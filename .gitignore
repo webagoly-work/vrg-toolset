@@ -1,0 +1,21 @@
+# --- Never upload: logins, keys, browser profiles ---
+Planner/home/
+Planner/data/
+.credentials.json
+*.key
+*.pem
+.env*
+
+# --- Portable programs (5 GB, not our code) ---
+Planner/apps/
+
+# --- Client documents stay on this PC ---
+*.pdf
+
+# --- Generated / temporary ---
+node_modules/
+.npm-cache/
+*.log
+*-log.txt
+SNAPSHOT.txt
+*.backup-*.html

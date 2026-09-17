@@ -1,0 +1,5 @@
+# Store text with LF so Windows and cloud (Linux) sessions agree
+* text=auto eol=lf
+# Windows batch files need CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf

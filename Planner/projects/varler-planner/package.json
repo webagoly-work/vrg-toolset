@@ -1,0 +1,22 @@
+{
+  "name": "varler-planner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Varler Planner — elektromos tervező, egyetlen offline HTML fájlba építve",
+  "scripts": {
+    "build": "node build.js",
+    "check": "node build.js --check",
+    "list": "node build.js --list",
+    "test": "node tests/run.js",
+    "manifest": "node tools/manifest.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}

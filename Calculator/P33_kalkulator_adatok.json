@@ -1,0 +1,135 @@
+{
+  "project": 1,
+  "name": "P33",
+  "source_layer": "Lmtwb8txz (Order)",
+  "unit_note": "db = darab (piece), m = meter — matching the metrikus-kalkulator /db and /m base units",
+  "devices_total_db": 42,
+  "devices_by_type": [
+    {
+      "type": "box",
+      "label_hu": "Kötődoboz",
+      "count_db": 5,
+      "heights_mm": {
+        "1900": 5
+      },
+      "refs": [
+        "SZ1",
+        "SZ2",
+        "SZ3",
+        "SZ4",
+        "SZ5"
+      ]
+    },
+    {
+      "type": "junction",
+      "label_hu": "Elágazó doboz",
+      "count_db": 2,
+      "heights_mm": {
+        "1900": 2
+      },
+      "refs": [
+        "KD1",
+        "KD2"
+      ]
+    },
+    {
+      "type": "light",
+      "label_hu": "Lámpatest (kötési pont)",
+      "count_db": 18,
+      "heights_mm": {
+        "1900": 4,
+        "2700": 14
+      },
+      "refs": [
+        "L10",
+        "L11",
+        "L12",
+        "L13",
+        "L14",
+        "L15",
+        "L16",
+        "L17",
+        "L18",
+        "L19",
+        "L20",
+        "L21",
+        "L22",
+        "L23",
+        "L24",
+        "L25",
+        "L26",
+        "L9"
+      ]
+    },
+    {
+      "type": "socket",
+      "label_hu": "Aljzat (csatlakozó)",
+      "count_db": 13,
+      "heights_mm": {
+        "300": 9,
+        "1100": 2,
+        "1400": 2
+      },
+      "refs": [
+        "D24",
+        "D25",
+        "D26",
+        "D27",
+        "D28",
+        "D29",
+        "D30",
+        "D31",
+        "D32",
+        "D33",
+        "D34",
+        "D35",
+        "D36"
+      ]
+    },
+    {
+      "type": "switch",
+      "label_hu": "Kapcsoló",
+      "count_db": 4,
+      "heights_mm": {
+        "1300": 4
+      },
+      "refs": [
+        "K12",
+        "K13",
+        "K14",
+        "K15"
+      ]
+    }
+  ],
+  "paths_m": [
+    {
+      "id": "pmtwgr6vr",
+      "ptype": "custom",
+      "build": "sull_gege",
+      "length_m": 1.57,
+      "is_led_strip": false
+    },
+    {
+      "id": "p8maz9n8r",
+      "ptype": "custom",
+      "build": "kv_custom",
+      "length_m": 0.61,
+      "is_led_strip": true
+    },
+    {
+      "id": "po6r36h4e",
+      "ptype": "custom",
+      "build": "kv_custom",
+      "length_m": 0.84,
+      "is_led_strip": true
+    },
+    {
+      "id": "p9p5md6l0",
+      "ptype": "custom",
+      "build": "kv_custom",
+      "length_m": 1.2,
+      "is_led_strip": true
+    }
+  ],
+  "leds_total_m": 2.66
+}

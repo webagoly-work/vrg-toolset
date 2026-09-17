@@ -1,0 +1,1632 @@
+<!doctype html>
+<html lang="hu"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Varler MindMD — kapcsolt jegyzetvászon</title>
+<style>
+:root{
+  --bg:#15120e; --grid:#221c14; --grid2:#2b2318;
+  --panel:#1c1710; --panel2:#241d15; --edge:#3a2f20;
+  --ink:#ece2d0; --ink2:#a99a83; --ink3:#7a6e5c;
+  --amber:#e8961c; --amber-d:#c07213; --rust:#e8641c;
+  --k-info:#e8961c; --k-warn:#e8641c; --k-todo:#5d9bd6; --k-done:#5fae6a; --k-dim:#a98cd6;
+  --r:13px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.45 "Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;overflow:hidden;
+  -webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:#241d15;border:1px solid var(--edge);border-radius:8px;padding:5px 9px;cursor:pointer}
+button:hover{background:#2e2519;border-color:#4a3c29}
+button.on{background:var(--amber-d);border-color:var(--amber);color:#1a1409;font-weight:600}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+input,select,textarea{background:#120f0b;border:1px solid var(--edge);border-radius:7px;padding:5px 7px}
+
+/* ---------- chrome ---------- */
+#top{position:fixed;inset:0 0 auto 0;height:46px;display:flex;align-items:center;gap:8px;
+  padding:0 12px;background:linear-gradient(#221b12,#1a150f);border-bottom:1px solid var(--edge);z-index:40}
+#top h1{margin:0;font-size:14px;font-weight:650;letter-spacing:.2px}
+#top h1 b{color:var(--amber);font-weight:650}
+#top .sp{flex:1}
+#top .grp{display:flex;gap:5px;align-items:center}
+#find{width:170px}
+#stat{position:fixed;left:0;right:0;bottom:0;height:26px;display:flex;align-items:center;gap:14px;
+  padding:0 12px;background:#1a150f;border-top:1px solid var(--edge);font-size:11.5px;color:var(--ink2);z-index:40}
+#stat kbd{background:#2a2118;border:1px solid var(--edge);border-radius:4px;padding:0 4px;color:var(--ink)}
+
+/* ---------- canvas ---------- */
+#stage{position:fixed;inset:46px 0 26px 0;overflow:hidden;cursor:default;
+  background-color:var(--bg);
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px}
+#world{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+#wires{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none}
+#wires path{fill:none}
+#wires .hit{stroke:transparent;stroke-width:14;pointer-events:stroke;cursor:pointer}
+#wires text{fill:var(--ink2);font:11px "Segoe UI",sans-serif;paint-order:stroke;stroke:var(--bg);stroke-width:4px}
+#marquee{position:absolute;border:1px solid var(--amber);background:rgba(232,150,28,.09);display:none}
+
+/* ---------- node ---------- */
+.node{position:absolute;background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);
+  box-shadow:0 8px 22px rgba(0,0,0,.45);display:flex;flex-direction:column;overflow:hidden}
+.node::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--kc,var(--amber))}
+.node.sel{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber),0 10px 28px rgba(0,0,0,.55)}
+.node.dim{opacity:.22}
+.node.hit{border-color:var(--rust);box-shadow:0 0 0 2px var(--rust)}
+.nh{display:flex;align-items:center;gap:6px;padding:7px 9px 7px 12px;cursor:grab;
+  background:var(--panel2);border-bottom:1px solid var(--edge);flex:0 0 auto}
+.nh:active{cursor:grabbing}
+.nt{flex:1;font-weight:640;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nt[contenteditable]{white-space:nowrap;outline:none}
+.nh .cv{color:var(--ink3);cursor:pointer;font-size:11px;padding:0 2px;background:none;border:0}
+.nh .cv:hover{color:var(--amber)}
+.nb{flex:1;overflow:auto;padding:9px 13px 11px;min-height:0;
+  font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-size:13.5px;line-height:1.62;color:#ddd2be}
+.nb.empty{color:var(--ink3);font-style:italic}
+.node.collapsed .nb{display:none}
+.node.collapsed{height:auto!important}
+.ntags{flex:0 0 auto;padding:0 12px 8px;display:flex;gap:5px;flex-wrap:wrap}
+.rs{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;
+  background:linear-gradient(135deg,transparent 50%,var(--edge) 50%)}
+.port{position:absolute;right:-8px;top:50%;margin-top:-8px;width:16px;height:16px;border-radius:50%;
+  background:var(--panel2);border:2px solid var(--edge);cursor:crosshair;opacity:0;transition:opacity .12s}
+.node:hover .port,.node.sel .port{opacity:1}
+.port:hover{background:var(--amber);border-color:var(--amber)}
+.nb textarea{width:100%;height:100%;min-height:120px;resize:none;border:0;background:#100d09;
+  font:13px/1.55 Consolas,"Cascadia Mono",monospace;color:#e6dcc8;padding:8px;border-radius:8px}
+
+/* ---------- markdown ---------- */
+.md h1,.md h2,.md h3,.md h4{font-family:"Segoe UI",sans-serif;margin:.85em 0 .35em;line-height:1.25;color:#f2e9d8}
+.md h1{font-size:1.35em;border-bottom:1px solid var(--edge);padding-bottom:.2em}
+.md h2{font-size:1.18em}.md h3{font-size:1.05em}.md h4{font-size:.98em;color:var(--ink2)}
+.md p{margin:.5em 0}
+.md ul,.md ol{margin:.4em 0;padding-left:1.35em}
+.md li{margin:.15em 0}
+.md li.task{list-style:none;margin-left:-1.1em}
+.md li.task input{margin-right:.45em;accent-color:var(--amber)}
+.md li.done{color:var(--ink3);text-decoration:line-through}
+.md a{color:var(--amber);text-decoration:none;border-bottom:1px solid rgba(232,150,28,.35)}
+.md a:hover{border-bottom-color:var(--amber)}
+.md a.wiki{color:#f0b24c;border-bottom-style:dashed}
+.md a.wiki.missing{color:var(--rust);border-bottom-color:rgba(232,100,28,.5)}
+.md a.ext::after{content:"↗";font-size:.75em;vertical-align:super;margin-left:1px;opacity:.7}
+.md code{font-family:Consolas,"Cascadia Mono",monospace;font-size:.88em;background:#100d09;
+  border:1px solid var(--edge);border-radius:4px;padding:0 4px}
+.md pre{background:#100d09;border:1px solid var(--edge);border-left:3px solid var(--amber-d);
+  border-radius:8px;padding:9px 11px;overflow:auto;margin:.6em 0}
+.md pre code{border:0;background:none;padding:0;font-size:12.2px;line-height:1.5}
+.md pre .lang{display:block;font:10.5px "Segoe UI",sans-serif;color:var(--ink3);margin-bottom:5px}
+.md blockquote{margin:.6em 0;padding:.1em 0 .1em .9em;border-left:2px solid var(--edge);color:var(--ink2)}
+.md table{border-collapse:collapse;margin:.6em 0;font-family:"Segoe UI",sans-serif;font-size:12.5px;width:100%}
+.md th,.md td{border:1px solid var(--edge);padding:4px 8px;text-align:left}
+.md th{background:#221b12;font-weight:640}
+.md tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+.md hr{border:0;border-top:1px solid var(--edge);margin:.9em 0}
+.md mark{background:rgba(232,150,28,.25);color:#f5e6cb;border-radius:3px;padding:0 2px}
+.md img{max-width:100%;border-radius:8px;border:1px solid var(--edge)}
+.md .adm{border:1px solid var(--edge);border-left:3px solid var(--kc,var(--amber));border-radius:8px;
+  padding:7px 11px;margin:.6em 0;background:rgba(255,255,255,.02)}
+.md .adm>.t{font-family:"Segoe UI",sans-serif;font-weight:640;font-size:12px;color:var(--kc,var(--amber));margin-bottom:3px}
+.md .diagram{margin:.6em 0;text-align:center}
+.md .diagram svg{max-width:100%}
+.tag{display:inline-block;font:11px "Segoe UI",sans-serif;background:#2a2118;border:1px solid var(--edge);
+  border-radius:999px;padding:1px 8px;color:var(--ink2);cursor:pointer}
+.tag:hover{border-color:var(--amber);color:var(--amber)}
+
+#tah{position:fixed;z-index:67;display:none;min-width:230px;max-width:320px;
+  background:var(--panel);border:1px solid var(--amber);border-radius:10px;padding:4px;
+  box-shadow:0 14px 34px rgba(0,0,0,.6);max-height:44vh;overflow:auto}
+#tah .it{display:flex;gap:10px;align-items:center;padding:5px 9px;border-radius:7px;
+  font-size:12.5px;cursor:pointer;white-space:nowrap}
+#tah .it .k{margin-left:auto;color:var(--ink3);font-size:11px;font-family:Consolas,monospace}
+#tah .it.on{background:var(--amber-d);color:#1a1409}
+#tah .it.on .k{color:#3a2a10}
+
+/* ---------- review comments ---------- */
+.md .cm{background:rgba(232,150,28,.13);border-bottom:1px dashed var(--amber);cursor:pointer;border-radius:2px}
+.md .cm:hover{background:rgba(232,150,28,.24)}
+.md .cm.res{background:transparent;border-bottom-color:var(--edge);opacity:.72}
+.md .cm sup{color:var(--amber);font-size:.68em;font-weight:700;margin-left:1px}
+.md .cm.flash{animation:fl 1.2s ease-out}
+@keyframes fl{0%,45%{background:rgba(232,150,28,.55)}100%{background:rgba(232,150,28,.13)}}
+.cbadge{font-size:11px;color:var(--amber);background:rgba(232,150,28,.12);
+  border:1px solid rgba(232,150,28,.35);border-radius:999px;padding:0 6px;flex:0 0 auto}
+#cbar{position:fixed;z-index:65;display:none}
+#cbar button{background:var(--amber-d);border-color:var(--amber);color:#1a1409;font-weight:600;
+  box-shadow:0 6px 16px rgba(0,0,0,.5)}
+#cpop{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);width:min(460px,92vw);z-index:66;
+  background:var(--panel);border:1px solid var(--amber);border-radius:12px;padding:11px;display:none;
+  box-shadow:0 18px 44px rgba(0,0,0,.6)}
+#cpop .q{font-size:12px;color:var(--ink2);margin-bottom:7px;font-style:italic}
+#cpop textarea{width:100%;resize:vertical;font:13px/1.5 "Segoe UI",sans-serif}
+#cpop .f{display:flex;gap:7px;justify-content:flex-end;margin-top:8px}
+.cmt{border:1px solid var(--edge);border-left:3px solid var(--amber);border-radius:9px;
+  padding:8px 10px;margin:7px 0;font-size:12.5px}
+.cmt.res{border-left-color:var(--k-done);opacity:.6}
+.cmt.flash{border-color:var(--amber);background:#241d15}
+.cmt .h{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.cmt .d{color:var(--ink3);font-size:11px}
+.cmt .q{color:var(--ink2);font-style:italic;border-left:2px solid var(--edge);padding-left:7px;margin:4px 0}
+.cmt .b{margin:3px 0}
+.mini{padding:1px 6px;font-size:11.5px;border-radius:6px}
+
+/* ---------- inspector ---------- */
+#insp{position:fixed;top:46px;bottom:26px;right:0;width:390px;background:var(--panel);
+  border-left:1px solid var(--edge);display:none;flex-direction:column;z-index:30}
+#insp.open{display:flex}
+#insp header{display:flex;align-items:center;gap:6px;padding:9px 11px;border-bottom:1px solid var(--edge);background:var(--panel2)}
+#insp header input{flex:1;font-weight:640}
+#insp .tabs{display:flex;gap:4px;padding:8px 11px 0}
+#insp .tabs button{border-radius:8px 8px 0 0;border-bottom-color:transparent}
+#insp .body{flex:1;overflow:auto;padding:11px}
+#src{width:100%;height:100%;min-height:260px;resize:vertical;background:#100d09;
+  font:13px/1.6 Consolas,"Cascadia Mono",monospace;border-radius:9px;padding:10px;tab-size:2}
+#insp .row{display:flex;gap:7px;align-items:center;margin:8px 0}
+#insp .lbl{font-size:11.5px;color:var(--ink3);margin:12px 0 5px}
+.linklist{list-style:none;margin:0;padding:0}
+.linklist li{padding:5px 8px;border:1px solid var(--edge);border-radius:7px;margin:4px 0;cursor:pointer;
+  font-size:12.5px;display:flex;gap:7px;align-items:center}
+.linklist li:hover{border-color:var(--amber);background:#241d15}
+.linklist li .d{color:var(--ink3);font-size:11px}
+
+/* ---------- palette / modal ---------- */
+#veil{position:fixed;inset:0;background:rgba(8,6,4,.66);z-index:60;display:none}
+#veil.open{display:block}
+#pal{position:fixed;left:50%;top:14vh;transform:translateX(-50%);width:min(560px,92vw);z-index:61;
+  background:var(--panel);border:1px solid var(--edge);border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.6);display:none}
+#pal.open{display:block}
+#palq{width:100%;border:0;border-bottom:1px solid var(--edge);border-radius:14px 14px 0 0;padding:13px 15px;font-size:15px;background:transparent}
+#palr{max-height:52vh;overflow:auto;padding:6px}
+#palr .it{padding:8px 11px;border-radius:9px;display:flex;gap:10px;align-items:center;cursor:pointer;font-size:13px}
+#palr .it .k{margin-left:auto;color:var(--ink3);font-size:11px}
+#palr .it.on{background:var(--amber-d);color:#1a1409}
+#palr .it.on .k{color:#3a2a10}
+#modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,92vw);z-index:61;
+  background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:16px;display:none}
+#modal.open{display:block}
+#modal h3{margin:0 0 10px;font-size:14px}
+#modal .out{background:#100d09;border:1px solid var(--edge);border-radius:9px;padding:10px;
+  font:12px/1.5 Consolas,monospace;max-height:46vh;overflow:auto;white-space:pre-wrap;word-break:break-word}
+#modal .foot{display:flex;gap:7px;justify-content:flex-end;margin-top:11px}
+#toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);background:#2a2118;border:1px solid var(--amber);
+  color:var(--ink);padding:7px 14px;border-radius:9px;z-index:70;display:none;font-size:12.5px}
+
+@media print{
+  #top,#stat,#stage,#insp,#veil,#pal,#modal,#toast,#cbar,#cpop,#tah,#pdlg{display:none!important}
+  #print{display:block!important}
+  html,body{background:#fff;height:auto;overflow:visible}
+}
+@page{size:A4;margin:18mm 16mm 16mm 18mm}
+#print{display:none;background:#fff;color:#111;font-family:Georgia,"Times New Roman",serif;font-size:11pt}
+#print .tb{border-bottom:2px solid #222;padding-bottom:9px;margin-bottom:16px}
+#print .tb h1{font-family:"Segoe UI",sans-serif;font-size:19pt;margin:0 0 8px}
+#print .tb table{border-collapse:collapse;font-family:"Segoe UI",sans-serif;font-size:9.5pt}
+#print .tb th{text-align:left;padding:1px 14px 1px 0;color:#555;font-weight:600;vertical-align:top}
+#print .tb td{padding:1px 0}
+#print section.newpage{break-before:page;page-break-before:always}
+#print h2{font-family:"Segoe UI",sans-serif;font-size:14pt;border-bottom:1px solid #bbb;
+  padding-bottom:3px;margin:0 0 9px;break-after:avoid}
+#print h2.nobreak{break-after:avoid}
+#print .toc{font-family:"Segoe UI",sans-serif;font-size:10pt}
+#print .toc ul{list-style:none;padding-left:0;margin:.3em 0}
+#print .toc li{padding:1px 0;border-bottom:1px dotted #ddd}
+#print hr.pb{break-after:page;page-break-after:always;border:0;height:0;margin:0}
+#print .md h1,#print .md h2,#print .md h3,#print .md h4{font-family:"Segoe UI",sans-serif;color:#111}
+#print .md h1{font-size:13pt}#print .md h2{font-size:12pt;border:0}#print .md h3{font-size:11pt}
+#print .md a{color:#8a4d05;border:0;text-decoration:none}
+#print .md a.ext::after{content:" (" attr(href) ")";font-size:.8em;color:#777}
+#print .md pre,#print .md code{background:#f5f2ec;border:1px solid #ddd;color:#222}
+#print .md pre{border-left:3px solid #8a6b2f}
+#print .md table{border-collapse:collapse;width:100%;font-family:"Segoe UI",sans-serif;font-size:9.5pt}
+#print .md th,#print .md td{border:1px solid #bbb;padding:3px 6px}
+#print .md th{background:#eee}
+#print .md tr,#print .md li,#print .md blockquote{break-inside:avoid}
+#print .md blockquote{border-left:2px solid #ccc;color:#444;padding-left:9px}
+#print .md .adm{border:1px solid #ccc;border-left:3px solid #8a6b2f;border-radius:5px;padding:5px 9px;break-inside:avoid}
+#print .md .adm>.t{font-family:"Segoe UI",sans-serif;font-weight:700;font-size:9.5pt}
+#print .md .fm,#print .fm{display:grid;grid-template-columns:auto 1fr;gap:1px 12px;
+  font-family:"Segoe UI",sans-serif;font-size:9.5pt;background:#f5f2ec;padding:7px 10px;border-radius:5px}
+#print .md .cm{background:#fdf3e0;border-bottom:1px dashed #b8860b}
+#print .md .cm.res{background:none;border-bottom:0}
+#print .notes{font-family:"Segoe UI",sans-serif;font-size:9pt;color:#444;
+  border-top:1px solid #ccc;margin-top:12px;padding-top:6px;break-inside:avoid}
+#print .notes h4{margin:0 0 4px;font-size:9.5pt}
+#print .notes li.res{color:#888}
+#print .md .toc{font-size:10pt}
+
+/* front-matter strip on screen */
+.md .fm{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;background:#100d09;
+  border:1px solid var(--edge);border-radius:8px;padding:6px 9px;margin:0 0 .6em;
+  font-family:"Segoe UI",sans-serif;font-size:11.5px}
+.md .fm dt{color:var(--ink3)}
+.md .fm dd{margin:0;color:var(--ink)}
+.md .toc{font-family:"Segoe UI",sans-serif;font-size:12.5px;border-left:2px solid var(--edge);padding-left:9px}
+.md .toc ul{list-style:none;padding-left:0;margin:.2em 0}
+.md .toc li{padding:1px 0}
+.md hr.pb{border:0;border-top:2px dashed var(--amber-d);margin:1em 0;position:relative}
+
+/* print dialog */
+#pdlg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,94vw);z-index:62;
+  background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:16px;display:none;
+  box-shadow:0 24px 60px rgba(0,0,0,.6)}
+#pdlg h3{margin:0 0 12px;font-size:14px}
+#pdlg .g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#pdlg label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--ink3)}
+#pdlg .g input{width:100%}
+#pdlg .o{margin-top:12px;display:grid;gap:5px}
+#pdlg .o label{flex-direction:row;align-items:center;gap:7px;font-size:12.5px;color:var(--ink)}
+#pdlg .f{display:flex;gap:7px;justify-content:flex-end;margin-top:14px}
+</style>
+</head><body>
+
+<div id="top">
+  <h1>Varler <b>MindMD</b></h1>
+  <div class="grp">
+    <button id="bNew" title="Új buborék (dupla kattintás a vásznon)">+ Buborék</button>
+    <button id="bLink" title="Kapcsolat rajzolása — C">⇢ Kapcsolat</button>
+    <button id="bLayout" title="Fa-elrendezés a kijelölt csomóponttól">⌥ Rendezés</button>
+    <button id="bFit" title="Illesztés a képernyőre — Ctrl+0">⛶ Illeszt</button>
+  </div>
+  <div class="grp">
+    <button id="bUndo" title="Vissza — Ctrl+Z">↶</button>
+    <button id="bRedo" title="Újra — Ctrl+Shift+Z">↷</button>
+  </div>
+  <input id="find" placeholder="Keresés a jegyzetekben…  Ctrl+F">
+  <div class="sp"></div>
+  <div class="grp">
+    <button id="bOpen">Megnyitás</button>
+    <button id="bSave" title="Ctrl+S">Mentés .mindmd.json</button>
+    <button id="bMd" title="Összefűzött Markdown">Export .md</button>
+    <button id="bPrint" title="Ctrl+P">Nyomtatás</button>
+    <button id="bPal" title="Parancsok — Ctrl+K">⌘K</button>
+  </div>
+  <input type="file" id="file" accept=".json,.md,.mindmd.json" style="display:none">
+</div>
+
+<div id="stage">
+  <div id="world">
+    <svg id="wires"><g id="wg"></g></svg>
+  </div>
+  <div id="marquee"></div>
+</div>
+
+<div id="insp">
+  <header>
+    <input id="iTitle" placeholder="Cím">
+    <select id="iKind" title="Típus">
+      <option value="info">📝 Jegyzet</option>
+      <option value="warn">⚠ Figyelem</option>
+      <option value="todo">☐ Teendő</option>
+      <option value="done">✔ Kész</option>
+      <option value="dim">📐 Adat</option>
+    </select>
+    <button id="iClose" title="Bezár">✕</button>
+  </header>
+  <div class="tabs">
+    <button id="tSrc" class="on">Forrás</button>
+    <button id="tPrev">Előnézet</button>
+    <button id="tCm">Megjegyzések <span id="cmN"></span></button>
+    <button id="tMeta">Kapcsolatok</button>
+  </div>
+  <div class="body">
+    <div id="pSrc"><textarea id="src" spellcheck="false"></textarea>
+      <div class="lbl">Címkék (vesszővel)</div>
+      <input id="iTags" style="width:100%" placeholder="pl. domoszló, ltr, betáp">
+    </div>
+    <div id="pPrev" class="md" style="display:none"></div>
+    <div id="pCm" style="display:none">
+      <div class="row"><button id="cmAdd">+ Megjegyzés a dokumentumhoz</button>
+        <label style="font-size:12px;color:var(--ink2)"><input type="checkbox" id="cmHide"> megoldottak elrejtése</label></div>
+      <div id="cmList"></div>
+    </div>
+    <div id="pMeta" style="display:none">
+      <div class="lbl">Kimenő kapcsolatok</div><ul id="lOut" class="linklist"></ul>
+      <div class="lbl">Hivatkoznak rá</div><ul id="lIn" class="linklist"></ul>
+      <div class="lbl">Hiányzó [[hivatkozás]] — kattints a létrehozáshoz</div><ul id="lMiss" class="linklist"></ul>
+    </div>
+  </div>
+</div>
+
+<div id="veil"></div>
+<div id="pal"><input id="palq" placeholder="Parancs vagy buborék neve…" spellcheck="false"><div id="palr"></div></div>
+<div id="modal"><h3 id="mTitle"></h3><div class="out" id="mOut"></div>
+  <div class="foot"><button id="mCopy">Vágólapra</button><button id="mDl">Letöltés</button><button id="mClose">Bezár</button></div></div>
+<div id="toast"></div>
+<div id="print"></div>
+
+<div id="stat">
+  <span id="sCount"></span>
+  <span id="sSel"></span>
+  <span class="sp" style="flex:1"></span>
+  <span><kbd>dupla katt</kbd> új · <kbd>Tab</kbd> gyerek · <kbd>Enter</kbd> testvér · <kbd>C</kbd> kapcsolat · <kbd>/</kbd> blokk · <kbd>[[</kbd> hivatkozás · <kbd>szöveg kijelölés</kbd> megjegyzés · <kbd>Ctrl+K</kbd> parancsok</span>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   Varler MindMD — a graph of markdown documents.
+   Single file, no dependencies, runs from file://.
+   Seams left open on purpose:
+     MD.render(src, ctx)          -> swap for markdown-it without touching the app
+     MD.fence['name'] = fn        -> custom fenced blocks (mermaid, varler-*)
+   ========================================================================= */
+
+/* ---------------------------------------------------------------- markdown */
+const MD = (function(){
+  const fence = {};                       // lang -> (code, ctx) => html
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  function inline(s, ctx){
+    ctx = ctx || {};
+    // review marks come out first: their delimiters would not survive escaping
+    const marks=[];
+    s = String(s).replace(/\{>\s*\[comment-id="([^"]+)"\]([\s\S]*?)<\}/g,(m,id,txt)=>{
+      marks.push({id,txt:txt.trim()}); return '\u0001'+(marks.length-1)+'\u0001'; });
+    const code=[];
+    s = s.replace(/`([^`]+)`/g,(m,c)=>{code.push(c);return '\u0000'+(code.length-1)+'\u0000';});
+    s = esc(s);
+    // images
+    s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,(m,a,u)=>`<img src="${u}" alt="${a}">`);
+    // wiki links [[Target|label]] — these become graph edges
+    s = s.replace(/\[\[([^\]|]+?)(?:\|([^\]]+?))?\]\]/g,(m,t,l)=>{
+      const target=t.trim(), miss = ctx && ctx.exists && !ctx.exists(target);
+      return `<a class="wiki${miss?' missing':''}" href="#" data-wiki="${esc(target)}">${esc(l||target)}</a>`;
+    });
+    // inline links
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,tx,u)=>{
+      const ext=/^(https?:|mailto:|file:)/i.test(u);
+      return `<a href="${u}"${ext?' target="_blank" rel="noopener" class="ext"':''}>${tx}</a>`;
+    });
+    // bare urls
+    s = s.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g,
+      (m,p,u)=>`${p}<a href="${u}" target="_blank" rel="noopener" class="ext">${u}</a>`);
+    s = s.replace(/\*\*\*([^*]+)\*\*\*/g,'<strong><em>$1</em></strong>')
+         .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+         .replace(/(^|[^\w*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
+         .replace(/__([^_]+)__/g,'<strong>$1</strong>')
+         .replace(/~~([^~]+)~~/g,'<del>$1</del>')
+         .replace(/==([^=]+)==/g,'<mark>$1</mark>')
+         .replace(/\^([^\s^]+)\^/g,'<sup>$1</sup>');
+    // #tags
+    s = s.replace(/(^|\s)#([\p{L}\d_\-\/]{2,})/gu,
+      (m,p,t)=>`${p}<a class="tag" href="#" data-tag="${esc(t)}">#${esc(t)}</a>`);
+    s = s.replace(/\u0000(\d+)\u0000/g,(m,i)=>`<code>${esc(code[+i])}</code>`);
+    return s.replace(/\u0001(\d+)\u0001/g,(m,i)=>{
+      const k=marks[+i], no=ctx.cmNo?ctx.cmNo(k.id):'', res=ctx.cmRes&&ctx.cmRes(k.id);
+      return `<span class="cm${res?' res':''}" data-cid="${esc(k.id)}" title="Megjegyzés — kattints">`+
+             `${inline(k.txt,ctx)}<sup>${esc(no)}</sup></span>`;
+    });
+  }
+
+  const RE_ITEM = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/;
+  const RE_REVIEW = /\{>>\s*\[REVIEW([^\]]*)\]([\s\S]*?)<<\}\s*/g;
+
+  /* ---- {: attribute lists } — one extension vehicle, not many ---------- */
+  function attrs(s){
+    const a={cls:[],id:'',kv:{}}; if(!s) return a;
+    let m, re=/([\w-]+)="([^"]*)"/g;
+    while((m=re.exec(s))) a.kv[m[1]]=m[2];
+    const rest=s.replace(re,'');
+    (rest.match(/\.[\w-]+/g)||[]).forEach(c=>a.cls.push(c.slice(1)));
+    const id=/#([\w-]+)/.exec(rest); if(id) a.id=id[1];
+    return a;
+  }
+  /* ---- YAML-ish front matter: the document as a record ----------------- */
+  function front(srcText){
+    const s=String(srcText||'').replace(/\r\n?/g,'\n');
+    const m=/^---\n([\s\S]*?)\n---\n?/.exec(s);
+    if(!m) return {meta:null, body:s};
+    const meta={};
+    m[1].split('\n').forEach(l=>{
+      const k=/^\s*([\w][\w -]*?)\s*:\s*(.*)$/.exec(l);
+      if(k) meta[k[1].trim()]=k[2].trim().replace(/^["']|["']$/g,'');
+    });
+    return {meta, body:s.slice(m[0].length)};
+  }
+  function tocOf(lines, at, lo, hi){
+    const hs=[]; lines.forEach((l,i)=>{ const m=/^(#{1,6})\s+(.*)$/.exec(l);
+      if(m) hs.push({i, lvl:m[1].length, text:m[2]}); });
+    // scope to the heading the marker sits under; fall back rather than blank
+    let scope=null;
+    for(let k=hs.length-1;k>=0;k--) if(hs[k].i<at){ scope=hs[k]; break; }
+    let use=hs;
+    if(scope){
+      const sub=hs.filter(h=>h.i>scope.i && h.lvl>scope.lvl);
+      const stop=hs.find(h=>h.i>scope.i && h.lvl<=scope.lvl);
+      use=sub.filter(h=>!stop||h.i<stop.i);
+      if(!use.length) use=hs;                      // continuity over surprise
+    }
+    use=use.filter(h=>h.lvl>=lo && h.lvl<=hi);
+    if(!use.length) return '';
+    const base=Math.min.apply(null,use.map(h=>h.lvl));
+    return '<nav class="toc"><ul>'+use.map(h=>
+      `<li style="margin-left:${(h.lvl-base)*14}px">${inline(h.text,{})}</li>`).join('')+'</ul></nav>';
+  }
+  const KINDS = {info:'📝',warn:'⚠',todo:'☐',done:'✔',dim:'📐',note:'📝',tip:'💡'};
+
+  function list(lines, from, ctx){
+    // collect the contiguous list block
+    let i=from, buf=[];
+    while(i<lines.length){
+      const l=lines[i];
+      if(RE_ITEM.test(l) || (/^\s+\S/.test(l) && buf.length) || (l.trim()==='' && RE_ITEM.test(lines[i+1]||''))){
+        buf.push(l); i++;
+      } else break;
+    }
+    // build a tree by indent
+    const items=[];
+    buf.forEach(l=>{
+      const m=RE_ITEM.exec(l);
+      if(m) items.push({ind:m[1].replace(/\t/g,'  ').length, ord:/\d/.test(m[2]), txt:m[3], kids:[]});
+      else if(items.length && l.trim()!=='') items[items.length-1].txt += '\n'+l.trim();
+    });
+    const root={kids:[],ind:-1}, stack=[root];
+    items.forEach(it=>{
+      while(stack.length>1 && it.ind <= stack[stack.length-1].ind) stack.pop();
+      stack[stack.length-1].kids.push(it); stack.push(it);
+    });
+    const item = k => {
+      const t=/^\[( |x|X)\]\s+(.*)$/.exec(k.txt);
+      let cls='', body;
+      if(t){ const done=t[1]!==' ';
+        cls=` class="task${done?' done':''}"`;
+        body=`<input type="checkbox" ${done?'checked':''} disabled>`+inline(t[2],ctx);
+      } else body = inline(k.txt.split('\n')[0],ctx) +
+          (k.txt.includes('\n') ? render(k.txt.split('\n').slice(1).join('\n'),ctx) : '');
+      return `<li${cls}>${body}${emit(k.kids)}</li>`;
+    };
+    // a level may hold both bullet and numbered runs — never merge them into one list
+    const emit = kids => {
+      let html='', run=[];
+      const flush=()=>{ if(!run.length) return;
+        const tag=run[0].ord?'ol':'ul';
+        html+=`<${tag}>`+run.map(item).join('')+`</${tag}>`; run=[]; };
+      kids.forEach(k=>{ if(run.length && run[0].ord!==k.ord) flush(); run.push(k); });
+      flush(); return html;
+    };
+    return {html:emit(root.kids), end:i};
+  }
+
+  function table(lines, from, ctx){
+    const head = lines[from].trim().replace(/^\||\|$/g,'').split('|');
+    const al = lines[from+1].trim().replace(/^\||\|$/g,'').split('|')
+      .map(c=>/^:.*:$/.test(c.trim())?'center':/:$/.test(c.trim())?'right':'left');
+    let i=from+2, rows=[];
+    while(i<lines.length && lines[i].includes('|') && lines[i].trim()!==''){
+      rows.push(lines[i].trim().replace(/^\||\|$/g,'').split('|')); i++;
+    }
+    const th = head.map((c,j)=>`<th style="text-align:${al[j]||'left'}">${inline(c.trim(),ctx)}</th>`).join('');
+    const tb = rows.map(r=>'<tr>'+head.map((_,j)=>
+      `<td style="text-align:${al[j]||'left'}">${inline((r[j]||'').trim(),ctx)}</td>`).join('')+'</tr>').join('');
+    // optional  {: col-widths="30,70" }  on the line right after the table
+    let cg='';
+    const am=/^\s*\{:?\s*([^}]*)\}\s*$/.exec(lines[i]||'');
+    if(am){ const a=attrs(am[1]);
+      if(a.kv['col-widths']){
+        cg='<colgroup>'+a.kv['col-widths'].split(',').map(w=>
+          `<col style="width:${parseFloat(w)||0}%">`).join('')+'</colgroup>';
+      }
+      i++;
+    }
+    return {html:`<table>${cg}<thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table>`, end:i};
+  }
+
+  function render(srcText, ctx){
+    ctx = ctx || {};
+    const fm = front(String(srcText||'').replace(RE_REVIEW,''));
+    const lines = fm.body.replace(/\r\n?/g,'\n').split('\n');
+    const out=[]; let i=0;
+    if(fm.meta && Object.keys(fm.meta).length){
+      out.push('<dl class="fm">'+Object.keys(fm.meta).map(k=>
+        `<dt>${esc(k)}</dt><dd>${inline(fm.meta[k],ctx)}</dd>`).join('')+'</dl>');
+    }
+    while(i<lines.length){
+      const ln=lines[i];
+
+      if(ln.trim()===''){ i++; continue; }
+
+      // [TOC] / [TOC:2-4] — this document; [MAP-TOC] — every bubble
+      let t=/^\s*\[TOC(?::(\d)-(\d))?\]\s*$/i.exec(ln);
+      if(t){ out.push(tocOf(lines,i,+(t[1]||1),+(t[2]||6))); i++; continue; }
+      if(/^\s*\[MAP-TOC\]\s*$/i.test(ln)){
+        out.push(ctx.mapToc?ctx.mapToc():'<nav class="toc"><ul><li>—</li></ul></nav>'); i++; continue; }
+
+      // fenced code / diagram
+      let m=/^\s*(```|~~~)\s*([\w.-]*)\s*$/.exec(ln);
+      if(m){
+        const mark=m[1], lang=m[2]; const buf=[]; i++;
+        while(i<lines.length && !new RegExp('^\\s*'+mark+'\\s*$').test(lines[i])) buf.push(lines[i++]);
+        i++;
+        const code=buf.join('\n');
+        if(lang && fence[lang]){ out.push(fence[lang](code, ctx)); }
+        else out.push(`<pre>${lang?`<span class="lang">${esc(lang)}</span>`:''}<code>${esc(code)}</code></pre>`);
+        continue;
+      }
+      // admonition ::: warn Title
+      m=/^:::+\s*([\w-]+)?\s*(.*)$/.exec(ln);
+      if(m && m[1]){
+        const kind=m[1], title=m[2]||''; const buf=[]; i++;
+        while(i<lines.length && !/^:::+\s*$/.test(lines[i])) buf.push(lines[i++]);
+        i++;
+        out.push(`<div class="adm" style="--kc:var(--k-${kind},var(--amber))">`+
+          `<div class="t">${KINDS[kind]||'●'} ${esc(title||kind)}</div>${render(buf.join('\n'),ctx)}</div>`);
+        continue;
+      }
+      // heading
+      m=/^(#{1,6})\s+(.*)$/.exec(ln);
+      if(m){ const h=Math.min(m[1].length,4);
+        out.push(`<h${h}>${inline(m[2],ctx)}</h${h}>`); i++; continue; }
+      // hr, optionally a page break:  --- {.page-break}
+      const hr=/^\s*([-*_])(?:\s*\1){2,}\s*(\{[^}]*\})?\s*$/.exec(ln);
+      if(hr){ const a=attrs(hr[2]||'');
+        out.push(a.cls.indexOf('page-break')>=0 ? '<hr class="pb">' : '<hr>'); i++; continue; }
+      // blockquote
+      if(/^\s*>/.test(ln)){ const buf=[];
+        while(i<lines.length && /^\s*>/.test(lines[i])) buf.push(lines[i++].replace(/^\s*>\s?/,''));
+        out.push(`<blockquote>${render(buf.join('\n'),ctx)}</blockquote>`); continue; }
+      // table
+      if(ln.includes('|') && /^\s*\|?[\s:|-]*-[\s:|-]*$/.test(lines[i+1]||'')){
+        const t=table(lines,i,ctx); out.push(t.html); i=t.end; continue; }
+      // list
+      if(RE_ITEM.test(ln)){ const l=list(lines,i,ctx); out.push(l.html); i=l.end; continue; }
+      // paragraph
+      const buf=[];
+      while(i<lines.length && lines[i].trim()!=='' && !/^(#{1,6}\s|\s*>|:::|\s*(```|~~~))/.test(lines[i])
+            && !RE_ITEM.test(lines[i])) buf.push(lines[i++]);
+      out.push(`<p>${inline(buf.join('\n'),ctx).replace(/\n/g,'<br>')}</p>`);
+    }
+    return out.join('\n');
+  }
+
+  // links a document declares, in order: [[wiki]] targets
+  function wikiLinks(srcText){
+    const out=[], re=/\[\[([^\]|]+?)(?:\|[^\]]+?)?\]\]/g; let m;
+    while((m=re.exec(String(srcText||'')))) out.push(m[1].trim());
+    return out;
+  }
+  function headings(srcText){
+    return String(srcText||'').split('\n').map(l=>/^(#{1,6})\s+(.*)$/.exec(l))
+      .filter(Boolean).map(m=>({lvl:m[1].length,text:m[2]}));
+  }
+  /* ---- review comments (CriticMarkup-shaped, NotepadMD compatible) -------
+     inline : {> [comment-id="c1"] a jelölt szöveg <}
+     thread : {>> [REVIEW comment-id="c1" time="…" author="…" quote="…"] test <<}
+     Both live in the file. The markdown is the database. */
+  function comments(srcText){
+    const out=[]; let m; RE_REVIEW.lastIndex=0;
+    while((m=RE_REVIEW.exec(String(srcText||'')))){
+      const a={}; let k; const re=/([\w-]+)="([^"]*)"/g;
+      while((k=re.exec(m[1]))) a[k[1]]=k[2];
+      out.push({id:a['comment-id']||'?', time:a.time||'', author:a.author||'',
+                quote:a.quote||'', resolved:a.resolved==='true', body:(m[2]||'').trim()});
+    }
+    return out;
+  }
+  function threads(srcText){
+    const map={}, order=[];
+    comments(srcText).forEach(c=>{ if(!map[c.id]){map[c.id]={id:c.id,items:[],resolved:true};order.push(c.id);}
+      map[c.id].items.push(c); if(!c.resolved) map[c.id].resolved=false; });
+    return order.map((id,i)=>Object.assign(map[id],{no:i+1}));
+  }
+  function stripComments(srcText){
+    return String(srcText||'').replace(RE_REVIEW,'')
+      .replace(/\{>\s*\[comment-id="[^"]+"\]([\s\S]*?)<\}/g,(m,t)=>t.trim()).replace(/\n{3,}/g,'\n\n').trim();
+  }
+  function writeThread(c){
+    const at=[`comment-id="${c.id}"`,`time="${c.time}"`,`author="${c.author}"`];
+    if(c.quote) at.push(`quote="${String(c.quote).replace(/"/g,"'").slice(0,120)}"`);
+    if(c.resolved) at.push('resolved="true"');
+    return `{>> [REVIEW ${at.join(' ')}] ${c.body} <<}`;
+  }
+  return {render, inline, wikiLinks, headings, fence, esc,
+          comments, threads, stripComments, writeThread, RE_REVIEW,
+          front, attrs, tocOf};
+})();
+
+/* Diagram seam: drop lib/mermaid.min.js next to this file and mermaid fences render.
+   Without it the block degrades to styled code — never a broken page. */
+MD.fence.mermaid = function(code){
+  const id='mmd'+(Math.random()*1e9|0);
+  if(window.mermaid){
+    setTimeout(()=>{ try{
+      window.mermaid.render(id+'s', code).then(r=>{
+        const el=document.getElementById(id); if(el) el.innerHTML=r.svg;
+      });
+    }catch(e){} },0);
+    return `<div class="diagram" id="${id}"><span class="lang">mermaid…</span></div>`;
+  }
+  return `<pre><span class="lang">mermaid — a lib/mermaid.min.js nincs betöltve</span><code>${MD.esc(code)}</code></pre>`;
+};
+(function(){ const s=document.createElement('script'); s.src='lib/mermaid.min.js';
+  s.onload=()=>{ try{ window.mermaid.initialize({startOnLoad:false,theme:'dark',
+    themeVariables:{primaryColor:'#241d15',lineColor:'#e8961c',textColor:'#ece2d0'}});
+    if(window.APP) APP.redrawAll(); }catch(e){} };
+  s.onerror=()=>{}; document.head.appendChild(s); })();
+
+/* ------------------------------------------------------------------ model */
+const $ = id => document.getElementById(id);
+const KIND = {info:'#e8961c',warn:'#e8641c',todo:'#5d9bd6',done:'#5fae6a',dim:'#a98cd6'};
+let doc = null, view = {x:0,y:0,k:1};
+let sel = new Set(), undoStack=[], redoStack=[], editing=null, linkFrom=null, filter='';
+
+function uid(p){ doc.seq=(doc.seq||0)+1; return p+doc.seq; }
+function blank(){
+  return {v:1, seq:0, title:'Névtelen térkép',
+    nodes:[{id:'n1',x:80,y:80,w:340,h:210,kind:'info',title:'Kezdés',tags:[],
+      body:'Dupla kattintás a vászonra: **új buborék**.\n\nDupla kattintás a szövegtörzsre: szerkesztés.\n\nHivatkozás másik buborékra: [[Markdown puska]] — a kapcsolat magától kirajzolódik.\n\n- [x] buborék\n- [ ] kapcsolat\n'},
+      {id:'n2',x:500,y:60,w:380,h:340,kind:'dim',title:'Markdown puska',tags:['súgó'],
+      body:'## Amit ez a szerkesztő tud\n\n| jelölés | eredmény |\n|---|---|\n| `**vastag**` | **vastag** |\n| `*dőlt*` | *dőlt* |\n| `==kiemelt==` | ==kiemelt== |\n| `~~áthúzott~~` | ~~áthúzott~~ |\n| `[[Cím]]` | kapcsolat |\n| `#címke` | #címke |\n\n::: warn Figyelemfelhívás\nA `::: warn`, `::: todo`, `::: done`, `::: dim` blokkok kiemelt dobozt adnak.\n:::\n\n```mermaid\ngraph LR\n  Betap --> Kismegszakito --> Lampa\n```\n'}],
+    edges:[{id:'e1',a:'n1',b:'n2',label:''}], view:{x:0,y:0,k:1}};
+}
+function node(id){ return doc.nodes.find(n=>n.id===id); }
+function byTitle(t){ const q=String(t).trim().toLowerCase();
+  return doc.nodes.find(n=>(n.title||'').trim().toLowerCase()===q); }
+
+/* derived edges: a [[link]] in a body is a link, never stored twice */
+function derived(){
+  const out=[];
+  doc.nodes.forEach(n=>MD.wikiLinks(n.body).forEach(t=>{
+    const tgt=byTitle(t); if(tgt && tgt.id!==n.id) out.push({a:n.id,b:tgt.id,wiki:true});
+  }));
+  return out;
+}
+function allEdges(){ return doc.edges.concat(derived()); }
+
+/* ------------------------------------------------------------------ undo */
+function snap(){ undoStack.push(JSON.stringify(doc)); if(undoStack.length>80) undoStack.shift(); redoStack.length=0; }
+function undo(){ if(!undoStack.length) return; redoStack.push(JSON.stringify(doc));
+  doc=JSON.parse(undoStack.pop()); sel.clear(); redrawAll(); toast('Visszavonva'); }
+function redo(){ if(!redoStack.length) return; undoStack.push(JSON.stringify(doc));
+  doc=JSON.parse(redoStack.pop()); sel.clear(); redrawAll(); toast('Újra'); }
+
+/* --------------------------------------------------------------- storage */
+const KEY='varler.mindmd';
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(Object.assign({},doc,{view}))); }catch(e){} }
+function load(){ try{ const s=localStorage.getItem(KEY); if(!s) return null; const d=JSON.parse(s);
+  if(d && d.nodes) return d; }catch(e){} return null; }
+
+/* ------------------------------------------------------------------ view */
+function applyView(){ $('world').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.k})`; }
+function toWorld(cx,cy){ const r=$('stage').getBoundingClientRect();
+  return {x:(cx-r.left-view.x)/view.k, y:(cy-r.top-view.y)/view.k}; }
+function fit(){
+  if(!doc.nodes.length) return;
+  const b=doc.nodes.reduce((a,n)=>({x0:Math.min(a.x0,n.x),y0:Math.min(a.y0,n.y),
+    x1:Math.max(a.x1,n.x+n.w),y1:Math.max(a.y1,n.y+(n.collapsed?44:n.h))}),
+    {x0:1e9,y0:1e9,x1:-1e9,y1:-1e9});
+  const r=$('stage').getBoundingClientRect(), pad=60;
+  view.k=Math.min(1.6,Math.max(.2,Math.min((r.width-pad*2)/(b.x1-b.x0||1),(r.height-pad*2)/(b.y1-b.y0||1))));
+  view.x=pad-b.x0*view.k + (r.width-pad*2-(b.x1-b.x0)*view.k)/2;
+  view.y=pad-b.y0*view.k + (r.height-pad*2-(b.y1-b.y0)*view.k)/2;
+  applyView();
+}
+function focusNode(id,zoom){
+  const n=node(id); if(!n) return;
+  const r=$('stage').getBoundingClientRect();
+  if(zoom) view.k=Math.max(view.k,.9);
+  view.x=r.width/2-(n.x+n.w/2)*view.k; view.y=r.height/2-(n.y+60)*view.k;
+  applyView(); sel.clear(); sel.add(id); redrawAll(); openInspector(id);
+}
+
+/* ----------------------------------------------------------------- render */
+function mdCtx(n){
+  const th = n ? MD.threads(n.body) : [];
+  const map = {}; th.forEach(t=>map[t.id]=t);
+  return {exists:t=>!!byTitle(t),
+          cmNo:id=>map[id]?String(map[id].no):'?',
+          cmRes:id=>map[id]?map[id].resolved:false};
+}
+function nodeThreads(n){ return MD.threads(n.body); }
+function openThreads(n){ return nodeThreads(n).filter(t=>!t.resolved).length; }
+function allThreads(){
+  const out=[]; doc.nodes.forEach(n=>nodeThreads(n).forEach(t=>out.push({node:n,t}))); return out;
+}
+let author = (function(){ try{ return localStorage.getItem('varler.mindmd.author')||''; }catch(e){ return ''; } })();
+function whoAmI(force){
+  if(author && !force) return author;
+  const a=prompt('Ki írja a megjegyzéseket? (a névvel kerülnek a fájlba)', author||'');
+  if(a===null) return author;
+  author=a.trim()||'Névtelen';
+  try{ localStorage.setItem('varler.mindmd.author',author); }catch(e){}
+  return author;
+}
+
+function nodeEl(n){
+  let el=document.getElementById('N'+n.id);
+  if(!el){
+    el=document.createElement('div'); el.className='node'; el.id='N'+n.id; el.dataset.id=n.id;
+    el.innerHTML=`<div class="nh"><button class="cv" title="Összecsukás">▾</button><div class="nt"></div>
+      <button class="cv x" title="Megnyitás a panelen">⋯</button></div>
+      <div class="nb md"></div><div class="ntags"></div>
+      <div class="port" title="Húzd egy másik buborékra"></div><div class="rs"></div>`;
+    $('world').appendChild(el);
+  }
+  el.style.left=n.x+'px'; el.style.top=n.y+'px'; el.style.width=n.w+'px';
+  el.style.height=n.collapsed?'auto':n.h+'px';
+  el.style.setProperty('--kc',KIND[n.kind]||KIND.info);
+  el.classList.toggle('sel',sel.has(n.id));
+  el.classList.toggle('collapsed',!!n.collapsed);
+  el.querySelector('.cv').textContent=n.collapsed?'▸':'▾';
+  el.querySelector('.nt').textContent=n.title||'Névtelen';
+  const open=openThreads(n);
+  let badge=el.querySelector('.cbadge');
+  if(open){ if(!badge){ badge=document.createElement('span'); badge.className='cbadge';
+      el.querySelector('.nh').insertBefore(badge, el.querySelector('.nt').nextSibling); }
+    badge.textContent='💬 '+open; }
+  else if(badge) badge.remove();
+  const body=el.querySelector('.nb');
+  if(editing!==n.id){
+    const src=(n.body||'').trim();
+    body.classList.toggle('empty',!src);
+    body.innerHTML = src ? MD.render(n.body, mdCtx(n)) : 'Üres — dupla kattintás a szerkesztéshez.';
+  }
+  const tg=el.querySelector('.ntags');
+  tg.innerHTML=(n.tags||[]).map(t=>`<span class="tag" data-tag="${MD.esc(t)}">#${MD.esc(t)}</span>`).join('');
+  // search dimming
+  const q=filter.trim().toLowerCase();
+  el.classList.toggle('dim', !!q && !((n.title+' '+n.body+' '+(n.tags||[]).join(' ')).toLowerCase().includes(q)));
+  return el;
+}
+
+function anchor(n,side){
+  const h=n.collapsed?40:n.h;
+  return side==='r' ? {x:n.x+n.w, y:n.y+h/2} : {x:n.x, y:n.y+h/2};
+}
+function drawWires(){
+  const g=$('wg'); let s='';
+  allEdges().forEach((e,i)=>{
+    const a=node(e.a), b=node(e.b); if(!a||!b) return;
+    const rev = b.x + b.w/2 < a.x + a.w/2;
+    const p1=anchor(a,rev?'l':'r'), p2=anchor(b,rev?'r':'l');
+    const dx=Math.max(46,Math.abs(p2.x-p1.x)*.45)*(rev?-1:1);
+    const d=`M${p1.x},${p1.y} C${p1.x+dx},${p1.y} ${p2.x-dx},${p2.y} ${p2.x},${p2.y}`;
+    const col=e.wiki?'#8d7a5c':'#e8961c';
+    s+=`<path d="${d}" stroke="${col}" stroke-width="${e.wiki?1.4:1.9}"${e.wiki?' stroke-dasharray="5 4"':''} marker-end="url(#ah${e.wiki?'w':''})"/>`;
+    if(!e.wiki) s+=`<path class="hit" d="${d}" data-edge="${e.id}"/>`;
+    if(e.label) s+=`<text x="${(p1.x+p2.x)/2}" y="${(p1.y+p2.y)/2-6}" text-anchor="middle">${MD.esc(e.label)}</text>`;
+  });
+  g.innerHTML=`<defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#e8961c"/></marker>
+    <marker id="ahw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#8d7a5c"/></marker></defs>`+s;
+}
+function redrawAll(){
+  const live=new Set(doc.nodes.map(n=>'N'+n.id));
+  [...$('world').querySelectorAll('.node')].forEach(el=>{ if(!live.has(el.id)) el.remove(); });
+  doc.nodes.forEach(nodeEl);
+  drawWires();
+  const oc=doc.nodes.reduce((a,n)=>a+openThreads(n),0);
+  $('sCount').textContent=`${doc.nodes.length} buborék · ${doc.edges.length} kapcsolat · ${derived().length} hivatkozás`+
+    (oc?` · ${oc} nyitott megjegyzés`:'');
+  $('sSel').textContent=sel.size?`kijelölve: ${sel.size}`:'';
+  if(sel.size===1 && $('insp').classList.contains('open')) fillInspector([...sel][0]);
+  save();
+}
+window.APP={redrawAll};
+
+/* ------------------------------------------------------------------ edits */
+function addNode(x,y,init){
+  snap();
+  const n=Object.assign({id:uid('n'),x:Math.round(x),y:Math.round(y),w:320,h:190,
+    kind:'info',title:'Új buborék',body:'',tags:[]},init||{});
+  doc.nodes.push(n); sel.clear(); sel.add(n.id); redrawAll();
+  return n;
+}
+function connect(a,b,label){
+  if(a===b) return;
+  if(doc.edges.some(e=>e.a===a&&e.b===b)) return;
+  snap(); doc.edges.push({id:uid('e'),a,b,label:label||''}); redrawAll();
+}
+function delNodes(ids){
+  snap();
+  doc.nodes=doc.nodes.filter(n=>!ids.has(n.id));
+  doc.edges=doc.edges.filter(e=>!ids.has(e.a)&&!ids.has(e.b));
+  sel.clear(); redrawAll();
+}
+function childOf(id){
+  const p=node(id); if(!p) return;
+  const kids=doc.edges.filter(e=>e.a===id).length;
+  const n=addNode(p.x+p.w+90, p.y+kids*150, {kind:p.kind});
+  connect(id,n.id); focusEdit(n.id,true); return n;
+}
+function siblingOf(id){
+  const parent=doc.edges.find(e=>e.b===id);
+  const p=node(id);
+  const n=addNode(p.x, p.y+(p.collapsed?46:p.h)+30, {kind:p.kind});
+  if(parent) connect(parent.a,n.id);
+  focusEdit(n.id,true); return n;
+}
+function focusEdit(id,titleOnly){
+  const el=document.getElementById('N'+id); if(!el) return;
+  const t=el.querySelector('.nt');
+  t.setAttribute('contenteditable','true'); t.focus();
+  const r=document.createRange(); r.selectNodeContents(t);
+  const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+  t.onblur=()=>{ snap(); node(id).title=t.textContent.trim()||'Névtelen';
+    t.removeAttribute('contenteditable'); t.onblur=null; redrawAll(); };
+  t.onkeydown=ev=>{ if(ev.key==='Enter'||ev.key==='Escape'){ ev.preventDefault(); t.blur();
+    if(!titleOnly) editBody(id); } };
+}
+function editBody(id){
+  const el=document.getElementById('N'+id); if(!el) return;
+  const n=node(id); editing=id;
+  const b=el.querySelector('.nb'); b.classList.remove('empty');
+  b.innerHTML='<textarea spellcheck="false"></textarea>';
+  const ta=b.querySelector('textarea'); ta.value=n.body||''; ta.focus();
+  attachTypeahead(ta,id);
+  ta.addEventListener('keydown',ev=>{
+    if(ev.key==='Escape'||(ev.key==='Enter'&&(ev.ctrlKey||ev.metaKey))){ ev.preventDefault(); ta.blur(); }
+    if(ev.key==='Tab'){ ev.preventDefault();
+      const s=ta.selectionStart; ta.value=ta.value.slice(0,s)+'  '+ta.value.slice(ta.selectionEnd);
+      ta.selectionStart=ta.selectionEnd=s+2; }
+    ev.stopPropagation();
+  });
+  ta.addEventListener('blur',()=>{ snap(); n.body=ta.value; editing=null; redrawAll();
+    if($('insp').classList.contains('open')) fillInspector(id); });
+}
+
+/* ================================================================ typeahead
+   Two triggers inside any markdown textarea:
+     "/"  at the start of a line -> block insert menu
+     "[[" anywhere               -> bubble title autocomplete
+   Both write plain markdown. Nothing is stored that the text does not say. */
+const D = () => new Date().toISOString().slice(0,10);
+const BLOCKS = [
+  {k:'Előlap adatok (front matter)', h:'---', ins:'---\nprojekt: $0\nmegrendelo: \nhelyszin: \n---\n'},
+  {k:'Tartalomjegyzék — ez a lap', h:'[TOC]', ins:'[TOC]\n$0'},
+  {k:'Tartalomjegyzék — teljes térkép', h:'[MAP-TOC]', ins:'[MAP-TOC]\n$0'},
+  {k:'Táblázat oszlopszélesség', h:'{: col-widths }', ins:'{: col-widths="$0" }'},
+  {k:'Cím 1',            h:'#',        ins:'# $0'},
+  {k:'Cím 2',            h:'##',       ins:'## $0'},
+  {k:'Cím 3',            h:'###',      ins:'### $0'},
+  {k:'Felsorolás',       h:'-',        ins:'- $0'},
+  {k:'Számozott lista',  h:'1.',       ins:'1. $0'},
+  {k:'Teendő lista',     h:'- [ ]',    ins:'- [ ] $0'},
+  {k:'Táblázat',         h:'3 oszlop', ins:'| $0 | Fejléc | Fejléc |\n|---|---|---|\n|  |  |  |\n|  |  |  |'},
+  {k:'Kódblokk',         h:'```',      ins:'```\n$0\n```'},
+  {k:'Mermaid diagram',  h:'```mermaid', ins:'```mermaid\ngraph LR\n  $0A --> B\n```'},
+  {k:'Idézet',           h:'>',        ins:'> $0'},
+  {k:'Doboz — Figyelem', h:':::warn',  ins:'::: warn $0\n\n:::'},
+  {k:'Doboz — Teendő',   h:':::todo',  ins:'::: todo $0\n\n:::'},
+  {k:'Doboz — Kész',     h:':::done',  ins:'::: done $0\n\n:::'},
+  {k:'Doboz — Adat',     h:':::dim',   ins:'::: dim $0\n\n:::'},
+  {k:'Doboz — Tipp',     h:':::tip',   ins:'::: tip $0\n\n:::'},
+  {k:'Vízszintes vonal', h:'---',      ins:'---\n$0'},
+  {k:'Oldaltörés',       h:'nyomtatás',ins:'--- {.page-break}\n$0'},
+  {k:'Hivatkozás buborékra', h:'[[…]]',ins:'[[$0]]'},
+  {k:'Külső link',       h:'[](url)',  ins:'[$0](https://)'},
+  {k:'Kép',              h:'![](…)',   ins:'![$0](kep.png)'},
+  {k:'Mai dátum',        h:'',         ins:()=>D()+' $0'},
+  {k:'Aláírás sor',      h:'jegyzőkönyv', ins:()=>`\n| Dátum | Név | Aláírás |\n|---|---|---|\n| ${D()} | $0 |  |\n`}
+];
+
+const tah=document.createElement('div'); tah.id='tah'; document.body.appendChild(tah);
+tah.addEventListener('mousedown',e=>e.preventDefault());   // keep textarea focus
+let T=null;   // {ta,nodeId,kind,start,items,ix}
+
+function caretXY(ta){
+  const cs=getComputedStyle(ta), d=document.createElement('div');
+  ['fontFamily','fontSize','fontWeight','lineHeight','letterSpacing','textIndent',
+   'paddingTop','paddingRight','paddingBottom','paddingLeft','borderWidth','width']
+    .forEach(p=>d.style[p]=cs[p]);
+  d.style.cssText+=';position:absolute;visibility:hidden;white-space:pre-wrap;word-wrap:break-word;'+
+                   'height:auto;overflow:hidden;box-sizing:border-box;left:-9999px;top:0';
+  d.textContent=ta.value.slice(0,ta.selectionStart);
+  const sp=document.createElement('span'); sp.textContent='\u200b'; d.appendChild(sp);
+  document.body.appendChild(d);
+  const r=ta.getBoundingClientRect();
+  const out={x:r.left+sp.offsetLeft-ta.scrollLeft,
+             y:r.top+sp.offsetTop-ta.scrollTop,
+             lh:parseFloat(cs.lineHeight)||17};
+  d.remove(); return out;
+}
+function tahClose(){ tah.style.display='none'; T=null; }
+function tahPaint(){
+  if(!T||!T.items.length){ tahClose(); return; }
+  tah.innerHTML=T.items.map((it,i)=>
+    `<div class="it${i===T.ix?' on':''}" data-i="${i}"><span>${MD.esc(it.k)}</span>`+
+    `<span class="k">${MD.esc(it.h||'')}</span></div>`).join('');
+  const p=caretXY(T.ta);
+  tah.style.display='block';
+  const w=tah.offsetWidth||260, hgt=tah.offsetHeight||120;
+  tah.style.left=Math.min(Math.max(6,p.x),innerWidth-w-8)+'px';
+  tah.style.top=(p.y+p.lh+hgt>innerHeight-30 ? Math.max(52,p.y-hgt-2) : p.y+p.lh+2)+'px';
+}
+function tahScan(ta,nodeId){
+  nodeId = nodeId || $('insp').dataset.id || null;
+  const before=ta.value.slice(0,ta.selectionStart);
+  let m=/\[\[([^\]\n]*)$/.exec(before);
+  if(m){
+    const q=m[1].toLowerCase();
+    const hits=doc.nodes.filter(n=>n.id!==nodeId && (n.title||'').toLowerCase().includes(q))
+      .slice(0,8).map(n=>({k:n.title,h:'buborék',ins:'[['+n.title+']]'}));
+    if(m[1].trim()) hits.push({k:'Új buborék: '+m[1].trim(),h:'létrehoz',make:m[1].trim(),
+                               ins:'[['+m[1].trim()+']]'});
+    T={ta,nodeId,kind:'wiki',start:ta.selectionStart-m[0].length,items:hits,ix:0};
+    tahPaint(); return;
+  }
+  m=/(?:^|\n)\/([\p{L}\d ]*)$/u.exec(before);
+  if(m){
+    const q=m[1].trim().toLowerCase();
+    const hits=BLOCKS.filter(b=>!q||b.k.toLowerCase().includes(q)||(b.h||'').toLowerCase().includes(q));
+    T={ta,nodeId,kind:'slash',start:ta.selectionStart-m[1].length-1,items:hits,ix:0};
+    tahPaint(); return;
+  }
+  tahClose();
+}
+function tahAccept(){
+  if(!T||!T.items.length) return false;
+  const it=T.items[T.ix], ta=T.ta, start=T.start;
+  let ins=typeof it.ins==='function'?it.ins():it.ins;
+  const caret=ins.indexOf('$0'); ins=ins.replace('$0','');
+  const val=ta.value;
+  ta.value=val.slice(0,start)+ins+val.slice(ta.selectionStart);
+  const pos=start+(caret<0?ins.length:caret);
+  ta.selectionStart=ta.selectionEnd=pos;
+  const make=it.make, nid=T.nodeId;
+  tahClose();
+  ta.dispatchEvent(new Event('input',{bubbles:true}));
+  if(make && !byTitle(make)){
+    const s=node(nid)||doc.nodes[0];
+    addNode((s?s.x+s.w+90:120),(s?s.y+110:120),{title:make});
+    toast('„'+make+'” létrehozva');
+    ta.focus(); ta.selectionStart=ta.selectionEnd=pos;
+  }
+  return true;
+}
+function attachTypeahead(ta, nodeId){
+  ta.addEventListener('keydown',e=>{
+    if(!T||T.ta!==ta) return;
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      e.preventDefault(); e.stopImmediatePropagation();
+      T.ix=(T.ix+(e.key==='ArrowDown'?1:T.items.length-1))%T.items.length; tahPaint(); }
+    else if(e.key==='Enter'||e.key==='Tab'){
+      if(tahAccept()){ e.preventDefault(); e.stopImmediatePropagation(); } }
+    else if(e.key==='Escape'){ e.preventDefault(); e.stopImmediatePropagation(); tahClose(); }
+  },true);
+  ta.addEventListener('input',()=>tahScan(ta,nodeId));
+  ta.addEventListener('click',()=>tahScan(ta,nodeId));
+  ta.addEventListener('blur',()=>setTimeout(tahClose,120));
+}
+tah.addEventListener('click',e=>{
+  const it=e.target.closest('.it'); if(!it||!T) return;
+  T.ix=+it.dataset.i; const ta=T.ta; tahAccept(); ta.focus();
+});
+
+/* ------------------------------------------------------- review comments */
+function nextCid(n){
+  let i=1; const used=new Set(nodeThreads(n).map(t=>t.id));
+  while(used.has('c'+i)) i++; return 'c'+i;
+}
+function addComment(id, quote, text){
+  const n=node(id); if(!n) return null;
+  const who=whoAmI(); if(!who) return null;
+  snap();
+  const cid=nextCid(n);
+  let body=n.body||'', marked=false;
+  if(quote){
+    const q=String(quote).trim();
+    const at=body.indexOf(q);
+    if(at>=0 && q.length>1){
+      body=body.slice(0,at)+`{> [comment-id="${cid}"] ${q} <}`+body.slice(at+q.length);
+      marked=true;
+    }
+  }
+  const c={id:cid,time:new Date().toISOString().slice(0,16)+'Z',author:who,
+           quote:marked?quote:'',body:text||''};
+  n.body=body.replace(/\s*$/,'')+'\n\n'+MD.writeThread(c)+'\n';
+  redrawAll(); openInspector(id); tab('cm');
+  if(!marked && quote) toast('A kijelölés nem található a forrásban — a megjegyzés a dokumentumhoz került');
+  return cid;
+}
+function replyComment(id, cid, text){
+  const n=node(id), who=whoAmI(); if(!n||!who) return;
+  snap();
+  n.body=n.body.replace(/\s*$/,'')+'\n'+MD.writeThread(
+    {id:cid,time:new Date().toISOString().slice(0,16)+'Z',author:who,quote:'',body:text})+'\n';
+  redrawAll();
+}
+function resolveComment(id, cid, on){
+  const n=node(id); if(!n) return; snap();
+  n.body=n.body.replace(MD.RE_REVIEW,(m,at,bd)=>{
+    if(!new RegExp('comment-id="'+cid+'"').test(at)) return m;
+    at=at.replace(/\s*resolved="[^"]*"/,'');
+    return `{>> [REVIEW${at}${on?' resolved="true"':''}]${bd}<<}\n`;
+  });
+  redrawAll();
+}
+function dropComment(id, cid){
+  const n=node(id); if(!n) return; snap();
+  n.body=n.body.replace(MD.RE_REVIEW,(m,at)=>
+    new RegExp('comment-id="'+cid+'"').test(at)?'':m);
+  n.body=n.body.replace(new RegExp('\\{>\\s*\\[comment-id="'+cid+'"\\]([\\s\\S]*?)<\\}','g'),'$1');
+  redrawAll();
+}
+
+/* floating "comment on selection" affordance */
+const cbar=document.createElement('div'); cbar.id='cbar';
+cbar.innerHTML='<button>💬 Megjegyzés</button>'; document.body.appendChild(cbar);
+let pendingSel=null;
+function hideCbar(){ cbar.style.display='none'; pendingSel=null; }
+document.addEventListener('mouseup',e=>{
+  if(e.target.closest('#cbar')||e.target.closest('#cpop')) return;
+  setTimeout(()=>{
+    const s=getSelection(); const txt=s?String(s).trim():'';
+    const host=s&&s.anchorNode?(s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement):null;
+    const nb=host&&host.closest?host.closest('.nb'):null;
+    if(!txt||!nb||nb.querySelector('textarea')){ hideCbar(); return; }
+    const r=s.getRangeAt(0).getBoundingClientRect();
+    cbar.style.display='block';
+    cbar.style.left=Math.max(8,r.left+r.width/2-60)+'px';
+    cbar.style.top=Math.max(52,r.top-34)+'px';
+    pendingSel={id:nb.closest('.node').dataset.id, quote:txt};
+  },0);
+});
+cbar.addEventListener('click',()=>{
+  if(!pendingSel) return;
+  const p=pendingSel; hideCbar();
+  cpopOpen(p.id,null,p.quote);
+});
+
+/* small composer popover, used for both new comments and replies */
+const cpop=document.createElement('div'); cpop.id='cpop';
+cpop.innerHTML='<div class="q"></div><textarea rows="3" placeholder="Megjegyzés… (Ctrl+Enter = mentés)"></textarea>'+
+  '<div class="f"><button class="ok">Mentés</button><button class="no">Mégse</button></div>';
+document.body.appendChild(cpop);
+let cpopCtx=null;
+function cpopOpen(nodeId, cid, quote){
+  cpopCtx={nodeId,cid};
+  cpop.querySelector('.q').textContent=cid?'Válasz':(quote?'„'+quote.slice(0,90)+'”':'Megjegyzés a dokumentumhoz');
+  cpop.dataset.quote=quote||'';
+  const ta=cpop.querySelector('textarea'); ta.value='';
+  cpop.style.display='block'; ta.focus();
+}
+function cpopClose(){ cpop.style.display='none'; cpopCtx=null; }
+cpop.querySelector('.no').onclick=cpopClose;
+cpop.querySelector('.ok').onclick=()=>{
+  if(!cpopCtx) return;
+  const t=cpop.querySelector('textarea').value.trim(); if(!t){ cpopClose(); return; }
+  if(cpopCtx.cid) replyComment(cpopCtx.nodeId,cpopCtx.cid,t);
+  else addComment(cpopCtx.nodeId,cpop.dataset.quote,t);
+  cpopClose(); toast('Megjegyzés mentve');
+};
+cpop.querySelector('textarea').addEventListener('keydown',e=>{
+  e.stopPropagation();
+  if(e.key==='Escape') cpopClose();
+  if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) cpop.querySelector('.ok').click();
+});
+
+/* -------------------------------------------------------------- inspector */
+let itab='src';
+function openInspector(id){ $('insp').classList.add('open'); fillInspector(id); }
+function fillInspector(id){
+  const n=node(id); if(!n){ $('insp').classList.remove('open'); return; }
+  $('insp').dataset.id=id;
+  $('iTitle').value=n.title||''; $('iKind').value=n.kind||'info';
+  $('iTags').value=(n.tags||[]).join(', ');
+  if(document.activeElement!==$('src')) $('src').value=n.body||'';
+  $('pPrev').innerHTML=MD.render(n.body,mdCtx(n));
+  const out=[],inn=[],miss=[];
+  allEdges().forEach(e=>{
+    if(e.a===id){ const t=node(e.b); if(t) out.push({id:t.id,t:t.title,d:e.wiki?'[[hivatkozás]]':(e.label||'kapcsolat')}); }
+    if(e.b===id){ const t=node(e.a); if(t) inn.push({id:t.id,t:t.title,d:e.wiki?'[[hivatkozás]]':(e.label||'kapcsolat')}); }
+  });
+  MD.wikiLinks(n.body).forEach(t=>{ if(!byTitle(t) && !miss.includes(t)) miss.push(t); });
+  const li=(a,cls)=>a.map(x=>`<li data-go="${x.id||''}" data-make="${x.make||''}">
+      <span>${MD.esc(x.t)}</span><span class="d">${MD.esc(x.d)}</span></li>`).join('')
+      || '<li class="d" style="cursor:default;color:#7a6e5c">—</li>';
+  $('lOut').innerHTML=li(out); $('lIn').innerHTML=li(inn);
+  $('lMiss').innerHTML=li(miss.map(t=>({t,d:'létrehozás',make:t})));
+  fillComments(id);
+}
+let hideResolved=false;
+function fillComments(id){
+  const n=node(id); if(!n) return;
+  const th=nodeThreads(n).filter(t=>!(hideResolved&&t.resolved));
+  const open=openThreads(n);
+  $('cmN').textContent=open?'('+open+')':'';
+  $('cmList').innerHTML = th.length ? th.map(t=>{
+    const head=t.items[0];
+    return `<div class="cmt${t.resolved?' res':''}" data-cid="${MD.esc(t.id)}">
+      <div class="h"><b>${t.no}.</b> ${MD.esc(head.author||'?')}
+        <span class="d">${MD.esc((head.time||'').replace('T',' ').replace('Z',''))}</span>
+        <span style="flex:1"></span>
+        <button class="mini go" title="Ugrás a jelölésre">⌖</button>
+        <button class="mini res" title="${t.resolved?'Újranyitás':'Megoldva'}">${t.resolved?'↺':'✓'}</button>
+        <button class="mini del" title="Törlés">✕</button></div>
+      ${head.quote?`<div class="q">„${MD.esc(head.quote)}”</div>`:''}
+      ${t.items.map(i=>`<div class="b"><b>${MD.esc(i.author||'?')}:</b> ${MD.esc(i.body)}</div>`).join('')}
+      <button class="mini rep">↩ Válasz</button></div>`;
+  }).join('') : '<div style="color:var(--ink3);font-size:12.5px">Nincs megjegyzés. Jelölj ki szöveget a buborékban, vagy használd a fenti gombot.</div>';
+}
+$('cmHide').onchange=()=>{ hideResolved=$('cmHide').checked; fillComments($('insp').dataset.id); };
+$('cmAdd').onclick=()=>cpopOpen($('insp').dataset.id,null,'');
+$('cmList').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const cid=e.target.closest('.cmt').dataset.cid, id=$('insp').dataset.id;
+  if(b.classList.contains('res')) resolveComment(id,cid,!e.target.closest('.cmt').classList.contains('res'));
+  else if(b.classList.contains('del')){ if(confirm('Megjegyzés törlése a fájlból?')) dropComment(id,cid); }
+  else if(b.classList.contains('rep')) cpopOpen(id,cid,'');
+  else if(b.classList.contains('go')){
+    const el=document.querySelector(`#N${id} .cm[data-cid="${cid}"]`);
+    if(el){ el.scrollIntoView({block:'center'}); el.classList.add('flash');
+      setTimeout(()=>el.classList.remove('flash'),1200); }
+    else toast('Ehhez a megjegyzéshez nincs szövegjelölés');
+  }
+});
+$('iClose').onclick=()=>$('insp').classList.remove('open');
+$('iTitle').oninput=()=>{ const n=node($('insp').dataset.id); if(!n) return;
+  n.title=$('iTitle').value; redrawAll(); };
+$('iKind').onchange=()=>{ const n=node($('insp').dataset.id); if(!n) return;
+  snap(); n.kind=$('iKind').value; redrawAll(); };
+$('iTags').oninput=()=>{ const n=node($('insp').dataset.id); if(!n) return;
+  n.tags=$('iTags').value.split(',').map(s=>s.trim().replace(/^#/,'')).filter(Boolean); redrawAll(); };
+let srcTimer=null;
+$('src').oninput=()=>{ const n=node($('insp').dataset.id); if(!n) return;
+  n.body=$('src').value; clearTimeout(srcTimer); srcTimer=setTimeout(()=>{ snap(); redrawAll(); },400); };
+function tab(t){ itab=t;
+  $('tSrc').classList.toggle('on',t==='src'); $('tPrev').classList.toggle('on',t==='prev');
+  $('tCm').classList.toggle('on',t==='cm'); $('tMeta').classList.toggle('on',t==='meta');
+  $('pSrc').style.display=t==='src'?'':'none';
+  $('pPrev').style.display=t==='prev'?'':'none';
+  $('pCm').style.display=t==='cm'?'':'none';
+  $('pMeta').style.display=t==='meta'?'':'none'; }
+$('tSrc').onclick=()=>tab('src'); $('tPrev').onclick=()=>tab('prev');
+$('tCm').onclick=()=>tab('cm'); $('tMeta').onclick=()=>tab('meta');
+$('insp').addEventListener('click',e=>{
+  const li=e.target.closest('li[data-go],li[data-make]'); if(!li) return;
+  if(li.dataset.make){ const t=li.dataset.make; const src=node($('insp').dataset.id);
+    const n=addNode(src.x+src.w+90, src.y+120, {title:t}); connect(src.id,n.id); focusNode(n.id); }
+  else if(li.dataset.go) focusNode(li.dataset.go);
+});
+
+/* ---------------------------------------------------------- interactions */
+const stage=$('stage'); let drag=null;
+
+stage.addEventListener('pointerdown',e=>{
+  const nEl=e.target.closest('.node');
+  // start a connection
+  if(e.target.classList.contains('port')){
+    linkFrom=nEl.dataset.id; drag={mode:'link'}; stage.setPointerCapture(e.pointerId); return;
+  }
+  if(e.target.classList.contains('rs')){
+    const n=node(nEl.dataset.id); snap();
+    drag={mode:'resize',id:n.id,x:e.clientX,y:e.clientY,w:n.w,h:n.h}; stage.setPointerCapture(e.pointerId); return;
+  }
+  if(nEl && e.target.closest('.nh') && !e.target.classList.contains('cv')){
+    const id=nEl.dataset.id;
+    if(!sel.has(id)){ if(!e.shiftKey) sel.clear(); sel.add(id); }
+    else if(e.shiftKey) sel.delete(id);
+    snap();
+    drag={mode:'move',x:e.clientX,y:e.clientY,
+      start:[...sel].map(i=>({id:i,x:node(i).x,y:node(i).y}))};
+    redrawAll(); if($('insp').classList.contains('open')) fillInspector(id);
+    stage.setPointerCapture(e.pointerId); return;
+  }
+  if(nEl) return;                                   // clicks inside a body
+  if(linkFrom){ linkFrom=null; toast('Kapcsolat megszakítva'); return; }
+  if(e.shiftKey){ drag={mode:'marq',x:e.clientX,y:e.clientY}; $('marquee').style.display='block'; }
+  else drag={mode:'pan',x:e.clientX,y:e.clientY,vx:view.x,vy:view.y};
+  if(!e.shiftKey){ sel.clear(); redrawAll(); }
+  stage.setPointerCapture(e.pointerId);
+});
+
+stage.addEventListener('pointermove',e=>{
+  if(linkFrom){
+    const t=e.target.closest('.node');
+    [...document.querySelectorAll('.node.hit')].forEach(x=>x.classList.remove('hit'));
+    if(t && t.dataset.id!==linkFrom) t.classList.add('hit');
+  }
+  if(!drag) return;
+  if(drag.mode==='pan'){ view.x=drag.vx+(e.clientX-drag.x); view.y=drag.vy+(e.clientY-drag.y); applyView(); }
+  else if(drag.mode==='move'){
+    const dx=(e.clientX-drag.x)/view.k, dy=(e.clientY-drag.y)/view.k, g=e.altKey?1:10;
+    drag.start.forEach(s=>{ const n=node(s.id);
+      n.x=Math.round((s.x+dx)/g)*g; n.y=Math.round((s.y+dy)/g)*g;
+      const el=document.getElementById('N'+n.id); el.style.left=n.x+'px'; el.style.top=n.y+'px'; });
+    drawWires();
+  }
+  else if(drag.mode==='resize'){
+    const n=node(drag.id);
+    n.w=Math.max(180,Math.round(drag.w+(e.clientX-drag.x)/view.k));
+    n.h=Math.max(90,Math.round(drag.h+(e.clientY-drag.y)/view.k));
+    const el=document.getElementById('N'+n.id); el.style.width=n.w+'px'; el.style.height=n.h+'px'; drawWires();
+  }
+  else if(drag.mode==='marq'){
+    const r=$('marquee'), x0=Math.min(drag.x,e.clientX), y0=Math.min(drag.y,e.clientY);
+    r.style.left=x0+'px'; r.style.top=y0+'px';
+    r.style.width=Math.abs(e.clientX-drag.x)+'px'; r.style.height=Math.abs(e.clientY-drag.y)+'px';
+  }
+});
+
+stage.addEventListener('pointerup',e=>{
+  if(drag && drag.mode==='marq'){
+    const a=toWorld(Math.min(drag.x,e.clientX),Math.min(drag.y,e.clientY));
+    const b=toWorld(Math.max(drag.x,e.clientX),Math.max(drag.y,e.clientY));
+    doc.nodes.forEach(n=>{ if(n.x<b.x&&n.x+n.w>a.x&&n.y<b.y&&n.y+n.h>a.y) sel.add(n.id); });
+    $('marquee').style.display='none'; redrawAll();
+  }
+  if(linkFrom){
+    const t=e.target.closest('.node');
+    [...document.querySelectorAll('.node.hit')].forEach(x=>x.classList.remove('hit'));
+    if(t && t.dataset.id!==linkFrom){ connect(linkFrom,t.dataset.id); toast('Kapcsolat létrehozva'); }
+    linkFrom=null;
+  }
+  drag=null;
+});
+
+stage.addEventListener('dblclick',e=>{
+  const nEl=e.target.closest('.node');
+  if(!nEl){ const p=toWorld(e.clientX,e.clientY); const n=addNode(p.x-160,p.y-40); focusEdit(n.id); return; }
+  if(e.target.closest('.nh')) { focusEdit(nEl.dataset.id,true); return; }
+  if(e.target.closest('.nb')) editBody(nEl.dataset.id);
+});
+
+stage.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const f=e.deltaY<0?1.12:1/1.12, k2=Math.max(.15,Math.min(3,view.k*f));
+  const r=stage.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  view.x=mx-(mx-view.x)*(k2/view.k); view.y=my-(my-view.y)*(k2/view.k); view.k=k2; applyView();
+},{passive:false});
+
+stage.addEventListener('click',e=>{
+  const cm=e.target.closest('.cm');
+  if(cm){ const host=e.target.closest('.node');
+    openInspector(host.dataset.id); tab('cm');
+    const row=$('cmList').querySelector(`.cmt[data-cid="${cm.dataset.cid}"]`);
+    if(row){ row.classList.add('flash'); row.scrollIntoView({block:'center'});
+      setTimeout(()=>row.classList.remove('flash'),1200); }
+    return; }
+  const w=e.target.closest('a[data-wiki]');
+  if(w){ e.preventDefault(); const t=byTitle(w.dataset.wiki);
+    if(t) focusNode(t.id,true);
+    else { const host=e.target.closest('.node'); const s=node(host.dataset.id);
+      const n=addNode(s.x+s.w+90,s.y+90,{title:w.dataset.wiki}); focusNode(n.id); }
+    return; }
+  const tg=e.target.closest('[data-tag]');
+  if(tg){ e.preventDefault(); filter=tg.dataset.tag; $('find').value=filter; redrawAll(); return; }
+  const cv=e.target.closest('.cv');
+  if(cv){ const id=cv.closest('.node').dataset.id;
+    if(cv.classList.contains('x')) openInspector(id);
+    else { const n=node(id); n.collapsed=!n.collapsed; redrawAll(); } return; }
+  const ed=e.target.closest('[data-edge]');
+  if(ed){ const eg=doc.edges.find(x=>x.id===ed.dataset.edge); if(!eg) return;
+    const l=prompt('Kapcsolat felirata (üres = törlés a felirat, "-" = kapcsolat törlése):',eg.label||'');
+    if(l===null) return; snap();
+    if(l==='-') doc.edges=doc.edges.filter(x=>x.id!==eg.id); else eg.label=l;
+    redrawAll(); return; }
+  const nEl=e.target.closest('.node');
+  if(nEl && !e.target.closest('a')){ if(!e.shiftKey) sel.clear(); sel.add(nEl.dataset.id); redrawAll(); }
+});
+
+/* ------------------------------------------------------------- keyboard */
+document.addEventListener('keydown',e=>{
+  const typing=/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)
+            || document.activeElement.isContentEditable;
+  const mod=e.ctrlKey||e.metaKey;
+  if(mod && e.key.toLowerCase()==='k'){ e.preventDefault(); palOpen(); return; }
+  if(mod && e.key.toLowerCase()==='f'){ e.preventDefault(); $('find').focus(); $('find').select(); return; }
+  if(mod && e.key.toLowerCase()==='s'){ e.preventDefault(); exportJSON(); return; }
+  if(mod && e.key==='0'){ e.preventDefault(); fit(); return; }
+  if(mod && e.key.toLowerCase()==='p'){ e.preventDefault(); pdlgOpen(); return; }
+  if(mod && e.key.toLowerCase()==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); return; }
+  if(mod && e.key==='/'){
+    const ta=document.activeElement;
+    if(ta && ta.id==='src'){ e.preventDefault();
+      const q=ta.value.slice(ta.selectionStart,ta.selectionEnd).trim();
+      cpopOpen($('insp').dataset.id,null,q); return; }
+  }
+  if(e.key==='Escape'){ palClose(); cpopClose(); hideCbar();
+    $('veil').classList.remove('open'); $('modal').classList.remove('open');
+    if(linkFrom){linkFrom=null;toast('Kapcsolat megszakítva');} return; }
+  if(typing) return;
+  const one=sel.size===1?[...sel][0]:null;
+  if(e.key==='Tab' && one){ e.preventDefault(); childOf(one); }
+  else if(e.key==='Enter' && one){ e.preventDefault(); siblingOf(one); }
+  else if(e.key==='F2' && one){ e.preventDefault(); editBody(one); }
+  else if(e.key==='Delete' && sel.size){ e.preventDefault(); delNodes(new Set(sel)); }
+  else if(e.key.toLowerCase()==='c' && one){ linkFrom=one; toast('Kattints a cél buborékra'); }
+  else if(e.key===' '){ e.preventDefault(); if(one){ const n=node(one); n.collapsed=!n.collapsed; redrawAll(); } }
+});
+$('find').addEventListener('input',()=>{ filter=$('find').value; redrawAll(); });
+
+/* --------------------------------------------------------------- layout */
+function layout(){
+  const root = sel.size===1 ? [...sel][0]
+    : (doc.nodes.find(n=>!allEdges().some(e=>e.b===n.id))||doc.nodes[0]||{}).id;
+  if(!root) return;
+  snap();
+  const seen=new Set([root]), depth={[root]:0}, order=[root];
+  for(let i=0;i<order.length;i++){
+    allEdges().filter(e=>e.a===order[i]).forEach(e=>{
+      if(seen.has(e.b)) return; seen.add(e.b); depth[e.b]=depth[order[i]]+1; order.push(e.b);
+    });
+  }
+  doc.nodes.filter(n=>!seen.has(n.id)).forEach(n=>{ seen.add(n.id); depth[n.id]=0; order.push(n.id); });
+  const cols={}; order.forEach(id=>{ (cols[depth[id]]=cols[depth[id]]||[]).push(id); });
+  const r=node(root);
+  const x0=r?r.x:80, y0=r?r.y:80;
+  Object.keys(cols).forEach(d=>{
+    let y=y0;
+    cols[d].forEach(id=>{ const n=node(id);
+      n.x=x0+ (+d)*(420); n.y=y; y += (n.collapsed?46:n.h)+34; });
+  });
+  redrawAll(); fit(); toast('Elrendezve');
+}
+
+/* ---------------------------------------------------------------- export */
+function graphOrder(){
+  const roots=doc.nodes.filter(n=>!allEdges().some(e=>e.b===n.id)).map(n=>n.id);
+  const seen=new Set(), out=[];
+  const walk=id=>{ if(seen.has(id))return; seen.add(id); out.push(id);
+    allEdges().filter(e=>e.a===id).forEach(e=>walk(e.b)); };
+  roots.forEach(walk); doc.nodes.forEach(n=>walk(n.id));
+  return out;
+}
+function toMarkdown(){
+  const L=[`# ${doc.title}`,''];
+  graphOrder().forEach(id=>{
+    const n=node(id); if(!n) return;
+    L.push(`## ${n.title}`);
+    const meta=[];
+    if(n.kind&&n.kind!=='info') meta.push(`típus: ${n.kind}`);
+    if((n.tags||[]).length) meta.push('címkék: '+n.tags.map(t=>'#'+t).join(' '));
+    const kids=allEdges().filter(e=>e.a===id).map(e=>(node(e.b)||{}).title).filter(Boolean);
+    if(kids.length) meta.push('kapcsolódik: '+kids.map(t=>`[[${t}]]`).join(', '));
+    if(meta.length) L.push('*'+meta.join(' · ')+'*','');
+    L.push((n.body||'').trim(),'');
+  });
+  return L.join('\n');
+}
+function fromMarkdown(txt){
+  // "## Title" blocks become nodes; [[links]] rebuild the edges
+  const lines=txt.replace(/\r\n?/g,'\n').split('\n');
+  const d=blank(); d.nodes=[]; d.edges=[]; d.seq=0;
+  let title=null, buf=[], y=60, x=60, i=0;
+  const push=()=>{ if(title===null) return;
+    d.seq++; d.nodes.push({id:'n'+d.seq,x:x,y:y,w:340,h:220,kind:'info',title,tags:[],body:buf.join('\n').trim()});
+    y+=260; if(y>1400){ y=60; x+=400; } };
+  lines.forEach(l=>{
+    const m=/^##\s+(.*)$/.exec(l);
+    if(m){ push(); title=m[1].trim(); buf=[]; }
+    else if(/^#\s+/.test(l) && title===null) d.title=l.replace(/^#\s+/,'').trim();
+    else if(title!==null) buf.push(l);
+  });
+  push();
+  return d.nodes.length?d:null;
+}
+function download(name,text,type){
+  const b=new Blob([text],{type:type||'text/plain;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);
+}
+function exportJSON(){ download((doc.title||'mindmd').replace(/\s+/g,'_')+'.mindmd.json',
+  JSON.stringify(Object.assign({},doc,{view}),null,1),'application/json'); toast('Mentve'); }
+function showModal(t,text,fname){
+  $('mTitle').textContent=t; $('mOut').textContent=text;
+  $('veil').classList.add('open'); $('modal').classList.add('open');
+  $('mDl').onclick=()=>download(fname,text);
+  $('mCopy').onclick=()=>{ navigator.clipboard.writeText(text).then(()=>toast('Vágólapra másolva'),
+    ()=>toast('A vágólap nem elérhető — jelöld ki kézzel')); };
+}
+$('mClose').onclick=()=>{ $('veil').classList.remove('open'); $('modal').classList.remove('open'); };
+$('veil').onclick=()=>{ $('veil').classList.remove('open'); $('modal').classList.remove('open');
+  if(pdlg.style.display==='block'){ pdlgSave(); pdlg.style.display='none'; } palClose(); };
+
+/* ---------------------------------------------------------- paged output */
+const PDEF={toc:true,split:true,notes:true,resolved:false,onlySel:false,clean:false};
+function pOpt(){ doc.print=Object.assign({},PDEF,doc.print||{}); return doc.print; }
+function mapTocHTML(ids){
+  return '<nav class="toc"><ul>'+ids.map(id=>{ const n=node(id); if(!n) return '';
+    return `<li><b>${MD.esc(n.title)}</b></li>`+
+      MD.headings(MD.front(n.body).body).filter(h=>h.lvl<=3).map(h=>
+        `<li style="margin-left:${h.lvl*14}px">${MD.esc(h.text)}</li>`).join('');
+  }).join('')+'</ul></nav>';
+}
+function titleBlock(){
+  const m=doc.meta||{};
+  const rows=[['Projekt',m.projekt||doc.title],['Megrendelő',m.megrendelo],['Helyszín',m.helyszin],
+              ['Verzió',m.verzio],['Dátum',m.datum||new Date().toISOString().slice(0,10)],
+              ['Készítette',m.keszitette||author]].filter(r=>r[1]);
+  return `<div class="tb"><h1>${MD.esc(m.projekt||doc.title)}</h1>
+    <table>${rows.slice(1).map(r=>`<tr><th>${MD.esc(r[0])}</th><td>${MD.esc(r[1])}</td></tr>`).join('')}</table></div>`;
+}
+function buildPrint(){
+  const o=pOpt();
+  const ids=(o.onlySel&&sel.size)?graphOrder().filter(i=>sel.has(i)):graphOrder();
+  const ctx=Object.assign(mdCtx(null),{mapToc:()=>mapTocHTML(ids)});
+  let h=titleBlock();
+  if(o.toc) h+=`<h2 class="nobreak">Tartalom</h2>${mapTocHTML(ids)}<hr class="pb">`;
+  ids.forEach((id,ix)=>{
+    const n=node(id); if(!n) return;
+    const src=o.clean?MD.stripComments(n.body):n.body;
+    const c=Object.assign({},ctx,mdCtx(n),{mapToc:()=>mapTocHTML(ids)});
+    h+=`<section${o.split&&ix?' class="newpage"':''}>
+      <h2>${MD.esc(n.title)}</h2>
+      <div class="md">${MD.render(src,c)}</div>`;
+    if(o.notes && !o.clean){
+      const th=nodeThreads(n).filter(t=>o.resolved||!t.resolved);
+      if(th.length) h+=`<div class="notes"><h4>Megjegyzések</h4><ol>`+th.map(t=>
+        `<li${t.resolved?' class="res"':''}>${t.items[0].quote?`<i>„${MD.esc(t.items[0].quote)}”</i> — `:''}`+
+        t.items.map(i=>`<b>${MD.esc(i.author)}:</b> ${MD.esc(i.body)}`).join(' · ')+`</li>`).join('')+`</ol></div>`;
+    }
+    h+='</section>';
+  });
+  $('print').innerHTML=h;
+}
+function printDoc(){ buildPrint(); window.print(); }
+
+/* print / title-block dialog */
+const pdlg=document.createElement('div'); pdlg.id='pdlg';
+pdlg.innerHTML=`<h3>Nyomtatás — dokumentum adatlap</h3>
+  <div class="g">
+    <label>Projekt<input data-m="projekt"></label>
+    <label>Megrendelő<input data-m="megrendelo"></label>
+    <label>Helyszín<input data-m="helyszin"></label>
+    <label>Verzió<input data-m="verzio"></label>
+    <label>Dátum<input data-m="datum" placeholder="ÉÉÉÉ-HH-NN"></label>
+    <label>Készítette<input data-m="keszitette"></label>
+  </div>
+  <div class="o">
+    <label><input type="checkbox" data-o="toc"> Tartalomjegyzék a címlap után</label>
+    <label><input type="checkbox" data-o="split"> Minden buborék új oldalon</label>
+    <label><input type="checkbox" data-o="notes"> Megjegyzések lábjegyzetként</label>
+    <label><input type="checkbox" data-o="resolved"> A megoldottak is</label>
+    <label><input type="checkbox" data-o="onlySel"> Csak a kijelölt buborékok</label>
+    <label><input type="checkbox" data-o="clean"> Tiszta példány (megjegyzések nélkül)</label>
+  </div>
+  <div class="f"><button class="prev">Előnézet</button><button class="ok">Nyomtatás</button>
+    <button class="no">Bezár</button></div>`;
+document.body.appendChild(pdlg);
+function pdlgOpen(){
+  const o=pOpt(), m=doc.meta=doc.meta||{};
+  pdlg.querySelectorAll('[data-m]').forEach(i=>i.value=m[i.dataset.m]||'');
+  pdlg.querySelectorAll('[data-o]').forEach(i=>i.checked=!!o[i.dataset.o]);
+  $('veil').classList.add('open'); pdlg.style.display='block';
+}
+function pdlgSave(){
+  const o=pOpt(), m=doc.meta=doc.meta||{};
+  pdlg.querySelectorAll('[data-m]').forEach(i=>m[i.dataset.m]=i.value.trim());
+  pdlg.querySelectorAll('[data-o]').forEach(i=>o[i.dataset.o]=i.checked);
+  save();
+}
+pdlg.querySelector('.no').onclick=()=>{ pdlgSave(); pdlg.style.display='none'; $('veil').classList.remove('open'); };
+pdlg.querySelector('.ok').onclick=()=>{ pdlgSave(); pdlg.style.display='none';
+  $('veil').classList.remove('open'); setTimeout(printDoc,30); };
+pdlg.querySelector('.prev').onclick=()=>{ pdlgSave(); buildPrint();
+  showModal('Nyomtatási előnézet — forrás', $('print').innerText.slice(0,20000), 'elonezet.txt'); };
+
+/* ------------------------------------------------------------- palette */
+const CMD=[
+  {k:'Új buborék',h:'dupla katt',f:()=>{const r=stage.getBoundingClientRect();
+    const p=toWorld(r.left+r.width/2,r.top+r.height/2); focusEdit(addNode(p.x-160,p.y-90).id);}},
+  {k:'Gyerek buborék',h:'Tab',f:()=>{ if(sel.size===1) childOf([...sel][0]); }},
+  {k:'Testvér buborék',h:'Enter',f:()=>{ if(sel.size===1) siblingOf([...sel][0]); }},
+  {k:'Kapcsolat rajzolása',h:'C',f:()=>{ if(sel.size===1){linkFrom=[...sel][0];toast('Kattints a cél buborékra');} }},
+  {k:'Megjegyzések — összesítő',h:'',f:()=>{
+    const rows=allThreads();
+    if(!rows.length){ toast('Nincs megjegyzés'); return; }
+    const t=rows.map(r=>`## ${r.node.title}  [${r.t.resolved?'megoldva':'nyitott'}]\n`+
+      (r.t.items[0].quote?`> „${r.t.items[0].quote}”\n`:'')+
+      r.t.items.map(i=>`- **${i.author}** (${i.time}): ${i.body}`).join('\n')).join('\n\n');
+    showModal('Megjegyzések összesítő ('+rows.filter(r=>!r.t.resolved).length+' nyitott)',t,'megjegyzesek.md'); }},
+  {k:'Következő nyitott megjegyzés',h:'',f:()=>{
+    const rows=allThreads().filter(r=>!r.t.resolved);
+    if(!rows.length){ toast('Nincs nyitott megjegyzés'); return; }
+    const cur=$('insp').dataset.id;
+    const i=rows.findIndex(r=>r.node.id===cur);
+    const nx=rows[(i+1)%rows.length];
+    focusNode(nx.node.id,true); tab('cm'); }},
+  {k:'Export — megjegyzések nélkül (tiszta .md)',h:'',f:()=>{
+    const t=graphOrder().map(id=>{const n=node(id);if(!n)return'';
+      return `## ${n.title}\n\n${MD.stripComments(n.body)}\n`;}).filter(Boolean).join('\n');
+    showModal('Tiszta Markdown','# '+doc.title+'\n\n'+t,
+      (doc.title||'mindmd').replace(/\s+/g,'_')+'_tiszta.md'); }},
+  {k:'Szerző beállítása',h:'',f:()=>{ whoAmI(true); toast('Szerző: '+author); }},
+  {k:'Fa-elrendezés',h:'',f:layout},
+  {k:'Illesztés a képernyőre',h:'Ctrl+0',f:fit},
+  {k:'Panel megnyitása',h:'',f:()=>{ if(sel.size===1) openInspector([...sel][0]); }},
+  {k:'Összes összecsukása',h:'',f:()=>{snap();doc.nodes.forEach(n=>n.collapsed=true);redrawAll();}},
+  {k:'Összes kinyitása',h:'',f:()=>{snap();doc.nodes.forEach(n=>n.collapsed=false);redrawAll();}},
+  {k:'Tartalomjegyzék',h:'',f:()=>{
+    const t=graphOrder().map(id=>{const n=node(id);if(!n)return'';
+      return `- ${n.title}\n`+MD.headings(n.body).map(h=>'  '.repeat(h.lvl)+'- '+h.text).join('\n');})
+      .filter(Boolean).join('\n');
+    showModal('Tartalomjegyzék',t,'tartalom.md'); }},
+  {k:'Export — összefűzött Markdown',h:'',f:()=>showModal('Markdown',toMarkdown(),
+      (doc.title||'mindmd').replace(/\s+/g,'_')+'.md')},
+  {k:'Export — .mindmd.json',h:'Ctrl+S',f:exportJSON},
+  {k:'Megnyitás fájlból',h:'',f:()=>$('file').click()},
+  {k:'Nyomtatás / PDF — adatlappal',h:'Ctrl+P',f:pdlgOpen},
+  {k:'Nyomtatás azonnal',h:'',f:printDoc},
+  {k:'Térkép átnevezése',h:'',f:()=>{const t=prompt('A térkép neve:',doc.title);if(t){snap();doc.title=t;redrawAll();}}},
+  {k:'Új, üres térkép',h:'',f:()=>{ if(confirm('Minden buborék törlődik. Folytatod?')){
+      snap(); doc=blank(); view={x:0,y:0,k:1}; applyView(); redrawAll(); } }},
+  {k:'Vissza',h:'Ctrl+Z',f:undo},
+  {k:'Újra',h:'Ctrl+Shift+Z',f:redo}
+];
+let palIx=0, palList=[];
+function palOpen(){ $('veil').classList.add('open'); $('pal').classList.add('open');
+  $('palq').value=''; palFill(''); $('palq').focus(); }
+function palClose(){ $('pal').classList.remove('open'); $('veil').classList.remove('open'); }
+function palFill(q){
+  q=q.trim().toLowerCase();
+  const cmds=CMD.filter(c=>!q||c.k.toLowerCase().includes(q)).map(c=>({label:c.k,hint:c.h,run:c.f}));
+  const nodes=!q?[]:doc.nodes.filter(n=>(n.title||'').toLowerCase().includes(q))
+    .slice(0,8).map(n=>({label:'→ '+n.title,hint:'ugrás',run:()=>focusNode(n.id,true)}));
+  palList=cmds.concat(nodes); palIx=0;
+  $('palr').innerHTML=palList.map((c,i)=>
+    `<div class="it${i===0?' on':''}" data-i="${i}"><span>${MD.esc(c.label)}</span><span class="k">${MD.esc(c.hint||'')}</span></div>`
+  ).join('')||'<div class="it">Nincs találat</div>';
+}
+$('palq').addEventListener('input',e=>palFill(e.target.value));
+$('palq').addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault();
+    palIx=(palIx+(e.key==='ArrowDown'?1:palList.length-1))%Math.max(1,palList.length);
+    [...$('palr').children].forEach((el,i)=>el.classList.toggle('on',i===palIx)); }
+  else if(e.key==='Enter'){ e.preventDefault(); const c=palList[palIx]; palClose(); if(c) c.run(); }
+});
+$('palr').addEventListener('click',e=>{ const it=e.target.closest('.it'); if(!it)return;
+  const c=palList[+it.dataset.i]; palClose(); if(c) c.run(); });
+
+/* ---------------------------------------------------------------- toolbar */
+$('bNew').onclick=()=>CMD[0].f();
+$('bLink').onclick=()=>{ if(sel.size===1){linkFrom=[...sel][0];toast('Kattints a cél buborékra');}
+  else toast('Előbb jelölj ki egy buborékot'); };
+$('bLayout').onclick=layout;
+$('bFit').onclick=fit;
+$('bUndo').onclick=undo; $('bRedo').onclick=redo;
+$('bSave').onclick=exportJSON;
+$('bMd').onclick=()=>showModal('Markdown',toMarkdown(),(doc.title||'mindmd').replace(/\s+/g,'_')+'.md');
+$('bPrint').onclick=pdlgOpen;
+$('bPal').onclick=palOpen;
+$('bOpen').onclick=()=>$('file').click();
+$('file').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      let d=null;
+      if(/\.json$/i.test(f.name)) d=JSON.parse(r.result);
+      else d=fromMarkdown(String(r.result));
+      if(!d||!d.nodes) throw new Error('bad');
+      snap(); doc=d; view=d.view||{x:0,y:0,k:1}; sel.clear(); applyView(); redrawAll(); fit();
+      toast(f.name+' betöltve');
+    }catch(err){ toast('Nem sikerült beolvasni: '+f.name); }
+  };
+  r.readAsText(f); e.target.value='';
+};
+// drag & drop a .md or .json onto the canvas
+stage.addEventListener('dragover',e=>e.preventDefault());
+stage.addEventListener('drop',e=>{
+  e.preventDefault(); const f=e.dataTransfer.files[0]; if(!f) return;
+  const r=new FileReader(); const p=toWorld(e.clientX,e.clientY);
+  r.onload=()=>{
+    if(/\.json$/i.test(f.name)){ try{ const d=JSON.parse(r.result); if(d.nodes){
+      snap(); doc=d; view=d.view||view; redrawAll(); fit(); toast('Betöltve'); return; } }catch(err){} }
+    snap();
+    const n=addNode(p.x-170,p.y-60,{title:f.name.replace(/\.md$/i,''),body:String(r.result),w:400,h:280});
+    focusNode(n.id);
+    toast(f.name+' beolvasva');
+  };
+  r.readAsText(f);
+});
+
+let tT=null;
+function toast(m){ const t=$('toast'); t.textContent=m; t.style.display='block';
+  clearTimeout(tT); tT=setTimeout(()=>t.style.display='none',1900); }
+
+/* ------------------------------------------------------------------ boot */
+doc = load() || blank();
+view = doc.view || {x:0,y:0,k:1};
+attachTypeahead($('src'), null);
+$('src').addEventListener('focus',()=>{ if(T) tahClose(); });
+applyView(); redrawAll();
+setTimeout(fit,60);
+</script>
+</body></html>

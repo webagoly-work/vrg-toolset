@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Varler Planner — villanyszerelési tervező</title>
+<style>
+ *{box-sizing:border-box}
+ body{margin:0;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#222;background:#eceae4;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+ header{background:#2c2c2c;color:#fff;padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+ header h1{font-size:15px;margin:0;font-weight:700}
+ header .sp{flex:1}
+ button{border:1px solid #cfc9bd;background:#fff;border-radius:7px;padding:5px 9px;font-size:12.5px;cursor:pointer}
+ button:hover{background:#f1eee7}
+ button.on{background:#2c2c2c;color:#fff;border-color:#2c2c2c}
+ #lockBtn.on{background:#c86a1a;border-color:#c86a1a;color:#fff}
+ .wrap{flex:1;display:flex;min-height:0}
+ .side{width:252px;background:#f7f5f0;border-right:1px solid #ddd8cd;overflow:auto;padding:0}
+ .picker{display:flex;flex-wrap:wrap;gap:3px;padding:6px;position:sticky;top:0;background:#efece4;border-bottom:1px solid #ddd8cd;z-index:2}
+ .pbtn{font-size:10.5px;padding:2px 6px;border:1px solid #cfc9bd;border-radius:5px;background:#fff;opacity:0.5;cursor:pointer}
+ .pbtn.on{opacity:1;background:#2c2c2c;color:#fff;border-color:#2c2c2c}
+ .panels{padding:9px}
+ .panels:empty::after{content:'⬑ Válassz panelt fentről a testre szabáshoz';display:block;color:#a8a293;font-size:12px;padding:16px 6px;text-align:center}
+ .side.r{border-right:none;border-left:1px solid #ddd8cd;width:236px}
+ .grp{margin-bottom:10px;border:1px solid #e4dfd4;border-radius:9px;background:#fff;padding:8px}
+ .grp h3{margin:0 0 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:#8a8478}
+ .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:3px 0}
+ label{font-size:12px;display:flex;gap:5px;align-items:center}
+ select,input[type=text],input[type=number]{font-size:12px;padding:3px 5px;border:1px solid #cfc9bd;border-radius:6px}
+ input[type=range]{flex:1}
+ .stage-wrap{flex:1;position:relative;background:#fbfaf7;min-width:0}
+ svg#stage{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
+ svg#stage text{user-select:none;-webkit-user-select:none}
+ /* ===== MOBILE MODE ===== */
+ body.mobile header{padding:6px 8px;gap:5px;overflow-x:auto;flex-wrap:nowrap}
+ body.mobile header button{font-size:13px;padding:7px 9px}
+ body.mobile .wrap{flex-direction:column}
+ body.mobile .side{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-height:62vh;
+   border-right:none;border-top:2px solid #cfc9bc;box-shadow:0 -6px 22px rgba(0,0,0,.22);
+   transform:translateY(100%);transition:transform .22s ease;z-index:40}
+ body.mobile .side.r{left:0;width:auto;border-left:none}
+ body.mobile .side.open{transform:translateY(0)}
+ body.mobile .picker{gap:5px;padding:8px}
+ body.mobile .picker button,body.mobile .tool{font-size:14px;padding:9px 11px;min-height:40px}
+ body.mobile .grp{padding:10px 12px}
+ body.mobile .row button,body.mobile .row select,body.mobile .row input[type=number]{min-height:38px;font-size:14px}
+ body.mobile label{font-size:13.5px}
+ body.mobile .stage-wrap{flex:1}
+ #mobileBar{display:none}
+ body.mobile #mobileBar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:35;
+   background:rgba(28,28,28,.92);backdrop-filter:blur(6px);padding:6px;gap:6px;align-items:center;justify-content:space-between;flex-wrap:nowrap}
+ body.mobile.sheet-open #mobileBar{bottom:62vh}
+ #mobileBar .mb{flex:0 0 auto;display:flex;gap:5px}
+ #mobileBar button{background:#3a3a3a;color:#fff;border:1px solid #555;border-radius:9px;
+   width:42px;height:42px;font-size:17px;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+ #mobileBar button:active{background:#e8641c}
+ #mobileBar button.wide{width:auto;padding:0 12px;font-size:14px}
+ #mobileBar .dpad{display:grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(2,38px);gap:3px}
+ #mobileBar .dpad button{width:38px;height:38px;font-size:15px}
+ #mobileHandle{display:none}
+ body.mobile #mobileHandle{display:block;position:fixed;left:50%;transform:translateX(-50%);
+   bottom:calc(56px);z-index:36;background:#2c2c2c;color:#fff;border:none;border-radius:12px 12px 0 0;
+   padding:5px 20px;font-size:13px;box-shadow:0 -3px 10px rgba(0,0,0,.2)}
+ body.mobile.sheet-open #mobileHandle{bottom:calc(62vh + 56px)}
+ #hud{position:absolute;left:12px;bottom:10px;background:#ffffffe0;border:1px solid #ddd;border-radius:8px;padding:6px 10px;font-size:12.5px;color:#333;pointer-events:none;white-space:pre-line}
+ #modeHint{position:absolute;left:12px;top:10px;background:#2c2c2ce6;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;max-width:360px}
+ #wvBox svg,#pvBox svg{user-select:none;-webkit-user-select:none;-ms-user-select:none;touch-action:none}
+ #wvBox,#pvBox{user-select:none;-webkit-user-select:none}
+ #stageRail{position:absolute;left:0;top:0;bottom:24px;width:104px;display:none;flex-direction:column;gap:2px;
+   padding:6px 4px;background:#f7f6f2ee;border-right:1px solid #e2ded4;z-index:6}
+ .stg{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid transparent;
+   background:transparent;border-radius:8px;padding:7px 2px;cursor:pointer;font-size:10.5px;color:#5a5348;line-height:1.15}
+ .stg:hover{background:#ece9e1}
+ .stg.on{background:#fff;border-color:#cfc9bd;color:#0a2b6b;font-weight:700;box-shadow:0 1px 3px #0001}
+ .stgIc{font-size:17px}
+ .stgN{text-align:center}
+ .stgB{position:absolute;right:6px;top:4px;min-width:15px;height:15px;border-radius:8px;font-size:9.5px;
+   line-height:15px;color:#fff;padding:0 3px}
+ .stgB.err{background:#c0392b} .stgB.wrn{background:#c0530f}
+ #inspector{position:absolute;right:0;top:0;bottom:24px;width:238px;display:none;overflow:auto;
+   background:#fbfaf7ee;border-left:1px solid #e2ded4;z-index:6;font-size:11.5px}
+ .insHead{padding:8px 10px;border-bottom:1px solid #eee9df}
+ .insSub{color:#8a8478;font-size:10.5px}
+ .insHead .insSub{display:block;margin-top:2px}
+ .insChk{padding:6px 10px;border-bottom:1px solid #eee9df;background:#fffdf8}
+ .ck{padding:2px 0;font-size:10.5px;color:#6a6357}
+ .ck.error{color:#c0392b} .ck.warn{color:#c0530f} .ck.ok{color:#3a7d44}
+ .insSel{padding:8px 10px;border-bottom:1px solid #eee9df;background:#fff}
+ .insFields{padding:6px 10px;border-bottom:1px solid #eee9df}
+ .insF{display:flex;align-items:center;gap:6px;margin:3px 0}
+ .insF span{flex:1;color:#6a6357;font-size:10.5px}
+ .insF input{width:88px;font-size:11px;padding:2px 4px}
+ .insRoom{padding:6px 10px;border-bottom:1px solid #eee9df}
+ .insRoomH{display:flex;justify-content:space-between;margin-bottom:3px;font-size:11px;color:#4a453c}
+ .insRoomR{display:flex;gap:6px;margin-top:3px}
+ .insRoomL{flex:1;color:#4a453c}
+ .insRoomRefs{color:#8a8478;font-size:10px;line-height:1.3;word-break:break-word}
+ .insActs{padding:6px 8px;display:flex;flex-direction:column;gap:3px}
+ .insA{text-align:left;font-size:11px;padding:4px 7px;white-space:normal;line-height:1.25}
+ #statusBar{position:absolute;left:0;right:0;bottom:0;height:24px;display:flex;align-items:center;gap:2px;
+   padding:0 10px;font-size:11px;color:#555;background:#f7f6f2;border-top:1px solid #e2ded4;pointer-events:none;z-index:5}
+ .sbChip{padding:0 8px;border-right:1px solid #e2ded4;white-space:nowrap}
+ .sbChip:last-child{border-right:0}
+ #palette{position:fixed;inset:0;display:none;align-items:flex-start;justify-content:center;
+   background:#0006;z-index:100000;padding-top:12vh}
+ #palBox{width:min(680px,92vw);background:#fff;border-radius:12px;box-shadow:0 18px 60px #0006;overflow:hidden}
+ #palQ{width:100%;border:0;border-bottom:1px solid #eee;padding:14px 16px;font-size:15px;outline:none}
+ #palList{max-height:52vh;overflow:auto}
+ .palRow{display:grid;grid-template-columns:26px 1fr auto auto;align-items:center;gap:8px;
+   padding:7px 14px;cursor:pointer;border-bottom:1px solid #f6f5f2}
+ .palRow.on{background:#eef4fb}
+ .palRow.off{opacity:.42}
+ .palRow.off .palLab{color:#666}
+ .palRow:hover{background:#f4f2ee}
+ .palIc{text-align:center}
+ .palLab{font-size:13px;color:#222}
+ .palGrp{font-size:10.5px;color:#9a948a}
+ .palKey{font-size:10.5px;color:#7a7468;font-family:ui-monospace,Consolas,monospace}
+ .palHint{grid-column:2/5;font-size:11px;color:#8a8478;margin-top:1px}
+ #palFoot{padding:7px 14px;font-size:10.5px;color:#9a948a;background:#faf9f6;border-top:1px solid #f0eee9}
+ #ctx{position:fixed;display:none;background:#fff;border:1px solid #bbb;border-radius:8px;box-shadow:0 4px 14px #0003;font-size:13px;z-index:99999;min-width:150px;max-height:80vh;overflow:auto}
+ .side.hide{display:none}
+ .edge{position:absolute;top:50%;transform:translateY(-50%);z-index:8;background:#2c2c2ccc;color:#fff;border:none;border-radius:0 8px 8px 0;padding:14px 5px;font-size:13px;box-shadow:0 2px 6px #0004}
+ .edge.r{border-radius:8px 0 0 8px}
+ #modalBg{position:fixed;inset:0;background:#0006;display:none;z-index:20;align-items:center;justify-content:center}
+ #modal{background:#fff;border-radius:12px;padding:16px 18px;min-width:300px;max-width:420px;box-shadow:0 10px 40px #0005;max-height:86vh;overflow:auto}
+ #modal.full{max-width:100vw!important;width:99vw;max-height:99vh;padding:10px 12px}
+ #modal h4{margin:0 0 10px;font-size:15px}
+ #modal .mrow{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
+ #modal label{font-size:12.5px}
+ #modal .mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+ .tbrow{background:#3a3a3a;display:none;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 8px}
+ .tbrow.show{display:flex}
+ .tbrow .grp{border:none;background:transparent;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+ .tbrow .grp h3,.tbrow .grp #modeTip{display:none}
+ .tbrow .row{margin:0;gap:4px}
+ .tbrow button{padding:4px 7px;font-size:12px}
+ .lblock{border:1px solid transparent;border-radius:6px;padding:2px 3px;margin:3px 0}
+ .lblock.lactive{border-color:#d8d2c6;background:#faf8f3}
+ .lrow{display:flex;align-items:center;gap:3px}
+ .lname{flex:1;min-width:0}
+ .lcats{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0 1px 22px}
+ .lrow button{padding:2px 4px;font-size:11px;line-height:1}
+ .lcat{width:17px;opacity:0.4}
+ .lcat.on{opacity:1;background:#2c2c2c;color:#fff;border-color:#2c2c2c}
+ .lname{font-size:12px;padding:2px 4px;border:1px solid #cfc9bd;border-radius:5px}
+ .resizer{flex:0 0 6px;cursor:col-resize;background:linear-gradient(#ddd8cd,#cfc9bd);border:none}
+ .resizer:hover{background:#b9b3a5}
+ .side{flex:0 0 auto}
+ #ctx button{display:block;width:100%;text-align:left;border:0;border-radius:0;padding:7px 14px}
+ .swatch{width:11px;height:11px;border-radius:3px;display:inline-block}
+ table{width:100%;border-collapse:collapse;font-size:12px}
+ td{padding:2px 3px;border-bottom:1px solid #f0ece2}
+ td.n{text-align:right;font-variant-numeric:tabular-nums}
+ .tool{flex:1;min-width:70px;text-align:center}
+ small{color:#8a8478;font-size:11px;line-height:1.35;display:block;margin-top:4px}
+ @media print{header,.side,#modeHint,#hud,#ctx{display:none!important}.wrap,.stage-wrap,body{height:auto}
+   svg#stage{filter:grayscale(1)}@page{size:A4 landscape;margin:8mm}}
+</style></head>
+<body>
+<header>
+  <h1>⚡ Varler Planner <span id="verTag" style="font-size:11px;font-weight:400;opacity:.55"></span></h1>
+ <button id="bSave">💾 Save</button>
+ <label style="color:#fff;font-size:12px">📂 Load<input id="bLoad" type="file" accept="application/json" style="display:none"></label>
+ <button id="bPNG">🖼 PNG A4</button><button id="bPNGg">🖼 PNG grey</button><button id="bPrint">🖨 Print</button>
+ <span class="sp"></span><button id="bNew">🗑 New</button><button id="bToolsLoc">⧉ Tools: fent</button><button id="autoLayout" class="on" title="Eszközhöz igazítja a paneleket">🎛 Auto-panel</button><button id="lockBtn" title="Építmény zárolása — csak nézegetés, véletlen kijelölés nélkül">🔒 Zár</button><button id="mobileBtn" title="Érintőképernyős mód">📱 Mobil</button><button id="bPanels">⤢ Full view</button><button id="bReset">Reset view</button>
+</header>
+<div id="toolbarRow" class="tbrow"></div>
+<div class="wrap">
+ <div class="side">
+  <div class="grp"><h3>Projektek</h3>
+   <div class="row" style="gap:4px">
+     <button id="pjSave" title="Aktuális terv mentése">💾 Mentés</button>
+     <button id="pjSaveAs" title="Mentés új néven">💾 Mint…</button>
+     <button id="pjNew" title="Üres munkaterület">📄 Új</button>
+   </div>
+   <div class="row" style="gap:4px">
+     <label style="font-size:12px;cursor:pointer">📥 Fájl import<input id="pjImport" type="file" accept=".json,application/json" style="display:none"></label>
+     <button id="pjExport" title="Aktuális terv letöltése fájlba">⬇ Export</button>
+   </div>
+   <div id="projList" style="max-height:200px;overflow:auto;border:1px solid #e4dfd4;border-radius:6px;background:#fff;margin-top:4px"></div>
+   <small>A tervek a böngésződben tárolódnak. „⬇ Export” ad egy .vplan.json fájlt, amit később „📥 Fájl import”-tal tölthetsz vissza.</small>
+  </div>
+
+  <div class="grp" id="toolsGrp"><h3>Tools</h3>
+   <div class="row">
+    <button class="tool on" data-mode="select">▖ Select</button>
+    <button class="tool" data-mode="grab">✥ Move</button>
+    <button class="tool" data-mode="format" title="Formátummásoló: jelölj ki egy elemet, kattints ide, majd egy azonos típusú elemre">🖌 Formátum</button>
+    <button class="tool" data-mode="path">➰ Path</button>
+    <button class="tool" data-mode="device">◈ Device</button></div>
+   <div class="row">
+    <button class="tool" data-mode="cable">╱ Cable</button>
+    <button class="tool" data-mode="wall">▤ Wall</button>
+    <button class="tool" data-mode="build">🚪 Build</button></div>
+   <div class="row">
+    <button class="tool" data-mode="object">🪑 Object</button>
+    <button class="tool" data-mode="floor">▦ Floor</button>
+    <button class="tool" data-mode="roof">🏠 Roof</button>
+    <button class="tool" data-mode="measure">📏 Measure</button>
+    <button class="tool" data-mode="note">📌 Note</button></div>
+   <div class="row">
+    <button id="bUndo">↩ Undo</button>
+    <button id="bRedo">↪ Redo</button></div>
+   <div class="row" id="wallOpts" style="display:none">Fal <input type="number" id="wallThick" value="100" step="10" style="width:54px"> mm
+     <label><input type="checkbox" id="wallErase"> radír/erase</label></div>
+   <small id="modeTip"></small>
+  </div>
+
+  <div class="grp"><h3>Layers</h3>
+   <div id="layerList"></div>
+   <div class="row"><button id="addLayer">+ Layer</button></div>
+   <small>Active layer gets new items. 👁 = layer on/off · P/D/C/W/B = path·device·cable·wall·build sub-layers.</small>
+  </div>
+
+  <div class="grp"><h3>Active level (new items)</h3>
+   <div class="row">
+    <label><input type="radio" name="al" value="basement">Pince</label>
+    <label><input type="radio" name="al" value="ground" checked>Földszint</label>
+    <label><input type="radio" name="al" value="upper">Emelet</label></div>
+  </div>
+
+  <div class="grp"><h3>Path (pálya – elsődleges)</h3>
+   <div class="row"><select id="pathType">
+     <option value="gege">Gégecső</option><option value="csat">Kábelcsatorna</option>
+     <option value="mbcu">MBCu falban</option><option value="mu">MŰ cső</option><option value="custom">Egyéb</option></select></div>
+   <div class="row">Magasság-kijelző <select id="hDisp"><option value="hover">lebegő a vonalon</option><option value="side">oldalsáv</option><option value="off">ki</option></select></div>
+   <div id="hBox" style="display:none;margin:4px 0;padding:8px;border-radius:8px;background:#fffef8;border:1px solid #e4dfd4"></div>
+   <small>Draw the empty pathway first (same snapping/heights as cable). ↑/↓ = rajz magasság · Ctrl = fal másik oldala · Enter = kész.</small>
+  </div>
+
+  <div class="grp"><h3>Cable (másodlagos)</h3>
+   <div class="row"><select id="cableType">
+     <option value="lighting">Világítás</option><option value="sockets">Dugalj</option>
+     <option value="power3">3 fázis</option><option value="data">Adat</option></select></div>
+   <div class="row">Rajz magasság <select id="drawH">
+     <option value="floor">Padló (0)</option><option value="s300">300 Dugalj</option>
+     <option value="s500">500 Gépek</option><option value="s1100" selected>1100 Kapcsoló</option>
+     <option value="s1300">1300 Panel</option><option value="s1400">1400 IP44</option>
+     <option value="s1900">1900 Lámpa</option><option value="gerinc">Gerinc (menny.−300)</option>
+     <option value="ceiling">Mennyezet (fal teteje)</option></select></div>
+   <div class="row"><button id="bRiserUp">Riser ↑</button><button id="bRiserDn">Riser ↓</button>
+     <label><input type="checkbox" id="wallLock" checked> falhoz köt</label></div>
+   <div class="row" style="font-size:11px"><label title="Padló és Mennyezet magasságban eddig sem kötött falhoz — ezzel a köztes magasságok is szabaddá válnak (pl. szabadon átvezetett gerinc, tálca, álmennyezet feletti szakasz).">
+     <input type="checkbox" id="midFree"> szabad köztes magasságban (nincs falhoz kötés)</label>
+     <button id="fineBtn" title="Finomhangolt mozgatás: 1 mm-es lépés, 5× lassabb. Tartsd az Alt vagy F billentyűt, vagy kapcsold be itt.">🔍 finom</button></div>
+   <small><b>Ctrl</b> = wall's other side (sticky) · <b>↑/↓</b> = height line · <b>←/→</b> = rotate · <b>Space</b> = kötődoboz · Enter = finish · Esc = cancel.</small>
+  </div>
+
+  <div class="grp"><h3>Device</h3>
+   <div class="row"><select id="devType">
+     <option value="socket">Aljzat</option><option value="switch">Kapcsoló</option>
+     <option value="light">Lámpa</option><option value="junction">Kötődoboz</option></select></div>
+   <small>Falra téve a Ctrl a fal két oldala közt vált (mint a pályánál). ↑/↓ magasság, ←/→ típus. Elosztószekrény: jobb klikk a falon → „Elosztószekrény ide".</small>
+  </div>
+
+  <div class="grp"><h3>Routing</h3>
+   <div class="row"><button id="bRecalc">↻ Újraszámol</button><button id="bClearRoute">🧹 Útvonalak törlése</button></div>
+   <small>Recompute re-runs every device (Szükséges erek) to its board. Clear removes routed wires (keeps manual section circuits).</small>
+  </div>
+
+  <div class="grp"><h3>Áramkörök</h3>
+   <div class="row" style="font-size:11px;color:#777">A rajzon lévő áramkörök — láthatóság, kiemelés, szerkesztés.</div>
+   <div class="row"><label style="font-size:11px"><input type="checkbox" id="circHoverInfo" checked> Lebegő infó a rajzon</label></div>
+   <div id="circList" style="max-height:240px;overflow:auto"></div>
+  </div>
+
+  <div class="grp"><h3>Dokumentáció</h3>
+   <div class="row"><button id="bNumber">🔢 Számozás</button><label><input type="checkbox" id="showRefs"> Jelölés a rajzon</label></div>
+   <div class="row"><button id="bCableList">📄 Kábellista</button><button id="bWireList">📄 Vezetéklista</button></div>
+   <div class="row"><button id="bSched" style="width:100%">⚡ Elosztó tábla (méretezés)</button></div>
+   <div class="row"><button id="bSwitchRep" style="width:100%">🎚 Kapcsoló riport (kapcsok/erek)</button></div>
+   <small>Számozás → D1, K1, L1, EL1… + circuit sorszám. Lists come from the routed circuits (Copy / CSV).</small>
+  </div>
+
+  <div class="grp"><h3>Objects</h3>
+   <div class="row"><input id="objSearch" placeholder="keresés…" style="flex:1"></div>
+   <div class="row"><label><input type="checkbox" id="objWallSnap" checked> Falhoz illesztés (magasság: ↑/↓, oldal: Ctrl)</label></div>
+   <div id="objList" style="max-height:190px;overflow:auto;border:1px solid #e4dfd4;border-radius:6px;background:#fff"></div>
+   <div class="row" style="font-size:11px;color:#8a8478">Kiválasztás → kattints a rajzra. Kijelölve: <b>WASD</b> mozgat · <b>Q/E</b> forgat · <b>↑/↓</b> emel · jobb klikk → méret.</div>
+  </div>
+
+  <div class="grp"><h3>Build (snaps to wall)</h3>
+   <div class="row"><select id="buildType">
+     <option value="door">Ajtó / door</option><option value="window">Ablak / window</option>
+     <option value="stairs">Lépcső / stairs</option></select></div>
+   <small>Click a wall to place. Right-click an object → Rotate / Delete.</small>
+  </div>
+
+  <div class="grp"><h3>Building / layout</h3>
+   <div class="row"><button id="bCreateRoom" style="width:100%">➕ Helyiség létrehozása</button></div>
+   <div class="row"><button id="bHouse">🏠 Ház</button><button id="bGarage">🚗 Garázs</button></div>
+   <div class="row"><label style="font-size:12px">📂 Load<input id="loadLayout" type="file" accept="application/json" style="display:none"></label>
+     <button id="saveLayout">⬇ Save layout</button></div>
+   <div class="row"><label style="font-size:12px">➕ Referencia terv<input id="loadRef" type="file" accept="application/json" style="display:none"></label></div>
+   <div id="refList"></div>
+   <small>Roof lives on <b>Emelet</b> — hide that level for the roof-off view.</small>
+  </div>
+
+  <div class="grp"><h3>Show levels &amp; height (mm)</h3>
+   <div class="row"><label><input type="checkbox" id="lvUpper" checked>Emelet</label>
+     <input type="number" id="hUpper" value="2700" step="50" style="width:66px"></div>
+   <div class="row"><label><input type="checkbox" id="lvGround" checked>Földszint</label>
+     <input type="number" id="hGround" value="2700" step="50" style="width:66px"></div>
+   <div class="row"><label><input type="checkbox" id="lvBase" checked>Pince</label>
+     <input type="number" id="hBase" value="2500" step="50" style="width:66px"></div>
+   <div class="row" style="font-size:11px;border-top:1px solid #eee;padding-top:4px">Álmennyezet
+     <select id="dcLevel" style="width:78px"><option value="upper">Emelet</option><option value="ground" selected>Fszt.</option><option value="basement">Pince</option></select>
+     <input type="number" id="dcVal" value="0" step="50" min="0" style="width:66px" title="0 = nincs álmennyezet ezen a szinten"> mm
+     <label style="margin-left:4px"><input type="checkbox" id="dcShow" checked> látszik</label>
+     <input type="color" id="dcCol" value="#cfd8dc" title="A sík színe" style="width:30px;height:22px;padding:0;border:1px solid #ccc">
+     <input type="number" id="dcOp" value="50" min="0" max="100" step="5" style="width:52px" title="Átlátszatlanság %">%</div>
+   <div class="row" style="font-size:10.5px;color:#888" id="dcInfo"></div>
+  </div>
+
+  <div class="grp"><h3>Height guide lines</h3>
+   <div class="row" style="font-size:11px"><label><input type="checkbox" id="freeHeightChk"> Szabad magasság (±100 mm, ↑/↓)</label></div>
+   <div class="row" id="freeMmBox" style="display:none;font-size:11px;gap:6px;align-items:center">Aktuális: <b id="freeMmVal">1100 mm</b> <button id="freeMmUp">+100</button><button id="freeMmDn">−100</button></div>
+   <div style="font-size:10.5px;color:#888;margin:2px 0">👁 = vonal látszik · ⭱ = ↑/↓ ide ugrik · dupla-katt a névre = átnevez</div>
+   <div id="guideBox"></div>
+   <div class="row" style="gap:4px"><input type="number" id="custG" placeholder="mm" style="width:64px"><input type="text" id="custGName" placeholder="név" style="width:80px"><button id="addG">+ magasság</button></div>
+  </div>
+
+  <div class="grp"><h3>Floor labels</h3>
+   <div class="row"><label><input type="checkbox" id="lblShow" checked> Show text on floors</label></div>
+   <div class="row">Size <input type="range" id="lblSize" min="0.4" max="2.2" step="0.1" value="1"></div>
+   <div class="row">Rotate <input type="range" id="lblRot" min="0" max="360" step="5" value="0"> <span id="lblRotV">0°</span></div>
+  </div>
+
+  <div class="grp"><h3>View</h3>
+   <div class="row"><label style="flex:1">Rotate <span id="rotVal">90°</span></label></div>
+   <div class="row"><button id="rotL" title="−15°">◀</button>
+     <input id="rot" type="range" min="0" max="360" value="90"><button id="rotR" title="+15°">▶</button></div>
+   <div class="row" style="gap:4px">
+     <button class="preset" data-deg="0">0°</button><button class="preset" data-deg="90">90°</button>
+     <button class="preset" data-deg="180">180°</button><button class="preset" data-deg="270">270°</button></div>
+   <div class="row">Render <select id="style">
+     <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option></select></div>
+   <div class="row">Walls <select id="wallMode">
+     <option value="translucent">translucent</option><option value="solid">solid</option>
+     <option value="hidden">hidden</option></select></div>
+   <div class="row"><label><input type="checkbox" id="explode" checked>Exploded</label>
+     <label><input type="checkbox" id="grid">Grid</label>
+     <input id="gridSize" type="number" value="250" step="50" style="width:58px"></div>
+   <div class="row"><label><input type="checkbox" id="isoGrid"> Izometrikus rács a földszinten</label></div>
+   <div class="row"><label><input type="checkbox" id="gizSnap" checked> Mozgatás rácshoz illesztés (Move)</label></div>
+   <div class="row"><label><input type="checkbox" id="multiSel"> Kijelölő keret a Select eszközben (kihúzás)</label></div>
+   <div class="row" style="font-size:11px">Eszköz méret <input id="devScale" type="range" min="0.4" max="1.2" step="0.04" value="0.72" style="width:90px"></div>
+   <div class="row" style="font-size:11px">Pálya vastagság <input id="pathScale" type="range" min="0.5" max="1.6" step="0.05" value="1" style="width:90px"></div>
+   <div class="row" style="font-size:11px">Pálya szín <input id="pathColor" type="color" value="#6f757d" style="width:40px;height:22px;padding:0;vertical-align:middle"> <button id="pathColorReset" style="font-size:10.5px">alap</button></div>
+   <div class="row" id="bpOpts" style="display:none"><label><input type="checkbox" id="bpDims" checked> Méretlánc</label><label><input type="checkbox" id="bpTitle" checked> Címblokk</label><button id="bpEdit">✎ Fejléc</button></div>
+   <div class="row">Szétnyitás <input id="gap" type="range" min="0" max="7000" step="100" value="2600"> <span id="gapV">2.6 m</span></div>
+  </div>
+ </div>
+
+ <div class="resizer" data-r="left"></div>
+ <div class="stage-wrap">
+  <svg id="stage" viewBox="0 0 1000 720" preserveAspectRatio="xMidYMid meet"><g id="vp"></g></svg>
+   <button id="mobileHandle">▲ Panelek</button>
+   <div id="mobileBar">
+     <div class="mb">
+       <button id="mbUndo" title="Vissza">↶</button>
+       <button id="mbRedo" title="Előre">↷</button>
+     </div>
+     <div class="dpad" id="mbPad">
+       <button data-nudge="rotL" title="Forgatás balra">⟲</button>
+       <button data-nudge="up" title="Dőlés fel">▲</button>
+       <button data-nudge="rotR" title="Forgatás jobbra">⟳</button>
+       <button data-nudge="zin" title="Nagyítás">＋</button>
+       <button data-nudge="down" title="Dőlés le">▼</button>
+       <button data-nudge="zout" title="Kicsinyítés">－</button>
+     </div>
+     <div class="mb">
+       <button id="mbDel" title="Törlés">🗑</button>
+       <button id="mbTop" title="Felülnézet/3D">⬒</button>
+       <button id="mbTools" class="wide" title="Eszközök">🧰 Eszköz</button>
+     </div>
+   </div>
+  <button id="view3d" style="position:absolute;right:12px;top:12px;font-weight:700;min-width:40px;box-shadow:0 2px 6px #0003">2D</button>
+  <button id="styleToggle" title="Normál ↔ Hivatalos (blueprint) nézet" style="position:absolute;right:60px;top:12px;font-weight:700;min-width:40px;box-shadow:0 2px 6px #0003">📐</button>
+  <button id="hideL" class="edge" style="left:0">◀</button>
+  <button id="hideR" class="edge r" style="right:0">▶</button>
+  <div id="modeHint"></div><div id="hud"></div><div id="ctx"></div>
+  <div id="stageRail"></div>
+  <div id="inspector"></div>
+  <div id="statusBar"></div>
+ </div>
+ <div id="modalBg"><div id="modal"></div></div>
+ <div class="resizer" data-r="right"></div>
+
+ <div class="side r">
+  <div class="grp"><h3>Cable totals (m)</h3><table id="tblCable"></table></div>
+  <div class="grp"><h3>Devices (db)</h3><table id="tblDev"></table></div>
+  <div class="grp"><h3>Árajánlat / BOM</h3>
+   <div class="row">Hulladék % <input type="number" id="waste" value="10" step="1" style="width:54px"></div>
+   <table id="tblBOM"></table>
+   <div class="row" style="margin-top:6px"><button id="bBOM">📋 Copy</button><button id="bBOMcsv">⬇ CSV</button><button id="bBOMj">⬇ JSON</button></div>
+   <small>Fill Ft/egység to price it. Cable length includes device drops (dugalj +0.3 m, kapcsoló +1.1 m, lámpa +0.5 m) and waste %.</small></div>
+ </div>
+</div>
+
+<script>
+/*__SRC__*/
+</script>
+</body></html>

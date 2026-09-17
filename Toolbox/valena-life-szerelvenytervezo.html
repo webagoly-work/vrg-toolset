@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valena Life Szerelvénytervező — Legrand kompatibilitási adatbázis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Narrow:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ece8df; --paper2:#f4f1ea; --panel:#fbfaf6; --panel-line:#d8d2c4;
+  --ink:#23282e; --ink-soft:#5a6068; --ink-faint:#8b8f95;
+  --accent:#d6531f; --accent-d:#b3400f; --accent-soft:#fbe3d6;
+  --teal:#2c6e76; --teal-soft:#dceaeb;
+  --warn:#b8860b; --warn-soft:#f6ecd0; --ok:#3f7a4d; --ok-soft:#dfeede;
+  --grid:rgba(35,40,46,.045);
+  --shadow:0 1px 0 rgba(255,255,255,.7) inset, 0 2px 6px rgba(35,40,46,.08), 0 12px 30px -18px rgba(35,40,46,.4);
+  --mono:'IBM Plex Mono',monospace; --disp:'Archivo Narrow',sans-serif; --ui:'Archivo',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--ui); color:var(--ink); background:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;
+  -webkit-font-smoothing:antialiased; line-height:1.45; font-size:14px;
+}
+.wrap{max-width:1320px;margin:0 auto;padding:18px 16px 60px}
+
+/* ===== HEADER ===== */
+header.top{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;
+  border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:16px;position:relative;
+}
+header.top::after{content:"";position:absolute;left:0;bottom:-5px;width:120px;height:2px;background:var(--accent)}
+.brandblock h1{
+  font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.5px;margin:0;line-height:1;
+  text-transform:uppercase;
+}
+.brandblock h1 b{color:var(--accent)}
+.brandblock .sub{font-size:12px;color:var(--ink-soft);letter-spacing:.5px;margin-top:4px;font-family:var(--mono)}
+.headmeta{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);text-align:right;line-height:1.7}
+.headmeta .tag{display:inline-block;border:1px solid var(--panel-line);border-radius:3px;padding:1px 6px;background:var(--panel)}
+
+/* ===== TOP CONTROL BAR ===== */
+.controlbar{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  background:var(--panel);border:1px solid var(--panel-line);border-radius:8px;
+  padding:10px 12px;margin-bottom:16px;box-shadow:var(--shadow)
+}
+.ctrl{display:flex;flex-direction:column;gap:4px}
+.ctrl .lbl{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-faint);font-weight:700;font-family:var(--mono)}
+.seg{display:inline-flex;border:1px solid var(--panel-line);border-radius:6px;overflow:hidden;background:#fff}
+.seg button{
+  border:0;background:transparent;font-family:var(--ui);font-weight:600;font-size:12.5px;
+  padding:7px 12px;cursor:pointer;color:var(--ink-soft);transition:.12s;white-space:nowrap
+}
+.seg button+button{border-left:1px solid var(--panel-line)}
+.seg button.on{background:var(--ink);color:#fff}
+.seg.acc button.on{background:var(--accent);color:#fff}
+.seg.tl button.on{background:var(--teal);color:#fff}
+.spacer{flex:1}
+.colorpick{display:flex;gap:5px;flex-wrap:wrap;align-items:center;max-width:430px}
+.swatch{
+  width:24px;height:24px;border-radius:5px;border:2px solid #fff;outline:1px solid var(--panel-line);
+  cursor:pointer;position:relative;box-shadow:0 1px 2px rgba(0,0,0,.15);transition:.12s
+}
+.swatch.on{outline:2px solid var(--ink);transform:scale(1.12)}
+.swatch:hover{transform:scale(1.12)}
+
+/* ===== MAIN GRID ===== */
+.layout{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+@media(max-width:980px){.layout{grid-template-columns:1fr}}
+
+.panel{background:var(--panel);border:1px solid var(--panel-line);border-radius:8px;box-shadow:var(--shadow)}
+.panel-h{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:10px 12px;border-bottom:1px solid var(--panel-line);
+}
+.panel-h h2{font-family:var(--disp);text-transform:uppercase;font-size:15px;letter-spacing:.3px;margin:0;font-weight:700}
+.panel-h .hnum{font-family:var(--mono);font-size:10px;color:#fff;background:var(--ink);border-radius:3px;padding:2px 6px}
+
+/* ===== CATALOG ===== */
+.search{padding:10px 12px;border-bottom:1px solid var(--panel-line)}
+.search input{
+  width:100%;border:1px solid var(--panel-line);border-radius:6px;padding:8px 10px;font-family:var(--ui);
+  font-size:13px;background:#fff
+}
+.search input:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.catscroll{max-height:560px;overflow:auto;padding:6px}
+.catgroup{margin:4px 0 8px}
+.catgroup .gh{
+  font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-faint);
+  padding:8px 8px 4px;font-weight:600;display:flex;align-items:center;gap:6px
+}
+.catgroup .gh::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--accent)}
+.catgroup.ext .gh::before{background:var(--teal)}
+.item{
+  display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer;transition:.1s;
+  border:1px solid transparent
+}
+.item:hover{background:#fff;border-color:var(--panel-line)}
+.item .ico{
+  width:30px;height:30px;flex:0 0 30px;border-radius:5px;background:var(--paper2);border:1px solid var(--panel-line);
+  display:grid;place-items:center;color:var(--ink-soft)
+}
+.item .meta{flex:1;min-width:0}
+.item .nm{font-size:12.5px;font-weight:600;line-height:1.2}
+.item .rf{font-family:var(--mono);font-size:10.5px;color:var(--accent-d);font-weight:500}
+.item .badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
+.b{font-family:var(--mono);font-size:8.5px;padding:1px 4px;border-radius:3px;letter-spacing:.3px;border:1px solid}
+.b.ip{background:var(--teal-soft);border-color:#9cc;color:var(--teal)}
+.b.gyv{background:var(--ok-soft);border-color:#aca;color:var(--ok)}
+.b.jl{background:var(--warn-soft);border-color:#ca9;color:var(--warn)}
+.b.sm{background:#eae3f3;border-color:#c5b6dd;color:#6c4aa0}
+.b.sp{background:var(--accent-soft);border-color:#e6b69d;color:var(--accent-d)}
+.item .add{
+  width:24px;height:24px;border-radius:6px;border:1px solid var(--panel-line);background:#fff;
+  font-size:17px;line-height:1;color:var(--accent);cursor:pointer;flex:0 0 24px;font-weight:700
+}
+.item:hover .add{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ===== BUILDER ===== */
+.builder-grid{display:grid;grid-template-columns:1fr;gap:16px}
+.stage{
+  padding:18px;background:
+    radial-gradient(circle at 18px 18px,var(--grid) 1.4px,transparent 1.4px);
+  background-size:18px 18px;background-color:var(--paper2);
+  border-bottom:1px solid var(--panel-line);min-height:170px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;position:relative
+}
+.stage .orient-note{position:absolute;top:8px;right:12px;font-family:var(--mono);font-size:10px;color:var(--ink-faint)}
+.plate-shell{display:flex;flex-direction:column;align-items:center;gap:10px}
+.plate{
+  position:relative;background:#fff;border-radius:10px;padding:10px;
+  box-shadow:0 2px 4px rgba(0,0,0,.08),0 18px 40px -22px rgba(0,0,0,.5);
+  display:flex;gap:6px;transition:.18s
+}
+.plate.vert{flex-direction:column}
+.plate.ghost{background:repeating-linear-gradient(45deg,#fbfaf6,#fbfaf6 8px,#f1eee6 8px,#f1eee6 16px);box-shadow:none;border:1.5px dashed var(--panel-line)}
+.slot{
+  width:84px;height:84px;border-radius:7px;background:var(--paper2);border:1px solid var(--panel-line);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;position:relative;
+  color:var(--ink-soft);transition:.12s
+}
+.slot.empty{background:repeating-linear-gradient(45deg,#f6f4ee,#f6f4ee 6px,#efece4 6px,#efece4 12px);color:var(--ink-faint)}
+.slot .sico{font-size:24px;line-height:1}
+.slot .sref{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--accent-d)}
+.slot .skill{
+  position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:1px solid var(--panel-line);
+  background:#fff;color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;line-height:18px;text-align:center;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);opacity:0;transition:.12s
+}
+.slot:hover .skill{opacity:1}
+.slot.smart{border-color:#c5b6dd}
+.slot.smart .sico{color:#6c4aa0}
+.plate-cap{font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-align:center}
+.plate-cap b{color:var(--ink)}
+.empty-stage{color:var(--ink-faint);font-family:var(--mono);font-size:12px;text-align:center;max-width:340px;line-height:1.6}
+
+/* placed list */
+.placed{padding:0}
+.placed-row{
+  display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--panel-line);
+  font-size:13px
+}
+.placed-row:last-child{border-bottom:0}
+.placed-row .q{font-family:var(--mono);font-weight:600;background:var(--ink);color:#fff;border-radius:4px;padding:2px 7px;font-size:11px}
+.placed-row .pr{font-family:var(--mono);font-size:11px;color:var(--accent-d);font-weight:600;flex:0 0 76px}
+.placed-row .pn{flex:1}
+.placed-row .rm{border:1px solid var(--panel-line);background:#fff;border-radius:5px;cursor:pointer;color:var(--ink-soft);font-size:12px;padding:3px 7px}
+.placed-row .rm:hover{border-color:var(--accent);color:var(--accent)}
+
+/* checklist */
+.check{padding:8px 12px 12px}
+.chk{
+  display:flex;gap:9px;align-items:flex-start;padding:9px 10px;border-radius:7px;margin-top:7px;
+  font-size:12.5px;border:1px solid;line-height:1.4
+}
+.chk .ci{font-size:15px;line-height:1.2;flex:0 0 auto;margin-top:1px}
+.chk .ctxt{flex:1}
+.chk .ctxt b{font-weight:700}
+.chk .ref{font-family:var(--mono);font-weight:600}
+.chk.warn{background:var(--warn-soft);border-color:#e3cf95;color:#7a5c08}
+.chk.info{background:#fff;border-color:var(--panel-line);color:var(--ink-soft)}
+.chk.ok{background:var(--ok-soft);border-color:#b3d2b5;color:#2c5a36}
+.chk.act{background:var(--accent-soft);border-color:#e6b69d;color:var(--accent-d)}
+.chk .cbtn{
+  border:1px solid currentColor;background:#fff;border-radius:5px;padding:4px 9px;cursor:pointer;
+  font-family:var(--ui);font-weight:600;font-size:11px;white-space:nowrap;color:inherit
+}
+.chk .cbtn:hover{background:currentColor;color:#fff !important}
+.chk .cbtn:hover *{color:#fff}
+
+/* builder action buttons */
+.bldactions{display:flex;gap:8px;flex-wrap:wrap;padding:12px;border-top:1px solid var(--panel-line);background:var(--paper2);border-radius:0 0 8px 8px}
+.btn{
+  border:1px solid var(--panel-line);background:#fff;border-radius:7px;padding:9px 14px;cursor:pointer;
+  font-family:var(--ui);font-weight:600;font-size:13px;color:var(--ink);transition:.12s;display:inline-flex;align-items:center;gap:7px
+}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-d);border-color:var(--accent-d)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn .k{font-family:var(--mono);font-size:15px}
+
+/* ===== SHOPPING LIST ===== */
+.cart-wrap{margin-top:16px}
+.cart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--panel-line)}
+.cart-head h2{font-family:var(--disp);text-transform:uppercase;font-size:15px;margin:0;font-weight:700}
+.cart-head .summ{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+.cart-body{display:grid;grid-template-columns:1fr 360px;gap:0}
+@media(max-width:860px){.cart-body{grid-template-columns:1fr}}
+.cart-table-wrap{padding:0;border-right:1px solid var(--panel-line);max-height:380px;overflow:auto}
+@media(max-width:860px){.cart-table-wrap{border-right:0;border-bottom:1px solid var(--panel-line)}}
+table.cart{width:100%;border-collapse:collapse;font-size:13px}
+table.cart th{
+  position:sticky;top:0;background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;letter-spacing:.5px;
+  text-transform:uppercase;text-align:left;padding:8px 12px;font-weight:600
+}
+table.cart th.c{text-align:center;width:54px}
+table.cart td{padding:8px 12px;border-bottom:1px solid var(--panel-line);vertical-align:middle}
+table.cart td.q{text-align:center;font-family:var(--mono);font-weight:600}
+table.cart td.r{font-family:var(--mono);color:var(--accent-d);font-weight:600;width:90px}
+table.cart tr:hover{background:var(--paper2)}
+table.cart .nm{color:var(--ink);font-size:12.5px}
+table.cart .fam{font-family:var(--mono);font-size:9px;color:var(--ink-faint);display:block;margin-top:1px}
+.cart-empty{padding:30px 16px;text-align:center;color:var(--ink-faint);font-family:var(--mono);font-size:12px}
+.txtside{padding:12px;display:flex;flex-direction:column;gap:8px}
+.txtside .tl{font-family:var(--mono);font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-faint);display:flex;justify-content:space-between;align-items:center}
+textarea#cartText{
+  width:100%;min-height:230px;resize:vertical;font-family:var(--mono);font-size:11.5px;line-height:1.55;
+  border:1px solid var(--panel-line);border-radius:7px;padding:10px;background:#fff;color:var(--ink);white-space:pre
+}
+textarea#cartText:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.tiny-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-soft);font-family:var(--mono)}
+.cart-actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px;border-top:1px solid var(--panel-line);background:var(--paper2);border-radius:0 0 8px 8px}
+
+/* footer note */
+.note{
+  margin-top:18px;font-size:11.5px;color:var(--ink-soft);line-height:1.6;background:var(--panel);
+  border:1px solid var(--panel-line);border-left:3px solid var(--teal);border-radius:6px;padding:12px 14px
+}
+.note b{color:var(--ink)}
+.note code{font-family:var(--mono);background:var(--paper2);padding:1px 5px;border-radius:3px;color:var(--accent-d)}
+
+/* toast */
+#toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+  background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;
+  box-shadow:0 10px 30px -8px rgba(0,0,0,.5);transition:.22s;z-index:99;font-family:var(--ui)
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast .k{color:var(--accent);font-family:var(--mono)}
+
+/* print */
+#printArea{display:none}
+@media print{
+  body *{visibility:hidden}
+  #printArea,#printArea *{visibility:visible}
+  #printArea{display:block;position:absolute;left:0;top:0;width:100%;padding:0;background:#fff}
+  #printArea pre{font-family:'IBM Plex Mono',monospace;font-size:12px;white-space:pre;color:#000}
+  @page{margin:18mm}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brandblock">
+      <h1>VALENA <b>LIFE</b> SZERELVÉNYTERVEZŐ</h1>
+      <div class="sub">Legrand kompatibilitási adatbázis &amp; építőkockás szerelvénysor-tervező</div>
+    </div>
+    <div class="headmeta">
+      <span class="tag">ADAT: HU Legrand katalógus 2025–2026</span><br>
+      cikkszám = gyártói referencia · ár nélkül<br>
+      <span id="modeReadout">MÓD: ALAP</span>
+    </div>
+  </header>
+
+  <!-- CONTROL BAR -->
+  <div class="controlbar">
+    <div class="ctrl">
+      <span class="lbl">Adatbázis mód</span>
+      <div class="seg acc" id="segMode">
+        <button data-mode="base" class="on">Alap · Valena Life</button>
+        <button data-mode="ext">Kiterjesztett · + családok</button>
+      </div>
+    </div>
+    <div class="ctrl">
+      <span class="lbl">Szerelésforma</span>
+      <div class="seg tl" id="segMount">
+        <button data-mount="flush" class="on">Süllyesztett</button>
+        <button data-mount="surface">Falon kívüli</button>
+      </div>
+    </div>
+    <div class="ctrl">
+      <span class="lbl">Sorolás iránya</span>
+      <div class="seg" id="segOrient">
+        <button data-orient="horiz" class="on">Vízszintes</button>
+        <button data-orient="vert">Függőleges</button>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="ctrl">
+      <span class="lbl">Keret színe</span>
+      <div class="colorpick" id="colorPick"></div>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="layout">
+
+    <!-- CATALOG -->
+    <section class="panel">
+      <div class="panel-h"><h2>Termékkatalógus</h2><span class="hnum" id="catCount">0</span></div>
+      <div class="search"><input id="searchBox" type="text" placeholder="Keresés: 101, dugalj, IP44, redőny, RJ45, cikkszám…"></div>
+      <div class="catscroll" id="catalog"></div>
+    </section>
+
+    <!-- BUILDER -->
+    <section>
+      <div class="panel builder-grid" style="padding:0;display:block">
+        <div class="panel-h"><h2>Tervezett szerelvénysor</h2><span class="hnum" id="modCount">0 modul</span></div>
+
+        <div class="stage" id="stage">
+          <span class="orient-note" id="orientNote">vízszintes</span>
+        </div>
+
+        <div class="placed" id="placedList"></div>
+
+        <div class="panel-h" style="border-top:1px solid var(--panel-line)"><h2 style="font-size:13px">Ellenőrzőlista &amp; javaslatok</h2><span class="hnum" id="chkCount">—</span></div>
+        <div class="check" id="checklist"></div>
+
+        <div class="bldactions">
+          <button class="btn primary" id="saveBtn" disabled><span class="k">▸</span> Sor mentése a listához</button>
+          <button class="btn ghost" id="newRowBtn"><span class="k">＋</span> Új sor / tábla ürítése</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- SHOPPING LIST -->
+  <section class="panel cart-wrap">
+    <div class="cart-head">
+      <h2>Bevásárlólista</h2>
+      <span class="summ" id="cartSumm">0 tétel · 0 db · 0 sor mentve</span>
+    </div>
+    <div class="cart-body">
+      <div class="cart-table-wrap" id="cartTableWrap"></div>
+      <div class="txtside">
+        <div class="tl">
+          <span>Szöveges export (Excel-be illeszthető)</span>
+          <label class="tiny-toggle"><input type="checkbox" id="incName" checked> megnevezés</label>
+        </div>
+        <textarea id="cartText" spellcheck="false" placeholder="A mentett tételek itt jelennek meg: balra darabszám, jobbra cikkszám (TAB-bal elválasztva)."></textarea>
+        <div class="tiny-toggle" style="opacity:.8">Oszlopok TAB-bal elválasztva — beilleszthető Excelbe / Google Sheetsbe.</div>
+      </div>
+    </div>
+    <div class="cart-actions">
+      <button class="btn" id="copyBtn"><span class="k">⧉</span> Másolás</button>
+      <button class="btn" id="printBtn"><span class="k">⎙</span> Nyomtatás</button>
+      <button class="btn ghost" id="clearListBtn"><span class="k">⌫</span> Lista törlése</button>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="resetAllBtn" style="border-color:#d9a;color:var(--accent-d)"><span class="k">↺</span> Minden alaphelyzetbe</button>
+    </div>
+  </section>
+
+  <div class="note" id="dataNote">
+    <b>Adatkezelés és pontosság.</b> A cikkszámok a magyar Legrand katalógus és hivatalos forgalmazói listák (2025–2026) alapján
+    ellenőrzött <b>gyártói referenciák</b>. A keret-cikkszámok rendszertani logikája: <code>754 + színkód + sorszám(1–5)</code>
+    (pl. fehér hármas = <code>754003</code>, alu hármas = <code>754133</code>). Ár szándékosan nincs a táblában, mert gyorsan változik —
+    a tervező mennyiségi/kompatibilitási segédeszköz; a végleges rendelést mindig vesd össze az aktuális Legrand katalógussal.
+    <br><b>Kiterjesztett mód:</b> a Valena Life és a Valena Allure <b>ugyanazt a Valena IN'MATIC mechanizmust</b> használja — a 752/753-as
+    mechanizmusok azonosak, csak a keret/burkolat tér el, ezért az Allure keretek közvetlen alternatívák. A Céliane / Niloé / Program Mosaic
+    önálló, párhuzamos rendszerek (nem cserélhető mechanizmus), a Program Mosaic 45×45 a DIN 49075 / 45×45 moduláris út kiindulópontja.
+    A más gyártók moduljainak DIN 49075 adapteres beillesztése későbbi bővítés.
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="printArea"><pre id="printPre"></pre></div>
+
+<script>
+/* =========================================================================
+   VALENA LIFE — ADATBÁZIS  (ellenőrzött gyártói cikkszámok, HU katalógus)
+   cat: kapcsolo | dugalj | adat | okos | keret | doboz | kiegeszito | din
+   ext:true  -> csak kiterjesztett módban jelenik meg
+   mod: hány modult (szerelvényhelyet) foglal a sorolókeretben
+   ========================================================================= */
+
+const COLORS = [
+  {code:'00', name:'Fehér',         hex:'#f3f3f0', ref:'754001'},
+  {code:'03', name:'Fehér-króm',    hex:'#e7ebee', ref:'754031'},
+  {code:'04', name:'Elefántcsont',  hex:'#ece2cb', ref:'754041'},
+  {code:'13', name:'Alumínium',     hex:'#aeb2b7', ref:'754131'},
+  {code:'14', name:'Gyöngyház',     hex:'#d6d2c8', ref:'754141'},
+  {code:'15', name:'Inox dekor',    hex:'#9ea3a8', ref:'754151'},
+  {code:'16', name:'Réz dekor',     hex:'#b4783f', ref:'754161'},
+  {code:'17', name:'Wenge dekor',   hex:'#44342a', ref:'754171'},
+  {code:'18', name:'Bambusz dekor', hex:'#c6a36e', ref:'754181'},
+];
+const frameRef = (code,gang)=> '754'+code+gang;            // gang 1..5
+
+const ICONS = {
+  kapcsolo:'⊟', kapcsolo2:'◫', valto:'⇄', kereszt:'✕', nyomo:'⊙', csillar:'⊞',
+  redony:'⇅', dimmer:'◐', kulcs:'⚿',
+  dugalj:'⏚', dugalj2:'⊟⊟', usb:'⎓', csap:'⊡', kabel:'≋',
+  rj45:'⌗', tv:'📺', vak:'▢',
+  okos:'❖', frame:'▭', box:'◳', led:'✦'
+};
+
+const DB = [
+  /* ---------- VALENA LIFE — KAPCSOLÓK ---------- */
+  {ref:'752101', name:'101 egypólusú kapcsoló, rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.kapcsolo, type:'switch'},
+  {ref:'752110', name:'101J egypólusú kapcsoló, beépített jelzőfénnyel', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.kapcsolo, type:'switch', jelzo:true},
+  {ref:'752151', name:'101 egypólusú kapcsoló, IP44, rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.kapcsolo, type:'switch', ip44:true},
+  {ref:'752102', name:'102 kétpólusú kapcsoló, csavaros', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.kapcsolo, type:'switch'},
+  {ref:'752164', name:'102 kétpólusú kapcsoló, IP44, csavaros', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.kapcsolo, type:'switch', ip44:true},
+  {ref:'752105', name:'105 csillárkapcsoló (kettős), rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.csillar, type:'switch'},
+  {ref:'752155', name:'105 csillárkapcsoló, IP44, rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.csillar, type:'switch', ip44:true},
+  {ref:'752106', name:'106 váltókapcsoló, rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.valto, type:'switch'},
+  {ref:'752156', name:'106 váltókapcsoló, IP44, rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.valto, type:'switch', ip44:true},
+  {ref:'752108', name:'106+6 kettős váltókapcsoló, rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.csillar, type:'switch'},
+  {ref:'752107', name:'107 keresztkapcsoló, csavaros', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.kereszt, type:'switch'},
+  {ref:'752111', name:'101N nyomókapcsoló (váltóérintkezős), rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.nyomo, type:'switch'},
+  {ref:'752118', name:'101N kettős nyomókapcsoló, rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.nyomo, type:'switch'},
+  {ref:'752171', name:'101N nyomókapcsoló, IP44, rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.nyomo, type:'switch', ip44:true},
+  {ref:'752125', name:'Kulcsos kapcsoló, kétállású (zárbetét nélkül)', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.kulcs, type:'switch', needsCylinder:true},
+  {ref:'752129', name:'Redőnykapcsoló, rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.redony, type:'switch'},
+  {ref:'752130', name:'Redőnynyomó, rugós', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.redony, type:'switch'},
+  {ref:'752162A', name:'Fényerőszabályzó (dimmer) 5–75 W LED + összes fényforrás', cat:'kapcsolo', fam:'Valena Life', mod:1, ico:ICONS.dimmer, type:'switch', dimmer:true},
+
+  /* ---------- VALENA LIFE — DUGALJAK ---------- */
+  {ref:'753121', name:'2P+F dugalj, rugós', cat:'dugalj', fam:'Valena Life', mod:1, ico:ICONS.dugalj, type:'socket'},
+  {ref:'753125', name:'2P+F dugalj, csavaros', cat:'dugalj', fam:'Valena Life', mod:1, ico:ICONS.dugalj, type:'socket'},
+  {ref:'753120', name:'2P+F dugalj gyermekvédelemmel, rugós', cat:'dugalj', fam:'Valena Life', mod:1, ico:ICONS.dugalj, type:'socket', gyv:true},
+  {ref:'753124', name:'2P+F dugalj gyermekvédelemmel, csavaros', cat:'dugalj', fam:'Valena Life', mod:1, ico:ICONS.dugalj, type:'socket', gyv:true},
+  {ref:'753119', name:'2P+F csapfedeles dugalj, IP44, gyermekvédelemmel, rugós', cat:'dugalj', fam:'Valena Life', mod:1, ico:ICONS.csap, type:'socket', ip44:true, gyv:true},
+  {ref:'753127', name:'2×2P+F kettős (dupla) dugalj, rugós', cat:'dugalj', fam:'Valena Life', mod:1, ico:ICONS.dugalj, type:'socket', special:'double'},
+  {ref:'753112', name:'USB dupla töltőaljzat, beépített tápegységgel', cat:'dugalj', fam:'Valena Life', mod:1, ico:ICONS.usb, type:'socket'},
+  {ref:'753134', name:'Kábelkivezető (sorkapocs nélkül)', cat:'dugalj', fam:'Valena Life', mod:1, ico:ICONS.kabel, type:'other'},
+
+  /* ---------- VALENA LIFE — ADAT / MULTIMÉDIA ---------- */
+  {ref:'753140', name:'RJ45 Cat5 UTP aljzat', cat:'adat', fam:'Valena Life', mod:1, ico:ICONS.rj45, type:'data'},
+  {ref:'753154', name:'2×RJ45 Cat5 FTP aljzat', cat:'adat', fam:'Valena Life', mod:1, ico:ICONS.rj45, type:'data'},
+  {ref:'753142', name:'RJ45 Cat6 UTP aljzat', cat:'adat', fam:'Valena Life', mod:1, ico:ICONS.rj45, type:'data'},
+  {ref:'753143', name:'2×RJ45 Cat6 UTP dupla aljzat', cat:'adat', fam:'Valena Life', mod:1, ico:ICONS.rj45, type:'data'},
+  {ref:'753160', name:'TV aljzat, végzáró 10 dB', cat:'adat', fam:'Valena Life', mod:1, ico:ICONS.tv, type:'data'},
+
+  /* ---------- VALENA LIFE — OKOS (Netatmo) — alap család része ---------- */
+  {ref:'752196', name:'Netatmo okos kezdőcsomag (gateway + okos dugalj)', cat:'okos', fam:'Valena Life Netatmo', mod:1, ico:ICONS.okos, type:'socket', smart:true, gateway:true},
+  {ref:'752152', name:'Netatmo okos 106 kapcsoló + vezeték nélküli kapcsoló (párosított szett)', cat:'okos', fam:'Valena Life Netatmo', mod:1, ico:ICONS.okos, type:'switch', smart:true, needsGateway:true},
+  {ref:'752150', name:'Netatmo okos mikromodul 106 + vezeték nélküli kapcsoló (szett)', cat:'okos', fam:'Valena Life Netatmo', mod:1, ico:ICONS.okos, type:'switch', smart:true, needsGateway:true},
+  {ref:'752185', name:'Netatmo vezeték nélküli 101 kapcsoló (ragasztható, elemes)', cat:'okos', fam:'Valena Life Netatmo', mod:1, ico:ICONS.okos, type:'switch', smart:true, wireless:true, includesFrame:true},
+  {ref:'752191', name:'Netatmo vezeték nélküli redőnyvezérlő kiegészítő kapcsoló', cat:'okos', fam:'Valena Life Netatmo', mod:1, ico:ICONS.okos, type:'switch', smart:true, wireless:true, includesFrame:true, needsGateway:true},
+
+  /* ---------- VALENA LIFE — KIEGÉSZÍTŐK ---------- */
+  {ref:'755180', name:'Vakfedél', cat:'kiegeszito', fam:'Valena Life', mod:1, ico:ICONS.vak, type:'blank'},
+  {ref:'069795', name:'Zárbetét kulcsos kapcsolóhoz (Plexo55/Céliane/Mosaic/Valena)', cat:'kiegeszito', fam:'Több család', mod:0, ico:ICONS.kulcs, type:'acc'},
+  {ref:'067664', name:'Vezetékes LED-lámpa 2P+F aljzat ellenőrzőfényéhez', cat:'kiegeszito', fam:'Több család', mod:0, ico:ICONS.led, type:'acc'},
+  {ref:'665091', name:'Vezetékes LED-lámpa kapcsoló jelző-/ellenőrzőfényéhez', cat:'kiegeszito', fam:'Több család', mod:0, ico:ICONS.led, type:'acc'},
+
+  /* ====================  KITERJESZTETT MÓD  ==================== */
+
+  /* Valena Allure — AZONOS mechanizmus, eltérő keret (közvetlen alternatíva) */
+  {ref:'754301', name:'Valena Allure egyes keret, fehér (műanyag) — Life mechanizmusra', cat:'keret', fam:'Valena Allure', mod:0, ico:ICONS.frame, type:'frameAlt', allureGang:1, ext:true},
+  {ref:'755541', name:'Valena Allure egyes keret, fehérüveg — Life mechanizmusra', cat:'keret', fam:'Valena Allure', mod:0, ico:ICONS.frame, type:'frameAlt', allureGang:1, ext:true},
+
+  /* Program Mosaic — párhuzamos 45×45 DIN moduláris rendszer */
+  {ref:'277802L', name:'Program Mosaic 1×2 modulos keret, fehér (45×45 rendszer)', cat:'din', fam:'Program Mosaic', mod:0, ico:ICONS.frame, type:'mosaic', ext:true},
+  {ref:'080011',  name:'Program Mosaic rögzítőkeret, 2 modul (süllyesztett)', cat:'din', fam:'Program Mosaic', mod:0, ico:ICONS.box, type:'mosaic', ext:true},
+  {ref:'77213',   name:'Program Mosaic 2P+F aljzat, 2 modul, csavaros (45×45)', cat:'din', fam:'Program Mosaic', mod:0, ico:ICONS.dugalj, type:'mosaic', ext:true},
+
+  /* Alternatív családok — információs jelölők (nem cserélhető mechanizmus) */
+  {ref:'CÉLIANE', name:'Céliane — önálló prémium család (kör+szögletes), saját mechanizmus', cat:'kiegeszito', fam:'Céliane', mod:0, ico:'◎', type:'altfam', ext:true, info:true},
+  {ref:'NILOÉ',   name:'Niloé / Niloé Step — önálló belépő-közép család, saját mechanizmus', cat:'kiegeszito', fam:'Niloé', mod:0, ico:'◻', type:'altfam', ext:true, info:true},
+];
+
+/* kategória-sorrend és címkék */
+const CATS = [
+  {key:'kapcsolo',   label:'Kapcsolók / nyomók'},
+  {key:'dugalj',     label:'Dugaljak / aljzatok'},
+  {key:'adat',       label:'Adat / multimédia'},
+  {key:'okos',       label:'Okos — Netatmo (Valena Life)'},
+  {key:'kiegeszito', label:'Kiegészítők'},
+  {key:'keret',      label:'Allure keretek (kit.)', extOnly:true},
+  {key:'din',        label:'DIN 45×45 — Program Mosaic (kit.)', extOnly:true},
+];
+
+/* =================== ÁLLAPOT =================== */
+let state = {
+  mode:'base', mount:'flush', orient:'horiz', color:'00',
+  row:[],        // [{ref,...product, uid}]
+  cart:[],       // [{ref,name,fam,qty}]
+  savedRows:0,
+};
+let uidc = 1;
+
+/* =================== SEGÉD =================== */
+const $ = s=>document.querySelector(s);
+const prod = ref=>DB.find(p=>p.ref===ref);
+function toast(html){const t=$('#toast');t.innerHTML=html;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
+
+function rowModules(){return state.row.reduce((s,p)=>s+(p.mod||0),0);}
+function colorObj(){return COLORS.find(c=>c.code===state.color);}
+
+/* =================== SZÍNVÁLASZTÓ =================== */
+function buildColors(){
+  const wrap=$('#colorPick');wrap.innerHTML='';
+  COLORS.forEach(c=>{
+    const s=document.createElement('div');
+    s.className='swatch'+(c.code===state.color?' on':'');
+    s.style.background=c.hex;s.title=c.name+' · ref. '+c.ref;
+    s.onclick=()=>{state.color=c.code;buildColors();renderStage();renderChecklist();};
+    wrap.appendChild(s);
+  });
+}
+
+/* =================== KATALÓGUS =================== */
+function buildCatalog(){
+  const q=$('#searchBox').value.trim().toLowerCase();
+  const host=$('#catalog');host.innerHTML='';let count=0;
+  CATS.forEach(cat=>{
+    if(cat.extOnly && state.mode!=='base' ){}            // shown only in ext
+    let items=DB.filter(p=>p.cat===cat.key);
+    if(state.mode==='base') items=items.filter(p=>!p.ext);
+    if(q) items=items.filter(p=>(p.name+' '+p.ref+' '+p.fam).toLowerCase().includes(q));
+    if(cat.extOnly && state.mode==='base') return;
+    if(!items.length) return;
+    const g=document.createElement('div');
+    g.className='catgroup'+(cat.extOnly?' ext':'');
+    g.innerHTML='<div class="gh">'+cat.label+'</div>';
+    items.forEach(p=>{
+      count++;
+      const el=document.createElement('div');el.className='item';
+      let badges='';
+      if(p.ip44) badges+='<span class="b ip">IP44</span>';
+      if(p.gyv) badges+='<span class="b gyv">GYV</span>';
+      if(p.jelzo) badges+='<span class="b jl">JELZŐ</span>';
+      if(p.smart) badges+='<span class="b sm">OKOS</span>';
+      if(p.special||p.type==='frameAlt'||p.type==='mosaic') badges+='<span class="b sp">'+(p.special==='double'?'SPECIÁLIS KERET':(p.type==='frameAlt'?'AZONOS MECH.':'45×45'))+'</span>';
+      const placeable = (p.mod>0) && !p.info && p.type!=='frameAlt' && p.type!=='mosaic';
+      el.innerHTML=
+        '<div class="ico">'+p.ico+'</div>'+
+        '<div class="meta"><div class="nm">'+p.name+'</div>'+
+        '<div class="rf">'+p.ref+' · '+p.fam+'</div>'+
+        (badges?'<div class="badges">'+badges+'</div>':'')+'</div>'+
+        (placeable?'<button class="add" title="Hozzáadás a sorhoz">＋</button>':'<button class="add" title="Hozzáadás a listához" style="font-size:13px">↘</button>');
+      el.querySelector('.add').onclick=(e)=>{e.stopPropagation();
+        if(placeable) addToRow(p.ref); else addExtra(p.ref);
+      };
+      el.onclick=()=>{ if(placeable) addToRow(p.ref); else addExtra(p.ref); };
+      g.appendChild(el);
+    });
+    host.appendChild(g);
+  });
+  $('#catCount').textContent=count;
+}
+
+/* =================== SOR ÉPÍTÉSE =================== */
+function addToRow(ref){
+  const p=prod(ref);if(!p)return;
+  if(rowModules()>=5 && p.mod>0){ toast('A sorolókeret <span class="k">max. 5 modul</span> — kezdj új sort.'); return;}
+  state.row.push(Object.assign({},p,{uid:uidc++}));
+  renderStage();renderPlaced();renderChecklist();
+  $('#saveBtn').disabled = state.row.length===0;
+}
+function removeFromRow(uid){
+  state.row=state.row.filter(p=>p.uid!==uid);
+  renderStage();renderPlaced();renderChecklist();
+  $('#saveBtn').disabled = state.row.length===0;
+}
+function clearRow(){
+  state.row=[];renderStage();renderPlaced();renderChecklist();
+  $('#saveBtn').disabled=true;
+}
+
+/* extra (modul nélküli) tétel közvetlenül a listához */
+function addExtra(ref){
+  const p=prod(ref);if(!p)return;
+  if(p.info){ toast(p.fam+': önálló, párhuzamos család — nem cserélhető Valena mechanizmus.'); return; }
+  addToCart(p.ref,p.name,p.fam,1);
+  toast('Listához adva: <span class="k">'+p.ref+'</span>');
+}
+
+/* =================== STAGE / ELŐNÉZET =================== */
+function renderStage(){
+  const stage=$('#stage');
+  const note=$('#orientNote');note.textContent = state.orient==='vert'?'függőleges':'vízszintes';
+  stage.querySelectorAll('.plate-shell,.empty-stage').forEach(n=>n.remove());
+  const mods=rowModules();
+  $('#modCount').textContent = mods+' modul';
+
+  if(state.row.length===0){
+    const e=document.createElement('div');e.className='empty-stage';
+    e.innerHTML='Válassz a katalógusból egy <b>kapcsolót</b>, <b>dugaljat</b> vagy más szerelvényt.<br>'+
+      'Minden hozzáadott elem egy modulhelyet foglal — a rendszer ehhez javasolja a megfelelő keretet.';
+    stage.appendChild(e);return;
+  }
+
+  const shell=document.createElement('div');shell.className='plate-shell';
+  const hasDouble = state.row.some(p=>p.special==='double');
+  const surface = state.mount==='surface';
+  const c=colorObj();
+
+  // plate
+  const plate=document.createElement('div');
+  plate.className='plate'+(state.orient==='vert'?' vert':'');
+  plate.style.background = surface ? '#fff' : c.hex;
+  plate.style.boxShadow = surface ? '0 2px 4px rgba(0,0,0,.1),0 18px 40px -22px rgba(0,0,0,.5)' : '0 2px 4px rgba(0,0,0,.08),0 18px 40px -22px rgba(0,0,0,.5)';
+  // dark frames need light slot border handling
+  state.row.forEach(p=>{
+    const slot=document.createElement('div');
+    slot.className='slot'+(p.smart?' smart':'');
+    slot.innerHTML='<div class="sico">'+p.ico+'</div><div class="sref">'+p.ref+'</div>'+
+      '<button class="skill" title="Eltávolítás">×</button>';
+    slot.querySelector('.skill').onclick=()=>removeFromRow(p.uid);
+    plate.appendChild(slot);
+  });
+  shell.appendChild(plate);
+
+  // caption
+  const cap=document.createElement('div');cap.className='plate-cap';
+  if(hasDouble && state.row.length===1){
+    cap.innerHTML='Speciális <b>dupla dugalj burkolat</b> szükséges → <b>754221</b> (fehér) / 754222 (alu)';
+  } else if(hasDouble){
+    cap.innerHTML='⚠ A <b>753127 dupla dugalj</b> külön burkolatot igényel, nem sorolható közös keretbe — kezeld önálló sorként.';
+  } else if(surface){
+    const sb=surfaceBox(mods);
+    cap.innerHTML='Falon kívüli: <b>'+sb.label+'</b>'+(sb.ref?' → <b>'+sb.ref+'</b>':'');
+  } else {
+    cap.innerHTML='Javasolt keret: <b>'+mods+'-es '+c.name+'</b> → <b>'+frameRef(state.color,mods)+'</b>';
+  }
+  shell.appendChild(cap);
+  stage.appendChild(shell);
+}
+
+function surfaceBox(mods){
+  // megerősített: 754191 egyes, 754192 kettes (fehér, IP20)
+  if(mods<=1) return {label:'egyes kiemelődoboz (fehér, IP20)', ref:'754191'};
+  if(mods===2) return {label:'kettes kiemelődoboz (fehér, IP20)', ref:'754192'};
+  return {label:(mods)+' modulos kiemelődoboz (nagyobb méret is létezik a katalógusban)', ref:''};
+}
+
+/* =================== PLACED LIST =================== */
+function renderPlaced(){
+  const host=$('#placedList');host.innerHTML='';
+  if(!state.row.length) return;
+  // group identical
+  const g={};const order=[];
+  state.row.forEach(p=>{ if(!g[p.ref]){g[p.ref]={p,uids:[]};order.push(p.ref);} g[p.ref].uids.push(p.uid); });
+  order.forEach(ref=>{
+    const {p,uids}=g[ref];
+    const row=document.createElement('div');row.className='placed-row';
+    row.innerHTML='<span class="q">'+uids.length+'×</span>'+
+      '<span class="pr">'+p.ref+'</span>'+
+      '<span class="pn">'+p.name+'<span style="color:var(--ink-faint);font-family:var(--mono);font-size:10px"> · '+p.fam+'</span></span>'+
+      '<button class="rm">törlés</button>';
+    row.querySelector('.rm').onclick=()=>removeFromRow(uids[uids.length-1]);
+    host.appendChild(row);
+  });
+}
+
+/* =================== ELLENŐRZŐLISTA / SZABÁLYOK =================== */
+function renderChecklist(){
+  const host=$('#checklist');host.innerHTML='';
+  const items=[];                 // {kind,icon,html,action?}
+  const mods=rowModules();
+  const c=colorObj();
+  const hasDouble=state.row.some(p=>p.special==='double');
+  const onlyDouble = hasDouble && state.row.length===1;
+
+  if(state.row.length===0){
+    items.push({kind:'info',icon:'›',html:'Üres sor. Adj hozzá szerelvényeket a katalógusból.'});
+    $('#chkCount').textContent='—';
+    items.forEach(renderChk);return;
+  }
+
+  /* 1) KERET / DOBOZ javaslat */
+  if(onlyDouble){
+    items.push({kind:'act',icon:'▭',
+      html:'A <b>dupla dugaljhoz</b> speciális burkolat kell: <span class="ref">754221</span> (fehér) vagy 754222 (alu).',
+      btn:'754221 hozzáadása', act:()=>{addToCart('754221','Valena Life dupla dugalj burkolat, fehér','Valena Life',1);saved('754221');}});
+  } else if(hasDouble){
+    items.push({kind:'warn',icon:'⚠',
+      html:'A <b>753127 dupla dugalj</b> nem sorolható közös keretbe más szerelvénnyel — tervezd külön sorként.'});
+  } else if(state.mount==='surface'){
+    const sb=surfaceBox(mods);
+    if(sb.ref) items.push({kind:'act',icon:'◳',
+      html:'Falon kívüli szerelés → <b>'+sb.label+'</b>: <span class="ref">'+sb.ref+'</span>.',
+      btn:sb.ref+' hozzáadása', act:()=>{addToCart(sb.ref,'Valena Life '+sb.label,'Valena Life',1);saved(sb.ref);}});
+    else items.push({kind:'warn',icon:'◳',html:'Falon kívüli, '+mods+' modul: nagyobb kiemelődoboz a katalógusból választandó.'});
+  } else {
+    const fref=frameRef(state.color,mods);
+    items.push({kind:'act',icon:'▭',
+      html:'Süllyesztett: <b>'+mods+'-es '+c.name+' sorolókeret</b> → <span class="ref">'+fref+'</span>.',
+      btn:fref+' hozzáadása', act:()=>{addToCart(fref,'Valena Life '+mods+'-es keret, '+c.name,'Valena Life',1);saved(fref);}});
+  }
+  if(mods>5) items.push({kind:'warn',icon:'⚠',html:'Több mint 5 modul — egy sorolókeret max. 5 modulos. Bontsd több sorra.'});
+
+  /* 2) KULCSOS KAPCSOLÓ → zárbetét */
+  if(state.row.some(p=>p.needsCylinder)){
+    items.push({kind:'act',icon:'⚿',
+      html:'A <b>kulcsos kapcsoló</b> zárbetét nélkül érkezik — szükséges: <span class="ref">069795</span>.',
+      btn:'069795 hozzáadása', act:()=>{addToCart('069795','Zárbetét kulcsos kapcsolóhoz','Több család',1);saved('069795');}});
+  }
+
+  /* 3) NETATMO gateway szükséglet */
+  const smartNeeds = state.row.some(p=>p.needsGateway);
+  const hasGateway = state.row.some(p=>p.gateway) || state.cart.some(x=>x.ref==='752196');
+  if(smartNeeds && !hasGateway){
+    items.push({kind:'act',icon:'❖',
+      html:'Az okos modulok működéséhez <b>Netatmo kezdőcsomag</b> kell: <span class="ref">752196</span> (gateway).',
+      btn:'752196 hozzáadása', act:()=>{addToCart('752196','Netatmo okos kezdőcsomag (gateway)','Valena Life Netatmo',1);saved('752196');}});
+  }
+  /* vezeték nélküli okos elem */
+  if(state.row.some(p=>p.wireless)){
+    items.push({kind:'info',icon:'✦',html:'Vezeték nélküli okos elem: <b>ragasztható</b>, saját kerettel érkezik — nem igényel szerelvénydobozt, így a modulszámba a keret-javaslatnál ne számítsd bele kötelezően.'});
+  }
+
+  /* 4) JELZŐFÉNY opció — kapcsolóhoz / aljzathoz */
+  const switchesNoJelzo = state.row.some(p=>p.type==='switch' && !p.jelzo && !p.smart && !p.dimmer);
+  if(switchesNoJelzo){
+    items.push({kind:'act',icon:'✦',
+      html:'A kapcsoló <b>jelzőfényessé tehető</b> LED-lámpával: <span class="ref">665091</span> (vagy gyári jelzős: 752110).',
+      btn:'665091 hozzáadása', act:()=>{addToCart('665091','Vezetékes LED-lámpa kapcsoló jelzőfényéhez','Több család',1);saved('665091');}});
+  }
+  const socketsPlain = state.row.some(p=>p.type==='socket' && !p.smart && p.special!=='double');
+  if(socketsPlain){
+    items.push({kind:'info',icon:'✦',
+      html:'Minden 2P+F aljzat <b>ellenőrzőfényessé tehető</b> a <span class="ref">067664</span> LED-lámpával (opció).',
+      btn:'067664 hozzáadása', act:()=>{addToCart('067664','Vezetékes LED-lámpa aljzat ellenőrzőfényéhez','Több család',1);saved('067664');}});
+  }
+
+  /* 5) DIMMER megjegyzés */
+  if(state.row.some(p=>p.dimmer)){
+    items.push({kind:'info',icon:'◐',html:'Fényerőszabályzó: ügyelj a min./max. terhelésre (5–75 W LED). Több fényforráshoz 3 vezetékes bekötés is lehet.'});
+  }
+
+  /* 6) IP44 keverés / sorolás */
+  const ip=state.row.filter(p=>p.ip44).length;
+  if(ip>0 && state.mount==='flush'){
+    items.push({kind:'info',icon:'⛨',html:'IP44 szerelvény hagyományos (nem IP44) kerettel sorolható, de a sorolás csak <b>vízszintesen</b> javasolt; teljes IP44 védettséghez IP44 keret/tömítés kell. Max. 5 IP-szerelvény sorolható.'});
+  }
+
+  /* 7) ÜRES POZÍCIÓ — vakfedél */
+  if(!hasDouble && state.mount==='flush'){
+    // ha a felhasználó nagyobb keretet szánna, csak emlékeztető
+    items.push({kind:'info',icon:'▢',html:'Ha a sorolókeretben üres modulhely marad, tedd be vakfedéllel: <span class="ref">755180</span>.'});
+  }
+
+  /* 8) KITERJESZTETT — Allure alternatíva */
+  if(state.mode==='ext' && !hasDouble && state.mount==='flush'){
+    items.push({kind:'info',icon:'◎',html:'<b>Kiterjesztett:</b> ugyanezekre a mechanizmusokra <b>Valena Allure</b> keret/burkolat is tehető (azonos IN\'MATIC mechanizmus) — pl. fehér <span class="ref">754301</span>, fehérüveg <span class="ref">755541</span>. Üveg/fém/fa/bőr/márvány kivitel.'});
+  }
+
+  /* 9) Készenléti visszajelzés */
+  const haveFrameForRow = state.cart.some(x=>x.ref===frameRef(state.color,mods)) ||
+                          (state.mount==='surface' && state.cart.some(x=>x.ref===surfaceBox(mods).ref)) ||
+                          (onlyDouble && state.cart.some(x=>x.ref==='754221'));
+  if(state.row.length>0 && haveFrameForRow && !(smartNeeds && !hasGateway)){
+    items.push({kind:'ok',icon:'✓',html:'A sor készen áll mentésre. A „Sor mentése" gombbal a tételek a bevásárlólistába kerülnek.'});
+  }
+
+  $('#chkCount').textContent = items.filter(i=>i.kind==='warn'||i.kind==='act').length+' teendő';
+  items.forEach(renderChk);
+
+  function renderChk(it){
+    const d=document.createElement('div');d.className='chk '+it.kind;
+    d.innerHTML='<span class="ci">'+it.icon+'</span><span class="ctxt">'+it.html+'</span>'+
+      (it.btn?'<button class="cbtn">'+it.btn+'</button>':'');
+    if(it.btn) d.querySelector('.cbtn').onclick=it.act;
+    host.appendChild(d);
+  }
+}
+function saved(ref){ toast('Listához adva: <span class="k">'+ref+'</span>'); renderChecklist(); renderCart(); }
+
+/* =================== BEVÁSÁRLÓLISTA =================== */
+function addToCart(ref,name,fam,qty){
+  const ex=state.cart.find(x=>x.ref===ref);
+  if(ex) ex.qty+=qty; else state.cart.push({ref,name,fam,qty});
+  renderCart();
+}
+function saveRow(){
+  if(!state.row.length){toast('Üres sor.');return;}
+  // group row items
+  const g={};
+  state.row.forEach(p=>{ g[p.ref]=g[p.ref]||{p,n:0}; g[p.ref].n++; });
+  Object.values(g).forEach(({p,n})=>addToCart(p.ref,p.name,p.fam,n));
+  state.savedRows++;
+  toast('Sor mentve (<span class="k">'+state.row.length+' szerelvény</span>) — folytathatod új sorral.');
+  clearRow();
+  renderCart();
+}
+function renderCart(){
+  const wrap=$('#cartTableWrap');
+  const totDb=state.cart.reduce((s,x)=>s+x.qty,0);
+  $('#cartSumm').textContent = state.cart.length+' tétel · '+totDb+' db · '+state.savedRows+' sor mentve';
+  if(!state.cart.length){
+    wrap.innerHTML='<div class="cart-empty">A bevásárlólista üres.<br>Építsd fel a szerelvénysort, majd kattints a „Sor mentése a listához" gombra.</div>';
+    $('#cartText').value='';return;
+  }
+  let html='<table class="cart"><thead><tr><th class="c">DB</th><th>Cikkszám / megnevezés</th></tr></thead><tbody>';
+  state.cart.forEach((x,i)=>{
+    html+='<tr><td class="q">'+x.qty+'</td><td><span class="r" style="display:inline">'+x.ref+'</span> '+
+      '<span class="nm">'+x.name+'</span><span class="fam">'+x.fam+'</span></td></tr>';
+  });
+  html+='</tbody></table>';
+  wrap.innerHTML=html;
+  renderCartText();
+}
+function renderCartText(){
+  const inc=$('#incName').checked;
+  let lines=[];
+  // fejléc
+  lines.push(inc ? 'DB\tCIKKSZÁM\tMEGNEVEZÉS' : 'DB\tCIKKSZÁM');
+  state.cart.forEach(x=>{
+    lines.push(inc ? (x.qty+'\t'+x.ref+'\t'+x.name) : (x.qty+'\t'+x.ref));
+  });
+  $('#cartText').value = lines.join('\n');
+}
+
+/* =================== GOMBOK / VEZÉRLÉS =================== */
+function bindSeg(id,key,after){
+  $(id).querySelectorAll('button').forEach(b=>{
+    b.onclick=()=>{
+      $(id).querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      state[key]=b.dataset[Object.keys(b.dataset)[0]];
+      after&&after();
+    };
+  });
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  buildColors();
+  buildCatalog();
+  renderStage();renderChecklist();renderCart();
+
+  bindSeg('#segMode','mode',()=>{
+    $('#modeReadout').textContent = 'MÓD: '+(state.mode==='base'?'ALAP':'KITERJESZTETT');
+    buildCatalog();renderChecklist();
+  });
+  bindSeg('#segMount','mount',()=>{renderStage();renderChecklist();});
+  bindSeg('#segOrient','orient',()=>{renderStage();});
+
+  $('#searchBox').addEventListener('input',buildCatalog);
+
+  $('#saveBtn').onclick=saveRow;
+  $('#newRowBtn').onclick=()=>{clearRow();toast('Tábla ürítve — kezdődhet az új sor.');};
+
+  $('#incName').onchange=renderCartText;
+  $('#copyBtn').onclick=()=>{
+    const t=$('#cartText');if(!t.value){toast('A lista üres.');return;}
+    t.select();
+    navigator.clipboard?.writeText(t.value).then(()=>toast('Szöveg a vágólapra másolva.'),
+      ()=>{document.execCommand('copy');toast('Másolva.');});
+  };
+  $('#printBtn').onclick=()=>{
+    if(!state.cart.length){toast('A lista üres.');return;}
+    // szépen igazított 2 oszlopos szöveg nyomtatáshoz
+    const inc=$('#incName').checked;
+    let out='VALENA LIFE — BEVÁSÁRLÓLISTA\n';
+    out+=new Date().toLocaleString('hu-HU')+'\n';
+    out+='Mód: '+(state.mode==='base'?'Alap (Valena Life)':'Kiterjesztett')+'  ·  Mentett sorok: '+state.savedRows+'\n';
+    out+='─'.repeat(48)+'\n';
+    out+= (inc?'DB   CIKKSZÁM     MEGNEVEZÉS':'DB   CIKKSZÁM')+'\n';
+    out+='─'.repeat(48)+'\n';
+    state.cart.forEach(x=>{
+      const q=String(x.qty).padEnd(5);
+      const r=String(x.ref).padEnd(13);
+      out+= inc ? (q+r+x.name+'\n') : (q+r.trimEnd()+'\n');
+    });
+    out+='─'.repeat(48)+'\n';
+    out+='Összesen: '+state.cart.length+' tétel · '+state.cart.reduce((s,x)=>s+x.qty,0)+' db\n';
+    $('#printPre').textContent=out;
+    window.print();
+  };
+  $('#clearListBtn').onclick=()=>{
+    if(!state.cart.length){toast('A lista már üres.');return;}
+    if(confirm('Biztosan törlöd a teljes bevásárlólistát? (A tervezett sor megmarad.)')){
+      state.cart=[];state.savedRows=0;renderCart();renderChecklist();toast('Bevásárlólista törölve.');
+    }
+  };
+  $('#resetAllBtn').onclick=()=>{
+    if(confirm('Minden alaphelyzetbe? Törlődik a tervezett sor ÉS a bevásárlólista.')){
+      state.row=[];state.cart=[];state.savedRows=0;state.color='00';
+      clearRow();buildColors();renderCart();renderStage();renderChecklist();
+      toast('Tervező alaphelyzetbe állítva.');
+    }
+  };
+});
+</script>
+</body>
+</html>

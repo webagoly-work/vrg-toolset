@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#14110d">
+<title>Varler — Telefon</title>
+<!--
+  mobile/phone-sender.html — Varler Planner 2.0-b
+
+  Served by tools/phone-relay-server.js over HTTP. NOTHING IS INSTALLED ON THE
+  PHONE: the page is downloaded fresh on every load, so changing this file and
+  reloading is the whole deployment process.
+
+  ── WHAT CHANGED FROM 1.0 ────────────────────────────────────────────────
+  1.0 sent bare messages: {type:'undo'}, {type:'tool',index,key}. This page
+  speaks the 2.0 envelope from src/07a-link.js — every message carries
+  {v,from,seq,t,type,payload} and announces its capabilities in `hello`.
+
+  The tool pad is NOT hardcoded. The planner's hello carries a `tools` table
+  built from its own TOOLKEYS/HINTS, so this page renders whatever that build
+  actually has. Add a tool to the planner and it appears here on reconnect,
+  with no edit to this file.
+
+  ── AFTER THIS PAGE IS VERIFIED ──────────────────────────────────────────
+  The legacy control bridge in src/07b-phone-camera.js (three L.on('undo'/
+  'redo'/'tool') subscriptions) exists only to keep the 1.0 page working.
+  Once this page is confirmed on real hardware, that block can be deleted.
+  Not before — deleting it early silently kills the old page's buttons.
+
+  ── GYRO ─────────────────────────────────────────────────────────────────
+  DeviceOrientationEvent needs a secure context. Over plain http:// it will
+  not fire, and no amount of page-side code changes that. The panel says so
+  plainly rather than sitting at zero and looking broken.
+-->
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;background:#14110d;color:#f2e9dc;
+    font:15px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;
+    user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+  #app{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+
+  header{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#1f1a14;
+    border-bottom:1px solid #3a2f22;flex:none}
+  #dot{width:10px;height:10px;border-radius:50%;background:#8a6a3a;flex:none;transition:background .2s}
+  #dot.up{background:#6fae63}#dot.mid{background:#e8a33d}
+  #who{font:11px ui-monospace,"SF Mono",monospace;color:#9d8f78;flex:1;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  header button{background:#2a2219;color:#f2e9dc;border:1px solid #3a2f22;border-radius:6px;
+    padding:5px 9px;font-size:13px}
+
+  #state{display:flex;gap:6px;flex-wrap:wrap;padding:6px 10px;background:#191510;
+    border-bottom:1px solid #2a2219;font:11px ui-monospace,monospace;color:#c9bda8;flex:none;min-height:28px}
+  #state b{color:#e8a33d;font-weight:600}
+
+  #tools{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:8px 10px;flex:none}
+  #tools button{background:#241d15;color:#e6dcc9;border:1px solid #3a2f22;border-radius:8px;
+    padding:11px 2px;font-size:12px;min-height:52px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;line-height:1.1}
+  #tools button .k{font:10px ui-monospace,monospace;color:#8a7a5c}
+  #tools button.on{background:#e8a33d;color:#14110d;border-color:#c8862b;font-weight:700}
+  #tools button.on .k{color:#5c4413}
+
+  #pad{flex:1;margin:0 10px 8px;border:1px dashed #3a2f22;border-radius:10px;
+    background:#191510;position:relative;touch-action:none;min-height:90px;
+    display:flex;align-items:center;justify-content:center}
+  #padHint{color:#5f5544;font-size:12px;text-align:center;padding:0 18px;pointer-events:none}
+
+  #bar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 10px 10px;flex:none}
+  #bar button{background:#2a2219;color:#f2e9dc;border:1px solid #3a2f22;border-radius:8px;
+    padding:13px 0;font-size:14px}
+  #bar button:active{background:#e8a33d;color:#14110d}
+  #bar button.on{background:#6fae63;color:#14110d;border-color:#4d8a44}
+
+  #note{padding:0 10px 8px;font-size:11px;color:#9d8f78;flex:none;min-height:16px}
+  #note.warn{color:#e8a33d}
+
+  dialog{background:#1f1a14;color:#f2e9dc;border:1px solid #3a2f22;border-radius:10px;
+    padding:14px;max-width:88vw}
+  dialog input{background:#14110d;color:#f2e9dc;border:1px solid #3a2f22;border-radius:6px;
+    padding:8px;font:14px ui-monospace,monospace;width:100%}
+  dialog .row{display:flex;gap:6px;margin-top:10px}
+  dialog button{flex:1;background:#2a2219;color:#f2e9dc;border:1px solid #3a2f22;
+    border-radius:6px;padding:9px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span id="dot"></span>
+    <span id="who">csatlakozás…</span>
+    <button id="bKeys">⌨</button>
+    <button id="bConn">⚙</button>
+  </header>
+
+  <div id="state"><span style="color:#5f5544">nincs adat a Plannerből</span></div>
+  <div id="tools"></div>
+  <div id="pad"><div id="padHint">Egy ujj — mozgatás<br>Két ujj — nagyítás<br>Dupla koppintás — nézet vissza</div></div>
+
+  <div id="bar">
+    <button id="bUndo">↶</button>
+    <button id="bRedo">↷</button>
+    <button id="bGyro">🧭</button>
+    <button id="bReset">⌂</button>
+  </div>
+  <div id="note"></div>
+</div>
+
+<dialog id="dKeys">
+  <div>Billentyű küldése a Plannernek</div>
+  <div class="row"><input id="keyIn" placeholder="pl. g, Escape, Delete" autocapitalize="off" autocomplete="off"></div>
+  <div class="row">
+    <label style="flex:1;font-size:12px"><input type="checkbox" id="kCtrl" style="width:auto"> Ctrl</label>
+    <label style="flex:1;font-size:12px"><input type="checkbox" id="kShift" style="width:auto"> Shift</label>
+  </div>
+  <div class="row"><button id="kCancel">Mégse</button><button id="kSend">Küld</button></div>
+</dialog>
+
+<dialog id="dConn">
+  <div>Relé címe</div>
+  <div class="row"><input id="urlIn" placeholder="ws://192.168.1.157:47291" autocapitalize="off" autocomplete="off"></div>
+  <div class="row"><button id="uCancel">Mégse</button><button id="uSave">Csatlakozás</button></div>
+</dialog>
+
+<!-- PROTO-CORE-START — tests/phone-proto-smoke.js evals everything between
+     these two markers with stubs. Keep it free of DOM access. -->
+<script>
+var PHONE = (function () {
+  'use strict';
+
+  var PROTO = 1, ROLE = 'phone';
+  var CAPS = ['state', 'cmd', 'keys', 'orientation', 'gesture'];
+
+  var seq = 0;
+
+  // Every outgoing message. Matches the envelope 07a-link.js expects.
+  function envelope(type, payload) {
+    return { v: PROTO, from: ROLE, seq: ++seq, t: Date.now(), type: type, payload: payload || {} };
+  }
+
+  function hello(app) {
+    return envelope('hello', { role: ROLE, app: app || '2.0-b', caps: CAPS });
+  }
+
+  // Semantic commands. The ids are the ones 07a-link.js registers by default;
+  // an unknown id comes back as a nack rather than doing nothing silently.
+  function cmd(id, extra) {
+    var p = { id: id };
+    if (extra) for (var k in extra) if (extra.hasOwnProperty(k)) p[k] = extra[k];
+    return envelope('cmd', p);
+  }
+
+  // The escape hatch. Anything with no semantic command yet goes through the
+  // planner's real keyboard handlers, editor-first.
+  function keys(key, mods) {
+    mods = mods || {};
+    return envelope('keys', { key: key, ctrl: !!mods.ctrl, shift: !!mods.shift, alt: !!mods.alt });
+  }
+
+  function orientation(o) {
+    return envelope('orientation', {
+      pitch: o.pitch, yaw: o.yaw,
+      pitchEnabled: !!o.pitchEnabled, yawEnabled: !!o.yawEnabled
+    });
+  }
+
+  function gesture(g) { return envelope('gesture', g); }
+
+  // Incoming. Returns a small verdict object so the UI layer stays dumb.
+  function read(raw) {
+    var m;
+    try { m = JSON.parse(raw); } catch (e) { return { kind: 'junk' }; }
+    if (!m || typeof m !== 'object') return { kind: 'junk' };
+    if (m.from === ROLE) return { kind: 'echo' };          // our own message came back
+    if (m.type === 'hello') return { kind: 'hello', peer: m.payload || {} };
+    if (m.type === 'state') return { kind: 'state', state: m.payload || {} };
+    if (m.type === 'ack') return { kind: 'ack', ack: m.payload || {} };
+    return { kind: 'other', type: m.type, payload: m.payload };
+  }
+
+  // Build the tool pad from the planner's own table. A build with more tools
+  // renders more buttons; this file never needs to know the list.
+  function toolButtons(peer) {
+    var t = (peer && peer.tools) || [];
+    return t.map(function (x, i) {
+      return {
+        mode: x.mode,
+        key: x.key || null,
+        index: i,
+        label: (x.hint || x.mode || '').split(/[—·(]/)[0].trim().slice(0, 11) || x.mode
+      };
+    });
+  }
+
+  // Derive the ws:// address from wherever this page was served, so the phone
+  // never has to be told an IP it already used to load the page.
+  function defaultUrl(loc) {
+    if (!loc || !loc.host) return null;
+    var proto = (loc.protocol === 'https:') ? 'wss://' : 'ws://';
+    return proto + loc.host;
+  }
+
+  // Pan/zoom from raw touch state. Pure so it can be tested without a screen.
+  function pinch(prev, now) {
+    if (!prev || !now) return null;
+    if (now.n === 1 && prev.n === 1)
+      return { kind: 'zoompan', dx: now.x - prev.x, dy: now.y - prev.y, scale: 1 };
+    if (now.n === 2 && prev.n === 2 && prev.d > 4)
+      return { kind: 'zoompan', dx: 0, dy: 0, scale: now.d / prev.d };
+    return null;
+  }
+
+  // Screen orientation is not camera orientation: beta is the front-back tilt
+  // and alpha the compass heading, and both need clamping before they reach a
+  // camera that expects 5..90 and 0..360.
+  function fromDeviceEvent(e) {
+    if (e == null || (e.beta == null && e.alpha == null)) return null;
+    var pitch = Math.max(5, Math.min(90, 90 - Math.abs(e.beta == null ? 45 : e.beta)));
+    var yaw = ((e.alpha == null ? 0 : e.alpha) % 360 + 360) % 360;
+    return { pitch: pitch, yaw: yaw };
+  }
+
+  function secureContextOk(w) {
+    if (!w) return false;
+    if (w.isSecureContext) return true;
+    var h = w.location && w.location.hostname;
+    return h === 'localhost' || h === '127.0.0.1';
+  }
+
+  return {
+    PROTO: PROTO, ROLE: ROLE, CAPS: CAPS,
+    envelope: envelope, hello: hello, cmd: cmd, keys: keys,
+    orientation: orientation, gesture: gesture, read: read,
+    toolButtons: toolButtons, defaultUrl: defaultUrl,
+    pinch: pinch, fromDeviceEvent: fromDeviceEvent, secureContextOk: secureContextOk,
+    _reset: function () { seq = 0; }
+  };
+})();
+</script>
+<!-- PROTO-CORE-END -->
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  var ws = null, retry = null, url = null;
+  var peer = null, tools = [], activeMode = null;
+  var gyroOn = false, lastSent = 0;
+
+  var LS = 'varler_relay_url';
+
+  function note(msg, warn) {
+    var n = $('note'); n.textContent = msg || '';
+    n.className = warn ? 'warn' : '';
+  }
+
+  function setDot(k, text) {
+    $('dot').className = k === 'up' ? 'up' : k === 'mid' ? 'mid' : '';
+    if (text != null) $('who').textContent = text;
+  }
+
+  function send(obj) {
+    if (!ws || ws.readyState !== 1) return false;
+    try { ws.send(JSON.stringify(obj)); return true; } catch (e) { return false; }
+  }
+
+  /* ---- connection ------------------------------------------------------- */
+
+  function connect(u) {
+    url = u || url || localStorage.getItem(LS) || PHONE.defaultUrl(location);
+    if (!url) { note('Nincs relé cím — ⚙ gomb.', true); return; }
+    try { localStorage.setItem(LS, url); } catch (e) { }
+
+    if (ws) { try { ws.onclose = null; ws.close(); } catch (e) { } }
+    setDot('mid', 'csatlakozás… ' + url);
+    try { ws = new WebSocket(url); } catch (e) { setDot('', 'hibás cím'); return; }
+
+    ws.onopen = function () {
+      setDot('mid', 'kapcsolódva — várom a Plannert');
+      send(PHONE.hello('2.0-b'));
+      note('');
+    };
+    ws.onmessage = function (e) {
+      var r = PHONE.read(e.data);
+      if (r.kind === 'hello') {
+        peer = r.peer;
+        tools = PHONE.toolButtons(peer);
+        paintTools();
+        setDot('up', 'Planner ' + (peer.app || '') + ' · ' + tools.length + ' eszköz');
+        send(PHONE.envelope('state.request', {}));
+      } else if (r.kind === 'state') {
+        paintState(r.state);
+      } else if (r.kind === 'ack' && r.ack && r.ack.ok === false) {
+        note('elutasítva: ' + (r.ack.id || '') + (r.ack.reason ? ' — ' + r.ack.reason : ''), true);
+      }
+    };
+    ws.onclose = function () {
+      peer = null;
+      setDot('', 'megszakadt — újrapróbálom…');
+      clearTimeout(retry); retry = setTimeout(function () { connect(url); }, 2000);
+    };
+    ws.onerror = function () { };
+  }
+
+  /* ---- painting --------------------------------------------------------- */
+
+  function paintTools() {
+    var el = $('tools');
+    if (!tools.length) { el.innerHTML = ''; return; }
+    el.innerHTML = tools.map(function (t) {
+      return '<button data-m="' + t.mode + '" data-i="' + t.index + '" data-k="' + (t.key || '') + '">'
+        + '<span>' + esc(t.label) + '</span>'
+        + (t.key ? '<span class="k">' + t.key + '</span>' : '') + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) {
+      b.onclick = function () {
+        send(PHONE.cmd('tool.select', { index: +b.dataset.i, key: b.dataset.k || null }));
+        buzz(8);
+      };
+    });
+    markActive();
+  }
+
+  function markActive() {
+    Array.prototype.forEach.call($('tools').querySelectorAll('button'), function (b) {
+      b.classList.toggle('on', b.dataset.m === activeMode);
+    });
+  }
+
+  function paintState(s) {
+    activeMode = s.mode || null;
+    markActive();
+    var bits = [];
+    if (s.mode) bits.push('<b>' + esc(s.mode) + '</b>');
+    if (s.level) bits.push('szint ' + esc(s.level));
+    if (s.freeHeight != null) bits.push('h ' + s.freeHeight);
+    if (s.pathType != null) bits.push('⌀' + s.pathType);
+    if (s.cableType) bits.push(esc(s.cableType));
+    if (s.flat) bits.push('2D');
+    if (s.lockTouch) bits.push('🔒');
+    $('state').innerHTML = bits.length ? bits.join(' · ') : '<span style="color:#5f5544">—</span>';
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { } }
+
+  /* ---- buttons ---------------------------------------------------------- */
+
+  $('bUndo').onclick = function () { send(PHONE.cmd('edit.undo')); buzz(8); };
+  $('bRedo').onclick = function () { send(PHONE.cmd('edit.redo')); buzz(8); };
+  $('bReset').onclick = function () { send(PHONE.cmd('view.reset')); buzz(8); };
+
+  /* ---- gesture pad ------------------------------------------------------ */
+
+  var pad = $('pad'), prev = null, lastTap = 0;
+
+  function touchState(ev) {
+    var t = ev.touches;
+    if (!t || !t.length) return null;
+    if (t.length === 1) return { n: 1, x: t[0].clientX, y: t[0].clientY, d: 0 };
+    var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+    return { n: 2, x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2, d: Math.hypot(dx, dy) };
+  }
+
+  pad.addEventListener('touchstart', function (ev) {
+    ev.preventDefault();
+    prev = touchState(ev);
+    var now = Date.now();
+    if (ev.touches.length === 1 && now - lastTap < 300) {
+      send(PHONE.gesture({ kind: 'reset' })); buzz(14); lastTap = 0;
+    } else lastTap = now;
+  }, { passive: false });
+
+  pad.addEventListener('touchmove', function (ev) {
+    ev.preventDefault();
+    var now = touchState(ev);
+    var g = PHONE.pinch(prev, now);
+    if (g && (g.dx || g.dy || g.scale !== 1)) send(PHONE.gesture(g));
+    prev = now;
+  }, { passive: false });
+
+  pad.addEventListener('touchend', function (ev) {
+    if (!ev.touches.length) prev = null; else prev = touchState(ev);
+  });
+
+  /* ---- gyro ------------------------------------------------------------- */
+
+  function onOrient(e) {
+    var o = PHONE.fromDeviceEvent(e);
+    if (!o) return;
+    var now = Date.now();
+    if (now - lastSent < 33) return;            // ~30 Hz is plenty for a camera
+    lastSent = now;
+    send(PHONE.orientation({ pitch: o.pitch, yaw: o.yaw, pitchEnabled: true, yawEnabled: true }));
+  }
+
+  $('bGyro').onclick = function () {
+    if (gyroOn) {
+      window.removeEventListener('deviceorientation', onOrient);
+      gyroOn = false; $('bGyro').classList.remove('on'); note('');
+      return;
+    }
+    if (!PHONE.secureContextOk(window)) {
+      note('A giroszkóp csak https:// alatt indul (secure context). Ezen a címen a böngésző nem adja ki az érzékelőt — a mozgatás és a nagyítás ettől még működik.', true);
+      return;
+    }
+    var start = function () {
+      window.addEventListener('deviceorientation', onOrient);
+      gyroOn = true; $('bGyro').classList.add('on'); note('Giroszkóp aktív.');
+    };
+    if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission().then(function (r) {
+        if (r === 'granted') start(); else note('Engedély megtagadva.', true);
+      }).catch(function () { note('Engedélykérés sikertelen.', true); });
+    } else start();
+  };
+
+  /* ---- dialogs ---------------------------------------------------------- */
+
+  $('bKeys').onclick = function () { $('keyIn').value = ''; $('dKeys').showModal(); };
+  $('kCancel').onclick = function () { $('dKeys').close(); };
+  $('kSend').onclick = function () {
+    var k = $('keyIn').value.trim();
+    if (k) send(PHONE.keys(k, { ctrl: $('kCtrl').checked, shift: $('kShift').checked }));
+    $('dKeys').close(); buzz(8);
+  };
+
+  $('bConn').onclick = function () {
+    $('urlIn').value = url || PHONE.defaultUrl(location) || '';
+    $('dConn').showModal();
+  };
+  $('uCancel').onclick = function () { $('dConn').close(); };
+  $('uSave').onclick = function () {
+    var u = $('urlIn').value.trim();
+    $('dConn').close();
+    if (u) connect(u);
+  };
+
+  /* ---- keep the screen alive while working -------------------------------- */
+  var lock = null;
+  function wake() {
+    try {
+      if (navigator.wakeLock && !lock)
+        navigator.wakeLock.request('screen').then(function (l) {
+          lock = l; l.addEventListener('release', function () { lock = null; });
+        }).catch(function () { });
+    } catch (e) { }
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { wake(); } });
+  wake();
+
+  connect();
+})();
+</script>
+</body>
+</html>

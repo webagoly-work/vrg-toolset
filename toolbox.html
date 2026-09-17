@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Varler Toolbox</title>
+<style>
+  :root{
+    --bg: #171310;
+    --panel: #201a14;
+    --panel-2: #150f0b;
+    --line: #3a2f22;
+    --line-soft: #2a231a;
+    --amber: #e2a13a;
+    --amber-soft: #7a5a29;
+    --rust: #c1622a;
+    --text: #f1e7d6;
+    --text-dim: #a89a85;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+    --sans: "Segoe UI", -apple-system, system-ui, sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.5;
+  }
+  header{
+    padding: 40px 32px 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  header h1{
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  header p{
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 14px;
+    max-width: 60ch;
+  }
+  .controls{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  #search{
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 8px 2px;
+    min-width: 220px;
+    outline: none;
+  }
+  #search:focus{ border-bottom-color: var(--amber); }
+  #search::placeholder{ color: var(--text-dim); }
+  .tabs{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .tab{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .tab:hover{ border-color: var(--amber-soft); color: var(--text); }
+  .tab.active{
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+  main{ padding: 28px 32px 60px; }
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tag{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    width: fit-content;
+    padding: 2px 6px;
+    border: 1px solid;
+  }
+  .tag-link{ color: var(--amber); border-color: var(--amber-soft); }
+  .tag-snippet{ color: var(--rust); border-color: #6b3a1e; }
+  .card h3{
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .card .cat{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .card .note{
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-dim);
+    flex-grow: 1;
+  }
+  .card .path-text{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    word-break: break-all;
+  }
+  .card .path-input{
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 6px;
+  }
+  .card .actions-row{
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .card a.open, .card button{
+    align-self: flex-start;
+    background: transparent;
+    border: none;
+    color: var(--amber);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 0;
+    border-bottom: 1px solid transparent;
+  }
+  .card a.open:hover, .card button:hover{ border-bottom-color: var(--amber); }
+  .card button.copy{ color: var(--text-dim); }
+  .card button.copy:hover{ color: var(--text); border-bottom-color: var(--text-dim); }
+  .code{
+    background: var(--panel-2);
+    border: 1px solid var(--line-soft);
+    padding: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 260px;
+    overflow: auto;
+  }
+  .hidden{ display: none; }
+
+  details.add{
+    margin-top: 28px;
+    border: 1px dashed var(--line);
+    padding: 16px;
+  }
+  details.add summary{
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--amber);
+    list-style: none;
+  }
+  details.add summary::-webkit-details-marker{ display:none; }
+  .form-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .form-grid .full{ grid-column: 1 / -1; }
+  label{
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  input[type=text], textarea, select{
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 8px;
+  }
+  textarea{ font-family: var(--mono); min-height: 90px; resize: vertical; }
+  .radio-row{ display: flex; gap: 16px; align-items: center; }
+  .radio-row label{ display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); margin: 0; }
+  .form-actions{
+    margin-top: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .btn-primary{
+    background: var(--amber);
+    color: #17130f;
+    border: none;
+    font-weight: 700;
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  .btn-primary:hover{ background: #f0b04f; }
+  .snippet-out{
+    margin-top: 14px;
+    display: none;
+  }
+  .snippet-out.show{ display: block; }
+  .snippet-out p{ font-size: 12px; color: var(--text-dim); margin: 0 0 6px; }
+  footer{
+    padding: 24px 32px 40px;
+    color: var(--text-dim);
+    font-size: 12px;
+    border-top: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Varler Toolbox</h1>
+  <p>Kódrészletek és mini eszközök, amíg egy-egy fejlesztés még nem érte el a saját program szintjét. Ha valami innen kinő, kerüljön be a START.cmd eszközlistájába a saját fájljával.</p>
+</header>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Keresés...">
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<main>
+  <div class="grid" id="grid"></div>
+
+  <details class="add">
+    <summary>+ Új bejegyzés hozzáadása</summary>
+    <div class="form-grid">
+      <div>
+        <label for="f-name">Név</label>
+        <input type="text" id="f-name">
+      </div>
+      <div>
+        <label for="f-cat">Kategória</label>
+        <input type="text" id="f-cat" list="cat-list">
+        <datalist id="cat-list"></datalist>
+      </div>
+      <div class="full">
+        <label>Típus</label>
+        <div class="radio-row">
+          <label><input type="radio" name="f-type" value="link" checked> Fájlra mutató link</label>
+          <label><input type="radio" name="f-type" value="snippet"> Beágyazott kódrészlet</label>
+        </div>
+      </div>
+      <div class="full" id="f-path-wrap">
+        <label for="f-path">Elérési út (a toolbox.html-hez képest, pl. Calculator\valami.html)</label>
+        <input type="text" id="f-path">
+      </div>
+      <div class="full hidden" id="f-code-wrap">
+        <label for="f-code">Kód</label>
+        <textarea id="f-code"></textarea>
+      </div>
+      <div class="full">
+        <label for="f-note">Megjegyzés</label>
+        <input type="text" id="f-note">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" id="f-submit">Hozzáadás</button>
+      <span style="font-size:12px;color:var(--text-dim)">Ez a munkamenetben azonnal megjelenik, de csak addig, amíg a lenti sort be nem illeszted a fájlba.</span>
+    </div>
+    <div class="snippet-out" id="snippet-out">
+      <p>Illeszd be ezt a sort az ENTRIES tömbbe (a &lt;script&gt;-en belül, a többi bejegyzés közé), majd mentsd el a fájlt - így marad meg végleg:</p>
+      <textarea id="snippet-text" readonly style="min-height:70px"></textarea>
+      <div class="form-actions">
+        <button class="btn-primary" id="snippet-copy">Sor másolása</button>
+      </div>
+    </div>
+  </details>
+</main>
+
+<footer>
+  Egyfájlos, offline oldal - file:// -ból is teljesen működik. Nem ír vissza a lemezre; új bejegyzés véglegesítéséhez illeszd be a generált sort a fájlba.
+</footer>
+
+<script>
+  // ------------------------------------------------------------------
+  // ENTRIES - the whole toolbox lives in this array. Add a line, save,
+  // done. type "link" needs path; type "snippet" needs code.
+  // Paths are relative to this file (Planner_VRG_U100\toolbox.html).
+  // The two BRIDGE/ESP entries below are placeholders - swap the code
+  // field for the real thing whenever it exists.
+  // ------------------------------------------------------------------
+  const ENTRIES = [
+    {name:"Varler Planner", category:"Tervezés", type:"link",
+     path:"Planner/projects/varler-planner/dist/varler_planner.html",
+     note:"Villanyszerelési tervező - fő munkaeszköz."},
+
+    {name:"Panel anyagár kalkulátor", category:"Kalkulátorok", type:"link",
+     path:"Calculator/panel_anyagar_kalkulator.html",
+     note:"varlerÁron csomag - panel/anyagár kalkulátor."},
+
+    {name:"LED árkalkulátor", category:"Kalkulátorok", type:"link",
+     path:"Calculator/led_arkalkulator.html",
+     note:"varlerÁron csomag - felmérési cheat sheet."},
+
+    {name:"Általános villanyszerelői kalkulátor", category:"Kalkulátorok", type:"link",
+     path:"Calculator/Altalanos_Villanyszerelui_Kalkulator.html",
+     note:"Egyfájlos ajánlatkészítő eszköz."},
+
+    {name:"VRG MindMap", category:"Jegyzetelés", type:"link",
+     path:"MindMap/vrg_mindmap.html",
+     note:"Kapcsolt markdown jegyzetvászon — wiki-linkek, címkék, kapcsolat-rétegek, gráf- és hélix-nézet."},
+
+    {name:"Valena termékcsalád választó", category:"Termékválasztók", type:"link",
+     path:"Toolbox/valena-life-szerelvenytervezo.html",
+     note:"Legrand Valena Life kompatibilitás - katalógus, előnézet, bevásárlólista export."},
+
+    {name:"Vezetékazonosító eszköz", category:"Diagnosztika", type:"link",
+     path:"",
+     note:"Még nincs elkészítve - a fájl nem található. Töltsd ki az útvonalat, ha elkészült."},
+
+    {name:"BRIDGE-DN - példa helyőrző", category:"Fejlesztés alatt", type:"snippet",
+     code:"// PÉLDA - cseréld le a tényleges BRIDGE-DN kódrészletre.\n// pl. protokoll-átjáró konfig váz, ESP32 mesh csomópont setup, stb.\n",
+     note:"Cseréld le, ha van tényleges kódrészlet a BRIDGE-DN-hez."},
+
+    {name:"Smart switch relé - példa helyőrző", category:"Fejlesztés alatt", type:"snippet",
+     code:"// PÉLDA - cseréld le a tényleges relévezérlő kódrészletre.\n",
+     note:"Cseréld le, ha van tényleges kódrészlet a relémodulhoz."}
+  ];
+
+  let activeCategory = "Mind";
+
+  function esc(s){ return JSON.stringify(s === undefined ? '' : s); }
+
+  function entryToLine(entry){
+    if(entry.type === 'link'){
+      return '    {name:' + esc(entry.name) + ', category:' + esc(entry.category) +
+             ', type:"link", path:' + esc(entry.path) + ', note:' + esc(entry.note) + '},';
+    }
+    return '    {name:' + esc(entry.name) + ', category:' + esc(entry.category) +
+           ', type:"snippet", code:' + esc(entry.code) + ', note:' + esc(entry.note) + '},';
+  }
+
+  function uniqueCategories(){
+    return [...new Set(ENTRIES.map(e => e.category))];
+  }
+
+  function renderTabs(){
+    const tabs = document.getElementById('tabs');
+    tabs.innerHTML = '';
+    const cats = ["Mind", ...uniqueCategories()];
+    cats.forEach(cat => {
+      const b = document.createElement('button');
+      b.className = 'tab' + (cat === activeCategory ? ' active' : '');
+      b.textContent = cat;
+      b.onclick = () => { activeCategory = cat; renderTabs(); applyFilters(); };
+      tabs.appendChild(b);
+    });
+    const dl = document.getElementById('cat-list');
+    dl.innerHTML = '';
+    uniqueCategories().forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      dl.appendChild(opt);
+    });
+  }
+
+  function buildCard(e){
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    const tag = document.createElement('div');
+    tag.className = 'tag ' + (e.type === 'snippet' ? 'tag-snippet' : 'tag-link');
+    tag.textContent = e.type === 'snippet' ? 'KÓDRÉSZLET' : 'FÁJL';
+    card.appendChild(tag);
+
+    const h = document.createElement('h3');
+    h.textContent = e.name;
+    card.appendChild(h);
+
+    const cat = document.createElement('div');
+    cat.className = 'cat';
+    cat.textContent = e.category;
+    card.appendChild(cat);
+
+    if(e.note){
+      const note = document.createElement('p');
+      note.className = 'note';
+      note.textContent = e.note;
+      card.appendChild(note);
+    }
+
+    if(e.type === 'link'){
+      const pathText = document.createElement('div');
+      pathText.className = 'path-text';
+      pathText.textContent = e.path;
+      card.appendChild(pathText);
+
+      const pathInput = document.createElement('input');
+      pathInput.type = 'text';
+      pathInput.className = 'path-input hidden';
+      pathInput.value = e.path;
+      card.appendChild(pathInput);
+
+      const actionsRow = document.createElement('div');
+      actionsRow.className = 'actions-row';
+
+      const a = document.createElement('a');
+      a.className = 'open';
+      a.href = e.path;
+      a.target = '_blank';
+      a.textContent = 'Megnyitás';
+      actionsRow.appendChild(a);
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'copy';
+      editBtn.textContent = 'Útvonal szerkesztése';
+      actionsRow.appendChild(editBtn);
+
+      card.appendChild(actionsRow);
+
+      const editOut = document.createElement('div');
+      editOut.className = 'snippet-out';
+      const editP = document.createElement('p');
+      editP.textContent = 'Cseréld ki ennek a bejegyzésnek a sorát az ENTRIES tömbben ezzel, majd mentsd el a fájlt:';
+      const editTa = document.createElement('textarea');
+      editTa.readOnly = true;
+      editTa.style.minHeight = '60px';
+      const editActions = document.createElement('div');
+      editActions.className = 'form-actions';
+      const editCopyBtn = document.createElement('button');
+      editCopyBtn.className = 'btn-primary';
+      editCopyBtn.textContent = 'Sor másolása';
+      editCopyBtn.onclick = () => {
+        navigator.clipboard.writeText(editTa.value).then(() => {
+          editCopyBtn.textContent = 'Másolva.';
+          setTimeout(() => editCopyBtn.textContent = 'Sor másolása', 1500);
+        });
+      };
+      editActions.appendChild(editCopyBtn);
+      editOut.appendChild(editP);
+      editOut.appendChild(editTa);
+      editOut.appendChild(editActions);
+      card.appendChild(editOut);
+
+      let editing = false;
+      editBtn.onclick = () => {
+        editing = !editing;
+        if(editing){
+          pathInput.value = e.path;
+          pathText.classList.add('hidden');
+          pathInput.classList.remove('hidden');
+          editBtn.textContent = 'Mentés';
+          pathInput.focus();
+        } else {
+          e.path = pathInput.value.trim() || e.path;
+          pathText.textContent = e.path;
+          pathInput.value = e.path;
+          a.href = e.path;
+          pathText.classList.remove('hidden');
+          pathInput.classList.add('hidden');
+          editBtn.textContent = 'Útvonal szerkesztése';
+
+          editTa.value = entryToLine(e);
+          editOut.classList.add('show');
+        }
+      };
+    } else {
+      const btn = document.createElement('button');
+      btn.textContent = 'Kód megjelenítése';
+      const pre = document.createElement('pre');
+      pre.className = 'code hidden';
+      const codeEl = document.createElement('code');
+      codeEl.textContent = e.code;
+      pre.appendChild(codeEl);
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy hidden';
+      copyBtn.textContent = 'Másolás';
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(e.code).then(() => {
+          copyBtn.textContent = 'Másolva.';
+          setTimeout(() => copyBtn.textContent = 'Másolás', 1500);
+        });
+      };
+      btn.onclick = () => {
+        const nowHidden = pre.classList.toggle('hidden');
+        copyBtn.classList.toggle('hidden', nowHidden);
+        btn.textContent = nowHidden ? 'Kód megjelenítése' : 'Kód elrejtése';
+      };
+      card.appendChild(btn);
+      card.appendChild(pre);
+      card.appendChild(copyBtn);
+    }
+
+    return card;
+  }
+
+  function render(list){
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    list.forEach(e => grid.appendChild(buildCard(e)));
+  }
+
+  function applyFilters(){
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    const filtered = ENTRIES.filter(e => {
+      const matchesCat = activeCategory === "Mind" || e.category === activeCategory;
+      const haystack = (e.name + ' ' + e.note + ' ' + e.category).toLowerCase();
+      const matchesQ = !q || haystack.includes(q);
+      return matchesCat && matchesQ;
+    });
+    render(filtered);
+  }
+
+  document.getElementById('search').addEventListener('input', applyFilters);
+
+  // ---- add-entry form ----
+  const typeRadios = document.querySelectorAll('input[name="f-type"]');
+  const pathWrap = document.getElementById('f-path-wrap');
+  const codeWrap = document.getElementById('f-code-wrap');
+  typeRadios.forEach(r => r.addEventListener('change', () => {
+    const isSnippet = document.querySelector('input[name="f-type"]:checked').value === 'snippet';
+    pathWrap.classList.toggle('hidden', isSnippet);
+    codeWrap.classList.toggle('hidden', !isSnippet);
+  }));
+
+  document.getElementById('f-submit').addEventListener('click', () => {
+    const name = document.getElementById('f-name').value.trim();
+    const category = document.getElementById('f-cat').value.trim() || "Egyéb";
+    const type = document.querySelector('input[name="f-type"]:checked').value;
+    const note = document.getElementById('f-note').value.trim();
+    if(!name){
+      document.getElementById('f-name').focus();
+      return;
+    }
+
+    const entry = { name, category, type, note };
+    if(type === 'link'){
+      entry.path = document.getElementById('f-path').value.trim();
+    } else {
+      entry.code = document.getElementById('f-code').value;
+    }
+
+    ENTRIES.push(entry);
+    renderTabs();
+    applyFilters();
+
+    document.getElementById('snippet-text').value = entryToLine(entry);
+    document.getElementById('snippet-out').classList.add('show');
+  });
+
+  document.getElementById('snippet-copy').addEventListener('click', () => {
+    const ta = document.getElementById('snippet-text');
+    navigator.clipboard.writeText(ta.value).then(() => {
+      const btn = document.getElementById('snippet-copy');
+      btn.textContent = 'Másolva.';
+      setTimeout(() => btn.textContent = 'Sor másolása', 1500);
+    });
+  });
+
+  renderTabs();
+  applyFilters();
+</script>
+
+</body>
+</html>

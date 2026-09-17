@@ -1,0 +1,65 @@
+{
+ "version": "0.9.2",
+ "modules": [
+  {
+   "file": "00-core.js",
+   "lines": 115,
+   "purpose": "projection maths, level table, building model, example house geometry"
+  },
+  {
+   "file": "01-state.js",
+   "lines": 169,
+   "purpose": "the state object, layers, circuits sidebar, legacy shims"
+  },
+  {
+   "file": "02-geometry.js",
+   "lines": 250,
+   "purpose": "geometry helpers, fine mode, snapping, wall geometry + properties"
+  },
+  {
+   "file": "03-render.js",
+   "lines": 773,
+   "purpose": "the whole draw pipeline: normal, blueprint, whiteout, symbols, ghosts"
+  },
+  {
+   "file": "04-totals.js",
+   "lines": 216,
+   "purpose": "totals, BOM, numbering, wire and switch reports"
+  },
+  {
+   "file": "05-wall-editor.js",
+   "lines": 892,
+   "purpose": "wall elevation editor: chases, notes, action rail, session, links, list"
+  },
+  {
+   "file": "06-plane-editor.js",
+   "lines": 396,
+   "purpose": "floor / álmennyezet / ceiling plane editor"
+  },
+  {
+   "file": "07-interaction.js",
+   "lines": 464,
+   "purpose": "pointer and keyboard handling, gizmo, format painter, touch"
+  },
+  {
+   "file": "08-menus.js",
+   "lines": 119,
+   "purpose": "hit-test, context menus, modals, room + wall + opening actions"
+  },
+  {
+   "file": "09-lamps.js",
+   "lines": 401,
+   "purpose": "lamp data sheet, generated objects, hover preview"
+  },
+  {
+   "file": "10-controls.js",
+   "lines": 168,
+   "purpose": "sidebar controls, projects, panels, persistence"
+  },
+  {
+   "file": "11-boot.js",
+   "lines": 441,
+   "purpose": "startup"
+  }
+ ]
+}

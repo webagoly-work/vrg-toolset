@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Panel Anyagár Kalkulátor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15181c;--panel:#1d2126;--panel-2:#242a31;--line:#3a434d;
+    --ink:#f2f5f8;--muted:#aab4be;--amber:#ffb300;--amber-dim:#3a2f12;
+    --green:#54e0a6;--blue:#6bbcff;--red:#ff7676;--shadow:0 10px 30px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:'JetBrains Mono',monospace}
+  body{padding:18px 14px 48px;max-width:600px;margin:0 auto;font-size:16px;line-height:1.45;background-image:repeating-linear-gradient(45deg,rgba(255,179,0,.018) 0 14px,transparent 14px 28px)}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:6px}
+  h1{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:36px;line-height:.92;letter-spacing:.5px;text-transform:uppercase}
+  h1 b{color:var(--amber)}
+  .tag{font-size:12px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;text-align:right;line-height:1.5}
+  .rule{height:3px;background:repeating-linear-gradient(90deg,var(--amber) 0 18px,transparent 18px 30px);margin:12px 0 18px;opacity:.85}
+
+  .sec{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px;margin-bottom:13px}
+  .sechdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .sechdr .t{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:22px;letter-spacing:1px;text-transform:uppercase}
+  .sechdr .s{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:18px;color:var(--green)}
+  .subt{font-size:15px !important;color:var(--muted) !important}
+
+  .fld{display:grid;grid-template-columns:1fr auto;gap:6px 8px;align-items:center;padding:9px 0;border-top:1px solid #2a313a}
+  .fld:first-of-type{border-top:none}
+  .fld .nm{font-size:16px;font-weight:600;line-height:1.3}
+  .fld .nm small{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:2px}
+  .num,.price{height:46px;background:#10141a;border:1px solid var(--line);color:var(--ink);font-family:'JetBrains Mono',monospace;font-weight:700;font-size:19px;text-align:center;border-radius:9px;outline:none}
+  .num{width:74px}
+  .price{width:90px;background:var(--amber-dim);border-color:#5a4a18;color:var(--amber);font-size:17px}
+  .num:focus,.price:focus{border-color:var(--amber)}
+  .pair{display:flex;gap:6px;align-items:center;justify-self:end}
+  .pair .x{color:var(--muted);font-size:14px}
+  .lo{grid-column:1/-1;text-align:right;font-size:15px;font-weight:700;color:var(--green);margin-top:0}
+
+  .slider{padding:10px 0 4px}
+  .slider label{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;gap:8px}
+  .slider label b{color:var(--ink);text-align:right}
+  input[type=range]{width:100%;accent-color:var(--amber);height:32px}
+  .splitnote{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;margin-top:2px}
+  .splitnote b{color:var(--blue)}
+
+  .check{font-size:14px;font-weight:700;text-align:right;margin-top:6px}
+  .check.ok{color:var(--green)} .check.bad{color:var(--amber)}
+
+  .addbtn{width:100%;height:48px;border:1px dashed var(--line);background:transparent;color:var(--muted);font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;text-transform:uppercase;border-radius:10px;cursor:pointer;margin-top:8px}
+  .addbtn:active{border-color:var(--amber);color:var(--amber)}
+  .otherrow{display:grid;grid-template-columns:1fr 100px 42px;gap:7px;align-items:center;padding:7px 0;border-top:1px solid #2a313a}
+  .otherrow:first-child{border-top:none}
+  .otherrow input.lbl{height:46px;background:#10141a;border:1px solid var(--line);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:15px;padding:0 10px;border-radius:9px;outline:none}
+  .otherrow input.lbl:focus{border-color:var(--amber)}
+  .otherrow .rm{height:46px;border:1px solid var(--line);background:var(--panel-2);color:var(--red);font-size:24px;border-radius:9px;cursor:pointer}
+  .otherrow .rm:active{background:#3a1c1c}
+
+  .reserve{background:var(--panel);border:1px solid #5a4a18;border-radius:13px;padding:14px;margin-bottom:13px}
+  .reserve label{display:flex;justify-content:space-between;font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+  .reserve label b{color:var(--amber);font-size:22px}
+
+  .total{margin-top:6px;background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--amber);border-radius:14px;padding:18px 16px 16px;box-shadow:var(--shadow)}
+  .total .cap{font-size:13px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+  .total .big{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:54px;line-height:.95;color:var(--amber);letter-spacing:.5px}
+  .total .big span{font-size:24px;color:var(--ink);margin-left:4px}
+  .meta{display:flex;flex-wrap:wrap;gap:7px 18px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+  .meta div{font-size:14px;color:var(--muted)} .meta b{color:var(--ink);font-weight:700}
+
+  .export{width:100%;height:56px;margin-top:13px;border:none;border-radius:12px;background:var(--green);color:#0e1512;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:20px;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+  .export:active{filter:brightness(.92)}
+
+  .combine{margin-top:13px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px}
+  .combine .row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+  .combine .nm{font-size:16px;font-weight:600}
+  .combine .nm small{display:block;font-size:13px;color:var(--muted);font-weight:400}
+  .combine .out{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:5px 18px;font-size:14px;color:var(--muted)}
+  .combine .out b{color:var(--ink)}
+  .combine .grand{color:var(--amber);font-weight:800;font-size:18px}
+
+  .foot{display:flex;gap:10px;margin-top:14px}
+  .btn{flex:1;height:52px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;text-transform:uppercase;border-radius:11px;cursor:pointer}
+  .btn:active{background:var(--panel-2)}
+  .btn.warn:active{background:#3a1c1c;border-color:#7a3030}
+
+  /* modal */
+  .ov{position:fixed;inset:0;background:rgba(6,8,11,.86);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+  .ov.show{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--amber);border-radius:14px;padding:16px;width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column}
+  .modal h3{font-family:'Saira Condensed',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:1px;color:var(--amber);margin-bottom:10px}
+  .modal textarea{flex:1;min-height:300px;background:#0e1218;border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.5;padding:12px;resize:none;white-space:pre;overflow:auto}
+  .modal .mbtns{display:flex;gap:10px;margin-top:12px}
+  .modal .mbtns button{flex:1;height:50px;border:none;border-radius:10px;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:1px;text-transform:uppercase;cursor:pointer}
+  .mb-copy{background:var(--green);color:#0e1512}
+  .mb-dl{background:var(--amber);color:#15181c}
+  .mb-close{background:var(--panel-2);color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Panel<br><b>anyagár</b></h1>
+  <div class="tag">részleges felújítás<br>csak anyag · HUF</div>
+</div>
+<div class="rule"></div>
+
+<!-- TÁBLA -->
+<div class="sec">
+  <div class="sechdr"><div class="t">Elosztótábla</div><div class="s" id="s-board">0 Ft</div></div>
+  <div class="slider">
+    <label>Tábla anyagára <b><span id="boardVal">160 000</span> Ft</b></label>
+    <input type="range" id="board" min="120000" max="200000" step="5000" value="160000">
+    <div class="splitnote"><span>120 000</span><span>200 000</span></div>
+  </div>
+</div>
+
+<!-- KÁBEL -->
+<div class="sec">
+  <div class="sechdr"><div class="t">Kábel + szerelés</div><div class="s" id="s-cable">0 Ft</div></div>
+
+  <div class="fld">
+    <div class="nm">Összes kábelhossz<small>teljes vezetékméret</small></div>
+    <div class="pair"><input class="num" id="cableLen" type="number" value="0" inputmode="decimal"><span class="x">m</span></div>
+  </div>
+
+  <div class="slider">
+    <label>MBCu keresztmetszet arány <b><span id="r15">60</span>% × 1,5 / <span id="r25">40</span>% × 2,5</b></label>
+    <input type="range" id="ratio15" min="0" max="100" step="5" value="60">
+    <div class="splitnote"><span>3×1,5: <b id="m15">0</b> m</span><span>3×2,5: <b id="m25">0</b> m</span></div>
+  </div>
+  <div class="fld">
+    <div class="nm">3×1,5 egységár <small>500–700 Ft/fm</small></div>
+    <div class="pair"><input class="price" id="p15" type="number" value="600" inputmode="numeric"><span class="x">Ft/m</span></div>
+  </div>
+  <div class="fld">
+    <div class="nm">3×2,5 egységár <small>750–900 Ft/fm</small></div>
+    <div class="pair"><input class="price" id="p25" type="number" value="825" inputmode="numeric"><span class="x">Ft/m</span></div>
+    <div class="lo" id="lo-cablemat">Kábel anyag: —</div>
+  </div>
+
+  <div class="sechdr" style="margin-top:8px"><div class="t subt">Szerelési mód (m)</div></div>
+  <div class="fld">
+    <div class="nm">Sima <small>kábelszeg / álmennyezet fölött — nincs felár</small></div>
+    <div class="pair"><input class="num" id="simaM" type="number" value="0" inputmode="decimal"><span class="x">m</span></div>
+  </div>
+  <div class="fld">
+    <div class="nm">Süllyesztett <small>+ gégecső</small></div>
+    <div class="pair"><input class="num" id="sullM" type="number" value="0" inputmode="decimal"><span class="x">m</span></div>
+  </div>
+  <div class="fld">
+    <div class="nm">Gégecső egységár <small>150–250 Ft/fm</small></div>
+    <div class="pair"><input class="price" id="pgege" type="number" value="200" inputmode="numeric"><span class="x">Ft/m</span></div>
+  </div>
+  <div class="fld">
+    <div class="nm">Kábelcsatornás <small>+ csatorna</small></div>
+    <div class="pair"><input class="num" id="csatM" type="number" value="0" inputmode="decimal"><span class="x">m</span></div>
+  </div>
+  <div class="check" id="alloc">Kiosztva: 0 / 0 m</div>
+
+  <div class="slider">
+    <label>Csatorna vékony/vastag arány <b><span id="rThin">50</span>% vékony / <span id="rThick">50</span>% vastag</b></label>
+    <input type="range" id="ratioThin" min="0" max="100" step="5" value="50">
+  </div>
+  <div class="fld">
+    <div class="nm">Csatorna vékony <small>~1 500 Ft/m</small></div>
+    <div class="pair"><input class="price" id="pthin" type="number" value="1500" inputmode="numeric"><span class="x">Ft/m</span></div>
+  </div>
+  <div class="fld">
+    <div class="nm">Csatorna vastag <small>2 500–3 000 Ft/m</small></div>
+    <div class="pair"><input class="price" id="pthick" type="number" value="2750" inputmode="numeric"><span class="x">Ft/m</span></div>
+    <div class="lo" id="lo-extra">Gégecső + csatorna: —</div>
+  </div>
+
+  <div class="fld">
+    <div class="nm">Gipsz <small>250–500 Ft/kg</small></div>
+    <div class="pair"><input class="num" id="gipszKg" type="number" value="0" inputmode="decimal"><span class="x">kg</span><input class="price" id="pgipsz" type="number" value="375" inputmode="numeric"><span class="x">Ft/kg</span></div>
+  </div>
+</div>
+
+<!-- SZERELVÉNYEK -->
+<div class="sec">
+  <div class="sechdr"><div class="t">Szerelvény (Asfora)</div><div class="s" id="s-fit">0 Ft</div></div>
+  <div class="fld">
+    <div class="nm">Dugalj <small>1 000–2 000 Ft/db</small></div>
+    <div class="pair"><input class="num" id="qOutlet" type="number" value="0" inputmode="numeric"><span class="x">×</span><input class="price" id="pOutlet" type="number" value="1500" inputmode="numeric"></div>
+  </div>
+  <div class="fld">
+    <div class="nm">Kapcsoló — sima <small>1 000–2 000 Ft/db</small></div>
+    <div class="pair"><input class="num" id="qSw1" type="number" value="0" inputmode="numeric"><span class="x">×</span><input class="price" id="pSw1" type="number" value="1500" inputmode="numeric"></div>
+  </div>
+  <div class="fld">
+    <div class="nm">Kapcsoló — dupla <small>102/105/106 · 1 500–3 000 Ft/db</small></div>
+    <div class="pair"><input class="num" id="qSw2" type="number" value="0" inputmode="numeric"><span class="x">×</span><input class="price" id="pSw2" type="number" value="2250" inputmode="numeric"></div>
+  </div>
+  <div class="fld">
+    <div class="nm">Kapcsoló — extra <small>107/106+6 · 3 000–5 000 Ft/db</small></div>
+    <div class="pair"><input class="num" id="qSw3" type="number" value="0" inputmode="numeric"><span class="x">×</span><input class="price" id="pSw3" type="number" value="4000" inputmode="numeric"></div>
+  </div>
+  <div class="fld">
+    <div class="nm">Kiemelőkeret <small>2 000–3 000 Ft/db</small></div>
+    <div class="pair"><input class="num" id="qFrame" type="number" value="0" inputmode="numeric"><span class="x">×</span><input class="price" id="pFrame" type="number" value="2500" inputmode="numeric"></div>
+    <div class="lo" id="lo-fitcount">Összes szerelvény: 0 db</div>
+  </div>
+</div>
+
+<!-- LÁMPA -->
+<div class="sec">
+  <div class="sechdr"><div class="t">Lámpa</div><div class="s" id="s-lamp">0 Ft</div></div>
+  <div class="fld">
+    <div class="nm">Lámpa anyag összérték</div>
+    <div class="pair"><input class="num" id="lampTotal" type="number" value="0" inputmode="numeric" style="width:104px"><span class="x">Ft</span></div>
+  </div>
+  <div class="fld">
+    <div class="nm">Darabszám</div>
+    <div class="pair"><input class="num" id="lampQty" type="number" value="0" inputmode="numeric"><span class="x">db</span></div>
+    <div class="lo" id="lo-lamp">Átlag: —</div>
+  </div>
+</div>
+
+<!-- EGYÉB -->
+<div class="sec">
+  <div class="sechdr"><div class="t">Egyéb költség</div><div class="s" id="s-other">0 Ft</div></div>
+  <div id="otherList"></div>
+  <button class="addbtn" id="addOther">+ Sor hozzáadása</button>
+</div>
+
+<!-- TARTALÉK -->
+<div class="reserve">
+  <label>Tartalék <b><span id="resVal">0</span>%</b></label>
+  <input type="range" id="reserve" min="0" max="30" step="1" value="0">
+  <div class="splitnote"><span>0%</span><span id="resAmt">+0 Ft</span><span>30%</span></div>
+</div>
+
+<!-- TOTAL -->
+<div class="total">
+  <div class="cap">Anyagár összesen (tartalékkal)</div>
+  <div class="big" id="grand">0 <span>Ft</span></div>
+  <div class="meta">
+    <div>Alap (tartalék nélkül): <b id="m-basetot">0</b></div>
+    <div>Tábla: <b id="m-board">0</b></div>
+    <div>Kábel+szer.: <b id="m-cable">0</b></div>
+    <div>Szerelvény: <b id="m-fit">0</b></div>
+    <div>Lámpa: <b id="m-lamp">0</b></div>
+    <div>Egyéb: <b id="m-other">0</b></div>
+  </div>
+</div>
+
+<button class="export" id="exportBtn">↓ Anyaglista mentése (.txt)</button>
+
+<!-- KOMBINÁLT -->
+<div class="combine">
+  <div class="row">
+    <div class="nm">Munkadíj <small>a munkadíj-kalkulátorból, kézzel</small></div>
+    <div class="pair"><input class="num" id="labor" type="number" value="0" inputmode="numeric" style="width:120px"><span class="x">Ft</span></div>
+  </div>
+  <div class="out">
+    <div>Anyag: <b id="c-mat">0</b></div>
+    <div>Munka: <b id="c-lab">0</b></div>
+    <div>Anyag arány: <b id="c-ratio">0%</b></div>
+    <div class="grand">Végösszeg: <span id="c-grand">0 Ft</span></div>
+  </div>
+</div>
+
+<div class="foot">
+  <button class="btn" id="defaults">Példa munka</button>
+  <button class="btn warn" id="clear">Nullázás</button>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="ov" id="ov">
+  <div class="modal">
+    <h3>Anyaglista</h3>
+    <textarea id="exportText" readonly></textarea>
+    <div class="mbtns">
+      <button class="mb-copy" id="copyBtn">Vágólapra</button>
+      <button class="mb-dl" id="dlBtn">Letöltés</button>
+      <button class="mb-close" id="closeBtn">Bezár</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const v = id => parseFloat($(id).value) || 0;
+  const fmt = n => Math.round(n).toLocaleString('hu-HU');
+
+  // ---- Other costs (dynamic) ----
+  const otherList = $('otherList');
+  function makeOtherRow(label, price){
+    const row = document.createElement('div');
+    row.className = 'otherrow';
+    row.innerHTML =
+      '<input class="lbl" type="text" placeholder="Tétel megnevezése">' +
+      '<input class="num oprice" type="number" inputmode="numeric" placeholder="0" style="width:100%">' +
+      '<button class="rm" title="Törlés">×</button>';
+    row.querySelector('.lbl').value = label || '';
+    if(price!=null && price!=='') row.querySelector('.oprice').value = price;
+    row.querySelector('.oprice').addEventListener('input', calc);
+    row.querySelector('.lbl').addEventListener('input', calc);
+    row.querySelector('.rm').addEventListener('click', ()=>{ row.remove(); calc(); });
+    otherList.appendChild(row);
+  }
+  $('addOther').addEventListener('click', ()=>{ makeOtherRow('', ''); });
+
+  // build the list of priced items (base, before reserve)
+  function buildItems(){
+    const len=v('cableLen'), r15=v('ratio15');
+    const len15=len*r15/100, len25=len*(100-r15)/100;
+    const rThin=v('ratioThin'), csatM=v('csatM');
+    const thinM=csatM*rThin/100, thickM=csatM*(100-rThin)/100;
+    const items=[];
+    const add=(name,val)=>{ if(val>0) items.push({name,val}); };
+    add('Elosztótábla (1 db)', v('board'));
+    add('MBCu 3x1,5 ('+len15.toFixed(1)+' m)', len15*v('p15'));
+    add('MBCu 3x2,5 ('+len25.toFixed(1)+' m)', len25*v('p25'));
+    add('Gegecso ('+v('sullM').toFixed(1)+' m)', v('sullM')*v('pgege'));
+    add('Kabelcsatorna vekony ('+thinM.toFixed(1)+' m)', thinM*v('pthin'));
+    add('Kabelcsatorna vastag ('+thickM.toFixed(1)+' m)', thickM*v('pthick'));
+    add('Gipsz ('+v('gipszKg').toFixed(1)+' kg)', v('gipszKg')*v('pgipsz'));
+    add('Dugalj ('+v('qOutlet')+' db)', v('qOutlet')*v('pOutlet'));
+    add('Kapcsolo sima ('+v('qSw1')+' db)', v('qSw1')*v('pSw1'));
+    add('Kapcsolo dupla ('+v('qSw2')+' db)', v('qSw2')*v('pSw2'));
+    add('Kapcsolo extra ('+v('qSw3')+' db)', v('qSw3')*v('pSw3'));
+    add('Kiemelokeret ('+v('qFrame')+' db)', v('qFrame')*v('pFrame'));
+    add('Lampa ('+v('lampQty')+' db)', v('lampTotal'));
+    otherList.querySelectorAll('.otherrow').forEach(r=>{
+      const lbl=(r.querySelector('.lbl').value||'Egyeb').trim();
+      const p=parseFloat(r.querySelector('.oprice').value)||0;
+      add(lbl, p);
+    });
+    return items;
+  }
+
+  function calc(){
+    const board = v('board');
+    $('boardVal').textContent = fmt(board);
+    $('s-board').textContent = fmt(board)+' Ft';
+
+    const len = v('cableLen'), r15 = v('ratio15');
+    $('r15').textContent = r15; $('r25').textContent = 100-r15;
+    const len15 = len*r15/100, len25 = len*(100-r15)/100;
+    $('m15').textContent = len15.toFixed(1); $('m25').textContent = len25.toFixed(1);
+    const cableMat = len15*v('p15') + len25*v('p25');
+    $('lo-cablemat').textContent = 'Kábel anyag: '+fmt(cableMat)+' Ft';
+
+    const simaM=v('simaM'), sullM=v('sullM'), csatM=v('csatM');
+    const alloc = simaM+sullM+csatM;
+    const ac = $('alloc');
+    ac.textContent = 'Kiosztva: '+alloc.toFixed(1)+' / '+len.toFixed(1)+' m';
+    ac.className = 'check '+(Math.abs(alloc-len)<0.05 ? 'ok' : 'bad');
+
+    const rThin = v('ratioThin');
+    $('rThin').textContent = rThin; $('rThick').textContent = 100-rThin;
+    const gege = sullM*v('pgege');
+    const csat = csatM*(rThin/100)*v('pthin') + csatM*(1-rThin/100)*v('pthick');
+    $('lo-extra').textContent = 'Gégecső + csatorna: '+fmt(gege+csat)+' Ft';
+
+    const gipsz = v('gipszKg')*v('pgipsz');
+    const cableTotal = cableMat + gege + csat + gipsz;
+    $('s-cable').textContent = fmt(cableTotal)+' Ft';
+
+    const fit = v('qOutlet')*v('pOutlet') + v('qSw1')*v('pSw1') + v('qSw2')*v('pSw2')
+              + v('qSw3')*v('pSw3') + v('qFrame')*v('pFrame');
+    const fitCount = v('qOutlet')+v('qSw1')+v('qSw2')+v('qSw3');
+    $('lo-fitcount').textContent = 'Összes szerelvény: '+fitCount+' db (+ '+v('qFrame')+' keret)';
+    $('s-fit').textContent = fmt(fit)+' Ft';
+
+    const lamp = v('lampTotal'); const lq = v('lampQty');
+    $('lo-lamp').textContent = 'Átlag: '+(lq>0?fmt(lamp/lq):'0')+' Ft/db';
+    $('s-lamp').textContent = fmt(lamp)+' Ft';
+
+    let other = 0;
+    otherList.querySelectorAll('.oprice').forEach(el=> other += parseFloat(el.value)||0);
+    $('s-other').textContent = fmt(other)+' Ft';
+
+    const baseTot = board + cableTotal + fit + lamp + other;
+    const res = v('reserve');
+    $('resVal').textContent = res;
+    const reserveAmt = baseTot*res/100;
+    $('resAmt').textContent = '+'+fmt(reserveAmt)+' Ft';
+    const grand = baseTot + reserveAmt;
+
+    $('grand').innerHTML = fmt(grand)+' <span>Ft</span>';
+    $('m-basetot').textContent = fmt(baseTot);
+    $('m-board').textContent = fmt(board); $('m-cable').textContent = fmt(cableTotal);
+    $('m-fit').textContent = fmt(fit); $('m-lamp').textContent = fmt(lamp); $('m-other').textContent = fmt(other);
+
+    const labor = v('labor');
+    const totalAll = grand + labor;
+    $('c-mat').textContent = fmt(grand)+' Ft';
+    $('c-lab').textContent = fmt(labor)+' Ft';
+    $('c-ratio').textContent = (totalAll>0 ? Math.round(grand/totalAll*100) : 0)+'%';
+    $('c-grand').textContent = fmt(totalAll)+' Ft';
+  }
+
+  // ---- Export: items at raised (reserve-included) value, percentage hidden ----
+  function buildExportText(){
+    const res = v('reserve');
+    const mult = 1 + res/100;
+    const items = buildItems();
+    const W = 34; // name column width
+    const lines = [];
+    lines.push('PANEL FELUJITAS — ANYAGLISTA');
+    lines.push(new Date().toISOString().slice(0,10));
+    lines.push('='.repeat(46));
+    lines.push('');
+    let sum = 0;
+    items.forEach(it=>{
+      const val = it.val*mult;
+      sum += val;
+      let nm = it.name; if(nm.length>W) nm = nm.slice(0,W);
+      const priceStr = fmt(val)+' Ft';
+      const dots = Math.max(2, 46 - nm.length - priceStr.length);
+      lines.push(nm + '.'.repeat(dots) + priceStr);
+    });
+    lines.push('-'.repeat(46));
+    const totStr = fmt(sum)+' Ft';
+    lines.push('OSSZESEN' + '.'.repeat(Math.max(2,46-8-totStr.length)) + totStr);
+    return lines.join('\n');
+  }
+
+  function openExport(){
+    $('exportText').value = buildExportText();
+    $('ov').classList.add('show');
+  }
+  $('exportBtn').addEventListener('click', openExport);
+  $('closeBtn').addEventListener('click', ()=> $('ov').classList.remove('show'));
+  $('ov').addEventListener('click', e=>{ if(e.target===$('ov')) $('ov').classList.remove('show'); });
+  $('copyBtn').addEventListener('click', ()=>{
+    const ta=$('exportText'); ta.select(); ta.setSelectionRange(0,99999);
+    try{ navigator.clipboard.writeText(ta.value); }catch(e){ document.execCommand('copy'); }
+    $('copyBtn').textContent='Másolva ✓';
+    setTimeout(()=>$('copyBtn').textContent='Vágólapra',1500);
+  });
+  $('dlBtn').addEventListener('click', ()=>{
+    const blob=new Blob([$('exportText').value],{type:'text/plain;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='anyaglista.txt';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+
+  document.querySelectorAll('input').forEach(el=> el.addEventListener('input', calc));
+
+  // job-specific quantity fields (zeroed by default and by Nullázás; rates kept)
+  const QTY = ['cableLen','simaM','sullM','csatM','gipszKg','qOutlet','qSw1','qSw2','qSw3','qFrame','lampTotal','lampQty','labor'];
+
+  function zeroState(){
+    QTY.forEach(id=> $(id).value=0);
+    $('reserve').value=0;
+    otherList.innerHTML=''; makeOtherRow('', '');
+    calc();
+  }
+
+  // "Példa munka": load the reference job
+  $('defaults').addEventListener('click', ()=>{
+    const d={board:160000,cableLen:52,ratio15:60,p15:600,p25:825,simaM:20,sullM:22,pgege:200,
+      csatM:10,ratioThin:50,pthin:1500,pthick:2750,gipszKg:15,pgipsz:375,
+      qOutlet:30,pOutlet:1500,qSw1:4,pSw1:1500,qSw2:2,pSw2:2250,qSw3:1,pSw3:4000,qFrame:30,pFrame:2500,
+      lampTotal:40000,lampQty:5,labor:0,reserve:0};
+    for(const k in d){ if($(k)) $(k).value=d[k]; }
+    otherList.innerHTML=''; makeOtherRow('Kötődobozok / WAGO / apró anyag', 15000); makeOtherRow('', '');
+    calc();
+  });
+
+  $('clear').addEventListener('click', zeroState);
+
+  // init: zeroed quantities, rates retained
+  makeOtherRow('', '');
+  calc();
+})();
+</script>
+</body>
+</html>
