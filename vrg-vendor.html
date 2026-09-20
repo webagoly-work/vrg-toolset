@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Vendor</title>
+<style>
+  :root{
+    --bg: #171310;
+    --panel: #201a14;
+    --panel-2: #150f0b;
+    --line: #3a2f22;
+    --line-soft: #2a231a;
+    --amber: #e2a13a;
+    --amber-soft: #7a5a29;
+    --rust: #c1622a;
+    --green: #7d9a4e;
+    --text: #f1e7d6;
+    --text-dim: #a89a85;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+    --sans: "Segoe UI", -apple-system, system-ui, sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.5; }
+  header{ padding:40px 32px 24px; border-bottom:1px solid var(--line); }
+  header h1{ margin:0 0 6px; font-size:28px; font-weight:700; letter-spacing:-0.01em; }
+  header p{ margin:0 0 4px; color:var(--text-dim); font-size:14px; max-width:78ch; }
+  header code{ font-family:var(--mono); color:var(--amber); font-size:13px; }
+  .controls{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:20px 32px; border-bottom:1px solid var(--line); }
+  #search{ background:transparent; border:none; border-bottom:1px solid var(--line); color:var(--text);
+           font-family:var(--sans); font-size:14px; padding:8px 2px; min-width:220px; outline:none; }
+  #search:focus{ border-bottom-color:var(--amber); }
+  #search::placeholder{ color:var(--text-dim); }
+  .tabs{ display:flex; flex-wrap:wrap; gap:6px; }
+  .tabs.right{ margin-left:auto; }
+  .tab{ background:transparent; border:1px solid var(--line); color:var(--text-dim); font-family:var(--mono);
+        font-size:12px; padding:6px 10px; cursor:pointer; border-radius:2px; }
+  .tab:hover{ border-color:var(--amber-soft); color:var(--text); }
+  .tab.on{ border-color:var(--amber); color:var(--amber); }
+  main{ padding:24px 32px 64px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:14px; }
+  .card{ background:var(--panel); border:1px solid var(--line-soft); border-left:3px solid var(--amber-soft);
+         border-radius:2px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .card.p1{ border-left-color:var(--rust); }
+  .card.p2{ border-left-color:var(--amber-soft); }
+  .card.p3{ border-left-color:var(--line); }
+  .card h3{ margin:0; font-size:15px; font-weight:600; }
+  .meta{ display:flex; flex-wrap:wrap; gap:5px; }
+  .pill{ font-family:var(--mono); font-size:11px; padding:2px 7px; border:1px solid var(--line);
+         border-radius:2px; color:var(--text-dim); }
+  .pill.aspect{ color:var(--amber); border-color:var(--amber-soft); }
+  .pill.offline{ color:var(--green); border-color:#4d5c33; }
+  .pill.warn{ color:var(--rust); border-color:#6b3a1c; }
+  .note{ margin:0; font-size:13px; color:var(--text-dim); }
+  .links{ display:flex; flex-wrap:wrap; gap:12px; margin-top:auto; padding-top:6px; border-top:1px solid var(--line-soft); }
+  .links a{ font-family:var(--mono); font-size:12px; color:var(--amber); text-decoration:none; }
+  .links a:hover{ text-decoration:underline; }
+  .links span{ font-family:var(--mono); font-size:12px; color:var(--text-dim); }
+  .empty{ color:var(--text-dim); font-size:14px; padding:32px 0; }
+  footer{ padding:0 32px 48px; color:var(--text-dim); font-size:13px; max-width:88ch; }
+  footer h2{ font-size:14px; color:var(--text); margin:24px 0 6px; font-weight:600; }
+  footer code{ font-family:var(--mono); color:var(--amber); }
+  footer ul{ padding-left:18px; margin:6px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>VRG Vendor</h1>
+  <p>Külső komponensek, amiket a VRG eszközök használnak vagy használhatnak. A lista forrása a
+     <code>vendor-manifest.json</code>; az alábbi tömb abból generált — kézzel ne írd át, futtasd inkább:
+     <code>node tools/fetch-vendor.js --sync-page</code>.</p>
+  <p>A „helyi másolat” linkek addig nem működnek, amíg le nem töltöd őket:
+     <code>node tools/fetch-vendor.js --all</code>. A <code>Vendor/</code> mappa nincs verziókezelve
+     (ugyanaz a szabály, mint a <code>Planner/apps/</code> esetén).</p>
+</header>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Keresés...">
+  <div class="tabs" id="tabs-aspect"></div>
+  <div class="tabs right" id="tabs-build"></div>
+</div>
+
+<main>
+  <div class="grid" id="grid"></div>
+  <p class="empty" id="empty" style="display:none">Nincs találat.</p>
+</main>
+
+<footer>
+  <h2>Jelölések</h2>
+  <ul>
+    <li><b>letölthető</b> — a <code>fetch-vendor.js</code> be tudja húzni a <code>Vendor/</code> alá.</li>
+    <li><b>npm</b> — fejlesztői függőség, npm-mel települ, nem vendoroljuk.</li>
+    <li><b>hivatkozás</b> — szerver vagy platformfüggő bináris; sosem kerül a repóba, felülről települ.</li>
+    <li><b>egyfájlos-offline</b> — elfér egyetlen offline HTML-ben. <b>helyi-eszköz</b> — csak build/teszt
+        időben fut, sosem kerül a <code>dist</code>-be. <b>szerver</b> — szolgáltatást, adatbázist vagy
+        konténert igényel.</li>
+    <li>A bal szegély a prioritás: <span style="color:var(--rust)">■</span> most,
+        <span style="color:var(--amber-soft)">■</span> következő kör,
+        <span style="color:var(--line)">■</span> jó tudni róla.</li>
+  </ul>
+
+  <h2>Csillagszám — olvasási segédlet</h2>
+  <p>Az ügynök-skillek környékén a csillagszám jelenleg felfújt: néhány hónapos tárak állnak 100 ezer
+     fölött. Marketing-elérésként olvasd, ne bizonyítékként. A megbízható számok az unalmasak —
+     az <code>Inkscape_electric_Symbols</code> 572 csillaga hat év alatt többet ér.</p>
+  <p>A „mozgás” dátum a legutóbbi <i>kódfeltöltés</i> (<code>pushed_at</code>), nem a
+     <code>updated_at</code>: utóbbi egy csillagtól is elmozdul, és semmit nem mond arról, él-e a projekt.</p>
+
+  <h2>Részletes indoklás</h2>
+  <p>Miért éppen ezek, és mit adnak a mi munkánkhoz:
+     <code>docs/components-offline.md</code> (egyfájlos + helyi eszközök) és
+     <code>docs/services-server.md</code> (szerveresek, üzemeltetési költséggel).
+     A Planner-specifikus könyvtárak első köre:
+     <code>Planner/projects/varler-planner/docs/library-scouting.md</code>.</p>
+</footer>
+
+<script>
+  // Generated from vendor-manifest.json — do not edit by hand.
+  // Regenerate: node tools/fetch-vendor.js --sync-page
+  /*__COMPONENTS_START__*/
+  const COMPONENTS = [
+    {
+      "slug": "inkscape-electric-symbols",
+      "name": "Inkscape Electric Symbols",
+      "repo": "upb-lea/Inkscape_electric_Symbols",
+      "npm": null,
+      "license": "CC0-1.0",
+      "stars": 572,
+      "pushed": "2026-02-08",
+      "aspect": "Planner",
+      "build": "egyfajlos-offline",
+      "priority": 1,
+      "vendor": "fetch",
+      "target": "inkscape-electric-symbols",
+      "note": "Villamos kapcsolási jelek SVG-ben. CC0 — közkincs, nincs licencakadály. Ez adat, nem kód: se bundler, se globális névtér nem érinti."
+    },
+    {
+      "slug": "tesseract-js",
+      "name": "tesseract.js",
+      "repo": "naptha/tesseract.js",
+      "npm": null,
+      "license": "Apache-2.0",
+      "stars": 38719,
+      "pushed": "2026-05-17",
+      "aspect": "Planner",
+      "build": "egyfajlos-offline",
+      "priority": 2,
+      "vendor": "fetch",
+      "target": "tesseract-js",
+      "note": "Tiszta JS OCR, magyar nyelvi csomaggal (hun). Adattábla-leolvasás telefonnal, hálózat nélkül. A nyelvi adat több MB — kísérőfájl, nem beágyazás."
+    },
+    {
+      "slug": "homerougheditor",
+      "name": "homeRoughEditor",
+      "repo": "ekymo/homeRoughEditor",
+      "npm": null,
+      "license": "MIT",
+      "stars": 394,
+      "pushed": "2024-07-21",
+      "aspect": "Planner",
+      "build": "egyfajlos-offline",
+      "priority": 2,
+      "vendor": "fetch",
+      "target": "homerougheditor",
+      "note": "SVG alaprajz-szerkesztő, keretrendszer nélküli JS, 212 KB. Olvasmány, nem függőség — a fal-csomópont és szoba-felismerés modellje érdekes. 2024 óta nincs kódmozgás."
+    },
+    {
+      "slug": "fflate",
+      "name": "fflate",
+      "repo": "101arrowz/fflate",
+      "npm": null,
+      "license": "MIT",
+      "stars": 3018,
+      "pushed": "2026-05-16",
+      "aspect": "Planner",
+      "build": "egyfajlos-offline",
+      "priority": 1,
+      "vendor": "fetch",
+      "target": "fflate",
+      "note": "~8 kB deflate/ZIP. A .vbundle.json mentések tömörítése és a base64 lámpafotók zsugorítása. Az első scouting-kör 1. helyezettje."
+    },
+    {
+      "slug": "idb-keyval",
+      "name": "idb-keyval",
+      "repo": "jakearchibald/idb-keyval",
+      "npm": null,
+      "license": "NOASSERTION",
+      "stars": 3245,
+      "pushed": "2026-07-08",
+      "aspect": "Planner",
+      "build": "egyfajlos-offline",
+      "priority": 2,
+      "vendor": "fetch",
+      "target": "idb-keyval",
+      "note": "~1 kB IndexedDB burkoló a localStorage 5-10 MB-os fala helyett. FIGYELEM: a GitHub nem ismer fel szabványos licencet — a LICENSE fájlt integrálás előtt el kell olvasni."
+    },
+    {
+      "slug": "pdfjs",
+      "name": "pdf.js",
+      "repo": "mozilla/pdf.js",
+      "npm": null,
+      "license": "Apache-2.0",
+      "stars": 53902,
+      "pushed": "2026-09-20",
+      "aspect": "Inventory",
+      "build": "helyi-eszkoz",
+      "priority": 1,
+      "vendor": "fetch",
+      "target": "pdfjs",
+      "note": "Helyettesíti a tools/pdf2.js 62 sorát. getTextContent() pozícióval adja a szöveget — pont az, amit a pdfrows.js vár. Type0/CID betűkészleteket is kezel."
+    },
+    {
+      "slug": "iconv-lite",
+      "name": "iconv-lite",
+      "repo": null,
+      "npm": "iconv-lite",
+      "license": "MIT (npm szerint — a GitHub-tárat nem sikerült visszaigazolni)",
+      "stars": null,
+      "pushed": null,
+      "aspect": "Inventory",
+      "build": "helyi-eszkoz",
+      "priority": 1,
+      "vendor": "npm",
+      "target": null,
+      "note": "Az egyetlen tétel, ami MEGLÉVŐ hibát javít: a tools/eml.js latin1-re esik vissza minden nem-UTF-8 levélnél, így az ISO-8859-2 magyar levelek elromlanak."
+    },
+    {
+      "slug": "exceljs",
+      "name": "ExcelJS",
+      "repo": "exceljs/exceljs",
+      "npm": null,
+      "license": "MIT",
+      "stars": 15480,
+      "pushed": "2025-01-21",
+      "aspect": "Inventory",
+      "build": "helyi-eszkoz",
+      "priority": 2,
+      "vendor": "npm",
+      "target": null,
+      "note": "Helyettesíti a tools/xlsx.js 45 sorát. FIGYELEM: utolsó kódmozgás 2025-01, 808 nyitott hibajegy — működik, de nem gondozott. A SheetJS elhagyta az npm-et, ezért mégis ez a járhatóbb út."
+    },
+    {
+      "slug": "playwright",
+      "name": "Playwright",
+      "repo": "microsoft/playwright",
+      "npm": null,
+      "license": "Apache-2.0",
+      "stars": 96412,
+      "pushed": "2026-09-20",
+      "aspect": "Fejlesztés",
+      "build": "helyi-eszkoz",
+      "priority": 1,
+      "vendor": "npm",
+      "target": null,
+      "note": "Betölti a docs/browser_verification_checklist.md kézi körét, amit a jsdom nem tud. file:// URL-t közvetlenül hajt. Külön vizuális regressziós könyvtár NEM kell mellé."
+    },
+    {
+      "slug": "biome",
+      "name": "Biome",
+      "repo": "biomejs/biome",
+      "npm": null,
+      "license": "Apache-2.0",
+      "stars": 25833,
+      "pushed": "2026-09-20",
+      "aspect": "Fejlesztés",
+      "build": "helyi-eszkoz",
+      "priority": 2,
+      "vendor": "npm",
+      "target": null,
+      "note": "A CLAUDE.md kimondja: \"There is no lint script.\" Ez betölti — egyetlen bináris, se bundler, se keretrendszer."
+    },
+    {
+      "slug": "skillspector",
+      "name": "SkillSpector",
+      "repo": "NVIDIA/SkillSpector",
+      "npm": null,
+      "license": null,
+      "stars": 17918,
+      "pushed": null,
+      "aspect": "Fejlesztés",
+      "build": "helyi-eszkoz",
+      "priority": 1,
+      "vendor": "reference",
+      "target": null,
+      "note": "Agent skill-ek biztonsági vizsgálata TELEPÍTÉS ELŐTT: prompt injection, adatkiszivárgás, ellátásilánc-kockázat. Minden linkgyűjteményből érkező skill ezen menjen át."
+    },
+    {
+      "slug": "restic",
+      "name": "restic",
+      "repo": "restic/restic",
+      "npm": null,
+      "license": "BSD-2-Clause",
+      "stars": 36153,
+      "pushed": "2026-09-20",
+      "aspect": "Üzemeltetés",
+      "build": "helyi-eszkoz",
+      "priority": 1,
+      "vendor": "reference",
+      "target": null,
+      "note": "Az Inventory/data/ pótolhatatlan: vrg-id-registry.json, teljes ártörténet, minden rendelési sor. Jelenleg nincs mentési terv. Platformfüggő bináris — nem vendorolható."
+    },
+    {
+      "slug": "paperless-ngx",
+      "name": "Paperless-ngx",
+      "repo": "paperless-ngx/paperless-ngx",
+      "npm": null,
+      "license": "GPL-3.0",
+      "stars": 45518,
+      "pushed": "2026-09-20",
+      "aspect": "Inventory",
+      "build": "szerver",
+      "priority": 2,
+      "vendor": "reference",
+      "target": null,
+      "note": "Amit az Inventory/tools/ kézzel csinál: beolvasás, OCR, indexelés, címkézés. Magyar OCR nyelvi csomaggal. NEM váltja ki a kinyerő pipeline-t — a forrásdokumentumoknak ad otthont."
+    },
+    {
+      "slug": "docspell",
+      "name": "Docspell",
+      "repo": "eikek/docspell",
+      "npm": null,
+      "license": "AGPL-3.0",
+      "stars": 2331,
+      "pushed": "2026-09-19",
+      "aspect": "Inventory",
+      "build": "szerver",
+      "priority": 3,
+      "vendor": "reference",
+      "target": null,
+      "note": "A Paperless alternatívája, kifejezetten e-mail forrásokra építve — ez jobban illik a DANIELLA levélarchívumhoz. Kisebb közösség."
+    },
+    {
+      "slug": "backrest",
+      "name": "Backrest",
+      "repo": "garethgeorge/backrest",
+      "npm": null,
+      "license": "GPL-3.0",
+      "stars": 7377,
+      "pushed": "2026-09-14",
+      "aspect": "Üzemeltetés",
+      "build": "szerver",
+      "priority": 3,
+      "vendor": "reference",
+      "target": null,
+      "note": "Webes felület a restic fölé. Csak akkor, ha a parancssor útban van — önmagában nem ad új képességet."
+    },
+    {
+      "slug": "kimai",
+      "name": "Kimai",
+      "repo": "kimai/kimai",
+      "npm": null,
+      "license": "AGPL-3.0",
+      "stars": 5015,
+      "pushed": "2026-09-17",
+      "aspect": "Üzemeltetés",
+      "build": "szerver",
+      "priority": 3,
+      "vendor": "reference",
+      "target": null,
+      "note": "Munkaóra-követés számlázásig, többnyelvű. Szűk és könnyű: ha a hiányzó láncszem a \"helyszíni óra → számla\", ez a kisebb eszköz."
+    },
+    {
+      "slug": "frappe-books",
+      "name": "Frappe Books",
+      "repo": "frappe/books",
+      "npm": null,
+      "license": "AGPL-3.0",
+      "stars": 4975,
+      "pushed": "2026-09-20",
+      "aspect": "Üzemeltetés",
+      "build": "helyi-eszkoz",
+      "priority": 2,
+      "vendor": "reference",
+      "target": null,
+      "note": "Könyvelés + készlet + számlázás Electronban, OFFLINE — nincs szerver. A listán ez az egyetlen üzleti eszköz, ami nem kér üzemeltetést."
+    },
+    {
+      "slug": "excalidraw",
+      "name": "Excalidraw",
+      "repo": "excalidraw/excalidraw",
+      "npm": null,
+      "license": "MIT",
+      "stars": 132531,
+      "pushed": "2026-09-20",
+      "aspect": "Új terület",
+      "build": "egyfajlos-offline",
+      "priority": 3,
+      "vendor": "fetch",
+      "target": "excalidraw",
+      "note": "Kézirajz-hatású vázlat. Nem a Planner versenytársa — a felmérés előtti gyors helyszínrajzé. Offline is megy."
+    },
+    {
+      "slug": "diagram-design",
+      "name": "diagram-design",
+      "repo": "cathrynlavery/diagram-design",
+      "npm": null,
+      "license": null,
+      "stars": 41495,
+      "pushed": null,
+      "aspect": "MindMap",
+      "build": "egyfajlos-offline",
+      "priority": 2,
+      "vendor": "fetch",
+      "target": "diagram-design",
+      "note": "\"Self-contained HTML + SVG. No Mermaid slop.\" A MindMap/lib/mermaid.min.js 3,5 MB — a repó legnagyobb fájlja, nagyobb mint a két kész program együtt."
+    },
+    {
+      "slug": "ponytail",
+      "name": "ponytail",
+      "repo": "DietrichGebert/ponytail",
+      "npm": null,
+      "license": null,
+      "stars": 142909,
+      "pushed": null,
+      "aspect": "Fejlesztés",
+      "build": "helyi-eszkoz",
+      "priority": 3,
+      "vendor": "reference",
+      "target": null,
+      "note": "\"A legjobb kód az, amit meg sem írtál.\" A library-scouting.md már így gondolkodik; ez az ügynökbe teszi át. A csillagszámot lásd a kalibrációs megjegyzésnél."
+    },
+    {
+      "slug": "planning-with-files",
+      "name": "planning-with-files",
+      "repo": "OthmanAdi/planning-with-files",
+      "npm": null,
+      "license": null,
+      "stars": 27020,
+      "pushed": null,
+      "aspect": "Fejlesztés",
+      "build": "helyi-eszkoz",
+      "priority": 3,
+      "vendor": "reference",
+      "target": null,
+      "note": "Fájlalapú tervezés, ami túléli a /clear-t. Az ARCHITECTURE.md + DECISIONS.md + 1.1_backlog.md ennek a kézi változata."
+    },
+    {
+      "slug": "recall",
+      "name": "recall",
+      "repo": "raiyanyahya/recall",
+      "npm": null,
+      "license": null,
+      "stars": 752,
+      "pushed": null,
+      "aspect": "Fejlesztés",
+      "build": "helyi-eszkoz",
+      "priority": 3,
+      "vendor": "reference",
+      "target": null,
+      "note": "Tartós Claude Code memória, teljesen offline. A docs/AI-CONTEXT.md és az EXPORT_vrg-inventory.txt ennek a kézi változata."
+    },
+    {
+      "slug": "pascalorg-editor",
+      "name": "pascal editor",
+      "repo": "pascalorg/editor",
+      "npm": null,
+      "license": null,
+      "stars": 24171,
+      "pushed": null,
+      "aspect": "Planner",
+      "build": "szerver",
+      "priority": 3,
+      "vendor": "reference",
+      "target": null,
+      "note": "3D építészeti szerkesztő MCP-vel, ügynöknek tervezve. Next.js + three.js, tehát ÁTVENNI NEM LEHET — a dokumentummodelljét érdemes elolvasni a 2_0_architecture.md mellé."
+    }
+  ];
+  /*__COMPONENTS_END__*/
+
+  const VENDOR_DIR = 'Vendor';
+  const $ = id => document.getElementById(id);
+  const state = { q: '', aspect: 'mind', build: 'mind' };
+
+  const uniq = key => ['mind', ...new Set(COMPONENTS.map(c => c[key]))];
+
+  function buildTabs(el, key) {
+    el.innerHTML = '';
+    uniq(key).forEach(v => {
+      const b = document.createElement('button');
+      b.className = 'tab' + (state[key] === v ? ' on' : '');
+      b.textContent = v;
+      b.onclick = () => { state[key] = v; buildTabs($('tabs-aspect'), 'aspect'); buildTabs($('tabs-build'), 'build'); render(); };
+      el.appendChild(b);
+    });
+  }
+
+  function matches(c) {
+    if (state.aspect !== 'mind' && c.aspect !== state.aspect) return false;
+    if (state.build !== 'mind' && c.build !== state.build) return false;
+    if (!state.q) return true;
+    const hay = [c.name, c.repo, c.npm, c.note, c.aspect, c.license].join(' ').toLowerCase();
+    return hay.includes(state.q);
+  }
+
+  function card(c) {
+    const el = document.createElement('article');
+    el.className = 'card p' + c.priority;
+
+    const h = document.createElement('h3');
+    h.textContent = c.name;
+    el.appendChild(h);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    const pills = [
+      { t: c.aspect, cls: 'aspect' },
+      { t: c.build, cls: c.build === 'egyfajlos-offline' ? 'offline' : '' },
+      { t: c.vendor === 'fetch' ? 'letölthető' : c.vendor === 'npm' ? 'npm' : 'hivatkozás', cls: '' },
+      { t: c.license || 'licenc: ellenőrizendő', cls: c.license ? '' : 'warn' },
+      { t: c.stars ? c.stars.toLocaleString('hu-HU') + '★' : '', cls: '' },
+      { t: c.pushed ? 'mozgás ' + c.pushed : '', cls: '' }
+    ];
+    pills.filter(p => p.t).forEach(p => {
+      const s = document.createElement('span');
+      s.className = 'pill ' + p.cls;
+      s.textContent = p.t;
+      meta.appendChild(s);
+    });
+    el.appendChild(meta);
+
+    const n = document.createElement('p');
+    n.className = 'note';
+    n.textContent = c.note;
+    el.appendChild(n);
+
+    const links = document.createElement('div');
+    links.className = 'links';
+    if (c.repo) {
+      const a = document.createElement('a');
+      a.href = 'https://github.com/' + c.repo;
+      a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = 'github ↗';
+      links.appendChild(a);
+    }
+    if (c.vendor === 'fetch' && c.target) {
+      const a = document.createElement('a');
+      a.href = VENDOR_DIR + '/' + c.target + '/';
+      a.textContent = 'helyi másolat';
+      links.appendChild(a);
+    }
+    if (c.vendor === 'npm') {
+      const s = document.createElement('span');
+      s.textContent = 'npm i -D ' + (c.npm || c.name.toLowerCase());
+      links.appendChild(s);
+    }
+    el.appendChild(links);
+    return el;
+  }
+
+  function render() {
+    const grid = $('grid');
+    grid.innerHTML = '';
+    const rows = COMPONENTS.filter(matches)
+      .sort((a, b) => a.priority - b.priority || a.name.localeCompare(b.name, 'hu'));
+    rows.forEach(c => grid.appendChild(card(c)));
+    $('empty').style.display = rows.length ? 'none' : 'block';
+  }
+
+  $('search').addEventListener('input', e => { state.q = e.target.value.toLowerCase(); render(); });
+  buildTabs($('tabs-aspect'), 'aspect');
+  buildTabs($('tabs-build'), 'build');
+  render();
+</script>
+
+</body>
+</html>

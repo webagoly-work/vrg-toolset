@@ -9,6 +9,12 @@ Planner/data/
 # --- Portable programs (5 GB, not our code) ---
 Planner/apps/
 
+# --- Vendored third-party components (fetched, not authored) ---
+# Rebuild with: node tools/fetch-vendor.js --all
+# The reproducible part is vendor-manifest.json + Vendor/.lock.json
+Vendor/
+!Vendor/.lock.json
+
 # --- Client documents stay on this PC ---
 *.pdf
 

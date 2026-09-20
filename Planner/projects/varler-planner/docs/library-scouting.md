@@ -144,145 +144,40 @@ Everything else on this list is a *know it exists* entry, not a *take it* entry.
 
 ---
 
-# Second pass — GitHub search, 2026-09-20
+# Second pass — 2026-09-20
 
-*Found by searching GitHub directly rather than by reading a recommendation feed. Every entry
-below carries its **star count and last-push date**, because that is the signal the
-link-aggregator route does not give you and the thing most worth knowing before you depend on
-anything.*
+The second scouting round searched GitHub directly rather than reading a recommendation feed. It
+covered the whole VRG toolset, not just the planner, so **it does not live in this file** — a
+document scoped to "judged against the single-file rule" loses its value if business tooling and
+servers get mixed in. It lives here instead:
 
-One tag is new. **TOOLING** means *runs on this PC at build or test time and never enters
-`dist`* — so the single-file rule, the global-scope rule and the size budget simply do not
-apply to it. That distinction is what makes most of this section cheap. A few entries below are
-scoped to `Inventory/` rather than the planner; they are marked, and they live here because
-this is where library decisions get recorded, not because the planner needs them.
+| | |
+|---|---|
+| `/docs/components-offline.md` | single-file/offline components and local build-time tooling, grouped by which VRG aspect they serve |
+| `/docs/services-server.md` | things that need a server, with the operational cost stated up front |
+| `/vendor-manifest.json` | machine-readable source of truth — licence, stars, last **code** push |
+| `/vrg-vendor.html` | the same list as a VRG-style page; `node tools/fetch-vendor.js --all` downloads what is downloadable |
 
-**Calibration, stated once.** Star counts in the agent-skills corner of GitHub are currently
-inflated by marketplace and curated-list dynamics — several three-month-old repos sit above
-100k. Read those as marketing reach, not as evidence of being battle-tested. The numbers worth
-trusting here are the unglamorous ones: 394 stars over eight years beats 142k over three months.
+What the second pass changes about **this** file:
 
----
+### `jakearchibald/idb-keyval` — the licence above is unverified
+This document records it as Apache-2.0. The GitHub API reports `NOASSERTION` — no standard
+licence detected. That is not an accusation, it is a gap: read the LICENSE file before this goes
+into a file handed to a customer. The technical argument for it is unaffected.
 
-## Things that could ship in `dist`
+### A method correction worth keeping
+Judging whether a project is alive means reading `pushed_at` (last code push), **not**
+`updated_at` — the latter moves when somebody stars the repository. The second pass initially
+called `ekymo/homeRoughEditor` actively maintained on the strength of `updated_at: 2026-09`; its
+last actual code push was **2024-07-21**. Good as a reference, disqualifying as a dependency.
+The same mistake is easy to repeat on every entry in this file.
 
-### `upb-lea/Inkscape_electric_Symbols` — 572★, active — **NOW, pending a licence read**
-An electrical symbol library in Inkscape SVG, from Paderborn's power-electronics group. The
-reason this one is unusually low-risk: **symbols are data, not code.** No bundler, no global
-scope to collide with, no TDZ ordering question — it is geometry you paste into `04-render.js`
-or `10-lamps.js`. The only real gate is whether its licence permits redistribution inside a
-drawing you hand to a customer. Read that before inlining a single path.
+### One blocker dissolved
+`upb-lea/Inkscape_electric_Symbols` is **CC0-1.0** — a public-domain dedication. It is the
+cleanest candidate in either pass: symbols are data, so none of the constraints at the top of
+this document apply to them at all.
 
-### `ekymo/homeRoughEditor` — 394★, created 2018, still pushed — **reference, not a dependency**
-"Floorplan editor SVG to create houseplan and homeplan with Javascript for client." The closest
-public peer to this project that exists: same medium, same no-framework posture, same problem.
-Take it as a **reading exercise, not an import** — specifically how it models wall junctions and
-room detection, since `1.1_backlog.md` is about to rework exactly that into
-terminals/segments/runs/circuits. Eight years of survival is the interesting fact about it.
-
-### `pascalorg/editor` — 24.2k★, very active — **NO as a dependency, WATCH as a design source**
-Local-first 3D architectural editor — BIM/CAD/floorplan — with MCP tools and agent skills built
-in. Next.js and react-three-fiber, so adopting it is off the table and always will be. Noted
-because it is the only serious *floorplan editor designed for an agent to drive*, which makes
-its document schema worth reading against `2_0_architecture.md`. Read the model, take nothing.
-
----
-
-## TOOLING — never enters `dist`
-
-### `NVIDIA/SkillSpector` — 17.9k★ — **TOOLING, do this first**
-Scans agent skills (Claude Code, Codex, MCP) for prompt injection, data exfiltration and
-supply-chain risk *before installation*. This is the highest-value entry in this pass and it is
-not close. Any skill arriving from a link aggregator, a curated list or a social feed should go
-through this before it touches the machine — see the provenance note under **Recorded as NO**.
-
-### Playwright — Apache-2.0 — **TOOLING, and the search's most useful negative result**
-`browser_verification_checklist.md` exists because jsdom cannot do that pass, and
-`tests/README.md` documents the gap. Playwright closes it: it drives `file://` directly, which
-is the actual deployment target, and its screenshot comparison complements the 70 jsdom golden
-renders rather than duplicating them.
-
-The negative result matters as much: **no dedicated visual-regression library is worth adding
-on top.** `lost-pixel` (1.7k★) is archived; the rest are Storybook- or Cypress-bound and assume
-a framework and a dev server, neither of which exists here. Playwright's built-in
-`toHaveScreenshot` is the whole answer, so this recommendation costs one dev dependency.
-
-### `iconv-lite` — MIT — **TOOLING, `Inventory/`, and it fixes a live bug**
-`tools/eml.js:10` falls back to `latin1` for any non-UTF-8 charset. Hungarian vendor mail is
-routinely **ISO-8859-2 (Latin-2)**, where `ő` is `0xF5` — in Latin-1 that decodes as `õ`. Lines
-48–49 have the same defect: the quoted-printable body is pushed through the latin1→utf8 trick
-regardless of the declared charset, which is correct for UTF-8 mail and mojibake for Latin-2.
-`iconv-lite` honours the declared charset. This is very likely also *why* `tools/pdf2.js` needs
-its hand-written `MAP = { '0118': 'ő', '0126': 'ű' }`.
-
-Smallest change on this list, and the only entry that repairs something already broken.
-
-### `mozilla/pdf.js` (`pdfjs-dist`) — Apache-2.0 — **TOOLING, `Inventory/`**
-Replaces `tools/pdf2.js` — 62 lines that regex-scan for `stream` blocks and understand only
-`Td`/`Tj` in latin1, and therefore break on any vendor PDF using Type0/CID fonts.
-`getTextContent()` returns text *with positions*, which is the shape `pdfrows.js` already wants.
-
-### `exceljs` — MIT — **TOOLING, `Inventory/`**
-Replaces `tools/xlsx.js` — 45 lines of hand-rolled ZIP central-directory walking that reads only
-`sharedStrings`, with no handling for inline strings, date serials or number formats.
-
-SheetJS is the better-known option and is **not** the easier one any more: its GitHub repo now
-redirects to `git.sheetjs.com`, and it has left npm. Verified, not remembered. Prefer `exceljs`
-unless something specific demands otherwise.
-
-### `ibrahimqureshae/mdflux` — 424★ — **WATCH, `Inventory/`**
-Local-first PDF→Markdown including scanned PDFs with OCR. A desktop app rather than a library,
-so treat it as a **benchmark** — does it beat `pdf2.js` on the real vendor documents? — rather
-than as something to import into the pipeline.
-
----
-
-## Agent harness — matches discipline this repo already has
-
-### `cathrynlavery/diagram-design` — 41.5k★ — **1.1**
-Tagline: *"Self-contained HTML + SVG. No shadows. No Mermaid slop."* `MindMap/lib/mermaid.min.js`
-is **3.5 MB** — the largest file in the repository, larger than both deliverables put together.
-Same philosophy as this project's, aimed squarely at the one place it was compromised.
-
-### `DietrichGebert/ponytail` — **WATCH**
-"The best code is the code you never wrote." This document already reasons this way — *"don't
-take it on speculation"* under `rbush` — but that discipline currently lives in review. This
-moves it into the agent. Discount the star count per the calibration note; judge the rules.
-
-### `OthmanAdi/planning-with-files` — 27k★ — **WATCH**
-File-based planning that survives `/clear` and compaction. `ARCHITECTURE.md`, `DECISIONS.md` and
-`1.1_backlog.md` are a hand-built version of this. Worth comparing before mechanising anything.
-
-### `raiyanyahya/recall` — 752★ — **WATCH**
-Durable Claude Code memory, entirely offline. `docs/AI-CONTEXT.md` and the dual-layer
-`EXPORT_vrg-inventory.txt` are the manual version. Modest stars, but offline-first, which is the
-constraint that matters here.
-
----
-
-## Recorded as NO, so they aren't evaluated twice
-
-### `BuilderIO/mitosis` — **NO**
-Write a UI component once, compile it to React/Vue/Svelte/Angular. Actively wrong for this
-project: there is no framework, no bundler and a deliberate single-global-scope rule. It solves
-a problem this codebase engineered its way out of.
-
-### Provenance note — link-aggregator recommendations
-The feed that prompted this pass (r/BestGitHubRepos) had roughly 45 of ~55 posts from a single
-account over 20 days, most scoring 2–12 upvotes. That is a promotional channel, not curation.
-It is not a reason to ignore it, but it is a reason to run **SkillSpector** over anything
-sourced from it, and to weight a three-week-old repo with nine stars accordingly — against a
-product whose whole premise is surviving on a stick, offline, years from now.
-
----
-
-## The shortlist for this pass, if you only take three
-
-1. **`NVIDIA/SkillSpector`** — before anything else on this page gets installed, including the
-   rest of this shortlist.
-2. **`iconv-lite`** — the only entry that fixes a bug that is already corrupting data.
-3. **`upb-lea/Inkscape_electric_Symbols`** — symbols are data, so the constraints that gate
-   everything else on this page do not apply. Licence read first.
-
-Playwright sits just outside the three only because it is a harness change rather than a
-dependency; it remains the right answer to the manual browser pass.
+### One dependency is staler than it looked
+`exceljs` was recommended over SheetJS. That still holds, but its last code push was
+**2025-01-21** with 808 open issues. SheetJS having left npm for `git.sheetjs.com` is the reason
+to prefer it, not its health.
