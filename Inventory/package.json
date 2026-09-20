@@ -1,0 +1,16 @@
+{
+  "name": "vrg-inventory",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VRG core inventory database — modular source, single-file deliverable. No dependencies on purpose.",
+  "type": "module",
+  "scripts": {
+    "build": "node build/bundle.js",
+    "test": "node --test \"test/*.test.js\"",
+    "check": "node --test \"test/*.test.js\" && node build/bundle.js",
+    "data": "node tools/build.js && node tools/enrich.js && node tools/enrich-vendor.js && node tools/export.js . && node tools/textexport.js .",
+    "serve": "node build/serve.js",
+    "vendor": "node tools/daniella-sitemap.js && node tools/daniella-fetch.js",
+    "pricecheck": "node tools/pricecheck.js"
+  }
+}

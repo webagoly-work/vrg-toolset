@@ -1,0 +1,1532 @@
+==============================================================================
+VRG KÉSZLET-ADATBÁZIS — TÉTELLISTA
+Generálva: 2026-09-19   |   Séma: vrg-inventory v2.0.0   |   221 tétel
+==============================================================================
+
+Az árak nettó egységárak forintban, a DANIELLA megrendelés-
+visszaigazolásokból kiolvasva (partner-specifikus, kedvezményes árak).
+A bruttó oszlop 27% ÁFA-val számított BECSLÉS, nem ajánlat.
+A kategóriák egyelőre AI-javaslatok; a hivatalos Daniella-kategóriák
+még nincsenek kitöltve. Üres mező = még nem gyűjtött adat.
+
+------------------------------------------------------------------------------
+(BESOROLATLAN) / (BESOROLATLAN)   (1 tétel)
+------------------------------------------------------------------------------
+  VRG-0221   WEI9037330000       Weidmüller 9037330000
+                                 gyártó: Weidmüller  |  gyártói cikkszám: 9037330000
+                                 nettó —  |  bruttó~ —
+
+------------------------------------------------------------------------------
+ELOSZTÓK ÉS SZEKRÉNYEK / KISELOSZTÓK   (9 tétel)
+------------------------------------------------------------------------------
+  VRG-0128   SCHEZ9EUC112        Kiselosztó falonkívüli 1/12 átlátszó ajtóval IP40 PE/N sínnel Easy9 EU EZ9EUC112
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9EUC112  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 4456 Ft  |  bruttó~ 5659 Ft  |  ár dátuma: 2026.08.25
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.08.25 – 2026.08.25)
+
+  VRG-0129   SCHEZ9EUC212        Kiselosztó falonkívüli 2/24 átlátszó ajtóval IP40 PE/N sínnel Easy9 EU EZ9EUC212
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9EUC212  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 8057,6 Ft  |  bruttó~ 10 233 Ft  |  ár dátuma: 2026.08.05
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.08.05 – 2026.08.05)
+
+  VRG-0130   SCHEZ9EUC312        Kiselosztó falonkívüli 3/36 átlátszó ajtóval IP40 PE/N sínnel Easy9 EU EZ9EUC312
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9EUC312  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 10 997,6 Ft  |  bruttó~ 13 967 Ft  |  ár dátuma: 2026.08.25
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.08.25 – 2026.08.25)
+
+  VRG-0001   ABB1SPE007717F0721  Kiselosztó falonkívüli 4/48 átlátszó ajtóval IP41 PE/N sínnel ABB Mistral41W 1SPE007717F0721
+                                 gyártó: ABB  |  gyártói cikkszám: 1SPE007717F0721  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 37 720 Ft  |  bruttó~ 47 904 Ft  |  ár dátuma: 2026.07.09
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.09 – 2026.07.09)
+
+  VRG-0035   GEWGW40053BD        Kiselosztó falonkívüli 4soros, 72 modulos átlátszó ajtóval IP40 PE/N dupla sínnel GW40053BD
+                                 gyártó: Gewiss  |  gyártói cikkszám: GW40053BD  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 48 288,16 Ft  |  bruttó~ 61 326 Ft  |  Daniella listaár 58 888 Ft (-18%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0048   HGRVF112TD          Kiselosztó süllyesztett 1/12 átlátszó ajtóval IP40 PE/N sínnel HAGER Golf VF112TD
+                                 gyártó: Hager  |  gyártói cikkszám: VF112TD  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 8235,26 Ft  |  bruttó~ 10 459 Ft  |  ár dátuma: 2026.07.01
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.06.30 – 2026.07.01)
+
+  VRG-0050   HGRVF412TD          Kiselosztó süllyesztett 4/48 átlátszó ajtóval IP40 PE/N sínnel HAGER Golf VF412TD
+                                 gyártó: Hager  |  gyártói cikkszám: VF412TD  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 24 418,6 Ft  |  bruttó~ 31 012 Ft  |  ár dátuma: 2026.07.01
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.01 – 2026.07.01)
+
+  VRG-0049   HGRVF412PD          Kiselosztó süllyesztett 4/48 teli ajtóval IP40 PE/N sínnel HAGER Golf VF412PD
+                                 gyártó: Hager  |  gyártói cikkszám: VF412PD  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 24 418,6 Ft  |  bruttó~ 31 012 Ft  |  ár dátuma: 2026.06.30
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.30 – 2026.06.30)
+
+  VRG-0074   LEG601983           Legrand 601983 Plexo3 falon kívüli kiselosztó 3sor 36modul IP65
+                                 gyártó: Legrand  |  gyártói cikkszám: 601983  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 34 721,7 Ft  |  bruttó~ 44 097 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+------------------------------------------------------------------------------
+ÉRZÉKELŐK ÉS AUTOMATIKA / MOZGÁS- ÉS JELENLÉTÉRZÉKELŐK   (1 tétel)
+------------------------------------------------------------------------------
+  VRG-0002   BEG92565            Jelenlét érzékelő süllyeszthető 360 PD2-M-1C-DE IP20 92565 B.E.G
+                                 gyártó: B.E.G.  |  gyártói cikkszám: 92565  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 25 399,66 Ft  |  bruttó~ 32 258 Ft  |  Daniella listaár 30 602 Ft (-17%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+------------------------------------------------------------------------------
+ÉRZÉKELŐK ÉS AUTOMATIKA / OKOS ESZKÖZÖK ÉS CSENGŐK   (2 tétel)
+------------------------------------------------------------------------------
+  VRG-0166   STI1603             Vezeték nélküli csengő dugaljas, 300m IP44, AC 230V beltéri egységgel Stilo
+                                 gyártó: Stilo  |  gyártói cikkszám: 1603  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 4291,4 Ft  |  bruttó~ 5450 Ft  |  ár dátuma: 2026.07.31
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.31 – 2026.07.31)
+
+  VRG-0167   STI1628             Wi-Fi okos dugalj (2P+F), 1x16A, fehér Stilo
+                                 gyártó: Stilo  |  gyártói cikkszám: 1628  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 3431,4 Ft  |  bruttó~ 4358 Ft  |  ár dátuma: 2026.06.17
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.17 – 2026.06.17)
+
+------------------------------------------------------------------------------
+GYENGEÁRAM ÉS ADATHÁLÓZAT / ADATKÁBELEK   (5 tétel)
+------------------------------------------------------------------------------
+  VRG-0004   BELDE1583EVAGOS     (939081 ) Számítógép vezeték CAT5 E - UTP fali réz PVC (0) BELDEN 1583e
+                                 gyártó: Belden  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 161,46 Ft  |  bruttó~ 205 Ft  |  Daniella listaár 207 Ft (-22%)  |  ár dátuma: 2026.09.15
+                                 eddig rendelve: 140 fm / 3 rendelésben (2026.08.27 – 2026.09.15)
+
+  VRG-0184   VEZ1000133          (989689 ) Számítógép vezeték CAT6 - UTP fali réz PVC (0) BITNER
+                                 gyártó: Bitner  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 170,17 Ft  |  bruttó~ 216 Ft  |  Daniella listaár 221 Ft (-23%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 112 fm / 3 rendelésben (2026.08.14 – 2026.09.08)
+
+  VRG-0182   VEZ1000091          Számítógép vezeték CAT5 E - UTP fali CCA!! (0)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 122,43 Ft  |  bruttó~ 155 Ft  |  ár dátuma: 2026.07.23
+                                 eddig rendelve: 30 fm / 1 rendelésben (2026.07.23 – 2026.07.23)
+
+  VRG-0003   BELDE1583E          Számítógép vezeték CAT5E UTP Belden 1583E
+                                 gyártó: Belden  |  gyártói cikkszám: 1583E
+                                 nettó —  |  bruttó~ —
+
+  VRG-0183   VEZ1000101          Számítógép vezeték CAT6 UTP
+                                 gyártó: BITNER
+                                 nettó —  |  bruttó~ —
+
+------------------------------------------------------------------------------
+GYENGEÁRAM ÉS ADATHÁLÓZAT / CSATLAKOZÓK ÉS ALJZATOK   (8 tétel)
+------------------------------------------------------------------------------
+  VRG-0122   SCHEPH4300121       ASFORA fehér 1xRJ45 Cat5e UTP aljzat, kerettel EPH4300121
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EPH4300121  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 2865,75 Ft  |  bruttó~ 3640 Ft  |  ár dátuma: 2026.07.29
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.29 – 2026.07.29)
+
+  VRG-0123   SCHEPH4700121       ASFORA fehér 1xRJ45 Cat6 UTP aljzat, kerettel EPH4700121
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EPH4700121  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 4011,2 Ft  |  bruttó~ 5094 Ft  |  ár dátuma: 2026.09.01
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.09.01 – 2026.09.01)
+
+  VRG-0121   SCHEPH3200121       ASFORA fehér TV aljzat végzáró 1 dB kerettel EPH3200121
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EPH3200121  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 1824,75 Ft  |  bruttó~ 2317 Ft  |  ár dátuma: 2026.07.31
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.07.29 – 2026.07.31)
+
+  VRG-0160   SOMFF1              F-csatlakozó FF 1
+                                 gyártó: Somogyi Elektronic  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 53,12 Ft  |  bruttó~ 67 Ft  |  ár dátuma: 2026.07.31
+                                 eddig rendelve: 8 db / 1 rendelésben (2026.07.31 – 2026.07.31)
+
+  VRG-0073   LEG413102           LEGRAND 413102 OH kalapsínre szerelhető RJ45 port Cat6 árnyékolt (FTP) 250MHz - 1 Gigabit/s
+                                 gyártó: Legrand  |  gyártói cikkszám: 413102  |  egység: db  |  kiszerelés: 4 db
+                                 nettó 2226,12 Ft  |  bruttó~ 2827 Ft  |  Daniella listaár 2854 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0081   LEG753142           Legrand 753142 Valena Life 1xRJ45 UTP Cat6 aljzat, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 753142  |  egység: db  |  kiszerelés: 5 db
+                                 nettó 4891,38 Ft  |  bruttó~ 6212 Ft  |  Daniella listaár 6271 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0159   SOM0889             Telefon Moduláris dugó 8P8C árnyékolt Cat 5-hoz (FTP)
+                                 gyártó: N/A  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 102,92 Ft  |  bruttó~ 131 Ft  |  Daniella listaár 124 Ft (-17%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 5 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0161   SOMTS52WH           Telefon Moduláris dugó 8P8C-hez törésgátló TS 52/WH fehér
+                                 gyártó: Somogyi Elektronic  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 48,14 Ft  |  bruttó~ 61 Ft  |  Daniella listaár 58 Ft (-17%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 5 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+------------------------------------------------------------------------------
+INSTALLÁCIÓ TECHNIKA / CSŐIDOMOK, BILINCSEK, TÖMSZELENCÉK   (20 tétel)
+------------------------------------------------------------------------------
+  VRG-0103   OBO2149010          Csőbilincs D-20 OBO M20 2955 /Mü.II/ Quick 2149010
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2149010  |  egység: db  |  kiszerelés: 100 db
+                                 nettó 31,6 Ft  |  bruttó~ 40 Ft  |  Daniella listaár 40 Ft (-21%)  |  ár dátuma: 2026.09.10
+                                 eddig rendelve: 140 db / 3 rendelésben (2026.08.05 – 2026.09.10)
+
+  VRG-0104   OBO2149016          Csőbilincs D-25 OBO M25 2955 /MÜ.II/ Quick 2149016
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2149016  |  egység: db  |  kiszerelés: 100 db
+                                 nettó 52,14 Ft  |  bruttó~ 66 Ft  |  ár dátuma: 2026.08.05
+                                 eddig rendelve: 120 db / 2 rendelésben (2026.06.12 – 2026.08.05)
+
+  VRG-0105   OBO2149022          Csőbilincs D-32 OBO M32 2955 /Mü.II/ Quick 2149022
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2149022  |  egység: db  |  kiszerelés: 50 db
+                                 nettó 81,37 Ft  |  bruttó~ 103 Ft  |  ár dátuma: 2026.09.14
+                                 eddig rendelve: 30 db / 2 rendelésben (2026.08.27 – 2026.09.14)
+
+  VRG-0095   NYUGMFL20           Gégecső toldó 20 MFL20 Inset
+                                 gyártó: Inset  |  gyártói cikkszám: MFL20  |  egység: db  |  kiszerelés: 50 db
+                                 nettó 85,12 Ft  |  bruttó~ 108 Ft  |  ár dátuma: 2026.09.17
+                                 eddig rendelve: 25 db / 3 rendelésben (2026.07.27 – 2026.09.17)
+
+  VRG-0096   NYUGMFL25           Gégecső toldó 25 MFL25 Inset
+                                 gyártó: Inset  |  gyártói cikkszám: MFL25  |  egység: db  |  kiszerelés: 20 db
+                                 nettó 98,8 Ft  |  bruttó~ 125 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 5 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0028   GEWDX40016          Karmantyú Mü.II. 16 IP40 szürke hal.mentes DX40016 Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX40016  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 86,1 Ft  |  bruttó~ 109 Ft  |  ár dátuma: 2026.07.14
+                                 eddig rendelve: 5 db / 1 rendelésben (2026.07.14 – 2026.07.14)
+
+  VRG-0029   GEWDX40020          Karmantyú Mü.II. 20 IP40 szürke hal.mentes DX40020 Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX40020  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 90,2 Ft  |  bruttó~ 115 Ft  |  ár dátuma: 2026.09.10
+                                 eddig rendelve: 5 db / 1 rendelésben (2026.07.14 – 2026.07.14)
+
+  VRG-0030   GEWDX40025          Karmantyú Mü.II. 25 IP40 szürke hal.mentes DX40025 Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX40025  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 108,5 Ft  |  bruttó~ 138 Ft  |  ár dátuma: 2026.07.14
+                                 eddig rendelve: 5 db / 1 rendelésben (2026.07.14 – 2026.07.14)
+
+  VRG-0031   GEWDX40120          Könyök Mü II 20 IP40 szürke hal.mentes DX40120 Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX40120  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 142,1 Ft  |  bruttó~ 180 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 4 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0032   GEWDX40125          Könyök Mü.II. 25 IP40 szürke halogénmentes DX40125 Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX40125  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 264,04 Ft  |  bruttó~ 335 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 9 db / 2 rendelésben (2026.06.12 – 2026.07.27)
+
+  VRG-0033   GEWDX40325          Könyök Mü.II. 25 szürke vizsgálható, szétszedhető, halogénmentes IP40 DX40325 Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX40325  |  egység: db
+                                 nettó 288,64 Ft  |  bruttó~ 367 Ft  |  ár dátuma: 2026.06.12
+
+  VRG-0034   GEWDX43220          Kötődobozhoz egyenes csatlakozó 20-as (csőadapter) IP67 szürke hal.mentes DX43220 Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX43220  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 478,06 Ft  |  bruttó~ 607 Ft  |  ár dátuma: 2026.09.10
+
+  VRG-0107   OBO2250209          OBO bilincs 2037 12-20mm 2250209
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2250209  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 94,8 Ft  |  bruttó~ 120 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 100 db / 1 rendelésben (2026.08.24 – 2026.08.24)
+
+  VRG-0106   OBO2250136          OBO bilincs 2037 6-13mm 2250136
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2250136  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 65,57 Ft  |  bruttó~ 83 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 25 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0022   ELTM32TOLDO         Symalen toldó M32
+                                 gyártó: ELTSZER  |  egység: db  |  kiszerelés: 15 db
+                                 nettó 127,68 Ft  |  bruttó~ 162 Ft  |  ár dátuma: 2026.09.15
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.15 – 2026.09.15)
+
+  VRG-0040   GEWGW50417          Tömszelence M25 +anya IP66 szürke GW50417 Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: GW50417  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 546,94 Ft  |  bruttó~ 695 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 5 db / 1 rendelésben (2026.08.24 – 2026.08.24)
+
+  VRG-0102   OBO2022770          Tömszelence M32 +anya 15-21mm IP68 V-TEC VM32+ LGR szürke 2022770 OBO
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2022770  |  egység: db
+                                 nettó —  |  bruttó~ —
+                                 eddig rendelve: 8 db / 1 rendelésben (2026.08.27 – 2026.08.27)
+
+  VRG-0042   HAU250056           Tömszelence M50 +anya 30-38mm IP68 szürke 250056 Haupa
+                                 gyártó: Haupa  |  gyártói cikkszám: 250056  |  egység: db  |  kiszerelés: 5 db
+                                 nettó 924 Ft  |  bruttó~ 1173 Ft  |  ár dátuma: 2026.09.14
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.09.14 – 2026.09.14)
+
+  VRG-0043   HAU250072           Tömszelence PG29 +anya 18-25mm IP68 szürke 250072 Haupa
+                                 gyártó: Haupa  |  gyártói cikkszám: 250072  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 429,6 Ft  |  bruttó~ 546 Ft  |  ár dátuma: 2026.09.14
+                                 eddig rendelve: 4 db / 1 rendelésben (2026.09.14 – 2026.09.14)
+
+  VRG-0044   HAU250076           Tömszelence PG42 +anya 30-38mm IP68 szürke 250076 Haupa
+                                 gyártó: Haupa  |  gyártói cikkszám: 250076  |  egység: db  |  kiszerelés: 5 db
+                                 nettó 1106,4 Ft  |  bruttó~ 1405 Ft  |  ár dátuma: 2026.09.14
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.09.14 – 2026.09.14)
+
+------------------------------------------------------------------------------
+INSTALLÁCIÓ TECHNIKA / GÉGECSÖVEK ÉS VÉDŐCSÖVEK   (9 tétel)
+------------------------------------------------------------------------------
+  VRG-0023   GEWDX15016R         Gégecső lépésálló 16/100 fekete (SGN) 750N FK15 DX15016R Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX15016R  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 79,1 Ft  |  bruttó~ 100 Ft  |  ár dátuma: 2026.07.14
+                                 eddig rendelve: 300 fm / 3 rendelésben (2026.06.30 – 2026.07.14)
+
+  VRG-0024   GEWDX15020R         Gégecső lépésálló 20/100 fekete (SGN) 750N FK15 DX15020R Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX15020R  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 109,06 Ft  |  bruttó~ 139 Ft  |  Daniella listaár 133 Ft (-18%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 300 fm / 2 rendelésben (2026.08.05 – 2026.09.08)
+
+  VRG-0180   UNI084057           Gégecső lépésálló 20/50 (fekete) UV-álló FXP-TURBO 084057 Univolt
+                                 gyártó: Univolt  |  gyártói cikkszám: 084057  |  egység: fm  |  kiszerelés: 50 fm
+                                 nettó 174,04 Ft  |  bruttó~ 221 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 50 fm / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0181   UNI084058           Gégecső lépésálló 25/50 (fekete) UV-álló FXP-TURBO 084058 Univolt
+                                 gyártó: Univolt  |  gyártói cikkszám: 084058  |  egység: fm  |  kiszerelés: 50 fm
+                                 nettó 231,8 Ft  |  bruttó~ 294 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 50 fm / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0179   UNI083271           Gégecső lépésálló 25/50 (szürke) FXP-TURBO 083271 Univolt
+                                 gyártó: Univolt  |  gyártói cikkszám: 083271  |  egység: fm  |  kiszerelés: 50 fm
+                                 nettó 182,4 Ft  |  bruttó~ 232 Ft  |  ár dátuma: 2026.07.01
+                                 eddig rendelve: 200 fm / 2 rendelésben (2026.06.30 – 2026.07.01)
+
+  VRG-0025   GEWDX15025R         Gégecső lépésálló 25/75 fekete (SGN) 750N FK15 DX15025R Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX15025R  |  egység: fm  |  kiszerelés: 75 fm
+                                 nettó 183,68 Ft  |  bruttó~ 233 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 225 fm / 2 rendelésben (2026.08.05 – 2026.08.24)
+
+  VRG-0026   GEWDX15032R         Gégecső lépésálló 32/50 fekete (SGN) 750N FK15 DX15032R Gewiss
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX15032R  |  egység: fm
+                                 nettó —  |  bruttó~ —
+                                 eddig rendelve: 50 fm / 1 rendelésben (2026.08.27 – 2026.08.27)
+
+  VRG-0027   GEWDX24925          Mü.II. cső PEP 25 szürke /3m tokos végű RK9 DX24925 320N (51m/köteg)
+                                 gyártó: Gewiss  |  gyártói cikkszám: DX24925  |  egység: fm  |  kiszerelés: 3 fm
+                                 nettó 169,4 Ft  |  bruttó~ 215 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 30 fm / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0021   ELTELSM32           Műa.cső ELS M32 Symalen 32 50fm/tek
+                                 gyártó: ELTSZER  |  egység: fm
+                                 nettó —  |  bruttó~ —
+                                 eddig rendelve: 100 fm / 1 rendelésben (2026.08.27 – 2026.08.27)
+
+------------------------------------------------------------------------------
+INSTALLÁCIÓ TECHNIKA / KÁBELCSATORNÁK ÉS PARAPETCSATORNÁK   (3 tétel)
+------------------------------------------------------------------------------
+  VRG-0175   STI942              MCSN 100x60 (szél/mag) 2m/szál STILO (18 fm/köteg)
+                                 gyártó: Stilo  |  gyártói cikkszám: 942  |  egység: fm  |  kiszerelés: 2 fm
+                                 nettó 1124,25 Ft  |  bruttó~ 1428 Ft  |  ár dátuma: 2026.06.17
+                                 eddig rendelve: 2 fm / 1 rendelésben (2026.06.17 – 2026.06.17)
+
+  VRG-0178   UNI012673           MIK 40/60 kábelcsatorna fedéllel fehér, UV-álló, lángálló 012673 Univolt
+                                 gyártó: Univolt  |  gyártói cikkszám: 012673  |  egység: fm  |  kiszerelés: 2 fm
+                                 nettó 1019,16 Ft  |  bruttó~ 1294 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 2 fm / 1 rendelésben (2026.08.24 – 2026.08.24)
+
+  VRG-0070   KOPPK90X55DHD       Parapet csatorna 90x55 fehér, PK 90X55 D HD Kopos (12 fm/köteg)
+                                 gyártó: Kopos  |  gyártói cikkszám: K90X55DHD  |  egység: fm
+                                 nettó 3186,75 Ft  |  bruttó~ 4047 Ft  |  ár dátuma: 2026.06.12
+
+------------------------------------------------------------------------------
+KAPCSOLÓK ÉS CSATLAKOZÓK / DUGVILLÁK ÉS CSATLAKOZÓK   (1 tétel)
+------------------------------------------------------------------------------
+  VRG-0071   LEG050316           DFO-16 LEG. 050316 2+F dugvilla. műa. fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 050316  |  egység: db  |  kiszerelés: 25 db
+                                 nettó 480,48 Ft  |  bruttó~ 610 Ft  |  ár dátuma: 2026.07.31
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.31 – 2026.07.31)
+
+------------------------------------------------------------------------------
+KAPCSOLÓK ÉS CSATLAKOZÓK / FALON KÍVÜLI SZERELVÉNYEK   (6 tétel)
+------------------------------------------------------------------------------
+  VRG-0091   LEG782400           Forix IP20 fehér 101 egypólusú kapcsoló fk. 782400 Legrand
+                                 gyártó: Legrand  |  gyártói cikkszám: 782400  |  egység: db  |  kiszerelés: 20 db
+                                 nettó 715,26 Ft  |  bruttó~ 908 Ft  |  ár dátuma: 2026.07.29
+                                 eddig rendelve: 6 db / 2 rendelésben (2026.07.24 – 2026.07.29)
+
+  VRG-0092   LEG782402           Forix IP20 fehér 101+101 kettős egypólusú kapcsoló fk. 782402 Legrand
+                                 gyártó: Legrand  |  gyártói cikkszám: 782402  |  egység: db  |  kiszerelés: 20 db
+                                 nettó 980,46 Ft  |  bruttó~ 1245 Ft  |  ár dátuma: 2026.07.29
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.29 – 2026.07.29)
+
+  VRG-0089   LEG782373           Legrand 782373 Forix 2P+F CSF csatlakozóaljzat csapfedéllel IP44, falon kívüli, biztonsági zsalus (GYV), csavaros, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 782373  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 1526,46 Ft  |  bruttó~ 1939 Ft  |  Daniella listaár 1957 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 3 db / 2 rendelésben (2026.06.12 – 2026.09.08)
+
+  VRG-0090   LEG782374           Legrand 782374 Forix 2x2P+F csatlakozóaljzat csapfedéllel IP44, biztonsági zsalus (GYV), falon kívüli, csavaros, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 782374  |  egység: db  |  kiszerelés: 5 db
+                                 nettó 2804,88 Ft  |  bruttó~ 3562 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0052   HUTOROE7206GSW      Orno felületre szerelhető kettes aljzat 2P+E, IP20, fehér, ToDo OR-OE-7206(GS)/W
+                                 gyártó: Orno  |  gyártói cikkszám: OE7206GSW  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 735,14 Ft  |  bruttó~ 934 Ft  |  ár dátuma: 2026.07.29
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.29 – 2026.07.29)
+
+  VRG-0072   LEG069742L          Plexo 55 falon kívüli 2x2P+F elővezetékezett vízszintes csatlakozóaljzat csapófedéllel, összeszerelt, szürke 069742L Legrand
+                                 gyártó: Legrand  |  gyártói cikkszám: 069742L  |  egység: db  |  kiszerelés: 5 db
+                                 nettó 8221,98 Ft  |  bruttó~ 10 442 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+------------------------------------------------------------------------------
+KAPCSOLÓK ÉS CSATLAKOZÓK / FÉNYERŐSZABÁLYZÓK (DIMMEREK)   (1 tétel)
+------------------------------------------------------------------------------
+  VRG-0020   EKP4377STANDARD     SMR-M 230V kapcsoló alá szerelhető, Elko Ep, 4377 ; LED izzók és energiatakarékos fénycsövek fényerőszabályzására!
+                                 gyártó: Elko EP  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 21 395,74 Ft  |  bruttó~ 27 173 Ft  |  Daniella listaár 25 778 Ft (-17%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+------------------------------------------------------------------------------
+KAPCSOLÓK ÉS CSATLAKOZÓK / KERETEK   (9 tétel)
+------------------------------------------------------------------------------
+  VRG-0124   SCHEPH5800221       ASFORA fehér keret 2-es, vízszintes EPH5800221
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EPH5800221  |  egység: db  |  kiszerelés: 25 db
+                                 nettó 485,6 Ft  |  bruttó~ 617 Ft  |  ár dátuma: 2026.08.31
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.07.27 – 2026.08.31)
+
+  VRG-0125   SCHEPH5800321       ASFORA fehér keret 3-as, vízszintes EPH5800321
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EPH5800321  |  egység: db  |  kiszerelés: 15 db
+                                 nettó 729,75 Ft  |  bruttó~ 927 Ft  |  ár dátuma: 2026.07.31
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.31 – 2026.07.31)
+
+  VRG-0126   SCHEPH5800421       ASFORA fehér keret 4-es, vízszintes EPH5800421
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EPH5800421  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1139,2 Ft  |  bruttó~ 1447 Ft  |  ár dátuma: 2026.09.16
+                                 eddig rendelve: 3 db / 3 rendelésben (2026.07.27 – 2026.09.16)
+
+  VRG-0075   LEG665001           Legrand 665001 Niloé 1-es keret, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 665001  |  egység: db  |  kiszerelés: 20 db
+                                 nettó 223,86 Ft  |  bruttó~ 284 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0082   LEG754001           Legrand 754001 Valena Life 1-es keret, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 754001  |  egység: db  |  kiszerelés: 20 db
+                                 nettó 484,38 Ft  |  bruttó~ 615 Ft  |  Daniella listaár 621 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 20 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0083   LEG754002           Legrand 754002 Valena Life 2-es keret, tetszőleges, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 754002  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 872,82 Ft  |  bruttó~ 1108 Ft  |  Daniella listaár 1119 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 6 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0084   LEG754005           Legrand 754005 Valena Life 5-ös keret, tetszőleges, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 754005  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 2911,74 Ft  |  bruttó~ 3698 Ft  |  Daniella listaár 3733 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0076   LEG665003           Niloé fehér keret 3-as 665003 Legrand
+                                 gyártó: Legrand  |  gyártói cikkszám: 665003  |  egység: db  |  kiszerelés: 5 db
+                                 nettó 748,02 Ft  |  bruttó~ 950 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0093   LEG863193           Niloé Step fehér keret 3-as 863193 Legrand
+                                 gyártó: Legrand  |  gyártói cikkszám: 863193  |  egység: db
+                                 nettó 804,18 Ft  |  bruttó~ 1021 Ft  |  ár dátuma: 2026.06.12
+
+------------------------------------------------------------------------------
+KAPCSOLÓK ÉS CSATLAKOZÓK / SÜLLYESZTETT CSATLAKOZÓALJZATOK   (5 tétel)
+------------------------------------------------------------------------------
+  VRG-0118   SCHEPH2900121       ASFORA fehér 2P+F csatlakozóaljzat kerettel EPH2900121
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EPH2900121  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 874,5 Ft  |  bruttó~ 1111 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 15 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0119   SCHEPH2970121       ASFORA fehér 2P+F csatlakozóaljzat, keret nélkül! EPH2970121 (120 db-os)
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EPH2970121  |  egység: db  |  kiszerelés: 120 db
+                                 nettó 854,4 Ft  |  bruttó~ 1085 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 3 db / 1 rendelésben (2026.08.24 – 2026.08.24)
+
+  VRG-0120   SCHEPH3100121       ASFORA fehér 2P+F CSF csapfedeles kerettel EPH3100121
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EPH3100121  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 1996,8 Ft  |  bruttó~ 2536 Ft  |  ár dátuma: 2026.09.01
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.09.01 – 2026.09.01)
+
+  VRG-0080   LEG753121           Legrand 753121 Valena Life 2P+F csatlakozóaljzat gyermekvédelem nélkül, rugós, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 753121  |  egység: db  |  kiszerelés: 15 db
+                                 nettó 1790,1 Ft  |  bruttó~ 2273 Ft  |  Daniella listaár 2295 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 25 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0088   LEG764539           Legrand 764539 Niloé 2P+F csatlakozóaljzat gyermekvédelem nélkül, csavaros, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 764539  |  egység: db  |  kiszerelés: 20 db
+                                 nettó 646,62 Ft  |  bruttó~ 821 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+------------------------------------------------------------------------------
+KAPCSOLÓK ÉS CSATLAKOZÓK / SÜLLYESZTETT KAPCSOLÓK   (6 tétel)
+------------------------------------------------------------------------------
+  VRG-0117   SCHEPH0400121       ASFORA fehér 106 rugós kerettel EPH0400121
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EPH0400121  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 1035 Ft  |  bruttó~ 1314 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0077   LEG752101           Legrand 752101 Valena Life egypólusú kapcsoló 10 AX, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 752101  |  egység: db  |  kiszerelés: 15 db
+                                 nettó 1790,1 Ft  |  bruttó~ 2273 Ft  |  Daniella listaár 2295 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 3 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0078   LEG752106           Legrand 752106 Valena Life váltókapcsoló 10 AX, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 752106  |  egység: db  |  kiszerelés: 15 db
+                                 nettó 2329,08 Ft  |  bruttó~ 2958 Ft  |  Daniella listaár 2986 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 4 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0079   LEG752107           Legrand 752107 Valena Life keresztkapcsoló 10 AX, fehér
+                                 gyártó: Legrand  |  gyártói cikkszám: 752107  |  egység: db  |  kiszerelés: 5 db
+                                 nettó 3582,54 Ft  |  bruttó~ 4550 Ft  |  Daniella listaár 4593 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0086   LEG764500           Niloé fehér 101 egypólusú kapcsoló 764500 Legrand
+                                 gyártó: Legrand  |  gyártói cikkszám: 764500  |  egység: db  |  kiszerelés: 20 db
+                                 nettó 674,7 Ft  |  bruttó~ 857 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0087   LEG764506           Niloé fehér 105 csillárkapcsoló 764506 ÚJ! Legrand
+                                 gyártó: Legrand  |  gyártói cikkszám: 764506  |  egység: db  |  kiszerelés: 20 db
+                                 nettó 939,12 Ft  |  bruttó~ 1193 Ft  |  ár dátuma: 2026.06.17
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.17 – 2026.06.17)
+
+------------------------------------------------------------------------------
+KISMEGSZAKÍTÓK ÉS VÉDELMEK / ÁRAM-VÉDŐKAPCSOLÓK (FI)   (4 tétel)
+------------------------------------------------------------------------------
+  VRG-0146   SCHEZ9R49225        EASY9 PRO áram-védőkapcsoló, A osztály, 2P, 25A, 30 mA EZ9R49225 Schneider
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9R49225  |  egység: db  |  kiszerelés: 6 db
+                                 nettó 10 209,6 Ft  |  bruttó~ 12 966 Ft  |  ár dátuma: 2026.07.09
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.06.12 – 2026.07.09)
+
+  VRG-0148   SCHEZ9R49425        EASY9 PRO áram-védőkapcsoló, A osztály, 4P, 25A, 30 mA EZ9R49425 Schneider
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9R49425  |  egység: db  |  kiszerelés: 3 db
+                                 nettó 10 973,3 Ft  |  bruttó~ 13 936 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0149   SCHEZ9R49440        EASY9 PRO áram-védőkapcsoló, A osztály, 4P, 40A, 30 mA EZ9R49440 Schneider
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9R49440  |  egység: db  |  kiszerelés: 3 db
+                                 nettó 14 000 Ft  |  bruttó~ 17 780 Ft  |  Daniella listaár 17 500 Ft (-20%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 4 db / 4 rendelésben (2026.07.21 – 2026.09.08)
+
+  VRG-0147   SCHEZ9R49240        FI relé 40/2-0,03 EASY9 PRO, A osztály!!! EZ9R49240 Schneider
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9R49240  |  egység: db  |  kiszerelés: 6 db
+                                 nettó 10 704 Ft  |  bruttó~ 13 594 Ft  |  ár dátuma: 2026.08.25
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.07.21 – 2026.08.25)
+
+------------------------------------------------------------------------------
+KISMEGSZAKÍTÓK ÉS VÉDELMEK / KISMEGSZAKÍTÓK   (19 tétel)
+------------------------------------------------------------------------------
+  VRG-0150   SCHR9F04110         1B 10A 4,5kA Schneider RESI9 R9F04110 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: R9F04110  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 1240,8 Ft  |  bruttó~ 1576 Ft  |  ár dátuma: 2026.07.21
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.21 – 2026.07.21)
+
+  VRG-0132   SCHEZ9F27110        1B 10A 6kA Schneider EASY9 PRO EZ9F27110 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F27110  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 1145,6 Ft  |  bruttó~ 1455 Ft  |  ár dátuma: 2026.07.09
+                                 eddig rendelve: 4 db / 1 rendelésben (2026.07.09 – 2026.07.09)
+
+  VRG-0131   SCHEZ9F27106        1B 6A 6kA Schneider EASY9 PRO EZ9F27106 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F27106  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 1228 Ft  |  bruttó~ 1560 Ft  |  ár dátuma: 2026.07.09
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.09 – 2026.07.09)
+
+  VRG-0134   SCHEZ9F57110        1C 10A 6kA Schneider EASY9 PRO EZ9F57110 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57110  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 1063,2 Ft  |  bruttó~ 1350 Ft  |  Daniella listaár 1329 Ft (-20%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 22 db / 5 rendelésben (2026.06.12 – 2026.09.08)
+
+  VRG-0151   SCHR9F14113         1C 13A 4,5kA Schneider RESI9 R9F14113 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: R9F14113  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 1182,4 Ft  |  bruttó~ 1502 Ft  |  ár dátuma: 2026.07.21
+                                 eddig rendelve: 15 db / 1 rendelésben (2026.07.21 – 2026.07.21)
+
+  VRG-0135   SCHEZ9F57113        1C 13A 6kA Schneider EASY9 PRO EZ9F57113 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57113  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 980,8 Ft  |  bruttó~ 1246 Ft  |  ár dátuma: 2026.08.25
+                                 eddig rendelve: 23 db / 4 rendelésben (2026.06.12 – 2026.08.25)
+
+  VRG-0152   SCHR9F14116         1C 16A 4,5kA Schneider RESI9 R9F14116 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: R9F14116  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 1125,6 Ft  |  bruttó~ 1430 Ft  |  ár dátuma: 2026.07.21
+                                 eddig rendelve: 7 db / 1 rendelésben (2026.07.21 – 2026.07.21)
+
+  VRG-0136   SCHEZ9F57116        1C 16A 6kA Schneider EASY9 PRO EZ9F57116 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57116  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 920 Ft  |  bruttó~ 1168 Ft  |  Daniella listaár 1150 Ft (-20%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 22 db / 6 rendelésben (2026.06.12 – 2026.09.08)
+
+  VRG-0137   SCHEZ9F57120        1C 20A 6kA Schneider EASY9 PRO EZ9F57120 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57120  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 919,5 Ft  |  bruttó~ 1168 Ft  |  ár dátuma: 2026.08.17
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.08.17 – 2026.08.17)
+
+  VRG-0133   SCHEZ9F57106        1C 6A 6kA Schneider EASY9 PRO EZ9F57106 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57106  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 1145,6 Ft  |  bruttó~ 1455 Ft  |  Daniella listaár 1432 Ft (-20%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 6 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0139   SCHEZ9F57210        2C 10A 6kA Schneider EASY9 PRO EZ9F57210 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57210  |  egység: db  |  kiszerelés: 6 db
+                                 nettó 2546,4 Ft  |  bruttó~ 3234 Ft  |  ár dátuma: 2026.07.24
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.07.09 – 2026.07.24)
+
+  VRG-0140   SCHEZ9F57213        2C 13A 6kA Schneider EASY9 PRO EZ9F57213 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57213  |  egység: db  |  kiszerelés: 6 db
+                                 nettó 2464 Ft  |  bruttó~ 3129 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 8 db / 2 rendelésben (2026.07.09 – 2026.08.24)
+
+  VRG-0141   SCHEZ9F57216        2C 16A 6kA Schneider EASY9 PRO EZ9F57216 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57216  |  egység: db  |  kiszerelés: 6 db
+                                 nettó 2381,6 Ft  |  bruttó~ 3025 Ft  |  ár dátuma: 2026.07.09
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.09 – 2026.07.09)
+
+  VRG-0138   SCHEZ9F57206        2C 6A 6kA Schneider EASY9 PRO EZ9F57206 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57206  |  egység: db  |  kiszerelés: 6 db
+                                 nettó 2628,8 Ft  |  bruttó~ 3339 Ft  |  Daniella listaár 3286 Ft (-20%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0142   SCHEZ9F57316        3C 16A 6kA Schneider EASY9 PRO EZ9F57316 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57316  |  egység: db  |  kiszerelés: 4 db
+                                 nettó 3314,25 Ft  |  bruttó~ 4209 Ft  |  ár dátuma: 2026.08.18
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.06.12 – 2026.08.18)
+
+  VRG-0153   SCHR9F14320         3C 20A 4,5kA Schneider RESI9 R9F14320 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: R9F14320  |  egység: db  |  kiszerelés: 4 db
+                                 nettó 4255,2 Ft  |  bruttó~ 5404 Ft  |  ár dátuma: 2026.07.21
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.21 – 2026.07.21)
+
+  VRG-0143   SCHEZ9F57320        3C 20A 6kA Schneider EASY9 PRO EZ9F57320 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57320  |  egység: db  |  kiszerelés: 4 db
+                                 nettó 3617,6 Ft  |  bruttó~ 4594 Ft  |  ár dátuma: 2026.08.25
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.08.18 – 2026.08.25)
+
+  VRG-0144   SCHEZ9F57420        4C 20A 6kA Schneider EASY9 PRO EZ9F57420 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57420  |  egység: db  |  kiszerelés: 3 db
+                                 nettó 5183,2 Ft  |  bruttó~ 6583 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0145   SCHEZ9F57432        4C 32A 6kA Schneider EASY9 PRO EZ9F57432 kismegszakító
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9F57432  |  egység: db  |  kiszerelés: 3 db
+                                 nettó 5595,2 Ft  |  bruttó~ 7106 Ft  |  Daniella listaár 6994 Ft (-20%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+------------------------------------------------------------------------------
+KISMEGSZAKÍTÓK ÉS VÉDELMEK / MODULÁRIS KÉSZÜLÉKEK   (1 tétel)
+------------------------------------------------------------------------------
+  VRG-0127   SCHEZ9A34223        EASY9 PRO Moduláris csengő, 230VAC EZ9A34223 Schneider
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: EZ9A34223  |  egység: db  |  kiszerelés: 12 db
+                                 nettó 4276,8 Ft  |  bruttó~ 5432 Ft  |  ár dátuma: 2026.07.09
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.09 – 2026.07.09)
+
+------------------------------------------------------------------------------
+KISMEGSZAKÍTÓK ÉS VÉDELMEK / SÍNEK ÉS SZERELÉSI TARTOZÉKOK   (9 tétel)
+------------------------------------------------------------------------------
+  VRG-0154   SCHR9XFH112         Fésűs sín 1P villás, 12 modul, 63A, RESI9 R9XFH112 Schneider
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: R9XFH112  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 1272 Ft  |  bruttó~ 1615 Ft  |  Daniella listaár 1590 Ft (-20%)  |  ár dátuma: 2026.09.16
+                                 eddig rendelve: 14 db / 6 rendelésben (2026.06.12 – 2026.09.16)
+
+  VRG-0220   WEI2657810000       Fésűs sín 1P villás, 12 modul, 63A, Weidmüller 2657810000 Készlet Erejéig!
+                                 gyártó: Weidmüller  |  gyártói cikkszám: 2657810000  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 716,85 Ft  |  bruttó~ 910 Ft  |  ár dátuma: 2026.07.31
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.31 – 2026.07.31)
+
+  VRG-0155   SCHR9XFH312         Fésűs sín 3P villás, 12 modul, 63A RESI9 R9XFH312 Schneider
+                                 gyártó: Schneider Electric  |  gyártói cikkszám: R9XFH312  |  egység: db  |  kiszerelés: 5 db
+                                 nettó 3032 Ft  |  bruttó~ 3851 Ft  |  ár dátuma: 2026.07.21
+                                 eddig rendelve: 7 db / 2 rendelésben (2026.06.12 – 2026.07.21)
+
+  VRG-0047   HGRK148             HAGER K148 Golf N/PE sín 6x16mm2 + 7x10mm2, 85mm
+                                 gyártó: Hager  |  gyártói cikkszám: K148  |  egység: db
+                                 nettó 2242,66 Ft  |  bruttó~ 2848 Ft  |  ár dátuma: 2026.07.22
+
+  VRG-0051   HGRVZ703N           HAGER VZ703N Golf N, PE sín tartó VF/VS 12 M elosztókhoz
+                                 gyártó: Hager  |  gyártói cikkszám: VZ703N  |  egység: db
+                                 nettó 935,41 Ft  |  bruttó~ 1188 Ft  |  ár dátuma: 2026.07.22
+
+  VRG-0019   EAT275413           NBP-1000 Takarólap 45mm, szürke RAL7035 (1m) 275413 (Y7-275413) Eaton
+                                 gyártó: Eaton  |  gyártói cikkszám: 275413  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1149,2 Ft  |  bruttó~ 1459 Ft  |  ár dátuma: 2026.07.31
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.31 – 2026.07.31)
+
+  VRG-0157   SEZ1000580900       Nullvezető csatlakozó N12 (kék) 12/N 12/N (300255) SEZ
+                                 gyártó: SEZ  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 611,72 Ft  |  bruttó~ 777 Ft  |  ár dátuma: 2026.07.21
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.21 – 2026.07.21)
+
+  VRG-0163   STI1123             TS-sín 0.5 fm-es 35mm perforált, 1mm vastag, Stilo
+                                 gyártó: Stilo  |  gyártói cikkszám: 1123  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 339,79 Ft  |  bruttó~ 432 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.08.24 – 2026.08.24)
+
+  VRG-0156   SEZ1000580800       Védővezető csatlakozó PE12 (zöld) 12/Z (300254) SEZ
+                                 gyártó: SEZ  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 611,72 Ft  |  bruttó~ 777 Ft  |  ár dátuma: 2026.07.21
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.21 – 2026.07.21)
+
+------------------------------------------------------------------------------
+KÖTÉSTECHNIKA / ÉRVÉGHÜVELYEK ÉS SARUK   (5 tétel)
+------------------------------------------------------------------------------
+  VRG-0176   TRAE22I             Érv.h. iker 2* 6,0/14 sárga E22I Tracon
+                                 gyártó: Tracon  |  gyártói cikkszám: E22I  |  egység: db  |  kiszerelés: 100 db
+                                 nettó 78,85 Ft  |  bruttó~ 100 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 20 db / 1 rendelésben (2026.08.24 – 2026.08.24)
+
+  VRG-0174   STI747              Érv.h. szig. 10/18 elefántcsont E10-18 Stilo
+                                 gyártó: Stilo  |  gyártói cikkszám: 747  |  egység: db
+                                 nettó —  |  bruttó~ —
+                                 eddig rendelve: 100 db / 1 rendelésben (2026.08.27 – 2026.08.27)
+
+  VRG-0173   STI746              Érvéghüvely szigetelt 10/12 elefántcsont E10-12 Stilo
+                                 gyártó: Stilo  |  gyártói cikkszám: 746  |  egység: db  |  kiszerelés: 100 db
+                                 nettó 13,76 Ft  |  bruttó~ 17 Ft  |  Daniella listaár 16 Ft (-14%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 200 db / 2 rendelésben (2026.08.18 – 2026.09.08)
+
+  VRG-0045   HAU290662           Ónozott saru (SZ 10-10) 290662 Haupa
+                                 gyártó: Haupa  |  gyártói cikkszám: 290662  |  egység: db  |  kiszerelés: 100 db
+                                 nettó 85,6 Ft  |  bruttó~ 109 Ft  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 5 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0172   STI671              Szemes csősaru ST- 50-10 Stilo
+                                 gyártó: Stilo  |  gyártói cikkszám: 671  |  egység: db  |  kiszerelés: 50 db
+                                 nettó 481,6 Ft  |  bruttó~ 612 Ft  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+------------------------------------------------------------------------------
+KÖTÉSTECHNIKA / FŐVEZETÉKI SORKAPCSOK   (13 tétel)
+------------------------------------------------------------------------------
+  VRG-0111   POL2080137          Fővezeték sorkapocs 2x 25/2x16mm2 kék HLAK 25-1/2 M2, 2080137 Pollmann
+                                 gyártó: Pollmann  |  gyártói cikkszám: 2080137  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 927,11 Ft  |  bruttó~ 1177 Ft  |  ár dátuma: 2026.08.25
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.08.25 – 2026.08.25)
+
+  VRG-0218   WEI1560670000       Fővezeték sorkapocs 2x 25/2x16mm2 kék WPD101, 1560670000 Weidmüller
+                                 gyártó: Weidmüller  |  gyártói cikkszám: 1560670000  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1004,4 Ft  |  bruttó~ 1276 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.06.17 – 2026.08.24)
+
+  VRG-0110   POL2080136          Fővezeték sorkapocs 2x 25/2x16mm2 szürke HLAK 25-1/2 M2, 2080136 Pollmann
+                                 gyártó: Pollmann  |  gyártói cikkszám: 2080136  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 927,11 Ft  |  bruttó~ 1177 Ft  |  ár dátuma: 2026.08.25
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.08.25 – 2026.08.25)
+
+  VRG-0219   WEI1560730000       Fővezeték sorkapocs 2x 25/2x16mm2 szürke WPD101, 1560730000 Weidmüller
+                                 gyártó: Weidmüller  |  gyártói cikkszám: 1560730000  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1004,4 Ft  |  bruttó~ 1276 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 10 db / 4 rendelésben (2026.06.17 – 2026.08.24)
+
+  VRG-0112   POL2080138          Fővezeték sorkapocs 2x 25/2x16mm2 z/s HLAK 25-1/2 M2, 2080138 Pollmann
+                                 gyártó: Pollmann  |  gyártói cikkszám: 2080138  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 927,11 Ft  |  bruttó~ 1177 Ft  |  ár dátuma: 2026.08.25
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.07.13 – 2026.08.25)
+
+  VRG-0217   WEI1560650000       Fővezeték sorkapocs 2x 25/2x16mm2 zöld WPD101, 1560650000 Weidmüller
+                                 gyártó: Weidmüller  |  gyártói cikkszám: 1560650000  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1004,4 Ft  |  bruttó~ 1276 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.06.17 – 2026.08.24)
+
+  VRG-0170   STI285              Fővezeték sorkapocs 2x 25/2x25mm2 kék HLAK 25-1/2, Stilo
+                                 gyártó: Stilo  |  gyártói cikkszám: 285  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 696,75 Ft  |  bruttó~ 885 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0169   STI284              Fővezeték sorkapocs 2x 25/2x25mm2 szürke HLAK 25-1/2, Stilo
+                                 gyártó: Stilo  |  gyártói cikkszám: 284  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 674,25 Ft  |  bruttó~ 856 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 3 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0171   STI286              Fővezeték sorkapocs 2x 25/2x25mm2 z/s HLAK 25-1/2, Stilo
+                                 gyártó: Stilo  |  gyártói cikkszám: 286  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 696,75 Ft  |  bruttó~ 885 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0114   POL2080184          Fővezeték sorkapocs 2x 35/6x25mm2 kék HLAK 35-1/6 M2, 2080184 Pollmann
+                                 gyártó: Pollmann  |  gyártói cikkszám: 2080184  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 2720,74 Ft  |  bruttó~ 3455 Ft  |  ár dátuma: 2026.07.09
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.09 – 2026.07.09)
+
+  VRG-0113   POL2080183          Fővezeték sorkapocs 2x 35/6x25mm2 szürke HLAK 35-1/6 M2, 2080183 Pollmann
+                                 gyártó: Pollmann  |  gyártói cikkszám: 2080183  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 2720,74 Ft  |  bruttó~ 3455 Ft  |  ár dátuma: 2026.07.09
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.09 – 2026.07.09)
+
+  VRG-0115   POL2080185          Fővezeték sorkapocs 2x 35/6x25mm2 zöld HLAK 35-1/6 M2, 2080185 Pollmann
+                                 gyártó: Pollmann  |  gyártói cikkszám: 2080185  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 2720,74 Ft  |  bruttó~ 3455 Ft  |  ár dátuma: 2026.07.17
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.17 – 2026.07.17)
+
+  VRG-0046   HENKKL54            Fővezeték sorkapocs 5P 4x1,5-25mm2 szürke-kék-z/s KKL 54 Hensel
+                                 gyártó: Hensel  |  gyártói cikkszám: KKL54  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 9618,96 Ft  |  bruttó~ 12 216 Ft  |  Daniella listaár 12 332 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+------------------------------------------------------------------------------
+KÖTÉSTECHNIKA / VEZETÉKÖSSZEKÖTŐK   (6 tétel)
+------------------------------------------------------------------------------
+  VRG-0211   WAGO2212411         WAGO 221-2411 vezeték összekötő sodrott 2-es, 1P átmenő, átlátszó, max. 4 mm2, 32A
+                                 gyártó: WAGO  |  gyártói cikkszám: 2212411  |  egység: db  |  kiszerelés: 60 db
+                                 nettó 124,1 Ft  |  bruttó~ 158 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 60 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0212   WAGO221415          WAGO 221-415 vezeték összekötő sodrott 5-ös, átlátszó 0,2- 4mm2, 32A
+                                 gyártó: WAGO  |  gyártói cikkszám: 221415  |  egység: db  |  kiszerelés: 25 db
+                                 nettó 197,83 Ft  |  bruttó~ 251 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 25 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0213   WAGO221613          WAGO 221-613 vez.összekötő sodrott 3-as, átlátszó 6mm2 30db
+                                 gyártó: WAGO  |  gyártói cikkszám: 221613  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 220,46 Ft  |  bruttó~ 280 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 10 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0214   WAGO222415          WAGO 222-415 vez.összekötő sodrott 5-ös
+                                 gyártó: WAGO  |  gyártói cikkszám: 222415  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 186,88 Ft  |  bruttó~ 237 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 10 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0216   WAGO2273205         WAGO 5x 0,5-2,5mm2 vez.összekötő sárga 2273-205
+                                 gyártó: WAGO  |  gyártói cikkszám: 2273205  |  egység: db  |  kiszerelés: 100 db
+                                 nettó 65,7 Ft  |  bruttó~ 83 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 20 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0215   WAGO2273203         WAGO COMPACT vezeték összekötő 3x0,5-2,5 mm2 tömör vezetékhez, átlátszó házban, narancssárga fedéllel 2273-203
+                                 gyártó: WAGO  |  gyártói cikkszám: 2273203  |  egység: db  |  kiszerelés: 100 db
+                                 nettó 47,45 Ft  |  bruttó~ 60 Ft  |  Daniella listaár 65 Ft (-27%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 130 db / 2 rendelésben (2026.07.27 – 2026.09.08)
+
+------------------------------------------------------------------------------
+MUNKAVÉDELEM ÉS SEGÉDANYAGOK / MUNKAVÉDELEM   (1 tétel)
+------------------------------------------------------------------------------
+  VRG-0116   PORA374K8RXL        Védőkesztyű, precíziós nitril, fekete, XL- es GP Grip 18 A374K8RXL Portwest
+                                 gyártó: Portwest  |  gyártói cikkszám: A374K8RXL  |  egység: pár  |  kiszerelés: 1 pár
+                                 nettó 1127,7 Ft  |  bruttó~ 1432 Ft  |  Daniella listaár 1253 Ft (-10%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 2 pár / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+------------------------------------------------------------------------------
+MUNKAVÉDELEM ÉS SEGÉDANYAGOK / SZERELÉSI SEGÉDANYAGOK   (3 tétel)
+------------------------------------------------------------------------------
+  VRG-0041   GIP00010            Gipsz stukatúr 10kg/zsák
+                                 gyártó: N/A  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1570,36 Ft  |  bruttó~ 1994 Ft  |  ár dátuma: 2026.08.05
+                                 eddig rendelve: 7 db / 2 rendelésben (2026.07.27 – 2026.08.05)
+
+  VRG-0094   NVT10009            Sittes zsák vastag 90x55cm
+                                 gyártó: N/A  |  egység: db  |  kiszerelés: 25 db
+                                 nettó 131,14 Ft  |  bruttó~ 167 Ft  |  Daniella listaár 158 Ft (-17%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 5 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0177   TRAFEH20            Szig.szalag 20x19 fehér Tracon
+                                 gyártó: Tracon  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 471,44 Ft  |  bruttó~ 599 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+------------------------------------------------------------------------------
+SZELLŐZÉS / VENTILÁTOROK ÉS RÁCSOK   (2 tétel)
+------------------------------------------------------------------------------
+  VRG-0062   KANND12             Kanlux ND 12 szellőzőrács hálóval ND12
+                                 gyártó: Kanlux  |  gyártói cikkszám: ND12  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1656,4 Ft  |  bruttó~ 2104 Ft  |  ár dátuma: 2026.09.14
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.14 – 2026.09.14)
+
+  VRG-0061   KAN70941            Ventilátor EOL 120HT páraérzékelős időkapcsolós Kanlux 70941
+                                 gyártó: Kanlux  |  gyártói cikkszám: 70941  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 9684,2 Ft  |  bruttó~ 12 299 Ft  |  ár dátuma: 2026.09.14
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.14 – 2026.09.14)
+
+------------------------------------------------------------------------------
+SZERELVÉNY- ÉS KÖTŐDOBOZOK / FALON KÍVÜLI KÖTŐDOBOZOK   (6 tétel)
+------------------------------------------------------------------------------
+  VRG-0098   OBO2000378          Kötődoboz 100x100x38 A14 OBO 2000378 sorkapocs nélkül PE IP55 világosszürke
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2000378  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 496,91 Ft  |  bruttó~ 631 Ft  |  Daniella listaár 629 Ft (-21%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 4 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0165   STI1501             Kötődoboz 100x100x70 sima falú IP65 Stilo /S-BOX helyett/
+                                 gyártó: Stilo  |  gyártói cikkszám: 1501  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 575,34 Ft  |  bruttó~ 731 Ft  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0164   STI1497             Kötődoboz 150x110x70 membrános IP65 Stilo /S-BOX helyett/
+                                 gyártó: Stilo  |  gyártói cikkszám: 1497  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 963,2 Ft  |  bruttó~ 1223 Ft  |  Daniella listaár 1120 Ft (-14%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 4 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0158   SEZ1001081400       Kötődoboz sima falú 190x140x70 S- BOX 416 (400363) SEZ
+                                 gyártó: SEZ  |  egység: db  |  kiszerelés: 20 db
+                                 nettó 1975,63 Ft  |  bruttó~ 2509 Ft  |  Daniella listaár 2677 Ft (-26,2%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 4 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0097   OBO2000342          OBO Kötődoboz 85* 85 A11 IP55 2000342
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2000342  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 268,45 Ft  |  bruttó~ 341 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 4 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0101   OBO2005312          OBO X16 H25 GNP5 LGR Leágazódoboz f vezetéki sorkapoccsal 240x191x125 világosszürke 2005312
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2005312  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 20 778,58 Ft  |  bruttó~ 26 389 Ft  |  ár dátuma: 2026.09.04
+                                 eddig rendelve: 4 db / 2 rendelésben (2026.08.27 – 2026.09.04)
+
+------------------------------------------------------------------------------
+SZERELVÉNY- ÉS KÖTŐDOBOZOK / GIPSZKARTON DOBOZOK   (5 tétel)
+------------------------------------------------------------------------------
+  VRG-0162   STI1012             Gipszkarton doboz 1-es, d68mm, 47mm mély, narancssárga (E-115 18345 helyett) Stilo
+                                 gyártó: Stilo  |  gyártói cikkszám: 1012  |  egység: db  |  kiszerelés: 10 db
+                                 nettó 162,54 Ft  |  bruttó~ 206 Ft  |  ár dátuma: 2026.09.01
+                                 eddig rendelve: 13 db / 1 rendelésben (2026.09.01 – 2026.09.01)
+
+  VRG-0068   KOPKPL6450LDNA      Gipszkarton doboz 1-es, d68mm, 50mm mély, sárga, légtömített KPL 64-50/LD NA Kopos
+                                 gyártó: Kopos  |  gyártói cikkszám: KPL6450LDNA  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 408,85 Ft  |  bruttó~ 519 Ft  |  ár dátuma: 2026.06.17
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.17 – 2026.06.17)
+
+  VRG-0065   KOPKPL64502LDNA     Gipszkarton doboz 2-es, 49mm mély, sárga, légtömített KPL 64-50/2LD NA Kopos
+                                 gyártó: Kopos  |  gyártói cikkszám: KPL64502LDNA  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 876 Ft  |  bruttó~ 1113 Ft  |  ár dátuma: 2026.09.01
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.09.01 – 2026.09.01)
+
+  VRG-0066   KOPKPL64503LDNA     Gipszkarton doboz 3-as, 49mm mély, sárga, légtömített KPL 64-50/3LD NA Kopos
+                                 gyártó: Kopos  |  gyártói cikkszám: KPL64503LDNA  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1239 Ft  |  bruttó~ 1574 Ft  |  ár dátuma: 2026.09.01
+                                 eddig rendelve: 6 db / 3 rendelésben (2026.06.12 – 2026.09.01)
+
+  VRG-0067   KOPKPL64505LDNA     Gipszkarton doboz 5-ös, 50mm mély, sárga, légtömített KPL 64-50/5LD NA Kopos
+                                 gyártó: Kopos  |  gyártói cikkszám: KPL64505LDNA  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1857,75 Ft  |  bruttó~ 2359 Ft  |  ár dátuma: 2026.09.01
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.09.01 – 2026.09.01)
+
+------------------------------------------------------------------------------
+SZERELVÉNY- ÉS KÖTŐDOBOZOK / SÜLLYESZTETT KÖTŐDOBOZOK ÉS FEDELEK   (5 tétel)
+------------------------------------------------------------------------------
+  VRG-0037   GEWGW48002          GW Kötődoboz sülly. 118x96x50 IP40 GW 48002
+                                 gyártó: Gewiss  |  gyártói cikkszám: GW48002  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 386,22 Ft  |  bruttó~ 490 Ft  |  ár dátuma: 2026.08.13
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.08.13 – 2026.08.13)
+
+  VRG-0038   GEWGW48005          GW Kötődoboz sülly. 160x130x70 IP40 GW 48005
+                                 gyártó: Gewiss  |  gyártói cikkszám: GW48005  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 822,5 Ft  |  bruttó~ 1045 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0039   GEWGW48007          GW Kötődoboz sülly. 294x152x75 IP40 GW 48007
+                                 gyártó: Gewiss  |  gyártói cikkszám: GW48007  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1592,5 Ft  |  bruttó~ 2022 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0036   GEWGW48001          GW Kötődoboz sülly. 92x92x45 IP40 GW 48001
+                                 gyártó: Gewiss  |  gyártói cikkszám: GW48001  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 317,34 Ft  |  bruttó~ 403 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.07.27 – 2026.07.27)
+
+  VRG-0069   KOPP356102005       Kötődoboz 100x100 süllyesztett, müds csavaros KOPP 356102005
+                                 gyártó: KOPP  |  gyártói cikkszám: 356102005  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 756,13 Ft  |  bruttó~ 960 Ft  |  ár dátuma: 2026.08.05
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.08.05 – 2026.08.05)
+
+------------------------------------------------------------------------------
+SZERELVÉNY- ÉS KÖTŐDOBOZOK / SZERELVÉNYDOBOZOK ÉS FEDELEK   (13 tétel)
+------------------------------------------------------------------------------
+  VRG-0013   DUND1101            Műa. doboz 100x100mm fedél nélkül, sárga D-1101 Dunszt
+                                 gyártó: Dunszt  |  gyártói cikkszám: 1101  |  egység: db  |  kiszerelés: 100 db
+                                 nettó 240,16 Ft  |  bruttó~ 305 Ft  |  ár dátuma: 2026.09.16
+                                 eddig rendelve: 6 db / 2 rendelésben (2026.07.03 – 2026.09.16)
+
+  VRG-0018   DUW18320            Műa. doboz 65mm, perforált, sorolható, 65mm mély, E107 M25 F-Tronic
+                                 gyártó: F-Tronic  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 63,84 Ft  |  bruttó~ 81 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 45 db / 3 rendelésben (2026.06.30 – 2026.07.27)
+
+  VRG-0017   DUW18310            Műa. doboz 65mm, perforált, sorolható, E-106 (18310) F-Tronic
+                                 gyártó: F-Tronic  |  gyártói cikkszám: 18310  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 42,33 Ft  |  bruttó~ 54 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 110 db / 3 rendelésben (2026.06.30 – 2026.07.27)
+
+  VRG-0015   DUND8001            Műa. doboz 80mm, nem perforált, sárga D-8001 (téglához is)
+                                 gyártó: Dunszt  |  gyártói cikkszám: 8001  |  egység: db  |  kiszerelés: 100 db
+                                 nettó 105,64 Ft  |  bruttó~ 134 Ft  |  ár dátuma: 2026.07.01
+                                 eddig rendelve: 50 db / 2 rendelésben (2026.06.30 – 2026.07.01)
+
+  VRG-0005   BUD25863            Műa. doboz 80mm, perforált, tetővel 25863 Budvill
+                                 gyártó: Budvill  |  gyártói cikkszám: 25863  |  egység: db  |  kiszerelés: 150 db
+                                 nettó 96,52 Ft  |  bruttó~ 123 Ft  |  ár dátuma: 2026.08.05
+                                 eddig rendelve: 10 db / 1 rendelésben (2026.08.05 – 2026.08.05)
+
+  VRG-0014   DUND1102            Műa. doboz fedő 100x100mm D-1102 (D1101 dobozhoz) Dunszt
+                                 gyártó: Dunszt  |  gyártói cikkszám: 1102  |  egység: db  |  kiszerelés: 50 db
+                                 nettó 139,84 Ft  |  bruttó~ 178 Ft  |  ár dátuma: 2026.09.16
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.09.16 – 2026.09.16)
+
+  VRG-0007   BUDT30305           Műa. doboz fedő 65mm, rugós Budvill
+                                 gyártó: Budvill  |  egység: db  |  kiszerelés: 200 db
+                                 nettó 35,72 Ft  |  bruttó~ 45 Ft  |  ár dátuma: 2026.09.16
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.09.16 – 2026.09.16)
+
+  VRG-0016   DUND8002            Műa. doboz fedő 80mm, rugós D-8002 Dunszt
+                                 gyártó: Dunszt  |  gyártói cikkszám: 8002  |  egység: db  |  kiszerelés: 200 db
+                                 nettó 72,96 Ft  |  bruttó~ 93 Ft  |  ár dátuma: 2026.07.01
+                                 eddig rendelve: 50 db / 2 rendelésben (2026.06.30 – 2026.07.01)
+
+  VRG-0099   OBO2003700          Műanyag doboz 65mm, perforált, sorolható, 46mm mély, UG 46 2003700 OBO
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2003700  |  egység: db  |  kiszerelés: 25 db
+                                 nettó 53,72 Ft  |  bruttó~ 68 Ft  |  Daniella listaár 68 Ft (-21%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 15 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0100   OBO2003702          Műanyag doboz 65mm, perforált, sorolható, 66mm mély, UG 66 2003702 OBO
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 2003702  |  egység: db  |  kiszerelés: 25 db
+                                 nettó 83,74 Ft  |  bruttó~ 106 Ft  |  Daniella listaár 106 Ft (-21%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 10 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0008   BUDT888666          MüDK Műanyag doboz fedél 100x100
+                                 gyártó: Budvill  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 44,08 Ft  |  bruttó~ 56 Ft  |  ár dátuma: 2026.07.01
+                                 eddig rendelve: 10 db / 2 rendelésben (2026.06.30 – 2026.07.01)
+
+  VRG-0006   BUDT30103           MüDN 100 doboz
+                                 gyártó: Budvill  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 567,72 Ft  |  bruttó~ 721 Ft  |  ár dátuma: 2026.08.13
+                                 eddig rendelve: 5 db / 1 rendelésben (2026.08.13 – 2026.08.13)
+
+  VRG-0085   LEG754192           Valena Life fehér kiemelődoboz 2-es 754192 Legrand
+                                 gyártó: Legrand  |  gyártói cikkszám: 754192  |  egység: db  |  kiszerelés: 5 db
+                                 nettó 3297,06 Ft  |  bruttó~ 4187 Ft  |  ár dátuma: 2026.07.16
+                                 eddig rendelve: 4 db / 1 rendelésben (2026.07.16 – 2026.07.16)
+
+------------------------------------------------------------------------------
+VEZETÉKEK ÉS KÁBELEK / ERŐÁTVITELI KÁBELEK   (3 tétel)
+------------------------------------------------------------------------------
+  VRG-0056   KAB1100065          EAYY-J 5x 16 /NAYY-J/ RE (0) földkábel 5x16
+                                 gyártó: N/A  |  egység: fm
+                                 nettó —  |  bruttó~ —
+                                 eddig rendelve: 30 fm / 1 rendelésben (2026.08.27 – 2026.08.27)
+
+  VRG-0057   KAB1400014          NYY-J 3x 1,5 (0) RE-TÖMÖR [ 0,6/1kV ] fekete erőátviteli kábel
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 339,3 Ft  |  bruttó~ 431 Ft  |  Daniella listaár 435 Ft (-22%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 30 fm / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0058   KAB1400016          NYY-J 3x 4 (0) RE-TÖMÖR [ 0,6/1kV ] fekete erőátviteli kábel
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 764,4 Ft  |  bruttó~ 971 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 40 fm / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+------------------------------------------------------------------------------
+VEZETÉKEK ÉS KÁBELEK / GUMIKÁBELEK ÉS HOSSZABBÍTÓ VEZETÉKEK   (4 tétel)
+------------------------------------------------------------------------------
+  VRG-0059   KAB1800011          H05RR-F 3x1,5 (100) (GT)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 358,82 Ft  |  bruttó~ 456 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 105 fm / 2 rendelésben (2026.06.16 – 2026.08.24)
+
+  VRG-0060   KAB1800012          H05RR-F 3x1,5 fekete (0) 300/500V gumikábel (GT)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 351,12 Ft  |  bruttó~ 446 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 5 fm / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0203   VEZ1800044          H05VV-F 3x 1,5 (0)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 298,76 Ft  |  bruttó~ 379 Ft  |  ár dátuma: 2026.07.03
+                                 eddig rendelve: 25 fm / 1 rendelésben (2026.07.03 – 2026.07.03)
+
+  VRG-0204   VEZ1800080          H05VV-F 5x 1,5 (0)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 441,21 Ft  |  bruttó~ 560 Ft  |  ár dátuma: 2026.07.03
+                                 eddig rendelve: 10 fm / 1 rendelésben (2026.07.03 – 2026.07.03)
+
+------------------------------------------------------------------------------
+VEZETÉKEK ÉS KÁBELEK / INSTALLÁCIÓS VEZETÉKEK   (6 tétel)
+------------------------------------------------------------------------------
+  VRG-0205   VEZ2100001          NYM-J 3x 1,5 (50) 300/500V tömör installációs vezeték (MB-Cu, MBCu)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 50 fm
+                                 nettó 260,26 Ft  |  bruttó~ 331 Ft  |  Daniella listaár 338 Ft (-23%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 150 fm / 3 rendelésben (2026.06.30 – 2026.09.08)
+
+  VRG-0207   VEZ2100006          NYM-J 3x 1,5 szürke (0) 300/500V tömör installációs vezeték (MB-Cu, MBCu)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 277,2 Ft  |  bruttó~ 352 Ft  |  ár dátuma: 2026.08.05
+                                 eddig rendelve: 95 fm / 4 rendelésben (2026.06.12 – 2026.08.05)
+
+  VRG-0206   VEZ2100002          NYM-J 3x 1,5 szürke (100) 300/500V tömör installációs vezeték (MB-Cu, MBCu)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 260,26 Ft  |  bruttó~ 331 Ft  |  Daniella listaár 338 Ft (-23%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 100 fm / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0209   VEZ2100011          NYM-J 3x 2,5 szürke (0) 300/500V tömör installációs vezeték (MB-Cu, MBCu)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 431,2 Ft  |  bruttó~ 548 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 10 fm / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0208   VEZ2100007          NYM-J 3x 2,5 szürke (100) 300/500V tömör installációs vezeték (MB-Cu, MBCu)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 396,55 Ft  |  bruttó~ 504 Ft  |  Daniella listaár 515 Ft (-23%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 100 fm / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0210   VEZ2100030          NYM-J 5x 1,5 szürke (0) 300/500V tömör installációs vezeték (MB-Cu, MBCu)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 438,9 Ft  |  bruttó~ 557 Ft  |  Daniella listaár 570 Ft (-23%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 90 fm / 3 rendelésben (2026.06.30 – 2026.09.08)
+
+------------------------------------------------------------------------------
+VEZETÉKEK ÉS KÁBELEK / SODROTT ÉS TÖMÖR EREZETŰ VEZETÉKEK   (18 tétel)
+------------------------------------------------------------------------------
+  VRG-0189   VEZ1500064          10 mkh (H07V-K 1x10)
+                                 gyártó: N/A
+                                 nettó —  |  bruttó~ —
+
+  VRG-0191   VEZ1500066          10 mkh (H07V-K 1x10)
+                                 gyártó: N/A
+                                 nettó —  |  bruttó~ —
+
+  VRG-0193   VEZ1500072          10 mkh (H07V-K 1x10)
+                                 gyártó: N/A
+                                 nettó —  |  bruttó~ —
+
+  VRG-0185   VEZ1500004          H07V-K 1x 1,5 fekete (100)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 78,54 Ft  |  bruttó~ 100 Ft  |  ár dátuma: 2026.08.14
+                                 eddig rendelve: 100 fm / 1 rendelésben (2026.08.14 – 2026.08.14)
+
+  VRG-0190   VEZ1500065          H07V-K 1x 10 fekete (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 566,72 Ft  |  bruttó~ 720 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 51 fm / 5 rendelésben (2026.06.12 – 2026.08.27)
+
+  VRG-0192   VEZ1500067          H07V-K 1x 10 kék (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 567,49 Ft  |  bruttó~ 721 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 27 fm / 4 rendelésben (2026.06.12 – 2026.08.27)
+
+  VRG-0194   VEZ1500073          H07V-K 1x 10 zöld/sárga (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 572,88 Ft  |  bruttó~ 728 Ft  |  ár dátuma: 2026.08.24
+                                 eddig rendelve: 29 fm / 5 rendelésben (2026.06.12 – 2026.08.27)
+
+  VRG-0195   VEZ1500087          H07V-K 1x 16 zöld/sárga (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 885,5 Ft  |  bruttó~ 1125 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 6 fm / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0186   VEZ1500032          H07V-K 1x 4 fekete (0)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 222,53 Ft  |  bruttó~ 283 Ft  |  ár dátuma: 2026.08.05
+                                 eddig rendelve: 21 fm / 2 rendelésben (2026.07.21 – 2026.08.05)
+
+  VRG-0187   VEZ1500034          H07V-K 1x 4 kék (0)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 222,53 Ft  |  bruttó~ 283 Ft  |  ár dátuma: 2026.08.05
+                                 eddig rendelve: 17 fm / 2 rendelésben (2026.07.21 – 2026.08.05)
+
+  VRG-0188   VEZ1500044          H07V-K 1x 4 z/s (0)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 1 fm
+                                 nettó 222,53 Ft  |  bruttó~ 283 Ft  |  ár dátuma: 2026.08.05
+                                 eddig rendelve: 17 fm / 2 rendelésben (2026.07.21 – 2026.08.05)
+
+  VRG-0196   VEZ1600010          H07V-U 1x 1,5 barna (100)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 79,31 Ft  |  bruttó~ 101 Ft  |  ár dátuma: 2026.07.01
+                                 eddig rendelve: 400 fm / 2 rendelésben (2026.06.30 – 2026.07.01)
+
+  VRG-0197   VEZ1600012          H07V-U 1x 1,5 fekete (100)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 79,31 Ft  |  bruttó~ 101 Ft  |  ár dátuma: 2026.09.10
+                                 eddig rendelve: 600 fm / 4 rendelésben (2026.06.30 – 2026.09.10)
+
+  VRG-0198   VEZ1600013          H07V-U 1x 1,5 kék (100)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 79,31 Ft  |  bruttó~ 101 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 500 fm / 3 rendelésben (2026.06.30 – 2026.07.27)
+
+  VRG-0199   VEZ1600019          H07V-U 1x 1,5 z/s (100)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 79,31 Ft  |  bruttó~ 101 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 500 fm / 3 rendelésben (2026.06.30 – 2026.07.27)
+
+  VRG-0200   VEZ1600023          H07V-U 1x 2,5 fekete (100)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 129,36 Ft  |  bruttó~ 164 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 500 fm / 3 rendelésben (2026.06.30 – 2026.07.27)
+
+  VRG-0201   VEZ1600024          H07V-U 1x 2,5 kék (100)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 129,36 Ft  |  bruttó~ 164 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 500 fm / 3 rendelésben (2026.06.30 – 2026.07.27)
+
+  VRG-0202   VEZ1600027          H07V-U 1x 2,5 z/s (100)
+                                 gyártó: N/A  |  egység: fm  |  kiszerelés: 100 fm
+                                 nettó 129,36 Ft  |  bruttó~ 164 Ft  |  ár dátuma: 2026.07.27
+                                 eddig rendelve: 500 fm / 3 rendelésben (2026.06.30 – 2026.07.27)
+
+------------------------------------------------------------------------------
+VILÁGÍTÁS / FÉNYFORRÁSOK   (1 tétel)
+------------------------------------------------------------------------------
+  VRG-0010   DEL038              Ha. ceruza 120W 118mm. R7s deLux
+                                 gyártó: deLux  |  gyártói cikkszám: 038  |  egység: db  |  kiszerelés: 50 db
+                                 nettó 394,74 Ft  |  bruttó~ 501 Ft  |  ár dátuma: 2026.09.16
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.16 – 2026.09.16)
+
+------------------------------------------------------------------------------
+VILÁGÍTÁS / REFLEKTOROK ÉS LÁMPATESTEK   (2 tétel)
+------------------------------------------------------------------------------
+  VRG-0011   DEL1714             LED reflektor 20W 1600lm, 120 fokos mozgásérzékelővel, 4000K, 30x SMD2835 LED, lapos, fekete deLux
+                                 gyártó: deLux  |  gyártói cikkszám: 1714  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 5581,4 Ft  |  bruttó~ 7088 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0012   DEL1745             LED reflektor 30W mozgásérzékelős, sorkapoccsal, tömszelencével 4000K 2400lm IP65 120 fok SMD, lapos, fekete delux
+                                 gyártó: deLux  |  gyártói cikkszám: 1745  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 7559,4 Ft  |  bruttó~ 9600 Ft  |  Daniella listaár 8790 Ft (-14%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+------------------------------------------------------------------------------
+VILLÁMVÉDELEM ÉS FÖLDELÉS / FÖLDELŐK ÉS FÖLDELŐ TARTOZÉKOK   (7 tétel)
+------------------------------------------------------------------------------
+  VRG-0009   DEHN556125          DEHN KSB 50 L10M Korrózióvédő szalag szélesség 50 mm L 10m 556125
+                                 gyártó: DEHN  |  gyártói cikkszám: 556125  |  egység: db  |  kiszerelés: 24 db
+                                 nettó 4731,72 Ft  |  bruttó~ 6009 Ft  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0053   JPR111356           J.P.111356 csatlakozó-kapocs
+                                 gyártó: J.P.  |  gyártói cikkszám: 111356  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 2379,64 Ft  |  bruttó~ 3022 Ft  |  ár dátuma: 2026.09.17
+                                 eddig rendelve: 3 db / 2 rendelésben (2026.07.06 – 2026.09.17)
+
+  VRG-0054   JPR1278             J.P.1278 multi kapocs 10/10mm
+                                 gyártó: J.P.  |  gyártói cikkszám: 1278  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1047,14 Ft  |  bruttó~ 1330 Ft  |  ár dátuma: 2026.07.06
+                                 eddig rendelve: 2 db / 1 rendelésben (2026.07.06 – 2026.07.06)
+
+  VRG-0055   JPR2058             J.P.2058 ütőcsúcs 20
+                                 gyártó: J.P.  |  gyártói cikkszám: 2058  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 1047,14 Ft  |  bruttó~ 1330 Ft  |  ár dátuma: 2026.09.17
+                                 eddig rendelve: 2 db / 2 rendelésben (2026.09.08 – 2026.09.17)
+
+  VRG-0168   STI1784             Multikapocs, Vario összekötő horganyzott M10 Rd8-10 BLKLEUNIVZ2-10VK-40
+                                 gyártó: Stilo  |  gyártói cikkszám: 1784  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 435,16 Ft  |  bruttó~ 553 Ft  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+  VRG-0108   OBO5000750XXX1      OBO 219 20 ST FT rúdföldelő standard 1,5m 5000750 helyette ideiglenesen: OBO5000947
+                                 gyártó: OBO Bettermann  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 8080,91 Ft  |  bruttó~ 10 263 Ft  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 6 db / 2 rendelésben (2026.07.06 – 2026.09.08)
+
+  VRG-0109   OBO5001641          OBO 2760 20 FT csatlakozóbilincs kör- és laposvezetőhöz 20mm 5001641
+                                 gyártó: OBO Bettermann  |  gyártói cikkszám: 5001641  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 2813,19 Ft  |  bruttó~ 3573 Ft  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+------------------------------------------------------------------------------
+VILLÁMVÉDELEM ÉS FÖLDELÉS / TÚLFESZÜLTSÉG-VÉDELEM   (2 tétel)
+------------------------------------------------------------------------------
+  VRG-0064   KIWA81027           PO I 3+1 m 280V túlfeszültség levezető 12,5kA T1+T2+T3 (B+C+D) 81.027 KIWA
+                                 gyártó: KIWA  |  gyártói cikkszám: 81027  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 34 845,3 Ft  |  bruttó~ 44 254 Ft  |  ár dátuma: 2026.06.12
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.06.12 – 2026.06.12)
+
+  VRG-0063   KIWA81004           Villámáram-levezető és túlfeszültség- védelmi készülék PO I 4 280V 12,5kA T1+T2+T3 (B+C+D) KIWA 81.004
+                                 gyártó: KIWA  |  gyártói cikkszám: 81004  |  egység: db  |  kiszerelés: 1 db
+                                 nettó 32 929,4 Ft  |  bruttó~ 41 820 Ft  |  Daniella listaár 47 042 Ft (-30%)  |  ár dátuma: 2026.09.08
+                                 eddig rendelve: 1 db / 1 rendelésben (2026.09.08 – 2026.09.08)
+
+
+==============================================================================
+AI-CONTEXT BLOCK — MACHINE READABLE. Everything below this line is
+written for an AI agent / importer, not for a human reader.
+==============================================================================
+
+@schema            vrg-inventory
+@schema_version    2.0.0
+@generated         2026-09-19
+@row_count         221
+@currency          HUF
+@vat_rate          0.27
+@primary_key       vrg_id   (neutral; the DANIELLA article number lives in the vendor block, and as legacy_id)
+@encoding          UTF-8, LF line endings
+@decimal_separator "." inside this block (the CSV siblings use "," for Excel-HU)
+
+@purpose
+  Vendor-independent core inventory of electrical installation material used
+  by VARLER GROUP. Vendor-specific facts (article number, price, stock, product
+  URL) live in a per-vendor sub-record and must only be shown when the user has
+  selected that vendor. With no vendor selected, show only the vendor-neutral
+  fields plus the rough price estimate.
+
+@provenance
+  Built from 53 DANIELLA e-mails (order confirmations, order-modification
+  notices, one goods-arrival notice), 3 DANIELLA PDFs (1 order confirmation with
+  list price + discount %, 2 quotations) and 4 working spreadsheets.
+  See docs/SOURCES.md for the file list and the extraction rules.
+
+@field_semantics
+  id                              string  DANIELLA article number, doubles as internal id
+  megnevezes                      string  longest observed product name across all sources
+  marka_gyarto                    string  brand; from the name text, else from the code prefix; "" = unknown
+  gyartoi_cikkszam                string  manufacturer part no.; id with the brand prefix stripped, kept ONLY
+                                          when the remainder also occurs in the product name; "" = not confirmed
+  kategoria_fo/al/ut              string  OFFICIAL DANIELLA category. EMPTY ON PURPOSE - to be collected online.
+                                          Target shape: al="Süllyesztett kötődobozok és fedelek",
+                                          ut="/Szerelvény- és kötődobozok/Installáció technika/"
+  kategoria_javaslat_fo/al        string  PROVISIONAL AI guess from keyword rules. Never treat as vendor truth.
+  tomeg_kg                        number  EMPTY - to be collected from manufacturer datasheets
+  egyseg                          string  db | fm | pár
+  becsult_netto_ar_huf            number  latest observed net unit price
+  becsult_brutto_ar_huf           number  becsult_netto_ar_huf * 1.27, rounded. ESTIMATE, not an offer.
+  ar_megfigyeles_datum            date    YYYY.MM.DD, date of the document that produced the price
+  gyartoi_termek_link             url     EMPTY - to be collected
+  megjegyzes / kedvenc            user    user-owned fields, always empty in a freshly generated export
+  daniella_*                      vendor  vendor block, see @vendor_block
+  rendelesek_szama                int     number of distinct orders this item appeared in
+  osszes_rendelt_mennyiseg        number  total quantity ordered so far (duplicate order revisions collapsed)
+  elso_rendeles / utolso_rendeles date    first / last order date
+  forras                          string  which source types contributed to this row
+
+@vendor_block daniella
+  cikkszam                        = id
+  netto_egysegar_huf              partner-specific discounted NET unit price from an order document
+  listaar_netto_huf               DANIELLA net list price (only in the PDF order confirmation)
+  engedmeny_szazalek              discount % applied to the list price
+  kiszereles / kiszereles_mennyiseg  pack size as printed, e.g. "100 db"
+  aktualis_brutto_ar_huf          EMPTY - the webshop gross price, filled by the "Árak frissítése" feature
+  keszlet_db                      EMPTY - webshop stock
+  termek_link                     EMPTY - webshop product URL
+  ar_ellenorizve                  EMPTY - timestamp of the last webshop price check
+  ar_elozmeny                     full observed price history, see data/vrg-price-history.csv
+
+@known_gaps
+  - official DANIELLA categories: 0 / 221 filled
+  - weights: 0 / 221 filled
+  - manufacturer product links: 0 / 221 filled
+  - vendor webshop price / stock / link: 0 / 221 filled
+  - brand unknown: 0 rows (mostly DANIELLA house cable codes KAB*/VEZ*)
+  - manufacturer part no. unconfirmed: 52 rows
+  - no price observed: 11 rows (mentioned only in a spreadsheet or arrival notice)
+
+@rebuild
+  1. Parse the .eml files: base64/quoted-printable body -> HTML. Item rows match
+     /<tr height="18px"[^>]*>/ ; cells are Cikkszám, Megnevezés, Kiszerelés, Rendelt,
+     Kiadható, Egységár, Nettó, Bruttó, Határidő. In "FIGYELEM! A rendelés módosult!"
+     mails names carry a leading "( ) " marker - strip it. In "Rendelése megérkezett"
+     mails the columns are Rendelt/Beérkezett/Később érkezik and carry NO prices.
+  2. Parse the PDFs: inflate the content streams, read Td coordinates, group fragments
+     by y, sort by x. Glyph <0118> = ő and <0126> = ű (per the embedded ToUnicode CMap).
+     Two layouts exist: with Listaár+Eng.% (order confirmation) and without (quotation).
+  3. Merge on the DANIELLA article number. One order number may appear in several
+     mails; for quantity totals keep only the newest mail per order number.
+  4. Re-derive brand, manufacturer part no. and provisional category with the rules in
+     tools/enrich.js. Never overwrite a user-edited value during a rebuild.
+
+@files
+  data/vrg-inventory.json       canonical, nested, machine-first
+  data/vrg-inventory.csv        flat, ";"-separated, decimal comma, UTF-8 BOM (Excel-HU)
+  data/vrg-price-history.csv    every observed price point
+  data/vrg-orders.csv           every order line, for usage statistics and audit
+  data/vrg-categories.csv       provisional category list + empty columns for the official mapping
+
+@data_tsv  columns: vrg_id	legacy_id	megnevezes	marka_gyarto	gyartoi_cikkszam	kategoria_javaslat_fo	kategoria_javaslat_al	egyseg	netto_huf	brutto_becsles_huf	ar_datum	daniella_listaar_netto_huf	daniella_engedmeny_szazalek	daniella_kiszereles	rendelesek_szama	osszes_rendelt_mennyiseg
+VRG-0001	ABB1SPE007717F0721	Kiselosztó falonkívüli 4/48 átlátszó ajtóval IP41 PE/N sínnel ABB Mistral41W 1SPE007717F0721	ABB	1SPE007717F0721	Elosztók és szekrények	Kiselosztók	db	37720	47904	2026.07.09			1 db	1	1
+VRG-0002	BEG92565	Jelenlét érzékelő süllyeszthető 360 PD2-M-1C-DE IP20 92565 B.E.G	B.E.G.	92565	Érzékelők és automatika	Mozgás- és jelenlétérzékelők	db	25399.66	32258	2026.09.08	30602	17	1 db	1	1
+VRG-0003	BELDE1583E	Számítógép vezeték CAT5E UTP Belden 1583E	Belden	1583E	Gyengeáram és adathálózat	Adatkábelek								0	0
+VRG-0004	BELDE1583EVAGOS	(939081 ) Számítógép vezeték CAT5 E - UTP fali réz PVC (0) BELDEN 1583e	Belden		Gyengeáram és adathálózat	Adatkábelek	fm	161.46	205	2026.09.15	207	22	1 fm	3	140
+VRG-0005	BUD25863	Műa. doboz 80mm, perforált, tetővel 25863 Budvill	Budvill	25863	Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	96.52	123	2026.08.05			150 db	1	10
+VRG-0006	BUDT30103	MüDN 100 doboz	Budvill		Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	567.72	721	2026.08.13			1 db	1	5
+VRG-0007	BUDT30305	Műa. doboz fedő 65mm, rugós Budvill	Budvill		Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	35.72	45	2026.09.16			200 db	2	2
+VRG-0008	BUDT888666	MüDK Műanyag doboz fedél 100x100	Budvill		Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	44.08	56	2026.07.01			1 db	2	10
+VRG-0009	DEHN556125	DEHN KSB 50 L10M Korrózióvédő szalag szélesség 50 mm L 10m 556125	DEHN	556125	Villámvédelem és földelés	Földelők és földelő tartozékok	db	4731.72	6009	2026.09.08			24 db	1	1
+VRG-0010	DEL038	Ha. ceruza 120W 118mm. R7s deLux	deLux	038	Világítás	Fényforrások	db	394.74	501	2026.09.16			50 db	1	1
+VRG-0011	DEL1714	LED reflektor 20W 1600lm, 120 fokos mozgásérzékelővel, 4000K, 30x SMD2835 LED, lapos, fekete deLux	deLux	1714	Világítás	Reflektorok és lámpatestek	db	5581.4	7088	2026.06.12			1 db	1	1
+VRG-0012	DEL1745	LED reflektor 30W mozgásérzékelős, sorkapoccsal, tömszelencével 4000K 2400lm IP65 120 fok SMD, lapos, fekete delux	deLux	1745	Világítás	Reflektorok és lámpatestek	db	7559.4	9600	2026.09.08	8790	14	1 db	1	1
+VRG-0013	DUND1101	Műa. doboz 100x100mm fedél nélkül, sárga D-1101 Dunszt	Dunszt	1101	Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	240.16	305	2026.09.16			100 db	2	6
+VRG-0014	DUND1102	Műa. doboz fedő 100x100mm D-1102 (D1101 dobozhoz) Dunszt	Dunszt	1102	Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	139.84	178	2026.09.16			50 db	1	2
+VRG-0015	DUND8001	Műa. doboz 80mm, nem perforált, sárga D-8001 (téglához is)	Dunszt	8001	Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	105.64	134	2026.07.01			100 db	2	50
+VRG-0016	DUND8002	Műa. doboz fedő 80mm, rugós D-8002 Dunszt	Dunszt	8002	Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	72.96	93	2026.07.01			200 db	2	50
+VRG-0017	DUW18310	Műa. doboz 65mm, perforált, sorolható, E-106 (18310) F-Tronic	F-Tronic	18310	Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	42.33	54	2026.07.27			1 db	3	110
+VRG-0018	DUW18320	Műa. doboz 65mm, perforált, sorolható, 65mm mély, E107 M25 F-Tronic	F-Tronic		Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	63.84	81	2026.07.27			1 db	3	45
+VRG-0019	EAT275413	NBP-1000 Takarólap 45mm, szürke RAL7035 (1m) 275413 (Y7-275413) Eaton	Eaton	275413	Kismegszakítók és védelmek	Sínek és szerelési tartozékok	db	1149.2	1459	2026.07.31			1 db	1	1
+VRG-0020	EKP4377STANDARD	SMR-M 230V kapcsoló alá szerelhető, Elko Ep, 4377 ; LED izzók és energiatakarékos fénycsövek fényerőszabályzására!	Elko EP		Kapcsolók és csatlakozók	Fényerőszabályzók (dimmerek)	db	21395.74	27173	2026.09.08	25778	17	1 db	1	1
+VRG-0021	ELTELSM32	Műa.cső ELS M32 Symalen 32 50fm/tek	ELTSZER		Installáció technika	Gégecsövek és védőcsövek	fm							1	100
+VRG-0022	ELTM32TOLDO	Symalen toldó M32	ELTSZER		Installáció technika	Csőidomok, bilincsek, tömszelencék	db	127.68	162	2026.09.15			15 db	1	1
+VRG-0023	GEWDX15016R	Gégecső lépésálló 16/100 fekete (SGN) 750N FK15 DX15016R Gewiss	Gewiss	DX15016R	Installáció technika	Gégecsövek és védőcsövek	fm	79.1	100	2026.07.14			100 fm	3	300
+VRG-0024	GEWDX15020R	Gégecső lépésálló 20/100 fekete (SGN) 750N FK15 DX15020R Gewiss	Gewiss	DX15020R	Installáció technika	Gégecsövek és védőcsövek	fm	109.06	139	2026.09.08	133	18	100 fm	2	300
+VRG-0025	GEWDX15025R	Gégecső lépésálló 25/75 fekete (SGN) 750N FK15 DX15025R Gewiss	Gewiss	DX15025R	Installáció technika	Gégecsövek és védőcsövek	fm	183.68	233	2026.08.24			75 fm	2	225
+VRG-0026	GEWDX15032R	Gégecső lépésálló 32/50 fekete (SGN) 750N FK15 DX15032R Gewiss	Gewiss	DX15032R	Installáció technika	Gégecsövek és védőcsövek	fm							1	50
+VRG-0027	GEWDX24925	Mü.II. cső PEP 25 szürke /3m tokos végű RK9 DX24925 320N (51m/köteg)	Gewiss	DX24925	Installáció technika	Gégecsövek és védőcsövek	fm	169.4	215	2026.06.12			3 fm	1	30
+VRG-0028	GEWDX40016	Karmantyú Mü.II. 16 IP40 szürke hal.mentes DX40016 Gewiss	Gewiss	DX40016	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	86.1	109	2026.07.14			1 db	1	5
+VRG-0029	GEWDX40020	Karmantyú Mü.II. 20 IP40 szürke hal.mentes DX40020 Gewiss	Gewiss	DX40020	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	90.2	115	2026.09.10			1 db	1	5
+VRG-0030	GEWDX40025	Karmantyú Mü.II. 25 IP40 szürke hal.mentes DX40025 Gewiss	Gewiss	DX40025	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	108.5	138	2026.07.14			1 db	1	5
+VRG-0031	GEWDX40120	Könyök Mü II 20 IP40 szürke hal.mentes DX40120 Gewiss	Gewiss	DX40120	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	142.1	180	2026.07.27			1 db	1	4
+VRG-0032	GEWDX40125	Könyök Mü.II. 25 IP40 szürke halogénmentes DX40125 Gewiss	Gewiss	DX40125	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	264.04	335	2026.07.27			1 db	2	9
+VRG-0033	GEWDX40325	Könyök Mü.II. 25 szürke vizsgálható, szétszedhető, halogénmentes IP40 DX40325 Gewiss	Gewiss	DX40325	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	288.64	367	2026.06.12				0	0
+VRG-0034	GEWDX43220	Kötődobozhoz egyenes csatlakozó 20-as (csőadapter) IP67 szürke hal.mentes DX43220 Gewiss	Gewiss	DX43220	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	478.06	607	2026.09.10			1 db	0	0
+VRG-0035	GEWGW40053BD	Kiselosztó falonkívüli 4soros, 72 modulos átlátszó ajtóval IP40 PE/N dupla sínnel GW40053BD	Gewiss	GW40053BD	Elosztók és szekrények	Kiselosztók	db	48288.16	61326	2026.09.08	58888	18	1 db	1	1
+VRG-0036	GEWGW48001	GW Kötődoboz sülly. 92x92x45 IP40 GW 48001	Gewiss	GW48001	Szerelvény- és kötődobozok	Süllyesztett kötődobozok és fedelek	db	317.34	403	2026.07.27			1 db	1	1
+VRG-0037	GEWGW48002	GW Kötődoboz sülly. 118x96x50 IP40 GW 48002	Gewiss	GW48002	Szerelvény- és kötődobozok	Süllyesztett kötődobozok és fedelek	db	386.22	490	2026.08.13			1 db	1	2
+VRG-0038	GEWGW48005	GW Kötődoboz sülly. 160x130x70 IP40 GW 48005	Gewiss	GW48005	Szerelvény- és kötődobozok	Süllyesztett kötődobozok és fedelek	db	822.5	1045	2026.07.27			1 db	1	1
+VRG-0039	GEWGW48007	GW Kötődoboz sülly. 294x152x75 IP40 GW 48007	Gewiss	GW48007	Szerelvény- és kötődobozok	Süllyesztett kötődobozok és fedelek	db	1592.5	2022	2026.07.27			1 db	1	1
+VRG-0040	GEWGW50417	Tömszelence M25 +anya IP66 szürke GW50417 Gewiss	Gewiss	GW50417	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	546.94	695	2026.08.24			1 db	1	5
+VRG-0041	GIP00010	Gipsz stukatúr 10kg/zsák	N/A		Munkavédelem és segédanyagok	Szerelési segédanyagok	db	1570.36	1994	2026.08.05			1 db	2	7
+VRG-0042	HAU250056	Tömszelence M50 +anya 30-38mm IP68 szürke 250056 Haupa	Haupa	250056	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	924	1173	2026.09.14			5 db	1	2
+VRG-0043	HAU250072	Tömszelence PG29 +anya 18-25mm IP68 szürke 250072 Haupa	Haupa	250072	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	429.6	546	2026.09.14			10 db	1	4
+VRG-0044	HAU250076	Tömszelence PG42 +anya 30-38mm IP68 szürke 250076 Haupa	Haupa	250076	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	1106.4	1405	2026.09.14			5 db	1	2
+VRG-0045	HAU290662	Ónozott saru (SZ 10-10) 290662 Haupa	Haupa	290662	Kötéstechnika	Érvéghüvelyek és saruk	db	85.6	109	2026.09.08			100 db	1	5
+VRG-0046	HENKKL54	Fővezeték sorkapocs 5P 4x1,5-25mm2 szürke-kék-z/s KKL 54 Hensel	Hensel	KKL54	Kötéstechnika	Fővezetéki sorkapcsok	db	9618.96	12216	2026.09.08	12332	22	1 db	1	1
+VRG-0047	HGRK148	HAGER K148 Golf N/PE sín 6x16mm2 + 7x10mm2, 85mm	Hager	K148	Kismegszakítók és védelmek	Sínek és szerelési tartozékok	db	2242.66	2848	2026.07.22				0	0
+VRG-0048	HGRVF112TD	Kiselosztó süllyesztett 1/12 átlátszó ajtóval IP40 PE/N sínnel HAGER Golf VF112TD	Hager	VF112TD	Elosztók és szekrények	Kiselosztók	db	8235.26	10459	2026.07.01			1 db	2	2
+VRG-0049	HGRVF412PD	Kiselosztó süllyesztett 4/48 teli ajtóval IP40 PE/N sínnel HAGER Golf VF412PD	Hager	VF412PD	Elosztók és szekrények	Kiselosztók	db	24418.6	31012	2026.06.30			1 db	1	1
+VRG-0050	HGRVF412TD	Kiselosztó süllyesztett 4/48 átlátszó ajtóval IP40 PE/N sínnel HAGER Golf VF412TD	Hager	VF412TD	Elosztók és szekrények	Kiselosztók	db	24418.6	31012	2026.07.01			1 db	1	1
+VRG-0051	HGRVZ703N	HAGER VZ703N Golf N, PE sín tartó VF/VS 12 M elosztókhoz	Hager	VZ703N	Kismegszakítók és védelmek	Sínek és szerelési tartozékok	db	935.41	1188	2026.07.22				0	0
+VRG-0052	HUTOROE7206GSW	Orno felületre szerelhető kettes aljzat 2P+E, IP20, fehér, ToDo OR-OE-7206(GS)/W	Orno	OE7206GSW	Kapcsolók és csatlakozók	Falon kívüli szerelvények	db	735.14	934	2026.07.29			1 db	1	1
+VRG-0053	JPR111356	J.P.111356 csatlakozó-kapocs	J.P.	111356	Villámvédelem és földelés	Földelők és földelő tartozékok	db	2379.64	3022	2026.09.17			1 db	2	3
+VRG-0054	JPR1278	J.P.1278 multi kapocs 10/10mm	J.P.	1278	Villámvédelem és földelés	Földelők és földelő tartozékok	db	1047.14	1330	2026.07.06			1 db	1	2
+VRG-0055	JPR2058	J.P.2058 ütőcsúcs 20	J.P.	2058	Villámvédelem és földelés	Földelők és földelő tartozékok	db	1047.14	1330	2026.09.17			1 db	2	2
+VRG-0056	KAB1100065	EAYY-J 5x 16 /NAYY-J/ RE (0) földkábel 5x16	N/A		Vezetékek és kábelek	Erőátviteli kábelek	fm							1	30
+VRG-0057	KAB1400014	NYY-J 3x 1,5 (0) RE-TÖMÖR [ 0,6/1kV ] fekete erőátviteli kábel	N/A		Vezetékek és kábelek	Erőátviteli kábelek	fm	339.3	431	2026.09.08	435	22	1 fm	1	30
+VRG-0058	KAB1400016	NYY-J 3x 4 (0) RE-TÖMÖR [ 0,6/1kV ] fekete erőátviteli kábel	N/A		Vezetékek és kábelek	Erőátviteli kábelek	fm	764.4	971	2026.06.12			1 fm	1	40
+VRG-0059	KAB1800011	H05RR-F 3x1,5 (100) (GT)	N/A		Vezetékek és kábelek	Gumikábelek és hosszabbító vezetékek	fm	358.82	456	2026.08.24			100 fm	2	105
+VRG-0060	KAB1800012	H05RR-F 3x1,5 fekete (0) 300/500V gumikábel (GT)	N/A		Vezetékek és kábelek	Gumikábelek és hosszabbító vezetékek	fm	351.12	446	2026.06.12			1 fm	1	5
+VRG-0061	KAN70941	Ventilátor EOL 120HT páraérzékelős időkapcsolós Kanlux 70941	Kanlux	70941	Szellőzés	Ventilátorok és rácsok	db	9684.2	12299	2026.09.14			1 db	1	1
+VRG-0062	KANND12	Kanlux ND 12 szellőzőrács hálóval ND12	Kanlux	ND12	Szellőzés	Ventilátorok és rácsok	db	1656.4	2104	2026.09.14			1 db	1	1
+VRG-0063	KIWA81004	Villámáram-levezető és túlfeszültség- védelmi készülék PO I 4 280V 12,5kA T1+T2+T3 (B+C+D) KIWA 81.004	KIWA	81004	Villámvédelem és földelés	Túlfeszültség-védelem	db	32929.4	41820	2026.09.08	47042	30	1 db	1	1
+VRG-0064	KIWA81027	PO I 3+1 m 280V túlfeszültség levezető 12,5kA T1+T2+T3 (B+C+D) 81.027 KIWA	KIWA	81027	Villámvédelem és földelés	Túlfeszültség-védelem	db	34845.3	44254	2026.06.12			1 db	1	1
+VRG-0065	KOPKPL64502LDNA	Gipszkarton doboz 2-es, 49mm mély, sárga, légtömített KPL 64-50/2LD NA Kopos	Kopos	KPL64502LDNA	Szerelvény- és kötődobozok	Gipszkarton dobozok	db	876	1113	2026.09.01			1 db	1	2
+VRG-0066	KOPKPL64503LDNA	Gipszkarton doboz 3-as, 49mm mély, sárga, légtömített KPL 64-50/3LD NA Kopos	Kopos	KPL64503LDNA	Szerelvény- és kötődobozok	Gipszkarton dobozok	db	1239	1574	2026.09.01			1 db	3	6
+VRG-0067	KOPKPL64505LDNA	Gipszkarton doboz 5-ös, 50mm mély, sárga, légtömített KPL 64-50/5LD NA Kopos	Kopos	KPL64505LDNA	Szerelvény- és kötődobozok	Gipszkarton dobozok	db	1857.75	2359	2026.09.01			1 db	1	2
+VRG-0068	KOPKPL6450LDNA	Gipszkarton doboz 1-es, d68mm, 50mm mély, sárga, légtömített KPL 64-50/LD NA Kopos	Kopos	KPL6450LDNA	Szerelvény- és kötődobozok	Gipszkarton dobozok	db	408.85	519	2026.06.17			1 db	1	1
+VRG-0069	KOPP356102005	Kötődoboz 100x100 süllyesztett, müds csavaros KOPP 356102005	KOPP	356102005	Szerelvény- és kötődobozok	Süllyesztett kötődobozok és fedelek	db	756.13	960	2026.08.05			1 db	1	2
+VRG-0070	KOPPK90X55DHD	Parapet csatorna 90x55 fehér, PK 90X55 D HD Kopos (12 fm/köteg)	Kopos	K90X55DHD	Installáció technika	Kábelcsatornák és parapetcsatornák	fm	3186.75	4047	2026.06.12				0	0
+VRG-0071	LEG050316	DFO-16 LEG. 050316 2+F dugvilla. műa. fehér	Legrand	050316	Kapcsolók és csatlakozók	Dugvillák és csatlakozók	db	480.48	610	2026.07.31			25 db	1	1
+VRG-0072	LEG069742L	Plexo 55 falon kívüli 2x2P+F elővezetékezett vízszintes csatlakozóaljzat csapófedéllel, összeszerelt, szürke 069742L Legrand	Legrand	069742L	Kapcsolók és csatlakozók	Falon kívüli szerelvények	db	8221.98	10442	2026.06.12			5 db	1	1
+VRG-0073	LEG413102	LEGRAND 413102 OH kalapsínre szerelhető RJ45 port Cat6 árnyékolt (FTP) 250MHz - 1 Gigabit/s	Legrand	413102	Gyengeáram és adathálózat	Csatlakozók és aljzatok	db	2226.12	2827	2026.09.08	2854	22	4 db	1	2
+VRG-0074	LEG601983	Legrand 601983 Plexo3 falon kívüli kiselosztó 3sor 36modul IP65	Legrand	601983	Elosztók és szekrények	Kiselosztók	db	34721.7	44097	2026.06.12			1 db	1	1
+VRG-0075	LEG665001	Legrand 665001 Niloé 1-es keret, fehér	Legrand	665001	Kapcsolók és csatlakozók	Keretek	db	223.86	284	2026.06.12			20 db	1	2
+VRG-0076	LEG665003	Niloé fehér keret 3-as 665003 Legrand	Legrand	665003	Kapcsolók és csatlakozók	Keretek	db	748.02	950	2026.06.12			5 db	1	1
+VRG-0077	LEG752101	Legrand 752101 Valena Life egypólusú kapcsoló 10 AX, fehér	Legrand	752101	Kapcsolók és csatlakozók	Süllyesztett kapcsolók	db	1790.1	2273	2026.09.08	2295	22	15 db	1	3
+VRG-0078	LEG752106	Legrand 752106 Valena Life váltókapcsoló 10 AX, fehér	Legrand	752106	Kapcsolók és csatlakozók	Süllyesztett kapcsolók	db	2329.08	2958	2026.09.08	2986	22	15 db	1	4
+VRG-0079	LEG752107	Legrand 752107 Valena Life keresztkapcsoló 10 AX, fehér	Legrand	752107	Kapcsolók és csatlakozók	Süllyesztett kapcsolók	db	3582.54	4550	2026.09.08	4593	22	5 db	1	1
+VRG-0080	LEG753121	Legrand 753121 Valena Life 2P+F csatlakozóaljzat gyermekvédelem nélkül, rugós, fehér	Legrand	753121	Kapcsolók és csatlakozók	Süllyesztett csatlakozóaljzatok	db	1790.1	2273	2026.09.08	2295	22	15 db	1	25
+VRG-0081	LEG753142	Legrand 753142 Valena Life 1xRJ45 UTP Cat6 aljzat, fehér	Legrand	753142	Gyengeáram és adathálózat	Csatlakozók és aljzatok	db	4891.38	6212	2026.09.08	6271	22	5 db	1	1
+VRG-0082	LEG754001	Legrand 754001 Valena Life 1-es keret, fehér	Legrand	754001	Kapcsolók és csatlakozók	Keretek	db	484.38	615	2026.09.08	621	22	20 db	1	20
+VRG-0083	LEG754002	Legrand 754002 Valena Life 2-es keret, tetszőleges, fehér	Legrand	754002	Kapcsolók és csatlakozók	Keretek	db	872.82	1108	2026.09.08	1119	22	10 db	1	6
+VRG-0084	LEG754005	Legrand 754005 Valena Life 5-ös keret, tetszőleges, fehér	Legrand	754005	Kapcsolók és csatlakozók	Keretek	db	2911.74	3698	2026.09.08	3733	22	10 db	1	1
+VRG-0085	LEG754192	Valena Life fehér kiemelődoboz 2-es 754192 Legrand	Legrand	754192	Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	3297.06	4187	2026.07.16			5 db	1	4
+VRG-0086	LEG764500	Niloé fehér 101 egypólusú kapcsoló 764500 Legrand	Legrand	764500	Kapcsolók és csatlakozók	Süllyesztett kapcsolók	db	674.7	857	2026.06.12			20 db	1	2
+VRG-0087	LEG764506	Niloé fehér 105 csillárkapcsoló 764506 ÚJ! Legrand	Legrand	764506	Kapcsolók és csatlakozók	Süllyesztett kapcsolók	db	939.12	1193	2026.06.17			20 db	1	1
+VRG-0088	LEG764539	Legrand 764539 Niloé 2P+F csatlakozóaljzat gyermekvédelem nélkül, csavaros, fehér	Legrand	764539	Kapcsolók és csatlakozók	Süllyesztett csatlakozóaljzatok	db	646.62	821	2026.06.12			20 db	1	1
+VRG-0089	LEG782373	Legrand 782373 Forix 2P+F CSF csatlakozóaljzat csapfedéllel IP44, falon kívüli, biztonsági zsalus (GYV), csavaros, fehér	Legrand	782373	Kapcsolók és csatlakozók	Falon kívüli szerelvények	db	1526.46	1939	2026.09.08	1957	22	10 db	2	3
+VRG-0090	LEG782374	Legrand 782374 Forix 2x2P+F csatlakozóaljzat csapfedéllel IP44, biztonsági zsalus (GYV), falon kívüli, csavaros, fehér	Legrand	782374	Kapcsolók és csatlakozók	Falon kívüli szerelvények	db	2804.88	3562	2026.06.12			5 db	1	1
+VRG-0091	LEG782400	Forix IP20 fehér 101 egypólusú kapcsoló fk. 782400 Legrand	Legrand	782400	Kapcsolók és csatlakozók	Falon kívüli szerelvények	db	715.26	908	2026.07.29			20 db	2	6
+VRG-0092	LEG782402	Forix IP20 fehér 101+101 kettős egypólusú kapcsoló fk. 782402 Legrand	Legrand	782402	Kapcsolók és csatlakozók	Falon kívüli szerelvények	db	980.46	1245	2026.07.29			20 db	1	1
+VRG-0093	LEG863193	Niloé Step fehér keret 3-as 863193 Legrand	Legrand	863193	Kapcsolók és csatlakozók	Keretek	db	804.18	1021	2026.06.12				0	0
+VRG-0094	NVT10009	Sittes zsák vastag 90x55cm	N/A		Munkavédelem és segédanyagok	Szerelési segédanyagok	db	131.14	167	2026.09.08	158	17	25 db	1	5
+VRG-0095	NYUGMFL20	Gégecső toldó 20 MFL20 Inset	Inset	MFL20	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	85.12	108	2026.09.17			50 db	3	25
+VRG-0096	NYUGMFL25	Gégecső toldó 25 MFL25 Inset	Inset	MFL25	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	98.8	125	2026.07.27			20 db	1	5
+VRG-0097	OBO2000342	OBO Kötődoboz 85* 85 A11 IP55 2000342	OBO Bettermann	2000342	Szerelvény- és kötődobozok	Falon kívüli kötődobozok	db	268.45	341	2026.06.12			1 db	1	4
+VRG-0098	OBO2000378	Kötődoboz 100x100x38 A14 OBO 2000378 sorkapocs nélkül PE IP55 világosszürke	OBO Bettermann	2000378	Szerelvény- és kötődobozok	Falon kívüli kötődobozok	db	496.91	631	2026.09.08	629	21	1 db	1	4
+VRG-0099	OBO2003700	Műanyag doboz 65mm, perforált, sorolható, 46mm mély, UG 46 2003700 OBO	OBO Bettermann	2003700	Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	53.72	68	2026.09.08	68	21	25 db	1	15
+VRG-0100	OBO2003702	Műanyag doboz 65mm, perforált, sorolható, 66mm mély, UG 66 2003702 OBO	OBO Bettermann	2003702	Szerelvény- és kötődobozok	Szerelvénydobozok és fedelek	db	83.74	106	2026.09.08	106	21	25 db	1	10
+VRG-0101	OBO2005312	OBO X16 H25 GNP5 LGR Leágazódoboz f vezetéki sorkapoccsal 240x191x125 világosszürke 2005312	OBO Bettermann	2005312	Szerelvény- és kötődobozok	Falon kívüli kötődobozok	db	20778.58	26389	2026.09.04			1 db	2	4
+VRG-0102	OBO2022770	Tömszelence M32 +anya 15-21mm IP68 V-TEC VM32+ LGR szürke 2022770 OBO	OBO Bettermann	2022770	Installáció technika	Csőidomok, bilincsek, tömszelencék	db							1	8
+VRG-0103	OBO2149010	Csőbilincs D-20 OBO M20 2955 /Mü.II/ Quick 2149010	OBO Bettermann	2149010	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	31.6	40	2026.09.10	40	21	100 db	3	140
+VRG-0104	OBO2149016	Csőbilincs D-25 OBO M25 2955 /MÜ.II/ Quick 2149016	OBO Bettermann	2149016	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	52.14	66	2026.08.05			100 db	2	120
+VRG-0105	OBO2149022	Csőbilincs D-32 OBO M32 2955 /Mü.II/ Quick 2149022	OBO Bettermann	2149022	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	81.37	103	2026.09.14			50 db	2	30
+VRG-0106	OBO2250136	OBO bilincs 2037 6-13mm 2250136	OBO Bettermann	2250136	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	65.57	83	2026.06.12			1 db	1	25
+VRG-0107	OBO2250209	OBO bilincs 2037 12-20mm 2250209	OBO Bettermann	2250209	Installáció technika	Csőidomok, bilincsek, tömszelencék	db	94.8	120	2026.08.24			1 db	1	100
+VRG-0108	OBO5000750XXX1	OBO 219 20 ST FT rúdföldelő standard 1,5m 5000750 helyette ideiglenesen: OBO5000947	OBO Bettermann		Villámvédelem és földelés	Földelők és földelő tartozékok	db	8080.91	10263	2026.09.08			1 db	2	6
+VRG-0109	OBO5001641	OBO 2760 20 FT csatlakozóbilincs kör- és laposvezetőhöz 20mm 5001641	OBO Bettermann	5001641	Villámvédelem és földelés	Földelők és földelő tartozékok	db	2813.19	3573	2026.09.08			1 db	1	1
+VRG-0110	POL2080136	Fővezeték sorkapocs 2x 25/2x16mm2 szürke HLAK 25-1/2 M2, 2080136 Pollmann	Pollmann	2080136	Kötéstechnika	Fővezetéki sorkapcsok	db	927.11	1177	2026.08.25			1 db	1	1
+VRG-0111	POL2080137	Fővezeték sorkapocs 2x 25/2x16mm2 kék HLAK 25-1/2 M2, 2080137 Pollmann	Pollmann	2080137	Kötéstechnika	Fővezetéki sorkapcsok	db	927.11	1177	2026.08.25			1 db	1	1
+VRG-0112	POL2080138	Fővezeték sorkapocs 2x 25/2x16mm2 z/s HLAK 25-1/2 M2, 2080138 Pollmann	Pollmann	2080138	Kötéstechnika	Fővezetéki sorkapcsok	db	927.11	1177	2026.08.25			1 db	2	2
+VRG-0113	POL2080183	Fővezeték sorkapocs 2x 35/6x25mm2 szürke HLAK 35-1/6 M2, 2080183 Pollmann	Pollmann	2080183	Kötéstechnika	Fővezetéki sorkapcsok	db	2720.74	3455	2026.07.09			1 db	1	1
+VRG-0114	POL2080184	Fővezeték sorkapocs 2x 35/6x25mm2 kék HLAK 35-1/6 M2, 2080184 Pollmann	Pollmann	2080184	Kötéstechnika	Fővezetéki sorkapcsok	db	2720.74	3455	2026.07.09			1 db	1	1
+VRG-0115	POL2080185	Fővezeték sorkapocs 2x 35/6x25mm2 zöld HLAK 35-1/6 M2, 2080185 Pollmann	Pollmann	2080185	Kötéstechnika	Fővezetéki sorkapcsok	db	2720.74	3455	2026.07.17			1 db	1	1
+VRG-0116	PORA374K8RXL	Védőkesztyű, precíziós nitril, fekete, XL- es GP Grip 18 A374K8RXL Portwest	Portwest	A374K8RXL	Munkavédelem és segédanyagok	Munkavédelem	pár	1127.7	1432	2026.09.08	1253	10	1 pár	1	2
+VRG-0117	SCHEPH0400121	ASFORA fehér 106 rugós kerettel EPH0400121	Schneider Electric	EPH0400121	Kapcsolók és csatlakozók	Süllyesztett kapcsolók	db	1035	1314	2026.07.27			10 db	1	2
+VRG-0118	SCHEPH2900121	ASFORA fehér 2P+F csatlakozóaljzat kerettel EPH2900121	Schneider Electric	EPH2900121	Kapcsolók és csatlakozók	Süllyesztett csatlakozóaljzatok	db	874.5	1111	2026.07.27			10 db	1	15
+VRG-0119	SCHEPH2970121	ASFORA fehér 2P+F csatlakozóaljzat, keret nélkül! EPH2970121 (120 db-os)	Schneider Electric	EPH2970121	Kapcsolók és csatlakozók	Süllyesztett csatlakozóaljzatok	db	854.4	1085	2026.08.24			120 db	1	3
+VRG-0120	SCHEPH3100121	ASFORA fehér 2P+F CSF csapfedeles kerettel EPH3100121	Schneider Electric	EPH3100121	Kapcsolók és csatlakozók	Süllyesztett csatlakozóaljzatok	db	1996.8	2536	2026.09.01			10 db	1	2
+VRG-0121	SCHEPH3200121	ASFORA fehér TV aljzat végzáró 1 dB kerettel EPH3200121	Schneider Electric	EPH3200121	Gyengeáram és adathálózat	Csatlakozók és aljzatok	db	1824.75	2317	2026.07.31			10 db	2	2
+VRG-0122	SCHEPH4300121	ASFORA fehér 1xRJ45 Cat5e UTP aljzat, kerettel EPH4300121	Schneider Electric	EPH4300121	Gyengeáram és adathálózat	Csatlakozók és aljzatok	db	2865.75	3640	2026.07.29			10 db	1	1
+VRG-0123	SCHEPH4700121	ASFORA fehér 1xRJ45 Cat6 UTP aljzat, kerettel EPH4700121	Schneider Electric	EPH4700121	Gyengeáram és adathálózat	Csatlakozók és aljzatok	db	4011.2	5094	2026.09.01			10 db	1	2
+VRG-0124	SCHEPH5800221	ASFORA fehér keret 2-es, vízszintes EPH5800221	Schneider Electric	EPH5800221	Kapcsolók és csatlakozók	Keretek	db	485.6	617	2026.08.31			25 db	2	2
+VRG-0125	SCHEPH5800321	ASFORA fehér keret 3-as, vízszintes EPH5800321	Schneider Electric	EPH5800321	Kapcsolók és csatlakozók	Keretek	db	729.75	927	2026.07.31			15 db	1	1
+VRG-0126	SCHEPH5800421	ASFORA fehér keret 4-es, vízszintes EPH5800421	Schneider Electric	EPH5800421	Kapcsolók és csatlakozók	Keretek	db	1139.2	1447	2026.09.16			1 db	3	3
+VRG-0127	SCHEZ9A34223	EASY9 PRO Moduláris csengő, 230VAC EZ9A34223 Schneider	Schneider Electric	EZ9A34223	Kismegszakítók és védelmek	Moduláris készülékek	db	4276.8	5432	2026.07.09			12 db	1	1
+VRG-0128	SCHEZ9EUC112	Kiselosztó falonkívüli 1/12 átlátszó ajtóval IP40 PE/N sínnel Easy9 EU EZ9EUC112	Schneider Electric	EZ9EUC112	Elosztók és szekrények	Kiselosztók	db	4456	5659	2026.08.25			1 db	1	1
+VRG-0129	SCHEZ9EUC212	Kiselosztó falonkívüli 2/24 átlátszó ajtóval IP40 PE/N sínnel Easy9 EU EZ9EUC212	Schneider Electric	EZ9EUC212	Elosztók és szekrények	Kiselosztók	db	8057.6	10233	2026.08.05			1 db	1	1
+VRG-0130	SCHEZ9EUC312	Kiselosztó falonkívüli 3/36 átlátszó ajtóval IP40 PE/N sínnel Easy9 EU EZ9EUC312	Schneider Electric	EZ9EUC312	Elosztók és szekrények	Kiselosztók	db	10997.6	13967	2026.08.25			1 db	1	1
+VRG-0131	SCHEZ9F27106	1B 6A 6kA Schneider EASY9 PRO EZ9F27106 kismegszakító	Schneider Electric	EZ9F27106	Kismegszakítók és védelmek	Kismegszakítók	db	1228	1560	2026.07.09			12 db	1	1
+VRG-0132	SCHEZ9F27110	1B 10A 6kA Schneider EASY9 PRO EZ9F27110 kismegszakító	Schneider Electric	EZ9F27110	Kismegszakítók és védelmek	Kismegszakítók	db	1145.6	1455	2026.07.09			12 db	1	4
+VRG-0133	SCHEZ9F57106	1C 6A 6kA Schneider EASY9 PRO EZ9F57106 kismegszakító	Schneider Electric	EZ9F57106	Kismegszakítók és védelmek	Kismegszakítók	db	1145.6	1455	2026.09.08	1432	20	12 db	1	6
+VRG-0134	SCHEZ9F57110	1C 10A 6kA Schneider EASY9 PRO EZ9F57110 kismegszakító	Schneider Electric	EZ9F57110	Kismegszakítók és védelmek	Kismegszakítók	db	1063.2	1350	2026.09.08	1329	20	12 db	5	22
+VRG-0135	SCHEZ9F57113	1C 13A 6kA Schneider EASY9 PRO EZ9F57113 kismegszakító	Schneider Electric	EZ9F57113	Kismegszakítók és védelmek	Kismegszakítók	db	980.8	1246	2026.08.25			12 db	4	23
+VRG-0136	SCHEZ9F57116	1C 16A 6kA Schneider EASY9 PRO EZ9F57116 kismegszakító	Schneider Electric	EZ9F57116	Kismegszakítók és védelmek	Kismegszakítók	db	920	1168	2026.09.08	1150	20	12 db	6	22
+VRG-0137	SCHEZ9F57120	1C 20A 6kA Schneider EASY9 PRO EZ9F57120 kismegszakító	Schneider Electric	EZ9F57120	Kismegszakítók és védelmek	Kismegszakítók	db	919.5	1168	2026.08.17			12 db	1	1
+VRG-0138	SCHEZ9F57206	2C 6A 6kA Schneider EASY9 PRO EZ9F57206 kismegszakító	Schneider Electric	EZ9F57206	Kismegszakítók és védelmek	Kismegszakítók	db	2628.8	3339	2026.09.08	3286	20	6 db	1	1
+VRG-0139	SCHEZ9F57210	2C 10A 6kA Schneider EASY9 PRO EZ9F57210 kismegszakító	Schneider Electric	EZ9F57210	Kismegszakítók és védelmek	Kismegszakítók	db	2546.4	3234	2026.07.24			6 db	2	2
+VRG-0140	SCHEZ9F57213	2C 13A 6kA Schneider EASY9 PRO EZ9F57213 kismegszakító	Schneider Electric	EZ9F57213	Kismegszakítók és védelmek	Kismegszakítók	db	2464	3129	2026.08.24			6 db	2	8
+VRG-0141	SCHEZ9F57216	2C 16A 6kA Schneider EASY9 PRO EZ9F57216 kismegszakító	Schneider Electric	EZ9F57216	Kismegszakítók és védelmek	Kismegszakítók	db	2381.6	3025	2026.07.09			6 db	1	1
+VRG-0142	SCHEZ9F57316	3C 16A 6kA Schneider EASY9 PRO EZ9F57316 kismegszakító	Schneider Electric	EZ9F57316	Kismegszakítók és védelmek	Kismegszakítók	db	3314.25	4209	2026.08.18			4 db	2	2
+VRG-0143	SCHEZ9F57320	3C 20A 6kA Schneider EASY9 PRO EZ9F57320 kismegszakító	Schneider Electric	EZ9F57320	Kismegszakítók és védelmek	Kismegszakítók	db	3617.6	4594	2026.08.25			4 db	2	2
+VRG-0144	SCHEZ9F57420	4C 20A 6kA Schneider EASY9 PRO EZ9F57420 kismegszakító	Schneider Electric	EZ9F57420	Kismegszakítók és védelmek	Kismegszakítók	db	5183.2	6583	2026.06.12			3 db	1	1
+VRG-0145	SCHEZ9F57432	4C 32A 6kA Schneider EASY9 PRO EZ9F57432 kismegszakító	Schneider Electric	EZ9F57432	Kismegszakítók és védelmek	Kismegszakítók	db	5595.2	7106	2026.09.08	6994	20	3 db	1	1
+VRG-0146	SCHEZ9R49225	EASY9 PRO áram-védőkapcsoló, A osztály, 2P, 25A, 30 mA EZ9R49225 Schneider	Schneider Electric	EZ9R49225	Kismegszakítók és védelmek	Áram-védőkapcsolók (FI)	db	10209.6	12966	2026.07.09			6 db	2	2
+VRG-0147	SCHEZ9R49240	FI relé 40/2-0,03 EASY9 PRO, A osztály!!! EZ9R49240 Schneider	Schneider Electric	EZ9R49240	Kismegszakítók és védelmek	Áram-védőkapcsolók (FI)	db	10704	13594	2026.08.25			6 db	2	2
+VRG-0148	SCHEZ9R49425	EASY9 PRO áram-védőkapcsoló, A osztály, 4P, 25A, 30 mA EZ9R49425 Schneider	Schneider Electric	EZ9R49425	Kismegszakítók és védelmek	Áram-védőkapcsolók (FI)	db	10973.3	13936	2026.06.12			3 db	1	1
+VRG-0149	SCHEZ9R49440	EASY9 PRO áram-védőkapcsoló, A osztály, 4P, 40A, 30 mA EZ9R49440 Schneider	Schneider Electric	EZ9R49440	Kismegszakítók és védelmek	Áram-védőkapcsolók (FI)	db	14000	17780	2026.09.08	17500	20	3 db	4	4
+VRG-0150	SCHR9F04110	1B 10A 4,5kA Schneider RESI9 R9F04110 kismegszakító	Schneider Electric	R9F04110	Kismegszakítók és védelmek	Kismegszakítók	db	1240.8	1576	2026.07.21			12 db	1	1
+VRG-0151	SCHR9F14113	1C 13A 4,5kA Schneider RESI9 R9F14113 kismegszakító	Schneider Electric	R9F14113	Kismegszakítók és védelmek	Kismegszakítók	db	1182.4	1502	2026.07.21			12 db	1	15
+VRG-0152	SCHR9F14116	1C 16A 4,5kA Schneider RESI9 R9F14116 kismegszakító	Schneider Electric	R9F14116	Kismegszakítók és védelmek	Kismegszakítók	db	1125.6	1430	2026.07.21			12 db	1	7
+VRG-0153	SCHR9F14320	3C 20A 4,5kA Schneider RESI9 R9F14320 kismegszakító	Schneider Electric	R9F14320	Kismegszakítók és védelmek	Kismegszakítók	db	4255.2	5404	2026.07.21			4 db	1	1
+VRG-0154	SCHR9XFH112	Fésűs sín 1P villás, 12 modul, 63A, RESI9 R9XFH112 Schneider	Schneider Electric	R9XFH112	Kismegszakítók és védelmek	Sínek és szerelési tartozékok	db	1272	1615	2026.09.16	1590	20	10 db	6	14
+VRG-0155	SCHR9XFH312	Fésűs sín 3P villás, 12 modul, 63A RESI9 R9XFH312 Schneider	Schneider Electric	R9XFH312	Kismegszakítók és védelmek	Sínek és szerelési tartozékok	db	3032	3851	2026.07.21			5 db	2	7
+VRG-0156	SEZ1000580800	Védővezető csatlakozó PE12 (zöld) 12/Z (300254) SEZ	SEZ		Kismegszakítók és védelmek	Sínek és szerelési tartozékok	db	611.72	777	2026.07.21			1 db	1	1
+VRG-0157	SEZ1000580900	Nullvezető csatlakozó N12 (kék) 12/N 12/N (300255) SEZ	SEZ		Kismegszakítók és védelmek	Sínek és szerelési tartozékok	db	611.72	777	2026.07.21			1 db	1	1
+VRG-0158	SEZ1001081400	Kötődoboz sima falú 190x140x70 S- BOX 416 (400363) SEZ	SEZ		Szerelvény- és kötődobozok	Falon kívüli kötődobozok	db	1975.63	2509	2026.09.08	2677	26,2	20 db	1	4
+VRG-0159	SOM0889	Telefon Moduláris dugó 8P8C árnyékolt Cat 5-hoz (FTP)	N/A		Gyengeáram és adathálózat	Csatlakozók és aljzatok	db	102.92	131	2026.09.08	124	17	1 db	1	5
+VRG-0160	SOMFF1	F-csatlakozó FF 1	Somogyi Elektronic		Gyengeáram és adathálózat	Csatlakozók és aljzatok	db	53.12	67	2026.07.31			1 db	1	8
+VRG-0161	SOMTS52WH	Telefon Moduláris dugó 8P8C-hez törésgátló TS 52/WH fehér	Somogyi Elektronic		Gyengeáram és adathálózat	Csatlakozók és aljzatok	db	48.14	61	2026.09.08	58	17	1 db	1	5
+VRG-0162	STI1012	Gipszkarton doboz 1-es, d68mm, 47mm mély, narancssárga (E-115 18345 helyett) Stilo	Stilo	1012	Szerelvény- és kötődobozok	Gipszkarton dobozok	db	162.54	206	2026.09.01			10 db	1	13
+VRG-0163	STI1123	TS-sín 0.5 fm-es 35mm perforált, 1mm vastag, Stilo	Stilo	1123	Kismegszakítók és védelmek	Sínek és szerelési tartozékok	db	339.79	432	2026.08.24			1 db	1	1
+VRG-0164	STI1497	Kötődoboz 150x110x70 membrános IP65 Stilo /S-BOX helyett/	Stilo	1497	Szerelvény- és kötődobozok	Falon kívüli kötődobozok	db	963.2	1223	2026.09.08	1120	14	1 db	1	4
+VRG-0165	STI1501	Kötődoboz 100x100x70 sima falú IP65 Stilo /S-BOX helyett/	Stilo	1501	Szerelvény- és kötődobozok	Falon kívüli kötődobozok	db	575.34	731	2026.09.08			1 db	1	1
+VRG-0166	STI1603	Vezeték nélküli csengő dugaljas, 300m IP44, AC 230V beltéri egységgel Stilo	Stilo	1603	Érzékelők és automatika	Okos eszközök és csengők	db	4291.4	5450	2026.07.31			1 db	1	1
+VRG-0167	STI1628	Wi-Fi okos dugalj (2P+F), 1x16A, fehér Stilo	Stilo	1628	Érzékelők és automatika	Okos eszközök és csengők	db	3431.4	4358	2026.06.17			1 db	1	1
+VRG-0168	STI1784	Multikapocs, Vario összekötő horganyzott M10 Rd8-10 BLKLEUNIVZ2-10VK-40	Stilo	1784	Villámvédelem és földelés	Földelők és földelő tartozékok	db	435.16	553	2026.09.08			1 db	1	1
+VRG-0169	STI284	Fővezeték sorkapocs 2x 25/2x25mm2 szürke HLAK 25-1/2, Stilo	Stilo	284	Kötéstechnika	Fővezetéki sorkapcsok	db	674.25	856	2026.06.12			1 db	1	3
+VRG-0170	STI285	Fővezeték sorkapocs 2x 25/2x25mm2 kék HLAK 25-1/2, Stilo	Stilo	285	Kötéstechnika	Fővezetéki sorkapcsok	db	696.75	885	2026.06.12			1 db	1	1
+VRG-0171	STI286	Fővezeték sorkapocs 2x 25/2x25mm2 z/s HLAK 25-1/2, Stilo	Stilo	286	Kötéstechnika	Fővezetéki sorkapcsok	db	696.75	885	2026.06.12			1 db	1	1
+VRG-0172	STI671	Szemes csősaru ST- 50-10 Stilo	Stilo	671	Kötéstechnika	Érvéghüvelyek és saruk	db	481.6	612	2026.09.08			50 db	1	1
+VRG-0173	STI746	Érvéghüvely szigetelt 10/12 elefántcsont E10-12 Stilo	Stilo	746	Kötéstechnika	Érvéghüvelyek és saruk	db	13.76	17	2026.09.08	16	14	100 db	2	200
+VRG-0174	STI747	Érv.h. szig. 10/18 elefántcsont E10-18 Stilo	Stilo	747	Kötéstechnika	Érvéghüvelyek és saruk	db							1	100
+VRG-0175	STI942	MCSN 100x60 (szél/mag) 2m/szál STILO (18 fm/köteg)	Stilo	942	Installáció technika	Kábelcsatornák és parapetcsatornák	fm	1124.25	1428	2026.06.17			2 fm	1	2
+VRG-0176	TRAE22I	Érv.h. iker 2* 6,0/14 sárga E22I Tracon	Tracon	E22I	Kötéstechnika	Érvéghüvelyek és saruk	db	78.85	100	2026.08.24			100 db	1	20
+VRG-0177	TRAFEH20	Szig.szalag 20x19 fehér Tracon	Tracon		Munkavédelem és segédanyagok	Szerelési segédanyagok	db	471.44	599	2026.07.27			10 db	1	1
+VRG-0178	UNI012673	MIK 40/60 kábelcsatorna fedéllel fehér, UV-álló, lángálló 012673 Univolt	Univolt	012673	Installáció technika	Kábelcsatornák és parapetcsatornák	fm	1019.16	1294	2026.08.24			2 fm	1	2
+VRG-0179	UNI083271	Gégecső lépésálló 25/50 (szürke) FXP-TURBO 083271 Univolt	Univolt	083271	Installáció technika	Gégecsövek és védőcsövek	fm	182.4	232	2026.07.01			50 fm	2	200
+VRG-0180	UNI084057	Gégecső lépésálló 20/50 (fekete) UV-álló FXP-TURBO 084057 Univolt	Univolt	084057	Installáció technika	Gégecsövek és védőcsövek	fm	174.04	221	2026.07.27			50 fm	1	50
+VRG-0181	UNI084058	Gégecső lépésálló 25/50 (fekete) UV-álló FXP-TURBO 084058 Univolt	Univolt	084058	Installáció technika	Gégecsövek és védőcsövek	fm	231.8	294	2026.07.27			50 fm	1	50
+VRG-0182	VEZ1000091	Számítógép vezeték CAT5 E - UTP fali CCA!! (0)	N/A		Gyengeáram és adathálózat	Adatkábelek	fm	122.43	155	2026.07.23			1 fm	1	30
+VRG-0183	VEZ1000101	Számítógép vezeték CAT6 UTP	BITNER		Gyengeáram és adathálózat	Adatkábelek								0	0
+VRG-0184	VEZ1000133	(989689 ) Számítógép vezeték CAT6 - UTP fali réz PVC (0) BITNER	Bitner		Gyengeáram és adathálózat	Adatkábelek	fm	170.17	216	2026.09.08	221	23	1 fm	3	112
+VRG-0185	VEZ1500004	H07V-K 1x 1,5 fekete (100)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	78.54	100	2026.08.14			100 fm	1	100
+VRG-0186	VEZ1500032	H07V-K 1x 4 fekete (0)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	222.53	283	2026.08.05			1 fm	2	21
+VRG-0187	VEZ1500034	H07V-K 1x 4 kék (0)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	222.53	283	2026.08.05			1 fm	2	17
+VRG-0188	VEZ1500044	H07V-K 1x 4 z/s (0)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	222.53	283	2026.08.05			1 fm	2	17
+VRG-0189	VEZ1500064	10 mkh (H07V-K 1x10)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek								0	0
+VRG-0190	VEZ1500065	H07V-K 1x 10 fekete (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	566.72	720	2026.08.24			1 fm	5	51
+VRG-0191	VEZ1500066	10 mkh (H07V-K 1x10)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek								0	0
+VRG-0192	VEZ1500067	H07V-K 1x 10 kék (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	567.49	721	2026.08.24			1 fm	4	27
+VRG-0193	VEZ1500072	10 mkh (H07V-K 1x10)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek								0	0
+VRG-0194	VEZ1500073	H07V-K 1x 10 zöld/sárga (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	572.88	728	2026.08.24			1 fm	5	29
+VRG-0195	VEZ1500087	H07V-K 1x 16 zöld/sárga (0) 450/750V hajlékony egyerű sodrott vezeték (M-kh, Mkh)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	885.5	1125	2026.06.12			1 fm	1	6
+VRG-0196	VEZ1600010	H07V-U 1x 1,5 barna (100)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	79.31	101	2026.07.01			100 fm	2	400
+VRG-0197	VEZ1600012	H07V-U 1x 1,5 fekete (100)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	79.31	101	2026.09.10			100 fm	4	600
+VRG-0198	VEZ1600013	H07V-U 1x 1,5 kék (100)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	79.31	101	2026.07.27			100 fm	3	500
+VRG-0199	VEZ1600019	H07V-U 1x 1,5 z/s (100)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	79.31	101	2026.07.27			100 fm	3	500
+VRG-0200	VEZ1600023	H07V-U 1x 2,5 fekete (100)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	129.36	164	2026.07.27			100 fm	3	500
+VRG-0201	VEZ1600024	H07V-U 1x 2,5 kék (100)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	129.36	164	2026.07.27			100 fm	3	500
+VRG-0202	VEZ1600027	H07V-U 1x 2,5 z/s (100)	N/A		Vezetékek és kábelek	Sodrott és tömör erezetű vezetékek	fm	129.36	164	2026.07.27			100 fm	3	500
+VRG-0203	VEZ1800044	H05VV-F 3x 1,5 (0)	N/A		Vezetékek és kábelek	Gumikábelek és hosszabbító vezetékek	fm	298.76	379	2026.07.03			1 fm	1	25
+VRG-0204	VEZ1800080	H05VV-F 5x 1,5 (0)	N/A		Vezetékek és kábelek	Gumikábelek és hosszabbító vezetékek	fm	441.21	560	2026.07.03			1 fm	1	10
+VRG-0205	VEZ2100001	NYM-J 3x 1,5 (50) 300/500V tömör installációs vezeték (MB-Cu, MBCu)	N/A		Vezetékek és kábelek	Installációs vezetékek	fm	260.26	331	2026.09.08	338	23	50 fm	3	150
+VRG-0206	VEZ2100002	NYM-J 3x 1,5 szürke (100) 300/500V tömör installációs vezeték (MB-Cu, MBCu)	N/A		Vezetékek és kábelek	Installációs vezetékek	fm	260.26	331	2026.09.08	338	23	100 fm	1	100
+VRG-0207	VEZ2100006	NYM-J 3x 1,5 szürke (0) 300/500V tömör installációs vezeték (MB-Cu, MBCu)	N/A		Vezetékek és kábelek	Installációs vezetékek	fm	277.2	352	2026.08.05			1 fm	4	95
+VRG-0208	VEZ2100007	NYM-J 3x 2,5 szürke (100) 300/500V tömör installációs vezeték (MB-Cu, MBCu)	N/A		Vezetékek és kábelek	Installációs vezetékek	fm	396.55	504	2026.09.08	515	23	100 fm	1	100
+VRG-0209	VEZ2100011	NYM-J 3x 2,5 szürke (0) 300/500V tömör installációs vezeték (MB-Cu, MBCu)	N/A		Vezetékek és kábelek	Installációs vezetékek	fm	431.2	548	2026.06.12			1 fm	1	10
+VRG-0210	VEZ2100030	NYM-J 5x 1,5 szürke (0) 300/500V tömör installációs vezeték (MB-Cu, MBCu)	N/A		Vezetékek és kábelek	Installációs vezetékek	fm	438.9	557	2026.09.08	570	23	1 fm	3	90
+VRG-0211	WAGO2212411	WAGO 221-2411 vezeték összekötő sodrott 2-es, 1P átmenő, átlátszó, max. 4 mm2, 32A	WAGO	2212411	Kötéstechnika	Vezetékösszekötők	db	124.1	158	2026.06.12			60 db	1	60
+VRG-0212	WAGO221415	WAGO 221-415 vezeték összekötő sodrott 5-ös, átlátszó 0,2- 4mm2, 32A	WAGO	221415	Kötéstechnika	Vezetékösszekötők	db	197.83	251	2026.06.12			25 db	1	25
+VRG-0213	WAGO221613	WAGO 221-613 vez.összekötő sodrott 3-as, átlátszó 6mm2 30db	WAGO	221613	Kötéstechnika	Vezetékösszekötők	db	220.46	280	2026.07.27			1 db	1	10
+VRG-0214	WAGO222415	WAGO 222-415 vez.összekötő sodrott 5-ös	WAGO	222415	Kötéstechnika	Vezetékösszekötők	db	186.88	237	2026.07.27			1 db	1	10
+VRG-0215	WAGO2273203	WAGO COMPACT vezeték összekötő 3x0,5-2,5 mm2 tömör vezetékhez, átlátszó házban, narancssárga fedéllel 2273-203	WAGO	2273203	Kötéstechnika	Vezetékösszekötők	db	47.45	60	2026.09.08	65	27	100 db	2	130
+VRG-0216	WAGO2273205	WAGO 5x 0,5-2,5mm2 vez.összekötő sárga 2273-205	WAGO	2273205	Kötéstechnika	Vezetékösszekötők	db	65.7	83	2026.07.27			100 db	1	20
+VRG-0217	WEI1560650000	Fővezeték sorkapocs 2x 25/2x16mm2 zöld WPD101, 1560650000 Weidmüller	Weidmüller	1560650000	Kötéstechnika	Fővezetéki sorkapcsok	db	1004.4	1276	2026.08.24			1 db	2	2
+VRG-0218	WEI1560670000	Fővezeték sorkapocs 2x 25/2x16mm2 kék WPD101, 1560670000 Weidmüller	Weidmüller	1560670000	Kötéstechnika	Fővezetéki sorkapcsok	db	1004.4	1276	2026.08.24			1 db	2	2
+VRG-0219	WEI1560730000	Fővezeték sorkapocs 2x 25/2x16mm2 szürke WPD101, 1560730000 Weidmüller	Weidmüller	1560730000	Kötéstechnika	Fővezetéki sorkapcsok	db	1004.4	1276	2026.08.24			1 db	4	10
+VRG-0220	WEI2657810000	Fésűs sín 1P villás, 12 modul, 63A, Weidmüller 2657810000 Készlet Erejéig!	Weidmüller	2657810000	Kismegszakítók és védelmek	Sínek és szerelési tartozékok	db	716.85	910	2026.07.31			1 db	1	1
+VRG-0221	WEI9037330000	Weidmüller 9037330000	Weidmüller	9037330000										0	0
+@end_data_tsv

@@ -19,3 +19,9 @@ node_modules/
 *-log.txt
 SNAPSHOT.txt
 *.backup-*.html
+
+# --- Inventory pipeline intermediates (regenerable) ---
+Inventory/.cache/
+
+# --- Generated price checks (dated snapshots, not source) ---
+Inventory/price-check-*.json

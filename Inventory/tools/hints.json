@@ -1,0 +1,32 @@
+[
+ {"cikkszam":"OBO5000750XXX1","nev":"földelés (OBO földelő szett)","src":"anyagar_sablon50_garázs földelés.xlsx"},
+ {"cikkszam":"JPR2058","nev":"ütőcsúcs 20","src":"anyagar_sablon50_garázs földelés.xlsx"},
+ {"cikkszam":"OBO5001641","nev":"földelőbilincs","src":"anyagar_sablon50_garázs földelés.xlsx"},
+ {"cikkszam":"STI1784","nev":"multik","src":"anyagar_sablon50_garázs földelés.xlsx"},
+ {"cikkszam":"STI671","nev":"szemes saru","src":"anyagar_sablon50_garázs földelés.xlsx"},
+ {"cikkszam":"HAU290662","nev":"szemes saru","src":"anyagar_sablon50_garázs földelés.xlsx"},
+ {"cikkszam":"STI1501","nev":"","src":"anyagar_sablon50_garázs földelés.xlsx"},
+
+ {"cikkszam":"KAB1100065","nev":"EAYY-J 5x 16 /NAYY-J/ RE (0) földkábel 5x16","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"ELTELSM32","nev":"Műa.cső ELS M32 Symalen 32 50fm/tek","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"VEZ1500066","nev":"10 mkh (H07V-K 1x10)","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"VEZ1500064","nev":"10 mkh (H07V-K 1x10)","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"VEZ1500072","nev":"10 mkh (H07V-K 1x10)","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"STI747","nev":"érvéghüvely","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"OBO2005312","nev":"OBO csatlakozó doboz","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"OBO2022770","nev":"tömszelence","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"GEWDX15032R","nev":"Gégecső lépésálló 32 DX15032R Gewiss","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"VEZ1000101","nev":"Számítógép vezeték CAT6 UTP","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"BELDE1583E","nev":"Számítógép vezeték CAT5E UTP Belden 1583E","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+ {"cikkszam":"OBO2149022","nev":"OBO Quick csőbilincs M32","src":"anyagar_sablon_Laci.xlsx + Anyagok Forgáchba.eml"},
+
+ {"cikkszam":"OBO2250209","nev":"OBO bilincs","src":"deseo2 másolata.xlsx"},
+ {"cikkszam":"STI1123","nev":"","src":"deseo2 másolata.xlsx"},
+ {"cikkszam":"SCHEZ9F57213","nev":"Kismegszakító 2P EASY9 PRO Schneider","src":"deseo2 másolata.xlsx"},
+ {"cikkszam":"GEWGW50417","nev":"Gégecső befogató Gewiss GW50417","src":"deseo2 másolata.xlsx"},
+ {"cikkszam":"WEI1560730000","nev":"Weidmüller 1560730000","src":"deseo2 másolata.xlsx"},
+ {"cikkszam":"WEI1560670000","nev":"Weidmüller 1560670000","src":"deseo2 másolata.xlsx"},
+ {"cikkszam":"WEI1560650000","nev":"Weidmüller 1560650000","src":"deseo2 másolata.xlsx"},
+ {"cikkszam":"WEI9037330000","nev":"Weidmüller 9037330000","src":"deseo2 másolata.xlsx"},
+ {"cikkszam":"KAB1800011","nev":"GT kábel 1,5 (H05RR-F)","src":"deseo2 másolata.xlsx"}
+]
