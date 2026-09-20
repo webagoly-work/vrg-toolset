@@ -79,6 +79,32 @@ function stripTopDir(name) {
   return i === -1 ? '' : name.slice(i + 1);
 }
 
+// A tarball is untrusted input, even from a repository we picked ourselves:
+// upstream can be compromised, and an archive may name an entry
+// "pkg/../../../.ssh/authorized_keys". path.join() resolves that happily and
+// writes outside Vendor/. Every path derived from archive or manifest data
+// goes through here, which resolves it and refuses anything that lands outside
+// its base. Note the backslash check: on Windows "a\..\b" is traversal too,
+// while on POSIX a backslash is a legal filename character, so the separator
+// is normalised before the test rather than after.
+const BACKSLASH = String.fromCharCode(92);
+
+function safeJoin(base, rel) {
+  if (typeof rel !== 'string' || !rel) return null;
+  if (rel.includes('\0')) return null;
+  const cleaned = rel.split(BACKSLASH).join('/');
+  if (path.isAbsolute(cleaned) || /^[a-zA-Z]:/.test(cleaned)) return null;
+
+  const root = path.resolve(base);
+  const full = path.resolve(root, cleaned);
+  // path.relative gives "" for the base itself and a "../"-prefixed path for
+  // anything above it. Comparing resolved paths beats string prefixes, which
+  // would also accept a sibling directory called "Vendor-evil".
+  const rel2 = path.relative(root, full);
+  if (rel2 === '' || rel2.startsWith('..') || path.isAbsolute(rel2)) return null;
+  return full;
+}
+
 function writeFileDeep(dest, data) {
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.writeFileSync(dest, data);
@@ -150,14 +176,28 @@ async function fetchOne(c) {
   const gz = Buffer.from(await res.arrayBuffer());
   const files = untar(zlib.gunzipSync(gz));
 
-  const dest = path.join(VENDOR, c.target);
+  // c.target comes from the manifest, which is ours — but it is still data,
+  // and rmSync below is recursive.
+  const dest = safeJoin(VENDOR, c.target);
+  if (!dest) {
+    console.log('HIBA: gyanús célkönyvtár a manifestben: ' + c.target);
+    return false;
+  }
   fs.rmSync(dest, { recursive: true, force: true });
   let bytes = 0;
+  let refused = 0;
   for (const f of files) {
     const rel = stripTopDir(f.name);
     if (!rel) continue;
-    writeFileDeep(path.join(dest, rel), f.data);
+    const out = safeJoin(dest, rel);
+    if (!out) { refused++; continue; }   // entry tried to escape Vendor/
+    writeFileDeep(out, f.data);
     bytes += f.data.length;
+  }
+  if (refused) {
+    console.log('  FIGYELEM: ' + refused + ' bejegyzés a Vendor/ könyvtáron KÍVÜLRE mutatott,');
+    console.log('  ezért nem írtam ki őket. Ez nem normális egy GitHub-tarballban — nézd meg a repót:');
+    console.log('  https://github.com/' + c.repo);
   }
 
   const sha = await resolveCommit(c.repo, c.ref);
