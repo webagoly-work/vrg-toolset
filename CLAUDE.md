@@ -1,5 +1,36 @@
 # VRG toolset — working rules
 
+## Drive layout
+
+```
+H:\
+  Dev-VRG\                  <- the whole environment; this is what gets zipped
+    VRG-DE\                 <- everything, same internal layout as before
+      Planner_VRG_U100\     <- the git repo
+      _installers\ _inbox\ _zipped\ _libs\ _desktop\ ...
+    Start.cmd               <- shim -> VRG-DE\...\Planner\START.cmd
+    VRG-DE-Launcher.cmd     <- shim -> VRG-DE\...\VRG-DE.cmd
+  H_BACKUP_2026-09-16\      <- deliberately left outside; 8.1 GB, would double the archive
+  _desktop                  <- JUNCTION -> Dev-VRG\VRG-DE\_desktop  (see below)
+```
+
+Both launchers at the `Dev-VRG` root are thin shims: the real menus stay in
+the repo so they remain version-controlled and there is no second copy to keep
+in sync. Each falls back to the pre-move location and says so, so they work
+either way.
+
+Nothing in the launcher needed re-pathing for the move, because `VRG-DE.cmd`
+derives `DE` from `%~dp0` and `HROOT` from one level above it — so
+`%HROOT%\_installers` resolves correctly in both layouts.
+
+**`H:\_desktop` is a junction, not a folder.** It contains only the portable
+Git that the Claude Code harness runs its shell from
+(`H:\_desktop\Git\bin\bash.exe`), pinned by absolute path. Moving it into
+`Dev-VRG` broke the Bash tool outright, so a junction keeps the old path
+resolving while the real 357 MB lives inside `Dev-VRG` and travels with the
+archive. Delete the junction only after pointing the harness at another Git —
+the repo carries one at `Planner\apps\git`.
+
 ## VRG Digital Environment
 
 `VRG-DE.cmd` at the repo root is the umbrella launcher. Projects sit in
