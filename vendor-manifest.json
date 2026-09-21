@@ -109,10 +109,11 @@
       "priority": 1,
       "vendor": "fetch",
       "target": "pdfjs",
-      "note": "Helyettesíti a tools/pdf2.js 62 sorát. getTextContent() pozícióval adja a szöveget — pont az, amit a pdfrows.js vár. Type0/CID betűkészleteket is kezel. A tárolót nem töltjük le: 100 MB teszt-PDF, a letöltés meg is szakad. A pdfjs-dist npm-csomag ugyanaz a könyvtár, 8 MB, rögzített verzióval és ellenőrzőösszeggel.",
+      "note": "Helyettesíti a tools/pdf2.js 62 sorát. getTextContent() pozícióval adja a szöveget — pont az, amit a pdfrows.js vár. Type0/CID betűkészleteket is kezel. A tárolót nem töltjük le: 100 MB teszt-PDF, a letöltés meg is szakad. A pdfjs-dist npm-csomag ugyanaz a könyvtár, 8 MB, rögzített verzióval és ellenőrzőösszeggel. FONTOS: a legacy/build/pdf.mjs-t használd, ne a build/pdf.mjs-t — a modern build Uint8Array.prototype.toHex()-et hív, ami ezen a Node-on (v24.18.0) nincs meg, és betöltéskor elszáll. A legacy buildet leteszteltük: 201 pozicionált szövegelem, az ő betű helyesen dekódolva.",
       "source": "npm",
       "npmPackage": "pdfjs-dist",
-      "npmVersion": "6.3.289"
+      "npmVersion": "6.3.289",
+      "entry": "legacy/build/pdf.mjs"
     },
     {
       "slug": "iconv-lite",
