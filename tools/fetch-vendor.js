@@ -26,6 +26,7 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const crypto = require('crypto');
 
 const ROOT = path.resolve(__dirname, '..');
 const MANIFEST = path.join(ROOT, 'vendor-manifest.json');
@@ -143,7 +144,7 @@ function list() {
     state: c.vendor !== 'fetch' ? '—'
          : fs.existsSync(path.join(VENDOR, c.target)) ? 'megvan'
          : 'hiányzik',
-    locked: lock[c.slug] ? lock[c.slug].sha.slice(0, 7) : ''
+    locked: !lock[c.slug] ? '' : (lock[c.slug].sha ? lock[c.slug].sha.slice(0, 7) : 'v' + lock[c.slug].version)
   }));
   const w = k => Math.max(...rows.map(r => String(r[k]).length), k.length);
   const cols = ['slug', 'mode', 'build', 'pri', 'state', 'locked'];
@@ -157,23 +158,95 @@ function list() {
   console.log(`\n${fetchable} letölthető, ${missing} hiányzik. Letöltés: node tools/fetch-vendor.js --all`);
 }
 
+// A component names where it comes from. Absent means GitHub, so every entry
+// written before npm support keeps working unchanged.
+function sourceOf(c) {
+  return c.source || 'github';
+}
+
+// Resolve an npm package to a concrete tarball. Unlike a GitHub branch, this
+// pins a version AND carries a publisher-signed digest we can check, so a
+// re-fetch either gets byte-identical content or fails loudly.
+async function resolveNpm(pkg, version) {
+  const url = `https://registry.npmjs.org/${pkg}/${version || 'latest'}`;
+  const r = await fetch(url, { headers: { 'User-Agent': 'vrg-fetch-vendor' } });
+  if (!r.ok) return { error: `registry ${r.status}` };
+  const j = await r.json();
+  if (!j.dist || !j.dist.tarball) return { error: 'a registry nem adott tarball URL-t' };
+  return { url: j.dist.tarball, version: j.version, integrity: j.dist.integrity || null };
+}
+
+// "sha512-<base64>" as npm writes it. Returns null when there is nothing to
+// check against, true/false when there is.
+function integrityOk(buf, integrity) {
+  if (!integrity) return null;
+  const m = /^(sha\d+)-(.+)$/.exec(integrity);
+  if (!m) return null;
+  const got = crypto.createHash(m[1]).update(buf).digest('base64');
+  return got === m[2];
+}
+
 async function fetchOne(c) {
   if (c.vendor !== 'fetch') {
     console.log(`- ${c.slug}: kihagyva (${c.vendor}) — lásd docs/services-server.md`);
     return false;
   }
-  const url = `https://codeload.github.com/${c.repo}/tar.gz/refs/heads/${c.ref}`;
-  process.stdout.write(`- ${c.slug}: ${c.repo}@${c.ref} ... `);
 
-  const res = await fetch(url, { headers: { 'User-Agent': 'vrg-fetch-vendor' } });
-  if (!res.ok) {
-    console.log(`HIBA ${res.status}`);
-    if (res.status === 404) console.log(`    A '${c.ref}' ág nem létezik? Nézd meg a repót: https://github.com/${c.repo}`);
-    if (res.status === 403) console.log('    A codeload.github.com-ot valami blokkolja (céges proxy, tűzfal).');
+  const kind = sourceOf(c);
+  let url, label, integrity = null, npmVersion = null;
+
+  if (kind === 'npm') {
+    const meta = await resolveNpm(c.npmPackage, c.npmVersion);
+    if (meta.error) {
+      console.log(`- ${c.slug}: HIBA — ${meta.error}`);
+      return false;
+    }
+    url = meta.url;
+    npmVersion = meta.version;
+    integrity = meta.integrity;
+    label = `npm:${c.npmPackage}@${npmVersion}`;
+  } else if (kind === 'github') {
+    url = `https://codeload.github.com/${c.repo}/tar.gz/refs/heads/${c.ref}`;
+    label = `${c.repo}@${c.ref}`;
+  } else {
+    console.log(`- ${c.slug}: HIBA — ismeretlen forrás: ${kind}`);
     return false;
   }
 
-  const gz = Buffer.from(await res.arrayBuffer());
+  process.stdout.write(`- ${c.slug}: ${label} ... `);
+
+  let res;
+  try {
+    res = await fetch(url, { headers: { 'User-Agent': 'vrg-fetch-vendor' } });
+  } catch (e) {
+    console.log(`HIBA — ${e.message}`);
+    return false;
+  }
+  if (!res.ok) {
+    console.log(`HIBA ${res.status}`);
+    if (res.status === 404 && kind === 'github') console.log(`    A '${c.ref}' ág nem létezik? Nézd meg a repót: https://github.com/${c.repo}`);
+    if (res.status === 403) console.log('    A letöltést valami blokkolja (céges proxy, tűzfal).');
+    return false;
+  }
+
+  // A repository tarball can be far larger than the library inside it —
+  // mozilla/pdf.js is 100 MB of test PDFs — and a long transfer gets reset.
+  // That is exactly why pdfjs is vendored from npm instead.
+  let gz;
+  try {
+    gz = Buffer.from(await res.arrayBuffer());
+  } catch (e) {
+    console.log(`HIBA — a letöltés megszakadt (${e.message})`);
+    if (kind === 'github') console.log('    Túl nagy a tároló? Nézd meg, van-e npm-es kiadása (source: "npm").');
+    return false;
+  }
+
+  const intact = integrityOk(gz, integrity);
+  if (intact === false) {
+    console.log('HIBA — a letöltött csomag nem egyezik a registry ellenőrzőösszegével. Nem csomagoltam ki.');
+    return false;
+  }
+
   const files = untar(zlib.gunzipSync(gz));
 
   // c.target comes from the manifest, which is ours — but it is still data,
@@ -187,7 +260,7 @@ async function fetchOne(c) {
   let bytes = 0;
   let refused = 0;
   for (const f of files) {
-    const rel = stripTopDir(f.name);
+    const rel = stripTopDir(f.name);   // npm tarballs nest under "package/"
     if (!rel) continue;
     const out = safeJoin(dest, rel);
     if (!out) { refused++; continue; }   // entry tried to escape Vendor/
@@ -196,16 +269,23 @@ async function fetchOne(c) {
   }
   if (refused) {
     console.log('  FIGYELEM: ' + refused + ' bejegyzés a Vendor/ könyvtáron KÍVÜLRE mutatott,');
-    console.log('  ezért nem írtam ki őket. Ez nem normális egy GitHub-tarballban — nézd meg a repót:');
-    console.log('  https://github.com/' + c.repo);
+    console.log('  ezért nem írtam ki őket. Ez nem normális egy valódi csomagban — nézd meg a forrást.');
   }
 
-  const sha = await resolveCommit(c.repo, c.ref);
   const lock = readLock();
-  lock[c.slug] = { repo: c.repo, ref: c.ref, sha: sha || '(feloldatlan)', fetched: new Date().toISOString().slice(0, 10) };
+  const today = new Date().toISOString().slice(0, 10);
+  if (kind === 'npm') {
+    lock[c.slug] = { source: 'npm', pkg: c.npmPackage, version: npmVersion, integrity: integrity || '(nincs)', fetched: today };
+  } else {
+    const sha = await resolveCommit(c.repo, c.ref);
+    lock[c.slug] = { source: 'github', repo: c.repo, ref: c.ref, sha: sha || '(feloldatlan)', fetched: today };
+  }
   writeFileDeep(LOCK, JSON.stringify(lock, null, 2) + '\n');
 
-  console.log(`${files.length} fájl, ${human(bytes)}${sha ? ', ' + sha.slice(0, 7) : ''}`);
+  const stamp = kind === 'npm'
+    ? `v${npmVersion}${intact === true ? ', ellenőrizve' : ''}`
+    : (lock[c.slug].sha !== '(feloldatlan)' ? lock[c.slug].sha.slice(0, 7) : '');
+  console.log(`${files.length} fájl, ${human(bytes)}${stamp ? ', ' + stamp : ''}`);
   return true;
 }
 
