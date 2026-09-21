@@ -1,5 +1,9 @@
 # VRG toolset — working rules
 
+The repo root is `H:\Planner_VRG_U100` (GitHub: `webagoly-work/vrg-toolset`, private).
+Each tool is a self-contained HTML app; the Planner and Inventory additionally
+have modular sources that build into one file.
+
 ## Drive layout
 
 ```
@@ -22,6 +26,13 @@ either way.
 Nothing in the launcher needed re-pathing for the move, because `VRG-DE.cmd`
 derives `DE` from `%~dp0` and `HROOT` from one level above it — so
 `%HROOT%\_installers` resolves correctly in both layouts.
+
+**Do not detect the Claude Code CLI by process name.** The Claude
+desktop app and the CLI both run as `claude.exe`; on this machine 20 such
+processes exist and only 2 are the CLI under `H:\`. Anything that needs to
+know whether the repo folder is in use must match on the executable *path*
+(`Get-Process | Where-Object { $_.Path -like '<folder>\*' }`), or it will
+refuse forever no matter what the user closes.
 
 **`H:\_desktop` is a junction, not a folder.** It contains only the portable
 Git that the Claude Code harness runs its shell from
@@ -55,11 +66,6 @@ converting. Two further cmd traps this launcher already hit:
 
 Console output from the launcher and its helpers stays ASCII-only — accented
 Hungarian garbles under the console codepage.
-
-
-The repo root is `H:\Planner_VRG_U100` (GitHub: `webagoly-work/vrg-toolset`, private).
-Each tool is a self-contained HTML app; the Planner and Inventory additionally
-have modular sources that build into one file.
 
 ## START.cmd is the front door — keep it current
 
