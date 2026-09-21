@@ -79,6 +79,12 @@ body[data-bar="right"] #top button[data-ic]::before{content:attr(data-ic);font-s
 #wires{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none}
 #wires path{fill:none}
 #wires .hit{stroke:transparent;stroke-width:14;pointer-events:stroke;cursor:pointer}
+/* ---------- edge selection + curve handles (after mind-elixir's arrows) ---------- */
+#wires .sel-edge{stroke-dasharray:none!important}
+#wires .eguide{stroke:var(--amber);stroke-width:1;stroke-dasharray:3 3;opacity:.55;fill:none}
+#wires .ehandle{fill:var(--amber);stroke:var(--bg);stroke-width:2;cursor:grab;pointer-events:all}
+#wires .ehandle:hover{stroke:var(--amber);fill:var(--bg)}
+#wires .ehandle.bent{fill:var(--rust)}   /* this one has been moved by hand */
 #wires text{fill:var(--ink2);font:11px "Segoe UI",sans-serif;paint-order:stroke;stroke:var(--bg);stroke-width:4px}
 #marquee{position:absolute;border:1px solid var(--amber);background:var(--t08);display:none}
 
@@ -902,6 +908,7 @@ const $ = id => document.getElementById(id);
 const KIND_VAR = k => `var(--k-${({info:1,warn:1,todo:1,done:1,dim:1}[k]?k:'info')})`;
 let doc = null, view = {x:0,y:0,k:1};
 let sel = new Set(), undoStack=[], redoStack=[], editing=null, linkFrom=null, filter='';
+let selEdge = null;            // id of the edge whose curve handles are showing
 
 function uid(p){ doc.seq=(doc.seq||0)+1; return p+doc.seq; }
 function blank(){
@@ -917,10 +924,17 @@ const HELP=[
     'Dupla kattintás a vászonra: **új buborék**.\n\n'+
     'Dupla kattintás a szövegtörzsre: szerkesztés.\n\n'+
     'Hivatkozás másik buborékra: `[[Cím]]` — a kapcsolat magától kirajzolódik.\n\n'+
+    'Kattints egy **kapcsolatra**: kijelölöd, és megjelenik a két fogópont. '+
+    'Húzd őket, és a vonal úgy hajlik, ahogy szeretnéd. A fogópont a buborékhoz '+
+    'képest tárolódik, így a hajlítás együtt mozog a buborékokkal.\n\n'+
     '| billentyű | mit tesz |\n|---|---|\n'+
     '| `Tab` | gyerek buborék |\n| `Enter` | testvér buborék |\n| `Szóköz` | össze/kicsuk |\n'+
     '| `C` | kapcsolat rajzolása |\n| `G` | gráf nézet |\n| `Z` | fókusz zoom |\n'+
-    '| `F2` | szerkesztés |\n| `Ctrl+K` | parancsok |\n'},
+    '| `F2` | szerkesztés |\n| `Ctrl+K` | parancsok |\n\n'+
+    'Kijelölt kapcsolaton:\n\n'+
+    '| billentyű | mit tesz |\n|---|---|\n'+
+    '| `Delete` | kapcsolat törlése |\n| `Backspace` | hajlítás visszavonása |\n'+
+    '| `Esc` | kijelölés elvetése |\n| dupla katt | felirat (`-` = törlés) |\n'},
   {title:'Markdown puska', src:
     '| jelölés | eredmény |\n|---|---|\n'+
     '| `**vastag**` | **vastag** |\n| `*dőlt*` | *dőlt* |\n| `==kiemelt==` | ==kiemelt== |\n'+
@@ -1210,7 +1224,7 @@ function anchor(n,side){
   return side==='r' ? {x:p.x+p.w, y:p.y+p.h/2} : {x:p.x, y:p.y+p.h/2};
 }
 function drawWires(){
-  const g=$('wg'); let s='';
+  const g=$('wg'); let s='', hz=null;   // hz: geometry of the selected edge, for its handles
   const cs=getComputedStyle(document.documentElement);
   const acc=(cs.getPropertyValue('--amber')||'#e8961c').trim();
   const wik=(cs.getPropertyValue('--ink3')||'#8d7a5c').trim();
@@ -1225,6 +1239,10 @@ function drawWires(){
     const p1=anchor(a,rev?'l':'r'), p2=anchor(b,rev?'r':'l');
     const L=e.layer?layer(e.layer):null;
     let d;
+    /* `lift` has to live out here: the label renderer below reads it, and it
+       used to be const-scoped inside the else branch — so drawWires() threw
+       "lift is not defined" and NO wires drew at all. Helix mode has no lift. */
+    let lift=0;
     if(helix.on){
       // the strand runs vertically, so the curve is pulled along Y — fluid, not elbowed
       const c1={x:pa.x+pa.w/2,y:pa.y+pa.h/2}, c2={x:pb.x+pb.w/2,y:pb.y+pb.h/2};
@@ -1232,9 +1250,17 @@ function drawWires(){
       d=`M${c1.x},${c1.y} C${c1.x+dxx},${c1.y+dy} ${c2.x-dxx},${c2.y-dy} ${c2.x},${c2.y}`;
     } else {
       // layer edges bow further out, so several between the same pair stay legible
-      const bow=L?.62:.45, lift=L?((layers().findIndex(x=>x.id===L.id)%3)+1)*16:0;
+      const bow=L?.62:.45;
+      lift=L?((layers().findIndex(x=>x.id===L.id)%3)+1)*16:0;
       const dx=Math.max(46,Math.abs(p2.x-p1.x)*bow)*(rev?-1:1);
-      d=`M${p1.x},${p1.y} C${p1.x+dx},${p1.y-lift} ${p2.x-dx},${p2.y-lift} ${p2.x},${p2.y}`;
+      /* The computed bow is the DEFAULT, not the law. A hand-placed control
+         point overrides it; an edge with no d1/d2 curves exactly as it always
+         did, so nothing about an older map changes until you bend it. */
+      let k1={x:p1.x+dx,y:p1.y-lift}, k2={x:p2.x-dx,y:p2.y-lift};
+      if(e.d1) k1={x:p1.x+e.d1.x,y:p1.y+e.d1.y};
+      if(e.d2) k2={x:p2.x+e.d2.x,y:p2.y+e.d2.y};
+      d=`M${p1.x},${p1.y} C${k1.x},${k1.y} ${k2.x},${k2.y} ${p2.x},${p2.y}`;
+      if(e.id && e.id===selEdge) hz={e,p1,p2,k1,k2};   // handles are drawn after the loop
     }
     const col=L?L.color:(e.wiki?wik:acc);
     const mid='m'+Object.keys(marks).length;
@@ -1248,15 +1274,38 @@ function drawWires(){
       if(!e.wiki) s+=`<path class="hit" d="${d}" data-edge="${e.id}"/>`;
       return;
     }
-    s+=`<path d="${d}" stroke="${col}" stroke-width="${e.wiki?1.4:(L?2.2:1.9)}"${far?' opacity=".12"':''}`+
+    const isSel = e.id && e.id===selEdge;
+    s+=`<path d="${d}" stroke="${col}" stroke-width="${e.wiki?1.4:(isSel?3.2:(L?2.2:1.9))}"${far?' opacity=".12"':''}`+
        `${e.wiki?' stroke-dasharray="5 4"':''} marker-end="url(#ahm${marks[col]})"/>`;
     if(!e.wiki) s+=`<path class="hit" d="${d}" data-edge="${e.id}"/>`;
     if(e.label&&!graph.on) s+=`<text x="${(p1.x+p2.x)/2}" y="${(p1.y+p2.y)/2-6-lift}" text-anchor="middle">${MD.esc(e.label)}</text>`;
   });
+  /* Handles last, so they sit above every wire and stay grabbable. A guide
+     line runs from each endpoint to its control point — without it a dragged
+     handle floating in space reads as an unrelated dot. */
+  if(hz){
+    const {p1,p2,k1,k2,e:se}=hz;
+    s+=`<path class="eguide" d="M${p1.x},${p1.y} L${k1.x},${k1.y}"/>`+
+       `<path class="eguide" d="M${p2.x},${p2.y} L${k2.x},${k2.y}"/>`+
+       `<circle class="ehandle${se.d1?' bent':''}" data-ectrl="1" data-edge="${se.id}" `+
+         `data-ax="${p1.x}" data-ay="${p1.y}" cx="${k1.x}" cy="${k1.y}" r="6"/>`+
+       `<circle class="ehandle${se.d2?' bent':''}" data-ectrl="2" data-edge="${se.id}" `+
+         `data-ax="${p2.x}" data-ay="${p2.y}" cx="${k2.x}" cy="${k2.y}" r="6"/>`;
+  }
   const defs=Object.keys(marks).map(col=>
     `<marker id="ahm${marks[col]}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">`+
     `<path d="M0,1 L9,5 L0,9 z" fill="${col}"/></marker>`).join('');
   g.innerHTML=`<defs>${defs}</defs>`+s;
+}
+
+/* Selecting an edge and selecting bubbles are mutually exclusive: the Delete
+   key has to mean one thing, not guess. */
+function selectEdge(id){ selEdge=id; if(id) sel.clear(); redrawAll(); }
+function clearEdgeSel(){ if(selEdge){ selEdge=null; return true; } return false; }
+/* Put a bent edge back on the computed bow. */
+function straightenEdge(id){
+  const eg=doc.edges.find(x=>x.id===id); if(!eg||(!eg.d1&&!eg.d2)) return false;
+  snap(); delete eg.d1; delete eg.d2; redrawAll(); return true;
 }
 function redrawAll(){
   dropIndex();            // every mutation ends here, so this is where the index expires
@@ -1457,6 +1506,8 @@ function delNodes(ids){
   snap();
   doc.nodes=doc.nodes.filter(n=>!ids.has(n.id));
   doc.edges=doc.edges.filter(e=>!ids.has(e.a)&&!ids.has(e.b));
+  // the selected wire may have just been one of the casualties
+  if(selEdge && !doc.edges.some(e=>e.id===selEdge)) selEdge=null;
   sel.clear(); redrawAll();
 }
 function childOf(id){
@@ -1863,6 +1914,16 @@ stage.addEventListener('pointerdown',e=>{
     const n=node(nEl.dataset.id); snap();
     drag={mode:'resize',id:n.id,x:e.clientX,y:e.clientY,w:n.w,h:n.h}; stage.setPointerCapture(e.pointerId); return;
   }
+  // grabbing a curve handle — snap() here, so one bend is one undo step
+  if(e.target.classList.contains('ehandle')){
+    const eg=doc.edges.find(x=>x.id===e.target.dataset.edge); if(!eg) return;
+    snap();
+    drag={mode:'ectrl',id:eg.id,which:e.target.dataset.ectrl,
+          x:e.clientX,y:e.clientY,
+          cx:+e.target.getAttribute('cx'),cy:+e.target.getAttribute('cy'),
+          ax:+e.target.dataset.ax,ay:+e.target.dataset.ay};
+    stage.setPointerCapture(e.pointerId); return;
+  }
   if(helix.on && !nEl){                 // the helix generates its own layout, so
     drag={mode:'hrot',x:e.clientX,r0:helix.rot};   // a background drag turns it
     stage.setPointerCapture(e.pointerId); return;
@@ -1892,7 +1953,7 @@ stage.addEventListener('pointerdown',e=>{
   if(nEl) return;                                   // clicks inside a body
   if(linkFrom){ linkFrom=null; toast('Kapcsolat megszakítva'); return; }
   if(addMod(e)){ drag={mode:'marq',x:e.clientX,y:e.clientY}; $('marquee').style.display='block'; }
-  else { drag={mode:'pan',x:e.clientX,y:e.clientY,vx:view.x,vy:view.y}; sel.clear(); redrawAll(); }
+  else { drag={mode:'pan',x:e.clientX,y:e.clientY,vx:view.x,vy:view.y}; sel.clear(); clearEdgeSel(); redrawAll(); }
   stage.setPointerCapture(e.pointerId);
 });
 
@@ -1903,6 +1964,15 @@ stage.addEventListener('pointermove',e=>{
     if(t && t.dataset.id!==linkFrom) t.classList.add('hit');
   }
   if(!drag) return;
+  if(drag.mode==='ectrl'){
+    // the stored value is an OFFSET from the endpoint, not an absolute point,
+    // so the bend travels with the bubbles when they move
+    const eg=doc.edges.find(x=>x.id===drag.id); if(!eg) return;
+    const nx=drag.cx+(e.clientX-drag.x)/view.k, ny=drag.cy+(e.clientY-drag.y)/view.k;
+    const d={x:Math.round(nx-drag.ax),y:Math.round(ny-drag.ay)};
+    if(drag.which==='1') eg.d1=d; else eg.d2=d;
+    drawWires(); return;
+  }
   if(drag.mode==='hrot'){ helixRotate(drag.r0+(e.clientX-drag.x)*0.006); return; }
   if(drag.mode==='gmove'){
     const w=toWorld(e.clientX,e.clientY), p=graph.pos[drag.id];
@@ -1934,6 +2004,7 @@ stage.addEventListener('pointermove',e=>{
 });
 
 stage.addEventListener('pointerup',e=>{
+  if(drag && drag.mode==='ectrl'){ drag=null; save(); return; }   // the bend is already applied; persist it
   if(drag && drag.mode==='gmove'){ graph.pin=null; gKick(); drag=null; return; }
   if(drag && drag.mode==='move' && !drag.moved){
     undoStack.pop();                                  // nothing moved: no undo step for a click
@@ -1958,6 +2029,15 @@ stage.addEventListener('pointerup',e=>{
 
 stage.addEventListener('dblclick',e=>{
   const nEl=e.target.closest('.node');
+  // double-click a wire: its label (and "-" to delete), where a single click used to
+  const edd=e.target.closest('[data-edge]');
+  if(edd && !nEl){ const eg=doc.edges.find(x=>x.id===edd.dataset.edge); if(!eg) return;
+    e.preventDefault(); e.stopPropagation();
+    const l=prompt('Kapcsolat felirata (üres = nincs felirat, "-" = kapcsolat törlése):',eg.label||'');
+    if(l===null) return; snap();
+    if(l==='-'){ doc.edges=doc.edges.filter(x=>x.id!==eg.id); if(selEdge===eg.id) selEdge=null; }
+    else eg.label=l;
+    redrawAll(); return; }
   if(graph.on){ if(nEl){ const id=nEl.dataset.id; gStop(); focusNode(id,true); } return; }
   if(!nEl){ const p=toWorld(e.clientX,e.clientY); const n=addNode(p.x-160,p.y-40); focusEdit(n.id); return; }
   if(e.target.closest('.nh')) { focusEdit(nEl.dataset.id,true); return; }
@@ -2000,14 +2080,15 @@ stage.addEventListener('click',e=>{
   if(cv){ const id=cv.closest('.node').dataset.id;
     if(cv.classList.contains('x')) openInspector(id);
     else { const n=node(id); n.collapsed=!n.collapsed; redrawAll(); } return; }
+  if(e.target.classList.contains('ehandle')) return;   // the handle's own drag owns this
   const ed=e.target.closest('[data-edge]');
+  // a click on a wire selects it and raises its curve handles; the label moved
+  // to double-click, because a prompt() on every stray click was heavy-handed
   if(ed){ const eg=doc.edges.find(x=>x.id===ed.dataset.edge); if(!eg) return;
-    const l=prompt('Kapcsolat felirata (üres = törlés a felirat, "-" = kapcsolat törlése):',eg.label||'');
-    if(l===null) return; snap();
-    if(l==='-') doc.edges=doc.edges.filter(x=>x.id!==eg.id); else eg.label=l;
-    redrawAll(); return; }
+    selectEdge(eg.id===selEdge?null:eg.id); return; }
   const nEl=e.target.closest('.node');
-  if(nEl && !e.target.closest('a')){ if(!addMod(e)) sel.clear(); sel.add(nEl.dataset.id); redrawAll(); }
+  if(nEl && !e.target.closest('a')){ clearEdgeSel();
+    if(!addMod(e)) sel.clear(); sel.add(nEl.dataset.id); redrawAll(); }
 });
 
 /* ------------------------------------------------------------- keyboard */
@@ -2033,8 +2114,19 @@ document.addEventListener('keydown',e=>{
     e.preventDefault(); nucleoOpen([...sel][0]); return; }
   if(e.key==='Escape'){ palClose(); cpopClose(); hideCbar(); helpToggle(false); nucleoClose();
     $('veil').classList.remove('open'); $('modal').classList.remove('open');
+    if(clearEdgeSel()) redrawAll();
     if(linkFrom){linkFrom=null;toast('Kapcsolat megszakítva');} return; }
   if(typing) return;
+  // an edge is selected: Delete removes the wire, Backspace straightens it.
+  // Checked before the bubble shortcuts because selectEdge() clears sel, so
+  // only one of the two can ever be live.
+  if(selEdge){
+    if(e.key==='Delete'){ e.preventDefault(); snap();
+      doc.edges=doc.edges.filter(x=>x.id!==selEdge); selEdge=null; redrawAll();
+      toast('Kapcsolat törölve'); return; }
+    if(e.key==='Backspace'){ e.preventDefault();
+      toast(straightenEdge(selEdge)?'Kapcsolat kiegyenesítve':'Ez a kapcsolat nincs meghajlítva'); return; }
+  }
   const one=sel.size===1?[...sel][0]:null;
   if(e.key==='Tab' && one){ e.preventDefault(); childOf(one); }
   else if(e.key==='Enter' && one){ e.preventDefault(); siblingOf(one); }
