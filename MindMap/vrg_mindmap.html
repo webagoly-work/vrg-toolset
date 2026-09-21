@@ -198,6 +198,16 @@ body[data-bar="right"] #top button[data-ic]::before{content:attr(data-ic);font-s
 @keyframes fl{0%,45%{background:var(--t55)}100%{background:var(--t14)}}
 .cbadge{font-size:11px;color:var(--amber);background:var(--t14);
   border:1px solid var(--t38);border-radius:999px;padding:0 6px;flex:0 0 auto}
+/* ---------- selected-edge toolbar ---------- */
+#ebar{position:fixed;z-index:64;display:none;gap:4px;align-items:center;padding:5px 6px;
+  background:var(--panel);border:1px solid var(--amber);border-radius:10px;
+  box-shadow:0 10px 26px var(--shadow);font-size:12px}
+#ebar.open{display:flex}
+#ebar button{padding:3px 7px;font-size:12px;line-height:1.5}
+#ebar button.on{background:var(--amber-d);border-color:var(--amber);color:var(--on-acc)}
+#ebar input[type=color]{width:26px;height:24px;padding:0;border-radius:6px;cursor:pointer}
+#ebar select{padding:2px 4px;font-size:12px}
+#ebar .sep{width:1px;align-self:stretch;background:var(--edge);margin:0 2px}
 #cbar{position:fixed;z-index:65;display:none}
 #cbar button{background:var(--amber-d);border-color:var(--amber);color:var(--on-acc);font-weight:600;
   box-shadow:0 6px 16px var(--shadow)}
@@ -389,7 +399,7 @@ body.side #stage{left:calc(var(--tL) + 250px)}
   color:var(--ink);padding:7px 14px;border-radius:9px;z-index:70;display:none;font-size:12.5px}
 
 @media print{
-  #top,#stat,#stage,#insp,#veil,#pal,#modal,#toast,#cbar,#cpop,#tah,#pdlg{display:none!important}
+  #top,#stat,#stage,#insp,#veil,#pal,#modal,#toast,#cbar,#cpop,#ebar,#tah,#pdlg{display:none!important}
   #print{display:block!important}
   html,body{background:#fff;height:auto;overflow:visible}
 }
@@ -1119,7 +1129,10 @@ function setTheme(name){
   applyTheme(); save();
 }
 function setL(L){ doc.theme=Object.assign({name:'amber'},doc.theme||{},{L:+L}); applyTheme(); save(); }
-function applyView(){ $('world').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.k})`; }
+function applyView(){ $('world').style.transform=`translate(${view.x}px,${view.y}px) scale(${view.k})`;
+  /* the wires live inside #world and move with the transform; the edge bar is
+     position:fixed, so it has to be told to follow */
+  if(typeof placeEbar==='function') placeEbar(); }
 function toWorld(cx,cy){ const r=$('stage').getBoundingClientRect();
   return {x:(cx-r.left-view.x)/view.k, y:(cy-r.top-view.y)/view.k}; }
 function fit(){
@@ -1262,7 +1275,11 @@ function drawWires(){
       d=`M${p1.x},${p1.y} C${k1.x},${k1.y} ${k2.x},${k2.y} ${p2.x},${p2.y}`;
       if(e.id && e.id===selEdge) hz={e,p1,p2,k1,k2};   // handles are drawn after the loop
     }
-    const col=L?L.color:(e.wiki?wik:acc);
+    /* per-edge style (after mind-elixir's ArrowStyle). Every field is
+       optional and falls back to what the edge would have looked like
+       anyway, so an unstyled edge is byte-identical to before. */
+    const st=e.style||null;
+    const col=(st&&st.stroke)||(L?L.color:(e.wiki?wik:acc));
     const mid='m'+Object.keys(marks).length;
     if(!marks[col]) marks[col]=mid;
     const far=graph.on&&graph.near&&!(graph.near.has(e.a)&&graph.near.has(e.b));
@@ -1275,8 +1292,14 @@ function drawWires(){
       return;
     }
     const isSel = e.id && e.id===selEdge;
-    s+=`<path d="${d}" stroke="${col}" stroke-width="${e.wiki?1.4:(isSel?3.2:(L?2.2:1.9))}"${far?' opacity=".12"':''}`+
-       `${e.wiki?' stroke-dasharray="5 4"':''} marker-end="url(#ahm${marks[col]})"/>`;
+    const w = (st&&st.width) || (e.wiki?1.4:(L?2.2:1.9));
+    const dash = (st&&st.dash) || (e.wiki?'5 4':null);
+    const op = far?'.12':((st&&st.opacity)||null);
+    /* one arrowhead per end. The marker is orient="auto-start-reverse", so
+       the same definition points the right way at either end. */
+    s+=`<path d="${d}" stroke="${col}" stroke-width="${isSel?(+w+1.3):w}"${op?` opacity="${op}"`:''}`+
+       `${dash?` stroke-dasharray="${dash}"`:''}`+
+       `${e.bi?` marker-start="url(#ahm${marks[col]})"`:''} marker-end="url(#ahm${marks[col]})"/>`;
     if(!e.wiki) s+=`<path class="hit" d="${d}" data-edge="${e.id}"/>`;
     if(e.label&&!graph.on) s+=`<text x="${(p1.x+p2.x)/2}" y="${(p1.y+p2.y)/2-6-lift}" text-anchor="middle">${MD.esc(e.label)}</text>`;
   });
@@ -1296,12 +1319,100 @@ function drawWires(){
     `<marker id="ahm${marks[col]}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">`+
     `<path d="M0,1 L9,5 L0,9 z" fill="${col}"/></marker>`).join('');
   g.innerHTML=`<defs>${defs}</defs>`+s;
+  /* the bar rides on the rendered wire, so it is placed after the paint */
+  if(typeof syncEbar==='function'){ if(selEdge) { syncEbar(); placeEbar(); } else ebar.classList.remove('open'); }
 }
+
+/* ---- the selected edge's toolbar ----
+   Built once and moved, the way #cbar is. It carries the settings that need
+   no canvas interaction — direction, colour, width, dash — while the curve
+   itself is shaped by the handles on the wire. */
+const ebar=document.createElement('div'); ebar.id='ebar';
+ebar.innerHTML=
+  '<button data-ea="bi" title="Ide-oda mutató kapcsolat">⟷</button>'+
+  '<span class="sep"></span>'+
+  '<input type="color" data-ea="stroke" title="Vonal színe">'+
+  '<button data-ea="nocol" title="Vissza az alapértelmezett színre">⦸</button>'+
+  '<select data-ea="width" title="Vastagság">'+
+    '<option value="">vastagság</option><option value="1.2">vékony</option>'+
+    '<option value="1.9">normál</option><option value="3">vastag</option>'+
+    '<option value="4.5">nagyon vastag</option></select>'+
+  '<select data-ea="dash" title="Vonaltípus">'+
+    '<option value="">folytonos</option><option value="6 4">szaggatott</option>'+
+    '<option value="2 4">pontozott</option><option value="12 5 2 5">váltakozó</option></select>'+
+  '<span class="sep"></span>'+
+  '<button data-ea="straight" title="Hajlítás visszavonása (Backspace)">⤾</button>'+
+  '<button data-ea="del" title="Kapcsolat törlése (Delete)">🗑</button>';
+document.body.appendChild(ebar);
+
+function edgeById(id){ return doc.edges.find(x=>x.id===id)||null; }
+/* An empty style object is noise in the saved file, so it is removed rather
+   than left behind whenever the last property is cleared. */
+function setEdgeStyle(eg,key,val){
+  const st=Object.assign({},eg.style||{});
+  if(val===''||val==null) delete st[key]; else st[key]=val;
+  if(Object.keys(st).length) eg.style=st; else delete eg.style;
+}
+function syncEbar(){
+  const eg=selEdge?edgeById(selEdge):null;
+  if(!eg){ ebar.classList.remove('open'); return; }
+  const st=eg.style||{};
+  ebar.querySelector('[data-ea="bi"]').classList.toggle('on',!!eg.bi);
+  ebar.querySelector('[data-ea="width"]').value=st.width||'';
+  ebar.querySelector('[data-ea="dash"]').value=st.dash||'';
+  const ci=ebar.querySelector('[data-ea="stroke"]');
+  /* with no override the swatch shows the colour the edge actually has, so
+     opening the picker starts from what you can see rather than from black */
+  ci.value=st.stroke||edgeColour(eg);
+  ebar.classList.add('open');
+}
+/* What colour this edge renders as right now, override or not. */
+function edgeColour(eg){
+  if(eg.style&&eg.style.stroke) return eg.style.stroke;
+  const cs=getComputedStyle(document.documentElement);
+  if(eg.layer){ const L=layer(eg.layer); if(L) return L.color; }
+  return (cs.getPropertyValue('--amber')||'#e8961c').trim();
+}
+/* Park the bar just below the middle of the wire. getPointAtLength works on
+   the real rendered curve, so it follows a bent edge instead of guessing. */
+function placeEbar(){
+  if(!selEdge||!ebar.classList.contains('open')) return;
+  const p=$('wg').querySelector(`path.hit[data-edge="${selEdge}"]`);
+  if(!p){ ebar.classList.remove('open'); return; }
+  let pt;
+  try{ pt=p.getPointAtLength(p.getTotalLength()/2).matrixTransform(p.getScreenCTM()); }
+  catch(err){ return; }
+  const w=ebar.offsetWidth||260, h=ebar.offsetHeight||32;
+  ebar.style.left=Math.min(Math.max(8,pt.x-w/2),innerWidth-w-8)+'px';
+  ebar.style.top =Math.min(Math.max(8,pt.y+14),innerHeight-h-8)+'px';
+}
+ebar.addEventListener('pointerdown',e=>e.stopPropagation());   // not a canvas gesture
+ebar.addEventListener('click',e=>{
+  const b=e.target.closest('[data-ea]'); if(!b) return;
+  const eg=edgeById(selEdge); if(!eg) return;
+  const act=b.dataset.ea;
+  if(act==='bi'){ snap(); eg.bi=!eg.bi; if(!eg.bi) delete eg.bi; redrawAll(); return; }
+  if(act==='nocol'){ snap(); setEdgeStyle(eg,'stroke',''); redrawAll(); return; }
+  if(act==='straight'){ toast(straightenEdge(selEdge)?'Kapcsolat kiegyenesítve':'Ez a kapcsolat nincs meghajlítva'); return; }
+  if(act==='del'){ snap(); doc.edges=doc.edges.filter(x=>x.id!==selEdge); selEdge=null; redrawAll();
+    toast('Kapcsolat törölve'); return; }
+});
+ebar.addEventListener('input',e=>{
+  const f=e.target.closest('[data-ea]'); if(!f) return;
+  const eg=edgeById(selEdge); if(!eg) return;
+  if(f.dataset.ea==='stroke'){ snap(); setEdgeStyle(eg,'stroke',f.value); redrawAll(); }
+});
+ebar.addEventListener('change',e=>{
+  const f=e.target.closest('[data-ea]'); if(!f) return;
+  const eg=edgeById(selEdge); if(!eg) return;
+  const k=f.dataset.ea;
+  if(k==='width'||k==='dash'){ snap(); setEdgeStyle(eg,k,f.value); redrawAll(); }
+});
 
 /* Selecting an edge and selecting bubbles are mutually exclusive: the Delete
    key has to mean one thing, not guess. */
 function selectEdge(id){ selEdge=id; if(id) sel.clear(); redrawAll(); }
-function clearEdgeSel(){ if(selEdge){ selEdge=null; return true; } return false; }
+function clearEdgeSel(){ if(selEdge){ selEdge=null; ebar.classList.remove('open'); return true; } return false; }
 /* Put a bent edge back on the computed bow. */
 function straightenEdge(id){
   const eg=doc.edges.find(x=>x.id===id); if(!eg||(!eg.d1&&!eg.d2)) return false;
@@ -1766,7 +1877,7 @@ cbar.innerHTML='<button>💬 Megjegyzés</button>'; document.body.appendChild(cb
 let pendingSel=null;
 function hideCbar(){ cbar.style.display='none'; pendingSel=null; }
 document.addEventListener('mouseup',e=>{
-  if(e.target.closest('#cbar')||e.target.closest('#cpop')) return;
+  if(e.target.closest('#cbar')||e.target.closest('#cpop')||e.target.closest('#ebar')) return;
   setTimeout(()=>{
     const s=getSelection(); const txt=s?String(s).trim():'';
     const host=s&&s.anchorNode?(s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement):null;
