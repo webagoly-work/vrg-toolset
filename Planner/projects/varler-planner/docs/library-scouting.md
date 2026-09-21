@@ -141,3 +141,43 @@ Superseded by fflate above for our purposes; noted so it doesn't get evaluated t
    back on site.
 
 Everything else on this list is a *know it exists* entry, not a *take it* entry.
+
+---
+
+# Second pass — 2026-09-20
+
+The second scouting round searched GitHub directly rather than reading a recommendation feed. It
+covered the whole VRG toolset, not just the planner, so **it does not live in this file** — a
+document scoped to "judged against the single-file rule" loses its value if business tooling and
+servers get mixed in. It lives here instead:
+
+| | |
+|---|---|
+| `/docs/components-offline.md` | single-file/offline components and local build-time tooling, grouped by which VRG aspect they serve |
+| `/docs/services-server.md` | things that need a server, with the operational cost stated up front |
+| `/vendor-manifest.json` | machine-readable source of truth — licence, stars, last **code** push |
+| `/vrg-vendor.html` | the same list as a VRG-style page; `node tools/fetch-vendor.js --all` downloads what is downloadable |
+
+What the second pass changes about **this** file:
+
+### `jakearchibald/idb-keyval` — the licence above is unverified
+This document records it as Apache-2.0. The GitHub API reports `NOASSERTION` — no standard
+licence detected. That is not an accusation, it is a gap: read the LICENSE file before this goes
+into a file handed to a customer. The technical argument for it is unaffected.
+
+### A method correction worth keeping
+Judging whether a project is alive means reading `pushed_at` (last code push), **not**
+`updated_at` — the latter moves when somebody stars the repository. The second pass initially
+called `ekymo/homeRoughEditor` actively maintained on the strength of `updated_at: 2026-09`; its
+last actual code push was **2024-07-21**. Good as a reference, disqualifying as a dependency.
+The same mistake is easy to repeat on every entry in this file.
+
+### One blocker dissolved
+`upb-lea/Inkscape_electric_Symbols` is **CC0-1.0** — a public-domain dedication. It is the
+cleanest candidate in either pass: symbols are data, so none of the constraints at the top of
+this document apply to them at all.
+
+### One dependency is staler than it looked
+`exceljs` was recommended over SheetJS. That still holds, but its last code push was
+**2025-01-21** with 808 open issues. SheetJS having left npm for `git.sheetjs.com` is the reason
+to prefer it, not its health.
