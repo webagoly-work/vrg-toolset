@@ -27,12 +27,22 @@ Nothing in the launcher needed re-pathing for the move, because `VRG-DE.cmd`
 derives `DE` from `%~dp0` and `HROOT` from one level above it — so
 `%HROOT%\_installers` resolves correctly in both layouts.
 
-**Do not detect the Claude Code CLI by process name.** The Claude
-desktop app and the CLI both run as `claude.exe`; on this machine 20 such
-processes exist and only 2 are the CLI under `H:\`. Anything that needs to
-know whether the repo folder is in use must match on the executable *path*
-(`Get-Process | Where-Object { $_.Path -like '<folder>\*' }`), or it will
-refuse forever no matter what the user closes.
+**The repo folder cannot be renamed while Claude Code has it open**, and
+process checks will not tell you why. Two traps, learnt the hard way:
+
+- Matching by process *name* is useless: the Claude desktop app and the CLI
+  both run as `claude.exe` (20 processes here, most of them the app). A
+  name-based check refuses forever no matter what the user closes.
+- Matching by executable *path* is necessary but **not sufficient**. Claude
+  Code watches its project directory, so it holds a handle even when its
+  binary lives elsewhere — after an update it runs from
+  `C:\Users\<user>\AppData\Roaming\Claude\claude-code\`, and a path check over
+  `H:\` then reports "nothing is running from there" while the move still
+  fails with Access Denied.
+
+So: never conclude a folder is free from a process listing. Attempt the
+operation, and treat its failure as the authority; list processes only as
+hints. A rename of the repo root has to happen with Claude Code fully closed.
 
 **`H:\_desktop` is a junction, not a folder.** It contains only the portable
 Git that the Claude Code harness runs its shell from
