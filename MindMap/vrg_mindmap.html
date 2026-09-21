@@ -939,17 +939,44 @@ function helpToggle(on){
   }
   h.classList.toggle('open',open);
 }
-function node(id){ return doc.nodes.find(n=>n.id===id); }
-function byTitle(t){ const q=String(t).trim().toLowerCase();
-  return doc.nodes.find(n=>(n.title||'').trim().toLowerCase()===q); }
+/* ---- lookup index (borrowed from jsMind's mind.nodes[id] map) ----
+   node() and byTitle() used to scan doc.nodes, and drawWires() calls node()
+   twice per edge while a drag calls drawWires() on every pointermove — so a
+   drag cost O(nodes x edges) per frame. jsMind keeps an id->node hash instead.
 
-/* derived edges: a [[link]] in a body is a link, never stored twice */
+   The index is deliberately NOT maintained incrementally. It is thrown away
+   at the top of every redrawAll(), which is what every mutation already ends
+   with, so it cannot outlive the data it describes. Rebuilding is one O(n)
+   pass (~0.05 ms at a thousand bubbles) against the O(n*e) it removes; a
+   stale-index bug would be far more expensive than the rebuild. */
+let _idx=null, _der=null;
+function reindex(){
+  const byId=new Map(), byT=new Map();
+  for(const n of doc.nodes){
+    byId.set(n.id,n);
+    /* first title wins, exactly like the old .find() did, so two bubbles
+       sharing a title still resolve to the same one as before */
+    const k=(n.title||'').trim().toLowerCase();
+    if(!byT.has(k)) byT.set(k,n);
+  }
+  return (_idx={byId,byT});
+}
+function idx(){ return _idx||reindex(); }
+function dropIndex(){ _idx=null; _der=null; }
+function node(id){ return idx().byId.get(id); }
+function byTitle(t){ return idx().byT.get(String(t).trim().toLowerCase()); }
+
+/* derived edges: a [[link]] in a body is a link, never stored twice.
+   Memoised on the same lifetime as the index: bodies and titles only change
+   through a redrawAll(), while a drag moves x/y and leaves the text alone, so
+   every frame of a drag reused to re-parse every body for nothing. */
 function derived(){
+  if(_der) return _der;
   const out=[];
   doc.nodes.forEach(n=>MD.wikiLinks(n.body).forEach(t=>{
     const tgt=byTitle(t); if(tgt && tgt.id!==n.id) out.push({a:n.id,b:tgt.id,wiki:true});
   }));
-  return out;
+  return (_der=out);
 }
 function allEdges(){ return doc.edges.concat(derived()); }
 
@@ -1232,6 +1259,7 @@ function drawWires(){
   g.innerHTML=`<defs>${defs}</defs>`+s;
 }
 function redrawAll(){
+  dropIndex();            // every mutation ends here, so this is where the index expires
   const vis=shownNodes();
   const live=new Set(vis.map(n=>'N'+n.id));
   [...$('world').querySelectorAll('.node')].forEach(el=>{ if(!live.has(el.id)) el.remove(); });
