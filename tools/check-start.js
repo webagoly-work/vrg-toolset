@@ -51,7 +51,7 @@ const IGNORE = [
 
 function read(file) {
   try { return fs.readFileSync(file, 'utf8'); }
-  catch (e) { console.error('Nem olvasható: ' + file); process.exit(1); }
+  catch (e) { console.error('Nem olvashato: ' + file); process.exit(1); }
 }
 
 function listHtml(rel) {
@@ -82,13 +82,13 @@ for (let i = 1; i <= 99; i++) {
   const p = (new RegExp('^set "T' + i + '_PATH=(.*)"', 'm').exec(src) || [])[1];
   if (!nm && !p) continue;
   if (nm && !p) { problems.push('T' + i + ' neve megvan, de nincs T' + i + '_PATH.'); continue; }
-  if (p && !nm) { problems.push('T' + i + ' útvonala megvan, de nincs T' + i + '_NAME.'); continue; }
+  if (p && !nm) { problems.push('T' + i + ' utvonala megvan, de nincs T' + i + '_NAME.'); continue; }
   entries.push({ n: i, name: nm, p });
 }
 
 if (declared && entries.length !== declared) {
-  problems.push('TOOLCOUNT=' + declared + ', de ' + entries.length + ' eszköz van definiálva. ' +
-    'Aki a TOOLCOUNT fölé esik, azt a menü sosem mutatja meg.');
+  problems.push('TOOLCOUNT=' + declared + ', de ' + entries.length + ' eszkoz van definialva. ' +
+    'Aki a TOOLCOUNT fole esik, azt a menu sosem mutatja meg.');
 }
 
 const registered = new Set();
@@ -96,7 +96,7 @@ for (const e of entries) {
   const abs = path.resolve(PLANNER, e.p.split(BS).join(path.sep));
   registered.add(path.relative(REPO, abs).split(path.sep).join('/'));
   if (!fs.existsSync(abs)) {
-    problems.push('T' + e.n + ' (' + e.name + ') nem létező fájlra mutat:\n      ' + e.p);
+    problems.push('T' + e.n + ' (' + e.name + ') nem letezo fajlra mutat:\n      ' + e.p);
   }
 }
 
@@ -108,15 +108,15 @@ for (const f of found) {
 }
 
 // --- report ----------------------------------------------------------------
-console.log('START.cmd: ' + entries.length + ' eszköz, TOOLCOUNT=' + (declared || '?'));
+console.log('START.cmd: ' + entries.length + ' eszkoz, TOOLCOUNT=' + (declared || '?'));
 for (const e of entries) {
   const abs = path.resolve(PLANNER, e.p.split(BS).join(path.sep));
-  console.log('  ' + (fs.existsSync(abs) ? 'ok     ' : 'HIÁNYZIK') +
+  console.log('  ' + (fs.existsSync(abs) ? 'ok     ' : 'HIANYZIK') +
     ' T' + String(e.n).padEnd(3) + String(e.name).slice(0, 44).padEnd(46) + e.p);
 }
 
 if (notes.length) {
-  console.log('\nEzek a lapok nincsenek a menüben — szándékos, vagy kimaradtak?');
+  console.log('\nEzek a lapok nincsenek a menuben - szandekos, vagy kimaradtak?');
   for (const f of notes) console.log('   ? ' + f);
 }
 
@@ -125,5 +125,5 @@ if (problems.length) {
   for (const p of problems) console.log('  - ' + p);
   process.exitCode = 1;
 } else {
-  console.log('\nRendben: minden bejegyzés létező fájlra mutat.');
+  console.log('\nRendben: minden bejegyzes letezo fajlra mutat.');
 }

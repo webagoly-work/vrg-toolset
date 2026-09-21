@@ -1,0 +1,16 @@
+=== NAGY FELADAT FAZISOKRA BONTASA ===
+
+<FELADAT LEIRASA>
+
+Ne kezdj kodolni. Eloszor:
+1. Nezd at, mi van most - olvass, ne feltetelezz.
+2. Bontsd fazisokra ugy, hogy minden fazis onmagaban mukodo, ellenorizheto
+   allapotot hagyjon maga utan. Ne legyen "fel funkcio" fazishatáron.
+3. Mondd meg, melyik fazis mechanikus (csak csinald) es melyik igenyel
+   tervezesi dontest (ott allj meg es kerdezz).
+4. Adj becslest arra, melyik fazis mit er - ha valami keveset, mondd ki.
+
+Utana csinald meg az ELSO fazist teljesen, ellenorizve, es allj meg.
+
+Ha kozben kiderul, hogy a feladat mast igenyel, mint amit kertem, szolj
+akkor, amikor kiderul - ne a vegen.

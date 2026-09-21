@@ -1,0 +1,22 @@
+=== UJ FUNKCIO EGY MEGLEVO APPBAN ===
+
+Add hozza <FUNKCIO> funkciot a <FAJL>-hoz.
+
+Mielott barmit irnal: olvasd el a fajl erintett reszeit, es keresd meg az
+OSSZES helyet, ami az adott adatot modositja - ne csak azt az egyet, amit
+eloszor megtalalsz.
+
+Kotelezo:
+- Ne valtoztasd meg a megletevo viselkedest. Ha uj mezot vezetsz be egy
+  rekordon, annak HIANYA jelentse pontosan a mai mukodest, hogy a regi
+  mentett fajlok valtozatlanul jelenjenek meg.
+- A valtoztatas utan bizonyitsd be, hogy a regi eset valtozatlan: rendereld
+  ki a regi allapotot a backupbol es az uj verziobol, es hasonlitsd ossze
+  attributumrol attributumra. Ne allitsd, hogy nem valtozott - mutasd meg.
+- Ellenorizd bongeszoben, ne csak kodban. localStorage-hoz kell egy igazi
+  origin: node MindMap/serve.js (8124) vagy npm run serve az Inventoryban.
+- Ha szin hordozza a jelentest, olvass computed style-t, ne screenshotot
+  nezz. Egy CSS specificitasi hiba mar egyszer szurkenek hagyott kesz
+  elemeket ugy, hogy minden osztaly helyes volt es minden teszt zold.
+
+A vegen mondd el, mit NEM ellenoriztel.

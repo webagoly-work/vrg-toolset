@@ -1,0 +1,20 @@
+=== ADAT, MENTES, VISSZAFELE KOMPATIBILITAS ===
+
+<MIT AKAROK TAROLNI / MIT AKAROK VALTOZTATNI AZ ADATSZERKEZETEN>
+
+Szabalyok, amiket ne hagyj figyelmen kivul:
+
+- A felhasznaloi adat kulon, verziozott dokumentum. Egy ujraepites (npm run
+  data) soha nem irhatja felul azt, amit en irtam bele.
+- Minden perzisztalt dokumentum vigyen schema_version-t es menjen at a
+  migracion.
+- Uj mezo hianya = a regi viselkedes. Ha ez nem tarthato, akkor kell
+  verziolepes es migracio - de eloszor kerdezd meg.
+- Ures objektumot ne hagyj a mentesben. Ha az utolso tulajdonsagot is
+  torlik, a szulo mezo is tunjon el.
+- Ami nem forrasbol jon, az ures marad. Ne talalj ki erteket, hogy szebb
+  legyen a tablazat.
+- Export -> ujraimportalas legyen mely-egyenlo. Nem kell byte-azonosnak
+  lennie, de az ertelmenek igen.
+
+A vegen mutasd meg egy regi mentesen, hogy valtozatlanul nyilik.

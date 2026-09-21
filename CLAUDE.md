@@ -1,5 +1,31 @@
 # VRG toolset — working rules
 
+## VRG Digital Environment
+
+`VRG-DE.cmd` at the repo root is the umbrella launcher. Projects sit in
+categories (LEAD / UNDER-DEV), each project's build-test-serve actions live in
+that project's own submenu rather than in one flat list, and there are
+sections for dev tooling, standalone programs and a prompt library
+(`tools/prompts/*.txt`). `Planner/START.cmd` still works and is not replaced.
+
+**Batch files must be written with CRLF line endings.** With LF, cmd.exe
+silently mis-parses multi-line parenthesised blocks — single-line `if ... goto`
+keeps working while every `for (...)` block quietly stops matching, so the
+menu renders but nothing can be selected. `.gitattributes` enforces
+`*.cmd text eol=crlf` on checkout, but a file written directly to disk needs
+converting. Two further cmd traps this launcher already hit:
+
+- Never `goto` out of a `for (...)` block; set a flag and jump after it.
+  Otherwise cmd loses its place and later fails on a label that does exist.
+- Inside a parenthesised block, echo values via `!delayed!`, not `%~1`. A name
+  containing brackets, like `VRG BuildTree (modder)`, closes the block early
+  because argument substitution happens before the block is parsed.
+- `timeout /t` errors when stdin is redirected; use `ping -n N 127.0.0.1 >nul`.
+
+Console output from the launcher and its helpers stays ASCII-only — accented
+Hungarian garbles under the console codepage.
+
+
 The repo root is `H:\Planner_VRG_U100` (GitHub: `webagoly-work/vrg-toolset`, private).
 Each tool is a self-contained HTML app; the Planner and Inventory additionally
 have modular sources that build into one file.

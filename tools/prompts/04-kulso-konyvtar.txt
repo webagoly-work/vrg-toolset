@@ -1,0 +1,21 @@
+=== KULSO KONYVTAR BEHOZATALA ===
+
+Keresek egy konyvtarat erre: <CEL>.
+
+Szempontok, ebben a sorrendben:
+- Van-e elore epitett, bongeszobol file:// alol is mukodo build. Ha csak
+  forras van bundler-rel, az nekunk nem jo.
+- Meret. A mermaid 3.6 MB, ennel kisebb a jo.
+- Licenc. MIT/BSD/Apache rendben; GPL/AGPL csak ha nem masolunk belole kodot.
+- Fuggosegek szama. Nulla a legjobb.
+- Mikor nyultak hozza utoljara.
+
+Ne a GitHub API "size" mezojet iddezd meretkent - az a teljes tortenetet
+szamolja. Merd meg a tenyleges csomagot.
+
+Ha a cel az, hogy FUGGVENYEKET emeljunk at belole, akkor a forras kell, nem
+az npm dist: az npm build valtozonevei gyakran osszenyomottak. Forrast
+mindig TAG-re rogzitve hozd le (refType: "tag"), ne agra.
+
+Behozatal: vendor-manifest.json + node tools/fetch-vendor.js.
+Atvett kodhoz a szerzoi jogi fejlec is jon.

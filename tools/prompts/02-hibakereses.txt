@@ -1,0 +1,19 @@
+=== HIBAKERESES ===
+
+<LEIRAS: mit csinal, mit kellene csinalnia>
+
+Mielott javitanal, reprodukald. Es mielott kijelented, hogy a hiba mar
+korabban is benne volt, futtasd le ugyanazt a legutolso erintetlen
+backupon is - csak igy derul ki, hogy te okoztad-e.
+
+Amit varok:
+1. A pontos ok, fajl:sor hivatkozassal. Ne talalgass.
+2. Miert nem bukott ki eddig - milyen teszt vagy ellenorzes nem latta.
+3. A javitas.
+4. Bizonyitas, hogy javult: ugyanaz a lepessor, ami elotte elszallt.
+
+Ha kozben masik hibat talalsz, ne javitsd ki nemaban. Mondd el, es kerdezd
+meg, hogy most kell-e.
+
+Ha a jelenseg szinben mutatkozik meg, computed style-t olvass, ne
+screenshotot: a szurke sotet hatteren ugy nez ki, mint "meg nincs kesz".

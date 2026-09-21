@@ -1,0 +1,16 @@
+=== UJ ESZKOZ FELVETELE A VRG-DE-BE ===
+
+Keszitettunk/athelyeztunk egy eszkozt: <NEV> -> <UTVONAL>
+
+Vedd fel rendesen:
+1. VRG-DE.cmd: uj bejegyzes a megfelelo kategoriaban (LEAD / UNDER-DEV),
+   a hozza tartozo muveletekkel egyutt. A meglevo sorszamokat ne keverd ossze,
+   mert fejbol tudom oket.
+2. Planner\START.cmd: a regi inditopult is maradjon ervenyes, amig el.
+3. node tools/check-start.js - futtasd le, es mutasd az eredmenyt.
+4. A datumozott NOTE blokk a .cmd tetejen mondja el, mi valtozott es mikor.
+5. Ha az eszkoz uj mappat kapott, nezd meg, kell-e .gitignore bejegyzes
+   (letoltott vagy generalt tartalom nem megy a repoba).
+
+Ha az eszkoz kulso komponenst hasznal, az a vendor-manifest.json-ba megy,
+tag-re rogzitve - ne masold be kezzel a Vendor mappaba.

@@ -1,0 +1,15 @@
+=== MUNKAMENET INDITAS (uj session eleje) ===
+
+Olvasd el a H:\Planner_VRG_U100\CLAUDE.md-t, aztan mondd el roviden:
+- mi valtozott a legutobbi nehany commitban (git log),
+- all-e valami felben (git status, es van-e agon olyan commit, ami nincs a
+  main-en),
+- fut-e minden: node tools/check-start.js, es az Inventoryban npm run check.
+
+Utana varj. Ne kezdj bele semmibe, amig nem mondom meg, min dolgozunk.
+
+Amit tudnod kell rolam:
+- Villanyszerelo vagyok, a toolset magyar felulettel keszul.
+- Egyben-HTML appokat epitunk, build nelkul is futniuk kell file:// alol.
+- Jobban jarok azzal, ha egy nagy kerest fazisokra bontasz es kozben
+  kerdezel, mint ha egyszerre mindent megcsinalsz.

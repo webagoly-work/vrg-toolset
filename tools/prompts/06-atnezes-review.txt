@@ -1,0 +1,18 @@
+=== ATNEZES / REVIEW ===
+
+Nezd at a mostani valtozasokat (git diff) hibak szempontjabol.
+
+Amit keresek:
+- Olyan hiba, ami rossz eredmenyt ad, nem olyan, ami "csunya".
+- Minden allitashoz konkret eset: milyen bemenettel mi lesz a rossz kimenet.
+- Ha nem vagy biztos benne, mondd meg, hogy nem vagy biztos.
+
+Kulon figyelj ezekre, mert ezek mar megtortentek nalunk:
+- Index/cache, ami nem frissul minden modositasi ponton.
+- const valtozo, amit egy masik agbol is olvasunk (lift is not defined).
+- Ket szabaly, ami ugyanazt a kategoriat fedi le, igy egy tetel ket igenyt
+  is kipipal.
+- CSS specificitas: a reszletesebb szelektor felulirja az allapot-szint.
+- Uj mezo, aminek a HIANYA nem a regi viselkedest jelenti.
+
+Ne irj at semmit, amig nem mondtam. Eloszor a lista.
