@@ -206,8 +206,12 @@ async function fetchOne(c) {
     integrity = meta.integrity;
     label = `npm:${c.npmPackage}@${npmVersion}`;
   } else if (kind === 'github') {
-    url = `https://codeload.github.com/${c.repo}/tar.gz/refs/heads/${c.ref}`;
-    label = `${c.repo}@${c.ref}`;
+    // refType lets a component pin a TAG instead of tracking a branch head.
+    // Source we intend to read and adapt should be pinned: a branch quietly
+    // becomes different code tomorrow.
+    const refPath = c.refType === 'tag' ? 'refs/tags/' : 'refs/heads/';
+    url = `https://codeload.github.com/${c.repo}/tar.gz/${refPath}${c.ref}`;
+    label = `${c.repo}@${c.ref}${c.refType === 'tag' ? ' (tag)' : ''}`;
   } else {
     console.log(`- ${c.slug}: HIBA — ismeretlen forrás: ${kind}`);
     return false;
@@ -224,7 +228,7 @@ async function fetchOne(c) {
   }
   if (!res.ok) {
     console.log(`HIBA ${res.status}`);
-    if (res.status === 404 && kind === 'github') console.log(`    A '${c.ref}' ág nem létezik? Nézd meg a repót: https://github.com/${c.repo}`);
+    if (res.status === 404 && kind === 'github') console.log(`    A '${c.ref}' ${c.refType === 'tag' ? 'címke' : 'ág'} nem létezik? Nézd meg a repót: https://github.com/${c.repo}`);
     if (res.status === 403) console.log('    A letöltést valami blokkolja (céges proxy, tűzfal).');
     return false;
   }
@@ -278,7 +282,7 @@ async function fetchOne(c) {
     lock[c.slug] = { source: 'npm', pkg: c.npmPackage, version: npmVersion, integrity: integrity || '(nincs)', fetched: today };
   } else {
     const sha = await resolveCommit(c.repo, c.ref);
-    lock[c.slug] = { source: 'github', repo: c.repo, ref: c.ref, sha: sha || '(feloldatlan)', fetched: today };
+    lock[c.slug] = { source: 'github', repo: c.repo, ref: c.ref, refType: c.refType || 'branch', sha: sha || '(feloldatlan)', fetched: today };
   }
   writeFileDeep(LOCK, JSON.stringify(lock, null, 2) + '\n');
 

@@ -370,6 +370,40 @@
       "vendor": "reference",
       "target": null,
       "note": "3D építészeti szerkesztő MCP-vel, ügynöknek tervezve. Next.js + three.js, tehát ÁTVENNI NEM LEHET — a dokumentummodelljét érdemes elolvasni a 2_0_architecture.md mellé."
+    },
+    {
+      "slug": "mind-elixir",
+      "name": "Mind Elixir",
+      "repo": "SSShooter/mind-elixir-core",
+      "license": "MIT",
+      "stars": 3163,
+      "pushed": "2026-09-16",
+      "aspect": "MindMap",
+      "build": "egyfajlos-offline",
+      "priority": 1,
+      "vendor": "fetch",
+      "target": "mind-elixir",
+      "entry": "src/index.ts",
+      "note": "Keretrendszer-független gondolattérkép mag, nulla függőséggel. A FORRÁST hozzuk le (v5.15.1 címke), mert a cél egyes funkciók átemelése a vrg_mindmap.html-be — az npm-csomag dist buildjében a változónevek összenyomottak (ss, is, rs, ls), olvashatatlan. Ha valaha futásidejű könyvtárként kellene: npm mind-elixir@5.15.1, dist/MindElixir.js, 105 kB. MIT — az átvett kóddal a szerzői jogi fejlécet is vinni kell (c) 2019 DjZhou.",
+      "ref": "v5.15.1",
+      "refType": "tag"
+    },
+    {
+      "slug": "jsmind",
+      "name": "jsMind",
+      "repo": "hizzgdev/jsmind",
+      "license": "BSD-3-Clause",
+      "stars": 3794,
+      "pushed": "2026-05-18",
+      "aspect": "MindMap",
+      "build": "egyfajlos-offline",
+      "priority": 2,
+      "vendor": "fetch",
+      "target": "jsmind",
+      "entry": "src/jsmind.js",
+      "note": "A minimalista változat: nulla függőség, régóta stabil. A FORRÁST hozzuk le (v0.9.1 címke) — az npm-csomag es6/jsmind.js-e teljesen minifikált (10 sor), átemelésre alkalmatlan. A GitHub API NOASSERTION-t jelez, de a LICENSE fájl egyértelmű: BSD-3-Clause, (c) 2014-2025 ZHANG ZHIGANG. BSD-3: az átvett kóddal a szerzői jogi fejlécet ÉS a három feltételt is vinni kell.",
+      "ref": "v0.9.1",
+      "refType": "tag"
     }
   ]
 }
