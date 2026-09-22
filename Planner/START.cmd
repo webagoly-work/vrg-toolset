@@ -10,7 +10,11 @@ setlocal EnableDelayedExpansion
 ::  location, so it works the same from C:\VARLER or a USB stick.
 ::
 ::  TO ADD A TOOL: copy a block in the TOOL REGISTRY section below, bump
-::  the number, and increase TOOLCOUNT. Nothing else needs to change.
+::  the number, and increase TOOLCOUNT. Nothing else needs to change - up
+::  to ten tools. The menu reads ONE keypress, so each tool holds one key:
+::  1-9, and the tenth is 0. An eleventh tool needs a letter of its own in
+::  the BILLENTYUK section and a line in the dispatch; the launcher says so
+::  on startup rather than quietly hiding it.
 ::
 ::  TO FIX A BROWSER PATH: edit the BROWSER PATHS section below.
 ::
@@ -28,6 +32,15 @@ setlocal EnableDelayedExpansion
 ::  2026-09-21 - registry reconciled with tools\check-start.js: all 10 entries
 ::  resolve. Run that script whenever a tool is added, renamed or moved -
 ::  it also lists pages in the repo that are missing from this registry.
+::
+::  2026-09-22 - both menus moved from set /p to choice, because the prompt
+::  kept snapping back to the previous entry. Two separate causes: set /p
+::  does not blank its variable on an empty Enter (so a keystroke that did
+::  not land re-ran the last pick), and the console line editor keeps the
+::  previous line in a template buffer that reappears at the first
+::  character. choice reads one keypress and has neither problem. QuickEdit
+::  was investigated and ruled out - it is already off, and Start.lnk
+::  carries no console properties that would override that.
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -91,6 +104,27 @@ set "T10_PATH=..\vrg-vendor.html"
 
 set "TOOLCOUNT=10"
 
+:: ------------------------- BILLENTYUK / MENU KEYS -------------------------
+:: A menu egy billentyure reagal (choice.exe), nem sort olvas. Ezert minden
+:: eszkoz egy karaktert kap: 1-9, a tizedik pedig 0. Ha egyszer 10-nel tobb
+:: eszkoz lesz, a 11. sajat betujelet igenyel itt es a DISPATCH reszben is.
+set "TOOLKEYS="
+for /L %%i in (1,1,%TOOLCOUNT%) do (
+    if %%i LSS 10 ( set "TOOLKEYS=!TOOLKEYS!%%i" ) else ( set "TOOLKEYS=!TOOLKEYS!0" )
+)
+set "ACTIONKEYS=BTGVMCINSPLDRQ"
+set "MENUKEYS=!TOOLKEYS!%ACTIONKEYS%"
+
+if %TOOLCOUNT% GTR 10 (
+    echo.
+    echo   FIGYELEM: a menu egy billentyus valasztast hasznal, igy 10 eszkozt
+    echo   tud kezelni ^(1-9 es 0^). A TOOLCOUNT jelenleg %TOOLCOUNT%, tehat a
+    echo   10. feletti eszkozok nem valaszthatok, amig nem kapnak sajat
+    echo   betujelet. Lasd a BILLENTYUK reszt a START.cmd elejen.
+    echo.
+    pause
+)
+
 :: --------------------- PLANNER PROJECT (folded in from varler.cmd) -------
 set "PLANNER_DIR=%ROOT%\projects\varler-planner"
 set "NODE_EXE=%ROOT%\apps\node\node.exe"
@@ -117,7 +151,11 @@ echo ============================================================
 echo.
 echo  -- Eszkozok / Tools --
 for /L %%i in (1,1,%TOOLCOUNT%) do (
-    echo   %%i^) !T%%i_NAME!
+    if %%i LSS 10 (
+        echo   %%i^) !T%%i_NAME!
+    ) else (
+        echo   0^) !T%%i_NAME!
+    )
 )
 echo.
 echo  -- Planner muveletek / Planner actions --
@@ -143,32 +181,46 @@ echo   R^) Teljes VRG toolset megnyitasa VS Code-ban  ^(repo gyoker^)
 echo.
 echo   Q^) Kilepes / Quit
 echo.
-set /p "CHOICE=Valasztas: "
+:: WHY choice AND NOT set /p:
+:: set /p reads a whole LINE through the console line editor, and that editor
+:: keeps the previous line in a template buffer - the old F1/F3/right-arrow
+:: recall. At the next prompt the old entry shows up again at the first
+:: character and the right-arrow key types it back in one character at a
+:: time, so the menu looked like it was snapping back to the last entry.
+:: set /p also leaves its variable untouched on an empty Enter, so a
+:: keystroke that did not land re-ran the previous pick.
+:: choice reads a single keypress with no line editor at all: no template
+:: buffer, no history, no empty input, and nothing to press Enter on.
+choice /C %MENUKEYS% /N /M "Valasztas: "
+set /a "KIDX=%ERRORLEVEL%-1"
+set "K="
+if %KIDX% GEQ 0 set "K=!MENUKEYS:~%KIDX%,1!"
+if not defined K goto MENU
 
-if /I "%CHOICE%"=="Q" exit /b 0
-if /I "%CHOICE%"=="B" goto DO_BUILD
-if /I "%CHOICE%"=="T" goto DO_TEST
-if /I "%CHOICE%"=="G" goto DO_GYRO
-if /I "%CHOICE%"=="V" goto DO_VSCODE
-if /I "%CHOICE%"=="M" goto DO_MANIFEST
-if /I "%CHOICE%"=="C" goto DO_CLAUDE
-if /I "%CHOICE%"=="I" goto DO_INV_BUILD
-if /I "%CHOICE%"=="N" goto DO_INV_TEST
-if /I "%CHOICE%"=="S" goto DO_INV_SERVE
-if /I "%CHOICE%"=="P" goto DO_INV_PRICECHECK
-if /I "%CHOICE%"=="L" goto DO_VENDOR_LIST
-if /I "%CHOICE%"=="D" goto DO_VENDOR_FETCH
-if /I "%CHOICE%"=="R" goto DO_VSCODE_REPO
+if /I "%K%"=="Q" exit /b 0
+if /I "%K%"=="B" goto DO_BUILD
+if /I "%K%"=="T" goto DO_TEST
+if /I "%K%"=="G" goto DO_GYRO
+if /I "%K%"=="V" goto DO_VSCODE
+if /I "%K%"=="M" goto DO_MANIFEST
+if /I "%K%"=="C" goto DO_CLAUDE
+if /I "%K%"=="I" goto DO_INV_BUILD
+if /I "%K%"=="N" goto DO_INV_TEST
+if /I "%K%"=="S" goto DO_INV_SERVE
+if /I "%K%"=="P" goto DO_INV_PRICECHECK
+if /I "%K%"=="L" goto DO_VENDOR_LIST
+if /I "%K%"=="D" goto DO_VENDOR_FETCH
+if /I "%K%"=="R" goto DO_VSCODE_REPO
 
+:: Only keys in MENUKEYS can get this far, so a digit here is always a real
+:: tool: 1-9 as printed, and 0 meaning the tenth entry.
 set "PICKNUM="
-for /L %%i in (1,1,%TOOLCOUNT%) do (
-    if "%CHOICE%"=="%%i" set "PICKNUM=%%i"
+if "%K%"=="0" (
+    set "PICKNUM=10"
+) else (
+    for /L %%i in (1,1,9) do if "%K%"=="%%i" set "PICKNUM=%%i"
 )
 if defined PICKNUM goto OPEN_TOOL
-
-echo.
-echo   Nem ervenyes valasztas.
-pause
 goto MENU
 
 :: ============================== OPEN A TOOL =================================
@@ -198,16 +250,16 @@ echo   3^) Zen browser
 echo   4^) Rendszer alapertelmezett bongeszo
 echo   0^) Vissza
 echo.
-set /p "BCHOICE=Bongeszo: "
-
-if "%BCHOICE%"=="0" goto MENU
-if "%BCHOICE%"=="1" goto OPEN_CHROME
-if "%BCHOICE%"=="2" goto OPEN_OPERAGX
-if "%BCHOICE%"=="3" goto OPEN_ZEN
-if "%BCHOICE%"=="4" goto OPEN_DEFAULT
-
-echo   Nem ervenyes valasztas.
-pause
+:: Egy billentyu, mint a fomenuben - lasd az ottani magyarazatot.
+:: Az errorlevel a /C listaban elfoglalt helyet adja vissza, ezert a
+:: vizsgalat csokkeno sorrendben all: az "if errorlevel N" azt jelenti,
+:: hogy "N vagy nagyobb".
+choice /C 12340 /N /M "Bongeszo: "
+if errorlevel 5 goto MENU
+if errorlevel 4 goto OPEN_DEFAULT
+if errorlevel 3 goto OPEN_ZEN
+if errorlevel 2 goto OPEN_OPERAGX
+if errorlevel 1 goto OPEN_CHROME
 goto BROWSER_MENU
 
 :OPEN_CHROME
