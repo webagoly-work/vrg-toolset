@@ -17,7 +17,7 @@
 // ---------------------------------------------------------------------------
 const SCHEMA_VERSION=2;
 const IDPRE={devices:'D',paths:'P',objects:'O',openings:'B',floors:'F',roofs:'R',
-             cables:'C',measures:'M',notes:'N',wallNotes:'W'};
+             cables:'C',measures:'M',notes:'N',wallNotes:'W',circuits:'A'};
 
 function idNum(id){const m=/(\d+)$/.exec(String(id||''));return m?+m[1]:0;}
 function maxIdNum(d){let n=0;
@@ -49,18 +49,41 @@ function nodeById(pathId,nodeId){const p=pathById(pathId);if(!p)return null;
   for(const n of (p.nodes||[]))if(n.id===nodeId)return n;return null;}
 function nodeIndexById(pathId,nodeId){const p=pathById(pathId);if(!p)return -1;
   return (p.nodes||[]).findIndex(n=>n.id===nodeId);}
-// device ↔ path-node link, by id. Returns null when either end is gone, which is
-// what makes deletion safe: a dangling link simply resolves to nothing.
-function linkTarget(dv){if(!dv||!dv.link)return null;
-  const p=pathById(dv.link.p);if(!p)return null;
-  const ix=(p.nodes||[]).findIndex(n=>n.id===dv.link.n);if(ix<0)return null;
-  return {path:p,node:p.nodes[ix],pi:indexById('paths',p.id),ni:ix};}
-function linkLabel(dv){const t=linkTarget(dv);if(!t)return '';
-  return t.path.id+'/'+t.node.id;}
+// device ↔ path-node links, by id. A device holds a LIST, dev.links = [{p, n, glue?}]: a route
+// usually enters a box and leaves it again, and several layers may each carry a routing proposal.
+//  - glue:true — the Wall View link: node and box are one point and move together, height included.
+//  - no glue   — the route reaches the box from a node above or beside it (auto-link, 05k): the node
+//                follows the box in plan only and keeps its own height.
+// A link resolves to null when either end is gone, which is what makes deletion safe.
+// The single dev.link of older documents is read as a glued link, and migrate() converts it.
+function devLinks(dv){if(!dv)return [];
+  const out=Array.isArray(dv.links)?dv.links.filter(l=>l&&l.p&&l.n):[];
+  if(dv.link&&dv.link.p&&dv.link.n&&!out.some(l=>l.p===dv.link.p&&l.n===dv.link.n))
+    out.unshift({p:dv.link.p,n:dv.link.n,glue:true});
+  return out;}
+function resolveLink(l){const p=l&&pathById(l.p);if(!p)return null;
+  const ix=(p.nodes||[]).findIndex(n=>n.id===l.n);if(ix<0)return null;
+  return {path:p,node:p.nodes[ix],pi:indexById('paths',p.id),ni:ix,glue:!!l.glue};}
+// every live link of a device, glued ones first
+function linkTargets(dv){return devLinks(dv).map(resolveLink).filter(Boolean).sort((a,b)=>b.glue-a.glue);}
+// the device's primary link — the glued one if it has one
+function linkTarget(dv){return linkTargets(dv)[0]||null;}
+function linkLabel(dv){return linkTargets(dv).map(t=>t.path.id+'/'+t.node.id).join(', ');}
+function hasLinkTo(dv,pathId,nodeId){return devLinks(dv).some(l=>l.p===pathId&&l.n===nodeId);}
+// set (or clear) the device's GLUED link; its other links stay
 function setLink(dv,pathId,nodeId){if(!dv)return;
-  if(pathId&&nodeId)dv.link={p:pathId,n:nodeId};else delete dv.link;}
+  const rest=devLinks(dv).filter(l=>!l.glue&&!(l.p===pathId&&l.n===nodeId));delete dv.link;
+  dv.links=(pathId&&nodeId)?[{p:pathId,n:nodeId,glue:true}].concat(rest):rest;
+  if(!dv.links.length)delete dv.links;}
+// add a plan-only link, unless that node is already linked
+function addLink(dv,pathId,nodeId){if(!dv||!pathId||!nodeId||hasLinkTo(dv,pathId,nodeId))return false;
+  dv.links=devLinks(dv);delete dv.link;dv.links.push({p:pathId,n:nodeId});return true;}
+function removeLinks(dv,pred){if(!dv)return 0;const all=devLinks(dv),keep=all.filter(l=>!pred(l));
+  delete dv.link;if(keep.length)dv.links=keep;else delete dv.links;return all.length-keep.length;}
+function clearLinks(dv){return removeLinks(dv,()=>true);}
 // drop links whose target no longer exists (called after any deletion)
-function pruneLinks(){data.devices.forEach(dv=>{if(dv.link&&!linkTarget(dv))delete dv.link;});}
+function pruneLinks(){data.devices.forEach(dv=>{if(!dv.link&&!dv.links)return;
+  if(devLinks(dv).some(l=>!resolveLink(l)))removeLinks(dv,l=>!resolveLink(l));});}
 // A stored reference to a device: an id since schema v2. A bare number is a v1 index and is
 // still accepted, so a document that skipped migration degrades instead of crashing.
 function devByRef(v){if(v==null)return null;
@@ -95,6 +118,12 @@ function migrate(d){if(!d||typeof d!=='object')return d;
     devs.forEach(dv=>{if(!dv||!dv.swMap||typeof dv.swMap!=='object')return;
       Object.keys(dv.swMap).forEach(k=>{const id=toId(dv.swMap[k]);if(id==null)delete dv.swMap[k];else dv.swMap[k]=id;});});
   }
+  // one dev.link → a dev.links list (the old link was glued). No version step: it is idempotent,
+  // so it simply runs on every load.
+  (d.devices||[]).forEach(dv=>{if(!dv||!dv.link)return;const l=dv.link;delete dv.link;
+    if(!l.p||!l.n)return;
+    dv.links=Array.isArray(dv.links)?dv.links:[];
+    if(!dv.links.some(x=>x.p===l.p&&x.n===l.n))dv.links.unshift({p:l.p,n:l.n,glue:true});});
   ensureIds(d);
   d.v=SCHEMA_VERSION;
   return d;}
@@ -107,7 +136,8 @@ function connectivity(){
   const terminals=[],segments=[],byPlace={};
   data.devices.forEach(dv=>{if(dv.type==='light'&&false)return;
     const t={id:dv.id,kind:(dv.type==='board'?'board':dv.type==='junction'?'junction':'device'),
-      ref:dv.ref||dv.id,x:dv.x,y:dv.y,h:dv.h||0,level:dv.level,link:(dv.link||null)};
+      ref:dv.ref||dv.id,x:dv.x,y:dv.y,h:dv.h||0,level:dv.level,links:devLinks(dv)};
+    t.link=t.links[0]||null;                               // the primary link, for older readers
     terminals.push(t);
     const k=graphKeyOf(dv);(byPlace[k]=byPlace[k]||[]).push(t);});
   data.paths.forEach(p=>{const ns=p.nodes||[];
@@ -118,7 +148,7 @@ function connectivity(){
         circuit:sec.circuit||null});}});
   // which terminal sits on which node (by link first, then by coincidence)
   const at={};
-  terminals.forEach(t=>{if(t.link){const key=t.link.p+'/'+t.link.n;(at[key]=at[key]||[]).push(t.id);}});
+  terminals.forEach(t=>t.links.forEach(l=>{const key=l.p+'/'+l.n;(at[key]=at[key]||[]).push(t.id);}));
   data.paths.forEach(p=>{(p.nodes||[]).forEach(n=>{const k=graphKeyOf(n);
     (byPlace[k]||[]).forEach(t=>{const key=p.id+'/'+n.id;
       if(!(at[key]||[]).includes(t.id))(at[key]=at[key]||[]).push(t.id);});});});
@@ -129,7 +159,7 @@ function connectivity(){
 // available to the console and the tests.
 function validate(){const out=[];
   const add=(sev,code,msg,ref)=>out.push({sev,code,msg,ref});
-  data.devices.forEach(dv=>{if(dv.link&&!linkTarget(dv))
+  data.devices.forEach(dv=>{if(devLinks(dv).some(l=>!resolveLink(l)))
     add('warn','link.dangling','Készülék pályakötése érvénytelen: '+(dv.ref||dv.id),dv.id);});
   data.paths.forEach(p=>{if((p.nodes||[]).length<2)
     add('error','path.stub','Pálya kevesebb mint 2 csomóponttal: '+p.id,p.id);
@@ -154,5 +184,7 @@ function validateSummary(){const v=validate();
 window.SCHEMA_VERSION=SCHEMA_VERSION;window.ensureIds=ensureIds;window.migrate=migrate;
 window.byId=byId;window.pathById=pathById;window.nodeById=nodeById;window.linkTarget=linkTarget;
 window.linkLabel=linkLabel;window.setLink=setLink;window.pruneLinks=pruneLinks;
+window.devLinks=devLinks;window.linkTargets=linkTargets;window.addLink=addLink;window.removeLinks=removeLinks;
+window.clearLinks=clearLinks;window.hasLinkTo=hasLinkTo;
 window.connectivity=connectivity;window.validate=validate;window.validateSummary=validateSummary;
 window.devByRef=devByRef;window.devIdOf=devIdOf;

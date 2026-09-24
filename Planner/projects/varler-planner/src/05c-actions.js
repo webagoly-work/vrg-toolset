@@ -259,7 +259,10 @@ registerActions([
        ['Space','a kiválasztott doboz letétele rajzolás közben'],['←/→','paletta vagy variáns váltása'],
        ['↑/↓','rajzolási magasság'],['Alt vagy F','finomhangolt mozgatás (1 mm)'],
        ['Shift','tengelyre kényszerítés'],['Ctrl','a fal másik oldala / snap felülbírálás'],
-       ['Dupla kattintás','tulajdonságok'],['Esc','egy szintet kilép — soha nem dob el munkát'],
+       ['Dupla kattintás','tulajdonságok'],['K','áramkör végpontjainak kijelölése a rajzon (újra K = kész)'],
+       ['Shift + kattintás','Készülék: a legközelebbi azonos doboz sorába, 72 mm-re (csatolva)'],
+       ['Pálya csomópont dobozon','a doboz a csomóponthoz kötődik, amikor a pálya lezárul'],
+       ['Esc','egy szintet kilép — soha nem dob el munkát'],
        ['Ctrl+Z / Ctrl+Shift+Z','visszavonás / újra'],['Ctrl+K','parancskereső']]
        .map(r=>`<div><b style="display:inline-block;min-width:170px">${r[0]}</b> ${r[1]}</div>`).join('')
      +`</div>`,()=>{},'Bezár')}

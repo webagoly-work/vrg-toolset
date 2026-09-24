@@ -51,6 +51,8 @@ This is deliberate for now: it made the split from a single file provably safe (
 | `05d-shell.js` | 190 | **the workflow shell** — stage rail and contextual inspector, generated from the registry |
  **the action registry**, the ⌘K palette and the status bar |
 | `05h-rooms.js` | 80 | **room membership** — which room each device belongs to (wall devices by the face they look into), per-room type/count breakdown |
+| `05j-circuits.js` | 250 | **circuit end points** — `data.circuits` (name, colour, dedikált, kismegszakító, member device ids), `K` pick mode, plan rings, per-layer device tint, the Áramkörök stage, JSON export for the Inventory / Elosztó tool |
+| `05k-room-auto.js` | 230 | **room-wide Wall View automation** — Sorolás: rows of boxes on one wall face become 72 mm clip groups; Pálya-kötés: route nodes sitting on a box (in plan, ≤25 mm) become plan-only links, per route layer and device layer, stacked boxes decided by height. Both per room or all rooms, previewed, one undo step. While drawing: Device tool + Shift places the box in the nearest same-type row (72 mm, clipped); a Path tool node put down on a box snaps onto it and becomes its link when the path is finished (`placeSnap`, used by `08-interaction.js`) |
 | `05b-editor-core.js` | 130 | **the editor surface layer** — one pointer/drag/warp/menu implementation, driven by a projection |
 | `06-wall-editor.js` | 850 | wall elevation editor — chase model, notes, action rail, session, links, coordinate list, **wall projection** |
 | `07-plane-editor.js` | 364 | floor / álmennyezet / ceiling plane editor, **plane projection** |

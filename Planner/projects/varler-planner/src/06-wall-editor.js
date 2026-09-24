@@ -128,7 +128,7 @@ function wallElevationData(r,level){const z0=r.z0||0,H=z0+(r.h||wallH(level));
     if(Math.abs(sOf(o.x,o.y))<tol&&inR(u)){const win=o.type==='window';ops.push({oi,type:o.type,u,w:o.w||(win?WIN_W:DOOR_W),h:o.h||(win?WIN_H:DOOR_H),sill:win?(o.sill!=null?o.sill:WIN_SILL):0});}});
   const devs=[];data.devices.forEach(dv=>{if(dv.level!==level||!layerShows(dv,'device'))return;const u=uOf(dv.x,dv.y),ss=sOf(dv.x,dv.y);
     if(Math.abs(ss)<tol&&inR(u))devs.push({di:data.devices.indexOf(dv),type:dv.type,ref:dv.ref||'',u,h:dv.h||0,back:ss<-1,
-      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:dv.link});});
+      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null});});
   const secs=[];data.paths.forEach((pa,pi)=>{if(!layerShows(pa,'path'))return;for(let i=0;i<pa.nodes.length-1;i++){const a=pa.nodes[i],b=pa.nodes[i+1];if(a.level!==level||b.level!==level)continue;
     const sa=sOf(a.x,a.y),sb=sOf(b.x,b.y);if(Math.abs(sa)<tol&&Math.abs(sb)<tol){const ua=uOf(a.x,a.y),ub=uOf(b.x,b.y);
       if(inR(Math.max(ua,ub))&&inR(Math.min(ua,ub))){const sec=pa.sections[i]||{build:'sull_gege'};
@@ -358,8 +358,9 @@ function wvDeviceItems(di){const D=data.devices[di];const items=[];
     act:()=>wvOpenModal('Magasság a padlótól',`<div class="mrow"><input id="pvz" type="number" step="10" value="${Math.round(D.h||0)}" style="width:90px"> mm</div>`
       +`<div class="mrow" style="font-size:11px;color:#777">Felülnézetben a magasság nem látszik — itt állítható. A síkhoz kötött sávon kívülre állítva a készülék halványan, kontextusként jelenik meg.</div>`,
       ()=>{wvPush();pvSetDeviceZ(di,+$('pvz').value||0);draw();})});
-  items.push({label:(D.link?'🔗 Kötés áthelyezése…':'🔗 Csatlakoztatás pályához…'),act:()=>wvLinkDevice(di)});
-  if(D.link)items.push({label:'🔗✕ Kötés bontása ('+linkLabel(D)+')',act:()=>{wvPush();delete D.link;edRender();draw();}});
+  const glued=devLinks(D).some(l=>l.glue);
+  items.push({label:(glued?'🔗 Kötés áthelyezése…':'🔗 Csatlakoztatás pályához…'),act:()=>wvLinkDevice(di)});
+  if(devLinks(D).length)items.push({label:'🔗✕ Kötések bontása ('+linkLabel(D)+')',act:()=>{wvPush();clearLinks(D);edRender();draw();}});
   items.push({label:'🗑 Törlés',act:()=>{wvPush();data.devices.splice(di,1);edRender();draw();}});
   return items;}
 function wvDistSeg(px,py,x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,L=dx*dx+dy*dy;
@@ -524,12 +525,14 @@ function wvSetDevice(di,u,h,raw){const dv=data.devices[di];if(!dv)return;const r
   wvPushLinkedNodes(grp);}
 // along-wall coordinate of a path node (+ its height) in the current wall's basis
 // ---- device ↔ path-node links: the node follows the device and vice versa ----
-function wvPushLinkedNodes(indices){indices.forEach(i=>{const g=data.devices[i];if(!g||!g.link)return;
-  const t=linkTarget(g);if(!t)return;const n=t.node;
-  n.x=g.x;n.y=g.y;n.h=g.h||0;});}
+// A glued node sits exactly on its box, height included. A plan-only node (auto-link: a ceiling
+// route above the box) follows the box in plan and keeps its own height.
+function wvPushLinkedNodes(indices){indices.forEach(i=>{const g=data.devices[i];if(!g)return;
+  linkTargets(g).forEach(t=>{const n=t.node;n.x=g.x;n.y=g.y;if(t.glue)n.h=g.h||0;});});}
+// Dragging a node drags only the boxes GLUED to it — a ceiling node never pulls a socket off its wall.
 function wvPullLinkedDev(pi,ni){const pa=data.paths[pi],n=pa&&pa.nodes[ni];if(!n)return;
   const pid=(data.paths[pi]||{}).id,nid=n.id;
-  data.devices.forEach(dv=>{if(dv.link&&dv.link.p===pid&&dv.link.n===nid){dv.x=n.x;dv.y=n.y;dv.h=n.h||0;}});}
+  data.devices.forEach(dv=>{if(devLinks(dv).some(l=>l.glue&&l.p===pid&&l.n===nid)){dv.x=n.x;dv.y=n.y;dv.h=n.h||0;}});}
 // ids made this trivial: a link whose target is gone simply resolves to nothing.
 function wvRelinkAfterPathRemoval(){pruneLinks();}
 // candidate path nodes on this wall, nearest first

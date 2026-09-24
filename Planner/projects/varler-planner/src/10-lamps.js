@@ -448,6 +448,8 @@ function roomMenuItems(rh){const rm=rh.rm,solo=soloRoomIs(rh);const items=[
     {label:(rm.noText?'🔤 Felirat be':'🔤 Felirat ki'),act:()=>{pushUndo();rm.noText=!rm.noText;draw();}},
     {label:'🏷 Helyiség adatlap… (név, burkolat, környezet, magasságok)',act:()=>roomPropsDialog(rm,rh.level,rh.src)},
     {label:'🔢 Helyiség átszámozása… (készülékjelölések a sablon szerint)',act:()=>roomRenumberDialog(rh)},
+    {label:'⛓ Sorolás… (egymás melletti dobozok csatolása 72 mm-re)',act:()=>autoClipDialog([rh])},
+    {label:'🔗 Pálya-kötés… (a készülékeken ülő csomópontok)',act:()=>autoLinkDialog([rh])},
     {label:'🧱 Helyiség kiterítve',act:()=>openRoomUnfold(rm,rh.level)},
     {label:'⬓ Padló nézet (felülnézet, szerkeszthető)',act:()=>openPlaneView(rm,rh.level,'floor')},
     {label:'⬒ Mennyezet nézet (felülről, a falakon átnézve)',act:()=>openPlaneView(rm,rh.level,'ceiling')},

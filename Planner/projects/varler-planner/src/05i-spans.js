@@ -13,7 +13,7 @@
 // — which is why the span, not the segment, is what gets named, sized and labelled.
 // See docs/wiring_pipeline.md. Derived on demand, never stored.
 //
-// A node is a terminal node when a device is LINKED to it (dev.link). Drawings made before the
+// A node is a terminal node when a device is LINKED to it (dev.links). Drawings made before the
 // ghost route tool have no links, so a device within SPAN_JOIN_TOL of a node still counts — that
 // fallback is reported by how:'near' so validate() can ask for it to be confirmed.
 const SPAN_JOIN_TOL=250;          // mm, 3D; the same tolerance the v1 routing graph merges with
@@ -27,7 +27,7 @@ function terminalAtNode(pa,node){if(!pa||!node)return null;
   const better=(dv,how,dist)=>!best||(how==='link'&&best.how!=='link')||
     (how===best.how&&(rank(dv)<rank(best.dev)||(rank(dv)===rank(best.dev)&&dist<best.dist)));
   data.devices.forEach(dv=>{if(!dv)return;
-    if(dv.link&&dv.link.p===pa.id&&dv.link.n===node.id){if(better(dv,'link',0))best={dev:dv,how:'link',dist:0};return;}
+    if(hasLinkTo(dv,pa.id,node.id)){if(better(dv,'link',0))best={dev:dv,how:'link',dist:0};return;}
     if(dv.level!==node.level)return;
     let dist;
     if(dv.type==='board'&&typeof pointInBoard==='function')dist=pointInBoard(dv,node.x,node.y,120)?0:Infinity;

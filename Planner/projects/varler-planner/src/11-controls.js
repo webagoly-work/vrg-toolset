@@ -99,7 +99,7 @@ $('styleToggle').onclick=()=>{const toBlueprint=state.style!=='blueprint';
 $('bRiserUp').onclick=()=>riser(1);$('bRiserDn').onclick=()=>riser(-1);
 function riser(dir){let i=ORD.indexOf(state.active)+dir;if(i<0||i>2)return;state.active=ORD[i];
   document.querySelector(`input[name=al][value=${ORD[i]}]`).checked=true;$('hud').textContent='Active level → '+ORD[i]+' (riser continues here).';}
-const UKEYS=['cables','paths','devices','notes','measures','openings','floors','objects','roofs','wallNotes'];
+const UKEYS=['cables','paths','devices','notes','measures','openings','floors','objects','roofs','wallNotes','circuits'];
 // per-surface note visibility travels with the project but is a map, not a list
 function noteHideSnap(){return JSON.parse(JSON.stringify(data.noteHide||{}));}
 // A snapshot may be SCOPED to the collections a command actually touches. Moving a

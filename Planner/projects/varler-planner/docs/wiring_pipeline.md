@@ -65,8 +65,22 @@ migration, not an edit.
 | **run** | one pull of a cable/wire set for a circuit, from terminal to terminal, through an ordered list of segments |
 | **containment** | Védőcső / Csatorna on a span: type, size, count, süllyesztett / falon kívül |
 
-A node is a **terminal node** when a terminal is linked to it (`dev.link`) or — legacy only —
+A node is a **terminal node** when a terminal is linked to it (`dev.links`) or — legacy only —
 coincides with it.
+
+**Links (2026-09-24).** A device holds a list, `dev.links = [{p, n, glue?}]`: a route enters a box and
+leaves it, and each layer can carry its own routing proposal, so one box may be linked to several
+nodes on several layers at once.
+- `glue:true` — made in the Wall View (🔗 Csatlakoztatás pályához): node and box are one point and
+  move together, height included. The old single `dev.link` is read, and migrated, as this kind.
+- plain — made by Pálya-kötés (`05k-room-auto.js`): the node sits on the box *in plan* (≤25 mm),
+  typically at ceiling height straight above it. The node follows the box in plan only; dragging the
+  node never drags the box. Re-linking a layer replaces that layer's plain links and nothing else.
+- Between boxes stacked on one plan point, a node drawn at a box's height (±150 mm) is on that box;
+  a ceiling node over a stack is offered with the nearest box pre-selected; equal heights are a tie.
+- Drawing with the Path tool, a node put down on a box symbol snaps onto the box (plan position,
+  drawing height kept) and becomes a plain link when the path is finished — decision 2 below, done for
+  every node, not only route ends. On a stack the box nearest the drawing height is the one taken.
 
 ---
 
@@ -75,7 +89,7 @@ coincides with it.
 1. **One geometry store.** Routes are `data.paths`. The ghost tool draws a route with no
    containment; the Védőcső / Csatorna tools assign containment to existing spans, or draw a route
    and assign in one step. `data.cables` stops being drawable (S2) and is migrated (S3).
-2. **Connection is explicit.** A route end placed on a terminal links it (`dev.link`). Coincidence
+2. **Connection is explicit.** A route end placed on a terminal links it (`dev.links`). Coincidence
    remains only as a fallback for pre-S2 drawings, and `validate()` reports each such join as
    `info` so it can be confirmed.
 3. **Suggestion and override are stored apart.** Every derived value has the shape
@@ -127,6 +141,17 @@ section.cont = {auto:[…], manual:[…] | null, basis:'h:…'}   // containment
 ```
 Both collections go into `UKEYS` **and** `IDPRE`. A run whose segment no longer exists (a node was
 inserted, a route deleted) is `error: megszakadt húzás` and can be re-pulled.
+
+### Pulled forward (2026-09-24): circuit end points, `05j-circuits.js`
+`data.circuits` exists ahead of S3, without runs. What is built: `id` (IDPRE `A`), `ref` (`A1`),
+`name`, `col` (a hex colour, not a name), `dedicated`, `mcb` and `members`.
+- `members` — the device ids the circuit must reach. A device is the end point of at most one circuit;
+  Elosztó and kötődoboz never are. A dedikált circuit holds exactly one.
+- `mcb` — `{curve, amps, poles, n}`, written as the Kalkulátor and Inventory write it (`1C 13A`,
+  `1P-N C16A`). DIN modules = poles + 1 for a switched N.
+- Circuits live on no layer, so the same end points hold for every layer's routing proposal.
+- No schema version bump: an older file opens with `circuits: []`.
+S3 adds `breaker`, `cable`, `voltage`, `board` and `data.runs` to this record rather than replacing it.
 
 ---
 

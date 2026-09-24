@@ -39,13 +39,16 @@ const STAGES=[
     const lamps=data.devices.filter(d=>d.type==='light'&&!d.lampName).length;
     if(lamps)out.push({sev:'info',msg:lamps+' lámpa nincs meghatározva (adatlap).'});
     return out;}},
- {k:'paths', n:'Pályák',       icon:'〰', groups:['Véset'],
+ {k:'circuits',n:'Áramkörök',  icon:'⚡', groups:['Áramkör'],
+  hint:'Végpontok: dedikált vagy több pontos áramkörök, kismegszakító. K = kijelölés a rajzon.',
+  check:()=>cktChecks()},
+ {k:'paths', n:'Pályák',       icon:'〰', groups:['Véset','Pálya'],
   hint:'Kábelpályák, vésetek, áramkörök.',
   check:()=>{const out=[];
     if(!data.paths.length)out.push({sev:'info',msg:'Még nincs pálya rajzolva.'});
     const empty=data.paths.filter(p=>(p.sections||[]).every(s=>!s.circuit&&!(s.circuits||[]).length)).length;
     if(empty)out.push({sev:'info',msg:empty+' pálya üres (nincs benne áramkör).'});
-    const unlinked=data.devices.filter(d=>d.type!=='board'&&!d.link).length;
+    const unlinked=data.devices.filter(d=>d.type!=='board'&&!devLinks(d).length).length;
     if(unlinked)out.push({sev:'info',msg:unlinked+' készülék nincs pályához kötve.'});
     return out;}},
  {k:'doc',   n:'Dokumentáció', icon:'📄', groups:['Dokumentáció','Ellenőrzés','Projekt'],
@@ -149,13 +152,15 @@ function renderInspector(){
                 :`<input id="${f.id}" type="number" step="${f.step}" value="${f.val}">`)+`</label>`).join('')+`</div>`:'')
     +(sel&&sel.t==='floors'&&data.floors[sel.i]
         ?roomBreakdownHtml({rm:data.floors[sel.i],src:'F',i:sel.i,level:data.floors[sel.i].level}):'')
+    +cktInspectorHtml(sel,st.k)+linkInspectorHtml(sel)
     +(acts.length?`<div class="insActs">`+acts.map(a=>
         `<button class="insA" data-id="${a.id}" title="${esc(a.hint||'')}">${a.icon||'•'} ${esc(a.label)}</button>`).join('')+`</div>`
       :`<div class="insSub" style="padding:6px 10px">${esc(t('insp.pick','Válassz elemet a rajzon.'))}</div>`);
   fields.forEach(f=>{const el=$(f.id);if(!el)return;
     el.onchange=()=>{pushUndo();f.set(f.text?el.value:(+el.value||0));draw();};
     el.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el.blur();}};});
-  insp.querySelectorAll('.insA').forEach(b=>b.onclick=()=>runAction(b.dataset.id));}
+  insp.querySelectorAll('.insA').forEach(b=>b.onclick=()=>runAction(b.dataset.id));
+  cktBindInspector(insp);}
 
 registerActions([
  {id:'shell.toggle',label:'Munkafolyamat-sáv be/ki',icon:'▤',group:'Nézet',alias:'shell rail workflow inspector',

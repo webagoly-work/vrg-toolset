@@ -93,6 +93,14 @@
  .insRoomR{display:flex;gap:6px;margin-top:3px}
  .insRoomL{flex:1;color:#4a453c}
  .insRoomRefs{color:#8a8478;font-size:10px;line-height:1.3;word-break:break-word}
+ .insCkt{padding:6px 10px;border-bottom:1px solid #eee9df}
+ .ckLine{display:flex;align-items:center;gap:5px;color:#4a453c}
+ .ckSw{display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid;box-sizing:border-box;flex:none}
+ .ckSw.multi{border-style:dashed}
+ .ckCard{border:1px solid #e2ded4;border-radius:5px;padding:4px 6px;margin-top:4px;cursor:pointer;background:#fff}
+ .ckCard:hover{border-color:#c9c2b3} .ckCard.on{border-color:#2f79c9;box-shadow:0 0 0 1px #2f79c9 inset}
+ .ckEd{font-size:10.5px;padding:0 5px;line-height:16px}
+ .ckSt.ready{color:#3a7d44} .ckSt.multi{color:#c0530f} .ckSt.bad,.ckSt.empty{color:#c0392b}
  .insActs{padding:6px 8px;display:flex;flex-direction:column;gap:3px}
  .insA{text-align:left;font-size:11px;padding:4px 7px;white-space:normal;line-height:1.25}
  #statusBar{position:absolute;left:0;right:0;bottom:0;height:24px;display:flex;align-items:center;gap:2px;
@@ -141,6 +149,7 @@
  .lrow button{padding:2px 4px;font-size:11px;line-height:1}
  .lcat{width:17px;opacity:0.4}
  .lcat.on{opacity:1;background:#2c2c2c;color:#fff;border-color:#2c2c2c}
+ .ltint{width:22px;height:17px;padding:0;border:1px solid #ccc;margin-left:4px;cursor:pointer}
  .lname{font-size:12px;padding:2px 4px;border:1px solid #cfc9bd;border-radius:5px}
  .resizer{flex:0 0 6px;cursor:col-resize;background:linear-gradient(#ddd8cd,#cfc9bd);border:none}
  .resizer:hover{background:#b9b3a5}
@@ -574,7 +583,7 @@ window.t=t;window.setLang=setLang;window.lang=lang;window.LANGS=LANGS;window.L10
 // ---------------------------------------------------------------------------
 const SCHEMA_VERSION=2;
 const IDPRE={devices:'D',paths:'P',objects:'O',openings:'B',floors:'F',roofs:'R',
-             cables:'C',measures:'M',notes:'N',wallNotes:'W'};
+             cables:'C',measures:'M',notes:'N',wallNotes:'W',circuits:'A'};
 
 function idNum(id){const m=/(\d+)$/.exec(String(id||''));return m?+m[1]:0;}
 function maxIdNum(d){let n=0;
@@ -606,18 +615,41 @@ function nodeById(pathId,nodeId){const p=pathById(pathId);if(!p)return null;
   for(const n of (p.nodes||[]))if(n.id===nodeId)return n;return null;}
 function nodeIndexById(pathId,nodeId){const p=pathById(pathId);if(!p)return -1;
   return (p.nodes||[]).findIndex(n=>n.id===nodeId);}
-// device ↔ path-node link, by id. Returns null when either end is gone, which is
-// what makes deletion safe: a dangling link simply resolves to nothing.
-function linkTarget(dv){if(!dv||!dv.link)return null;
-  const p=pathById(dv.link.p);if(!p)return null;
-  const ix=(p.nodes||[]).findIndex(n=>n.id===dv.link.n);if(ix<0)return null;
-  return {path:p,node:p.nodes[ix],pi:indexById('paths',p.id),ni:ix};}
-function linkLabel(dv){const t=linkTarget(dv);if(!t)return '';
-  return t.path.id+'/'+t.node.id;}
+// device ↔ path-node links, by id. A device holds a LIST, dev.links = [{p, n, glue?}]: a route
+// usually enters a box and leaves it again, and several layers may each carry a routing proposal.
+//  - glue:true — the Wall View link: node and box are one point and move together, height included.
+//  - no glue   — the route reaches the box from a node above or beside it (auto-link, 05k): the node
+//                follows the box in plan only and keeps its own height.
+// A link resolves to null when either end is gone, which is what makes deletion safe.
+// The single dev.link of older documents is read as a glued link, and migrate() converts it.
+function devLinks(dv){if(!dv)return [];
+  const out=Array.isArray(dv.links)?dv.links.filter(l=>l&&l.p&&l.n):[];
+  if(dv.link&&dv.link.p&&dv.link.n&&!out.some(l=>l.p===dv.link.p&&l.n===dv.link.n))
+    out.unshift({p:dv.link.p,n:dv.link.n,glue:true});
+  return out;}
+function resolveLink(l){const p=l&&pathById(l.p);if(!p)return null;
+  const ix=(p.nodes||[]).findIndex(n=>n.id===l.n);if(ix<0)return null;
+  return {path:p,node:p.nodes[ix],pi:indexById('paths',p.id),ni:ix,glue:!!l.glue};}
+// every live link of a device, glued ones first
+function linkTargets(dv){return devLinks(dv).map(resolveLink).filter(Boolean).sort((a,b)=>b.glue-a.glue);}
+// the device's primary link — the glued one if it has one
+function linkTarget(dv){return linkTargets(dv)[0]||null;}
+function linkLabel(dv){return linkTargets(dv).map(t=>t.path.id+'/'+t.node.id).join(', ');}
+function hasLinkTo(dv,pathId,nodeId){return devLinks(dv).some(l=>l.p===pathId&&l.n===nodeId);}
+// set (or clear) the device's GLUED link; its other links stay
 function setLink(dv,pathId,nodeId){if(!dv)return;
-  if(pathId&&nodeId)dv.link={p:pathId,n:nodeId};else delete dv.link;}
+  const rest=devLinks(dv).filter(l=>!l.glue&&!(l.p===pathId&&l.n===nodeId));delete dv.link;
+  dv.links=(pathId&&nodeId)?[{p:pathId,n:nodeId,glue:true}].concat(rest):rest;
+  if(!dv.links.length)delete dv.links;}
+// add a plan-only link, unless that node is already linked
+function addLink(dv,pathId,nodeId){if(!dv||!pathId||!nodeId||hasLinkTo(dv,pathId,nodeId))return false;
+  dv.links=devLinks(dv);delete dv.link;dv.links.push({p:pathId,n:nodeId});return true;}
+function removeLinks(dv,pred){if(!dv)return 0;const all=devLinks(dv),keep=all.filter(l=>!pred(l));
+  delete dv.link;if(keep.length)dv.links=keep;else delete dv.links;return all.length-keep.length;}
+function clearLinks(dv){return removeLinks(dv,()=>true);}
 // drop links whose target no longer exists (called after any deletion)
-function pruneLinks(){data.devices.forEach(dv=>{if(dv.link&&!linkTarget(dv))delete dv.link;});}
+function pruneLinks(){data.devices.forEach(dv=>{if(!dv.link&&!dv.links)return;
+  if(devLinks(dv).some(l=>!resolveLink(l)))removeLinks(dv,l=>!resolveLink(l));});}
 // A stored reference to a device: an id since schema v2. A bare number is a v1 index and is
 // still accepted, so a document that skipped migration degrades instead of crashing.
 function devByRef(v){if(v==null)return null;
@@ -652,6 +684,12 @@ function migrate(d){if(!d||typeof d!=='object')return d;
     devs.forEach(dv=>{if(!dv||!dv.swMap||typeof dv.swMap!=='object')return;
       Object.keys(dv.swMap).forEach(k=>{const id=toId(dv.swMap[k]);if(id==null)delete dv.swMap[k];else dv.swMap[k]=id;});});
   }
+  // one dev.link → a dev.links list (the old link was glued). No version step: it is idempotent,
+  // so it simply runs on every load.
+  (d.devices||[]).forEach(dv=>{if(!dv||!dv.link)return;const l=dv.link;delete dv.link;
+    if(!l.p||!l.n)return;
+    dv.links=Array.isArray(dv.links)?dv.links:[];
+    if(!dv.links.some(x=>x.p===l.p&&x.n===l.n))dv.links.unshift({p:l.p,n:l.n,glue:true});});
   ensureIds(d);
   d.v=SCHEMA_VERSION;
   return d;}
@@ -664,7 +702,8 @@ function connectivity(){
   const terminals=[],segments=[],byPlace={};
   data.devices.forEach(dv=>{if(dv.type==='light'&&false)return;
     const t={id:dv.id,kind:(dv.type==='board'?'board':dv.type==='junction'?'junction':'device'),
-      ref:dv.ref||dv.id,x:dv.x,y:dv.y,h:dv.h||0,level:dv.level,link:(dv.link||null)};
+      ref:dv.ref||dv.id,x:dv.x,y:dv.y,h:dv.h||0,level:dv.level,links:devLinks(dv)};
+    t.link=t.links[0]||null;                               // the primary link, for older readers
     terminals.push(t);
     const k=graphKeyOf(dv);(byPlace[k]=byPlace[k]||[]).push(t);});
   data.paths.forEach(p=>{const ns=p.nodes||[];
@@ -675,7 +714,7 @@ function connectivity(){
         circuit:sec.circuit||null});}});
   // which terminal sits on which node (by link first, then by coincidence)
   const at={};
-  terminals.forEach(t=>{if(t.link){const key=t.link.p+'/'+t.link.n;(at[key]=at[key]||[]).push(t.id);}});
+  terminals.forEach(t=>t.links.forEach(l=>{const key=l.p+'/'+l.n;(at[key]=at[key]||[]).push(t.id);}));
   data.paths.forEach(p=>{(p.nodes||[]).forEach(n=>{const k=graphKeyOf(n);
     (byPlace[k]||[]).forEach(t=>{const key=p.id+'/'+n.id;
       if(!(at[key]||[]).includes(t.id))(at[key]=at[key]||[]).push(t.id);});});});
@@ -686,7 +725,7 @@ function connectivity(){
 // available to the console and the tests.
 function validate(){const out=[];
   const add=(sev,code,msg,ref)=>out.push({sev,code,msg,ref});
-  data.devices.forEach(dv=>{if(dv.link&&!linkTarget(dv))
+  data.devices.forEach(dv=>{if(devLinks(dv).some(l=>!resolveLink(l)))
     add('warn','link.dangling','Készülék pályakötése érvénytelen: '+(dv.ref||dv.id),dv.id);});
   data.paths.forEach(p=>{if((p.nodes||[]).length<2)
     add('error','path.stub','Pálya kevesebb mint 2 csomóponttal: '+p.id,p.id);
@@ -711,6 +750,8 @@ function validateSummary(){const v=validate();
 window.SCHEMA_VERSION=SCHEMA_VERSION;window.ensureIds=ensureIds;window.migrate=migrate;
 window.byId=byId;window.pathById=pathById;window.nodeById=nodeById;window.linkTarget=linkTarget;
 window.linkLabel=linkLabel;window.setLink=setLink;window.pruneLinks=pruneLinks;
+window.devLinks=devLinks;window.linkTargets=linkTargets;window.addLink=addLink;window.removeLinks=removeLinks;
+window.clearLinks=clearLinks;window.hasLinkTo=hasLinkTo;
 window.connectivity=connectivity;window.validate=validate;window.validateSummary=validateSummary;
 window.devByRef=devByRef;window.devIdOf=devIdOf;
 //////////////////// state ////////////////////
@@ -878,7 +919,7 @@ function syncHeightUI(){const sel=$('drawH');if(sel&&!state.freeHeight)sel.value
   const fc=$('freeHeightChk');if(fc)fc.checked=!!state.freeHeight;
   const fm=$('freeMmBox');if(fm)fm.style.display=state.freeHeight?'flex':'none';
   const fv=$('freeMmVal');if(fv)fv.textContent=(state.freeMm||0)+' mm';}
-const data={v:SCHEMA_VERSION,seq:0,cables:[],paths:[],devices:[],notes:[],measures:[],openings:[],floors:[],objects:[],roofs:[],wallNotes:[],noteHide:{}};
+const data={v:SCHEMA_VERSION,seq:0,cables:[],paths:[],devices:[],notes:[],measures:[],openings:[],floors:[],objects:[],roofs:[],wallNotes:[],circuits:[],noteHide:{}};
 let draft=null,pathDraft=null,measureDraft=null,cursor=null,lock=null,wallStart=null,floorStart=null,roofStart=null,dragItem=null,bothPan=false,objGhost=null,buildGhost=null;const undo=[],redo=[];
 
 //////////////////// geometry helpers ////////////////////
@@ -1572,13 +1613,16 @@ function devSym(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),x=b[0],y=b[1];
   const dash=back?'stroke-dasharray="2.5 2"':'';
   const R=v=>+(v*k).toFixed(2);let sym='';
   const wrap=inner=>`<g opacity="${fillA}">${inner}</g>`;
-  if(d.type==='socket')sym=`<circle cx="${x}" cy="${y}" r="${R(6.5)}" fill="#fff" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(3)}" y1="${y}" x2="${x+R(3)}" y2="${y}" stroke="${col}" stroke-width="${R(1.5)}"/>`;
-  else if(d.type==='switch')sym=`<rect x="${x-R(6)}" y="${y-R(6)}" width="${R(12)}" height="${R(12)}" rx="${R(2)}" fill="#fff" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(2)}" y1="${y+R(3)}" x2="${x+R(3)}" y2="${y-R(3)}" stroke="${col}" stroke-width="${R(1.5)}"/>`;
-  else if(d.type==='light')sym=`<circle cx="${x}" cy="${y}" r="${R(6.5)}" fill="#fff8dc" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(4.5)}" y1="${y-R(4.5)}" x2="${x+R(4.5)}" y2="${y+R(4.5)}" stroke="${col}"/><line x1="${x+R(4.5)}" y1="${y-R(4.5)}" x2="${x-R(4.5)}" y2="${y+R(4.5)}" stroke="${col}"/>`;
+  // a tinted layer colours the symbol body (05j-circuits.js); untinted keeps the original fills
+  const tint=(typeof layerTintOf==='function')?layerTintOf(d):null,tf=f=>tint?tintMix(tint,0.45):f;
+  if(d.type==='socket')sym=`<circle cx="${x}" cy="${y}" r="${R(6.5)}" fill="${tf('#fff')}" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(3)}" y1="${y}" x2="${x+R(3)}" y2="${y}" stroke="${col}" stroke-width="${R(1.5)}"/>`;
+  else if(d.type==='switch')sym=`<rect x="${x-R(6)}" y="${y-R(6)}" width="${R(12)}" height="${R(12)}" rx="${R(2)}" fill="${tf('#fff')}" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(2)}" y1="${y+R(3)}" x2="${x+R(3)}" y2="${y-R(3)}" stroke="${col}" stroke-width="${R(1.5)}"/>`;
+  else if(d.type==='light')sym=`<circle cx="${x}" cy="${y}" r="${R(6.5)}" fill="${tf('#fff8dc')}" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(4.5)}" y1="${y-R(4.5)}" x2="${x+R(4.5)}" y2="${y+R(4.5)}" stroke="${col}"/><line x1="${x+R(4.5)}" y1="${y-R(4.5)}" x2="${x-R(4.5)}" y2="${y+R(4.5)}" stroke="${col}"/>`;
   else if(d.type==='board')sym=`<rect x="${x-R(8)}" y="${y-R(8)}" width="${R(16)}" height="${R(16)}" rx="${R(2)}" fill="#ffe9b0" stroke="${col}" stroke-width="${R(1.7)}"/><text x="${x}" y="${y+R(4)}" font-size="${R(10)}" text-anchor="middle" font-weight="700">T</text>`;
-  else if(d.type==='box')sym=`<circle cx="${x}" cy="${y}" r="${R(6)}" fill="${d.lv?'#e6f2ff':'#fff'}" stroke="${col}" stroke-width="${R(1.4)}" stroke-dasharray="${R(2.4)} ${R(1.8)}"/><circle cx="${x}" cy="${y}" r="${R(1.6)}" fill="${col}"/>`;
-  else sym=`<rect x="${x-R(5.5)}" y="${y-R(5.5)}" width="${R(11)}" height="${R(11)}" fill="#fff" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><circle cx="${x}" cy="${y}" r="${R(2)}" fill="${col}"/>`;
+  else if(d.type==='box')sym=`<circle cx="${x}" cy="${y}" r="${R(6)}" fill="${tf(d.lv?'#e6f2ff':'#fff')}" stroke="${col}" stroke-width="${R(1.4)}" stroke-dasharray="${R(2.4)} ${R(1.8)}"/><circle cx="${x}" cy="${y}" r="${R(1.6)}" fill="${col}"/>`;
+  else sym=`<rect x="${x-R(5.5)}" y="${y-R(5.5)}" width="${R(11)}" height="${R(11)}" fill="${tf('#fff')}" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><circle cx="${x}" cy="${y}" r="${R(2)}" fill="${col}"/>`;
   sym=wrap(sym);
+  if(typeof cktRingSvg==='function')sym=cktRingSvg(d,x,y,k,back)+sym;   // circuit end point ring, under the symbol
   if(d.kind||d.lv){const code=(d.kind&&DEVKIND[d.kind]?DEVKIND[d.kind].s:'LV');
     sym+=`<text x="${x}" y="${y+R(15)}" font-size="${R(8)}" text-anchor="middle" fill="#5a5348" paint-order="stroke" stroke="#fff" stroke-width="2.4" opacity="${fillA}">${esc(code)}</text>`;}
   if(state.showRefs&&d.ref)sym+=`<text x="${x+R(9)}" y="${y-R(8)}" font-size="${R(9.5)}" fill="#0a2b6b" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.6" opacity="${fillA}">${esc(d.ref)}</text>`;
@@ -1797,8 +1841,15 @@ function draw(){
       if(cursor){const a=dr.nodes[dr.nodes.length-1],A=[a.x,a.y,dz(a.level,a.h)],C=[cursor.x,cursor.y,dz(cursor.level,cursor.h)];
         s+=`<polyline points="${p2b([A,C])}" fill="none" stroke="#e8641c" stroke-width="3" stroke-dasharray="8 5"/>`
           +`<circle cx="${planToBase(...C)[0]}" cy="${planToBase(...C)[1]}" r="3.4" fill="#fff" stroke="#e8641c" stroke-width="2"/>`;}
-      for(const n of dr.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="3" fill="#fff" stroke="#6f757d" stroke-width="2"/>`;}}
+      // a node put down on a box is green: it becomes that box's link when the path is finished
+      for(const n of dr.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="3" fill="#fff" stroke="${n.on?'#1d9e75':'#6f757d'}" stroke-width="2"/>`;}}
+    // the box the path cursor has snapped onto (05k placeSnap)
+    if(cursor&&cursor.dev){const d=byId('devices',cursor.dev);if(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0));
+      s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${+(11*(state.devScale||0.72)).toFixed(2)}" fill="none" stroke="#1d9e75" stroke-width="2"/>`;}}
     if(state.mode==='device'&&cursor){const gt=($('devType')||{}).value||'socket';
+      // Shift: a dashed tie from the row it joins
+      if(cursor.row){const a=byId('devices',cursor.row);if(a){const A=planToBase(a.x,a.y,dz(a.level,a.h||0)),C=planToBase(cursor.x,cursor.y,dz(cursor.level,cursor.h));
+        s+=`<line x1="${A[0]}" y1="${A[1]}" x2="${C[0]}" y2="${C[1]}" stroke="#1d9e75" stroke-width="1.6" stroke-dasharray="3 2"/>`;}}
       s+=`<g opacity="0.7">`+devSym({type:gt,level:cursor.level,x:cursor.x,y:cursor.y,h:cursor.h,ref:''})+`</g>`;}
     // hovering height mini-display (toggle: state.hDisp 'hover'|'side'|'off')
     if(state.hDisp==='hover'&&cursor){const c=planToBase(cursor.x,cursor.y,dz(cursor.level,cursor.h));
@@ -2036,8 +2087,11 @@ function placeAtCursor(){if(!cursor)return;const it=placeItem(),base=it.mk();if(
   dev.ref=nextRef(dev.type);
   if(dev.type==='board'){dev.h=BOARD_DEFAULT_Z;if(typeof ensureBoardObject==='function'){data.devices.push(dev);ensureBoardObject(dev);draw();
     $('hud').textContent=it.n+' elhelyezve.';return data.devices.length-1;}}
-  data.devices.push(dev);draw();
+  data.devices.push(dev);
   $('hud').textContent=it.n+' elhelyezve — '+(dev.ref||'')+' · '+Math.round(dev.h)+' mm';
+  // Shift held in the Device tool: the cursor already sits in a row slot (05k) — join it if it is the same box
+  if(cursor.row&&typeof rowJoin==='function'&&(byId('devices',cursor.row)||{}).type===dev.type)rowJoin(dev,cursor.row);
+  draw();
   return data.devices.length-1;}
 function nextRef(type){let n=0;data.devices.forEach(d=>{if(d.type===type&&d.ref)n++;});return (REFPRE[type]||'X')+(n+1);}
 function autoNumber(){pushUndo();const c={};data.devices.forEach(d=>{c[d.type]=(c[d.type]||0)+1;d.ref=(REFPRE[d.type]||'X')+c[d.type];});
@@ -2539,7 +2593,10 @@ registerActions([
        ['Space','a kiválasztott doboz letétele rajzolás közben'],['←/→','paletta vagy variáns váltása'],
        ['↑/↓','rajzolási magasság'],['Alt vagy F','finomhangolt mozgatás (1 mm)'],
        ['Shift','tengelyre kényszerítés'],['Ctrl','a fal másik oldala / snap felülbírálás'],
-       ['Dupla kattintás','tulajdonságok'],['Esc','egy szintet kilép — soha nem dob el munkát'],
+       ['Dupla kattintás','tulajdonságok'],['K','áramkör végpontjainak kijelölése a rajzon (újra K = kész)'],
+       ['Shift + kattintás','Készülék: a legközelebbi azonos doboz sorába, 72 mm-re (csatolva)'],
+       ['Pálya csomópont dobozon','a doboz a csomóponthoz kötődik, amikor a pálya lezárul'],
+       ['Esc','egy szintet kilép — soha nem dob el munkát'],
        ['Ctrl+Z / Ctrl+Shift+Z','visszavonás / újra'],['Ctrl+K','parancskereső']]
        .map(r=>`<div><b style="display:inline-block;min-width:170px">${r[0]}</b> ${r[1]}</div>`).join('')
      +`</div>`,()=>{},'Bezár')}
@@ -2669,13 +2726,16 @@ const STAGES=[
     const lamps=data.devices.filter(d=>d.type==='light'&&!d.lampName).length;
     if(lamps)out.push({sev:'info',msg:lamps+' lámpa nincs meghatározva (adatlap).'});
     return out;}},
- {k:'paths', n:'Pályák',       icon:'〰', groups:['Véset'],
+ {k:'circuits',n:'Áramkörök',  icon:'⚡', groups:['Áramkör'],
+  hint:'Végpontok: dedikált vagy több pontos áramkörök, kismegszakító. K = kijelölés a rajzon.',
+  check:()=>cktChecks()},
+ {k:'paths', n:'Pályák',       icon:'〰', groups:['Véset','Pálya'],
   hint:'Kábelpályák, vésetek, áramkörök.',
   check:()=>{const out=[];
     if(!data.paths.length)out.push({sev:'info',msg:'Még nincs pálya rajzolva.'});
     const empty=data.paths.filter(p=>(p.sections||[]).every(s=>!s.circuit&&!(s.circuits||[]).length)).length;
     if(empty)out.push({sev:'info',msg:empty+' pálya üres (nincs benne áramkör).'});
-    const unlinked=data.devices.filter(d=>d.type!=='board'&&!d.link).length;
+    const unlinked=data.devices.filter(d=>d.type!=='board'&&!devLinks(d).length).length;
     if(unlinked)out.push({sev:'info',msg:unlinked+' készülék nincs pályához kötve.'});
     return out;}},
  {k:'doc',   n:'Dokumentáció', icon:'📄', groups:['Dokumentáció','Ellenőrzés','Projekt'],
@@ -2779,13 +2839,15 @@ function renderInspector(){
                 :`<input id="${f.id}" type="number" step="${f.step}" value="${f.val}">`)+`</label>`).join('')+`</div>`:'')
     +(sel&&sel.t==='floors'&&data.floors[sel.i]
         ?roomBreakdownHtml({rm:data.floors[sel.i],src:'F',i:sel.i,level:data.floors[sel.i].level}):'')
+    +cktInspectorHtml(sel,st.k)+linkInspectorHtml(sel)
     +(acts.length?`<div class="insActs">`+acts.map(a=>
         `<button class="insA" data-id="${a.id}" title="${esc(a.hint||'')}">${a.icon||'•'} ${esc(a.label)}</button>`).join('')+`</div>`
       :`<div class="insSub" style="padding:6px 10px">${esc(t('insp.pick','Válassz elemet a rajzon.'))}</div>`);
   fields.forEach(f=>{const el=$(f.id);if(!el)return;
     el.onchange=()=>{pushUndo();f.set(f.text?el.value:(+el.value||0));draw();};
     el.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el.blur();}};});
-  insp.querySelectorAll('.insA').forEach(b=>b.onclick=()=>runAction(b.dataset.id));}
+  insp.querySelectorAll('.insA').forEach(b=>b.onclick=()=>runAction(b.dataset.id));
+  cktBindInspector(insp);}
 
 registerActions([
  {id:'shell.toggle',label:'Munkafolyamat-sáv be/ki',icon:'▤',group:'Nézet',alias:'shell rail workflow inspector',
@@ -3313,7 +3375,7 @@ function deviceHostWall(d){if(d.side==null)return null;
     // which face: the device's actual offset wins; d.side only breaks a tie on the centreline
     const off=(d.x-px)*wi.perp[0]+(d.y-py)*wi.perp[1];
     const s=Math.abs(off)>1?Math.sign(off):(d.side?1:-1);
-    best={wi,dist,px,py,nx:wi.perp[0]*s,ny:wi.perp[1]*s};});
+    best={r,wi,dist,px,py,nx:wi.perp[0]*s,ny:wi.perp[1]*s};});
   return best;}
 // the plan point that decides the room
 function deviceRoomPoint(d){const h=deviceHostWall(d);if(!h)return [d.x,d.y];
@@ -3450,7 +3512,7 @@ window.applyRoomRenumber=applyRoomRenumber;window.roomRenumberDialog=roomRenumbe
 // — which is why the span, not the segment, is what gets named, sized and labelled.
 // See docs/wiring_pipeline.md. Derived on demand, never stored.
 //
-// A node is a terminal node when a device is LINKED to it (dev.link). Drawings made before the
+// A node is a terminal node when a device is LINKED to it (dev.links). Drawings made before the
 // ghost route tool have no links, so a device within SPAN_JOIN_TOL of a node still counts — that
 // fallback is reported by how:'near' so validate() can ask for it to be confirmed.
 const SPAN_JOIN_TOL=250;          // mm, 3D; the same tolerance the v1 routing graph merges with
@@ -3464,7 +3526,7 @@ function terminalAtNode(pa,node){if(!pa||!node)return null;
   const better=(dv,how,dist)=>!best||(how==='link'&&best.how!=='link')||
     (how===best.how&&(rank(dv)<rank(best.dev)||(rank(dv)===rank(best.dev)&&dist<best.dist)));
   data.devices.forEach(dv=>{if(!dv)return;
-    if(dv.link&&dv.link.p===pa.id&&dv.link.n===node.id){if(better(dv,'link',0))best={dev:dv,how:'link',dist:0};return;}
+    if(hasLinkTo(dv,pa.id,node.id)){if(better(dv,'link',0))best={dev:dv,how:'link',dist:0};return;}
     if(dv.level!==node.level)return;
     let dist;
     if(dv.type==='board'&&typeof pointInBoard==='function')dist=pointInBoard(dv,node.x,node.y,120)?0:Infinity;
@@ -3512,6 +3574,579 @@ function spanOfSection(pathId,si){return allSpans().find(s=>s.path===pathId&&s.s
 // test hooks (consts are not global properties)
 window.terminalAtNode=terminalAtNode;window.routeSpans=routeSpans;window.allSpans=allSpans;
 window.spanOfSection=spanOfSection;window.SPAN_JOIN_TOL=SPAN_JOIN_TOL;
+
+// The first slice of the circuit record planned for schema v3 (docs/wiring_pipeline.md §4):
+// a circuit knows its NAME, COLOUR, whether it is DEDIKÁLT, its kismegszakító and its
+// END POINTS — the devices it has to reach. Runs (which segments a cable takes) come later.
+//
+//   data.circuits = [{id:'A12', ref:'A1', name, col:'#1d9e75', dedicated, mcb, members:['D7',…]}]
+//
+// - dedikált: exactly one end point, wired straight to the Elosztó.
+// - több pontos: several end points that first have to reach each other inside the room.
+// - A device is the end point of at most ONE circuit. Elosztó and kötődoboz are never end points:
+//   wires pass through or are cut there, they don't end there.
+// - Members are device ids, not indices; a deleted device simply stops resolving.
+// - Circuits live on no layer. The same end points stay valid whichever layer's routing
+//   proposal they are later wired along.
+//
+// Nothing here is drawn unless a circuit exists, so a document without circuits renders
+// byte-identically to one made before this module.
+
+// ---- the record ----
+function cktList(){if(!Array.isArray(data.circuits))data.circuits=[];return data.circuits;}
+function cktById(id){return id?byId('circuits',id):null;}
+function cktMembers(c){return ((c&&c.members)||[]).map(id=>byId('devices',id)).filter(Boolean);}
+function cktOfDevice(d){if(!d||!d.id||!Array.isArray(data.circuits))return null;
+  for(const c of data.circuits)if(c&&(c.members||[]).indexOf(d.id)>=0)return c;return null;}
+function cktCanJoin(d){return !!d&&d.type!=='board'&&d.type!=='junction';}
+var CKT_COLS=['#1d9e75','#d85a30','#7f77dd','#d4537e','#2f79c9','#b8901f','#16a3b8','#8e44ad','#5d8a1f','#c0392b'];
+function cktColor(c){return (c&&/^#[0-9a-f]{6}$/i.test(c.col||''))?c.col:'#888888';}
+function cktNextRef(){let n=0;cktList().forEach(c=>{const m=/^A(\d+)$/.exec((c&&c.ref)||'');if(m)n=Math.max(n,+m[1]);});return 'A'+(n+1);}
+function cktNextCol(){const used=cktList().map(c=>c.col);
+  return CKT_COLS.find(x=>used.indexOf(x)<0)||CKT_COLS[cktList().length%CKT_COLS.length];}
+function cktLabel(c){return c?[c.ref,c.name].filter(Boolean).join(' '):'';}
+// Create a circuit (with an id) and return it. The caller pushes undo first.
+function cktCreate(o){o=o||{};
+  const c={ref:cktNextRef(),name:o.name||'Új áramkör',col:o.col||cktNextCol(),dedicated:!!o.dedicated,
+    mcb:o.mcb||null,members:[]};
+  cktList().push(c);ensureIds(data);
+  (o.members||[]).forEach(id=>cktAssign(c,byId('devices',id)));
+  return c;}
+// make d an end point of c, taking it out of any other circuit; a dedikált circuit keeps only d
+function cktAssign(c,d){if(!c||!cktCanJoin(d))return false;if(!d.id)ensureIds(data);
+  const other=cktOfDevice(d);if(other===c)return true;
+  if(other)other.members=other.members.filter(x=>x!==d.id);
+  if(c.dedicated)c.members=[d.id];else (c.members=c.members||[]).push(d.id);
+  return true;}
+function cktRelease(d){const c=cktOfDevice(d);if(!c)return false;c.members=c.members.filter(x=>x!==d.id);return true;}
+function cktSetDedicated(c,on){c.dedicated=!!on;
+  if(c.dedicated&&(c.members||[]).length>1)c.members=c.members.slice(0,1);}
+// where a circuit stands on its way to the Behúzás
+function cktStatus(c){const n=cktMembers(c).length;
+  if(!n)return {k:'empty',t:'nincs végpont'};
+  if(c.dedicated)return n===1?{k:'ready',t:'dedikált · kész a Behúzásra'}:{k:'bad',t:'dedikált, de '+n+' végpont'};
+  return n===1?{k:'open',t:'1 végpont · bővíthető'}:{k:'multi',t:n+' végpont · szobán belül összekötendő'};}
+
+// ---- kismegszakító ----
+// Written the way the Kalkulátor and the Inventory write it: `1C 13A` (poles, characteristic,
+// rating), and `1P-N C16A` for a pole plus switched neutral. Typed forms such as `C13A1P`,
+// `c16 3p` or `B10` are read too. The DIN rail width follows from the poles: one module per pole,
+// plus one for a switched N — the Kalkulátor counts `1P-N` as 2 modules and `3P-N` as 4.
+function mcbParse(s){s=String(s||'').toUpperCase().replace(/\s+/g,' ').trim();
+  if(!s)return {empty:true};
+  const withN=/(\d|P)\s*[-+]\s*N\b/.test(s);
+  const ca=/([BCDKZ])\s*(\d{1,3})\s*A?(?![0-9])/.exec(s.replace(/(\d|P)\s*[-+]\s*N\b/,'$1'));
+  if(!ca)return {err:'Hiányzik a karakterisztika és a névleges áram (pl. 1C 13A).'};
+  let poles=null;const pm=/(\d)\s*P\b/.exec(s);
+  if(pm)poles=+pm[1];else{const lead=/^(\d)\s*[BCDKZ]/.exec(s);poles=lead?+lead[1]:1;}
+  const amps=+ca[2];
+  if(poles<1||poles>4)return {err:'A pólusszám 1–4 lehet.'};
+  if(amps<1||amps>125)return {err:'A névleges áram 1–125 A lehet.'};
+  return {curve:ca[1],amps,poles,n:withN};}
+function mcbText(m){if(!m||!m.curve)return '';
+  return m.n?`${m.poles}P-N ${m.curve}${m.amps}A`:`${m.poles}${m.curve} ${m.amps}A`;}
+function mcbModules(m){return (m&&m.curve)?m.poles+(m.n?1:0):0;}
+
+// ---- plan symbols ----
+// the ring around an end point: solid = dedikált, dashed = több pontos
+function cktRingSvg(d,x,y,k,back){const c=cktOfDevice(d);if(!c)return '';
+  const R=v=>+(v*k).toFixed(2),col=cktColor(c);
+  const dash=c.dedicated?'':` stroke-dasharray="${R(3.2)} ${R(2.4)}"`;
+  const hot=(cktPick===c.id);
+  return (hot?`<circle cx="${x}" cy="${y}" r="${R(12.5)}" fill="${col}" fill-opacity="0.16"/>`:'')
+    +`<circle cx="${x}" cy="${y}" r="${R(10.5)}" fill="none" stroke="${col}" stroke-width="${R(hot?2.8:2.2)}"${dash}${back?' opacity="0.6"':''}/>`;}
+// A layer may tint the body of every device on it, so two layouts (old and new) shown together
+// stay apart. The tint is the layer colour washed towards white, keeping the symbol's lines legible.
+function layerTintOf(d){const L=layerById((d&&d.layer)||'L0');
+  return (L&&/^#[0-9a-f]{6}$/i.test(L.tint||''))?L.tint:null;}
+function tintMix(hex,a){const n=parseInt(hex.slice(1),16),m=v=>Math.round(255-(255-v)*a);
+  return '#'+[m(n>>16&255),m(n>>8&255),m(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('');}
+
+// The shell caches its stage checks per scene version. Renaming a circuit, adding an empty one or
+// changing its breaker leaves the scene as it was, so the Áramkörök checks are dropped by hand.
+function cktRedraw(){if(typeof invalidateShell==='function')invalidateShell();draw();}
+
+// ---- pick mode: click devices on the plan to make them end points of one circuit ----
+// var, not let: devSym reads cktPick, and a draw() before this line runs must not hit a TDZ
+var cktPick=null,cktLast=null;
+function cktPickHint(){const c=cktById(cktPick);if(!c)return '';
+  return `⚡ ${cktLabel(c)} — kattints a készülékekre (újra kattintva kiveszi) · K vagy Esc = kész`;}
+function cktPickStart(id){const c=cktById(id);if(!c)return false;
+  if(state.mode!=='select')setMode('select');
+  cktPick=c.id;cktLast=c.id;selected=null;if(typeof clearMulti==='function')clearMulti();
+  const mh=$('modeHint');if(mh)mh.textContent=cktPickHint();
+  $('hud').textContent=cktPickHint()+' · '+cktStatus(c).t;cktRedraw();return true;}
+function cktPickStop(){if(!cktPick)return false;cktPick=null;
+  const mh=$('modeHint');if(mh&&typeof HINTS!=='undefined')mh.textContent=HINTS[state.mode]||'';
+  cktRedraw();return true;}
+function cktPickToggle(di){const c=cktById(cktPick),d=data.devices[di];if(!c||!d)return;
+  if(!cktCanJoin(d)){$('hud').textContent='Elosztó és kötődoboz nem lehet végpont — rajtuk a vezeték áthalad.';return;}
+  pushUndo(['circuits']);
+  const mine=cktOfDevice(d)===c,was=cktOfDevice(d);
+  if(mine)cktRelease(d);else cktAssign(c,d);
+  $('hud').textContent=(d.ref||d.id)+(mine?' kivéve: ':(was?' áthelyezve ide: ':' hozzáadva: '))+cktLabel(c)+' · '+cktStatus(c).t;
+  cktRedraw();}
+// the circuit a command acts on: the one being picked, else the selected device's
+function cktCurrent(){if(cktPick)return cktById(cktPick);
+  const o=(typeof selected!=='undefined'&&selected&&selected.t==='devices')?data.devices[selected.i]:null;
+  return cktOfDevice(o);}
+function cktSelDevices(){const hs=(typeof selList==='function')?selList():[];
+  return hs.filter(h=>h&&h.t==='devices').map(h=>data.devices[h.i]).filter(cktCanJoin);}
+
+// ---- edit dialog ----
+function cktEditDialog(c){if(!c)return;
+  const a=v=>esc(String(v==null?'':v)).replace(/"/g,'&quot;');
+  const refs=cktMembers(c).map(d=>d.ref||d.id);
+  openModal('Áramkör — '+esc(cktLabel(c)),
+    `<div class="mrow"><label style="width:92px">Jelölés</label><input id="ckRef" value="${a(c.ref)}" style="width:70px">`
+   +` <input id="ckCol" type="color" value="${cktColor(c)}" style="width:40px;height:24px" title="Szín"></div>`
+   +`<div class="mrow"><label style="width:92px">Név</label><input id="ckName" value="${a(c.name)}" style="flex:1"></div>`
+   +`<div class="mrow"><label><input type="checkbox" id="ckDed" ${c.dedicated?'checked':''}> dedikált — egyetlen végpont, közvetlenül az Elosztóra</label></div>`
+   +`<div class="mrow"><label style="width:92px">Kismegszakító</label><input id="ckMcb" value="${a(mcbText(c.mcb))}" placeholder="1C 13A" style="width:110px">`
+   +` <span id="ckMcbOut" style="font-size:11px;color:#777"></span></div>`
+   +`<div class="mrow" style="font-size:11px;color:#777">Írható így is: C13A1P · 1P-N C16A · 3C 20A. A pólusszámból jön, hány DIN modult foglal.</div>`
+   +`<div class="mrow" style="font-size:11px;color:#555">Végpontok (${refs.length}): ${esc(refs.join(' · ')||'—')}</div>`,
+    ()=>{const m=mcbParse($('ckMcb').value);if(m.err){$('ckMcbOut').textContent='⚠ '+m.err;$('ckMcbOut').style.color='#c0392b';return false;}
+      pushUndo(['circuits']);
+      c.ref=$('ckRef').value.trim()||c.ref;c.name=$('ckName').value.trim();c.col=$('ckCol').value;
+      c.mcb=m.empty?null:{curve:m.curve,amps:m.amps,poles:m.poles,n:m.n};
+      cktSetDedicated(c,$('ckDed').checked);cktRedraw();},'Mentés');
+  const out=()=>{const m=mcbParse($('ckMcb').value),o=$('ckMcbOut');o.style.color='#777';
+    o.textContent=m.empty?'nincs megadva':m.err?'⚠ '+m.err:'→ '+mcbText(m)+' · '+mcbModules(m)+' modul';
+    if(m.err)o.style.color='#c0392b';};
+  $('ckMcb').oninput=out;out();}
+
+// ---- export: the circuit list as data, for the Inventory and the Elosztó tool ----
+function cktExportObj(){
+  const byMcb={};let modules=0;
+  const list=cktList().map(c=>{const m=c.mcb&&c.mcb.curve?c.mcb:null,mt=mcbText(m);
+    if(m){byMcb[mt]=(byMcb[mt]||0)+1;modules+=mcbModules(m);}
+    return {id:c.id,ref:c.ref||'',name:c.name||'',color:cktColor(c),dedicated:!!c.dedicated,status:cktStatus(c).k,
+      mcb:m?{text:mt,curve:m.curve,amps:m.amps,poles:m.poles,n:!!m.n,modules:mcbModules(m)}:null,
+      members:cktMembers(c).map(d=>{const r=(typeof roomOfDevice==='function')?roomOfDevice(d):null;
+        return {id:d.id,ref:d.ref||'',type:d.type,typeLabel:(typeof devTypeLabel==='function')?devTypeLabel(d):d.type,
+          kind:d.kind||'',level:d.level,layer:d.layer||'L0',layerName:(layerById(d.layer||'L0')||{}).name||'',
+          room:r?{num:r.rm.num||'',name:r.rm.name||''}:null};})};});
+  return {format:'vrg-circuits',version:1,project:(typeof B!=='undefined'&&B&&B.name)||'',
+    exported:new Date().toISOString(),totals:{circuits:list.length,modules,byMcb},circuits:list};}
+function cktExport(){const o=cktExportObj(),nm=(o.project||'terv').replace(/[^\w\-]+/g,'_');
+  download(nm+'_aramkorok.json',JSON.stringify(o,null,2));
+  $('hud').textContent='Áramkörök exportálva: '+o.circuits.length+' kör, '+o.totals.modules+' modul.';}
+
+// ---- inspector ----
+function cktSwatch(c){return `<span class="ckSw${c.dedicated?'':' multi'}" style="border-color:${cktColor(c)};background:${c.dedicated?cktColor(c):'transparent'}"></span>`;}
+// the line under a selected device, in any stage
+function cktDeviceHtml(d){if(!d||!cktCanJoin(d))return '';const c=cktOfDevice(d);
+  return `<div class="insCkt"><div class="insRoomH"><b>Áramkör</b>`
+    +(c?`<span>${esc(mcbText(c.mcb)||'—')}</span></div><div class="ckLine">${cktSwatch(c)}${esc(cktLabel(c))}</div>`
+       :`<span></span></div><div class="insSub">nincs áramkörben — K: végpont kijelölés</div>`)+`</div>`;}
+// the circuit list, in the Áramkörök stage
+function cktListHtml(){const L=cktList();let mods=0;L.forEach(c=>mods+=mcbModules(c.mcb));
+  const head=`<div class="insRoomH"><b>Áramkörök</b><span>${L.length} db${mods?' · '+mods+' modul':''}</span></div>`;
+  if(!L.length)return `<div class="insCkt">${head}<div class="insSub">Még nincs áramkör. K vagy „Új áramkör”, majd kattints a végpontokra.</div></div>`;
+  return `<div class="insCkt">${head}`+L.map(c=>{const st=cktStatus(c);
+    return `<div class="ckCard${cktPick===c.id?' on':''}" data-ck="${esc(c.id)}">`
+      +`<div class="ckLine">${cktSwatch(c)}<b>${esc(c.ref||'')}</b>&nbsp;${esc(c.name||'')}<span style="flex:1"></span>`
+      +`<button class="ckEd" data-cke="${esc(c.id)}" title="Szerkesztés">✎</button></div>`
+      +`<div class="insSub">${esc(mcbText(c.mcb)||'nincs kismegszakító')} · <span class="ckSt ${st.k}">${esc(st.t)}</span></div></div>`;}).join('')
+    +`</div>`;}
+function cktInspectorHtml(sel,stageKey){let s='';
+  if(sel&&sel.t==='devices')s+=cktDeviceHtml(data.devices[sel.i]);
+  if(stageKey==='circuits')s+=cktListHtml();
+  return s;}
+function cktBindInspector(root){if(!root)return;
+  root.querySelectorAll('.ckCard[data-ck]').forEach(el=>el.onclick=e=>{
+    if(e.target&&e.target.dataset&&e.target.dataset.cke)return;
+    const id=el.dataset.ck;if(cktPick===id)cktPickStop();else cktPickStart(id);});
+  root.querySelectorAll('.ckEd[data-cke]').forEach(b=>b.onclick=e=>{e.stopPropagation();cktEditDialog(cktById(b.dataset.cke));});}
+
+// ---- stage check ----
+function cktChecks(){const out=[],L=cktList();
+  const cand=data.devices.filter(d=>cktCanJoin(d)&&!cktOfDevice(d)).length;
+  if(!L.length){out.push({sev:'info',msg:'Még nincs áramkör — K: végpontok kijelölése.'});return out;}
+  const empty=L.filter(c=>!cktMembers(c).length).length;
+  if(empty)out.push({sev:'warn',msg:empty+' áramkörnek nincs végpontja.'});
+  const bad=L.filter(c=>cktStatus(c).k==='bad').length;
+  if(bad)out.push({sev:'warn',msg:bad+' dedikált áramkörnek több végpontja van.'});
+  const noMcb=L.filter(c=>!(c.mcb&&c.mcb.curve)).length;
+  if(noMcb)out.push({sev:'info',msg:noMcb+' áramkörnél nincs megadva kismegszakító.'});
+  if(cand)out.push({sev:'info',msg:cand+' készülék még nincs áramkörben.'});
+  return out;}
+
+// ---- actions ----
+registerActions([
+ {id:'circuit.pick',alias:'aramkor vegpont endpoint circuit pick kor',label:'Végpontok kijelölése',icon:'⚡',group:'Áramkör',keys:['k'],
+  hint:'Kattints a készülékekre a rajzon: az aktív áramkör végpontjai lesznek. K vagy Esc = kész.',
+  when:c=>!c.inEditor,
+  run:()=>{if(cktPick){cktPickStop();return;}
+    let c=cktCurrent()||cktById(cktLast)||cktList()[cktList().length-1];
+    if(!c){pushUndo(['circuits']);c=cktCreate();}
+    cktPickStart(c.id);}},
+ {id:'circuit.new',alias:'uj aramkor new circuit',label:'Új áramkör',icon:'＋',group:'Áramkör',
+  hint:'Új áramkör, és rögtön a végpontjai kijelölése.',
+  when:c=>!c.inEditor,run:()=>{pushUndo(['circuits']);const c=cktCreate();cktPickStart(c.id);}},
+ {id:'circuit.fromSel',alias:'kijeloltekbol aramkor selection circuit',label:'Kijelöltekből áramkör',icon:'⚡',group:'Áramkör',
+  need:'Jelölj ki egy vagy több készüléket (Ctrl+kattintás).',
+  hint:'A kijelölt készülékek egy új áramkör végpontjai lesznek; egy készülék esetén dedikált.',
+  when:c=>!c.inEditor&&cktSelDevices().length>0,
+  run:()=>{const ds=cktSelDevices();pushUndo(['circuits']);
+    const c=cktCreate({dedicated:ds.length===1});ds.forEach(d=>cktAssign(c,d));cktLast=c.id;
+    $('hud').textContent=cktLabel(c)+' · '+cktStatus(c).t;cktRedraw();cktEditDialog(c);}},
+ {id:'circuit.edit',alias:'aramkor szerkesztes kismegszakito mcb',label:'Áramkör szerkesztése…',icon:'✎',group:'Áramkör',
+  need:'Válassz egy áramkörbe tartozó készüléket, vagy lépj végpont kijelölésbe.',
+  hint:'Név, szín, dedikált, kismegszakító (pl. 1C 13A).',
+  when:c=>!c.inEditor&&!!cktCurrent(),run:()=>cktEditDialog(cktCurrent())},
+ {id:'circuit.release',alias:'kivetel aramkorbol remove from circuit',label:'Kivétel az áramkörből',icon:'⊖',group:'Áramkör',
+  need:'Válassz egy áramkörbe tartozó készüléket.',
+  when:c=>!c.inEditor&&c.selType==='devices'&&!!cktOfDevice(data.devices[c.sel.i]),
+  run:c=>{pushUndo(['circuits']);cktRelease(data.devices[c.sel.i]);cktRedraw();}},
+ {id:'circuit.remove',alias:'aramkor torlese delete circuit',label:'Áramkör törlése',icon:'🗑',group:'Áramkör',
+  need:'Válassz egy áramkört (végpont kijelölés vagy egy tagja).',
+  hint:'Csak a kört törli; a készülékek maradnak.',
+  when:c=>!c.inEditor&&!!cktCurrent(),
+  run:()=>{const c=cktCurrent();if(!c||!confirm('Törlöd: '+cktLabel(c)+'? A készülékek megmaradnak.'))return;
+    pushUndo(['circuits']);data.circuits=cktList().filter(x=>x!==c);if(cktPick===c.id)cktPickStop();cktRedraw();}},
+ {id:'circuit.export',alias:'aramkorok export json inventory',label:'Áramkörök exportálása',icon:'⬇',group:'Áramkör',
+  hint:'JSON: áramkörök, végpontok helyiséggel, kismegszakító és DIN modulszám — az Inventory és az Elosztó eszköz is olvassa.',
+  run:()=>cktExport()}
+]);
+
+// test hooks
+window.cktList=cktList;window.cktById=cktById;window.cktMembers=cktMembers;window.cktOfDevice=cktOfDevice;
+window.cktCreate=cktCreate;window.cktAssign=cktAssign;window.cktRelease=cktRelease;window.cktSetDedicated=cktSetDedicated;
+window.cktStatus=cktStatus;window.mcbParse=mcbParse;window.mcbText=mcbText;window.mcbModules=mcbModules;
+window.cktPickStart=cktPickStart;window.cktPickStop=cktPickStop;window.cktPickToggle=cktPickToggle;
+window.cktExportObj=cktExportObj;window.cktRingSvg=cktRingSvg;window.layerTintOf=layerTintOf;window.tintMix=tintMix;
+window.cktIsPicking=()=>cktPick;window.cktChecks=cktChecks;
+
+// What the Wall View does one box at a time (⛓ Doboz csatolása szomszédhoz), done for a whole
+// room — or every room — in one click, with a preview first.
+//
+// SOROLÁS (auto-clip): boxes placed next to each other on one wall face become one clip group at
+// the standard pitch (DEV_CLIP_SPACING, 72 mm), exactly as the manual clip would leave them.
+// A row is: same room, same wall, same face, same layer, same height (±30 mm), same type unless
+// asked otherwise, neighbours no further apart than the gap setting. A row keeps its centre;
+// the boxes close up around it in their original order.
+//
+// Path nodes follow the boxes they sit on. A node LINKED to a box moves with it; an unlinked node
+// within AUTOCLIP_NODE_TOL of a box in plan moves too, because in practice a route is drawn with a
+// node on each box it touches (typically at ceiling height, straight above it). Nodes move in plan
+// only — their height is never changed, so a ceiling route stays at the ceiling.
+//
+// PÁLYA-KÖTÉS (auto-link) is further down: route nodes sitting on a box become links of that box.
+var AUTOCLIP_GAP=180,AUTOCLIP_DH=30,AUTOCLIP_NODE_TOL=25,AUTOCLIP_MAX=5;
+function autoClipEligible(d){return !!d&&(d.type==='socket'||d.type==='switch'||d.type==='box')&&d.side!=null;}
+
+// {rows:[{entry, room, type, idx:[device index…], moves:[{i,from,to,dist}], nodes:[{p,n,dx,dy}],
+//         gid, kind:'new'|'extend'|'repitch', maxMove}], ok, warn:[…]}
+function planAutoClip(entries,opt){opt=opt||{};
+  const gap=+opt.gap>0?+opt.gap:AUTOCLIP_GAP,same=opt.sameType!==false,withNodes=opt.nodes!==false;
+  const rows=[],warn=[];let ok=0;
+  (entries||[]).forEach(entry=>{if(!entry)return;
+    // bucket the room's wall boxes by wall + face + layer (+ type)
+    const buckets={};
+    roomMembers(entry).forEach(i=>{const d=data.devices[i];if(!autoClipEligible(d))return;
+      const hw=deviceHostWall(d);if(!hw||!hw.r)return;
+      const r=hw.r,wid=r.id||[r.x0,r.y0,r.x1,r.y1].join(',');
+      const face=(hw.nx+hw.ny)>0?1:-1,u=hw.wi.horiz?hw.px:hw.py;
+      const key=[wid,face,d.layer||'L0',same?d.type:'*'].join('|');
+      (buckets[key]=buckets[key]||[]).push({i,d,u,hw,h:d.h||0});});
+    Object.values(buckets).forEach(list=>{
+      // height bands first (a switch row above a socket row is two rows), then gaps along the wall
+      list.sort((a,b)=>a.h-b.h);const bands=[];
+      list.forEach(it=>{const b=bands[bands.length-1];if(b&&it.h-b[b.length-1].h<=AUTOCLIP_DH)b.push(it);else bands.push([it]);});
+      bands.forEach(band=>{band.sort((a,b)=>a.u-b.u);let cur=[];
+        const flush=()=>{if(cur.length<2)return;
+          if(cur.length>AUTOCLIP_MAX)warn.push(roomLabel(entry.rm)+': '+cur.length+' doboz egy sorban — '+AUTOCLIP_MAX+'-ös csoportokra bontva.');
+          for(let s=0;s<cur.length;s+=AUTOCLIP_MAX){const part=cur.slice(s,s+AUTOCLIP_MAX);
+            if(part.length<2)continue;
+            const row=planClipRow(entry,part,withNodes);if(row)rows.push(row);else ok++;}};
+        band.forEach(it=>{if(cur.length&&it.u-cur[cur.length-1].u>gap){flush();cur=[];}cur.push(it);});
+        flush();});});});
+  return {rows,ok,warn};}
+
+// one row → where each box goes; null when the row is already a clean clip group
+function planClipRow(entry,items,withNodes){
+  const ref=items.slice().sort((a,b)=>idNum(a.d.id)-idNum(b.d.id))[0];     // the box placed first sets height and face offset
+  const ox=ref.d.x-ref.hw.px,oy=ref.d.y-ref.hw.py,horiz=ref.hw.wi.horiz;
+  const uc=items.reduce((s,it)=>s+it.u,0)/items.length,n=items.length;
+  const moves=items.map((it,k)=>{const u=uc+(k-(n-1)/2)*DEV_CLIP_SPACING;
+    const to={x:Math.round(horiz?u:ref.hw.px+ox),y:Math.round(horiz?ref.hw.py+oy:u),h:ref.h};
+    const from={x:it.d.x,y:it.d.y,h:it.h};
+    return {i:it.i,from,to,dist:Math.hypot(to.x-from.x,to.y-from.y,to.h-from.h)};});
+  const maxMove=Math.max(...moves.map(m=>m.dist));
+  // clip groups already present among these boxes
+  const gids=[...new Set(items.map(it=>it.d.clip).filter(Boolean))];
+  const groupSize=g=>data.devices.filter(d=>d.clip===g).length;
+  const whole=gids.length===1&&groupSize(gids[0])===n&&items.every(it=>it.d.clip===gids[0]);
+  if(whole&&maxMove<1)return null;
+  const kind=whole?'repitch':gids.length?'extend':'new';
+  // path nodes sitting on a box that moves
+  const nodes=[];
+  if(withNodes){const seen=new Set();
+    moves.forEach(m=>{if(m.dist<0.5)return;const d=data.devices[m.i],dx=m.to.x-m.from.x,dy=m.to.y-m.from.y;
+      linkTargets(d).forEach(lk=>{const key=lk.path.id+'/'+lk.node.id;if(!seen.has(key)){seen.add(key);nodes.push({p:lk.path.id,n:lk.node.id,dx,dy});}});
+      data.paths.forEach(pa=>(pa.nodes||[]).forEach(nd=>{if(nd.level!==d.level)return;
+        if(Math.hypot(nd.x-m.from.x,nd.y-m.from.y)>AUTOCLIP_NODE_TOL)return;
+        const key=pa.id+'/'+nd.id;if(seen.has(key))return;seen.add(key);nodes.push({p:pa.id,n:nd.id,dx,dy});}));});}
+  return {entry,room:roomLabel(entry.rm),type:items[0].d.type,idx:items.map(it=>it.i),moves,nodes,
+    gid:(whole||gids.length===1&&items.filter(it=>it.d.clip===gids[0]).length===groupSize(gids[0]))?gids[0]:null,
+    kind,maxMove};}
+
+// Apply the chosen rows as one undo step; returns how many rows were clipped.
+function applyAutoClip(rows){rows=(rows||[]).filter(Boolean);if(!rows.length)return 0;
+  pushUndo(['devices','paths']);ensureIds(data);
+  const stamp=Date.now().toString(36);
+  rows.forEach((row,k)=>{const gid=row.gid||('clip'+stamp+'_'+k);
+    row.moves.forEach(m=>{const d=data.devices[m.i];if(!d)return;d.x=m.to.x;d.y=m.to.y;d.h=m.to.h;d.clip=gid;});
+    row.nodes.forEach(q=>{const nd=nodeById(q.p,q.n);if(nd){nd.x+=q.dx;nd.y+=q.dy;}});});   // plan only, never the height
+  // a group left with a single box (its partners joined another row) is dissolved, as wvUnclip would
+  const count={};data.devices.forEach(d=>{if(d.clip)count[d.clip]=(count[d.clip]||0)+1;});
+  data.devices.forEach(d=>{if(d.clip&&count[d.clip]<2)delete d.clip;});
+  draw();return rows.length;}
+
+// ---- dialog: preview, tick the rows, apply ----
+const AUTOCLIP_KIND={new:'új csoport',extend:'bővítés',repitch:'72 mm-re igazítás'};
+function autoClipDialog(entries,title){entries=(entries||[]).filter(Boolean);if(!entries.length)return;
+  let plan=null;
+  openModal(esc(title||('Sorolás — '+roomLabel(entries[0].rm))),
+    `<div class="mrow" style="font-size:12px">Szomszéd, ha a középpontok távolsága ≤ <input id="acGap" type="number" step="10" min="72" value="${state.autoClipGap||AUTOCLIP_GAP}" style="width:66px"> mm</div>`
+   +`<div class="mrow" style="font-size:12px"><label><input type="checkbox" id="acSame" checked> csak azonos típus (aljzat az aljzattal)</label></div>`
+   +`<div class="mrow" style="font-size:12px"><label><input type="checkbox" id="acNodes" checked> a dobozon ülő pálya-csomópontok is mozognak (magasságuk marad)</label></div>`
+   +`<div id="acPrev" style="max-height:320px;overflow:auto;font-size:12px;border-top:1px solid #eee;padding-top:4px"></div>`,
+    ()=>{const pick=[...document.querySelectorAll('#acPrev input[data-row]')].filter(c=>c.checked).map(c=>plan.rows[+c.dataset.row]);
+      if(!pick.length)return false;
+      state.autoClipGap=+$('acGap').value||AUTOCLIP_GAP;
+      const n=applyAutoClip(pick);
+      $('hud').textContent='Sorolás: '+n+' sor csatolva '+DEV_CLIP_SPACING+' mm-es osztással.';},'Sorolás');
+  const run=()=>{plan=planAutoClip(entries,{gap:+$('acGap').value,sameType:$('acSame').checked,nodes:$('acNodes').checked});
+    const many=entries.length>1;
+    $('acPrev').innerHTML=(plan.rows.length?plan.rows.map((r,k)=>
+        `<label style="display:flex;gap:6px;align-items:flex-start;padding:3px 0;border-bottom:1px solid #f2efe8">`
+        +`<input type="checkbox" data-row="${k}" checked style="margin-top:2px"><span style="flex:1">`
+        +(many?`<b>${esc(r.room)}</b> · `:'')+`${esc(DEV[r.type]||r.type)} × ${r.idx.length}: `
+        +esc(r.idx.map(i=>data.devices[i].ref||data.devices[i].id).join(' · '))
+        +`<br><span style="color:#8a8478">${esc(AUTOCLIP_KIND[r.kind])} · max. elmozdulás ${Math.round(r.maxMove)} mm`
+        +(r.nodes.length?` · ${r.nodes.length} csomópont követi`:'')+`</span></span></label>`).join('')
+       :`<div style="color:#8a8478;padding:4px 0">Nincs egymás melletti doboz ${esc(String(+$('acGap').value))} mm-en belül.</div>`)
+      +(plan.ok?`<div style="color:#3a7d44;padding:4px 0">✔ ${plan.ok} sor már szabályosan csatolva.</div>`:'')
+      +plan.warn.map(m=>`<div style="color:#c0530f;padding:2px 0">⚠ ${esc(m)}</div>`).join('');};
+  ['acGap','acSame','acNodes'].forEach(id=>{$(id).oninput=run;$(id).onchange=run;});
+  run();}
+function allRoomEntries(){const out=[];ORD.forEach(l=>allRooms(l).forEach(e=>out.push(e)));return out;}
+
+// ---- PÁLYA-KÖTÉS (auto-link): every route node that sits on a box becomes a link of that box ----
+// "Sits on" is decided in PLAN, within AUTOLINK_TOL: a route is drawn with a node on each box it
+// touches, usually at ceiling height straight above it, so heights differ by metres and are ignored.
+// Nothing moves — neither node nor box. The links are plan-only (no glue), so the node never gets
+// pulled down to the box's height later.
+// Links live on the device but point at one layer's routes, so each routing proposal (layer) is
+// linked on its own, and re-linking a layer replaces only that layer's auto-links. Glued links made
+// by hand in the Wall View are never touched.
+// Height still decides between boxes stacked on one plan point (KD 2500 / K 1300 / D 300 on one
+// drop): a node drawn at a box's height (±AUTOLINK_HTOL) is on THAT box; a ceiling node over a stack
+// is offered with the box nearest in height pre-selected; two boxes at the same height — usually the
+// same box on two layouts — are shown as a tie.
+var AUTOLINK_TOL=25,AUTOLINK_HTOL=150;
+function devLayerOn(L){return L.visible!==false&&(L.cats||{}).device!==false;}
+function autoLinkEligible(d,devLayers){if(!d||d.type==='board')return false;
+  return devLayers?devLayers.indexOf(d.layer||'L0')>=0:layerShows(d,'device');}
+// device layers with linkable boxes in these rooms
+function deviceLayersIn(entries){const n={};
+  (entries||[]).forEach(e=>roomMembers(e).forEach(i=>{const d=data.devices[i];if(d&&d.type!=='board'){const k=d.layer||'L0';n[k]=(n[k]||0)+1;}}));
+  return layers.filter(L=>n[L.id]).map(L=>({id:L.id,name:L.name,on:devLayerOn(L),devices:n[L.id]}));}
+function entryLevels(entries){return [...new Set((entries||[]).map(e=>e.level))];}
+// the layers that carry routes on these levels, with how many
+function routeLayers(levels){const n={};
+  data.paths.forEach(p=>{if((p.nodes||[]).some(q=>levels.indexOf(q.level)>=0)){const k=p.layer||'L0';n[k]=(n[k]||0)+1;}});
+  return layers.filter(L=>n[L.id]).map(L=>({id:L.id,name:L.name,visible:L.visible!==false,paths:n[L.id]}));}
+function planAutoLink(entries,opt){opt=opt||{};entries=(entries||[]).filter(Boolean);
+  const tol=+opt.tol>0?+opt.tol:AUTOLINK_TOL,replace=opt.replace!==false;
+  const lids=opt.layers||routeLayers(entryLevels(entries)).filter(L=>L.visible).map(L=>L.id);
+  const paths=data.paths.filter(p=>lids.indexOf(p.layer||'L0')>=0),pathIds=new Set(paths.map(p=>p.id));
+  const devLayers=opt.devLayers||null;
+  const devs=[];entries.forEach(e=>roomMembers(e).forEach(i=>{const d=data.devices[i];
+    if(autoLinkEligible(d,devLayers))devs.push({i,d,room:roomLabel(e.rm)});}));
+  // with replace, these devices' earlier auto-links into the chosen layers are dropped first
+  const replaced=l=>replace&&!l.glue&&pathIds.has(l.p);
+  const kept=o=>devLinks(o.d).filter(l=>!replaced(l));
+  const pairs=[],amb=[];let already=0,dropped=0;
+  if(replace)devs.forEach(o=>{dropped+=devLinks(o.d).filter(replaced).length;});
+  paths.forEach(pa=>(pa.nodes||[]).forEach(nd=>{
+    const near=devs.filter(o=>o.d.level===nd.level).map(o=>({i:o.i,d:o.d,room:o.room,
+      dist:Math.hypot(nd.x-o.d.x,nd.y-o.d.y),dh:Math.round((nd.h||0)-(o.d.h||0))})).filter(o=>o.dist<=tol);
+    if(!near.length)return;
+    const fresh=near.filter(o=>!kept(o).some(l=>l.p===pa.id&&l.n===nd.id));
+    already+=near.length-fresh.length;if(!fresh.length)return;
+    const base={p:pa.id,n:nd.id,layer:pa.layer||'L0',h:Math.round(nd.h||0)};
+    if(fresh.length===1){pairs.push(Object.assign(base,fresh[0]));return;}
+    fresh.sort((a,b)=>Math.abs(a.dh)-Math.abs(b.dh));
+    const at=fresh.filter(o=>Math.abs(o.dh)<=AUTOLINK_HTOL);
+    if(at.length===1){pairs.push(Object.assign(base,at[0],{byHeight:true}));return;}      // drawn at its height
+    const m=Math.abs(fresh[0].dh),top=at.length?at:fresh.filter(o=>Math.abs(o.dh)-m<=AUTOLINK_HTOL);
+    amb.push(Object.assign(base,{cands:fresh,kind:top.length===1?'height':'tie',def:top.length===1?String(top[0].i):'all'}));}));
+  // boxes no chosen route reaches — worth a look before wiring. A box in a clip row counts as
+  // reached when any box of its row is: the route enters a row at one end and the row carries it on.
+  const reached=new Set(pairs.map(q=>q.i));amb.forEach(a=>a.cands.forEach(o=>reached.add(o.i)));
+  devs.forEach(o=>{if(kept(o).some(l=>pathIds.has(l.p)))reached.add(o.i);});
+  const rowHit=new Set();reached.forEach(i=>{const c=data.devices[i].clip;if(c)rowHit.add(c);});
+  const unreached=devs.filter(o=>!reached.has(o.i)&&!(o.d.clip&&rowHit.has(o.d.clip))).map(o=>o.i);
+  return {pairs,amb,already,dropped,unreached,layers:lids,devLayers,tol,replace,devIdx:devs.map(o=>o.i),pathIds:[...pathIds]};}
+// choice[k] for ambiguous node k: 'all', 'none', or a device index; missing = the plan's default
+function applyAutoLink(plan,choice){if(!plan)return 0;choice=choice||{};
+  pushUndo(['devices']);
+  const pathIds=new Set(plan.pathIds);
+  if(plan.replace)plan.devIdx.forEach(i=>removeLinks(data.devices[i],l=>!l.glue&&pathIds.has(l.p)));
+  let n=0;
+  plan.pairs.forEach(q=>{if(addLink(data.devices[q.i],q.p,q.n))n++;});
+  plan.amb.forEach((a,k)=>{const ch=choice[k]==null?(a.def||'all'):choice[k];
+    a.cands.forEach(o=>{if((ch==='all'||+ch===o.i)&&addLink(data.devices[o.i],a.p,a.n))n++;});});
+  if(typeof invalidateShell==='function')invalidateShell();       // links change no pixels of the plan
+  draw();return n;}
+
+function autoLinkDialog(entries,title){entries=(entries||[]).filter(Boolean);if(!entries.length)return;
+  const RL=routeLayers(entryLevels(entries)),DL=deviceLayersIn(entries);let plan=null;
+  const ref=i=>esc(data.devices[i].ref||data.devices[i].id);
+  if(!RL.length){openModal('Pálya-kötés','<div class="mrow">Ezen a szinten még nincs pálya.</div>',()=>{},'Bezár');return;}
+  openModal(esc(title||('Pálya-kötés — '+roomLabel(entries[0].rm))),
+    `<div class="mrow" style="font-size:12px">Csomópont a készüléken, ha alaprajzban ≤ <input id="alTol" type="number" step="5" min="1" value="${state.autoLinkTol||AUTOLINK_TOL}" style="width:56px"> mm-re van tőle (a magasság csak egymás feletti dobozoknál számít)</div>`
+   +`<div class="mrow" style="font-size:12px;flex-wrap:wrap;gap:4px 12px">Pályák rétege: `
+   +RL.map(L=>`<label><input type="checkbox" class="alLay" value="${esc(L.id)}" ${L.visible?'checked':''}> ${esc(L.name)} <span style="color:#8a8478">(${L.paths})</span></label>`).join('')+`</div>`
+   +`<div class="mrow" style="font-size:12px;flex-wrap:wrap;gap:4px 12px">Készülékek rétege: `
+   +DL.map(L=>`<label><input type="checkbox" class="alDev" value="${esc(L.id)}" ${L.on?'checked':''}> ${esc(L.name)} <span style="color:#8a8478">(${L.devices})</span></label>`).join('')+`</div>`
+   +`<div class="mrow" style="font-size:12px"><label><input type="checkbox" id="alRep" checked> a rétegek korábbi automatikus kötéseit újraszámolja (a kézi kötések maradnak)</label></div>`
+   +`<div id="alPrev" style="max-height:340px;overflow:auto;font-size:12px;border-top:1px solid #eee;padding-top:4px"></div>`,
+    ()=>{const choice={};document.querySelectorAll('#alPrev select[data-amb]').forEach(s=>{choice[+s.dataset.amb]=s.value;});
+      if(!plan.pairs.length&&!plan.amb.length&&!plan.dropped)return false;
+      state.autoLinkTol=+$('alTol').value||AUTOLINK_TOL;
+      const n=applyAutoLink(plan,choice);
+      $('hud').textContent='Pálya-kötés: '+n+' kötés'+(plan.dropped?' ('+plan.dropped+' régi újraszámolva)':'')+'.';},'Kötés');
+  const run=()=>{const ticked=cls=>[...document.querySelectorAll(cls)].filter(c=>c.checked).map(c=>c.value);
+    plan=planAutoLink(entries,{tol:+$('alTol').value,layers:ticked('.alLay'),devLayers:ticked('.alDev'),replace:$('alRep').checked});
+    // new links per device, in room order
+    const per={};plan.pairs.forEach(q=>{(per[q.i]=per[q.i]||[]).push(q);});
+    const rooms={};Object.keys(per).forEach(i=>{const r=per[i][0].room;(rooms[r]=rooms[r]||[]).push(+i);});
+    const lname=id=>(layerById(id)||{}).name||id;
+    $('alPrev').innerHTML=
+      `<div style="padding:2px 0 6px"><b>${plan.pairs.length}</b> új kötés · ${Object.keys(per).length} készülék`
+      +(plan.amb.length?` · ${plan.amb.length} csomópont választással`:'')
+      +(plan.already?` · ${plan.already} már kötve`:'')+(plan.dropped?` · ${plan.dropped} régi újraszámolva`:'')+`</div>`
+      +Object.keys(rooms).map(r=>`<div style="padding:2px 0"><b>${esc(r)}</b>: `
+        +rooms[r].map(i=>`${ref(i)}<span style="color:#8a8478">×${per[i].length}</span>`).join(' · ')+`</div>`).join('')
+      +(plan.amb.length?`<div style="padding:6px 0 2px"><b>Egy csomópont, több készülék</b> <span style="color:#8a8478">— ⚠ azonos magasságban (ugyanaz a doboz két rétegen?) · ↕ magasság szerint előválasztva</span></div>`:'')
+      +plan.amb.map((a,k)=>{const sel=v=>String(v)===String(a.def)?' selected':'';
+        return `<div style="padding:3px 0;color:${a.kind==='tie'?'#c0530f':'#4a453c'}">${a.kind==='tie'?'⚠':'↕'} ${esc(lname(a.layer))} ${esc(a.p)}/${esc(a.n)} (${a.h} mm): `
+        +`<select data-amb="${k}"><option value="all"${sel('all')}>mindegyik</option>`
+        +a.cands.map(o=>`<option value="${o.i}"${sel(o.i)}>csak ${ref(o.i)} (${o.d.h||0} mm, ${esc(lname(o.d.layer||'L0'))})</option>`).join('')
+        +`<option value="none">egyik sem</option></select></div>`;}).join('')
+      +(plan.unreached.length?`<div style="padding:4px 0;color:#8a8478">Nincs a közelében csomópont a választott rétegeken: ${plan.unreached.map(ref).join(' · ')}</div>`:'')
+      +(!plan.layers.length?`<div style="color:#c0392b">Válassz legalább egy réteget.</div>`:'');};
+  $('alTol').oninput=run;$('alRep').onchange=run;document.querySelectorAll('.alLay,.alDev').forEach(c=>c.onchange=run);
+  run();}
+// the inspector line under a selected device: how many route nodes it is linked to, and on which layers
+function linkInspectorHtml(sel){if(!sel||sel.t!=='devices')return '';const d=data.devices[sel.i];if(!d||d.type==='board')return '';
+  const ts=linkTargets(d),lay=[...new Set(ts.map(t=>(layerById(t.path.layer||'L0')||{}).name||''))].filter(Boolean);
+  return `<div class="insCkt"><div class="insRoomH"><b>Pálya-kötés</b><span>${ts.length?ts.length+' csomópont':'—'}</span></div>`
+    +`<div class="insSub">${ts.length?esc(lay.join(', '))+(ts.some(t=>t.glue)?' · kézi kötéssel':''):'nincs pályához kötve'}</div></div>`;}
+
+// ---- while drawing: the same two things, one box or one node at a time ----
+// Device tool + Shift: the new box goes 72 mm beside the nearest box of the same type on the same
+// wall face and layer (within ROWSNAP_REACH), past the row's end on the cursor's side, at that box's
+// height — and joins its clip group. Path tool: a node put down on a box symbol snaps onto the box
+// in plan (keeping the drawing height) and, when the path is finished, becomes a link of that box.
+// Both are decided in the cursor snap, so the preview shows exactly what the click will do.
+// When the cursor is locked to a wall, only that wall face counts. Unlocked (e.g. drawing at ceiling
+// height) the nearest box of the type near the cursor decides, and its own wall gives the row's line.
+var ROWSNAP_REACH=400,ROWSNAP_OFF=300;
+function rowSnap(p,type){if(!p||!autoClipEligible({type,side:0}))return null;
+  const face=state.side?1:-1,lay=curLayer();let best=null;
+  data.devices.forEach(d=>{if(d.level!==p.level||d.type!==type||(d.layer||'L0')!==lay||d.side==null)return;
+    const hw=deviceHostWall(d);if(!hw)return;const wi=hw.wi;
+    if(p.wall){if(!(hw.r===p.wall||(hw.r.id&&hw.r.id===p.wall.id)))return;   // by id too: undo rebuilds walls
+      if(((hw.nx*wi.perp[0]+hw.ny*wi.perp[1])>0?1:-1)!==face)return;}
+    const du=Math.abs(wi.horiz?d.x-p.x:d.y-p.y),dv=Math.abs(wi.horiz?d.y-p.y:d.x-p.x);
+    if(du>ROWSNAP_REACH||(!p.wall&&dv>ROWSNAP_OFF))return;
+    if(!best||du+dv<best.k)best={d,hw,k:du+dv};});
+  if(!best)return null;
+  const horiz=best.hw.wi.horiz,uOf=o=>horiz?o.x:o.y,u=uOf(p);
+  const a=best.d,grp=a.clip?data.devices.filter(x=>x.clip===a.clip):[a];
+  if(grp.length>=AUTOCLIP_MAX)return {full:true,anchor:a};
+  const us=grp.map(uOf),nu=u>=uOf(a)?Math.max(...us)+DEV_CLIP_SPACING:Math.min(...us)-DEV_CLIP_SPACING;
+  return {anchor:a,x:horiz?nu:a.x,y:horiz?a.y:nu,h:a.h||0};}
+// The visible box whose symbol is under this base-space point. Boxes stacked on one plan point
+// overlap in the flat plan, so the one nearest the drawing height h wins (a ceiling route lands on
+// the KD at the top of a drop, a route drawn at socket height on the socket), then one on the active
+// layer, then the nearest symbol.
+function devAtBase(bx,by,level,h){const k=state.devScale||0.72,R=Math.max(8*k,10/(state.zoom||1)),lay=curLayer();
+  const hit=[];
+  data.devices.forEach(d=>{if(d.level!==level||!state.levels[d.level]||!layerShows(d,'device'))return;
+    const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),dd=Math.hypot(b[0]-bx,b[1]-by);
+    if(dd<=R)hit.push({d,dd,dh:h==null?0:Math.abs((d.h||0)-h),own:(d.layer||'L0')===lay?0:1});});
+  hit.sort((a,b)=>(a.dh-b.dh)||(a.own-b.own)||(a.dd-b.dd));
+  return hit.length?hit[0].d:null;}
+// cableSnap, plus the two placement snaps; `base` is the pointer in base space
+function placeSnapAt(p,base,shift){
+  if(state.mode==='device'&&shift){const r=rowSnap(p,($('devType')||{}).value||'socket');
+    if(r&&r.full)p.snap='sor tele ('+AUTOCLIP_MAX+' doboz) — nem csatolható';
+    else if(r){p.x=r.x;p.y=r.y;p.h=r.h;p.row=r.anchor.id;p.snap='sor · '+(r.anchor.ref||r.anchor.id)+' mellé, '+DEV_CLIP_SPACING+' mm';}
+    else p.snap+=' · nincs azonos doboz a közelben';}
+  if(state.mode==='path'&&base){const d=devAtBase(base[0],base[1],p.level,p.h);
+    if(d){p.x=d.x;p.y=d.y;p.dev=d.id;p.snap='készülékre: '+(d.ref||d.id);}}
+  return p;}
+function placeSnap(e){return placeSnapAt(cableSnap(e),clientToBase(e),!!(e&&e.shiftKey));}
+// make dev the next box of anchor's row (clip group); the caller pushed undo
+function rowJoin(dev,anchorId){const a=byId('devices',anchorId);if(!a||!dev)return false;
+  const gid=a.clip||('clip'+Date.now().toString(36));a.clip=gid;dev.clip=gid;dev.side=a.side;
+  $('hud').textContent=(dev.ref||'')+' csatolva: '+(a.ref||a.id)+' sorába, '+DEV_CLIP_SPACING+' mm';return true;}
+// the Device tool's click
+function placeDevice(p,ty){pushUndo();
+  const dev={type:ty,level:p.level,x:p.x,y:p.y,h:p.h,layer:curLayer(),ref:nextRef(ty)};
+  if(p.wall){dev.side=state.side?1:0;}   // remember which wall side (like path sections)
+  data.devices.push(dev);
+  if(p.row)rowJoin(dev,p.row);
+  draw();return dev;}
+// the Path tool's click: a node, marked when it was put down on a box
+function pathAddNode(p){if(!pathDraft){pushUndo();pathDraft={ptype:state.pathType,nodes:[],sections:[],layer:curLayer()};}
+  if(pathDraft.nodes.length)pathDraft.sections.push({build:'sull_gege',circuit:null});
+  const n={level:p.level,x:p.x,y:p.y,h:p.h};if(p.dev)n.on=p.dev;
+  pathDraft.nodes.push(n);draw();return n;}
+// called by finishPath once the path is in data.paths: marked nodes become links of their boxes
+function linkMarkedNodes(pa){if(!pa||!(pa.nodes||[]).some(n=>n.on))return 0;ensureIds(data);let k=0;
+  pa.nodes.forEach(n=>{if(!n.on)return;const d=byId('devices',n.on);delete n.on;if(d&&addLink(d,pa.id,n.id))k++;});
+  if(k&&typeof invalidateShell==='function')invalidateShell();
+  return k;}
+// Shift pressed or released without moving the mouse: redo the Device tool's snap where the pointer is
+function refreshPlaceCursor(shift){if(state.mode!=='device')return;
+  try{if(!lastPtr||(!lastPtr[0]&&!lastPtr[1]))return;cursor=placeSnap({clientX:lastPtr[0],clientY:lastPtr[1],shiftKey:shift});state.hoverR=cursor.wall||null;
+    $('hud').textContent=cursor.snap;drawSoon();}catch(_){}}
+document.addEventListener('keydown',e=>{if(e.key==='Shift'&&!e.repeat)refreshPlaceCursor(true);});
+document.addEventListener('keyup',e=>{if(e.key==='Shift')refreshPlaceCursor(false);});
+
+registerActions([
+ {id:'room.autoclip',alias:'sorolas auto clip csatolas row helyiseg',need:'Jelölj ki egy helyiséget (padlót).',
+  label:'Sorolás a helyiségben…',icon:'⛓',group:'Helyiség',
+  hint:'Az egymás mellé tett azonos dobozok egy csatolt sorba kerülnek, 72 mm-es osztással — előnézettel.',
+  when:c=>!c.inEditor&&!!selRoomEntry(c.sel),run:c=>autoClipDialog([selRoomEntry(c.sel)])},
+ {id:'rooms.autoclip',alias:'sorolas minden helyiseg auto clip all rooms',
+  label:'Sorolás minden helyiségben…',icon:'⛓',group:'Készülék',
+  hint:'Az egész terv egymás melletti dobozai, helyiségenként — előnézettel, soronként kipipálható.',
+  when:c=>!c.inEditor,run:()=>autoClipDialog(allRoomEntries(),'Sorolás — minden helyiség')},
+ {id:'room.autolink',alias:'pálya kötés auto link csomopont node helyiseg',need:'Jelölj ki egy helyiséget (padlót).',
+  label:'Pálya-kötés a helyiségben…',icon:'🔗',group:'Helyiség',
+  hint:'A készülékeken ülő pálya-csomópontok a készülékhez kötődnek — rétegenként, előnézettel. Semmi nem mozdul.',
+  when:c=>!c.inEditor&&!!selRoomEntry(c.sel),run:c=>autoLinkDialog([selRoomEntry(c.sel)])},
+ {id:'rooms.autolink',alias:'pálya kötés minden helyiseg auto link all rooms',
+  label:'Pálya-kötés minden helyiségben…',icon:'🔗',group:'Pálya',
+  hint:'Az egész terv: minden készülék a rajta ülő csomópontokhoz kötődik, a kiválasztott rétegek pályáin.',
+  when:c=>!c.inEditor,run:()=>autoLinkDialog(allRoomEntries(),'Pálya-kötés — minden helyiség')}
+]);
+
+// test hooks
+window.planAutoClip=planAutoClip;window.applyAutoClip=applyAutoClip;window.autoClipDialog=autoClipDialog;
+window.allRoomEntries=allRoomEntries;window.planAutoLink=planAutoLink;window.applyAutoLink=applyAutoLink;
+window.autoLinkDialog=autoLinkDialog;window.routeLayers=routeLayers;window.linkInspectorHtml=linkInspectorHtml;
+window.deviceLayersIn=deviceLayersIn;window.rowSnap=rowSnap;window.devAtBase=devAtBase;window.placeSnapAt=placeSnapAt;
+window.placeDevice=placeDevice;window.pathAddNode=pathAddNode;window.linkMarkedNodes=linkMarkedNodes;
 // ---- Wall View: 2D elevation of a selected wall ----
 function devMini(type,x,y,col){
   if(type==='socket')return `<circle cx="${x}" cy="${y}" r="6" fill="#fff" stroke="${col}" stroke-width="1.4"/><line x1="${x-3}" y1="${y}" x2="${x+3}" y2="${y}" stroke="${col}" stroke-width="1.4"/>`;
@@ -3634,7 +4269,7 @@ function wallElevationData(r,level){const z0=r.z0||0,H=z0+(r.h||wallH(level));
     if(Math.abs(sOf(o.x,o.y))<tol&&inR(u)){const win=o.type==='window';ops.push({oi,type:o.type,u,w:o.w||(win?WIN_W:DOOR_W),h:o.h||(win?WIN_H:DOOR_H),sill:win?(o.sill!=null?o.sill:WIN_SILL):0});}});
   const devs=[];data.devices.forEach(dv=>{if(dv.level!==level||!layerShows(dv,'device'))return;const u=uOf(dv.x,dv.y),ss=sOf(dv.x,dv.y);
     if(Math.abs(ss)<tol&&inR(u))devs.push({di:data.devices.indexOf(dv),type:dv.type,ref:dv.ref||'',u,h:dv.h||0,back:ss<-1,
-      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:dv.link});});
+      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null});});
   const secs=[];data.paths.forEach((pa,pi)=>{if(!layerShows(pa,'path'))return;for(let i=0;i<pa.nodes.length-1;i++){const a=pa.nodes[i],b=pa.nodes[i+1];if(a.level!==level||b.level!==level)continue;
     const sa=sOf(a.x,a.y),sb=sOf(b.x,b.y);if(Math.abs(sa)<tol&&Math.abs(sb)<tol){const ua=uOf(a.x,a.y),ub=uOf(b.x,b.y);
       if(inR(Math.max(ua,ub))&&inR(Math.min(ua,ub))){const sec=pa.sections[i]||{build:'sull_gege'};
@@ -3864,8 +4499,9 @@ function wvDeviceItems(di){const D=data.devices[di];const items=[];
     act:()=>wvOpenModal('Magasság a padlótól',`<div class="mrow"><input id="pvz" type="number" step="10" value="${Math.round(D.h||0)}" style="width:90px"> mm</div>`
       +`<div class="mrow" style="font-size:11px;color:#777">Felülnézetben a magasság nem látszik — itt állítható. A síkhoz kötött sávon kívülre állítva a készülék halványan, kontextusként jelenik meg.</div>`,
       ()=>{wvPush();pvSetDeviceZ(di,+$('pvz').value||0);draw();})});
-  items.push({label:(D.link?'🔗 Kötés áthelyezése…':'🔗 Csatlakoztatás pályához…'),act:()=>wvLinkDevice(di)});
-  if(D.link)items.push({label:'🔗✕ Kötés bontása ('+linkLabel(D)+')',act:()=>{wvPush();delete D.link;edRender();draw();}});
+  const glued=devLinks(D).some(l=>l.glue);
+  items.push({label:(glued?'🔗 Kötés áthelyezése…':'🔗 Csatlakoztatás pályához…'),act:()=>wvLinkDevice(di)});
+  if(devLinks(D).length)items.push({label:'🔗✕ Kötések bontása ('+linkLabel(D)+')',act:()=>{wvPush();clearLinks(D);edRender();draw();}});
   items.push({label:'🗑 Törlés',act:()=>{wvPush();data.devices.splice(di,1);edRender();draw();}});
   return items;}
 function wvDistSeg(px,py,x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,L=dx*dx+dy*dy;
@@ -4030,12 +4666,14 @@ function wvSetDevice(di,u,h,raw){const dv=data.devices[di];if(!dv)return;const r
   wvPushLinkedNodes(grp);}
 // along-wall coordinate of a path node (+ its height) in the current wall's basis
 // ---- device ↔ path-node links: the node follows the device and vice versa ----
-function wvPushLinkedNodes(indices){indices.forEach(i=>{const g=data.devices[i];if(!g||!g.link)return;
-  const t=linkTarget(g);if(!t)return;const n=t.node;
-  n.x=g.x;n.y=g.y;n.h=g.h||0;});}
+// A glued node sits exactly on its box, height included. A plan-only node (auto-link: a ceiling
+// route above the box) follows the box in plan and keeps its own height.
+function wvPushLinkedNodes(indices){indices.forEach(i=>{const g=data.devices[i];if(!g)return;
+  linkTargets(g).forEach(t=>{const n=t.node;n.x=g.x;n.y=g.y;if(t.glue)n.h=g.h||0;});});}
+// Dragging a node drags only the boxes GLUED to it — a ceiling node never pulls a socket off its wall.
 function wvPullLinkedDev(pi,ni){const pa=data.paths[pi],n=pa&&pa.nodes[ni];if(!n)return;
   const pid=(data.paths[pi]||{}).id,nid=n.id;
-  data.devices.forEach(dv=>{if(dv.link&&dv.link.p===pid&&dv.link.n===nid){dv.x=n.x;dv.y=n.y;dv.h=n.h||0;}});}
+  data.devices.forEach(dv=>{if(devLinks(dv).some(l=>l.glue&&l.p===pid&&l.n===nid)){dv.x=n.x;dv.y=n.y;dv.h=n.h||0;}});}
 // ids made this trivial: a link whose target is gone simply resolves to nothing.
 function wvRelinkAfterPathRemoval(){pruneLinks();}
 // candidate path nodes on this wall, nearest first
@@ -4378,7 +5016,7 @@ function planeViewData(room,level,kind,tol){
   const devs=[],ghosts=[],secs=[],risers=[],ops=[];
   data.devices.forEach((dv,di)=>{if(dv.level!==level||!ins(dv.x,dv.y))return;
     const rec={di,type:dv.type,ref:dv.ref,u:dv.x,h:dv.y,z:dv.h||0,back:false,devDef:dv.devDef,boxColor:dv.boxColor,
-      jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:dv.link};
+      jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null};
     (inb(dv.h||0)?devs:ghosts).push(rec);});
   data.paths.forEach((pa,pi)=>{for(let i=0;i<pa.nodes.length-1;i++){
     const a=pa.nodes[i],c=pa.nodes[i+1];if(a.level!==level&&c.level!==level)continue;
@@ -5477,7 +6115,8 @@ const HINTS={select:'Select — drag pan, wheel zoom. Click cable/device to dele
  roof:'Roof — click two points to span a roof over that area, then pick type (lapos/félnyereg/nyereg/konty), eave + ridge height and overhang. Right-click it to edit.',
  floor:'Floor — click two points to drop a floor section on the active level. Draw walls on it to make a room. Backspace cancels.',
  measure:'Measure — click two points for the distance.',note:'Note — click a spot, then type text. Tip: hold LEFT+RIGHT mouse to pan while drawing; Backspace = undo last click.'};
-function setMode(m){state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorStart=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();
+function setMode(m){if(m!=='select'&&typeof cktPick!=='undefined'&&cktPick)cktPick=null;   // another tool ends end point picking
+  state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorStart=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();
   document.querySelectorAll('.tool[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
   const wo=$('wallOpts');if(wo)wo.style.display=(m==='wall')?'flex':'none';
   $('modeHint').textContent=HINTS[m];$('modeTip').textContent=HINTS[m];if(window.__dashReady)applyToolLayout(m);
@@ -5548,7 +6187,9 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
     if(!e.ctrlKey){selected=null;clearMulti();}
     selBox={x0:e.clientX,y0:e.clientY,x1:e.clientX,y1:e.clientY};dragging=true;moved=false;last=[e.clientX,e.clientY];
     try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
-  if(state.mode==='select'){const h=hitTest(e);
+  if(state.mode==='select'){let h=hitTest(e);
+    // end point picking (05j-circuits.js): a device click toggles it; anything else pans as empty space would
+    if(cktPick){if(h&&h.t==='devices'){cktPickToggle(h.i);return;}h=null;}
     if(switchPick&&h&&h.t==='devices'){const D=data.devices[switchPick.di];D.swMap=D.swMap||{};D.swMap[switchPick.term]=devIdOf(h.i);
       const di=switchPick.di;switchPick=null;$('modeHint').textContent=HINTS.select;draw();editSwitchType(di);return;}
     if(pendingRoute&&h&&h.t==='devices'){routeDevice(pendingRoute.dev,'pick',data.devices[h.i]);pendingRoute=null;$('modeHint').textContent=HINTS.select;return;}
@@ -5564,13 +6205,8 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
     else{dragging=true;} // multi-select off → empty drag pans the view
     moved=false;last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(state.mode==='cable'){const p=cableSnap(e);if(!draft){pushUndo();draft={type:state.cableType,nodes:[],layer:curLayer()};}draft.nodes.push({level:p.level,x:p.x,y:p.y,h:p.h});draw();}
-  else if(state.mode==='path'){const p=cableSnap(e);if(!pathDraft){pushUndo();pathDraft={ptype:state.pathType,nodes:[],sections:[],layer:curLayer()};}
-    if(pathDraft.nodes.length)pathDraft.sections.push({build:'sull_gege',circuit:null});
-    pathDraft.nodes.push({level:p.level,x:p.x,y:p.y,h:p.h});draw();}
-  else if(state.mode==='device'){const p=cableSnap(e);const ty=$('devType').value;pushUndo();
-    const dev={type:ty,level:p.level,x:p.x,y:p.y,h:p.h,layer:curLayer(),ref:nextRef(ty)};
-    if(p.wall){dev.side=state.side?1:0;}   // remember which wall side (like path sections)
-    data.devices.push(dev);draw();}
+  else if(state.mode==='path')pathAddNode(placeSnap(e));             // on a box: marked, linked at finish (05k)
+  else if(state.mode==='device')placeDevice(placeSnap(e),$('devType').value);   // Shift: joins the row (05k)
   else if(state.mode==='wall'){
     if(state.wallErase){const r=wallHitRect(e);if(r){pushUndo();const a=WALLS[state.active];a.splice(a.indexOf(r),1);SNAP[state.active]=centerlines(a);draw();}return;}
     const p=wallPointSnap(e,wallStart);
@@ -5682,7 +6318,7 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
     drawSoon();return;}
   if(dragging){const dx=e.clientX-last[0],dy=e.clientY-last[1];if(Math.abs(dx)+Math.abs(dy)>2)moved=true;
     state.panX+=dx;state.panY+=dy;last=[e.clientX,e.clientY];setTransform();return;}
-  if(state.mode==='cable'||state.mode==='path'||state.mode==='device'){const p=cableSnap(e);cursor=p;state.hoverR=p.wall||null;state.hoverL=state.active;
+  if(state.mode==='cable'||state.mode==='path'||state.mode==='device'){const p=placeSnap(e);cursor=p;state.hoverR=p.wall||null;state.hoverL=state.active;
     const dr=state.mode==='path'?pathDraft:draft;
     let msg=`x ${(p.x/1000).toFixed(2)} · y ${(p.y/1000).toFixed(2)} m · ${p.snap} · h ${(p.h/1000).toFixed(2)} m`;
     if(dr&&dr.nodes.length){const t={nodes:dr.nodes.concat([{level:p.level,x:p.x,y:p.y,h:p.h}])};msg+=`\nrun: ${cableLen(t).toFixed(2)} m`;}
@@ -5756,7 +6392,8 @@ function setPitch(v){state.pitch=Math.max(5,Math.min(90,v));state.flat=state.pit
 function panBy(dx,dy){state.panX+=dx;state.panY+=dy;setTransform();}
 function zoomBy(f){state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));setTransform();}
 window.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorStart=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();if(state.mode!=='select')setMode('select');draw();return;}
+  if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();
+    draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorStart=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();if(state.mode!=='select')setMode('select');draw();return;}
   const tag=(e.target&&e.target.tagName)||'';if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return; // don't hijack while typing
   if(state.lockTouch){ // locked: allow camera keys (WASD/QE/arrows) + undo/redo, block edits (Delete, Ctrl+D, tool keys already harmless)
     const k=e.key.toLowerCase();
@@ -5876,7 +6513,7 @@ function finishPath(){if(pathDraft&&pathDraft.nodes.length>=2){pathDraft.id='p'+
     if(off!==0){pathDraft.zoff=off;   // push every node down by |off| mm so it renders under the existing path
       pathDraft.nodes.forEach(n=>{n.h=Math.max(0,(n.h||0)+off);});
       $('hud').textContent=`Pálya ${-off} mm-rel a meglévő alá helyezve.`;}
-    data.paths.push(pathDraft);}pathDraft=null;lock=null;state.hoverR=null;draw();}
+    data.paths.push(pathDraft);linkMarkedNodes(pathDraft);}pathDraft=null;lock=null;state.hoverR=null;draw();}
 // ============ MOBILE TOUCH GESTURES ============
 // 1 finger: acts as the current tool (pointer events already handle draw/select/drag).
 // 2 fingers: pinch = zoom, twist = rotate (yaw), drag = pan; vertical spread while
@@ -6616,6 +7253,8 @@ function roomMenuItems(rh){const rm=rh.rm,solo=soloRoomIs(rh);const items=[
     {label:(rm.noText?'🔤 Felirat be':'🔤 Felirat ki'),act:()=>{pushUndo();rm.noText=!rm.noText;draw();}},
     {label:'🏷 Helyiség adatlap… (név, burkolat, környezet, magasságok)',act:()=>roomPropsDialog(rm,rh.level,rh.src)},
     {label:'🔢 Helyiség átszámozása… (készülékjelölések a sablon szerint)',act:()=>roomRenumberDialog(rh)},
+    {label:'⛓ Sorolás… (egymás melletti dobozok csatolása 72 mm-re)',act:()=>autoClipDialog([rh])},
+    {label:'🔗 Pálya-kötés… (a készülékeken ülő csomópontok)',act:()=>autoLinkDialog([rh])},
     {label:'🧱 Helyiség kiterítve',act:()=>openRoomUnfold(rm,rh.level)},
     {label:'⬓ Padló nézet (felülnézet, szerkeszthető)',act:()=>openPlaneView(rm,rh.level,'floor')},
     {label:'⬒ Mennyezet nézet (felülről, a falakon átnézve)',act:()=>openPlaneView(rm,rh.level,'ceiling')},
@@ -7186,7 +7825,7 @@ $('styleToggle').onclick=()=>{const toBlueprint=state.style!=='blueprint';
 $('bRiserUp').onclick=()=>riser(1);$('bRiserDn').onclick=()=>riser(-1);
 function riser(dir){let i=ORD.indexOf(state.active)+dir;if(i<0||i>2)return;state.active=ORD[i];
   document.querySelector(`input[name=al][value=${ORD[i]}]`).checked=true;$('hud').textContent='Active level → '+ORD[i]+' (riser continues here).';}
-const UKEYS=['cables','paths','devices','notes','measures','openings','floors','objects','roofs','wallNotes'];
+const UKEYS=['cables','paths','devices','notes','measures','openings','floors','objects','roofs','wallNotes','circuits'];
 // per-surface note visibility travels with the project but is a map, not a list
 function noteHideSnap(){return JSON.parse(JSON.stringify(data.noteHide||{}));}
 // A snapshot may be SCOPED to the collections a command actually touches. Moving a
@@ -8053,7 +8692,11 @@ function renderLayers(){const el=$('layerList');if(!el)return;const cats=['path'
      +`<button data-lv="${L.id}" title="show/hide">${L.visible?'👁':'🚫'}</button>`
      +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
      +(L.id!=='L0'?`<button data-lx="${L.id}" title="törlés">✕</button>`:'')+`</div>`
-     +`<div class="lcats">${cs}</div></div>`;}).join('');
+     +`<div class="lcats">${cs}`
+     +`<input type="color" class="ltint" data-lt="${L.id}" value="${L.tint||'#ffffff'}" title="Készülékek színezése ezen a rétegen (régi / új kiosztás elkülönítése)">`
+     +(L.tint?`<button data-ltx="${L.id}" class="lcat" title="színezés ki">⊘</button>`:'')+`</div></div>`;}).join('');
+  el.querySelectorAll('[data-lt]').forEach(i=>i.onchange=()=>{layerById(i.dataset.lt).tint=i.value;renderLayers();draw();});
+  el.querySelectorAll('[data-ltx]').forEach(b=>b.onclick=()=>{delete layerById(b.dataset.ltx).tint;renderLayers();draw();});
   el.querySelectorAll('[data-la]').forEach(r=>r.onchange=()=>{state.activeLayer=r.dataset.la;});
   el.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const L=layerById(b.dataset.lv);L.visible=!L.visible;renderLayers();draw();});
   el.querySelectorAll('[data-ln]').forEach(i=>i.onchange=()=>{layerById(i.dataset.ln).name=i.value;});

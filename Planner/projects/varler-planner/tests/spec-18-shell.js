@@ -22,12 +22,12 @@ setTimeout(()=>{
   w.ensureIds(w.__data);w.draw();
 
   // ---------- the rail ----------
-  ok('five stages, in the order the job happens',
-     w.STAGES.map(s=>s.n).join('→')==='Épület→Helyiségek→Kiosztás→Pályák→Dokumentáció');
+  ok('six stages, in the order the job happens',
+     w.STAGES.map(s=>s.n).join('→')==='Épület→Helyiségek→Kiosztás→Áramkörök→Pályák→Dokumentáció');
   ok('every stage explains itself and can self-check',
      w.STAGES.every(s=>s.hint&&typeof s.check==='function'&&s.icon));
   ok('the rail renders',(function(){const r=$('stageRail');
-    return r&&r.style.display==='flex'&&r.querySelectorAll('.stg[data-k]').length===5;})());
+    return r&&r.style.display==='flex'&&r.querySelectorAll('.stg[data-k]').length===6;})());
   ok('the current stage is marked',(function(){w.setStage('paths');
     const on=$('stageRail').querySelector('.stg.on');return on&&on.dataset.k==='paths';})());
   ok('clicking a stage switches it',(function(){

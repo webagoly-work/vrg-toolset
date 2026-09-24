@@ -203,7 +203,11 @@ function renderLayers(){const el=$('layerList');if(!el)return;const cats=['path'
      +`<button data-lv="${L.id}" title="show/hide">${L.visible?'👁':'🚫'}</button>`
      +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
      +(L.id!=='L0'?`<button data-lx="${L.id}" title="törlés">✕</button>`:'')+`</div>`
-     +`<div class="lcats">${cs}</div></div>`;}).join('');
+     +`<div class="lcats">${cs}`
+     +`<input type="color" class="ltint" data-lt="${L.id}" value="${L.tint||'#ffffff'}" title="Készülékek színezése ezen a rétegen (régi / új kiosztás elkülönítése)">`
+     +(L.tint?`<button data-ltx="${L.id}" class="lcat" title="színezés ki">⊘</button>`:'')+`</div></div>`;}).join('');
+  el.querySelectorAll('[data-lt]').forEach(i=>i.onchange=()=>{layerById(i.dataset.lt).tint=i.value;renderLayers();draw();});
+  el.querySelectorAll('[data-ltx]').forEach(b=>b.onclick=()=>{delete layerById(b.dataset.ltx).tint;renderLayers();draw();});
   el.querySelectorAll('[data-la]').forEach(r=>r.onchange=()=>{state.activeLayer=r.dataset.la;});
   el.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const L=layerById(b.dataset.lv);L.visible=!L.visible;renderLayers();draw();});
   el.querySelectorAll('[data-ln]').forEach(i=>i.onchange=()=>{layerById(i.dataset.ln).name=i.value;});

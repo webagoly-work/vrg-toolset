@@ -448,13 +448,16 @@ function devSym(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),x=b[0],y=b[1];
   const dash=back?'stroke-dasharray="2.5 2"':'';
   const R=v=>+(v*k).toFixed(2);let sym='';
   const wrap=inner=>`<g opacity="${fillA}">${inner}</g>`;
-  if(d.type==='socket')sym=`<circle cx="${x}" cy="${y}" r="${R(6.5)}" fill="#fff" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(3)}" y1="${y}" x2="${x+R(3)}" y2="${y}" stroke="${col}" stroke-width="${R(1.5)}"/>`;
-  else if(d.type==='switch')sym=`<rect x="${x-R(6)}" y="${y-R(6)}" width="${R(12)}" height="${R(12)}" rx="${R(2)}" fill="#fff" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(2)}" y1="${y+R(3)}" x2="${x+R(3)}" y2="${y-R(3)}" stroke="${col}" stroke-width="${R(1.5)}"/>`;
-  else if(d.type==='light')sym=`<circle cx="${x}" cy="${y}" r="${R(6.5)}" fill="#fff8dc" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(4.5)}" y1="${y-R(4.5)}" x2="${x+R(4.5)}" y2="${y+R(4.5)}" stroke="${col}"/><line x1="${x+R(4.5)}" y1="${y-R(4.5)}" x2="${x-R(4.5)}" y2="${y+R(4.5)}" stroke="${col}"/>`;
+  // a tinted layer colours the symbol body (05j-circuits.js); untinted keeps the original fills
+  const tint=(typeof layerTintOf==='function')?layerTintOf(d):null,tf=f=>tint?tintMix(tint,0.45):f;
+  if(d.type==='socket')sym=`<circle cx="${x}" cy="${y}" r="${R(6.5)}" fill="${tf('#fff')}" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(3)}" y1="${y}" x2="${x+R(3)}" y2="${y}" stroke="${col}" stroke-width="${R(1.5)}"/>`;
+  else if(d.type==='switch')sym=`<rect x="${x-R(6)}" y="${y-R(6)}" width="${R(12)}" height="${R(12)}" rx="${R(2)}" fill="${tf('#fff')}" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(2)}" y1="${y+R(3)}" x2="${x+R(3)}" y2="${y-R(3)}" stroke="${col}" stroke-width="${R(1.5)}"/>`;
+  else if(d.type==='light')sym=`<circle cx="${x}" cy="${y}" r="${R(6.5)}" fill="${tf('#fff8dc')}" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><line x1="${x-R(4.5)}" y1="${y-R(4.5)}" x2="${x+R(4.5)}" y2="${y+R(4.5)}" stroke="${col}"/><line x1="${x+R(4.5)}" y1="${y-R(4.5)}" x2="${x-R(4.5)}" y2="${y+R(4.5)}" stroke="${col}"/>`;
   else if(d.type==='board')sym=`<rect x="${x-R(8)}" y="${y-R(8)}" width="${R(16)}" height="${R(16)}" rx="${R(2)}" fill="#ffe9b0" stroke="${col}" stroke-width="${R(1.7)}"/><text x="${x}" y="${y+R(4)}" font-size="${R(10)}" text-anchor="middle" font-weight="700">T</text>`;
-  else if(d.type==='box')sym=`<circle cx="${x}" cy="${y}" r="${R(6)}" fill="${d.lv?'#e6f2ff':'#fff'}" stroke="${col}" stroke-width="${R(1.4)}" stroke-dasharray="${R(2.4)} ${R(1.8)}"/><circle cx="${x}" cy="${y}" r="${R(1.6)}" fill="${col}"/>`;
-  else sym=`<rect x="${x-R(5.5)}" y="${y-R(5.5)}" width="${R(11)}" height="${R(11)}" fill="#fff" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><circle cx="${x}" cy="${y}" r="${R(2)}" fill="${col}"/>`;
+  else if(d.type==='box')sym=`<circle cx="${x}" cy="${y}" r="${R(6)}" fill="${tf(d.lv?'#e6f2ff':'#fff')}" stroke="${col}" stroke-width="${R(1.4)}" stroke-dasharray="${R(2.4)} ${R(1.8)}"/><circle cx="${x}" cy="${y}" r="${R(1.6)}" fill="${col}"/>`;
+  else sym=`<rect x="${x-R(5.5)}" y="${y-R(5.5)}" width="${R(11)}" height="${R(11)}" fill="${tf('#fff')}" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><circle cx="${x}" cy="${y}" r="${R(2)}" fill="${col}"/>`;
   sym=wrap(sym);
+  if(typeof cktRingSvg==='function')sym=cktRingSvg(d,x,y,k,back)+sym;   // circuit end point ring, under the symbol
   if(d.kind||d.lv){const code=(d.kind&&DEVKIND[d.kind]?DEVKIND[d.kind].s:'LV');
     sym+=`<text x="${x}" y="${y+R(15)}" font-size="${R(8)}" text-anchor="middle" fill="#5a5348" paint-order="stroke" stroke="#fff" stroke-width="2.4" opacity="${fillA}">${esc(code)}</text>`;}
   if(state.showRefs&&d.ref)sym+=`<text x="${x+R(9)}" y="${y-R(8)}" font-size="${R(9.5)}" fill="#0a2b6b" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.6" opacity="${fillA}">${esc(d.ref)}</text>`;
@@ -673,8 +676,15 @@ function draw(){
       if(cursor){const a=dr.nodes[dr.nodes.length-1],A=[a.x,a.y,dz(a.level,a.h)],C=[cursor.x,cursor.y,dz(cursor.level,cursor.h)];
         s+=`<polyline points="${p2b([A,C])}" fill="none" stroke="#e8641c" stroke-width="3" stroke-dasharray="8 5"/>`
           +`<circle cx="${planToBase(...C)[0]}" cy="${planToBase(...C)[1]}" r="3.4" fill="#fff" stroke="#e8641c" stroke-width="2"/>`;}
-      for(const n of dr.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="3" fill="#fff" stroke="#6f757d" stroke-width="2"/>`;}}
+      // a node put down on a box is green: it becomes that box's link when the path is finished
+      for(const n of dr.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="3" fill="#fff" stroke="${n.on?'#1d9e75':'#6f757d'}" stroke-width="2"/>`;}}
+    // the box the path cursor has snapped onto (05k placeSnap)
+    if(cursor&&cursor.dev){const d=byId('devices',cursor.dev);if(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0));
+      s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${+(11*(state.devScale||0.72)).toFixed(2)}" fill="none" stroke="#1d9e75" stroke-width="2"/>`;}}
     if(state.mode==='device'&&cursor){const gt=($('devType')||{}).value||'socket';
+      // Shift: a dashed tie from the row it joins
+      if(cursor.row){const a=byId('devices',cursor.row);if(a){const A=planToBase(a.x,a.y,dz(a.level,a.h||0)),C=planToBase(cursor.x,cursor.y,dz(cursor.level,cursor.h));
+        s+=`<line x1="${A[0]}" y1="${A[1]}" x2="${C[0]}" y2="${C[1]}" stroke="#1d9e75" stroke-width="1.6" stroke-dasharray="3 2"/>`;}}
       s+=`<g opacity="0.7">`+devSym({type:gt,level:cursor.level,x:cursor.x,y:cursor.y,h:cursor.h,ref:''})+`</g>`;}
     // hovering height mini-display (toggle: state.hDisp 'hover'|'side'|'off')
     if(state.hDisp==='hover'&&cursor){const c=planToBase(cursor.x,cursor.y,dz(cursor.level,cursor.h));

@@ -30,7 +30,7 @@ function planeViewData(room,level,kind,tol){
   const devs=[],ghosts=[],secs=[],risers=[],ops=[];
   data.devices.forEach((dv,di)=>{if(dv.level!==level||!ins(dv.x,dv.y))return;
     const rec={di,type:dv.type,ref:dv.ref,u:dv.x,h:dv.y,z:dv.h||0,back:false,devDef:dv.devDef,boxColor:dv.boxColor,
-      jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:dv.link};
+      jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null};
     (inb(dv.h||0)?devs:ghosts).push(rec);});
   data.paths.forEach((pa,pi)=>{for(let i=0;i<pa.nodes.length-1;i++){
     const a=pa.nodes[i],c=pa.nodes[i+1];if(a.level!==level&&c.level!==level)continue;

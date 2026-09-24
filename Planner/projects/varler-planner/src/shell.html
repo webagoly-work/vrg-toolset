@@ -93,6 +93,14 @@
  .insRoomR{display:flex;gap:6px;margin-top:3px}
  .insRoomL{flex:1;color:#4a453c}
  .insRoomRefs{color:#8a8478;font-size:10px;line-height:1.3;word-break:break-word}
+ .insCkt{padding:6px 10px;border-bottom:1px solid #eee9df}
+ .ckLine{display:flex;align-items:center;gap:5px;color:#4a453c}
+ .ckSw{display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid;box-sizing:border-box;flex:none}
+ .ckSw.multi{border-style:dashed}
+ .ckCard{border:1px solid #e2ded4;border-radius:5px;padding:4px 6px;margin-top:4px;cursor:pointer;background:#fff}
+ .ckCard:hover{border-color:#c9c2b3} .ckCard.on{border-color:#2f79c9;box-shadow:0 0 0 1px #2f79c9 inset}
+ .ckEd{font-size:10.5px;padding:0 5px;line-height:16px}
+ .ckSt.ready{color:#3a7d44} .ckSt.multi{color:#c0530f} .ckSt.bad,.ckSt.empty{color:#c0392b}
  .insActs{padding:6px 8px;display:flex;flex-direction:column;gap:3px}
  .insA{text-align:left;font-size:11px;padding:4px 7px;white-space:normal;line-height:1.25}
  #statusBar{position:absolute;left:0;right:0;bottom:0;height:24px;display:flex;align-items:center;gap:2px;
@@ -141,6 +149,7 @@
  .lrow button{padding:2px 4px;font-size:11px;line-height:1}
  .lcat{width:17px;opacity:0.4}
  .lcat.on{opacity:1;background:#2c2c2c;color:#fff;border-color:#2c2c2c}
+ .ltint{width:22px;height:17px;padding:0;border:1px solid #ccc;margin-left:4px;cursor:pointer}
  .lname{font-size:12px;padding:2px 4px;border:1px solid #cfc9bd;border-radius:5px}
  .resizer{flex:0 0 6px;cursor:col-resize;background:linear-gradient(#ddd8cd,#cfc9bd);border:none}
  .resizer:hover{background:#b9b3a5}

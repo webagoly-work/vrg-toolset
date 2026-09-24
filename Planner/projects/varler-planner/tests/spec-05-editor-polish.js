@@ -103,13 +103,13 @@ setTimeout(()=>{
   ok('link marker rendered',/stroke-dasharray="2 2"/.test(w.wallElevationSVG(d,false,true).svg));
   ok('link shown in the list',new RegExp('🔗'+w.__data.paths[0].id+'/'+w.__data.paths[0].nodes[0].id).test(w.wvListHTML(d,d.len)));
   ok('link survives session save',(function(){const so=JSON.parse(JSON.stringify(w.sessionObj()));
-    return so.data.devices[0].link&&so.data.devices[0].link.p===w.__data.paths[0].id;})());
+    const l=(so.data.devices[0].links||[])[0];return l&&l.p===w.__data.paths[0].id&&l.glue===true;})());
   ok('deleting a path clears dangling links',(function(){w.__data.paths.push({nodes:[{x:0,y:90,h:0,level:lvl},{x:9,y:90,h:0,level:lvl}],sections:[{build:'sull_gege'}]});
     w.ensureIds(w.__data);
     const keep=w.__data.paths[1];
     w.setLink(w.__data.devices[1],keep.id,keep.nodes[0].id);
     w.__data.paths.splice(0,1);w.wvRelinkAfterPathRemoval();
-    return !w.__data.devices[0].link&&w.__data.devices[1].link.p===keep.id;})());
+    return !w.devLinks(w.__data.devices[0]).length&&w.devLinks(w.__data.devices[1])[0].p===keep.id;})());
 
   // ---------- create anything ----------
   reset();

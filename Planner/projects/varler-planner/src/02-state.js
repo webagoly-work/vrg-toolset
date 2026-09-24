@@ -171,6 +171,6 @@ function syncHeightUI(){const sel=$('drawH');if(sel&&!state.freeHeight)sel.value
   const fc=$('freeHeightChk');if(fc)fc.checked=!!state.freeHeight;
   const fm=$('freeMmBox');if(fm)fm.style.display=state.freeHeight?'flex':'none';
   const fv=$('freeMmVal');if(fv)fv.textContent=(state.freeMm||0)+' mm';}
-const data={v:SCHEMA_VERSION,seq:0,cables:[],paths:[],devices:[],notes:[],measures:[],openings:[],floors:[],objects:[],roofs:[],wallNotes:[],noteHide:{}};
+const data={v:SCHEMA_VERSION,seq:0,cables:[],paths:[],devices:[],notes:[],measures:[],openings:[],floors:[],objects:[],roofs:[],wallNotes:[],circuits:[],noteHide:{}};
 let draft=null,pathDraft=null,measureDraft=null,cursor=null,lock=null,wallStart=null,floorStart=null,roofStart=null,dragItem=null,bothPan=false,objGhost=null,buildGhost=null;const undo=[],redo=[];
 
