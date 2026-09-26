@@ -54,7 +54,8 @@ This is deliberate for now: it made the split from a single file provably safe (
 | `05b-editor-core.js` | 130 | **the editor surface layer** — one pointer/drag/warp/menu implementation, driven by a projection |
 | `06-wall-editor.js` | 850 | wall elevation editor — chase model, notes, action rail, session, links, coordinate list, **wall projection** |
 | `07-plane-editor.js` | 364 | floor / álmennyezet / ceiling plane editor, **plane projection** |
-| `08-interaction.js` | 463 | pointer and keyboard handling, gizmo, format painter, touch gestures |
+| `08-interaction.js` | 724 | pointer and keyboard handling, gizmo, format painter, touch gestures, and the two input adapters (`PLANNER_CAM`, `PLANNER_INPUT`) |
+| `08b-gamepad.js` | 601 | **the controller scheme** — virtual cursor, action wheel, button legend |
 | `09-menus.js` | 118 | hit-test, context menus, modal helper, room / wall / opening actions |
 | `10-lamps.js` | 400 | lamp data sheet, generated objects, hover preview |
 | `11-controls.js` | 167 | sidebar controls, projects, panels, persistence |
@@ -155,6 +156,51 @@ list of buttons to maintain.
 
 **The shell is chrome, not drawing.** A test asserts the scene layer is byte-identical with the
 shell on and off.
+
+## Input adapters and the controller
+
+Two objects at the bottom of `08-interaction.js` are the only surface any alternative input device
+talks to:
+
+- **`PLANNER_CAM`** — camera and history: `setPitch` / `setYaw` / `zoomBy` / `panBy` / `pivotAt` /
+  `resetView` / `undo` / `redo` / `selectTool`. Built for the phone gyro, shared with the gamepad.
+- **`PLANNER_INPUT`** — everything else a device needs: `hover` / `press` / `release` / `context`
+  for the mouse verbs, `escape` / `heightStep` / `cyclePick` / `drop` / `del` for the keyboard ones,
+  plus `busy()`, `stageRect()` and the readouts the legend needs.
+
+Neither adds a top-level name (they are `window.X = {...}`), which matters in a single shared scope.
+
+**Why a device driver never calls a handler directly.** The stage's pointer handlers are ~200 lines
+of mode-specific placement, snapping and drag logic, and the keyboard handler already decides, per
+mode, whether `ArrowUp` means "step the drawing height" or "tilt the camera". Re-implementing any of
+that for a second device would create a parallel code path to keep in sync. So `PLANNER_INPUT`
+*replays* — it dispatches the same pointer and key events a mouse and keyboard send, exactly as
+`camUndo()` already dispatches Ctrl+Z rather than calling `doUndo()`. Two consequences worth
+knowing:
+
+- A press is `pointerdown` and a release is `pointerup`, so **click, drag and gizmo-drag all work
+  with no controller-specific code**. `setPointerCapture()` rejects a synthetic `pointerId`, which
+  is why every call site in that file already wraps it in `try/catch`.
+- The D-pad is literally the arrow keys, which is also the rule the user is taught.
+
+`08b-gamepad.js` is then a pure driver: one rAF loop polling `navigator.getGamepads()` (the Gamepad
+API has no axis events), dead zone and response curve, a virtual cursor, the wheel and the legend.
+It talks to nothing but the two adapters, the way `07b-phone-camera.js` talks to nothing but
+`PLANNER_CAM`.
+
+**One mechanism for two cursor models.** The cursor roams inside a box centred on the stage and
+pushing past the edge drags the camera. A box of `0` collapses that to a reticle fixed at screen
+centre with the world moving under it. Selection modes use a 0.55 box (a free cursor), every drawing
+mode uses 0 (a locked reticle, steadier for placing). Same code path, one number per mode, both
+exposed as settings — there is no second mode to maintain.
+
+**The reticle, wheel and legend are DOM chrome over `.stage-wrap`, never SVG inside `draw()`** —
+the same rule as the shell, for the same reason. That is what makes it structurally impossible for
+the controller to move a golden hash.
+
+Its config lives in its own `localStorage` key, **not in `state`**: `sessionObj()` serialises the
+whole `state` object into every saved project, and a per-PC input preference has no business
+travelling inside a client's plan file.
 
 ## Surfaces and projections
 

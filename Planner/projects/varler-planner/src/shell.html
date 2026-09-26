@@ -116,6 +116,48 @@
  .palKey{font-size:10.5px;color:#7a7468;font-family:ui-monospace,Consolas,monospace}
  .palHint{grid-column:2/5;font-size:11px;color:#8a8478;margin-top:1px}
  #palFoot{padding:7px 14px;font-size:10.5px;color:#9a948a;background:#faf9f6;border-top:1px solid #f0eee9}
+ /* ---- controller mode (08b-gamepad.js) --------------------------------
+    All three surfaces are DOM chrome sitting OVER the stage, never SVG inside
+    draw(). The shell follows the same rule for the same reason: the scene
+    layer stays byte-identical whether this is on or off, so a controller can
+    never move a golden hash. */
+ #gpCursor{position:fixed;display:none;width:34px;height:34px;margin:-17px 0 0 -17px;
+   pointer-events:none;z-index:99998}
+ #gpCursor::before{content:'';position:absolute;inset:0;border-radius:50%;
+   border:2px solid #e8641c;box-shadow:0 0 0 1px #fff8,0 1px 5px #0004;opacity:.9}
+ #gpCursor::after{content:'';position:absolute;left:50%;top:50%;width:4px;height:4px;
+   margin:-2px 0 0 -2px;border-radius:50%;background:#e8641c;box-shadow:0 0 0 1px #fff}
+ #gpCursor.locked::before{border-style:dashed;border-color:#2f6fb0}
+ #gpCursor.locked::after{background:#2f6fb0}
+ #gpCursor.target::before{border-width:3px;border-color:#1f9d55;opacity:1}
+ #gpCursor.target::after{background:#1f9d55}
+ /* A floating pill, centred, rather than a full-width bar: the stage rail
+    (104px) and the inspector both reach down to the status bar, and a
+    full-width strip would sit on top of them. */
+ #gpLegend{position:absolute;left:50%;transform:translateX(-50%);bottom:29px;
+   height:26px;display:none;align-items:center;gap:5px;padding:0 12px;
+   font-size:11px;color:#3a3a3a;background:#fffefbF2;border:1px solid #e2ded4;
+   border-radius:13px;box-shadow:0 2px 8px #0002;pointer-events:none;z-index:6;
+   max-width:calc(100% - 230px);overflow:hidden;white-space:nowrap}
+ #gpLegend .gpKey{display:inline-block;min-width:20px;padding:1px 5px;border-radius:4px;
+   background:#3a3a3a;color:#fff;font-size:10px;font-weight:700;text-align:center;
+   font-family:ui-monospace,Consolas,monospace}
+ #gpLegend .gpAct{margin-right:9px;color:#444}
+ #gpLegend .gpCtx{color:#8a8478;font-style:italic}
+ #gpWheel{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+   flex-direction:column;background:#0003;z-index:99999;pointer-events:none}
+ #gpWheel .gpSec{fill:#fffefbF2;stroke:#d8d3c8;stroke-width:1.2}
+ #gpWheel .gpSec.on{fill:#e8641c;stroke:#c8540c}
+ #gpWheel .gpSec.dim{opacity:.45}
+ #gpWheel .gpIco{text-anchor:middle;font-size:17px;fill:#3a3a3a}
+ #gpWheel .gpIco.on,#gpWheel .gpLbl.on{fill:#fff;font-weight:700}
+ #gpWheel .gpLbl{text-anchor:middle;font-size:10.5px;fill:#4a4a4a}
+ #gpWheel .gpHub{fill:#2c2c2cF2;stroke:#1a1a1a}
+ #gpWheel .gpHubT{text-anchor:middle;font-size:13px;font-weight:700;fill:#fff}
+ #gpWheel .gpHubS{text-anchor:middle;font-size:10.5px;fill:#e8a06c}
+ #gpWheel .gpWfoot{margin-top:10px;max-width:520px;padding:6px 14px;border-radius:8px;
+   background:#2c2c2cE8;color:#f4f2ee;font-size:11.5px;text-align:center}
+ #gpBtn.on{background:#1f9d55;border-color:#1f9d55;color:#fff}
  #ctx{position:fixed;display:none;background:#fff;border:1px solid #bbb;border-radius:8px;box-shadow:0 4px 14px #0003;font-size:13px;z-index:99999;min-width:150px;max-height:80vh;overflow:auto}
  .side.hide{display:none}
  .edge{position:absolute;top:50%;transform:translateY(-50%);z-index:8;background:#2c2c2ccc;color:#fff;border:none;border-radius:0 8px 8px 0;padding:14px 5px;font-size:13px;box-shadow:0 2px 6px #0004}
@@ -152,7 +194,7 @@
  td.n{text-align:right;font-variant-numeric:tabular-nums}
  .tool{flex:1;min-width:70px;text-align:center}
  small{color:#8a8478;font-size:11px;line-height:1.35;display:block;margin-top:4px}
- @media print{header,.side,#modeHint,#hud,#ctx{display:none!important}.wrap,.stage-wrap,body{height:auto}
+ @media print{header,.side,#modeHint,#hud,#ctx,#gpLegend,#gpCursor,#gpWheel{display:none!important}.wrap,.stage-wrap,body{height:auto}
    svg#stage{filter:grayscale(1)}@page{size:A4 landscape;margin:8mm}}
 </style></head>
 <body>
@@ -161,7 +203,7 @@
  <button id="bSave">💾 Save</button>
  <label style="color:#fff;font-size:12px">📂 Load<input id="bLoad" type="file" accept="application/json" style="display:none"></label>
  <button id="bPNG">🖼 PNG A4</button><button id="bPNGg">🖼 PNG grey</button><button id="bPrint">🖨 Print</button>
- <span class="sp"></span><button id="bNew">🗑 New</button><button id="bToolsLoc">⧉ Tools: fent</button><button id="autoLayout" class="on" title="Eszközhöz igazítja a paneleket">🎛 Auto-panel</button><button id="lockBtn" title="Építmény zárolása — csak nézegetés, véletlen kijelölés nélkül">🔒 Zár</button><button id="mobileBtn" title="Érintőképernyős mód">📱 Mobil</button><button id="bPanels">⤢ Full view</button><button id="bReset">Reset view</button>
+ <span class="sp"></span><button id="bNew">🗑 New</button><button id="bToolsLoc">⧉ Tools: fent</button><button id="autoLayout" class="on" title="Eszközhöz igazítja a paneleket">🎛 Auto-panel</button><button id="lockBtn" title="Építmény zárolása — csak nézegetés, véletlen kijelölés nélkül">🔒 Zár</button><button id="mobileBtn" title="Érintőképernyős mód">📱 Mobil</button><button id="gpBtn" title="Kontroller mód (Xbox-kompatibilis USB kontroller)">🎮 Kontroller</button><button id="bPanels">⤢ Full view</button><button id="bReset">Reset view</button>
 </header>
 <div id="toolbarRow" class="tbrow"></div>
 <div class="wrap">
@@ -382,7 +424,10 @@
   <div id="stageRail"></div>
   <div id="inspector"></div>
   <div id="statusBar"></div>
+  <div id="gpLegend"></div>
  </div>
+ <div id="gpCursor"></div>
+ <div id="gpWheel"></div>
  <div id="modalBg"><div id="modal"></div></div>
  <div class="resizer" data-r="right"></div>
 

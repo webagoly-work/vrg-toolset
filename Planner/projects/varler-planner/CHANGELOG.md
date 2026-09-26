@@ -1,5 +1,63 @@
 # Changelog
 
+## Unreleased — controller support
+
+An **Xbox-compatible USB controller** as an alternative to keyboard and mouse, off by default,
+switched on with the 🎮 button in the header, ⌘K → "kontroller", or the Kontroller section of the
+settings panel. Modelled on Tropico 5's scheme, which got three things right: the sticks mean the
+same thing on every screen, a button legend is always visible and always current, and nothing is
+deeper than two presses.
+
+- **The map is anchored on one rule the user can hold in their head: the D-pad is the arrow keys.**
+  In this app the arrows already mean "step the drawing height" and "cycle the place palette" —
+  the two most-repeated operations there are. Left stick cursor, right stick yaw/pitch pivoting at
+  the cursor, analog triggers zoom, A primary click, B `Esc`, X context menu (or drop the place item
+  while drawing), Y the action wheel, LB/RB undo/redo, LS fine mode, RS recentre, Start the palette.
+- **A is the mouse button, not a "place" command**: press is `pointerdown`, release is `pointerup`.
+  Click, drag and gizmo-drag therefore all work without one line of controller-specific placement
+  code, because they go through the handlers the mouse already goes through.
+- **Free cursor and fixed reticle are one mechanism.** The cursor roams inside a box and pushing
+  past the edge drags the camera; a box of 0 collapses to a reticle locked at screen centre with the
+  world moving under it. Selection modes get a free cursor, drawing modes a locked reticle. Both
+  numbers are settings.
+- **Sticky targeting.** A thumbstick cannot hit a millimetre and does not have to — `cableSnap()`
+  already snaps. On top of that, pressing A with nothing directly under the reticle hit-tests a ring
+  around it and clicks the nearest target instead. It runs on press, not per frame; a low-rate scan
+  tints the reticle green when a target is in reach, so the stickiness is visible before you commit.
+- **The action wheel is generated from the action registry**, like the palette and the inspector —
+  a new action appears in it the moment it is registered, with nothing to maintain. Two rules shape
+  it, and they pull against each other:
+  - **The top ring is fixed** — the same eight sectors in the same places regardless of context,
+    because muscle memory is most of what makes a controller fast and it cannot learn a ring that
+    rearranges itself. Seven named groups plus Egyéb. A curated fixed-eight ring is a setting.
+  - **Unavailable actions are dimmed, not hidden**, per the registry's own rule. Pressing A on a
+    greyed entry tells you what it needs and leaves the wheel open, rather than eating the press.
+  Eight sectors of twelve is not every action and is not trying to be — the wheel is the speed
+  surface and ⌘K is the complete one — but every action is *assigned* to a sector
+  (`sum(sector.full) === ACTIONS.length`, asserted), and a full ring says how many it is not showing
+  and where they are. When a ring does overflow it keeps the runnable entries and cuts the greyed
+  ones, so a cut can never cost you something you could have run.
+  The sector pick is sticky, so recentring your thumb between aiming and pressing A doesn't lose it.
+- **The button legend** re-labels itself per mode and is most of why the scheme is quick to pick up.
+- **Two new input adapters** at the bottom of `08-interaction.js`: `PLANNER_INPUT` joins the
+  existing `PLANNER_CAM`, and `08b-gamepad.js` talks to nothing else — the same discipline
+  `07b-phone-camera.js` follows. Neither adapter adds a top-level name.
+- The reticle, wheel and legend are DOM chrome over the stage, never SVG inside `draw()`, so the
+  scene layer is untouched and no golden hash can move.
+- Config lives in its own `localStorage` key rather than in `state`, which is serialised into every
+  saved project — a per-PC input preference should not travel inside a client's plan.
+- **One change outside the controller, and it is worth knowing about.** Closing an open path or
+  cable run was only ever Enter or a double-click — registered nowhere, so findable by nobody, and
+  unreachable from a controller entirely (B is `Esc`, and `Esc` *discards* the draft). It is now a
+  registered action, `draw.finish`, which puts it in ⌘K, the status bar and the wheel as well as on
+  RS. It appears only while a run with at least two points is open.
+- **74 new assertions** (`tests/spec-23-gamepad.js`) driving the frame with a scripted pad: dead
+  zone and response curve, both cursor models, camera and clamps, placement, drag, undo/redo, the
+  wheel at both levels, the ring cut, closing a run, standing down behind a modal, off-means-off,
+  and the two invariants that matter: the scene layer is byte-identical with the controller on and off, and no
+  controller surface appears inside the stage SVG. What no test can see — whether the browser hands
+  us a pad at all — is group **G** of the browser checklist.
+
 ## 1.0.0 — the coherent foundation
 Phase 6, and the end of the refactor. Everything built before this is now standing on a structure
 that can absorb the next fifty features.

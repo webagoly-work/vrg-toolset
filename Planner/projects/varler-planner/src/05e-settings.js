@@ -48,6 +48,8 @@ function settingsPanel(){
     +`<div style="font-size:11.5px;columns:2;column-gap:18px">`
     +WALL_PRESETS.map(w=>`<div>${esc(w.n)} — <b>${w.th} mm</b></div>`).join('')+`</div>`
 
+    +gpSettingsBlock()
+
     +`<h4 style="margin:12px 0 4px">Nyelv / Language</h4>`
     +row('Felület nyelve',`<select id="stLang" style="width:140px">`
       +Object.keys(LANGS).map(k=>`<option value="${k}" ${lang()===k?'selected':''}>${LANGS[k]}</option>`).join('')
@@ -59,7 +61,66 @@ function settingsPanel(){
       state.boardZ=Math.max(0,+$('stBoard').value||BOARD_DEFAULT_Z);
       state.plenum=Math.max(0,+$('stPlen').value||DROP_PLENUM);
       const L=$('stLang').value;if(L!==lang())setLang(L);
+      gpSettingsSave();
       draw();},'Mentés');}
+
+// ---- controller (08b-gamepad.js) ----------------------------------------
+// The controller's numbers are the same KIND of thing as the ones above: a
+// professional preference that differs per person and per hand. They belong
+// in front of the user, not buried in a module. They are NOT part of `state`
+// though — sessionObj() serialises state into every saved project, and a
+// per-PC input preference has no business travelling in a client's plan.
+function gpSettingsBlock(){
+  const G=window.PLANNER_GP;
+  if(!G)return '';
+  const c=G.cfg(),D=G.defaults();
+  const row=(label,html,note)=>`<div class="mrow" style="align-items:center">`
+    +`<label style="width:190px;font-size:11.5px">${esc(label)}</label>${html}`
+    +(note?`<span style="color:#999;font-size:11px;margin-left:8px">${esc(note)}</span>`:'')+`</div>`;
+  const num=(id,val,step,min,max,suffix)=>`<input id="${id}" type="number" step="${step}" min="${min}" max="${max}" value="${val}" style="width:86px">`
+    +(suffix?` <span style="font-size:11px;color:#777">${esc(suffix)}</span>`:'');
+  return `<h4 style="margin:12px 0 4px">${esc(t('set.gamepad','Kontroller'))}</h4>`
+    +`<div style="font-size:11px;color:#777;margin-bottom:4px">`
+    +esc(t('set.gamepadNote','Bal kar: kurzor · jobb kar: kamera · ravaszok: nagyítás · Y: művelet-kerék. Rajzolás közben a kurzor a képernyő közepére rögzül, és a világ mozog alatta.'))
+    +`</div>`
+    +row('Kontroller mód',`<input id="gpOn" type="checkbox" ${c.on?'checked':''}>`,
+         G.connected()?'kontroller csatlakoztatva':'nyomj meg egy gombot a kontrolleren')
+    +row('Gombsáv mutatása',`<input id="gpLeg" type="checkbox" ${c.legend?'checked':''}>`,'alul, folyamatosan')
+    +row('Rezgés',`<input id="gpRum" type="checkbox" ${c.rumble?'checked':''}>`)
+    +row('Függőleges tengely fordítva',`<input id="gpInv" type="checkbox" ${c.invertY?'checked':''}>`,'jobb kar')
+    +row('Holtjáték',num('gpDead',c.dead,0.01,0,0.6),`alap ${D.dead}`)
+    +row('Kurzor sebesség',num('gpCur',c.cursorSpeed,25,100,3000,'px/s'),`alap ${D.cursorSpeed}`)
+    +row('Kamera sebesség',num('gpYaw',c.yawSpeed,5,10,600,'fok/s'),`alap ${D.yawSpeed}`)
+    +row('Tapadás sugara',num('gpStick',c.sticky,4,0,160,'px'),'0 = kikapcsolva')
+    +row('Kurzor doboz (kijelölés)',num('gpBoxF',c.boxFree,0.05,0,1),'a képernyő arányában; 0 = középre rögzítve')
+    +row('Kurzor doboz (rajzolás)',num('gpBoxD',c.boxDraw,0.05,0,1),'alap 0 — rögzített célkereszt')
+    +row('Művelet-kerék',`<select id="gpWheelMode" style="width:200px">`
+      +`<option value="auto" ${c.wheel==='auto'?'selected':''}>Automatikus (a műveletlistából)</option>`
+      +`<option value="curated" ${c.wheel==='curated'?'selected':''}>Rögzített 8 szelet</option>`
+      +`</select>`,'az alkerék mindig generált');}
+
+function gpSettingsSave(){
+  const G=window.PLANNER_GP;
+  if(!G||!$('gpOn'))return;
+  const numv=(id,dflt,min,max)=>{const e=$(id);if(!e)return dflt;
+    const v=+e.value;return isNaN(v)?dflt:Math.max(min,Math.min(max,v));};
+  const c=G.cfg();
+  G.set('legend',$('gpLeg').checked);
+  G.set('rumble',$('gpRum').checked);
+  G.set('invertY',$('gpInv').checked);
+  G.set('dead',numv('gpDead',c.dead,0,0.6));
+  G.set('cursorSpeed',numv('gpCur',c.cursorSpeed,100,3000));
+  // One "camera speed" knob drives both axes, keeping the default yaw:pitch
+  // ratio — two separate numbers for something the hand experiences as one
+  // thing is a setting nobody tunes correctly.
+  const yaw=numv('gpYaw',c.yawSpeed,10,600),D=G.defaults();
+  G.set('yawSpeed',yaw);
+  G.set('pitchSpeed',Math.round(yaw*(D.pitchSpeed/D.yawSpeed)));
+  G.set('sticky',numv('gpStick',c.sticky,0,160));
+  G.set('boxFree',numv('gpBoxF',c.boxFree,0,1));
+  G.set('boxDraw',numv('gpBoxD',c.boxDraw,0,1));
+  const w=$('gpWheelMode');if(w)G.set('wheel',w.value==='curated'?'curated':'auto');
+  if($('gpOn').checked!==c.on)G.setEnabled($('gpOn').checked);}
 
 registerActions([
  {id:'app.settings',label:'Beállítások és szabványok',icon:'⚙',group:'Projekt',

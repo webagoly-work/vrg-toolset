@@ -598,3 +598,120 @@ window.PLANNER_CAM={
   read(){ return {yaw:state.rot,pitch:state.pitch,zoom:state.zoom,
                   panX:state.panX,panY:state.panY,flat:state.flat}; }
 };
+
+// ==========================================================================
+// PLANNER_INPUT — the input adapter for 08b-gamepad.js
+//
+// PLANNER_CAM (above) moves the camera. A controller also has to do what the
+// MOUSE does — hover, click, drag, open a context menu — and what the ARROW
+// KEYS do — step the drawing height, cycle the place palette. Those verbs
+// live here so the gamepad driver can stay exactly what 07b-phone-camera.js
+// already is: a module that talks only to an adapter and never reaches into
+// this file's internals. With one shared scope that discipline is worth
+// keeping — see the SC / UNDO_SCOPE collision in docs/ARCHITECTURE.md.
+//
+// NO NEW TOP-LEVEL NAMES. Everything below is a method on one exported
+// object, so there is nothing here that can collide with anything.
+//
+// WHY SYNTHETIC POINTER EVENTS instead of calling the handlers directly:
+// the stage's pointerdown/move/up handlers are ~200 lines of mode-specific
+// placement, snapping and drag logic. Re-implementing any of it for the
+// controller would create a second code path to keep in sync — the bug
+// factory this project keeps designing away from. So the driver moves a
+// virtual cursor and the adapter replays it as the events a mouse sends:
+// A pressed = pointerdown, A released = pointerup. Click, drag and
+// gizmo-drag then all work with no controller-specific placement code at
+// all. setPointerCapture() rejects a synthetic pointerId, which is exactly
+// why every call site above already wraps it in try/catch.
+//
+// WHY SYNTHETIC KEY EVENTS for the editing verbs: same reason camUndo()
+// dispatches Ctrl+Z rather than calling doUndo(). The keyboard handler
+// decides, per mode, whether ArrowUp means "step the drawing height" or
+// "tilt the camera"; that decision is already made and already tested.
+// Dispatching the key reuses it. It also gives the D-pad one honest rule a
+// user can hold in their head: THE D-PAD IS THE ARROW KEYS.
+// ==========================================================================
+window.PLANNER_INPUT=(function(){
+  const PEV=(typeof PointerEvent==='function')?PointerEvent
+           :(typeof MouseEvent==='function')?MouseEvent:null;
+  const PID=9001;                       // a pointerId no real device will use
+
+  function pev(type,x,y,extra){
+    if(!PEV)return null;
+    const o=Object.assign({clientX:x,clientY:y,screenX:x,screenY:y,bubbles:true,cancelable:true,
+      pointerId:PID,pointerType:'mouse',isPrimary:true,button:0,buttons:0},extra||{});
+    let e;try{e=new PEV(type,o);}catch(_){return null;}
+    // jsdom's MouseEvent drops pointerId; put it back so the capture paths behave
+    if(e.pointerId===undefined){try{Object.defineProperty(e,'pointerId',{value:PID});}catch(_){}}
+    return e;}
+
+  function toStage(type,x,y,extra){
+    const e=pev(type,x,y,extra);
+    if(e&&typeof stage!=='undefined'&&stage&&stage.dispatchEvent)stage.dispatchEvent(e);
+    return !!e;}
+
+  // Dispatch on DOCUMENT, not window: the planner's keydown listeners are split
+  // across both (the main map on window, undo/redo and fine mode on document),
+  // and document→window bubbling is the only route that reaches all of them.
+  function keyev(key,opts){
+    if(typeof KeyboardEvent!=='function')return false;
+    let e;try{e=new KeyboardEvent('keydown',Object.assign({key,bubbles:true,cancelable:true},opts||{}));}
+    catch(_){return false;}
+    document.dispatchEvent(e);return true;}
+
+  let held=false;                        // is the virtual button down?
+
+  return {
+    // ---- what the driver has to know ----
+    mode(){return state.mode;},
+    modeLabel(){return (typeof MODENAME!=='undefined'&&MODENAME[state.mode])||state.mode;},
+
+    // Something else owns the input right now. The editors keep their own
+    // pointer handling and their own history; a modal and the palette are
+    // keyboard surfaces. The driver stands down rather than firing events
+    // into them from behind.
+    busy(){
+      if(typeof edCur==='function'&&edCur())return 'editor';
+      if(typeof modalBg!=='undefined'&&modalBg&&modalBg.style){
+        const d=modalBg.style.display;if(d&&d!=='none')return 'modal';}
+      if(typeof paletteIsOpen==='function'&&paletteIsOpen())return 'palette';
+      return null;},
+
+    stageRect(){
+      if(typeof stage==='undefined'||!stage||!stage.getBoundingClientRect)return null;
+      const r=stage.getBoundingClientRect();
+      return (r&&r.width>0&&r.height>0)?r:null;},
+
+    // ---- the mouse verbs ----
+    hover(x,y){return toStage('pointermove',x,y,{buttons:held?1:0});},
+    press(x,y){held=true;return toStage('pointerdown',x,y,{button:0,buttons:1});},
+    release(x,y){held=false;return toStage('pointerup',x,y,{button:0,buttons:0});},
+    isHeld(){return held;},
+    context(x,y){if(typeof openCtxAt==='function'){openCtxAt({clientX:x,clientY:y});return true;}return false;},
+    hitAt(x,y){try{return (typeof hitTest==='function')?hitTest({clientX:x,clientY:y}):null;}catch(_){return null;}},
+
+    // ---- the keyboard verbs, taking the same route the keys take ----
+    escape(){return keyev('Escape');},
+    heightStep(d){return keyev(d>0?'ArrowUp':'ArrowDown');},
+    cyclePick(d){return keyev(d>0?'ArrowRight':'ArrowLeft');},
+    drop(){return keyev(' ');},                       // Space — the place palette
+    flipSide(){return keyev('Control');},             // near/far wall face
+    finish(){return keyev('Enter');},                 // close an open path/cable run
+
+    // fine mode is called straight through: it needs the cursor's screen
+    // position, which a synthetic Alt keypress has no way to carry.
+    fine(on,x,y){
+      if(on){if(typeof fineOn==='function')fineOn(x,y);}
+      else{if(typeof fineOff==='function')fineOff();}
+      return true;},
+
+    // ---- readouts for the legend ----
+    sel(){
+      const n=(typeof selList==='function')?selList().length:0;
+      const l=(n&&typeof selected!=='undefined'&&selected&&typeof pLabel==='function')?pLabel(selected):'';
+      return {count:n,label:l,type:(typeof selected!=='undefined'&&selected&&selected.t)||null};},
+    hasCursor(){return (typeof cursor!=='undefined')&&!!cursor;},
+    hud(msg){const h=$('hud');if(h)h.textContent=msg;},
+    repaint(){(typeof drawSoon==='function'?drawSoon:draw)();}
+  };
+})();

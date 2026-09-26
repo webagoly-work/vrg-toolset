@@ -179,6 +179,19 @@ registerActions([
   {id:'edit.delete',alias:'delete remove',need:'Jelölj ki egy elemet.',label:'Kijelölt törlése',icon:'🗑',group:'Szerkesztés',
    when:c=>!!c.sel&&!c.inEditor,run:()=>{pushUndo();removeHit(selected);selected=null;draw();}},
 
+  // ---- closing an open run ----
+  // Enter and a double-click already did this, and neither is discoverable —
+  // nor reachable at all from a controller, where Esc (B) would DISCARD the
+  // draft rather than close it. Registering it is what the architecture rule
+  // asks for: an unregistered capability is a feature nobody can find.
+  {id:'draw.finish',alias:'finish close run path cable lezar befejez',
+   label:'Futó pálya / kábel lezárása',icon:'⏎',group:'Rajz',keys:['enter'],
+   need:'Csak rajzolás közben, ha már van legalább két pont.',
+   hint:'Ugyanaz, mint az Enter vagy a dupla kattintás.',
+   when:c=>(c.mode==='path'&&typeof pathDraft!=='undefined'&&pathDraft&&pathDraft.nodes.length>=2)
+         ||(c.mode==='cable'&&typeof draft!=='undefined'&&draft&&draft.nodes.length>=2),
+   run:c=>{if(c.mode==='path')finishPath();else finishCable();}},
+
   // ---- view ----
   {id:'view.toggle3d',alias:'3d 2d view toggle',label:'2D ↔ 3D',icon:'⬒',group:'Nézet',keys:['mod+3'],
    hint:'A két nézet külön kameraállást őriz.',run:()=>$('view3d').onclick()},
