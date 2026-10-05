@@ -351,9 +351,9 @@ const ITEMS = [
    specs:'5V→12V, 5,5×2,1mm · cikksz. 7-1-51', buses:[{t:'POWER',r:'controller'}], note:'12V eszközök USB/powerbankról.'},
   {id:'psu5v3a', role:'power', name:'5V 3A dugasztáp (AC-DC)', qty:1, logic:null, specs:'cikksz. 7-3-26', buses:[{t:'POWER',r:'controller'}], note:'Always-on/bench táp.'},
   {id:'bbpsu', role:'power', name:'Breadboard tápegység modul', qty:2, logic:null, specs:'3,3V/5V sín · cikksz. 3-2-39', buses:[{t:'POWER',r:'controller'}]},
-  {id:'vmeter', role:'power', name:'0,36" voltmérő 0–33V (zöld+piros)', qty:4, logic:null, specs:'cikksz. 8-1-38 / 8-1-33', buses:[]},
+  {id:'vmeter', role:'power', name:'0,36" voltmérő 0–33V (zöld+piros)', qty:6, logic:null, specs:'cikksz. 8-1-38 / 8-1-33 · +2 piros: SZ13324', buses:[]},
   // -- tools --
-  {id:'iron80w', role:'tool', name:'Forrasztópáka 80W állítható', qty:1, logic:null, specs:'cikksz. 14-2-13', buses:[], note:'Mostantól tudsz forrasztani — a no-solder út opcionális.'},
+  {id:'iron80w', role:'tool', name:'Forrasztópáka 80W állítható', qty:2, logic:null, specs:'cikksz. 14-2-13', buses:[], note:'Mostantól tudsz forrasztani — a no-solder út opcionális.'},
   {id:'lcrt4', role:'tool', name:'LCR-T4 alkatrész teszter', qty:1, logic:null, specs:'R/L/C/tranzisztor/ESR · cikksz. 8-1-12', buses:[]},
   {id:'hvgen', role:'tool', name:'500KV impulzusgenerátor MCY-12-1', qty:1, logic:null, specs:'cikksz. 10-9-5', buses:[], note:'NAGYFESZ ív-generátor — ÉLETVESZÉLY, csak óvatos kísérlet.'},
   // -- connectors --
@@ -362,6 +362,49 @@ const ITEMS = [
   {id:'rahdr', role:'connector', name:'Hajlított lábas anya sor (1x10/5P/8P)', qty:11, logic:null, specs:'cikksz. YXS1716', buses:[]},
   // -- consumables --
   {id:'wire_sil', role:'consumable', name:'20 AWG szilikon vezeték (fekete+piros)', qty:8, logic:null, specs:'cikksz. C-04 / C-05', buses:[]},
+
+  // ===== ÚJ HAUL (SZ13324/13325 · 2026-09-25) — a 80W páka és a piros voltmérő fent, qty-emeléssel =====
+  // -- display / input --
+  {id:'oled096', role:'peripheral', name:'0,96" OLED 128×64 fehér (I2C)', qty:4, logic:'tol',
+   specs:'jellemzően SSD1306 · I2C 0x3C (0x3D) · cikksz. 4-1-21', buses:[{t:'I2C',r:'device',addr:'0x3C'}],
+   note:'Címütközik a 1.3" OLED-dal és egymással — több kijelző egy buszon csak címváltással (0x3D) vagy muxszal.'},
+  {id:'ec11', role:'peripheral', name:'EC-11 forgóenkóder modul', qty:2, logic:'tol',
+   specs:'A/B + nyomógomb (SW) · 3 GPIO · cikksz. 3-3-4', buses:[{t:'GPIO',r:'device'}],
+   note:'A 0,96" OLED-dal kezelő-pár (menü + gomb).'},
+  // -- sensors --
+  {id:'cdm324', role:'peripheral', name:'CDM324 24GHz mikrohullámú radar (Doppler)', qty:1, logic:'tol',
+   specs:'mozgásérzékelés · analóg IF kimenet · cikksz. 2-3-14', buses:[{t:'ADC',r:'device'}],
+   note:'Doppler: mozgást lát, álló jelenlétet NEM (arra az LD2410 való — Bővítés fül). Az IF jel gyenge, erősítő kell az ADC elé.'},
+  {id:'w3230', role:'peripheral', name:'W3230 digitális termosztát 12V', qty:2, logic:null,
+   specs:'NTC szondás hőfokszabályzó · relé kimenet · 12V táp · cikksz. 8-1-70', buses:[],
+   note:'Önálló — nincs busza; MCU nélkül kapcsol hőre (ventilátor/fűtés).'},
+  // -- RF --
+  {id:'cc2531', role:'rf', name:'CC2531 Zigbee USB sniffer (XWireless)', qty:1, logic:null,
+   specs:'802.15.4 / 2,4GHz · USB dongle · cikksz. 3-1-8', buses:[{t:'USB',r:'device'}],
+   note:'PC/Pi-oldali. Z-Stack firmware-rel zigbee2mqtt-koordinátor is lehet, de csak kis hálózatra, Threadet nem tud — a rendes koordinátor dongle (Bővítés fül) továbbra is kell.'},
+  // -- power / meters --
+  {id:'vameter', role:'power', name:'DC V-A mérő 0–100V / 0–10A', qty:2, logic:null,
+   specs:'feszültség + áram kijelző · panelbe építhető · cikksz. 8-1-31', buses:[]},
+  // -- tools --
+  {id:'kws065c', role:'tool', name:'KWS-065C USB-C teszter (V / A / mAh)', qty:1, logic:null,
+   specs:'feszültség, áram, kapacitás · cikksz. 8-1-25', buses:[],
+   note:'Cella-futásidő és node-fogyasztás mérése — a runtime-log alapja. (Korábban a Bővítés fülön volt.)'},
+  {id:'pwmgen', role:'tool', name:'PWM jelgenerátor 3 csatornás', qty:1, logic:null,
+   specs:'állítható frekvencia + kitöltés · cikksz. 8-1-54', buses:[],
+   note:'Szervó/LED/MOSFET teszt MCU nélkül.'},
+  {id:'heatplate', role:'tool', name:'200W LED forrasztó fűtőlap csipesszel', qty:3, logic:null,
+   specs:'220V · 260 °C · cikksz. 14-2-17', buses:[],
+   note:'HÁLÓZATI 220V, forró felület — a szilikon alátéten használd.'},
+  {id:'tipclean', role:'tool', name:'Pákahegy-tisztító réz forgács (dobozban)', qty:2, logic:null, specs:'cikksz. 14-2-5', buses:[]},
+  {id:'silmat', role:'tool', name:'Hőálló szilikon szerelőalátét (kék)', qty:1, logic:null, specs:'cikksz. YXS2299', buses:[]},
+  {id:'esdtweez', role:'tool', name:'ESD antisztatikus csipeszkészlet (6 db)', qty:1, logic:null, specs:'műanyag · cikksz. 14-1-3', buses:[]},
+  // -- consumables --
+  {id:'fluxpen', role:'consumable', name:'Flux adagoló toll 10ml', qty:1, logic:null, specs:'cikksz. 14-1-2', buses:[]},
+  // -- DIY kits --
+  {id:'kit_tempalarm', role:'kit', name:'Hőmérséklet-riasztó DIY forrasztókészlet', qty:1, logic:null,
+   specs:'LED + hangjelzés · 5V · cikksz. 15-1-17', buses:[]},
+  {id:'kit_cd4060', role:'kit', name:'CD4060 zenélő LED-lámpa DIY forrasztókészlet', qty:1, logic:null,
+   specs:'3 színű fényhatás · cikksz. 15-1-18', buses:[]},
 
   // ---- WIRING / CONSUMABLES ----
   {id:'hdr_str', role:'consumable', name:'Színes tüskesor 40p (5 csík)', qty:2, logic:null, specs:'egyenes 2,54mm', buses:[]},
@@ -457,15 +500,23 @@ const CIKK_META = {
  "YXS1716":{sz:"SZ12585",date:"2026-09-12",ft:50},"3-2-39":{sz:"SZ12583",date:"2026-09-12",ft:500},
  "10-7-126":{sz:"SZ12583",date:"2026-09-12",ft:200},"C-04":{sz:"SZ12583",date:"2026-09-12",ft:280},
  "C-05":{sz:"SZ12583",date:"2026-09-12",ft:280},"3-1-36":{sz:"SZ12583",date:"2026-09-12",ft:400},
- "8-1-38":{sz:"SZ12583",date:"2026-09-12",ft:400},"8-1-33":{sz:"SZ12583",date:"2026-09-12",ft:400},
+ "8-1-38":{sz:"SZ12583",date:"2026-09-12",ft:400},"8-1-33":{sz:"SZ12583 / SZ13324",date:"2026-09-12 / 2026-09-25",ft:400},
  "10-4-4":{sz:"SZ12583",date:"2026-09-12",ft:100},"10-9-5":{sz:"SZ12583",date:"2026-09-12",ft:2200},
  "8-1-12":{sz:"SZ12583",date:"2026-09-12",ft:4130},
  "1-2-46":{sz:"SZ12584",date:"2026-09-12",ft:2600},"1-2-35":{sz:"SZ12584",date:"2026-09-12",ft:3700},
  "1-2-47":{sz:"SZ12584",date:"2026-09-12",ft:3100},
- "14-2-13":{sz:"SZ12585",date:"2026-09-12",ft:3000},"1-2-14":{sz:"SZ12585",date:"2026-09-12",ft:2200},
+ "14-2-13":{sz:"SZ12585 / SZ13324",date:"2026-09-12 / 2026-09-25",ft:3000},"1-2-14":{sz:"SZ12585",date:"2026-09-12",ft:2200},
  "10-7-138":{sz:"SZ12585",date:"2026-09-12",ft:280},"2-3-15":{sz:"SZ12585",date:"2026-09-12",ft:300},
  "2-1-37":{sz:"SZ12585",date:"2026-09-12",ft:990},"3-6-35":{sz:"SZ12585",date:"2026-09-12",ft:2500},
- "3-3-6":{sz:"SZ12585",date:"2026-09-12",ft:800},"1-4-8":{sz:"SZ12585",date:"2026-09-12",ft:3500}
+ "3-3-6":{sz:"SZ12585",date:"2026-09-12",ft:800},"1-4-8":{sz:"SZ12585",date:"2026-09-12",ft:3500},
+ "14-2-5":{sz:"SZ13324",date:"2026-09-25",ft:600},"8-1-31":{sz:"SZ13324",date:"2026-09-25",ft:900},
+ "8-1-70":{sz:"SZ13324",date:"2026-09-25",ft:1300},"8-1-54":{sz:"SZ13324",date:"2026-09-25",ft:1600},
+ "14-2-17":{sz:"SZ13324",date:"2026-09-25",ft:1557.33},"15-1-17":{sz:"SZ13324",date:"2026-09-25",ft:1385},
+ "15-1-18":{sz:"SZ13324",date:"2026-09-25",ft:1250},"YXS2299":{sz:"SZ13324",date:"2026-09-25",ft:750},
+ "14-1-3":{sz:"SZ13324",date:"2026-09-25",ft:600},"14-1-2":{sz:"SZ13324",date:"2026-09-25",ft:1100},
+ "8-1-25":{sz:"SZ13324",date:"2026-09-25",ft:3300},
+ "3-1-8":{sz:"SZ13325",date:"2026-09-25",ft:2699},"4-1-21":{sz:"SZ13325",date:"2026-09-25",ft:1150},
+ "2-3-14":{sz:"SZ13325",date:"2026-09-25",ft:2000},"3-3-4":{sz:"SZ13325",date:"2026-09-25",ft:580}
 };
 /* fallback cikkszám for early items whose specs lack it */
 const ID_TO_CIKK = {
@@ -485,7 +536,6 @@ const ORDER = [
  {id:'o_bench',cat:'Táp & akku',name:'Állítható bench tápegység (0–30V/5A)',unlock:'Biztonságos áramkorlátos bekapcsolás — a füst-teszt vége. Minden prototípus első védvonala.'},
  {id:'o_bms',cat:'Táp & akku',name:'2S/3S/4S BMS + balansz töltő',unlock:'A többcellás L7 pakkhoz KÖTELEZŐ — a powerbank modul csak 1S. A 4S feszmérőd ehhez passzol.'},
  {id:'o_buckboost',cat:'Táp & akku',name:'MP1584 buck + MT3608 boost készlet',unlock:'Tetszőleges sín az akkuról/12V-ról. Kiegészíti a meglévő LM2596-okat kisebb helyre.'},
- {id:'o_usbmeter',cat:'Táp & akku',name:'USB teljesítménymérő (feszültség/áram/mAh)',unlock:'Cella-futásidő és node-fogyasztás mérése — a runtime-log alapja.'},
  {id:'o_xt60',cat:'Táp & akku',name:'XT60 + JST + biztosítéktartó szett',unlock:'Rendes akku-csatlakozók a pakkhoz; nem szabad forrasztott cellalábakra bízni a terhelést.'},
 
  // ===== Csatlakozó & kábel =====
@@ -605,8 +655,8 @@ function conflicts(){
 }
 
 /* ===================== RENDER: INVENTORY ===================== */
-const ROLE_LABEL={host:'Hostok',carrier:'Hordozók',peripheral:'Perifériák',rf:'RF',programmer:'Programozók',power:'Táp / akku',connector:'Csatlakozó',tool:'Eszközök',consumable:'Fogyó'};
-const ROLE_ORDER=['host','peripheral','rf','carrier','programmer','power','connector','tool','consumable'];
+const ROLE_LABEL={host:'Hostok',carrier:'Hordozók',peripheral:'Perifériák',rf:'RF',programmer:'Programozók',power:'Táp / akku',connector:'Csatlakozó',tool:'Eszközök',consumable:'Fogyó',kit:'DIY készletek'};
+const ROLE_ORDER=['host','peripheral','rf','carrier','programmer','power','connector','tool','consumable','kit'];
 function busChips(it){ return (it.buses||[]).filter(b=>b.t!=='USB').map(b=>`<span class="bus">${b.t}${b.addr?(' '+b.addr):''}</span>`).join(''); }
 function renderInventory(){
   let html='';
