@@ -67,25 +67,47 @@ function setStage(k){state.stage=k;const st=stageByKey(k);
   $('hud').textContent=stageName(st)+' — '+stageHint(st);renderShell();}
 function shellOn(){return state.shell!==false;}
 
+// draw() calls renderShell() on every pointermove. Rebuilding the rail and the inspector
+// there threw away whatever the user was doing in them: an <input> being typed into lost
+// its focus and its half-typed value, the inspector scrolled back to the top, and every
+// stage re-ran its check() over the whole model. Both are now built as strings and only
+// written to the DOM when they actually differ, with the checks cached per scene version.
+let _chkVer=-1,_chkMap=null,_railHtml=null,_inspHtml=null;
+function stageChecks(st){if(_chkVer!==sceneVer||!_chkMap){_chkVer=sceneVer;_chkMap={};}
+  if(!(st.k in _chkMap)){try{_chkMap[st.k]=st.check()||[];}catch(_){_chkMap[st.k]=[];}}
+  return _chkMap[st.k];}
+function invalidateShell(){_chkVer=-1;_chkMap=null;_railHtml=null;_inspHtml=null;
+  if(typeof _sbHtml!=='undefined')_sbHtml=null;}
+const RAIL_MIN=330,INSP_MIN=520;      // px of stage needed before each overlay earns its place
+// A width of 0 means the page has not been laid out yet (or we are in jsdom) — that is not
+// a narrow screen, so nothing is hidden on the strength of it.
+function stageW(){const el=document.querySelector('.stage-wrap');if(!el)return 9999;
+  const wpx=el.getBoundingClientRect().width;return wpx>0?wpx:9999;}
+function railRoom(){return stageW()>=RAIL_MIN;}
+function inspRoom(){return stageW()>=INSP_MIN;}
 function renderShell(){
   const rail=$('stageRail'),insp=$('inspector');
   if(!rail||!insp)return;
   if(!shellOn()){rail.style.display='none';insp.style.display='none';return;}
-  rail.style.display='flex';
+  const showRail=railRoom();
+  rail.style.display=showRail?'flex':'none';
+  const mh=$('modeHint');if(mh)mh.style.left=showRail?'116px':'12px';   // clear of the rail
+
   const cur=state.stage||'build';
-  rail.innerHTML=STAGES.map((s,i)=>
+  const railHtml=STAGES.map((s,i)=>
     `<button class="stg${s.k===cur?' on':''}" data-k="${s.k}" title="${esc(stageHint(s))}">`
     +`<span class="stgIc">${s.icon}</span><span class="stgN">${i+1}. ${esc(stageName(s))}</span>`
     +stageBadge(s)+`</button>`).join('')
    +`<div style="flex:1"></div>`
    +`<button class="stg" id="stgPal" title="Minden parancs (Ctrl+K)"><span class="stgIc">⌘</span><span class="stgN">Parancsok</span></button>`
    +`<button class="stg" id="stgOff" title="A munkafolyamat-sáv elrejtése"><span class="stgIc">✕</span><span class="stgN">Elrejt</span></button>`;
-  rail.querySelectorAll('.stg[data-k]').forEach(b=>b.onclick=()=>setStage(b.dataset.k));
-  $('stgPal').onclick=()=>paletteOpen();
-  $('stgOff').onclick=()=>{state.shell=false;renderShell();};
+  if(railHtml!==_railHtml){_railHtml=railHtml;rail.innerHTML=railHtml;
+    rail.querySelectorAll('.stg[data-k]').forEach(b=>b.onclick=()=>setStage(b.dataset.k));
+    $('stgPal').onclick=()=>paletteOpen();
+    $('stgOff').onclick=()=>{state.shell=false;renderShell();};}
   renderInspector();}
 function stageBadge(s){let bad=0,warn=0;
-  try{(s.check()||[]).forEach(i=>{if(i.sev==='error')bad++;else if(i.sev==='warn')warn++;});}catch(_){}
+  stageChecks(s).forEach(i=>{if(i.sev==='error')bad++;else if(i.sev==='warn')warn++;});
   if(bad)return `<span class="stgB err">${bad}</span>`;
   if(warn)return `<span class="stgB wrn">${warn}</span>`;
   return '';}
@@ -135,13 +157,13 @@ function inspectorActions(sel){
   return actionsFor(ctx).filter(a=>st.groups.indexOf(a.group)>=0||(sel&&selGroups.indexOf(a.group)>=0));}
 function renderInspector(){
   const insp=$('inspector');if(!insp)return;
-  if(!shellOn()){insp.style.display='none';return;}
+  if(!shellOn()||!inspRoom()){insp.style.display='none';return;}
   const sel=(typeof selected!=='undefined')?selected:null;
   const st=stageByKey(state.stage||'build');
-  const chk=(()=>{try{return st.check()||[];}catch(_){return [];}})();
+  const chk=stageChecks(st);
   const ttl=inspectorTitle(sel),fields=inspectorFields(sel),acts=inspectorActions(sel);
   insp.style.display='block';
-  insp.innerHTML=
+  const html=
      `<div class="insHead"><b>${esc(st.icon+' '+stageName(st))}</b><span class="insSub">${esc(stageHint(st))}</span></div>`
     +(chk.length?`<div class="insChk">`+chk.map(i=>
         `<div class="ck ${i.sev}">${i.sev==='error'?'⛔':i.sev==='warn'?'⚠':i.sev==='ok'?'✔':'•'} ${esc(i.msg)}</div>`).join('')+`</div>`:'')
@@ -156,12 +178,15 @@ function renderInspector(){
     +(acts.length?`<div class="insActs">`+acts.map(a=>
         `<button class="insA" data-id="${a.id}" title="${esc(a.hint||'')}">${a.icon||'•'} ${esc(a.label)}</button>`).join('')+`</div>`
       :`<div class="insSub" style="padding:6px 10px">${esc(t('insp.pick','Válassz elemet a rajzon.'))}</div>`);
+  if(html===_inspHtml)return;               // leave the panel — and its focused input — alone
+  const sc=insp.scrollTop;_inspHtml=html;insp.innerHTML=html;insp.scrollTop=sc;
   fields.forEach(f=>{const el=$(f.id);if(!el)return;
     el.onchange=()=>{pushUndo();f.set(f.text?el.value:(+el.value||0));draw();};
     el.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el.blur();}};});
   insp.querySelectorAll('.insA').forEach(b=>b.onclick=()=>runAction(b.dataset.id));
   cktBindInspector(insp);}
 
+window.addEventListener('resize',()=>{if(typeof renderShell==='function')renderShell();});
 registerActions([
  {id:'shell.toggle',label:'Munkafolyamat-sáv be/ki',icon:'▤',group:'Nézet',alias:'shell rail workflow inspector',
   hint:'A bal oldali szakasz-sáv és a jobb oldali tulajdonság-panel.',

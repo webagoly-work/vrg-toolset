@@ -124,14 +124,20 @@ function paletteKeyLabel(k){return (k||'').replace('mod','Ctrl').replace('shift'
   .replace(/\+/g,'+').replace('space','Space').toUpperCase();}
 
 // ---- status bar: what is true right now ----
+// Validation walks the whole model, so it is cached against the scene version: a pan, a
+// hover or a camera move cannot change the counts, and draw() runs on every pointermove.
+let _vsVer=-1,_vsCache=null;
+function statusValidate(){if(_vsVer===sceneVer&&_vsCache)return _vsCache;
+  _vsVer=sceneVer;_vsCache=(typeof validateSummary==='function')?validateSummary():{error:0,warn:0};return _vsCache;}
+let _sbHtml=null;
 function statusBar(){const el=$('statusBar');if(!el)return;
   const E=(typeof edCur==='function')?edCur():null;
   const hmm=(typeof drawHmm==='function')?drawHmm(state.active):0;
   const gd=GUIDES.find(x=>x.k===state.drawHKey);
   const n=(typeof selList==='function')?selList().length:0;
-  const v=(typeof validateSummary==='function')?validateSummary():{error:0,warn:0};
+  const v=statusValidate();
   const chip=(txt,col)=>`<span class="sbChip"${col?` style="color:${col}"`:''}>${txt}</span>`;
-  el.innerHTML=
+  const html=
      chip('▣ '+(MODENAME[state.mode]||state.mode))
     +chip(t('sb.level','szint')+': '+state.active)
     +chip(t('sb.height','magasság')+': '+Math.round(hmm)+' mm'+(gd?' ('+esc(gd.l)+')':''))
@@ -142,7 +148,9 @@ function statusBar(){const el=$('statusBar');if(!el)return;
     +(v.error?chip('⛔ '+v.error+' '+t('sb.error','hiba'),'#c0392b'):'')
     +(v.warn?chip('⚠ '+v.warn+' '+t('sb.warn','figyelmeztetés'),'#c0530f'):'')
     +`<span style="flex:1"></span>`
-    +chip('⌘K / Ctrl+K — '+t('sb.cmd','parancsok'),'#777');}
+    +chip('⌘K / Ctrl+K — '+t('sb.cmd','parancsok'),'#777');
+  if(html===_sbHtml)return;                 // nothing to say that it is not already saying
+  _sbHtml=html;el.innerHTML=html;}
 const MODENAME={select:'Kijelölés',grab:'Mozgatás',wall:'Fal',floor:'Padló',build:'Építés',device:'Készülék',
   path:'Pálya',cable:'Kábel',measure:'Mérés',note:'Jegyzet',object:'Objektum',roof:'Tető',format:'Formátum'};
 
@@ -160,7 +168,11 @@ registerActions([
   _mode('select','Kijelölés','⬚',['v'],'Elemek kiválasztása és tulajdonságaik elérése.'),
   _mode('grab','Mozgatás','✥',['m'],'Kijelölt elem mozgatása a nyilakkal és a gizmóval.'),
   _mode('wall','Fal rajzolása','🧱',['w'],'Falak húzása; a végpontok a meglévő falak tengelyére ugranak.'),
-  _mode('floor','Padló rajzolása','▦',null,'Helyiség padlójának kijelölése.'),
+  _mode('floor','Padló rajzolása','▦',null,'Pont után pont, élő Terület/Kerület; az első pontra kattintva zárul.'),
+  {id:'floor.fromwalls',alias:'floor from walls enclosed room fill padlo',label:'Padló a falak közé',icon:'▦',group:'Rajz',
+   need:'Vidd a kurzort egy falakkal zárt térbe (Padló eszköz), vagy jobb klikk a rajzon.',
+   hint:'A falakkal körbezárt tér belső kontúrját veszi át padlónak — sarkokkal együtt.',
+   when:()=>!!cursor,run:()=>floorFromWalls(cursor.x,cursor.y,state.active)},
   _mode('build','Építés (ajtó/ablak/lépcső)','🚪',['b'],'Nyílászáró elhelyezése a falon; a szellemkép mutatja, hova kerül.'),
   _mode('device','Készülék','🔌',['d'],'Aljzat, kapcsoló, lámpa, kötődoboz elhelyezése.'),
   _mode('path','Pálya','〰',['p'],'Kábelpálya rajzolása; Space letesz egy dobozt, ←/→ vált a palettán.'),
@@ -193,6 +205,23 @@ registerActions([
   {id:'view.style.whiteout',label:'Fehér (whiteout) nézet',icon:'⬜',group:'Nézet',
    when:c=>c.style!=='whiteout',run:()=>{state.style='whiteout';if($('style'))$('style').value='whiteout';
      if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();}},
+  {id:'view.bp.scale',alias:'scale page drawing meretarany blueprint',label:'Rajzi méretarány (M 1:50…)',icon:'📏',group:'Nézet',
+   hint:'A hivatalos nézet vonalvastagságai és feliratai papír-milliméterben, a választott méretarányhoz.',
+   run:()=>{const opts=BP_SCALES.map(v=>`<option value="${v}" ${v===bpScaleN()?'selected':''}>M 1:${v}</option>`).join('');
+     openModal('Rajzi méretarány',
+       `<div class="mrow"><label style="width:110px">Méretarány</label><select id="bsSel" style="width:110px">${opts}</select></div>`
+      +`<div class="mrow"><label style="width:110px">Vonalvastagság</label><input id="bsFine" type="range" min="0.6" max="1.8" step="0.05" value="${bpFine()}" style="width:140px"> <span id="bsFineV">${bpFine().toFixed(2).replace('.',',')}×</span></div>`
+      +`<div class="mrow" style="font-size:10.5px;color:#888">ISO tollvastagságok: fal 0,5 · általános 0,35 · vékony 0,25 · sraffozás 0,13 mm papíron. Feliratok 1,8–4,5 mm.</div>`,
+       ()=>{state.bpScale=+$('bsSel').value||50;state.bpFine=+$('bsFine').value||1;bpUI&&bpUI();draw();
+         $('hud').textContent='Méretarány M 1:'+bpScaleN()+'.';});
+     $('bsFine').oninput=()=>{$('bsFineV').textContent=(+$('bsFine').value).toFixed(2).replace('.',',')+'×';};}},
+  {id:'view.bp.scaleview',alias:'scale view zoom meretarany',label:'Nézet a méretarány szerint',icon:'⤢',group:'Nézet',
+   hint:'A nagyítást úgy állítja, hogy a képernyőn (96 dpi) kb. valós méretarányban legyen a rajz.',
+   run:()=>bpScaleView()},
+  {id:'view.wallmerge',alias:'wall merge corners egyesites falak',label:'Falak egyesítve (vizuális)',icon:'🧱',group:'Nézet',
+   hint:'A falak egy testként jelennek meg, sarokvarratok nélkül. A hivatalos nézet mindig így rajzol. A falak külön kijelölhetők maradnak.',
+   when:c=>c.style!=='blueprint',run:()=>{state.wallMerge=!state.wallMerge;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;draw();
+     $('hud').textContent=state.wallMerge?'Falak egyesítve.':'Falak külön rajzolva.';}},
   {id:'view.reset',alias:'reset view fit zoom',label:'Nézet visszaállítása',icon:'⟲',group:'Nézet',run:()=>{resetView();draw();}},
   {id:'view.fine',label:'Finomhangolt mozgatás be/ki',icon:'🔍',group:'Nézet',
    hint:'1 mm-es lépés, 5× lassabb mozgatás. Tartva: Alt vagy F.',run:()=>fineToggle()},

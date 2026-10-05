@@ -20,7 +20,7 @@ function floorLabel(room,level){ // isometric text painted on the floor
   const th=state.labelRot*Math.PI/180, cs=Math.cos(th), sn=Math.sin(th); // rotate text within the plane
   const rax=ax*cs+bx*sn, ray=ay*cs+by*sn, rbx=-ax*sn+bx*cs, rby=-ay*sn+by*cs;
   const [w,h]=roomDims(room.poly),area=(w*h/1e6).toFixed(area_dec(w*h));
-  const col=state.style==='whiteout'?'#000':'#3a352c', sz=520*state.labelSize;
+  const col=state.style==='whiteout'?'#000':'#3a352c', sz=nvMM(NV_TXT.room)*state.labelSize;
   const m=`matrix(${rax},${ray},${rbx},${rby},${O[0]},${O[1]})`;
   const ttl=(room.num?room.num+'  ':'')+(room.name||'');
   let body=`<tspan x="0" dy="${-0.54*sz}">${esc(ttl)}</tspan>`
@@ -48,7 +48,14 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
         if(fl.level!==l||!layerShows(fl,'build'))return;
         if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;
         pushFloor(faces,fl.poly,fz+mm,dcC,'#8fa0a8','4 3',dcO);});}
-    if(wm!=='hidden')for(const r of WALLS[l])if(layerShows(r,'wall')&&soloWallOk(r,l))pushBox(faces,r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)),op);
+    if(wm!=='hidden'){const wrs=(WALLS[l]||[]).filter(r=>layerShows(r,'wall')&&soloWallOk(r,l));
+      const merge=wallMergeOn()&&wm==='solid';
+      const sibs=merge?wrs.map(r=>({r,z0:fz+(r.z0||0),z1:fz+(r.z0||0)+(r.h||wallH(l))})):null;
+      const flat=merge&&state.pitch>=88;
+      for(const r of wrs)pushBox(faces,r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)),op,false,merge?{sibs,flat}:null);
+      // from above, one contour around the whole wall body instead of a line per rectangle
+      if(flat)rectsUnionSegs(wrs).forEach(g=>{const zt=fz+wallH(l);
+        faces.push({pts:[[g[0],g[1],zt],[g[2],g[3],zt]],fill:'none',stroke:'#514c43',op:1,dash:null,key:depthOf((g[0]+g[2])/2,(g[1]+g[3])/2,zt)+40});});}
     // from straight above you cannot see height, so mark anything raised off the floor
     if(state.flat||state.pitch>=88){
       for(const r of WALLS[l])if((r.z0||0)>0&&layerShows(r,'wall')&&soloWallOk(r,l))raised.push({r,mm:r.z0,kind:'w',l});
@@ -68,7 +75,7 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
   const ordered=floorFaces.concat(solidFaces);
   let s='';for(const f of ordered){if(f.op===0)continue;const fo=f.op<1?` fill-opacity="${f.op}"`:'';
     const d=f.dash?` stroke-dasharray="${f.dash}"`:'';
-    s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}"${fo} stroke="${f.stroke}" stroke-width="${f.sw||1}"${d}/>`;}
+    s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}"${fo} stroke="${f.stroke}" stroke-width="${nvSW(f.sw||NV_PEN.edge)}"${d}/>`;}
   s+=raisedMarks(raised);
   return s+isoGridSvg();}
 // 2D badge for anything that starts above the floor (lebegő fal / dobogó) — otherwise invisible from above
@@ -118,40 +125,67 @@ function pushObj(faces,o,sel){const v=objCorners(o);
   for(const fi of FACES){const pts=fi.map(i=>v[i]);const n0=newell(pts);if(!faceVisible(n0))continue;
     const n=rotN(n0,state.rot);
     // bias by the object's own centre depth (not each face's) so the whole box sorts as a unit vs the floor → no per-face flicker
-    faces.push({pts,fill:shade(hexToRgb(o.color||'#b6a894'),n),stroke:sel?'#e30613':'#6f6455',sw:sel?2:0.9,op:0.96,key:depthOf(o.x,o.y,dz(o.level,(o.z||0)+(o.ht||600)/2))+zbias});}}
+    faces.push({pts,fill:shade(hexToRgb(o.color||'#b6a894'),n),stroke:sel?'#e30613':'#6f6455',sw:sel?NV_PEN.sel:NV_PEN.edge,op:0.96,key:depthOf(o.x,o.y,dz(o.level,(o.z||0)+(o.ht||600)/2))+zbias});}}
 // ================= BLUEPRINT (hivatalos alaprajz) RENDER =================
 function polyArea(poly){let a=0;for(let i=0,j=poly.length-1;i<poly.length;j=i++)a+=(poly[j][0]*poly[i][1]-poly[i][0]*poly[j][1]);return Math.abs(a/2);}
 // Hungarian blueprint door symbols. variant bit1 = hinge at the far jamb, bit0 = which side it opens to.
+// ---------------------------------------------------------------------------
+// PAGE SCALE. A blueprint is drawn at a drawing scale (M 1:50), so its pen
+// weights and text are PAPER millimetres, not screen units: a 0.5 mm pen at
+// 1:50 covers 25 mm of building. Everything below goes through bpSW/bpFS/bpG,
+// which is why a 100 mm partition finally reads as a 100 mm partition.
+// state.bpFine is the user's taste multiplier on top (1 = ISO).
+// ---------------------------------------------------------------------------
+const BP_SCALES=[20,25,50,75,100,200];
+const BP_PEN={wall:0.5,body:0.35,thin:0.25,fine:0.18,hair:0.13};
+const BP_TXT={title:4.5,room:3.5,body:2.5,small:1.8};
+function bpScaleN(){const v=+state.bpScale;return v>0?v:50;}
+function bpFine(){const v=+state.bpFine;return v>0?v:1;}
+function bpG(mm){return mm*bpScaleN()/50;}          // a model-mm constant tuned at 1:50, kept paper-constant
+function bpU(paperMm){return paperMm*bpScaleN()*SC*bpFine();}   // paper mm → base units
+function bpSW(paperMm){return bpU(paperMm).toFixed(3);}          // stroke-width
+function bpFS(paperMm){return bpU(paperMm).toFixed(2);}          // font-size
+// The modelling view is drawn to the SAME drawing scale. Its pens are lighter than the
+// blueprint's (it is a working view, not a plot) but they are still paper millimetres, so a
+// 100 mm partition is no longer outlined with a 22 mm line and a room name is no longer half
+// a metre tall. That proportion — fat outlines, giant labels — was the whole toy-brick look.
+const NV_PEN={thick:0.35,edge:0.25,soft:0.18,sel:0.5};      // paper mm
+const NV_TXT={room:3.5};                                     // paper mm, the room name
+function nvSW(paperMm){return bpU(paperMm).toFixed(3);}      // paper mm → base units
+function nvMM(paperMm){return paperMm*bpScaleN();}           // paper mm → model mm (label space)
+function bpDefs(){const p=bpU(1.3).toFixed(2);                   // hatch pitch, paper mm
+  return `<defs><pattern id="bph" width="${p}" height="${p}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">`
+    +`<rect width="${p}" height="${p}" fill="#fff"/><line x1="0" y1="0" x2="0" y2="${p}" stroke="#111" stroke-width="${bpSW(BP_PEN.hair)}"/></pattern></defs>`;}
 function bpDoorSymbol(q,W,o,wdt,z,corners){
   const [a,b2,c2,d2]=corners;const kind=doorKind(o);
-  let s=`<polyline points="${p2b([[a[0],a[1],z],[d2[0],d2[1],z]])}" fill="none" stroke="#111" stroke-width="1"/>`
-       +`<polyline points="${p2b([[b2[0],b2[1],z],[c2[0],c2[1],z]])}" fill="none" stroke="#111" stroke-width="1"/>`;
+  let s=`<polyline points="${p2b([[a[0],a[1],z],[d2[0],d2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
+       +`<polyline points="${p2b([[b2[0],b2[1],z],[c2[0],c2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
   const hingeAtStart=!((o.variant||0)&2), side=((o.variant||0)&1)?1:-1;
   const ux=W.horiz?1:0, uy=W.horiz?0:1, px=W.horiz?0:1, py=W.horiz?1:0;
   const cxm=(q.x0+q.x1)/2, cym=(q.y0+q.y1)/2, th=W.horiz?(q.y1-q.y0):(q.x1-q.x0);
   const u0=[W.horiz?q.x0:cxm, W.horiz?cym:q.y0], u1=[W.horiz?q.x1:cxm, W.horiz?cym:q.y1];
   const leafArc=(hinge,dirSign,wid)=>{ // leaf line + quarter-circle swing
     const end=[hinge[0]+px*wid*side, hinge[1]+py*wid*side];
-    let t=`<polyline points="${p2b([[hinge[0],hinge[1],z],[end[0],end[1],z]])}" fill="none" stroke="#111" stroke-width="1"/>`;
+    let t=`<polyline points="${p2b([[hinge[0],hinge[1],z],[end[0],end[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
     const arc=[];for(let i=0;i<=10;i++){const k=i/10*Math.PI/2;
       arc.push([hinge[0]+ux*dirSign*wid*Math.sin(k)+px*wid*side*Math.cos(k),
                 hinge[1]+uy*dirSign*wid*Math.sin(k)+py*wid*side*Math.cos(k), z]);}
-    return t+`<polyline points="${p2b(arc)}" fill="none" stroke="#111" stroke-width="0.7"/>`;};
+    return t+`<polyline points="${p2b(arc)}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;};
   const slab=(off,frac,dash)=>{ // a leaf drawn as a thin slab parallel to the wall
     const t0=off,t1=off+wdt*frac,d=th*0.32;
     const A=[W.horiz?(q.x0+t0):(cxm-d/2+px*0), W.horiz?(cym-d/2):(q.y0+t0)];
     const w0=W.horiz?(t1-t0):d, h0=W.horiz?d:(t1-t0);
     const pts=W.horiz?[[A[0],cym-d/2+side*th*0.9],[A[0]+w0,cym-d/2+side*th*0.9],[A[0]+w0,cym+d/2+side*th*0.9],[A[0],cym+d/2+side*th*0.9]]
                      :[[cxm-d/2+side*th*0.9,q.y0+t0],[cxm+d/2+side*th*0.9,q.y0+t0],[cxm+d/2+side*th*0.9,q.y0+t1],[cxm-d/2+side*th*0.9,q.y0+t1]];
-    return `<polygon points="${p2b(pts.map(pp=>[pp[0],pp[1],z]))}" fill="#fff" stroke="#111" stroke-width="0.9"${dash?' stroke-dasharray="5 3"':''}/>`;};
+    return `<polygon points="${p2b(pts.map(pp=>[pp[0],pp[1],z]))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"${dash?' stroke-dasharray="5 3"':''}/>`;};
   const arrow=(frac)=>{ // sliding direction arrow along the wall
     const t0=wdt*0.2,t1=wdt*0.8,off=side*th*1.5;
     const A=W.horiz?[q.x0+t0,cym+off]:[cxm+off,q.y0+t0], B=W.horiz?[q.x0+t1,cym+off]:[cxm+off,q.y0+t1];
     const hx=(B[0]-A[0])*0.12,hy=(B[1]-A[1])*0.12,nx=px*wdt*0.05,ny=py*wdt*0.05;
-    return `<polyline points="${p2b([[A[0],A[1],z],[B[0],B[1],z]])}" fill="none" stroke="#111" stroke-width="0.7"/>`
-      +`<polyline points="${p2b([[B[0]-hx+nx,B[1]-hy+ny,z],[B[0],B[1],z],[B[0]-hx-nx,B[1]-hy-ny,z]])}" fill="none" stroke="#111" stroke-width="0.7"/>`;};
+    return `<polyline points="${p2b([[A[0],A[1],z],[B[0],B[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`
+      +`<polyline points="${p2b([[B[0]-hx+nx,B[1]-hy+ny,z],[B[0],B[1],z],[B[0]-hx-nx,B[1]-hy-ny,z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;};
   const label=(txt)=>{const b=planToBase(cxm+px*side*th*2.4,cym+py*side*th*2.4,z);
-    return `<text x="${b[0]}" y="${b[1]}" font-size="8" text-anchor="middle" fill="#111">${esc(txt)}</text>`;};
+    return `<text x="${b[0]}" y="${b[1]}" font-size="${bpFS(BP_TXT.small)}" text-anchor="middle" fill="#111">${esc(txt)}</text>`;};
   if(kind==='opening')return s;                                   // bare structural opening: reveals only
   if(kind==='hinged'||kind==='fire'){
     s+=leafArc(hingeAtStart?u0:u1,hingeAtStart?1:-1,wdt);
@@ -162,7 +196,7 @@ function bpDoorSymbol(q,W,o,wdt,z,corners){
   if(kind==='folding'){                                           // concertina: zigzag across the opening
     const n=4,zz=[];for(let i=0;i<=n;i++){const t=i/n*wdt,dpt=(i%2?1:0)*th*0.9*side;
       zz.push([W.horiz?(q.x0+t):(cxm+dpt), W.horiz?(cym+dpt):(q.y0+t), z]);}
-    s+=`<polyline points="${p2b(zz)}" fill="none" stroke="#111" stroke-width="1"/>`;return s;}
+    s+=`<polyline points="${p2b(zz)}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;return s;}
   if(kind==='sliding'){s+=slab(0,1,false)+arrow();return s;}       // leaf parked in front of the wall
   if(kind==='pocket'){                                             // leaf disappears into the wall: dashed
     s+=slab(0,1,true)+arrow();
@@ -174,17 +208,17 @@ function bpDoorSymbol(q,W,o,wdt,z,corners){
     const th2=th*0.55,inSide=side;                                 // shown on the room side of the wall
     const c0=[W.horiz?q.x0:(cxm+inSide*th2),W.horiz?(cym+inSide*th2):q.y0];
     const c1=[W.horiz?q.x1:(cxm+inSide*th2),W.horiz?(cym+inSide*th2):q.y1];
-    s+=`<polyline points="${p2b([[c0[0],c0[1],z],[c1[0],c1[1],z]])}" fill="none" stroke="#111" stroke-width="1.2"/>`;
+    s+=`<polyline points="${p2b([[c0[0],c0[1],z],[c1[0],c1[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.wall)}"/>`;
     // the coiled drum, drawn as two arcs at the opening's ends
     [[c0,1],[c1,-1]].forEach(pair=>{const P=pair[0],dir=pair[1],rr=th*0.42,arc=[];
       for(let i=0;i<=12;i++){const k=i/12*Math.PI*1.6;
         arc.push([P[0]+ux*dir*rr*Math.sin(k)*0.5+px*inSide*rr*(1-Math.cos(k))*0.5,
                   P[1]+uy*dir*rr*Math.sin(k)*0.5+py*inSide*rr*(1-Math.cos(k))*0.5,z]);}
-      s+=`<polyline points="${p2b(arc)}" fill="none" stroke="#111" stroke-width="0.8"/>`;});
+      s+=`<polyline points="${p2b(arc)}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;});
     // the slat pack, hatched, partially projecting into the room
     const n2=6,zz=[];for(let i=0;i<=n2;i++){const t=i/n2;
       const A=[c0[0]+(c1[0]-c0[0])*t,c0[1]+(c1[1]-c0[1])*t];
-      zz.push(`<line x1="${planToBase(A[0],A[1],z)[0]}" y1="${planToBase(A[0],A[1],z)[1]}" x2="${planToBase(A[0]+px*inSide*th*0.3,A[1]+py*inSide*th*0.3,z)[0]}" y2="${planToBase(A[0]+px*inSide*th*0.3,A[1]+py*inSide*th*0.3,z)[1]}" stroke="#111" stroke-width="0.5"/>`);}
+      zz.push(`<line x1="${planToBase(A[0],A[1],z)[0]}" y1="${planToBase(A[0],A[1],z)[1]}" x2="${planToBase(A[0]+px*inSide*th*0.3,A[1]+py*inSide*th*0.3,z)[0]}" y2="${planToBase(A[0]+px*inSide*th*0.3,A[1]+py*inSide*th*0.3,z)[1]}" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`);}
     s+=zz.join('')+label('RK ↑');return s;}
   return s;}
 function bpWallSpans(r,level){const horiz=(r.x1-r.x0)>=(r.y1-r.y0);
@@ -198,18 +232,18 @@ function bpWallSpans(r,level){const horiz=(r.x1-r.x0)>=(r.y1-r.y0);
   spans.sort((a,b)=>a.u0-b.u0);return {horiz,len,thick,spans};}
 function bpSeg(r,horiz,u0,u1){return horiz?{x0:r.x0+u0,y0:r.y0,x1:r.x0+u1,y1:r.y1}:{x0:r.x0,y0:r.y0+u0,x1:r.x1,y1:r.y0+u1};}
 function bpRect(q,z){return p2b([[q.x0,q.y0,z],[q.x1,q.y0,z],[q.x1,q.y1,z],[q.x0,q.y1,z]]);}
-function bpTick(x,y,z,ang){const L=95;const a=[x-Math.cos(ang)*L,y-Math.sin(ang)*L,z],b=[x+Math.cos(ang)*L,y+Math.sin(ang)*L,z];
-  return `<polyline points="${p2b([a,b])}" fill="none" stroke="#111" stroke-width="0.9"/>`;}
+function bpTick(x,y,z,ang){const L=bpG(95);const a=[x-Math.cos(ang)*L,y-Math.sin(ang)*L,z],b=[x+Math.cos(ang)*L,y+Math.sin(ang)*L,z];
+  return `<polyline points="${p2b([a,b])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;}
 function bpTxt(x,y,z,txt,size,weight,anchor,dy){const b=planToBase(x,y,z);
-  return `<text x="${b[0].toFixed(1)}" y="${(b[1]+(dy||0)).toFixed(1)}" font-size="${size}" font-weight="${weight||400}" text-anchor="${anchor||'middle'}" fill="#111" font-family="Arial,Segoe UI">${esc(txt)}</text>`;}
+  return `<text x="${b[0].toFixed(1)}" y="${(b[1]+(dy||0)).toFixed(1)}" font-size="${bpFS(size)}" font-weight="${weight||400}" text-anchor="${anchor||'middle'}" fill="#111" font-family="Arial,Segoe UI">${esc(txt)}</text>`;}
 function bpDimChain(vals,fixed,axis,z,flip){ // axis 'x': stations along x at y=fixed
   if(vals.length<2)return '';let s='';const a=axis==='x'?[vals[0],fixed]:[fixed,vals[0]],b=axis==='x'?[vals[vals.length-1],fixed]:[fixed,vals[vals.length-1]];
-  s+=`<polyline points="${p2b([[a[0],a[1],z],[b[0],b[1],z]])}" fill="none" stroke="#111" stroke-width="0.8"/>`;
+  s+=`<polyline points="${p2b([[a[0],a[1],z],[b[0],b[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;
   const tickAng=axis==='x'?Math.PI/4:-Math.PI/4;
   vals.forEach(v=>{const px=axis==='x'?v:fixed,py=axis==='x'?fixed:v;s+=bpTick(px,py,z,tickAng);});
   for(let i=1;i<vals.length;i++){const d=Math.round(vals[i]-vals[i-1]);if(d<60)continue;
     const m=(vals[i]+vals[i-1])/2,px=axis==='x'?m:fixed,py=axis==='x'?fixed:m;
-    s+=bpTxt(px,py,z,(d/1000).toFixed(2).replace('.',','),9.5,400,'middle',flip?11:-5);}
+    s+=bpTxt(px,py,z,(d/1000).toFixed(2).replace('.',','),BP_TXT.body,400,'middle',bpU(flip?3:-1.2));}
   return s;}
 function bpBBox(level){let b={x0:1e9,y0:1e9,x1:-1e9,y1:-1e9},any=false;
   const add=p=>{b.x0=Math.min(b.x0,p[0]);b.x1=Math.max(b.x1,p[0]);b.y0=Math.min(b.y0,p[1]);b.y1=Math.max(b.y1,p[1]);any=true;};
@@ -219,46 +253,53 @@ function bpBBox(level){let b={x0:1e9,y0:1e9,x1:-1e9,y1:-1e9},any=false;
   return any?b:null;}
 function drawBlueprintGeom(){return state.pitch>=88?drawBlueprintPlan():drawBlueprintIso();}
 function drawBlueprintPlan(){const level=state.active;const z=dz(level,0);
-  let s=`<defs><pattern id="bph" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">`
-    +`<rect width="7" height="7" fill="#fff"/><line x1="0" y1="0" x2="0" y2="7" stroke="#111" stroke-width="1.5"/></pattern></defs>`;
+  let s=bpDefs();
   // ---- floors (white) ----
   const rooms=[];
   (ROOMSB[level]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level}))return;rooms.push(rm);});
   data.floors.forEach((fl,i)=>{if(fl.level!==level)return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level}))return;rooms.push(fl);});
-  rooms.forEach(rm=>{s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],z]))}" fill="#fff" stroke="#111" stroke-width="0.5"/>`;});
+  rooms.forEach(rm=>{s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],z]))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;});
   // ---- objects as thin plan outlines ----
   data.objects.forEach(o=>{if(o.level!==level||!layerShows(o,'object'))return;if(isGenObject(o)&&!genObjectsVisible())return;
-    s+=`<polygon points="${p2b(objFootprint(o))}" fill="#fff" stroke="#111" stroke-width="0.9"/>`;});
-  // ---- walls: hatched, openings cut out ----
+    s+=`<polygon points="${p2b(objFootprint(o))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;});
+  // ---- walls: hatched, openings cut out, drawn as ONE merged body ----
+  // The hatched pieces are filled first with no outline of their own; the contour is then
+  // drawn from the union of those pieces, so the seams where walls overlap or butt together
+  // never appear and the corners close symmetrically. The walls themselves are not modified.
+  const wpc=[];let sym='';
   (WALLS[level]||[]).forEach(r=>{if(!layerShows(r,'wall')||!soloWallOk(r,level))return;
     const W=bpWallSpans(r,level);let u=0;
-    W.spans.forEach(sp=>{if(sp.u0-u>1)s+=`<polygon points="${bpRect(bpSeg(r,W.horiz,u,sp.u0),z)}" fill="url(#bph)" stroke="#111" stroke-width="1.2"/>`;u=Math.max(u,sp.u1);});
-    if(W.len-u>1)s+=`<polygon points="${bpRect(bpSeg(r,W.horiz,u,W.len),z)}" fill="url(#bph)" stroke="#111" stroke-width="1.2"/>`;
+    W.spans.forEach(sp=>{if(sp.u0-u>1)wpc.push(bpSeg(r,W.horiz,u,sp.u0));u=Math.max(u,sp.u1);});
+    if(W.len-u>1)wpc.push(bpSeg(r,W.horiz,u,W.len));
     // opening symbols in the gaps
     W.spans.forEach(sp=>{const q=bpSeg(r,W.horiz,sp.u0,sp.u1),o=sp.o,wdt=sp.u1-sp.u0;
-      s+=`<polygon points="${bpRect(q,z)}" fill="#fff" stroke="none"/>`;
+      sym+=`<polygon points="${bpRect(q,z)}" fill="#fff" stroke="none"/>`;
       const a=W.horiz?[q.x0,q.y0]:[q.x0,q.y0],b2=W.horiz?[q.x1,q.y0]:[q.x0,q.y1],
             c2=W.horiz?[q.x1,q.y1]:[q.x1,q.y1],d2=W.horiz?[q.x0,q.y1]:[q.x1,q.y0];
       if(o.type==='window'){const m0=W.horiz?[q.x0,(q.y0+q.y1)/2]:[(q.x0+q.x1)/2,q.y0],m1=W.horiz?[q.x1,(q.y0+q.y1)/2]:[(q.x0+q.x1)/2,q.y1];
-        s+=`<polyline points="${p2b([[a[0],a[1],z],[b2[0],b2[1],z]])}" fill="none" stroke="#111" stroke-width="0.9"/>`
-          +`<polyline points="${p2b([[d2[0],d2[1],z],[c2[0],c2[1],z]])}" fill="none" stroke="#111" stroke-width="0.9"/>`
-          +`<polyline points="${p2b([[m0[0],m0[1],z],[m1[0],m1[1],z]])}" fill="none" stroke="#111" stroke-width="0.7"/>`;}
-      else s+=bpDoorSymbol(q,W,o,wdt,z,[a,b2,c2,d2]);});});
+        sym+=`<polyline points="${p2b([[a[0],a[1],z],[b2[0],b2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
+          +`<polyline points="${p2b([[d2[0],d2[1],z],[c2[0],c2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
+          +`<polyline points="${p2b([[m0[0],m0[1],z],[m1[0],m1[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;}
+      else sym+=bpDoorSymbol(q,W,o,wdt,z,[a,b2,c2,d2]);});});
+  // the merged body: hatch with no seams, then one contour around the union
+  wpc.forEach(q=>{s+=`<polygon points="${bpRect(q,z)}" fill="url(#bph)" stroke="none"/>`;});
+  s+=sym;
+  rectsUnionSegs(wpc).forEach(g=>{s+=`<polyline points="${p2b([[g[0],g[1],z],[g[2],g[3],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.wall)}" stroke-linecap="square"/>`;});
   // ---- stairs in plan: treads + direction arrow ----
   data.openings.forEach(o=>{if(o.level!==level||o.type!=='stairs'||!layerShows(o,'build'))return;
     const Wd=o.w||STAIR_W,going=o.going||GOING,n=Math.max(3,Math.round((o.h||wallH(level))/(o.riser||RISER)));
     const d=[Math.cos(o.ang),Math.sin(o.ang)],p=[-Math.sin(o.ang),Math.cos(o.ang)],rev=(o.variant&1)?-1:1;
     const P=(u,v)=>[o.x+d[0]*u*rev+p[0]*v, o.y+d[1]*u*rev+p[1]*v, z];
-    s+=`<polygon points="${p2b([P(0,0),P(n*going,0),P(n*going,Wd),P(0,Wd)])}" fill="#fff" stroke="#111" stroke-width="1"/>`;
-    for(let i=1;i<n;i++)s+=`<polyline points="${p2b([P(i*going,0),P(i*going,Wd)])}" fill="none" stroke="#111" stroke-width="0.6"/>`;
-    s+=`<polyline points="${p2b([P(going*0.6,Wd/2),P(n*going-going*0.6,Wd/2)])}" fill="none" stroke="#111" stroke-width="0.8"/>`;});
+    s+=`<polygon points="${p2b([P(0,0),P(n*going,0),P(n*going,Wd),P(0,Wd)])}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
+    for(let i=1;i<n;i++)s+=`<polyline points="${p2b([P(i*going,0),P(i*going,Wd)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.fine)}"/>`;
+    s+=`<polyline points="${p2b([P(going*0.6,Wd/2),P(n*going-going*0.6,Wd/2)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;});
   // ---- room labels: NAME / burkolat / area ----
   if(state.showRoomText)rooms.forEach(rm=>{if(rm.noText)return;
     let cx=0,cy=0;rm.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=rm.poly.length;cy/=rm.poly.length;
     const ar=(polyArea(rm.poly)/1e6).toFixed(2).replace('.',',');
-    s+=bpTxt(cx,cy,z,(rm.name||'HELYISÉG').toUpperCase(),11.5,700,'middle',-6);
-    if(rm.mat!==undefined?rm.mat:true)s+=bpTxt(cx,cy,z,rm.mat||'hidegburkolat',9.5,400,'middle',5);
-    s+=bpTxt(cx,cy,z,ar+' m²',9.5,400,'middle',16);});
+    s+=bpTxt(cx,cy,z,(rm.name||'HELYISÉG').toUpperCase(),BP_TXT.room,700,'middle',bpU(-1.2));
+    if(rm.mat!==undefined?rm.mat:true)s+=bpTxt(cx,cy,z,rm.mat||'hidegburkolat',BP_TXT.body,400,'middle',bpU(2.2));
+    s+=bpTxt(cx,cy,z,ar+' m²',BP_TXT.body,400,'middle',bpU(5));});
   // ---- dimension chains ----
   const bb=bpBBox(level);
   if(bb&&state.bp.dims){const xs=new Set(),ys=new Set();
@@ -273,21 +314,20 @@ function drawBlueprintPlan(){const level=state.active;const z=dz(level,0);
     s+=bpDimChain([bb.y0,bb.y1],bb.x0-1900,'y',z,false);}
   // ---- north arrow ----
   if(bb){const nx=bb.x1+2200,ny=bb.y0+300;
-    s+=`<polyline points="${p2b([[nx,ny+900,z],[nx,ny-900,z]])}" fill="none" stroke="#111" stroke-width="1"/>`
+    s+=`<polyline points="${p2b([[nx,ny+900,z],[nx,ny-900,z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
       +`<polygon points="${p2b([[nx,ny-1150,z],[nx-260,ny-500,z],[nx+260,ny-500,z]])}" fill="#111"/>`
-      +bpTxt(nx,ny-1500,z,'É',13,700,'middle',0);}
+      +bpTxt(nx,ny-1500,z,'É',BP_TXT.room,700,'middle',0);}
   // ---- title block ----
   if(bb&&state.bp.title){const tx=bb.x0,ty=bb.y0-3400;
-    const L=[[state.bp.proj||(B&&B.name)||'LAKÓÉPÜLET',13,700],
-             ['Földszinti alaprajz — '+level,11,400],
-             [state.bp.addr||'',10.5,400],[state.bp.by||'Varler Group',10.5,400]];
-    let dy=0;L.forEach(l=>{if(!l[0])return;s+=bpTxt(tx,ty,z,l[0],l[1],l[2],'start',dy);dy+=l[1]+5;});}
+    const L=[[state.bp.proj||(B&&B.name)||'LAKÓÉPÜLET',BP_TXT.title,700],
+             ['Földszinti alaprajz — '+level,BP_TXT.body,400],
+             [state.bp.addr||'',BP_TXT.small,400],[state.bp.by||'Varler Group',BP_TXT.small,400]];
+    let dy=0;L.forEach(l=>{if(!l[0])return;s+=bpTxt(tx,ty,z,l[0],l[1],l[2],'start',bpU(dy));dy+=l[1]+1.4;});}
   return s;}
-const BPDEFS=`<defs><pattern id="bph" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fff"/><line x1="0" y1="0" x2="0" y2="7" stroke="#111" stroke-width="1.5"/></pattern></defs>`;
 function pushBpBox(faces,r,z0,z1,hatchTop){const v=boxCorners(r,z0,z1);
   FACES.forEach((fi,idx)=>{const pts=fi.map(i=>v[i]);if(!faceVisible(newell(pts)))return;
     let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=4;cy/=4;cz/=4;
-    faces.push({pts,fill:(idx===0&&hatchTop)?'url(#bph)':'#fff',op:1,stroke:'#111',sw:idx===0?1.2:0.9,key:depthOf(cx,cy,cz)});});}
+    faces.push({pts,fill:(idx===0&&hatchTop)?'url(#bph)':'#fff',op:1,stroke:'#111',sw:idx===0?BP_PEN.wall:BP_PEN.body,key:depthOf(cx,cy,cz)});});}
 function bpFloorLabel(rm,level){let cx=0,cy=0;rm.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=rm.poly.length;cy/=rm.poly.length;
   const z=dz(level,0),O=planToBase(cx,cy,z),Ex=planToBase(cx+1000,cy,z),Ey=planToBase(cx,cy+1000,z);
   let ax=(Ex[0]-O[0])/1000,ay=(Ex[1]-O[1])/1000,bx=(Ey[0]-O[0])/1000,by=(Ey[1]-O[1])/1000;
@@ -299,7 +339,7 @@ function bpFloorLabel(rm,level){let cx=0,cy=0;rm.poly.forEach(p=>{cx+=p[0];cy+=p
    +`<tspan x="0" dy="${-0.5*sz}" font-size="${sz}" font-weight="700">${esc(((rm.num?rm.num+'  ':'')+(rm.name||'HELYISÉG')).toUpperCase())}</tspan>`
    +`<tspan x="0" dy="${1.05*sz}" font-size="${0.78*sz}">${esc(rm.mat||'hidegburkolat')}</tspan>`
    +`<tspan x="0" dy="${0.95*sz}" font-size="${0.78*sz}">${ar} m²</tspan></text></g>`;}
-function drawBlueprintIso(){const faces=[];let s=BPDEFS;
+function drawBlueprintIso(){const faces=[];let s=bpDefs();
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0),H=wallH(l);
     if(SLAB[l])pushFloor(faces,SLAB[l],fz,'#fff','#111',null,1);
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;pushFloor(faces,rm.poly,fz,'#fff','#111',null,1);});
@@ -320,15 +360,15 @@ function drawBlueprintIso(){const faces=[];let s=BPDEFS;
     data.objects.forEach(o=>{if(o.level!==l||!layerShows(o,'object'))return;if(isGenObject(o)&&!genObjectsVisible())return;
       const v=objCorners(o);FACES.forEach(fi=>{const pts=fi.map(i=>v[i]);if(!faceVisible(newell(pts)))return;
         let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=4;cy/=4;cz/=4;
-        faces.push({pts,fill:'#fff',op:1,stroke:'#111',sw:0.8,key:depthOf(cx,cy,cz)+18});});});
+        faces.push({pts,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.thin,key:depthOf(cx,cy,cz)+18});});});
     (data.roofs||[]).forEach(rf=>{if(rf.level!==l)return;roofFaceList(rf).forEach(fc=>{
       if(!faceVisible(newell(fc)))return;let cx=0,cy=0,cz=0;fc.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=fc.length;cy/=fc.length;cz/=fc.length;
-      faces.push({pts:fc,fill:'#fff',op:1,stroke:'#111',sw:1,key:depthOf(cx,cy,cz)+30});});});
+      faces.push({pts:fc,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.body,key:depthOf(cx,cy,cz)+30});});});
     (ROOFS[l]||[]).forEach(rf=>{const base=floorDispZ(l);const pts=rf.p.map(q=>[q[0],q[1],base+q[2]]);
       let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=pts.length;cy/=pts.length;cz/=pts.length;
-      faces.push({pts,fill:'#fff',op:1,stroke:'#111',sw:1,key:depthOf(cx,cy,cz)+30});});}
+      faces.push({pts,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.body,key:depthOf(cx,cy,cz)+30});});}
   faces.sort((a,b)=>a.key-b.key);
-  faces.forEach(f=>{s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}" stroke="${f.stroke}" stroke-width="${f.sw||1}"/>`;});
+  faces.forEach(f=>{s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}" stroke="${f.stroke}" stroke-width="${bpSW(f.sw||BP_PEN.body)}"/>`;});
   // labels on the floor plane
   if(state.showRoomText)for(const l of ORD){if(!state.levels[l])continue;
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(rm.noText||(state.soloRoom&&!soloRoomIs({src:'B',i,level:l})))return;s+=bpFloorLabel(rm,l);});
@@ -341,11 +381,11 @@ function drawBlueprintIso(){const faces=[];let s=BPDEFS;
     s+=bpDimChain(X,bb.y0-900,'x',z,false)+bpDimChain([bb.x0,bb.x1],bb.y0-1900,'x',z,false)
       +bpDimChain(Y,bb.x0-900,'y',z,false)+bpDimChain([bb.y0,bb.y1],bb.x0-1900,'y',z,false);}
   if(bb){const nx=bb.x1+2200,ny=bb.y0+300;
-    s+=`<polyline points="${p2b([[nx,ny+900,z],[nx,ny-900,z]])}" fill="none" stroke="#111" stroke-width="1"/>`
-      +`<polygon points="${p2b([[nx,ny-1150,z],[nx-260,ny-500,z],[nx+260,ny-500,z]])}" fill="#111"/>`+bpTxt(nx,ny-1500,z,'É',13,700,'middle',0);}
+    s+=`<polyline points="${p2b([[nx,ny+900,z],[nx,ny-900,z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
+      +`<polygon points="${p2b([[nx,ny-1150,z],[nx-260,ny-500,z],[nx+260,ny-500,z]])}" fill="#111"/>`+bpTxt(nx,ny-1500,z,'É',BP_TXT.room,700,'middle',0);}
   if(bb&&state.bp.title){const tx=bb.x0,ty=bb.y0-3400;
-    const L=[[state.bp.proj||(B&&B.name)||'LAKÓÉPÜLET',13,700],['Alaprajz — '+level,11,400],[state.bp.addr||'',10.5,400],[state.bp.by||'Varler Group',10.5,400]];
-    let dy=0;L.forEach(l=>{if(!l[0])return;s+=bpTxt(tx,ty,z,l[0],l[1],l[2],'start',dy);dy+=l[1]+5;});}
+    const L=[[state.bp.proj||(B&&B.name)||'LAKÓÉPÜLET',BP_TXT.title,700],['Alaprajz — '+level,BP_TXT.body,400],[state.bp.addr||'',BP_TXT.small,400],[state.bp.by||'Varler Group',BP_TXT.small,400]];
+    let dy=0;L.forEach(l=>{if(!l[0])return;s+=bpTxt(tx,ty,z,l[0],l[1],l[2],'start',bpU(dy));dy+=l[1]+1.4;});}
   return s;}
 const ROOFTYPES={flat:'Lapostető',mono:'Félnyeregtető',gable:'Nyeregtető',hip:'Kontytető'};
 function roofFaceList(rf){const base=dz(rf.level,0),ov=rf.ovh||0;
@@ -366,7 +406,7 @@ function roofFaceList(rf){const base=dz(rf.level,0),ov=rf.ovh||0;
 function pushUserRoof(faces,rf,sel){roofFaceList(rf).forEach(fc=>{
   let n=rotN(newell(fc),state.rot);if(n[2]<0)n=n.map(k=>-k);
   let cx=0,cy=0,cz=0;fc.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=fc.length;cy/=fc.length;cz/=fc.length;
-  faces.push({pts:fc,fill:shade(hexToRgb(rf.color||'#9a6b52'),n),op:0.95,stroke:sel?'#e30613':'#5d4235',sw:sel?2:1,key:depthOf(cx,cy,cz)+30});});}
+  faces.push({pts:fc,fill:shade(hexToRgb(rf.color||'#9a6b52'),n),op:0.95,stroke:sel?'#e30613':'#5d4235',sw:sel?NV_PEN.sel:NV_PEN.edge,key:depthOf(cx,cy,cz)+30});});}
 function addRoof(a,b){const x0=Math.min(a[0],b[0]),x1=Math.max(a[0],b[0]),y0=Math.min(a[1],b[1]),y1=Math.max(a[1],b[1]);
   if(x1-x0<300||y1-y0<300)return;
   const lv=state.active,H=wallH(lv);
@@ -393,10 +433,20 @@ function isoGridSvg(){if(!state.isoGrid||!state.levels.ground)return '';
 function pushFloor(faces,poly,z,fill,stroke,dash,op){let cx=0,cy=0;poly.forEach(p=>{cx+=p[0];cy+=p[1];});
   cx/=poly.length;cy/=poly.length;
   faces.push({pts:poly.map(p=>[p[0],p[1],z]),fill,stroke,dash,op,key:depthOf(cx,cy,z)-1,ground:true});}
-function pushBox(faces,r,z0,z1,op,ghost){const v=boxCorners(r,z0,z1);
+// `mg` (visual wall merge) carries the sibling walls: a face whose outside is buried in another
+// wall is not a surface anybody can see, and drawing it is what makes butted walls look chopped.
+function pushBox(faces,r,z0,z1,op,ghost,mg){const v=boxCorners(r,z0,z1);
   for(const f of FACES){const pts=f.map(i=>v[i]);const n0=newell(pts);if(!faceVisible(n0))continue;
+    if(mg&&faceBuried(pts,n0,z0,z1,mg.sibs))continue;
     const n=rotN(n0,state.rot);const cx=(r.x0+r.x1)/2,cy=(r.y0+r.y1)/2,cz=(z0+z1)/2;
-    faces.push({pts,fill:shade(ghost?[198,195,188]:[150,146,136],n),stroke:ghost?'#a49e93':'#514c43',op:ghost?Math.min(op,0.45):op,dash:null,key:depthOf(cx,cy,cz)});}}
+    const flatTop=mg&&mg.flat;   // seen from straight above the contour is drawn once, around the union
+    faces.push({pts,fill:shade(ghost?[198,195,188]:[150,146,136],n),stroke:flatTop?'none':(ghost?'#a49e93':'#514c43'),
+      op:ghost?Math.min(op,0.45):op,dash:null,key:depthOf(cx,cy,cz)});}}
+// is the space just outside this face inside another wall?
+function faceBuried(pts,n,z0,z1,sibs){const E=2;
+  let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=pts.length;cy/=pts.length;cz/=pts.length;
+  const x=cx+n[0]*E,y=cy+n[1]*E,zz=cz+n[2]*E;
+  return sibs.some(s=>x>s.r.x0+E&&x<s.r.x1-E&&y>s.r.y0+E&&y<s.r.y1-E&&zz>s.z0-E&&zz<s.z1+E);}
 function hexToRgb(h){h=(h||'#8a8f96').replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
 function pushRoof(faces,rf,l){const base=floorDispZ(l);const pts=rf.p.map(q=>[q[0],q[1],base+q[2]]);
   let n=rotN(newell(pts),state.rot);if(n[2]<0)n=n.map(k=>-k);
@@ -519,15 +569,15 @@ function stairsSym(o){const {faces,hole}=stairsFaceList(o);faces.sort((a,b)=>a.k
   return s;}
 function pushOpening(faces,o){
   if(o.type==='stairs'){const {faces:sf,hole}=stairsFaceList(o);
-    sf.forEach(f=>faces.push({pts:f.pts,fill:f.fill,op:0.92,stroke:'#5b5f63',sw:0.8,key:f.key}));
+    sf.forEach(f=>faces.push({pts:f.pts,fill:f.fill,op:0.92,stroke:'#5b5f63',sw:NV_PEN.soft,key:f.key}));
     if(hole){let cx=0,cy=0,cz=0;hole.forEach(q=>{cx+=q[0];cy+=q[1];cz+=q[2];});cx/=4;cy/=4;cz/=4;
-      faces.push({pts:hole,fill:bgCol(),op:1,stroke:'#5b5f63',sw:0.9,dash:'5 4',key:depthOf(cx,cy,cz)});}return;}
+      faces.push({pts:hole,fill:bgCol(),op:1,stroke:'#5b5f63',sw:NV_PEN.edge,dash:'5 4',key:depthOf(cx,cy,cz)});}return;}
   const d=[Math.cos(o.ang),Math.sin(o.ang)],win=o.type==='window';
   const ww=o.w||(win?WIN_W:DOOR_W),wh=o.h||(win?WIN_H:DOOR_H),sill=(o.sill!=null?o.sill:(win?WIN_SILL:0)),hw=ww/2;
   const z0=dz(o.level,sill),z1=dz(o.level,sill+wh);
   const q=[[o.x-d[0]*hw,o.y-d[1]*hw,z0],[o.x+d[0]*hw,o.y+d[1]*hw,z0],[o.x+d[0]*hw,o.y+d[1]*hw,z1],[o.x-d[0]*hw,o.y-d[1]*hw,z1]];
   let cx=0,cy=0,cz=0;q.forEach(pp=>{cx+=pp[0];cy+=pp[1];cz+=pp[2];});cx/=4;cy/=4;cz/=4;
-  faces.push({pts:q,fill:bgCol(),op:0.96,stroke:'#3a3a3a',sw:1.6,key:depthOf(cx,cy,cz)+40});}
+  faces.push({pts:q,fill:bgCol(),op:0.96,stroke:'#3a3a3a',sw:NV_PEN.thick,key:depthOf(cx,cy,cz)+40});}
 function stairsSym_OLD(o){const L=o.level,base=dz(L,0),Hlev=wallH(L);
   const d=[Math.cos(o.ang),Math.sin(o.ang)],p=[-Math.sin(o.ang),Math.cos(o.ang)],rev=(o.variant&1)?-1:1;
   const Wd=o.w||STAIR_W,riser=o.riser||RISER,going=o.going||GOING,th=o.th||STAIR_TH;
@@ -566,12 +616,16 @@ function cableLen(cb){let L=0;for(let i=1;i<cb.nodes.length;i++){const a=cb.node
 // re-assigned when its string actually changed, and transient chrome lives in
 // its own layer that can be swapped without touching the drawing.
 let _lyScene=null,_lyOverlay=null,_lastScene=null,_lastOverlay=null,_paints=0,_skips=0;
+// Bumped whenever the drawn scene actually changes. The shell (status bar, stage rail,
+// inspector) hangs its caches off this, so a pan or a hover no longer re-runs validation
+// or rebuilds their DOM — which is what used to eat the focus out of the inspector inputs.
+let sceneVer=0;
 function paintLayers(scene,overlay){
   if(!_lyScene||_lyScene.parentNode!==vp){
     vp.innerHTML='<g id="lyScene"></g><g id="lyOverlay"></g>';
     _lyScene=vp.firstChild;_lyOverlay=vp.lastChild;_lastScene=_lastOverlay=null;}
   const cs=(scene!==_lastScene),co=(overlay!==_lastOverlay);
-  if(cs){_lyScene.innerHTML=scene;_lastScene=scene;_paints++;}else _skips++;
+  if(cs){_lyScene.innerHTML=scene;_lastScene=scene;_paints++;sceneVer++;}else _skips++;
   if(co){_lyOverlay.innerHTML=overlay;_lastOverlay=overlay;_paints++;}else _skips++;
   return {scene:cs,overlay:co};}
 function paintStats(){return {paints:_paints,skips:_skips};}
@@ -630,14 +684,25 @@ function draw(){
   if(state.mode==='roof'&&roofStart&&cursor){const fz=dz(state.active,0),x0=Math.min(roofStart[0],cursor.x),x1=Math.max(roofStart[0],cursor.x),y0=Math.min(roofStart[1],cursor.y),y1=Math.max(roofStart[1],cursor.y);
     s+=`<polygon points="${p2b([[x0,y0,fz],[x1,y0,fz],[x1,y1,fz],[x0,y1,fz]])}" fill="#9a6b52" fill-opacity="0.25" stroke="#5d4235" stroke-width="1.5" stroke-dasharray="6 4"/>`;}
   // floor-draw rubber band
-  if(state.mode==='floor'&&floorStart&&cursor){const fz=dz(state.active,0),x0=Math.min(floorStart[0],cursor.x),x1=Math.max(floorStart[0],cursor.x),y0=Math.min(floorStart[1],cursor.y),y1=Math.max(floorStart[1],cursor.y);
-    s+=`<polygon points="${p2b([[x0,y0,fz],[x1,y0,fz],[x1,y1,fz],[x0,y1,fz]])}" fill="#e2ddd0" fill-opacity="0.4" stroke="#2c2c2c" stroke-width="1.5" stroke-dasharray="6 4"/>`;
-    const W_=(x1-x0),D_=(y1-y0);
-    const midT=planToBase((x0+x1)/2,y0,fz),midR=planToBase(x1,(y0+y1)/2,fz),ctr=planToBase((x0+x1)/2,(y0+y1)/2,fz);
-    s+=`<text x="${midT[0]}" y="${midT[1]-6}" font-size="11" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${(W_/1000).toFixed(2)} m</text>`
-      +`<text x="${midR[0]+8}" y="${midR[1]}" font-size="11" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${(D_/1000).toFixed(2)} m</text>`
-      +`<text x="${ctr[0]}" y="${ctr[1]}" font-size="10.5" text-anchor="middle" fill="#555" paint-order="stroke" stroke="#fff" stroke-width="3">${((W_*D_)/1e6).toFixed(2)} m²</text>`;
-    $('hud').textContent=`padló: ${(W_/1000).toFixed(2)} × ${(D_/1000).toFixed(2)} m = ${((W_*D_)/1e6).toFixed(2)} m²`;}
+  // floor outline being drawn: the points so far, the rubber-band edge, and live Terület / Kerület
+  if(state.mode==='floor'&&floorDraft&&floorDraft.length&&cursor){const fz=dz(state.active,0);
+    const pts=floorDraft.concat([[cursor.x,cursor.y]]);
+    const closing=floorNearFirst([cursor.x,cursor.y])&&floorDraft.length>=3;
+    if(pts.length>=3)s+=`<polygon points="${p2b(pts.map(p=>[p[0],p[1],fz]))}" fill="#e2ddd0" fill-opacity="${closing?0.5:0.3}" stroke="none"/>`;
+    s+=`<polyline points="${p2b(floorDraft.map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#2c2c2c" stroke-width="1.6"/>`
+      +`<polyline points="${p2b([[floorDraft[floorDraft.length-1][0],floorDraft[floorDraft.length-1][1],fz],[cursor.x,cursor.y,fz]])}" fill="none" stroke="#2c2c2c" stroke-width="1.4" stroke-dasharray="6 4"/>`;
+    if(floorDraft.length>=2)s+=`<polyline points="${p2b([[cursor.x,cursor.y,fz],[floorDraft[0][0],floorDraft[0][1],fz]])}" fill="none" stroke="#8a857b" stroke-width="1" stroke-dasharray="3 5"/>`;
+    floorDraft.forEach((p,i)=>{const b=planToBase(p[0],p[1],fz),first=i===0;
+      s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${first?(closing?6:4.5):3}" fill="${first?(closing?'#e8641c':'#fff'):'#fff'}" stroke="#2c2c2c" stroke-width="1.4"/>`;});
+    // the segment being drawn, then area + perimeter at the centroid
+    const lastP=floorDraft[floorDraft.length-1],mid=planToBase((lastP[0]+cursor.x)/2,(lastP[1]+cursor.y)/2,fz);
+    const segL=Math.hypot(cursor.x-lastP[0],cursor.y-lastP[1])/1000;
+    s+=`<text x="${mid[0]}" y="${mid[1]-7}" font-size="11" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${segL.toFixed(2)} m</text>`;
+    if(pts.length>=3){let cx=0,cy=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=pts.length;cy/=pts.length;
+      const c=planToBase(cx,cy,fz),A=polyAreaMM(pts)/1e6,P=polyPerimMM(pts,true)/1000;
+      s+=`<text x="${c[0]}" y="${c[1]-3}" font-size="11.5" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3.2">Terület ${A.toFixed(2)} m²</text>`
+        +`<text x="${c[0]}" y="${c[1]+11}" font-size="10.5" text-anchor="middle" fill="#555" paint-order="stroke" stroke="#fff" stroke-width="3">Kerület ${P.toFixed(2)} m</text>`;}
+    if(closing)s+=`<text x="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[0]}" y="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[1]-12}" font-size="10.5" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">zárás</text>`;}
   // floor labels (isometric, painted)
   if(state.style!=='blueprint')for(const l of ORD){if(!state.levels[l])continue;
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(rm.noText||(state.soloRoom&&!soloRoomIs({src:'B',i,level:l})))return;s+=floorLabel(rm,l);});

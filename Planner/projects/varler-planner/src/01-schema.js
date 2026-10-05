@@ -38,6 +38,13 @@ function ensureIds(d){d=d||data;
   // gizmo hold a wall REFERENCE, and applySnap rebuilds every wall object.
   for(const l of ORD)(WALLS[l]||[]).forEach(r=>{if(r&&!r.id)r.id=next('W');});
   d.seq=seq;return d;}
+// A copy is a NEW record. ensureIds() only fills in MISSING ids, so a copy that kept the original's
+// id stayed a second answer to it for good: byId(), the circuit end points and the Behúzás entries
+// then only ever found the first. A device copy also leaves behind what ties the original to its
+// place: its links to route nodes and its clip row.
+function copyRecord(coll,r){const c=JSON.parse(JSON.stringify(r));
+  if(c&&typeof c==='object'){delete c.id;if(coll==='devices'){delete c.link;delete c.links;delete c.clip;}}
+  return c;}
 
 // ---- lookups (linear, but memoised per call site where it matters) ----
 function byId(coll,id){if(!id)return null;const a=data[coll]||[];
@@ -105,6 +112,7 @@ function migrate(d){if(!d||typeof d!=='object')return d;
       if(p&&n)dv.link={p:p.id,n:n.id};else delete dv.link;});
     if(!d.noteHide||typeof d.noteHide!=='object')d.noteHide={};
   }
+  repairDupIds(d);                    // before v1→v2: a device index must still map to ONE id
   if(from<2){
     // v1 → v2: wiring held device INDICES (sec.circuits[].dev, swMap values), so deleting a
     // device re-pointed its wiring at the neighbour. Resolve them while the indices still mean
@@ -127,6 +135,77 @@ function migrate(d){if(!d||typeof d!=='object')return d;
   ensureIds(d);
   d.v=SCHEMA_VERSION;
   return d;}
+
+// ---- repair: several records under one id ----
+// Files saved before copyRecord() existed can hold them (NV4: three sockets all "D131"). On load
+// the FIRST keeps the id and every later one gets a fresh id from the counter. What pointed at it:
+//  - a device's links live on the device itself, so they simply travel with it;
+//  - a Behúzás entry (sec.circuits[].dev) moves to a copy only when that is unambiguous, for the
+//    whole group at once: its wire data matches exactly one of them; or the devices' own board
+//    routes account for every entry (a route crosses a section once, so a section on k of the routes
+//    carries k entries); or the devices hang on the same route node — so routing any of them writes
+//    the same entries — and every section carries exactly one entry per device;
+//  - anything else (a switch output, a circuit end point, an entry nothing explains) stays with the
+//    first and is reported — idRepairReport(), the console, and the HUD after loading.
+// Idempotent, and not a schema step: a document without repeats is left untouched.
+let idRepairLast=null;
+function repairDupIds(d){d=d||data;idRepairLast=null;
+  const dups=[];
+  UKEYS.forEach(k=>{const seen=new Map();(d[k]||[]).forEach(r=>{if(!r||typeof r!=='object'||!r.id)return;
+    if(seen.has(r.id))dups.push({k,r,id:r.id,first:seen.get(r.id)});else seen.set(r.id,r);});});
+  if(!dups.length)return null;
+  let seq=Math.max(+d.seq||0,maxIdNum(d));
+  for(const l of ORD)(WALLS[l]||[]).forEach(r=>{seq=Math.max(seq,idNum(r&&r.id));});
+  const rep={reid:[],moved:0,split:[],kept:[]},groups=new Map();  // old device id → [first, copy…]
+  dups.forEach(x=>{const nid=(IDPRE[x.k]||'X')+(++seq);
+    rep.reid.push({coll:x.k,from:x.id,to:nid,ref:String(x.r.ref||x.r.name||x.r.text||'').slice(0,30)});
+    if(x.k==='devices'){if(!groups.has(x.id))groups.set(x.id,[x.first]);groups.get(x.id).push(x.r);}
+    x.r.id=nid;});
+  d.seq=seq;
+  const wires=o=>JSON.stringify(Object.keys(o||{}).filter(k=>k!=='dev').sort().map(k=>[k,o[k]]));
+  const live=d===data&&typeof routeSections==='function';        // routes are read from the open document
+  let graph=null;
+  groups.forEach((G,X)=>{
+    const es=[];
+    (d.paths||[]).forEach((p,pi)=>(p.sections||[]).forEach((sec,si)=>{if(!sec)return;
+      (Array.isArray(sec.circuits)?sec.circuits:[]).concat(sec.circuit?[sec.circuit]:[])
+        .forEach(c=>{if(c&&c.dev===X)es.push({p,pi,si,c});});}));
+    const req=G.filter(dv=>dv.req),unsure=[],to={};
+    const move=(e,dv)=>{if(dv.id===X)return;e.c.dev=dv.id;rep.moved++;to[dv.id]=(to[dv.id]||0)+1;};
+    es.forEach(e=>{const m=req.filter(dv=>wires(dv.req)===wires(e.c)),cands=m.length?m:req;
+      if(cands.length===1)move(e,cands[0]);else{e.cands=cands;unsure.push(e);}});
+    if(unsure.length){let plan=null;
+      if(live){if(!graph)graph=buildGraph();
+        const at={};                                                // one list per section and candidate set
+        unsure.forEach(e=>{const k=e.pi+':'+e.si+'|'+e.cands.map(dv=>G.indexOf(dv)).join();(at[k]=at[k]||[]).push(e);});
+        const keys=Object.keys(at),routes=new Map(G.map(dv=>[dv,dv.req?routeSections(graph,dv):null]));
+        plan=[];
+        for(const k of keys){const list=at[k],sk=k.split('|')[0];
+          const S=list[0].cands.filter(dv=>{const r=routes.get(dv);return !!r&&r.has(sk);});
+          if(S.length!==list.length){plan=null;break;}
+          list.forEach((e,i)=>plan.push([e,S[i]]));}
+        const oneNode=cs=>{const a=cs.map(dv=>anchorNode(graph,dv.x,dv.y));return a[0]>=0&&a.every(x=>x===a[0]);};
+        if(!plan&&keys.every(k=>at[k].length===at[k][0].cands.length&&oneNode(at[k][0].cands))){
+          plan=[];keys.forEach(k=>at[k].forEach((e,i)=>plan.push([e,e.cands[i]])));}}
+      if(plan)plan.forEach(([e,dv])=>move(e,dv));
+      else rep.kept.push({what:'behúzás',id:X,n:unsure.length,by:[...new Set(unsure.map(e=>e.p.id))].join(' ')});}
+    Object.keys(to).forEach(t=>rep.split.push({from:X,to:t,n:to[t]}));
+    (d.devices||[]).forEach(sw=>{if(sw&&sw.swMap)Object.keys(sw.swMap).forEach(t=>{
+      if(sw.swMap[t]===X)rep.kept.push({what:'kapcsoló',id:X,n:1,by:(sw.ref||sw.id)+' / '+t});});});
+    (d.circuits||[]).forEach(c=>{if(c&&(c.members||[]).indexOf(X)>=0)
+      rep.kept.push({what:'áramkör végpont',id:X,n:1,by:c.ref||c.id});});
+  });
+  idRepairLast=rep;
+  try{console.warn('Kettőzött azonosítók javítva: '+rep.reid.map(r=>r.from+'→'+r.to).join(', ')
+    +(rep.moved?' · behúzás-bejegyzés átkötve: '+rep.split.map(s=>s.from+'→'+s.to+' ×'+s.n).join(', '):'')
+    +(rep.kept.length?' · az elsőnél maradt: '+rep.kept.map(k=>k.id+' '+k.what+' ×'+k.n+' ('+k.by+')').join('; '):''));}catch(_){}
+  return rep;}
+function idRepairReport(){return idRepairLast;}
+// one line for the HUD after a load, '' when nothing was repaired
+function idRepairNote(){const r=idRepairLast;if(!r)return '';
+  return ' · Kettőzött azonosító javítva: '+r.reid.length+' elem új azonosítót kapott'
+    +(r.moved?', '+r.moved+' behúzás átkötve':'')
+    +(r.kept.length?', '+r.kept.reduce((n,k)=>n+k.n,0)+' hivatkozás az elsőnél maradt (részletek a konzolon)':'');}
 
 // ---- CONNECTIVITY: derived, never stored (geometry stays the single truth) ----
 // terminals = devices that terminate a run; segments = one drawn span between two
@@ -188,3 +267,4 @@ window.devLinks=devLinks;window.linkTargets=linkTargets;window.addLink=addLink;w
 window.clearLinks=clearLinks;window.hasLinkTo=hasLinkTo;
 window.connectivity=connectivity;window.validate=validate;window.validateSummary=validateSummary;
 window.devByRef=devByRef;window.devIdOf=devIdOf;
+window.copyRecord=copyRecord;window.repairDupIds=repairDupIds;window.idRepairReport=idRepairReport;window.idRepairNote=idRepairNote;

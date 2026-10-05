@@ -118,3 +118,38 @@ Retracing an existing run adds no new geometry; it adds wires to the run that is
 ### Known weakness: `draw()` has no scheduler
 
 232 call sites, full scene rebuild each time, ~90 ms at 120 devices, running on every pointermove during a drag. The fix is layers plus a rAF-coalesced `invalidate()`, planned but not done. Don't add work inside `draw()` without measuring.
+
+### The blueprint is drawn in paper millimetres, at a scale
+
+Line weights and text used to be set in screen units: a wall outline came out ~27 mm thick on the
+building and a room label ~255 mm tall, so nothing next to them could read as being to scale — the
+plan looked like a sketch no matter how carefully it was drawn. The blueprint now has a drawing
+scale (`state.bpScale`, default M 1:50) and every weight and text size is a **paper** millimetre
+converted through it (`bpSW`/`bpFS`/`bpG`), ISO pens: 0.5 wall, 0.35 general, 0.25 thin, 0.13 hatch.
+`state.bpFine` multiplies on top, because screen and paper do not read the same and that is taste,
+not standard. Model-space constants tuned at 1:50 (tick length, dimension offsets) go through
+`bpG()` so they stay paper-constant when the scale changes. Only the blueprint works this way; the
+normal and whiteout views keep their screen-space weights, which is what makes them readable while
+modelling.
+
+### Merging walls is a rendering decision, never a stored one
+
+Walls overlap at every corner and butt end to end along a run, so drawing each rectangle's own
+outline leaves the seams that make a finished plan look chopped up. `rectsUnionSegs()` keeps only
+the edge pieces whose *outside* is not inside another wall, and the body is filled first with no
+outline of its own — so the contour is drawn once, around the union, and corners close symmetrically.
+Nothing is merged in the data: the walls stay separate records, individually selectable, editable
+and deletable, and a plan that is merged on screen still has the same nine walls underneath. In 3D
+the same rule culls faces buried inside another wall. The blueprint always merges (an official plan
+has no seams); other views get a toggle, because while modelling it helps to see where one wall ends.
+
+### A floor is a polygon, and the enclosed-room fill stops at the inner faces
+
+The floor tool draws point after point with a live Terület/Kerület and closes on its first point —
+the measure-tool gesture people already know — instead of the old two-click rectangle, which could
+not describe an L-shaped room at all. The one-click fill floods the cell grid cut by the wall edges
+from the clicked point: if the flood reaches the margin ring the space is not closed and it refuses
+rather than laying a floor over half the drawing. The outline it returns follows the **inner faces**
+of the walls, so the area is the net floor area of the room. (`createRoom` still frames its walls on
+the outline it is given, which is a centreline; the two conventions differ by half a wall on each
+side and the fill is the one that matches what a floor covering actually costs.)

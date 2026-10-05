@@ -49,6 +49,8 @@ const L10N={hu:{},en:{
 function lang(){return (state&&state.lang)||'hu';}
 function t(key,hu){const d=L10N[lang()];const v=d&&d[key];return (v!=null&&v!=='')?v:(hu!=null?hu:key);}
 function setLang(l){if(!LANGS[l])return;state.lang=l;
+  // the shell caches its markup and its check() messages, and both are translated
+  if(typeof invalidateShell==='function')invalidateShell();
   if(typeof renderShell==='function')renderShell();
   if(typeof statusBar==='function')statusBar();
   if(typeof draw==='function')draw();

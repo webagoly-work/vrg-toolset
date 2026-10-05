@@ -18,10 +18,10 @@ const HINTS={select:'Select — drag pan, wheel zoom. Click cable/device to dele
  grab:'Move (KSP-mód) — kattints bármely elemre (fal, padló, ajtó, ablak, lépcső, tető, objektum). Nyilak: eltolás · kék gyűrű: forgatás · lila: emelés · sárga sarok: átméretezés. Billentyű: WASD tol, Q/E forgat, ↑/↓ emel, Del töröl, Ctrl+D másol.',
  object:'Object — pick an item in the Objects panel, then click to place. Select it to move with WASD, rotate Q/E, lift ↑/↓; right-click for size.',
  roof:'Roof — click two points to span a roof over that area, then pick type (lapos/félnyereg/nyereg/konty), eave + ridge height and overhang. Right-click it to edit.',
- floor:'Floor — click two points to drop a floor section on the active level. Draw walls on it to make a room. Backspace cancels.',
+ floor:'Padló — pont után pont, mint a térképes területmérő; élő Terület/Kerület. Az első pontra kattintva (vagy Enterrel) zárul, Backspace visszavesz egy pontot. Falakkal zárt térbe: jobb klikk → Padló a falak közé.',
  measure:'Measure — click two points for the distance.',note:'Note — click a spot, then type text. Tip: hold LEFT+RIGHT mouse to pan while drawing; Backspace = undo last click.'};
 function setMode(m){if(m!=='select'&&typeof cktPick!=='undefined'&&cktPick)cktPick=null;   // another tool ends end point picking
-  state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorStart=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();
+  state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();
   document.querySelectorAll('.tool[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
   const wo=$('wallOpts');if(wo)wo.style.display=(m==='wall')?'flex':'none';
   $('modeHint').textContent=HINTS[m];$('modeTip').textContent=HINTS[m];if(window.__dashReady)applyToolLayout(m);
@@ -56,7 +56,13 @@ function rotateGroup(list,ang,piv){const cs=Math.cos(ang),sn=Math.sin(ang);
     // also spin each piece about its own centre so it stays oriented with the group
     if(h.t==='objects'||h.t==='openings')pRot(h,ang);});
   const lv=new Set(list.filter(h=>h.t==='wall').map(h=>h.level));lv.forEach(l=>SNAP[l]=centerlines(WALLS[l]));}
-function cloneMulti(list){const out=[];list.forEach(h=>{const nh=clonePiece(h);if(nh)out.push(nh);});return out;}
+// a copy leaves its clip row behind (copyRecord); boxes copied together with row partners form a row of their own
+function cloneMulti(list){const out=[],rows={};
+  list.forEach(h=>{const src=h.t==='devices'?pieceRef(h):null,nh=clonePiece(h);if(!nh)return;out.push(nh);
+    if(src&&src.clip)(rows[src.clip]=rows[src.clip]||[]).push(pieceRef(nh));});
+  const stamp=Date.now().toString(36);
+  Object.keys(rows).forEach((g,k)=>{if(rows[g].length>1)rows[g].forEach(d=>{d.clip='clip'+stamp+'c'+k;});});
+  return out;}
 stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
   if((e.buttons&3)===3){camDrag={m:'pitch',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(e.button===2){camDrag={m:'yaw',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
@@ -121,7 +127,13 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
       pushUndo();addWall(wallStart,p);wallStart=null;$('hud').textContent='Fal létrehozva.';}
     draw();}
   else if(state.mode==='object'){placeObject(e);}
-  else if(state.mode==='floor'){const p=wallPointSnap(e);if(!floorStart)floorStart=p;else{pushUndo();addFloor(floorStart,p);floorStart=null;}draw();}
+  else if(state.mode==='floor'){const p=floorSnap(e);
+    // point after point; clicking the first point again closes the outline and makes the floor
+    if(floorDraft&&floorDraft.length>=3&&floorNearFirst(p)){finishFloorDraft();}
+    else{if(!floorDraft)floorDraft=[];
+      const last=floorDraft[floorDraft.length-1];
+      if(!last||Math.hypot(p[0]-last[0],p[1]-last[1])>=20)floorDraft.push(p);
+      $('hud').textContent=floorDraftHud(null);draw();}}
   else if(state.mode==='roof'){const p=wallPointSnap(e);if(!roofStart)roofStart=p;else{addRoof(roofStart,p);roofStart=null;}draw();}
   else if(state.mode==='build'){const w=snapWall(e,state.active,0);if(w){pushUndo();const o={type:state.buildType,level:state.active,x:w.x,y:w.y,ang:w.ang,variant:0,layer:curLayer()};if(state.buildType==='stairs')Object.assign(o,state.stairDef);data.openings.push(o);draw();}}
   else if(state.mode==='note'){const p=snap(e,state.active);const t=prompt('Note:');if(t){pushUndo();data.notes.push({level:p.level,x:p.x,y:p.y,text:t,layer:curLayer()});}draw();}
@@ -240,7 +252,9 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
       (state.buildType==='stairs'?(state.stairDef||{}):{})):null;
     cursor=w?{x:w.x,y:w.y,level:state.active,h:0}:null;drawSoon();}
   else if(state.mode==='select'&&!dragItem&&!gizDrag){/* hover only */}
-  else if(state.mode==='floor'||state.mode==='roof'){const p=wallPointSnap(e);cursor={x:p[0],y:p[1],level:state.active,h:0};drawSoon();}
+  else if(state.mode==='floor'||state.mode==='roof'){const p=(state.mode==='floor')?floorSnap(e):wallPointSnap(e);
+    cursor={x:p[0],y:p[1],level:state.active,h:0};
+    if(state.mode==='floor')$('hud').textContent=floorDraftHud(true);drawSoon();}
   else if(state.mode==='select'){const r=wallHitRect(e);if(r!==state.hoverR){state.hoverR=r;state.hoverL=state.active;drawSoon();}}});
 stage.addEventListener('pointerup',()=>{
   if(ctrlToggle){ // a ctrl+click that did NOT turn into a drag-clone → toggle multi-selection
@@ -298,7 +312,7 @@ function panBy(dx,dy){state.panX+=dx;state.panY+=dy;setTransform();}
 function zoomBy(f){state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));setTransform();}
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();
-    draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorStart=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();if(state.mode!=='select')setMode('select');draw();return;}
+    draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();if(state.mode!=='select')setMode('select');draw();return;}
   const tag=(e.target&&e.target.tagName)||'';if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return; // don't hijack while typing
   if(state.lockTouch){ // locked: allow camera keys (WASD/QE/arrows) + undo/redo, block edits (Delete, Ctrl+D, tool keys already harmless)
     const k=e.key.toLowerCase();
@@ -353,12 +367,14 @@ window.addEventListener('keydown',e=>{
     const stepping=(state.mode==='cable'||state.mode==='path'||state.mode==='device'||(state.mode==='object'&&state.objWallSnap))&&!e.shiftKey;
     if(stepping){e.preventDefault();stepHeight(e.key==='ArrowUp'?1:-1);return;}
     e.preventDefault();setPitch(state.pitch+(e.key==='ArrowUp'?5:-5));return;}
-  if(e.key==='Enter'){if(state.mode==='cable')finishCable();else if(state.mode==='path')finishPath();return;}
+  if(e.key==='Enter'){if(state.mode==='cable')finishCable();else if(state.mode==='path')finishPath();
+    else if(state.mode==='floor'&&floorDraft)finishFloorDraft();return;}
   if(e.key==='Backspace'){
     if(state.mode==='path'&&pathDraft&&pathDraft.nodes.length){e.preventDefault();pathDraft.nodes.pop();if(pathDraft.sections.length)pathDraft.sections.pop();draw();return;}
     if(state.mode==='cable'&&draft&&draft.nodes.length){e.preventDefault();draft.nodes.pop();draw();return;}
     if(state.mode==='wall'&&wallStart){e.preventDefault();wallStart=null;draw();return;}
-    if(state.mode==='floor'&&floorStart){e.preventDefault();floorStart=null;draw();return;}
+    if(state.mode==='floor'&&floorDraft&&floorDraft.length){e.preventDefault();floorDraft.pop();
+      if(!floorDraft.length)floorDraft=null;$('hud').textContent=floorDraftHud(null);draw();return;}
     if(state.mode==='roof'&&roofStart){e.preventDefault();roofStart=null;draw();return;}}
   if(e.key==='Delete'&&state.mode==='select'&&selected){e.preventDefault();pushUndo();removeHit(selected);selected=null;draw();return;}
   if(state.mode==='grab'&&selected&&selected.t==='objects'&&e.key==='Control'){
@@ -413,6 +429,47 @@ function computeStackOffset(np){
 function nearestOnSegPlain(px,py,x0,y0,x1,y1){const dx=x1-x0,dy=y1-y0,L2=dx*dx+dy*dy||1;
   let t=((px-x0)*dx+(py-y0)*dy)/L2;t=Math.max(0,Math.min(1,t));const cx=x0+t*dx,cy=y0+t*dy;
   return {d:Math.hypot(px-cx,py-cy),t};}
+// ---- floor drawing: a polygon, like the Google Maps measure tool ----
+// Snapping is the wall snap plus the draft's own points, so an outline closes exactly on
+// its first point and edges line up with the walls they follow.
+const FLOOR_CLOSE_PX=14;
+function floorSnap(e){const p=wallPointSnap(e);
+  if(floorDraft&&floorDraft.length){const tol=Math.max(80,FLOOR_CLOSE_PX/state.zoom/SC);
+    let best=null,bd=tol;
+    floorDraft.forEach(q=>{const d=Math.hypot(p[0]-q[0],p[1]-q[1]);if(d<bd){bd=d;best=q;}});
+    if(best)return [best[0],best[1]];}
+  return p;}
+function floorNearFirst(p){if(!floorDraft||!floorDraft.length)return false;
+  const tol=Math.max(80,FLOOR_CLOSE_PX/state.zoom/SC);
+  return Math.hypot(p[0]-floorDraft[0][0],p[1]-floorDraft[0][1])<=tol;}
+// live Terület / Kerület of the draft, optionally including the point under the cursor
+function floorDraftMetrics(withCursor){const pts=(floorDraft||[]).slice();
+  if(withCursor&&cursor)pts.push([cursor.x,cursor.y]);
+  return {n:pts.length,area:pts.length>=3?polyAreaMM(pts)/1e6:0,
+    per:polyPerimMM(pts,pts.length>=3)/1000,pts};}
+function floorDraftHud(withCursor){const m=floorDraftMetrics(withCursor);
+  if(!m.n)return 'Padló: kattints az első pontra. (a falakra és sarkokra illeszkedik)';
+  if(m.n<3)return 'Padló: '+m.n+' pont · kerület '+m.per.toFixed(2)+' m — Backspace: vissza, Esc: elvet';
+  return 'Padló: '+m.n+' pont · terület '+m.area.toFixed(2)+' m² · kerület '+m.per.toFixed(2)
+    +' m — az első pontra kattintva zárul (Enter is), Backspace: vissza';}
+function finishFloorDraft(){if(!floorDraft||floorDraft.length<3){$('hud').textContent='Legalább 3 pont kell a padlóhoz.';return false;}
+  pushUndo(UNDO_SCOPE.floor);
+  const ix=addFloorPoly(floorDraft,{level:state.active});
+  const m=floorDraftMetrics(false);floorDraft=null;
+  if(ix<0){draw();$('hud').textContent='Túl kicsi terület — nem jött létre padló.';return false;}
+  selected={t:'floors',i:ix,level:state.active};draw();
+  $('hud').textContent='Padló kész: '+m.area.toFixed(2)+' m² · kerület '+m.per.toFixed(2)+' m. Nevet az adatlapon adhatsz neki.';
+  return true;}
+// one click inside a space closed by walls: the floor takes its whole inner outline
+function floorFromWalls(x,y,level){level=level||state.active;
+  const poly=enclosedOutlineAt(x,y,level);
+  if(!poly){$('hud').textContent='Itt nincs falakkal zárt tér — rajzold körbe kézzel (Padló eszköz), vagy zárd be a falakat.';return false;}
+  pushUndo(UNDO_SCOPE.floor);
+  const ix=addFloorPoly(poly,{level});
+  if(ix<0){$('hud').textContent='A zárt tér túl kicsi.';return false;}
+  selected={t:'floors',i:ix,level};draw();
+  $('hud').textContent='Padló a falak közé: '+(polyAreaMM(poly)/1e6).toFixed(2)+' m² · kerület '+(polyPerimMM(poly,true)/1000).toFixed(2)+' m.';
+  return true;}
 function finishPath(){if(pathDraft&&pathDraft.nodes.length>=2){pathDraft.id='p'+Date.now().toString(36);pathDraft.lane=0;
     const off=computeStackOffset(pathDraft);
     if(off!==0){pathDraft.zoff=off;   // push every node down by |off| mm so it renders under the existing path

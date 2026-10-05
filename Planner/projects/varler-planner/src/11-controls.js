@@ -17,6 +17,8 @@ $('style').onchange=e=>{state.style=e.target.value;bpUI();
     $('hud').textContent='Blueprint nézet — 2D felülnézetre váltottam.';}
   draw();};
 $('wallMode').onchange=e=>{state.wallMode=e.target.value;draw();};
+if($('wallMerge'))$('wallMerge').onchange=e=>{state.wallMerge=e.target.checked;draw();
+  $('hud').textContent=state.wallMerge?'Falak egyesítve — csak a külső kontúr látszik, a falak külön kijelölhetők maradnak.':'Falak külön rajzolva.';};
 $('explode').onchange=e=>{state.exploded=e.target.checked;draw();};
 $('grid').onchange=e=>state.grid=e.target.checked;$('gridSize').onchange=e=>state.gridSize=+e.target.value;
 $('isoGrid').onchange=e=>{state.isoGrid=e.target.checked;draw();};
@@ -37,7 +39,26 @@ $('bpEdit').onclick=()=>openModal('Címblokk',
  +`<div class="mrow">Készítette <input id="tpB" value="${esc(state.bp.by||'Varler Group')}" style="width:220px"></div>`,
   ()=>{state.bp.proj=$('tpP').value;state.bp.addr=$('tpA').value;state.bp.by=$('tpB').value;draw();});
 function bpUI(){const on=state.style==='blueprint';$('bpOpts').style.display=on?'flex':'none';
-  $('bpDims').checked=state.bp.dims;$('bpTitle').checked=state.bp.title;}
+  $('bpDims').checked=state.bp.dims;$('bpTitle').checked=state.bp.title;
+  // the drawing scale drives the modelling view's pens and labels too, so it is always offered
+  ['bpScaleRow','bpFineRow'].forEach(id=>{if($(id))$(id).style.display='flex';});
+  const sel=$('bpScale');
+  if(sel){if(!sel.options.length)sel.innerHTML=BP_SCALES.map(v=>`<option value="${v}">M 1:${v}</option>`).join('');
+    sel.value=String(bpScaleN());}
+  if($('bpFine')){$('bpFine').value=bpFine();$('bpFineV').textContent=bpFine().toFixed(2).replace('.',',')+'×';}}
+if($('bpScale'))$('bpScale').onchange=e=>{state.bpScale=+e.target.value||50;draw();
+  $('hud').textContent='Méretarány M 1:'+bpScaleN()+' — a vonalvastagságok és feliratok papír-milliméterben, mindkét nézetben.';};
+if($('bpFine'))$('bpFine').oninput=e=>{state.bpFine=+e.target.value||1;
+  $('bpFineV').textContent=bpFine().toFixed(2).replace('.',',')+'×';draw();};
+if($('bpFit'))$('bpFit').onclick=()=>bpScaleView();
+// Zoom so the drawing is really at its scale on screen: one paper mm = one screen mm (96 dpi).
+// SC is base units per model mm, and the stage <svg> maps W base units onto its client width.
+function bpScaleView(){const el=$('stage'),k=el?(el.getBoundingClientRect().width/W)||1:1;
+  const px=96/25.4;                                  // CSS px per physical mm
+  const z=px/(bpScaleN()*SC*k);
+  const cx=(W/2-state.panX)/state.zoom, cy=(Hh/2-state.panY)/state.zoom;   // keep the view centre
+  state.zoom=z;state.panX=W/2-cx*z;state.panY=Hh/2-cy*z;setTransform();draw();
+  $('hud').textContent='Nézet M 1:'+bpScaleN()+' szerint — a képernyőn kb. valós méretarány (96 dpi).';}
 $('bNumber').onclick=()=>autoNumber();$('bCableList').onclick=()=>showCableList();$('bSched').onclick=()=>showSchedule();$('bWireList').onclick=()=>showWireList();
 if($('bSwitchRep'))$('bSwitchRep').onclick=()=>showSwitchReport();
 $('showRefs').onchange=e=>{state.showRefs=e.target.checked;draw();};
@@ -192,7 +213,7 @@ $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileR
   Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   if(o.layers)layers=o.layers;if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
-function syncUI(){setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;$('explode').checked=state.exploded;
+function syncUI(){setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;$('explode').checked=state.exploded;
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   $('lvBase').checked=state.levels.basement;$('lvGround').checked=state.levels.ground;$('lvUpper').checked=state.levels.upper;
   $('hBase').value=LH.basement;$('hGround').value=LH.ground;$('hUpper').value=LH.upper;if(typeof dcSync==='function')dcSync();

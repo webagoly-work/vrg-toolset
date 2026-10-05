@@ -76,6 +76,13 @@ WALLS[level]  SLAB[level]  GHOST[level]  ROOMSB[level]  ROOFS[level]  SNAP[level
 per-document counter that only moves forward, so an id is never reused. `ensureIds()` is
 idempotent and runs wherever a document is snapshotted, saved or loaded, rather than at every
 creation site. `data.v` is the schema version; `migrate()` upgrades older files on load.
+Because `ensureIds()` only fills in *missing* ids, **every copy must go through
+`copyRecord(coll, rec)`**, which drops the id (and, for a device, its links and clip row) — a
+plain `JSON.parse(JSON.stringify(x))` or `Object.assign({}, x)` copy keeps the original's id,
+which is how NV4 ended up with three sockets called `D131`. Files saved before that fix are
+mended on load by `repairDupIds()` (called from `migrate()`, no version step): the first record
+keeps the id, the rest get fresh ones, and a Behúzás entry moves to a copy only when that is
+unambiguous; anything else stays with the first and is reported (`idRepairReport()`, console, HUD).
 
 **Cross-references are ids, not indices.** `dev.link = {p:'P3', n:'n12'}`; resolve with
 `linkTarget(dev)`, which returns `null` when either end is gone. Deleting anything is therefore

@@ -266,6 +266,15 @@ function routeDevice(i,mode,targetDev,silent){const D=data.devices[i];if(!D.req)
     (pa.sections[e.si].circuits=pa.sections[e.si].circuits||[]).push(Object.assign({},D.req,{dev:devId}));hops++;
     cur=prev[cur].u;if(mode==='next'&&boxes.has(cur)&&cur!==dst)break;}
   if(!silent){draw();$('hud').textContent=`Behúzva: ${hops} szakasz${mode==='next'?' (köv. dobozig)':mode==='pick'?' (célig)':' (szekrényig)'}.`;}}
+// the sections routeDevice(…,'board') would fill for D, as 'pi:si' keys — read only; null when there
+// is no route. Tells apart devices that were saved under one id (repairDupIds, 01-schema.js).
+function routeSections(g,D){if(!g.nodes.length)return null;
+  const dst=anchorNode(g,D.x,D.y),bd=nearestBoard(D.x,D.y);if(dst<0||!bd)return null;
+  const src=boardAnchor(g,bd);if(src<0)return null;
+  const {prev}=dijkstra(g,src);if(dst!==src&&!prev[dst])return null;
+  const out=new Set();let cur=dst,guard=0;
+  while(cur!==src&&prev[cur]&&guard++<9999){const e=prev[cur].e;out.add(e.pi+':'+e.si);cur=prev[cur].u;}
+  return out;}
 function runDevice(i){routeDevice(i,'board');}
 function clearRouting(silent){if(!silent)pushUndo();data.paths.forEach(pa=>pa.sections.forEach(sec=>{if(sec&&sec.circuits)delete sec.circuits;}));if(!silent)draw();}
 function recomputeRouting(){pushUndo();clearRouting(true);data.devices.forEach((D,i)=>{if(D.req)routeDevice(i,'board',null,true);});draw();$('hud').textContent='Útvonalak újraszámolva.';}
@@ -384,12 +393,12 @@ stage.addEventListener('contextmenu',e=>{e.preventDefault();if(ctxSuppress){ctxS
   const oh=hitTest(e);
   if(oh&&oh.t==='roofs'){const R=data.roofs[oh.i];ctxMenu(e,[
     {label:'📐 Tető beállítás',act:()=>roofDlg('Tető beállítás',R,v=>{pushUndo();Object.assign(R,v);draw();})},
-    {label:'⧉ Másolás',act:()=>{pushUndo();data.roofs.push(Object.assign({},R,{y0:R.y0+(R.y1-R.y0)+500,y1:R.y1+(R.y1-R.y0)+500}));draw();}},
+    {label:'⧉ Másolás',act:()=>{pushUndo();data.roofs.push(Object.assign(copyRecord('roofs',R),{y0:R.y0+(R.y1-R.y0)+500,y1:R.y1+(R.y1-R.y0)+500}));draw();}},
     {label:'🗑 Törlés',act:()=>{pushUndo();data.roofs.splice(oh.i,1);selected=null;draw();}}]);return;}
   if(oh&&oh.t==='objects'){const O=data.objects[oh.i];ctxMenu(e,[
     {label:'📐 Méretek',act:()=>objDimModal('Objektum méretei',{n:O.name,w:O.w,d:O.d,ht:O.ht,z:O.z||0},v=>{pushUndo();O.name=v.n;O.w=v.w;O.d=v.d;O.ht=v.ht;O.z=v.z;draw();})},
     {label:'↻ Forgatás 15°',act:()=>{pushUndo();O.ang=(O.ang||0)+Math.PI/12;draw();}},
-    {label:'⧉ Másolás',act:()=>{pushUndo();data.objects.push(Object.assign({},O,{x:O.x+(O.w||600)+200}));draw();}},
+    {label:'⧉ Másolás',act:()=>{pushUndo();data.objects.push(Object.assign(copyRecord('objects',O),{x:O.x+(O.w||600)+200}));draw();}},
     {label:'→ Réteg…',act:()=>sendToLayer(O)},
     {label:'⬆ Előre hozás (floor fölé)',act:()=>{pushUndo();O.zord=(O.zord||0)+1;draw();}},
     {label:'⬇ Hátra küldés (floor alá)',act:()=>{pushUndo();O.zord=(O.zord||0)-1;draw();}},
@@ -413,7 +422,7 @@ stage.addEventListener('contextmenu',e=>{e.preventDefault();if(ctxSuppress){ctxS
         items.push({label:'⇄ Zsanér oldal (bal ↔ jobb)',act:()=>{pushUndo();oo.variant=((oo.variant||0)^2)&3;draw();
           $('hud').textContent='Zsanér: '+(((oo.variant||0)&2)?'túlsó tok':'közeli tok');}});
         items.push({label:'⇅ Nyitásirány (befelé ↔ kifelé)',act:()=>{pushUndo();oo.variant=((oo.variant||0)^1)&3;draw();
-          $('hud').textContent='Nyitásirány átfordítva.';}});}items.push({label:'⧉ Másolás',act:()=>{pushUndo();const d=[Math.cos(oo.ang),Math.sin(oo.ang)],off=(oo.w||1000);data.openings.push(Object.assign({},oo,{x:oo.x+d[0]*off,y:oo.y+d[1]*off}));draw();}});items.push({label:'→ Réteg…',act:()=>sendToLayer(oo)});}
+          $('hud').textContent='Nyitásirány átfordítva.';}});}items.push({label:'⧉ Másolás',act:()=>{pushUndo();const d=[Math.cos(oo.ang),Math.sin(oo.ang)],off=(oo.w||1000);data.openings.push(Object.assign(copyRecord('openings',oo),{x:oo.x+d[0]*off,y:oo.y+d[1]*off}));draw();}});items.push({label:'→ Réteg…',act:()=>sendToLayer(oo)});}
     if(h.t==='devices')deviceExtraItems(h.i,items);
     if(h.t==='notes')ntMenu(items,h.i);                                 // note RCO: 10b-notes.js
     if(h.t==='floors'){const rh0={rm:data.floors[h.i],src:'F',i:h.i,level:data.floors[h.i].level};
@@ -438,6 +447,8 @@ stage.addEventListener('contextmenu',e=>{e.preventDefault();if(ctxSuppress){ctxS
     {label:(state.bg.visible?'🚫 Háttér elrejtése':'👁 Háttér mutatása'),act:()=>{state.bg.visible=!state.bg.visible;draw();}},
     {label:'◐ Háttér beállítás',act:()=>bgSettings()},{label:'🗑 Háttér törlése',act:()=>{state.bg=null;draw();}});
   if(state.soloRoom)bgItems.push({label:'👁 Összes helyiség',act:()=>{state.soloRoom=null;draw();}});
+  {const z0=dz(state.active,0),pt=baseToPlan(...clientToBase(e),z0);
+   bgItems.unshift({label:'▦ Padló a falak közé (zárt tér kitöltése)',act:()=>floorFromWalls(pt[0],pt[1],state.active)});}
   qrMenu(bgItems,'stage',null);                                         // QR: wifi / url / phone
   ctxMenu(e,bgItems);});
 function hideCtx(){ctx.style.display='none';}

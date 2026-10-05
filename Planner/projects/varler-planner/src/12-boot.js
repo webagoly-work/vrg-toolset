@@ -42,9 +42,11 @@ function renderObjList(){const el=$('objList');if(!el)return;const q=(($('objSea
 // below read/write centre (cx,cy), footprint (w,d), rotation (ang), base z and
 // height (ht) uniformly across walls / floors / openings / stairs / roofs /
 // objects / devices, so one gizmo can grab-offset-rotate-resize them all.
-function clonePiece(h){if(!h)return null;
-  if(h.t==='wall'){const a=WALLS[h.level],c=JSON.parse(JSON.stringify(a[a.indexOf(h.ref)]));a.push(c);SNAP[h.level]=centerlines(a);return {t:'wall',level:h.level,ref:c};}
-  const arr=data[h.t];if(!arr)return null;const c=JSON.parse(JSON.stringify(arr[h.i]));arr.push(c);return {t:h.t,i:arr.length-1};}
+// Ctrl+drag and Ctrl+D copy through here; the copy gets its own id from the counter at once
+function clonePiece(h){if(!h)return null;let nh;
+  if(h.t==='wall'){const a=WALLS[h.level],c=copyRecord('walls',a[a.indexOf(h.ref)]);a.push(c);SNAP[h.level]=centerlines(a);nh={t:'wall',level:h.level,ref:c};}
+  else{const arr=data[h.t];if(!arr)return null;arr.push(copyRecord(h.t,arr[h.i]));nh={t:h.t,i:arr.length-1};}
+  ensureIds(data);return nh;}
 function pieceRef(h){if(!h)return null;
   if(h.t==='wall')return h.ref;
   const arr=data[h.t];return arr?arr[h.i]:null;}
@@ -243,7 +245,7 @@ function applyProjectData(o){ // o = a sessionObj payload
 function loadProject(id){const ix=loadProjIndex();const p=ix[id];if(!p)return;
   hardResetWorkspace();
   applyProjectData(p.data);currentProjId=id;try{localStorage.setItem(CURRENT_KEY,id);}catch(_){}
-  renderProjects();$('hud').textContent='Betöltve: '+p.name;}
+  renderProjects();$('hud').textContent='Betöltve: '+p.name+idRepairNote();}
 function deleteProject(id){const ix=loadProjIndex();if(!ix[id])return;
   if(!confirm('Törlöd ezt a tervet: "'+ix[id].name+'"? Nem visszavonható.'))return;
   delete ix[id];saveProjIndex(ix);if(currentProjId===id)currentProjId=null;renderProjects();}
@@ -263,7 +265,7 @@ function hardResetWorkspace(){
   undo.length=0;redo.length=0;                                 // no stepping back into another project
   selected=null;clearMulti&&clearMulti();
   draft=null;pathDraft=null;measureDraft=null;cursor=null;lock=null;
-  wallStart=null;floorStart=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;
+  wallStart=null;floorDraft=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;
   state.soloRoom=null;state.bg=null;state.warp=null;refB=[];
   try{lampHoverHide();}catch(_){}
   try{hideCtx();}catch(_){}}
@@ -315,7 +317,7 @@ function restoreSession(){try{const raw=localStorage.getItem(LS_KEY);if(!raw)ret
   data.noteHide=(o.data&&o.data.noteHide)||{};data.seq=(o.data&&+o.data.seq)||0;data.v=(o.data&&+o.data.v)||0;
   migrate(data);
   syncUI();renderLayers();renderRefList();if(typeof renderDashboard==='function')renderDashboard();draw();
-  $('hud').textContent='Munkamenet visszaállítva.';return true;}catch(_){return false;}}
+  $('hud').textContent='Munkamenet visszaállítva.'+idRepairNote();return true;}catch(_){return false;}}
 $('bNew').onclick=()=>{if(!confirm('Üres munkaterület? A nem mentett változások elvesznek.'))return;newBlankProject();};
 $('pjSave').onclick=()=>{if(currentProjId){saveProject(loadProjIndex()[currentProjId].name,currentProjId);}else{const nm=prompt('Terv neve:',B.name||'Új terv');if(nm==null)return;saveProject(nm.trim()||'Új terv');}};
 $('pjSaveAs').onclick=()=>{const nm=prompt('Új terv neve:',(B.name||'Terv')+' másolat');if(nm==null)return;saveProject(nm.trim()||'Terv');};
@@ -364,7 +366,7 @@ $('mbTop').onclick=()=>$('view3d').click();
 (function restoreLock(){try{if(localStorage.getItem('villanyterv_lock')==='1')setLockTouch(true);}catch(_){}})();
 window.__proj={save:saveProject,load:loadProject,list:loadProjIndex,del:deleteProject,blank:newBlankProject,importFile:importProjectFile,snap:projSnapshot};
 
-window.__H=HOUSE;window.__G=GARAGE;window.__data=data;window.__state=state;window.__getWalls=()=>WALLS;window.__setSel=(h)=>{selected=h;draw();};window.__getSel=()=>selected;window.__panels=()=>PANELS;window.__panelLoc=()=>panelLoc;window.__wallStart=()=>wallStart;window.__objGhost=()=>objGhost;window.__cursor=()=>cursor;window.__cursorSnap=()=>cursor&&cursor.snap;window.__fmtSrc=()=>fmtSource;window.__selCount=()=>selList().length;window.__selMulti=()=>selMulti.map(h=>h.t+(h.i!==undefined?h.i:""));window.__sel=()=>selected;window.__addMulti=(h)=>addMulti(h);window.__centroid=()=>groupCentroid(selList());window.__rotateGroup=(l,a,p)=>rotateGroup(l,a,p);window.__selListArr=()=>selList();window.__clearMulti=()=>{clearMulti();selected=null;};window.hitTestAt=(x,y)=>hitTest({clientX:x,clientY:y});window.__touchG=()=>touchG;window.__WV=()=>WV;window.__PV=()=>PV;window.__setCursor=c=>{cursor=c;};window.__undoLen=()=>undo.length;window.__redoLen=()=>redo.length;window.VERSION=VERSION;window.drawNormalGeom=drawNormalGeom;window.PLACE_ITEMS=PLACE_ITEMS;window.WALL_PRESETS=WALL_PRESETS;window.NOTEKIND=NOTEKIND;window.LAMP_MOUNT=LAMP_MOUNT;window.DROPC=DROPC;window.GUIDES_REF=()=>GUIDES;window.LAMP_FIX=LAMP_FIX;window.ROOM_ENV=ROOM_ENV;window.ROOM_USE=ROOM_USE;window.ROOM_FLOOR=ROOM_FLOOR;window.ROOM_HEAT=ROOM_HEAT;window.__ROOMSB=()=>ROOMSB;window.DOORTYPE=DOORTYPE;window.__snap=(scope)=>snap_(scope);window.__applySnap=sn=>applySnap(sn);window.DEV=DEV;window.REFPRE=REFPRE;window.DEVKIND=DEVKIND;window.BUILDNAME=BUILDNAME;window.__buildGhost=()=>buildGhost;window.__setBuildGhost=g=>{buildGhost=g;};window.__LH=()=>LH;window.__guides=()=>GUIDES;window.__setWV=(k,v)=>{WV[k]=v;};window.__selBox=()=>selBox;window.__setBox=(b)=>{selBox=b;};window.__finishBox=()=>finishSelBox();window.__objPick=()=>objPick;window.loadBuilding=loadBuilding;
+window.__H=HOUSE;window.__G=GARAGE;window.__data=data;window.__state=state;window.__getWalls=()=>WALLS;window.__setSel=(h)=>{selected=h;draw();};window.__getSel=()=>selected;window.__panels=()=>PANELS;window.__panelLoc=()=>panelLoc;window.__wallStart=()=>wallStart;window.__objGhost=()=>objGhost;window.__cursor=()=>cursor;window.__cursorSnap=()=>cursor&&cursor.snap;window.__fmtSrc=()=>fmtSource;window.__selCount=()=>selList().length;window.__selMulti=()=>selMulti.map(h=>h.t+(h.i!==undefined?h.i:""));window.__sel=()=>selected;window.__addMulti=(h)=>addMulti(h);window.__centroid=()=>groupCentroid(selList());window.__rotateGroup=(l,a,p)=>rotateGroup(l,a,p);window.__selListArr=()=>selList();window.__clearMulti=()=>{clearMulti();selected=null;};window.hitTestAt=(x,y)=>hitTest({clientX:x,clientY:y});window.__touchG=()=>touchG;window.__WV=()=>WV;window.__PV=()=>PV;window.__setCursor=c=>{cursor=c;};window.__undoLen=()=>undo.length;window.__redoLen=()=>redo.length;window.VERSION=VERSION;window.drawNormalGeom=drawNormalGeom;window.PLACE_ITEMS=PLACE_ITEMS;window.WALL_PRESETS=WALL_PRESETS;window.NOTEKIND=NOTEKIND;window.LAMP_MOUNT=LAMP_MOUNT;window.DROPC=DROPC;window.GUIDES_REF=()=>GUIDES;window.LAMP_FIX=LAMP_FIX;window.ROOM_ENV=ROOM_ENV;window.ROOM_USE=ROOM_USE;window.ROOM_FLOOR=ROOM_FLOOR;window.ROOM_HEAT=ROOM_HEAT;window.__ROOMSB=()=>ROOMSB;window.DOORTYPE=DOORTYPE;window.__snap=(scope)=>snap_(scope);window.__applySnap=sn=>applySnap(sn);window.DEV=DEV;window.REFPRE=REFPRE;window.DEVKIND=DEVKIND;window.BUILDNAME=BUILDNAME;window.__buildGhost=()=>buildGhost;window.__setBuildGhost=g=>{buildGhost=g;};window.__LH=()=>LH;window.__guides=()=>GUIDES;window.__setWV=(k,v)=>{WV[k]=v;};window.__selBox=()=>selBox;window.__setBox=(b)=>{selBox=b;};window.__finishBox=()=>finishSelBox();window.__objPick=()=>objPick;window.loadBuilding=loadBuilding;window.__sceneVer=()=>sceneVer;window.__pens=()=>({NV_PEN,NV_TXT,BP_PEN,BP_TXT,BP_SCALES});window.__floorDraft=()=>floorDraft;window.__setFloorDraft=v=>{floorDraft=v;};
 function placeTools(loc){const g=$('toolsGrp'),bar=$('toolbarRow'),rs=document.querySelector('.side.r');
   if(loc==='top'){bar.appendChild(g);bar.classList.add('show');$('bToolsLoc').textContent='⧉ Tools: oldalt';}
   else{rs.appendChild(g);bar.classList.remove('show');$('bToolsLoc').textContent='⧉ Tools: fent';}
@@ -449,9 +451,15 @@ function renderDashboard(){
   PANELS.forEach(p=>{const loc=panelLoc[p.pid];(loc==='left'?lp:loc==='right'?rp:loc==='top'?tb:panelPool).appendChild(p.el);});
   tb.classList.toggle('show',tb.children.length>0);
   const tp=PANELS.find(p=>p.label==='Tools');if(tp)$('bToolsLoc').textContent=(panelLoc[tp.pid]==='top')?'⧉ Tools: oldalt':'⧉ Tools: fent';
+  // The picker is the same 20 buttons every time; only which of them are lit changes.
+  // Rebuilding them on every render (so on every tool switch, via applyToolLayout) made
+  // the whole strip flash and dropped the hover state out from under the pointer.
   [['left',L],['right',R]].forEach(a=>{const side=a[0],pk=a[1].querySelector('.picker');
-    pk.innerHTML=PANELS.map(p=>`<button class="pbtn ${panelLoc[p.pid]===side?'on':''}" data-pp="${p.pid}" data-ps="${side}">${p.label}</button>`).join('');
-    pk.querySelectorAll('.pbtn').forEach(b=>b.onclick=()=>{const pid=b.dataset.pp,sd=b.dataset.ps;panelLoc[pid]=(panelLoc[pid]===sd)?'off':sd;renderDashboard();if(typeof scheduleSave==='function')scheduleSave();});});}
+    if(pk.children.length!==PANELS.length){
+      pk.innerHTML=PANELS.map(p=>`<button class="pbtn" data-pp="${p.pid}" data-ps="${side}">${p.label}</button>`).join('');
+      pk.querySelectorAll('.pbtn').forEach(b=>b.onclick=()=>{const pid=b.dataset.pp,sd=b.dataset.ps;
+        panelLoc[pid]=(panelLoc[pid]===sd)?'off':sd;renderDashboard();if(typeof scheduleSave==='function')scheduleSave();});}
+    pk.querySelectorAll('.pbtn').forEach(b=>b.classList.toggle('on',panelLoc[b.dataset.pp]===side));});}
 $('bToolsLoc').onclick=()=>{const tp=PANELS.find(p=>p.label==='Tools');if(!tp)return;
   panelLoc[tp.pid]=(panelLoc[tp.pid]==='top')?'left':'top';renderDashboard();scheduleSave();};
 $('objSearch').oninput=()=>renderObjList();renderObjList();

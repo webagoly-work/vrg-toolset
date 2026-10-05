@@ -150,6 +150,47 @@ function addWall(a,b){const T=state.wallThick,dx=Math.abs(b[0]-a[0]),dy=Math.abs
   else{const x=a[0];r={x0:x-T/2,y0:Math.min(a[1],b[1]),x1:x+T/2,y1:Math.max(a[1],b[1])};}
   const len=Math.max(Math.abs(r.x1-r.x0),Math.abs(r.y1-r.y0));if(len<120)return;
   r.layer=curLayer();WALLS[state.active].push(r);SNAP[state.active]=centerlines(WALLS[state.active]);draw&&draw();}
+// ---- floor as a polygon: point after point, closing on the first point ----
+function polyAreaMM(p){let a=0;for(let i=0,j=p.length-1;i<p.length;j=i++)a+=(p[j][0]*p[i][1]-p[i][0]*p[j][1]);return Math.abs(a/2);}
+function polyPerimMM(p,closed){let L=0;for(let i=1;i<p.length;i++)L+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);
+  if(closed&&p.length>2)L+=Math.hypot(p[0][0]-p[p.length-1][0],p[0][1]-p[p.length-1][1]);return L;}
+function addFloorPoly(poly,opt){opt=opt||{};
+  if(!poly||poly.length<3||polyAreaMM(poly)<1e5)return -1;      // under 0.1 m² is a misclick, not a room
+  data.floors.push({level:opt.level||state.active,poly:poly.map(p=>[p[0],p[1]]),
+    fill:opt.fill||'#e2ddd0',name:opt.name||'',layer:curLayer()});
+  return data.floors.length-1;}
+// ---- the space enclosed by walls around a point ----
+// The wall edges cut the plan into a grid of cells; the cells reachable from the clicked one
+// without crossing a wall ARE the room. If the flood reaches the outside, the space is not
+// closed and the caller says so instead of drawing a floor over half the drawing.
+function enclosedOutlineAt(px,py,level){
+  const walls=(WALLS[level]||[]).filter(r=>layerShows(r,'wall'));
+  if(!walls.length)return null;
+  const M=2000;                                   // margin ring, so "escaped to the outside" is detectable
+  const xs=new Set(),ys=new Set();
+  walls.forEach(r=>{xs.add(r.x0);xs.add(r.x1);ys.add(r.y0);ys.add(r.y1);});
+  const bb={x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys)};
+  if(px<bb.x0-M||px>bb.x1+M||py<bb.y0-M||py>bb.y1+M)return null;
+  xs.add(bb.x0-M);xs.add(bb.x1+M);ys.add(bb.y0-M);ys.add(bb.y1+M);
+  const X=[...xs].sort((a,b)=>a-b),Y=[...ys].sort((a,b)=>a-b);
+  const nx=X.length-1,ny=Y.length-1;
+  const solid=(i,j)=>{const cx=(X[i]+X[i+1])/2,cy=(Y[j]+Y[j+1])/2;
+    return walls.some(r=>cx>r.x0&&cx<r.x1&&cy>r.y0&&cy<r.y1);};
+  let ci=-1,cj=-1;
+  for(let i=0;i<nx;i++)if(px>=X[i]&&px<=X[i+1]){ci=i;break;}
+  for(let j=0;j<ny;j++)if(py>=Y[j]&&py<=Y[j+1]){cj=j;break;}
+  if(ci<0||cj<0||solid(ci,cj))return null;         // clicked inside a wall
+  const seen=new Set(),stack=[[ci,cj]],cells=[];let escaped=false;
+  while(stack.length){const [i,j]=stack.pop(),k=i+','+j;
+    if(seen.has(k))continue;seen.add(k);
+    if(i<0||j<0||i>=nx||j>=ny){escaped=true;continue;}
+    if(solid(i,j))continue;
+    if(i===0||j===0||i===nx-1||j===ny-1)escaped=true;   // reached the margin ring: open to the outside
+    cells.push({x0:X[i],y0:Y[j],x1:X[i+1],y1:Y[j+1]});
+    stack.push([i+1,j],[i-1,j],[i,j+1],[i,j-1]);}
+  if(escaped||!cells.length)return null;
+  const poly=rectsUnionOutline(cells);
+  return (poly&&poly.length>=3)?poly:null;}
 function addFloor(a,b){if(Math.abs(b[0]-a[0])<200||Math.abs(b[1]-a[1])<200)return;
   const x0=Math.min(a[0],b[0]),x1=Math.max(a[0],b[0]),y0=Math.min(a[1],b[1]),y1=Math.max(a[1],b[1]);
   data.floors.push({level:state.active,poly:[[x0,y0],[x1,y0],[x1,y1],[x0,y1]],fill:'#e2ddd0',layer:curLayer()});}
@@ -199,6 +240,41 @@ function snapRectToWalls(rc,level){ // shift a rect so its nearest edge sticks t
     if(horiz){[rc.y0,rc.y1].forEach(ry=>{const dd=Math.abs(ry-cy);if(dd<bestY){bestY=dd;dy=cy-ry;}});}
     else{[rc.x0,rc.x1].forEach(rx=>{const dd=Math.abs(rx-cx);if(dd<bestX){bestX=dd;dx=cx-rx;}});}});
   return {x0:rc.x0+dx,y0:rc.y0+dy,x1:rc.x1+dx,y1:rc.y1+dy};}
+// ---- visual wall merge: the outline of a union of axis-aligned rectangles ----
+// Walls overlap at every corner and butt end-to-end along a run, so drawing each
+// rectangle's own outline leaves the seams that make a finished plan look chopped up.
+// This keeps only the edge pieces that are genuinely on the OUTSIDE: an edge piece is
+// dropped when the space just outside it belongs to another rectangle. Corners come out
+// symmetric for free, because the surviving pieces meet on the union boundary.
+// Nothing is stored — the walls themselves are untouched and stay individually selectable.
+const WMERGE_EPS=0.6;   // mm — how far outside an edge we look for a neighbour
+function rectsUnionSegs(rects){const out=[];
+  const inside=(x,y,q)=>x>q.x0+WMERGE_EPS&&x<q.x1-WMERGE_EPS&&y>q.y0+WMERGE_EPS&&y<q.y1-WMERGE_EPS;
+  rects.forEach((r,ri)=>{
+    // each edge, with the outward normal that says which side is "not this rectangle"
+    const edges=[{a:[r.x0,r.y0],b:[r.x1,r.y0],n:[0,-1],horiz:true},
+                 {a:[r.x0,r.y1],b:[r.x1,r.y1],n:[0, 1],horiz:true},
+                 {a:[r.x0,r.y0],b:[r.x0,r.y1],n:[-1,0],horiz:false},
+                 {a:[r.x1,r.y0],b:[r.x1,r.y1],n:[ 1,0],horiz:false}];
+    edges.forEach(e=>{
+      const lo=e.horiz?e.a[0]:e.a[1], hi=e.horiz?e.b[0]:e.b[1];
+      // cut the edge wherever a neighbour starts or ends, then judge each piece on its own
+      const cuts=[lo,hi];
+      rects.forEach((q,qi)=>{if(qi===ri)return;
+        (e.horiz?[q.x0,q.x1]:[q.y0,q.y1]).forEach(v=>{if(v>lo+WMERGE_EPS&&v<hi-WMERGE_EPS)cuts.push(v);});});
+      cuts.sort((x,y)=>x-y);
+      let run=null;   // merge adjacent surviving pieces back into one segment
+      for(let i=0;i<cuts.length-1;i++){const c0=cuts[i],c1=cuts[i+1];if(c1-c0<WMERGE_EPS)continue;
+        const m=(c0+c1)/2;
+        const px=(e.horiz?m:e.a[0])+e.n[0]*WMERGE_EPS*2, py=(e.horiz?e.a[1]:m)+e.n[1]*WMERGE_EPS*2;
+        const buried=rects.some((q,qi)=>qi!==ri&&inside(px,py,q));
+        if(buried){if(run){out.push(run);run=null;}continue;}
+        if(run)run[e.horiz?2:3]=c1;
+        else run=e.horiz?[c0,e.a[1],c1,e.a[1]]:[e.a[0],c0,e.a[0],c1];}
+      if(run)out.push(run);});});
+  return out;}
+// the wall rectangles of a level that are actually drawn, as plain rects
+function wallMergeOn(){return state.style==='blueprint'||state.wallMerge===true;}
 function createRoom(opt){ // opt {rects:[{w,d,ox,oy}]|w,d, name,mat,walls,thick,cx,cy,level,snap}
   const lvl=opt.level||state.active;
   let cx=opt.cx,cy=opt.cy;if(cx==null||cy==null){const c=viewCentrePlan();cx=c[0];cy=c[1];}

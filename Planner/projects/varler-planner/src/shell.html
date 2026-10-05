@@ -61,7 +61,7 @@
    padding:5px 20px;font-size:13px;box-shadow:0 -3px 10px rgba(0,0,0,.2)}
  body.mobile.sheet-open #mobileHandle{bottom:calc(62vh + 56px)}
  #hud{position:absolute;left:12px;bottom:10px;background:#ffffffe0;border:1px solid #ddd;border-radius:8px;padding:6px 10px;font-size:12.5px;color:#333;pointer-events:none;white-space:pre-line}
- #modeHint{position:absolute;left:12px;top:10px;background:#2c2c2ce6;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;max-width:360px}
+ #modeHint{position:absolute;left:12px;top:10px;background:#2c2c2ce6;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;max-width:360px;z-index:7}
  #wvBox svg,#pvBox svg{user-select:none;-webkit-user-select:none;-ms-user-select:none;touch-action:none}
  #wvBox,#pvBox{user-select:none;-webkit-user-select:none}
  #stageRail{position:absolute;left:0;top:0;bottom:24px;width:104px;display:none;flex-direction:column;gap:2px;
@@ -345,7 +345,8 @@
      <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option></select></div>
    <div class="row">Walls <select id="wallMode">
      <option value="translucent">translucent</option><option value="solid">solid</option>
-     <option value="hidden">hidden</option></select></div>
+     <option value="hidden">hidden</option></select>
+    <label style="margin-left:8px" title="A falak egy testként jelennek meg: nincs sarokvarrat. A hivatalos nézet mindig így rajzol; a falak egyenként kijelölhetők maradnak."><input type="checkbox" id="wallMerge"> Falak egyesítve</label></div>
    <div class="row"><label><input type="checkbox" id="explode" checked>Exploded</label>
      <label><input type="checkbox" id="grid">Grid</label>
      <input id="gridSize" type="number" value="250" step="50" style="width:58px"></div>
@@ -356,6 +357,9 @@
    <div class="row" style="font-size:11px">Pálya vastagság <input id="pathScale" type="range" min="0.5" max="1.6" step="0.05" value="1" style="width:90px"></div>
    <div class="row" style="font-size:11px">Pálya szín <input id="pathColor" type="color" value="#6f757d" style="width:40px;height:22px;padding:0;vertical-align:middle"> <button id="pathColorReset" style="font-size:10.5px">alap</button></div>
    <div class="row" id="bpOpts" style="display:none"><label><input type="checkbox" id="bpDims" checked> Méretlánc</label><label><input type="checkbox" id="bpTitle" checked> Címblokk</label><button id="bpEdit">✎ Fejléc</button></div>
+   <div class="row" id="bpScaleRow" style="display:none;font-size:11px" title="A rajzi méretarány: a vonalvastagságok és a feliratok ehhez mért papír-milliméterben készülnek, a hivatalos és a modellező nézetben egyaránt.">Méretarány <select id="bpScale" style="width:78px"></select>
+    <button id="bpFit" title="A nézetet a választott méretarányra nagyítja (kb. 1:1 a képernyőn)">⤢ Méretarány szerint</button></div>
+   <div class="row" id="bpFineRow" style="display:none;font-size:11px" title="Szorzó az ISO tollvastagságokon — ha a képernyőn túl halvány vagy túl vastag a rajz.">Vonalvastagság <input id="bpFine" type="range" min="0.6" max="1.8" step="0.05" value="1" style="width:90px"> <span id="bpFineV">1,00×</span></div>
    <div class="row">Szétnyitás <input id="gap" type="range" min="0" max="7000" step="100" value="2600"> <span id="gapV">2.6 m</span></div>
   </div>
  </div>
