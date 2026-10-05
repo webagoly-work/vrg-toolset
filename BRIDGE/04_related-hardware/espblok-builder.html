@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESPBLOK · CAD Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg:       #0d1a10;
+    --bg2:      #111f14;
+    --bg3:      #162019;
+    --panel:    #0a1a0d;
+    --border:   #1e3522;
+    --border2:  #2a4a30;
+    --board:    #1a3320;
+    --board2:   #1f3d25;
+    --copper:   #c8860a;
+    --silk:     #d4f0c8;
+    --hole:     #0a0e0b;
+    --rail-r:   #8b1a1a;
+    --rail-b:   #1a3a8b;
+    --rail-y:   #c8860a;
+    --accent:   #3ddc84;
+    --accent2:  #2ab866;
+    --warn:     #e8a820;
+    --danger:   #e04040;
+    --text:     #c8e4c0;
+    --text2:    #7aaa70;
+    --text3:    #4a7a45;
+    --mono:     'Share Tech Mono', monospace;
+    --head:     'Rajdhani', sans-serif;
+    --cell:     10px;
+    --gap:      1px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── TOP BAR ── */
+  #topbar {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border2);
+    padding: 0 16px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-shrink: 0;
+  }
+  #logo {
+    font-family: var(--head);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+  #logo span { color: var(--text3); font-weight: 400; font-size: 13px; letter-spacing: 0; margin-left: 6px; }
+
+  .board-tabs { display: flex; gap: 2px; }
+  .board-tab {
+    padding: 4px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+  }
+  .board-tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+  .board-tab:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+  .topbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .btn {
+    padding: 5px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .btn-test  { background: transparent; border-color: var(--warn);   color: var(--warn);   }
+  .btn-reset { background: transparent; border-color: var(--danger);  color: var(--danger); }
+  .btn-save  { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+  .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+  .btn:active { transform: scale(0.97); }
+
+  /* ── MAIN LAYOUT ── */
+  #main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── LEFT PANEL: MODULE PALETTE ── */
+  #palette {
+    width: 220px;
+    background: var(--panel);
+    border-right: 1px solid var(--border2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  #palette-header {
+    padding: 10px 12px 6px;
+    font-family: var(--head);
+    font-size: 13px;
+    color: var(--text2);
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  #palette-search {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  #palette-search input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 2px;
+    outline: none;
+  }
+  #palette-search input:focus { border-color: var(--accent); }
+  #palette-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+  }
+  #palette-list::-webkit-scrollbar { width: 4px; }
+  #palette-list::-webkit-scrollbar-track { background: var(--bg); }
+  #palette-list::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  .palette-group-label {
+    padding: 8px 12px 3px;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .palette-item {
+    padding: 5px 10px;
+    cursor: grab;
+    border-left: 3px solid transparent;
+    transition: all 0.1s;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .palette-item:hover {
+    background: var(--bg3);
+    border-left-color: var(--accent);
+  }
+  .palette-item.dragging { opacity: 0.4; cursor: grabbing; }
+  .pi-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  .pi-info { flex: 1; min-width: 0; }
+  .pi-name {
+    font-family: var(--head);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pi-sub {
+    font-size: 10px;
+    color: var(--text3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pi-dims {
+    font-size: 9px;
+    color: var(--text3);
+    font-family: var(--mono);
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+
+  /* ── CENTER: CANVAS ── */
+  #canvas-area {
+    flex: 1;
+    background: var(--bg);
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    gap: 30px;
+    position: relative;
+  }
+  #canvas-area::-webkit-scrollbar { width: 6px; height: 6px; }
+  #canvas-area::-webkit-scrollbar-track { background: var(--bg); }
+  #canvas-area::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  .board-label {
+    font-family: var(--head);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: -24px;
+    align-self: flex-start;
+    padding-left: 4px;
+  }
+
+  .board-wrapper {
+    position: relative;
+    cursor: crosshair;
+  }
+  .board-wrapper.drop-target { outline: 2px dashed var(--accent); }
+
+  /* ── RIGHT PANEL: INSPECTOR ── */
+  #inspector {
+    width: 200px;
+    background: var(--panel);
+    border-left: 1px solid var(--border2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  #inspector-header {
+    padding: 10px 12px 6px;
+    font-family: var(--head);
+    font-size: 13px;
+    color: var(--text2);
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  #inspector-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+  }
+  #inspector-body::-webkit-scrollbar { width: 4px; }
+  #inspector-body::-webkit-scrollbar-track { background: var(--bg); }
+  #inspector-body::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  .insp-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+  }
+  .insp-label { color: var(--text3); }
+  .insp-val   { color: var(--text);  text-align: right; font-family: var(--mono); }
+
+  .insp-section {
+    font-family: var(--head);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    padding: 8px 0 4px;
+    text-transform: uppercase;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 10px;
+    margin: 2px 2px 0 0;
+    font-family: var(--mono);
+  }
+  .tag-espnow  { background: #1a3a20; color: #4dc870; border: 1px solid #2a5a30; }
+  .tag-wifi    { background: #1a2a3a; color: #4a90d4; border: 1px solid #2a3a5a; }
+  .tag-i2c     { background: #2a2010; color: #c8a040; border: 1px solid #4a3a10; }
+  .tag-spi     { background: #2a1020; color: #c840a0; border: 1px solid #4a1a30; }
+  .tag-uart    { background: #20102a; color: #a040c8; border: 1px solid #301a4a; }
+  .tag-lora    { background: #102a2a; color: #40c8c8; border: 1px solid #1a4a4a; }
+  .tag-ble     { background: #10202a; color: #4088c8; border: 1px solid #1a3040; }
+  .tag-power   { background: #2a2000; color: #c88820; border: 1px solid #4a3a00; }
+  .tag-zigbee  { background: #1a1a2a; color: #8888d0; border: 1px solid #2a2a4a; }
+
+  .conn-badge {
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 10px;
+    margin: 2px 0;
+    display: block;
+  }
+  .conn-ok   { background: #0a2a10; color: var(--accent);  border: 1px solid #1a5a20; }
+  .conn-warn { background: #2a1a00; color: var(--warn);    border: 1px solid #5a3a00; }
+  .conn-err  { background: #2a0a0a; color: var(--danger);  border: 1px solid #5a1a1a; }
+  .conn-info { background: #001a2a; color: #60aacc;        border: 1px solid #003a5a; }
+
+  /* ── BOTTOM LOG ── */
+  #log-bar {
+    height: 80px;
+    background: var(--panel);
+    border-top: 1px solid var(--border2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  #log-header {
+    padding: 4px 12px;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  #log-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 12px;
+    font-size: 10px;
+    line-height: 1.6;
+  }
+  #log-content::-webkit-scrollbar { width: 4px; }
+  #log-content::-webkit-scrollbar-thumb { background: var(--border2); }
+  .log-ok   { color: var(--accent); }
+  .log-warn { color: var(--warn); }
+  .log-err  { color: var(--danger); }
+  .log-info { color: var(--text2); }
+
+  /* ── PLACED MODULE on canvas ── */
+  .placed-module {
+    position: absolute;
+    border-radius: 2px;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    cursor: move;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: box-shadow 0.15s, border-color 0.15s;
+    z-index: 10;
+  }
+  .placed-module:hover {
+    border-color: rgba(255,255,255,0.4);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 12px rgba(61,220,132,0.2);
+    z-index: 20;
+  }
+  .placed-module.selected {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent), 0 0 16px rgba(61,220,132,0.3);
+    z-index: 30;
+  }
+  .pm-name {
+    font-family: var(--head);
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    line-height: 1.2;
+    padding: 1px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pm-sub {
+    font-size: 7px;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pm-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1px;
+    padding: 0 2px;
+  }
+  .pm-tag {
+    font-size: 6px;
+    padding: 0 3px;
+    border-radius: 1px;
+    color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.2);
+    line-height: 1.4;
+  }
+  .pm-delete {
+    position: absolute;
+    top: 1px;
+    right: 2px;
+    font-size: 9px;
+    color: rgba(255,60,60,0.7);
+    cursor: pointer;
+    line-height: 1;
+    padding: 1px;
+    display: none;
+  }
+  .placed-module:hover .pm-delete,
+  .placed-module.selected .pm-delete { display: block; }
+
+  /* Connection lines SVG overlay */
+  #conn-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* Modal */
+  #modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  #modal-bg.show { display: flex; }
+  #modal {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 20px;
+    width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  #modal h2 {
+    font-family: var(--head);
+    font-size: 16px;
+    color: var(--accent);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+  #modal .modal-close {
+    float: right;
+    cursor: pointer;
+    color: var(--danger);
+    font-size: 14px;
+  }
+  .modal-section { margin-top: 14px; }
+  .modal-section h3 {
+    font-family: var(--head);
+    font-size: 12px;
+    color: var(--text2);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 3px;
+  }
+  .modal-item { padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .modal-item b { color: var(--warn); }
+  .modal-item .ok { color: var(--accent); }
+  .modal-item .err { color: var(--danger); }
+
+  #no-modules-msg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text3);
+    font-size: 11px;
+    text-align: center;
+    pointer-events: none;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div id="logo">ESPBLOK <span>// BOARD BUILDER v1.0</span></div>
+  <div class="board-tabs">
+    <button class="board-tab active" onclick="setBoard('single')">SINGLE RAIL</button>
+    <button class="board-tab" onclick="setBoard('triple')">TRIPLE RAIL</button>
+  </div>
+  <div class="topbar-right">
+    <span id="module-counter" style="font-size:10px;color:var(--text3);letter-spacing:1px">0 modules</span>
+    <button class="btn btn-test" onclick="testConnections()">▶ TEST</button>
+    <button class="btn btn-reset" onclick="resetBoard()">⟳ RESET</button>
+    <button class="btn btn-save" onclick="saveImage()">⬇ SAVE PNG</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT: PALETTE -->
+  <div id="palette">
+    <div id="palette-header">MODULE PALETTE</div>
+    <div id="palette-search"><input type="text" placeholder="search modules..." oninput="filterPalette(this.value)" id="psearch"></div>
+    <div id="palette-list"></div>
+  </div>
+
+  <!-- CENTER: CANVAS -->
+  <div id="canvas-area">
+    <div class="board-label" id="board-label">SINGLE RAIL · 830pt</div>
+    <div class="board-wrapper" id="board-wrapper">
+      <canvas id="board-canvas"></canvas>
+      <svg id="conn-overlay"></svg>
+      <div id="board-modules"></div>
+      <div id="no-modules-msg">drag modules from palette<br>to place on board</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: INSPECTOR -->
+  <div id="inspector">
+    <div id="inspector-header">INSPECTOR</div>
+    <div id="inspector-body">
+      <div style="color:var(--text3);font-size:11px;padding:8px 0">Select a module to inspect</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM LOG -->
+<div id="log-bar">
+  <div id="log-header">SYSTEM LOG</div>
+  <div id="log-content"><span class="log-info">// ESPBLOK builder ready. Drag modules onto board.</span></div>
+</div>
+
+<!-- TEST RESULTS MODAL -->
+<div id="modal-bg" onclick="closeModal(event)">
+  <div id="modal">
+    <span class="modal-close" onclick="document.getElementById('modal-bg').classList.remove('show')">✕ close</span>
+    <h2>CONNECTION TEST RESULTS</h2>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// MODULE DATABASE
+// ═══════════════════════════════════════════════
+const MODULES = [
+  // ── OFFICIAL ESPRESSIF DEVKITS ──
+  { id:'esp32-devkitc', group:'Official Espressif',
+    name:'ESP32 DevKitC V4', short:'ESP32', type:'mcu',
+    color:'#1a4a2a', w:11, h:21, // breadboard units (1BU = 10px render)
+    desc:'Dual-core 240MHz, 4MB flash',
+    dims:'27.9 × 53.3 mm', pins:38,
+    protocols:['ESP-NOW','WiFi','BLE','UART','I2C','SPI'],
+    power:'3.3V (USB-5V reg onboard)',
+    notes:'Classic dev board. Spans full breadboard width. 19-pin each side.',
+    category:'mcu'
+  },
+  { id:'esp32s3-devkitc', group:'Official Espressif',
+    name:'ESP32-S3 DevKitC-1', short:'S3', type:'mcu',
+    color:'#1a5030', w:11, h:27,
+    desc:'S3 dual-core + USB OTG + AI',
+    dims:'27.9 × 68.0 mm', pins:44,
+    protocols:['ESP-NOW','WiFi','BLE5','UART','I2C','SPI','USB'],
+    power:'3.3V (USB-5V reg onboard)',
+    notes:'Best for compute tasks. USB OTG. 8MB PSRAM option. Ideal CORE module.',
+    category:'mcu'
+  },
+  { id:'esp32c3-devkitm', group:'Official Espressif',
+    name:'ESP32-C3 DevKitM-1', short:'C3', type:'mcu',
+    color:'#1a4838', w:11, h:20,
+    desc:'RISC-V single-core, ultra low power',
+    dims:'27.9 × 50.8 mm', pins:32,
+    protocols:['ESP-NOW','WiFi','BLE5','UART','I2C','SPI','USB'],
+    power:'3.3V (USB-5V reg onboard)',
+    notes:'Best budget/power node. RISC-V. Ideal for satellite modules.',
+    category:'mcu'
+  },
+  { id:'esp32s2-devkitm', group:'Official Espressif',
+    name:'ESP32-S2 DevKitM-1', short:'S2', type:'mcu',
+    color:'#204038', w:11, h:21,
+    desc:'Single-core, USB native, no BLE',
+    dims:'27.9 × 53.3 mm', pins:36,
+    protocols:['ESP-NOW','WiFi','UART','I2C','SPI','USB'],
+    power:'3.3V (USB-5V reg onboard)',
+    notes:'USB HID capable. Good for USB peripheral emulation.',
+    category:'mcu'
+  },
+  { id:'esp32h2-devkitm', group:'Official Espressif',
+    name:'ESP32-H2 DevKitM-1', short:'H2', type:'mcu',
+    color:'#202848', w:11, h:21,
+    desc:'Thread/Zigbee/BLE5, RISC-V',
+    dims:'27.9 × 53.3 mm', pins:26,
+    protocols:['Thread','Zigbee','BLE5','UART','I2C','SPI'],
+    power:'3.3V (USB-5V reg onboard)',
+    notes:'802.15.4 mesh. No WiFi. Ideal border router node.',
+    category:'mcu'
+  },
+  { id:'esp32c6-devkitc', group:'Official Espressif',
+    name:'ESP32-C6 DevKitC-1', short:'C6', type:'mcu',
+    color:'#282048', w:11, h:21,
+    desc:'WiFi6, BLE5, Thread, Zigbee',
+    dims:'27.9 × 53.3 mm', pins:30,
+    protocols:['ESP-NOW','WiFi6','BLE5','Thread','Zigbee','UART','I2C','SPI'],
+    power:'3.3V (USB-5V reg onboard)',
+    notes:'Best connectivity coverage. WiFi6 + 15.4 in one chip.',
+    category:'mcu'
+  },
+  // ── THIRD PARTY ESP32 BOARDS ──
+  { id:'lilygo-t3s3', group:'3rd Party MCU',
+    name:'Lilygo T3S3', short:'T3S3', type:'mcu',
+    color:'#3a2010', w:13, h:29,
+    desc:'S3 + LoRa SX1262, e-paper ready',
+    dims:'33.0 × 73.0 mm', pins:38,
+    protocols:['ESP-NOW','WiFi','BLE5','LoRa','UART','I2C','SPI','Meshtastic'],
+    power:'LiPo (onboard TP4054) + USB-C',
+    notes:'Your current Meshtastic hardware. Perfect RADIO+CORE combo.',
+    category:'mcu'
+  },
+  { id:'waveshare-s3-amoled', group:'3rd Party MCU',
+    name:'WS ESP32-S3 AMOLED', short:'S3+OLED', type:'mcu',
+    color:'#103030', w:21, h:17,
+    desc:'S3 + 1.64" AMOLED touchscreen',
+    dims:'54.0 × 43.0 mm', pins:36,
+    protocols:['ESP-NOW','WiFi','BLE5','UART','I2C','SPI'],
+    power:'LiPo (JST) + USB-C',
+    notes:'Reference board for ESPBLOK form factor. Has display built in.',
+    category:'mcu'
+  },
+  { id:'lilygo-tdisplay-s3', group:'3rd Party MCU',
+    name:'Lilygo T-Display S3', short:'TDisp', type:'mcu',
+    color:'#182830', w:11, h:32,
+    desc:'S3 + 1.9" color LCD + battery',
+    dims:'27.9 × 80.0 mm', pins:38,
+    protocols:['ESP-NOW','WiFi','BLE5','UART','I2C','SPI'],
+    power:'LiPo (onboard) + USB-C',
+    notes:'Tall footprint. DISPLAY+MCU combined module.',
+    category:'mcu'
+  },
+  { id:'seeed-xiao-esp32s3', group:'3rd Party MCU',
+    name:'Seeed XIAO ESP32-S3', short:'XIAO', type:'mcu',
+    color:'#204028', w:7, h:9,
+    desc:'Ultra-compact, 11-pin',
+    dims:'17.5 × 21.0 mm', pins:11,
+    protocols:['ESP-NOW','WiFi','BLE5','UART','I2C','SPI'],
+    power:'3.3V regulated, USB-C',
+    notes:'Smallest ESP32-S3 board. Ideal for tight-packed satellite modules.',
+    category:'mcu'
+  },
+  { id:'olimex-esp32-poe', group:'3rd Party MCU',
+    name:'Olimex ESP32-PoE', short:'PoE', type:'mcu',
+    color:'#2a1010', w:11, h:27,
+    desc:'ESP32 + Ethernet PoE',
+    dims:'27.9 × 68.0 mm', pins:36,
+    protocols:['ESP-NOW','WiFi','BLE','Ethernet','UART','I2C','SPI'],
+    power:'PoE 802.3af or USB',
+    notes:'Wired network option. Industrial use. Pairs well with POWER module.',
+    category:'mcu'
+  },
+  // ── POWER MODULES ──
+  { id:'tp4056-usbc', group:'Power',
+    name:'TP4056 USB-C', short:'CHARGER', type:'power',
+    color:'#3a2800', w:10, h:6,
+    desc:'1A LiPo charger + protection',
+    dims:'25.0 × 15.0 mm', pins:6,
+    protocols:['power'],
+    power:'5V USB-C in → LiPo out',
+    notes:'Standard charge IC for ESPBLOK uniform power. Add to every module.',
+    category:'power'
+  },
+  { id:'mt3608-boost', group:'Power',
+    name:'MT3608 Boost', short:'BOOST', type:'power',
+    color:'#3a2000', w:11, h:6,
+    desc:'2A adjustable boost to 28V',
+    dims:'28.0 × 14.0 mm', pins:6,
+    protocols:['power'],
+    power:'2–24V in → adj out',
+    notes:'Generates 5V bus from LiPo. Part of POWER module.',
+    category:'power'
+  },
+  { id:'ams1117-33', group:'Power',
+    name:'AMS1117 3.3V', short:'REG 3V3', type:'power',
+    color:'#2a2000', w:6, h:4,
+    desc:'1A LDO 5V→3.3V regulator',
+    dims:'15.0 × 10.0 mm', pins:4,
+    protocols:['power'],
+    power:'5V in → 3.3V 1A out',
+    notes:'Bus rail converter. Add if MCU needs clean 3.3V separate from USB reg.',
+    category:'power'
+  },
+  { id:'ina219-power-mon', group:'Power',
+    name:'INA219 Power Mon', short:'MONITOR', type:'power',
+    color:'#2a1a00', w:10, h:6,
+    desc:'I2C voltage + current sensor',
+    dims:'26.0 × 14.0 mm', pins:8,
+    protocols:['I2C','power'],
+    power:'3.3V–5V',
+    notes:'Energy monitor. Addr: 0x40–0x4F. Perfect for ESPBLOK power telemetry.',
+    category:'power'
+  },
+  // ── STORAGE MODULES ──
+  { id:'microsd-spi', group:'Storage',
+    name:'microSD SPI', short:'SD CARD', type:'storage',
+    color:'#1a2a38', w:10, h:7,
+    desc:'SPI microSD slot breakout',
+    dims:'25.0 × 18.0 mm', pins:8,
+    protocols:['SPI'],
+    power:'3.3V',
+    notes:'STORE module. CS/MOSI/MISO/SCK. Use with ESP32 SPI pins.',
+    category:'storage'
+  },
+  { id:'at24c256-eeprom', group:'Storage',
+    name:'AT24C256 EEPROM', short:'EEPROM', type:'storage',
+    color:'#182030', w:8, h:6,
+    desc:'32KB I2C EEPROM',
+    dims:'20.0 × 15.0 mm', pins:8,
+    protocols:['I2C'],
+    power:'3.3V–5V',
+    notes:'Persistent config store. Addr: 0x50–0x57. 1M write cycles.',
+    category:'storage'
+  },
+  // ── SENSORS / ENVIRONMENTAL ──
+  { id:'bme280-env', group:'Sensors',
+    name:'BME280', short:'ENV', type:'sensor',
+    color:'#102a18', w:6, h:6,
+    desc:'Temp + humidity + pressure',
+    dims:'15.0 × 15.0 mm', pins:6,
+    protocols:['I2C','SPI'],
+    power:'3.3V',
+    notes:'SENSE core. Addr: 0x76/0x77. Environmental SENSE module.',
+    category:'sensor'
+  },
+  { id:'mpu6050-imu', group:'Sensors',
+    name:'MPU-6050 IMU', short:'IMU', type:'sensor',
+    color:'#102818', w:8, h:6,
+    desc:'6-axis accel + gyro',
+    dims:'20.0 × 15.0 mm', pins:8,
+    protocols:['I2C'],
+    power:'3.3V–5V',
+    notes:'Addr: 0x68/0x69. Motion detection. SENSE module add-on.',
+    category:'sensor'
+  },
+  { id:'ds3231-rtc', group:'Sensors',
+    name:'DS3231 RTC', short:'RTC', type:'sensor',
+    color:'#201838', w:15, h:9,
+    desc:'Precision I2C RTC + temp',
+    dims:'38.0 × 22.0 mm', pins:8,
+    protocols:['I2C'],
+    power:'3.3V (+ CR2032 backup)',
+    notes:'Addr: 0x68. Timekeeping for SENSE module. CR2032 maintains time offline.',
+    category:'sensor'
+  },
+  { id:'max4466-mic', group:'Sensors',
+    name:'MAX4466 Mic', short:'MIC', type:'sensor',
+    color:'#2a1028', w:9, h:6,
+    desc:'Adjustable gain electret mic',
+    dims:'22.0 × 14.0 mm', pins:3,
+    protocols:['analog'],
+    power:'2.4V–5.5V',
+    notes:'Analog out. Use ADC pin on ESP32. Part of AUDIO module.',
+    category:'sensor'
+  },
+  // ── DISPLAY / OUTPUT ──
+  { id:'ssd1306-oled', group:'Display',
+    name:'SSD1306 OLED 0.96"', short:'OLED', type:'display',
+    color:'#0a1a2a', w:11, h:11,
+    desc:'128×64 monochrome I2C OLED',
+    dims:'27.0 × 27.0 mm', pins:4,
+    protocols:['I2C'],
+    power:'3.3V–5V',
+    notes:'Addr: 0x3C/0x3D. DISPLAY module. Low power. Always-on status display.',
+    category:'display'
+  },
+  { id:'pcm5102-dac', group:'Audio',
+    name:'PCM5102 I2S DAC', short:'DAC', type:'audio',
+    color:'#2a0a2a', w:17, h:9,
+    desc:'High-quality I2S stereo DAC',
+    dims:'42.0 × 23.0 mm', pins:8,
+    protocols:['I2S'],
+    power:'3.3V–5V',
+    notes:'AUDIO module output. Pairs with MAX4466 mic for full duplex.',
+    category:'audio'
+  },
+  // ── WIRELESS / COMMS ──
+  { id:'sx1278-lora', group:'Radio',
+    name:'SX1278 LoRa', short:'LoRa', type:'radio',
+    color:'#102828', w:15, h:10,
+    desc:'433/915MHz LoRa SX1278',
+    dims:'38.0 × 25.0 mm', pins:10,
+    protocols:['LoRa','SPI','Meshtastic'],
+    power:'3.3V',
+    notes:'RADIO module. SPI interface. Up to 20km range. Meshtastic compatible.',
+    category:'radio'
+  },
+  { id:'nrf24l01-rf', group:'Radio',
+    name:'nRF24L01+', short:'2.4GHz', type:'radio',
+    color:'#10202a', w:12, h:6,
+    desc:'2.4GHz ISM transceiver',
+    dims:'29.0 × 16.0 mm', pins:8,
+    protocols:['SPI','RF24'],
+    power:'1.9V–3.6V (sensitive!)',
+    notes:'Fast, 2Mbit/s. Add 100µF cap near VCC. NOT ESP-NOW compatible directly.',
+    category:'radio'
+  },
+  { id:'cc2530-zigbee', group:'Radio',
+    name:'CC2530 Zigbee', short:'ZIGBEE', type:'radio',
+    color:'#181828', w:11, h:10,
+    desc:'2.4GHz Zigbee coordinator',
+    dims:'27.0 × 25.0 mm', pins:10,
+    protocols:['Zigbee','UART'],
+    power:'2.0V–3.6V',
+    notes:'Pairs with ESP32-H2 for Zigbee mesh. UART AT commands.',
+    category:'radio'
+  },
+];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let currentBoard = 'single';
+let placedModules = []; // {id, moduleId, x, y, boardCol (0,1,2)}
+let selectedId = null;
+let dragModule = null;
+let dragOffset = {x:0, y:0};
+let nextId = 1;
+const CELL = 10; // px per breadboard unit
+
+// Board configs (in breadboard units)
+const BOARDS = {
+  single: {
+    cols: 1,
+    colWidth: 63,   // standard 830pt breadboard = 63 rows
+    totalW: 63,
+    totalH: 34,     // 5 bus top + 2ch + 25 main + 2ch + 5 bus bottom (approx)
+    label: 'SINGLE RAIL · 830pt'
+  },
+  triple: {
+    cols: 3,
+    colWidth: 63,
+    totalW: 63*3 + 6, // 3 boards + 2 gaps, in CELL units (gaps drawn as px)
+    totalH: 34,
+    label: 'TRIPLE RAIL · 3× 830pt'
+  }
+};
+
+// ═══════════════════════════════════════════════
+// BOARD DRAWING
+// ═══════════════════════════════════════════════
+function drawBoard(canvas, type) {
+  const cfg = BOARDS[type];
+  const boardPxW = 63 * CELL;
+  const H = cfg.totalH * CELL;
+  const W = type === 'triple' ? boardPxW * 3 + 60 : boardPxW;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  if (type === 'single') {
+    drawBreadboard(ctx, 0, 0, CELL);
+  } else {
+    // 3 boards side by side with 30px gap between each
+    const boardPxW = 63 * CELL;
+    for (let c = 0; c < 3; c++) {
+      drawBreadboard(ctx, c * (boardPxW + 30), 0, CELL);
+    }
+    // fill gaps
+    ctx.fillStyle = '#0d1a10';
+    ctx.fillRect(boardPxW, 0, 30, H);
+    ctx.fillRect(boardPxW*2+30, 0, 30, H);
+  }
+}
+
+function drawBreadboard(ctx, ox, oy, cell) {
+  const ROWS = 63;
+  const BUS_ROWS = 5;
+  const MAIN_COLS = 5; // each side
+  const CHAN = 2.5; // channel width in cells
+
+  const bw = ROWS * cell;
+  const bh = 34 * cell;
+
+  // Board body
+  ctx.fillStyle = '#1a3320';
+  ctx.beginPath();
+  roundRect(ctx, ox, oy, bw, bh, 4);
+  ctx.closePath();
+  ctx.fill();
+
+  // Board edge
+  ctx.strokeStyle = '#2a5030';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  roundRect(ctx, ox+0.5, oy+0.5, bw-1, bh-1, 4);
+  ctx.closePath();
+  ctx.stroke();
+
+  // Silk text
+  ctx.fillStyle = '#3a6040';
+  ctx.font = `${cell*0.8}px 'Share Tech Mono', monospace`;
+  ctx.textAlign = 'center';
+
+  // RAIL REGIONS
+  // Top power bus (rows 1-5 in bus cols)
+  const busH = (BUS_ROWS + 1) * cell;
+  ctx.fillStyle = 'rgba(15,25,18,0.6)';
+  ctx.fillRect(ox+cell*0.5, oy+cell*0.5, bw - cell, busH - cell*0.5);
+
+  // Bottom power bus
+  ctx.fillRect(ox+cell*0.5, oy + bh - busH + cell*0.5 - cell, bw - cell, busH - cell*0.5);
+
+  // Center channel
+  const chanY = oy + busH + MAIN_COLS*cell;
+  ctx.fillStyle = 'rgba(8,15,10,0.8)';
+  ctx.fillRect(ox, chanY, bw, cell*2);
+
+  // Draw holes
+  const holeR = cell * 0.18;
+
+  // Top bus holes (2 rows: + and -)
+  for (let railRow = 0; railRow < 2; railRow++) {
+    const hy = oy + (railRow + 1) * cell + cell * 0.5;
+    for (let col = 0; col < ROWS; col++) {
+      const hx = ox + col * cell + cell * 0.5;
+      // Color stripe
+      ctx.fillStyle = railRow === 0 ? 'rgba(140,20,20,0.6)' : 'rgba(20,40,140,0.6)';
+      ctx.fillRect(ox + col * cell + cell*0.15, hy - cell*0.22, cell*0.7, cell*0.44);
+      drawHole(ctx, hx, hy, holeR);
+    }
+    // Rail label
+    ctx.fillStyle = railRow === 0 ? '#8b2a2a' : '#2a408b';
+    ctx.font = `bold ${cell*0.7}px 'Share Tech Mono', monospace`;
+    ctx.textAlign = 'left';
+    ctx.fillText(railRow === 0 ? '+' : '−', ox + 2, hy + cell * 0.3);
+  }
+
+  // Bottom bus holes
+  for (let railRow = 0; railRow < 2; railRow++) {
+    const hy = oy + bh - (2 - railRow) * cell - cell * 0.5;
+    for (let col = 0; col < ROWS; col++) {
+      const hx = ox + col * cell + cell * 0.5;
+      ctx.fillStyle = railRow === 0 ? 'rgba(140,20,20,0.6)' : 'rgba(20,40,140,0.6)';
+      ctx.fillRect(ox + col * cell + cell*0.15, hy - cell*0.22, cell*0.7, cell*0.44);
+      drawHole(ctx, hx, hy, holeR);
+    }
+    ctx.fillStyle = railRow === 0 ? '#8b2a2a' : '#2a408b';
+    ctx.font = `bold ${cell*0.7}px 'Share Tech Mono', monospace`;
+    ctx.textAlign = 'left';
+    ctx.fillText(railRow === 0 ? '+' : '−', ox + 2, hy + cell * 0.3);
+  }
+
+  // Main holes (a-e top, f-j bottom)
+  for (let row = 0; row < ROWS; row++) {
+    const hx = ox + row * cell + cell * 0.5;
+    // Row number every 5
+    if ((row+1) % 5 === 0 || row === 0) {
+      ctx.fillStyle = '#2a5030';
+      ctx.font = `${cell*0.6}px 'Share Tech Mono', monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(row+1, hx, oy + busH + 0.7*cell);
+    }
+    for (let col = 0; col < MAIN_COLS; col++) {
+      // Top side (a-e)
+      const hy1 = oy + busH + (col + 1.5) * cell;
+      drawHole(ctx, hx, hy1, holeR);
+      // Bottom side (f-j)
+      const hy2 = oy + busH + (col + MAIN_COLS + CHAN + 1.5) * cell;
+      drawHole(ctx, hx, hy2, holeR);
+    }
+  }
+
+  // Column letters
+  const letters = ['a','b','c','d','e','f','g','h','i','j'];
+  ctx.fillStyle = '#2a6035';
+  ctx.font = `${cell*0.65}px 'Share Tech Mono', monospace`;
+  ctx.textAlign = 'right';
+  for (let col = 0; col < 5; col++) {
+    ctx.fillText(letters[col], ox + cell*0.9, oy + busH + (col+1.5)*cell + cell*0.22);
+    ctx.fillText(letters[col+5], ox + cell*0.9, oy + busH + (col+MAIN_COLS+CHAN+1.5)*cell + cell*0.22);
+  }
+}
+
+function drawHole(ctx, x, y, r) {
+  ctx.fillStyle = '#080f0a';
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#1a3a20';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h);
+  ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r);
+}
+
+// ═══════════════════════════════════════════════
+// PALETTE RENDERING
+// ═══════════════════════════════════════════════
+function renderPalette(filter='') {
+  const list = document.getElementById('palette-list');
+  list.innerHTML = '';
+  const groups = {};
+  MODULES.forEach(m => {
+    const name = m.name.toLowerCase();
+    const desc = m.desc.toLowerCase();
+    if (filter && !name.includes(filter.toLowerCase()) && !desc.includes(filter.toLowerCase())) return;
+    if (!groups[m.group]) groups[m.group] = [];
+    groups[m.group].push(m);
+  });
+  Object.entries(groups).forEach(([g, mods]) => {
+    const gl = document.createElement('div');
+    gl.className = 'palette-group-label';
+    gl.textContent = g;
+    list.appendChild(gl);
+    mods.forEach(m => {
+      const el = document.createElement('div');
+      el.className = 'palette-item';
+      el.draggable = true;
+      el.dataset.moduleId = m.id;
+      el.innerHTML = `
+        <div class="pi-color" style="background:${m.color};border:1px solid rgba(255,255,255,0.15)"></div>
+        <div class="pi-info">
+          <div class="pi-name">${m.name}</div>
+          <div class="pi-sub">${m.desc}</div>
+          <div class="pi-dims">${m.dims} · ${m.pins}p</div>
+        </div>`;
+      el.addEventListener('dragstart', e => {
+        dragModule = m;
+        e.dataTransfer.effectAllowed = 'copy';
+        el.classList.add('dragging');
+      });
+      el.addEventListener('dragend', () => el.classList.remove('dragging'));
+      list.appendChild(el);
+    });
+  });
+}
+
+function filterPalette(val) { renderPalette(val); }
+
+// ═══════════════════════════════════════════════
+// BOARD DRAG/DROP + MODULE PLACEMENT
+// ═══════════════════════════════════════════════
+function initBoardDrop() {
+  const wrapper = document.getElementById('board-wrapper');
+  wrapper.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    wrapper.classList.add('drop-target');
+  });
+  wrapper.addEventListener('dragleave', () => wrapper.classList.remove('drop-target'));
+  wrapper.addEventListener('drop', e => {
+    e.preventDefault();
+    wrapper.classList.remove('drop-target');
+    if (!dragModule) return;
+    const rect = wrapper.getBoundingClientRect();
+    const px = Math.round((e.clientX - rect.left) / CELL) * CELL;
+    const py = Math.round((e.clientY - rect.top) / CELL) * CELL;
+    placeModule(dragModule, px, py);
+    dragModule = null;
+  });
+}
+
+function placeModule(moduleDef, px, py) {
+  const placed = {
+    uid: nextId++,
+    moduleId: moduleDef.id,
+    x: px,
+    y: py,
+    w: moduleDef.w * CELL,
+    h: moduleDef.h * CELL,
+  };
+  placedModules.push(placed);
+  renderPlacedModules();
+  log(`info`, `placed ${moduleDef.name} @ (${Math.round(px/CELL)}, ${Math.round(py/CELL)}) BU`);
+  updateNoModulesMsg();
+}
+
+function renderPlacedModules() {
+  const container = document.getElementById('board-modules');
+  container.innerHTML = '';
+  const svg = document.getElementById('conn-overlay');
+  const canvas = document.getElementById('board-canvas');
+  svg.setAttribute('width', canvas.width);
+  svg.setAttribute('height', canvas.height);
+  svg.innerHTML = '';
+
+  placedModules.forEach(pm => {
+    const m = MODULES.find(x => x.id === pm.moduleId);
+    if (!m) return;
+    const el = document.createElement('div');
+    el.className = 'placed-module' + (pm.uid === selectedId ? ' selected' : '');
+    el.style.cssText = `left:${pm.x}px;top:${pm.y}px;width:${pm.w}px;height:${pm.h}px;background:${m.color};`;
+    el.dataset.uid = pm.uid;
+
+    const tags = m.protocols.slice(0,3).map(p =>
+      `<span class="pm-tag">${p}</span>`).join('');
+
+    el.innerHTML = `
+      <span class="pm-delete" onclick="deleteModule(${pm.uid},event)">✕</span>
+      <div class="pm-name">${m.short}</div>
+      <div class="pm-sub">${m.dims}</div>
+      <div class="pm-tags">${tags}</div>`;
+
+    el.addEventListener('mousedown', e => startDragPlaced(e, pm.uid));
+    el.addEventListener('click', e => { e.stopPropagation(); selectModule(pm.uid); });
+    container.appendChild(el);
+  });
+
+  // Draw I2C/power connection lines between modules sharing protocols
+  drawConnectionLines(svg);
+}
+
+function drawConnectionLines(svg) {
+  const pairs = [];
+  for (let i = 0; i < placedModules.length; i++) {
+    for (let j = i+1; j < placedModules.length; j++) {
+      const a = MODULES.find(x => x.id === placedModules[i].moduleId);
+      const b = MODULES.find(x => x.id === placedModules[j].moduleId);
+      if (!a || !b) continue;
+      const shared = a.protocols.filter(p => b.protocols.includes(p) && p !== 'power');
+      if (shared.length === 0) continue;
+      pairs.push({a: placedModules[i], b: placedModules[j], protocols: shared});
+    }
+  }
+  pairs.forEach(pair => {
+    const ax = pair.a.x + pair.a.w/2;
+    const ay = pair.a.y + pair.a.h/2;
+    const bx = pair.b.x + pair.b.w/2;
+    const by = pair.b.y + pair.b.h/2;
+    const color = getProtoColor(pair.protocols[0]);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', ax); line.setAttribute('y1', ay);
+    line.setAttribute('x2', bx); line.setAttribute('y2', by);
+    line.setAttribute('stroke', color);
+    line.setAttribute('stroke-width', '1');
+    line.setAttribute('stroke-dasharray', '3 3');
+    line.setAttribute('opacity', '0.5');
+    svg.appendChild(line);
+    // Protocol label at midpoint
+    const tx = (ax+bx)/2;
+    const ty = (ay+by)/2;
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', tx); t.setAttribute('y', ty-3);
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('fill', color);
+    t.setAttribute('font-size','7');
+    t.setAttribute('font-family',"'Share Tech Mono',monospace");
+    t.textContent = pair.protocols[0];
+    svg.appendChild(t);
+  });
+}
+
+function getProtoColor(p) {
+  const map = {
+    'ESP-NOW':'#3ddc84','WiFi':'#4a90d4','WiFi6':'#4ab0f4',
+    'BLE':'#6060e0','BLE5':'#6060e0','I2C':'#c8a040','SPI':'#c840a0',
+    'UART':'#a040c8','LoRa':'#40c8c8','Meshtastic':'#40e0c0',
+    'Thread':'#8888d0','Zigbee':'#8888d0','Ethernet':'#40a0c0',
+    'I2S':'#d06080','analog':'#80a040','power':'#c8860a'
+  };
+  return map[p] || '#888';
+}
+
+// ═══════════════════════════════════════════════
+// MODULE DRAGGING (placed on board)
+// ═══════════════════════════════════════════════
+function startDragPlaced(e, uid) {
+  e.stopPropagation();
+  const pm = placedModules.find(p => p.uid === uid);
+  if (!pm) return;
+  selectModule(uid);
+  const rect = document.getElementById('board-wrapper').getBoundingClientRect();
+  dragOffset.x = e.clientX - rect.left - pm.x;
+  dragOffset.y = e.clientY - rect.top - pm.y;
+
+  function onMove(ev) {
+    const r = document.getElementById('board-wrapper').getBoundingClientRect();
+    const nx = Math.max(0, Math.round((ev.clientX - r.left - dragOffset.x) / CELL) * CELL);
+    const ny = Math.max(0, Math.round((ev.clientY - r.top - dragOffset.y) / CELL) * CELL);
+    pm.x = nx; pm.y = ny;
+    renderPlacedModules();
+  }
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    log('info', `moved module to (${Math.round(pm.x/CELL)}, ${Math.round(pm.y/CELL)}) BU`);
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function deleteModule(uid, e) {
+  e.stopPropagation();
+  const pm = placedModules.find(p => p.uid === uid);
+  const m = pm ? MODULES.find(x => x.id === pm.moduleId) : null;
+  placedModules = placedModules.filter(p => p.uid !== uid);
+  if (selectedId === uid) {
+    selectedId = null;
+    renderInspector(null);
+  }
+  renderPlacedModules();
+  updateNoModulesMsg();
+  if (m) log('warn', `removed ${m.name}`);
+}
+
+function selectModule(uid) {
+  selectedId = uid;
+  const pm = placedModules.find(p => p.uid === uid);
+  const m = pm ? MODULES.find(x => x.id === pm.moduleId) : null;
+  renderInspector(m, pm);
+  renderPlacedModules();
+}
+
+document.getElementById('canvas-area').addEventListener('click', () => {
+  selectedId = null;
+  renderInspector(null);
+  renderPlacedModules();
+});
+
+// ═══════════════════════════════════════════════
+// INSPECTOR
+// ═══════════════════════════════════════════════
+function renderInspector(m, pm) {
+  const body = document.getElementById('inspector-body');
+  if (!m) {
+    body.innerHTML = `<div style="color:var(--text3);font-size:11px;padding:8px 0">Select a module to inspect</div>`;
+    return;
+  }
+  const tagHtml = m.protocols.map(p =>
+    `<span class="tag tag-${p.toLowerCase().replace(/[^a-z]/g,'').replace('espnow','espnow').replace('wifi6','wifi').replace('ble5','ble')}">${p}</span>`
+  ).join(' ');
+
+  body.innerHTML = `
+    <div style="background:${m.color};border-radius:3px;padding:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.1)">
+      <div style="font-family:var(--head);font-size:16px;font-weight:700;color:#fff">${m.name}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px">${m.desc}</div>
+    </div>
+    <div class="insp-row"><span class="insp-label">dims</span><span class="insp-val">${m.dims}</span></div>
+    <div class="insp-row"><span class="insp-label">pins</span><span class="insp-val">${m.pins}</span></div>
+    <div class="insp-row"><span class="insp-label">BU size</span><span class="insp-val">${m.w} × ${m.h}</span></div>
+    <div class="insp-row"><span class="insp-label">power</span><span class="insp-val" style="font-size:9px;max-width:110px;text-align:right">${m.power}</span></div>
+    ${pm ? `<div class="insp-row"><span class="insp-label">position</span><span class="insp-val">(${Math.round(pm.x/CELL)}, ${Math.round(pm.y/CELL)}) BU</span></div>` : ''}
+    <div class="insp-section">PROTOCOLS</div>
+    <div style="padding:4px 0">${tagHtml}</div>
+    <div class="insp-section">NOTES</div>
+    <div style="font-size:10px;color:var(--text2);line-height:1.5;padding:4px 0">${m.notes}</div>
+    ${renderCompatibility(m)}`;
+}
+
+function renderCompatibility(m) {
+  if (placedModules.length < 2) return '';
+  const placed = placedModules.map(pm => MODULES.find(x => x.id === pm.moduleId)).filter(Boolean);
+  const others = placed.filter(o => o.id !== m.id);
+  if (others.length === 0) return '';
+
+  let html = `<div class="insp-section">COMPATIBILITY</div>`;
+  others.forEach(o => {
+    const shared = m.protocols.filter(p => o.protocols.includes(p));
+    const cls = shared.length > 0 ? 'conn-ok' : 'conn-warn';
+    const txt = shared.length > 0 ? `↔ ${o.short}: ${shared.join(', ')}` : `↔ ${o.short}: no shared bus`;
+    html += `<span class="conn-badge ${cls}">${txt}</span>`;
+  });
+  return html;
+}
+
+// ═══════════════════════════════════════════════
+// CONNECTION TEST
+// ═══════════════════════════════════════════════
+function testConnections() {
+  if (placedModules.length === 0) {
+    log('warn', 'no modules placed — nothing to test');
+    return;
+  }
+  const mods = placedModules.map(pm => MODULES.find(x => x.id === pm.moduleId)).filter(Boolean);
+
+  const results = {
+    power: [],
+    busses: {},
+    conflicts: [],
+    warnings: [],
+    ok: []
+  };
+
+  // Check power distribution
+  const hasPower = mods.some(m => m.category === 'power' || m.type === 'power');
+  const hasBoost = mods.some(m => m.id === 'mt3608-boost');
+  const hasCharger = mods.some(m => m.id === 'tp4056-usbc');
+  const mcus = mods.filter(m => m.category === 'mcu');
+
+  if (!hasPower) {
+    results.warnings.push('No POWER module detected — bus rails unregulated');
+  } else {
+    results.ok.push('Power module present');
+  }
+  if (!hasCharger && mcus.length > 0) {
+    results.warnings.push('No TP4056 charger — LiPo backup not covered');
+  }
+  if (hasBoost && !hasCharger) {
+    results.warnings.push('Boost converter without charger — check upstream');
+  }
+
+  // Check protocol buses
+  const protocols = ['I2C','SPI','UART','ESP-NOW','WiFi','LoRa'];
+  protocols.forEach(proto => {
+    const users = mods.filter(m => m.protocols.includes(proto));
+    if (users.length === 0) return;
+    const isWireless = ['ESP-NOW','WiFi','LoRa','BLE','BLE5','Meshtastic','Thread','Zigbee'].includes(proto);
+    results.busses[proto] = users.map(m => m.short);
+    if (proto === 'I2C' && users.length > 1) {
+      results.ok.push(`I2C bus: ${users.map(m=>m.short).join(' ↔ ')} (shared SDA/SCL)`);
+    }
+    if (proto === 'SPI' && users.length > 1) {
+      const needCS = users.length;
+      results.ok.push(`SPI bus: ${users.map(m=>m.short).join(' + ')} (need ${needCS} CS pins)`);
+      if (needCS > 3 && mcus.some(m => m.id.includes('c3'))) {
+        results.warnings.push('C3 has limited GPIO — check SPI CS pin count');
+      }
+    }
+    if (proto === 'ESP-NOW') {
+      if (users.length > 1) results.ok.push(`ESP-NOW: ${users.length} nodes — mesh capable`);
+      else results.ok.push(`ESP-NOW: ${users[0]?.short} — needs peer`);
+    }
+    if (proto === 'LoRa' && users.length > 0) {
+      const hasMCU = mcus.some(m => m.protocols.includes('SPI'));
+      if (!hasMCU) results.warnings.push('LoRa SX1278 present but no SPI master MCU detected');
+      else results.ok.push('LoRa + SPI MCU: wiring compatible');
+    }
+  });
+
+  // Check I2C address conflicts
+  const i2cDevices = {
+    'bme280-env': 0x76, 'mpu6050-imu': 0x68, 'ds3231-rtc': 0x68,
+    'ssd1306-oled': 0x3C, 'at24c256-eeprom': 0x50, 'ina219-power-mon': 0x40
+  };
+  const usedAddrs = {};
+  mods.forEach(m => {
+    if (i2cDevices[m.id] !== undefined) {
+      const addr = i2cDevices[m.id];
+      if (usedAddrs[addr]) {
+        results.conflicts.push(`I2C conflict 0x${addr.toString(16).toUpperCase()}: ${usedAddrs[addr]} + ${m.short}`);
+      } else {
+        usedAddrs[addr] = m.short;
+      }
+    }
+  });
+
+  // DS3231 + MPU6050 both 0x68
+  if (mods.some(m=>m.id==='ds3231-rtc') && mods.some(m=>m.id==='mpu6050-imu')) {
+    results.conflicts.push('DS3231 and MPU-6050 share I2C 0x68 — conflict! Use MPU AD0 pin to shift to 0x69');
+  }
+
+  // nRF24 voltage check
+  if (mods.some(m=>m.id==='nrf24l01-rf') && mods.some(m=>m.type==='mcu')) {
+    results.warnings.push('nRF24L01: 3.3V sensitive — add 100µF bypass cap at VCC');
+  }
+
+  // Power consumption estimate
+  let mW = 0;
+  mods.forEach(m => {
+    const table = {mcu:200,power:50,storage:30,sensor:15,display:80,audio:120,radio:100};
+    mW += table[m.category]||50;
+  });
+  results.ok.push(`Est. draw ~${mW}mW — LiPo 500mAh ≈ ${Math.round(3700*500/mW/60)} min runtime`);
+
+  // Render modal
+  let html = '';
+  if (results.ok.length) {
+    html += `<div class="modal-section"><h3>✓ PASSING</h3>`;
+    results.ok.forEach(r => html += `<div class="modal-item"><span class="ok">✓</span> ${r}</div>`);
+    html += '</div>';
+  }
+  if (results.warnings.length) {
+    html += `<div class="modal-section"><h3>⚠ WARNINGS</h3>`;
+    results.warnings.forEach(r => html += `<div class="modal-item"><b>⚠</b> ${r}</div>`);
+    html += '</div>';
+  }
+  if (results.conflicts.length) {
+    html += `<div class="modal-section"><h3>✕ CONFLICTS</h3>`;
+    results.conflicts.forEach(r => html += `<div class="modal-item"><span class="err">✕</span> ${r}</div>`);
+    html += '</div>';
+  }
+  html += `<div class="modal-section"><h3>BUS MAP</h3>`;
+  Object.entries(results.busses).forEach(([proto, nodes]) => {
+    html += `<div class="modal-item"><b>${proto}</b>: ${nodes.join(' → ')}</div>`;
+  });
+  html += '</div>';
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-bg').classList.add('show');
+
+  log('ok', `test complete — ${results.ok.length} pass, ${results.warnings.length} warn, ${results.conflicts.length} conflict`);
+  results.conflicts.forEach(r => log('err', r));
+  results.warnings.forEach(r => log('warn', r));
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-bg')) {
+    document.getElementById('modal-bg').classList.remove('show');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// RESET + SAVE
+// ═══════════════════════════════════════════════
+function resetBoard() {
+  if (placedModules.length > 0 && !confirm('Reset board? All placed modules will be removed.')) return;
+  placedModules = [];
+  selectedId = null;
+  renderPlacedModules();
+  renderInspector(null);
+  updateNoModulesMsg();
+  log('warn', 'board reset');
+}
+
+function saveImage() {
+  const boardCanvas = document.getElementById('board-canvas');
+  const modulesEl = document.getElementById('board-modules');
+  const connSvg = document.getElementById('conn-overlay');
+
+  // Create offscreen canvas
+  const off = document.createElement('canvas');
+  off.width = boardCanvas.width;
+  off.height = boardCanvas.height;
+  const ctx = off.getContext('2d');
+
+  // Draw board
+  ctx.drawImage(boardCanvas, 0, 0);
+
+  // Draw connection SVG
+  const svgData = new XMLSerializer().serializeToString(connSvg);
+  const svgBlob = new Blob([svgData], {type:'image/svg+xml'});
+  const svgUrl = URL.createObjectURL(svgBlob);
+  const svgImg = new Image();
+  svgImg.onload = () => {
+    ctx.drawImage(svgImg, 0, 0);
+    URL.revokeObjectURL(svgUrl);
+
+    // Draw placed modules
+    placedModules.forEach(pm => {
+      const m = MODULES.find(x => x.id === pm.moduleId);
+      if (!m) return;
+      ctx.fillStyle = m.color;
+      ctx.beginPath();
+      ctx.roundRect(pm.x, pm.y, pm.w, pm.h, 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Label
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold ${Math.min(pm.w/4, 11)}px 'Rajdhani',sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(m.short, pm.x + pm.w/2, pm.y + pm.h/2);
+      // Dims
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = `${Math.min(pm.w/5.5, 8)}px 'Share Tech Mono',monospace`;
+      ctx.fillText(m.dims, pm.x + pm.w/2, pm.y + pm.h/2 + 12);
+    });
+
+    // Watermark
+    ctx.fillStyle = 'rgba(61,220,132,0.3)';
+    ctx.font = `bold 14px 'Rajdhani',sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('ESPBLOK · BOARD BUILDER', off.width - 8, off.height - 6);
+
+    const link = document.createElement('a');
+    link.download = `espblok-layout-${Date.now()}.png`;
+    link.href = off.toDataURL('image/png');
+    link.click();
+    log('ok', 'PNG exported');
+  };
+  svgImg.src = svgUrl;
+}
+
+// ═══════════════════════════════════════════════
+// BOARD SWITCHING
+// ═══════════════════════════════════════════════
+function setBoard(type) {
+  currentBoard = type;
+  document.querySelectorAll('.board-tab').forEach(t => {
+    t.classList.toggle('active', t.getAttribute('onclick').includes(type));
+  });
+  document.getElementById('board-label').textContent = BOARDS[type].label;
+  const canvas = document.getElementById('board-canvas');
+  drawBoard(canvas, type);
+  // Resize SVG overlay
+  const svg = document.getElementById('conn-overlay');
+  svg.setAttribute('width', canvas.width);
+  svg.setAttribute('height', canvas.height);
+  renderPlacedModules();
+  log('info', `board: ${BOARDS[type].label}`);
+}
+
+// ═══════════════════════════════════════════════
+// LOGGING
+// ═══════════════════════════════════════════════
+function log(level, msg) {
+  const c = document.getElementById('log-content');
+  const span = document.createElement('span');
+  span.className = `log-${level}`;
+  const now = new Date();
+  const ts = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+  span.textContent = `[${ts}] ${msg}`;
+  const br = document.createElement('br');
+  c.appendChild(span);
+  c.appendChild(br);
+  c.scrollTop = c.scrollHeight;
+}
+
+function updateNoModulesMsg() {
+  const msg = document.getElementById('no-modules-msg');
+  msg.style.display = placedModules.length === 0 ? 'block' : 'none';
+  const counter = document.getElementById('module-counter');
+  if (counter) counter.textContent = `${placedModules.length} module${placedModules.length !== 1 ? 's' : ''}`;
+}
+
+// Keyboard: Delete/Backspace removes selected module
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId !== null) {
+    if (document.activeElement.tagName === 'INPUT') return;
+    const pm = placedModules.find(p => p.uid === selectedId);
+    const m = pm ? MODULES.find(x => x.id === pm.moduleId) : null;
+    placedModules = placedModules.filter(p => p.uid !== selectedId);
+    selectedId = null;
+    renderPlacedModules();
+    renderInspector(null);
+    updateNoModulesMsg();
+    if (m) log('warn', `deleted ${m.name} via keyboard`);
+  }
+  // Escape deselects
+  if (e.key === 'Escape') {
+    selectedId = null;
+    renderInspector(null);
+    renderPlacedModules();
+  }
+});
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  renderPalette();
+  setBoard('single');
+  initBoardDrop();
+  updateNoModulesMsg();
+  log('ok', 'ESPBLOK board builder initialized');
+  log('info', `${MODULES.length} modules loaded in palette`);
+});
+</script>
+</body>
+</html>

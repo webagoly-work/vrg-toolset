@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 1220" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Courier New', monospace">
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" fill="none" stroke="#16202e" stroke-width="1"/>
+    </pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0 0L6 3L0 6Z" fill="#8b98a5"/>
+    </marker>
+    <style>
+      .lbl{fill:#e6edf3;font-size:14px}.lblsm{fill:#aeb9c4;font-size:12px}
+      .tag{fill:#5b7a99;font-size:11px;letter-spacing:1px}
+      .live{stroke:#f5a623}.neu{stroke:#5b7a99}.trav{stroke:#2dd4bf}.ctrl{stroke:#d946ef}.en{stroke:#4ade80}
+      .w{fill:none;stroke-width:2.6}.node{fill:#0a0e14;stroke-width:2.2}
+      .title{fill:#2dd4bf;font-size:21px;letter-spacing:1px}
+    </style>
+  </defs>
+
+  <rect width="1120" height="1220" fill="#0a0e14"/>
+  <rect width="1120" height="1220" fill="url(#grid)"/>
+
+  <text x="48" y="50" fill="#e6edf3" font-size="27" letter-spacing="2">BRIDGE · SMART PEER SWITCH</text>
+  <text x="48" y="74" class="tag">RF IS A CONSTANTLY-POWERED PEER TOGGLE · MANUAL-FIRST PRESERVED · FAIL-SAFE TO MANUAL</text>
+  <line x1="48" y1="90" x2="1072" y2="90" stroke="#2dd4bf" stroke-width="1" opacity="0.5"/>
+  <g transform="translate(48,108)">
+    <line class="w live" x1="0" y1="0" x2="30" y2="0"/><text x="38" y="4" class="tag">L</text>
+    <line class="w trav" x1="90" y1="0" x2="120" y2="0"/><text x="128" y="4" class="tag">TRAVELLER</text>
+    <line class="w neu" x1="270" y1="0" x2="300" y2="0"/><text x="308" y="4" class="tag">N</text>
+    <line class="w ctrl" x1="360" y1="0" x2="390" y2="0"/><text x="398" y="4" class="tag">RF COIL</text>
+    <line class="w en" x1="520" y1="0" x2="550" y2="0"/><text x="558" y="4" class="tag">RF-ENABLE (CONSTANT)</text>
+  </g>
+
+  <!-- ============ PANEL: DUAL ============ -->
+  <rect x="40" y="134" width="1040" height="586" rx="10" fill="#0f141c" stroke="#1f2c3b" stroke-width="1.5"/>
+  <text x="64" y="170" class="title">PEER SWITCH — DUAL</text>
+  <text x="64" y="194" class="tag">TWO MANUAL 106 SWITCHES + RF AS THE CROSS (107) BETWEEN THEM · 3 PEERS</text>
+
+  <g transform="translate(0,18)">
+    <text x="92" y="304" class="tag">L</text>
+    <circle class="node live" cx="110" cy="330" r="5"/><line class="w live" x1="110" y1="330" x2="190" y2="330"/>
+    <circle class="node trav" cx="190" cy="330" r="4"/><circle class="node trav" cx="268" cy="298" r="4"/><circle class="node trav" cx="268" cy="362" r="4"/>
+    <line class="w live" x1="190" y1="330" x2="262" y2="300"/>
+    <text x="158" y="392" class="lblsm">S1 (106)</text>
+    <line class="w trav" x1="268" y1="298" x2="450" y2="298"/><line class="w trav" x1="268" y1="362" x2="450" y2="362"/>
+    <rect x="450" y="272" width="170" height="116" rx="8" fill="#0a0e14" stroke="#d946ef" stroke-width="2"/>
+    <text x="535" y="266" text-anchor="middle" class="tag" fill="#d946ef">RF VIRTUAL CROSS · DPDT</text>
+    <circle class="node trav" cx="450" cy="298" r="4"/><circle class="node trav" cx="450" cy="362" r="4"/><circle class="node trav" cx="620" cy="298" r="4"/><circle class="node trav" cx="620" cy="362" r="4"/>
+    <line class="w trav" x1="450" y1="298" x2="620" y2="298"/><line class="w trav" x1="450" y1="362" x2="620" y2="362"/>
+    <line x1="450" y1="298" x2="620" y2="362" stroke="#2dd4bf" stroke-width="1.4" stroke-dasharray="4 5" opacity="0.45"/>
+    <line x1="450" y1="362" x2="620" y2="298" stroke="#2dd4bf" stroke-width="1.4" stroke-dasharray="4 5" opacity="0.45"/>
+    <text x="535" y="412" text-anchor="middle" class="tag">de-energised = straight · energised = cross</text>
+    <line class="w trav" x1="620" y1="298" x2="772" y2="298"/><line class="w trav" x1="620" y1="362" x2="772" y2="362"/>
+    <circle class="node trav" cx="772" cy="298" r="4"/><circle class="node trav" cx="772" cy="362" r="4"/><circle class="node trav" cx="850" cy="330" r="4"/>
+    <line class="w trav" x1="772" y1="298" x2="846" y2="328"/>
+    <text x="812" y="392" class="lblsm">S2 (106)</text>
+    <line class="w trav" x1="850" y1="330" x2="900" y2="330"/>
+    <circle cx="924" cy="330" r="20" fill="#0a0e14" stroke="#f5a623" stroke-width="2.4"/>
+    <line x1="910" y1="316" x2="938" y2="344" stroke="#f5a623" stroke-width="2"/><line x1="938" y1="316" x2="910" y2="344" stroke="#f5a623" stroke-width="2"/>
+    <text x="924" y="382" text-anchor="middle" class="lblsm">LAMP</text>
+    <line class="w neu" x1="944" y1="330" x2="1000" y2="330"/><circle class="node neu" cx="1000" cy="330" r="5"/><text x="1010" y="334" class="tag">N</text>
+    <line class="w ctrl" x1="535" y1="388" x2="535" y2="448"/>
+    <rect x="430" y="448" width="210" height="56" rx="8" fill="#0a0e14" stroke="#d946ef" stroke-width="1.8"/>
+    <text x="535" y="473" text-anchor="middle" class="lblsm" fill="#d946ef">RF / ESP32</text>
+    <text x="535" y="492" text-anchor="middle" class="tag">virtual-cross driver</text>
+    <line class="w en" x1="330" y1="476" x2="428" y2="476" marker-end="url(#arrow)"/>
+    <text x="330" y="465" class="tag" fill="#4ade80">Shadow tap — ALWAYS POWERED</text>
+  </g>
+  <g transform="translate(64,632)">
+    <text y="0" class="lbl">• <tspan fill="#2dd4bf">S1, S2 and the RF cross are equal peers</tspan> — flip any one to toggle the lamp.</text>
+    <text y="24" class="lbl">• <tspan fill="#f5a623">Fail-safe:</tspan> RF loss → relay rests STRAIGHT → plain two-way staircase, manual intact.</text>
+  </g>
+
+  <!-- ============ PANEL: SINGLE ============ -->
+  <rect x="40" y="742" width="1040" height="440" rx="10" fill="#0f141c" stroke="#1f2c3b" stroke-width="1.5"/>
+  <text x="64" y="778" class="title">PEER SWITCH — SINGLE</text>
+  <text x="64" y="802" class="tag">ONE MANUAL 106 + RF CHANGEOVER AS THE COMPANION SWITCH OF A TWO-WAY · 2 PEERS · NO CROSS</text>
+
+  <g transform="translate(0,18)">
+    <text x="92" y="894" class="tag">L</text>
+    <circle class="node live" cx="110" cy="920" r="5"/><line class="w live" x1="110" y1="920" x2="190" y2="920"/>
+    <circle class="node trav" cx="190" cy="920" r="4"/><circle class="node trav" cx="268" cy="888" r="4"/><circle class="node trav" cx="268" cy="952" r="4"/>
+    <line class="w live" x1="190" y1="920" x2="262" y2="890"/>
+    <text x="150" y="982" class="lblsm">S1 (106)</text>
+    <line class="w trav" x1="268" y1="888" x2="480" y2="888"/><line class="w trav" x1="268" y1="952" x2="480" y2="952"/>
+    <rect x="480" y="862" width="170" height="116" rx="8" fill="#0a0e14" stroke="#d946ef" stroke-width="2"/>
+    <text x="565" y="856" text-anchor="middle" class="tag" fill="#d946ef">RF RELAY · SPDT CHANGEOVER</text>
+    <circle class="node trav" cx="480" cy="888" r="4"/><circle class="node trav" cx="480" cy="952" r="4"/><circle class="node trav" cx="650" cy="920" r="4"/>
+    <line class="w trav" x1="480" y1="888" x2="650" y2="920"/>
+    <line x1="480" y1="952" x2="650" y2="920" stroke="#2dd4bf" stroke-width="1.4" stroke-dasharray="4 5" opacity="0.45"/>
+    <text x="470" y="884" text-anchor="end" class="tag">A</text><text x="470" y="956" text-anchor="end" class="tag">B</text>
+    <text x="565" y="998" text-anchor="middle" class="tag">de-energised = A→lamp · energised = B→lamp</text>
+    <line class="w trav" x1="650" y1="920" x2="724" y2="920"/>
+    <circle cx="748" cy="920" r="20" fill="#0a0e14" stroke="#f5a623" stroke-width="2.4"/>
+    <line x1="734" y1="906" x2="762" y2="934" stroke="#f5a623" stroke-width="2"/><line x1="762" y1="906" x2="734" y2="934" stroke="#f5a623" stroke-width="2"/>
+    <text x="748" y="972" text-anchor="middle" class="lblsm">LAMP</text>
+    <line class="w neu" x1="768" y1="920" x2="850" y2="920"/><circle class="node neu" cx="850" cy="920" r="5"/><text x="860" y="924" class="tag">N</text>
+    <line class="w ctrl" x1="565" y1="978" x2="565" y2="1030"/>
+    <rect x="465" y="1030" width="200" height="52" rx="8" fill="#0a0e14" stroke="#d946ef" stroke-width="1.8"/>
+    <text x="565" y="1052" text-anchor="middle" class="lblsm" fill="#d946ef">RF / ESP32</text>
+    <text x="565" y="1070" text-anchor="middle" class="tag">companion changeover</text>
+    <line class="w en" x1="362" y1="1056" x2="463" y2="1056" marker-end="url(#arrow)"/>
+    <text x="362" y="1045" class="tag" fill="#4ade80">Shadow tap — ALWAYS POWERED</text>
+  </g>
+  <g transform="translate(64,1118)">
+    <text y="0" class="lbl">• <tspan fill="#2dd4bf">S1 and the RF relay are the two peer toggles</tspan> of a two-way circuit.</text>
+    <text y="24" class="lbl">• <tspan fill="#f5a623">Fail-safe:</tspan> RF loss → relay rests on N.C. (A) → S1 controls the lamp alone.</text>
+  </g>
+</svg>

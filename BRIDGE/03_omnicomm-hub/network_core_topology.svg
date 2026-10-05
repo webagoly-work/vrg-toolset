@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="640" viewBox="0 0 680 640" role="img" font-family="'DejaVu Sans', Arial, sans-serif">
+<title>Network core topology with VLAN segmentation</title>
+<rect x="0" y="0" width="680" height="640" fill="#0b0c0f"/>
+<style>
+ .th{font-size:13px;font-weight:700;fill:#e8eaf0}
+ .ts{font-size:10.5px;fill:#9aa0b4}
+ .teal{fill:#16241f;stroke:#57fbca}
+ .amber{fill:#241f12;stroke:#fbbf57}
+ .coral{fill:#241612;stroke:#fb8157}
+ .gray{fill:#1c1f28;stroke:#6b7089}
+ .blue{fill:#101a26;stroke:#57b4fb}
+ .tealx{fill:#57fbca}.amberx{fill:#fbbf57}
+</style>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#6b7089" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<text class="ts" x="40" y="22">Colors = separate VLAN segments  ·  gray = infrastructure  ·  blue = the hub (control plane)</text>
+
+<rect class="gray" x="270" y="38" width="140" height="40" rx="20" stroke-width="1"/>
+<text class="th" x="340" y="63" text-anchor="middle">Internet</text>
+
+<rect class="gray" x="270" y="112" width="140" height="44" rx="8" stroke-width="1"/>
+<text class="th" x="340" y="132" text-anchor="middle">Gateway (WAN)</text>
+<text class="ts" x="340" y="148" text-anchor="middle">NAT · internet door</text>
+<line x1="340" y1="78" x2="340" y2="110" stroke="#6b7089" stroke-width="2" marker-end="url(#arrow)"/>
+
+<rect class="blue" x="40" y="100" width="180" height="80" rx="8" stroke-width="1"/>
+<text class="th" x="130" y="124" text-anchor="middle">HUB (control plane)</text>
+<text class="ts" x="130" y="143" text-anchor="middle">DHCP · DNS · AdGuard</text>
+<text class="ts" x="130" y="159" text-anchor="middle">VLAN &amp; firewall policy</text>
+<text class="ts" x="130" y="175" text-anchor="middle">4G LTE failover</text>
+
+<rect class="amber" x="470" y="112" width="150" height="44" rx="8" stroke-width="1"/>
+<text class="ts" x="545" y="132" text-anchor="middle">4G LTE</text>
+<text class="ts" x="545" y="148" text-anchor="middle">backup internet</text>
+<line x1="470" y1="148" x2="224" y2="162" stroke="#fbbf57" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+
+<rect class="gray" x="240" y="230" width="200" height="56" rx="8" stroke-width="1.4"/>
+<text class="th" x="340" y="254" text-anchor="middle">Managed switch</text>
+<text class="ts" x="340" y="272" text-anchor="middle">VLAN backbone (data plane)</text>
+<line x1="340" y1="156" x2="340" y2="228" stroke="#6b7089" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="220" y1="150" x2="280" y2="232" stroke="#57b4fb" stroke-width="2"/>
+<text class="ts" x="150" y="206" text-anchor="start">trunk (all VLANs)</text>
+
+<rect class="teal" x="30" y="360" width="140" height="80" rx="8" stroke-width="1"/>
+<text class="th" x="100" y="384" text-anchor="middle">VLAN 10</text>
+<text class="ts" x="100" y="402" text-anchor="middle">Trusted</text>
+<text class="ts" x="100" y="420" text-anchor="middle">laptops, phones</text>
+
+<rect class="amber" x="185" y="360" width="155" height="80" rx="8" stroke-width="1"/>
+<text class="th" x="262" y="384" text-anchor="middle">VLAN 20</text>
+<text class="ts" x="262" y="402" text-anchor="middle">IoT + Audio</text>
+<text class="ts" x="262" y="420" text-anchor="middle">ESP nodes, bulbs</text>
+
+<rect class="coral" x="355" y="360" width="140" height="80" rx="8" stroke-width="1"/>
+<text class="th" x="425" y="384" text-anchor="middle">VLAN 30</text>
+<text class="ts" x="425" y="402" text-anchor="middle">Cameras</text>
+<text class="ts" x="425" y="420" text-anchor="middle">no internet</text>
+
+<rect class="gray" x="510" y="360" width="140" height="80" rx="8" stroke-width="1"/>
+<text class="th" x="580" y="384" text-anchor="middle">VLAN 40</text>
+<text class="ts" x="580" y="402" text-anchor="middle">Guest</text>
+<text class="ts" x="580" y="420" text-anchor="middle">internet only</text>
+
+<line x1="300" y1="286" x2="100" y2="358" stroke="#6b7089" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="330" y1="286" x2="262" y2="358" stroke="#6b7089" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="360" y1="286" x2="425" y2="358" stroke="#6b7089" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="390" y1="286" x2="560" y2="358" stroke="#6b7089" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+<rect class="gray" x="200" y="500" width="280" height="50" rx="8" stroke-width="1"/>
+<text class="th" x="340" y="522" text-anchor="middle">Wi-Fi Access Point(s)</text>
+<text class="ts" x="340" y="538" text-anchor="middle">broadcasts each VLAN as its own SSID</text>
+<line x1="340" y1="286" x2="340" y2="498" stroke="#6b7089" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+<text class="ts" x="350" y="474" text-anchor="start">VLAN trunk</text>
+
+<text class="ts" x="340" y="585" text-anchor="middle">Firewall rules (set on the hub): IoT → internet only, never → Trusted · Cameras → nothing</text>
+<text class="ts" x="340" y="606" text-anchor="middle">Hub → reaches all VLANs (it must talk to every device it coordinates)</text>
+</svg>

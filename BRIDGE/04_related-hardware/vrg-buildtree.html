@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="hu" data-theme="amber">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRG BuildTree</title>
+<style>
+  :root{
+    --bg:#14100c; --panel:#1d1712; --panel2:#241d16; --ink:#f4e9d6; --muted:#a8977d;
+    --accent:#e6a532; --accent-dim:#8a6a2a; --line:#3a2f22;
+    --green:#5b8c3e; --green-ink:#9ed46f; --amberflag:#c8912d; --red:#c8492d; --red-ink:#e88b73; --violet:#9a6cc0;
+  }
+  [data-theme="light"]{
+    --bg:#f4efe6; --panel:#fff; --panel2:#f7f2e8; --ink:#221c14; --muted:#6d6252;
+    --accent:#a9781a; --accent-dim:#a9781a; --line:#d8cdb8;
+    --green:#4f7d34; --green-ink:#3c6a22; --amberflag:#9a6a10; --red:#b33f22; --red-ink:#8f3016; --violet:#7a4fa8;
+  }
+  [data-theme="slate"]{
+    --bg:#0f1417; --panel:#161d22; --panel2:#1c252b; --ink:#e6edf2; --muted:#8fa2ad;
+    --accent:#4fb0d0; --accent-dim:#2f6f86; --line:#26323a;
+    --green:#4f9d6a; --green-ink:#7fd8a0; --amberflag:#c8912d; --red:#d0574a; --red-ink:#ec8b80; --violet:#8f7cd0;
+  }
+  [data-theme="green"]{
+    --bg:#0b120d; --panel:#111a13; --panel2:#16211a; --ink:#d7f0dc; --muted:#7fa088;
+    --accent:#57c07a; --accent-dim:#2f6f45; --line:#20301f; --green:#57c07a; --green-ink:#9ff0b6;
+    --amberflag:#c8b02d; --red:#c85a4a; --red-ink:#ec9384; --violet:#7cc0a0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.45}
+  .wrap{max-width:1180px;margin:0 auto;padding:16px 16px 80px}
+  header{border-bottom:2px solid var(--accent);padding-bottom:10px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  h1{font-size:20px;margin:0;letter-spacing:.03em}
+  h1 span{color:var(--accent)}
+  .toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .themebtns{display:flex;gap:4px}
+  .swatch{width:20px;height:20px;border-radius:5px;border:2px solid var(--line);cursor:pointer}
+  .swatch.sel{border-color:var(--accent)}
+  button.b{background:var(--accent);color:var(--bg);border:none;border-radius:6px;padding:7px 12px;font-weight:700;cursor:pointer;font-size:12.5px}
+  button.b.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  button.b:disabled{opacity:.4;cursor:not-allowed}
+
+  /* diagram viewer placeholder */
+  .diagbox{border:1.5px dashed var(--accent-dim);border-radius:10px;min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;margin-bottom:14px;background:linear-gradient(180deg,rgba(230,165,50,.05),transparent);text-align:center;padding:16px}
+
+  /* saved devices gallery */
+  .gallery{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .devcard{border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:8px;background:var(--panel);padding:10px 12px;min-width:200px;max-width:280px}
+  .devcard h4{margin:0 0 4px;font-size:13px}
+  .devcard .meta{font-size:11px;color:var(--muted);margin-bottom:6px}
+  .devcard .chainrow{font-size:11px;color:var(--ink);margin:2px 0}
+  .devcard .acts{display:flex;gap:6px;margin-top:8px}
+  .devcard .acts button{font-size:11px;padding:4px 8px}
+  .emptygal{color:var(--muted);font-size:12px;font-style:italic}
+
+  .tabs{display:flex;gap:6px;margin:6px 0 14px}
+  .tab{flex:1;text-align:center;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:8px;cursor:pointer;font-weight:600;color:var(--muted)}
+  .tab.active{color:var(--ink);border-color:var(--accent-dim);background:linear-gradient(180deg,rgba(230,165,50,.12),transparent)}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-bottom:10px}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:20px;font-size:11px;border:1px solid}
+  .chip.g{color:var(--green-ink);border-color:var(--green)} .chip.a{color:var(--amberflag);border-color:var(--accent-dim)} .chip.r{color:var(--red-ink);border-color:var(--red)}
+
+  .cols{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+  @media(max-width:860px){.cols{grid-template-columns:1fr}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .card>h2{font-size:13px;margin:0;padding:10px 13px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(230,165,50,.10),transparent)}
+  .card .body{padding:6px 10px 12px}
+  .grp h3{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--accent-dim);margin:11px 4px 4px;font-weight:700}
+
+  .item{display:flex;align-items:flex-start;gap:8px;padding:7px 6px;border-bottom:1px solid var(--line);border-left:3px solid transparent}
+  .item.g{border-left-color:var(--green)} .item.a{border-left-color:var(--amberflag)} .item.r{border-left-color:var(--red);opacity:.72}
+  .item.inbuild{background:rgba(230,165,50,.08)}
+  .item .add{margin-top:1px;cursor:pointer;width:22px;height:22px;border:1.5px solid var(--accent-dim);border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:14px;flex-shrink:0}
+  .item.inbuild .add{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+  .item.isbase .add{background:var(--violet);border-color:var(--violet);color:#fff}
+  .item .mid{flex:1;min-width:0}
+  .item .n{font-weight:600;font-size:13px}
+  .item .n .baselab{font-size:9px;background:var(--violet);color:#fff;padding:1px 5px;border-radius:10px;margin-left:5px}
+  .item .s{color:var(--muted);font-size:11px;display:block;margin-top:1px}
+  .item .meta{font-size:10px;color:var(--accent-dim);margin-top:2px}
+  .busline{margin-top:3px;display:flex;gap:4px;flex-wrap:wrap}
+  .bus{font-size:9.5px;padding:1px 6px;border-radius:3px;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+  /* stock stepper */
+  .stock{display:flex;align-items:center;gap:3px;margin-top:4px}
+  .stock button{width:20px;height:20px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:4px;cursor:pointer;font-size:13px;line-height:1;padding:0}
+  .stock input{width:38px;text-align:center;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:4px;font-size:12px;padding:2px}
+  .stock .lab{font-size:10px;color:var(--muted);margin-left:4px}
+
+  /* builder panel (sticky) */
+  .builder{position:sticky;top:12px}
+  .builder .body{min-height:60px}
+  .bnode{display:flex;align-items:center;gap:7px;padding:6px 7px;margin:4px 0;border-radius:6px;background:var(--panel2);border:1px solid var(--line)}
+  .bnode.base{border-color:var(--violet)}
+  .bnode .conn{font-size:9.5px;font-weight:700;padding:1px 7px;border-radius:12px;white-space:nowrap;border:1px solid var(--accent-dim);color:var(--accent)}
+  .bnode.g .conn{color:var(--green-ink);border-color:var(--green)} .bnode.a .conn{color:var(--amberflag)} .bnode.r .conn{color:var(--red-ink);border-color:var(--red)}
+  .bnode .bn{flex:1;font-size:12px;font-weight:600}
+  .bnode .rm{cursor:pointer;color:var(--red-ink);font-size:15px}
+  .bnode select{font-size:10px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:4px}
+  .minidiag{margin:8px 0;border:1px solid var(--line);border-radius:6px;background:var(--panel2);padding:4px}
+  .bactions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .bactions button{font-size:12px;padding:6px 10px}
+  .bhint{font-size:11px;color:var(--muted);padding:4px 2px}
+  .cf{font-size:11.5px;padding:4px 7px;margin:3px 0;border-radius:5px;background:rgba(200,73,45,.10);border:1px solid rgba(200,73,45,.4)}
+  .cf.res{background:rgba(91,140,62,.10);border-color:rgba(91,140,62,.4);color:var(--green-ink)}
+
+  /* change log */
+  .logwrap{margin-top:18px}
+  .logentry{border:1px solid var(--line);border-radius:7px;padding:9px 11px;margin:6px 0;background:var(--panel);font-size:12px;display:flex;flex-direction:column;gap:5px}
+  .logentry.dec{border-left:4px solid var(--amberflag)} .logentry.inc{border-left:4px solid var(--red)} .logentry.inc.resolved{border-left-color:var(--green)}
+  .logentry .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .logentry .ts{color:var(--muted);font-size:10.5px}
+  .logentry input{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:5px 7px;font-size:12px;width:100%}
+  .logentry .flag{font-size:10px;padding:1px 7px;border-radius:10px}
+  .logentry .flag.miss{background:rgba(200,73,45,.15);color:var(--red-ink);border:1px solid var(--red)}
+  .logentry .flag.ok{background:rgba(91,140,62,.15);color:var(--green-ink);border:1px solid var(--green)}
+  .unlock{font-size:11.5px;color:var(--green-ink);margin-top:3px;display:block}
+  .hidden{display:none}
+  .note{font-size:11px;color:var(--muted)}
+  a{color:var(--accent)}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>VRG <span>BuildTree</span></h1>
+    <div class="toolbar">
+      <div class="themebtns" id="themebtns"></div>
+      <button class="b ghost" onclick="exportState()">Export</button>
+      <button class="b ghost" onclick="document.getElementById('importfile').click()">Import</button>
+      <input type="file" id="importfile" accept="application/json" onchange="importState(event)">
+      <button class="b ghost" onclick="resetAll()">Reset</button>
+    </div>
+  </header>
+
+  <!-- diagram viewer placeholder (ESPBLOK viz goes here later) -->
+  <div class="diagbox" id="diagbox">
+    Diagram-néző — ide kerül később az <b>ESPBLOK builder vizualizáció</b> (átdolgozás + integráció a saját Project után).
+  </div>
+
+  <!-- saved Eszköz gallery -->
+  <div class="gallery" id="gallery"></div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="wb" onclick="switchTab('wb')">Műhely — készlet + Eszköz-építő</div>
+    <div class="tab" data-tab="ord" onclick="switchTab('ord')">Bővítéshez rendelhető tételek</div>
+  </div>
+
+  <!-- WORKBENCH -->
+  <div id="wb">
+    <div class="legend">
+      <span class="chip g">● kompatibilis</span>
+      <span class="chip a">● feltétellel</span>
+      <span class="chip r">● nincs közös busz</span>
+      <span>Az <b>első kiválasztott</b> tétel lesz az <b>Alap</b>; a színek ahhoz viszonyítanak.</span>
+    </div>
+    <div class="cols">
+      <div class="card">
+        <h2>Készlet</h2>
+        <div class="body" id="inventory"></div>
+      </div>
+      <div class="card builder">
+        <h2>Új Eszköz</h2>
+        <div class="body" id="builderBody"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Dokumentált variánsok</h2>
+      <div class="body" id="variants"></div>
+    </div>
+
+    <!-- change log -->
+    <div class="logwrap card">
+      <h2>Készlet-változási napló (kézi módosítások)</h2>
+      <div class="body" id="logbody"></div>
+    </div>
+  </div>
+
+  <!-- ORDER -->
+  <div id="ord" class="hidden">
+    <div class="note" style="margin-bottom:10px">
+      Minőségi mező minden kapcsolódó kategóriában — kis/opcionális kiegészítők, jövőállóság, és a jelenlegi
+      készlet hídjait/hiányait lefedő modulok. Amit kiválasztasz, azt átemeljük a Műhely fülre.
+    </div>
+    <div class="card"><div class="body" id="orderList"></div></div>
+  </div>
+</div>
+
+<script>
+const ITEMS = [
+  // ---- HOSTS ----
+  {id:'s3', role:'host', name:'ESP32-S3 N16R8 Dual USB-C', qty:1, fp:'42pin', logic:3.3,
+   specs:'16MB flash / 8MB PSRAM · dual USB-C (CH343 UART + natív OTG) · PCB antenna · 1 meglévő + 2 úton',
+   buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'I2S',r:'controller'},{t:'GPIO',r:'controller'},{t:'ADC',r:'controller'},{t:'DAC',r:'controller'},{t:'USB',r:'either'}],
+   note:'Natív USB-hoz OTG kábel kell. Nincs u.FL — a 2.4GHz SMA-IPEX antenna ide nem megy.'},
+
+  {id:'pico2', role:'host', name:'Raspberry Pi Pico 2 (RP2350) USB-C', qty:2, fp:'pico', logic:3.3,
+   specs:'Cortex-M33 150MHz · 16MB flash · 520KB SRAM · cikksz. 1-4-8',
+   buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'GPIO',r:'controller'},{t:'ADC',r:'controller'},{t:'PWM',r:'controller'},{t:'USB',r:'either'}],
+   note:'MCU — NINCS wifi/BLE, NEM tunnel-host. Kiváló natív USB-HID agy (TinyUSB+PIO) az L1 vezetékes oldalához.'},
+
+  {id:'wroom32d', role:'host', name:'ESP32 WROOM-32D 38-pin (CP2102)', qty:1, fp:'38pin', logic:3.3,
+   specs:'klasszikus ESP32 · WiFi+BLE · USB-C · cikksz. 1-2-15',
+   buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'I2S',r:'controller'},{t:'GPIO',r:'controller'},{t:'ADC',r:'controller'},{t:'USB',r:'either'}],
+   note:'38-pin — RÁÜL az I/O shieldre (végre van hozzá panel). ESP-NOW/Zigbee2MQTT-hez bombabiztos.'},
+
+  {id:'lvgltouch', role:'host', name:'ESP32 WROOM LVGL 2,4" érintőkijelző', qty:1, fp:'cyd', logic:3.3,
+   specs:'agy + kijelző + touch egyben (CYD stílus) · cikksz. 1-2-44',
+   buses:[{t:'I2C',r:'controller'},{t:'UART',r:'controller'},{t:'GPIO',r:'controller'},{t:'USB',r:'either'}],
+   note:'A PiP-boy touch-modulja — MEGVAN. WROOM-32 (nincs PSRAM), UI-ra elég; a GPIO-kivezetés korlátozott.'},
+
+  // ---- CARRIERS ----
+  {id:'ioshield', role:'carrier', name:'ESP32 I/O shield 38-pin', qty:2, fp:'38pin', logic:3.3,
+   specs:'GPIO kivezetés csavaros sorra · Vin 6,5–16V', buses:[{t:'GPIO',r:'passive'}],
+   note:'38-pin lábkiosztás — a 42-pin S3 NEM ül rá. 38-pin WROOM-hoz jó.'},
+  {id:'nanoproto', role:'carrier', name:'Arduino Nano próbapanel', qty:1, fp:'nano', logic:'tol',
+   specs:'kétoldalas, plated, 2,54mm', buses:[{t:'GPIO',r:'passive'}]},
+
+  // ---- PERIPHERALS ----
+  {id:'pcf8575', role:'peripheral', name:'PCF8575 16-ch I/O expander', qty:1, logic:'tol',
+   specs:'I2C GPIO bővítő · 2,5–5,5V', buses:[{t:'I2C',r:'device',addr:'0x20'}]},
+  {id:'mux4067', role:'peripheral', name:'CD74HC4067 16-ch analóg mux', qty:1, logic:'tol',
+   specs:'16→1 analóg/digitális mux · 4 select GPIO + 1 SIG · cikksz. 10-1-3', buses:[{t:'GPIO',r:'device'},{t:'ADC',r:'device'}],
+   note:'Sok analóg bemenet 1 ADC-re; a kábeltérképező analóg pásztázásához is jó.'},
+  {id:'pn532', role:'peripheral', name:'PN532 NFC/RFID V3', qty:1, logic:3.3,
+   specs:'13,56MHz · I2C / SPI / HSU átkapcsolható', buses:[{t:'I2C',r:'device',addr:'0x24'},{t:'SPI',r:'device'},{t:'UART',r:'device'}]},
+  {id:'mfrc522', role:'peripheral', name:'MFRC-522 RFID', qty:2, logic:3.3,
+   specs:'13,56MHz · SPI', buses:[{t:'SPI',r:'device'}]},
+  {id:'oled', role:'peripheral', name:'1.3" OLED + EC11 enkóder', qty:2, logic:'tol',
+   specs:'SH1106 128×64 kijelző + forgóenkóder', buses:[{t:'I2C',r:'device',addr:'0x3C'},{t:'GPIO',r:'device'}]},
+  {id:'nrf905', role:'peripheral', name:'nRF905 sub-GHz adó-vevő', qty:2, logic:3.3,
+   specs:'433/868/915MHz · SPI · CSAK 3,3V', buses:[{t:'SPI',r:'device'}],
+   note:'5V-ot nem visel — 3,3V hostot igényel vagy szintillesztőt.'},
+  {id:'vl6180x', role:'peripheral', name:'VL6180X ToF távolságérzékelő', qty:1, logic:'tol',
+   specs:'lézeres ToF ~5–100mm + fény · I2C 0x29 · cikksz. 2-3-30', buses:[{t:'I2C',r:'device',addr:'0x29'}],
+   note:'Gesztus/közelség — pendant vezérléshez vagy jelenlét/mérés.'},
+  {id:'sdmod', role:'peripheral', name:'microSD író-olvasó modul (6pin)', qty:1, logic:'tol',
+   specs:'a vault tárolója · SPI · cikksz. 3-1-25', buses:[{t:'SPI',r:'device'}]},
+  {id:'at24c256', role:'peripheral', name:'AT24C256 EEPROM modul', qty:1, logic:'tol',
+   specs:'256kB I2C EEPROM', buses:[{t:'I2C',r:'device',addr:'0x50'}]},
+  {id:'pir', role:'peripheral', name:'HC-SR501 PIR + konzol', qty:1, logic:'tol',
+   specs:'mozgásérzékelő · Vin 5V · kimenet 3,3V-biztos', buses:[{t:'GPIO',r:'device'}]},
+  {id:'lx06la', role:'peripheral', name:'LX06LA hangrögzítő/lejátszó', qty:1, logic:'tol',
+   specs:'10mp · gomb/GPIO trigger · 3–5V · hangszóró-kimenet', buses:[{t:'GPIO',r:'device'},{t:'ANALOG',r:'passive'}]},
+  {id:'lm386', role:'peripheral', name:'LM386 audio erősítő', qty:2, logic:null,
+   specs:'analóg be → hangszóró · 5–12V', buses:[{t:'ANALOG',r:'device'}]},
+  {id:'pbuzz', role:'peripheral', name:'Passzív buzzer 5V', qty:2, logic:'tol',
+   specs:'PWM-mel hajtott — te adod a frekvenciát', buses:[{t:'PWM',r:'device'}]},
+  {id:'abuzz', role:'peripheral', name:'Aktív piezo buzzer 12V 85dB', qty:1, logic:'tol',
+   specs:'tranzisztoros meghajtás · 12V', buses:[{t:'GPIO',r:'device'}]},
+
+  // ---- RF ----
+  {id:'ant24', role:'rf', name:'2.4GHz antenna SMA→IPEX', qty:1, logic:null,
+   specs:'u.FL/IPEX csatlakozó', buses:[{t:'UFL',r:'passive'}],
+   note:'Csak u.FL-lel szerelt paneleknek. Az S3 Dual-USB-C PCB antennás.'},
+
+  // ---- PROGRAMMERS / PC-SIDE ----
+  {id:'ch341a', role:'programmer', name:'CH341A EEPROM/Flash programozó', qty:1, logic:5,
+   specs:'SOIC8 SPI/I2C flash · PC-oldali USB', buses:[{t:'SPI',r:'controller'},{t:'I2C',r:'controller'},{t:'USB',r:'either'}],
+   note:'Klasszikus board ~5V-os SPI vonalakkal — 3,3V flash-t ölhet. Szintillesztő / 3,3V mod kell.'},
+  {id:'usbrs485', role:'programmer', name:'USB–RS485 adapter', qty:1, logic:'tol',
+   specs:'Modbus RTU PC-ről (pl. SDM630)', buses:[{t:'RS485',r:'controller'},{t:'USB',r:'either'}]},
+  {id:'cp2102', role:'programmer', name:'CP2102 6-in-1 USB átalakító', qty:1, logic:'tol',
+   specs:'TTL / RS232 / RS485', buses:[{t:'UART',r:'controller'},{t:'RS485',r:'controller'},{t:'RS232',r:'controller'},{t:'USB',r:'either'}]},
+  {id:'ch340e', role:'programmer', name:'CH340E USB-C→TTL', qty:3, logic:'tol',
+   specs:'flasheléshez', buses:[{t:'UART',r:'controller'},{t:'USB',r:'either'}]},
+  {id:'ch343p', role:'programmer', name:'CH343P USB→TTL 6Mbps', qty:5, logic:'tol',
+   specs:'flasheléshez', buses:[{t:'UART',r:'controller'},{t:'USB',r:'either'}]},
+  {id:'stlink', role:'programmer', name:'ST-Link V2', qty:1, logic:'tol',
+   specs:'STM8/STM32 · SWD/JTAG', buses:[{t:'SWD',r:'controller'},{t:'USB',r:'either'}]},
+
+  // ---- CONNECTORS / RESOLVERS ----
+  {id:'shifter', role:'connector', name:'4-ch szintillesztő 3,3↔5V', qty:7, logic:'tol', resolver:true,
+   specs:'kétirányú · I2C/SPI/UART/GPIO', buses:[{t:'I2C',r:'either'},{t:'SPI',r:'either'},{t:'UART',r:'either'},{t:'GPIO',r:'either'}],
+   note:'Feszültség-ütközést old fel a buildben.'},
+  {id:'griff', role:'tool', name:'Griff mérőcsipesz CAT II 1000V/4A', qty:1, logic:null, specs:'élő panelen is', buses:[]},
+
+  // ---- POWER / BATTERY ----
+  {id:'buck2596', role:'power', name:'LM2596 állítható buck CC/CV', qty:2, logic:null,
+   specs:'DC-DC step-down · 5V/3,3V beállítható · cikksz. 7-1-52', buses:[{t:'POWER',r:'controller'}]},
+  {id:'pbmod', role:'power', name:'18650 powerbank vezérlő (5V 1.2A)', qty:2, logic:null,
+   specs:'tölt + boost 5V — cordless tápegység a pendantnak · cikksz. 6-1-11', buses:[{t:'POWER',r:'controller'}]},
+  {id:'cell35e', role:'power', name:'Samsung INR18650-35E 3500mAh', qty:4, logic:null,
+   specs:'Li-ion cella (mennyiség megerősítendő) · cikksz. 6-5-10', buses:[]},
+  {id:'hold1', role:'power', name:'18650 tartó rugós 1 cellás', qty:2, logic:null, specs:'cikksz. 6-4-27', buses:[]},
+  {id:'hold2s', role:'power', name:'18650 tartó 2S (2 cellás)', qty:1, logic:null, specs:'L7 pack terület · cikksz. 6-4-24', buses:[]},
+  {id:'hold21', role:'power', name:'18650 tartó 2×1', qty:4, logic:null, specs:'cikksz. 6-4-34', buses:[]},
+  {id:'holdsmd', role:'power', name:'18650 tartó SMD 1 cellás', qty:2, logic:null, specs:'cikksz. 6-4-1', buses:[]},
+  {id:'tp4056', role:'power', name:'TP4056 1S töltő USB-C (védelemmel)', qty:4, logic:null,
+   specs:'önálló cellatöltő · cikksz. 6-1-41', buses:[]},
+  {id:'ind100', role:'consumable', name:'100µH (3A) toroid induktivitás', qty:1, logic:null, specs:'buck ripple/hő mod · cikksz. YXZ1212', buses:[]},
+
+
+  // ===== ÚJ HAUL (SZ12198/12582/12583/12584/12585) =====
+  // -- ESP fleet (swarm / BRIDGE) --
+  {id:'c3zero', role:'host', name:'ESP32-C3 Zero', qty:6, fp:'c3zero', logic:3.3,
+   specs:'RISC-V · WiFi+BLE · USB-C · cikksz. 1-2-46',
+   buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'GPIO',r:'controller'},{t:'ADC',r:'controller'},{t:'USB',r:'either'}],
+   note:'Apró, olcsó node — a swarm/ESP-NOW raj magja (6 db).'},
+  {id:'c6devkit', role:'host', name:'ESP32-C6 DevKit N4R2', qty:2, fp:'c6', logic:3.3,
+   specs:'WiFi6 + BLE + 802.15.4 · cikksz. 1-2-35',
+   buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'GPIO',r:'controller'},{t:'ADC',r:'controller'},{t:'USB',r:'either'}],
+   note:'802.15.4 rádió → Thread/Zigbee/Matter NATÍV — közös nevező a BRIDGE-dzsel.'},
+  {id:'s3zero', role:'host', name:'ESP32-S3-Zero Mini', qty:2, fp:'s3zero', logic:3.3,
+   specs:'S3 mini · WiFi+BLE · cikksz. 1-2-47',
+   buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'I2S',r:'controller'},{t:'GPIO',r:'controller'},{t:'ADC',r:'controller'},{t:'USB',r:'either'}],
+   note:'Kompakt S3 node (PSRAM/AI); a swarm erősebb tagjai.'},
+  {id:'c2devkit', role:'host', name:'ESP32-C2 (ESP8684) DevKit', qty:1, fp:'c2', logic:3.3,
+   specs:'olcsó RISC-V · WiFi+BLE · cikksz. 1-2-14',
+   buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'GPIO',r:'controller'},{t:'ADC',r:'controller'},{t:'USB',r:'either'}],
+   note:'Legolcsóbb WiFi+BLE node.'},
+  // -- carriers --
+  {id:'s3shield44', role:'carrier', name:'ESP32-S3 I/O shield 44-pin', qty:1, fp:'42pin', logic:3.3,
+   specs:'GPIO kivezetés · cikksz. 3-6-35', buses:[{t:'GPIO',r:'passive'}],
+   note:'VÉGRE ráül a 42/44-pin S3-ra (a 38-pin shield nem volt jó rá).'},
+  {id:'ioshield30', role:'carrier', name:'ESP32 I/O shield 30-pin', qty:2, fp:'30pin', logic:3.3,
+   specs:'cikksz. 3-3-6', buses:[{t:'GPIO',r:'passive'}], note:'30-pin ESP32 boardokhoz.'},
+  // -- sensors / input peripherals --
+  {id:'mpu6050', role:'peripheral', name:'MPU6050 IMU (GY-521)', qty:1, logic:'tol',
+   specs:'6-tengelyes gyro+accel · I2C 0x68 · cikksz. 2-1-29', buses:[{t:'I2C',r:'device',addr:'0x68'}],
+   note:'Valós orientáció a pendantnak ESP-NOW-on — a gyro-blokádot hardveresen megoldja.'},
+  {id:'mcp2515', role:'peripheral', name:'MCP2515 CAN busz', qty:3, logic:5,
+   specs:'CAN vezérlő+transceiver · SPI · cikksz. 3-2-26', buses:[{t:'SPI',r:'device'}],
+   note:'Kristály 8/16MHz — állítsd a libben! TJA1050 5V → SPI-n szintillesztő vagy SN65HVD230 (3,3V).'},
+  {id:'mpu_tilt', role:'peripheral', name:'KY-017 higanyos dőléskapcsoló', qty:1, logic:'tol', specs:'cikksz. 2-1-34', buses:[{t:'GPIO',r:'device'}]},
+  {id:'yl99', role:'peripheral', name:'YL-99 végálláskapcsoló modul', qty:1, logic:'tol', specs:'cikksz. 3-1-72', buses:[{t:'GPIO',r:'device'}]},
+  {id:'microsw', role:'peripheral', name:'Mikro végálláskapcsoló', qty:1, logic:'tol', specs:'cikksz. 10-7-138', buses:[{t:'GPIO',r:'device'}]},
+  {id:'keypad34', role:'peripheral', name:'3×4 mátrix billentyűzet', qty:1, logic:'tol',
+   specs:'7 GPIO · cikksz. 3-1-71', buses:[{t:'GPIO',r:'device'}], note:'PIN-bevitel — BRIDGE beléptető.'},
+  {id:'mq135', role:'peripheral', name:'MQ-135 gáz/levegőminőség', qty:1, logic:5,
+   specs:'analóg · cikksz. 2-1-43', buses:[{t:'ADC',r:'device'}], note:'5V fűtés, bemelegedési idő; füst/CO2/NH3/gáz.'},
+  {id:'sa12', role:'peripheral', name:'SA-12 hőmérséklet modul', qty:2, logic:'tol', specs:'cikksz. 2-1-44', buses:[{t:'GPIO',r:'device'}]},
+  {id:'rcwl0516', role:'peripheral', name:'RCWL-0516 mikrohullámú radar', qty:1, logic:'tol',
+   specs:'mozgás/jelenlét · cikksz. 2-3-15', buses:[{t:'GPIO',r:'device'}], note:'Falon át is érzékel — jelenlét/kutyakövetés felé.'},
+  {id:'btn12', role:'peripheral', name:'12×12mm LED-es nyomógombok (5 szín)', qty:10, logic:'tol',
+   specs:'világító pillanatgomb · cikksz. 10-7-126..130', buses:[{t:'GPIO',r:'device'}], note:'Vezérlőpanel/pendant bemenet.'},
+  {id:'pot5k', role:'peripheral', name:'B5K potméter 5kΩ', qty:1, logic:'tol', specs:'analóg · cikksz. 10-4-4', buses:[{t:'ADC',r:'device'}]},
+  // -- actuators --
+  {id:'maglock', role:'peripheral', name:'Mini elektromos mágneszár', qty:1, logic:null,
+   specs:'beléptető aktuátor · cikksz. 3-1-82', buses:[{t:'GPIO',r:'device'}], note:'12V + relé/driver — NEM közvetlen GPIO. BRIDGE beléptető.'},
+  {id:'relay1', role:'peripheral', name:'Relé modul 1-ch 5V/220V', qty:2, logic:'tol',
+   specs:'opto be · cikksz. 3-1-36', buses:[{t:'GPIO',r:'device'}], note:'220V kapcsolás — HÁLÓZAT, óvatosan/tokban.'},
+  {id:'siren', role:'peripheral', name:'Sziréna/riasztó 6–15V', qty:1, logic:null,
+   specs:'cikksz. 2-1-37', buses:[{t:'GPIO',r:'device'}], note:'Hangos kimenet driverrel.'},
+  // -- power / display --
+  {id:'acdimmer', role:'power', name:'AC 220V 2000W dimmer/fordulatszabályzó', qty:1, logic:null,
+   specs:'TRIAC · cikksz. 7-3-8', buses:[], note:'HÁLÓZATI 220V — ÉLETVESZÉLY. Szigetelt tok kötelező. Fény/motor sebesség.'},
+  {id:'usb12v', role:'power', name:'USB→12V boost tápkábel', qty:2, logic:null,
+   specs:'5V→12V, 5,5×2,1mm · cikksz. 7-1-51', buses:[{t:'POWER',r:'controller'}], note:'12V eszközök USB/powerbankról.'},
+  {id:'psu5v3a', role:'power', name:'5V 3A dugasztáp (AC-DC)', qty:1, logic:null, specs:'cikksz. 7-3-26', buses:[{t:'POWER',r:'controller'}], note:'Always-on/bench táp.'},
+  {id:'bbpsu', role:'power', name:'Breadboard tápegység modul', qty:2, logic:null, specs:'3,3V/5V sín · cikksz. 3-2-39', buses:[{t:'POWER',r:'controller'}]},
+  {id:'vmeter', role:'power', name:'0,36" voltmérő 0–33V (zöld+piros)', qty:4, logic:null, specs:'cikksz. 8-1-38 / 8-1-33', buses:[]},
+  // -- tools --
+  {id:'iron80w', role:'tool', name:'Forrasztópáka 80W állítható', qty:1, logic:null, specs:'cikksz. 14-2-13', buses:[], note:'Mostantól tudsz forrasztani — a no-solder út opcionális.'},
+  {id:'lcrt4', role:'tool', name:'LCR-T4 alkatrész teszter', qty:1, logic:null, specs:'R/L/C/tranzisztor/ESR · cikksz. 8-1-12', buses:[]},
+  {id:'hvgen', role:'tool', name:'500KV impulzusgenerátor MCY-12-1', qty:1, logic:null, specs:'cikksz. 10-9-5', buses:[], note:'NAGYFESZ ív-generátor — ÉLETVESZÉLY, csak óvatos kísérlet.'},
+  // -- connectors --
+  {id:'fhdr19', role:'connector', name:'Anya fejléc 2,54mm 19-pin (5db/cs)', qty:2, logic:null,
+   specs:'cikksz. 10-7-106', buses:[], note:'A RÉG HIÁNYZÓ anya foglalat — cserélhetőség MEGVAN.'},
+  {id:'rahdr', role:'connector', name:'Hajlított lábas anya sor (1x10/5P/8P)', qty:11, logic:null, specs:'cikksz. YXS1716', buses:[]},
+  // -- consumables --
+  {id:'wire_sil', role:'consumable', name:'20 AWG szilikon vezeték (fekete+piros)', qty:8, logic:null, specs:'cikksz. C-04 / C-05', buses:[]},
+
+  // ---- WIRING / CONSUMABLES ----
+  {id:'hdr_str', role:'consumable', name:'Színes tüskesor 40p (5 csík)', qty:2, logic:null, specs:'egyenes 2,54mm', buses:[]},
+  {id:'hdr_ra', role:'consumable', name:'Tüskesor 40p 90°', qty:2, logic:null, specs:'', buses:[]},
+  {id:'dupmf', role:'consumable', name:'Dupont M-F 20cm ×40', qty:1, logic:null, specs:'', buses:[]},
+  {id:'dupff', role:'consumable', name:'Dupont F-F 20cm ×40', qty:1, logic:null, specs:'', buses:[]},
+  {id:'bbjmp', role:'consumable', name:'Breadboard jumper szett 65db', qty:1, logic:null, specs:'merev', buses:[]},
+  {id:'heat', role:'consumable', name:'Zsugorcső 328db', qty:1, logic:null, specs:'', buses:[]},
+  {id:'breadboard', role:'carrier', name:'Breadboard 400 lyukas', qty:2, logic:null, fp:'breadboard', specs:'cikksz. 3-1-23 (a 400-as: figyelj a homorúságra)', buses:[]},
+];
+const VARIANTS = [
+  {
+    name:'PiP-boy base prototípus (v0)',
+    tagline:'Korai formaprototípus: fedett touchscreen + jobbkezes grip, kagyló-encase.',
+    layout:[
+      'Alaplap: téglalap műanyag lap (base fél).',
+      'JOBB oldal: 1× 18650 fedve → jobbkezes grip + tápcella.',
+      'BAL oldal: a touch-modul külön 18650 tartója (második, független cella).',
+      'TETŐ: touchscreen-on-board modul fedi a base téglalapot.',
+      'MÁSODLAGOS: 1.3" OLED + EC11 enkóder mint kis kijelző + forgó bevitel.',
+      'A base fél és a touch fél a (még nem létező) műanyag kagyló-encase-szel kattan össze.'
+    ],
+    // parts: {id or fab, role in build, conn, owned}
+    parts:[
+      {name:'ESP32 WROOM LVGL 2,4" touch-modul (agy+kijelző)', conn:'—', owned:true, alt:'megvan (cikksz. 1-2-44) — vagy S3 + külön panel a vault-szerep miatt'},
+      {name:'Samsung INR18650-35E cella ×2', conn:'TÁP', owned:true},
+      {name:'18650 powerbank vezérlő ×2 (5V, védelem)', conn:'TÁP', owned:true},
+      {name:'18650 tartó (grip + bal oldali)', conn:'mech', owned:true},
+      {name:'1.3" OLED + EC11 (másodlagos kijelző+enkóder)', conn:'I2C + GPIO', owned:true},
+      {name:'microSD modul (vault)', conn:'SPI', owned:true, opt:true},
+      {name:'VL6180X ToF (gesztus, opció)', conn:'I2C', owned:true, opt:true},
+      {name:'jumperek / tüskesor / szintillesztő', conn:'—', owned:true},
+      {name:'PiP base alaplap + kagyló-encase (fab)', conn:'mech', owned:false}
+    ],
+    missing:[
+      'Műanyag kagyló-encase (base lap + jobb-grip fedél + touch-fedél + klikk) — az EGYETLEN hiány már. 3D-nyomtatás/lemez, nem bolti tétel.'
+    ],
+    notes:[
+      'Táp-topológia: két FÜGGETLEN 1S rail (jobb cella→base/agy, bal cella→touch-modul), mindkettő saját powerbank vezérlőn — pont a „külön tartó" leíráshoz. Ha egy rail legyen: 2S + valódi BMS kell, nem a powerbank modul.',
+      'Grip-cella BIZTONSÁG: a INR18650-35E magas áramú, védelem nélküli — a gripbe csak védett úton (powerbank modul védelme) és szellőzéssel, nyomás/átszúrás ellen mereven. Kézi hő + nyomás alá nem tehető csupasz cella.',
+      'Agy-választás: az integrált touch-modul (WROOM) elég a UI-hoz, de gyengébb; ha ez legyen a vault-szerver is, inkább a meglévő S3 legyen az agy és a panel külön.'
+    ],
+    pinmap:[
+      'S3 I2C: SDA→G8, SCL→G9  (OLED 0x3C + VL6180X 0x29 közös buszon)',
+      'S3 enkóder (EC11): A→G4, B→G5, SW→G6, + GND',
+      'S3 microSD (SPI): MOSI→G11, SCK→G12, MISO→G13, CS→G10, + 3V3 + GND',
+      'S3 táp: 5V ← powerbank OUT+, GND ← OUT−  (egyszerre csak egy forrás: USB VAGY 5V)',
+      'KERÜLD (S3): G0, G3, G19, G20, G26–G37 (flash/PSRAM N16R8!), G45, G46',
+      'Terminál (WROOM LVGL): kijelző+touch belső; táp a panel akku-bemenetéről vagy 2. powerbank modulról'
+    ],
+    espnow:[
+      'Link = ESP-NOW (rádió) a két ESP32 közt — NINCS vezeték a felek közt; a klikk tisztán mechanikai.',
+      'Párosítás: mindkét panel kiírja a saját MAC-jét (WiFi.macAddress()); a másikat esp_now_add_peer()-rel vedd fel.',
+      'Mindkettő UGYANAZON a WiFi-csatornán legyen (esp_now + fix channel), különben nem hallják egymást.',
+      'Adatirány: terminál→agy parancs (touch), agy→terminál állapot. Kis fix struct payload elég.',
+      'Közös GND CSAK akkor kell, ha vezetékes UART-ra váltasz (G17 TX / G18 RX) ESP-NOW helyett.'
+    ]
+  }
+];
+
+/* ---- invoice metadata: cikkszám -> {sz, date, ft(bruttó/db)} ---- */
+const CIKK_META = {
+ "3-1-61":{sz:"SZ11580",date:"2026-08-26",ft:2700},"5-1-49":{sz:"SZ11580",date:"2026-08-26",ft:300},
+ "3-1-10":{sz:"SZ11580",date:"2026-08-26",ft:390},"3-5-9":{sz:"SZ11580",date:"2026-08-26",ft:700},
+ "2-2-20":{sz:"SZ11580",date:"2026-08-26",ft:1700},"2-1-18":{sz:"SZ11580",date:"2026-08-26",ft:2000},
+ "2-1-17":{sz:"SZ11580",date:"2026-08-26",ft:990},"2-2-25":{sz:"SZ11580",date:"2026-08-26",ft:970},
+ "2-1-10":{sz:"SZ11580",date:"2026-08-26",ft:590},"2-1-11":{sz:"SZ11580",date:"2026-08-26",ft:150},
+ "2-1-22":{sz:"SZ11580",date:"2026-08-26",ft:450},"2-2-22":{sz:"SZ11580",date:"2026-08-26",ft:450},
+ "4-1-34":{sz:"SZ11580",date:"2026-08-26",ft:2200},"3-2-24":{sz:"SZ11580",date:"2026-08-26",ft:1500},
+ "2-3-23":{sz:"SZ11580",date:"2026-08-26",ft:580},"3-1-38":{sz:"SZ11580",date:"2026-08-26",ft:2400},
+ "YXA166":{sz:"SZ11580",date:"2026-08-26",ft:400},"10-7-47":{sz:"SZ11580",date:"2026-08-26",ft:200},
+ "10-7-65":{sz:"SZ11580",date:"2026-08-26",ft:50},"9-1-29":{sz:"SZ11580",date:"2026-08-26",ft:500},
+ "9-1-28":{sz:"SZ11580",date:"2026-08-26",ft:500},"9-1-16":{sz:"SZ11580",date:"2026-08-26",ft:500},
+ "9-1-13":{sz:"SZ11580",date:"2026-08-26",ft:3000},"3-5-15":{sz:"SZ11580",date:"2026-08-26",ft:90},
+ "9-1-78":{sz:"SZ11580",date:"2026-08-26",ft:800},
+ "10-1-3":{sz:"SZ11669",date:"2026-08-27",ft:500},"1-2-23":{sz:"SZ11669",date:"2026-08-27",ft:3990},
+ "3-3-5":{sz:"SZ11669",date:"2026-08-27",ft:1200},"3-1-23":{sz:"SZ12198",date:"2026-09-06",ft:650},
+ "1-2-44":{sz:"SZ11670",date:"2026-08-27",ft:6400},"6-1-41":{sz:"SZ11670",date:"2026-08-27",ft:260},
+ "1-2-15":{sz:"SZ11670",date:"2026-08-27",ft:3200},
+ "3-1-25":{sz:"SZ11812",date:"2026-08-30",ft:540},"YXZ1212":{sz:"SZ11812",date:"2026-08-30",ft:150},
+ "7-1-52":{sz:"SZ11812",date:"2026-08-30",ft:595},"6-4-27":{sz:"SZ11812",date:"2026-08-30",ft:100},
+ "6-4-24":{sz:"SZ11812",date:"2026-08-30",ft:150},"6-4-34":{sz:"SZ11812",date:"2026-08-30",ft:110},
+ "6-1-11":{sz:"SZ11812",date:"2026-08-30",ft:650},"6-4-1":{sz:"SZ11812",date:"2026-08-30",ft:200},
+ "6-5-10":{sz:"SZ12198",date:"2026-09-06",ft:1500},
+ "2-1-29":{sz:"SZ12198",date:"2026-09-06",ft:1400},"7-3-8":{sz:"SZ12198",date:"2026-09-06",ft:800},
+ "3-2-26":{sz:"SZ12585",date:"2026-09-12",ft:700},"2-2-27":{sz:"SZ12198",date:"2026-09-06",ft:500},
+ "7-1-51":{sz:"SZ12582",date:"2026-09-12",ft:341},"7-3-26":{sz:"SZ12582",date:"2026-09-12",ft:1000},
+ "2-2-32":{sz:"SZ12582",date:"2026-09-12",ft:150},
+ "10-7-106":{sz:"SZ12583",date:"2026-09-12",ft:180},"2-1-34":{sz:"SZ12583",date:"2026-09-12",ft:150},
+ "3-1-72":{sz:"SZ12583",date:"2026-09-12",ft:150},"3-1-71":{sz:"SZ12583",date:"2026-09-12",ft:1390},
+ "2-1-43":{sz:"SZ12583",date:"2026-09-12",ft:990},"2-2-28":{sz:"SZ12585",date:"2026-09-12",ft:1000},
+ "3-1-82":{sz:"SZ12583",date:"2026-09-12",ft:1600},"2-1-44":{sz:"SZ12583",date:"2026-09-12",ft:200},
+ "YXS1716":{sz:"SZ12585",date:"2026-09-12",ft:50},"3-2-39":{sz:"SZ12583",date:"2026-09-12",ft:500},
+ "10-7-126":{sz:"SZ12583",date:"2026-09-12",ft:200},"C-04":{sz:"SZ12583",date:"2026-09-12",ft:280},
+ "C-05":{sz:"SZ12583",date:"2026-09-12",ft:280},"3-1-36":{sz:"SZ12583",date:"2026-09-12",ft:400},
+ "8-1-38":{sz:"SZ12583",date:"2026-09-12",ft:400},"8-1-33":{sz:"SZ12583",date:"2026-09-12",ft:400},
+ "10-4-4":{sz:"SZ12583",date:"2026-09-12",ft:100},"10-9-5":{sz:"SZ12583",date:"2026-09-12",ft:2200},
+ "8-1-12":{sz:"SZ12583",date:"2026-09-12",ft:4130},
+ "1-2-46":{sz:"SZ12584",date:"2026-09-12",ft:2600},"1-2-35":{sz:"SZ12584",date:"2026-09-12",ft:3700},
+ "1-2-47":{sz:"SZ12584",date:"2026-09-12",ft:3100},
+ "14-2-13":{sz:"SZ12585",date:"2026-09-12",ft:3000},"1-2-14":{sz:"SZ12585",date:"2026-09-12",ft:2200},
+ "10-7-138":{sz:"SZ12585",date:"2026-09-12",ft:280},"2-3-15":{sz:"SZ12585",date:"2026-09-12",ft:300},
+ "2-1-37":{sz:"SZ12585",date:"2026-09-12",ft:990},"3-6-35":{sz:"SZ12585",date:"2026-09-12",ft:2500},
+ "3-3-6":{sz:"SZ12585",date:"2026-09-12",ft:800},"1-4-8":{sz:"SZ12585",date:"2026-09-12",ft:3500}
+};
+/* fallback cikkszám for early items whose specs lack it */
+const ID_TO_CIKK = {
+ ch341a:"3-1-61",lm386:"5-1-49",abuzz:"3-1-10",usbrs485:"3-5-9",cp2102:"2-2-20",pn532:"2-1-18",
+ mfrc522:"2-1-17",pcf8575:"2-2-25",pir:"2-1-10",ch340e:"2-2-27",ch343p:"2-2-28",ant24:"2-1-22",
+ at24c256:"2-2-22",oled:"4-1-34",nrf905:"3-2-24",lx06la:"2-3-23",stlink:"3-1-38",shifter:"2-2-32",
+ ioshield:"3-3-5",nanoproto:"YXA166",hdr_str:"10-7-47",hdr_ra:"10-7-65",dupmf:"9-1-29",dupff:"9-1-28",
+ bbjmp:"9-1-16",griff:"9-1-13",pbuzz:"3-5-15",heat:"9-1-78",s3:"1-2-23",pico2:"1-4-8",wroom32d:"1-2-15",
+ lvgltouch:"1-2-44",sdmod:"3-1-25",ind100:"YXZ1212",buck2596:"7-1-52",pbmod:"6-1-11",tp4056:"6-1-41",
+ cell35e:"6-5-10",hold1:"6-4-27",hold2s:"6-4-24",hold21:"6-4-34",holdsmd:"6-4-1",breadboard:"3-1-23",
+ mux4067:"10-1-3"
+};
+</script>
+<script>
+const ORDER = [
+ // ===== Táp & akku =====
+ {id:'o_bench',cat:'Táp & akku',name:'Állítható bench tápegység (0–30V/5A)',unlock:'Biztonságos áramkorlátos bekapcsolás — a füst-teszt vége. Minden prototípus első védvonala.'},
+ {id:'o_bms',cat:'Táp & akku',name:'2S/3S/4S BMS + balansz töltő',unlock:'A többcellás L7 pakkhoz KÖTELEZŐ — a powerbank modul csak 1S. A 4S feszmérőd ehhez passzol.'},
+ {id:'o_buckboost',cat:'Táp & akku',name:'MP1584 buck + MT3608 boost készlet',unlock:'Tetszőleges sín az akkuról/12V-ról. Kiegészíti a meglévő LM2596-okat kisebb helyre.'},
+ {id:'o_usbmeter',cat:'Táp & akku',name:'USB teljesítménymérő (feszültség/áram/mAh)',unlock:'Cella-futásidő és node-fogyasztás mérése — a runtime-log alapja.'},
+ {id:'o_xt60',cat:'Táp & akku',name:'XT60 + JST + biztosítéktartó szett',unlock:'Rendes akku-csatlakozók a pakkhoz; nem szabad forrasztott cellalábakra bízni a terhelést.'},
+
+ // ===== Csatlakozó & kábel =====
+ {id:'o_qwiic',cat:'Csatlakozó & kábel',name:'Qwiic/STEMMA-QT kábel + hub',unlock:'Forrasztás/tüskesor nélküli I2C lánc — a hordozható MPU6050/ToF/RTC csatlakozás legjobb útja.'},
+ {id:'o_crimp',cat:'Csatlakozó & kábel',name:'Dupont krimpelő + pin/ház készlet',unlock:'Hidegen készített, tartós saját kábelek — a viselhető build vibrációt tűrő köté­sei.'},
+ {id:'o_ferrule',cat:'Csatlakozó & kábel',name:'Érvéghüvely készlet + krimpelő',unlock:'Sodrott ér csavaros sorba — villanyszerelői minőség a BRIDGE/elosztó bekötésnél.'},
+ {id:'o_din',cat:'Csatlakozó & kábel',name:'DIN-sín sorkapcsok + véglemez',unlock:'A BRIDGE-DN / shadow layer szekrénybe való rendezett elosztás.'},
+ {id:'o_idc',cat:'Csatlakozó & kábel',name:'IDC szalagkábel + fejek (2.54)',unlock:'Sokágú, rendezett belső kábelezés a PiP-boy/hub belsejében.'},
+
+ // ===== Hálózat & szerver =====
+ {id:'o_glinet',cat:'Hálózat & szerver',name:'GL.iNet mini router (OpenWRT)',elsewhere:true,unlock:'A L2 tunnel-helper: AP + Tailscale/cloudflared egy dobozban. A legkisebb út az internet-URL-hez.'},
+ {id:'o_pi5',cat:'Hálózat & szerver',name:'Raspberry Pi 5 + NVMe HAT',elsewhere:true,unlock:'A L3 mini-szerver alapja; a vault, ami FUT, nem csak tárol. A tunnelt is elviszi.'},
+ {id:'o_w5500',cat:'Hálózat & szerver',name:'W5500 Ethernet (SPI)',unlock:'Vezetékes uplink egy ESP32-nek — WiFi-független, stabil hálózat a szekrény-szervernek.'},
+ {id:'o_poe',cat:'Hálózat & szerver',name:'PoE splitter (5V/12V)',unlock:'Egy kábel adat+táp a fix node-oknak — tiszta shadow-layer telepítés.'},
+
+ // ===== Rádió & protokoll =====
+ {id:'o_zbdongle',cat:'Rádió & protokoll',name:'Zigbee/Thread koordinátor dongle',unlock:'A C6-tal együtt a BRIDGE közös protokoll-padlója (Matter-over-Thread).'},
+ {id:'o_lora868',cat:'Rádió & protokoll',name:'868MHz LoRa (SX1276)',elsewhere:true,unlock:'EU Meshtastic / nagy hatótáv — a boltok 433MHz-esek, ezt máshonnan.'},
+ {id:'o_ld2410',cat:'Rádió & protokoll',name:'LD2410 mmWave jelenlét',elsewhere:true,unlock:'Pontos jelenlét (az RCWL-0516 durvább). Kutyakövetés/room presence.'},
+ {id:'o_rtlsdr',cat:'Rádió & protokoll',name:'RTL-SDR Blog V4',unlock:'Passzív rádió-vétel; a HackRF (L6) előszobája.'},
+ {id:'o_lte',cat:'Rádió & protokoll',name:'SIM7600 LTE + GPS modem',unlock:'Hálózatfüggetlen net a helyszínen + tartalék tunnel-út + pozíció.'},
+ {id:'o_nrf24',cat:'Rádió & protokoll',name:'nRF24L01+ (2.4GHz)',unlock:'Olcsó, gyors point-to-point a swarm belső linkjéhez az ESP-NOW mellé/helyett.'},
+
+ // ===== Szenzor =====
+ {id:'o_bme280',cat:'Szenzor',name:'BME280 hő/pára/nyomás',unlock:'A standard környezeti node — egyből Home Assistantba.'},
+ {id:'o_ds3231',cat:'Szenzor',name:'DS3231 RTC',unlock:'Tápkimaradást túlélő időbélyeg — a vault-log és ütemezés alapja.'},
+ {id:'o_ina',cat:'Szenzor',name:'INA219/INA226 áram+feszültség',unlock:'DC sín valós fogyasztása — energia-telemetria modul-léptékben (BRIDGE/SDM630 kicsiben).'},
+ {id:'o_sct',cat:'Szenzor',name:'SCT-013 lakatfogó + ACS712',unlock:'Non-invazív AC áram mérés — a shadow-layer energia-ág prototípusa.'},
+ {id:'o_tc',cat:'Szenzor',name:'K-hőelem + MAX31855',unlock:'Elosztó/HVAC magas hőmérséklet — a SA-12 hatókörén túl.'},
+ {id:'o_vl53',cat:'Szenzor',name:'VL53L0X/L1X ToF (hosszabb táv)',unlock:'A VL6180X ~10cm-e helyett méteres távolság — gesztus/térkép.'},
+ {id:'o_i2s',cat:'Szenzor',name:'INMP441 mic + MAX98357 amp',unlock:'S3-audio be+ki: zajszintmérő, intercom, prop hang, wake-word.'},
+
+ // ===== Kijelző & UI =====
+ {id:'o_epaper',cat:'Kijelző & UI',name:'2.9" e-paper kijelző',unlock:'Alacsony fogyasztású állapotkijelző fix node-okhoz (akkuról hetekig).'},
+ {id:'o_ws2812',cat:'Kijelző & UI',name:'WS2812B RGB szalag/gyűrű',unlock:'Cinema RGB réteg + státusz-fény; egy adatlábon vezérelhető.'},
+ {id:'o_ips',cat:'Kijelző & UI',name:'1.9"/2.0" IPS SPI kijelző',unlock:'Kis, éles kijelző node-okhoz, ahol a touch-panel túl nagy.'},
+ {id:'o_joy',cat:'Kijelző & UI',name:'Analóg joystick / thumbstick',unlock:'Extra pendant-bevitel az enkóder mellé — kétirányú kamera-mozgatás.'},
+
+ // ===== Tár =====
+ {id:'o_sdcards',cat:'Tár',name:'microSD kártyák (A1, 32–128GB)',unlock:'A vault médiája — több példány a rotáló mentésekhez.'},
+ {id:'o_ssd',cat:'Tár',name:'SSD + USB tok',unlock:'Megbízhatóbb vault-tár mint az SD (ami csendben elhal). A hivatkozott biztonságos backup-hely.'},
+
+ // ===== Aktuátor & motor =====
+ {id:'o_stepper',cat:'Aktuátor & motor',name:'NEMA17 + TMC2209 driver',unlock:'A cinema roller-screen / falmozgatás rendes motorja (a 28BYJ csak proto).'},
+ {id:'o_ssr',cat:'Aktuátor & motor',name:'SSR (szilárdtest relé) + hűtő',unlock:'Csendes, kopásmentes AC kapcsolás a mechanikus relék helyett — hosszú élettartam.'},
+ {id:'o_mosfet',cat:'Aktuátor & motor',name:'Logic-level MOSFET kapcsoló panel',unlock:'DC terhelés (LED szalag, mágneszár, sziréna) GPIO-ról biztonságosan.'},
+
+ // ===== Védelem & minőség =====
+ {id:'o_isolator',cat:'Védelem & minőség',name:'USB izolátor (ADuM)',unlock:'Galvanikus leválasztás, amikor RS485/CAN-t hajtasz élő panel mellől laptopról.'},
+ {id:'o_logic',cat:'Védelem & minőség',name:'8-ch logikai analizátor',unlock:'I2C/SPI/UART/CAN hibakeresés — a MCP2515 bit-timing gondok gyors diagnózisa.'},
+ {id:'o_shifter',cat:'Védelem & minőség',name:'Több 4/8-ch szintillesztő',unlock:'Sosem elég — a CH341A/MCP2515/5V modulok mind ezt kérik a 3,3V hostok ellen.'},
+ {id:'o_hub',cat:'Védelem & minőség',name:'Kapcsolható-portú USB hub (YKUSH)',elsewhere:true,unlock:'A L4 adapter-választó: a megfelelő programozó él, a többi sötét — nincs COM-ütközés.'},
+
+ // ===== Ház & mechanika =====
+ {id:'o_box',cat:'Ház & mechanika',name:'Műszerdobozok / hordozó tok szett',unlock:'A PiP-boy/hub kagyló és a fix node-ok háza — a fab-hiány áthidalása.'},
+ {id:'o_inserts',cat:'Ház & mechanika',name:'Heat-set inzert + standoff készlet',unlock:'Újra-nyitható, csavarozható 3D-nyomtatott ház — nem ragasztott véglegesítés.'},
+ {id:'o_filament',cat:'Ház & mechanika',name:'PETG/PLA filament + PVC/akril lap',unlock:'A kagyló-encase és a két PVC alaplap nyersanyaga.'}
+];
+</script>
+<script>
+/* ===================== STATE ===================== */
+const DEVCOLORS = ["#e6a532","#5b8c3e","#4fb0d0","#9a6cc0","#c8622d","#c85a9a","#3d7fb0","#8a9a2d"];
+let STATE = { stock:{}, log:[], devices:[], theme:"amber" };
+let build = { base:null, nodes:[] };   // nodes: {id,bus}
+let undoStack=[], redoStack=[];
+
+/* ===================== HELPERS ===================== */
+function itemById(id){ return ITEMS.find(x=>x.id===id) || ORDER.find(x=>x.id===id); }
+function cikkOf(it){
+  if(!it) return "";
+  if(ID_TO_CIKK[it.id]) return ID_TO_CIKK[it.id];
+  const m = (it.specs||"").match(/cikksz\.?\s*([0-9A-Za-z]+(?:-[0-9A-Za-z]+)*)/);
+  return m ? m[1] : "";
+}
+function metaOf(it){ return CIKK_META[cikkOf(it)] || null; }
+function stockOf(it){ return (it.id in STATE.stock) ? STATE.stock[it.id] : (it.qty ?? 0); }
+function fmtFt(n){ return n==null? "—" : n.toLocaleString('hu-HU')+" Ft"; }
+
+/* ===================== COMPAT ENGINE ===================== */
+const DATA_BUS=['I2C','SPI','UART','I2S','SWD','RS485','RS232'];
+function logicClash(a,b){ if(a==null||b==null||a==='tol'||b==='tol') return false; return a!==b; }
+function candidates(base, p){
+  const out=[];
+  (p.buses||[]).forEach(pb=>{
+    if(['POWER','USB','UFL','DVP'].includes(pb.t)) return;
+    const hb=(base.buses||[]).find(h=>h.t===pb.t && (h.r==='controller'||h.r==='either'));
+    if(hb) out.push({t:pb.t, addr:pb.addr, shift:logicClash(base.logic,p.logic)});
+  });
+  return out;
+}
+function relState(p){
+  if(!build.base) return null;
+  const base=itemById(build.base);
+  if(p.id===build.base) return 'g';
+  if(p.role==='carrier'){ if(p.fp==='breadboard') return 'g'; if(base.fp&&p.fp&&base.fp!==p.fp) return 'r'; return 'a'; }
+  if(['connector','tool','consumable','power'].includes(p.role)) return 'a';
+  if(p.role==='rf'){ return (base.buses||[]).some(b=>b.t==='UFL')?'g':'r'; }
+  const c=candidates(base,p);
+  if(!c.length) return 'r';
+  return c.every(x=>x.shift)?'a':'g';
+}
+function conflicts(){
+  if(!build.base) return [];
+  const base=itemById(build.base), list=[];
+  const shifter=build.nodes.some(n=>{const it=itemById(n.id); return it&&it.resolver;});
+  build.nodes.forEach(n=>{
+    const it=itemById(n.id), c=candidates(base,it).find(x=>x.t===n.bus);
+    if(c&&c.shift){ shifter? list.push({res:true,txt:`${it.name}: ${n.bus} 5V/3,3V eltérés — feloldva szintillesztővel.`})
+                          : list.push({res:false,txt:`${it.name}: ${n.bus} szint nem egyezik → szintillesztő kell.`}); }
+  });
+  const i2c={};
+  build.nodes.forEach(n=>{ if(n.bus!=='I2C')return; const it=itemById(n.id),bb=(it.buses||[]).find(x=>x.t==='I2C'); if(bb&&bb.addr)(i2c[bb.addr]=i2c[bb.addr]||[]).push(it.name); });
+  Object.keys(i2c).forEach(a=>{ if(i2c[a].length>1) list.push({res:false,txt:`I2C címütközés ${a}: ${i2c[a].join(', ')} → mux/cím.`}); });
+  const carrier=build.nodes.map(n=>itemById(n.id)).find(it=>it.role==='carrier'&&it.fp&&it.fp!=='breadboard');
+  if(carrier&&base.fp&&carrier.fp!==base.fp) list.push({res:false,txt:`Lábkiosztás: ${carrier.name} (${carrier.fp}) ≠ Alap (${base.fp}).`});
+  return list;
+}
+
+/* ===================== RENDER: INVENTORY ===================== */
+const ROLE_LABEL={host:'Hostok',carrier:'Hordozók',peripheral:'Perifériák',rf:'RF',programmer:'Programozók',power:'Táp / akku',connector:'Csatlakozó',tool:'Eszközök',consumable:'Fogyó'};
+const ROLE_ORDER=['host','peripheral','rf','carrier','programmer','power','connector','tool','consumable'];
+function busChips(it){ return (it.buses||[]).filter(b=>b.t!=='USB').map(b=>`<span class="bus">${b.t}${b.addr?(' '+b.addr):''}</span>`).join(''); }
+function renderInventory(){
+  let html='';
+  ROLE_ORDER.forEach(role=>{
+    const rows=ITEMS.filter(i=>i.role===role);
+    if(!rows.length) return;
+    html+=`<div class="grp"><h3>${ROLE_LABEL[role]}</h3>`;
+    rows.forEach(it=>{
+      const st=relState(it), cls=st||'', inB=build.base===it.id||build.nodes.some(n=>n.id===it.id);
+      const isBase=build.base===it.id;
+      const meta=metaOf(it), stk=stockOf(it);
+      html+=`<div class="item ${cls} ${inB?'inbuild':''} ${isBase?'isbase':''}">
+        <div class="add" onclick="pick('${it.id}')" title="Alap/hozzáad">${isBase?'★':(inB?'✓':'+')}</div>
+        <div class="mid">
+          <span class="n">${it.name}${isBase?'<span class="baselab">ALAP</span>':''}</span>
+          <span class="s">${it.specs||''}${it.note?(' — '+it.note):''}</span>
+          ${meta?`<span class="meta">${meta.sz} · ${meta.date} · ${fmtFt(meta.ft)}/db</span>`:''}
+          <div class="stock">
+            <button onclick="setStock('${it.id}',${stk-1})">−</button>
+            <input type="number" value="${stk}" min="0" onchange="setStock('${it.id}',parseInt(this.value)||0)">
+            <button onclick="setStock('${it.id}',${stk+1})">+</button>
+            <span class="lab">db</span>
+          </div>
+          <div class="busline">${busChips(it)}</div>
+        </div></div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('inventory').innerHTML=html;
+}
+
+/* ===================== BUILDER ===================== */
+function snapshot(){ undoStack.push(JSON.stringify(build)); if(undoStack.length>50)undoStack.shift(); redoStack=[]; }
+function pick(id){
+  const it=itemById(id); if(!it) return;
+  snapshot();
+  if(!build.base){ build.base=id; }
+  else if(build.base===id){ build.base=null; build.nodes=[]; }
+  else { const i=build.nodes.findIndex(n=>n.id===id);
+    if(i>=0) build.nodes.splice(i,1);
+    else { const c=candidates(itemById(build.base),it); build.nodes.push({id, bus:c.length?c[0].t:null}); } }
+  renderInventory(); renderBuilder();
+}
+function setNodeBus(id,bus){ const n=build.nodes.find(x=>x.id===id); if(n){snapshot();n.bus=bus;renderBuilder();} }
+function undo(){ if(!undoStack.length)return; redoStack.push(JSON.stringify(build)); build=JSON.parse(undoStack.pop()); renderInventory(); renderBuilder(); }
+function redo(){ if(!redoStack.length)return; undoStack.push(JSON.stringify(build)); build=JSON.parse(redoStack.pop()); renderInventory(); renderBuilder(); }
+function clearBuild(){ snapshot(); build={base:null,nodes:[]}; renderInventory(); renderBuilder(); }
+
+function miniDiagram(){
+  if(!build.base) return '';
+  const base=itemById(build.base);
+  const n=build.nodes.length, w=300, rowH=34, h=50+n*rowH;
+  let s=`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%">`;
+  s+=`<rect x="90" y="8" width="120" height="26" rx="5" fill="var(--panel2)" stroke="var(--violet)"/>`;
+  s+=`<text x="150" y="25" text-anchor="middle" font-size="11" fill="var(--ink)">${(base.name||'').slice(0,20)}</text>`;
+  build.nodes.forEach((nd,i)=>{
+    const it=itemById(nd.id), y=50+i*rowH, cand=candidates(base,it).find(c=>c.t===nd.bus);
+    const col = (['connector','tool','consumable','power'].includes(it.role))?'var(--accent)':(!candidates(base,it).length?'var(--red)':(cand&&cand.shift?'var(--amberflag)':'var(--green)'));
+    s+=`<line x1="150" y1="34" x2="60" y2="${y+13}" stroke="${col}" stroke-width="1.5"/>`;
+    s+=`<rect x="10" y="${y}" width="100" height="26" rx="5" fill="var(--panel2)" stroke="${col}"/>`;
+    s+=`<text x="60" y="${y+17}" text-anchor="middle" font-size="10" fill="var(--ink)">${(it.name||'').slice(0,16)}</text>`;
+    s+=`<text x="180" y="${y+17}" font-size="9" fill="${col}">${nd.bus||it.role}</text>`;
+  });
+  s+=`</svg>`;
+  return `<div class="minidiag">${s}</div>`;
+}
+function renderBuilder(){
+  const el=document.getElementById('builderBody');
+  if(!build.base){ el.innerHTML=`<div class="bhint">Kattints egy tételre — az <b>első</b> lesz az <b>Alap</b>. A továbbiak csatlakoznak hozzá, a busz nevével és kompatibilitás-színnel.</div>`; return; }
+  const base=itemById(build.base);
+  let html=`<div class="bnode base"><span class="conn">ALAP</span><span class="bn">${base.name}</span><span class="rm" onclick="pick('${base.id}')">×</span></div>`;
+  build.nodes.forEach(nd=>{
+    const it=itemById(nd.id), cands=candidates(base,it);
+    let state='g'; if(['connector','tool','consumable','power'].includes(it.role))state='a';
+    else if(!cands.length)state='r'; else {const cur=cands.find(c=>c.t===nd.bus); state=cur?(cur.shift?'a':'g'):'r';}
+    const conn=(['connector','tool','consumable','power'].includes(it.role))?(it.resolver?'FELOLDÓ':it.role):(nd.bus||'—');
+    let sel=''; if(cands.length>1){ sel=`<select onchange="setNodeBus('${nd.id}',this.value)">`+cands.map(c=>`<option ${c.t===nd.bus?'selected':''}>${c.t}</option>`).join('')+`</select>`; }
+    html+=`<div class="bnode ${state}"><span class="conn">${conn}</span><span class="bn">${it.name}</span>${sel}<span class="rm" onclick="pick('${nd.id}')">×</span></div>`;
+  });
+  html+=miniDiagram();
+  const cf=conflicts();
+  if(cf.length) html+=cf.map(c=>`<div class="cf ${c.res?'res':''}">${c.txt}</div>`).join('');
+  html+=`<input id="devname" placeholder="Eszköz neve…" style="width:100%;margin-top:8px;padding:6px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:5px">`;
+  html+=`<div class="bactions">
+    <button class="b" onclick="saveDevice()">Kész ✓</button>
+    <button class="b ghost" onclick="undo()">Undo</button>
+    <button class="b ghost" onclick="redo()">Redo</button>
+    <button class="b ghost" onclick="clearBuild()">Ürít</button>
+  </div>`;
+  el.innerHTML=html;
+}
+
+/* ===================== DEVICES (saved Eszköz) ===================== */
+function saveDevice(){
+  if(!build.base) return;
+  const nm=(document.getElementById('devname')||{}).value||('Eszköz '+(STATE.devices.length+1));
+  const colour=DEVCOLORS[STATE.devices.length%DEVCOLORS.length];
+  STATE.devices.push({name:nm, colour, base:build.base, nodes:build.nodes.slice(), ts:new Date().toISOString().slice(0,16).replace('T',' ')});
+  build={base:null,nodes:[]}; undoStack=[]; redoStack=[];
+  renderInventory(); renderBuilder(); renderGallery();
+}
+function delDevice(i){ STATE.devices.splice(i,1); renderGallery(); }
+function deviceMd(d){
+  const base=itemById(d.base);
+  let md=`# ${d.name}\n\n**Alap:** ${base.name}\n\n**Elemek:**\n`;
+  d.nodes.forEach(n=>{ const it=itemById(n.id); md+=`- ${it.name} — *${n.bus||it.role}*\n`; });
+  md+=`\n_${d.ts} · VRG BuildTree_\n`;
+  return md;
+}
+function dlDevice(i){ const d=STATE.devices[i]; download(d.name.replace(/[^\w\-]+/g,'_')+'.md', deviceMd(d),'text/markdown'); }
+function renderGallery(){
+  const g=document.getElementById('gallery');
+  if(!STATE.devices.length){ g.innerHTML=`<span class="emptygal">Még nincs mentett Eszköz. Építs egyet jobbra, majd „Kész".</span>`; return; }
+  g.innerHTML=STATE.devices.map((d,i)=>{
+    const base=itemById(d.base);
+    const rows=[`<div class="chainrow">★ ${base.name}</div>`].concat(d.nodes.map(n=>{const it=itemById(n.id);return `<div class="chainrow">└ <b>${n.bus||it.role}</b> · ${it.name}</div>`;})).join('');
+    return `<div class="devcard" style="border-left-color:${d.colour}">
+      <h4>${d.name}</h4><div class="meta">${d.ts} · ${d.nodes.length+1} elem</div>
+      ${rows}
+      <div class="acts"><button class="b ghost" onclick="dlDevice(${i})">.md</button><button class="b ghost" onclick="delDevice(${i})">Töröl</button></div>
+    </div>`;
+  }).join('');
+}
+
+/* ===================== STOCK EDIT + CHANGE LOG ===================== */
+function setStock(id,val){
+  val=Math.max(0,val|0);
+  const it=itemById(id), old=stockOf(it);
+  if(val===old) return;
+  STATE.stock[id]=val;
+  STATE.log.unshift({ts:new Date().toISOString().slice(0,16).replace('T',' '), id, name:it.name, from:old, to:val, reason:'', szamla:'', dir: val<old?'dec':'inc'});
+  renderInventory(); renderLog();
+}
+function setLogField(i,field,v){ STATE.log[i][field]=v; if(field==='szamla') renderLog(); }
+function renderLog(){
+  const el=document.getElementById('logbody');
+  if(!STATE.log.length){ el.innerHTML=`<div class="note">Nincs kézi módosítás. A készlet-változtatások (± db) ide kerülnek indoklással / hiányzó-számla jelöléssel.</div>`; return; }
+  el.innerHTML=STATE.log.map((e,i)=>{
+    if(e.dir==='dec'){
+      return `<div class="logentry dec"><div class="top"><b>${e.name}</b> <span class="ts">${e.ts}</span></div>
+        <div>${e.from} → ${e.to} db (csökkenés)</div>
+        <input placeholder="Indok (mire ment el / hova került)…" value="${e.reason||''}" onchange="setLogField(${i},'reason',this.value)"></div>`;
+    } else {
+      const resolved=!!e.szamla;
+      return `<div class="logentry inc ${resolved?'resolved':''}"><div class="top"><b>${e.name}</b> <span class="ts">${e.ts}</span>
+        <span class="flag ${resolved?'ok':'miss'}">${resolved?('✓ '+e.szamla):'hiányzó számla'}</span></div>
+        <div>${e.from} → ${e.to} db (növekedés)</div>
+        <input placeholder="Számlaszám kód (pl. SZ12585) a feloldáshoz…" value="${e.szamla||''}" onchange="setLogField(${i},'szamla',this.value)"></div>`;
+    }
+  }).join('');
+}
+
+/* ===================== ORDER TAB ===================== */
+function renderOrder(){
+  const cats=[...new Set(ORDER.map(o=>o.cat))];
+  let html='';
+  cats.forEach(cat=>{
+    html+=`<div class="grp"><h3>${cat}</h3>`;
+    ORDER.filter(o=>o.cat===cat).forEach(o=>{
+      const tag=o.elsewhere?'<span class="chip r">máshonnan</span>':(o.redundant?'<span class="chip a">redundáns</span>':'');
+      html+=`<div class="item a"><div class="add" style="cursor:default">·</div>
+        <div class="mid"><span class="n">${o.name}</span> ${tag}
+        ${o.specs?`<span class="s">${o.specs}</span>`:''}
+        <span class="unlock">→ ${o.unlock}</span></div></div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('orderList').innerHTML=html;
+}
+
+/* ===================== VARIANTS (documented) ===================== */
+function renderVariants(){
+  const box=document.getElementById('variants'); if(!box) return;
+  box.innerHTML=VARIANTS.map(v=>{
+    const parts=(v.parts||[]).map(p=>`<div class="bnode ${p.owned?'g':'r'}"><span class="conn">${p.conn||'—'}</span><span class="bn">${p.name}</span><span style="font-size:11px;color:${p.owned?'var(--green-ink)':'var(--red-ink)'}">${p.owned?'✓':'☐'}</span></div>`).join('');
+    const layout=(v.layout||[]).map(l=>`<li>${l}</li>`).join('');
+    const pin=(v.pinmap||[]).map(p=>`<div class="bus" style="display:block;margin:3px 0;padding:4px 7px">${p}</div>`).join('');
+    const esp=(v.espnow||[]).map(e=>`<div class="cf res">${e}</div>`).join('');
+    const notes=(v.notes||[]).map(n=>`<div class="cf res" style="color:var(--muted);border-color:var(--line);background:var(--panel2)">${n}</div>`).join('');
+    const miss=(v.missing||[]).map(m=>`<div class="cf">${m}</div>`).join('');
+    return `<div class="bnode base"><span class="bn">${v.name}</span></div>
+      <div class="note" style="margin:3px 0 6px">${v.tagline||''}</div>
+      ${layout?`<div class="grp"><h3>Elrendezés</h3><ul style="margin:4px 0 4px 16px;color:var(--muted);font-size:12px">${layout}</ul></div>`:''}
+      <div class="grp"><h3>Alkatrészek</h3>${parts}</div>
+      ${miss?`<div class="grp"><h3>Hiányzik</h3>${miss}</div>`:''}
+      ${pin?`<div class="grp"><h3>Pin map</h3>${pin}</div>`:''}
+      ${esp?`<div class="grp"><h3>ESP-NOW</h3>${esp}</div>`:''}
+      ${notes?`<div class="grp"><h3>Jegyzet</h3>${notes}</div>`:''}`;
+  }).join('');
+}
+
+/* ===================== EXPORT / IMPORT / RESET ===================== */
+function download(name,text,type){ const b=new Blob([text],{type:type||'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); }
+function exportState(){ download('vrg-buildtree-state.json', JSON.stringify(STATE,null,2)); }
+function importState(ev){ const f=ev.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); STATE=Object.assign({stock:{},log:[],devices:[],theme:'amber'},d); setTheme(STATE.theme); renderAll(); }catch(e){ alert('Hibás JSON'); } }; r.readAsText(f); }
+function resetAll(){ if(!confirm('Minden kézi módosítás, napló és mentett Eszköz törlése?'))return; STATE={stock:{},log:[],devices:[],theme:STATE.theme}; build={base:null,nodes:[]}; renderAll(); }
+
+/* ===================== THEME ===================== */
+const THEMES=[["amber","#e6a532"],["light","#f4efe6"],["slate","#4fb0d0"],["green","#57c07a"]];
+function setTheme(t){ document.documentElement.dataset.theme=t; STATE.theme=t; document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('sel',s.dataset.t===t)); }
+function renderThemes(){ document.getElementById('themebtns').innerHTML=THEMES.map(([t,c])=>`<div class="swatch ${t===STATE.theme?'sel':''}" data-t="${t}" style="background:${c}" title="${t}" onclick="setTheme('${t}')"></div>`).join(''); }
+
+/* ===================== TABS + INIT ===================== */
+function switchTab(t){ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t)); document.getElementById('wb').classList.toggle('hidden',t!=='wb'); document.getElementById('ord').classList.toggle('hidden',t!=='ord'); }
+function renderAll(){ renderThemes(); renderInventory(); renderBuilder(); renderGallery(); renderOrder(); renderVariants(); renderLog(); }
+renderAll();
+
+</script>
+</body>
+</html>

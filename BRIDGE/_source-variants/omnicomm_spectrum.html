@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OmniComm Hub — Protocol Spectrum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0b0c0f;
+    --surface:  #13151a;
+    --surface2: #1c1f28;
+    --border:   #2a2e3d;
+    --border2:  #383d50;
+    --text:     #e8eaf0;
+    --muted:    #6b7089;
+    --accent:   #c8fb57;
+    --accent2:  #57fbca;
+    --coral:    #fb8157;
+    --amber:    #fbbf57;
+    --violet:   #a78bfa;
+    --info:     #57b4fb;
+    --danger:   #fb5757;
+    --success:  #57fb9a;
+    --warn:     #fbdc57;
+
+    --tier-core:   #c8fb57;
+    --tier-dongle: #a78bfa;
+    --tier-proxy:  #57fbca;
+    --tier-net:    #fb8157;
+  }
+
+  html { background: var(--bg); }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-width: 1600px;
+    padding: 48px 40px 80px;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 900px 500px at 30% -10%, rgba(200,251,87,0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 700px 400px at 80% 110%, rgba(87,185,251,0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 52px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left { }
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 52px;
+    font-weight: 400;
+    line-height: 1.05;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  .subtitle {
+    margin-top: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── SPECTRUM STAGE ── */
+  .spectrum-stage {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 36px 0;
+    margin-bottom: 0;
+    position: relative;
+    overflow: visible;
+  }
+
+  .stage-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  /* ── PROTOCOL ROWS ── */
+  .protocol-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .proto-row {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    min-height: 54px;
+  }
+
+  /* Protocol button */
+  .proto-btn {
+    position: relative;
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    background: var(--surface2);
+    user-select: none;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .proto-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.18s;
+    border-radius: 8px;
+  }
+  .proto-btn:hover { transform: translateY(-1px); }
+  .proto-btn:hover::before { opacity: 0.07; }
+
+  .proto-btn.active {
+    border-color: var(--btn-color);
+    box-shadow: 0 0 0 1px var(--btn-color), 0 4px 24px -4px var(--btn-glow);
+  }
+  .proto-btn.active::before { opacity: 0.12; }
+  .proto-btn.active .btn-name { color: var(--btn-color); }
+  .proto-btn.inactive { opacity: 0.38; }
+
+  .btn-color-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 10px 0 0 10px;
+    background: var(--btn-color);
+    opacity: 0.7;
+    transition: opacity 0.18s;
+  }
+  .proto-btn.active .btn-color-bar { opacity: 1; }
+
+  .btn-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    transition: color 0.18s;
+    white-space: nowrap;
+  }
+  .btn-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  /* ── FREQUENCY AXIS ── */
+  .axis-wrap {
+    position: relative;
+    height: 64px;
+    margin: 0 0;
+    padding: 0 0 0;
+  }
+
+  .axis-line {
+    position: absolute;
+    left: 0; right: 0;
+    top: 20px;
+    height: 1px;
+    background: linear-gradient(to right, var(--border2) 0%, var(--border) 100%);
+  }
+
+  /* Arrow head */
+  .axis-arrow {
+    position: absolute;
+    right: -6px;
+    top: 14px;
+    width: 0; height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-left: 10px solid var(--border2);
+  }
+
+  .axis-tick-group {
+    position: absolute;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(-50%);
+  }
+  .axis-tick {
+    width: 1px;
+    height: 10px;
+    background: var(--border2);
+    margin-top: 15px;
+  }
+  .axis-freq {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+  }
+
+  /* active indicator dot on axis */
+  .axis-indicator {
+    position: absolute;
+    top: 14px;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    border: 2px solid var(--btn-color, var(--border2));
+    background: var(--bg);
+    box-shadow: 0 0 8px var(--btn-glow, transparent);
+    transition: all 0.2s;
+    z-index: 2;
+  }
+  .axis-indicator.lit {
+    background: var(--btn-color);
+    box-shadow: 0 0 14px var(--btn-glow);
+  }
+
+  .axis-label-right {
+    position: absolute;
+    right: 10px;
+    top: 26px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+  }
+
+  /* ── SPREADSHEET ── */
+  .sheet-wrap {
+    margin-top: 0;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    overflow: hidden;
+  }
+
+  .sheet-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .sheet-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .sheet-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  thead tr {
+    background: var(--surface2);
+  }
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    transition: background 0.12s, opacity 0.2s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr.row-inactive { opacity: 0.28; }
+  tbody td {
+    padding: 11px 16px;
+    color: var(--text);
+    vertical-align: middle;
+    line-height: 1.4;
+  }
+  .td-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+  .td-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    display: inline-block;
+  }
+  .td-function { color: var(--muted); font-size: 12px; line-height: 1.5; max-width: 320px; }
+  .td-hz {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+  .td-hw { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+  .td-cost {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .badge-hw {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin: 2px 2px 2px 0;
+    white-space: nowrap;
+  }
+  .badge-yes {
+    background: rgba(200,251,87,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(200,251,87,0.25);
+  }
+  .badge-partial {
+    background: rgba(251,220,87,0.1);
+    color: var(--warn);
+    border: 1px solid rgba(251,220,87,0.25);
+  }
+  .badge-no {
+    background: rgba(251,87,87,0.08);
+    color: var(--danger);
+    border: 1px solid rgba(251,87,87,0.2);
+  }
+
+  /* tier colour dots in name col */
+  .tier-pip {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 8px;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+
+  /* select all / none buttons */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .ctrl-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.14s;
+  }
+  .ctrl-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .ctrl-btn.tier-btn {
+    border-color: var(--tc);
+    color: var(--tc);
+    background: rgba(255,255,255,0.02);
+  }
+  .ctrl-btn.tier-btn:hover { background: rgba(255,255,255,0.06); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <p class="eyebrow">Wireless Intelligence Hub · Communication Layer</p>
+      <h1>OmniComm <em>Spectrum</em></h1>
+      <p class="subtitle">Click any protocol to toggle active / inactive · All tiers shown below</p>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--tier-core)"></div>Core — built-in</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--tier-dongle)"></div>USB Dongle</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--tier-proxy)"></div>ESP32 Proxy / Add-on</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--tier-net)"></div>Network / Gateway</div>
+    </div>
+  </header>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button class="ctrl-btn" onclick="setAll(true)">Select all</button>
+    <button class="ctrl-btn" onclick="setAll(false)">Clear all</button>
+    <button class="ctrl-btn tier-btn" style="--tc:var(--tier-core)" onclick="setTier('core')">Core only</button>
+    <button class="ctrl-btn tier-btn" style="--tc:var(--tier-dongle)" onclick="setTier('dongle')">+ USB Dongles</button>
+    <button class="ctrl-btn tier-btn" style="--tc:var(--tier-proxy)" onclick="setTier('proxy')">+ ESP32 Proxy</button>
+    <button class="ctrl-btn tier-btn" style="--tc:var(--tier-net)" onclick="setTier('net')">+ Network / Gateway</button>
+  </div>
+
+  <!-- SPECTRUM STAGE -->
+  <div class="spectrum-stage">
+    <p class="stage-label">Protocol spectrum — frequency axis</p>
+
+    <!-- Row 1: Core -->
+    <div class="protocol-rows" id="proto-rows"></div>
+
+    <!-- AXIS -->
+    <div class="axis-wrap" id="axis-wrap">
+      <div class="axis-line"></div>
+      <div class="axis-arrow"></div>
+      <div class="axis-label-right">FREQ →</div>
+    </div>
+  </div>
+
+  <!-- SPREADSHEET -->
+  <div class="sheet-wrap">
+    <div class="sheet-header-bar">
+      <span class="sheet-title">Protocol reference — ordered basic → premium</span>
+      <span class="sheet-count" id="sheet-count">— / — active</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Function added</th>
+          <th>Frequency</th>
+          <th>Connection to hardware</th>
+          <th>Est. cost</th>
+          <th>N305</th>
+          <th>Pi 5</th>
+        </tr>
+      </thead>
+      <tbody id="sheet-body"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+// tier: core | dongle | proxy | net
+// axisX: 0-1 normalised position on frequency axis
+// width: relative button width (arbitrary units, summed per row)
+// n305 / pi5: 'yes' | 'partial' | 'no'
+
+const PROTOCOLS = [
+  // ── ROW 1 — Core built-in ──────────────────────────────────────────────────
+  {
+    id: 'zwav',   row: 0, tier: 'core',
+    name: 'Z-Wave 800',
+    sub: '868 MHz · sub-GHz mesh',
+    type: 'Comms',
+    func: 'Mesh RF network for locks, security sensors & dimmers. Sub-GHz penetrates walls, near-zero interference with Wi-Fi.',
+    hz: '868 MHz',
+    axisX: 0.21,
+    hw: 'Aeotec Z-Stick 7 · USB',
+    cost: '~€45',
+    n305: 'yes', pi5: 'yes',
+    w: 160,
+  },
+  {
+    id: 'zigb',   row: 0, tier: 'core',
+    name: 'Zigbee 3.0',
+    sub: '2.4 GHz · IEEE 802.15.4',
+    type: 'Comms',
+    func: 'Mesh network supporting 3,000+ devices: bulbs, plugs, sensors, valves, remotes. Self-healing mesh topology.',
+    hz: '2.4 GHz',
+    axisX: 0.62,
+    hw: 'HA Connect ZBT-2 · USB',
+    cost: '~€30',
+    n305: 'yes', pi5: 'yes',
+    w: 165,
+  },
+  {
+    id: 'thrd',   row: 0, tier: 'core',
+    name: 'Thread / Matter',
+    sub: '2.4 GHz · IPv6 mesh',
+    type: 'Comms',
+    func: 'Next-gen IP-based mesh for Matter-certified devices. Borderless interop between all major ecosystems (Apple, Google, Amazon).',
+    hz: '2.4 GHz',
+    axisX: 0.655,
+    hw: 'HA Connect ZBT-2 (shared) · USB',
+    cost: '(shared w/ Zigbee)',
+    n305: 'yes', pi5: 'yes',
+    w: 170,
+  },
+  {
+    id: 'wifi',   row: 0, tier: 'core',
+    name: 'Wi-Fi 6 / 6E',
+    sub: '2.4 + 5 GHz · 802.11ax',
+    type: 'Comms',
+    func: 'Direct IP control of Shelly, Sonoff, Tasmota, ESPHome, Tuya-local, and cloud-bridged devices. Local API preferred.',
+    hz: '2.4 / 5 GHz',
+    axisX: 0.75,
+    hw: 'Host NIC (built-in)',
+    cost: '€0',
+    n305: 'yes', pi5: 'yes',
+    w: 155,
+  },
+  {
+    id: 'eth',    row: 0, tier: 'core',
+    name: 'Ethernet / IP',
+    sub: '2.5 GbE · local network',
+    type: 'Comms',
+    func: 'Wired backbone for hub, NAS, PoE cameras, Shelly Pro, KNX gateways and any networked smart device via local API or MQTT.',
+    hz: 'Wired',
+    axisX: 0.02,
+    hw: 'Host NIC (built-in)',
+    cost: '€0',
+    n305: 'yes', pi5: 'yes',
+    w: 155,
+  },
+
+  // ── ROW 2 — USB Dongles ────────────────────────────────────────────────────
+  {
+    id: 'rtlsdr', row: 1, tier: 'dongle',
+    name: '433 / 868 RF — RTL-SDR',
+    sub: '315 / 433 / 868 / 915 MHz · SDR',
+    type: 'Comms',
+    func: 'Passive receive of any RF sensor: weather stations, tire pressure, old garage remotes, energy clamp sensors, legacy thermostats.',
+    hz: '433 / 868 MHz',
+    axisX: 0.17,
+    hw: 'RTL-SDR Blog V4 · USB · rtl_433 add-on',
+    cost: '~€30',
+    n305: 'yes', pi5: 'yes',
+    w: 210,
+  },
+  {
+    id: 'ble',    row: 1, tier: 'dongle',
+    name: 'Bluetooth LE',
+    sub: '2.4 GHz · BLE 5.x',
+    type: 'Comms',
+    func: 'Xiaomi, Govee, BTHome sensors, body scales, BLE tags and proximity detection. Host Bluetooth used directly.',
+    hz: '2.4 GHz',
+    axisX: 0.595,
+    hw: 'Host BT (built-in) · ESP32 proxy nodes',
+    cost: '€0 + €4/proxy',
+    n305: 'yes', pi5: 'yes',
+    w: 200,
+  },
+  {
+    id: 'enocean',row: 1, tier: 'dongle',
+    name: 'EnOcean',
+    sub: '868 MHz · energy harvesting',
+    type: 'Comms',
+    func: 'Battery-free wireless switches, sensors and actuators. Switches harvest power from the button press itself — zero maintenance.',
+    hz: '868 MHz',
+    axisX: 0.215,
+    hw: 'EnOcean USB 300 dongle',
+    cost: '~€30',
+    n305: 'yes', pi5: 'yes',
+    w: 185,
+  },
+
+  // ── ROW 3 — ESP32 Proxy / Add-on ─────────────────────────────────────────
+  {
+    id: 'ir',     row: 2, tier: 'proxy',
+    name: 'Infrared (IR)',
+    sub: 'IR · 850–950 nm · ESPHome',
+    type: 'Comms',
+    func: 'Full bidirectional control of TVs, AV receivers, projectors, air conditioners and any IR remote device. Learns and replays codes.',
+    hz: 'IR (optical)',
+    axisX: 0.04,
+    hw: 'ESP32 + IR LED/receiver board · ESPHome',
+    cost: '~€5 / room',
+    n305: 'yes', pi5: 'yes',
+    w: 180,
+  },
+  {
+    id: 'cc1101', row: 2, tier: 'proxy',
+    name: 'RF Bidirectional — CC1101',
+    sub: '315 / 433 / 868 MHz · TX+RX',
+    type: 'Comms',
+    func: 'Send AND receive on sub-GHz bands. Control roller shutters, RF switches, doorbells and devices no longer sold with smart alternatives.',
+    hz: '433 / 868 MHz',
+    axisX: 0.175,
+    hw: 'CC1101 module + ESP32 · ESPHome',
+    cost: '~€6',
+    n305: 'yes', pi5: 'yes',
+    w: 200,
+  },
+  {
+    id: 'nfc',    row: 2, tier: 'proxy',
+    name: 'NFC Tags',
+    sub: '13.56 MHz · ISO 14443',
+    type: 'Comms / UI',
+    func: 'Phone tap-to-trigger automation scenes. Door tag arms/disarms alarm; desk tag sets work mode; bedside tag activates sleep scene.',
+    hz: '13.56 MHz',
+    axisX: 0.087,
+    hw: 'HA companion app + NFC sticker tags',
+    cost: '~€0.30 / tag',
+    n305: 'yes', pi5: 'yes',
+    w: 170,
+  },
+  {
+    id: 'uwb',    row: 2, tier: 'proxy',
+    name: 'UWB Precision Presence',
+    sub: '6–9 GHz · Ultra-Wideband',
+    type: 'Presence',
+    func: 'Centimetre-level room-person detection. HA knows which room each person is in — enabling truly room-aware lighting and climate.',
+    hz: '6–9 GHz',
+    axisX: 0.93,
+    hw: 'iPhone / Pixel UWB + HA app + optional Pozyx anchors',
+    cost: '€0 (app) or ~€200 (anchors)',
+    n305: 'yes', pi5: 'yes',
+    w: 200,
+  },
+  {
+    id: 'mmwave', row: 2, tier: 'proxy',
+    name: 'mmWave Presence',
+    sub: '24 / 60 GHz · radar',
+    type: 'Presence',
+    func: 'Detects stationary occupancy (reading, sleeping) that PIR sensors miss. Prevents lights/HVAC switching off in occupied rooms.',
+    hz: '24 / 60 GHz',
+    axisX: 0.88,
+    hw: 'Aqara FP2 / Sonoff SNZB-06P · Zigbee',
+    cost: '~€35–50',
+    n305: 'yes', pi5: 'yes',
+    w: 190,
+  },
+  {
+    id: 'voice',  row: 2, tier: 'proxy',
+    name: 'Local Voice (Assist)',
+    sub: '2.4 GHz · Wi-Fi satellite',
+    type: 'Control',
+    func: 'Fully local, cloud-free voice control via HA Assist + Wyoming protocol. ESP32-S3 Box satellites per room; no subscription needed.',
+    hz: '2.4 GHz',
+    axisX: 0.64,
+    hw: 'ESP32-S3 Box / HA Voice PE · Wi-Fi',
+    cost: '~€20 / room',
+    n305: 'yes', pi5: 'partial',
+    w: 190,
+  },
+
+  // ── ROW 4 — Network / Gateway ────────────────────────────────────────────
+  {
+    id: 'p1',     row: 3, tier: 'net',
+    name: 'P1 / DSMR Meter Port',
+    sub: 'Serial · utility meter interface',
+    type: 'Energy',
+    func: 'Real-time whole-home electricity and gas consumption from utility meter. Enables tariff-aware automations and energy dashboard.',
+    hz: 'Wired / Serial',
+    axisX: 0.025,
+    hw: 'SlimmeLezer+ / HomeWizard P1 · Ethernet or Wi-Fi',
+    cost: '~€35',
+    n305: 'yes', pi5: 'yes',
+    w: 165,
+  },
+  {
+    id: 'modbus', row: 3, tier: 'net',
+    name: 'Modbus RTU / TCP',
+    sub: 'RS-485 / TCP · industrial',
+    type: 'Building',
+    func: 'Reads and controls solar inverters, heat pumps, HVAC units and EV chargers. The bridge between consumer smart home and building infrastructure.',
+    hz: 'Wired (RS-485)',
+    axisX: 0.035,
+    hw: 'USB RS-485 adapter or TCP gateway · native HA integration',
+    cost: '~€15',
+    n305: 'yes', pi5: 'yes',
+    w: 180,
+  },
+  {
+    id: 'knx',    row: 3, tier: 'net',
+    name: 'KNX / EIB',
+    sub: 'KNX IP · professional bus',
+    type: 'Building',
+    func: 'Master control over professional-grade lighting (DALI), motorised facades, shading systems and building management. Gateway to premium AV.',
+    hz: 'Wired (KNX bus)',
+    axisX: 0.045,
+    hw: 'KNX IP Router (~€150) · native HA integration',
+    cost: '~€150',
+    n305: 'yes', pi5: 'yes',
+    w: 155,
+  },
+  {
+    id: 'lora',   row: 3, tier: 'net',
+    name: 'LoRa / LoRaWAN',
+    sub: '868 MHz · long-range low-power',
+    type: 'Comms',
+    func: 'km-range sensors for garden, pool, outbuildings and remote gate automation where Wi-Fi and Zigbee don't reach.',
+    hz: '868 MHz',
+    axisX: 0.22,
+    hw: 'RAK7268 LoRaWAN gateway · Ethernet',
+    cost: '~€60',
+    n305: 'yes', pi5: 'yes',
+    w: 175,
+  },
+  {
+    id: 'mesh',   row: 3, tier: 'net',
+    name: 'Meshtastic',
+    sub: '868 MHz · off-grid LoRa mesh',
+    type: 'Comms',
+    func: 'Off-grid encrypted mesh messaging and sensor relay over LoRa. Operates without internet or cellular — useful for property perimeter and emergency use.',
+    hz: '868 MHz',
+    axisX: 0.24,
+    hw: 'LILYGO T-Beam / Heltec V3 · USB or Wi-Fi to HA',
+    cost: '~€30',
+    n305: 'yes', pi5: 'yes',
+    w: 185,
+  },
+  {
+    id: 'ai',     row: 3, tier: 'net',
+    name: 'Local AI (Ollama / LLM)',
+    sub: 'CPU/GPU inference · local LLM',
+    type: 'Intelligence',
+    func: 'On-device language model (Mistral, Llama 3) for natural-language automation descriptions, anomaly narration and intelligent device grouping.',
+    hz: 'N/A — compute',
+    axisX: 0.50,
+    hw: 'Runs on N305 CPU (1–3B models) · Ollama LXC',
+    cost: '€0 (software)',
+    n305: 'partial', pi5: 'no',
+    w: 205,
+  },
+  {
+    id: 'coral',  row: 3, tier: 'net',
+    name: 'Google Coral TPU',
+    sub: 'USB edge AI accelerator',
+    type: 'AI / Camera',
+    func: 'Hardware AI inference for Frigate NVR. Detects person / vehicle / animal at 30+ FPS per camera stream without loading the CPU.',
+    hz: 'USB (no RF)',
+    axisX: 0.50,
+    hw: 'Google Coral USB Accelerator · USB 3.0',
+    cost: '~€60',
+    n305: 'yes', pi5: 'partial',
+    w: 200,
+  },
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+const active = {};
+PROTOCOLS.forEach(p => active[p.id] = true);
+
+// ── AXIS TICK POSITIONS (normalised 0-1 left to right on axis) ──────────────
+const TICKS = [
+  { label: '13.56 MHz', x: 0.087 },
+  { label: '315 MHz',   x: 0.13 },
+  { label: '433 MHz',   x: 0.17 },
+  { label: '868 MHz',   x: 0.22 },
+  { label: '1.9 GHz',   x: 0.40 },
+  { label: '2.4 GHz',   x: 0.62 },
+  { label: '5 GHz',     x: 0.78 },
+  { label: '6–9 GHz',   x: 0.88 },
+  { label: '24–60 GHz', x: 0.935 },
+];
+
+const TIER_COLORS = {
+  core:   { c: 'var(--tier-core)',   g: 'rgba(200,251,87,0.35)',   label: 'Core — built-in' },
+  dongle: { c: 'var(--tier-dongle)', g: 'rgba(167,139,250,0.35)',  label: 'USB Dongle' },
+  proxy:  { c: 'var(--tier-proxy)',  g: 'rgba(87,251,202,0.35)',   label: 'ESP32 Proxy / Add-on' },
+  net:    { c: 'var(--tier-net)',    g: 'rgba(251,129,87,0.35)',   label: 'Network / Gateway' },
+};
+
+// Type badge colours
+const TYPE_COLORS = {
+  'Comms':       { bg: 'rgba(87,180,251,0.13)', c: '#57b4fb' },
+  'Comms / UI':  { bg: 'rgba(87,180,251,0.13)', c: '#57b4fb' },
+  'Presence':    { bg: 'rgba(167,139,250,0.13)', c: '#a78bfa' },
+  'Control':     { bg: 'rgba(87,251,202,0.13)',  c: '#57fbca' },
+  'Energy':      { bg: 'rgba(200,251,87,0.13)',  c: '#c8fb57' },
+  'Building':    { bg: 'rgba(251,191,87,0.13)',  c: '#fbbf57' },
+  'Intelligence':{ bg: 'rgba(251,87,87,0.13)',   c: '#fb8157' },
+  'AI / Camera': { bg: 'rgba(251,87,87,0.13)',   c: '#fb8157' },
+};
+
+// ── BUILD ─────────────────────────────────────────────────────────────────
+function buildRows() {
+  const container = document.getElementById('proto-rows');
+  container.innerHTML = '';
+
+  // Group by row
+  const rows = {};
+  PROTOCOLS.forEach(p => {
+    if (!rows[p.row]) rows[p.row] = [];
+    rows[p.row].push(p);
+  });
+
+  const rowLabels = ['CORE — BUILT-IN', 'USB DONGLES', 'ESP32 PROXY / ADD-ON', 'NETWORK / GATEWAY'];
+
+  Object.keys(rows).sort().forEach(r => {
+    const rowEl = document.createElement('div');
+    rowEl.style.cssText = 'display:flex; align-items:stretch; gap:10px; margin-bottom:4px;';
+
+    // Row label
+    const labelEl = document.createElement('div');
+    labelEl.style.cssText = `
+      width: 118px; flex-shrink:0; display:flex; align-items:center;
+      font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing:0.14em;
+      color: var(--muted); text-transform: uppercase; line-height:1.3;
+      padding-right: 8px;
+    `;
+    labelEl.textContent = rowLabels[r] || '';
+    rowEl.appendChild(labelEl);
+
+    // Button row
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex; gap:10px; flex-wrap:wrap; flex:1; align-items:stretch;';
+
+    rows[r].forEach(p => {
+      const tc = TIER_COLORS[p.tier];
+      const btn = document.createElement('div');
+      btn.className = 'proto-btn' + (active[p.id] ? ' active' : ' inactive');
+      btn.dataset.id = p.id;
+      btn.style.cssText = `--btn-color:${tc.c}; --btn-glow:${tc.g}; width:${p.w}px;`;
+      btn.innerHTML = `
+        <div class="btn-color-bar"></div>
+        <div class="btn-name">${p.name}</div>
+        <div class="btn-sub">${p.sub}</div>
+      `;
+      btn.addEventListener('click', () => toggle(p.id));
+      btnRow.appendChild(btn);
+    });
+
+    rowEl.appendChild(btnRow);
+    container.appendChild(rowEl);
+  });
+}
+
+function buildAxis() {
+  const wrap = document.getElementById('axis-wrap');
+
+  // Build ticks
+  TICKS.forEach(t => {
+    const g = document.createElement('div');
+    g.className = 'axis-tick-group';
+    g.style.left = (t.x * 100) + '%';
+    g.innerHTML = `<div class="axis-tick"></div><div class="axis-freq">${t.label}</div>`;
+    wrap.appendChild(g);
+  });
+
+  // Build axis indicators for each protocol
+  PROTOCOLS.forEach(p => {
+    const tc = TIER_COLORS[p.tier];
+    const ind = document.createElement('div');
+    ind.className = 'axis-indicator' + (active[p.id] ? ' lit' : '');
+    ind.id = 'ind-' + p.id;
+    ind.style.cssText = `left:${p.axisX * 100}%; --btn-color:${tc.c}; --btn-glow:${tc.g};`;
+    ind.title = p.name;
+    wrap.appendChild(ind);
+  });
+}
+
+function buildSheet() {
+  const tbody = document.getElementById('sheet-body');
+  tbody.innerHTML = '';
+
+  // Order: core first, then dongle, proxy, net
+  const order = ['core', 'dongle', 'proxy', 'net'];
+  const sorted = [...PROTOCOLS].sort((a, b) => order.indexOf(a.tier) - order.indexOf(b.tier));
+
+  sorted.forEach(p => {
+    const tc = TIER_COLORS[p.tier];
+    const typ = TYPE_COLORS[p.type] || { bg: 'rgba(255,255,255,0.05)', c: 'var(--muted)' };
+    const tr = document.createElement('tr');
+    tr.dataset.id = p.id;
+    tr.className = active[p.id] ? '' : 'row-inactive';
+
+    const n305Badge = badgeHtml('N305', p.n305);
+    const pi5Badge  = badgeHtml('Pi 5', p.pi5);
+
+    tr.innerHTML = `
+      <td class="td-name">
+        <span class="tier-pip" style="background:${tc.c}"></span>${p.name}
+      </td>
+      <td>
+        <span class="td-type" style="background:${typ.bg};color:${typ.c}">${p.type}</span>
+      </td>
+      <td class="td-function">${p.func}</td>
+      <td class="td-hz">${p.hz}</td>
+      <td class="td-hw">${p.hw}</td>
+      <td class="td-cost">${p.cost}</td>
+      <td>${n305Badge}</td>
+      <td>${pi5Badge}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  updateCount();
+}
+
+function badgeHtml(label, val) {
+  const cls = val === 'yes' ? 'badge-yes' : val === 'partial' ? 'badge-partial' : 'badge-no';
+  const icon = val === 'yes' ? '✓' : val === 'partial' ? '~' : '✗';
+  const text = val === 'yes' ? 'Yes' : val === 'partial' ? 'Limited' : 'No';
+  return `<span class="badge-hw ${cls}">${icon} ${text}</span>`;
+}
+
+function toggle(id) {
+  active[id] = !active[id];
+  updateAll(id);
+}
+
+function updateAll(id) {
+  // button
+  const btn = document.querySelector(`.proto-btn[data-id="${id}"]`);
+  if (btn) {
+    btn.classList.toggle('active', active[id]);
+    btn.classList.toggle('inactive', !active[id]);
+  }
+  // indicator
+  const ind = document.getElementById('ind-' + id);
+  if (ind) ind.classList.toggle('lit', active[id]);
+  // row
+  const tr = document.querySelector(`tr[data-id="${id}"]`);
+  if (tr) tr.classList.toggle('row-inactive', !active[id]);
+
+  updateCount();
+}
+
+function setAll(val) {
+  PROTOCOLS.forEach(p => { active[p.id] = val; });
+  PROTOCOLS.forEach(p => updateAll(p.id));
+}
+
+function setTier(tier) {
+  const tiers = ['core', 'dongle', 'proxy', 'net'];
+  const idx = tiers.indexOf(tier);
+  PROTOCOLS.forEach(p => {
+    active[p.id] = tiers.indexOf(p.tier) <= idx;
+  });
+  PROTOCOLS.forEach(p => updateAll(p.id));
+}
+
+function updateCount() {
+  const total = PROTOCOLS.length;
+  const on = Object.values(active).filter(Boolean).length;
+  document.getElementById('sheet-count').textContent = `${on} / ${total} active`;
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+buildRows();
+buildAxis();
+buildSheet();
+</script>
+</body>
+</html>

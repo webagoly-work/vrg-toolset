@@ -1,0 +1,378 @@
+{
+"pack":"BRIDGE-Q-001",
+"title":"BRIDGE Design Fine-Tuning — Round 1",
+"rev":"r1",
+"date":"2026-10-02",
+"sections":[
+
+{"id":"A","title":"General / cross-cutting","note":"How the document set itself behaves, and who builds it.","questions":[
+ {"id":"A01","q":"Numbering for the new chapters?","why":"I started BRIDGE-STD-001/2/3. Worth settling before there are ten of them.","rec":"A","opts":[
+  {"k":"A","t":"Keep BRIDGE-STD-00N","d":"Standards sit beside ARCH-00N as their own series."},
+  {"k":"B","t":"BRIDGE-REF-<chapter>","d":"Number them as Reference chapters instead, 1–15 per the reading order."},
+  {"k":"C","t":"Appendices to ARCH-002","d":"One document, everything folded in as appendices."}]},
+ {"id":"A02","q":"How should the Reference be assembled?","rec":"B","opts":[
+  {"k":"A","t":"One large file","d":"Single markdown document, everything in it."},
+  {"k":"B","t":"One file per chapter + index","d":"What we are already doing; easier to revise a chapter without touching the rest."},
+  {"k":"C","t":"Chapters, plus a generated single file","d":"Both — author per chapter, build a combined document for reading or printing."}]},
+ {"id":"A03","q":"Hungarian language policy for the Reference?","why":"ARCH-002 exists in HU; the new standards are English.","rec":"B","opts":[
+  {"k":"A","t":"Full parallel HU translation","d":"Every chapter in both. Doubles maintenance."},
+  {"k":"B","t":"English + a HU terminology glossary","d":"One glossary mapping every BRIDGE term, so you can talk to trades in Hungarian."},
+  {"k":"C","t":"English only","d":"No HU material at all."}]},
+ {"id":"A04","q":"Revision scheme?","rec":"A","opts":[
+  {"k":"A","t":"r1, r2, r3","d":"What the corpus already uses."},
+  {"k":"B","t":"Semantic — 1.0.0","d":"Major/minor/patch; clearer about whether a change breaks anything."},
+  {"k":"C","t":"Date-stamped","d":"Revision is the date. Simple, no judgement needed."}]},
+ {"id":"A05","q":"The ten-layer drawing colour code?","why":"ARCH-002 §2.3 fixes ten colours. Amber/yellow and the two teals are close together.","rec":"C","opts":[
+  {"k":"A","t":"Keep exactly as drawn","d":"No change."},
+  {"k":"B","t":"Re-derive for colour-blind safety","d":"New palette, maximally separable. Breaks consistency with existing drawings."},
+  {"k":"C","t":"Keep, add hatch patterns as redundancy","d":"Colour stays; every layer also gets a line style, so a mono print still reads."}]},
+ {"id":"A06","q":"Label hardware for conduits and boxes?","why":"The SELV standard requires durable machine-printed labels; it does not say which.","rec":"A","opts":[
+  {"k":"A","t":"Thermal-transfer (Rhino / Brady class)","d":"Survives plaster dust and years. The trade standard."},
+  {"k":"B","t":"Laser print in clear sleeve","d":"Cheap, legible, less durable at cut ends."},
+  {"k":"C","t":"Engraved tags","d":"Permanent, slow, expensive; right for the cabinet only."}]},
+ {"id":"A07","q":"Where do as-builts live?","why":"STD-001 §3.3 requires photographing every run before closing. Those photos need a home with the room reference.","rec":"B","opts":[
+  {"k":"A","t":"Photos + spreadsheet","d":"Simple, works today, no build effort."},
+  {"k":"B","t":"Into the Planner app","d":"Room and device records already exist there; as-builts attach to them."},
+  {"k":"C","t":"PDF drawing set","d":"Formal, good for handover, poor for ongoing edits."}]},
+ {"id":"A08","q":"Who installs what?","why":"Changes the register of the Reference — a document for an electrician reads differently from one for you.","rec":"B","opts":[
+  {"k":"A","t":"You throughout","d":"Including MAINS."},
+  {"k":"B","t":"Electrician for MAINS, you for SELV + data","d":"The split the SELV standard implicitly assumes."},
+  {"k":"C","t":"Electrician throughout, your design","d":"You specify, they build. Highest documentation burden."}]}
+]},
+
+{"id":"B","title":"STD-001 — Physical standardisation","note":"Dimensions, zones, conduit and sequence. Confirm or correct the numbers I chose.","questions":[
+ {"id":"B01","q":"RB-S at 90 mm internal depth cannot take full-depth DIN gear. Accept, or change?","rec":"B","opts":[
+  {"k":"A","t":"Accept the restriction","d":"RB-S stays shallow: terminals, compact PSU, sub-controller, 4 compact relays."},
+  {"k":"B","t":"Raise all classes to 110 mm minimum","d":"One depth rule, every class takes any gear. Slightly deeper chase everywhere."},
+  {"k":"C","t":"Drop RB-S entirely","d":"RB-M is the smallest box in the house. Simplest schedule, more volume in small rooms."}]},
+ {"id":"B02","q":"Vertical row pitch of 125 mm?","rec":"A","opts":[
+  {"k":"A","t":"125 mm","d":"Consumer-unit standard: 45 mm device + 80 mm wiring."},
+  {"k":"B","t":"150 mm","d":"Easier wiring and bend radius; fewer rows per box."},
+  {"k":"C","t":"100 mm","d":"More rows; tight for anything but terminals."}]},
+ {"id":"B03","q":"Horizontal module — 18 mm or true DIN 17.5 mm?","why":"DIN modules are nominally 17.5 mm; consumer units are commonly laid out on 18 mm.","rec":"A","opts":[
+  {"k":"A","t":"18 mm","d":"Matches how the BRIDGE-DN cabinet is already drawn."},
+  {"k":"B","t":"17.5 mm","d":"True DIN; more modules per box, and matches device datasheets exactly."}]},
+ {"id":"B04","q":"Zone order — sensors low, mains high?","why":"Air flows bottom to top, so heat sources belong high. But mains entry from below is the conventional habit.","rec":"A","opts":[
+  {"k":"A","t":"Sensors low, mains high","d":"As drafted. Thermally and electromagnetically correct."},
+  {"k":"B","t":"Mains at the bottom, conventional","d":"Familiar to any electrician; PSU heat then rises through every other zone."}]},
+ {"id":"B05","q":"Where does the Z4 RF column go?","rec":"A","opts":[
+  {"k":"A","t":"Side column, hinge-opposite","d":"Full height, behind an RF window, isolated from Z1."},
+  {"k":"B","t":"Top strip","d":"Highest position for antennas; adjacent to the mains zone, which is worse for EMI."},
+  {"k":"C","t":"Separate satellite box","d":"Radios leave the RoomBox entirely — best RF, one more enclosure per room."}]},
+ {"id":"B06","q":"IR emitter position?","why":"IR is the one element in the box with a hard line-of-sight requirement, and it sets where the RF window goes.","rec":"C","opts":[
+  {"k":"A","t":"In the RF window","d":"No extra endpoint; line of sight limited to whatever the box faces."},
+  {"k":"B","t":"Separate ceiling IR emitter on an ARM","d":"Proper coverage; one more endpoint and conduit."},
+  {"k":"C","t":"Both","d":"Window emitter as standard, ceiling emitter where a TV or split unit needs it."}]},
+ {"id":"B07","q":"Day-one zone fill cap?","rec":"A","opts":[
+  {"k":"A","t":"60%","d":"As drafted."},
+  {"k":"B","t":"50%","d":"More growth room; pushes classes up a size."},
+  {"k":"C","t":"No cap","d":"Fill as needed, accept rework later."}]},
+ {"id":"B08","q":"C4 spare conduit size?","rec":"B","opts":[
+  {"k":"A","t":"M25 as drafted","d":"Takes coax, fibre, audio."},
+  {"k":"B","t":"M32","d":"Takes anything including a future multi-core bundle. Small cost now, large option later."},
+  {"k":"C","t":"Two spares, M25 + M20","d":"Two independent futures rather than one big one."}]},
+ {"id":"B09","q":"A dedicated fibre conduit to each RoomBox now?","rec":"B","opts":[
+  {"k":"A","t":"Yes, add M20 fibre","d":"Sixth conduit in the bundle."},
+  {"k":"B","t":"No — C4 covers it","d":"Fibre pulls into the spare when it is wanted."},
+  {"k":"C","t":"Fibre to RB-L/RB-H only","d":"Where 10 GbE might actually land."}]},
+ {"id":"B10","q":"If KNX is not taken, what happens to the C5 position?","rec":"A","opts":[
+  {"k":"A","t":"Reserve the position, install nothing","d":"Bundle order never shifts; a later KNX run has a defined slot."},
+  {"k":"B","t":"Install the conduit empty anyway","d":"Cheapest time to do it is now."},
+  {"k":"C","t":"Omit entirely","d":"Four conduits, and KNX is off the table for good."}]},
+ {"id":"B11","q":"Corridor side convention for MAINS vs the CHANNEL bundle?","rec":"A","opts":[
+  {"k":"A","t":"Fixed — MAINS always the same hand","d":"Pick once, document it, never think again."},
+  {"k":"B","t":"Per project","d":"Decide per corridor on site."},
+  {"k":"C","t":"MAINS away from wet walls","d":"Rule follows the plumbing instead of a convention."}]},
+ {"id":"B12","q":"RoomBox mounting height?","rec":"A","opts":[
+  {"k":"A","t":"Bottom edge ≥ 1.90 m","d":"As ARCH-002. Out of sight, above furniture, above most hazards."},
+  {"k":"B","t":"≈1.60 m","d":"Far easier to work in. Visible, and within reach of children."},
+  {"k":"C","t":"≈2.10 m","d":"Effectively invisible; needs a step for every service visit."}]},
+ {"id":"B13","q":"RoomBox door construction?","rec":"B","opts":[
+  {"k":"A","t":"Hinged steel","d":"Robust, shields EMI, needs an RF window cut."},
+  {"k":"B","t":"Hinged paintable polymer","d":"RF-transparent, disappears into the wall, vents easily."},
+  {"k":"C","t":"Removable screw-fixed cover","d":"Most discreet, slowest to open."}]},
+ {"id":"B14","q":"Cover finish and visibility?","rec":"A","opts":[
+  {"k":"A","t":"Flush paintable, invisible","d":"Reads as wall. Needs good documentation to ever find again."},
+  {"k":"B","t":"Visible service panel","d":"Honest, findable, reads as technical."},
+  {"k":"C","t":"Behind joinery","d":"Hidden in a wardrobe or cabinet. Best looking, worst access."}]},
+ {"id":"B15","q":"Cable entry method?","rec":"A","opts":[
+  {"k":"A","t":"Knockouts + glands","d":"Standard, sealed, defined positions."},
+  {"k":"B","t":"Brush strip","d":"Fast, flexible, no sealing."},
+  {"k":"C","t":"Pre-fitted glands","d":"Fixed count and size, decided at manufacture."}]},
+ {"id":"B16","q":"ZT service loop length?","rec":"A","opts":[
+  {"k":"A","t":"300 mm","d":"As drafted — enough to re-terminate once."},
+  {"k":"B","t":"500 mm","d":"Enough to re-terminate repeatedly or relocate a rail."},
+  {"k":"C","t":"Cut to length","d":"Tidiest, no second chances."}]},
+ {"id":"B17","q":"Fans in a RoomBox?","rec":"A","opts":[
+  {"k":"A","t":"Never — natural convection only","d":"No noise, no moving part to fail in a wall."},
+  {"k":"B","t":"RB-H only","d":"The one box that may carry a real heat load."},
+  {"k":"C","t":"Temperature-triggered anywhere","d":"Runs rarely; still a bearing in a wall cavity."}]},
+ {"id":"B18","q":"RB-O / outdoor ingress strategy?","rec":"C","opts":[
+  {"k":"A","t":"IP65 fully sealed","d":"As drafted; loses 20% of thermal budget."},
+  {"k":"B","t":"IP55 vented","d":"Better thermals, more ingress risk."},
+  {"k":"C","t":"IP65 + breather membrane","d":"Sealed to water, vents vapour — stops condensation without losing rating."}]},
+ {"id":"B19","q":"Edge RoomBox naming?","rec":"A","opts":[
+  {"k":"A","t":"RB-E with /W /G /T suffixes","d":"One class, three documented variants."},
+  {"k":"B","t":"Separate classes RB-W, RB-G, RB-T","d":"Flatter; five classes become seven."},
+  {"k":"C","t":"Just RB-E","d":"Variant recorded in the room schedule, not the class name."}]},
+ {"id":"B20","q":"Where does PANEL LINK physically live, given BRIDGE-DN V2 is full?","why":"This is C3. Three real answers.","rec":"A","opts":[
+  {"k":"A","t":"RB-E/T beside the cabinet","d":"A technical Edge RoomBox hosts the metering gallery."},
+  {"k":"B","t":"Second small cabinet","d":"Dedicated enclosure, DIN rail, conventional."},
+  {"k":"C","t":"Measuring gallery above the existing unit","d":"ARCH-002 variant B, built as drawn."}]},
+ {"id":"B21","q":"ARM identifier scheme?","why":"U1. The Planner shares this namespace, so it has to be decided jointly.","rec":"B","opts":[
+  {"k":"A","t":"R<room>-A<n>","d":"Flat and short: R03-A2."},
+  {"k":"B","t":"R<room>-<layer>-<n>","d":"Layer visible in the name: R03-LV-2. Self-documenting, longer."},
+  {"k":"C","t":"R<room>-<wall><n>","d":"Position-coded: R03-N2. Finds things physically."}]},
+ {"id":"B22","q":"Endpoint identifier scheme?","rec":"B","opts":[
+  {"k":"A","t":"Sequential — E<n>","d":"R03-E07. Shortest, says nothing."},
+  {"k":"B","t":"Typed — L/S/P/T prefix","d":"R03-L2 lamp, R03-S4 socket. Readable at a glance."},
+  {"k":"C","t":"Position-coded","d":"Encodes wall and height. Most informative, least stable if things move."}]},
+ {"id":"B23","q":"The 13-step per-room buildup order?","rec":"A","opts":[
+  {"k":"A","t":"Confirm as drafted","d":"Dependency-ordered; no step needs a later one."},
+  {"k":"B","t":"Move Security earlier","d":"Third-party conduit goes in with first fix, so nothing is forgotten."},
+  {"k":"C","t":"Move RF before Sensor","d":"Radios in before sensor endpoints."}]},
+ {"id":"B24","q":"How many universal endpoint positions per room?","why":"UEPs are the cheapest future-proofing in the design and the easiest to under-provide.","rec":"B","opts":[
+  {"k":"A","t":"As drafted, 1–3 by class","d":"Modest."},
+  {"k":"B","t":"Minimum 2 everywhere, 4 in RB-L","d":"More generous; the cost is a flush box and a conduit."},
+  {"k":"C","t":"Only where genuinely undecided","d":"Leanest; relies on getting the schedule right first time."}]},
+ {"id":"B25","q":"Pull box interval?","rec":"A","opts":[
+  {"k":"A","t":"15 m","d":"As drafted."},
+  {"k":"B","t":"10 m","d":"Easier pulls, more boxes to hide and document."},
+  {"k":"C","t":"Judgement per run","d":"By bend count and cable stiffness."}]},
+ {"id":"B26","q":"Conduit cover in screed?","rec":"A","opts":[
+  {"k":"A","t":"25 mm","d":"As drafted."},
+  {"k":"B","t":"30 mm","d":"Safer against screws and drills; needs the floor buildup to allow it."},
+  {"k":"C","t":"Per floor buildup","d":"Calculated per room."}]},
+ {"id":"B27","q":"Minimum bend radius?","rec":"A","opts":[
+  {"k":"A","t":"8 × cable OD","d":"Cat6A ≈ 65–75 mm. The cable standard's own figure."},
+  {"k":"B","t":"10 × OD","d":"Headroom for stiffer future cable. Larger sweeps to accommodate."}]},
+ {"id":"B28","q":"Where does the conduit and cable schedule live?","rec":"B","opts":[
+  {"k":"A","t":"Spreadsheet","d":"Works today."},
+  {"k":"B","t":"The Planner app","d":"Rooms, devices and paths already modelled there."},
+  {"k":"C","t":"In the Reference itself","d":"One document; goes stale fastest."}]}
+]},
+
+{"id":"C","title":"STD-002 — Light and scene","note":"Photometry, the 24 V rail, scenes, and which integrated lighting is actually in scope.","questions":[
+ {"id":"C01","q":"Dimming curve?","rec":"A","opts":[
+  {"k":"A","t":"s³ — CIE L* perceptual","d":"Perceptually linear slider. Needs a per-fixture correction against DALI gear."},
+  {"k":"B","t":"Gamma 2.2","d":"Close enough, familiar from displays."},
+  {"k":"C","t":"DALI log everywhere","d":"One curve across all gear; non-DALI channels emulate it."}]},
+ {"id":"C02","q":"Minimum level for egress and night light?","rec":"A","opts":[
+  {"k":"A","t":"≤ 2%","d":"As drafted. Drives driver selection."},
+  {"k":"B","t":"≤ 1%","d":"Genuinely dark-adapted night light. Narrows driver choice sharply."},
+  {"k":"C","t":"5% is fine","d":"Widest product choice; will feel bright at 3 a.m."}]},
+ {"id":"C03","q":"PWM frequency?","rec":"A","opts":[
+  {"k":"A","t":"≥3 kHz floor, 10–20 kHz target","d":"Clear of IEEE 1789 entirely."},
+  {"k":"B","t":"20 kHz everywhere","d":"Camera-safe by default; more EMI care on long runs."},
+  {"k":"C","t":"1 kHz is fine","d":"Only if nothing is ever filmed. Still inside low-risk at modest depth."}]},
+ {"id":"C04","q":"PWM or CCR as the default dimming method?","rec":"A","opts":[
+  {"k":"A","t":"PWM default, CCR in filmed rooms","d":"Cost-effective, colour-stable, with CCR where it matters."},
+  {"k":"B","t":"CCR everywhere","d":"Flicker-free by construction; dearer, slight warm shift at low level."},
+  {"k":"C","t":"PWM everywhere","d":"Cheapest and simplest; accept banding on camera."}]},
+ {"id":"C05","q":"Which rooms count as filmed spaces?","multi":true,"opts":[
+  {"k":"A","t":"Studio / workshop"},{"k":"B","t":"Media room"},{"k":"C","t":"Living"},
+  {"k":"D","t":"Kitchen"},{"k":"E","t":"None — I do not film indoors"}]},
+ {"id":"C06","q":"Colour fidelity target in primary living space?","rec":"A","opts":[
+  {"k":"A","t":"Ra ≥ 90, R9 ≥ 50","d":"As drafted; task areas stricter at 95/90."},
+  {"k":"B","t":"Ra ≥ 95, R9 ≥ 90 everywhere","d":"Uniformly excellent. Costs more, narrows choice, no bad fixtures."},
+  {"k":"C","t":"Ra ≥ 80 acceptable","d":"Widest product range, visibly duller reds."}]},
+ {"id":"C07","q":"Duv tolerance window?","rec":"A","opts":[
+  {"k":"A","t":"−0.004 to +0.002 — asymmetric","d":"Pink forgiven, green rejected. Tighter than the standard."},
+  {"k":"B","t":"Symmetric ±0.003","d":"Simpler to state, lets some green through."},
+  {"k":"C","t":"C78.377 ±0.006","d":"Accept anything compliant; some product will look green."}]},
+ {"id":"C08","q":"Default tunable-white channel pair?","rec":"A","opts":[
+  {"k":"A","t":"2700 K + 4000 K","d":"Mid-mix Duv ≈ −0.003, inside tolerance, covers the useful range."},
+  {"k":"B","t":"2700 K + 3000 K","d":"Near-perfect locus tracking, very little range."},
+  {"k":"C","t":"2700 K + 6500 K","d":"Full range, mid-mix ≈ −0.009 and visibly pink."}]},
+ {"id":"C09","q":"Which rooms are tunable white at all?","multi":true,"why":"Fixed-CCT fixtures are cheaper and simpler. Tunable earns its place where people spend hours.","opts":[
+  {"k":"A","t":"Living"},{"k":"B","t":"Bedroom"},{"k":"C","t":"Study"},{"k":"D","t":"Kitchen"},
+  {"k":"E","t":"Bathroom"},{"k":"F","t":"All habitable rooms"},{"k":"G","t":"None — fixed CCT throughout"}]},
+ {"id":"C10","q":"Where is a three-channel locus-tracking fixture justified?","multi":true,"opts":[
+  {"k":"A","t":"Studio / workshop"},{"k":"B","t":"Living"},{"k":"C","t":"Bedroom"},{"k":"D","t":"Nowhere — two channels everywhere"}]},
+ {"id":"C11","q":"Binning tolerance on continuous runs?","rec":"A","opts":[
+  {"k":"A","t":"≤ 2 SDCM","d":"As drafted; a step is invisible."},
+  {"k":"B","t":"≤ 3 SDCM","d":"Much wider supply, a faint step may show on a white ceiling."},
+  {"k":"C","t":"≤ 1 SDCM on critical runs","d":"Cove and under-cabinet held to the tightest bin available."}]},
+ {"id":"C12","q":"RGB policy?","rec":"A","opts":[
+  {"k":"A","t":"RGBWW, accent only","d":"White always from white LEDs; colour is an accent layer."},
+  {"k":"B","t":"No colour at all","d":"Tunable white only. Calmer, cheaper, less to go wrong."},
+  {"k":"C","t":"Full RGB wherever wanted","d":"Maximum flexibility, risk of a house that looks like a games room."}]},
+ {"id":"C13","q":"Which rooms get a colour-capable accent layer?","multi":true,"opts":[
+  {"k":"A","t":"Living"},{"k":"B","t":"Media room"},{"k":"C","t":"Bedroom"},{"k":"D","t":"Hall / stair"},
+  {"k":"E","t":"Outdoor"},{"k":"F","t":"None"}]},
+ {"id":"C14","q":"Manual hold-off duration after someone overrides a scene by hand?","why":"The single biggest source of irritation in an automated house.","rec":"A","opts":[
+  {"k":"A","t":"90 minutes","d":"As drafted."},
+  {"k":"B","t":"30 minutes","d":"Automation returns sooner; may feel pushy."},
+  {"k":"C","t":"Until the next manual action","d":"Automation never reasserts on its own. Maximum respect, risk of a room stuck in a stale state."},
+  {"k":"D","t":"4 hours","d":"Effectively the rest of the evening."}]},
+ {"id":"C15","q":"Should the hold-off end early when the room empties?","rec":"A","opts":[
+  {"k":"A","t":"Yes — after 10 min vacant","d":"As drafted. A fresh arrival gets automation back."},
+  {"k":"B","t":"No — always the full duration","d":"Predictable; the override survives you leaving the room."},
+  {"k":"C","t":"After 20 min vacant","d":"Middle ground."}]},
+ {"id":"C16","q":"Bus B (assured) autonomy target?","rec":"A","opts":[
+  {"k":"A","t":"2 h at 15 W","d":"≈30 Wh usable; covers a normal outage comfortably."},
+  {"k":"B","t":"3 h","d":"Covers a long outage; larger pack per room or a bigger central one."},
+  {"k":"C","t":"1 h","d":"Enough to find a torch and get down the stairs."}]},
+ {"id":"C17","q":"Where does the Bus B battery live?","rec":"B","opts":[
+  {"k":"A","t":"A pack in each RoomBox","d":"Fully distributed, survives anything local; many packs to maintain."},
+  {"k":"B","t":"One central pack feeding an assured 24 V bus","d":"One battery to maintain and test; depends on the assured bus surviving."},
+  {"k":"C","t":"Both — central pack, small local buffer","d":"Most robust, most hardware."}]},
+ {"id":"C18","q":"Egress fallback level when the hardwired relay fires?","rec":"A","opts":[
+  {"k":"A","t":"5%","d":"Clearly visible, dark-adapted eyes cope, long battery life."},
+  {"k":"B","t":"10%","d":"Confident light for an unfamiliar visitor; halves autonomy."},
+  {"k":"C","t":"2%","d":"Just enough to navigate; longest runtime."}]},
+ {"id":"C19","q":"Egress self-test cadence?","rec":"A","opts":[
+  {"k":"A","t":"Monthly, automatic, logged","d":"Capacity trend visible; alerts before failure."},
+  {"k":"B","t":"Quarterly","d":"Less battery wear, slower to spot degradation."},
+  {"k":"C","t":"Manual only","d":"No automatic discharge; relies on you remembering."}]},
+ {"id":"C20","q":"DALI-2 DT8 — where and whether?","rec":"A","opts":[
+  {"k":"A","t":"Above ~20 controlled fixtures","d":"Mains and architectural fixtures on DALI; all tape direct from Z2."},
+  {"k":"B","t":"From the start, everywhere applicable","d":"One addressable system, failure reporting throughout, higher cost per point."},
+  {"k":"C","t":"Never","d":"Direct relay, PWM and 0–10 V only. Simplest, no addressability."}]},
+ {"id":"C21","q":"Circadian ramp by default?","rec":"B","opts":[
+  {"k":"A","t":"On everywhere by default","d":"The house warms and dims through the day without being asked."},
+  {"k":"B","t":"Opt-in per room","d":"On where it helps — bedroom, living — off in utility spaces."},
+  {"k":"C","t":"Off","d":"Scenes only, no background drift."}]},
+ {"id":"C22","q":"Bedroom night level?","rec":"A","opts":[
+  {"k":"A","t":"≤ 1 lx at the floor","d":"Navigable without waking anyone."},
+  {"k":"B","t":"2 lx","d":"Easier to see; may disturb a light sleeper."},
+  {"k":"C","t":"No night light in bedrooms","d":"Egress on the landing only."}]},
+ {"id":"C23","q":"Which linear / architectural lighting types are in the first build?","multi":true,"why":"Picking these narrows the fixture schedule and the conduit count immediately. Continued in C23B.","opts":[
+  {"k":"A","t":"Cove uplight"},{"k":"B","t":"Perimeter slot / shadow gap"},{"k":"C","t":"Under-cabinet"},
+  {"k":"D","t":"Plinth / toe-kick"},{"k":"E","t":"Skirting / step marker"},{"k":"F","t":"Stair tread"},
+  {"k":"G","t":"Handrail"}]},
+ {"id":"C23B","q":"Which feature and outdoor lighting types are in the first build?","multi":true,"opts":[
+  {"k":"A","t":"Wardrobe / drawer"},{"k":"B","t":"Mirror / vanity"},{"k":"C","t":"Shelf / niche"},
+  {"k":"D","t":"Art framing"},{"k":"E","t":"Headboard reading"},{"k":"F","t":"Bathroom niche"},
+  {"k":"G","t":"Outdoor facade graze"},{"k":"H","t":"Outdoor path / step"}]},
+ {"id":"C24","q":"Primary ambient strategy?","rec":"A","opts":[
+  {"k":"A","t":"Cove uplight","d":"Indirect, even, flattering. Needs ceiling detail designed in."},
+  {"k":"B","t":"Downlights","d":"Conventional, cheap, hard shadows and a drilled ceiling."},
+  {"k":"C","t":"Pendants and lamps only","d":"No architectural light; most flexible, least controllable."}]},
+ {"id":"C25","q":"Evening CCT?","rec":"A","opts":[
+  {"k":"A","t":"2700 K"},{"k":"B","t":"2400 K","d":"Warmer, more candle-like."},{"k":"C","t":"2200 K","d":"Very warm; can look dingy on cool-toned walls."}]},
+ {"id":"C26","q":"Morning CCT?","rec":"A","opts":[
+  {"k":"A","t":"4000 K","d":"Alerting without feeling clinical."},
+  {"k":"B","t":"5000 K","d":"Strongest circadian signal, harshest look."},
+  {"k":"C","t":"3500 K","d":"Gentler; weaker morning cue."}]},
+ {"id":"C27","q":"Task illuminance table?","rec":"A","opts":[
+  {"k":"A","t":"Confirm as drafted","d":"500 lx worktop and desk, 300 lx vertical at the vanity."},
+  {"k":"B","t":"Raise kitchen to 750 lx","d":"Serious cooking light."},
+  {"k":"C","t":"Lower throughout","d":"Softer house, more reliance on task lamps."}]},
+ {"id":"C28","q":"Scene set per room?","rec":"A","opts":[
+  {"k":"A","t":"The ten as drafted","d":"Off, Egress, Night, Morning, Day, Evening, Task, Film, Guest, Clean."},
+  {"k":"B","t":"Five core only","d":"Off, Night, Day, Evening, Task. Less to configure and maintain."},
+  {"k":"C","t":"Per-room custom","d":"Each room gets what suits it. Most work, best fit."}]},
+ {"id":"C29","q":"Certified emergency luminaires on the stairs, in addition to BRIDGE egress?","why":"BRIDGE egress is supplementary by design. Stairs are where the real risk is.","rec":"C","opts":[
+  {"k":"A","t":"Yes, certified units on stairs","d":"EN 1838 / EN 60598-2-22 on their own supply, alongside BRIDGE."},
+  {"k":"B","t":"No — BRIDGE egress is enough","d":"Accept the supplementary level."},
+  {"k":"C","t":"Check with the electrician first","d":"Settle what OTSZ actually requires here before deciding."}]},
+ {"id":"C30","q":"What switches mains lamps?","rec":"A","opts":[
+  {"k":"A","t":"Bistable relay per lamp in Z1","d":"As ARCH-002 and the ζ/η families. Manual-first guaranteed in hardware."},
+  {"k":"B","t":"Shelly-class smart relays","d":"What BRIDGE-DN already uses; fast to build, firmware-dependent fail-safe."},
+  {"k":"C","t":"DALI drivers only","d":"No relays; everything addressable and dimmable. Loses the hardware bistable."}]}
+]},
+
+{"id":"D","title":"STD-003 — Presence and identity","note":"Portals, fusion, Trinity, and audio that follows. The weights and thresholds are drafts — correct them.","questions":[
+ {"id":"D01","q":"Default portal instrumentation tier?","rec":"A","opts":[
+  {"k":"A","t":"P-2 at every significant doorway","d":"Direction, count and pet discrimination. Two ToF per door."},
+  {"k":"B","t":"P-1 default, P-2 selectively","d":"Direction everywhere, counting only where it matters. Cheaper, loses the count constraint."},
+  {"k":"C","t":"P-0 + room sensors","d":"Door contacts only. The graph becomes weak and the veto unreliable."}]},
+ {"id":"D02","q":"Which openings get P-3 (portal + mmWave + thermal)?","multi":true,"opts":[
+  {"k":"A","t":"Entry door"},{"k":"B","t":"Hall to living"},{"k":"C","t":"Stair head"},{"k":"D","t":"None"}]},
+ {"id":"D03","q":"ToF module choice?","rec":"C","opts":[
+  {"k":"A","t":"VL53L1X single-zone","d":"Cheap, I²C, one range per sensor. Enough for direction and height."},
+  {"k":"B","t":"VL53L5CX 8×8","d":"Profile and shape; distinguishes abreast crossings. Dearer, more processing."},
+  {"k":"C","t":"Mixed — L5CX at entry, L1X elsewhere","d":"Spend the resolution where crossings are complex."}]},
+ {"id":"D04","q":"ToF pair spacing above the opening?","rec":"A","opts":[
+  {"k":"A","t":"200 mm","d":"As drafted; good direction resolution at walking pace."},
+  {"k":"B","t":"300 mm","d":"Cleaner separation, needs a deeper lintel reveal."},
+  {"k":"C","t":"One sensor + door contact","d":"Direction inferred from contact timing. Cheapest, least reliable."}]},
+ {"id":"D05","q":"Is pet discrimination needed?","why":"It drives the ToF choice and a good deal of the fusion tuning.","opts":[
+  {"k":"A","t":"Yes — animals in the house"},{"k":"B","t":"No animals"},{"k":"C","t":"Possibly in future — design for it"}]},
+ {"id":"D06","q":"The graph veto — a zone with zero counted occupants overrides a lone sensor?","rec":"A","opts":[
+  {"k":"A","t":"Confirm the veto","d":"Structural cure for mmWave ghosting."},
+  {"k":"B","t":"Sensor always wins","d":"Simpler, ghosting returns."},
+  {"k":"C","t":"Graph always wins","d":"Strongest constraint; a missed crossing then blinds a room until reconciliation."}]},
+ {"id":"D07","q":"Sensor–graph disagreement window before the sensor is trusted?","rec":"A","opts":[
+  {"k":"A","t":"60 s"},{"k":"B","t":"30 s","d":"Faster correction, more churn."},{"k":"C","t":"120 s","d":"Stabler, slower to recover from a missed crossing."}]},
+ {"id":"D08","q":"Full reconciliation timeout (everything resets to zero)?","rec":"A","opts":[
+  {"k":"A","t":"15 min"},{"k":"B","t":"30 min","d":"Very conservative."},{"k":"C","t":"5 min","d":"Fast recovery, risk of zeroing a still occupant."}]},
+ {"id":"D09","q":"A portal held open — when do its two zones merge?","rec":"A","opts":[
+  {"k":"A","t":"After 5 min open"},{"k":"B","t":"Never merge","d":"Zones stay distinct; counts drift when doors live open."},
+  {"k":"C","t":"After 2 min","d":"Quicker to reflect reality, more merging churn."}]},
+ {"id":"D10","q":"Vacancy grace periods?","rec":"A","opts":[
+  {"k":"A","t":"Confirm as drafted","d":"2 min hall to 30 min bedroom."},
+  {"k":"B","t":"All shorter","d":"More responsive, more wrong turn-offs."},
+  {"k":"C","t":"All longer","d":"Never caught out, more wasted light and heat."}]},
+ {"id":"D11","q":"mmWave hardware?","rec":"B","opts":[
+  {"k":"A","t":"LD2410 / LD2450 on ESP32","d":"Cheapest, fully open, raw data available, most tuning work."},
+  {"k":"B","t":"Apollo R PRO-1","d":"PoE, dual radar, native ESPHome, local. Fits the architecture exactly."},
+  {"k":"C","t":"Aqara FP2 / FP400","d":"Best zoning and polish; configuration needs the vendor app and cloud."},
+  {"k":"D","t":"Everything Presence One","d":"PIR + mmWave, fully tunable in HA, retail-assembled."}]},
+ {"id":"D12","q":"Which rooms get mmWave?","multi":true,"opts":[
+  {"k":"A","t":"Living"},{"k":"B","t":"Bedroom"},{"k":"C","t":"Study"},{"k":"D","t":"Kitchen"},
+  {"k":"E","t":"Bathroom"},{"k":"F","t":"Hall / stair"},{"k":"G","t":"Every room"}]},
+ {"id":"D13","q":"Bed load cell?","why":"It converts the hardest presence case in the house into the easiest.","rec":"A","opts":[
+  {"k":"A","t":"Yes"},{"k":"B","t":"No"},{"k":"C","t":"Later — reserve the conduit"}]},
+ {"id":"D14","q":"Thermal array (privacy-safe count and position)?","rec":"C","opts":[
+  {"k":"A","t":"Yes, in living and kitchen"},{"k":"B","t":"No"},
+  {"k":"C","t":"Bathroom only","d":"Where a camera is unacceptable but fall detection matters."}]},
+ {"id":"D15","q":"Camera placement?","rec":"A","opts":[
+  {"k":"A","t":"Entry, garage, workshop only","d":"As drafted — highest fusion weight, narrowest deployment."},
+  {"k":"B","t":"Entry only"},{"k":"C","t":"None indoors"},{"k":"D","t":"More — specify in the note"}]},
+ {"id":"D16","q":"Which rooms get CO₂?","multi":true,"why":"CO₂ is the best long-window occupancy evidence in the house.","opts":[
+  {"k":"A","t":"Bedroom"},{"k":"B","t":"Living"},{"k":"C","t":"Study"},{"k":"D","t":"Kitchen"},{"k":"E","t":"Every habitable room"}]},
+ {"id":"D17","q":"Acoustic sensing?","rec":"A","opts":[
+  {"k":"A","t":"Yes, local classification only","d":"On-device events, no audio ever transmitted."},
+  {"k":"B","t":"Level only","d":"Volume threshold, no classification. Least capable, least sensitive."},
+  {"k":"C","t":"No microphones","d":"Rules out voice control and acoustic corroboration."}]},
+ {"id":"D18","q":"WiFi CSI?","rec":"B","opts":[
+  {"k":"A","t":"Pursue now as an experimental signal","d":"Low fusion weight until validated in situ."},
+  {"k":"B","t":"Later","d":"Reserve the idea; build the proven layers first."},
+  {"k":"C","t":"Never"}]},
+ {"id":"D19","q":"Which rooms get UWB anchors?","multi":true,"why":"Three anchors per room, in the L-pattern corners already specified.","opts":[
+  {"k":"A","t":"Living"},{"k":"B","t":"Entry hall"},{"k":"C","t":"Study"},{"k":"D","t":"Bedroom"},{"k":"E","t":"None for now"}]},
+ {"id":"D20","q":"The fusion weight table?","rec":"A","opts":[
+  {"k":"A","t":"Accept as drafted","d":"Tune against real behaviour after commissioning."},
+  {"k":"B","t":"I want specific changes","d":"Say which in the note."},
+  {"k":"C","t":"Start simpler","d":"Three or four sensors only, add weight classes later."}]},
+ {"id":"D21","q":"State thresholds +6 / +2 / −2?","rec":"A","opts":[
+  {"k":"A","t":"Confirm"},{"k":"B","t":"Tighten","d":"Harder to declare occupied; fewer false positives, more false vacancies."},
+  {"k":"C","t":"Loosen","d":"Quicker to respond, more ghosting."}]},
+ {"id":"D22","q":"The Trinity objects?","rec":"A","opts":[
+  {"k":"A","t":"Phone, keychain, wallet","d":"As proposed."},
+  {"k":"B","t":"A different three","d":"Name them in the note — watch, bag, badge?"},
+  {"k":"C","t":"Two is enough","d":"Phone and keychain. Weaker claim, less to carry."}]},
+ {"id":"D23","q":"Trinity tag technology?","rec":"A","opts":[
+  {"k":"A","t":"BLE beacon tags","d":"Cheap, years of battery, works with ESP32 proxies you already have."},
+  {"k":"B","t":"UWB tags","d":"Precise position as well as presence; dearer, shorter battery life."},
+  {"k":"C","t":"NFC — tap only","d":"No passive presence at all; defeats the point of carrying them."},
+  {"k":"D","t":"Mixed","d":"BLE on all three, UWB added to the keychain."}]},
+ {"id":"D24","q":"T3 threshold of 18 points, with at least one active factor?","why":"Three of three tags gives 14 — deliberately short of 18, so tags alone can never unlock a door.","rec":"A","opts":[
+  {"k":"A","t":"Confirm 18 + one active factor"},
+  {"k":"B","t":"Raise it","d":"Two active factors for T3. More secure, more friction."},
+  {"k":"C","t":"Lower it","d":"Convenient, and carried tags start to approach door-opening authority."}]},
+ {"id":"D25","q":"PIN length on the 4×3 matrix?","rec":"B","opts":[
+  {"k":"A","t":"4 digits"},{"k":"B","t":"6 digits","d":"Meaningfully harder to guess, still quick to enter."},
+  {"k":"C","t":"4 digits + lockout escalation","d":"Short PIN, rising delay after failures."}]},
+ {"id":"D26","q":"Behavioural profile retention?","rec":"A","opts":[
+  {"k":"A","t":"90 days raw, aggregates kept","d":"As drafted."},
+  {"k":"B","t":"30 days raw","d":"Less to lose, weaker pattern learning."},
+  {"k":"C","t":"Do not profile at all","d":"Drop the behavioural factor entirely."}]},
+ {"id":"D27","q":"Remote recovery path?","why":"STD-003 §4.4 makes your own server the root of recovery, which makes it a dependency.","rec":"C","opts":[
+  {"k":"A","t":"Use an existing server","d":"Name it in the note."},
+  {"k":"B","t":"Set one up for this","d":"New dependency, deliberately provisioned and monitored."},
+  {"k":"C","t":"No remote recovery — console only","d":"Recovery requires physical access to COMP. Simplest and safest; you must be at home."}]},
+ {"id":"D28","q":"Audio that follows — default behaviour?","rec":"A","opts":[
+  {"k":"A","t":"On, excluding bath and quiet-hours bedroom","d":"As drafted."},
+  {"k":"B","t":"Opt-in per room"},{"k":"C","t":"Off","d":"Per-room audio only, no handoff."}]},
+ {"id":"D29","q":"Quiet hours begin at?","rec":"B","opts":[
+  {"k":"A","t":"22:00"},{"k":"B","t":"23:00"},{"k":"C","t":"Configurable per person","d":"Needs identity at T1+ to apply."}]},
+ {"id":"D30","q":"Speaker layout?","rec":"A","opts":[
+  {"k":"A","t":"Confirm the table","d":"Ceiling for the follow-me layer, wall or floor for the living-room front stage."},
+  {"k":"B","t":"Ceiling everywhere including living","d":"Invisible throughout, no real stereo image anywhere."},
+  {"k":"C","t":"Wall or floor everywhere","d":"Better imaging, visible speakers in every room."}]}
+]}
+
+]}

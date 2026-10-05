@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESPBLOK · CAD Builder v2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap');
+:root {
+  --bg:#15181c;--bg2:#1a1e23;--bg3:#242a31;--panel:#1d2126;
+  --border:#2a313a;--border2:#3a434d;
+  --accent:#ffb300;--accent2:#cc8f00;
+  --warn:#54e0a6;--danger:#ff7676;--info:#6bbcff;
+  --text:#f2f5f8;--text2:#aab4be;--text3:#5a6670;
+  --mono:'JetBrains Mono',monospace;--head:'Saira Condensed',sans-serif;
+  --cell:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:12px;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none;background-image:repeating-linear-gradient(45deg,rgba(255,179,0,.018) 0 14px,transparent 14px 28px);}
+
+/* TOP BAR */
+#topbar{background:var(--panel);border-bottom:1px solid var(--border2);padding:0 12px;height:44px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;}
+#logo{font-family:var(--head);font-size:18px;font-weight:700;color:var(--accent);letter-spacing:2px;white-space:nowrap;}
+#logo span{color:var(--text3);font-weight:400;font-size:11px;margin-left:4px;}
+.sep{color:var(--border2);font-size:14px;}
+.tabs{display:flex;gap:2px;}
+.tab{padding:3px 10px;font-family:var(--mono);font-size:10px;background:transparent;border:1px solid var(--border2);color:var(--text2);cursor:pointer;border-radius:2px;transition:all .15s;}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600;}
+.tab:hover:not(.active){border-color:var(--accent);color:var(--accent);}
+.btn{padding:4px 11px;font-family:var(--mono);font-size:10px;border-radius:2px;cursor:pointer;border:1px solid;transition:all .15s;letter-spacing:.3px;white-space:nowrap;}
+.btn-test{background:transparent;border-color:var(--warn);color:var(--warn);}
+.btn-reset{background:transparent;border-color:var(--danger);color:var(--danger);}
+.btn-save{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600;}
+.btn-wire{background:transparent;border-color:var(--info);color:var(--info);}
+.btn-wire.active{background:var(--info);color:#000;}
+.btn:hover{opacity:.8;}
+.btn:active{transform:scale(.97);}
+#module-counter{font-size:10px;color:var(--text3);letter-spacing:1px;white-space:nowrap;}
+.topbar-right{margin-left:auto;display:flex;gap:6px;align-items:center;}
+
+/* MAIN */
+#main{flex:1;display:flex;overflow:hidden;}
+
+/* LEFT PALETTE */
+#palette{width:200px;background:var(--panel);border-right:1px solid var(--border2);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+#palette-header{padding:8px 10px 5px;font-family:var(--head);font-size:12px;color:var(--text2);letter-spacing:1px;border-bottom:1px solid var(--border);flex-shrink:0;}
+#psearch-wrap{padding:5px 6px;border-bottom:1px solid var(--border);flex-shrink:0;}
+#psearch{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;padding:3px 7px;border-radius:2px;outline:none;}
+#psearch:focus{border-color:var(--accent);}
+#palette-list{flex:1;overflow-y:auto;padding:2px 0;}
+#palette-list::-webkit-scrollbar{width:3px;}
+#palette-list::-webkit-scrollbar-thumb{background:var(--border2);}
+.pg-label{padding:6px 10px 2px;font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;}
+.pi{padding:4px 8px;cursor:grab;border-left:2px solid transparent;transition:all .1s;display:flex;align-items:flex-start;gap:6px;}
+.pi:hover{background:var(--bg3);border-left-color:var(--accent);}
+.pi.dragging{opacity:.4;}
+.pi-dot{width:8px;height:8px;border-radius:1px;margin-top:4px;flex-shrink:0;}
+.pi-info{flex:1;min-width:0;}
+.pi-name{font-family:var(--head);font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pi-sub{font-size:9px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pi-dims{font-size:8px;color:var(--text3);font-family:var(--mono);}
+
+/* CANVAS */
+#canvas-area{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:flex-start;padding:16px;gap:20px;position:relative;background:var(--bg);}
+#canvas-area::-webkit-scrollbar{width:5px;height:5px;}
+#canvas-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.board-label{font-family:var(--head);font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
+#board-wrapper{position:relative;cursor:crosshair;flex-shrink:0;}
+#board-wrapper.drop-target{outline:2px dashed var(--accent);}
+#board-wrapper.wire-mode{cursor:cell;}
+#board-canvas{display:block;}
+#conn-overlay,#pin-overlay{position:absolute;top:0;left:0;pointer-events:none;}
+#board-modules{position:absolute;top:0;left:0;}
+#no-msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text3);font-size:11px;text-align:center;pointer-events:none;line-height:2;}
+
+/* RIGHT INSPECTOR */
+#inspector{width:195px;background:var(--panel);border-left:1px solid var(--border2);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+#insp-header{padding:8px 10px 5px;font-family:var(--head);font-size:12px;color:var(--text2);letter-spacing:1px;border-bottom:1px solid var(--border);flex-shrink:0;}
+#insp-body{flex:1;overflow-y:auto;padding:8px;}
+#insp-body::-webkit-scrollbar{width:3px;}
+#insp-body::-webkit-scrollbar-thumb{background:var(--border2);}
+.irow{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid var(--border);font-size:10px;}
+.ilabel{color:var(--text3);}
+.ival{color:var(--text);text-align:right;font-family:var(--mono);}
+.isec{font-family:var(--head);font-size:10px;color:var(--text3);letter-spacing:1px;padding:6px 0 3px;text-transform:uppercase;}
+.tag{display:inline-block;padding:1px 5px;border-radius:1px;font-size:9px;margin:1px 1px 0 0;}
+.tag-espnow{background:#1e2a1a;color:#54e0a6;border:1px solid #2a3d24;}
+.tag-wifi,.tag-wifi6{background:#1a2333;color:#6bbcff;border:1px solid #263550;}
+.tag-i2c{background:#2a2010;color:#ffb300;border:1px solid #4a3a10;}
+.tag-spi{background:#2a1520;color:#e07090;border:1px solid #4a1a30;}
+.tag-uart{background:#201528;color:#b070d8;border:1px solid #381a4a;}
+.tag-lora,.tag-meshtastic{background:#152828;color:#40d0d0;border:1px solid #1a4444;}
+.tag-ble,.tag-ble5{background:#151e2a;color:#6bbcff;border:1px solid #1a3050;}
+.tag-power{background:#2a1f00;color:#ffb300;border:1px solid #4a3800;}
+.tag-thread,.tag-zigbee{background:#1a1a28;color:#9090d8;border:1px solid #2a2a48;}
+.badge{padding:2px 6px;border-radius:2px;font-size:9px;margin:1px 0;display:block;}
+.badge-ok{background:#101e14;color:var(--warn);border:1px solid #1a3d20;}
+.badge-warn{background:#2a1f00;color:var(--accent);border:1px solid #4a3800;}
+.badge-err{background:#2a1010;color:var(--danger);border:1px solid #4a1818;}
+
+/* BOTTOM LOG */
+#log-bar{height:70px;background:var(--panel);border-top:1px solid var(--border2);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+#log-hdr{padding:3px 10px;font-size:9px;color:var(--text3);letter-spacing:1px;border-bottom:1px solid var(--border);flex-shrink:0;}
+#log-body{flex:1;overflow-y:auto;padding:3px 10px;font-size:9px;line-height:1.6;}
+#log-body::-webkit-scrollbar{width:3px;}
+#log-body::-webkit-scrollbar-thumb{background:var(--border2);}
+.lok{color:var(--accent);}.lwarn{color:var(--warn);}.lerr{color:var(--danger);}.linfo{color:var(--text2);}
+
+/* PLACED MODULE (rendered on canvas via SVG/canvas, not DOM divs) */
+/* Wire mode highlight */
+.wire-candidate{outline:2px solid var(--info) !important;outline-offset:2px;}
+
+/* MODAL */
+#modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;}
+#modal-bg.show{display:flex;}
+#modal{background:var(--panel);border:1px solid var(--border2);border-radius:3px;padding:18px;width:460px;max-height:78vh;overflow-y:auto;}
+#modal h2{font-family:var(--head);font-size:15px;color:var(--accent);margin-bottom:10px;letter-spacing:1px;}
+.mclose{float:right;cursor:pointer;color:var(--danger);font-size:13px;}
+.msec{margin-top:12px;}
+.msec h3{font-family:var(--head);font-size:11px;color:var(--text2);letter-spacing:1px;margin-bottom:4px;border-bottom:1px solid var(--border);padding-bottom:2px;}
+.mitem{padding:3px 0;border-bottom:1px solid var(--border);color:var(--text2);font-size:10px;}
+.mok{color:var(--accent);}.merr{color:var(--danger);}
+
+/* JSON import/export modal */
+#json-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1001;align-items:center;justify-content:center;}
+#json-modal-bg.show{display:flex;}
+#json-modal{background:var(--panel);border:1px solid var(--border2);border-radius:3px;padding:18px;width:520px;max-height:80vh;display:flex;flex-direction:column;gap:10px;}
+#json-modal h2{font-family:var(--head);font-size:15px;color:var(--accent);letter-spacing:1px;}
+#json-ta{flex:1;min-height:200px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);font-family:var(--mono);font-size:10px;padding:8px;border-radius:2px;resize:vertical;outline:none;}
+#json-ta:focus{border-color:var(--accent);}
+.json-btns{display:flex;gap:8px;}
+
+/* Power draw bar */
+#power-bar{font-size:10px;color:var(--text3);padding:2px 10px;background:var(--bg3);border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:12px;align-items:center;}
+.pw-val{color:var(--warn);font-family:var(--mono);}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div id="logo">ESPBLOK <span>// v2.0</span></div>
+  <span class="sep">|</span>
+  <div class="tabs" id="board-tabs">
+    <button class="tab active" onclick="setBoard('single')">SINGLE</button>
+    <button class="tab" onclick="setBoard('triple')">TRIPLE</button>
+    <button class="tab" onclick="setBoard('canvas')">FREE CANVAS</button>
+  </div>
+  <span class="sep">|</span>
+  <div class="tabs" id="wire-tabs">
+    <button class="tab btn-wire" id="wire-btn" onclick="toggleWireMode()">⚡ WIRE</button>
+    <select id="wire-type-sel" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:9px;padding:2px 4px;border-radius:2px;">
+      <option value="I2C">I2C</option>
+      <option value="SPI">SPI</option>
+      <option value="UART">UART</option>
+      <option value="ESP-NOW">ESP-NOW</option>
+      <option value="power">PWR</option>
+      <option value="GND">GND</option>
+      <option value="LoRa">LoRa</option>
+      <option value="custom">custom</option>
+    </select>
+  </div>
+  <div class="topbar-right">
+    <span id="module-counter">0 modules</span>
+    <button class="btn btn-test" onclick="testConnections()">▶ TEST</button>
+    <button class="btn btn-reset" onclick="resetBoard()">⟳ RESET</button>
+    <button class="btn" style="border-color:var(--text3);color:var(--text3);" onclick="showJsonModal()">⇅ CONFIG</button>
+    <button class="btn btn-save" onclick="saveImage()">⬇ PNG</button>
+  </div>
+</div>
+
+<div id="main">
+  <div id="palette">
+    <div id="palette-header">MODULES</div>
+    <div id="psearch-wrap"><input id="psearch" type="text" placeholder="search..." oninput="filterPalette(this.value)"></div>
+    <div id="palette-list"></div>
+  </div>
+
+  <div id="canvas-area">
+    <div class="board-label" id="board-label">SINGLE RAIL · 830pt</div>
+    <div id="board-wrapper">
+      <canvas id="board-canvas"></canvas>
+      <svg id="conn-overlay" style="z-index:4;"></svg>
+      <svg id="pin-overlay" style="z-index:6;pointer-events:none;"></svg>
+      <svg id="wire-overlay" style="z-index:7;position:absolute;top:0;left:0;pointer-events:none;"></svg>
+      <div id="board-modules" style="position:absolute;top:0;left:0;z-index:8;"></div>
+      <div id="no-msg">drag modules from palette to place<br><span style="color:var(--text3);font-size:9px;">right-click module to rotate · Del to delete</span></div>
+    </div>
+  </div>
+
+  <div id="inspector">
+    <div id="insp-header">INSPECTOR</div>
+    <div id="insp-body"><div style="color:var(--text3);font-size:10px;padding:6px 0">Select a module</div></div>
+  </div>
+</div>
+
+<div id="power-bar">
+  <span>EST. DRAW:</span><span class="pw-val" id="pw-total">0 mW</span>
+  <span>|</span>
+  <span>500mAh LiPo ≈</span><span class="pw-val" id="pw-runtime">—</span>
+  <span style="color:var(--text3);font-size:9px;">(heuristic estimate)</span>
+  <span style="margin-left:auto;color:var(--text3);font-size:9px;">snap-to-rail: off · simulation: heuristic · config: JSON import/export</span>
+</div>
+
+<div id="log-bar">
+  <div id="log-hdr">SYSTEM LOG</div>
+  <div id="log-body"><span class="linfo">// ESPBLOK v2 ready — drag, rotate (R), delete (Del), wire (W)</span></div>
+</div>
+
+<div id="modal-bg" onclick="closeModal(event)">
+  <div id="modal">
+    <span class="mclose" onclick="document.getElementById('modal-bg').classList.remove('show')">✕</span>
+    <h2>CONNECTION TEST</h2>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div id="json-modal-bg" onclick="closeJsonModal(event)">
+  <div id="json-modal">
+    <h2>CONFIG IMPORT / EXPORT <span class="mclose" onclick="closeJsonModal({target:document.getElementById('json-modal-bg')})">✕</span></h2>
+    <div style="font-size:10px;color:var(--text2)">Export current layout as JSON, or paste a saved JSON to restore it.</div>
+    <textarea id="json-ta" spellcheck="false"></textarea>
+    <div class="json-btns">
+      <button class="btn btn-save" onclick="exportJson()">EXPORT</button>
+      <button class="btn btn-test" onclick="importJson()">IMPORT</button>
+      <button class="btn btn-reset" onclick="document.getElementById('json-ta').value=''">CLEAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// MODULE DATABASE
+// ══════════════════════════════════════════════════════════
+// pinEdge: which edge the 7 ESPBLOK bus pins sit on (0=bottom, 1=right, 2=top, 3=left)
+// powerMw: estimated power draw in mW at normal operation
+// The 7 ESPBLOK bus pins: GND, 3V3, 5V, SCL, SDA, IO0, IO1
+const MODULES = [
+  {id:'esp32-devkitc',group:'Official Espressif',name:'ESP32 DevKitC V4',short:'ESP32',
+   color:'#1a4a2a',w:11,h:21,desc:'Dual-core 240MHz, 4MB flash',dims:'27.9×53.3mm',pins:38,
+   protocols:['ESP-NOW','WiFi','BLE','UART','I2C','SPI'],power:'3.3V USB-reg',powerMw:150,
+   notes:'Classic dev board. 19-pin each side.',category:'mcu',pinEdge:0},
+  {id:'esp32s3-devkitc',group:'Official Espressif',name:'ESP32-S3 DevKitC-1',short:'S3',
+   color:'#1a5030',w:11,h:27,desc:'S3 dual-core + USB OTG + AI',dims:'27.9×68mm',pins:44,
+   protocols:['ESP-NOW','WiFi','BLE5','UART','I2C','SPI','USB'],power:'3.3V USB-reg',powerMw:200,
+   notes:'Best CORE. USB OTG. 8MB PSRAM option.',category:'mcu',pinEdge:0},
+  {id:'esp32c3-devkitm',group:'Official Espressif',name:'ESP32-C3 DevKitM-1',short:'C3',
+   color:'#1a4838',w:11,h:20,desc:'RISC-V single-core, low power',dims:'27.9×50.8mm',pins:32,
+   protocols:['ESP-NOW','WiFi','BLE5','UART','I2C','SPI','USB'],power:'3.3V USB-reg',powerMw:80,
+   notes:'Best budget node. Ideal satellite.',category:'mcu',pinEdge:0},
+  {id:'esp32s2-devkitm',group:'Official Espressif',name:'ESP32-S2 DevKitM-1',short:'S2',
+   color:'#204038',w:11,h:21,desc:'Single-core USB native, no BLE',dims:'27.9×53.3mm',pins:36,
+   protocols:['ESP-NOW','WiFi','UART','I2C','SPI','USB'],power:'3.3V USB-reg',powerMw:90,
+   notes:'USB HID capable.',category:'mcu',pinEdge:0},
+  {id:'esp32h2-devkitm',group:'Official Espressif',name:'ESP32-H2 DevKitM-1',short:'H2',
+   color:'#202848',w:11,h:21,desc:'Thread/Zigbee/BLE5, RISC-V',dims:'27.9×53.3mm',pins:26,
+   protocols:['Thread','Zigbee','BLE5','UART','I2C','SPI'],power:'3.3V USB-reg',powerMw:70,
+   notes:'802.15.4 mesh. No WiFi. Border router.',category:'mcu',pinEdge:0},
+  {id:'esp32c6-devkitc',group:'Official Espressif',name:'ESP32-C6 DevKitC-1',short:'C6',
+   color:'#282048',w:11,h:21,desc:'WiFi6+BLE5+Thread+Zigbee',dims:'27.9×53.3mm',pins:30,
+   protocols:['ESP-NOW','WiFi6','BLE5','Thread','Zigbee','UART','I2C','SPI'],power:'3.3V USB-reg',powerMw:120,
+   notes:'Best multi-protocol coverage.',category:'mcu',pinEdge:0},
+  {id:'lilygo-t3s3',group:'3rd Party MCU',name:'Lilygo T3S3',short:'T3S3',
+   color:'#3a2010',w:13,h:29,desc:'S3 + LoRa SX1262, e-paper',dims:'33×73mm',pins:38,
+   protocols:['ESP-NOW','WiFi','BLE5','LoRa','UART','I2C','SPI','Meshtastic'],power:'LiPo+USB-C',powerMw:230,
+   notes:'Your Meshtastic board. RADIO+CORE combo.',category:'mcu',pinEdge:0},
+  {id:'waveshare-s3-amoled',group:'3rd Party MCU',name:'WS S3 AMOLED 1.64"',short:'S3+OLED',
+   color:'#103030',w:21,h:17,desc:'S3 + 1.64" AMOLED touch',dims:'54×43mm',pins:36,
+   protocols:['ESP-NOW','WiFi','BLE5','UART','I2C','SPI'],power:'LiPo JST+USB-C',powerMw:260,
+   notes:'ESPBLOK reference board. Display built-in.',category:'mcu',pinEdge:0},
+  {id:'lilygo-tdisplay-s3',group:'3rd Party MCU',name:'Lilygo T-Display S3',short:'TDisp',
+   color:'#182830',w:11,h:32,desc:'S3 + 1.9" LCD + battery',dims:'27.9×80mm',pins:38,
+   protocols:['ESP-NOW','WiFi','BLE5','UART','I2C','SPI'],power:'LiPo+USB-C',powerMw:280,
+   notes:'DISPLAY+MCU combined.',category:'mcu',pinEdge:0},
+  {id:'seeed-xiao-esp32s3',group:'3rd Party MCU',name:'Seeed XIAO ESP32-S3',short:'XIAO',
+   color:'#204028',w:7,h:9,desc:'Ultra-compact 11-pin S3',dims:'17.5×21mm',pins:11,
+   protocols:['ESP-NOW','WiFi','BLE5','UART','I2C','SPI'],power:'3.3V USB-C',powerMw:90,
+   notes:'Smallest S3. Tight satellite builds.',category:'mcu',pinEdge:0},
+  {id:'olimex-esp32-poe',group:'3rd Party MCU',name:'Olimex ESP32-PoE',short:'PoE',
+   color:'#2a1010',w:11,h:27,desc:'ESP32 + Ethernet PoE 802.3af',dims:'27.9×68mm',pins:36,
+   protocols:['ESP-NOW','WiFi','BLE','Ethernet','UART','I2C','SPI'],power:'PoE or USB',powerMw:400,
+   notes:'Wired industrial node.',category:'mcu',pinEdge:0},
+  {id:'tp4056-usbc',group:'Power',name:'TP4056 USB-C Charger',short:'CHRG',
+   color:'#3a2800',w:10,h:6,desc:'1A LiPo charger + protection',dims:'25×15mm',pins:6,
+   protocols:['power'],power:'5V USB-C → LiPo',powerMw:15,
+   notes:'Uniform ESPBLOK charger. Add to every module.',category:'power',pinEdge:1},
+  {id:'mt3608-boost',group:'Power',name:'MT3608 Boost',short:'BOOST',
+   color:'#3a2000',w:11,h:6,desc:'2A adjustable boost to 28V',dims:'28×14mm',pins:6,
+   protocols:['power'],power:'2–24V → adj',powerMw:20,
+   notes:'Generates 5V bus from LiPo.',category:'power',pinEdge:1},
+  {id:'ams1117-33',group:'Power',name:'AMS1117 3.3V',short:'REG3V3',
+   color:'#2a2000',w:6,h:4,desc:'1A LDO 5V→3.3V',dims:'15×10mm',pins:4,
+   protocols:['power'],power:'5V→3.3V 1A',powerMw:5,
+   notes:'Rail converter. Clean 3.3V for MCUs.',category:'power',pinEdge:1},
+  {id:'ina219-power-mon',group:'Power',name:'INA219 Power Monitor',short:'IMON',
+   color:'#2a1a00',w:10,h:6,desc:'I2C V+I sensor',dims:'26×14mm',pins:8,
+   protocols:['I2C','power'],power:'3.3V–5V',powerMw:3,
+   notes:'Addr 0x40–0x4F. Power telemetry.',category:'power',pinEdge:1},
+  {id:'microsd-spi',group:'Storage',name:'microSD SPI',short:'SDCARD',
+   color:'#1a2a38',w:10,h:7,desc:'SPI microSD breakout',dims:'25×18mm',pins:8,
+   protocols:['SPI'],power:'3.3V',powerMw:30,
+   notes:'CS/MOSI/MISO/SCK. STORE module.',category:'storage',pinEdge:0},
+  {id:'at24c256-eeprom',group:'Storage',name:'AT24C256 EEPROM',short:'EEPROM',
+   color:'#182030',w:8,h:6,desc:'32KB I2C EEPROM',dims:'20×15mm',pins:8,
+   protocols:['I2C'],power:'3.3V–5V',powerMw:5,
+   notes:'Addr 0x50–0x57. 1M write cycles.',category:'storage',pinEdge:0},
+  {id:'bme280-env',group:'Sensors',name:'BME280',short:'ENV',
+   color:'#102a18',w:6,h:6,desc:'Temp+humidity+pressure',dims:'15×15mm',pins:6,
+   protocols:['I2C','SPI'],power:'3.3V',powerMw:3,
+   notes:'Addr 0x76/0x77. SENSE core.',category:'sensor',pinEdge:2},
+  {id:'mpu6050-imu',group:'Sensors',name:'MPU-6050 IMU',short:'IMU',
+   color:'#102818',w:8,h:6,desc:'6-axis accel+gyro',dims:'20×15mm',pins:8,
+   protocols:['I2C'],power:'3.3V–5V',powerMw:12,
+   notes:'Addr 0x68/0x69. Motion.',category:'sensor',pinEdge:2},
+  {id:'ds3231-rtc',group:'Sensors',name:'DS3231 RTC',short:'RTC',
+   color:'#201838',w:15,h:9,desc:'Precision I2C RTC + temp',dims:'38×22mm',pins:8,
+   protocols:['I2C'],power:'3.3V (+CR2032)',powerMw:2,
+   notes:'Addr 0x68. CR2032 backup.',category:'sensor',pinEdge:2},
+  {id:'max4466-mic',group:'Sensors',name:'MAX4466 Mic',short:'MIC',
+   color:'#2a1028',w:9,h:6,desc:'Adjustable gain electret mic',dims:'22×14mm',pins:3,
+   protocols:['analog'],power:'2.4V–5.5V',powerMw:8,
+   notes:'Analog out → ESP32 ADC.',category:'sensor',pinEdge:2},
+  {id:'ssd1306-oled',group:'Display',name:'SSD1306 OLED 0.96"',short:'OLED',
+   color:'#0a1a2a',w:11,h:11,desc:'128×64 monochrome I2C',dims:'27×27mm',pins:4,
+   protocols:['I2C'],power:'3.3V–5V',powerMw:30,
+   notes:'Addr 0x3C/0x3D. Status display.',category:'display',pinEdge:0},
+  {id:'pcm5102-dac',group:'Audio',name:'PCM5102 I2S DAC',short:'DAC',
+   color:'#2a0a2a',w:17,h:9,desc:'High-quality I2S stereo DAC',dims:'42×23mm',pins:8,
+   protocols:['I2S'],power:'3.3V–5V',powerMw:80,
+   notes:'AUDIO out. Pairs with MIC.',category:'audio',pinEdge:0},
+  {id:'sx1278-lora',group:'Radio',name:'SX1278 LoRa 433MHz',short:'LoRa',
+   color:'#102828',w:15,h:10,desc:'433/915MHz LoRa transceiver',dims:'38×25mm',pins:10,
+   protocols:['LoRa','SPI','Meshtastic'],power:'3.3V',powerMw:100,
+   notes:'RADIO module. 20km range. Meshtastic.',category:'radio',pinEdge:2},
+  {id:'nrf24l01-rf',group:'Radio',name:'nRF24L01+',short:'2.4G',
+   color:'#10202a',w:12,h:6,desc:'2.4GHz ISM transceiver',dims:'29×16mm',pins:8,
+   protocols:['SPI','RF24'],power:'1.9V–3.6V',powerMw:40,
+   notes:'2Mbit/s. Add 100µF at VCC.',category:'radio',pinEdge:2},
+  {id:'cc2530-zigbee',group:'Radio',name:'CC2530 Zigbee',short:'ZIGBEE',
+   color:'#181828',w:11,h:10,desc:'2.4GHz Zigbee coordinator',dims:'27×25mm',pins:10,
+   protocols:['Zigbee','UART'],power:'2.0V–3.6V',powerMw:60,
+   notes:'Pairs with H2. UART AT cmds.',category:'radio',pinEdge:2},
+];
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let currentBoard = 'single';
+let placedModules = []; // {uid, moduleId, x, y, rotation(0/1/2/3)}
+let wires = [];         // {uid, typeKey, fromUid, toUid, color, label}
+let selectedId = null;
+let dragModuleDef = null;
+let dragOffset = {x:0,y:0};
+let nextId = 1;
+let wireMode = false;
+let wirePending = null; // uid of first selected module in wire mode
+let wireTypeKey = 'I2C';
+const CELL = 10;
+
+// ══════════════════════════════════════════════════════════
+// BOARD CONFIG
+// ══════════════════════════════════════════════════════════
+const BOARDS = {
+  single:{totalW:630, totalH:340, label:'SINGLE RAIL · 830pt'},
+  triple:{totalW:630*3+60, totalH:340, label:'TRIPLE RAIL · 3× 830pt'},
+  canvas:{totalW:1400, totalH:900, label:'FREE CANVAS'}
+};
+
+// ══════════════════════════════════════════════════════════
+// PROTO COLORS
+// ══════════════════════════════════════════════════════════
+const PROTO_COLOR = {
+  'ESP-NOW':'#ffb300','WiFi':'#6bbcff','WiFi6':'#90ccff',
+  'BLE':'#b090e8','BLE5':'#b090e8','I2C':'#ffb300','SPI':'#e070a0',
+  'UART':'#b070d8','LoRa':'#40d0d0','Meshtastic':'#54e0a6',
+  'Thread':'#9090d8','Zigbee':'#9090d8','Ethernet':'#6bbcff',
+  'I2S':'#d06080','analog':'#90a840','power':'#ffb300','GND':'#666',
+  'RF24':'#d07030','custom':'#aab4be'
+};
+function pc(p){return PROTO_COLOR[p]||'#888';}
+
+// ══════════════════════════════════════════════════════════
+// GEOMETRY HELPERS
+// ══════════════════════════════════════════════════════════
+// Returns {w,h} of a placed module accounting for rotation
+function pmDims(pm){
+  const m=MODULES.find(x=>x.id===pm.moduleId);
+  if(!m)return{w:0,h:0};
+  const rot=pm.rotation||0;
+  return (rot===1||rot===3)?{w:m.h*CELL,h:m.w*CELL}:{w:m.w*CELL,h:m.h*CELL};
+}
+// Center of a placed module
+function pmCenter(pm){
+  const d=pmDims(pm);
+  return{x:pm.x+d.w/2, y:pm.y+d.h/2};
+}
+// Edge midpoint for USB-C port (connector face)
+function pmConnector(pm){
+  const m=MODULES.find(x=>x.id===pm.moduleId);
+  if(!m)return pmCenter(pm);
+  const d=pmDims(pm);
+  const rot=pm.rotation||0;
+  // Original pinEdge rotated by pm.rotation
+  const edge=(m.pinEdge+rot)%4; // 0=bottom,1=right,2=top,3=left
+  switch(edge){
+    case 0: return{x:pm.x+d.w/2, y:pm.y+d.h};
+    case 1: return{x:pm.x+d.w,   y:pm.y+d.h/2};
+    case 2: return{x:pm.x+d.w/2, y:pm.y};
+    case 3: return{x:pm.x,       y:pm.y+d.h/2};
+    default:return pmCenter(pm);
+  }
+}
+// 7 ESPBLOK bus pins along the pin edge
+function pmPins(pm){
+  const m=MODULES.find(x=>x.id===pm.moduleId);
+  if(!m)return[];
+  const d=pmDims(pm);
+  const rot=pm.rotation||0;
+  const edge=(m.pinEdge+rot)%4;
+  const labels=['GND','3V3','5V','SCL','SDA','IO0','IO1'];
+  const count=7;
+  const pins=[];
+  for(let i=0;i<count;i++){
+    const t=(i+0.5)/count;
+    let x,y;
+    switch(edge){
+      case 0: x=pm.x+d.w*t; y=pm.y+d.h; break;
+      case 1: x=pm.x+d.w; y=pm.y+d.h*t; break;
+      case 2: x=pm.x+d.w*t; y=pm.y; break;
+      case 3: x=pm.x; y=pm.y+d.h*t; break;
+    }
+    pins.push({label:labels[i],x,y});
+  }
+  return pins;
+}
+
+// ══════════════════════════════════════════════════════════
+// BOARD DRAWING
+// ══════════════════════════════════════════════════════════
+function drawBoard(){
+  const canvas=document.getElementById('board-canvas');
+  const cfg=BOARDS[currentBoard];
+  canvas.width=cfg.totalW; canvas.height=cfg.totalH;
+  ['conn-overlay','pin-overlay','wire-overlay'].forEach(id=>{
+    const s=document.getElementById(id);
+    s.setAttribute('width',cfg.totalW); s.setAttribute('height',cfg.totalH);
+    s.style.width=cfg.totalW+'px'; s.style.height=cfg.totalH+'px';
+  });
+  const ctx=canvas.getContext('2d');
+  if(currentBoard==='canvas'){
+    drawFreeCanvas(ctx,cfg.totalW,cfg.totalH);
+  } else if(currentBoard==='single'){
+    drawBreadboard(ctx,0,0);
+  } else {
+    drawBreadboard(ctx,0,0);
+    drawBreadboard(ctx,630+30,0);
+    drawBreadboard(ctx,630*2+60,0);
+    ctx.fillStyle='#15181c';
+    ctx.fillRect(630,0,30,cfg.totalH);
+    ctx.fillRect(630*2+30,0,30,cfg.totalH);
+  }
+}
+
+function drawFreeCanvas(ctx,w,h){
+  ctx.fillStyle='#13161a';
+  ctx.fillRect(0,0,w,h);
+  // dot grid
+  ctx.fillStyle='#2a313a';
+  for(let x=CELL;x<w;x+=CELL){
+    for(let y=CELL;y<h;y+=CELL){
+      ctx.beginPath();
+      ctx.arc(x,y,0.8,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+  // border
+  ctx.strokeStyle='#3a434d';
+  ctx.lineWidth=1;
+  ctx.strokeRect(0.5,0.5,w-1,h-1);
+}
+
+function drawBreadboard(ctx,ox,oy){
+  const W=630, H=340;
+  const CELL=10;
+  // body — dark blue-grey PCB surface
+  ctx.fillStyle='#1d2126';
+  ctx.beginPath(); rr(ctx,ox,oy,W,H,4); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#3a434d'; ctx.lineWidth=1;
+  ctx.beginPath(); rr(ctx,ox+.5,oy+.5,W-1,H-1,4); ctx.closePath(); ctx.stroke();
+  // bus zones
+  ctx.fillStyle='rgba(15,18,22,.5)';
+  ctx.fillRect(ox+4,oy+4,W-8,58);
+  ctx.fillRect(ox+4,oy+H-62,W-8,58);
+  // center channel
+  ctx.fillStyle='rgba(10,12,16,.85)';
+  ctx.fillRect(ox,oy+148,W,24);
+  // draw holes — top bus (2 rows)
+  for(let rail=0;rail<2;rail++){
+    const hy=oy+(rail+1)*CELL+5;
+    const clr=rail===0?'rgba(140,20,20,.5)':'rgba(20,40,140,.5)';
+    for(let c=0;c<63;c++){
+      const hx=ox+c*CELL+5;
+      ctx.fillStyle=clr;
+      ctx.fillRect(hx-3,hy-2,6,4);
+      hole(ctx,hx,hy,1.6);
+    }
+    ctx.fillStyle=rail===0?'#8b2a2a':'#2a408b';
+    ctx.font=`bold 7px 'JetBrains Mono',monospace`;
+    ctx.fillText(rail===0?'+':'−',ox+2,hy+2.5);
+  }
+  // bottom bus
+  for(let rail=0;rail<2;rail++){
+    const hy=oy+H-(2-rail)*CELL-5;
+    const clr=rail===0?'rgba(140,20,20,.5)':'rgba(20,40,140,.5)';
+    for(let c=0;c<63;c++){
+      const hx=ox+c*CELL+5;
+      ctx.fillStyle=clr;
+      ctx.fillRect(hx-3,hy-2,6,4);
+      hole(ctx,hx,hy,1.6);
+    }
+    ctx.fillStyle=rail===0?'#8b2a2a':'#2a408b';
+    ctx.font=`bold 7px 'JetBrains Mono',monospace`;
+    ctx.fillText(rail===0?'+':'−',ox+2,hy+2.5);
+  }
+  // main holes a-e (top) and f-j (bottom)
+  const busH=38;
+  for(let row=0;row<63;row++){
+    const hx=ox+row*CELL+5;
+    if((row+1)%5===0||row===0){
+      ctx.fillStyle='#3a434d'; ctx.font=`6px 'JetBrains Mono',monospace`;
+      ctx.textAlign='center';
+      ctx.fillText(row+1,hx,oy+busH+7);
+    }
+    for(let col=0;col<5;col++){
+      hole(ctx,hx,oy+busH+(col+1)*CELL+5,1.6);
+      hole(ctx,hx,oy+busH+(col+9)*CELL+27,1.6);
+    }
+  }
+  // row letters
+  const L=['a','b','c','d','e','f','g','h','i','j'];
+  ctx.fillStyle='#4a5560'; ctx.font=`6px 'JetBrains Mono',monospace`; ctx.textAlign='right';
+  for(let c=0;c<5;c++){
+    ctx.fillText(L[c],ox+8,oy+busH+(c+1)*CELL+8);
+    ctx.fillText(L[c+5],ox+8,oy+busH+(c+9)*CELL+30);
+  }
+}
+
+function hole(ctx,x,y,r){
+  ctx.fillStyle='#0e1116';
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#2a313a'; ctx.lineWidth=.4; ctx.stroke();
+}
+function rr(ctx,x,y,w,h,r){
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+  ctx.arcTo(x+w,y,x+w,y+r,r); ctx.lineTo(x+w,y+h-r);
+  ctx.arcTo(x+w,y+h,x+w-r,y+h,r); ctx.lineTo(x+r,y+h);
+  ctx.arcTo(x,y+h,x,y+h-r,r); ctx.lineTo(x,y+r);
+  ctx.arcTo(x,y,x+r,y,r);
+}
+
+// ══════════════════════════════════════════════════════════
+// PALETTE
+// ══════════════════════════════════════════════════════════
+function renderPalette(filter=''){
+  const list=document.getElementById('palette-list');
+  list.innerHTML='';
+  const groups={};
+  MODULES.forEach(m=>{
+    if(filter&&!m.name.toLowerCase().includes(filter.toLowerCase())&&!m.desc.toLowerCase().includes(filter.toLowerCase()))return;
+    if(!groups[m.group])groups[m.group]=[];
+    groups[m.group].push(m);
+  });
+  Object.entries(groups).forEach(([g,mods])=>{
+    const gl=document.createElement('div');
+    gl.className='pg-label'; gl.textContent=g; list.appendChild(gl);
+    mods.forEach(m=>{
+      const el=document.createElement('div');
+      el.className='pi'; el.draggable=true; el.dataset.moduleId=m.id;
+      el.innerHTML=`<div class="pi-dot" style="background:${m.color};border:1px solid rgba(255,255,255,.15)"></div>
+        <div class="pi-info">
+          <div class="pi-name">${m.name}</div>
+          <div class="pi-sub">${m.desc}</div>
+          <div class="pi-dims">${m.dims} · ${m.pins}p · ~${m.powerMw}mW</div>
+        </div>`;
+      el.addEventListener('dragstart',e=>{dragModuleDef=m;e.dataTransfer.effectAllowed='copy';el.classList.add('dragging');});
+      el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+      list.appendChild(el);
+    });
+  });
+}
+function filterPalette(v){renderPalette(v);}
+
+// ══════════════════════════════════════════════════════════
+// DRAG/DROP ONTO BOARD
+// ══════════════════════════════════════════════════════════
+function initBoardDrop(){
+  const w=document.getElementById('board-wrapper');
+  w.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='copy';w.classList.add('drop-target');});
+  w.addEventListener('dragleave',()=>w.classList.remove('drop-target'));
+  w.addEventListener('drop',e=>{
+    e.preventDefault(); w.classList.remove('drop-target');
+    if(!dragModuleDef)return;
+    const rect=w.getBoundingClientRect();
+    const px=Math.round((e.clientX-rect.left)/CELL)*CELL;
+    const py=Math.round((e.clientY-rect.top)/CELL)*CELL;
+    placeModule(dragModuleDef,px,py);
+    dragModuleDef=null;
+  });
+}
+
+function placeModule(m,px,py){
+  const pm={uid:nextId++, moduleId:m.id, x:px, y:py, rotation:0};
+  placedModules.push(pm);
+  render();
+  log('info',`placed ${m.name} @ (${px/CELL},${py/CELL})`);
+  updateCounters();
+}
+
+// ══════════════════════════════════════════════════════════
+// MAIN RENDER
+// ══════════════════════════════════════════════════════════
+function render(){
+  renderModuleDivs();
+  renderPinOverlay();
+  renderWireOverlay();
+}
+
+function renderModuleDivs(){
+  const container=document.getElementById('board-modules');
+  container.innerHTML='';
+  placedModules.forEach(pm=>{
+    const m=MODULES.find(x=>x.id===pm.moduleId);
+    if(!m)return;
+    const d=pmDims(pm);
+    const isSelected=pm.uid===selectedId;
+    const isWirePending=wireMode&&wirePending===pm.uid;
+    const el=document.createElement('div');
+    el.style.cssText=`position:absolute;left:${pm.x}px;top:${pm.y}px;width:${d.w}px;height:${d.h}px;
+      background:${m.color};border-radius:2px;
+      border:${isSelected?'2px solid #ffb300':isWirePending?'2px solid #6bbcff':'1px solid rgba(255,255,255,.18)'};
+      cursor:${wireMode?'pointer':'move'};overflow:hidden;z-index:${isSelected?30:10};
+      transition:box-shadow .15s;
+      box-shadow:${isSelected?'0 0 0 1px #ffb300,0 0 12px rgba(255,179,0,.25)':isWirePending?'0 0 0 2px #6bbcff':'none'};`;
+    el.dataset.uid=pm.uid;
+
+    // Inner content — name, dims, proto tags
+    const minW=d.w, minH=d.h;
+    const showTags=minW>50&&minH>30;
+    const showSub=minH>40;
+    const fontSize=Math.max(7,Math.min(11,d.w/8));
+    const tags=m.protocols.slice(0,3).map(p=>`<span style="font-size:6px;padding:0 3px;border-radius:1px;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);line-height:1.4">${p}</span>`).join('');
+
+    el.innerHTML=`
+      <div style="position:absolute;top:1px;right:2px;font-size:9px;color:rgba(255,80,80,.8);cursor:pointer;z-index:20;padding:1px 3px;" onclick="deleteModule(${pm.uid},event)" title="delete">✕</div>
+      <div style="position:absolute;top:1px;left:2px;font-size:8px;color:rgba(255,255,255,.5);cursor:pointer;z-index:20;padding:1px 3px;" onclick="rotateModule(${pm.uid},event)" title="rotate 90°">↻</div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:4px 2px;gap:1px;">
+        <div style="font-family:'Saira Condensed',sans-serif;font-size:${fontSize}px;font-weight:700;color:rgba(255,255,255,.95);text-align:center;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.short}</div>
+        ${showSub?`<div style="font-size:${Math.max(6,fontSize-2)}px;color:rgba(255,255,255,.45);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.dims}</div>`:''}
+        ${showTags?`<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1px;">${tags}</div>`:''}
+      </div>`;
+
+    if(!wireMode){
+      el.addEventListener('mousedown',e=>startDragPlaced(e,pm.uid));
+    }
+    el.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(wireMode){ handleWireClick(pm.uid); return; }
+      selectModule(pm.uid);
+    });
+    el.addEventListener('contextmenu',e=>{e.preventDefault();rotateModule(pm.uid,e);});
+    container.appendChild(el);
+  });
+  const msg=document.getElementById('no-msg');
+  msg.style.display=placedModules.length===0?'block':'none';
+}
+
+function renderPinOverlay(){
+  const svg=document.getElementById('pin-overlay');
+  svg.innerHTML='';
+  if(wireMode||selectedId===null)return; // only show pins for selected module
+  // Show for ALL modules when in "show all" mode, else just selected
+  const toShow=placedModules.filter(pm=>pm.uid===selectedId);
+  toShow.forEach(pm=>{
+    const pins=pmPins(pm);
+    const conn=pmConnector(pm);
+    const m=MODULES.find(x=>x.id===pm.moduleId);
+    pins.forEach((p,i)=>{
+      // Pin circle
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r','4');
+      c.setAttribute('fill',getPinColor(p.label));
+      c.setAttribute('stroke','rgba(255,255,255,.6)'); c.setAttribute('stroke-width','0.5');
+      svg.appendChild(c);
+      // Pin label
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      // offset label away from module edge
+      const d=pmDims(pm);
+      const rot=(m.pinEdge+(pm.rotation||0))%4;
+      let lx=p.x, ly=p.y;
+      const off=12;
+      if(rot===0){ly+=off;} else if(rot===1){lx+=off;} else if(rot===2){ly-=off;} else {lx-=off;}
+      t.setAttribute('x',lx); t.setAttribute('y',ly);
+      t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle');
+      t.setAttribute('fill','rgba(255,255,255,.8)'); t.setAttribute('font-size','7');
+      t.setAttribute('font-family',"'JetBrains Mono',monospace");
+      t.textContent=p.label;
+      svg.appendChild(t);
+    });
+    // USB-C connector indicator
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    const cw=14, ch=6;
+    rect.setAttribute('x',conn.x-cw/2); rect.setAttribute('y',conn.y-ch/2);
+    rect.setAttribute('width',cw); rect.setAttribute('height',ch);
+    rect.setAttribute('rx','2');
+    rect.setAttribute('fill','#c8860a'); rect.setAttribute('stroke','rgba(255,255,255,.5)');
+    rect.setAttribute('stroke-width','0.8');
+    svg.appendChild(rect);
+    const ct=document.createElementNS('http://www.w3.org/2000/svg','text');
+    ct.setAttribute('x',conn.x); ct.setAttribute('y',conn.y);
+    ct.setAttribute('text-anchor','middle'); ct.setAttribute('dominant-baseline','middle');
+    ct.setAttribute('fill','#000'); ct.setAttribute('font-size','5');
+    ct.setAttribute('font-family',"'JetBrains Mono',monospace");
+    ct.setAttribute('font-weight','bold'); ct.textContent='USB-C';
+    svg.appendChild(ct);
+  });
+}
+
+// Show all pins when "show pins" toggled; also show compact dots always
+function renderAllPinDots(){
+  // tiny dots on every placed module's pin edge (always visible)
+  const svg=document.getElementById('pin-overlay');
+  // we'll append to existing content (called after renderPinOverlay)
+  placedModules.forEach(pm=>{
+    if(pm.uid===selectedId)return; // already handled in detail
+    const pins=pmPins(pm);
+    pins.forEach(p=>{
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r','2.5');
+      c.setAttribute('fill',getPinColor(p.label));
+      c.setAttribute('stroke','rgba(0,0,0,.4)'); c.setAttribute('stroke-width','0.5');
+      c.setAttribute('opacity','0.7');
+      svg.appendChild(c);
+    });
+    // connector dot
+    const conn=pmConnector(pm);
+    const cr=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    const cw=8,ch=4;
+    cr.setAttribute('x',conn.x-cw/2); cr.setAttribute('y',conn.y-ch/2);
+    cr.setAttribute('width',cw); cr.setAttribute('height',ch);
+    cr.setAttribute('rx','1'); cr.setAttribute('fill','#c8860a');
+    cr.setAttribute('opacity','0.6');
+    svg.appendChild(cr);
+  });
+}
+
+function getPinColor(label){
+  const map={GND:'#555',['3V3']:'#e04040',['5V']:'#ffb300',SCL:'#cc8f00',SDA:'#cc8f00',IO0:'#54e0a6',IO1:'#2ab866'};
+  return map[label]||'#888';
+}
+
+function renderWireOverlay(){
+  const svg=document.getElementById('wire-overlay');
+  svg.innerHTML='';
+  // Auto-detected shared-protocol lines (dashed, thin)
+  for(let i=0;i<placedModules.length;i++){
+    for(let j=i+1;j<placedModules.length;j++){
+      const a=MODULES.find(x=>x.id===placedModules[i].moduleId);
+      const b=MODULES.find(x=>x.id===placedModules[j].moduleId);
+      if(!a||!b)continue;
+      const shared=a.protocols.filter(p=>b.protocols.includes(p)&&p!=='power');
+      if(!shared.length)continue;
+      const ca=pmCenter(placedModules[i]), cb=pmCenter(placedModules[j]);
+      const color=pc(shared[0]);
+      const line=makeSvgEl('line',{x1:ca.x,y1:ca.y,x2:cb.x,y2:cb.y,stroke:color,'stroke-width':'1','stroke-dasharray':'4 4',opacity:'0.35'});
+      svg.appendChild(line);
+    }
+  }
+  // Manual wires (solid, thicker)
+  wires.forEach(w=>{
+    const pmA=placedModules.find(p=>p.uid===w.fromUid);
+    const pmB=placedModules.find(p=>p.uid===w.toUid);
+    if(!pmA||!pmB)return;
+    const ca=pmCenter(pmA), cb=pmCenter(pmB);
+    const midX=(ca.x+cb.x)/2, midY=(ca.y+cb.y)/2;
+    // Orthogonal route: L-bend
+    const path=`M${ca.x},${ca.y} L${ca.x},${midY} L${cb.x},${midY} L${cb.x},${cb.y}`;
+    const pe=makeSvgEl('path',{d:path,fill:'none',stroke:w.color,'stroke-width':'1.8','stroke-linecap':'round','stroke-linejoin':'round'});
+    svg.appendChild(pe);
+    // Label
+    const t=makeSvgEl('text',{x:midX,y:midY-4,'text-anchor':'middle',fill:w.color,'font-size':'8','font-family':"'JetBrains Mono',monospace"});
+    t.textContent=w.label;
+    svg.appendChild(t);
+    // Delete button for wire
+    const delG=document.createElementNS('http://www.w3.org/2000/svg','g');
+    delG.setAttribute('style','cursor:pointer;');
+    delG.onclick=()=>{deleteWire(w.uid);};
+    const delCirc=makeSvgEl('circle',{cx:midX,cy:midY+8,r:'6',fill:'rgba(30,10,10,.8)',stroke:'#e04040','stroke-width':'0.8'});
+    const delT=makeSvgEl('text',{x:midX,y:midY+8,'text-anchor':'middle','dominant-baseline':'central',fill:'#e04040','font-size':'8','font-family':"sans-serif"});
+    delT.textContent='✕';
+    delG.appendChild(delCirc); delG.appendChild(delT);
+    // We need pointer-events on the wire overlay SVG for this
+    svg.style.pointerEvents='all';
+    svg.appendChild(delG);
+  });
+  // Wire-mode: show crosshair/candidate highlight handled in renderModuleDivs
+  if(wireMode&&wirePending!==null){
+    const pmA=placedModules.find(p=>p.uid===wirePending);
+    if(pmA){
+      const ca=pmCenter(pmA);
+      const circ=makeSvgEl('circle',{cx:ca.x,cy:ca.y,r:'6',fill:'none',stroke:pc(wireTypeKey),'stroke-width':'1.5','stroke-dasharray':'3 2'});
+      svg.appendChild(circ);
+    }
+  }
+}
+
+function makeSvgEl(tag,attrs){
+  const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+  return el;
+}
+
+// ══════════════════════════════════════════════════════════
+// WIRE MODE
+// ══════════════════════════════════════════════════════════
+function toggleWireMode(){
+  wireMode=!wireMode;
+  wirePending=null;
+  wireTypeKey=document.getElementById('wire-type-sel').value;
+  const btn=document.getElementById('wire-btn');
+  btn.classList.toggle('active',wireMode);
+  document.getElementById('board-wrapper').classList.toggle('wire-mode',wireMode);
+  log(wireMode?'info':'linfo', wireMode?`wire mode ON — ${wireTypeKey} — click two modules to connect`:'wire mode OFF');
+  render();
+}
+
+document.getElementById('wire-type-sel').addEventListener('change',function(){
+  wireTypeKey=this.value;
+  if(wireMode)log('info',`wire type → ${wireTypeKey}`);
+});
+
+function handleWireClick(uid){
+  if(wirePending===null){
+    wirePending=uid;
+    const pm=placedModules.find(p=>p.uid===uid);
+    const m=pm?MODULES.find(x=>x.id===pm.moduleId):null;
+    log('info',`wire: selected ${m?m.short:'?'} — now click second module`);
+    render();
+  } else if(wirePending===uid){
+    wirePending=null; render();
+    log('lwarn','wire: deselected');
+  } else {
+    const pmA=placedModules.find(p=>p.uid===wirePending);
+    const pmB=placedModules.find(p=>p.uid===uid);
+    const mA=pmA?MODULES.find(x=>x.id===pmA.moduleId):null;
+    const mB=pmB?MODULES.find(x=>x.id===pmB.moduleId):null;
+    wires.push({uid:nextId++, typeKey:wireTypeKey, fromUid:wirePending, toUid:uid, color:pc(wireTypeKey), label:wireTypeKey});
+    log('ok',`wire added: ${mA?mA.short:'?'} ↔ ${mB?mB.short:'?'} [${wireTypeKey}]`);
+    wirePending=null;
+    render();
+  }
+}
+
+function deleteWire(uid){
+  wires=wires.filter(w=>w.uid!==uid);
+  log('warn','wire removed');
+  render();
+}
+
+// ══════════════════════════════════════════════════════════
+// MODULE INTERACTION
+// ══════════════════════════════════════════════════════════
+function startDragPlaced(e,uid){
+  e.stopPropagation();
+  const pm=placedModules.find(p=>p.uid===uid);
+  if(!pm)return;
+  selectModule(uid);
+  const rect=document.getElementById('board-wrapper').getBoundingClientRect();
+  dragOffset.x=e.clientX-rect.left-pm.x;
+  dragOffset.y=e.clientY-rect.top-pm.y;
+  let moved=false;
+  function onMove(ev){
+    moved=true;
+    const r=document.getElementById('board-wrapper').getBoundingClientRect();
+    pm.x=Math.max(0,Math.round((ev.clientX-r.left-dragOffset.x)/CELL)*CELL);
+    pm.y=Math.max(0,Math.round((ev.clientY-r.top-dragOffset.y)/CELL)*CELL);
+    render(); renderInspector(MODULES.find(x=>x.id===pm.moduleId),pm);
+  }
+  function onUp(){
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onUp);
+    if(moved)log('info',`moved to (${pm.x/CELL},${pm.y/CELL}) BU`);
+  }
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onUp);
+}
+
+function rotateModule(uid,e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  const pm=placedModules.find(p=>p.uid===uid);
+  if(!pm)return;
+  pm.rotation=((pm.rotation||0)+1)%4;
+  render();
+  if(selectedId===uid) renderInspector(MODULES.find(x=>x.id===pm.moduleId),pm);
+  log('info',`rotated ${pm.rotation*90}°`);
+}
+
+function deleteModule(uid,e){
+  if(e){e.stopPropagation();}
+  const pm=placedModules.find(p=>p.uid===uid);
+  const m=pm?MODULES.find(x=>x.id===pm.moduleId):null;
+  placedModules=placedModules.filter(p=>p.uid!==uid);
+  wires=wires.filter(w=>w.fromUid!==uid&&w.toUid!==uid);
+  if(selectedId===uid){selectedId=null;renderInspector(null);}
+  render(); updateCounters();
+  if(m)log('warn',`removed ${m.name}`);
+}
+
+function selectModule(uid){
+  selectedId=uid;
+  const pm=placedModules.find(p=>p.uid===uid);
+  const m=pm?MODULES.find(x=>x.id===pm.moduleId):null;
+  renderInspector(m,pm);
+  render();
+}
+
+document.getElementById('canvas-area').addEventListener('click',e=>{
+  if(e.target===document.getElementById('canvas-area')||e.target===document.getElementById('board-wrapper')||e.target===document.getElementById('board-canvas')){
+    if(wireMode){wirePending=null;render();return;}
+    selectedId=null; renderInspector(null); render();
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// INSPECTOR
+// ══════════════════════════════════════════════════════════
+function renderInspector(m,pm){
+  const body=document.getElementById('insp-body');
+  if(!m){body.innerHTML=`<div style="color:var(--text3);font-size:10px;padding:5px 0">Select a module</div>`;return;}
+  const rot=pm?pm.rotation||0:0;
+  const d=pm?pmDims(pm):{w:m.w*CELL,h:m.h*CELL};
+  const tagHtml=m.protocols.map(p=>{
+    const k=p.toLowerCase().replace(/[^a-z0-9]/g,'').replace('espnow','espnow').replace('wifi6','wifi').replace('ble5','ble');
+    return`<span class="tag tag-${k}">${p}</span>`;
+  }).join(' ');
+  const pinLabels=['GND','3V3','5V','SCL','SDA','IO0','IO1'];
+  const pinColors=pinLabels.map(getPinColor);
+  const pinDots=pinLabels.map((l,i)=>`<span style="display:inline-flex;align-items:center;gap:2px;font-size:9px;color:rgba(255,255,255,.7);margin:1px 3px 1px 0"><span style="width:6px;height:6px;border-radius:50%;background:${pinColors[i]};display:inline-block"></span>${l}</span>`).join('');
+  // Compatibility
+  const placed=placedModules.map(p=>MODULES.find(x=>x.id===p.moduleId)).filter(Boolean);
+  const others=placed.filter(o=>o.id!==m.id);
+  const compatHtml=others.length?`<div class="isec">COMPAT</div>`+others.map(o=>{
+    const shared=m.protocols.filter(p=>o.protocols.includes(p));
+    const cls=shared.length?'badge-ok':'badge-warn';
+    return`<span class="badge ${cls}">${shared.length?'↔':'✗'} ${o.short}${shared.length?': '+shared.join(', '):''}</span>`;
+  }).join(''):'';
+  body.innerHTML=`
+    <div style="background:${m.color};border-radius:2px;padding:6px;margin-bottom:8px;border:1px solid rgba(255,255,255,.1)">
+      <div style="font-family:'Saira Condensed',sans-serif;font-size:14px;font-weight:700;color:#fff">${m.name}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.55);margin-top:1px">${m.desc}</div>
+    </div>
+    <div class="irow"><span class="ilabel">dims</span><span class="ival">${m.dims}</span></div>
+    <div class="irow"><span class="ilabel">pins</span><span class="ival">${m.pins}</span></div>
+    <div class="irow"><span class="ilabel">BU</span><span class="ival">${m.w}×${m.h}</span></div>
+    <div class="irow"><span class="ilabel">rotation</span><span class="ival">${rot*90}°</span></div>
+    <div class="irow"><span class="ilabel">draw</span><span class="ival" style="color:var(--warn)">~${m.powerMw}mW</span></div>
+    ${pm?`<div class="irow"><span class="ilabel">pos</span><span class="ival">(${pm.x/CELL},${pm.y/CELL})BU</span></div>`:''}
+    <div class="irow"><span class="ilabel">power</span><span class="ival" style="font-size:8px;max-width:105px;text-align:right">${m.power}</span></div>
+    <div class="isec">BUS PINS</div>
+    <div style="padding:2px 0 4px">${pinDots}</div>
+    <div style="font-size:8px;color:var(--text3);margin-bottom:4px">pin edge: ${['bottom','right','top','left'][((m.pinEdge||0)+(pm?pm.rotation||0:0))%4]} · USB-C connector</div>
+    <div class="isec">PROTOCOLS</div>
+    <div style="padding:3px 0">${tagHtml}</div>
+    <div class="isec">NOTES</div>
+    <div style="font-size:9px;color:var(--text2);line-height:1.5;padding:2px 0">${m.notes}</div>
+    ${compatHtml}
+    <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;">
+      <button class="btn" style="font-size:9px;padding:3px 7px;border-color:var(--accent);color:var(--accent);" onclick="rotateModule(${pm?pm.uid:-1},null)">↻ rotate</button>
+      <button class="btn" style="font-size:9px;padding:3px 7px;border-color:var(--danger);color:var(--danger);" onclick="deleteModule(${pm?pm.uid:-1},null);renderInspector(null)">✕ delete</button>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// CONNECTION TEST
+// ══════════════════════════════════════════════════════════
+function testConnections(){
+  if(!placedModules.length){log('warn','nothing placed');return;}
+  const mods=placedModules.map(pm=>MODULES.find(x=>x.id===pm.moduleId)).filter(Boolean);
+  const res={ok:[],warn:[],err:[]};
+  const hasPower=mods.some(m=>m.category==='power');
+  if(!hasPower)res.warn.push('No POWER module — bus rails unregulated');
+  else res.ok.push('Power module present');
+  if(!mods.some(m=>m.id==='tp4056-usbc'))res.warn.push('No TP4056 charger — autonomous backup not covered');
+  // I2C addresses
+  const i2cAddr={bme280:0x76,mpu6050:0x68,ds3231:0x68,ssd1306:0x3C,at24c256:0x50,ina219:0x40};
+  const addrMap={'bme280-env':0x76,'mpu6050-imu':0x68,'ds3231-rtc':0x68,'ssd1306-oled':0x3C,'at24c256-eeprom':0x50,'ina219-power-mon':0x40};
+  const used={};
+  mods.forEach(m=>{if(addrMap[m.id]!==undefined){const a=addrMap[m.id];if(used[a])res.err.push(`I2C 0x${a.toString(16).toUpperCase()} conflict: ${used[a]} + ${m.short}`);else used[a]=m.short;}});
+  if(mods.some(m=>m.id==='ds3231-rtc')&&mods.some(m=>m.id==='mpu6050-imu'))res.err.push('DS3231 + MPU6050 both 0x68 — use MPU AD0 to shift to 0x69');
+  if(mods.some(m=>m.id==='nrf24l01-rf'))res.warn.push('nRF24L01: 3.3V sensitive — add 100µF bypass at VCC');
+  // Bus maps
+  const buses={};
+  ['I2C','SPI','UART','ESP-NOW','LoRa','Zigbee','Thread'].forEach(p=>{
+    const u=mods.filter(m=>m.protocols.includes(p));
+    if(u.length>0)buses[p]=u.map(m=>m.short);
+    if(u.length>1&&p==='I2C')res.ok.push(`I2C bus: ${u.map(m=>m.short).join('↔')}`);
+    if(u.length>1&&p==='SPI')res.ok.push(`SPI: ${u.length} devices — need ${u.length} CS pins`);
+  });
+  // Power estimate
+  const totalMw=mods.reduce((s,m)=>s+(m.powerMw||50),0);
+  const runtime=Math.round(3700*500/totalMw/60);
+  res.ok.push(`Est. draw: ${totalMw}mW — 500mAh LiPo ≈ ${runtime} min (heuristic)`);
+  // Manual wires
+  if(wires.length)res.ok.push(`${wires.length} manual wire${wires.length>1?'s':''} defined`);
+  // Render modal
+  let html='';
+  if(res.ok.length){html+=`<div class="msec"><h3>✓ PASSING</h3>`;res.ok.forEach(r=>html+=`<div class="mitem"><span class="mok">✓</span> ${r}</div>`);html+='</div>';}
+  if(res.warn.length){html+=`<div class="msec"><h3>⚠ WARNINGS</h3>`;res.warn.forEach(r=>html+=`<div class="mitem"><b style="color:var(--warn)">⚠</b> ${r}</div>`);html+='</div>';}
+  if(res.err.length){html+=`<div class="msec"><h3>✕ CONFLICTS</h3>`;res.err.forEach(r=>html+=`<div class="mitem"><span class="merr">✕</span> ${r}</div>`);html+='</div>';}
+  html+=`<div class="msec"><h3>BUS MAP</h3>`;
+  Object.entries(buses).forEach(([p,ns])=>html+=`<div class="mitem"><b style="color:${pc(p)}">${p}</b>: ${ns.join(' → ')}</div>`);
+  html+='</div>';
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal-bg').classList.add('show');
+  log('ok',`test: ${res.ok.length}✓ ${res.warn.length}⚠ ${res.err.length}✕`);
+  res.err.forEach(r=>log('err',r));
+  res.warn.forEach(r=>log('warn',r));
+}
+
+function closeModal(e){if(e.target===document.getElementById('modal-bg'))document.getElementById('modal-bg').classList.remove('show');}
+
+// ══════════════════════════════════════════════════════════
+// JSON CONFIG IMPORT / EXPORT
+// ══════════════════════════════════════════════════════════
+function showJsonModal(){
+  document.getElementById('json-ta').value=JSON.stringify({board:currentBoard,modules:placedModules,wires},null,2);
+  document.getElementById('json-modal-bg').classList.add('show');
+}
+function closeJsonModal(e){if(e.target===document.getElementById('json-modal-bg'))document.getElementById('json-modal-bg').classList.remove('show');}
+function exportJson(){
+  const data=JSON.stringify({board:currentBoard,modules:placedModules,wires},null,2);
+  document.getElementById('json-ta').value=data;
+  const blob=new Blob([data],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`espblok-${Date.now()}.json`;
+  a.click();
+  log('ok','config exported as JSON');
+}
+function importJson(){
+  try{
+    const data=JSON.parse(document.getElementById('json-ta').value);
+    if(data.board)setBoard(data.board);
+    if(Array.isArray(data.modules)){placedModules=data.modules;nextId=Math.max(nextId,...placedModules.map(p=>p.uid+1),1);}
+    if(Array.isArray(data.wires)){wires=data.wires;nextId=Math.max(nextId,...wires.map(w=>w.uid+1),nextId);}
+    render(); updateCounters();
+    document.getElementById('json-modal-bg').classList.remove('show');
+    log('ok',`config imported: ${placedModules.length} modules, ${wires.length} wires`);
+  }catch(err){
+    log('err','JSON parse error: '+err.message);
+    alert('Invalid JSON: '+err.message);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// RESET + SAVE
+// ══════════════════════════════════════════════════════════
+function resetBoard(){
+  if(placedModules.length>0&&!confirm('Reset? All modules and wires will be removed.'))return;
+  placedModules=[]; wires=[]; selectedId=null; wirePending=null; wireMode=false;
+  document.getElementById('wire-btn').classList.remove('active');
+  document.getElementById('board-wrapper').classList.remove('wire-mode');
+  renderInspector(null); render(); updateCounters();
+  log('warn','board reset');
+}
+
+function saveImage(){
+  const boardCanvas=document.getElementById('board-canvas');
+  const W=boardCanvas.width, H=boardCanvas.height;
+  const off=document.createElement('canvas');
+  off.width=W; off.height=H;
+  const ctx=off.getContext('2d');
+  ctx.drawImage(boardCanvas,0,0);
+  // Draw wires SVG
+  const wireSvgEl=document.getElementById('wire-overlay');
+  const svgStr=new XMLSerializer().serializeToString(wireSvgEl);
+  const svgBlob=new Blob([svgStr],{type:'image/svg+xml'});
+  const svgUrl=URL.createObjectURL(svgBlob);
+  const svgImg=new Image();
+  svgImg.onload=()=>{
+    ctx.drawImage(svgImg,0,0);
+    URL.revokeObjectURL(svgUrl);
+    // Draw modules
+    placedModules.forEach(pm=>{
+      const m=MODULES.find(x=>x.id===pm.moduleId);
+      if(!m)return;
+      const d=pmDims(pm);
+      ctx.fillStyle=m.color;
+      ctx.beginPath(); rr(ctx,pm.x,pm.y,d.w,d.h,2); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle='#fff'; ctx.font=`bold ${Math.min(d.w/5,11)}px 'Saira Condensed',sans-serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(m.short,pm.x+d.w/2,pm.y+d.h/2);
+      ctx.fillStyle='rgba(255,255,255,.4)'; ctx.font=`${Math.min(d.w/6,8)}px 'JetBrains Mono',monospace`;
+      ctx.fillText(m.dims,pm.x+d.w/2,pm.y+d.h/2+12);
+      // Pin dots
+      pmPins(pm).forEach(p=>{
+        ctx.fillStyle=getPinColor(p.label);
+        ctx.beginPath(); ctx.arc(p.x,p.y,2.5,0,Math.PI*2); ctx.fill();
+      });
+      // USB-C connector
+      const conn=pmConnector(pm);
+      ctx.fillStyle='#c8860a';
+      ctx.fillRect(conn.x-5,conn.y-3,10,6);
+    });
+    // Watermark
+    ctx.fillStyle='rgba(255,179,0,.25)'; ctx.font='bold 12px Saira Condensed,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='bottom';
+    ctx.fillText('ESPBLOK v2 · BOARD BUILDER',W-6,H-4);
+    const link=document.createElement('a');
+    link.download=`espblok-${Date.now()}.png`;
+    link.href=off.toDataURL('image/png'); link.click();
+    log('ok','PNG exported');
+  };
+  svgImg.src=svgUrl;
+}
+
+// ══════════════════════════════════════════════════════════
+// BOARD SWITCH
+// ══════════════════════════════════════════════════════════
+function setBoard(type){
+  currentBoard=type;
+  document.querySelectorAll('#board-tabs .tab').forEach(t=>{
+    t.classList.toggle('active',t.getAttribute('onclick').includes(`'${type}'`));
+  });
+  document.getElementById('board-label').textContent=BOARDS[type].label;
+  drawBoard(); render();
+  log('info','board: '+BOARDS[type].label);
+}
+
+// ══════════════════════════════════════════════════════════
+// COUNTERS + POWER BAR
+// ══════════════════════════════════════════════════════════
+function updateCounters(){
+  const n=placedModules.length;
+  document.getElementById('module-counter').textContent=`${n} module${n!==1?'s':''}`;
+  const totalMw=placedModules.reduce((s,pm)=>{
+    const m=MODULES.find(x=>x.id===pm.moduleId);
+    return s+(m?m.powerMw:0);
+  },0);
+  document.getElementById('pw-total').textContent=totalMw+' mW';
+  document.getElementById('pw-runtime').textContent=totalMw>0?Math.round(3700*500/totalMw/60)+' min':'—';
+}
+
+// ══════════════════════════════════════════════════════════
+// KEYBOARD
+// ══════════════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(document.activeElement.tagName==='INPUT'||document.activeElement.tagName==='TEXTAREA')return;
+  if(e.key==='Delete'||e.key==='Backspace'){
+    if(selectedId!==null)deleteModule(selectedId,null);
+  }
+  if(e.key==='Escape'){
+    selectedId=null; wirePending=null;
+    if(wireMode)toggleWireMode();
+    renderInspector(null); render();
+  }
+  if(e.key.toLowerCase()==='r'&&selectedId!==null){
+    rotateModule(selectedId,null);
+  }
+  if(e.key.toLowerCase()==='w'){
+    toggleWireMode();
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// LOG
+// ══════════════════════════════════════════════════════════
+function log(level,msg){
+  const c=document.getElementById('log-body');
+  const now=new Date();
+  const ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const span=document.createElement('span');
+  span.className=level; span.textContent=`[${ts}] ${msg}`;
+  c.appendChild(span); c.appendChild(document.createElement('br'));
+  c.scrollTop=c.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  renderPalette();
+  drawBoard();
+  render();
+  initBoardDrop();
+  updateCounters();
+  log('ok','ESPBLOK v2 initialized');
+  log('info',`${MODULES.length} modules · R=rotate · W=wire · Del=delete · right-click=rotate`);
+});
+</script>
+</body>
+</html>

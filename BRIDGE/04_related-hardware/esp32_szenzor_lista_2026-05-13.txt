@@ -1,0 +1,180 @@
+ESP32 SMART HOME — SZENZOR BEVÁSÁRLÓLISTA
+Generálva: 2026. május 13. 02:03
+══════════════════════════════════════════════════════════════
+
+Összesen: 29 szenzor · 5 helyiség
+
+══════════════════════════════════════════════════════════════
+
+
+  📦 EGYÉB
+  ════════════════════════════════════════
+
+  📍 ELŐSZOBA (5 szenzor)
+  ──────────────────────────────────────────────────────────────
+    1. [○] RFID kártyaolvasó
+       Modell : RC522 / MFRC522
+       ESP32  : ESP32 (SPI)
+       Megjegyzés: Tag/kártya alapú beléptetés HA-val
+
+    2. [○] Hőmérséklet + páratartalom szenzor
+       Modell : AHT20 / BME280
+       ESP32  : ESP32-C3 (I²C)
+
+    3. [ ] Ujjlenyomat-olvasó
+       Modell : R503 / AS608
+       ESP32  : ESP32 (UART)
+
+    4. [●] Okos csengő gomb
+       Modell : Nyomógomb + ESP32
+       ESP32  : ESP32-C3
+       Megjegyzés: Értesítés HA-on / telefonon
+
+    5. [ ] Fényérzékelő
+       Modell : BH1750
+       ESP32  : ESP32-C3 (I²C)
+
+
+
+  🏠 FÖLDSZINT
+  ════════════════════════════════════════
+
+  📍 NAPPALI (6 szenzor)
+  ──────────────────────────────────────────────────────────────
+    6. [○] TVOC / AQI érzékelő
+       Modell : ENS160
+       ESP32  : ESP32-C3 (I²C)
+
+    7. [○] Fényérzékelő (automata árnyékoló)
+       Modell : VEML7700
+       ESP32  : ESP32-C3 (I²C)
+       Megjegyzés: Automata árnyékoló / fényerő szabályozás
+
+    8. [○] IR vevő/adó (klíma/TV vezérlés)
+       Modell : TSOP38238 + IR LED
+       ESP32  : ESP32 (RMT)
+
+    9. [●] CO₂ érzékelő
+       Modell : MH-Z19B / SCD40
+       ESP32  : ESP32 (UART/I²C)
+       Megjegyzés: Szellőztetési jelzés, komfort monitoring
+
+   10. [●] Hőmérséklet + páratartalom + légnyomás
+       Modell : BME280
+       ESP32  : ESP32-C3 (I²C)
+
+   11. [ ] Hangasszisztens mikrofon
+       Modell : INMP441
+       ESP32  : ESP32-S3 (I²S)
+
+
+  📍 KONYHA (8 szenzor)
+  ──────────────────────────────────────────────────────────────
+   12. [○] Páratartalom + hőmérséklet
+       Modell : SHT31
+       ESP32  : ESP32-C3 (I²C)
+       Megjegyzés: Elszívó automatikus vezérlés
+
+   13. [○] Energiamérő (hűtő/sütő fogyasztás)
+       Modell : PZEM-004T
+       ESP32  : ESP32 (UART)
+       Megjegyzés: Hűtő / sütő fogyasztás mérése
+
+   14. [○] TVOC levegőminőség érzékelő
+       Modell : CCS811 / ENS160
+       ESP32  : ESP32-C3 (I²C)
+
+   15. [●] Füstérzékelő
+       Modell : MQ-2 / optikai
+       ESP32  : ESP32-C3
+
+   16. [●] CO (szén-monoxid) érzékelő
+       Modell : MQ-7
+       ESP32  : ESP32-C3 (ADC)
+
+   17. [●] Gázszivárgás érzékelő (LPG/propán)
+       Modell : MQ-6
+       ESP32  : ESP32-C3 (ADC)
+       Megjegyzés: Padlótól 10–15 cm-re felszerelve
+
+   18. [●] Vízszivárgás érzékelő
+       Modell : Padlószenzor
+       ESP32  : ESP32-C3 (GPIO)
+       Megjegyzés: Mosogatógép / mosogató csap alá
+
+   19. [●] PIR mozgásérzékelő
+       Modell : HC-SR501
+       ESP32  : ESP32-C3
+
+
+  📍 FÜRDŐSZOBA (FSZ) (6 szenzor)
+  ──────────────────────────────────────────────────────────────
+   20. [○] mmWave radar (statikus jelenlét)
+       Modell : LD2410C
+       ESP32  : ESP32-C3 (UART)
+       Megjegyzés: Jelenlét zuhanyban is
+
+   21. [○] Fényérzékelő
+       Modell : BH1750
+       ESP32  : ESP32-C3 (I²C)
+
+   22. [●] Páratartalom + hőmérséklet
+       Modell : SHT31
+       ESP32  : ESP32-C3 (I²C)
+       Megjegyzés: Ventilátor automata: zuhanyozás után
+
+   23. [●] PIR mozgásérzékelő (IP-védett)
+       Modell : AM312
+       ESP32  : ESP32-C3
+
+   24. [●] Vízszivárgás érzékelő
+       Modell : Padlószenzor
+       ESP32  : ESP32-C3 (GPIO)
+
+   25. [ ] Vízfolyásmérő
+       Modell : YF-S201
+       ESP32  : ESP32-C3 (GPIO pulse)
+       Megjegyzés: Vízfogyasztás tracking
+
+
+  📍 FOLYOSÓ / KÖZLEKEDŐ (4 szenzor)
+  ──────────────────────────────────────────────────────────────
+   26. [○] Fényérzékelő
+       Modell : BH1750
+       ESP32  : ESP32-C3 (I²C)
+
+   27. [○] Hőmérséklet érzékelő
+       Modell : DS18B20 / AHT20
+       ESP32  : ESP32-C3
+
+   28. [●] PIR mozgásérzékelő (lépcsővilágítás)
+       Modell : HC-SR501
+       ESP32  : ESP32-C3
+       Megjegyzés: Lépcsővilágítás automatika
+
+   29. [●] Füstérzékelő (menekülési útvonal)
+       Modell : MQ-2
+       ESP32  : ESP32-C3 (ADC)
+       Megjegyzés: Tűzjelzés menekülési útvonalon
+
+
+══════════════════════════════════════════════════════════════
+
+PRIORITÁS JELÖLÉSEK:
+  [●] MUST-HAVE  — Alapvetően szükséges
+  [○] NICE       — Erősen ajánlott
+  [ ] OPCIONÁLIS — Extra komfort
+
+ESP32 CHIP ÖSSZEFOGLALÓ:
+  ESP32-C3     — Kompakt, Wi-Fi + BLE, 3.3V logika, olcsó alapszenzor csomópont
+  ESP32        — Dupla mag, BT Classic + BLE, Wi-Fi, UART/SPI/I2C/ADC bőven
+  ESP32-S3     — Dupla mag 240MHz, AI/ML, I²S audio, PSRAM, nagy projektek
+  ESP32-CAM    — OV2640 kamera modul, RTSP stream, mozgásérzékelés + kép
+  ESP32-C6     — Wi-Fi 6 + Zigbee + Thread + Matter, okosotthon jövő-proof
+  ESP32-H2     — Zigbee + Thread + Matter, Wi-Fi nélkül, alacsony fogyasztás
+
+FIRMWARE AJÁNLÁS: ESPHome + Home Assistant
+  docs.esphome.io  |  home-assistant.io
+
+══════════════════════════════════════════════════════════════
+Generálta: ESP32 Smart Home Tervező

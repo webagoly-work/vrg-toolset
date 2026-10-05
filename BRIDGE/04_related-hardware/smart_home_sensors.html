@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 Smart Home — Szenzortervező</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Share+Tech+Mono&family=PT+Serif:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ── COLOUR SYSTEM — Institutional document palette ── */
+:root {
+  --bg:       #0e0e0e;       /* near-black, institutional dark */
+  --surface:  #161616;       /* document card surface */
+  --surface2: #1e1e1e;       /* inset / spec cell */
+  --border:   #2f2f2f;       /* dividers */
+  --border2:  #3d3d3d;       /* lighter rule */
+  --accent:   #c8a951;       /* aged amber — clearance / approval */
+  --accent2:  #8c8c8c;       /* cool mid-grey — secondary info */
+  --accent3:  #e05a2b;       /* incident orange — warnings */
+  --accent4:  #a8a8a8;       /* light grey label */
+  --accent5:  #6b6b6b;       /* deep muted */
+  --accent6:  #c8a951;       /* same amber for consistency */
+  --danger:   #cc2c2c;       /* containment breach red */
+  --muted:    #545454;
+  --text:     #d4d0c8;       /* aged paper off-white */
+  --text2:    #8a8680;       /* secondary text */
+  --stamp:    #cc2c2c;       /* classification stamp */
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+  /* subtle paper grain */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* Horizontal rule texture lines across page */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 27px,
+      rgba(200,169,81,0.03) 27px,
+      rgba(200,169,81,0.03) 28px
+    );
+  pointer-events: none; z-index: 0;
+}
+
+/* Worn left margin line */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 80px; bottom: 0;
+  width: 1px;
+  background: rgba(200,169,81,0.06);
+  pointer-events: none; z-index: 0;
+}
+
+.wrapper {
+  position: relative; z-index: 1;
+  max-width: 1340px; margin: 0 auto;
+  padding: 0 24px 120px;
+}
+
+/* ── HEADER ── */
+header {
+  padding: 48px 0 32px;
+  border-bottom: 2px solid var(--border2);
+  margin-bottom: 0;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  position: relative;
+}
+
+/* Top classification bar */
+header::before {
+  content: 'DOCUMENT CLASS: RESTRICTED  //  AUTHORISED PERSONNEL ONLY  //  DO NOT DISTRIBUTE';
+  position: absolute; top: 0; left: 0; right: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: .18em;
+  color: var(--stamp);
+  border-top: 1px solid var(--stamp);
+  border-bottom: 1px solid rgba(204,44,44,.25);
+  padding: 5px 0;
+  text-align: center;
+  opacity: 0.85;
+}
+
+header > div { margin-top: 28px; }
+
+.hdr-eyebrow {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: .25em; text-transform: uppercase; color: var(--accent);
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.hdr-eyebrow::before {
+  content: '▮';
+  font-size: 8px;
+  color: var(--accent);
+}
+
+h1 {
+  font-family: 'Special Elite', serif;
+  font-size: clamp(28px,4.5vw,52px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: .02em;
+  color: var(--text);
+}
+h1 span { color: var(--accent); }
+
+.hdr-pills { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; margin-top: 28px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--accent);
+  padding: 4px 12px; border-radius: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text2);
+}
+.pill-dot { width: 5px; height: 5px; border-radius: 0; transform: rotate(45deg); }
+
+/* ── STICKY COUNTER BAR ── */
+.counter-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,10,.97);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border2);
+  border-top: 1px solid rgba(200,169,81,.2);
+  margin: 0 -24px 44px;
+  padding: 9px 24px;
+}
+.counter-inner { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.counter-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted);
+}
+.counter-num {
+  font-family: 'Special Elite', serif;
+  font-size: 26px; font-weight: 400; color: var(--accent); transition: color .2s;
+  letter-spacing: .05em;
+}
+.counter-num.zero { color: var(--muted); }
+.counter-details { display: flex; gap: 16px; flex-wrap: wrap; margin-left: auto; }
+.counter-room {
+  font-size: 9px; color: var(--text2);
+  display: flex; gap: 5px; align-items: center;
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: .06em;
+}
+.counter-room-dot { width: 5px; height: 5px; border-radius: 0; transform: rotate(45deg); }
+
+.select-all-btn, .clear-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+  padding: 5px 14px; border-radius: 0; cursor: pointer; transition: all .15s; border: 1px solid;
+}
+.select-all-btn {
+  border-color: var(--accent); color: var(--accent);
+  background: rgba(200,169,81,.06);
+}
+.select-all-btn:hover { background: rgba(200,169,81,.14); }
+.clear-btn { border-color: var(--border2); color: var(--muted); background: transparent; }
+.clear-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ── SECTION HEADER ── */
+.ref-section { margin-bottom: 72px; }
+.section-hdr { margin-bottom: 32px; border-bottom: 1px solid var(--border2); padding-bottom: 20px; }
+.section-eyebrow {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: .25em; text-transform: uppercase; color: var(--accent);
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+.section-eyebrow::before {
+  content: '§';
+  font-size: 12px; color: var(--accent); opacity: .7;
+}
+.section-title {
+  font-family: 'Special Elite', serif;
+  font-size: clamp(20px,3vw,30px); font-weight: 400; color: var(--text);
+  letter-spacing: .02em; line-height: 1.15; margin-bottom: 10px;
+}
+.section-desc {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; color: var(--text2); line-height: 1.75; max-width: 640px;
+}
+
+/* ── REFERENCE GRID ── */
+.ref-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(360px,1fr));
+  gap: 1px; background: var(--border); border: 1px solid var(--border2);
+}
+.ref-card {
+  background: var(--surface); padding: 0;
+  display: flex; flex-direction: column; position: relative; overflow: hidden;
+}
+/* Stamped side bar */
+.ref-card::after {
+  content: '';
+  position: absolute; top:0; left:0; width:4px; height:100%;
+  background: var(--rc, var(--accent)); opacity: .55;
+}
+.ref-card-hdr {
+  padding: 14px 16px 12px 20px;
+  display: flex; gap: 12px; align-items: flex-start;
+  border-bottom: 1px solid var(--border);
+}
+.ref-icon {
+  width: 38px; height: 38px; flex-shrink: 0;
+  border-radius: 0; border: 1px solid var(--border2);
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.ref-name {
+  font-family: 'Special Elite', serif;
+  font-size: 14px; font-weight: 400; color: var(--text); line-height: 1.2; margin-bottom: 2px;
+}
+.ref-models {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; color: var(--rc, var(--accent)); letter-spacing: .08em;
+}
+.ref-badge {
+  margin-left: auto; flex-shrink: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .16em; text-transform: uppercase;
+  padding: 2px 7px;
+  border: 1px solid var(--rc, var(--accent));
+  color: var(--rc, var(--accent)); border-radius: 0;
+}
+.ref-body { padding: 12px 16px 12px 20px; flex: 1; }
+.ref-desc {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10.5px; color: var(--text2); line-height: 1.7; margin-bottom: 10px;
+}
+.ref-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 10px; }
+.ref-spec {
+  background: var(--surface2); padding: 6px 8px; border-radius: 0;
+  border-left: 2px solid var(--border2);
+}
+.ref-spec-lbl {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px;
+}
+.ref-spec-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10.5px; color: var(--text); line-height: 1.3;
+}
+.ref-placement {
+  padding: 10px 16px 14px 20px;
+  background: rgba(200,169,81,.03);
+  border-top: 1px solid var(--border);
+}
+.ref-pl-lbl {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+  display: flex; gap: 6px; align-items: center;
+}
+.ref-pl-lbl::before { content: '▸'; font-size: 9px; }
+.ref-rule {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; color: var(--text2); line-height: 1.55;
+  display: flex; gap: 8px; margin-bottom: 3px;
+}
+.ref-rule::before { content: '—'; color: var(--accent5); flex-shrink:0; }
+.ref-rule.warn { color: var(--accent3); }
+.ref-rule.warn::before { content: '!'; color: var(--accent3); font-weight: 700; }
+
+/* ── FLOOR SECTIONS ── */
+.floor-section { margin-bottom: 64px; }
+.floor-label {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
+  border-bottom: 1px solid var(--border2); padding-bottom: 14px;
+  position: relative;
+}
+/* Horizontal classification line */
+.floor-label::before {
+  content: '';
+  position: absolute; bottom: -1px; left: 0;
+  width: 60px; height: 2px;
+  background: currentColor;
+  opacity: .4;
+}
+.floor-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; font-weight: 400; letter-spacing: .22em; text-transform: uppercase;
+  padding: 4px 12px; border: 1px solid currentColor; border-radius: 0;
+}
+.floor-tag.ground  { color: #8c8c8c; }
+.floor-tag.upper   { color: var(--accent); }
+.floor-tag.basement{ color: var(--accent3); }
+.floor-tag.outdoor { color: #7aaa7a; }
+.floor-title {
+  font-family: 'Special Elite', serif;
+  font-size: 22px; font-weight: 400; color: var(--text); letter-spacing: .03em;
+}
+.floor-select-all {
+  margin-left: auto;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .15em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 0; cursor: pointer; transition: all .15s;
+  border: 1px solid var(--border2); color: var(--muted); background: transparent;
+}
+.floor-select-all:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── ROOM GRID ── */
+.rooms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px,1fr)); gap: 12px; }
+
+/* ── ROOM CARD ── */
+.room-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 0; overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+  position: relative;
+}
+/* Corner notch top-right — file tab effect */
+.room-card::before {
+  content: '';
+  position: absolute; top: 0; right: 0;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 16px 16px 0;
+  border-color: transparent var(--bg) transparent transparent;
+  z-index: 2;
+}
+.room-card:hover {
+  border-color: var(--rc, var(--accent));
+  box-shadow: inset 0 0 0 1px rgba(200,169,81,.04);
+}
+.room-card-hdr {
+  padding: 14px 18px 11px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,255,255,.015) 0%, transparent 100%);
+}
+.room-icon-title { display: flex; align-items: center; gap: 10px; }
+.room-icon {
+  width: 36px; height: 36px; border-radius: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;
+  background: var(--surface2); border: 1px solid var(--border2);
+}
+.room-name {
+  font-family: 'Special Elite', serif;
+  font-weight: 400; font-size: 15px; color: var(--text); line-height: 1.2;
+}
+.room-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; margin-top: 2px;
+}
+.room-count-wrap { text-align: right; }
+.room-checked-count {
+  font-family: 'Special Elite', serif;
+  font-size: 24px; font-weight: 400;
+  color: var(--rc, var(--accent)); line-height: 1; transition: color .2s;
+}
+.room-checked-count.zero { color: var(--border2); }
+.room-count-lbl {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase;
+}
+.room-select-all-wrap {
+  padding: 5px 18px;
+  border-bottom: 1px dashed var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,.008);
+}
+.room-select-all {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); background: none; border: none; cursor: pointer; padding: 2px 0; transition: color .15s;
+}
+.room-select-all:hover { color: var(--rc, var(--accent)); }
+.room-total-lbl {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; color: var(--border2); letter-spacing: .06em;
+}
+
+/* ── SENSOR CATEGORY ── */
+.sensor-cat { margin-top: 2px; }
+.sensor-cat-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted);
+  padding: 8px 18px 5px; display: flex; align-items: center; gap: 10px;
+}
+.sensor-cat-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── CHECKBOX ROW ── */
+.sensor-row {
+  display: flex; align-items: flex-start; gap: 10px; padding: 5px 18px;
+  cursor: pointer; transition: background .1s; user-select: none;
+}
+.sensor-row:hover { background: rgba(200,169,81,.03); }
+.sensor-row input[type="checkbox"] { display: none; }
+.cb-box {
+  width: 14px; height: 14px; flex-shrink: 0; border-radius: 0; margin-top: 2px;
+  border: 1.5px solid var(--border2); background: transparent;
+  transition: border-color .12s, background .12s;
+  display: flex; align-items: center; justify-content: center;
+}
+.sensor-row:hover .cb-box { border-color: var(--rc, var(--accent)); }
+.sensor-row input:checked ~ .cb-box {
+  background: var(--rc, var(--accent));
+  border-color: var(--rc, var(--accent));
+}
+.sensor-row input:checked ~ .cb-box::after {
+  content: '✓'; font-size: 9px; color: #000; font-weight: 900; line-height: 1;
+}
+.cb-content { flex: 1; min-width: 0; }
+.cb-name {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11.5px; color: var(--text); line-height: 1.3;
+}
+.cb-meta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; margin-top: 2px; }
+.cb-model {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; color: var(--muted);
+}
+.cb-esp {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .08em;
+  padding: 1px 5px; border-radius: 0;
+  border: 1px solid rgba(200,169,81,.25);
+  color: var(--accent); background: rgba(200,169,81,.05);
+  white-space: nowrap;
+}
+.cb-priority {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 1px 5px; border-radius: 0;
+}
+.cb-priority.must {
+  background: rgba(200,169,81,.1); color: var(--accent);
+  border: 1px solid rgba(200,169,81,.25);
+}
+.cb-priority.nice {
+  background: rgba(140,140,140,.08); color: var(--accent2);
+  border: 1px solid rgba(140,140,140,.2);
+}
+.cb-priority.opt {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border);
+}
+.cb-note {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9.5px; color: var(--muted); font-style: italic;
+  margin-top: 1px; line-height: 1.4;
+}
+
+/* ── EXPORT BAR ── */
+.export-zone {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: rgba(8,8,8,.97);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border2);
+  box-shadow: 0 -1px 0 0 rgba(200,169,81,.12);
+  padding: 14px 24px;
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+}
+/* Classification footer line */
+.export-zone::before {
+  content: 'AUTHORISED ACCESS ONLY — RETAIN FOR AUDIT';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--stamp) 0px, var(--stamp) 12px,
+    transparent 12px, transparent 18px
+  );
+  opacity: .35;
+}
+.export-summary {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10.5px; color: var(--text2);
+}
+.export-summary strong { color: var(--text); font-size: 15px; font-family: 'Special Elite', serif; }
+.export-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-weight: 400; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  padding: 11px 30px; border-radius: 0; cursor: pointer; transition: all .18s;
+  border: 1px solid var(--accent); color: #0e0e0e; background: var(--accent);
+  margin-left: auto; white-space: nowrap;
+}
+.export-btn:hover { background: #dfc060; border-color: #dfc060; }
+.export-btn:active { transform: translateY(1px); }
+.export-btn:disabled { opacity: .28; cursor: not-allowed; }
+.export-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.export-leg-item {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; color: var(--text2); letter-spacing: .06em;
+}
+
+/* ── MISC ── */
+@media (max-width: 700px) {
+  .rooms-grid, .ref-grid { grid-template-columns: 1fr; }
+  header { flex-direction: column; align-items: flex-start; }
+  .hdr-pills { align-items: flex-start; }
+  .ref-specs { grid-template-columns: 1fr; }
+  .counter-details { display: none; }
+  .export-zone { flex-direction: column; align-items: flex-start; }
+  .export-btn { margin-left: 0; width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- HEADER -->
+<header>
+  <div>
+    <div class="hdr-eyebrow">ESP32 Smart Home Tervező</div>
+    <h1>Szenzortérkép<br><span>& Bevásárlólista Generátor</span></h1>
+  </div>
+  <div class="hdr-pills">
+    <div class="pill"><span class="pill-dot" style="background:var(--accent)"></span> Emeletes családi ház · 100–150 m²</div>
+    <div class="pill"><span class="pill-dot" style="background:var(--accent2)"></span> ESPHome / Home Assistant kompatibilis</div>
+    <div class="pill"><span class="pill-dot" style="background:var(--accent)"></span> Jelöld be amit szeretnél · Töltsd le a listát</div>
+  </div>
+</header>
+
+<!-- STICKY COUNTER BAR -->
+<div class="counter-bar">
+  <div class="counter-inner">
+    <div>
+      <div class="counter-label">Kijelölt szenzorok</div>
+      <div class="counter-num zero" id="totalCount">0</div>
+    </div>
+    <div class="counter-details" id="roomCounters"></div>
+    <button class="select-all-btn" onclick="selectAll()">Összes kijelölése</button>
+    <button class="clear-btn" onclick="clearAll()">Törlés</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SZENZOR REFERENCIA SZEKCIÓ
+════════════════════════════════════ -->
+<div class="ref-section">
+  <div class="section-hdr">
+    <div class="section-eyebrow">Szenzor Referencia</div>
+    <div class="section-title">Szenzortípusok & Elhelyezési Útmutató</div>
+    <p class="section-desc">Minden szenzortípus leírása, technikai adatai és helyes telepítési irányelvei. A megfelelő elhelyezés legalább annyira fontos, mint a szenzor minősége.</p>
+  </div>
+  <div class="ref-grid">
+
+    <div class="ref-card" style="--rc:#8c9aaa">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">🔴</div>
+        <div><div class="ref-name">PIR Mozgásérzékelő</div><div class="ref-models">HC-SR501 · AM312 · HC-SR505</div></div>
+        <div class="ref-badge">Mozgás</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">Passzív infravörös érzékelő: mozgó hőforrásokat (emberi test) detektál. Csak mozgást érzékel — statikusan ülő személy nem triggereli. Gyors, olcsó, alacsony fogyasztású.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">Hatótáv</div><div class="ref-spec-val">5–12 m</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Látószög</div><div class="ref-spec-val">100–120°</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">Digital GPIO</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Feszültség</div><div class="ref-spec-val">3.3–5V</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">Magasság: 2,0–2,5 m, sarokba szerelve a legjobb</div>
+        <div class="ref-rule">Mozgásra merőlegesen a legjobb — oldalirányú mozgást érzékeli</div>
+        <div class="ref-rule warn">Kerülni: légkondicionáló, radiátor, tűzhely, közvetlen napfény közelében</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#c8a951">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">📡</div>
+        <div><div class="ref-name">mmWave Radar (Jelenlét)</div><div class="ref-models">LD2410 · LD2410C · LD2450</div></div>
+        <div class="ref-badge">Jelenlét</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">24 GHz FMCW radar: statikus és mozgó embert egyaránt érzékel, légzés mikromozgásait is. Alvó, ülő, fekvő személy is detektálható. ESPHome natív UART támogatás.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">Hatótáv</div><div class="ref-spec-val">0,2–6 m</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Látószög</div><div class="ref-spec-val">±60° (120°)</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">UART + BT</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Feszültség</div><div class="ref-spec-val">5V (3.3V logika)</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">1,5–2,5 m magasan, vagy mennyezeten (plafon konfig)</div>
+        <div class="ref-rule">Üveget, vékony falapot átlát — falba rejthető</div>
+        <div class="ref-rule warn">Érzékenységi gate-eket ESPHome-ban testre kell szabni</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#a89878">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">🌡️</div>
+        <div><div class="ref-name">Hőmérséklet & Páratartalom</div><div class="ref-models">BME280 · SHT31 · AHT20 · BME680</div></div>
+        <div class="ref-badge">Környezet</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">BME280: hőmérséklet ±1°C, páratartalom ±3% RH, légnyomás mérés I²C-n. BME680 ezen felül VOC/AQI indexet is számol. SHT31 a legpontosabb páraszenzor.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">Pontosság (T)</div><div class="ref-spec-val">±1,0°C</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Pontosság (RH)</div><div class="ref-spec-val">±3% RH</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">I²C / SPI</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Feszültség</div><div class="ref-spec-val">3.3V</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">1,2–1,5 m magasan, szabad légáramlás szükséges</div>
+        <div class="ref-rule">ESP32 board hőkisugárzásától min. 5–10 cm távolságra</div>
+        <div class="ref-rule warn">Kerülni: ablak, ajtó, szellőző, közvetlen napfény közelében</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#e05a2b">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">💨</div>
+        <div><div class="ref-name">CO₂ Érzékelő (NDIR)</div><div class="ref-models">MH-Z19B · MH-Z21 · SCD40 · SCD41</div></div>
+        <div class="ref-badge">Levegő</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">NDIR elven mér. 400 ppm = friss levegő · 800+ ppm = szellőztetés kell · 1200+ ppm = kognitív teljesítmény romlik. Alvásminőség, szellőztetési automata alapja.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">Tartomány</div><div class="ref-spec-val">400–5000 ppm</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Pontosság</div><div class="ref-spec-val">±50 ppm ±5%</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">UART / I²C</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Bemelegedés</div><div class="ref-spec-val">~3 perc</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">1,2–1,5 m — légzési zóna magassága (CO₂ padló felé süllyed)</div>
+        <div class="ref-rule">Min. 1,5 m-re a munkaállomástól, legalább 1 m-re az ajtótól</div>
+        <div class="ref-rule warn">Kerülni: ablak, szellőző közvetlen közelében (hígítja a mérést)</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#cc4444">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">🔥</div>
+        <div><div class="ref-name">Füstérzékelő</div><div class="ref-models">MQ-2 · MQ-135 · optikai</div></div>
+        <div class="ref-badge">Tűz</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">Füst felfelé áramlik és a mennyezet közelében gyűlik. MQ-2: füst, LPG, metán, alkohol egyaránt érzékel. Minden szintre és hálószoba közelébe kötelező.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">Detektál</div><div class="ref-spec-val">Füst, LPG, gőz</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">Analog + Digital</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Feszültség</div><div class="ref-spec-val">5V</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Bemelegedés</div><div class="ref-spec-val">20–30 mp</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">Mennyezeten vagy mennyezettől max. 30 cm-re a falon</div>
+        <div class="ref-rule">Minden szinten: lépcsőn, folyosón, hálószobák közelében</div>
+        <div class="ref-rule warn">Kerülni: konyha légterében (gőz/sütésfüst hamis riasztás) · sarokban (holt légtér)</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#c8a040">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">⚠️</div>
+        <div><div class="ref-name">CO Szén-monoxid Érzékelő</div><div class="ref-models">MQ-7 · MQ-9 · elektrokémiai</div></div>
+        <div class="ref-badge">Biztonság</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">CO szinte azonos sűrűségű a levegővel — egyenletesen terjed, a magasság kevésbé kritikus. Szagtalan, íztelen: detektálás nélkül észrevehetetlen. Kazán, gázfűtés, garázs esetén életmentő.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">Veszélyes szint</div><div class="ref-spec-val">50+ ppm (tartós)</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">Analog GPIO</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Feszültség</div><div class="ref-spec-val">5V</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Élettartam</div><div class="ref-spec-val">5–7 év</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">~1,5 m magasság (szemmagasság) — CO egyenletesen terjed</div>
+        <div class="ref-rule">Minden szinten; gázkészüléktől 3 m-en belül, de nem közvetlenül mellette</div>
+        <div class="ref-rule warn">Kerülni: fürdőszoba, konyha közvetlenül (pára interferencia)</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#d06030">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">💥</div>
+        <div><div class="ref-name">Gázszivárgás Érzékelő</div><div class="ref-models">MQ-6 (LPG) · MQ-4 (metán)</div></div>
+        <div class="ref-badge">Biztonság</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">Elhelyezés gázsűrűség szerint: LPG/propán nehezebb → padló közelben. Metán/földgáz könnyebb → mennyezet közelben. Konyha és kazánhelyiség legkritikusabb.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">LPG/Propán</div><div class="ref-spec-val">Nehezebb (padló)</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Metán/Földgáz</div><div class="ref-spec-val">Könnyebb (plafon)</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">Analog + Digital</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Feszültség</div><div class="ref-spec-val">5V</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">LPG (MQ-6): padlótól 10–15 cm — gáz padlón gyűlik</div>
+        <div class="ref-rule">Metán (MQ-4): mennyezettől 30 cm-en belül</div>
+        <div class="ref-rule warn">Légáramlat közelében hamis negatívot adhat (hígítja)</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#7a9ea8">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">💧</div>
+        <div><div class="ref-name">Vízszivárgás Érzékelő</div><div class="ref-models">Kapacitív padlószenzor · kábeles</div></div>
+        <div class="ref-badge">Vízvédelem</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">Két érintkező közt elfolyó vezető vizet érzékel. Legolcsóbb "katasztrófa megelőző" megoldás. Mosógép, bojler, WC tartály, mosogatógép, radiátor alá kötelező.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">Elv</div><div class="ref-spec-val">Vezető kapcsolat</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">Digital GPIO</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Feszültség</div><div class="ref-spec-val">3.3–5V</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Ár</div><div class="ref-spec-val">~0,5–2 EUR</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">Közvetlenül a padlón, ahol az első csepegés megjelenne</div>
+        <div class="ref-rule">Bojler/vízmelegítő tálca mélypontján</div>
+        <div class="ref-rule warn">Ne a padlólefolyó mellé — víz elvezet mielőtt érintkezne</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#c8a951">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">☀️</div>
+        <div><div class="ref-name">Fényérzékelő (Lux)</div><div class="ref-models">BH1750 · VEML7700 · TSL2591 · LDR</div></div>
+        <div class="ref-badge">Komfort</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">Megvilágítottságot mér lux-ban. Automata fényerő, redőnyvezérlés és napfelkelte-napnyugta automata alapja. VEML7700: 0,004–120 000 lux rendkívül tág tartomány.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">Tartomány</div><div class="ref-spec-val">0,004–120 000 lux</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">I²C / Analog</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Feszültség</div><div class="ref-spec-val">3.3V</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Pontosság</div><div class="ref-spec-val">±5% (digitális)</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">Természetes fényforrás felé nézve (ablak iránya), de nem közvetlen napfényen</div>
+        <div class="ref-rule">1,5–2 m magasságon, takarásmentesen</div>
+        <div class="ref-rule warn">Közvetlen izzóra nézve telítésbe megy</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#9090b8">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">🚪</div>
+        <div><div class="ref-name">Ajtó & Ablak Kontakt</div><div class="ref-models">Mágneses reed · MC-38</div></div>
+        <div class="ref-badge">Biztonság</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">Reed kapcsoló + mágnes pár. Mágnes eltávolodásakor GPIO interrupt. Klíma leállítás nyitott ablaknál, riasztás, jelenlétdetektálás alapja. Passzív fogyasztás: ~0 mW.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">Elv</div><div class="ref-spec-val">Reed switch</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Aktiválás</div><div class="ref-spec-val">5–15 mm</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">Digital N.O./N.C.</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Fogyasztás</div><div class="ref-spec-val">~0 mW (passzív)</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">Szenzor a fix keretbe, mágnes a mozgó szárnyba — 5–10 mm résre</div>
+        <div class="ref-rule">Ablakra sarokban, ajtóra felső sarokba (legtisztább trigger)</div>
+        <div class="ref-rule warn">Fém keret mágneses interferenciát okozhat — tesztelj!</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#b89040">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">⚡</div>
+        <div><div class="ref-name">Energiamérő</div><div class="ref-models">PZEM-004T · INA226 · SCT-013</div></div>
+        <div class="ref-badge">Energia</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">PZEM-004T: AC feszültség, áram, teljesítmény, fogyasztás UART-on. SCT-013: nem invazív klesztenező, kábel köré csípve. INA226: DC mérés (napelem, akkumulátor).</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">AC pontosság</div><div class="ref-spec-val">±0,5% (PZEM)</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">PZEM max.</div><div class="ref-spec-val">100A</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">UART / I²C</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">SCT típus</div><div class="ref-spec-val">Nem invazív</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">PZEM: főelosztón belül, mért körök csatlakozásánál</div>
+        <div class="ref-rule">SCT: csak az egyenáramú fázisvezetékre (semleges NÉLKÜL)</div>
+        <div class="ref-rule warn">Elektromos szekrény munkát csak villanyszerelő végezhet!</div>
+      </div>
+    </div>
+
+    <div class="ref-card" style="--rc:#7aaa7a">
+      <div class="ref-card-hdr">
+        <div class="ref-icon">🌱</div>
+        <div><div class="ref-name">Talajnedvesség</div><div class="ref-models">SEN0308 (kapacitív) · YL-69 (rezisztív)</div></div>
+        <div class="ref-badge">Kert</div>
+      </div>
+      <div class="ref-body">
+        <div class="ref-desc">Kapacitív (SEN0308): dielektromos állandót mér, nem korrodál, IP65, tartós. Rezisztív (YL-69): olcsóbb, de elektrolízissel néhány hónap alatt tönkremegy. Automata öntözés alapja.</div>
+        <div class="ref-specs">
+          <div class="ref-spec"><div class="ref-spec-lbl">Kapacitív élettartam</div><div class="ref-spec-val">Évek</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">IP védelem</div><div class="ref-spec-val">IP65 (SEN0308)</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Interfész</div><div class="ref-spec-val">Analog ADC</div></div>
+          <div class="ref-spec"><div class="ref-spec-lbl">Feszültség</div><div class="ref-spec-val">3.3–5V</div></div>
+        </div>
+      </div>
+      <div class="ref-placement">
+        <div class="ref-pl-lbl">Elhelyezés</div>
+        <div class="ref-rule">Gyökérzóna mélységébe: kertben 5–15 cm, cserépben 3–8 cm</div>
+        <div class="ref-rule">Elektróda teljesen talajba süllyesztve, vízszintesen</div>
+        <div class="ref-rule warn">Rezisztív szenzort NE hagyd folyamatosan áram alatt — kalibrálás szükséges</div>
+      </div>
+    </div>
+
+  </div><!-- /ref-grid -->
+</div><!-- /ref-section -->
+
+<!-- ═══════════════════════════════════
+     FLOOR: FÖLDSZINT
+════════════════════════════════════ -->
+<div class="floor-section" id="floor-ground">
+  <div class="floor-label">
+    <span class="floor-tag ground">Földszint</span>
+    <span class="floor-title">Ground Floor — Nappali zóna</span>
+    <button class="floor-select-all" onclick="selectFloor('floor-ground')">Szint kijelölése</button>
+  </div>
+  <div class="rooms-grid">
+
+    <!-- ELŐSZOBA -->
+    <div class="room-card" style="--rc:#8c9aaa" data-room="Előszoba">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🚪</div><div><div class="room-name">Előszoba / Bejárat</div><div class="room-sub">Entrée · ~6–8 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-eloszo">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap">
+        <button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button>
+        <span class="room-total-lbl" id="tot-eloszo"></span>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Mozgás & Jelenlét</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Előszoba" data-name="PIR mozgásérzékelő" data-model="HC-SR501" data-esp="ESP32-C3 / ESP32"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">PIR mozgásérzékelő</div><div class="cb-meta"><span class="cb-model">HC-SR501</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div><div class="cb-note">Belépés észlelése, automatikus világítás</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Előszoba" data-name="mmWave radar érzékelő" data-model="LD2410C" data-esp="ESP32-C3 / ESP32-S3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">mmWave radar érzékelő</div><div class="cb-meta"><span class="cb-model">LD2410C</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Statikus jelenlét is (cipőfűző kötés)</div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Ajtó & Biztonság</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Előszoba" data-name="Mágneses ajtóérzékelő" data-model="MC-38 reed switch" data-esp="ESP32 / ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Mágneses ajtóérzékelő</div><div class="cb-meta"><span class="cb-model">MC-38 reed switch</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Előszoba" data-name="RFID kártyaolvasó" data-model="RC522 / MFRC522" data-esp="ESP32 (SPI)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">RFID kártyaolvasó</div><div class="cb-meta"><span class="cb-model">RC522</span><span class="cb-esp">ESP32 (SPI)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Tag/kártya alapú beléptetés HA-val</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Előszoba" data-name="Ujjlenyomat-olvasó" data-model="R503 / AS608" data-esp="ESP32 (UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Ujjlenyomat-olvasó</div><div class="cb-meta"><span class="cb-model">R503 / AS608</span><span class="cb-esp">ESP32 (UART)</span><span class="cb-priority opt">Opt</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Előszoba" data-name="Okos csengő gomb" data-model="Nyomógomb + ESP32" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Okos csengő gomb</div><div class="cb-meta"><span class="cb-model">Nyomógomb + relay</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div><div class="cb-note">Értesítés HA-on / telefonon</div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Környezet</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Előszoba" data-name="Hőmérséklet + páratartalom szenzor" data-model="AHT20 / BME280" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Hőmérséklet + páratartalom</div><div class="cb-meta"><span class="cb-model">AHT20 / BME280</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Előszoba" data-name="Fényérzékelő" data-model="BH1750" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Fényérzékelő</div><div class="cb-meta"><span class="cb-model">BH1750</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority opt">Opt</span></div></div></label>
+      </div>
+    </div>
+
+    <!-- NAPPALI -->
+    <div class="room-card" style="--rc:#c8a951" data-room="Nappali">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🛋️</div><div><div class="room-name">Nappali</div><div class="room-sub">Living Room · ~25–35 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-nappali">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-nappali"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Jelenlét</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Nappali" data-name="mmWave radar (multi-target)" data-model="HLK-LD2450" data-esp="ESP32 (UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">mmWave radar multi-target</div><div class="cb-meta"><span class="cb-model">HLK-LD2450</span><span class="cb-esp">ESP32 (UART)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Több ember detektálása nagy helyiségben</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Nappali" data-name="PIR mozgásérzékelő" data-model="HC-SR501" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">PIR mozgásérzékelő (tartalék)</div><div class="cb-meta"><span class="cb-model">HC-SR501</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority nice">Nice</span></div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Levegőminőség</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Nappali" data-name="CO₂ érzékelő" data-model="MH-Z19B / SCD40" data-esp="ESP32 (UART/I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">CO₂ érzékelő</div><div class="cb-meta"><span class="cb-model">MH-Z19B / SCD40</span><span class="cb-esp">ESP32 (UART)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Szellőztetési jelzés, komfort monitoring</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Nappali" data-name="TVOC / AQI érzékelő" data-model="ENS160" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">TVOC / AQI érzékelő</div><div class="cb-meta"><span class="cb-model">ENS160</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Nappali" data-name="Hőmérséklet + páratartalom + légnyomás" data-model="BME280" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Hőmérséklet + páratartalom + légnyomás</div><div class="cb-meta"><span class="cb-model">BME280</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority must">Must</span></div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Komfort & Automatika</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Nappali" data-name="Fényérzékelő (automata árnyékoló)" data-model="VEML7700" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Fényérzékelő</div><div class="cb-meta"><span class="cb-model">VEML7700</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Automata árnyékoló / fényerő szabályozás</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Nappali" data-name="IR vevő/adó (klíma/TV vezérlés)" data-model="TSOP38238 + IR LED" data-esp="ESP32 (RMT)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">IR vevő/adó (klíma / TV)</div><div class="cb-meta"><span class="cb-model">TSOP38238 + IR LED</span><span class="cb-esp">ESP32 (RMT)</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Nappali" data-name="Hangasszisztens mikrofon" data-model="INMP441" data-esp="ESP32-S3 (I²S)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Hangasszisztens mikrofon</div><div class="cb-meta"><span class="cb-model">INMP441</span><span class="cb-esp">ESP32-S3 (I²S)</span><span class="cb-priority opt">Opt</span></div></div></label>
+      </div>
+    </div>
+
+    <!-- KONYHA -->
+    <div class="room-card" style="--rc:#e05a2b" data-room="Konyha">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🍳</div><div><div class="room-name">Konyha</div><div class="room-sub">Kitchen · ~12–18 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-konyha">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-konyha"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Biztonság — Kritikus!</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Konyha" data-name="Füstérzékelő" data-model="MQ-2 / optikai" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Füstérzékelő</div><div class="cb-meta"><span class="cb-model">MQ-2 / optikai</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Konyha" data-name="CO (szén-monoxid) érzékelő" data-model="MQ-7" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">CO szén-monoxid érzékelő</div><div class="cb-meta"><span class="cb-model">MQ-7</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Konyha" data-name="Gázszivárgás érzékelő (LPG/propán)" data-model="MQ-6" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Gázszivárgás érzékelő (LPG)</div><div class="cb-meta"><span class="cb-model">MQ-6</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Padlótól 10–15 cm-re felszerelve</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Konyha" data-name="Vízszivárgás érzékelő" data-model="Padlószenzor" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vízszivárgás érzékelő</div><div class="cb-meta"><span class="cb-model">Padlószenzor</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Mosogatógép / mosogató csap alá</div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Levegőminőség & Jelenlét</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Konyha" data-name="Páratartalom + hőmérséklet" data-model="SHT31" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Páratartalom + hőmérséklet</div><div class="cb-meta"><span class="cb-model">SHT31</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Elszívó automatikus vezérlés</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Konyha" data-name="PIR mozgásérzékelő" data-model="HC-SR501" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">PIR mozgásérzékelő</div><div class="cb-meta"><span class="cb-model">HC-SR501</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Konyha" data-name="Energiamérő (hűtő/sütő fogyasztás)" data-model="PZEM-004T" data-esp="ESP32 (UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Energiamérő</div><div class="cb-meta"><span class="cb-model">PZEM-004T</span><span class="cb-esp">ESP32 (UART)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Hűtő / sütő fogyasztás mérése</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Konyha" data-name="TVOC levegőminőség érzékelő" data-model="CCS811 / ENS160" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">TVOC / eCO₂ érzékelő</div><div class="cb-meta"><span class="cb-model">ENS160</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div></div></label>
+      </div>
+    </div>
+
+    <!-- FÜRDŐSZOBA FSZ -->
+    <div class="room-card" style="--rc:#7a9ea8" data-room="Fürdőszoba (FSZ)">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🚿</div><div><div class="room-name">Fürdőszoba (FSZ)</div><div class="room-sub">Bathroom · ~6–9 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-furdo1">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-furdo1"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Páraszint & Ventilátor</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Fürdőszoba (FSZ)" data-name="Páratartalom + hőmérséklet" data-model="SHT31" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Páratartalom + hőmérséklet</div><div class="cb-meta"><span class="cb-model">SHT31</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Ventilátor automata: zuhanyozás után</div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Jelenlét & Biztonság</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Fürdőszoba (FSZ)" data-name="PIR mozgásérzékelő (IP-védett)" data-model="AM312" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">PIR mozgásérzékelő (IP-védett)</div><div class="cb-meta"><span class="cb-model">AM312</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Fürdőszoba (FSZ)" data-name="mmWave radar (statikus jelenlét)" data-model="LD2410C" data-esp="ESP32-C3 (UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">mmWave radar (statikus jelenlét)</div><div class="cb-meta"><span class="cb-model">LD2410C</span><span class="cb-esp">ESP32-C3 (UART)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Jelenlét zuhanyban is</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Fürdőszoba (FSZ)" data-name="Vízszivárgás érzékelő" data-model="Padlószenzor" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vízszivárgás érzékelő</div><div class="cb-meta"><span class="cb-model">Padlószenzor</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Fürdőszoba (FSZ)" data-name="Vízfolyásmérő" data-model="YF-S201" data-esp="ESP32-C3 (GPIO pulse)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vízfolyásmérő</div><div class="cb-meta"><span class="cb-model">YF-S201</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority opt">Opt</span></div><div class="cb-note">Vízfogyasztás tracking</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Fürdőszoba (FSZ)" data-name="Fényérzékelő" data-model="BH1750" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Fényérzékelő</div><div class="cb-meta"><span class="cb-model">BH1750</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div></div></label>
+      </div>
+    </div>
+
+    <!-- FOLYOSÓ -->
+    <div class="room-card" style="--rc:#9090b8" data-room="Folyosó / Közlekedő">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🚶</div><div><div class="room-name">Folyosó / Közlekedő</div><div class="room-sub">Hallway · ~4–6 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-folyoso">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-folyoso"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Mozgás & Világítás</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Folyosó / Közlekedő" data-name="PIR mozgásérzékelő (lépcsővilágítás)" data-model="HC-SR501" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">PIR mozgásérzékelő</div><div class="cb-meta"><span class="cb-model">HC-SR501</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div><div class="cb-note">Lépcsővilágítás automatika</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Folyosó / Közlekedő" data-name="Fényérzékelő" data-model="BH1750" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Fényérzékelő</div><div class="cb-meta"><span class="cb-model">BH1750</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Folyosó / Közlekedő" data-name="Hőmérséklet érzékelő" data-model="DS18B20 / AHT20" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Hőmérséklet érzékelő</div><div class="cb-meta"><span class="cb-model">DS18B20</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Folyosó / Közlekedő" data-name="Füstérzékelő (menekülési útvonal)" data-model="MQ-2" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Füstérzékelő</div><div class="cb-meta"><span class="cb-model">MQ-2</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Tűzjelzés menekülési útvonalon</div></div></label>
+      </div>
+    </div>
+
+  </div><!-- /rooms-grid -->
+</div>
+
+<!-- ═══════════════════════════════════
+     FLOOR: EMELET
+════════════════════════════════════ -->
+<div class="floor-section" id="floor-upper">
+  <div class="floor-label">
+    <span class="floor-tag upper">Emelet</span>
+    <span class="floor-title">First Floor — Hálózóna</span>
+    <button class="floor-select-all" onclick="selectFloor('floor-upper')">Szint kijelölése</button>
+  </div>
+  <div class="rooms-grid">
+
+    <!-- FŐHÁLÓSZOBA -->
+    <div class="room-card" style="--rc:#a89878" data-room="Főhálószoba">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🛏️</div><div><div class="room-name">Főhálószoba</div><div class="room-sub">Master Bedroom · ~16–22 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-halo">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-halo"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Jelenlét & Alvás</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Főhálószoba" data-name="mmWave radar (alvás közben is)" data-model="LD2410C" data-esp="ESP32-C3 (UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">mmWave radar érzékelő</div><div class="cb-meta"><span class="cb-model">LD2410C</span><span class="cb-esp">ESP32-C3 (UART)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Alvás közbeni jelenlét is — PIR erre nem elég</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Főhálószoba" data-name="Fényérzékelő (éjjeli mód / redőny)" data-model="VEML7700" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Fényérzékelő (éjjeli mód)</div><div class="cb-meta"><span class="cb-model">VEML7700</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Napfelkelte szerinti automata redőny</div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Levegőminőség — Alváskomfort</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Főhálószoba" data-name="CO₂ érzékelő (alvásminőség)" data-model="SCD40" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">CO₂ érzékelő</div><div class="cb-meta"><span class="cb-model">SCD40</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority must">Must</span></div><div class="cb-note">1000+ ppm = ébredési problémák, szellőztess!</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Főhálószoba" data-name="Hőmérséklet + páratartalom + légnyomás" data-model="BME280" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Hőmérséklet + páratartalom</div><div class="cb-meta"><span class="cb-model">BME280</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Főhálószoba" data-name="TVOC / VOC érzékelő" data-model="ENS160" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">TVOC érzékelő</div><div class="cb-meta"><span class="cb-model">ENS160</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Biztonság & Komfort</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Főhálószoba" data-name="Mágneses ablakérzékelő" data-model="MC-38 reed switch" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Mágneses ablakérzékelő</div><div class="cb-meta"><span class="cb-model">MC-38</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Főhálószoba" data-name="Füstérzékelő" data-model="MQ-2" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Füstérzékelő</div><div class="cb-meta"><span class="cb-model">MQ-2</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Főhálószoba" data-name="Motorvezérelt redőny pozíciószenzor" data-model="Stepper + endstop" data-esp="ESP32 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Redőnyvezérlő + pozíció</div><div class="cb-meta"><span class="cb-model">Stepper + endstop</span><span class="cb-esp">ESP32 (GPIO)</span><span class="cb-priority opt">Opt</span></div><div class="cb-note">Napfelkelte szerinti automata nyitás</div></div></label>
+      </div>
+    </div>
+
+    <!-- GYEREKSZOBA -->
+    <div class="room-card" style="--rc:#b07890" data-room="Gyerekszoba">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🧒</div><div><div class="room-name">Gyerekszoba</div><div class="room-sub">Child's Room · ~12–16 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-gyerek">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-gyerek"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Jelenlét & Biztonság</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Gyerekszoba" data-name="PIR + mmWave kombináció" data-model="HC-SR501 + LD2410C" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">PIR + mmWave kombináció</div><div class="cb-meta"><span class="cb-model">HC-SR501 + LD2410C</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Gyerekszoba" data-name="Mágneses ajtóérzékelő" data-model="MC-38" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Mágneses ajtóérzékelő</div><div class="cb-meta"><span class="cb-model">MC-38</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Gyerekszoba" data-name="Mágneses ablakérzékelő" data-model="MC-38" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Mágneses ablakérzékelő</div><div class="cb-meta"><span class="cb-model">MC-38</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Gyerekszoba" data-name="Füstérzékelő" data-model="MQ-2" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Füstérzékelő</div><div class="cb-meta"><span class="cb-model">MQ-2</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority must">Must</span></div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Levegőminőség & Komfort</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Gyerekszoba" data-name="CO₂ + hőmérséklet + páratartalom + VOC" data-model="BME680" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">CO₂ + hőmérséklet + páratartalom + VOC</div><div class="cb-meta"><span class="cb-model">BME680</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Gyerekeknél kritikus az optimális 19–21°C</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Gyerekszoba" data-name="Zajszint / csecsemőriasztó mikrofon" data-model="INMP441 / MAX9814" data-esp="ESP32-S3 (I²S)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Zajszint / csecsemőriasztó mikrofon</div><div class="cb-meta"><span class="cb-model">INMP441</span><span class="cb-esp">ESP32-S3 (I²S)</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Gyerekszoba" data-name="Fényérzékelő (éjjeli mód)" data-model="BH1750" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Fényérzékelő (éjjeli mód)</div><div class="cb-meta"><span class="cb-model">BH1750</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div></div></label>
+      </div>
+    </div>
+
+    <!-- DOLGOZÓ -->
+    <div class="room-card" style="--rc:#8888b0" data-room="Dolgozó / Vendégszoba">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">💼</div><div><div class="room-name">Dolgozó / Vendégszoba</div><div class="room-sub">Study / Guest · ~10–14 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-dolgozo">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-dolgozo"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Jelenlét & Levegőminőség</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Dolgozó / Vendégszoba" data-name="mmWave radar (ülő jelenlét)" data-model="LD2410C" data-esp="ESP32-C3 (UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">mmWave radar érzékelő</div><div class="cb-meta"><span class="cb-model">LD2410C</span><span class="cb-esp">ESP32-C3 (UART)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Íróasztalon ülő jelenlét is detektálva</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Dolgozó / Vendégszoba" data-name="CO₂ érzékelő (koncentráció)" data-model="MH-Z19B" data-esp="ESP32 (UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">CO₂ érzékelő</div><div class="cb-meta"><span class="cb-model">MH-Z19B</span><span class="cb-esp">ESP32 (UART)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Magas CO₂ = romló koncentráció munkánál</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Dolgozó / Vendégszoba" data-name="Hőmérséklet + páratartalom" data-model="AHT20" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Hőmérséklet + páratartalom</div><div class="cb-meta"><span class="cb-model">AHT20</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Dolgozó / Vendégszoba" data-name="Fényérzékelő" data-model="VEML7700" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Fényérzékelő</div><div class="cb-meta"><span class="cb-model">VEML7700</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Dolgozó / Vendégszoba" data-name="Energiamérő (PC fogyasztás)" data-model="INA226 / PZEM-004T" data-esp="ESP32 (I²C/UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Energiamérő (PC fogyasztás)</div><div class="cb-meta"><span class="cb-model">INA226</span><span class="cb-esp">ESP32 (I²C)</span><span class="cb-priority opt">Opt</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Dolgozó / Vendégszoba" data-name="Mágneses ajtó + ablakérzékelő" data-model="MC-38" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Mágneses ajtó + ablak</div><div class="cb-meta"><span class="cb-model">MC-38</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div></div></label>
+      </div>
+    </div>
+
+    <!-- EMELETI FÜRDŐ -->
+    <div class="room-card" style="--rc:#7ab8c0" data-room="Emeleti Fürdőszoba">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🛁</div><div><div class="room-name">Emeleti Fürdőszoba</div><div class="room-sub">Upper Bath · ~5–8 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-furdo2">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-furdo2"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Páraszint & Víz</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Emeleti Fürdőszoba" data-name="Páratartalom + hőmérséklet (penészmegelőzés)" data-model="SHT31" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Páratartalom + hőmérséklet</div><div class="cb-meta"><span class="cb-model">SHT31</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Penészesedés megelőzés — ventilátor automata</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Emeleti Fürdőszoba" data-name="Vízszivárgás érzékelő" data-model="Padlószenzor" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vízszivárgás érzékelő</div><div class="cb-meta"><span class="cb-model">Padlószenzor</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Emeleti Fürdőszoba" data-name="Vízfolyásmérő" data-model="YF-S201" data-esp="ESP32-C3 (GPIO pulse)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vízfolyásmérő</div><div class="cb-meta"><span class="cb-model">YF-S201</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority opt">Opt</span></div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Jelenlét</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Emeleti Fürdőszoba" data-name="mmWave radar érzékelő" data-model="LD2410C" data-esp="ESP32-C3 (UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">mmWave radar érzékelő</div><div class="cb-meta"><span class="cb-model">LD2410C</span><span class="cb-esp">ESP32-C3 (UART)</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Emeleti Fürdőszoba" data-name="PIR mozgásérzékelő (IP-védett)" data-model="AM312" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">PIR mozgásérzékelő (IP-védett)</div><div class="cb-meta"><span class="cb-model">AM312</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div></div></label>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     FLOOR: PINCE
+════════════════════════════════════ -->
+<div class="floor-section" id="floor-basement">
+  <div class="floor-label">
+    <span class="floor-tag basement">Pince</span>
+    <span class="floor-title">Basement — Tároló & Gépészet</span>
+    <button class="floor-select-all" onclick="selectFloor('floor-basement')">Szint kijelölése</button>
+  </div>
+  <div class="rooms-grid">
+
+    <!-- PINCE -->
+    <div class="room-card" style="--rc:#e05a2b" data-room="Pince / Tároló">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🏚️</div><div><div class="room-name">Pince / Tároló</div><div class="room-sub">Basement · ~15–25 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-pince">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-pince"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Biztonság — Kritikus!</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Pince / Tároló" data-name="CO érzékelő (kazán/gáz)" data-model="MQ-7" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">CO érzékelő</div><div class="cb-meta"><span class="cb-model">MQ-7</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Gázkészülék / kazán CO szivárgás</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Pince / Tároló" data-name="Gázszivárgás érzékelő (LPG)" data-model="MQ-6" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Gázszivárgás érzékelő (LPG)</div><div class="cb-meta"><span class="cb-model">MQ-6</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Pince / Tároló" data-name="Vízszivárgás érzékelő (talajvíz / csőtörés)" data-model="Padlószenzor" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vízszivárgás érzékelő</div><div class="cb-meta"><span class="cb-model">Padlószenzor</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Talajvíz / csőtörés korai jelzés</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Pince / Tároló" data-name="Füstérzékelő" data-model="MQ-2" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Füstérzékelő</div><div class="cb-meta"><span class="cb-model">MQ-2</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority must">Must</span></div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Környezet & Belépés</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Pince / Tároló" data-name="Hőmérséklet + páratartalom (bor/élelmiszertárolás)" data-model="DS18B20 + DHT22" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Hőmérséklet + páratartalom</div><div class="cb-meta"><span class="cb-model">DS18B20 + DHT22</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div><div class="cb-note">Bor / élelmiszertárolás optimuma</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Pince / Tároló" data-name="PIR mozgásérzékelő" data-model="HC-SR501" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">PIR mozgásérzékelő</div><div class="cb-meta"><span class="cb-model">HC-SR501</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Pince / Tároló" data-name="Mágneses ajtóérzékelő" data-model="MC-38" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Mágneses ajtóérzékelő</div><div class="cb-meta"><span class="cb-model">MC-38</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Pince / Tároló" data-name="Kazán hőmérséklet + nyomásmérő" data-model="DS18B20 + analóg nyomásszenzor" data-esp="ESP32 (ADC + 1-Wire)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Kazán hőmérséklet + nyomás</div><div class="cb-meta"><span class="cb-model">DS18B20 + nyomásszenzor</span><span class="cb-esp">ESP32 (ADC)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Fűtési rendszer monitoring</div></div></label>
+      </div>
+    </div>
+
+    <!-- MOSÓKONYHA -->
+    <div class="room-card" style="--rc:#b89040" data-room="Mosókonyha / Gépészet">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🔧</div><div><div class="room-name">Mosókonyha / Gépészet</div><div class="room-sub">Utility Room · ~6–10 m²</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-mosokon">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-mosokon"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Energiamérés & Gépek</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Mosókonyha / Gépészet" data-name="Energiamérő (mosógép/szárítógép)" data-model="PZEM-004T" data-esp="ESP32 (UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Energiamérő</div><div class="cb-meta"><span class="cb-model">PZEM-004T</span><span class="cb-esp">ESP32 (UART)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Mosógép / szárítógép fogyasztás + ciklus állapot</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Mosókonyha / Gépészet" data-name="Vibráció érzékelő (mosógép ciklus)" data-model="SW-420" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vibráció érzékelő (ciklus vége)</div><div class="cb-meta"><span class="cb-model">SW-420</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Értesítés mosás végeztével</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Mosókonyha / Gépészet" data-name="Vízszivárgás érzékelő (×2)" data-model="Padlószenzor ×2" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vízszivárgás érzékelő ×2</div><div class="cb-meta"><span class="cb-model">Padlószenzor</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Környezet</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Mosókonyha / Gépészet" data-name="Páratartalom + hőmérséklet" data-model="AHT20" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Páratartalom + hőmérséklet</div><div class="cb-meta"><span class="cb-model">AHT20</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Mosókonyha / Gépészet" data-name="Áramklesztenező (nem invazív)" data-model="SCT-013-030" data-esp="ESP32 (ADC + burden resistor)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Áramklesztenező (nem invazív)</div><div class="cb-meta"><span class="cb-model">SCT-013-030</span><span class="cb-esp">ESP32 (ADC)</span><span class="cb-priority opt">Opt</span></div></div></label>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     FLOOR: KÜLTÉR
+════════════════════════════════════ -->
+<div class="floor-section" id="floor-outdoor">
+  <div class="floor-label">
+    <span class="floor-tag outdoor">Kültér</span>
+    <span class="floor-title">Outdoor — Kert, Bejárat & Kocsibeálló</span>
+    <button class="floor-select-all" onclick="selectFloor('floor-outdoor')">Szint kijelölése</button>
+  </div>
+  <div class="rooms-grid">
+
+    <!-- KOCSIBEÁLLÓ -->
+    <div class="room-card" style="--rc:#c8a951" data-room="Kocsibeálló / Garázs">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🚗</div><div><div class="room-name">Kocsibeálló / Garázs</div><div class="room-sub">Carport · Zárt tér</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-gardzs">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-gardzs"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Biztonság & Belépés</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Kocsibeálló / Garázs" data-name="PIR mozgásérzékelő (kültéri, IP65)" data-model="HC-SR501 IP65" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">PIR mozgásérzékelő (kültéri IP65)</div><div class="cb-meta"><span class="cb-model">HC-SR501 IP65</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Kocsibeálló / Garázs" data-name="Ultrahangos távolságszenzor (parkolás)" data-model="HC-SR04 / JSN-SR04T" data-esp="ESP32-C3 (TRIG/ECHO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Ultrahangos távolságszenzor</div><div class="cb-meta"><span class="cb-model">JSN-SR04T</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Autó bent van-e? Parkolás segítő</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Kocsibeálló / Garázs" data-name="Garázskapu állapotérzékelő (tilt/mágneses)" data-model="MC-38 / tilt switch" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Garázskapu állapotérzékelő</div><div class="cb-meta"><span class="cb-model">MC-38 / tilt switch</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Nyitva felejtés riasztás</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Kocsibeálló / Garázs" data-name="ESP32-CAM kamera" data-model="OV2640 modul" data-esp="ESP32-CAM (AI Thinker)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">ESP32-CAM kamera</div><div class="cb-meta"><span class="cb-model">OV2640</span><span class="cb-esp">ESP32-CAM</span><span class="cb-priority nice">Nice</span></div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Gáz & Fagyás</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Kocsibeálló / Garázs" data-name="CO érzékelő (beindult autó)" data-model="MQ-7" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">CO érzékelő — zárt tér!</div><div class="cb-meta"><span class="cb-model">MQ-7</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Autó beindul zárt garázsban → vészjelzés</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Kocsibeálló / Garázs" data-name="Fagyérzékelő / kültéri hőmérséklet" data-model="DS18B20 vízálló" data-esp="ESP32-C3 (1-Wire)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Fagyérzékelő / kültéri hőmérséklet</div><div class="cb-meta"><span class="cb-model">DS18B20 vízálló</span><span class="cb-esp">ESP32-C3 (1-Wire)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Téli figyelmeztetés, anti-freeze</div></div></label>
+      </div>
+    </div>
+
+    <!-- KAPU / KERÍTÉS -->
+    <div class="room-card" style="--rc:#6aa880" data-room="Bejárati Kapu & Kerítés">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🏡</div><div><div class="room-name">Bejárati Kapu & Kerítés</div><div class="room-sub">Gate & Perimeter</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-kapu">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-kapu"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Belépés & Azonosítás</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Bejárati Kapu & Kerítés" data-name="PIR + kamera (ESP32-CAM kültéri)" data-model="OV2640 + kültéri ház" data-esp="ESP32-CAM / ESP32-S3-EYE"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">PIR + kamera (kültéri)</div><div class="cb-meta"><span class="cb-model">OV2640 kültéri</span><span class="cb-esp">ESP32-CAM</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Bejárati Kapu & Kerítés" data-name="Kapuérzékelő (mágneses)" data-model="MC-38" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Kapuérzékelő (mágneses)</div><div class="cb-meta"><span class="cb-model">MC-38</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority must">Must</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Bejárati Kapu & Kerítés" data-name="RFID / Keypad beléptetés" data-model="RC522 + 4×4 Keypad" data-esp="ESP32-C3 (SPI + GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">RFID / Keypad beléptetés</div><div class="cb-meta"><span class="cb-model">RC522 + Keypad</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Bejárati Kapu & Kerítés" data-name="Okos csengő gomb (kapunál)" data-model="Nyomógomb + ESP32" data-esp="ESP32-C3"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Okos csengő gomb</div><div class="cb-meta"><span class="cb-model">Nyomógomb</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority must">Must</span></div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Kerítés Peremvédelem</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Bejárati Kapu & Kerítés" data-name="IR fényfüggöny / lézersorompó" data-model="E18-D80NK IR" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">IR fényfüggöny / lézersorompó</div><div class="cb-meta"><span class="cb-model">E18-D80NK</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority opt">Opt</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Bejárati Kapu & Kerítés" data-name="Vibráció érzékelő (kerítésen)" data-model="SW-420" data-esp="ESP32-C3 (GPIO)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vibráció érzékelő (kerítésen)</div><div class="cb-meta"><span class="cb-model">SW-420</span><span class="cb-esp">ESP32-C3 (GPIO)</span><span class="cb-priority opt">Opt</span></div></div></label>
+      </div>
+    </div>
+
+    <!-- KERT -->
+    <div class="room-card" style="--rc:#7aaa7a" data-room="Kert & Öntözés">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">🌿</div><div><div class="room-name">Kert & Öntözés</div><div class="room-sub">Garden & Irrigation</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-kert">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-kert"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Talaj & Öntözés</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Kert & Öntözés" data-name="Kapacitív talajnedvesség érzékelő (IP65)" data-model="SEN0308 DFRobot" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Kapacitív talajnedvesség (IP65)</div><div class="cb-meta"><span class="cb-model">SEN0308</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Automata öntöző vezérlés alapja</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Kert & Öntözés" data-name="Vízálló talajhőmérséklet szenzor" data-model="DS18B20 vízálló" data-esp="ESP32-C3 (1-Wire)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vízálló talajhőmérséklet</div><div class="cb-meta"><span class="cb-model">DS18B20 vízálló</span><span class="cb-esp">ESP32-C3 (1-Wire)</span><span class="cb-priority nice">Nice</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Kert & Öntözés" data-name="Vízfolyásmérő (öntözés)" data-model="YF-S201" data-esp="ESP32-C3 (GPIO pulse)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Vízfolyásmérő (öntözés)</div><div class="cb-meta"><span class="cb-model">YF-S201</span><span class="cb-esp">ESP32-C3</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Öntözési vízfogyasztás mérés</div></div></label>
+      </div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Időjárás & Kültér</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Kert & Öntözés" data-name="Kültéri meteorológiai állomás" data-model="BME280 (kültéri ház)" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Kültéri meteorológiai állomás</div><div class="cb-meta"><span class="cb-model">BME280 kültéri</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Hőmérséklet, páratartalom, légnyomás</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Kert & Öntözés" data-name="Esőérzékelő" data-model="YL-83 / FC-37" data-esp="ESP32-C3 (ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Esőérzékelő</div><div class="cb-meta"><span class="cb-model">YL-83 / FC-37</span><span class="cb-esp">ESP32-C3 (ADC)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Esőzésnél öntözés automatikus leállítás</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Kert & Öntözés" data-name="UV index érzékelő" data-model="VEML6075" data-esp="ESP32-C3 (I²C)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">UV index érzékelő</div><div class="cb-meta"><span class="cb-model">VEML6075</span><span class="cb-esp">ESP32-C3 (I²C)</span><span class="cb-priority opt">Opt</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Kert & Öntözés" data-name="Szélsebességmérő (anemométer)" data-model="Anemométer + ESP32" data-esp="ESP32 (ADC / pulse)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Szélsebességmérő</div><div class="cb-meta"><span class="cb-model">Anemométer</span><span class="cb-esp">ESP32 (ADC)</span><span class="cb-priority opt">Opt</span></div></div></label>
+      </div>
+    </div>
+
+    <!-- FŐELOSZTÓ -->
+    <div class="room-card" style="--rc:#c8a951" data-room="Főelosztó / Mérőhely">
+      <div class="room-card-hdr">
+        <div class="room-icon-title"><div class="room-icon">⚡</div><div><div class="room-name">Főelosztó / Mérőhely</div><div class="room-sub">Main Electrical Panel</div></div></div>
+        <div class="room-count-wrap"><div class="room-checked-count zero" id="cnt-eloszt">0</div><div class="room-count-lbl">kijelölve</div></div>
+      </div>
+      <div class="room-select-all-wrap"><button class="room-select-all" onclick="selectRoom(this)">Szoba összes kijelölése</button><span class="room-total-lbl" id="tot-eloszt"></span></div>
+      <div class="sensor-cat">
+        <div class="sensor-cat-label">Energiamérés — Ház szinten</div>
+        <label class="sensor-row"><input type="checkbox" data-room="Főelosztó / Mérőhely" data-name="Házi főmérő 3-fázisú" data-model="PZEM-004T 3-fázis" data-esp="ESP32 (UART)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Házi főmérő 3-fázisú</div><div class="cb-meta"><span class="cb-model">PZEM-004T 3P</span><span class="cb-esp">ESP32 (UART)</span><span class="cb-priority must">Must</span></div><div class="cb-note">Teljes fogyasztás, feszültség, áramerősség</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Főelosztó / Mérőhely" data-name="Nem invazív áramklesztenező ×3" data-model="SCT-013-100 ×3" data-esp="ESP32 (ADC ×3)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Nem invazív áramklesztenező ×3</div><div class="cb-meta"><span class="cb-model">SCT-013-100 ×3</span><span class="cb-esp">ESP32 (ADC)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Egyes körök fogyasztásának mérése</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Főelosztó / Mérőhely" data-name="Hőmérséklet az elosztón belül" data-model="DS18B20" data-esp="ESP32-C3 (1-Wire)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Hőmérséklet az elosztóban</div><div class="cb-meta"><span class="cb-model">DS18B20</span><span class="cb-esp">ESP32-C3 (1-Wire)</span><span class="cb-priority nice">Nice</span></div><div class="cb-note">Túlmelegedési riasztás</div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Főelosztó / Mérőhely" data-name="Napelemes inverter monitoring (RS485/Modbus)" data-model="RS485 → ESP32 adapter" data-esp="ESP32 (UART RS485)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Napelemes inverter monitoring</div><div class="cb-meta"><span class="cb-model">RS485 adapter</span><span class="cb-esp">ESP32 (UART)</span><span class="cb-priority opt">Opt</span></div></div></label>
+        <label class="sensor-row"><input type="checkbox" data-room="Főelosztó / Mérőhely" data-name="Akkumulátor / UPS szintmérő" data-model="INA226 / analóg feszültségosztó" data-esp="ESP32 (I²C / ADC)"><div class="cb-box"></div><div class="cb-content"><div class="cb-name">Akkumulátor / UPS szintmérő</div><div class="cb-meta"><span class="cb-model">INA226</span><span class="cb-esp">ESP32 (I²C)</span><span class="cb-priority opt">Opt</span></div></div></label>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SPACER for fixed bar -->
+<div style="height:80px"></div>
+
+</div><!-- /wrapper -->
+
+<!-- ═══════════════════════════════════
+     FIXED EXPORT BAR
+════════════════════════════════════ -->
+<div class="export-zone">
+  <div>
+    <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Összesítés</div>
+    <div class="export-summary"><strong id="exportCount">0</strong> szenzor kijelölve · <span id="exportRooms">0 helyiség</span></div>
+  </div>
+  <div class="export-legend">
+    <div class="export-leg-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span> Must-have</div>
+    <div class="export-leg-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent2);display:inline-block"></span> Nice-to-have</div>
+    <div class="export-leg-item"><span style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block"></span> Opcionális</div>
+  </div>
+  <button class="export-btn" id="exportBtn" onclick="exportList()" disabled>⬇ Lista letöltése (.txt)</button>
+</div>
+
+<script>
+// ─── State & helpers ───────────────────────────────────
+const allCheckboxes = () => document.querySelectorAll('input[type="checkbox"]');
+
+function updateCounts() {
+  const checked = [...allCheckboxes()].filter(c => c.checked);
+  const total = checked.length;
+
+  // Header counter
+  const el = document.getElementById('totalCount');
+  el.textContent = total;
+  el.classList.toggle('zero', total === 0);
+
+  // Export bar
+  document.getElementById('exportCount').textContent = total;
+  document.getElementById('exportBtn').disabled = total === 0;
+
+  // Room counters
+  const roomMap = {};
+  checked.forEach(c => {
+    const r = c.dataset.room;
+    roomMap[r] = (roomMap[r] || 0) + 1;
+  });
+  document.getElementById('exportRooms').textContent =
+    Object.keys(roomMap).length + ' helyiség';
+
+  // Per-room display counters
+  document.querySelectorAll('[data-room]').forEach(card => {
+    const room = card.dataset.room;
+    if (!room) return;
+    const slug = slugify(room);
+    const cnt = document.getElementById('cnt-' + slug);
+    if (!cnt) return;
+    const n = roomMap[room] || 0;
+    cnt.textContent = n;
+    cnt.classList.toggle('zero', n === 0);
+  });
+
+  // Room total labels (set once on first pass)
+  document.querySelectorAll('[data-room]').forEach(card => {
+    const room = card.dataset.room;
+    if (!room) return;
+    const slug = slugify(room);
+    const totEl = document.getElementById('tot-' + slug);
+    if (!totEl || totEl.textContent) return;
+    const tot = card.querySelectorAll('input[type="checkbox"]').length;
+    totEl.textContent = tot + ' szenzor összesen';
+  });
+
+  // Top counters area
+  const roomCounters = document.getElementById('roomCounters');
+  roomCounters.innerHTML = Object.entries(roomMap)
+    .slice(0, 5)
+    .map(([r, n]) => `<div class="counter-room"><span class="counter-room-dot" style="background:var(--accent)"></span>${r}: ${n}</div>`)
+    .join('') + (Object.keys(roomMap).length > 5 ? `<div class="counter-room" style="color:var(--muted)">+${Object.keys(roomMap).length - 5} terület…</div>` : '');
+}
+
+function slugify(str) {
+  return str.toLowerCase()
+    .replace(/[áàä]/g, 'a').replace(/[éè]/g, 'e').replace(/[íì]/g, 'i')
+    .replace(/[óöő]/g, 'o').replace(/[úüű]/g, 'u')
+    .replace(/[^a-z0-9]/g, '').substring(0, 8);
+}
+
+// Init total labels immediately
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-room]').forEach(card => {
+    const room = card.dataset.room;
+    if (!room) return;
+    const slug = slugify(room);
+    const totEl = document.getElementById('tot-' + slug);
+    if (!totEl) return;
+    const tot = card.querySelectorAll('input[type="checkbox"]').length;
+    totEl.textContent = tot + ' szenzor összesen';
+  });
+  updateCounts();
+});
+
+// Listen to all checkboxes
+document.addEventListener('change', e => {
+  if (e.target.type === 'checkbox') updateCounts();
+});
+
+// ─── Select helpers ────────────────────────────────────
+function selectAll() {
+  allCheckboxes().forEach(c => c.checked = true);
+  updateCounts();
+}
+function clearAll() {
+  allCheckboxes().forEach(c => c.checked = false);
+  updateCounts();
+}
+function selectFloor(floorId) {
+  document.getElementById(floorId)
+    .querySelectorAll('input[type="checkbox"]')
+    .forEach(c => c.checked = true);
+  updateCounts();
+}
+function selectRoom(btn) {
+  const card = btn.closest('[data-room]');
+  const boxes = card.querySelectorAll('input[type="checkbox"]');
+  const anyUnchecked = [...boxes].some(c => !c.checked);
+  boxes.forEach(c => c.checked = anyUnchecked);
+  updateCounts();
+}
+
+// ─── Export ────────────────────────────────────────────
+function exportList() {
+  const checked = [...allCheckboxes()].filter(c => c.checked);
+  if (!checked.length) return;
+
+  // Group by room
+  const rooms = {};
+  checked.forEach(c => {
+    const r = c.dataset.room || 'Egyéb';
+    if (!rooms[r]) rooms[r] = [];
+    rooms[r].push(c);
+  });
+
+  const lines = [];
+  const divider = '═'.repeat(62);
+  const thinDiv = '─'.repeat(62);
+
+  lines.push('ESP32 SMART HOME — SZENZOR BEVÁSÁRLÓLISTA');
+  lines.push('Generálva: ' + new Date().toLocaleDateString('hu-HU', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}));
+  lines.push(divider);
+  lines.push('');
+  lines.push(`Összesen: ${checked.length} szenzor · ${Object.keys(rooms).length} helyiség`);
+  lines.push('');
+  lines.push(divider);
+  lines.push('');
+
+  // Group by floor hint
+  const floorOrder = {
+    'Előszoba / Bejárat': 'FÖLDSZINT',
+    'Nappali': 'FÖLDSZINT',
+    'Konyha': 'FÖLDSZINT',
+    'Fürdőszoba (FSZ)': 'FÖLDSZINT',
+    'Folyosó / Közlekedő': 'FÖLDSZINT',
+    'Főhálószoba': 'EMELET',
+    'Gyerekszoba': 'EMELET',
+    'Dolgozó / Vendégszoba': 'EMELET',
+    'Emeleti Fürdőszoba': 'EMELET',
+    'Pince / Tároló': 'PINCE',
+    'Mosókonyha / Gépészet': 'PINCE',
+    'Kocsibeálló / Garázs': 'KÜLTÉR',
+    'Bejárati Kapu & Kerítés': 'KÜLTÉR',
+    'Kert & Öntözés': 'KÜLTÉR',
+    'Főelosztó / Mérőhely': 'KÜLTÉR',
+  };
+
+  const floors = {};
+  Object.entries(rooms).forEach(([room, sensors]) => {
+    const f = floorOrder[room] || 'EGYÉB';
+    if (!floors[f]) floors[f] = {};
+    floors[f][room] = sensors;
+  });
+
+  const floorIconMap = {
+    'FÖLDSZINT': '🏠 FÖLDSZINT',
+    'EMELET': '🏠 EMELET',
+    'PINCE': '⬇  PINCE',
+    'KÜLTÉR': '🌿 KÜLTÉR',
+    'EGYÉB': '📦 EGYÉB',
+  };
+
+  let globalIdx = 1;
+  Object.entries(floors).forEach(([floor, roomObj]) => {
+    lines.push('');
+    lines.push('  ' + floorIconMap[floor]);
+    lines.push('  ' + '═'.repeat(40));
+    lines.push('');
+
+    Object.entries(roomObj).forEach(([room, sensors]) => {
+      lines.push(`  📍 ${room.toUpperCase()} (${sensors.length} szenzor)`);
+      lines.push('  ' + thinDiv);
+
+      // Must-have first
+      const sorted = [...sensors].sort((a, b) => {
+        const pOrder = {'must': 0, 'nice': 1, 'opt': 2};
+        const pa = a.closest('label').querySelector('.cb-priority')?.classList[1] || 'opt';
+        const pb = b.closest('label').querySelector('.cb-priority')?.classList[1] || 'opt';
+        return (pOrder[pa] || 2) - (pOrder[pb] || 2);
+      });
+
+      sorted.forEach(c => {
+        const priorityEl = c.closest('label')?.querySelector('.cb-priority');
+        const priority = priorityEl ? priorityEl.textContent.trim().toUpperCase() : '';
+        const pTag = priority === 'MUST' ? '[●]' : priority === 'NICE' ? '[○]' : '[ ]';
+        const noteEl = c.closest('label')?.querySelector('.cb-note');
+        const note = noteEl ? noteEl.textContent.trim() : '';
+
+        lines.push(`  ${String(globalIdx++).padStart(3, ' ')}. ${pTag} ${c.dataset.name}`);
+        lines.push(`       Modell : ${c.dataset.model}`);
+        lines.push(`       ESP32  : ${c.dataset.esp}`);
+        if (note) lines.push(`       Megjegyzés: ${note}`);
+        lines.push('');
+      });
+
+      lines.push('');
+    });
+  });
+
+  lines.push(divider);
+  lines.push('');
+  lines.push('PRIORITÁS JELÖLÉSEK:');
+  lines.push('  [●] MUST-HAVE  — Alapvetően szükséges');
+  lines.push('  [○] NICE       — Erősen ajánlott');
+  lines.push('  [ ] OPCIONÁLIS — Extra komfort');
+  lines.push('');
+  lines.push('ESP32 CHIP ÖSSZEFOGLALÓ:');
+  lines.push('  ESP32-C3     — Kompakt, Wi-Fi + BLE, 3.3V logika, olcsó alapszenzor csomópont');
+  lines.push('  ESP32        — Dupla mag, BT Classic + BLE, Wi-Fi, UART/SPI/I2C/ADC bőven');
+  lines.push('  ESP32-S3     — Dupla mag 240MHz, AI/ML, I²S audio, PSRAM, nagy projektek');
+  lines.push('  ESP32-CAM    — OV2640 kamera modul, RTSP stream, mozgásérzékelés + kép');
+  lines.push('  ESP32-C6     — Wi-Fi 6 + Zigbee + Thread + Matter, okosotthon jövő-proof');
+  lines.push('  ESP32-H2     — Zigbee + Thread + Matter, Wi-Fi nélkül, alacsony fogyasztás');
+  lines.push('');
+  lines.push('FIRMWARE AJÁNLÁS: ESPHome + Home Assistant');
+  lines.push('  docs.esphome.io  |  home-assistant.io');
+  lines.push('');
+  lines.push(divider);
+  lines.push('Generálta: ESP32 Smart Home Tervező');
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'esp32_szenzor_lista_' + new Date().toISOString().slice(0,10) + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
