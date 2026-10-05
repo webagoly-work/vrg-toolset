@@ -10,13 +10,20 @@ have modular sources that build into one file.
 H:\
   Dev-VRG\                  <- the whole environment; this is what gets zipped
     VRG-DE\                 <- everything, same internal layout as before
-      Planner_VRG_U100\     <- the git repo
+      Planner_VRG_U100\     <- the git repo  (THE working copy)
       _installers\ _inbox\ _zipped\ _libs\ _desktop\ ...
     Start.cmd               <- shim -> VRG-DE\...\Planner\START.cmd
     VRG-DE-Launcher.cmd     <- shim -> VRG-DE\...\VRG-DE.cmd
   H_BACKUP_2026-09-16\      <- deliberately left outside; 8.1 GB, would double the archive
   _desktop                  <- JUNCTION -> Dev-VRG\VRG-DE\_desktop  (see below)
 ```
+
+**The repo got here by being copied, not moved.** `H:\Planner_VRG_U100` could
+not be renamed: something holds a handle on it continuously while Claude Code
+is open, and it survived a reboot. A rename needs exclusive access; a copy
+only needs to read, so robocopy went through cleanly (32,173 files, 0 failed).
+If a stale `H:\Planner_VRG_U100` is still present, it is the dead original —
+`H:\Dev-VRG\_remove-old-copy.ps1` verifies the new copy and deletes it.
 
 Both launchers at the `Dev-VRG` root are thin shims: the real menus stay in
 the repo so they remain version-controlled and there is no second copy to keep
