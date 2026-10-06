@@ -49,8 +49,8 @@ finished WP is what counts, not per session.
 | WP | title | depends | size | status |
 |---|---|---|---|---|
 | A1 | Layer model v2 + schema seed | — | M | verified — 2026-10-06 — uncommitted · 1 fix (active layer after undo) · follow-ups: whiteout walls + Wall View notes ignore opacity |
-| A2 | Layer panel: vertical sub-layers, opacity, swap/move | A1 | M | built — 2026-10-06 — uncommitted |
-| A3 | Duplicate, merge, link, lock | A2 | M | built — 2026-10-06 — uncommitted |
+| A2 | Layer panel: vertical sub-layers, opacity, swap/move | A1 | M | built — 2026-10-06 — 552148c |
+| A3 | Duplicate, merge, link, lock | A2 | M | built — 2026-10-06 — 552148c |
 | ⏸ | **checkpoint — use the new layer panel on NV4 / P33** | | | |
 | B1 | Stack model, wizard, panel group, stage rail, shared hooks | A3 | L | todo |
 | B2 | Marks: walls, sides, vertical/horizontal strips | B1 | L | todo |
