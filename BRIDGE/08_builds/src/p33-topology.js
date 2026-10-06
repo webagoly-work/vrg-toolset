@@ -54,7 +54,7 @@ function t1() {
 
   // ---- cabinet ----
   s += node(290, 140, 260, 440, 'ELOSZTÓSZEKRÉNY',
-    'R01 · 48 M BRIDGE-DN\n+ one free 12 M row, or an equal\n   flush DN box beside it (K10)\n   → PANEL LINK metering\n      (gateway, addr 150)\n\noutgoing:\n· 3 system circuits → BASE\n   (one remotely operable, F04)\n· room circuits per RoomBox\n· 2 × SSC\n· AV position circuit\n· big loads, direct\n· socket circuits doubled (S04)',
+    'R01 · 48 M BRIDGE-DN\n+ one free 12 M row, or an equal\n   flush DN box beside it (K10)\n   → PANEL LINK metering\n      (gateway, addr 150)\n\noutgoing:\n· 2 system circuits → BASE\n   (one remotely operable, F04)\n· room circuits per RoomBox\n· 2 × SSC\n· AV position circuit\n· big loads, direct\n· S04 doubling kept where the\n   load is (kitchen), trimmed\n   elsewhere (K31)',
     { fill: '#fff', stroke: C.mains, bsize: 12.5 });
 
   // ---- BASE ----
@@ -70,7 +70,7 @@ function t1() {
 
   // ---- branches ----
   s += node(1290, 140, 260, 110, 'RBX06 · RB-H', 'R06 · addr 6 · chain node\nserves R06 + R07 (K07)\n+ ARMs to the media wall', { bsize: 12.5 });
-  s += node(1290, 300, 260, 90, 'RBX08 · RB-E/W', 'R08 · addr 8 · terminal\nIP44 · SELV-only beyond', { fill: C.boxE, bsize: 12.5 });
+  s += node(1290, 300, 260, 90, 'RBX08 · RB-E/W', 'R08 · addr 8 · terminal\noutside the bathroom (K29)', { fill: C.boxE, bsize: 12.5 });
   s += node(1290, 450, 260, 110, 'RBX09 · RB-M', 'R09 · addr 9 · terminal\nprovisioned now,\nfitted with the upper floor', { fill: C.future, dash: true, bsize: 12.5 });
   s += `<circle cx="1245" cy="505" r="15" fill="#fff" stroke="${C.channel}" stroke-width="3"/><circle cx="1245" cy="505" r="5" fill="${C.channel}"/>`;
   s += label(1205, 545, 'V1 riser\nR05, left side', C.channel, { size: 11 });
@@ -271,19 +271,20 @@ function t3() {
   s += node(40, 140, 170, 70, 'Villanyóra', 'service meter', { fill: C.panel, stroke: C.line });
   s += node(40, 250, 170, 70, 'Main isolator', 'in the cabinet', { fill: '#fff', stroke: C.mains });
   s += wire([[125, 210], [125, 250]], C.mains);
-  s += `<rect x="250" y="130" width="500" height="930" rx="10" fill="#fff" stroke="${C.mains}" stroke-width="2.5"/>`;
+  s += `<rect x="250" y="130" width="500" height="1000" rx="10" fill="#fff" stroke="${C.mains}" stroke-width="2.5"/>`;
   s += wire([[210, 285], [250, 285]], C.mains);
   s += text(266, 156, '48 M BRIDGE-DN  +  12 M DN row (K10)', { size: 13, weight: 700 });
   s += text(266, 176, 'PANEL LINK meters every way below — galvanically isolated, data only', { size: 11.5, color: C.link });
 
   const rows = [
     // [group, ways, feed title, feed body, busB, poe, ifTrips, opts]
-    ['SYSTEM', ['BASE-1', 'BASE-2', 'BASE-3 ⟲'], 'BASE · R03', 'NET · COMP · MEDIA\n+ charger for the assured pack', 'source', 'source', 'BASE runs on the other two;\n⟲ = remotely operable (F04)'],
+    ['SYSTEM', ['BASE-1', 'BASE-2 ⟲'], 'BASE · R03', 'NET · COMP · MEDIA', 'source', 'source', 'BASE runs on the other one;\n⟲ = remotely operable (F04, K31)'],
+    ['SYSTEM', ['PACK'], 'Assured pack · R05 (K27)', 'charger for bus B', 'source', '', 'bus B floats on its battery;\nno gap, no transfer'],
     ['SYSTEM', ['SSC-1', 'SSC-2'], 'SSC', 'security centre · provider\'s\nequipment', '', '', 'provider\'s own battery;\nBRIDGE sees a fault state'],
-    ['ROOMBOX', ['L', 'S1', 'S2'], 'RBX03 · R03 hub', 'Z1 → 150 W PSU → bus A\nR01–R05 lamps + sockets', 'yes', 'yes', 'R01–R05 manual control stays\non the bistables; egress + NTL-TR\nstay lit on bus B'],
-    ['ROOMBOX', ['L', 'S1', 'S2'], 'RBX06 · R06', 'R06 + R07 + media wall', 'yes', 'yes', 'same, for R06–R07; the AV\nposition is separate'],
-    ['ROOMBOX', ['L', 'S'], 'RBX08 · R08', 'wet — SELV-only beyond the box', 'yes', 'yes', 'bathroom egress light holds;\nthe interlock keeps fan state'],
-    ['ROOMBOX', ['L', 'S1', 'S2'], 'RBX09 · R09 (provisioned)', 'ways reserved, cable capped', 'later', 'later', '—'],
+    ['ROOMBOX', ['L', 'K1', 'K2', 'K3', 'G'], 'RBX03 · R03 hub', 'K1–K3 kitchen + island (S04 kept)\nG: R01 R03 R05 general', 'yes', 'yes', 'one socket way trips, one group\ngoes; egress + NTL-TR on bus B'],
+    ['ROOMBOX', ['L', 'S6', 'S7'], 'RBX06 · R06', 'R06 and R07 sockets kept apart\n(AV has its own way)', 'yes', 'yes', 'R06 and R07 fail independently;\nthe AV position is separate'],
+    ['ROOMBOX', ['L', 'S'], 'RBX08 · R08', 'outside the bathroom (K29)\nSELV-only beyond the box', 'yes', 'yes', 'bathroom egress light holds;\nthe interlock keeps fan state'],
+    ['ROOMBOX', ['L', 'S'], 'RBX09 · R09 (provisioned)', 'mains sleeve beside V1 (§14)', 'later', 'later', '—'],
     ['BIG LOAD', ['OVEN'], 'Oven tower', 'R02', '', '', 'that appliance only'],
     ['BIG LOAD', ['HOB'], 'Induction hob — island (K20)', 'feed in the floor before screed', '', '', 'that appliance only'],
     ['BIG LOAD', ['DW', 'WM'], 'Dishwasher · washing machine', '', '', '', 'that appliance only'],
@@ -296,10 +297,11 @@ function t3() {
   rows.forEach(([g, ways, ft, fb, bb, pe, ifT], i) => {
     const y = y0 + i * rh, mid = y + 30, future = /provisioned/.test(ft);
     if (g !== lastGroup) { s += text(266, y + 6, g, { size: 11, weight: 700, color: C.sub }); lastGroup = g; }
+    const step = ways.length > 3 ? 76 : 120, cw = step - 12;
     ways.forEach((w, j) => {
-      const x = 360 + j * 120;
-      s += `<rect x="${x}" y="${mid - 14}" width="104" height="28" rx="5" fill="${g === 'BIG LOAD' ? C.load : '#fff'}" stroke="${C.mains}" stroke-width="1.5"${future ? ' stroke-dasharray="5 4"' : ''}/>` +
-        text(x + 52, mid + 5, w, { size: 12, weight: 700, anchor: 'middle', color: C.mains });
+      const x = 360 + j * step;
+      s += `<rect x="${x}" y="${mid - 14}" width="${cw}" height="28" rx="5" fill="${g === 'BIG LOAD' ? C.load : '#fff'}" stroke="${C.mains}" stroke-width="1.5"${future ? ' stroke-dasharray="5 4"' : ''}/>` +
+        text(x + cw / 2, mid + 5, w, { size: 12, weight: 700, anchor: 'middle', color: C.mains });
     });
     s += wire([[750, mid], [800, mid]], C.mains, { dash: future ? '6 4' : undefined });
     s += node(800, mid - 32, 270, 68, ft, fb, { fill: g === 'BIG LOAD' ? C.load : (g === 'SYSTEM' ? C.base : C.box), stroke: g === 'BIG LOAD' ? C.mains : C.channel, dash: future, tsize: 13.5, bsize: 11 });
@@ -308,26 +310,26 @@ function t3() {
     s += text(1580, mid - 4, ifT, { size: 11.5, color: C.ink });
   });
   // bus B trunk from BASE's pack
-  const yB = y0 + 30, yLast = y0 + 5 * rh + 30;
+  const yB = y0 + rh + 30, yP = y0 + 44, yLast = y0 + 6 * rh + 30;
   s += `<path d="M1080,${yB} L${busX},${yB} L${busX},${yLast}" fill="none" stroke="${BUSB}" stroke-width="4"/>`;
   s += text(1192, yB - 10, 'LiFePO4 ≈ 6 Ah @ 24 V', { size: 11.5, color: BUSB, weight: 700 });
   s += text(1192, yB + 30, 'central pack in R05 (C17)\n2 h at 15 W · backup connector\nhardwired latch → egress', { size: 11, color: BUSB });
   // PoE trunk from NET
-  s += `<path d="M1080,${yB + 14} L${poeX},${yB + 14} L${poeX},${yLast}" fill="none" stroke="${POE}" stroke-width="2.5" stroke-dasharray="2 3"/>`;
-  s += text(1452, yB + 54, 'from NET\n5–8 W per box\nsub-controller +\nZ4 radios only', { size: 11, color: POE });
+  s += `<path d="M1080,${yP} L${poeX},${yP} L${poeX},${yLast}" fill="none" stroke="${POE}" stroke-width="2.5" stroke-dasharray="2 3"/>`;
+  s += text(1452, yP + 40, 'from NET\n5–8 W per box\nsub-controller +\nZ4 radios only', { size: 11, color: POE });
 
-  s += `<rect x="800" y="1072" width="1170" height="54" rx="8" fill="#fff7ed" stroke="${C.mains}"/>`;
-  s += text(816, 1095, 'Way count, reasoned: 5 system + 11 RoomBox + 7 big-load ≈ 23 outgoing ways, before RCD/RCBO selection.', { size: 13, weight: 700, color: C.mains });
-  s += text(816, 1116, 'The outline already found 48 M full at V2 — BUILD-002 checks modules against 48 M + the 12 M row before anything is bought.', { size: 12, color: C.ink });
+  s += `<rect x="800" y="1146" width="1170" height="54" rx="8" fill="#fff7ed" stroke="${C.mains}"/>`;
+  s += text(816, 1169, '5 system + 12 RoomBox + 7 big-load = 24 ways, each a 1-module RCBO (K31) → 29 of 36 M single-phase · 34 of 36 M three-phase', { size: 13, weight: 700, color: C.mains });
+  s += text(816, 1190, 'Row 4 (12 M) is free in the distributed variant and becomes the PANEL LINK row. Feed, SPD and phase plan: BUILD-001 §14.', { size: 12, color: C.ink });
 
-  s += legendBar(40, 1150, 1930, [
+  s += legendBar(40, 1222, 1930, [
     [(x, y) => `<line x1="${x}" y1="${y}" x2="${x + 46}" y2="${y}" stroke="${C.mains}" stroke-width="2.5"/>`, '230 V from the cabinet'],
     [(x, y) => `<line x1="${x}" y1="${y}" x2="${x + 46}" y2="${y}" stroke="#0f766e" stroke-width="4"/>`, 'bus B — assured 24 V, survives mains loss'],
     [(x, y) => `<line x1="${x}" y1="${y}" x2="${x + 46}" y2="${y}" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="2 3"/>`, 'PoE backup path to each sub-controller'],
     [(x, y) => `<rect x="${x}" y="${y - 12}" width="46" height="24" rx="5" fill="#fff" stroke="${C.mains}" stroke-dasharray="5 4"/>`, 'provisioned, not yet fitted'],
   ], 4);
-  return frame(2000, 1250, 'P33 · T3 — Power topology',
-    `Three independent supply trees: 230 V from the cabinet, the assured 24 V bus from BASE, PoE backup from NET. Read each row left to right.   ${REVTAG}`, s);
+  return frame(2000, 1300, 'P33 · T3 — Power topology',
+    `Three independent supply trees: 230 V from the cabinet, the assured 24 V bus from the pack in R05, PoE backup from NET. Read each row left to right.   ${REVTAG}`, s);
 }
 
 // ===========================================================================
@@ -560,5 +562,5 @@ emit('P33-T1_system-spine', t1(), 2000, 1250);
 emit('P33-T2_channel-lanes', t2(), 2000, 1140);
 emit('P33-T8_failure-domains', t8(), 2000, 1170);
 emit('P33-T5_presence-graph', t5(), 2000, 1220);
-emit('P33-T3_power', t3(), 2000, 1250);
+emit('P33-T3_power', t3(), 2000, 1300);
 for (const b of Object.keys(TREES)) { const { svg, h } = t10(b); emit(`P33-T10_${b}`, svg, 2000, h); }

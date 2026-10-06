@@ -239,11 +239,13 @@ penetration.
 
 ### 4.5 Three consequences of the answers worth flagging
 
-**Doubled socket circuits grow the cabinet.** S04's note — *"as a preferred standard we double the
-circuit of power socket to keep the 1,5 mm² cable type"* — is a sound rule and it doubles MCB ways
-and M25 conduits for sockets. **The 48-module cabinet is already full at V2.** The second enclosure
-already planned for PANEL LINK (B20, RB-E/T) absorbs this, but it is now **required rather than
-optional**, and it should be sized for the doubled circuit count before it is bought.
+**The cabinet fits after all (K31, K32).** S04 doubles socket circuits to keep 1.5 mm² cable, and
+the 48-module cabinet was full at V2 — but V2's fourth row holds the **centralised** variant's
+core, which a distributed house like P33 does not need. That row becomes the PANEL LINK row. With
+**one-module RCBOs on every way**, BASE on two system ways, and S04's doubling **kept only where the
+load concentrates** (the kitchen worktop and island), the house needs **24 ways: 29 of 36 modules
+on single phase, 34 of 36 three-phase-ready.** No second enclosure. Derivation and the supply
+calculation for both cases: `P33-BUILD-001` §14. *This reverses r2's "second enclosure required".*
 
 **The hob is induction, on the island (K20).** S06 omitted it; the plan put it in the island. It
 takes its own big-load circuit from the cabinet to the island, never through a RoomBox, and the

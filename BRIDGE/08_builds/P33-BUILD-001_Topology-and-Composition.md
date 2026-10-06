@@ -104,7 +104,7 @@ redundancy. In P33, RoomBox 1 *is* stacked on BASE, so all three would sit withi
 each other — the redundancy STD-005 asked for, without the spatial diversity that made it worth
 having.
 
-**Correction for this instance:** two border routers at BASE, the third at **RBX06** — the far end
+**Correction for this instance, decided (K30):** two border routers at BASE, the third at **RBX06** — the far end
 of the ground floor and directly under the void, so it also reaches up towards the upper floor
 before RBX09 exists. When the upper floor is fitted, review whether it moves to RBX09.
 
@@ -122,7 +122,7 @@ Class and role. Products in BUILD-002.
 | **COMP** | Home Assistant as a client · **arbiter as its own service** · MQTT broker · ESPHome · BRIDGE_LINK master with **4 × RS-485**, one channel per RoomBox · two Thread border routers (§3.3) | G06 · STD-004 §3 · STD-005 §5 |
 | **MEDIA** | **Full pack**: low-power x86 with hardware video · NVMe system + library bays · **NVR on its own surveillance disk** · Snapcast server · media server · 2.5 GbE / SFP+ uplink | H01 · STD-007 §7 |
 | **Assured supply** | central 24 V bus B pack + **backup connector slot** — **in R05 beside V1, not in this joinery** (§12.1) | C17 |
-| **Supply** | 3 system circuits from the cabinet, one through a remotely operable breaker | F04 · STD-001 §4.2 |
+| **Supply** | 2 system circuits from the cabinet, one through a remotely operable breaker (K31) | F04 · STD-001 §4.2 |
 
 **The protocol masters attach to the network, never by USB to COMP** (ARCH-002 §4.2). That is
 what lets MEDIA leave this joinery later — K10 says it may — without a redesign.
@@ -131,7 +131,7 @@ what lets MEDIA leave this joinery later — K10 says it may — without a redes
 
 | | RBX03 | RBX06 | RBX08 | RBX09 |
 |---|---|---|---|---|
-| **Class** | RB-H 600 × 600 × 120 | RB-H 600 × 600 × 120 | RB-E/W, RB-M envelope, IP44 | RB-M 400 × 500 × 110 |
+| **Class** | RB-H 600 × 600 × 120 | RB-H 600 × 600 × 120 | RB-E/W, RB-M envelope — outside the bathroom (K29), so no IP44 | RB-M 400 × 500 × 110 |
 | **Role** | hub · ZT for 3 runs | chain node · media wall | terminal, wet | terminal, upper floor |
 | **PSU** | 150 W, 24 V rail | 150 W | per RB-M | per RB-M |
 | **Room switch** | wide-DC 12–57 V, PoE+ injecting, 8-port | same, ≈ 63 W injection (2 APs + panel + camera position) | 5-port | 5–8-port |
@@ -250,15 +250,13 @@ doctrine stated per circuit.
 - **No single cabinet way removes control of a room.** A RoomBox's lighting way trips; its lamps
   go dark, but its sub-controller stays alive on PoE and its egress light and NTL-TR stay alive on
   bus B. The room can still report what happened.
-- **BASE has three ways and needs one.** The third is remotely operable (F04), so the system can be
-  power-cycled without reaching the cabinet.
+- **BASE has two ways and needs one (K31).** The second is remotely operable (F04), so the system
+  can be power-cycled without reaching the cabinet.
 - **Big loads never meet a RoomBox.** Their failures are their own.
 
-**Way count, reasoned rather than counted against a schedule:** 5 system + 11 RoomBox (lighting
-and doubled sockets, S04) + 7 big-load ≈ **23 outgoing ways**, before RCD/RCBO selection. The
-outline already found the 48-module cabinet full at V2. **The 12-module DN row of K10 is for
-PANEL LINK, not for these ways**, so BUILD-002's first cabinet task is a module count against
-both.
+**Way count: 24**, each a one-module RCBO — 5 system, 12 RoomBox, 7 big-load. They fit rows 1–3
+on either supply, and row 4 is the PANEL LINK row. The derivation, the S04 trim and the supply
+calculation are in **§14**.
 
 > **A gap T3 exposed, now closed: the assured bus rides C4b (K25).** Bus B runs from the central
 > pack to every RoomBox, but the CHANNEL had no conduit for it — LV is "made in each RoomBox" and
@@ -375,14 +373,113 @@ once the media wall's position is known. T4 and T9 can wait for BUILD-002.
 
 ---
 
-## 14. Open
+## 14. The cabinet and the supply (K31, K32)
+
+### 14.1 Where the shortage came from — and why most of it is not P33's
+
+BRIDGE-DN V2 fills its 48 modules (4 rows × 12) like this:
+
+- **Rows 1–3:** feed, surge protection, one 25 A 30 mA RCD in front of everything, 14 circuits
+  and a modular bell.
+- **Row 4:** the **centralised-variant core** — 5 V supply, Raspberry Pi 5, USB hub with the
+  Zigbee coordinator, a three-phase energy meter and a two-channel lighting switch.
+
+**P33 is the distributed variant** (C2-T: it has a bathroom and bedrooms on another floor). COMP
+lives in BASE, the coordinator sits on the network at NET, and switching happens in the RoomBoxes.
+**So row 4 is free, and it becomes the 12-module PANEL LINK row of K10** — inside the existing
+cabinet, with no extension box. The shortage that the outline found was the centralised variant's,
+not this house's.
+
+### 14.2 The three reductions taken
+
+| | Reduction | Effect |
+|---|---|---|
+| **c** | **BASE on two system ways, not three** — F04 allows two to three; the remotely operable one is kept | −1 way |
+| **a** | **A one-module RCBO on every way**, replacing grouped RCDs | no RCD modules at all; **one earth fault trips one circuit**, which is T3's and T8's failure-domain logic carried into the cabinet. It also retires V2's single 25 A RCD, which no longer suits a cabinet that feeds an induction hob, an oven and a water heater |
+| **S04** | **Doubling trimmed by tolerance** — kept where the load concentrates, dropped where a single 1.5 mm² circuit is enough | −6 ways against strict doubling, below |
+
+**The S04 trim, by tolerance.** Strict doubling of every conventional socket circuit would give
+**14** socket ways. Ranked by how well each group tolerates a single 1.5 mm² circuit:
+
+| Group | Load profile | Tolerance | Ways |
+|---|---|---|---|
+| **Kitchen worktop A, B + the island** (R02, R03) | kettle, microwave, coffee machine, toaster — high and simultaneous | **lowest — doubling kept**: two worktop runs and the island on its own | **3** |
+| R08 fürdő | hairdryer ≈ 2 kW, one user | medium — fits one circuit | 1 |
+| R07 szoba | chargers, bedside, occasionally a heater | high. **Kept separate from R06** for failure isolation, not for load | 1 |
+| R06 nappali | the AV position has its own way; the rest is lamps, chargers, a vacuum | high | 1 |
+| R01 + R03 general + R05 | vacuum, chargers | high | 1 |
+| Upper floor (R09–R13) | provisioned | review at the upper renovation | 1 |
+| | | | **8 of 14** |
+
+> **A correction to my own figures.** T3's first version counted two socket ways per RoomBox and
+> labelled that "doubled sockets". That was already an unstated trim — strict S04 is 14 socket
+> ways, not 7. The trimmed plan above is 8, and it is stated.
+
+**Reduction b was not taken**, so the upper floor keeps its own cabinet ways (lighting + one
+socket). **The gap it exposed remains regardless: the V1 riser carries only the CHANNEL.** Those
+two circuits, and any future upper-floor big load — the *klíma ?* on the upper sheet — need a
+**separate MAINS sleeve through the slab beside V1**, kept apart from the bundle and fire-stopped.
+Specify **two M25 plus one empty M25**, laid with the riser now.
+
+### 14.3 The way count
+
+| Group | Ways |
+|---|---|
+| System — BASE ×2 (one remotely operable), assured pack (K27), SSC ×2 | 5 |
+| RoomBox lighting — RBX03, RBX06, RBX08, RBX09 | 4 |
+| RoomBox sockets — the trimmed plan above | 8 |
+| Big loads — oven tower, induction hob, dishwasher, washing machine, bojler, klíma, AV position | 7 |
+| | **24** |
+
+### 14.4 The supply, both cases (K32)
+
+**Connected load, reasoned on typical ratings** — BUILD-002 replaces each with a nameplate:
+
+| Load | kW | | Load | kW |
+|---|---|---|---|---|
+| Induction hob, 4 zones | 7.4 | | Klíma | 1.2 |
+| Oven tower | 3.5 | | Kitchen sockets (kettle, microwave, coffee) | 3.0 |
+| Washing machine | 2.2 | | Other sockets | 2.0 |
+| Dishwasher | 2.0 | | AV position | 0.5 |
+| Bojler | 2.0 | | Lighting · BRIDGE (BASE, 4 boxes, pack) | 0.5 · 0.3 |
+| | | | **Connected** | **≈ 24.6** |
+
+**A realistic evening peak** — hob 5.0 (two zones boosting), oven 3.5, kettle 2.2, dishwasher
+heating 2.0, bojler 2.0, klíma 1.2, base load 1.5 — is **≈ 17.4 kW**.
+
+| | **Single-phase, 1 × 32 A — interim** | **Three-phase — long term** |
+|---|---|---|
+| Capacity | **7.4 kW** | **3 × 25 A = 17.3 kW** · 3 × 32 A = 22 kW |
+| Verdict | **Works only with load management.** The hob limited to 3.7 kW plus the oven is already 7.2 kW — the whole supply. Rules: **hob power limit set to 16 A** (a setup option on most induction hobs) · **bojler on the *vezérelt* off-peak tariff**, or shed by a cabinet contactor · dishwasher and washer on **delay start** outside cooking hours. **Hob, oven and a kettle together will trip it** — accepted as an interim constraint | **3 × 25 A carries the realistic peak** with the same delay-start habit. **3 × 32 A removes every constraint** and leaves room for a heat pump or an EV charger. Recommendation: **3 × 32 A** if the DSO's upgrade fee is acceptable, otherwise 3 × 25 A |
+| Phase plan | — | **L1** hob A · bojler · lighting + BRIDGE · **L2** hob B · washing machine · klíma · **L3** oven · dishwasher · kitchen sockets — each ≈ 28–33 A only if everything coincides, ≈ 20–25 A in practice |
+| Hob | one 1P+N RCBO, 16–20 A, 1 module | **2L + 2N connection**, two 1P+N RCBOs on L1 and L2 — a shared-neutral 2L+1N connection would trip two separate RCBOs |
+| Feed | 2P main switch (2) · SPD 1P+N (2) · bell (1) | **4P main switch (4) · SPD 3P+N (4)** · bell (1) |
+| **Modules, rows 1–3** | **5 + 24 = 29 of 36** (+ 2 if the bojler is shed by contactor) | **9 + 25 = 34 of 36** |
+
+**Recommendation: build the cabinet three-phase-ready from day one** — the 4-pole main switch, the
+three-phase SPD and three-phase comb busbars, with every circuit labelled with its target phase. It
+costs four modules now and makes the upgrade a supply change with no rework inside the cabinet.
+**How the interim single-phase supply is landed is the installer's call under the DSO's rules (A08)**;
+this document does not prescribe it. At 34 of 36, the three-phase layout leaves two spare modules;
+moving the modular bell out of the cabinet makes it three.
+
+**BRIDGE can do the load management, within one rule.** PANEL LINK meters the main feed, so the
+arbiter knows when the supply nears its limit and can defer a dishwasher or a washer through their
+own interfaces. **Switching a big load off still needs a certified contactor in the cabinet**
+(STD-001 §4) — software never sheds high current directly.
+
+---
+
+## 15. Open
 
 | | Item | Blocks |
 |---|---|---|
-| 1 | **RBX08's wall** in the redrawn bathroom, outside zones 0–2 | CH-8's route |
+| 1 | ~~RBX08's wall~~ — **decided (K29):** the walkway face of the new bathroom wall, outside the wet room. The new wall is built **≈ 150 mm** to take the 110 mm box; IP44 is no longer needed, and the room beyond stays SELV-only. **Check the washbasin's pipe runs in that wall on site** | — |
 | 2 | **The media wall's position** in R06 | RBX06's exact wall · the AV position · C2's route |
-| 3 | **RBX06's wall** — candidate on the R06 face of the masonry spine beside R07 (drawn with "?" on the floor sheet) | CH-6 |
+| 3 | ~~RBX06's wall~~ — **decided (K28):** the R06 face of the R06 / R07 partition, at its right end, the box body recessed into R07's wardrobe void. The partition is thin, so the wardrobe takes the depth. An IR blaster, if wanted, is its own endpoint at the media wall, not a reason to move the box | — |
 | 4 | **Product selection** and the **per-ARM schedule** | BUILD-002 |
 | 5 | **§3.2's ΔT** on RBX03 above a loaded BASE | commissioning, not design |
-| 6 | **Cabinet module count** — ≈ 23 ways against 48 M (§9) | the cabinet |
+| 6 | ~~Cabinet module count~~ — **decided (K31, K32), §14**: 24 ways, 29 or 34 of 36 modules; row 4 is the PANEL LINK row | — |
+| 6a | **The supply**: which three-phase rating, and when — the DSO's fee decides 3 × 25 A or 3 × 32 A | the head of the cabinet |
+| 6b | **The MAINS sleeve beside V1** — two M25 plus one empty M25, laid with the riser | the upper floor's circuits |
 | 7 | **C23 / C23B** lighting types · **H10** Snapcast placement · **D9** security provider | unchanged |
