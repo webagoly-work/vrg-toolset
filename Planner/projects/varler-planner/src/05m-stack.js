@@ -47,7 +47,7 @@ const STK_CTX=[];      // fn(e) → [{label,act}…] or null — first non-empty
 const STK_WV=[];       // fn(WV) → svg in Wall View elevation coords (u,v mm) — B2 adds the anchor in 06
 const STK_PV=[];       // fn(PV) → svg in Plane View coords — B3 adds the anchor in 07
 const STK_CHECKS={};   // roleKey → [fn(stack) → [{sev,msg}]]
-function stkHookSvg(list){let s='';for(const f of (list||[])){try{s+=f()||'';}catch(_){}}return s;}
+function stkHookSvg(list,arg){let s='';for(const f of (list||[])){try{s+=f(arg)||'';}catch(_){}}return s;}   // arg: the view's own context (STK_WV gets the elevation scales)
 function stkToolEvent(ph,e){for(const t of STK_TOOLS){try{if(t.active()&&t[ph]&&t[ph](e))return true;}catch(_){}}return false;}
 function stkCtxItems(e){for(const f of STK_CTX){try{const r=f(e);if(r&&r.length)return r;}catch(_){}}return null;}
 

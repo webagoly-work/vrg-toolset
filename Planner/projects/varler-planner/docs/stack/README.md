@@ -53,8 +53,8 @@ finished WP is what counts, not per session.
 | A3 | Duplicate, merge, link, lock | A2 | M | built — 2026-10-06 — 552148c |
 | ⏸ | **checkpoint — use the new layer panel on NV4 / P33** | | | |
 | B1 | Stack model, wizard, panel group, stage rail, shared hooks | A3 | L | built — 2026-10-07 — d5cbf43 |
-| B2 | Marks: walls, sides, vertical/horizontal strips | B1 | L | todo |
-| B3 | Marks: doors, windows, floor/ceiling strips and zones | B2 | M | todo |
+| B2 | Marks: walls, sides, vertical/horizontal strips | B1 | L | built — 2026-10-07 — b23commit |
+| B3 | Marks: doors, windows, floor/ceiling strips and zones | B2 | M | built — 2026-10-07 — b23commit |
 | B4 | Movement traces: 45° line, freehand, smoothed, door snap | B3 | M | todo |
 | B5 | Portal graph: line of sight, 500 mm encoding, heatmap | B4 | M | todo |
 | ⏸ | **checkpoint — mark one real floor; do the tags feel right?** | | | |

@@ -130,6 +130,7 @@ function planeViewSVG(d,dims){const M=56;
           const cur=(hx===0.5?'ns-resize':hy===0.5?'ew-resize':'nwse-resize');
           s+=`<rect class="wvwarp" data-pi="${warpPi}" data-hx="${hx}" data-hy="${hy}" x="${(px-4).toFixed(1)}" y="${(py-4).toFixed(1)}" width="8" height="8" fill="#fff" stroke="#e8641c" stroke-width="1.4" style="cursor:${cur}"/>`;});}}
   }
+  if(typeof stkHookSvg==='function')s+=stkHookSvg(STK_PV,{d,X,Y,sc});   // BRIDGE Stack plane marks (05n), in plan mm
   // ---- NOTES ----
   if(L.notes!==false)d.notes.forEach(n=>{s+=noteBox(n,X(n.u),Y(n.h));});
   // ---- dims + caption ----

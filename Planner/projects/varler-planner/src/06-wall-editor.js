@@ -269,6 +269,7 @@ function wallElevationSVG(d,showFar,dims){const M=56,H=d.H,len=d.len;
       s+=`<text x="${wx}" y="${wy}" font-size="9" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">${wl}</text>`
         +`<text x="${wx}" y="${wy}" font-size="9" text-anchor="middle" fill="#c0530f">${wl}</text>`;}}
   } // end installed layer
+  if(typeof stkHookSvg==='function')s+=stkHookSvg(STK_WV,{d,X,Y,sc,len,H});   // BRIDGE Stack marks (05n), in elevation mm
   // ---- NOTES LAYER (draggable wall notes) ----
   if(L.notes&&d.notes)d.notes.forEach(nt=>{s+=noteBox(nt,X(nt.u),Y(nt.h));});
   // ---- LIVE MEASURE overlay (while dragging an item): distance from left, right, and ground ----

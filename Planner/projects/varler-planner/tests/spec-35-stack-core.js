@@ -197,12 +197,13 @@ setTimeout(()=>{
   fresh();w.__state.rot=0;w.__state.pitch=90;w.__state.flat=true;
   D().floors.push({level:lvl,name:'T',poly:[[0,0],[4000,0],[4000,3000],[0,3000]]});const dv=addDev({x:1000,y:1000});
   w.draw();const base=w.eval('_lastScene'),baseOv=w.eval('_lastOverlay');
-  ok('with the hook lists empty the scene is what it was without them',w.stkHookSvg([])===''&&w.eval('STK_SCENE.length')===0&&base.indexOf('id="t"')<0);
+  const keepS=w.STK_SCENE.slice(),keepO=w.STK_OVERLAY.slice();      // the marking layer (05n) registers its own hooks
+  ok('with no stack data every registered hook draws nothing: the scene is what it was without them',w.stkHookSvg([])===''&&w.stkHookSvg(w.STK_SCENE)===''&&w.stkHookSvg(w.STK_OVERLAY)===''&&base.indexOf('id="t"')<0);
   w.STK_SCENE.push(()=>'<g id="t"/>');w.STK_OVERLAY.push(()=>'<g id="o"/>');w.draw();
   ok('a pushed scene fn appears in the scene, an overlay fn in the overlay only',w.eval('_lastScene').indexOf('<g id="t"/>')>=0&&w.eval('_lastOverlay').indexOf('<g id="o"/>')>=0&&w.eval('_lastScene').indexOf('id="o"')<0);
-  w.STK_SCENE.length=0;w.STK_OVERLAY.length=0;w.draw();
+  w.STK_SCENE.length=0;keepS.forEach(f=>w.STK_SCENE.push(f));w.STK_OVERLAY.length=0;keepO.forEach(f=>w.STK_OVERLAY.push(f));w.draw();
   ok('removing them restores the scene byte for byte',w.eval('_lastScene')===base&&w.eval('_lastOverlay')===baseOv);
-  ok('a throwing hook is skipped, the others still draw',(function(){w.STK_SCENE.push(()=>{throw new Error('x');},()=>'<g id="t2"/>');w.draw();const r=w.eval('_lastScene').indexOf('id="t2"')>=0;w.STK_SCENE.length=0;w.draw();return r;})());
+  ok('a throwing hook is skipped, the others still draw',(function(){w.STK_SCENE.push(()=>{throw new Error('x');},()=>'<g id="t2"/>');w.draw();const r=w.eval('_lastScene').indexOf('id="t2"')>=0;w.STK_SCENE.length=0;keepS.forEach(f=>w.STK_SCENE.push(f));w.draw();return r;})());
   // tools: pointer
   const bb=w.planToBase(dv.x,dv.y,w.dz(dv.level,dv.h||0));w.clientToBase=()=>bb;
   w.setMode('select');w.__setSel(null);
