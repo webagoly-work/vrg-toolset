@@ -120,27 +120,30 @@ $('styleToggle').onclick=()=>{const toBlueprint=state.style!=='blueprint';
 $('bRiserUp').onclick=()=>riser(1);$('bRiserDn').onclick=()=>riser(-1);
 function riser(dir){let i=ORD.indexOf(state.active)+dir;if(i<0||i>2)return;state.active=ORD[i];
   document.querySelector(`input[name=al][value=${ORD[i]}]`).checked=true;$('hud').textContent='Active level → '+ORD[i]+' (riser continues here).';}
-const UKEYS=['cables','paths','devices','notes','measures','openings','floors','objects','roofs','wallNotes','circuits'];
+const UKEYS=['cables','paths','devices','notes','measures','openings','floors','objects','roofs','wallNotes','circuits','marks','traces','runs'];
 // per-surface note visibility travels with the project but is a map, not a list
 function noteHideSnap(){return JSON.parse(JSON.stringify(data.noteHide||{}));}
 // A snapshot may be SCOPED to the collections a command actually touches. Moving a
 // device no longer deep-clones every lamp thumbnail in the project; the entry records
 // its own scope so applySnap restores exactly what it captured.
 function snap_(scope){ensureIds(data);                  // nothing is snapshotted without an id
-  const keys=(scope&&scope.length)?scope.filter(k=>UKEYS.indexOf(k)>=0):UKEYS;
+  const sc=(scope&&scope.length)?scope:null,ks=sc?sc.filter(k=>UKEYS.indexOf(k)>=0):[];
+  const keys=ks.length?ks:UKEYS;
   const o=keys.reduce((o,k)=>(o[k]=data[k],o),{});
-  o.__scope=(scope&&scope.length)?keys.slice():null;
-  if(!scope||scope.indexOf('__walls')>=0||!scope.length){o.__walls={};for(const l of ORD)o.__walls[l]=WALLS[l]||[];}
+  o.__scope=sc?sc.slice():null;                                 // markers kept → redo is symmetric
+  if(!sc||sc.indexOf('__walls')>=0){o.__walls={};for(const l of ORD)o.__walls[l]=WALLS[l]||[];}
+  if(sc&&sc.indexOf('__layers')>=0)o.__layers={layers,stacks};  // opt-in only — a plain pushUndo() must not carry layers
   o.__noteHide=data.noteHide||{};o.__seq=data.seq||0;o.__v=data.v||SCHEMA_VERSION;
   return JSON.parse(JSON.stringify(o));}
 function snapBytes(sn){try{return JSON.stringify(sn).length;}catch(_){return 0;}}
 function applySnap(sn){
-  const keys=sn.__scope||UKEYS;                          // a scoped entry restores only what it holds
+  const ks=(sn.__scope||UKEYS).filter(k=>UKEYS.indexOf(k)>=0),keys=ks.length?ks:UKEYS;   // a scoped entry restores only what it holds
   keys.forEach(k=>{if(sn[k])data[k]=sn[k];});
   if(sn.__noteHide)data.noteHide=sn.__noteHide;
   data.seq=Math.max(+sn.__seq||0,data.seq||0);data.v=sn.__v||SCHEMA_VERSION;   // ids must never be reissued
   pruneLinks();
   if(sn.__walls){for(const l of ORD){WALLS[l]=(sn.__walls[l]||[]).map(wr);SNAP[l]=centerlines(WALLS[l]);}}
+  if(sn.__layers){layers=sn.__layers.layers;stacks=sn.__layers.stacks||[];if(!layers.some(l=>l.id===state.activeLayer))state.activeLayer=layers[0]?layers[0].id:'L0';if(typeof renderLayers==='function')renderLayers();}
   reselectAfterSnap();}
 // applySnap rebuilds every wall object, so anything holding a wall REFERENCE — the
 // selection, a gizmo drag — would silently keep editing an orphan. Re-resolve by
@@ -208,10 +211,10 @@ $('bBOM').onclick=()=>{const t=bomText();navigator.clipboard.writeText(t).then((
 $('bBOMcsv').onclick=()=>download('bom.csv',bomCSV());
 $('bBOMj').onclick=()=>download('bom.json',JSON.stringify(bomJSON(),null,2));
 $('bSave').onclick=()=>{for(const l of ORD)B.walls[l]=(WALLS[l]||[]).map(rectArr);
-  download('villanyterv.json',JSON.stringify({state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,panelLoc},null,2));};
+  download('villanyterv.json',JSON.stringify({state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc},null,2));};
 $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);
   Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
-  if(o.layers)layers=o.layers;if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
+  if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
 function syncUI(){setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;$('explode').checked=state.exploded;
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');

@@ -125,14 +125,14 @@ function wallElevationData(r,level){const z0=r.z0||0,H=z0+(r.h||wallH(level));
   const uOf=(X,Y)=>(X-ox)*ax+(Y-oy)*ay,sOfRaw=(X,Y)=>(X-cx)*px+(Y-cy)*py,tol=thick/2+250,inR=u=>u>-200&&u<len+200;
   const sflip=(typeof WV!=='undefined'&&WV&&WV.flipSide)?-1:1;const sOf=(X,Y)=>sOfRaw(X,Y)*sflip;
   const ops=[];data.openings.forEach((o,oi)=>{if(o.level!==level||o.type==='stairs'||!layerShows(o,'build'))return;const u=uOf(o.x,o.y);
-    if(Math.abs(sOf(o.x,o.y))<tol&&inR(u)){const win=o.type==='window';ops.push({oi,type:o.type,u,w:o.w||(win?WIN_W:DOOR_W),h:o.h||(win?WIN_H:DOOR_H),sill:win?(o.sill!=null?o.sill:WIN_SILL):0});}});
+    if(Math.abs(sOf(o.x,o.y))<tol&&inR(u)){const win=o.type==='window';ops.push(lyrTagOp({oi,type:o.type,u,w:o.w||(win?WIN_W:DOOR_W),h:o.h||(win?WIN_H:DOOR_H),sill:win?(o.sill!=null?o.sill:WIN_SILL):0},o,'build'));}});
   const devs=[];data.devices.forEach(dv=>{if(dv.level!==level||!layerShows(dv,'device'))return;const u=uOf(dv.x,dv.y),ss=sOf(dv.x,dv.y);
-    if(Math.abs(ss)<tol&&inR(u))devs.push({di:data.devices.indexOf(dv),type:dv.type,ref:dv.ref||'',u,h:dv.h||0,back:ss<-1,
-      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null});});
+    if(Math.abs(ss)<tol&&inR(u))devs.push(lyrTagOp({di:data.devices.indexOf(dv),type:dv.type,ref:dv.ref||'',u,h:dv.h||0,back:ss<-1,
+      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null},dv,'device'));});
   const secs=[];data.paths.forEach((pa,pi)=>{if(!layerShows(pa,'path'))return;for(let i=0;i<pa.nodes.length-1;i++){const a=pa.nodes[i],b=pa.nodes[i+1];if(a.level!==level||b.level!==level)continue;
     const sa=sOf(a.x,a.y),sb=sOf(b.x,b.y);if(Math.abs(sa)<tol&&Math.abs(sb)<tol){const ua=uOf(a.x,a.y),ub=uOf(b.x,b.y);
       if(inR(Math.max(ua,ub))&&inR(Math.min(ua,ub))){const sec=pa.sections[i]||{build:'sull_gege'};
-        secs.push({pi,na:i,nb:i+1,ua,ub,ha:a.h||0,hb:b.h||0,build:sec.build,dia:sec.dia,cd:sec.cd,carried:(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]),back:(sa+sb)/2<-1});}}}});
+        secs.push(lyrTagOp({pi,na:i,nb:i+1,ua,ub,ha:a.h||0,hb:b.h||0,build:sec.build,dia:sec.dia,cd:sec.cd,carried:(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]),back:(sa+sb)/2<-1},pa,'path'));}}}});
   const notes=[];const __nk=wallKey(r,level);
   if(!noteSurfaceHidden(__nk))(data.wallNotes||[]).forEach((nt,i)=>{if(nt.wallKey!==__nk)return;
     notes.push({i,u:nt.u,h:nt.h,text:nt.text,kind:nt.kind,tag:nt.tag});});
@@ -233,29 +233,29 @@ function wallElevationSVG(d,showFar,dims){const M=56,H=d.H,len=d.len;
   if(L.installed){
   const warpPi=(WV&&WV.warp)?WV.warp.pi:null;
   const drawSec=back=>{const arr=d.secs.filter(x=>x.back===back);
-    arr.forEach(t=>{const col=back?'#b0b4b8':(t.build.indexOf('kv_')===0?'#c0761d':'#6f757d');
+    arr.forEach(t=>{const s0=s.length;const col=back?'#b0b4b8':(t.build.indexOf('kv_')===0?'#c0761d':'#6f757d');
       const sw=((t.build||'').indexOf('sull')>=0?Math.max(1.5,+(chaseDia(t.build,t)*sc).toFixed(2)):2.4);   // real conduit ⌀
       s+=`<line x1="${X(t.ua)}" y1="${Y(t.ha)}" x2="${X(t.ub)}" y2="${Y(t.hb)}" stroke="${col}" stroke-width="${sw}" stroke-dasharray="${t.build.indexOf('kv_')===0?'':'6 3'}" stroke-linecap="round"/>`;
       // invisible fat grab line: drag = move the WHOLE section, Alt+click = warp mode for this path
       if(!back)s+=`<line class="wvseg" data-pi="${t.pi}" data-na="${t.na}" data-nb="${t.nb}" x1="${X(t.ua)}" y1="${Y(t.ha)}" x2="${X(t.ub)}" y2="${Y(t.hb)}" stroke="transparent" stroke-width="14" stroke-linecap="round" pointer-events="stroke" style="cursor:grab"/>`;
       if(t.carried.length){const mx=(X(t.ua)+X(t.ub))/2,my=(Y(t.ha)+Y(t.hb))/2,c=t.carried[0],n=t.carried.reduce((a,x)=>a+(x.count||1),0);
-        s+=`<text x="${mx}" y="${my-4}" font-size="9" text-anchor="middle" fill="${back?'#b0b4b8':'#0a5c33'}" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc((c.name||'')+(c.num?' '+c.num:''))} ${n}ér</text>`;}});
+        s+=`<text x="${mx}" y="${my-4}" font-size="9" text-anchor="middle" fill="${back?'#b0b4b8':'#0a5c33'}" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc((c.name||'')+(c.num?' '+c.num:''))} ${n}ér</text>`;}s=lyrWrapOp(s,s0,t.op);});
     if(!back)arr.forEach(t=>{const col=(t.build.indexOf('kv_')===0?'#c0761d':'#6f757d'),hi=(t.pi===warpPi);
       s+=`<circle class="wvnode" data-pi="${t.pi}" data-ni="${t.na}" cx="${X(t.ua)}" cy="${Y(t.ha)}" r="4.5" fill="${hi?'#fff3d6':'#fff'}" stroke="${hi?'#e8641c':col}" stroke-width="1.6" style="cursor:move"/>`
         +`<circle class="wvnode" data-pi="${t.pi}" data-ni="${t.nb}" cx="${X(t.ub)}" cy="${Y(t.hb)}" r="4.5" fill="${hi?'#fff3d6':'#fff'}" stroke="${hi?'#e8641c':col}" stroke-width="1.6" style="cursor:move"/>`;});};
   if(showFar)drawSec(true);drawSec(false);
-  d.ops.forEach(o=>{const x=Math.min(X(o.u-o.w/2),X(o.u+o.w/2)),y=Y(o.sill+o.h),w=(o.w*sc).toFixed(1),h=(o.h*sc).toFixed(1);
+  d.ops.forEach(o=>{const s0=s.length;const x=Math.min(X(o.u-o.w/2),X(o.u+o.w/2)),y=Y(o.sill+o.h),w=(o.w*sc).toFixed(1),h=(o.h*sc).toFixed(1);
     s+=`<g class="wvop" data-oi="${o.oi}" style="cursor:ew-resize">`
       +`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#fff" stroke="#111" stroke-width="1.4"/>`;
     if(o.type==='window')s+=`<line x1="${x}" y1="${Y(o.sill+o.h/2)}" x2="${(+x+ +w)}" y2="${Y(o.sill+o.h/2)}" stroke="#2f6fb0"/><line x1="${X(o.u)}" y1="${y}" x2="${X(o.u)}" y2="${(+y+ +h)}" stroke="#2f6fb0"/>`;
-    s+=`<text x="${X(o.u)}" y="${y-3}" font-size="9" text-anchor="middle" fill="#111">${o.type==='window'?'Ablak':'Ajtó'} ${o.w}×${o.h}${o.sill?'/'+o.sill:''}</text></g>`;});
-  const drawDev=back=>d.devs.filter(x=>x.back===back).forEach(dv=>{const col=back?'#b0b4b8':'#111',x=X(dv.u),y=Y(dv.h);
+    s+=`<text x="${X(o.u)}" y="${y-3}" font-size="9" text-anchor="middle" fill="#111">${o.type==='window'?'Ablak':'Ajtó'} ${o.w}×${o.h}${o.sill?'/'+o.sill:''}</text></g>`;s=lyrWrapOp(s,s0,o.op);});
+  const drawDev=back=>d.devs.filter(x=>x.back===back).forEach(dv=>{const s0=s.length;const col=back?'#b0b4b8':'#111',x=X(dv.u),y=Y(dv.h);
     s+=`<g class="wvdev" data-di="${dv.di}" style="cursor:move">`+wvDevBox(dv,x,y,sc,col,back)
       +`<text x="${x+DEV_BOX_W/2*sc+3}" y="${y-7}" font-size="9" fill="${back?'#b0b4b8':'#0a2b6b'}" font-weight="700">${esc(dv.ref)}</text>`;
     const def=deviceCat(dv.devDef);if(def&&!back)s+=`<text x="${x+DEV_BOX_W/2*sc+3}" y="${y+4}" font-size="7.5" fill="#666">${esc(def.cikk)}</text>`;
     if(dv.link&&!back)s+=`<circle cx="${x}" cy="${y}" r="${(DEV_BOX_W/2)*sc+3}" fill="none" stroke="#c0530f" stroke-width="0.9" stroke-dasharray="2 2"/>`;
     s+=`</g>`;
-    s+=`<line x1="${X(0)}" y1="${y}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="0.4" stroke-dasharray="2 3" opacity="0.5"/><text x="${X(0)+2}" y="${y-2}" font-size="8" fill="${col}">${Math.round(dv.h)}</text>`;});
+    s+=`<line x1="${X(0)}" y1="${y}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="0.4" stroke-dasharray="2 3" opacity="0.5"/><text x="${X(0)+2}" y="${y-2}" font-size="8" fill="${col}">${Math.round(dv.h)}</text>`;s=lyrWrapOp(s,s0,dv.op);});
   if(showFar)drawDev(true);drawDev(false);
   // ---- WARP (Photoshop-style free transform of one path's nodes on this wall) ----
   if(warpPi!=null){const bb=wvWarpBox(d,warpPi);

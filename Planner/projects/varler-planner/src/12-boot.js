@@ -200,7 +200,7 @@ function objDimModal(title,cur,ok){openModal(title,
   ()=>ok({n:$('odN').value,w:+$('odW').value||600,d:+$('odD').value||600,ht:+$('odH').value||600,z:+$('odZ').value||0}));}
 // ---- layers UI ----
 function renderLayers(){const el=$('layerList');if(!el)return;const cats=['path','device','cable','wall','build','object'];
-  el.innerHTML=layers.map(L=>{const cs=cats.map(c=>`<button data-lc="${L.id}:${c}" class="lcat ${L.cats[c]!==false?'on':''}" title="${c}">${c[0].toUpperCase()}</button>`).join('');
+  el.innerHTML=layers.map(L=>{const cs=cats.map(c=>`<button data-lc="${L.id}:${c}" class="lcat ${(LAYER_CATS_V1[c]||[c]).every(k=>L.cats[k]!==false)?'on':''}" title="${c}">${c[0].toUpperCase()}</button>`).join('');
     return `<div class="lblock ${L.id===state.activeLayer?'lactive':''}"><div class="lrow"><input type="radio" name="alayer" ${L.id===state.activeLayer?'checked':''} data-la="${L.id}" title="aktív">`
      +`<button data-lv="${L.id}" title="show/hide">${L.visible?'👁':'🚫'}</button>`
      +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
@@ -213,9 +213,9 @@ function renderLayers(){const el=$('layerList');if(!el)return;const cats=['path'
   el.querySelectorAll('[data-la]').forEach(r=>r.onchange=()=>{state.activeLayer=r.dataset.la;});
   el.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const L=layerById(b.dataset.lv);L.visible=!L.visible;renderLayers();draw();});
   el.querySelectorAll('[data-ln]').forEach(i=>i.onchange=()=>{layerById(i.dataset.ln).name=i.value;});
-  el.querySelectorAll('[data-lc]').forEach(b=>b.onclick=()=>{const p=b.dataset.lc.split(':'),L=layerById(p[0]);L.cats[p[1]]=(L.cats[p[1]]===false);renderLayers();draw();});
+  el.querySelectorAll('[data-lc]').forEach(b=>b.onclick=()=>{const p=b.dataset.lc.split(':'),L=layerById(p[0]),ks=LAYER_CATS_V1[p[1]]||[p[1]],on=ks.every(k=>L.cats[k]!==false);ks.forEach(k=>{L.cats[k]=!on;});renderLayers();draw();});   // old six-button panel: device/build still switch their v2 groups (WP-A2 replaces the panel)
   el.querySelectorAll('[data-lx]').forEach(b=>b.onclick=()=>{const id=b.dataset.lx;layers=layers.filter(l=>l.id!==id);if(state.activeLayer===id)state.activeLayer='L0';renderLayers();draw();});}
-$('addLayer').onclick=()=>{const id='L'+Date.now().toString(36);layers.push({id,name:'Réteg '+(layers.length+1),visible:true,cats:{path:true,device:true,cable:true,wall:true,build:true,object:true}});state.activeLayer=id;renderLayers();};
+$('addLayer').onclick=()=>{const id='L'+Date.now().toString(36);layers.push({id,name:'Réteg '+(layers.length+1),visible:true,cats:layerCatsAll()});state.activeLayer=id;renderLayers();};
 // ---- project library (named save slots) ----
 const PROJ_KEY='villanyterv_projects_v1';   // {id:{name,ts,data}}
 const CURRENT_KEY='villanyterv_current_v1';  // id of last-open project (for autosave)
@@ -230,7 +230,7 @@ function saveProject(name,id){const ix=loadProjIndex();id=id||('p'+Date.now().to
 function applyProjectData(o){ // o = a sessionObj payload
   Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
-  layers=o.layers||[{id:'L0',name:'Alap',visible:true,cats:{path:true,device:true,cable:true,wall:true,build:true,object:true}}];
+  layers=o.layers||[{id:'L0',name:'Alap',visible:true,cats:layerCatsAll()}];stacks=o.stacks||[];lyrMigrateAll();
   if(o.panelLoc)panelLoc=o.panelLoc;refB=o.refB||[];
   loadBuilding(o.building||blankBuilding(),true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])?JSON.parse(JSON.stringify(o.data[k])):[]);
@@ -259,6 +259,7 @@ function hardResetWorkspace(){
   if(typeof PV!=='undefined'&&PV){if(PV.keyFn)document.removeEventListener('keydown',PV.keyFn,true);PV=null;}
   try{closeModal();}catch(_){}
   UKEYS.forEach(k=>{data[k].length=0;});                       // in place: other code holds references
+  stacks=[];
   data.noteHide={};
   for(const l of ORD){WALLS[l]=[];SLAB[l]=null;GHOST[l]=null;ROOMSB[l]=[];ROOFS[l]=[];SNAP[l]=centerlines([]);}
   DROPC.basement=0;DROPC.ground=0;DROPC.upper=0;
@@ -306,13 +307,13 @@ const LS_KEY='villanyterv_autosave_v1';let saveTimer=null;
 function sessionObj(){ensureIds(data);data.v=SCHEMA_VERSION;
   for(const l of ORD){B.walls[l]=(WALLS[l]||[]).map(rectArr);
   B.rooms=B.rooms||{};B.rooms[l]=ROOMSB[l]||[];}   // room-sheet edits on building rooms persist too
-  return {v:1,state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,panelLoc,refB};}
+  return {v:1,state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc,refB};}
 function saveSession(){try{if(currentProjId){const ix=loadProjIndex();if(ix[currentProjId]){ix[currentProjId].data=sessionObj();ix[currentProjId].ts=Date.now();saveProjIndex(ix);}}else{localStorage.setItem(LS_KEY,JSON.stringify(sessionObj()));}}catch(_){}}
 function scheduleSave(){try{clearTimeout(saveTimer);saveTimer=setTimeout(saveSession,1200);}catch(_){}}
 function restoreSession(){try{const raw=localStorage.getItem(LS_KEY);if(!raw)return false;const o=JSON.parse(raw);
   Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
-  if(o.layers)layers=o.layers;if(o.panelLoc)panelLoc=o.panelLoc;if(o.refB)refB=o.refB;if(o.building)loadBuilding(o.building,true);
+  if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.refB)refB=o.refB;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);
   data.noteHide=(o.data&&o.data.noteHide)||{};data.seq=(o.data&&+o.data.seq)||0;data.v=(o.data&&+o.data.v)||0;
   migrate(data);

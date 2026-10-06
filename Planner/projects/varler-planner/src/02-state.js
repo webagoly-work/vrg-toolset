@@ -17,10 +17,33 @@ const HORDER=['floor','s300','s500','s1100','s1300','s1400','s1900','gerinc','ce
 const DEVORDER=['socket','switch','light','junction'];
 const BUILDORDER=['door','window','stairs'];
 const BUILDNAME={door:'Ajtó',window:'Ablak',stairs:'Lépcső'};
-let layers=[{id:'L0',name:'Alap',visible:true,cats:{path:true,device:true,cable:true,wall:true,build:true,object:true}}];
+// Sub-layer categories (panel order). opt:true = shown only when the layer has such items.
+// Sits ABOVE `let layers` because the default layer is built from it at load time (TDZ otherwise).
+const LAYER_CATS=[
+ {k:'path',  n:'Pályák'},
+ {k:'socket',n:'Dugaljak'},
+ {k:'switch',n:'Kapcsolók'},
+ {k:'light', n:'Lámpák'},
+ {k:'device',n:'Eszközök'},                 // every other device: dobozok, elosztó, RBX, BASE, végpontok
+ {k:'wall',  n:'Falak'},
+ {k:'door',  n:'Ajtók'},
+ {k:'window',n:'Ablakok'},
+ {k:'stairs',n:'Lépcsők'},
+ {k:'object',n:'Tárgyak'},
+ {k:'floor', n:'Padló / helyiség',opt:true},
+ {k:'roof',  n:'Tetők',opt:true},
+ {k:'note',  n:'Jegyzetek',opt:true},
+ {k:'cable', n:'Kábelek (régi)',opt:true},
+ {k:'mark',  n:'Jelölések',opt:true},
+ {k:'trace', n:'Mozgásnyomok',opt:true}];
+const LAYER_CATS_V1={device:['socket','switch','light','device'],build:['door','window','stairs','floor','roof']};
+function layerCatsAll(on){const o={};LAYER_CATS.forEach(c=>o[c.k]=on!==false);return o;}
+let layers=[{id:'L0',name:'Alap',visible:true,cats:layerCatsAll()}];
+let stacks=[];
 function curLayer(){return state.activeLayer;}
 function layerById(id){return layers.find(l=>l.id===id)||layers[0];}
-function layerShows(item,cat){const L=layerById((item&&item.layer)||'L0');return L.visible&&(L.cats[cat]!==false);}
+function layerShows(item,cat){const L=layerById((item&&item.layer)||'L0');cat=lyrCat(item,cat);
+  return L.visible&&(L.cats[cat]!==false);}
 const CIRC={lighting:{c:'#e6a800',dash:'',name:'Világítás'},sockets:{c:'#2f79c9',dash:'',name:'Dugalj'},
  power3:{c:'#d1493f',dash:'7 4',name:'3 fázis'},data:{c:'#16a085',dash:'2 4',name:'Adat'}};
 const DEV={socket:'Aljzat',switch:'Kapcsoló',light:'Lámpa',board:'Elosztószekrény',junction:'Kötődoboz',box:'Szerelvénydoboz'};
@@ -171,6 +194,6 @@ function syncHeightUI(){const sel=$('drawH');if(sel&&!state.freeHeight)sel.value
   const fc=$('freeHeightChk');if(fc)fc.checked=!!state.freeHeight;
   const fm=$('freeMmBox');if(fm)fm.style.display=state.freeHeight?'flex':'none';
   const fv=$('freeMmVal');if(fv)fv.textContent=(state.freeMm||0)+' mm';}
-const data={v:SCHEMA_VERSION,seq:0,cables:[],paths:[],devices:[],notes:[],measures:[],openings:[],floors:[],objects:[],roofs:[],wallNotes:[],circuits:[],noteHide:{}};
+const data={v:SCHEMA_VERSION,seq:0,cables:[],paths:[],devices:[],notes:[],measures:[],openings:[],floors:[],objects:[],roofs:[],wallNotes:[],circuits:[],marks:[],traces:[],runs:[],noteHide:{}};
 let draft=null,pathDraft=null,measureDraft=null,cursor=null,lock=null,wallStart=null,floorDraft=null,roofStart=null,dragItem=null,bothPan=false,objGhost=null,buildGhost=null;const undo=[],redo=[];
 

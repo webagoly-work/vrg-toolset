@@ -35,7 +35,7 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0);
     if(SLAB[l])pushFloor(faces,SLAB[l],fz,'#dedcd3','#8f8a80',null,1);
     else (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;pushFloor(faces,rm.poly,fz,rm.fill,'#8f8a80',null,1);});
-    data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build'))return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;pushFloor(faces,fl.poly,fz+(fl.z||0),fl.fill||'#e2ddd0','#8f8a80',null,1);});
+    data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build'))return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;const n0=faces.length;pushFloor(faces,fl.poly,fz+(fl.z||0),fl.fill||'#e2ddd0','#8f8a80',null,1);lyrFaces(faces,n0,fl,'floor');});
     if(GHOST[l])pushFloor(faces,GHOST[l],fz,'#000000','#8a857b','7 6',0.07);
     // álmennyezet: a translucent plane at its own height, per room where it applies
     if(state.showDropCeil!==false){
@@ -47,12 +47,12 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
       data.floors.forEach((fl,i)=>{const mm=dropCeilMm(l,fl);if(!mm)return;
         if(fl.level!==l||!layerShows(fl,'build'))return;
         if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;
-        pushFloor(faces,fl.poly,fz+mm,dcC,'#8fa0a8','4 3',dcO);});}
+        const n0=faces.length;pushFloor(faces,fl.poly,fz+mm,dcC,'#8fa0a8','4 3',dcO);lyrFaces(faces,n0,fl,'floor');});}
     if(wm!=='hidden'){const wrs=(WALLS[l]||[]).filter(r=>layerShows(r,'wall')&&soloWallOk(r,l));
       const merge=wallMergeOn()&&wm==='solid';
       const sibs=merge?wrs.map(r=>({r,z0:fz+(r.z0||0),z1:fz+(r.z0||0)+(r.h||wallH(l))})):null;
       const flat=merge&&state.pitch>=88;
-      for(const r of wrs)pushBox(faces,r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)),op,false,merge?{sibs,flat}:null);
+      for(const r of wrs){const n0=faces.length;pushBox(faces,r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)),op,false,merge?{sibs,flat}:null);lyrFaces(faces,n0,r,'wall');}
       // from above, one contour around the whole wall body instead of a line per rectangle
       if(flat)rectsUnionSegs(wrs).forEach(g=>{const zt=fz+wallH(l);
         faces.push({pts:[[g[0],g[1],zt],[g[2],g[3],zt]],fill:'none',stroke:'#514c43',op:1,dash:null,key:depthOf((g[0]+g[2])/2,(g[1]+g[3])/2,zt)+40});});}
@@ -61,11 +61,11 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
       for(const r of WALLS[l])if((r.z0||0)>0&&layerShows(r,'wall')&&soloWallOk(r,l))raised.push({r,mm:r.z0,kind:'w',l});
       data.floors.forEach((fl,i)=>{if(fl.level===l&&(fl.z||0)>0&&layerShows(fl,'build'))raised.push({fl,mm:fl.z,kind:'f',l});});}
     for(const rf of (ROOFS[l]||[]))pushRoof(faces,rf,l);}
-  if(state.style!=='whiteout')for(const o of data.openings)if(state.levels[o.level]&&layerShows(o,'build')&&soloOk(o.x,o.y,o.level))pushOpening(faces,o);
-  for(const rf of (data.roofs||[]))if(state.levels[rf.level]&&layerShows(rf,'build'))
-    pushUserRoof(faces,rf,selected&&selected.t==='roofs'&&data.roofs[selected.i]===rf);
-  for(const o of data.objects)if(state.levels[o.level]&&layerShows(o,'object')&&soloOk(o.x,o.y,o.level)&&!(isGenObject(o)&&!genObjectsVisible()))
-    pushObj(faces,o,selected&&selected.t==='objects'&&data.objects[selected.i]===o);
+  if(state.style!=='whiteout')for(const o of data.openings)if(state.levels[o.level]&&layerShows(o,'build')&&soloOk(o.x,o.y,o.level)){const n0=faces.length;pushOpening(faces,o);lyrFaces(faces,n0,o,'build');}
+  for(const rf of (data.roofs||[]))if(state.levels[rf.level]&&layerShows(rf,'build')){const n0=faces.length;
+    pushUserRoof(faces,rf,selected&&selected.t==='roofs'&&data.roofs[selected.i]===rf);lyrFaces(faces,n0,rf,'roof');}
+  for(const o of data.objects)if(state.levels[o.level]&&layerShows(o,'object')&&soloOk(o.x,o.y,o.level)&&!(isGenObject(o)&&!genObjectsVisible())){const n0=faces.length;
+    pushObj(faces,o,selected&&selected.t==='objects'&&data.objects[selected.i]===o);lyrFaces(faces,n0,o,'object');}
   pushRefBuildings(faces);
   // Floors are the flat ground plane at z=0 — they never occlude raised solids that rest on them.
   // Painter's algorithm on centroid depth fails when a big floor's centroid is nearer than an object's,
@@ -74,8 +74,8 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
   solidFaces.sort((a,b)=>a.key-b.key);
   const ordered=floorFaces.concat(solidFaces);
   let s='';for(const f of ordered){if(f.op===0)continue;const fo=f.op<1?` fill-opacity="${f.op}"`:'';
-    const d=f.dash?` stroke-dasharray="${f.dash}"`:'';
-    s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}"${fo} stroke="${f.stroke}" stroke-width="${nvSW(f.sw||NV_PEN.edge)}"${d}/>`;}
+    const d=f.dash?` stroke-dasharray="${f.dash}"`:'',lo=f.lop?` opacity="${lyrOpStr(f.lop)}"`:'';   // lop = layer opacity (05l)
+    s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}"${fo} stroke="${f.stroke}" stroke-width="${nvSW(f.sw||NV_PEN.edge)}"${d}${lo}/>`;}
   s+=raisedMarks(raised);
   return s+isoGridSvg();}
 // 2D badge for anything that starts above the floor (lebegő fal / dobogó) — otherwise invisible from above
@@ -261,38 +261,43 @@ function drawBlueprintPlan(){const level=state.active;const z=dz(level,0);
   rooms.forEach(rm=>{s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],z]))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;});
   // ---- objects as thin plan outlines ----
   data.objects.forEach(o=>{if(o.level!==level||!layerShows(o,'object'))return;if(isGenObject(o)&&!genObjectsVisible())return;
-    s+=`<polygon points="${p2b(objFootprint(o))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;});
+    s+=lyrWrap(o,'object',`<polygon points="${p2b(objFootprint(o))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`);});
   // ---- walls: hatched, openings cut out, drawn as ONE merged body ----
   // The hatched pieces are filled first with no outline of their own; the contour is then
   // drawn from the union of those pieces, so the seams where walls overlap or butt together
   // never appear and the corners close symmetrically. The walls themselves are not modified.
-  const wpc=[];let sym='';
+  const wgr={};   // layer opacity → its wall pieces; at 100 % there is one group and the output is unchanged
   (WALLS[level]||[]).forEach(r=>{if(!layerShows(r,'wall')||!soloWallOk(r,level))return;
+    const wo=lyrOp(r,'wall'),G=wgr[wo]||(wgr[wo]={wpc:[],sym:''}),wpc=G.wpc;
     const W=bpWallSpans(r,level);let u=0;
     W.spans.forEach(sp=>{if(sp.u0-u>1)wpc.push(bpSeg(r,W.horiz,u,sp.u0));u=Math.max(u,sp.u1);});
     if(W.len-u>1)wpc.push(bpSeg(r,W.horiz,u,W.len));
     // opening symbols in the gaps
     W.spans.forEach(sp=>{const q=bpSeg(r,W.horiz,sp.u0,sp.u1),o=sp.o,wdt=sp.u1-sp.u0;
-      sym+=`<polygon points="${bpRect(q,z)}" fill="#fff" stroke="none"/>`;
+      G.sym+=`<polygon points="${bpRect(q,z)}" fill="#fff" stroke="none"/>`;
       const a=W.horiz?[q.x0,q.y0]:[q.x0,q.y0],b2=W.horiz?[q.x1,q.y0]:[q.x0,q.y1],
             c2=W.horiz?[q.x1,q.y1]:[q.x1,q.y1],d2=W.horiz?[q.x0,q.y1]:[q.x1,q.y0];
       if(o.type==='window'){const m0=W.horiz?[q.x0,(q.y0+q.y1)/2]:[(q.x0+q.x1)/2,q.y0],m1=W.horiz?[q.x1,(q.y0+q.y1)/2]:[(q.x0+q.x1)/2,q.y1];
-        sym+=`<polyline points="${p2b([[a[0],a[1],z],[b2[0],b2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
+        G.sym+=`<polyline points="${p2b([[a[0],a[1],z],[b2[0],b2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
           +`<polyline points="${p2b([[d2[0],d2[1],z],[c2[0],c2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
           +`<polyline points="${p2b([[m0[0],m0[1],z],[m1[0],m1[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;}
-      else sym+=bpDoorSymbol(q,W,o,wdt,z,[a,b2,c2,d2]);});});
+      else G.sym+=bpDoorSymbol(q,W,o,wdt,z,[a,b2,c2,d2]);});});
   // the merged body: hatch with no seams, then one contour around the union
+  Object.keys(wgr).forEach(k=>{const G=wgr[k],wpc=G.wpc,s0=s.length;
   wpc.forEach(q=>{s+=`<polygon points="${bpRect(q,z)}" fill="url(#bph)" stroke="none"/>`;});
-  s+=sym;
+  s+=G.sym;
   rectsUnionSegs(wpc).forEach(g=>{s+=`<polyline points="${p2b([[g[0],g[1],z],[g[2],g[3],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.wall)}" stroke-linecap="square"/>`;});
+  s=lyrWrapOp(s,s0,+k);});
   // ---- stairs in plan: treads + direction arrow ----
   data.openings.forEach(o=>{if(o.level!==level||o.type!=='stairs'||!layerShows(o,'build'))return;
+    const s0=s.length;
     const Wd=o.w||STAIR_W,going=o.going||GOING,n=Math.max(3,Math.round((o.h||wallH(level))/(o.riser||RISER)));
     const d=[Math.cos(o.ang),Math.sin(o.ang)],p=[-Math.sin(o.ang),Math.cos(o.ang)],rev=(o.variant&1)?-1:1;
     const P=(u,v)=>[o.x+d[0]*u*rev+p[0]*v, o.y+d[1]*u*rev+p[1]*v, z];
     s+=`<polygon points="${p2b([P(0,0),P(n*going,0),P(n*going,Wd),P(0,Wd)])}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
     for(let i=1;i<n;i++)s+=`<polyline points="${p2b([P(i*going,0),P(i*going,Wd)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.fine)}"/>`;
-    s+=`<polyline points="${p2b([P(going*0.6,Wd/2),P(n*going-going*0.6,Wd/2)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;});
+    s+=`<polyline points="${p2b([P(going*0.6,Wd/2),P(n*going-going*0.6,Wd/2)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;
+    s=lyrWrapFrom(s,s0,o,'build');});
   // ---- room labels: NAME / burkolat / area ----
   if(state.showRoomText)rooms.forEach(rm=>{if(rm.noText)return;
     let cx=0,cy=0;rm.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=rm.poly.length;cy/=rm.poly.length;
@@ -346,6 +351,7 @@ function drawBlueprintIso(){const faces=[];let s=bpDefs();
     data.floors.forEach((fl,i)=>{if(fl.level!==l)return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;pushFloor(faces,fl.poly,fz+(fl.z||0),'#fff','#111',null,1);});
     // walls split by openings -> real 3D voids
     (WALLS[l]||[]).forEach(r=>{if(!layerShows(r,'wall')||!soloWallOk(r,l))return;
+      const n0=faces.length;
       const wh=r.h||H,wz=fz+(r.z0||0),W=bpWallSpans(r,l);let u=0;
       W.spans.forEach(sp=>{if(sp.u0-u>1)pushBpBox(faces,bpSeg(r,W.horiz,u,sp.u0),wz,wz+wh,true);
         const o=sp.o;
@@ -356,11 +362,14 @@ function drawBlueprintIso(){const faces=[];let s=bpDefs();
         else{const dh=o.h||DOOR_H;const q=bpSeg(r,W.horiz,sp.u0,sp.u1);
           if(wz+dh<wz+wh-20)pushBpBox(faces,q,wz+dh,wz+wh,true);}
         u=Math.max(u,sp.u1);});
-      if(W.len-u>1)pushBpBox(faces,bpSeg(r,W.horiz,u,W.len),wz,wz+wh,true);});
+      if(W.len-u>1)pushBpBox(faces,bpSeg(r,W.horiz,u,W.len),wz,wz+wh,true);
+      lyrFaces(faces,n0,r,'wall');});
     data.objects.forEach(o=>{if(o.level!==l||!layerShows(o,'object'))return;if(isGenObject(o)&&!genObjectsVisible())return;
+      const n0=faces.length;
       const v=objCorners(o);FACES.forEach(fi=>{const pts=fi.map(i=>v[i]);if(!faceVisible(newell(pts)))return;
         let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=4;cy/=4;cz/=4;
-        faces.push({pts,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.thin,key:depthOf(cx,cy,cz)+18});});});
+        faces.push({pts,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.thin,key:depthOf(cx,cy,cz)+18});});
+      lyrFaces(faces,n0,o,'object');});
     (data.roofs||[]).forEach(rf=>{if(rf.level!==l)return;roofFaceList(rf).forEach(fc=>{
       if(!faceVisible(newell(fc)))return;let cx=0,cy=0,cz=0;fc.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=fc.length;cy/=fc.length;cz/=fc.length;
       faces.push({pts:fc,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.body,key:depthOf(cx,cy,cz)+30});});});
@@ -368,7 +377,7 @@ function drawBlueprintIso(){const faces=[];let s=bpDefs();
       let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=pts.length;cy/=pts.length;cz/=pts.length;
       faces.push({pts,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.body,key:depthOf(cx,cy,cz)+30});});}
   faces.sort((a,b)=>a.key-b.key);
-  faces.forEach(f=>{s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}" stroke="${f.stroke}" stroke-width="${bpSW(f.sw||BP_PEN.body)}"/>`;});
+  faces.forEach(f=>{s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}" stroke="${f.stroke}" stroke-width="${bpSW(f.sw||BP_PEN.body)}"${f.lop?` opacity="${lyrOpStr(f.lop)}"`:''}/>`;});
   // labels on the floor plane
   if(state.showRoomText)for(const l of ORD){if(!state.levels[l])continue;
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(rm.noText||(state.soloRoom&&!soloRoomIs({src:'B',i,level:l})))return;s+=bpFloorLabel(rm,l);});
@@ -708,9 +717,9 @@ function draw(){
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(rm.noText||(state.soloRoom&&!soloRoomIs({src:'B',i,level:l})))return;s+=floorLabel(rm,l);});
     data.floors.forEach((fl,i)=>{if(fl.level!==l||!fl.name||fl.noText)return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;s+=floorLabel(fl,l);});}
   // openings
-  if(state.style==='whiteout')for(const o of data.openings){if(state.levels[o.level]&&layerShows(o,'build')&&soloOk(o.x,o.y,o.level))s+=openingSym(o);}
+  if(state.style==='whiteout')for(const o of data.openings){if(state.levels[o.level]&&layerShows(o,'build')&&soloOk(o.x,o.y,o.level))s+=lyrWrap(o,'build',openingSym(o));}
   // paths (primary conduits) — layered under cables
-  for(const pa of data.paths){if(!layerShows(pa,'path'))continue;if(pa.nodes.filter(n=>state.levels[n.level]).length<2)continue;const lane=pa.lane||0;
+  for(const pa of data.paths){if(!layerShows(pa,'path'))continue;if(pa.nodes.filter(n=>state.levels[n.level]).length<2)continue;const lane=pa.lane||0,s0=s.length;
     for(let i=1;i<pa.nodes.length;i++){const a=pa.nodes[i-1],b=pa.nodes[i];
       if(!state.levels[a.level]||!state.levels[b.level])continue;
       const sec=(pa.sections&&pa.sections[i-1])||{build:'sull_gege'};
@@ -732,7 +741,8 @@ function draw(){
         const mb=planToBase((A[0]+B[0])/2,(A[1]+B[1])/2,(A[2]+B[2])/2);const nwires=carried.reduce((t,c)=>t+(c.count||1),0);
         const lbl=(sec.circuit?(sec.circuit.name||'')+(sec.circuit.num?' '+sec.circuit.num:''):carried.length+' kör')+' · '+nwires+'ér';
         if(!dim&&state.circHoverInfo!==false)s+=`<text x="${mb[0]}" y="${mb[1]-4}" font-size="8.5" text-anchor="middle" fill="${ccol}" paint-order="stroke" stroke="#fff" stroke-width="2.6">${esc(lbl)}</text>`;}}}
-    for(const n of pa.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="1.8" fill="#555"/>`;}}
+    for(const n of pa.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="1.8" fill="#555"/>`;}
+    s=lyrWrapFrom(s,s0,pa,'path');}
   if((state.mode==='path'||state.mode==='cable'||state.mode==='device')){const dr=state.mode==='path'?pathDraft:(state.mode==='cable'?draft:null);
     if(dr&&dr.nodes.length){const placed=dr.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]);
       // placed (committed) segments — solid
@@ -771,9 +781,10 @@ function draw(){
         +`</g>`;}}
   // cables
   for(const cb of data.cables){if(!circOn[cb.type]||!layerShows(cb,'cable'))continue;const vis=cb.nodes.filter(n=>state.levels[n.level]);
-    if(vis.length<2)continue;const cc=CIRC[cb.type];
+    if(vis.length<2)continue;const cc=CIRC[cb.type],s0=s.length;
     s+=`<polyline points="${p2b(cb.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]))}" fill="none" stroke="${cc.c}" stroke-width="2.3" stroke-dasharray="${cc.dash}" stroke-linejoin="round" stroke-linecap="round"/>`;
-    for(const n of cb.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="2" fill="${cc.c}"/>`;}}
+    for(const n of cb.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="2" fill="${cc.c}"/>`;}
+    s=lyrWrapFrom(s,s0,cb,'cable');}
   if(draft&&draft.nodes.length){const cc=CIRC[draft.type];const pts=draft.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]);
     if(cursor)pts.push([cursor.x,cursor.y,dz(cursor.level,cursor.h)]);
     s+=`<polyline points="${p2b(pts)}" fill="none" stroke="${cc.c}" stroke-width="2.3" stroke-dasharray="4 3"/>`;
@@ -781,11 +792,12 @@ function draw(){
   // devices
   // switch→device links (show what each switch controls)
   if(state.showSwitchLinks!==false)for(const sw of data.devices){if(sw.type!=='switch'||!sw.swMap||!state.levels[sw.level]||!layerShows(sw,'device'))continue;
-    const a=planToBase(sw.x,sw.y,dz(sw.level,sw.h||0));
+    const a=planToBase(sw.x,sw.y,dz(sw.level,sw.h||0)),s0=s.length;
     Object.keys(sw.swMap).forEach(term=>{const tgt=devByRef(sw.swMap[term]);if(!tgt||!state.levels[tgt.level])return;
       const b=planToBase(tgt.x,tgt.y,dz(tgt.level,tgt.h||0));
       s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#c43d8f" stroke-width="1.1" stroke-dasharray="3 3" opacity="0.75"/>`
-        +`<text x="${(a[0]*0.6+b[0]*0.4)}" y="${(a[1]*0.6+b[1]*0.4)-2}" font-size="7.5" fill="#c43d8f" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="2">${esc(term)}</text>`;});}
+        +`<text x="${(a[0]*0.6+b[0]*0.4)}" y="${(a[1]*0.6+b[1]*0.4)-2}" font-size="7.5" fill="#c43d8f" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="2">${esc(term)}</text>`;});
+    s=lyrWrapFrom(s,s0,sw,'device');}
   // determine which devices are seen from BEHIND (through the wall) so devSym can dim them.
   // Robust method: a device is "behind" if, in the CURRENT projection, its host wall plane sits
   // between the camera and the device — i.e. the device's projected depth is GREATER (farther)
@@ -826,17 +838,20 @@ function draw(){
   } else for(const d of data.devices)d.faceBack=false;
   // board connection rectangles (the whole rectangle is one connection point along the expected underside)
   for(const b of data.devices){if(b.type!=='board'||!state.levels[b.level]||!layerShows(b,'device'))continue;
+    const s0=s.length;
     const poly=boardRectPoly(b).map(p=>planToBase(p[0],p[1],dz(b.level,b.z||BOARD_DEFAULT_Z)));
     s+=`<polygon points="${poly.map(p=>p[0]+','+p[1]).join(' ')}" fill="#ffe9b0" fill-opacity="0.5" stroke="#b8901f" stroke-width="1.3" stroke-dasharray="4 2"/>`;
     const c=planToBase(b.x,b.y,dz(b.level,b.z||BOARD_DEFAULT_Z));
-    s+=`<text x="${c[0]}" y="${c[1]+3}" font-size="8.5" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc(b.ref||'EL')}</text>`;}
-  for(const d of data.devices){if(state.levels[d.level]&&layerShows(d,'device')&&soloOk(d.x,d.y,d.level))s+=devSym(d);}
+    s+=`<text x="${c[0]}" y="${c[1]+3}" font-size="8.5" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc(b.ref||'EL')}</text>`;s=lyrWrapFrom(s,s0,b,'device');}
+  for(const d of data.devices){if(state.levels[d.level]&&layerShows(d,'device')&&soloOk(d.x,d.y,d.level))s+=lyrWrap(d,'device',devSym(d));}
   // notes
   for(const [ni,n] of data.notes.entries()){if(!state.levels[n.level])continue;
     if(typeof ntVisible==='function'&&!ntVisible(n))continue;
     const b=planToBase(n.x,n.y,dz(n.level,0));
+    const s0=s.length;
     s+=(typeof ntSym==='function')?ntSym(n,ni,b)
-      :`<g><path d="M${b[0]} ${b[1]} l-6 -12 a6 6 0 1 1 12 0 z" fill="#d1493f" stroke="#7a2a24"/><text x="${b[0]+9}" y="${b[1]-9}" font-size="10.5" fill="#333" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(n.text)}</text></g>`;}  // measures
+      :`<g><path d="M${b[0]} ${b[1]} l-6 -12 a6 6 0 1 1 12 0 z" fill="#d1493f" stroke="#7a2a24"/><text x="${b[0]+9}" y="${b[1]-9}" font-size="10.5" fill="#333" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(n.text)}</text></g>`;
+    s=lyrWrapFrom(s,s0,n,'note');}  // measures
   const ms=data.measures.concat(measureDraft&&measureDraft.length===2?[measureDraft]:[]);
   for(const mz of ms){const a=planToBase(mz[0].x,mz[0].y,dz(mz[0].level,0)),b=planToBase(mz[1].x,mz[1].y,dz(mz[1].level,0));
     const L=(Math.hypot(mz[1].x-mz[0].x,mz[1].y-mz[0].y)/1000).toFixed(2);

@@ -589,7 +589,7 @@ window.t=t;window.setLang=setLang;window.lang=lang;window.LANGS=LANGS;window.L10
 // ---------------------------------------------------------------------------
 const SCHEMA_VERSION=2;
 const IDPRE={devices:'D',paths:'P',objects:'O',openings:'B',floors:'F',roofs:'R',
-             cables:'C',measures:'M',notes:'N',wallNotes:'W',circuits:'A'};
+             cables:'C',measures:'M',notes:'N',wallNotes:'W',circuits:'A',marks:'J',traces:'T',runs:'H'};
 
 function idNum(id){const m=/(\d+)$/.exec(String(id||''));return m?+m[1]:0;}
 function maxIdNum(d){let n=0;
@@ -851,10 +851,33 @@ const HORDER=['floor','s300','s500','s1100','s1300','s1400','s1900','gerinc','ce
 const DEVORDER=['socket','switch','light','junction'];
 const BUILDORDER=['door','window','stairs'];
 const BUILDNAME={door:'Ajtó',window:'Ablak',stairs:'Lépcső'};
-let layers=[{id:'L0',name:'Alap',visible:true,cats:{path:true,device:true,cable:true,wall:true,build:true,object:true}}];
+// Sub-layer categories (panel order). opt:true = shown only when the layer has such items.
+// Sits ABOVE `let layers` because the default layer is built from it at load time (TDZ otherwise).
+const LAYER_CATS=[
+ {k:'path',  n:'Pályák'},
+ {k:'socket',n:'Dugaljak'},
+ {k:'switch',n:'Kapcsolók'},
+ {k:'light', n:'Lámpák'},
+ {k:'device',n:'Eszközök'},                 // every other device: dobozok, elosztó, RBX, BASE, végpontok
+ {k:'wall',  n:'Falak'},
+ {k:'door',  n:'Ajtók'},
+ {k:'window',n:'Ablakok'},
+ {k:'stairs',n:'Lépcsők'},
+ {k:'object',n:'Tárgyak'},
+ {k:'floor', n:'Padló / helyiség',opt:true},
+ {k:'roof',  n:'Tetők',opt:true},
+ {k:'note',  n:'Jegyzetek',opt:true},
+ {k:'cable', n:'Kábelek (régi)',opt:true},
+ {k:'mark',  n:'Jelölések',opt:true},
+ {k:'trace', n:'Mozgásnyomok',opt:true}];
+const LAYER_CATS_V1={device:['socket','switch','light','device'],build:['door','window','stairs','floor','roof']};
+function layerCatsAll(on){const o={};LAYER_CATS.forEach(c=>o[c.k]=on!==false);return o;}
+let layers=[{id:'L0',name:'Alap',visible:true,cats:layerCatsAll()}];
+let stacks=[];
 function curLayer(){return state.activeLayer;}
 function layerById(id){return layers.find(l=>l.id===id)||layers[0];}
-function layerShows(item,cat){const L=layerById((item&&item.layer)||'L0');return L.visible&&(L.cats[cat]!==false);}
+function layerShows(item,cat){const L=layerById((item&&item.layer)||'L0');cat=lyrCat(item,cat);
+  return L.visible&&(L.cats[cat]!==false);}
 const CIRC={lighting:{c:'#e6a800',dash:'',name:'Világítás'},sockets:{c:'#2f79c9',dash:'',name:'Dugalj'},
  power3:{c:'#d1493f',dash:'7 4',name:'3 fázis'},data:{c:'#16a085',dash:'2 4',name:'Adat'}};
 const DEV={socket:'Aljzat',switch:'Kapcsoló',light:'Lámpa',board:'Elosztószekrény',junction:'Kötődoboz',box:'Szerelvénydoboz'};
@@ -1005,7 +1028,7 @@ function syncHeightUI(){const sel=$('drawH');if(sel&&!state.freeHeight)sel.value
   const fc=$('freeHeightChk');if(fc)fc.checked=!!state.freeHeight;
   const fm=$('freeMmBox');if(fm)fm.style.display=state.freeHeight?'flex':'none';
   const fv=$('freeMmVal');if(fv)fv.textContent=(state.freeMm||0)+' mm';}
-const data={v:SCHEMA_VERSION,seq:0,cables:[],paths:[],devices:[],notes:[],measures:[],openings:[],floors:[],objects:[],roofs:[],wallNotes:[],circuits:[],noteHide:{}};
+const data={v:SCHEMA_VERSION,seq:0,cables:[],paths:[],devices:[],notes:[],measures:[],openings:[],floors:[],objects:[],roofs:[],wallNotes:[],circuits:[],marks:[],traces:[],runs:[],noteHide:{}};
 let draft=null,pathDraft=null,measureDraft=null,cursor=null,lock=null,wallStart=null,floorDraft=null,roofStart=null,dragItem=null,bothPan=false,objGhost=null,buildGhost=null;const undo=[],redo=[];
 
 //////////////////// geometry helpers ////////////////////
@@ -1362,7 +1385,7 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0);
     if(SLAB[l])pushFloor(faces,SLAB[l],fz,'#dedcd3','#8f8a80',null,1);
     else (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;pushFloor(faces,rm.poly,fz,rm.fill,'#8f8a80',null,1);});
-    data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build'))return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;pushFloor(faces,fl.poly,fz+(fl.z||0),fl.fill||'#e2ddd0','#8f8a80',null,1);});
+    data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build'))return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;const n0=faces.length;pushFloor(faces,fl.poly,fz+(fl.z||0),fl.fill||'#e2ddd0','#8f8a80',null,1);lyrFaces(faces,n0,fl,'floor');});
     if(GHOST[l])pushFloor(faces,GHOST[l],fz,'#000000','#8a857b','7 6',0.07);
     // álmennyezet: a translucent plane at its own height, per room where it applies
     if(state.showDropCeil!==false){
@@ -1374,12 +1397,12 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
       data.floors.forEach((fl,i)=>{const mm=dropCeilMm(l,fl);if(!mm)return;
         if(fl.level!==l||!layerShows(fl,'build'))return;
         if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;
-        pushFloor(faces,fl.poly,fz+mm,dcC,'#8fa0a8','4 3',dcO);});}
+        const n0=faces.length;pushFloor(faces,fl.poly,fz+mm,dcC,'#8fa0a8','4 3',dcO);lyrFaces(faces,n0,fl,'floor');});}
     if(wm!=='hidden'){const wrs=(WALLS[l]||[]).filter(r=>layerShows(r,'wall')&&soloWallOk(r,l));
       const merge=wallMergeOn()&&wm==='solid';
       const sibs=merge?wrs.map(r=>({r,z0:fz+(r.z0||0),z1:fz+(r.z0||0)+(r.h||wallH(l))})):null;
       const flat=merge&&state.pitch>=88;
-      for(const r of wrs)pushBox(faces,r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)),op,false,merge?{sibs,flat}:null);
+      for(const r of wrs){const n0=faces.length;pushBox(faces,r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)),op,false,merge?{sibs,flat}:null);lyrFaces(faces,n0,r,'wall');}
       // from above, one contour around the whole wall body instead of a line per rectangle
       if(flat)rectsUnionSegs(wrs).forEach(g=>{const zt=fz+wallH(l);
         faces.push({pts:[[g[0],g[1],zt],[g[2],g[3],zt]],fill:'none',stroke:'#514c43',op:1,dash:null,key:depthOf((g[0]+g[2])/2,(g[1]+g[3])/2,zt)+40});});}
@@ -1388,11 +1411,11 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
       for(const r of WALLS[l])if((r.z0||0)>0&&layerShows(r,'wall')&&soloWallOk(r,l))raised.push({r,mm:r.z0,kind:'w',l});
       data.floors.forEach((fl,i)=>{if(fl.level===l&&(fl.z||0)>0&&layerShows(fl,'build'))raised.push({fl,mm:fl.z,kind:'f',l});});}
     for(const rf of (ROOFS[l]||[]))pushRoof(faces,rf,l);}
-  if(state.style!=='whiteout')for(const o of data.openings)if(state.levels[o.level]&&layerShows(o,'build')&&soloOk(o.x,o.y,o.level))pushOpening(faces,o);
-  for(const rf of (data.roofs||[]))if(state.levels[rf.level]&&layerShows(rf,'build'))
-    pushUserRoof(faces,rf,selected&&selected.t==='roofs'&&data.roofs[selected.i]===rf);
-  for(const o of data.objects)if(state.levels[o.level]&&layerShows(o,'object')&&soloOk(o.x,o.y,o.level)&&!(isGenObject(o)&&!genObjectsVisible()))
-    pushObj(faces,o,selected&&selected.t==='objects'&&data.objects[selected.i]===o);
+  if(state.style!=='whiteout')for(const o of data.openings)if(state.levels[o.level]&&layerShows(o,'build')&&soloOk(o.x,o.y,o.level)){const n0=faces.length;pushOpening(faces,o);lyrFaces(faces,n0,o,'build');}
+  for(const rf of (data.roofs||[]))if(state.levels[rf.level]&&layerShows(rf,'build')){const n0=faces.length;
+    pushUserRoof(faces,rf,selected&&selected.t==='roofs'&&data.roofs[selected.i]===rf);lyrFaces(faces,n0,rf,'roof');}
+  for(const o of data.objects)if(state.levels[o.level]&&layerShows(o,'object')&&soloOk(o.x,o.y,o.level)&&!(isGenObject(o)&&!genObjectsVisible())){const n0=faces.length;
+    pushObj(faces,o,selected&&selected.t==='objects'&&data.objects[selected.i]===o);lyrFaces(faces,n0,o,'object');}
   pushRefBuildings(faces);
   // Floors are the flat ground plane at z=0 — they never occlude raised solids that rest on them.
   // Painter's algorithm on centroid depth fails when a big floor's centroid is nearer than an object's,
@@ -1401,8 +1424,8 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
   solidFaces.sort((a,b)=>a.key-b.key);
   const ordered=floorFaces.concat(solidFaces);
   let s='';for(const f of ordered){if(f.op===0)continue;const fo=f.op<1?` fill-opacity="${f.op}"`:'';
-    const d=f.dash?` stroke-dasharray="${f.dash}"`:'';
-    s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}"${fo} stroke="${f.stroke}" stroke-width="${nvSW(f.sw||NV_PEN.edge)}"${d}/>`;}
+    const d=f.dash?` stroke-dasharray="${f.dash}"`:'',lo=f.lop?` opacity="${lyrOpStr(f.lop)}"`:'';   // lop = layer opacity (05l)
+    s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}"${fo} stroke="${f.stroke}" stroke-width="${nvSW(f.sw||NV_PEN.edge)}"${d}${lo}/>`;}
   s+=raisedMarks(raised);
   return s+isoGridSvg();}
 // 2D badge for anything that starts above the floor (lebegő fal / dobogó) — otherwise invisible from above
@@ -1588,38 +1611,43 @@ function drawBlueprintPlan(){const level=state.active;const z=dz(level,0);
   rooms.forEach(rm=>{s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],z]))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;});
   // ---- objects as thin plan outlines ----
   data.objects.forEach(o=>{if(o.level!==level||!layerShows(o,'object'))return;if(isGenObject(o)&&!genObjectsVisible())return;
-    s+=`<polygon points="${p2b(objFootprint(o))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;});
+    s+=lyrWrap(o,'object',`<polygon points="${p2b(objFootprint(o))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`);});
   // ---- walls: hatched, openings cut out, drawn as ONE merged body ----
   // The hatched pieces are filled first with no outline of their own; the contour is then
   // drawn from the union of those pieces, so the seams where walls overlap or butt together
   // never appear and the corners close symmetrically. The walls themselves are not modified.
-  const wpc=[];let sym='';
+  const wgr={};   // layer opacity → its wall pieces; at 100 % there is one group and the output is unchanged
   (WALLS[level]||[]).forEach(r=>{if(!layerShows(r,'wall')||!soloWallOk(r,level))return;
+    const wo=lyrOp(r,'wall'),G=wgr[wo]||(wgr[wo]={wpc:[],sym:''}),wpc=G.wpc;
     const W=bpWallSpans(r,level);let u=0;
     W.spans.forEach(sp=>{if(sp.u0-u>1)wpc.push(bpSeg(r,W.horiz,u,sp.u0));u=Math.max(u,sp.u1);});
     if(W.len-u>1)wpc.push(bpSeg(r,W.horiz,u,W.len));
     // opening symbols in the gaps
     W.spans.forEach(sp=>{const q=bpSeg(r,W.horiz,sp.u0,sp.u1),o=sp.o,wdt=sp.u1-sp.u0;
-      sym+=`<polygon points="${bpRect(q,z)}" fill="#fff" stroke="none"/>`;
+      G.sym+=`<polygon points="${bpRect(q,z)}" fill="#fff" stroke="none"/>`;
       const a=W.horiz?[q.x0,q.y0]:[q.x0,q.y0],b2=W.horiz?[q.x1,q.y0]:[q.x0,q.y1],
             c2=W.horiz?[q.x1,q.y1]:[q.x1,q.y1],d2=W.horiz?[q.x0,q.y1]:[q.x1,q.y0];
       if(o.type==='window'){const m0=W.horiz?[q.x0,(q.y0+q.y1)/2]:[(q.x0+q.x1)/2,q.y0],m1=W.horiz?[q.x1,(q.y0+q.y1)/2]:[(q.x0+q.x1)/2,q.y1];
-        sym+=`<polyline points="${p2b([[a[0],a[1],z],[b2[0],b2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
+        G.sym+=`<polyline points="${p2b([[a[0],a[1],z],[b2[0],b2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
           +`<polyline points="${p2b([[d2[0],d2[1],z],[c2[0],c2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
           +`<polyline points="${p2b([[m0[0],m0[1],z],[m1[0],m1[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;}
-      else sym+=bpDoorSymbol(q,W,o,wdt,z,[a,b2,c2,d2]);});});
+      else G.sym+=bpDoorSymbol(q,W,o,wdt,z,[a,b2,c2,d2]);});});
   // the merged body: hatch with no seams, then one contour around the union
+  Object.keys(wgr).forEach(k=>{const G=wgr[k],wpc=G.wpc,s0=s.length;
   wpc.forEach(q=>{s+=`<polygon points="${bpRect(q,z)}" fill="url(#bph)" stroke="none"/>`;});
-  s+=sym;
+  s+=G.sym;
   rectsUnionSegs(wpc).forEach(g=>{s+=`<polyline points="${p2b([[g[0],g[1],z],[g[2],g[3],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.wall)}" stroke-linecap="square"/>`;});
+  s=lyrWrapOp(s,s0,+k);});
   // ---- stairs in plan: treads + direction arrow ----
   data.openings.forEach(o=>{if(o.level!==level||o.type!=='stairs'||!layerShows(o,'build'))return;
+    const s0=s.length;
     const Wd=o.w||STAIR_W,going=o.going||GOING,n=Math.max(3,Math.round((o.h||wallH(level))/(o.riser||RISER)));
     const d=[Math.cos(o.ang),Math.sin(o.ang)],p=[-Math.sin(o.ang),Math.cos(o.ang)],rev=(o.variant&1)?-1:1;
     const P=(u,v)=>[o.x+d[0]*u*rev+p[0]*v, o.y+d[1]*u*rev+p[1]*v, z];
     s+=`<polygon points="${p2b([P(0,0),P(n*going,0),P(n*going,Wd),P(0,Wd)])}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
     for(let i=1;i<n;i++)s+=`<polyline points="${p2b([P(i*going,0),P(i*going,Wd)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.fine)}"/>`;
-    s+=`<polyline points="${p2b([P(going*0.6,Wd/2),P(n*going-going*0.6,Wd/2)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;});
+    s+=`<polyline points="${p2b([P(going*0.6,Wd/2),P(n*going-going*0.6,Wd/2)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;
+    s=lyrWrapFrom(s,s0,o,'build');});
   // ---- room labels: NAME / burkolat / area ----
   if(state.showRoomText)rooms.forEach(rm=>{if(rm.noText)return;
     let cx=0,cy=0;rm.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=rm.poly.length;cy/=rm.poly.length;
@@ -1673,6 +1701,7 @@ function drawBlueprintIso(){const faces=[];let s=bpDefs();
     data.floors.forEach((fl,i)=>{if(fl.level!==l)return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;pushFloor(faces,fl.poly,fz+(fl.z||0),'#fff','#111',null,1);});
     // walls split by openings -> real 3D voids
     (WALLS[l]||[]).forEach(r=>{if(!layerShows(r,'wall')||!soloWallOk(r,l))return;
+      const n0=faces.length;
       const wh=r.h||H,wz=fz+(r.z0||0),W=bpWallSpans(r,l);let u=0;
       W.spans.forEach(sp=>{if(sp.u0-u>1)pushBpBox(faces,bpSeg(r,W.horiz,u,sp.u0),wz,wz+wh,true);
         const o=sp.o;
@@ -1683,11 +1712,14 @@ function drawBlueprintIso(){const faces=[];let s=bpDefs();
         else{const dh=o.h||DOOR_H;const q=bpSeg(r,W.horiz,sp.u0,sp.u1);
           if(wz+dh<wz+wh-20)pushBpBox(faces,q,wz+dh,wz+wh,true);}
         u=Math.max(u,sp.u1);});
-      if(W.len-u>1)pushBpBox(faces,bpSeg(r,W.horiz,u,W.len),wz,wz+wh,true);});
+      if(W.len-u>1)pushBpBox(faces,bpSeg(r,W.horiz,u,W.len),wz,wz+wh,true);
+      lyrFaces(faces,n0,r,'wall');});
     data.objects.forEach(o=>{if(o.level!==l||!layerShows(o,'object'))return;if(isGenObject(o)&&!genObjectsVisible())return;
+      const n0=faces.length;
       const v=objCorners(o);FACES.forEach(fi=>{const pts=fi.map(i=>v[i]);if(!faceVisible(newell(pts)))return;
         let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=4;cy/=4;cz/=4;
-        faces.push({pts,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.thin,key:depthOf(cx,cy,cz)+18});});});
+        faces.push({pts,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.thin,key:depthOf(cx,cy,cz)+18});});
+      lyrFaces(faces,n0,o,'object');});
     (data.roofs||[]).forEach(rf=>{if(rf.level!==l)return;roofFaceList(rf).forEach(fc=>{
       if(!faceVisible(newell(fc)))return;let cx=0,cy=0,cz=0;fc.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=fc.length;cy/=fc.length;cz/=fc.length;
       faces.push({pts:fc,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.body,key:depthOf(cx,cy,cz)+30});});});
@@ -1695,7 +1727,7 @@ function drawBlueprintIso(){const faces=[];let s=bpDefs();
       let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=pts.length;cy/=pts.length;cz/=pts.length;
       faces.push({pts,fill:'#fff',op:1,stroke:'#111',sw:BP_PEN.body,key:depthOf(cx,cy,cz)+30});});}
   faces.sort((a,b)=>a.key-b.key);
-  faces.forEach(f=>{s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}" stroke="${f.stroke}" stroke-width="${bpSW(f.sw||BP_PEN.body)}"/>`;});
+  faces.forEach(f=>{s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}" stroke="${f.stroke}" stroke-width="${bpSW(f.sw||BP_PEN.body)}"${f.lop?` opacity="${lyrOpStr(f.lop)}"`:''}/>`;});
   // labels on the floor plane
   if(state.showRoomText)for(const l of ORD){if(!state.levels[l])continue;
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(rm.noText||(state.soloRoom&&!soloRoomIs({src:'B',i,level:l})))return;s+=bpFloorLabel(rm,l);});
@@ -2035,9 +2067,9 @@ function draw(){
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(rm.noText||(state.soloRoom&&!soloRoomIs({src:'B',i,level:l})))return;s+=floorLabel(rm,l);});
     data.floors.forEach((fl,i)=>{if(fl.level!==l||!fl.name||fl.noText)return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;s+=floorLabel(fl,l);});}
   // openings
-  if(state.style==='whiteout')for(const o of data.openings){if(state.levels[o.level]&&layerShows(o,'build')&&soloOk(o.x,o.y,o.level))s+=openingSym(o);}
+  if(state.style==='whiteout')for(const o of data.openings){if(state.levels[o.level]&&layerShows(o,'build')&&soloOk(o.x,o.y,o.level))s+=lyrWrap(o,'build',openingSym(o));}
   // paths (primary conduits) — layered under cables
-  for(const pa of data.paths){if(!layerShows(pa,'path'))continue;if(pa.nodes.filter(n=>state.levels[n.level]).length<2)continue;const lane=pa.lane||0;
+  for(const pa of data.paths){if(!layerShows(pa,'path'))continue;if(pa.nodes.filter(n=>state.levels[n.level]).length<2)continue;const lane=pa.lane||0,s0=s.length;
     for(let i=1;i<pa.nodes.length;i++){const a=pa.nodes[i-1],b=pa.nodes[i];
       if(!state.levels[a.level]||!state.levels[b.level])continue;
       const sec=(pa.sections&&pa.sections[i-1])||{build:'sull_gege'};
@@ -2059,7 +2091,8 @@ function draw(){
         const mb=planToBase((A[0]+B[0])/2,(A[1]+B[1])/2,(A[2]+B[2])/2);const nwires=carried.reduce((t,c)=>t+(c.count||1),0);
         const lbl=(sec.circuit?(sec.circuit.name||'')+(sec.circuit.num?' '+sec.circuit.num:''):carried.length+' kör')+' · '+nwires+'ér';
         if(!dim&&state.circHoverInfo!==false)s+=`<text x="${mb[0]}" y="${mb[1]-4}" font-size="8.5" text-anchor="middle" fill="${ccol}" paint-order="stroke" stroke="#fff" stroke-width="2.6">${esc(lbl)}</text>`;}}}
-    for(const n of pa.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="1.8" fill="#555"/>`;}}
+    for(const n of pa.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="1.8" fill="#555"/>`;}
+    s=lyrWrapFrom(s,s0,pa,'path');}
   if((state.mode==='path'||state.mode==='cable'||state.mode==='device')){const dr=state.mode==='path'?pathDraft:(state.mode==='cable'?draft:null);
     if(dr&&dr.nodes.length){const placed=dr.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]);
       // placed (committed) segments — solid
@@ -2098,9 +2131,10 @@ function draw(){
         +`</g>`;}}
   // cables
   for(const cb of data.cables){if(!circOn[cb.type]||!layerShows(cb,'cable'))continue;const vis=cb.nodes.filter(n=>state.levels[n.level]);
-    if(vis.length<2)continue;const cc=CIRC[cb.type];
+    if(vis.length<2)continue;const cc=CIRC[cb.type],s0=s.length;
     s+=`<polyline points="${p2b(cb.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]))}" fill="none" stroke="${cc.c}" stroke-width="2.3" stroke-dasharray="${cc.dash}" stroke-linejoin="round" stroke-linecap="round"/>`;
-    for(const n of cb.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="2" fill="${cc.c}"/>`;}}
+    for(const n of cb.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="2" fill="${cc.c}"/>`;}
+    s=lyrWrapFrom(s,s0,cb,'cable');}
   if(draft&&draft.nodes.length){const cc=CIRC[draft.type];const pts=draft.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]);
     if(cursor)pts.push([cursor.x,cursor.y,dz(cursor.level,cursor.h)]);
     s+=`<polyline points="${p2b(pts)}" fill="none" stroke="${cc.c}" stroke-width="2.3" stroke-dasharray="4 3"/>`;
@@ -2108,11 +2142,12 @@ function draw(){
   // devices
   // switch→device links (show what each switch controls)
   if(state.showSwitchLinks!==false)for(const sw of data.devices){if(sw.type!=='switch'||!sw.swMap||!state.levels[sw.level]||!layerShows(sw,'device'))continue;
-    const a=planToBase(sw.x,sw.y,dz(sw.level,sw.h||0));
+    const a=planToBase(sw.x,sw.y,dz(sw.level,sw.h||0)),s0=s.length;
     Object.keys(sw.swMap).forEach(term=>{const tgt=devByRef(sw.swMap[term]);if(!tgt||!state.levels[tgt.level])return;
       const b=planToBase(tgt.x,tgt.y,dz(tgt.level,tgt.h||0));
       s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#c43d8f" stroke-width="1.1" stroke-dasharray="3 3" opacity="0.75"/>`
-        +`<text x="${(a[0]*0.6+b[0]*0.4)}" y="${(a[1]*0.6+b[1]*0.4)-2}" font-size="7.5" fill="#c43d8f" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="2">${esc(term)}</text>`;});}
+        +`<text x="${(a[0]*0.6+b[0]*0.4)}" y="${(a[1]*0.6+b[1]*0.4)-2}" font-size="7.5" fill="#c43d8f" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="2">${esc(term)}</text>`;});
+    s=lyrWrapFrom(s,s0,sw,'device');}
   // determine which devices are seen from BEHIND (through the wall) so devSym can dim them.
   // Robust method: a device is "behind" if, in the CURRENT projection, its host wall plane sits
   // between the camera and the device — i.e. the device's projected depth is GREATER (farther)
@@ -2153,17 +2188,20 @@ function draw(){
   } else for(const d of data.devices)d.faceBack=false;
   // board connection rectangles (the whole rectangle is one connection point along the expected underside)
   for(const b of data.devices){if(b.type!=='board'||!state.levels[b.level]||!layerShows(b,'device'))continue;
+    const s0=s.length;
     const poly=boardRectPoly(b).map(p=>planToBase(p[0],p[1],dz(b.level,b.z||BOARD_DEFAULT_Z)));
     s+=`<polygon points="${poly.map(p=>p[0]+','+p[1]).join(' ')}" fill="#ffe9b0" fill-opacity="0.5" stroke="#b8901f" stroke-width="1.3" stroke-dasharray="4 2"/>`;
     const c=planToBase(b.x,b.y,dz(b.level,b.z||BOARD_DEFAULT_Z));
-    s+=`<text x="${c[0]}" y="${c[1]+3}" font-size="8.5" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc(b.ref||'EL')}</text>`;}
-  for(const d of data.devices){if(state.levels[d.level]&&layerShows(d,'device')&&soloOk(d.x,d.y,d.level))s+=devSym(d);}
+    s+=`<text x="${c[0]}" y="${c[1]+3}" font-size="8.5" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc(b.ref||'EL')}</text>`;s=lyrWrapFrom(s,s0,b,'device');}
+  for(const d of data.devices){if(state.levels[d.level]&&layerShows(d,'device')&&soloOk(d.x,d.y,d.level))s+=lyrWrap(d,'device',devSym(d));}
   // notes
   for(const [ni,n] of data.notes.entries()){if(!state.levels[n.level])continue;
     if(typeof ntVisible==='function'&&!ntVisible(n))continue;
     const b=planToBase(n.x,n.y,dz(n.level,0));
+    const s0=s.length;
     s+=(typeof ntSym==='function')?ntSym(n,ni,b)
-      :`<g><path d="M${b[0]} ${b[1]} l-6 -12 a6 6 0 1 1 12 0 z" fill="#d1493f" stroke="#7a2a24"/><text x="${b[0]+9}" y="${b[1]-9}" font-size="10.5" fill="#333" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(n.text)}</text></g>`;}  // measures
+      :`<g><path d="M${b[0]} ${b[1]} l-6 -12 a6 6 0 1 1 12 0 z" fill="#d1493f" stroke="#7a2a24"/><text x="${b[0]+9}" y="${b[1]-9}" font-size="10.5" fill="#333" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(n.text)}</text></g>`;
+    s=lyrWrapFrom(s,s0,n,'note');}  // measures
   const ms=data.measures.concat(measureDraft&&measureDraft.length===2?[measureDraft]:[]);
   for(const mz of ms){const a=planToBase(mz[0].x,mz[0].y,dz(mz[0].level,0)),b=planToBase(mz[1].x,mz[1].y,dz(mz[1].level,0));
     const L=(Math.hypot(mz[1].x-mz[0].x,mz[1].y-mz[0].y)/1000).toFixed(2);
@@ -4428,6 +4466,89 @@ window.allRoomEntries=allRoomEntries;window.planAutoLink=planAutoLink;window.app
 window.autoLinkDialog=autoLinkDialog;window.routeLayers=routeLayers;window.linkInspectorHtml=linkInspectorHtml;
 window.deviceLayersIn=deviceLayersIn;window.rowSnap=rowSnap;window.devAtBase=devAtBase;window.placeSnapAt=placeSnapAt;
 window.placeDevice=placeDevice;window.pathAddNode=pathAddNode;window.linkMarkedNodes=linkMarkedNodes;
+// ==========================================================================
+// 05l-layers.js — layer model v2: sixteen sub-layer categories, per-category opacity
+//
+// Part of the Varler Planner source. These files are CONCATENATED IN ORDER
+// by build.js into a single <script>, so they share one scope: a function
+// defined here is visible everywhere. Do not reorder them without checking
+// tests/golden.js — const/let are subject to temporal dead zones.
+// ==========================================================================
+
+// LAYER_CATS / LAYER_CATS_V1 / layerCatsAll() live in 02-state.js (the default layer is built from
+// them at load time). Prefix here: lyr. Everything below is a function, so call order is free.
+
+// the category of a device: sockets, switches and lights are their own; every other box is 'device'
+function lyrDevCat(d){const t=d&&d.type;
+  if(t==='socket'||t==='switch'||t==='light')return t;
+  if(t==='ep'){const c=d.code;return (c==='LMP'||c==='LNR')?'light':c==='SWI'?'switch':c==='SOC'?'socket':'device';}
+  return 'device';}
+// a call site may still say the v1 names 'device' / 'build'; map them onto the v2 category of THIS item
+function lyrCat(item,cat){
+  if(cat==='device')return (item&&item.type)?lyrDevCat(item):'device';
+  if(cat==='build'){const t=item&&item.type;
+    if(t==='door'||t==='window'||t==='stairs')return t;
+    return (item&&item.poly)?'floor':'roof';}
+  return cat;}
+// the category a record of a collection belongs to (coll 'walls' = a wall rect)
+function lyrCatOf(coll,rec){
+  switch(coll){
+    case 'devices':return lyrDevCat(rec);
+    case 'openings':return (rec&&rec.type)||'door';
+    case 'floors':return 'floor';
+    case 'roofs':return 'roof';
+    case 'objects':return 'object';
+    case 'paths':return 'path';
+    case 'cables':return 'cable';
+    case 'notes':case 'wallNotes':return 'note';
+    case 'walls':return 'wall';
+    case 'marks':return 'mark';
+    case 'traces':return 'trace';}
+  return null;}
+function lyrKnown(k){return LAYER_CATS.some(c=>c.k===k);}
+// opacity step: one decimal, 0.1…1
+function lyrClampOp(v){v=+v;if(!isFinite(v))return 1;return Math.min(1,Math.max(0.1,Math.round(v*10)/10));}
+// idempotent: v1 layers (device / build keys) become v2, every category present, op cleaned
+function lyrMigrate(L){if(!L)return L;
+  const c=L.cats||(L.cats={});
+  if(!('socket' in c)&&!('switch' in c)&&!('light' in c)&&('device' in c)){const v=c.device!==false;
+    LAYER_CATS_V1.device.forEach(k=>{c[k]=v;});}
+  if('build' in c){const v=c.build!==false;LAYER_CATS_V1.build.forEach(k=>{c[k]=v;});delete c.build;}
+  LAYER_CATS.forEach(k=>{if(c[k.k]===undefined)c[k.k]=true;});
+  if(L.op&&typeof L.op==='object'){
+    Object.keys(L.op).forEach(k=>{if(!lyrKnown(k)){delete L.op[k];return;}
+      const v=lyrClampOp(L.op[k]);if(v>=1)delete L.op[k];else L.op[k]=v;});
+    if(!Object.keys(L.op).length)delete L.op;}
+  else if('op' in L)delete L.op;
+  return L;}
+function lyrMigrateAll(){layers.forEach(lyrMigrate);}
+// the layer opacity of an item in a category, 1 when none is set
+function lyrOp(item,cat){const L=layerById((item&&item.layer)||'L0'),k=lyrCat(item,cat);
+  const v=L.op&&L.op[k];return (typeof v==='number'&&v>=0.1&&v<1)?v:1;}
+function lyrOpStr(v){return String(+v.toFixed(1));}
+function lyrOpAttr(item,cat){const v=lyrOp(item,cat);return v===1?'':` opacity="${lyrOpStr(v)}"`;}
+function lyrWrap(item,cat,svg){const v=lyrOp(item,cat);return v===1?svg:`<g opacity="${lyrOpStr(v)}">`+svg+`</g>`;}
+// wrap what a loop appended to `s` since index `i` — for sites that build one long string
+function lyrWrapFrom(s,i,item,cat){return lyrWrapOp(s,i,lyrOp(item,cat));}
+function lyrWrapOp(s,i,v){return (!v||v>=1)?s:s.slice(0,i)+`<g opacity="${lyrOpStr(v)}">`+s.slice(i)+`</g>`;}
+// data records handed to the wall / plane views carry `op` only when it is below 1 (no change at 100 %)
+function lyrTagOp(rec,item,cat){const v=lyrOp(item,cat);if(v<1)rec.op=v;return rec;}
+// depth-sorted face lists (3D views): tag the faces pushed since index `from` with the layer opacity
+function lyrFaces(faces,from,item,cat){const v=lyrOp(item,cat);if(v===1)return;
+  for(let i=from;i<faces.length;i++)faces[i].lop=v;}
+function lyrSetOp(layerId,cat,v){const L=layerById(layerId);if(!L||!lyrKnown(cat))return;
+  v=lyrClampOp(v);
+  if(v>=1){if(L.op){delete L.op[cat];if(!Object.keys(L.op).length)delete L.op;}}
+  else{(L.op||(L.op={}))[cat]=v;}
+  draw();}
+// every layer / stack operation is undoable as one step: all collections + walls + layers + stacks
+function lyrPushUndo(){pushUndo(['__walls','__layers']);}
+
+// test hooks
+window.LAYER_CATS=LAYER_CATS;window.lyrDevCat=lyrDevCat;window.lyrCat=lyrCat;window.lyrCatOf=lyrCatOf;
+window.lyrMigrate=lyrMigrate;window.lyrMigrateAll=lyrMigrateAll;window.lyrOp=lyrOp;window.lyrOpAttr=lyrOpAttr;
+window.lyrWrap=lyrWrap;window.lyrWrapFrom=lyrWrapFrom;window.lyrWrapOp=lyrWrapOp;window.lyrTagOp=lyrTagOp;window.lyrFaces=lyrFaces;window.lyrSetOp=lyrSetOp;window.lyrPushUndo=lyrPushUndo;window.layerCatsAll=layerCatsAll;
+window.layerShows=layerShows;
 // ---- Wall View: 2D elevation of a selected wall ----
 function devMini(type,x,y,col){
   if(type==='socket')return `<circle cx="${x}" cy="${y}" r="6" fill="#fff" stroke="${col}" stroke-width="1.4"/><line x1="${x-3}" y1="${y}" x2="${x+3}" y2="${y}" stroke="${col}" stroke-width="1.4"/>`;
@@ -4547,14 +4668,14 @@ function wallElevationData(r,level){const z0=r.z0||0,H=z0+(r.h||wallH(level));
   const uOf=(X,Y)=>(X-ox)*ax+(Y-oy)*ay,sOfRaw=(X,Y)=>(X-cx)*px+(Y-cy)*py,tol=thick/2+250,inR=u=>u>-200&&u<len+200;
   const sflip=(typeof WV!=='undefined'&&WV&&WV.flipSide)?-1:1;const sOf=(X,Y)=>sOfRaw(X,Y)*sflip;
   const ops=[];data.openings.forEach((o,oi)=>{if(o.level!==level||o.type==='stairs'||!layerShows(o,'build'))return;const u=uOf(o.x,o.y);
-    if(Math.abs(sOf(o.x,o.y))<tol&&inR(u)){const win=o.type==='window';ops.push({oi,type:o.type,u,w:o.w||(win?WIN_W:DOOR_W),h:o.h||(win?WIN_H:DOOR_H),sill:win?(o.sill!=null?o.sill:WIN_SILL):0});}});
+    if(Math.abs(sOf(o.x,o.y))<tol&&inR(u)){const win=o.type==='window';ops.push(lyrTagOp({oi,type:o.type,u,w:o.w||(win?WIN_W:DOOR_W),h:o.h||(win?WIN_H:DOOR_H),sill:win?(o.sill!=null?o.sill:WIN_SILL):0},o,'build'));}});
   const devs=[];data.devices.forEach(dv=>{if(dv.level!==level||!layerShows(dv,'device'))return;const u=uOf(dv.x,dv.y),ss=sOf(dv.x,dv.y);
-    if(Math.abs(ss)<tol&&inR(u))devs.push({di:data.devices.indexOf(dv),type:dv.type,ref:dv.ref||'',u,h:dv.h||0,back:ss<-1,
-      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null});});
+    if(Math.abs(ss)<tol&&inR(u))devs.push(lyrTagOp({di:data.devices.indexOf(dv),type:dv.type,ref:dv.ref||'',u,h:dv.h||0,back:ss<-1,
+      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null},dv,'device'));});
   const secs=[];data.paths.forEach((pa,pi)=>{if(!layerShows(pa,'path'))return;for(let i=0;i<pa.nodes.length-1;i++){const a=pa.nodes[i],b=pa.nodes[i+1];if(a.level!==level||b.level!==level)continue;
     const sa=sOf(a.x,a.y),sb=sOf(b.x,b.y);if(Math.abs(sa)<tol&&Math.abs(sb)<tol){const ua=uOf(a.x,a.y),ub=uOf(b.x,b.y);
       if(inR(Math.max(ua,ub))&&inR(Math.min(ua,ub))){const sec=pa.sections[i]||{build:'sull_gege'};
-        secs.push({pi,na:i,nb:i+1,ua,ub,ha:a.h||0,hb:b.h||0,build:sec.build,dia:sec.dia,cd:sec.cd,carried:(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]),back:(sa+sb)/2<-1});}}}});
+        secs.push(lyrTagOp({pi,na:i,nb:i+1,ua,ub,ha:a.h||0,hb:b.h||0,build:sec.build,dia:sec.dia,cd:sec.cd,carried:(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]),back:(sa+sb)/2<-1},pa,'path'));}}}});
   const notes=[];const __nk=wallKey(r,level);
   if(!noteSurfaceHidden(__nk))(data.wallNotes||[]).forEach((nt,i)=>{if(nt.wallKey!==__nk)return;
     notes.push({i,u:nt.u,h:nt.h,text:nt.text,kind:nt.kind,tag:nt.tag});});
@@ -4655,29 +4776,29 @@ function wallElevationSVG(d,showFar,dims){const M=56,H=d.H,len=d.len;
   if(L.installed){
   const warpPi=(WV&&WV.warp)?WV.warp.pi:null;
   const drawSec=back=>{const arr=d.secs.filter(x=>x.back===back);
-    arr.forEach(t=>{const col=back?'#b0b4b8':(t.build.indexOf('kv_')===0?'#c0761d':'#6f757d');
+    arr.forEach(t=>{const s0=s.length;const col=back?'#b0b4b8':(t.build.indexOf('kv_')===0?'#c0761d':'#6f757d');
       const sw=((t.build||'').indexOf('sull')>=0?Math.max(1.5,+(chaseDia(t.build,t)*sc).toFixed(2)):2.4);   // real conduit ⌀
       s+=`<line x1="${X(t.ua)}" y1="${Y(t.ha)}" x2="${X(t.ub)}" y2="${Y(t.hb)}" stroke="${col}" stroke-width="${sw}" stroke-dasharray="${t.build.indexOf('kv_')===0?'':'6 3'}" stroke-linecap="round"/>`;
       // invisible fat grab line: drag = move the WHOLE section, Alt+click = warp mode for this path
       if(!back)s+=`<line class="wvseg" data-pi="${t.pi}" data-na="${t.na}" data-nb="${t.nb}" x1="${X(t.ua)}" y1="${Y(t.ha)}" x2="${X(t.ub)}" y2="${Y(t.hb)}" stroke="transparent" stroke-width="14" stroke-linecap="round" pointer-events="stroke" style="cursor:grab"/>`;
       if(t.carried.length){const mx=(X(t.ua)+X(t.ub))/2,my=(Y(t.ha)+Y(t.hb))/2,c=t.carried[0],n=t.carried.reduce((a,x)=>a+(x.count||1),0);
-        s+=`<text x="${mx}" y="${my-4}" font-size="9" text-anchor="middle" fill="${back?'#b0b4b8':'#0a5c33'}" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc((c.name||'')+(c.num?' '+c.num:''))} ${n}ér</text>`;}});
+        s+=`<text x="${mx}" y="${my-4}" font-size="9" text-anchor="middle" fill="${back?'#b0b4b8':'#0a5c33'}" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc((c.name||'')+(c.num?' '+c.num:''))} ${n}ér</text>`;}s=lyrWrapOp(s,s0,t.op);});
     if(!back)arr.forEach(t=>{const col=(t.build.indexOf('kv_')===0?'#c0761d':'#6f757d'),hi=(t.pi===warpPi);
       s+=`<circle class="wvnode" data-pi="${t.pi}" data-ni="${t.na}" cx="${X(t.ua)}" cy="${Y(t.ha)}" r="4.5" fill="${hi?'#fff3d6':'#fff'}" stroke="${hi?'#e8641c':col}" stroke-width="1.6" style="cursor:move"/>`
         +`<circle class="wvnode" data-pi="${t.pi}" data-ni="${t.nb}" cx="${X(t.ub)}" cy="${Y(t.hb)}" r="4.5" fill="${hi?'#fff3d6':'#fff'}" stroke="${hi?'#e8641c':col}" stroke-width="1.6" style="cursor:move"/>`;});};
   if(showFar)drawSec(true);drawSec(false);
-  d.ops.forEach(o=>{const x=Math.min(X(o.u-o.w/2),X(o.u+o.w/2)),y=Y(o.sill+o.h),w=(o.w*sc).toFixed(1),h=(o.h*sc).toFixed(1);
+  d.ops.forEach(o=>{const s0=s.length;const x=Math.min(X(o.u-o.w/2),X(o.u+o.w/2)),y=Y(o.sill+o.h),w=(o.w*sc).toFixed(1),h=(o.h*sc).toFixed(1);
     s+=`<g class="wvop" data-oi="${o.oi}" style="cursor:ew-resize">`
       +`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#fff" stroke="#111" stroke-width="1.4"/>`;
     if(o.type==='window')s+=`<line x1="${x}" y1="${Y(o.sill+o.h/2)}" x2="${(+x+ +w)}" y2="${Y(o.sill+o.h/2)}" stroke="#2f6fb0"/><line x1="${X(o.u)}" y1="${y}" x2="${X(o.u)}" y2="${(+y+ +h)}" stroke="#2f6fb0"/>`;
-    s+=`<text x="${X(o.u)}" y="${y-3}" font-size="9" text-anchor="middle" fill="#111">${o.type==='window'?'Ablak':'Ajtó'} ${o.w}×${o.h}${o.sill?'/'+o.sill:''}</text></g>`;});
-  const drawDev=back=>d.devs.filter(x=>x.back===back).forEach(dv=>{const col=back?'#b0b4b8':'#111',x=X(dv.u),y=Y(dv.h);
+    s+=`<text x="${X(o.u)}" y="${y-3}" font-size="9" text-anchor="middle" fill="#111">${o.type==='window'?'Ablak':'Ajtó'} ${o.w}×${o.h}${o.sill?'/'+o.sill:''}</text></g>`;s=lyrWrapOp(s,s0,o.op);});
+  const drawDev=back=>d.devs.filter(x=>x.back===back).forEach(dv=>{const s0=s.length;const col=back?'#b0b4b8':'#111',x=X(dv.u),y=Y(dv.h);
     s+=`<g class="wvdev" data-di="${dv.di}" style="cursor:move">`+wvDevBox(dv,x,y,sc,col,back)
       +`<text x="${x+DEV_BOX_W/2*sc+3}" y="${y-7}" font-size="9" fill="${back?'#b0b4b8':'#0a2b6b'}" font-weight="700">${esc(dv.ref)}</text>`;
     const def=deviceCat(dv.devDef);if(def&&!back)s+=`<text x="${x+DEV_BOX_W/2*sc+3}" y="${y+4}" font-size="7.5" fill="#666">${esc(def.cikk)}</text>`;
     if(dv.link&&!back)s+=`<circle cx="${x}" cy="${y}" r="${(DEV_BOX_W/2)*sc+3}" fill="none" stroke="#c0530f" stroke-width="0.9" stroke-dasharray="2 2"/>`;
     s+=`</g>`;
-    s+=`<line x1="${X(0)}" y1="${y}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="0.4" stroke-dasharray="2 3" opacity="0.5"/><text x="${X(0)+2}" y="${y-2}" font-size="8" fill="${col}">${Math.round(dv.h)}</text>`;});
+    s+=`<line x1="${X(0)}" y1="${y}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="0.4" stroke-dasharray="2 3" opacity="0.5"/><text x="${X(0)+2}" y="${y-2}" font-size="8" fill="${col}">${Math.round(dv.h)}</text>`;s=lyrWrapOp(s,s0,dv.op);});
   if(showFar)drawDev(true);drawDev(false);
   // ---- WARP (Photoshop-style free transform of one path's nodes on this wall) ----
   if(warpPi!=null){const bb=wvWarpBox(d,warpPi);
@@ -5296,21 +5417,21 @@ function planeViewData(room,level,kind,tol){
   const ins=(x,y)=>x>=bb.x0&&x<=bb.x1&&y>=bb.y0&&y<=bb.y1;
   const devs=[],ghosts=[],secs=[],risers=[],ops=[];
   data.devices.forEach((dv,di)=>{if(dv.level!==level||!ins(dv.x,dv.y))return;
-    const rec={di,type:dv.type,ref:dv.ref,u:dv.x,h:dv.y,z:dv.h||0,back:false,devDef:dv.devDef,boxColor:dv.boxColor,
-      jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null};
+    const rec=lyrTagOp({di,type:dv.type,ref:dv.ref,u:dv.x,h:dv.y,z:dv.h||0,back:false,devDef:dv.devDef,boxColor:dv.boxColor,
+      jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null},dv,'device');
     (inb(dv.h||0)?devs:ghosts).push(rec);});
   data.paths.forEach((pa,pi)=>{for(let i=0;i<pa.nodes.length-1;i++){
     const a=pa.nodes[i],c=pa.nodes[i+1];if(a.level!==level&&c.level!==level)continue;
     const sec=pa.sections[i]||{};
     const ia=inb(a.h||0)&&ins(a.x,a.y),ic=inb(c.h||0)&&ins(c.x,c.y);
-    if(ia&&ic)secs.push({pi,na:i,nb:i+1,ua:a.x,ha:a.y,ub:c.x,hb:c.y,build:sec.build||'sull_gege',
+    if(ia&&ic)secs.push(lyrTagOp({pi,na:i,nb:i+1,ua:a.x,ha:a.y,ub:c.x,hb:c.y,build:sec.build||'sull_gege',
       dia:sec.dia,cd:sec.cd,carried:(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]),back:false,
-      za:a.h||0,zb:c.h||0});
+      za:a.h||0,zb:c.h||0},pa,'path'));
     else if(ia)risers.push({pi,ni:i,u:a.x,h:a.y,z:a.h||0,to:c.h||0});
     else if(ic)risers.push({pi,ni:i+1,u:c.x,h:c.y,z:c.h||0,to:a.h||0});}});
   (data.openings||[]).forEach((o,oi)=>{if(o.level!==level||!ins(o.x,o.y))return;
     if(o.type!=='door'&&o.type!=='window')return;
-    ops.push({oi,type:o.type,x:o.x,y:o.y,ang:o.ang||0,w:o.w||(o.type==='window'?WIN_W:DOOR_W)});});
+    ops.push(lyrTagOp({oi,type:o.type,x:o.x,y:o.y,ang:o.ang||0,w:o.w||(o.type==='window'?WIN_W:DOOR_W)},o,'build'));});
   const notes=noteSurfaceHidden(key)?[]:(data.wallNotes||[]).map((n,i)=>({...n,i})).filter(n=>n.wallKey===key)
     .map(n=>({i:n.i,u:n.u,h:n.h,text:n.text,kind:n.kind,tag:n.tag}));
   return {room,level,kind,band,key,poly,bb,pb,walls:roomWalls(poly,level),devs,ghosts,secs,risers,ops,notes,
@@ -5346,10 +5467,10 @@ function planeViewSVG(d,dims){const M=56;
             :`fill="#ded9cc" stroke="#8f887a" stroke-width="0.9"`)+`/>`;
     s+=`<text x="${((x0+x1)/2).toFixed(1)}" y="${((y0+y1)/2+3).toFixed(1)}" font-size="8" text-anchor="middle" fill="#9a9184">${w.side}</text>`;});
   // door/window footprints, for orientation
-  d.ops.forEach(o=>{const dx=Math.cos(o.ang),dy=Math.sin(o.ang),hw=o.w/2;
+  d.ops.forEach(o=>{const s0=s.length;const dx=Math.cos(o.ang),dy=Math.sin(o.ang),hw=o.w/2;
     const ax=X(o.x-dx*hw),ay=Y(o.y-dy*hw),bx=X(o.x+dx*hw),by=Y(o.y+dy*hw);
     s+=`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="${o.type==='window'?'#2f6fb0':'#fff'}" stroke-width="4" stroke-linecap="butt"/>`
-      +`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="#7d7466" stroke-width="0.7" stroke-dasharray="3 2"/>`;});
+      +`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="#7d7466" stroke-width="0.7" stroke-dasharray="3 2"/>`;s=lyrWrapOp(s,s0,o.op);});
   // ---- CHASE LAYER (shared with the wall editor) ----
   if(L.cuts&&chS.length){
     s+=`<clipPath id="cutclip">`+chS.map(S=>`<polygon points="${S.poly.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}"/>`).join('')+`</clipPath>`;
@@ -5370,12 +5491,12 @@ function planeViewSVG(d,dims){const M=56;
   // ---- INSTALLED ----
   const warpPi=(PV&&PV.warp)?PV.warp.pi:null;
   if(L.installed!==false){
-    d.secs.forEach(t=>{const col=((t.build||'').indexOf('kv_')===0?'#c0761d':'#6f757d');
+    d.secs.forEach(t=>{const s0=s.length;const col=((t.build||'').indexOf('kv_')===0?'#c0761d':'#6f757d');
       const sw=((t.build||'').indexOf('sull')>=0?Math.max(1.5,+(chaseDia(t.build,t)*sc).toFixed(2)):2.4);
       s+=`<line x1="${X(t.ua)}" y1="${Y(t.ha)}" x2="${X(t.ub)}" y2="${Y(t.hb)}" stroke="${col}" stroke-width="${sw}" stroke-dasharray="${(t.build||'').indexOf('kv_')===0?'':'6 3'}" stroke-linecap="round"/>`
         +`<line class="wvseg" data-pi="${t.pi}" data-na="${t.na}" data-nb="${t.nb}" x1="${X(t.ua)}" y1="${Y(t.ha)}" x2="${X(t.ub)}" y2="${Y(t.hb)}" stroke="transparent" stroke-width="14" stroke-linecap="round" pointer-events="stroke" style="cursor:grab"/>`;
       if(t.carried&&t.carried.length){const mx=(X(t.ua)+X(t.ub))/2,my=(Y(t.ha)+Y(t.hb))/2,c=t.carried[0],n=t.carried.reduce((a,x)=>a+(x.count||1),0);
-        s+=pvText(mx.toFixed(1),(my-5).toFixed(1),esc((c.name||'')+(c.num?' '+c.num:''))+' '+n+'ér',9,'#0a5c33');}});
+        s+=pvText(mx.toFixed(1),(my-5).toFixed(1),esc((c.name||'')+(c.num?' '+c.num:''))+' '+n+'ér',9,'#0a5c33');}s=lyrWrapOp(s,s0,t.op);});
     d.secs.forEach(t=>{const col=((t.build||'').indexOf('kv_')===0?'#c0761d':'#6f757d'),hi=(t.pi===warpPi);
       s+=`<circle class="wvnode" data-pi="${t.pi}" data-ni="${t.na}" cx="${X(t.ua)}" cy="${Y(t.ha)}" r="4.5" fill="${hi?'#fff3d6':'#fff'}" stroke="${hi?'#e8641c':col}" stroke-width="1.6" style="cursor:move"/>`
         +`<circle class="wvnode" data-pi="${t.pi}" data-ni="${t.nb}" cx="${X(t.ub)}" cy="${Y(t.hb)}" r="4.5" fill="${hi?'#fff3d6':'#fff'}" stroke="${hi?'#e8641c':col}" stroke-width="1.6" style="cursor:move"/>`;});
@@ -5384,10 +5505,10 @@ function planeViewSVG(d,dims){const M=56;
       s+=`<circle class="pvriser" cx="${x}" cy="${y}" r="10" fill="#fff" stroke="#2f6fb0" stroke-width="1.8"/>`
         +`<text x="${x}" y="${y+4.6}" font-size="13" font-weight="700" text-anchor="middle" fill="#2f6fb0">${up?'↑':'↓'}</text>`
         +pvText((x+13).toFixed(1),(y-11).toFixed(1),Math.round(r.to)+' mm',9,'#2f6fb0','start');});
-    d.devs.forEach(dv=>{const x=X(dv.u),y=Y(dv.h);
+    d.devs.forEach(dv=>{const s0=s.length;const x=X(dv.u),y=Y(dv.h);
       s+=`<g class="wvdev" data-di="${dv.di}" style="cursor:move">`+wvDevBox(dv,x,y,sc,'#0a2b6b',false)+`</g>`;
       s+=pvText(x,(y-(DEV_BOX_W/2)*sc-5).toFixed(1),esc(dv.ref||''),9,'#0a2b6b');
-      if(dv.link)s+=`<circle cx="${x}" cy="${y}" r="${(DEV_BOX_W/2)*sc+3}" fill="none" stroke="#c0530f" stroke-width="0.9" stroke-dasharray="2 2"/>`;});
+      if(dv.link)s+=`<circle cx="${x}" cy="${y}" r="${(DEV_BOX_W/2)*sc+3}" fill="none" stroke="#c0530f" stroke-width="0.9" stroke-dasharray="2 2"/>`;s=lyrWrapOp(s,s0,dv.op);});
     // warp box
     if(warpPi!=null){const bx=wvWarpBox(d,warpPi);
       if(bx){const x0=Math.min(X(bx.u0),X(bx.u1)),x1=Math.max(X(bx.u0),X(bx.u1)),y0=Math.min(Y(bx.h0),Y(bx.h1)),y1=Math.max(Y(bx.h0),Y(bx.h1));
@@ -8195,27 +8316,30 @@ $('styleToggle').onclick=()=>{const toBlueprint=state.style!=='blueprint';
 $('bRiserUp').onclick=()=>riser(1);$('bRiserDn').onclick=()=>riser(-1);
 function riser(dir){let i=ORD.indexOf(state.active)+dir;if(i<0||i>2)return;state.active=ORD[i];
   document.querySelector(`input[name=al][value=${ORD[i]}]`).checked=true;$('hud').textContent='Active level → '+ORD[i]+' (riser continues here).';}
-const UKEYS=['cables','paths','devices','notes','measures','openings','floors','objects','roofs','wallNotes','circuits'];
+const UKEYS=['cables','paths','devices','notes','measures','openings','floors','objects','roofs','wallNotes','circuits','marks','traces','runs'];
 // per-surface note visibility travels with the project but is a map, not a list
 function noteHideSnap(){return JSON.parse(JSON.stringify(data.noteHide||{}));}
 // A snapshot may be SCOPED to the collections a command actually touches. Moving a
 // device no longer deep-clones every lamp thumbnail in the project; the entry records
 // its own scope so applySnap restores exactly what it captured.
 function snap_(scope){ensureIds(data);                  // nothing is snapshotted without an id
-  const keys=(scope&&scope.length)?scope.filter(k=>UKEYS.indexOf(k)>=0):UKEYS;
+  const sc=(scope&&scope.length)?scope:null,ks=sc?sc.filter(k=>UKEYS.indexOf(k)>=0):[];
+  const keys=ks.length?ks:UKEYS;
   const o=keys.reduce((o,k)=>(o[k]=data[k],o),{});
-  o.__scope=(scope&&scope.length)?keys.slice():null;
-  if(!scope||scope.indexOf('__walls')>=0||!scope.length){o.__walls={};for(const l of ORD)o.__walls[l]=WALLS[l]||[];}
+  o.__scope=sc?sc.slice():null;                                 // markers kept → redo is symmetric
+  if(!sc||sc.indexOf('__walls')>=0){o.__walls={};for(const l of ORD)o.__walls[l]=WALLS[l]||[];}
+  if(sc&&sc.indexOf('__layers')>=0)o.__layers={layers,stacks};  // opt-in only — a plain pushUndo() must not carry layers
   o.__noteHide=data.noteHide||{};o.__seq=data.seq||0;o.__v=data.v||SCHEMA_VERSION;
   return JSON.parse(JSON.stringify(o));}
 function snapBytes(sn){try{return JSON.stringify(sn).length;}catch(_){return 0;}}
 function applySnap(sn){
-  const keys=sn.__scope||UKEYS;                          // a scoped entry restores only what it holds
+  const ks=(sn.__scope||UKEYS).filter(k=>UKEYS.indexOf(k)>=0),keys=ks.length?ks:UKEYS;   // a scoped entry restores only what it holds
   keys.forEach(k=>{if(sn[k])data[k]=sn[k];});
   if(sn.__noteHide)data.noteHide=sn.__noteHide;
   data.seq=Math.max(+sn.__seq||0,data.seq||0);data.v=sn.__v||SCHEMA_VERSION;   // ids must never be reissued
   pruneLinks();
   if(sn.__walls){for(const l of ORD){WALLS[l]=(sn.__walls[l]||[]).map(wr);SNAP[l]=centerlines(WALLS[l]);}}
+  if(sn.__layers){layers=sn.__layers.layers;stacks=sn.__layers.stacks||[];if(!layers.some(l=>l.id===state.activeLayer))state.activeLayer=layers[0]?layers[0].id:'L0';if(typeof renderLayers==='function')renderLayers();}
   reselectAfterSnap();}
 // applySnap rebuilds every wall object, so anything holding a wall REFERENCE — the
 // selection, a gizmo drag — would silently keep editing an orphan. Re-resolve by
@@ -8283,10 +8407,10 @@ $('bBOM').onclick=()=>{const t=bomText();navigator.clipboard.writeText(t).then((
 $('bBOMcsv').onclick=()=>download('bom.csv',bomCSV());
 $('bBOMj').onclick=()=>download('bom.json',JSON.stringify(bomJSON(),null,2));
 $('bSave').onclick=()=>{for(const l of ORD)B.walls[l]=(WALLS[l]||[]).map(rectArr);
-  download('villanyterv.json',JSON.stringify({state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,panelLoc},null,2));};
+  download('villanyterv.json',JSON.stringify({state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc},null,2));};
 $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);
   Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
-  if(o.layers)layers=o.layers;if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
+  if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
 function syncUI(){setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;$('explode').checked=state.exploded;
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
@@ -9059,7 +9183,7 @@ function objDimModal(title,cur,ok){openModal(title,
   ()=>ok({n:$('odN').value,w:+$('odW').value||600,d:+$('odD').value||600,ht:+$('odH').value||600,z:+$('odZ').value||0}));}
 // ---- layers UI ----
 function renderLayers(){const el=$('layerList');if(!el)return;const cats=['path','device','cable','wall','build','object'];
-  el.innerHTML=layers.map(L=>{const cs=cats.map(c=>`<button data-lc="${L.id}:${c}" class="lcat ${L.cats[c]!==false?'on':''}" title="${c}">${c[0].toUpperCase()}</button>`).join('');
+  el.innerHTML=layers.map(L=>{const cs=cats.map(c=>`<button data-lc="${L.id}:${c}" class="lcat ${(LAYER_CATS_V1[c]||[c]).every(k=>L.cats[k]!==false)?'on':''}" title="${c}">${c[0].toUpperCase()}</button>`).join('');
     return `<div class="lblock ${L.id===state.activeLayer?'lactive':''}"><div class="lrow"><input type="radio" name="alayer" ${L.id===state.activeLayer?'checked':''} data-la="${L.id}" title="aktív">`
      +`<button data-lv="${L.id}" title="show/hide">${L.visible?'👁':'🚫'}</button>`
      +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
@@ -9072,9 +9196,9 @@ function renderLayers(){const el=$('layerList');if(!el)return;const cats=['path'
   el.querySelectorAll('[data-la]').forEach(r=>r.onchange=()=>{state.activeLayer=r.dataset.la;});
   el.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const L=layerById(b.dataset.lv);L.visible=!L.visible;renderLayers();draw();});
   el.querySelectorAll('[data-ln]').forEach(i=>i.onchange=()=>{layerById(i.dataset.ln).name=i.value;});
-  el.querySelectorAll('[data-lc]').forEach(b=>b.onclick=()=>{const p=b.dataset.lc.split(':'),L=layerById(p[0]);L.cats[p[1]]=(L.cats[p[1]]===false);renderLayers();draw();});
+  el.querySelectorAll('[data-lc]').forEach(b=>b.onclick=()=>{const p=b.dataset.lc.split(':'),L=layerById(p[0]),ks=LAYER_CATS_V1[p[1]]||[p[1]],on=ks.every(k=>L.cats[k]!==false);ks.forEach(k=>{L.cats[k]=!on;});renderLayers();draw();});   // old six-button panel: device/build still switch their v2 groups (WP-A2 replaces the panel)
   el.querySelectorAll('[data-lx]').forEach(b=>b.onclick=()=>{const id=b.dataset.lx;layers=layers.filter(l=>l.id!==id);if(state.activeLayer===id)state.activeLayer='L0';renderLayers();draw();});}
-$('addLayer').onclick=()=>{const id='L'+Date.now().toString(36);layers.push({id,name:'Réteg '+(layers.length+1),visible:true,cats:{path:true,device:true,cable:true,wall:true,build:true,object:true}});state.activeLayer=id;renderLayers();};
+$('addLayer').onclick=()=>{const id='L'+Date.now().toString(36);layers.push({id,name:'Réteg '+(layers.length+1),visible:true,cats:layerCatsAll()});state.activeLayer=id;renderLayers();};
 // ---- project library (named save slots) ----
 const PROJ_KEY='villanyterv_projects_v1';   // {id:{name,ts,data}}
 const CURRENT_KEY='villanyterv_current_v1';  // id of last-open project (for autosave)
@@ -9089,7 +9213,7 @@ function saveProject(name,id){const ix=loadProjIndex();id=id||('p'+Date.now().to
 function applyProjectData(o){ // o = a sessionObj payload
   Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
-  layers=o.layers||[{id:'L0',name:'Alap',visible:true,cats:{path:true,device:true,cable:true,wall:true,build:true,object:true}}];
+  layers=o.layers||[{id:'L0',name:'Alap',visible:true,cats:layerCatsAll()}];stacks=o.stacks||[];lyrMigrateAll();
   if(o.panelLoc)panelLoc=o.panelLoc;refB=o.refB||[];
   loadBuilding(o.building||blankBuilding(),true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])?JSON.parse(JSON.stringify(o.data[k])):[]);
@@ -9118,6 +9242,7 @@ function hardResetWorkspace(){
   if(typeof PV!=='undefined'&&PV){if(PV.keyFn)document.removeEventListener('keydown',PV.keyFn,true);PV=null;}
   try{closeModal();}catch(_){}
   UKEYS.forEach(k=>{data[k].length=0;});                       // in place: other code holds references
+  stacks=[];
   data.noteHide={};
   for(const l of ORD){WALLS[l]=[];SLAB[l]=null;GHOST[l]=null;ROOMSB[l]=[];ROOFS[l]=[];SNAP[l]=centerlines([]);}
   DROPC.basement=0;DROPC.ground=0;DROPC.upper=0;
@@ -9165,13 +9290,13 @@ const LS_KEY='villanyterv_autosave_v1';let saveTimer=null;
 function sessionObj(){ensureIds(data);data.v=SCHEMA_VERSION;
   for(const l of ORD){B.walls[l]=(WALLS[l]||[]).map(rectArr);
   B.rooms=B.rooms||{};B.rooms[l]=ROOMSB[l]||[];}   // room-sheet edits on building rooms persist too
-  return {v:1,state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,panelLoc,refB};}
+  return {v:1,state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc,refB};}
 function saveSession(){try{if(currentProjId){const ix=loadProjIndex();if(ix[currentProjId]){ix[currentProjId].data=sessionObj();ix[currentProjId].ts=Date.now();saveProjIndex(ix);}}else{localStorage.setItem(LS_KEY,JSON.stringify(sessionObj()));}}catch(_){}}
 function scheduleSave(){try{clearTimeout(saveTimer);saveTimer=setTimeout(saveSession,1200);}catch(_){}}
 function restoreSession(){try{const raw=localStorage.getItem(LS_KEY);if(!raw)return false;const o=JSON.parse(raw);
   Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
-  if(o.layers)layers=o.layers;if(o.panelLoc)panelLoc=o.panelLoc;if(o.refB)refB=o.refB;if(o.building)loadBuilding(o.building,true);
+  if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.refB)refB=o.refB;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);
   data.noteHide=(o.data&&o.data.noteHide)||{};data.seq=(o.data&&+o.data.seq)||0;data.v=(o.data&&+o.data.v)||0;
   migrate(data);

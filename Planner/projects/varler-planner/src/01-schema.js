@@ -17,7 +17,7 @@
 // ---------------------------------------------------------------------------
 const SCHEMA_VERSION=2;
 const IDPRE={devices:'D',paths:'P',objects:'O',openings:'B',floors:'F',roofs:'R',
-             cables:'C',measures:'M',notes:'N',wallNotes:'W',circuits:'A'};
+             cables:'C',measures:'M',notes:'N',wallNotes:'W',circuits:'A',marks:'J',traces:'T',runs:'H'};
 
 function idNum(id){const m=/(\d+)$/.exec(String(id||''));return m?+m[1]:0;}
 function maxIdNum(d){let n=0;
