@@ -1,0 +1,157 @@
+# BRIDGE Stack — build pack for the Planner
+
+**What this is.** The 2026-10-06 dev draft (layer rework + BRIDGE Stack, phases 1–2) turned into
+**22 small work packages (WPs)** that a cheaper model can build one at a time with little context,
+and a stronger model can verify. The expensive thinking — order, data model, algorithms, edge cases,
+test values — is done here once, so each build session reads ~2 short files instead of the codebase.
+
+| file | read by | what |
+|---|---|---|
+| `00_CONTRACT.md` | every builder and verifier | where to work, commands, the single-scope rule, all data additions, conventions, report format |
+| `01_CATALOGUES.md` | the WPs that name a section | every data table as paste-ready JS (tags, codes, cables, conduits, RF, rules) |
+| `WP-*.md` | one builder each | goal (your words), files to read, functions, anchors, UI strings, tests, verifier focus |
+| `PLANNER-STACK-Q-001.json` | you | 41 decisions with defaults, in the BRIDGE tuner's pack format |
+| `PROMPTS.md` | you | the short prompts: read-all-first, build, verify, resolve, status |
+| `../../tools/check-globals.js` | builders, verifiers | duplicate global names + syntax check over `src/` (written and tested 2026-10-06) |
+
+---
+
+## How to run it
+
+1. **Answer the decisions** (optional — every WP carries a default). Load `PLANNER-STACK-Q-001.json`
+   into the BRIDGE tuner (*Load pack → paste*), answer, paste the `Q=key ~ note` lines back with the
+   **RESOLVE** prompt. Only answers that differ from the default change anything.
+2. **Set up once** — the worktree on branch `planner-stack` from `planner-circuit-endpoints`
+   (`00_CONTRACT.md §0`). WP-A1's builder does this.
+3. **Per WP, in order:** a fresh session with the **BUILD** prompt → a fresh session with the
+   **VERIFY** prompt → the verifier sets the status below to `verified`.
+4. **Stop at every ⏸** and try it in the browser yourself before the next wave — those are the points
+   where a design call, not code, decides whether the next wave is right.
+
+Suggested model and effort per session (set both in the session's model picker before the prompt):
+
+| session | model | effort |
+|---|---|---|
+| BUILD A2 A3 B3 B4 B5 C1–C5 D1 D2 D4 E1 E5 | Sonnet 5.5 | medium |
+| BUILD A1 B1 (shared plumbing: undo, render, pointer hooks) · B2 D3 (large) | Sonnet 5.5 | high |
+| BUILD E3 E4 (the fill — the physics rules live here) | Opus 5.5 | high |
+| BUILD E2 (pure algorithms, exact tests) | Haiku 4.5 (no effort setting) — Sonnet 5.5 low if it struggles |
+| VERIFY every WP | Opus 5.5 | high — its default is medium, set it |
+| VERIFY A1 B1 E3 E4 | Opus 5.5 | xhigh |
+| ⏸ checkpoint review of a whole wave | Opus 5.5 high · once after wave E: Fable 5.1 medium |
+| RESOLVE · STATUS | Sonnet 5.5 | medium · low |
+
+Move a WP's builder up one step when its verifier had to fix more than a couple of things — cost per
+finished WP is what counts, not per session.
+
+## Order, dependencies, status
+
+| WP | title | depends | size | status |
+|---|---|---|---|---|
+| A1 | Layer model v2 + schema seed | — | M | verified — 2026-10-06 — uncommitted · 1 fix (active layer after undo) · follow-ups: whiteout walls + Wall View notes ignore opacity |
+| A2 | Layer panel: vertical sub-layers, opacity, swap/move | A1 | M | todo |
+| A3 | Duplicate, merge, link, lock | A2 | M | todo |
+| ⏸ | **checkpoint — use the new layer panel on NV4 / P33** | | | |
+| B1 | Stack model, wizard, panel group, stage rail, shared hooks | A3 | L | todo |
+| B2 | Marks: walls, sides, vertical/horizontal strips | B1 | L | todo |
+| B3 | Marks: doors, windows, floor/ceiling strips and zones | B2 | M | todo |
+| B4 | Movement traces: 45° line, freehand, smoothed, door snap | B3 | M | todo |
+| B5 | Portal graph: line of sight, 500 mm encoding, heatmap | B4 | M | todo |
+| ⏸ | **checkpoint — mark one real floor; do the tags feel right?** | | | |
+| C1 | Hardware nodes: RBX, board, meter, entry, SSC | B2 | M | todo |
+| C2 | RBX room serving + coverage ghost | C1 | M | todo |
+| C3 | RF multi-wall model + RF view | C2 | M | todo |
+| C4 | BASE placement + guideline highlights | C1 | S–M | todo |
+| C5 | Channel routes between hardware nodes | C1, C4 | M | todo |
+| ⏸ | **checkpoint — phase 1 of a stack end to end** | | | |
+| D1 | Endpoint catalogue (BRIDGE codes) | B1 | M | todo |
+| D2 | Room needs checklists | D1, B3 | M | todo |
+| D3 | Placement suggestions | D1, D2, B5, (C3) | L | todo |
+| D4 | Circuits + control groups in the stack | D1 | M | todo |
+| ⏸ | **checkpoint — fill one room layer by layer** | | | |
+| E1 | Stack view + ARM routes | C5, D1 | M | todo |
+| E2 | Route graph: Dijkstra · chain · Steiner (KMB) | E1 | M | todo |
+| E3 | Auto-fill: runs, pipes, sizing | E2, D4, D2 | L | todo |
+| ⏸ | **checkpoint — compare a filled room with your own hand count** | | | |
+| E4 | Channel fill: bundle, RBX feeds, trunks | E3, C5 | M | todo |
+| E5 | Elosztószekrény: ways, RCBO, modules, phases | E4, D4 | M | todo |
+
+≈ 5 600 new lines in 13 new modules (`05l`…`05x`) + 22 spec files. Golden renders stay identical
+throughout (only A1 updates the six `/session` hashes once).
+
+---
+
+## Your draft → where each part lives
+
+| draft | WP |
+|---|---|
+| sub-layer buttons vertical, room next to each | A2 |
+| RCO / hold-and-drag a sub-layer onto another layer, the two swap | A2 |
+| two 10 % buttons + hide/visible per sub-layer | A1 (model, render) · A2 (buttons) |
+| new sub-layers: path, dugaljak, kapcsolók, lámpák, eszközök, walls, doors, lépcsők, tárgyak | A1 (+ ablakok and six optional rows, Q02) |
+| Photoshop: duplicate, link, merge | A3 (+ lock, Q07) |
+| layer-by-layer work; parallel paths on different layers don't get confused | B1 (stack) · E3 (same route, separate pipes) |
+| new BRIDGE Stack; existing layers can take a stack role; several can merge into the base | B1 |
+| constructional layer: floor, walls, doors, windows, rooms | B1 (Szerkezet role + checks) |
+| marking: wall tags, +/− on walls and sides, L-shape, TV wall | B2 |
+| tool cycle wall → side → vertical zone → horizontal zone; RCO extend to whole room | B2 |
+| zone tags (Elosztó, BASE, RBX locations; night/leg light bands) | B2 (`vstrip` / `hstrip` tags) |
+| door marks: entrance, portal, unused, others | B3 |
+| window marks — suggestions | B3 + Q19 |
+| floor/ceiling strips | B3 |
+| 45° lines in 100 mm steps, freehand, smoothed freehand | B4 |
+| traces near a door attach to it | B4 |
+| doors encoded by relative distance, position, frame angle; traces on a 500 mm grid; line of sight between doors of the same room | B5 |
+| rectangles and circles for corridors, dwells, water areas | B3 |
+| hardware: Elosztószekrény, data entry, mérőóra, RBX on marked wall sections | C1 |
+| ghost with a visual field from each side; direct coverage; RCO to add rooms; every room needs an RBX | C2 |
+| wireless cloud toggle | C2 + C3 |
+| BASE: units separately or as one; guideline highlights | C4 |
+| channel topology: path-tool variant between hardware nodes, multiple routes allowed, flush / trunking rule | C5 |
+| per-room, per-layer checklists with sensible ticks; ≥ 1 device per ticked type = done | D2 |
+| suggested placements from phase 1 (points and strips) | D3 |
+| RF layer with per-technology toggles, pale zones, faint outline | C3 |
+| SECURITY last | B1 role order · D1 (`from:'ssc'`, never into a RoomBox) |
+| devices as path end points with a dedicated circuit; socket strings; switch–lamp logic | D4 (+ Q29: in BRIDGE the switch is an input, not a wire to the lamp) |
+| draw on the stack as one layer; one-line paths branching from the RBX to every endpoint | E1 |
+| "there is a word for that algorithm" | E2 — **Steiner tree** (minimum tree through a given network), next to **home runs** (shortest-path tree) and **daisy chains** |
+| auto-fill wireway + cable per layer per room | E3 |
+| RCO on a finished RBX fills the hardware channel | E4 |
+| Elosztószekrény module count, RCD type, MCB, overvoltage | E5 |
+| phase 3: export formats | not in this pack — every derived result is already a pure JSON function (`prtGraph`, `needReport`, `afillReport`, `eloSchedule`) so phase 3 is formatters only |
+
+---
+
+## Found while preparing this — worth knowing before building
+
+1. **The live Planner code is not on `main`.** It is on `planner-circuit-endpoints` (2 commits ahead,
+   unmerged: circuits, auto-clip, auto-link, id repair). The pack builds on that branch, in a worktree,
+   because the main checkout holds other sessions' uncommitted BRIDGE edits.
+2. **A gap in STD-001** (Q37): the CHANNEL bundle sizes are fixed (C1 M25 = two Cat6A at 40 %), but a
+   chained RoomBox passes downstream rooms' uplinks through. The standard does not say what the
+   upstream bundle carries. Default: warn, never upsize silently.
+3. **STD-001 and A2 read differently on room-circuit feeds** (Q38): "M25 per circuit group" vs "two
+   S04 circuits → M32". Default packing satisfies both.
+4. **NV4's switch–lamp wiring does not apply in a BRIDGE stack** (Q29): the switch is an input to the
+   RoomBox bistable and each lamp group an output, so there is no switch-to-lamp cable. The 101/105
+   schemes stay with the conventional wiring pipeline (slice S6).
+5. **Six type codes are missing from STD-004** (Q36): DED, ETH, SCR, AVP, USB, SEC.
+6. **Your 300 mm strip is the DIN 18015-3 installation-zone width** — the standard zones are offered as
+   tags (`zona_v`, `zona_f`), so the marking layer can start from the norm.
+7. **Undo had to be designed carefully:** layers become undoable only for layer operations; otherwise
+   undoing a device move would also undo a visibility toggle made after it.
+8. **Acceptance anchored to a real design:** E5's test reproduces P33's settled cabinet (24 ways,
+   29 modules single-phase, 34 three-phase).
+
+## Follow-ups (not in this pack)
+F1 phase-3 exporters · F2 conventional switch schemes (wiring pipeline S6) · F3 12 V / 24 V separate
+conduits (A2 rule not modelled) · F4 bend counting for the 33 % rule · F5 undo for building-model rooms ·
+F6 auto-placing a kötődoboz at a branch node · F7 STD-005 channel plan checks · F8 conduit labels and
+wire codes (wiring pipeline S8).
+
+## Glossary
+**RCO** right-click option · **RBX** RoomBox · **BASE** NET + COMP + MEDIA · **CHANNEL** the BASE→RBX
+bundle C1…C5 · **ARM** a route from an RBX to endpoints (`R03.A2`) · **role** what a stack layer is for ·
+**run** one cable pull between two terminals · **leg** one piece of a chain run · **pipe** one conduit,
+always box to box · **family** conduit family (MAINS, LV, BUSB, CONTROL, DATA, KNX, SENSOR, MEDIA, USB,
+SECURITY) — families never share a pipe · **carrier** what a channel route carries, from its end types.
