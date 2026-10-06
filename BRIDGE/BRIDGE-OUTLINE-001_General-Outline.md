@@ -85,7 +85,7 @@ misunderstood thing about the system, so it is worth stating as a table.
 | **SECURITY** | third-party alarm | SSC | **no** — a parallel route, own conduits |
 | **NOTIFICATION** | visual output | assured bus + ESP-NOW | **no** — shares the portal stub-out |
 
-Plus two spares — **C4 M25 and C4b M20** — empty with draw cords.
+Plus **C4 M25**, a spare with a draw cord, and **C4b M20**, which carries the assured 24 V bus (K25).
 
 **The gear tiers**, which sit on top of the conduit rather than beside it: T1 base gateways ·
 T2 integrated devices · T3 manual-first actuation · T4 sensor fleet · **T5 the coordinator** ·
@@ -112,7 +112,7 @@ those live on MEDIA or a dedicated node.
    │ COMP  ═══════╪═══════════════════════════════════════════╝
    │ MEDIA        │  storage · Snapcast · NVR
    └──────┬───────┘
-          │ CHANNEL — C1 data · C2 media · C3 control · C4/C4b spare · C5 knx
+          │ CHANNEL — C1 data · C2 media · C3 control · C4 spare · C4b bus B · C5 knx
       ROOMBOX ──► ARM ──► ENDPOINT
           │
    SSC ══ SECURITY CHANNEL ══► security point per RoomBox ══► star ARMs
@@ -252,7 +252,7 @@ island needs that feed in the floor before the screed.
 **The lamp count passed the DALI crossover and the answer still holds.** Ground floor ≈ 19 controlled
 mains lamps with R03's two; with the upper floor, roughly 26. That is above the 15–25 crossover on
 count — but **C30 keeps a bistable relay per lamp regardless**, which forecloses DALI's main benefit
-before cost enters the argument. **No DALI in v1** stands, and the C4b conduit keeps the door open.
+before cost enters the argument. **No DALI in v1** stands, and a CHANNEL spare keeps the door open — C5 while KNX is not taken, otherwise C4 (K25).
 
 ### 4.6 Provision, as answered
 

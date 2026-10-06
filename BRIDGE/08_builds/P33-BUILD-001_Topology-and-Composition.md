@@ -1,6 +1,6 @@
 # P33-BUILD-001 — Topology and Hardware Composition
 
-**Doc:** P33-BUILD-001 · r1 · 2026-10-06 · English · views T1 · T3 · T5 · T10
+**Doc:** P33-BUILD-001 · r1 · 2026-10-06 · English · views T1 · T2 · T3 · T5 · T8 · T10
 **Closes:** U22, the hardware composition of the P33 instance. It is also the first time all eight
 standards meet one real dwelling.
 **Built on:** BRIDGE-OUTLINE-001 r2 §4 · P33-D1 r3 (round K) · STD-001 · 004 · 005 · 007
@@ -121,7 +121,7 @@ Class and role. Products in BUILD-002.
 | **NET** | 16-port managed switch, PoE+ (802.3at), **≥ 90 W** budget, 2 × SFP · Zigbee coordinator, network-attached | STD-005 §2, §5 |
 | **COMP** | Home Assistant as a client · **arbiter as its own service** · MQTT broker · ESPHome · BRIDGE_LINK master with **4 × RS-485**, one channel per RoomBox · two Thread border routers (§3.3) | G06 · STD-004 §3 · STD-005 §5 |
 | **MEDIA** | **Full pack**: low-power x86 with hardware video · NVMe system + library bays · **NVR on its own surveillance disk** · Snapcast server · media server · 2.5 GbE / SFP+ uplink | H01 · STD-007 §7 |
-| **Assured supply** | central 24 V bus B pack + **backup connector slot** | C17 |
+| **Assured supply** | central 24 V bus B pack + **backup connector slot** — **in R05 beside V1, not in this joinery** (§12.1) | C17 |
 | **Supply** | 3 system circuits from the cabinet, one through a remotely operable breaker | F04 · STD-001 §4.2 |
 
 **The protocol masters attach to the network, never by USB to COMP** (ARCH-002 §4.2). That is
@@ -163,7 +163,7 @@ first check, before anything is bought.
 |---|---|---|---|
 | **CH-0** | BASE → RBX03 | — | **inside the joinery** (§3.1). No conduit |
 | **CH-6** | RBX03 → RBX06 | full bundle **C1 · C2 · C3 · C4 · C4b · C5** | one penetration of the masonry spine. C2 carries the AV feed on to the media wall |
-| **CH-8** | RBX03 → RBX08 | **spur C1 · C3 · C4** | RB-E terminal, no screen (STD-001 §5). Keep it clear of the wet-wall zone |
+| **CH-8** | RBX03 → RBX08 | **spur C1 · C3 · C4 · C4b** | RB-E terminal, no screen (STD-001 §5). **C4b added (K25)** so the bathroom keeps the assured bus. Keep it clear of the wet-wall zone |
 | **CH-9** | RBX03 → V1 → RBX09 | full bundle | **provisioned now, terminated later.** A full bundle because the riser can never be reopened cheaply, whatever the upper floor turns out to need |
 | **CH-9s** | V1 junction → R13 tároló | **C4** spare | from the junction, not from RBX09, so RBX09 stays truly terminal (K16) |
 
@@ -229,12 +229,10 @@ zone. The boundary between them is drawn by zoned mmWave, not by a portal.
 **The terrace is not an exterior edge.** Nobody arrives from it, so it is a zone like any other,
 and the house count holds while someone stands outside on it.
 
-> **One decision this leaves for you.** Outline §4.3 argued that R03's internal doorways deserve
-> **P-3** as much as the entrance does, because a misordered crossing there corrupts every
-> downstream zone at once. T5 draws them **P-2**, the D01 position. The tree structure narrows the
-> gap: in a tree a crossing cannot be misattributed between branches, only miscounted. **P-2 is
-> enough unless commissioning shows abreast crossings at R01↔R03** — and the portal ARM is the same
-> either way, so the upgrade is a fit-out change, not a construction one.
+> **R03's doorways are P-2 (K26).** Outline §4.3 had argued for P-3 there. The tree structure
+> narrows the gap: in a tree a crossing cannot be misattributed between branches, only miscounted.
+> **Revisit only if commissioning shows abreast crossings at R01↔R03** — the portal ARM is the same
+> either way, so an upgrade is a fit-out change, not a construction one.
 
 ---
 
@@ -262,12 +260,12 @@ outline already found the 48-module cabinet full at V2. **The 12-module DN row o
 PANEL LINK, not for these ways**, so BUILD-002's first cabinet task is a module count against
 both.
 
-> **A gap T3 exposed: the assured bus has no defined route.** Bus B runs from the central pack at
-> BASE to every RoomBox, but STD-001 §3.1's CHANNEL has no conduit for it — LV is "made in each
-> RoomBox" and does not travel the CHANNEL. The two candidates are **C4b**, the M20 spare (which
-> STD-001 reserves for a DALI pair, now foreclosed by C30), or **a dedicated M20 alongside the
-> bundle**. My recommendation is **C4b**: DALI is out, the conduit is already in every run, and it
-> keeps the bundle order unchanged. **Your call**, because it spends a spare.
+> **A gap T3 exposed, now closed: the assured bus rides C4b (K25).** Bus B runs from the central
+> pack to every RoomBox, but the CHANNEL had no conduit for it — LV is "made in each RoomBox" and
+> does not travel the CHANNEL. **C4b** was the M20 spare reserved for a DALI pair. No DALI is
+> fitted in v1, so the bus can take it; it is in every run, and the bundle order does not change.
+> **The DALI reservation moves to C5 while KNX is not taken, otherwise to C4** — STD-001 §3.1 and
+> STD-002 §10 are amended to match, and RBX08's spur gains C4b (§5).
 
 ---
 
@@ -292,32 +290,92 @@ and conduit sizes to them. RBX09's tree is drawn dashed: provisioned, not fitted
 
 ---
 
-## 11. Further views — for a later round
+## 11. T2 — the CHANNEL lanes
 
-T1, T3, T5 and T10 are done. The remaining six:
+![T2 — CHANNEL lanes](fig/P33-T2_channel-lanes.png)
+
+**A metro map.** One lane per run, the six conduits as parallel tracks in their fixed order, and
+stations where something physical happens: leaving the joinery, a wall penetration, a pull point,
+the slab sleeves. **Lengths are not yet measured**, so stations mark *what* happens, not *where*.
+
+**What it shows:**
+
+- **No conduit in this house carries two boxes' cables.** CH-0, the hub's shared segment, is the
+  joinery tray (§3.1), so every lane starts single-box.
+- **CH-9 is the one run with a forced pull point.** Along R03's south wall, a turn into the kamra
+  and a turn upward make three bends, so STD-001 §3.3 puts a pull point **at the foot of the
+  riser**. It is a natural one: in the kamra, behind a door, beside the inspection box.
+- **CH-9 is built in two states.** Conduits, sleeves and draw cords now. Cable later, from the
+  inspection box upward, when the upper floor is done. The fire-stopping goes in with the sleeves.
+- **CH-8's spur now carries C4b**, so the bathroom's egress light is on the assured bus like
+  every other room.
+
+**Fill is reasoned on typical conduit bores**, not measured cable diameters: the worst day-one
+case is C1 at about 32 %, under the 40 % limit. C2's limit is the HDMI plug, not the fill.
+
+---
+
+## 12. T8 — failure domains
+
+![T8 — failure domains](fig/P33-T8_failure-domains.png)
+
+**Six failures, each the T1 spine re-coloured**, then what the occupant actually experiences:
+manual switching, automation, the egress light, and the house as a whole. The rows come from
+STD-006 §2's failure matrix, applied to this house's topology.
+
+**Two results specific to P33:**
+
+- **E — the hub is a hub for cables, not for logic.** RBX03's sub-controller can die and
+  R06–R09 never notice. Each box has its own RS-485 channel from COMP, and the pass-through is
+  passive copper. The physical chain does not create a logical one.
+- **F — the joinery is a common cause.** This is the cost of the K13 stacking. One event at that
+  position — a leak from above, a fire, sustained overheating — takes out NET, COMP, MEDIA and the
+  hub together. The downstream boxes fall back to autonomy, and manual switching survives
+  everywhere except R01–R05, whose relays sit in RBX03.
+
+### 12.1 Where the assured pack lives
+
+BUILD-001 placed the central bus B pack at BASE without a reason; nothing in the standards fixes
+its position. **Scenario F is the reason not to.** If the pack sits in the joinery, the one event
+that removes the coordinator also removes every egress light in the house. That is exactly the
+kind of coupling the central-pack decision (C17) was taken to avoid.
+
+**Decided (K27): the pack goes in R05 kamra**, in its own small enclosure beside the V1 riser.
+
+- It is a different cupboard from the joinery, so a joinery event does not reach it.
+- It is cool, it is low-value space, and it is already the services riser.
+- From there, bus B reaches the joinery over a short dedicated link and enters C4b of every run.
+
+T3 and T8 draw the pack as a separate element, labelled R05. The BASE joinery no longer carries
+anything whose loss would darken an egress light.
+
+---
+
+## 13. Further views — for a later round
+
+T1, T2, T3, T5, T8 and T10 are done. The remaining four:
 
 T1 answers *what feeds what*. Each view below answers one different question about the same
 installation. All read left to right unless the question has a different natural axis.
 
 | | View | The question it answers | Natural form |
 |---|---|---|---|
-| **T2** | **CHANNEL lanes** | which conduit carries what, run by run, through the riser and the pass-through | a "metro map": one lane per run, C1–C5 as parallel tracks, stations at boxes and pull points |
+| ~~T2~~ | **CHANNEL lanes** — *done, §11* | which conduit carries what, run by run, through the riser and the pass-through | a "metro map": one lane per run, C1–C5 as parallel tracks, stations at boxes and pull points |
 | ~~T3~~ | **Power topology** — *done, §9* | which breaker feeds what, and what dies with it | cabinet ways → circuits → boxes and big loads, with the assured 24 V bus as a second, independent tree |
 | **T4** | **Control and data star** | how COMP and NET actually see the house | COMP's four RS-485 channels and NET's 16 ports as two fan-outs, VLAN-coloured |
 | ~~T5~~ | **Presence zone graph** — *done, §8* | where people can go, and where the system counts them | rooms as nodes, portals as edges with their P-tier, anchors marked, the void as a non-walkable sight line |
 | **T6** | **Radio map** | which protocol is coordinated where, and who routes for whom | Zigbee / Thread / BLE as three overlaid meshes on the box positions |
 | **T7** | **Media and audio paths** | why music and television never share a path | Path A (Snapcast, distributed) and Path B (local, low-latency) side by side, follow-me rooms highlighted |
-| **T8** | **Failure domains** | what still works when COMP, NET, a circuit or a box is lost | the T1 layout re-coloured per failure state — manual-first made visible |
+| ~~T8~~ | **Failure domains** — *done, §12* | what still works when COMP, NET, a circuit or a box is lost | the T1 layout re-coloured per failure state — manual-first made visible |
 | **T9** | **Build sequence** | what must be in the wall before the plaster | a swimlane: the 13 build steps against the rooms, with *provision now / fit later* for the upper floor |
 | ~~T10~~ | **Endpoint trees** — *done, §10* | what hangs off each box | per RoomBox: box → ARMs → endpoints, the ARM schedule as a tree — BUILD-002's backbone |
 
-**Next, if you want them:** T2 and T8. T2 because the riser and the hub's joinery are where
-conduit fill will actually be decided. T8 because it is T3's failure column turned into a picture of
-the whole house.
+**Next, if you want them:** T6 (radio) once the Thread change of §3.3 is accepted, and T7 (media)
+once the media wall's position is known. T4 and T9 can wait for BUILD-002.
 
 ---
 
-## 12. Open
+## 14. Open
 
 | | Item | Blocks |
 |---|---|---|
@@ -326,7 +384,5 @@ the whole house.
 | 3 | **RBX06's wall** — candidate on the R06 face of the masonry spine beside R07 (drawn with "?" on the floor sheet) | CH-6 |
 | 4 | **Product selection** and the **per-ARM schedule** | BUILD-002 |
 | 5 | **§3.2's ΔT** on RBX03 above a loaded BASE | commissioning, not design |
-| 6 | **Assured bus B route** — C4b (recommended) or a dedicated M20 (§9) | bus B to every box |
-| 7 | **R03's doorways: P-2 or P-3** (§8) — P-2 drawn; the ARM is the same either way | portal fit-out only |
-| 8 | **Cabinet module count** — ≈ 23 ways against 48 M (§9) | the cabinet |
-| 9 | **C23 / C23B** lighting types · **H10** Snapcast placement · **D9** security provider | unchanged |
+| 6 | **Cabinet module count** — ≈ 23 ways against 48 M (§9) | the cabinet |
+| 7 | **C23 / C23B** lighting types · **H10** Snapcast placement · **D9** security provider | unchanged |

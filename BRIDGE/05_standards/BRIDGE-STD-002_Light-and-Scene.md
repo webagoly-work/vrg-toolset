@@ -575,8 +575,9 @@ And **C30 keeps the bistable relay per lamp in Z1 regardless** — so DALI's lar
 replacing per-fixture switching wiring, is foreclosed before the comparison begins. What remains is
 a nicer dimming protocol, and PWM and 0–10 V already provide that.
 
-**Decision: no DALI in v1. Two things keep the door open for almost nothing** — the **C4b M20 spare**
-in the CHANNEL bundle can carry a DALI pair later (STD-001 §3.1), and the gateway position at NET
+**Decision: no DALI in v1. Two things keep the door open for almost nothing** — a CHANNEL spare
+can carry a DALI pair later: **C5** while KNX is not taken, otherwise **C4** (STD-001 §3.1; C4b,
+the original reservation, now carries the assured bus — K25), and the gateway position at NET
 from ARCH-002 §4.2 stays reserved. If fixture count doubles, or lamp-failure reporting becomes worth
 real money, it is an addition rather than a rebuild.
 

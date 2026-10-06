@@ -266,7 +266,7 @@ room, five years later, C3 is always third from the left looking away from BASE.
 | **C2 MEDIA** | M40 | 1 × HDMI 2.1 AOC + 1 × Cat6A (HDBaseT / HDMI-over-IP) | next video standard |
 | **C3 CONTROL** | M20 | 1 × Cat6A S/FTP (BRIDGE_LINK) | second RS-485 on pair 2 (CAN reserved, E10) |
 | **C4 SPARE** | M25 | **empty + draw cord** | coax, fibre, audio |
-| **C4b SPARE** | M20 | **empty + draw cord** | DALI pair, second control run, anything small |
+| **C4b BUS B** | M20 | **the assured 24 V bus B pair** (K25) | — *(was the spare reserved for a DALI pair; that reservation moves to C5, or C4 if KNX is taken)* |
 | **C5 KNX** | M20 | **installed empty** even if KNX is not taken (B10) | KNX TP |
 
 > **Two spares, not one (B08).** r1 specified a single M32. Two independent spares of different
@@ -414,7 +414,7 @@ Two properties define it, and the first pays for the second:
 1. **No ZT.** Nothing routes through it, so plane D3 is freed for its own service loops. An
    RB-E can sit one class smaller than its endpoint count would otherwise demand.
 2. **A reduced CHANNEL spur.** A terminal node rarely needs all five conduits. Typical spur:
-   **C1 DATA + C3 CONTROL + C4 SPARE**; C2 MEDIA omitted unless the domain has a screen;
+   **C1 DATA + C3 CONTROL + C4 SPARE + C4b BUS B** *(C4b added by K25: every box needs the assured bus)*; C2 MEDIA omitted unless the domain has a screen;
    C5 per the KNX decision.
 
 It remains a **full SELV source for its domain** — it converts, fuses and monitors exactly as

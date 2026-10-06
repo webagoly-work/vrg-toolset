@@ -63,7 +63,7 @@ function t1() {
   s += node(645, 182, 230, 84, 'NET', '16-port managed, PoE+ ≥ 90 W\n2 × SFP · VLAN 10/20/30/40/50/99\nZigbee coordinator (on the network)', { fill: '#fff', bsize: 11.5, tsize: 14 });
   s += node(645, 276, 230, 104, 'COMP', 'Home Assistant (client) · MQTT\narbiter = own service (G06)\nESPHome · BRIDGE_LINK master,\n4 × RS-485, one per RoomBox', { fill: '#fff', bsize: 11.5, tsize: 14 });
   s += node(645, 390, 230, 96, 'MEDIA — full pack (H01)', 'x86 + HW video · Snapcast\nmedia server · NVR on its own\ndisk · 2.5 GbE / SFP+', { fill: '#fff', bsize: 11.5, tsize: 14 });
-  s += node(645, 496, 230, 72, 'Assured 24 V pack', 'central bus B + backup\nconnector slot (C17)', { fill: '#fff', bsize: 11.5, tsize: 14 });
+  s += node(645, 496, 230, 72, 'Assured 24 V pack', 'C17 · housed in R05,\nnot in this joinery', { fill: '#fff', bsize: 11.5, tsize: 14 });
 
   // ---- hub ----
   s += node(970, 230, 240, 200, 'RBX03 · RB-H', 'R03 · Modbus addr 3\nhub: pass-through (ZT)\nfor three runs\n\nstacked directly above BASE\n— the chain\'s only shared\nsegment is inside the joinery', { bsize: 12.5 });
@@ -125,7 +125,7 @@ function t1() {
   // ---- legend ----
   const lx = 40, ly = 1110;
   s += `<rect x="${lx}" y="${ly}" width="1920" height="110" rx="8" fill="${C.panel}" stroke="${C.line}"/>`;
-  const items = [[C.channel, 6, '', 'CHANNEL (C1 data · C2 media · C3 control · C4/C4b spare · C5 KNX, empty)'], [C.mains, 2.5, '', '230 V — cabinet routes'],
+  const items = [[C.channel, 6, '', 'CHANNEL (C1 data · C2 media · C3 control · C4 spare · C4b bus B · C5 KNX, empty)'], [C.mains, 2.5, '', '230 V — cabinet routes'],
     [C.data, 2.5, '', 'ISP line'], [C.link, 2.5, '7 5', 'PANEL LINK — data only'], [C.sec, 3, '10 5', 'SECURITY channel'], [C.ink, 1.6, '', 'ARMs to rooms']];
   items.forEach(([c, w, d, t], i) => {
     const x = lx + 20 + (i % 3) * 640, y = ly + 34 + Math.floor(i / 3) * 40;
@@ -311,7 +311,7 @@ function t3() {
   const yB = y0 + 30, yLast = y0 + 5 * rh + 30;
   s += `<path d="M1080,${yB} L${busX},${yB} L${busX},${yLast}" fill="none" stroke="${BUSB}" stroke-width="4"/>`;
   s += text(1192, yB - 10, 'LiFePO4 ≈ 6 Ah @ 24 V', { size: 11.5, color: BUSB, weight: 700 });
-  s += text(1192, yB + 30, 'central pack at BASE (C17)\n2 h at 15 W · backup connector\nhardwired latch → egress', { size: 11, color: BUSB });
+  s += text(1192, yB + 30, 'central pack in R05 (C17)\n2 h at 15 W · backup connector\nhardwired latch → egress', { size: 11, color: BUSB });
   // PoE trunk from NET
   s += `<path d="M1080,${yB + 14} L${poeX},${yB + 14} L${poeX},${yLast}" fill="none" stroke="${POE}" stroke-width="2.5" stroke-dasharray="2 3"/>`;
   s += text(1452, yB + 54, 'from NET\n5–8 W per box\nsub-controller +\nZ4 radios only', { size: 11, color: POE });
@@ -402,7 +402,163 @@ function emit(name, svg, w, h) {
   }
   console.log('wrote', name);
 }
+// ===========================================================================
+// T2 — CHANNEL lanes. A metro map: one lane per run, the six conduits as
+// parallel tracks in their fixed order, stations where something happens.
+const TRACKS = [
+  ['C1', 'DATA', 'M25', '#2563eb', '2 × Cat6A U/FTP'],
+  ['C2', 'MEDIA', 'M40', '#db2777', 'HDMI AOC + Cat6A'],
+  ['C3', 'CTRL', 'M20', '#16a34a', 'Cat6A S/FTP · BRIDGE_LINK'],
+  ['C4', 'SPARE', 'M25', '#94a3b8', 'empty + draw cord'],
+  ['C4b', 'BUS B', 'M20', '#0f766e', 'assured 24 V pair (K25)'],
+  ['C5', 'KNX', 'M20', '#cbd5e1', 'installed empty (B10)'],
+];
+function t2() {
+  let s = '';
+  const gap = 11;                        // track spacing inside a lane
+  s += `<rect x="40" y="130" width="250" height="860" rx="12" fill="${C.base}" stroke="${C.channel}" stroke-width="2.5"/>`;
+  s += text(56, 162, 'JOINERY · R03', { size: 16, weight: 700 });
+  s += text(56, 186, 'RBX03 (upper) over BASE\n\nCH-0 — BASE → RBX03 is an\nopen tray inside the joinery,\nnot a conduit (§3.1).\n\nEvery run below leaves the\njoinery carrying one box\'s\ncables only — so no conduit\nin this house is shared by\ntwo boxes.', { size: 12.5, color: C.sub });
+
+  const lanes = [
+    { id: 'CH-6', to: 'RBX06 · RB-H · R06', y: 230, tracks: [0, 1, 2, 3, 4, 5],
+      stations: [[430, 'leave joinery'], [640, 'masonry spine\npenetration'], [900, '≤ 2 bends:\nno pull point\n(reasoned)'], [1160, 'RBX06']],
+      note: 'C2 continues through RBX06\'s pass-through to the AV position' },
+    { id: 'CH-8', to: 'RBX08 · RB-E/W · R08', y: 450, tracks: [0, 2, 3, 4],
+      stations: [[430, 'leave joinery'], [760, 'pull point —\nper route (open:\nRBX08\'s wall)'], [1160, 'RBX08']],
+      note: 'spur: C1 · C3 · C4 + C4b — the bathroom keeps the assured bus' },
+    { id: 'CH-9', to: 'RBX09 · RB-M · R09 (upper)', y: 680, tracks: [0, 1, 2, 3, 4, 5],
+      stations: [[430, 'leave joinery'], [610, 'along R03\nsouth wall'], [790, 'PP at riser foot\n(3rd bend)'], [960, 'V1 sleeves\nthrough slab\nfire-stopped'], [1160, 'inspection box\n— capped\ndraw cords'], [1420, 'RBX09\nupper renovation']],
+      futureFrom: 1160, note: 'conduits now, cables pulled with the upper floor' },
+  ];
+  lanes.forEach(L => {
+    const top = L.y - 46, h = 6 * gap + 92;
+    s += `<rect x="300" y="${top}" width="1330" height="${h}" rx="10" fill="#f8fafc" stroke="#e4e7eb"/>`;
+    s += text(316, top + 22, L.id, { size: 15, weight: 700, color: C.channel }) + text(380, top + 22, '→ ' + L.to, { size: 13, weight: 700 });
+    s += text(1615, top + 22, L.note, { size: 11.5, color: C.sub, italic: true, anchor: 'end' });
+    const endX = L.id === 'CH-9' ? 1420 : 1160;
+    TRACKS.forEach((t, i) => {
+      const y = L.y + i * gap, on = L.tracks.includes(i);
+      if (!on) { s += `<line x1="300" y1="${y}" x2="${endX}" y2="${y}" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="2 6"/>`; return; }
+      if (L.futureFrom) {
+        s += `<line x1="290" y1="${y}" x2="${L.futureFrom}" y2="${y}" stroke="${t[3]}" stroke-width="5" stroke-linecap="round"/>`;
+        s += `<line x1="${L.futureFrom}" y1="${y}" x2="${endX}" y2="${y}" stroke="${t[3]}" stroke-width="5" stroke-dasharray="8 7" stroke-linecap="round" opacity=".6"/>`;
+      } else s += `<line x1="290" y1="${y}" x2="${endX}" y2="${y}" stroke="${t[3]}" stroke-width="5" stroke-linecap="round"/>`;
+    });
+    L.stations.forEach(([x, lbl], k) => {
+      const last = k === L.stations.length - 1;
+      s += `<rect x="${x - 9}" y="${L.y - 12}" width="18" height="${5 * gap + 24}" rx="9" fill="#fff" stroke="${last ? C.channel : C.ink}" stroke-width="${last ? 3.5 : 2}"/>`;
+      s += text(x, L.y + 5 * gap + 34, lbl, { size: 11.5, anchor: 'middle', color: last ? C.channel : C.ink, weight: last ? 700 : 400 });
+    });
+  });
+  // CH-9s branch from the V1 junction
+  const jx = 1160, jy = 680 + 3 * gap;
+  s += `<path d="M${jx},${jy} C${jx + 60},${jy} ${jx + 60},905 ${jx + 120},905 L1420,905" fill="none" stroke="${TRACKS[3][3]}" stroke-width="5" stroke-dasharray="8 7"/>`;
+  s += `<rect x="1411" y="893" width="18" height="24" rx="9" fill="#fff" stroke="${C.channel}" stroke-width="3"/>`;
+  s += text(1340, 892, 'CH-9s', { size: 13, weight: 700, color: C.channel }) + text(1440, 910, 'R13 tároló — C4 spare (K16)', { size: 12, color: C.ink });
+
+  // track key + fill
+  s += `<rect x="1660" y="130" width="310" height="860" rx="12" fill="#fff" stroke="${C.line}"/>`;
+  s += text(1680, 162, 'The bundle — fixed order', { size: 15, weight: 700 });
+  s += text(1680, 182, 'left → right, looking away from BASE', { size: 11.5, color: C.sub });
+  TRACKS.forEach((t, i) => {
+    const y = 220 + i * 74;
+    s += `<line x1="1680" y1="${y}" x2="1730" y2="${y}" stroke="${t[3]}" stroke-width="6" stroke-linecap="round"/>`;
+    s += text(1742, y + 5, `${t[0]} · ${t[1]} · ${t[2]}`, { size: 14, weight: 700 }) + text(1742, y + 25, t[4], { size: 12, color: C.sub });
+  });
+  s += text(1680, 690, [
+    'Day-one fill, reasoned on typical',
+    'conduit bores (limit 40 %):',
+    'C1  2 × Cat6A in M25   ≈ 32 %',
+    'C2  AOC + Cat6A in M40 ≈ 10 %',
+    '      (the plug is the limit, §5.2)',
+    'C3  1 × Cat6A in M20   ≈ 27 %',
+    'C4b 24 V pair in M20   ≈ 27 %',
+    '',
+    'Rules on every run (STD-001 §3.3):',
+    '≤ two 90° bends between pull points',
+    'bend radius ≥ 8 × OD — sweeps only',
+    'draw cord in every conduit',
+    'both ends labelled P33-R<nn>-C<n>',
+  ].join('\n'), { size: 12, color: C.ink });
+
+  s += legendBar(40, 1020, 1930, [
+    [(x, y) => `<line x1="${x}" y1="${y}" x2="${x + 46}" y2="${y}" stroke="#2563eb" stroke-width="5" stroke-linecap="round"/>`, 'conduit with day-one cable'],
+    [(x, y) => `<line x1="${x}" y1="${y}" x2="${x + 46}" y2="${y}" stroke="#2563eb" stroke-width="5" stroke-dasharray="8 7" opacity=".6"/>`, 'conduit in, cable later'],
+    [(x, y) => `<line x1="${x}" y1="${y}" x2="${x + 46}" y2="${y}" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="2 6"/>`, 'not in this run (RB-E spur)'],
+    [(x, y) => `<rect x="${x + 14}" y="${y - 14}" width="18" height="28" rx="9" fill="#fff" stroke="${C.ink}" stroke-width="2"/>`, 'station — penetration, pull point, sleeve'],
+    [(x, y) => `<rect x="${x + 14}" y="${y - 14}" width="18" height="28" rx="9" fill="#fff" stroke="${C.channel}" stroke-width="3.5"/>`, 'RoomBox — the run terminates'],
+  ]);
+  return frame(2000, 1140, 'P33 · T2 — CHANNEL lanes',
+    `One lane per run, the six conduits as parallel tracks in their fixed order. Lengths are not yet measured: stations mark what happens, not where.   ${REVTAG}`, s);
+}
+
+// ===========================================================================
+// T8 — failure domains: the spine re-coloured per failure, six small multiples.
+const ST = { ok: ['#dcfce7', '#15803d'], deg: ['#fef3c7', '#b45309'], lost: ['#fee2e2', '#b91c1c'], na: ['#f1f5f9', '#94a3b8'] };
+function miniSpine(x0, y0, st) {
+  let s = '';
+  const box = (x, y, w, h, t, k) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${ST[st[k] || 'ok'][0]}" stroke="${ST[st[k] || 'ok'][1]}" stroke-width="2"/>` +
+    text(x + w / 2, y + h / 2 + 4, t, { size: 11.5, weight: 700, anchor: 'middle', color: C.ink });
+  const ln = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${C.line}" stroke-width="2"/>`;
+  s += ln(x0 + 70, y0 + 80, x0 + 92, y0 + 80) + ln(x0 + 182, y0 + 80, x0 + 204, y0 + 80) + ln(x0 + 284, y0 + 80, x0 + 306, y0 + 80);
+  s += ln(x0 + 296, y0 + 30, x0 + 296, y0 + 140) + ln(x0 + 296, y0 + 30, x0 + 306, y0 + 30) + ln(x0 + 296, y0 + 140, x0 + 306, y0 + 140);
+  s += box(x0, y0 + 60, 70, 40, 'CAB', 'cab');
+  s += `<rect x="${x0 + 92}" y="${y0}" width="90" height="170" rx="6" fill="none" stroke="${C.line}" stroke-dasharray="4 3"/>`;
+  s += box(x0 + 98, y0 + 6, 78, 30, 'NET', 'net') + box(x0 + 98, y0 + 42, 78, 30, 'COMP', 'comp') + box(x0 + 98, y0 + 78, 78, 30, 'MEDIA', 'media') + box(x0 + 98, y0 + 120, 78, 42, 'PACK', 'pack');
+  s += box(x0 + 204, y0 + 58, 80, 44, 'RBX03', 'r3');
+  s += box(x0 + 306, y0 + 12, 74, 36, 'RBX06', 'r6') + box(x0 + 306, y0 + 62, 74, 36, 'RBX08', 'r8') + box(x0 + 306, y0 + 122, 74, 36, 'RBX09', 'r9');
+  return s;
+}
+function t8() {
+  let s = '';
+  const SC = [
+    { t: 'A · Mains lost, whole flat', st: { cab: 'lost', net: 'deg', comp: 'deg', media: 'lost', pack: 'ok', r3: 'lost', r6: 'lost', r8: 'lost', r9: 'na' },
+      p: [['manual switching', 'lost'], ['automation', 'lost'], ['egress light', 'ok', '2 h on bus B'], ['house', 'deg', 'COMP on its UPS']],
+      n: 'The one honest limit (STD-006 §2.2): manual-first needs electricity. Bus B is the answer to a blackout.' },
+    { t: 'B · RBX06\'s circuit trips', st: { r6: 'deg', r9: 'na' },
+      p: [['manual switching', 'deg', 'dead in R06–R07'], ['automation', 'ok', 'RBX06 alive on PoE'], ['egress light', 'ok', 'central pack'], ['house', 'ok']],
+      n: 'R06 and R07 go dark but stay reported. The AV circuit and every other room are untouched.' },
+    { t: 'C · COMP down', st: { comp: 'lost', r3: 'deg', r6: 'deg', r8: 'deg', r9: 'na' },
+      p: [['manual switching', 'ok'], ['automation', 'deg', 'autonomy, last state'], ['egress light', 'ok'], ['house', 'deg', 'no scenes, schedules']],
+      n: 'Every box falls back to autonomy within 3 s. On return COMP reconciles, it never reasserts.' },
+    { t: 'D · NET down', st: { net: 'lost', r3: 'deg', r6: 'deg', r8: 'deg', r9: 'na' },
+      p: [['manual switching', 'ok'], ['automation', 'deg', 'local rules only'], ['egress light', 'ok'], ['house', 'deg', 'no panels, cameras']],
+      n: 'The boxes keep their RS-485 link to COMP. What goes is everything that rides Ethernet: panels, cameras, Matter over WiFi.' },
+    { t: 'E · RBX03\'s sub-controller dead', st: { r3: 'lost', r9: 'na' },
+      p: [['manual switching', 'ok'], ['automation', 'deg', 'dead in R01–R05 only'], ['egress light', 'ok'], ['house', 'ok']],
+      n: 'The hub is a hub for cables, not for logic: each box has its own RS-485 channel and the pass-through is passive. Downstream boxes never notice.' },
+    { t: 'F · The joinery lost (water, heat)', st: { net: 'lost', comp: 'lost', media: 'lost', pack: 'lost', r3: 'lost', r6: 'deg', r8: 'deg', r9: 'na' },
+      p: [['manual switching', 'deg', 'lost in R01–R05 only'], ['automation', 'deg', 'autonomy downstream'], ['egress light', 'lost', 'if the pack were here'], ['house', 'lost']],
+      n: 'Common cause: stacking puts BASE and the hub in one cupboard. Were the assured pack there too, egress would go with them — which is why it moves to R05 (BUILD-001 §12.1).' },
+  ];
+  SC.forEach((c, i) => {
+    const x = 40 + (i % 3) * 650, y = 120 + Math.floor(i / 3) * 470;
+    s += `<rect x="${x}" y="${y}" width="630" height="450" rx="12" fill="#fff" stroke="${C.line}"/>`;
+    s += text(x + 18, y + 32, c.t, { size: 17, weight: 700 });
+    s += miniSpine(x + 120, y + 56, c.st);
+    c.p.forEach(([lbl, k, sub], j) => {
+      const px = x + 18 + (j % 2) * 302, py = y + 252 + Math.floor(j / 2) * 62;
+      s += `<rect x="${px}" y="${py}" width="290" height="52" rx="8" fill="${ST[k][0]}" stroke="${ST[k][1]}" stroke-width="1.6"/>`;
+      s += text(px + 12, py + 21, lbl, { size: 13, weight: 700, color: ST[k][1] }) + text(px + 12, py + 40, sub || { ok: 'full function', deg: 'degraded', lost: 'lost' }[k], { size: 12, color: C.ink });
+    });
+    const words = c.n.split(' '); let line = '', lines = [];
+    words.forEach(w => { if ((line + ' ' + w).length > 78) { lines.push(line.trim()); line = w; } else line += ' ' + w; }); lines.push(line.trim());
+    s += text(x + 18, y + 392, lines.join('\n'), { size: 12.5, color: C.sub, italic: true });
+  });
+  s += legendBar(40, 1080, 1930, [
+    [(x, y) => `<rect x="${x}" y="${y - 12}" width="46" height="24" rx="5" fill="${ST.ok[0]}" stroke="${ST.ok[1]}" stroke-width="2"/>`, 'full function'],
+    [(x, y) => `<rect x="${x}" y="${y - 12}" width="46" height="24" rx="5" fill="${ST.deg[0]}" stroke="${ST.deg[1]}" stroke-width="2"/>`, 'degraded — autonomy, or partial'],
+    [(x, y) => `<rect x="${x}" y="${y - 12}" width="46" height="24" rx="5" fill="${ST.lost[0]}" stroke="${ST.lost[1]}" stroke-width="2"/>`, 'lost'],
+    [(x, y) => `<rect x="${x}" y="${y - 12}" width="46" height="24" rx="5" fill="${ST.na[0]}" stroke="${ST.na[1]}" stroke-width="2"/>`, 'not yet fitted (RBX09)'],
+  ], 4);
+  return frame(2000, 1170, 'P33 · T8 — Failure domains',
+    `Six failures, each the T1 spine re-coloured, then what the occupant actually experiences. Rows of STD-006 §2's matrix, applied to this house.   ${REVTAG}`, s);
+}
+
 emit('P33-T1_system-spine', t1(), 2000, 1250);
+emit('P33-T2_channel-lanes', t2(), 2000, 1140);
+emit('P33-T8_failure-domains', t8(), 2000, 1170);
 emit('P33-T5_presence-graph', t5(), 2000, 1220);
 emit('P33-T3_power', t3(), 2000, 1250);
 for (const b of Object.keys(TREES)) { const { svg, h } = t10(b); emit(`P33-T10_${b}`, svg, 2000, h); }
