@@ -7,26 +7,26 @@
 // tests/golden.js — const/let are subject to temporal dead zones.
 // ==========================================================================
 //////////////////// hit-test + context menu ////////////////////
-function hitTest(e){const [bx,by]=clientToBase(e);let hit=null,hd=(state.mobile?26:12)/state.zoom;
+function hitTest(e){lyrLockName=null;const [bx,by]=clientToBase(e);let hit=null,hd=(state.mobile?26:12)/state.zoom;
   (data.roofs||[]).forEach((rf,i)=>{if(!state.levels[rf.level])return;const b=planToBase((rf.x0+rf.x1)/2,(rf.y0+rf.y1)/2,dz(rf.level,(rf.eave+rf.ridge)/2));
-    const d=Math.hypot(bx-b[0],by-b[1]);if(d<Math.max(hd,18/state.zoom)){hd=d;hit={t:'roofs',i};}});
+    const d=Math.hypot(bx-b[0],by-b[1]);if(d<Math.max(hd,18/state.zoom)&&!lyrLockHit(rf)){hd=d;hit={t:'roofs',i};}});
   data.objects.forEach((o,i)=>{if(!state.levels[o.level])return;const b=planToBase(o.x,o.y,dz(o.level,(o.z||0)+(o.ht||0)/2));
     const d=Math.hypot(bx-b[0],by-b[1]);const rad=Math.max(14,Math.min(o.w||600,o.d||600)*0.5*SC*0.9)/state.zoom;
-    if(d<Math.max(hd,rad)){hd=d;hit={t:'objects',i};}});
-  data.openings.forEach((o,i)=>{const b=planToBase(o.x,o.y,dz(o.level,0));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd){hd=d;hit={t:'openings',i};}});
-  data.devices.forEach((o,i)=>{const b=planToBase(o.x,o.y,dz(o.level,o.h||0));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd){hd=d;hit={t:'devices',i};}});
-  {const wr2=wallHitRect(e);if(wr2){const b=planToBase((wr2.x0+wr2.x1)/2,(wr2.y0+wr2.y1)/2,dz(state.active,(wr2.h||wallH(state.active))/2));
+    if(d<Math.max(hd,rad)&&!lyrLockHit(o)){hd=d;hit={t:'objects',i};}});
+  data.openings.forEach((o,i)=>{const b=planToBase(o.x,o.y,dz(o.level,0));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd&&!lyrLockHit(o)){hd=d;hit={t:'openings',i};}});
+  data.devices.forEach((o,i)=>{const b=planToBase(o.x,o.y,dz(o.level,o.h||0));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd&&!lyrLockHit(o)){hd=d;hit={t:'devices',i};}});
+  {const wr2=wallHitRect(e);if(wr2&&!lyrLockHit(wr2)){const b=planToBase((wr2.x0+wr2.x1)/2,(wr2.y0+wr2.y1)/2,dz(state.active,(wr2.h||wallH(state.active))/2));
     const dd=Math.hypot(bx-b[0],by-b[1]);if(!hit||dd<hd+40/state.zoom){if(!hit)hit={t:'wall',level:state.active,ref:wr2};}}}
-  data.notes.forEach((o,i)=>{const b=planToBase(o.x,o.y,dz(o.level,0));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd){hd=d;hit={t:'notes',i};}});
+  data.notes.forEach((o,i)=>{const b=planToBase(o.x,o.y,dz(o.level,0));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd&&!lyrLockHit(o)){hd=d;hit={t:'notes',i};}});
   data.measures.forEach((m,i)=>{if(!m||m.length<2)return;if(!state.levels[m[0].level])return;
     const a=planToBase(m[0].x,m[0].y,dz(m[0].level,0)),b=planToBase(m[1].x,m[1].y,dz(m[1].level,0));
     const r=nearestOnSegPlain(bx,by,a[0],a[1],b[0],b[1]);if(r.d<hd&&r.d<14/state.zoom){hd=r.d;hit={t:'measures',i};}});
   // floors: selectable by clicking inside the polygon (only if nothing higher-priority was hit)
   if(!hit){const [px,py]=baseToPlan(bx,by,dz(state.active,0));
     for(let i=data.floors.length-1;i>=0;i--){const fl=data.floors[i];if(!state.levels[fl.level])continue;
-      if(fl.poly&&pointInPoly(px,py,fl.poly)){hit={t:'floors',i};break;}}}
-  data.cables.forEach((cb,ci)=>cb.nodes.forEach(n=>{const b=planToBase(n.x,n.y,dz(n.level,n.h));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd){hd=d;hit={t:'cables',i:ci};}}));
-  return hit;}
+      if(fl.poly&&pointInPoly(px,py,fl.poly)&&!lyrLockHit(fl)){hit={t:'floors',i};break;}}}
+  data.cables.forEach((cb,ci)=>cb.nodes.forEach(n=>{const b=planToBase(n.x,n.y,dz(n.level,n.h));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd&&!lyrLockHit(cb)){hd=d;hit={t:'cables',i:ci};}}));
+  return lyrLockReport(hit);}
 function removeHit(h){
   if(h&&h.t==='devices'){const dv=data.devices[h.i];
     if(dv&&dv.genId){const ix=data.objects.findIndex(o=>o.genId===dv.genId);if(ix>=0)data.objects.splice(ix,1);}}if(h.t==='wall'){const a=WALLS[h.level]||[];const idx=a.indexOf(h.ref);if(idx>=0){a.splice(idx,1);SNAP[h.level]=centerlines(a);}return;}
@@ -60,9 +60,9 @@ function pathSectionHit(e){const [bx,by]=clientToBase(e);let best=null,bd=12/sta
   data.paths.forEach((pa,pi)=>{const lane=pa.lane||0;for(let i=1;i<pa.nodes.length;i++){const a=pa.nodes[i-1],b=pa.nodes[i];
     if(!state.levels[a.level]||!state.levels[b.level])continue;const dx=b.x-a.x,dy=b.y-a.y,ln=Math.hypot(dx,dy)||1;
     const A=planToBase(a.x-dy/ln*lane*PATHW,a.y+dx/ln*lane*PATHW,dz(a.level,a.h)),B=planToBase(b.x-dy/ln*lane*PATHW,b.y+dx/ln*lane*PATHW,dz(b.level,b.h));
-    const r=nearestOnSeg(bx,by,A[0],A[1],B[0],B[1]);if(r.d<bd){bd=r.d;best={pi,si:i-1,t:r.t};}}});return best;}
+    const r=nearestOnSeg(bx,by,A[0],A[1],B[0],B[1]);if(r.d<bd&&!lyrLockHit(pa)){bd=r.d;best={pi,si:i-1,t:r.t};}}});return best;}
 function devHitIdx(e){const [bx,by]=clientToBase(e);let best=null,bd=14/state.zoom;
-  data.devices.forEach((d,i)=>{if(!state.levels[d.level])return;const b=planToBase(d.x,d.y,dz(d.level,d.h||0));const dd=Math.hypot(bx-b[0],by-b[1]);if(dd<bd){bd=dd;best=i;}});return best;}
+  data.devices.forEach((d,i)=>{if(!state.levels[d.level])return;const b=planToBase(d.x,d.y,dz(d.level,d.h||0));const dd=Math.hypot(bx-b[0],by-b[1]);if(dd<bd&&!lyrLockHit(d)){bd=dd;best=i;}});return best;}
 function nearestPathNode(pa,x,y){let bi=0,bd=1e18;pa.nodes.forEach((n,i)=>{const d=Math.hypot(n.x-x,n.y-y);if(d<bd){bd=d;bi=i;}});return {i:bi,d:bd};}
 function nearestPathToPoint(x,y){let best=null,bd=1e18;data.paths.forEach((pa,pi)=>{const nn=nearestPathNode(pa,x,y);if(nn.d<bd){bd=nn.d;best={pi,ni:nn.i,d:nn.d};}});return best;}
 function boxesOnPath(pa){const res=[];data.devices.forEach(d=>{if(d.type!=='junction'&&d.type!=='board')return;const nn=nearestPathNode(pa,d.x,d.y);if(nn.d<400)res.push({ni:nn.i,type:d.type});});return res;}

@@ -198,23 +198,7 @@ function objDimModal(title,cur,ok){openModal(title,
   +`<div class="mrow">Magasság <input id="odH" type="number" value="${cur.ht}" style="width:80px"> mm</div>`
   +`<div class="mrow">Padlótól <input id="odZ" type="number" value="${cur.z||0}" style="width:80px"> mm</div>`,
   ()=>ok({n:$('odN').value,w:+$('odW').value||600,d:+$('odD').value||600,ht:+$('odH').value||600,z:+$('odZ').value||0}));}
-// ---- layers UI ----
-function renderLayers(){const el=$('layerList');if(!el)return;const cats=['path','device','cable','wall','build','object'];
-  el.innerHTML=layers.map(L=>{const cs=cats.map(c=>`<button data-lc="${L.id}:${c}" class="lcat ${(LAYER_CATS_V1[c]||[c]).every(k=>L.cats[k]!==false)?'on':''}" title="${c}">${c[0].toUpperCase()}</button>`).join('');
-    return `<div class="lblock ${L.id===state.activeLayer?'lactive':''}"><div class="lrow"><input type="radio" name="alayer" ${L.id===state.activeLayer?'checked':''} data-la="${L.id}" title="aktív">`
-     +`<button data-lv="${L.id}" title="show/hide">${L.visible?'👁':'🚫'}</button>`
-     +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
-     +(L.id!=='L0'?`<button data-lx="${L.id}" title="törlés">✕</button>`:'')+`</div>`
-     +`<div class="lcats">${cs}`
-     +`<input type="color" class="ltint" data-lt="${L.id}" value="${L.tint||'#ffffff'}" title="Készülékek színezése ezen a rétegen (régi / új kiosztás elkülönítése)">`
-     +(L.tint?`<button data-ltx="${L.id}" class="lcat" title="színezés ki">⊘</button>`:'')+`</div></div>`;}).join('');
-  el.querySelectorAll('[data-lt]').forEach(i=>i.onchange=()=>{layerById(i.dataset.lt).tint=i.value;renderLayers();draw();});
-  el.querySelectorAll('[data-ltx]').forEach(b=>b.onclick=()=>{delete layerById(b.dataset.ltx).tint;renderLayers();draw();});
-  el.querySelectorAll('[data-la]').forEach(r=>r.onchange=()=>{state.activeLayer=r.dataset.la;});
-  el.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const L=layerById(b.dataset.lv);L.visible=!L.visible;renderLayers();draw();});
-  el.querySelectorAll('[data-ln]').forEach(i=>i.onchange=()=>{layerById(i.dataset.ln).name=i.value;});
-  el.querySelectorAll('[data-lc]').forEach(b=>b.onclick=()=>{const p=b.dataset.lc.split(':'),L=layerById(p[0]),ks=LAYER_CATS_V1[p[1]]||[p[1]],on=ks.every(k=>L.cats[k]!==false);ks.forEach(k=>{L.cats[k]=!on;});renderLayers();draw();});   // old six-button panel: device/build still switch their v2 groups (WP-A2 replaces the panel)
-  el.querySelectorAll('[data-lx]').forEach(b=>b.onclick=()=>{const id=b.dataset.lx;layers=layers.filter(l=>l.id!==id);if(state.activeLayer===id)state.activeLayer='L0';renderLayers();draw();});}
+// ---- layers UI: renderLayers lives in 05l-layers.js ----
 $('addLayer').onclick=()=>{const id='L'+Date.now().toString(36);layers.push({id,name:'Réteg '+(layers.length+1),visible:true,cats:layerCatsAll()});state.activeLayer=id;renderLayers();};
 // ---- project library (named save slots) ----
 const PROJ_KEY='villanyterv_projects_v1';   // {id:{name,ts,data}}
