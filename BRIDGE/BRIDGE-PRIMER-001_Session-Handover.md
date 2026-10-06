@@ -6,14 +6,18 @@
 **Why it exists:** the previous account hit a weekly limit. Same computer, different account.
 Nothing needs downloading or rebuilding.
 
-**Where it is.** BRIDGE now lives **inside the `vrg-toolset` repository**, at `<repo>/BRIDGE/`.
-The repo root is currently `H:\Planner_VRG_U100` — note a move to
-`H:\Dev-VRG\VRG-DE\Planner_VRG_U100` is half-finished, so confirm the root with
-`git rev-parse --show-toplevel` rather than trusting the path. A superseded copy may still sit at
-`H:\Dev-VRG\VRG-DE\BRIDGE`; **it is not authoritative** and carries a `_MOVED-TO-REPO.md` marker.
+**Where it is.** BRIDGE lives **inside the `vrg-toolset` repository**, at `<repo>/BRIDGE/`, on
+`main`.
 
-The commit is on branch **`bridge-docs`**. If `git log` does not show it, it was never pushed —
-the push was blocked in the session that made it and was left for the user to run.
+**Work in `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`.** That is the live working copy.
+`H:\Planner_VRG_U100` is a **backup** that is refreshed from time to time — not a second workspace.
+They were accidentally mixed up once and reconciling them took real effort; do not repeat it.
+Confirm with `git rev-parse --show-toplevel` if in any doubt. A superseded copy of BRIDGE may also
+sit at `H:\Dev-VRG\VRG-DE\BRIDGE` carrying a `_MOVED-TO-REPO.md` marker — not authoritative, safe
+to ignore or delete.
+
+Branches: `main` carries BRIDGE · `bridge-docs` was the original import · `planner-circuit-endpoints`
+holds the live Planner work · `planner-device-id-repair` is a **stale pointer** sitting behind it.
 
 ---
 

@@ -1,6 +1,11 @@
 # VRG toolset — working rules
 
-The repo root is `H:\Planner_VRG_U100` (GitHub: `webagoly-work/vrg-toolset`, private).
+The repo root is `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`
+(GitHub: `webagoly-work/vrg-toolset`, private). **`H:\Planner_VRG_U100` is a
+backup copy, not a second workspace** — refresh it from time to time, never
+work in it. The two were mixed up once and a full session's work landed in the
+backup; reconciling them cost real effort. Confirm with
+`git rev-parse --show-toplevel` if ever unsure.
 Each tool is a self-contained HTML app; the Planner and Inventory additionally
 have modular sources that build into one file.
 
