@@ -59,11 +59,20 @@ const STAGES=[
     if(!v.error&&!v.warn)out.push({sev:'ok',msg:'Az ellenőrzés nem talált kifogásolni valót.'});
     return out;}}
 ];
-function stageByKey(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
+// With a BRIDGE Stack active (05m) the rail shows the stack's steps instead of the general stages [Q11=A].
+// shellStages()/shellKey() are the ONLY places that decide which list the rail, the inspector and the
+// next/previous actions read.
+function shellStages(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkStages(S):null;
+  return (L&&L.length)?L:STAGES;}            // a stack with no role layer left (all deleted) falls back to the general stages
+function shellKey(){const L=shellStages();
+  return L===STAGES?(state.stage||'build'):stkCurrentKey(stkActive());}
+function stageByKey(k){const L=shellStages();return L.find(s=>s.k===k)||L[0];}
 // stage names and hints run through the seam, so the rail follows the language
 function stageName(s){return t('stage.'+s.k,s.n);}
 function stageHint(s){return t('stage.'+s.k+'.hint',s.hint);}
-function setStage(k){state.stage=k;const st=stageByKey(k);
+function setStage(k){state.stage=k;
+  if(k.indexOf('stk:')===0&&typeof stkEnterRole==='function')stkEnterRole(k.slice(4));   // the role's layer becomes the active layer
+  const st=stageByKey(k);
   $('hud').textContent=stageName(st)+' — '+stageHint(st);renderShell();}
 function shellOn(){return state.shell!==false;}
 
@@ -93,9 +102,10 @@ function renderShell(){
   rail.style.display=showRail?'flex':'none';
   const mh=$('modeHint');if(mh)mh.style.left=showRail?'116px':'12px';   // clear of the rail
 
-  const cur=state.stage||'build';
-  const railHtml=STAGES.map((s,i)=>
-    `<button class="stg${s.k===cur?' on':''}" data-k="${s.k}" title="${esc(stageHint(s))}">`
+  const cur=shellKey(),SL=shellStages(),inStack=SL!==STAGES;
+  const railHtml=(inStack?`<button class="stg stk" id="stgBack" title="Vissza az általános szakaszokhoz"><span class="stgIc">◂</span><span class="stgN">Általános</span></button>`:'')
+   +SL.map((s,i)=>
+    `<button class="stg${inStack?' stk':''}${s.k===cur?' on':''}" data-k="${s.k}" title="${esc(stageHint(s))}">`
     +`<span class="stgIc">${s.icon}</span><span class="stgN">${i+1}. ${esc(stageName(s))}</span>`
     +stageBadge(s)+`</button>`).join('')
    +`<div style="flex:1"></div>`
@@ -103,6 +113,7 @@ function renderShell(){
    +`<button class="stg" id="stgOff" title="A munkafolyamat-sáv elrejtése"><span class="stgIc">✕</span><span class="stgN">Elrejt</span></button>`;
   if(railHtml!==_railHtml){_railHtml=railHtml;rail.innerHTML=railHtml;
     rail.querySelectorAll('.stg[data-k]').forEach(b=>b.onclick=()=>setStage(b.dataset.k));
+    if($('stgBack'))$('stgBack').onclick=()=>stkLeave();
     $('stgPal').onclick=()=>paletteOpen();
     $('stgOff').onclick=()=>{state.shell=false;renderShell();};}
   renderInspector();}
@@ -152,14 +163,14 @@ function inspectorFields(sel){
     N('ins_oz',t('f.base','Alja a padlótól (mm)'),Math.round(o.z||0),v=>{o.z=Math.max(0,v);},50)];
   return [];}
 function inspectorActions(sel){
-  const ctx=actionCtx(),st=stageByKey(state.stage||'build');
+  const ctx=actionCtx(),st=stageByKey(shellKey());
   const selGroups=['Fal','Készülék','Helyiség','Nyílászáró','Szerkesztő'];
   return actionsFor(ctx).filter(a=>st.groups.indexOf(a.group)>=0||(sel&&selGroups.indexOf(a.group)>=0));}
 function renderInspector(){
   const insp=$('inspector');if(!insp)return;
   if(!shellOn()||!inspRoom()){insp.style.display='none';return;}
   const sel=(typeof selected!=='undefined')?selected:null;
-  const st=stageByKey(state.stage||'build');
+  const st=stageByKey(shellKey());
   const chk=stageChecks(st);
   const ttl=inspectorTitle(sel),fields=inspectorFields(sel),acts=inspectorActions(sel);
   insp.style.display='block';
@@ -192,12 +203,12 @@ registerActions([
   hint:'A bal oldali szakasz-sáv és a jobb oldali tulajdonság-panel.',
   run:()=>{state.shell=!shellOn();renderShell();}},
  {id:'shell.next',label:'Következő szakasz',icon:'▶',group:'Nézet',keys:['mod+arrowright'],
-  run:()=>{const i=STAGES.findIndex(s=>s.k===(state.stage||'build'));setStage(STAGES[Math.min(i+1,STAGES.length-1)].k);}},
+  run:()=>{const L=shellStages(),i=L.findIndex(s=>s.k===shellKey());setStage(L[Math.min(i+1,L.length-1)].k);}},
  {id:'shell.prev',label:'Előző szakasz',icon:'◀',group:'Nézet',keys:['mod+arrowleft'],
-  run:()=>{const i=STAGES.findIndex(s=>s.k===(state.stage||'build'));setStage(STAGES[Math.max(i-1,0)].k);}}
+  run:()=>{const L=shellStages(),i=L.findIndex(s=>s.k===shellKey());setStage(L[Math.max(i-1,0)].k);}}
 ]);
 
 // test hooks
 window.STAGES=STAGES;window.setStage=setStage;window.renderShell=renderShell;window.renderInspector=renderInspector;
 window.inspectorFields=inspectorFields;window.inspectorTitle=inspectorTitle;window.inspectorActions=inspectorActions;
-window.shellOn=shellOn;window.stageByKey=stageByKey;
+window.shellOn=shellOn;window.stageByKey=stageByKey;window.shellStages=shellStages;window.shellKey=shellKey;

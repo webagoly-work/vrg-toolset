@@ -64,13 +64,22 @@
  #modeHint{position:absolute;left:12px;top:10px;background:#2c2c2ce6;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;max-width:360px;z-index:7}
  #wvBox svg,#pvBox svg{user-select:none;-webkit-user-select:none;-ms-user-select:none;touch-action:none}
  #wvBox,#pvBox{user-select:none;-webkit-user-select:none}
- #stageRail{position:absolute;left:0;top:0;bottom:24px;width:104px;display:none;flex-direction:column;gap:2px;
+ #stageRail{position:absolute;left:0;top:0;bottom:24px;width:104px;display:none;flex-direction:column;gap:2px;overflow-y:auto;
    padding:6px 4px;background:#f7f6f2ee;border-right:1px solid #e2ded4;z-index:6}
  .stg{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid transparent;
    background:transparent;border-radius:8px;padding:7px 2px;cursor:pointer;font-size:10.5px;color:#5a5348;line-height:1.15}
  .stg:hover{background:#ece9e1}
  .stg.on{background:#fff;border-color:#cfc9bd;color:#0a2b6b;font-weight:700;box-shadow:0 1px 3px #0001}
  .stgIc{font-size:17px}
+ .stg.stk{flex-direction:row;justify-content:flex-start;gap:5px;padding:4px 5px;text-align:left;flex:none}
+ .stg.stk .stgIc{font-size:13px;width:16px;text-align:center}
+ .stg.stk .stgN{text-align:left}
+ .lstack{display:flex;align-items:center;gap:4px;margin:6px 0 2px;padding:3px 4px;border-radius:6px;background:#ece9e1;font-size:12px;font-weight:700}
+ .lstack .lsname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .lstack .lph{font-weight:400;font-size:10.5px;color:#5a5348}
+ .lstack button{padding:1px 4px;font-size:11px;line-height:1}
+ .lstkbody{margin-left:10px}
+ .lrole{margin:0 0 1px 22px;font-size:10px;color:#5a5348}
  .stgN{text-align:center}
  .stgB{position:absolute;right:6px;top:4px;min-width:15px;height:15px;border-radius:8px;font-size:9.5px;
    line-height:15px;color:#fff;padding:0 3px}

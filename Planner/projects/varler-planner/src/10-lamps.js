@@ -376,6 +376,7 @@ function ctxMenu(e,items){ctx.innerHTML=items.map((it,i)=>`<button data-i="${i}"
   ctx.style.left=Math.round(x)+'px';ctx.style.top=Math.round(y)+'px';
   ctx.querySelectorAll('button').forEach(b=>b.onclick=()=>{hideCtx();items[+b.dataset.i].act();});}
 stage.addEventListener('contextmenu',e=>{e.preventDefault();if(ctxSuppress){ctxSuppress=false;return;}if(camDrag&&camDrag.moved){return;}
+  if(typeof stkCtxItems==='function'){const it=stkCtxItems(e);if(it){ctxMenu(e,it);return;}}
   if(state.lockTouch)return; // locked: no piece/edit menu (right-drag still rotates the camera)
   const di=devHitIdx(e);
   if(di!=null){const D=data.devices[di];const items=[];

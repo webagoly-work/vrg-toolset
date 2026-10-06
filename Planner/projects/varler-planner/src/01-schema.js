@@ -29,6 +29,7 @@ function maxIdNum(d){let n=0;
 function ensureIds(d){d=d||data;
   let seq=Math.max(+d.seq||0,maxIdNum(d));
   for(const l of ORD)(WALLS[l]||[]).forEach(r=>{seq=Math.max(seq,idNum(r&&r.id));});
+  for(const l of ORD)(ROOMSB[l]||[]).forEach(r=>{seq=Math.max(seq,idNum(r&&r.id));});   // building rooms carry Y ids too
   const next=p=>p+(++seq);
   UKEYS.forEach(k=>{const pre=IDPRE[k]||'X';
     (d[k]||[]).forEach(r=>{if(!r||typeof r!=='object')return;
@@ -37,6 +38,9 @@ function ensureIds(d){d=d||data;
   // walls live outside `data` but still need a stable identity: the selection and the
   // gizmo hold a wall REFERENCE, and applySnap rebuilds every wall object.
   for(const l of ORD)(WALLS[l]||[]).forEach(r=>{if(r&&!r.id)r.id=next('W');});
+  // building rooms too: a stack's room checklists point at a room by id, never by index. They persist
+  // because sessionObj already writes B.rooms[l]=ROOMSB[l].
+  for(const l of ORD)(ROOMSB[l]||[]).forEach(rm=>{if(rm&&!rm.id)rm.id=next('Y');});
   d.seq=seq;return d;}
 // A copy is a NEW record. ensureIds() only fills in MISSING ids, so a copy that kept the original's
 // id stayed a second answer to it for good: byId(), the circuit end points and the Behúzás entries
@@ -236,6 +240,8 @@ function connectivity(){
 // ---- VALIDATION: one place for every "this looks wrong" rule ----
 // sev: 'error' | 'warn' | 'info'. The UI will surface these; for now they are
 // available to the console and the tests.
+// later work packages register {code, run()→[{sev,code,msg,ref}]} here; validate() runs them last
+const VALIDATORS=[];
 function validate(){const out=[];
   const add=(sev,code,msg,ref)=>out.push({sev,code,msg,ref});
   data.devices.forEach(dv=>{if(devLinks(dv).some(l=>!resolveLink(l)))
@@ -254,6 +260,7 @@ function validate(){const out=[];
   data.devices.forEach(dv=>{if(!dv.swMap)return;
     Object.keys(dv.swMap).forEach(k=>{if(!devByRef(dv.swMap[k]))
       add('warn','switch.dangling','Kapcsoló kimenete törölt készülékre mutat: '+(dv.ref||dv.id)+' / '+k,dv.id);});});
+  VALIDATORS.forEach(v=>{try{(v.run()||[]).forEach(x=>out.push(x));}catch(_){}});
   return out;}
 function validateSummary(){const v=validate();
   const n=s=>v.filter(x=>x.sev===s).length;

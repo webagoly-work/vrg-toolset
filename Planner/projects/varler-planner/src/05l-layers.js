@@ -134,7 +134,7 @@ function lyrStepOp(layerId,cat,dir){const L=lyrLayer(layerId);if(!L)return;
 // default: only the active layer is open; the user's own fold choice (L.collapsed) wins [Q08=A]
 function lyrFolded(L){return L.collapsed===undefined?(L.id!==state.activeLayer):!!L.collapsed;}
 function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
-  el.innerHTML=layers.map(L=>{const open=!lyrFolded(L),cnt=lyrCounts(L.id),act=L.id===state.activeLayer;
+  const block=L=>{const open=!lyrFolded(L),cnt=open?lyrCounts(L.id):{},act=L.id===state.activeLayer;
     let h=`<div class="lblock ${act?'lactive':''}" data-lb="${L.id}"><div class="lrow">`
       +`<button data-lf="${L.id}" title="összecsukás / kinyitás">${open?'▾':'▸'}</button>`
       +`<input type="radio" name="alayer" ${act?'checked':''} data-la="${L.id}" title="aktív">`
@@ -142,7 +142,8 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
       +`<button data-lk="${L.id}" title="zárolás: a réteg elemei nem jelölhetők ki és nem húzhatók">${L.lock?'🔒':'🔓'}</button>`
       +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
       +(L.link?`<span class="llink" title="csatolt réteg: a láthatóság, átlátszóság és zár közös">🔗</span>`:'')
-      +(L.id!=='L0'?`<button data-lx="${L.id}" title="törlés">✕</button>`:'')+`</div>`;
+      +(L.id!=='L0'?`<button data-lx="${L.id}" title="törlés">✕</button>`:'')+`</div>`
+      +((L.stack&&L.role&&typeof stkRole==='function')?`<div class="lrole">${esc((stkRole(L.role)||{n:L.role}).n)}</div>`:'');
     if(open){h+=`<div class="lsubs">`+LAYER_CATS.filter(c=>!c.opt||cnt[c.k]>0).map(c=>{
         const on=L.cats[c.k]!==false,op=lyrOpOf(L,c.k),n=cnt[c.k]||0,key=L.id+':'+c.k;
         return `<div class="lsub${on?'':' off'}${n?'':' none'}" data-sl="${key}">`
@@ -152,12 +153,25 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
           +`<button data-so="${key}:1" title="átlátszatlanabb (+10 %)" ${op>=1?'disabled':''}>+</button></div>`;}).join('')+`</div>`
       +`<div class="lcats"><input type="color" class="ltint" data-lt="${L.id}" value="${L.tint||'#ffffff'}" title="Készülékek színezése ezen a rétegen (régi / új kiosztás elkülönítése)">`
       +(L.tint?`<button data-ltx="${L.id}" class="lcat" title="színezés ki">⊘</button>`:'')+`</div>`;}
-    return h+`</div>`;}).join('');
+    return h+`</div>`;};
+  // a BRIDGE Stack's layers sit in a block under its header (role order); everything else renders below, as before
+  const stackIds=new Set(stacks.map(s=>s.id));let html='';
+  stacks.forEach(S=>{html+=`<div class="lstack" data-ls="${S.id}"><button data-lsf="${S.id}" title="összecsukás / kinyitás">${S.collapsed?'▸':'▾'}</button>`
+      +`<span class="lsname" title="${esc(S.name).replace(/"/g,'&quot;')}">▤ ${stkShort(S)} · ${esc(S.name)}</span><span class="lph">${S.phase===2?'2. fázis':'1. fázis'}</span>`
+      +`<button data-lsm="${S.id}" title="Stack menü">⋯</button></div>`
+      +(S.collapsed?'':`<div class="lstkbody">`+stkLayersOf(S.id).map(block).join('')+`</div>`);});
+  html+=layers.filter(L=>!L.stack||!stackIds.has(L.stack)).map(block).join('');
+  el.innerHTML=html;
   const q=(sel,fn)=>el.querySelectorAll(sel).forEach(fn);
+  q('[data-lsf]',b=>b.onclick=()=>{const S=stkById(b.dataset.lsf);S.collapsed=!S.collapsed;renderLayers();});
+  q('[data-lsm]',b=>b.onclick=e=>stkMenu(e,b.dataset.lsm));
+  q('.lstack',h=>h.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();stkMenu(e,h.dataset.ls);}));
   q('[data-lf]',b=>b.onclick=()=>{const L=lyrLayer(b.dataset.lf);L.collapsed=!lyrFolded(L);renderLayers();});
   q('[data-lt]',i=>i.onchange=()=>{layerById(i.dataset.lt).tint=i.value;renderLayers();draw();});
   q('[data-ltx]',b=>b.onclick=()=>{delete layerById(b.dataset.ltx).tint;renderLayers();draw();});
-  q('[data-la]',r=>r.onchange=()=>{state.activeLayer=r.dataset.la;renderLayers();});
+  q('[data-la]',r=>r.onchange=()=>{state.activeLayer=r.dataset.la;const L=lyrLayer(r.dataset.la);
+    if(L&&L.stack){state.stkOff=false;state.stack=L.stack;}      // picking a stack layer enters its stack
+    renderLayers();if(typeof renderShell==='function')renderShell();});
   q('[data-lv]',b=>b.onclick=()=>{const L=layerById(b.dataset.lv),v=!L.visible;lyrGroupOf(L.id).forEach(x=>{x.visible=v;});renderLayers();draw();});
   q('[data-lk]',b=>b.onclick=()=>lyrToggleLock(b.dataset.lk));
   q('.lrow',r=>r.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();lyrLayerMenu(e,r.parentNode.dataset.lb);}));
@@ -305,12 +319,12 @@ function lyrDuplicate(srcId,opt){opt=opt||{};const S=lyrLayer(srcId);if(!S)retur
 // ---- merge ------------------------------------------------------------------------------------------
 // every item of the `from` layers moves to `into`; the from layers are removed. `into` keeps its own
 // cats and opacity. L0 is the fallback layer: a target, never a source.
-function lyrMerge(intoId,fromIds){const I=lyrLayer(intoId);
+function lyrMerge(intoId,fromIds,opt){const I=lyrLayer(intoId);
   const from=(fromIds||[]).filter((x,i,a)=>x!==intoId&&lyrLayer(x)&&a.indexOf(x)===i);
   if(!I||!from.length)return false;
   if(from.indexOf('L0')>=0){lyrHud('Az alap réteg (L0) nem olvasztható be máshová.');return false;}
   if(from.some(x=>lyrLayer(x).stack&&lyrLayer(x).stack!==I.stack)){lyrHud('Stack réteg csak a saját stackjébe olvasztható.');return false;}
-  lyrPushUndo();
+  if(!(opt&&opt.noUndo))lyrPushUndo();       // noUndo: the caller (a stack wizard) already took the one undo step
   let n=0;const touched=[];
   lyrEachItem((k,r)=>{if(from.indexOf(r.layer||'L0')>=0){r.layer=intoId;n++;if(k==='walls')touched.push({coll:k,rec:r});}});
   lyrSnapWalls(touched);
@@ -340,6 +354,7 @@ function lyrLinkDialog(id){
 function lyrLayerMenu(e,id){const L=lyrLayer(id);if(!L)return;const i=layers.indexOf(L),items=[];
   items.push({label:'Réteg másolása…',act:()=>lyrDuplicateDialog(id)});
   if(i<layers.length-1&&id!=='L0')items.push({label:'Egyesítés az alatta lévővel',act:()=>lyrMergeDown(id)});
+  if(L.role==='construct'&&typeof stkNonConstruct==='function'&&stkNonConstruct(id).n)items.push({label:'Nem szerkezeti elemek áthelyezése új rétegre',act:()=>stkMoveNonConstruct(id)});
   if(L.link){items.push({label:'Csatolt rétegek egyesítése',act:()=>lyrMergeLinked(id)});items.push({label:'Csatolás bontása',act:()=>lyrUnlink(id)});}
   if(layers.length>1)items.push({label:'Csatolás…',act:()=>lyrLinkDialog(id)});
   items.push({label:L.lock?'Zárolás feloldása':'Zárolás',act:()=>lyrToggleLock(id)});

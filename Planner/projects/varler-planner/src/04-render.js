@@ -884,6 +884,7 @@ function draw(){
   if(state.mode==='format'&&fmtSource&&selected){const c=pGetC(selected),b=planToBase(c[0],c[1],dz(pieceLevel(selected),pGetZ(selected)));
     ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="13" fill="none" stroke="#e8641c" stroke-width="2.5" stroke-dasharray="4 3"/>`
       +`<text x="${b[0]}" y="${b[1]-18}" font-size="10" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">🖌 forrás</text>`;}
+  if(typeof stkHookSvg==='function'){s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
   const changed=paintLayers(s,ov);
   setTransform();
   if(typeof statusBar==='function')statusBar();

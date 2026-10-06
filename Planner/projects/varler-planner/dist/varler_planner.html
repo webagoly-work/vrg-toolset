@@ -64,13 +64,22 @@
  #modeHint{position:absolute;left:12px;top:10px;background:#2c2c2ce6;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;max-width:360px;z-index:7}
  #wvBox svg,#pvBox svg{user-select:none;-webkit-user-select:none;-ms-user-select:none;touch-action:none}
  #wvBox,#pvBox{user-select:none;-webkit-user-select:none}
- #stageRail{position:absolute;left:0;top:0;bottom:24px;width:104px;display:none;flex-direction:column;gap:2px;
+ #stageRail{position:absolute;left:0;top:0;bottom:24px;width:104px;display:none;flex-direction:column;gap:2px;overflow-y:auto;
    padding:6px 4px;background:#f7f6f2ee;border-right:1px solid #e2ded4;z-index:6}
  .stg{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid transparent;
    background:transparent;border-radius:8px;padding:7px 2px;cursor:pointer;font-size:10.5px;color:#5a5348;line-height:1.15}
  .stg:hover{background:#ece9e1}
  .stg.on{background:#fff;border-color:#cfc9bd;color:#0a2b6b;font-weight:700;box-shadow:0 1px 3px #0001}
  .stgIc{font-size:17px}
+ .stg.stk{flex-direction:row;justify-content:flex-start;gap:5px;padding:4px 5px;text-align:left;flex:none}
+ .stg.stk .stgIc{font-size:13px;width:16px;text-align:center}
+ .stg.stk .stgN{text-align:left}
+ .lstack{display:flex;align-items:center;gap:4px;margin:6px 0 2px;padding:3px 4px;border-radius:6px;background:#ece9e1;font-size:12px;font-weight:700}
+ .lstack .lsname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .lstack .lph{font-weight:400;font-size:10.5px;color:#5a5348}
+ .lstack button{padding:1px 4px;font-size:11px;line-height:1}
+ .lstkbody{margin-left:10px}
+ .lrole{margin:0 0 1px 22px;font-size:10px;color:#5a5348}
  .stgN{text-align:center}
  .stgB{position:absolute;right:6px;top:4px;min-width:15px;height:15px;border-radius:8px;font-size:9.5px;
    line-height:15px;color:#fff;padding:0 3px}
@@ -612,6 +621,7 @@ function maxIdNum(d){let n=0;
 function ensureIds(d){d=d||data;
   let seq=Math.max(+d.seq||0,maxIdNum(d));
   for(const l of ORD)(WALLS[l]||[]).forEach(r=>{seq=Math.max(seq,idNum(r&&r.id));});
+  for(const l of ORD)(ROOMSB[l]||[]).forEach(r=>{seq=Math.max(seq,idNum(r&&r.id));});   // building rooms carry Y ids too
   const next=p=>p+(++seq);
   UKEYS.forEach(k=>{const pre=IDPRE[k]||'X';
     (d[k]||[]).forEach(r=>{if(!r||typeof r!=='object')return;
@@ -620,6 +630,9 @@ function ensureIds(d){d=d||data;
   // walls live outside `data` but still need a stable identity: the selection and the
   // gizmo hold a wall REFERENCE, and applySnap rebuilds every wall object.
   for(const l of ORD)(WALLS[l]||[]).forEach(r=>{if(r&&!r.id)r.id=next('W');});
+  // building rooms too: a stack's room checklists point at a room by id, never by index. They persist
+  // because sessionObj already writes B.rooms[l]=ROOMSB[l].
+  for(const l of ORD)(ROOMSB[l]||[]).forEach(rm=>{if(rm&&!rm.id)rm.id=next('Y');});
   d.seq=seq;return d;}
 // A copy is a NEW record. ensureIds() only fills in MISSING ids, so a copy that kept the original's
 // id stayed a second answer to it for good: byId(), the circuit end points and the Behúzás entries
@@ -819,6 +832,8 @@ function connectivity(){
 // ---- VALIDATION: one place for every "this looks wrong" rule ----
 // sev: 'error' | 'warn' | 'info'. The UI will surface these; for now they are
 // available to the console and the tests.
+// later work packages register {code, run()→[{sev,code,msg,ref}]} here; validate() runs them last
+const VALIDATORS=[];
 function validate(){const out=[];
   const add=(sev,code,msg,ref)=>out.push({sev,code,msg,ref});
   data.devices.forEach(dv=>{if(devLinks(dv).some(l=>!resolveLink(l)))
@@ -837,6 +852,7 @@ function validate(){const out=[];
   data.devices.forEach(dv=>{if(!dv.swMap)return;
     Object.keys(dv.swMap).forEach(k=>{if(!devByRef(dv.swMap[k]))
       add('warn','switch.dangling','Kapcsoló kimenete törölt készülékre mutat: '+(dv.ref||dv.id)+' / '+k,dv.id);});});
+  VALIDATORS.forEach(v=>{try{(v.run()||[]).forEach(x=>out.push(x));}catch(_){}});
   return out;}
 function validateSummary(){const v=validate();
   const n=s=>v.filter(x=>x.sev===s).length;
@@ -2245,6 +2261,7 @@ function draw(){
   if(state.mode==='format'&&fmtSource&&selected){const c=pGetC(selected),b=planToBase(c[0],c[1],dz(pieceLevel(selected),pGetZ(selected)));
     ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="13" fill="none" stroke="#e8641c" stroke-width="2.5" stroke-dasharray="4 3"/>`
       +`<text x="${b[0]}" y="${b[1]-18}" font-size="10" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">🖌 forrás</text>`;}
+  if(typeof stkHookSvg==='function'){s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
   const changed=paintLayers(s,ov);
   setTransform();
   if(typeof statusBar==='function')statusBar();
@@ -3051,11 +3068,20 @@ const STAGES=[
     if(!v.error&&!v.warn)out.push({sev:'ok',msg:'Az ellenőrzés nem talált kifogásolni valót.'});
     return out;}}
 ];
-function stageByKey(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
+// With a BRIDGE Stack active (05m) the rail shows the stack's steps instead of the general stages [Q11=A].
+// shellStages()/shellKey() are the ONLY places that decide which list the rail, the inspector and the
+// next/previous actions read.
+function shellStages(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkStages(S):null;
+  return (L&&L.length)?L:STAGES;}            // a stack with no role layer left (all deleted) falls back to the general stages
+function shellKey(){const L=shellStages();
+  return L===STAGES?(state.stage||'build'):stkCurrentKey(stkActive());}
+function stageByKey(k){const L=shellStages();return L.find(s=>s.k===k)||L[0];}
 // stage names and hints run through the seam, so the rail follows the language
 function stageName(s){return t('stage.'+s.k,s.n);}
 function stageHint(s){return t('stage.'+s.k+'.hint',s.hint);}
-function setStage(k){state.stage=k;const st=stageByKey(k);
+function setStage(k){state.stage=k;
+  if(k.indexOf('stk:')===0&&typeof stkEnterRole==='function')stkEnterRole(k.slice(4));   // the role's layer becomes the active layer
+  const st=stageByKey(k);
   $('hud').textContent=stageName(st)+' — '+stageHint(st);renderShell();}
 function shellOn(){return state.shell!==false;}
 
@@ -3085,9 +3111,10 @@ function renderShell(){
   rail.style.display=showRail?'flex':'none';
   const mh=$('modeHint');if(mh)mh.style.left=showRail?'116px':'12px';   // clear of the rail
 
-  const cur=state.stage||'build';
-  const railHtml=STAGES.map((s,i)=>
-    `<button class="stg${s.k===cur?' on':''}" data-k="${s.k}" title="${esc(stageHint(s))}">`
+  const cur=shellKey(),SL=shellStages(),inStack=SL!==STAGES;
+  const railHtml=(inStack?`<button class="stg stk" id="stgBack" title="Vissza az általános szakaszokhoz"><span class="stgIc">◂</span><span class="stgN">Általános</span></button>`:'')
+   +SL.map((s,i)=>
+    `<button class="stg${inStack?' stk':''}${s.k===cur?' on':''}" data-k="${s.k}" title="${esc(stageHint(s))}">`
     +`<span class="stgIc">${s.icon}</span><span class="stgN">${i+1}. ${esc(stageName(s))}</span>`
     +stageBadge(s)+`</button>`).join('')
    +`<div style="flex:1"></div>`
@@ -3095,6 +3122,7 @@ function renderShell(){
    +`<button class="stg" id="stgOff" title="A munkafolyamat-sáv elrejtése"><span class="stgIc">✕</span><span class="stgN">Elrejt</span></button>`;
   if(railHtml!==_railHtml){_railHtml=railHtml;rail.innerHTML=railHtml;
     rail.querySelectorAll('.stg[data-k]').forEach(b=>b.onclick=()=>setStage(b.dataset.k));
+    if($('stgBack'))$('stgBack').onclick=()=>stkLeave();
     $('stgPal').onclick=()=>paletteOpen();
     $('stgOff').onclick=()=>{state.shell=false;renderShell();};}
   renderInspector();}
@@ -3144,14 +3172,14 @@ function inspectorFields(sel){
     N('ins_oz',t('f.base','Alja a padlótól (mm)'),Math.round(o.z||0),v=>{o.z=Math.max(0,v);},50)];
   return [];}
 function inspectorActions(sel){
-  const ctx=actionCtx(),st=stageByKey(state.stage||'build');
+  const ctx=actionCtx(),st=stageByKey(shellKey());
   const selGroups=['Fal','Készülék','Helyiség','Nyílászáró','Szerkesztő'];
   return actionsFor(ctx).filter(a=>st.groups.indexOf(a.group)>=0||(sel&&selGroups.indexOf(a.group)>=0));}
 function renderInspector(){
   const insp=$('inspector');if(!insp)return;
   if(!shellOn()||!inspRoom()){insp.style.display='none';return;}
   const sel=(typeof selected!=='undefined')?selected:null;
-  const st=stageByKey(state.stage||'build');
+  const st=stageByKey(shellKey());
   const chk=stageChecks(st);
   const ttl=inspectorTitle(sel),fields=inspectorFields(sel),acts=inspectorActions(sel);
   insp.style.display='block';
@@ -3184,15 +3212,15 @@ registerActions([
   hint:'A bal oldali szakasz-sáv és a jobb oldali tulajdonság-panel.',
   run:()=>{state.shell=!shellOn();renderShell();}},
  {id:'shell.next',label:'Következő szakasz',icon:'▶',group:'Nézet',keys:['mod+arrowright'],
-  run:()=>{const i=STAGES.findIndex(s=>s.k===(state.stage||'build'));setStage(STAGES[Math.min(i+1,STAGES.length-1)].k);}},
+  run:()=>{const L=shellStages(),i=L.findIndex(s=>s.k===shellKey());setStage(L[Math.min(i+1,L.length-1)].k);}},
  {id:'shell.prev',label:'Előző szakasz',icon:'◀',group:'Nézet',keys:['mod+arrowleft'],
-  run:()=>{const i=STAGES.findIndex(s=>s.k===(state.stage||'build'));setStage(STAGES[Math.max(i-1,0)].k);}}
+  run:()=>{const L=shellStages(),i=L.findIndex(s=>s.k===shellKey());setStage(L[Math.max(i-1,0)].k);}}
 ]);
 
 // test hooks
 window.STAGES=STAGES;window.setStage=setStage;window.renderShell=renderShell;window.renderInspector=renderInspector;
 window.inspectorFields=inspectorFields;window.inspectorTitle=inspectorTitle;window.inspectorActions=inspectorActions;
-window.shellOn=shellOn;window.stageByKey=stageByKey;
+window.shellOn=shellOn;window.stageByKey=stageByKey;window.shellStages=shellStages;window.shellKey=shellKey;
 
 // Every number the drawing and the bill of materials are built from, in one place.
 // These are DOMAIN decisions — they differ by country, by client and by habit — so
@@ -4605,7 +4633,7 @@ function lyrStepOp(layerId,cat,dir){const L=lyrLayer(layerId);if(!L)return;
 // default: only the active layer is open; the user's own fold choice (L.collapsed) wins [Q08=A]
 function lyrFolded(L){return L.collapsed===undefined?(L.id!==state.activeLayer):!!L.collapsed;}
 function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
-  el.innerHTML=layers.map(L=>{const open=!lyrFolded(L),cnt=lyrCounts(L.id),act=L.id===state.activeLayer;
+  const block=L=>{const open=!lyrFolded(L),cnt=open?lyrCounts(L.id):{},act=L.id===state.activeLayer;
     let h=`<div class="lblock ${act?'lactive':''}" data-lb="${L.id}"><div class="lrow">`
       +`<button data-lf="${L.id}" title="összecsukás / kinyitás">${open?'▾':'▸'}</button>`
       +`<input type="radio" name="alayer" ${act?'checked':''} data-la="${L.id}" title="aktív">`
@@ -4613,7 +4641,8 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
       +`<button data-lk="${L.id}" title="zárolás: a réteg elemei nem jelölhetők ki és nem húzhatók">${L.lock?'🔒':'🔓'}</button>`
       +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
       +(L.link?`<span class="llink" title="csatolt réteg: a láthatóság, átlátszóság és zár közös">🔗</span>`:'')
-      +(L.id!=='L0'?`<button data-lx="${L.id}" title="törlés">✕</button>`:'')+`</div>`;
+      +(L.id!=='L0'?`<button data-lx="${L.id}" title="törlés">✕</button>`:'')+`</div>`
+      +((L.stack&&L.role&&typeof stkRole==='function')?`<div class="lrole">${esc((stkRole(L.role)||{n:L.role}).n)}</div>`:'');
     if(open){h+=`<div class="lsubs">`+LAYER_CATS.filter(c=>!c.opt||cnt[c.k]>0).map(c=>{
         const on=L.cats[c.k]!==false,op=lyrOpOf(L,c.k),n=cnt[c.k]||0,key=L.id+':'+c.k;
         return `<div class="lsub${on?'':' off'}${n?'':' none'}" data-sl="${key}">`
@@ -4623,12 +4652,25 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
           +`<button data-so="${key}:1" title="átlátszatlanabb (+10 %)" ${op>=1?'disabled':''}>+</button></div>`;}).join('')+`</div>`
       +`<div class="lcats"><input type="color" class="ltint" data-lt="${L.id}" value="${L.tint||'#ffffff'}" title="Készülékek színezése ezen a rétegen (régi / új kiosztás elkülönítése)">`
       +(L.tint?`<button data-ltx="${L.id}" class="lcat" title="színezés ki">⊘</button>`:'')+`</div>`;}
-    return h+`</div>`;}).join('');
+    return h+`</div>`;};
+  // a BRIDGE Stack's layers sit in a block under its header (role order); everything else renders below, as before
+  const stackIds=new Set(stacks.map(s=>s.id));let html='';
+  stacks.forEach(S=>{html+=`<div class="lstack" data-ls="${S.id}"><button data-lsf="${S.id}" title="összecsukás / kinyitás">${S.collapsed?'▸':'▾'}</button>`
+      +`<span class="lsname" title="${esc(S.name).replace(/"/g,'&quot;')}">▤ ${stkShort(S)} · ${esc(S.name)}</span><span class="lph">${S.phase===2?'2. fázis':'1. fázis'}</span>`
+      +`<button data-lsm="${S.id}" title="Stack menü">⋯</button></div>`
+      +(S.collapsed?'':`<div class="lstkbody">`+stkLayersOf(S.id).map(block).join('')+`</div>`);});
+  html+=layers.filter(L=>!L.stack||!stackIds.has(L.stack)).map(block).join('');
+  el.innerHTML=html;
   const q=(sel,fn)=>el.querySelectorAll(sel).forEach(fn);
+  q('[data-lsf]',b=>b.onclick=()=>{const S=stkById(b.dataset.lsf);S.collapsed=!S.collapsed;renderLayers();});
+  q('[data-lsm]',b=>b.onclick=e=>stkMenu(e,b.dataset.lsm));
+  q('.lstack',h=>h.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();stkMenu(e,h.dataset.ls);}));
   q('[data-lf]',b=>b.onclick=()=>{const L=lyrLayer(b.dataset.lf);L.collapsed=!lyrFolded(L);renderLayers();});
   q('[data-lt]',i=>i.onchange=()=>{layerById(i.dataset.lt).tint=i.value;renderLayers();draw();});
   q('[data-ltx]',b=>b.onclick=()=>{delete layerById(b.dataset.ltx).tint;renderLayers();draw();});
-  q('[data-la]',r=>r.onchange=()=>{state.activeLayer=r.dataset.la;renderLayers();});
+  q('[data-la]',r=>r.onchange=()=>{state.activeLayer=r.dataset.la;const L=lyrLayer(r.dataset.la);
+    if(L&&L.stack){state.stkOff=false;state.stack=L.stack;}      // picking a stack layer enters its stack
+    renderLayers();if(typeof renderShell==='function')renderShell();});
   q('[data-lv]',b=>b.onclick=()=>{const L=layerById(b.dataset.lv),v=!L.visible;lyrGroupOf(L.id).forEach(x=>{x.visible=v;});renderLayers();draw();});
   q('[data-lk]',b=>b.onclick=()=>lyrToggleLock(b.dataset.lk));
   q('.lrow',r=>r.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();lyrLayerMenu(e,r.parentNode.dataset.lb);}));
@@ -4776,12 +4818,12 @@ function lyrDuplicate(srcId,opt){opt=opt||{};const S=lyrLayer(srcId);if(!S)retur
 // ---- merge ------------------------------------------------------------------------------------------
 // every item of the `from` layers moves to `into`; the from layers are removed. `into` keeps its own
 // cats and opacity. L0 is the fallback layer: a target, never a source.
-function lyrMerge(intoId,fromIds){const I=lyrLayer(intoId);
+function lyrMerge(intoId,fromIds,opt){const I=lyrLayer(intoId);
   const from=(fromIds||[]).filter((x,i,a)=>x!==intoId&&lyrLayer(x)&&a.indexOf(x)===i);
   if(!I||!from.length)return false;
   if(from.indexOf('L0')>=0){lyrHud('Az alap réteg (L0) nem olvasztható be máshová.');return false;}
   if(from.some(x=>lyrLayer(x).stack&&lyrLayer(x).stack!==I.stack)){lyrHud('Stack réteg csak a saját stackjébe olvasztható.');return false;}
-  lyrPushUndo();
+  if(!(opt&&opt.noUndo))lyrPushUndo();       // noUndo: the caller (a stack wizard) already took the one undo step
   let n=0;const touched=[];
   lyrEachItem((k,r)=>{if(from.indexOf(r.layer||'L0')>=0){r.layer=intoId;n++;if(k==='walls')touched.push({coll:k,rec:r});}});
   lyrSnapWalls(touched);
@@ -4811,6 +4853,7 @@ function lyrLinkDialog(id){
 function lyrLayerMenu(e,id){const L=lyrLayer(id);if(!L)return;const i=layers.indexOf(L),items=[];
   items.push({label:'Réteg másolása…',act:()=>lyrDuplicateDialog(id)});
   if(i<layers.length-1&&id!=='L0')items.push({label:'Egyesítés az alatta lévővel',act:()=>lyrMergeDown(id)});
+  if(L.role==='construct'&&typeof stkNonConstruct==='function'&&stkNonConstruct(id).n)items.push({label:'Nem szerkezeti elemek áthelyezése új rétegre',act:()=>stkMoveNonConstruct(id)});
   if(L.link){items.push({label:'Csatolt rétegek egyesítése',act:()=>lyrMergeLinked(id)});items.push({label:'Csatolás bontása',act:()=>lyrUnlink(id)});}
   if(layers.length>1)items.push({label:'Csatolás…',act:()=>lyrLinkDialog(id)});
   items.push({label:L.lock?'Zárolás feloldása':'Zárolás',act:()=>lyrToggleLock(id)});
@@ -4848,6 +4891,239 @@ window.layerShows=layerShows;window.lyrEachItem=lyrEachItem;window.lyrItemsOf=ly
 window.lyrSwapCat=lyrSwapCat;window.lyrMoveCat=lyrMoveCat;window.lyrSolo=lyrSolo;window.lyrStepOp=lyrStepOp;window.lyrOpOf=lyrOpOf;window.lyrSubMenu=lyrSubMenu;
 window.lyrGroupOf=lyrGroupOf;window.lyrLink=lyrLink;window.lyrUnlink=lyrUnlink;window.lyrToggleLock=lyrToggleLock;window.lyrLockHit=lyrLockHit;window.lyrDuplicate=lyrDuplicate;
 window.lyrMerge=lyrMerge;window.lyrMergeDown=lyrMergeDown;window.lyrMergeLinked=lyrMergeLinked;window.lyrLayerMenu=lyrLayerMenu;
+
+// A stack is METADATA over ordinary layers [Q10=A]: each stack layer is a normal layer carrying
+// L.stack (the stack id) and L.role (a STK_ROLES key), so every existing tool keeps working on it.
+// The record lives in the session global `stacks`: {id, name, kind:'bridge', scale:'S-C', layers:[…], phase}.
+// Prefix: stk. Everything here is a function or a table read inside functions.
+
+const STK_ROLES=[      // order = panel order = stage order. fam = default conduit family (01_CATALOGUES §7)
+ {k:'construct',  n:'Szerkezet',   ph:1, cats:['wall','floor','door','window','stairs','object'], hint:'Padló, falak, ajtók, ablakok, helyiségek.'},
+ {k:'mark',       n:'Jelölés',     ph:1, cats:['mark','trace'], hint:'Szabályok, tiltások, preferenciák, mozgásnyomok.'},
+ {k:'hw',         n:'Hardver',     ph:1, cats:['device'], hint:'Elosztószekrény, mérőóra, adatbelépés, RBX dobozok.'},
+ {k:'base',       n:'BASE',        ph:1, cats:['device'], hint:'NET · COMP · MEDIA.'},
+ {k:'channel',    n:'Csatorna',    ph:1, cats:['path'],   hint:'Fizikai összeköttetés két hardverpont között.'},
+ {k:'sys:MAINS',  n:'Erősáram',               ph:2, fam:'MAINS'},
+ {k:'sys:LV',     n:'Törpefeszültség — A busz', ph:2, fam:'LV'},
+ {k:'sys:BUSB',   n:'Biztosított 24 V — B busz',ph:2, fam:'BUSB'},
+ {k:'sys:CONTROL',n:'Vezérlés (BRIDGE_LINK)', ph:2, fam:'CONTROL'},
+ {k:'sys:DATA',   n:'Adat / PoE',             ph:2, fam:'DATA'},
+ {k:'sys:KNX',    n:'KNX',                    ph:2, fam:'KNX', off:true},   // P33: not taken
+ {k:'sys:SENSOR', n:'Érzékelők',              ph:2, fam:'SENSOR'},
+ {k:'sys:RF',     n:'Rádió — lefedettség',    ph:2, fam:null},             // a coverage plan, no conduit (A2 step 9)
+ {k:'sys:HMI',    n:'Kezelőfelületek',        ph:2, fam:'CONTROL'},
+ {k:'sys:MEDIA',  n:'Média és hang',          ph:2, fam:'MEDIA'},
+ {k:'sys:USB',    n:'USB',                    ph:2, fam:'USB'},
+ {k:'sys:SECURITY',n:'Biztonságtechnika',     ph:2, fam:'SECURITY', last:true}, // always last [user]
+ {k:'arm',        n:'ARM pályák',  ph:2, cats:['path'], hint:'Egyvonalas pályák az RBX-től minden végpontig.'}];
+const STK_ICONS={construct:'🧱',mark:'🚩',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
+  'sys:DATA':'🌐','sys:KNX':'⌘','sys:SENSOR':'📡','sys:RF':'📶','sys:HMI':'🖲','sys:MEDIA':'🔊','sys:USB':'🔌','sys:SECURITY':'🛡',arm:'🌿'};
+// the action groups the inspector offers per role. A work package that adds actions to one system role
+// pushes into STK_GROUPS['+sys:MAINS'] etc.; groups that do not exist yet simply show nothing.
+const STK_GROUPS={construct:['Fal','Nyílászáró','Szint','Rajz','Helyiség'],mark:['Jelölés'],hw:['Hardver','Rádió'],
+  base:['Hardver'],channel:['Csatorna'],arm:['ARM','Feltöltés'],'sys:*':['Végpont','Szükséglet']};
+function stkGroupsOf(roleKey){return STK_GROUPS[roleKey]||(roleKey.indexOf('sys:')===0?STK_GROUPS['sys:*'].concat(STK_GROUPS['+'+roleKey]||[]):[]);}
+
+// ---- shared hooks: the only render / pointer edits any later stack work package needs ----
+const STK_SCENE=[];    // fn() → svg string, appended to the SCENE (persisted drawing: marks, traces, zones)
+const STK_OVERLAY=[];  // fn() → svg string, appended to the OVERLAY (ghosts, coverage, pick highlights)
+const STK_TOOLS=[];    // {k, active()→bool, down(e)?, move(e)?, up(e)?, key(e)?, esc(e)?} — first active tool that returns true eats the event
+const STK_CTX=[];      // fn(e) → [{label,act}…] or null — first non-empty wins the stage right-click
+const STK_WV=[];       // fn(WV) → svg in Wall View elevation coords (u,v mm) — B2 adds the anchor in 06
+const STK_PV=[];       // fn(PV) → svg in Plane View coords — B3 adds the anchor in 07
+const STK_CHECKS={};   // roleKey → [fn(stack) → [{sev,msg}]]
+function stkHookSvg(list){let s='';for(const f of (list||[])){try{s+=f()||'';}catch(_){}}return s;}
+function stkToolEvent(ph,e){for(const t of STK_TOOLS){try{if(t.active()&&t[ph]&&t[ph](e))return true;}catch(_){}}return false;}
+function stkCtxItems(e){for(const f of STK_CTX){try{const r=f(e);if(r&&r.length)return r;}catch(_){}}return null;}
+
+// ---- model ----
+function stkById(id){return id?stacks.find(s=>s.id===id)||null:null;}
+function stkOfLayer(layerId){const L=lyrLayer(layerId);return L&&L.stack?stkById(L.stack):null;}
+// the stack of the active layer; otherwise the one the user last entered. `state.stkOff` is "◂ Általános":
+// it holds the rail on the general stages even when the active layer still belongs to a stack.
+function stkActive(){if(state.stkOff)return null;
+  return stkOfLayer(state.activeLayer)||stkById(state.stack);}
+function stkLayer(stackId,roleKey){return layers.find(l=>l.stack===stackId&&l.role===roleKey)||null;}
+function stkLayersOf(stackId){return layers.filter(l=>l.stack===stackId)
+  .sort((a,b)=>stkRoleIx(a.role)-stkRoleIx(b.role));}
+function stkRoleIx(k){const i=STK_ROLES.findIndex(r=>r.k===k);return i<0?999:i;}
+function stkRole(k){return STK_ROLES.find(r=>r.k===k)||null;}
+function stkShort(S){return 'B'+(stacks.indexOf(S)+1);}
+function stkSync(S){S.layers=stkLayersOf(S.id).map(l=>l.id);}
+function stkNewId(){let n=Date.now(),id;do{id='S'+n.toString(36);n++;}while(stacks.some(s=>s.id===id));return id;}
+// room identity for the later checklists: F ids for data.floors, Y ids for building rooms (ensureIds)
+function stkRoomId(entry){return entry&&entry.rm?entry.rm.id:null;}
+function stkRooms(level){return allRooms(level).map(e=>({id:stkRoomId(e),name:e.rm.name||'',num:e.rm.num||'',kind:e.rm.kind||null,poly:e.rm.poly,rm:e.rm}));}
+
+function stkMakeLayer(S,role){
+  return {id:lyrNewId(),name:stkShort(S)+' · '+role.n,visible:true,cats:layerCatsAll(),stack:S.id,role:role.k};}
+// opts: {name, construct:{mode:'new'|'adopt', layers:[ids], merge:bool}, roles:[phase-2 keys] (default: every ph:2 role that is not off), phase}
+function stkCreate(opts){opts=opts||{};
+  ensureIds(data);lyrPushUndo();
+  const S={id:stkNewId(),name:(opts.name||'').trim()||('BRIDGE Stack '+(stacks.length+1)),kind:'bridge',scale:'S-C',layers:[],phase:opts.phase===2?2:1};
+  stacks.push(S);
+  const want=opts.roles||STK_ROLES.filter(r=>r.ph===2&&!r.off).map(r=>r.k);
+  const c=opts.construct||{mode:'new'};
+  // Szerkezet: an existing layer takes the role [Q12=A: by reference, nothing is copied]
+  let cl=null;
+  if(c.mode==='adopt'){
+    let ids=(c.layers||[]).filter((x,i,a)=>{const L=lyrLayer(x);return L&&!L.stack&&a.indexOf(x)===i;});
+    if(ids.length>1&&c.merge!==false){
+      const into=ids.indexOf('L0')>=0?'L0':ids[0];     // L0 may be a target, never a source
+      lyrMerge(into,ids.filter(x=>x!==into),{noUndo:true});ids=[into];}
+    cl=ids.length?lyrLayer(ids[0]):null;
+    if(cl){cl.stack=S.id;cl.role='construct';}}
+  // new layers: one contiguous block after the last existing layer, in STK_ROLES order
+  STK_ROLES.forEach(r=>{
+    if(r.k==='construct'){if(!cl){cl=stkMakeLayer(S,r);layers.push(cl);}return;}
+    if(r.ph===1||want.indexOf(r.k)>=0)layers.push(stkMakeLayer(S,r));});
+  stkSync(S);
+  state.stack=S.id;state.stkOff=false;state.activeLayer=cl.id;state.stage='stk:construct';
+  lyrRefresh();
+  const odd=stkNonConstruct(cl.id);
+  lyrHud(odd.n?'A Szerkezet rétegen '+odd.n+' nem szerkezeti elem is van — áthelyezheted (jobb klikk a rétegen).'
+                :'Új BRIDGE Stack: '+S.name+' ('+S.layers.length+' réteg)');
+  return S;}
+// existing layers take a role: the layer itself is referenced, nothing is copied [Q12=A].
+// several ids + merge → merged into the first (L0 wins as target), then referenced.
+function stkAdopt(stackId,roleKey,layerIds,opt){opt=opt||{};
+  const S=stkById(stackId),role=stkRole(roleKey);if(!S||!role)return false;
+  let ids=(layerIds||[]).filter((x,i,a)=>{const L=lyrLayer(x);return L&&a.indexOf(x)===i&&(!L.stack||L.stack===stackId);});
+  if(!ids.length)return false;
+  lyrPushUndo();
+  if(ids.length>1&&opt.merge){const into=ids.indexOf('L0')>=0?'L0':ids[0];
+    if(!lyrMerge(into,ids.filter(x=>x!==into),{noUndo:true}))return false;ids=[into];}
+  const L=lyrLayer(ids[0]);
+  const prev=stkLayer(stackId,roleKey);if(prev&&prev!==L){delete prev.stack;delete prev.role;}   // the old holder becomes an ordinary layer
+  L.stack=stackId;L.role=roleKey;stkSync(S);
+  lyrRefresh();
+  if(roleKey==='construct'){const odd=stkNonConstruct(L.id);
+    if(odd.n)lyrHud('A Szerkezet rétegen '+odd.n+' nem szerkezeti elem is van — áthelyezheted (jobb klikk a rétegen).');}
+  return true;}
+// the stack record goes; layers and items stay as ordinary layers
+function stkDissolve(id){const S=stkById(id);if(!S)return false;
+  lyrPushUndo();
+  layers.forEach(l=>{if(l.stack===id){delete l.stack;delete l.role;}});
+  stacks=stacks.filter(s=>s.id!==id);
+  if(state.stack===id)state.stack=null;
+  if(/^stk:/.test(state.stage||''))state.stage='build';
+  lyrRefresh();lyrHud('Stack feloldva: '+S.name+' (a rétegek megmaradtak)');
+  return true;}
+function stkRename(id,name){const S=stkById(id);name=(name||'').trim();if(!S||!name)return false;
+  lyrPushUndo();S.name=name;renderLayers();return true;}
+function stkSetPhase(id,ph){const S=stkById(id);if(!S)return false;S.phase=ph===2?2:1;renderLayers();return true;}
+
+// non-construct items on a Szerkezet layer: {n, cats:{cat:count}}
+function stkNonConstruct(layerId){const ok=stkRole('construct').cats,cnt=lyrCounts(layerId),cats={};let n=0;
+  Object.keys(cnt).forEach(k=>{if(ok.indexOf(k)<0){cats[k]=cnt[k];n+=cnt[k];}});return {n,cats};}
+// move them onto a new layer (one undo step) — the layer RCO item on a Szerkezet layer
+function stkMoveNonConstruct(layerId){const odd=stkNonConstruct(layerId),L=lyrLayer(layerId);if(!L||!odd.n)return false;
+  lyrPushUndo();
+  const N={id:lyrNewId(),name:'Nem szerkezeti elemek',visible:true,cats:layerCatsAll()};
+  layers.splice(layers.indexOf(L)+1,0,N);
+  const moved=[];Object.keys(odd.cats).forEach(k=>lyrItemsOf(layerId,k).forEach(x=>{x.rec.layer=N.id;moved.push(x);}));
+  lyrSnapWalls(moved);lyrRefresh();lyrHud('Áthelyezve új rétegre: '+odd.n+' elem');return true;}
+
+// ---- the stage rail ----
+function stkStages(S){return STK_ROLES.filter(r=>stkLayer(S.id,r.k)).map(r=>({
+  k:'stk:'+r.k,n:r.n,icon:STK_ICONS[r.k]||'•',groups:stkGroupsOf(r.k),
+  hint:r.hint||('Rendszer-réteg: '+r.n),check:()=>stkCheck(S,r.k)}));}
+// the stage that is current: the role of the active layer, else the last chosen stage, else the first
+function stkCurrentKey(S){const L=lyrLayer(state.activeLayer),SL=stkStages(S);
+  if(L&&L.stack===S.id&&L.role&&SL.some(s=>s.k==='stk:'+L.role))return 'stk:'+L.role;
+  if(SL.some(s=>s.k===state.stage))return state.stage;
+  return SL.length?SL[0].k:'build';}
+// setStage('stk:<role>') lands here: the role's layer becomes the active layer
+function stkEnterRole(roleKey){const S=stkActive()||stkById(state.stack);if(!S)return;
+  const L=stkLayer(S.id,roleKey);if(!L)return;
+  state.stkOff=false;state.stack=S.id;state.activeLayer=L.id;renderLayers();}
+// "◂ Általános": back to the general stages
+function stkLeave(){state.stkOff=true;state.stack=null;
+  const L=layers.find(l=>!l.stack);if(L)state.activeLayer=L.id;
+  state.stage='build';renderLayers();renderShell();}
+// "Stack aktiválása"
+function stkActivate(id){const S=stkById(id);if(!S)return;
+  const L=stkLayer(id,'construct')||stkLayersOf(id)[0];if(!L)return;
+  state.stkOff=false;state.stack=id;state.activeLayer=L.id;state.stage='stk:'+L.role;renderLayers();renderShell();}
+
+// ---- checks ----
+// construct's own checks, then whatever the role's work packages pushed into STK_CHECKS[roleKey]
+function stkCheck(S,roleKey){const out=[];
+  if(roleKey==='construct'){const L=stkLayer(S.id,'construct');
+    if(L){let walls=0;for(const l of ORD)(WALLS[l]||[]).forEach(r=>{if((r.layer||'L0')===L.id)walls++;});
+      if(!walls)out.push({sev:'info',msg:'Még nincs fal a Szerkezet rétegen.'});
+      let unnamed=0,noId=0;
+      ORD.forEach(l=>stkRooms(l).forEach(r=>{
+        const mine=r.rm.layer?r.rm.layer===L.id:true;      // building rooms carry no layer; floors do
+        if(!mine)return;if(!r.name)unnamed++;if(!r.id)noId++;}));
+      if(unnamed)out.push({sev:'warn',msg:unnamed+' helyiségnek nincs neve.'});
+      if(noId)out.push({sev:'error',msg:noId+' helyiségnek nincs azonosítója.'});
+      if(!data.openings.some(o=>o.type==='door'&&(o.layer||'L0')===L.id))out.push({sev:'info',msg:'Még nincs ajtó a Szerkezet rétegen.'});}}
+  (STK_CHECKS[roleKey]||[]).forEach(f=>{try{(f(S)||[]).forEach(x=>out.push(x));}catch(_){}});
+  return out;}
+
+// ---- the wizard ----
+function stkWizard(){
+  const free=layers.filter(l=>!l.stack);
+  const ph2=STK_ROLES.filter(r=>r.ph===2);
+  openModal('Új BRIDGE Stack',
+    `<div class="mrow">Név <input id="skName" value="BRIDGE Stack ${stacks.length+1}" style="width:200px"></div>`
+   +`<div class="mrow"><b>Szerkezet</b></div>`
+   +`<div class="mrow"><label><input type="radio" name="skMode" value="new" checked> Új, üres réteg</label></div>`
+   +`<div class="mrow"><label><input type="radio" name="skMode" value="adopt" ${free.length?'':'disabled'}> Meglévő réteg(ek)</label></div>`
+   +`<div id="skAdopt" style="display:none;margin:0 0 4px 18px">`
+   +free.map(l=>`<div><label><input type="checkbox" class="skL" value="${l.id}"> ${esc(l.name)}</label></div>`).join('')
+   +`<div id="skMergeRow" style="display:none"><label><input type="checkbox" id="skMerge" checked> egyesítés egy rétegbe</label></div></div>`
+   +`<div class="mrow"><b>2. fázis rétegek</b></div>`
+   +`<div style="margin:0 0 4px 18px">`+ph2.map(r=>`<div><label><input type="checkbox" class="skR" value="${r.k}" ${r.off?'':'checked'}> ${esc(r.n)}${r.off?' <span style="color:#888">(alapból kikapcsolva)</span>':''}</label></div>`).join('')+`</div>`
+   +`<div class="mrow" style="font-size:11px;color:#888">Az 1. fázis rétegei (Szerkezet, Jelölés, Hardver, BASE, Csatorna) mindig létrejönnek. A stack csak jelölés a rétegeken: minden meglévő eszköz ugyanúgy működik rajtuk.</div>`,
+    ()=>{const mode=(document.querySelector('input[name=skMode]:checked')||{}).value||'new';
+      const ids=[...document.querySelectorAll('.skL')].filter(x=>x.checked).map(x=>x.value);
+      if(mode==='adopt'&&!ids.length){lyrHud('Jelölj ki legalább egy meglévő réteget, vagy válaszd az új réteget.');return false;}
+      stkCreate({name:$('skName').value,construct:{mode,layers:ids,merge:$('skMerge')?$('skMerge').checked:true},
+        roles:[...document.querySelectorAll('.skR')].filter(x=>x.checked).map(x=>x.value)});});
+  const sync=()=>{const adopt=(document.querySelector('input[name=skMode]:checked')||{}).value==='adopt';
+    $('skAdopt').style.display=adopt?'block':'none';
+    $('skMergeRow').style.display=(adopt&&document.querySelectorAll('.skL:checked').length>=2)?'block':'none';};
+  document.querySelectorAll('input[name=skMode]').forEach(r=>r.onchange=sync);
+  document.querySelectorAll('.skL').forEach(c=>c.onchange=sync);}
+// "Meglévő réteg felvétele szerepbe…"
+function stkAdoptDialog(stackId){const S=stkById(stackId);if(!S)return;
+  const free=layers.filter(l=>!l.stack||l.stack===stackId);
+  openModal('Meglévő réteg felvétele szerepbe',
+    `<div class="mrow">Szerep <select id="saRole" style="width:220px">${STK_ROLES.map(r=>`<option value="${r.k}">${esc(r.n)}</option>`).join('')}</select></div>`
+   +`<div class="mrow">Réteg <select id="saLayer" style="width:220px">${free.map(l=>`<option value="${l.id}">${esc(l.name)}</option>`).join('')}</select></div>`
+   +`<div class="mrow" style="font-size:11px;color:#888">A réteg maga kerül a szerepbe (nem másolat). Aki eddig a szerepet viselte, sima réteg lesz.</div>`,
+    ()=>{stkAdopt(stackId,$('saRole').value,[$('saLayer').value]);});}
+function stkRenameDialog(id){const S=stkById(id);if(!S)return;
+  openModal('Stack átnevezése',`<div class="mrow">Név <input id="srName" value="${esc(S.name).replace(/"/g,'&quot;')}" style="width:220px"></div>`,
+    ()=>{stkRename(id,$('srName').value);});}
+function stkMenu(e,id){const S=stkById(id);if(!S)return;
+  ctxMenu(e,[
+    {label:'Stack aktiválása',act:()=>stkActivate(id)},
+    {label:'Átnevezés…',act:()=>stkRenameDialog(id)},
+    {label:'Fázis: '+(S.phase===2?'2 → 1':'1 → 2'),act:()=>stkSetPhase(id,S.phase===2?1:2)},
+    {label:'Meglévő réteg felvétele szerepbe…',act:()=>stkAdoptDialog(id)},
+    {label:'Stack feloldása (rétegek maradnak)',act:()=>stkDissolve(id)}]);}
+
+registerActions([
+ {id:'stack.create',alias:'uj bridge stack reteg csoport new stack wizard',label:'Új BRIDGE Stack…',icon:'▤',group:'Stack',
+  hint:'Előre beállított rétegcsoport: Szerkezet, Jelölés, Hardver, BASE, Csatorna + a 2. fázis rendszerrétegei. Meglévő réteg is szerepet kaphat.',
+  run:()=>stkWizard()},
+ {id:'stack.dissolve',alias:'stack feloldasa dissolve',label:'Stack feloldása (rétegek maradnak)',icon:'▤',group:'Stack',
+  need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>stkDissolve(stkActive().id)},
+ {id:'stack.leave',alias:'altalanos szakaszok vissza general stages leave stack',label:'Vissza az általános szakaszokhoz',icon:'◂',group:'Stack',
+  need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>stkLeave()}
+]);
+
+// test hooks
+window.STK_ROLES=STK_ROLES;window.STK_GROUPS=STK_GROUPS;window.STK_SCENE=STK_SCENE;window.STK_OVERLAY=STK_OVERLAY;window.STK_TOOLS=STK_TOOLS;
+window.STK_CTX=STK_CTX;window.STK_WV=STK_WV;window.STK_PV=STK_PV;window.STK_CHECKS=STK_CHECKS;window.VALIDATORS=VALIDATORS;
+window.stkById=stkById;window.stkOfLayer=stkOfLayer;window.stkActive=stkActive;window.stkLayer=stkLayer;window.stkLayersOf=stkLayersOf;window.stkRole=stkRole;
+window.stkCreate=stkCreate;window.stkAdopt=stkAdopt;window.stkDissolve=stkDissolve;window.stkRename=stkRename;window.stkRoomId=stkRoomId;window.stkRooms=stkRooms;
+window.stkStages=stkStages;window.stkCheck=stkCheck;window.stkGroupsOf=stkGroupsOf;window.stkLeave=stkLeave;window.stkActivate=stkActivate;
+window.stkNonConstruct=stkNonConstruct;window.stkMoveNonConstruct=stkMoveNonConstruct;window.stkHookSvg=stkHookSvg;window.stkToolEvent=stkToolEvent;
+window.stkCtxItems=stkCtxItems;window.stkMenu=stkMenu;window.stkSetPhase=stkSetPhase;
 // ---- Wall View: 2D elevation of a selected wall ----
 function devMini(type,x,y,col){
   if(type==='socket')return `<circle cx="${x}" cy="${y}" r="6" fill="#fff" stroke="${col}" stroke-width="1.4"/><line x1="${x-3}" y1="${y}" x2="${x+3}" y2="${y}" stroke="${col}" stroke-width="1.4"/>`;
@@ -6860,6 +7136,7 @@ function cloneMulti(list){const out=[],rows={};
   Object.keys(rows).forEach((g,k)=>{if(rows[g].length>1)rows[g].forEach(d=>{d.clip='clip'+stamp+'c'+k;});});
   return out;}
 stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
+  if(typeof stkToolEvent==='function'&&stkToolEvent('down',e))return;
   if((e.buttons&3)===3){camDrag={m:'pitch',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(e.button===2){camDrag={m:'yaw',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(e.button!==0)return;
@@ -6936,6 +7213,7 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
   else if(state.mode==='measure'){const p=snap(e,state.active);if(!measureDraft)measureDraft=[{level:p.level,x:p.x,y:p.y}];
     else{measureDraft.push({level:p.level,x:p.x,y:p.y});pushUndo();data.measures.push(measureDraft);measureDraft=null;}draw();}});
 stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
+  if(typeof stkToolEvent==='function'&&stkToolEvent('move',e))return;
   if(state.mode==='select'||state.mode==='grab'){const li=lampAt(e.clientX,e.clientY);
     if(li!=null)lampHoverShow(data.devices[li],e.clientX,e.clientY);else lampHoverHide();}
   else lampHoverHide();
@@ -7052,7 +7330,8 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
     cursor={x:p[0],y:p[1],level:state.active,h:0};
     if(state.mode==='floor')$('hud').textContent=floorDraftHud(true);drawSoon();}
   else if(state.mode==='select'){const r=wallHitRect(e);if(r!==state.hoverR){state.hoverR=r;state.hoverL=state.active;drawSoon();}}});
-stage.addEventListener('pointerup',()=>{
+stage.addEventListener('pointerup',(e)=>{
+  if(typeof stkToolEvent==='function'&&stkToolEvent('up',e))return;
   if(ctrlToggle){ // a ctrl+click that did NOT turn into a drag-clone → toggle multi-selection
     toggleMulti(ctrlToggle.h);selected=inMulti(ctrlToggle.h)?ctrlToggle.h:(selMulti[selMulti.length-1]||null);
     if(selMulti.length)$('hud').textContent=selList().length+' elem kijelölve.';ctrlToggle=null;draw();}
@@ -7108,8 +7387,10 @@ function panBy(dx,dy){state.panX+=dx;state.panY+=dy;setTransform();}
 function zoomBy(f){state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));setTransform();}
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();
+    if(typeof stkToolEvent==='function')stkToolEvent('esc',e);   // a stack tool stops on Esc, it never discards data
     draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();if(state.mode!=='select')setMode('select');draw();return;}
   const tag=(e.target&&e.target.tagName)||'';if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return; // don't hijack while typing
+  if(typeof stkToolEvent==='function'&&stkToolEvent('key',e))return;
   if(state.lockTouch){ // locked: allow camera keys (WASD/QE/arrows) + undo/redo, block edits (Delete, Ctrl+D, tool keys already harmless)
     const k=e.key.toLowerCase();
     if(e.key==='Delete'||e.key==='Backspace'||(e.ctrlKey&&k==='d')){e.preventDefault();return;}
@@ -7939,6 +8220,7 @@ function ctxMenu(e,items){ctx.innerHTML=items.map((it,i)=>`<button data-i="${i}"
   ctx.style.left=Math.round(x)+'px';ctx.style.top=Math.round(y)+'px';
   ctx.querySelectorAll('button').forEach(b=>b.onclick=()=>{hideCtx();items[+b.dataset.i].act();});}
 stage.addEventListener('contextmenu',e=>{e.preventDefault();if(ctxSuppress){ctxSuppress=false;return;}if(camDrag&&camDrag.moved){return;}
+  if(typeof stkCtxItems==='function'){const it=stkCtxItems(e);if(it){ctxMenu(e,it);return;}}
   if(state.lockTouch)return; // locked: no piece/edit menu (right-drag still rotates the camera)
   const di=devHitIdx(e);
   if(di!=null){const D=data.devices[di];const items=[];

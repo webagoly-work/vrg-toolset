@@ -64,6 +64,7 @@ function cloneMulti(list){const out=[],rows={};
   Object.keys(rows).forEach((g,k)=>{if(rows[g].length>1)rows[g].forEach(d=>{d.clip='clip'+stamp+'c'+k;});});
   return out;}
 stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
+  if(typeof stkToolEvent==='function'&&stkToolEvent('down',e))return;
   if((e.buttons&3)===3){camDrag={m:'pitch',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(e.button===2){camDrag={m:'yaw',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(e.button!==0)return;
@@ -140,6 +141,7 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
   else if(state.mode==='measure'){const p=snap(e,state.active);if(!measureDraft)measureDraft=[{level:p.level,x:p.x,y:p.y}];
     else{measureDraft.push({level:p.level,x:p.x,y:p.y});pushUndo();data.measures.push(measureDraft);measureDraft=null;}draw();}});
 stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
+  if(typeof stkToolEvent==='function'&&stkToolEvent('move',e))return;
   if(state.mode==='select'||state.mode==='grab'){const li=lampAt(e.clientX,e.clientY);
     if(li!=null)lampHoverShow(data.devices[li],e.clientX,e.clientY);else lampHoverHide();}
   else lampHoverHide();
@@ -256,7 +258,8 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
     cursor={x:p[0],y:p[1],level:state.active,h:0};
     if(state.mode==='floor')$('hud').textContent=floorDraftHud(true);drawSoon();}
   else if(state.mode==='select'){const r=wallHitRect(e);if(r!==state.hoverR){state.hoverR=r;state.hoverL=state.active;drawSoon();}}});
-stage.addEventListener('pointerup',()=>{
+stage.addEventListener('pointerup',(e)=>{
+  if(typeof stkToolEvent==='function'&&stkToolEvent('up',e))return;
   if(ctrlToggle){ // a ctrl+click that did NOT turn into a drag-clone → toggle multi-selection
     toggleMulti(ctrlToggle.h);selected=inMulti(ctrlToggle.h)?ctrlToggle.h:(selMulti[selMulti.length-1]||null);
     if(selMulti.length)$('hud').textContent=selList().length+' elem kijelölve.';ctrlToggle=null;draw();}
@@ -312,8 +315,10 @@ function panBy(dx,dy){state.panX+=dx;state.panY+=dy;setTransform();}
 function zoomBy(f){state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));setTransform();}
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();
+    if(typeof stkToolEvent==='function')stkToolEvent('esc',e);   // a stack tool stops on Esc, it never discards data
     draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();if(state.mode!=='select')setMode('select');draw();return;}
   const tag=(e.target&&e.target.tagName)||'';if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return; // don't hijack while typing
+  if(typeof stkToolEvent==='function'&&stkToolEvent('key',e))return;
   if(state.lockTouch){ // locked: allow camera keys (WASD/QE/arrows) + undo/redo, block edits (Delete, Ctrl+D, tool keys already harmless)
     const k=e.key.toLowerCase();
     if(e.key==='Delete'||e.key==='Backspace'||(e.ctrlKey&&k==='d')){e.preventDefault();return;}
