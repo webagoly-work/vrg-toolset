@@ -1,6 +1,6 @@
 # BRIDGE — General Outline
 
-**Doc:** BRIDGE-OUTLINE-001 · r1 · 2026-10-05 · English
+**Doc:** BRIDGE-OUTLINE-001 · r2 · 2026-10-06 · English · r2 applies round K (upper floor, R07, BASE, riser, box naming)
 **Role:** the top of the document set. What the system is, in what order it is built, and where
 every detail lives. **P33 is the worked instance** carried alongside.
 **Integrates:** `P33-D1 r1` answers (47/47, 2026-10-05) · the P33 floorplan (held locally) · the
@@ -146,32 +146,57 @@ Classes: **RB-M** 400×500×110 · **RB-L** 500×600×110 · **RB-H** 600×600×
 | **R07** | SZOBA — room | laminált | **12.16 m²** | 3 | 2 shutters |
 | **R08** | FÜRDŐ — bathroom | csempe | **4.75 m²** | 2 | |
 | | *ground floor* | | **≈ 55.8 m²** | **17 + R03** | |
-| **R09** | bedroom 1 | — | ? | ? | **upper floor** |
-| **R10** | bedroom 2 | — | ? | ? | upper floor |
-| **R11** | small hall | — | ? | ? | upper floor |
+| **R09** | SZOBA — upper room | laminált | **10.24 m²** *(12.01 incl. < 1.90 m)* | 2 | **upper floor.** Sloped ceiling; railing on the void side. RBX09 here |
+| **R10** | FÜRDŐ — upper bathroom | csempe | **4.07 m²** | 2 | upper floor. Served by ARMs from RBX09, no box of its own (K15) |
+| **R11** | KÖZLEKEDŐ — upper hall | — | **1.94 m²** | 1 + stair | upper floor. Stair head |
+| **R12** | TERASZ — roof terrace | — | **6.18 m²** | 1 | upper floor. Outdoor endpoints on ARMs, no RB-O (K16). **Later development** |
+| **R13** | TÁROLÓ — store | — | **3.64 m²** | 1 | upper floor, reached from the terrace |
+| | *upper floor* | | **≈ 26.1 m²** | **7** | **not renovated until the ground floor is finished** |
+
+> **Correction (K01, 2026-10-06).** The upper floor was carried here as "two bedrooms and a small
+> hall". The plan says otherwise: one room, a bathroom, a hall, a roof terrace and a store. Room
+> refs R09–R13 replace the R09–R11 placeholders, which were never issued (K11). Lamp counts are the
+> accepted provisional defaults (K17).
 
 Two floors (G01), occupied space above throughout (G02) — **so a floor-void thermal riser is
 available**, which is the only pipe that adds real stack height.
 
+**A double-height void links the floors (K12).** Over the window strip of **R06 only**, the space
+is open to the roof — about **4.5 m** — and R09's railing looks down into it. Three consequences:
+an mmWave sensor in R09 will see across the railing into R06 and needs masking; sound and heat
+travel up; and the **stair remains the only walkable link**, so the stairway count anchor of §4.3
+still holds.
+
 ### 4.2 Topology
 
 ```
-   ELOSZTÓSZEKRÉNY + BASE          R01 ELŐSZOBA
-            │ CHANNEL
-            ▼
-      RBX01  ──  R03 ÉTKEZŐ        RB-H · the hub · serves R01 R02 R03 R04 R05
-        ├──► RBX02 — R06 NAPPALI   RB-L · SSC alongside
-        ├──► RBX03 — R08 FÜRDŐ     RB-E/W · terminal · IP44
-        └──► RBX04 — upper floor   RB-M terminal · serves R09 R10 R11
-                   via the R05 stair void
+  ELOSZTÓSZEKRÉNY ══ power + data ══ BASE ═ CHANNEL ═ RBX03 ─┬─► RBX06  R06 NAPPALI   RB-H · R06 R07 + AV position
+  R01 · ISP entry                    R03, stacked     R03     ├─► RBX08  R08 FÜRDŐ     RB-E/W · terminal · IP44
+                                     under RBX03      RB-H    └─► RBX09  R09 (upper)   RB-M terminal · R09–R13
+                                                      R01–R05        via the R05 kamra riser (V1)
 ```
 
-**RBX01 belongs in R03, not R01**, and three things agree on it: R03 is the circulation hub so the
+**Boxes are keyed to the room they sit in (K19, STD-004 §1.3)** — reference, room and Modbus
+address are one number. The chain-order names RBX01–04 used until r1 are retired; "RoomBox 1"
+survives only as plain English for the hub.
+
+**RBX03 belongs in R03, not R01**, and three things agree on it: R03 is the circulation hub so the
 ARM runs to the most endpoints are shortest; it is the **geometric centre of the plan**, which is the
 best possible position for RF coverage and for BLE/UWB trilateration; and R01 at 2.55 m² has no wall
 to spare. A three-branch chain node makes it **RB-H**.
 
-**R07 SZOBA is served from RBX01 or RBX02** depending on which wall it shares — the plan will say.
+**RBX03 and BASE share one position (K13, G04/G05)** — on R03's south wall, the stretch with the
+WC and the entrance hall behind it: RoomBox in the upper section, BASE at eye level, in a
+**joinery build-out** because that wall is a thin partition that cannot take a 120 mm box flush.
+It sits between the entrance and the hub, as the network-first rule wants, and backs straight onto
+the cabinet side.
+
+**R07 SZOBA is served from RBX06 (K07)**, across the shared R06/R07 wall, and RBX06 grows to
+**RB-H** — it now serves two rooms and carries ARMs to the media wall.
+
+**The upper floor rises through R05 (K14).** The riser runs up the kamra's left side, against the
+masonry spine that continues upstairs between R09 and the stair. Built now as capped sleeves and an
+inspection box with draw cords; RBX09's exact position is set during the upper renovation.
 
 ### 4.3 The finding — R03 is the articulation point
 
@@ -207,7 +232,7 @@ two halves are used at different times for different reasons.
 
 ### 4.4 R05 KAMRA is the services riser
 
-The pantry is **under the stairs**, which makes it the obvious vertical route to RBX04 — and the
+The pantry is **under the stairs**, which makes it the obvious vertical route to RBX09 — and the
 obvious home for the **floor-void thermal riser** that G02 just made possible. A 1.36 m² understairs
 store is poor for storage and excellent for services. Fire-stopping to OTSZ applies to the
 penetration.
@@ -220,12 +245,12 @@ and M25 conduits for sockets. **The 48-module cabinet is already full at V2.** T
 already planned for PANEL LINK (B20, RB-E/T) absorbs this, but it is now **required rather than
 optional**, and it should be sized for the doubled circuit count before it is bought.
 
-**No hob on the big-load list.** S06 named oven, dishwasher, washing machine and water heater but
-**not a hob**. Gas, or on the oven circuit? It changes a 2P C16 way in the cabinet, so worth
-confirming.
+**The hob is induction, on the island (K20).** S06 omitted it; the plan put it in the island. It
+takes its own big-load circuit from the cabinet to the island, never through a RoomBox, and the
+island needs that feed in the floor before the screed.
 
 **The lamp count passed the DALI crossover and the answer still holds.** Ground floor ≈ 19 controlled
-mains lamps with R03's two; with the upper floor, roughly 27. That is above the 15–25 crossover on
+mains lamps with R03's two; with the upper floor, roughly 26. That is above the 15–25 crossover on
 count — but **C30 keeps a bistable relay per lamp regardless**, which forecloses DALI's main benefit
 before cost enters the argument. **No DALI in v1** stands, and the C4b conduit keeps the door open.
 
@@ -245,16 +270,19 @@ at r2 plus a thermal annex. The three contradictions C1, C2, C3 closed; C4 and C
 
 **Open, in the order it matters:**
 
+**Closed 2026-10-06 (round K):** the upper floor (K01–K06, K11, K15–K17) · R07 from RBX06 (K07) ·
+the BASE position (K09, K10, K13) · the riser (K14) · box naming (K19) · the hob (K20). **G06 is
+largely answered by the marked plan**: the spine and both outer walls are masonry ≥ 25 cm, the
+partitions are thin — which is what put RBX03 + BASE in a joinery build-out.
+
 | | Open | Blocks |
 |---|---|---|
-| 1 | **Upper floor** — areas, lamp counts, and whether RBX04 serves three rooms as RB-M terminal *(the "small end terminal" of G07 is probably too small for three habitable rooms)* | the CHANNEL schedule and RBX04's class |
-| 2 | **R07's shared wall** — served from RBX01 or RBX02 | the ARM schedule |
-| 3 | **G06 wall construction** — answered `?` with a request for **simple visuals of the choices** | chase depth, cross-vent, the 110 mm envelope |
-| 4 | **C23 / C23B** — which integrated lighting types, waiting on `06_reference-images/` | the fixture schedule |
-| 5 | **G04 / G05 BASE arrangement** — split or unit, modular per available space | the LAYER TIE, and whether fibre is wanted there |
-| 6 | **The hob** (§4.5) · **H10** Snapcast placement, to be measured not argued · **D9** the security provider and `alarm_type` | |
+| 1 | **C23 / C23B** — which integrated lighting types, waiting on `06_reference-images/` | the fixture schedule |
+| 2 | **RBX08's wall** in the redrawn bathroom, outside zones 0–2 | the R08 ARM runs |
+| 3 | **The media wall's position** in R06 | the AV position and RBX06's exact wall |
+| 4 | **H10** Snapcast placement, to be measured not argued · **D9** the security provider and `alarm_type` | |
 
-**Next build step:** `P33-BUILD-001` — the hardware composition, which needs items 1 and 2 above.
+**Next build step:** `P33-BUILD-001` — the topology and hardware composition. Nothing above blocks it.
 
 ---
 
@@ -272,6 +300,7 @@ at r2 plus a thermal annex. The three contradictions C1, C2, C3 closed; C4 and C
    ├── 07_P33/            ** LOCAL ONLY, NOT IN GIT ** — client property. Blueprints, the
    │                      electrical plan, the room survey. The design knowledge is in
    │                      05_standards and in §4 above, de-identified
+   ├── 08_builds/         P33-BUILD-001 topology + composition · fig/ · src/ (figure generators)
    ├── _build/            the register, decision records, briefings
    └── _tuner/            the question tool and packs
 ```

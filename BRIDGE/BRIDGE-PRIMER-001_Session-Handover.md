@@ -143,16 +143,19 @@ published page.*
 
 ## 7. Open items, in the order they matter
 
+> **Updated 2026-10-06.** Round K (K00–K20, recorded in `07_P33/P33-D1_Room-Schedule.md` §9 and
+> applied in the outline r2) closed the upper floor, R07, the BASE position, the riser, box naming
+> and the hob. **RoomBoxes are now keyed to their room: RBX03 · RBX06 · RBX08 · RBX09.** The
+> upper floor is one room, a bathroom, a hall, a roof terrace and a store (R09–R13), not two
+> bedrooms. G06 is largely answered by the client's marked plan.
+
 | | Open | Blocks |
 |---|---|---|
-| **1** | **Upper floor** — two bedrooms + small hall: areas, lamp counts, and RBX04's class. G07 guessed "a smaller end terminal"; three habitable rooms probably wants **RB-M terminal** | the CHANNEL schedule, RBX04 |
-| **2** | **R07 SZOBA's shared wall** — served from RBX01 or RBX02 | the ARM schedule |
-| **3** | **G06 wall construction** — answered `?` with an explicit request for **simple visuals of the choices.** He asked for this; it is owed | chase depth, cross-vent, the 110 mm envelope |
-| **4** | **C23 / C23B** — which integrated lighting types. Waiting on photographs in `06_reference-images/`, where the index says what to collect | the fixture schedule |
-| **5** | **G04 / G05 BASE arrangement** — split or one unit, "modular, depends on available space" | the LAYER TIE |
-| **6** | Minor: is there an electric **hob** (S06 omitted it) · **H10** Snapcast placement, *to be measured not argued* · **D9** security provider and whether it can supply `alarm_type` |  |
+| **1** | **C23 / C23B** — which integrated lighting types. Waiting on photographs in `06_reference-images/` | the fixture schedule |
+| **2** | **RBX08's wall** in the redrawn bathroom · **the R06 media wall's position** | R08 ARMs · AV position |
+| **3** | **H10** Snapcast placement, *to be measured not argued* · **D9** security provider and `alarm_type` |  |
 
-**The next build document is `P33-BUILD-001`** — the hardware composition. It needs items 1 and 2.
+**`P33-BUILD-001`** — topology and hardware composition — is the current build document.
 
 ---
 
