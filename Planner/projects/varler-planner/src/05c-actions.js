@@ -127,8 +127,11 @@ function paletteKeyLabel(k){return (k||'').replace('mod','Ctrl').replace('shift'
 // Validation walks the whole model, so it is cached against the scene version: a pan, a
 // hover or a camera move cannot change the counts, and draw() runs on every pointermove.
 let _vsVer=-1,_vsCache=null;
-function statusValidate(){if(_vsVer===sceneVer&&_vsCache)return _vsCache;
-  _vsVer=sceneVer;_vsCache=(typeof validateSummary==='function')?validateSummary():{error:0,warn:0};return _vsCache;}
+// the cache key: the scene version AND a cheap model fingerprint — a change that draws nothing (a one-node path,
+// a renamed room) must still refresh the checks and the validation chip
+function shellModelKey(){let s=sceneVer+'|'+(data.seq||0)+'|'+undo.length+'|'+redo.length;UKEYS.forEach(k=>{s+='|'+((data[k]||[]).length);});return s;}
+function statusValidate(){const key=shellModelKey();if(_vsVer===key&&_vsCache)return _vsCache;
+  _vsVer=key;_vsCache=(typeof validateSummary==='function')?validateSummary():{error:0,warn:0};return _vsCache;}
 let _sbHtml=null;
 function statusBar(){const el=$('statusBar');if(!el)return;
   const E=(typeof edCur==='function')?edCur():null;

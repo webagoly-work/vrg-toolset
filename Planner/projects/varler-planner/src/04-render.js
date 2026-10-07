@@ -890,7 +890,7 @@ function draw(){
   const changed=paintLayers(s,ov);
   setTransform();
   if(typeof statusBar==='function')statusBar();
-  if(typeof renderShell==='function')renderShell();
+  if(typeof renderShell==='function')renderShell(true);   // per frame: cached checks (an explicit renderShell() recomputes)
   // totals derive from the model, and the model can't have changed if the scene string
   // is identical — so a camera move or a hover no longer recomputes the BOM.
   if(changed.scene)updateTotals();

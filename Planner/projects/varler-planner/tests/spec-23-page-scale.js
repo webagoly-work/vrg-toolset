@@ -40,8 +40,9 @@ setTimeout(()=>{
     return fs2.length&&Math.max(...fs2)<=+w.bpFS(4.5)+1e-9;})());
   ok('the hatch pitch follows the scale',(function(){const m=/<pattern id="bph" width="([\d.]+)"/.exec(scene());
     return m&&Math.abs(+m[1]-+w.bpU(1.3).toFixed(2))<0.02;})());
+  // the normal view draws with its own paper-mm pens (spec-26) — not the blueprint's
   ok('the normal view keeps its own line weights',(function(){st.style='normal';w.draw();
-    const ws=widths(scene());st.style='blueprint';w.draw();return ws.includes(1);})());
+    const ws=widths(scene()),pen=+w.eval('nvSW(NV_PEN.edge)');st.style='blueprint';w.draw();return ws.some(x=>Math.abs(x-pen)<1e-3);})());
 
   // ---------- scale view ----------
   ok('scale view zooms so one paper mm is one screen mm',(function(){w.bpScaleView();

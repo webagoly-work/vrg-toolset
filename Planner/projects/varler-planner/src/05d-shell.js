@@ -82,7 +82,7 @@ function shellOn(){return state.shell!==false;}
 // stage re-ran its check() over the whole model. Both are now built as strings and only
 // written to the DOM when they actually differ, with the checks cached per scene version.
 let _chkVer=-1,_chkMap=null,_railHtml=null,_inspHtml=null;
-function stageChecks(st){if(_chkVer!==sceneVer||!_chkMap){_chkVer=sceneVer;_chkMap={};}
+function stageChecks(st){const key=shellModelKey();if(_chkVer!==key||!_chkMap){_chkVer=key;_chkMap={};}
   if(!(st.k in _chkMap)){try{_chkMap[st.k]=st.check()||[];}catch(_){_chkMap[st.k]=[];}}
   return _chkMap[st.k];}
 function invalidateShell(){_chkVer=-1;_chkMap=null;_railHtml=null;_inspHtml=null;
@@ -94,7 +94,7 @@ function stageW(){const el=document.querySelector('.stage-wrap');if(!el)return 9
   const wpx=el.getBoundingClientRect().width;return wpx>0?wpx:9999;}
 function railRoom(){return stageW()>=RAIL_MIN;}
 function inspRoom(){return stageW()>=INSP_MIN;}
-function renderShell(){
+function renderShell(fromDraw){if(!fromDraw)_chkMap=null;   // an explicit call recomputes the checks; draw() passes true and keeps the cache
   const rail=$('stageRail'),insp=$('inspector');
   if(!rail||!insp)return;
   if(!shellOn()){rail.style.display='none';insp.style.display='none';return;}
