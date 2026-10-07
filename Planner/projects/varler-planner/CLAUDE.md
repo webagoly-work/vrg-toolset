@@ -15,7 +15,7 @@ npm install               # once — jsdom (tests) + ws (phone relay)
 npm run build              # src/ → dist/varler_planner.html
 node build.js --check      # build, diff against ./planner.html (or $REF) — verifies a pure/no-op change
 node build.js --list       # show module list + build order without building
-npm test                   # build + run every tests/spec-*.js + golden.js (595+ assertions, 70 golden renders)
+npm test                   # build + run every tests/spec-*.js + golden.js (2000+ assertions in 48 suites, 70 golden renders)
 node tests/run.js --golden-update   # accept intentional rendering changes (updates tests/golden.json)
 node tests/spec-14-schema.js        # run a single suite directly (any spec-*.js works the same way)
 npm run manifest            # node tools/manifest.js
