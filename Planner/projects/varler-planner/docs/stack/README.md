@@ -55,8 +55,8 @@ finished WP is what counts, not per session.
 | B1 | Stack model, wizard, panel group, stage rail, shared hooks | A3 | L | built — 2026-10-07 — d5cbf43 |
 | B2 | Marks: walls, sides, vertical/horizontal strips | B1 | L | built — 2026-10-07 — fc5e894 |
 | B3 | Marks: doors, windows, floor/ceiling strips and zones | B2 | M | built — 2026-10-07 — fc5e894 |
-| B4 | Movement traces: 45° line, freehand, smoothed, door snap | B3 | M | todo |
-| B5 | Portal graph: line of sight, 500 mm encoding, heatmap | B4 | M | todo |
+| B4 | Movement traces: 45° line, freehand, smoothed, door snap | B3 | M | built — 2026-10-07 — uncommitted |
+| B5 | Portal graph: line of sight, 500 mm encoding, heatmap | B4 | M | built — 2026-10-07 — uncommitted |
 | ⏸ | **checkpoint — mark one real floor; do the tags feel right?** | | | |
 | C1 | Hardware nodes: RBX, board, meter, entry, SSC | B2 | M | todo |
 | C2 | RBX room serving + coverage ghost | C1 | M | todo |

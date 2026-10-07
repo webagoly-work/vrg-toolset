@@ -127,8 +127,8 @@ setTimeout(()=>{
   // 6 — the keys: g, Shift+g, Tab, Esc
   fixture();
   ok('G starts the plane tool and shows plane + mode in #modeHint',(function(){key('g');return w.MRK_P.on&&w.MRK_P.mode==='px'&&/Padló/.test($('modeHint').textContent)&&/Sáv \(vízszintes\)/.test($('modeHint').textContent);})());
-  ok('G cycles px → py → rect → circle → px',(function(){const s=[];for(let i=0;i<4;i++){key('g');s.push(w.MRK_P.mode);}return s.join()==='py,rect,circle,px';})());
-  ok('Shift+G cycles back',(function(){key('g',{shiftKey:true});return w.MRK_P.mode==='circle';})());
+  ok('G cycles px → py → rect → circle → (the trace modes of B4) → px',(function(){const s=[];for(let i=0;i<7;i++){key('g');s.push(w.MRK_P.mode);}return s.join()==='py,rect,circle,line45,free,smooth,px';})());
+  ok('Shift+G cycles back',(function(){key('g',{shiftKey:true});const a=w.MRK_P.mode;key('g');return a==='smooth'&&w.MRK_P.mode==='px';})());
   ok('Tab toggles floor ↔ ceiling and says so',(function(){const e=wkey('Tab');const a=w.MRK_P.plane==='ceiling'&&$('hud').textContent==='Mennyezet'&&e.defaultPrevented;wkey('Tab');return a&&w.MRK_P.plane==='floor'&&$('hud').textContent==='Padló';})());
   ok('Tab is NOT eaten while focus is in an input',(function(){const inp=w.document.createElement('input');w.document.body.appendChild(inp);const e=new w.KeyboardEvent('keydown',{key:'Tab',bubbles:true,cancelable:true});inp.dispatchEvent(e);inp.remove();return w.MRK_P.plane==='floor'&&!e.defaultPrevented;})());
   ok('mode + plane show in #modeHint after Tab',(function(){wkey('Tab');const r=/Mennyezet/.test($('modeHint').textContent);wkey('Tab');return r;})());
@@ -138,7 +138,7 @@ setTimeout(()=>{
   ok('starting one tool ends the other',(function(){key('j');const a=w.MRK_T.on;key('g');const b=w.MRK_P.on&&!w.MRK_T.on;key('j');return a&&b&&w.MRK_T.on&&!w.MRK_P.on;})());
   w.mrkToolsOff();
   ok('changing the drawing tool ends the plane tool',(function(){key('g');w.setMode('wall');const r=!w.eval('mrkPlaneActive()');w.setMode('select');return r&&!w.MRK_P.on;})());
-  ok('MRK_PLANE_MODES is the extensible list: px, py, rect, circle',J(w.MRK_PLANE_MODES.map(m=>m.k))===J(['px','py','rect','circle']));
+  ok('MRK_PLANE_MODES is the extensible list: px, py, rect, circle first, then what later work packages push',J(w.MRK_PLANE_MODES.map(m=>m.k).slice(0,4))===J(['px','py','rect','circle'])&&w.MRK_PLANE_MODES.length>=4);
   ok('actions mark.plane / mark.planeBack exist',['mark.plane','mark.planeBack'].every(id=>{const a=w.actionById(id);return a&&a.group==='Jelölés';}));
 
   // 7 — the plane tool with the pointer, the picker tags per plane

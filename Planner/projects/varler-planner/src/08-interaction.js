@@ -315,8 +315,9 @@ function panBy(dx,dy){state.panX+=dx;state.panY+=dy;setTransform();}
 function zoomBy(f){state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));setTransform();}
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();
-    if(typeof stkToolEvent==='function')stkToolEvent('esc',e);   // a stack tool stops on Esc, it never discards data
-    draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();if(state.mode!=='select')setMode('select');draw();return;}
+    draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();
+    if(typeof stkToolEvent==='function')stkToolEvent('esc',e);   // a stack tool stops on Esc (after the dialogs are closed — a finishing tool may open its own); it never discards data
+    if(state.mode!=='select')setMode('select');draw();return;}
   const tag=(e.target&&e.target.tagName)||'';if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return; // don't hijack while typing
   if(typeof stkToolEvent==='function'&&stkToolEvent('key',e))return;
   if(state.lockTouch){ // locked: allow camera keys (WASD/QE/arrows) + undo/redo, block edits (Delete, Ctrl+D, tool keys already harmless)

@@ -321,7 +321,7 @@ function mrkHint(){const mh=$('modeHint');if(!mh)return;
   if(typeof MRK_P!=='undefined'&&MRK_P.on){mh.textContent=mrkPlaneName()+' · g váltja a módot · Tab: padló ↔ mennyezet · + − 0 x polaritás · Shift+húzás = sávszélesség · Esc kilép';return;}
   mh.textContent=MRK_T.on?mrkModeName()+' · j váltja a módot · + − 0 x polaritás · Shift+kattintás = az előző címkékkel · Esc kilép'
                          :(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}
-function mrkToolsOff(){MRK_T.on=false;MRK_DRAG=null;MRK_H=null;if(typeof MRK_P!=='undefined')MRK_P.on=false;mrkHint();}
+function mrkToolsOff(){MRK_T.on=false;MRK_DRAG=null;MRK_H=null;if(typeof trcCancel==='function')trcCancel();if(typeof MRK_P!=='undefined')MRK_P.on=false;mrkHint();}
 function mrkToolStart(mode){if(typeof mrkToolsOff==='function')mrkToolsOff();
   if(state.mode!=='select')setMode('select');
   MRK_T.on=true;if(mode)MRK_T.mode=mode;mrkHint();$('hud').textContent=mrkModeName();draw();}
@@ -558,22 +558,27 @@ function mrkPlaneOverlay(){if(!MRK_P.on)return '';
   return `<g opacity="0.85" pointer-events="none">`+mrkPlaneSvg(m)+`</g>`;}
 function mrkPlaneActive(){if(!MRK_P.on)return false;if(state.mode!=='select'||(typeof WV!=='undefined'&&WV)||(typeof PV!=='undefined'&&PV)){MRK_P.on=false;MRK_PD=null;MRK_PH=null;mrkHint();return false;}return true;}
 STK_TOOLS.push({k:'mrkPlane',active:mrkPlaneActive,
-  down(e){if(e.button!==0||(e.buttons&3)===3)return false;const p=mrkPlanePt(e),mode=MRK_P.mode;
+  down(e){if(typeof trcIsMode==='function'&&trcIsMode(MRK_P.mode))return trcDown(e);          // traces (05o)
+    if(e.button!==0||(e.buttons&3)===3)return false;const p=mrkPlanePt(e),mode=MRK_P.mode;
     const room=(mode==='px'||mode==='py')?mrkRoomAtPt(p.level,p.x,p.y):null;
     if((mode==='px'||mode==='py')&&!room)return false;                               // outside every room: the click pans as usual
     MRK_PD={level:p.level,plane:MRK_P.plane,mode,p0:p,p1:null,room,shift:e.shiftKey};try{stage.setPointerCapture(e.pointerId);}catch(_){}return true;},
-  move(e){const p=mrkPlanePt(e);if(MRK_PD){MRK_PD.p1=p;draw();return true;}
+  move(e){if(typeof trcIsMode==='function'&&trcIsMode(MRK_P.mode))return trcMove(e);
+    const p=mrkPlanePt(e);if(MRK_PD){MRK_PD.p1=p;draw();return true;}
     MRK_PH=p;if(MRK_P.mode==='px'||MRK_P.mode==='py'||MRK_P.mode==='circle')draw();return false;},
-  up(e){const d=MRK_PD;if(!d)return false;MRK_PD=null;d.p1=mrkPlanePt(e);        // the release point counts even if no move event came (touch)
+  up(e){if(typeof trcIsMode==='function'&&trcIsMode(MRK_P.mode))return trcUp(e);
+    const d=MRK_PD;if(!d)return false;MRK_PD=null;d.p1=mrkPlanePt(e);        // the release point counts even if no move event came (touch)
     mrkPlaneCommit(d.level,d.plane,d.mode,d.p0,d.p1,{shift:e.shiftKey||d.shift});draw();return true;},
-  key(e){if(e.ctrlKey||e.metaKey||e.altKey)return false;
+  key(e){if(typeof trcIsMode==='function'&&trcIsMode(MRK_P.mode)&&trcKey(e))return true;      // Enter / Backspace of a 45° line
+    if(e.ctrlKey||e.metaKey||e.altKey)return false;
     if(e.key==='Tab'){e.preventDefault();mrkPlaneToggle();return true;}
     if(e.key==='+'||e.key==='='){mrkSetPol('plus');return true;}
     if(e.key==='-'||e.key==='_'){mrkSetPol('minus');return true;}
     if(e.key==='0'){mrkSetPol('none');return true;}
     if(e.key==='x'||e.key==='X'){mrkSetPol('ban');return true;}
     return false;},
-  esc(e){mrkToolsOff();draw();}});
+  esc(e){if(typeof trcEsc==='function'&&trcEsc())return;      // the first Esc finishes / drops a trace in progress, the next leaves the tool
+    mrkToolsOff();draw();}});
 STK_OVERLAY.push(mrkPlaneOverlay);
 
 // Plane View: the marks of the plane being edited (floor ↔ floor; álmennyezet and ceiling ↔ ceiling), in plan mm
