@@ -4677,7 +4677,7 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
   q('[data-ln]',i=>i.onchange=()=>{lyrPushUndo();layerById(i.dataset.ln).name=i.value;});
   q('[data-sv]',b=>b.onclick=()=>{const p=b.dataset.sv.split(':'),L=lyrLayer(p[0]),v=(L.cats[p[1]]===false);lyrGroupOf(L.id).forEach(x=>{x.cats[p[1]]=v;});renderLayers();draw();});
   q('[data-so]',b=>b.onclick=()=>{const p=b.dataset.so.split(':');lyrStepOp(p[0],p[1],+p[2]);});
-  q('[data-lx]',b=>b.onclick=()=>{const id=b.dataset.lx;layers=layers.filter(l=>l.id!==id);if(state.activeLayer===id)state.activeLayer='L0';renderLayers();draw();});
+  q('[data-lx]',b=>b.onclick=()=>lyrDelete(b.dataset.lx));
   q('.lsub',row=>{
     row.addEventListener('pointerdown',e=>{if((e.button||0)>0||(e.target.closest&&e.target.closest('button')))return;lyrDragArm(e,row);});
     row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();lyrSubMenu(e,row.dataset.sl);});});}
@@ -4774,6 +4774,18 @@ function lyrLockHit(item){const L=layerById((item&&item.layer)||'L0');
 function lyrLockReport(hit){const n=lyrLockName;lyrLockName=null;
   if(!hit&&n)lyrHud('Zárolt réteg: '+n);return hit;}
 
+// ---- delete --------------------------------------------------------------------------------------------
+// The layer goes; its items move to the base layer L0 (they used to keep a dead layer id and only LOOKED like
+// L0's). One undo step brings the layer and the items back. A stack role layer leaves its stack, which is resynced.
+function lyrDelete(id){const L=lyrLayer(id);if(!L||id==='L0')return false;
+  lyrPushUndo();let n=0;const touched=[];
+  lyrEachItem((k,r)=>{if((r.layer||'L0')===id){r.layer='L0';n++;if(k==='walls')touched.push({coll:k,rec:r});}});
+  lyrSnapWalls(touched);
+  layers=layers.filter(l=>l.id!==id);lyrTidyLinks();
+  if(L.stack&&typeof stkById==='function'){const S=stkById(L.stack);if(S)stkSync(S);}
+  if(!layers.some(l=>l.id===state.activeLayer))state.activeLayer='L0';
+  lyrRefresh();lyrHud('Réteg törölve: '+L.name+(n?' — '+n+' elem az Alap rétegre került':''));
+  return true;}
 // ---- duplicate -------------------------------------------------------------------------------------
 function lyrNewId(){let n=Date.now(),id;do{id='L'+n.toString(36);n++;}while(layers.some(l=>l.id===id));return id;}
 // a copy of every item of the layer, fresh ids; links inside the layer are re-pointed at the copies.
@@ -4890,7 +4902,7 @@ window.lyrWrap=lyrWrap;window.lyrWrapFrom=lyrWrapFrom;window.lyrWrapOp=lyrWrapOp
 window.layerShows=layerShows;window.lyrEachItem=lyrEachItem;window.lyrItemsOf=lyrItemsOf;window.lyrCounts=lyrCounts;window.lyrCount=lyrCount;
 window.lyrSwapCat=lyrSwapCat;window.lyrMoveCat=lyrMoveCat;window.lyrSolo=lyrSolo;window.lyrStepOp=lyrStepOp;window.lyrOpOf=lyrOpOf;window.lyrSubMenu=lyrSubMenu;
 window.lyrGroupOf=lyrGroupOf;window.lyrLink=lyrLink;window.lyrUnlink=lyrUnlink;window.lyrToggleLock=lyrToggleLock;window.lyrLockHit=lyrLockHit;window.lyrDuplicate=lyrDuplicate;
-window.lyrMerge=lyrMerge;window.lyrMergeDown=lyrMergeDown;window.lyrMergeLinked=lyrMergeLinked;window.lyrLayerMenu=lyrLayerMenu;
+window.lyrMerge=lyrMerge;window.lyrDelete=lyrDelete;window.lyrMergeDown=lyrMergeDown;window.lyrMergeLinked=lyrMergeLinked;window.lyrLayerMenu=lyrLayerMenu;
 
 // A stack is METADATA over ordinary layers [Q10=A]: each stack layer is a normal layer carrying
 // L.stack (the stack id) and L.role (a STK_ROLES key), so every existing tool keeps working on it.
@@ -5011,7 +5023,7 @@ function stkDissolve(id){const S=stkById(id);if(!S)return false;
   return true;}
 function stkRename(id,name){const S=stkById(id);name=(name||'').trim();if(!S||!name)return false;
   lyrPushUndo();S.name=name;renderLayers();return true;}
-function stkSetPhase(id,ph){const S=stkById(id);if(!S)return false;S.phase=ph===2?2:1;renderLayers();return true;}
+function stkSetPhase(id,ph){const S=stkById(id);if(!S)return false;lyrPushUndo();S.phase=ph===2?2:1;renderLayers();return true;}
 
 // non-construct items on a Szerkezet layer: {n, cats:{cat:count}}
 function stkNonConstruct(layerId){const ok=stkRole('construct').cats,cnt=lyrCounts(layerId),cats={};let n=0;

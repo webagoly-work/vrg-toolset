@@ -126,7 +126,7 @@ function stkDissolve(id){const S=stkById(id);if(!S)return false;
   return true;}
 function stkRename(id,name){const S=stkById(id);name=(name||'').trim();if(!S||!name)return false;
   lyrPushUndo();S.name=name;renderLayers();return true;}
-function stkSetPhase(id,ph){const S=stkById(id);if(!S)return false;S.phase=ph===2?2:1;renderLayers();return true;}
+function stkSetPhase(id,ph){const S=stkById(id);if(!S)return false;lyrPushUndo();S.phase=ph===2?2:1;renderLayers();return true;}
 
 // non-construct items on a Szerkezet layer: {n, cats:{cat:count}}
 function stkNonConstruct(layerId){const ok=stkRole('construct').cats,cnt=lyrCounts(layerId),cats={};let n=0;

@@ -144,6 +144,15 @@ setTimeout(()=>{
   ok('layer.duplicate opens a modal that duplicates the active layer',(function(){w.__state.activeLayer='L0';addDev({ref:'Q'});const n=LY().length;w.actionById('layer.duplicate').run({});$('ldWalls').checked=false;$('mOk').click();return LY().length===n+1;})());
   ok('layer.link opens a checkbox list and links the ticked layers',(function(){w.lyrUnlink('L1');w.__state.activeLayer='L0';w.actionById('layer.link').run({});
     const boxes=[...w.document.querySelectorAll('.llSel')];boxes.forEach(b=>{b.checked=(b.value==='L0'||b.value==='L2');});$('mOk').click();return !!LY().find(l=>l.id==='L0').link&&LY().find(l=>l.id==='L0').link===LY().find(l=>l.id==='L2').link;})());
+  // review 2026-10-07 — deleting a layer is one undo step and leaves no orphan layer ids
+  fresh();addL('L7','Törlendő');const d7=addDev({ref:'D7x',layer:'L7'});w.__getWalls()[lvl].push({x0:0,y0:0,x1:1000,y1:100,layer:'L7'});w.ensureIds(D());w.__state.activeLayer='L7';
+  ok('lyrDelete moves the items to L0 and removes the layer',w.lyrDelete('L7')&&d7.layer==='L0'&&w.__getWalls()[lvl].every(r=>(r.layer||'L0')!=='L7')&&!LY().some(l=>l.id==='L7'));
+  ok('…and the active layer falls back to L0',w.__state.activeLayer==='L0');
+  ok('one undo brings the layer and its items back',(function(){w.doUndo();const back=LY().some(l=>l.id==='L7');const dv=D().devices.find(x=>x.ref==='D7x');return back&&dv&&dv.layer==='L7';})());
+  ok('L0 cannot be deleted',w.lyrDelete('L0')===false);
+  ok('deleting a stack role layer resyncs the stack',(function(){const S=w.stkCreate({name:'T'});const L=w.stkLayer(S.id,'hw');const n=S.layers.length;w.lyrDelete(L.id);
+    return S.layers.length===n-1&&S.layers.indexOf(L.id)<0;})());
+  ok('the ✕ button deletes through lyrDelete (undoable)',(function(){fresh();addL('L8','x');const u=undoLen();const b=w.document.querySelector('[data-lx="L8"]');if(!b)return 'no button';click(b);return !LY().some(l=>l.id==='L8')&&undoLen()===u+1;})());
   ok('reg: draw()',(function(){try{w.draw();return true;}catch(e){return 'ERR '+e.message;}})()===true);
  }catch(e){R.push(['EXCEPTION',false,e.stack.split('\n').slice(0,4).join(' | ')]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x?'   ['+x+']':''));});
