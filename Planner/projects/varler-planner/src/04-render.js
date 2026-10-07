@@ -66,6 +66,7 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
     pushUserRoof(faces,rf,selected&&selected.t==='roofs'&&data.roofs[selected.i]===rf);lyrFaces(faces,n0,rf,'roof');}
   for(const o of data.objects)if(state.levels[o.level]&&layerShows(o,'object')&&soloOk(o.x,o.y,o.level)&&!(isGenObject(o)&&!genObjectsVisible())){const n0=faces.length;
     pushObj(faces,o,selected&&selected.t==='objects'&&data.objects[selected.i]===o);lyrFaces(faces,n0,o,'object');}
+  if(typeof stkBoxes==='function')for(const o of stkBoxes())if(state.levels[o.level]&&soloOk(o.x,o.y,o.level)){const n0=faces.length;pushObj(faces,o,false);lyrFaces(faces,n0,o,'device');}   // derived 3D boxes of stack devices
   pushRefBuildings(faces);
   // Floors are the flat ground plane at z=0 — they never occlude raised solids that rest on them.
   // Painter's algorithm on centroid depth fails when a big floor's centroid is nearer than an object's,
@@ -515,6 +516,7 @@ function devSym(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),x=b[0],y=b[1];
   else if(d.type==='board')sym=`<rect x="${x-R(8)}" y="${y-R(8)}" width="${R(16)}" height="${R(16)}" rx="${R(2)}" fill="#ffe9b0" stroke="${col}" stroke-width="${R(1.7)}"/><text x="${x}" y="${y+R(4)}" font-size="${R(10)}" text-anchor="middle" font-weight="700">T</text>`;
   else if(d.type==='box')sym=`<circle cx="${x}" cy="${y}" r="${R(6)}" fill="${tf(d.lv?'#e6f2ff':'#fff')}" stroke="${col}" stroke-width="${R(1.4)}" stroke-dasharray="${R(2.4)} ${R(1.8)}"/><circle cx="${x}" cy="${y}" r="${R(1.6)}" fill="${col}"/>`;
   else sym=`<rect x="${x-R(5.5)}" y="${y-R(5.5)}" width="${R(11)}" height="${R(11)}" fill="${tf('#fff')}" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><circle cx="${x}" cy="${y}" r="${R(2)}" fill="${col}"/>`;
+  if(typeof stkDevSym==='function'){const st=stkDevSym(d,x,y,k,back);if(st)sym=st;}   // BRIDGE Stack device types (05m hooks)
   sym=wrap(sym);
   if(typeof cktRingSvg==='function')sym=cktRingSvg(d,x,y,k,back)+sym;   // circuit end point ring, under the symbol
   if(d.kind||d.lv){const code=(d.kind&&DEVKIND[d.kind]?DEVKIND[d.kind].s:'LV');

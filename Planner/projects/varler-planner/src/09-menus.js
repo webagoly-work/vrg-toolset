@@ -75,9 +75,9 @@ function setSectionCircuit(pi,si){const sec=data.paths[pi].sections[si]||(data.p
   setTimeout(()=>{const sel=$('cCol'),sw=$('cColSw');if(sel&&sw)sel.onchange=()=>{const f=CIRCUIT_COLORS.find(x=>x.k===sel.value);sw.style.background=f?f.c:'#1f9d55';};},30);}
 function addBoxOnPath(pi,si,t){const pa=data.paths[pi],a=pa.nodes[si],b=pa.nodes[si+1];
   pushUndo();data.devices.push({type:'junction',level:a.level,x:(a.x+b.x*(t||0.5))/(1+(t||0.5))*0+ (a.x+b.x)/2,y:(a.y+b.y)/2});draw();}
-function addParallelPath(pi){const src=data.paths[pi];const clone=JSON.parse(JSON.stringify(src));
-  clone.id='p'+Date.now().toString(36);clone.lane=(src.lane||0)+1;clone.sections=clone.sections.map(s=>({build:s.build,circuit:null}));
-  pushUndo();data.paths.push(clone);draw();}
+function addParallelPath(pi){const src=data.paths[pi];const clone=copyRecord('paths',src);(clone.nodes||[]).forEach(n=>{delete n.id;});   // fresh path AND node ids from data.seq
+  clone.lane=(src.lane||0)+1;clone.sections=clone.sections.map(s=>({build:s.build,circuit:null}));
+  pushUndo();data.paths.push(clone);ensureIds(data);draw();}
 function placeBoardAt(e){const h=BOARD_DEFAULT_Z,w=snapWall(e,state.active,h);let x,y;if(w){x=w.x;y=w.y;}else{const p=baseToPlan(...clientToBase(e),dz(state.active,h));x=p[0];y=p[1];}
   pushUndo();const b={type:'board',level:state.active,x,y,h,z:h,rw:BOARD_RW,rd:BOARD_RD,ang:(w&&w.ang)||0,layer:curLayer(),autoObj:true};
   data.devices.push(b);ensureBoardObject(b);draw();}

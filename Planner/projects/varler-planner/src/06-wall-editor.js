@@ -98,6 +98,7 @@ function chaseSummary(shapes){const grp={},pk={};
 // rectangle overlaid on top when dv.devDef is set. sc = mm→px scale. col = stroke; boxCol = optional per-box fill.
 function wvKindCode(dv){return (dv.kind&&DEVKIND[dv.kind])?DEVKIND[dv.kind].s:(dv.lv?'LV':'');}
 function wvDevBox(dv,x,y,sc,col,back){const r=(DEV_BOX_W/2)*sc;let s='';
+  if(typeof stkWvBox==='function'){const st=stkWvBox(dv,x,y,sc,col,back);if(st)return st;}   // BRIDGE Stack device types (05m hooks)
   const fill=dv.boxColor||'#fff';
   // Kötődoboz: 80mm circle OR rectangle (dv.jbShape)
   if(dv.type==='junction'){const jr=((dv.jbSize||80)/2)*sc;

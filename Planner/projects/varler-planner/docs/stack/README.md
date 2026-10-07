@@ -58,11 +58,11 @@ finished WP is what counts, not per session.
 | B4 | Movement traces: 45° line, freehand, smoothed, door snap | B3 | M | built — 2026-10-07 — uncommitted |
 | B5 | Portal graph: line of sight, 500 mm encoding, heatmap | B4 | M | built — 2026-10-07 — uncommitted |
 | ⏸ | **checkpoint — mark one real floor; do the tags feel right?** | | | |
-| C1 | Hardware nodes: RBX, board, meter, entry, SSC | B2 | M | todo |
-| C2 | RBX room serving + coverage ghost | C1 | M | todo |
-| C3 | RF multi-wall model + RF view | C2 | M | todo |
-| C4 | BASE placement + guideline highlights | C1 | S–M | todo |
-| C5 | Channel routes between hardware nodes | C1, C4 | M | todo |
+| C1 | Hardware nodes: RBX, board, meter, entry, SSC | B2 | M | built + verified — 2026-10-07 — main session (spec-40) |
+| C2 | RBX room serving + coverage ghost | C1 | M | built + verified — 2026-10-07 — main session (spec-40) |
+| C3 | RF multi-wall model + RF view | C2 | M | built + verified — 2026-10-07 — main session (spec-42) |
+| C4 | BASE placement + guideline highlights | C1 | S–M | built + verified — 2026-10-07 — main session (spec-40) |
+| C5 | Channel routes between hardware nodes | C1, C4 | M | built + verified — 2026-10-07 — main session (spec-44) |
 | ⏸ | **checkpoint — phase 1 of a stack end to end** | | | |
 | D1 | Endpoint catalogue (BRIDGE codes) | B1 | M | todo |
 | D2 | Room needs checklists | D1, B3 | M | todo |

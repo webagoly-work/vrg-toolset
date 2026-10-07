@@ -1443,6 +1443,7 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
     pushUserRoof(faces,rf,selected&&selected.t==='roofs'&&data.roofs[selected.i]===rf);lyrFaces(faces,n0,rf,'roof');}
   for(const o of data.objects)if(state.levels[o.level]&&layerShows(o,'object')&&soloOk(o.x,o.y,o.level)&&!(isGenObject(o)&&!genObjectsVisible())){const n0=faces.length;
     pushObj(faces,o,selected&&selected.t==='objects'&&data.objects[selected.i]===o);lyrFaces(faces,n0,o,'object');}
+  if(typeof stkBoxes==='function')for(const o of stkBoxes())if(state.levels[o.level]&&soloOk(o.x,o.y,o.level)){const n0=faces.length;pushObj(faces,o,false);lyrFaces(faces,n0,o,'device');}   // derived 3D boxes of stack devices
   pushRefBuildings(faces);
   // Floors are the flat ground plane at z=0 — they never occlude raised solids that rest on them.
   // Painter's algorithm on centroid depth fails when a big floor's centroid is nearer than an object's,
@@ -1892,6 +1893,7 @@ function devSym(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),x=b[0],y=b[1];
   else if(d.type==='board')sym=`<rect x="${x-R(8)}" y="${y-R(8)}" width="${R(16)}" height="${R(16)}" rx="${R(2)}" fill="#ffe9b0" stroke="${col}" stroke-width="${R(1.7)}"/><text x="${x}" y="${y+R(4)}" font-size="${R(10)}" text-anchor="middle" font-weight="700">T</text>`;
   else if(d.type==='box')sym=`<circle cx="${x}" cy="${y}" r="${R(6)}" fill="${tf(d.lv?'#e6f2ff':'#fff')}" stroke="${col}" stroke-width="${R(1.4)}" stroke-dasharray="${R(2.4)} ${R(1.8)}"/><circle cx="${x}" cy="${y}" r="${R(1.6)}" fill="${col}"/>`;
   else sym=`<rect x="${x-R(5.5)}" y="${y-R(5.5)}" width="${R(11)}" height="${R(11)}" fill="${tf('#fff')}" stroke="${col}" stroke-width="${R(1.5)}" ${dash}/><circle cx="${x}" cy="${y}" r="${R(2)}" fill="${col}"/>`;
+  if(typeof stkDevSym==='function'){const st=stkDevSym(d,x,y,k,back);if(st)sym=st;}   // BRIDGE Stack device types (05m hooks)
   sym=wrap(sym);
   if(typeof cktRingSvg==='function')sym=cktRingSvg(d,x,y,k,back)+sym;   // circuit end point ring, under the symbol
   if(d.kind||d.lv){const code=(d.kind&&DEVKIND[d.kind]?DEVKIND[d.kind].s:'LV');
@@ -4939,7 +4941,7 @@ function stkGroupsOf(roleKey){return STK_GROUPS[roleKey]||(roleKey.indexOf('sys:
 // ---- shared hooks: the only render / pointer edits any later stack work package needs ----
 const STK_SCENE=[];    // fn() → svg string, appended to the SCENE (persisted drawing: marks, traces, zones)
 const STK_OVERLAY=[];  // fn() → svg string, appended to the OVERLAY (ghosts, coverage, pick highlights)
-const STK_TOOLS=[];    // {k, active()→bool, down(e)?, move(e)?, up(e)?, key(e)?, esc(e)?} — first active tool that returns true eats the event
+const STK_TOOLS=[];    // {k, active()→bool, down(e)?, move(e)?, up(e)?, key(e)?, esc(e)?, mode({mode})? — told before setMode switches} — first active tool that returns true eats the event
 const STK_CTX=[];      // fn(e) → [{label,act}…] or null — first non-empty wins the stage right-click
 const STK_WV=[];       // fn(WV) → svg in Wall View elevation coords (u,v mm) — B2 adds the anchor in 06
 const STK_PV=[];       // fn(PV) → svg in Plane View coords — B3 adds the anchor in 07
@@ -4947,6 +4949,22 @@ const STK_CHECKS={};   // roleKey → [fn(stack) → [{sev,msg}]]
 function stkHookSvg(list,arg){let s='';for(const f of (list||[])){try{s+=f(arg)||'';}catch(_){}}return s;}   // arg: the view's own context (STK_WV gets the elevation scales)
 function stkToolEvent(ph,e){for(const t of STK_TOOLS){try{if(t.active()&&t[ph]&&t[ph](e))return true;}catch(_){}}return false;}
 function stkCtxItems(e){for(const f of STK_CTX){try{const r=f(e);if(r&&r.length)return r;}catch(_){}}return null;}
+// extensions of the EXISTING right-click menus (they add items, they never replace the menu):
+const STK_DEVMENU=[];   // fn(di, items) — the device menu (10-lamps deviceExtraItems)
+const STK_PATHMENU=[];  // fn(ps={pi,si}, items) — the route-section menu
+const STK_ROOMMENU=[];  // fn(rh={rm,src,i,level}, items) — the room menu
+function stkMenuHook(list,a,items){for(const f of list){try{f(a,items);}catch(_){}}return items;}
+function stkDevMenu(di,items){return stkMenuHook(STK_DEVMENU,di,items);}
+function stkPathMenu(ps,items){return stkMenuHook(STK_PATHMENU,ps,items);}
+function stkRoomMenu(rh,items){return stkMenuHook(STK_ROOMMENU,rh,items);}
+// device symbols and 3D boxes of the stack's own device types (hardware nodes, endpoints)
+const STK_DEVSYM=[];   // fn(d,x,y,k,back) → svg | null — the plan symbol (first non-null wins)
+const STK_WVBOX=[];    // fn(dv,x,y,sc,col,back) → svg | null — the Wall View / Plane View box
+const STK_BOXES=[];    // fn() → [object-like {level,x,y,z,w,d,ht,ang,color,layer}] — 3D boxes, derived at draw time
+function stkFirst(list,args){for(const f of list){try{const r=f.apply(null,args);if(r)return r;}catch(_){}}return null;}
+function stkDevSym(d,x,y,k,back){return stkFirst(STK_DEVSYM,[d,x,y,k,back]);}
+function stkWvBox(dv,x,y,sc,col,back){return stkFirst(STK_WVBOX,[dv,x,y,sc,col,back]);}
+function stkBoxes(){const out=[];for(const f of STK_BOXES){try{(f()||[]).forEach(o=>out.push(o));}catch(_){}}return out;}
 
 // ---- model ----
 function stkById(id){return id?stacks.find(s=>s.id===id)||null:null;}
@@ -5136,6 +5154,8 @@ window.stkCreate=stkCreate;window.stkAdopt=stkAdopt;window.stkDissolve=stkDissol
 window.stkStages=stkStages;window.stkCheck=stkCheck;window.stkGroupsOf=stkGroupsOf;window.stkLeave=stkLeave;window.stkActivate=stkActivate;
 window.stkNonConstruct=stkNonConstruct;window.stkMoveNonConstruct=stkMoveNonConstruct;window.stkHookSvg=stkHookSvg;window.stkToolEvent=stkToolEvent;
 window.stkCtxItems=stkCtxItems;window.stkMenu=stkMenu;window.stkSetPhase=stkSetPhase;
+window.STK_DEVMENU=STK_DEVMENU;window.STK_PATHMENU=STK_PATHMENU;window.STK_ROOMMENU=STK_ROOMMENU;window.STK_DEVSYM=STK_DEVSYM;window.STK_WVBOX=STK_WVBOX;window.STK_BOXES=STK_BOXES;
+window.stkDevMenu=stkDevMenu;window.stkPathMenu=stkPathMenu;window.stkRoomMenu=stkRoomMenu;window.stkDevSym=stkDevSym;window.stkWvBox=stkWvBox;window.stkBoxes=stkBoxes;
 
 // Marks are CONSTRAINTS and INTENTIONS the later layers read: wall materials feed the RF model, strips
 // attract placement, `ban` marks raise warnings on routes. They are stored in data.marks (record shapes:
@@ -6077,6 +6097,638 @@ window.trcSceneSvg=trcSceneSvg;window.trcHit=trcHit;window.trcMenu=trcMenu;windo
 window.trcReattach=trcReattach;window.trcIsMode=trcIsMode;window.trcCancel=trcCancel;window.trcAlong=trcAlong;window.trcLen=trcLen;
 window.prtSegInPoly=prtSegInPoly;window.prtGrid=prtGrid;window.prtAStar=prtAStar;window.prtFrame=prtFrame;window.prtToFrame=prtToFrame;window.prtBearing=prtBearing;
 window.prtGraph=prtGraph;window.prtResample=prtResample;window.prtOverlaySvg=prtOverlaySvg;
+
+// Hardware nodes are DEVICES with their own `type` (rbx, base, meter, entry, ssc; the Elosztószekrény is the
+// existing `board`), so they inherit placement, room membership, links to routes, ids and undo.
+//   rbx  {rb:'RB-M', serves:null|[roomId…], radios:['thread',…]}   serves null = automatic (C2)
+//   base {units:['NET','COMP','MEDIA']}                              any non-empty subset (C4)
+// A device sits on the FACE of its wall (x,y = the face point, side = which face), so deviceHostWall (05h)
+// and the Wall View agree on the side. Its 3D box is DERIVED at draw time (STK_BOXES) — never stored, so it
+// can never go stale when the device moves. Prefix: hw.
+
+const HW_TYPES={rbx:'RoomBox (RBX)',base:'BASE',meter:'Mérőóra',entry:'Adatbelépési pont',ssc:'Biztonsági központ (SSC)'};
+// RoomBox classes, w × h × d mm (Outline §3). RB-E is its own class family; sized as RB-M until STD-001 fixes it.
+const HW_RB={'RB-M':[400,500,110],'RB-L':[500,600,110],'RB-H':[600,600,120],'RB-E':[400,500,110],'RB-O':[400,500,150],'RB-S':[300,400,110]};
+const HW_RB_DEF='RB-M';
+const HW_BASE_UNITS={NET:{n:'NET — kommunikáció',c:'#3b82c4'},COMP:{n:'COMP — koordinátor',c:'#3fa36b'},MEDIA:{n:'MEDIA — tárolás, streamek',c:'#c2638a'}};
+const HW_UNIT_ORDER=['NET','COMP','MEDIA'];
+const HW_BASE_SIZE=[600,1800,400];   /*r*/ // one column, units stacked; the real size comes from the joinery design
+// per type: default centre height (mm), plan label, body colour, the stack role whose layer it goes on,
+// the vertical-strip tag it is attracted to (05n), and a size for the types without a class table
+const HW_DEF={
+ rbx:  {h:2150,lbl:'RBX', col:'#c9d6e3',role:'hw',  strip:'rbx'},   // STD-001-A1: bottom ≥ 1.90 m → RB-M centred at 2150 spans 1900–2400
+ board:{h:2000,lbl:'EL',  col:'#ffe9b0',role:'hw',  strip:'elo'},
+ meter:{h:1500,lbl:'kWh', col:'#d8d2c4',role:'hw',  size:[300,450,150]},   /*r*/
+ entry:{h:300, lbl:'ISP', col:'#cfe3d4',role:'hw',  size:[200,300,100]},   /*r*/
+ ssc:  {h:1800,lbl:'SSC', col:'#e3cfcf',role:'hw',  strip:'ssc',size:[400,500,120]},   /*r*/
+ base: {h:900, lbl:'BASE',col:'#dfe6ef',role:'base',strip:'base'}};
+// guidance shown while placing BASE (C4). sev = what a violation raises. mm values reasoned, not measured.
+const HW_BASE_RULES=[
+ {k:'dry',    sev:'error',n:'BASE nem kerülhet nedves / vizes helyiségbe.'},
+ {k:'board',  sev:'warn', n:'BASE az Elosztószekrény közelében: PANEL LINK + 2–3 rendszerkör. Javasolt ≤ 8 m.', mm:8000},
+ {k:'entry',  sev:'info', n:'NET az adatbelépési pont közelében (≤ 10 m).', mm:10000},
+ {k:'column', sev:'warn', n:'NET · COMP · MEDIA egy oszlopban (≤ 1 m), hacsak nem szándékosan osztott (LAYER TIE).', mm:1000},
+ {k:'centre', sev:'info', n:'A szint közepéhez közel: jobb rádiós lefedettség és UWB/BLE helymeghatározás.'},
+ {k:'strip',  sev:'info', n:'Jelölt „BASE helye” sávban.'},
+ {k:'cat6a',  sev:'error',n:'Minden RBX ≤ 90 m Cat6A nyomvonalon (állandó link, ISO/IEC 11801).', mm:90000}];
+Object.assign(DEV,HW_TYPES);            // DEV (02-state) names device types everywhere — an earlier const, safe at load
+
+// ---- records ---------------------------------------------------------------------------------------------------
+function hwIs(d){return !!(d&&HW_TYPES[d.type]);}
+function hwList(type,level){return data.devices.filter(d=>d&&(type?d.type===type:(hwIs(d)||d.type==='board'))&&(!level||d.level===level));}
+function hwDefRadios(){return (typeof RF_RBX_RADIOS!=='undefined')?RF_RBX_RADIOS.slice():['thread','ble','espnow'];}   // 05q may be absent
+function hwUnits(d){return (d&&Array.isArray(d.units)&&d.units.length)?HW_UNIT_ORDER.filter(u=>d.units.indexOf(u)>=0):HW_UNIT_ORDER.slice();}
+// {w, ht, dp} — width along the wall, height, depth into the wall
+function hwSize(d){
+  if(d.type==='rbx'){const s=HW_RB[d.rb]||HW_RB[HW_RB_DEF];return {w:s[0],ht:s[1],dp:s[2]};}
+  if(d.type==='base'){const n=hwUnits(d).length;return {w:HW_BASE_SIZE[0],ht:Math.max(600,Math.round(HW_BASE_SIZE[1]*n/3)),dp:HW_BASE_SIZE[2]};}
+  if(d.type==='board')return {w:d.rw||BOARD_RW,ht:800,dp:d.rd||BOARD_RD};
+  const s=(HW_DEF[d.type]||{}).size||[300,300,100];return {w:s[0],ht:s[1],dp:s[2]};}
+function hwDefH(type,units){if(type==='base')return Math.round(hwSize({type,units}).ht/2);   // stands on the floor
+  return (HW_DEF[type]||{h:1500}).h;}
+// the wall a device sits on — {r, wi, px, py, nx, ny} (05h), or null when it stands free
+function hwHost(d){return (typeof deviceHostWall==='function'&&d&&d.side!=null)?deviceHostWall(d):null;}
+// where the body is in plan: centre, angle, the face normal it looks along. A wall box is recessed with its front
+// 10 mm proud of the face (a RoomBox lives IN the wall); a free-standing one is centred on its point.
+function hwFrame(d){const S=hwSize(d),h=hwHost(d);
+  if(!h)return {cx:d.x,cy:d.y,ang:d.ang||0,n:null,S,host:null};
+  const fx=h.px+h.nx*h.wi.thick/2,fy=h.py+h.ny*h.wi.thick/2,k=10-S.dp/2;
+  return {cx:fx+h.nx*k,cy:fy+h.ny*k,ang:h.wi.horiz?0:Math.PI/2,n:[h.nx,h.ny],S,host:h};}
+// the 3D box of a device: object-shaped, so pushObj (04-render) draws it
+function hwBox(d){const F=hwFrame(d);
+  return {level:d.level,x:F.cx,y:F.cy,z:Math.max(0,(d.h||0)-F.S.ht/2),w:F.S.w,d:F.S.dp,ht:F.S.ht,ang:F.ang,
+    color:(HW_DEF[d.type]||{}).col||'#ccc',layer:d.layer,name:HW_TYPES[d.type]||d.type,hwFor:d.id};}
+function hwFootprint(d,z){const F=hwFrame(d),c=Math.cos(F.ang),s=Math.sin(F.ang),hw=F.S.w/2,hd=F.S.dp/2;
+  const P=(u,v)=>[F.cx+c*u-s*v,F.cy+s*u+c*v,z];return [P(-hw,-hd),P(hw,-hd),P(hw,hd),P(-hw,hd)];}
+// the room number a box is keyed to (STD-004: boxes keyed to their room) — the last digit group of num
+function hwRoomNo(roomId){const e=mrkRoomById(roomId),num=e&&e.rm.num?String(e.rm.num):'';const m=/(\d+)\D*$/.exec(num);
+  return m?(m[1].length<2?'0'+m[1]:m[1]):null;}
+function hwRef(d){
+  if(d.type==='rbx'){const own=hwAutoServes(d)[0],no=own?hwRoomNo(own):null;
+    let base='RBX'+(no||String(hwList('rbx').indexOf(d)+1).padStart(2,'0')),ref=base,k=0;
+    while(hwList('rbx').some(x=>x!==d&&x.ref===ref))ref=base+String.fromCharCode(98+(k++));   // RBX03, RBX03b …
+    return ref;}
+  const pre={base:'BASE',meter:'MÉRŐ',entry:'ISP',ssc:'SSC'}[d.type]||d.type.toUpperCase();
+  const n=hwList(d.type).filter(x=>x!==d).length;return n?pre+(n+1):pre;}
+
+// ---- symbols: plan, Wall View, 3D ------------------------------------------------------------------------------------
+function hwSymbol(d,x,y,k,back){if(!hwIs(d))return null;
+  const z=dz(d.level,d.h||0),F=hwFrame(d),col=back?'#9299a0':'#222',def=HW_DEF[d.type],c=planToBase(F.cx,F.cy,z);
+  const lbl=d.type==='base'?hwUnits(d).map(u=>u[0]).join('·'):def.lbl,R=v=>+(v*k).toFixed(2);
+  let s=`<polygon points="${p2b(hwFootprint(d,z))}" fill="${def.col}" stroke="${col}" stroke-width="${R(1.6)}"/>`;
+  s+=`<text x="${c[0].toFixed(1)}" y="${(c[1]+R(3.5)).toFixed(1)}" font-size="${R(10)}" text-anchor="middle" font-weight="700" fill="${col}">${esc(lbl)}</text>`;
+  if(d.type==='rbx')s+=`<text x="${c[0].toFixed(1)}" y="${(c[1]+R(13)).toFixed(1)}" font-size="${R(7.5)}" text-anchor="middle" fill="${col}">${esc(d.rb||HW_RB_DEF)}</text>`;
+  return s;}
+STK_DEVSYM.push(hwSymbol);
+// Wall View / Plane View: the real body, centred on the device's height
+function hwWvBox(dv,x,y,sc,col,back){const d=data.devices[dv.di];if(!hwIs(d))return null;
+  const S=hwSize(d),w=S.w*sc,h=S.ht*sc,def=HW_DEF[d.type];
+  let s=`<rect x="${(x-w/2).toFixed(1)}" y="${(y-h/2).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${back?'#eef0f2':def.col}" stroke="${col}" stroke-width="1.4"${back?' stroke-dasharray="4 3"':''}/>`;
+  if(d.type==='base'){const us=hwUnits(d),bh=h/us.length;us.forEach((u,i)=>{
+    s+=`<rect x="${(x-w/2).toFixed(1)}" y="${(y-h/2+i*bh).toFixed(1)}" width="${w.toFixed(1)}" height="${bh.toFixed(1)}" fill="${HW_BASE_UNITS[u].c}" fill-opacity="0.25" stroke="none"/>`
+      +`<text x="${x.toFixed(1)}" y="${(y-h/2+i*bh+bh/2+3).toFixed(1)}" font-size="9" text-anchor="middle" fill="${col}">${u}</text>`;});}
+  else s+=`<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="10" text-anchor="middle" font-weight="700" fill="${col}">${esc(def.lbl)}</text>`;
+  if(d.type==='rbx')s+=`<text x="${x.toFixed(1)}" y="${(y+14).toFixed(1)}" font-size="8" text-anchor="middle" fill="${col}">${esc(d.rb||HW_RB_DEF)}</text>`;
+  return s;}
+STK_WVBOX.push(hwWvBox);
+STK_BOXES.push(()=>hwList().filter(d=>hwIs(d)&&layerShows(d,'device')).map(hwBox));
+
+// ---- room serving (C2) -------------------------------------------------------------------------------------------------
+// the rooms on the two faces of the box's wall, front first [Q21=A: both faces]; a free-standing box: its own room
+function hwAutoServes(d){const h=hwHost(d);
+  if(!h){const r=(typeof roomOfDevice==='function')?roomOfDevice(d):null;return r&&stkRoomId(r)?[stkRoomId(r)]:[];}
+  const side=Math.sign(h.nx*h.wi.perp[0]+h.ny*h.wi.perp[1])||1,u=mrkU(h.r,d.x,d.y),out=[];
+  [side,-side].forEach(s=>{const e=mrkRoomOfFace(d.level,h.r,s,u),id=e&&stkRoomId(e);if(id&&out.indexOf(id)<0)out.push(id);});
+  return out;}
+// every room has exactly ONE RoomBox [Q22=A]. Claims are ranked: a manual list (d.serves) first, then the room a box
+// faces, then the room behind its wall; ties go to the lower id. `dup` lists rooms two equal-rank claims fight over.
+function hwServeMap(){const claims={};
+  const add=(rid,d,p)=>{if(!rid)return;(claims[rid]=claims[rid]||[]).push({d,p});};
+  hwList('rbx').forEach(d=>{if(Array.isArray(d.serves))d.serves.forEach(r=>add(r,d,0));else hwAutoServes(d).forEach((r,i)=>add(r,d,i===0?1:2));});
+  const own={},dup={};
+  Object.keys(claims).forEach(r=>{const c=claims[r].sort((a,b)=>a.p-b.p||prtIdCmp(a.d.id||'',b.d.id||''));own[r]=c[0].d;
+    const top=c.filter(x=>x.p===c[0].p);if(top.length>1)dup[r]=top.map(x=>x.d);});
+  return {own,dup};}
+function hwServes(d){const M=hwServeMap();return Object.keys(M.own).filter(r=>M.own[r]===d&&mrkRoomById(r)).sort(prtIdCmp);}
+function hwRoomRbx(roomId){return hwServeMap().own[roomId]||null;}
+function hwUnserved(level){const own=hwServeMap().own;return stkRooms(level).filter(r=>r.id&&!own[r.id]);}
+
+// pick mode: clicks on rooms toggle them in the box's own list
+let HW_SP=null;                                       // {id: rbx device id, pushed}
+function hwServePick(d){if(!d||d.type!=='rbx')return;if(state.mode!=='select')setMode('select');
+  if(typeof mrkToolsOff==='function')mrkToolsOff();HW_T.on=false;
+  HW_SP={id:d.id,pushed:false};lyrHud('Helyiségek hozzárendelése: '+(d.ref||d.id)+' — kattints a helyiségekre · Enter / Esc: kész');draw();}
+function hwServeToggle(rid){const d=byId('devices',HW_SP&&HW_SP.id);if(!d||!rid)return false;
+  if(!HW_SP.pushed){pushUndo(['devices']);HW_SP.pushed=true;}
+  if(!Array.isArray(d.serves))d.serves=hwServes(d).slice();
+  const i=d.serves.indexOf(rid);
+  if(i>=0){d.serves.splice(i,1);lyrHud('Levéve: '+hwRoomLabel(rid));draw();return true;}
+  const other=hwRoomRbx(rid);
+  if(other&&other!==d){if(!confirm(hwRoomLabel(rid)+' jelenleg: '+(other.ref||other.id)+'. Átteszed ide?'))return false;
+    other.serves=hwServes(other).filter(x=>x!==rid);}
+  d.serves.push(rid);lyrHud('Hozzáadva: '+hwRoomLabel(rid));draw();return true;}
+function hwRoomLabel(rid){const e=mrkRoomById(rid);return e?((e.rm.num?e.rm.num+' ':'')+(e.rm.name||rid)):rid;}
+STK_TOOLS.push({k:'hwServe',active:()=>{if(!HW_SP)return false;if(state.mode!=='select'||!byId('devices',HW_SP.id)){HW_SP=null;return false;}return true;},
+  down(e){if(e.button!==0)return false;const rh=roomHitAt(e);if(!rh)return false;hwServeToggle(stkRoomId(rh));return true;},
+  key(e){if(e.key==='Enter'){HW_SP=null;lyrHud('Hozzárendelés kész.');draw();return true;}return false;},
+  esc(){HW_SP=null;draw();}});
+
+// ---- the placement tool (C1) ----------------------------------------------------------------------------------------------
+let HW_T={on:false,type:'rbx',rb:HW_RB_DEF,units:HW_UNIT_ORDER.slice(),g:null};
+// the nearest visible wall within 16 px at height h, the face the pointer is on, the position along it
+function hwPick(e,h){const level=state.active,[bx,by]=clientToBase(e),zz=dz(level,h||0);let best=null,bd=16/state.zoom;
+  (WALLS[level]||[]).forEach(r=>{if(!r||!r.id||!layerShows(r,'wall'))return;const w=wallDist(r,bx,by,zz);if(w.d<bd){bd=w.d;best=r;}});
+  if(!best)return null;
+  const p=baseToPlan(bx,by,zz),wi=wallInfo(best),a=wi.seg[0],off=(p[0]-a[0])*wi.perp[0]+(p[1]-a[1])*wi.perp[1];
+  return {level,r:best,id:best.id,u:mrkU(best,p[0],p[1]),side:off>=0?1:-1};}
+// the ghost of what a click would place. A box is attracted to a vertical strip carrying its tag within 400 mm along
+// the same face; a `ban` mark under it turns it red (placement is still allowed — the check warns).
+function hwGhost(e){const t=HW_T.type,h=hwDefH(t,HW_T.units),pk=hwPick(e,h);
+  if(!pk){if(t!=='base')return null;                     // a BASE column may stand free in a room
+    const [bx,by]=clientToBase(e),p=baseToPlan(bx,by,dz(state.active,0));
+    return {type:t,level:state.active,x:Math.round(p[0]),y:Math.round(p[1]),free:true,h,ban:[],snapped:false};}
+  return hwGhostFrom(pk,t,h);}
+// the same from a plan point (scripts, tests): the nearest visible wall within `tol` mm
+function hwPickPlan(level,x,y,tol){let best=null,bd=tol||400;
+  (WALLS[level]||[]).forEach(r=>{if(!r||!r.id||!layerShows(r,'wall'))return;const wi=wallInfo(r),a=wi.seg[0],b=wi.seg[1],nr=nearestOnSegPlain(x,y,a[0],a[1],b[0],b[1]);
+    if(nr.d<bd){bd=nr.d;best=r;}});
+  if(!best)return null;const wi=wallInfo(best),a=wi.seg[0],off=(x-a[0])*wi.perp[0]+(y-a[1])*wi.perp[1];
+  return {level,r:best,id:best.id,u:mrkU(best,x,y),side:off>=0?1:-1};}
+function hwGhostAt(type,level,x,y){const h=hwDefH(type,HW_T.units),pk=hwPickPlan(level,x,y);
+  if(!pk)return type==='base'?{type,level,x:Math.round(x),y:Math.round(y),free:true,h,ban:[],snapped:false}:null;
+  return hwGhostFrom(pk,type,h);}
+function hwGhostFrom(pk,t,h){const def=HW_DEF[t];
+  let u=pk.u,snapped=false;
+  if(def.strip&&typeof mrkList==='function'){let best=null,bd=400;
+    mrkList().forEach(m=>{if(m.kind!=='vstrip'||m.level!==pk.level||m.wall!==pk.id||m.side!==pk.side||(m.tags||[]).indexOf(def.strip)<0)return;
+      const c=(m.u0+m.u1)/2,dd=Math.abs(c-u);if(dd<bd){bd=dd;best=c;}});
+    if(best!=null){u=best;snapped=true;}}
+  u=Math.round(Math.max(0,Math.min(mrkWallLen(pk.r),u)));
+  const onCentre=t==='board',p=mrkFacePt(pk.r,pk.side,u,onCentre?-wallInfo(pk.r).thick/2:0);      // the board keeps its centreline convention
+  const ban=(typeof mrkAt==='function')?mrkAt(pk.level,pk.id,pk.side,u,h).filter(x=>x.pol==='ban'):[];
+  return {type:t,level:pk.level,x:Math.round(p[0]),y:Math.round(p[1]),side:pk.side>0?1:0,wall:pk.id,u,h,
+    ang:wallInfo(pk.r).horiz?0:Math.PI/2,snapped,ban};}
+// the device a ghost turns into (not yet in data)
+function hwFromGhost(g){const t=g.type,S=(typeof stkActive==='function')?stkActive():null,L=S?stkLayer(S.id,HW_DEF[t].role):null;
+  const d={type:t,level:g.level,x:g.x,y:g.y,h:g.h,layer:L?L.id:state.activeLayer};
+  if(!g.free)d.side=g.side;
+  if(t==='rbx'){d.rb=HW_T.rb;d.serves=null;d.radios=hwDefRadios();}
+  if(t==='base'){d.units=HW_T.units.slice();d.h=hwDefH('base',d.units);}
+  if(t==='board'){Object.assign(d,{h:BOARD_DEFAULT_Z,z:BOARD_DEFAULT_Z,rw:BOARD_RW,rd:BOARD_RD,ang:g.ang||0,autoObj:true});delete d.side;}
+  return d;}
+function hwPlace(g){if(!g)return null;const d=hwFromGhost(g);
+  pushUndo(['devices','objects']);data.devices.push(d);ensureIds(data);
+  if(d.type==='board'){if(typeof ensureBoardObject==='function')ensureBoardObject(d);if(!d.ref)d.ref='EL'+(hwList('board').length>1?hwList('board').length:'1');}
+  else d.ref=hwRef(d);
+  draw();
+  lyrHud((HW_TYPES[d.type]||DEV[d.type]||d.type)+' elhelyezve: '+d.ref+(g.ban&&g.ban.length?' — figyelem: tilos zóna ('+g.ban.map(b=>(b.tags||[]).join(',')||'⛔').join('; ')+')':''));
+  return d;}
+function hwToolStart(type){if(typeof mrkToolsOff==='function')mrkToolsOff();HW_SP=null;
+  if(state.mode!=='select')setMode('select');
+  if(type==='base'){hwBaseUnitPicker(units=>{Object.assign(HW_T,{on:true,type,units,g:null});hwHint();draw();});return;}
+  HW_T.on=true;HW_T.type=type;HW_T.g=null;hwHint();draw();}
+function hwHint(){const mh=$('modeHint');if(!mh)return;
+  mh.textContent=HW_T.on?((HW_TYPES[HW_T.type]||'Elosztószekrény')+' elhelyezése'+(HW_T.type==='rbx'?' · '+HW_T.rb+' · Tab: osztály':'')
+    +(HW_T.type==='base'?' · '+HW_T.units.join(' + '):'')+' · Esc kilép'):(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}
+function hwToolOff(){HW_T.on=false;HW_T.g=null;hwHint();}
+STK_TOOLS.push({k:'hwPlace',active:()=>{if(!HW_T.on)return false;if(state.mode!=='select'||(typeof WV!=='undefined'&&WV)){hwToolOff();return false;}return true;},
+  down(e){if(e.button!==0)return false;const g=hwGhost(e);if(!g)return false;HW_T.g=g;hwPlace(g);return true;},
+  move(e){HW_T.g=hwGhost(e);draw();return false;},
+  key(e){if(e.key==='Tab'&&HW_T.type==='rbx'){e.preventDefault();const ks=Object.keys(HW_RB),i=ks.indexOf(HW_T.rb);
+    HW_T.rb=ks[(i+(e.shiftKey?ks.length-1:1))%ks.length];hwHint();lyrHud('RB osztály: '+HW_T.rb+' ('+HW_RB[HW_T.rb].join(' × ')+' mm)');draw();return true;}
+    return false;},
+  esc(){hwToolOff();draw();}});
+
+// ---- overlay: the ghost, its coverage, guidance ------------------------------------------------------------------------------
+function hwRoomPolyId(rid){const e=mrkRoomById(rid);return e?e.rm.poly:null;}
+// direct coverage: the served rooms tinted, and a half-disc field on each face that has a room, clipped to it
+function hwCoverageSvg(d,rooms,tag){const z=dz(d.level,0);let s='';
+  rooms.forEach((rid,i)=>{const poly=hwRoomPolyId(rid);if(!poly)return;
+    s+=`<polygon points="${p2b(poly.map(p=>[p[0],p[1],z]))}" fill="#3b82c4" fill-opacity="0.10" stroke="#3b82c4" stroke-width="0.5"/>`;
+    const h=hwHost(d);if(!h)return;
+    const side=Math.sign(h.nx*h.wi.perp[0]+h.ny*h.wi.perp[1])||1,u=mrkU(h.r,d.x,d.y);
+    [side,-side].forEach(sg=>{const e=mrkRoomOfFace(d.level,h.r,sg,u);if(!e||stkRoomId(e)!==rid)return;
+      const bb=polyBBox(poly),R=Math.min(3000,Math.hypot(bb.x1-bb.x0,bb.y1-bb.y0)/2),f=mrkFacePt(h.r,sg,u,0);
+      const nx=h.wi.perp[0]*sg,ny=h.wi.perp[1]*sg,a0=Math.atan2(ny,nx),pts=[[f[0],f[1],z]];
+      for(let k=0;k<=24;k++){const a=a0-Math.PI/2+k*Math.PI/24;pts.push([f[0]+Math.cos(a)*R,f[1]+Math.sin(a)*R,z]);}
+      const id='hwcv-'+tag+'-'+i+'-'+(sg>0?'p':'n');
+      s+=`<clipPath id="${id}"><polygon points="${p2b(poly.map(p=>[p[0],p[1],z]))}"/></clipPath>`
+        +`<g clip-path="url(#${id})"><polygon points="${p2b(pts)}" fill="#3b82c4" fill-opacity="0.16" stroke="none"/></g>`;});});
+  return s;}
+function hwUnservedSvg(level){const z=dz(level,0);const us=hwUnserved(level);if(!us.length)return '';
+  return `<defs><pattern id="hwhatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#c8372d" stroke-width="1.2"/></pattern></defs>`
+    +us.map(r=>`<polygon points="${p2b(r.poly.map(p=>[p[0],p[1],z]))}" fill="url(#hwhatch)" fill-opacity="0.25" stroke="none"/>`).join('');}
+function hwStageIs(role){const S=(typeof stkActive==='function')?stkActive():null;if(!S)return false;
+  const L=lyrLayer(state.activeLayer);return !!(L&&L.stack===S.id&&L.role===role);}
+function hwOverlaySvg(){let s='';const level=state.active;
+  if(hwStageIs('hw'))s+=hwUnservedSvg(level);
+  // the selected RBX (or the one being assigned) shows what it covers
+  const sd=HW_SP?byId('devices',HW_SP.id):((typeof selected!=='undefined'&&selected&&selected.t==='devices')?data.devices[selected.i]:null);
+  if(sd&&sd.type==='rbx'&&state.levels[sd.level]){s+=hwCoverageSvg(sd,hwServes(sd),'sel');
+    if(state.hwCloud&&typeof rfCoverageSvg==='function')s+=rfCoverageSvg([sd]);}
+  if(sd&&sd.type==='base'&&state.levels[sd.level])s+=hwBaseGuideSvg(sd);
+  const g=HW_T.on?HW_T.g:null;
+  if(g){const d=hwFromGhost(g);d.id='ghost';
+    if(d.type==='rbx'){s+=hwCoverageSvg(d,hwAutoServes(d),'gh');if(state.hwCloud&&typeof rfCoverageSvg==='function')s+=rfCoverageSvg([d]);}
+    if(d.type==='base')s+=hwBaseGuideSvg(d);
+    const z=dz(d.level,d.h||0),col=g.ban&&g.ban.length?'#c8372d':(d.type==='base'?hwBaseWorst(d):g.snapped?'#2e9e5b':'#2f6fb0');
+    if(d.type==='board'){const c=planToBase(d.x,d.y,z);s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="10" fill="none" stroke="${col}" stroke-width="2.5" stroke-dasharray="4 3"/>`;}
+    else s+=`<polygon points="${p2b(hwFootprint(d,z))}" fill="${col}" fill-opacity="0.25" stroke="${col}" stroke-width="2"/>`;}
+  return s?`<g pointer-events="none">`+s+`</g>`:'';}
+STK_OVERLAY.push(hwOverlaySvg);
+
+// ---- BASE (C4) -------------------------------------------------------------------------------------------------------------------
+function hwBasePlaced(except){const m={};hwList('base').forEach(d=>{if(d===except)return;hwUnits(d).forEach(u=>{if(!m[u])m[u]=d;});});return m;}
+function hwBaseUnitPicker(ok,dev){const placed=hwBasePlaced(dev),cur=dev?hwUnits(dev):HW_UNIT_ORDER.filter(u=>!placed[u]);
+  openModal(dev?'BASE egységek':'BASE elhelyezése — egységek',
+    HW_UNIT_ORDER.map(u=>`<div class="mrow"><label><input type="checkbox" class="hbU" value="${u}" ${cur.indexOf(u)>=0&&!placed[u]?'checked':''} ${placed[u]?'disabled':''}> <b style="color:${HW_BASE_UNITS[u].c}">${u}</b> — ${esc(HW_BASE_UNITS[u].n.split(' — ')[1]||'')}`
+      +(placed[u]?` <span style="color:#888">(már elhelyezve: ${esc(placed[u].ref||placed[u].id)})</span>`:'')+`</label></div>`).join('')
+    +`<div class="mrow" style="font-size:11px;color:#888">Mindhárom = a teljes BASE egy oszlopként. Külön elhelyezve = osztott BASE (LAYER TIE).</div>`,
+    ()=>{const us=[...document.querySelectorAll('.hbU')].filter(c=>c.checked&&!c.disabled).map(c=>c.value);
+      if(!us.length){lyrHud('Legalább egy egységet válassz.');return false;}ok(us);});}
+function hwSetUnits(d,units){units=HW_UNIT_ORDER.filter(u=>units.indexOf(u)>=0);if(!units.length)return false;
+  const placed=hwBasePlaced(d);if(units.some(u=>placed[u]))return false;            // a unit lives in one device only
+  pushUndo(['devices']);d.units=units;d.h=hwDefH('base',units);draw();return true;}
+// the level's area-weighted room centroid and its bbox diagonal
+function hwLevelCentre(level){let A=0,cx=0,cy=0,x0=1e18,y0=1e18,x1=-1e18,y1=-1e18;
+  allRooms(level).forEach(e=>{const p=e.rm.poly;let a=0,qx=0,qy=0;
+    for(let i=0,j=p.length-1;i<p.length;j=i++){const f=p[j][0]*p[i][1]-p[i][0]*p[j][1];a+=f;qx+=(p[j][0]+p[i][0])*f;qy+=(p[j][1]+p[i][1])*f;
+      x0=Math.min(x0,p[i][0]);y0=Math.min(y0,p[i][1]);x1=Math.max(x1,p[i][0]);y1=Math.max(y1,p[i][1]);}
+    if(Math.abs(a)>1e-6){A+=a/2;cx+=qx/6;cy+=qy/6;}});
+  if(!A)return null;return {x:cx/A,y:cy/A,diag:Math.hypot(x1-x0,y1-y0)};}
+function hwNearest(type,d){let best=null,bd=1e18;hwList(type).forEach(o=>{if(o===d||o.level!==d.level)return;const dd=Math.hypot(o.x-d.x,o.y-d.y);if(dd<bd){bd=dd;best=o;}});
+  return best?{d:best,mm:bd}:null;}
+// → [{k, sev, ok, msg}] for a BASE device (placed or a ghost)
+function hwBaseRules(d){const out=[],R=k=>HW_BASE_RULES.find(r=>r.k===k),us=hwUnits(d);
+  const push=(k,ok,extra)=>{const r=R(k);out.push({k,sev:r.sev,ok,msg:r.n+(extra?' — '+extra:'')});};
+  const room=(typeof roomOfDevice==='function')?roomOfDevice(d):null,env=room&&room.rm.env;
+  push('dry',!(env==='nedves'||env==='vizes'),room?(room.rm.name||''):'');
+  const b=hwNearest('board',d);push('board',!!b&&b.mm<=R('board').mm,b?(b.mm/1000).toFixed(1)+' m':'nincs Elosztószekrény');
+  if(us.indexOf('NET')>=0){const en=hwNearest('entry',d);push('entry',!!en&&en.mm<=R('entry').mm,en?(en.mm/1000).toFixed(1)+' m':'nincs adatbelépés');}
+  const others=hwList('base').filter(o=>o!==d&&o.id!==d.id&&o.level===d.level);
+  if(others.length){const far=others.filter(o=>Math.hypot(o.x-d.x,o.y-d.y)>R('column').mm);push('column',!far.length,far.length?far.map(o=>o.ref||o.id).join(', '):'');}
+  const c=hwLevelCentre(d.level);if(c)push('centre',Math.hypot(c.x-d.x,c.y-d.y)<=0.2*c.diag,'');
+  const h=hwHost(d);let inStrip=false;
+  if(h&&typeof mrkList==='function'){const side=Math.sign(h.nx*h.wi.perp[0]+h.ny*h.wi.perp[1])||1,u=mrkU(h.r,d.x,d.y);
+    inStrip=mrkList().some(m=>m.kind==='vstrip'&&m.wall===h.r.id&&m.side===side&&u>=m.u0&&u<=m.u1&&(m.tags||[]).indexOf('base')>=0);}
+  push('strip',inStrip,'');
+  if(typeof chnLenToBase==='function'&&d.id&&d.id!=='ghost'){const long=hwList('rbx').filter(x=>{const L=chnLenToBase(x.id,d.id);return L!=null&&L>R('cat6a').mm;});
+    push('cat6a',!long.length,long.map(x=>(x.ref||x.id)+' '+(chnLenToBase(x.id,d.id)/1000).toFixed(0)+' m').join(', '));}
+  return out;}
+function hwBaseWorst(d){const bad=hwBaseRules(d).filter(r=>!r.ok);
+  return bad.some(r=>r.sev==='error')?'#c8372d':bad.some(r=>r.sev==='warn')?'#d08a1e':'#2e9e5b';}
+// rings around the boards and the data entries, wet rooms hatched, the level centre, lines to the other units
+function hwBaseGuideSvg(d){const z=dz(d.level,0),R=k=>HW_BASE_RULES.find(r=>r.k===k);let s='';
+  const ring=(o,mm,col)=>{const pts=[];for(let i=0;i<=48;i++){const a=i*Math.PI/24;pts.push([o.x+Math.cos(a)*mm,o.y+Math.sin(a)*mm,z]);}
+    return `<polygon points="${p2b(pts)}" fill="${col}" fill-opacity="0.05" stroke="${col}" stroke-width="1" stroke-dasharray="6 4"/>`;};
+  hwList('board',d.level).forEach(b=>{s+=ring(b,R('board').mm,'#2e9e5b');});
+  if(hwUnits(d).indexOf('NET')>=0)hwList('entry',d.level).forEach(en=>{s+=ring(en,R('entry').mm,'#3b82c4');});
+  allRooms(d.level).forEach(e=>{if(e.rm.env==='nedves'||e.rm.env==='vizes')
+    s+=`<polygon points="${p2b(e.rm.poly.map(p=>[p[0],p[1],z]))}" fill="#c8372d" fill-opacity="0.12" stroke="#c8372d" stroke-width="0.8" stroke-dasharray="3 3"/>`;});
+  const c=hwLevelCentre(d.level);if(c){const b=planToBase(c.x,c.y,z);
+    s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="6" fill="none" stroke="#7a5cc0" stroke-width="1.5"/><line x1="${(b[0]-9).toFixed(1)}" y1="${b[1].toFixed(1)}" x2="${(b[0]+9).toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#7a5cc0"/><line x1="${b[0].toFixed(1)}" y1="${(b[1]-9).toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${(b[1]+9).toFixed(1)}" stroke="#7a5cc0"/>`;}
+  hwList('base',d.level).forEach(o=>{if(o===d||o.id===d.id)return;const far=Math.hypot(o.x-d.x,o.y-d.y)>R('column').mm;
+    s+=`<polyline points="${p2b([[d.x,d.y,z],[o.x,o.y,z]])}" fill="none" stroke="${far?'#d08a1e':'#2e9e5b'}" stroke-width="1.5" stroke-dasharray="5 4"/>`;});
+  if(typeof mrkList==='function')mrkList().forEach(m=>{if(m.kind!=='vstrip'||m.level!==d.level||(m.tags||[]).indexOf('base')<0)return;const r=mrkWallById(m.level,m.wall);if(!r)return;
+    const a=mrkFacePt(r,m.side,m.u0,30),b=mrkFacePt(r,m.side,m.u1,30);s+=mrkLine(a,b,z,'#2e9e5b',8);});
+  const bad=hwBaseRules(d).filter(r=>!r.ok);
+  if(HW_T.on&&HW_T.g){const mh=$('modeHint');if(mh)mh.textContent=bad.length?bad.sort((a,b)=>({error:0,warn:1,info:2}[a.sev]-{error:0,warn:1,info:2}[b.sev])).map(r=>r.msg).join(' · '):'BASE: minden irányelv teljesül.';}
+  return s;}
+
+// ---- right-click on a hardware device (adds to the existing device menu) ---------------------------------------------------------
+STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!hwIs(d))return;
+  if(d.type==='rbx'){
+    Object.keys(HW_RB).forEach(k=>{if(k!==(d.rb||HW_RB_DEF))items.push({label:'▣ RB osztály: '+k+' ('+HW_RB[k].join('×')+')',act:()=>{pushUndo(['devices']);d.rb=k;draw();}});});
+    items.push({label:'▣ Helyiségek hozzárendelése…',act:()=>hwServePick(d)});
+    if(Array.isArray(d.serves))items.push({label:'▣ Automatikus hozzárendelés visszaállítása',act:()=>{pushUndo(['devices']);d.serves=null;draw();}});
+    hwServes(d).forEach(rid=>items.push({label:'· '+hwRoomLabel(rid),act:()=>{}}));
+    if(typeof rfRadiosDialog==='function')items.push({label:'📶 Rádiók…',act:()=>rfRadiosDialog(d)});}
+  if(d.type==='base')items.push({label:'🖧 BASE egységek…',act:()=>hwBaseUnitPicker(us=>{if(!hwSetUnits(d,us))lyrHud('Egy egység csak egy BASE eszközben lehet.');},d)});
+  items.push({label:'▣ Jelölés újraszámítása',act:()=>{pushUndo(['devices']);d.ref=hwRef(d);draw();}});});
+
+// ---- checks ---------------------------------------------------------------------------------------------------------------------------
+(STK_CHECKS.hw=STK_CHECKS.hw||[]).push(S=>{const out=[];
+  if(!hwList('board').length)out.push({sev:'error',msg:'Nincs Elosztószekrény.'});
+  if(!hwList('meter').length)out.push({sev:'warn',msg:'Nincs mérőóra elhelyezve.'});
+  if(!hwList('entry').length)out.push({sev:'warn',msg:'Nincs adatbelépési pont elhelyezve.'});
+  if(!hwList('rbx').length)out.push({sev:'info',msg:'Még nincs RBX.'});
+  hwList().forEach(d=>{const h=hwHost(d);if(!h||typeof mrkAt!=='function')return;
+    const side=Math.sign(h.nx*h.wi.perp[0]+h.ny*h.wi.perp[1])||1,ban=mrkAt(d.level,h.r.id,side,mrkU(h.r,d.x,d.y),d.h).filter(x=>x.pol==='ban');
+    if(ban.length)out.push({sev:'warn',msg:(d.ref||d.id)+': tilos zónán ('+ban.map(b=>(b.tags||[]).join(', ')||'⛔').join('; ')+')'});});
+  hwList('rbx').forEach(d=>{const r=(typeof roomOfDevice==='function')?roomOfDevice(d):null;
+    if(r&&(r.rm.env==='nedves'||r.rm.env==='vizes'))out.push({sev:'warn',msg:(d.ref||d.id)+': nedves / vizes helyiségben.'});});
+  const M=hwServeMap(),lv={};hwList('rbx').forEach(d=>{lv[d.level]=1;});
+  Object.keys(lv).forEach(l=>hwUnserved(l).forEach(r=>out.push({sev:'warn',msg:((r.num?r.num+' ':'')+(r.name||r.id))+': nincs RBX hozzárendelve'})));
+  Object.keys(M.dup).forEach(r=>out.push({sev:'error',msg:hwRoomLabel(r)+': két RBX egyenlő igénnyel ('+M.dup[r].map(d=>d.ref||d.id).join(', ')+')'}));
+  hwList('rbx').forEach(d=>{const n=hwServes(d).length;if(n>3&&d.rb!=='RB-H')out.push({sev:'info',msg:(d.ref||d.id)+': '+n+' helyiséget szolgál ki — RB-H javasolt.'});});
+  return out;});
+(STK_CHECKS.base=STK_CHECKS.base||[]).push(S=>{const out=[],bs=hwList('base');
+  if(!bs.length){out.push({sev:'error',msg:'Nincs BASE elhelyezve.'});return out;}
+  const seen={};bs.forEach(d=>hwUnits(d).forEach(u=>{(seen[u]=seen[u]||[]).push(d);}));
+  HW_UNIT_ORDER.forEach(u=>{if(!seen[u])out.push({sev:'warn',msg:u+' hiányzik minden BASE eszközből.'});
+    else if(seen[u].length>1)out.push({sev:'error',msg:u+' két BASE eszközben is szerepel ('+seen[u].map(d=>d.ref||d.id).join(', ')+').'});});
+  bs.forEach(d=>hwBaseRules(d).forEach(r=>{if(!r.ok)out.push({sev:r.sev,msg:(d.ref||d.id)+': '+r.msg});}));
+  return out;});
+
+// ---- actions ----------------------------------------------------------------------------------------------------------------------------
+registerActions([
+ {id:'hw.rbx',alias:'rbx roombox elhelyezes place room box',label:'RBX elhelyezése',icon:'▣',group:'Hardver',
+  hint:'RoomBox a falra; a jelölt „RBX helye” sáv vonzza. Tab: RB osztály. A szellem mutatja, mely helyiségeket szolgálja ki.',run:()=>hwToolStart('rbx')},
+ {id:'hw.board',alias:'elosztoszekreny elhelyezes board place',label:'Elosztószekrény elhelyezése',icon:'▤',group:'Hardver',run:()=>hwToolStart('board')},
+ {id:'hw.meter',alias:'meroora villanyora meter place',label:'Mérőóra elhelyezése',icon:'◔',group:'Hardver',run:()=>hwToolStart('meter')},
+ {id:'hw.entry',alias:'adatbelepes isp entry place',label:'Adatbelépési pont elhelyezése',icon:'⇲',group:'Hardver',run:()=>hwToolStart('entry')},
+ {id:'hw.ssc',alias:'biztonsagi kozpont ssc security place',label:'Biztonsági központ (SSC) elhelyezése',icon:'⛨',group:'Hardver',run:()=>hwToolStart('ssc')},
+ {id:'hw.base',alias:'base net comp media elhelyezes place',label:'BASE elhelyezése',icon:'🖧',group:'Hardver',
+  hint:'NET · COMP · MEDIA egyenként vagy együtt; a szellem az irányelveket mutatja (Elosztó közelsége, száraz helyiség, oszlop, középpont).',run:()=>hwToolStart('base')},
+ {id:'hw.serve',alias:'rbx helyiseg hozzarendeles serve rooms assign',label:'RBX: helyiségek hozzárendelése',icon:'▣',group:'Hardver',
+  need:'Jelölj ki egy RBX-et.',when:c=>c.selType==='devices'&&data.devices[c.sel.i]&&data.devices[c.sel.i].type==='rbx',run:c=>hwServePick(data.devices[c.sel.i])},
+ {id:'hw.cloud',alias:'vezetek nelkuli lefedettseg wireless cloud rf',label:'Vezeték nélküli lefedettség (RBX)',icon:'☁',group:'Rádió',
+  hint:'A kijelölt / elhelyezés alatt álló RBX rádiós lefedettsége a szellemen.',
+  run:()=>{state.hwCloud=!state.hwCloud;if(typeof rfCoverageSvg!=='function')lyrHud('A rádiós modell (C3) még nincs kész.');else lyrHud('Vezeték nélküli lefedettség '+(state.hwCloud?'be':'ki'));draw();}}
+]);
+
+// test hooks
+window.HW_TYPES=HW_TYPES;window.HW_RB=HW_RB;window.HW_DEF=HW_DEF;window.HW_T=HW_T;window.HW_BASE_RULES=HW_BASE_RULES;
+window.hwIs=hwIs;window.hwList=hwList;window.hwSize=hwSize;window.hwHost=hwHost;window.hwFrame=hwFrame;window.hwBox=hwBox;window.hwRef=hwRef;
+window.hwSymbol=hwSymbol;window.hwAutoServes=hwAutoServes;window.hwServeMap=hwServeMap;window.hwServes=hwServes;window.hwRoomRbx=hwRoomRbx;
+window.hwUnserved=hwUnserved;window.hwServePick=hwServePick;window.hwServeToggle=hwServeToggle;window.hwGhost=hwGhost;window.hwFromGhost=hwFromGhost;
+window.hwPlace=hwPlace;window.hwToolStart=hwToolStart;window.hwToolOff=hwToolOff;window.hwOverlaySvg=hwOverlaySvg;window.hwCoverageSvg=hwCoverageSvg;
+window.hwBaseRules=hwBaseRules;window.hwSetUnits=hwSetUnits;window.hwBasePlaced=hwBasePlaced;window.hwLevelCentre=hwLevelCentre;window.hwUnits=hwUnits;
+window.hwServePickState=()=>HW_SP;window.hwGhostAt=hwGhostAt;window.hwPickPlan=hwPickPlan;window.hwBaseGuideSvg=hwBaseGuideSvg;
+
+// A simplified COST-231 multi-wall model [Q23=B]: path loss grows with distance AND with every wall crossed;
+// the loss of a wall comes from its material tag on the Marking layer (05n), else from its thickness.
+//   PL(d) = 10·pe·log10(d) + f·Σ wall loss            (d in m, min 0.5)
+//   covered when PL ≤ 10·pe·log10(R0)                  (R0 = the free-space range; the PL at 1 m cancels out)
+// Every number is a typical indoor figure — reasoned, not measured — and editable in the RF settings.
+// Coverage is DERIVED and memoised against a basis string (sources, walls, wall tags, settings). Prefix: rf.
+
+const RF_TECH=[
+ {k:'wifi',  n:'WiFi 2,4 GHz',   c:'#3b82c4', R0:20, pe:2.2, f:1.0,  src:['acp']},
+ {k:'wifi5', n:'WiFi 5 GHz',     c:'#2a5f99', R0:12, pe:2.4, f:1.6,  src:['acp'], off:true},
+ {k:'thread',n:'Thread (ch 20)', c:'#3fa36b', R0:15, pe:2.3, f:1.0,  src:['rbx']},   // STD-005 channel plan
+ {k:'zigbee',n:'Zigbee (ch 25)', c:'#7aa63a', R0:15, pe:2.3, f:1.0,  src:['rbx'], off:true},
+ {k:'ble',   n:'BLE',            c:'#8a63c2', R0:10, pe:2.2, f:1.0,  src:['rbx']},
+ {k:'uwb',   n:'UWB',            c:'#c2638a', R0:10, pe:2.0, f:1.5,  src:['rbx']},   // NLOS hurts ranging: walls ×1.5
+ {k:'espnow',n:'ESP-NOW (ch 1)', c:'#c28a3b', R0:20, pe:2.2, f:1.0,  src:['rbx','base']},
+ {k:'lora',  n:'LoRa 868 MHz',   c:'#8a8a8a', R0:80, pe:2.0, f:0.6,  src:['base'], off:true}]; // STD-005: BASE-only (1 % duty)
+const RF_GRID=500;                                 // mm — the same grid as the portal encoding (05o)
+const RF_RBX_RADIOS=['thread','ble','espnow'];     // a new RBX; UWB is added in key rooms (STD-005 / U23)
+
+function rfTech(k){return RF_TECH.find(t=>t.k===k)||null;}
+// the settings: state.rf = {on:{tech:bool}, R0:{tech:m}} — defaults from RF_TECH
+function rfOn(k){const s=state.rf&&state.rf.on;if(s&&k in s)return !!s[k];const t=rfTech(k);return !!t&&!t.off;}
+function rfR0(k){const s=state.rf&&state.rf.R0,t=rfTech(k);return (s&&+s[k]>0)?+s[k]:(t?t.R0:10);}
+
+// ---- the model (pure) -------------------------------------------------------------------------------------------
+// dB at 2.4 GHz: the largest rf of the wall's material tags, else by thickness
+function rfWallLoss(r){let v=null;
+  if(typeof mrkWallTags==='function'&&r&&r.id)mrkWallTags(r.id).forEach(k=>{const t=mrkTag('wall',k);if(t&&t.rf!=null)v=Math.max(v==null?0:v,t.rf);});
+  if(v!=null)return v;
+  const th=wallInfo(r).thick;return th>=250?12:th>=120?8:4;}
+// Liang–Barsky: does the segment a→b pass through the rectangle?
+function rfSegRect(ax,ay,bx,by,r){let t0=0,t1=1;const dx=bx-ax,dy=by-ay;
+  const x0=Math.min(r.x0,r.x1),x1=Math.max(r.x0,r.x1),y0=Math.min(r.y0,r.y1),y1=Math.max(r.y0,r.y1);
+  const p=[-dx,dx,-dy,dy],q=[ax-x0,x1-ax,ay-y0,y1-ay];
+  for(let i=0;i<4;i++){if(p[i]===0){if(q[i]<0)return false;}else{const t=q[i]/p[i];if(p[i]<0){if(t>t1)return false;if(t>t0)t0=t;}else{if(t<t0)return false;if(t<t1)t1=t;}}}
+  return t1>t0;}
+function rfInRect(x,y,r,pad){return x>=Math.min(r.x0,r.x1)-pad&&x<=Math.max(r.x0,r.x1)+pad&&y>=Math.min(r.y0,r.y1)-pad&&y<=Math.max(r.y0,r.y1)+pad;}
+// the walls a ray crosses; the wall a source is mounted IN does not count (the source sits inside or on its rect)
+function rfSegWalls(level,ax,ay,bx,by){return (WALLS[level]||[]).filter(r=>r&&!rfInRect(ax,ay,r,2)&&rfSegRect(ax,ay,bx,by,r));}
+// the radios: RoomBoxes carrying the tech, access points (D1 end points coded ACP), BASE devices
+function rfSources(level,tech,only){const t=rfTech(tech);if(!t)return [];const out=[];
+  (only||data.devices).forEach(d=>{if(!d||d.level!==level)return;
+    let ok=false;
+    if(d.type==='rbx'&&t.src.indexOf('rbx')>=0)ok=(d.radios||RF_RBX_RADIOS).indexOf(tech)>=0;
+    else if(d.type==='ep'&&d.code==='ACP'&&t.src.indexOf('acp')>=0)ok=true;
+    else if(d.type==='base'&&t.src.indexOf('base')>=0)ok=true;
+    if(ok){const F=(typeof hwFrame==='function'&&d.type!=='ep')?hwFrame(d):null;
+      // a wall box radiates from just in front of its face, so its own wall is not counted
+      const x=F&&F.n?F.cx+F.n[0]*(F.S.dp/2+20):d.x,y=F&&F.n?F.cy+F.n[1]*(F.S.dp/2+20):d.y;
+      out.push({id:d.id,x,y,dev:d});}});
+  return out;}
+// margin in dB (≥ 0 = covered) at plan point x,y from one source
+function rfMargin(src,x,y,tech){const T=rfTech(tech),level=src.dev?src.dev.level:state.active;
+  const d=Math.max(0.5,Math.hypot(x-src.x,y-src.y)/1000);
+  let wl=0;rfSegWalls(level,src.x,src.y,x,y).forEach(r=>{wl+=rfWallLoss(r);});
+  return 10*T.pe*Math.log10(rfR0(tech))-(10*T.pe*Math.log10(d)+T.f*wl);}
+// the cells of the level that lie inside some room
+function rfCells(level){const g=RF_GRID,seen=new Set(),out=[];
+  allRooms(level).forEach(e=>{prtGrid(e.rm.poly,g).forEach(c=>{const k=c.i+','+c.j;if(!seen.has(k)){seen.add(k);out.push(c);}});});
+  return out;}
+// best margin over the sources per cell; uncovered cells (m < 0) omitted. Memoised on a basis string.
+const RF_MEMO={};
+function rfBasis(level,tech,srcs){
+  let s=tech+'|'+rfR0(tech)+'|'+srcs.map(q=>q.id+':'+Math.round(q.x)+','+Math.round(q.y)).join(';')+'|';
+  (WALLS[level]||[]).forEach(r=>{s+=(r.id||'')+':'+r.x0+','+r.y0+','+r.x1+','+r.y1+':'+(typeof mrkWallTags==='function'&&r.id?mrkWallTags(r.id).join(','):'')+';';});
+  allRooms(level).forEach(e=>{s+=JSON.stringify(e.rm.poly);});
+  return s;}
+function rfGrid(level,tech,only){const srcs=rfSources(level,tech,only),key=level+'|'+tech+(only?'|'+only.map(d=>d.id).join(','):'');
+  const basis=rfBasis(level,tech,srcs),m=RF_MEMO[key];if(m&&m.basis===basis)return m.res;
+  const g=RF_GRID,cells=[];
+  if(srcs.length)rfCells(level).forEach(c=>{const x=(c.i+0.5)*g,y=(c.j+0.5)*g;let best=-1e9;
+    srcs.forEach(q=>{const v=rfMargin(q,x,y,tech);if(v>best)best=v;});
+    if(best>=0)cells.push({i:c.i,j:c.j,m:Math.round(best*10)/10});});
+  const res={tech,level,grid:g,cells};RF_MEMO[key]={basis,res};return res;}
+// share 0…1 of the room's cells that are covered
+function rfRoomCover(roomId,tech){const e=mrkRoomById(roomId);if(!e)return 0;
+  const all=prtGrid(e.rm.poly,RF_GRID);if(!all.length)return 0;
+  const cov=new Set(rfGrid(e.level,tech).cells.map(c=>c.i+','+c.j));
+  return all.filter(c=>cov.has(c.i+','+c.j)).length/all.length;}
+
+// ---- the view -----------------------------------------------------------------------------------------------------------
+// pale squares, tint by margin, a faint outline where a covered cell meets an uncovered one. `only` restricts the
+// sources (the RBX ghost of C2); otherwise every shown tech of the active level.
+function rfCoverageSvg(only){const level=only&&only[0]?only[0].level:state.active,z=dz(level,0),g=RF_GRID;let s='';
+  RF_TECH.forEach(T=>{if(!rfOn(T.k))return;const G=rfGrid(level,T.k,only);if(!G.cells.length)return;
+    const has=new Set(G.cells.map(c=>c.i+','+c.j));
+    G.cells.forEach(c=>{const op=(0.05+0.10*Math.min(1,c.m/10)).toFixed(3);
+      s+=`<polygon points="${p2b([[c.i*g,c.j*g,z],[(c.i+1)*g,c.j*g,z],[(c.i+1)*g,(c.j+1)*g,z],[c.i*g,(c.j+1)*g,z]])}" fill="${T.c}" fill-opacity="${op}" stroke="none"/>`;
+      [[1,0,[c.i+1,c.j],[c.i+1,c.j+1]],[-1,0,[c.i,c.j],[c.i,c.j+1]],[0,1,[c.i,c.j+1],[c.i+1,c.j+1]],[0,-1,[c.i,c.j],[c.i+1,c.j]]].forEach(([di,dj,a,b])=>{
+        if(!has.has((c.i+di)+','+(c.j+dj)))s+=`<polyline points="${p2b([[a[0]*g,a[1]*g,z],[b[0]*g,b[1]*g,z]])}" fill="none" stroke="${T.c}" stroke-opacity="0.35" stroke-width="0.6"/>`;});});});
+  return s;}
+function rfStageOn(){if(state.rfShow)return true;
+  const S=(typeof stkActive==='function')?stkActive():null,L=S?lyrLayer(state.activeLayer):null;return !!(L&&L.stack===S.id&&L.role==='sys:RF');}
+STK_OVERLAY.push(()=>rfStageOn()?`<g pointer-events="none">`+rfCoverageSvg()+`</g>`:'');
+
+// ---- settings and radios ------------------------------------------------------------------------------------------------------
+function rfSettingsDialog(){
+  openModal('Rádiós beállítások',
+    `<table style="font-size:12px;width:100%"><tr><th align="left">Technológia</th><th>Mutat</th><th>R0 (m)</th></tr>`
+    +RF_TECH.map(T=>`<tr><td><span style="color:${T.c}">■</span> ${esc(T.n)}</td><td align="center"><input type="checkbox" class="rfOn" data-k="${T.k}" ${rfOn(T.k)?'checked':''}></td>`
+      +`<td align="center"><input type="number" class="rfR0" data-k="${T.k}" value="${rfR0(T.k)}" style="width:60px" min="1"></td></tr>`).join('')+`</table>`
+    +`<div class="mrow" style="font-size:11px;color:#888">Tipikus beltéri értékek — nem mért. A falcsillapítás a Jelölés réteg falcímkéiből jön (tartófal 15 dB, gipszkarton 3 dB…), címke nélkül a falvastagságból.</div>`,
+    ()=>{const on={},R0={};document.querySelectorAll('.rfOn').forEach(c=>{on[c.dataset.k]=c.checked;});
+      document.querySelectorAll('.rfR0').forEach(i=>{const v=+i.value;if(v>0&&v!==rfTech(i.dataset.k).R0)R0[i.dataset.k]=v;});
+      state.rf={on,R0};draw();});}
+function rfRadiosDialog(d){if(!d||d.type!=='rbx')return;const cur=d.radios||RF_RBX_RADIOS;
+  openModal('RBX rádiói — '+(d.ref||d.id),RF_TECH.filter(T=>T.src.indexOf('rbx')>=0).map(T=>
+    `<div class="mrow"><label><input type="checkbox" class="rfRad" value="${T.k}" ${cur.indexOf(T.k)>=0?'checked':''}> <span style="color:${T.c}">■</span> ${esc(T.n)}</label></div>`).join(''),
+    ()=>{pushUndo(['devices']);d.radios=[...document.querySelectorAll('.rfRad')].filter(c=>c.checked).map(c=>c.value);draw();});}
+
+// ---- checks -----------------------------------------------------------------------------------------------------------------------
+// per room, per RF need ticked in D2 (rm.needs['sys:RF']); until D2 exists: wifi and thread everywhere
+(STK_CHECKS['sys:RF']=STK_CHECKS['sys:RF']||[]).push(S=>{const out=[];
+  ORD.forEach(l=>{if(!rfSources(l,'thread').length&&!rfSources(l,'wifi').length)return;
+    stkRooms(l).forEach(r=>{if(!r.id)return;
+      const want=(typeof needOf==='function')?Object.keys(needOf(r.rm,'sys:RF')).filter(k=>needOf(r.rm,'sys:RF')[k]):['wifi','thread'];
+      want.forEach(k=>{if(!rfTech(k))return;const c=rfRoomCover(r.id,k);
+        if(c<0.9)out.push({sev:'warn',msg:((r.num?r.num+' ':'')+(r.name||r.id))+': '+rfTech(k).n+' lefedettség '+Math.round(c*100)+' %'});});});});
+  return out;});
+
+registerActions([
+ {id:'rf.view',alias:'radio lefedettseg rf coverage wifi thread view',label:'Rádió-lefedettség mutatása',icon:'📶',group:'Rádió',
+  hint:'Halvány zónák az RBX-ektől és hozzáférési pontoktól; a Rádió szakaszban magától bekapcsol.',
+  run:()=>{state.rfShow=!state.rfShow;draw();lyrHud('Rádió-lefedettség '+(state.rfShow?'be':'ki'));}},
+ {id:'rf.settings',alias:'radios beallitasok rf settings range',label:'Rádiós beállítások…',icon:'⚙',group:'Rádió',run:()=>rfSettingsDialog()}
+]);
+// the RF stage gets the radio actions too
+(STK_GROUPS['+sys:RF']=STK_GROUPS['+sys:RF']||[]).push('Rádió');
+
+// test hooks
+window.RF_TECH=RF_TECH;window.RF_GRID=RF_GRID;window.RF_RBX_RADIOS=RF_RBX_RADIOS;
+window.rfWallLoss=rfWallLoss;window.rfSegRect=rfSegRect;window.rfSegWalls=rfSegWalls;window.rfSources=rfSources;window.rfMargin=rfMargin;
+window.rfGrid=rfGrid;window.rfRoomCover=rfRoomCover;window.rfCoverageSvg=rfCoverageSvg;window.rfOn=rfOn;window.rfR0=rfR0;window.rfRadiosDialog=rfRadiosDialog;
+
+// A channel route is an ordinary path (data.paths) drawn with the Path tool while CHN_T is on:
+//   {route:'channel', rule:'sull'|'csat', carrier?:<override>}
+// Its ends link to hardware devices through the Path tool's own node-on-box snapping (05k), so the route knows
+// what it joins. WHAT it carries is derived from the two end types (CHN_CARRIERS) [Q25=A] — the fill (E4)
+// turns that into pipes and cables. Several routes between the same pair are legal and named /b, /c.
+// Prefix: chn.
+
+const CHN_CARRIERS=[
+ {pair:['meter','board'], k:'feed',    n:'Fővezeték'},
+ {pair:['entry','base'],  k:'isp',     n:'Szolgáltatói belépés'},
+ {pair:['board','base'],  k:'panel',   n:'PANEL LINK + rendszerkörök'},
+ {pair:['base','rbx'],    k:'channel', n:'CHANNEL köteg'},
+ {pair:['rbx','rbx'],     k:'channel', n:'CHANNEL köteg (lánc)'},
+ {pair:['board','rbx'],   k:'mains',   n:'Erősáramú szobakörök'},
+ {pair:['board','ssc'],   k:'mains',   n:'SSC körök'},
+ {pair:['ssc','rbx'],     k:'security',n:'Biztonsági törzs'},
+ {pair:['base','ssc'],    k:'data',    n:'SSC adat (VLAN 50)'}];
+// the CHANNEL bundle, STD-001 §3.1 — fixed order, fixed sizes
+const CHN_BUNDLE=[
+ {k:'C1', fam:'DATA',   w:'M25', cab:[{c:'CAT6A_U',n:2}]},
+ {k:'C2', fam:'MEDIA',  w:'M40', cab:[{c:'AOC_FIX'},{c:'CAT6A_U'}]},
+ {k:'C3', fam:'CONTROL',w:'M20', cab:[{c:'CAT6A_S'}]},
+ {k:'C4', fam:null,     w:'M25', cab:[{c:'SPARE'}]},
+ {k:'C4b',fam:'BUSB',   w:'M20', cab:[{c:'H05_2x25'}]},
+ {k:'C5', fam:'KNX',    w:'M20', cab:[{c:'SPARE'}], note:'KNX / DALI tartalék, üresen beépítve'}];
+const CHN_COL={channel:'#2f6fb0',mains:'#d1493f',panel:'#7a5cc0',security:'#555555',feed:'#8a3a2a',isp:'#16a085',data:'#16a085'};
+const CHN_RANK={meter:0,entry:1,board:2,base:3,ssc:4,rbx:5};
+
+let CHN_T={on:false,rule:'sull'};
+// routes finished by the Path tool pass through these (E1's ARM routes use the same hook)
+const CHN_PATH_HOOKS=[];
+function chnPathFinished(p){CHN_PATH_HOOKS.forEach(f=>{try{f(p);}catch(_){}});}
+function chnBuild(rule){return rule==='csat'?'kv_csat_szeles':'sull_gege';}
+function chnApplyRule(p,rule){p.rule=rule==='csat'?'csat':'sull';p.ptype=p.rule==='csat'?'csat':'gege';
+  (p.sections||[]).forEach(s=>{if(s)s.build=chnBuild(p.rule);});}
+CHN_PATH_HOOKS.push(p=>{if(!CHN_T.on||!p)return;p.route='channel';chnApplyRule(p,CHN_T.rule);
+  const k=chnCarrier(p);if(CHN_COL[k])p.color=CHN_COL[k];
+  const e=chnEnds(p);lyrHud('Csatorna: '+chnName(p)+' — '+chnCarrierName(k)+(e[0]&&e[1]?'':' · figyelem: nyitott vég (nincs hardverponton)'));});
+
+// ---- derived ------------------------------------------------------------------------------------------------------
+function chnRoutes(){return data.paths.filter(p=>p&&p.route==='channel');}
+function chnIsHw(d){return !!d&&(d.type==='board'||(typeof hwIs==='function'&&hwIs(d)));}
+// the hardware device linked to a node of this path, or null
+function chnDevAt(p,n){if(!n)return null;return data.devices.find(d=>chnIsHw(d)&&hasLinkTo(d,p.id,n.id))||null;}
+function chnEnds(p){const ns=(p&&p.nodes)||[];return [chnDevAt(p,ns[0]),chnDevAt(p,ns[ns.length-1])];}
+function chnDerived(a,b){if(!a||!b)return null;
+  const c=CHN_CARRIERS.find(x=>(x.pair[0]===a.type&&x.pair[1]===b.type)||(x.pair[0]===b.type&&x.pair[1]===a.type));return c?c.k:null;}
+function chnCarrier(p){if(p.carrier)return p.carrier;const e=chnEnds(p);return chnDerived(e[0],e[1])||'ismeretlen';}
+function chnCarrierName(k){const c=CHN_CARRIERS.find(x=>x.k===k);return c?c.n:(k==='ismeretlen'?'ismeretlen hordozó':k);}
+function chnRank(d){return d?(CHN_RANK[d.type]!=null?CHN_RANK[d.type]:9):99;}
+function chnSortEnds(p){const e=chnEnds(p).slice();e.sort((x,y)=>chnRank(x)-chnRank(y)||String((x&&x.ref)||'').localeCompare(String((y&&y.ref)||'')));return e;}
+function chnPairKey(p){const e=chnSortEnds(p);return e.map(d=>d?d.id:'?').join('~');}
+// '<refA>~<refB>', the lower rank first; the 2nd, 3rd … route between the same pair gets /b, /c (by id order)
+function chnName(p){const e=chnSortEnds(p),base=e.map(d=>d?(d.ref||d.id):'?').join('~'),key=chnPairKey(p);
+  const same=chnRoutes().filter(q=>chnPairKey(q)===key),i=same.indexOf(p);   // creation order (data.paths order)
+  return i>0?base+'/'+String.fromCharCode(97+i):base;}
+function chnLen(p){let s=0;const ns=p.nodes||[];for(let i=1;i<ns.length;i++)s+=Math.hypot(ns[i].x-ns[i-1].x,ns[i].y-ns[i-1].y,(ns[i].h||0)-(ns[i-1].h||0));return s;}
+// {nodes:[ids], edges:[{a,b,p,carrier,len}]}
+function chnGraph(){const edges=[],nodes=new Set();
+  chnRoutes().forEach(p=>{const e=chnEnds(p);if(!e[0]||!e[1]||e[0]===e[1])return;
+    nodes.add(e[0].id);nodes.add(e[1].id);edges.push({a:e[0].id,b:e[1].id,p:p.id,carrier:chnCarrier(p),len:Math.round(chnLen(p))});});
+  return {nodes:[...nodes],edges};}
+// shortest 'channel'-carrier paths from the BASE devices (or one of them): {<id>:{parent, root, len, hops, via:[route ids]}}
+function chnTree(baseId){const G=chnGraph(),adj={};
+  G.edges.filter(e=>e.carrier==='channel').forEach(e=>{(adj[e.a]=adj[e.a]||[]).push(e);(adj[e.b]=adj[e.b]||[]).push(e);});
+  const roots=hwList('base').filter(b=>!baseId||b.id===baseId).map(b=>b.id),T={},open=[];
+  roots.forEach(r=>{T[r]={parent:null,root:r,len:0,hops:0,via:[]};open.push(r);});
+  while(open.length){open.sort((x,y)=>T[x].len-T[y].len||prtIdCmp(x,y));const u=open.shift();
+    (adj[u]||[]).forEach(e=>{const v=e.a===u?e.b:e.a,nl=T[u].len+e.len;
+      if(!T[v]||nl<T[v].len){T[v]={parent:u,root:T[u].root,len:nl,hops:T[u].hops+1,via:T[u].via.concat([e.p])};
+        const vd=byId('devices',v);if(vd&&vd.type==='rbx'&&open.indexOf(v)<0)open.push(v);}});}   // only RoomBoxes pass the chain on
+  roots.forEach(r=>{delete T[r];});return T;}
+function chnLenToBase(rbxId,baseId){const t=chnTree(baseId)[rbxId];return t?t.len:null;}
+function chnChain(rbxId){const t=chnTree()[rbxId];if(!t)return null;const p=byId('devices',t.parent);return p&&p.type==='base'?'direct':'chained';}
+
+// ---- the tool: the Path tool with a flag ----------------------------------------------------------------------------
+function chnToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkLayer(S.id,'channel'):null;
+  if(L){state.activeLayer=L.id;renderLayers();}
+  if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();
+  state.pathType=CHN_T.rule==='csat'?'csat':'gege';setMode('path');CHN_T.on=true;
+  const mh=$('modeHint');if(mh)mh.textContent='Csatorna-útvonal: kattints a hardverpontokra (RBX, BASE, Elosztó…) · Tab: süllyesztett ↔ kábelcsatorna · dupla katt: kész';
+  lyrHud('Csatorna-útvonal — '+(CHN_T.rule==='csat'?'kábelcsatorna':'süllyesztett'));}
+STK_TOOLS.push({k:'chnRoute',active:()=>{if(!CHN_T.on)return false;if(state.mode!=='path'){CHN_T.on=false;return false;}return true;},
+  key(e){if(e.key!=='Tab')return false;e.preventDefault();CHN_T.rule=CHN_T.rule==='csat'?'sull':'csat';state.pathType=CHN_T.rule==='csat'?'csat':'gege';
+    if(typeof pathDraft!=='undefined'&&pathDraft)pathDraft.ptype=state.pathType;
+    lyrHud(CHN_T.rule==='csat'?'Kábelcsatorna':'Süllyesztett');return true;},
+  mode(){CHN_T.on=false;},     // any tool change ends it (chnToolStart sets the flag AFTER its own setMode)
+  esc(){CHN_T.on=false;}});
+
+// ---- labels ----------------------------------------------------------------------------------------------------------------
+function chnLabelsSvg(){const S=(typeof stkActive==='function')?stkActive():null,L=S?lyrLayer(state.activeLayer):null;
+  if(!state.chnLabels&&!(L&&L.stack===S.id&&L.role==='channel'))return '';let s='';
+  chnRoutes().forEach(p=>{const ns=p.nodes||[];if(ns.length<2||!state.levels[ns[0].level]||!layerShows(p,'path'))return;
+    let bi=1,bl=-1;for(let i=1;i<ns.length;i++){const l=Math.hypot(ns[i].x-ns[i-1].x,ns[i].y-ns[i-1].y);if(l>bl){bl=l;bi=i;}}
+    const a=ns[bi-1],b=ns[bi],k=chnCarrier(p),col=CHN_COL[k]||'#555';
+    s+=mrkText((a.x+b.x)/2,(a.y+b.y)/2,dz(a.level,((a.h||0)+(b.h||0))/2),chnName(p)+' · '+chnCarrierName(k),col,9);});
+  return s?`<g pointer-events="none">${s}</g>`:'';}
+STK_OVERLAY.push(chnLabelsSvg);
+
+// ---- right-click on a channel route (adds to the route menu) ----------------------------------------------------------------
+function chnContentText(p){const k=chnCarrier(p);
+  if(k==='channel')return CHN_BUNDLE.map(b=>b.k+' '+b.w+' · '+(b.fam||'tartalék')+' · '+b.cab.map(c=>(c.n?c.n+'×':'')+((typeof AFILL_CABLES!=='undefined'&&AFILL_CABLES[c.c])?AFILL_CABLES[c.c].n:c.c)).join(' + ')+(b.note?' ('+b.note+')':'')).join('\n');
+  if(k==='feed')return 'A betáp a szolgáltató szabályai szerint (A08) — nem számolt.';
+  return 'A tartalmat a Csatorna feltöltése (E4) számolja.';}
+STK_PATHMENU.push((ps,items)=>{const p=data.paths[ps.pi];if(!p||p.route!=='channel')return;
+  items.unshift({label:'⇋ Csatorna: '+chnName(p)+' — '+chnCarrierName(chnCarrier(p)),act:()=>{}});
+  if(p.rule!=='sull')items.push({label:'⇋ Szabály: süllyesztett',act:()=>{pushUndo(['paths']);chnApplyRule(p,'sull');draw();}});
+  if(p.rule!=='csat')items.push({label:'⇋ Szabály: kábelcsatorna',act:()=>{pushUndo(['paths']);chnApplyRule(p,'csat');draw();}});
+  if(p.carrier)items.push({label:'⇋ Hordozó: automatikus ('+chnCarrierName(chnDerived(...chnEnds(p))||'ismeretlen')+')',act:()=>{pushUndo(['paths']);delete p.carrier;draw();}});
+  [...new Set(CHN_CARRIERS.map(c=>c.k))].forEach(k=>{if(k!==chnCarrier(p))items.push({label:'⇋ Hordozó: '+chnCarrierName(k),act:()=>{pushUndo(['paths']);p.carrier=k;if(CHN_COL[k])p.color=CHN_COL[k];draw();}});});
+  items.push({label:'⇋ Tartalom megjelenítése',act:()=>openModal('Csatorna tartalma — '+chnName(p),`<pre style="font-size:11.5px;white-space:pre-wrap">${esc(chnContentText(p))}</pre>`,()=>{},'Bezár')});});
+
+// ---- checks -------------------------------------------------------------------------------------------------------------------
+(STK_CHECKS.channel=STK_CHECKS.channel||[]).push(S=>{const out=[];
+  chnRoutes().forEach(p=>{const e=chnEnds(p);if(!e[0]||!e[1])out.push({sev:'warn',msg:'Nyitott végű csatorna: '+chnName(p)});
+    else if(chnCarrier(p)==='ismeretlen')out.push({sev:'info',msg:chnName(p)+': ismeretlen hordozó ('+e[0].type+' – '+e[1].type+')'});});
+  const T=chnTree(),G=chnGraph();
+  hwList('rbx').forEach(d=>{
+    if(!T[d.id])out.push({sev:'warn',msg:(d.ref||d.id)+': nincs CHANNEL kapcsolata BASE-hez.'});
+    else{if(T[d.id].len>90000)out.push({sev:'error',msg:(d.ref||d.id)+': '+(T[d.id].len/1000).toFixed(0)+' m a BASE-ig (> 90 m Cat6A).'});
+      const par=byId('devices',T[d.id].parent);if(par&&par.type==='rbx'&&par.rb!=='RB-H')out.push({sev:'info',msg:(par.ref||par.id)+' láncpont: '+(d.ref||d.id)+' rajta keresztül — RB-H javasolt (STD-001).'});}
+    if(!G.edges.some(e=>e.carrier==='mains'&&(e.a===d.id||e.b===d.id)))out.push({sev:'warn',msg:(d.ref||d.id)+': nincs erősáramú útvonal az Elosztószekrénytől.'});});
+  if(hwList('meter').length&&!G.edges.some(e=>e.carrier==='feed'))out.push({sev:'info',msg:'Nincs fővezeték (mérőóra → Elosztószekrény).'});
+  if(hwList('entry').length&&!G.edges.some(e=>e.carrier==='isp'))out.push({sev:'info',msg:'Nincs szolgáltatói belépés (adatbelépés → BASE).'});
+  return out;});
+
+registerActions([
+ {id:'chn.route',alias:'csatorna utvonal channel route path hardware',label:'Csatorna-útvonal',icon:'⇋',group:'Csatorna',
+  hint:'A Pálya eszköz egy változata: két hardverpont (BASE, RBX, Elosztó, SSC…) közötti fizikai összeköttetés. Tab: süllyesztett ↔ kábelcsatorna.',
+  run:()=>chnToolStart()},
+ {id:'chn.labels',alias:'csatorna feliratok channel labels',label:'Csatorna-feliratok be / ki',icon:'🏷',group:'Csatorna',
+  run:()=>{state.chnLabels=!state.chnLabels;draw();}}
+]);
+
+// test hooks
+window.CHN_CARRIERS=CHN_CARRIERS;window.CHN_BUNDLE=CHN_BUNDLE;window.CHN_T=CHN_T;window.CHN_PATH_HOOKS=CHN_PATH_HOOKS;
+window.chnRoutes=chnRoutes;window.chnEnds=chnEnds;window.chnCarrier=chnCarrier;window.chnName=chnName;window.chnGraph=chnGraph;window.chnTree=chnTree;
+window.chnLenToBase=chnLenToBase;window.chnChain=chnChain;window.chnToolStart=chnToolStart;window.chnApplyRule=chnApplyRule;window.chnPathFinished=chnPathFinished;
+window.chnLen=chnLen;window.chnContentText=chnContentText;
 // ---- Wall View: 2D elevation of a selected wall ----
 function devMini(type,x,y,col){
   if(type==='socket')return `<circle cx="${x}" cy="${y}" r="6" fill="#fff" stroke="${col}" stroke-width="1.4"/><line x1="${x-3}" y1="${y}" x2="${x+3}" y2="${y}" stroke="${col}" stroke-width="1.4"/>`;
@@ -6169,6 +6821,7 @@ function chaseSummary(shapes){const grp={},pk={};
 // rectangle overlaid on top when dv.devDef is set. sc = mm→px scale. col = stroke; boxCol = optional per-box fill.
 function wvKindCode(dv){return (dv.kind&&DEVKIND[dv.kind])?DEVKIND[dv.kind].s:(dv.lv?'LV':'');}
 function wvDevBox(dv,x,y,sc,col,back){const r=(DEV_BOX_W/2)*sc;let s='';
+  if(typeof stkWvBox==='function'){const st=stkWvBox(dv,x,y,sc,col,back);if(st)return st;}   // BRIDGE Stack device types (05m hooks)
   const fill=dv.boxColor||'#fff';
   // Kötődoboz: 80mm circle OR rectangle (dv.jbShape)
   if(dv.type==='junction'){const jr=((dv.jbSize||80)/2)*sc;
@@ -8047,7 +8700,7 @@ const HINTS={select:'Select — drag pan, wheel zoom. Click cable/device to dele
  roof:'Roof — click two points to span a roof over that area, then pick type (lapos/félnyereg/nyereg/konty), eave + ridge height and overhang. Right-click it to edit.',
  floor:'Padló — pont után pont, mint a térképes területmérő; élő Terület/Kerület. Az első pontra kattintva (vagy Enterrel) zárul, Backspace visszavesz egy pontot. Falakkal zárt térbe: jobb klikk → Padló a falak közé.',
  measure:'Measure — click two points for the distance.',note:'Note — click a spot, then type text. Tip: hold LEFT+RIGHT mouse to pan while drawing; Backspace = undo last click.'};
-function setMode(m){if(m!=='select'&&typeof cktPick!=='undefined'&&cktPick)cktPick=null;   // another tool ends end point picking
+function setMode(m){if(m!=='select'&&typeof cktPick!=='undefined'&&cktPick)cktPick=null;if(typeof stkToolEvent==='function')stkToolEvent('mode',{mode:m});   // another tool ends end point picking
   state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();
   document.querySelectorAll('.tool[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
   const wo=$('wallOpts');if(wo)wo.style.display=(m==='wall')?'flex':'none';
@@ -8503,12 +9156,12 @@ function floorFromWalls(x,y,level){level=level||state.active;
   selected={t:'floors',i:ix,level};draw();
   $('hud').textContent='Padló a falak közé: '+(polyAreaMM(poly)/1e6).toFixed(2)+' m² · kerület '+(polyPerimMM(poly,true)/1000).toFixed(2)+' m.';
   return true;}
-function finishPath(){if(pathDraft&&pathDraft.nodes.length>=2){pathDraft.id='p'+Date.now().toString(36);pathDraft.lane=0;
+function finishPath(){if(pathDraft&&pathDraft.nodes.length>=2){delete pathDraft.id;pathDraft.lane=0;   // the id comes from data.seq below (a timestamp id repeated within one ms)
     const off=computeStackOffset(pathDraft);
     if(off!==0){pathDraft.zoff=off;   // push every node down by |off| mm so it renders under the existing path
       pathDraft.nodes.forEach(n=>{n.h=Math.max(0,(n.h||0)+off);});
       $('hud').textContent=`Pálya ${-off} mm-rel a meglévő alá helyezve.`;}
-    data.paths.push(pathDraft);linkMarkedNodes(pathDraft);}pathDraft=null;lock=null;state.hoverR=null;draw();}
+    data.paths.push(pathDraft);ensureIds(data);linkMarkedNodes(pathDraft);if(typeof chnPathFinished==='function')chnPathFinished(pathDraft);}pathDraft=null;lock=null;state.hoverR=null;draw();}
 // ============ MOBILE TOUCH GESTURES ============
 // 1 finger: acts as the current tool (pointer events already handle draw/select/drag).
 // 2 fingers: pinch = zoom, twist = rotate (yaw), drag = pan; vertical spread while
@@ -8756,9 +9409,9 @@ function setSectionCircuit(pi,si){const sec=data.paths[pi].sections[si]||(data.p
   setTimeout(()=>{const sel=$('cCol'),sw=$('cColSw');if(sel&&sw)sel.onchange=()=>{const f=CIRCUIT_COLORS.find(x=>x.k===sel.value);sw.style.background=f?f.c:'#1f9d55';};},30);}
 function addBoxOnPath(pi,si,t){const pa=data.paths[pi],a=pa.nodes[si],b=pa.nodes[si+1];
   pushUndo();data.devices.push({type:'junction',level:a.level,x:(a.x+b.x*(t||0.5))/(1+(t||0.5))*0+ (a.x+b.x)/2,y:(a.y+b.y)/2});draw();}
-function addParallelPath(pi){const src=data.paths[pi];const clone=JSON.parse(JSON.stringify(src));
-  clone.id='p'+Date.now().toString(36);clone.lane=(src.lane||0)+1;clone.sections=clone.sections.map(s=>({build:s.build,circuit:null}));
-  pushUndo();data.paths.push(clone);draw();}
+function addParallelPath(pi){const src=data.paths[pi];const clone=copyRecord('paths',src);(clone.nodes||[]).forEach(n=>{delete n.id;});   // fresh path AND node ids from data.seq
+  clone.lane=(src.lane||0)+1;clone.sections=clone.sections.map(s=>({build:s.build,circuit:null}));
+  pushUndo();data.paths.push(clone);ensureIds(data);draw();}
 function placeBoardAt(e){const h=BOARD_DEFAULT_Z,w=snapWall(e,state.active,h);let x,y;if(w){x=w.x;y=w.y;}else{const p=baseToPlan(...clientToBase(e),dz(state.active,h));x=p[0];y=p[1];}
   pushUndo();const b={type:'board',level:state.active,x,y,h,z:h,rw:BOARD_RW,rd:BOARD_RD,ang:(w&&w.ang)||0,layer:curLayer(),autoObj:true};
   data.devices.push(b);ensureBoardObject(b);draw();}
@@ -8840,6 +9493,7 @@ function genObjectsVisible(){return state.showGenObjects!==false;}
 // ---- the dialog ----
 // lamp / height items — shared by BOTH plan device menus (the device-hit one and the hitTest one)
 function deviceExtraItems(di,items){const D=data.devices[di];if(!D)return items;
+  if(typeof stkDevMenu==='function')stkDevMenu(di,items);   // BRIDGE Stack device items (05m hooks)
   if(D.type==='light'){
     items.push({label:'💡 Lámpa adatlap… (méret, beépítés, link, kép, objektum)',act:()=>lampDialog(di)});
     items.push({label:(lampObjIndex(di)>=0?'🧊 Objektum frissítése a paraméterekből':'🧊 Objektum generálása a paraméterekből'),
@@ -9215,6 +9869,7 @@ stage.addEventListener('contextmenu',e=>{e.preventDefault();if(ctxSuppress){ctxS
     {label:'🎨 Pálya szín…',act:()=>{const pa=data.paths[ps.pi];openModal('Pálya szín',`<div class="mrow">Szín <input id="pcPick" type="color" value="${pa.color||state.pathColor||'#6f757d'}" style="width:48px;height:26px;vertical-align:middle"></div><div class="mrow" style="font-size:11px;color:#777">Ez a pálya saját színe (felülírja a globális beállítást).</div>`,()=>{pushUndo();pa.color=$('pcPick').value;draw();},'Alkalmaz');}},
     {label:'↺ Pálya szín törlése',act:()=>{pushUndo();delete data.paths[ps.pi].color;draw();}},
     {label:'🗑 Pálya törlése',act:()=>{pushUndo();data.paths.splice(ps.pi,1);draw();}}];
+    if(typeof stkPathMenu==='function')stkPathMenu(ps,items);   // BRIDGE Stack route items (05m hooks)
     qrMenu(items,'paths',{pi:ps.pi,si:ps.si});                          // QR: 05g on:['paths']
     ctxMenu(e,items);return;}
   const h=hitTest(e);if(h&&h.t!=='wall'){const items=[];if(h.t==='openings'){const oo=data.openings[h.i];if(oo.type==='stairs')items.push({label:'📐 Méretek',act:()=>editStairs(h.i)});else if(oo.type==='door'||oo.type==='window')items.push({label:'📐 Méretek',act:()=>editOpening(h.i)});
@@ -9273,6 +9928,7 @@ function roomMenuItems(rh){const rm=rh.rm,solo=soloRoomIs(rh);const items=[
       act:()=>{pushUndo();const on=noteSurfaceToggle(k);draw();
         $('hud').textContent='A '+nm+' jegyzetei '+(on?'láthatók':'elrejtve')+'.';}});});
     if(rh.src==='F')items.push({label:'🗑 Padló törlése',act:()=>{pushUndo();data.floors.splice(rh.i,1);draw();}});
+    if(typeof stkRoomMenu==='function')stkRoomMenu(rh,items);   // BRIDGE Stack room items (05m hooks)
     qrMenu(items,'floors',{rm:rm});                                     // QR: 05g on:['floors']
     return items;}
 function hideCtx2_(){}

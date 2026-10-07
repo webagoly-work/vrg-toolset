@@ -42,7 +42,7 @@ function stkGroupsOf(roleKey){return STK_GROUPS[roleKey]||(roleKey.indexOf('sys:
 // ---- shared hooks: the only render / pointer edits any later stack work package needs ----
 const STK_SCENE=[];    // fn() → svg string, appended to the SCENE (persisted drawing: marks, traces, zones)
 const STK_OVERLAY=[];  // fn() → svg string, appended to the OVERLAY (ghosts, coverage, pick highlights)
-const STK_TOOLS=[];    // {k, active()→bool, down(e)?, move(e)?, up(e)?, key(e)?, esc(e)?} — first active tool that returns true eats the event
+const STK_TOOLS=[];    // {k, active()→bool, down(e)?, move(e)?, up(e)?, key(e)?, esc(e)?, mode({mode})? — told before setMode switches} — first active tool that returns true eats the event
 const STK_CTX=[];      // fn(e) → [{label,act}…] or null — first non-empty wins the stage right-click
 const STK_WV=[];       // fn(WV) → svg in Wall View elevation coords (u,v mm) — B2 adds the anchor in 06
 const STK_PV=[];       // fn(PV) → svg in Plane View coords — B3 adds the anchor in 07
@@ -50,6 +50,22 @@ const STK_CHECKS={};   // roleKey → [fn(stack) → [{sev,msg}]]
 function stkHookSvg(list,arg){let s='';for(const f of (list||[])){try{s+=f(arg)||'';}catch(_){}}return s;}   // arg: the view's own context (STK_WV gets the elevation scales)
 function stkToolEvent(ph,e){for(const t of STK_TOOLS){try{if(t.active()&&t[ph]&&t[ph](e))return true;}catch(_){}}return false;}
 function stkCtxItems(e){for(const f of STK_CTX){try{const r=f(e);if(r&&r.length)return r;}catch(_){}}return null;}
+// extensions of the EXISTING right-click menus (they add items, they never replace the menu):
+const STK_DEVMENU=[];   // fn(di, items) — the device menu (10-lamps deviceExtraItems)
+const STK_PATHMENU=[];  // fn(ps={pi,si}, items) — the route-section menu
+const STK_ROOMMENU=[];  // fn(rh={rm,src,i,level}, items) — the room menu
+function stkMenuHook(list,a,items){for(const f of list){try{f(a,items);}catch(_){}}return items;}
+function stkDevMenu(di,items){return stkMenuHook(STK_DEVMENU,di,items);}
+function stkPathMenu(ps,items){return stkMenuHook(STK_PATHMENU,ps,items);}
+function stkRoomMenu(rh,items){return stkMenuHook(STK_ROOMMENU,rh,items);}
+// device symbols and 3D boxes of the stack's own device types (hardware nodes, endpoints)
+const STK_DEVSYM=[];   // fn(d,x,y,k,back) → svg | null — the plan symbol (first non-null wins)
+const STK_WVBOX=[];    // fn(dv,x,y,sc,col,back) → svg | null — the Wall View / Plane View box
+const STK_BOXES=[];    // fn() → [object-like {level,x,y,z,w,d,ht,ang,color,layer}] — 3D boxes, derived at draw time
+function stkFirst(list,args){for(const f of list){try{const r=f.apply(null,args);if(r)return r;}catch(_){}}return null;}
+function stkDevSym(d,x,y,k,back){return stkFirst(STK_DEVSYM,[d,x,y,k,back]);}
+function stkWvBox(dv,x,y,sc,col,back){return stkFirst(STK_WVBOX,[dv,x,y,sc,col,back]);}
+function stkBoxes(){const out=[];for(const f of STK_BOXES){try{(f()||[]).forEach(o=>out.push(o));}catch(_){}}return out;}
 
 // ---- model ----
 function stkById(id){return id?stacks.find(s=>s.id===id)||null:null;}
@@ -239,3 +255,5 @@ window.stkCreate=stkCreate;window.stkAdopt=stkAdopt;window.stkDissolve=stkDissol
 window.stkStages=stkStages;window.stkCheck=stkCheck;window.stkGroupsOf=stkGroupsOf;window.stkLeave=stkLeave;window.stkActivate=stkActivate;
 window.stkNonConstruct=stkNonConstruct;window.stkMoveNonConstruct=stkMoveNonConstruct;window.stkHookSvg=stkHookSvg;window.stkToolEvent=stkToolEvent;
 window.stkCtxItems=stkCtxItems;window.stkMenu=stkMenu;window.stkSetPhase=stkSetPhase;
+window.STK_DEVMENU=STK_DEVMENU;window.STK_PATHMENU=STK_PATHMENU;window.STK_ROOMMENU=STK_ROOMMENU;window.STK_DEVSYM=STK_DEVSYM;window.STK_WVBOX=STK_WVBOX;window.STK_BOXES=STK_BOXES;
+window.stkDevMenu=stkDevMenu;window.stkPathMenu=stkPathMenu;window.stkRoomMenu=stkRoomMenu;window.stkDevSym=stkDevSym;window.stkWvBox=stkWvBox;window.stkBoxes=stkBoxes;

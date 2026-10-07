@@ -20,7 +20,7 @@ const HINTS={select:'Select — drag pan, wheel zoom. Click cable/device to dele
  roof:'Roof — click two points to span a roof over that area, then pick type (lapos/félnyereg/nyereg/konty), eave + ridge height and overhang. Right-click it to edit.',
  floor:'Padló — pont után pont, mint a térképes területmérő; élő Terület/Kerület. Az első pontra kattintva (vagy Enterrel) zárul, Backspace visszavesz egy pontot. Falakkal zárt térbe: jobb klikk → Padló a falak közé.',
  measure:'Measure — click two points for the distance.',note:'Note — click a spot, then type text. Tip: hold LEFT+RIGHT mouse to pan while drawing; Backspace = undo last click.'};
-function setMode(m){if(m!=='select'&&typeof cktPick!=='undefined'&&cktPick)cktPick=null;   // another tool ends end point picking
+function setMode(m){if(m!=='select'&&typeof cktPick!=='undefined'&&cktPick)cktPick=null;if(typeof stkToolEvent==='function')stkToolEvent('mode',{mode:m});   // another tool ends end point picking
   state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();
   document.querySelectorAll('.tool[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
   const wo=$('wallOpts');if(wo)wo.style.display=(m==='wall')?'flex':'none';
@@ -476,12 +476,12 @@ function floorFromWalls(x,y,level){level=level||state.active;
   selected={t:'floors',i:ix,level};draw();
   $('hud').textContent='Padló a falak közé: '+(polyAreaMM(poly)/1e6).toFixed(2)+' m² · kerület '+(polyPerimMM(poly,true)/1000).toFixed(2)+' m.';
   return true;}
-function finishPath(){if(pathDraft&&pathDraft.nodes.length>=2){pathDraft.id='p'+Date.now().toString(36);pathDraft.lane=0;
+function finishPath(){if(pathDraft&&pathDraft.nodes.length>=2){delete pathDraft.id;pathDraft.lane=0;   // the id comes from data.seq below (a timestamp id repeated within one ms)
     const off=computeStackOffset(pathDraft);
     if(off!==0){pathDraft.zoff=off;   // push every node down by |off| mm so it renders under the existing path
       pathDraft.nodes.forEach(n=>{n.h=Math.max(0,(n.h||0)+off);});
       $('hud').textContent=`Pálya ${-off} mm-rel a meglévő alá helyezve.`;}
-    data.paths.push(pathDraft);linkMarkedNodes(pathDraft);}pathDraft=null;lock=null;state.hoverR=null;draw();}
+    data.paths.push(pathDraft);ensureIds(data);linkMarkedNodes(pathDraft);if(typeof chnPathFinished==='function')chnPathFinished(pathDraft);}pathDraft=null;lock=null;state.hoverR=null;draw();}
 // ============ MOBILE TOUCH GESTURES ============
 // 1 finger: acts as the current tool (pointer events already handle draw/select/drag).
 // 2 fingers: pinch = zoom, twist = rotate (yaw), drag = pan; vertical spread while

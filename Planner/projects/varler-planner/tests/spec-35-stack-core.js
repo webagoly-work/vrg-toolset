@@ -183,7 +183,7 @@ setTimeout(()=>{
   ok('construct check: a room without an id → error',(function(){const f=D().floors[0];delete f.id;const r=w.stkCheck(S10,'construct').some(x=>x.sev==='error');w.ensureIds(D());return r;})());
   ok('construct check is quiet once there is a wall, a door and a named room',(function(){D().floors[0].name='Hall';addWall(w.stkLayer(S10.id,'construct').id,0);
     D().openings.push({type:'door',level:lvl,x:0,y:0,ang:0,layer:w.stkLayer(S10.id,'construct').id});w.ensureIds(D());return w.stkCheck(S10,'construct').length===0;})());
-  ok('other roles have no checks until a work package adds one',w.stkCheck(S10,'hw').length===0);
+  ok('a role no work package registered checks for returns none',w.stkCheck(S10,'zz:none').length===0);
   ok('STK_CHECKS[role] functions are concatenated, a throwing one is skipped',(function(){w.STK_CHECKS.hw=[()=>[{sev:'warn',msg:'q'}],()=>{throw new Error('x');}];const c=w.stkCheck(S10,'hw');delete w.STK_CHECKS.hw;return c.length===1&&c[0].msg==='q';})());
   ok('the stage badge shows the warning count in the rail',(function(){w.STK_CHECKS.mark=[()=>[{sev:'warn',msg:'q'}]];w.invalidateShell();w.renderShell();const b=railBtns().find(x=>x.dataset.k==='stk:mark').querySelector('.stgB');delete w.STK_CHECKS.mark;return !!b&&b.textContent==='1';})());
 

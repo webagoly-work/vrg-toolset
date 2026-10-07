@@ -40,6 +40,7 @@ function genObjectsVisible(){return state.showGenObjects!==false;}
 // ---- the dialog ----
 // lamp / height items — shared by BOTH plan device menus (the device-hit one and the hitTest one)
 function deviceExtraItems(di,items){const D=data.devices[di];if(!D)return items;
+  if(typeof stkDevMenu==='function')stkDevMenu(di,items);   // BRIDGE Stack device items (05m hooks)
   if(D.type==='light'){
     items.push({label:'💡 Lámpa adatlap… (méret, beépítés, link, kép, objektum)',act:()=>lampDialog(di)});
     items.push({label:(lampObjIndex(di)>=0?'🧊 Objektum frissítése a paraméterekből':'🧊 Objektum generálása a paraméterekből'),
@@ -415,6 +416,7 @@ stage.addEventListener('contextmenu',e=>{e.preventDefault();if(ctxSuppress){ctxS
     {label:'🎨 Pálya szín…',act:()=>{const pa=data.paths[ps.pi];openModal('Pálya szín',`<div class="mrow">Szín <input id="pcPick" type="color" value="${pa.color||state.pathColor||'#6f757d'}" style="width:48px;height:26px;vertical-align:middle"></div><div class="mrow" style="font-size:11px;color:#777">Ez a pálya saját színe (felülírja a globális beállítást).</div>`,()=>{pushUndo();pa.color=$('pcPick').value;draw();},'Alkalmaz');}},
     {label:'↺ Pálya szín törlése',act:()=>{pushUndo();delete data.paths[ps.pi].color;draw();}},
     {label:'🗑 Pálya törlése',act:()=>{pushUndo();data.paths.splice(ps.pi,1);draw();}}];
+    if(typeof stkPathMenu==='function')stkPathMenu(ps,items);   // BRIDGE Stack route items (05m hooks)
     qrMenu(items,'paths',{pi:ps.pi,si:ps.si});                          // QR: 05g on:['paths']
     ctxMenu(e,items);return;}
   const h=hitTest(e);if(h&&h.t!=='wall'){const items=[];if(h.t==='openings'){const oo=data.openings[h.i];if(oo.type==='stairs')items.push({label:'📐 Méretek',act:()=>editStairs(h.i)});else if(oo.type==='door'||oo.type==='window')items.push({label:'📐 Méretek',act:()=>editOpening(h.i)});
@@ -473,6 +475,7 @@ function roomMenuItems(rh){const rm=rh.rm,solo=soloRoomIs(rh);const items=[
       act:()=>{pushUndo();const on=noteSurfaceToggle(k);draw();
         $('hud').textContent='A '+nm+' jegyzetei '+(on?'láthatók':'elrejtve')+'.';}});});
     if(rh.src==='F')items.push({label:'🗑 Padló törlése',act:()=>{pushUndo();data.floors.splice(rh.i,1);draw();}});
+    if(typeof stkRoomMenu==='function')stkRoomMenu(rh,items);   // BRIDGE Stack room items (05m hooks)
     qrMenu(items,'floors',{rm:rm});                                     // QR: 05g on:['floors']
     return items;}
 function hideCtx2_(){}
