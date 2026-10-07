@@ -44,7 +44,8 @@ setTimeout(()=>{
   const plan=w.afillChannelPlan(S.id);const RT=id=>plan.routes.find(x=>x.p===id);
   ok('BASE→RBX1: six pipes C1…C5 + C4b in order with their fixed sizes',J(RT(cB1.id).pipes.map(p=>p.key+':'+p.size))===J(['C1:M25','C2:M40','C3:M20','C4:M25','C4b:M20','C5:M20']));
   ok('…C1 carries 4 × Cat6A (RBX1 + RBX2) → an overfill warning (177 mm² > 105 mm²)',RT(cB1.id).pipes[0].cables[0].n===4&&plan.warns.some(x=>x.code==='chn.overfill'&&x.ref===cB1.id&&/C1/.test(x.msg)));
-  ok('…RBX1→RBX2 C1 carries 2 → no warning there',RT(cR12.id).pipes[0].cables[0].n===2&&!plan.warns.some(x=>x.ref===cR12.id&&/C1 /.test(x.msg)));
+  ok('…RBX1→RBX2 C1 carries 2 → no warning there',RT(cR12.id).pipes[0].cables[0].n===2&&!plan.warns.some(x=>x.sev==='warn'&&x.ref===cR12.id&&/C1 /.test(x.msg)));
+  ok('…but the route is over 10 m and 34 % > 33 % → a chn.long info on C1 (STD-001 vs A2 §1), not marked over',w.chnLen(cR12)>10000&&!RT(cR12.id).pipes[0].over&&plan.warns.some(x=>x.sev==='info'&&x.code==='chn.long'&&x.ref===cR12.id&&x.msg.indexOf('C1 M25')===0),Math.round(w.chnLen(cR12)));
   ok('board→RBX1: 1 lighting + 2 socket circuits → M32 (2) + M25 (1)',J(RT(m1.id).pipes.map(p=>[p.size,p.cables.reduce((s,c)=>s+c.n,0)]))===J([['M32',2],['M25',1]]),J(RT(m1.id).pipes.map(p=>[p.size,p.cables])));
   ok('board→RBX2: lighting only (no sockets in R2) → one M25',J(RT(m2.id).pipes.map(p=>p.size))===J(['M25']));
   ok('SSC→RBX1: one trunk ≥ M25 holding both SEC cables, merging the room pipes',(function(){const t=RT(sec.id).pipes[0];return t.key==='TRUNK'&&t.cables[0].n===2&&w.AFILL_CONDUITS.findIndex(c=>c.k===t.size)>=2&&t.merged.length===2;})());

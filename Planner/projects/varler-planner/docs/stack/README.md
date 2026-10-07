@@ -48,36 +48,51 @@ finished WP is what counts, not per session.
 
 | WP | title | depends | size | status |
 |---|---|---|---|---|
-| A1 | Layer model v2 + schema seed | — | M | verified — 2026-10-06 — uncommitted · 1 fix (active layer after undo) · follow-ups: whiteout walls + Wall View notes ignore opacity |
+| A1 | Layer model v2 + schema seed | — | M | verified — 2026-10-06 — 58c3ecc · 1 fix (active layer after undo) · follow-ups: whiteout walls + Wall View notes ignore opacity |
 | A2 | Layer panel: vertical sub-layers, opacity, swap/move | A1 | M | built — 2026-10-06 — 552148c |
 | A3 | Duplicate, merge, link, lock | A2 | M | built — 2026-10-06 — 552148c |
 | ⏸ | **checkpoint — use the new layer panel on NV4 / P33** | | | |
 | B1 | Stack model, wizard, panel group, stage rail, shared hooks | A3 | L | built — 2026-10-07 — d5cbf43 |
 | B2 | Marks: walls, sides, vertical/horizontal strips | B1 | L | built — 2026-10-07 — fc5e894 |
 | B3 | Marks: doors, windows, floor/ceiling strips and zones | B2 | M | built — 2026-10-07 — fc5e894 |
-| B4 | Movement traces: 45° line, freehand, smoothed, door snap | B3 | M | built — 2026-10-07 — uncommitted |
-| B5 | Portal graph: line of sight, 500 mm encoding, heatmap | B4 | M | built — 2026-10-07 — uncommitted |
+| B4 | Movement traces: 45° line, freehand, smoothed, door snap | B3 | M | built — 2026-10-07 — f40abfe |
+| B5 | Portal graph: line of sight, 500 mm encoding, heatmap | B4 | M | built — 2026-10-07 — f40abfe |
 | ⏸ | **checkpoint — mark one real floor; do the tags feel right?** | | | |
-| C1 | Hardware nodes: RBX, board, meter, entry, SSC | B2 | M | built + verified — 2026-10-07 — main session (spec-40) |
-| C2 | RBX room serving + coverage ghost | C1 | M | built + verified — 2026-10-07 — main session (spec-40) |
-| C3 | RF multi-wall model + RF view | C2 | M | built + verified — 2026-10-07 — main session (spec-42) |
-| C4 | BASE placement + guideline highlights | C1 | S–M | built + verified — 2026-10-07 — main session (spec-40) |
-| C5 | Channel routes between hardware nodes | C1, C4 | M | built + verified — 2026-10-07 — main session (spec-44) |
+| C1 | Hardware nodes: RBX, board, meter, entry, SSC | B2 | M | built + verified — 2026-10-07 — ce1413e (spec-40) |
+| C2 | RBX room serving + coverage ghost | C1 | M | built + verified — 2026-10-07 — ce1413e (spec-40) |
+| C3 | RF multi-wall model + RF view | C2 | M | built + verified — 2026-10-07 — ce1413e (spec-42) |
+| C4 | BASE placement + guideline highlights | C1 | S–M | built + verified — 2026-10-07 — ce1413e (spec-40) |
+| C5 | Channel routes between hardware nodes | C1, C4 | M | built + verified — 2026-10-07 — ce1413e (spec-44) |
 | ⏸ | **checkpoint — phase 1 of a stack end to end** | | | |
-| D1 | Endpoint catalogue (BRIDGE codes) | B1 | M | built + verified — 2026-10-07 — main session (spec-45) |
-| D2 | Room needs checklists | D1, B3 | M | built + verified — 2026-10-07 — main session (spec-46) |
-| D3 | Placement suggestions | D1, D2, B5, (C3) | L | built + verified — 2026-10-07 — main session (spec-46) |
-| D4 | Circuits + control groups in the stack | D1 | M | built + verified — 2026-10-07 — main session (spec-45) |
+| D1 | Endpoint catalogue (BRIDGE codes) | B1 | M | built + verified — 2026-10-07 — 7d04549 (spec-45) |
+| D2 | Room needs checklists | D1, B3 | M | built + verified — 2026-10-07 — 7d04549 (spec-46) |
+| D3 | Placement suggestions | D1, D2, B5, (C3) | L | built + verified — 2026-10-07 — 7d04549 (spec-46) |
+| D4 | Circuits + control groups in the stack | D1 | M | built + verified — 2026-10-07 — 7d04549 (spec-45) |
 | ⏸ | **checkpoint — fill one room layer by layer** | | | |
-| E1 | Stack view + ARM routes | C5, D1 | M | built + verified — 2026-10-07 — main session (spec-49) |
-| E2 | Route graph: Dijkstra · chain · Steiner (KMB) | E1 | M | built + verified — 2026-10-07 — main session (spec-50) |
-| E3 | Auto-fill: runs, pipes, sizing | E2, D4, D2 | L | built + verified — 2026-10-07 — main session (spec-51) |
+| E1 | Stack view + ARM routes | C5, D1 | M | built + verified — 2026-10-07 — 96cd797 (spec-49) |
+| E2 | Route graph: Dijkstra · chain · Steiner (KMB) | E1 | M | built + verified — 2026-10-07 — 96cd797 (spec-50) |
+| E3 | Auto-fill: runs, pipes, sizing | E2, D4, D2 | L | built + verified — 2026-10-07 — 96cd797 (spec-51) |
 | ⏸ | **checkpoint — compare a filled room with your own hand count** | | | |
-| E4 | Channel fill: bundle, RBX feeds, trunks | E3, C5 | M | built + verified — 2026-10-07 — main session (spec-52) |
-| E5 | Elosztószekrény: ways, RCBO, modules, phases | E4, D4 | M | built + verified — 2026-10-07 — main session (spec-53) |
+| E4 | Channel fill: bundle, RBX feeds, trunks | E3, C5 | M | built + verified — 2026-10-07 — 96cd797 (spec-52) |
+| E5 | Elosztószekrény: ways, RCBO, modules, phases | E4, D4 | M | built + verified — 2026-10-07 — 96cd797 (spec-53) |
 
-≈ 5 600 new lines in 13 new modules (`05l`…`05x`) + 22 spec files. Golden renders stay identical
-throughout (only A1 updates the six `/session` hashes once).
+Built: 13 new modules (`05l`…`05x`, 3 568 dense lines) + 19 spec files; 6 073 lines added over
+`src/` + `tests/` against `planner-circuit-endpoints`. Suite: 48 suites, 2 029 assertions, golden
+70/70. The golden hashes were re-baselined once (f140380): the 36 diffs were the six fixtures' six
+drawing renders, changed by the page-scale work already on the base branch, not by the stack.
+`spec-54-stack-e2e` builds one apartment through every phase (hardware → channel → endpoints →
+ARM → fill → cabinet) and times `draw()`.
+
+From C1 on, the WPs were built in the main session instead of by cheaper builders, and the whole
+stack was then reviewed as one piece. What that review changed in code that existed before:
+
+- path ids: `finishPath` and the parallel-path copy issued timestamp ids, which collide when two
+  paths finish in the same millisecond → both now take `data.seq` ids (`ensureIds`, `copyRecord`).
+- a tool flag (channel / ARM / endpoint) leaked onto the next ordinary path → `setMode` emits a
+  `mode` tool event and every stack tool resets on it.
+- the stage rail's checks and the status-bar validation were cached across model changes (stale
+  ticks in spec-17/18) → keyed on `shellModelKey()`; an explicit `renderShell()` recomputes.
+- deleting a layer and changing a stack's phase were not undoable → both push undo.
 
 ---
 
@@ -142,6 +157,13 @@ throughout (only A1 updates the six `/session` hashes once).
    undoing a device move would also undo a visibility toggle made after it.
 8. **Acceptance anchored to a real design:** E5's test reproduces P33's settled cabinet (24 ways,
    29 modules single-phase, 34 three-phase).
+9. **STD-001's fixed C1 size meets A2 only up to 10 m** (found while building E4): C1 M25 with two
+   Cat6A is 34 %; A2 §1 allows 40 %, but only 33 % on a run over 10 m. The fill keeps STD-001's
+   size and raises an info (`chn.long`) on such a channel, never a warning, never an upsize.
+   A single cable in its fixed pipe is judged by the 1.4 × OD rule, so a lone bus-B pair in M20 is
+   not an overfill.
+10. **One owner per room.** Two RoomBoxes with an equal claim on a room (both face it, no manual
+    assignment) are an error in the Hardver checks; the lower id serves it until you assign one.
 
 ## Follow-ups (not in this pack)
 F1 phase-3 exporters · F2 conventional switch schemes (wiring pipeline S6) · F3 12 V / 24 V separate

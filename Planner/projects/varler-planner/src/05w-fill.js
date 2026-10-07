@@ -173,8 +173,12 @@ function afillChannelPlan(stackId,onlyRbxId){const S=stackId?stkById(stackId):st
     if(k==='channel'){const n=below(p.id).length||1;
       CHN_BUNDLE.forEach(b=>{const cables=b.cab.map(c=>({c:c.c,n:(c.c==='SPARE'?1:(c.n||1)*n),w:b.w}));
         const area=cables.filter(c=>!AFILL_CABLES[c.c].empty).reduce((s,c)=>s+c.n*afillArea(AFILL_CABLES[c.c].od),0),f=area/afillArea(AFILL_CONDUITS[afillCondIx(b.w)].id);
-        R.pipes.push({key:b.k,fam:b.fam||'SPARE',cables,segs,len,size:b.w,fill:+f.toFixed(3),why:b.k+' '+b.w+(b.note?' — '+b.note:'')});
-        if(f>AFILL_RULE.fill+1e-9)out.warns.push({sev:'warn',code:'chn.overfill',msg:b.k+' túltelítve ('+chnName(p)+'): '+cables.map(c=>c.n+' × '+afillCabName(c.c)).join(' + ')+' ('+Math.round(f*100)+' %) — STD-001 nem szabályozza a láncolt köteget; döntés kell: párhuzamos köteg vagy nagyobb cső.',ref:p.id});});}
+        // the fixed size is enough when the sizing rule would not ask for more (one cable: 1.4 × OD; several: the fill)
+        // a real overfill fails even the 40 % rule; 'fits at 40 %, not at the 33 % of a run over 10 m' is STD-001's own C1 vs A2 §1
+        const bare=cables.map(c=>({c:c.c,n:c.n,w:'M16'})),fits=afillCondIx(afillSize(bare,0).size)<=afillCondIx(b.w),fitsLong=afillCondIx(afillSize(bare,len).size)<=afillCondIx(b.w);
+        R.pipes.push({key:b.k,fam:b.fam||'SPARE',cables,segs,len,size:b.w,fill:+f.toFixed(3),why:b.k+' '+b.w+(b.note?' — '+b.note:''),over:!fits});
+        if(fits&&!fitsLong)out.warns.push({sev:'info',code:'chn.long',msg:b.k+' '+b.w+' ('+chnName(p)+', '+(len/1000).toFixed(1)+' m): '+Math.round(f*100)+' % — a 10 m feletti szakaszra az A2 33 %-ot enged, az STD-001 rögzített mérete ennél szűkebb. Ellenőrizd a csövet.',ref:p.id});
+        if(!fits)out.warns.push({sev:'warn',code:'chn.overfill',msg:b.k+' túltelítve ('+chnName(p)+'): '+cables.map(c=>c.n+' × '+afillCabName(c.c)).join(' + ')+' ('+Math.round(f*100)+' %) — STD-001 nem szabályozza a láncolt köteget; döntés kell: párhuzamos köteg vagy nagyobb cső.',ref:p.id});});}
     else if(k==='mains'){const e=chnEnds(p),rb=e.find(d=>d&&d.type==='rbx'),sc=e.find(d=>d&&d.type==='ssc');let cables=[];
       if(rb){cables.push({c:'NYM3x15',n:E.lightPerRbx});afillRbxCircuits(rb,S).forEach(c=>cables.push({c:c.cable,n:1}));}
       else if(sc)cables.push({c:'NYM3x15',n:E.sys.ssc});
