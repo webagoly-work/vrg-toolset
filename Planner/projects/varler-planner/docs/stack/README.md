@@ -64,10 +64,10 @@ finished WP is what counts, not per session.
 | C4 | BASE placement + guideline highlights | C1 | S–M | built + verified — 2026-10-07 — main session (spec-40) |
 | C5 | Channel routes between hardware nodes | C1, C4 | M | built + verified — 2026-10-07 — main session (spec-44) |
 | ⏸ | **checkpoint — phase 1 of a stack end to end** | | | |
-| D1 | Endpoint catalogue (BRIDGE codes) | B1 | M | todo |
-| D2 | Room needs checklists | D1, B3 | M | todo |
-| D3 | Placement suggestions | D1, D2, B5, (C3) | L | todo |
-| D4 | Circuits + control groups in the stack | D1 | M | todo |
+| D1 | Endpoint catalogue (BRIDGE codes) | B1 | M | built + verified — 2026-10-07 — main session (spec-45) |
+| D2 | Room needs checklists | D1, B3 | M | built + verified — 2026-10-07 — main session (spec-46) |
+| D3 | Placement suggestions | D1, D2, B5, (C3) | L | built + verified — 2026-10-07 — main session (spec-46) |
+| D4 | Circuits + control groups in the stack | D1 | M | built + verified — 2026-10-07 — main session (spec-45) |
 | ⏸ | **checkpoint — fill one room layer by layer** | | | |
 | E1 | Stack view + ARM routes | C5, D1 | M | todo |
 | E2 | Route graph: Dijkstra · chain · Steiner (KMB) | E1 | M | todo |

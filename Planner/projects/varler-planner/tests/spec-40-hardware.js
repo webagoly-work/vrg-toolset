@@ -31,7 +31,7 @@ setTimeout(()=>{
   ok('hardware is in the Eszközök sub-layer',w.lyrDevCat({type:'rbx'})==='device'&&w.lyrDevCat({type:'meter'})==='device');
   // an RBX on the partition, facing A (x < 4000)
   const g=w.hwGhostAt('rbx',lvl,3900,2000);
-  ok('a ghost on the partition faces the pointer side',!!g&&g.wall===part().id&&g.side===0&&g.x===3950&&g.y===2000,JSON.stringify(g));
+  ok('a ghost on the partition faces the pointer side',!!g&&g.wall===part().id&&g.side===0&&g.x===4000&&g.y===2000,JSON.stringify(g));
   const rbx=w.hwPlace(g);
   ok('the RBX is placed at h 2150 with class RB-M',rbx&&rbx.type==='rbx'&&rbx.h===2150&&rbx.rb==='RB-M');
   ok('its ref is keyed to the room it faces (1.03 → RBX03)',rbx.ref==='RBX03',rbx.ref);

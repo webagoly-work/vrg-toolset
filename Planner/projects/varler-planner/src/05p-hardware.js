@@ -11,8 +11,8 @@
 // existing `board`), so they inherit placement, room membership, links to routes, ids and undo.
 //   rbx  {rb:'RB-M', serves:null|[roomId…], radios:['thread',…]}   serves null = automatic (C2)
 //   base {units:['NET','COMP','MEDIA']}                              any non-empty subset (C4)
-// A device sits on the FACE of its wall (x,y = the face point, side = which face), so deviceHostWall (05h)
-// and the Wall View agree on the side. Its 3D box is DERIVED at draw time (STK_BOXES) — never stored, so it
+// A wall device sits on the wall CENTRELINE with d.side naming the face (1 = along wallInfo(r).perp), exactly as the
+// Device tool places sockets and switches, so deviceHostWall (05h), the row and auto-link tools (05k) treat it alike. Its 3D box is DERIVED at draw time (STK_BOXES) — never stored, so it
 // can never go stale when the device moves. Prefix: hw.
 
 const HW_TYPES={rbx:'RoomBox (RBX)',base:'BASE',meter:'Mérőóra',entry:'Adatbelépési pont',ssc:'Biztonsági központ (SSC)'};
@@ -173,7 +173,7 @@ function hwGhostFrom(pk,t,h){const def=HW_DEF[t];
       const c=(m.u0+m.u1)/2,dd=Math.abs(c-u);if(dd<bd){bd=dd;best=c;}});
     if(best!=null){u=best;snapped=true;}}
   u=Math.round(Math.max(0,Math.min(mrkWallLen(pk.r),u)));
-  const onCentre=t==='board',p=mrkFacePt(pk.r,pk.side,u,onCentre?-wallInfo(pk.r).thick/2:0);      // the board keeps its centreline convention
+  const p=mrkFacePt(pk.r,pk.side,u,-wallInfo(pk.r).thick/2);     // on the CENTRELINE, the face in d.side — the convention of every other device (05k)
   const ban=(typeof mrkAt==='function')?mrkAt(pk.level,pk.id,pk.side,u,h).filter(x=>x.pol==='ban'):[];
   return {type:t,level:pk.level,x:Math.round(p[0]),y:Math.round(p[1]),side:pk.side>0?1:0,wall:pk.id,u,h,
     ang:wallInfo(pk.r).horiz?0:Math.PI/2,snapped,ban};}

@@ -110,7 +110,7 @@ setTimeout(()=>{
   ok('picking another stack layer in the panel moves the rail with it',(function(){const hw=LY().find(l=>l.role==='hw');const r=w.document.querySelector('[data-la="'+hw.id+'"]');r.checked=true;r.dispatchEvent(new w.Event('change',{bubbles:true}));
     return railBtns().find(b=>b.classList.contains('on')).dataset.k==='stk:hw';})());
   ok('shell.next / shell.prev walk the stack stages',(function(){w.setStage('stk:construct');w.actionById('shell.next').run({});const a=w.shellKey();w.actionById('shell.prev').run({});return a==='stk:mark'&&w.shellKey()==='stk:construct';})());
-  ok('the construct role offers the Fal / Helyiség action groups, mark offers none yet',w.stkGroupsOf('construct').indexOf('Fal')>=0&&w.stkGroupsOf('sys:MAINS').join()==='Végpont,Szükséglet'&&w.stkGroupsOf('mark').join()==='Jelölés');
+  ok('the construct role offers the Fal / Helyiség action groups, mark offers none yet',w.stkGroupsOf('construct').indexOf('Fal')>=0&&w.stkGroupsOf('sys:MAINS').slice(0,2).join()==='Végpont,Szükséglet'&&w.stkGroupsOf('mark').join()==='Jelölés');
   ok('STK_GROUPS["+sys:MAINS"] extends one system role only',(function(){w.STK_GROUPS['+sys:MAINS']=['X'];const a=w.stkGroupsOf('sys:MAINS').indexOf('X')>=0&&w.stkGroupsOf('sys:LV').indexOf('X')<0;delete w.STK_GROUPS['+sys:MAINS'];return a;})());
   click($('stgBack'));
   ok('"◂ Általános" restores the six general stages',railBtns().length===6&&!$('stgBack')&&w.stkActive()===null&&w.shellStages()===w.STAGES);
