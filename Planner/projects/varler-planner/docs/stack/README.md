@@ -69,12 +69,12 @@ finished WP is what counts, not per session.
 | D3 | Placement suggestions | D1, D2, B5, (C3) | L | built + verified — 2026-10-07 — main session (spec-46) |
 | D4 | Circuits + control groups in the stack | D1 | M | built + verified — 2026-10-07 — main session (spec-45) |
 | ⏸ | **checkpoint — fill one room layer by layer** | | | |
-| E1 | Stack view + ARM routes | C5, D1 | M | todo |
-| E2 | Route graph: Dijkstra · chain · Steiner (KMB) | E1 | M | todo |
-| E3 | Auto-fill: runs, pipes, sizing | E2, D4, D2 | L | todo |
+| E1 | Stack view + ARM routes | C5, D1 | M | built + verified — 2026-10-07 — main session (spec-49) |
+| E2 | Route graph: Dijkstra · chain · Steiner (KMB) | E1 | M | built + verified — 2026-10-07 — main session (spec-50) |
+| E3 | Auto-fill: runs, pipes, sizing | E2, D4, D2 | L | built + verified — 2026-10-07 — main session (spec-51) |
 | ⏸ | **checkpoint — compare a filled room with your own hand count** | | | |
-| E4 | Channel fill: bundle, RBX feeds, trunks | E3, C5 | M | todo |
-| E5 | Elosztószekrény: ways, RCBO, modules, phases | E4, D4 | M | todo |
+| E4 | Channel fill: bundle, RBX feeds, trunks | E3, C5 | M | built + verified — 2026-10-07 — main session (spec-52) |
+| E5 | Elosztószekrény: ways, RCBO, modules, phases | E4, D4 | M | built + verified — 2026-10-07 — main session (spec-53) |
 
 ≈ 5 600 new lines in 13 new modules (`05l`…`05x`) + 22 spec files. Golden renders stay identical
 throughout (only A1 updates the six `/session` hashes once).

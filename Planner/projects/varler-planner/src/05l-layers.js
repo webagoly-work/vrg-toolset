@@ -56,7 +56,9 @@ function lyrMigrate(L){if(!L)return L;
 function lyrMigrateAll(){layers.forEach(lyrMigrate);}
 // the layer opacity of an item in a category, 1 when none is set
 function lyrOp(item,cat){const L=layerById((item&&item.layer)||'L0'),k=lyrCat(item,cat);
-  const v=L.op&&L.op[k];return (typeof v==='number'&&v>=0.1&&v<1)?v:1;}
+  const v=L.op&&L.op[k];let op=(typeof v==='number'&&v>=0.1&&v<1)?v:1;
+  if(state.stkView&&typeof armFade==='function')op=Math.round(op*armFade(item)*100)/100;   // E1: the stack drawn as one, other layers faded
+  return op;}
 function lyrOpStr(v){return String(+v.toFixed(1));}
 function lyrOpAttr(item,cat){const v=lyrOp(item,cat);return v===1?'':` opacity="${lyrOpStr(v)}"`;}
 function lyrWrap(item,cat,svg){const v=lyrOp(item,cat);return v===1?svg:`<g opacity="${lyrOpStr(v)}">`+svg+`</g>`;}

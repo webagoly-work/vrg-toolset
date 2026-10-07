@@ -4557,7 +4557,9 @@ function lyrMigrate(L){if(!L)return L;
 function lyrMigrateAll(){layers.forEach(lyrMigrate);}
 // the layer opacity of an item in a category, 1 when none is set
 function lyrOp(item,cat){const L=layerById((item&&item.layer)||'L0'),k=lyrCat(item,cat);
-  const v=L.op&&L.op[k];return (typeof v==='number'&&v>=0.1&&v<1)?v:1;}
+  const v=L.op&&L.op[k];let op=(typeof v==='number'&&v>=0.1&&v<1)?v:1;
+  if(state.stkView&&typeof armFade==='function')op=Math.round(op*armFade(item)*100)/100;   // E1: the stack drawn as one, other layers faded
+  return op;}
 function lyrOpStr(v){return String(+v.toFixed(1));}
 function lyrOpAttr(item,cat){const v=lyrOp(item,cat);return v===1?'':` opacity="${lyrOpStr(v)}"`;}
 function lyrWrap(item,cat,svg){const v=lyrOp(item,cat);return v===1?svg:`<g opacity="${lyrOpStr(v)}">`+svg+`</g>`;}
@@ -7323,6 +7325,648 @@ window.NEED_KINDS=NEED_KINDS;window.NEED_DEFAULTS=NEED_DEFAULTS;window.SUG_RULES
 window.needFold=needFold;window.needKind=needKind;window.needDefaults=needDefaults;window.needDerived=needDerived;window.needOf=needOf;window.needSet=needSet;
 window.needHave=needHave;window.needStatus=needStatus;window.needRoomSummary=needRoomSummary;window.needNextRole=needNextRole;window.needReport=needReport;
 window.needDialog=needDialog;window.needOverview=needOverview;window.sugFor=sugFor;window.sugSnap=sugSnap;window.sugRoomOf=sugRoomOf;window.sugOverlaySvg=sugOverlaySvg;
+
+// An ARM is a one-line route from a RoomBox towards endpoints (STD-004 `R03.A2` — layers are an attribute, never
+// part of the name). One ARM carries any number of layers; "the same route, separate conduits" is worked out by
+// the fill (E3) — here only geometry and joins are drawn. ARM routes are ordinary paths (route:'arm') on the stack's
+// ARM layer, drawn with the Path tool while ARM_T is on; a route that starts or ends ON another route branches
+// from it through an explicit join n.j = {p, n} (never by coincidence). Prefix: arm.
+
+let ARM_T={on:false,rule:'sull'};
+const ARM_SNAP=150;                       // mm in plan: an end this close to another route branches from it
+
+// ---- the stack view [Q40=A]: every layer of the active stack drawn as one, the rest faded to 30 % ----------------
+function armFade(item){const S=(typeof stkActive==='function')?stkActive():null;if(!S)return 1;
+  const L=lyrLayer((item&&item.layer)||'L0');return L&&L.stack===S.id?1:0.3;}
+
+// ---- the tool --------------------------------------------------------------------------------------------------------
+function armToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkLayer(S.id,'arm'):null;
+  if(!L){lyrHud('Aktív BRIDGE Stack ARM réteggel kell hozzá.');return;}
+  if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();if(typeof epToolOff==='function')epToolOff();
+  state.activeLayer=L.id;state.stkView=true;renderLayers();
+  state.pathType=ARM_T.rule==='csat'?'csat':'gege';setMode('path');ARM_T.on=true;
+  const mh=$('modeHint');if(mh)mh.textContent='ARM pálya: az RBX-től a végpontokig, bármely réteg végpontjára illeszthető · ágaztatás: kezdd egy meglévő pályán · Tab: süllyesztett ↔ kábelcsatorna · dupla katt: kész';
+  lyrHud('ARM pálya — stack nézet bekapcsolva');}
+STK_TOOLS.push({k:'armRoute',active:()=>{if(!ARM_T.on)return false;if(state.mode!=='path'){ARM_T.on=false;return false;}return true;},
+  key(e){if(e.key!=='Tab')return false;e.preventDefault();ARM_T.rule=ARM_T.rule==='csat'?'sull':'csat';state.pathType=ARM_T.rule==='csat'?'csat':'gege';
+    if(typeof pathDraft!=='undefined'&&pathDraft)pathDraft.ptype=state.pathType;lyrHud(ARM_T.rule==='csat'?'Kábelcsatorna':'Süllyesztett');return true;},
+  mode(){ARM_T.on=false;},esc(){ARM_T.on=false;}});
+CHN_PATH_HOOKS.push(p=>{if(!ARM_T.on||!p)return;p.route='arm';chnApplyRule(p,ARM_T.rule);p.color='#5a5a5a';
+  const j=armJoinEnds(p);lyrHud('ARM '+armRef(p)+(j?' — ágaztatva '+j+' végen':'')+(armEndOpen(p).length?' · figyelem: kötetlen vég':''));});
+
+// ---- branching: explicit joins ----------------------------------------------------------------------------------------
+function armIsRoute(p){return !!p&&(p.route==='arm'||p.route==='channel');}
+function armNodeLinked(p,n){return data.devices.some(d=>hasLinkTo(d,p.id,n.id));}
+// insert a node into section si of path q at plan point (x,y); the height is interpolated, both halves keep the
+// section's build. Ids of every other node stay, so links and joins stay valid.
+function armSplitAt(q,si,x,y){const a=q.nodes[si],b=q.nodes[si+1];if(!a||!b)return null;
+  const L=Math.hypot(b.x-a.x,b.y-a.y)||1,t=Math.max(0,Math.min(1,((x-a.x)*(b.x-a.x)+(y-a.y)*(b.y-a.y))/(L*L)));
+  const n={level:a.level,x:Math.round(a.x+(b.x-a.x)*t),y:Math.round(a.y+(b.y-a.y)*t),h:Math.round((a.h||0)+((b.h||0)-(a.h||0))*t)};
+  const sec=q.sections[si]?JSON.parse(JSON.stringify(q.sections[si])):{build:'sull_gege',circuit:null};
+  q.nodes.splice(si+1,0,n);q.sections.splice(si+1,0,sec);ensureIds(data);return n;}
+// the nearest other route node (or route segment) to a plan point, within ARM_SNAP
+function armNearest(p,level,x,y){let best=null,bd=ARM_SNAP;
+  data.paths.forEach(q=>{if(q===p||!armIsRoute(q))return;(q.nodes||[]).forEach((n,i)=>{if(n.level!==level)return;const d=Math.hypot(n.x-x,n.y-y);if(d<bd){bd=d;best={q,n,ni:i};}});});
+  if(best)return best;
+  data.paths.forEach(q=>{if(q===p||!armIsRoute(q))return;const ns=q.nodes||[];
+    for(let i=0;i<ns.length-1;i++){const a=ns[i],b=ns[i+1];if(a.level!==level||b.level!==level)continue;
+      const r=nearestOnSegPlain(x,y,a.x,a.y,b.x,b.y);if(r.d<bd&&r.t>0.02&&r.t<0.98){bd=r.d;best={q,si:i};}}});
+  return best;}
+// both ends: not on a device → branch from the route there (snap onto its node, or split its segment first)
+function armJoinEnds(p){const ns=p.nodes||[];if(ns.length<2)return 0;let k=0;
+  [0,ns.length-1].forEach(i=>{const n=ns[i];if(!n||n.j||armNodeLinked(p,n))return;const hit=armNearest(p,n.level,n.x,n.y);if(!hit)return;
+    let tn=hit.n;if(!tn)tn=armSplitAt(hit.q,hit.si,n.x,n.y);if(!tn)return;
+    n.x=tn.x;n.y=tn.y;n.j={p:hit.q.id,n:tn.id};k++;});      // the height stays its own: the drop counts as length in E2
+  return k;}
+// ends that are neither on a device nor joined
+function armEndOpen(p){const ns=p.nodes||[],out=[];[0,ns.length-1].forEach(i=>{const n=ns[i];if(n&&!n.j&&!armNodeLinked(p,n)&&!data.devices.some(d=>hasLinkTo(d,p.id,n.id)))out.push(n);});return out;}
+// a join whose target path or node is gone → removed (called from validation, not on every draw)
+function armPruneJoins(){let n=0;data.paths.forEach(p=>(p.nodes||[]).forEach(nd=>{if(nd.j&&!nodeById(nd.j.p,nd.j.n)){delete nd.j;n++;}}));return n;}
+
+// ---- derived --------------------------------------------------------------------------------------------------------------
+function armRoutes(roomId){return data.paths.filter(p=>p&&p.route==='arm'&&(!roomId||armRoomOf(p)===roomId));}
+// the room holding most of the route's nodes (ties: the first node's room)
+function armRoomOf(p){const cnt={};let first=null;(p.nodes||[]).forEach(n=>{const e=mrkRoomAtPt(n.level,n.x,n.y),id=e&&stkRoomId(e);if(!id)return;if(!first)first=id;cnt[id]=(cnt[id]||0)+1;});
+  let best=first,bn=first?cnt[first]:0;Object.keys(cnt).forEach(k=>{if(cnt[k]>bn){bn=cnt[k];best=k;}});return best;}
+function armRef(p){const r=armRoomOf(p),same=data.paths.filter(q=>q&&q.route==='arm'&&armRoomOf(q)===r);return 'A'+(same.indexOf(p)+1);}
+// a segment that lies ALONG a wall carrying a `ban` mark (both nodes inside the wall rect + 20 mm, parallel to it)
+// → chasing forbidden; one that crosses such a wall → a penetration (info)
+function armBanWall(r){return typeof mrkList==='function'&&mrkList().some(m=>m.kind==='wall'&&m.wall===r.id&&m.pol==='ban');}
+function armBanSegs(p){const out=[];const ns=p.nodes||[];
+  for(let i=0;i<ns.length-1;i++){const a=ns[i],b=ns[i+1];if(a.level!==b.level)continue;
+    (WALLS[a.level]||[]).forEach(r=>{if(!armBanWall(r))return;const wi=wallInfo(r),par=wi.horiz?Math.abs(a.y-b.y)<1:Math.abs(a.x-b.x)<1;
+      const inA=rfInRect(a.x,a.y,r,20),inB=rfInRect(b.x,b.y,r,20);
+      if(inA&&inB&&par)out.push({si:i,wall:r.id,kind:'along'});
+      else if(rfSegRect(a.x,a.y,b.x,b.y,r)&&!(inA&&inB))out.push({si:i,wall:r.id,kind:'cross'});});}
+  return out;}
+// the stack devices that no arm / channel route node reaches
+function armUnreached(S){const sys=layers.filter(l=>l.stack===S.id&&l.role&&l.role.indexOf('sys:')===0).map(l=>l.id);
+  return data.devices.filter(d=>sys.indexOf(d.layer)>=0&&!devLinks(d).some(l=>{const q=pathById(l.p);return armIsRoute(q);}));}
+
+// ---- overlay: refs, open ends, unreached endpoints -------------------------------------------------------------------------
+function armOverlaySvg(){const S=(typeof stkActive==='function')?stkActive():null;if(!S)return '';
+  const L=lyrLayer(state.activeLayer);if(!(L&&L.stack===S.id&&L.role==='arm')&&!ARM_T.on)return '';let s='';
+  armRoutes().forEach(p=>{const ns=p.nodes||[];if(ns.length<2||!state.levels[ns[0].level])return;const a=ns[0],b=ns[1];
+    s+=mrkText((a.x+b.x)/2,(a.y+b.y)/2,dz(a.level,((a.h||0)+(b.h||0))/2),armRef(p),'#5a5a5a',9);
+    armEndOpen(p).forEach(n=>{const c=planToBase(n.x,n.y,dz(n.level,n.h||0));s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="6" fill="none" stroke="#c8372d" stroke-width="2"/>`;});});
+  armUnreached(S).forEach(d=>{if(!state.levels[d.level])return;const c=planToBase(d.x,d.y,dz(d.level,d.h||0));
+    s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="11" fill="none" stroke="#d08a1e" stroke-width="2" stroke-dasharray="3 2"/>`;});
+  return s?`<g pointer-events="none">${s}</g>`:'';}
+STK_OVERLAY.push(armOverlaySvg);
+
+// ---- checks and validation -------------------------------------------------------------------------------------------------------
+(STK_CHECKS.arm=STK_CHECKS.arm||[]).push(S=>{const out=[];
+  armUnreached(S).forEach(d=>out.push({sev:'warn',msg:(d.ref||d.id)+': nincs ARM / csatorna pályához kötve'}));
+  armRoutes().forEach(p=>{const ref=armRef(p);
+    if(armEndOpen(p).length)out.push({sev:'warn',msg:ref+' ('+(armRoomOf(p)||'?')+'): kötetlen vég — sem végponton, sem pályán'});
+    if(p.rule!=='csat')armBanSegs(p).forEach(b=>out.push(b.kind==='along'?{sev:'warn',msg:'Tartófal: süllyesztett ARM itt tilos — '+ref+' ('+b.wall+')'}
+                                                                 :{sev:'info',msg:'Falátvezetés tilos falon — '+ref+' ('+b.wall+')'}));});
+  if(typeof hwList==='function')hwList('rbx').forEach(x=>{const rooms=hwServes(x);
+    if(rooms.length&&!devLinks(x).some(l=>{const q=pathById(l.p);return q&&q.route==='arm';}))out.push({sev:'info',msg:(x.ref||x.id)+': még nem indul belőle ARM pálya'});});
+  return out;});
+VALIDATORS.push({code:'arm.join',run:()=>{const n=armPruneJoins();return n?[{sev:'info',code:'arm.join',msg:n+' elárvult pálya-ágaztatás törölve (a célpálya már nincs meg).'}]:[];}});
+
+registerActions([
+ {id:'arm.route',alias:'arm palya rajzolas route draw branch',label:'ARM pálya rajzolása',icon:'⑂',group:'ARM',
+  hint:'Egyvonalas pálya az RBX-től a végpontokig, rétegtől függetlenül (stack nézet). Meglévő pályán kezdve ágaztat.',
+  need:'Aktív BRIDGE Stack ARM réteggel kell hozzá.',when:c=>{const S=stkActive();return !!(S&&stkLayer(S.id,'arm'));},run:()=>armToolStart()},
+ {id:'stack.view',alias:'stack nezet egy retegkent view as one layer',label:'Stack nézet (egy rétegként)',icon:'▤',group:'Stack',
+  hint:'A stack minden rétege együtt, a többi réteg 30 %-ra halványítva.',
+  need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>{state.stkView=!state.stkView;draw();lyrHud('Stack nézet '+(state.stkView?'be':'ki'));}}
+]);
+(STK_GROUPS.arm=STK_GROUPS.arm||[]).indexOf('Stack')<0&&STK_GROUPS.arm.push('Stack');
+
+// test hooks
+window.ARM_T=ARM_T;window.armFade=armFade;window.armToolStart=armToolStart;window.armJoinEnds=armJoinEnds;window.armSplitAt=armSplitAt;
+window.armEndOpen=armEndOpen;window.armPruneJoins=armPruneJoins;window.armRoutes=armRoutes;window.armRoomOf=armRoomOf;window.armRef=armRef;
+window.armBanSegs=armBanSegs;window.armUnreached=armUnreached;window.armOverlaySvg=armOverlaySvg;
+
+// Pure functions over the routes the user DREW — no geometry is ever invented:
+//   home run / star    → a shortest-path tree (Dijkstra)
+//   daisy chain        → nearest-neighbour order by graph distance, shortest paths between consecutive members
+//   branching tree     → the Steiner tree problem in graphs, approximated by KMB (Kou–Markowsky–Berman)
+// Connections are EXPLICIT: consecutive nodes of a route, joins (n.j), device links; plus exact coincidence
+// (≤ 1 mm, same level) as the only fallback — never the old 250 mm union (wiring pipeline F1).
+// Every tie is broken by key order, so the same drawing always gives the same answer. Prefix: rg.
+
+function rgEid(a,b){return a<b?a+'|'+b:b+'|'+a;}
+// G = {nodes: Map key → {key, kind:'node'|'dev', x,y,h,level, p?,n?, dev?}, adj: Map key → [{to, w, e}]}
+//   route node 'P12/n40' · device terminal 'D:D7'.  e = {k:'seg',p,a,b,si} | {k:'join'} | {k:'drop',dev}
+function rgBuild(opt){opt=opt||{};const routes=opt.routes||['arm','channel'];
+  const G={nodes:new Map(),adj:new Map()};
+  const addN=(k,o)=>{if(!G.nodes.has(k)){o.key=k;G.nodes.set(k,o);G.adj.set(k,[]);}};
+  const addE=(a,b,w,e)=>{if(a===b||!G.adj.has(a)||!G.adj.has(b))return;G.adj.get(a).push({to:b,w,e});G.adj.get(b).push({to:a,w,e});};
+  const ps=data.paths.filter(p=>p&&p.id&&routes.indexOf(p.route)>=0);
+  ps.forEach(p=>(p.nodes||[]).forEach(n=>{if(n&&n.id)addN(p.id+'/'+n.id,{kind:'node',x:n.x,y:n.y,h:n.h||0,level:n.level,p:p.id,n:n.id});}));
+  ps.forEach(p=>{const ns=p.nodes||[];for(let i=1;i<ns.length;i++){const a=ns[i-1],b=ns[i];
+    addE(p.id+'/'+a.id,p.id+'/'+b.id,Math.hypot(b.x-a.x,b.y-a.y,(b.h||0)-(a.h||0)),{k:'seg',p:p.id,a:a.id,b:b.id,si:i-1});}});
+  ps.forEach(p=>(p.nodes||[]).forEach(n=>{if(!n||!n.j)return;const k2=n.j.p+'/'+n.j.n,t=G.nodes.get(k2);if(!t)return;
+    addE(p.id+'/'+n.id,k2,Math.abs((n.h||0)-t.h),{k:'join'});}));
+  data.devices.forEach(d=>{if(!d||!d.id)return;const ls=devLinks(d).filter(l=>G.nodes.has(l.p+'/'+l.n));if(!ls.length)return;
+    const dk='D:'+d.id;addN(dk,{kind:'dev',x:d.x,y:d.y,h:d.h||0,level:d.level,dev:d.id});
+    ls.forEach(l=>{const t=G.nodes.get(l.p+'/'+l.n);addE(dk,l.p+'/'+l.n,l.glue?0:Math.abs(t.h-(d.h||0)),{k:'drop',dev:d.id});});});
+  const byPos={};G.nodes.forEach((o,k)=>{if(o.kind!=='node')return;const pk=Math.round(o.x)+','+Math.round(o.y)+'@'+o.level;(byPos[pk]=byPos[pk]||[]).push(k);});
+  Object.keys(byPos).forEach(pk=>{const ks=byPos[pk];for(let i=0;i<ks.length;i++)for(let j=i+1;j<ks.length;j++){
+    const a=G.nodes.get(ks[i]),b=G.nodes.get(ks[j]);if(a.p!==b.p&&Math.abs(a.h-b.h)<=1)addE(ks[i],ks[j],0,{k:'join'});}});
+  G.adj.forEach(l=>l.sort((x,y)=>x.to<y.to?-1:x.to>y.to?1:x.w-y.w));
+  return G;}
+function rgDevKey(id){return 'D:'+id;}
+
+// ---- Dijkstra (binary heap, lazy deletion; ties by key) ----------------------------------------------------------------
+function rgLess(x,y){return x.d<y.d||(x.d===y.d&&x.k<y.k);}
+function rgHeap(){const a=[];return {get size(){return a.length;},
+  push(x){a.push(x);let i=a.length-1;while(i>0){const p=(i-1)>>1;if(rgLess(a[i],a[p])){const t=a[i];a[i]=a[p];a[p]=t;i=p;}else break;}},
+  pop(){const top=a[0],last=a.pop();if(a.length){a[0]=last;let i=0;for(;;){const l=2*i+1,r=l+1;let m=i;
+      if(l<a.length&&rgLess(a[l],a[m]))m=l;if(r<a.length&&rgLess(a[r],a[m]))m=r;if(m===i)break;const t=a[i];a[i]=a[m];a[m]=t;i=m;}}
+    return top;}};}
+function rgDijkstra(G,src){const dist=new Map(),prev=new Map();if(!G.nodes.has(src))return {dist,prev};
+  const H=rgHeap();dist.set(src,0);H.push({d:0,k:src});
+  while(H.size){const c=H.pop();if(c.d>dist.get(c.k))continue;
+    for(const e of G.adj.get(c.k)){const nd=c.d+e.w,old=dist.get(e.to);
+      if(old===undefined||nd<old-1e-9){dist.set(e.to,nd);prev.set(e.to,c.k);H.push({d:nd,k:e.to});}}}
+  return {dist,prev};}
+function rgPath(prev,src,dst){if(src===dst)return [src];if(!prev.has(dst))return null;const out=[dst];let k=dst,guard=0;
+  while(k!==src&&guard++<1e6){k=prev.get(k);if(k===undefined)return null;out.unshift(k);}return out;}
+// the edges along a key list (the lightest edge between each consecutive pair)
+function rgPathEdges(G,keys){const out=[];if(!keys)return out;
+  for(let i=1;i<keys.length;i++){let best=null;for(const e of G.adj.get(keys[i-1])||[])if(e.to===keys[i]&&(!best||e.w<best.w))best=e;
+    if(best)out.push({a:keys[i-1],b:keys[i],w:best.w,e:best.e});}
+  return out;}
+function rgLen(G,keys){return rgPathEdges(G,keys).reduce((s,x)=>s+x.w,0);}
+
+// ---- the three topologies ------------------------------------------------------------------------------------------------
+// star: one shortest path per member → [{to, keys|null, len}]
+function rgStar(G,origin,members){const D=rgDijkstra(G,origin);
+  return members.map(m=>{const keys=D.dist.has(m)?rgPath(D.prev,origin,m):null;return {to:m,keys,len:keys?D.dist.get(m):null};});}
+// chain: from the origin, always to the nearest unvisited member by graph distance → {order, legs, unreached}
+function rgChain(G,origin,members){let cur=origin;const rest=members.slice(),order=[origin],legs=[];
+  while(rest.length){const D=rgDijkstra(G,cur);let best=null,bd=Infinity;
+    rest.forEach(m=>{const d=D.dist.get(m);if(d!==undefined&&(d<bd-1e-9||(Math.abs(d-bd)<=1e-9&&best&&m<best))){bd=d;best=m;}});
+    if(best===null)break;
+    legs.push({from:cur,to:best,keys:rgPath(D.prev,cur,best),len:bd});order.push(best);rest.splice(rest.indexOf(best),1);cur=best;}
+  return {order,legs,unreached:rest};}
+// Steiner tree (KMB): 1) Dijkstra from each terminal 2) Prim MST on the metric closure 3) union of the shortest paths
+// of the MST edges 4) Prim MST of that subgraph 5) delete non-terminal leaves until none is left
+function rgSteiner(G,terminals){const T=[...new Set(terminals)].filter(t=>G.nodes.has(t)),unreached=[...new Set(terminals)].filter(t=>!G.nodes.has(t));
+  if(!T.length)return {edges:[],nodes:[],cost:0,branch:[],unreached,adj:new Map()};
+  const D={};T.forEach(t=>{D[t]=rgDijkstra(G,t);});
+  const inT=new Set([T[0]]),mst=[];
+  for(;;){let best=null;
+    inT.forEach(a=>T.forEach(b=>{if(inT.has(b))return;const d=D[a].dist.get(b);if(d===undefined)return;
+      if(!best||d<best.d-1e-9||(Math.abs(d-best.d)<=1e-9&&(a+'|'+b)<(best.a+'|'+best.b)))best={a,b,d};}));
+    if(!best)break;inT.add(best.b);mst.push(best);}
+  T.forEach(t=>{if(!inT.has(t))unreached.push(t);});
+  const H=new Map();                                        // eid → {a,b,w}
+  mst.forEach(m=>rgPathEdges(G,rgPath(D[m.a].prev,m.a,m.b)).forEach(x=>{const id=rgEid(x.a,x.b);if(!H.has(id)||x.w<H.get(id).w)H.set(id,{a:x.a,b:x.b,w:x.w});}));
+  // Prim on H
+  const hadj=new Map();H.forEach((v,id)=>{[v.a,v.b].forEach(k=>{if(!hadj.has(k))hadj.set(k,[]);});hadj.get(v.a).push({to:v.b,w:v.w,id});hadj.get(v.b).push({to:v.a,w:v.w,id});});
+  const keep=new Set(),seen=new Set([T[0]]);
+  if(hadj.size){for(;;){let best=null;
+      seen.forEach(k=>(hadj.get(k)||[]).forEach(e=>{if(seen.has(e.to))return;if(!best||e.w<best.w-1e-9||(Math.abs(e.w-best.w)<=1e-9&&e.id<best.id))best=e;}));
+      if(!best)break;keep.add(best.id);seen.add(best.to);}}
+  // prune non-terminal leaves
+  const term=new Set(T),deg=new Map();const bump=(k,d)=>deg.set(k,(deg.get(k)||0)+d);
+  keep.forEach(id=>{const v=H.get(id);bump(v.a,1);bump(v.b,1);});
+  let changed=true;while(changed){changed=false;
+    keep.forEach(id=>{const v=H.get(id);if(!keep.has(id))return;
+      if((deg.get(v.a)===1&&!term.has(v.a))||(deg.get(v.b)===1&&!term.has(v.b))){keep.delete(id);bump(v.a,-1);bump(v.b,-1);changed=true;}});}
+  const edges=[...keep].sort(),nodes=new Set(),adj=new Map();let cost=0;
+  edges.forEach(id=>{const v=H.get(id);cost+=v.w;nodes.add(v.a);nodes.add(v.b);
+    [[v.a,v.b],[v.b,v.a]].forEach(([x,y])=>{if(!adj.has(x))adj.set(x,[]);adj.get(x).push(y);});});
+  if(!edges.length&&T.length)nodes.add(T[0]);
+  const branch=[...nodes].filter(k=>(adj.get(k)||[]).length>=3).sort();
+  return {edges,nodes:[...nodes].sort(),cost,branch,unreached,adj};}
+// cut a Steiner tree into legs between "stops" (terminals and branch nodes): [{from, to, keys}]
+function rgTreeLegs(ST,origin,stops){const stop=new Set(stops),legs=[],seen=new Set();
+  const walk=(start)=>{(ST.adj.get(start)||[]).slice().sort().forEach(nb=>{const eid=rgEid(start,nb);if(seen.has(eid))return;
+      const keys=[start];let prev=start,cur=nb;seen.add(eid);
+      while(!stop.has(cur)&&(ST.adj.get(cur)||[]).length===2){keys.push(cur);const nx=ST.adj.get(cur).find(x=>x!==prev);seen.add(rgEid(cur,nx));prev=cur;cur=nx;}
+      keys.push(cur);legs.push({from:start,to:cur,keys});walk(cur);});};
+  walk(origin);return legs;}
+function rgReach(G,src){const seen=new Set([src]),q=[src];while(q.length){const k=q.shift();(G.adj.get(k)||[]).forEach(e=>{if(!seen.has(e.to)){seen.add(e.to);q.push(e.to);}});}return seen;}
+
+// test hooks
+window.rgEid=rgEid;window.rgBuild=rgBuild;window.rgDevKey=rgDevKey;window.rgDijkstra=rgDijkstra;window.rgPath=rgPath;window.rgPathEdges=rgPathEdges;window.rgLen=rgLen;
+window.rgStar=rgStar;window.rgChain=rgChain;window.rgSteiner=rgSteiner;window.rgTreeLegs=rgTreeLegs;window.rgReach=rgReach;
+
+// The physics rule that keeps this simple and right:
+//   A PIPE CAN ONLY START AND END AT A BOX. A cable leaves its conduit only at a box (RBX, an endpoint's box, a
+//   kötődoboz), so every RUN LEG — origin → endpoint (star) or member → next member (chain) — is its own pipe,
+//   running beside the others on a shared route. Two legs share one pipe only when they are the same FAMILY and run
+//   between the same two boxes (2 × Cat6A to a double data point). Families never share a pipe (STD-001-A2 rule 1).
+// Stored results follow wiring_pipeline decision 3: data.runs (stage 'stack' | 'channel') and per route section
+// sec.cont = {auto:[…], manual, basis} where every auto entry carries `src` ('room:<id>' | 'chn:<route id>') and a
+// writer replaces only its own entries. Lengths are approximations (decision 6): Σ route + slack per end, waste in
+// the report, labelled tájékoztató. Prefix: afill.
+
+// ---- catalogues (01_CATALOGUES §6–§7). od = outer diameter (mm, the UPPER end of A2 §2.2: size up when in doubt) ----
+const AFILL_CABLES={
+ NYM3x15:{n:'NYM-J 3×1,5',od:9},   NYM3x25:{n:'NYM-J 3×2,5',od:10.5}, NYM4x15:{n:'NYM-J 4×1,5',od:10},
+ NYM5x25:{n:'NYM-J 5×2,5',od:12},  NYM3x6:{n:'NYM-J 3×6',od:13.5},    NYM5x6:{n:'NYM-J 5×6',od:16},
+ H05_2x15:{n:'H05VV-F 2×1,5',od:7.5}, H05_2x25:{n:'H05VV-F 2×2,5',od:9},
+ JY2x2x08:{n:'J-Y(St)Y 2×2×0,8',od:5.5}, JY4x2x08:{n:'J-Y(St)Y 4×2×0,8',od:7},
+ LIYCY4x05:{n:'LiYCY 4×0,5',od:6}, LIYCY6x025:{n:'LiYCY 6×0,25',od:5.5/*r*/}, LIYY2x05:{n:'LiYY 2×0,5',od:4.5/*r*/},
+ YCYM:{n:'YCYM 2×2×0,8 (KNX)',od:5.5},
+ CAT6A_U:{n:'Cat6A U/FTP',od:7.5}, CAT6A_S:{n:'Cat6A S/FTP',od:8},
+ AOC_FIX:{n:'HDMI AOC, fix fej',od:4.5,minW:'M40'}, AOC_DET:{n:'HDMI AOC, levehető fej',od:4.5,minW:'M25'},
+ AOC_USB:{n:'USB 3.x AOC',od:5/*r*/,minW:'M25'},
+ SPK2x15:{n:'Hangszóró 2×1,5',od:6.5}, SPK2x25:{n:'Hangszóró 2×2,5',od:7.5}, SPK4x25:{n:'Hangszóró 4×2,5',od:10},
+ LINE:{n:'Árnyékolt vonalkábel',od:6/*r*/},
+ ALARM6:{n:'Riasztó 4×0,22+2×0,5 árny.',od:5.5}, SIREN4:{n:'Sziréna 2×0,75+2×0,22 árny.',od:6/*r*/},
+ BUS4:{n:'Szolgáltatói 4 eres busz',od:5/*r*/},
+ SPARE:{n:'Üres cső + behúzószál',od:0,empty:true}};
+// flexible light conduit, inner diameter mm (A2 §2.1 — typical, check the datasheet)
+const AFILL_CONDUITS=[{k:'M16',id:10.7},{k:'M20',id:14.1},{k:'M25',id:18.3},{k:'M32',id:24.3},{k:'M40',id:31.2},{k:'M50',id:39.6},{k:'M63',id:52.6}];
+const AFILL_RULE={single:1.4, fill:0.40, fillLong:0.33, longMm:10000, slackPerEnd:500};
+// cls = the sharing class of A2 §5; c = drawing colour (the role colours of 05s)
+const AFILL_FAMS={MAINS:{n:'Erősáram',cls:'mains',c:'#d1493f'},LV:{n:'A busz (SELV)',cls:'selvp',c:'#e6a800'},BUSB:{n:'B busz (biztosított)',cls:'selvp',c:'#b07a2a'},
+  CONTROL:{n:'Vezérlés',cls:'sig',c:'#7a5cc0'},DATA:{n:'Adat',cls:'sig',c:'#16a085'},KNX:{n:'KNX',cls:'sig',c:'#2e7d32'},SENSOR:{n:'Érzékelő',cls:'sig',c:'#2f79c9'},
+  MEDIA:{n:'Média',cls:'sig',c:'#c2638a'},USB:{n:'USB',cls:'sig',c:'#607d8b'},SECURITY:{n:'Biztonság',cls:'sec',c:'#444444'},SPARE:{n:'Tartalék',cls:'spare',c:'#999999'}};
+const AFILL_SHARE={'mains|selvp':'warn','mains|sig':'warn','mains|sec':'warn',
+  'selvp|sig':'ok','selvp|sec':'ok','sig|sec':'ok','mains|mains':'ok','selvp|selvp':'ok','sig|sig':'ok','sec|sec':'ok'};
+const AFILL_SHARE_MSG='Erősáram és törpefeszültség egy nyomvonalon: ≥ 50 mm távolság vagy rögzített fémválaszfal, keresztezés 90°-ban (A2 §5).';
+
+function afillRuns(){if(!Array.isArray(data.runs))data.runs=[];return data.runs;}
+function afillCondIx(k){const i=AFILL_CONDUITS.findIndex(c=>c.k===k);return i<0?0:i;}
+function afillArea(d){return Math.PI*d*d/4;}
+function afillCabName(c){return (AFILL_CABLES[c]||{n:c}).n;}
+// the conduit a set of cables needs: {size, fill, why, over?}. cables = [{c, n, w}]
+function afillSize(cables,lenMm,minK){const list=(cables||[]).filter(c=>c&&AFILL_CABLES[c.c]);let need=minK?afillCondIx(minK):0;
+  list.forEach(c=>{need=Math.max(need,afillCondIx(c.w||'M16'),afillCondIx(AFILL_CABLES[c.c].minW||'M16'));});
+  const real=list.filter(c=>!AFILL_CABLES[c.c].empty);
+  if(!real.length){const C=AFILL_CONDUITS[need];return {size:C.k,fill:0,why:'üres cső + behúzószál → '+C.k};}
+  const n=real.reduce((s,c)=>s+(c.n||1),0),area=real.reduce((s,c)=>s+(c.n||1)*afillArea(AFILL_CABLES[c.c].od),0);
+  const lbl=real.map(c=>((c.n||1)>1?(c.n)+'×':'1×')+afillCabName(c.c)).join(' + ');
+  if(n===1){const od=AFILL_CABLES[real[0].c].od,i=AFILL_CONDUITS.findIndex(k=>k.id>=AFILL_RULE.single*od);need=Math.max(need,i<0?AFILL_CONDUITS.length-1:i);
+    const C=AFILL_CONDUITS[need];return {size:C.k,fill:+(area/afillArea(C.id)).toFixed(3),why:lbl+': ID '+C.id+' ≥ 1,4 × '+od+' → '+C.k};}
+  const k=lenMm>AFILL_RULE.longMm?AFILL_RULE.fillLong:AFILL_RULE.fill;
+  for(let i=need;i<AFILL_CONDUITS.length;i++){const C=AFILL_CONDUITS[i],f=area/afillArea(C.id);
+    if(f<=k+1e-9)return {size:C.k,fill:+f.toFixed(3),why:lbl+': '+Math.round(f*100)+' % ≤ '+Math.round(k*100)+' % → '+C.k};}
+  const C=AFILL_CONDUITS[AFILL_CONDUITS.length-1],f=area/afillArea(C.id);
+  return {size:C.k,fill:+f.toFixed(3),why:lbl+': '+Math.round(f*100)+' % — túltelített M63 is',over:true};}
+// FNV-1a 32-bit, hex
+function afillHash(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return 'h:'+h.toString(16);}
+
+// ---- planning one room (pure) -----------------------------------------------------------------------------------------
+function afillGroupsOf(roomId,S){const out=[];STK_ROLES.forEach(r=>{if(r.k.indexOf('sys:')!==0||r.k==='sys:RF'||!stkLayer(S.id,r.k))return;
+  epGroupsFor(roomId,r.k,S.id).forEach(g=>out.push(Object.assign({role:r.k},g)));});return out;}
+function afillBasis(roomId,S){S=S||stkActive();const routes=data.paths.filter(p=>p&&(p.route==='arm'||p.route==='channel')).map(p=>[p.id,p.rule,(p.nodes||[]).map(n=>[n.id,Math.round(n.x),Math.round(n.y),Math.round(n.h||0),n.j?n.j.p+'/'+n.j.n:''])]);
+  const groups=S?afillGroupsOf(roomId,S):[];const ids=new Set();groups.forEach(g=>g.members.forEach(m=>ids.add(m)));
+  const devs=data.devices.filter(d=>d&&(ids.has(d.id)||d.type==='rbx'||d.type==='board'||d.type==='ssc')).map(d=>[d.id,Math.round(d.x),Math.round(d.y),Math.round(d.h||0),d.code||d.type,d.var||'',d.layer,devLinks(d).map(l=>l.p+'/'+l.n).join(','),(d.serves||[]).join(',')]);
+  return afillHash(JSON.stringify([routes,devs,groups.map(g=>[g.key,g.topo,g.members])]));}
+// nearest device of a type by graph distance from a key
+function afillNearestOf(G,type,fromKey){const D=rgDijkstra(G,fromKey);let best=null,bd=Infinity;
+  data.devices.forEach(d=>{if(!d||d.type!==type)return;const k=rgDevKey(d.id),x=D.dist.get(k);if(x!==undefined&&(x<bd-1e-9||(Math.abs(x-bd)<=1e-9&&best&&d.id<best.id))){bd=x;best=d;}});return best;}
+// → {room, rbx, runs:[…], pipes:[…], warns:[…]}
+function afillPlanRoom(stackId,roomId,G){const S=stackId?stkById(stackId):stkActive(),warns=[],runs=[];
+  const room=mrkRoomById(roomId),lbl=room?((room.rm.num?room.rm.num+' ':'')+(room.rm.name||roomId)):roomId;
+  const rbx=(typeof hwRoomRbx==='function')?hwRoomRbx(roomId):null;
+  if(!S)return {room:roomId,rbx:null,runs,pipes:[],warns:[{sev:'error',code:'fill.nostack',msg:'Nincs aktív BRIDGE Stack.'}]};
+  if(!rbx)return {room:roomId,rbx:null,runs,pipes:[],warns:[{sev:'error',code:'fill.norbx',msg:lbl+': nincs RBX hozzárendelve.',ref:roomId}]};
+  G=G||rgBuild({routes:['arm','channel']});
+  afillGroupsOf(roomId,S).forEach(g=>{const first=byId('devices',g.members[0]);if(!first)return;
+    epCables(first).forEach((cab,ci)=>{
+      // the origin: the room's RoomBox, or — never through a RoomBox — the board / the SSC nearest by route
+      let org=null;
+      if(cab.from==='rbx')org=rbx;
+      else{const k0=rgDevKey(first.id);org=G.nodes.has(k0)?afillNearestOf(G,cab.from==='board'?'board':'ssc',k0):null;
+        if(!org)org=hwList(cab.from==='board'?'board':'ssc')[0]||null;}
+      if(!org){warns.push({sev:'error',code:'fill.noorigin',msg:lbl+': nincs '+(cab.from==='board'?'Elosztószekrény':cab.from==='ssc'?'biztonsági központ':'RBX')+' a '+g.code+' kábeléhez.',ref:first.id});return;}
+      const ok=rgDevKey(org.id);
+      if(!G.nodes.has(ok)){warns.push({sev:'warn',code:'fill.unreached',msg:(org.ref||org.id)+': nincs pályán (ARM / csatorna).',ref:org.id});return;}
+      const mk=g.members.map(rgDevKey),legs=[];
+      const miss=m=>{const d=byId('devices',m.slice(2));warns.push({sev:'warn',code:'fill.unreached',msg:((d&&(d.ref||d.id))||m)+': nincs pályán a '+(org.ref||org.id)+'-ig',ref:m.slice(2)});};
+      if(g.topo==='chain'){const C=rgChain(G,ok,mk);C.legs.forEach(l=>legs.push(l));C.unreached.forEach(miss);}
+      else if(g.topo==='tree'){const ST=rgSteiner(G,[ok].concat(mk));ST.unreached.forEach(miss);
+        const stops=new Set([ok].concat(mk).concat(ST.branch));
+        ST.branch.forEach(b=>{const nd=G.nodes.get(b);if(nd&&nd.kind!=='dev')warns.push({sev:'warn',code:'fill.branch',msg:'Elágazás doboz nélkül: kötődoboz kell ide ('+b+')',ref:b});});
+        rgTreeLegs(ST,ok,[...stops]).forEach(l=>legs.push(Object.assign(l,{len:rgLen(G,l.keys)})));}
+      else rgStar(G,ok,mk).forEach(s=>{if(!s.keys){miss(s.to);return;}legs.push({from:ok,to:s.to,keys:s.keys,len:s.len});});
+      legs.forEach(l=>{const edges=rgPathEdges(G,l.keys);
+        runs.push({role:g.role,code:g.code,group:g.key,fam:cab.c==='SPARE'?'SPARE':(cab.fam||'MAINS'),cable:cab.c,n:cab.n||1,w:cab.w,ci,origin:cab.from,
+          from:l.from.indexOf('D:')===0?l.from.slice(2):l.from,to:l.to.indexOf('D:')===0?l.to.slice(2):l.to,
+          segs:edges.filter(x=>x.e.k==='seg').map(x=>({p:x.e.p,a:x.e.a,b:x.e.b,si:x.e.si})),
+          route:Math.round(l.len),len:Math.round(l.len+2*AFILL_RULE.slackPerEnd)});});});});
+  // pipes: one per (family, from, to); a spare is always its own
+  const byKey=new Map();
+  runs.forEach((r,i)=>{const key=r.fam==='SPARE'?'SPARE|'+r.from+'|'+r.to+'|'+r.group+'|'+r.ci:r.fam+'|'+r.from+'|'+r.to;r.pipe=key;
+    if(!byKey.has(key))byKey.set(key,{key,fam:r.fam,from:r.from,to:r.to,cables:[],segs:r.segs,len:r.route});
+    const P=byKey.get(key);const ex=P.cables.find(c=>c.c===r.cable&&c.w===r.w);if(ex)ex.n+=r.n;else P.cables.push({c:r.cable,n:r.n,w:r.w});});
+  const pipes=[...byKey.values()];
+  pipes.forEach(P=>Object.assign(P,afillSize(P.cables,P.len)));
+  pipes.forEach(P=>{if(P.over)warns.push({sev:'warn',code:'fill.overfill',msg:'Túltelített cső: '+P.why,ref:P.key});});
+  // route sharing (A2 §5) and the ban walls
+  const perSec=new Map();pipes.forEach(P=>P.segs.forEach(s=>{const k=s.p+':'+s.si;if(!perSec.has(k))perSec.set(k,new Set());perSec.get(k).add(P.fam);}));
+  perSec.forEach((fams,k)=>{const cls=[...fams].map(f=>(AFILL_FAMS[f]||{}).cls).filter(c=>c&&c!=='spare');let bad=false;
+    for(let i=0;i<cls.length&&!bad;i++)for(let j=i+1;j<cls.length;j++){const pr=[cls[i],cls[j]].sort().join('|');if(cls[i]!==cls[j]&&AFILL_SHARE[pr]==='warn'){bad=true;break;}}
+    if(bad)warns.push({sev:'warn',code:'fill.share',msg:AFILL_SHARE_MSG+' ('+k+')',ref:k});});
+  const banned=new Set();if(typeof armBanSegs==='function')data.paths.forEach(p=>{if(!p||p.rule==='csat'||(p.route!=='arm'&&p.route!=='channel'))return;
+    armBanSegs(p).forEach(b=>{if(b.kind==='along')banned.add(p.id+':'+b.si);});});
+  [...perSec.keys()].filter(k=>banned.has(k)).forEach(k=>warns.push({sev:'warn',code:'fill.ban',msg:'Tartófalon süllyesztett cső: '+k,ref:k}));
+  return {room:roomId,rbx:rbx.id,runs,pipes,warns,basis:afillBasis(roomId,S)};}
+
+// ---- apply -------------------------------------------------------------------------------------------------------------------
+function afillSec(pid,si){const p=pathById(pid);return p&&p.sections?p.sections[si]:null;}
+function afillDropSrc(src){data.paths.forEach(p=>(p.sections||[]).forEach(sec=>{if(sec&&sec.cont&&Array.isArray(sec.cont.auto)){
+  sec.cont.auto=sec.cont.auto.filter(a=>a.src!==src);if(!sec.cont.auto.length&&!sec.cont.manual)delete sec.cont;}}));}
+function afillPutPipe(P,src,basis,extra){P.segs.forEach(s=>{const sec=afillSec(s.p,s.si);if(!sec)return;
+  sec.cont=sec.cont||{auto:[],manual:null};sec.cont.auto=sec.cont.auto||[];
+  sec.cont.auto.push(Object.assign({src,pipe:P.key,fam:P.fam,size:P.size,n:P.cables.reduce((a,c)=>a+(c.n||1),0),fill:P.fill,cables:P.cables.map(c=>({c:c.c,n:c.n}))},extra||{}));
+  sec.cont.basis=basis;});}
+function afillApply(plans,S){S=S||stkActive();if(!plans.length)return 0;pushUndo(['paths','runs']);let n=0;
+  plans.forEach(pl=>{if(!pl.rbx)return;const src='room:'+pl.room;
+    data.runs=afillRuns().filter(r=>!(r.stage==='stack'&&r.room===pl.room&&r.manual!==true));
+    afillDropSrc(src);
+    pl.runs.forEach(r=>{afillRuns().push({stage:'stack',stack:S.id,role:r.role,room:pl.room,code:r.code,group:r.group,fam:r.fam,from:r.from,to:r.to,
+      via:r.segs.map(s=>({p:s.p,a:s.a,b:s.b})),cable:{c:r.cable,n:r.n},len:r.len,pipe:r.pipe,basis:pl.basis});n++;});
+    pl.pipes.forEach(P=>afillPutPipe(P,src,pl.basis));});
+  ensureIds(data);if(typeof invalidateShell==='function')invalidateShell();draw();return n;}
+// pipes of a section that are not merged into a trunk (E4)
+function afillSecPipes(sec){const a=(sec&&sec.cont&&Array.isArray(sec.cont.auto))?sec.cont.auto:[],merged=new Set();
+  a.forEach(x=>(x.merged||[]).forEach(k=>merged.add(k)));
+  return a.filter(x=>!(x.src.indexOf('room:')===0&&merged.has(x.pipe)));}
+// stale = the stored basis differs from the current one
+function afillStale(roomId,S){const rs=afillRuns().filter(r=>r.stage==='stack'&&r.room===roomId);if(!rs.length)return false;return rs[0].basis!==afillBasis(roomId,S);}
+function afillManualStale(){const out=[];data.paths.forEach(p=>(p.sections||[]).forEach((sec,si)=>{if(sec&&sec.cont&&sec.cont.manual&&sec.cont.auto&&sec.cont.auto.length){
+  const rooms=[...new Set(sec.cont.auto.filter(a=>a.src.indexOf('room:')===0).map(a=>a.src.slice(5)))];
+  if(rooms.some(r=>afillStale(r)))out.push({sev:'warn',code:'fill.manual',msg:'Kézi érték, a bemenet azóta változott: '+p.id+':'+si,ref:p.id});}}));return out;}
+
+// ==================================================================================================================
+// WP-E4 — the channel fill: the CHANNEL bundle, the RoomBox feeds, the trunks
+// ==================================================================================================================
+const AFILL_PACK_CAP=afillArea(24.3)*AFILL_RULE.fill;   // M32 at 40 % — A2: "two S04 circuits on one route → M32"
+// the socket circuits a RoomBox carries: real 05j circuits with a SOC member in its rooms + the implicit room circuits
+function afillRbxCircuits(rbx,S){const out=new Map();hwServes(rbx).forEach(rid=>epCircuits(rid,S.id).forEach(c=>{
+  const socs=c.members.map(id=>byId('devices',id)).filter(d=>d&&epCodeOf(d)==='SOC');if(!socs.length)return;
+  if(!out.has(c.key))out.set(c.key,{key:c.key,name:c.name,cable:(epVar(socs[0])||{}).k==='25'?'NYM3x25':'NYM3x15'});}));return [...out.values()];}
+// first-fit decreasing into M32-at-40 % bins, then each bin sized with a minimum of M25 (STD-001 §3.1) [Q38=A]
+function afillPackMains(cables,lenMm){const items=[];cables.forEach(c=>{for(let i=0;i<(c.n||1);i++)items.push({c:c.c,a:afillArea(AFILL_CABLES[c.c].od)});});
+  items.sort((x,y)=>y.a-x.a||(x.c<y.c?-1:1));const bins=[];
+  items.forEach(it=>{const b=bins.find(b=>b.a+it.a<=AFILL_PACK_CAP+1e-9);if(b){b.a+=it.a;b.items.push(it);}else bins.push({a:it.a,items:[it]});});
+  return bins.map(b=>{const cs=[];b.items.forEach(it=>{const ex=cs.find(c=>c.c===it.c);if(ex)ex.n++;else cs.push({c:it.c,n:1,w:'M20'});});
+    return Object.assign({cables:cs},afillSize(cs,lenMm,'M25'));});}
+function afillSegsOf(p){return (p.sections||[]).map((s,si)=>({p:p.id,a:p.nodes[si].id,b:p.nodes[si+1].id,si}));}
+// → {routes:[{p, carrier, pipes:[…], note?}], runs:[…], warns:[…]}
+function afillChannelPlan(stackId,onlyRbxId){const S=stackId?stkById(stackId):stkActive(),out={routes:[],runs:[],warns:[]};if(!S)return out;
+  const T=chnTree(),E=afillEloRules();
+  const below=pid=>hwList('rbx').filter(x=>T[x.id]&&T[x.id].via.indexOf(pid)>=0);          // every RBX whose way to BASE uses this route
+  const wanted=p=>{if(!onlyRbxId)return true;const t=T[onlyRbxId];const ends=chnEnds(p);return (t&&t.via.indexOf(p.id)>=0)||ends.some(d=>d&&d.id===onlyRbxId);};
+  chnRoutes().forEach(p=>{if(!wanted(p))return;const k=chnCarrier(p),len=Math.round(chnLen(p)),segs=afillSegsOf(p),R={p:p.id,carrier:k,pipes:[]};
+    if(k==='channel'){const n=below(p.id).length||1;
+      CHN_BUNDLE.forEach(b=>{const cables=b.cab.map(c=>({c:c.c,n:(c.c==='SPARE'?1:(c.n||1)*n),w:b.w}));
+        const area=cables.filter(c=>!AFILL_CABLES[c.c].empty).reduce((s,c)=>s+c.n*afillArea(AFILL_CABLES[c.c].od),0),f=area/afillArea(AFILL_CONDUITS[afillCondIx(b.w)].id);
+        R.pipes.push({key:b.k,fam:b.fam||'SPARE',cables,segs,len,size:b.w,fill:+f.toFixed(3),why:b.k+' '+b.w+(b.note?' — '+b.note:'')});
+        if(f>AFILL_RULE.fill+1e-9)out.warns.push({sev:'warn',code:'chn.overfill',msg:b.k+' túltelítve ('+chnName(p)+'): '+cables.map(c=>c.n+' × '+afillCabName(c.c)).join(' + ')+' ('+Math.round(f*100)+' %) — STD-001 nem szabályozza a láncolt köteget; döntés kell: párhuzamos köteg vagy nagyobb cső.',ref:p.id});});}
+    else if(k==='mains'){const e=chnEnds(p),rb=e.find(d=>d&&d.type==='rbx'),sc=e.find(d=>d&&d.type==='ssc');let cables=[];
+      if(rb){cables.push({c:'NYM3x15',n:E.lightPerRbx});afillRbxCircuits(rb,S).forEach(c=>cables.push({c:c.cable,n:1}));}
+      else if(sc)cables.push({c:'NYM3x15',n:E.sys.ssc});
+      afillPackMains(cables,len).forEach((B,i)=>R.pipes.push(Object.assign({key:'MAINS.'+(i+1),fam:'MAINS',segs,len},B)));}
+    else if(k==='panel'){R.pipes.push(Object.assign({key:'SYS',fam:'MAINS',cables:[{c:'NYM3x15',n:E.sys.base,w:'M20'}],segs,len},afillSize([{c:'NYM3x15',n:E.sys.base,w:'M20'}],len,'M25')));   /*r*/
+      R.pipes.push(Object.assign({key:'PANEL',fam:'CONTROL',cables:[{c:'CAT6A_S',n:1,w:'M20'}],segs,len},afillSize([{c:'CAT6A_S',n:1,w:'M20'}],len)));   /*r*/
+      R.note='PANEL LINK + rendszerkörök: erősáram és vezérlés egy nyomvonalon — szándékos (≥ 50 mm vagy válaszfal).';}
+    else if(k==='data')R.pipes.push(Object.assign({key:'DATA',fam:'DATA',cables:[{c:'CAT6A_U',n:1,w:'M20'}],segs,len},afillSize([{c:'CAT6A_U',n:1,w:'M20'}],len)));
+    else if(k==='isp')R.pipes.push({key:'ISP',fam:'SPARE',cables:[{c:'SPARE',n:1,w:'M25'}],segs,len,size:'M25',fill:0,why:'üres M25 + behúzószál — a szolgáltató kábele az övé'});   /*r*/
+    else if(k==='security'){const keys=new Set(),cab=[];afillRuns().forEach(r=>{if(r.stage!=='stack'||r.fam!=='SECURITY')return;
+        if((r.via||[]).some(v=>v.p===p.id)){keys.add(r.pipe);const ex=cab.find(c=>c.c===r.cable.c);if(ex)ex.n+=r.cable.n||1;else cab.push({c:r.cable.c,n:r.cable.n||1,w:'M16'});}});
+      if(cab.length)R.pipes.push(Object.assign({key:'TRUNK',fam:'SECURITY',cables:cab,segs,len,merged:[...keys]},afillSize(cab,len,'M25')));
+      else R.note='Nincs még biztonsági végpont-futás ezen a törzsön (előbb a helyiségek feltöltése).';}
+    else if(k==='feed')R.note='A betáp a szolgáltató szabályai szerint (A08) — nem számolt.';
+    out.routes.push(R);});
+  // runs of the bundle: BASE → every reached RBX, through its chain (logical star, physical chain)
+  hwList('rbx').forEach(x=>{const t=T[x.id];if(!t||(onlyRbxId&&x.id!==onlyRbxId&&!(T[onlyRbxId]&&T[onlyRbxId].via.some(v=>t.via.indexOf(v)>=0))))return;
+    const via=[];t.via.forEach(pid=>{const p=pathById(pid);if(p)afillSegsOf(p).forEach(s=>via.push({p:s.p,a:s.a,b:s.b}));});
+    const L=Math.round(t.len+2*AFILL_RULE.slackPerEnd);
+    CHN_BUNDLE.forEach(b=>b.cab.forEach(c=>{if(c.c==='SPARE')return;out.runs.push({carrier:'channel',code:b.k,from:t.root,to:x.id,via,cable:{c:c.c,n:c.n||1},len:L,fam:b.fam});}));});
+  return out;}
+function afillEloRules(){return (typeof ELO_RULES!=='undefined')?ELO_RULES:{lightPerRbx:1,sys:{base:2,ssc:2,pack:1}};}
+function afillChannelApply(plan,S){S=S||stkActive();if(!plan||!plan.routes.length)return 0;pushUndo(['paths','runs']);
+  const touched=new Set(plan.routes.map(R=>R.p));
+  data.runs=afillRuns().filter(r=>!(r.stage==='channel'&&r.manual!==true&&(r.via||[]).some(v=>touched.has(v.p))));
+  plan.routes.forEach(R=>{afillDropSrc('chn:'+R.p);R.pipes.forEach(P=>afillPutPipe(P,'chn:'+R.p,'',P.merged?{merged:P.merged}:null));});
+  plan.runs.forEach(r=>afillRuns().push(Object.assign({stage:'channel'},r)));
+  ensureIds(data);if(typeof invalidateShell==='function')invalidateShell();draw();return plan.runs.length;}
+
+// ---- report (the phase-3 seam) --------------------------------------------------------------------------------------------------
+function afillReport(stackId){const S=stackId?stkById(stackId):stkActive();if(!S)return null;const waste=1+(+state.waste||0)/100;
+  const m=x=>Math.round(x/100)/10;
+  const out={stack:S.id,rbx:[],channels:[],warnings:[]};
+  hwList('rbx').forEach(x=>{const rooms=hwServes(x),roles={},tot={cables:{},pipes:{}};
+    afillRuns().filter(r=>r.stage==='stack'&&rooms.indexOf(r.room)>=0).forEach(r=>{const R=roles[r.role]||(roles[r.role]={role:r.role,endpoints:new Set(),cables:{},pipes:{}});
+      R.endpoints.add(r.to);const nm=afillCabName(r.cable.c),len=r.len*(r.cable.n||1)*waste;R.cables[nm]=(R.cables[nm]||0)+len;tot.cables[nm]=(tot.cables[nm]||0)+len;});
+    const seen=new Set();data.paths.forEach(p=>(p.sections||[]).forEach((sec,si)=>{afillSecPipes(sec).forEach(a=>{if(a.src.indexOf('room:')!==0||rooms.indexOf(a.src.slice(5))<0)return;
+      const L=Math.hypot(p.nodes[si+1].x-p.nodes[si].x,p.nodes[si+1].y-p.nodes[si].y,(p.nodes[si+1].h||0)-(p.nodes[si].h||0));
+      tot.pipes[a.size]=(tot.pipes[a.size]||0)+L;});}));
+    const fix=o=>{Object.keys(o).forEach(k=>{o[k]=m(o[k]);});return o;};
+    out.rbx.push({id:x.id,ref:x.ref||x.id,rooms,roles:Object.values(roles).map(R=>({role:R.role,endpoints:R.endpoints.size,cables:fix(R.cables)})),
+      totals:{cables:fix(tot.cables),pipes:fix(tot.pipes)},chain:(typeof chnChain==='function')?chnChain(x.id):null});});
+  chnRoutes().forEach(p=>{const pipes=[];(p.sections||[]).slice(0,1).forEach(sec=>afillSecPipes(sec).filter(a=>a.src==='chn:'+p.id).forEach(a=>pipes.push({k:a.pipe,size:a.size,fill:a.fill,cables:a.cables})));
+    out.channels.push({id:p.id,name:chnName(p),carrier:chnCarrier(p),len:m(chnLen(p)),pipes});});
+  return out;}
+
+// ---- drawing: one thin line per pipe along every filled section ----------------------------------------------------------------
+function afillSceneSvg(){if(state.fillShow===false)return '';let s='';
+  data.paths.forEach(p=>{if(!p||(p.route!=='arm'&&p.route!=='channel')||!layerShows(p,'path'))return;const ns=p.nodes||[];
+    (p.sections||[]).forEach((sec,si)=>{const ps=afillSecPipes(sec);if(!ps.length||!ns[si+1]||!state.levels[ns[si].level])return;
+      const a=ns[si],b=ns[si+1],A=planToBase(a.x,a.y,dz(a.level,a.h||0)),B=planToBase(b.x,b.y,dz(b.level,b.h||0));
+      let dx=B[0]-A[0],dy=B[1]-A[1];const l=Math.hypot(dx,dy)||1;const nx=-dy/l,ny=dx/l;
+      ps.forEach((P,i)=>{const o=(i-(ps.length-1)/2)*1.6,c=(AFILL_FAMS[P.fam]||{c:'#888'}).c;
+        s+=`<line x1="${(A[0]+nx*o).toFixed(1)}" y1="${(A[1]+ny*o).toFixed(1)}" x2="${(B[0]+nx*o).toFixed(1)}" y2="${(B[1]+ny*o).toFixed(1)}" stroke="${c}" stroke-width="1"/>`;});});
+    if(s)s=lyrWrap(p,'path',s);});
+  return s;}
+STK_SCENE.push(afillSceneSvg);
+
+// ---- UI: preview → apply ------------------------------------------------------------------------------------------------------------
+function afillSummary(plans){const byRole={},warn={};
+  plans.forEach(pl=>{pl.runs.forEach(r=>{const R=byRole[r.role]||(byRole[r.role]={runs:0,cables:{},pipes:{}});R.runs++;const nm=afillCabName(r.cable);R.cables[nm]=(R.cables[nm]||0)+r.len*(r.n||1);});
+    pl.pipes.forEach(P=>{const r=pl.runs.find(x=>x.pipe===P.key);const R=byRole[r?r.role:'?']||(byRole[r?r.role:'?']={runs:0,cables:{},pipes:{}});R.pipes[P.size]=(R.pipes[P.size]||0)+(P.len||0);});
+    pl.warns.forEach(x=>{(warn[x.code]=warn[x.code]||[]).push(x.msg);});});
+  return {byRole,warn};}
+function afillPreview(plans,onApply,title){const sm=afillSummary(plans),m=x=>(x/1000).toFixed(1).replace('.',',');
+  openModal(title||'Feltöltés — előnézet',
+    `<div style="max-height:400px;overflow:auto;font-size:12px">`
+    +Object.keys(sm.byRole).sort((a,b)=>stkRoleIx(a)-stkRoleIx(b)).map(k=>{const R=sm.byRole[k];
+      return `<div class="mrow"><b>${esc((stkRole(k)||{n:k}).n)}</b> — ${R.runs} futás · `+Object.keys(R.cables).map(c=>esc(c)+' '+m(R.cables[c])+' m').join(' · ')
+        +' · '+Object.keys(R.pipes).sort().map(sz=>sz+' '+m(R.pipes[sz])+' m').join(' · ')+`</div>`;}).join('')
+    +(Object.keys(sm.warn).length?`<div class="mrow" style="color:#b05a00"><b>Figyelmeztetések</b></div>`
+      +Object.keys(sm.warn).map(c=>`<div style="color:#b05a00">${esc(c)} × ${sm.warn[c].length}: ${esc(sm.warn[c][0])}${sm.warn[c].length>1?' …':''}</div>`).join(''):'')
+    +`</div><div class="mrow" style="font-size:11px;color:#888">A hosszak tájékoztató jellegűek (pálya + ${AFILL_RULE.slackPerEnd} mm végenként).</div>`,
+    ()=>{const n=onApply();lyrHud('Feltöltve: '+n+' futás.');},'Alkalmaz');}
+function afillRoomIds(){const out=[];ORD.forEach(l=>stkRooms(l).forEach(r=>{if(r.id)out.push(r.id);}));return out;}
+function afillRoomUI(roomId){const S=stkActive();if(!S){lyrHud('Aktív BRIDGE Stack kell hozzá.');return;}
+  const G=rgBuild({routes:['arm','channel']}),pl=[afillPlanRoom(S.id,roomId,G)];afillPreview(pl,()=>afillApply(pl,S),'Helyiség feltöltése — előnézet');}
+function afillAllUI(){const S=stkActive();if(!S){lyrHud('Aktív BRIDGE Stack kell hozzá.');return;}
+  const G=rgBuild({routes:['arm','channel']}),pl=afillRoomIds().map(r=>afillPlanRoom(S.id,r,G)).filter(p=>p.rbx);afillPreview(pl,()=>afillApply(pl,S),'Teljes stack feltöltése — előnézet');}
+function afillChannelUI(rbxId){const S=stkActive();if(!S){lyrHud('Aktív BRIDGE Stack kell hozzá.');return;}const P=afillChannelPlan(S.id,rbxId);
+  openModal('Csatorna feltöltése — előnézet',`<div style="max-height:400px;overflow:auto;font-size:12px">`
+    +P.routes.map(R=>{const p=pathById(R.p);return `<div class="mrow"><b>${esc(p?chnName(p):R.p)}</b> · ${esc(chnCarrierName(R.carrier))}</div>`
+      +R.pipes.map(x=>`<div style="margin-left:12px">${esc(x.key)} ${x.size} · ${esc(x.cables.map(c=>c.n+'×'+afillCabName(c.c)).join(' + '))}${x.fill?' · '+Math.round(x.fill*100)+' %':''}</div>`).join('')
+      +(R.note?`<div style="margin-left:12px;color:#888">${esc(R.note)}</div>`:'');}).join('')
+    +P.warns.map(x=>`<div style="color:#b05a00">${esc(x.msg)}</div>`).join('')+`</div>`,
+    ()=>{const n=afillChannelApply(P,S);lyrHud('Csatorna feltöltve: '+n+' futás.');},'Alkalmaz');}
+function afillReportUI(){const r=afillReport();if(!r){lyrHud('Aktív BRIDGE Stack kell hozzá.');return;}
+  openModal('Kábel- és csőlista (tájékoztató)',`<div style="max-height:420px;overflow:auto;font-size:12px">`
+    +r.rbx.map(x=>`<div class="mrow"><b>${esc(x.ref)}</b> — ${x.rooms.length} helyiség${x.chain?' · '+x.chain:''}</div>`
+      +`<div style="margin-left:12px">`+Object.keys(x.totals.cables).sort().map(k=>esc(k)+': '+x.totals.cables[k]+' m').join('<br>')+`</div>`
+      +`<div style="margin-left:12px;color:#555">`+Object.keys(x.totals.pipes).sort().map(k=>k+': '+x.totals.pipes[k]+' m').join(' · ')+`</div>`).join('')
+    +`<div class="mrow"><b>Csatornák</b></div>`+r.channels.map(c=>`<div style="margin-left:12px">${esc(c.name)} · ${esc(chnCarrierName(c.carrier))} · ${c.len} m · ${esc(c.pipes.map(p=>p.k+' '+p.size).join(', '))}</div>`).join('')
+    +`</div><div class="mrow" style="font-size:11px;color:#888">Kábelhossz × (1 + ${state.waste||0} % hulladék). Tájékoztató.</div>`,()=>{},'Bezár');}
+
+STK_ROOMMENU.push((rh,items)=>{if(!stkActive())return;items.push({label:'⚙ Helyiség feltöltése…',act:()=>afillRoomUI(stkRoomId(rh))});});
+STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d||d.type!=='rbx'||!stkActive())return;
+  items.push({label:'⚙ Csatorna feltöltése (ez az RBX)',act:()=>afillChannelUI(d.id)});});
+(STK_CHECKS.arm=STK_CHECKS.arm||[]).push(S=>{const out=[];afillRoomIds().forEach(r=>{const has=afillRuns().some(x=>x.stage==='stack'&&x.room===r);
+  if(has&&afillStale(r,S))out.push({sev:'warn',msg:hwRoomLabel(r)+': a feltöltés elavult — futtasd újra.'});});
+  afillManualStale().forEach(x=>out.push(x));return out;});
+(STK_CHECKS.channel=STK_CHECKS.channel||[]).push(S=>{const out=[];if(!chnRoutes().length)return out;
+  if(!afillRuns().some(r=>r.stage==='channel'))out.push({sev:'info',msg:'A csatornák még nincsenek feltöltve.'});
+  afillChannelPlan(S.id).warns.forEach(w=>out.push({sev:w.sev,msg:w.msg}));return out;});
+
+registerActions([
+ {id:'fill.room',alias:'helyiseg feltoltese fill room cables conduits',label:'Helyiség feltöltése…',icon:'⚙',group:'Feltöltés',
+  hint:'A kijelölt helyiség minden rendszer-rétegének futásai, csövei és kábelei az ARM pályákon (előnézet, majd Alkalmaz).',
+  need:'Jelölj ki egy helyiséget (padlót).',when:c=>!!stkActive()&&c.selType==='floors',run:c=>afillRoomUI(data.floors[c.sel.i].id)},
+ {id:'fill.all',alias:'teljes stack feltoltese fill all',label:'Teljes stack feltöltése…',icon:'⚙',group:'Feltöltés',
+  need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>afillAllUI()},
+ {id:'fill.channel',alias:'csatornak feltoltese fill channel bundle',label:'Csatornák feltöltése…',icon:'⇋',group:'Feltöltés',
+  hint:'CHANNEL köteg (C1…C5) a BASE-től minden RBX-ig a láncon át, az RBX-ek erősáramú betápja, a biztonsági törzs.',
+  need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>afillChannelUI(null)},
+ {id:'fill.report',alias:'kabel cso lista report cable conduit list',label:'Kábel- és csőlista',icon:'☰',group:'Feltöltés',
+  need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>afillReportUI()},
+ {id:'fill.export',alias:'feltoltes export json',label:'Feltöltés exportálása (JSON)',icon:'⬇',group:'Feltöltés',
+  need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>download('feltoltes-'+stkActive().name.replace(/\s+/g,'_')+'.json',JSON.stringify(afillReport(),null,1))},
+ {id:'fill.show',alias:'csovek mutatasa pipes show',label:'Csövek mutatása be / ki',icon:'≡',group:'Feltöltés',run:()=>{state.fillShow=state.fillShow===false;draw();}}
+]);
+
+// test hooks
+window.AFILL_CABLES=AFILL_CABLES;window.AFILL_CONDUITS=AFILL_CONDUITS;window.AFILL_RULE=AFILL_RULE;window.AFILL_FAMS=AFILL_FAMS;
+window.afillRuns=afillRuns;window.afillSize=afillSize;window.afillPlanRoom=afillPlanRoom;window.afillApply=afillApply;window.afillBasis=afillBasis;window.afillStale=afillStale;
+window.afillSecPipes=afillSecPipes;window.afillReport=afillReport;window.afillChannelPlan=afillChannelPlan;window.afillChannelApply=afillChannelApply;window.afillPackMains=afillPackMains;
+window.afillRbxCircuits=afillRbxCircuits;window.afillManualStale=afillManualStale;window.afillHash=afillHash;window.afillSceneSvg=afillSceneSvg;
+
+// The defaults are P33's settled cabinet (P33-BUILD-001 §14, K31/K32): a one-module RCBO on every way, a
+// three-phase-ready feed, way groups system / RoomBox lighting / RoomBox sockets / big loads. Ratings and loads
+// are typical (reasoned) and a 05j circuit's own `mcb` always wins. The result is a schedule and a JSON the future
+// DIN-rail tool reads (format vrg-cabinet v1, wrapping the existing vrg-circuits payload). Prefix: elo.
+
+const ELO_RULES={
+ perWay:'rcbo',            // K31: one 1-module RCBO on every way; 'rcd' = grouped RCDs instead [Q33=A]
+ rcbo:{type:'A',ma:30,mod:1},
+ rcd:{type:'A',ma:30,amps:40,mod:2,maxWays:4},       /*r*/ // only when perWay==='rcd'
+ sys:{base:2, ssc:2, pack:1},                        // B1 §14.3: BASE ×2, SSC ×2, assured pack ×1
+ lightPerRbx:1,                                      // B1 §14.3
+ socketKitchen:3,                                    // S04 trimmed (B1 §14.2): worktop A, B + the island
+ mcb:{lighting:'1C 10A', socket15:'1C 13A', socket25:'1C 16A', g16:'1C 16A', hob32:'1C 32A', hob2l:'1P-N C16A', sys:'1C 10A', alelo:'3C 25A', avp:'1C 16A'}, /*r*/
+ feed:{'1f':[{n:'Főkapcsoló 2P',mod:2},{n:'Túlfeszültség-védelem 1P+N (T1+T2)',mod:2}],
+       '3f':[{n:'Főkapcsoló 4P',mod:4},{n:'Túlfeszültség-védelem 3P+N (T1+T2)',mod:4}]},
+ bell:{n:'Moduláris csengő',mod:1,on:true},
+ phase:'3f',               // K32: build three-phase-ready
+ rowModules:12, spareMin:2,
+ // typical connected load per way, kW — B1 §14.4 (BUILD-002 replaces them with nameplates)
+ kw:{hob2l:7.4, hob32:7.4, g16:2.0, oven:3.5, washer:2.2, dishwasher:2.0, bojler:2.0, klima:1.2, avp:0.5,
+     socketKitchen:1.0, socket:0.7, light:0.15, sys:0.1, alelo:5.0}};   /*r*/
+const ELO_KW_WORDS=[[/sut|oven/,'oven'],[/mosogat|dishwash/,'dishwasher'],[/mosogep|washer/,'washer'],[/bojler|boiler/,'bojler'],[/klima|split|hvac/,'klima']];
+
+function eloOpt(o){const s=state.elo||{};return {phase:(o&&o.phase)||s.phase||ELO_RULES.phase,perWay:(o&&o.perWay)||s.perWay||ELO_RULES.perWay};}
+// the consumers a board feeds over the channel topology (mains / panel carriers)
+function eloFeeds(boardId){const out={rbx:[],base:[],ssc:[]};
+  chnGraph().edges.forEach(e=>{if(e.carrier!=='mains'&&e.carrier!=='panel')return;const o=e.a===boardId?e.b:e.b===boardId?e.a:null;if(!o)return;
+    const d=byId('devices',o);if(d&&out[d.type]&&out[d.type].indexOf(d)<0)out[d.type].push(d);});
+  ['rbx','base','ssc'].forEach(k=>out[k].sort((a,b)=>prtIdCmp(a.id,b.id)));return out;}
+// the board a big load hangs on: the origin of its fill run, else the only / nearest board
+function eloLoadBoard(d){const r=afillRuns().find(x=>x.stage==='stack'&&x.to===d.id&&(byId('devices',x.from)||{}).type==='board');
+  if(r)return r.from;const bs=hwList('board');if(bs.length===1)return bs[0].id;
+  let best=null,bd=1e18;bs.forEach(b=>{const dd=Math.hypot(b.x-d.x,b.y-d.y)+(b.level===d.level?0:1e9);if(dd<bd){bd=dd;best=b;}});return best?best.id:null;}
+function eloMcbOf(dev,fallback){const c=dev&&typeof cktOfDevice==='function'?cktOfDevice(dev):null;return (c&&c.mcb&&c.mcb.curve)?mcbText(c.mcb):fallback;}
+function eloLoadKw(d){const v=d.var||'',txt=needFold([d.name,d.lampName,d.note,d.ref].filter(Boolean).join(' '));
+  if(v==='hob2l'||v==='hob32')return ELO_RULES.kw[v];if(v==='alelo')return ELO_RULES.kw.alelo;if(epCodeOf(d)==='AVP')return ELO_RULES.kw.avp;
+  const hit=ELO_KW_WORDS.find(w=>w[0].test(txt));return hit?ELO_RULES.kw[hit[1]]:ELO_RULES.kw.g16;}
+// → [{key, label, kind, mcb, kw, phases:1|2, feeds:[ids]}] — one entry per way (a 2L+2N hob on 3 phases = two ways)
+function eloWays(boardId,opt){opt=eloOpt(opt);const F=eloFeeds(boardId),S=stkActive(),R=ELO_RULES,ways=[];
+  const add=(key,label,kind,mcb,kw,feeds)=>ways.push({key,label,kind,mcb,kw,feeds:feeds||[]});
+  if(F.base.length)for(let i=1;i<=R.sys.base;i++)add('sys:base:'+i,'BASE '+i,'sys',R.mcb.sys,R.kw.sys,F.base.map(d=>d.id));
+  F.ssc.forEach(s=>{for(let i=1;i<=R.sys.ssc;i++)add('sys:ssc:'+s.id+':'+i,(s.ref||'SSC')+' '+i,'sys',R.mcb.sys,R.kw.sys,[s.id]);});
+  const busB=S&&stkLayer(S.id,'sys:BUSB')&&data.devices.some(d=>d.layer===stkLayer(S.id,'sys:BUSB').id);
+  const packBoard=(()=>{const bs=hwList('board');const fb=bs.find(b=>eloFeeds(b.id).base.length);return (fb||bs[0]||{}).id;})();
+  if(busB&&packBoard===boardId)for(let i=1;i<=R.sys.pack;i++)add('sys:pack:'+i,'B busz akku','sys',R.mcb.sys,R.kw.sys,[]);
+  F.rbx.forEach(x=>{for(let i=1;i<=R.lightPerRbx;i++)add('light:'+x.id+':'+i,(x.ref||x.id)+' világítás','light',R.mcb.lighting,R.kw.light,[x.id]);});
+  const seen=new Set();
+  F.rbx.forEach(x=>{(S?afillRbxCircuits(x,S):[]).forEach(c=>{if(seen.has(c.key))return;seen.add(c.key);
+    const real=typeof cktById==='function'?cktById(c.key):null,members=real?real.members:[];
+    const kitchen=hwServes(x).some(r=>{const e=mrkRoomById(r);return e&&needKind(e.rm)==='konyha'&&(!real||members.some(m=>{const d=byId('devices',m);return d&&epRoomOf(d)===r;}));});
+    add('socket:'+c.key,c.name||'dugalj','socket',(real&&real.mcb&&real.mcb.curve)?mcbText(real.mcb):(c.cable==='NYM3x25'?R.mcb.socket25:R.mcb.socket15),
+      kitchen?R.kw.socketKitchen:R.kw.socket,members);});});
+  data.devices.forEach(d=>{const c=d&&epCodeOf(d);if(c!=='DED'&&c!=='AVP')return;if(eloLoadBoard(d)!==boardId)return;
+    const v=d.var||'',kw=eloLoadKw(d),lbl=(d.ref||d.id)+' — '+((epVar(d)||{}).n||'').split(' — ')[0];
+    if(v==='hob2l'&&opt.phase==='3f'){for(let i=1;i<=2;i++)add('load:'+d.id+':'+i,lbl+' ('+i+'/2)','load',eloMcbOf(d,R.mcb.hob2l),kw/2,[d.id]);}
+    else add('load:'+d.id,lbl,'load',eloMcbOf(d,c==='AVP'?R.mcb.avp:(R.mcb[v]||R.mcb.g16)),kw,[d.id]);});
+  return ways;}
+function eloDevice(mcb,perWay){const m=mcbParse(mcb);if(!m||!m.curve)return mcb;
+  return perWay==='rcbo'?'RCBO '+(m.poles+(m.n?'P+N':'P'))+' '+m.curve+m.amps+' '+ELO_RULES.rcbo.ma+' mA '+ELO_RULES.rcbo.type:'MCB '+mcbText(m);}
+// greedy: largest load first onto the least loaded phase; the two halves of a hob onto two different phases
+function eloBalance(ways){const ph={L1:0,L2:0,L3:0},keys=['L1','L2','L3'];const pick=ex=>keys.filter(k=>k!==ex).sort((a,b)=>ph[a]-ph[b]||(a<b?-1:1))[0];
+  const order=ways.slice().sort((a,b)=>b.kw-a.kw||(a.key<b.key?-1:1));const hob={};
+  order.forEach(w=>{const base=w.key.replace(/:\d$/,'');let p;if(/^load:.*:[12]$/.test(w.key)&&hob[base])p=pick(hob[base]);else p=pick(null);
+    if(/^load:.*:[12]$/.test(w.key))hob[base]=hob[base]||p;w.phase=p;ph[p]+=w.kw;});
+  return ph;}
+// the schedule: plain JSON
+function eloSchedule(boardId,o){const opt=eloOpt(o),R=ELO_RULES,b=byId('devices',boardId);
+  const ways=eloWays(boardId,opt).map(w=>Object.assign({},w,{device:eloDevice(w.mcb,opt.perWay),
+    mod:opt.perWay==='rcbo'?R.rcbo.mod:mcbModules(mcbParse(w.mcb))||1,phase:null}));
+  const feed=R.feed[opt.phase].map(f=>({n:f.n,mod:f.mod}));if(R.bell.on)feed.push({n:R.bell.n,mod:R.bell.mod});
+  const rcd=[];if(opt.perWay==='rcd'){for(let i=0;i<ways.length;i+=R.rcd.maxWays)rcd.push({n:'RCD '+R.rcd.amps+'A '+R.rcd.ma+' mA '+R.rcd.type,mod:R.rcd.mod,ways:ways.slice(i,i+R.rcd.maxWays).map(w=>w.key)});}
+  const totalMod=feed.reduce((s,f)=>s+f.mod,0)+ways.reduce((s,w)=>s+w.mod,0)+rcd.reduce((s,r)=>s+r.mod,0);
+  const rows=Math.max(1,Math.ceil(totalMod/R.rowModules)),free=rows*R.rowModules-totalMod,warnings=[];
+  let phases=null;
+  if(opt.phase==='3f'){phases=eloBalance(ways);const v=Object.values(phases),mx=Math.max(...v),mn=Math.min(...v);
+    Object.keys(phases).forEach(k=>{phases[k]=Math.round(phases[k]*100)/100;});
+    if(mn>0&&mx/mn>1.5)warnings.push({sev:'warn',code:'elo.phase',msg:'Fázisaszimmetria: '+Object.keys(phases).map(k=>k+' '+phases[k]+' kW').join(' · ')});}
+  if(free<R.spareMin)warnings.push({sev:'warn',code:'elo.spare',msg:'Csak '+free+' szabad modul — következő sor / nagyobb szekrény.'});
+  return {board:boardId,ref:b?(b.ref||b.id):boardId,phase:opt.phase,perWay:opt.perWay,feed,ways,rcd,totalMod,rows,free,phases,warnings};}
+
+// ---- checks ---------------------------------------------------------------------------------------------------------------
+(STK_CHECKS['sys:MAINS']=STK_CHECKS['sys:MAINS']||[]).push(S=>{const out=[];
+  hwList('rbx').forEach(x=>hwServes(x).forEach(r=>{const e=mrkRoomById(r);if(!e||needKind(e.rm)!=='konyha')return;
+    const n=epCircuits(r,S.id).filter(c=>c.members.some(id=>epCodeOf(byId('devices',id))==='SOC')).length;
+    if(n&&n<ELO_RULES.socketKitchen)out.push({sev:'info',msg:hwRoomLabel(r)+': '+n+' dugaljkör — S04 szerint a konyhába '+ELO_RULES.socketKitchen+' javasolt (pult A, B + sziget).'});}));
+  if(afillRuns().length)data.devices.forEach(d=>{const c=epCodeOf(d);if(c!=='DED'&&c!=='AVP')return;
+    if(!afillRuns().some(r=>r.stage==='stack'&&r.to===d.id&&(byId('devices',r.from)||{}).type==='board'))out.push({sev:'warn',msg:(d.ref||d.id)+': nincs útvonal az Elosztószekrénytől.'});});
+  return out;});
+
+// ---- UI and export ----------------------------------------------------------------------------------------------------------
+function eloDialog(boardId){const bs=hwList('board');if(!bs.length){lyrHud('Nincs Elosztószekrény.');return;}
+  boardId=boardId||bs[0].id;const opt=eloOpt();const S=eloSchedule(boardId,opt);
+  const kinds={sys:'Rendszer',light:'RBX világítás',socket:'RBX dugaljkörök',load:'Nagy fogyasztók'};
+  openModal('Elosztószekrény összeállítás — '+S.ref,
+    `<div class="mrow">Szekrény <select id="eloB">${bs.map(b=>`<option value="${b.id}" ${b.id===boardId?'selected':''}>${esc(b.ref||b.id)}</option>`).join('')}</select>`
+    +` Betáp <select id="eloP"><option value="1f" ${opt.phase==='1f'?'selected':''}>1 fázis</option><option value="3f" ${opt.phase==='3f'?'selected':''}>3 fázis</option></select>`
+    +` Védelem <select id="eloW"><option value="rcbo" ${opt.perWay==='rcbo'?'selected':''}>RCBO soronként</option><option value="rcd" ${opt.perWay==='rcd'?'selected':''}>RCD csoportok</option></select></div>`
+    +`<div style="max-height:380px;overflow:auto"><table style="font-size:11.5px;width:100%"><tr><th align="left">Áramkör</th><th>Kismegsz.</th><th align="left">Eszköz</th><th>Mod.</th><th>Fázis</th><th>kW</th></tr>`
+    +S.feed.map(f=>`<tr style="color:#555"><td>${esc(f.n)}</td><td></td><td></td><td align="center">${f.mod}</td><td></td><td></td></tr>`).join('')
+    +Object.keys(kinds).map(k=>{const ws=S.ways.filter(w=>w.kind===k);if(!ws.length)return '';
+      return `<tr><td colspan="6"><b>${kinds[k]}</b> (${ws.length})</td></tr>`+ws.map(w=>`<tr><td>${esc(w.label)}</td><td align="center">${esc(w.mcb)}</td><td>${esc(w.device)}</td><td align="center">${w.mod}</td><td align="center">${w.phase||''}</td><td align="center">${w.kw}</td></tr>`).join('');}).join('')
+    +S.rcd.map(r=>`<tr style="color:#555"><td>${esc(r.n)}</td><td></td><td>${r.ways.length} kör</td><td align="center">${r.mod}</td><td></td><td></td></tr>`).join('')
+    +`</table></div><div class="mrow"><b>${S.totalMod} / ${S.rows*ELO_RULES.rowModules} modul · ${S.rows} sor · ${S.free} szabad</b>`
+    +(S.phases?' · '+Object.keys(S.phases).map(k=>k+' '+S.phases[k]+' kW').join(' · '):'')+`</div>`
+    +S.warnings.map(x=>`<div style="color:#b05a00">${esc(x.msg)}</div>`).join('')
+    +`<div class="mrow" style="font-size:11px;color:#888">Névleges értékek és terhelések tipikusak — egy áramkör saját kismegszakítója mindig felülírja.</div>`,()=>{},'Bezár');
+  const re=()=>{state.elo={phase:$('eloP').value,perWay:$('eloW').value};closeModal();eloDialog($('eloB').value);};
+  $('eloB').onchange=re;$('eloP').onchange=re;$('eloW').onchange=re;}
+function eloExportObj(boardId){const bs=hwList('board');boardId=boardId||(bs[0]&&bs[0].id);
+  return {format:'vrg-cabinet',v:1,project:(state.bp&&state.bp.proj)||'',schedule:boardId?eloSchedule(boardId):null,
+    circuits:(typeof cktExportObj==='function')?cktExportObj():null};}
+
+registerActions([
+ {id:'elo.schedule',alias:'elosztoszekreny osszeallitas cabinet schedule rcbo modules',label:'Elosztószekrény összeállítás…',icon:'▤',group:'Feltöltés',
+  hint:'Áramkörök (rendszer, RBX világítás és dugalj, nagy fogyasztók), RCBO / RCD, túlfeszültség-védelem, modulszám, fázisok.',
+  need:'Legalább egy Elosztószekrény kell.',when:c=>hwList('board').length>0,run:()=>eloDialog()},
+ {id:'elo.export',alias:'eloszto export json vrg-cabinet din',label:'Elosztó exportálása (JSON)',icon:'⬇',group:'Feltöltés',
+  need:'Legalább egy Elosztószekrény kell.',when:c=>hwList('board').length>0,run:()=>download('vrg-cabinet.json',JSON.stringify(eloExportObj(),null,1))}
+]);
+(STK_GROUPS['+sys:MAINS']=STK_GROUPS['+sys:MAINS']||[]).push('Feltöltés');
+
+// test hooks
+window.ELO_RULES=ELO_RULES;window.eloFeeds=eloFeeds;window.eloWays=eloWays;window.eloSchedule=eloSchedule;window.eloBalance=eloBalance;
+window.eloExportObj=eloExportObj;window.eloLoadBoard=eloLoadBoard;window.eloDialog=eloDialog;
 // ---- Wall View: 2D elevation of a selected wall ----
 function devMini(type,x,y,col){
   if(type==='socket')return `<circle cx="${x}" cy="${y}" r="6" fill="#fff" stroke="${col}" stroke-width="1.4"/><line x1="${x-3}" y1="${y}" x2="${x+3}" y2="${y}" stroke="${col}" stroke-width="1.4"/>`;
