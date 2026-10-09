@@ -184,10 +184,10 @@ function mrkGeom(m){
 
 // ---- drawing: plan --------------------------------------------------------------------------------------------
 function mrkCol(m){return (MRK_POL[m.pol]||MRK_POL.none).c;}
-function mrkLine(a,b,z,col,w,dash){return `<polyline points="${p2b([[a[0],a[1],z],[b[0],b[1],z]])}" fill="none" stroke="${col}" stroke-width="${w}"${dash?` stroke-dasharray="${dash}"`:''} stroke-linecap="round"/>`;}
+function mrkLine(a,b,z,col,w,dash){w=vsP(w);dash=dash?vsDash(dash):dash;return `<polyline points="${p2b([[a[0],a[1],z],[b[0],b[1],z]])}" fill="none" stroke="${col}" stroke-width="${w}"${dash?` stroke-dasharray="${dash}"`:''} stroke-linecap="round"/>`;}
 // haloed text: a stroke pass, then a fill pass (exporters ignore paint-order)
-function mrkText(x,y,z,txt,col,size,anchor){const b=planToBase(x,y,z),a=anchor||'middle',t=esc(String(txt));
-  return `<text x="${b[0].toFixed(1)}" y="${b[1].toFixed(1)}" font-size="${size}" text-anchor="${a}" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">${t}</text>`
+function mrkText(x,y,z,txt,col,size,anchor){size=vsP(size);const b=planToBase(x,y,z),a=anchor||'middle',t=esc(String(txt));
+  return `<text x="${b[0].toFixed(1)}" y="${b[1].toFixed(1)}" font-size="${size}" text-anchor="${a}" fill="none" stroke="#fff" stroke-width="${vsP(2.6)}" stroke-linejoin="round">${t}</text>`
         +`<text x="${b[0].toFixed(1)}" y="${b[1].toFixed(1)}" font-size="${size}" text-anchor="${a}" fill="${col}">${t}</text>`;}
 function mrkFirstTag(m){const k=(m.tags||[])[0];return k?mrkTagName(m,k).replace(/ [—(].*$/,''):'';}
 function mrkTrunc(s,n){return s.length>n?s.slice(0,n-1)+'…':s;}
@@ -195,7 +195,7 @@ function mrkBand(m){return '↕ '+Math.round(m.v0)+'–'+Math.round(m.v1);}
 // the SVG of one wall-related mark (also used, un-wrapped, for the hover / drag preview)
 function mrkWallSvg(m){const g=mrkGeom(m);if(!g)return '';const z=dz(g.level,0),col=mrkCol(m);let s='';
   if(m.kind==='wall'){const r=g.rect;
-    s+=`<polygon points="${p2b([[r.x0,r.y0,z],[r.x1,r.y0,z],[r.x1,r.y1,z],[r.x0,r.y1,z]])}" fill="${col}" fill-opacity="0.12" stroke="${col}" stroke-width="2"/>`;
+    s+=`<polygon points="${p2b([[r.x0,r.y0,z],[r.x1,r.y0,z],[r.x1,r.y1,z],[r.x0,r.y1,z]])}" fill="${col}" fill-opacity="0.12" stroke="${col}" stroke-width="${vsP(2)}"/>`;
     const lbl=mrkTrunc(mrkFirstTag(m)||MRK_POL[m.pol].s,14);
     s+=mrkText((r.x0+r.x1)/2,(r.y0+r.y1)/2,z,lbl,col,9);return s;}
   g.faces.forEach(f=>{const a=mrkFacePt(f.r,f.side,f.u0,f.off),b=mrkFacePt(f.r,f.side,f.u1,f.off);
@@ -332,7 +332,7 @@ function mrkSetPol(p){MRK_T.pol=p;$('hud').textContent='Jelölés polaritás: '+
 function mrkOverlaySvg(){if(!MRK_T.on||!MRK_H)return '';
   const h=MRK_H;
   if(h.opening){const o=h.opening,c=planToBase(o.x,o.y,dz(o.level,0)),R=Math.max(10,((o.w||DOOR_W)/2)*SC*0.9);
-    return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="none" stroke="${(MRK_POL[MRK_T.pol]||MRK_POL.none).c}" stroke-width="2.5" stroke-dasharray="4 3" pointer-events="none"/>`;}
+    return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="none" stroke="${(MRK_POL[MRK_T.pol]||MRK_POL.none).c}" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}" pointer-events="none"/>`;}
   const r=mrkWallById(h.level,h.id);if(!r)return '';
   const mode=MRK_T.mode,pol=MRK_T.pol,col=(MRK_POL[pol]||MRK_POL.none).c;let m=null;
   const brush=mrkBrush(mode),v=mrkHstripV(brush[0],r,h.level);
@@ -478,9 +478,9 @@ function mrkOpeningSvg(m){const o=mrkOpeningById(m.op);if(!o||!state.levels[o.le
     lbl=t.indexOf('bejarat')>=0?'BEJ':t.indexOf('lepcso')>=0?'LÉP':tier?tier.toUpperCase():t.indexOf('nyitva')>=0?'NYITVA':t.indexOf('nemhasznalt')>=0?'✕':
         (t[0]?mrkTrunc(mrkTagName(m,t[0]).replace(/ [—(].*$/,''),10):'');}
   if(!lbl&&m.pol)lbl=MRK_POL[m.pol].s;
-  return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="${col}" fill-opacity="0.10" stroke="${col}" stroke-width="2"/>`
-    +(lbl?`<text x="${c[0].toFixed(1)}" y="${(c[1]+R+10).toFixed(1)}" font-size="9" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">${esc(lbl)}</text>`
-         +`<text x="${c[0].toFixed(1)}" y="${(c[1]+R+10).toFixed(1)}" font-size="9" text-anchor="middle" fill="${col}">${esc(lbl)}</text>`:'');}
+  return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="${col}" fill-opacity="0.10" stroke="${col}" stroke-width="${vsP(2)}"/>`
+    +(lbl?`<text x="${c[0].toFixed(1)}" y="${(c[1]+R+vsP(10)).toFixed(1)}" font-size="${vsP(9)}" text-anchor="middle" fill="none" stroke="#fff" stroke-width="${vsP(2.6)}" stroke-linejoin="round">${esc(lbl)}</text>`
+         +`<text x="${c[0].toFixed(1)}" y="${(c[1]+R+vsP(10)).toFixed(1)}" font-size="${vsP(9)}" text-anchor="middle" fill="${col}">${esc(lbl)}</text>`:'');}
 
 // ---- floor and ceiling: strips and zones ---------------------------------------------------------------------------
 // Modes come from an extensible list: WP-B4 pushes line45 / free / smooth into it.
@@ -537,7 +537,7 @@ function mrkCirclePoly(cx,cy,r){const p=[];for(let i=0;i<48;i++){const a=i*Math.
 // plan drawing. A ceiling mark floats in an iso view, so there it is drawn at floor level with a dashed outline.
 function mrkPlaneSvg(m){if(!state.levels[m.level])return '';
   const flat=state.flat||state.pitch>=88,float=(m.plane==='ceiling'&&!flat),z=float?dz(m.level,0):mrkPlaneZ(m.level,m.plane),col=mrkCol(m);
-  const dash=float?' stroke-dasharray="5 4"':'',attrs=`fill="${col}" fill-opacity="0.14" stroke="${col}" stroke-width="0.5"${dash}`;let s='',cx,cy;
+  const dash=float?' stroke-dasharray="'+vsDash('5 4')+'"':'',attrs=`fill="${col}" fill-opacity="0.14" stroke="${col}" stroke-width="${vsP(0.5)}"${dash}`;let s='',cx,cy;
   if(m.kind==='pstrip'){const b=mrkPstripBox(m);if(!b)return '';
     const id='mrkc-'+m.id;
     s+=`<clipPath id="${id}"><polygon points="${p2b(b.poly.map(p=>[p[0],p[1],z]))}"/></clipPath>`

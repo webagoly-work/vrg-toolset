@@ -198,7 +198,7 @@ registerActions([
   {id:'view.toggle3d',alias:'3d 2d view toggle',label:'2D ↔ 3D',icon:'⬒',group:'Nézet',keys:['mod+3'],
    hint:'A két nézet külön kameraállást őriz.',run:()=>$('view3d').onclick()},
   {id:'view.style.plan',alias:'normal plan view',label:'Normál nézet',icon:'🖼',group:'Nézet',
-   when:c=>c.style!=='plan',run:()=>{state.style='plan';if($('style'))$('style').value='plan';
+   when:c=>c.style!=='normal',run:()=>{state.style='normal';if($('style'))$('style').value='normal';
      if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();}},
   {id:'view.style.blueprint',alias:'blueprint official plan',label:'Hivatalos (blueprint) nézet',icon:'📐',group:'Nézet',
    hint:'A hivatalos 2D rajzi jelkulcs szerinti megjelenítés.',
@@ -208,6 +208,11 @@ registerActions([
   {id:'view.style.whiteout',label:'Fehér (whiteout) nézet',icon:'⬜',group:'Nézet',
    when:c=>c.style!=='whiteout',run:()=>{state.style='whiteout';if($('style'))$('style').value='whiteout';
      if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();}},
+  {id:'view.style.preview',alias:'ugyfel elonezet client preview sotet dark',label:'Ügyfél-előnézet (sötét)',icon:'🌑',group:'Nézet',
+   hint:'Ugyanaz a terv abban a megjelenésben, amiben az ügyfél a 3D előnézetben látja: sötét alap, vékony drótváz, világító végpontok.',
+   when:c=>c.style!=='preview',run:()=>{state.style='preview';if($('style'))$('style').value='preview';
+     if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();
+     $('hud').textContent='Ügyfél-előnézet — a kliens 3D nézetének megjelenése a terven.';}},
   {id:'view.bp.scale',alias:'scale page drawing meretarany blueprint',label:'Rajzi méretarány (M 1:50…)',icon:'📏',group:'Nézet',
    hint:'A hivatalos nézet vonalvastagságai és feliratai papír-milliméterben, a választott méretarányhoz.',
    run:()=>{const opts=BP_SCALES.map(v=>`<option value="${v}" ${v===bpScaleN()?'selected':''}>M 1:${v}</option>`).join('');
@@ -218,6 +223,23 @@ registerActions([
        ()=>{state.bpScale=+$('bsSel').value||50;state.bpFine=+$('bsFine').value||1;bpUI&&bpUI();draw();
          $('hud').textContent='Méretarány M 1:'+bpScaleN()+'.';});
      $('bsFine').oninput=()=>{$('bsFineV').textContent=(+$('bsFine').value).toFixed(2).replace('.',',')+'×';};}},
+  {id:'view.scale.step',alias:'nezeti leptek view scale resolution felbontas kozelebb',label:'Nézeti lépték (1× … 10×)',icon:'🔎',group:'Nézet',
+   hint:'A rajz alap-léptéke. Nagyobb lépték: ugyanaz a képernyőterület kevesebb millimétert mutat, tehát közelebb lehet menni. A tollak és a készülékjelek képernyőmérete nem változik.',
+   run:()=>{const cur=vsOk(state.viewScale);
+     openModal('Nézeti lépték',
+       `<div class="mrow"><label style="width:110px">Lépték</label><select id="vsSel" style="width:150px">`
+      +VIEW_SCALES.map(v=>`<option value="${v}" ${v===cur?'selected':''}>${v}× ${v===1?'— teljes terv':v===10?'— részlet':''}</option>`).join('')+`</select></div>`
+      +`<div class="mrow" style="font-size:10.5px;color:#888">1× a legtávolabbi nézet: a teljes terv belefér. Minden lépés ugyanannyiszor közelebb engedi a nagyítást, a vonalvastagság és a készülékjelek képernyőmérete változatlanul.</div>`,
+       ()=>{vsSet(+$('vsSel').value);if($('viewScale'))$('viewScale').value=String(vsK());
+         $('hud').textContent='Nézeti lépték '+vsK()+'×.';});}},
+  {id:'view.scale.up',alias:'leptek fel kozelebb scale up',label:'Nézeti lépték feljebb',icon:'🔎',group:'Nézet',
+   when:c=>vsOk(state.viewScale)!==VIEW_SCALES[VIEW_SCALES.length-1],need:'A legnagyobb léptéknél vagy.',
+   run:()=>{const i=VIEW_SCALES.indexOf(vsOk(state.viewScale));vsSet(VIEW_SCALES[Math.min(VIEW_SCALES.length-1,i+1)]);
+     if($('viewScale'))$('viewScale').value=String(vsK());$('hud').textContent='Nézeti lépték '+vsK()+'×.';}},
+  {id:'view.scale.down',alias:'leptek le tavolabb scale down',label:'Nézeti lépték lejjebb',icon:'🔎',group:'Nézet',
+   when:c=>vsOk(state.viewScale)!==VIEW_SCALES[0],need:'Már a legtávolabbi léptéken vagy.',
+   run:()=>{const i=VIEW_SCALES.indexOf(vsOk(state.viewScale));vsSet(VIEW_SCALES[Math.max(0,i-1)]);
+     if($('viewScale'))$('viewScale').value=String(vsK());$('hud').textContent='Nézeti lépték '+vsK()+'×.';}},
   {id:'view.bp.scaleview',alias:'scale view zoom meretarany',label:'Nézet a méretarány szerint',icon:'⤢',group:'Nézet',
    hint:'A nagyítást úgy állítja, hogy a képernyőn (96 dpi) kb. valós méretarányban legyen a rajz.',
    run:()=>bpScaleView()},

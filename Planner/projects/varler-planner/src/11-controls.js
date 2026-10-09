@@ -11,6 +11,11 @@ function setRot(deg){deg=((Math.round(deg)%360)+360)%360;state.rot=deg;$('rot').
   document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('on',+b.dataset.deg===deg));draw();}
 $('rot').oninput=e=>setRot(+e.target.value);$('rotL').onclick=()=>setRot(state.rot-15);$('rotR').onclick=()=>setRot(state.rot+15);
 document.querySelectorAll('.preset').forEach(b=>b.onclick=()=>setRot(+b.dataset.deg));
+if($('lyrSpot'))$('lyrSpot').onchange=()=>lyrSpotToggle();
+if($('lyrPaintAll'))$('lyrPaintAll').onchange=e=>lyrPaintAll(e.target.checked);
+if($('viewScale'))$('viewScale').onchange=e=>{vsSet(+e.target.value);
+  $('hud').textContent='Nézeti lépték '+vsK()+'× — '+(vsK()===1?'a teljes terv belefér; innen lehet feljebb lépni.'
+    :'a nagyítás '+vsK()+'-szer közelebb ér; a tollak és jelek mérete nem változott.');};
 $('style').onchange=e=>{state.style=e.target.value;bpUI();
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   if(state.style==='blueprint'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();
@@ -216,7 +221,8 @@ $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileR
   Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
-function syncUI(){setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;$('explode').checked=state.exploded;
+function syncUI(){vsApply();if($('viewScale'))$('viewScale').value=String(vsOk(state.viewScale));
+  setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;$('explode').checked=state.exploded;
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   $('lvBase').checked=state.levels.basement;$('lvGround').checked=state.levels.ground;$('lvUpper').checked=state.levels.upper;
   $('hBase').value=LH.basement;$('hGround').value=LH.ground;$('hUpper').value=LH.upper;if(typeof dcSync==='function')dcSync();

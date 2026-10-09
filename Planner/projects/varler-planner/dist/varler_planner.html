@@ -29,6 +29,9 @@
  .stage-wrap{flex:1;position:relative;background:#fbfaf7;min-width:0}
  svg#stage{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
  svg#stage text{user-select:none;-webkit-user-select:none}
+ /* the client-preview render: the dark ground is the stage's own background, so the drawing
+    itself stays a plain SVG that exports and prints without a full-bleed rectangle in it */
+ svg#stage.prev{background:#0a0e13}
  /* ===== MOBILE MODE ===== */
  body.mobile header{padding:6px 8px;gap:5px;overflow-x:auto;flex-wrap:nowrap}
  body.mobile header button{font-size:13px;padding:7px 9px}
@@ -170,6 +173,14 @@
  .llink{font-size:11px;margin:0 2px}
  .lsub.ldrag{opacity:.6;background:#faf8f3;outline:1px dashed #2c2c2c}
  .lblock.ldrop{border-color:#2c2c2c;background:#faf8f3}
+ /* the layer's colour code: a disc in its own colour; filled = its devices are painted with it */
+ .lswatch{flex:0 0 auto;width:14px;height:14px;padding:0;border-radius:50%;border:2px solid var(--lc,#8a857b);
+   background:transparent;cursor:pointer;line-height:0;font-size:0}
+ .lswatch.on{background:var(--lc,#8a857b)}
+ .lswatch:hover{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--lc,#8a857b)}
+ /* the spotlight: the lit layer's block glows in that layer's colour */
+ .lblock.lspot{border-color:var(--lspot,transparent);background:#fffdf7;
+   box-shadow:0 0 0 1px var(--lspot,transparent),0 0 10px -1px var(--lspot,transparent)}
  .lname{font-size:12px;padding:2px 4px;border:1px solid #cfc9bd;border-radius:5px}
  .resizer{flex:0 0 6px;cursor:col-resize;background:linear-gradient(#ddd8cd,#cfc9bd);border:none}
  .resizer:hover{background:#b9b3a5}
@@ -235,6 +246,9 @@
   </div>
 
   <div class="grp"><h3>Layers</h3>
+   <div class="row" style="gap:10px;font-size:11.5px">
+     <label title="Vidd a kurzort (vagy kattints) bármelyik készülékre: az összes rétegtársa felvillan, és a réteg sora is kigyullad a réteg színével."><input type="checkbox" id="lyrSpot"> Réteg-kiemelés</label>
+     <label title="Minden réteg készülékei a réteg saját színét kapják. Rétegenként is kapcsolható a sor színkorongjával."><input type="checkbox" id="lyrPaintAll"> Mind színezve</label></div>
    <div id="layerList"></div>
    <div class="row"><button id="addLayer">+ Layer</button></div>
    <small>Az aktív réteg kapja az új elemeket. 👁 = látható / rejtett · 🔒 zárolás · − / + = átlátszóság 10 %-onként. Alréteg: tartsd nyomva és húzd másik rétegre (csere; Ctrl = áthelyezés) · jobb klikk = menü.</small>
@@ -361,8 +375,10 @@
    <div class="row" style="gap:4px">
      <button class="preset" data-deg="0">0°</button><button class="preset" data-deg="90">90°</button>
      <button class="preset" data-deg="180">180°</button><button class="preset" data-deg="270">270°</button></div>
+   <div class="row" title="A rajz alap-léptéke. Nagyobb lépték = ugyanaz a képernyőterület kevesebb millimétert mutat, azaz közelebb lehet menni. A tollak és a készülékjelek képernyőmérete nem változik.">Nézeti lépték <select id="viewScale">
+     <option value="1">1× — teljes terv</option><option value="2">2×</option><option value="5">5×</option><option value="10">10× — részlet</option></select></div>
    <div class="row">Render <select id="style">
-     <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option></select></div>
+     <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option><option value="preview">Ügyfél-előnézet (sötét)</option></select></div>
    <div class="row">Walls <select id="wallMode">
      <option value="translucent">translucent</option><option value="solid">solid</option>
      <option value="hidden">hidden</option></select>
@@ -433,7 +449,51 @@
 <script>
 //////////////////// core (verified) ////////////////////
 const C=Math.cos(Math.PI/6), S=Math.sin(Math.PI/6);
-let CXv=7300, CYv=4900, GAP=2600; const W=1000,Hh=720,SC=0.045;
+let CXv=7300, CYv=4900, GAP=2600; const W=1000,Hh=720;
+
+//////////////////// view scale (nézeti méretarány) ////////////////////
+// SC is base units per model mm — the drawing's BASE scale, under the pan/zoom transform.
+// A scale step grows the model in base space and shrinks the zoom by the same factor, so the
+// picture does not jump; what changes is the band the zoom range covers. Step 1 is the widest
+// view (the whole building fits); step 10 reaches ten times closer before the zoom ceiling.
+//
+// Sizes fall into three kinds, and only the third needs help:
+//   * model mm (geometry, nvMM room text)  — scale with the model, correct by construction;
+//   * paper mm (bpU/nvSW/bpSW/bpFS)        — carry SC already, correct by construction;
+//   * base units written as a literal       — would shrink on screen; pass them through vsP().
+// Anything of the form `C/state.zoom` is already screen-constant and needs nothing.
+const SC_BASE=0.045;
+const VIEW_SCALES=[1,2,5,10];
+let SC=SC_BASE;
+function vsK(){return SC/SC_BASE;}                 // the active step, 1 = the old fixed scale
+function vsOk(f){return VIEW_SCALES.indexOf(+f)>=0?+f:1;}
+function vsP(baseUnits){return +(baseUnits*vsK()).toFixed(3);}   // a size authored in base units at 1×
+function vsDash(d){return vsK()===1?d:String(d).trim().split(/\s+/).map(v=>vsP(+v)).join(' ');}
+// A badge — a label, a node dot, a cursor read-out — is a fixed SCREEN size pinned to a point, not
+// a thing on the building. Scaling the group about its own anchor carries the literal sizes AND the
+// little ±3 nudges with it, which is why these are wrapped rather than edited number by number.
+// Model-true geometry must never go through here: use vsP() on its stroke width instead.
+function vsBadge(x,y,svg){const k=vsK();
+  return k===1?svg:`<g transform="translate(${(+x).toFixed(1)},${(+y).toFixed(1)}) scale(${k}) translate(${(-x).toFixed(1)},${(-y).toFixed(1)})">${svg}</g>`;}
+// the two symbol scales authored in base units, carried through the view-scale step
+function devK(){return (state.devScale||0.72)*vsK();}
+function pathK(){return (state.pathScale||1)*vsK();}
+function vsClamp(z){return Math.max(0.15/vsK(),Math.min(5,z));}  // step 1's full range, plus the extra reach
+// state → SC, without moving the camera (load, undo, boot)
+function vsApply(){SC=SC_BASE*vsOk(state.viewScale);}
+// 12-boot's home view (zoom .5 centred), expressed at the active step
+function vsHomeView(){const r=vsK();return {zoom:.5/r,panX:(1-.5/r)*W/2,panY:(1-.5/r)*Hh/2};}
+// Switch step without moving the picture: note the PLAN point under the viewport centre, change
+// the scale, divide the zoom by the same factor, then re-pan that point back to the centre. Going
+// through plan coordinates (not base ones) keeps it exact even when the zoom clamp bites.
+function vsSet(f){f=vsOk(f);const prev=vsK();if(f===prev)return false;
+  const z=state.zoom,zz=dz(state.active,0);
+  const plan=baseToPlanB((W/2-state.panX)/z,(Hh/2-state.panY)/z,zz);
+  state.viewScale=f;vsApply();
+  state.zoom=vsClamp(z*prev/f);
+  const now=planToBase(plan[0],plan[1],zz);
+  state.panX=W/2-now[0]*state.zoom;state.panY=Hh/2-now[1]*state.zoom;
+  setTransform();draw();return true;}
 const ORD=['basement','ground','upper'];
 const LH={basement:2500,ground:2700,upper:2700};
 // Álmennyezet: per level, 0 = nincs. A room may override it (rm.dropC) — a lowered ceiling
@@ -873,7 +933,7 @@ const state={rot:90,zoom:.5,panX:250,panY:180,exploded:true,wallMode:'translucen
  grid:false,gridSize:250,cableType:'lighting',drawHKey:'s1100',freeHeight:false,freeMm:1100,chaseFactor:1.6,chasePad:4,boxDepth:45,buildType:'door',
  flat:false,showLabels:true,labelSize:1,labelRot:0,
  side:0,wallLock:true,midFree:false,showDropCeil:true,wallThick:100,wallErase:false,pathType:'gege',toolsLoc:'side',
- waste:10,price:{},hoverR:null,hoverL:'ground',stairDef:{w:1000,riser:180,going:250,th:300},isoGrid:false,activeLayer:'L0',showRefs:false,pitch:30,flat:false,soloRoom:null,showRoomText:true,bg:null,bp:{dims:true,title:true,proj:'',addr:'',by:''},bpScale:50,bpFine:1,hDisp:'hover',objAng:0,gizmoSnap:true,mobile:false,objWallSnap:true,multiSelect:false,circHoverInfo:true,circHidden:{},circHi:null,devScale:0.72,pathScale:1};
+ waste:10,price:{},hoverR:null,hoverL:'ground',stairDef:{w:1000,riser:180,going:250,th:300},isoGrid:false,activeLayer:'L0',showRefs:false,pitch:30,flat:false,soloRoom:null,showRoomText:true,bg:null,bp:{dims:true,title:true,proj:'',addr:'',by:''},bpScale:50,bpFine:1,hDisp:'hover',objAng:0,gizmoSnap:true,mobile:false,objWallSnap:true,multiSelect:false,circHoverInfo:true,circHidden:{},circHi:null,devScale:0.72,pathScale:1,viewScale:1};
 const HORDER=['floor','s300','s500','s1100','s1300','s1400','s1900','gerinc','ceiling'];
 const DEVORDER=['socket','switch','light','junction'];
 const BUILDORDER=['door','window','stairs'];
@@ -1387,19 +1447,53 @@ function openCreateRoom(){
 function p2b(pts){return pts.map(p=>{const b=planToBase(p[0],p[1],p[2]);return b[0].toFixed(1)+','+b[1].toFixed(1);}).join(' ');}
 function roomDims(poly){let xs=poly.map(p=>p[0]),ys=poly.map(p=>p[1]);
   return [Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys)];}
+// ---- fitting a room label into the room it names -------------------------------------------------
+// A floor label is painted on the floor in MODEL millimetres, so it holds its size against the
+// building at any zoom or view scale. At 1:50 that is 175 mm, which suits a living room and is
+// nearly twice the width of a WC — small rooms used to spill their name across their neighbours,
+// and it was that spill, not the big rooms, that made the plan look coarse. So: measure the block,
+// shrink it until it sits inside the room, never grow it.
+//
+// Advance widths are estimated, not measured — there is no text metric without a layout pass, and
+// draw() runs on every pointer move. Checked against eight real rooms the estimate lands within
+// 8 %, which the 0.86 margin covers; being a little over only means a slightly smaller label.
+const LBL_EM={title:0.52,body:0.56};              // average em per character, per line kind
+const LBL_MIN=0.40;                               // never shrink past this fraction of the base size
+// half-extents of the room about its centroid, in the label's own rotated frame. The label is
+// centred, so the SHORTER half on each axis is what it actually has to live in.
+function lblBox(poly,cx,cy,thDeg,flip){
+  const th=thDeg*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th),s=flip?-1:1;
+  let uMin=1e9,uMax=-1e9,vMin=1e9,vMax=-1e9;
+  poly.forEach(p=>{const dx=p[0]-cx,dy=s*(p[1]-cy),u=dx*cs+dy*sn,v=-dx*sn+dy*cs;
+    if(u<uMin)uMin=u;if(u>uMax)uMax=u;if(v<vMin)vMin=v;if(v>vMax)vMax=v;});
+  return {u:Math.min(uMax,-uMin),v:Math.min(vMax,-vMin)};}
+// lines: [{t, k (size factor), by (baseline, in units of sz)}] — the block's own geometry
+function lblFit(sz,box,lines){
+  if(!(box.u>0&&box.v>0)||!lines.length)return sz;
+  let w=0;lines.forEach(l=>{w=Math.max(w,String(l.t).length*(l.em||LBL_EM.body)*l.k*sz);});
+  const f=lines[0],z=lines[lines.length-1];
+  const h=(z.by-f.by)*sz + f.k*sz*0.78 + z.k*sz*0.22;      // ascender of the first, descender of the last
+  const kw=w>0?(2*box.u*0.86)/w:1, kh=h>0?(2*box.v*0.86)/h:1;
+  return sz*Math.max(LBL_MIN,Math.min(1,kw,kh));}
+
 function floorLabel(room,level){ // isometric text painted on the floor
   if(!state.showLabels)return '';
   let cx=0,cy=0;room.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=room.poly.length;cy/=room.poly.length;
   const z=dz(level,0),O=planToBase(cx,cy,z);
   const Ex=planToBase(cx+1000,cy,z),Ey=planToBase(cx,cy+1000,z);
   let ax=(Ex[0]-O[0])/1000, ay=(Ex[1]-O[1])/1000, bx=(Ey[0]-O[0])/1000, by=(Ey[1]-O[1])/1000;
-  if(ax*by-ay*bx<0){bx=-bx;by=-by;}          // keep glyphs readable (no mirror)
+  const flip=(ax*by-ay*bx<0);
+  if(flip){bx=-bx;by=-by;}                   // keep glyphs readable (no mirror)
   const th=state.labelRot*Math.PI/180, cs=Math.cos(th), sn=Math.sin(th); // rotate text within the plane
   const rax=ax*cs+bx*sn, ray=ay*cs+by*sn, rbx=-ax*sn+bx*cs, rby=-ay*sn+by*cs;
   const [w,h]=roomDims(room.poly),area=(w*h/1e6).toFixed(area_dec(w*h));
-  const col=state.style==='whiteout'?'#000':'#3a352c', sz=nvMM(NV_TXT.room)*state.labelSize;
-  const m=`matrix(${rax},${ray},${rbx},${rby},${O[0]},${O[1]})`;
+  const col=state.style==='whiteout'?'#000':prevOn()?PREV.muted:'#3a352c';
   const ttl=(room.num?room.num+'  ':'')+(room.name||'');
+  const lines=[{t:ttl,k:1,by:-0.54,em:LBL_EM.title},{t:`${area} m² · ${w}×${h}`,k:0.73,by:0.54}];
+  if(room.mat)lines.push({t:room.mat,k:0.66,by:1.49});
+  const sz=lblFit(nvMM(NV_TXT.room)*state.labelSize,
+                  lblBox(room.poly,cx,cy,state.labelRot,flip),lines);
+  const m=`matrix(${rax},${ray},${rbx},${rby},${O[0]},${O[1]})`;
   let body=`<tspan x="0" dy="${-0.54*sz}">${esc(ttl)}</tspan>`
    +`<tspan x="0" dy="${1.08*sz}" font-size="${0.73*sz}" font-weight="400">${area} m² · ${w}×${h}</tspan>`;
   if(room.mat)body+=`<tspan x="0" dy="${0.95*sz}" font-size="${0.66*sz}" font-weight="400">${esc(room.mat)}</tspan>`;
@@ -1460,14 +1554,14 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
 function raisedMarks(list){if(!list||!list.length)return '';let s='';
   list.forEach(it=>{const fz=dz(it.l,0);
     if(it.kind==='w'){const r=it.r,foot=[[r.x0,r.y0],[r.x1,r.y0],[r.x1,r.y1],[r.x0,r.y1]];
-      s+=`<polygon points="${p2b(foot.map(q=>[q[0],q[1],fz]))}" fill="none" stroke="#c0530f" stroke-width="1.2" stroke-dasharray="7 4"/>`;
+      s+=`<polygon points="${p2b(foot.map(q=>[q[0],q[1],fz]))}" fill="none" stroke="#c0530f" stroke-width="${vsP(1.2)}" stroke-dasharray="${vsDash('7 4')}"/>`;
       const c=planToBase((r.x0+r.x1)/2,(r.y0+r.y1)/2,fz);
-      s+=`<text x="${c[0]}" y="${c[1]+3}" font-size="9.5" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">↑${Math.round(it.mm)}</text>`
-        +`<text x="${c[0]}" y="${c[1]+3}" font-size="9.5" text-anchor="middle" fill="#c0530f">↑${Math.round(it.mm)}</text>`;}
+      s+=`<text x="${c[0]}" y="${c[1]+vsP(3)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="none" stroke="#fff" stroke-width="${vsP(2.6)}" stroke-linejoin="round">↑${Math.round(it.mm)}</text>`
+        +`<text x="${c[0]}" y="${c[1]+vsP(3)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="#c0530f">↑${Math.round(it.mm)}</text>`;}
     else{const pl=it.fl.poly,b=polyBBox(pl),c=planToBase((b.x0+b.x1)/2,(b.y0+b.y1)/2,fz);
-      s+=`<polygon points="${p2b(pl.map(q=>[q[0],q[1],fz]))}" fill="none" stroke="#c0530f" stroke-width="1.2" stroke-dasharray="7 4"/>`
-        +`<text x="${c[0]}" y="${c[1]-14}" font-size="9.5" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">↑${Math.round(it.mm)} dobogó</text>`
-        +`<text x="${c[0]}" y="${c[1]-14}" font-size="9.5" text-anchor="middle" fill="#c0530f">↑${Math.round(it.mm)} dobogó</text>`;}});
+      s+=`<polygon points="${p2b(pl.map(q=>[q[0],q[1],fz]))}" fill="none" stroke="#c0530f" stroke-width="${vsP(1.2)}" stroke-dasharray="${vsDash('7 4')}"/>`
+        +`<text x="${c[0]}" y="${c[1]-vsP(14)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="none" stroke="#fff" stroke-width="${vsP(2.6)}" stroke-linejoin="round">↑${Math.round(it.mm)} dobogó</text>`
+        +`<text x="${c[0]}" y="${c[1]-vsP(14)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="#c0530f">↑${Math.round(it.mm)} dobogó</text>`;}});
   return s;}
 let refB=[];
 function pushRefBuildings(faces){refB.forEach(rb=>{if(!rb.visible)return;const o=rb.b,dx=rb.dx||0,dy=rb.dy||0;
@@ -1555,7 +1649,7 @@ function bpDoorSymbol(q,W,o,wdt,z,corners){
     const w0=W.horiz?(t1-t0):d, h0=W.horiz?d:(t1-t0);
     const pts=W.horiz?[[A[0],cym-d/2+side*th*0.9],[A[0]+w0,cym-d/2+side*th*0.9],[A[0]+w0,cym+d/2+side*th*0.9],[A[0],cym+d/2+side*th*0.9]]
                      :[[cxm-d/2+side*th*0.9,q.y0+t0],[cxm+d/2+side*th*0.9,q.y0+t0],[cxm+d/2+side*th*0.9,q.y0+t1],[cxm-d/2+side*th*0.9,q.y0+t1]];
-    return `<polygon points="${p2b(pts.map(pp=>[pp[0],pp[1],z]))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"${dash?' stroke-dasharray="5 3"':''}/>`;};
+    return `<polygon points="${p2b(pts.map(pp=>[pp[0],pp[1],z]))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"${dash?' stroke-dasharray="'+vsDash('5 3')+'"':''}/>`;};
   const arrow=(frac)=>{ // sliding direction arrow along the wall
     const t0=wdt*0.2,t1=wdt*0.8,off=side*th*1.5;
     const A=W.horiz?[q.x0+t0,cym+off]:[cxm+off,q.y0+t0], B=W.horiz?[q.x0+t1,cym+off]:[cxm+off,q.y0+t1];
@@ -1714,13 +1808,18 @@ function pushBpBox(faces,r,z0,z1,hatchTop){const v=boxCorners(r,z0,z1);
 function bpFloorLabel(rm,level){let cx=0,cy=0;rm.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=rm.poly.length;cy/=rm.poly.length;
   const z=dz(level,0),O=planToBase(cx,cy,z),Ex=planToBase(cx+1000,cy,z),Ey=planToBase(cx,cy+1000,z);
   let ax=(Ex[0]-O[0])/1000,ay=(Ex[1]-O[1])/1000,bx=(Ey[0]-O[0])/1000,by=(Ey[1]-O[1])/1000;
-  if(ax*by-ay*bx<0){bx=-bx;by=-by;}
+  const flip=(ax*by-ay*bx<0);
+  if(flip){bx=-bx;by=-by;}
   const th=state.labelRot*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th);
   const rax=ax*cs+bx*sn,ray=ay*cs+by*sn,rbx=-ax*sn+bx*cs,rby=-ay*sn+by*cs;
-  const sz=430*state.labelSize,ar=(polyArea(rm.poly)/1e6).toFixed(2).replace('.',',');
+  const ar=(polyArea(rm.poly)/1e6).toFixed(2).replace('.',','),
+        ttl=((rm.num?rm.num+'  ':'')+(rm.name||'HELYISÉG')).toUpperCase(),mat=rm.mat||'hidegburkolat';
+  // the official view labels at 430 mm, bigger still than the modelling view — same fit, same reason
+  const sz=lblFit(430*state.labelSize,lblBox(rm.poly,cx,cy,state.labelRot,flip),
+    [{t:ttl,k:1,by:-0.5,em:LBL_EM.title},{t:mat,k:0.78,by:0.55},{t:ar+' m²',k:0.78,by:1.50}]);
   return `<g transform="matrix(${rax},${ray},${rbx},${rby},${O[0]},${O[1]})"><text text-anchor="middle" fill="#111" font-family="Arial,Segoe UI">`
-   +`<tspan x="0" dy="${-0.5*sz}" font-size="${sz}" font-weight="700">${esc(((rm.num?rm.num+'  ':'')+(rm.name||'HELYISÉG')).toUpperCase())}</tspan>`
-   +`<tspan x="0" dy="${1.05*sz}" font-size="${0.78*sz}">${esc(rm.mat||'hidegburkolat')}</tspan>`
+   +`<tspan x="0" dy="${-0.5*sz}" font-size="${sz}" font-weight="700">${esc(ttl)}</tspan>`
+   +`<tspan x="0" dy="${1.05*sz}" font-size="${0.78*sz}">${esc(mat)}</tspan>`
    +`<tspan x="0" dy="${0.95*sz}" font-size="${0.78*sz}">${ar} m²</tspan></text></g>`;}
 function drawBlueprintIso(){const faces=[];let s=bpDefs();
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0),H=wallH(l);
@@ -1813,9 +1912,9 @@ function isoGridSvg(){if(!state.isoGrid||!state.levels.ground)return '';
   if(SLAB.ground)scan(SLAB.ground);(ROOMSB.ground||[]).forEach(r=>scan(r.poly));data.floors.forEach(f=>{if(f.level==='ground')scan(f.poly);});
   if(minx>maxx)return '';let s='';
   for(let x=Math.ceil(minx/gs)*gs;x<=maxx;x+=gs){const a=planToBase(x,miny,z),b=planToBase(x,maxy,z);
-    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#9aa0a6" stroke-width="0.5" opacity="0.6"/>`;}
+    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#9aa0a6" stroke-width="${vsP(0.5)}" opacity="0.6"/>`;}
   for(let y=Math.ceil(miny/gs)*gs;y<=maxy;y+=gs){const a=planToBase(minx,y,z),b=planToBase(maxx,y,z);
-    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#9aa0a6" stroke-width="0.5" opacity="0.6"/>`;}
+    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#9aa0a6" stroke-width="${vsP(0.5)}" opacity="0.6"/>`;}
   return s;}
 function pushFloor(faces,poly,z,fill,stroke,dash,op){let cx=0,cy=0;poly.forEach(p=>{cx+=p[0];cy+=p[1];});
   cx/=poly.length;cy/=poly.length;
@@ -1840,7 +1939,10 @@ function pushRoof(faces,rf,l){const base=floorDispZ(l);const pts=rf.p.map(q=>[q[
   let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=pts.length;cy/=pts.length;cz/=pts.length;
   faces.push({pts,fill:shade(hexToRgb(rf.fill),n),stroke:'#5b5f63',op:1,dash:null,key:depthOf(cx,cy,cz)});}
 
-function drawWhiteout(){ // edge-only sketch, black 100/80, hidden dashed, minimal ink
+// Every wall edge of every shown level, split into the ones an outside eye can see and the ones it
+// cannot. Two renders are built on it — the white-out sketch and the client preview — so it lives
+// on its own; changing it changes both, which is the point.
+function wireEdges(){
   const solid=new Set(),all=new Map();
   function edgeKey(a,b){const A=a.map(v=>Math.round(v)).join(','),B=b.map(v=>Math.round(v)).join(',');return A<B?A+'|'+B:B+'|'+A;}
   function addBox(r,z0,z1){const v=boxCorners(r,z0,z1);const ctr=[(r.x0+r.x1)/2,(r.y0+r.y1)/2,(z0+z1)/2];
@@ -1851,21 +1953,77 @@ function drawWhiteout(){ // edge-only sketch, black 100/80, hidden dashed, minim
       for(let i=0;i<4;i++){const a=pts[i],b=pts[(i+1)%4],k=edgeKey(a,b);
         if(!all.has(k))all.set(k,{a,b,horiz:Math.abs(a[2]-b[2])<1});if(vis)solid.add(k);}}}
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0);for(const r of WALLS[l])if(layerShows(r,'wall')&&soloWallOk(r,l))addBox(r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)));}
+  return {all,solid};}
+
+function drawWhiteout(){ // edge-only sketch, black 100/80, hidden dashed, minimal ink
+  const {all,solid}=wireEdges();
   let s='';
   // floor + roof outlines (layout-driven)
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0);
-    if(SLAB[l])s+=`<polygon points="${p2b(SLAB[l].map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-width="1.1"/>`;
-    for(const rm of (ROOMSB[l]||[]))s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-opacity="0.8" stroke-width="0.7"/>`;
-    if(GHOST[l])s+=`<polygon points="${p2b(GHOST[l].map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-opacity="0.8" stroke-width="0.7" stroke-dasharray="6 5"/>`;
+    if(SLAB[l])s+=`<polygon points="${p2b(SLAB[l].map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-width="${vsP(1.1)}"/>`;
+    for(const rm of (ROOMSB[l]||[]))s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-opacity="0.8" stroke-width="${vsP(0.7)}"/>`;
+    if(GHOST[l])s+=`<polygon points="${p2b(GHOST[l].map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-opacity="0.8" stroke-width="${vsP(0.7)}" stroke-dasharray="${vsDash('6 5')}"/>`;
     for(const rf of (ROOFS[l]||[])){const base=floorDispZ(l);
-      s+=`<polygon points="${p2b(rf.p.map(q=>[q[0],q[1],base+q[2]]))}" fill="none" stroke="#000" stroke-width="1"/>`;}}
+      s+=`<polygon points="${p2b(rf.p.map(q=>[q[0],q[1],base+q[2]]))}" fill="none" stroke="#000" stroke-width="${vsP(1)}"/>`;}}
   // wall edges
   for(const [k,e] of all){const isSolid=solid.has(k);const pts=p2b([e.a,e.b]);
-    if(isSolid){const o=e.horiz?1:0.8,wd=e.horiz?1.1:0.85;
+    if(isSolid){const o=e.horiz?1:0.8,wd=vsP(e.horiz?1.1:0.85);
       s+=`<polyline points="${pts}" fill="none" stroke="#000" stroke-opacity="${o}" stroke-width="${wd}"/>`;}
-    else{const o=0.8,dsh=e.horiz?'4 3':'3 3';
-      s+=`<polyline points="${pts}" fill="none" stroke="#000" stroke-opacity="${o}" stroke-width="0.6" stroke-dasharray="${dsh}"/>`;}}
+    else{const o=0.8,dsh=vsDash(e.horiz?'4 3':'3 3');
+      s+=`<polyline points="${pts}" fill="none" stroke="#000" stroke-opacity="${o}" stroke-width="${vsP(0.6)}" stroke-dasharray="${dsh}"/>`;}}
   return s;}
+
+// ---- the client-preview render ------------------------------------------------------------------
+// The fourth render is the look the client meets in the WebGL preview (projects/client-preview):
+// near-black ground, the building as a thin cool wireframe, the work glowing on top of it. It is
+// the same drawing and the same model, only dressed differently — so the client's view can be
+// reached without leaving the Planner, and a frame of it can go straight into the brochure.
+//
+// The palette is the VRG Title Card dark token set, written out as plain hex: the product is one
+// offline file and an SVG string, with no stylesheet to carry custom properties.
+const PREV={ground:'#0a0e13',slab:'#16202b',line:'#d6e4ee',ink:'#e7edf1',muted:'#93a1ad',
+  faint:'#5d6b77',sand:'#d8b27a',halo:'#e9c893',ice:'#bfe3f2'};
+function prevOn(){return state.style==='preview';}
+// A glow without a filter: one wide soft pass under one thin bright one. feGaussianBlur would look
+// better and is the first thing an SVG exporter throws away, which is the whole reason for this.
+function prevGlow(pts,col,w,op,dash){
+  const d=dash?` stroke-dasharray="${vsDash(dash)}"`:'';
+  return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-opacity="${(op*0.2).toFixed(2)}" stroke-width="${vsP(w*3.6)}" stroke-linecap="round" stroke-linejoin="round"${d}/>`
+    +`<polyline points="${pts}" fill="none" stroke="${col}" stroke-opacity="${op}" stroke-width="${vsP(w)}" stroke-linecap="round" stroke-linejoin="round"${d}/>`;}
+function drawPreviewGeom(){
+  const {all,solid}=wireEdges();
+  let s='';
+  for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0);
+    // the ground the building stands on: panes, not surfaces — dark, barely there
+    if(SLAB[l])s+=`<polygon points="${p2b(SLAB[l].map(p=>[p[0],p[1],fz]))}" fill="${PREV.slab}" fill-opacity="0.55" stroke="${PREV.line}" stroke-opacity="0.40" stroke-width="${vsP(0.9)}"/>`;
+    (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;
+      s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],fz]))}" fill="${PREV.slab}" fill-opacity="0.45" stroke="${PREV.line}" stroke-opacity="0.24" stroke-width="${vsP(0.7)}"/>`;});
+    data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build'))return;
+      if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;const s0=s.length;
+      s+=`<polygon points="${p2b(fl.poly.map(p=>[p[0],p[1],fz+(fl.z||0)]))}" fill="${PREV.slab}" fill-opacity="0.5" stroke="${PREV.line}" stroke-opacity="0.30" stroke-width="${vsP(0.7)}"/>`;
+      s=lyrWrapFrom(s,s0,fl,'floor');});
+    if(GHOST[l])s+=`<polygon points="${p2b(GHOST[l].map(p=>[p[0],p[1],fz]))}" fill="none" stroke="${PREV.faint}" stroke-opacity="0.55" stroke-width="${vsP(0.6)}" stroke-dasharray="${vsDash('6 5')}"/>`;
+    for(const rf of (ROOFS[l]||[])){const base=floorDispZ(l);
+      s+=prevGlow(p2b(rf.p.map(q=>[q[0],q[1],base+q[2]])),PREV.line,0.8,0.45);}}
+  // the shell: horizontals carry the shape, verticals only hold it up, hidden edges just hint
+  for(const [k,e] of all){const pts=p2b([e.a,e.b]);
+    if(solid.has(k))s+=prevGlow(pts,PREV.line,e.horiz?0.9:0.6,e.horiz?0.8:0.42);
+    else s+=`<polyline points="${pts}" fill="none" stroke="${PREV.line}" stroke-opacity="0.15" stroke-width="${vsP(0.5)}" stroke-dasharray="${vsDash('3 4')}"/>`;}
+  // furniture is context, not content: a bare footprint, no fill
+  for(const o of data.objects){if(!state.levels[o.level]||!layerShows(o,'object')||!soloOk(o.x,o.y,o.level))continue;
+    if(isGenObject(o)&&!genObjectsVisible())continue;const s0=s.length;
+    s+=`<polygon points="${p2b(objFootprint(o))}" fill="none" stroke="${PREV.faint}" stroke-opacity="0.6" stroke-width="${vsP(0.6)}"/>`;
+    s=lyrWrapFrom(s,s0,o,'object');}
+  // openings read as warm gaps in a cool shell — the only place the sand accent is spent
+  for(const o of data.openings){if(!state.levels[o.level]||!layerShows(o,'build')||!soloOk(o.x,o.y,o.level))continue;
+    if(o.type==='stairs'){s+=prevGlow(p2b(objFootprint({x:o.x,y:o.y,ang:o.ang,w:o.w||STAIR_W,d:400,level:o.level,z:0})),PREV.faint,0.6,0.5);continue;}
+    const dd=[Math.cos(o.ang),Math.sin(o.ang)],win=o.type==='window';
+    const ww=o.w||(win?WIN_W:DOOR_W),wh=o.h||(win?WIN_H:DOOR_H),sill=(o.sill!=null?o.sill:(win?WIN_SILL:0)),hw=ww/2;
+    const z0=dz(o.level,sill),z1=dz(o.level,sill+wh);
+    const q=[[o.x-dd[0]*hw,o.y-dd[1]*hw,z0],[o.x+dd[0]*hw,o.y+dd[1]*hw,z0],
+             [o.x+dd[0]*hw,o.y+dd[1]*hw,z1],[o.x-dd[0]*hw,o.y-dd[1]*hw,z1],[o.x-dd[0]*hw,o.y-dd[1]*hw,z0]];
+    const s0=s.length;s+=prevGlow(p2b(q),win?PREV.ice:PREV.sand,0.8,0.72);s=lyrWrapFrom(s,s0,o,'build');}
+  return s+isoGridSvg();}
 
 function drawGuides(){let s='';const line=state.style==='whiteout';
   for(const l of ORD){if(!state.levels[l])continue;
@@ -1874,15 +2032,15 @@ function drawGuides(){let s='';const line=state.style==='whiteout';
     for(const gd of on){for(const seg of SNAP[l]){
       const A=[seg[0][0],seg[0][1],dz(l,gd.mm)],B=[seg[1][0],seg[1][1],dz(l,gd.mm)];
       const col=line?'#000':gd.c,op=line?0.8:0.6,dsh=line?'2 4':'';
-      s+=`<line x1="${planToBase(A[0],A[1],A[2])[0].toFixed(1)}" y1="${planToBase(A[0],A[1],A[2])[1].toFixed(1)}" x2="${planToBase(B[0],B[1],B[2])[0].toFixed(1)}" y2="${planToBase(B[0],B[1],B[2])[1].toFixed(1)}" stroke="${col}" stroke-opacity="${op}" stroke-width="0.7" stroke-dasharray="${dsh}"/>`;}}}
+      s+=`<line x1="${planToBase(A[0],A[1],A[2])[0].toFixed(1)}" y1="${planToBase(A[0],A[1],A[2])[1].toFixed(1)}" x2="${planToBase(B[0],B[1],B[2])[0].toFixed(1)}" y2="${planToBase(B[0],B[1],B[2])[1].toFixed(1)}" stroke="${col}" stroke-opacity="${op}" stroke-width="${vsP(0.7)}" stroke-dasharray="${dsh}"/>`;}}}
   return s;}
 
 function devSym(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),x=b[0],y=b[1];
-  const k=state.devScale||0.72;               // global device symbol scale (smaller = less crowded)
+  const k=devK();                             // symbol scale: the user slider, at the view scale
   // are we seeing this device from behind, through the wall? (computed in draw() via depth comparison)
   const back=(d.faceBack===true);
   const col=back?'#9299a0':'#222',fillA=back?0.55:1;
-  const dash=back?'stroke-dasharray="2.5 2"':'';
+  const dash=back?`stroke-dasharray="${vsDash('2.5 2')}"`:'';
   const R=v=>+(v*k).toFixed(2);let sym='';
   const wrap=inner=>`<g opacity="${fillA}">${inner}</g>`;
   // a tinted layer colours the symbol body (05j-circuits.js); untinted keeps the original fills
@@ -1896,9 +2054,10 @@ function devSym(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),x=b[0],y=b[1];
   if(typeof stkDevSym==='function'){const st=stkDevSym(d,x,y,k,back);if(st)sym=st;}   // BRIDGE Stack device types (05m hooks)
   sym=wrap(sym);
   if(typeof cktRingSvg==='function')sym=cktRingSvg(d,x,y,k,back)+sym;   // circuit end point ring, under the symbol
+  if(typeof lyrSpotIs==='function'&&lyrSpotIs(d))sym=lyrSpotRing(d,x,y,k)+sym;   // layer spotlight (05l), furthest back
   if(d.kind||d.lv){const code=(d.kind&&DEVKIND[d.kind]?DEVKIND[d.kind].s:'LV');
-    sym+=`<text x="${x}" y="${y+R(15)}" font-size="${R(8)}" text-anchor="middle" fill="#5a5348" paint-order="stroke" stroke="#fff" stroke-width="2.4" opacity="${fillA}">${esc(code)}</text>`;}
-  if(state.showRefs&&d.ref)sym+=`<text x="${x+R(9)}" y="${y-R(8)}" font-size="${R(9.5)}" fill="#0a2b6b" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.6" opacity="${fillA}">${esc(d.ref)}</text>`;
+    sym+=`<text x="${x}" y="${y+R(15)}" font-size="${R(8)}" text-anchor="middle" fill="#5a5348" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.4)}" opacity="${fillA}">${esc(code)}</text>`;}
+  if(state.showRefs&&d.ref)sym+=`<text x="${x+R(9)}" y="${y-R(8)}" font-size="${R(9.5)}" fill="#0a2b6b" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}" opacity="${fillA}">${esc(d.ref)}</text>`;
   return sym;}
 
 const DOOR_W=900,DOOR_H=2100,WIN_W=1200,WIN_H=1500,WIN_SILL=900;
@@ -1916,7 +2075,7 @@ const DOORTYPE={
 function doorKind(o){return (o&&o.dtype&&DOORTYPE[o.dtype])?o.dtype:'hinged';}
 function doorName(o){return DOORTYPE[doorKind(o)].n;}
 const STAIR_W=1000,RISER=180,GOING=250,STAIR_TH=300;
-function bgCol(){return state.style==='whiteout'?'#ffffff':'#fbfaf7';}
+function bgCol(){return state.style==='whiteout'?'#ffffff':prevOn()?PREV.ground:'#fbfaf7';}
 function openingSym(o){
   if(o.type==='stairs')return stairsSym(o);
   const d=[Math.cos(o.ang),Math.sin(o.ang)],win=o.type==='window';
@@ -1924,12 +2083,12 @@ function openingSym(o){
   const z0=dz(o.level,sill),z1=dz(o.level,sill+wh);
   const P=(u,zz)=>[o.x+d[0]*u,o.y+d[1]*u,zz];
   const q=[P(-hw,z0),P(hw,z0),P(hw,z1),P(-hw,z1)];
-  let s=`<polygon points="${q.map(c=>bx(c)+','+by(c)).join(' ')}" fill="${bgCol()}" fill-opacity="0.95" stroke="#3a3a3a" stroke-width="1.6" stroke-linejoin="round"/>`;
+  let s=`<polygon points="${q.map(c=>bx(c)+','+by(c)).join(' ')}" fill="${bgCol()}" fill-opacity="0.95" stroke="#3a3a3a" stroke-width="${vsP(1.6)}" stroke-linejoin="round"/>`;
   if(win){const s0=dz(o.level,sill),sa=P(-hw,s0),sb=P(hw,s0),m0=P(0,z0),m1=P(0,z1);
-    s+=`<line x1="${bx(sa)}" y1="${by(sa)}" x2="${bx(sb)}" y2="${by(sb)}" stroke="#2f6fb0" stroke-width="1.4"/>`;
-    s+=`<line x1="${bx(m0)}" y1="${by(m0)}" x2="${bx(m1)}" y2="${by(m1)}" stroke="#2f6fb0" stroke-width="1"/>`;}
+    s+=`<line x1="${bx(sa)}" y1="${by(sa)}" x2="${bx(sb)}" y2="${by(sb)}" stroke="#2f6fb0" stroke-width="${vsP(1.4)}"/>`;
+    s+=`<line x1="${bx(m0)}" y1="${by(m0)}" x2="${bx(m1)}" y2="${by(m1)}" stroke="#2f6fb0" stroke-width="${vsP(1)}"/>`;}
   else{const th=P(-hw,dz(o.level,0)),th2=P(hw,dz(o.level,0));
-    s+=`<line x1="${bx(th)}" y1="${by(th)}" x2="${bx(th2)}" y2="${by(th2)}" stroke="#3a3a3a" stroke-width="1"/>`;}
+    s+=`<line x1="${bx(th)}" y1="${by(th)}" x2="${bx(th2)}" y2="${by(th2)}" stroke="#3a3a3a" stroke-width="${vsP(1)}"/>`;}
   return s;}
 function stairsFaceList(o){const L=o.level,base=dz(L,0),Hlev=wallH(L);
   const d=[Math.cos(o.ang),Math.sin(o.ang)],p=[-Math.sin(o.ang),Math.cos(o.ang)],rev=(o.variant&1)?-1:1;
@@ -1952,8 +2111,8 @@ function stairsFaceList(o){const L=o.level,base=dz(L,0),Hlev=wallH(L);
   if(up&&state.levels[up]){const uz=dz(up,0);hole=[Pt(0,0,0),Pt(run,0,0),Pt(run,Wd,0),Pt(0,Wd,0)].map(q=>[q[0],q[1],uz]);}
   return {faces:fl,hole};}
 function stairsSym(o){const {faces,hole}=stairsFaceList(o);faces.sort((a,b)=>a.key-b.key);
-  let s=faces.map(f=>`<polygon points="${p2b(f.pts)}" fill="${f.fill}" fill-opacity="0.92" stroke="#5b5f63" stroke-width="0.8"/>`).join('');
-  if(hole)s+=`<polygon points="${p2b(hole)}" fill="${bgCol()}" stroke="#5b5f63" stroke-width="0.9" stroke-dasharray="5 4"/>`;
+  let s=faces.map(f=>`<polygon points="${p2b(f.pts)}" fill="${f.fill}" fill-opacity="0.92" stroke="#5b5f63" stroke-width="${vsP(0.8)}"/>`).join('');
+  if(hole)s+=`<polygon points="${p2b(hole)}" fill="${bgCol()}" stroke="#5b5f63" stroke-width="${vsP(0.9)}" stroke-dasharray="${vsDash('5 4')}"/>`;
   return s;}
 function pushOpening(faces,o){
   if(o.type==='stairs'){const {faces:sf,hole}=stairsFaceList(o);
@@ -1984,11 +2143,11 @@ function stairsSym_OLD(o){const L=o.level,base=dz(L,0),Hlev=wallH(L);
     face([Pt(u0,0,z-riser),Pt(u0,0,z),Pt(u0,Wd,z),Pt(u0,Wd,z-riser)],'#aeb3b8');}
   face([Pt(0,0,0),Pt(run,0,n*riser-th),Pt(run,Wd,n*riser-th),Pt(0,Wd,0)],'#7f8489');
   faces.sort((a,b)=>a.key-b.key);
-  let s='';for(const f of faces)s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}" fill-opacity="0.92" stroke="#5b5f63" stroke-width="0.8"/>`;
+  let s='';for(const f of faces)s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}" fill-opacity="0.92" stroke="#5b5f63" stroke-width="${vsP(0.8)}"/>`;
   const up=ORD[ORD.indexOf(L)+1];
   if(up&&state.levels[up]){const uz=dz(up,0);
     const hole=[Pt(0,0,0),Pt(run,0,0),Pt(run,Wd,0),Pt(0,Wd,0)].map(q=>[q[0],q[1],uz]);
-    s+=`<polygon points="${p2b(hole)}" fill="${bgCol()}" stroke="#5b5f63" stroke-width="0.9" stroke-dasharray="5 4"/>`;}
+    s+=`<polygon points="${p2b(hole)}" fill="${bgCol()}" stroke="#5b5f63" stroke-width="${vsP(0.9)}" stroke-dasharray="${vsDash('5 4')}"/>`;}
   return s;}
 function bx(P){return planToBase(P[0],P[1],P[2])[0].toFixed(1);}
 function by(P){return planToBase(P[0],P[1],P[2])[1].toFixed(1);}
@@ -2025,26 +2184,28 @@ function drawSoon(){if(_drawPending)return;_drawPending=true;
   const run=()=>{_drawPending=false;draw();};
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(run);else run();}
 function draw(){
-  let s = bgSvg() + (state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom():drawNormalGeom());
+  if(stage&&stage.classList)stage.classList.toggle('prev',prevOn());   // the dark ground is CSS on the stage, not a rect inside the drawing
+  let s = bgSvg() + (state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom()
+                    :prevOn()?drawPreviewGeom():drawNormalGeom());
   s+=drawGuides();
   // hovered / locked wall highlight
   if(state.hoverR){const r=state.hoverR,l=state.hoverL,fz=dz(l,0);
     const foot=[[r.x0,r.y0],[r.x1,r.y0],[r.x1,r.y1],[r.x0,r.y1]];
-    s+=`<polygon points="${p2b(foot.map(p=>[p[0],p[1],fz]))}" fill="#ffcf3d" fill-opacity="0.20" stroke="#e0a200" stroke-width="1.4"/>`;
+    s+=`<polygon points="${p2b(foot.map(p=>[p[0],p[1],fz]))}" fill="#ffcf3d" fill-opacity="0.20" stroke="#e0a200" stroke-width="${vsP(1.4)}"/>`;
     if(state.mode==='cable'){const wi=wallInfo(r),off=(state.side?1:-1)*wi.thick/2;
       const fa=[wi.seg[0][0]+wi.perp[0]*off,wi.seg[0][1]+wi.perp[1]*off,fz],fb=[wi.seg[1][0]+wi.perp[0]*off,wi.seg[1][1]+wi.perp[1]*off,fz];
-      s+=`<polyline points="${p2b([fa,fb])}" fill="none" stroke="#e30613" stroke-width="3.2" stroke-linecap="round"/>`;}}
+      s+=`<polyline points="${p2b([fa,fb])}" fill="none" stroke="#e30613" stroke-width="${vsP(3.2)}" stroke-linecap="round"/>`;}}
   // wall-draw rubber band
   if(state.mode==='wall'&&wallStart&&cursor){const fz=dz(state.active,0);
     const a=planToBase(wallStart[0],wallStart[1],fz),b=planToBase(cursor.x,cursor.y,fz);
     const len=Math.hypot(cursor.x-wallStart[0],cursor.y-wallStart[1]);
-    s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#2c2c2c" stroke-width="3" stroke-dasharray="7 4"/>`
-      +`<circle cx="${a[0]}" cy="${a[1]}" r="4" fill="#fff" stroke="#2c2c2c" stroke-width="2"/>`
-      +`<circle cx="${b[0]}" cy="${b[1]}" r="4" fill="#e8641c" stroke="#fff" stroke-width="1.5"/>`
-      +`<text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-6}" font-size="11" text-anchor="middle" fill="#2c2c2c" paint-order="stroke" stroke="#fff" stroke-width="3">${(len/1000).toFixed(2)} m</text>`;}
+    s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#2c2c2c" stroke-width="${vsP(3)}" stroke-dasharray="${vsDash('7 4')}"/>`
+      +`<circle cx="${a[0]}" cy="${a[1]}" r="${vsP(4)}" fill="#fff" stroke="#2c2c2c" stroke-width="${vsP(2)}"/>`
+      +`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(4)}" fill="#e8641c" stroke="#fff" stroke-width="${vsP(1.5)}"/>`
+      +`<text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-vsP(6)}" font-size="${vsP(11)}" text-anchor="middle" fill="#2c2c2c" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">${(len/1000).toFixed(2)} m</text>`;}
   // also show a marker where the FIRST click will land (before wallStart is set) when hovering in wall mode
   if(state.mode==='wall'&&!wallStart&&cursor&&!state.wallErase){const fz=dz(state.active,0),c=planToBase(cursor.x,cursor.y,fz);
-    s+=`<circle cx="${c[0]}" cy="${c[1]}" r="4" fill="#fff" stroke="#e8641c" stroke-width="2"/>`;}
+    s+=`<circle cx="${c[0]}" cy="${c[1]}" r="${vsP(4)}" fill="#fff" stroke="#e8641c" stroke-width="${vsP(2)}"/>`;}
   if(state.mode==='object'&&objGhost&&objPick&&!objPick.custom){
     const gang=(objGhost.gang!=null?objGhost.gang:0)+(state.objAng||0);
     const g={level:objGhost.level,x:objGhost.x,y:objGhost.y,z:objGhost.z||0,w:objPick.w,d:objPick.d,ht:objPick.h,ang:gang};
@@ -2053,44 +2214,44 @@ function draw(){
       let cx=0,cy=0,cz=0;pts.forEach(pp=>{cx+=pp[0];cy+=pp[1];cz+=pp[2];});cx/=4;cy/=4;cz/=4;gf.push({pts,key:depthOf(cx,cy,cz)});});
     gf.sort((a,b)=>a.key-b.key);
     const gc=objGhost.wall?'#3fae55':'#2f6fb0';
-    gf.forEach(fc=>{s+=`<polygon points="${p2b(fc.pts)}" fill="${gc}" fill-opacity="0.18" stroke="${gc}" stroke-width="1.2" stroke-dasharray="5 3"/>`;});
+    gf.forEach(fc=>{s+=`<polygon points="${p2b(fc.pts)}" fill="${gc}" fill-opacity="0.18" stroke="${gc}" stroke-width="${vsP(1.2)}" stroke-dasharray="${vsDash('5 3')}"/>`;});
     const b=planToBase(objGhost.x,objGhost.y,dz(objGhost.level,(objGhost.z||0)+(objPick.h||0)));
-    s+=`<text x="${b[0]}" y="${b[1]-6}" font-size="10" text-anchor="middle" fill="#2f6fb0" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.6">${esc(objPick.n)}${objGhost.wall?' · '+((objGhost.z||0)/1000).toFixed(2)+' m (fal)':''}</text>`;}
+    s+=`<text x="${b[0]}" y="${b[1]-vsP(6)}" font-size="${vsP(10)}" text-anchor="middle" fill="#2f6fb0" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}">${esc(objPick.n)}${objGhost.wall?' · '+((objGhost.z||0)/1000).toFixed(2)+' m (fal)':''}</text>`;}
   // ghost of whatever Space would drop right now (path/cable drawing)
   if((state.mode==='path'||state.mode==='cable')&&cursor&&state.showPlaceGhost!==false){
     const it=placeItem(),probe=Object.assign({level:cursor.level,x:cursor.x,y:cursor.y,h:cursor.h||0},
       (it.id==='kdx'?{type:'junction',jbShape:'rect',jbSize:(state.lastJb||120)}:(it.id==='board'?{type:'board'}:it.mk()||{type:'box'})));
     const gb=planToBase(cursor.x,cursor.y,dz(cursor.level,cursor.h||0));
     s+=`<g opacity="0.45">${devSym(Object.assign({},probe,{ref:''}))}</g>`
-      +`<text x="${gb[0]}" y="${gb[1]-16}" font-size="9.5" text-anchor="middle" fill="#2f6fb0" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.6">␣ ${esc(it.n)}</text>`;}
+      +`<text x="${gb[0]}" y="${gb[1]-vsP(16)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="#2f6fb0" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}">␣ ${esc(it.n)}</text>`;}
   // ghost of the build piece under the cursor (same idea as the object ghost)
   if(state.mode==='build'&&buildGhost){
     const g=Object.assign({},buildGhost);
     s+=`<g opacity="0.42">${openingSym(g)}</g>`;
     const gb=planToBase(g.x,g.y,dz(g.level,0));
-    s+=`<text x="${gb[0]}" y="${gb[1]-10}" font-size="9.5" text-anchor="middle" fill="#3fae55" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.6">${esc(BUILDNAME[g.type]||g.type)}</text>`;}
+    s+=`<text x="${gb[0]}" y="${gb[1]-vsP(10)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="#3fae55" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}">${esc(BUILDNAME[g.type]||g.type)}</text>`;}
   if(state.mode==='roof'&&roofStart&&cursor){const fz=dz(state.active,0),x0=Math.min(roofStart[0],cursor.x),x1=Math.max(roofStart[0],cursor.x),y0=Math.min(roofStart[1],cursor.y),y1=Math.max(roofStart[1],cursor.y);
-    s+=`<polygon points="${p2b([[x0,y0,fz],[x1,y0,fz],[x1,y1,fz],[x0,y1,fz]])}" fill="#9a6b52" fill-opacity="0.25" stroke="#5d4235" stroke-width="1.5" stroke-dasharray="6 4"/>`;}
+    s+=`<polygon points="${p2b([[x0,y0,fz],[x1,y0,fz],[x1,y1,fz],[x0,y1,fz]])}" fill="#9a6b52" fill-opacity="0.25" stroke="#5d4235" stroke-width="${vsP(1.5)}" stroke-dasharray="${vsDash('6 4')}"/>`;}
   // floor-draw rubber band
   // floor outline being drawn: the points so far, the rubber-band edge, and live Terület / Kerület
   if(state.mode==='floor'&&floorDraft&&floorDraft.length&&cursor){const fz=dz(state.active,0);
     const pts=floorDraft.concat([[cursor.x,cursor.y]]);
     const closing=floorNearFirst([cursor.x,cursor.y])&&floorDraft.length>=3;
     if(pts.length>=3)s+=`<polygon points="${p2b(pts.map(p=>[p[0],p[1],fz]))}" fill="#e2ddd0" fill-opacity="${closing?0.5:0.3}" stroke="none"/>`;
-    s+=`<polyline points="${p2b(floorDraft.map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#2c2c2c" stroke-width="1.6"/>`
-      +`<polyline points="${p2b([[floorDraft[floorDraft.length-1][0],floorDraft[floorDraft.length-1][1],fz],[cursor.x,cursor.y,fz]])}" fill="none" stroke="#2c2c2c" stroke-width="1.4" stroke-dasharray="6 4"/>`;
-    if(floorDraft.length>=2)s+=`<polyline points="${p2b([[cursor.x,cursor.y,fz],[floorDraft[0][0],floorDraft[0][1],fz]])}" fill="none" stroke="#8a857b" stroke-width="1" stroke-dasharray="3 5"/>`;
+    s+=`<polyline points="${p2b(floorDraft.map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#2c2c2c" stroke-width="${vsP(1.6)}"/>`
+      +`<polyline points="${p2b([[floorDraft[floorDraft.length-1][0],floorDraft[floorDraft.length-1][1],fz],[cursor.x,cursor.y,fz]])}" fill="none" stroke="#2c2c2c" stroke-width="${vsP(1.4)}" stroke-dasharray="${vsDash('6 4')}"/>`;
+    if(floorDraft.length>=2)s+=`<polyline points="${p2b([[cursor.x,cursor.y,fz],[floorDraft[0][0],floorDraft[0][1],fz]])}" fill="none" stroke="#8a857b" stroke-width="${vsP(1)}" stroke-dasharray="${vsDash('3 5')}"/>`;
     floorDraft.forEach((p,i)=>{const b=planToBase(p[0],p[1],fz),first=i===0;
-      s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${first?(closing?6:4.5):3}" fill="${first?(closing?'#e8641c':'#fff'):'#fff'}" stroke="#2c2c2c" stroke-width="1.4"/>`;});
+      s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${vsP(first?(closing?6:4.5):3)}" fill="${first?(closing?'#e8641c':'#fff'):'#fff'}" stroke="#2c2c2c" stroke-width="${vsP(1.4)}"/>`;});
     // the segment being drawn, then area + perimeter at the centroid
     const lastP=floorDraft[floorDraft.length-1],mid=planToBase((lastP[0]+cursor.x)/2,(lastP[1]+cursor.y)/2,fz);
     const segL=Math.hypot(cursor.x-lastP[0],cursor.y-lastP[1])/1000;
-    s+=`<text x="${mid[0]}" y="${mid[1]-7}" font-size="11" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${segL.toFixed(2)} m</text>`;
+    s+=`<text x="${mid[0]}" y="${mid[1]-vsP(7)}" font-size="${vsP(11)}" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">${segL.toFixed(2)} m</text>`;
     if(pts.length>=3){let cx=0,cy=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=pts.length;cy/=pts.length;
       const c=planToBase(cx,cy,fz),A=polyAreaMM(pts)/1e6,P=polyPerimMM(pts,true)/1000;
-      s+=`<text x="${c[0]}" y="${c[1]-3}" font-size="11.5" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3.2">Terület ${A.toFixed(2)} m²</text>`
-        +`<text x="${c[0]}" y="${c[1]+11}" font-size="10.5" text-anchor="middle" fill="#555" paint-order="stroke" stroke="#fff" stroke-width="3">Kerület ${P.toFixed(2)} m</text>`;}
-    if(closing)s+=`<text x="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[0]}" y="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[1]-12}" font-size="10.5" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">zárás</text>`;}
+      s+=`<text x="${c[0]}" y="${c[1]-vsP(3)}" font-size="${vsP(11.5)}" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3.2)}">Terület ${A.toFixed(2)} m²</text>`
+        +`<text x="${c[0]}" y="${c[1]+vsP(11)}" font-size="${vsP(10.5)}" text-anchor="middle" fill="#555" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">Kerület ${P.toFixed(2)} m</text>`;}
+    if(closing)s+=`<text x="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[0]}" y="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[1]-vsP(12)}" font-size="${vsP(10.5)}" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">zárás</text>`;}
   // floor labels (isometric, painted)
   if(state.style!=='blueprint')for(const l of ORD){if(!state.levels[l])continue;
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(rm.noText||(state.soloRoom&&!soloRoomIs({src:'B',i,level:l})))return;s+=floorLabel(rm,l);});
@@ -2104,8 +2265,8 @@ function draw(){
       const sec=(pa.sections&&pa.sections[i-1])||{build:'sull_gege'};
       const dx=b.x-a.x,dy=b.y-a.y,ln=Math.hypot(dx,dy)||1,px=-dy/ln*lane*PATHW,py=dx/ln*lane*PATHW;
       const A=[a.x+px,a.y+py,dz(a.level,a.h)],B=[b.x+px,b.y+py,dz(b.level,b.h)];
-      const surf=buildSurface(sec.build),col=(pa.color||state.pathColor||(surf?'#c0761d':'#6f757d')),dash=surf?'':'7 4',
-        wdt=(sec.build.indexOf('szeles')>=0?4.0:2.4)*(state.pathScale||1);
+      const surf=buildSurface(sec.build),col=(pa.color||state.pathColor||(surf?'#c0761d':'#6f757d')),dash=surf?'':vsDash('7 4'),
+        wdt=(sec.build.indexOf('szeles')>=0?4.0:2.4)*pathK();
       s+=`<polyline points="${p2b([A,B])}" fill="none" stroke="${col}" stroke-width="${wdt}" stroke-dasharray="${dash}" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>`;
       const carried=(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]);
       if(carried.length){const c0=sec.circuit||carried[0];const passing=c0.passing;
@@ -2116,29 +2277,29 @@ function draw(){
         // circuit colour runs continuously along the whole path (straight AND diagonal) for consistent colour codes
         const ccol=circuitColor(c0);
         const op=dim?0.18:(passing?0.5:0.95);
-        s+=`<polyline points="${p2b([A,B])}" fill="none" stroke="${ccol}" stroke-width="${state.circHi===ckey?3:2}" opacity="${op}" ${passing?'stroke-dasharray="2 4"':''}/>`;
+        s+=`<polyline points="${p2b([A,B])}" fill="none" stroke="${ccol}" stroke-width="${vsP(state.circHi===ckey?3:2)}" opacity="${op}" ${passing?'stroke-dasharray="'+vsDash('2 4')+'"':''}/>`;
         const mb=planToBase((A[0]+B[0])/2,(A[1]+B[1])/2,(A[2]+B[2])/2);const nwires=carried.reduce((t,c)=>t+(c.count||1),0);
         const lbl=(sec.circuit?(sec.circuit.name||'')+(sec.circuit.num?' '+sec.circuit.num:''):carried.length+' kör')+' · '+nwires+'ér';
-        if(!dim&&state.circHoverInfo!==false)s+=`<text x="${mb[0]}" y="${mb[1]-4}" font-size="8.5" text-anchor="middle" fill="${ccol}" paint-order="stroke" stroke="#fff" stroke-width="2.6">${esc(lbl)}</text>`;}}}
-    for(const n of pa.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="1.8" fill="#555"/>`;}
+        if(!dim&&state.circHoverInfo!==false)s+=`<text x="${mb[0]}" y="${mb[1]-vsP(4)}" font-size="${vsP(8.5)}" text-anchor="middle" fill="${ccol}" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}">${esc(lbl)}</text>`;}}}
+    for(const n of pa.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(1.8)}" fill="#555"/>`;}
     s=lyrWrapFrom(s,s0,pa,'path');}
   if((state.mode==='path'||state.mode==='cable'||state.mode==='device')){const dr=state.mode==='path'?pathDraft:(state.mode==='cable'?draft:null);
     if(dr&&dr.nodes.length){const placed=dr.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]);
       // placed (committed) segments — solid
-      s+=`<polyline points="${p2b(placed)}" fill="none" stroke="#6f757d" stroke-width="3.6"/>`;
+      s+=`<polyline points="${p2b(placed)}" fill="none" stroke="#6f757d" stroke-width="${vsP(3.6)}"/>`;
       // pending segment to cursor — dashed + amber
       if(cursor){const a=dr.nodes[dr.nodes.length-1],A=[a.x,a.y,dz(a.level,a.h)],C=[cursor.x,cursor.y,dz(cursor.level,cursor.h)];
-        s+=`<polyline points="${p2b([A,C])}" fill="none" stroke="#e8641c" stroke-width="3" stroke-dasharray="8 5"/>`
-          +`<circle cx="${planToBase(...C)[0]}" cy="${planToBase(...C)[1]}" r="3.4" fill="#fff" stroke="#e8641c" stroke-width="2"/>`;}
+        s+=`<polyline points="${p2b([A,C])}" fill="none" stroke="#e8641c" stroke-width="${vsP(3)}" stroke-dasharray="${vsDash('8 5')}"/>`
+          +`<circle cx="${planToBase(...C)[0]}" cy="${planToBase(...C)[1]}" r="${vsP(3.4)}" fill="#fff" stroke="#e8641c" stroke-width="${vsP(2)}"/>`;}
       // a node put down on a box is green: it becomes that box's link when the path is finished
-      for(const n of dr.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="3" fill="#fff" stroke="${n.on?'#1d9e75':'#6f757d'}" stroke-width="2"/>`;}}
+      for(const n of dr.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(3)}" fill="#fff" stroke="${n.on?'#1d9e75':'#6f757d'}" stroke-width="${vsP(2)}"/>`;}}
     // the box the path cursor has snapped onto (05k placeSnap)
     if(cursor&&cursor.dev){const d=byId('devices',cursor.dev);if(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0));
-      s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${+(11*(state.devScale||0.72)).toFixed(2)}" fill="none" stroke="#1d9e75" stroke-width="2"/>`;}}
+      s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${+(11*devK()).toFixed(2)}" fill="none" stroke="#1d9e75" stroke-width="${vsP(2)}"/>`;}}
     if(state.mode==='device'&&cursor){const gt=($('devType')||{}).value||'socket';
       // Shift: a dashed tie from the row it joins
       if(cursor.row){const a=byId('devices',cursor.row);if(a){const A=planToBase(a.x,a.y,dz(a.level,a.h||0)),C=planToBase(cursor.x,cursor.y,dz(cursor.level,cursor.h));
-        s+=`<line x1="${A[0]}" y1="${A[1]}" x2="${C[0]}" y2="${C[1]}" stroke="#1d9e75" stroke-width="1.6" stroke-dasharray="3 2"/>`;}}
+        s+=`<line x1="${A[0]}" y1="${A[1]}" x2="${C[0]}" y2="${C[1]}" stroke="#1d9e75" stroke-width="${vsP(1.6)}" stroke-dasharray="${vsDash('3 2')}"/>`;}}
       s+=`<g opacity="0.7">`+devSym({type:gt,level:cursor.level,x:cursor.x,y:cursor.y,h:cursor.h,ref:''})+`</g>`;}
     // hovering height mini-display (toggle: state.hDisp 'hover'|'side'|'off')
     if(state.hDisp==='hover'&&cursor){const c=planToBase(cursor.x,cursor.y,dz(cursor.level,cursor.h));
@@ -2148,8 +2309,8 @@ function draw(){
       const pal=(state.mode==='path'||state.mode==='cable')?placeItem():null;   // what Space would drop
       const boxH=(showSide?56:40)+(pal?20:0);
       const bx0=c[0]+14,by0=c[1]-46;
-      s+=`<line x1="${c[0]}" y1="${c[1]}" x2="${bx0}" y2="${by0+30}" stroke="#e8641c" stroke-width="1"/>`
-        +`<g font-family="Arial" style="pointer-events:none">`
+      s+=`<line x1="${c[0]}" y1="${c[1]}" x2="${bx0}" y2="${by0+30}" stroke="#e8641c" stroke-width="${vsP(1)}"/>`
+        +vsBadge(bx0,by0,`<g font-family="Arial" style="pointer-events:none">`
         +`<rect x="${bx0}" y="${by0}" width="150" height="${boxH}" rx="5" fill="#fffef8" stroke="#d8d2c4"/>`
         +`<rect x="${bx0}" y="${by0}" width="6" height="${boxH}" fill="${gc}"/>`
         +`<text x="${bx0+13}" y="${by0+16}" font-size="12" font-weight="700" fill="#111">↧ ${(cursor.h/1000).toFixed(2)} m</text>`
@@ -2157,25 +2318,25 @@ function draw(){
         +(lastH!=null&&Math.abs(lastH-cursor.h)>1?`<text x="${bx0+146}" y="${by0+16}" font-size="10" text-anchor="end" fill="#999">előző ${(lastH/1000).toFixed(2)}</text>`:'')
         +(showSide?`<text x="${bx0+13}" y="${by0+48}" font-size="9.5" fill="#2f6fb0">▣ ${state.side?'túloldal':'közeli oldal'} · Ctrl vált</text>`:'')
         +(pal?paletteBadge(bx0,by0+(showSide?56:40),pal):'')
-        +`</g>`;}}
+        +`</g>`);}}
   // cables
   for(const cb of data.cables){if(!circOn[cb.type]||!layerShows(cb,'cable'))continue;const vis=cb.nodes.filter(n=>state.levels[n.level]);
     if(vis.length<2)continue;const cc=CIRC[cb.type],s0=s.length;
-    s+=`<polyline points="${p2b(cb.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]))}" fill="none" stroke="${cc.c}" stroke-width="2.3" stroke-dasharray="${cc.dash}" stroke-linejoin="round" stroke-linecap="round"/>`;
-    for(const n of cb.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="2" fill="${cc.c}"/>`;}
+    s+=`<polyline points="${p2b(cb.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]))}" fill="none" stroke="${cc.c}" stroke-width="${vsP(2.3)}" stroke-dasharray="${cc.dash}" stroke-linejoin="round" stroke-linecap="round"/>`;
+    for(const n of cb.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(2)}" fill="${cc.c}"/>`;}
     s=lyrWrapFrom(s,s0,cb,'cable');}
   if(draft&&draft.nodes.length){const cc=CIRC[draft.type];const pts=draft.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]);
     if(cursor)pts.push([cursor.x,cursor.y,dz(cursor.level,cursor.h)]);
-    s+=`<polyline points="${p2b(pts)}" fill="none" stroke="${cc.c}" stroke-width="2.3" stroke-dasharray="4 3"/>`;
-    for(const n of draft.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="3" fill="#fff" stroke="${cc.c}" stroke-width="2"/>`;}}
+    s+=`<polyline points="${p2b(pts)}" fill="none" stroke="${cc.c}" stroke-width="${vsP(2.3)}" stroke-dasharray="${vsDash('4 3')}"/>`;
+    for(const n of draft.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(3)}" fill="#fff" stroke="${cc.c}" stroke-width="${vsP(2)}"/>`;}}
   // devices
   // switch→device links (show what each switch controls)
   if(state.showSwitchLinks!==false)for(const sw of data.devices){if(sw.type!=='switch'||!sw.swMap||!state.levels[sw.level]||!layerShows(sw,'device'))continue;
     const a=planToBase(sw.x,sw.y,dz(sw.level,sw.h||0)),s0=s.length;
     Object.keys(sw.swMap).forEach(term=>{const tgt=devByRef(sw.swMap[term]);if(!tgt||!state.levels[tgt.level])return;
       const b=planToBase(tgt.x,tgt.y,dz(tgt.level,tgt.h||0));
-      s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#c43d8f" stroke-width="1.1" stroke-dasharray="3 3" opacity="0.75"/>`
-        +`<text x="${(a[0]*0.6+b[0]*0.4)}" y="${(a[1]*0.6+b[1]*0.4)-2}" font-size="7.5" fill="#c43d8f" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="2">${esc(term)}</text>`;});
+      s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#c43d8f" stroke-width="${vsP(1.1)}" stroke-dasharray="${vsDash('3 3')}" opacity="0.75"/>`
+        +`<text x="${(a[0]*0.6+b[0]*0.4)}" y="${(a[1]*0.6+b[1]*0.4)-vsP(2)}" font-size="${vsP(7.5)}" fill="#c43d8f" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2)}">${esc(term)}</text>`;});
     s=lyrWrapFrom(s,s0,sw,'device');}
   // determine which devices are seen from BEHIND (through the wall) so devSym can dim them.
   // Robust method: a device is "behind" if, in the CURRENT projection, its host wall plane sits
@@ -2219,22 +2380,22 @@ function draw(){
   for(const b of data.devices){if(b.type!=='board'||!state.levels[b.level]||!layerShows(b,'device'))continue;
     const s0=s.length;
     const poly=boardRectPoly(b).map(p=>planToBase(p[0],p[1],dz(b.level,b.z||BOARD_DEFAULT_Z)));
-    s+=`<polygon points="${poly.map(p=>p[0]+','+p[1]).join(' ')}" fill="#ffe9b0" fill-opacity="0.5" stroke="#b8901f" stroke-width="1.3" stroke-dasharray="4 2"/>`;
+    s+=`<polygon points="${poly.map(p=>p[0]+','+p[1]).join(' ')}" fill="#ffe9b0" fill-opacity="0.5" stroke="#b8901f" stroke-width="${vsP(1.3)}" stroke-dasharray="${vsDash('4 2')}"/>`;
     const c=planToBase(b.x,b.y,dz(b.level,b.z||BOARD_DEFAULT_Z));
-    s+=`<text x="${c[0]}" y="${c[1]+3}" font-size="8.5" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc(b.ref||'EL')}</text>`;s=lyrWrapFrom(s,s0,b,'device');}
+    s+=`<text x="${c[0]}" y="${c[1]+vsP(3)}" font-size="${vsP(8.5)}" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.4)}">${esc(b.ref||'EL')}</text>`;s=lyrWrapFrom(s,s0,b,'device');}
   for(const d of data.devices){if(state.levels[d.level]&&layerShows(d,'device')&&soloOk(d.x,d.y,d.level))s+=lyrWrap(d,'device',devSym(d));}
   // notes
   for(const [ni,n] of data.notes.entries()){if(!state.levels[n.level])continue;
     if(typeof ntVisible==='function'&&!ntVisible(n))continue;
     const b=planToBase(n.x,n.y,dz(n.level,0));
     const s0=s.length;
-    s+=(typeof ntSym==='function')?ntSym(n,ni,b)
-      :`<g><path d="M${b[0]} ${b[1]} l-6 -12 a6 6 0 1 1 12 0 z" fill="#d1493f" stroke="#7a2a24"/><text x="${b[0]+9}" y="${b[1]-9}" font-size="10.5" fill="#333" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(n.text)}</text></g>`;
+    s+=vsBadge(b[0],b[1],(typeof ntSym==='function')?ntSym(n,ni,b)
+      :`<g><path d="M${b[0]} ${b[1]} l-6 -12 a6 6 0 1 1 12 0 z" fill="#d1493f" stroke="#7a2a24"/><text x="${b[0]+9}" y="${b[1]-9}" font-size="10.5" fill="#333" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(n.text)}</text></g>`);
     s=lyrWrapFrom(s,s0,n,'note');}  // measures
   const ms=data.measures.concat(measureDraft&&measureDraft.length===2?[measureDraft]:[]);
   for(const mz of ms){const a=planToBase(mz[0].x,mz[0].y,dz(mz[0].level,0)),b=planToBase(mz[1].x,mz[1].y,dz(mz[1].level,0));
     const L=(Math.hypot(mz[1].x-mz[0].x,mz[1].y-mz[0].y)/1000).toFixed(2);
-    s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#7a2a24" stroke-width="1.6" stroke-dasharray="5 3"/><text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-4}" font-size="11" text-anchor="middle" fill="#7a2a24" paint-order="stroke" stroke="#fff" stroke-width="3">${L} m</text>`;}
+    s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#7a2a24" stroke-width="${vsP(1.6)}" stroke-dasharray="${vsDash('5 3')}"/><text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-vsP(4)}" font-size="${vsP(11)}" text-anchor="middle" fill="#7a2a24" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">${L} m</text>`;}
   // ---- everything below is TRANSIENT chrome: rubber bands, ghosts, gizmo, selection.
   // It lives in its own layer so hovering or dragging a marquee never re-parses the drawing. ----
   let ov='';
@@ -2242,10 +2403,10 @@ function draw(){
   if(state.mode==='measure'&&measureDraft&&measureDraft.length===1&&cursor){
     const a=planToBase(measureDraft[0].x,measureDraft[0].y,dz(measureDraft[0].level,0)),b=planToBase(cursor.x,cursor.y,dz(cursor.level,0));
     const L=(Math.hypot(cursor.x-measureDraft[0].x,cursor.y-measureDraft[0].y)/1000).toFixed(3);
-    ov+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#7a2a24" stroke-width="1.6" stroke-dasharray="5 3"/>`
-      +`<circle cx="${a[0]}" cy="${a[1]}" r="3.5" fill="#fff" stroke="#7a2a24" stroke-width="2"/>`
-      +`<circle cx="${b[0]}" cy="${b[1]}" r="3.5" fill="#e8641c" stroke="#fff" stroke-width="1.5"/>`
-      +`<text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-5}" font-size="12" text-anchor="middle" fill="#7a2a24" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3.5">${L} m</text>`;}
+    ov+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#7a2a24" stroke-width="${vsP(1.6)}" stroke-dasharray="${vsDash('5 3')}"/>`
+      +`<circle cx="${a[0]}" cy="${a[1]}" r="${vsP(3.5)}" fill="#fff" stroke="#7a2a24" stroke-width="${vsP(2)}"/>`
+      +`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(3.5)}" fill="#e8641c" stroke="#fff" stroke-width="${vsP(1.5)}"/>`
+      +`<text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-vsP(5)}" font-size="${vsP(12)}" text-anchor="middle" fill="#7a2a24" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3.5)}">${L} m</text>`;}
   if(selBox){const x0=Math.min(selBox.x0,selBox.x1),x1=Math.max(selBox.x0,selBox.x1),y0=Math.min(selBox.y0,selBox.y1),y1=Math.max(selBox.y0,selBox.y1);
     // client px → base coords (inverse of base*zoom+pan)
     const bx0=(x0-state.panX)/state.zoom,by0=(y0-state.panY)/state.zoom,bx1=(x1-state.panX)/state.zoom,by1=(y1-state.panY)/state.zoom;
@@ -2254,15 +2415,15 @@ function draw(){
   if(state.mode==='grab'&&_sl.length>1){
     // highlight each selected piece + one group gizmo at the centroid
     _sl.forEach(h=>{const c=pGetC(h);if(!c)return;const b=planToBase(c[0],c[1],dz(pieceLevel(h),pGetZ(h)));
-      ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="9" fill="#2f6fb0" fill-opacity="0.18" stroke="#2f6fb0" stroke-width="2"/>`;});
+      ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(9)}" fill="#2f6fb0" fill-opacity="0.18" stroke="#2f6fb0" stroke-width="${vsP(2)}"/>`;});
     const gc=groupCentroid(_sl),gb=planToBase(gc[0],gc[1],dz(state.active,0));
     ov+=gizmoSvgAt(gb,_sl.length);
   } else if(state.mode==='grab'&&selected)ov+=gizmoSvg(selected);
   if(state.mode==='select'&&_sl.length>1){_sl.forEach(h=>{const c=pGetC(h);if(!c)return;const b=planToBase(c[0],c[1],dz(pieceLevel(h),pGetZ(h)));
-      ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="9" fill="#2f6fb0" fill-opacity="0.18" stroke="#2f6fb0" stroke-width="2"/>`;});}
+      ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(9)}" fill="#2f6fb0" fill-opacity="0.18" stroke="#2f6fb0" stroke-width="${vsP(2)}"/>`;});}
   if(state.mode==='format'&&fmtSource&&selected){const c=pGetC(selected),b=planToBase(c[0],c[1],dz(pieceLevel(selected),pGetZ(selected)));
-    ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="13" fill="none" stroke="#e8641c" stroke-width="2.5" stroke-dasharray="4 3"/>`
-      +`<text x="${b[0]}" y="${b[1]-18}" font-size="10" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">🖌 forrás</text>`;}
+    ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(13)}" fill="none" stroke="#e8641c" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}"/>`
+      +`<text x="${b[0]}" y="${b[1]-vsP(18)}" font-size="${vsP(10)}" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">🖌 forrás</text>`;}
   if(typeof stkHookSvg==='function'){s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
   const changed=paintLayers(s,ov);
   setTransform();
@@ -2827,7 +2988,7 @@ registerActions([
   {id:'view.toggle3d',alias:'3d 2d view toggle',label:'2D ↔ 3D',icon:'⬒',group:'Nézet',keys:['mod+3'],
    hint:'A két nézet külön kameraállást őriz.',run:()=>$('view3d').onclick()},
   {id:'view.style.plan',alias:'normal plan view',label:'Normál nézet',icon:'🖼',group:'Nézet',
-   when:c=>c.style!=='plan',run:()=>{state.style='plan';if($('style'))$('style').value='plan';
+   when:c=>c.style!=='normal',run:()=>{state.style='normal';if($('style'))$('style').value='normal';
      if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();}},
   {id:'view.style.blueprint',alias:'blueprint official plan',label:'Hivatalos (blueprint) nézet',icon:'📐',group:'Nézet',
    hint:'A hivatalos 2D rajzi jelkulcs szerinti megjelenítés.',
@@ -2837,6 +2998,11 @@ registerActions([
   {id:'view.style.whiteout',label:'Fehér (whiteout) nézet',icon:'⬜',group:'Nézet',
    when:c=>c.style!=='whiteout',run:()=>{state.style='whiteout';if($('style'))$('style').value='whiteout';
      if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();}},
+  {id:'view.style.preview',alias:'ugyfel elonezet client preview sotet dark',label:'Ügyfél-előnézet (sötét)',icon:'🌑',group:'Nézet',
+   hint:'Ugyanaz a terv abban a megjelenésben, amiben az ügyfél a 3D előnézetben látja: sötét alap, vékony drótváz, világító végpontok.',
+   when:c=>c.style!=='preview',run:()=>{state.style='preview';if($('style'))$('style').value='preview';
+     if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();
+     $('hud').textContent='Ügyfél-előnézet — a kliens 3D nézetének megjelenése a terven.';}},
   {id:'view.bp.scale',alias:'scale page drawing meretarany blueprint',label:'Rajzi méretarány (M 1:50…)',icon:'📏',group:'Nézet',
    hint:'A hivatalos nézet vonalvastagságai és feliratai papír-milliméterben, a választott méretarányhoz.',
    run:()=>{const opts=BP_SCALES.map(v=>`<option value="${v}" ${v===bpScaleN()?'selected':''}>M 1:${v}</option>`).join('');
@@ -2847,6 +3013,23 @@ registerActions([
        ()=>{state.bpScale=+$('bsSel').value||50;state.bpFine=+$('bsFine').value||1;bpUI&&bpUI();draw();
          $('hud').textContent='Méretarány M 1:'+bpScaleN()+'.';});
      $('bsFine').oninput=()=>{$('bsFineV').textContent=(+$('bsFine').value).toFixed(2).replace('.',',')+'×';};}},
+  {id:'view.scale.step',alias:'nezeti leptek view scale resolution felbontas kozelebb',label:'Nézeti lépték (1× … 10×)',icon:'🔎',group:'Nézet',
+   hint:'A rajz alap-léptéke. Nagyobb lépték: ugyanaz a képernyőterület kevesebb millimétert mutat, tehát közelebb lehet menni. A tollak és a készülékjelek képernyőmérete nem változik.',
+   run:()=>{const cur=vsOk(state.viewScale);
+     openModal('Nézeti lépték',
+       `<div class="mrow"><label style="width:110px">Lépték</label><select id="vsSel" style="width:150px">`
+      +VIEW_SCALES.map(v=>`<option value="${v}" ${v===cur?'selected':''}>${v}× ${v===1?'— teljes terv':v===10?'— részlet':''}</option>`).join('')+`</select></div>`
+      +`<div class="mrow" style="font-size:10.5px;color:#888">1× a legtávolabbi nézet: a teljes terv belefér. Minden lépés ugyanannyiszor közelebb engedi a nagyítást, a vonalvastagság és a készülékjelek képernyőmérete változatlanul.</div>`,
+       ()=>{vsSet(+$('vsSel').value);if($('viewScale'))$('viewScale').value=String(vsK());
+         $('hud').textContent='Nézeti lépték '+vsK()+'×.';});}},
+  {id:'view.scale.up',alias:'leptek fel kozelebb scale up',label:'Nézeti lépték feljebb',icon:'🔎',group:'Nézet',
+   when:c=>vsOk(state.viewScale)!==VIEW_SCALES[VIEW_SCALES.length-1],need:'A legnagyobb léptéknél vagy.',
+   run:()=>{const i=VIEW_SCALES.indexOf(vsOk(state.viewScale));vsSet(VIEW_SCALES[Math.min(VIEW_SCALES.length-1,i+1)]);
+     if($('viewScale'))$('viewScale').value=String(vsK());$('hud').textContent='Nézeti lépték '+vsK()+'×.';}},
+  {id:'view.scale.down',alias:'leptek le tavolabb scale down',label:'Nézeti lépték lejjebb',icon:'🔎',group:'Nézet',
+   when:c=>vsOk(state.viewScale)!==VIEW_SCALES[0],need:'Már a legtávolabbi léptéken vagy.',
+   run:()=>{const i=VIEW_SCALES.indexOf(vsOk(state.viewScale));vsSet(VIEW_SCALES[Math.max(0,i-1)]);
+     if($('viewScale'))$('viewScale').value=String(vsK());$('hud').textContent='Nézeti lépték '+vsK()+'×.';}},
   {id:'view.bp.scaleview',alias:'scale view zoom meretarany',label:'Nézet a méretarány szerint',icon:'⤢',group:'Nézet',
    hint:'A nagyítást úgy állítja, hogy a képernyőn (96 dpi) kb. valós méretarányban legyen a rajz.',
    run:()=>bpScaleView()},
@@ -4013,15 +4196,21 @@ function mcbModules(m){return (m&&m.curve)?m.poles+(m.n?1:0):0;}
 // ---- plan symbols ----
 // the ring around an end point: solid = dedikált, dashed = több pontos
 function cktRingSvg(d,x,y,k,back){const c=cktOfDevice(d);if(!c)return '';
-  const R=v=>+(v*k).toFixed(2),col=cktColor(c);
+  // written in the symbol's own unit (05z), so the ring keeps hugging the body when the view scale
+  // switches the bodies to real millimetres. In screen mode this is exactly `k`.
+  const u=(typeof icoRingU==='function')?icoRingU(d,k):k;
+  const R=v=>+(v*u).toFixed(2),col=cktColor(c);
   const dash=c.dedicated?'':` stroke-dasharray="${R(3.2)} ${R(2.4)}"`;
   const hot=(cktPick===c.id);
   return (hot?`<circle cx="${x}" cy="${y}" r="${R(12.5)}" fill="${col}" fill-opacity="0.16"/>`:'')
     +`<circle cx="${x}" cy="${y}" r="${R(10.5)}" fill="none" stroke="${col}" stroke-width="${R(hot?2.8:2.2)}"${dash}${back?' opacity="0.6"':''}/>`;}
 // A layer may tint the body of every device on it, so two layouts (old and new) shown together
 // stay apart. The tint is the layer colour washed towards white, keeping the symbol's lines legible.
-function layerTintOf(d){const L=layerById((d&&d.layer)||'L0');
-  return (L&&/^#[0-9a-f]{6}$/i.test(L.tint||''))?L.tint:null;}
+// A hand-picked tint still wins and still implies "paint it" (that is what the picker always did);
+// otherwise the layer's own colour is used only when its swatch is switched on (05l).
+function layerTintOf(d){const L=layerById((d&&d.layer)||'L0');if(!L)return null;
+  if(/^#[0-9a-f]{6}$/i.test(L.tint||''))return L.tint;
+  return (typeof lyrPaints==='function'&&lyrPaints(L))?lyrAutoCol(L):null;}
 function tintMix(hex,a){const n=parseInt(hex.slice(1),16),m=v=>Math.round(255-(255-v)*a);
   return '#'+[m(n>>16&255),m(n>>8&255),m(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('');}
 
@@ -4440,7 +4629,7 @@ function rowSnap(p,type){if(!p||!autoClipEligible({type,side:0}))return null;
 // overlap in the flat plan, so the one nearest the drawing height h wins (a ceiling route lands on
 // the KD at the top of a drop, a route drawn at socket height on the socket), then one on the active
 // layer, then the nearest symbol.
-function devAtBase(bx,by,level,h){const k=state.devScale||0.72,R=Math.max(8*k,10/(state.zoom||1)),lay=curLayer();
+function devAtBase(bx,by,level,h){const k=devK(),R=Math.max(8*k,10/(state.zoom||1)),lay=curLayer();
   const hit=[];
   data.devices.forEach(d=>{if(d.level!==level||!state.levels[d.level]||!layerShows(d,'device'))return;
     const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),dd=Math.hypot(b[0]-bx,b[1]-by);
@@ -4542,6 +4731,57 @@ function lyrCatOf(coll,rec){
     case 'traces':return 'trace';}
   return null;}
 function lyrKnown(k){return LAYER_CATS.some(c=>c.k===k);}
+
+// ---- the colour code -------------------------------------------------------------------------
+// Every layer has a colour, whether or not anything is painted with it. A stack layer takes its
+// ROLE's fixed colour (STK_COL, 05m), so the same system reads the same colour in every project;
+// an ordinary layer gets an evenly spaced hue from its position, which is only ever a tie-breaker
+// between layers that mean nothing in particular. `L.tint` set by hand still wins over both.
+const LYR_HUES=[205,28,145,275,48,330,180,95,255,15,120,300];
+function lyrAutoCol(L){
+  if(!L)return '#8a857b';
+  if(L.stack&&L.role&&typeof stkRoleCol==='function'){const c=stkRoleCol(L.role);if(c)return c;}
+  const i=Math.max(0,layers.indexOf(L));
+  return hslHex(LYR_HUES[i%LYR_HUES.length],0.42,0.46);}
+function hslHex(h,s,l){                                   // h in degrees, s/l in 0..1
+  const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
+  const t=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];
+  return '#'+t.map(v=>Math.round((v+m)*255).toString(16).padStart(2,'0')).join('');}
+function lyrColor(L){return (L&&/^#[0-9a-f]{6}$/i.test(L.tint||''))?L.tint:lyrAutoCol(L);}
+function lyrColorOf(id){return lyrColor(lyrLayer(id)||layers[0]);}
+// `L.paint` is the per-layer switch the panel offers: draw this layer's devices in its colour.
+function lyrPaints(L){return !!(L&&L.paint);}
+function lyrTogglePaint(id){const L=lyrLayer(id);if(!L)return false;
+  if(L.paint)delete L.paint;else L.paint=true;renderLayers();draw();return true;}
+
+// ---- the spotlight ---------------------------------------------------------------------------
+// With it on, touching one device lights up every device that shares its layer, and the layer's
+// block in the panel glows the same colour — one gesture answers "what else is on this run?".
+// It is a VIEW state: never saved with the drawing, never undoable.
+var lyrSpot=null;                                          // the layer id currently lit
+function lyrSpotOn(){return state.lyrSpot===true;}
+function lyrSpotSet(id){
+  if(!lyrSpotOn())id=null;
+  if(id===lyrSpot)return false;
+  lyrSpot=id||null;lyrSpotPanel();drawSoon();return true;}
+function lyrSpotOfDevice(di){const d=(di!=null)?data.devices[di]:null;return d?(d.layer||'L0'):null;}
+function lyrSpotIs(item){return !!(lyrSpot&&item&&(item.layer||'L0')===lyrSpot);}
+// the panel half: a glow on the lit layer's block, in that layer's own colour
+function lyrSpotPanel(){const el=$('layerList');if(!el)return;
+  el.querySelectorAll('.lblock').forEach(b=>{
+    const on=(b.dataset.lb===lyrSpot);
+    b.classList.toggle('lspot',on);
+    b.style.setProperty('--lspot',on?lyrColorOf(b.dataset.lb):'transparent');});}
+// the drawing half: a halo in the layer's colour, behind the symbol, on every device of that layer
+function lyrSpotRing(d,x,y,k){const c=lyrColorOf(d&&d.layer||'L0');
+  const u=(typeof icoRingU==='function')?icoRingU(d,k||0.72):(k||0.72);   // the symbol's own unit (05z)
+  return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(13*u).toFixed(2)}" fill="${c}" fill-opacity="0.16" stroke="${c}" stroke-opacity="0.75" stroke-width="${+(u*2.2).toFixed(2)}"/>`;}
+function lyrSpotToggle(){state.lyrSpot=!lyrSpotOn();
+  if(!lyrSpotOn())lyrSpot=null;
+  renderLayers();draw();
+  lyrHud(lyrSpotOn()?'Réteg-kiemelés be — vidd a kurzort egy készülékre: a rétegtársai és a réteg sora is felvillan.'
+                    :'Réteg-kiemelés ki.');
+  return lyrSpotOn();}
 // opacity step: one decimal, 0.1…1
 function lyrClampOp(v){v=+v;if(!isFinite(v))return 1;return Math.min(1,Math.max(0.1,Math.round(v*10)/10));}
 // idempotent: v1 layers (device / build keys) become v2, every category present, op cleaned
@@ -4646,6 +4886,8 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
       +`<input type="radio" name="alayer" ${act?'checked':''} data-la="${L.id}" title="aktív">`
       +`<button data-lv="${L.id}" title="show/hide">${L.visible?'👁':'🚫'}</button>`
       +`<button data-lk="${L.id}" title="zárolás: a réteg elemei nem jelölhetők ki és nem húzhatók">${L.lock?'🔒':'🔓'}</button>`
+      +`<button class="lswatch${lyrPaints(L)?' on':''}" data-lp="${L.id}" style="--lc:${lyrColor(L)}"`
+      +` title="${esc(lyrColorTitle(L))}">●</button>`
       +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
       +(L.link?`<span class="llink" title="csatolt réteg: a láthatóság, átlátszóság és zár közös">🔗</span>`:'')
       +(L.id!=='L0'?`<button data-lx="${L.id}" title="törlés">✕</button>`:'')+`</div>`
@@ -4675,6 +4917,7 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
   q('[data-lf]',b=>b.onclick=()=>{const L=lyrLayer(b.dataset.lf);L.collapsed=!lyrFolded(L);renderLayers();});
   q('[data-lt]',i=>i.onchange=()=>{layerById(i.dataset.lt).tint=i.value;renderLayers();draw();});
   q('[data-ltx]',b=>b.onclick=()=>{delete layerById(b.dataset.ltx).tint;renderLayers();draw();});
+  q('[data-lp]',b=>b.onclick=()=>lyrTogglePaint(b.dataset.lp));
   q('[data-la]',r=>r.onchange=()=>{state.activeLayer=r.dataset.la;const L=lyrLayer(r.dataset.la);
     if(L&&L.stack){state.stkOff=false;state.stack=L.stack;}      // picking a stack layer enters its stack
     renderLayers();if(typeof renderShell==='function')renderShell();});
@@ -4687,7 +4930,18 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
   q('[data-lx]',b=>b.onclick=()=>lyrDelete(b.dataset.lx));
   q('.lsub',row=>{
     row.addEventListener('pointerdown',e=>{if((e.button||0)>0||(e.target.closest&&e.target.closest('button')))return;lyrDragArm(e,row);});
-    row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();lyrSubMenu(e,row.dataset.sl);});});}
+    row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();lyrSubMenu(e,row.dataset.sl);});});
+  lyrSpotPanel();                                   // re-apply the glow after the panel is rebuilt
+  if($('lyrSpot'))$('lyrSpot').checked=lyrSpotOn();
+  if($('lyrPaintAll'))$('lyrPaintAll').checked=layers.length>0&&layers.every(lyrPaints);}
+function lyrColorTitle(L){
+  const src=(/^#[0-9a-f]{6}$/i.test(L.tint||''))?'kézi szín'
+    :(L.stack&&L.role&&typeof stkRole==='function')?('a szerep rögzített színe · '+((stkRole(L.role)||{n:L.role}).n))
+    :'automatikus szín';
+  return lyrColor(L)+' — '+src+'. Kattints: a réteg készülékei '+(lyrPaints(L)?'ne legyenek':'legyenek')+' ezzel színezve.';}
+// the panel's "Mind színezve": on turns every layer on, off turns every layer off
+function lyrPaintAll(on){lyrPushUndo();layers.forEach(L=>{if(on)L.paint=true;else delete L.paint;});
+  renderLayers();draw();return on;}
 
 // right-click on a sub-layer row: the menu is flat (ctxMenu has no submenus)
 function lyrSubMenu(e,sl){const p=sl.split(':'),L=lyrLayer(p[0]),cat=p[1];if(!L)return;
@@ -4937,6 +5191,15 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'arm',        n:'ARM pályák',  ph:2, cats:['path'], hint:'Egyvonalas pályák az RBX-től minden végpontig.'}];
 const STK_ICONS={construct:'🧱',mark:'🚩',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
   'sys:DATA':'🌐','sys:KNX':'⌘','sys:SENSOR':'📡','sys:RF':'📶','sys:HMI':'🖲','sys:MEDIA':'🔊','sys:USB':'🔌','sys:SECURITY':'🛡',arm:'🌿'};
+// One colour per role, fixed [user]: Erősáram is the same red in every project, on the panel, on the
+// symbols and in the BRIDGE sheets — a colour has to mean a system, not "the third layer down".
+// The sys:* half of this table is what 05s hands to the endpoint symbols (EP_ROLE_COL reads it).
+const STK_COL={construct:'#7c7468',mark:'#c0530f',hw:'#4a5a68',base:'#1f6f8b',channel:'#8a7bbf',
+  'sys:MAINS':'#d1493f','sys:LV':'#e6a800','sys:BUSB':'#b07a2a','sys:CONTROL':'#7a5cc0','sys:DATA':'#16a085',
+  'sys:KNX':'#2e7d32','sys:SENSOR':'#2f79c9','sys:RF':'#3fa7a7','sys:HMI':'#5470b0','sys:MEDIA':'#c2638a',
+  'sys:USB':'#607d8b','sys:SECURITY':'#444444',arm:'#2e9e5b'};
+function stkRoleCol(k){return STK_COL[k]||null;}
+function stkSysCols(){const o={};Object.keys(STK_COL).forEach(k=>{if(k.indexOf('sys:')===0)o[k]=STK_COL[k];});return o;}
 // the action groups the inspector offers per role. A work package that adds actions to one system role
 // pushes into STK_GROUPS['+sys:MAINS'] etc.; groups that do not exist yet simply show nothing.
 const STK_GROUPS={construct:['Fal','Nyílászáró','Szint','Rajz','Helyiség'],mark:['Jelölés'],hw:['Hardver','Rádió'],
@@ -5152,7 +5415,7 @@ registerActions([
 ]);
 
 // test hooks
-window.STK_ROLES=STK_ROLES;window.STK_GROUPS=STK_GROUPS;window.STK_SCENE=STK_SCENE;window.STK_OVERLAY=STK_OVERLAY;window.STK_TOOLS=STK_TOOLS;
+window.STK_ROLES=STK_ROLES;window.STK_COL=STK_COL;window.STK_GROUPS=STK_GROUPS;window.STK_SCENE=STK_SCENE;window.STK_OVERLAY=STK_OVERLAY;window.STK_TOOLS=STK_TOOLS;
 window.STK_CTX=STK_CTX;window.STK_WV=STK_WV;window.STK_PV=STK_PV;window.STK_CHECKS=STK_CHECKS;window.VALIDATORS=VALIDATORS;
 window.stkById=stkById;window.stkOfLayer=stkOfLayer;window.stkActive=stkActive;window.stkLayer=stkLayer;window.stkLayersOf=stkLayersOf;window.stkRole=stkRole;
 window.stkCreate=stkCreate;window.stkAdopt=stkAdopt;window.stkDissolve=stkDissolve;window.stkRename=stkRename;window.stkRoomId=stkRoomId;window.stkRooms=stkRooms;
@@ -5339,10 +5602,10 @@ function mrkGeom(m){
 
 // ---- drawing: plan --------------------------------------------------------------------------------------------
 function mrkCol(m){return (MRK_POL[m.pol]||MRK_POL.none).c;}
-function mrkLine(a,b,z,col,w,dash){return `<polyline points="${p2b([[a[0],a[1],z],[b[0],b[1],z]])}" fill="none" stroke="${col}" stroke-width="${w}"${dash?` stroke-dasharray="${dash}"`:''} stroke-linecap="round"/>`;}
+function mrkLine(a,b,z,col,w,dash){w=vsP(w);dash=dash?vsDash(dash):dash;return `<polyline points="${p2b([[a[0],a[1],z],[b[0],b[1],z]])}" fill="none" stroke="${col}" stroke-width="${w}"${dash?` stroke-dasharray="${dash}"`:''} stroke-linecap="round"/>`;}
 // haloed text: a stroke pass, then a fill pass (exporters ignore paint-order)
-function mrkText(x,y,z,txt,col,size,anchor){const b=planToBase(x,y,z),a=anchor||'middle',t=esc(String(txt));
-  return `<text x="${b[0].toFixed(1)}" y="${b[1].toFixed(1)}" font-size="${size}" text-anchor="${a}" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">${t}</text>`
+function mrkText(x,y,z,txt,col,size,anchor){size=vsP(size);const b=planToBase(x,y,z),a=anchor||'middle',t=esc(String(txt));
+  return `<text x="${b[0].toFixed(1)}" y="${b[1].toFixed(1)}" font-size="${size}" text-anchor="${a}" fill="none" stroke="#fff" stroke-width="${vsP(2.6)}" stroke-linejoin="round">${t}</text>`
         +`<text x="${b[0].toFixed(1)}" y="${b[1].toFixed(1)}" font-size="${size}" text-anchor="${a}" fill="${col}">${t}</text>`;}
 function mrkFirstTag(m){const k=(m.tags||[])[0];return k?mrkTagName(m,k).replace(/ [—(].*$/,''):'';}
 function mrkTrunc(s,n){return s.length>n?s.slice(0,n-1)+'…':s;}
@@ -5350,7 +5613,7 @@ function mrkBand(m){return '↕ '+Math.round(m.v0)+'–'+Math.round(m.v1);}
 // the SVG of one wall-related mark (also used, un-wrapped, for the hover / drag preview)
 function mrkWallSvg(m){const g=mrkGeom(m);if(!g)return '';const z=dz(g.level,0),col=mrkCol(m);let s='';
   if(m.kind==='wall'){const r=g.rect;
-    s+=`<polygon points="${p2b([[r.x0,r.y0,z],[r.x1,r.y0,z],[r.x1,r.y1,z],[r.x0,r.y1,z]])}" fill="${col}" fill-opacity="0.12" stroke="${col}" stroke-width="2"/>`;
+    s+=`<polygon points="${p2b([[r.x0,r.y0,z],[r.x1,r.y0,z],[r.x1,r.y1,z],[r.x0,r.y1,z]])}" fill="${col}" fill-opacity="0.12" stroke="${col}" stroke-width="${vsP(2)}"/>`;
     const lbl=mrkTrunc(mrkFirstTag(m)||MRK_POL[m.pol].s,14);
     s+=mrkText((r.x0+r.x1)/2,(r.y0+r.y1)/2,z,lbl,col,9);return s;}
   g.faces.forEach(f=>{const a=mrkFacePt(f.r,f.side,f.u0,f.off),b=mrkFacePt(f.r,f.side,f.u1,f.off);
@@ -5487,7 +5750,7 @@ function mrkSetPol(p){MRK_T.pol=p;$('hud').textContent='Jelölés polaritás: '+
 function mrkOverlaySvg(){if(!MRK_T.on||!MRK_H)return '';
   const h=MRK_H;
   if(h.opening){const o=h.opening,c=planToBase(o.x,o.y,dz(o.level,0)),R=Math.max(10,((o.w||DOOR_W)/2)*SC*0.9);
-    return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="none" stroke="${(MRK_POL[MRK_T.pol]||MRK_POL.none).c}" stroke-width="2.5" stroke-dasharray="4 3" pointer-events="none"/>`;}
+    return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="none" stroke="${(MRK_POL[MRK_T.pol]||MRK_POL.none).c}" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}" pointer-events="none"/>`;}
   const r=mrkWallById(h.level,h.id);if(!r)return '';
   const mode=MRK_T.mode,pol=MRK_T.pol,col=(MRK_POL[pol]||MRK_POL.none).c;let m=null;
   const brush=mrkBrush(mode),v=mrkHstripV(brush[0],r,h.level);
@@ -5633,9 +5896,9 @@ function mrkOpeningSvg(m){const o=mrkOpeningById(m.op);if(!o||!state.levels[o.le
     lbl=t.indexOf('bejarat')>=0?'BEJ':t.indexOf('lepcso')>=0?'LÉP':tier?tier.toUpperCase():t.indexOf('nyitva')>=0?'NYITVA':t.indexOf('nemhasznalt')>=0?'✕':
         (t[0]?mrkTrunc(mrkTagName(m,t[0]).replace(/ [—(].*$/,''),10):'');}
   if(!lbl&&m.pol)lbl=MRK_POL[m.pol].s;
-  return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="${col}" fill-opacity="0.10" stroke="${col}" stroke-width="2"/>`
-    +(lbl?`<text x="${c[0].toFixed(1)}" y="${(c[1]+R+10).toFixed(1)}" font-size="9" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">${esc(lbl)}</text>`
-         +`<text x="${c[0].toFixed(1)}" y="${(c[1]+R+10).toFixed(1)}" font-size="9" text-anchor="middle" fill="${col}">${esc(lbl)}</text>`:'');}
+  return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="${col}" fill-opacity="0.10" stroke="${col}" stroke-width="${vsP(2)}"/>`
+    +(lbl?`<text x="${c[0].toFixed(1)}" y="${(c[1]+R+vsP(10)).toFixed(1)}" font-size="${vsP(9)}" text-anchor="middle" fill="none" stroke="#fff" stroke-width="${vsP(2.6)}" stroke-linejoin="round">${esc(lbl)}</text>`
+         +`<text x="${c[0].toFixed(1)}" y="${(c[1]+R+vsP(10)).toFixed(1)}" font-size="${vsP(9)}" text-anchor="middle" fill="${col}">${esc(lbl)}</text>`:'');}
 
 // ---- floor and ceiling: strips and zones ---------------------------------------------------------------------------
 // Modes come from an extensible list: WP-B4 pushes line45 / free / smooth into it.
@@ -5692,7 +5955,7 @@ function mrkCirclePoly(cx,cy,r){const p=[];for(let i=0;i<48;i++){const a=i*Math.
 // plan drawing. A ceiling mark floats in an iso view, so there it is drawn at floor level with a dashed outline.
 function mrkPlaneSvg(m){if(!state.levels[m.level])return '';
   const flat=state.flat||state.pitch>=88,float=(m.plane==='ceiling'&&!flat),z=float?dz(m.level,0):mrkPlaneZ(m.level,m.plane),col=mrkCol(m);
-  const dash=float?' stroke-dasharray="5 4"':'',attrs=`fill="${col}" fill-opacity="0.14" stroke="${col}" stroke-width="0.5"${dash}`;let s='',cx,cy;
+  const dash=float?' stroke-dasharray="'+vsDash('5 4')+'"':'',attrs=`fill="${col}" fill-opacity="0.14" stroke="${col}" stroke-width="${vsP(0.5)}"${dash}`;let s='',cx,cy;
   if(m.kind==='pstrip'){const b=mrkPstripBox(m);if(!b)return '';
     const id='mrkc-'+m.id;
     s+=`<clipPath id="${id}"><polygon points="${p2b(b.poly.map(p=>[p[0],p[1],z]))}"/></clipPath>`
@@ -5917,9 +6180,9 @@ function trcTriangle(x,y,dx,dy,z,col){const c=planToBase(x,y,z),q=planToBase(x+d
   const tip=[c[0]+ux*6,c[1]+uy*6],bl=[c[0]-ux*4-uy*4,c[1]-uy*4+ux*4],br=[c[0]-ux*4+uy*4,c[1]-uy*4-ux*4];
   return `<polygon points="${[tip,bl,br].map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${col}"/>`;}
 function trcDot(p,z,col,r,fill){const b=planToBase(p[0],p[1],z);
-  return `<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${r}" fill="${fill||col}" stroke="${col}" stroke-width="1"/>`;}
+  return `<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${r}" fill="${fill||col}" stroke="${col}" stroke-width="${vsP(1)}"/>`;}
 function trcSvg(t,preview){const z=dz(t.level,0),col=trcCol(t),pts=t.pts;if(!pts||pts.length<2)return '';
-  let s=`<polyline points="${p2b(pts.map(p=>[p[0],p[1],z]))}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"${(t.plane==='ceiling'||preview)?' stroke-dasharray="6 4"':''}/>`;
+  let s=`<polyline points="${p2b(pts.map(p=>[p[0],p[1],z]))}" fill="none" stroke="${col}" stroke-width="${vsP(2)}" stroke-linejoin="round" stroke-linecap="round"${(t.plane==='ceiling'||preview)?' stroke-dasharray="'+vsDash('6 4')+'"':''}/>`;
   if(t.dir===0){s+=trcDot(pts[0],z,col,3)+trcDot(pts[pts.length-1],z,col,3);}
   else{const len=trcLen(pts),first=len<1000?len/2:500;trcAlong(pts,1000,first).forEach(q=>{s+=trcTriangle(q.x,q.y,q.dx,q.dy,z,col);});}
   if(t.a)s+=trcDot(pts[0],z,col,3,'#fff');if(t.b)s+=trcDot(pts[pts.length-1],z,col,3,'#fff');
@@ -5930,7 +6193,7 @@ function trcSceneSvg(){let s='';
 function trcOverlaySvg(){if(typeof MRK_P==='undefined'||!MRK_P.on||!trcIsMode(MRK_P.mode))return '';
   trcSync();const level=state.active,z=dz(level,0);let s='';
   const ring=o=>{const c=planToBase(o.x,o.y,z),R=Math.max(10,((o.w||900)/2)*SC*0.9);
-    return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="none" stroke="#2a8c8c" stroke-width="2.5" stroke-dasharray="4 3" pointer-events="none"/>`;};
+    return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="none" stroke="#2a8c8c" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}" pointer-events="none"/>`;};
   const probe=TRC_D?TRC_D.pts[TRC_D.pts.length-1]:TRC_H;
   if(TRC_D){const pts=TRC_D.cur?TRC_D.pts.concat([TRC_D.cur]):TRC_D.pts;
     if(pts.length>=2)s+=`<g opacity="0.9" pointer-events="none">`+trcSvg({level,plane:TRC_D.plane,pts,dir:1,tags:(TRC_B&&TRC_B.tags)||['mozgas']},true)+`</g>`;
@@ -6065,13 +6328,13 @@ function prtOverlaySvg(){if(!state.prtShow&&!state.prtHeat)return '';
       s+=`<polygon points="${p2b([[i*g,j*g,z],[(i+1)*g,j*g,z],[(i+1)*g,(j+1)*g,z],[i*g,(j+1)*g,z]])}" fill="#d0503a" fill-opacity="${(0.08+0.42*h[k]/max).toFixed(2)}" stroke="none"/>`;});});}
   if(state.prtShow){
     G.edges.forEach(e=>{
-      if(e.los)s+=`<polyline points="${p2b([[e.pa[0],e.pa[1],z],[e.pb[0],e.pb[1],z]])}" fill="none" stroke="#3b6ea5" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+      if(e.los)s+=`<polyline points="${p2b([[e.pa[0],e.pa[1],z],[e.pb[0],e.pb[1],z]])}" fill="none" stroke="#3b6ea5" stroke-width="${vsP(1.5)}" stroke-dasharray="${vsDash('6 4')}"/>`;
       else{const room=mrkRoomById(e.room),r=room&&prtAStar(room.rm.poly,e.pa,e.pb,g);
-        if(r)s+=`<polyline points="${p2b([[e.pa[0],e.pa[1],z]].concat(r.cells.map(c=>[(c[0]+0.5)*g,(c[1]+0.5)*g,z])).concat([[e.pb[0],e.pb[1],z]]))}" fill="none" stroke="#3b6ea5" stroke-width="1.5" stroke-dasharray="1.5 4" stroke-linecap="round"/>`;}
+        if(r)s+=`<polyline points="${p2b([[e.pa[0],e.pa[1],z]].concat(r.cells.map(c=>[(c[0]+0.5)*g,(c[1]+0.5)*g,z])).concat([[e.pb[0],e.pb[1],z]]))}" fill="none" stroke="#3b6ea5" stroke-width="${vsP(1.5)}" stroke-dasharray="${vsDash('1.5 4')}" stroke-linecap="round"/>`;}
       if(e.dGrid!=null)s+=mrkText((e.pa[0]+e.pb[0])/2,(e.pa[1]+e.pb[1])/2,z,(e.dGrid/1000).toFixed(1)+' m','#3b6ea5',9);});
     G.doors.forEach(d=>{const c=planToBase(d.x,d.y,z),f=d.open?'#fff':'#3b6ea5';
-      s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="8" fill="${f}" stroke="#3b6ea5" stroke-width="2"/>`;
-      if(d.anchor)s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="12" fill="none" stroke="#3b6ea5" stroke-width="1.5"/>`;});}
+      s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(8)}" fill="${f}" stroke="#3b6ea5" stroke-width="${vsP(2)}"/>`;
+      if(d.anchor)s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(12)}" fill="none" stroke="#3b6ea5" stroke-width="${vsP(1.5)}"/>`;});}
   return `<g pointer-events="none">`+s+`</g>`;}
 STK_OVERLAY.push(prtOverlaySvg);
 
@@ -6309,7 +6572,7 @@ function hwRoomPolyId(rid){const e=mrkRoomById(rid);return e?e.rm.poly:null;}
 // direct coverage: the served rooms tinted, and a half-disc field on each face that has a room, clipped to it
 function hwCoverageSvg(d,rooms,tag){const z=dz(d.level,0);let s='';
   rooms.forEach((rid,i)=>{const poly=hwRoomPolyId(rid);if(!poly)return;
-    s+=`<polygon points="${p2b(poly.map(p=>[p[0],p[1],z]))}" fill="#3b82c4" fill-opacity="0.10" stroke="#3b82c4" stroke-width="0.5"/>`;
+    s+=`<polygon points="${p2b(poly.map(p=>[p[0],p[1],z]))}" fill="#3b82c4" fill-opacity="0.10" stroke="#3b82c4" stroke-width="${vsP(0.5)}"/>`;
     const h=hwHost(d);if(!h)return;
     const side=Math.sign(h.nx*h.wi.perp[0]+h.ny*h.wi.perp[1])||1,u=mrkU(h.r,d.x,d.y);
     [side,-side].forEach(sg=>{const e=mrkRoomOfFace(d.level,h.r,sg,u);if(!e||stkRoomId(e)!==rid)return;
@@ -6321,7 +6584,7 @@ function hwCoverageSvg(d,rooms,tag){const z=dz(d.level,0);let s='';
         +`<g clip-path="url(#${id})"><polygon points="${p2b(pts)}" fill="#3b82c4" fill-opacity="0.16" stroke="none"/></g>`;});});
   return s;}
 function hwUnservedSvg(level){const z=dz(level,0);const us=hwUnserved(level);if(!us.length)return '';
-  return `<defs><pattern id="hwhatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#c8372d" stroke-width="1.2"/></pattern></defs>`
+  return `<defs><pattern id="hwhatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#c8372d" stroke-width="${vsP(1.2)}"/></pattern></defs>`
     +us.map(r=>`<polygon points="${p2b(r.poly.map(p=>[p[0],p[1],z]))}" fill="url(#hwhatch)" fill-opacity="0.25" stroke="none"/>`).join('');}
 function hwStageIs(role){const S=(typeof stkActive==='function')?stkActive():null;if(!S)return false;
   const L=lyrLayer(state.activeLayer);return !!(L&&L.stack===S.id&&L.role===role);}
@@ -6337,8 +6600,8 @@ function hwOverlaySvg(){let s='';const level=state.active;
     if(d.type==='rbx'){s+=hwCoverageSvg(d,hwAutoServes(d),'gh');if(state.hwCloud&&typeof rfCoverageSvg==='function')s+=rfCoverageSvg([d]);}
     if(d.type==='base')s+=hwBaseGuideSvg(d);
     const z=dz(d.level,d.h||0),col=g.ban&&g.ban.length?'#c8372d':(d.type==='base'?hwBaseWorst(d):g.snapped?'#2e9e5b':'#2f6fb0');
-    if(d.type==='board'){const c=planToBase(d.x,d.y,z);s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="10" fill="none" stroke="${col}" stroke-width="2.5" stroke-dasharray="4 3"/>`;}
-    else s+=`<polygon points="${p2b(hwFootprint(d,z))}" fill="${col}" fill-opacity="0.25" stroke="${col}" stroke-width="2"/>`;}
+    if(d.type==='board'){const c=planToBase(d.x,d.y,z);s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(10)}" fill="none" stroke="${col}" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}"/>`;}
+    else s+=`<polygon points="${p2b(hwFootprint(d,z))}" fill="${col}" fill-opacity="0.25" stroke="${col}" stroke-width="${vsP(2)}"/>`;}
   return s?`<g pointer-events="none">`+s+`</g>`:'';}
 STK_OVERLAY.push(hwOverlaySvg);
 
@@ -6385,15 +6648,15 @@ function hwBaseWorst(d){const bad=hwBaseRules(d).filter(r=>!r.ok);
 // rings around the boards and the data entries, wet rooms hatched, the level centre, lines to the other units
 function hwBaseGuideSvg(d){const z=dz(d.level,0),R=k=>HW_BASE_RULES.find(r=>r.k===k);let s='';
   const ring=(o,mm,col)=>{const pts=[];for(let i=0;i<=48;i++){const a=i*Math.PI/24;pts.push([o.x+Math.cos(a)*mm,o.y+Math.sin(a)*mm,z]);}
-    return `<polygon points="${p2b(pts)}" fill="${col}" fill-opacity="0.05" stroke="${col}" stroke-width="1" stroke-dasharray="6 4"/>`;};
+    return `<polygon points="${p2b(pts)}" fill="${col}" fill-opacity="0.05" stroke="${col}" stroke-width="${vsP(1)}" stroke-dasharray="${vsDash('6 4')}"/>`;};
   hwList('board',d.level).forEach(b=>{s+=ring(b,R('board').mm,'#2e9e5b');});
   if(hwUnits(d).indexOf('NET')>=0)hwList('entry',d.level).forEach(en=>{s+=ring(en,R('entry').mm,'#3b82c4');});
   allRooms(d.level).forEach(e=>{if(e.rm.env==='nedves'||e.rm.env==='vizes')
-    s+=`<polygon points="${p2b(e.rm.poly.map(p=>[p[0],p[1],z]))}" fill="#c8372d" fill-opacity="0.12" stroke="#c8372d" stroke-width="0.8" stroke-dasharray="3 3"/>`;});
+    s+=`<polygon points="${p2b(e.rm.poly.map(p=>[p[0],p[1],z]))}" fill="#c8372d" fill-opacity="0.12" stroke="#c8372d" stroke-width="${vsP(0.8)}" stroke-dasharray="${vsDash('3 3')}"/>`;});
   const c=hwLevelCentre(d.level);if(c){const b=planToBase(c.x,c.y,z);
-    s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="6" fill="none" stroke="#7a5cc0" stroke-width="1.5"/><line x1="${(b[0]-9).toFixed(1)}" y1="${b[1].toFixed(1)}" x2="${(b[0]+9).toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#7a5cc0"/><line x1="${b[0].toFixed(1)}" y1="${(b[1]-9).toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${(b[1]+9).toFixed(1)}" stroke="#7a5cc0"/>`;}
+    s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${vsP(6)}" fill="none" stroke="#7a5cc0" stroke-width="${vsP(1.5)}"/><line x1="${(b[0]-vsP(9)).toFixed(1)}" y1="${b[1].toFixed(1)}" x2="${(b[0]+vsP(9)).toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#7a5cc0"/><line x1="${b[0].toFixed(1)}" y1="${(b[1]-vsP(9)).toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${(b[1]+vsP(9)).toFixed(1)}" stroke="#7a5cc0"/>`;}
   hwList('base',d.level).forEach(o=>{if(o===d||o.id===d.id)return;const far=Math.hypot(o.x-d.x,o.y-d.y)>R('column').mm;
-    s+=`<polyline points="${p2b([[d.x,d.y,z],[o.x,o.y,z]])}" fill="none" stroke="${far?'#d08a1e':'#2e9e5b'}" stroke-width="1.5" stroke-dasharray="5 4"/>`;});
+    s+=`<polyline points="${p2b([[d.x,d.y,z],[o.x,o.y,z]])}" fill="none" stroke="${far?'#d08a1e':'#2e9e5b'}" stroke-width="${vsP(1.5)}" stroke-dasharray="${vsDash('5 4')}"/>`;});
   if(typeof mrkList==='function')mrkList().forEach(m=>{if(m.kind!=='vstrip'||m.level!==d.level||(m.tags||[]).indexOf('base')<0)return;const r=mrkWallById(m.level,m.wall);if(!r)return;
     const a=mrkFacePt(r,m.side,m.u0,30),b=mrkFacePt(r,m.side,m.u1,30);s+=mrkLine(a,b,z,'#2e9e5b',8);});
   const bad=hwBaseRules(d).filter(r=>!r.ok);
@@ -6550,7 +6813,7 @@ function rfCoverageSvg(only){const level=only&&only[0]?only[0].level:state.activ
     G.cells.forEach(c=>{const op=(0.05+0.10*Math.min(1,c.m/10)).toFixed(3);
       s+=`<polygon points="${p2b([[c.i*g,c.j*g,z],[(c.i+1)*g,c.j*g,z],[(c.i+1)*g,(c.j+1)*g,z],[c.i*g,(c.j+1)*g,z]])}" fill="${T.c}" fill-opacity="${op}" stroke="none"/>`;
       [[1,0,[c.i+1,c.j],[c.i+1,c.j+1]],[-1,0,[c.i,c.j],[c.i,c.j+1]],[0,1,[c.i,c.j+1],[c.i+1,c.j+1]],[0,-1,[c.i,c.j],[c.i+1,c.j]]].forEach(([di,dj,a,b])=>{
-        if(!has.has((c.i+di)+','+(c.j+dj)))s+=`<polyline points="${p2b([[a[0]*g,a[1]*g,z],[b[0]*g,b[1]*g,z]])}" fill="none" stroke="${T.c}" stroke-opacity="0.35" stroke-width="0.6"/>`;});});});
+        if(!has.has((c.i+di)+','+(c.j+dj)))s+=`<polyline points="${p2b([[a[0]*g,a[1]*g,z],[b[0]*g,b[1]*g,z]])}" fill="none" stroke="${T.c}" stroke-opacity="0.35" stroke-width="${vsP(0.6)}"/>`;});});});
   return s;}
 function rfStageOn(){if(state.rfShow)return true;
   const S=(typeof stkActive==='function')?stkActive():null,L=S?lyrLayer(state.activeLayer):null;return !!(L&&L.stack===S.id&&L.role==='sys:RF');}
@@ -6829,9 +7092,8 @@ const EP_CAT=[
    {k:'contact',n:'Nyitásérzékelő',cab:[{c:'ALARM6',w:'M16'}]},
    {k:'siren',  n:'Kültéri sziréna',cab:[{c:'SIREN4',w:'M16'}]},
    {k:'keypad', n:'Kezelő / buszeszköz',cab:[{c:'BUS4',w:'M16'}]}]}];
-// symbol colour per role
-const EP_ROLE_COL={'sys:MAINS':'#d1493f','sys:LV':'#e6a800','sys:BUSB':'#b07a2a','sys:CONTROL':'#7a5cc0','sys:DATA':'#16a085',
-  'sys:KNX':'#2e7d32','sys:SENSOR':'#2f79c9','sys:HMI':'#5470b0','sys:MEDIA':'#c2638a','sys:USB':'#607d8b','sys:SECURITY':'#444444'};
+// symbol colour per role — one source of truth, STK_COL in 05m (which loads first)
+const EP_ROLE_COL=stkSysCols();
 const EP_CLASSIC={LMP:'light',SWI:'switch',SOC:'socket'};
 const EP_FROM_TYPE={light:'LMP',switch:'SWI',socket:'SOC'};
 
@@ -6905,16 +7167,16 @@ function epPicker(role){const S=(typeof stkActive==='function')?stkActive():null
 // ---- symbols ----------------------------------------------------------------------------------------------------------------
 function epSymbol(d,x,y,k,back){if(!d||d.type!=='ep')return null;
   const R=v=>+(v*k).toFixed(2),col=back?'#9299a0':(EP_ROLE_COL[epRoleOf(d)]||'#444');
-  return `<rect x="${x-R(7)}" y="${y-R(7)}" width="${R(14)}" height="${R(14)}" rx="${R(3)}" fill="#fff" stroke="${col}" stroke-width="${R(1.6)}"${back?' stroke-dasharray="2.5 2"':''}/>`
+  return `<rect x="${x-R(7)}" y="${y-R(7)}" width="${R(14)}" height="${R(14)}" rx="${R(3)}" fill="#fff" stroke="${col}" stroke-width="${R(1.6)}"${back?' stroke-dasharray="'+vsDash('2.5 2')+'"':''}/>`
     +`<text x="${x}" y="${(y+R(2.6)).toFixed(2)}" font-size="${R(6.8)}" text-anchor="middle" font-weight="700" fill="${col}">${esc(d.code||'?')}</text>`;}
 STK_DEVSYM.push(epSymbol);
 function epWvBox(dv,x,y,sc,col,back){const d=data.devices[dv.di];if(!d||d.type!=='ep')return null;
   const r=35*sc,c=back?'#b0b4b8':(EP_ROLE_COL[epRoleOf(d)]||col);
-  return `<rect x="${(x-r).toFixed(1)}" y="${(y-r).toFixed(1)}" width="${(2*r).toFixed(1)}" height="${(2*r).toFixed(1)}" rx="3" fill="#fff" stroke="${c}" stroke-width="1.5"${back?' stroke-dasharray="3 2"':''}/>`
+  return `<rect x="${(x-r).toFixed(1)}" y="${(y-r).toFixed(1)}" width="${(2*r).toFixed(1)}" height="${(2*r).toFixed(1)}" rx="3" fill="#fff" stroke="${c}" stroke-width="${vsP(1.5)}"${back?' stroke-dasharray="'+vsDash('3 2')+'"':''}/>`
     +`<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="${Math.max(7,r*0.55).toFixed(1)}" text-anchor="middle" font-weight="700" fill="${c}">${esc(d.code||'?')}</text>`;}
 STK_WVBOX.push(epWvBox);
 // the ghost while placing
-STK_OVERLAY.push(()=>{if(!EP_T.on||!EP_T.g)return '';const g=EP_T.g,b=planToBase(g.x,g.y,dz(g.level,g.h||0)),k=state.devScale||0.72;
+STK_OVERLAY.push(()=>{if(!EP_T.on||!EP_T.g)return '';const g=EP_T.g,b=planToBase(g.x,g.y,dz(g.level,g.h||0)),k=devK();
   const fake={type:epTypeFor(EP_T.code),code:EP_T.code,level:g.level,layer:(epRoleLayer(EP_T.role)||{}).id};
   return `<g opacity="0.6" pointer-events="none">`+(fake.type==='ep'?epSymbol(fake,b[0],b[1],k,false):devSym(Object.assign(fake,{x:g.x,y:g.y,h:g.h})))+`</g>`;});
 
@@ -7000,7 +7262,7 @@ STK_OVERLAY.push(()=>{const sel=(typeof selected!=='undefined'&&selected&&select
   const sw=EP_CTL?byId('devices',EP_CTL.id):(sel&&Array.isArray(sel.ctl)?sel:null);if(!sw||!state.levels[sw.level])return '';
   const a=planToBase(sw.x,sw.y,dz(sw.level,sw.h||0));let s='';
   (sw.ctl||[]).forEach(id=>{const l=byId('devices',id);if(!l||!state.levels[l.level])return;const b=planToBase(l.x,l.y,dz(l.level,l.h||0));
-    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#d1493f" stroke-width="1" stroke-dasharray="4 3"/>`;});
+    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#d1493f" stroke-width="${vsP(1)}" stroke-dasharray="${vsDash('4 3')}"/>`;});
   return s?`<g pointer-events="none">${s}</g>`:'';});
 (STK_CHECKS['sys:MAINS']=STK_CHECKS['sys:MAINS']||[]).push(S=>{const out=[],L=stkLayer(S.id,'sys:MAINS');if(!L)return out;
   const on=data.devices.filter(d=>d.layer===L.id);
@@ -7023,7 +7285,7 @@ registerActions([
   run:()=>{const L=lyrLayer(state.activeLayer);epToolStart(code,L.role);}}))));
 
 // test hooks
-window.EP_CAT=EP_CAT;window.EP_T=EP_T;window.epEntry=epEntry;window.epOfRole=epOfRole;window.epTypeFor=epTypeFor;window.epCodeOf=epCodeOf;window.epRoleOf=epRoleOf;
+window.EP_CAT=EP_CAT;window.EP_ROLE_COL=EP_ROLE_COL;window.EP_T=EP_T;window.epEntry=epEntry;window.epOfRole=epOfRole;window.epTypeFor=epTypeFor;window.epCodeOf=epCodeOf;window.epRoleOf=epRoleOf;
 window.epVar=epVar;window.epCables=epCables;window.epRef=epRef;window.epMake=epMake;window.epPlace=epPlace;window.epToolStart=epToolStart;window.epGhost=epGhost;
 window.epSymbol=epSymbol;window.epCircuitOf=epCircuitOf;window.epCircuits=epCircuits;window.epLampGroups=epLampGroups;window.epGroupsFor=epGroupsFor;
 window.epCtlPick=epCtlPick;window.epCtlToggle=epCtlToggle;window.epInRoom=epInRoom;window.epCtlOf=epCtlOf;window.epRoomOf=epRoomOf;
@@ -7299,14 +7561,14 @@ function sugOverlaySvg(){if(state.sugOn===false||typeof EP_T==='undefined'||!EP_
   const g=EP_T.g,rid=sugRoomOf(g);if(!rid)return '';const col=EP_ROLE_COL[EP_T.role]||'#2f6fb0';let s='';
   sugFor(EP_T.code,EP_T.role,rid).forEach(h=>{const z0=dz(h.level,0);
     if(h.kind==='pt'){const b=planToBase(h.x,h.y,dz(h.level,h.h||0));
-      s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="7" fill="none" stroke="${col}" stroke-width="1.6" opacity="0.7"/>`
+      s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${vsP(7)}" fill="none" stroke="${col}" stroke-width="${vsP(1.6)}" opacity="0.7"/>`
         +`<line x1="${(b[0]-10).toFixed(1)}" y1="${b[1].toFixed(1)}" x2="${(b[0]+10).toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${col}" opacity="0.7"/>`
         +`<line x1="${b[0].toFixed(1)}" y1="${(b[1]-10).toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${(b[1]+10).toFixed(1)}" stroke="${col}" opacity="0.7"/>`;}
     else{const r=mrkWallById(h.level,h.wall);if(!r)return;const a=mrkFacePt(r,h.side,h.u0,8),b=mrkFacePt(r,h.side,h.u1,8);
       const c=h.kind==='cover'?(h.pol==='ban'?'#c8372d':'#d08a1e'):col,o=h.kind==='cover'?(h.pol==='ban'?0.5:0.4):0.45;
-      s+=`<polyline points="${p2b([[a[0],a[1],z0],[b[0],b[1],z0]])}" fill="none" stroke="${c}" stroke-width="5" stroke-opacity="${o}" stroke-linecap="butt"/>`;}});
+      s+=`<polyline points="${p2b([[a[0],a[1],z0],[b[0],b[1],z0]])}" fill="none" stroke="${c}" stroke-width="${vsP(5)}" stroke-opacity="${o}" stroke-linecap="butt"/>`;}});
   if(g.snapped&&g.why){const b=planToBase(g.x,g.y,dz(g.level,g.h||0)),x=b[0].toFixed(1),y=(b[1]-14).toFixed(1),t=esc(g.why);   // haloed: stroke pass, then fill pass
-    s+=`<text x="${x}" y="${y}" font-size="8.5" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">${t}</text><text x="${x}" y="${y}" font-size="8.5" text-anchor="middle" fill="${col}">${t}</text>`;}
+    s+=`<text x="${x}" y="${y}" font-size="${vsP(8.5)}" text-anchor="middle" fill="none" stroke="#fff" stroke-width="${vsP(2.6)}" stroke-linejoin="round">${t}</text><text x="${x}" y="${y}" font-size="${vsP(8.5)}" text-anchor="middle" fill="${col}">${t}</text>`;}
   return s?`<g pointer-events="none">${s}</g>`:'';}
 STK_OVERLAY.push(sugOverlaySvg);
 
@@ -7411,9 +7673,9 @@ function armOverlaySvg(){const S=(typeof stkActive==='function')?stkActive():nul
   const L=lyrLayer(state.activeLayer);if(!(L&&L.stack===S.id&&L.role==='arm')&&!ARM_T.on)return '';let s='';
   armRoutes().forEach(p=>{const ns=p.nodes||[];if(ns.length<2||!state.levels[ns[0].level])return;const a=ns[0],b=ns[1];
     s+=mrkText((a.x+b.x)/2,(a.y+b.y)/2,dz(a.level,((a.h||0)+(b.h||0))/2),armRef(p),'#5a5a5a',9);
-    armEndOpen(p).forEach(n=>{const c=planToBase(n.x,n.y,dz(n.level,n.h||0));s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="6" fill="none" stroke="#c8372d" stroke-width="2"/>`;});});
+    armEndOpen(p).forEach(n=>{const c=planToBase(n.x,n.y,dz(n.level,n.h||0));s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(6)}" fill="none" stroke="#c8372d" stroke-width="${vsP(2)}"/>`;});});
   armUnreached(S).forEach(d=>{if(!state.levels[d.level])return;const c=planToBase(d.x,d.y,dz(d.level,d.h||0));
-    s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="11" fill="none" stroke="#d08a1e" stroke-width="2" stroke-dasharray="3 2"/>`;});
+    s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(11)}" fill="none" stroke="#d08a1e" stroke-width="${vsP(2)}" stroke-dasharray="${vsDash('3 2')}"/>`;});
   return s?`<g pointer-events="none">${s}</g>`:'';}
 STK_OVERLAY.push(armOverlaySvg);
 
@@ -7777,7 +8039,7 @@ function afillSceneSvg(){if(state.fillShow===false)return '';let s='';
       const a=ns[si],b=ns[si+1],A=planToBase(a.x,a.y,dz(a.level,a.h||0)),B=planToBase(b.x,b.y,dz(b.level,b.h||0));
       let dx=B[0]-A[0],dy=B[1]-A[1];const l=Math.hypot(dx,dy)||1;const nx=-dy/l,ny=dx/l;
       ps.forEach((P,i)=>{const o=(i-(ps.length-1)/2)*1.6,c=(AFILL_FAMS[P.fam]||{c:'#888'}).c;
-        s+=`<line x1="${(A[0]+nx*o).toFixed(1)}" y1="${(A[1]+ny*o).toFixed(1)}" x2="${(B[0]+nx*o).toFixed(1)}" y2="${(B[1]+ny*o).toFixed(1)}" stroke="${c}" stroke-width="1"/>`;});});
+        s+=`<line x1="${(A[0]+nx*o).toFixed(1)}" y1="${(A[1]+ny*o).toFixed(1)}" x2="${(B[0]+nx*o).toFixed(1)}" y2="${(B[1]+ny*o).toFixed(1)}" stroke="${c}" stroke-width="${vsP(1)}"/>`;});});
     if(s)s=lyrWrap(p,'path',s);});
   return s;}
 STK_SCENE.push(afillSceneSvg);
@@ -8032,6 +8294,261 @@ function cpvModel(opts){opts=opts||{};const scope=Object.assign(cpvDefaultScope(
   return {kind:'vrg-client-preview',v:CPV_VERSION,name:opts.name||B.name||'Terv',created:new Date().toISOString(),units:'mm',
     levels,rooms,walls,openings,devices,circuits:[],
     stats:{rooms:rooms.filter(r=>inLv.has(r.level)).length,endpoints:devices.filter(d=>inLv.has(d.level)&&d.kind==='endpoint').length}};}
+
+// Everything that was not a socket, a switch, a lamp or a board used to fall through to one
+// generic square-with-a-dot, so an érzékelő, a kezelőpanel, a hangszóró and a kamera were the same
+// picture. A symbol now carries three separate things, and each answers a different question:
+//
+//   BODY   what KIND of thing is it, and how big is it really —
+//          szerelvény (a 68 mm doboz) < kötődoboz < mennyezeti pont < hardver;
+//   MARK   WHICH device it is — a two-or-three-stroke pictogram inside the body;
+//   COLOUR which SYSTEM it belongs to — the role colour from STK_COL (05m), the same red
+//          for Erősáram in every project; or the layer's own colour where that is switched on.
+//
+// Sizing is hybrid [user]: up to view scale 2 the bodies are a readable fixed SCREEN size, in
+// tiers that only suggest the real proportions. From 2× they are drawn as real plan footprints in
+// millimetres, aligned to the wall they sit on — at 5–10× a 68 mm szerelvény really is 68 mm
+// against its wall, and a RoomBox really is its own box. One picture, two honest regimes.
+//
+// The marks are ours, drawn here as path data in a −5…+5 unit box. Nothing is fetched and nothing
+// is a font: the product is one offline HTML file, and an icon font would be a second one.
+
+const ICO_MM_FROM=2;                 // from this view-scale step the bodies are real millimetres
+const ICO_SZ_MM=68;                  // szerelvénydoboz ⌀ (DEV_BOX_W in 06, which loads later)
+const ICO_CEIL_MM=120;               // a ceiling outlet's own plate
+function icoMmMode(){return vsK()>=ICO_MM_FROM;}
+
+// family → {r: half-size in base units at scale 1, mm: real size, shape}
+// The r ladder is the "relative size" the user asked the shapes to carry: a szerelvény is the
+// smallest and the most numerous, hardware is unmistakably bigger.
+const ICO_FAM={
+ szerelveny:{r:5.0, mm:ICO_SZ_MM,   shape:'sq'},     // flush device in a 68 mm box
+ ceiling:   {r:6.0, mm:ICO_CEIL_MM, shape:'circ'},   // lamp, sensor, AP, speaker — on the plane above
+ doboz:     {r:6.6, mm:null,        shape:'auto'},   // kötődoboz: its own jbSize and jbShape
+ hw:        {r:9.0, mm:null,        shape:'hw'},     // RBX, mérőóra, ISP, SSC — its real body
+ hwbig:     {r:10.5,mm:null,        shape:'hw'}};    // elosztószekrény, BASE
+
+// ---- the marks ---------------------------------------------------------------------------------
+// Each is drawn inside a −5…+5 box and scaled to the body. `f` fills instead of strokes.
+const ICO_MARK={
+ socket:  {d:'M-3.2 1.3 A3.2 3.2 0 0 1 3.2 1.3 Z M-3.8 1.3 H3.8',f:1},
+ switch:  {d:'M0 2.6 L0 0 L2.8 -2.8 M-1 2.6 H1'},
+ light:   {d:'M-2.7 -2.7 L2.7 2.7 M2.7 -2.7 L-2.7 2.7'},
+ ledline: {d:'M-3.8 1.4 L-1.3 -1.4 L1.3 1.4 L3.8 -1.4'},
+ dedicat: {d:'M0.9 -3.2 L-1.7 0.4 H0.2 L-0.9 3.2 L2.1 -0.5 H0.3 Z',f:1},
+ shutter: {d:'M-3.2 -2.6 H3.2 M-3.2 -0.9 H3.2 M-3.2 0.8 H3.2 M-3.2 2.5 H3.2'},
+ uep:     {d:'M-2.1 0 A2.1 2.1 0 1 0 2.1 0 A2.1 2.1 0 1 0 -2.1 0 M-0.9 0 H0.9'},
+ notify:  {d:'M0 -1.6 A1.6 1.6 0 1 0 0 1.6 A1.6 1.6 0 1 0 0 -1.6 M0 -3.6 V-2.6 M0 2.6 V3.6 M-3.6 0 H-2.6 M2.6 0 H3.6'},
+ portal:  {d:'M-2.9 3.2 V-0.5 A2.9 2.9 0 0 1 2.9 -0.5 V3.2'},
+ wifi:    {d:'M-3.2 0.4 A4.4 4.4 0 0 1 3.2 0.4 M-1.7 2 A2.4 2.4 0 0 1 1.7 2 M-0.5 3.2 A0.7 0.7 0 1 0 0.5 3.2 A0.7 0.7 0 1 0 -0.5 3.2'},
+ eth:     {d:'M-2.7 -2.2 H2.7 V1.2 H1.2 V2.8 H-1.2 V1.2 H-2.7 Z'},
+ cam:     {d:'M-3.2 -1.7 H0.9 V1.7 H-3.2 Z M0.9 -0.6 L3.2 -2.4 V2.4 L0.9 0.6 Z'},
+ knx:     {d:'M-3.6 0 H3.6 M-2.4 -1.2 V1.2 M0 -1.2 V1.2 M2.4 -1.2 V1.2'},
+ sensor:  {d:'M-0.8 -2.6 A0.8 0.8 0 1 0 0.8 -2.6 A0.8 0.8 0 1 0 -0.8 -2.6 M-2.4 0 A2.6 2.6 0 0 0 2.4 0 M-3.8 1.6 A4 4 0 0 0 3.8 1.6'},
+ panel:   {d:'M-3 -2.5 H3 V2.5 H-3 Z M-1.5 1.1 H1.5'},
+ thermo:  {d:'M0 1.4 V-2.9 M-1.1 2.3 A1.4 1.4 0 1 0 1.1 2.3 A1.4 1.4 0 1 0 -1.1 2.3 M1 -1.6 H2.2 M1 -0.3 H2.2'},
+ speaker: {d:'M-3.2 -1.4 H-1.4 L0.4 -3.1 V3.1 L-1.4 1.4 H-3.2 Z M1.8 -1.5 A2.2 2.2 0 0 1 1.8 1.5'},
+ screen:  {d:'M-3.2 -2.4 H3.2 V1 H-3.2 Z M0 1 V2.4 M-1.7 2.7 H1.7'},
+ avp:     {d:'M-3.2 -2.2 H3.2 V2.2 H-3.2 Z M-0.8 -0.9 L1.2 0 L-0.8 0.9 Z'},
+ usb:     {d:'M0 3.2 V-3.2 M0 -0.9 L-2.1 0.9 M0 -0.9 L2.1 0.9 M-0.7 3.2 A0.7 0.7 0 1 0 0.7 3.2 A0.7 0.7 0 1 0 -0.7 3.2 M-2.1 0.9 V2 M2.1 0.9 L2.1 2'},
+ shield:  {d:'M0 -3.3 L2.9 -1.9 V0.7 C2.9 2.5 0 3.4 0 3.4 C0 3.4 -2.9 2.5 -2.9 0.7 V-1.9 Z'},
+ junction:{d:'M-3.8 0 H-1.5 M1.5 0 H3.8 M0 -3.8 V-1.5 M0 1.5 V3.8 M-1 0 A1 1 0 1 0 1 0 A1 1 0 1 0 -1 0',f:0},
+ rbx:     {d:'M-2.8 -3.2 H2.8 V3.2 H-2.8 Z M1.1 -3.2 V3.2 M-0.2 0 H0.4'},
+ base:    {d:'M-3.2 -2.6 H3.2 M-3.2 0 H3.2 M-3.2 2.6 H3.2 M-3.2 -3.4 V3.4 M3.2 -3.4 V3.4'},
+ board:   {d:'M-3.4 -2.4 H3.4 V2.4 H-3.4 Z M-1.7 -1.2 V1.2 M0 -1.2 V1.2 M1.7 -1.2 V1.2'},
+ meter:   {d:'M-2.6 0 A2.6 2.6 0 1 0 2.6 0 A2.6 2.6 0 1 0 -2.6 0 M0 0 L1.8 -1.3'},
+ entry:   {d:'M-3.6 0 H1.4 M-0.4 -1.7 L1.7 0 L-0.4 1.7 M2.8 -2.6 V2.6'},
+ generic: {d:'M-1.3 0 A1.3 1.3 0 1 0 1.3 0 A1.3 1.3 0 1 0 -1.3 0',f:1}};
+
+// code → mark, for the endpoint catalogue (05s). A code can appear under two roles (LMP is both a
+// MAINS lamp and a BUSB escape light); the colour separates them, the mark stays the same thing.
+const ICO_BY_CODE={LMP:'light',SWI:'switch',SOC:'socket',DED:'dedicat',SHU:'shutter',LNR:'ledline',
+ UEP:'uep',NTL:'notify',POR:'portal',ACP:'wifi',ETH:'eth',CAM:'cam',ACT:'knx',SEN:'sensor',
+ PAN:'panel',THR:'thermo',SPK:'speaker',SCR:'screen',AVP:'avp',USB:'usb',SEC:'shield'};
+const ICO_BY_TYPE={socket:'socket',switch:'switch',light:'light',junction:'junction',box:'generic',
+ board:'board',rbx:'rbx',base:'base',meter:'meter',entry:'entry',ssc:'shield'};
+// which codes live on the plane above rather than on a wall — they get the round ceiling body
+const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK'];
+
+// ---- what a device is --------------------------------------------------------------------------
+function icoHw(d){return !!(d&&typeof HW_TYPES!=='undefined'&&HW_TYPES[d.type]);}
+function icoFamOf(d){
+  if(!d)return 'szerelveny';
+  if(d.type==='board'||d.type==='base')return 'hwbig';
+  if(icoHw(d))return 'hw';
+  if(d.type==='box')return 'szerelveny';        // an empty szerelvénydoboz is a 68 mm box like any other
+  if(d.type==='junction')return 'doboz';
+  const code=(typeof epCodeOf==='function')?epCodeOf(d):null;
+  const en=(typeof epEntryOf==='function')?epEntryOf(d):null;
+  const mount=en?en.mount:(d.type==='light'?'ceiling':'wall');
+  if(mount==='ceiling'||(code&&ICO_CEILING.indexOf(code)>=0&&mount!=='wall'))return 'ceiling';
+  return 'szerelveny';}
+function icoMarkOf(d){
+  const code=(typeof epCodeOf==='function')?epCodeOf(d):null;
+  if(code&&ICO_BY_CODE[code])return ICO_BY_CODE[code];
+  return ICO_BY_TYPE[d&&d.type]||'generic';}
+// real plan size in mm, and whether the body is round
+function icoSizeOf(d,fam){
+  if(fam==='doboz')return {mm:+(d.jbSize||80),round:d.jbShape==='circle'};
+  if(fam==='hw'||fam==='hwbig'){const S=(typeof hwSize==='function')?hwSize(d):null;
+    return {mm:S?Math.max(S.w,220):300,w:S?S.w:300,dp:S?S.dp:120,round:false,real:!!S};}
+  const F=ICO_FAM[fam]||ICO_FAM.szerelveny;
+  return {mm:F.mm,round:fam==='ceiling'};}
+
+// ---- colour --------------------------------------------------------------------------------------
+// A painted layer wins (it is a deliberate "show me this layer"), then the system's own role colour,
+// then plain ink. Both the layer colour and the role colour come from STK_COL, so a stack layer and
+// its devices can never disagree.
+function icoRoleCol(d){
+  if(typeof epRoleOf==='function'){const r=epRoleOf(d);
+    if(r&&typeof stkRoleCol==='function'){const c=stkRoleCol(r);if(c)return c;}}
+  if(icoHw(d)&&typeof stkRoleCol==='function'){
+    const role=(typeof HW_DEF!=='undefined'&&HW_DEF[d.type]||{}).role||'hw';
+    const c=stkRoleCol(role);if(c)return c;}
+  if(d&&d.type==='board'&&typeof stkRoleCol==='function')return stkRoleCol('hw');
+  const L=(typeof lyrLayer==='function')?lyrLayer(d&&d.layer||'L0'):null;
+  if(L&&L.stack&&L.role&&typeof stkRoleCol==='function'){const c=stkRoleCol(L.role);if(c)return c;}
+  return null;}
+function icoCol(d){
+  const t=(typeof layerTintOf==='function')?layerTintOf(d):null;    // a painted / hand-tinted layer
+  return t||icoRoleCol(d)||'#3a3a3a';}
+function icoMix(hex,a){            // toward white; a = how much of the colour survives
+  if(!/^#[0-9a-f]{6}$/i.test(hex))return hex;
+  const n=parseInt(hex.slice(1),16),m=v=>Math.round(255-(255-v)*a);
+  return '#'+[m(n>>16&255),m(n>>8&255),m(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('');}
+
+// ---- geometry --------------------------------------------------------------------------------------
+// the real footprint in plan, squared or rounded, turned to the wall it sits on
+function icoFoot(d,mm,round,z){
+  const h=(typeof deviceHostWall==='function'&&d&&d.side!=null)?deviceHostWall(d):null;
+  const seg=h&&h.wi&&h.wi.seg,ang=seg?Math.atan2(seg[1][1]-seg[0][1],seg[1][0]-seg[0][0]):0;
+  const c=Math.cos(ang),s=Math.sin(ang),r=mm/2;
+  const P=(u,v)=>[d.x+c*u-s*v,d.y+s*u+c*v,z];
+  if(round){const out=[];for(let i=0;i<16;i++){const a=i*Math.PI/8;out.push(P(r*Math.cos(a),r*Math.sin(a)));}return out;}
+  return [P(-r,-r),P(r,-r),P(r,r),P(-r,r)];}
+// how wide the real footprint comes out on the base canvas — the mark is sized to fit inside it
+function icoFootR(pts){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  pts.forEach(p=>{const b=planToBase(p[0],p[1],p[2]);
+    if(b[0]<x0)x0=b[0];if(b[0]>x1)x1=b[0];if(b[1]<y0)y0=b[1];if(b[1]>y1)y1=b[1];});
+  return Math.min(x1-x0,y1-y0)/2;}
+
+// ---- the symbol --------------------------------------------------------------------------------------
+function icoMarkSvg(key,x,y,r,col,sw){
+  const M=ICO_MARK[key]||ICO_MARK.generic,s=r/5*0.86;        // the box is −5…5, leave a rim
+  const t=`translate(${x.toFixed(2)},${y.toFixed(2)}) scale(${s.toFixed(3)})`;
+  return M.f?`<path transform="${t}" d="${M.d}" fill="${col}" stroke="${col}" stroke-width="${(sw/s).toFixed(2)}" stroke-linejoin="round"/>`
+            :`<path transform="${t}" d="${M.d}" fill="none" stroke="${col}" stroke-width="${(sw/s).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/>`;}
+function icoBodySvg(fam,x,y,r,fill,col,sw,dash,round){
+  if(round||fam==='ceiling')return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="${fill}" stroke="${col}" stroke-width="${sw}"${dash}/>`;
+  const rx=(fam==='szerelveny'?r*0.3:r*0.16).toFixed(2);
+  return `<rect x="${(x-r).toFixed(1)}" y="${(y-r).toFixed(1)}" width="${(2*r).toFixed(2)}" height="${(2*r).toFixed(2)}" rx="${rx}" fill="${fill}" stroke="${col}" stroke-width="${sw}"${dash}/>`;}
+
+// The one entry point: registered FIRST on STK_DEVSYM, so it answers for every device type it knows
+// and hands the rest back to the symbols that were there before.
+function icoSym(d,x,y,k,back){
+  if(!d||!d.type)return null;
+  const fam=icoFamOf(d);
+  if(fam==='szerelveny'&&!ICO_BY_TYPE[d.type]&&!(typeof epCodeOf==='function'&&epCodeOf(d)))return null;
+  const mark=icoMarkOf(d),size=icoSizeOf(d,fam),F=ICO_FAM[fam]||ICO_FAM.szerelveny;
+  // On the dark client-preview ground the same colours have to go the other way: lift them toward
+  // the light instead of washing them toward white, and sit them on the ground, not on paper.
+  const dark=(typeof prevOn==='function')&&prevOn();
+  const base=icoCol(d),col=back?'#9299a0':(dark?icoMix(base,0.62):base);
+  const ink=back?'#9299a0':(dark?icoMix(base,0.5):icoMix(base,0.86));
+  // a painted or hand-tinted layer is a deliberate "show me this one", so it fills loudly; the
+  // system's own colour only washes the body, or every plan would read as a colour chart
+  const paint=(typeof layerTintOf==='function')?layerTintOf(d):null;
+  const fill=back?(dark?'#121a23':'#f2f4f6')
+    :dark?'#0e141b':(paint?tintMix(paint,0.45):icoMix(base,0.14));
+  // an empty szerelvénydoboz is drawn open: there is nothing in it yet
+  const dash=back?` stroke-dasharray="${vsDash('2.5 2')}"`
+    :(d.type==='box'?` stroke-dasharray="${vsDash('3 2')}"`:'');
+  let s='',r;
+  if(icoMmMode()&&size.mm){                                    // real millimetres, on the wall
+    const z=dz(d.level,d.h||0),pts=icoFoot(d,size.mm,size.round,z);
+    r=Math.max(2.2,icoFootR(pts));
+    s+=`<polygon points="${p2b(pts)}" fill="${fill}" stroke="${ink}" stroke-width="${vsP(1.3)}"${dash}/>`;
+  }else{                                                        // fixed screen size, in tiers
+    r=F.r*k;
+    s+=icoBodySvg(fam,x,y,r,fill,ink,+(k*1.5).toFixed(2),dash,size.round);
+  }
+  s+=icoMarkSvg(mark,x,y,r,col,Math.max(0.8,r*0.17));
+  // The pictogram says what kind of thing it is; these say WHICH one, and a plan is still read in
+  // words. Hardware keeps its short label (RBX / EL / kWh / ISP / SSC / BASE) plus the one line
+  // that matters for it, and an endpoint keeps its STD-004 code — exactly what they said before.
+  const lab=[];
+  if(icoHw(d)||d.type==='board'){
+    const L=(typeof HW_DEF!=='undefined'&&HW_DEF[d.type]||{}).lbl;if(L)lab.push(L);
+    if(d.type==='rbx')lab.push(d.rb||(typeof HW_RB_DEF!=='undefined'?HW_RB_DEF:''));
+    else if(d.type==='base'&&typeof hwUnits==='function')lab.push(hwUnits(d).map(u=>u[0]).join('·'));}
+  else if(d.type==='ep')lab.push(d.code||'?');
+  const halo=dark?(typeof PREV!=='undefined'?PREV.ground:'#0a0e13'):'#fff';
+  lab.filter(Boolean).forEach((t,i)=>{
+    s+=`<text x="${x.toFixed(1)}" y="${(y+r+vsP(8)+i*vsP(8.5)).toFixed(1)}" font-size="${vsP(i?7:8)}" text-anchor="middle"`
+      +` font-weight="${i?400:700}" fill="${col}" paint-order="stroke" stroke="${halo}" stroke-width="${vsP(2.4)}">${esc(t)}</text>`;});
+  return s;}
+
+// The radius the body is actually drawn at, in base units. Rings that hug a symbol — the circuit
+// end point (05j), the layer spotlight (05l) — have to follow it across the screen/millimetre
+// switch, or at 5× they float around a body a third their size.
+function icoBodyR(d,k){
+  const fam=icoFamOf(d),size=icoSizeOf(d,fam),F=ICO_FAM[fam]||ICO_FAM.szerelveny;
+  if(icoMmMode()&&size.mm)return Math.max(2.2,icoFootR(icoFoot(d,size.mm,size.round,dz(d.level,d.h||0))));
+  return F.r*k;}
+// The unit those rings are written in. In screen mode it is exactly the symbol scale they always
+// used (a szerelvény body is 5 units), so nothing about the 1× drawing moves.
+function icoRingU(d,k){const r=icoMmMode()?icoBodyR(d,k):null;return r?r/5:k;}
+
+// ---- the legend ----------------------------------------------------------------------------------
+// What the plan is actually using, so the vocabulary can be read without hunting for one of each.
+function icoLegendRows(){
+  const seen={},rows=[];
+  data.devices.forEach(d=>{const fam=icoFamOf(d),mark=icoMarkOf(d),key=fam+'/'+mark+'/'+icoCol(d);
+    if(seen[key])return;seen[key]=1;
+    const en=(typeof epEntryOf==='function')?epEntryOf(d):null;
+    const role=(typeof epRoleOf==='function')?epRoleOf(d):null;
+    rows.push({fam,mark,col:icoCol(d),
+      name:(en?en.n:(DEV[d.type]||(typeof HW_TYPES!=='undefined'&&HW_TYPES[d.type])||d.type)),
+      sys:role&&typeof stkRole==='function'?((stkRole(role)||{}).n||''):''});});
+  return rows.sort((a,b)=>a.sys.localeCompare(b.sys,'hu')||a.name.localeCompare(b.name,'hu'));}
+function icoLegendChip(row,px){const r=px/2-1.5;
+  return `<svg width="${px}" height="${px}" viewBox="0 0 ${px} ${px}">`
+    +icoBodySvg(row.fam,px/2,px/2,r,icoMix(row.col,0.14),icoMix(row.col,0.86),1.4,'',row.fam==='ceiling')
+    +icoMarkSvg(row.mark,px/2,px/2,r,row.col,Math.max(0.8,r*0.17))+`</svg>`;}
+function icoLegend(){const rows=icoLegendRows();
+  openModal('Jelkulcs — a terven szereplő készülékek',
+    rows.length?`<div style="display:grid;grid-template-columns:28px 1fr 130px;gap:4px 8px;align-items:center;max-height:60vh;overflow:auto">`
+      +rows.map(r=>icoLegendChip(r,24)+`<span style="font-size:12px">${esc(r.name)}</span>`
+        +`<span style="font-size:11px;color:${r.col}">${esc(r.sys)}</span>`).join('')+`</div>`
+      +`<div class="mrow" style="font-size:10.5px;color:#888;margin-top:8px">A test mérete a készülék valódi méretét jelzi (szerelvény &lt; kötődoboz &lt; mennyezeti pont &lt; hardver), a jel azt, hogy melyik készülék, a szín pedig azt, hogy melyik rendszeré. 2× nézeti léptéktől a testek valódi milliméterben rajzolódnak.</div>`
+    :`<div class="mrow">Még nincs készülék a terven.</div>`,null);}
+
+// first in the chain: 05p's hwSymbol and 05s's endpoint square stay behind it as the fallback
+STK_DEVSYM.unshift(icoSym);
+
+registerActions([
+ {id:'view.legend',alias:'jelkulcs legend ikonok szimbolumok symbols',label:'Jelkulcs (készülékjelek)',icon:'🗝',group:'Nézet',
+  hint:'A terven szereplő készülékjelek: test = méret és fajta, jel = melyik készülék, szín = melyik rendszer.',
+  run:()=>icoLegend()},
+ {id:'layers.spotlight',alias:'reteg kiemeles spotlight highlight hover',label:'Réteg-kiemelés be/ki',icon:'💡',group:'Réteg',
+  hint:'Egy készülékre mutatva az összes rétegtársa felvillan, és a réteg sora is kigyullad az oldalsávban.',
+  run:()=>lyrSpotToggle()},
+ {id:'layers.paint.all',alias:'retegek szinezese szinkod colour code paint',label:'Minden réteg színezve be/ki',icon:'🎨',group:'Réteg',
+  hint:'Minden réteg készülékei a réteg saját színét kapják. Rétegenként a sor színkorongjával is kapcsolható.',
+  run:()=>{const on=!(layers.length&&layers.every(lyrPaints));lyrPaintAll(on);
+    if($('lyrPaintAll'))$('lyrPaintAll').checked=on;
+    lyrHud(on?'Minden réteg a saját színével rajzol.':'Rétegszínezés ki.');}},
+ {id:'layers.paint.one',alias:'aktiv reteg szinezese paint layer',label:'Aktív réteg színezve be/ki',icon:'🎨',group:'Réteg',
+  hint:'Csak az aktív réteg készülékei kapják a réteg színét.',
+  run:()=>lyrTogglePaint(state.activeLayer)}
+]);
+
+// test hooks
+window.ICO_FAM=ICO_FAM;window.ICO_MARK=ICO_MARK;window.ICO_BY_CODE=ICO_BY_CODE;window.ICO_BY_TYPE=ICO_BY_TYPE;
+window.ICO_MM_FROM=ICO_MM_FROM;window.icoSym=icoSym;window.icoFamOf=icoFamOf;window.icoMarkOf=icoMarkOf;
+window.icoCol=icoCol;window.icoRoleCol=icoRoleCol;window.icoMmMode=icoMmMode;window.icoSizeOf=icoSizeOf;
+window.icoLegendRows=icoLegendRows;window.icoLegend=icoLegend;window.icoMix=icoMix;
+window.icoBodyR=icoBodyR;window.icoRingU=icoRingU;
 // ---- Wall View: 2D elevation of a selected wall ----
 function devMini(type,x,y,col){
   if(type==='socket')return `<circle cx="${x}" cy="${y}" r="6" fill="#fff" stroke="${col}" stroke-width="1.4"/><line x1="${x-3}" y1="${y}" x2="${x+3}" y2="${y}" stroke="${col}" stroke-width="1.4"/>`;
@@ -10047,6 +10564,8 @@ function cloneMulti(list){const out=[],rows={};
   Object.keys(rows).forEach((g,k)=>{if(rows[g].length>1)rows[g].forEach(d=>{d.clip='clip'+stamp+'c'+k;});});
   return out;}
 stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
+  // a tap lights the layer too — a touch screen never sends the hover that drives it
+  if(e.button===0&&typeof lyrSpotOn==='function'&&lyrSpotOn())lyrSpotSet(lyrSpotOfDevice(devHitIdx(e)));
   if(typeof stkToolEvent==='function'&&stkToolEvent('down',e))return;
   if((e.buttons&3)===3){camDrag={m:'pitch',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(e.button===2){camDrag={m:'yaw',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
@@ -10128,6 +10647,8 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
   if(state.mode==='select'||state.mode==='grab'){const li=lampAt(e.clientX,e.clientY);
     if(li!=null)lampHoverShow(data.devices[li],e.clientX,e.clientY);else lampHoverHide();}
   else lampHoverHide();
+  // layer spotlight (05l): the device under the pointer lights its whole layer, panel row included
+  if(typeof lyrSpotOn==='function'&&lyrSpotOn())lyrSpotSet(lyrSpotOfDevice(devHitIdx(e)));
   const bts=e.buttons&3;
   if(bts===3||bts===2){ // 3 = both -> pitch, 2 = right only -> yaw
     if(!camDrag){camDrag={m:bts===3?'pitch':'yaw',moved:false,pivotCursor:pivotAtCursor(e)};last=[e.clientX,e.clientY];return;}
@@ -10295,7 +10816,7 @@ function applyFormat(h){if(!fmtSource){return false;}
 function setPitch(v){state.pitch=Math.max(5,Math.min(90,v));state.flat=state.pitch>=88;
   $('view3d').textContent=state.pitch>=88?'3D':'2D';$('hud').textContent='Kameradőlés: '+Math.round(state.pitch)+'°';draw();}
 function panBy(dx,dy){state.panX+=dx;state.panY+=dy;setTransform();}
-function zoomBy(f){state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));setTransform();}
+function zoomBy(f){state.zoom=vsClamp(state.zoom*f);setTransform();}
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();
     draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();
@@ -10495,7 +11016,7 @@ stage.addEventListener('touchmove',e=>{
     // pan by mid-point movement (always active — this is the primary two-finger action)
     state.panX=touchG.panX0+(m[0]-touchG.m0[0]);state.panY=touchG.panY0+(m[1]-touchG.m0[1]);
     // pinch zoom — only past a spread threshold so a straight drag doesn't creep-zoom
-    if(touchG.d0>10&&Math.abs(d-touchG.d0)>14){state.zoom=Math.max(0.15,Math.min(5,touchG.zoom0*(d/touchG.d0)));}
+    if(touchG.d0>10&&Math.abs(d-touchG.d0)>14){state.zoom=vsClamp(touchG.zoom0*(d/touchG.d0));}
     // twist rotate (yaw) — dead-zone so a straight pan doesn't spin the view
     let dA=(ang-touchG.a0)*180/Math.PI;while(dA>180)dA-=360;while(dA<-180)dA+=360;
     if(Math.abs(dA)>7)setRotSilent(touchG.rot0+dA);
@@ -10514,7 +11035,7 @@ function openCtxAt(ev){ // reuse the contextmenu pipeline via a synthetic event
   const evt=new MouseEvent('contextmenu',{clientX:ev.clientX,clientY:ev.clientY,bubbles:true,cancelable:true});
   stage.dispatchEvent(evt);}
 stage.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY<0?1.12:1/1.12,before=state.zoom;
-  state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));const p=stage.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
+  state.zoom=vsClamp(state.zoom*f);const p=stage.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
   const u=p.matrixTransform(stage.getScreenCTM().inverse());
   state.panX=u.x-(u.x-state.panX)*(state.zoom/before);state.panY=u.y-(u.y-state.panY)*(state.zoom/before);setTransform();},{passive:false});
 stage.addEventListener('click',e=>{if(state.mode!=='select')return;moved=false;});
@@ -10582,7 +11103,7 @@ function camIsOverUI(x,y){
 // so the HUD readout and a synchronous draw are wanted.
 function camReset(){
   setRotSilent(90);
-  state.zoom=0.5; state.panX=250; state.panY=180;
+  const hv=vsHomeView();state.zoom=hv.zoom;state.panX=hv.panX;state.panY=hv.panY;
   setTransform();
   setPitch(30);
   const h=$('hud'); if(h) h.textContent='Nézet visszaállítva.';
@@ -11703,6 +12224,11 @@ function setRot(deg){deg=((Math.round(deg)%360)+360)%360;state.rot=deg;$('rot').
   document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('on',+b.dataset.deg===deg));draw();}
 $('rot').oninput=e=>setRot(+e.target.value);$('rotL').onclick=()=>setRot(state.rot-15);$('rotR').onclick=()=>setRot(state.rot+15);
 document.querySelectorAll('.preset').forEach(b=>b.onclick=()=>setRot(+b.dataset.deg));
+if($('lyrSpot'))$('lyrSpot').onchange=()=>lyrSpotToggle();
+if($('lyrPaintAll'))$('lyrPaintAll').onchange=e=>lyrPaintAll(e.target.checked);
+if($('viewScale'))$('viewScale').onchange=e=>{vsSet(+e.target.value);
+  $('hud').textContent='Nézeti lépték '+vsK()+'× — '+(vsK()===1?'a teljes terv belefér; innen lehet feljebb lépni.'
+    :'a nagyítás '+vsK()+'-szer közelebb ér; a tollak és jelek mérete nem változott.');};
 $('style').onchange=e=>{state.style=e.target.value;bpUI();
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   if(state.style==='blueprint'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();
@@ -11908,7 +12434,8 @@ $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileR
   Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
-function syncUI(){setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;$('explode').checked=state.exploded;
+function syncUI(){vsApply();if($('viewScale'))$('viewScale').value=String(vsOk(state.viewScale));
+  setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;$('explode').checked=state.exploded;
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   $('lvBase').checked=state.levels.basement;$('lvGround').checked=state.levels.ground;$('lvUpper').checked=state.levels.upper;
   $('hBase').value=LH.basement;$('hGround').value=LH.ground;$('hUpper').value=LH.upper;if(typeof dcSync==='function')dcSync();
@@ -12486,7 +13013,7 @@ const VBACKUP = (function () {
   return api;
 })();
 //////////////////// go ////////////////////
-function resetView(){state.zoom=.5;state.panX=(1-.5)*W/2;state.panY=(1-.5)*Hh/2;setTransform();}
+function resetView(){const h=vsHomeView();state.zoom=h.zoom;state.panX=h.panX;state.panY=h.panY;setTransform();}
 // ---------------- camera memory: 2D and 3D each remember their own view ----------------
 function camSnap(){return {pitch:state.pitch,rot:state.rot,zoom:state.zoom,panX:state.panX,panY:state.panY};}
 function camApply(c){state.rot=c.rot;state.zoom=c.zoom;state.panX=c.panX;state.panY=c.panY;
@@ -12606,7 +13133,7 @@ function gizmoSvgAt(C,count){ // simplified move+rotate gizmo at base-coord C fo
     +`<path d="M ${C[0]-7} ${C[1]-62} A 7 7 0 1 1 ${C[0]} ${C[1]-55}" fill="none" stroke="#2f6fb0" stroke-width="2"/>`;
   g+=`<circle cx="${C[0]}" cy="${C[1]}" r="4" fill="#2f6fb0"/></g>`;
   g+=`<text x="${C[0]}" y="${C[1]+46}" font-size="10.5" text-anchor="middle" fill="#111" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${count} elem együtt</text>`;
-  return g;}
+  return vsBadge(C[0],C[1],g);}
 function gizmoSvg(h){if(!h)return'';const o=pieceRef(h);if(!o)return'';
   const [cx,cy]=pGetC(h),z=dz(pieceLevel(h),pGetZ(h)+ (h.t==='objects'?(o.ht||0)/2:0));
   const C=planToBase(cx,cy,z);
@@ -12640,7 +13167,7 @@ function gizmoSvg(h){if(!h)return'';const o=pieceRef(h);if(!o)return'';
   g+=`<circle cx="${C[0]}" cy="${C[1]}" r="3.5" fill="#2f6fb0"/></g>`;
   // label
   g+=`<text x="${C[0]}" y="${C[1]+44}" font-size="10.5" text-anchor="middle" fill="#111" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(pLabel(h))}</text>`;
-  return g;}
+  return vsBadge(C[0],C[1],g);}
 
 function objSnap(e){const lvl=state.active;const [bx,by]=clientToBase(e);
   const walls=WALLS[lvl]||[];
@@ -12691,7 +13218,7 @@ function saveProject(name,id){const ix=loadProjIndex();id=id||('p'+Date.now().to
   try{localStorage.setItem(CURRENT_KEY,id);}catch(_){}
   renderProjects();$('hud').textContent='Mentve: '+snap.name;return id;}
 function applyProjectData(o){ // o = a sessionObj payload
-  Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
+  Object.assign(state,o.state||{});vsApply();Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   layers=o.layers||[{id:'L0',name:'Alap',visible:true,cats:layerCatsAll()}];stacks=o.stacks||[];lyrMigrateAll();
   if(o.panelLoc)panelLoc=o.panelLoc;refB=o.refB||[];
@@ -12830,7 +13357,7 @@ $('mbTop').onclick=()=>$('view3d').click();
 (function restoreLock(){try{if(localStorage.getItem('villanyterv_lock')==='1')setLockTouch(true);}catch(_){}})();
 window.__proj={save:saveProject,load:loadProject,list:loadProjIndex,del:deleteProject,blank:newBlankProject,importFile:importProjectFile,snap:projSnapshot};
 
-window.__H=HOUSE;window.__G=GARAGE;window.__data=data;window.__state=state;window.__getWalls=()=>WALLS;window.__setSel=(h)=>{selected=h;draw();};window.__getSel=()=>selected;window.__panels=()=>PANELS;window.__panelLoc=()=>panelLoc;window.__wallStart=()=>wallStart;window.__objGhost=()=>objGhost;window.__cursor=()=>cursor;window.__cursorSnap=()=>cursor&&cursor.snap;window.__fmtSrc=()=>fmtSource;window.__selCount=()=>selList().length;window.__selMulti=()=>selMulti.map(h=>h.t+(h.i!==undefined?h.i:""));window.__sel=()=>selected;window.__addMulti=(h)=>addMulti(h);window.__centroid=()=>groupCentroid(selList());window.__rotateGroup=(l,a,p)=>rotateGroup(l,a,p);window.__selListArr=()=>selList();window.__clearMulti=()=>{clearMulti();selected=null;};window.hitTestAt=(x,y)=>hitTest({clientX:x,clientY:y});window.__touchG=()=>touchG;window.__WV=()=>WV;window.__PV=()=>PV;window.__setCursor=c=>{cursor=c;};window.__undoLen=()=>undo.length;window.__redoLen=()=>redo.length;window.VERSION=VERSION;window.drawNormalGeom=drawNormalGeom;window.PLACE_ITEMS=PLACE_ITEMS;window.WALL_PRESETS=WALL_PRESETS;window.NOTEKIND=NOTEKIND;window.LAMP_MOUNT=LAMP_MOUNT;window.DROPC=DROPC;window.GUIDES_REF=()=>GUIDES;window.LAMP_FIX=LAMP_FIX;window.ROOM_ENV=ROOM_ENV;window.ROOM_USE=ROOM_USE;window.ROOM_FLOOR=ROOM_FLOOR;window.ROOM_HEAT=ROOM_HEAT;window.__ROOMSB=()=>ROOMSB;window.DOORTYPE=DOORTYPE;window.__snap=(scope)=>snap_(scope);window.__applySnap=sn=>applySnap(sn);window.DEV=DEV;window.REFPRE=REFPRE;window.DEVKIND=DEVKIND;window.BUILDNAME=BUILDNAME;window.__buildGhost=()=>buildGhost;window.__setBuildGhost=g=>{buildGhost=g;};window.__LH=()=>LH;window.__guides=()=>GUIDES;window.__setWV=(k,v)=>{WV[k]=v;};window.__selBox=()=>selBox;window.__setBox=(b)=>{selBox=b;};window.__finishBox=()=>finishSelBox();window.__objPick=()=>objPick;window.loadBuilding=loadBuilding;window.__sceneVer=()=>sceneVer;window.__pens=()=>({NV_PEN,NV_TXT,BP_PEN,BP_TXT,BP_SCALES});window.__floorDraft=()=>floorDraft;window.__setFloorDraft=v=>{floorDraft=v;};
+window.__H=HOUSE;window.__G=GARAGE;window.__data=data;window.__state=state;window.__getWalls=()=>WALLS;window.__setSel=(h)=>{selected=h;draw();};window.__getSel=()=>selected;window.__panels=()=>PANELS;window.__panelLoc=()=>panelLoc;window.__wallStart=()=>wallStart;window.__objGhost=()=>objGhost;window.__cursor=()=>cursor;window.__cursorSnap=()=>cursor&&cursor.snap;window.__fmtSrc=()=>fmtSource;window.__selCount=()=>selList().length;window.__selMulti=()=>selMulti.map(h=>h.t+(h.i!==undefined?h.i:""));window.__sel=()=>selected;window.__addMulti=(h)=>addMulti(h);window.__centroid=()=>groupCentroid(selList());window.__rotateGroup=(l,a,p)=>rotateGroup(l,a,p);window.__selListArr=()=>selList();window.__clearMulti=()=>{clearMulti();selected=null;};window.hitTestAt=(x,y)=>hitTest({clientX:x,clientY:y});window.__touchG=()=>touchG;window.__WV=()=>WV;window.__PV=()=>PV;window.__setCursor=c=>{cursor=c;};window.__undoLen=()=>undo.length;window.__redoLen=()=>redo.length;window.VERSION=VERSION;window.drawNormalGeom=drawNormalGeom;window.PLACE_ITEMS=PLACE_ITEMS;window.WALL_PRESETS=WALL_PRESETS;window.NOTEKIND=NOTEKIND;window.LAMP_MOUNT=LAMP_MOUNT;window.DROPC=DROPC;window.GUIDES_REF=()=>GUIDES;window.LAMP_FIX=LAMP_FIX;window.ROOM_ENV=ROOM_ENV;window.ROOM_USE=ROOM_USE;window.ROOM_FLOOR=ROOM_FLOOR;window.ROOM_HEAT=ROOM_HEAT;window.__ROOMSB=()=>ROOMSB;window.DOORTYPE=DOORTYPE;window.__snap=(scope)=>snap_(scope);window.__applySnap=sn=>applySnap(sn);window.DEV=DEV;window.REFPRE=REFPRE;window.DEVKIND=DEVKIND;window.BUILDNAME=BUILDNAME;window.__buildGhost=()=>buildGhost;window.__setBuildGhost=g=>{buildGhost=g;};window.__LH=()=>LH;window.__guides=()=>GUIDES;window.__setWV=(k,v)=>{WV[k]=v;};window.__selBox=()=>selBox;window.__setBox=(b)=>{selBox=b;};window.__finishBox=()=>finishSelBox();window.__objPick=()=>objPick;window.loadBuilding=loadBuilding;window.__sceneVer=()=>sceneVer;window.__pens=()=>({NV_PEN,NV_TXT,BP_PEN,BP_TXT,BP_SCALES});window.VIEW_SCALES=VIEW_SCALES;window.PREV=PREV;window.LAYER_CATS=LAYER_CATS;window.__SC=()=>SC;window.LBL_EM=LBL_EM;window.__floorDraft=()=>floorDraft;window.__setFloorDraft=v=>{floorDraft=v;};
 function placeTools(loc){const g=$('toolsGrp'),bar=$('toolbarRow'),rs=document.querySelector('.side.r');
   if(loc==='top'){bar.appendChild(g);bar.classList.add('show');$('bToolsLoc').textContent='⧉ Tools: oldalt';}
   else{rs.appendChild(g);bar.classList.remove('show');$('bToolsLoc').textContent='⧉ Tools: fent';}

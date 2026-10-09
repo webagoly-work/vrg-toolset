@@ -265,7 +265,7 @@ function rowSnap(p,type){if(!p||!autoClipEligible({type,side:0}))return null;
 // overlap in the flat plan, so the one nearest the drawing height h wins (a ceiling route lands on
 // the KD at the top of a drop, a route drawn at socket height on the socket), then one on the active
 // layer, then the nearest symbol.
-function devAtBase(bx,by,level,h){const k=state.devScale||0.72,R=Math.max(8*k,10/(state.zoom||1)),lay=curLayer();
+function devAtBase(bx,by,level,h){const k=devK(),R=Math.max(8*k,10/(state.zoom||1)),lay=curLayer();
   const hit=[];
   data.devices.forEach(d=>{if(d.level!==level||!state.levels[d.level]||!layerShows(d,'device'))return;
     const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),dd=Math.hypot(b[0]-bx,b[1]-by);

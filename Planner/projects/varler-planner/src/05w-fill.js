@@ -232,7 +232,7 @@ function afillSceneSvg(){if(state.fillShow===false)return '';let s='';
       const a=ns[si],b=ns[si+1],A=planToBase(a.x,a.y,dz(a.level,a.h||0)),B=planToBase(b.x,b.y,dz(b.level,b.h||0));
       let dx=B[0]-A[0],dy=B[1]-A[1];const l=Math.hypot(dx,dy)||1;const nx=-dy/l,ny=dx/l;
       ps.forEach((P,i)=>{const o=(i-(ps.length-1)/2)*1.6,c=(AFILL_FAMS[P.fam]||{c:'#888'}).c;
-        s+=`<line x1="${(A[0]+nx*o).toFixed(1)}" y1="${(A[1]+ny*o).toFixed(1)}" x2="${(B[0]+nx*o).toFixed(1)}" y2="${(B[1]+ny*o).toFixed(1)}" stroke="${c}" stroke-width="1"/>`;});});
+        s+=`<line x1="${(A[0]+nx*o).toFixed(1)}" y1="${(A[1]+ny*o).toFixed(1)}" x2="${(B[0]+nx*o).toFixed(1)}" y2="${(B[1]+ny*o).toFixed(1)}" stroke="${c}" stroke-width="${vsP(1)}"/>`;});});
     if(s)s=lyrWrap(p,'path',s);});
   return s;}
 STK_SCENE.push(afillSceneSvg);

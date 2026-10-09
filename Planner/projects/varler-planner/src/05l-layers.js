@@ -38,6 +38,57 @@ function lyrCatOf(coll,rec){
     case 'traces':return 'trace';}
   return null;}
 function lyrKnown(k){return LAYER_CATS.some(c=>c.k===k);}
+
+// ---- the colour code -------------------------------------------------------------------------
+// Every layer has a colour, whether or not anything is painted with it. A stack layer takes its
+// ROLE's fixed colour (STK_COL, 05m), so the same system reads the same colour in every project;
+// an ordinary layer gets an evenly spaced hue from its position, which is only ever a tie-breaker
+// between layers that mean nothing in particular. `L.tint` set by hand still wins over both.
+const LYR_HUES=[205,28,145,275,48,330,180,95,255,15,120,300];
+function lyrAutoCol(L){
+  if(!L)return '#8a857b';
+  if(L.stack&&L.role&&typeof stkRoleCol==='function'){const c=stkRoleCol(L.role);if(c)return c;}
+  const i=Math.max(0,layers.indexOf(L));
+  return hslHex(LYR_HUES[i%LYR_HUES.length],0.42,0.46);}
+function hslHex(h,s,l){                                   // h in degrees, s/l in 0..1
+  const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
+  const t=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];
+  return '#'+t.map(v=>Math.round((v+m)*255).toString(16).padStart(2,'0')).join('');}
+function lyrColor(L){return (L&&/^#[0-9a-f]{6}$/i.test(L.tint||''))?L.tint:lyrAutoCol(L);}
+function lyrColorOf(id){return lyrColor(lyrLayer(id)||layers[0]);}
+// `L.paint` is the per-layer switch the panel offers: draw this layer's devices in its colour.
+function lyrPaints(L){return !!(L&&L.paint);}
+function lyrTogglePaint(id){const L=lyrLayer(id);if(!L)return false;
+  if(L.paint)delete L.paint;else L.paint=true;renderLayers();draw();return true;}
+
+// ---- the spotlight ---------------------------------------------------------------------------
+// With it on, touching one device lights up every device that shares its layer, and the layer's
+// block in the panel glows the same colour — one gesture answers "what else is on this run?".
+// It is a VIEW state: never saved with the drawing, never undoable.
+var lyrSpot=null;                                          // the layer id currently lit
+function lyrSpotOn(){return state.lyrSpot===true;}
+function lyrSpotSet(id){
+  if(!lyrSpotOn())id=null;
+  if(id===lyrSpot)return false;
+  lyrSpot=id||null;lyrSpotPanel();drawSoon();return true;}
+function lyrSpotOfDevice(di){const d=(di!=null)?data.devices[di]:null;return d?(d.layer||'L0'):null;}
+function lyrSpotIs(item){return !!(lyrSpot&&item&&(item.layer||'L0')===lyrSpot);}
+// the panel half: a glow on the lit layer's block, in that layer's own colour
+function lyrSpotPanel(){const el=$('layerList');if(!el)return;
+  el.querySelectorAll('.lblock').forEach(b=>{
+    const on=(b.dataset.lb===lyrSpot);
+    b.classList.toggle('lspot',on);
+    b.style.setProperty('--lspot',on?lyrColorOf(b.dataset.lb):'transparent');});}
+// the drawing half: a halo in the layer's colour, behind the symbol, on every device of that layer
+function lyrSpotRing(d,x,y,k){const c=lyrColorOf(d&&d.layer||'L0');
+  const u=(typeof icoRingU==='function')?icoRingU(d,k||0.72):(k||0.72);   // the symbol's own unit (05z)
+  return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(13*u).toFixed(2)}" fill="${c}" fill-opacity="0.16" stroke="${c}" stroke-opacity="0.75" stroke-width="${+(u*2.2).toFixed(2)}"/>`;}
+function lyrSpotToggle(){state.lyrSpot=!lyrSpotOn();
+  if(!lyrSpotOn())lyrSpot=null;
+  renderLayers();draw();
+  lyrHud(lyrSpotOn()?'Réteg-kiemelés be — vidd a kurzort egy készülékre: a rétegtársai és a réteg sora is felvillan.'
+                    :'Réteg-kiemelés ki.');
+  return lyrSpotOn();}
 // opacity step: one decimal, 0.1…1
 function lyrClampOp(v){v=+v;if(!isFinite(v))return 1;return Math.min(1,Math.max(0.1,Math.round(v*10)/10));}
 // idempotent: v1 layers (device / build keys) become v2, every category present, op cleaned
@@ -142,6 +193,8 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
       +`<input type="radio" name="alayer" ${act?'checked':''} data-la="${L.id}" title="aktív">`
       +`<button data-lv="${L.id}" title="show/hide">${L.visible?'👁':'🚫'}</button>`
       +`<button data-lk="${L.id}" title="zárolás: a réteg elemei nem jelölhetők ki és nem húzhatók">${L.lock?'🔒':'🔓'}</button>`
+      +`<button class="lswatch${lyrPaints(L)?' on':''}" data-lp="${L.id}" style="--lc:${lyrColor(L)}"`
+      +` title="${esc(lyrColorTitle(L))}">●</button>`
       +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
       +(L.link?`<span class="llink" title="csatolt réteg: a láthatóság, átlátszóság és zár közös">🔗</span>`:'')
       +(L.id!=='L0'?`<button data-lx="${L.id}" title="törlés">✕</button>`:'')+`</div>`
@@ -171,6 +224,7 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
   q('[data-lf]',b=>b.onclick=()=>{const L=lyrLayer(b.dataset.lf);L.collapsed=!lyrFolded(L);renderLayers();});
   q('[data-lt]',i=>i.onchange=()=>{layerById(i.dataset.lt).tint=i.value;renderLayers();draw();});
   q('[data-ltx]',b=>b.onclick=()=>{delete layerById(b.dataset.ltx).tint;renderLayers();draw();});
+  q('[data-lp]',b=>b.onclick=()=>lyrTogglePaint(b.dataset.lp));
   q('[data-la]',r=>r.onchange=()=>{state.activeLayer=r.dataset.la;const L=lyrLayer(r.dataset.la);
     if(L&&L.stack){state.stkOff=false;state.stack=L.stack;}      // picking a stack layer enters its stack
     renderLayers();if(typeof renderShell==='function')renderShell();});
@@ -183,7 +237,18 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
   q('[data-lx]',b=>b.onclick=()=>lyrDelete(b.dataset.lx));
   q('.lsub',row=>{
     row.addEventListener('pointerdown',e=>{if((e.button||0)>0||(e.target.closest&&e.target.closest('button')))return;lyrDragArm(e,row);});
-    row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();lyrSubMenu(e,row.dataset.sl);});});}
+    row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();lyrSubMenu(e,row.dataset.sl);});});
+  lyrSpotPanel();                                   // re-apply the glow after the panel is rebuilt
+  if($('lyrSpot'))$('lyrSpot').checked=lyrSpotOn();
+  if($('lyrPaintAll'))$('lyrPaintAll').checked=layers.length>0&&layers.every(lyrPaints);}
+function lyrColorTitle(L){
+  const src=(/^#[0-9a-f]{6}$/i.test(L.tint||''))?'kézi szín'
+    :(L.stack&&L.role&&typeof stkRole==='function')?('a szerep rögzített színe · '+((stkRole(L.role)||{n:L.role}).n))
+    :'automatikus szín';
+  return lyrColor(L)+' — '+src+'. Kattints: a réteg készülékei '+(lyrPaints(L)?'ne legyenek':'legyenek')+' ezzel színezve.';}
+// the panel's "Mind színezve": on turns every layer on, off turns every layer off
+function lyrPaintAll(on){lyrPushUndo();layers.forEach(L=>{if(on)L.paint=true;else delete L.paint;});
+  renderLayers();draw();return on;}
 
 // right-click on a sub-layer row: the menu is flat (ctxMenu has no submenus)
 function lyrSubMenu(e,sl){const p=sl.split(':'),L=lyrLayer(p[0]),cat=p[1];if(!L)return;

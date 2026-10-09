@@ -7,7 +7,7 @@
 // tests/golden.js — const/let are subject to temporal dead zones.
 // ==========================================================================
 //////////////////// go ////////////////////
-function resetView(){state.zoom=.5;state.panX=(1-.5)*W/2;state.panY=(1-.5)*Hh/2;setTransform();}
+function resetView(){const h=vsHomeView();state.zoom=h.zoom;state.panX=h.panX;state.panY=h.panY;setTransform();}
 // ---------------- camera memory: 2D and 3D each remember their own view ----------------
 function camSnap(){return {pitch:state.pitch,rot:state.rot,zoom:state.zoom,panX:state.panX,panY:state.panY};}
 function camApply(c){state.rot=c.rot;state.zoom=c.zoom;state.panX=c.panX;state.panY=c.panY;
@@ -127,7 +127,7 @@ function gizmoSvgAt(C,count){ // simplified move+rotate gizmo at base-coord C fo
     +`<path d="M ${C[0]-7} ${C[1]-62} A 7 7 0 1 1 ${C[0]} ${C[1]-55}" fill="none" stroke="#2f6fb0" stroke-width="2"/>`;
   g+=`<circle cx="${C[0]}" cy="${C[1]}" r="4" fill="#2f6fb0"/></g>`;
   g+=`<text x="${C[0]}" y="${C[1]+46}" font-size="10.5" text-anchor="middle" fill="#111" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${count} elem együtt</text>`;
-  return g;}
+  return vsBadge(C[0],C[1],g);}
 function gizmoSvg(h){if(!h)return'';const o=pieceRef(h);if(!o)return'';
   const [cx,cy]=pGetC(h),z=dz(pieceLevel(h),pGetZ(h)+ (h.t==='objects'?(o.ht||0)/2:0));
   const C=planToBase(cx,cy,z);
@@ -161,7 +161,7 @@ function gizmoSvg(h){if(!h)return'';const o=pieceRef(h);if(!o)return'';
   g+=`<circle cx="${C[0]}" cy="${C[1]}" r="3.5" fill="#2f6fb0"/></g>`;
   // label
   g+=`<text x="${C[0]}" y="${C[1]+44}" font-size="10.5" text-anchor="middle" fill="#111" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(pLabel(h))}</text>`;
-  return g;}
+  return vsBadge(C[0],C[1],g);}
 
 function objSnap(e){const lvl=state.active;const [bx,by]=clientToBase(e);
   const walls=WALLS[lvl]||[];
@@ -212,7 +212,7 @@ function saveProject(name,id){const ix=loadProjIndex();id=id||('p'+Date.now().to
   try{localStorage.setItem(CURRENT_KEY,id);}catch(_){}
   renderProjects();$('hud').textContent='Mentve: '+snap.name;return id;}
 function applyProjectData(o){ // o = a sessionObj payload
-  Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
+  Object.assign(state,o.state||{});vsApply();Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   layers=o.layers||[{id:'L0',name:'Alap',visible:true,cats:layerCatsAll()}];stacks=o.stacks||[];lyrMigrateAll();
   if(o.panelLoc)panelLoc=o.panelLoc;refB=o.refB||[];
@@ -351,7 +351,7 @@ $('mbTop').onclick=()=>$('view3d').click();
 (function restoreLock(){try{if(localStorage.getItem('villanyterv_lock')==='1')setLockTouch(true);}catch(_){}})();
 window.__proj={save:saveProject,load:loadProject,list:loadProjIndex,del:deleteProject,blank:newBlankProject,importFile:importProjectFile,snap:projSnapshot};
 
-window.__H=HOUSE;window.__G=GARAGE;window.__data=data;window.__state=state;window.__getWalls=()=>WALLS;window.__setSel=(h)=>{selected=h;draw();};window.__getSel=()=>selected;window.__panels=()=>PANELS;window.__panelLoc=()=>panelLoc;window.__wallStart=()=>wallStart;window.__objGhost=()=>objGhost;window.__cursor=()=>cursor;window.__cursorSnap=()=>cursor&&cursor.snap;window.__fmtSrc=()=>fmtSource;window.__selCount=()=>selList().length;window.__selMulti=()=>selMulti.map(h=>h.t+(h.i!==undefined?h.i:""));window.__sel=()=>selected;window.__addMulti=(h)=>addMulti(h);window.__centroid=()=>groupCentroid(selList());window.__rotateGroup=(l,a,p)=>rotateGroup(l,a,p);window.__selListArr=()=>selList();window.__clearMulti=()=>{clearMulti();selected=null;};window.hitTestAt=(x,y)=>hitTest({clientX:x,clientY:y});window.__touchG=()=>touchG;window.__WV=()=>WV;window.__PV=()=>PV;window.__setCursor=c=>{cursor=c;};window.__undoLen=()=>undo.length;window.__redoLen=()=>redo.length;window.VERSION=VERSION;window.drawNormalGeom=drawNormalGeom;window.PLACE_ITEMS=PLACE_ITEMS;window.WALL_PRESETS=WALL_PRESETS;window.NOTEKIND=NOTEKIND;window.LAMP_MOUNT=LAMP_MOUNT;window.DROPC=DROPC;window.GUIDES_REF=()=>GUIDES;window.LAMP_FIX=LAMP_FIX;window.ROOM_ENV=ROOM_ENV;window.ROOM_USE=ROOM_USE;window.ROOM_FLOOR=ROOM_FLOOR;window.ROOM_HEAT=ROOM_HEAT;window.__ROOMSB=()=>ROOMSB;window.DOORTYPE=DOORTYPE;window.__snap=(scope)=>snap_(scope);window.__applySnap=sn=>applySnap(sn);window.DEV=DEV;window.REFPRE=REFPRE;window.DEVKIND=DEVKIND;window.BUILDNAME=BUILDNAME;window.__buildGhost=()=>buildGhost;window.__setBuildGhost=g=>{buildGhost=g;};window.__LH=()=>LH;window.__guides=()=>GUIDES;window.__setWV=(k,v)=>{WV[k]=v;};window.__selBox=()=>selBox;window.__setBox=(b)=>{selBox=b;};window.__finishBox=()=>finishSelBox();window.__objPick=()=>objPick;window.loadBuilding=loadBuilding;window.__sceneVer=()=>sceneVer;window.__pens=()=>({NV_PEN,NV_TXT,BP_PEN,BP_TXT,BP_SCALES});window.__floorDraft=()=>floorDraft;window.__setFloorDraft=v=>{floorDraft=v;};
+window.__H=HOUSE;window.__G=GARAGE;window.__data=data;window.__state=state;window.__getWalls=()=>WALLS;window.__setSel=(h)=>{selected=h;draw();};window.__getSel=()=>selected;window.__panels=()=>PANELS;window.__panelLoc=()=>panelLoc;window.__wallStart=()=>wallStart;window.__objGhost=()=>objGhost;window.__cursor=()=>cursor;window.__cursorSnap=()=>cursor&&cursor.snap;window.__fmtSrc=()=>fmtSource;window.__selCount=()=>selList().length;window.__selMulti=()=>selMulti.map(h=>h.t+(h.i!==undefined?h.i:""));window.__sel=()=>selected;window.__addMulti=(h)=>addMulti(h);window.__centroid=()=>groupCentroid(selList());window.__rotateGroup=(l,a,p)=>rotateGroup(l,a,p);window.__selListArr=()=>selList();window.__clearMulti=()=>{clearMulti();selected=null;};window.hitTestAt=(x,y)=>hitTest({clientX:x,clientY:y});window.__touchG=()=>touchG;window.__WV=()=>WV;window.__PV=()=>PV;window.__setCursor=c=>{cursor=c;};window.__undoLen=()=>undo.length;window.__redoLen=()=>redo.length;window.VERSION=VERSION;window.drawNormalGeom=drawNormalGeom;window.PLACE_ITEMS=PLACE_ITEMS;window.WALL_PRESETS=WALL_PRESETS;window.NOTEKIND=NOTEKIND;window.LAMP_MOUNT=LAMP_MOUNT;window.DROPC=DROPC;window.GUIDES_REF=()=>GUIDES;window.LAMP_FIX=LAMP_FIX;window.ROOM_ENV=ROOM_ENV;window.ROOM_USE=ROOM_USE;window.ROOM_FLOOR=ROOM_FLOOR;window.ROOM_HEAT=ROOM_HEAT;window.__ROOMSB=()=>ROOMSB;window.DOORTYPE=DOORTYPE;window.__snap=(scope)=>snap_(scope);window.__applySnap=sn=>applySnap(sn);window.DEV=DEV;window.REFPRE=REFPRE;window.DEVKIND=DEVKIND;window.BUILDNAME=BUILDNAME;window.__buildGhost=()=>buildGhost;window.__setBuildGhost=g=>{buildGhost=g;};window.__LH=()=>LH;window.__guides=()=>GUIDES;window.__setWV=(k,v)=>{WV[k]=v;};window.__selBox=()=>selBox;window.__setBox=(b)=>{selBox=b;};window.__finishBox=()=>finishSelBox();window.__objPick=()=>objPick;window.loadBuilding=loadBuilding;window.__sceneVer=()=>sceneVer;window.__pens=()=>({NV_PEN,NV_TXT,BP_PEN,BP_TXT,BP_SCALES});window.VIEW_SCALES=VIEW_SCALES;window.PREV=PREV;window.LAYER_CATS=LAYER_CATS;window.__SC=()=>SC;window.LBL_EM=LBL_EM;window.__floorDraft=()=>floorDraft;window.__setFloorDraft=v=>{floorDraft=v;};
 function placeTools(loc){const g=$('toolsGrp'),bar=$('toolbarRow'),rs=document.querySelector('.side.r');
   if(loc==='top'){bar.appendChild(g);bar.classList.add('show');$('bToolsLoc').textContent='⧉ Tools: oldalt';}
   else{rs.appendChild(g);bar.classList.remove('show');$('bToolsLoc').textContent='⧉ Tools: fent';}

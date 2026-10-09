@@ -101,9 +101,8 @@ const EP_CAT=[
    {k:'contact',n:'Nyitásérzékelő',cab:[{c:'ALARM6',w:'M16'}]},
    {k:'siren',  n:'Kültéri sziréna',cab:[{c:'SIREN4',w:'M16'}]},
    {k:'keypad', n:'Kezelő / buszeszköz',cab:[{c:'BUS4',w:'M16'}]}]}];
-// symbol colour per role
-const EP_ROLE_COL={'sys:MAINS':'#d1493f','sys:LV':'#e6a800','sys:BUSB':'#b07a2a','sys:CONTROL':'#7a5cc0','sys:DATA':'#16a085',
-  'sys:KNX':'#2e7d32','sys:SENSOR':'#2f79c9','sys:HMI':'#5470b0','sys:MEDIA':'#c2638a','sys:USB':'#607d8b','sys:SECURITY':'#444444'};
+// symbol colour per role — one source of truth, STK_COL in 05m (which loads first)
+const EP_ROLE_COL=stkSysCols();
 const EP_CLASSIC={LMP:'light',SWI:'switch',SOC:'socket'};
 const EP_FROM_TYPE={light:'LMP',switch:'SWI',socket:'SOC'};
 
@@ -177,16 +176,16 @@ function epPicker(role){const S=(typeof stkActive==='function')?stkActive():null
 // ---- symbols ----------------------------------------------------------------------------------------------------------------
 function epSymbol(d,x,y,k,back){if(!d||d.type!=='ep')return null;
   const R=v=>+(v*k).toFixed(2),col=back?'#9299a0':(EP_ROLE_COL[epRoleOf(d)]||'#444');
-  return `<rect x="${x-R(7)}" y="${y-R(7)}" width="${R(14)}" height="${R(14)}" rx="${R(3)}" fill="#fff" stroke="${col}" stroke-width="${R(1.6)}"${back?' stroke-dasharray="2.5 2"':''}/>`
+  return `<rect x="${x-R(7)}" y="${y-R(7)}" width="${R(14)}" height="${R(14)}" rx="${R(3)}" fill="#fff" stroke="${col}" stroke-width="${R(1.6)}"${back?' stroke-dasharray="'+vsDash('2.5 2')+'"':''}/>`
     +`<text x="${x}" y="${(y+R(2.6)).toFixed(2)}" font-size="${R(6.8)}" text-anchor="middle" font-weight="700" fill="${col}">${esc(d.code||'?')}</text>`;}
 STK_DEVSYM.push(epSymbol);
 function epWvBox(dv,x,y,sc,col,back){const d=data.devices[dv.di];if(!d||d.type!=='ep')return null;
   const r=35*sc,c=back?'#b0b4b8':(EP_ROLE_COL[epRoleOf(d)]||col);
-  return `<rect x="${(x-r).toFixed(1)}" y="${(y-r).toFixed(1)}" width="${(2*r).toFixed(1)}" height="${(2*r).toFixed(1)}" rx="3" fill="#fff" stroke="${c}" stroke-width="1.5"${back?' stroke-dasharray="3 2"':''}/>`
+  return `<rect x="${(x-r).toFixed(1)}" y="${(y-r).toFixed(1)}" width="${(2*r).toFixed(1)}" height="${(2*r).toFixed(1)}" rx="3" fill="#fff" stroke="${c}" stroke-width="${vsP(1.5)}"${back?' stroke-dasharray="'+vsDash('3 2')+'"':''}/>`
     +`<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="${Math.max(7,r*0.55).toFixed(1)}" text-anchor="middle" font-weight="700" fill="${c}">${esc(d.code||'?')}</text>`;}
 STK_WVBOX.push(epWvBox);
 // the ghost while placing
-STK_OVERLAY.push(()=>{if(!EP_T.on||!EP_T.g)return '';const g=EP_T.g,b=planToBase(g.x,g.y,dz(g.level,g.h||0)),k=state.devScale||0.72;
+STK_OVERLAY.push(()=>{if(!EP_T.on||!EP_T.g)return '';const g=EP_T.g,b=planToBase(g.x,g.y,dz(g.level,g.h||0)),k=devK();
   const fake={type:epTypeFor(EP_T.code),code:EP_T.code,level:g.level,layer:(epRoleLayer(EP_T.role)||{}).id};
   return `<g opacity="0.6" pointer-events="none">`+(fake.type==='ep'?epSymbol(fake,b[0],b[1],k,false):devSym(Object.assign(fake,{x:g.x,y:g.y,h:g.h})))+`</g>`;});
 
@@ -272,7 +271,7 @@ STK_OVERLAY.push(()=>{const sel=(typeof selected!=='undefined'&&selected&&select
   const sw=EP_CTL?byId('devices',EP_CTL.id):(sel&&Array.isArray(sel.ctl)?sel:null);if(!sw||!state.levels[sw.level])return '';
   const a=planToBase(sw.x,sw.y,dz(sw.level,sw.h||0));let s='';
   (sw.ctl||[]).forEach(id=>{const l=byId('devices',id);if(!l||!state.levels[l.level])return;const b=planToBase(l.x,l.y,dz(l.level,l.h||0));
-    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#d1493f" stroke-width="1" stroke-dasharray="4 3"/>`;});
+    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#d1493f" stroke-width="${vsP(1)}" stroke-dasharray="${vsDash('4 3')}"/>`;});
   return s?`<g pointer-events="none">${s}</g>`:'';});
 (STK_CHECKS['sys:MAINS']=STK_CHECKS['sys:MAINS']||[]).push(S=>{const out=[],L=stkLayer(S.id,'sys:MAINS');if(!L)return out;
   const on=data.devices.filter(d=>d.layer===L.id);
@@ -295,7 +294,7 @@ registerActions([
   run:()=>{const L=lyrLayer(state.activeLayer);epToolStart(code,L.role);}}))));
 
 // test hooks
-window.EP_CAT=EP_CAT;window.EP_T=EP_T;window.epEntry=epEntry;window.epOfRole=epOfRole;window.epTypeFor=epTypeFor;window.epCodeOf=epCodeOf;window.epRoleOf=epRoleOf;
+window.EP_CAT=EP_CAT;window.EP_ROLE_COL=EP_ROLE_COL;window.EP_T=EP_T;window.epEntry=epEntry;window.epOfRole=epOfRole;window.epTypeFor=epTypeFor;window.epCodeOf=epCodeOf;window.epRoleOf=epRoleOf;
 window.epVar=epVar;window.epCables=epCables;window.epRef=epRef;window.epMake=epMake;window.epPlace=epPlace;window.epToolStart=epToolStart;window.epGhost=epGhost;
 window.epSymbol=epSymbol;window.epCircuitOf=epCircuitOf;window.epCircuits=epCircuits;window.epLampGroups=epLampGroups;window.epGroupsFor=epGroupsFor;
 window.epCtlPick=epCtlPick;window.epCtlToggle=epCtlToggle;window.epInRoom=epInRoom;window.epCtlOf=epCtlOf;window.epRoomOf=epRoomOf;

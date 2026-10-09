@@ -89,9 +89,9 @@ function armOverlaySvg(){const S=(typeof stkActive==='function')?stkActive():nul
   const L=lyrLayer(state.activeLayer);if(!(L&&L.stack===S.id&&L.role==='arm')&&!ARM_T.on)return '';let s='';
   armRoutes().forEach(p=>{const ns=p.nodes||[];if(ns.length<2||!state.levels[ns[0].level])return;const a=ns[0],b=ns[1];
     s+=mrkText((a.x+b.x)/2,(a.y+b.y)/2,dz(a.level,((a.h||0)+(b.h||0))/2),armRef(p),'#5a5a5a',9);
-    armEndOpen(p).forEach(n=>{const c=planToBase(n.x,n.y,dz(n.level,n.h||0));s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="6" fill="none" stroke="#c8372d" stroke-width="2"/>`;});});
+    armEndOpen(p).forEach(n=>{const c=planToBase(n.x,n.y,dz(n.level,n.h||0));s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(6)}" fill="none" stroke="#c8372d" stroke-width="${vsP(2)}"/>`;});});
   armUnreached(S).forEach(d=>{if(!state.levels[d.level])return;const c=planToBase(d.x,d.y,dz(d.level,d.h||0));
-    s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="11" fill="none" stroke="#d08a1e" stroke-width="2" stroke-dasharray="3 2"/>`;});
+    s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(11)}" fill="none" stroke="#d08a1e" stroke-width="${vsP(2)}" stroke-dasharray="${vsDash('3 2')}"/>`;});
   return s?`<g pointer-events="none">${s}</g>`:'';}
 STK_OVERLAY.push(armOverlaySvg);
 

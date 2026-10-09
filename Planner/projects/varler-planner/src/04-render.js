@@ -10,19 +10,53 @@
 function p2b(pts){return pts.map(p=>{const b=planToBase(p[0],p[1],p[2]);return b[0].toFixed(1)+','+b[1].toFixed(1);}).join(' ');}
 function roomDims(poly){let xs=poly.map(p=>p[0]),ys=poly.map(p=>p[1]);
   return [Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys)];}
+// ---- fitting a room label into the room it names -------------------------------------------------
+// A floor label is painted on the floor in MODEL millimetres, so it holds its size against the
+// building at any zoom or view scale. At 1:50 that is 175 mm, which suits a living room and is
+// nearly twice the width of a WC — small rooms used to spill their name across their neighbours,
+// and it was that spill, not the big rooms, that made the plan look coarse. So: measure the block,
+// shrink it until it sits inside the room, never grow it.
+//
+// Advance widths are estimated, not measured — there is no text metric without a layout pass, and
+// draw() runs on every pointer move. Checked against eight real rooms the estimate lands within
+// 8 %, which the 0.86 margin covers; being a little over only means a slightly smaller label.
+const LBL_EM={title:0.52,body:0.56};              // average em per character, per line kind
+const LBL_MIN=0.40;                               // never shrink past this fraction of the base size
+// half-extents of the room about its centroid, in the label's own rotated frame. The label is
+// centred, so the SHORTER half on each axis is what it actually has to live in.
+function lblBox(poly,cx,cy,thDeg,flip){
+  const th=thDeg*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th),s=flip?-1:1;
+  let uMin=1e9,uMax=-1e9,vMin=1e9,vMax=-1e9;
+  poly.forEach(p=>{const dx=p[0]-cx,dy=s*(p[1]-cy),u=dx*cs+dy*sn,v=-dx*sn+dy*cs;
+    if(u<uMin)uMin=u;if(u>uMax)uMax=u;if(v<vMin)vMin=v;if(v>vMax)vMax=v;});
+  return {u:Math.min(uMax,-uMin),v:Math.min(vMax,-vMin)};}
+// lines: [{t, k (size factor), by (baseline, in units of sz)}] — the block's own geometry
+function lblFit(sz,box,lines){
+  if(!(box.u>0&&box.v>0)||!lines.length)return sz;
+  let w=0;lines.forEach(l=>{w=Math.max(w,String(l.t).length*(l.em||LBL_EM.body)*l.k*sz);});
+  const f=lines[0],z=lines[lines.length-1];
+  const h=(z.by-f.by)*sz + f.k*sz*0.78 + z.k*sz*0.22;      // ascender of the first, descender of the last
+  const kw=w>0?(2*box.u*0.86)/w:1, kh=h>0?(2*box.v*0.86)/h:1;
+  return sz*Math.max(LBL_MIN,Math.min(1,kw,kh));}
+
 function floorLabel(room,level){ // isometric text painted on the floor
   if(!state.showLabels)return '';
   let cx=0,cy=0;room.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=room.poly.length;cy/=room.poly.length;
   const z=dz(level,0),O=planToBase(cx,cy,z);
   const Ex=planToBase(cx+1000,cy,z),Ey=planToBase(cx,cy+1000,z);
   let ax=(Ex[0]-O[0])/1000, ay=(Ex[1]-O[1])/1000, bx=(Ey[0]-O[0])/1000, by=(Ey[1]-O[1])/1000;
-  if(ax*by-ay*bx<0){bx=-bx;by=-by;}          // keep glyphs readable (no mirror)
+  const flip=(ax*by-ay*bx<0);
+  if(flip){bx=-bx;by=-by;}                   // keep glyphs readable (no mirror)
   const th=state.labelRot*Math.PI/180, cs=Math.cos(th), sn=Math.sin(th); // rotate text within the plane
   const rax=ax*cs+bx*sn, ray=ay*cs+by*sn, rbx=-ax*sn+bx*cs, rby=-ay*sn+by*cs;
   const [w,h]=roomDims(room.poly),area=(w*h/1e6).toFixed(area_dec(w*h));
-  const col=state.style==='whiteout'?'#000':'#3a352c', sz=nvMM(NV_TXT.room)*state.labelSize;
-  const m=`matrix(${rax},${ray},${rbx},${rby},${O[0]},${O[1]})`;
+  const col=state.style==='whiteout'?'#000':prevOn()?PREV.muted:'#3a352c';
   const ttl=(room.num?room.num+'  ':'')+(room.name||'');
+  const lines=[{t:ttl,k:1,by:-0.54,em:LBL_EM.title},{t:`${area} m² · ${w}×${h}`,k:0.73,by:0.54}];
+  if(room.mat)lines.push({t:room.mat,k:0.66,by:1.49});
+  const sz=lblFit(nvMM(NV_TXT.room)*state.labelSize,
+                  lblBox(room.poly,cx,cy,state.labelRot,flip),lines);
+  const m=`matrix(${rax},${ray},${rbx},${rby},${O[0]},${O[1]})`;
   let body=`<tspan x="0" dy="${-0.54*sz}">${esc(ttl)}</tspan>`
    +`<tspan x="0" dy="${1.08*sz}" font-size="${0.73*sz}" font-weight="400">${area} m² · ${w}×${h}</tspan>`;
   if(room.mat)body+=`<tspan x="0" dy="${0.95*sz}" font-size="${0.66*sz}" font-weight="400">${esc(room.mat)}</tspan>`;
@@ -83,14 +117,14 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
 function raisedMarks(list){if(!list||!list.length)return '';let s='';
   list.forEach(it=>{const fz=dz(it.l,0);
     if(it.kind==='w'){const r=it.r,foot=[[r.x0,r.y0],[r.x1,r.y0],[r.x1,r.y1],[r.x0,r.y1]];
-      s+=`<polygon points="${p2b(foot.map(q=>[q[0],q[1],fz]))}" fill="none" stroke="#c0530f" stroke-width="1.2" stroke-dasharray="7 4"/>`;
+      s+=`<polygon points="${p2b(foot.map(q=>[q[0],q[1],fz]))}" fill="none" stroke="#c0530f" stroke-width="${vsP(1.2)}" stroke-dasharray="${vsDash('7 4')}"/>`;
       const c=planToBase((r.x0+r.x1)/2,(r.y0+r.y1)/2,fz);
-      s+=`<text x="${c[0]}" y="${c[1]+3}" font-size="9.5" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">↑${Math.round(it.mm)}</text>`
-        +`<text x="${c[0]}" y="${c[1]+3}" font-size="9.5" text-anchor="middle" fill="#c0530f">↑${Math.round(it.mm)}</text>`;}
+      s+=`<text x="${c[0]}" y="${c[1]+vsP(3)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="none" stroke="#fff" stroke-width="${vsP(2.6)}" stroke-linejoin="round">↑${Math.round(it.mm)}</text>`
+        +`<text x="${c[0]}" y="${c[1]+vsP(3)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="#c0530f">↑${Math.round(it.mm)}</text>`;}
     else{const pl=it.fl.poly,b=polyBBox(pl),c=planToBase((b.x0+b.x1)/2,(b.y0+b.y1)/2,fz);
-      s+=`<polygon points="${p2b(pl.map(q=>[q[0],q[1],fz]))}" fill="none" stroke="#c0530f" stroke-width="1.2" stroke-dasharray="7 4"/>`
-        +`<text x="${c[0]}" y="${c[1]-14}" font-size="9.5" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">↑${Math.round(it.mm)} dobogó</text>`
-        +`<text x="${c[0]}" y="${c[1]-14}" font-size="9.5" text-anchor="middle" fill="#c0530f">↑${Math.round(it.mm)} dobogó</text>`;}});
+      s+=`<polygon points="${p2b(pl.map(q=>[q[0],q[1],fz]))}" fill="none" stroke="#c0530f" stroke-width="${vsP(1.2)}" stroke-dasharray="${vsDash('7 4')}"/>`
+        +`<text x="${c[0]}" y="${c[1]-vsP(14)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="none" stroke="#fff" stroke-width="${vsP(2.6)}" stroke-linejoin="round">↑${Math.round(it.mm)} dobogó</text>`
+        +`<text x="${c[0]}" y="${c[1]-vsP(14)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="#c0530f">↑${Math.round(it.mm)} dobogó</text>`;}});
   return s;}
 let refB=[];
 function pushRefBuildings(faces){refB.forEach(rb=>{if(!rb.visible)return;const o=rb.b,dx=rb.dx||0,dy=rb.dy||0;
@@ -178,7 +212,7 @@ function bpDoorSymbol(q,W,o,wdt,z,corners){
     const w0=W.horiz?(t1-t0):d, h0=W.horiz?d:(t1-t0);
     const pts=W.horiz?[[A[0],cym-d/2+side*th*0.9],[A[0]+w0,cym-d/2+side*th*0.9],[A[0]+w0,cym+d/2+side*th*0.9],[A[0],cym+d/2+side*th*0.9]]
                      :[[cxm-d/2+side*th*0.9,q.y0+t0],[cxm+d/2+side*th*0.9,q.y0+t0],[cxm+d/2+side*th*0.9,q.y0+t1],[cxm-d/2+side*th*0.9,q.y0+t1]];
-    return `<polygon points="${p2b(pts.map(pp=>[pp[0],pp[1],z]))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"${dash?' stroke-dasharray="5 3"':''}/>`;};
+    return `<polygon points="${p2b(pts.map(pp=>[pp[0],pp[1],z]))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"${dash?' stroke-dasharray="'+vsDash('5 3')+'"':''}/>`;};
   const arrow=(frac)=>{ // sliding direction arrow along the wall
     const t0=wdt*0.2,t1=wdt*0.8,off=side*th*1.5;
     const A=W.horiz?[q.x0+t0,cym+off]:[cxm+off,q.y0+t0], B=W.horiz?[q.x0+t1,cym+off]:[cxm+off,q.y0+t1];
@@ -337,13 +371,18 @@ function pushBpBox(faces,r,z0,z1,hatchTop){const v=boxCorners(r,z0,z1);
 function bpFloorLabel(rm,level){let cx=0,cy=0;rm.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=rm.poly.length;cy/=rm.poly.length;
   const z=dz(level,0),O=planToBase(cx,cy,z),Ex=planToBase(cx+1000,cy,z),Ey=planToBase(cx,cy+1000,z);
   let ax=(Ex[0]-O[0])/1000,ay=(Ex[1]-O[1])/1000,bx=(Ey[0]-O[0])/1000,by=(Ey[1]-O[1])/1000;
-  if(ax*by-ay*bx<0){bx=-bx;by=-by;}
+  const flip=(ax*by-ay*bx<0);
+  if(flip){bx=-bx;by=-by;}
   const th=state.labelRot*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th);
   const rax=ax*cs+bx*sn,ray=ay*cs+by*sn,rbx=-ax*sn+bx*cs,rby=-ay*sn+by*cs;
-  const sz=430*state.labelSize,ar=(polyArea(rm.poly)/1e6).toFixed(2).replace('.',',');
+  const ar=(polyArea(rm.poly)/1e6).toFixed(2).replace('.',','),
+        ttl=((rm.num?rm.num+'  ':'')+(rm.name||'HELYISÉG')).toUpperCase(),mat=rm.mat||'hidegburkolat';
+  // the official view labels at 430 mm, bigger still than the modelling view — same fit, same reason
+  const sz=lblFit(430*state.labelSize,lblBox(rm.poly,cx,cy,state.labelRot,flip),
+    [{t:ttl,k:1,by:-0.5,em:LBL_EM.title},{t:mat,k:0.78,by:0.55},{t:ar+' m²',k:0.78,by:1.50}]);
   return `<g transform="matrix(${rax},${ray},${rbx},${rby},${O[0]},${O[1]})"><text text-anchor="middle" fill="#111" font-family="Arial,Segoe UI">`
-   +`<tspan x="0" dy="${-0.5*sz}" font-size="${sz}" font-weight="700">${esc(((rm.num?rm.num+'  ':'')+(rm.name||'HELYISÉG')).toUpperCase())}</tspan>`
-   +`<tspan x="0" dy="${1.05*sz}" font-size="${0.78*sz}">${esc(rm.mat||'hidegburkolat')}</tspan>`
+   +`<tspan x="0" dy="${-0.5*sz}" font-size="${sz}" font-weight="700">${esc(ttl)}</tspan>`
+   +`<tspan x="0" dy="${1.05*sz}" font-size="${0.78*sz}">${esc(mat)}</tspan>`
    +`<tspan x="0" dy="${0.95*sz}" font-size="${0.78*sz}">${ar} m²</tspan></text></g>`;}
 function drawBlueprintIso(){const faces=[];let s=bpDefs();
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0),H=wallH(l);
@@ -436,9 +475,9 @@ function isoGridSvg(){if(!state.isoGrid||!state.levels.ground)return '';
   if(SLAB.ground)scan(SLAB.ground);(ROOMSB.ground||[]).forEach(r=>scan(r.poly));data.floors.forEach(f=>{if(f.level==='ground')scan(f.poly);});
   if(minx>maxx)return '';let s='';
   for(let x=Math.ceil(minx/gs)*gs;x<=maxx;x+=gs){const a=planToBase(x,miny,z),b=planToBase(x,maxy,z);
-    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#9aa0a6" stroke-width="0.5" opacity="0.6"/>`;}
+    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#9aa0a6" stroke-width="${vsP(0.5)}" opacity="0.6"/>`;}
   for(let y=Math.ceil(miny/gs)*gs;y<=maxy;y+=gs){const a=planToBase(minx,y,z),b=planToBase(maxx,y,z);
-    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#9aa0a6" stroke-width="0.5" opacity="0.6"/>`;}
+    s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#9aa0a6" stroke-width="${vsP(0.5)}" opacity="0.6"/>`;}
   return s;}
 function pushFloor(faces,poly,z,fill,stroke,dash,op){let cx=0,cy=0;poly.forEach(p=>{cx+=p[0];cy+=p[1];});
   cx/=poly.length;cy/=poly.length;
@@ -463,7 +502,10 @@ function pushRoof(faces,rf,l){const base=floorDispZ(l);const pts=rf.p.map(q=>[q[
   let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=pts.length;cy/=pts.length;cz/=pts.length;
   faces.push({pts,fill:shade(hexToRgb(rf.fill),n),stroke:'#5b5f63',op:1,dash:null,key:depthOf(cx,cy,cz)});}
 
-function drawWhiteout(){ // edge-only sketch, black 100/80, hidden dashed, minimal ink
+// Every wall edge of every shown level, split into the ones an outside eye can see and the ones it
+// cannot. Two renders are built on it — the white-out sketch and the client preview — so it lives
+// on its own; changing it changes both, which is the point.
+function wireEdges(){
   const solid=new Set(),all=new Map();
   function edgeKey(a,b){const A=a.map(v=>Math.round(v)).join(','),B=b.map(v=>Math.round(v)).join(',');return A<B?A+'|'+B:B+'|'+A;}
   function addBox(r,z0,z1){const v=boxCorners(r,z0,z1);const ctr=[(r.x0+r.x1)/2,(r.y0+r.y1)/2,(z0+z1)/2];
@@ -474,21 +516,77 @@ function drawWhiteout(){ // edge-only sketch, black 100/80, hidden dashed, minim
       for(let i=0;i<4;i++){const a=pts[i],b=pts[(i+1)%4],k=edgeKey(a,b);
         if(!all.has(k))all.set(k,{a,b,horiz:Math.abs(a[2]-b[2])<1});if(vis)solid.add(k);}}}
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0);for(const r of WALLS[l])if(layerShows(r,'wall')&&soloWallOk(r,l))addBox(r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)));}
+  return {all,solid};}
+
+function drawWhiteout(){ // edge-only sketch, black 100/80, hidden dashed, minimal ink
+  const {all,solid}=wireEdges();
   let s='';
   // floor + roof outlines (layout-driven)
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0);
-    if(SLAB[l])s+=`<polygon points="${p2b(SLAB[l].map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-width="1.1"/>`;
-    for(const rm of (ROOMSB[l]||[]))s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-opacity="0.8" stroke-width="0.7"/>`;
-    if(GHOST[l])s+=`<polygon points="${p2b(GHOST[l].map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-opacity="0.8" stroke-width="0.7" stroke-dasharray="6 5"/>`;
+    if(SLAB[l])s+=`<polygon points="${p2b(SLAB[l].map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-width="${vsP(1.1)}"/>`;
+    for(const rm of (ROOMSB[l]||[]))s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-opacity="0.8" stroke-width="${vsP(0.7)}"/>`;
+    if(GHOST[l])s+=`<polygon points="${p2b(GHOST[l].map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#000" stroke-opacity="0.8" stroke-width="${vsP(0.7)}" stroke-dasharray="${vsDash('6 5')}"/>`;
     for(const rf of (ROOFS[l]||[])){const base=floorDispZ(l);
-      s+=`<polygon points="${p2b(rf.p.map(q=>[q[0],q[1],base+q[2]]))}" fill="none" stroke="#000" stroke-width="1"/>`;}}
+      s+=`<polygon points="${p2b(rf.p.map(q=>[q[0],q[1],base+q[2]]))}" fill="none" stroke="#000" stroke-width="${vsP(1)}"/>`;}}
   // wall edges
   for(const [k,e] of all){const isSolid=solid.has(k);const pts=p2b([e.a,e.b]);
-    if(isSolid){const o=e.horiz?1:0.8,wd=e.horiz?1.1:0.85;
+    if(isSolid){const o=e.horiz?1:0.8,wd=vsP(e.horiz?1.1:0.85);
       s+=`<polyline points="${pts}" fill="none" stroke="#000" stroke-opacity="${o}" stroke-width="${wd}"/>`;}
-    else{const o=0.8,dsh=e.horiz?'4 3':'3 3';
-      s+=`<polyline points="${pts}" fill="none" stroke="#000" stroke-opacity="${o}" stroke-width="0.6" stroke-dasharray="${dsh}"/>`;}}
+    else{const o=0.8,dsh=vsDash(e.horiz?'4 3':'3 3');
+      s+=`<polyline points="${pts}" fill="none" stroke="#000" stroke-opacity="${o}" stroke-width="${vsP(0.6)}" stroke-dasharray="${dsh}"/>`;}}
   return s;}
+
+// ---- the client-preview render ------------------------------------------------------------------
+// The fourth render is the look the client meets in the WebGL preview (projects/client-preview):
+// near-black ground, the building as a thin cool wireframe, the work glowing on top of it. It is
+// the same drawing and the same model, only dressed differently — so the client's view can be
+// reached without leaving the Planner, and a frame of it can go straight into the brochure.
+//
+// The palette is the VRG Title Card dark token set, written out as plain hex: the product is one
+// offline file and an SVG string, with no stylesheet to carry custom properties.
+const PREV={ground:'#0a0e13',slab:'#16202b',line:'#d6e4ee',ink:'#e7edf1',muted:'#93a1ad',
+  faint:'#5d6b77',sand:'#d8b27a',halo:'#e9c893',ice:'#bfe3f2'};
+function prevOn(){return state.style==='preview';}
+// A glow without a filter: one wide soft pass under one thin bright one. feGaussianBlur would look
+// better and is the first thing an SVG exporter throws away, which is the whole reason for this.
+function prevGlow(pts,col,w,op,dash){
+  const d=dash?` stroke-dasharray="${vsDash(dash)}"`:'';
+  return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-opacity="${(op*0.2).toFixed(2)}" stroke-width="${vsP(w*3.6)}" stroke-linecap="round" stroke-linejoin="round"${d}/>`
+    +`<polyline points="${pts}" fill="none" stroke="${col}" stroke-opacity="${op}" stroke-width="${vsP(w)}" stroke-linecap="round" stroke-linejoin="round"${d}/>`;}
+function drawPreviewGeom(){
+  const {all,solid}=wireEdges();
+  let s='';
+  for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0);
+    // the ground the building stands on: panes, not surfaces — dark, barely there
+    if(SLAB[l])s+=`<polygon points="${p2b(SLAB[l].map(p=>[p[0],p[1],fz]))}" fill="${PREV.slab}" fill-opacity="0.55" stroke="${PREV.line}" stroke-opacity="0.40" stroke-width="${vsP(0.9)}"/>`;
+    (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;
+      s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],fz]))}" fill="${PREV.slab}" fill-opacity="0.45" stroke="${PREV.line}" stroke-opacity="0.24" stroke-width="${vsP(0.7)}"/>`;});
+    data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build'))return;
+      if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;const s0=s.length;
+      s+=`<polygon points="${p2b(fl.poly.map(p=>[p[0],p[1],fz+(fl.z||0)]))}" fill="${PREV.slab}" fill-opacity="0.5" stroke="${PREV.line}" stroke-opacity="0.30" stroke-width="${vsP(0.7)}"/>`;
+      s=lyrWrapFrom(s,s0,fl,'floor');});
+    if(GHOST[l])s+=`<polygon points="${p2b(GHOST[l].map(p=>[p[0],p[1],fz]))}" fill="none" stroke="${PREV.faint}" stroke-opacity="0.55" stroke-width="${vsP(0.6)}" stroke-dasharray="${vsDash('6 5')}"/>`;
+    for(const rf of (ROOFS[l]||[])){const base=floorDispZ(l);
+      s+=prevGlow(p2b(rf.p.map(q=>[q[0],q[1],base+q[2]])),PREV.line,0.8,0.45);}}
+  // the shell: horizontals carry the shape, verticals only hold it up, hidden edges just hint
+  for(const [k,e] of all){const pts=p2b([e.a,e.b]);
+    if(solid.has(k))s+=prevGlow(pts,PREV.line,e.horiz?0.9:0.6,e.horiz?0.8:0.42);
+    else s+=`<polyline points="${pts}" fill="none" stroke="${PREV.line}" stroke-opacity="0.15" stroke-width="${vsP(0.5)}" stroke-dasharray="${vsDash('3 4')}"/>`;}
+  // furniture is context, not content: a bare footprint, no fill
+  for(const o of data.objects){if(!state.levels[o.level]||!layerShows(o,'object')||!soloOk(o.x,o.y,o.level))continue;
+    if(isGenObject(o)&&!genObjectsVisible())continue;const s0=s.length;
+    s+=`<polygon points="${p2b(objFootprint(o))}" fill="none" stroke="${PREV.faint}" stroke-opacity="0.6" stroke-width="${vsP(0.6)}"/>`;
+    s=lyrWrapFrom(s,s0,o,'object');}
+  // openings read as warm gaps in a cool shell — the only place the sand accent is spent
+  for(const o of data.openings){if(!state.levels[o.level]||!layerShows(o,'build')||!soloOk(o.x,o.y,o.level))continue;
+    if(o.type==='stairs'){s+=prevGlow(p2b(objFootprint({x:o.x,y:o.y,ang:o.ang,w:o.w||STAIR_W,d:400,level:o.level,z:0})),PREV.faint,0.6,0.5);continue;}
+    const dd=[Math.cos(o.ang),Math.sin(o.ang)],win=o.type==='window';
+    const ww=o.w||(win?WIN_W:DOOR_W),wh=o.h||(win?WIN_H:DOOR_H),sill=(o.sill!=null?o.sill:(win?WIN_SILL:0)),hw=ww/2;
+    const z0=dz(o.level,sill),z1=dz(o.level,sill+wh);
+    const q=[[o.x-dd[0]*hw,o.y-dd[1]*hw,z0],[o.x+dd[0]*hw,o.y+dd[1]*hw,z0],
+             [o.x+dd[0]*hw,o.y+dd[1]*hw,z1],[o.x-dd[0]*hw,o.y-dd[1]*hw,z1],[o.x-dd[0]*hw,o.y-dd[1]*hw,z0]];
+    const s0=s.length;s+=prevGlow(p2b(q),win?PREV.ice:PREV.sand,0.8,0.72);s=lyrWrapFrom(s,s0,o,'build');}
+  return s+isoGridSvg();}
 
 function drawGuides(){let s='';const line=state.style==='whiteout';
   for(const l of ORD){if(!state.levels[l])continue;
@@ -497,15 +595,15 @@ function drawGuides(){let s='';const line=state.style==='whiteout';
     for(const gd of on){for(const seg of SNAP[l]){
       const A=[seg[0][0],seg[0][1],dz(l,gd.mm)],B=[seg[1][0],seg[1][1],dz(l,gd.mm)];
       const col=line?'#000':gd.c,op=line?0.8:0.6,dsh=line?'2 4':'';
-      s+=`<line x1="${planToBase(A[0],A[1],A[2])[0].toFixed(1)}" y1="${planToBase(A[0],A[1],A[2])[1].toFixed(1)}" x2="${planToBase(B[0],B[1],B[2])[0].toFixed(1)}" y2="${planToBase(B[0],B[1],B[2])[1].toFixed(1)}" stroke="${col}" stroke-opacity="${op}" stroke-width="0.7" stroke-dasharray="${dsh}"/>`;}}}
+      s+=`<line x1="${planToBase(A[0],A[1],A[2])[0].toFixed(1)}" y1="${planToBase(A[0],A[1],A[2])[1].toFixed(1)}" x2="${planToBase(B[0],B[1],B[2])[0].toFixed(1)}" y2="${planToBase(B[0],B[1],B[2])[1].toFixed(1)}" stroke="${col}" stroke-opacity="${op}" stroke-width="${vsP(0.7)}" stroke-dasharray="${dsh}"/>`;}}}
   return s;}
 
 function devSym(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),x=b[0],y=b[1];
-  const k=state.devScale||0.72;               // global device symbol scale (smaller = less crowded)
+  const k=devK();                             // symbol scale: the user slider, at the view scale
   // are we seeing this device from behind, through the wall? (computed in draw() via depth comparison)
   const back=(d.faceBack===true);
   const col=back?'#9299a0':'#222',fillA=back?0.55:1;
-  const dash=back?'stroke-dasharray="2.5 2"':'';
+  const dash=back?`stroke-dasharray="${vsDash('2.5 2')}"`:'';
   const R=v=>+(v*k).toFixed(2);let sym='';
   const wrap=inner=>`<g opacity="${fillA}">${inner}</g>`;
   // a tinted layer colours the symbol body (05j-circuits.js); untinted keeps the original fills
@@ -519,9 +617,10 @@ function devSym(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),x=b[0],y=b[1];
   if(typeof stkDevSym==='function'){const st=stkDevSym(d,x,y,k,back);if(st)sym=st;}   // BRIDGE Stack device types (05m hooks)
   sym=wrap(sym);
   if(typeof cktRingSvg==='function')sym=cktRingSvg(d,x,y,k,back)+sym;   // circuit end point ring, under the symbol
+  if(typeof lyrSpotIs==='function'&&lyrSpotIs(d))sym=lyrSpotRing(d,x,y,k)+sym;   // layer spotlight (05l), furthest back
   if(d.kind||d.lv){const code=(d.kind&&DEVKIND[d.kind]?DEVKIND[d.kind].s:'LV');
-    sym+=`<text x="${x}" y="${y+R(15)}" font-size="${R(8)}" text-anchor="middle" fill="#5a5348" paint-order="stroke" stroke="#fff" stroke-width="2.4" opacity="${fillA}">${esc(code)}</text>`;}
-  if(state.showRefs&&d.ref)sym+=`<text x="${x+R(9)}" y="${y-R(8)}" font-size="${R(9.5)}" fill="#0a2b6b" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.6" opacity="${fillA}">${esc(d.ref)}</text>`;
+    sym+=`<text x="${x}" y="${y+R(15)}" font-size="${R(8)}" text-anchor="middle" fill="#5a5348" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.4)}" opacity="${fillA}">${esc(code)}</text>`;}
+  if(state.showRefs&&d.ref)sym+=`<text x="${x+R(9)}" y="${y-R(8)}" font-size="${R(9.5)}" fill="#0a2b6b" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}" opacity="${fillA}">${esc(d.ref)}</text>`;
   return sym;}
 
 const DOOR_W=900,DOOR_H=2100,WIN_W=1200,WIN_H=1500,WIN_SILL=900;
@@ -539,7 +638,7 @@ const DOORTYPE={
 function doorKind(o){return (o&&o.dtype&&DOORTYPE[o.dtype])?o.dtype:'hinged';}
 function doorName(o){return DOORTYPE[doorKind(o)].n;}
 const STAIR_W=1000,RISER=180,GOING=250,STAIR_TH=300;
-function bgCol(){return state.style==='whiteout'?'#ffffff':'#fbfaf7';}
+function bgCol(){return state.style==='whiteout'?'#ffffff':prevOn()?PREV.ground:'#fbfaf7';}
 function openingSym(o){
   if(o.type==='stairs')return stairsSym(o);
   const d=[Math.cos(o.ang),Math.sin(o.ang)],win=o.type==='window';
@@ -547,12 +646,12 @@ function openingSym(o){
   const z0=dz(o.level,sill),z1=dz(o.level,sill+wh);
   const P=(u,zz)=>[o.x+d[0]*u,o.y+d[1]*u,zz];
   const q=[P(-hw,z0),P(hw,z0),P(hw,z1),P(-hw,z1)];
-  let s=`<polygon points="${q.map(c=>bx(c)+','+by(c)).join(' ')}" fill="${bgCol()}" fill-opacity="0.95" stroke="#3a3a3a" stroke-width="1.6" stroke-linejoin="round"/>`;
+  let s=`<polygon points="${q.map(c=>bx(c)+','+by(c)).join(' ')}" fill="${bgCol()}" fill-opacity="0.95" stroke="#3a3a3a" stroke-width="${vsP(1.6)}" stroke-linejoin="round"/>`;
   if(win){const s0=dz(o.level,sill),sa=P(-hw,s0),sb=P(hw,s0),m0=P(0,z0),m1=P(0,z1);
-    s+=`<line x1="${bx(sa)}" y1="${by(sa)}" x2="${bx(sb)}" y2="${by(sb)}" stroke="#2f6fb0" stroke-width="1.4"/>`;
-    s+=`<line x1="${bx(m0)}" y1="${by(m0)}" x2="${bx(m1)}" y2="${by(m1)}" stroke="#2f6fb0" stroke-width="1"/>`;}
+    s+=`<line x1="${bx(sa)}" y1="${by(sa)}" x2="${bx(sb)}" y2="${by(sb)}" stroke="#2f6fb0" stroke-width="${vsP(1.4)}"/>`;
+    s+=`<line x1="${bx(m0)}" y1="${by(m0)}" x2="${bx(m1)}" y2="${by(m1)}" stroke="#2f6fb0" stroke-width="${vsP(1)}"/>`;}
   else{const th=P(-hw,dz(o.level,0)),th2=P(hw,dz(o.level,0));
-    s+=`<line x1="${bx(th)}" y1="${by(th)}" x2="${bx(th2)}" y2="${by(th2)}" stroke="#3a3a3a" stroke-width="1"/>`;}
+    s+=`<line x1="${bx(th)}" y1="${by(th)}" x2="${bx(th2)}" y2="${by(th2)}" stroke="#3a3a3a" stroke-width="${vsP(1)}"/>`;}
   return s;}
 function stairsFaceList(o){const L=o.level,base=dz(L,0),Hlev=wallH(L);
   const d=[Math.cos(o.ang),Math.sin(o.ang)],p=[-Math.sin(o.ang),Math.cos(o.ang)],rev=(o.variant&1)?-1:1;
@@ -575,8 +674,8 @@ function stairsFaceList(o){const L=o.level,base=dz(L,0),Hlev=wallH(L);
   if(up&&state.levels[up]){const uz=dz(up,0);hole=[Pt(0,0,0),Pt(run,0,0),Pt(run,Wd,0),Pt(0,Wd,0)].map(q=>[q[0],q[1],uz]);}
   return {faces:fl,hole};}
 function stairsSym(o){const {faces,hole}=stairsFaceList(o);faces.sort((a,b)=>a.key-b.key);
-  let s=faces.map(f=>`<polygon points="${p2b(f.pts)}" fill="${f.fill}" fill-opacity="0.92" stroke="#5b5f63" stroke-width="0.8"/>`).join('');
-  if(hole)s+=`<polygon points="${p2b(hole)}" fill="${bgCol()}" stroke="#5b5f63" stroke-width="0.9" stroke-dasharray="5 4"/>`;
+  let s=faces.map(f=>`<polygon points="${p2b(f.pts)}" fill="${f.fill}" fill-opacity="0.92" stroke="#5b5f63" stroke-width="${vsP(0.8)}"/>`).join('');
+  if(hole)s+=`<polygon points="${p2b(hole)}" fill="${bgCol()}" stroke="#5b5f63" stroke-width="${vsP(0.9)}" stroke-dasharray="${vsDash('5 4')}"/>`;
   return s;}
 function pushOpening(faces,o){
   if(o.type==='stairs'){const {faces:sf,hole}=stairsFaceList(o);
@@ -607,11 +706,11 @@ function stairsSym_OLD(o){const L=o.level,base=dz(L,0),Hlev=wallH(L);
     face([Pt(u0,0,z-riser),Pt(u0,0,z),Pt(u0,Wd,z),Pt(u0,Wd,z-riser)],'#aeb3b8');}
   face([Pt(0,0,0),Pt(run,0,n*riser-th),Pt(run,Wd,n*riser-th),Pt(0,Wd,0)],'#7f8489');
   faces.sort((a,b)=>a.key-b.key);
-  let s='';for(const f of faces)s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}" fill-opacity="0.92" stroke="#5b5f63" stroke-width="0.8"/>`;
+  let s='';for(const f of faces)s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}" fill-opacity="0.92" stroke="#5b5f63" stroke-width="${vsP(0.8)}"/>`;
   const up=ORD[ORD.indexOf(L)+1];
   if(up&&state.levels[up]){const uz=dz(up,0);
     const hole=[Pt(0,0,0),Pt(run,0,0),Pt(run,Wd,0),Pt(0,Wd,0)].map(q=>[q[0],q[1],uz]);
-    s+=`<polygon points="${p2b(hole)}" fill="${bgCol()}" stroke="#5b5f63" stroke-width="0.9" stroke-dasharray="5 4"/>`;}
+    s+=`<polygon points="${p2b(hole)}" fill="${bgCol()}" stroke="#5b5f63" stroke-width="${vsP(0.9)}" stroke-dasharray="${vsDash('5 4')}"/>`;}
   return s;}
 function bx(P){return planToBase(P[0],P[1],P[2])[0].toFixed(1);}
 function by(P){return planToBase(P[0],P[1],P[2])[1].toFixed(1);}
@@ -648,26 +747,28 @@ function drawSoon(){if(_drawPending)return;_drawPending=true;
   const run=()=>{_drawPending=false;draw();};
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(run);else run();}
 function draw(){
-  let s = bgSvg() + (state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom():drawNormalGeom());
+  if(stage&&stage.classList)stage.classList.toggle('prev',prevOn());   // the dark ground is CSS on the stage, not a rect inside the drawing
+  let s = bgSvg() + (state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom()
+                    :prevOn()?drawPreviewGeom():drawNormalGeom());
   s+=drawGuides();
   // hovered / locked wall highlight
   if(state.hoverR){const r=state.hoverR,l=state.hoverL,fz=dz(l,0);
     const foot=[[r.x0,r.y0],[r.x1,r.y0],[r.x1,r.y1],[r.x0,r.y1]];
-    s+=`<polygon points="${p2b(foot.map(p=>[p[0],p[1],fz]))}" fill="#ffcf3d" fill-opacity="0.20" stroke="#e0a200" stroke-width="1.4"/>`;
+    s+=`<polygon points="${p2b(foot.map(p=>[p[0],p[1],fz]))}" fill="#ffcf3d" fill-opacity="0.20" stroke="#e0a200" stroke-width="${vsP(1.4)}"/>`;
     if(state.mode==='cable'){const wi=wallInfo(r),off=(state.side?1:-1)*wi.thick/2;
       const fa=[wi.seg[0][0]+wi.perp[0]*off,wi.seg[0][1]+wi.perp[1]*off,fz],fb=[wi.seg[1][0]+wi.perp[0]*off,wi.seg[1][1]+wi.perp[1]*off,fz];
-      s+=`<polyline points="${p2b([fa,fb])}" fill="none" stroke="#e30613" stroke-width="3.2" stroke-linecap="round"/>`;}}
+      s+=`<polyline points="${p2b([fa,fb])}" fill="none" stroke="#e30613" stroke-width="${vsP(3.2)}" stroke-linecap="round"/>`;}}
   // wall-draw rubber band
   if(state.mode==='wall'&&wallStart&&cursor){const fz=dz(state.active,0);
     const a=planToBase(wallStart[0],wallStart[1],fz),b=planToBase(cursor.x,cursor.y,fz);
     const len=Math.hypot(cursor.x-wallStart[0],cursor.y-wallStart[1]);
-    s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#2c2c2c" stroke-width="3" stroke-dasharray="7 4"/>`
-      +`<circle cx="${a[0]}" cy="${a[1]}" r="4" fill="#fff" stroke="#2c2c2c" stroke-width="2"/>`
-      +`<circle cx="${b[0]}" cy="${b[1]}" r="4" fill="#e8641c" stroke="#fff" stroke-width="1.5"/>`
-      +`<text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-6}" font-size="11" text-anchor="middle" fill="#2c2c2c" paint-order="stroke" stroke="#fff" stroke-width="3">${(len/1000).toFixed(2)} m</text>`;}
+    s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#2c2c2c" stroke-width="${vsP(3)}" stroke-dasharray="${vsDash('7 4')}"/>`
+      +`<circle cx="${a[0]}" cy="${a[1]}" r="${vsP(4)}" fill="#fff" stroke="#2c2c2c" stroke-width="${vsP(2)}"/>`
+      +`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(4)}" fill="#e8641c" stroke="#fff" stroke-width="${vsP(1.5)}"/>`
+      +`<text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-vsP(6)}" font-size="${vsP(11)}" text-anchor="middle" fill="#2c2c2c" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">${(len/1000).toFixed(2)} m</text>`;}
   // also show a marker where the FIRST click will land (before wallStart is set) when hovering in wall mode
   if(state.mode==='wall'&&!wallStart&&cursor&&!state.wallErase){const fz=dz(state.active,0),c=planToBase(cursor.x,cursor.y,fz);
-    s+=`<circle cx="${c[0]}" cy="${c[1]}" r="4" fill="#fff" stroke="#e8641c" stroke-width="2"/>`;}
+    s+=`<circle cx="${c[0]}" cy="${c[1]}" r="${vsP(4)}" fill="#fff" stroke="#e8641c" stroke-width="${vsP(2)}"/>`;}
   if(state.mode==='object'&&objGhost&&objPick&&!objPick.custom){
     const gang=(objGhost.gang!=null?objGhost.gang:0)+(state.objAng||0);
     const g={level:objGhost.level,x:objGhost.x,y:objGhost.y,z:objGhost.z||0,w:objPick.w,d:objPick.d,ht:objPick.h,ang:gang};
@@ -676,44 +777,44 @@ function draw(){
       let cx=0,cy=0,cz=0;pts.forEach(pp=>{cx+=pp[0];cy+=pp[1];cz+=pp[2];});cx/=4;cy/=4;cz/=4;gf.push({pts,key:depthOf(cx,cy,cz)});});
     gf.sort((a,b)=>a.key-b.key);
     const gc=objGhost.wall?'#3fae55':'#2f6fb0';
-    gf.forEach(fc=>{s+=`<polygon points="${p2b(fc.pts)}" fill="${gc}" fill-opacity="0.18" stroke="${gc}" stroke-width="1.2" stroke-dasharray="5 3"/>`;});
+    gf.forEach(fc=>{s+=`<polygon points="${p2b(fc.pts)}" fill="${gc}" fill-opacity="0.18" stroke="${gc}" stroke-width="${vsP(1.2)}" stroke-dasharray="${vsDash('5 3')}"/>`;});
     const b=planToBase(objGhost.x,objGhost.y,dz(objGhost.level,(objGhost.z||0)+(objPick.h||0)));
-    s+=`<text x="${b[0]}" y="${b[1]-6}" font-size="10" text-anchor="middle" fill="#2f6fb0" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.6">${esc(objPick.n)}${objGhost.wall?' · '+((objGhost.z||0)/1000).toFixed(2)+' m (fal)':''}</text>`;}
+    s+=`<text x="${b[0]}" y="${b[1]-vsP(6)}" font-size="${vsP(10)}" text-anchor="middle" fill="#2f6fb0" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}">${esc(objPick.n)}${objGhost.wall?' · '+((objGhost.z||0)/1000).toFixed(2)+' m (fal)':''}</text>`;}
   // ghost of whatever Space would drop right now (path/cable drawing)
   if((state.mode==='path'||state.mode==='cable')&&cursor&&state.showPlaceGhost!==false){
     const it=placeItem(),probe=Object.assign({level:cursor.level,x:cursor.x,y:cursor.y,h:cursor.h||0},
       (it.id==='kdx'?{type:'junction',jbShape:'rect',jbSize:(state.lastJb||120)}:(it.id==='board'?{type:'board'}:it.mk()||{type:'box'})));
     const gb=planToBase(cursor.x,cursor.y,dz(cursor.level,cursor.h||0));
     s+=`<g opacity="0.45">${devSym(Object.assign({},probe,{ref:''}))}</g>`
-      +`<text x="${gb[0]}" y="${gb[1]-16}" font-size="9.5" text-anchor="middle" fill="#2f6fb0" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.6">␣ ${esc(it.n)}</text>`;}
+      +`<text x="${gb[0]}" y="${gb[1]-vsP(16)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="#2f6fb0" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}">␣ ${esc(it.n)}</text>`;}
   // ghost of the build piece under the cursor (same idea as the object ghost)
   if(state.mode==='build'&&buildGhost){
     const g=Object.assign({},buildGhost);
     s+=`<g opacity="0.42">${openingSym(g)}</g>`;
     const gb=planToBase(g.x,g.y,dz(g.level,0));
-    s+=`<text x="${gb[0]}" y="${gb[1]-10}" font-size="9.5" text-anchor="middle" fill="#3fae55" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.6">${esc(BUILDNAME[g.type]||g.type)}</text>`;}
+    s+=`<text x="${gb[0]}" y="${gb[1]-vsP(10)}" font-size="${vsP(9.5)}" text-anchor="middle" fill="#3fae55" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}">${esc(BUILDNAME[g.type]||g.type)}</text>`;}
   if(state.mode==='roof'&&roofStart&&cursor){const fz=dz(state.active,0),x0=Math.min(roofStart[0],cursor.x),x1=Math.max(roofStart[0],cursor.x),y0=Math.min(roofStart[1],cursor.y),y1=Math.max(roofStart[1],cursor.y);
-    s+=`<polygon points="${p2b([[x0,y0,fz],[x1,y0,fz],[x1,y1,fz],[x0,y1,fz]])}" fill="#9a6b52" fill-opacity="0.25" stroke="#5d4235" stroke-width="1.5" stroke-dasharray="6 4"/>`;}
+    s+=`<polygon points="${p2b([[x0,y0,fz],[x1,y0,fz],[x1,y1,fz],[x0,y1,fz]])}" fill="#9a6b52" fill-opacity="0.25" stroke="#5d4235" stroke-width="${vsP(1.5)}" stroke-dasharray="${vsDash('6 4')}"/>`;}
   // floor-draw rubber band
   // floor outline being drawn: the points so far, the rubber-band edge, and live Terület / Kerület
   if(state.mode==='floor'&&floorDraft&&floorDraft.length&&cursor){const fz=dz(state.active,0);
     const pts=floorDraft.concat([[cursor.x,cursor.y]]);
     const closing=floorNearFirst([cursor.x,cursor.y])&&floorDraft.length>=3;
     if(pts.length>=3)s+=`<polygon points="${p2b(pts.map(p=>[p[0],p[1],fz]))}" fill="#e2ddd0" fill-opacity="${closing?0.5:0.3}" stroke="none"/>`;
-    s+=`<polyline points="${p2b(floorDraft.map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#2c2c2c" stroke-width="1.6"/>`
-      +`<polyline points="${p2b([[floorDraft[floorDraft.length-1][0],floorDraft[floorDraft.length-1][1],fz],[cursor.x,cursor.y,fz]])}" fill="none" stroke="#2c2c2c" stroke-width="1.4" stroke-dasharray="6 4"/>`;
-    if(floorDraft.length>=2)s+=`<polyline points="${p2b([[cursor.x,cursor.y,fz],[floorDraft[0][0],floorDraft[0][1],fz]])}" fill="none" stroke="#8a857b" stroke-width="1" stroke-dasharray="3 5"/>`;
+    s+=`<polyline points="${p2b(floorDraft.map(p=>[p[0],p[1],fz]))}" fill="none" stroke="#2c2c2c" stroke-width="${vsP(1.6)}"/>`
+      +`<polyline points="${p2b([[floorDraft[floorDraft.length-1][0],floorDraft[floorDraft.length-1][1],fz],[cursor.x,cursor.y,fz]])}" fill="none" stroke="#2c2c2c" stroke-width="${vsP(1.4)}" stroke-dasharray="${vsDash('6 4')}"/>`;
+    if(floorDraft.length>=2)s+=`<polyline points="${p2b([[cursor.x,cursor.y,fz],[floorDraft[0][0],floorDraft[0][1],fz]])}" fill="none" stroke="#8a857b" stroke-width="${vsP(1)}" stroke-dasharray="${vsDash('3 5')}"/>`;
     floorDraft.forEach((p,i)=>{const b=planToBase(p[0],p[1],fz),first=i===0;
-      s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${first?(closing?6:4.5):3}" fill="${first?(closing?'#e8641c':'#fff'):'#fff'}" stroke="#2c2c2c" stroke-width="1.4"/>`;});
+      s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${vsP(first?(closing?6:4.5):3)}" fill="${first?(closing?'#e8641c':'#fff'):'#fff'}" stroke="#2c2c2c" stroke-width="${vsP(1.4)}"/>`;});
     // the segment being drawn, then area + perimeter at the centroid
     const lastP=floorDraft[floorDraft.length-1],mid=planToBase((lastP[0]+cursor.x)/2,(lastP[1]+cursor.y)/2,fz);
     const segL=Math.hypot(cursor.x-lastP[0],cursor.y-lastP[1])/1000;
-    s+=`<text x="${mid[0]}" y="${mid[1]-7}" font-size="11" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${segL.toFixed(2)} m</text>`;
+    s+=`<text x="${mid[0]}" y="${mid[1]-vsP(7)}" font-size="${vsP(11)}" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">${segL.toFixed(2)} m</text>`;
     if(pts.length>=3){let cx=0,cy=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=pts.length;cy/=pts.length;
       const c=planToBase(cx,cy,fz),A=polyAreaMM(pts)/1e6,P=polyPerimMM(pts,true)/1000;
-      s+=`<text x="${c[0]}" y="${c[1]-3}" font-size="11.5" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3.2">Terület ${A.toFixed(2)} m²</text>`
-        +`<text x="${c[0]}" y="${c[1]+11}" font-size="10.5" text-anchor="middle" fill="#555" paint-order="stroke" stroke="#fff" stroke-width="3">Kerület ${P.toFixed(2)} m</text>`;}
-    if(closing)s+=`<text x="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[0]}" y="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[1]-12}" font-size="10.5" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">zárás</text>`;}
+      s+=`<text x="${c[0]}" y="${c[1]-vsP(3)}" font-size="${vsP(11.5)}" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3.2)}">Terület ${A.toFixed(2)} m²</text>`
+        +`<text x="${c[0]}" y="${c[1]+vsP(11)}" font-size="${vsP(10.5)}" text-anchor="middle" fill="#555" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">Kerület ${P.toFixed(2)} m</text>`;}
+    if(closing)s+=`<text x="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[0]}" y="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[1]-vsP(12)}" font-size="${vsP(10.5)}" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">zárás</text>`;}
   // floor labels (isometric, painted)
   if(state.style!=='blueprint')for(const l of ORD){if(!state.levels[l])continue;
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(rm.noText||(state.soloRoom&&!soloRoomIs({src:'B',i,level:l})))return;s+=floorLabel(rm,l);});
@@ -727,8 +828,8 @@ function draw(){
       const sec=(pa.sections&&pa.sections[i-1])||{build:'sull_gege'};
       const dx=b.x-a.x,dy=b.y-a.y,ln=Math.hypot(dx,dy)||1,px=-dy/ln*lane*PATHW,py=dx/ln*lane*PATHW;
       const A=[a.x+px,a.y+py,dz(a.level,a.h)],B=[b.x+px,b.y+py,dz(b.level,b.h)];
-      const surf=buildSurface(sec.build),col=(pa.color||state.pathColor||(surf?'#c0761d':'#6f757d')),dash=surf?'':'7 4',
-        wdt=(sec.build.indexOf('szeles')>=0?4.0:2.4)*(state.pathScale||1);
+      const surf=buildSurface(sec.build),col=(pa.color||state.pathColor||(surf?'#c0761d':'#6f757d')),dash=surf?'':vsDash('7 4'),
+        wdt=(sec.build.indexOf('szeles')>=0?4.0:2.4)*pathK();
       s+=`<polyline points="${p2b([A,B])}" fill="none" stroke="${col}" stroke-width="${wdt}" stroke-dasharray="${dash}" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>`;
       const carried=(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]);
       if(carried.length){const c0=sec.circuit||carried[0];const passing=c0.passing;
@@ -739,29 +840,29 @@ function draw(){
         // circuit colour runs continuously along the whole path (straight AND diagonal) for consistent colour codes
         const ccol=circuitColor(c0);
         const op=dim?0.18:(passing?0.5:0.95);
-        s+=`<polyline points="${p2b([A,B])}" fill="none" stroke="${ccol}" stroke-width="${state.circHi===ckey?3:2}" opacity="${op}" ${passing?'stroke-dasharray="2 4"':''}/>`;
+        s+=`<polyline points="${p2b([A,B])}" fill="none" stroke="${ccol}" stroke-width="${vsP(state.circHi===ckey?3:2)}" opacity="${op}" ${passing?'stroke-dasharray="'+vsDash('2 4')+'"':''}/>`;
         const mb=planToBase((A[0]+B[0])/2,(A[1]+B[1])/2,(A[2]+B[2])/2);const nwires=carried.reduce((t,c)=>t+(c.count||1),0);
         const lbl=(sec.circuit?(sec.circuit.name||'')+(sec.circuit.num?' '+sec.circuit.num:''):carried.length+' kör')+' · '+nwires+'ér';
-        if(!dim&&state.circHoverInfo!==false)s+=`<text x="${mb[0]}" y="${mb[1]-4}" font-size="8.5" text-anchor="middle" fill="${ccol}" paint-order="stroke" stroke="#fff" stroke-width="2.6">${esc(lbl)}</text>`;}}}
-    for(const n of pa.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="1.8" fill="#555"/>`;}
+        if(!dim&&state.circHoverInfo!==false)s+=`<text x="${mb[0]}" y="${mb[1]-vsP(4)}" font-size="${vsP(8.5)}" text-anchor="middle" fill="${ccol}" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}">${esc(lbl)}</text>`;}}}
+    for(const n of pa.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(1.8)}" fill="#555"/>`;}
     s=lyrWrapFrom(s,s0,pa,'path');}
   if((state.mode==='path'||state.mode==='cable'||state.mode==='device')){const dr=state.mode==='path'?pathDraft:(state.mode==='cable'?draft:null);
     if(dr&&dr.nodes.length){const placed=dr.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]);
       // placed (committed) segments — solid
-      s+=`<polyline points="${p2b(placed)}" fill="none" stroke="#6f757d" stroke-width="3.6"/>`;
+      s+=`<polyline points="${p2b(placed)}" fill="none" stroke="#6f757d" stroke-width="${vsP(3.6)}"/>`;
       // pending segment to cursor — dashed + amber
       if(cursor){const a=dr.nodes[dr.nodes.length-1],A=[a.x,a.y,dz(a.level,a.h)],C=[cursor.x,cursor.y,dz(cursor.level,cursor.h)];
-        s+=`<polyline points="${p2b([A,C])}" fill="none" stroke="#e8641c" stroke-width="3" stroke-dasharray="8 5"/>`
-          +`<circle cx="${planToBase(...C)[0]}" cy="${planToBase(...C)[1]}" r="3.4" fill="#fff" stroke="#e8641c" stroke-width="2"/>`;}
+        s+=`<polyline points="${p2b([A,C])}" fill="none" stroke="#e8641c" stroke-width="${vsP(3)}" stroke-dasharray="${vsDash('8 5')}"/>`
+          +`<circle cx="${planToBase(...C)[0]}" cy="${planToBase(...C)[1]}" r="${vsP(3.4)}" fill="#fff" stroke="#e8641c" stroke-width="${vsP(2)}"/>`;}
       // a node put down on a box is green: it becomes that box's link when the path is finished
-      for(const n of dr.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="3" fill="#fff" stroke="${n.on?'#1d9e75':'#6f757d'}" stroke-width="2"/>`;}}
+      for(const n of dr.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(3)}" fill="#fff" stroke="${n.on?'#1d9e75':'#6f757d'}" stroke-width="${vsP(2)}"/>`;}}
     // the box the path cursor has snapped onto (05k placeSnap)
     if(cursor&&cursor.dev){const d=byId('devices',cursor.dev);if(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0));
-      s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${+(11*(state.devScale||0.72)).toFixed(2)}" fill="none" stroke="#1d9e75" stroke-width="2"/>`;}}
+      s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${+(11*devK()).toFixed(2)}" fill="none" stroke="#1d9e75" stroke-width="${vsP(2)}"/>`;}}
     if(state.mode==='device'&&cursor){const gt=($('devType')||{}).value||'socket';
       // Shift: a dashed tie from the row it joins
       if(cursor.row){const a=byId('devices',cursor.row);if(a){const A=planToBase(a.x,a.y,dz(a.level,a.h||0)),C=planToBase(cursor.x,cursor.y,dz(cursor.level,cursor.h));
-        s+=`<line x1="${A[0]}" y1="${A[1]}" x2="${C[0]}" y2="${C[1]}" stroke="#1d9e75" stroke-width="1.6" stroke-dasharray="3 2"/>`;}}
+        s+=`<line x1="${A[0]}" y1="${A[1]}" x2="${C[0]}" y2="${C[1]}" stroke="#1d9e75" stroke-width="${vsP(1.6)}" stroke-dasharray="${vsDash('3 2')}"/>`;}}
       s+=`<g opacity="0.7">`+devSym({type:gt,level:cursor.level,x:cursor.x,y:cursor.y,h:cursor.h,ref:''})+`</g>`;}
     // hovering height mini-display (toggle: state.hDisp 'hover'|'side'|'off')
     if(state.hDisp==='hover'&&cursor){const c=planToBase(cursor.x,cursor.y,dz(cursor.level,cursor.h));
@@ -771,8 +872,8 @@ function draw(){
       const pal=(state.mode==='path'||state.mode==='cable')?placeItem():null;   // what Space would drop
       const boxH=(showSide?56:40)+(pal?20:0);
       const bx0=c[0]+14,by0=c[1]-46;
-      s+=`<line x1="${c[0]}" y1="${c[1]}" x2="${bx0}" y2="${by0+30}" stroke="#e8641c" stroke-width="1"/>`
-        +`<g font-family="Arial" style="pointer-events:none">`
+      s+=`<line x1="${c[0]}" y1="${c[1]}" x2="${bx0}" y2="${by0+30}" stroke="#e8641c" stroke-width="${vsP(1)}"/>`
+        +vsBadge(bx0,by0,`<g font-family="Arial" style="pointer-events:none">`
         +`<rect x="${bx0}" y="${by0}" width="150" height="${boxH}" rx="5" fill="#fffef8" stroke="#d8d2c4"/>`
         +`<rect x="${bx0}" y="${by0}" width="6" height="${boxH}" fill="${gc}"/>`
         +`<text x="${bx0+13}" y="${by0+16}" font-size="12" font-weight="700" fill="#111">↧ ${(cursor.h/1000).toFixed(2)} m</text>`
@@ -780,25 +881,25 @@ function draw(){
         +(lastH!=null&&Math.abs(lastH-cursor.h)>1?`<text x="${bx0+146}" y="${by0+16}" font-size="10" text-anchor="end" fill="#999">előző ${(lastH/1000).toFixed(2)}</text>`:'')
         +(showSide?`<text x="${bx0+13}" y="${by0+48}" font-size="9.5" fill="#2f6fb0">▣ ${state.side?'túloldal':'közeli oldal'} · Ctrl vált</text>`:'')
         +(pal?paletteBadge(bx0,by0+(showSide?56:40),pal):'')
-        +`</g>`;}}
+        +`</g>`);}}
   // cables
   for(const cb of data.cables){if(!circOn[cb.type]||!layerShows(cb,'cable'))continue;const vis=cb.nodes.filter(n=>state.levels[n.level]);
     if(vis.length<2)continue;const cc=CIRC[cb.type],s0=s.length;
-    s+=`<polyline points="${p2b(cb.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]))}" fill="none" stroke="${cc.c}" stroke-width="2.3" stroke-dasharray="${cc.dash}" stroke-linejoin="round" stroke-linecap="round"/>`;
-    for(const n of cb.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="2" fill="${cc.c}"/>`;}
+    s+=`<polyline points="${p2b(cb.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]))}" fill="none" stroke="${cc.c}" stroke-width="${vsP(2.3)}" stroke-dasharray="${cc.dash}" stroke-linejoin="round" stroke-linecap="round"/>`;
+    for(const n of cb.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(2)}" fill="${cc.c}"/>`;}
     s=lyrWrapFrom(s,s0,cb,'cable');}
   if(draft&&draft.nodes.length){const cc=CIRC[draft.type];const pts=draft.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]);
     if(cursor)pts.push([cursor.x,cursor.y,dz(cursor.level,cursor.h)]);
-    s+=`<polyline points="${p2b(pts)}" fill="none" stroke="${cc.c}" stroke-width="2.3" stroke-dasharray="4 3"/>`;
-    for(const n of draft.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="3" fill="#fff" stroke="${cc.c}" stroke-width="2"/>`;}}
+    s+=`<polyline points="${p2b(pts)}" fill="none" stroke="${cc.c}" stroke-width="${vsP(2.3)}" stroke-dasharray="${vsDash('4 3')}"/>`;
+    for(const n of draft.nodes){const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(3)}" fill="#fff" stroke="${cc.c}" stroke-width="${vsP(2)}"/>`;}}
   // devices
   // switch→device links (show what each switch controls)
   if(state.showSwitchLinks!==false)for(const sw of data.devices){if(sw.type!=='switch'||!sw.swMap||!state.levels[sw.level]||!layerShows(sw,'device'))continue;
     const a=planToBase(sw.x,sw.y,dz(sw.level,sw.h||0)),s0=s.length;
     Object.keys(sw.swMap).forEach(term=>{const tgt=devByRef(sw.swMap[term]);if(!tgt||!state.levels[tgt.level])return;
       const b=planToBase(tgt.x,tgt.y,dz(tgt.level,tgt.h||0));
-      s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#c43d8f" stroke-width="1.1" stroke-dasharray="3 3" opacity="0.75"/>`
-        +`<text x="${(a[0]*0.6+b[0]*0.4)}" y="${(a[1]*0.6+b[1]*0.4)-2}" font-size="7.5" fill="#c43d8f" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="2">${esc(term)}</text>`;});
+      s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#c43d8f" stroke-width="${vsP(1.1)}" stroke-dasharray="${vsDash('3 3')}" opacity="0.75"/>`
+        +`<text x="${(a[0]*0.6+b[0]*0.4)}" y="${(a[1]*0.6+b[1]*0.4)-vsP(2)}" font-size="${vsP(7.5)}" fill="#c43d8f" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2)}">${esc(term)}</text>`;});
     s=lyrWrapFrom(s,s0,sw,'device');}
   // determine which devices are seen from BEHIND (through the wall) so devSym can dim them.
   // Robust method: a device is "behind" if, in the CURRENT projection, its host wall plane sits
@@ -842,22 +943,22 @@ function draw(){
   for(const b of data.devices){if(b.type!=='board'||!state.levels[b.level]||!layerShows(b,'device'))continue;
     const s0=s.length;
     const poly=boardRectPoly(b).map(p=>planToBase(p[0],p[1],dz(b.level,b.z||BOARD_DEFAULT_Z)));
-    s+=`<polygon points="${poly.map(p=>p[0]+','+p[1]).join(' ')}" fill="#ffe9b0" fill-opacity="0.5" stroke="#b8901f" stroke-width="1.3" stroke-dasharray="4 2"/>`;
+    s+=`<polygon points="${poly.map(p=>p[0]+','+p[1]).join(' ')}" fill="#ffe9b0" fill-opacity="0.5" stroke="#b8901f" stroke-width="${vsP(1.3)}" stroke-dasharray="${vsDash('4 2')}"/>`;
     const c=planToBase(b.x,b.y,dz(b.level,b.z||BOARD_DEFAULT_Z));
-    s+=`<text x="${c[0]}" y="${c[1]+3}" font-size="8.5" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc(b.ref||'EL')}</text>`;s=lyrWrapFrom(s,s0,b,'device');}
+    s+=`<text x="${c[0]}" y="${c[1]+vsP(3)}" font-size="${vsP(8.5)}" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.4)}">${esc(b.ref||'EL')}</text>`;s=lyrWrapFrom(s,s0,b,'device');}
   for(const d of data.devices){if(state.levels[d.level]&&layerShows(d,'device')&&soloOk(d.x,d.y,d.level))s+=lyrWrap(d,'device',devSym(d));}
   // notes
   for(const [ni,n] of data.notes.entries()){if(!state.levels[n.level])continue;
     if(typeof ntVisible==='function'&&!ntVisible(n))continue;
     const b=planToBase(n.x,n.y,dz(n.level,0));
     const s0=s.length;
-    s+=(typeof ntSym==='function')?ntSym(n,ni,b)
-      :`<g><path d="M${b[0]} ${b[1]} l-6 -12 a6 6 0 1 1 12 0 z" fill="#d1493f" stroke="#7a2a24"/><text x="${b[0]+9}" y="${b[1]-9}" font-size="10.5" fill="#333" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(n.text)}</text></g>`;
+    s+=vsBadge(b[0],b[1],(typeof ntSym==='function')?ntSym(n,ni,b)
+      :`<g><path d="M${b[0]} ${b[1]} l-6 -12 a6 6 0 1 1 12 0 z" fill="#d1493f" stroke="#7a2a24"/><text x="${b[0]+9}" y="${b[1]-9}" font-size="10.5" fill="#333" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(n.text)}</text></g>`);
     s=lyrWrapFrom(s,s0,n,'note');}  // measures
   const ms=data.measures.concat(measureDraft&&measureDraft.length===2?[measureDraft]:[]);
   for(const mz of ms){const a=planToBase(mz[0].x,mz[0].y,dz(mz[0].level,0)),b=planToBase(mz[1].x,mz[1].y,dz(mz[1].level,0));
     const L=(Math.hypot(mz[1].x-mz[0].x,mz[1].y-mz[0].y)/1000).toFixed(2);
-    s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#7a2a24" stroke-width="1.6" stroke-dasharray="5 3"/><text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-4}" font-size="11" text-anchor="middle" fill="#7a2a24" paint-order="stroke" stroke="#fff" stroke-width="3">${L} m</text>`;}
+    s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#7a2a24" stroke-width="${vsP(1.6)}" stroke-dasharray="${vsDash('5 3')}"/><text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-vsP(4)}" font-size="${vsP(11)}" text-anchor="middle" fill="#7a2a24" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">${L} m</text>`;}
   // ---- everything below is TRANSIENT chrome: rubber bands, ghosts, gizmo, selection.
   // It lives in its own layer so hovering or dragging a marquee never re-parses the drawing. ----
   let ov='';
@@ -865,10 +966,10 @@ function draw(){
   if(state.mode==='measure'&&measureDraft&&measureDraft.length===1&&cursor){
     const a=planToBase(measureDraft[0].x,measureDraft[0].y,dz(measureDraft[0].level,0)),b=planToBase(cursor.x,cursor.y,dz(cursor.level,0));
     const L=(Math.hypot(cursor.x-measureDraft[0].x,cursor.y-measureDraft[0].y)/1000).toFixed(3);
-    ov+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#7a2a24" stroke-width="1.6" stroke-dasharray="5 3"/>`
-      +`<circle cx="${a[0]}" cy="${a[1]}" r="3.5" fill="#fff" stroke="#7a2a24" stroke-width="2"/>`
-      +`<circle cx="${b[0]}" cy="${b[1]}" r="3.5" fill="#e8641c" stroke="#fff" stroke-width="1.5"/>`
-      +`<text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-5}" font-size="12" text-anchor="middle" fill="#7a2a24" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3.5">${L} m</text>`;}
+    ov+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#7a2a24" stroke-width="${vsP(1.6)}" stroke-dasharray="${vsDash('5 3')}"/>`
+      +`<circle cx="${a[0]}" cy="${a[1]}" r="${vsP(3.5)}" fill="#fff" stroke="#7a2a24" stroke-width="${vsP(2)}"/>`
+      +`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(3.5)}" fill="#e8641c" stroke="#fff" stroke-width="${vsP(1.5)}"/>`
+      +`<text x="${(a[0]+b[0])/2}" y="${(a[1]+b[1])/2-vsP(5)}" font-size="${vsP(12)}" text-anchor="middle" fill="#7a2a24" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3.5)}">${L} m</text>`;}
   if(selBox){const x0=Math.min(selBox.x0,selBox.x1),x1=Math.max(selBox.x0,selBox.x1),y0=Math.min(selBox.y0,selBox.y1),y1=Math.max(selBox.y0,selBox.y1);
     // client px → base coords (inverse of base*zoom+pan)
     const bx0=(x0-state.panX)/state.zoom,by0=(y0-state.panY)/state.zoom,bx1=(x1-state.panX)/state.zoom,by1=(y1-state.panY)/state.zoom;
@@ -877,15 +978,15 @@ function draw(){
   if(state.mode==='grab'&&_sl.length>1){
     // highlight each selected piece + one group gizmo at the centroid
     _sl.forEach(h=>{const c=pGetC(h);if(!c)return;const b=planToBase(c[0],c[1],dz(pieceLevel(h),pGetZ(h)));
-      ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="9" fill="#2f6fb0" fill-opacity="0.18" stroke="#2f6fb0" stroke-width="2"/>`;});
+      ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(9)}" fill="#2f6fb0" fill-opacity="0.18" stroke="#2f6fb0" stroke-width="${vsP(2)}"/>`;});
     const gc=groupCentroid(_sl),gb=planToBase(gc[0],gc[1],dz(state.active,0));
     ov+=gizmoSvgAt(gb,_sl.length);
   } else if(state.mode==='grab'&&selected)ov+=gizmoSvg(selected);
   if(state.mode==='select'&&_sl.length>1){_sl.forEach(h=>{const c=pGetC(h);if(!c)return;const b=planToBase(c[0],c[1],dz(pieceLevel(h),pGetZ(h)));
-      ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="9" fill="#2f6fb0" fill-opacity="0.18" stroke="#2f6fb0" stroke-width="2"/>`;});}
+      ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(9)}" fill="#2f6fb0" fill-opacity="0.18" stroke="#2f6fb0" stroke-width="${vsP(2)}"/>`;});}
   if(state.mode==='format'&&fmtSource&&selected){const c=pGetC(selected),b=planToBase(c[0],c[1],dz(pieceLevel(selected),pGetZ(selected)));
-    ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="13" fill="none" stroke="#e8641c" stroke-width="2.5" stroke-dasharray="4 3"/>`
-      +`<text x="${b[0]}" y="${b[1]-18}" font-size="10" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">🖌 forrás</text>`;}
+    ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(13)}" fill="none" stroke="#e8641c" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}"/>`
+      +`<text x="${b[0]}" y="${b[1]-vsP(18)}" font-size="${vsP(10)}" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">🖌 forrás</text>`;}
   if(typeof stkHookSvg==='function'){s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
   const changed=paintLayers(s,ov);
   setTransform();

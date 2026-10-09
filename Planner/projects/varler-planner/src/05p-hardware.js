@@ -213,7 +213,7 @@ function hwRoomPolyId(rid){const e=mrkRoomById(rid);return e?e.rm.poly:null;}
 // direct coverage: the served rooms tinted, and a half-disc field on each face that has a room, clipped to it
 function hwCoverageSvg(d,rooms,tag){const z=dz(d.level,0);let s='';
   rooms.forEach((rid,i)=>{const poly=hwRoomPolyId(rid);if(!poly)return;
-    s+=`<polygon points="${p2b(poly.map(p=>[p[0],p[1],z]))}" fill="#3b82c4" fill-opacity="0.10" stroke="#3b82c4" stroke-width="0.5"/>`;
+    s+=`<polygon points="${p2b(poly.map(p=>[p[0],p[1],z]))}" fill="#3b82c4" fill-opacity="0.10" stroke="#3b82c4" stroke-width="${vsP(0.5)}"/>`;
     const h=hwHost(d);if(!h)return;
     const side=Math.sign(h.nx*h.wi.perp[0]+h.ny*h.wi.perp[1])||1,u=mrkU(h.r,d.x,d.y);
     [side,-side].forEach(sg=>{const e=mrkRoomOfFace(d.level,h.r,sg,u);if(!e||stkRoomId(e)!==rid)return;
@@ -225,7 +225,7 @@ function hwCoverageSvg(d,rooms,tag){const z=dz(d.level,0);let s='';
         +`<g clip-path="url(#${id})"><polygon points="${p2b(pts)}" fill="#3b82c4" fill-opacity="0.16" stroke="none"/></g>`;});});
   return s;}
 function hwUnservedSvg(level){const z=dz(level,0);const us=hwUnserved(level);if(!us.length)return '';
-  return `<defs><pattern id="hwhatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#c8372d" stroke-width="1.2"/></pattern></defs>`
+  return `<defs><pattern id="hwhatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#c8372d" stroke-width="${vsP(1.2)}"/></pattern></defs>`
     +us.map(r=>`<polygon points="${p2b(r.poly.map(p=>[p[0],p[1],z]))}" fill="url(#hwhatch)" fill-opacity="0.25" stroke="none"/>`).join('');}
 function hwStageIs(role){const S=(typeof stkActive==='function')?stkActive():null;if(!S)return false;
   const L=lyrLayer(state.activeLayer);return !!(L&&L.stack===S.id&&L.role===role);}
@@ -241,8 +241,8 @@ function hwOverlaySvg(){let s='';const level=state.active;
     if(d.type==='rbx'){s+=hwCoverageSvg(d,hwAutoServes(d),'gh');if(state.hwCloud&&typeof rfCoverageSvg==='function')s+=rfCoverageSvg([d]);}
     if(d.type==='base')s+=hwBaseGuideSvg(d);
     const z=dz(d.level,d.h||0),col=g.ban&&g.ban.length?'#c8372d':(d.type==='base'?hwBaseWorst(d):g.snapped?'#2e9e5b':'#2f6fb0');
-    if(d.type==='board'){const c=planToBase(d.x,d.y,z);s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="10" fill="none" stroke="${col}" stroke-width="2.5" stroke-dasharray="4 3"/>`;}
-    else s+=`<polygon points="${p2b(hwFootprint(d,z))}" fill="${col}" fill-opacity="0.25" stroke="${col}" stroke-width="2"/>`;}
+    if(d.type==='board'){const c=planToBase(d.x,d.y,z);s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(10)}" fill="none" stroke="${col}" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}"/>`;}
+    else s+=`<polygon points="${p2b(hwFootprint(d,z))}" fill="${col}" fill-opacity="0.25" stroke="${col}" stroke-width="${vsP(2)}"/>`;}
   return s?`<g pointer-events="none">`+s+`</g>`:'';}
 STK_OVERLAY.push(hwOverlaySvg);
 
@@ -289,15 +289,15 @@ function hwBaseWorst(d){const bad=hwBaseRules(d).filter(r=>!r.ok);
 // rings around the boards and the data entries, wet rooms hatched, the level centre, lines to the other units
 function hwBaseGuideSvg(d){const z=dz(d.level,0),R=k=>HW_BASE_RULES.find(r=>r.k===k);let s='';
   const ring=(o,mm,col)=>{const pts=[];for(let i=0;i<=48;i++){const a=i*Math.PI/24;pts.push([o.x+Math.cos(a)*mm,o.y+Math.sin(a)*mm,z]);}
-    return `<polygon points="${p2b(pts)}" fill="${col}" fill-opacity="0.05" stroke="${col}" stroke-width="1" stroke-dasharray="6 4"/>`;};
+    return `<polygon points="${p2b(pts)}" fill="${col}" fill-opacity="0.05" stroke="${col}" stroke-width="${vsP(1)}" stroke-dasharray="${vsDash('6 4')}"/>`;};
   hwList('board',d.level).forEach(b=>{s+=ring(b,R('board').mm,'#2e9e5b');});
   if(hwUnits(d).indexOf('NET')>=0)hwList('entry',d.level).forEach(en=>{s+=ring(en,R('entry').mm,'#3b82c4');});
   allRooms(d.level).forEach(e=>{if(e.rm.env==='nedves'||e.rm.env==='vizes')
-    s+=`<polygon points="${p2b(e.rm.poly.map(p=>[p[0],p[1],z]))}" fill="#c8372d" fill-opacity="0.12" stroke="#c8372d" stroke-width="0.8" stroke-dasharray="3 3"/>`;});
+    s+=`<polygon points="${p2b(e.rm.poly.map(p=>[p[0],p[1],z]))}" fill="#c8372d" fill-opacity="0.12" stroke="#c8372d" stroke-width="${vsP(0.8)}" stroke-dasharray="${vsDash('3 3')}"/>`;});
   const c=hwLevelCentre(d.level);if(c){const b=planToBase(c.x,c.y,z);
-    s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="6" fill="none" stroke="#7a5cc0" stroke-width="1.5"/><line x1="${(b[0]-9).toFixed(1)}" y1="${b[1].toFixed(1)}" x2="${(b[0]+9).toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#7a5cc0"/><line x1="${b[0].toFixed(1)}" y1="${(b[1]-9).toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${(b[1]+9).toFixed(1)}" stroke="#7a5cc0"/>`;}
+    s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${vsP(6)}" fill="none" stroke="#7a5cc0" stroke-width="${vsP(1.5)}"/><line x1="${(b[0]-vsP(9)).toFixed(1)}" y1="${b[1].toFixed(1)}" x2="${(b[0]+vsP(9)).toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#7a5cc0"/><line x1="${b[0].toFixed(1)}" y1="${(b[1]-vsP(9)).toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${(b[1]+vsP(9)).toFixed(1)}" stroke="#7a5cc0"/>`;}
   hwList('base',d.level).forEach(o=>{if(o===d||o.id===d.id)return;const far=Math.hypot(o.x-d.x,o.y-d.y)>R('column').mm;
-    s+=`<polyline points="${p2b([[d.x,d.y,z],[o.x,o.y,z]])}" fill="none" stroke="${far?'#d08a1e':'#2e9e5b'}" stroke-width="1.5" stroke-dasharray="5 4"/>`;});
+    s+=`<polyline points="${p2b([[d.x,d.y,z],[o.x,o.y,z]])}" fill="none" stroke="${far?'#d08a1e':'#2e9e5b'}" stroke-width="${vsP(1.5)}" stroke-dasharray="${vsDash('5 4')}"/>`;});
   if(typeof mrkList==='function')mrkList().forEach(m=>{if(m.kind!=='vstrip'||m.level!==d.level||(m.tags||[]).indexOf('base')<0)return;const r=mrkWallById(m.level,m.wall);if(!r)return;
     const a=mrkFacePt(r,m.side,m.u0,30),b=mrkFacePt(r,m.side,m.u1,30);s+=mrkLine(a,b,z,'#2e9e5b',8);});
   const bad=hwBaseRules(d).filter(r=>!r.ok);

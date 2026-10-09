@@ -9,7 +9,51 @@
 
 //////////////////// core (verified) ////////////////////
 const C=Math.cos(Math.PI/6), S=Math.sin(Math.PI/6);
-let CXv=7300, CYv=4900, GAP=2600; const W=1000,Hh=720,SC=0.045;
+let CXv=7300, CYv=4900, GAP=2600; const W=1000,Hh=720;
+
+//////////////////// view scale (nézeti méretarány) ////////////////////
+// SC is base units per model mm — the drawing's BASE scale, under the pan/zoom transform.
+// A scale step grows the model in base space and shrinks the zoom by the same factor, so the
+// picture does not jump; what changes is the band the zoom range covers. Step 1 is the widest
+// view (the whole building fits); step 10 reaches ten times closer before the zoom ceiling.
+//
+// Sizes fall into three kinds, and only the third needs help:
+//   * model mm (geometry, nvMM room text)  — scale with the model, correct by construction;
+//   * paper mm (bpU/nvSW/bpSW/bpFS)        — carry SC already, correct by construction;
+//   * base units written as a literal       — would shrink on screen; pass them through vsP().
+// Anything of the form `C/state.zoom` is already screen-constant and needs nothing.
+const SC_BASE=0.045;
+const VIEW_SCALES=[1,2,5,10];
+let SC=SC_BASE;
+function vsK(){return SC/SC_BASE;}                 // the active step, 1 = the old fixed scale
+function vsOk(f){return VIEW_SCALES.indexOf(+f)>=0?+f:1;}
+function vsP(baseUnits){return +(baseUnits*vsK()).toFixed(3);}   // a size authored in base units at 1×
+function vsDash(d){return vsK()===1?d:String(d).trim().split(/\s+/).map(v=>vsP(+v)).join(' ');}
+// A badge — a label, a node dot, a cursor read-out — is a fixed SCREEN size pinned to a point, not
+// a thing on the building. Scaling the group about its own anchor carries the literal sizes AND the
+// little ±3 nudges with it, which is why these are wrapped rather than edited number by number.
+// Model-true geometry must never go through here: use vsP() on its stroke width instead.
+function vsBadge(x,y,svg){const k=vsK();
+  return k===1?svg:`<g transform="translate(${(+x).toFixed(1)},${(+y).toFixed(1)}) scale(${k}) translate(${(-x).toFixed(1)},${(-y).toFixed(1)})">${svg}</g>`;}
+// the two symbol scales authored in base units, carried through the view-scale step
+function devK(){return (state.devScale||0.72)*vsK();}
+function pathK(){return (state.pathScale||1)*vsK();}
+function vsClamp(z){return Math.max(0.15/vsK(),Math.min(5,z));}  // step 1's full range, plus the extra reach
+// state → SC, without moving the camera (load, undo, boot)
+function vsApply(){SC=SC_BASE*vsOk(state.viewScale);}
+// 12-boot's home view (zoom .5 centred), expressed at the active step
+function vsHomeView(){const r=vsK();return {zoom:.5/r,panX:(1-.5/r)*W/2,panY:(1-.5/r)*Hh/2};}
+// Switch step without moving the picture: note the PLAN point under the viewport centre, change
+// the scale, divide the zoom by the same factor, then re-pan that point back to the centre. Going
+// through plan coordinates (not base ones) keeps it exact even when the zoom clamp bites.
+function vsSet(f){f=vsOk(f);const prev=vsK();if(f===prev)return false;
+  const z=state.zoom,zz=dz(state.active,0);
+  const plan=baseToPlanB((W/2-state.panX)/z,(Hh/2-state.panY)/z,zz);
+  state.viewScale=f;vsApply();
+  state.zoom=vsClamp(z*prev/f);
+  const now=planToBase(plan[0],plan[1],zz);
+  state.panX=W/2-now[0]*state.zoom;state.panY=Hh/2-now[1]*state.zoom;
+  setTransform();draw();return true;}
 const ORD=['basement','ground','upper'];
 const LH={basement:2500,ground:2700,upper:2700};
 // Álmennyezet: per level, 0 = nincs. A room may override it (rm.dropC) — a lowered ceiling

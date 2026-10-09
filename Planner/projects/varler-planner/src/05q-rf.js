@@ -96,7 +96,7 @@ function rfCoverageSvg(only){const level=only&&only[0]?only[0].level:state.activ
     G.cells.forEach(c=>{const op=(0.05+0.10*Math.min(1,c.m/10)).toFixed(3);
       s+=`<polygon points="${p2b([[c.i*g,c.j*g,z],[(c.i+1)*g,c.j*g,z],[(c.i+1)*g,(c.j+1)*g,z],[c.i*g,(c.j+1)*g,z]])}" fill="${T.c}" fill-opacity="${op}" stroke="none"/>`;
       [[1,0,[c.i+1,c.j],[c.i+1,c.j+1]],[-1,0,[c.i,c.j],[c.i,c.j+1]],[0,1,[c.i,c.j+1],[c.i+1,c.j+1]],[0,-1,[c.i,c.j],[c.i+1,c.j]]].forEach(([di,dj,a,b])=>{
-        if(!has.has((c.i+di)+','+(c.j+dj)))s+=`<polyline points="${p2b([[a[0]*g,a[1]*g,z],[b[0]*g,b[1]*g,z]])}" fill="none" stroke="${T.c}" stroke-opacity="0.35" stroke-width="0.6"/>`;});});});
+        if(!has.has((c.i+di)+','+(c.j+dj)))s+=`<polyline points="${p2b([[a[0]*g,a[1]*g,z],[b[0]*g,b[1]*g,z]])}" fill="none" stroke="${T.c}" stroke-opacity="0.35" stroke-width="${vsP(0.6)}"/>`;});});});
   return s;}
 function rfStageOn(){if(state.rfShow)return true;
   const S=(typeof stkActive==='function')?stkActive():null,L=S?lyrLayer(state.activeLayer):null;return !!(L&&L.stack===S.id&&L.role==='sys:RF');}

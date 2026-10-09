@@ -82,15 +82,21 @@ function mcbModules(m){return (m&&m.curve)?m.poles+(m.n?1:0):0;}
 // ---- plan symbols ----
 // the ring around an end point: solid = dedikált, dashed = több pontos
 function cktRingSvg(d,x,y,k,back){const c=cktOfDevice(d);if(!c)return '';
-  const R=v=>+(v*k).toFixed(2),col=cktColor(c);
+  // written in the symbol's own unit (05z), so the ring keeps hugging the body when the view scale
+  // switches the bodies to real millimetres. In screen mode this is exactly `k`.
+  const u=(typeof icoRingU==='function')?icoRingU(d,k):k;
+  const R=v=>+(v*u).toFixed(2),col=cktColor(c);
   const dash=c.dedicated?'':` stroke-dasharray="${R(3.2)} ${R(2.4)}"`;
   const hot=(cktPick===c.id);
   return (hot?`<circle cx="${x}" cy="${y}" r="${R(12.5)}" fill="${col}" fill-opacity="0.16"/>`:'')
     +`<circle cx="${x}" cy="${y}" r="${R(10.5)}" fill="none" stroke="${col}" stroke-width="${R(hot?2.8:2.2)}"${dash}${back?' opacity="0.6"':''}/>`;}
 // A layer may tint the body of every device on it, so two layouts (old and new) shown together
 // stay apart. The tint is the layer colour washed towards white, keeping the symbol's lines legible.
-function layerTintOf(d){const L=layerById((d&&d.layer)||'L0');
-  return (L&&/^#[0-9a-f]{6}$/i.test(L.tint||''))?L.tint:null;}
+// A hand-picked tint still wins and still implies "paint it" (that is what the picker always did);
+// otherwise the layer's own colour is used only when its swatch is switched on (05l).
+function layerTintOf(d){const L=layerById((d&&d.layer)||'L0');if(!L)return null;
+  if(/^#[0-9a-f]{6}$/i.test(L.tint||''))return L.tint;
+  return (typeof lyrPaints==='function'&&lyrPaints(L))?lyrAutoCol(L):null;}
 function tintMix(hex,a){const n=parseInt(hex.slice(1),16),m=v=>Math.round(255-(255-v)*a);
   return '#'+[m(n>>16&255),m(n>>8&255),m(n&255)].map(v=>v.toString(16).padStart(2,'0')).join('');}
 

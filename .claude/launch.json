@@ -6,6 +6,13 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["MindMap/serve.js"],
       "port": 8124
+    },
+    {
+      "name": "planner",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["Planner/projects/varler-planner/tools/serve.js"],
+      "port": 8131,
+      "url": "http://localhost:8131"
     }
   ]
 }

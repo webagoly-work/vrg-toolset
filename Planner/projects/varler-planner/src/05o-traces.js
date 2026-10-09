@@ -131,9 +131,9 @@ function trcTriangle(x,y,dx,dy,z,col){const c=planToBase(x,y,z),q=planToBase(x+d
   const tip=[c[0]+ux*6,c[1]+uy*6],bl=[c[0]-ux*4-uy*4,c[1]-uy*4+ux*4],br=[c[0]-ux*4+uy*4,c[1]-uy*4-ux*4];
   return `<polygon points="${[tip,bl,br].map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${col}"/>`;}
 function trcDot(p,z,col,r,fill){const b=planToBase(p[0],p[1],z);
-  return `<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${r}" fill="${fill||col}" stroke="${col}" stroke-width="1"/>`;}
+  return `<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${r}" fill="${fill||col}" stroke="${col}" stroke-width="${vsP(1)}"/>`;}
 function trcSvg(t,preview){const z=dz(t.level,0),col=trcCol(t),pts=t.pts;if(!pts||pts.length<2)return '';
-  let s=`<polyline points="${p2b(pts.map(p=>[p[0],p[1],z]))}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"${(t.plane==='ceiling'||preview)?' stroke-dasharray="6 4"':''}/>`;
+  let s=`<polyline points="${p2b(pts.map(p=>[p[0],p[1],z]))}" fill="none" stroke="${col}" stroke-width="${vsP(2)}" stroke-linejoin="round" stroke-linecap="round"${(t.plane==='ceiling'||preview)?' stroke-dasharray="'+vsDash('6 4')+'"':''}/>`;
   if(t.dir===0){s+=trcDot(pts[0],z,col,3)+trcDot(pts[pts.length-1],z,col,3);}
   else{const len=trcLen(pts),first=len<1000?len/2:500;trcAlong(pts,1000,first).forEach(q=>{s+=trcTriangle(q.x,q.y,q.dx,q.dy,z,col);});}
   if(t.a)s+=trcDot(pts[0],z,col,3,'#fff');if(t.b)s+=trcDot(pts[pts.length-1],z,col,3,'#fff');
@@ -144,7 +144,7 @@ function trcSceneSvg(){let s='';
 function trcOverlaySvg(){if(typeof MRK_P==='undefined'||!MRK_P.on||!trcIsMode(MRK_P.mode))return '';
   trcSync();const level=state.active,z=dz(level,0);let s='';
   const ring=o=>{const c=planToBase(o.x,o.y,z),R=Math.max(10,((o.w||900)/2)*SC*0.9);
-    return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="none" stroke="#2a8c8c" stroke-width="2.5" stroke-dasharray="4 3" pointer-events="none"/>`;};
+    return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${R.toFixed(1)}" fill="none" stroke="#2a8c8c" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}" pointer-events="none"/>`;};
   const probe=TRC_D?TRC_D.pts[TRC_D.pts.length-1]:TRC_H;
   if(TRC_D){const pts=TRC_D.cur?TRC_D.pts.concat([TRC_D.cur]):TRC_D.pts;
     if(pts.length>=2)s+=`<g opacity="0.9" pointer-events="none">`+trcSvg({level,plane:TRC_D.plane,pts,dir:1,tags:(TRC_B&&TRC_B.tags)||['mozgas']},true)+`</g>`;
@@ -279,13 +279,13 @@ function prtOverlaySvg(){if(!state.prtShow&&!state.prtHeat)return '';
       s+=`<polygon points="${p2b([[i*g,j*g,z],[(i+1)*g,j*g,z],[(i+1)*g,(j+1)*g,z],[i*g,(j+1)*g,z]])}" fill="#d0503a" fill-opacity="${(0.08+0.42*h[k]/max).toFixed(2)}" stroke="none"/>`;});});}
   if(state.prtShow){
     G.edges.forEach(e=>{
-      if(e.los)s+=`<polyline points="${p2b([[e.pa[0],e.pa[1],z],[e.pb[0],e.pb[1],z]])}" fill="none" stroke="#3b6ea5" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+      if(e.los)s+=`<polyline points="${p2b([[e.pa[0],e.pa[1],z],[e.pb[0],e.pb[1],z]])}" fill="none" stroke="#3b6ea5" stroke-width="${vsP(1.5)}" stroke-dasharray="${vsDash('6 4')}"/>`;
       else{const room=mrkRoomById(e.room),r=room&&prtAStar(room.rm.poly,e.pa,e.pb,g);
-        if(r)s+=`<polyline points="${p2b([[e.pa[0],e.pa[1],z]].concat(r.cells.map(c=>[(c[0]+0.5)*g,(c[1]+0.5)*g,z])).concat([[e.pb[0],e.pb[1],z]]))}" fill="none" stroke="#3b6ea5" stroke-width="1.5" stroke-dasharray="1.5 4" stroke-linecap="round"/>`;}
+        if(r)s+=`<polyline points="${p2b([[e.pa[0],e.pa[1],z]].concat(r.cells.map(c=>[(c[0]+0.5)*g,(c[1]+0.5)*g,z])).concat([[e.pb[0],e.pb[1],z]]))}" fill="none" stroke="#3b6ea5" stroke-width="${vsP(1.5)}" stroke-dasharray="${vsDash('1.5 4')}" stroke-linecap="round"/>`;}
       if(e.dGrid!=null)s+=mrkText((e.pa[0]+e.pb[0])/2,(e.pa[1]+e.pb[1])/2,z,(e.dGrid/1000).toFixed(1)+' m','#3b6ea5',9);});
     G.doors.forEach(d=>{const c=planToBase(d.x,d.y,z),f=d.open?'#fff':'#3b6ea5';
-      s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="8" fill="${f}" stroke="#3b6ea5" stroke-width="2"/>`;
-      if(d.anchor)s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="12" fill="none" stroke="#3b6ea5" stroke-width="1.5"/>`;});}
+      s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(8)}" fill="${f}" stroke="#3b6ea5" stroke-width="${vsP(2)}"/>`;
+      if(d.anchor)s+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${vsP(12)}" fill="none" stroke="#3b6ea5" stroke-width="${vsP(1.5)}"/>`;});}
   return `<g pointer-events="none">`+s+`</g>`;}
 STK_OVERLAY.push(prtOverlaySvg);
 

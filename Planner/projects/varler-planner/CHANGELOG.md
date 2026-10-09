@@ -1,5 +1,45 @@
 # Changelog
 
+## Unreleased — the drawing starts to look like itself
+Five complaints about the *look* of the plan, which turned out to be four causes.
+
+- **Nézeti lépték (view scale), 1× / 2× / 5× / 10×.** `SC` was a constant, so the zoom ceiling put
+  a floor under how close you could work: at full zoom a screen rectangle showed 500 mm and no
+  less. A step grows the model in base space and divides the zoom by the same factor, so the
+  picture does not move — what moves is the band the zoom covers. At 10× that same rectangle shows
+  50 mm. Pens, device symbols and labels keep their size on screen throughout, because every size
+  in the drawing now declares whether it is model millimetres, paper millimetres or base units
+  (`vsP` / `vsDash` / `vsBadge` / `devK` / `pathK`). Step 1 is the identity: the 70 golden renders
+  did not move.
+- **Room labels fit the room.** A name was sized from the paper scale with no regard for the room,
+  so a WC wore a label 1.8× its own width and a lépcső 1.9×, spilling across their neighbours —
+  which is what actually made the plan look coarse, not the big rooms. The block is now measured
+  and shrunk to fit, never grown. Measured on P33: every label went from 0.83–1.90 of the room
+  width to 0.26–0.94. The official view got the same treatment.
+- **A symbol set of our own.** Everything that was not a socket, a switch, a lamp or a board drew
+  as one generic square-with-a-dot — érzékelő, kamera, hangszóró and kezelőpanel were the same
+  picture. A symbol now says three things: **body** = what kind of thing and how big it really is
+  (szerelvény 68 mm < kötődoboz < mennyezeti pont < hardver), **mark** = which device (24 drawn
+  pictograms, ours, no icon font — the product is still one offline file), **colour** = which
+  system. Sizing is hybrid: fixed screen tiers up to 2×, real plan footprints aligned to the host
+  wall from 2× upward. Nothing the plan used to say in words was lost — the hardware labels and
+  the STD-004 endpoint codes are still on the drawing. `Jelkulcs` (⌘K) lists what a plan uses.
+- **One colour per system, everywhere.** `STK_COL` fixes a colour per stack role — Erősáram is the
+  same red in every project, on the panel, on the symbols and in the BRIDGE sheets — and
+  `EP_ROLE_COL` now reads from it instead of keeping a second copy. Each layer row carries its
+  colour as a disc; clicking it paints that layer's devices in it, and `Mind színezve` does the
+  lot. A hand-picked tint still beats both.
+- **Réteg-kiemelés (the spotlight).** With it on, the device under the pointer lights up every
+  device that shares its layer, and that layer's block in the panel glows the same colour — one
+  gesture answers "what else is on this run?". View state: never saved, never undoable.
+- **A fourth render: Ügyfél-előnézet.** The same plan in the look the client meets in the WebGL
+  preview — near-black ground, thin cool wireframe, warm openings, glowing endpoints — built on
+  the same edge pass as the white-out sketch (`wireEdges`). The glow is two stroke passes, not a
+  filter, because that is the first thing an SVG exporter throws away.
+- Fixed: `Normál nézet` in the palette set `state.style='plan'`, a value nothing renders and the
+  Render selector has no option for.
+- **2117 assertions across 51 suites, 70 golden renders.**
+
 ## 1.0.0 — the coherent foundation
 Phase 6, and the end of the refactor. Everything built before this is now standing on a structure
 that can absorb the next fifty features.

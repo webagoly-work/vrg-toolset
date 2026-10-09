@@ -29,6 +29,11 @@ project's substitute for "did I break anything structurally."
 
 ## Architecture
 
+**New to this codebase? Read `docs/PRIMER.md` first** — the on-ramp: which of the three checkouts
+you are in, the build/check/test loop, **what the 70 golden renders do and do not cover**, how to
+measure the drawing in a real browser, and the traps that have cost real time. It is the
+experience; the two files below are the map and the reasons.
+
 **Read `docs/ARCHITECTURE.md` before editing anything non-trivial** — it's the canonical module map
 and invariant list; this section is a condensed pointer to it. `docs/DECISIONS.md` explains *why*
 non-obvious choices were made (read before "fixing" one back). `docs/1.1_backlog.md` has queued

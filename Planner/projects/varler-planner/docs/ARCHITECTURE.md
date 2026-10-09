@@ -39,12 +39,12 @@ This is deliberate for now: it made the split from a single file provably safe (
 
 | file | ~lines | what lives here |
 |---|---|---|
-| `00-core.js` | 114 | isometric projection maths, level table (`LH`, `ORD`, `DROPC`), the building model, example house geometry |
+| `00-core.js` | 166 | isometric projection maths, level table (`LH`, `ORD`, `DROPC`), the building model, example house geometry, **the view scale** (`SC` / `vsSet` / `vsP` / `vsBadge`) |
 | `00b-i18n.js` | 60 | **the translation seam** — `t(key, hu)`, the hu/en dictionaries, `setLang` |
 | `01-schema.js` | 110 | **document schema** — ids, migrations, reference resolution, connectivity graph, validation |
 | `02-state.js` | 168 | the `state` object, layer system, circuits sidebar, legacy shims |
 | `03-geometry.js` | 249 | geometry helpers, fine mode (Alt), snapping, wall geometry and the wall property sheet |
-| `04-render.js` | 772 | the entire draw pipeline: normal 3D, blueprint plan and iso, whiteout, device and opening symbols, ghosts, raised-element badges |
+| `04-render.js` | 1012 | the entire draw pipeline: normal 3D, blueprint plan and iso, whiteout, **client preview (dark wireframe)**, device and opening symbols, ghosts, raised-element badges, **room-label fit** (`lblFit`) |
 | `05-totals.js` | 215 | totals, BOM, auto-numbering, wire and switch reports |
 | `05c-actions.js` | 250 | the action registry, the ⌘K palette and the status bar |
 | `05e-settings.js` | 90 | **the standards panel** — every domain number in one dialog |
@@ -53,7 +53,7 @@ This is deliberate for now: it made the split from a single file provably safe (
 | `05h-rooms.js` | 80 | **room membership** — which room each device belongs to (wall devices by the face they look into), per-room type/count breakdown |
 | `05j-circuits.js` | 250 | **circuit end points** — `data.circuits` (name, colour, dedikált, kismegszakító, member device ids), `K` pick mode, plan rings, per-layer device tint, the Áramkörök stage, JSON export for the Inventory / Elosztó tool |
 | `05k-room-auto.js` | 230 | **room-wide Wall View automation** — Sorolás: rows of boxes on one wall face become 72 mm clip groups; Pálya-kötés: route nodes sitting on a box (in plan, ≤25 mm) become plan-only links, per route layer and device layer, stacked boxes decided by height. Both per room or all rooms, previewed, one undo step. While drawing: Device tool + Shift places the box in the nearest same-type row (72 mm, clipped); a Path tool node put down on a box snaps onto it and becomes its link when the path is finished (`placeSnap`, used by `08-interaction.js`) |
-| `05l-layers.js` | 408 | **layer model v2 + layer panel** (BRIDGE Stack, WP-A1–A3) — the 16 sub-layer categories (`LAYER_CATS` itself sits in `02-state.js`), v1→v2 migration, per-category opacity (`lyrOp` / `lyrWrap` / `lyrFaces`), `lyrPushUndo` (layers + stacks in undo, opt-in via the `__layers` scope marker); `renderLayers` (vertical sub-layer rows, hold-drag), `lyrSwapCat` / `lyrMoveCat`, `lyrDuplicate` / `lyrMerge*` / `lyrLink` / lock (`lyrLockHit` is called from `hitTest`) |
+| `05l-layers.js` | 472 | **layer model v2 + layer panel** (BRIDGE Stack, WP-A1–A3) — the 16 sub-layer categories (`LAYER_CATS` itself sits in `02-state.js`), v1→v2 migration, per-category opacity (`lyrOp` / `lyrWrap` / `lyrFaces`), `lyrPushUndo` (layers + stacks in undo, opt-in via the `__layers` scope marker); `renderLayers` (vertical sub-layer rows, hold-drag), `lyrSwapCat` / `lyrMoveCat`, `lyrDuplicate` / `lyrMerge*` / `lyrLink` / lock (`lyrLockHit` is called from `hitTest`); **the colour code** — `lyrColor` (a stack layer takes its ROLE colour from `STK_COL`, an ordinary one an evenly spaced hue, a hand tint beats both), the per-layer paint switch (`L.paint`) and **the spotlight** (`state.lyrSpot`: the device under the pointer lights every device of its layer and the layer block in the panel — view state, never saved, never undoable) |
 | `05m-stack.js` | 259 | **BRIDGE Stack** (WP-B1) — `stacks` (session global) over ordinary layers carrying `L.stack`/`L.role`; `STK_ROLES`, wizard `stack.create`, adopt/dissolve, the stack stage rail (`shellStages()` in 05d), construct checks, and the shared hooks later stack work packages plug into: `STK_SCENE` / `STK_OVERLAY` (04 `draw()`), `STK_TOOLS` (08 pointer + keys), `STK_CTX` (10 right-click), `STK_WV` / `STK_PV`, `STK_CHECKS`; `VALIDATORS` lives in 01-schema |
 | `05n-marks.js` | 639 | **marking layer** (BRIDGE Stack, WP-B2/B3) — `data.marks`: wall / side / vstrip / hstrip / hband marks, door and window tags, floor and ceiling strips and zones; `mrkAt()` is the query later layers use; tools `mrkWall` (J) and `mrkPlane` (G / Tab) through `STK_TOOLS`, drawing through `STK_SCENE` / `STK_OVERLAY` / `STK_WV` / `STK_PV`, right-click through `STK_CTX`; tag tables `MRK_TAGS` |
 | `05o-traces.js` | 318 | **movement traces + portal graph** (BRIDGE Stack, WP-B4/B5) — `data.traces`: 45° line / freehand / smoothed freehand modes of the plane tool (RDP + end-fixed Chaikin), door snapping; `prtGraph(level)` is a pure derived JSON (doors as nodes, line of sight, A* over the 500 mm grid, trace encoding in each door frame, heat map) with two default-off overlays and a JSON export |
@@ -67,6 +67,7 @@ This is deliberate for now: it made the split from a single file provably safe (
 | `05w-fill.js` | 306 | **auto-fill** (WP-E3/E4) — a pipe only starts and ends at a box: one pipe per run leg, merged only for the same family between the same two boxes; sizing by STD-001-A2 (1.4 × OD single, 40 % / 33 % fill, plug minimums); `data.runs` + `sec.cont.auto` entries owned by `src`, manual kept, basis for staleness; share / ban / overfill warnings; the CHANNEL bundle with chain accumulation, MAINS feed packing (M32 bins, M25 minimum), the security trunk; report and export |
 | `05x-cabinet.js` | 133 | **Elosztószekrény** (WP-E5) — ways from the channel topology (system, RBX lighting, RBX socket circuits, big loads), RCBO per way or grouped RCDs, feed + SPD + bell, rows and spare modules, greedy phase balance; `vrg-cabinet` v1 export wrapping `vrg-circuits`; reproduces P33 (24 ways, 29 / 34 modules) |
 | `05y-client-preview.js` | 58 | **Client preview model** — `cpvModel({scope})`, a pure read of the open plan into the `vrg-client-preview` v1 JSON the WebGL page (`projects/client-preview`) renders: levels with scope in / ghost / skip (default: shown → in, hidden with geometry → ghost, empty → skip), rooms with area and devices, wall rectangles, openings, devices with room and facing; `circuits` empty until phase 3 |
+| `05z-icons.js` | 252 | **the symbol set** — body = family and real size (szerelvény 68 mm < kötődoboz < mennyezeti pont < hardver), mark = which device (`ICO_MARK`, our own paths in a −5…5 box), colour = which system (`STK_COL` through `icoCol`); hybrid sizing — fixed screen tiers up to view scale 2, real plan footprints from 2× (`ICO_MM_FROM`); registered FIRST on `STK_DEVSYM`, so `hwSymbol` and `epSymbol` remain the fallback; `icoLegend()` lists what a plan actually uses |
 | `05b-editor-core.js` | 130 | **the editor surface layer** — one pointer/drag/warp/menu implementation, driven by a projection |
 | `06-wall-editor.js` | 850 | wall elevation editor — chase model, notes, action rail, session, links, coordinate list, **wall projection** |
 | `07-plane-editor.js` | 364 | floor / álmennyezet / ceiling plane editor, **plane projection** |
@@ -213,6 +214,24 @@ when 1.1 needs one. Don't reach for `modalEl` directly in editor code.
   *that* cheaper needs per-item DOM updates, which is a later job.
 - **`updateTotals()` only runs when the scene string changed.** Totals derive from the model, so
   a camera move or a hover can't affect them.
+- **`SC` is a variable now, and a size belongs to one of three kinds.** The view scale (`vsSet`,
+  `VIEW_SCALES` = 1, 2, 5, 10) grows the model in base space and divides the zoom by the same
+  factor, so the picture never jumps; what moves is the band the zoom range covers — step 10
+  reaches ten times closer before the ceiling. Which means any size you write has to say which
+  kind it is:
+  - **model mm** (geometry, `nvMM` room text) — scales with the model, right by construction;
+  - **paper mm** (`bpU` / `nvSW` / `bpSW` / `bpFS`) — already carries `SC`, right by construction;
+  - **base units written as a literal** — would shrink on screen; pass it through **`vsP()`**
+    (or `vsDash()` for a dash pattern, `devK()` / `pathK()` for the symbol scales).
+  Anything of the form `C/state.zoom` is already screen-constant and needs nothing. A screen-sized
+  BADGE — a label, a node dot, a cursor read-out — is wrapped in **`vsBadge(x,y,svg)`** instead, so
+  its small ±n offsets travel with its sizes; never put model-true geometry through `vsBadge`.
+  Step 1 is the identity for all of it, which is why the golden renders did not move.
+- **A room label is fitted to its room** (`lblFit`, `lblBox`). The size is still model mm from the
+  paper scale, so it holds against the building at any zoom — but it is shrunk until the block fits
+  the room, and never grown. The advance widths are *estimated*, not measured: `draw()` runs on
+  every pointer move and there is no text metric without a layout pass. The estimate is good to
+  about 8 %, which the 0.86 margin covers.
 - **`drawSoon()`** is the rAF-coalesced draw, used by the pointermove handlers. `draw()` itself
   stays synchronous, so the other ~200 call sites and every test behave as before.
 - **Undo snapshots can be scoped.** `pushUndo(['paths'])` clones only that collection and the

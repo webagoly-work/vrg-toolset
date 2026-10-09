@@ -29,6 +29,9 @@
  .stage-wrap{flex:1;position:relative;background:#fbfaf7;min-width:0}
  svg#stage{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
  svg#stage text{user-select:none;-webkit-user-select:none}
+ /* the client-preview render: the dark ground is the stage's own background, so the drawing
+    itself stays a plain SVG that exports and prints without a full-bleed rectangle in it */
+ svg#stage.prev{background:#0a0e13}
  /* ===== MOBILE MODE ===== */
  body.mobile header{padding:6px 8px;gap:5px;overflow-x:auto;flex-wrap:nowrap}
  body.mobile header button{font-size:13px;padding:7px 9px}
@@ -170,6 +173,14 @@
  .llink{font-size:11px;margin:0 2px}
  .lsub.ldrag{opacity:.6;background:#faf8f3;outline:1px dashed #2c2c2c}
  .lblock.ldrop{border-color:#2c2c2c;background:#faf8f3}
+ /* the layer's colour code: a disc in its own colour; filled = its devices are painted with it */
+ .lswatch{flex:0 0 auto;width:14px;height:14px;padding:0;border-radius:50%;border:2px solid var(--lc,#8a857b);
+   background:transparent;cursor:pointer;line-height:0;font-size:0}
+ .lswatch.on{background:var(--lc,#8a857b)}
+ .lswatch:hover{box-shadow:0 0 0 2px #fff,0 0 0 3px var(--lc,#8a857b)}
+ /* the spotlight: the lit layer's block glows in that layer's colour */
+ .lblock.lspot{border-color:var(--lspot,transparent);background:#fffdf7;
+   box-shadow:0 0 0 1px var(--lspot,transparent),0 0 10px -1px var(--lspot,transparent)}
  .lname{font-size:12px;padding:2px 4px;border:1px solid #cfc9bd;border-radius:5px}
  .resizer{flex:0 0 6px;cursor:col-resize;background:linear-gradient(#ddd8cd,#cfc9bd);border:none}
  .resizer:hover{background:#b9b3a5}
@@ -235,6 +246,9 @@
   </div>
 
   <div class="grp"><h3>Layers</h3>
+   <div class="row" style="gap:10px;font-size:11.5px">
+     <label title="Vidd a kurzort (vagy kattints) bármelyik készülékre: az összes rétegtársa felvillan, és a réteg sora is kigyullad a réteg színével."><input type="checkbox" id="lyrSpot"> Réteg-kiemelés</label>
+     <label title="Minden réteg készülékei a réteg saját színét kapják. Rétegenként is kapcsolható a sor színkorongjával."><input type="checkbox" id="lyrPaintAll"> Mind színezve</label></div>
    <div id="layerList"></div>
    <div class="row"><button id="addLayer">+ Layer</button></div>
    <small>Az aktív réteg kapja az új elemeket. 👁 = látható / rejtett · 🔒 zárolás · − / + = átlátszóság 10 %-onként. Alréteg: tartsd nyomva és húzd másik rétegre (csere; Ctrl = áthelyezés) · jobb klikk = menü.</small>
@@ -361,8 +375,10 @@
    <div class="row" style="gap:4px">
      <button class="preset" data-deg="0">0°</button><button class="preset" data-deg="90">90°</button>
      <button class="preset" data-deg="180">180°</button><button class="preset" data-deg="270">270°</button></div>
+   <div class="row" title="A rajz alap-léptéke. Nagyobb lépték = ugyanaz a képernyőterület kevesebb millimétert mutat, azaz közelebb lehet menni. A tollak és a készülékjelek képernyőmérete nem változik.">Nézeti lépték <select id="viewScale">
+     <option value="1">1× — teljes terv</option><option value="2">2×</option><option value="5">5×</option><option value="10">10× — részlet</option></select></div>
    <div class="row">Render <select id="style">
-     <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option></select></div>
+     <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option><option value="preview">Ügyfél-előnézet (sötét)</option></select></div>
    <div class="row">Walls <select id="wallMode">
      <option value="translucent">translucent</option><option value="solid">solid</option>
      <option value="hidden">hidden</option></select>

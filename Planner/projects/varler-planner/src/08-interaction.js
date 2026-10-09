@@ -64,6 +64,8 @@ function cloneMulti(list){const out=[],rows={};
   Object.keys(rows).forEach((g,k)=>{if(rows[g].length>1)rows[g].forEach(d=>{d.clip='clip'+stamp+'c'+k;});});
   return out;}
 stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
+  // a tap lights the layer too — a touch screen never sends the hover that drives it
+  if(e.button===0&&typeof lyrSpotOn==='function'&&lyrSpotOn())lyrSpotSet(lyrSpotOfDevice(devHitIdx(e)));
   if(typeof stkToolEvent==='function'&&stkToolEvent('down',e))return;
   if((e.buttons&3)===3){camDrag={m:'pitch',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(e.button===2){camDrag={m:'yaw',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
@@ -145,6 +147,8 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
   if(state.mode==='select'||state.mode==='grab'){const li=lampAt(e.clientX,e.clientY);
     if(li!=null)lampHoverShow(data.devices[li],e.clientX,e.clientY);else lampHoverHide();}
   else lampHoverHide();
+  // layer spotlight (05l): the device under the pointer lights its whole layer, panel row included
+  if(typeof lyrSpotOn==='function'&&lyrSpotOn())lyrSpotSet(lyrSpotOfDevice(devHitIdx(e)));
   const bts=e.buttons&3;
   if(bts===3||bts===2){ // 3 = both -> pitch, 2 = right only -> yaw
     if(!camDrag){camDrag={m:bts===3?'pitch':'yaw',moved:false,pivotCursor:pivotAtCursor(e)};last=[e.clientX,e.clientY];return;}
@@ -312,7 +316,7 @@ function applyFormat(h){if(!fmtSource){return false;}
 function setPitch(v){state.pitch=Math.max(5,Math.min(90,v));state.flat=state.pitch>=88;
   $('view3d').textContent=state.pitch>=88?'3D':'2D';$('hud').textContent='Kameradőlés: '+Math.round(state.pitch)+'°';draw();}
 function panBy(dx,dy){state.panX+=dx;state.panY+=dy;setTransform();}
-function zoomBy(f){state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));setTransform();}
+function zoomBy(f){state.zoom=vsClamp(state.zoom*f);setTransform();}
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();
     draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();
@@ -512,7 +516,7 @@ stage.addEventListener('touchmove',e=>{
     // pan by mid-point movement (always active — this is the primary two-finger action)
     state.panX=touchG.panX0+(m[0]-touchG.m0[0]);state.panY=touchG.panY0+(m[1]-touchG.m0[1]);
     // pinch zoom — only past a spread threshold so a straight drag doesn't creep-zoom
-    if(touchG.d0>10&&Math.abs(d-touchG.d0)>14){state.zoom=Math.max(0.15,Math.min(5,touchG.zoom0*(d/touchG.d0)));}
+    if(touchG.d0>10&&Math.abs(d-touchG.d0)>14){state.zoom=vsClamp(touchG.zoom0*(d/touchG.d0));}
     // twist rotate (yaw) — dead-zone so a straight pan doesn't spin the view
     let dA=(ang-touchG.a0)*180/Math.PI;while(dA>180)dA-=360;while(dA<-180)dA+=360;
     if(Math.abs(dA)>7)setRotSilent(touchG.rot0+dA);
@@ -531,7 +535,7 @@ function openCtxAt(ev){ // reuse the contextmenu pipeline via a synthetic event
   const evt=new MouseEvent('contextmenu',{clientX:ev.clientX,clientY:ev.clientY,bubbles:true,cancelable:true});
   stage.dispatchEvent(evt);}
 stage.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY<0?1.12:1/1.12,before=state.zoom;
-  state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));const p=stage.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
+  state.zoom=vsClamp(state.zoom*f);const p=stage.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
   const u=p.matrixTransform(stage.getScreenCTM().inverse());
   state.panX=u.x-(u.x-state.panX)*(state.zoom/before);state.panY=u.y-(u.y-state.panY)*(state.zoom/before);setTransform();},{passive:false});
 stage.addEventListener('click',e=>{if(state.mode!=='select')return;moved=false;});
@@ -599,7 +603,7 @@ function camIsOverUI(x,y){
 // so the HUD readout and a synchronous draw are wanted.
 function camReset(){
   setRotSilent(90);
-  state.zoom=0.5; state.panX=250; state.panY=180;
+  const hv=vsHomeView();state.zoom=hv.zoom;state.panX=hv.panX;state.panY=hv.panY;
   setTransform();
   setPitch(30);
   const h=$('hud'); if(h) h.textContent='Nézet visszaállítva.';

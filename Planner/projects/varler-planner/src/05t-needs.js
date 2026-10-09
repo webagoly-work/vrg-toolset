@@ -278,14 +278,14 @@ function sugOverlaySvg(){if(state.sugOn===false||typeof EP_T==='undefined'||!EP_
   const g=EP_T.g,rid=sugRoomOf(g);if(!rid)return '';const col=EP_ROLE_COL[EP_T.role]||'#2f6fb0';let s='';
   sugFor(EP_T.code,EP_T.role,rid).forEach(h=>{const z0=dz(h.level,0);
     if(h.kind==='pt'){const b=planToBase(h.x,h.y,dz(h.level,h.h||0));
-      s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="7" fill="none" stroke="${col}" stroke-width="1.6" opacity="0.7"/>`
+      s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${vsP(7)}" fill="none" stroke="${col}" stroke-width="${vsP(1.6)}" opacity="0.7"/>`
         +`<line x1="${(b[0]-10).toFixed(1)}" y1="${b[1].toFixed(1)}" x2="${(b[0]+10).toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${col}" opacity="0.7"/>`
         +`<line x1="${b[0].toFixed(1)}" y1="${(b[1]-10).toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${(b[1]+10).toFixed(1)}" stroke="${col}" opacity="0.7"/>`;}
     else{const r=mrkWallById(h.level,h.wall);if(!r)return;const a=mrkFacePt(r,h.side,h.u0,8),b=mrkFacePt(r,h.side,h.u1,8);
       const c=h.kind==='cover'?(h.pol==='ban'?'#c8372d':'#d08a1e'):col,o=h.kind==='cover'?(h.pol==='ban'?0.5:0.4):0.45;
-      s+=`<polyline points="${p2b([[a[0],a[1],z0],[b[0],b[1],z0]])}" fill="none" stroke="${c}" stroke-width="5" stroke-opacity="${o}" stroke-linecap="butt"/>`;}});
+      s+=`<polyline points="${p2b([[a[0],a[1],z0],[b[0],b[1],z0]])}" fill="none" stroke="${c}" stroke-width="${vsP(5)}" stroke-opacity="${o}" stroke-linecap="butt"/>`;}});
   if(g.snapped&&g.why){const b=planToBase(g.x,g.y,dz(g.level,g.h||0)),x=b[0].toFixed(1),y=(b[1]-14).toFixed(1),t=esc(g.why);   // haloed: stroke pass, then fill pass
-    s+=`<text x="${x}" y="${y}" font-size="8.5" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">${t}</text><text x="${x}" y="${y}" font-size="8.5" text-anchor="middle" fill="${col}">${t}</text>`;}
+    s+=`<text x="${x}" y="${y}" font-size="${vsP(8.5)}" text-anchor="middle" fill="none" stroke="#fff" stroke-width="${vsP(2.6)}" stroke-linejoin="round">${t}</text><text x="${x}" y="${y}" font-size="${vsP(8.5)}" text-anchor="middle" fill="${col}">${t}</text>`;}
   return s?`<g pointer-events="none">${s}</g>`:'';}
 STK_OVERLAY.push(sugOverlaySvg);
 
