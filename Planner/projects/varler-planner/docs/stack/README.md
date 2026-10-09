@@ -165,6 +165,25 @@ stack was then reviewed as one piece. What that review changed in code that exis
 10. **One owner per room.** Two RoomBoxes with an equal claim on a room (both face it, no manual
     assignment) are an error in the Hardver checks; the lower id serves it until you assign one.
 
+## After the pack — test plans and the routing workshop (2026-10-09)
+
+- **P33 test plans**, generated through the Planner's own functions by `tools/testplans/p33-teszt.js`
+  (v1) and `p33-teszt-v2.js` (v2), into `Calculator/P33-teszt_v1.vplan.json` and `_v2`.
+  - **v1:** P33 turned 180° with the remodel applied; hardware nodes, the golden path (CHANNEL lane +
+    230 V lane), the client's new endpoints only, circuits, and a portal box per door.
+  - **v2:** v1 plus every higher layer at ideal positions, and spine T-boxes; it clears every room-needs
+    checklist.
+  - `tools/testplans/render-plan.js` draws a labelled review sheet of either.
+- **WORKSHOP-001_routing.md:** layer selection without ghost wireways (build with B, select with A,
+  provision on purpose), wall / floor / mixed route types, the draft rulebook. **Answered 2026-10-09**
+  (§7): switches at 1100 with a smart band at 1300, mixed routing by default, ceiling as a third type,
+  partitioned boxes wherever families meet.
+- **IDEA-001_cluster-flush-boxes.md:** cluster points and flush-box sizing, for a later round.
+- **IDEA-002_flush-cover-standard.md** + `FLUSH-COVERS-001.json`: the product half of IDEA-001 — the
+  two size ladders (83 mm device / 100 mm hatch), real products per zone, the three cluster classes
+  K1–K3, and the vendor channel with in-person pickup per vendor. Side research, 2026-10-09;
+  answered the same day (§10): two-tier covers, Chorus ONE for clusters, a second hatch supplier.
+
 ## Follow-ups (not in this pack)
 F1 phase-3 exporters · F2 conventional switch schemes (wiring pipeline S6) · F3 12 V / 24 V separate
 conduits (A2 rule not modelled) · F4 bend counting for the 33 % rule · F5 undo for building-model rooms ·

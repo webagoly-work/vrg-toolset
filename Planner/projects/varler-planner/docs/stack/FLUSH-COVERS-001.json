@@ -1,0 +1,419 @@
+{
+  "_comment": [
+    "FLUSH-COVERS-001 — the flush housing + cover collection for IDEA-002.",
+    "Research date 2026-10-09. Prices and stock were read off Hungarian webshops that day;",
+    "they varied by up to 20% for the same article number, so treat every price as a band.",
+    "",
+    "  ladder: 'D'  device ladder, 83 mm module, one switch series, 1-8 positions",
+    "          'H'  hatch ladder, 100 mm step (200/300/400/500/600 + custom x100)",
+    "          '-'  housing only (no visible face of its own)",
+    "",
+    "  zone:   'low'      200-500 mm      'medium'  800-1400 mm",
+    "          'high'     1900-2500 mm    'ceiling'",
+    "          (floor is pathways only, so there are exactly four device zones)",
+    "",
+    "  role:   'box'      what is built into the wall",
+    "          'cover'    what closes it",
+    "          'both'     supplied as box + cover",
+    "",
+    "  priority: 1 = take now   2 = next round   3 = know it exists",
+    "",
+    "  dims are OUTER unless noted; 'niche' = required wall cutout.",
+    "  depthOk: does the published depth satisfy the ARCH-002 8.4 class it claims to serve?",
+    "  verify: fields that need a manufacturer datasheet before use.",
+    "",
+    "Vendor availability lives in 'vendors' at the bottom, keyed by id, exactly as the",
+    "Inventory keeps vendor facts out of the neutral record. A product references vendor ids only."
+  ],
+  "generated": "2026-10-09",
+  "feeds": "IDEA-001 §4 FLUSH_BOXES",
+
+  "products": [
+    {
+      "slug": "box-round-68",
+      "name": "Süllyesztett szerelvénydoboz Ø68",
+      "role": "box", "ladder": "-", "zone": ["low", "medium", "ceiling"],
+      "dims": { "d": 68, "innerDepth": [47, 61] },
+      "wall": "masonry", "priority": 1, "vendors": ["daniella"],
+      "note": "Az alapdarab. A 61 mm-es belső mélység a smart-up tartalék minimuma; a 47 mm-es változatot ne tervezzük oda, ahol később modul kerülhet a szerelvény mögé."
+    },
+    {
+      "slug": "box-kopos-kpl64-50",
+      "name": "Kopos KPL 64-50/2-5 LD sorolható gipszkarton szerelvénydoboz",
+      "role": "box", "ladder": "-", "zone": ["low", "medium"],
+      "variants": [
+        { "code": "KPL 64-50/2LD NA", "gangs": 2, "dims": { "w": 138, "h": 68 } },
+        { "code": "KPL 64-50/3LD NA", "gangs": 3, "dims": { "w": 209, "h": 68 } },
+        { "code": "KPL 64-50/4LD NA", "gangs": 4, "dims": { "w": 280, "h": 68 } },
+        { "code": "KPL 64-50/5LD NA", "gangs": 5, "dims": { "w": 351, "h": 68 } }
+      ],
+      "wall": "hollow", "priority": 1, "vendors": ["daniella", "16amper", "elektrikstore"],
+      "cluster": ["K1", "K2"],
+      "note": "A K1/K2 klaszterházak alapja. Gumis kábelbevezetés. A 71 mm-es osztás adja a D létra ritmusát: 2-es 138, 3-as 209, 4-es 280, 5-ös 351 — mindegyik 71 mm-rel nő."
+    },
+    {
+      "slug": "box-kaiser-gk-gang",
+      "name": "Kaiser 9252-22 / 9253-22 / 9254-22 gipszkarton szerelvénydoboz 2/3/4-es",
+      "role": "box", "ladder": "-", "zone": ["low", "medium"],
+      "wall": "hollow", "priority": 2, "vendors": ["ultima", "daniella", "elektrikstore"],
+      "cluster": ["K1", "K2"],
+      "verify": ["outer dimensions per gang count"],
+      "note": "A Kopos alternatívája ott, ahol a Kaiser rendszer többi eleme (légtömör gallér, ThermoX) már adott. A méretek adatlapról kellenek."
+    },
+    {
+      "slug": "box-anro-gk-gang",
+      "name": "ANRO gipszkartonba süllyeszthető szerelvénydoboz 1-4-es",
+      "role": "box", "ladder": "-", "zone": ["low", "medium"],
+      "variants": [
+        { "gangs": 1, "dims": { "w": 65, "h": 40 }, "priceGrossHuf": 290 },
+        { "gangs": 2, "dims": { "w": 145, "h": 74, "d": 45 }, "priceGrossHuf": 790 },
+        { "gangs": 4, "dims": { "w": 285, "h": 74, "d": 45 }, "priceGrossHuf": 1321 }
+      ],
+      "wall": "hollow", "priority": 3, "vendors": ["anro"],
+      "note": "Árban a legalja, színes (sárga/fekete) kivitel. Díszléc-kereskedés, nem villamossági nagyker — ár-összehasonlításra jó, standardnak nem."
+    },
+    {
+      "slug": "box-flush-200",
+      "name": "Süllyesztett kötődoboz 200×200, csavaros fedéllel",
+      "role": "both", "ladder": "H", "zone": ["medium", "high"],
+      "variants": [
+        { "code": "JANGAR JG-2179", "dims": { "w": 200, "h": 200, "d": 63 }, "ip": "IP30", "entry": "68 mm kivágás" },
+        { "code": "KOPP 356104007", "dims": { "w": 200, "h": 200, "d": 80 }, "entry": "14 kitörhető csőbevezetés" }
+      ],
+      "priority": 1, "vendors": ["1000volt", "elektrosokk", "schonvill", "daniella"],
+      "cluster": ["K3"],
+      "note": "A KULCSDARAB. 200×200 az egyetlen méret, amely dobozként ÉS revíziós ajtóként is raktári — itt találkozik a D és a H létra. Válaszfallal MAINS/SELV szétválasztásra; a saját csavaros fedele helyett 200×200 gipszkarton-betétes ajtóval festhetővé tehető."
+    },
+    {
+      "slug": "box-kopos-ko",
+      "name": "Kopos KO 110/L NA és KO 125/1L NA süllyesztett kötődoboz fedéllel",
+      "role": "both", "ladder": "-", "zone": ["high", "ceiling"],
+      "variants": [
+        { "code": "KO 110/L NA", "dims": { "w": 116, "h": 116, "d": 45 }, "ip": "IP30", "accessories": "V 110 L fedél + P 110 L válaszfal" },
+        { "code": "KO 125/1L NA", "dims": { "w": 152, "h": 152, "d": 64 } }
+      ],
+      "wall": "hollow", "priority": 1, "vendors": ["16amper", "daniella"],
+      "note": "A portáldoboz (P33 v1 '10×10') legközelebbi valódi terméke: 116×116. Két áramkör 400 V-ig, válaszfallal elválasztva — pont a portál MAINS+SELV igénye."
+    },
+    {
+      "slug": "box-kaiser-9195-91",
+      "name": "Kaiser 9195-91 kötődoboz 2 áramkörös, gipszkarton",
+      "role": "both", "ladder": "-", "zone": ["high", "ceiling"],
+      "dims": { "w": 107, "h": 107, "d": 45 },
+      "wall": "hollow", "priority": 2, "vendors": ["ultima", "elektrikstore"],
+      "note": "A másik '10×10' jelölt, 107 mm. Kaiser-rendszerben ez a következetes választás a Kopos KO 110/L helyett."
+    },
+    {
+      "slug": "box-kaiser-masonry-junction",
+      "name": "Kaiser süllyesztett elágazó- és kötődobozok tégla-/betonfalba, előlappal",
+      "role": "both", "ladder": "-", "zone": ["medium", "high"],
+      "variants": [
+        { "code": "1096-31", "dims": { "w": 159, "h": 159 }, "wall": "brick", "note": "fedél + 4 csavar, halogénmentes" },
+        { "code": "1296-02", "dims": { "w": 180, "h": 180, "d": 84 }, "wall": "concrete", "note": "elágazó/kötődoboz + előlap" },
+        { "code": "1297-02", "dims": { "w": 250, "h": 220, "d": 82 }, "wall": "concrete", "note": "elágazó/kötődoboz + előlap" }
+      ],
+      "priority": 2, "vendors": ["ultima", "elektrikstore", "onlinevill"],
+      "cluster": ["K3"],
+      "note": "Betonfalas panelkockában ez a K3 útja — a gipszkarton-betétes ajtó ott nem opció. Az 'előlap' gyári takaróelem, nem festhető lap."
+    },
+    {
+      "slug": "box-gewiss-503",
+      "name": "Gewiss Chorus szerelvénydoboz, olasz szabvány (503 típus)",
+      "role": "box", "ladder": "D", "zone": ["low", "medium"],
+      "variants": [{ "code": "GW16503", "modules": 3, "ip": "IP40", "priceGrossHuf": 1626 }],
+      "priority": 1, "vendors": ["daniella", "mentavill", "dl1"],
+      "cluster": ["K1", "K2"],
+      "note": "Az olasz 3/4/6/7 modulos logika alapdoboza. A Chorus ONE egylapos előlapjával egy klaszter EGY megszakítás nélküli lapot kap — ez a legtisztább klaszter-megjelenés, amit találtam."
+    },
+    {
+      "slug": "box-mosaic-flush",
+      "name": "Legrand Program Mosaic süllyesztett doboz",
+      "role": "box", "ladder": "D", "zone": ["low", "medium"],
+      "variants": [{ "code": "078872L", "modules": "2x4", "priceGrossHuf": 8585 }],
+      "priority": 2, "vendors": ["daniella", "legrandaruhaz", "16amper"],
+      "cluster": ["K2"],
+      "note": "Drága, de a Mosaic a legnagyobb egylapos lefedést adja (2×8). Akkor indokolt, ha a klaszter adat/USB-nehéz — iroda, médiafal, íróasztal."
+    },
+
+    {
+      "slug": "cover-asfora",
+      "name": "Schneider Asfora keret és vakfedél",
+      "role": "cover", "ladder": "D", "zone": ["low", "medium"],
+      "variants": [
+        { "code": "EPH5600121", "what": "vakfedél kerettel, fehér", "dims": { "w": 83, "h": 83, "d": 35 }, "ip": "IP20", "fixing": "karmok 51-80 mm", "priceBandGrossHuf": [1579, 2400] },
+        { "code": "EPH5800321", "what": "vízszintes 3-as keret, fehér" }
+      ],
+      "range": { "horizontal": [1, 6], "vertical": [1, 3] },
+      "priority": 1, "vendors": ["daniella", "haluxvill", "onlinevill", "elektroprofi"],
+      "verify": ["frame pitch and multi-gang outer dimensions", "compatibility with Sedna Design frames"],
+      "note": "A jelenlegi panelkocka-standard, ezért az alapértelmezés. 6 vízszintes pozíció a legtöbb klasztert lefedi. A vakfedél a UEP és a tartalékpozíciók lezárása."
+    },
+    {
+      "slug": "cover-gewiss-chorus-one",
+      "name": "Gewiss Chorus / ChoruSmart ONE előlap",
+      "role": "cover", "ladder": "D", "zone": ["low", "medium"],
+      "modulesAvailable": [1, 2, 3, 4, 6, 8],
+      "supports": ["GW16803 (3M)", "GW16804 (4M)", "GW16806 (6M)", "GW16807N (7M)"],
+      "variants": [
+        { "code": "GW16109TB", "what": "ONE technopolimer előlap, 6 modul, nagy", "dims": { "w": 202 } },
+        { "code": "GW16128VT", "what": "Chorus One vízszintes 4-es keret 2+2+2+2 mod., titánium", "priceGrossHuf": 8659 }
+      ],
+      "priority": 1, "vendors": ["daniella", "mentavill", "dl1"],
+      "verify": ["plate widths for 3, 4 and 7 modules"],
+      "note": "A KLASZTEREK LEGJOBB VÁLASZTÁSA. Egy lap sok funkció fölött — pont a klaszterpont-gondolat. Ne keverd Vimar Plana tartóval: a lapok csak saját sorozatú tartóra mennek."
+    },
+    {
+      "slug": "cover-mosaic",
+      "name": "Legrand Program Mosaic keret",
+      "role": "cover", "ladder": "D", "zone": ["low", "medium"],
+      "sizesAvailable": ["1", "2", "2x2", "3x2", "4x2", "2x4", "3x4", "2x6", "2x8"],
+      "variants": [
+        { "code": "078837", "what": "2x8 keret, vízszintes, fehér", "priceBandGrossHuf": [11619, 12146] },
+        { "code": "080286", "what": "6 modulos keret, vízszintes", "dims": { "h": 83, "w": 225, "d": 40 } },
+        { "code": "277071L", "what": "2 modulos vakfedél, fehér", "priceGrossHuf": 1505 },
+        { "code": "079076L", "what": "2x6 keret, vízszintes, antracit", "priceGrossHuf": 8533 }
+      ],
+      "plate2module": { "w": 82, "h": 82 },
+      "priority": 2, "vendors": ["daniella", "legrandaruhaz", "16amper", "1vill", "lumenet"],
+      "note": "Technikai/irodai karakter. A 2-modulos lap 82×82, tehát a D létrán ül. 2×8-ig egyetlen keret — a legnagyobb lefedés, a legnagyobb áron."
+    },
+    {
+      "slug": "cover-plaster-flush-round",
+      "name": "Vakolatsíkba kerülő kerek vakfedél (Dietzel HWD/TD 65) és rugós dobozfedelek",
+      "role": "cover", "ladder": "-", "zone": ["low", "medium", "ceiling"],
+      "variants": [
+        { "code": "Dietzel 001162 HWD/TD 65", "for": "Ø65 doboz", "fixing": "csavaros", "finish": "fehér, tapétázható" },
+        { "code": "T 303 05", "for": "Ø65 doboz (Ø68 fedél)", "fixing": "rugós" },
+        { "code": "T 303 06", "for": "Ø80 doboz (Ø88 fedél)", "fixing": "rugós" }
+      ],
+      "priority": 1, "vendors": ["emile", "villanyaszbolt", "daniella"],
+      "note": "A 'láthatatlan' elem kis léptékben: UEP és tartalék pozíciók, mennyezeti kötőpontok. Tapétázható/festhető, tehát a fal síkjába olvad — ez a kis megfelelője a nagy gipszkarton-betétes ajtónak."
+    },
+
+    {
+      "slug": "hatch-gk-insert",
+      "name": "Gipszkarton-betétes revíziós ajtó (festhető, nyomásra nyíló)",
+      "role": "cover", "ladder": "H", "zone": ["medium", "high", "ceiling"],
+      "construction": "alumínium keret + 12,5 / 15 / 25 mm GKBi betét, két önzáró zárelem, 1,5 mm rés szigetelőcsíkkal",
+      "opening": "nyomásra (kilincs nélkül); zárváltozatok SN pattintós / FS négyszögkulcs / PZ cilinder / Z bútorzár",
+      "stockSizes": [[200, 200], [300, 300], [400, 400], [500, 500], [600, 600], [600, 1000], [600, 1200]],
+      "customSizes": true,
+      "variantsOffered": ["normál", "impregnált (nedves tér)", "tűzgátló (EI/F30-F90)", "légtömör (EN 1026 4. kat.)", "burkolható (csempe+ragasztó vastagságot meg kell adni; gyári default 6+2 mm)"],
+      "priceGrossHuf": { "300x300": 8255, "400x400": 8890, "500x500": 10160, "600x600": 12700, "600x1000": 19050, "600x1200": 26670, "basis": "Prowallz, 2026-10-09, bruttó; impregnált +0,6-1,3 k, tűzgátló +1,3-2,5 k" },
+      "leadTimeCustom": "2-9 nap",
+      "priority": 1, "vendors": ["prowallz", "tetenyker", "primavent", "lambda", "arkibau", "bauhaus"],
+      "rbxMap": { "RB-S": "300x400", "RB-M": "400x500", "RB-L": "500x600", "RB-H": "600x600" },
+      "note": "A C STRATÉGIA GERINCE. Ez az EGYETLEN család, amely 200-tól 1200-ig ugyanazzal a kerék-/árnyékrés-részlettel megy végig, és a látható felület maga a fal. Glettelés után kb. 1 mm illesztés marad — nem tűnik el teljesen, de nem is szerelvény. A 1,5 mm-es rést glett nem érheti, különben nem nyílik. NEM villamossági áru: Daniella nem hozza."
+    },
+    {
+      "slug": "hatch-steel-plastic",
+      "name": "Szerelőnyílás fehér acél lemezből / műanyagból",
+      "role": "cover", "ladder": "H", "zone": ["high", "ceiling"],
+      "variants": [
+        { "code": "GK0063", "material": "fehér acél lemez", "for": "gipszkarton szerkezet" },
+        { "code": "GK0114", "material": "műanyag", "sizes": [[150, 150], [200, 200]] }
+      ],
+      "priority": 3, "vendors": ["mestervagyok", "kispaltuzep", "buildox", "profilvasker"],
+      "note": "Olcsó, látszó keretes. Gépészeti térben, kamrában, álmennyezetben elfogadható; lakótérben a látszó fehér keret elrontja a H létra lényegét. A régi ABB-műanyag kivitelek besárgulnak."
+    },
+    {
+      "slug": "hatch-magnetic-tileable",
+      "name": "Mágneses, burkolható (keret és pánt nélküli) szerelőnyílás",
+      "role": "cover", "ladder": "H", "zone": ["medium", "high"],
+      "construction": "mágneses tartóelemek menetes szárral / állítható talppal, hogy a csempe a környező fal síkjába álljon",
+      "priority": 2, "vendors": [],
+      "verify": ["Hungarian vendor with published sizes and prices"],
+      "note": "A legláthatatlanabb megoldás csempézett falon — nincs látható keret vagy pánt. A fürdőszobai RBX (P33 R08, RB-E/W) erre kiált. Magyar forgalmazót publikált mérettel és árral nem találtam — ez nyitott tétel."
+    },
+
+    {
+      "slug": "board-tracon-edssn",
+      "name": "Tracon EDSSN süllyesztett elosztódoboz, fehér-sík ajtóval (NPE nélkül)",
+      "role": "both", "ladder": "H", "zone": ["high"],
+      "ip": "IP40",
+      "variants": [
+        { "code": "EDSSN-8/1", "modules": "1x8", "dims": { "h": 180, "w": 220, "d": 88 } },
+        { "code": "EDSSN-12/1", "modules": "1x12", "dims": { "h": 240, "w": 305, "d": 80 }, "verify": "egy webshop 200x256x66-ot ír" },
+        { "code": "EDSSN-12/2", "modules": "2x12", "dims": { "h": 395, "w": 305, "d": 85 } },
+        { "code": "EDSSN-12/3", "modules": "3x12", "dims": { "h": 545, "w": 305, "d": 85 } },
+        { "code": "EDSSN-18/2", "modules": "2x18", "dims": { "h": 480, "w": 440, "d": 90 } },
+        { "code": "EDSSN-18/3", "modules": "3x18", "dims": { "h": 655, "w": 440, "d": 90 } },
+        { "code": "EDSSN-18/4", "modules": "4x18", "dims": { "h": 860, "w": 440, "d": 95 }, "verify": "egy másik forrás 855 mm" }
+      ],
+      "depthOk": false,
+      "priority": 2, "vendors": ["tracon", "daniella", "haluxvill", "hejovill", "vilszershop", "audax", "lakitech"],
+      "note": "A sík fehér ajtó a legjobb 'A stratégia' arc, és a méretlétra végigmegy. KÉT KORLÁT: a szélesség 440 mm-nél megáll (RB-L/RB-H nem fér bele), és a mélység 80-95 mm, míg RB-M/L 110-et, RB-H 120-at kér. EDSS- = füstszínű ajtó, ugyanazok a méretek."
+    },
+    {
+      "slug": "board-abb-uk600",
+      "name": "ABB UK600 Media / Combi süllyesztett szekrény",
+      "role": "both", "ladder": "H", "zone": ["high"],
+      "door": "RAL 9016 fehér vagy RAL 7016 antracit; multimédia ajtó kétféle szellőzőnyílással",
+      "niche": [[480, 367, 95], [605, 367, 95], [730, 367, 95], [855, 367, 95]],
+      "variants": [
+        { "code": "UK636MW", "rows": 3, "dims": { "h": 622, "w": 384, "d": 97 } },
+        { "code": "UK660MW", "rows": 5, "dims": { "h": 872, "w": 384, "d": 97 }, "mountDepth": 88 },
+        { "code": "UK663CW", "what": "Combi", "dims": { "h": 872, "w": 384, "d": 97 } },
+        { "code": "UK636MB", "what": "ajtó nélkül", "dims": { "h": 597, "w": 362, "d": 97 } }
+      ],
+      "wall": ["flush", "hollow", "flammable"],
+      "depthOk": false,
+      "priority": 2, "vendors": ["sonepar", "sopvill", "daniella"],
+      "note": "A Media a gyengeáramnak, a Combi a két rendszert egy szekrénybe viszi — fogalmilag ez a legközelebbi gyári RoomBox. 384 mm széles, 88-97 mm mély: RB-S/RB-M arányban jó, RB-L/RB-H-hoz keskeny és sekély. RAL 9016, NEM azonos a Hager 9010-ével."
+    },
+    {
+      "slug": "board-hager-fwu",
+      "name": "Hager univers süllyesztett mezős elosztó (FWU / FW..US)",
+      "role": "both", "ladder": "H", "zone": ["high"],
+      "finish": "RAL 9010, acéllemez, IP30, II. érintésvédelmi osztály",
+      "variants": [
+        { "code": "FW42US2", "what": "teli ajtóval, 96 modul, 4 sor", "dims": { "h": 703, "w": 603, "d": 110 } },
+        { "code": "FWU42D", "what": "2x4 sor, üres", "dims": { "h": 703, "w": 603, "d": 125 }, "niche": [657, 565, 115] },
+        { "code": "FWU52S", "what": "120 modul", "dims": { "h": 853, "w": 603, "d": 125 }, "niche": [807, 565, 115] },
+        { "code": "FWU62S", "what": "144 modul", "dims": { "h": 1003, "w": 603, "d": 125 }, "niche": [957, 565, 115], "verify": "adatlap 952x560-at is ír" }
+      ],
+      "accessories": ["gipszkarton beépítő szett", "UN42TN média kit 600x500", "UM41UK média kit 600x250"],
+      "depthOk": true,
+      "priority": 1, "vendors": ["daniella", "vilszershop", "elektrikstore", "govill"],
+      "note": "AZ EGYETLEN talált gyári család, amely 603 mm szélességet ÉS 110-115 mm mélységet ad — vagyis RB-H-t (600x600x120) tényleg kiszolgálja, a teli ajtós FW42US2 pedig sík fehér arcot ad hozzá. Ha A stratégia kell RB-L/RB-H méretben, ez az."
+    },
+    {
+      "slug": "board-hager-volta-vu",
+      "name": "Hager Volta VU multimédia elosztó, süllyesztett",
+      "role": "both", "ladder": "H", "zone": ["high"],
+      "variants": [
+        { "rows": 3, "dims": { "h": 630.5, "w": 348, "d": 98 } },
+        { "rows": 5, "dims": { "h": 880.5, "w": 348, "d": 98 } },
+        { "code": "VU48NW", "what": "4 soros, fém ajtó, szerelőlappal, dugaljjal" }
+      ],
+      "depthOk": false,
+      "priority": 3, "vendors": ["daniella", "mentavill", "elektrikstore"],
+      "note": "348 mm széles — RB-S-nél nagyobbhoz keskeny. Akkor érdekes, ha a RoomBox inkább magas, mint széles (szűk előtér, aknafal)."
+    },
+    {
+      "slug": "board-legrand-practibox-s",
+      "name": "Legrand Practibox S süllyesztett kiselosztó",
+      "role": "both", "ladder": "H", "zone": ["high"],
+      "range": "1-4 sor, soronként 4/6/8/12/18 modul; fehér vagy füstszínű ajtó",
+      "wallVariants": { "brick": "650 °C", "hollow": "850 °C" },
+      "depthOk": false,
+      "priority": 3, "vendors": ["daniella", "vilszershop", "legrandaruhaz"],
+      "verify": ["outer dimensions per row count"],
+      "note": "Van kifejezetten gyengeáramú (RJ45/TV/optika) gipszkarton változata. A tégla- és a GK-kivitel KÜLÖN cikkszám — a tűzállósági jelölés (650 vs 850 °C) az azonosító."
+    },
+    {
+      "slug": "board-schneider-resi9-easy9",
+      "name": "Schneider Resi9 Mini Pragma / Easy9 süllyesztett, teli ajtós",
+      "role": "both", "ladder": "H", "zone": ["high"],
+      "variants": [
+        { "code": "MIP22112", "modules": "1x12", "priceGrossHuf": 6887 },
+        { "code": "EZ9EUB108", "modules": "1x8" },
+        { "code": "EZ9EUB112", "modules": "1x12" }
+      ],
+      "depthOk": false,
+      "priority": 3, "vendors": ["daniella"],
+      "note": "Egysoros, tehát csak portáldoboz / kis T-pont léptékben jön szóba. Akkor logikus, ha az egész lakás Schneider (Asfora) — egy gyártó, egy fehér."
+    },
+    {
+      "slug": "board-tehnoplast-media",
+      "name": "Tehnoplast THP-U36-3-1-EP-PL média lakáselosztó, süllyesztett",
+      "role": "both", "ladder": "H", "zone": ["high"],
+      "dims": { "base": [325, 568, 90], "mediaBay": [250, 220, 70] },
+      "door": "fehér fém",
+      "depthOk": false,
+      "priority": 3, "vendors": ["onlinevill"],
+      "note": "Router/switch/splitter/erősítő együtt — a gondolat jó, a 250x220x70 médiarekesz viszont kevés egy RoomBox Z3 zónájához, 19 collos keretre pedig semmiképp."
+    },
+    {
+      "slug": "board-schrack-media",
+      "name": "Schrack süllyesztett média elosztó, 4 soros, téglafalba",
+      "role": "both", "ladder": "H", "zone": ["high"],
+      "finish": "RAL 9003, IP30, 1 db DIN sín",
+      "depthOk": false,
+      "priority": 3, "vendors": ["schrack"],
+      "verify": ["outer dimensions"],
+      "note": "RAL 9003 — HARMADIK fehér a Hager 9010 és az ABB 9016 mellett. Egy falon csak egyiket."
+    },
+
+    {
+      "slug": "ceiling-kaiser-thermox",
+      "name": "Kaiser ThermoX lámpadobozok",
+      "role": "both", "ladder": "-", "zone": ["ceiling"],
+      "variants": [
+        { "code": "9300-22", "what": "univerzális lámpadoboz", "dims": { "d": 90 }, "panel": "7-40 mm", "front": "ásványgyapot előlappal, kétféle elülső rész, felülről vagy alulról építhető" },
+        { "code": "9300-03", "what": "Ø82 készlet", "front": "lámpadoboz + trafónyílás-záró + kétoldalon használható előlap" },
+        { "code": "9320-10", "what": "Ø74 légtömör LED (6,6 W)", "dims": { "d": 70 }, "lidIncluded": false, "fixing": "csavar nélkül" },
+        { "code": "9320-11", "what": "Ø74 LED, <=9 W", "dims": { "d": 95 }, "airtight": true, "halogenFree": true },
+        { "code": "9310-10", "what": "Spacer szigetelés-távtartó, 100-40 mm állítható" }
+      ],
+      "priority": 1, "vendors": ["ultima", "daniella", "mentavill", "elektrikstore", "borosesfiai"],
+      "note": "A mennyezeti zóna alapcsaládja. A 9320-10-hez FEDÉL NEM JÁR — külön kell. Légtömörség a páratechnikai réteg miatt számít, nem kényelmi kérdés."
+    },
+    {
+      "slug": "ceiling-kaiser-9063-50",
+      "name": "Kaiser 9063-50 gipszkarton mennyezeti lámpa csatlakozódoboz, M5 menettel",
+      "role": "box", "ladder": "-", "zone": ["ceiling"],
+      "dims": { "d": 68 },
+      "lidIncluded": false,
+      "priority": 1, "vendors": ["daniella", "ultima"],
+      "note": "M5 menet = a lámpa teherhordó rögzítése a dobozban. Fedél nélkül jön: tartalék/jövőbeli lámpapozícióhoz párosítsd a vakolatsíkba kerülő kerek vakfedéllel."
+    }
+  ],
+
+  "clusterClasses": [
+    { "id": "K1", "name": "kis klaszter", "demand": "2-3 gang, egy rekesz, standard mélység", "housing": ["box-kopos-kpl64-50", "box-kaiser-gk-gang", "box-gewiss-503"], "ladder": "D" },
+    { "id": "K2", "name": "közepes klaszter", "demand": "4-6 gang, egy rekesz, smart-up mélység", "housing": ["box-kopos-kpl64-50", "box-gewiss-503", "box-mosaic-flush"], "ladder": "D" },
+    { "id": "K3", "name": "osztott klaszter", "demand": "bármennyi gang + MAINS/SELV szétválasztás, vagy modulhalom a szerelvények mögött", "housing": ["box-flush-200", "box-kopos-ko", "box-kaiser-masonry-junction"], "ladder": "H" }
+  ],
+
+  "vendors": {
+    "daniella": { "name": "Daniella Villamosság", "url": "https://daniella.hu", "orderIn": true, "pickup": true, "pickupNote": "~45 telephely, országos; személyes átvétel vagy futár; rendelés webshop/telefon/e-mail. Daniella Helloszerszám bolt: 1173 Budapest, Csomafalva u. 2, +36 20/320-68-82", "carries": ["Kaiser", "Gewiss", "Legrand", "Hager", "Schneider", "Kopos", "Tracon?"], "doesNotCarry": ["revíziós ajtó / szerelőajtó (szárazépítési áru)"], "verify": ["Tracon EDSSN listing"] },
+    "ultima": { "name": "Ultima Kft. — Kaiser magyarországi képviselet", "url": "https://www.ultima.hu", "url2": "https://www.kaiserdobozok.hu", "orderIn": true, "pickup": true, "pickupNote": "1172 Budapest, Rétifarkas utca 6." },
+    "tracon": { "name": "Tracon Electric", "url": "https://shop.traconelectric.com", "orderIn": true, "pickup": "partner", "pickupNote": "saját webshop + kiterjedt partnerbolt-hálózat; átvétel boltonként ellenőrizendő" },
+    "schrack": { "name": "Schrack Technik", "url": "https://www.schrack.hu", "orderIn": true, "pickup": "verify", "pickupNote": "fiókhálózat — ellenőrizendő" },
+    "sonepar": { "name": "Sonepar Hungary", "url": "https://shop.sonepar.hu", "orderIn": true, "pickup": "verify" },
+    "tetenyker": { "name": "TÉTÉNY-KER 87 Kft. (FF System F3)", "url": "https://catalog.ffsystembau.hu", "orderIn": true, "pickup": true, "pickupNote": "1185 Budapest, Üllői út 626; ajánlat űrlapon vagy +36 1 439 1251; info@teteny-ker.hu" },
+    "prowallz": { "name": "PROWALLZ Kft.", "url": "https://reviziosajtoarak.hu", "url2": "https://prowallz.hu", "orderIn": true, "pickup": true, "pickupNote": "Nagytarcsai átvétel; készlet Budapesten és vidéken (utcanév nincs közölve); +36 30 958 2915, info@prowallz.hu; egyedi méret 2-9 nap" },
+    "primavent": { "name": "Primavent", "url": "https://primavent.hu", "orderIn": true, "pickup": "verify", "pickupNote": "konfigurált, rendelésre gyártott SzAH/SzAP/SzAHl/SzFH rendszerek" },
+    "lambda": { "name": "Lambda Webáruház", "url": "https://lambdawebaruhaz.hu", "orderIn": true, "pickup": "verify" },
+    "arkibau": { "name": "Arkibau", "url": "https://arkibau.hu", "orderIn": true, "pickup": "verify" },
+    "bauhaus": { "name": "Bauhaus", "url": "https://www.bauhaus.hu", "orderIn": true, "pickup": true, "pickupNote": "áruházi készlet — a commodity 20x20-60x60 létra" },
+    "mestervagyok": { "name": "Mestervagyok", "url": "https://www.mestervagyok.hu", "orderIn": true, "pickup": "verify" },
+    "kispaltuzep": { "name": "Kispál Tüzép", "url": "https://www.kispaltuzep.hu", "orderIn": true, "pickup": true },
+    "buildox": { "name": "Buildox", "url": "https://www.buildox.hu", "orderIn": true, "pickup": "verify" },
+    "profilvasker": { "name": "Profilvasker", "url": "https://www.profilvasker.hu", "orderIn": true, "pickup": "verify" },
+    "mentavill": { "name": "Mentavill", "url": "https://www.mentavill.hu", "orderIn": true, "pickup": "verify" },
+    "elektrikstore": { "name": "Elektrikstore", "url": "https://elektrikstore.hu", "orderIn": true, "pickup": "verify" },
+    "elektroprofi": { "name": "Elektro Profi", "url": "https://elektroprofishop.hu", "orderIn": true, "pickup": "verify" },
+    "haluxvill": { "name": "Haluxvill Kft.", "url": "https://shop.haluxvill.hu", "orderIn": true, "pickup": "verify" },
+    "hejovill": { "name": "Hejővill", "url": "https://www.hejovill.hu", "orderIn": true, "pickup": "verify" },
+    "vilszershop": { "name": "Vilszershop (Vilszerker Kft., Győr)", "url": "https://vilszershop.hu", "orderIn": true, "pickup": true, "pickupNote": "9028 Győr, Régi Veszprémi út 14-16." },
+    "audax": { "name": "Audaxshop", "url": "https://audaxshop.hu", "orderIn": true, "pickup": "verify" },
+    "lakitech": { "name": "Lakitech", "url": "https://lakitech.hu", "orderIn": true, "pickup": "verify" },
+    "16amper": { "name": "16Amper", "url": "https://www.16amper.hu", "orderIn": true, "pickup": "verify" },
+    "onlinevill": { "name": "Onlinevill", "url": "https://www.onlinevill.hu", "orderIn": true, "pickup": "verify" },
+    "lumenet": { "name": "Lumenet", "url": "https://lumenet.hu", "orderIn": true, "pickup": "verify" },
+    "legrandaruhaz": { "name": "Legrand Áruház", "url": "https://legrandaruhaz.hu", "orderIn": true, "pickup": "verify" },
+    "1vill": { "name": "1Vill.hu", "url": "https://www.1vill.hu", "orderIn": true, "pickup": "verify" },
+    "emile": { "name": "E-mile", "url": "https://www.e-mile.hu", "orderIn": true, "pickup": "verify" },
+    "dl1": { "name": "DL1 Villamossági Nagykereskedés", "url": "https://dl1.hu", "orderIn": true, "pickup": "verify" },
+    "borosesfiai": { "name": "Boros és Fiai", "url": "https://shop.borosesfiai.hu", "orderIn": true, "pickup": "verify" },
+    "govill": { "name": "Govill", "url": "https://www.govill.hu", "orderIn": true, "pickup": "verify" },
+    "sopvill": { "name": "Sop-Vill Kft.", "url": "https://sopvill.hu", "orderIn": true, "pickup": "verify" },
+    "villanyaszbolt": { "name": "Villanyászbolt", "url": "https://www.villanyaszbolt.hu", "orderIn": true, "pickup": "verify" },
+    "1000volt": { "name": "1000Volt", "url": "https://1000volt.hu", "orderIn": true, "pickup": "verify" },
+    "elektrosokk": { "name": "Seemis Kft. / Elektrosokk", "url": "https://shop.elektrosokk.hu", "orderIn": true, "pickup": "verify" },
+    "schonvill": { "name": "Schönvill", "url": "https://www.schonvill.avasweb.eu", "orderIn": true, "pickup": "verify" },
+    "anro": { "name": "ANRO Díszléc", "url": "https://www.anrodiszlec.hu", "orderIn": true, "pickup": "verify", "note": "díszléc-kereskedés, nem villamossági nagyker" }
+  },
+
+  "openItems": [
+    "Gewiss Chorus ONE előlap-szélességek 3, 4 és 7 modulra (csak a 6 modulos 202 mm van meg).",
+    "Asfora keret-osztás és többes keret külső méretek; Asfora vakfedél Sedna Design keretben?",
+    "Tracon EDSSN-12/1 (240x305x80 vs 200x256x66), EDSSN-18/4 (860 vs 855), Hager FWU62S niche (957x565 vs 952x560).",
+    "Valódi 100x100 süllyesztett doboz nem létezik — 107 (Kaiser 9195-91) vagy 116 (Kopos KO 110/L), vagy a portáldoboz felmegy a H létra 200-ára.",
+    "RB-O (kültéri, IP65) süllyesztett fedélcsalád nincs kutatva.",
+    "Mágneses, burkolható (keret nélküli) szerelőnyíláshoz magyar forgalmazó publikált mérettel és árral.",
+    "Hatch zárfajta döntés: nyomásra nyíló vs kulcsos/cilinderes — biztonsági kérdés, nem csak megjelenés (az RBX elérhető magasságban MAINS-t tartalmaz)."
+  ]
+}
