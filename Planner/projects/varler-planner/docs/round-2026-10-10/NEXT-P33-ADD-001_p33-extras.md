@@ -69,3 +69,26 @@ Then write a pack in docs/round-p33-add-001/ in the same format (contract, mater
 research items as IDEA documents. Build nothing.
 END — analyse and preset only.
 ```
+
+## 5. Added 2026-10-10 (last reply of this session): the SmartFrame (BSF)
+
+The user added a larger item: a **second BRIDGE box type at every portal**, working name
+**SmartFrame (Bridge SmartFrame, BSF)**. It uses the gate-shaped zone around a doorway: the corner
+box, the hinge-side vertical, the over-door horizontal and the handle-side column. It runs on
+bus B (assured 24 V), holds an ESP32-S3 swarm head with 2–3 uniform C3/C6 satellites, takes
+upper-stack layers off the RBX, and links to it over a **Silver Rail** under the cross-room channel.
+It is half-independent: it can run without BRIDGE.
+
+The full request, the analysis and the pre-work are in
+**`NEXT-P33-ADD-001-SF_smartframe-brief.md`** (same folder). It has the user's words, what existing
+standards it inherits or changes (STD-003 §2, ARCH-001, IDEA-001/002, WORKSHOP-001), the DIN 18015-3
+zone argument, the four-face door geometry, a draft slot standard and tiers, the swarm module set,
+12 questions, a research list and a three-phase plan. Start it with the codephrase **GO FRAME**
+(`GO-FRAME.md` at the worktree root).
+
+Overlap with this file: **#4** (terminal positions next to every portal) is absorbed by the
+SmartFrame's M3 slot; **#5** lábfény uses its L0 slot / hinge riser; **#9** battery sensors may
+parent on C6 satellites; **#11** BRIDGE SECURITY should be researched **together** with the swarm's
+fallback / "ghost" network (brief Q-SF-12). When the §4 pack is written, pack the SmartFrame in the
+same `docs/round-p33-add-001/`, and settle the SmartFrame concept (brief §8 phases 1–2) **before**
+the pack's #4/#5 WPs are finalised.

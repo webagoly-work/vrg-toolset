@@ -149,3 +149,6 @@ symbols grey while every class was correct and every test passed.
 
 - **`GO R1010`** — read `GO-R1010.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
   and do what it says: continue the Planner round 2026-10-10, then the P33-ADD-001 extras.
+- **`GO FRAME`** — read `GO-FRAME.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
+  and do what it says: the BRIDGE SmartFrame (BSF) concept: research, IDEA-003, tune with the user,
+  then the BRIDGE doc and (after round 2026-10-10 is built) the Planner pack. No code.
