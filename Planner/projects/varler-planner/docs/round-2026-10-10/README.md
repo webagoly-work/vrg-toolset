@@ -18,6 +18,8 @@ otherwise.
 | `WP-U1…U7`, `WP-G1…G2`, `WP-S1…S5`, `WP-M1…M2` | one file per work package |
 | `R1010-Q-001.json` | the decision pack (tuner format) |
 | `PROMPTS.md` | build-all / build-one / verify / resolve / status prompts |
+| `NEXT-P33-ADD-001_p33-extras.md` | **queued after this round:** the user's P33 extras (note of 2026-10-10), transcribed and mapped onto the stack |
+| `GO-R1010.md` (repo root) | the session briefing behind the codephrase **GO R1010** |
 | `H:\Dev-VRG\VRG-DE\_inbox\BRIDGE Tuner - Planner R1010.html` | the tuner with this pack loaded — answer there, "Export answers", paste into the RESOLVE prompt |
 
 ---
