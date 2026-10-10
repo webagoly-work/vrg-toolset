@@ -144,3 +144,8 @@ origin and saving fails silently. Serve the folder instead:
 (port 8123). Verify colour-carrying behaviour by reading *computed* styles,
 not by looking at a screenshot; a CSS specificity bug once left finished
 symbols grey while every class was correct and every test passed.
+
+## Codephrases
+
+- **`GO R1010`** — read `GO-R1010.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
+  and do what it says: continue the Planner round 2026-10-10, then the P33-ADD-001 extras.
