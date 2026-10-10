@@ -126,7 +126,70 @@ function lampHoverShow(dv,cx,cy){const L=lampDef(dv);if(!L.thumb||!L.hover)retur
   el.innerHTML=`<img src="${L.thumb}" style="display:block;max-width:230px;max-height:180px;border-radius:3px">`
     +`<div style="font-size:11px;color:#555;padding:3px 2px 1px">${esc(L.name||dv.ref||'Lámpa')}${L.url?' · ↗ bolti link':''}</div>`;
   el.style.left=Math.round(cx+16)+'px';el.style.top=Math.round(cy+16)+'px';el.style.display='block';}
-function lampHoverHide(){const el=$('thumbPop');if(el)el.style.display='none';}
+function lampHoverHide(){hovCancel();const el=$('thumbPop');if(el)el.style.display='none';}
+
+// ---- the device hover card (round 2026-10-10, WP-U6) ----
+// "Lebegő infó (eszközök)": with state.devHover on, pointing at a device in Select / Move shows what it is, which
+// circuit, which layer, which room, how high, and whatever else is saved with it. Not the Áramkörök panel's
+// "Lebegő infó a rajzon" (circHoverInfo), which labels route sections. One floating box only: #thumbPop, which the
+// lamp photo already uses — a lamp with a photo shows it on top of the facts.
+let HOV={t:null,i:null};
+function hovZone(d){const h=d.h||0,top=(typeof wallH==='function')?wallH(d.level):2700;
+  return h>=top-150?'mennyezet':h<650?'alacsony':h<1650?'közepes':'magas';}
+function hovRoomName(id){const e=(typeof mrkRoomById==='function')?mrkRoomById(id):null;return e&&e.rm?roomLabel(e.rm):String(id);}
+// [{k,v}] — the single source of what the card says; a row with no value is left out, at most 8 rows
+function hovFacts(d){if(!d)return [];const rows=[],add=(k,v)=>{if(v!=null&&v!=='')rows.push({k,v:String(v)});};
+  const code=(typeof epCodeOf==='function')?epCodeOf(d):null,role=(typeof epRoleOf==='function')?epRoleOf(d):null;
+  const en=(code&&d.type==='ep'&&typeof epEntry==='function')?epEntry(code,role):null;
+  const nm=(typeof HW_TYPES!=='undefined'&&HW_TYPES[d.type])||(en&&en.n)||DEV[d.type]||d.type;
+  add('',[d.ref,nm].filter((v,k,a)=>v&&a.indexOf(v)===k).join(' · '));   // "BASE", not "BASE · BASE"
+  if(d.type==='rbx'){const rb=d.rb||HW_RB_DEF,S=HW_RB[rb];add('Típus',rb+(S?' · '+S[0]+' × '+S[1]+' × '+S[2]+' mm':'')+(d.one?' · 1 szobás':''));}
+  else if(d.type==='base')add('Típus','BASE · '+hwUnits(d).join(' + '));
+  else if(en){const v=(en.vars||[]).find(x=>x.k===d.var);add('Típus',code+(v?' · '+v.n:''));}
+  else add('Típus',DEV[d.type]||(code||d.type));
+  const c=(typeof cktOfDevice==='function')?cktOfDevice(d):null;
+  if(c){const m=mcbText(c.mcb);add('Áramkör',cktLabel(c)+(m?' · '+m:''));}
+  else{const k=(typeof epCircuitOf==='function')?epCircuitOf(d):null;
+    if(k){const p=k.split(':');
+      add('Áramkör',p[0]==='ded'?'dedikált':p[0]==='room'?hovRoomName(p[1])+' dugalj'
+        :p[0]==='light'?'világítás · '+((data.devices.find(x=>x.id===p[1])||{}).ref||'RBX ?'):k);}}
+  {const L=layerById(d.layer||'L0'),R=L&&L.role?STK_ROLES.find(r=>r.k===L.role):null;
+   add('Réteg',L?(L.name+(R&&L.name.indexOf(R.n)<0?' · '+R.n:'')):'');}
+  {const r=(typeof roomOfDevice==='function')?roomOfDevice(d):null;if(r)add('Helyiség',roomLabel(r.rm));}
+  add('Magasság',Math.round(d.h||0)+' mm · '+hovZone(d));
+  const extra=[];if(d.note)extra.push(d.note);
+  if(d.type==='light'){const L=lampDef(d);if(L.name)extra.push(L.name+(L.url?' ↗ bolti link':''));}
+  if(d.type==='rbx'&&typeof hwServes==='function'){const s=hwServes(d);if(s.length)extra.push('kiszolgál: '+s.map(hovRoomName).join(', '));}
+  if(d.type==='base'&&typeof hwBaseRules==='function'){const bad=hwBaseRules(d).filter(r=>!r.ok);
+    extra.push(bad.length?bad.length+' szabály sérül — '+bad[0].msg:'BASE szabályok rendben');}
+  {const n=devLinks(d).length;if(n)extra.push(n+' pálya-kötés');}
+  add('Egyéb',extra.join(' · '));
+  return rows.slice(0,8);}
+function hovCancel(){if(HOV.t){clearTimeout(HOV.t);HOV.t=null;}}
+function hovHide(){hovCancel();HOV.i=null;const el=$('thumbPop');if(el)el.style.display='none';}
+function hovShow(d,cx,cy){if(!d)return hovHide();
+  let el=$('thumbPop');
+  if(!el){el=document.createElement('div');el.id='thumbPop';
+    el.style.cssText='position:fixed;z-index:9999;pointer-events:none;background:#fff;border:1px solid #cfc9bd;border-radius:6px;padding:4px;box-shadow:0 6px 18px rgba(0,0,0,.18);max-width:240px';
+    document.body.appendChild(el);}
+  const F=hovFacts(d),L=d.type==='light'?lampDef(d):null,col=lyrColorOf(d.layer||'L0');
+  el.innerHTML=(L&&L.thumb&&L.hover?`<img src="${L.thumb}" style="display:block;max-width:230px;max-height:150px;border-radius:3px;margin-bottom:3px">`:'')
+    +`<div style="font-size:11.5px;font-weight:700;color:#222;padding:2px 2px 3px"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:${col}"></span>${esc(F.length?F[0].v:'')}</div>`
+    +`<table style="font-size:10.5px;color:#444;border-collapse:collapse">`
+    +F.slice(1).map(r=>`<tr><td style="color:#8a8478;padding:1px 6px 1px 2px;vertical-align:top;white-space:nowrap">${esc(r.k)}</td><td style="padding:1px 2px">${esc(r.v)}</td></tr>`).join('')+`</table>`;
+  el.style.display='block';
+  // 16 px off the pointer, flipped left / up near the window edges
+  const w=el.offsetWidth||240,h=el.offsetHeight||120,W=window.innerWidth||1e4,H=window.innerHeight||1e4;
+  el.style.left=Math.round(cx+16+w>W?Math.max(4,cx-16-w):cx+16)+'px';el.style.top=Math.round(cy+16+h>H?Math.max(4,cy-16-h):cy+16)+'px';}
+// called from pointermove in Select / Move: a 120 ms dwell before showing, so sweeping the cursor does not flicker
+function hovMove(e){const i=devHitIdx(e);
+  if(i==null){hovHide();return;}
+  if(HOV.i===i){const el=$('thumbPop');if(el&&el.style.display==='block')hovShow(data.devices[i],e.clientX,e.clientY);return;}
+  hovCancel();HOV.i=i;const x=e.clientX,y=e.clientY;
+  HOV.t=setTimeout(()=>{HOV.t=null;if(HOV.i===i&&data.devices[i])hovShow(data.devices[i],x,y);},120);}
+function hovToggle(on){state.devHover=(on==null)?!state.devHover:!!on;if(!state.devHover)hovHide();
+  if($('devHover'))$('devHover').checked=!!state.devHover;
+  if(typeof lyrHud==='function')lyrHud(state.devHover?'Lebegő infó be — mutass egy készülékre.':'Lebegő infó ki.');return state.devHover;}
 // base coords → client pixels (the inverse of clientToBase, minus the fine-mode damping)
 function baseToClientPt(bx,by){try{const m=stage.getScreenCTM();if(!m)return null;
   const pt=stage.createSVGPoint();pt.x=bx*state.zoom+state.panX;pt.y=by*state.zoom+state.panY;
@@ -134,7 +197,7 @@ function baseToClientPt(bx,by){try{const m=stage.getScreenCTM();if(!m)return nul
 function lampAt(cx,cy){                                  // topmost lamp under the pointer, in plan pixels
   let best=null,bd=1e9;
   data.devices.forEach((d,i)=>{if(d.type!=='light'||!d.thumb||d.hover===false)return;
-    if(d.level!==state.active||!state.levels[d.level])return;
+    if(d.level!==state.active||!hitOk(d,'device'))return;          // a hidden lamp shows no thumbnail (U1)
     const b=planToBase(d.x,d.y,dz(d.level,d.h||0));
     const p=baseToClientPt(b[0],b[1]);if(!p)return;const dd=Math.hypot(p[0]-cx,p[1]-cy);
     if(dd<26&&dd<bd){bd=dd;best=i;}});

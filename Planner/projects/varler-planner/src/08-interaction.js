@@ -8,20 +8,20 @@
 // ==========================================================================
 //////////////////// interaction ////////////////////
 const $=id=>document.getElementById(id);
-const HINTS={select:'Select — drag pan, wheel zoom. Click cable/device to delete. Right-click object/wall for menu.',
+const HINTS={select:'Kijelölés — kattints egy elemre: kiemelve, a jobb oldali panel mutatja. Húzás: mozgatás · Ctrl: több elem · Alt: átfedő elemek közt vált · jobb klikk: menü.',
  path:'Path — draw the empty pathway (snaps to wall & height, Ctrl flips side, ↑/↓ height, ←/→ rotate). Right-click a section for build/circuit/kötődoboz/parallel. Enter finish.',
  cable:'Cable — snaps along the locked wall; Ctrl flips to the other side (sticky). ↑/↓ height line · ←/→ rotate · Space kötődoboz · Enter finish · Esc cancel.',
  device:'Device — click to drop the selected symbol on the active level.',
  wall:'Wall — click two points to draw a wall on the active level (axis-aligned). Tick radír to erase by clicking. Right-click a wall to delete.',
  build:'Build — click a wall to place the selected object; it snaps & aligns. Right-click it to Rotate/Delete.',
  format:'Formátummásoló — 1) jelölj ki egy forráselemet (Select vagy kattints rá itt), 2) kattints egy AZONOS TÍPUSÚ elemre, hogy átvegye a forma-jellemzőit (méret, típus, magasság). Ajtó→ajtó, ablak→ablak, objektum→objektum, stb.',
- grab:'Move (KSP-mód) — kattints bármely elemre (fal, padló, ajtó, ablak, lépcső, tető, objektum). Nyilak: eltolás · kék gyűrű: forgatás · lila: emelés · sárga sarok: átméretezés. Billentyű: WASD tol, Q/E forgat, ↑/↓ emel, Del töröl, Ctrl+D másol.',
+ grab:'Move (KSP-mód) — kattints bármely elemre (fal, padló, ajtó, ablak, lépcső, tető, objektum). Kék középpont: szabad mozgatás · Nyilak: eltolás · kék gyűrű: forgatás · lila: emelés · sárga sarok: átméretezés. Billentyű: WASD tol, Q/E forgat, ↑/↓ emel, Del töröl, Ctrl+D másol.',
  object:'Object — pick an item in the Objects panel, then click to place. Select it to move with WASD, rotate Q/E, lift ↑/↓; right-click for size.',
  roof:'Roof — click two points to span a roof over that area, then pick type (lapos/félnyereg/nyereg/konty), eave + ridge height and overhang. Right-click it to edit.',
  floor:'Padló — pont után pont, mint a térképes területmérő; élő Terület/Kerület. Az első pontra kattintva (vagy Enterrel) zárul, Backspace visszavesz egy pontot. Falakkal zárt térbe: jobb klikk → Padló a falak közé.',
  measure:'Measure — click two points for the distance.',note:'Note — click a spot, then type text. Tip: hold LEFT+RIGHT mouse to pan while drawing; Backspace = undo last click.'};
 function setMode(m){if(m!=='select'&&typeof cktPick!=='undefined'&&cktPick)cktPick=null;if(typeof stkToolEvent==='function')stkToolEvent('mode',{mode:m});   // another tool ends end point picking
-  state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();
+  state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();lampHoverHide();
   document.querySelectorAll('.tool[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
   const wo=$('wallOpts');if(wo)wo.style.display=(m==='wall')?'flex':'none';
   $('modeHint').textContent=HINTS[m];$('modeTip').textContent=HINTS[m];if(window.__dashReady)applyToolLayout(m);
@@ -82,9 +82,13 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
     applyFormat(h); draw(); return;}
   if(state.mode==='grab'){
     const g=e.target&&e.target.closest?e.target.closest('.giz'):null;
-    if(g&&(selected||selList().length)){pushUndo();gizDrag={ax:g.dataset.ax,rd:g.dataset.rd||'',sg:+(g.dataset.sg||0),cx:+(g.dataset.cx||0),cy:+(g.dataset.cy||0),
-      last:[e.clientX,e.clientY],startC:selected?pGetC(selected):groupCentroid(selList()),startWD:selected?pGetWD(selected):[0,0],startZ:selected?pGetZ(selected):0,
-      group:selList().length>1?selList():null,piv:groupCentroid(selList())};
+    if(g&&(selected||selList().length)){pushUndo();const grp=selList().length>1?selList():null;
+      gizDrag={ax:g.dataset.ax,rd:g.dataset.rd||'',sg:+(g.dataset.sg||0),cx:+(g.dataset.cx||0),cy:+(g.dataset.cy||0),
+      last:[e.clientX,e.clientY],startC:grp?groupCentroid(grp):(selected?pGetC(selected):groupCentroid(selList())),startWD:selected?pGetWD(selected):[0,0],startZ:selected?pGetZ(selected):0,
+      group:grp,piv:groupCentroid(selList())};
+      // U3: a move handle (the centre dot, a group arrow) drags by the offset under the cursor, like a click on the
+      // piece does. Without `grab` the move branch of pointermove threw — the group gizmo's arrows never moved anything.
+      if(gizDrag.ax==='move'&&selected)gizDrag.grab=baseToPlan(...clientToBase(e),dz(pieceLevel(selected),pGetZ(selected)));
       try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
     const h=hitTest(e);
     // Ctrl+click toggles a piece in the multi-selection (unless it turns into a drag → clone below)
@@ -110,11 +114,13 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
     if(h&&e.ctrlKey){ // Ctrl: toggle multi on click, or clone on drag — decide on move
       selected=h;last=[e.clientX,e.clientY];moved=false;ctrlToggle={h,client:[e.clientX,e.clientY]};dragItem=null;
       try{stage.setPointerCapture(e.pointerId);}catch(_){}draw();return;}
-    if(h){
-      if(inMulti(h)&&selList().length>1){dragItem={h,pushed:false,group:selList(),grab:baseToPlan(...clientToBase(e),dz(pieceLevel(h),pGetZ(h)))};selected=h;}
-      else{clearMulti();dragItem={h,pushed:false};selected=h;}
-      moved=false;last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
-    selected=null;clearMulti();
+    // U2: the click draws at once (aura + inspector) — it used to wait for some other redraw. A drag only starts
+    // past 4 px (dragItem.live), so a shaky click no longer nudges the piece and records an undo step.
+    if(h){const at={x0:e.clientX,y0:e.clientY,live:false};
+      if(inMulti(h)&&selList().length>1){dragItem=Object.assign({h,pushed:false,group:selList(),grab:baseToPlan(...clientToBase(e),dz(pieceLevel(h),pGetZ(h)))},at);selected=h;}
+      else{clearMulti();dragItem=Object.assign({h,pushed:false},at);selected=h;}
+      moved=false;last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}draw();return;}
+    selected=null;clearMulti();draw();
     if(state.multiSelect){selBox={x0:e.clientX,y0:e.clientY,x1:e.clientX,y1:e.clientY};dragging=true;}
     else{dragging=true;} // multi-select off → empty drag pans the view
     moved=false;last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
@@ -144,8 +150,9 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
     else{measureDraft.push({level:p.level,x:p.x,y:p.y});pushUndo();data.measures.push(measureDraft);measureDraft=null;}draw();}});
 stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
   if(typeof stkToolEvent==='function'&&stkToolEvent('move',e))return;
-  if(state.mode==='select'||state.mode==='grab'){const li=lampAt(e.clientX,e.clientY);
-    if(li!=null)lampHoverShow(data.devices[li],e.clientX,e.clientY);else lampHoverHide();}
+  if(state.mode==='select'||state.mode==='grab'){
+    if(state.devHover){if(e.buttons)hovHide();else hovMove(e);}   // U6: the device card (a lamp's photo rides on it)
+    else{const li=lampAt(e.clientX,e.clientY);if(li!=null)lampHoverShow(data.devices[li],e.clientX,e.clientY);else lampHoverHide();}}
   else lampHoverHide();
   // layer spotlight (05l): the device under the pointer lights its whole layer, panel row included
   if(typeof lyrSpotOn==='function'&&lyrSpotOn())lyrSpotSet(lyrSpotOfDevice(devHitIdx(e)));
@@ -164,9 +171,10 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
   // Ctrl held on a piece: a small drag turns the ctrl-click into a clone (Ctrl+drag = copy)
   if(ctrlToggle){const mv=Math.abs(e.clientX-ctrlToggle.client[0])+Math.abs(e.clientY-ctrlToggle.client[1]);
     if(mv>4){const h=ctrlToggle.h;ctrlToggle=null;pushUndo();
-      const nh=clonePiece(h);if(nh){selected=nh;clearMulti();dragItem={h:nh,pushed:true};}
+      const nh=clonePiece(h);if(nh){selected=nh;clearMulti();dragItem={h:nh,pushed:true,live:true};}
       last=[e.clientX,e.clientY];moved=true;return;}
   }
+  if(dragItem&&dragItem.live===false){if(Math.hypot(e.clientX-dragItem.x0,e.clientY-dragItem.y0)<4)return;dragItem.live=true;}
   if(dragItem&&dragItem.group&&dragItem.group.length>1){moved=true;if(!dragItem.pushed){pushUndo();dragItem.pushed=true;}
     const p=baseToPlan(...clientToBase(e),dz(pieceLevel(dragItem.h),pGetZ(dragItem.h)));
     if(!dragItem.gc)dragItem.gc=groupCentroid(dragItem.group);
@@ -277,8 +285,8 @@ function finishSelBox(){if(!selBox)return;const x0=Math.min(selBox.x0,selBox.x1)
     const sx=b[0]*state.zoom+state.panX, sy=b[1]*state.zoom+state.panY;return sx>=x0&&sx<=x1&&sy>=y0&&sy<=y1;};
   const hits=[];
   ['objects','devices','openings','roofs','floors','notes'].forEach(t=>{(data[t]||[]).forEach((o,i)=>{
-    if(o.level&&!state.levels[o.level])return;const h={t,i};if(test(h))hits.push(h);});});
-  (WALLS[state.active]||[]).forEach(r=>{const h={t:'wall',level:state.active,ref:r};if(test(h))hits.push(h);});
+    if(!hitOkRec(t,o,i))return;const h={t,i};if(test(h))hits.push(h);});});   // what is not drawn is not boxed (U1)
+  (WALLS[state.active]||[]).forEach(r=>{if(!hitOkWall(r,state.active))return;const h={t:'wall',level:state.active,ref:r};if(test(h))hits.push(h);});
   hits.forEach(addMulti);
   if(selMulti.length){selected=selMulti[0];$('hud').textContent=selMulti.length+' elem kijelölve (mozgatás/forgatás együtt).';}
   draw();}
@@ -317,8 +325,42 @@ function setPitch(v){state.pitch=Math.max(5,Math.min(90,v));state.flat=state.pit
   $('view3d').textContent=state.pitch>=88?'3D':'2D';$('hud').textContent='Kameradőlés: '+Math.round(state.pitch)+'°';draw();}
 function panBy(dx,dy){state.panX+=dx;state.panY+=dy;setTransform();}
 function zoomBy(f){state.zoom=vsClamp(state.zoom*f);setTransform();}
+// ---- the selection nudge (round 2026-10-10, WP-U4) ----
+// {mv:[sx,sy]} (screen directions) or {rot:±1} for a key of the active layout, else null. Ctrl / Alt / ⌘ never nudge
+// (Ctrl+Shift+W closes a Chrome window; Alt is the fine-mode key).
+function kbdNudgeKey(e){if(e.ctrlKey||e.metaKey||e.altKey)return null;const k=(e.key||'').toLowerCase(),L=KBD_LAYOUTS[kbdLayout()];
+  const T=e.shiftKey?KBD_SHIFT:L;if(!T.move)return null;
+  if(T.move[k])return {mv:T.move[k]};if(T.rot[k])return {rot:T.rot[k]};return null;}
+// Shift + W A S D moves the selection, Shift + Q / E turns it — plain W A S D / Q / E are the camera, always [Q-U03].
+// Step 100 mm; 10 mm in fine mode (F / Alt held or the 🔍 lock), like every other drag. Move mode moves the whole
+// multi-selection; the Object tool's ghost only turns. One undo step per press, taken BEFORE the change (the old WASD
+// nudge pushed it after, so Ctrl+Z could not take a keyboard move back).
+function kbdNudge(e){const n=kbdNudgeKey(e);if(!n)return false;
+  if(state.mode==='object'&&objGhost&&!(selected&&selected.t==='objects')){if(!n.rot)return false;
+    e.preventDefault();state.objAng=(state.objAng||0)+n.rot*Math.PI/12;draw();return true;}
+  if(state.mode!=='grab'&&state.mode!=='select')return false;
+  const list=state.mode==='grab'?selList():(selected?[selected]:[]);if(!list.length)return false;
+  e.preventDefault();pushUndo();
+  if(n.mv){const st=(fineAnchor||state.fineLock)?10:100,rr=state.rot*Math.PI/180,cs=Math.cos(rr),sn=Math.sin(rr);
+    const dx=n.mv[0]*st,dy=n.mv[1]*st,px=dx*cs+dy*sn,py=-dx*sn+dy*cs;   // screen → plan, rotation-aware as before
+    if(list.length>1)moveGroup(list,px,py);else{const c=pGetC(list[0]);pSetC(list[0],c[0]+px,c[1]+py);}}
+  else{const a=n.rot*Math.PI/12;if(list.length>1)rotateGroup(list,a,groupCentroid(list));else pRot(list[0],a);}
+  draw();$('hud').textContent=list.length>1?list.length+' elem':pLabel(list[0]);return true;}
+// the key names every hint and help line uses, from the active layout
+function kbdNames(){const ij=kbdLayout()==='ijkl';
+  return {mv:ij?'IJKL (vagy Shift+WASD)':'Shift+WASD',rot:ij?'U/O (vagy Shift+Q/E)':'Shift+Q/E',mark:kbdKey('markWall'),ckt:kbdKey('circuit')};}
+// runs on load (syncUI) and when the layout changes: moves the two registry keys and rewrites every text naming them
+function kbdApplyLayout(){const L=KBD_LAYOUTS[kbdLayout()],N=kbdNames(),A=id=>(typeof actionById==='function')?actionById(id):null;
+  const mw=A('mark.wall'),mb=A('mark.wallBack'),cp=A('circuit.pick');
+  if(mw){mw.keys=[L.markWall];mw.hint=`Fal / falfelület / függőleges sáv / vízszintes sáv címkézése + vagy − jellel. ${N.mark} váltja a módot, Shift+kattintás az előző címkékkel jelöl.`;}
+  if(mb){mb.keys=['shift+'+L.markWall];mb.need=`Indítsd el a Fal jelölése eszközt (${N.mark}).`;}
+  if(cp){cp.keys=[L.circuit];cp.hint=`Kattints a készülékekre a rajzon: az aktív áramkör végpontjai lesznek. ${N.ckt} vagy Esc = kész.`;}
+  HINTS.grab=`Mozgatás — kattints egy elemre. ${N.mv} tol (F: finom), ${N.rot} forgat, ↑/↓ emel · kék középpont: szabad mozgatás, kék gyűrű: forgatás, lila: emelés, sárga sarok: méret · Del töröl, Ctrl+D másol. WASD/QE: kamera.`;
+  HINTS.object=`Tárgy — válassz egyet a Tárgyak panelen, majd kattints a lerakáshoz; ${N.rot} forgatja. Kijelölve: ${N.mv} tol, ↑/↓ emel, jobb klikk: méret. WASD/QE: kamera.`;
+  if(HINTS[state.mode]&&$('modeHint')&&(state.mode==='grab'||state.mode==='object')){$('modeHint').textContent=HINTS[state.mode];$('modeTip').textContent=HINTS[state.mode];}
+  if(typeof invalidateShell==='function')invalidateShell();}
 window.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();
+  if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();lampHoverHide();
     draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();
     if(typeof stkToolEvent==='function')stkToolEvent('esc',e);   // a stack tool stops on Esc (after the dialogs are closed — a finishing tool may open its own); it never discards data
     if(state.mode!=='select')setMode('select');draw();return;}
@@ -329,13 +371,10 @@ window.addEventListener('keydown',e=>{
     if(e.key==='Delete'||e.key==='Backspace'||(e.ctrlKey&&k==='d')){e.preventDefault();return;}
   }
   if(e.key>='1'&&e.key<='9'&&!e.ctrlKey&&!e.altKey){const t=TOOLKEYS[+e.key-1];if(t){e.preventDefault();setMode(t);return;}}
-  if(state.mode==='grab'&&selected){const k=e.key.toLowerCase(),st=e.shiftKey?10:100;const c=pGetC(selected);let used=true;
-    const rr=state.rot*Math.PI/180,cs=Math.cos(rr),sn=Math.sin(rr);
-    const mv=(dx,dy)=>{pSetC(selected,c[0]+dx*cs+dy*sn,c[1]-dx*sn+dy*cs);};
-    if(!e.ctrlKey&&k==='w')mv(0,-st);else if(!e.ctrlKey&&k==='s')mv(0,st);else if(!e.ctrlKey&&k==='a')mv(-st,0);else if(!e.ctrlKey&&k==='d'){mv(st,0);}
-    else if(k==='q')pRot(selected,-Math.PI/12);else if(k==='e')pRot(selected,Math.PI/12);
-    else if(e.key==='ArrowUp'&&pLiftable(selected))pSetZ(selected,pGetZ(selected)+(e.shiftKey?10:50));
-    else if(e.key==='ArrowDown'&&pLiftable(selected))pSetZ(selected,Math.max(0,pGetZ(selected)-(e.shiftKey?10:50)));
+  if(!state.lockTouch&&kbdNudge(e))return;   // U4: Shift+WASD/QE (or IJKL/UO) — plain WASD/QE fall through to the camera below
+  if(state.mode==='grab'&&selected){const k=e.key.toLowerCase();let used=true;
+    const lift=e.key==='ArrowUp'?1:e.key==='ArrowDown'?-1:0;
+    if(lift&&pLiftable(selected)){pushUndo();pSetZ(selected,Math.max(0,pGetZ(selected)+lift*(e.shiftKey?10:50)));}   // undo BEFORE the change
     else if(e.key==='Delete'){pushUndo();const gl=selList();
       if(gl.length>1){ // remove all — sort so index-based removals don't shift each other
         const byArr={};gl.forEach(h=>{if(h.t==='wall'){const a=WALLS[h.level];const idx=a.indexOf(h.ref);if(idx>=0){a.splice(idx,1);}}else{(byArr[h.t]=byArr[h.t]||[]).push(h.i);}});
@@ -347,18 +386,11 @@ window.addEventListener('keydown',e=>{
       if(gl.length>1){const clones=cloneMulti(gl);clones.forEach(h=>{const c=pGetC(h);pSetC(h,c[0]+300,c[1]+300);});clearMulti();clones.forEach(addMulti);selected=clones[0]||null;draw();return;}
       const nh=clonePiece(selected);if(nh){selected=nh;pSetC(nh,pGetC(nh)[0]+300,pGetC(nh)[1]+300);}draw();return;}
     else used=false;
-    if(used){e.preventDefault();pushUndo();draw();$('hud').textContent=pLabel(selected);return;}}
-  if(state.mode==='object'&&objGhost&&!(selected&&selected.t==='objects')){const k=e.key.toLowerCase();
-    if(k==='q'){e.preventDefault();state.objAng=(state.objAng||0)-Math.PI/12;draw();return;}
-    if(k==='e'){e.preventDefault();state.objAng=(state.objAng||0)+Math.PI/12;draw();return;}}
+    if(used){e.preventDefault();draw();$('hud').textContent=pLabel(selected);return;}}
   const selObj=(state.mode==='select'&&selected&&selected.t==='objects')?data.objects[selected.i]:null;
-  if(selObj){const k=e.key.toLowerCase(),st=e.shiftKey?10:100;let used=true;
-    const c=Math.cos(state.rot*Math.PI/180),sn=Math.sin(state.rot*Math.PI/180);
-    const mv=(dx,dy)=>{selObj.x+=dx*c+dy*sn;selObj.y+=-dx*sn+dy*c;};
-    if(k==='w')mv(0,-st);else if(k==='s')mv(0,st);else if(k==='a')mv(-st,0);else if(k==='d')mv(st,0);
-    else if(k==='q')selObj.ang=(selObj.ang||0)-Math.PI/12;else if(k==='e')selObj.ang=(selObj.ang||0)+Math.PI/12;
-    else if(e.key==='ArrowUp')selObj.z=(selObj.z||0)+(e.shiftKey?10:50);
-    else if(e.key==='ArrowDown')selObj.z=Math.max(0,(selObj.z||0)-(e.shiftKey?10:50));
+  if(selObj){let used=true;   // ↑/↓ lift a selected object (its W A S D / Q E moved to kbdNudge with Shift)
+    if(e.key==='ArrowUp'){pushUndo();selObj.z=(selObj.z||0)+(e.shiftKey?10:50);}
+    else if(e.key==='ArrowDown'){pushUndo();selObj.z=Math.max(0,(selObj.z||0)-(e.shiftKey?10:50));}
     else used=false;
     if(used){e.preventDefault();draw();$('hud').textContent=`${selObj.name||'Objektum'} — ${Math.round(selObj.w)}×${Math.round(selObj.d)}×${Math.round(selObj.ht)} mm · padlótól ${Math.round(selObj.z||0)} · ${Math.round((selObj.ang||0)*180/Math.PI)}°`;return;}}
   const K=e.key.toLowerCase(),STEP=42;
@@ -534,7 +566,7 @@ function setRotSilent(deg){deg=((Math.round(deg)%360)+360)%360;state.rot=deg;con
 function openCtxAt(ev){ // reuse the contextmenu pipeline via a synthetic event
   const evt=new MouseEvent('contextmenu',{clientX:ev.clientX,clientY:ev.clientY,bubbles:true,cancelable:true});
   stage.dispatchEvent(evt);}
-stage.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY<0?1.12:1/1.12,before=state.zoom;
+stage.addEventListener('wheel',e=>{e.preventDefault();lampHoverHide();const f=e.deltaY<0?1.12:1/1.12,before=state.zoom;
   state.zoom=vsClamp(state.zoom*f);const p=stage.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
   const u=p.matrixTransform(stage.getScreenCTM().inverse());
   state.panX=u.x-(u.x-state.panX)*(state.zoom/before);state.panY=u.y-(u.y-state.panY)*(state.zoom/before);setTransform();},{passive:false});

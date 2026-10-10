@@ -48,6 +48,11 @@ function settingsPanel(){
     +`<div style="font-size:11.5px;columns:2;column-gap:18px">`
     +WALL_PRESETS.map(w=>`<div>${esc(w.n)} — <b>${w.th} mm</b></div>`).join('')+`</div>`
 
+    +`<h4 style="margin:12px 0 4px">${esc(t('set.keys','Billentyűzet'))}</h4>`
+    +row('Billentyűkiosztás',`<select id="stKbd" style="width:140px">`
+      +Object.keys(KBD_LAYOUTS).map(k=>`<option value="${k}" ${kbdLayout()===k?'selected':''}>${esc(KBD_LAYOUTS[k].n)}</option>`).join('')
+      +`</select>`,'WASD/QE mindig a kamera; a kijelölés mozgatása')
+
     +`<h4 style="margin:12px 0 4px">Nyelv / Language</h4>`
     +row('Felület nyelve',`<select id="stLang" style="width:140px">`
       +Object.keys(LANGS).map(k=>`<option value="${k}" ${lang()===k?'selected':''}>${LANGS[k]}</option>`).join('')
@@ -58,6 +63,7 @@ function settingsPanel(){
       state.boxDepth=Math.max(10,+$('stBox').value||45);
       state.boardZ=Math.max(0,+$('stBoard').value||BOARD_DEFAULT_Z);
       state.plenum=Math.max(0,+$('stPlen').value||DROP_PLENUM);
+      const kb=$('stKbd').value;if(kb!==kbdLayout()){state.kbdLayout=kb;kbdApplyLayout();}
       const L=$('stLang').value;if(L!==lang())setLang(L);
       draw();},'Mentés');}
 

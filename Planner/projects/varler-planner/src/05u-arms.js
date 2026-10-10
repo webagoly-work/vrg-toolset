@@ -26,10 +26,10 @@ function armToolStart(){const S=(typeof stkActive==='function')?stkActive():null
   if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();if(typeof epToolOff==='function')epToolOff();
   state.activeLayer=L.id;state.stkView=true;renderLayers();
   state.pathType=ARM_T.rule==='csat'?'csat':'gege';setMode('path');ARM_T.on=true;
-  const mh=$('modeHint');if(mh)mh.textContent='ARM pálya: az RBX-től a végpontokig, bármely réteg végpontjára illeszthető · ágaztatás: kezdd egy meglévő pályán · Tab: süllyesztett ↔ kábelcsatorna · dupla katt: kész';
+  const mh=$('modeHint');if(mh)mh.textContent='ARM pálya: az RBX-től a végpontokig, bármely réteg végpontjára illeszthető · ágaztatás: kezdd egy meglévő pályán · R: süllyesztett ↔ kábelcsatorna · dupla katt: kész';
   lyrHud('ARM pálya — stack nézet bekapcsolva');}
 STK_TOOLS.push({k:'armRoute',active:()=>{if(!ARM_T.on)return false;if(state.mode!=='path'){ARM_T.on=false;return false;}return true;},
-  key(e){if(e.key!=='Tab')return false;e.preventDefault();ARM_T.rule=ARM_T.rule==='csat'?'sull':'csat';state.pathType=ARM_T.rule==='csat'?'csat':'gege';
+  key(e){if(!((e.key==='r'||e.key==='R')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.shiftKey))return false;e.preventDefault();ARM_T.rule=ARM_T.rule==='csat'?'sull':'csat';state.pathType=ARM_T.rule==='csat'?'csat':'gege';
     if(typeof pathDraft!=='undefined'&&pathDraft)pathDraft.ptype=state.pathType;lyrHud(ARM_T.rule==='csat'?'Kábelcsatorna':'Süllyesztett');return true;},
   mode(){ARM_T.on=false;},esc(){ARM_T.on=false;}});
 CHN_PATH_HOOKS.push(p=>{if(!ARM_T.on||!p)return;p.route='arm';chnApplyRule(p,ARM_T.rule);p.color='#5a5a5a';

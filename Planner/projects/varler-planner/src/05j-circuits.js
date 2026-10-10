@@ -108,7 +108,7 @@ function cktRedraw(){if(typeof invalidateShell==='function')invalidateShell();dr
 // var, not let: devSym reads cktPick, and a draw() before this line runs must not hit a TDZ
 var cktPick=null,cktLast=null;
 function cktPickHint(){const c=cktById(cktPick);if(!c)return '';
-  return `⚡ ${cktLabel(c)} — kattints a készülékekre (újra kattintva kiveszi) · K vagy Esc = kész`;}
+  return `⚡ ${cktLabel(c)} — kattints a készülékekre (újra kattintva kiveszi) · ${kbdKey('circuit')} vagy Esc = kész`;}
 function cktPickStart(id){const c=cktById(id);if(!c)return false;
   if(state.mode!=='select')setMode('select');
   cktPick=c.id;cktLast=c.id;selected=null;if(typeof clearMulti==='function')clearMulti();
@@ -177,7 +177,7 @@ function cktSwatch(c){return `<span class="ckSw${c.dedicated?'':' multi'}" style
 function cktDeviceHtml(d){if(!d||!cktCanJoin(d))return '';const c=cktOfDevice(d);
   return `<div class="insCkt"><div class="insRoomH"><b>Áramkör</b>`
     +(c?`<span>${esc(mcbText(c.mcb)||'—')}</span></div><div class="ckLine">${cktSwatch(c)}${esc(cktLabel(c))}</div>`
-       :`<span></span></div><div class="insSub">nincs áramkörben — K: végpont kijelölés</div>`)+`</div>`;}
+       :`<span></span></div><div class="insSub">nincs áramkörben — ${kbdKey('circuit')}: végpont kijelölés</div>`)+`</div>`;}
 // the circuit list, in the Áramkörök stage
 function cktListHtml(){const L=cktList();let mods=0;L.forEach(c=>mods+=mcbModules(c.mcb));
   const head=`<div class="insRoomH"><b>Áramkörök</b><span>${L.length} db${mods?' · '+mods+' modul':''}</span></div>`;
@@ -201,7 +201,7 @@ function cktBindInspector(root){if(!root)return;
 // ---- stage check ----
 function cktChecks(){const out=[],L=cktList();
   const cand=data.devices.filter(d=>cktCanJoin(d)&&!cktOfDevice(d)).length;
-  if(!L.length){out.push({sev:'info',msg:'Még nincs áramkör — K: végpontok kijelölése.'});return out;}
+  if(!L.length){out.push({sev:'info',msg:'Még nincs áramkör — '+kbdKey('circuit')+': végpontok kijelölése.'});return out;}
   const empty=L.filter(c=>!cktMembers(c).length).length;
   if(empty)out.push({sev:'warn',msg:empty+' áramkörnek nincs végpontja.'});
   const bad=L.filter(c=>cktStatus(c).k==='bad').length;

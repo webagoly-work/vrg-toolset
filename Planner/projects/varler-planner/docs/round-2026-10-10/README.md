@@ -174,15 +174,15 @@ any golden render (they render the default, merge off).
 
 | WP | Title | Status |
 |---|---|---|
-| U1 | Hidden = untouchable (`hitOk`) | todo |
-| U2 | Select tool selects visibly | todo |
-| U3 | Selected piece keeps the click; centre is a handle | todo |
-| U4 | Keyboard layout | todo |
-| U5 | Panels: resize the rail + inspector, Tab = full width | todo |
-| U6 | Device hover card | todo |
-| U7 | Falak egyesítve in translucent mode | todo |
-| G1 | Wide doors and windows | todo ⏸ |
-| G2 | Wall refine | todo ⏸ |
+| U1 | Hidden = untouchable (`hitOk`) | built — 2026-10-10 — uncommitted |
+| U2 | Select tool selects visibly | built — 2026-10-10 — uncommitted |
+| U3 | Selected piece keeps the click; centre is a handle | built — 2026-10-10 — uncommitted |
+| U4 | Keyboard layout | built — 2026-10-10 — uncommitted |
+| U5 | Panels: resize the rail + inspector, Tab = full width | built — 2026-10-10 — uncommitted |
+| U6 | Device hover card | built — 2026-10-10 — uncommitted |
+| U7 | Falak egyesítve in translucent mode | built — 2026-10-10 — uncommitted |
+| G1 | Wide doors and windows | built — 2026-10-10 — uncommitted (look OK’d; goldens re-baselined: openings/scene@0·45·90 + plan2d) |
+| G2 | Wall refine | ⏸ dry run shown 2026-10-10 (wrfPlan built; apply + dialog wait for the user) |
 | S1 | Stack layer menu + Info | todo |
 | S2 | One-room RBX | todo |
 | S3 | BASE + RBX on one wall section | todo |
@@ -207,6 +207,7 @@ any golden render (they render the default, merge off).
 | M06 | A **+ a sample from NV4's Elosztó; 1–2 klíma circuits expected by default** | `samples/NV4-minta.vrg-elo-presets.json` · MATERIAL §5 (`klima` tier 1 `expect:[1,2]`, new `szobakor`) · WP-M2 tests 8–9 |
 | M07 | A, **Esc falls back to B** | WP-M2 step 3, test 7 |
 | M08 | A (catalogue now 12 · 11 · 9 = 32 rows after M06) | — |
+| U4-build (asked while building, 2026-10-10) | plain **W / D lose their tool shortcuts** (camera only; Wall = 5, Device = 3) · in `'ijkl'` mark-wall = **T**, circuit pick = **N** (M and C are Move and Cable) | MATERIAL §1 correction note · `05c` `_mode('wall'/'device')` · `KBD_LAYOUTS.ijkl` |
 
 The M1 and M2 ⏸ (decisions / catalogue) are therefore satisfied; G1 (look mock) and G2 (dry run)
 still stop.

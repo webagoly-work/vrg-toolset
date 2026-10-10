@@ -197,14 +197,15 @@ function hwToolStart(type){if(typeof mrkToolsOff==='function')mrkToolsOff();HW_S
   if(type==='base'){hwBaseUnitPicker(units=>{Object.assign(HW_T,{on:true,type,units,g:null});hwHint();draw();});return;}
   HW_T.on=true;HW_T.type=type;HW_T.g=null;hwHint();draw();}
 function hwHint(){const mh=$('modeHint');if(!mh)return;
-  mh.textContent=HW_T.on?((HW_TYPES[HW_T.type]||'Elosztószekrény')+' elhelyezése'+(HW_T.type==='rbx'?' · '+HW_T.rb+' · Tab: osztály':'')
+  mh.textContent=HW_T.on?((HW_TYPES[HW_T.type]||'Elosztószekrény')+' elhelyezése'+(HW_T.type==='rbx'?' · '+HW_T.rb+' · ←/→: osztály':'')
     +(HW_T.type==='base'?' · '+HW_T.units.join(' + '):'')+' · Esc kilép'):(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}
 function hwToolOff(){HW_T.on=false;HW_T.g=null;hwHint();}
 STK_TOOLS.push({k:'hwPlace',active:()=>{if(!HW_T.on)return false;if(state.mode!=='select'||(typeof WV!=='undefined'&&WV)){hwToolOff();return false;}return true;},
   down(e){if(e.button!==0)return false;const g=hwGhost(e);if(!g)return false;HW_T.g=g;hwPlace(g);return true;},
   move(e){HW_T.g=hwGhost(e);draw();return false;},
-  key(e){if(e.key==='Tab'&&HW_T.type==='rbx'){e.preventDefault();const ks=Object.keys(HW_RB),i=ks.indexOf(HW_T.rb);
-    HW_T.rb=ks[(i+(e.shiftKey?ks.length-1:1))%ks.length];hwHint();lyrHud('RB osztály: '+HW_T.rb+' ('+HW_RB[HW_T.rb].join(' × ')+' mm)');draw();return true;}
+  key(e){const dir=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;   // was Tab (U4 freed it); the tool runs before the camera's ←/→
+    if(dir&&HW_T.type==='rbx'&&!e.ctrlKey&&!e.altKey){e.preventDefault();const ks=Object.keys(HW_RB),i=ks.indexOf(HW_T.rb);
+    HW_T.rb=ks[(i+dir+ks.length)%ks.length];hwHint();lyrHud('RB osztály: '+HW_T.rb+' ('+HW_RB[HW_T.rb].join(' × ')+' mm)');draw();return true;}
     return false;},
   esc(){hwToolOff();draw();}});
 
@@ -342,7 +343,7 @@ STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!hwIs(d))return;
 // ---- actions ----------------------------------------------------------------------------------------------------------------------------
 registerActions([
  {id:'hw.rbx',alias:'rbx roombox elhelyezes place room box',label:'RBX elhelyezése',icon:'▣',group:'Hardver',
-  hint:'RoomBox a falra; a jelölt „RBX helye” sáv vonzza. Tab: RB osztály. A szellem mutatja, mely helyiségeket szolgálja ki.',run:()=>hwToolStart('rbx')},
+  hint:'RoomBox a falra; a jelölt „RBX helye” sáv vonzza. ←/→: RB osztály. A szellem mutatja, mely helyiségeket szolgálja ki.',run:()=>hwToolStart('rbx')},
  {id:'hw.board',alias:'elosztoszekreny elhelyezes board place',label:'Elosztószekrény elhelyezése',icon:'▤',group:'Hardver',run:()=>hwToolStart('board')},
  {id:'hw.meter',alias:'meroora villanyora meter place',label:'Mérőóra elhelyezése',icon:'◔',group:'Hardver',run:()=>hwToolStart('meter')},
  {id:'hw.entry',alias:'adatbelepes isp entry place',label:'Adatbelépési pont elhelyezése',icon:'⇲',group:'Hardver',run:()=>hwToolStart('entry')},

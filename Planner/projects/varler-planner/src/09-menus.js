@@ -7,25 +7,84 @@
 // tests/golden.js — const/let are subject to temporal dead zones.
 // ==========================================================================
 //////////////////// hit-test + context menu ////////////////////
-function hitTest(e){lyrLockName=null;const [bx,by]=clientToBase(e);let hit=null,hd=(state.mobile?26:12)/state.zoom;
-  (data.roofs||[]).forEach((rf,i)=>{if(!state.levels[rf.level])return;const b=planToBase((rf.x0+rf.x1)/2,(rf.y0+rf.y1)/2,dz(rf.level,(rf.eave+rf.ridge)/2));
-    const d=Math.hypot(bx-b[0],by-b[1]);if(d<Math.max(hd,18/state.zoom)&&!lyrLockHit(rf)){hd=d;hit={t:'roofs',i};}});
-  data.objects.forEach((o,i)=>{if(!state.levels[o.level])return;const b=planToBase(o.x,o.y,dz(o.level,(o.z||0)+(o.ht||0)/2));
-    const d=Math.hypot(bx-b[0],by-b[1]);const rad=Math.max(14,Math.min(o.w||600,o.d||600)*0.5*SC*0.9)/state.zoom;
-    if(d<Math.max(hd,rad)&&!lyrLockHit(o)){hd=d;hit={t:'objects',i};}});
-  data.openings.forEach((o,i)=>{const b=planToBase(o.x,o.y,dz(o.level,0));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd&&!lyrLockHit(o)){hd=d;hit={t:'openings',i};}});
-  data.devices.forEach((o,i)=>{const b=planToBase(o.x,o.y,dz(o.level,o.h||0));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd&&!lyrLockHit(o)){hd=d;hit={t:'devices',i};}});
-  {const wr2=wallHitRect(e);if(wr2&&!lyrLockHit(wr2)){const b=planToBase((wr2.x0+wr2.x1)/2,(wr2.y0+wr2.y1)/2,dz(state.active,(wr2.h||wallH(state.active))/2));
-    const dd=Math.hypot(bx-b[0],by-b[1]);if(!hit||dd<hd+40/state.zoom){if(!hit)hit={t:'wall',level:state.active,ref:wr2};}}}
-  data.notes.forEach((o,i)=>{const b=planToBase(o.x,o.y,dz(o.level,0));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd&&!lyrLockHit(o)){hd=d;hit={t:'notes',i};}});
+// ---- what can be touched (round 2026-10-10, WP-U1) ----
+// The hit side of what 04-render draws: a level that is off, a layer or sub-layer that is hidden, a solo room that
+// excludes it, a generated object while those are switched off — none of it can be clicked, hovered, boxed or
+// menu'd. Before this only the LOCK was checked here, so a socket on a hidden layer still stole the click.
+// Snapping is deliberately not gated (Q-U01=A): drawing onto a wall layer hidden on purpose is common.
+function hitOk(item,cat,level){const L=level||(item&&item.level)||state.active;
+  if(!state.levels[L]||!layerShows(item,cat))return false;
+  if(cat==='note')return !(item&&item.hidden);                 // notes draw outside a solo room too (ntVisible)
+  if(cat==='object'&&isGenObject(item)&&!genObjectsVisible())return false;
+  if(item&&item.x!=null&&!soloOk(item.x,item.y,L))return false;
+  return true;}
+// a wall rect has no x/y (soloWallOk instead), and Nézet → Falak "rejtett" removes walls from the normal view only —
+// the white-out, blueprint and preview views draw them whatever the wall mode says
+function hitOkWall(r,level){const L=level||state.active;
+  if(!state.levels[L]||!layerShows(r,'wall')||!soloWallOk(r,L))return false;
+  return !(state.wallMode==='hidden'&&state.style!=='whiteout'&&state.style!=='blueprint'&&!prevOn());}
+// a record of a collection, by collection key (box select); a floor also obeys the solo room like 04 drawNormalGeom
+function hitOkRec(t,o,i){
+  if(t==='floors')return hitOk(o,'build')&&!(state.soloRoom&&!soloRoomIs({src:'F',i,level:o.level}));
+  return hitOk(o,{objects:'object',devices:'device',openings:'build',roofs:'build',notes:'note',paths:'path',cables:'cable'}[t]||t);}
+// ---- what a click picks (round 2026-10-10, WP-U3) ----
+// Every piece under the pointer becomes a candidate in a tier: 0 = a point piece (opening, device, note, measure,
+// cable) — nearest centre wins; 1 = an object, hit anywhere inside its DRAWN box (distance to the projected
+// silhouette, 0 inside), or a roof by its centre handle — ties go to the smaller one; 2 = the wall under the pointer;
+// 3 = the floor polygon. A lower tier always wins, so a socket inside a cabinet's box is still the socket. This
+// replaced one pass in which an object claimed half its size around its centre and then reset the distance every
+// later piece had to beat — the big piece near the cursor won. Lock checks stay where a piece WOULD hit (lyrLockHit
+// records the name it reports when nothing else was found).
+function hitHull(P){P=P.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+  const lo=[],up=[];for(const p of P){while(lo.length>1&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p);}
+  for(let i=P.length-1;i>=0;i--){const p=P[i];while(up.length>1&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p);}
+  return lo.slice(0,-1).concat(up.slice(0,-1));}
+function hitFootD(pts,bx,by){if(pointInPoly(bx,by,pts))return 0;let d=1e18;
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++)d=Math.min(d,nearestOnSegPlain(bx,by,pts[j][0],pts[j][1],pts[i][0],pts[i][1]).d);return d;}
+function hitCands(e,bx,by){const Z=state.zoom,hd=(state.mobile?26:12)/Z,C=[],add=(h,d,tier,area)=>{C.push({h,d,tier,area:area||0});};
+  (data.roofs||[]).forEach((rf,i)=>{if(!hitOk(rf,'build'))return;const b=planToBase((rf.x0+rf.x1)/2,(rf.y0+rf.y1)/2,dz(rf.level,(rf.eave+rf.ridge)/2));
+    const d=Math.hypot(bx-b[0],by-b[1]);if(d<Math.max(hd,18/Z)&&!lyrLockHit(rf))add({t:'roofs',i},d,1,Math.abs((rf.x1-rf.x0)*(rf.y1-rf.y0)));});
+  data.objects.forEach((o,i)=>{if(!hitOk(o,'object'))return;
+    const d=hitFootD(hitHull(objCorners(o).map(p=>planToBase(p[0],p[1],p[2]))),bx,by);
+    const b=planToBase(o.x,o.y,dz(o.level,(o.z||0)+(o.ht||0)/2)),dc=Math.hypot(bx-b[0],by-b[1]);   // a tiny object keeps the old 14 px reach
+    if((d<=4/Z||dc<14/Z)&&!lyrLockHit(o))add({t:'objects',i},d,1,(o.w||600)*(o.d||600));});
+  data.openings.forEach((o,i)=>{if(!hitOk(o,'build'))return;const b=planToBase(o.x,o.y,dz(o.level,0));let d=Math.hypot(bx-b[0],by-b[1]);
+    const F=opnWide()?opnFootprint(o):null;if(F){const z=dz(o.level,0);d=Math.min(d,hitFootD(F.corners.map(p=>planToBase(p[0],p[1],z)),bx,by));}   // G1: the whole footprint
+    if(d<hd&&!lyrLockHit(o))add({t:'openings',i},d,0);});
+  data.devices.forEach((o,i)=>{if(!hitOk(o,'device'))return;const b=planToBase(o.x,o.y,dz(o.level,o.h||0)),d=Math.hypot(bx-b[0],by-b[1]);if(d<hd&&!lyrLockHit(o))add({t:'devices',i},d,0);});
+  data.notes.forEach((o,i)=>{if(!hitOk(o,'note'))return;const b=planToBase(o.x,o.y,dz(o.level,0)),d=Math.hypot(bx-b[0],by-b[1]);if(d<hd&&!lyrLockHit(o))add({t:'notes',i},d,0);});
   data.measures.forEach((m,i)=>{if(!m||m.length<2)return;if(!state.levels[m[0].level])return;
     const a=planToBase(m[0].x,m[0].y,dz(m[0].level,0)),b=planToBase(m[1].x,m[1].y,dz(m[1].level,0));
-    const r=nearestOnSegPlain(bx,by,a[0],a[1],b[0],b[1]);if(r.d<hd&&r.d<14/state.zoom){hd=r.d;hit={t:'measures',i};}});
-  // floors: selectable by clicking inside the polygon (only if nothing higher-priority was hit)
-  if(!hit){const [px,py]=baseToPlan(bx,by,dz(state.active,0));
-    for(let i=data.floors.length-1;i>=0;i--){const fl=data.floors[i];if(!state.levels[fl.level])continue;
-      if(fl.poly&&pointInPoly(px,py,fl.poly)&&!lyrLockHit(fl)){hit={t:'floors',i};break;}}}
-  data.cables.forEach((cb,ci)=>cb.nodes.forEach(n=>{const b=planToBase(n.x,n.y,dz(n.level,n.h));const d=Math.hypot(bx-b[0],by-b[1]);if(d<hd&&!lyrLockHit(cb)){hd=d;hit={t:'cables',i:ci};}}));
+    const r=nearestOnSegPlain(bx,by,a[0],a[1],b[0],b[1]);if(r.d<hd&&r.d<14/Z)add({t:'measures',i},r.d,0);});
+  data.cables.forEach((cb,ci)=>{if(!circOn[cb.type])return;let d=1e18;
+    cb.nodes.forEach(n=>{if(!hitOk(cb,'cable',n.level))return;const b=planToBase(n.x,n.y,dz(n.level,n.h));d=Math.min(d,Math.hypot(bx-b[0],by-b[1]));});
+    if(d<hd&&!lyrLockHit(cb))add({t:'cables',i:ci},d,0);});
+  {const r=wallHitRect(e);if(r&&!lyrLockHit(r))add({t:'wall',level:state.active,ref:r},0,2,Math.abs((r.x1-r.x0)*(r.y1-r.y0)));}
+  {const [px,py]=baseToPlan(bx,by,dz(state.active,0));   // the topmost floor under the pointer
+    for(let i=data.floors.length-1;i>=0;i--){const fl=data.floors[i];if(!hitOkRec('floors',fl,i))continue;
+      if(fl.poly&&pointInPoly(px,py,fl.poly)&&!lyrLockHit(fl)){add({t:'floors',i},0,3,polyAreaMM(fl.poly));break;}}}
+  return C.sort((a,b)=>a.tier-b.tier||a.d-b.d||a.area-b.area);}   // stable: equal distances keep collection order
+// The selected piece keeps a click on — or right next to — its own centre (the gizmo's blue dot) even when another
+// piece's centre is nearer. That holds for a POINT piece only: a room's or a cabinet's centre is an abstract spot
+// with sockets around it, and a selected floor must not swallow them (its Move-mode dot is a .giz handle anyway).
+// A big piece (wall / object / floor / roof) instead keeps clicks inside its own box against a piece of its own size
+// class — never against a smaller piece sitting in it.
+function hitPreferSel(hit,bx,by){const s=selected;if(!s||!hit||hEq(s,hit))return hit;
+  const o=pieceRef(s);if(!o)return hit;
+  if(s.t==='wall'?!hitOkWall(o,s.level):!hitOkRec(s.t,o,s.i))return hit;
+  if(layerById((s.t==='measures'?null:o.layer)||'L0').lock)return hit;
+  const big=t=>t==='wall'||t==='objects'||t==='floors'||t==='roofs',L=pieceLevel(s);
+  if(!big(s.t)){const c=pGetC(s),b=planToBase(c[0],c[1],dz(L,pGetZ(s)));return Math.hypot(bx-b[0],by-b[1])<14/state.zoom?s:hit;}
+  if(!big(hit.t))return hit;
+  if(s.t==='objects')return hitFootD(hitHull(objCorners(o).map(p=>planToBase(p[0],p[1],p[2]))),bx,by)===0?s:hit;
+  const z=s.t==='wall'?(o.z0||0):s.t==='floors'?(o.z||0):(o.eave||0),[px,py]=baseToPlan(bx,by,dz(L,z));
+  const inside=s.t==='floors'?pointInPoly(px,py,o.poly):(px>=Math.min(o.x0,o.x1)&&px<=Math.max(o.x0,o.x1)&&py>=Math.min(o.y0,o.y1)&&py<=Math.max(o.y0,o.y1));
+  return inside?s:hit;}
+function hitTest(e){lyrLockName=null;const [bx,by]=clientToBase(e);const C=hitCands(e,bx,by);let hit=C.length?C[0].h:null;
+  // Alt+click — "something is in the way": the next piece under the pointer after the current selection, round and round
+  if(e&&e.altKey&&e.type==='pointerdown'&&e.button===0&&C.length>1){const k=(C.findIndex(c=>hEq(c.h,selected))+1)%C.length;hit=C[k].h;
+    $('hud').textContent='Átfedő elemek: '+(k+1)+' / '+C.length+' — Alt+kattintás: következő';}
+  else hit=hitPreferSel(hit,bx,by);
   return lyrLockReport(hit);}
 function removeHit(h){
   if(h&&h.t==='devices'){const dv=data.devices[h.i];
@@ -58,11 +117,11 @@ function readCircuit(){const count=+$('cCount').value||0,colors=[];for(let i=0;i
 // ---- hit helpers ----
 function pathSectionHit(e){const [bx,by]=clientToBase(e);let best=null,bd=12/state.zoom;
   data.paths.forEach((pa,pi)=>{const lane=pa.lane||0;for(let i=1;i<pa.nodes.length;i++){const a=pa.nodes[i-1],b=pa.nodes[i];
-    if(!state.levels[a.level]||!state.levels[b.level])continue;const dx=b.x-a.x,dy=b.y-a.y,ln=Math.hypot(dx,dy)||1;
+    if(!hitOk(pa,'path',a.level)||!state.levels[b.level])continue;const dx=b.x-a.x,dy=b.y-a.y,ln=Math.hypot(dx,dy)||1;
     const A=planToBase(a.x-dy/ln*lane*PATHW,a.y+dx/ln*lane*PATHW,dz(a.level,a.h)),B=planToBase(b.x-dy/ln*lane*PATHW,b.y+dx/ln*lane*PATHW,dz(b.level,b.h));
     const r=nearestOnSeg(bx,by,A[0],A[1],B[0],B[1]);if(r.d<bd&&!lyrLockHit(pa)){bd=r.d;best={pi,si:i-1,t:r.t};}}});return best;}
 function devHitIdx(e){const [bx,by]=clientToBase(e);let best=null,bd=14/state.zoom;
-  data.devices.forEach((d,i)=>{if(!state.levels[d.level])return;const b=planToBase(d.x,d.y,dz(d.level,d.h||0));const dd=Math.hypot(bx-b[0],by-b[1]);if(dd<bd&&!lyrLockHit(d)){bd=dd;best=i;}});return best;}
+  data.devices.forEach((d,i)=>{if(!hitOk(d,'device'))return;const b=planToBase(d.x,d.y,dz(d.level,d.h||0));const dd=Math.hypot(bx-b[0],by-b[1]);if(dd<bd&&!lyrLockHit(d)){bd=dd;best=i;}});return best;}
 function nearestPathNode(pa,x,y){let bi=0,bd=1e18;pa.nodes.forEach((n,i)=>{const d=Math.hypot(n.x-x,n.y-y);if(d<bd){bd=d;bi=i;}});return {i:bi,d:bd};}
 function nearestPathToPoint(x,y){let best=null,bd=1e18;data.paths.forEach((pa,pi)=>{const nn=nearestPathNode(pa,x,y);if(nn.d<bd){bd=nn.d;best={pi,ni:nn.i,d:nn.d};}});return best;}
 function boxesOnPath(pa){const res=[];data.devices.forEach(d=>{if(d.type!=='junction'&&d.type!=='board')return;const nn=nearestPathNode(pa,d.x,d.y);if(nn.d<400)res.push({ni:nn.i,type:d.type});});return res;}

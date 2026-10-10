@@ -111,6 +111,13 @@ function pLiftable(h){return h && (h.t==='objects'||h.t==='devices'||h.t==='roof
   ||h.t==='wall'||h.t==='floors'||(h.t==='openings'&&pieceRef(h)&&pieceRef(h).type!=='stairs'));}
 
 // ---- gizmo rendering: hovering arrows anchored to the piece centre ----
+// The blue centre dot is a free-move handle (round 2026-10-10, WP-U3). It had no class="giz", so a click on it fell
+// through to hitTest, which picked whichever piece's centre was nearest — often a neighbour. It is drawn LAST: all four
+// arrow shafts start at the centre, so underneath them the dot could never be reached; on top, its 8 px target only
+// takes the first 8 px of each 46 px shaft. Near-zero fill, not fill="none" — an unfilled circle is not hit-testable.
+function gizCentre(C,r){return `<g class="giz" data-ax="move" style="cursor:move">`
+  +`<circle cx="${C[0]}" cy="${C[1]}" r="8" fill="#000" fill-opacity="0.001"/>`
+  +`<circle cx="${C[0]}" cy="${C[1]}" r="${r}" fill="#2f6fb0"/></g>`;}
 function gizmoSvgAt(C,count){ // simplified move+rotate gizmo at base-coord C for a group
   const ex=[C[0]+1,C[1]],nrm=v=>{const m=Math.hypot(v[0],v[1])||1;return[v[0]/m,v[1]/m];};
   // screen axes: derive plan +X/+Y directions at this point
@@ -125,7 +132,7 @@ function gizmoSvgAt(C,count){ // simplified move+rotate gizmo at base-coord C fo
   g+=arrow(ux,'#e2483a')+arrow([-ux[0],-ux[1]],'#e2483a')+arrow(uy,'#3fae55')+arrow([-uy[0],-uy[1]],'#3fae55');
   g+=`<circle class="giz" data-ax="rot" cx="${C[0]}" cy="${C[1]-62}" r="7" fill="#fff" stroke="#2f6fb0" stroke-width="2.4" style="cursor:grab"/>`
     +`<path d="M ${C[0]-7} ${C[1]-62} A 7 7 0 1 1 ${C[0]} ${C[1]-55}" fill="none" stroke="#2f6fb0" stroke-width="2"/>`;
-  g+=`<circle cx="${C[0]}" cy="${C[1]}" r="4" fill="#2f6fb0"/></g>`;
+  g+=gizCentre(C,4)+`</g>`;
   g+=`<text x="${C[0]}" y="${C[1]+46}" font-size="10.5" text-anchor="middle" fill="#111" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${count} elem együtt</text>`;
   return vsBadge(C[0],C[1],g);}
 function gizmoSvg(h){if(!h)return'';const o=pieceRef(h);if(!o)return'';
@@ -157,8 +164,7 @@ function gizmoSvg(h){if(!h)return'';const o=pieceRef(h);if(!o)return'';
     [[-1,0,'w'],[1,0,'w'],[0,-1,'d'],[0,1,'d']].forEach(c=>{const b=planToBase(cx+c[0]*hw,cy+c[1]*hd,z);
       const col=c[2]==='w'?'#e2483a':'#3fae55';
       g+=`<rect class="giz" data-ax="rs" data-rd="${c[2]}" data-cx="${c[0]}" data-cy="${c[1]}" x="${b[0]-5}" y="${b[1]-5}" width="10" height="10" rx="2" fill="#fff" stroke="${col}" stroke-width="2" style="cursor:${c[2]==='w'?'ew':'ns'}-resize"/>`;});}
-  // centre dot
-  g+=`<circle cx="${C[0]}" cy="${C[1]}" r="3.5" fill="#2f6fb0"/></g>`;
+  g+=gizCentre(C,3.5)+`</g>`;
   // label
   g+=`<text x="${C[0]}" y="${C[1]+44}" font-size="10.5" text-anchor="middle" fill="#111" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(pLabel(h))}</text>`;
   return vsBadge(C[0],C[1],g);}
@@ -448,4 +454,4 @@ function renderDashboard(){
 $('bToolsLoc').onclick=()=>{const tp=PANELS.find(p=>p.label==='Tools');if(!tp)return;
   panelLoc[tp.pid]=(panelLoc[tp.pid]==='top')?'left':'top';renderDashboard();scheduleSave();};
 $('objSearch').oninput=()=>renderObjList();renderObjList();
-buildDashboard();window.__dashReady=true;stampVersion();renderLayers();restoreSession();if(autoLayout)applyToolLayout(state.mode);
+buildDashboard();window.__dashReady=true;stampVersion();renderLayers();kbdApplyLayout();restoreSession();if(autoLayout)applyToolLayout(state.mode);

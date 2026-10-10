@@ -125,7 +125,8 @@ function wallPropsDialog(r,level){const g=wallGeom(r),fullH=wallH(level);
   info();}
 function wallHitRect(e){const [bx,by]=clientToBase(e),lvl=state.active,arr=WALLS[lvl]||[];const zz=dz(lvl,0);
   const [px,py]=baseToPlan(bx,by,zz);
-  for(const r of arr){if(px>=r.x0-30&&px<=r.x1+30&&py>=r.y0-30&&py<=r.y1+30)return r;}return null;}
+  for(const r of arr){if(!hitOkWall(r,lvl))continue;          // a wall that is not drawn is not hit (U1, 09-menus)
+    if(px>=r.x0-30&&px<=r.x1+30&&py>=r.y0-30&&py<=r.y1+30)return r;}return null;}
 function wallPointSnap(e,startPt){const lvl=state.active,zz=dz(lvl,0);let [x,y]=baseToPlan(...clientToBase(e),zz);
   // snap tolerance is a fixed SCREEN distance (px) converted to plan mm, so it stays sane at any zoom
   const tolMM=Math.min(600,140/state.zoom/SC*1);   // ~fixed on screen, capped so it never eats open space
@@ -275,6 +276,79 @@ function rectsUnionSegs(rects){const out=[];
   return out;}
 // the wall rectangles of a level that are actually drawn, as plain rects
 function wallMergeOn(){return state.style==='blueprint'||state.wallMerge===true;}
+
+// ---- wall refine — the PLAN (round 2026-10-10, WP-G2; rules in docs/round-2026-10-10/01_MATERIAL §6) ----
+// Pure: reads WALLS[level], returns what refining would move, mutates nothing. Every L corner becomes the full square of
+// the two bands, every T stem stops exactly on the through wall's face (Q-G02 = A; B = the nearest exact form per
+// junction, C = stems through to the far face). The wall tool snaps to the partner's CENTRELINE, which leaves a notch
+// outside and half an overlap inside every L — that is the "not clean" corner this fixes.
+// Coordinates are first rounded to 1 mm (P33's were fractional after a 180° turn), so targets are whole mm and a second
+// run finds nothing to do. The result: {round, junctions[{type,a,b,moves,multi?}], collinear[], skipped[{ids,why}], moves}.
+function wrfPlan(level,opt){opt=opt||{};const form=opt.form||'A',H=wallH(level);
+  const all=(WALLS[level]||[]).filter(r=>r&&r.id&&(!opt.layer||(r.layer||'L0')===opt.layer)&&layerShows(r,'wall'));
+  const R={},round=[];   // id → the wall after the 1 mm pre-pass
+  all.forEach(r=>{const q={id:r.id,x0:Math.round(r.x0),x1:Math.round(r.x1),y0:Math.round(r.y0),y1:Math.round(r.y1),z0:r.z0||0,h:r.h||H,
+    lock:!!layerById(r.layer||'L0').lock,horiz:(r.x1-r.x0)>=(r.y1-r.y0)};R[r.id]=q;
+    if(q.x0!==r.x0||q.x1!==r.x1||q.y0!==r.y0||q.y1!==r.y1)round.push(r.id);});
+  const W=Object.values(R),Hs=W.filter(q=>q.horiz),Vs=W.filter(q=>!q.horiz);
+  const out={round,junctions:[],collinear:[],skipped:[],moves:[]},cand=[];   // cand: {id,end,to,j,dist}
+  for(const A of Hs)for(const B of Vs){
+    if(Math.abs(A.z0-B.z0)>10||A.z0>10||B.z0>10)continue;          // raised walls (lebegő fal, pengefal) take no part
+    const tA=A.y1-A.y0,tB=B.x1-B.x0,TOL=Math.max(60,1.5*Math.max(tA,tB));
+    if(!(A.x0<=B.x1+TOL&&A.x1>=B.x0-TOL&&B.y0<=A.y1+TOL&&B.y1>=A.y0-TOL))continue;
+    const passA=A.x0<B.x0-TOL&&A.x1>B.x1+TOL,passB=B.y0<A.y0-TOL&&B.y1>A.y1+TOL;
+    const type=passA&&passB?'X':(passA||passB)?'T':'L',j={type,a:A.id,b:B.id,moves:[]};out.junctions.push(j);
+    if(type==='X')continue;
+    if(A.lock||B.lock){out.skipped.push({ids:[A.id,B.id],why:'zárolt'});j.skip=true;continue;}
+    const cA=(A.y0+A.y1)/2,cB=(B.x0+B.x1)/2;
+    const aEnd=Math.abs(A.x0-cB)<=Math.abs(A.x1-cB)?'x0':'x1',bEnd=Math.abs(B.y0-cA)<=Math.abs(B.y1-cA)?'y0':'y1';
+    // B's faces seen from A's near end: the one towards A's body (near) and away from it (outer); likewise for A
+    const bNear=aEnd==='x0'?B.x1:B.x0,bOuter=aEnd==='x0'?B.x0:B.x1,aNear=bEnd==='y0'?A.y1:A.y0,aOuter=bEnd==='y0'?A.y0:A.y1;
+    const cost=ms=>ms.reduce((s,m)=>s+Math.abs(R[m.id][m.end]-m.to),0);
+    let ms;
+    if(type==='T'){const stem=passA?{id:B.id,end:bEnd,near:aNear,far:aOuter}:{id:A.id,end:aEnd,near:bNear,far:bOuter};
+      const butt=[{id:stem.id,end:stem.end,to:stem.near}],thru=[{id:stem.id,end:stem.end,to:stem.far}];
+      ms=form==='C'?thru:form==='B'?(cost(thru)<cost(butt)?thru:butt):butt;}
+    else{const square=[{id:A.id,end:aEnd,to:bOuter},{id:B.id,end:bEnd,to:aOuter}],
+        aOwns=[{id:A.id,end:aEnd,to:bOuter},{id:B.id,end:bEnd,to:aNear}],bOwns=[{id:A.id,end:aEnd,to:bNear},{id:B.id,end:bEnd,to:aOuter}];
+      ms=form==='B'?[square,aOwns,bOwns].reduce((best,f)=>cost(f)<cost(best)?f:best,square):square;}
+    ms.forEach(m=>{const w=R[m.id],dist=m.id===A.id?Math.abs(w[m.end]-cB):Math.abs(w[m.end]-cA);cand.push({...m,j,dist});});}
+  // one end, two junctions (a three-wall meeting): the end belongs to the junction whose partner band is nearest
+  const byEnd={};cand.forEach(c=>{(byEnd[c.id+'.'+c.end]=byEnd[c.id+'.'+c.end]||[]).push(c);});
+  const keep=[];Object.values(byEnd).forEach(L=>{L.sort((p,q)=>p.dist-q.dist);keep.push(L[0]);
+    L[0].js=L.filter(c=>c.to===L[0].to).map(c=>c.j);   // a shared end (same target from two junctions) counts for both
+    if(L.some(c=>c.to!==L[0].to)){L.forEach(c=>{c.j.multi=true;});out.skipped.push({ids:[...new Set(L.flatMap(c=>[c.j.a,c.j.b]))],why:'többszörös csomópont'});}});
+  // collinear pairs: same orientation, bands overlapping, ends within TOL — a ≤ 20 mm band offset is snapped and the gap closed
+  [[Hs,'x','y'],[Vs,'y','x']].forEach(([L,u,v])=>{for(let i=0;i<L.length;i++)for(let k=i+1;k<L.length;k++){const P=L[i],Q=L[k];
+    if(!(P[v+'0']<Q[v+'1']&&Q[v+'0']<P[v+'1']))continue;
+    const TOL=Math.max(60,1.5*Math.max(P[v+'1']-P[v+'0'],Q[v+'1']-Q[v+'0']));
+    const [l,r]=P[u+'0']<=Q[u+'0']?[P,Q]:[Q,P],gap=r[u+'0']-l[u+'1'];if(Math.abs(gap)>TOL)continue;
+    const off=Math.abs((P[v+'0']+P[v+'1'])/2-(Q[v+'0']+Q[v+'1'])/2),entry={a:P.id,b:Q.id,offset:Math.round(off),gap:Math.round(gap)};out.collinear.push(entry);
+    if(off>20||(off<0.5&&gap===0))continue;                          // a deliberate step in the wall, or already exact
+    if(P.lock||Q.lock){out.skipped.push({ids:[P.id,Q.id],why:'zárolt'});continue;}
+    const [lo,hi]=(P[u+'1']-P[u+'0'])<(Q[u+'1']-Q[u+'0'])?[P,Q]:[Q,P],dv=(hi[v+'0']+hi[v+'1'])/2-(lo[v+'0']+lo[v+'1'])/2;
+    entry.band=Math.round(dv);
+    keep.push({id:lo.id,end:v+'0',to:lo[v+'0']+dv,band:true},{id:lo.id,end:v+'1',to:lo[v+'1']+dv,band:true});
+    if(gap!==0)keep.push(lo===l?{id:lo.id,end:u+'1',to:r[u+'0']}:{id:lo.id,end:u+'0',to:l[u+'1']});}});
+  // guards: a move longer than max(300, 2 × thickness), a wall left under 120 mm, an opening left outside its wall
+  const next={};W.forEach(q=>{next[q.id]={...q};});
+  const real=keep.filter(m=>Math.abs(R[m.id][m.end]-m.to)>=0.5);
+  const bad=new Set();
+  real.forEach(m=>{const q=R[m.id],t=q.horiz?q.y1-q.y0:q.x1-q.x0;if(!m.band&&Math.abs(q[m.end]-m.to)>Math.max(300,2*t)){bad.add(m);out.skipped.push({ids:[m.id],why:'kézi ellenőrzés — '+Math.round(Math.abs(q[m.end]-m.to))+' mm mozgás'});}});
+  real.filter(m=>!bad.has(m)).forEach(m=>{next[m.id][m.end]=m.to;});
+  W.forEach(q=>{const n=next[q.id],len=q.horiz?n.x1-n.x0:n.y1-n.y0;let why=null;
+    if(len<120)why='túl rövid fal ('+Math.round(len)+' mm)';
+    else (data.openings||[]).forEach(o=>{if(o.level!==level||why||opnHost(o)!==WALLS[level].find(r=>r.id===q.id))return;
+      const w=o.w||(o.type==='window'?WIN_W:DOOR_W),u=q.horiz?o.x:o.y;if(u-w/2<(q.horiz?n.x0:n.y0)-1||u+w/2>(q.horiz?n.x1:n.y1)+1)why='nyílászáró a falon kívül';});
+    if(why){real.filter(m=>m.id===q.id&&!bad.has(m)).forEach(m=>bad.add(m));out.skipped.push({ids:[q.id],why});}});
+  out.moves=real.filter(m=>!bad.has(m)).map(m=>({id:m.id,end:m.end,from:R[m.id][m.end],to:m.to,band:!!m.band,js:m.js||[]}));
+  out.moves.forEach(m=>{m.js.forEach(j=>j.moves.push({id:m.id,end:m.end,from:m.from,to:m.to}));delete m.js;});
+  return out;}
+// the dry-run numbers the dialog (and the ⏸ report) show
+function wrfSummary(p){const n=t=>p.junctions.filter(j=>j.type===t).length,big=p.moves.reduce((m,x)=>Math.max(m,Math.abs(x.to-x.from)),0);
+  return {L:n('L'),T:n('T'),X:n('X'),collinear:p.collinear.length,exact:p.junctions.filter(j=>j.type!=='X'&&!j.skip&&!j.multi&&!j.moves.length).length,
+    moves:p.moves.length,maxMove:Math.round(big),rounded:p.round.length,
+    multi:p.skipped.filter(s=>s.why==='többszörös csomópont').length,skipped:p.skipped.map(s=>s.ids.join('+')+': '+s.why)};}
 function createRoom(opt){ // opt {rects:[{w,d,ox,oy}]|w,d, name,mat,walls,thick,cx,cy,level,snap}
   const lvl=opt.level||state.active;
   let cx=opt.cx,cy=opt.cy;if(cx==null||cy==null){const c=viewCentrePlan();cx=c[0];cy=c[1];}

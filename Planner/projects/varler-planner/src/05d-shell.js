@@ -87,20 +87,55 @@ function stageChecks(st){const key=shellModelKey();if(_chkVer!==key||!_chkMap){_
   return _chkMap[st.k];}
 function invalidateShell(){_chkVer=-1;_chkMap=null;_railHtml=null;_inspHtml=null;
   if(typeof _sbHtml!=='undefined')_sbHtml=null;}
-const RAIL_MIN=330,INSP_MIN=520;      // px of stage needed before each overlay earns its place
+const RAIL_MIN=330,INSP_MIN=520;      // px of stage needed before each overlay earns its place (at the default widths)
 // A width of 0 means the page has not been laid out yet (or we are in jsdom) — that is not
 // a narrow screen, so nothing is hidden on the strength of it.
 function stageW(){const el=document.querySelector('.stage-wrap');if(!el)return 9999;
   const wpx=el.getBoundingClientRect().width;return wpx>0?wpx:9999;}
-function railRoom(){return stageW()>=RAIL_MIN;}
-function inspRoom(){return stageW()>=INSP_MIN;}
+function railRoom(){return stageW()>=RAIL_MIN-PNL_DEF.rail+pnlW('rail');}   // the thresholds move with the panels (U5)
+function inspRoom(){return stageW()>=INSP_MIN-PNL_DEF.insp+pnlW('insp');}
+
+// ---- panel widths + wide work mode (round 2026-10-10, WP-U5) ----
+// The rail and the inspector are resized by a 6 px grip on their inner edge. The grips live in .stage-wrap, not in
+// the panels: both panels are rebuilt from cached HTML, which would throw a grip — and its pointer capture — away.
+const PNL_DEF={rail:104,insp:238},PNL_LIM={rail:[80,260],insp:[200,520]};
+function pnlW(p){const v=+state[p==='rail'?'railW':'inspW'],L=PNL_LIM[p];return v?Math.max(L[0],Math.min(L[1],v)):PNL_DEF[p];}
+function pnlSetW(p,w){const L=PNL_LIM[p];w=Math.round(Math.max(L[0],Math.min(L[1],+w||PNL_DEF[p])));
+  state[p==='rail'?'railW':'inspW']=w;pnlApply();return w;}
+function pnlApply(){const rail=$('stageRail'),insp=$('inspector'),wrap=document.querySelector('.stage-wrap');if(!rail||!insp||!wrap)return;
+  const rw=pnlW('rail')+'px',iw=pnlW('insp')+'px';if(rail.style.width!==rw)rail.style.width=rw;if(insp.style.width!==iw)insp.style.width=iw;
+  [['rail',rail],['insp',insp]].forEach(([p,el])=>{let g=wrap.querySelector(`.pnlGrip[data-p="${p}"]`);
+    if(!g){g=document.createElement('div');g.className='pnlGrip';g.dataset.p=p;g.title='Húzd: szélesség · dupla kattintás: alapméret';wrap.appendChild(g);pnlBindGrip(g);}
+    const on=el.style.display==='flex'||el.style.display==='block',d=on?'block':'none';if(g.style.display!==d)g.style.display=d;
+    const pos=(pnlW(p)-3)+'px';if(p==='rail'){if(g.style.left!==pos)g.style.left=pos;}else if(g.style.right!==pos)g.style.right=pos;});}
+function pnlBindGrip(g){let d=null;const p=g.dataset.p;
+  g.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();d={x:e.clientX,w:pnlW(p)};try{g.setPointerCapture(e.pointerId);}catch(_){}});
+  g.addEventListener('pointermove',e=>{if(!d)return;const dx=e.clientX-d.x;pnlSetW(p,p==='rail'?d.w+dx:d.w-dx);});
+  g.addEventListener('pointerup',()=>{if(!d)return;d=null;renderShell();});
+  g.addEventListener('dblclick',()=>{pnlSetW(p,PNL_DEF[p]);renderShell();});}
+// Tab: hide both sidebars, the rail and the inspector; Tab again restores EXACTLY what was showing — a sidebar the user
+// had already closed stays closed. The stage SVG is xMidYMid-fitted, so the plan point at its centre stays put.
+function pnlWideOn(){return !!state.wideWork;}
+function pnlSides(){return {l:document.querySelector('.side:not(.r)'),r:document.querySelector('.side.r')};}
+function pnlSyncArrows(){const S=pnlSides(),hl=$('hideL'),hr=$('hideR'),bp=$('bPanels');
+  if(hl&&S.l)hl.textContent=S.l.classList.contains('hide')?'▶':'◀';if(hr&&S.r)hr.textContent=S.r.classList.contains('hide')?'◀':'▶';
+  if(bp)bp.textContent=document.querySelector('.side:not(.hide)')?'⤢ Full view':'⤡ Panels';}
+function pnlWide(){const S=pnlSides();
+  if(!state.wideWork){state.wideWork={l:!!(S.l&&S.l.classList.contains('hide')),r:!!(S.r&&S.r.classList.contains('hide')),rail:shellOn(),insp:shellOn()};
+    if(S.l)S.l.classList.add('hide');if(S.r)S.r.classList.add('hide');state.shell=false;}
+  else{const s=state.wideWork;state.wideWork=null;
+    if(S.l)S.l.classList.toggle('hide',!!s.l);if(S.r)S.r.classList.toggle('hide',!!s.r);state.shell=!!(s.rail||s.insp);}
+  pnlSyncArrows();renderShell();setTransform();$('hud').textContent=pnlWideOn()?'Széles munkanézet — Tab: vissza':'Panelek vissza.';return pnlWideOn();}
+// a saved project that was left in wide mode opens in wide mode (the sidebars' hidden state lives in the DOM, not state)
+function pnlWideSync(){if(!state.wideWork)return;const S=pnlSides();if(S.l)S.l.classList.add('hide');if(S.r)S.r.classList.add('hide');pnlSyncArrows();}
 function renderShell(fromDraw){if(!fromDraw)_chkMap=null;   // an explicit call recomputes the checks; draw() passes true and keeps the cache
   const rail=$('stageRail'),insp=$('inspector');
   if(!rail||!insp)return;
-  if(!shellOn()){rail.style.display='none';insp.style.display='none';return;}
+  if(!shellOn()){rail.style.display='none';insp.style.display='none';pnlApply();
+    const mh0=$('modeHint');if(mh0)mh0.style.left='12px';return;}   // no rail to keep clear of (wide mode, Elrejt)
   const showRail=railRoom();
   rail.style.display=showRail?'flex':'none';
-  const mh=$('modeHint');if(mh)mh.style.left=showRail?'116px':'12px';   // clear of the rail
+  const mh=$('modeHint');if(mh)mh.style.left=showRail?(pnlW('rail')+12)+'px':'12px';   // clear of the rail
 
   const cur=shellKey(),SL=shellStages(),inStack=SL!==STAGES;
   const railHtml=(inStack?`<button class="stg stk" id="stgBack" title="Vissza az általános szakaszokhoz"><span class="stgIc">◂</span><span class="stgN">Általános</span></button>`:'')
@@ -116,7 +151,7 @@ function renderShell(fromDraw){if(!fromDraw)_chkMap=null;   // an explicit call 
     if($('stgBack'))$('stgBack').onclick=()=>stkLeave();
     $('stgPal').onclick=()=>paletteOpen();
     $('stgOff').onclick=()=>{state.shell=false;renderShell();};}
-  renderInspector();}
+  renderInspector();pnlApply();}
 function stageBadge(s){let bad=0,warn=0;
   stageChecks(s).forEach(i=>{if(i.sev==='error')bad++;else if(i.sev==='warn')warn++;});
   if(bad)return `<span class="stgB err">${bad}</span>`;
@@ -202,6 +237,10 @@ registerActions([
  {id:'shell.toggle',label:'Munkafolyamat-sáv be/ki',icon:'▤',group:'Nézet',alias:'shell rail workflow inspector',
   hint:'A bal oldali szakasz-sáv és a jobb oldali tulajdonság-panel.',
   run:()=>{state.shell=!shellOn();renderShell();}},
+ // U5: Tab is free since U4 moved the five tool uses to ←/→ and R. A modal or an editor keeps Tab for its own fields.
+ {id:'view.wide',alias:'wide full screen focus tab panels sidebars hide szeles teljes',label:'Széles munkanézet',icon:'⛶',group:'Nézet',keys:['tab'],
+  hint:'Az oldalsávok, a munkafolyamat-sáv és a jobb oldali panel el / vissza — Tab. Pontosan azt hozza vissza, ami látszott.',
+  when:c=>!c.inEditor&&!(modalBg&&modalBg.style.display==='flex'),run:()=>pnlWide()},
  {id:'shell.next',label:'Következő szakasz',icon:'▶',group:'Nézet',keys:['mod+arrowright'],
   run:()=>{const L=shellStages(),i=L.findIndex(s=>s.k===shellKey());setStage(L[Math.min(i+1,L.length-1)].k);}},
  {id:'shell.prev',label:'Előző szakasz',icon:'◀',group:'Nézet',keys:['mod+arrowleft'],

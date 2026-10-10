@@ -83,10 +83,10 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
         if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;
         const n0=faces.length;pushFloor(faces,fl.poly,fz+mm,dcC,'#8fa0a8','4 3',dcO);lyrFaces(faces,n0,fl,'floor');});}
     if(wm!=='hidden'){const wrs=(WALLS[l]||[]).filter(r=>layerShows(r,'wall')&&soloWallOk(r,l));
-      const merge=wallMergeOn()&&wm==='solid';
-      const sibs=merge?wrs.map(r=>({r,z0:fz+(r.z0||0),z1:fz+(r.z0||0)+(r.h||wallH(l))})):null;
+      const merge=wallMergeOn()&&wm!=='hidden';   // U7: was solid-only, so in the default translucent mode the box did nothing
+      const sibs=merge?wrs.map((r,k)=>({r,k,z0:fz+(r.z0||0),z1:fz+(r.z0||0)+(r.h||wallH(l))})):null;
       const flat=merge&&state.pitch>=88;
-      for(const r of wrs){const n0=faces.length;pushBox(faces,r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)),op,false,merge?{sibs,flat}:null);lyrFaces(faces,n0,r,'wall');}
+      wrs.forEach((r,k)=>{const n0=faces.length;pushBox(faces,r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)),op,false,merge?{sibs,flat,clip:op<1,k}:null);lyrFaces(faces,n0,r,'wall');});
       // from above, one contour around the whole wall body instead of a line per rectangle
       if(flat)rectsUnionSegs(wrs).forEach(g=>{const zt=fz+wallH(l);
         faces.push({pts:[[g[0],g[1],zt],[g[2],g[3],zt]],fill:'none',stroke:'#514c43',op:1,dash:null,key:depthOf((g[0]+g[2])/2,(g[1]+g[3])/2,zt)+40});});}
@@ -108,7 +108,9 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
   const floorFaces=faces.filter(f=>f.ground),solidFaces=faces.filter(f=>!f.ground);
   solidFaces.sort((a,b)=>a.key-b.key);
   const ordered=floorFaces.concat(solidFaces);
-  let s='';for(const f of ordered){if(f.op===0)continue;const fo=f.op<1?` fill-opacity="${f.op}"`:'';
+  let s='';for(const f of ordered){if(f.op===0)continue;
+    if(f.raw){s+=f.lop?`<g opacity="${lyrOpStr(f.lop)}">${f.raw}</g>`:f.raw;continue;}   // G1: an opening's plan symbol
+    const fo=f.op<1?` fill-opacity="${f.op}"`:'';
     const d=f.dash?` stroke-dasharray="${f.dash}"`:'',lo=f.lop?` opacity="${lyrOpStr(f.lop)}"`:'';   // lop = layer opacity (05l)
     s+=`<polygon points="${p2b(f.pts)}" fill="${f.fill}"${fo} stroke="${f.stroke}" stroke-width="${nvSW(f.sw||NV_PEN.edge)}"${d}${lo}/>`;}
   s+=raisedMarks(raised);
@@ -191,36 +193,38 @@ function nvMM(paperMm){return paperMm*bpScaleN();}           // paper mm → mod
 function bpDefs(){const p=bpU(1.3).toFixed(2);                   // hatch pitch, paper mm
   return `<defs><pattern id="bph" width="${p}" height="${p}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">`
     +`<rect width="${p}" height="${p}" fill="#fff"/><line x1="0" y1="0" x2="0" y2="${p}" stroke="#111" stroke-width="${bpSW(BP_PEN.hair)}"/></pattern></defs>`;}
-function bpDoorSymbol(q,W,o,wdt,z,corners){
+const BP_DOOR_PEN={c:'#111',sw:bpSW,body:BP_PEN.body,thin:BP_PEN.thin,wall:BP_PEN.wall,fill:'#fff',arc:''};
+// pen = the pen set: the blueprint by default; the modelling view (G1, opnSymbol) passes lighter pens and a dashed swing
+function bpDoorSymbol(q,W,o,wdt,z,corners,pen){pen=pen||BP_DOOR_PEN;   // not P: the roll-up drum loop has a local P
   const [a,b2,c2,d2]=corners;const kind=doorKind(o);
-  let s=`<polyline points="${p2b([[a[0],a[1],z],[d2[0],d2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`
-       +`<polyline points="${p2b([[b2[0],b2[1],z],[c2[0],c2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
+  let s=`<polyline points="${p2b([[a[0],a[1],z],[d2[0],d2[1],z]])}" fill="none" stroke="${pen.c}" stroke-width="${pen.sw(pen.body)}"/>`
+       +`<polyline points="${p2b([[b2[0],b2[1],z],[c2[0],c2[1],z]])}" fill="none" stroke="${pen.c}" stroke-width="${pen.sw(pen.body)}"/>`;
   const hingeAtStart=!((o.variant||0)&2), side=((o.variant||0)&1)?1:-1;
   const ux=W.horiz?1:0, uy=W.horiz?0:1, px=W.horiz?0:1, py=W.horiz?1:0;
   const cxm=(q.x0+q.x1)/2, cym=(q.y0+q.y1)/2, th=W.horiz?(q.y1-q.y0):(q.x1-q.x0);
   const u0=[W.horiz?q.x0:cxm, W.horiz?cym:q.y0], u1=[W.horiz?q.x1:cxm, W.horiz?cym:q.y1];
   const leafArc=(hinge,dirSign,wid)=>{ // leaf line + quarter-circle swing
     const end=[hinge[0]+px*wid*side, hinge[1]+py*wid*side];
-    let t=`<polyline points="${p2b([[hinge[0],hinge[1],z],[end[0],end[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
+    let t=`<polyline points="${p2b([[hinge[0],hinge[1],z],[end[0],end[1],z]])}" fill="none" stroke="${pen.c}" stroke-width="${pen.sw(pen.body)}"/>`;
     const arc=[];for(let i=0;i<=10;i++){const k=i/10*Math.PI/2;
       arc.push([hinge[0]+ux*dirSign*wid*Math.sin(k)+px*wid*side*Math.cos(k),
                 hinge[1]+uy*dirSign*wid*Math.sin(k)+py*wid*side*Math.cos(k), z]);}
-    return t+`<polyline points="${p2b(arc)}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;};
+    return t+`<polyline points="${p2b(arc)}" fill="none" stroke="${pen.c}" stroke-width="${pen.sw(pen.thin)}"${pen.arc}/>`;};
   const slab=(off,frac,dash)=>{ // a leaf drawn as a thin slab parallel to the wall
     const t0=off,t1=off+wdt*frac,d=th*0.32;
     const A=[W.horiz?(q.x0+t0):(cxm-d/2+px*0), W.horiz?(cym-d/2):(q.y0+t0)];
     const w0=W.horiz?(t1-t0):d, h0=W.horiz?d:(t1-t0);
     const pts=W.horiz?[[A[0],cym-d/2+side*th*0.9],[A[0]+w0,cym-d/2+side*th*0.9],[A[0]+w0,cym+d/2+side*th*0.9],[A[0],cym+d/2+side*th*0.9]]
                      :[[cxm-d/2+side*th*0.9,q.y0+t0],[cxm+d/2+side*th*0.9,q.y0+t0],[cxm+d/2+side*th*0.9,q.y0+t1],[cxm-d/2+side*th*0.9,q.y0+t1]];
-    return `<polygon points="${p2b(pts.map(pp=>[pp[0],pp[1],z]))}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"${dash?' stroke-dasharray="'+vsDash('5 3')+'"':''}/>`;};
+    return `<polygon points="${p2b(pts.map(pp=>[pp[0],pp[1],z]))}" fill="${pen.fill}" stroke="${pen.c}" stroke-width="${pen.sw(pen.body)}"${dash?' stroke-dasharray="'+vsDash('5 3')+'"':''}/>`;};
   const arrow=(frac)=>{ // sliding direction arrow along the wall
     const t0=wdt*0.2,t1=wdt*0.8,off=side*th*1.5;
     const A=W.horiz?[q.x0+t0,cym+off]:[cxm+off,q.y0+t0], B=W.horiz?[q.x0+t1,cym+off]:[cxm+off,q.y0+t1];
     const hx=(B[0]-A[0])*0.12,hy=(B[1]-A[1])*0.12,nx=px*wdt*0.05,ny=py*wdt*0.05;
-    return `<polyline points="${p2b([[A[0],A[1],z],[B[0],B[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`
-      +`<polyline points="${p2b([[B[0]-hx+nx,B[1]-hy+ny,z],[B[0],B[1],z],[B[0]-hx-nx,B[1]-hy-ny,z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;};
+    return `<polyline points="${p2b([[A[0],A[1],z],[B[0],B[1],z]])}" fill="none" stroke="${pen.c}" stroke-width="${pen.sw(pen.thin)}"/>`
+      +`<polyline points="${p2b([[B[0]-hx+nx,B[1]-hy+ny,z],[B[0],B[1],z],[B[0]-hx-nx,B[1]-hy-ny,z]])}" fill="none" stroke="${pen.c}" stroke-width="${pen.sw(pen.thin)}"/>`;};
   const label=(txt)=>{const b=planToBase(cxm+px*side*th*2.4,cym+py*side*th*2.4,z);
-    return `<text x="${b[0]}" y="${b[1]}" font-size="${bpFS(BP_TXT.small)}" text-anchor="middle" fill="#111">${esc(txt)}</text>`;};
+    return `<text x="${b[0]}" y="${b[1]}" font-size="${bpFS(BP_TXT.small)}" text-anchor="middle" fill="${pen.c}">${esc(txt)}</text>`;};
   if(kind==='opening')return s;                                   // bare structural opening: reveals only
   if(kind==='hinged'||kind==='fire'){
     s+=leafArc(hingeAtStart?u0:u1,hingeAtStart?1:-1,wdt);
@@ -231,7 +235,7 @@ function bpDoorSymbol(q,W,o,wdt,z,corners){
   if(kind==='folding'){                                           // concertina: zigzag across the opening
     const n=4,zz=[];for(let i=0;i<=n;i++){const t=i/n*wdt,dpt=(i%2?1:0)*th*0.9*side;
       zz.push([W.horiz?(q.x0+t):(cxm+dpt), W.horiz?(cym+dpt):(q.y0+t), z]);}
-    s+=`<polyline points="${p2b(zz)}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;return s;}
+    s+=`<polyline points="${p2b(zz)}" fill="none" stroke="${pen.c}" stroke-width="${pen.sw(pen.body)}"/>`;return s;}
   if(kind==='sliding'){s+=slab(0,1,false)+arrow();return s;}       // leaf parked in front of the wall
   if(kind==='pocket'){                                             // leaf disappears into the wall: dashed
     s+=slab(0,1,true)+arrow();
@@ -243,17 +247,17 @@ function bpDoorSymbol(q,W,o,wdt,z,corners){
     const th2=th*0.55,inSide=side;                                 // shown on the room side of the wall
     const c0=[W.horiz?q.x0:(cxm+inSide*th2),W.horiz?(cym+inSide*th2):q.y0];
     const c1=[W.horiz?q.x1:(cxm+inSide*th2),W.horiz?(cym+inSide*th2):q.y1];
-    s+=`<polyline points="${p2b([[c0[0],c0[1],z],[c1[0],c1[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.wall)}"/>`;
+    s+=`<polyline points="${p2b([[c0[0],c0[1],z],[c1[0],c1[1],z]])}" fill="none" stroke="${pen.c}" stroke-width="${pen.sw(pen.wall)}"/>`;
     // the coiled drum, drawn as two arcs at the opening's ends
     [[c0,1],[c1,-1]].forEach(pair=>{const P=pair[0],dir=pair[1],rr=th*0.42,arc=[];
       for(let i=0;i<=12;i++){const k=i/12*Math.PI*1.6;
         arc.push([P[0]+ux*dir*rr*Math.sin(k)*0.5+px*inSide*rr*(1-Math.cos(k))*0.5,
                   P[1]+uy*dir*rr*Math.sin(k)*0.5+py*inSide*rr*(1-Math.cos(k))*0.5,z]);}
-      s+=`<polyline points="${p2b(arc)}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;});
+      s+=`<polyline points="${p2b(arc)}" fill="none" stroke="${pen.c}" stroke-width="${pen.sw(pen.thin)}"/>`;});
     // the slat pack, hatched, partially projecting into the room
     const n2=6,zz=[];for(let i=0;i<=n2;i++){const t=i/n2;
       const A=[c0[0]+(c1[0]-c0[0])*t,c0[1]+(c1[1]-c0[1])*t];
-      zz.push(`<line x1="${planToBase(A[0],A[1],z)[0]}" y1="${planToBase(A[0],A[1],z)[1]}" x2="${planToBase(A[0]+px*inSide*th*0.3,A[1]+py*inSide*th*0.3,z)[0]}" y2="${planToBase(A[0]+px*inSide*th*0.3,A[1]+py*inSide*th*0.3,z)[1]}" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`);}
+      zz.push(`<line x1="${planToBase(A[0],A[1],z)[0]}" y1="${planToBase(A[0],A[1],z)[1]}" x2="${planToBase(A[0]+px*inSide*th*0.3,A[1]+py*inSide*th*0.3,z)[0]}" y2="${planToBase(A[0]+px*inSide*th*0.3,A[1]+py*inSide*th*0.3,z)[1]}" stroke="${pen.c}" stroke-width="${pen.sw(pen.thin)}"/>`);}
     s+=zz.join('')+label('RK ↑');return s;}
   return s;}
 function bpWallSpans(r,level){const horiz=(r.x1-r.x0)>=(r.y1-r.y0);
@@ -489,8 +493,38 @@ function pushBox(faces,r,z0,z1,op,ghost,mg){const v=boxCorners(r,z0,z1);
     if(mg&&faceBuried(pts,n0,z0,z1,mg.sibs))continue;
     const n=rotN(n0,state.rot);const cx=(r.x0+r.x1)/2,cy=(r.y0+r.y1)/2,cz=(z0+z1)/2;
     const flatTop=mg&&mg.flat;   // seen from straight above the contour is drawn once, around the union
-    faces.push({pts,fill:shade(ghost?[198,195,188]:[150,146,136],n),stroke:flatTop?'none':(ghost?'#a49e93':'#514c43'),
-      op:ghost?Math.min(op,0.45):op,dash:null,key:depthOf(cx,cy,cz)});}}
+    const face={pts,fill:shade(ghost?[198,195,188]:[150,146,136],n),stroke:flatTop?'none':(ghost?'#a49e93':'#514c43'),
+      op:ghost?Math.min(op,0.45):op,dash:null,key:depthOf(cx,cy,cz)};
+    if(mg&&mg.clip){wmgClipFace(pts,r,z0,z1,mg).forEach(p=>faces.push(Object.assign({},face,{pts:p})));continue;}
+    faces.push(face);}}
+// ---- one body for translucent walls (round 2026-10-10, WP-U7) ----
+// faceBuried tests a face's CENTRE, so at a corner both walls' top faces survive over the overlap square, and so does
+// every side face only partly inside a neighbour. At opacity 1 nobody sees it; at 0.5 that square is painted twice —
+// the darker corners. Walls are axis-aligned boxes, so cutting is rectangle arithmetic, not polygon clipping.
+// a minus every rect of list, as ≤ 4·n axis-aligned pieces in the same {u0,u1,v0,v1} form
+function rectMinus(a,list){const EPS=0.5;let out=[a];
+  for(const b of list){const nx=[];
+    for(const p of out){const i0=Math.max(p.u0,b.u0),i1=Math.min(p.u1,b.u1),j0=Math.max(p.v0,b.v0),j1=Math.min(p.v1,b.v1);
+      if(i1-i0<=EPS||j1-j0<=EPS){nx.push(p);continue;}
+      if(i0-p.u0>EPS)nx.push({u0:p.u0,u1:i0,v0:p.v0,v1:p.v1});
+      if(p.u1-i1>EPS)nx.push({u0:i1,u1:p.u1,v0:p.v0,v1:p.v1});
+      if(j0-p.v0>EPS)nx.push({u0:i0,u1:i1,v0:p.v0,v1:j0});
+      if(p.v1-j1>EPS)nx.push({u0:i0,u1:i1,v0:j1,v1:p.v1});}
+    out=nx;}
+  return out;}
+// the visible pieces of one box face: cut away where the space just outside it is inside a sibling (a corner square,
+// a butt joint), and where an EARLIER sibling has the same face in the same plane (two outer faces in line — the
+// first one keeps the shared stretch). Returns [pts] when nothing is cut.
+function wmgClipFace(pts,r,z0,z1,mg){const E=2,B=[[r.x0,r.x1],[r.y0,r.y1],[z0,z1]];
+  let a=-1;for(let k=0;k<3;k++)if(pts.every(p=>Math.abs(p[k]-pts[0][k])<1e-6)){a=k;break;}
+  if(a<0)return [pts];
+  const c=pts[0][a],sg=c>(B[a][0]+B[a][1])/2?1:-1,U=a===0?1:0,V=a===2?1:2,xo=c+sg*E,cut=[];
+  mg.sibs.forEach(s=>{if(s.k===mg.k)return;const S=[[s.r.x0,s.r.x1],[s.r.y0,s.r.y1],[s.z0,s.z1]];
+    const inside=xo>S[a][0]&&xo<S[a][1],twin=s.k<mg.k&&Math.abs((sg>0?S[a][1]:S[a][0])-c)<=E;
+    if(inside||twin)cut.push({u0:S[U][0],u1:S[U][1],v0:S[V][0],v1:S[V][1]});});
+  if(!cut.length)return [pts];
+  return rectMinus({u0:B[U][0],u1:B[U][1],v0:B[V][0],v1:B[V][1]},cut)
+    .map(p=>[[p.u0,p.v0],[p.u1,p.v0],[p.u1,p.v1],[p.u0,p.v1]].map(([u,v])=>{const q=[0,0,0];q[a]=c;q[U]=u;q[V]=v;return q;}));}
 // is the space just outside this face inside another wall?
 function faceBuried(pts,n,z0,z1,sibs){const E=2;
   let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=pts.length;cy/=pts.length;cz/=pts.length;
@@ -641,6 +675,7 @@ const STAIR_W=1000,RISER=180,GOING=250,STAIR_TH=300;
 function bgCol(){return state.style==='whiteout'?'#ffffff':prevOn()?PREV.ground:'#fbfaf7';}
 function openingSym(o){
   if(o.type==='stairs')return stairsSym(o);
+  {const F=opnWide()?opnFootprint(o):null;if(F)return opnSymWide(o,F);}
   const d=[Math.cos(o.ang),Math.sin(o.ang)],win=o.type==='window';
   const ww=o.w||(win?WIN_W:DOOR_W),wh=o.h||(win?WIN_H:DOOR_H),sill=(o.sill!=null?o.sill:(win?WIN_SILL:0)),hw=ww/2;
   const z0=dz(o.level,sill),z1=dz(o.level,sill+wh);
@@ -677,11 +712,64 @@ function stairsSym(o){const {faces,hole}=stairsFaceList(o);faces.sort((a,b)=>a.k
   let s=faces.map(f=>`<polygon points="${p2b(f.pts)}" fill="${f.fill}" fill-opacity="0.92" stroke="#5b5f63" stroke-width="${vsP(0.8)}"/>`).join('');
   if(hole)s+=`<polygon points="${p2b(hole)}" fill="${bgCol()}" stroke="#5b5f63" stroke-width="${vsP(0.9)}" stroke-dasharray="${vsDash('5 4')}"/>`;
   return s;}
+// ---- wide doors and windows (round 2026-10-10, WP-G1) ----
+// An opening used to be one zero-thickness quad on the wall centreline, so from above a door or a window was a line.
+// 'wide' draws its footprint across the host wall: a door is a gap from face to face with its swing, a window a pale
+// pane that stops short of both faces with a double glass line. No host wall → the old line look. 'line' is kept.
+const OPN_DEFAULT='wide';   // 'line' until the goldens had proven the refactor pure (identical 70/70), then flipped once
+const OPN_GLASS='#e3eef8';
+function opnWide(){return (state.openingStyle||OPN_DEFAULT)==='wide';}
+// the wall an opening sits in: same level and orientation, the opening's centre within its band (bpWallSpans' test)
+function opnHost(o){if(!o||o.type==='stairs')return null;
+  const oh=Math.abs(Math.cos(o.ang||0))>=Math.abs(Math.sin(o.ang||0));let best=null,bd=1e18;
+  for(const r of (WALLS[o.level]||[])){const h=(r.x1-r.x0)>=(r.y1-r.y0);if(h!==oh)continue;
+    const t=h?(r.y1-r.y0):(r.x1-r.x0),u=h?o.x:o.y,off=h?Math.abs(o.y-(r.y0+r.y1)/2):Math.abs(o.x-(r.x0+r.x1)/2);
+    if(off>t/2+220||u<(h?r.x0:r.y0)-1||u>(h?r.x1:r.y1)+1)continue;
+    if(off<bd){bd=off;best=r;}}
+  return best;}
+// the window pane's inset from each wall face: 12 % of the wall, 15–40 mm, and a pane never narrower than 10 mm
+function opnInset(t){return Math.max(0,Math.min(Math.max(15,Math.min(40,0.12*t)),(t-10)/2));}
+// {door,h,t,c,u0,u1,v0,v1,inset,host,P,corners} in plan mm: u along the wall, v across; P(u,v) → [x,y]
+function opnFootprint(o){const r=opnHost(o);if(!r)return null;
+  const h=(r.x1-r.x0)>=(r.y1-r.y0),t=h?(r.y1-r.y0):(r.x1-r.x0),c=h?(r.y0+r.y1)/2:(r.x0+r.x1)/2;
+  const door=o.type!=='window',w=o.w||(door?DOOR_W:WIN_W),u=h?o.x:o.y,ins=door?0:opnInset(t),half=t/2-ins;
+  const P=(uu,vv)=>h?[uu,vv]:[vv,uu],u0=u-w/2,u1=u+w/2,v0=c-half,v1=c+half;
+  return {door,h,t,c,u0,u1,v0,v1,inset:ins,host:r,P,corners:[P(u0,v0),P(u1,v0),P(u1,v1),P(u0,v1)]};}
+// the plan symbol at height z: the footprint, then a door's jambs + leaf + swing (the blueprint's own shapes with the
+// modelling pens) or a window's double glass line. wo = white-out: ink only.
+function opnTopSvg(o,F,z,wo){const pts=F.corners.map(p=>[p[0],p[1],z]),ink=wo?'#111':'#2b2822';
+  let s=F.door?`<polygon points="${p2b(pts)}" fill="${bgCol()}" fill-opacity="${wo?1:0.96}" stroke="none"/>`
+    :`<polygon points="${p2b(pts)}" fill="${wo?'#fff':OPN_GLASS}" fill-opacity="${wo?1:0.85}" stroke="${wo?ink:'#3a3a3a'}" stroke-width="${nvSW(NV_PEN.edge)}"/>`;
+  if(F.door){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),q={x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys)};
+    const a=[q.x0,q.y0],b2=F.h?[q.x1,q.y0]:[q.x0,q.y1],c2=[q.x1,q.y1],d2=F.h?[q.x0,q.y1]:[q.x1,q.y0];
+    s+=bpDoorSymbol(q,{horiz:F.h},o,F.u1-F.u0,z,[a,b2,c2,d2],
+      {c:ink,sw:nvSW,body:NV_PEN.thick,thin:NV_PEN.soft,wall:NV_PEN.thick,fill:bgCol(),arc:` stroke-dasharray="${vsDash('4 3')}"`});}
+  else[-3,3].forEach(g=>{const A=F.P(F.u0,F.c+g),B=F.P(F.u1,F.c+g);
+    s+=`<polyline points="${p2b([[A[0],A[1],z],[B[0],B[1],z]])}" fill="none" stroke="${wo?ink:'#2f6fb0'}" stroke-width="${nvSW(NV_PEN.soft)}"/>`;});
+  return s;}
+// white-out / ghost: the same footprint as ink — from above the plan symbol, at an angle the four faces as outlines
+function opnSymWide(o,F){if(state.flat||state.pitch>=88)return opnTopSvg(o,F,opnTopZ(o,F),true);
+  const [z0,z1]=opnZ(o),P3=(u,v,z)=>{const p=F.P(u,v);return [p[0],p[1],z];};let s='';
+  [F.v0,F.v1].forEach(v=>{s+=`<polygon points="${p2b([P3(F.u0,v,z0),P3(F.u1,v,z0),P3(F.u1,v,z1),P3(F.u0,v,z1)])}" fill="none" stroke="${F.door?'#3a3a3a':'#2f6fb0'}" stroke-width="${vsP(1.2)}" stroke-linejoin="round"/>`;});
+  [F.u0,F.u1].forEach(u=>{s+=`<polygon points="${p2b([P3(u,F.v0,z0),P3(u,F.v1,z0),P3(u,F.v1,z1),P3(u,F.v0,z1)])}" fill="none" stroke="#3a3a3a" stroke-width="${vsP(0.8)}"/>`;});
+  return s;}
+function opnZ(o){const win=o.type==='window',wh=o.h||(win?WIN_H:DOOR_H),sill=(o.sill!=null?o.sill:(win?WIN_SILL:0));return [dz(o.level,sill),dz(o.level,sill+wh)];}
+function opnTopZ(o,F){const r=F.host;return dz(o.level,(r.z0||0)+(r.h||wallH(o.level)))+1;}
+// 3D: the two long faces (door: the wall faces; window: the inset planes) and the two jambs; from above, the plan symbol
+// at wall-top height, sorted above the wall's top face
+function opnPushWide(faces,o,F){const win=!F.door,[z0,z1]=opnZ(o),P3=(u,v,z)=>{const p=F.P(u,v);return [p[0],p[1],z];};
+  const cp=F.P((F.u0+F.u1)/2,F.c),key=depthOf(cp[0],cp[1],(z0+z1)/2)+40;
+  [F.v0,F.v1].forEach(v=>faces.push({pts:[P3(F.u0,v,z0),P3(F.u1,v,z0),P3(F.u1,v,z1),P3(F.u0,v,z1)],
+    fill:win?OPN_GLASS:bgCol(),op:win?0.35:0.96,stroke:win?'#2f6fb0':'#3a3a3a',sw:NV_PEN.edge,key}));
+  [F.u0,F.u1].forEach(u=>faces.push({pts:[P3(u,F.v0,z0),P3(u,F.v1,z0),P3(u,F.v1,z1),P3(u,F.v0,z1)],
+    fill:win?'#c9d8e6':bgCol(),op:win?0.9:0.96,stroke:'#3a3a3a',sw:NV_PEN.soft,key:key+1}));
+  if(state.flat||state.pitch>=88){const zt=opnTopZ(o,F);faces.push({raw:opnTopSvg(o,F,zt,false),key:depthOf(cp[0],cp[1],zt)+80});}}
 function pushOpening(faces,o){
   if(o.type==='stairs'){const {faces:sf,hole}=stairsFaceList(o);
     sf.forEach(f=>faces.push({pts:f.pts,fill:f.fill,op:0.92,stroke:'#5b5f63',sw:NV_PEN.soft,key:f.key}));
     if(hole){let cx=0,cy=0,cz=0;hole.forEach(q=>{cx+=q[0];cy+=q[1];cz+=q[2];});cx/=4;cy/=4;cz/=4;
       faces.push({pts:hole,fill:bgCol(),op:1,stroke:'#5b5f63',sw:NV_PEN.edge,dash:'5 4',key:depthOf(cx,cy,cz)});}return;}
+  {const F=opnWide()?opnFootprint(o):null;if(F){opnPushWide(faces,o,F);return;}}
   const d=[Math.cos(o.ang),Math.sin(o.ang)],win=o.type==='window';
   const ww=o.w||(win?WIN_W:DOOR_W),wh=o.h||(win?WIN_H:DOOR_H),sill=(o.sill!=null?o.sill:(win?WIN_SILL:0)),hw=ww/2;
   const z0=dz(o.level,sill),z1=dz(o.level,sill+wh);
@@ -717,6 +805,40 @@ function by(P){return planToBase(P[0],P[1],P[2])[1].toFixed(1);}
 
 function cableLen(cb){let L=0;for(let i=1;i<cb.nodes.length;i++){const a=cb.nodes[i-1],b=cb.nodes[i];
   L+=Math.hypot(b.x-a.x,b.y-a.y)+Math.abs(wz(b.level,b.h)-wz(a.level,a.h));}return L/1000;}
+
+// ---- the selection aura (round 2026-10-10, WP-U2) ----
+// A discreet glow around the selected piece: a wide pale stroke under a thin bright one. No SVG filter — a blur is
+// the first thing an exporter throws away (PRIMER). The widths and the gap are SCREEN pixels (C/state.zoom), so the
+// glow reads the same at every zoom and view scale while the shape it hugs is the model's own. Overlay only: it
+// must never reach the scene string (updateTotals caching, golden renders).
+const SEL_AURA={c:'#2f8fff',wide:7,thin:1.6,op:0.22,gap:6};
+function selAuraShape(h){const o=pieceRef(h);if(!o)return null;const L=pieceLevel(h),Z=state.zoom;
+  const poly=(pts,z)=>({poly:pts.map(p=>planToBase(p[0],p[1],dz(L,z)))});
+  const box=(cx,cy,w,d,ang)=>{const c=Math.cos(ang||0),s=Math.sin(ang||0);
+    return [[-w/2,-d/2],[w/2,-d/2],[w/2,d/2],[-w/2,d/2]].map(p=>[cx+p[0]*c-p[1]*s,cy+p[0]*s+p[1]*c]);};
+  const ring=(x,y,z,r)=>({c:planToBase(x,y,dz(L,z)),r});
+  switch(h.t){
+    case 'devices':return ring(o.x,o.y,o.h||0,icoBodyR(o,devK())+SEL_AURA.gap/Z);
+    case 'wall':return poly([[o.x0,o.y0],[o.x1,o.y0],[o.x1,o.y1],[o.x0,o.y1]],o.z0||0);
+    case 'roofs':return poly([[o.x0,o.y0],[o.x1,o.y0],[o.x1,o.y1],[o.x0,o.y1]],o.eave||0);
+    case 'floors':return poly(o.poly,o.z||0);
+    case 'objects':return poly(box(o.x,o.y,o.w||600,o.d||600,o.ang),o.z||0);
+    case 'openings':{if(o.type==='stairs')return ring(o.x,o.y,0,14/Z);
+      {const F=opnWide()?opnFootprint(o):null;if(F)return poly(F.corners,0);}   // G1: the glow traces the wide footprint
+      // the line look: a face on the centreline, so the glow takes its host wall's thickness
+      const host=(WALLS[L]||[]).find(r=>o.x>=r.x0-5&&o.x<=r.x1+5&&o.y>=r.y0-5&&o.y<=r.y1+5);
+      return poly(box(o.x,o.y,pGetWD(h)[0],host?Math.min(host.x1-host.x0,host.y1-host.y0):200,o.ang),0);}
+    case 'notes':return ring(o.x,o.y,0,12/Z);
+    case 'measures':return {line:o.map(p=>planToBase(p.x,p.y,dz(p.level,0)))};
+    case 'cables':return {line:o.nodes.filter(n=>state.levels[n.level]).map(n=>planToBase(n.x,n.y,dz(n.level,n.h)))};}
+  return null;}
+function selAuraSvg(h){const g=selAuraShape(h);if(!g||(g.line&&g.line.length<2))return '';const A=SEL_AURA,Z=state.zoom;
+  const one=(w,op)=>{const st=`fill="none" stroke="${A.c}" stroke-width="${(w/Z).toFixed(3)}" stroke-opacity="${op}" stroke-linejoin="round" stroke-linecap="round"`;
+    if(g.c)return `<circle cx="${g.c[0].toFixed(1)}" cy="${g.c[1].toFixed(1)}" r="${g.r.toFixed(2)}" ${st}/>`;
+    const pts=(g.poly||g.line).map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    return g.poly?`<polygon points="${pts}" ${st}/>`:`<polyline points="${pts}" ${st}/>`;};
+  // pointer-events none: the glow sits over the piece and must never take its click
+  return `<g data-sel-aura="${h.t}" pointer-events="none">`+one(A.wide,A.op)+one(A.thin,1)+`</g>`;}
 
 // ---------------------------------------------------------------------------
 // RENDER SCHEDULING
@@ -981,7 +1103,8 @@ function draw(){
       ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(9)}" fill="#2f6fb0" fill-opacity="0.18" stroke="#2f6fb0" stroke-width="${vsP(2)}"/>`;});
     const gc=groupCentroid(_sl),gb=planToBase(gc[0],gc[1],dz(state.active,0));
     ov+=gizmoSvgAt(gb,_sl.length);
-  } else if(state.mode==='grab'&&selected)ov+=gizmoSvg(selected);
+  } else if(state.mode==='grab'&&selected)ov+=selAuraSvg(selected)+gizmoSvg(selected);   // the same glow under the gizmo
+  if(state.mode==='select'&&_sl.length===1)ov+=selAuraSvg(_sl[0]);   // U2: a single selection used to show nothing here
   if(state.mode==='select'&&_sl.length>1){_sl.forEach(h=>{const c=pGetC(h);if(!c)return;const b=planToBase(c[0],c[1],dz(pieceLevel(h),pGetZ(h)));
       ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(9)}" fill="#2f6fb0" fill-opacity="0.18" stroke="#2f6fb0" stroke-width="${vsP(2)}"/>`;});}
   if(state.mode==='format'&&fmtSource&&selected){const c=pGetC(selected),b=planToBase(c[0],c[1],dz(pieceLevel(selected),pGetZ(selected)));

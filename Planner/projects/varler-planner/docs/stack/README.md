@@ -184,6 +184,29 @@ stack was then reviewed as one piece. What that review changed in code that exis
   K1–K3, and the vendor channel with in-person pickup per vendor. Side research, 2026-10-09;
   answered the same day (§10): two-tier covers, Chorus ONE for clusters, a second hatch supplier.
 
+## Session brief — the step-by-step build session (2026-10-06 → 10-07, closed 2026-10-10)
+
+A session built the pack one work package at a time (A1 → B5, the user committing after each pair).
+It was cut off by an app quit while B4/B5 were still uncommitted — and on re-check it was **superseded,
+not lost**: the worktree is shared, so another session committed the same files (`f40abfe`), then built
+C1–E5 itself (`ce1413e`, `7d04549`, `96cd797`), reviewed the stack (`3e0c0d2`) and ran the 10-09 visual
+round. Specs 36–39 (marks, openings, traces, portal graph: 93 / 95 / 80 / 64) still pass on the current branch.
+
+- **What that session built:** A1 `58c3ecc` (layer model v2; verifier fix: active layer after undo) · A2/A3 `552148c`
+  (panel, swap/move, duplicate/merge/link/lock) · B1 `d5cbf43` (stack model, wizard, rail, shared `STK_*` hooks) ·
+  B2/B3 `fc5e894` (marks, door/window tags, plane strips and zones) · B4/B5 `f40abfe` (traces, portal graph).
+- **Findings worth keeping:**
+  - The WP-B1 claim "golden identical" was wrong: building rooms getting `Y` ids moves `data.seq`, so the six
+    `/session` golden hashes changed (patched surgically, once).
+  - `stkHookSvg(list, arg)` passes the view's own scales to `STK_WV` / `STK_PV`.
+  - The Escape handler in `08-interaction.js` calls `stkToolEvent('esc')` **after** `closeModal()` — a finishing
+    trace opens its own dialog.
+  - Pointer release must use its own position (a touch tap sends no move event).
+  - The marking tools switch themselves off when `state.mode` leaves `select` (no `setMode` edit).
+  - The marks align in the normal and blueprint plan views (looked at in the browser pane).
+- **Still open (yours):** the ⏸ checkpoints on a real floor — do the tags feel right, freehand and 45° drawing
+  feel, heat-map tint.
+
 ## Follow-ups (not in this pack)
 F1 phase-3 exporters · F2 conventional switch schemes (wiring pipeline S6) · F3 12 V / 24 V separate
 conduits (A2 rule not modelled) · F4 bend counting for the 33 % rule · F5 undo for building-model rooms ·

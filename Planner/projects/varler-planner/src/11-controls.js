@@ -12,6 +12,7 @@ function setRot(deg){deg=((Math.round(deg)%360)+360)%360;state.rot=deg;$('rot').
 $('rot').oninput=e=>setRot(+e.target.value);$('rotL').onclick=()=>setRot(state.rot-15);$('rotR').onclick=()=>setRot(state.rot+15);
 document.querySelectorAll('.preset').forEach(b=>b.onclick=()=>setRot(+b.dataset.deg));
 if($('lyrSpot'))$('lyrSpot').onchange=()=>lyrSpotToggle();
+if($('devHover'))$('devHover').onchange=()=>hovToggle($('devHover').checked);   // U6
 if($('lyrPaintAll'))$('lyrPaintAll').onchange=e=>lyrPaintAll(e.target.checked);
 if($('viewScale'))$('viewScale').onchange=e=>{vsSet(+e.target.value);
   $('hud').textContent='Nézeti lépték '+vsK()+'× — '+(vsK()===1?'a teljes terv belefér; innen lehet feljebb lépni.'
@@ -21,7 +22,11 @@ $('style').onchange=e=>{state.style=e.target.value;bpUI();
   if(state.style==='blueprint'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();
     $('hud').textContent='Blueprint nézet — 2D felülnézetre váltottam.';}
   draw();};
-$('wallMode').onchange=e=>{state.wallMode=e.target.value;draw();};
+$('wallMode').onchange=e=>{state.wallMode=e.target.value;wmgSyncBox();draw();};
+if($('openingStyle'))$('openingStyle').onchange=e=>{state.openingStyle=e.target.value;draw();};   // G1
+// U7: nothing to merge when the walls are not drawn — say so instead of a box that silently does nothing
+function wmgSyncBox(){const b=$('wallMerge'),L=$('wallMergeL');if(!b)return;const off=state.wallMode==='hidden';b.disabled=off;
+  if(L){if(!L.dataset.t)L.dataset.t=L.title;L.title=off?'Rejtett falaknál nincs mit egyesíteni.':L.dataset.t;L.style.opacity=off?'0.5':'';}}
 if($('wallMerge'))$('wallMerge').onchange=e=>{state.wallMerge=e.target.checked;draw();
   $('hud').textContent=state.wallMerge?'Falak egyesítve — csak a külső kontúr látszik, a falak külön kijelölhetők maradnak.':'Falak külön rajzolva.';};
 $('explode').onchange=e=>{state.exploded=e.target.checked;draw();};
@@ -221,8 +226,11 @@ $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileR
   Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
-function syncUI(){vsApply();if($('viewScale'))$('viewScale').value=String(vsOk(state.viewScale));
-  setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;$('explode').checked=state.exploded;
+function syncUI(){vsApply();if(typeof kbdApplyLayout==='function')kbdApplyLayout();   // U4: the saved layout's keys and hints
+  if(typeof pnlWideSync==='function')pnlWideSync();   // U5: a project left in wide mode opens in it
+  if($('devHover'))$('devHover').checked=!!state.devHover;   // U6
+  if($('viewScale'))$('viewScale').value=String(vsOk(state.viewScale));
+  setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;wmgSyncBox();if($('openingStyle'))$('openingStyle').value=opnWide()?'wide':'line';$('explode').checked=state.exploded;
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   $('lvBase').checked=state.levels.basement;$('lvGround').checked=state.levels.ground;$('lvUpper').checked=state.levels.upper;
   $('hBase').value=LH.basement;$('hGround').value=LH.ground;$('hUpper').value=LH.upper;if(typeof dcSync==='function')dcSync();

@@ -39,8 +39,8 @@ setTimeout(()=>{
   ok('a second BASE→RBX route is named /b, the BASE side first',w.chnName(p1)==='BASE~'+r1.ref&&w.chnName(p4)==='BASE~'+r1.ref+'/b',w.chnName(p4));
   ok('the shortest of parallel routes counts for the tree',w.chnLenToBase(r1.id)===Math.round(Math.min(w.chnLen(p1),w.chnLen(p4))));
   ok('a carrier override sticks; removing it restores the derived one',(function(){p4.carrier='data';const a=w.chnCarrier(p4)==='data';delete p4.carrier;return a&&w.chnCarrier(p4)==='channel';})());
-  ok('Tab while drawing flips the rule; the sections follow',(function(){w.chnToolStart();w.eval('pathAddNode('+JSON.stringify(at(ssc))+')');
-    w.stkToolEvent('key',{key:'Tab',preventDefault(){}});w.eval('pathAddNode('+JSON.stringify(at(r1))+')');w.eval('finishPath()');const p=D().paths[D().paths.length-1];
+  ok('R while drawing flips the rule; the sections follow',(function(){w.chnToolStart();w.eval('pathAddNode('+JSON.stringify(at(ssc))+')');
+    w.stkToolEvent('key',{key:'r',preventDefault(){}});w.eval('pathAddNode('+JSON.stringify(at(r1))+')');w.eval('finishPath()');const p=D().paths[D().paths.length-1];
     w.CHN_T.rule='sull';return p.rule==='csat'&&p.sections.every(s=>s.build==='kv_csat_szeles')&&w.chnCarrier(p)==='security';})());
   ok('an ordinary path drawn later is untouched (tool off after leaving path mode)',(function(){w.setMode('select');w.eval("pathAddNode({level:'ground',x:500,y:500,h:300})");w.eval("pathAddNode({level:'ground',x:900,y:500,h:300})");w.eval('finishPath()');
     const p=D().paths[D().paths.length-1];return !p.route&&!p.rule;})());

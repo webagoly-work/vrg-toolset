@@ -246,6 +246,9 @@ registerActions([
  {id:'layers.spotlight',alias:'reteg kiemeles spotlight highlight hover',label:'Réteg-kiemelés be/ki',icon:'💡',group:'Réteg',
   hint:'Egy készülékre mutatva az összes rétegtársa felvillan, és a réteg sora is kigyullad az oldalsávban.',
   run:()=>lyrSpotToggle()},
+ {id:'layers.hoverInfo',alias:'lebego info hover card tooltip device eszkoz kartya',label:'Lebegő infó be/ki',icon:'🛈',group:'Réteg',
+  hint:'Egy készülékre mutatva kis ablak: név, típus, áramkör, réteg, helyiség, magasság, egyéb adatok.',
+  run:()=>hovToggle()},
  {id:'layers.paint.all',alias:'retegek szinezese szinkod colour code paint',label:'Minden réteg színezve be/ki',icon:'🎨',group:'Réteg',
   hint:'Minden réteg készülékei a réteg saját színét kapják. Rétegenként a sor színkorongjával is kapcsolható.',
   run:()=>{const on=!(layers.length&&layers.every(lyrPaints));lyrPaintAll(on);

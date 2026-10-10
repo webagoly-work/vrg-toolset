@@ -123,8 +123,8 @@ setTimeout(()=>{
   ok('Shift on the last click saves with the previous tags, no dialog',(function(){w.mrkPlaneStart('line45');ptr('pointerdown',100,2400);ptr('pointerup',100,2400);ptr('pointerdown',900,2400);ptr('pointerup',900,2400);
     wkey('Enter',{shiftKey:true});const nodlg=!$('mOk');return nodlg&&T().length===4&&T()[3].dir===0&&T()[3].tags.join()==='mozgas,atjaras';})());
   ok('changing the mode while drawing drops the draft',(function(){w.mrkPlaneStart('line45');ptr('pointerdown',100,100);ptr('pointerup',100,100);w.mrkPlaneCycle(1);w.mrkPlaneCycle(-1);ptr('pointermove',500,100);return w.eval('TRC_D')===null;})());
-  ok('the plane toggle (Tab) puts the trace on the ceiling',(function(){w.mrkPlaneStart('line45');wkey('Tab');ptr('pointerdown',100,100);ptr('pointerup',100,100);
-    const q=w.eval('TRC_D&&TRC_D.plane')==='ceiling';wkey('Tab');return q;})());
+  ok('the plane toggle (R) puts the trace on the ceiling',(function(){w.mrkPlaneStart('line45');wkey('r');ptr('pointerdown',100,100);ptr('pointerup',100,100);
+    const q=w.eval('TRC_D&&TRC_D.plane')==='ceiling';wkey('r');return q;})());
   w.mrkToolsOff();
 
   // 7 — drawing

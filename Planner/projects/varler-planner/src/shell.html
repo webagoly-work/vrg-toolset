@@ -184,6 +184,8 @@
  .lname{font-size:12px;padding:2px 4px;border:1px solid #cfc9bd;border-radius:5px}
  .resizer{flex:0 0 6px;cursor:col-resize;background:linear-gradient(#ddd8cd,#cfc9bd);border:none}
  .resizer:hover{background:#b9b3a5}
+ .pnlGrip{position:absolute;top:0;bottom:24px;width:6px;cursor:col-resize;z-index:7;display:none;background:transparent}
+ .pnlGrip:hover,.pnlGrip:active{background:linear-gradient(#ddd8cd,#cfc9bd)}
  .side{flex:0 0 auto}
  #ctx button{display:block;width:100%;text-align:left;border:0;border-radius:0;padding:7px 14px}
  .swatch{width:11px;height:11px;border-radius:3px;display:inline-block}
@@ -248,6 +250,7 @@
   <div class="grp"><h3>Layers</h3>
    <div class="row" style="gap:10px;font-size:11.5px">
      <label title="Vidd a kurzort (vagy kattints) bármelyik készülékre: az összes rétegtársa felvillan, és a réteg sora is kigyullad a réteg színével."><input type="checkbox" id="lyrSpot"> Réteg-kiemelés</label>
+     <label title="Kijelölés vagy Mozgatás közben egy készülékre mutatva kis ablak mutatja: név, típus, áramkör, réteg, helyiség, magasság, egyéb adatok."><input type="checkbox" id="devHover"> Lebegő infó (eszközök)</label>
      <label title="Minden réteg készülékei a réteg saját színét kapják. Rétegenként is kapcsolható a sor színkorongjával."><input type="checkbox" id="lyrPaintAll"> Mind színezve</label></div>
    <div id="layerList"></div>
    <div class="row"><button id="addLayer">+ Layer</button></div>
@@ -382,7 +385,9 @@
    <div class="row">Walls <select id="wallMode">
      <option value="translucent">translucent</option><option value="solid">solid</option>
      <option value="hidden">hidden</option></select>
-    <label style="margin-left:8px" title="A falak egy testként jelennek meg: nincs sarokvarrat. A hivatalos nézet mindig így rajzol; a falak egyenként kijelölhetők maradnak."><input type="checkbox" id="wallMerge"> Falak egyesítve</label></div>
+    <label id="wallMergeL" style="margin-left:8px" title="A falak egy testként jelennek meg: nincs sarokvarrat. A hivatalos nézet mindig így rajzol; a falak egyenként kijelölhetők maradnak. Áttetsző és tömör falaknál is működik."><input type="checkbox" id="wallMerge"> Falak egyesítve</label></div>
+   <div class="row" title="Széles: az ajtó falsíktól falsíkig rés a nyitásívvel, az ablak a falsíkoktól kicsit beljebb álló üvegsáv. Vonal: a régi, falközépi vonal.">Nyílászárók <select id="openingStyle">
+     <option value="wide">széles</option><option value="line">vonal</option></select></div>
    <div class="row"><label><input type="checkbox" id="explode" checked>Exploded</label>
      <label><input type="checkbox" id="grid">Grid</label>
      <input id="gridSize" type="number" value="250" step="50" style="width:58px"></div>

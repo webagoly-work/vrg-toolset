@@ -87,10 +87,10 @@ function chnToolStart(){const S=(typeof stkActive==='function')?stkActive():null
   if(L){state.activeLayer=L.id;renderLayers();}
   if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();
   state.pathType=CHN_T.rule==='csat'?'csat':'gege';setMode('path');CHN_T.on=true;
-  const mh=$('modeHint');if(mh)mh.textContent='Csatorna-útvonal: kattints a hardverpontokra (RBX, BASE, Elosztó…) · Tab: süllyesztett ↔ kábelcsatorna · dupla katt: kész';
+  const mh=$('modeHint');if(mh)mh.textContent='Csatorna-útvonal: kattints a hardverpontokra (RBX, BASE, Elosztó…) · R: süllyesztett ↔ kábelcsatorna · dupla katt: kész';
   lyrHud('Csatorna-útvonal — '+(CHN_T.rule==='csat'?'kábelcsatorna':'süllyesztett'));}
 STK_TOOLS.push({k:'chnRoute',active:()=>{if(!CHN_T.on)return false;if(state.mode!=='path'){CHN_T.on=false;return false;}return true;},
-  key(e){if(e.key!=='Tab')return false;e.preventDefault();CHN_T.rule=CHN_T.rule==='csat'?'sull':'csat';state.pathType=CHN_T.rule==='csat'?'csat':'gege';
+  key(e){if(!((e.key==='r'||e.key==='R')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.shiftKey))return false;e.preventDefault();CHN_T.rule=CHN_T.rule==='csat'?'sull':'csat';state.pathType=CHN_T.rule==='csat'?'csat':'gege';
     if(typeof pathDraft!=='undefined'&&pathDraft)pathDraft.ptype=state.pathType;
     lyrHud(CHN_T.rule==='csat'?'Kábelcsatorna':'Süllyesztett');return true;},
   mode(){CHN_T.on=false;},     // any tool change ends it (chnToolStart sets the flag AFTER its own setMode)
@@ -135,7 +135,7 @@ STK_PATHMENU.push((ps,items)=>{const p=data.paths[ps.pi];if(!p||p.route!=='chann
 
 registerActions([
  {id:'chn.route',alias:'csatorna utvonal channel route path hardware',label:'Csatorna-útvonal',icon:'⇋',group:'Csatorna',
-  hint:'A Pálya eszköz egy változata: két hardverpont (BASE, RBX, Elosztó, SSC…) közötti fizikai összeköttetés. Tab: süllyesztett ↔ kábelcsatorna.',
+  hint:'A Pálya eszköz egy változata: két hardverpont (BASE, RBX, Elosztó, SSC…) közötti fizikai összeköttetés. R: süllyesztett ↔ kábelcsatorna.',
   run:()=>chnToolStart()},
  {id:'chn.labels',alias:'csatorna feliratok channel labels',label:'Csatorna-feliratok be / ki',icon:'🏷',group:'Csatorna',
   run:()=>{state.chnLabels=!state.chnLabels;draw();}}

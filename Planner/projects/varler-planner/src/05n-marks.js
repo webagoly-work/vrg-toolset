@@ -318,8 +318,8 @@ function mrkPick(e){const level=state.active,[bx,by]=clientToBase(e),zz=dz(level
 let MRK_H=null,MRK_DRAG=null;                       // hover target, a vertical-strip drag in progress
 function mrkModeName(){const m=MRK_MODES.find(x=>x.k===MRK_T.mode);return 'Jelölés: '+(m?m.n:MRK_T.mode);}
 function mrkHint(){const mh=$('modeHint');if(!mh)return;
-  if(typeof MRK_P!=='undefined'&&MRK_P.on){mh.textContent=mrkPlaneName()+' · g váltja a módot · Tab: padló ↔ mennyezet · + − 0 x polaritás · Shift+húzás = sávszélesség · Esc kilép';return;}
-  mh.textContent=MRK_T.on?mrkModeName()+' · j váltja a módot · + − 0 x polaritás · Shift+kattintás = az előző címkékkel · Esc kilép'
+  if(typeof MRK_P!=='undefined'&&MRK_P.on){mh.textContent=mrkPlaneName()+' · g váltja a módot · R: padló ↔ mennyezet · + − 0 x polaritás · Shift+húzás = sávszélesség · Esc kilép';return;}
+  mh.textContent=MRK_T.on?mrkModeName()+' · '+kbdKey('markWall')+' váltja a módot · + − 0 x polaritás · Shift+kattintás = az előző címkékkel · Esc kilép'
                          :(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}
 function mrkToolsOff(){MRK_T.on=false;MRK_DRAG=null;MRK_H=null;if(typeof trcCancel==='function')trcCancel();if(typeof MRK_P!=='undefined')MRK_P.on=false;mrkHint();}
 function mrkToolStart(mode){if(typeof mrkToolsOff==='function')mrkToolsOff();
@@ -571,7 +571,7 @@ STK_TOOLS.push({k:'mrkPlane',active:mrkPlaneActive,
     mrkPlaneCommit(d.level,d.plane,d.mode,d.p0,d.p1,{shift:e.shiftKey||d.shift});draw();return true;},
   key(e){if(typeof trcIsMode==='function'&&trcIsMode(MRK_P.mode)&&trcKey(e))return true;      // Enter / Backspace of a 45° line
     if(e.ctrlKey||e.metaKey||e.altKey)return false;
-    if(e.key==='Tab'){e.preventDefault();mrkPlaneToggle();return true;}
+    if((e.key==='r'||e.key==='R')&&!e.shiftKey){e.preventDefault();mrkPlaneToggle();return true;}   // was Tab (U4)
     if(e.key==='+'||e.key==='='){mrkSetPol('plus');return true;}
     if(e.key==='-'||e.key==='_'){mrkSetPol('minus');return true;}
     if(e.key==='0'){mrkSetPol('none');return true;}
@@ -620,7 +620,7 @@ function mrkDanglingOther(m){
   return out;});
 registerActions([
  {id:'mark.plane',alias:'jeloles padlo mennyezet floor ceiling zone strip zona',label:'Padló / mennyezet jelölése',icon:'▦',group:'Jelölés',keys:['g'],
-  hint:'Sávok és zónák (téglalap, kör) a padlón vagy a mennyezeten. G váltja a módot, Tab a padló ↔ mennyezet között.',
+  hint:'Sávok és zónák (téglalap, kör) a padlón vagy a mennyezeten. G váltja a módot, R a padló ↔ mennyezet között.',
   run:()=>{if(MRK_P.on)mrkPlaneCycle(1);else mrkPlaneStart(MRK_P.mode);}},
  {id:'mark.planeBack',alias:'jeloles elozo mod padlo previous mode plane',label:'Padló / mennyezet: előző mód',icon:'▦',group:'Jelölés',keys:['shift+g'],
   need:'Indítsd el a Padló / mennyezet jelölése eszközt (G).',when:c=>MRK_P.on,run:()=>mrkPlaneCycle(-1)}

@@ -170,14 +170,16 @@ registerActions([
   // ---- tools ----
   _mode('select','Kijelölés','⬚',['v'],'Elemek kiválasztása és tulajdonságaik elérése.'),
   _mode('grab','Mozgatás','✥',['m'],'Kijelölt elem mozgatása a nyilakkal és a gizmóval.'),
-  _mode('wall','Fal rajzolása','🧱',['w'],'Falak húzása; a végpontok a meglévő falak tengelyére ugranak.'),
+  // W and D were the Wall and Device keys since the first version, so pressing them switched tool AND panned; they are
+  // camera keys now (round 2026-10-10, U4 — answered in the build session). The tools keep 5 and 3 and Ctrl+K.
+  _mode('wall','Fal rajzolása','🧱',null,'Falak húzása; a végpontok a meglévő falak tengelyére ugranak.'),
   _mode('floor','Padló rajzolása','▦',null,'Pont után pont, élő Terület/Kerület; az első pontra kattintva zárul.'),
   {id:'floor.fromwalls',alias:'floor from walls enclosed room fill padlo',label:'Padló a falak közé',icon:'▦',group:'Rajz',
    need:'Vidd a kurzort egy falakkal zárt térbe (Padló eszköz), vagy jobb klikk a rajzon.',
    hint:'A falakkal körbezárt tér belső kontúrját veszi át padlónak — sarkokkal együtt.',
    when:()=>!!cursor,run:()=>floorFromWalls(cursor.x,cursor.y,state.active)},
   _mode('build','Építés (ajtó/ablak/lépcső)','🚪',['b'],'Nyílászáró elhelyezése a falon; a szellemkép mutatja, hova kerül.'),
-  _mode('device','Készülék','🔌',['d'],'Aljzat, kapcsoló, lámpa, kötődoboz elhelyezése.'),
+  _mode('device','Készülék','🔌',null,'Aljzat, kapcsoló, lámpa, kötődoboz elhelyezése.'),
   _mode('path','Pálya','〰',['p'],'Kábelpálya rajzolása; Space letesz egy dobozt, ←/→ vált a palettán.'),
   _mode('cable','Kábel / áramkör','⚡',['c'],'Vezetékek behúzása a meglévő pályákra.'),
   _mode('measure','Mérés','📏',null,'Két pont közti távolság.'),
@@ -244,9 +246,14 @@ registerActions([
    hint:'A nagyítást úgy állítja, hogy a képernyőn (96 dpi) kb. valós méretarányban legyen a rajz.',
    run:()=>bpScaleView()},
   {id:'view.wallmerge',alias:'wall merge corners egyesites falak',label:'Falak egyesítve (vizuális)',icon:'🧱',group:'Nézet',
-   hint:'A falak egy testként jelennek meg, sarokvarratok nélkül. A hivatalos nézet mindig így rajzol. A falak külön kijelölhetők maradnak.',
-   when:c=>c.style!=='blueprint',run:()=>{state.wallMerge=!state.wallMerge;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;draw();
+   hint:'A falak egy testként jelennek meg, sarokvarratok nélkül. A hivatalos nézet mindig így rajzol. A falak külön kijelölhetők maradnak. Áttetsző és tömör falaknál is működik.',
+   need:'Rejtett falaknál nincs mit egyesíteni (és a hivatalos nézet mindig egyesít).',
+   when:c=>c.style!=='blueprint'&&state.wallMode!=='hidden',run:()=>{state.wallMerge=!state.wallMerge;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;draw();
      $('hud').textContent=state.wallMerge?'Falak egyesítve.':'Falak külön rajzolva.';}},
+  {id:'view.openings',alias:'doors windows openings wide line nyilaszarok ajto ablak szeles vonal',label:'Nyílászárók: széles ↔ vonal',icon:'🚪',group:'Nézet',
+   hint:'Széles: az ajtó falsíktól falsíkig rés a nyitásívvel, az ablak a falsíkoktól beljebb álló üvegsáv. Vonal: a régi falközépi vonal.',
+   run:()=>{state.openingStyle=opnWide()?'line':'wide';if($('openingStyle'))$('openingStyle').value=state.openingStyle;draw();
+     $('hud').textContent='Nyílászárók: '+(opnWide()?'széles':'vonal');}},
   {id:'view.reset',alias:'reset view fit zoom',label:'Nézet visszaállítása',icon:'⟲',group:'Nézet',run:()=>{resetView();draw();}},
   {id:'view.fine',label:'Finomhangolt mozgatás be/ki',icon:'🔍',group:'Nézet',
    hint:'1 mm-es lépés, 5× lassabb mozgatás. Tartva: Alt vagy F.',run:()=>fineToggle()},
@@ -307,19 +314,26 @@ registerActions([
   {id:'help.palette',alias:'command palette search',label:'Parancsok keresése',icon:'⌘',group:'Súgó',keys:['mod+k'],
    hint:'Minden funkció egy helyen, kereshetően.',run:()=>paletteOpen()},
   {id:'help.keys',alias:'keyboard shortcuts keys help',label:'Billentyűk',icon:'⌨',group:'Súgó',
-   run:()=>openModal('Billentyűk',
+   run:()=>{const N=kbdNames();openModal('Billentyűk',
      `<div style="font-size:12px;line-height:1.9">`
      +[['Bal egér','kijelölés / rajzolás'],['Jobb egér','helyi menü arra, ami a kurzor alatt van'],
-       ['Space','a kiválasztott doboz letétele rajzolás közben'],['←/→','paletta vagy variáns váltása'],
+       ['W A S D · Q / E','kamera: mozgatás · nagyítás (mindig)'],
+       [N.mv,'a kijelölés mozgatása 100 mm (finom módban 10 mm)'],[N.rot,'a kijelölés forgatása 15° (Tárgy eszköz: a szellem)'],
+       ['R','az eszköz második módja (süllyesztett ↔ csatorna, padló ↔ mennyezet)'],
+       ['Tab','széles munkanézet: oldalsávok és panelek el / vissza'],
+       ['Space','a kiválasztott doboz letétele rajzolás közben'],['←/→','paletta, típus vagy variáns váltása (RBX osztály, végpont-variáns is)'],
        ['↑/↓','rajzolási magasság'],['Alt vagy F','finomhangolt mozgatás (1 mm)'],
        ['Shift','tengelyre kényszerítés'],['Ctrl','a fal másik oldala / snap felülbírálás'],
-       ['Dupla kattintás','tulajdonságok'],['K','áramkör végpontjainak kijelölése a rajzon (újra K = kész)'],
+       ['Alt + kattintás','átfedő elemek: a kurzor alatti következő elem kijelölése'],
+       ['Kék középpont','a kijelölt elem szabad mozgatása (Move)'],
+       ['Dupla kattintás','tulajdonságok'],[N.ckt,'áramkör végpontjainak kijelölése a rajzon (újra '+N.ckt+' = kész)'],
+       [N.mark+' / Shift+'+N.mark,'fal jelölése / előző jelölési mód'],
        ['Shift + kattintás','Készülék: a legközelebbi azonos doboz sorába, 72 mm-re (csatolva)'],
        ['Pálya csomópont dobozon','a doboz a csomóponthoz kötődik, amikor a pálya lezárul'],
        ['Esc','egy szintet kilép — soha nem dob el munkát'],
        ['Ctrl+Z / Ctrl+Shift+Z','visszavonás / újra'],['Ctrl+K','parancskereső']]
        .map(r=>`<div><b style="display:inline-block;min-width:170px">${r[0]}</b> ${r[1]}</div>`).join('')
-     +`</div>`,()=>{},'Bezár')}
+     +`</div>`,()=>{},'Bezár');}}
 ]);
 
 // ---- palette + status wiring ----

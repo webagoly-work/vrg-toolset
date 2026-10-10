@@ -155,13 +155,14 @@ function epToolStart(code,role,vk){const en=epEntry(code,role);if(!en)return;
   if(state.mode!=='select')setMode('select');
   Object.assign(EP_T,{on:true,code,role:en.role,var:vk||en.vars[0].k,g:null});epHint();draw();}
 function epHint(){const mh=$('modeHint');if(!mh)return;const en=EP_T.on?epEntry(EP_T.code,EP_T.role):null;
-  mh.textContent=en?(EP_T.code+' — '+en.n+' · '+((en.vars.find(v=>v.k===EP_T.var)||{}).n||'')+' · Tab: változat · Alt: szabad elhelyezés · Esc kilép'):(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}
+  mh.textContent=en?(EP_T.code+' — '+en.n+' · '+((en.vars.find(v=>v.k===EP_T.var)||{}).n||'')+' · ←/→: változat · Alt: szabad elhelyezés · Esc kilép'):(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}
 function epToolOff(){EP_T.on=false;EP_T.g=null;epHint();}
 STK_TOOLS.push({k:'epPlace',active:()=>{if(!EP_T.on)return false;if(state.mode!=='select'||(typeof WV!=='undefined'&&WV)){epToolOff();return false;}return true;},
   down(e){if(e.button!==0)return false;const g=epGhost(e);if(!g)return false;epPlace(g);return true;},
   move(e){EP_T.g=epGhost(e);draw();return false;},
-  key(e){if(e.key!=='Tab')return false;e.preventDefault();const en=epEntry(EP_T.code,EP_T.role),i=en.vars.findIndex(v=>v.k===EP_T.var);
-    EP_T.var=en.vars[(i+(e.shiftKey?en.vars.length-1:1))%en.vars.length].k;epHint();return true;},
+  key(e){const dir=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!dir||e.ctrlKey||e.altKey)return false;   // was Tab (U4)
+    e.preventDefault();const en=epEntry(EP_T.code,EP_T.role),i=en.vars.findIndex(v=>v.k===EP_T.var);
+    EP_T.var=en.vars[(i+dir+en.vars.length)%en.vars.length].k;epHint();return true;},
   mode(){epToolOff();},esc(){epToolOff();draw();}});
 // the picker: every code of the role, variants as radio buttons
 function epPicker(role){const S=(typeof stkActive==='function')?stkActive():null,L=lyrLayer(state.activeLayer);

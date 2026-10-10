@@ -124,17 +124,17 @@ setTimeout(()=>{
   ok('mrkRoomZones: the strip and the circle whose centre is in the room',(function(){const z=w.mrkRoomZones(W.A.id);return z.length===2&&w.mrkRoomZones(W.A.id,'ceiling').length===0&&w.mrkRoomZones('nope').length===0;})());
   ok('a strip is clipped to its room (two rooms: the other room is not covered)',(function(){fixture();w.MRK_T.tags=['folyoso'];w.mrkPlaneCommit(lvl,'floor','px',{x:1000,y:1500},null,{shift:true});return w.mrkPlaneAt(lvl,'floor',1000,1500).length===1&&w.mrkPlaneAt(lvl,'floor',3000,1500).length===0&&w.mrkRoomZones(W.B.id).length===0;})());
 
-  // 6 — the keys: g, Shift+g, Tab, Esc
+  // 6 — the keys: g, Shift+g, R (was Tab until round 2026-10-10), Esc
   fixture();
   ok('G starts the plane tool and shows plane + mode in #modeHint',(function(){key('g');return w.MRK_P.on&&w.MRK_P.mode==='px'&&/Padló/.test($('modeHint').textContent)&&/Sáv \(vízszintes\)/.test($('modeHint').textContent);})());
   ok('G cycles px → py → rect → circle → (the trace modes of B4) → px',(function(){const s=[];for(let i=0;i<7;i++){key('g');s.push(w.MRK_P.mode);}return s.join()==='py,rect,circle,line45,free,smooth,px';})());
   ok('Shift+G cycles back',(function(){key('g',{shiftKey:true});const a=w.MRK_P.mode;key('g');return a==='smooth'&&w.MRK_P.mode==='px';})());
-  ok('Tab toggles floor ↔ ceiling and says so',(function(){const e=wkey('Tab');const a=w.MRK_P.plane==='ceiling'&&$('hud').textContent==='Mennyezet'&&e.defaultPrevented;wkey('Tab');return a&&w.MRK_P.plane==='floor'&&$('hud').textContent==='Padló';})());
-  ok('Tab is NOT eaten while focus is in an input',(function(){const inp=w.document.createElement('input');w.document.body.appendChild(inp);const e=new w.KeyboardEvent('keydown',{key:'Tab',bubbles:true,cancelable:true});inp.dispatchEvent(e);inp.remove();return w.MRK_P.plane==='floor'&&!e.defaultPrevented;})());
-  ok('mode + plane show in #modeHint after Tab',(function(){wkey('Tab');const r=/Mennyezet/.test($('modeHint').textContent);wkey('Tab');return r;})());
+  ok('R toggles floor ↔ ceiling and says so',(function(){const e=wkey('r');const a=w.MRK_P.plane==='ceiling'&&$('hud').textContent==='Mennyezet'&&e.defaultPrevented;wkey('r');return a&&w.MRK_P.plane==='floor'&&$('hud').textContent==='Padló';})());
+  ok('R is NOT eaten while focus is in an input',(function(){const inp=w.document.createElement('input');w.document.body.appendChild(inp);const e=new w.KeyboardEvent('keydown',{key:'r',bubbles:true,cancelable:true});inp.dispatchEvent(e);inp.remove();return w.MRK_P.plane==='floor'&&!e.defaultPrevented;})());
+  ok('mode + plane show in #modeHint after R',(function(){wkey('r');const r=/Mennyezet/.test($('modeHint').textContent);wkey('r');return r;})());
   ok('+ − 0 x work in the plane tool too',(function(){wkey('x');const a=w.MRK_T.pol==='ban';wkey('+');return a&&w.MRK_T.pol==='plus';})());
   ok('Esc turns the plane tool off',(function(){wkey('Escape');return w.MRK_P.on===false&&!/Padló \/ mennyezet:/.test($('modeHint').textContent);})());
-  ok('Tab is not eaten when the plane tool is off',(function(){const e=wkey('Tab');return !e.defaultPrevented&&w.MRK_P.plane==='floor';})());
+  ok('R is not eaten when the plane tool is off',(function(){const e=wkey('r');return !e.defaultPrevented&&w.MRK_P.plane==='floor';})());
   ok('starting one tool ends the other',(function(){key('j');const a=w.MRK_T.on;key('g');const b=w.MRK_P.on&&!w.MRK_T.on;key('j');return a&&b&&w.MRK_T.on&&!w.MRK_P.on;})());
   w.mrkToolsOff();
   ok('changing the drawing tool ends the plane tool',(function(){key('g');w.setMode('wall');const r=!w.eval('mrkPlaneActive()');w.setMode('select');return r&&!w.MRK_P.on;})());
@@ -149,7 +149,7 @@ setTimeout(()=>{
   ok('releasing opens the plane picker offering the FLOOR tags only',(function(){const t=[...w.document.querySelectorAll('.mpTag')].map(c=>c.value);return /Padló \/ mennyezet/.test($('modal').textContent)&&t.indexOf('padlofutes')>=0&&t.indexOf('almennyezet')<0&&t.indexOf('szenzor')>=0;})());
   pick(['vizes']);
   ok('the pointer-made zone is stored with the picked tag and its polarity (vizes → ban)',M().length===1&&M()[0].shape==='rect'&&M()[0].x1===1450&&M()[0].tags.join()==='vizes'&&M()[0].pol==='ban');
-  wkey('Tab');ptr('pointerdown',500,500,null,w.dz(lvl,w.wallH(lvl)));ptr('pointerup',900,900,null,w.dz(lvl,w.wallH(lvl)));
+  wkey('r');ptr('pointerdown',500,500,null,w.dz(lvl,w.wallH(lvl)));ptr('pointerup',900,900,null,w.dz(lvl,w.wallH(lvl)));
   ok('for the ceiling the picker offers almennyezet, not padlofutes (both-planes tags in each)',(function(){const t=[...w.document.querySelectorAll('.mpTag')].map(c=>c.value);return t.indexOf('almennyezet')>=0&&t.indexOf('padlofutes')<0&&t.indexOf('szenzor')>=0;})());
   pick(['almennyezet']);
   ok('a ceiling mark is stored with plane ceiling',M().length===2&&M()[1].plane==='ceiling');

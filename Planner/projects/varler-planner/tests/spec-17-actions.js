@@ -80,10 +80,10 @@ setTimeout(()=>{
      &&w.actionKeyString({ctrlKey:true,shiftKey:true,key:'Z'})==='mod+shift+z');
   ok('keys resolve to actions',(function(){const a=w.actionForKey('mod+k',w.actionCtx());
     return a&&a.id==='help.palette';})());
-  ok('tool shortcuts are wired',['v','m','w','b','d','p','c'].every(k=>{
+  ok('tool shortcuts are wired (W and D are camera keys since round 2026-10-10)',['v','m','b','p','c'].every(k=>{
     const a=w.actionForKey(k,w.actionCtx());return a&&a.id.indexOf('mode.')===0;}));
   ok('a shortcut respects its own gate',(function(){w.openWallView(WA[0],lvl);
-    const a=w.actionForKey('w',w.actionCtx());w.wvCloseEditor(true);return a===null;})(),
+    const a=w.actionForKey('v',w.actionCtx());w.wvCloseEditor(true);return a===null;})(),
      'tool keys are dead while an editor is open');
 
   // ---------- the palette ----------

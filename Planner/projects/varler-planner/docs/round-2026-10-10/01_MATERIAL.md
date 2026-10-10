@@ -43,8 +43,15 @@ kept.
 |---|---|---|
 | move 100 mm (fine mode 10 mm) | Shift + W A S D | I (fel) · J (bal) · K (le) · L (jobb) |
 | rotate ±15° (also the Object ghost) | Shift + Q / E | U / O |
-| mark wall tool / previous mode | J / Shift+J | **M / Shift+M** |
-| circuit end point picking | K | **C** |
+| mark wall tool / previous mode | J / Shift+J | **T / Shift+T** (was M — M is the Move tool) |
+| circuit end point picking | K | **N** (was C — C is the Cable tool) |
+
+**Correction found while building U4 (2026-10-10, answered by the user):** the tool actions in
+`05c-actions.js` (`_mode(…)`) already held seven plain letters — **V** select · **M** move · **W** wall ·
+**B** build · **D** device · **P** path · **C** cable — which this table had missed (they are built by a
+helper, so a `keys:[…]` grep does not show them). Plain W and D therefore switched tool *and* panned. Answers:
+W and D are **camera only** now (Wall = 5, Device = 3, Ctrl+K); in `'ijkl'` the two moved tools take **T** and
+**N** instead of M and C.
 
 Everything else in the table above is identical in both layouts. Switching layout rewrites the
 `keys` of the two moved registry actions (`mark.wall`, `mark.wallBack`, `circuit.pick`) at runtime
@@ -53,8 +60,8 @@ and every hint / help line that names them — build the hint strings from one k
 (harmless, and muscle memory survives a switch). Ctrl+Shift+W is never used (it closes the browser
 window in Chrome).
 
-Still free after this round (plain letters, `'shift'` layout): **B C H I L M N O P T U V Y Z** (X only
-inside the mark tools); in `'ijkl'`: **B H N P T V Y Z**.
+Still free after this round (plain letters): `'shift'` layout **H I L N O T U Y Z**; `'ijkl'` **H Y Z** (X only
+inside the mark tools, R only inside the five tools that used Tab; Y / Z are Ctrl+Y / Ctrl+Z when held with Ctrl).
 
 **Help dialog rows to add / change** (`help.keys`, 05c ≈ line 312):
 ```js
