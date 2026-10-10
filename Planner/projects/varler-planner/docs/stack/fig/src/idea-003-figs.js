@@ -320,8 +320,210 @@ function figRoomPlan(doc, geo) {
   return s + '</svg>\n';
 }
 
+// ═════════════════════════════════════════════════════════════════════════════════════════════
+// shared for F3 / F4: endpoints on wall faces, and the IDEA-001 cluster rule the Planner applies (06b clsGroups)
+// ═════════════════════════════════════════════════════════════════════════════════════════════
+const HWT = ['board', 'base', 'rbx', 'meter', 'entry', 'ssc', 'junction', 'portal', 'cluster'];
+const isEp = d => d && d.code && HWT.indexOf(d.type) < 0;
+const wallOf = (walls, x, y) => walls.find(w => x >= Math.min(w.x0, w.x1) - 1 && x <= Math.max(w.x0, w.x1) + 1 && y >= Math.min(w.y0, w.y1) - 1 && y <= Math.max(w.y0, w.y1) + 1);
+const wHoriz = w => Math.abs(w.x1 - w.x0) >= Math.abs(w.y1 - w.y0);
+const zoneOf = h => (h || 0) < 650 ? 'low' : (h || 0) < 1750 ? 'mid' : 'high';
+// 03-geometry wallInfo: perp = +y for a horizontal wall, +x for a vertical one; device side 1 faces +perp
+function epFaces(D, walls) {
+  return D.devices.filter(d => isEp(d) && d.side != null).map(d => { const w = wallOf(walls, d.x, d.y); if (!w) return null;
+    return { d, w, sign: d.side ? 1 : -1, u: wHoriz(w) ? d.x : d.y, z: zoneOf(d.h) }; }).filter(Boolean); }
+function clusterGroups(faces) {
+  const by = {}; faces.forEach(f => { const k = f.w.id + '|' + f.sign + '|' + f.z; (by[k] = by[k] || []).push(f); });
+  const out = [];
+  Object.keys(by).forEach(k => { const a = by[k].sort((p, q) => p.u - q.u); let cur = [a[0]];
+    for (let i = 1; i <= a.length; i++) { if (i < a.length && a[i].u - cur[cur.length - 1].u <= 300) { cur.push(a[i]); continue; }
+      if (cur.length >= 2) { const roles = new Set(cur.map(f => f.d.code === 'LMP' || f.d.code === 'SWI' || f.d.code === 'SOC' || f.d.code === 'DED' || f.d.code === 'SHU' ? 'M' : 'S'));
+        out.push({ f: cur, u: cur.reduce((s, f) => s + f.u, 0) / cur.length, h: cur.reduce((s, f) => s + (f.d.h || 0), 0) / cur.length,
+          cls: roles.size > 1 ? 'K3' : cur.length <= 3 ? 'K1' : cur.length <= 6 ? 'K2' : 'K3' }); }
+      if (i < a.length) cur = [a[i]]; } });
+  return out; }
+// the nest of one door face, by IDEA-003 H0-1 / H0-3
+function nestOf(p, face) { const at = face.freeBeyondHinge >= 300 ? 'hinge' : 'latch';
+  return { at, u: at === 'hinge' ? p.hingeU + p.away * 200 : p.latchU - p.away * 200 }; }
+const markedDoors = D => new Set((D.marks || []).filter(m => m.kind === 'opening' && (m.tags || []).some(t => ['portal', 'bejarat', 'lepcso', 'p1', 'p2', 'p3'].indexOf(t) >= 0)).map(m => m.op));
+
+// ═════════════════════════════════════════════════════════════════════════════════════════════
+// F3 — the floor-plan cut: every node tier on the whole P33 ground floor
+// ═════════════════════════════════════════════════════════════════════════════════════════════
+function figPlanCut(doc, geo) {
+  const P = doc.project, D = P.data, walls = P.building.walls.ground;
+  const k = 0.085, X0 = 380, Y0 = 2040, X = x => 30 + (x - X0) * k, Y = y => 84 + (y - Y0) * k;
+  const W = 1250, H = 760;
+  let s = svgOpen(W, H, 'IDEA-003 F3 — P33 ground floor: the node tiers in plan',
+    'Plan cut of the P33 ground floor from the test plan: rooms, walls and doors; gold nodes and the golden channel; RBXs, Portals and Silver Rails; endpoints and the cluster boxes the IDEA-001 rule forms from them; corner cluster points.');
+  s += `<defs><clipPath id="pc"><rect x="30" y="84" width="${f1((10560 - X0) * k)}" height="${f1((9400 - Y0) * k)}"/></clipPath></defs>`;
+  s += T(30, 32, 'IDEA-003 · F3 — floor-plan cut at 1 m: P33 ground floor, all node tiers (geometry and endpoints from P33-teszt_v2)', { size: STYLE.t1, weight: 600 });
+  s += T(30, 50, 'Gold = Elosztó, BASE and the channel between them and the RBXs · silver = RBX, Portal, Silver Rail · bronze = endpoints and the cluster boxes that house them.', { fill: STYLE.faint });
+  s += T(30, 66, 'R06 / R07 rails are drawn as built along the L; elsewhere the rail is shown as a link (it follows the walls at ≈ 2450).', { fill: STYLE.faint });
+  let g = '';
+  const floors = D.floors.filter(f => f.level === 'ground');
+  floors.forEach(f => { g += `<polygon points="${f.poly.map(p => f1(X(p[0])) + ',' + f1(Y(p[1]))).join(' ')}" fill="${STYLE.room}" stroke="none"/>`; });
+  walls.forEach(w => { g += `<rect x="${f1(X(Math.min(w.x0, w.x1)))}" y="${f1(Y(Math.min(w.y0, w.y1)))}" width="${f1(Math.abs(w.x1 - w.x0) * k)}" height="${f1(Math.abs(w.y1 - w.y0) * k)}" fill="${STYLE.wall}" stroke="${STYLE.wallEdge}" stroke-width="0.5"/>`; });
+  D.openings.filter(o => o.level === 'ground' && o.type === 'window').forEach(o => { const ww = 1200, vert = Math.abs(Math.sin(o.ang)) > 0.5;
+    g += vert ? `<rect x="${f1(X(o.x) - 10)}" y="${f1(Y(o.y - ww / 2))}" width="20" height="${f1(ww * k)}" fill="#fff" stroke="${STYLE.ink}" stroke-width="0.7"/>`
+              : `<rect x="${f1(X(o.x - ww / 2))}" y="${f1(Y(o.y) - 10)}" width="${f1(ww * k)}" height="20" fill="#fff" stroke="${STYLE.ink}" stroke-width="0.7"/>`; });
+  geo.forEach(p => { const wall = walls.find(w => w.id === p.wall), sw = p.faces.find(f => f.swing), lo = p.horiz ? Math.min(wall.y0, wall.y1) : Math.min(wall.x0, wall.x1), hi = p.horiz ? Math.max(wall.y0, wall.y1) : Math.max(wall.x0, wall.x1);
+    const a = Math.min(p.hingeU, p.latchU), b = Math.max(p.hingeU, p.latchU);
+    g += p.horiz ? `<rect x="${f1(X(a))}" y="${f1(Y(lo))}" width="${f1((b - a) * k)}" height="${f1((hi - lo) * k)}" fill="#fff"/>` : `<rect x="${f1(X(lo))}" y="${f1(Y(a))}" width="${f1((hi - lo) * k)}" height="${f1((b - a) * k)}" fill="#fff"/>`;
+    const hp = p.horiz ? [p.hingeU, sw.plane] : [sw.plane, p.hingeU], lp = p.horiz ? [p.hingeU, sw.plane + sw.sign * p.wid] : [sw.plane + sw.sign * p.wid, p.hingeU];
+    g += `<line x1="${f1(X(hp[0]))}" y1="${f1(Y(hp[1]))}" x2="${f1(X(lp[0]))}" y2="${f1(Y(lp[1]))}" stroke="${STYLE.ink}" stroke-width="1.1"/>`; });
+  // bronze: endpoints (wall = square, ceiling / floor = ring)
+  D.devices.filter(isEp).forEach(d => { const x = X(d.x), y = Y(d.y);
+    g += d.side != null ? `<rect x="${f1(x - 2.2)}" y="${f1(y - 2.2)}" width="4.4" height="4.4" fill="${STYLE.bronze}" opacity="0.8"/>` : `<circle cx="${f1(x)}" cy="${f1(y)}" r="2.6" fill="none" stroke="${STYLE.bronze}" stroke-width="1" opacity="0.8"/>`; });
+  // bronze: cluster boxes from the endpoints (06b's rule)
+  const groups = clusterGroups(epFaces(D, walls));
+  groups.forEach(G => { const w = G.f[0].w, hz = wHoriz(w), cx = hz ? G.u : (Math.min(w.x0, w.x1) + Math.max(w.x0, w.x1)) / 2, cy = hz ? (Math.min(w.y0, w.y1) + Math.max(w.y0, w.y1)) / 2 : G.u;
+    const len = Math.max(300, (G.f[G.f.length - 1].u - G.f[0].u) + 220) * k;
+    g += hz ? `<rect x="${f1(X(cx) - len / 2)}" y="${f1(Y(cy) - 5)}" width="${f1(len)}" height="10" fill="none" stroke="${STYLE.bronze}" stroke-width="1.3" stroke-dasharray="3 2"/>`
+            : `<rect x="${f1(X(cx) - 5)}" y="${f1(Y(cy) - len / 2)}" width="10" height="${f1(len)}" fill="none" stroke="${STYLE.bronze}" stroke-width="1.3" stroke-dasharray="3 2"/>`; });
+  // gold: the channel, the board, BASE
+  D.paths.filter(p => p.route === 'channel').forEach(p => { g += `<polyline points="${p.nodes.map(n => f1(X(n.x)) + ',' + f1(Y(n.y))).join(' ')}" fill="none" stroke="${STYLE.gold}" stroke-width="2.6" stroke-dasharray="8 5"/>`; });
+  const dev = t => D.devices.filter(d => d.type === t);
+  dev('board').concat(dev('base')).forEach(d => { g += `<rect x="${f1(X(d.x) - 13)}" y="${f1(Y(d.y) - 7)}" width="26" height="14" fill="${STYLE.gold}" stroke="${STYLE.ink}" stroke-width="0.8"/>`; });
+  // silver: RBXs, Portals, rails
+  const rbx = dev('rbx'); rbx.forEach(d => { g += `<rect x="${f1(X(d.x) - 13)}" y="${f1(Y(d.y) - 7)}" width="26" height="14" fill="${STYLE.silver}" stroke="${STYLE.ink}" stroke-width="0.8"/>`; });
+  const rbxOf = room => ['R06', 'R07'].indexOf(room) >= 0 ? rbx.find(d => Math.abs(d.x - 5784) < 300) : ['R01', 'R02', 'R03', 'R04', 'R05'].indexOf(room) >= 0 ? rbx.find(d => Math.abs(d.x - 3634) < 300) : null;
+  const marked = markedDoors(D), nests = [];
+  geo.filter(p => marked.has(p.id)).forEach(p => p.faces.forEach(f => { if (f.room === 'outside') return; const n = nestOf(p, f);
+    const off = f.sign * 110, pt = p.horiz ? [n.u, f.plane + off] : [f.plane + off, n.u]; nests.push({ p, f, n, pt }); }));
+  nests.forEach(N => { const r = rbxOf(N.f.room); if (!r || ['R06', 'R07'].indexOf(N.f.room) >= 0) return;
+    g += `<line x1="${f1(X(r.x))}" y1="${f1(Y(r.y))}" x2="${f1(X(N.pt[0]))}" y2="${f1(Y(N.pt[1]))}" stroke="${STYLE.silver}" stroke-width="1.6" stroke-dasharray="5 4"/>`; });
+  const i = 70, rail = pts => `<polyline points="${pts.map(p => f1(X(p[0])) + ',' + f1(Y(p[1]))).join(' ')}" fill="none" stroke="${STYLE.silver}" stroke-width="3.2" stroke-linejoin="round"/>`;
+  g += rail([[5327 + i, 5591], [5327 + i, 6215 - i], [8837, 6215 - i]]) + rail([[5784, 6465 + i], [5327 + i, 6465 + i], [5327 + i, 7540 - i], [6198 + i, 7540 - i], [6198 + i, 8807]]) + rail([[5784, 6465 + i], [8837, 6465 + i]]);
+  nests.forEach(N => { g += `<rect x="${f1(X(N.pt[0]) - 6)}" y="${f1(Y(N.pt[1]) - 6)}" width="12" height="12" fill="${STYLE.paper}" stroke="${N.n.at === 'hinge' ? STYLE.selv : '#b8721d'}" stroke-width="2"/>`; });
+  // corner cluster points of the two L rooms (F2)
+  [[5327 + 160, 2390 + 160], [10100 - 160, 2390 + 160], [10100 - 160, 6215 - 160], [10100 - 160, 6465 + 160], [10100 - 160, 9050 - 160]].forEach(([x, y]) => {
+    g += `<circle cx="${f1(X(x))}" cy="${f1(Y(y))}" r="6" fill="${STYLE.paper}" stroke="${STYLE.ink}" stroke-width="1.2"/><circle cx="${f1(X(x))}" cy="${f1(Y(y))}" r="2" fill="${STYLE.ink}"/>`; });
+  s += `<g clip-path="url(#pc)">${g}</g>`;
+  floors.forEach(f => { const cx = f.poly.reduce((a, p) => a + p[0], 0) / f.poly.length, cy = f.poly.reduce((a, p) => a + p[1], 0) / f.poly.length;
+    s += T(X(cx), Y(cy) - 4, f.num, { anchor: 'middle', weight: 600 }) + T(X(cx), Y(cy) + 10, f.name, { anchor: 'middle', fill: STYLE.faint }); });
+  dev('board').forEach(d => { s += T(X(d.x), Y(d.y) - 11, 'EL1', { anchor: 'middle', weight: 600, fill: '#8a6d12' }); });
+  dev('base').forEach(d => { s += T(X(d.x), Y(d.y) - 11, 'BASE', { anchor: 'middle', weight: 600, fill: '#8a6d12' }); });
+  rbx.forEach(d => { s += T(X(d.x) + 16, Y(d.y) + 4, Math.abs(d.x - 5784) < 300 ? 'RBX06' : Math.abs(d.x - 3634) < 300 ? 'RBX03' : (d.ref || 'RBX'), { weight: 600, fill: '#4d5862' }); });   // BUILD-001 K19 names (the test file says RBX01/02)
+  // legend
+  const lx = 910; let ly = 104;
+  const L = (sw, a, b) => { s += sw(lx, ly); s += T(lx + 34, ly + 4, a, { weight: 600 }); if (b) s += T(lx + 34, ly + 18, b, { fill: STYLE.faint }); ly += b ? 36 : 24; };
+  s += T(lx, ly - 18, 'gold — arany', { weight: 600, fill: '#8a6d12' });
+  L((x, y) => `<rect x="${x + 3}" y="${y - 7}" width="20" height="14" fill="${STYLE.gold}" stroke="${STYLE.ink}" stroke-width="0.8"/>`, 'Elosztó · BASE', 'gold nodes; the board is the only one preloaded');
+  L((x, y) => `<line x1="${x}" y1="${y}" x2="${x + 26}" y2="${y}" stroke="${STYLE.gold}" stroke-width="2.6" stroke-dasharray="8 5"/>`, 'golden channel', 'gold node → gold / silver node');
+  ly += 8; s += T(lx, ly - 4, 'silver — ezüst', { weight: 600, fill: '#4d5862' }); ly += 12;
+  L((x, y) => `<rect x="${x + 3}" y="${y - 7}" width="20" height="14" fill="${STYLE.silver}" stroke="${STYLE.ink}" stroke-width="0.8"/>`, 'RBX', 'the room\'s silver node');
+  L((x, y) => `<rect x="${x + 7}" y="${y - 6}" width="12" height="12" fill="#fff" stroke="${STYLE.selv}" stroke-width="2"/>`, 'Portal nest — hinge side', 'H0-1');
+  L((x, y) => `<rect x="${x + 7}" y="${y - 6}" width="12" height="12" fill="#fff" stroke="#b8721d" stroke-width="2"/>`, 'Portal nest — latch side', 'H0-3: < 300 mm beyond the hinge');
+  L((x, y) => `<line x1="${x}" y1="${y}" x2="${x + 26}" y2="${y}" stroke="${STYLE.silver}" stroke-width="3.2"/>`, 'Silver Rail, as built', 'R06 / R07 along the L');
+  L((x, y) => `<line x1="${x}" y1="${y}" x2="${x + 26}" y2="${y}" stroke="${STYLE.silver}" stroke-width="1.6" stroke-dasharray="5 4"/>`, 'Silver Rail, as a link', 'RBX03 → its Portals');
+  ly += 8; s += T(lx, ly - 4, 'bronze — bronz', { weight: 600, fill: '#7a4a24' }); ly += 12;
+  L((x, y) => `<rect x="${x + 10}" y="${y - 2}" width="4.4" height="4.4" fill="${STYLE.bronze}"/><circle cx="${x + 20}" cy="${y}" r="2.6" fill="none" stroke="${STYLE.bronze}"/>`, 'endpoints', 'wall ▪ · ceiling ○ (' + D.devices.filter(isEp).length + ')');
+  L((x, y) => `<rect x="${x + 2}" y="${y - 5}" width="22" height="10" fill="none" stroke="${STYLE.bronze}" stroke-width="1.3" stroke-dasharray="3 2"/>`, 'cluster box', groups.length + ' from the endpoints (≤ 300 mm, one face, one zone)');
+  L((x, y) => `<circle cx="${x + 13}" cy="${y}" r="6" fill="#fff" stroke="${STYLE.ink}" stroke-width="1.2"/><circle cx="${x + 13}" cy="${y}" r="2" fill="${STYLE.ink}"/>`, 'corner cluster point', 'the corners the L leaves out');
+  s += T(lx, ly + 10, nests.length + ' Portal nests on the ' + marked.size + ' marked doors;', { fill: '#55534d' });
+  s += T(lx, ly + 26, nests.filter(n => n.n.at === 'latch').length + ' of them moved to the latch side.', { fill: '#55534d' });
+  return s + '</svg>\n';
+}
+
+// ═════════════════════════════════════════════════════════════════════════════════════════════
+// F4 — the L unfolded: R06's two marked walls as one elevation strip
+// ═════════════════════════════════════════════════════════════════════════════════════════════
+function figWallUnfold(doc, geo) {
+  const P = doc.project, D = P.data, walls = P.building.walls.ground;
+  const k = 0.125, CEIL = 2850, LEN15 = 10100 - 5327, LEN12 = 6215 - 2390, ox = 120, floorY = 500;
+  const S15 = x => 10100 - x, S12 = y => LEN15 + (6215 - y);           // the strip coordinate, mm from the SE corner
+  const Xs = sm => ox + sm * k, Y = mm => floorY - mm * k;
+  const W = 1290, H = 700;
+  let s = svgOpen(W, H, 'IDEA-003 F4 — R06 nappali, the L unfolded',
+    'Elevation of R06 seen from inside: the north face of W15 and the east face of W12 unfolded round their shared corner, with the DIN zones, the two doors and their Portals, RBX06, the Silver Rail at 2450, the golden channel at 2600, the SmartFrame slots and the real endpoints grouped into cluster boxes.');
+  s += `<defs>${hatch('lin4', STYLE.lintel)}${hatch('leaf4', '#d9cfb9')}</defs>`;
+  s += T(40, 30, 'IDEA-003 · F4 — wall elevation: R06 nappali, its L unfolded (W15 north face ⟶ corner ⟶ W12 east face), ceiling 2850', { size: STYLE.t1, weight: 600 });
+  s += T(40, 48, 'Seen from inside the room. Endpoints are the real P33-teszt_v2 ones on these two faces; dashed boxes are the cluster boxes the Planner forms from them.', { fill: STYLE.faint });
+  const total = LEN15 + LEN12;
+  s += `<rect x="${f1(Xs(0))}" y="${f1(Y(CEIL))}" width="${f1(total * k)}" height="${f1(CEIL * k)}" fill="${STYLE.roomAlt}" stroke="${STYLE.wallEdge}" stroke-width="0.8"/>`;
+  s += `<rect x="${f1(Xs(0))}" y="${f1(Y(2700))}" width="${f1(total * k)}" height="${f1(300 * k)}" fill="${STYLE.zoneH}"/><rect x="${f1(Xs(0))}" y="${f1(Y(450))}" width="${f1(total * k)}" height="${f1(300 * k)}" fill="${STYLE.zoneH}"/>`;
+  s += T(Xs(total) - 6, Y(2700) + 12, 'ZW-o', { anchor: 'end', fill: '#5d7a3f' }) + T(Xs(total) - 6, Y(450) + 12, 'ZW-u', { anchor: 'end', fill: '#5d7a3f' });
+  // the doors: [strip start, end] and which end is the hinge
+  const doorOn = id => { const p = geo.find(q => q.id === id); const f = p.faces.find(x => x.room === 'R06');
+    const sm = id === 'B171' ? S15 : S12, a = sm(p.hingeU), b = sm(p.latchU); return { p, f, hinge: a, latch: b, lo: Math.min(a, b), hi: Math.max(a, b), dir: Math.sign(b - a) }; };
+  const doors = [doorOn('B171'), doorOn('B103')];
+  doors.forEach(d => {
+    // zone bands: ZS-t at the latch (DIN), ZS-t(h) at the hinge (BRIDGE, documented) — clipped to the face
+    const band = (c0, c1, dashed) => { const a = Math.max(0, Math.min(c0, c1)), b = Math.min(total, Math.max(c0, c1)); if (b <= a) return '';
+      return `<rect x="${f1(Xs(a))}" y="${f1(Y(CEIL))}" width="${f1((b - a) * k)}" height="${f1(CEIL * k)}" fill="${STYLE.zoneV}" opacity="0.9"${dashed ? ` stroke="${STYLE.silver}" stroke-dasharray="4 3" stroke-width="0.8"` : ''}/>`; };
+    s += band(d.latch + d.dir * 100, d.latch + d.dir * 300, false) + band(d.hinge - d.dir * 100, d.hinge - d.dir * 300, true);
+    if (d.f.swing) { const a = Math.max(d.dir > 0 ? d.hinge - 820 : d.hinge, d.dir > 0 ? (d.p.id === 'B103' ? LEN15 : 0) : 0), b = d.dir > 0 ? d.hinge : Math.min(total, d.hinge + 820);
+      s += `<rect x="${f1(Xs(Math.min(a, b)))}" y="${f1(Y(2050))}" width="${f1(Math.abs(b - a) * k)}" height="${f1(2050 * k)}" fill="url(#leaf4)"/>`; }
+    s += `<rect x="${f1(Xs(d.lo - 150))}" y="${f1(Y(2230))}" width="${f1((d.hi - d.lo + 300) * k)}" height="${f1(130 * k)}" fill="url(#lin4)" stroke="${STYLE.lintel}" stroke-width="0.6"/>`;
+    s += `<rect x="${f1(Xs(d.lo))}" y="${f1(Y(2100))}" width="${f1((d.hi - d.lo) * k)}" height="${f1(2100 * k)}" fill="#fff" stroke="${STYLE.ink}" stroke-width="1.2"/>`;
+    s += T(Xs((d.lo + d.hi) / 2), Y(1000), d.p.id, { anchor: 'middle', weight: 600 }) + T(Xs((d.lo + d.hi) / 2), Y(1000) + 15, 'opens into R06', { anchor: 'middle', fill: STYLE.faint });
+    s += T(Xs((d.lo + d.hi) / 2), Y(1000) + 30, (d.f.freeBeyondHinge >= 300 ? 'hinge free ' : 'hinge only ') + d.f.freeBeyondHinge + ' mm', { anchor: 'middle', fill: d.f.freeBeyondHinge >= 300 ? STYLE.selv : '#b8721d' }); });
+  // the corner of the L
+  s += `<line x1="${f1(Xs(LEN15))}" y1="${f1(Y(CEIL))}" x2="${f1(Xs(LEN15))}" y2="${f1(Y(0))}" stroke="${STYLE.ink}" stroke-width="1" stroke-dasharray="6 4"/>`;
+  s += T(Xs(LEN15), Y(CEIL) - 8, 'SW corner — the vertex of the L', { anchor: 'middle', fill: STYLE.faint });
+  // RBX06 in W15
+  const r6 = D.devices.find(d => d.type === 'rbx' && Math.abs(d.x - 5784) < 300), rs = S15(r6.x);
+  s += `<rect x="${f1(Xs(rs - 300))}" y="${f1(Y(2450))}" width="${f1(600 * k)}" height="${f1(600 * k)}" fill="${STYLE.silver}" stroke="${STYLE.ink}" stroke-width="1"/>`;
+  s += T(Xs(rs), Y(2150) + 4, 'RBX06 · RB-H', { anchor: 'middle', weight: 600, fill: '#fff' });
+  // the nests
+  const nest = d => d.f.freeBeyondHinge >= 300 ? d.hinge - d.dir * 200 : d.latch + d.dir * 200;
+  const n171 = nest(doors[0]), n103 = nest(doors[1]);
+  // rail and channel
+  s += `<line x1="${f1(Xs(n171))}" y1="${f1(Y(2450))}" x2="${f1(Xs(n103))}" y2="${f1(Y(2450))}" stroke="${STYLE.silver}" stroke-width="5"/>`;
+  const ch0 = (doors[1].lo + doors[1].hi) / 2;
+  s += `<polyline points="${f1(Xs(ch0))},${f1(Y(2600))} ${f1(Xs(rs))},${f1(Y(2600))} ${f1(Xs(rs))},${f1(Y(2450))}" fill="none" stroke="${STYLE.gold}" stroke-width="3" stroke-dasharray="10 6"/>`;
+  s += T(Xs(ch0) + 6, Y(2600) - 6, '↶ from RBX03 (R03), over the B103 head', { fill: '#8a6d12' });
+  // slots of an SF-2 frame (dashed = provisioned), on each door's own columns
+  const slot = (sm, h, w, hh, lab, col, left) => `<rect x="${f1(Xs(sm) - w * k / 2)}" y="${f1(Y(h) - hh * k / 2)}" width="${f1(w * k)}" height="${f1(hh * k)}" rx="1.5" fill="#fff" stroke="${col}" stroke-width="1.4" stroke-dasharray="3 2"/>`
+    + T(Xs(sm) + (left ? -1 : 1) * (w * k / 2 + 4), Y(h) + 4, lab, { fill: col, anchor: left ? 'end' : 'start' });
+  [[doors[0], n171], [doors[1], n103]].forEach(([d, n]) => {
+    s += `<rect x="${f1(Xs(n) - 100 * k)}" y="${f1(Y(2550))}" width="${f1(200 * k)}" height="${f1(200 * k)}" fill="#fff" stroke="${STYLE.selv}" stroke-width="2"/>`
+      + T(Xs(n), Y(2550) - 5, 'H0 nest', { anchor: 'middle', weight: 600, fill: STYLE.selv });
+    const smart = n, latchCol = d.latch + d.dir * 200, mid = (d.lo + d.hi) / 2;
+    s += slot(mid, 2400, 68, 68, 'H1', STYLE.selv);
+    s += slot(d.f.swing ? latchCol : smart, 1450, 160, 120, 'M3' + (d.f.swing ? ' (H0-2)' : ''), STYLE.selv, d.f.swing && d.p.id === 'B103');
+    s += slot(smart, 1620, 68, 68, 'M4', STYLE.selv) + slot(smart, 250, 68, 68, 'L0', STYLE.selv) + slot(latchCol, 1000, 68, 68, 'L2', STYLE.prov); });
+  // the real endpoints on these two faces, and their cluster boxes
+  const faces = epFaces(D, walls).filter(f => (f.w.id === 'W15' && f.sign < 0) || (f.w.id === 'W12' && f.sign > 0));
+  const smOf = f => f.w.id === 'W15' ? S15(f.d.x) : S12(f.d.y);
+  clusterGroups(faces).forEach(G => { const xs = G.f.map(smOf), a = Math.min(...xs) - 110, b = Math.max(...xs) + 110, hs = G.f.map(f => f.d.h || 0), h0 = Math.min(...hs) - 90, h1 = Math.max(...hs) + 90;
+    s += `<rect x="${f1(Xs(a))}" y="${f1(Y(h1))}" width="${f1((b - a) * k)}" height="${f1((h1 - h0) * k)}" rx="2" fill="none" stroke="${STYLE.bronze}" stroke-width="1.5" stroke-dasharray="4 3"/>`
+      + T(Xs(a), Y(h1) - 4, G.cls, { weight: 600, fill: STYLE.bronze }); });
+  faces.forEach(f => { const x = Xs(smOf(f)), y = Y(f.d.h || 0);
+    s += `<rect x="${f1(x - 5)}" y="${f1(y - 5)}" width="10" height="10" fill="#fff" stroke="${STYLE.bronze}" stroke-width="1.4"/>` + T(x, y + 17, f.d.code, { anchor: 'middle', fill: '#7a4a24' }); });
+  // corner clusters live on the neighbouring walls
+  s += T(Xs(0) + 4, Y(CEIL) + 14, '◂ SE corner cluster: on the east wall', { fill: STYLE.faint });
+  s += T(Xs(total) - 4, Y(CEIL) + 14, 'NW corner cluster: on the north wall ▸', { anchor: 'end', fill: STYLE.faint });
+  // face captions and the height axis
+  s += T(Xs(LEN15 / 2), floorY + 20, 'W15 · north face (R06 side) · from the SE corner', { anchor: 'middle', fill: STYLE.faint });
+  s += T(Xs(LEN15 + LEN12 / 2), floorY + 20, 'W12 · east face (R06 side) · to the NW corner', { anchor: 'middle', fill: STYLE.faint });
+  [[0, '±0'], [1000, '1000'], [1450, '1450'], [2100, '2100'], [2450, '2450 rail'], [2600, '2600 channel'], [2850, '2850']].forEach(([mm, lab]) => { s += T(ox - 6, Y(mm) + 4, lab, { anchor: 'end', fill: STYLE.faint }); });
+  // legend
+  let lx = 40; const ly = floorY + 56;
+  const leg = (sw, txt) => { s += sw(lx, ly); s += T(lx + 30, ly + 4, txt); lx += 30 + txt.length * 6.1 + 20; };
+  leg((x, y) => `<line x1="${x}" y1="${y}" x2="${x + 24}" y2="${y}" stroke="${STYLE.silver}" stroke-width="5"/>`, 'Silver Rail 2450');
+  leg((x, y) => `<line x1="${x}" y1="${y}" x2="${x + 24}" y2="${y}" stroke="${STYLE.gold}" stroke-width="3" stroke-dasharray="10 6"/>`, 'golden channel 2600');
+  leg((x, y) => `<rect x="${x + 4}" y="${y - 8}" width="16" height="16" fill="#fff" stroke="${STYLE.selv}" stroke-width="2"/>`, 'Portal nest H0');
+  leg((x, y) => `<rect x="${x + 6}" y="${y - 6}" width="12" height="12" fill="#fff" stroke="${STYLE.selv}" stroke-dasharray="3 2"/>`, 'SmartFrame slot (SF-2)');
+  leg((x, y) => `<rect x="${x + 7}" y="${y - 5}" width="10" height="10" fill="#fff" stroke="${STYLE.bronze}" stroke-width="1.4"/>`, 'endpoint (P33 v2)');
+  leg((x, y) => `<rect x="${x}" y="${y - 7}" width="24" height="14" fill="none" stroke="${STYLE.bronze}" stroke-dasharray="4 3"/>`, 'cluster box');
+  lx = 40; const ly2 = ly + 24;
+  const leg2 = (sw, txt) => { s += sw(lx, ly2); s += T(lx + 30, ly2 + 4, txt); lx += 30 + txt.length * 6.1 + 20; };
+  leg2((x, y) => `<rect x="${x}" y="${y - 7}" width="24" height="14" fill="${STYLE.zoneV}"/>`, 'ZS-t latch (DIN)');
+  leg2((x, y) => `<rect x="${x}" y="${y - 7}" width="24" height="14" fill="${STYLE.zoneV}" stroke="${STYLE.silver}" stroke-dasharray="4 3"/>`, 'ZS-t(h) hinge (BRIDGE)');
+  leg2((x, y) => `<rect x="${x}" y="${y - 7}" width="24" height="14" fill="${STYLE.zoneH}"/>`, 'ZW-o / ZW-u (DIN)');
+  leg2((x, y) => `<rect x="${x}" y="${y - 7}" width="24" height="14" fill="url(#leaf4)"/>`, 'behind the open leaf');
+  leg2((x, y) => `<rect x="${x}" y="${y - 7}" width="24" height="14" fill="${STYLE.lintel}" opacity="0.6"/>`, 'lintel');
+  s += T(40, ly2 + 48, 'P33 v2 puts the POR portal sensors at 2150 — inside the lintel band (2100–2230). The Portal moves them to H1 at 2400, on the rail line above the lintel.', { fill: '#55534d' });
+  s += T(40, ly2 + 30, 'B171: only 163 mm of wall beyond its hinge, so its nest and smart column take the latch side (H0-3). B103: the leaf opens into R06, so its terminal M3 moves to the latch side (H0-2).', { fill: '#55534d' });
+  return s + '</svg>\n';
+}
+
 const doc = JSON.parse(fs.readFileSync(PLAN, 'utf8'));
 const geo = portalGeometry(doc);
+fs.writeFileSync(path.join(OUT, 'IDEA-003_F3_plan-cut.svg'), figPlanCut(doc, geo));
+fs.writeFileSync(path.join(OUT, 'IDEA-003_F4_wall-unfold.svg'), figWallUnfold(doc, geo));
 fs.writeFileSync(path.join(OUT, 'IDEA-003_F1_door-elevation.svg'), figElevation());
 fs.writeFileSync(path.join(OUT, 'IDEA-003_F2_room-pattern.svg'), figRoomPlan(doc, geo));
 process.stdout.write(JSON.stringify(geo.map(p => ({ id: p.id, wall: p.wall, hinge: p.hingeU, latch: p.latchU,

@@ -193,6 +193,7 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
       +`<input type="radio" name="alayer" ${act?'checked':''} data-la="${L.id}" title="aktív">`
       +`<button data-lv="${L.id}" title="show/hide">${L.visible?'👁':'🚫'}</button>`
       +`<button data-lk="${L.id}" title="zárolás: a réteg elemei nem jelölhetők ki és nem húzhatók">${L.lock?'🔒':'🔓'}</button>`
+      +((typeof idealCap==='function'&&idealCap(L))?`<button data-lid="${L.id}" class="lideal${L.ideal===false?'':' on'}" title="ideális helyek mutatása / elrejtése (✦) — jobb klikk egy ✦ helyen: elhelyezés">${L.ideal===false?'✧':'✦'}</button>`:'')
       +`<button class="lswatch${lyrPaints(L)?' on':''}" data-lp="${L.id}" style="--lc:${lyrColor(L)}"`
       +` title="${esc(lyrColorTitle(L))}">●</button>`
       +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
@@ -230,6 +231,7 @@ function renderLayers(){const el=$('layerList');if(!el)return;lyrDragEnd();
     renderLayers();if(typeof renderShell==='function')renderShell();});
   q('[data-lv]',b=>b.onclick=()=>{const L=layerById(b.dataset.lv),v=!L.visible;lyrGroupOf(L.id).forEach(x=>{x.visible=v;});renderLayers();draw();});
   q('[data-lk]',b=>b.onclick=()=>lyrToggleLock(b.dataset.lk));
+  q('[data-lid]',b=>b.onclick=()=>{const L=lyrLayer(b.dataset.lid);L.ideal=(L.ideal===false);renderLayers();draw();});
   q('.lrow',r=>r.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();lyrLayerMenu(e,r.parentNode.dataset.lb);}));
   q('[data-ln]',i=>i.onchange=()=>{lyrPushUndo();layerById(i.dataset.ln).name=i.value;});
   q('[data-sv]',b=>b.onclick=()=>{const p=b.dataset.sv.split(':'),L=lyrLayer(p[0]),v=(L.cats[p[1]]===false);lyrGroupOf(L.id).forEach(x=>{x.cats[p[1]]=v;});renderLayers();draw();});

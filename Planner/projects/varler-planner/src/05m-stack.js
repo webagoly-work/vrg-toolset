@@ -30,22 +30,25 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:MEDIA',  n:'Média és hang',          ph:2, fam:'MEDIA'},
  {k:'sys:USB',    n:'USB',                    ph:2, fam:'USB'},
  {k:'sys:SECURITY',n:'Biztonságtechnika',     ph:2, fam:'SECURITY', last:true}, // always last [user]
- {k:'arm',        n:'ARM pályák',  ph:2, cats:['path'], hint:'Egyvonalas pályák az RBX-től minden végpontig.'}];
+ {k:'cluster',    n:'Klaszterpontok', ph:2, cats:['device'], hint:'Klaszterdobozok (K1 · K2 · K3): több réteg végpontjai egy süllyesztett házban — IDEA-001/002/003.'},
+ {k:'arm',        n:'ARM pályák',  ph:2, cats:['path'], hint:'Egyvonalas pályák az RBX-től minden végpontig.'},
+ // the top of the stack: the gathered extras and SmartFrame ideas as provisioned endpoints (P33-ADD-001, IDEA-003)
+ {k:'sys:EXTRA',  n:'Extrák és ötletek',      ph:2, fam:'LV', hint:'Előkészített végpontok: P33 extrák (#1–#11) és a SmartFrame slotjai. Az ideális helyek ✦-gal.'}];
 const STK_ICONS={construct:'🧱',mark:'🚩',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
-  'sys:DATA':'🌐','sys:KNX':'⌘','sys:SENSOR':'📡','sys:RF':'📶','sys:HMI':'🖲','sys:MEDIA':'🔊','sys:USB':'🔌','sys:SECURITY':'🛡',arm:'🌿'};
+  'sys:DATA':'🌐','sys:KNX':'⌘','sys:SENSOR':'📡','sys:RF':'📶','sys:HMI':'🖲','sys:MEDIA':'🔊','sys:USB':'🔌','sys:SECURITY':'🛡',cluster:'▦',arm:'🌿','sys:EXTRA':'✧'};
 // One colour per role, fixed [user]: Erősáram is the same red in every project, on the panel, on the
 // symbols and in the BRIDGE sheets — a colour has to mean a system, not "the third layer down".
 // The sys:* half of this table is what 05s hands to the endpoint symbols (EP_ROLE_COL reads it).
 const STK_COL={construct:'#7c7468',mark:'#c0530f',hw:'#4a5a68',base:'#1f6f8b',channel:'#8a7bbf',
   'sys:MAINS':'#d1493f','sys:LV':'#e6a800','sys:BUSB':'#b07a2a','sys:CONTROL':'#7a5cc0','sys:DATA':'#16a085',
   'sys:KNX':'#2e7d32','sys:SENSOR':'#2f79c9','sys:RF':'#3fa7a7','sys:HMI':'#5470b0','sys:MEDIA':'#c2638a',
-  'sys:USB':'#607d8b','sys:SECURITY':'#444444',arm:'#2e9e5b'};
+  'sys:USB':'#607d8b','sys:SECURITY':'#444444',cluster:'#9c6b30',arm:'#2e9e5b','sys:EXTRA':'#b0489a'};
 function stkRoleCol(k){return STK_COL[k]||null;}
 function stkSysCols(){const o={};Object.keys(STK_COL).forEach(k=>{if(k.indexOf('sys:')===0)o[k]=STK_COL[k];});return o;}
 // the action groups the inspector offers per role. A work package that adds actions to one system role
 // pushes into STK_GROUPS['+sys:MAINS'] etc.; groups that do not exist yet simply show nothing.
 const STK_GROUPS={construct:['Fal','Nyílászáró','Szint','Rajz','Helyiség'],mark:['Jelölés'],hw:['Hardver','Rádió'],
-  base:['Hardver'],channel:['Csatorna'],arm:['ARM','Feltöltés'],'sys:*':['Végpont','Szükséglet']};
+  base:['Hardver'],channel:['Csatorna'],cluster:['Klaszter'],arm:['ARM','Feltöltés'],'sys:*':['Végpont','Szükséglet']};
 function stkGroupsOf(roleKey){return STK_GROUPS[roleKey]||(roleKey.indexOf('sys:')===0?STK_GROUPS['sys:*'].concat(STK_GROUPS['+'+roleKey]||[]):[]);}
 
 // ---- shared hooks: the only render / pointer edits any later stack work package needs ----

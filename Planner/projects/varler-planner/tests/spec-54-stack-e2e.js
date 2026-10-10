@@ -27,7 +27,7 @@ setTimeout(()=>{
   w.ensureIds(D());w.eval('for(const l of ORD)SNAP[l]=centerlines(WALLS[l]);');
   const [E,N,K]=D().floors.map(f=>f.id),[d1,d2,dIn,win]=D().openings;
   const S=w.stkCreate({name:'E2E'}),L=r=>w.stkLayer(S.id,r).id;
-  ok('1 · the stack has its 17 layers and the construct checks pass',S.layers.length===17&&!w.stkCheck(S,'construct').some(c=>c.sev==='error'));
+  ok('1 · the stack has its 19 layers and the construct checks pass',S.layers.length===19&&!w.stkCheck(S,'construct').some(c=>c.sev==='error'));
   // ---- marking ----
   const M=o=>{w.mrkList().push(Object.assign({level:lvl,layer:L('mark'),pol:'none',tags:[]},o));w.ensureIds(D());};
   M({kind:'opening',op:dIn.id,tags:['bejarat','portal','p3']});M({kind:'opening',op:d1.id,tags:['portal','p2']});M({kind:'opening',op:win.id,tags:['redony']});

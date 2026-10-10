@@ -1,14 +1,15 @@
 # IDEA-003 — SmartFrame: the Portal as a second BRIDGE box type
 
-Status: **concept r0, 2026-10-10 · Phase 1 of GO FRAME · ⏸ for fine-tuning with the user** · nothing
-decided beyond the answers in §0.2 · no code · feeds the future **BRIDGE-STD-009** (Q-SF-02) and the
+Status: **concept r1, 2026-10-10 · the §13 questions answered (all defaults, Q1 and Q2 confirmed) · the Planner part built
+the same day (§15)** · feeds the future **BRIDGE-STD-009** (Q-SF-02) and the
 Planner pack `docs/round-p33-add-001/` (after round 2026-10-10 is built)
 Brief: [`../round-2026-10-10/NEXT-P33-ADD-001-SF_smartframe-brief.md`](../round-2026-10-10/NEXT-P33-ADD-001-SF_smartframe-brief.md)
 Related: [IDEA-001](IDEA-001_cluster-flush-boxes.md) (cluster points) · [IDEA-002](IDEA-002_flush-cover-standard.md)
 (housings, Ladder D / H) · [WORKSHOP-001](WORKSHOP-001_routing.md) (paths, provisioned state) ·
 BRIDGE STD-001 / STD-003 / STD-005 / STD-008 · ARCH-001
 Figures (generated, never hand-edited): [F1 door elevation](fig/IDEA-003_F1_door-elevation.svg) ·
-[F2 P33 room pattern](fig/IDEA-003_F2_room-pattern.svg) · [set-cover tables](fig/IDEA-003_setcover.md) —
+[F2 P33 room pattern](fig/IDEA-003_F2_room-pattern.svg) · [F3 floor-plan cut](fig/IDEA-003_F3_plan-cut.svg) ·
+[F4 the L unfolded](fig/IDEA-003_F4_wall-unfold.svg) · [set-cover tables](fig/IDEA-003_setcover.md) —
 sources in `fig/src/idea-003-figs.js` and `fig/src/idea-003-setcover.js`
 
 > *"…a half-independent subsystem that can also work without BRIDGE… It uses what the wall around a
@@ -355,9 +356,9 @@ the notched R07, or two of the other guesses), say so and §7 changes accordingl
   *that* node's path continues.
 - **P-2** A **gold path ending at a bronze endpoint is a direct line** (dedicated / heavy load: DED,
   AVP). This is WORKSHOP-001's old "bronze path", renamed: bronze is now a node tier, not a path.
-- **P-3 (the exception the user named)** A **shared mains circuit** (dugalj áramkör) leaving the
-  Elosztó is a **silver** path: it serves a string of endpoints like a rail does, not one load. ⚑ *Is
-  this the only exception, or the rule "shared circuit = silver, dedicated = gold" in general?*
+- **P-3** A **shared circuit is a silver path, a dedicated one gold** — the general rule (answered
+  2026-10-10). A shared mains circuit (dugalj áramkör) leaving the Elosztó serves a string of endpoints like
+  a rail does, so it is silver even though the Elosztó is a gold node.
 - **P-4** One node alone is a node. **Same-tier nodes on one string, feeding downstream in tandem,
   form a Rail.** BASE and its parts form the **gold rail**; a room's RBX + Portals form its **Silver
   Rail**.
@@ -505,7 +506,14 @@ the 24 V input makes every Portal a bus B monitor point.
 | D-7 | STD-001 room table | door frame point + portal + NTL-TR per room | → one Portal class + tier per door |
 | D-8 | catalogues `POR` / `NTL` | portal box at 2150, NTL at 1150 beside the door | POR moves into H0 / H1; NTL into M1 |
 
-## 13. Open questions for the fine-tuning (⏸)
+## 13. Questions of the fine-tuning — answered 2026-10-10
+
+**Answers:** 1 yes · 2 **general rule** (a shared circuit is always a silver path, a dedicated one gold) · 3–10 the
+defaults below. So: PT-S/D/E/W/B (PT-D/W for a double Portal with a wet face) · ZS-t(h) carries SELV and data only ·
+H0-3 = latch side · core `vl53l0x` first, `vl53l1x` after a licence check · M3 to the latch side on a swing face ·
+more than two doors: the best L, others as spurs · the P33 list below · `STYLE` is the draft figure standard.
+
+The questions as asked:
 
 1. **Q-SF-01**: is §7.4's reading of "both variants" right?
 2. **Tiers**: is P-3 (shared circuit = silver) the only exception, or the general rule?
@@ -520,7 +528,7 @@ the 24 V input makes every Portal a bus B monitor point.
 10. The **figure style** (`STYLE` in `fig/src/idea-003-figs.js`): accept as the draft standard for
     SmartFrame illustrations, or align it with the "VRG Title Card" design system first?
 
-## 14. What happens after the ⏸
+## 14. What happens next
 
 **Phase 2** (after the user's go): **BRIDGE-STD-009 SmartFrame** in the main checkout, plus amendments
 to STD-003 §2.4, the STD-001 room table and WORKSHOP-001 §0/§1. **Phase 3** (after round 2026-10-10 is
@@ -559,3 +567,11 @@ Localisation: [Bermuda (MIT)](https://github.com/agittins/bermuda) ·
 [espressif/esp-csi (Apache-2.0)](https://github.com/espressif/esp-csi) ·
 [ESPresense (AGPL-3.0)](https://github.com/ESPresense/ESPresense) ·
 [ESPectre on the Espressif registry (GPL-3.0)](https://components.espressif.com/components/francescopace/espectre/versions/3.0.0/readme)
+
+## 15. In the Planner (built 2026-10-10)
+
+See `docs/stack/README.md` → *SmartFrame, clusters and ideal spots*. What the drawings F3 / F4 show is what the
+Planner computes: the nest rules H0-1 / H0-3, the cluster rule of IDEA-001 (same face, same zone, ≤ 300 mm;
+MAINS + SELV → K3), the corner points of an L room (three outer corners plus the inner one, never over an opening),
+and the tiers. Found while drawing F4: **P33 v2's POR sensors sit at 2150, inside the lintel band** — the Portal's
+H1 pocket at 2400 is where they belong.

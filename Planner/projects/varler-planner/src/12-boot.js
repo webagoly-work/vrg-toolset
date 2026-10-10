@@ -455,3 +455,4 @@ $('bToolsLoc').onclick=()=>{const tp=PANELS.find(p=>p.label==='Tools');if(!tp)re
   panelLoc[tp.pid]=(panelLoc[tp.pid]==='top')?'left':'top';renderDashboard();scheduleSave();};
 $('objSearch').oninput=()=>renderObjList();renderObjList();
 buildDashboard();window.__dashReady=true;stampVersion();renderLayers();kbdApplyLayout();restoreSession();if(autoLayout)applyToolLayout(state.mode);
+if(typeof preloadBoot==="function")preloadBoot();   // a build with plans baked in (tools/make-preload.js) offers them first

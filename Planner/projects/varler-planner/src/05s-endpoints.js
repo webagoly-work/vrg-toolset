@@ -145,10 +145,13 @@ function epMake(g,code,role,vk){const type=epTypeFor(code),L=epRoleLayer(role);
   const d={type,code,var:vk||epEntry(code,role).vars[0].k,level:g.level,x:g.x,y:g.y,h:g.h,layer:L?L.id:state.activeLayer};
   if(g.side!=null)d.side=g.side;
   return d;}
+// after a placement, inside the same undo step: 06b hosts the endpoint in a node or opens a secondary cluster box
+const EP_PLACED=[];   // fn(d, g) — g carries host / snapped / why from whoever built the ghost
 function epPlace(g,code,role,vk){if(!g)return null;code=code||EP_T.code;role=role||EP_T.role;
   const d=epMake(g,code,role,vk||EP_T.var);
   pushUndo(['devices']);data.devices.push(d);ensureIds(data);
   d.ref=EP_CLASSIC[code]&&typeof nextRef==='function'?nextRef(d.type):epRef(d);
+  EP_PLACED.forEach(f=>{try{f(d,g);}catch(_){}});
   draw();const v=epVar(d);lyrHud(code+' · '+epEntry(code,role).n+' · '+(v?v.n:'')+(g.why?' — '+g.why:''));return d;}
 function epToolStart(code,role,vk){const en=epEntry(code,role);if(!en)return;
   if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();
@@ -295,7 +298,7 @@ registerActions([
   run:()=>{const L=lyrLayer(state.activeLayer);epToolStart(code,L.role);}}))));
 
 // test hooks
-window.EP_CAT=EP_CAT;window.EP_ROLE_COL=EP_ROLE_COL;window.EP_T=EP_T;window.epEntry=epEntry;window.epOfRole=epOfRole;window.epTypeFor=epTypeFor;window.epCodeOf=epCodeOf;window.epRoleOf=epRoleOf;
+window.EP_CAT=EP_CAT;window.EP_PLACED=EP_PLACED;window.EP_ROLE_COL=EP_ROLE_COL;window.EP_T=EP_T;window.epEntry=epEntry;window.epOfRole=epOfRole;window.epTypeFor=epTypeFor;window.epCodeOf=epCodeOf;window.epRoleOf=epRoleOf;
 window.epVar=epVar;window.epCables=epCables;window.epRef=epRef;window.epMake=epMake;window.epPlace=epPlace;window.epToolStart=epToolStart;window.epGhost=epGhost;
 window.epSymbol=epSymbol;window.epCircuitOf=epCircuitOf;window.epCircuits=epCircuits;window.epLampGroups=epLampGroups;window.epGroupsFor=epGroupsFor;
 window.epCtlPick=epCtlPick;window.epCtlToggle=epCtlToggle;window.epInRoom=epInRoom;window.epCtlOf=epCtlOf;window.epRoomOf=epRoomOf;

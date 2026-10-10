@@ -30,16 +30,16 @@ setTimeout(()=>{
   fresh();const n0=LY().length,u0=undoLen();
   const S=w.stkCreate({name:'T'});
   const SL=LY().filter(l=>l.stack===S.id);
-  ok('STK_ROLES: 5 phase-1 and 13 phase-2 roles, KNX off',w.STK_ROLES.filter(r=>r.ph===1).length===5&&w.STK_ROLES.filter(r=>r.ph===2).length===13&&w.STK_ROLES.find(r=>r.k==='sys:KNX').off===true);
-  ok('stkCreate makes 5 phase-1 + 12 phase-2 layers (KNX off)',SL.length===17&&!SL.some(l=>l.role==='sys:KNX'));
+  ok('STK_ROLES: 5 phase-1 and 15 phase-2 roles (+ Klaszterpontok, Extrák — IDEA-003), KNX off',w.STK_ROLES.filter(r=>r.ph===1).length===5&&w.STK_ROLES.filter(r=>r.ph===2).length===15&&w.STK_ROLES.find(r=>r.k==='sys:KNX').off===true);
+  ok('stkCreate makes 5 phase-1 + 14 phase-2 layers (KNX off)',SL.length===19&&!SL.some(l=>l.role==='sys:KNX'));
   ok('the layers come in STK_ROLES order, each with stack and role',J(SL.map(l=>l.role))===J(roleKeys.filter(k=>k!=='sys:KNX'))&&SL.every(l=>l.stack===S.id&&l.role));
-  ok('the new layers are one contiguous block after the existing ones',LY().length===n0+17&&LY().slice(n0).every(l=>l.stack===S.id)&&!LY().slice(0,n0).some(l=>l.stack));
+  ok('the new layers are one contiguous block after the existing ones',LY().length===n0+19&&LY().slice(n0).every(l=>l.stack===S.id)&&!LY().slice(0,n0).some(l=>l.stack));
   ok('layers are named "<short> · <role>"',SL[0].name==='B1 · Szerkezet'&&SL[1].name==='B1 · Jelölés');
   ok('the record: kind bridge, scale S-C, phase 1, layers listed in role order',S.kind==='bridge'&&S.scale==='S-C'&&S.phase===1&&J(S.layers)===J(SL.map(l=>l.id))&&ST().length===1&&S.name==='T');
   ok('the Szerkezet layer is active and the stack is entered',w.__state.activeLayer===SL[0].id&&w.stkActive()===S);
   ok('the stack creation is one undo step that removes everything',undoLen()===u0+1&&(w.doUndo(),LY().length===n0&&ST().length===0&&!LY().some(l=>l.stack)));
   w.doRedo();
-  ok('redo brings the whole stack back',ST().length===1&&LY().length===n0+17);
+  ok('redo brings the whole stack back',ST().length===1&&LY().length===n0+19);
   ok('KNX can be ticked and the phase-2 set can be trimmed',(function(){fresh();const s=w.stkCreate({roles:['sys:KNX','sys:LV']});
     return LY().filter(l=>l.stack===s.id).map(l=>l.role).join()==='construct,mark,hw,base,channel,sys:LV,sys:KNX'.split(',').sort((a,b)=>roleKeys.indexOf(a)-roleKeys.indexOf(b)).join();})());
   ok('a second stack is named B2 and its block follows the first',(function(){fresh();w.stkCreate({});const s2=w.stkCreate({name:'Z'});
@@ -48,7 +48,7 @@ setTimeout(()=>{
   // 2 — adoption
   fresh();addL('LX','Régi fal');addWall('LX',0);addWall('LX',2000);
   const n1=LY().length,sA=w.stkCreate({construct:{mode:'adopt',layers:['LX']}});
-  ok('adopting an existing layer as Szerkezet creates no new Szerkezet layer',LY().length===n1+16&&LY().filter(l=>l.role==='construct').length===1);
+  ok('adopting an existing layer as Szerkezet creates no new Szerkezet layer',LY().length===n1+18&&LY().filter(l=>l.role==='construct').length===1);
   ok('the adopted layer is referenced, keeps its name and its items',LY().find(l=>l.id==='LX').role==='construct'&&LY().find(l=>l.id==='LX').stack===sA.id&&LY().find(l=>l.id==='LX').name==='Régi fal'&&w.lyrItemsOf('LX','wall').length===2);
   ok('the adopted layer is the active one',w.__state.activeLayer==='LX'&&w.stkLayer(sA.id,'construct').id==='LX');
   fresh();addL('LA','A');addL('LB','B');addWall('LA',0);addWall('LB',3000);addDev({layer:'LB'});
@@ -101,7 +101,7 @@ setTimeout(()=>{
   fresh();
   ok('without a stack the rail shows the six general stages',railBtns().length===6&&w.shellStages()===w.STAGES&&!$('stgBack'));
   const S5=w.stkCreate({});
-  ok('with the stack active the rail shows 17 role buttons and a back button',railBtns().length===17&&!!$('stgBack')&&railBtns()[0].textContent.indexOf('Szerkezet')>=0&&railBtns()[1].textContent.indexOf('Jelölés')>=0);
+  ok('with the stack active the rail shows 19 role buttons and a back button',railBtns().length===19&&!!$('stgBack')&&railBtns()[0].textContent.indexOf('Szerkezet')>=0&&railBtns()[1].textContent.indexOf('Jelölés')>=0);
   ok('the Szerkezet button is the current one',railBtns().find(b=>b.classList.contains('on')).dataset.k==='stk:construct');
   w.setStage('stk:mark');
   ok("setStage('stk:mark') makes the Jelölés layer active and highlights it",LY().find(l=>l.id===w.__state.activeLayer).role==='mark'&&railBtns().find(b=>b.classList.contains('on')).dataset.k==='stk:mark');
@@ -117,8 +117,8 @@ setTimeout(()=>{
   ok('the active layer is a non-stack layer again',!LY().find(l=>l.id===w.__state.activeLayer).stack);
   ok('the stack stays in the project after leaving it',ST().length===1);
   w.stkActivate(S5.id);
-  ok('Stack aktiválása re-enters it',w.stkActive()===S5&&railBtns().length===17);
-  ok('a stack role without a layer has no button',(function(){const lay=w.stkLayer(S5.id,'sys:HMI');LY().splice(LY().indexOf(lay),1);w.renderShell();const n=railBtns().length;LY().push(lay);return n===16;})());
+  ok('Stack aktiválása re-enters it',w.stkActive()===S5&&railBtns().length===19);
+  ok('a stack role without a layer has no button',(function(){const lay=w.stkLayer(S5.id,'sys:HMI');LY().splice(LY().indexOf(lay),1);w.renderShell();const n=railBtns().length;LY().push(lay);return n===18;})());
 
   ok('a stack whose role layers were all deleted falls back to the general rail instead of crashing',(function(){fresh();const s=w.stkCreate({});
     const ids=LY().filter(l=>l.stack===s.id).map(l=>l.id);w.eval('layers=layers.filter(l=>!l.stack)');w.__state.activeLayer='L0';w.__state.stack=s.id;
@@ -128,7 +128,7 @@ setTimeout(()=>{
   fresh();const S6=w.stkCreate({});addDev({layer:w.stkLayer(S6.id,'hw').id});const nl=LY().length;
   ok('stkDissolve keeps all layers and items, clears stack and role',(function(){const r=w.stkDissolve(S6.id);return r&&ST().length===0&&LY().length===nl&&LY().every(l=>!l.stack&&!l.role)&&D().devices.length===1;})());
   ok('after dissolving the rail is the general one',w.stkActive()===null&&railBtns().length===6);
-  ok('dissolving is undoable',(function(){w.doUndo();return ST().length===1&&LY().filter(l=>l.stack).length===17;})());
+  ok('dissolving is undoable',(function(){w.doUndo();return ST().length===1&&LY().filter(l=>l.stack).length===19;})());
 
   // 7 — merge rule regression
   ok('merging a stack layer into a non-stack layer is refused',(function(){fresh();const s=w.stkCreate({});addL('LN','N');const mk=w.stkLayer(s.id,'mark').id;const r=w.lyrMerge('LN',[mk]);return r===false&&LY().some(l=>l.id===mk)&&/Stack réteg/.test($('hud').textContent);})());
@@ -137,7 +137,7 @@ setTimeout(()=>{
   // 8 — the wizard
   fresh();addL('LW1','Alap fal');addL('LW2','Másik');
   w.actionById('stack.create').run({});
-  ok('the wizard lists the phase-2 roles, KNX unticked',w.document.querySelectorAll('.skR').length===13&&[...w.document.querySelectorAll('.skR')].filter(x=>x.checked).length===12&&!w.document.querySelector('.skR[value="sys:KNX"]').checked);
+  ok('the wizard lists the phase-2 roles, KNX unticked',w.document.querySelectorAll('.skR').length===15&&[...w.document.querySelectorAll('.skR')].filter(x=>x.checked).length===14&&!w.document.querySelector('.skR[value="sys:KNX"]').checked);
   ok('the name defaults to "BRIDGE Stack <n>"',$('skName').value==='BRIDGE Stack 1');
   ok('the adopt list shows only non-stack layers; merge appears at 2+ ticked',(function(){
     const ad=w.document.querySelector('input[name=skMode][value=adopt]');ad.checked=true;ad.dispatchEvent(new w.Event('change',{bubbles:true}));
@@ -145,7 +145,7 @@ setTimeout(()=>{
     const b=w.document.querySelectorAll('.skL');b[1].checked=true;b[1].dispatchEvent(new w.Event('change',{bubbles:true}));const one=$('skMergeRow').style.display==='none';
     b[2].checked=true;b[2].dispatchEvent(new w.Event('change',{bubbles:true}));return shown&&one&&$('skMergeRow').style.display==='block';})());
   ok('OK creates the stack from the wizard, merging the ticked layers',(function(){$('skName').value='Lakás';$('mOk').click();
-    const s=ST()[0];return s&&s.name==='Lakás'&&LY().filter(l=>l.stack===s.id).length===17&&LY().find(l=>l.role==='construct').id==='LW1'&&!LY().some(l=>l.id==='LW2');})());
+    const s=ST()[0];return s&&s.name==='Lakás'&&LY().filter(l=>l.stack===s.id).length===19&&LY().find(l=>l.role==='construct').id==='LW1'&&!LY().some(l=>l.id==='LW2');})());
   ok('adopt without any ticked layer is refused and keeps the dialog',(function(){fresh();addL('LV','V');w.actionById('stack.create').run({});const ad=w.document.querySelector('input[name=skMode][value=adopt]');ad.checked=true;
     $('mOk').click();const kept=w.document.querySelector('#modalBg').style.display==='flex'&&ST().length===0;w.closeModal();return kept;})());
   ok('the wizard can leave optional phase-2 layers out',(function(){fresh();w.actionById('stack.create').run({});w.document.querySelectorAll('.skR').forEach(x=>{x.checked=(x.value==='sys:LV');});$('mOk').click();
@@ -155,7 +155,7 @@ setTimeout(()=>{
   fresh();addL('LO','Egyéb');const S9=w.stkCreate({name:'Ház'});w.renderLayers();
   ok('a stack header with short name, name and phase renders above the stack layers',(function(){const h=w.document.querySelector('#layerList .lstack');return h&&/B1 · Ház/.test(h.textContent)&&/1\. fázis/.test(h.textContent);})());
   ok('the stack layers sit in an indented body, in role order, with a role caption',(function(){const b=w.document.querySelector('#layerList .lstkbody');const ids=[...b.querySelectorAll('[data-lb]')].map(x=>x.dataset.lb);
-    return ids.length===17&&ids[0]===w.stkLayer(S9.id,'construct').id&&b.querySelector('.lrole').textContent==='Szerkezet';})());
+    return ids.length===19&&ids[0]===w.stkLayer(S9.id,'construct').id&&b.querySelector('.lrole').textContent==='Szerkezet';})());
   ok('non-stack layers render below the stack block, as before',(function(){const list=w.document.querySelector('#layerList');const kids=[...list.children];const lastStk=kids.indexOf(list.querySelector('.lstkbody'));
     return kids.slice(lastStk+1).every(k=>k.classList.contains('lblock'))&&kids.slice(lastStk+1).map(k=>k.dataset.lb).join()==='L0,LO';})());
   click(w.document.querySelector('[data-lsf]'));
@@ -190,7 +190,7 @@ setTimeout(()=>{
   // 11 — persistence
   fresh();const S11=w.stkCreate({name:'P'});
   ok('stacks and the layer role fields survive sessionObj → applyProjectData',(function(){const o=JSON.parse(JSON.stringify(w.sessionObj()));w.applyProjectData(o);
-    return ST().length===1&&ST()[0].name==='P'&&LY().filter(l=>l.stack===ST()[0].id).length===17&&w.stkLayer(ST()[0].id,'hw')!==null;})());
+    return ST().length===1&&ST()[0].name==='P'&&LY().filter(l=>l.stack===ST()[0].id).length===19&&w.stkLayer(ST()[0].id,'hw')!==null;})());
   ok('a project without a stack opens on the general rail',(function(){const o=JSON.parse(JSON.stringify(w.sessionObj()));o.stacks=[];o.layers.forEach(l=>{delete l.stack;delete l.role;});o.state.stack=null;w.applyProjectData(o);return w.stkActive()===null&&railBtns().length===6;})());
 
   // 12 — shared hooks

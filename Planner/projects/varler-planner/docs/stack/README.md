@@ -184,6 +184,24 @@ stack was then reviewed as one piece. What that review changed in code that exis
   K1–K3, and the vendor channel with in-person pickup per vendor. Side research, 2026-10-09;
   answered the same day (§10): two-tier covers, Chorus ONE for clusters, a second hatch supplier.
 
+## SmartFrame, clusters and ideal spots (built 2026-10-10, GO FRAME)
+
+Concept: [IDEA-003](IDEA-003_smartframe.md). Built on request in the same session, outside the WP pack:
+
+| what | where | in short |
+|---|---|---|
+| Portal | `src/06a-portals.js` | hardware type `portal` on a door face; ⌘K *Portál elhelyezése*, *Portálok a jelölt ajtókhoz*; right-click: class, tier, side |
+| Silver Rail | `src/06a-portals.js` | `route:'rail'`, the Path tool with a flag (like the channel); ⌘K *Ezüst sín* |
+| cluster boxes | `src/06b-clusters.js` | type `cluster` K1/K2/K3 on the new **Klaszterpontok** layer; ⌘K *Klaszterdoboz elhelyezése*, *Klaszterek a végpontokból* |
+| ideal spots | `src/06b-clusters.js`, ✦ in `05l` | every stack layer's ideal places as dashed ghosts; right-click one to place it; ⌘K *Ideális helyek: minden réteg* |
+| device list | `src/06b-clusters.js` | right-click a Portal / RBX / box / BASE on a system layer, or a custom point on a higher layer → one-click list |
+| secondary boxes | `EP_PLACED` hook in `05s` | a higher-layer endpoint on a custom spot opens a dashed K1 box; the next one beside it joins it |
+| Extrák layer | `XTR_CAT` in `06b` | the top role `sys:EXTRA`: P33-ADD-001 #1–#11 and the SmartFrame slots as provisioned endpoints |
+| preloaded build | `tools/make-preload.js` | `dist/varler_planner_P33.html`: P33 v1 + v2 with only the Elosztó placed, ceiling 2850 |
+
+Tests: `spec-66-portals-clusters.js`; spec-35 / 54 count the two new roles. The fill (E3/E4) does not read rails or
+hosts yet — a later round decides how a Portal-served endpoint is filled (`from:'frame'`, IDEA-003 §8 P-5).
+
 ## Session brief — the step-by-step build session (2026-10-06 → 10-07, closed 2026-10-10)
 
 A session built the pack one work package at a time (A1 → B5, the user committing after each pair).
