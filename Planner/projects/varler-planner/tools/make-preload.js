@@ -7,17 +7,19 @@
 // endpoints stay; of the hardware ONLY the Elosztószekrény stays (its cabinet defaults in 05x are P33's own,
 // BUILD-001 §14). BASE, RBXs, ARM T-boxes, the channel routes and everything that pointed at them go. The ceiling is
 // the user's 2850 (IDEA-003 §2.3; the test files still say 2700), and the stack gets the Klaszterpontok and Extrák
-// layers it predates. The source files in Calculator/ are not touched.
+// layers it predates. Both get the client sheet's furniture and the upper floor (p33-furniture.js furnish()).
+// The source files in Calculator/ are not touched.
 'use strict';
 const fs = require('fs'), path = require('path');
+const { furnish } = require('./p33-furniture');   // the client sheet's furniture + the upper floor (tools/p33-furniture.js)
 const ROOT = path.resolve(__dirname, '..'), REPO = path.resolve(ROOT, '..', '..', '..');
 const DIST = path.join(ROOT, 'dist', 'varler_planner.html');
 const OUT = path.join(ROOT, 'dist', 'varler_planner_P33.html');
 const PLANS = [
   { file: 'Calculator/P33-teszt_v1.vplan.json', name: 'P33 v1 — ügyfél végpontjai · csak Elosztó',
-    note: 'Szerkezet, jelölések és az ügyfél 55 végpontja; a hardverből csak az Elosztószekrény. A BASE, az RBX-ek, a portálok és az útvonalak a tieid.' },
+    note: 'Szerkezet, jelölések, az ügyfél 55 végpontja és az eredeti tervlap bútorai (emelettel); a hardverből csak az Elosztószekrény. A BASE, az RBX-ek, a portálok és az útvonalak a tieid.' },
   { file: 'Calculator/P33-teszt_v2.vplan.json', name: 'P33 v2 — minden réteg · csak Elosztó',
-    note: 'Minden rendszerréteg végpontjai (124); a hardverből csak az Elosztószekrény. Rajzold meg a BASE-t, az RBX-eket, a portálokat, a csatornát és az ezüst síneket.' }];
+    note: 'Minden rendszerréteg végpontjai (124) és az eredeti tervlap bútorai (emelettel); a hardverből csak az Elosztószekrény. Rajzold meg a BASE-t, az RBX-eket, a portálokat, a csatornát és az ezüst síneket.' }];
 const DROP_TYPES = ['base', 'rbx', 'junction', 'meter', 'entry', 'ssc', 'portal', 'cluster'];
 const CEIL = 2850;
 const NEW_ROLES = [{ k: 'cluster', n: 'Klaszterpontok', after: 'sys:SECURITY' }, { k: 'sys:EXTRA', n: 'Extrák és ötletek', after: 'arm' }];
@@ -58,9 +60,9 @@ if (!fs.existsSync(DIST)) { console.error('no build — run: node build.js'); pr
 let html = fs.readFileSync(DIST, 'utf8');
 const list = PLANS.map(p => {
   const src = JSON.parse(fs.readFileSync(path.join(REPO, p.file), 'utf8'));
-  const t = trim(src.project || src);
+  const t = trim(src.project || src), fu = furnish(t.P);
   const kept = t.P.data.devices.length, board = t.P.data.devices.filter(d => d.type === 'board').length;
-  console.log(p.file + ': removed ' + t.removed.devices + ' hardware devices and ' + t.removed.paths + ' routes · kept ' + kept + ' devices (' + board + ' Elosztó)');
+  console.log(p.file + ': removed ' + t.removed.devices + ' hardware devices and ' + t.removed.paths + ' routes · kept ' + kept + ' devices (' + board + ' Elosztó) · furnished with ' + fu.objs.length + ' objects + the upper floor');
   return { name: p.name, note: p.note, project: t.P }; });
 const tag = '<script>window.VRG_PRELOAD=' + JSON.stringify(list).replace(/<\/script/gi, '<\\/script') + ';</script>\n';
 const at = html.indexOf('<script');
