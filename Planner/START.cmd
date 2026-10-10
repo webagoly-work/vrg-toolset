@@ -49,6 +49,12 @@ setlocal EnableDelayedExpansion
 ::  Planner actions and reuses the same browser chooser. That folder is
 ::  outside the repo and disappears once the branch is merged, so the action
 ::  checks for it and explains itself instead of failing.
+::
+::  2026-10-10 - E) added: the same worktree build, then tools\make-preload.js
+::  bakes P33 teszt v1 + v2 into dist\varler_planner_P33.html (blueprint,
+::  marks and endpoints; of the hardware only the Eloszto) and opens that.
+::  A letter again, for the same reason as W). check-start.js now counts a
+::  page an action opens (set "TFULL=%WT_DIR%\...") as registered.
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -120,7 +126,7 @@ set "TOOLKEYS="
 for /L %%i in (1,1,%TOOLCOUNT%) do (
     if %%i LSS 10 ( set "TOOLKEYS=!TOOLKEYS!%%i" ) else ( set "TOOLKEYS=!TOOLKEYS!0" )
 )
-set "ACTIONKEYS=BWTGVMCINSPLDRQ"
+set "ACTIONKEYS=BWETGVMCINSPLDRQ"
 set "MENUKEYS=!TOOLKEYS!%ACTIONKEYS%"
 
 if %TOOLCOUNT% GTR 10 (
@@ -177,6 +183,7 @@ echo.
 echo  -- Planner muveletek / Planner actions --
 echo   B^) Build          ^(npm run build^)
 echo   W^) Build + megnyitas - fejlesztoi ag ^(wt-planner-stack^)
+echo   E^) P33 elotoltve - fejlesztoi ag ^(v1 + v2, csak az Eloszto^)
 echo   T^) Test           ^(npm test^)
 echo   G^) Gyro relay szerver inditasa
 echo   V^) Planner projekt megnyitasa VS Code-ban
@@ -217,6 +224,7 @@ if not defined K goto MENU
 if /I "%K%"=="Q" exit /b 0
 if /I "%K%"=="B" goto DO_BUILD
 if /I "%K%"=="W" goto DO_WT_BUILD
+if /I "%K%"=="E" goto DO_WT_P33
 if /I "%K%"=="T" goto DO_TEST
 if /I "%K%"=="G" goto DO_GYRO
 if /I "%K%"=="V" goto DO_VSCODE
@@ -368,6 +376,46 @@ set "TFULL=%WT_DIR%\dist\varler_planner.html"
 if not exist "%TFULL%" (
     echo.
     echo   HIBA: a build lefutott, de nincs fajl itt:
+    echo     %TFULL%
+    echo.
+    pause
+    goto MENU
+)
+goto BROWSER_MENU
+
+:: E) the worktree build with the P33 plans baked in (tools\make-preload.js)
+:DO_WT_P33
+call :CHECK_NODE || goto MENU
+if not exist "%WT_DIR%\tools\make-preload.js" (
+    echo.
+    echo   Nincs ilyen fajl:
+    echo     %WT_DIR%\tools\make-preload.js
+    echo   Az elotoltott P33 build a planner-stack worktree-ben keszul. Ha az ag
+    echo   mar be lett olvasztva, ez az elem felesleges.
+    echo.
+    pause
+    goto MENU
+)
+pushd "%WT_DIR%"
+call "%NPM_CMD%" run build
+set "RC=%ERRORLEVEL%"
+if "%RC%"=="0" (
+    "%NODE_EXE%" tools\make-preload.js
+    set "RC=!ERRORLEVEL!"
+)
+popd
+if not "%RC%"=="0" (
+    echo.
+    echo   A build vagy az elotoltes hibaval allt le ^(kod %RC%^) - a fajl nem frissult.
+    echo.
+    pause
+    goto MENU
+)
+set "TNAME=Varler Planner - P33 elotoltve (wt-planner-stack)"
+set "TFULL=%WT_DIR%\dist\varler_planner_P33.html"
+if not exist "%TFULL%" (
+    echo.
+    echo   HIBA: lefutott, de nincs fajl itt:
     echo     %TFULL%
     echo.
     pause

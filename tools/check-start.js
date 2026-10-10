@@ -100,6 +100,11 @@ for (const e of entries) {
   }
 }
 
+// Pages a letter action opens from the planner-stack worktree (W, E: set "TFULL=%WT_DIR%\dist\x.html") are
+// launchable too. The worktree is a copy of the planner project, and after the merge the page lives there.
+const actRe = /^set "TFULL=%WT_DIR%\\(.*)"/gm;
+for (let m; (m = actRe.exec(src));) registered.add('Planner/projects/varler-planner/' + m[1].split(BS).join('/'));
+
 // --- 3: tools the registry has never heard of ------------------------------
 const found = [];
 for (const g of TOOL_GLOBS) found.push(...listHtml(g.dir));
