@@ -87,6 +87,10 @@ body[data-bar="right"] #top button[data-ic]::before{content:attr(data-ic);font-s
 #wires .ehandle.bent{fill:var(--rust)}   /* this one has been moved by hand */
 #wires text{fill:var(--ink2);font:11px "Segoe UI",sans-serif;paint-order:stroke;stroke:var(--bg);stroke-width:4px}
 #marquee{position:absolute;border:1px solid var(--amber);background:var(--t08);display:none}
+/* Dragging across the canvas used to sweep-select every label it crossed. Only the
+   note body stays selectable — the review-comment flow needs a real text selection. */
+#stage{-webkit-user-select:none;user-select:none}
+#stage .nb,#stage [contenteditable]{-webkit-user-select:text;user-select:text}
 
 /* ---------- node ---------- */
 .node{position:absolute;background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);
@@ -108,6 +112,14 @@ body[data-bar="right"] #top button[data-ic]::before{content:attr(data-ic);font-s
 .node.collapsed .nb,.node.collapsed .ntags,.node.collapsed .rs{display:none}
 .node.collapsed{height:auto!important}
 /* a bubble showing nothing but its title carries less furniture */
+/* a frame: translucent, so the bubbles it holds stay readable on top of it */
+.node.isbox{background:color-mix(in srgb,var(--panel) 55%,transparent);
+  border-style:solid;border-color:var(--kc,var(--amber));box-shadow:none}
+.node.isbox>.nh{background:color-mix(in srgb,var(--panel2) 80%,transparent)}
+.node.isbox>.nt{font-weight:700}
+.node.isbox>.nb{overflow:auto}
+.node.isbox>.rs{opacity:.5}
+.node.isbox.sel{box-shadow:0 0 0 2px var(--amber)}
 /* a layer-bound bubble reads as belonging to its layer, not to the base map */
 .node.onlayer{border-style:dashed}
 .node.onlayer::before{width:4px}
@@ -600,7 +612,7 @@ body.side #stage{left:calc(var(--tL) + 250px)}
   <span id="sCount"></span>
   <span id="sSel"></span>
   <span class="sp" style="flex:1"></span>
-  <span><kbd>dupla katt</kbd> új · <kbd>Tab</kbd> gyerek · <kbd>Enter</kbd> testvér · <kbd>C</kbd> kapcsolat · <kbd>/</kbd> blokk · <kbd>[[</kbd> hivatkozás · <kbd>szöveg kijelölés</kbd> megjegyzés · <kbd>G</kbd> gráf · <kbd>Z</kbd> fókusz · <kbd>Ctrl+K</kbd> parancsok</span>
+  <span><kbd>Shift+nyilak</kbd> fókusz · <kbd>Ctrl+→</kbd> testvér · <kbd>Ctrl+↓</kbd> gyerek · <kbd>Ctrl+←</kbd> belső · <kbd>Ctrl+↑</kbd> keret · <kbd>Enter</kbd> önálló · <kbd>C</kbd> kapcsolat · <kbd>[[</kbd> hivatkozás · <kbd>G</kbd> gráf · <kbd>Ctrl+K</kbd> parancsok</span>
 </div>
 
 <script>
@@ -937,10 +949,21 @@ const HELP=[
     'Kattints egy **kapcsolatra**: kijelölöd, és megjelenik a két fogópont. '+
     'Húzd őket, és a vonal úgy hajlik, ahogy szeretnéd. A fogópont a buborékhoz '+
     'képest tárolódik, így a hajlítás együtt mozog a buborékokkal.\n\n'+
+    'Egér: **bal gomb húzás** a vásznon kijelölő négyzetet rajzol, '+
+    '**középső gomb húzás** mozgatja a vásznat.\n\n'+
+    '### Két kézzel, egér nélkül\n\n'+
+    'Mindig van egy kijelölt buborék — minden billentyű arra vonatkozik. '+
+    'A nyilak önmagukban nem csinálnak semmit.\n\n'+
     '| billentyű | mit tesz |\n|---|---|\n'+
-    '| `Tab` | gyerek buborék |\n| `Enter` | testvér buborék |\n| `Szóköz` | össze/kicsuk |\n'+
+    '| `Shift`+nyilak | a fókusz a legközelebbi buborékra ugrik abban az irányban (két nyíl együtt = átlósan) |\n'+
+    '| `Ctrl`+`→` | testvér |\n| `Ctrl`+`↓` | gyerek |\n'+
+    '| `Ctrl`+`←` | belső buborék (a kijelölt keretébe) |\n'+
+    '| `Ctrl`+`↑` | keret a kijelölt(ek) köré |\n'+
+    '| `Enter` | önálló buborék, kapcsolat nélkül |\n\n'+
+    '| billentyű | mit tesz |\n|---|---|\n'+
+    '| `Tab` | gyerek buborék |\n| `Szóköz` | össze/kicsuk |\n'+
     '| `C` | kapcsolat rajzolása |\n| `G` | gráf nézet |\n| `Z` | fókusz zoom |\n'+
-    '| `F2` | szerkesztés |\n| `Ctrl+K` | parancsok |\n\n'+
+    '| `N` | nukleobázis nézet |\n| `F2` | szerkesztés |\n| `Ctrl+K` | parancsok |\n\n'+
     'Kijelölt kapcsolaton:\n\n'+
     '| billentyű | mit tesz |\n|---|---|\n'+
     '| `Delete` | kapcsolat törlése |\n| `Backspace` | hajlítás visszavonása |\n'+
@@ -1197,11 +1220,24 @@ function nodeEl(n){
   el.style.setProperty('--kc', nl?nl.color:KIND_VAR(n.kind));   // layer membership is visible at a glance
   el.classList.toggle('onlayer',!!nl);
   el.classList.toggle('attached',!!n.of);
+  /* A frame is drawn behind the bubbles it holds, and its own body keeps a fixed
+     band at the top so the rest of the rectangle stays clear for them. */
+  const box=isBox(n), dep=boxDepth(n);
+  el.classList.toggle('isbox',box);
+  el.style.zIndex=String(10+dep*10+(box?0:5));
+  const bodyEl=el.querySelector('.nb');
+  if(box && !n.collapsed){ bodyEl.style.flex='0 0 auto'; bodyEl.style.height=(boxOwn(n)-BOX_HEAD)+'px';
+    bodyEl.style.display=(n.body||'').trim()?'':'none'; }
+  else { bodyEl.style.flex=''; bodyEl.style.height=''; bodyEl.style.display=''; }
   el.classList.toggle('sel',sel.has(n.id));
   el.classList.toggle('collapsed',!!n.collapsed);
   el.classList.toggle('bare', !!n.collapsed);   // collapsed == title only == less chrome
   el.querySelector('.cv').textContent=n.collapsed?'▸':'▾';
-  el.querySelector('.nt').textContent=n.title||'Névtelen';
+  /* Never overwrite a title that is being typed into. A redraw can happen for any
+     reason mid-rename (a click elsewhere, a save, a layer toggle) and rewriting the
+     element here would throw away the keystrokes before blur could commit them. */
+  const tEl=el.querySelector('.nt');
+  if(!tEl.isContentEditable) tEl.textContent=n.title||'Névtelen';
   const open=openThreads(n);
   let badge=el.querySelector('.cbadge');
   if(open){ if(!badge){ badge=document.createElement('span'); badge.className='cbadge';
@@ -1236,6 +1272,23 @@ function anchor(n,side){
   const p=POS(n);
   return side==='r' ? {x:p.x+p.w, y:p.y+p.h/2} : {x:p.x, y:p.y+p.h/2};
 }
+/* ---- straight mode: the wire leaves wherever the two bubbles actually face ----
+   Curve mode always docks left/right, which looks wrong for a bubble sitting
+   directly above or below. Here the line runs centre to centre and each end is
+   cut at the border it crosses, so the contact point travels the full 360°. */
+function wireStraight(){ return doc.wire==='straight'; }
+function toggleWireMode(){
+  doc.wire=wireStraight()?'curve':'straight'; save(); redrawAll();
+  toast(wireStraight()?'Egyenes vonalak — a legközelebbi pontokból':'Ívelt vonalak — oldalról');
+}
+// where the ray from this rect's centre toward `t` leaves the rect
+function edgePoint(p,t){
+  const cx=p.x+p.w/2, cy=p.y+p.h/2, dx=t.x-cx, dy=t.y-cy;
+  if(!dx&&!dy) return {x:cx,y:cy};
+  const sx=dx?(p.w/2)/Math.abs(dx):Infinity, sy=dy?(p.h/2)/Math.abs(dy):Infinity;
+  const k=Math.min(sx,sy);
+  return {x:cx+dx*k, y:cy+dy*k};
+}
 function drawWires(){
   const g=$('wg'); let s='', hz=null;   // hz: geometry of the selected edge, for its handles
   const cs=getComputedStyle(document.documentElement);
@@ -1249,7 +1302,12 @@ function drawWires(){
     if(!nodeShown(a)||!nodeShown(b)) return;      // an edge to a hidden bubble is not a wire
     const pa=POS(a), pb=POS(b);
     const rev = pb.x + pb.w/2 < pa.x + pa.w/2;
-    const p1=anchor(a,rev?'l':'r'), p2=anchor(b,rev?'r':'l');
+    const straight = wireStraight() && !helix.on;
+    let p1=anchor(a,rev?'l':'r'), p2=anchor(b,rev?'r':'l');
+    if(straight){
+      const c1={x:pa.x+pa.w/2,y:pa.y+pa.h/2}, c2={x:pb.x+pb.w/2,y:pb.y+pb.h/2};
+      p1=edgePoint(pa,c2); p2=edgePoint(pb,c1);
+    }
     const L=e.layer?layer(e.layer):null;
     let d;
     /* `lift` has to live out here: the label renderer below reads it, and it
@@ -1261,6 +1319,8 @@ function drawWires(){
       const c1={x:pa.x+pa.w/2,y:pa.y+pa.h/2}, c2={x:pb.x+pb.w/2,y:pb.y+pb.h/2};
       const dy=(c2.y-c1.y)*.42, dxx=(c2.x-c1.x)*.18;
       d=`M${c1.x},${c1.y} C${c1.x+dxx},${c1.y+dy} ${c2.x-dxx},${c2.y-dy} ${c2.x},${c2.y}`;
+    } else if(straight){
+      d=`M${p1.x},${p1.y} L${p2.x},${p2.y}`;      // no control points, so no curve handles
     } else {
       // layer edges bow further out, so several between the same pair stay legible
       const bow=L?.62:.45;
@@ -1461,7 +1521,7 @@ function layers(){ return doc.layers=doc.layers||[]; }
 function layer(id){ return layers().find(l=>l.id===id)||null; }
 function layerShown(id){ const l=layer(id); return !l || l.on!==false; }
 /* a bubble bound to a layer lives and dies with it; an unbound one is always there */
-function nodeShown(n){ return !n.layer || layerShown(n.layer); }
+function nodeShown(n){ return (!n.layer || layerShown(n.layer)) && !inCollapsedBox(n); }
 function shownNodes(){ return doc.nodes.filter(nodeShown); }
 function addLayer(name){
   const ls=layers();
@@ -1524,6 +1584,97 @@ function moveToLayer(ids,layerId){
     else { delete n.layer; delete n.of; } });
   redrawAll(); renderLayers();
   toast(layerId?('Áthelyezve: '+layer(layerId).name):'Vissza az alaprétegre');
+}
+
+/* ===================================================== containers ==========
+   A container is an ordinary bubble that owns others: it keeps its own title and
+   body, and the bubbles inside it keep their own coordinates. The frame is
+   derived from where its members actually are, so nothing has to be kept in
+   sync by hand — move a member and the frame grows to follow it. */
+const BOX_PAD=26, BOX_HEAD=34, BOX_BODY=96;
+function membersOf(id){ return doc.nodes.filter(n=>n.in===id); }
+function isBox(n){ return !!n && doc.nodes.some(m=>m.in===n.id); }
+// the band at the top of the frame that belongs to the container itself
+function boxOwn(b){ return BOX_HEAD + ((b.body||'').trim()?BOX_BODY:0); }
+function boxDepth(n){ let d=0,g=n,seen=new Set();
+  while(g&&g.in&&!seen.has(g.id)){ seen.add(g.id); g=node(g.in); if(g) d++; else break; }
+  return d; }
+// every bubble inside this one, however deep
+function descendants(id,out){ out=out||[];
+  membersOf(id).forEach(m=>{ if(out.indexOf(m.id)<0){ out.push(m.id); descendants(m.id,out); } });
+  return out; }
+function inCollapsedBox(n){ let g=n.in?node(n.in):null, seen=new Set();
+  while(g){ if(g.collapsed) return true; if(seen.has(g.id)) break; seen.add(g.id); g=g.in?node(g.in):null; }
+  return false; }
+/* would putting `id` inside `intoId` create a loop? */
+function boxWouldLoop(id,intoId){ let g=node(intoId), seen=new Set();
+  while(g){ if(g.id===id) return true; if(seen.has(g.id)) break; seen.add(g.id); g=g.in?node(g.in):null; }
+  return false; }
+
+function fitBox(id,seen){
+  const b=node(id); if(!b) return;
+  seen=seen||new Set(); if(seen.has(id)) return; seen.add(id);
+  const ms=membersOf(id); if(!ms.length) return;
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  ms.forEach(m=>{ const p=POS(m); x0=Math.min(x0,p.x); y0=Math.min(y0,p.y);
+    x1=Math.max(x1,p.x+p.w); y1=Math.max(y1,p.y+p.h); });
+  const own=boxOwn(b);
+  b.x=Math.round(x0-BOX_PAD);
+  b.y=Math.round(y0-BOX_PAD-own);
+  b.w=Math.round(x1-x0+BOX_PAD*2);
+  b.h=Math.round(y1-y0+BOX_PAD*2+own);
+  if(b.in) fitBox(b.in,seen);          // a nested frame grows with the one inside it
+}
+/* refit every frame that owns one of these bubbles, and return the frames (plus
+   their own outer frames) so a live drag can move their elements too */
+function fitBoxesOf(ids){
+  const done=new Set();
+  ids.forEach(i=>{ const n=node(i); if(!n||!n.in) return;
+    let g=n.in, guard=0;
+    while(g&&guard++<50){ if(!done.has(g)){ done.add(g); fitBox(g); } const p=node(g); g=p&&p.in; }
+  });
+  return [...done];
+}
+// put a bubble's element where the model says it is (used during a drag, no full redraw)
+function placeEl(id){ const n=node(id), el=n&&document.getElementById('N'+n.id);
+  if(!el) return;
+  el.style.left=n.x+'px'; el.style.top=n.y+'px'; el.style.width=n.w+'px';
+  if(!n.collapsed) el.style.height=n.h+'px';
+}
+
+/* inner: a new bubble inside this one, stacked under whatever is already there */
+function innerOf(id){
+  const b=node(id); if(!b) return null;
+  const ms=membersOf(id);
+  let x=b.x+BOX_PAD, y=b.y+boxOwn(b);
+  if(ms.length){ const low=ms.reduce((a,m)=>(POS(m).y+POS(m).h > POS(a).y+POS(a).h)?m:a);
+    x=low.x; y=POS(low).y+POS(low).h+24; }
+  const n=addNode(x,y,{kind:b.kind,w:Math.max(200,Math.min(340,b.w-BOX_PAD*2))});
+  n.in=id; fitBox(id); redrawAll(); focusEdit(n.id); return n;
+}
+/* exo: a new frame drawn around what is selected */
+function exoOf(ids){
+  const ns=ids.map(node).filter(Boolean);
+  if(!ns.length){ toast('Jelölj ki legalább egy buborékot'); return null; }
+  // only wrap the outermost ones; a member whose container is also selected comes along anyway
+  const set=new Set(ns.map(n=>n.id));
+  const tops=ns.filter(n=>!(n.in&&set.has(n.in)));
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  tops.forEach(m=>{ const p=POS(m); x0=Math.min(x0,p.x); y0=Math.min(y0,p.y);
+    x1=Math.max(x1,p.x+p.w); y1=Math.max(y1,p.y+p.h); });
+  const outer = tops[0].in && tops.every(n=>n.in===tops[0].in) ? tops[0].in : null;
+  const b=addNode(x0-BOX_PAD, y0-BOX_PAD-BOX_HEAD,
+    {title:'Keret', w:Math.round(x1-x0+BOX_PAD*2), h:Math.round(y1-y0+BOX_PAD*2+BOX_HEAD)});
+  if(outer) b.in=outer;
+  tops.forEach(m=>{ m.in=b.id; });
+  fitBox(b.id);
+  sel.clear(); sel.add(b.id); redrawAll(); focusEdit(b.id,true); return b;
+}
+function unbox(ids){
+  const touched=[]; snap();
+  ids.forEach(i=>{ const n=node(i); if(n&&n.in){ touched.push(n.in); delete n.in; } });
+  if(!touched.length){ undoStack.pop(); toast('Ez nincs keretben'); return; }
+  touched.forEach(t=>fitBox(t)); redrawAll(); toast('Kivéve a keretből');
 }
 
 /* ==================================================== nucleobase ===========
@@ -1615,6 +1766,10 @@ function connectOnLayer(ids,layerId){
 }
 function delNodes(ids){
   snap();
+  // deleting a frame must not delete what it held — those are documents; they
+  // fall back onto the canvas, the same way deleting a layer keeps its bubbles.
+  // This has to happen AFTER snap(), or undo brings the frame back empty.
+  doc.nodes.forEach(n=>{ if(n.in&&ids.has(n.in)) delete n.in; });
   doc.nodes=doc.nodes.filter(n=>!ids.has(n.id));
   doc.edges=doc.edges.filter(e=>!ids.has(e.a)&&!ids.has(e.b));
   // the selected wire may have just been one of the casualties
@@ -2014,8 +2169,22 @@ const stage=$('stage'); let drag=null;
 /* Ctrl adds to the selection (Planner's convention); Shift kept as an alias */
 const addMod = e => e.ctrlKey||e.metaKey||e.shiftKey;
 
+/* A rename in progress is committed by anything that starts elsewhere, so the
+   title behaves like every other field: click away and it is saved. */
+function commitTitle(){
+  const a=document.activeElement;
+  if(a && a.classList && a.classList.contains('nt') && a.isContentEditable) a.blur();
+}
+
 stage.addEventListener('pointerdown',e=>{
   if(e.button===2) return;                       // right-click is the menu's, not the drag's
+  if(!e.target.closest('[contenteditable]')) commitTitle();
+  // middle button pans, anywhere — the left button belongs to selection now
+  if(e.button===1){
+    e.preventDefault();
+    drag={mode:'pan',x:e.clientX,y:e.clientY,vx:view.x,vy:view.y};
+    stage.setPointerCapture(e.pointerId); return;
+  }
   const nEl=e.target.closest('.node');
   // start a connection
   if(e.target.classList.contains('port')){
@@ -2055,18 +2224,25 @@ stage.addEventListener('pointerdown',e=>{
     else if(addMod(e)) sel.delete(id);
     snap();
     // a press on the title that never moves is a rename, not a drag — decided on release
+    // dragging a frame carries everything inside it, however deep
+    const moving=new Set(sel); sel.forEach(i=>descendants(i).forEach(d=>moving.add(d)));
     drag={mode:'move',x:e.clientX,y:e.clientY,id,moved:false,
       title:!!e.target.closest('.nt')&&!addMod(e),
-      start:[...sel].map(i=>({id:i,x:node(i).x,y:node(i).y}))};
+      start:[...moving].filter(i=>node(i)).map(i=>({id:i,x:node(i).x,y:node(i).y}))};
     redrawAll(); if($('insp').classList.contains('open')) fillInspector(id);
     stage.setPointerCapture(e.pointerId); return;
   }
   if(nEl) return;                                   // clicks inside a body
   if(linkFrom){ linkFrom=null; toast('Kapcsolat megszakítva'); return; }
-  if(addMod(e)){ drag={mode:'marq',x:e.clientX,y:e.clientY}; $('marquee').style.display='block'; }
-  else { drag={mode:'pan',x:e.clientX,y:e.clientY,vx:view.x,vy:view.y}; sel.clear(); clearEdgeSel(); redrawAll(); }
+  // left button on empty canvas draws a selection box; Ctrl/Shift adds to what is selected
+  drag={mode:'marq',x:e.clientX,y:e.clientY,add:addMod(e)};
+  $('marquee').style.display='block';
   stage.setPointerCapture(e.pointerId);
 });
+
+// Windows opens its autoscroll cursor on a middle click unless both are stopped
+stage.addEventListener('auxclick',e=>{ if(e.button===1) e.preventDefault(); });
+stage.addEventListener('mousedown',e=>{ if(e.button===1) e.preventDefault(); });
 
 stage.addEventListener('pointermove',e=>{
   if(linkFrom){
@@ -2097,7 +2273,8 @@ stage.addEventListener('pointermove',e=>{
     const dx=(e.clientX-drag.x)/view.k, dy=(e.clientY-drag.y)/view.k, g=e.altKey?1:10;
     drag.start.forEach(s=>{ const n=node(s.id);
       n.x=Math.round((s.x+dx)/g)*g; n.y=Math.round((s.y+dy)/g)*g;
-      const el=document.getElementById('N'+n.id); el.style.left=n.x+'px'; el.style.top=n.y+'px'; });
+      const el=document.getElementById('N'+n.id); if(el){ el.style.left=n.x+'px'; el.style.top=n.y+'px'; } });
+    fitBoxesOf(drag.start.map(s=>s.id)).forEach(placeEl);   // a member moved: its frame follows
     drawWires();
   }
   else if(drag.mode==='resize'){
@@ -2126,7 +2303,8 @@ stage.addEventListener('pointerup',e=>{
   if(drag && drag.mode==='marq'){
     const a=toWorld(Math.min(drag.x,e.clientX),Math.min(drag.y,e.clientY));
     const b=toWorld(Math.max(drag.x,e.clientX),Math.max(drag.y,e.clientY));
-    doc.nodes.forEach(n=>{ if(n.x<b.x&&n.x+n.w>a.x&&n.y<b.y&&n.y+n.h>a.y) sel.add(n.id); });
+    if(!drag.add){ sel.clear(); clearEdgeSel(); }   // a plain box replaces the selection
+    shownNodes().forEach(n=>{ if(n.x<b.x&&n.x+n.w>a.x&&n.y<b.y&&n.y+n.h>a.y) sel.add(n.id); });
     $('marquee').style.display='none'; redrawAll();
   }
   if(linkFrom){
@@ -2202,6 +2380,91 @@ stage.addEventListener('click',e=>{
     if(!addMod(e)) sel.clear(); sel.add(nEl.dataset.id); redrawAll(); }
 });
 
+/* ============================================ keyboard navigation ==========
+   Two hands on the keyboard, no mouse. One bubble is always the focus — it is
+   where every key applies. Shift+arrows walk that focus across the canvas by
+   geometry (hold two arrows for a diagonal); Ctrl+arrows grow the map from it:
+   → sibling, ↓ child, ← inner, ↑ exo. The camera keeps the focus centred. */
+const ARROWS={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+const held=new Set(); let hopTimer=null;
+
+function focusId(){ return sel.size===1?[...sel][0]:null; }
+// there is always somewhere to start from
+function ensureFocus(){
+  if(focusId()) return focusId();
+  const vis=shownNodes(); if(!vis.length) return null;
+  const pick=[...sel].find(id=>node(id)&&nodeShown(node(id))) || vis[0].id;
+  sel.clear(); sel.add(pick); redrawAll(); return pick;
+}
+function centreOf(n){ const p=POS(n); return {x:p.x+p.w/2, y:p.y+p.h/2}; }
+/* ease the view so the focused bubble sits in the middle of the stage */
+function gravitate(id){
+  const n=node(id); if(!n) return;
+  const r=$('stage').getBoundingClientRect(), c=centreOf(n);
+  easeTo(r.width/2-c.x*view.k, r.height/2-c.y*view.k, view.k, 300);
+}
+function setFocus(id,quiet){
+  if(!node(id)) return;
+  sel.clear(); sel.add(id); clearEdgeSel(); redrawAll();
+  if(!quiet) gravitate(id);
+  if($('insp').classList.contains('open')) fillInspector(id);
+}
+/* the nearest bubble in a direction: a cone first, the whole half-plane as a
+   fallback, so a hop never silently does nothing when something is over there */
+function hopFocus(dx,dy){
+  const from=ensureFocus(); if(!from) return;
+  const n=node(from), c=centreOf(n);
+  const len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len;
+  let best=null, wide=null;
+  shownNodes().forEach(m=>{
+    if(m.id===from) return;
+    const q=centreOf(m), vx=q.x-c.x, vy=q.y-c.y, d=Math.hypot(vx,vy);
+    if(d<1) return;
+    const cos=(vx*ux+vy*uy)/d;
+    if(cos<=0.08) return;                       // behind, or square to the side
+    /* Alignment counts more than distance, cubed: asking for up-right should
+       reach the bubble up and to the right, not the nearer one straight up. */
+    const score=d/Math.pow(Math.max(cos,0.12),3);
+    if(!wide||score<wide.score) wide={id:m.id,score};
+    if(cos>=0.5 && (!best||score<best.score)) best={id:m.id,score};
+  });
+  const target=(best||wide);
+  if(!target){ toast('Nincs buborék ebben az irányban'); return; }
+  setFocus(target.id);
+}
+function queueHop(){
+  clearTimeout(hopTimer);
+  // a diagonal is two arrows pressed together; wait a beat so both are counted
+  hopTimer=setTimeout(()=>{
+    let dx=0,dy=0;
+    held.forEach(k=>{ const v=ARROWS[k]; if(v){ dx+=v[0]; dy+=v[1]; } });
+    held.clear();          // each hop consumes its arrows: a missed keyup can't steer the next one
+    if(dx||dy) hopFocus(dx,dy);
+  },45);
+}
+/* Ctrl+arrow grows the map from the focused bubble */
+function growFrom(id,key){
+  if(key==='ArrowRight') return siblingOf(id);
+  if(key==='ArrowDown')  return childOf(id);
+  if(key==='ArrowLeft')  return innerOf(id);
+  if(key==='ArrowUp')    return exoOf(sel.size>1?[...sel]:[id]);
+  return null;
+}
+/* Enter: a bubble of its own, connected to nothing */
+function loneNode(){
+  const f=focusId(), n=f&&node(f);
+  const r=$('stage').getBoundingClientRect();
+  const p=n ? {x:n.x+n.w+90, y:n.y}
+            : toWorld(r.left+r.width/2, r.top+r.height/2);
+  const fresh=addNode(p.x,p.y,{});
+  if(n&&n.in) fresh.in=n.in;                    // born in the same frame as its neighbour
+  if(fresh.in) fitBox(fresh.in);
+  redrawAll(); gravitate(fresh.id); focusEdit(fresh.id); return fresh;
+}
+
+document.addEventListener('keyup',e=>{ held.delete(e.key); });
+window.addEventListener('blur',()=>held.clear());
+
 /* ------------------------------------------------------------- keyboard */
 document.addEventListener('keydown',e=>{
   const typing=/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)
@@ -2238,9 +2501,19 @@ document.addEventListener('keydown',e=>{
     if(e.key==='Backspace'){ e.preventDefault();
       toast(straightenEdge(selEdge)?'Kapcsolat kiegyenesítve':'Ez a kapcsolat nincs meghajlítva'); return; }
   }
+  /* arrows do nothing on their own — they only move or grow with a modifier */
+  if(ARROWS[e.key]){
+    if(e.shiftKey && !mod){ e.preventDefault(); held.add(e.key); queueHop(); return; }
+    if(mod && !e.shiftKey){ e.preventDefault();
+      const f=ensureFocus(); if(!f) return;
+      const made=growFrom(f,e.key);
+      if(made) gravitate(made.id);
+      return; }
+    return;
+  }
   const one=sel.size===1?[...sel][0]:null;
   if(e.key==='Tab' && one){ e.preventDefault(); childOf(one); }
-  else if(e.key==='Enter' && one){ e.preventDefault(); siblingOf(one); }
+  else if(e.key==='Enter'){ e.preventDefault(); loneNode(); }
   else if(e.key==='F2' && one){ e.preventDefault(); editBody(one); }
   else if(e.key==='Delete' && sel.size){ e.preventDefault(); delNodes(new Set(sel)); }
   else if(e.key.toLowerCase()==='c' && one){ linkFrom=one; toast('Kattints a cél buborékra'); }
@@ -2448,6 +2721,12 @@ const ACT=[
     f:c=>{ const n=node(c.id); if(n){ n.collapsed=!n.collapsed; redrawAll(); } }},
   {k:'Lista pipálható jelölőnégyzetekkel',h:'',g:'edit',at:['node','body'],when:c=>!!c.id,
     f:c=>toTaskList(c.id)},
+  {k:'Belső buborék — ebbe a keretbe',h:'Ctrl+←',g:'new',at:['node'],when:c=>!!c.id,
+    f:c=>{ if(c.id) innerOf(c.id); }},
+  {k:'Keret köré (exo)',h:'Ctrl+↑',g:'new',at:['node'],when:c=>!!c.id,
+    f:c=>{ if(c.id) exoOf([c.id]); }},
+  {k:'Kivesz a keretből',h:'',g:'edit',at:['node'],when:c=>!!(c.id&&node(c.id)&&node(c.id).in),
+    f:c=>unbox([c.id])},
   {k:'Törlés',h:'Del',g:'danger',at:['node'],when:c=>!!c.id,
     f:c=>delNodes(new Set([c.id]))},
 
@@ -2481,6 +2760,10 @@ const ACT=[
         ? [{k:'→ alapréteg', f:()=>moveToLayer(c.ids,null)}] : [])},
   {k:'Kapcsolat-rétegek…',h:'',g:'layer',at:['multi','bg','pal','node'],
     f:()=>{ renderLayers(); $('lay').classList.add('open'); }},
+  {k:'Keret a kijelöltek köré (exo)',h:'Ctrl+↑',g:'multi',at:['multi'],when:c=>c.ids.length>0,
+    f:c=>exoOf(c.ids)},
+  {k:'A kijelöltek kivétele a keretből',h:'',g:'multi',at:['multi'],
+    f:c=>unbox(c.ids)},
   {k:'A kijelöltek törlése',h:'Del',g:'danger',at:['multi'],
     f:c=>delNodes(new Set(c.ids))},
   {k:'Megjegyzések — összesítő',h:'',g:'review',at:['pal','bg'],f:()=>{
@@ -2508,6 +2791,7 @@ const ACT=[
   {k:'Fókusz zoom be/ki',h:'Z',g:'view',at:['pal','bg'],f:()=>$('bZoom').click()},
   {k:'Oldalsáv',h:'Ctrl+B',g:'view',at:['pal','bg'],f:()=>sideToggle()},
   {k:'Markdown kapcsolatok mutatása / elrejtése',h:'',g:'view',at:['pal','bg'],f:toggleWiki},
+  {k:'Vonalak: ívelt / egyenes',h:'',g:'view',at:['pal','bg'],f:toggleWireMode},
   {k:'Összes összecsukása',h:'',g:'view',at:['pal','bg'],
     f:()=>{snap();doc.nodes.forEach(n=>n.collapsed=true);redrawAll();}},
   {k:'Összes kinyitása',h:'',g:'view',at:['pal','bg'],
@@ -3021,6 +3305,7 @@ $('src').addEventListener('focus',()=>{ if(T) tahClose(); });
 setBar(doc.bar||'top');
 applyTheme(); applyLod(); applyView(); redrawAll();
 if(doc.side) sideToggle(true);
+ensureFocus();                 // the keyboard always has somewhere to start
 setTimeout(fit,60);
 </script>
 </body></html>

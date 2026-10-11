@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRIDGE-DN · Build Diagrams</title>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@300;400;600;700;900&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.1/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg:       #15181c;
+    --bg2:      #1c2028;
+    --bg3:      #21262e;
+    --border:   #2a2f38;
+    --amber:    #ffb300;
+    --amber2:   #ffd050;
+    --amber-dim:#7a5500;
+    --text:     #d8dde6;
+    --text-dim: #7a8394;
+    --green:    #4ade80;
+    --cyan:     #38bdf8;
+    --red:      #f87171;
+    --purple:   #c084fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Saira Condensed', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--bg2);
+    border-bottom: 2px solid var(--amber);
+    padding: 28px 40px 22px;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    font-size: 32px; font-weight: 900; letter-spacing: 4px;
+    color: var(--amber); text-transform: uppercase;
+  }
+  .logo span { color: var(--text-dim); font-weight: 300; }
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase;
+  }
+  .version-tag {
+    margin-left: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--amber-dim);
+    border: 1px solid var(--amber-dim); padding: 3px 8px; letter-spacing: 1px;
+  }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 40px; }
+
+  .context {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    padding: 16px 20px;
+    margin-bottom: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text-dim); line-height: 1.9;
+  }
+
+  .section-header {
+    display: flex; align-items: center; gap: 16px;
+    margin: 44px 0 8px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--amber2); background: var(--amber-dim);
+    padding: 4px 9px; letter-spacing: 1px;
+  }
+  .section-title {
+    font-size: 21px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text);
+  }
+  .section-desc {
+    font-size: 13px; color: var(--text-dim); margin: 4px 0 18px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .diagram-box {
+    background: #0d1014;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    margin: 12px 0 8px;
+    overflow-x: auto;
+    text-align: center;
+  }
+  .mermaid { text-align: center; }
+
+  .note {
+    background: var(--bg2);
+    border-left: 2px solid var(--amber-dim);
+    padding: 10px 16px;
+    margin: 12px 0 8px;
+    font-size: 14px; color: var(--text);
+  }
+  .note strong { color: var(--amber2); }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  }
+  th {
+    background: var(--bg3); color: var(--amber);
+    padding: 10px 14px; text-align: left; letter-spacing: 1px;
+    text-transform: uppercase; font-size: 10px;
+    border-bottom: 2px solid var(--amber-dim);
+  }
+  td {
+    padding: 9px 14px; border-bottom: 1px solid var(--border);
+    color: var(--text); vertical-align: top;
+  }
+  tr:hover td { background: var(--bg3); }
+
+  footer {
+    margin-top: 60px; padding: 24px 40px; border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-dim); letter-spacing: 1px; text-align: center;
+  }
+  footer strong { color: var(--amber-dim); }
+
+  @media (max-width: 768px) {
+    header, main, footer { padding-left: 20px; padding-right: 20px; }
+    .diagram-box { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">BRIDGE<span>-DN</span></div>
+  <div class="subtitle">Build Diagrams · Wall Placement & Signal Flow</div>
+  <div class="version-tag">REV 1.0 · 2026</div>
+</header>
+
+<main>
+
+<div class="context">
+  Visual reference for the BRIDGE-DN installation. Vertical position represents ACTUAL HEIGHT ON THE WALL — top of a diagram = high on the wall, bottom = chest/hand height. Arrows show cable/signal direction and physical routing.<br><br>
+  CONTEXT: Király Street, Budapest · ceiling &gt; 3.0 m · distribution box mounted high under the mains · Pi core at ~2.5 m · user terminal at chest level (~1.2–1.4 m).
+</div>
+
+<!-- 1 -->
+<div class="section-header">
+  <div class="section-num">01</div>
+  <div class="section-title">Wall Elevation</div>
+</div>
+<div class="section-desc">Master "where on the wall" view — read top-to-bottom as high-to-low.</div>
+<div class="diagram-box">
+<pre class="mermaid">
+flowchart TB
+    subgraph CEILING["CEILING ZONE  (~3.0 m)"]
+        ceil["Ceiling / cable tray entry"]
+    end
+    subgraph DBOX["DISTRIBUTION BOX  (mounted ~1.8-2.5 m) - 48-module, 4-row"]
+        mains["UPPER HALF (rows 1-2)<br/>Residential MAINS<br/>breakers / RCDs / meter feed"]
+        core["LOWER HALF (rows 3-4)<br/>BRIDGE-DN CORE on DIN rail<br/>Pi 5 / NVMe / PSU / DIN USB hubs / switch"]
+        mains --- core
+    end
+    subgraph TRUNK["EXTENSION TRUNK  (down the wall ~1.0-1.5 m)"]
+        trunkcable["Bundle: USB3 / USB2 / Ethernet / HDMI / 5V feed"]
+    end
+    subgraph TERM["USER TERMINAL  (chest height ~1.2-1.4 m)"]
+        screen["5-8in touchscreen (front face)"]
+        hubs["Port fan-out: USB2 radios L / USB3 data R / RJ45 / HDMI / dock"]
+        kbd["Mini keyboard shelf"]
+        screen --- hubs --- kbd
+    end
+    ceil -->|"drop into box"| mains
+    core ==>|"TRUNK down wall"| trunkcable
+    trunkcable ==>|"terminates at"| screen
+
+    style DBOX fill:#1c2028,stroke:#ffb300,stroke-width:2px,color:#d8dde6
+    style mains fill:#2a1a1a,stroke:#f87171,color:#d8dde6
+    style core fill:#21262e,stroke:#ffb300,color:#ffd050
+    style TERM fill:#1c2028,stroke:#38bdf8,stroke-width:2px,color:#d8dde6
+    style TRUNK fill:#15181c,stroke:#7a8394,color:#7a8394
+    style CEILING fill:#15181c,stroke:#2a2f38,color:#7a8394
+</pre>
+</div>
+<div class="note"><strong>Placement key:</strong> MAINS occupies the upper half (untouched, live 230V). BRIDGE-DN CORE occupies the free lower half. The trunk drops straight down the wall to the terminal at chest height so a person can plug in without a ladder.</div>
+
+<!-- 2 -->
+<div class="section-header">
+  <div class="section-num">02</div>
+  <div class="section-title">Distribution Box Internals</div>
+</div>
+<div class="section-desc">Four 12-module DIN rails. Top-to-bottom = top rail to bottom rail.</div>
+<div class="diagram-box">
+<pre class="mermaid">
+flowchart TB
+    subgraph ROW1["RAIL 1 - MAINS (do not touch)"]
+        direction LR
+        m1["Main switch"] --- m2["RCD"] --- m3["Breakers xN"]
+    end
+    subgraph ROW2["RAIL 2 - MAINS (do not touch)"]
+        direction LR
+        m4["Breakers xN"] --- m5["Surge protection"] --- m6["Spare"]
+    end
+    subgraph ROW3["RAIL 3 - BRIDGE-DN power + compute"]
+        direction LR
+        psu["MeanWell HDR-60-5<br/>5V DIN PSU"] --- pi["Raspberry Pi 5 8GB<br/>+ NVMe (DINrPlate)"] --- sw["DIN Ethernet<br/>switch"]
+    end
+    subgraph ROW4["RAIL 4 - BRIDGE-DN I/O"]
+        direction LR
+        hub2["Industrial DIN<br/>USB 2.0 hub<br/>(rail-powered)"] --- hub3["Industrial DIN<br/>USB 3.0 hub<br/>(rail-powered)"] --- term["Terminal blocks<br/>(data patch)"]
+    end
+    ROW1 --- ROW2 --- ROW3 --- ROW4
+    psu -.->|"5V DC"| pi
+    psu -.->|"5V"| hub2
+    psu -.->|"5V"| hub3
+    pi -->|"USB2"| hub2
+    pi -->|"USB3"| hub3
+    pi -->|"LAN"| sw
+
+    style ROW1 fill:#2a1a1a,stroke:#f87171,color:#d8dde6
+    style ROW2 fill:#2a1a1a,stroke:#f87171,color:#d8dde6
+    style ROW3 fill:#21262e,stroke:#ffb300,color:#ffd050
+    style ROW4 fill:#21262e,stroke:#ffb300,color:#ffd050
+</pre>
+</div>
+<div class="note"><strong>Note:</strong> The 230V mains half and the 5V DC BRIDGE half share the box but are physically separated by rail. Only the lower two rails carry the smart-home core.</div>
+
+<!-- 3 -->
+<div class="section-header">
+  <div class="section-num">03</div>
+  <div class="section-title">BRIDGE-DNE — LAN Version</div>
+</div>
+<div class="section-desc">Heavy radios ride the LAN (ser2net), placed away from the box. Green = networked, amber = USB, blue = terminal.</div>
+<div class="diagram-box">
+<pre class="mermaid">
+flowchart TB
+    psu["DIN 5V PSU (in box)"]:::power
+    pi["Raspberry Pi 5 / HAOS<br/>(in box, ~2.5 m)"]:::core
+    sw["DIN Ethernet switch (in box)"]:::core
+    subgraph LAN["NETWORKED RADIOS - placed for best RF coverage (NOT in box)"]
+        direction LR
+        mr3u["SLZB-MR3U<br/>Zigbee + Thread<br/>(separate chips)"]:::net
+        zwave_net["Z-Wave via<br/>MR3U passthrough"]:::net
+    end
+    subgraph BOXUSB["USB in box - light load only"]
+        direction LR
+        hub2["DIN USB 2.0 hub"]:::usb
+        hub3["DIN USB 3.0 hub"]:::usb
+    end
+    subgraph TERMINAL["USER TERMINAL (chest ~1.3 m)"]
+        direction LR
+        ble["CSR8510 BLE"]:::term
+        thread2["SONOFF Dongle-E<br/>2nd Thread BR"]:::term
+        rs485["USB-RS485<br/>Modbus"]:::term
+        sdr["RTL-SDR<br/>433/868"]:::term
+        free["FREE PORTS x4+"]:::free
+    end
+    psu -.->|5V| pi
+    pi -->|Ethernet| sw
+    sw ==>|"LAN / ser2net"| mr3u
+    mr3u --- zwave_net
+    pi -->|"USB2 trunk down wall"| hub2
+    pi -->|"USB3 trunk down wall"| hub3
+    hub2 --> ble
+    hub2 --> thread2
+    hub2 --> rs485
+    hub3 --> sdr
+    hub2 --> free
+
+    classDef power fill:#2a1a00,stroke:#c87000,color:#ffd050
+    classDef core fill:#21262e,stroke:#ffb300,color:#ffd050
+    classDef net fill:#0a2a1e,stroke:#4ade80,color:#4ade80
+    classDef usb fill:#1c2028,stroke:#ffb300,color:#d8dde6
+    classDef term fill:#0a1a3a,stroke:#38bdf8,color:#38bdf8
+    classDef free fill:#15181c,stroke:#7a8394,color:#7a8394
+</pre>
+</div>
+<div class="note"><strong>DNE placement logic:</strong> the SLZB-MR3U (Zigbee + Thread) leaves the box entirely and sits wherever coverage is best. Only light, non-RF-critical USB devices hang at the terminal. ~2 radio USB ports used.</div>
+
+<!-- 4 -->
+<div class="section-header">
+  <div class="section-num">04</div>
+  <div class="section-title">BRIDGE-DNU — USB Version</div>
+</div>
+<div class="section-desc">Everything is USB. No LAN dependency. All radios hang at the terminal on extension pigtails.</div>
+<div class="diagram-box">
+<pre class="mermaid">
+flowchart TB
+    psu["DIN 5V PSU (in box)"]:::power
+    pi["Raspberry Pi 5 / HAOS<br/>(in box, ~2.5 m)"]:::core
+    subgraph BOXUSB["USB hubs (in box, DIN rail)"]
+        direction LR
+        hub2["DIN USB 2.0 hub<br/>(7-port)"]:::usb
+        hub3["DIN USB 3.0 hub"]:::usb
+    end
+    subgraph TERMINAL["USER TERMINAL (chest ~1.3 m) - all radios on pigtails, antennas fanned out"]
+        direction LR
+        zig["SONOFF ZBDongle-P<br/>Primary Zigbee"]:::radio
+        thr["SONOFF Dongle-E<br/>Primary Thread"]:::radio
+        zst["Aeotec Z-Stick 10 Pro<br/>Z-Wave + backup Zigbee"]:::radio
+        ble["CSR8510 BLE"]:::radio
+        thr2["2nd Dongle-E<br/>spare Thread"]:::radio
+        rs485["USB-RS485"]:::term
+        sdr["RTL-SDR"]:::term
+        free["FREE x2"]:::free
+    end
+    psu -.->|5V| pi
+    psu -.->|5V rail| hub2
+    psu -.->|5V rail| hub3
+    pi ==>|"USB2 trunk down wall"| hub2
+    pi ==>|"USB3 trunk down wall"| hub3
+    hub2 --> zig
+    hub2 --> thr
+    hub2 --> zst
+    hub2 --> ble
+    hub2 --> thr2
+    hub2 --> rs485
+    hub3 --> sdr
+    hub3 --> free
+
+    classDef power fill:#2a1a00,stroke:#c87000,color:#ffd050
+    classDef core fill:#21262e,stroke:#ffb300,color:#ffd050
+    classDef usb fill:#1c2028,stroke:#ffb300,color:#d8dde6
+    classDef radio fill:#2a1a00,stroke:#ffb300,color:#ffd050
+    classDef term fill:#0a1a3a,stroke:#38bdf8,color:#38bdf8
+    classDef free fill:#15181c,stroke:#7a8394,color:#7a8394
+</pre>
+</div>
+<div class="note"><strong>DNU placement logic:</strong> no networked radios — every 2.4 GHz dongle plugs into the terminal's USB 2.0 hub via a 15–30 cm pigtail so antennas sit clear of the metal box and each other. ~5–6 radio USB ports used, zero network dependency.</div>
+
+<!-- 5 -->
+<div class="section-header">
+  <div class="section-num">05</div>
+  <div class="section-title">The Extension Trunk</div>
+</div>
+<div class="section-desc">What runs down the wall. Left-to-right = cables side by side in the bundle.</div>
+<div class="diagram-box">
+<pre class="mermaid">
+flowchart TB
+    box["BOX CORE (top, ~2.5 m)<br/>Pi 5 + DIN hubs + PSU"]:::core
+    subgraph BUNDLE["TRUNK BUNDLE (down the wall, 1.0-1.5 m)"]
+        direction LR
+        c1["USB 3.0<br/>(data side)"]:::u3
+        c2["USB 2.0<br/>(radio side)<br/>keep separated"]:::u2
+        c3["Ethernet<br/>Cat6"]:::eth
+        c4["HDMI<br/>(shortest run)"]:::hdmi
+        c5["5V power<br/>to hubs"]:::pwr
+    end
+    term["TERMINAL (bottom, ~1.3 m)<br/>hubs fan out / screen / keyboard / dock"]:::term
+    box ==> BUNDLE ==> term
+
+    classDef core fill:#21262e,stroke:#ffb300,color:#ffd050
+    classDef u3 fill:#0a1a3a,stroke:#38bdf8,color:#38bdf8
+    classDef u2 fill:#2a1a00,stroke:#ffb300,color:#ffd050
+    classDef eth fill:#0a2a1e,stroke:#4ade80,color:#4ade80
+    classDef hdmi fill:#1a0a2a,stroke:#c084fc,color:#c084fc
+    classDef pwr fill:#2a1a00,stroke:#c87000,color:#ffd050
+    classDef term fill:#1c2028,stroke:#38bdf8,color:#d8dde6
+</pre>
+</div>
+<div class="note"><strong>Trunk rule:</strong> keep the USB 2.0 (radio) line physically separated from the USB 3.0 line inside the bundle — USB 3.0 broadband noise couples into 2.4 GHz radios. Run them on opposite sides, or use foil-shielded USB 3.0 cable. Power (USB-C to Pi) is NOT extended — it stays in the box.</div>
+
+<!-- 6 -->
+<div class="section-header">
+  <div class="section-num">06</div>
+  <div class="section-title">Terminal Face</div>
+</div>
+<div class="section-desc">Front view of the chest-level unit (Version C/D style: screen + port block + dock).</div>
+<div class="diagram-box">
+<pre class="mermaid">
+flowchart TB
+    subgraph FRONT["TERMINAL FRONT FACE (~1.3 m, facing user)"]
+        direction TB
+        scr["5-8in TOUCHSCREEN<br/>(status + control)"]:::scr
+        dock["LAPTOP DOCK PORT<br/>(radios stay live when un/docked)"]:::dock
+    end
+    subgraph LEFTSIDE["LEFT SIDE"]
+        lu["USB 2.0 hub ports<br/>= RADIOS<br/>(pigtails, antennas out)"]:::u2
+    end
+    subgraph RIGHTSIDE["RIGHT SIDE"]
+        direction TB
+        ru["USB 3.0 hub ports<br/>= DATA / SDR / storage"]:::u3
+        rj["RJ45 coupler<br/>(laptop / service)"]:::eth
+        hd["HDMI out"]:::hdmi
+    end
+    subgraph BOTTOM["BOTTOM"]
+        direction TB
+        kb["Mini keyboard shelf<br/>(parked)"]:::kb
+        tin["Trunk cable entry<br/>(from box above)"]:::core
+    end
+    LEFTSIDE --- FRONT --- RIGHTSIDE
+    FRONT --- BOTTOM
+
+    classDef scr fill:#0a1a3a,stroke:#38bdf8,color:#38bdf8
+    classDef dock fill:#1a0a2a,stroke:#c084fc,color:#c084fc
+    classDef u2 fill:#2a1a00,stroke:#ffb300,color:#ffd050
+    classDef u3 fill:#0a1a3a,stroke:#38bdf8,color:#38bdf8
+    classDef eth fill:#0a2a1e,stroke:#4ade80,color:#4ade80
+    classDef hdmi fill:#1a0a2a,stroke:#c084fc,color:#c084fc
+    classDef kb fill:#1c2028,stroke:#7a8394,color:#d8dde6
+    classDef core fill:#21262e,stroke:#ffb300,color:#ffd050
+</pre>
+</div>
+<div class="note"><strong>Face logic:</strong> radios on the LEFT (USB 2.0, RF-isolated, antennas pointing away from wall), data on the RIGHT (USB 3.0), trunk enters from BOTTOM (coming down from the box above), keyboard parks underneath. Laptop dock on the front keeps radios connected to the Pi whether or not a laptop is present.</div>
+
+<!-- LEGEND -->
+<div class="section-header">
+  <div class="section-num">—</div>
+  <div class="section-title">Legend</div>
+</div>
+<table>
+  <thead>
+    <tr><th>Colour</th><th>Meaning</th></tr>
+  </thead>
+  <tbody>
+    <tr><td style="color:#f87171;">Red border</td><td>230V mains — do not touch</td></tr>
+    <tr><td style="color:#ffb300;">Amber border</td><td>BRIDGE-DN core / USB / power (5V DC)</td></tr>
+    <tr><td style="color:#4ade80;">Green border</td><td>Networked radios (LAN / ser2net) — DNE only</td></tr>
+    <tr><td style="color:#38bdf8;">Blue border</td><td>User terminal / data-side devices</td></tr>
+    <tr><td style="color:#c084fc;">Purple border</td><td>Video (HDMI) / laptop dock</td></tr>
+    <tr><td style="color:#7a8394;">Grey border</td><td>Spare / free / passive routing</td></tr>
+  </tbody>
+</table>
+<div class="note"><strong>Height reference across all diagrams:</strong> ceiling ~3.0 m → distribution box 1.8–2.5 m → trunk down the wall → user terminal 1.2–1.4 m.</div>
+
+</main>
+
+<footer>
+  várlerÁron · <strong>BRIDGE-DN</strong> · Build Diagrams Rev 1.0 · Budapest, Király Street
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      darkMode: true,
+      background: '#0d1014',
+      primaryColor: '#21262e',
+      primaryTextColor: '#d8dde6',
+      primaryBorderColor: '#ffb300',
+      lineColor: '#7a8394',
+      textColor: '#d8dde6',
+      fontFamily: 'JetBrains Mono, monospace',
+      fontSize: '13px',
+      clusterBkg: '#15181c',
+      clusterBorder: '#2a2f38',
+      edgeLabelBackground: '#15181c'
+    },
+    flowchart: { curve: 'basis', padding: 16, useMaxWidth: true }
+  });
+</script>
+
+</body>
+</html>

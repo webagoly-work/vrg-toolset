@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BRIDGE Tuner</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#fff; --ink:#1a1a18; --dim:#6b6b64; --line:#dcdcd6;
+    --accent:#1f6f8b; --accent-ink:#fff; --rec:#8a6d1f; --recbg:#fdf6e3;
+    --ok:#2f7d4f; --okbg:#eef7f1; --warn:#9a4a2f; --radius:10px;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#16171a; --panel:#1e2024; --ink:#e8e8e4; --dim:#9a9a92; --line:#33363c;
+      --accent:#4aa3c0; --accent-ink:#0d1114; --rec:#d8bd72; --recbg:#2a2616;
+      --ok:#6fc08e; --okbg:#1a2620; --warn:#e09478;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16171a; --panel:#1e2024; --ink:#e8e8e4; --dim:#9a9a92; --line:#33363c;
+    --accent:#4aa3c0; --accent-ink:#0d1114; --rec:#d8bd72; --recbg:#2a2616;
+    --ok:#6fc08e; --okbg:#1a2620; --warn:#e09478;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
+  header{position:sticky;top:0;z-index:10;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px}
+  .hrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  h1{font-size:15px;margin:0;font-weight:650;letter-spacing:.2px}
+  .meta{font:12px/1.4 var(--mono);color:var(--dim)}
+  .grow{flex:1 1 auto}
+  button,.fbtn{font:13px var(--sans);padding:7px 11px;border:1px solid var(--line);background:var(--panel);
+    color:var(--ink);border-radius:8px;cursor:pointer}
+  button:hover,.fbtn:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .fbtn{display:inline-block}
+  .fbtn input{display:none}
+  .bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:9px}
+  .bar>i{display:block;height:100%;background:var(--ok);width:0;transition:width .25s}
+  main{display:grid;grid-template-columns:230px 1fr;gap:0;align-items:start}
+  nav{position:sticky;top:94px;padding:14px 10px;max-height:calc(100vh - 100px);overflow:auto}
+  nav button{display:block;width:100%;text-align:left;margin-bottom:5px;border-color:transparent;background:none;padding:7px 9px}
+  nav button.on{background:var(--panel);border-color:var(--line);font-weight:600}
+  nav .cnt{float:right;font:11px var(--mono);color:var(--dim)}
+  nav .done .cnt{color:var(--ok)}
+  section.body{padding:16px 18px 80px;min-width:0}
+  .q{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;margin-bottom:12px}
+  .q:focus-within{border-color:var(--accent)}
+  .q.answered{border-left:3px solid var(--ok)}
+  .qid{font:11px var(--mono);color:var(--dim);letter-spacing:.5px}
+  .qt{font-weight:600;margin:3px 0 2px;font-size:15px}
+  .why{font-size:13px;color:var(--dim);margin:0 0 10px}
+  .opts{display:flex;flex-direction:column;gap:6px}
+  .opt{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;
+    padding:8px 10px;cursor:pointer;background:none}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{background:var(--okbg);border-color:var(--ok)}
+  .opt .key{font:11px var(--mono);color:var(--dim);min-width:14px;padding-top:2px}
+  .opt.sel .key{color:var(--ok);font-weight:700}
+  .opt .lab{font-size:14px;font-weight:550}
+  .opt .des{font-size:12.5px;color:var(--dim);margin-top:2px;line-height:1.45}
+  .tag{font:10px var(--mono);background:var(--recbg);color:var(--rec);border-radius:4px;padding:1px 5px;
+    margin-left:6px;vertical-align:1px;letter-spacing:.3px}
+  .note{width:100%;margin-top:8px;font:13px var(--sans);padding:7px 9px;border:1px solid var(--line);
+    border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical;min-height:34px}
+  .empty{padding:50px 20px;text-align:center;color:var(--dim)}
+  .empty code{font:12px var(--mono);background:var(--panel);padding:2px 5px;border-radius:4px}
+  dialog{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);color:var(--ink);
+    max-width:760px;width:92vw;padding:0}
+  dialog::backdrop{background:#0008}
+  .dh{padding:12px 15px;border-bottom:1px solid var(--line);font-weight:650;display:flex;gap:10px;align-items:center}
+  .dc{padding:14px 15px}
+  textarea.io{width:100%;min-height:260px;font:12px/1.5 var(--mono);padding:10px;border:1px solid var(--line);
+    border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical}
+  .df{padding:11px 15px;border-top:1px solid var(--line);display:flex;gap:9px;justify-content:flex-end}
+  .hint{font-size:12.5px;color:var(--dim);margin:0 0 9px}
+  .kbd{font:11px var(--mono);border:1px solid var(--line);border-radius:4px;padding:1px 4px;color:var(--dim)}
+  @media (max-width:820px){
+    main{grid-template-columns:1fr}
+    nav{position:static;max-height:none;display:flex;gap:6px;overflow-x:auto;padding:10px 16px 0;border-bottom:1px solid var(--line)}
+    nav button{width:auto;white-space:nowrap;margin:0}
+    nav .cnt{float:none;margin-left:6px}
+    section.body{padding:14px 16px 80px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <h1>BRIDGE Tuner</h1>
+    <div class="meta" id="packmeta">no pack loaded</div>
+    <div class="grow"></div>
+    <label class="fbtn">Load pack<input type="file" id="fPack" accept=".json,.txt"></label>
+    <button id="bPaste">Paste pack</button>
+    <label class="fbtn">Resume answers<input type="file" id="fAns" accept=".txt,.csv"></label>
+    <button id="bOnly">Unanswered only</button>
+    <button id="bTheme" title="Toggle theme">◐</button>
+    <button id="bExport" class="primary" disabled>Export</button>
+  </div>
+  <div class="bar"><i id="prog"></i></div>
+</header>
+
+<main>
+  <nav id="nav"></nav>
+  <section class="body" id="body">
+    <div class="empty">
+      <p><strong>Load a question pack to begin.</strong></p>
+      <p>Use <em>Load pack</em> for a <code>.json</code> file, or <em>Paste pack</em> to drop one in as text.</p>
+      <p style="margin-top:22px">Keys: <span class="kbd">1</span>–<span class="kbd">9</span> pick an option on the
+      focused question · <span class="kbd">0</span> mark unsure · <span class="kbd">J</span>/<span class="kbd">K</span> move</p>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg">
+  <div class="dh"><span id="dlgTitle">Paste</span><div class="grow"></div><button id="dlgX">Close</button></div>
+  <div class="dc">
+    <p class="hint" id="dlgHint"></p>
+    <textarea class="io" id="dlgTA" spellcheck="false"></textarea>
+  </div>
+  <div class="df" id="dlgFoot"></div>
+</dialog>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s), ce=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
+let PACK=null, ANS={}, NOTE={}, CUR=0, ONLY=false;
+
+/* ---------- storage (best effort; never required) ---------- */
+const skey=()=>"bridge-tuner:"+(PACK?PACK.pack+":"+(PACK.rev||""):"");
+function save(){ try{ localStorage.setItem(skey(),JSON.stringify({ANS,NOTE})); }catch(e){} }
+function load(){ try{ const r=localStorage.getItem(skey()); if(r){const o=JSON.parse(r); ANS=o.ANS||{}; NOTE=o.NOTE||{};} }catch(e){} }
+
+/* ---------- helpers ---------- */
+const allQ =()=> PACK? PACK.sections.flatMap(s=>s.questions):[];
+const isAns=q=> ANS[q.id]!==undefined && ANS[q.id]!==null && !(Array.isArray(ANS[q.id])&&!ANS[q.id].length);
+const secDone=s=> s.questions.filter(isAns).length;
+
+function setTheme(t){ document.documentElement.setAttribute("data-theme",t); try{localStorage.setItem("bridge-tuner:theme",t);}catch(e){} }
+try{ const t=localStorage.getItem("bridge-tuner:theme"); if(t) document.documentElement.setAttribute("data-theme",t); }catch(e){}
+$("#bTheme").onclick=()=>{ const c=document.documentElement.getAttribute("data-theme");
+  setTheme(c==="dark"?"light":c==="light"?"dark":(matchMedia("(prefers-color-scheme:dark)").matches?"light":"dark")); };
+
+/* ---------- pack ---------- */
+function loadPack(txt){
+  let p; try{ p=JSON.parse(txt); }catch(e){ alert("Not valid JSON:\n"+e.message); return; }
+  if(!p.sections||!Array.isArray(p.sections)){ alert("Pack has no 'sections' array."); return; }
+  p.sections.forEach(s=> s.questions=(s.questions||[]));
+  PACK=p; ANS={}; NOTE={}; CUR=0; load();
+  $("#packmeta").textContent=(p.pack||"pack")+" "+(p.rev||"")+" · "+allQ().length+" questions"+(p.date?" · "+p.date:"");
+  document.title="BRIDGE Tuner — "+(p.title||p.pack||"");
+  $("#bExport").disabled=false;
+  render();
+}
+
+/* ---------- answers import ---------- */
+function loadAnswers(txt){
+  if(!PACK){ alert("Load the question pack first."); return; }
+  let n=0;
+  txt.split(/\r?\n/).forEach(line=>{
+    line=line.trim(); if(!line||line.startsWith("#")) return;
+    const m=line.match(/^([A-Za-z]\w*)\s*=\s*([^~]*)(?:~\s*(.*))?$/); if(!m) return;
+    const id=m[1].toUpperCase(), val=(m[2]||"").trim(), note=(m[3]||"").trim();
+    const q=allQ().find(x=>x.id.toUpperCase()===id); if(!q) return;
+    if(note) NOTE[q.id]=note;
+    if(val==="?"||val===""){ ANS[q.id]="?"; }
+    else if(q.multi){ ANS[q.id]=val.split("|").map(s=>s.trim().toUpperCase()).filter(Boolean); }
+    else { ANS[q.id]=val.toUpperCase(); }
+    n++;
+  });
+  save(); render(); alert("Imported "+n+" answers.");
+}
+
+/* ---------- export ---------- */
+function exportText(){
+  const qs=allQ(), done=qs.filter(isAns).length;
+  const L=["#BRIDGE-ANSWERS v1",
+           "#pack="+(PACK.pack||"?")+" "+(PACK.rev||""),
+           "#date="+new Date().toISOString().slice(0,10),
+           "#answered="+done+"/"+qs.length];
+  PACK.sections.forEach(s=>{
+    const rows=s.questions.filter(q=>isAns(q)||NOTE[q.id]);
+    if(!rows.length) return;
+    L.push("");L.push("# "+s.id+" — "+s.title);
+    rows.forEach(q=>{
+      let v=ANS[q.id]; v = v==="?"||v===undefined ? "?" : (Array.isArray(v)? v.join("|") : v);
+      L.push(q.id+"="+v+(NOTE[q.id]?" ~ "+NOTE[q.id].replace(/\s+/g," "):""));
+    });
+  });
+  return L.join("\n")+"\n";
+}
+
+/* ---------- render ---------- */
+function render(){
+  if(!PACK) return;
+  const nav=$("#nav"); nav.innerHTML="";
+  PACK.sections.forEach((s,i)=>{
+    const d=secDone(s), b=ce("button",(i===CUR?"on ":"")+(d===s.questions.length?"done":""));
+    b.innerHTML='<span class="cnt">'+d+"/"+s.questions.length+"</span>"+s.id+" · "+s.title;
+    b.onclick=()=>{CUR=i;render();window.scrollTo({top:0});}; nav.appendChild(b);
+  });
+  const qs=allQ(), done=qs.filter(isAns).length;
+  $("#prog").style.width=(qs.length? done/qs.length*100:0)+"%";
+  $("#packmeta").textContent=(PACK.pack||"pack")+" "+(PACK.rev||"")+" · "+done+"/"+qs.length+" answered";
+
+  const sec=PACK.sections[CUR], body=$("#body"); body.innerHTML="";
+  const h=ce("div"); h.style.margin="0 0 14px";
+  h.innerHTML='<div class="qid">SECTION '+sec.id+'</div><div style="font-size:19px;font-weight:650">'+esc(sec.title)+"</div>"+
+              (sec.note?'<p class="why" style="margin-top:5px">'+esc(sec.note)+"</p>":"");
+  body.appendChild(h);
+
+  let shown=0;
+  sec.questions.forEach(q=>{
+    if(ONLY && isAns(q)) return; shown++;
+    body.appendChild(card(q));
+  });
+  if(!shown){ const e=ce("div","empty"); e.textContent= ONLY? "Nothing unanswered in this section.":"No questions here."; body.appendChild(e); }
+
+  const f=ce("div"); f.style.cssText="display:flex;gap:9px;margin-top:18px";
+  if(CUR>0){ const b=ce("button"); b.textContent="◀ "+PACK.sections[CUR-1].id; b.onclick=()=>{CUR--;render();window.scrollTo({top:0});}; f.appendChild(b); }
+  if(CUR<PACK.sections.length-1){ const b=ce("button"); b.textContent=PACK.sections[CUR+1].id+" ▶"; b.onclick=()=>{CUR++;render();window.scrollTo({top:0});}; f.appendChild(b); }
+  const sp=ce("div","grow"); f.appendChild(sp);
+  const x=ce("button","primary"); x.textContent="Export answers"; x.onclick=openExport; f.appendChild(x);
+  body.appendChild(f);
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function card(q){
+  const c=ce("div","q"+(isAns(q)?" answered":"")); c.tabIndex=0; c.dataset.qid=q.id;
+  c.innerHTML='<div class="qid">'+q.id+(q.multi?" · multi-select":"")+'</div><div class="qt">'+esc(q.q)+"</div>"+
+              (q.why?'<p class="why">'+esc(q.why)+"</p>":"");
+  const box=ce("div","opts");
+  const numbered=(q.opts||[]).length<=9;
+  (q.opts||[]).forEach((o,i)=>{
+    const sel = q.multi ? (Array.isArray(ANS[q.id])&&ANS[q.id].includes(o.k)) : ANS[q.id]===o.k;
+    const b=ce("button","opt"+(sel?" sel":""));
+    b.innerHTML='<span class="key">'+(numbered?(i+1):esc(o.k))+'</span><span><span class="lab">'+esc(o.t)+"</span>"+
+      (q.rec===o.k?'<span class="tag">RECOMMENDED</span>':"")+
+      (o.d?'<span class="des">'+esc(o.d)+"</span>":"")+"</span>";
+    b.onclick=()=>pick(q,o.k); box.appendChild(b);
+  });
+  const u=ce("button","opt"+(ANS[q.id]==="?"?" sel":""));
+  u.innerHTML='<span class="key">0</span><span><span class="lab">Unsure — discuss this one</span>'+
+              '<span class="des">Flags it for me rather than guessing.</span></span>';
+  u.onclick=()=>pick(q,"?"); box.appendChild(u);
+  c.appendChild(box);
+
+  const n=ce("textarea","note"); n.placeholder="Note (optional) — constraints, a different answer, why";
+  n.value=NOTE[q.id]||""; n.oninput=()=>{ NOTE[q.id]=n.value.trim()||undefined; if(!NOTE[q.id]) delete NOTE[q.id]; save(); };
+  c.appendChild(n);
+  return c;
+}
+
+function pick(q,k){
+  if(k==="?"){ ANS[q.id]= ANS[q.id]==="?" ? undefined : "?"; }
+  else if(q.multi){
+    const a=Array.isArray(ANS[q.id])?ANS[q.id].slice():[];
+    const i=a.indexOf(k); if(i<0)a.push(k); else a.splice(i,1);
+    ANS[q.id]=a.length?a:undefined;
+  } else { ANS[q.id]= ANS[q.id]===k ? undefined : k; }
+  if(ANS[q.id]===undefined) delete ANS[q.id];
+  save();
+  const y=window.scrollY; render(); window.scrollTo({top:y});
+}
+
+/* ---------- keyboard ---------- */
+document.addEventListener("keydown",e=>{
+  if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName)||e.metaKey||e.ctrlKey||e.altKey) return;
+  const card=e.target.closest?.(".q")||document.activeElement.closest?.(".q");
+  if(/^[0-9]$/.test(e.key)&&card){
+    const q=allQ().find(x=>x.id===card.dataset.qid); if(!q) return;
+    e.preventDefault();
+    if(e.key==="0") pick(q,"?");
+    else if((q.opts||[]).length<=9){ const o=q.opts[+e.key-1]; if(o) pick(q,o.k); }
+    requestAnimationFrame(()=>{ const n=document.querySelector('.q[data-qid="'+q.id+'"]'); if(n)n.focus(); });
+    return;
+  }
+  if(e.key==="j"||e.key==="k"){
+    const cards=[...document.querySelectorAll(".q")]; if(!cards.length) return;
+    let i=cards.indexOf(card); i = e.key==="j" ? Math.min(i+1,cards.length-1) : Math.max(i-1,0);
+    if(i<0)i=0; cards[i].focus(); cards[i].scrollIntoView({block:"center",behavior:"smooth"}); e.preventDefault();
+  }
+});
+
+/* ---------- dialog ---------- */
+function dialog(title,hint,value,buttons,ro){
+  $("#dlgTitle").textContent=title; $("#dlgHint").textContent=hint;
+  const ta=$("#dlgTA"); ta.value=value||""; ta.readOnly=!!ro;
+  const f=$("#dlgFoot"); f.innerHTML="";
+  buttons.forEach(b=>{ const x=ce("button",b.p?"primary":""); x.textContent=b.t; x.onclick=()=>b.fn(ta.value); f.appendChild(x); });
+  $("#dlg").showModal(); if(ro){ ta.select(); }
+}
+$("#dlgX").onclick=()=>$("#dlg").close();
+
+$("#bPaste").onclick=()=>dialog("Paste question pack",
+  "Paste the pack JSON, then Load.","",
+  [{t:"Load",p:true,fn:v=>{$("#dlg").close();loadPack(v);}}]);
+
+function openExport(){
+  const txt=exportText();
+  dialog("Export answers",
+    "Copy this and send it back, or download it as a file. It is deliberately compact.",
+    txt,
+    [{t:"Copy",p:true,fn:v=>{ navigator.clipboard?.writeText(v).then(()=>{
+        const b=[...$("#dlgFoot").children].find(x=>x.textContent==="Copy"); if(b){b.textContent="Copied";setTimeout(()=>b.textContent="Copy",1200);} },
+        ()=>alert("Copy failed — select the text manually.")); }},
+     {t:"Download",fn:v=>{
+        const a=ce("a"); a.href=URL.createObjectURL(new Blob([v],{type:"text/plain"}));
+        a.download=(PACK.pack||"BRIDGE")+"-answers-"+new Date().toISOString().slice(0,10)+".txt";
+        a.click(); URL.revokeObjectURL(a.href); }}],
+    true);
+}
+$("#bExport").onclick=openExport;
+
+$("#bOnly").onclick=()=>{ ONLY=!ONLY; $("#bOnly").textContent= ONLY?"Show all":"Unanswered only"; render(); };
+
+function readFile(inp,fn){ inp.onchange=()=>{ const f=inp.files[0]; if(!f)return;
+  const r=new FileReader(); r.onload=()=>fn(String(r.result)); r.readAsText(f); inp.value=""; }; }
+readFile($("#fPack"),loadPack);
+readFile($("#fAns"),loadAnswers);
+</script>
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Varler BuildTree — műhely &amp; beszerzés</title>
+<style>
+  :root{
+    --bg:#14100c; --panel:#1d1712; --panel2:#241d16; --ink:#f4e9d6; --muted:#a8977d;
+    --amber:#e6a532; --amber-dim:#8a6a2a; --line:#3a2f22;
+    --green:#5b8c3e; --green-ink:#9ed46f; --amberflag:#c8912d; --red:#c8492d; --red-ink:#e88b73;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.45}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 16px 60px}
+  header{border-bottom:2px solid var(--amber);padding-bottom:12px;margin-bottom:14px}
+  h1{font-size:21px;margin:0 0 2px;letter-spacing:.02em}
+  h1 .sub{color:var(--amber);font-weight:400}
+  .meta{color:var(--muted);font-size:12px}
+
+  .tabs{display:flex;gap:6px;margin:14px 0 18px}
+  .tab{flex:1;text-align:center;padding:11px 8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;cursor:pointer;font-weight:600;letter-spacing:.02em;color:var(--muted)}
+  .tab.active{color:var(--ink);border-color:var(--amber-dim);background:linear-gradient(180deg,rgba(230,165,50,.14),transparent)}
+  .tab small{display:block;font-weight:400;font-size:11px;color:var(--muted);margin-top:2px}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:14px}
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:20px;font-size:11px;border:1px solid}
+  .chip.g{color:var(--green-ink);border-color:var(--green);background:rgba(91,140,62,.12)}
+  .chip.a{color:var(--amberflag);border-color:var(--amber-dim);background:rgba(230,165,50,.10)}
+  .chip.r{color:var(--red-ink);border-color:var(--red);background:rgba(200,73,45,.12)}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:820px){.cols{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .card > h2{font-size:14px;margin:0;padding:11px 14px;letter-spacing:.04em;text-transform:uppercase;color:var(--amber);border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(230,165,50,.10),transparent)}
+  .card .body{padding:8px 12px 12px}
+
+  .hostpick{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);flex-wrap:wrap}
+  select,input[type=text]{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;font-family:inherit}
+
+  .grp{margin-top:8px}
+  .grp h3{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--amber-dim);margin:10px 4px 4px;font-weight:700}
+  .item{display:flex;align-items:flex-start;gap:9px;padding:7px 8px;border-bottom:1px solid var(--line);border-left:3px solid transparent}
+  .item.g{border-left-color:var(--green)} .item.a{border-left-color:var(--amberflag)} .item.r{border-left-color:var(--red);opacity:.72}
+  .item .add{margin-top:2px;cursor:pointer;user-select:none;width:20px;height:20px;border:1.5px solid var(--amber-dim);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--amber);font-size:14px;line-height:1;flex-shrink:0}
+  .item.inbuild .add{background:var(--amber);color:#14100c;border-color:var(--amber)}
+  .item.r .add{border-color:var(--red);color:var(--red-ink);cursor:not-allowed}
+  .item .n{font-weight:600}
+  .item .n .qty{color:var(--amber);font-weight:400;font-size:12px}
+  .item .s{color:var(--muted);font-size:11.5px;display:block;margin-top:1px}
+  .item .busline{margin-top:3px;display:flex;gap:4px;flex-wrap:wrap}
+  .bus{font-size:9.5px;padding:1px 6px;border-radius:3px;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+
+  .build .body{min-height:80px}
+  .base{padding:8px 10px;border:1px solid var(--amber-dim);border-radius:6px;background:var(--panel2);margin-bottom:6px}
+  .base .n{font-weight:700;color:var(--amber)}
+  .edge{display:flex;align-items:center;gap:8px;padding:7px 8px;margin:5px 0;border-radius:6px;background:var(--panel2);border:1px solid var(--line)}
+  .edge .conn{font-size:10px;font-weight:700;padding:2px 8px;border-radius:14px;white-space:nowrap;flex-shrink:0}
+  .edge.g .conn{color:var(--green-ink);border:1px solid var(--green);background:rgba(91,140,62,.14)}
+  .edge.a .conn{color:var(--amberflag);border:1px solid var(--amber-dim);background:rgba(230,165,50,.12)}
+  .edge.r .conn{color:var(--red-ink);border:1px solid var(--red);background:rgba(200,73,45,.14)}
+  .edge .en{flex:1}
+  .edge .en .nm{font-weight:600}
+  .edge .en .dt{font-size:11px;color:var(--muted)}
+  .edge .busSel{font-size:11px;padding:3px 5px}
+  .edge .rm{cursor:pointer;color:var(--red-ink);font-size:16px;padding:0 4px}
+
+  .conflicts{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+  .conflicts h4{margin:0 0 5px;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--red-ink)}
+  .cf{font-size:12px;padding:5px 8px;margin:4px 0;border-radius:5px;background:rgba(200,73,45,.10);border:1px solid rgba(200,73,45,.4)}
+  .cf.res{background:rgba(91,140,62,.10);border-color:rgba(91,140,62,.4);color:var(--green-ink)}
+  .cf b{color:var(--red-ink)} .cf.res b{color:var(--green-ink)}
+  .noconf{font-size:12px;color:var(--green-ink);padding:4px 2px}
+
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+  button.act{background:var(--amber);color:#14100c;border:none;border-radius:6px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:13px}
+  button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .out{margin-top:12px}
+  pre{background:#0e0b08;border:1px solid var(--line);border-radius:6px;padding:12px;font-size:12px;color:var(--ink);white-space:pre-wrap;max-height:280px;overflow:auto;font-family:"DejaVu Sans Mono",monospace}
+
+  .unlock{font-size:11.5px;color:var(--green-ink);margin-top:3px;display:block}
+  .order-note{font-size:11px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:10px}
+  .todo{font-size:11px;color:var(--amberflag);background:rgba(230,165,50,.08);border:1px solid var(--amber-dim);border-radius:6px;padding:8px 10px;margin:10px 0}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Varler <span class="sub">BuildTree</span></h1>
+    <div class="meta">Készletből építhető eszközfák + kompatibilitás-ellenőrzés · v1 · 2026-08-27</div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="workbench" onclick="switchTab('workbench')">Műhely <small>meglévő készlet + build-fák</small></div>
+    <div class="tab" data-tab="order" onclick="switchTab('order')">Beszerezhető <small>bővítéshez rendelhető tételek</small></div>
+  </div>
+
+  <div class="legend">
+    <span class="chip g">● kompatibilis</span>
+    <span class="chip a">● feltétellel (szintillesztő / cím / táp)</span>
+    <span class="chip r">● nincs közös busz / ütközés</span>
+    <span>A színek a kiválasztott <b>alaphoz (host)</b> viszonyítanak.</span>
+  </div>
+
+  <!-- ============ WORKBENCH TAB ============ -->
+  <div id="workbench">
+    <div class="todo" id="todoNote">
+      Megerősítendő az utolsó vásárlásból: az <b>ESP32-S3 mennyisége</b> (jelenleg 1× rögzítve) és a „<b>meg némi</b>" alatt mi volt még.
+      Szólj, és pontosítom.
+    </div>
+    <div class="cols">
+      <!-- inventory -->
+      <div class="card">
+        <h2>Készlet</h2>
+        <div class="hostpick">
+          Alap (host):
+          <select id="hostSel" onchange="setHost(this.value)"></select>
+          <span id="hostNote"></span>
+        </div>
+        <div class="body" id="inventory"></div>
+      </div>
+
+      <!-- build -->
+      <div class="card build">
+        <h2>Aktuális build-fa</h2>
+        <div class="body">
+          <div id="buildArea"></div>
+          <div class="conflicts" id="conflicts"></div>
+          <div class="actions">
+            <input type="text" id="devName" placeholder="Eszköz neve (pl. Kábeltérképező A-vég)" style="flex:1;min-width:160px">
+          </div>
+          <div class="actions">
+            <button class="act" onclick="genMd()">.md generálás</button>
+            <button class="act ghost" onclick="copyOut()">Másolás</button>
+            <button class="act ghost" onclick="downloadOut()">Letöltés</button>
+            <button class="act ghost" onclick="clearBuild()">Ürítés</button>
+          </div>
+          <div class="out hidden" id="outWrap"><pre id="outPre"></pre></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ORDER TAB ============ -->
+  <div id="order" class="hidden">
+    <div class="order-note">
+      Ez a lista nő és karbantartott. Ha kéred, átnézem a készletet + az eddigi buildeket, és új kombókat javaslok azzal, hogy
+      melyik itteni tétel kell hozzá. Amit kiválasztasz, azt a következő szerkesztéskor átemelem a Műhely fülre (te elküldöd a
+      friss HTML-t, én belejelölöm). Minden tételnél ott a busz-/feszültség-metaadat, hogy ugyanaz a zöld/piros ellenőrzés
+      vonatkozzon rájuk.
+    </div>
+    <div class="card">
+      <h2>Rendelhető tételek</h2>
+      <div class="body" id="orderList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- DATA MODEL ----------
+ role: host | peripheral | programmer | connector(resolver) | carrier | rf | power | tool | consumable
+ buses: [{t:'I2C', r:'controller'|'device'|'either'|'passive', addr?:'0x..'}]
+ logic: 3.3 | 5 | 'tol' | null
+ fp: footprint for carriers/hosts
+*/
+const DATA_BUS = ['I2C','SPI','UART','I2S','SWD','RS485','RS232'];
+const TRIG_BUS = ['GPIO','ADC','DAC','PWM','ANALOG'];
+
+const ITEMS = [
+  // ---- HOSTS ----
+  {id:'s3', role:'host', name:'ESP32-S3 N16R8 Dual USB-C', qty:1, fp:'42pin', logic:3.3,
+   specs:'16MB flash / 8MB PSRAM · dual USB-C (CH343 UART + natív OTG) · PCB antenna',
+   buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'I2S',r:'controller'},{t:'GPIO',r:'controller'},{t:'ADC',r:'controller'},{t:'DAC',r:'controller'},{t:'USB',r:'either'}],
+   note:'Natív USB-hoz OTG kábel kell. Nincs u.FL — a 2.4GHz SMA-IPEX antenna ide nem megy.'},
+
+  // ---- CARRIERS ----
+  {id:'ioshield', role:'carrier', name:'ESP32 I/O shield 38-pin', qty:1, fp:'38pin', logic:3.3,
+   specs:'GPIO kivezetés csavaros sorra · Vin 6,5–16V', buses:[{t:'GPIO',r:'passive'}],
+   note:'38-pin lábkiosztás — a 42-pin S3 NEM ül rá. 38-pin WROOM-hoz jó.'},
+  {id:'nanoproto', role:'carrier', name:'Arduino Nano próbapanel', qty:1, fp:'nano', logic:'tol',
+   specs:'kétoldalas, plated, 2,54mm', buses:[{t:'GPIO',r:'passive'}]},
+
+  // ---- PERIPHERALS ----
+  {id:'pcf8575', role:'peripheral', name:'PCF8575 16-ch I/O expander', qty:1, logic:'tol',
+   specs:'I2C GPIO bővítő · 2,5–5,5V', buses:[{t:'I2C',r:'device',addr:'0x20'}]},
+  {id:'pn532', role:'peripheral', name:'PN532 NFC/RFID V3', qty:1, logic:3.3,
+   specs:'13,56MHz · I2C / SPI / HSU átkapcsolható', buses:[{t:'I2C',r:'device',addr:'0x24'},{t:'SPI',r:'device'},{t:'UART',r:'device'}]},
+  {id:'mfrc522', role:'peripheral', name:'MFRC-522 RFID', qty:2, logic:3.3,
+   specs:'13,56MHz · SPI', buses:[{t:'SPI',r:'device'}]},
+  {id:'oled', role:'peripheral', name:'1.3" OLED + EC11 enkóder', qty:2, logic:'tol',
+   specs:'SH1106 128×64 kijelző + forgóenkóder', buses:[{t:'I2C',r:'device',addr:'0x3C'},{t:'GPIO',r:'device'}]},
+  {id:'nrf905', role:'peripheral', name:'nRF905 sub-GHz adó-vevő', qty:2, logic:3.3,
+   specs:'433/868/915MHz · SPI · CSAK 3,3V', buses:[{t:'SPI',r:'device'}],
+   note:'5V-ot nem visel — 3,3V hostot igényel vagy szintillesztőt.'},
+  {id:'at24c256', role:'peripheral', name:'AT24C256 EEPROM modul', qty:1, logic:'tol',
+   specs:'256kB I2C EEPROM', buses:[{t:'I2C',r:'device',addr:'0x50'}]},
+  {id:'pir', role:'peripheral', name:'HC-SR501 PIR + konzol', qty:1, logic:'tol',
+   specs:'mozgásérzékelő · Vin 5V · kimenet 3,3V-biztos', buses:[{t:'GPIO',r:'device'}]},
+  {id:'lx06la', role:'peripheral', name:'LX06LA hangrögzítő/lejátszó', qty:1, logic:'tol',
+   specs:'10mp · gomb/GPIO trigger · 3–5V · hangszóró-kimenet', buses:[{t:'GPIO',r:'device'},{t:'ANALOG',r:'passive'}]},
+  {id:'lm386', role:'peripheral', name:'LM386 audio erősítő', qty:2, logic:null,
+   specs:'analóg be → hangszóró · 5–12V', buses:[{t:'ANALOG',r:'device'}]},
+  {id:'pbuzz', role:'peripheral', name:'Passzív buzzer 5V', qty:2, logic:'tol',
+   specs:'PWM-mel hajtott — te adod a frekvenciát', buses:[{t:'PWM',r:'device'}]},
+  {id:'abuzz', role:'peripheral', name:'Aktív piezo buzzer 12V 85dB', qty:1, logic:'tol',
+   specs:'tranzisztoros meghajtás · 12V', buses:[{t:'GPIO',r:'device'}]},
+
+  // ---- RF ----
+  {id:'ant24', role:'rf', name:'2.4GHz antenna SMA→IPEX', qty:1, logic:null,
+   specs:'u.FL/IPEX csatlakozó', buses:[{t:'UFL',r:'passive'}],
+   note:'Csak u.FL-lel szerelt paneleknek. Az S3 Dual-USB-C PCB antennás.'},
+
+  // ---- PROGRAMMERS / PC-SIDE ----
+  {id:'ch341a', role:'programmer', name:'CH341A EEPROM/Flash programozó', qty:1, logic:5,
+   specs:'SOIC8 SPI/I2C flash · PC-oldali USB', buses:[{t:'SPI',r:'controller'},{t:'I2C',r:'controller'},{t:'USB',r:'either'}],
+   note:'Klasszikus board ~5V-os SPI vonalakkal — 3,3V flash-t ölhet. Szintillesztő / 3,3V mod kell.'},
+  {id:'usbrs485', role:'programmer', name:'USB–RS485 adapter', qty:1, logic:'tol',
+   specs:'Modbus RTU PC-ről (pl. SDM630)', buses:[{t:'RS485',r:'controller'},{t:'USB',r:'either'}]},
+  {id:'cp2102', role:'programmer', name:'CP2102 6-in-1 USB átalakító', qty:1, logic:'tol',
+   specs:'TTL / RS232 / RS485', buses:[{t:'UART',r:'controller'},{t:'RS485',r:'controller'},{t:'RS232',r:'controller'},{t:'USB',r:'either'}]},
+  {id:'ch340e', role:'programmer', name:'CH340E USB-C→TTL', qty:2, logic:'tol',
+   specs:'flasheléshez', buses:[{t:'UART',r:'controller'},{t:'USB',r:'either'}]},
+  {id:'ch343p', role:'programmer', name:'CH343P USB→TTL 6Mbps', qty:1, logic:'tol',
+   specs:'flasheléshez', buses:[{t:'UART',r:'controller'},{t:'USB',r:'either'}]},
+  {id:'stlink', role:'programmer', name:'ST-Link V2', qty:1, logic:'tol',
+   specs:'STM8/STM32 · SWD/JTAG', buses:[{t:'SWD',r:'controller'},{t:'USB',r:'either'}]},
+
+  // ---- CONNECTORS / RESOLVERS ----
+  {id:'shifter', role:'connector', name:'4-ch szintillesztő 3,3↔5V', qty:3, logic:'tol', resolver:true,
+   specs:'kétirányú · I2C/SPI/UART/GPIO', buses:[{t:'I2C',r:'either'},{t:'SPI',r:'either'},{t:'UART',r:'either'},{t:'GPIO',r:'either'}],
+   note:'Feszültség-ütközést old fel a buildben.'},
+  {id:'griff', role:'tool', name:'Griff mérőcsipesz CAT II 1000V/4A', qty:1, logic:null, specs:'élő panelen is', buses:[]},
+
+  // ---- WIRING / CONSUMABLES ----
+  {id:'hdr_str', role:'consumable', name:'Színes tüskesor 40p (5 csík)', qty:2, logic:null, specs:'egyenes 2,54mm', buses:[]},
+  {id:'hdr_ra', role:'consumable', name:'Tüskesor 40p 90°', qty:2, logic:null, specs:'', buses:[]},
+  {id:'dupmf', role:'consumable', name:'Dupont M-F 20cm ×40', qty:1, logic:null, specs:'', buses:[]},
+  {id:'dupff', role:'consumable', name:'Dupont F-F 20cm ×40', qty:1, logic:null, specs:'', buses:[]},
+  {id:'bbjmp', role:'consumable', name:'Breadboard jumper szett 65db', qty:1, logic:null, specs:'merev', buses:[]},
+  {id:'heat', role:'consumable', name:'Zsugorcső 328db', qty:1, logic:null, specs:'', buses:[]},
+  {id:'breadboard', role:'carrier', name:'Breadboard', qty:1, logic:null, fp:'breadboard', specs:'(méret megerősítendő — 830?)', buses:[]},
+];
+
+const ORDER = [
+  {id:'o_s3dev', name:'ESP32-S3-DEV-N16R8 + TA-44P', role:'host', logic:3.3, fp:'44pin',
+   specs:'HESTORE alt. S3', unlock:'REDUNDÁNS — a Dual-USB-C S3-at már megvetted. Kihagyható.', redundant:true,
+   buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'I2S',r:'controller'},{t:'GPIO',r:'controller'}]},
+  {id:'o_inmp441', name:'INMP441 I2S mikrofon', role:'peripheral', logic:3.3,
+   specs:'I2S be', unlock:'S3-audio bemenet: wake-word, zajszintmérő, intercom.', buses:[{t:'I2S',r:'device'}]},
+  {id:'o_max98357', name:'MAX98357A I2S erősítő', role:'peripheral', logic:3.3,
+   specs:'I2S ki → hangszóró', unlock:'S3-audio kimenet: prop hang, hangjelzés, TTS.', buses:[{t:'I2S',r:'device'},{t:'ANALOG',r:'controller'}]},
+  {id:'o_ds3231', name:'DS3231 RTC', role:'peripheral', logic:'tol',
+   specs:'I2C 0x68', unlock:'Tápkimaradást túlélő időbélyeg minden loggerhez.', buses:[{t:'I2C',r:'device',addr:'0x68'}]},
+  {id:'o_bme280', name:'BME280 hő/pára/nyomás', role:'peripheral', logic:'tol',
+   specs:'I2C 0x76', unlock:'Környezeti node egyből Home Assistantba.', buses:[{t:'I2C',r:'device',addr:'0x76'}]},
+  {id:'o_sd', name:'microSD modul (SPI)', role:'peripheral', logic:'tol',
+   specs:'SPI', unlock:'Logolás / config / kamera-tár.', buses:[{t:'SPI',r:'device'}]},
+  {id:'o_buck', name:'LM2596 / MP1584 buck', role:'power', logic:null,
+   specs:'DC-DC step-down', unlock:'12V shadow layerről vagy akkuról hajtás. 5V + 3,3V beállítva.', buses:[{t:'POWER',r:'controller'}]},
+  {id:'o_tp4056', name:'TP4056 + 18650 + tartó', role:'power', logic:null,
+   specs:'1S töltő + cella', unlock:'A kézi eszközök (kábeltérképező, multitool) vezeték nélkülivé válnak.', buses:[{t:'POWER',r:'controller'}]},
+  {id:'o_sockets', name:'Tüskesor aljzat (anya) 2,54mm', role:'connector', logic:null,
+   specs:'foglalat', unlock:'A modulok cserélhetők maradnak — nem forrasztod le őket.', buses:[]},
+  {id:'o_lora868', name:'868MHz LoRa modul (SX1276)', role:'peripheral', logic:3.3,
+   specs:'SPI · EU sáv', unlock:'Meshtastic / nagy hatótáv. MÁSHONNAN — a boltok 433MHz-esek.', elsewhere:true, buses:[{t:'SPI',r:'device'}]},
+  {id:'o_ld2410', name:'LD2410 mmWave jelenlét', role:'peripheral', logic:3.3,
+   specs:'UART', unlock:'Kutyakövetés / jelenlét. MÁSHONNAN — egyik boltban sincs.', elsewhere:true, buses:[{t:'UART',r:'device'}]},
+  {id:'o_cam', name:'OV2640 kamera / S3-CAM', role:'peripheral', logic:3.3,
+   specs:'DVP kamera', unlock:'QR/vízió/timelapse. Vagy 1 S3-at CAM-verzióban (Modulshop 5.000 Ft).', buses:[{t:'DVP',r:'device'}]},
+  {id:'o_spk', name:'8Ω mini hangszóró', role:'peripheral', logic:null,
+   specs:'passzív', unlock:'Az erősítő / LX06LA tényleges megszólaltatásához.', buses:[{t:'ANALOG',r:'passive'}]},
+];
+
+/* ---------- STATE ---------- */
+let hostId = 's3';
+let build = []; // array of {id, bus}
+
+/* ---------- COMPAT ENGINE ---------- */
+function item(id){ return ITEMS.find(x=>x.id===id) || ORDER.find(x=>x.id===id); }
+function logicClash(a,b){
+  if(a===null||b===null||a==='tol'||b==='tol') return false;
+  return a!==b;
+}
+// candidate data/trigger connections between host and peripheral
+function candidates(host, p){
+  const out=[];
+  (p.buses||[]).forEach(pb=>{
+    if(pb.t==='POWER'||pb.t==='USB'||pb.t==='UFL'||pb.t==='DVP') return;
+    // host must offer a matching controllable bus (or GPIO for triggers)
+    const hb=(host.buses||[]).find(h=>h.t===pb.t && (h.r==='controller'||h.r==='either'));
+    if(hb) out.push({t:pb.t, addr:pb.addr, shift:logicClash(host.logic,p.logic)});
+  });
+  return out;
+}
+// state of a peripheral relative to current host: 'g' | 'a' | 'r'
+function relState(p){
+  const host=item(hostId);
+  if(!host||p.id===hostId) return null;
+  if(p.role==='carrier'){ // footprint logic
+    if(p.fp==='breadboard') return 'g';
+    if(host.fp && p.fp && host.fp!==p.fp) return 'r';
+    return 'a';
+  }
+  if(p.role==='connector'||p.role==='tool'||p.role==='consumable'||p.role==='power') return 'a';
+  if(p.role==='rf'){
+    // u.FL antenna only if host has UFL
+    const hasUfl=(host.buses||[]).some(b=>b.t==='UFL');
+    return hasUfl?'g':'r';
+  }
+  const c=candidates(host,p);
+  if(c.length===0) return 'r';
+  if(c.every(x=>x.shift)) return 'a';
+  return 'g';
+}
+
+/* ---------- CONFLICT DETECTION ---------- */
+function conflicts(){
+  const host=item(hostId);
+  const list=[];
+  const shifterInBuild = build.some(b=>{const it=item(b.id); return it && it.resolver;});
+  // voltage
+  build.forEach(b=>{
+    const it=item(b.id);
+    const c=candidates(host,it).find(x=>x.t===b.bus);
+    if(c && c.shift){
+      if(shifterInBuild) list.push({res:true, txt:`<b>${it.name}</b> 5V/3,3V eltérés a(z) ${b.bus} vonalon — feloldva a build-beli szintillesztővel.`});
+      else list.push({res:false, txt:`<b>${it.name}</b>: ${b.bus} logikai szint nem egyezik a hosttal → 4-ch szintillesztő kell.`});
+    }
+  });
+  // I2C address clash
+  const i2c={};
+  build.forEach(b=>{
+    if(b.bus!=='I2C') return; const it=item(b.id);
+    const bb=(it.buses||[]).find(x=>x.t==='I2C'); if(bb&&bb.addr){ (i2c[bb.addr]=i2c[bb.addr]||[]).push(it.name); }
+  });
+  Object.keys(i2c).forEach(a=>{ if(i2c[a].length>1) list.push({res:false, txt:`I2C címütközés a(z) <b>${a}</b> címen: ${i2c[a].join(', ')} → cím-jumper átállítás vagy I2C mux.`}); });
+  // footprint carrier
+  const carrier=build.map(b=>item(b.id)).find(it=>it.role==='carrier'&&it.fp&&it.fp!=='breadboard');
+  if(carrier && host.fp && carrier.fp!==host.fp)
+    list.push({res:false, txt:`Lábkiosztás: <b>${carrier.name}</b> (${carrier.fp}) ≠ host (${host.fp}) — nem ül rá.`});
+  // rf antenna
+  build.forEach(b=>{ const it=item(b.id); if(it.role==='rf'){ const hasUfl=(host.buses||[]).some(x=>x.t==='UFL'); if(!hasUfl) list.push({res:false, txt:`<b>${it.name}</b>: a host nem u.FL-es — nincs hova csatlakoztatni.`}); } });
+  return list;
+}
+
+/* ---------- RENDER ---------- */
+const ROLE_LABEL={host:'Hostok',carrier:'Hordozók / próbapanel',peripheral:'Perifériák',rf:'RF',programmer:'Programozók / PC-oldal',connector:'Csatlakozó / feloldó',tool:'Eszközök',consumable:'Huzalozás / fogyó'};
+const ROLE_ORDER=['host','peripheral','rf','carrier','programmer','connector','tool','consumable'];
+
+function renderHostSel(){
+  const sel=document.getElementById('hostSel');
+  const hosts=ITEMS.filter(i=>i.role==='host'||i.role==='programmer'||i.role==='carrier');
+  sel.innerHTML=hosts.map(h=>`<option value="${h.id}" ${h.id===hostId?'selected':''}>${h.name}</option>`).join('');
+  const h=item(hostId);
+  document.getElementById('hostNote').textContent = h.note?('· '+h.note):'';
+}
+function busChips(it){
+  return (it.buses||[]).filter(b=>b.t!=='USB').map(b=>`<span class="bus">${b.t}${b.addr?(' '+b.addr):''}</span>`).join('');
+}
+function renderInventory(){
+  const inv=document.getElementById('inventory'); let html='';
+  ROLE_ORDER.forEach(role=>{
+    const rows=ITEMS.filter(i=>i.role===role && i.id!==hostId);
+    if(!rows.length) return;
+    html+=`<div class="grp"><h3>${ROLE_LABEL[role]}</h3>`;
+    rows.forEach(it=>{
+      const st=relState(it)||'a';
+      const inB=build.some(b=>b.id===it.id);
+      html+=`<div class="item ${st} ${inB?'inbuild':''}">
+        <div class="add" onclick="toggle('${it.id}')">${inB?'✓':'+'}</div>
+        <div><span class="n">${it.name} ${it.qty>1?`<span class="qty">×${it.qty}</span>`:''}</span>
+        <span class="s">${it.specs||''}${it.note?(' — '+it.note):''}</span>
+        <div class="busline">${busChips(it)}</div></div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  inv.innerHTML=html;
+}
+function renderBuild(){
+  const host=item(hostId); const area=document.getElementById('buildArea');
+  let html=`<div class="base"><span class="n">${host.name}</span> <span class="s" style="color:var(--muted)">${host.logic?(host.logic+'V logika'):''} ${host.fp?('· '+host.fp):''}</span></div>`;
+  if(!build.length){ html+='<div class="s" style="color:var(--muted);padding:6px 2px">Adj hozzá tételeket a készletből (+). Az él megnevezi a csatlakozás módját, és jelzi a kompatibilitást.</div>'; }
+  build.forEach(b=>{
+    const it=item(b.id); const cands=candidates(host,it);
+    let state='g';
+    if(it.role==='connector'||it.role==='power'||it.role==='consumable'||it.role==='tool') state='a';
+    else if(!cands.length) state='r';
+    else { const cur=cands.find(c=>c.t===b.bus); state = cur? (cur.shift?'a':'g') : 'r'; }
+    const connLabel = (it.role==='connector'||it.role==='power'||it.role==='tool'||it.role==='consumable')
+        ? (it.role==='power'?'TÁP':(it.resolver?'FELOLDÓ':'—'))
+        : (b.bus||'—');
+    let busSel='';
+    if(cands.length>1){
+      busSel=`<select class="busSel" onchange="setBus('${b.id}',this.value)">`+
+        cands.map(c=>`<option value="${c.t}" ${c.t===b.bus?'selected':''}>${c.t}${c.addr?(' '+c.addr):''}</option>`).join('')+`</select>`;
+    }
+    const addr=(it.buses||[]).find(x=>x.t===b.bus&&x.addr);
+    html+=`<div class="edge ${state}">
+      <span class="conn">${connLabel}</span>
+      <div class="en"><div class="nm">${it.name}</div><div class="dt">${addr?('cím '+addr.addr+' · '):''}${it.logic&&it.logic!=='tol'?(it.logic+'V'):''} ${it.note?('· '+it.note):''}</div></div>
+      ${busSel}
+      <span class="rm" onclick="toggle('${it.id}')">×</span>
+    </div>`;
+  });
+  area.innerHTML=html;
+  // conflicts
+  const cf=conflicts(); const box=document.getElementById('conflicts');
+  if(!build.length){ box.innerHTML=''; return; }
+  if(!cf.length){ box.innerHTML='<div class="noconf">● Nincs ütközés — a fa építhető.</div>'; }
+  else { box.innerHTML='<h4>Figyelmeztetések</h4>'+cf.map(c=>`<div class="cf ${c.res?'res':''}">${c.txt}</div>`).join(''); }
+}
+function renderOrder(){
+  const box=document.getElementById('orderList'); let html='';
+  const groups={host:'Hostok',peripheral:'Perifériák',power:'Táp',connector:'Csatlakozó'};
+  Object.keys(groups).forEach(g=>{
+    const rows=ORDER.filter(o=>o.role===g); if(!rows.length) return;
+    html+=`<div class="grp"><h3>${groups[g]}</h3>`;
+    rows.forEach(o=>{
+      const tag = o.redundant?'<span class="chip a">redundáns</span>':(o.elsewhere?'<span class="chip r">máshonnan</span>':'');
+      html+=`<div class="item a"><div class="add" style="cursor:default">·</div>
+        <div><span class="n">${o.name}</span> ${tag}
+        <span class="s">${o.specs||''}</span>
+        <span class="unlock">→ ${o.unlock||''}</span>
+        <div class="busline">${busChips(o)}</div></div></div>`;
+    });
+    html+='</div>';
+  });
+  box.innerHTML=html;
+}
+
+/* ---------- ACTIONS ---------- */
+function toggle(id){
+  const it=item(id);
+  if(relState(it)==='r' && !confirm(it.name+' nem kompatibilis a jelenlegi hosttal. Hozzáadod így is (ütközés jelölve)?')) return;
+  const i=build.findIndex(b=>b.id===id);
+  if(i>=0) build.splice(i,1);
+  else { const c=candidates(item(hostId),it); build.push({id, bus: c.length?c[0].t:null}); }
+  renderInventory(); renderBuild();
+}
+function setBus(id,bus){ const b=build.find(x=>x.id===id); if(b) b.bus=bus; renderBuild(); }
+function setHost(id){ hostId=id; build=[]; renderHostSel(); renderInventory(); renderBuild(); }
+function clearBuild(){ build=[]; document.getElementById('outWrap').classList.add('hidden'); renderInventory(); renderBuild(); }
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
+  document.getElementById('workbench').classList.toggle('hidden',t!=='workbench');
+  document.getElementById('order').classList.toggle('hidden',t!=='order');
+}
+
+/* ---------- EXPORT ---------- */
+function buildMd(){
+  const host=item(hostId); const name=document.getElementById('devName').value.trim()||'(névtelen build)';
+  const cf=conflicts();
+  let md=`# ${name}\n\n`;
+  md+=`**Alap (host):** ${host.name} — ${host.logic?host.logic+'V logika':''}${host.fp?', '+host.fp:''}\n\n`;
+  md+=`**Elemek és csatlakozás:**\n`;
+  if(!build.length) md+='- (üres)\n';
+  build.forEach(b=>{
+    const it=item(b.id); const cands=candidates(host,it);
+    let mark='✅'; const cur=cands.find(c=>c.t===b.bus);
+    if(it.role==='connector'||it.role==='power'||it.role==='tool'||it.role==='consumable') mark='➕';
+    else if(!cands.length) mark='❌';
+    else if(cur&&cur.shift) mark='⚠️';
+    const addr=(it.buses||[]).find(x=>x.t===b.bus&&x.addr);
+    const conn=(it.role==='connector'||it.role==='power'||it.role==='tool'||it.role==='consumable')?(it.resolver?'feloldó':it.role):(b.bus||'—');
+    md+=`- ${it.name} — *${conn}*${addr?` (cím ${addr.addr})`:''} — ${mark}\n`;
+  });
+  md+=`\n**Ütközések:**\n`;
+  if(!cf.length) md+='- nincs\n';
+  else cf.forEach(c=>{ md+=`- ${c.res?'✅ (feloldva) ':'⚠️ '}${c.txt.replace(/<[^>]+>/g,'')}\n`; });
+  md+=`\n_Generálva: ${new Date().toISOString().slice(0,10)} · Varler BuildTree_\n`;
+  return md;
+}
+function genMd(){ document.getElementById('outPre').textContent=buildMd(); document.getElementById('outWrap').classList.remove('hidden'); }
+function copyOut(){ const t=buildMd(); navigator.clipboard&&navigator.clipboard.writeText(t); genMd(); }
+function downloadOut(){
+  const name=(document.getElementById('devName').value.trim()||'build').replace(/[^\w\-]+/g,'_');
+  const blob=new Blob([buildMd()],{type:'text/markdown'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name+'.md'; a.click();
+}
+
+/* ---------- INIT ---------- */
+renderHostSel(); renderInventory(); renderBuild(); renderOrder();
+</script>
+</body>
+</html>

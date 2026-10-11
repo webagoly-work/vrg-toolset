@@ -3,3 +3,19 @@
 # Windows batch files need CRLF
 *.cmd text eol=crlf
 *.bat text eol=crlf
+
+# --- BRIDGE: archived source material — preserve bytes exactly ---
+# Collected as-is; line-ending normalisation changes their hashes, and some of
+# the CAD tools that read them expect CRLF. Authored .md/.json/.svg under
+# BRIDGE keep the repo's LF convention.
+BRIDGE/03_omnicomm-hub/**   -text
+BRIDGE/_source-variants/**  -text
+BRIDGE/**/*.sxe   -text
+BRIDGE/**/*.dxf   -text
+BRIDGE/**/*.dpdraw -text
+BRIDGE/**/*.pdf   binary
+BRIDGE/**/*.png   binary
+BRIDGE/**/*.jpg   binary
+BRIDGE/**/*.xlsx  binary
+BRIDGE/**/*.docx  binary
+BRIDGE/**/*.zip   binary

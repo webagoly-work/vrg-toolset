@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 1500" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Courier New', monospace">
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" fill="none" stroke="#16202e" stroke-width="1"/>
+    </pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0 0L6 3L0 6Z" fill="#8b98a5"/>
+    </marker>
+    <style>
+      .lbl   { fill:#e6edf3; font-size:14px; }
+      .lblsm { fill:#aeb9c4; font-size:12px; }
+      .tag   { fill:#5b7a99; font-size:11px; letter-spacing:1px; }
+      .live  { stroke:#f5a623; }
+      .neu   { stroke:#5b7a99; }
+      .trav  { stroke:#2dd4bf; }
+      .ctrl  { stroke:#d946ef; }
+      .en    { stroke:#4ade80; }
+      .w     { fill:none; stroke-width:2.6; }
+      .node  { fill:#0a0e14; stroke-width:2.2; }
+      .title { fill:#2dd4bf; font-size:21px; letter-spacing:1px; }
+    </style>
+  </defs>
+
+  <!-- background -->
+  <rect width="1120" height="1500" fill="#0a0e14"/>
+  <rect width="1120" height="1500" fill="url(#grid)"/>
+
+  <!-- header -->
+  <text x="48" y="52" fill="#e6edf3" font-size="28" letter-spacing="2">BRIDGE · PARALLEL CONTROL SCHEMATICS</text>
+  <text x="48" y="78" class="tag">ARCH-A1 · SOLUTIONS ζ &amp; η · THEORETICAL — DRAWN LOGICAL, NOT TO CODE</text>
+  <line x1="48" y1="96" x2="1072" y2="96" stroke="#2dd4bf" stroke-width="1" opacity="0.5"/>
+
+  <!-- legend -->
+  <g transform="translate(48,120)">
+    <line class="w live" x1="0"  y1="0" x2="34" y2="0"/><text x="42" y="4" class="lblsm">Live (L)</text>
+    <line class="w neu"  x1="150" y1="0" x2="184" y2="0"/><text x="192" y="4" class="lblsm">Neutral (N)</text>
+    <line class="w trav" x1="320" y1="0" x2="354" y2="0"/><text x="362" y="4" class="lblsm">Traveller</text>
+    <line class="w ctrl" x1="490" y1="0" x2="524" y2="0"/><text x="532" y="4" class="lblsm">RF control / coil</text>
+    <line class="w en"   x1="720" y1="0" x2="754" y2="0"/><text x="762" y="4" class="lblsm">RF-enable feed</text>
+  </g>
+
+  <!-- ================= PANEL ζ ================= -->
+  <rect x="40" y="160" width="1040" height="560" rx="10" fill="#0f141c" stroke="#1f2c3b" stroke-width="1.5"/>
+  <text x="64" y="196" class="title">ζ — 2×SPDT (S3 · "váltó" 106) + RF VIRTUAL CROSS (S4 · "kereszt" 107)</text>
+  <text x="64" y="220" class="tag">EVERY ACTOR IS A PEER TOGGLE · FLIP ANY ONE → LAMP INVERTS</text>
+
+  <!-- circuit ζ -->
+  <g transform="translate(0,40)">
+    <!-- L source -->
+    <text x="92" y="294" class="tag">L</text>
+    <circle class="node live" cx="110" cy="320" r="5"/>
+    <line class="w live" x1="110" y1="320" x2="190" y2="320"/>
+
+    <!-- S1 SPDT -->
+    <circle class="node trav" cx="190" cy="320" r="4"/>
+    <circle class="node trav" cx="268" cy="288" r="4"/>
+    <circle class="node trav" cx="268" cy="352" r="4"/>
+    <line class="w live" x1="190" y1="320" x2="262" y2="290"/>  <!-- blade to A (up) -->
+    <text x="158" y="378" class="lblsm">S1</text>
+
+    <!-- travellers S1 -> cross -->
+    <line class="w trav" x1="268" y1="288" x2="450" y2="288"/>
+    <line class="w trav" x1="268" y1="352" x2="450" y2="352"/>
+
+    <!-- cross relay (DPDT) -->
+    <rect x="450" y="262" width="170" height="116" rx="8" fill="#0a0e14" stroke="#d946ef" stroke-width="2"/>
+    <text x="535" y="256" text-anchor="middle" class="tag" fill="#d946ef">RF VIRTUAL CROSS · DPDT</text>
+    <circle class="node trav" cx="450" cy="288" r="4"/>
+    <circle class="node trav" cx="450" cy="352" r="4"/>
+    <circle class="node trav" cx="620" cy="288" r="4"/>
+    <circle class="node trav" cx="620" cy="352" r="4"/>
+    <!-- straight (active, de-energised) -->
+    <line class="w trav" x1="450" y1="288" x2="620" y2="288"/>
+    <line class="w trav" x1="450" y1="352" x2="620" y2="352"/>
+    <!-- crossed (alternate, ghost) -->
+    <line x1="450" y1="288" x2="620" y2="352" stroke="#2dd4bf" stroke-width="1.4" stroke-dasharray="4 5" opacity="0.45"/>
+    <line x1="450" y1="352" x2="620" y2="288" stroke="#2dd4bf" stroke-width="1.4" stroke-dasharray="4 5" opacity="0.45"/>
+    <text x="535" y="402" text-anchor="middle" class="tag">de-energised = straight · energised = cross</text>
+
+    <!-- travellers cross -> S2 -->
+    <line class="w trav" x1="620" y1="288" x2="772" y2="288"/>
+    <line class="w trav" x1="620" y1="352" x2="772" y2="352"/>
+
+    <!-- S2 SPDT -->
+    <circle class="node trav" cx="772" cy="288" r="4"/>
+    <circle class="node trav" cx="772" cy="352" r="4"/>
+    <circle class="node trav" cx="850" cy="320" r="4"/>
+    <line class="w trav" x1="772" y1="288" x2="846" y2="318"/> <!-- blade to A (up) -->
+    <text x="812" y="378" class="lblsm">S2</text>
+    <line class="w trav" x1="850" y1="320" x2="900" y2="320"/>
+
+    <!-- lamp -->
+    <circle cx="924" cy="320" r="20" fill="#0a0e14" stroke="#f5a623" stroke-width="2.4"/>
+    <line x1="910" y1="306" x2="938" y2="334" stroke="#f5a623" stroke-width="2"/>
+    <line x1="938" y1="306" x2="910" y2="334" stroke="#f5a623" stroke-width="2"/>
+    <text x="924" y="372" text-anchor="middle" class="lblsm">LAMP</text>
+    <line class="w neu" x1="944" y1="320" x2="1000" y2="320"/>
+    <circle class="node neu" cx="1000" cy="320" r="5"/>
+    <text x="1010" y="324" class="tag">N</text>
+
+    <!-- coil + RF driver -->
+    <line class="w ctrl" x1="535" y1="378" x2="535" y2="452"/>
+    <rect x="430" y="452" width="210" height="58" rx="8" fill="#0a0e14" stroke="#d946ef" stroke-width="1.8"/>
+    <text x="535" y="478" text-anchor="middle" class="lblsm" fill="#d946ef">RF / ESP32</text>
+    <text x="535" y="497" text-anchor="middle" class="tag">virtual-cross driver</text>
+    <!-- constant power feed -->
+    <line class="w en" x1="330" y1="481" x2="428" y2="481" marker-end="url(#arrow)"/>
+    <text x="330" y="470" class="tag" fill="#4ade80">parallel mains tap — ALWAYS POWERED</text>
+  </g>
+
+  <!-- notes ζ -->
+  <g transform="translate(64,600)">
+    <text y="0"  class="lbl">• Lamp = result of the series path through S1 → cross → S2. <tspan fill="#2dd4bf">S1, S2 and the RF cross are equal peers</tspan> — flipping any one toggles the lamp.</text>
+    <text y="24" class="lbl">• <tspan fill="#4ade80">RF stays powered</tspan> from the parallel Shadow tap, so it can toggle from any state (close-to-equal reach).</text>
+    <text y="48" class="lbl">• <tspan fill="#f5a623">Fail-safe:</tspan> RF loss → relay rests STRAIGHT → degrades to a plain two-switch staircase. Manual control fully intact.</text>
+    <text y="72" class="lblsm">Caveat — XOR mental model: a switch's physical position need not equal lamp state; the lamp itself is the indicator (as in any staircase circuit).</text>
+  </g>
+
+  <!-- ================= PANEL η ================= -->
+  <rect x="40" y="770" width="1040" height="600" rx="10" fill="#0f141c" stroke="#1f2c3b" stroke-width="1.5"/>
+  <text x="64" y="806" class="title">η — MULTI-POLE SWITCH WITH RF-ENABLE (2-pole · DPST 102)</text>
+  <text x="64" y="830" class="tag">MANUAL OFF = ABSOLUTE (LAMP DEAD + RF LOCKED OUT) · MANUAL ON = DELEGATES TO RF</text>
+
+  <!-- circuit η -->
+  <g transform="translate(0,40)">
+    <!-- L source + branch -->
+    <text x="92" y="884" class="tag">L</text>
+    <circle class="node live" cx="110" cy="910" r="5"/>
+    <line class="w live" x1="110" y1="910" x2="110" y2="1000"/>
+    <line class="w live" x1="110" y1="910" x2="180" y2="910"/>   <!-- to pole A -->
+    <line class="w live" x1="110" y1="1000" x2="180" y2="1000"/> <!-- to pole B -->
+
+    <!-- 2-gang switch -->
+    <circle class="node live" cx="180" cy="910" r="4"/>
+    <circle class="node live" cx="262" cy="910" r="4"/>
+    <line class="w live" x1="180" y1="910" x2="258" y2="896"/> <!-- pole A blade (closed) -->
+    <circle class="node en" cx="180" cy="1000" r="4"/>
+    <circle class="node en" cx="262" cy="1000" r="4"/>
+    <line class="w en" x1="180" y1="1000" x2="258" y2="986"/> <!-- pole B blade (closed) -->
+    <!-- mechanical gang link -->
+    <line x1="219" y1="888" x2="219" y2="978" stroke="#8b98a5" stroke-width="1.6" stroke-dasharray="3 4"/>
+    <text x="120" y="1052" class="lblsm">2-GANG (ganged poles A+B)</text>
+    <text x="120" y="1070" class="tag">Pole A = lamp live · Pole B = RF power</text>
+
+    <!-- Pole A -> RF relay NC contact -> lamp -->
+    <line class="w live" x1="262" y1="910" x2="350" y2="910"/>
+    <!-- NC contact -->
+    <rect x="350" y="884" width="150" height="52" rx="7" fill="#0a0e14" stroke="#d946ef" stroke-width="2"/>
+    <circle class="node live" cx="362" cy="910" r="3.5"/>
+    <circle class="node live" cx="488" cy="910" r="3.5"/>
+    <line class="w live" x1="362" y1="910" x2="484" y2="900"/> <!-- contact closed (NC) -->
+    <text x="425" y="878" text-anchor="middle" class="tag" fill="#d946ef">RF RELAY — N.C.</text>
+    <text x="425" y="952" text-anchor="middle" class="tag">closed by default = LAMP ON</text>
+    <line class="w live" x1="500" y1="910" x2="560" y2="910"/>
+
+    <!-- lamp -->
+    <circle cx="584" cy="910" r="20" fill="#0a0e14" stroke="#f5a623" stroke-width="2.4"/>
+    <line x1="570" y1="896" x2="598" y2="924" stroke="#f5a623" stroke-width="2"/>
+    <line x1="598" y1="896" x2="570" y2="924" stroke="#f5a623" stroke-width="2"/>
+    <text x="584" y="962" text-anchor="middle" class="lblsm">LAMP</text>
+    <line class="w neu" x1="604" y1="910" x2="720" y2="910"/>
+    <circle class="node neu" cx="720" cy="910" r="5"/>
+    <text x="730" y="914" class="tag">N</text>
+
+    <!-- Pole B -> RF actuator power -->
+    <line class="w en" x1="262" y1="1000" x2="360" y2="1000" marker-end="url(#arrow)"/>
+    <rect x="360" y="975" width="220" height="58" rx="8" fill="#0a0e14" stroke="#4ade80" stroke-width="1.8"/>
+    <text x="470" y="1000" text-anchor="middle" class="lblsm" fill="#4ade80">RF / ESP32 ACTUATOR</text>
+    <text x="470" y="1019" text-anchor="middle" class="tag">powered ONLY when manual ON</text>
+    <!-- coil actuation line up to NC contact -->
+    <line class="w ctrl" x1="470" y1="975" x2="470" y2="936" stroke-dasharray="5 4"/>
+    <line class="w ctrl" x1="470" y1="936" x2="425" y2="936" stroke-dasharray="5 4"/>
+    <text x="486" y="960" class="tag" fill="#d946ef">drives coil → opens to switch OFF</text>
+  </g>
+
+  <!-- notes η -->
+  <g transform="translate(64,1248)">
+    <text y="0"  class="lbl">• <tspan fill="#4ade80">Pole B gates the RF unit's power</tspan> — so the actuator only exists while the manual switch is ON.</text>
+    <text y="24" class="lbl">• <tspan fill="#f5a623">Manual OFF</tspan> → both poles open → lamp dead AND RF depowered. Absolute off; <tspan fill="#f5a623">RF cannot turn it on.</tspan></text>
+    <text y="48" class="lbl">• <tspan fill="#2dd4bf">Manual ON</tspan> → lamp live present, RF powered. N.C. contact = lamp ON by default; RF energises coil to switch OFF, releases for ON.</text>
+    <text y="72" class="lblsm">Asymmetric by design (the conservative tenet): RF reaches the lamp only while manual permits. Caveat — RF unit cold-boots when manual switches on (brief delay).</text>
+  </g>
+
+  <!-- footer -->
+  <text x="48" y="1450" class="tag">CONTRAST · ζ: RF constantly powered → true peer · η: RF gated by the manual switch → manual-supreme, RF reach only while ON</text>
+</svg>

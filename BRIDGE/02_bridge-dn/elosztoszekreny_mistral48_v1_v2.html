@@ -1,0 +1,179 @@
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Méretarányos elosztószekrény-terv két változatban: alap kiépítés a táblázat anyagaiból, és bővített változat a BRIDGE-DN hardverrel.</h2>
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;padding:4px 0">
+  <div id="svgbox" style="flex:1 1 440px;min-width:380px;max-width:520px"></div>
+  <div style="flex:1 1 280px;min-width:250px;max-width:340px;font-family:var(--font-sans)">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button id="btn1" style="padding:6px 12px;border:1px solid var(--border-strong);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent);font-size:13px;cursor:pointer">1 · alap (táblázat)</button>
+      <button id="btn2" style="padding:6px 12px;border:1px solid var(--border-strong);border-radius:var(--radius);background:transparent;color:var(--text-secondary);font-size:13px;cursor:pointer">2 · bővített (BRIDGE-DN)</button>
+    </div>
+    <div id="gauge" style="font-size:13px;color:var(--text-secondary);margin-bottom:6px"></div>
+    <div style="height:6px;border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-bottom:14px"><div id="gbar" style="height:100%;width:54%;background:#EF9F27"></div></div>
+    <div style="font-size:13px;color:var(--text-primary);font-weight:500;margin-bottom:6px">Jelmagyarázat</div>
+    <div style="font-size:12px;color:var(--text-secondary);line-height:1.9">
+      <span style="display:inline-block;width:22px;height:0;border-top:3px solid #EF9F27;vertical-align:middle"></span> fázis (L) &nbsp;
+      <span style="display:inline-block;width:22px;height:0;border-top:3px solid #378ADD;vertical-align:middle"></span> nulla (N)<br>
+      <span style="display:inline-block;width:22px;height:0;border-top:3px solid #639922;vertical-align:middle"></span> védőföld (PE) &nbsp;
+      <span style="display:inline-block;width:22px;height:0;border-top:3px dashed #1D9E75;vertical-align:middle"></span> Ethernet<br>
+      <span style="display:inline-block;width:22px;height:0;border-top:3px dashed #D4537E;vertical-align:middle"></span> CT-mérés / USB &nbsp;
+      <span style="display:inline-block;width:22px;height:0;border-top:3px solid #D4537E;vertical-align:middle"></span> 5 V DC
+    </div>
+    <div style="font-size:13px;color:var(--text-primary);font-weight:500;margin:14px 0 6px">Áramkörök (14 aktív + 1 tartalék)</div>
+    <div style="font-size:12px;color:var(--text-secondary);line-height:1.75;font-family:var(--font-mono)">
+      K1 sütő · C16 2P<br>K2 mosógép · C13 2P<br>K3 mosogatógép · C13 2P<br>K4 bojler · C13 2P<br>K5 BRIDGE-DN / RPi · C10 2P<br>K6–K9 világítás · B10 1P<br>K10 dugalj konyha · C16 1P<br>K11 dugalj nappali · C16 1P<br>K12 dugalj hálók · C13 1P<br>K13 dugalj egyéb · C13 1P<br>K14 csengő + vezérlés · B6 1P<br>T tartalék · C13 1P
+    </div>
+    <div style="font-size:13px;color:var(--text-primary);font-weight:500;margin:14px 0 6px">Megjegyzések</div>
+    <ul id="notes" style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin:0;padding-left:16px"></ul>
+  </div>
+</div>
+<script>
+const S=1.1, CX=70, CY=34, CW=320*S, CH=636*S;
+const X=m=>CX+(52+m*18)*S;
+const RY=[0,155,292.5,430,567.5];
+const WH=45*S;
+const A='#EF9F27', NB='#378ADD', PG='#639922', TE='#1D9E75', MG='#D4537E';
+const xL=88,xN=95,xPE=102,xRa=372.8,xRb=378.8,xRc=384.8,xRd=390.8,xRe=396.8,xRf=402.8;
+const nY=CY+575*S, peY=CY+598*S, yEnt=CY+CH-24;
+function P(pts,c,w,d){return '<polyline points="'+pts.map(p=>p.join(',')).join(' ')+'" fill="none" stroke="'+c+'" stroke-width="'+w+'"'+(d?' stroke-dasharray="'+d+'"':'')+' stroke-linejoin="round"/>';}
+function T(x,y,s,o){o=o||{};return '<text x="'+x+'" y="'+y+'" font-size="'+(o.fs||11)+'" fill="'+(o.f||'var(--text-secondary)')+'" text-anchor="'+(o.a||'middle')+'" font-family="'+(o.ff||'var(--font-mono)')+'"'+(o.rot?' transform="rotate(-90 '+x+' '+y+')"':'')+'>'+s+'</text>';}
+function mods1(){return [
+ {r:1,m:0,w:1.5,k:'termL',l:'L 35mm²'},{r:1,m:1.5,w:1.5,k:'termN',l:'N 35mm²'},
+ {r:1,m:3,w:2,k:'rcd',l:'FI 25/2 30mA A'},{r:1,m:5,w:1,k:'bell',l:'csengő'},
+ {r:2,m:0,w:2,k:'mcb',l:'C16/2',tag:'K1'},{r:2,m:2,w:2,k:'mcb',l:'C13/2',tag:'K2'},
+ {r:2,m:4,w:2,k:'mcb',l:'C13/2',tag:'K3'},{r:2,m:6,w:2,k:'mcb',l:'C13/2',tag:'K4'},
+ {r:2,m:8,w:2,k:'mcb',l:'C10/2',tag:'K5'},
+ {r:3,m:0,w:1,k:'mcb',l:'B10',tag:'K6'},{r:3,m:1,w:1,k:'mcb',l:'B10',tag:'K7'},
+ {r:3,m:2,w:1,k:'mcb',l:'B10',tag:'K8'},{r:3,m:3,w:1,k:'mcb',l:'B10',tag:'K9'},
+ {r:3,m:4,w:1,k:'mcb',l:'C16',tag:'K10'},{r:3,m:5,w:1,k:'mcb',l:'C16',tag:'K11'},
+ {r:3,m:6,w:1,k:'mcb',l:'C13',tag:'K12'},{r:3,m:7,w:1,k:'mcb',l:'C13',tag:'K13'},
+ {r:3,m:8,w:1,k:'mcb',l:'C13',tag:'T',res:1},{r:3,m:9,w:1,k:'mcb',l:'B6',tag:'K14'}];}
+function mods2(){var a=mods1().filter(x=>!(x.r==1&&x.m>=3));
+ a.push({r:1,m:3,w:2,k:'main',l:'főkapcs. 2P'},{r:1,m:5,w:2,k:'spd',l:'SPD T2'},
+ {r:1,m:7,w:2,k:'rcd',l:'FI 25/2 30mA A'},{r:1,m:9,w:1,k:'bell',l:'csengő'},
+ {r:1,m:10,w:1,k:'key',l:'eth'},{r:1,m:11,w:1,k:'key',l:'eth'},
+ {r:2,m:10,w:2,k:'em',l:'pro 3EM'},
+ {r:3,m:10,w:1,k:'sh2',l:'pro 2'},{r:3,m:11,w:1,k:'rc',l:'RC tag'},
+ {r:4,m:0,w:3,k:'psu',l:'HDR-60-5'},{r:4,m:3,w:5,k:'rpi',l:'RPi 5 + NVMe'},
+ {r:4,m:8,w:2,k:'hub',l:'USB hub'},{r:4,m:10,w:2,k:'slzb',l:'SLZB-MR3U'});
+ return a;}
+function drawMod(o,v){var x=X(o.m),w=o.w*18*S,y=RY[o.r],h=WH,s='';
+ var st={termL:'var(--border-stronger)',termN:NB,rcd:A,bell:'var(--border-strong)',mcb:'var(--border-strong)',main:'var(--border-stronger)',spd:PG,key:TE,em:MG,sh2:MG,rc:'var(--border-strong)',psu:'var(--border-stronger)',rpi:TE,hub:MG,slzb:TE}[o.k];
+ if(o.k=='psu')h=WH+14; if(o.k=='rpi')h=WH+10;
+ s+='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="2" fill="var(--surface-2)" stroke="'+st+'" stroke-width="1.3"'+(o.res?' opacity="0.55"':'')+'/>';
+ var cx=x+w/2, cy=y+h/2;
+ if(o.k=='mcb'||o.k=='rcd'||o.k=='main'){
+  s+='<rect x="'+(cx-4)+'" y="'+(y+5)+'" width="8" height="11" rx="1.5" fill="'+(o.res?'var(--border-strong)':A)+'"/>';
+  s+=T(cx,cy+14,o.l,{rot:1,f:'var(--text-secondary)'});
+  if(o.k=='rcd')s+='<circle cx="'+(x+w-7)+'" cy="'+(y+h-9)+'" r="3.2" fill="none" stroke="'+A+'" stroke-width="1.4"/>';
+ } else if(o.k=='bell'){
+  s+='<circle cx="'+cx+'" cy="'+(y+12)+'" r="5" fill="none" stroke="var(--text-muted)" stroke-width="1.4"/>';
+  s+=T(cx,cy+16,o.l,{rot:1});
+ } else if(o.k=='key'){
+  s+='<rect x="'+(cx-4.5)+'" y="'+(y+7)+'" width="9" height="8" fill="none" stroke="'+TE+'" stroke-width="1.4"/>';
+  s+=T(cx,cy+12,o.l,{rot:1});
+ } else if(o.k=='psu'||o.k=='rpi'){
+  s+=T(cx,cy+4,o.l,{f:'var(--text-primary)'});
+  if(o.k=='psu')s+=T(cx,cy+18,'5V 60W',{fs:11,f:'var(--text-muted)'});
+ } else if(o.k=='slzb'){
+  s+='<line x1="'+(x+8)+'" y1="'+y+'" x2="'+(x+8)+'" y2="'+(y-11)+'" stroke="'+TE+'" stroke-width="1.4"/><circle cx="'+(x+8)+'" cy="'+(y-13)+'" r="2.4" fill="'+TE+'"/>';
+  s+=T(cx,cy+22,o.l,{rot:1});
+ } else if(o.k=='termL'||o.k=='termN'){
+  s+='<circle cx="'+cx+'" cy="'+(y+9)+'" r="3" fill="none" stroke="var(--text-muted)" stroke-width="1.3"/><circle cx="'+cx+'" cy="'+(y+h-9)+'" r="3" fill="none" stroke="var(--text-muted)" stroke-width="1.3"/>';
+  s+=T(cx,cy+16,o.l,{rot:1});
+ } else { s+=T(cx,cy+18,o.l,{rot:1}); }
+ if(o.tag){
+  if(o.r==2){var lx=X(o.m+1.5);
+   if(!(v=='v2'&&o.tag=='K5'))s+=P([[lx,y],[lx,y-20]],A,1.6);
+   var tx=(v=='v2'&&o.tag=='K5')?X(o.m+0.5)-6:lx-6;
+   s+=T(tx,y-16,o.tag,{a:'end',f:'var(--text-primary)'});
+   if(o.ct)s+='<circle cx="'+lx+'" cy="'+(y-13)+'" r="4.5" fill="none" stroke="'+MG+'" stroke-width="1.8"/>';
+  } else { s+=T(cx,y-6,o.tag,{f:'var(--text-primary)'}); }
+ }
+ return s;}
+function render(v){
+ var M=(v=='v1'?mods1():mods2());
+ if(v=='v2'){M.forEach(o=>{if(o.tag=='K1'||o.tag=='K4'||o.tag=='K5')o.ct=1;});}
+ var s='<svg width="100%" viewBox="0 0 460 772" xmlns="http://www.w3.org/2000/svg" role="img"><title>Elosztószekrény elrendezés</title>';
+ s+=P([[CX,20],[CX+CW,20]],'var(--border-strong)',1);
+ s+=T(CX+CW/2,15,'320 mm');
+ s+=P([[56,CY],[56,CY+CH]],'var(--border-strong)',1);
+ s+=T(52,CY+CH/2,'636 mm',{rot:1});
+ s+='<rect x="'+CX+'" y="'+CY+'" width="'+CW+'" height="'+CH+'" rx="6" fill="var(--surface-1)" stroke="var(--border-stronger)" stroke-width="2"/>';
+ s+='<rect x="'+(CX+8)+'" y="'+(CY+8)+'" width="'+(CW-16)+'" height="'+(CH-16)+'" rx="3" fill="none" stroke="var(--border)" stroke-width="1"/>';
+ for(var r=1;r<=4;r++){
+  s+=P([[X(0)-4,RY[r]+WH/2],[X(12)+4,RY[r]+WH/2]],'var(--border)',5);
+  s+=T(112,RY[r]+WH/2,r+'. sor',{rot:1,fs:11,f:'var(--text-muted)'});
+ }
+ s+='<rect x="'+(X(0)-6)+'" y="'+nY+'" width="'+(X(12)-X(0)+12)+'" height="4" fill="'+NB+'"/>'+T(X(0)-12,nY+5,'N sín',{a:'end'});
+ s+='<rect x="'+(X(0)-6)+'" y="'+peY+'" width="'+(X(12)-X(0)+12)+'" height="4" fill="'+PG+'"/>'+T(X(0)-12,peY+5,'PE sín',{a:'end'});
+ var c2=RY[2]+WH, c3=RY[3]+WH;
+ s+='<rect x="'+X(0)+'" y="'+(c2+4)+'" width="'+(X(10)-X(0))+'" height="4" fill="'+A+'"/>';
+ for(var i=0;i<5;i++){s+=P([[X(i*2+1.5),c2],[X(i*2+1.5),c2+4]],A,1.6); s+=P([[X(i*2+0.5),c2],[X(i*2+0.5),c2+12]],NB,1.4);}
+ s+='<rect x="'+X(0)+'" y="'+(c2+12)+'" width="'+(X(9)-X(0))+'" height="4" fill="'+NB+'"/>';
+ var c3end=(v=='v2'?X(11):X(10));
+ s+='<rect x="'+X(0)+'" y="'+(c3+4)+'" width="'+(c3end-X(0))+'" height="4" fill="'+A+'"/>';
+ var n1=(v=='v2'?11:10); for(var i=0;i<n1;i++){if(v=='v1'&&i>9)break; s+=P([[X(i+0.5),c3],[X(i+0.5),c3+4]],A,1.4);}
+ s+=T(40,yEnt-10,'betáp',{a:'start',f:'var(--text-primary)'});
+ s+=T(40,yEnt+28,'1×230 V',{a:'start',fs:11,f:'var(--text-muted)'});
+ var b1=RY[1]+WH;
+ s+=P([[40,yEnt],[xL,yEnt],[xL,218],[X(0.75),218],[X(0.75),b1]],A,2);
+ s+=P([[40,yEnt+7],[xN,yEnt+7],[xN,225],[X(2.25),225],[X(2.25),b1]],NB,2);
+ s+=P([[40,yEnt+14],[xPE,yEnt+14],[xPE,peY+2],[X(0)-6,peY+2]],PG,2);
+ if(v=='v1'){
+  s+=P([[X(0.75),RY[1]],[X(0.75),147],[X(4.5),147],[X(4.5),RY[1]]],A,2);
+  s+=P([[X(2.25),RY[1]],[X(2.25),141],[X(3.5),141],[X(3.5),RY[1]]],NB,2);
+  s+=P([[X(4.5),b1],[X(4.5),230],[xRa,230],[xRa,c2+6],[X(10)+2,c2+6]],A,2);
+  s+=P([[xRa,c2+6],[xRa,c3+6],[c3end+2,c3+6]],A,2);
+  s+=P([[X(3.5),b1],[X(3.5),235],[xRb,235],[xRb,nY+2],[X(12)+6,nY+2]],NB,2);
+  s+=P([[xRb,c2+14],[X(9),c2+14]],NB,1.6);
+  s+='<rect x="'+X(0)+'" y="'+(RY[4]-6)+'" width="'+(X(12)-X(0))+'" height="'+(WH+12)+'" rx="3" fill="none" stroke="var(--border-strong)" stroke-width="1.2" stroke-dasharray="5 4"/>';
+  s+=T(X(6),RY[4]+WH/2+4,'BRIDGE-DN zóna — üresen előkészítve',{fs:12,ff:'var(--font-sans)'});
+ } else {
+  s+=P([[X(0.75),RY[1]],[X(0.75),147],[X(4.5),147],[X(4.5),RY[1]]],A,2);
+  s+=P([[X(2.25),RY[1]],[X(2.25),141],[X(3.5),141],[X(3.5),RY[1]]],NB,2);
+  s+=P([[X(4.5),b1],[X(4.5),218],[X(8.5),218],[X(8.5),b1]],A,2);
+  s+=P([[X(3.5),b1],[X(3.5),223],[X(7.5),223],[X(7.5),b1]],NB,2);
+  s+=P([[X(5.5),b1],[X(5.5),218]],A,1.6);
+  s+=P([[X(6.5),b1],[X(6.5),228],[xPE,228],[xPE,peY+2]],PG,1.6);
+  s+=P([[X(8.5),RY[1]],[X(8.5),147],[xRa,147],[xRa,c2+6],[X(10)+2,c2+6]],A,2);
+  s+=P([[xRa,c2+6],[xRa,c3+6],[c3end+2,c3+6]],A,2);
+  s+=P([[X(7.5),RY[1]],[X(7.5),141],[xRb,141],[xRb,nY+2],[X(12)+6,nY+2]],NB,2);
+  s+=P([[xRb,c2+14],[X(9),c2+14]],NB,1.6);
+  s+=P([[X(9.5),RY[2]-20],[X(9.5),256],[xRc,256],[xRc,553],[X(1.5),553],[X(1.5),RY[4]]],A,1.8);
+  s+=P([[X(8.5),RY[2]],[X(8.5),260],[xRd,260],[xRd,558],[X(0.75),558],[X(0.75),RY[4]]],NB,1.8);
+  s+=P([[X(1.5),RY[2]-13],[X(11),RY[2]-13],[X(11),RY[2]]],MG,1.3,'4 3');
+  s+=P([[X(10.5),b1],[X(10.5),214],[xRe,214],[xRe,543],[X(5.5),543],[X(5.5),RY[4]]],TE,1.5,'5 3');
+  s+=P([[X(11.5),b1],[X(11.5),210],[xRf,210],[xRf,547],[X(11),547],[X(11),RY[4]]],TE,1.5,'5 3');
+  s+=P([[X(1.5),RY[4]+WH+14],[X(1.5),640],[X(4),640],[X(4),RY[4]+WH+10]],MG,2);
+  s+=T(X(2.75),652,'5 V DC',{fs:11,f:MG});
+  s+=P([[X(9),RY[4]+WH],[X(9),634],[X(6.5),634],[X(6.5),RY[4]+WH+10]],MG,1.4,'4 3');
+ }
+ M.forEach(o=>{s+=drawMod(o,v);});
+ s+=T(CX+CW/2,CY+CH+22,'ABB Mistral41W · 4 sor × 12 modul · IP41 · 1 modul = 18 mm',{fs:11,f:'var(--text-muted)',ff:'var(--font-sans)'});
+ s+='</svg>';
+ document.getElementById('svgbox').innerHTML=s;
+ var used=(v=='v1'?26:48);
+ document.getElementById('gauge').textContent='Kihasználtság: '+used+' / 48 modul';
+ document.getElementById('gbar').style.width=(used/48*100)+'%';
+ var notes=(v=='v1')?[
+  '14 aktív kör + 1 tartalék (T) — az eredeti 9 körből bővítve',
+  'K5 (C10/2P) már bekötve a leendő RPi tápjának',
+  '2P körök N-je egyenként az N-sínről, a fésűs sínen a N-fogak kivágva',
+  'A 4. sor teljes egészében üresen marad a BRIDGE-DN-nek',
+  'A csengőmodult a K14 (B6) táplálja',
+  'Főkapcsoló és SPD nincs a táblázatban — pótolandó tétel']:[
+  'Betáp → főkapcsoló → SPD T2 → FI → fésűs sínek',
+  'K5 → HDR-60-5 tápegység → RPi 5 (5 V DC)',
+  '3EM CT-bilincsek: K1 sütő, K4 bojler, K5 BRIDGE',
+  'RPi + SLZB-MR3U Ethernetről (2 keystone), dongle-ok a USB hubról',
+  'Pro 2 a világításkörökhöz, RC-tag a nyomógombos vezérléshez',
+  'Mind a 48 modul betelt — DIN dugaljnak már nincs hely'];
+ document.getElementById('notes').innerHTML=notes.map(n=>'<li>'+n+'</li>').join('');
+ document.getElementById('btn1').style.background=(v=='v1')?'var(--bg-accent)':'transparent';
+ document.getElementById('btn1').style.color=(v=='v1')?'var(--text-accent)':'var(--text-secondary)';
+ document.getElementById('btn2').style.background=(v=='v2')?'var(--bg-accent)':'transparent';
+ document.getElementById('btn2').style.color=(v=='v2')?'var(--text-accent)':'var(--text-secondary)';
+}
+document.getElementById('btn1').onclick=()=>render('v1');
+document.getElementById('btn2').onclick=()=>render('v2');
+render('v1');
+</script>
