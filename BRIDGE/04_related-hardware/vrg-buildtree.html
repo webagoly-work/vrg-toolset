@@ -191,8 +191,8 @@
 <script>
 const ITEMS = [
   // ---- HOSTS ----
-  {id:'s3', role:'host', name:'ESP32-S3 N16R8 Dual USB-C', qty:1, fp:'42pin', logic:3.3,
-   specs:'16MB flash / 8MB PSRAM · dual USB-C (CH343 UART + natív OTG) · PCB antenna · 1 meglévő + 2 úton',
+  {id:'s3', role:'host', name:'ESP32-S3 N16R8 Dual USB-C', qty:3, fp:'42pin', logic:3.3,
+   specs:'16MB flash / 8MB PSRAM · dual USB-C (CH343 UART + natív OTG) · PCB antenna · 3 db (a 2 úton lévő megjött: SZ14217)',
    buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'I2S',r:'controller'},{t:'GPIO',r:'controller'},{t:'ADC',r:'controller'},{t:'DAC',r:'controller'},{t:'USB',r:'either'}],
    note:'Natív USB-hoz OTG kábel kell. Nincs u.FL — a 2.4GHz SMA-IPEX antenna ide nem megy.'},
 
@@ -219,7 +219,7 @@ const ITEMS = [
    specs:'kétoldalas, plated, 2,54mm', buses:[{t:'GPIO',r:'passive'}]},
 
   // ---- PERIPHERALS ----
-  {id:'pcf8575', role:'peripheral', name:'PCF8575 16-ch I/O expander', qty:1, logic:'tol',
+  {id:'pcf8575', role:'peripheral', name:'PCF8575 16-ch I/O expander', qty:2, logic:'tol',
    specs:'I2C GPIO bővítő · 2,5–5,5V', buses:[{t:'I2C',r:'device',addr:'0x20'}]},
   {id:'mux4067', role:'peripheral', name:'CD74HC4067 16-ch analóg mux', qty:1, logic:'tol',
    specs:'16→1 analóg/digitális mux · 4 select GPIO + 1 SIG · cikksz. 10-1-3', buses:[{t:'GPIO',r:'device'},{t:'ADC',r:'device'}],
@@ -248,7 +248,7 @@ const ITEMS = [
    specs:'analóg be → hangszóró · 5–12V', buses:[{t:'ANALOG',r:'device'}]},
   {id:'pbuzz', role:'peripheral', name:'Passzív buzzer 5V', qty:2, logic:'tol',
    specs:'PWM-mel hajtott — te adod a frekvenciát', buses:[{t:'PWM',r:'device'}]},
-  {id:'abuzz', role:'peripheral', name:'Aktív piezo buzzer 12V 85dB', qty:1, logic:'tol',
+  {id:'abuzz', role:'peripheral', name:'Aktív piezo buzzer 12V 85dB', qty:3, logic:'tol',
    specs:'tranzisztoros meghajtás · 12V', buses:[{t:'GPIO',r:'device'}]},
 
   // ---- RF ----
@@ -266,13 +266,13 @@ const ITEMS = [
    specs:'TTL / RS232 / RS485', buses:[{t:'UART',r:'controller'},{t:'RS485',r:'controller'},{t:'RS232',r:'controller'},{t:'USB',r:'either'}]},
   {id:'ch340e', role:'programmer', name:'CH340E USB-C→TTL', qty:3, logic:'tol',
    specs:'flasheléshez', buses:[{t:'UART',r:'controller'},{t:'USB',r:'either'}]},
-  {id:'ch343p', role:'programmer', name:'CH343P USB→TTL 6Mbps', qty:5, logic:'tol',
+  {id:'ch343p', role:'programmer', name:'CH343P USB→TTL 6Mbps', qty:7, logic:'tol',
    specs:'flasheléshez', buses:[{t:'UART',r:'controller'},{t:'USB',r:'either'}]},
   {id:'stlink', role:'programmer', name:'ST-Link V2', qty:1, logic:'tol',
    specs:'STM8/STM32 · SWD/JTAG', buses:[{t:'SWD',r:'controller'},{t:'USB',r:'either'}]},
 
   // ---- CONNECTORS / RESOLVERS ----
-  {id:'shifter', role:'connector', name:'4-ch szintillesztő 3,3↔5V', qty:7, logic:'tol', resolver:true,
+  {id:'shifter', role:'connector', name:'4-ch szintillesztő 3,3↔5V', qty:11, logic:'tol', resolver:true,
    specs:'kétirányú · I2C/SPI/UART/GPIO', buses:[{t:'I2C',r:'either'},{t:'SPI',r:'either'},{t:'UART',r:'either'},{t:'GPIO',r:'either'}],
    note:'Feszültség-ütközést old fel a buildben.'},
   {id:'griff', role:'tool', name:'Griff mérőcsipesz CAT II 1000V/4A', qty:1, logic:null, specs:'élő panelen is', buses:[]},
@@ -325,13 +325,13 @@ const ITEMS = [
    specs:'CAN vezérlő+transceiver · SPI · cikksz. 3-2-26', buses:[{t:'SPI',r:'device'}],
    note:'Kristály 8/16MHz — állítsd a libben! TJA1050 5V → SPI-n szintillesztő vagy SN65HVD230 (3,3V).'},
   {id:'mpu_tilt', role:'peripheral', name:'KY-017 higanyos dőléskapcsoló', qty:1, logic:'tol', specs:'cikksz. 2-1-34', buses:[{t:'GPIO',r:'device'}]},
-  {id:'yl99', role:'peripheral', name:'YL-99 végálláskapcsoló modul', qty:1, logic:'tol', specs:'cikksz. 3-1-72', buses:[{t:'GPIO',r:'device'}]},
-  {id:'microsw', role:'peripheral', name:'Mikro végálláskapcsoló', qty:1, logic:'tol', specs:'cikksz. 10-7-138', buses:[{t:'GPIO',r:'device'}]},
+  {id:'yl99', role:'peripheral', name:'YL-99 végálláskapcsoló modul', qty:5, logic:'tol', specs:'cikksz. 3-1-72', buses:[{t:'GPIO',r:'device'}]},
+  {id:'microsw', role:'peripheral', name:'Mikro végálláskapcsoló', qty:3, logic:'tol', specs:'cikksz. 10-7-138', buses:[{t:'GPIO',r:'device'}]},
   {id:'keypad34', role:'peripheral', name:'3×4 mátrix billentyűzet', qty:1, logic:'tol',
    specs:'7 GPIO · cikksz. 3-1-71', buses:[{t:'GPIO',r:'device'}], note:'PIN-bevitel — BRIDGE beléptető.'},
   {id:'mq135', role:'peripheral', name:'MQ-135 gáz/levegőminőség', qty:1, logic:5,
    specs:'analóg · cikksz. 2-1-43', buses:[{t:'ADC',r:'device'}], note:'5V fűtés, bemelegedési idő; füst/CO2/NH3/gáz.'},
-  {id:'sa12', role:'peripheral', name:'SA-12 hőmérséklet modul', qty:2, logic:'tol', specs:'cikksz. 2-1-44', buses:[{t:'GPIO',r:'device'}]},
+  {id:'sa12', role:'peripheral', name:'SA-12 hőmérséklet modul', qty:4, logic:'tol', specs:'cikksz. 2-1-44', buses:[{t:'GPIO',r:'device'}]},
   {id:'rcwl0516', role:'peripheral', name:'RCWL-0516 mikrohullámú radar', qty:1, logic:'tol',
    specs:'mozgás/jelenlét · cikksz. 2-3-15', buses:[{t:'GPIO',r:'device'}], note:'Falon át is érzékel — jelenlét/kutyakövetés felé.'},
   {id:'btn12', role:'peripheral', name:'12×12mm LED-es nyomógombok (5 szín)', qty:10, logic:'tol',
@@ -342,7 +342,7 @@ const ITEMS = [
    specs:'beléptető aktuátor · cikksz. 3-1-82', buses:[{t:'GPIO',r:'device'}], note:'12V + relé/driver — NEM közvetlen GPIO. BRIDGE beléptető.'},
   {id:'relay1', role:'peripheral', name:'Relé modul 1-ch 5V/220V', qty:2, logic:'tol',
    specs:'opto be · cikksz. 3-1-36', buses:[{t:'GPIO',r:'device'}], note:'220V kapcsolás — HÁLÓZAT, óvatosan/tokban.'},
-  {id:'siren', role:'peripheral', name:'Sziréna/riasztó 6–15V', qty:1, logic:null,
+  {id:'siren', role:'peripheral', name:'Sziréna/riasztó 6–15V', qty:3, logic:null,
    specs:'cikksz. 2-1-37', buses:[{t:'GPIO',r:'device'}], note:'Hangos kimenet driverrel.'},
   // -- power / display --
   {id:'acdimmer', role:'power', name:'AC 220V 2000W dimmer/fordulatszabályzó', qty:1, logic:null,
@@ -351,9 +351,9 @@ const ITEMS = [
    specs:'5V→12V, 5,5×2,1mm · cikksz. 7-1-51', buses:[{t:'POWER',r:'controller'}], note:'12V eszközök USB/powerbankról.'},
   {id:'psu5v3a', role:'power', name:'5V 3A dugasztáp (AC-DC)', qty:1, logic:null, specs:'cikksz. 7-3-26', buses:[{t:'POWER',r:'controller'}], note:'Always-on/bench táp.'},
   {id:'bbpsu', role:'power', name:'Breadboard tápegység modul', qty:2, logic:null, specs:'3,3V/5V sín · cikksz. 3-2-39', buses:[{t:'POWER',r:'controller'}]},
-  {id:'vmeter', role:'power', name:'0,36" voltmérő 0–33V (zöld+piros)', qty:4, logic:null, specs:'cikksz. 8-1-38 / 8-1-33', buses:[]},
+  {id:'vmeter', role:'power', name:'0,36" voltmérő 0–33V (zöld+piros)', qty:6, logic:null, specs:'cikksz. 8-1-38 / 8-1-33 · +2 piros: SZ13324', buses:[]},
   // -- tools --
-  {id:'iron80w', role:'tool', name:'Forrasztópáka 80W állítható', qty:1, logic:null, specs:'cikksz. 14-2-13', buses:[], note:'Mostantól tudsz forrasztani — a no-solder út opcionális.'},
+  {id:'iron80w', role:'tool', name:'Forrasztópáka 80W állítható', qty:2, logic:null, specs:'cikksz. 14-2-13', buses:[], note:'Mostantól tudsz forrasztani — a no-solder út opcionális.'},
   {id:'lcrt4', role:'tool', name:'LCR-T4 alkatrész teszter', qty:1, logic:null, specs:'R/L/C/tranzisztor/ESR · cikksz. 8-1-12', buses:[]},
   {id:'hvgen', role:'tool', name:'500KV impulzusgenerátor MCY-12-1', qty:1, logic:null, specs:'cikksz. 10-9-5', buses:[], note:'NAGYFESZ ív-generátor — ÉLETVESZÉLY, csak óvatos kísérlet.'},
   // -- connectors --
@@ -362,6 +362,132 @@ const ITEMS = [
   {id:'rahdr', role:'connector', name:'Hajlított lábas anya sor (1x10/5P/8P)', qty:11, logic:null, specs:'cikksz. YXS1716', buses:[]},
   // -- consumables --
   {id:'wire_sil', role:'consumable', name:'20 AWG szilikon vezeték (fekete+piros)', qty:8, logic:null, specs:'cikksz. C-04 / C-05', buses:[]},
+
+  // ===== ÚJ HAUL (SZ12833 · 2026-09-17) — 28 690 Ft bruttó − 2 869 Ft MI-kosár − 690 Ft hűségpont = 25 131 Ft =====
+  // a CH343P (2-2-28) és a szintillesztő (2-2-32) fent, qty-emeléssel
+  {id:'eth01evo', role:'host', name:'ESP32-C3 ETH01-EVO (Ethernet + WiFi + BT)', qty:2, fp:'eth01evo', logic:3.3,
+   specs:'3-in-1: vezetékes Ethernet + WiFi + Bluetooth · cikksz. 1-2-39',
+   buses:[{t:'I2C',r:'controller'},{t:'SPI',r:'controller'},{t:'UART',r:'controller'},{t:'GPIO',r:'controller'},{t:'ADC',r:'controller'}],
+   note:'Vezetékes uplink NATÍVAN — a szekrény-szerver/fix node WiFi-független útja. Flasheléshez UART adapter kell (nem feltételeztem natív USB-t, ellenőrizd a panelen).'},
+  {id:'joy_ps2x2', role:'peripheral', name:'Dual PS2 joystick modul', qty:1, logic:'tol',
+   specs:'2× analóg thumbstick + nyomógomb · cikksz. 9-1-26',
+   buses:[{t:'ADC',r:'device'},{t:'GPIO',r:'device'}],
+   note:'4 ADC + 2 GPIO. A Bővítés fülön kért joystick MEGVAN — pendant / kamera-mozgatás.'},
+  {id:'psu180w', role:'power', name:'180W kapcsolóüzemű tápegység modul (kettős kimenet)', qty:1, logic:null,
+   specs:'két független kimenet · cikksz. 7-3-44', buses:[{t:'POWER',r:'controller'}],
+   note:'HÁLÓZATI 220V bemenet — szigetelt tok/takarás kötelező. A bench/szekrény fő tápja.'},
+  {id:'sjv4w', role:'power', name:'SJV-4W DC-DC buck-boost 30V 3A', qty:1, logic:null,
+   specs:'feszültségnövelő ÉS -csökkentő · max 30V / 3A · cikksz. 7-1-54', buses:[{t:'POWER',r:'controller'}],
+   note:'A bemenet alá ÉS fölé is tud — akkuról stabil sín a cella teljes ürülési ívén, amit a puszta buck (LM2596) nem ad.'},
+  {id:'usbadip', role:'connector', name:'USB 2.0 "A" anya → 2,54mm DIP adapter', qty:4, logic:null,
+   specs:'panelre forrasztható USB aljzat · cikksz. 10-7-112', buses:[]},
+  {id:'diodekit', role:'consumable', name:'Diódakészlet (8 típus, 100 db)', qty:2, logic:null,
+   specs:'cikksz. 10-6-37', buses:[]},
+  {id:'t2n2222', role:'consumable', name:'2N2222 NPN kapcsolótranzisztor (5db/cs)', qty:2, logic:null,
+   specs:'TO-92 · kisjelű kapcsoló · cikksz. 10-2-31', buses:[]},
+  {id:'fqpf10n60c', role:'consumable', name:'FQPF10N60C teljesítmény MOSFET TO-220F', qty:2, logic:null,
+   specs:'600V N-csatornás (10N60 osztály) · cikksz. 10-2-35', buses:[],
+   note:'NEM logic-level: 3,3V GPIO nem nyitja ki rendesen — gate-driver vagy a MosFet trigger modul kell elé.'},
+  {id:'so15mf', role:'consumable', name:'M3 réz hatszög távtartó 15mm apa-anya', qty:8, logic:null,
+   specs:'cikksz. 16-1-1', buses:[],
+   note:'Panel-egymásra-építés és házba szerelés — 28 db távtartó összesen (15/10mm, apa-anya és anya-anya).'},
+  {id:'so10mf', role:'consumable', name:'M3 réz hatszög távtartó 10mm apa-anya', qty:4, logic:null,
+   specs:'cikksz. 16-1-13', buses:[]},
+  {id:'so15ff', role:'consumable', name:'M3 réz hatszög távtartó 15mm anya-anya', qty:8, logic:null,
+   specs:'cikksz. 16-1-2', buses:[]},
+  {id:'so10ff', role:'consumable', name:'M3 réz hatszög távtartó 10mm anya-anya', qty:8, logic:null,
+   specs:'cikksz. 16-1-17', buses:[]},
+
+  // ===== ÚJ HAUL (SZ13324/13325 · 2026-09-25) — a 80W páka és a piros voltmérő fent, qty-emeléssel =====
+  // -- display / input --
+  {id:'oled096', role:'peripheral', name:'0,96" OLED 128×64 fehér (I2C)', qty:4, logic:'tol',
+   specs:'jellemzően SSD1306 · I2C 0x3C (0x3D) · cikksz. 4-1-21', buses:[{t:'I2C',r:'device',addr:'0x3C'}],
+   note:'Címütközik a 1.3" OLED-dal és egymással — több kijelző egy buszon csak címváltással (0x3D) vagy muxszal.'},
+  {id:'ec11', role:'peripheral', name:'EC-11 forgóenkóder modul', qty:2, logic:'tol',
+   specs:'A/B + nyomógomb (SW) · 3 GPIO · cikksz. 3-3-4', buses:[{t:'GPIO',r:'device'}],
+   note:'A 0,96" OLED-dal kezelő-pár (menü + gomb).'},
+  // -- sensors --
+  {id:'cdm324', role:'peripheral', name:'CDM324 24GHz mikrohullámú radar (Doppler)', qty:1, logic:'tol',
+   specs:'mozgásérzékelés · analóg IF kimenet · cikksz. 2-3-14', buses:[{t:'ADC',r:'device'}],
+   note:'Doppler: mozgást lát, álló jelenlétet NEM (arra az LD2410 való — Bővítés fül). Az IF jel gyenge, erősítő kell az ADC elé.'},
+  {id:'w3230', role:'peripheral', name:'W3230 digitális termosztát 12V', qty:2, logic:null,
+   specs:'NTC szondás hőfokszabályzó · relé kimenet · 12V táp · cikksz. 8-1-70', buses:[],
+   note:'Önálló — nincs busza; MCU nélkül kapcsol hőre (ventilátor/fűtés).'},
+  // -- RF --
+  {id:'cc2531', role:'rf', name:'CC2531 Zigbee USB sniffer (XWireless)', qty:1, logic:null,
+   specs:'802.15.4 / 2,4GHz · USB dongle · cikksz. 3-1-8', buses:[{t:'USB',r:'device'}],
+   note:'PC/Pi-oldali. Z-Stack firmware-rel zigbee2mqtt-koordinátor is lehet, de csak kis hálózatra, Threadet nem tud — a rendes koordinátor dongle (Bővítés fül) továbbra is kell.'},
+  // -- power / meters --
+  {id:'vameter', role:'power', name:'DC V-A mérő 0–100V / 0–10A', qty:2, logic:null,
+   specs:'feszültség + áram kijelző · panelbe építhető · cikksz. 8-1-31', buses:[]},
+  // -- tools --
+  {id:'kws065c', role:'tool', name:'KWS-065C USB-C teszter (V / A / mAh)', qty:1, logic:null,
+   specs:'feszültség, áram, kapacitás · cikksz. 8-1-25', buses:[],
+   note:'Cella-futásidő és node-fogyasztás mérése — a runtime-log alapja. (Korábban a Bővítés fülön volt.)'},
+  {id:'pwmgen', role:'tool', name:'PWM jelgenerátor 3 csatornás', qty:1, logic:null,
+   specs:'állítható frekvencia + kitöltés · cikksz. 8-1-54', buses:[],
+   note:'Szervó/LED/MOSFET teszt MCU nélkül.'},
+  {id:'heatplate', role:'tool', name:'200W LED forrasztó fűtőlap csipesszel', qty:3, logic:null,
+   specs:'220V · 260 °C · cikksz. 14-2-17', buses:[],
+   note:'HÁLÓZATI 220V, forró felület — a szilikon alátéten használd.'},
+  {id:'tipclean', role:'tool', name:'Pákahegy-tisztító réz forgács (dobozban)', qty:2, logic:null, specs:'cikksz. 14-2-5', buses:[]},
+  {id:'silmat', role:'tool', name:'Hőálló szilikon szerelőalátét (kék)', qty:1, logic:null, specs:'cikksz. YXS2299', buses:[]},
+  {id:'esdtweez', role:'tool', name:'ESD antisztatikus csipeszkészlet (6 db)', qty:1, logic:null, specs:'műanyag · cikksz. 14-1-3', buses:[]},
+  // -- consumables --
+  {id:'fluxpen', role:'consumable', name:'Flux adagoló toll 10ml', qty:1, logic:null, specs:'cikksz. 14-1-2', buses:[]},
+  // -- DIY kits --
+  {id:'kit_tempalarm', role:'kit', name:'Hőmérséklet-riasztó DIY forrasztókészlet', qty:1, logic:null,
+   specs:'LED + hangjelzés · 5V · cikksz. 15-1-17', buses:[]},
+  {id:'kit_cd4060', role:'kit', name:'CD4060 zenélő LED-lámpa DIY forrasztókészlet', qty:1, logic:null,
+   specs:'3 színű fényhatás · cikksz. 15-1-18', buses:[]},
+
+  // ===== ÚJ HAUL (SZ13442 · 2026-09-28, SZ13865/13866 · 2026-10-02, SZ14217 · 2026-10-07) =====
+  // a +2 S3 (1-2-23), a sziréna, a piezo csengő, a YL-99, a mikro végállás, az SA-12 és a PCF8575 fent, qty-emeléssel
+  // MR45384/MR45385 = az SZ13866/SZ13865 díjbekérője (ugyanaz a tartalom) — NEM külön beszerzés
+  // -- hosts --
+  {id:'esp01s', role:'host', name:'ESP-01S WiFi modul (ESP8266EX)', qty:1, fp:'esp01', logic:3.3,
+   specs:'8-pin · 1MB flash · WiFi (nincs BLE) · cikksz. 1-2-4',
+   buses:[{t:'UART',r:'either'},{t:'GPIO',r:'controller'}],
+   note:'NINCS USB és nincs 3,3V szabályzó — CH340E/CH343P + külső 3,3V kell a flasheléshez. 2 szabad GPIO: egy-relés/egy-szenzoros mini node.'},
+  // -- peripherals --
+  {id:'tm1638', role:'peripheral', name:'TM1638 LED&KEY modul (8×7-szegmens + 8 gomb + 8 LED)', qty:1, logic:'tol',
+   specs:'3 vezetékes soros: CLK/DIO/STB · cikksz. 3-2-18', buses:[{t:'GPIO',r:'device'}],
+   note:'Kész kezelőfelület 3 GPIO-ról — kijelző, gombok és visszajelző LED-ek egy panelen.'},
+  {id:'vibmot', role:'peripheral', name:'5V vibrációs motor modul', qty:2, logic:'tol',
+   specs:'cikksz. 3-2-19', buses:[{t:'GPIO',r:'device'},{t:'PWM',r:'device'}],
+   note:'Haptikus visszajelzés a pendantnak/PiP-boynak.'},
+  {id:'mosfettrig', role:'peripheral', name:'MosFet trigger modul 15A 400W', qty:2, logic:'tol',
+   specs:'logic-level MOSFET kapcsoló · 15A / 400W · cikksz. 3-2-4', buses:[{t:'GPIO',r:'device'},{t:'PWM',r:'device'}],
+   note:'A Bővítés fülön kért MOSFET panel MEGVAN: LED szalag, mágneszár, sziréna, ventilátor GPIO-ról, relé nélkül, PWM-ezhetően.'},
+  {id:'voltsens', role:'peripheral', name:'Volt szenzor DC 0–25V', qty:2, logic:'tol',
+   specs:'feszültségosztó modul ADC-re (1:5) · cikksz. 2-1-8', buses:[{t:'ADC',r:'device'}],
+   note:'3,3V-os ADC-vel a tényleges felső határ ~16,5V — 25V-hoz 5V-os ADC vagy saját osztó kell.'},
+  {id:'btnpanel3', role:'peripheral', name:'Nyomógomb panel 3-as', qty:2, logic:'tol',
+   specs:'3 pillanatgomb egy panelen · cikksz. 3-1-54', buses:[{t:'GPIO',r:'device'}],
+   note:'Kész 3-gombos bevitel — menü előre/vissza/OK az EC-11 helyett vagy mellé.'},
+  // -- power --
+  {id:'akkushield', role:'power', name:'Akku shield 2×18650 (5V + 3V kimenet)', qty:1, logic:null,
+   specs:'micro USB töltés · 5V és 3V sín · cikksz. 6-4-36', buses:[{t:'POWER',r:'controller'}],
+   note:'Tartó + töltő + boost egy panelen — a legkevesebb forrasztás a cordless prototípushoz.'},
+  {id:'cr2032x2', role:'power', name:'2×CR2032 gombelemtartó 6V', qty:2, logic:null,
+   specs:'2 cella sorban = 6V · forrasztható · cikksz. 6-4-42', buses:[],
+   note:'Coin-cell táp apró node-nak/RTC-nek. 6V, NEM 3V — 3,3V-os panelre szabályzó vagy dióda-esés kell.'},
+  {id:'cn3903', role:'power', name:'CN3903 mini DC-DC step-down 5V', qty:2, logic:null,
+   specs:'fix 5V buck · cikksz. 7-1-47', buses:[{t:'POWER',r:'controller'}],
+   note:'Apró 5V sín 12V-ról — oda, ahova az LM2596 nem fér be.'},
+  // -- connectors --
+  {id:'fhdr20', role:'connector', name:'Anya fejléc 2,54mm 20-pin (5db/cs)', qty:1, logic:null,
+   specs:'cikksz. 10-7-107', buses:[],
+   note:'A 19-pin (10-7-106) párja — 40-pin ESP panelek foglalatához.'},
+  {id:'dcjack_f', role:'connector', name:'DC táp aljzat 5,5×2,1mm — beforrasztható', qty:4, logic:null,
+   specs:'panelbe forrasztható anya · cikksz. 10-7-58', buses:[]},
+  {id:'dcjack_m', role:'connector', name:'DC táp dugó 5,5×2,1mm — szerelhető', qty:4, logic:null,
+   specs:'csavaros/szerelhető apa, forrasztás nélkül kábelre · cikksz. 10-7-15', buses:[]},
+  {id:'dcpig', role:'connector', name:'DC dugó 5,5×2,1mm szerelt kábellel (cseppálló, 15cm)', qty:2, logic:null,
+   specs:'kész pigtail, fekete · cikksz. 10-7-108', buses:[]},
+  {id:'xt60', role:'connector', name:'XT60 csatlakozó pár 40A/500V', qty:8, logic:null,
+   specs:'8 pár · akku-főcsatlakozó · cikksz. 10-7-13', buses:[],
+   note:'Az L7 pakk terhelését ez viszi, nem a forrasztott cellaláb. A Bővítés fülön már csak JST + biztosítéktartó hiányzik.'},
 
   // ---- WIRING / CONSUMABLES ----
   {id:'hdr_str', role:'consumable', name:'Színes tüskesor 40p (5 csík)', qty:2, logic:null, specs:'egyenes 2,54mm', buses:[]},
@@ -425,9 +551,9 @@ const VARIANTS = [
 /* ---- invoice metadata: cikkszám -> {sz, date, ft(bruttó/db)} ---- */
 const CIKK_META = {
  "3-1-61":{sz:"SZ11580",date:"2026-08-26",ft:2700},"5-1-49":{sz:"SZ11580",date:"2026-08-26",ft:300},
- "3-1-10":{sz:"SZ11580",date:"2026-08-26",ft:390},"3-5-9":{sz:"SZ11580",date:"2026-08-26",ft:700},
+ "3-1-10":{sz:"SZ11580 / SZ13866",date:"2026-08-26 / 2026-10-02",ft:390},"3-5-9":{sz:"SZ11580",date:"2026-08-26",ft:700},
  "2-2-20":{sz:"SZ11580",date:"2026-08-26",ft:1700},"2-1-18":{sz:"SZ11580",date:"2026-08-26",ft:2000},
- "2-1-17":{sz:"SZ11580",date:"2026-08-26",ft:990},"2-2-25":{sz:"SZ11580",date:"2026-08-26",ft:970},
+ "2-1-17":{sz:"SZ11580",date:"2026-08-26",ft:990},"2-2-25":{sz:"SZ11580 / SZ14217",date:"2026-08-26 / 2026-10-07",ft:970},
  "2-1-10":{sz:"SZ11580",date:"2026-08-26",ft:590},"2-1-11":{sz:"SZ11580",date:"2026-08-26",ft:150},
  "2-1-22":{sz:"SZ11580",date:"2026-08-26",ft:450},"2-2-22":{sz:"SZ11580",date:"2026-08-26",ft:450},
  "4-1-34":{sz:"SZ11580",date:"2026-08-26",ft:2200},"3-2-24":{sz:"SZ11580",date:"2026-08-26",ft:1500},
@@ -437,7 +563,7 @@ const CIKK_META = {
  "9-1-28":{sz:"SZ11580",date:"2026-08-26",ft:500},"9-1-16":{sz:"SZ11580",date:"2026-08-26",ft:500},
  "9-1-13":{sz:"SZ11580",date:"2026-08-26",ft:3000},"3-5-15":{sz:"SZ11580",date:"2026-08-26",ft:90},
  "9-1-78":{sz:"SZ11580",date:"2026-08-26",ft:800},
- "10-1-3":{sz:"SZ11669",date:"2026-08-27",ft:500},"1-2-23":{sz:"SZ11669",date:"2026-08-27",ft:3990},
+ "10-1-3":{sz:"SZ11669",date:"2026-08-27",ft:500},"1-2-23":{sz:"SZ11669 / SZ14217",date:"2026-08-27 / 2026-10-07",ft:3990},
  "3-3-5":{sz:"SZ11669",date:"2026-08-27",ft:1200},"3-1-23":{sz:"SZ12198",date:"2026-09-06",ft:650},
  "1-2-44":{sz:"SZ11670",date:"2026-08-27",ft:6400},"6-1-41":{sz:"SZ11670",date:"2026-08-27",ft:260},
  "1-2-15":{sz:"SZ11670",date:"2026-08-27",ft:3200},
@@ -449,23 +575,50 @@ const CIKK_META = {
  "2-1-29":{sz:"SZ12198",date:"2026-09-06",ft:1400},"7-3-8":{sz:"SZ12198",date:"2026-09-06",ft:800},
  "3-2-26":{sz:"SZ12585",date:"2026-09-12",ft:700},"2-2-27":{sz:"SZ12198",date:"2026-09-06",ft:500},
  "7-1-51":{sz:"SZ12582",date:"2026-09-12",ft:341},"7-3-26":{sz:"SZ12582",date:"2026-09-12",ft:1000},
- "2-2-32":{sz:"SZ12582",date:"2026-09-12",ft:150},
+ "2-2-32":{sz:"SZ12582 / SZ12833",date:"2026-09-12 / 2026-09-17",ft:150},
  "10-7-106":{sz:"SZ12583",date:"2026-09-12",ft:180},"2-1-34":{sz:"SZ12583",date:"2026-09-12",ft:150},
- "3-1-72":{sz:"SZ12583",date:"2026-09-12",ft:150},"3-1-71":{sz:"SZ12583",date:"2026-09-12",ft:1390},
- "2-1-43":{sz:"SZ12583",date:"2026-09-12",ft:990},"2-2-28":{sz:"SZ12585",date:"2026-09-12",ft:1000},
- "3-1-82":{sz:"SZ12583",date:"2026-09-12",ft:1600},"2-1-44":{sz:"SZ12583",date:"2026-09-12",ft:200},
+ "3-1-72":{sz:"SZ12583 / SZ13866",date:"2026-09-12 / 2026-10-02",ft:150},"3-1-71":{sz:"SZ12583",date:"2026-09-12",ft:1390},
+ "2-1-43":{sz:"SZ12583",date:"2026-09-12",ft:990},"2-2-28":{sz:"SZ12585 / SZ12833",date:"2026-09-12 / 2026-09-17",ft:1000},
+ "3-1-82":{sz:"SZ12583",date:"2026-09-12",ft:1600},"2-1-44":{sz:"SZ12583 / SZ14217",date:"2026-09-12 / 2026-10-07",ft:200},
+ /* SZ12833 · 2026-09-17 — 28 690 Ft bruttó − 2 869 Ft MI-kosár − 690 Ft hűségpont = 25 131 Ft */
+ "1-2-39":{sz:"SZ12833",date:"2026-09-17",ft:4800},"10-6-37":{sz:"SZ12833",date:"2026-09-17",ft:700},
+ "9-1-26":{sz:"SZ12833",date:"2026-09-17",ft:1990},"7-3-44":{sz:"SZ12833",date:"2026-09-17",ft:6900},
+ "10-2-31":{sz:"SZ12833",date:"2026-09-17",ft:150},"16-1-1":{sz:"SZ12833",date:"2026-09-17",ft:120},
+ "16-1-13":{sz:"SZ12833",date:"2026-09-17",ft:220},"16-1-2":{sz:"SZ12833",date:"2026-09-17",ft:110},
+ "16-1-17":{sz:"SZ12833",date:"2026-09-17",ft:100},"10-7-112":{sz:"SZ12833",date:"2026-09-17",ft:110},
+ "10-2-35":{sz:"SZ12833",date:"2026-09-17",ft:200},"7-1-54":{sz:"SZ12833",date:"2026-09-17",ft:1540},
  "YXS1716":{sz:"SZ12585",date:"2026-09-12",ft:50},"3-2-39":{sz:"SZ12583",date:"2026-09-12",ft:500},
  "10-7-126":{sz:"SZ12583",date:"2026-09-12",ft:200},"C-04":{sz:"SZ12583",date:"2026-09-12",ft:280},
  "C-05":{sz:"SZ12583",date:"2026-09-12",ft:280},"3-1-36":{sz:"SZ12583",date:"2026-09-12",ft:400},
- "8-1-38":{sz:"SZ12583",date:"2026-09-12",ft:400},"8-1-33":{sz:"SZ12583",date:"2026-09-12",ft:400},
+ "8-1-38":{sz:"SZ12583",date:"2026-09-12",ft:400},"8-1-33":{sz:"SZ12583 / SZ13324",date:"2026-09-12 / 2026-09-25",ft:400},
  "10-4-4":{sz:"SZ12583",date:"2026-09-12",ft:100},"10-9-5":{sz:"SZ12583",date:"2026-09-12",ft:2200},
  "8-1-12":{sz:"SZ12583",date:"2026-09-12",ft:4130},
  "1-2-46":{sz:"SZ12584",date:"2026-09-12",ft:2600},"1-2-35":{sz:"SZ12584",date:"2026-09-12",ft:3700},
  "1-2-47":{sz:"SZ12584",date:"2026-09-12",ft:3100},
- "14-2-13":{sz:"SZ12585",date:"2026-09-12",ft:3000},"1-2-14":{sz:"SZ12585",date:"2026-09-12",ft:2200},
- "10-7-138":{sz:"SZ12585",date:"2026-09-12",ft:280},"2-3-15":{sz:"SZ12585",date:"2026-09-12",ft:300},
- "2-1-37":{sz:"SZ12585",date:"2026-09-12",ft:990},"3-6-35":{sz:"SZ12585",date:"2026-09-12",ft:2500},
- "3-3-6":{sz:"SZ12585",date:"2026-09-12",ft:800},"1-4-8":{sz:"SZ12585",date:"2026-09-12",ft:3500}
+ "14-2-13":{sz:"SZ12585 / SZ13324",date:"2026-09-12 / 2026-09-25",ft:3000},"1-2-14":{sz:"SZ12585",date:"2026-09-12",ft:2200},
+ "10-7-138":{sz:"SZ12585 / SZ13866",date:"2026-09-12 / 2026-10-02",ft:280},"2-3-15":{sz:"SZ12585",date:"2026-09-12",ft:300},
+ "2-1-37":{sz:"SZ12585 / SZ13442",date:"2026-09-12 / 2026-09-28",ft:990},"3-6-35":{sz:"SZ12585",date:"2026-09-12",ft:2500},
+ "3-3-6":{sz:"SZ12585",date:"2026-09-12",ft:800},"1-4-8":{sz:"SZ12585",date:"2026-09-12",ft:3500},
+ "14-2-5":{sz:"SZ13324",date:"2026-09-25",ft:600},"8-1-31":{sz:"SZ13324",date:"2026-09-25",ft:900},
+ "8-1-70":{sz:"SZ13324",date:"2026-09-25",ft:1300},"8-1-54":{sz:"SZ13324",date:"2026-09-25",ft:1600},
+ "14-2-17":{sz:"SZ13324",date:"2026-09-25",ft:1557.33},"15-1-17":{sz:"SZ13324",date:"2026-09-25",ft:1385},
+ "15-1-18":{sz:"SZ13324",date:"2026-09-25",ft:1250},"YXS2299":{sz:"SZ13324",date:"2026-09-25",ft:750},
+ "14-1-3":{sz:"SZ13324",date:"2026-09-25",ft:600},"14-1-2":{sz:"SZ13324",date:"2026-09-25",ft:1100},
+ "8-1-25":{sz:"SZ13324",date:"2026-09-25",ft:3300},
+ "3-1-8":{sz:"SZ13325",date:"2026-09-25",ft:2699},"4-1-21":{sz:"SZ13325",date:"2026-09-25",ft:1150},
+ "2-3-14":{sz:"SZ13325",date:"2026-09-25",ft:2000},"3-3-4":{sz:"SZ13325",date:"2026-09-25",ft:580},
+ /* SZ13442 · 2026-09-28 — 2 180 Ft bruttó − 181 Ft hűségpont = 1 999 Ft */
+ "6-4-42":{sz:"SZ13442",date:"2026-09-28",ft:100},
+ /* SZ13865 · 2026-10-02 — 2 780 Ft bruttó, hűségpontból fizetve (0 Ft fizetendő) */
+ "10-7-58":{sz:"SZ13865",date:"2026-10-02",ft:90},"10-7-15":{sz:"SZ13865",date:"2026-10-02",ft:90},
+ "10-7-108":{sz:"SZ13865",date:"2026-10-02",ft:150},"10-7-13":{sz:"SZ13865",date:"2026-10-02",ft:220},
+ /* SZ13866 · 2026-10-02 — 5 400 Ft bruttó − 400 Ft hűségpont = 5 000 Ft */
+ "3-2-19":{sz:"SZ13866",date:"2026-10-02",ft:300},"3-2-4":{sz:"SZ13866",date:"2026-10-02",ft:450},
+ "2-1-8":{sz:"SZ13866",date:"2026-10-02",ft:180},"7-1-47":{sz:"SZ13866",date:"2026-10-02",ft:250},
+ "3-1-54":{sz:"SZ13866",date:"2026-10-02",ft:550},
+ /* SZ14217 · 2026-10-07 — 13 800 Ft */
+ "1-2-4":{sz:"SZ14217",date:"2026-10-07",ft:1000},"10-7-107":{sz:"SZ14217",date:"2026-10-07",ft:150},
+ "6-4-36":{sz:"SZ14217",date:"2026-10-07",ft:2200},"3-2-18":{sz:"SZ14217",date:"2026-10-07",ft:1100}
 };
 /* fallback cikkszám for early items whose specs lack it */
 const ID_TO_CIKK = {
@@ -484,9 +637,8 @@ const ORDER = [
  // ===== Táp & akku =====
  {id:'o_bench',cat:'Táp & akku',name:'Állítható bench tápegység (0–30V/5A)',unlock:'Biztonságos áramkorlátos bekapcsolás — a füst-teszt vége. Minden prototípus első védvonala.'},
  {id:'o_bms',cat:'Táp & akku',name:'2S/3S/4S BMS + balansz töltő',unlock:'A többcellás L7 pakkhoz KÖTELEZŐ — a powerbank modul csak 1S. A 4S feszmérőd ehhez passzol.'},
- {id:'o_buckboost',cat:'Táp & akku',name:'MP1584 buck + MT3608 boost készlet',unlock:'Tetszőleges sín az akkuról/12V-ról. Kiegészíti a meglévő LM2596-okat kisebb helyre.'},
- {id:'o_usbmeter',cat:'Táp & akku',name:'USB teljesítménymérő (feszültség/áram/mAh)',unlock:'Cella-futásidő és node-fogyasztás mérése — a runtime-log alapja.'},
- {id:'o_xt60',cat:'Táp & akku',name:'XT60 + JST + biztosítéktartó szett',unlock:'Rendes akku-csatlakozók a pakkhoz; nem szabad forrasztott cellalábakra bízni a terhelést.'},
+ {id:'o_buckboost',cat:'Táp & akku',name:'MP1584 buck + MT3608 boost készlet (kicsiben)',unlock:'Buck-boost MEGVAN egy darab (SJV-4W 30V/3A, SZ12833) — ez már csak a kis helyre, több példányban, a viselhető/pendant buildekhez kell.'},
+ {id:'o_xt60',cat:'Táp & akku',name:'JST + biztosítéktartó szett (XT60 megvan)',unlock:'Az XT60 pár MEGVAN (SZ13865, 8 pár) — már csak a JST balansz-csatlakozók és az inline biztosítéktartó hiányzik a pakkhoz.'},
 
  // ===== Csatlakozó & kábel =====
  {id:'o_qwiic',cat:'Csatlakozó & kábel',name:'Qwiic/STEMMA-QT kábel + hub',unlock:'Forrasztás/tüskesor nélküli I2C lánc — a hordozható MPU6050/ToF/RTC csatlakozás legjobb útja.'},
@@ -498,7 +650,7 @@ const ORDER = [
  // ===== Hálózat & szerver =====
  {id:'o_glinet',cat:'Hálózat & szerver',name:'GL.iNet mini router (OpenWRT)',elsewhere:true,unlock:'A L2 tunnel-helper: AP + Tailscale/cloudflared egy dobozban. A legkisebb út az internet-URL-hez.'},
  {id:'o_pi5',cat:'Hálózat & szerver',name:'Raspberry Pi 5 + NVMe HAT',elsewhere:true,unlock:'A L3 mini-szerver alapja; a vault, ami FUT, nem csak tárol. A tunnelt is elviszi.'},
- {id:'o_w5500',cat:'Hálózat & szerver',name:'W5500 Ethernet (SPI)',unlock:'Vezetékes uplink egy ESP32-nek — WiFi-független, stabil hálózat a szekrény-szervernek.'},
+ {id:'o_w5500',cat:'Hálózat & szerver',name:'W5500 Ethernet (SPI) — már csak retrofitra',unlock:'A vezetékes uplink NATÍVAN megvan (ESP32-C3 ETH01-EVO ×2, SZ12833). Ez már csak arra kell, ha egy MÁSIK panelt (S3, C6, Pico) akarsz Ethernetre tenni.'},
  {id:'o_poe',cat:'Hálózat & szerver',name:'PoE splitter (5V/12V)',unlock:'Egy kábel adat+táp a fix node-oknak — tiszta shadow-layer telepítés.'},
 
  // ===== Rádió & protokoll =====
@@ -522,7 +674,6 @@ const ORDER = [
  {id:'o_epaper',cat:'Kijelző & UI',name:'2.9" e-paper kijelző',unlock:'Alacsony fogyasztású állapotkijelző fix node-okhoz (akkuról hetekig).'},
  {id:'o_ws2812',cat:'Kijelző & UI',name:'WS2812B RGB szalag/gyűrű',unlock:'Cinema RGB réteg + státusz-fény; egy adatlábon vezérelhető.'},
  {id:'o_ips',cat:'Kijelző & UI',name:'1.9"/2.0" IPS SPI kijelző',unlock:'Kis, éles kijelző node-okhoz, ahol a touch-panel túl nagy.'},
- {id:'o_joy',cat:'Kijelző & UI',name:'Analóg joystick / thumbstick',unlock:'Extra pendant-bevitel az enkóder mellé — kétirányú kamera-mozgatás.'},
 
  // ===== Tár =====
  {id:'o_sdcards',cat:'Tár',name:'microSD kártyák (A1, 32–128GB)',unlock:'A vault médiája — több példány a rotáló mentésekhez.'},
@@ -531,7 +682,6 @@ const ORDER = [
  // ===== Aktuátor & motor =====
  {id:'o_stepper',cat:'Aktuátor & motor',name:'NEMA17 + TMC2209 driver',unlock:'A cinema roller-screen / falmozgatás rendes motorja (a 28BYJ csak proto).'},
  {id:'o_ssr',cat:'Aktuátor & motor',name:'SSR (szilárdtest relé) + hűtő',unlock:'Csendes, kopásmentes AC kapcsolás a mechanikus relék helyett — hosszú élettartam.'},
- {id:'o_mosfet',cat:'Aktuátor & motor',name:'Logic-level MOSFET kapcsoló panel',unlock:'DC terhelés (LED szalag, mágneszár, sziréna) GPIO-ról biztonságosan.'},
 
  // ===== Védelem & minőség =====
  {id:'o_isolator',cat:'Védelem & minőség',name:'USB izolátor (ADuM)',unlock:'Galvanikus leválasztás, amikor RS485/CAN-t hajtasz élő panel mellől laptopról.'},
@@ -541,7 +691,7 @@ const ORDER = [
 
  // ===== Ház & mechanika =====
  {id:'o_box',cat:'Ház & mechanika',name:'Műszerdobozok / hordozó tok szett',unlock:'A PiP-boy/hub kagyló és a fix node-ok háza — a fab-hiány áthidalása.'},
- {id:'o_inserts',cat:'Ház & mechanika',name:'Heat-set inzert + standoff készlet',unlock:'Újra-nyitható, csavarozható 3D-nyomtatott ház — nem ragasztott véglegesítés.'},
+ {id:'o_inserts',cat:'Ház & mechanika',name:'Heat-set inzert készlet (standoff megvan)',unlock:'A réz távtartók MEGVANNAK (28 db M3, SZ12833) — már csak a heat-set inzert hiányzik az újra-nyitható, csavarozható 3D-nyomtatott házhoz.'},
  {id:'o_filament',cat:'Ház & mechanika',name:'PETG/PLA filament + PVC/akril lap',unlock:'A kagyló-encase és a két PVC alaplap nyersanyaga.'}
 ];
 </script>
@@ -605,8 +755,8 @@ function conflicts(){
 }
 
 /* ===================== RENDER: INVENTORY ===================== */
-const ROLE_LABEL={host:'Hostok',carrier:'Hordozók',peripheral:'Perifériák',rf:'RF',programmer:'Programozók',power:'Táp / akku',connector:'Csatlakozó',tool:'Eszközök',consumable:'Fogyó'};
-const ROLE_ORDER=['host','peripheral','rf','carrier','programmer','power','connector','tool','consumable'];
+const ROLE_LABEL={host:'Hostok',carrier:'Hordozók',peripheral:'Perifériák',rf:'RF',programmer:'Programozók',power:'Táp / akku',connector:'Csatlakozó',tool:'Eszközök',consumable:'Fogyó',kit:'DIY készletek'};
+const ROLE_ORDER=['host','peripheral','rf','carrier','programmer','power','connector','tool','consumable','kit'];
 function busChips(it){ return (it.buses||[]).filter(b=>b.t!=='USB').map(b=>`<span class="bus">${b.t}${b.addr?(' '+b.addr):''}</span>`).join(''); }
 function renderInventory(){
   let html='';
