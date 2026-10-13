@@ -1,0 +1,913 @@
+﻿VRG BuildTree — TELJES KÉSZLET-ADATBÁZIS (birtokolt modulok és alkatrészek)
+========================================================================
+Exportálva: 2026-10-13
+Forrás:     Planner_VRG_U100/Modder/vrg-buildtree.html (a fájl maga a source of truth)
+Beszállító: Nováki József e.v. / Modulshop — árak bruttó Ft/db
+
+FOR AI SESSIONS (English): this is the complete owned hardware stock of the user (hobby /
+smart-home workbench, "BRIDGE" system). Section 1 = owned items (qty, id, role, part code, price,
+invoice, logic level, buses + I2C addresses, notes). Section 2 = NOT owned: a to-order wishlist.
+Section 3 = documented build ideas (variants). UI language is Hungarian. "logic: tol" = 3.3V/5V
+tolerant; "logic: 3.3" = 3.3V only. Only Section 1 counts as stock.
+
+########################################################################
+# 1. BIRTOKOLT KÉSZLET
+########################################################################
+
+### HOSTOK (agyak)  —  10 tételsor / 21 db
+------------------------------------------------------------------------
+   3 db  ESP32-S3 N16R8 Dual USB-C   [id: s3]
+        cikksz. 1-2-23 · 3990 Ft/db · SZ11669 / SZ14217 (2026-08-27 / 2026-10-07)
+        specs: 16MB flash / 8MB PSRAM · dual USB-C (CH343 UART + natív OTG) · PCB antenna · 3 db (a 2 úton lévő megjött: SZ14217)
+        logika: 3.3 V · footprint: 42pin · buszok: I2C/controller, SPI/controller, UART/controller, I2S/controller, GPIO/controller, ADC/controller, DAC/controller, USB/either
+        megjegyzés: Natív USB-hoz OTG kábel kell. Nincs u.FL — a 2.4GHz SMA-IPEX antenna ide nem megy.
+
+   2 db  Raspberry Pi Pico 2 (RP2350) USB-C   [id: pico2]
+        cikksz. 1-4-8 · 3500 Ft/db · SZ12585 (2026-09-12)
+        specs: Cortex-M33 150MHz · 16MB flash · 520KB SRAM
+        logika: 3.3 V · footprint: pico · buszok: I2C/controller, SPI/controller, UART/controller, GPIO/controller, ADC/controller, PWM/controller, USB/either
+        megjegyzés: MCU — NINCS wifi/BLE, NEM tunnel-host. Kiváló natív USB-HID agy (TinyUSB+PIO) az L1 vezetékes oldalához.
+
+   1 db  ESP32 WROOM-32D 38-pin (CP2102)   [id: wroom32d]
+        cikksz. 1-2-15 · 3200 Ft/db · SZ11670 (2026-08-27)
+        specs: klasszikus ESP32 · WiFi+BLE · USB-C
+        logika: 3.3 V · footprint: 38pin · buszok: I2C/controller, SPI/controller, UART/controller, I2S/controller, GPIO/controller, ADC/controller, USB/either
+        megjegyzés: 38-pin — RÁÜL az I/O shieldre (végre van hozzá panel). ESP-NOW/Zigbee2MQTT-hez bombabiztos.
+
+   1 db  ESP32 WROOM LVGL 2,4" érintőkijelző   [id: lvgltouch]
+        cikksz. 1-2-44 · 6400 Ft/db · SZ11670 (2026-08-27)
+        specs: agy + kijelző + touch egyben (CYD stílus)
+        logika: 3.3 V · footprint: cyd · buszok: I2C/controller, UART/controller, GPIO/controller, USB/either
+        megjegyzés: A PiP-boy touch-modulja — MEGVAN. WROOM-32 (nincs PSRAM), UI-ra elég; a GPIO-kivezetés korlátozott.
+
+   6 db  ESP32-C3 Zero   [id: c3zero]
+        cikksz. 1-2-46 · 2600 Ft/db · SZ12584 (2026-09-12)
+        specs: RISC-V · WiFi+BLE · USB-C
+        logika: 3.3 V · footprint: c3zero · buszok: I2C/controller, SPI/controller, UART/controller, GPIO/controller, ADC/controller, USB/either
+        megjegyzés: Apró, olcsó node — a swarm/ESP-NOW raj magja (6 db).
+
+   2 db  ESP32-C6 DevKit N4R2   [id: c6devkit]
+        cikksz. 1-2-35 · 3700 Ft/db · SZ12584 (2026-09-12)
+        specs: WiFi6 + BLE + 802.15.4
+        logika: 3.3 V · footprint: c6 · buszok: I2C/controller, SPI/controller, UART/controller, GPIO/controller, ADC/controller, USB/either
+        megjegyzés: 802.15.4 rádió → Thread/Zigbee/Matter NATÍV — közös nevező a BRIDGE-dzsel.
+
+   2 db  ESP32-S3-Zero Mini   [id: s3zero]
+        cikksz. 1-2-47 · 3100 Ft/db · SZ12584 (2026-09-12)
+        specs: S3 mini · WiFi+BLE
+        logika: 3.3 V · footprint: s3zero · buszok: I2C/controller, SPI/controller, UART/controller, I2S/controller, GPIO/controller, ADC/controller, USB/either
+        megjegyzés: Kompakt S3 node (PSRAM/AI); a swarm erősebb tagjai.
+
+   1 db  ESP32-C2 (ESP8684) DevKit   [id: c2devkit]
+        cikksz. 1-2-14 · 2200 Ft/db · SZ12585 (2026-09-12)
+        specs: olcsó RISC-V · WiFi+BLE
+        logika: 3.3 V · footprint: c2 · buszok: I2C/controller, SPI/controller, UART/controller, GPIO/controller, ADC/controller, USB/either
+        megjegyzés: Legolcsóbb WiFi+BLE node.
+
+   2 db  ESP32-C3 ETH01-EVO (Ethernet + WiFi + BT)   [id: eth01evo]
+        cikksz. 1-2-39 · 4800 Ft/db · SZ12833 (2026-09-17)
+        specs: 3-in-1: vezetékes Ethernet + WiFi + Bluetooth
+        logika: 3.3 V · footprint: eth01evo · buszok: I2C/controller, SPI/controller, UART/controller, GPIO/controller, ADC/controller
+        megjegyzés: Vezetékes uplink NATÍVAN — a szekrény-szerver/fix node WiFi-független útja. Flasheléshez UART adapter kell (nem feltételeztem natív USB-t, ellenőrizd a panelen).
+
+   1 db  ESP-01S WiFi modul (ESP8266EX)   [id: esp01s]
+        cikksz. 1-2-4 · 1000 Ft/db · SZ14217 (2026-10-07)
+        specs: 8-pin · 1MB flash · WiFi (nincs BLE)
+        logika: 3.3 V · footprint: esp01 · buszok: UART/either, GPIO/controller
+        megjegyzés: NINCS USB és nincs 3,3V szabályzó — CH340E/CH343P + külső 3,3V kell a flasheléshez. 2 szabad GPIO: egy-relés/egy-szenzoros mini node.
+
+
+### PERIFÉRIÁK  —  38 tételsor / 78 db
+------------------------------------------------------------------------
+   2 db  PCF8575 16-ch I/O expander   [id: pcf8575]
+        cikksz. 2-2-25 · 970 Ft/db · SZ11580 / SZ14217 (2026-08-26 / 2026-10-07)
+        specs: I2C GPIO bővítő · 2,5–5,5V
+        logika: tol (3,3/5V tűrő) · buszok: I2C/device 0x20
+
+   1 db  CD74HC4067 16-ch analóg mux   [id: mux4067]
+        cikksz. 10-1-3 · 500 Ft/db · SZ11669 (2026-08-27)
+        specs: 16→1 analóg/digitális mux · 4 select GPIO + 1 SIG
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device, ADC/device
+        megjegyzés: Sok analóg bemenet 1 ADC-re; a kábeltérképező analóg pásztázásához is jó.
+
+   1 db  PN532 NFC/RFID V3   [id: pn532]
+        cikksz. 2-1-18 · 2000 Ft/db · SZ11580 (2026-08-26)
+        specs: 13,56MHz · I2C / SPI / HSU átkapcsolható
+        logika: 3.3 V · buszok: I2C/device 0x24, SPI/device, UART/device
+
+   2 db  MFRC-522 RFID   [id: mfrc522]
+        cikksz. 2-1-17 · 990 Ft/db · SZ11580 (2026-08-26)
+        specs: 13,56MHz · SPI
+        logika: 3.3 V · buszok: SPI/device
+
+   2 db  1.3" OLED + EC11 enkóder   [id: oled]
+        cikksz. 4-1-34 · 2200 Ft/db · SZ11580 (2026-08-26)
+        specs: SH1106 128×64 kijelző + forgóenkóder
+        logika: tol (3,3/5V tűrő) · buszok: I2C/device 0x3C, GPIO/device
+
+   2 db  nRF905 sub-GHz adó-vevő   [id: nrf905]
+        cikksz. 3-2-24 · 1500 Ft/db · SZ11580 (2026-08-26)
+        specs: 433/868/915MHz · SPI · CSAK 3,3V
+        logika: 3.3 V · buszok: SPI/device
+        megjegyzés: 5V-ot nem visel — 3,3V hostot igényel vagy szintillesztőt.
+
+   1 db  VL6180X ToF távolságérzékelő   [id: vl6180x]
+        cikksz. 2-3-30 · ár —
+        specs: lézeres ToF ~5–100mm + fény · I2C 0x29
+        logika: tol (3,3/5V tűrő) · buszok: I2C/device 0x29
+        megjegyzés: Gesztus/közelség — pendant vezérléshez vagy jelenlét/mérés.
+
+   1 db  microSD író-olvasó modul (6pin)   [id: sdmod]
+        cikksz. 3-1-25 · 540 Ft/db · SZ11812 (2026-08-30)
+        specs: a vault tárolója · SPI
+        logika: tol (3,3/5V tűrő) · buszok: SPI/device
+
+   1 db  AT24C256 EEPROM modul   [id: at24c256]
+        cikksz. 2-2-22 · 450 Ft/db · SZ11580 (2026-08-26)
+        specs: 256kB I2C EEPROM
+        logika: tol (3,3/5V tűrő) · buszok: I2C/device 0x50
+
+   1 db  HC-SR501 PIR + konzol   [id: pir]
+        cikksz. 2-1-10 · 590 Ft/db · SZ11580 (2026-08-26)
+        specs: mozgásérzékelő · Vin 5V · kimenet 3,3V-biztos
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+
+   1 db  LX06LA hangrögzítő/lejátszó   [id: lx06la]
+        cikksz. 2-3-23 · 580 Ft/db · SZ11580 (2026-08-26)
+        specs: 10mp · gomb/GPIO trigger · 3–5V · hangszóró-kimenet
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device, ANALOG/passive
+
+   2 db  LM386 audio erősítő   [id: lm386]
+        cikksz. 5-1-49 · 300 Ft/db · SZ11580 (2026-08-26)
+        specs: analóg be → hangszóró · 5–12V
+        logika: — · buszok: ANALOG/device
+
+   2 db  Passzív buzzer 5V   [id: pbuzz]
+        cikksz. 3-5-15 · 90 Ft/db · SZ11580 (2026-08-26)
+        specs: PWM-mel hajtott — te adod a frekvenciát
+        logika: tol (3,3/5V tűrő) · buszok: PWM/device
+
+   3 db  Aktív piezo buzzer 12V 85dB   [id: abuzz]
+        cikksz. 3-1-10 · 390 Ft/db · SZ11580 / SZ13866 (2026-08-26 / 2026-10-02)
+        specs: tranzisztoros meghajtás · 12V
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+
+   1 db  MPU6050 IMU (GY-521)   [id: mpu6050]
+        cikksz. 2-1-29 · 1400 Ft/db · SZ12198 (2026-09-06)
+        specs: 6-tengelyes gyro+accel · I2C 0x68
+        logika: tol (3,3/5V tűrő) · buszok: I2C/device 0x68
+        megjegyzés: Valós orientáció a pendantnak ESP-NOW-on — a gyro-blokádot hardveresen megoldja.
+
+   3 db  MCP2515 CAN busz   [id: mcp2515]
+        cikksz. 3-2-26 · 700 Ft/db · SZ12585 (2026-09-12)
+        specs: CAN vezérlő+transceiver · SPI
+        logika: 5 V · buszok: SPI/device
+        megjegyzés: Kristály 8/16MHz — állítsd a libben! TJA1050 5V → SPI-n szintillesztő vagy SN65HVD230 (3,3V).
+
+   1 db  KY-017 higanyos dőléskapcsoló   [id: mpu_tilt]
+        cikksz. 2-1-34 · 150 Ft/db · SZ12583 (2026-09-12)
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+
+   5 db  YL-99 végálláskapcsoló modul   [id: yl99]
+        cikksz. 3-1-72 · 150 Ft/db · SZ12583 / SZ13866 (2026-09-12 / 2026-10-02)
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+
+   3 db  Mikro végálláskapcsoló   [id: microsw]
+        cikksz. 10-7-138 · 280 Ft/db · SZ12585 / SZ13866 (2026-09-12 / 2026-10-02)
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+
+   1 db  3×4 mátrix billentyűzet   [id: keypad34]
+        cikksz. 3-1-71 · 1390 Ft/db · SZ12583 (2026-09-12)
+        specs: 7 GPIO
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+        megjegyzés: PIN-bevitel — BRIDGE beléptető.
+
+   1 db  MQ-135 gáz/levegőminőség   [id: mq135]
+        cikksz. 2-1-43 · 990 Ft/db · SZ12583 (2026-09-12)
+        specs: analóg
+        logika: 5 V · buszok: ADC/device
+        megjegyzés: 5V fűtés, bemelegedési idő; füst/CO2/NH3/gáz.
+
+   4 db  SA-12 hőmérséklet modul   [id: sa12]
+        cikksz. 2-1-44 · 200 Ft/db · SZ12583 / SZ14217 (2026-09-12 / 2026-10-07)
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+
+   1 db  RCWL-0516 mikrohullámú radar   [id: rcwl0516]
+        cikksz. 2-3-15 · 300 Ft/db · SZ12585 (2026-09-12)
+        specs: mozgás/jelenlét
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+        megjegyzés: Falon át is érzékel — jelenlét/kutyakövetés felé.
+
+  10 db  12×12mm LED-es nyomógombok (5 szín)   [id: btn12]
+        cikksz. 10-7-126 · 200 Ft/db · SZ12583 (2026-09-12)
+        specs: világító pillanatgomb
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+        megjegyzés: Vezérlőpanel/pendant bemenet.
+
+   1 db  B5K potméter 5kΩ   [id: pot5k]
+        cikksz. 10-4-4 · 100 Ft/db · SZ12583 (2026-09-12)
+        specs: analóg
+        logika: tol (3,3/5V tűrő) · buszok: ADC/device
+
+   1 db  Mini elektromos mágneszár   [id: maglock]
+        cikksz. 3-1-82 · 1600 Ft/db · SZ12583 (2026-09-12)
+        specs: beléptető aktuátor
+        logika: — · buszok: GPIO/device
+        megjegyzés: 12V + relé/driver — NEM közvetlen GPIO. BRIDGE beléptető.
+
+   2 db  Relé modul 1-ch 5V/220V   [id: relay1]
+        cikksz. 3-1-36 · 400 Ft/db · SZ12583 (2026-09-12)
+        specs: opto be
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+        megjegyzés: 220V kapcsolás — HÁLÓZAT, óvatosan/tokban.
+
+   3 db  Sziréna/riasztó 6–15V   [id: siren]
+        cikksz. 2-1-37 · 990 Ft/db · SZ12585 / SZ13442 (2026-09-12 / 2026-09-28)
+        logika: — · buszok: GPIO/device
+        megjegyzés: Hangos kimenet driverrel.
+
+   1 db  Dual PS2 joystick modul   [id: joy_ps2x2]
+        cikksz. 9-1-26 · 1990 Ft/db · SZ12833 (2026-09-17)
+        specs: 2× analóg thumbstick + nyomógomb
+        logika: tol (3,3/5V tűrő) · buszok: ADC/device, GPIO/device
+        megjegyzés: 4 ADC + 2 GPIO. A Bővítés fülön kért joystick MEGVAN — pendant / kamera-mozgatás.
+
+   4 db  0,96" OLED 128×64 fehér (I2C)   [id: oled096]
+        cikksz. 4-1-21 · 1150 Ft/db · SZ13325 (2026-09-25)
+        specs: jellemzően SSD1306 · I2C 0x3C (0x3D)
+        logika: tol (3,3/5V tűrő) · buszok: I2C/device 0x3C
+        megjegyzés: Címütközik a 1.3" OLED-dal és egymással — több kijelző egy buszon csak címváltással (0x3D) vagy muxszal.
+
+   2 db  EC-11 forgóenkóder modul   [id: ec11]
+        cikksz. 3-3-4 · 580 Ft/db · SZ13325 (2026-09-25)
+        specs: A/B + nyomógomb (SW) · 3 GPIO
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+        megjegyzés: A 0,96" OLED-dal kezelő-pár (menü + gomb).
+
+   1 db  CDM324 24GHz mikrohullámú radar (Doppler)   [id: cdm324]
+        cikksz. 2-3-14 · 2000 Ft/db · SZ13325 (2026-09-25)
+        specs: mozgásérzékelés · analóg IF kimenet
+        logika: tol (3,3/5V tűrő) · buszok: ADC/device
+        megjegyzés: Doppler: mozgást lát, álló jelenlétet NEM (arra az LD2410 való — Bővítés fül). Az IF jel gyenge, erősítő kell az ADC elé.
+
+   2 db  W3230 digitális termosztát 12V   [id: w3230]
+        cikksz. 8-1-70 · 1300 Ft/db · SZ13324 (2026-09-25)
+        specs: NTC szondás hőfokszabályzó · relé kimenet · 12V táp
+        logika: —
+        megjegyzés: Önálló — nincs busza; MCU nélkül kapcsol hőre (ventilátor/fűtés).
+
+   1 db  TM1638 LED&KEY modul (8×7-szegmens + 8 gomb + 8 LED)   [id: tm1638]
+        cikksz. 3-2-18 · 1100 Ft/db · SZ14217 (2026-10-07)
+        specs: 3 vezetékes soros: CLK/DIO/STB
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+        megjegyzés: Kész kezelőfelület 3 GPIO-ról — kijelző, gombok és visszajelző LED-ek egy panelen.
+
+   2 db  5V vibrációs motor modul   [id: vibmot]
+        cikksz. 3-2-19 · 300 Ft/db · SZ13866 (2026-10-02)
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device, PWM/device
+        megjegyzés: Haptikus visszajelzés a pendantnak/PiP-boynak.
+
+   2 db  MosFet trigger modul 15A 400W   [id: mosfettrig]
+        cikksz. 3-2-4 · 450 Ft/db · SZ13866 (2026-10-02)
+        specs: logic-level MOSFET kapcsoló · 15A / 400W
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device, PWM/device
+        megjegyzés: A Bővítés fülön kért MOSFET panel MEGVAN: LED szalag, mágneszár, sziréna, ventilátor GPIO-ról, relé nélkül, PWM-ezhetően.
+
+   2 db  Volt szenzor DC 0–25V   [id: voltsens]
+        cikksz. 2-1-8 · 180 Ft/db · SZ13866 (2026-10-02)
+        specs: feszültségosztó modul ADC-re (1:5)
+        logika: tol (3,3/5V tűrő) · buszok: ADC/device
+        megjegyzés: 3,3V-os ADC-vel a tényleges felső határ ~16,5V — 25V-hoz 5V-os ADC vagy saját osztó kell.
+
+   2 db  Nyomógomb panel 3-as   [id: btnpanel3]
+        cikksz. 3-1-54 · 550 Ft/db · SZ13866 (2026-10-02)
+        specs: 3 pillanatgomb egy panelen
+        logika: tol (3,3/5V tűrő) · buszok: GPIO/device
+        megjegyzés: Kész 3-gombos bevitel — menü előre/vissza/OK az EC-11 helyett vagy mellé.
+
+
+### RF / ANTENNA  —  2 tételsor / 2 db
+------------------------------------------------------------------------
+   1 db  2.4GHz antenna SMA→IPEX   [id: ant24]
+        cikksz. 2-1-22 · 450 Ft/db · SZ11580 (2026-08-26)
+        specs: u.FL/IPEX csatlakozó
+        logika: — · buszok: UFL/passive
+        megjegyzés: Csak u.FL-lel szerelt paneleknek. Az S3 Dual-USB-C PCB antennás.
+
+   1 db  CC2531 Zigbee USB sniffer (XWireless)   [id: cc2531]
+        cikksz. 3-1-8 · 2699 Ft/db · SZ13325 (2026-09-25)
+        specs: 802.15.4 / 2,4GHz · USB dongle
+        logika: — · buszok: USB/device
+        megjegyzés: PC/Pi-oldali. Z-Stack firmware-rel zigbee2mqtt-koordinátor is lehet, de csak kis hálózatra, Threadet nem tud — a rendes koordinátor dongle (Bővítés fül) továbbra is kell.
+
+
+### HORDOZÓK / PANELEK  —  5 tételsor / 8 db
+------------------------------------------------------------------------
+   2 db  ESP32 I/O shield 38-pin   [id: ioshield]
+        cikksz. 3-3-5 · 1200 Ft/db · SZ11669 (2026-08-27)
+        specs: GPIO kivezetés csavaros sorra · Vin 6,5–16V
+        logika: 3.3 V · footprint: 38pin · buszok: GPIO/passive
+        megjegyzés: 38-pin lábkiosztás — a 42-pin S3 NEM ül rá. 38-pin WROOM-hoz jó.
+
+   1 db  Arduino Nano próbapanel   [id: nanoproto]
+        cikksz. YXA166 · 400 Ft/db · SZ11580 (2026-08-26)
+        specs: kétoldalas, plated, 2,54mm
+        logika: tol (3,3/5V tűrő) · footprint: nano · buszok: GPIO/passive
+
+   1 db  ESP32-S3 I/O shield 44-pin   [id: s3shield44]
+        cikksz. 3-6-35 · 2500 Ft/db · SZ12585 (2026-09-12)
+        specs: GPIO kivezetés
+        logika: 3.3 V · footprint: 42pin · buszok: GPIO/passive
+        megjegyzés: VÉGRE ráül a 42/44-pin S3-ra (a 38-pin shield nem volt jó rá).
+
+   2 db  ESP32 I/O shield 30-pin   [id: ioshield30]
+        cikksz. 3-3-6 · 800 Ft/db · SZ12585 (2026-09-12)
+        logika: 3.3 V · footprint: 30pin · buszok: GPIO/passive
+        megjegyzés: 30-pin ESP32 boardokhoz.
+
+   2 db  Breadboard 400 lyukas   [id: breadboard]
+        cikksz. 3-1-23 · 650 Ft/db · SZ12198 (2026-09-06)
+        specs: (a 400-as: figyelj a homorúságra)
+        logika: — · footprint: breadboard
+
+
+### PROGRAMOZÓK / PC-OLDAL  —  6 tételsor / 14 db
+------------------------------------------------------------------------
+   1 db  CH341A EEPROM/Flash programozó   [id: ch341a]
+        cikksz. 3-1-61 · 2700 Ft/db · SZ11580 (2026-08-26)
+        specs: SOIC8 SPI/I2C flash · PC-oldali USB
+        logika: 5 V · buszok: SPI/controller, I2C/controller, USB/either
+        megjegyzés: Klasszikus board ~5V-os SPI vonalakkal — 3,3V flash-t ölhet. Szintillesztő / 3,3V mod kell.
+
+   1 db  USB–RS485 adapter   [id: usbrs485]
+        cikksz. 3-5-9 · 700 Ft/db · SZ11580 (2026-08-26)
+        specs: Modbus RTU PC-ről (pl. SDM630)
+        logika: tol (3,3/5V tűrő) · buszok: RS485/controller, USB/either
+
+   1 db  CP2102 6-in-1 USB átalakító   [id: cp2102]
+        cikksz. 2-2-20 · 1700 Ft/db · SZ11580 (2026-08-26)
+        specs: TTL / RS232 / RS485
+        logika: tol (3,3/5V tűrő) · buszok: UART/controller, RS485/controller, RS232/controller, USB/either
+
+   3 db  CH340E USB-C→TTL   [id: ch340e]
+        cikksz. 2-2-27 · 500 Ft/db · SZ12198 (2026-09-06)
+        specs: flasheléshez
+        logika: tol (3,3/5V tűrő) · buszok: UART/controller, USB/either
+
+   7 db  CH343P USB→TTL 6Mbps   [id: ch343p]
+        cikksz. 2-2-28 · 1000 Ft/db · SZ12585 / SZ12833 (2026-09-12 / 2026-09-17)
+        specs: flasheléshez
+        logika: tol (3,3/5V tűrő) · buszok: UART/controller, USB/either
+
+   1 db  ST-Link V2   [id: stlink]
+        cikksz. 3-1-38 · 2400 Ft/db · SZ11580 (2026-08-26)
+        specs: STM8/STM32 · SWD/JTAG
+        logika: tol (3,3/5V tűrő) · buszok: SWD/controller, USB/either
+
+
+### TÁP / AKKU  —  19 tételsor / 42 db
+------------------------------------------------------------------------
+   2 db  LM2596 állítható buck CC/CV   [id: buck2596]
+        cikksz. 7-1-52 · 595 Ft/db · SZ11812 (2026-08-30)
+        specs: DC-DC step-down · 5V/3,3V beállítható
+        logika: — · buszok: POWER/controller
+
+   2 db  18650 powerbank vezérlő (5V 1.2A)   [id: pbmod]
+        cikksz. 6-1-11 · 650 Ft/db · SZ11812 (2026-08-30)
+        specs: tölt + boost 5V — cordless tápegység a pendantnak
+        logika: — · buszok: POWER/controller
+
+   4 db  Samsung INR18650-35E 3500mAh   [id: cell35e]
+        cikksz. 6-5-10 · 1500 Ft/db · SZ12198 (2026-09-06)
+        specs: Li-ion cella (mennyiség megerősítendő)
+        logika: —
+
+   2 db  18650 tartó rugós 1 cellás   [id: hold1]
+        cikksz. 6-4-27 · 100 Ft/db · SZ11812 (2026-08-30)
+        logika: —
+
+   1 db  18650 tartó 2S (2 cellás)   [id: hold2s]
+        cikksz. 6-4-24 · 150 Ft/db · SZ11812 (2026-08-30)
+        specs: L7 pack terület
+        logika: —
+
+   4 db  18650 tartó 2×1   [id: hold21]
+        cikksz. 6-4-34 · 110 Ft/db · SZ11812 (2026-08-30)
+        logika: —
+
+   2 db  18650 tartó SMD 1 cellás   [id: holdsmd]
+        cikksz. 6-4-1 · 200 Ft/db · SZ11812 (2026-08-30)
+        logika: —
+
+   4 db  TP4056 1S töltő USB-C (védelemmel)   [id: tp4056]
+        cikksz. 6-1-41 · 260 Ft/db · SZ11670 (2026-08-27)
+        specs: önálló cellatöltő
+        logika: —
+
+   1 db  AC 220V 2000W dimmer/fordulatszabályzó   [id: acdimmer]
+        cikksz. 7-3-8 · 800 Ft/db · SZ12198 (2026-09-06)
+        specs: TRIAC
+        logika: —
+        megjegyzés: HÁLÓZATI 220V — ÉLETVESZÉLY. Szigetelt tok kötelező. Fény/motor sebesség.
+
+   2 db  USB→12V boost tápkábel   [id: usb12v]
+        cikksz. 7-1-51 · 341 Ft/db · SZ12582 (2026-09-12)
+        specs: 5V→12V, 5,5×2,1mm
+        logika: — · buszok: POWER/controller
+        megjegyzés: 12V eszközök USB/powerbankról.
+
+   1 db  5V 3A dugasztáp (AC-DC)   [id: psu5v3a]
+        cikksz. 7-3-26 · 1000 Ft/db · SZ12582 (2026-09-12)
+        logika: — · buszok: POWER/controller
+        megjegyzés: Always-on/bench táp.
+
+   2 db  Breadboard tápegység modul   [id: bbpsu]
+        cikksz. 3-2-39 · 500 Ft/db · SZ12583 (2026-09-12)
+        specs: 3,3V/5V sín
+        logika: — · buszok: POWER/controller
+
+   6 db  0,36" voltmérő 0–33V (zöld+piros)   [id: vmeter]
+        cikksz. 8-1-38 · 400 Ft/db · SZ12583 (2026-09-12)
+        specs: / 8-1-33 · +2 piros: SZ13324
+        logika: —
+
+   1 db  180W kapcsolóüzemű tápegység modul (kettős kimenet)   [id: psu180w]
+        cikksz. 7-3-44 · 6900 Ft/db · SZ12833 (2026-09-17)
+        specs: két független kimenet
+        logika: — · buszok: POWER/controller
+        megjegyzés: HÁLÓZATI 220V bemenet — szigetelt tok/takarás kötelező. A bench/szekrény fő tápja.
+
+   1 db  SJV-4W DC-DC buck-boost 30V 3A   [id: sjv4w]
+        cikksz. 7-1-54 · 1540 Ft/db · SZ12833 (2026-09-17)
+        specs: feszültségnövelő ÉS -csökkentő · max 30V / 3A
+        logika: — · buszok: POWER/controller
+        megjegyzés: A bemenet alá ÉS fölé is tud — akkuról stabil sín a cella teljes ürülési ívén, amit a puszta buck (LM2596) nem ad.
+
+   2 db  DC V-A mérő 0–100V / 0–10A   [id: vameter]
+        cikksz. 8-1-31 · 900 Ft/db · SZ13324 (2026-09-25)
+        specs: feszültség + áram kijelző · panelbe építhető
+        logika: —
+
+   1 db  Akku shield 2×18650 (5V + 3V kimenet)   [id: akkushield]
+        cikksz. 6-4-36 · 2200 Ft/db · SZ14217 (2026-10-07)
+        specs: micro USB töltés · 5V és 3V sín
+        logika: — · buszok: POWER/controller
+        megjegyzés: Tartó + töltő + boost egy panelen — a legkevesebb forrasztás a cordless prototípushoz.
+
+   2 db  2×CR2032 gombelemtartó 6V   [id: cr2032x2]
+        cikksz. 6-4-42 · 100 Ft/db · SZ13442 (2026-09-28)
+        specs: 2 cella sorban = 6V · forrasztható
+        logika: —
+        megjegyzés: Coin-cell táp apró node-nak/RTC-nek. 6V, NEM 3V — 3,3V-os panelre szabályzó vagy dióda-esés kell.
+
+   2 db  CN3903 mini DC-DC step-down 5V   [id: cn3903]
+        cikksz. 7-1-47 · 250 Ft/db · SZ13866 (2026-10-02)
+        specs: fix 5V buck
+        logika: — · buszok: POWER/controller
+        megjegyzés: Apró 5V sín 12V-ról — oda, ahova az LM2596 nem fér be.
+
+
+### CSATLAKOZÓK  —  9 tételsor / 47 db
+------------------------------------------------------------------------
+  11 db  4-ch szintillesztő 3,3↔5V   [id: shifter]
+        cikksz. 2-2-32 · 150 Ft/db · SZ12582 / SZ12833 (2026-09-12 / 2026-09-17)
+        specs: kétirányú · I2C/SPI/UART/GPIO
+        logika: tol (3,3/5V tűrő) · buszok: I2C/either, SPI/either, UART/either, GPIO/either
+        megjegyzés: Feszültség-ütközést old fel a buildben.
+
+   2 db  Anya fejléc 2,54mm 19-pin (5db/cs)   [id: fhdr19]
+        cikksz. 10-7-106 · 180 Ft/db · SZ12583 (2026-09-12)
+        logika: —
+        megjegyzés: A RÉG HIÁNYZÓ anya foglalat — cserélhetőség MEGVAN.
+
+  11 db  Hajlított lábas anya sor (1x10/5P/8P)   [id: rahdr]
+        cikksz. YXS1716 · 50 Ft/db · SZ12585 (2026-09-12)
+        logika: —
+
+   4 db  USB 2.0 "A" anya → 2,54mm DIP adapter   [id: usbadip]
+        cikksz. 10-7-112 · 110 Ft/db · SZ12833 (2026-09-17)
+        specs: panelre forrasztható USB aljzat
+        logika: —
+
+   1 db  Anya fejléc 2,54mm 20-pin (5db/cs)   [id: fhdr20]
+        cikksz. 10-7-107 · 150 Ft/db · SZ14217 (2026-10-07)
+        logika: —
+        megjegyzés: A 19-pin (10-7-106) párja — 40-pin ESP panelek foglalatához.
+
+   4 db  DC táp aljzat 5,5×2,1mm — beforrasztható   [id: dcjack_f]
+        cikksz. 10-7-58 · 90 Ft/db · SZ13865 (2026-10-02)
+        specs: panelbe forrasztható anya
+        logika: —
+
+   4 db  DC táp dugó 5,5×2,1mm — szerelhető   [id: dcjack_m]
+        cikksz. 10-7-15 · 90 Ft/db · SZ13865 (2026-10-02)
+        specs: csavaros/szerelhető apa, forrasztás nélkül kábelre
+        logika: —
+
+   2 db  DC dugó 5,5×2,1mm szerelt kábellel (cseppálló, 15cm)   [id: dcpig]
+        cikksz. 10-7-108 · 150 Ft/db · SZ13865 (2026-10-02)
+        specs: kész pigtail, fekete
+        logika: —
+
+   8 db  XT60 csatlakozó pár 40A/500V   [id: xt60]
+        cikksz. 10-7-13 · 220 Ft/db · SZ13865 (2026-10-02)
+        specs: 8 pár · akku-főcsatlakozó
+        logika: —
+        megjegyzés: Az L7 pakk terhelését ez viszi, nem a forrasztott cellaláb. A Bővítés fülön már csak JST + biztosítéktartó hiányzik.
+
+
+### ESZKÖZÖK / MÉRŐK  —  10 tételsor / 14 db
+------------------------------------------------------------------------
+   1 db  Griff mérőcsipesz CAT II 1000V/4A   [id: griff]
+        cikksz. 9-1-13 · 3000 Ft/db · SZ11580 (2026-08-26)
+        specs: élő panelen is
+        logika: —
+
+   2 db  Forrasztópáka 80W állítható   [id: iron80w]
+        cikksz. 14-2-13 · 3000 Ft/db · SZ12585 / SZ13324 (2026-09-12 / 2026-09-25)
+        logika: —
+        megjegyzés: Mostantól tudsz forrasztani — a no-solder út opcionális.
+
+   1 db  LCR-T4 alkatrész teszter   [id: lcrt4]
+        cikksz. 8-1-12 · 4130 Ft/db · SZ12583 (2026-09-12)
+        specs: R/L/C/tranzisztor/ESR
+        logika: —
+
+   1 db  500KV impulzusgenerátor MCY-12-1   [id: hvgen]
+        cikksz. 10-9-5 · 2200 Ft/db · SZ12583 (2026-09-12)
+        logika: —
+        megjegyzés: NAGYFESZ ív-generátor — ÉLETVESZÉLY, csak óvatos kísérlet.
+
+   1 db  KWS-065C USB-C teszter (V / A / mAh)   [id: kws065c]
+        cikksz. 8-1-25 · 3300 Ft/db · SZ13324 (2026-09-25)
+        specs: feszültség, áram, kapacitás
+        logika: —
+        megjegyzés: Cella-futásidő és node-fogyasztás mérése — a runtime-log alapja. (Korábban a Bővítés fülön volt.)
+
+   1 db  PWM jelgenerátor 3 csatornás   [id: pwmgen]
+        cikksz. 8-1-54 · 1600 Ft/db · SZ13324 (2026-09-25)
+        specs: állítható frekvencia + kitöltés
+        logika: —
+        megjegyzés: Szervó/LED/MOSFET teszt MCU nélkül.
+
+   3 db  200W LED forrasztó fűtőlap csipesszel   [id: heatplate]
+        cikksz. 14-2-17 · 1557.33 Ft/db · SZ13324 (2026-09-25)
+        specs: 220V · 260 °C
+        logika: —
+        megjegyzés: HÁLÓZATI 220V, forró felület — a szilikon alátéten használd.
+
+   2 db  Pákahegy-tisztító réz forgács (dobozban)   [id: tipclean]
+        cikksz. 14-2-5 · 600 Ft/db · SZ13324 (2026-09-25)
+        logika: —
+
+   1 db  Hőálló szilikon szerelőalátét (kék)   [id: silmat]
+        cikksz. YXS2299 · 750 Ft/db · SZ13324 (2026-09-25)
+        logika: —
+
+   1 db  ESD antisztatikus csipeszkészlet (6 db)   [id: esdtweez]
+        cikksz. 14-1-3 · 600 Ft/db · SZ13324 (2026-09-25)
+        specs: műanyag
+        logika: —
+
+
+### FOGYÓ / KÁBELEZÉS  —  16 tételsor / 52 db
+------------------------------------------------------------------------
+   1 db  100µH (3A) toroid induktivitás   [id: ind100]
+        cikksz. YXZ1212 · 150 Ft/db · SZ11812 (2026-08-30)
+        specs: buck ripple/hő mod
+        logika: —
+
+   8 db  20 AWG szilikon vezeték (fekete+piros)   [id: wire_sil]
+        cikksz. C-04 · 280 Ft/db · SZ12583 (2026-09-12)
+        specs: / C-05
+        logika: —
+
+   2 db  Diódakészlet (8 típus, 100 db)   [id: diodekit]
+        cikksz. 10-6-37 · 700 Ft/db · SZ12833 (2026-09-17)
+        logika: —
+
+   2 db  2N2222 NPN kapcsolótranzisztor (5db/cs)   [id: t2n2222]
+        cikksz. 10-2-31 · 150 Ft/db · SZ12833 (2026-09-17)
+        specs: TO-92 · kisjelű kapcsoló
+        logika: —
+
+   2 db  FQPF10N60C teljesítmény MOSFET TO-220F   [id: fqpf10n60c]
+        cikksz. 10-2-35 · 200 Ft/db · SZ12833 (2026-09-17)
+        specs: 600V N-csatornás (10N60 osztály)
+        logika: —
+        megjegyzés: NEM logic-level: 3,3V GPIO nem nyitja ki rendesen — gate-driver vagy a MosFet trigger modul kell elé.
+
+   8 db  M3 réz hatszög távtartó 15mm apa-anya   [id: so15mf]
+        cikksz. 16-1-1 · 120 Ft/db · SZ12833 (2026-09-17)
+        logika: —
+        megjegyzés: Panel-egymásra-építés és házba szerelés — 28 db távtartó összesen (15/10mm, apa-anya és anya-anya).
+
+   4 db  M3 réz hatszög távtartó 10mm apa-anya   [id: so10mf]
+        cikksz. 16-1-13 · 220 Ft/db · SZ12833 (2026-09-17)
+        logika: —
+
+   8 db  M3 réz hatszög távtartó 15mm anya-anya   [id: so15ff]
+        cikksz. 16-1-2 · 110 Ft/db · SZ12833 (2026-09-17)
+        logika: —
+
+   8 db  M3 réz hatszög távtartó 10mm anya-anya   [id: so10ff]
+        cikksz. 16-1-17 · 100 Ft/db · SZ12833 (2026-09-17)
+        logika: —
+
+   1 db  Flux adagoló toll 10ml   [id: fluxpen]
+        cikksz. 14-1-2 · 1100 Ft/db · SZ13324 (2026-09-25)
+        logika: —
+
+   2 db  Színes tüskesor 40p (5 csík)   [id: hdr_str]
+        cikksz. 10-7-47 · 200 Ft/db · SZ11580 (2026-08-26)
+        specs: egyenes 2,54mm
+        logika: —
+
+   2 db  Tüskesor 40p 90°   [id: hdr_ra]
+        cikksz. 10-7-65 · 50 Ft/db · SZ11580 (2026-08-26)
+        logika: —
+
+   1 db  Dupont M-F 20cm ×40   [id: dupmf]
+        cikksz. 9-1-29 · 500 Ft/db · SZ11580 (2026-08-26)
+        logika: —
+
+   1 db  Dupont F-F 20cm ×40   [id: dupff]
+        cikksz. 9-1-28 · 500 Ft/db · SZ11580 (2026-08-26)
+        logika: —
+
+   1 db  Breadboard jumper szett 65db   [id: bbjmp]
+        cikksz. 9-1-16 · 500 Ft/db · SZ11580 (2026-08-26)
+        specs: merev
+        logika: —
+
+   1 db  Zsugorcső 328db   [id: heat]
+        cikksz. 9-1-78 · 800 Ft/db · SZ11580 (2026-08-26)
+        logika: —
+
+
+### DIY FORRASZTÓKÉSZLETEK  —  2 tételsor / 2 db
+------------------------------------------------------------------------
+   1 db  Hőmérséklet-riasztó DIY forrasztókészlet   [id: kit_tempalarm]
+        cikksz. 15-1-17 · 1385 Ft/db · SZ13324 (2026-09-25)
+        specs: LED + hangjelzés · 5V
+        logika: —
+
+   1 db  CD4060 zenélő LED-lámpa DIY forrasztókészlet   [id: kit_cd4060]
+        cikksz. 15-1-18 · 1250 Ft/db · SZ13324 (2026-09-25)
+        specs: 3 színű fényhatás
+        logika: —
+
+
+### ÖSSZESÍTŐ
+------------------------------------------------------------------------
+  Tételsor összesen:        117
+  Darabszám összesen:       280 db
+  Ismert beszerzési érték:  226 118 Ft  (készlet × bruttó egységár)
+  Ár nélküli tétel (1): VL6180X ToF távolságérzékelő
+
+### SZÁMLÁK
+------------------------------------------------------------------------
+  SZ11580   2026-08-26   25 cikkszám
+  SZ11669   2026-08-27   3 cikkszám
+  SZ11670   2026-08-27   3 cikkszám
+  SZ11812   2026-08-30   8 cikkszám
+  SZ12198   2026-09-06   5 cikkszám
+  SZ12582   2026-09-12   3 cikkszám
+  SZ12583   2026-09-12   17 cikkszám
+  SZ12584   2026-09-12   3 cikkszám
+  SZ12585   2026-09-12   11 cikkszám
+  SZ12833   2026-09-17   14 cikkszám
+  SZ13324   2026-09-25   13 cikkszám
+  SZ13325   2026-09-25   4 cikkszám
+  SZ13442   2026-09-28   2 cikkszám
+  SZ13865   2026-10-02   4 cikkszám
+  SZ13866   2026-10-02   8 cikkszám
+  SZ14217   2026-10-07   7 cikkszám
+
+  Díjbekérők (NEM külön beszerzés): MR42988 = SZ11580 · MR45384 = SZ13866 · MR45385 = SZ13865
+
+########################################################################
+# 2. NINCS MEG — „Bővítéshez rendelhető" kívánságlista (NEM készlet)
+########################################################################
+
+### Táp & akku
+------------------------------------------------------------------------
+  - Állítható bench tápegység (0–30V/5A)   [id: o_bench]
+      mire jó: Biztonságos áramkorlátos bekapcsolás — a füst-teszt vége. Minden prototípus első védvonala.
+  - 2S/3S/4S BMS + balansz töltő   [id: o_bms]
+      mire jó: A többcellás L7 pakkhoz KÖTELEZŐ — a powerbank modul csak 1S. A 4S feszmérőd ehhez passzol.
+  - MP1584 buck + MT3608 boost készlet (kicsiben)   [id: o_buckboost]
+      mire jó: Buck-boost MEGVAN egy darab (SJV-4W 30V/3A, SZ12833) — ez már csak a kis helyre, több példányban, a viselhető/pendant buildekhez kell.
+  - JST + biztosítéktartó szett (XT60 megvan)   [id: o_xt60]
+      mire jó: Az XT60 pár MEGVAN (SZ13865, 8 pár) — már csak a JST balansz-csatlakozók és az inline biztosítéktartó hiányzik a pakkhoz.
+
+### Csatlakozó & kábel
+------------------------------------------------------------------------
+  - Qwiic/STEMMA-QT kábel + hub   [id: o_qwiic]
+      mire jó: Forrasztás/tüskesor nélküli I2C lánc — a hordozható MPU6050/ToF/RTC csatlakozás legjobb útja.
+  - Dupont krimpelő + pin/ház készlet   [id: o_crimp]
+      mire jó: Hidegen készített, tartós saját kábelek — a viselhető build vibrációt tűrő köté­sei.
+  - Érvéghüvely készlet + krimpelő   [id: o_ferrule]
+      mire jó: Sodrott ér csavaros sorba — villanyszerelői minőség a BRIDGE/elosztó bekötésnél.
+  - DIN-sín sorkapcsok + véglemez   [id: o_din]
+      mire jó: A BRIDGE-DN / shadow layer szekrénybe való rendezett elosztás.
+  - IDC szalagkábel + fejek (2.54)   [id: o_idc]
+      mire jó: Sokágú, rendezett belső kábelezés a PiP-boy/hub belsejében.
+
+### Hálózat & szerver
+------------------------------------------------------------------------
+  - GL.iNet mini router (OpenWRT)   [id: o_glinet]
+      mire jó: A L2 tunnel-helper: AP + Tailscale/cloudflared egy dobozban. A legkisebb út az internet-URL-hez.
+  - Raspberry Pi 5 + NVMe HAT   [id: o_pi5]
+      mire jó: A L3 mini-szerver alapja; a vault, ami FUT, nem csak tárol. A tunnelt is elviszi.
+  - W5500 Ethernet (SPI) — már csak retrofitra   [id: o_w5500]
+      mire jó: A vezetékes uplink NATÍVAN megvan (ESP32-C3 ETH01-EVO ×2, SZ12833). Ez már csak arra kell, ha egy MÁSIK panelt (S3, C6, Pico) akarsz Ethernetre tenni.
+  - PoE splitter (5V/12V)   [id: o_poe]
+      mire jó: Egy kábel adat+táp a fix node-oknak — tiszta shadow-layer telepítés.
+
+### Rádió & protokoll
+------------------------------------------------------------------------
+  - Zigbee/Thread koordinátor dongle   [id: o_zbdongle]
+      mire jó: A C6-tal együtt a BRIDGE közös protokoll-padlója (Matter-over-Thread).
+  - 868MHz LoRa (SX1276)   [id: o_lora868]
+      mire jó: EU Meshtastic / nagy hatótáv — a boltok 433MHz-esek, ezt máshonnan.
+  - LD2410 mmWave jelenlét   [id: o_ld2410]
+      mire jó: Pontos jelenlét (az RCWL-0516 durvább). Kutyakövetés/room presence.
+  - RTL-SDR Blog V4   [id: o_rtlsdr]
+      mire jó: Passzív rádió-vétel; a HackRF (L6) előszobája.
+  - SIM7600 LTE + GPS modem   [id: o_lte]
+      mire jó: Hálózatfüggetlen net a helyszínen + tartalék tunnel-út + pozíció.
+  - nRF24L01+ (2.4GHz)   [id: o_nrf24]
+      mire jó: Olcsó, gyors point-to-point a swarm belső linkjéhez az ESP-NOW mellé/helyett.
+
+### Szenzor
+------------------------------------------------------------------------
+  - BME280 hő/pára/nyomás   [id: o_bme280]
+      mire jó: A standard környezeti node — egyből Home Assistantba.
+  - DS3231 RTC   [id: o_ds3231]
+      mire jó: Tápkimaradást túlélő időbélyeg — a vault-log és ütemezés alapja.
+  - INA219/INA226 áram+feszültség   [id: o_ina]
+      mire jó: DC sín valós fogyasztása — energia-telemetria modul-léptékben (BRIDGE/SDM630 kicsiben).
+  - SCT-013 lakatfogó + ACS712   [id: o_sct]
+      mire jó: Non-invazív AC áram mérés — a shadow-layer energia-ág prototípusa.
+  - K-hőelem + MAX31855   [id: o_tc]
+      mire jó: Elosztó/HVAC magas hőmérséklet — a SA-12 hatókörén túl.
+  - VL53L0X/L1X ToF (hosszabb táv)   [id: o_vl53]
+      mire jó: A VL6180X ~10cm-e helyett méteres távolság — gesztus/térkép.
+  - INMP441 mic + MAX98357 amp   [id: o_i2s]
+      mire jó: S3-audio be+ki: zajszintmérő, intercom, prop hang, wake-word.
+
+### Kijelző & UI
+------------------------------------------------------------------------
+  - 2.9" e-paper kijelző   [id: o_epaper]
+      mire jó: Alacsony fogyasztású állapotkijelző fix node-okhoz (akkuról hetekig).
+  - WS2812B RGB szalag/gyűrű   [id: o_ws2812]
+      mire jó: Cinema RGB réteg + státusz-fény; egy adatlábon vezérelhető.
+  - 1.9"/2.0" IPS SPI kijelző   [id: o_ips]
+      mire jó: Kis, éles kijelző node-okhoz, ahol a touch-panel túl nagy.
+
+### Tár
+------------------------------------------------------------------------
+  - microSD kártyák (A1, 32–128GB)   [id: o_sdcards]
+      mire jó: A vault médiája — több példány a rotáló mentésekhez.
+  - SSD + USB tok   [id: o_ssd]
+      mire jó: Megbízhatóbb vault-tár mint az SD (ami csendben elhal). A hivatkozott biztonságos backup-hely.
+
+### Aktuátor & motor
+------------------------------------------------------------------------
+  - NEMA17 + TMC2209 driver   [id: o_stepper]
+      mire jó: A cinema roller-screen / falmozgatás rendes motorja (a 28BYJ csak proto).
+  - SSR (szilárdtest relé) + hűtő   [id: o_ssr]
+      mire jó: Csendes, kopásmentes AC kapcsolás a mechanikus relék helyett — hosszú élettartam.
+
+### Védelem & minőség
+------------------------------------------------------------------------
+  - USB izolátor (ADuM)   [id: o_isolator]
+      mire jó: Galvanikus leválasztás, amikor RS485/CAN-t hajtasz élő panel mellől laptopról.
+  - 8-ch logikai analizátor   [id: o_logic]
+      mire jó: I2C/SPI/UART/CAN hibakeresés — a MCP2515 bit-timing gondok gyors diagnózisa.
+  - Több 4/8-ch szintillesztő   [id: o_shifter]
+      mire jó: Sosem elég — a CH341A/MCP2515/5V modulok mind ezt kérik a 3,3V hostok ellen.
+  - Kapcsolható-portú USB hub (YKUSH)   [id: o_hub]
+      mire jó: A L4 adapter-választó: a megfelelő programozó él, a többi sötét — nincs COM-ütközés.
+
+### Ház & mechanika
+------------------------------------------------------------------------
+  - Műszerdobozok / hordozó tok szett   [id: o_box]
+      mire jó: A PiP-boy/hub kagyló és a fix node-ok háza — a fab-hiány áthidalása.
+  - Heat-set inzert készlet (standoff megvan)   [id: o_inserts]
+      mire jó: A réz távtartók MEGVANNAK (28 db M3, SZ12833) — már csak a heat-set inzert hiányzik az újra-nyitható, csavarozható 3D-nyomtatott házhoz.
+  - PETG/PLA filament + PVC/akril lap   [id: o_filament]
+      mire jó: A kagyló-encase és a két PVC alaplap nyersanyaga.
+
+########################################################################
+# 3. DOKUMENTÁLT VARIÁNSOK (építési ötletek, NINCS megépítve)
+########################################################################
+
+### Korábbi
+------------------------------------------------------------------------
+  * PiP-boy base prototípus (v0)
+      Korai formaprototípus: fedett touchscreen + jobbkezes grip, kagyló-encase.
+      alkatrész: 8/9 megvan · hiányzik: Műanyag kagyló-encase (base lap + jobb-grip fedél + touch-fedél + klikk) — az EGYETLEN hiány már. 3D-nyomtatás/lemez, nem bolti tétel.
+
+### A) Enkóder-pult / HID DECK vonal
+------------------------------------------------------------------------
+  * Enkóder-pult v1 — S3-Zero, 3 enkóder, USB-HID + web
+      Három forgatógomb a PC-hez USB-billentyűzetként; a modem WiFi-jén saját weblap (http://vrg-knobs.local) a hozzárendelésekhez.
+      alkatrész: 4/5 megvan · hiányzik: Ház/előlap — 3D-nyomtatás vagy doboz. Elektronikailag minden megvan.
+
+  * Kétirányú asztali panel — TM1638 + LED-gombok, app-függő profil
+      A pult visszabeszél: a PC megmondja, melyik app van elöl, a pult átvált és LED-del / kijelzővel mutatja a réteget, hangerőt, hívás-időt.
+      alkatrész: 6/6 megvan · hiányzik: Nagyobb előlap a gombsorral (fab).
+
+  * Planner pendant — enkóderek a Planner kamerájához
+      Saját eszköz, saját hardver-vezérlő: forgatás = orbit / pan / zoom a Planner 3D/2.5D nézetében, gomb = a V2 kamera-presetek léptetése.
+      alkatrész: 2/2 megvan · hiányzik: Planner oldali bekötés: PLANNER_CAM vezérlése a /state értékekből (szoftver, nem alkatrész).
+
+  * NFC munkakártyák — kártyaérintésre betöltött munka
+      Egy „P33" kártyát a pultra érintve megnyílik a P33 Planner-fájl, az árazási mappa, és a pult a munka billentyűrétegére vált.
+      alkatrész: 2/3 megvan · hiányzik: Extra 13,56 MHz (MIFARE Classic / NTAG) kártyák vagy matricák — a modulhoz általában csak 1 kártya + 1 kulcstartó jár.
+
+  * Walk-away zár — radar zárolja a PC-t
+      Ha felállsz az asztaltól, a radar észreveszi és Win+L-t küld; visszaülve felébreszti a kijelzőket.
+      alkatrész: 3/3 megvan
+
+  * Vezeték nélküli split — asztali dongle + akkus GRIP (air mouse)
+      A HID DECK GRIP + BASE első verziója: az N16R8 az asztalon USB-dongle, a kézi egység ESP-NOW-n küld.
+      alkatrész: 8/9 megvan · hiányzik: GRIP markolat-ház (fab). | Opció: 1S cellához LDO/buck-boost, ha a cella teljes ívén stabil 3,3V kell (a CN3903 step-down 3,7V-ból nem ad 5V-ot).
+
+### B) Szakmai eszközök (villanyszerelés)
+------------------------------------------------------------------------
+  * Kábelér-azonosító — két végű érpár-térkép
+      Sokeres kábel két végén egy-egy egység: az egyik sorban jelet ad minden érre, a másik megmondja, hova érkezik — A→B táblázat a CYD-n.
+      alkatrész: 5/6 megvan · hiányzik: Csatlakozó-fej a kábelvéghez (sorkapocs-sor vagy krokodilcsipesz-köteg). | Bemeneti védelem: soros ellenállás (1 kΩ) + diódák érenként (a diódakészletből, ellenállás nincs a listán).
+
+  * Modbus fogyasztásmérő-olvasó — laptopról a helyszínen
+      DIN-sínes Modbus RTU fogyasztásmérők kiolvasása USB–RS485 adapterrel, export a munka dokumentációjához.
+      alkatrész: 2/2 megvan · hiányzik: Mérőtípusonkénti regiszter-térkép (adatlapból). | Állandó telepítéshez: TTL↔RS485 modul (MAX485/MAX3485) az ESP oldalra.
+
+  * Labortáp-állomás — 180W modul + buck-boost + mérők
+      Saját asztali táp: 180W-os modul → SJV-4W buck-boost → V-A mérők az előlapon, XT60 kimenetek, ESP webes naplózás.
+      alkatrész: 6/7 megvan · hiányzik: Ház + IEC hálózati aljzat biztosítékkal + főkapcsoló (vagy az o_xt60 sorból biztosítéktartó). | Opció: INA219/INA226 (Bővítés fül) a pontos árammérő naplózáshoz.
+
+  * 18650 kapacitásmérő
+      Feltölt, majd terhelésen kisüt és mAh-t mér — a 4 db 35E cella valós állapotához.
+      alkatrész: 5/6 megvan · hiányzik: Teljesítmény-ellenállás (4 Ω / 10 W körül) — vagy pontosabb áramhoz INA219 (Bővítés fül).
+
+### C) Kütyük, játék, hasznos apróságok
+------------------------------------------------------------------------
+  * Vezeték nélküli kvíz-buzzerek (max. 6 játékos)
+      Minden játékosnál egy C3 Zero egy LED-es gombbal; a gazda-egység az első nyomás után mindenkit letilt, a TM1638 mutatja a pontokat.
+      alkatrész: 5/6 megvan · hiányzik: Játékos-dobozok (fab). | 6 játékoshoz 6 tápforrás — 4 cella + TP4056 van, a többi USB-ről.
+
+  * Reakció- / Simon-játék
+      A 10 színes LED-gomb sorban felvillan, ismételd meg (Simon), vagy üsd le minél gyorsabban (reakcióidő) — rekord a TM1638-on.
+      alkatrész: 6/6 megvan
+
+  * Érintés nélküli lámpakapcsoló
+      Kéz a szenzor fölé = a pákaállomás / asztali lámpa be-ki; tartott kéz = fényerő (12V LED-nél).
+      alkatrész: 4/4 megvan
+
+  * Szerszámos láda / fiók NFC-zár
+      Kártya vagy telefon (NFC) érintésre nyit a mágneszár; rossz kártyára rövid sípolás.
+      alkatrész: 7/7 megvan
+
+  * Hangüzenetes csengő / üzenőgomb
+      Gombnyomásra üzenetet rögzítesz a következő érkezőnek; a villogó gomb jelzi, hogy van üzenet, nyomásra lejátssza.
+      alkatrész: 4/5 megvan · hiányzik: Kis hangszóró (8 Ω, 0,5–1 W), ha nincs a modul mellett.
+
+  * Szoba-szenzor node — levegő, hőmérséklet, jelenlét
+      Levegőminőség-trend, hőmérséklet, mozgás → MQTT / Home Assistant, kijelzés a CYD-n.
+      alkatrész: 5/6 megvan · hiányzik: MQTT broker (szoftver). | Pontos hő/páratartalomhoz BME280 (Bővítés fül).
+
+  * Fészer- / garázsriasztó a Site Pagerrel
+      Radar mozgást lát → sziréna + nagy hatótávú riasztás a Site Pagerre nRF905-ön.
+      alkatrész: 6/7 megvan · hiányzik: Kültéri doboz + 12V táp a helyszínen.
+
+### D) Későbbi, nagyobb projektek
+------------------------------------------------------------------------
+  * BRIDGE CONTROL fali egység — prototípus
+      Az enkóder-pult termékké nőve: süllyesztett dobozba forgatógomb + kijelző + jelenlét + hőmérséklet; fényt, árnyékolást, jelenetet vezérel.
+      alkatrész: 4/6 megvan · hiányzik: Süllyesztett 230V→5V tápmodul (minősített). | Előlap/keret (fab). | LD2410 — valódi álló jelenlét (Bővítés fül).
+
+  * Vezetékes CAN-busz a fix node-okhoz
+      Elosztók és fix szenzorok között CAN: zavarvédett, WiFi-független, sima kábelen fut — vezetékes BRIDGE telepítéshez.
+      alkatrész: 2/3 megvan · hiányzik: 120 Ω lezáró ellenállás a busz két végére. | Ellenőrizd az MCP2515 modul kvarcát (8 vagy 16 MHz) és a TJA1050 tápját (5V) — 3,3V-os ESP-hez szintillesztés / 3,3V-os transceiver kell.
+
+  * NFC-címkés elosztók — tábla érintésre megnyílnak az áramkörök
+      Minden átadott elosztóra NFC-matrica; telefon vagy CYD érintéssel megnyitja az adott tábla áramköreit a Plannerből.
+      alkatrész: 2/3 megvan · hiányzik: NTAG matricák (fémfelületre: anti-metal változat). | Planner export: táblánkénti URL / adatcsomag, amire a címke mutat.
+
+  * Áramkörönkénti energiamérés a szekrényben
+      Lakatfogós áramváltók → ETH01-EVO a szekrényben → mért értékek a Planner áramkör-azonosítóihoz kötve. Fizetős kiegészítő az ügyfélnek.
+      alkatrész: 2/4 megvan · hiányzik: SCT-013 lakatfogók (Bővítés fül: o_sct). | Külső ADC a pontos méréshez. | DIN-sínes ház (o_din).
+
+  * Thread / Matter node a C6-tal
+      A BRIDGE eszközök hub nélkül csatlakoznak Apple / Google / Home Assistant otthonokba.
+      alkatrész: 2/3 megvan · hiányzik: Thread border router vagy koordinátor dongle (Bővítés fül: o_zbdongle).
+
+  * Teljes HID DECK — BASE + SCREEN + GRIP
+      A koncepció-doksi végállapota: dokkoló BASE számítási maggal, CYD SCREEN, akkus GRIP, egy összetett HID a PC felé.
+      alkatrész: 3/5 megvan · hiányzik: Számítási mag (o_pi5 a Bővítés fülön, vagy CM5). | Dokkoló mechanika, töltési út a bay-eken.
+
+— vége —
