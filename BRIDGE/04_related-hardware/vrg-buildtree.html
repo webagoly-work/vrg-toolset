@@ -545,6 +545,447 @@ const VARIANTS = [
       'Adatirány: terminál→agy parancs (touch), agy→terminál állapot. Kis fix struct payload elég.',
       'Közös GND CSAK akkor kell, ha vezetékes UART-ra váltasz (G17 TX / G18 RX) ESP-NOW helyett.'
     ]
+  },
+
+  /* ===== 2026-10-12 ötletkör — a készlet alapján (javaslat, NINCS megépítve/tesztelve). A pin mapek javaslatok: a panel feliratán ellenőrizd. ===== */
+
+  // ---------- A) ENKÓDER-PULT / DECK vonal ----------
+  {
+    group:'A) Enkóder-pult / HID DECK vonal',
+    name:'Enkóder-pult v1 — S3-Zero, 3 enkóder, USB-HID + web',
+    tagline:'Három forgatógomb a PC-hez USB-billentyűzetként; a modem WiFi-jén saját weblap (http://vrg-knobs.local) a hozzárendelésekhez.',
+    layout:[
+      '1× EC-11 modul + 2× 1.3" OLED+EC11 modul egy kis lapon; az S3-Zero hátul.',
+      'USB-C a PC felé = natív USB (HID), a WiFi a modemhez csatlakozik (STA mód).',
+      'Enkóderenként: forgatás = hangerő / görgetés / F13–F24, nyomás = mute / váltás.'
+    ],
+    parts:[
+      {name:'ESP32-S3-Zero Mini (agy, natív USB-HID + WiFi)', conn:'USB', owned:true},
+      {name:'EC-11 forgóenkóder modul', conn:'GPIO', owned:true},
+      {name:'1.3" OLED + EC11 ×2 (kijelző + enkóder)', conn:'I2C + GPIO', owned:true},
+      {name:'Dupont kábelek / tüskesor', conn:'—', owned:true},
+      {name:'Ház / előlap (fab)', conn:'mech', owned:false}
+    ],
+    missing:['Ház/előlap — 3D-nyomtatás vagy doboz. Elektronikailag minden megvan.'],
+    pinmap:[
+      'Enk1 (EC-11): A→G1, B→G2, SW→G4',
+      'Enk2 (OLED-modul #1): A→G5, B→G6, SW→G7',
+      'Enk3 (OLED-modul #2): A→G8, B→G9, SW→G10',
+      'Kijelző #1 (Wire): SDA→G11, SCL→G12 · 0x3C',
+      'Kijelző #2 (Wire1): SDA→G13, SCL→G14 · 0x3C — külön busz, így nincs címütközés',
+      'Táp: minden modul 3V3-ról (a felhúzók így 3,3V-ra húznak)',
+      'Ellenőrizd: G14 kivezetése a panelen; ha nincs, G3 (strapping, bemenetként felhúzással jó)'
+    ],
+    notes:[
+      'Arduino: USB Mode = USB-OTG (TinyUSB); ESP32Encoder (PCNT) + USBHIDConsumerControl + USBHIDKeyboard.',
+      'Web: WiFiManager (első indításkor „VRG-Knobs-Setup" AP) + ESPmDNS + WebServer; /state JSON, /set?enc=&act= → Preferences (NVS). CORS fejléc, hogy file:// VRG eszközök is olvassák.',
+      'ArduinoOTA: az első USB-flash után hálózaton frissíthető.',
+      'Csak 2,4 GHz WiFi. Internet felől NE port-forward — Tailscale vagy HA.'
+    ]
+  },
+  {
+    group:'A) Enkóder-pult / HID DECK vonal',
+    name:'Kétirányú asztali panel — TM1638 + LED-gombok, app-függő profil',
+    tagline:'A pult visszabeszél: a PC megmondja, melyik app van elöl, a pult átvált és LED-del / kijelzővel mutatja a réteget, hangerőt, hívás-időt.',
+    layout:[
+      'Az Enkóder-pult v1 kiegészítése (ugyanaz az S3-Zero).',
+      'TM1638: 8 gomb + 8 LED + 8 digit — réteg, hangerő %, hívás-időzítő.',
+      '10 LED-es nyomógomb a PCF8575-ön (I2C) — makrók; a LED a tényleges állapotot mutatja (pl. mikrofon némítva).',
+      'Rezgőmotor: rövid koppanás rétegváltáskor / tartomány végén.',
+      'PC oldalon kis script (AutoHotkey/Python) küldi az aktív ablakot: HTTP /profile?app=…'
+    ],
+    parts:[
+      {name:'ESP32-S3-Zero Mini (az Enkóder-pultból)', conn:'USB + WiFi', owned:true},
+      {name:'TM1638 LED&KEY modul', conn:'GPIO (3 vonal)', owned:true},
+      {name:'PCF8575 16-ch I/O bővítő ×2 (0x20 + 0x21, A0 átkötéssel)', conn:'I2C', owned:true},
+      {name:'12×12mm LED-es nyomógomb ×10', conn:'PCF8575', owned:true},
+      {name:'5V rezgőmotor modul', conn:'GPIO', owned:true},
+      {name:'4-ch szintillesztő (ha a TM1638 5V-on megy)', conn:'—', owned:true, opt:true}
+    ],
+    missing:['Nagyobb előlap a gombsorral (fab).'],
+    pinmap:[
+      'TM1638: STB→G15, CLK→G16, DIO→G17 (3,3V-on általában megy; 5V-on szintillesztőn át)',
+      'PCF8575: az 1. I2C buszon (G11/G12) a #1 kijelző mellett · 0x20',
+      'PCF8575 #1 (0x20) P0–P9 → 10 gomb (aktív alacsony) · PCF8575 #2 (0x21) P0–P9 → 10 gomb-LED',
+      'Rezgőmotor: IN→G18'
+    ],
+    notes:[
+      'A PCF8575 kimenete gyenge felhúzó — LED-et LE-húzva (sink) hajts, ellenállással.',
+      'A 10 gomb LED-jéhez + 10 bemenet = 20 vonal → a 2. PCF8575 (0x21) is kell, megvan.'
+    ]
+  },
+  {
+    group:'A) Enkóder-pult / HID DECK vonal',
+    name:'Planner pendant — enkóderek a Planner kamerájához',
+    tagline:'Saját eszköz, saját hardver-vezérlő: forgatás = orbit / pan / zoom a Planner 3D/2.5D nézetében, gomb = a V2 kamera-presetek léptetése.',
+    layout:[
+      'Ugyanaz az Enkóder-pult hardver, „Planner" réteg.',
+      'A Planner a pult /state végpontját pollozza fetch-csel (file://-ról is megy, CORS fejléc kell).',
+      'Alternatíva: HID-billentyűk (pl. F13–F18), amiket a Planner billentyűparancsként kezel — nulla hálózat.'
+    ],
+    parts:[
+      {name:'Enkóder-pult v1 (S3-Zero + 3 enkóder + 2 OLED)', conn:'HTTP / HID', owned:true},
+      {name:'Dual PS2 joystick modul (opció: pan két tengelyen)', conn:'ADC', owned:true, opt:true}
+    ],
+    missing:['Planner oldali bekötés: PLANNER_CAM vezérlése a /state értékekből (szoftver, nem alkatrész).'],
+    pinmap:['Joystick (opció): VRx→G5, VRy→G6 (ADC1) — csak ha az Enk2 helyére kerül; mindkettő nem fér el egyszerre','A többi láb az Enkóder-pult v1 pin mapje szerint'],
+    notes:['A HID DECK doksi 10.4 pontja: a pendant és a GRIP ugyanaz az ág — ez a változat az első kézzelfogható lépés.']
+  },
+  {
+    group:'A) Enkóder-pult / HID DECK vonal',
+    name:'NFC munkakártyák — kártyaérintésre betöltött munka',
+    tagline:'Egy „P33" kártyát a pultra érintve megnyílik a P33 Planner-fájl, az árazási mappa, és a pult a munka billentyűrétegére vált.',
+    layout:[
+      'MFRC-522 olvasó a pult előlapja mögött (a műanyagon átolvas).',
+      'Kártya UID → profil a pult NVS-ében; a PC-script megnyitja a hozzárendelt fájlokat.'
+    ],
+    parts:[
+      {name:'MFRC-522 RFID (SPI)', conn:'SPI', owned:true},
+      {name:'Enkóder-pult v1 (S3-Zero)', conn:'—', owned:true},
+      {name:'13,56 MHz kártyák / matricák (munkánként egy)', conn:'—', owned:false}
+    ],
+    missing:['Extra 13,56 MHz (MIFARE Classic / NTAG) kártyák vagy matricák — a modulhoz általában csak 1 kártya + 1 kulcstartó jár.'],
+    pinmap:['MFRC-522 (SPI): SCK→G38, MOSI→G39, MISO→G40, SS→G41, RST→G42, 3V3 (5V-ot nem visel!) — ellenőrizd a hátsó padokat; ha nincsenek, PN532 I2C módban a meglévő buszon (0x24)']
+  },
+  {
+    group:'A) Enkóder-pult / HID DECK vonal',
+    name:'Walk-away zár — radar zárolja a PC-t',
+    tagline:'Ha felállsz az asztaltól, a radar észreveszi és Win+L-t küld; visszaülve felébreszti a kijelzőket.',
+    layout:[
+      'RCWL-0516 az asztallap alatt (fán/műanyagon át lát, fémen nem).',
+      'Távozás = X másodperc mozgás nélkül → HID Win+L. Érkezés → egér-mozdítás (képernyő-ébresztés).'
+    ],
+    parts:[
+      {name:'RCWL-0516 mikrohullámú radar', conn:'GPIO', owned:true},
+      {name:'ESP32-S3-Zero Mini (önálló, vagy az Enkóder-pultba építve)', conn:'USB-HID', owned:true},
+      {name:'VL6180X ToF (opció: közelítésre ébredő kijelző)', conn:'I2C 0x29', owned:true, opt:true}
+    ],
+    pinmap:['RCWL-0516: VIN→5V, OUT→G4 (3,3V-os kimenet), GND','VL6180X (opció): közös I2C, 0x29'],
+    notes:['A radar érzékeny, falon át is lát — az érzékenységet a hold-idővel + firmware-késleltetéssel szelídítsd. Jelenlétre (álló ember) az LD2410 való (Bővítés fül).']
+  },
+  {
+    group:'A) Enkóder-pult / HID DECK vonal',
+    name:'Vezeték nélküli split — asztali dongle + akkus GRIP (air mouse)',
+    tagline:'A HID DECK GRIP + BASE első verziója: az N16R8 az asztalon USB-dongle, a kézi egység ESP-NOW-n küld.',
+    layout:[
+      'Dongle: S3 N16R8 a PC USB-jén — egyetlen összetett HID eszközként jelenik meg.',
+      'GRIP: S3-Zero + dual PS2 joystick + MPU6050 + 18650 + TP4056; gomb nyomva tartva = air mouse.',
+      'SCREEN (később): a CYD érintőkijelző ugyanarra a dongle-ra csatlakozik.'
+    ],
+    parts:[
+      {name:'ESP32-S3 N16R8 Dual USB-C (dongle / BASE)', conn:'USB-HID', owned:true},
+      {name:'ESP32-S3-Zero Mini (GRIP agy)', conn:'ESP-NOW', owned:true},
+      {name:'Dual PS2 joystick modul', conn:'ADC + GPIO', owned:true},
+      {name:'MPU6050 IMU', conn:'I2C 0x68', owned:true},
+      {name:'Samsung INR18650-35E + 1 cellás tartó', conn:'TÁP', owned:true},
+      {name:'TP4056 1S töltő USB-C (védelemmel)', conn:'TÁP', owned:true},
+      {name:'CN3903 5V step-down / vagy közvetlenül 3V3 LDO-ra', conn:'TÁP', owned:true},
+      {name:'ESP32 WROOM LVGL 2,4" (SCREEN, később)', conn:'ESP-NOW', owned:true, opt:true},
+      {name:'GRIP ház (fab)', conn:'mech', owned:false}
+    ],
+    missing:['GRIP markolat-ház (fab).','Opció: 1S cellához LDO/buck-boost, ha a cella teljes ívén stabil 3,3V kell (a CN3903 step-down 3,7V-ból nem ad 5V-ot).'],
+    pinmap:[
+      'GRIP joystick: VRx1→G1, VRy1→G2, SW1→G4 · VRx2→G5, VRy2→G6, SW2→G7 (ADC1 lábak — ADC2 ütközik a rádióval)',
+      'GRIP MPU6050: SDA→G11, SCL→G12 · 0x68',
+      'GRIP akku: cella → TP4056 B+/B− → OUT → S3-Zero 5V lába (a panel LDO-ja 3,3V-ot csinál) — USB és akku egyszerre ne'
+    ],
+    espnow:[
+      'Dongle és GRIP ugyanazon a WiFi-csatornán (ha a dongle a modemre is csatlakozik, a csatorna a modemé).',
+      'Csomag: kis fix struct (tengelyek, gombok, gyro delta) ~100–200 Hz.',
+      'Párosítás: MAC kiírás, esp_now_add_peer(); később titkosított peer (LMK).'
+    ],
+    notes:['Gyro: deadzone + simítás + gyro/accel fúzió (lásd n1rml/esp32_airmouse a HID DECK doksiban).']
+  },
+
+  // ---------- B) SZAKMAI ESZKÖZÖK ----------
+  {
+    group:'B) Szakmai eszközök (villanyszerelés)',
+    name:'Kábelér-azonosító — két végű érpár-térkép',
+    tagline:'Sokeres kábel két végén egy-egy egység: az egyik sorban jelet ad minden érre, a másik megmondja, hova érkezik — A→B táblázat a CYD-n.',
+    layout:[
+      'Adó-egység: C3 Zero + PCF8575 (16 kimenet) → 16 ér.',
+      'Vevő-egység: C3 Zero + PCF8575 (16 bemenet) a másik végen.',
+      'A két egység ESP-NOW-n beszél; eredmény a CYD-n vagy a telefonon (web).',
+      'Közös referencia: az egyik ér vagy az árnyékolás a GND (a két vég között kell egy közös vezető).'
+    ],
+    parts:[
+      {name:'ESP32-C3 Zero ×2', conn:'ESP-NOW', owned:true},
+      {name:'PCF8575 ×2', conn:'I2C', owned:true},
+      {name:'CD74HC4067 mux (alternatíva / analóg mérés: ellenállás, rövidzár)', conn:'GPIO + ADC', owned:true, opt:true},
+      {name:'ESP32 WROOM LVGL 2,4" (kijelző, opció)', conn:'ESP-NOW', owned:true, opt:true},
+      {name:'18650 + TP4056 ×2 (hordozható táp)', conn:'TÁP', owned:true},
+      {name:'Krokodilcsipeszes / sorkapcsos csatlakozó-fej (fab)', conn:'mech', owned:false}
+    ],
+    missing:['Csatlakozó-fej a kábelvéghez (sorkapocs-sor vagy krokodilcsipesz-köteg).','Bemeneti védelem: soros ellenállás (1 kΩ) + diódák érenként (a diódakészletből, ellenállás nincs a listán).'],
+    pinmap:['C3 Zero: SDA→G4, SCL→G5 (PCF8575 0x20)','Adó: PCF kimenet egyenként LOW, a többi felhúzott bemenet','Vevő: PCF minden lába bemenet, felhúzva; a LOW-ra húzott láb = az ér'],
+    notes:[
+      '⚠ CSAK feszültségmentes, mindkét végen leválasztott kábelen! Feszültség alatti hálózatra kötve a modul azonnal tönkremegy és veszélyes.',
+      'Bővítés: a mux + ADC-vel szakadás / rövidzár / érek közti zárlat is kimutatható.'
+    ]
+  },
+  {
+    group:'B) Szakmai eszközök (villanyszerelés)',
+    name:'Modbus fogyasztásmérő-olvasó — laptopról a helyszínen',
+    tagline:'DIN-sínes Modbus RTU fogyasztásmérők kiolvasása USB–RS485 adapterrel, export a munka dokumentációjához.',
+    layout:[
+      'Laptop + USB–RS485 adapter → a mérő A/B kapcsai.',
+      'Szoftver: kis VRG HTML (Web Serial — localhost/https kell) vagy Python script; regiszter-térkép mérőtípusonként.',
+      'Később: ETH01-EVO a szekrényben állandó olvasóként (RS485 modul kell hozzá).'
+    ],
+    parts:[
+      {name:'USB–RS485 adapter', conn:'USB / RS485', owned:true},
+      {name:'CP2102 6-in-1 USB átalakító (tartalék RS485 út)', conn:'USB', owned:true, opt:true}
+    ],
+    missing:['Mérőtípusonkénti regiszter-térkép (adatlapból).','Állandó telepítéshez: TTL↔RS485 modul (MAX485/MAX3485) az ESP oldalra.'],
+    notes:['Csak Modbus RTU-s mérőn működik. Az RS485 kapocs SELV, de a szekrényben dolgozni szakszerűen kell (feszültségmentesítés, takarás).','Lezáró ellenállás (120 Ω) a busz végén, ha hosszú a vonal.']
+  },
+  {
+    group:'B) Szakmai eszközök (villanyszerelés)',
+    name:'Labortáp-állomás — 180W modul + buck-boost + mérők',
+    tagline:'Saját asztali táp: 180W-os modul → SJV-4W buck-boost → V-A mérők az előlapon, XT60 kimenetek, ESP webes naplózás.',
+    layout:[
+      '230V → 180W kapcsolóüzemű modul (zárt, szigetelt térben).',
+      'Kimenet 1: fix (a modul kimenete) · Kimenet 2: SJV-4W állítható 0–30V / 3A.',
+      'Előlap: 2× DC V-A mérő + 0,36" voltmérők; XT60 + DC jack kimenetek.',
+      'C3 Zero: volt-szenzorokkal méri a kimeneteket, weblapon görbét rajzol.'
+    ],
+    parts:[
+      {name:'180W kapcsolóüzemű tápegység modul (kettős kimenet)', conn:'230V → DC', owned:true},
+      {name:'SJV-4W DC-DC buck-boost 30V 3A', conn:'TÁP', owned:true},
+      {name:'DC V-A mérő 0–100V / 0–10A ×2', conn:'TÁP', owned:true},
+      {name:'0,36" voltmérő 0–33V', conn:'TÁP', owned:true},
+      {name:'XT60 + DC aljzat', conn:'csatlakozó', owned:true},
+      {name:'ESP32-C3 Zero + Volt szenzor 0–25V ×2', conn:'ADC + WiFi', owned:true},
+      {name:'Zárt fém/műanyag ház, hálózati aljzat, biztosíték, kapcsoló', conn:'mech', owned:false}
+    ],
+    missing:['Ház + IEC hálózati aljzat biztosítékkal + főkapcsoló (vagy az o_xt60 sorból biztosítéktartó).','Opció: INA219/INA226 (Bővítés fül) a pontos árammérő naplózáshoz.'],
+    pinmap:['Volt szenzor 1 → C3 G0 (ADC), Volt szenzor 2 → G1 (ADC)','A 0–25V szenzor 5:1 osztó → ESP ADC max 3,3V ≈ 16,5V mérhető; fölötte saját osztó kell'],
+    notes:['⚠ A 180W modul 230V-os bemenete: zárt, érintésvédett ház, PE bekötve a fém házra, takarás kötelező. Nyitott asztalon nem üzemeltethető.']
+  },
+  {
+    group:'B) Szakmai eszközök (villanyszerelés)',
+    name:'18650 kapacitásmérő',
+    tagline:'Feltölt, majd terhelésen kisüt és mAh-t mér — a 4 db 35E cella valós állapotához.',
+    layout:[
+      'Töltés: TP4056. Kisütés: MosFet trigger modul + teljesítmény-ellenállás.',
+      'C3 Zero méri a cellafeszültséget, idő × áram = mAh; 2,8V-nál leállít.',
+      'Eredmény weblapon / soros porton görbével.'
+    ],
+    parts:[
+      {name:'ESP32-C3 Zero', conn:'ADC + GPIO', owned:true},
+      {name:'TP4056 1S töltő', conn:'TÁP', owned:true},
+      {name:'MosFet trigger modul 15A', conn:'GPIO', owned:true},
+      {name:'18650 tartó 1 cellás', conn:'TÁP', owned:true},
+      {name:'Volt szenzor DC 0–25V', conn:'ADC', owned:true},
+      {name:'Terhelő ellenállás (pl. 4 Ω / 10 W → ~1 A)', conn:'TÁP', owned:false}
+    ],
+    missing:['Teljesítmény-ellenállás (4 Ω / 10 W körül) — vagy pontosabb áramhoz INA219 (Bővítés fül).'],
+    pinmap:['Cella+ → osztó → C3 G0 (ADC) · MosFet trigger IN → G1 · töltés/kisütés váltása firmware-ből'],
+    notes:['A terhelő ellenállás forró lesz — hűtőborda / szellőzés. Védelem nélküli cellát 2,8V alá ne süss.']
+  },
+
+  // ---------- C) KÜTYÜK / JÁTÉK ----------
+  {
+    group:'C) Kütyük, játék, hasznos apróságok',
+    name:'Vezeték nélküli kvíz-buzzerek (max. 6 játékos)',
+    tagline:'Minden játékosnál egy C3 Zero egy LED-es gombbal; a gazda-egység az első nyomás után mindenkit letilt, a TM1638 mutatja a pontokat.',
+    layout:[
+      'Játékos: C3 Zero + 1 LED-es gomb (5 szín ×2) + akku/powerbank.',
+      'Gazda: S3 vagy C3 + TM1638 (pontszám, ki nyomott elsőnek) + piezo.',
+      'ESP-NOW: a gombnyomás időbélyeggel megy, a gazda dönt.'
+    ],
+    parts:[
+      {name:'ESP32-C3 Zero ×6 (játékosok; vagy 5 + 1 gazda)', conn:'ESP-NOW', owned:true},
+      {name:'12×12mm LED-es nyomógomb (5 szín)', conn:'GPIO', owned:true},
+      {name:'TM1638 LED&KEY (gazda kijelző + játékvezetői gombok)', conn:'GPIO', owned:true},
+      {name:'Passzív buzzer 5V', conn:'GPIO', owned:true},
+      {name:'18650 + TP4056 (4 készlet) vagy USB powerbank', conn:'TÁP', owned:true},
+      {name:'Kis dobozok a játékos-gombokhoz (fab)', conn:'mech', owned:false}
+    ],
+    missing:['Játékos-dobozok (fab).','6 játékoshoz 6 tápforrás — 4 cella + TP4056 van, a többi USB-ről.'],
+    pinmap:['Játékos C3: gomb→G3 (felhúzva), gomb-LED→G4 (ellenálláson)','Gazda: TM1638 STB/CLK/DIO → 3 GPIO, buzzer → 1 GPIO'],
+    espnow:['Broadcast a gazdának, gazda nyugtáz + LED-parancs vissza (ki nyert / tiltva).','Fix csatorna, nincs router — bárhol működik.']
+  },
+  {
+    group:'C) Kütyük, játék, hasznos apróságok',
+    name:'Reakció- / Simon-játék',
+    tagline:'A 10 színes LED-gomb sorban felvillan, ismételd meg (Simon), vagy üsd le minél gyorsabban (reakcióidő) — rekord a TM1638-on.',
+    parts:[
+      {name:'ESP32-C3 Zero vagy S3-Zero', conn:'—', owned:true},
+      {name:'12×12mm LED-es nyomógomb ×10', conn:'PCF8575', owned:true},
+      {name:'PCF8575 ×2 (10 gomb + 10 LED)', conn:'I2C', owned:true},
+      {name:'TM1638 (pontszám, rekord)', conn:'GPIO', owned:true},
+      {name:'Passzív buzzer (hangok)', conn:'PWM', owned:true},
+      {name:'AT24C256 EEPROM (rekordok tárolása, opció)', conn:'I2C 0x50', owned:true, opt:true}
+    ],
+    pinmap:['PCF8575 #1 (0x20) = 10 gomb · PCF8575 #2 (0x21) = 10 LED · I2C: SDA→G4, SCL→G5 (C3)'],
+    notes:['Gyerekkel is jó első közös forrasztós projekt.']
+  },
+  {
+    group:'C) Kütyük, játék, hasznos apróságok',
+    name:'Érintés nélküli lámpakapcsoló',
+    tagline:'Kéz a szenzor fölé = a pákaállomás / asztali lámpa be-ki; tartott kéz = fényerő (12V LED-nél).',
+    parts:[
+      {name:'VL6180X ToF', conn:'I2C 0x29', owned:true},
+      {name:'ESP32-C3 Zero', conn:'—', owned:true},
+      {name:'MosFet trigger modul (12V LED-szalag / lámpa)', conn:'PWM', owned:true},
+      {name:'Relé modul 1-ch (230V lámpához)', conn:'GPIO', owned:true, opt:true}
+    ],
+    pinmap:['VL6180X: SDA→G4, SCL→G5 · MosFet trigger PWM→G6 · relé→G7'],
+    notes:['⚠ 230V-os lámpánál a relé-modul érintésvédett dobozba, a modul hálózati oldala nem lehet szabadon. 12V-os LED-del biztonságos asztali játék.']
+  },
+  {
+    group:'C) Kütyük, játék, hasznos apróságok',
+    name:'Szerszámos láda / fiók NFC-zár',
+    tagline:'Kártya vagy telefon (NFC) érintésre nyit a mágneszár; rossz kártyára rövid sípolás.',
+    parts:[
+      {name:'PN532 NFC (I2C módban)', conn:'I2C 0x24', owned:true},
+      {name:'Mini elektromos mágneszár', conn:'12V', owned:true},
+      {name:'MosFet trigger modul (zár kapcsolása)', conn:'GPIO', owned:true},
+      {name:'Dióda a zár tekercsére (flyback)', conn:'—', owned:true},
+      {name:'ESP32-C3 Zero', conn:'—', owned:true},
+      {name:'USB→12V boost kábel vagy DC aljzat + 12V táp', conn:'TÁP', owned:true},
+      {name:'Aktív piezo / passzív buzzer', conn:'GPIO', owned:true}
+    ],
+    pinmap:['PN532: SDA→G4, SCL→G5 (DIP kapcsoló I2C-re) · MosFet IN→G6 · buzzer→G7','Flyback dióda a zár kapcsaira fordítva (katód a +12V-on)'],
+    notes:['A zár áramát ellenőrizd (impulzusban nyisson, ne tartósan áram alatt melegedjen).','Vészkioldás: mechanikus nyitási lehetőség maradjon.']
+  },
+  {
+    group:'C) Kütyük, játék, hasznos apróságok',
+    name:'Hangüzenetes csengő / üzenőgomb',
+    tagline:'Gombnyomásra üzenetet rögzítesz a következő érkezőnek; a villogó gomb jelzi, hogy van üzenet, nyomásra lejátssza.',
+    parts:[
+      {name:'LX06LA hangrögzítő/lejátszó', conn:'GPIO', owned:true},
+      {name:'LM386 audio erősítő', conn:'analóg', owned:true},
+      {name:'12×12mm LED-es nyomógomb ×2 (felvétel / lejátszás)', conn:'GPIO', owned:true},
+      {name:'ESP32-C3 Zero (opció: értesítés a telefonra / Site Pagerre)', conn:'WiFi', owned:true, opt:true},
+      {name:'Hangszóró (ha a modulhoz nem járt)', conn:'—', owned:false}
+    ],
+    missing:['Kis hangszóró (8 Ω, 0,5–1 W), ha nincs a modul mellett.'],
+    notes:['Önállóan, ESP nélkül is működik (a modul gombjaival); az ESP csak az értesítést és a LED-villogást adja.']
+  },
+  {
+    group:'C) Kütyük, játék, hasznos apróságok',
+    name:'Szoba-szenzor node — levegő, hőmérséklet, jelenlét',
+    tagline:'Levegőminőség-trend, hőmérséklet, mozgás → MQTT / Home Assistant, kijelzés a CYD-n.',
+    parts:[
+      {name:'ESP32-C3 Zero vagy C6 DevKit', conn:'WiFi', owned:true},
+      {name:'MQ-135 gáz/levegőminőség', conn:'ADC', owned:true},
+      {name:'SA-12 hőmérséklet modul', conn:'GPIO', owned:true},
+      {name:'HC-SR501 PIR', conn:'GPIO', owned:true},
+      {name:'ESP32 WROOM LVGL 2,4" (fali kijelző, opció)', conn:'WiFi/MQTT', owned:true, opt:true},
+      {name:'MQTT broker (HA / Mosquitto a PC-n)', conn:'szoftver', owned:false}
+    ],
+    missing:['MQTT broker (szoftver).','Pontos hő/páratartalomhoz BME280 (Bővítés fül).'],
+    pinmap:['MQ-135 AO → osztó (5V→3,3V) → G0 · SA-12 DO→G3 · PIR OUT→G4 · MQ-135 fűtés 5V-ról (~150 mA)'],
+    notes:['Az MQ-135 csak trendet ad, nem kalibrált ppm-et; 24–48 óra beégetés után stabil.']
+  },
+  {
+    group:'C) Kütyük, játék, hasznos apróságok',
+    name:'Fészer- / garázsriasztó a Site Pagerrel',
+    tagline:'Radar mozgást lát → sziréna + nagy hatótávú riasztás a Site Pagerre nRF905-ön.',
+    parts:[
+      {name:'ESP32-C3 Zero / S3-Zero', conn:'—', owned:true},
+      {name:'RCWL-0516 vagy CDM324 radar', conn:'GPIO / ADC', owned:true},
+      {name:'HC-SR501 PIR (megerősítés, kevesebb téves riasztás)', conn:'GPIO', owned:true},
+      {name:'Sziréna 6–15V + MosFet trigger', conn:'12V', owned:true},
+      {name:'nRF905 sub-GHz', conn:'SPI', owned:true},
+      {name:'YL-99 / mikro végállás (ajtónyitás)', conn:'GPIO', owned:true},
+      {name:'Kültéri doboz (fab)', conn:'mech', owned:false}
+    ],
+    missing:['Kültéri doboz + 12V táp a helyszínen.'],
+    pinmap:['nRF905 (SPI, CSAK 3,3V): SCK/MOSI/MISO/CSN + TXEN, TRX_CE, PWR, DR — 8 vonal; S3-Zero-n kényelmesebb','Radar OUT→GPIO · PIR OUT→GPIO · ajtó-végállás→GPIO · sziréna MosFet IN→GPIO'],
+    notes:['Riasztás = radar ÉS (PIR VAGY ajtó) — a radar önmagában túl érzékeny.','Az nRF905 könyvtár-kérdés nyitott (lásd S3 side projects); a Site Pagerrel azonos firmware-alap kell.']
+  },
+
+  // ---------- D) KÉSŐBBI, NAGYOBB PROJEKTEK ----------
+  {
+    group:'D) Későbbi, nagyobb projektek',
+    name:'BRIDGE CONTROL fali egység — prototípus',
+    tagline:'Az enkóder-pult termékké nőve: süllyesztett dobozba forgatógomb + kijelző + jelenlét + hőmérséklet; fényt, árnyékolást, jelenetet vezérel.',
+    layout:[
+      'Süllyesztett szerelvénydoboz-méret (SmartFrame / Portals kapcsolódás).',
+      'Enkóder + OLED + radar-jelenlét (közelítésre ébred) + hőmérő.',
+      'MQTT / Home Assistant felé; később Thread (C6).'
+    ],
+    parts:[
+      {name:'ESP32-S3-Zero vagy C6 DevKit', conn:'WiFi / Thread', owned:true},
+      {name:'1.3" OLED + EC11', conn:'I2C + GPIO', owned:true},
+      {name:'RCWL-0516 (vagy LD2410 a Bővítésből)', conn:'GPIO', owned:true},
+      {name:'SA-12 hőmérséklet', conn:'GPIO', owned:true},
+      {name:'Fali táp (230V→5V süllyesztett modul)', conn:'TÁP', owned:false},
+      {name:'Előlap + doboz-adapter (fab)', conn:'mech', owned:false}
+    ],
+    missing:['Süllyesztett 230V→5V tápmodul (minősített).','Előlap/keret (fab).','LD2410 — valódi álló jelenlét (Bővítés fül).'],
+    notes:['Ez kapcsolja össze a hobbi-vonalat a BRIDGE ügyfélmunkával; a CONTROL kategória (korábban HMI) első valós példánya.']
+  },
+  {
+    group:'D) Későbbi, nagyobb projektek',
+    name:'Vezetékes CAN-busz a fix node-okhoz',
+    tagline:'Elosztók és fix szenzorok között CAN: zavarvédett, WiFi-független, sima kábelen fut — vezetékes BRIDGE telepítéshez.',
+    parts:[
+      {name:'MCP2515 CAN modul ×3', conn:'SPI', owned:true},
+      {name:'ESP32-C3 Zero / ETH01-EVO (gateway)', conn:'SPI + Ethernet', owned:true},
+      {name:'Sodrott érpáras kábel (pl. UTP egy érpárja) + 120 Ω lezárás', conn:'CAN', owned:false}
+    ],
+    missing:['120 Ω lezáró ellenállás a busz két végére.','Ellenőrizd az MCP2515 modul kvarcát (8 vagy 16 MHz) és a TJA1050 tápját (5V) — 3,3V-os ESP-hez szintillesztés / 3,3V-os transceiver kell.'],
+    notes:['A gateway (ETH01-EVO) a CAN-t MQTT-re fordítja a szekrényben.','Előny a WiFi-vel szemben: determinisztikus, falon/födémen át is megy, nincs párosítás.']
+  },
+  {
+    group:'D) Későbbi, nagyobb projektek',
+    name:'NFC-címkés elosztók — tábla érintésre megnyílnak az áramkörök',
+    tagline:'Minden átadott elosztóra NFC-matrica; telefon vagy CYD érintéssel megnyitja az adott tábla áramköreit a Plannerből.',
+    parts:[
+      {name:'PN532 / MFRC-522 (olvasó a saját kézi eszközben)', conn:'I2C / SPI', owned:true},
+      {name:'ESP32 WROOM LVGL 2,4" (kézi kijelző)', conn:'—', owned:true},
+      {name:'NTAG215/216 matricák (táblánként 1)', conn:'—', owned:false}
+    ],
+    missing:['NTAG matricák (fémfelületre: anti-metal változat).','Planner export: táblánkénti URL / adatcsomag, amire a címke mutat.'],
+    notes:['A Planner/Inventory QR-ja már megvan — az NFC ugyanaz, tartósabb formában; a telefon olvasóként is elég.']
+  },
+  {
+    group:'D) Későbbi, nagyobb projektek',
+    name:'Áramkörönkénti energiamérés a szekrényben',
+    tagline:'Lakatfogós áramváltók → ETH01-EVO a szekrényben → mért értékek a Planner áramkör-azonosítóihoz kötve. Fizetős kiegészítő az ügyfélnek.',
+    parts:[
+      {name:'ESP32-C3 ETH01-EVO (vezetékes uplink)', conn:'Ethernet', owned:true},
+      {name:'CD74HC4067 mux (több áramváltó egy ADC-n)', conn:'ADC', owned:true},
+      {name:'SCT-013 áramváltók (áramkörönként)', conn:'ADC', owned:false},
+      {name:'Pontos ADC (pl. ADS1115) + feszültség-referencia', conn:'I2C', owned:false}
+    ],
+    missing:['SCT-013 lakatfogók (Bővítés fül: o_sct).','Külső ADC a pontos méréshez.','DIN-sínes ház (o_din).'],
+    notes:['⚠ Az áramváltó nyitott (nem bontja az áramkört), de a szekrényben szerelni szakszerűen, feszültségmentesítve kell.','Alternatíva: Modbus-os almérők (lásd Modbus-olvasó variáns) — hitelesebb, drágább.']
+  },
+  {
+    group:'D) Későbbi, nagyobb projektek',
+    name:'Thread / Matter node a C6-tal',
+    tagline:'A BRIDGE eszközök hub nélkül csatlakoznak Apple / Google / Home Assistant otthonokba.',
+    parts:[
+      {name:'ESP32-C6 DevKit N4R2 ×2 (node + border-router teszt)', conn:'802.15.4 + WiFi', owned:true},
+      {name:'CC2531 Zigbee sniffer (forgalom-figyelés)', conn:'USB', owned:true},
+      {name:'Thread border router (HA SkyConnect / Apple TV / Nest Hub)', conn:'—', owned:false}
+    ],
+    missing:['Thread border router vagy koordinátor dongle (Bővítés fül: o_zbdongle).'],
+    notes:['A CC2531 csak Zigbee-t lát, Threadet nem — Threadhez a második C6 lehet sniffer (802.15.4).']
+  },
+  {
+    group:'D) Későbbi, nagyobb projektek',
+    name:'Teljes HID DECK — BASE + SCREEN + GRIP',
+    tagline:'A koncepció-doksi végállapota: dokkoló BASE számítási maggal, CYD SCREEN, akkus GRIP, egy összetett HID a PC felé.',
+    layout:[
+      'BASE: S3 N16R8 (rádió + HID) + számítási mag (Pi Zero 2 W / CM5 / beépített telefon).',
+      'SCREEN: CYD + MPU6050 · GRIP: lásd a Vezeték nélküli split variánst.',
+      'Döntött dokkolás (15–25°), pogo vagy USB-C érintkezők.'
+    ],
+    parts:[
+      {name:'ESP32-S3 N16R8 (BASE rádió/HID)', conn:'USB + ESP-NOW', owned:true},
+      {name:'ESP32 WROOM LVGL 2,4" (SCREEN)', conn:'ESP-NOW', owned:true},
+      {name:'GRIP (a split variánsból)', conn:'ESP-NOW', owned:true},
+      {name:'Számítási mag: Pi 5 / CM5 (lásd BRIDGE/03 CM5 IO board)', conn:'USB / LAN', owned:false},
+      {name:'Dokkoló alaplap + bay-ek + érintkezők (fab)', conn:'mech', owned:false}
+    ],
+    missing:['Számítási mag (o_pi5 a Bővítés fülön, vagy CM5).','Dokkoló mechanika, töltési út a bay-eken.'],
+    notes:['Részletek: BRIDGE/04_related-hardware/HID-DECK-concept.md — építési sorrend 0–4. fázis.']
   }
 ];
 
@@ -930,14 +1371,17 @@ function renderOrder(){
 /* ===================== VARIANTS (documented) ===================== */
 function renderVariants(){
   const box=document.getElementById('variants'); if(!box) return;
+  let prevGroup='';
   box.innerHTML=VARIANTS.map(v=>{
+    const gh=(v.group&&v.group!==prevGroup)?`<h2 style="margin:22px 0 8px;font-size:14px;border-bottom:1px solid var(--line);padding-bottom:4px">${v.group}</h2>`:'';
+    prevGroup=v.group||prevGroup;
     const parts=(v.parts||[]).map(p=>`<div class="bnode ${p.owned?'g':'r'}"><span class="conn">${p.conn||'—'}</span><span class="bn">${p.name}</span><span style="font-size:11px;color:${p.owned?'var(--green-ink)':'var(--red-ink)'}">${p.owned?'✓':'☐'}</span></div>`).join('');
     const layout=(v.layout||[]).map(l=>`<li>${l}</li>`).join('');
     const pin=(v.pinmap||[]).map(p=>`<div class="bus" style="display:block;margin:3px 0;padding:4px 7px">${p}</div>`).join('');
     const esp=(v.espnow||[]).map(e=>`<div class="cf res">${e}</div>`).join('');
     const notes=(v.notes||[]).map(n=>`<div class="cf res" style="color:var(--muted);border-color:var(--line);background:var(--panel2)">${n}</div>`).join('');
     const miss=(v.missing||[]).map(m=>`<div class="cf">${m}</div>`).join('');
-    return `<div class="bnode base"><span class="bn">${v.name}</span></div>
+    return `${gh}<div class="bnode base" style="margin-top:14px"><span class="bn">${v.name}</span></div>
       <div class="note" style="margin:3px 0 6px">${v.tagline||''}</div>
       ${layout?`<div class="grp"><h3>Elrendezés</h3><ul style="margin:4px 0 4px 16px;color:var(--muted);font-size:12px">${layout}</ul></div>`:''}
       <div class="grp"><h3>Alkatrészek</h3>${parts}</div>
