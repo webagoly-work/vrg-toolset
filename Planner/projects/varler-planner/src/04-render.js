@@ -76,6 +76,22 @@ function cutTops(l){const [cx,cy]=cutCamSides(),walls=WALLS[l]||[],rooms=allRoom
   if(m&&m.key===key)return m.tops;
   const tops=viewWallTops(walls,viewWallClass(walls,rooms,cx,cy),wallH(l),state.cutH||1500,state.cutNearH||1000);
   CUT_MEMO.set(walls,{key,tops});return tops;}
+// ---- V4 "Tiszta axo" in the 3D view (docs/views/DECISIONS.md D-V4-1 A) ----
+// The scene becomes the view core's drawing of the active level, through the LIVE camera (planToBase),
+// so it sits exactly where the normal 3D view draws and the overlay + hit-testing stay valid. Always the
+// cutaway (state.cutH / cutNearH). Core sizes are base units at 1× (the core's frame is base / vsK(),
+// scaled back up by a transform), like every other literal size here. 3D only: in 2D → normal.
+function tisztaOn(){return state.style==='tiszta'&&state.pitch<88;}
+let TISZTA_MEMO=null;   // one render per camera + model fingerprint; a hover or a pan reuses it
+function tisztaRender(){const L=state.active,f=vsK(),M=viewModel(L),[cx,cy]=cutCamSides(),cut=state.cutH||1500,nearCut=state.cutNearH||1000;
+  const key=JSON.stringify([state.rot,state.pitch,SC,W,Hh,state.exploded,L,cut,nearCut,cx,cy,M.H,M.walls,M.rooms.map(r=>[r.poly,r.name,r.num]),
+    M.openings,M.objects,M.devices.map(d=>[d.x,d.y,d.h,d.type,d.layer,d.ref,d.side]),M.entry&&M.entry.id]);
+  if(TISZTA_MEMO&&TISZTA_MEMO.key===key)return TISZTA_MEMO.R;
+  const prj=(x,y,z)=>{const b=planToBase(x,y,dz(L,z));return [b[0]/f,b[1]/f];};
+  const R=viewRender({level:L,model:M,camera:{prj,cx,cy},cut,nearCut,yaw:Math.round(camNorm(state.rot)),pitch:Math.round(state.pitch)});
+  TISZTA_MEMO={key,R};return R;}
+function drawTisztaGeom(){const R=tisztaRender(),S=VIEW_STYLES[R.def.style]||VIEW_STYLES.tiszta;
+  return `<g class="vw" transform="scale(${vsK()})" stroke-linejoin="round">${viewDefs(S)}${R.body}</g>`;}
 // an opening clipped to its lowered host wall; null when the whole opening sits above the cut
 function cutOpening(o){if(o.type==='stairs')return o;const host=opnHost(o);if(!host)return o;
   const top=cutTops(o.level).get(host);if(top==null)return o;
@@ -889,8 +905,8 @@ function drawSoon(){if(_drawPending)return;_drawPending=true;
   const run=()=>{_drawPending=false;draw();};
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(run);else run();}
 function draw(){
-  if(stage&&stage.classList)stage.classList.toggle('prev',prevOn());   // the dark ground is CSS on the stage, not a rect inside the drawing
-  let s = bgSvg() + (state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom()
+  if(stage&&stage.classList){stage.classList.toggle('prev',prevOn());stage.classList.toggle('tiszta',tisztaOn());}   // the dark ground is CSS on the stage, not a rect inside the drawing
+  let s = bgSvg() + (tisztaOn()?drawTisztaGeom():state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom()
                     :prevOn()?drawPreviewGeom():drawNormalGeom());
   s+=drawGuides();
   // hovered / locked wall highlight
@@ -957,6 +973,7 @@ function draw(){
       s+=`<text x="${c[0]}" y="${c[1]-vsP(3)}" font-size="${vsP(11.5)}" text-anchor="middle" fill="#2c2c2c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3.2)}">Terület ${A.toFixed(2)} m²</text>`
         +`<text x="${c[0]}" y="${c[1]+vsP(11)}" font-size="${vsP(10.5)}" text-anchor="middle" fill="#555" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">Kerület ${P.toFixed(2)} m</text>`;}
     if(closing)s+=`<text x="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[0]}" y="${planToBase(floorDraft[0][0],floorDraft[0][1],fz)[1]-vsP(12)}" font-size="${vsP(10.5)}" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">zárás</text>`;}
+  const sTr=s.length;   // Tiszta (V4) keeps the scene up to here + the draft block below; the core draws labels and endpoints itself
   // floor labels (isometric, painted)
   if(state.style!=='blueprint')for(const l of ORD){if(!state.levels[l])continue;
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(rm.noText||(state.soloRoom&&!soloRoomIs({src:'B',i,level:l})))return;s+=floorLabel(rm,l);});
@@ -988,6 +1005,7 @@ function draw(){
         if(!dim&&state.circHoverInfo!==false)s+=`<text x="${mb[0]}" y="${mb[1]-vsP(4)}" font-size="${vsP(8.5)}" text-anchor="middle" fill="${ccol}" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}">${esc(lbl)}</text>`;}}}
     for(const n of pa.nodes){if(!state.levels[n.level])continue;const b=planToBase(n.x,n.y,dz(n.level,n.h));s+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(1.8)}" fill="#555"/>`;}
     s=lyrWrapFrom(s,s0,pa,'path');}
+  const sDr0=s.length;
   if((state.mode==='path'||state.mode==='cable'||state.mode==='device')){const dr=state.mode==='path'?pathDraft:(state.mode==='cable'?draft:null);
     if(dr&&dr.nodes.length){const placed=dr.nodes.map(n=>[n.x,n.y,dz(n.level,n.h)]);
       // placed (committed) segments — solid
@@ -1024,6 +1042,7 @@ function draw(){
         +(showSide?`<text x="${bx0+13}" y="${by0+48}" font-size="9.5" fill="#2f6fb0">▣ ${state.side?'túloldal':'közeli oldal'} · Ctrl vált</text>`:'')
         +(pal?paletteBadge(bx0,by0+(showSide?56:40),pal):'')
         +`</g>`);}}
+  const sDr1=s.length;
   // cables
   for(const cb of data.cables){if(!circOn[cb.type]||!layerShows(cb,'cable'))continue;const vis=cb.nodes.filter(n=>state.levels[n.level]);
     if(vis.length<2)continue;const cc=CIRC[cb.type],s0=s.length;
@@ -1130,7 +1149,8 @@ function draw(){
   if(state.mode==='format'&&fmtSource&&selected){const c=pGetC(selected),b=planToBase(c[0],c[1],dz(pieceLevel(selected),pGetZ(selected)));
     ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(13)}" fill="none" stroke="#e8641c" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}"/>`
       +`<text x="${b[0]}" y="${b[1]-vsP(18)}" font-size="${vsP(10)}" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">🖌 forrás</text>`;}
-  if(typeof stkHookSvg==='function'){s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
+  if(tisztaOn())s=s.slice(0,sTr)+s.slice(sDr0,sDr1);   // a presentation look: no routes, notes, measures or stack scene layer
+  if(typeof stkHookSvg==='function'){if(!tisztaOn())s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
   const changed=paintLayers(s,ov);
   setTransform();
   if(typeof statusBar==='function')statusBar();

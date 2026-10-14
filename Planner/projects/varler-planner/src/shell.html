@@ -31,7 +31,7 @@
  svg#stage text{user-select:none;-webkit-user-select:none}
  /* the client-preview render: the dark ground is the stage's own background, so the drawing
     itself stays a plain SVG that exports and prints without a full-bleed rectangle in it */
- svg#stage.prev{background:#0a0e13}
+ svg#stage.prev{background:#0a0e13} svg#stage.tiszta{background:#f7f6f2}
  /* ===== MOBILE MODE ===== */
  body.mobile header{padding:6px 8px;gap:5px;overflow-x:auto;flex-wrap:nowrap}
  body.mobile header button{font-size:13px;padding:7px 9px}
@@ -244,9 +244,16 @@
   <h1>⚡ Varler Planner <span id="verTag" style="font-size:11px;font-weight:400;opacity:.55"></span></h1>
  <button id="bSave">💾 Save</button>
  <label style="color:#fff;font-size:12px">📂 Load<input id="bLoad" type="file" accept="application/json" style="display:none"></label>
- <button id="bPNG">🖼 PNG A4</button><button id="bPNGg">🖼 PNG grey</button><button id="bPrint">🖨 Print</button>
+ <button id="bPNG">🖼 PNG A4</button><button id="bPNGg">🖼 PNG grey</button><button id="bPrint">🖨 Print</button><button id="bExport" title="A tiszta axonometria lapja (cím, jelmagyarázat) az aktív szintről: SVG, PNG vagy nyomtatás. A nagyítás a képernyőé, a rajz mindig középen.">📤 Exportálás ▾</button>
  <span class="sp"></span><button id="bNew">🗑 New</button><button id="bToolsLoc">⧉ Tools: fent</button><button id="autoLayout" class="on" title="Eszközhöz igazítja a paneleket">🎛 Auto-panel</button><button id="lockBtn" title="Építmény zárolása — csak nézegetés, véletlen kijelölés nélkül">🔒 Zár</button><button id="mobileBtn" title="Érintőképernyős mód">📱 Mobil</button><button id="gpBtn" title="Kontroller mód (Xbox-kompatibilis USB kontroller)">🎮 Kontroller</button><button id="bPanels">⤢ Full view</button><button id="bReset">Reset view</button>
 </header>
+<div id="expMenu" style="display:none;position:fixed;z-index:60;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 6px 18px #0002;padding:8px 10px;font-size:12.5px;color:#333">
+ <div class="row">Nézet <select id="expView"></select></div>
+ <div class="row" id="expRotRow" title="A felülnézet forgatása; 0° = az alaprajz úgy, ahogy rajzolva van.">Forgatás <select id="expRot"></select></div>
+ <div class="row" title="A helyiségek egymás fölé emelve: a bejárati helyiség az első, a többi a tőle mért távolság sorrendjében; a közös falak a középvonalukon kettéválnak."><label><input type="checkbox" id="expExplode"> Szétszedve</label> · Emelés lépcsője <select id="expStep"></select></div>
+ <div class="row" title="A BRIDGE rétegek lapokként a ház fölött, a rétegsorrendben; minden lap csak a saját elemeit mutatja. Szétszedés helyett: a ház alatta egyben marad."><label><input type="checkbox" id="expPlates"> Rétegek</label> · <label><input type="checkbox" id="expLeadAll"> minden elemhez vezetővonal</label></div>
+ <div class="row">Cím <input id="expTitle" type="text" placeholder="(csak a szint neve)" style="width:150px"></div>
+ <div class="row"><button id="expSvg">SVG</button> <button id="expPng">PNG</button> <button id="expPrint">🖨 Nyomtatás</button></div></div>
 <div id="toolbarRow" class="tbrow"></div>
 <div class="wrap">
  <div class="side">
@@ -427,7 +434,7 @@
    <div class="row" title="A rajz alap-léptéke. Nagyobb lépték = ugyanaz a képernyőterület kevesebb millimétert mutat, azaz közelebb lehet menni. A tollak és a készülékjelek képernyőmérete nem változik.">Nézeti lépték <select id="viewScale">
      <option value="1">1× — teljes terv</option><option value="2">2×</option><option value="5">5×</option><option value="10">10× — részlet</option></select></div>
    <div class="row">Render <select id="style">
-     <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option><option value="preview">Ügyfél-előnézet (sötét)</option></select></div>
+     <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option><option value="preview">Ügyfél-előnézet (sötét)</option><option value="tiszta">Tiszta axo (3D)</option></select></div>
    <div class="row">Walls <select id="wallMode">
      <option value="translucent">translucent</option><option value="solid">solid</option>
      <option value="hidden">hidden</option><option value="cutaway">kivágás (Sims)</option></select>

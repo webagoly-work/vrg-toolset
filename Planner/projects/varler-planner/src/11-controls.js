@@ -23,7 +23,10 @@ $('style').onchange=e=>{state.style=e.target.value;bpUI();
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   if(state.style==='blueprint'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();
     $('hud').textContent='Blueprint nézet — 2D felülnézetre váltottam.';}
-  draw();};
+  draw();if(state.style==='tiszta')tisztaHud();};
+// V4: Tiszta axo is a 3D look; in 2D the normal drawing stays, and the HUD says why
+function tisztaHud(){if($('hud'))$('hud').textContent=tisztaOn()?'Tiszta axo — az aktív szint, kivágással ('+(state.cutH||1500)+' / '+(state.cutNearH||1000)+' mm); útvonalak és jegyzetek nélkül.'
+  :'Tiszta axo — 3D nézetben jelenik meg; 2D-ben a normál rajz marad.';}
 $('wallMode').onchange=e=>{state.wallMode=e.target.value;wmgSyncBox();cutSyncRow();draw();
   if(state.wallMode==='cutaway')$('hud').textContent='Kivágás: a kamera felőli falak '+(state.cutNearH||1000)+' mm, a belsők '+(state.cutH||1500)+' mm magasak — forgatáskor követi a kamerát.';};
 // V3: the cutaway heights row shows only in that wall mode

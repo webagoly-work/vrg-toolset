@@ -24,8 +24,8 @@ const VIEW_DEF={level:'ground',yaw:225,pitch:50,k:0.105,cut:1500,nearCut:1000,pl
 const VIEW_STYLES={
  tiszta:{name:'Tiszta axonometria',paper:'#f7f6f2',ink:'#262624',inkSoft:'#6d6a63',objInk:'#9a968c',
   face:{'wall.top.full':'#ffffff','wall.top.cut':'#c9c3b6','wall.a':'#efede8','wall.b':'#dddad3',
-        'obj.top':'#fbfaf6','obj.a':'#f6f5f1','obj.b':'#ebe9e3','plinth.a':'#e6e3dc','plinth.b':'#d3cfc6','thresh':'#ebe8e1'},
-  width:{wall:1.15,obj:0.75,plinth:1.0,base:0.6,room:0.45,drop:0.5,leader:0.6},
+        'obj.top':'#fbfaf6','obj.a':'#f6f5f1','obj.b':'#ebe9e3','plinth.a':'#e6e3dc','plinth.b':'#d3cfc6','thresh':'#ebe8e1','plate.top':'#fdfcf9','plate.side':'#e4e0d7'},
+  width:{wall:1.15,obj:0.75,plinth:1.0,base:0.6,room:0.45,drop:0.5,leader:0.6,plate:0.8,ghost:0.7,route:1.6},plateOp:0.34,ghostOp:0.55,
   font:"Jost,'Segoe UI',Arial,sans-serif",mono:"'Azeret Mono',Consolas,monospace"}};
 
 // room floor tone from the room's name (Hungarian keywords); the style may override per name
@@ -95,6 +95,11 @@ function viewRender(defIn){const def=Object.assign({},VIEW_DEF,defIn||{}),S=VIEW
   const xs=new Set(),ys=new Set(),add=b=>{xs.add(Math.round(b.x0));xs.add(Math.round(b.x1));ys.add(Math.round(b.y0));ys.add(Math.round(b.y1));};
   walls.forEach(add);opens.forEach(add);gridObjs.forEach(o=>add(objBox(o)));
   rooms.forEach(r=>r.poly.forEach(([x,y])=>{xs.add(Math.round(x));ys.add(Math.round(y));}));
+  // V5 explode: rooms lifted by (rank + 1) × step; a wall between two rooms is split at its centreline (D-V5-1 A)
+  const EX=def.explode&&!def.plates?viewExplodeOrder(M):null,   // V6: plates stand on the plain house
+   step=EX?(+def.explode.step||900):0,liftOf=new Map();
+  if(EX){EX.forEach(e=>liftOf.set(e.room,(e.rank+1)*step));
+    for(const w of walls)if(viewWallRooms(w,rooms).length===2){if(viewWallHoriz(w))ys.add(Math.round((w.y0+w.y1)/2));else xs.add(Math.round((w.x0+w.x1)/2));}}
   const X=[...xs].sort((a,b)=>a-b),Y=[...ys].sort((a,b)=>a-b),NI=Math.max(0,X.length-1),NJ=Math.max(0,Y.length-1);
   const col=[],roomOf=[];
   for(let i=0;i<NI;i++){col.push([]);roomOf.push([]);for(let j=0;j<NJ;j++){
@@ -108,16 +113,30 @@ function viewRender(defIn){const def=Object.assign({},VIEW_DEF,defIn||{}),S=VIEW
         else L.push({a:(w.z0||0),b:top,top:tt,kind:'wall'});}
       for(const o of gridObjs)if(viewInBox(cx,cy,objBox(o)))L.push({a:o.z||0,b:(o.z||0)+(o.ht||o.h||600),top:'obj.top',kind:'obj'});}
     col[i].push(viewMergeIv(L));}}
+  const own=[],liftAt=[];
+  if(EX)for(let i=0;i<NI;i++){own.push([]);liftAt.push([]);for(let j=0;j<NJ;j++){
+    let o=roomOf[i][j];const cx=(X[i]+X[i+1])/2,cy=(Y[j]+Y[j+1])/2,w=o?null:walls.find(r=>viewInBox(cx,cy,r));
+    if(!o&&w){const h=viewWallHoriz(w),side=h?(cy<(w.y0+w.y1)/2?-1:1):(cx<(w.x0+w.x1)/2?-1:1);
+      const walk=(di,dj)=>{for(let k=1;k<=8;k++){const ii=i+di*k,jj=j+dj*k;if(ii<0||jj<0||ii>=NI||jj>=NJ)return null;if(roomOf[ii][jj])return roomOf[ii][jj];}return null;};
+      o=h?(walk(0,side)||walk(0,-side)||walk(-1,0)||walk(1,0)):(walk(side,0)||walk(-side,0)||walk(0,-1)||walk(0,1));}
+    own[i].push(o||null);}}
+  // corners and stubs no walk reached: the owner of the nearest owned solid neighbour (a flood through solid cells)
+  if(EX){let q=[];for(let i=0;i<NI;i++)for(let j=0;j<NJ;j++)if(own[i][j])q.push([i,j]);
+    while(q.length){const nx=[];for(const [i,j] of q)for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){const ii=i+di,jj=j+dj;
+        if(ii<0||jj<0||ii>=NI||jj>=NJ||own[ii][jj]||!col[ii][jj].length)continue;own[ii][jj]=own[i][j];nx.push([ii,jj]);}q=nx;}
+    for(let i=0;i<NI;i++)for(let j=0;j<NJ;j++){const L=own[i][j]&&liftOf.get(own[i][j])||0;liftAt[i].push(L);
+      if(L)col[i][j]=col[i][j].map(v=>Object.assign({},v,{a:v.a+L,b:v.b+L}));}}
   const cell=(i,j)=>(i<0||j<0||i>=NI||j>=NJ)?[]:col[i][j];
   const hasTop=(i,j,z)=>cell(i,j).some(v=>Math.abs(v.b-z)<0.5);
   // the faces the camera sees: on the camera side of each axis
   const fx=CX<0?{d:-1,at:i=>X[i]}:{d:1,at:i=>X[i+1]},fy=CY<0?{d:-1,at:j=>Y[j]}:{d:1,at:j=>Y[j+1]};
   const expX=(i,j,a,b)=>viewMinus(a,b,cell(i+fx.d,j)),expY=(i,j,a,b)=>viewMinus(a,b,cell(i,j+fy.d));
   const P=[];   // the primitive list, in painter order
-  const poly=(t,pts,extra)=>P.push(Object.assign({k:'poly',t,p:pts},extra||{}));
-  const line=(t,a,b,w)=>P.push({k:'line',t,a,b,w});
+  let grp=null;   // V5: the owner room of the cell being drawn, on every primitive (slice 2 animates by it)
+  const poly=(t,pts,extra)=>P.push(Object.assign({k:'poly',t,p:pts},EX?{grp}:null,extra||{}));
+  const line=(t,a,b,w)=>P.push(EX?{k:'line',t,a,b,w,grp}:{k:'line',t,a,b,w});
   const devAt=new Map();
-  function column(i,j){const x0=X[i],x1=X[i+1],y0=Y[j],y1=Y[j+1];
+  function column(i,j){const x0=X[i],x1=X[i+1],y0=Y[j],y1=Y[j+1];if(EX)grp=own[i][j]?viewRoomKey(own[i][j]):null;
     for(const iv of cell(i,j)){const K=iv.kind,ek='edge.'+K,z=iv.b;
       if(CX!==0){const x=fx.at(i);
         for(const [a,b] of expX(i,j,iv.a,iv.b)){
@@ -141,9 +160,10 @@ function viewRender(defIn){const def=Object.assign({},VIEW_DEF,defIn||{}),S=VIEW
       edge(i,j-1,prj(x0,y0,z),prj(x1,y0,z));edge(i,j+1,prj(x0,y1,z),prj(x1,y1,z));}
     const d=devAt.get(i+','+j);if(d)d.forEach(f=>f());}
   const findIdx=(arr,v)=>{let lo=0,hi=arr.length-2;while(lo<hi){const m=(lo+hi+1)>>1;if(arr[m]<=v)lo=m;else hi=m-1;}return Math.max(0,lo);};
+  const liftXY=(x,y)=>EX?liftAt[findIdx(X,x)][findIdx(Y,y)]||0:0;
   const later=(x,y,fn)=>{const k=findIdx(X,x)+','+findIdx(Y,y);if(!devAt.has(k))devAt.set(k,[]);devAt.get(k).push(fn);};
   // sprites: a rotated box, its visible faces sorted, drawn after the cell under its centre
-  for(const o of sprites){later(o.x,o.y,()=>{const a=o.ang||0,c=Math.cos(a),s=Math.sin(a),hw=o.w/2,hd=o.d/2,z0=o.z||0,z1=z0+(o.ht||o.h||600);
+  for(const o of sprites){const sl=liftXY(o.x,o.y);later(o.x,o.y,()=>{const a=o.ang||0,c=Math.cos(a),s=Math.sin(a),hw=o.w/2,hd=o.d/2,z0=(o.z||0)+sl,z1=z0+(o.ht||o.h||600);
     const C=[[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]].map(([u,v])=>[o.x+u*c-v*s,o.y+u*s+v*c]);
     const fs=[];for(let e=0;e<4;e++){const A=C[e],B=C[(e+1)%4],nx=(B[1]-A[1]),ny=-(B[0]-A[0]);
       if(nx*CX+ny*CY<=0)continue;fs.push({pts:[prj(A[0],A[1],z0),prj(B[0],B[1],z0),prj(B[0],B[1],z1),prj(A[0],A[1],z1)],t:Math.abs(nx)>Math.abs(ny)?'obj.a':'obj.b',
@@ -151,36 +171,124 @@ function viewRender(defIn){const def=Object.assign({},VIEW_DEF,defIn||{}),S=VIEW
     fs.sort((p,q)=>p.key-q.key).forEach(f=>{poly(f.t,f.pts);for(let e=0;e<4;e++)line('edge.obj',f.pts[e],f.pts[(e+1)%4],'obj');});
     const T=C.map(p=>prj(p[0],p[1],z1));poly('obj.top',T);for(let e=0;e<4;e++)line('edge.obj',T[e],T[(e+1)%4],'obj');});}
   // endpoints: on the room-side face of their wall at their real height; ceiling items float with a drop line
-  let nDev=0;const roles=new Set(),hwTags=[];
+  let nDev=0;const roles=new Set(),hwTags=[],devPos=[];
   if(def.devices)for(const d of M.devices){const L=layerById(d.layer||'L0'),role=(L&&L.role)||'construct';
     const hwk=d.type==='board'||d.type==='base'||d.type==='rbx';let px=d.x,py=d.y,nx=0,ny=0,onWall=false;
     const host=d.type==='light'?null:viewHostWall(walls,d);
     if(host){const k=host.t/2+4;if(host.h){py=host.cy+host.n*k;ny=host.n;}else{px=host.cx+host.n*k;nx=host.n;}onWall=true;}
-    const z=d.h||0,back=onWall&&(nx*CX+ny*CY)<0;
-    later(px+nx*30,py+ny*30,()=>P.push({k:'ep',t:'ep',s:prj(px,py,z),drop:onWall?null:prj(px,py,0),role,type:d.type,hw:hwk,back,ref:d.ref||''}));
+    const dl=liftXY(px+nx*30,py+ny*30),z=(d.h||0)+dl,back=onWall&&(nx*CX+ny*CY)<0;
+    later(px+nx*30,py+ny*30,()=>P.push({k:'ep',t:'ep',s:prj(px,py,z),drop:onWall?null:prj(px,py,dl),role,type:d.type,hw:hwk,back,ref:d.ref||''}));
     if(hwk)hwTags.push({s:prj(px,py,z),txt:d.ref||d.type.toUpperCase()});
+    devPos.push({d,role,px,py,s:prj(px,py,z),hw:hwk});
     roles.add(role);nDev++;}
   // far → near along both axes
   const I=[...Array(NI).keys()],J=[...Array(NJ).keys()];if(CX<0)I.reverse();if(CY<0)J.reverse();
   for(const i of I)for(const j of J)column(i,j);
   // labels on top, in screen space
   if(def.labels){for(const r of rooms){const c=viewCentroid(r.poly),a=polyArea(r.poly);
-      P.push({k:'text',t:'label.room',s:prj(c[0],c[1],0),txt:(r.name||'').replace('·','/').toUpperCase(),sub:r.num||'',small:a<2.5e6});}
+      P.push({k:'text',t:'label.room',s:prj(c[0],c[1],liftOf.get(r)||0),txt:(r.name||'').replace('·','/').toUpperCase(),sub:r.num||'',small:a<2.5e6});}
     hwTags.forEach(h=>P.push({k:'text',t:'label.tag',s:h.s,txt:h.txt,leader:true}));
     if(M.entry){const o=M.entry,host=walls.find(r=>viewInBox(o.x,o.y,{x0:r.x0-1,y0:r.y0-1,x1:r.x1+1,y1:r.y1+1}));
       if(host){const h=viewWallHoriz(host),out=(cls.get(host)==='int')?1:(()=>{const mx=(host.x0+host.x1)/2,my=(host.y0+host.y1)/2;
           return roomAt(h?mx:host.x1+60,h?host.y1+60:my)?-1:1;})();
         const ax=h?o.x:o.x+out*1100,ay=h?o.y+out*1100:o.y,bx=h?o.x:o.x+out*250,by=h?o.y+out*250:o.y;
-        P.push({k:'text',t:'label.entry',s:prj(ax,ay,0),to:prj(bx,by,0),txt:'BEJÁRAT'});}}
+        const el=EX?(liftOf.get(EX[0].room)||0):0;
+        P.push({k:'text',t:'label.entry',s:prj(ax,ay,el),to:prj(bx,by,el),txt:'BEJÁRAT'});}}
     viewPlaceLabels(P);}
+  // V6: the stack plates above the plain house (after the house labels: the placer only sees the house)
+  const PL=def.plates?viewPlates({def,M,prj,CX,CY,H,devPos,P}):null;
   // bounds over the whole block (plinth to wall top) so every view of the level frames the same
   let b={minX:1e9,minY:1e9,maxX:-1e9,maxY:-1e9};
-  if(NI&&NJ)for(const x of [X[0],X[NI]])for(const y of [Y[0],Y[NJ]])for(const z of [-def.plinth,H]){const q=prj(x,y,z);
+  if(NI&&NJ)for(const x of [X[0],X[NI]])for(const y of [Y[0],Y[NJ]])for(const z of [-def.plinth,H+(EX?EX.length*step:0)].concat(PL?[PL.top].concat(PL.ghosts.map(g=>g.z)):[])){const q=prj(x,y,z);
     b.minX=Math.min(b.minX,q[0]);b.maxX=Math.max(b.maxX,q[0]);b.minY=Math.min(b.minY,q[1]);b.maxY=Math.max(b.maxY,q[1]);}
+  // V6: the plate labels hang left of their plates; the frame takes them in (the label box estimate of viewTextBox)
+  for(const p of P)if(p.t==='label.plate')b.minX=Math.min(b.minX,p.at[0]-(p.txt||'').length*(7.4*0.62+0.6)-2);
   const far=[],near=[],int=[];walls.forEach(w=>({far,near,int}[cls.get(w)]).push(w.id||''));
   const out={def,prims:P,bounds:b,roles:[...roles],stats:{cells:NI*NJ,grid:[NI,NJ],devices:nDev,far,near,int,sprites:sprites.length}};
+  if(PL){out.stats.plates=PL.plates;out.stats.leaders=PL.leaders;out.stats.ghosts=PL.ghosts;out.stats.step=PL.step;}
+  if(EX){out.stats.lifts={};EX.forEach(e=>{out.stats.lifts[viewRoomKey(e.room)]=liftOf.get(e.room);});out.stats.order=EX.map(e=>viewRoomKey(e.room));out.stats.step=step;}
   out.body=viewBodySvg(P,S);out.svg=viewSvg(out,S);
   return out;}
+
+// ---- V5: the exploded view's room order (D-V5-1: entrance first, then by plan distance) ----
+function viewRoomKey(r){return r.num||r.name||'';}
+// the rooms on the two long faces of a wall (60 mm probes), 0–2 of them
+function viewWallRooms(w,rooms){const h=viewWallHoriz(w),mx=(w.x0+w.x1)/2,my=(w.y0+w.y1)/2,m=60;
+  const at=(x,y)=>{for(let k=rooms.length-1;k>=0;k--)if(pointInPoly(x,y,rooms[k].poly))return rooms[k];return null;};
+  const a=h?at(mx,w.y0-m):at(w.x0-m,my),b=h?at(mx,w.y1+m):at(w.x1+m,my);
+  return [a,b].filter((r,i,arr)=>r&&arr.indexOf(r)===i);}
+// [{room, rank}]: rank 0 = the room beside the entrance (the bejarat-tagged opening), else the largest
+function viewExplodeOrder(M){const rooms=M.rooms;if(!rooms.length)return [];
+  let first=null;
+  if(M.entry){const o=M.entry,host=M.walls.find(r=>viewInBox(o.x,o.y,{x0:r.x0-1,y0:r.y0-1,x1:r.x1+1,y1:r.y1+1}));
+    if(host){const h=viewWallHoriz(host),q=(h?[[o.x,host.y0-60],[o.x,host.y1+60]]:[[host.x0-60,o.y],[host.x1+60,o.y]]);
+      for(const [x,y] of q){const r=rooms.slice().reverse().find(rm=>pointInPoly(x,y,rm.poly));if(r){first=r;break;}}}}
+  if(!first)first=rooms.reduce((a,b)=>polyArea(b.poly)>polyArea(a.poly)?b:a);
+  const c0=viewCentroid(first.poly),d=r=>{const c=viewCentroid(r.poly);return Math.hypot(c[0]-c0[0],c[1]-c0[1]);};
+  const rest=rooms.filter(r=>r!==first).map((r,k)=>({r,k,d:d(r)})).sort((a,b)=>a.d-b.d||a.k-b.k).map(e=>e.r);
+  return [first].concat(rest).map((room,rank)=>({room,rank}));}
+// the step options of the menu (D-V5-1: selectable, 900 default)
+const VIEW_EXPLODE_STEPS=[{k:'900',n:'900 mm'},{k:'600',n:'600 mm'},{k:'wall',n:'falmagasság'}];
+function viewExplodeStep(level,k){return k==='wall'?wallH(level):k==='600'?600:900;}
+
+// ---- V6: the stack plates (WORKPLAN WP V6, DECISIONS D-V6) ----
+// [{role, name, n, items}] in STK_ROLES order: roles with content on the level, minus construct (the house) and arm
+// (routing junctions). An item: {kind, x, y, at (its screen point in the house), key (leader by default), …}.
+function viewPlateRoles(M,devPos){const by=new Map(),cnt=new Map(),roleOf=x=>{const L=layerById(x.layer||'L0');return (L&&L.role)||'construct';};
+  const add=(role,it,count)=>{if(role==='construct'||role==='arm')return;if(!by.has(role)){by.set(role,[]);cnt.set(role,0);}by.get(role).push(it);if(count)cnt.set(role,cnt.get(role)+1);};
+  devPos.forEach(q=>add(q.role,{kind:'dev',x:q.px,y:q.py,at:q.s,key:q.role==='hw'||q.role==='base',type:q.d.type,hw:q.hw},true));
+  for(const pa of data.paths){const ns=pa.nodes.filter(n=>n.level===M.level);if(ns.length<2||!layerShows(pa,'path'))continue;const r=roleOf(pa);
+    add(r,{kind:'path',pts:ns.map(n=>[n.x,n.y])},true);
+    for(const n of [ns[0],ns[ns.length-1]])add(r,{kind:'end',x:n.x,y:n.y,h:n.h||0,key:r==='channel'},false);}
+  for(const m of (data.marks||[])){if(m.level!==M.level)continue;let pt=null;
+    if(m.kind==='opening'){const o=data.openings.find(o=>o.id===m.op);if(o)pt=[o.x,o.y];}
+    else{const g=mrkGeom(m);if(g&&g.faces&&g.faces[0]){const f=g.faces[0];pt=mrkFacePt(f.r,f.side,(f.u0+f.u1)/2,f.off||0);}
+      else if(g&&g.rect)pt=[(g.rect.x0+g.rect.x1)/2,(g.rect.y0+g.rect.y1)/2];}
+    if(pt)add(roleOf(m),{kind:'mark',x:pt[0],y:pt[1],key:false},true);}
+  return STK_ROLES.filter(r=>by.has(r.k)).map(r=>({role:r.k,name:r.n,n:cnt.get(r.k),items:by.get(r.k)}));}
+// the outline loops of the solid plan (walls ∪ rooms): grid cells, boundary edges with the solid on the left,
+// chained, collinear runs merged. [[x,y], …] per loop.
+function viewFootprint(walls,rooms){const xs=new Set(),ys=new Set();
+  walls.forEach(b=>{xs.add(Math.round(b.x0));xs.add(Math.round(b.x1));ys.add(Math.round(b.y0));ys.add(Math.round(b.y1));});
+  rooms.forEach(r=>r.poly.forEach(([x,y])=>{xs.add(Math.round(x));ys.add(Math.round(y));}));
+  const X=[...xs].sort((a,b)=>a-b),Y=[...ys].sort((a,b)=>a-b),NI=X.length-1,NJ=Y.length-1;if(NI<1||NJ<1)return [];
+  const sol=[];for(let i=0;i<NI;i++){sol.push([]);for(let j=0;j<NJ;j++){const cx=(X[i]+X[i+1])/2,cy=(Y[j]+Y[j+1])/2;
+    sol[i].push(walls.some(r=>viewInBox(cx,cy,r))||rooms.some(r=>pointInPoly(cx,cy,r.poly)));}}
+  const S=(i,j)=>i>=0&&j>=0&&i<NI&&j<NJ&&sol[i][j],out=new Map(),E=[];
+  const edge=(a,b)=>{const e={a,b,used:false};E.push(e);const k=a.join(',');if(!out.has(k))out.set(k,[]);out.get(k).push(e);};
+  for(let i=0;i<NI;i++)for(let j=0;j<NJ;j++){if(!sol[i][j])continue;
+    if(!S(i,j-1))edge([i,j],[i+1,j]);if(!S(i+1,j))edge([i+1,j],[i+1,j+1]);if(!S(i,j+1))edge([i+1,j+1],[i,j+1]);if(!S(i-1,j))edge([i,j+1],[i,j]);}
+  const loops=[];
+  for(const e0 of E){if(e0.used)continue;const L=[];let e=e0;
+    while(e&&!e.used){e.used=true;L.push(e.a);const nx=(out.get(e.b.join(','))||[]).filter(q=>!q.used);e=nx[0]||null;}
+    const P=L.map(([i,j])=>[X[i],Y[j]]),Q=[];
+    for(let k=0;k<P.length;k++){const a=P[(k+P.length-1)%P.length],b=P[k],c=P[(k+1)%P.length];
+      if((b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0])!==0)Q.push(b);}
+    if(Q.length>2)loops.push(Q);}
+  return loops;}
+// pushes the ghost outlines and the plates into P (bottom to top); returns {plates, leaders, ghosts, top, step}
+function viewPlates(c){const {def,M,prj,CX,CY,H,devPos,P}=c,step=+def.plates.step||900,all=def.plates.leaders==='all',T=60;
+  const roles=viewPlateRoles(M,devPos),loops=viewFootprint(M.walls,M.rooms),ghosts=[];
+  for(const l of ORD){if(l===M.level||!(WALLS[l]||[]).length)continue;const z=wz(l,0)-wz(M.level,0),G=viewModel(l);   // real heights, not the 3D view's exploded display gap
+    const gp=viewFootprint(G.walls,G.rooms).map(lp=>({k:'gline',t:'ghost',p:lp.map(([x,y])=>prj(x,y,z)),grp:'ghost:'+l}));
+    if(!gp.length)continue;if(z<0)P.unshift(...gp);else P.push(...gp);ghosts.push({level:l,z});}
+  let leaders=0;const plates=[];
+  roles.forEach((r,k)=>{const z=H+(k+1)*step,col=STK_COL[r.role]||'#888',g=r.role;
+    for(const lp of loops){const n=lp.length;
+      for(let e=0;e<n;e++){const A=lp[e],B=lp[(e+1)%n],nx=B[1]-A[1],ny=-(B[0]-A[0]);
+        if(nx*CX+ny*CY>0)P.push({k:'poly',t:'plate.side',p:[prj(A[0],A[1],z-T),prj(B[0],B[1],z-T),prj(B[0],B[1],z),prj(A[0],A[1],z)],grp:g});}}
+    let lx=null;
+    for(const lp of loops){const pts=lp.map(([x,y])=>prj(x,y,z));P.push({k:'poly',t:'plate.top',p:pts,edge:col,grp:g});
+      pts.forEach(q=>{if(!lx||q[0]<lx[0])lx=q;});}
+    for(const it of r.items){if(it.kind==='path'||!(all||it.key))continue;
+      const at=it.kind==='end'?prj(it.x,it.y,it.h):(it.at||prj(it.x,it.y,0));P.push({k:'lead',a:prj(it.x,it.y,z),b:at,c:col,grp:g});leaders++;}
+    for(const it of r.items){
+      if(it.kind==='path')P.push({k:'pline',p:it.pts.map(([x,y])=>prj(x,y,z)),c:col,grp:g});
+      else if(it.kind==='end')P.push({k:'dot',s:prj(it.x,it.y,z),c:col,grp:g});
+      else P.push({k:'ep',t:'ep',s:prj(it.x,it.y,z),drop:null,role:r.role,type:it.kind==='mark'?'mark':it.type,hw:!!it.hw,back:false,ref:'',grp:g});}
+    if(lx)P.push({k:'text',t:'label.plate',s:lx,at:[lx[0]-8,lx[1]+3],txt:r.name+' · '+r.n,c:col,grp:g});
+    plates.push({role:r.role,n:r.n,z});});
+  return {plates,leaders,ghosts,top:H+roles.length*step,step};}
 
 // ---- interval helpers ----
 function viewMergeIv(list){list.sort((p,q)=>p.a-q.a);const out=[];
@@ -235,7 +343,13 @@ function viewPlaceLabels(P){const obs=[];
 // ---- primitives → SVG through a style sheet ----
 function viewBodySvg(P,S){const f=v=>v.toFixed(1),pt=q=>f(q[0])+','+f(q[1]);let s='';
   for(const p of P){
-    if(p.k==='poly'){const c=p.fill||S.face[p.t]||'#eee';s+=`<polygon points="${p.p.map(pt).join(' ')}" fill="${c}" stroke="${c}" stroke-width="0.6"/>`;}
+    if(p.k==='poly'){const c=p.fill||S.face[p.t]||'#eee';
+      if(p.edge)s+=`<polygon points="${p.p.map(pt).join(' ')}" fill="${c}" fill-opacity="${S.plateOp}" stroke="${p.edge}" stroke-width="${S.width.plate}"/>`;
+      else s+=`<polygon points="${p.p.map(pt).join(' ')}" fill="${c}" stroke="${c}" stroke-width="0.6"${p.t==='plate.side'?` fill-opacity="${S.plateOp}" stroke-opacity="${S.plateOp}"`:''}/>`;}
+    else if(p.k==='gline')s+=`<polygon points="${p.p.map(pt).join(' ')}" fill="none" stroke="${S.inkSoft}" stroke-width="${S.width.ghost}" stroke-dasharray="4 3" opacity="${S.ghostOp}"/>`;
+    else if(p.k==='lead')s+=`<line x1="${f(p.a[0])}" y1="${f(p.a[1])}" x2="${f(p.b[0])}" y2="${f(p.b[1])}" stroke="${p.c}" stroke-width="${S.width.drop}" stroke-dasharray="1.5 2.5"/>`;
+    else if(p.k==='pline')s+=`<polyline points="${p.p.map(pt).join(' ')}" fill="none" stroke="${p.c}" stroke-width="${S.width.route}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    else if(p.k==='dot')s+=`<circle cx="${f(p.s[0])}" cy="${f(p.s[1])}" r="1.8" fill="${p.c}"/>`;
     else if(p.k==='line'){const obj=p.t==='edge.obj',room=p.w==='room';
       s+=`<line x1="${f(p.a[0])}" y1="${f(p.a[1])}" x2="${f(p.b[0])}" y2="${f(p.b[1])}" stroke="${room?S.inkSoft:obj?S.objInk:S.ink}" stroke-width="${S.width[p.w]||1}" stroke-linecap="round"/>`;}
     else if(p.k==='ep')s+=viewEpSvg(p,S);
@@ -254,6 +368,7 @@ function viewTextSvg(p,S){const f=v=>v.toFixed(1),[x,y]=p.s,[ax,ay]=p.at||[x,y];
     +(p.sub?`<text x="${f(ax)}" y="${f(ay+(p.small?8:10))}" text-anchor="middle" class="vw-rn">${esc(p.sub)}</text>`:'');
   if(p.t==='label.tag'){const q=p.q||[x-22,y-26];return `<line x1="${f(x)}" y1="${f(y)}" x2="${f(q[0])}" y2="${f(q[1])}" stroke="${S.ink}" stroke-width="${S.width.leader}"/>`
     +`<text x="${f(ax)}" y="${f(ay)}" text-anchor="${p.end===false?'start':'end'}" class="vw-tag">${esc(p.txt)}</text>`;}
+  if(p.t==='label.plate')return `<text x="${f(ax)}" y="${f(ay)}" text-anchor="end" class="vw-tag" style="fill:${p.c}">${esc(p.txt)}</text>`;
   if(p.t==='label.entry')return `<line x1="${f(x)}" y1="${f(y)}" x2="${f(p.to[0])}" y2="${f(p.to[1])}" stroke="${S.ink}" stroke-width="1.2" marker-end="url(#vw-arr)"/>`
     +`<text x="${f(ax)}" y="${f(ay)}" text-anchor="middle" class="vw-tag">${esc(p.txt)}</text>`;
   return '';}
@@ -261,10 +376,47 @@ function viewDefs(S){return `<defs><marker id="vw-arr" viewBox="0 0 8 8" refX="7
   +`<style>.vw text{font-family:${S.font};fill:${S.ink}}.vw-rm{font-size:8.6px;letter-spacing:1.3px;font-weight:600;stroke:#ffffffcc;stroke-width:2.6px;paint-order:stroke}`
   +`.vw-rm.sm{font-size:6.8px}.vw-rn{font-family:${S.mono};font-size:6.6px;fill:${S.inkSoft};stroke:#ffffffcc;stroke-width:2.2px;paint-order:stroke}`
   +`.vw-tag{font-family:${S.mono};font-size:7.4px;letter-spacing:.6px;stroke:${S.paper};stroke-width:2.4px;paint-order:stroke}</style></defs>`;}
-// a standalone SVG: paper, padding, the body. Title block and legend are V4's (the export), not the core's.
+// a standalone SVG: paper, padding, the body. The framed sheet (title + legend) is viewSheetSvg below.
 function viewSvg(R,S){const b=R.bounds,pad=R.def.pad,W=Math.ceil(b.maxX-b.minX+2*pad),H=Math.ceil(b.maxY-b.minY+2*pad);
   return `<svg xmlns="http://www.w3.org/2000/svg" class="vw" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${viewDefs(S)}`
     +`<rect width="100%" height="100%" fill="${S.paper}"/><g transform="translate(${(pad-b.minX).toFixed(1)},${(pad-b.minY).toFixed(1)})" stroke-linejoin="round">${R.body}</g></svg>`;}
 
+// ---- the sheet: title, the drawing, the legend (V4; the frame tools/p33-axo.js used to draw) ----
+// The legend lists only the roles actually present (R.roles order); the wall rows quote the view's own heights.
+const VIEW_ROLE_HU={'sys:MAINS':'Erősáram','sys:DED':'Dedikált körök','sys:SOC':'Dugaljak','sys:LIGHT':'Világítás','sys:LV':'Törpefeszültség (A)','sys:BUSB':'Biztosított 24 V (B)',
+  'sys:CONTROL':'Vezérlés','sys:DATA':'Adat / PoE','sys:SENSOR':'Érzékelők','sys:HMI':'Kezelőfelületek',
+  'sys:MEDIA':'Média és hang','sys:USB':'USB','sys:SECURITY':'Biztonságtechnika',hw:'Hardver',base:'BASE'};
+const VIEW_LEVEL_HU={basement:'PINCE',ground:'FÖLDSZINT',upper:'EMELET'};
+const VIEW_SHEET={margin:70,legend:270,top:40,row:17};
+// opts.scale draws the body at that factor (the export keeps the on-screen zoom); the frame stays in px.
+function viewSheetSvg(R,opts){const o=opts||{},def=R.def,S=VIEW_STYLES[def.style]||VIEW_STYLES.tiszta,k=o.scale||1,b0=R.bounds,
+  b={minX:b0.minX*k,minY:b0.minY*k,maxX:b0.maxX*k,maxY:b0.maxY*k};
+  const M=VIEW_SHEET.margin,LEG=VIEW_SHEET.legend,top=VIEW_SHEET.top,RW=VIEW_SHEET.row,H=o.H!=null?o.H:wallH(def.level);
+  const W=Math.ceil(b.maxX-b.minX+2*M+LEG),HH=Math.ceil(b.maxY-b.minY+2*M+top);
+  const roles=R.roles.filter(r=>VIEW_ROLE_HU[r]);
+  // no role rows (a plan without stack layers, NV4): no heading either, JELEK moves to the top (D-V4-3)
+  let leg=`<g transform="translate(${W-LEG+10},${M+top})">`+(roles.length?`<text class="lh" x="0" y="0">VÉGPONTOK RENDSZERENKÉNT</text>`:'');
+  roles.forEach((r,k)=>{const y=20+k*RW;leg+=`<rect x="0" y="${y-7}" width="9" height="9" fill="${STK_COL[r]}"/><text class="lt" x="16" y="${y+1}">${VIEW_ROLE_HU[r]}</text>`;});
+  const y2=roles.length?20+roles.length*RW+18:0;leg+=`<text class="lh" x="0" y="${y2}">JELEK</text>`;
+  const sym=[['circle','Lámpa (mennyezet, ejtővonallal)'],['dot','Dugalj'],['sq','Kapcsoló / doboz'],['dia','Egyéb végpont'],['fade','Fal túloldalán']];
+  sym.forEach(([k,t],n)=>{const y=y2+20+n*RW,cx=4.5,cy=y-3,c='#555';
+    leg+=k==='circle'?`<circle cx="${cx}" cy="${cy}" r="3.6" fill="#fff" stroke="${c}" stroke-width="1.3"/>`
+      :k==='dot'?`<circle cx="${cx}" cy="${cy}" r="3" fill="${c}"/>`:k==='sq'?`<rect x="${cx-3}" y="${cy-3}" width="6" height="6" fill="${c}"/>`
+      :k==='dia'?`<path d="M${cx} ${cy-4}l4 4l-4 4l-4 -4z" fill="${c}"/>`:`<circle cx="${cx}" cy="${cy}" r="3" fill="${c}" opacity="0.45"/>`;
+    leg+=`<text class="lt" x="16" y="${y+1}">${t}</text>`;});
+  const y3=y2+20+sym.length*RW+14;
+  leg+=`<text class="lh" x="0" y="${y3}">FALAK</text>`
+    +`<rect x="0" y="${y3+9}" width="9" height="9" fill="#fff" stroke="${S.ink}" stroke-width="0.8"/><text class="lt" x="16" y="${y3+17}">Távoli külső fal — teljes ${H} mm</text>`
+    +`<rect x="0" y="${y3+26}" width="9" height="9" fill="${S.face['wall.top.cut']}" stroke="${S.ink}" stroke-width="0.8"/><text class="lt" x="16" y="${y3+34}">Vágott fal — belső ${def.cut} · kamera felőli külső ${def.nearCut} mm</text></g>`;
+  const lv=VIEW_LEVEL_HU[def.level]||def.level,t1=esc((o.title?o.title+' · '+lv:lv).toUpperCase());
+  const t2=esc(o.sub!=null?o.sub:`Axonometria · nézet ${def.yaw}° / ${def.pitch}° · vágás ${def.cut} / ${def.nearCut} mm · ${R.stats.devices} végpont`);
+  const title=`<g transform="translate(${M},${M-18})"><text class="t1" x="0" y="0">${t1}</text><text class="t2" x="0" y="18">${t2}</text></g>`;
+  const defs=viewDefs(S).replace('</style>',`.t1{font-family:Marcellus,Georgia,serif;font-size:22px;letter-spacing:3px}.t2{font-size:10.5px;fill:${S.inkSoft};letter-spacing:.4px}`
+    +`.lh{font-size:8.4px;letter-spacing:1.6px;font-weight:600}.lt{font-size:8.6px;fill:#3b3a36}</style>`);
+  return {W,H:HH,roles,svg:`<svg xmlns="http://www.w3.org/2000/svg" class="vw" width="${W}" height="${HH}" viewBox="0 0 ${W} ${HH}">${defs}`
+    +`<rect width="100%" height="100%" fill="${S.paper}"/>${title}`
+    +`<g transform="translate(${(M-b.minX).toFixed(1)},${(M+top-b.minY).toFixed(1)})${k!==1?' scale('+(+k.toFixed(4))+')':''}" stroke-linejoin="round">${R.body}</g>${leg}</svg>`};}
+
+window.viewSheetSvg=viewSheetSvg;window.viewPlateRoles=viewPlateRoles;window.viewFootprint=viewFootprint;window.viewExplodeOrder=viewExplodeOrder;window.viewExplodeStep=viewExplodeStep;window.VIEW_EXPLODE_STEPS=VIEW_EXPLODE_STEPS;window.VIEW_ROLE_HU=VIEW_ROLE_HU;window.VIEW_LEVEL_HU=VIEW_LEVEL_HU;
 window.viewRender=viewRender;window.viewWallClass=viewWallClass;window.viewWallTops=viewWallTops;window.viewModel=viewModel;
 window.viewCamera=viewCamera;window.viewRoomTone=viewRoomTone;window.VIEW_STYLES=VIEW_STYLES;window.VIEW_DEF=VIEW_DEF;

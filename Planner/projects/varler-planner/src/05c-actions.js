@@ -228,6 +228,16 @@ registerActions([
    when:c=>c.style!=='preview',run:()=>{state.style='preview';if($('style'))$('style').value='preview';
      if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();
      $('hud').textContent='Ügyfél-előnézet — a kliens 3D nézetének megjelenése a terven.';}},
+  {id:'view.style.tiszta',alias:'tiszta axo axonometria clean presentation kivagas',label:'Tiszta axo nézet (3D)',icon:'🏠',group:'Nézet',
+   hint:'A tiszta axonometrikus megjelenés az aktív szinten: fehér falak, kivágás, színes végpontok, helyiségcímkék. Csak 3D-ben; útvonalak nélkül.',
+   when:c=>c.style!=='tiszta',run:()=>{state.style='tiszta';if($('style'))$('style').value='tiszta';
+     if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();tisztaHud();}},
+  {id:'view.export.menu',alias:'export exportalas axonometria svg png print nyomtatas',label:'Exportálás… (axonometria lap)',icon:'📤',group:'Nézet',
+   hint:'A tiszta axonometria lapja az aktív szintről; a nézet választható (alapból felülnézet), a nagyítás a képernyőé, a rajz középen.',
+   run:()=>vexpMenuToggle(true)},
+  {id:'view.export.svg',alias:'export axonometria svg',label:'Axonometria SVG',icon:'📤',group:'Nézet',run:()=>vexpSvg()},
+  {id:'view.export.png',alias:'export axonometria png',label:'Axonometria PNG',icon:'📤',group:'Nézet',run:()=>vexpPng()},
+  {id:'view.export.print',alias:'export axonometria print nyomtatas',label:'Axonometria nyomtatás',icon:'🖨',group:'Nézet',run:()=>vexpPrint()},
   {id:'view.bp.scale',alias:'scale page drawing meretarany blueprint',label:'Rajzi méretarány (M 1:50…)',icon:'📏',group:'Nézet',
    hint:'A hivatalos nézet vonalvastagságai és feliratai papír-milliméterben, a választott méretarányhoz.',
    run:()=>{const opts=BP_SCALES.map(v=>`<option value="${v}" ${v===bpScaleN()?'selected':''}>M 1:${v}</option>`).join('');
