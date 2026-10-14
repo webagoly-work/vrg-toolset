@@ -475,7 +475,7 @@ own interfaces. **Switching a big load off still needs a certified contactor in 
 | | Item | Blocks |
 |---|---|---|
 | 1 | ~~RBX08's wall~~ — **decided (K29):** the walkway face of the new bathroom wall, outside the wet room. The new wall is built **≈ 150 mm** to take the 110 mm box; IP44 is no longer needed, and the room beyond stays SELV-only. **Check the washbasin's pipe runs in that wall on site** | — |
-| 2 | **The media wall's position** in R06 | RBX06's exact wall · the AV position · C2's route |
+| 2 | ~~The media wall's position~~ — **decided (K33), §16** | — |
 | 3 | ~~RBX06's wall~~ — **decided (K28):** the R06 face of the R06 / R07 partition, at its right end, the box body recessed into R07's wardrobe void. The partition is thin, so the wardrobe takes the depth. An IR blaster, if wanted, is its own endpoint at the media wall, not a reason to move the box | — |
 | 4 | **Product selection** and the **per-ARM schedule** | BUILD-002 |
 | 5 | **§3.2's ΔT** on RBX03 above a loaded BASE | commissioning, not design |
@@ -483,3 +483,40 @@ own interfaces. **Switching a big load off still needs a certified contactor in 
 | 6a | **The supply**: which three-phase rating, and when — the DSO's fee decides 3 × 25 A or 3 × 32 A | the head of the cabinet |
 | 6b | **The MAINS sleeve beside V1** — two M25 plus one empty M25, laid with the riser | the upper floor's circuits |
 | 7 | **C23 / C23B** lighting types · **H10** Snapcast placement · **D9** security provider | unchanged |
+
+---
+
+## 16. The media wall — one partition, two screens (K33)
+
+**Decided:** the R06 media wall goes on **R06's upper wall**, the partition shared with R07. The
+**same wall carries a smaller media unit on the R07 side**, for a bedroom television facing the
+bed. R07 therefore gains a screen, which the provision matrix had left at `?`.
+
+**What this gets right.** RBX06 already sits at the right-hand end of that partition (K28), so
+C2's onward run to the AV position is a short horizontal along one wall. Both screens are within
+a metre or two of the box that serves them, and the two units can share sources through the wall.
+
+**The flag, once: a cinema front stage on a thin partition, back to back with a bed.** Speakers
+and a subwoofer fixed to a thin wall drive it as a panel, and the bedroom on the other side hears
+the low end of every film. Built as asked, under three conditions:
+
+1. **The R06 media wall is a decoupled build-out** — its own frame standing off the partition,
+   mineral wool in the cavity, no rigid fixings through to the R07 face. The build-out is also
+   where the AV position's ventilated void, the media-wall route (M50 minimum, M63 or trunking,
+   STD-007 §5.3) and the in-wall speaker back-boxes live. The partition itself stays thin.
+2. **Nothing is back to back.** The R06 flush boxes and the R07 unit's boxes are **offset by at
+   least 300 mm**, never sharing a hole through the partition — for sound, and for fire.
+3. **The subwoofer stands on the floor, clear of the partition.** It is never wall-mounted on
+   this wall.
+
+**The bedroom unit is small on purpose.** A TV mount, one 10 × 10 cm flush box, a Cat6A from
+RBX06, a socket on R07's own circuit, and **one M40 sleeve through the partition** to the AV void,
+offset per rule 2. The sleeve lets the bedroom screen take an HDMI feed from the media wall's
+sources if wanted, and is empty with a draw cord otherwise. Its sound is the TV's own, or a
+soundbar — **path B, local** (STD-007 §1). It is not the follow-me pair (P02), which stays a
+separate ceiling layer.
+
+**The IR question (from K28) answers itself here:** both units sit on the same wall within reach
+of RBX06, and an IR blaster is a UEP-class endpoint at each screen if wanted.
+
+**This unblocks T7** (media and audio paths).

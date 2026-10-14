@@ -344,7 +344,7 @@ const TREES = {
   ] },
   RBX06: { cls: 'RB-H · R06 · addr 6', rooms: [
     ['R06 nappali', ['LMP1–5', 'SWI group', 'SHU1–4+', 'PAN1', 'THR1', 'SEN1 mmWave', 'SEN2 corner motion', 'SEN3 CO₂', 'ACP ×2', 'SPK1–2 follow-me', 'UWB anchors ×3', 'radio corner nodes ×2', 'media wall, 4 layers', 'AV position (own circuit)'], ['sockets ×2 runs', 'LV cove · plinth · shelf'], ['NTL-TR', 'NTL-ST', 'NTL-ND', 'UEP ×4']],
-    ['R07 szoba', ['LMP1 ceiling', 'LMP2–3 bedside', 'SWI1', 'SHU1–2', 'PAN1', 'THR1', 'SEN1 mmWave', 'SEN2 CO₂', 'SPK1–2 follow-me (P02)', 'bed vital-signs stub'], ['sockets +0.30', 'LV cove · under-bed · headboard'], ['POR.R06.R07 P-2', 'NTL-TR', 'NTL-ST', 'UEP ×2']],
+    ['R07 szoba', ['LMP1 ceiling', 'LMP2–3 bedside', 'SWI1', 'SHU1–2', 'PAN1', 'THR1', 'SEN1 mmWave', 'SEN2 CO₂', 'SPK1–2 follow-me (P02)', 'bed vital-signs stub', 'bedroom media unit (K33)'], ['sockets +0.30', 'LV cove · under-bed · headboard'], ['POR.R06.R07 P-2', 'NTL-TR', 'NTL-ST', 'UEP ×2']],
   ] },
   RBX08: { cls: 'RB-E/W · R08 · addr 8', rooms: [
     ['R08 fürdő', ['LMP1 ceiling', 'LMP2 mirror / vanity', 'ACT1 extractor', 'SEN1 thermal array (primary)', 'SEN2 leak', 'SPK1 follow-me, IP-rated', 'door frame point'], ['LV skirting · niche'], ['POR.R07.R08 P-2', 'NTL-TR', 'NTL-ND', 'UEP ×2']],
