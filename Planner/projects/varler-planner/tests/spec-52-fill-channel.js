@@ -33,7 +33,7 @@ setTimeout(()=>{
   const sec=chn([at(ssc),P(3000,700),P(500,700),at(r1)]),feed=chn([at(meter),at(board)]);
   ok('fixture: carriers',w.chnCarrier(cB1)==='channel'&&w.chnCarrier(cR12)==='channel'&&w.chnCarrier(m1)==='mains'&&w.chnCarrier(sec)==='security'&&w.chnCarrier(feed)==='feed');
   ok('fixture: RBX2 is chained behind RBX1',w.chnChain(r2.id)==='chained');
-  const put=(code,role,x,y,side)=>{const en=w.epEntry(code,role);return w.epPlace({level:lvl,x,y,h:en.h||2700,mount:en.mount,side:en.mount==='wall'?(side==null?1:side):undefined},code,role);};
+  const put=(code,role,x,y,side)=>{role=(role==='sys:MAINS')?w.mnsRoleOf(code):role;const en=w.epEntry(code,role);return w.epPlace({level:lvl,x,y,h:en.h||2700,mount:en.mount,side:en.mount==='wall'?(side==null?1:side):undefined},code,role);};
   const s1=put('SOC','sys:MAINS',2000,0,1),s2=put('SOC','sys:MAINS',3000,4000,0),l1=put('LMP','sys:MAINS',2500,2000);
   const c=w.cktCreate({name:'Pult'});w.cktAssign(c,s1);                                 // s1 real circuit, s2 the implicit one → 2 socket circuits
   const e1=put('SEC','sys:SECURITY',4000,0,1),e2=put('SEC','sys:SECURITY',4000,4000,0);

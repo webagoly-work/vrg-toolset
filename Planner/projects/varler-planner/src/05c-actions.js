@@ -269,6 +269,10 @@ registerActions([
      $('hud').textContent='Nyílászárók: '+(opnWide()?'széles':'vonal');}},
   ...CAM_PRESETS.map(p=>({id:'view.cam.'+p.k,alias:'vetulet projection camera kamera '+p.k+' '+p.n.toLowerCase(),label:'Vetület: '+p.n,icon:'◇',group:'Nézet',
    hint:p.hint,run:()=>camPresetApply(p.k)})),
+  {id:'doc.printPalette',alias:'print palette grey gray nyomtatas szurke paletta',label:'Szürke-biztos nyomtatási paletta be/ki',icon:'🖨',group:'Nézet',
+   hint:'Nyomtatáskor és szürke PNG-nél minden rendszer külön szürkeárnyalat + vonalminta, jelmagyarázattal. A képernyő nem változik.',
+   run:()=>{state.printPal=state.printPal===false;if($('printPal'))$('printPal').checked=state.printPal;
+     $('hud').textContent='Nyomtatási paletta: '+(state.printPal?'szürke-biztos':'valódi színek');}},
   {id:'view.cutaway',alias:'cutaway sims walls down kivagas falak le',label:'Falak: kivágás (Sims) be/ki',icon:'🏠',group:'Nézet',
    hint:'A kamera felőli falak lesüllyednek, a távoli külső falak teljes magasak; forgatáskor követi a kamerát.',
    run:()=>{state.wallMode=state.wallMode==='cutaway'?(state.wallModePrev||'translucent'):(state.wallModePrev=state.wallMode,'cutaway');

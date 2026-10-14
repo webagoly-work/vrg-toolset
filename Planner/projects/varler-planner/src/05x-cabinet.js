@@ -88,7 +88,8 @@ function eloSchedule(boardId,o){const opt=eloOpt(o),R=ELO_RULES,b=byId('devices'
   return {board:boardId,ref:b?(b.ref||b.id):boardId,phase:opt.phase,perWay:opt.perWay,feed,ways,rcd,totalMod,rows,free,phases,warnings};}
 
 // ---- checks ---------------------------------------------------------------------------------------------------------------
-(STK_CHECKS['sys:MAINS']=STK_CHECKS['sys:MAINS']||[]).push(S=>{const out=[];
+// M1: about ways and modules — one registration (on the dedicated layer) is enough for the three Erősáram roles
+(STK_CHECKS['sys:DED']=STK_CHECKS['sys:DED']||[]).push(S=>{const out=[];
   hwList('rbx').forEach(x=>hwServes(x).forEach(r=>{const e=mrkRoomById(r);if(!e||needKind(e.rm)!=='konyha')return;
     const n=epCircuits(r,S.id).filter(c=>c.members.some(id=>epCodeOf(byId('devices',id))==='SOC')).length;
     if(n&&n<ELO_RULES.socketKitchen)out.push({sev:'info',msg:hwRoomLabel(r)+': '+n+' dugaljkör — S04 szerint a konyhába '+ELO_RULES.socketKitchen+' javasolt (pult A, B + sziget).'});}));
@@ -126,7 +127,7 @@ registerActions([
  {id:'elo.export',alias:'eloszto export json vrg-cabinet din',label:'Elosztó exportálása (JSON)',icon:'⬇',group:'Feltöltés',
   need:'Legalább egy Elosztószekrény kell.',when:c=>hwList('board').length>0,run:()=>download('vrg-cabinet.json',JSON.stringify(eloExportObj(),null,1))}
 ]);
-(STK_GROUPS['+sys:MAINS']=STK_GROUPS['+sys:MAINS']||[]).push('Feltöltés');
+MNS_ROLES.forEach(r=>(STK_GROUPS['+'+r]=STK_GROUPS['+'+r]||[]).push('Feltöltés'));
 
 // test hooks
 window.ELO_RULES=ELO_RULES;window.eloFeeds=eloFeeds;window.eloWays=eloWays;window.eloSchedule=eloSchedule;window.eloBalance=eloBalance;

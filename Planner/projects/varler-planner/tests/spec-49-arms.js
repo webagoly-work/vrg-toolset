@@ -20,7 +20,7 @@ setTimeout(()=>{
   w.ensureIds(D());w.eval('for(const l of ORD)SNAP[l]=centerlines(WALLS[l]);');
   const S=w.stkCreate({name:'R'});
   const rbx=w.hwPlace(w.hwGhostAt('rbx',lvl,100,1500));
-  const put=(code,role,x,y,side)=>{const en=w.epEntry(code,role);return w.epPlace({level:lvl,x,y,h:en.h||2700,mount:en.mount,side:en.mount==='wall'?(side==null?1:side):undefined},code,role);};
+  const put=(code,role,x,y,side)=>{role=(role==='sys:MAINS')?w.mnsRoleOf(code):role;const en=w.epEntry(code,role);return w.epPlace({level:lvl,x,y,h:en.h||2700,mount:en.mount,side:en.mount==='wall'?(side==null?1:side):undefined},code,role);};
   const sen=put('SEN','sys:SENSOR',3000,1500),soc=put('SOC','sys:MAINS',2000,0,1);
   const draw=pts=>{w.armToolStart();pts.forEach(p=>w.eval('pathAddNode('+JSON.stringify(p)+')'));w.eval('finishPath()');return D().paths[D().paths.length-1];};
   const at=(d,h)=>({level:lvl,x:d.x,y:d.y,h:h||2600,dev:d.id});

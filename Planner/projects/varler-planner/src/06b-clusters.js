@@ -25,7 +25,7 @@ const CLS_ZONES={low:{n:'alsó (200–500)',h:300},mid:{n:'középső (800–140
 const CLS_GAP=300;              // IDEA-001 §3: one box width plus a gap
 const CLS_HOSTS=['cluster','portal','rbx','base'];
 function clsZoneOf(h){return (h||0)<650?'low':(h||0)<1750?'mid':'high';}
-function clsHigher(role){return !!role&&role.indexOf('sys:')===0&&role!=='sys:MAINS'&&role!=='sys:RF';}
+function clsHigher(role){return !!role&&role.indexOf('sys:')===0&&!mnsIs(role)&&role!=='sys:RF';}
 function clsList(level){return data.devices.filter(d=>d&&d.type==='cluster'&&(!level||d.level===level));}
 function clsMembers(node){return node?data.devices.filter(d=>d&&d.host===node.id):[];}
 
@@ -69,7 +69,7 @@ function clsGroups(level){const by={};
       if(cur.length>=2)out.push(clsFromGroup(level,cur));if(i<a.length)cur=[a[i]];}});
   return out;}
 function clsFromGroup(level,cur){const r=cur[0].r,side=cur[0].side,u=Math.round(cur.reduce((s,x)=>s+x.u,0)/cur.length),h=Math.round(cur.reduce((s,x)=>s+(x.d.h||0),0)/cur.length/50)*50;
-  const roles=[...new Set(cur.map(x=>epRoleOf(x.d)))],mains=roles.indexOf('sys:MAINS')>=0,other=roles.some(x=>x!=='sys:MAINS');
+  const roles=[...new Set(cur.map(x=>epRoleOf(x.d)))],mains=roles.some(mnsIs),other=roles.some(x=>!mnsIs(x));
   const cls=(mains&&other)?'K3':cur.length<=3?'K1':cur.length<=6?'K2':'K3',wi=wallInfo(r),p=mrkFacePt(r,side,u,-wi.thick/2);
   return {kind:'cluster',level,r,wall:r.id,side,u,h,zone:cur[0].z,cls,members:cur.map(x=>x.d.id),x:Math.round(p[0]),y:Math.round(p[1]),mount:'wall',
     why:cur.length+' végpont · '+cur.map(x=>epCodeOf(x.d)).join(' ')+(mains&&other?' · erős + gyenge → K3':'')};}
@@ -254,7 +254,7 @@ STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d)return;
   clsList().forEach(d=>{const ms=clsMembers(d),K=CLS_K[d.cls]||CLS_K.K2,roles=[...new Set(ms.map(m=>epRoleOf(m)))];
     if(!ms.length)out.push({sev:'info',msg:(d.ref||d.id)+': üres klaszterdoboz (tartalék hely).'});
     if(ms.length>K.max)out.push({sev:'warn',msg:(d.ref||d.id)+': '+ms.length+' tag > '+K.max+' — nagyobb osztály kell.'});
-    if(d.cls!=='K3'&&roles.indexOf('sys:MAINS')>=0&&roles.some(r=>r!=='sys:MAINS'))out.push({sev:'warn',msg:(d.ref||d.id)+': erős- és gyengeáram egy rekeszben — K3 (osztott) kell (EN 50174-2).'});});
+    if(d.cls!=='K3'&&roles.some(mnsIs)&&roles.some(r=>!mnsIs(r)))out.push({sev:'warn',msg:(d.ref||d.id)+': erős- és gyengeáram egy rekeszben — K3 (osztott) kell (EN 50174-2).'});});
   const n=clsGroups(state.active).length;if(n)out.push({sev:'info',msg:n+' végpont-csoport még nincs dobozban — Klaszterek a végpontokból.'});
   return out;});
 

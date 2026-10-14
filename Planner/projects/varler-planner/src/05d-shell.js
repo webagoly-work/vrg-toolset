@@ -147,7 +147,10 @@ function renderShell(fromDraw){if(!fromDraw)_chkMap=null;   // an explicit call 
    +`<button class="stg" id="stgPal" title="Minden parancs (Ctrl+K)"><span class="stgIc">⌘</span><span class="stgN">Parancsok</span></button>`
    +`<button class="stg" id="stgOff" title="A munkafolyamat-sáv elrejtése"><span class="stgIc">✕</span><span class="stgN">Elrejt</span></button>`;
   if(railHtml!==_railHtml){_railHtml=railHtml;rail.innerHTML=railHtml;
-    rail.querySelectorAll('.stg[data-k]').forEach(b=>b.onclick=()=>setStage(b.dataset.k));
+    rail.querySelectorAll('.stg[data-k]').forEach(b=>{b.onclick=()=>setStage(b.dataset.k);
+      // S1: a stack stage's button opens its role layer's menu (the same one as the Layers panel row)
+      b.addEventListener('contextmenu',e=>{const k=b.dataset.k;if(k.indexOf('stk:')!==0||typeof stkActive!=='function')return;
+        const S=stkActive(),L=S&&stkLayer(S.id,k.slice(4));if(!L)return;e.preventDefault();e.stopPropagation();lyrLayerMenu(e,L.id);});});
     if($('stgBack'))$('stgBack').onclick=()=>stkLeave();
     $('stgPal').onclick=()=>paletteOpen();
     $('stgOff').onclick=()=>{state.shell=false;renderShell();};}

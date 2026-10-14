@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — round 2026-10-10: S1 · S5 · M1
+- **Stack layer menu + Info (S1).** Right-click a stack layer (panel row or rail button): Info (purpose, device types live from the catalogue, where and how many with this plan's counts, what it clusters with), Aktiválás, Csak ez látszik, Kiemelés, Elemek kijelölése, Ellenőrzés, Helyiség-igények, Tartalom törlése (one undo; a locked layer refuses). Texts in `src/13-role-info.js`.
+- **Security catalogue (S5).** Ten Home Assistant / ESPHome codes (MOT DWC GLB SRN KPD PNC LCK SMK COA DBL) with symbols, room needs, placement hints and an Alap / Prémium tier (`secTier` on the stack). Battery variants carry no cable. Life safety: certified standalone smoke / CO alarms first, HA only notifies.
+- **Erősáram split (M1).** One `sys:MAINS` layer becomes Dedikált körök · Dugaljak · Világítás (lamps, switches, shutter motors), all still `fam:'MAINS'`. **Plans migrate on load** (`stkMigrateRoles`): the old layer keeps its id as Dugaljak, devices move by code, room checklists split. **A plan saved after this opens in an older build with the three new roles shown as plain layers.** `sys:MAINS` stays a read-only alias in the catalogue and needs. Grey-safe print palette (`STK_PRINT`, `state.printPal`) for printing and PNG grey, with a legend; route strokes do not carry the patterns yet.
+
 ## Unreleased — the drawing starts to look like itself
 Five complaints about the *look* of the plan, which turned out to be four causes.
 

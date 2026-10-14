@@ -183,12 +183,12 @@ any golden render (they render the default, merge off).
 | U7 | Falak egyesítve in translucent mode | built — 2026-10-10 — uncommitted |
 | G1 | Wide doors and windows | built — 2026-10-10 — uncommitted (look OK’d; goldens re-baselined: openings/scene@0·45·90 + plan2d) |
 | G2 | Wall refine | ⏸ dry run shown 2026-10-10 (wrfPlan built; apply + dialog wait for the user) |
-| S1 | Stack layer menu + Info | todo |
+| S1 | Stack layer menu + Info | built — 2026-10-13 — spec-70 (not 67: taken) |
 | S2 | One-room RBX | todo |
 | S3 | BASE + RBX on one wall section | todo |
 | S4 | Routes follow hardware | todo |
-| S5 | Security catalogue (HA / ESPHome) | todo |
-| M1 | Erősáram split + print palette | todo |
+| S5 | Security catalogue (HA / ESPHome) | built — 2026-10-13 — spec-71; tier select in the Info dialog + SSC right-click menu (not an inspector) |
+| M1 | Erősáram split + print palette | built — 2026-10-13 — spec-72; owed: print patterns on route strokes |
 | M2 | Circuit presets | todo |
 
 **Answers (2026-10-10, tuner, 23 / 24) — resolved into the WPs and MATERIAL:**

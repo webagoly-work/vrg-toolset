@@ -12,7 +12,7 @@ const state={rot:90,zoom:.5,panX:250,panY:180,exploded:true,wallMode:'translucen
  grid:false,gridSize:250,cableType:'lighting',drawHKey:'s1100',freeHeight:false,freeMm:1100,chaseFactor:1.6,chasePad:4,boxDepth:45,buildType:'door',
  flat:false,showLabels:true,labelSize:1,labelRot:0,
  side:0,wallLock:true,midFree:false,showDropCeil:true,wallThick:100,wallErase:false,pathType:'gege',toolsLoc:'side',
- waste:10,price:{},hoverR:null,hoverL:'ground',stairDef:{w:1000,riser:180,going:250,th:300},isoGrid:false,activeLayer:'L0',showRefs:false,pitch:30,flat:false,soloRoom:null,showRoomText:true,bg:null,bp:{dims:true,title:true,proj:'',addr:'',by:''},bpScale:50,bpFine:1,hDisp:'hover',objAng:0,gizmoSnap:true,mobile:false,objWallSnap:true,multiSelect:false,circHoverInfo:true,circHidden:{},circHi:null,devScale:0.72,pathScale:1,viewScale:1,camPreset:null,camLock:false,camLockPitch:null,cutH:1500,cutNearH:1000};
+ waste:10,price:{},hoverR:null,hoverL:'ground',stairDef:{w:1000,riser:180,going:250,th:300},isoGrid:false,activeLayer:'L0',showRefs:false,pitch:30,flat:false,soloRoom:null,showRoomText:true,bg:null,bp:{dims:true,title:true,proj:'',addr:'',by:''},bpScale:50,bpFine:1,hDisp:'hover',objAng:0,gizmoSnap:true,mobile:false,objWallSnap:true,multiSelect:false,circHoverInfo:true,circHidden:{},circHi:null,devScale:0.72,pathScale:1,viewScale:1,camPreset:null,camLock:false,camLockPitch:null,cutH:1500,cutNearH:1000,printPal:true};
 // ---- keyboard layouts (round 2026-10-10, WP-U4) ----
 // Plain W A S D / Q E are the camera, always — they used to move the selection in Move mode and a selected object in
 // Select mode, so the same key panned or nudged depending on what happened to be selected. The selection now moves

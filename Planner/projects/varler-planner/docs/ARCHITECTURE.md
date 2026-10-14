@@ -79,6 +79,7 @@ This is deliberate for now: it made the split from a single file provably safe (
 | `10-lamps.js` | 400 | lamp data sheet, generated objects, hover preview |
 | `11-controls.js` | 167 | sidebar controls, projects, panels, persistence |
 | `12-boot.js` | 440 | startup wiring |
+| `13-role-info.js` | 83 | data only: the stack layer Info texts (`RLI_TEXT`), loaded last — every use is inside a function |
 
 **Where do I put a new feature?** By subject, not by size. A new door type goes in `04-render.js` next to the other door symbols; a new editor action goes in `06-` or `07-`; a new standard or catalogue table goes in `00-core.js` for now (it gets its own module later).
 

@@ -432,6 +432,7 @@
      <option value="translucent">translucent</option><option value="solid">solid</option>
      <option value="hidden">hidden</option><option value="cutaway">kivágás (Sims)</option></select>
     <label id="wallMergeL" style="margin-left:8px" title="A falak egy testként jelennek meg: nincs sarokvarrat. A hivatalos nézet mindig így rajzol; a falak egyenként kijelölhetők maradnak. Áttetsző és tömör falaknál is működik."><input type="checkbox" id="wallMerge"> Falak egyesítve</label></div>
+   <div class="row" title="Nyomtatáskor és szürke PNG-nél a rendszerszínek egymástól jól elváló szürkeárnyalatokra és vonalmintákra váltanak; a képernyő nem változik."><label><input type="checkbox" id="printPal" checked> Szürke-biztos nyomtatási paletta</label></div>
    <div class="row" id="cutRow" style="display:none" title="Kivágás: a kamera felőli falak lesüllyednek, a távoli külső falak teljes magasak maradnak. Forgatáskor a kivágás követi a kamerát.">Kivágás belső <input type="number" id="cutH" min="300" max="2700" step="100" value="1500" style="width:58px"> külső <input type="number" id="cutNearH" min="0" max="2700" step="100" value="1000" style="width:58px"> mm</div>
    <div class="row" title="Széles: az ajtó falsíktól falsíkig rés a nyitásívvel, az ablak a falsíkoktól kicsit beljebb álló üvegsáv. Vonal: a régi, falközépi vonal.">Nyílászárók <select id="openingStyle">
      <option value="wide">széles</option><option value="line">vonal</option></select></div>
@@ -1038,7 +1039,7 @@ const state={rot:90,zoom:.5,panX:250,panY:180,exploded:true,wallMode:'translucen
  grid:false,gridSize:250,cableType:'lighting',drawHKey:'s1100',freeHeight:false,freeMm:1100,chaseFactor:1.6,chasePad:4,boxDepth:45,buildType:'door',
  flat:false,showLabels:true,labelSize:1,labelRot:0,
  side:0,wallLock:true,midFree:false,showDropCeil:true,wallThick:100,wallErase:false,pathType:'gege',toolsLoc:'side',
- waste:10,price:{},hoverR:null,hoverL:'ground',stairDef:{w:1000,riser:180,going:250,th:300},isoGrid:false,activeLayer:'L0',showRefs:false,pitch:30,flat:false,soloRoom:null,showRoomText:true,bg:null,bp:{dims:true,title:true,proj:'',addr:'',by:''},bpScale:50,bpFine:1,hDisp:'hover',objAng:0,gizmoSnap:true,mobile:false,objWallSnap:true,multiSelect:false,circHoverInfo:true,circHidden:{},circHi:null,devScale:0.72,pathScale:1,viewScale:1,camPreset:null,camLock:false,camLockPitch:null,cutH:1500,cutNearH:1000};
+ waste:10,price:{},hoverR:null,hoverL:'ground',stairDef:{w:1000,riser:180,going:250,th:300},isoGrid:false,activeLayer:'L0',showRefs:false,pitch:30,flat:false,soloRoom:null,showRoomText:true,bg:null,bp:{dims:true,title:true,proj:'',addr:'',by:''},bpScale:50,bpFine:1,hDisp:'hover',objAng:0,gizmoSnap:true,mobile:false,objWallSnap:true,multiSelect:false,circHoverInfo:true,circHidden:{},circHi:null,devScale:0.72,pathScale:1,viewScale:1,camPreset:null,camLock:false,camLockPitch:null,cutH:1500,cutNearH:1000,printPal:true};
 // ---- keyboard layouts (round 2026-10-10, WP-U4) ----
 // Plain W A S D / Q E are the camera, always — they used to move the selection in Move mode and a selected object in
 // Select mode, so the same key panned or nudged depending on what happened to be selected. The selection now moves
@@ -3495,6 +3496,10 @@ registerActions([
      $('hud').textContent='Nyílászárók: '+(opnWide()?'széles':'vonal');}},
   ...CAM_PRESETS.map(p=>({id:'view.cam.'+p.k,alias:'vetulet projection camera kamera '+p.k+' '+p.n.toLowerCase(),label:'Vetület: '+p.n,icon:'◇',group:'Nézet',
    hint:p.hint,run:()=>camPresetApply(p.k)})),
+  {id:'doc.printPalette',alias:'print palette grey gray nyomtatas szurke paletta',label:'Szürke-biztos nyomtatási paletta be/ki',icon:'🖨',group:'Nézet',
+   hint:'Nyomtatáskor és szürke PNG-nél minden rendszer külön szürkeárnyalat + vonalminta, jelmagyarázattal. A képernyő nem változik.',
+   run:()=>{state.printPal=state.printPal===false;if($('printPal'))$('printPal').checked=state.printPal;
+     $('hud').textContent='Nyomtatási paletta: '+(state.printPal?'szürke-biztos':'valódi színek');}},
   {id:'view.cutaway',alias:'cutaway sims walls down kivagas falak le',label:'Falak: kivágás (Sims) be/ki',icon:'🏠',group:'Nézet',
    hint:'A kamera felőli falak lesüllyednek, a távoli külső falak teljes magasak; forgatáskor követi a kamerát.',
    run:()=>{state.wallMode=state.wallMode==='cutaway'?(state.wallModePrev||'translucent'):(state.wallModePrev=state.wallMode,'cutaway');
@@ -3815,7 +3820,10 @@ function renderShell(fromDraw){if(!fromDraw)_chkMap=null;   // an explicit call 
    +`<button class="stg" id="stgPal" title="Minden parancs (Ctrl+K)"><span class="stgIc">⌘</span><span class="stgN">Parancsok</span></button>`
    +`<button class="stg" id="stgOff" title="A munkafolyamat-sáv elrejtése"><span class="stgIc">✕</span><span class="stgN">Elrejt</span></button>`;
   if(railHtml!==_railHtml){_railHtml=railHtml;rail.innerHTML=railHtml;
-    rail.querySelectorAll('.stg[data-k]').forEach(b=>b.onclick=()=>setStage(b.dataset.k));
+    rail.querySelectorAll('.stg[data-k]').forEach(b=>{b.onclick=()=>setStage(b.dataset.k);
+      // S1: a stack stage's button opens its role layer's menu (the same one as the Layers panel row)
+      b.addEventListener('contextmenu',e=>{const k=b.dataset.k;if(k.indexOf('stk:')!==0||typeof stkActive!=='function')return;
+        const S=stkActive(),L=S&&stkLayer(S.id,k.slice(4));if(!L)return;e.preventDefault();e.stopPropagation();lyrLayerMenu(e,L.id);});});
     if($('stgBack'))$('stgBack').onclick=()=>stkLeave();
     $('stgPal').onclick=()=>paletteOpen();
     $('stgOff').onclick=()=>{state.shell=false;renderShell();};}
@@ -5708,6 +5716,7 @@ function lyrLayerMenu(e,id){const L=lyrLayer(id);if(!L)return;const i=layers.ind
   if(L.link){items.push({label:'Csatolt rétegek egyesítése',act:()=>lyrMergeLinked(id)});items.push({label:'Csatolás bontása',act:()=>lyrUnlink(id)});}
   if(layers.length>1)items.push({label:'Csatolás…',act:()=>lyrLinkDialog(id)});
   items.push({label:L.lock?'Zárolás feloldása':'Zárolás',act:()=>lyrToggleLock(id)});
+  if(L.stack&&L.role&&typeof stkLayerMenu==='function'){items.push({label:'—',act:()=>{}});stkLayerMenu(L,items);}   // S1
   ctxMenu(e,items);}
 registerActions([
  {id:'layer.duplicate',alias:'reteg masolas duplicate layer copy',label:'Réteg másolása…',icon:'⧉',group:'Réteg',
@@ -5754,7 +5763,11 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'hw',         n:'Hardver',     ph:1, cats:['device'], hint:'Elosztószekrény, mérőóra, adatbelépés, RBX dobozok.'},
  {k:'base',       n:'BASE',        ph:1, cats:['device'], hint:'NET · COMP · MEDIA.'},
  {k:'channel',    n:'Csatorna',    ph:1, cats:['path'],   hint:'Fizikai összeköttetés két hardverpont között.'},
- {k:'sys:MAINS',  n:'Erősáram',               ph:2, fam:'MAINS'},
+ // Erősáram is three layers since round 2026-10-10 (WP-M1): dedicated · sockets · lighting (lamps + switches + shutters).
+ // All three keep fam:'MAINS', so the fill, the conduit packing and the cabinet see one family as before.
+ {k:'sys:DED',    n:'Dedikált körök',         ph:2, fam:'MAINS'},
+ {k:'sys:SOC',    n:'Dugaljak',               ph:2, fam:'MAINS'},
+ {k:'sys:LIGHT',  n:'Világítás',              ph:2, fam:'MAINS'},
  {k:'sys:LV',     n:'Törpefeszültség — A busz', ph:2, fam:'LV'},
  {k:'sys:BUSB',   n:'Biztosított 24 V — B busz',ph:2, fam:'BUSB'},
  {k:'sys:CONTROL',n:'Vezérlés (BRIDGE_LINK)', ph:2, fam:'CONTROL'},
@@ -5770,16 +5783,66 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'arm',        n:'ARM pályák',  ph:2, cats:['path'], hint:'Egyvonalas pályák az RBX-től minden végpontig.'},
  // the top of the stack: the gathered extras and SmartFrame ideas as provisioned endpoints (P33-ADD-001, IDEA-003)
  {k:'sys:EXTRA',  n:'Extrák és ötletek',      ph:2, fam:'LV', hint:'Előkészített végpontok: P33 extrák (#1–#11) és a SmartFrame slotjai. Az ideális helyek ✦-gal.'}];
-const STK_ICONS={construct:'🧱',mark:'🚩',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
+const STK_ICONS={construct:'🧱',mark:'🚩',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:DED':'🔌','sys:SOC':'⚡','sys:LIGHT':'💡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
   'sys:DATA':'🌐','sys:KNX':'⌘','sys:SENSOR':'📡','sys:RF':'📶','sys:HMI':'🖲','sys:MEDIA':'🔊','sys:USB':'🔌','sys:SECURITY':'🛡',cluster:'▦',arm:'🌿','sys:EXTRA':'✧'};
 // One colour per role, fixed [user]: Erősáram is the same red in every project, on the panel, on the
 // symbols and in the BRIDGE sheets — a colour has to mean a system, not "the third layer down".
 // The sys:* half of this table is what 05s hands to the endpoint symbols (EP_ROLE_COL reads it).
 const STK_COL={construct:'#7c7468',mark:'#c0530f',hw:'#4a5a68',base:'#1f6f8b',channel:'#8a7bbf',
-  'sys:MAINS':'#d1493f','sys:LV':'#e6a800','sys:BUSB':'#b07a2a','sys:CONTROL':'#7a5cc0','sys:DATA':'#16a085',
+  'sys:MAINS':'#d1493f','sys:DED':'#6d4c41','sys:SOC':'#c62828','sys:LIGHT':'#ef7b72','sys:LV':'#e6a800','sys:BUSB':'#b07a2a','sys:CONTROL':'#7a5cc0','sys:DATA':'#16a085',
   'sys:KNX':'#2e7d32','sys:SENSOR':'#2f79c9','sys:RF':'#3fa7a7','sys:HMI':'#5470b0','sys:MEDIA':'#c2638a',
   'sys:USB':'#607d8b','sys:SECURITY':'#444444',cluster:'#9c6b30',arm:'#2e9e5b','sys:EXTRA':'#b0489a'};
-function stkRoleCol(k){return STK_COL[k]||null;}
+// the switch inside the lighting layer is orange (the user's words: barna, vörös, világospiros lámpa, narancs kapcsoló)
+const EP_CODE_COL={'sys:LIGHT':{SWI:'#f08c2e'}};
+// grey-safe print palette (answer M04, MATERIAL §4b): c = colour for colour print, L = CIE L* it greys to, p = line
+// pattern (s solid · d dash · o dot · x dash-dot). Used only while printing / exporting PNG grey (prnActive), never on screen.
+const STK_PRINT={
+ 'sys:DED':{c:'#5f3f34',L:30,p:'s'},  'sys:SOC':{c:'#ca2c2b',L:45,p:'s'},
+ SWI:{c:'#d87817',L:60,p:'s'},        'sys:LIGHT':{c:'#fea096',L:75,p:'s'},   // lamp
+ 'sys:CONTROL':{c:'#4d3593',L:30,p:'d'},'sys:BUSB':{c:'#92600c',L:45,p:'d'},
+ 'sys:DATA':{c:'#1ca388',L:60,p:'d'}, 'sys:LV':{c:'#edae10',L:75,p:'d'},
+ 'sys:USB':{c:'#2e4b57',L:30,p:'o'},  'sys:HMI':{c:'#4c69a8',L:45,p:'o'},
+ 'sys:SENSOR':{c:'#5392e5',L:60,p:'o'},'sys:MEDIA':{c:'#ff9ac1',L:75,p:'o'},
+ 'sys:SECURITY':{c:'#474747',L:30,p:'x'},'sys:KNX':{c:'#2a7a2f',L:45,p:'x'},
+ arm:{c:'#35a460',L:60,p:'x'},        'sys:RF':{c:'#64c8c8',L:75,p:'x'},
+ // phase 1 — boxes and walls, told apart by kind, so levels may repeat
+ hw:{c:'#394956',L:30,p:'s'}, base:{c:'#25738f',L:45,p:'s'}, channel:{c:'#9687cc',L:60,p:'s'},
+ mark:{c:'#e3702e',L:60,p:'x'}, construct:{c:'#7e766a',L:50,p:'s'}};
+const STK_PRINT_DASH={s:'',d:'6 3',o:'1.2 2.4',x:'7 2 1.5 2'};
+let prnOn=false;                                   // true only around exportPNG(true) and between beforeprint / afterprint
+function prnActive(){return prnOn&&state.printPal!==false;}
+function prnSet(on){const was=prnActive();prnOn=!!on;if(was!==prnActive()&&typeof draw==='function')draw();return prnActive();}
+// the legend a printed / exported sheet carries: every role (and the switch) actually used by a visible device
+function prnLegendSvg(x,y){const used=[],seen={};
+  data.devices.forEach(d=>{if(!d||!state.levels[d.level]||(typeof layerShows==='function'&&!layerShows(d)))return;
+    const r=typeof epRoleOf==='function'?epRoleOf(d):null;if(!r||!STK_PRINT[r])return;
+    const c=typeof epCodeOf==='function'?epCodeOf(d):null,k=(r==='sys:LIGHT'&&c==='SWI')?'SWI':r;
+    if(!seen[k]){seen[k]=1;used.push(k);}});
+  if(!used.length)return '';
+  used.sort((a,b)=>(stkRoleIx(a==='SWI'?'sys:LIGHT':a)-stkRoleIx(b==='SWI'?'sys:LIGHT':b))||(a==='SWI'?1:-1));
+  const nm=k=>k==='SWI'?'Kapcsoló':((stkRole(k)||{n:k}).n);
+  let s=`<g id="prnLegend" font-family="Arial,sans-serif" font-size="11"><rect x="${x}" y="${y}" width="190" height="${18+used.length*16}" fill="#fff" stroke="#888" stroke-width="0.6"/>`
+    +`<text x="${x+8}" y="${y+13}" font-weight="700">Rendszerek (nyomtatási paletta)</text>`;
+  used.forEach((k,i)=>{const p=STK_PRINT[k],yy=y+28+i*16,dash=STK_PRINT_DASH[p.p]?` stroke-dasharray="${STK_PRINT_DASH[p.p]}"`:'';
+    s+=`<line x1="${x+8}" y1="${yy-4}" x2="${x+34}" y2="${yy-4}" stroke="${p.c}" stroke-width="3"${dash}/>`
+      +`<text x="${x+42}" y="${yy}">${esc(nm(k))}</text>`;});
+  return s+'</g>';}
+function stkPrintOf(k,code){return (code&&k==='sys:LIGHT'&&STK_PRINT[code])||STK_PRINT[k]||null;}
+function stkPrintCol(k,code){const p=stkPrintOf(k,code);return p?p.c:null;}
+// one colour lookup for a role (and optionally the device code): the print palette while printing, else the screen colours
+function stkRoleCol(k,code){if(prnActive()){const c=stkPrintCol(k,code);if(c)return c;}
+  return (code&&EP_CODE_COL[k]&&EP_CODE_COL[k][code])||STK_COL[k]||null;}
+// ---- the Erősáram split (WP-M1) ----
+const MNS_ROLES=['sys:DED','sys:SOC','sys:LIGHT'];
+function mnsIs(role){return role==='sys:MAINS'||MNS_ROLES.indexOf(role)>=0;}
+// which of the three a MAINS endpoint belongs to — MATERIAL §4 table (SHU is a switched load: lighting, Q-M03)
+function mnsRoleOf(code,type){
+  if(code==='DED')return 'sys:DED';
+  if(code==='LMP'||code==='SWI'||code==='SHU')return 'sys:LIGHT';
+  if(code==='SOC')return 'sys:SOC';
+  if(type==='light'||type==='switch')return 'sys:LIGHT';
+  if(type==='socket')return 'sys:SOC';
+  return 'sys:SOC';}
 function stkSysCols(){const o={};Object.keys(STK_COL).forEach(k=>{if(k.indexOf('sys:')===0)o[k]=STK_COL[k];});return o;}
 // the action groups the inspector offers per role. A work package that adds actions to one system role
 // pushes into STK_GROUPS['+sys:MAINS'] etc.; groups that do not exist yet simply show nothing.
@@ -5826,7 +5889,32 @@ function stkLayer(stackId,roleKey){return layers.find(l=>l.stack===stackId&&l.ro
 function stkLayersOf(stackId){return layers.filter(l=>l.stack===stackId)
   .sort((a,b)=>stkRoleIx(a.role)-stkRoleIx(b.role));}
 function stkRoleIx(k){const i=STK_ROLES.findIndex(r=>r.k===k);return i<0?999:i;}
-function stkRole(k){return STK_ROLES.find(r=>r.k===k)||null;}
+function stkRole(k){const r=STK_ROLES.find(x=>x.k===k);if(r)return r;
+  // read-only alias: an old saved plan or an old link still resolves 'sys:MAINS' while it migrates
+  if(k==='sys:MAINS')return {k:'sys:MAINS',n:'Erősáram',ph:2,fam:'MAINS',alias:MNS_ROLES};
+  return null;}
+// ---- load-time role migrations (idempotent; run after the data is in, before the panel renders) ----
+// WP-M1: a stack's one sys:MAINS layer becomes three. The old layer keeps its id (and its visibility, lock, opacity)
+// as sys:SOC; sys:DED and sys:LIGHT are new layers copying those; devices move by code; room checklists split by code.
+function stkMigrateRoles(){let n=0;
+  layers.filter(L=>L.stack&&L.role==='sys:MAINS').forEach(L=>{n++;
+    const base={visible:L.visible!==false,cats:Object.assign({},L.cats||{}),stack:L.stack};
+    if(L.lock)base.lock=true;if(L.op)base.op=Object.assign({},L.op);
+    const nm=s=>/Erősáram/.test(L.name||'')?L.name.replace(/Erősáram/,s):s;
+    const mk=(role,name)=>{const id=stkMigrateId();return Object.assign({id,name:nm(name),role},JSON.parse(JSON.stringify(base)));};
+    // each new layer joins the list BEFORE the next id is made — two ids minted in the same millisecond would collide
+    const G=mk('sys:LIGHT','Világítás');layers.splice(layers.indexOf(L)+1,0,G);
+    const D=mk('sys:DED','Dedikált körök');layers.splice(layers.indexOf(L),0,D);
+    L.role='sys:SOC';L.name=nm('Dugaljak');
+    data.devices.forEach(d=>{if(!d||d.layer!==L.id)return;const r=mnsRoleOf(d.code||(typeof EP_FROM_TYPE!=='undefined'?EP_FROM_TYPE[d.type]:null),d.type);
+      if(r==='sys:DED')d.layer=D.id;else if(r==='sys:LIGHT')d.layer=G.id;});
+    const S=stkById(L.stack);if(S)stkSync(S);});
+  // room checklists: split rm.needs['sys:MAINS'] by code (floors and building rooms)
+  const split=rm=>{if(!rm||!rm.needs||!rm.needs['sys:MAINS'])return;const old=rm.needs['sys:MAINS'];delete rm.needs['sys:MAINS'];
+    Object.keys(old).forEach(c=>{const r=mnsRoleOf(c);(rm.needs[r]=rm.needs[r]||{})[c]=old[c];});};
+  (data.floors||[]).forEach(split);if(typeof ROOMSB!=='undefined')for(const l of ORD)(ROOMSB[l]||[]).forEach(split);
+  return n;}
+function stkMigrateId(){let k=Date.now(),id;do{id='L'+(k++).toString(36)+'m';}while(layers.some(l=>l.id===id));return id;}
 function stkShort(S){return 'B'+(stacks.indexOf(S)+1);}
 function stkSync(S){S.layers=stkLayersOf(S.id).map(l=>l.id);}
 function stkNewId(){let n=Date.now(),id;do{id='S'+n.toString(36);n++;}while(stacks.some(s=>s.id===id));return id;}
@@ -5995,7 +6083,106 @@ registerActions([
   need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>stkLeave()}
 ]);
 
+// ---- the stack layer right-click menu + Info (round 2026-10-10, WP-S1) ----
+// A role layer's row in the Layers panel and its stage button in the rail open the same menu: the layer's
+// own items (05l lyrLayerMenu), then — after a separator — what a work package pushed into STK_LAYERMENU.
+const STK_LAYERMENU=[];   // fn(L, items) — extra items for a stack role layer's menu
+function stkLayerMenu(L,items){return stkMenuHook(STK_LAYERMENU,L,items);}
+// the items S1 itself adds (every role layer)
+STK_LAYERMENU.push((L,items)=>{const n=rliCount(L.id),role=stkRole(L.role),solo=state.rliSolo&&state.rliSolo.stack===L.stack;
+  items.push({label:'ℹ Info — '+esc(role?role.n:L.role),act:()=>rliDialog(L.role,L.stack)});
+  items.push({label:'Aktiválás',act:()=>rliActivate(L.id)});
+  items.push({label:solo?'Mind látszik':'Csak ez látszik',act:()=>solo?rliSoloOff():rliSolo(L.id)});
+  items.push({label:'Kiemelés (Réteg-kiemelés)',act:()=>{if(!lyrSpotOn())lyrSpotToggle();lyrSpotSet(L.id);}});
+  items.push({label:'Elemek kijelölése ('+rliSelectable(L.id).length+')',act:()=>rliSelect(L.id)});
+  items.push({label:'Ellenőrzés…',act:()=>rliCheckDialog(L.role,L.stack)});
+  if(L.role.indexOf('sys:')===0)items.push({label:'Helyiség-igények…',act:()=>rliNeedsDialog(L.role,L.stack)});
+  items.push({label:'🗑 Tartalom törlése… ('+n+' elem)',act:()=>rliClear(L.id)});});
+// everything that lives on the layer: the UKEYS collections and the walls of every level
+function rliItems(layerId){const out=[];lyrEachItem((k,r)=>{if((r.layer||'L0')===layerId)out.push({coll:k,rec:r});});return out;}
+function rliCount(layerId){return rliItems(layerId).length;}
+function rliActivate(id){const L=lyrLayer(id);if(!L)return;state.activeLayer=id;
+  if(L.stack){state.stkOff=false;state.stack=L.stack;if(L.role)state.stage='stk:'+L.role;}
+  renderLayers();if(typeof renderShell==='function')renderShell();lyrHud('Aktív réteg: '+L.name);}
+// solo inside the stack: the other layers of the same stack hide; their visibility is remembered for "Mind látszik"
+function rliSolo(id){const L=lyrLayer(id);if(!L||!L.stack)return false;
+  const prev={};stkLayersOf(L.stack).forEach(x=>{prev[x.id]=x.visible!==false;x.visible=(x.id===id);});
+  state.rliSolo={stack:L.stack,layer:id,prev};lyrRefresh();lyrHud('Csak ez látszik: '+L.name+' — jobb klikk → Mind látszik visszaállítja.');return true;}
+function rliSoloOff(){const s=state.rliSolo;if(!s)return false;
+  stkLayersOf(s.stack).forEach(x=>{x.visible=(s.prev[x.id]!==undefined)?s.prev[x.id]:true;});
+  delete state.rliSolo;lyrRefresh();lyrHud('A stack rétegei a korábbi láthatósággal.');return true;}
+// the visible, unlocked items of the layer that the selection model can hold
+function rliSelectable(id){const L=lyrLayer(id);if(!L||L.lock||L.visible===false)return [];const out=[];
+  ['objects','devices','openings','roofs','floors','notes'].forEach(t=>(data[t]||[]).forEach((o,i)=>{
+    if(o&&(o.layer||'L0')===id&&(typeof hitOk!=='function'||hitOk(o,{objects:'object',devices:'device',openings:'build',roofs:'build',floors:'build',notes:'note'}[t])))out.push({t,i});}));
+  for(const l of ORD)(WALLS[l]||[]).forEach(r=>{if((r.layer||'L0')===id)out.push({t:'wall',ref:r,level:l});});
+  return out;}
+function rliSelect(id){const hs=rliSelectable(id),L=lyrLayer(id);
+  if(!hs.length){lyrHud(L&&L.lock?'Zárolt réteg: '+L.name:'Nincs kijelölhető elem ezen a rétegen.');return 0;}
+  clearMulti();hs.forEach(h=>addMulti(h));selected=hs[0];setMode('grab');draw();
+  lyrHud(hs.length+' elem kijelölve ('+L.name+') — Mozgatás eszköz.');return hs.length;}
+function rliCheckDialog(roleKey,stackId){const S=stkById(stackId)||stkActive();if(!S)return;
+  const list=stkCheck(S,roleKey),r=stkRole(roleKey),C={error:'#c62828',warn:'#b26a00',info:'#2f6fb0'};
+  openModal('Ellenőrzés — '+esc(r?r.n:roleKey),list.length?list.map(x=>`<div style="padding:3px 0;border-bottom:1px solid #f0f0f0"><b style="color:${C[x.sev]||'#555'}">${x.sev==='error'?'hiba':x.sev==='warn'?'figyelem':'info'}</b> · ${esc(x.msg)}</div>`).join('')
+    :'<div class="mrow">Nincs kifogás ezen a rétegen.</div>',()=>{},'Bezár');}
+function rliNeedsDialog(roleKey,stackId){const S=stkById(stackId)||stkActive();if(!S)return;const r=stkRole(roleKey);
+  const rows=rliRoomCounts(roleKey,S.id);
+  openModal('Helyiség-igények — '+esc(r?r.n:roleKey),rows.length?`<table style="border-collapse:collapse;font-size:12px">`
+    +rows.map(x=>`<tr><td style="padding:2px 8px 2px 0"><b>${esc(x.num)}</b> ${esc(x.name)}</td><td style="padding:2px 8px;text-align:right">${x.have} / ${x.need}</td>`
+      +`<td style="color:#888">${x.missing.length?'hiányzik: '+x.missing.map(esc).join(', '):''}</td></tr>`).join('')+`</table>`
+    :'<div class="mrow">Nincs helyiség, vagy ennek a rétegnek nincs igénye.</div>',()=>{},'Bezár');}
+// per room: endpoints of this role it has vs the codes its needs ask (needOf / needHave, 05t)
+function rliRoomCounts(roleKey,stackId){if(typeof needOf!=='function')return [];const out=[];
+  for(const l of ORD)stkRooms(l).forEach(e=>{if(!e.id)return;const need=needOf(e.rm,roleKey),ks=Object.keys(need).filter(k=>need[k]);
+    if(!ks.length)return;const have=ks.filter(k=>needHave(e.id,roleKey,k,stackId)>0);
+    out.push({num:e.num||'',name:e.name||'',need:ks.length,have:have.length,missing:ks.filter(k=>have.indexOf(k)<0)});});
+  return out;}
+// the Info dialog
+function rliDialog(roleKey,stackId){const r=stkRole(roleKey),T=(typeof RLI_TEXT!=='undefined'&&RLI_TEXT[roleKey])||{},c=STK_COL[roleKey]||'#888';
+  openModal(`${STK_ICONS[roleKey]||''} ${esc(r?r.n:roleKey)} <span style="display:inline-block;width:12px;height:12px;background:${c};border-radius:2px;vertical-align:middle"></span>`,
+    rliInfoHtml(roleKey,stackId||(stkActive()||{}).id),()=>{},'Bezár');
+  const sel=$('rliSecTier'),S=stkById(stackId)||stkActive();
+  if(sel&&S){sel.value=S.secTier==='premium'?'premium':'alap';sel.onchange=()=>epSecTierSet(S.id,sel.value);}}
+function rliInfoHtml(roleKey,stackId){const r=stkRole(roleKey),T=(typeof RLI_TEXT!=='undefined'&&RLI_TEXT[roleKey])||{};
+  const sec=(h,b)=>`<div style="margin:8px 0 2px;font-weight:700">${h}</div><div style="font-size:12px;line-height:1.45">${b}</div>`;
+  let types='';const eps=(typeof epOfRole==='function')?epOfRole(roleKey):[];
+  if(eps.length)types=eps.map(e=>`<div><b>${esc(e.code)}</b> — ${esc(e.n)}${e.mount==='ceiling'?' · mennyezet':e.h?' · '+e.h+' mm':''}`
+    +((e.vars||[]).length?`<div style="color:#777;margin-left:12px">${e.vars.map(v=>esc(v.n)+(v.h?' ('+v.h+' mm)':'')).join(' · ')}</div>`:'')+`</div>`).join('');
+  else if(roleKey==='construct'&&r&&r.cats)types=r.cats.map(k=>esc(typeof lyrCatName==='function'?lyrCatName(k):k)).join(', ');
+  else if(roleKey==='hw')types=Object.keys(HW_TYPES).filter(k=>HW_DEF[k]&&HW_DEF[k].role==='hw').map(k=>esc(HW_TYPES[k])).join(', ');
+  else if(roleKey==='base')types=HW_UNIT_ORDER.map(u=>'<b>'+u+'</b> — '+esc((HW_BASE_UNITS[u].n.split(' — ')[1])||'')).join(' · ');
+  else if(roleKey==='cluster')types='Klaszterdobozok K1 · K2 · K3 (06b).';
+  else types='<span style="color:#888">—</span>';
+  const counts=stackId&&roleKey.indexOf('sys:')===0?rliRoomCounts(roleKey,stackId):[];
+  const here=counts.length?`<div style="margin-top:4px;color:#555">Ebben a tervben: `+counts.map(x=>`<span style="white-space:nowrap">${esc(x.num)} ${esc(x.name)} · ${x.have} / ${x.need}</span>`).join(' · ')+`</div>`:'';
+  const tier=roleKey==='sys:SECURITY'&&stackId?sec('Biztonsági kivitel',`<select id="rliSecTier"><option value="alap">Alap — vegyes (a belső mozgás és a pánikgomb az RBX-hez)</option>`
+    +`<option value="premium">Prémium — csillag (minden behatolás-érzékelő az SSC-ig)</option></select>`):'';
+  return sec('Mire való',esc(T.cel||'—'))+sec('Eszköztípusok',types)+sec('Hol és mennyi',esc(T.hol||'—')+here)+sec('Mivel klaszterezhető',esc(T.klaszter||'—'))+tier;}
+// delete everything ON the layer; the layer, its role and its stack stay. One undo step brings it all back.
+function rliClear(layerId,opt){opt=opt||{};const L=lyrLayer(layerId);if(!L)return 0;
+  if(L.lock){lyrHud('Zárolt réteg: '+L.name+' — előbb oldd fel a zárolást.');return 0;}   // Q-S02 = A
+  const items=rliItems(layerId);if(!items.length){lyrHud('A(z) „'+L.name+'” réteg üres.');return 0;}
+  if(!opt.yes&&!confirm(items.length+' elem törlése a(z) „'+L.name+'” rétegről? A réteg megmarad. (Visszavonható)'))return 0;
+  pushUndo();
+  const gone=new Set(items.map(x=>x.rec)),devIds=new Set(items.filter(x=>x.coll==='devices').map(x=>x.rec.id));
+  UKEYS.forEach(k=>{if(Array.isArray(data[k]))data[k]=data[k].filter(r=>!gone.has(r));});
+  for(const l of ORD)if((WALLS[l]||[]).some(r=>gone.has(r))){WALLS[l]=WALLS[l].filter(r=>!gone.has(r));SNAP[l]=centerlines(WALLS[l]);}
+  (data.circuits||[]).forEach(c=>{if(c.members)c.members=c.members.filter(id=>!devIds.has(id));});
+  pruneLinks();selected=null;clearMulti();lyrRefresh();
+  lyrHud(items.length+' elem törölve: '+L.name+' (Ctrl+Z visszahozza).');return items.length;}
+registerActions([
+ {id:'layer.info',alias:'reteg info informacio layer role',label:'Réteg infó',icon:'ℹ',group:'Réteg',
+  hint:'Mire való az aktív stack réteg, milyen eszköztípusok, hol és mennyi, mivel klaszterezhető.',
+  need:'Egy BRIDGE Stack réteg legyen aktív.',when:()=>{const L=lyrLayer(state.activeLayer);return !!(L&&L.stack&&L.role);},
+  run:()=>{const L=lyrLayer(state.activeLayer);rliDialog(L.role,L.stack);}},
+ {id:'layer.clear',alias:'reteg tartalom torlese clear layer contents delete',label:'Réteg tartalmának törlése…',icon:'🗑',group:'Réteg',
+  hint:'Az aktív réteg minden elemét törli; a réteg megmarad. Visszavonható.',run:()=>rliClear(state.activeLayer)}]);
+
 // test hooks
+window.MNS_ROLES=MNS_ROLES;window.mnsIs=mnsIs;window.mnsRoleOf=mnsRoleOf;window.stkMigrateRoles=stkMigrateRoles;window.STK_PRINT=STK_PRINT;window.EP_CODE_COL=EP_CODE_COL;
+window.prnLegendSvg=prnLegendSvg;window.prnActive=prnActive;window.prnSet=prnSet;window.stkPrintCol=stkPrintCol;window.stkPrintOf=stkPrintOf;window.STK_PRINT_DASH=STK_PRINT_DASH;
+window.STK_LAYERMENU=STK_LAYERMENU;window.rliDialog=rliDialog;window.rliClear=rliClear;window.rliCount=rliCount;window.rliInfoHtml=rliInfoHtml;
+window.rliSolo=rliSolo;window.rliSoloOff=rliSoloOff;window.rliSelect=rliSelect;window.rliRoomCounts=rliRoomCounts;
 window.STK_ROLES=STK_ROLES;window.STK_COL=STK_COL;window.STK_GROUPS=STK_GROUPS;window.STK_SCENE=STK_SCENE;window.STK_OVERLAY=STK_OVERLAY;window.STK_TOOLS=STK_TOOLS;
 window.STK_CTX=STK_CTX;window.STK_WV=STK_WV;window.STK_PV=STK_PV;window.STK_CHECKS=STK_CHECKS;window.VALIDATORS=VALIDATORS;
 window.stkById=stkById;window.stkOfLayer=stkOfLayer;window.stkActive=stkActive;window.stkLayer=stkLayer;window.stkLayersOf=stkLayersOf;window.stkRole=stkRole;
@@ -7594,20 +7781,20 @@ window.chnLen=chnLen;window.chnContentText=chnContentText;
 
 const EP_CAT=[
  // ---- MAINS ----
- {code:'LMP',role:'sys:MAINS',n:'Lámpa',cat:'light',mount:'ceiling',topo:'chain',from:'rbx',vars:[
+ {code:'LMP',role:'sys:LIGHT',n:'Lámpa',cat:'light',mount:'ceiling',topo:'chain',from:'rbx',vars:[
    {k:'230',n:'230 V lámpahely',cab:[{c:'NYM3x15',w:'M20'}]}]},
- {code:'SWI',role:'sys:MAINS',n:'Kapcsoló (bemenet)',cat:'switch',mount:'wall',h:1100,topo:'star',from:'rbx',vars:[
+ {code:'SWI',role:'sys:LIGHT',n:'Kapcsoló (bemenet)',cat:'switch',mount:'wall',h:1100,topo:'star',from:'rbx',vars:[
    {k:'230', n:'230 V nyomó (RC-szűrt, BRIDGE-DN)',cab:[{c:'NYM3x15',w:'M20'}]},            // default [Q29]
    {k:'selv',n:'SELV nyomó → bistabil bemenet',    cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
- {code:'SOC',role:'sys:MAINS',n:'Dugalj',cat:'socket',mount:'wall',h:300,topo:'chain',from:'rbx',vars:[
+ {code:'SOC',role:'sys:SOC',n:'Dugalj',cat:'socket',mount:'wall',h:300,topo:'chain',from:'rbx',vars:[
    {k:'s04',n:'1,5 mm² kör (S04)',cab:[{c:'NYM3x15',w:'M20'}]},
    {k:'25', n:'2,5 mm² kör',      cab:[{c:'NYM3x25',w:'M25'}]}]},
- {code:'DED',new:true,role:'sys:MAINS',n:'Dedikált fogyasztó',cat:'device',mount:'wall',h:300,topo:'star',from:'board',vars:[
+ {code:'DED',new:true,role:'sys:DED',n:'Dedikált fogyasztó',cat:'device',mount:'wall',h:300,topo:'star',from:'board',vars:[
    {k:'g16',  n:'16 A — sütő, mosogatógép, mosógép, bojler, klíma, AV',cab:[{c:'NYM3x25',w:'M25'}]},
    {k:'hob32',n:'Indukciós főzőlap 32 A, 1 fázis',cab:[{c:'NYM3x6',w:'M32'}]},
    {k:'hob2l',n:'Indukciós főzőlap 2L+2N / 3 fázis',cab:[{c:'NYM5x25',w:'M25'}]},
    {k:'alelo',n:'Alelosztó betáp, 3 fázis',cab:[{c:'NYM5x6',w:'M32'}]}]},
- {code:'SHU',role:'sys:MAINS',n:'Redőnymotor',cat:'device',mount:'wall',h:2300,topo:'star',from:'rbx',vars:[
+ {code:'SHU',role:'sys:LIGHT',n:'Redőnymotor',cat:'device',mount:'wall',h:2300,topo:'star',from:'rbx',vars:[
    {k:'230',n:'Fel · le · N · PE',cab:[{c:'NYM4x15',w:'M20'}]}]},
  // ---- LV, bus A ----
  {code:'LNR',role:'sys:LV',n:'LED-vonal / rejtett világítás',cat:'light',mount:'ceiling',topo:'star',from:'rbx',vars:[
@@ -7677,15 +7864,76 @@ const EP_CAT=[
    {k:'det',    n:'Mozgásérzékelő',cab:[{c:'ALARM6',w:'M16'}]},
    {k:'contact',n:'Nyitásérzékelő',cab:[{c:'ALARM6',w:'M16'}]},
    {k:'siren',  n:'Kültéri sziréna',cab:[{c:'SIREN4',w:'M16'}]},
-   {k:'keypad', n:'Kezelő / buszeszköz',cab:[{c:'BUS4',w:'M16'}]}]}];
+   {k:'keypad', n:'Kezelő / buszeszköz',cab:[{c:'BUS4',w:'M16'}]}]},   // stays: third-party systems
+ // ---- SECURITY — Home Assistant / ESPHome (round 2026-10-10, WP-S5). /*r*/ heights are reasoned; ⚑ before client use.
+ // from = the PREMIUM (star) origin; epFromOf() gives 'rbx' for MOT and PNC in the default Alap tier (answer S01).
+ // An empty cab list is legal: a battery Zigbee / Thread variant carries no cable, makes no run, and still counts as placed.
+ {code:'MOT',new:true,role:'sys:SECURITY',n:'Mozgásérzékelő (behatolás)',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: corner, 2.0–2.4 m
+   {k:'pir', n:'PIR, vezetékes (ESPHome gpio)',          cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'dual',n:'PIR + mikrohullám (kettős technológia)', cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'pet', n:'Kisállatbarát PIR',                       cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'mmw', n:'mmWave jelenlét + behatolás (LD2410 / LD2450)',cab:[{c:'LIYCY4x05',w:'M16'}]}]},
+ {code:'DWC',new:true,role:'sys:SECURITY',n:'Nyitásérzékelő (ajtó / ablak)',cat:'device',mount:'wall',h:2050,topo:'star',from:'ssc',vars:[   // r: frame top, latch side
+   {k:'reed',n:'Reed + szabotázs, vezetékes',      cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'roll',n:'Redőny / görgős nyitásérzékelő',  cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'zb',  n:'Elemes, Zigbee / Thread (nincs kábel)',cab:[]}]},
+ {code:'GLB',new:true,role:'sys:SECURITY',n:'Üvegtörés-érzékelő',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: facing the glazing ≤ 6 m ⚑
+   {k:'wired',n:'Vezetékes (akusztikus)',cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'zb',   n:'Elemes, Zigbee / Thread',cab:[]}]},
+ {code:'SRN',new:true,role:'sys:SECURITY',n:'Sziréna',cat:'device',mount:'wall',h:2300,topo:'star',from:'ssc',vars:[
+   {k:'bel',n:'Beltéri sziréna (12 V)',                 cab:[{c:'SIREN4',w:'M16'}]},
+   {k:'kul',n:'Kültéri sziréna villogóval, akkus, szabotázs',h:2800,cab:[{c:'SIREN4',w:'M16'}]}]},   // r: outdoor: out of reach
+ {code:'KPD',new:true,role:'sys:SECURITY',n:'Kezelő / belépési pont',cat:'device',mount:'wall',h:1450,topo:'star',from:'ssc',vars:[   // the ≈1300 smart band [W]; S07 = B: the HMI panel's entry variant stays too
+   {k:'kod',n:'Kódbillentyűzet (matrix_keypad / Wiegand)',cab:[{c:'JY4x2x08',w:'M16'}]},
+   {k:'nfc',n:'NFC / RFID olvasó (PN532 / RC522)',        cab:[{c:'JY4x2x08',w:'M16'}]},
+   {k:'ujj',n:'Ujjlenyomat-olvasó',                       cab:[{c:'JY4x2x08',w:'M16'}]},
+   {k:'pan',n:'Érintőpanel riasztó-felülettel (PoE)',      cab:[{c:'CAT6A_S',w:'M20',fam:'DATA'}]}]},
+ {code:'PNC',new:true,role:'sys:SECURITY',n:'Pánikgomb',cat:'device',mount:'wall',h:900,topo:'star',from:'ssc',vars:[   // r: bedside / entry
+   {k:'wired',n:'Vezetékes',cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'zb',   n:'Elemes, Zigbee / Thread',cab:[]}]},
+ {code:'LCK',new:true,role:'sys:SECURITY',n:'Zár / zárnyelv-állapot',cat:'device',mount:'wall',h:1050,topo:'star',from:'ssc',vars:[   // r: door frame, latch side
+   {k:'str',n:'Elektromos zárfogadó + állapotjelzés (12 V)',cab:[{c:'JY2x2x08',w:'M16'}]},
+   {k:'mot',n:'Motoros okoszár, elemes (Zigbee / Thread / Matter)',cab:[]}]},
+ {code:'SMK',new:true,role:'sys:SECURITY',n:'Füst- / hőérzékelő (EN 14604)',cat:'device',mount:'ceiling',topo:'star',from:'rbx',vars:[   // life safety: the certified standalone alarm is primary, HA only notifies
+   {k:'zb',  n:'Elemes füstjelző, rádiós összekötéssel + HA (Zigbee / Thread)',cab:[]},
+   {k:'ilk', n:'230 V összekötött füstjelző + relékimenet az RBX bemenetre',cab:[{c:'NYM3x15',w:'M20',fam:'MAINS',from:'board'},{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]},
+   {k:'heat',n:'Hőérzékelő (konyha, garázs)',cab:[]}]},
+ {code:'COA',new:true,role:'sys:SECURITY',n:'CO-érzékelő (EN 50291)',cat:'device',mount:'wall',h:2000,topo:'star',from:'rbx',vars:[   // r: ⚑ EN 50292: high on the wall, ≥150 mm below the ceiling, 1–3 m from the appliance
+   {k:'zb', n:'Elemes, Zigbee / Thread',cab:[]},
+   {k:'ilk',n:'Hálózati + relékimenet az RBX bemenetre',cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
+ {code:'DBL',new:true,role:'sys:SECURITY',n:'Videós kaputelefon / csengő',cat:'device',mount:'wall',h:1500,topo:'star',from:'rbx',vars:[   // local: ONVIF / Reolink [CoreRef]
+   {k:'poe',n:'PoE, helyi (ONVIF)',cab:[{c:'CAT6A_U',w:'M20',fam:'DATA'}]}]}];
+// the security tier (answer S01): Alap (default, mixed) — the interior detectors (MOT, PNC) go to the room's
+// RBX; Prémium (star) — every intrusion point to the SSC. Every reader of entry.from goes through here.
+const EP_SEC_INTERIOR=['MOT','PNC'];
+function epSecTier(d){const S=d&&typeof stkOfLayer==='function'?stkOfLayer(d.layer):null,A=S||(typeof stkActive==='function'?stkActive():null);
+  return (A&&A.secTier)==='premium'?'premium':'alap';}
+function epSecTierSet(stackId,v){const S=stkById(stackId);if(!S)return false;v=v==='premium'?'premium':'alap';if((S.secTier||'alap')===v)return false;
+  lyrPushUndo();S.secTier=v;if(typeof invalidateShell==='function')invalidateShell();draw();
+  lyrHud('Biztonsági kivitel: '+(v==='premium'?'Prémium — minden behatolás-érzékelő csillagban az SSC-ig.':'Alap — a belső mozgásérzékelők és a pánikgomb a helyiség RBX-éhez.'));return true;}
+// the SSC hardware node (Q-S06): an ESPHome alarm node (Ethernet, battery, optional GSM — default) or a third-party panel.
+// Label and Info only; no new geometry.
+const EP_SSC_KIND={ha:'ESPHome riasztó-csomópont (Ethernet, akku, opcionális GSM)','3p':'Harmadik fél riasztóközpontja'};
+function epSscKind(d){return d&&d.sscKind==='3p'?'3p':'ha';}
+STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d||d.type!=='ssc')return;const S=stkOfLayer(d.layer)||stkActive();
+  const k=epSscKind(d),o=k==='ha'?'3p':'ha';
+  items.push({label:'SSC: '+EP_SSC_KIND[k]+' → váltás: '+EP_SSC_KIND[o].split(' (')[0],act:()=>{pushUndo(['devices']);if(o==='3p')d.sscKind='3p';else delete d.sscKind;draw();
+    lyrHud('SSC: '+EP_SSC_KIND[o]);}});
+  if(S){const t=S.secTier==='premium'?'premium':'alap';
+    items.push({label:'Biztonsági kivitel: '+(t==='premium'?'Prémium':'Alap')+' → '+(t==='premium'?'Alap':'Prémium'),act:()=>epSecTierSet(S.id,t==='premium'?'alap':'premium')});}});
+function epFromOf(entry,d){if(!entry)return null;
+  if(entry.role==='sys:SECURITY'&&EP_SEC_INTERIOR.indexOf(entry.code)>=0&&epSecTier(d)==='alap')return 'rbx';
+  return entry.from;}
 // symbol colour per role — one source of truth, STK_COL in 05m (which loads first)
 const EP_ROLE_COL=stkSysCols();
 const EP_CLASSIC={LMP:'light',SWI:'switch',SOC:'socket'};
 const EP_FROM_TYPE={light:'LMP',switch:'SWI',socket:'SOC'};
 
 // ---- the catalogue ------------------------------------------------------------------------------------------------
-function epEntry(code,role){return EP_CAT.find(e=>e.code===code&&(!role||e.role===role))||null;}
-function epOfRole(role){return EP_CAT.filter(e=>e.role===role);}
+// role 'sys:MAINS' is a read-only alias for the three Erősáram roles (WP-M1): an old caller still finds LMP, SWI, SOC, DED, SHU
+function epRoleIs(e,role){return e.role===role||(role==='sys:MAINS'&&typeof mnsIs==='function'&&mnsIs(e.role));}
+function epEntry(code,role){return EP_CAT.find(e=>e.code===code&&(!role||epRoleIs(e,role)))||null;}
+function epOfRole(role){return EP_CAT.filter(e=>epRoleIs(e,role));}
 function epTypeFor(code){return EP_CLASSIC[code]||'ep';}
 // the code of a device: its own, or the classic type's (a socket drawn with the old Device tool is a SOC)
 function epCodeOf(d){return d?(d.code||EP_FROM_TYPE[d.type]||null):null;}
@@ -7696,7 +7944,7 @@ function epEntryOf(d){const c=epCodeOf(d);return c?(epEntry(c,epRoleOf(d))||epEn
 function epVar(d){const e=epEntryOf(d);if(!e)return null;return e.vars.find(v=>v.k===d.var)||e.vars[0];}
 // [{c, w, fam, n, from}] with the defaults filled: fam = the role's family, n = 1, from = the entry's origin
 function epCables(d){const e=epEntryOf(d),v=epVar(d);if(!e||!v)return [];const R=stkRole(e.role)||{};
-  return v.cab.map(c=>({c:c.c,w:c.w,fam:c.fam||R.fam||null,n:c.n||1,from:c.from||e.from}));}
+  return (v.cab||[]).map(c=>({c:c.c,w:c.w,fam:c.fam||R.fam||null,n:c.n||1,from:c.from||epFromOf(e,d)}));}
 // the display code: '<code><n>', n = running number of that code in its room (derived — STD-004 R03.LMP2)
 function epRef(d){const c=epCodeOf(d);if(!c)return d.ref||'';const r=roomOfDevice(d),rid=r&&stkRoomId(r);
   const same=data.devices.filter(x=>epCodeOf(x)===c&&x.level===d.level&&(()=>{const rr=roomOfDevice(x);return (rr&&stkRoomId(rr))===rid;})());
@@ -7711,9 +7959,10 @@ function epCeilH(level,x,y){const e=(typeof mrkRoomAtPt==='function')?mrkRoomAtP
 // the ghost: a wall endpoint on the wall centreline (face in side), a ceiling / floor one at the plan point
 function epGhost(e){const en=epEntry(EP_T.code,EP_T.role);if(!en)return null;const level=state.active;
   let g;
-  if(en.mount==='wall'){const pk=hwPick(e,en.h||1100);if(!pk)return null;
+  const vh=((en.vars||[]).find(v=>v.k===EP_T.var)||{}).h;   // S5: a variant may carry its own height (outdoor siren 2800)
+  if(en.mount==='wall'){const pk=hwPick(e,vh||en.h||1100);if(!pk)return null;
     const p=mrkFacePt(pk.r,pk.side,pk.u,-wallInfo(pk.r).thick/2);
-    g={level,x:Math.round(p[0]),y:Math.round(p[1]),h:en.h||1100,side:pk.side>0?1:0,wall:pk.id,u:Math.round(pk.u),wallSide:pk.side,mount:'wall'};}
+    g={level,x:Math.round(p[0]),y:Math.round(p[1]),h:vh||en.h||1100,side:pk.side>0?1:0,wall:pk.id,u:Math.round(pk.u),wallSide:pk.side,mount:'wall'};}
   else{const z0=en.mount==='floor'?0:wallH(level),[bx,by]=clientToBase(e),p=baseToPlan(bx,by,dz(level,z0));
     g={level,x:Math.round(p[0]),y:Math.round(p[1]),h:en.mount==='floor'?0:epCeilH(level,p[0],p[1]),mount:en.mount};}
   if(typeof sugSnap==='function'&&!e.altKey)g=sugSnap(g,EP_T.code,EP_T.role)||g;       // D3 — Alt places freely
@@ -7746,9 +7995,9 @@ STK_TOOLS.push({k:'epPlace',active:()=>{if(!EP_T.on)return false;if(state.mode!=
   mode(){epToolOff();},esc(){epToolOff();draw();}});
 // the picker: every code of the role, variants as radio buttons
 function epPicker(role){const S=(typeof stkActive==='function')?stkActive():null,L=lyrLayer(state.activeLayer);
-  role=role||(L&&L.role&&L.role.indexOf('sys:')===0?L.role:'sys:MAINS');const list=epOfRole(role);
+  role=role||(L&&L.role&&L.role.indexOf('sys:')===0?L.role:'sys:SOC');const list=epOfRole(role);
   openModal('Végpont — '+((stkRole(role)||{n:role}).n),
-    list.map((en,i)=>`<div class="mrow" style="align-items:flex-start"><label style="width:200px"><input type="radio" name="epC" value="${en.code}" ${i===0?'checked':''}> <b style="color:${EP_ROLE_COL[role]}">${en.code}</b> ${esc(en.n)}${en.new?' <span style="color:#999">(új kód)</span>':''}</label>`
+    list.map((en,i)=>`<div class="mrow" style="align-items:flex-start"><label style="width:200px"><input type="radio" name="epC" value="${en.code}" ${i===0?'checked':''}> <b style="color:${stkRoleCol(role,en.code)||EP_ROLE_COL[role]}">${en.code}</b> ${esc(en.n)}${en.new?' <span style="color:#999">(új kód)</span>':''}</label>`
       +`<span>`+en.vars.map((v,j)=>`<label style="display:block;font-size:11.5px"><input type="radio" name="epV_${en.code}" value="${v.k}" ${j===0?'checked':''}> ${esc(v.n)}</label>`).join('')+`</span></div>`).join('')
     +(list.length?'':`<div class="mrow">Ennek a szerepnek nincs végpontja (a lefedettség a Rádió nézetben).</div>`),
     ()=>{const c=(document.querySelector('input[name=epC]:checked')||{}).value;if(!c)return;
@@ -7756,12 +8005,12 @@ function epPicker(role){const S=(typeof stkActive==='function')?stkActive():null
 
 // ---- symbols ----------------------------------------------------------------------------------------------------------------
 function epSymbol(d,x,y,k,back){if(!d||d.type!=='ep')return null;
-  const R=v=>+(v*k).toFixed(2),col=back?'#9299a0':(EP_ROLE_COL[epRoleOf(d)]||'#444');
+  const R=v=>+(v*k).toFixed(2),col=back?'#9299a0':(stkRoleCol(epRoleOf(d),epCodeOf(d))||'#444');
   return `<rect x="${x-R(7)}" y="${y-R(7)}" width="${R(14)}" height="${R(14)}" rx="${R(3)}" fill="#fff" stroke="${col}" stroke-width="${R(1.6)}"${back?' stroke-dasharray="'+vsDash('2.5 2')+'"':''}/>`
     +`<text x="${x}" y="${(y+R(2.6)).toFixed(2)}" font-size="${R(6.8)}" text-anchor="middle" font-weight="700" fill="${col}">${esc(d.code||'?')}</text>`;}
 STK_DEVSYM.push(epSymbol);
 function epWvBox(dv,x,y,sc,col,back){const d=data.devices[dv.di];if(!d||d.type!=='ep')return null;
-  const r=35*sc,c=back?'#b0b4b8':(EP_ROLE_COL[epRoleOf(d)]||col);
+  const r=35*sc,c=back?'#b0b4b8':(stkRoleCol(epRoleOf(d),epCodeOf(d))||col);
   return `<rect x="${(x-r).toFixed(1)}" y="${(y-r).toFixed(1)}" width="${(2*r).toFixed(1)}" height="${(2*r).toFixed(1)}" rx="3" fill="#fff" stroke="${c}" stroke-width="${vsP(1.5)}"${back?' stroke-dasharray="'+vsDash('3 2')+'"':''}/>`
     +`<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="${Math.max(7,r*0.55).toFixed(1)}" text-anchor="middle" font-weight="700" fill="${c}">${esc(d.code||'?')}</text>`;}
 STK_WVBOX.push(epWvBox);
@@ -7795,10 +8044,14 @@ VALIDATORS.push({code:'ep.*',run:()=>{const out=[];
 //   LMP / LNR → the RBX's lighting circuit (ELO_RULES.lightPerRbx)
 // control groups (BRIDGE): a switch is an INPUT of the RoomBox bistable, each lamp group an OUTPUT — there is no
 // switch-to-lamp wire [Q29]. sw.ctl = [lamp ids] says which lamps the switch controls.
-(STK_GROUPS['+sys:MAINS']=STK_GROUPS['+sys:MAINS']||[]).push('Áramkör','Vezérlés');
+MNS_ROLES.forEach(r=>(STK_GROUPS['+'+r]=STK_GROUPS['+'+r]||[]).push('Áramkör','Vezérlés'));   // M1: all three Erősáram layers
 function epRoomOf(d){const r=roomOfDevice(d);return r?stkRoomId(r):null;}
 // devices of a room on a role's layer of the active (or given) stack
-function epInRoom(roomId,role,stackId){const S=stackId?stkById(stackId):((typeof stkActive==='function')?stkActive():null);
+function epInRoom(roomId,role,stackId){
+  // M1: 'sys:MAINS' is the union of the three Erősáram roles (plus a not-yet-migrated MAINS layer)
+  if(role==='sys:MAINS'){const seen=new Set(),out=[];MNS_ROLES.concat(['sys:MAINS!']).forEach(r=>epInRoom(roomId,r,stackId).forEach(d=>{if(!seen.has(d)){seen.add(d);out.push(d);}}));return out;}
+  if(role==='sys:MAINS!')role='sys:MAINS';
+  const S=stackId?stkById(stackId):((typeof stkActive==='function')?stkActive():null);
   const L=S?stkLayer(S.id,role):null;
   return data.devices.filter(d=>d&&epCodeOf(d)&&(L?d.layer===L.id:epRoleOf(d)===role)&&epRoomOf(d)===roomId);}
 function epCircuitOf(d){const c=(typeof cktOfDevice==='function')?cktOfDevice(d):null;if(c)return c.id;
@@ -7817,7 +8070,7 @@ function epCircuits(roomId,stackId){const by={};
   return Object.keys(by).sort().map(k=>by[k]);}
 // output groups: lamps grouped by the identical SET of switches controlling them; uncontrolled lamps alone
 function epCtlOf(lampId){return data.devices.filter(s=>Array.isArray(s.ctl)&&s.ctl.indexOf(lampId)>=0).map(s=>s.id).sort();}
-function epLampGroups(roomId,stackId,role){const lamps=epInRoom(roomId,role||'sys:MAINS',stackId).filter(d=>epCodeOf(d)==='LMP');
+function epLampGroups(roomId,stackId,role){const lamps=epInRoom(roomId,role||'sys:LIGHT',stackId).filter(d=>epCodeOf(d)==='LMP');
   const g={};lamps.forEach(l=>{const sig=epCtlOf(l.id).join(',')||('alone:'+l.id);(g[sig]=g[sig]||[]).push(l.id);});
   return Object.keys(g).map(k=>g[k].sort(prtIdCmp)).sort((a,b)=>prtIdCmp(a[0],b[0]));}
 // THE input for the fill (E3): [{key, code, topo, members:[ids], from}] for one room and role
@@ -7826,11 +8079,11 @@ function epGroupsFor(roomId,role,stackId){const devs=epInRoom(roomId,role,stackI
   Object.keys(byCode).sort().forEach(code=>{const en=epEntry(code,role)||epEntry(code),ds=byCode[code];
     if(!en)return;
     if(en.topo==='chain'){
-      if(code==='LMP')epLampGroups(roomId,stackId,role).forEach((g,i)=>out.push({key:role+':LMP:'+g[0],code,topo:g.length>1?'chain':'star',members:g,from:en.from}));
+      if(code==='LMP')epLampGroups(roomId,stackId,role).forEach((g,i)=>out.push({key:role+':LMP:'+g[0],code,topo:g.length>1?'chain':'star',members:g,from:epFromOf(en,ds[0])}));
       else if(code==='SOC'){const by={};ds.forEach(d=>{const k=epCircuitOf(d)||('room:'+roomId);(by[k]=by[k]||[]).push(d.id);});
-        Object.keys(by).sort().forEach(k=>out.push({key:role+':SOC:'+k,code,topo:by[k].length>1?'chain':'star',members:by[k].sort(prtIdCmp),from:en.from}));}
-      else out.push({key:role+':'+code+':'+roomId,code,topo:ds.length>1?'chain':'star',members:ds.map(d=>d.id).sort(prtIdCmp),from:en.from});}
-    else ds.slice().sort((a,b)=>prtIdCmp(a.id,b.id)).forEach(d=>out.push({key:role+':'+code+':'+d.id,code,topo:'star',members:[d.id],from:en.from}));});
+        Object.keys(by).sort().forEach(k=>out.push({key:role+':SOC:'+k,code,topo:by[k].length>1?'chain':'star',members:by[k].sort(prtIdCmp),from:epFromOf(en,ds[0])}));}
+      else out.push({key:role+':'+code+':'+roomId,code,topo:ds.length>1?'chain':'star',members:ds.map(d=>d.id).sort(prtIdCmp),from:epFromOf(en,ds[0])});}
+    else ds.slice().sort((a,b)=>prtIdCmp(a.id,b.id)).forEach(d=>out.push({key:role+':'+code+':'+d.id,code,topo:'star',members:[d.id],from:epFromOf(en,d)}));});
   return out;}
 
 // the control pick mode: clicking a lamp toggles it in the switch's ctl list
@@ -7854,11 +8107,14 @@ STK_OVERLAY.push(()=>{const sel=(typeof selected!=='undefined'&&selected&&select
   (sw.ctl||[]).forEach(id=>{const l=byId('devices',id);if(!l||!state.levels[l.level])return;const b=planToBase(l.x,l.y,dz(l.level,l.h||0));
     s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#d1493f" stroke-width="${vsP(1)}" stroke-dasharray="${vsDash('4 3')}"/>`;});
   return s?`<g pointer-events="none">${s}</g>`:'';});
-(STK_CHECKS['sys:MAINS']=STK_CHECKS['sys:MAINS']||[]).push(S=>{const out=[],L=stkLayer(S.id,'sys:MAINS');if(!L)return out;
+// M1: the switch / lamp control checks belong to the lighting layer; the dedicated-circuit check to the dedicated one
+(STK_CHECKS['sys:LIGHT']=STK_CHECKS['sys:LIGHT']||[]).push(S=>{const out=[],L=stkLayer(S.id,'sys:LIGHT')||stkLayer(S.id,'sys:MAINS');if(!L)return out;
   const on=data.devices.filter(d=>d.layer===L.id);
   on.forEach(d=>{const c=epCodeOf(d);
     if(c==='SWI'&&!(d.ctl&&d.ctl.length))out.push({sev:'info',msg:(d.ref||d.id)+': nem vezérel semmit'});
     if(c==='LMP'&&!epCtlOf(d.id).length)out.push({sev:'info',msg:(d.ref||d.id)+': egy kapcsoló sem vezérli'});});
+  return out;});
+(STK_CHECKS['sys:DED']=STK_CHECKS['sys:DED']||[]).push(S=>{const out=[];
   if(typeof cktList==='function')cktList().forEach(c=>{if(c.dedicated&&(c.members||[]).length>1)out.push({sev:'warn',msg:(c.name||c.id)+': dedikált kör, de '+c.members.length+' tagja van'});});
   return out;});
 
@@ -7876,7 +8132,7 @@ registerActions([
 
 // test hooks
 window.EP_CAT=EP_CAT;window.EP_PLACED=EP_PLACED;window.EP_ROLE_COL=EP_ROLE_COL;window.EP_T=EP_T;window.epEntry=epEntry;window.epOfRole=epOfRole;window.epTypeFor=epTypeFor;window.epCodeOf=epCodeOf;window.epRoleOf=epRoleOf;
-window.epVar=epVar;window.epCables=epCables;window.epRef=epRef;window.epMake=epMake;window.epPlace=epPlace;window.epToolStart=epToolStart;window.epGhost=epGhost;
+window.epFromOf=epFromOf;window.epSecTierSet=epSecTierSet;window.epSscKind=epSscKind;window.epVar=epVar;window.epCables=epCables;window.epRef=epRef;window.epMake=epMake;window.epPlace=epPlace;window.epToolStart=epToolStart;window.epGhost=epGhost;
 window.epSymbol=epSymbol;window.epCircuitOf=epCircuitOf;window.epCircuits=epCircuits;window.epLampGroups=epLampGroups;window.epGroupsFor=epGroupsFor;
 window.epCtlPick=epCtlPick;window.epCtlToggle=epCtlToggle;window.epInRoom=epInRoom;window.epCtlOf=epCtlOf;window.epRoomOf=epRoomOf;
 
@@ -7904,19 +8160,19 @@ const NEED_KINDS=[
  {k:'egyeb',    n:'Egyéb',     re:/.*/}];
 // kind → role → codes. The kind's entry REPLACES '*' for that role ([] = nothing ticked).
 const NEED_DEFAULTS={
- '*':        {'sys:MAINS':['LMP','SWI','SOC'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread'],'sys:MEDIA':['SPK']},
- eloszoba:   {'sys:BUSB':['LMP'],'sys:HMI':['PAN'],'sys:DATA':['CAM'],'sys:SECURITY':['SEC'],'sys:MEDIA':[]},
- konyha:     {'sys:MAINS':['LMP','SWI','SOC','DED'],'sys:LV':['LNR'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread','uwb']},
+ '*':        {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread'],'sys:MEDIA':['SPK']},
+ eloszoba:   {'sys:BUSB':['LMP'],'sys:HMI':['PAN'],'sys:DATA':['CAM'],'sys:SECURITY':['DWC','KPD','SRN','MOT'],'sys:MEDIA':[]},   // S5: replaces ['SEC']
+ konyha:     {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:LV':['LNR'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['SMK']},   // SMK 'heat' suggested here
  etkezo:     {'sys:RF':['wifi','thread','uwb']},
- nappali:    {'sys:LV':['LNR','UEP'],'sys:DATA':['ETH','ACP'],'sys:HMI':['PAN','THR'],'sys:MEDIA':['SPK','SCR','AVP'],'sys:USB':['USB'],'sys:RF':['wifi','thread','uwb']},
- halo:       {'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:HMI':['THR']},
+ nappali:    {'sys:LV':['LNR','UEP'],'sys:DATA':['ETH','ACP'],'sys:HMI':['PAN','THR'],'sys:MEDIA':['SPK','SCR','AVP'],'sys:USB':['USB'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['MOT']},
+ halo:       {'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:HMI':['THR'],'sys:SECURITY':['SMK']},
  dolgozo:    {'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:USB':['USB']},
  furdo:      {'sys:LV':['LNR'],'sys:HMI':['THR']},
- wc:         {'sys:MAINS':['LMP','SWI'],'sys:MEDIA':[]},
- kamra:      {'sys:MAINS':['LMP','SWI'],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[]},
- kozlekedo:  {'sys:MAINS':['LMP','SWI'],'sys:BUSB':['LMP','NTL'],'sys:MEDIA':[]},
- kulter:     {'sys:MAINS':['LMP','SOC'],'sys:DATA':['CAM'],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[]},
- gepeszet:   {'sys:MAINS':['LMP','SWI','SOC','DED'],'sys:SENSOR':['SEN'],'sys:MEDIA':[]},
+ wc:         {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:MEDIA':[]},
+ kamra:      {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[]},
+ kozlekedo:  {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:BUSB':['LMP','NTL'],'sys:MEDIA':[],'sys:SECURITY':['SMK','MOT']},
+ kulter:     {'sys:LIGHT':['LMP'],'sys:SOC':['SOC'],'sys:DATA':['CAM'],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[],'sys:SECURITY':['SRN','MOT']},
+ gepeszet:   {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:SENSOR':['SEN'],'sys:MEDIA':[],'sys:SECURITY':['SMK','COA']},
  egyeb:      {}};
 const NEED_STATUS={off:{n:'ki',c:'#9aa0a6'},empty:{n:'nincs igény',c:'#9aa0a6'},open:{n:'hiányos',c:'#d08a1e'},done:{n:'kész',c:'#2e9e5b'}};
 
@@ -7933,15 +8189,21 @@ function needTagged(list,tags){return list.some(o=>{const t=mrkOpeningTags(o.id)
 function needDerived(rm){const e=needRoomEntry(rm),rid=e&&stkRoomId(e),out={};if(!rid||typeof mrkOpeningTags!=='function')return out;
   const add=(role,code)=>{(out[role]=out[role]||[]);if(out[role].indexOf(code)<0)out[role].push(code);};
   const wins=needOpenings(rid,'window'),doors=needOpenings(rid,'door'),all=needOpenings(rid);
-  if(needTagged(wins,['redony','arnyekolo']))add('sys:MAINS','SHU');
+  if(needTagged(wins,['redony','arnyekolo']))add('sys:LIGHT','SHU');
   if(needTagged(doors,['portal','bejarat','lepcso']))add('sys:BUSB','NTL');
   if(needTagged(doors,['p2','p3'])){add('sys:CONTROL','POR');add('sys:SENSOR','POR');}
-  if(needTagged(all,['kulso','bejarat','nyitaserz','vedett']))add('sys:SECURITY','SEC');
+  // S5: the entrance gets contact + keypad + doorbell; every perimeter opening a contact; a protected window glass-break
+  if(needTagged(doors,['bejarat'])){add('sys:SECURITY','DWC');add('sys:SECURITY','KPD');add('sys:SECURITY','DBL');}
+  if(needTagged(all,['kulso','nyitaserz','vedett']))add('sys:SECURITY','DWC');
+  if(needTagged(wins,['vedett']))add('sys:SECURITY','GLB');
   if(typeof trcList==='function'&&trcList().some(t=>t.level===e.level&&(t.tags||[]).some(k=>k==='ejszakai'||k==='lepcso')&&
      (t.pts||[]).some(p=>pointInPoly(p[0],p[1],rm.poly))))add('sys:BUSB','LMP');
   return out;}
 // role → [codes] with the derived ones marked: {codes:[…], derived:[…]}
-function needDefaults(rm,role){const k=needKind(rm),base=NEED_DEFAULTS['*'][role]||[],own=(NEED_DEFAULTS[k]||{})[role];
+function needDefaults(rm,role){
+  if(role==='sys:MAINS'&&typeof MNS_ROLES!=='undefined'){const o={codes:[],derived:[]};   // M1 alias: lighting, sockets, dedicated
+    ['sys:LIGHT','sys:SOC','sys:DED'].forEach(r=>{const x=needDefaults(rm,r);x.codes.forEach(c=>{if(o.codes.indexOf(c)<0)o.codes.push(c);});x.derived.forEach(c=>o.derived.push(c));});return o;}
+  const k=needKind(rm),base=NEED_DEFAULTS['*'][role]||[],own=(NEED_DEFAULTS[k]||{})[role];
   const codes=(own!==undefined?own:base).slice(),derived=(needDerived(rm)[role]||[]).filter(c=>codes.indexOf(c)<0);
   return {codes:codes.concat(derived),derived};}
 // {code:true} — the saved checklist of that layer, else the defaults
@@ -8032,7 +8294,7 @@ function needReport(stackId){const S=stackId?stkById(stackId):stkActive();if(!S)
 const SUG_RULES=[
  {code:'SWI', anchor:'doorHandle',  h:1100, off:150, n:'Kilincs felőli oldal, 150 mm-re a toktól'},
  {code:'SOC', anchor:'hband',       h:300,  n:'Dugaljsáv a + jelölt oldalakon, L-forma előnyben'},
- {code:'LMP', role:'sys:MAINS', anchor:'roomCentre', n:'Mennyezet közepe / lámpasor sáv'},
+ {code:'LMP', role:'sys:LIGHT', anchor:'roomCentre', n:'Mennyezet közepe / lámpasor sáv'},
  {code:'SEN', anchor:'farCorner',   h:2200, n:'Az ajtóval átlós sarok'},
  {code:'POR', anchor:'doorLintel',  h:2150, n:'Ajtó szemöldök fölött (ToF pár)'},
  {code:'NTL', anchor:'doorFlank',   h:1150, off:200, n:'Minden portál mellett'},
@@ -8043,6 +8305,13 @@ const SUG_RULES=[
  {code:'ACP', anchor:'coverageGap', n:'Mennyezet, a WiFi lefedettség hiányának közepe'},
  {code:'LNR', role:'sys:LV', anchor:'hstripTag', tag:'cove', n:'Mennyezet alatti sáv'},
  {code:'LMP', role:'sys:BUSB', anchor:'traceTag', tag:'ejszakai', h:300, n:'Éjszakai útvonal mentén, lábfény magasság'},
+ // S5 — security (Home Assistant / ESPHome). DWC on the frame top, latch side; KPD inside the entrance next to the panel;
+ // MOT in the corner that sees the most doors; SRN: indoors high and visible, outdoors above the entrance at 2800.
+ {code:'DWC', anchor:'openingLatch', h:2050, off:120, n:'Tok teteje, a kilincs felőli oldalon'},
+ {code:'KPD', anchor:'doorHandle',  h:1450, off:600, n:'Bejárat mellett, kilincs felől (a panel mellett)'},
+ {code:'MOT', anchor:'doorCorner',  h:2200, n:'A legtöbb ajtót belátó sarok'},
+ {code:'SRN', anchor:'farCorner',   h:2300, n:'Beltéri sziréna: magas, jól hallható pont'},
+ {code:'SRN', anchor:'entryOuter',  h:2800, off:400, n:'Kültéri sziréna: a bejárat fölött, kívül, elérhetetlen magasságban'},
  {code:'*',   anchor:'avoid',       n:'Tilos / kerülendő jelölés'}];
 
 // geometry helpers -------------------------------------------------------------------------------------------------------------------
@@ -8064,7 +8333,7 @@ function sugCeil(e,x,y){return epCeilH(e.level,x,y);}
 
 // anchors → hints [{kind:'pt'|'band'|'strip'|'cover', …, why}] -------------------------------------------------------------------------
 const SUG_ANCHORS={
- doorHandle(R,e,rid){const out=[];needOpenings(rid,'door').forEach(o=>{if(R.code==='PAN'&&mrkOpeningTags(o.id).indexOf('bejarat')<0)return;
+ doorHandle(R,e,rid){const out=[];needOpenings(rid,'door').forEach(o=>{if((R.code==='PAN'||R.code==='KPD')&&mrkOpeningTags(o.id).indexOf('bejarat')<0)return;
    const D=sugDoor(o,rid),p=sugDoorPt(D,D.hd*(D.w+R.off),R.h,R.n);if(p)out.push(p);});return out;},
  doorFlank(R,e,rid){const out=[];needOpenings(rid,'door').forEach(o=>{const t=mrkOpeningTags(o.id);if(!['portal','bejarat','lepcso'].some(k=>t.indexOf(k)>=0))return;
    const D=sugDoor(o,rid),p=sugDoorPt(D,D.hd*(D.w+R.off),R.h,R.n);if(p)out.push(p);});return out;},
@@ -8121,6 +8390,26 @@ const SUG_ANCHORS={
        if(!best)return;const wi=wallInfo(best.r),u=mrkU(best.r,q.x,q.y),off=(q.x-wi.seg[0][0])*wi.perp[0]+(q.y-wi.seg[0][1])*wi.perp[1],side=off>=0?1:-1,p=mrkFacePt(best.r,side,u,-wi.thick/2);
        out.push({kind:'pt',x:Math.round(p[0]),y:Math.round(p[1]),h:R.h,level:e.level,wall:best.r.id,side,mount:'wall',why:R.n});});});
    return out;},
+ // S5: the latch-side top corner of every perimeter opening (doors at the frame top, windows above the head)
+ openingLatch(R,e,rid){const out=[];needOpenings(rid).forEach(o=>{const t=mrkOpeningTags(o.id);
+   if(!['kulso','bejarat','nyitaserz','vedett'].some(k=>t.indexOf(k)>=0))return;
+   const D=sugDoor(o,rid),h=o.type==='window'?((o.sill!=null?o.sill:WIN_SILL)+(o.h||WIN_H)+50):R.h,p=sugDoorPt(D,D.hd*Math.max(0,D.w-R.off),h,R.n);if(p)out.push(p);});return out;},
+ // S5: the convex room corner whose view (the quadrant between its two walls) holds the most door centres
+ doorCorner(R,e,rid){const P=e.rm.poly,ds=needOpenings(rid,'door');if(P.length<3)return [];let best=null;
+   P.forEach((v,i)=>{const a=P[(i+P.length-1)%P.length],b=P[(i+1)%P.length],ua=[a[0]-v[0],a[1]-v[1]],ub=[b[0]-v[0],b[1]-v[1]];
+     const la=Math.hypot(ua[0],ua[1])||1,lb=Math.hypot(ub[0],ub[1])||1,na=[ua[0]/la,ua[1]/la],nb=[ub[0]/lb,ub[1]/lb];
+     let bx=na[0]+nb[0],by=na[1]+nb[1];const bl=Math.hypot(bx,by);if(bl<1e-6)return;bx/=bl;by/=bl;
+     const q=[v[0]+bx*150,v[1]+by*150];if(!pointInPoly(q[0],q[1],P))return;            // a reflex corner looks into the wall
+     const seen=ds.filter(o=>{const dx=o.x-v[0],dy=o.y-v[1];return dx*na[0]+dy*na[1]>=0&&dx*nb[0]+dy*nb[1]>=0;}).length;
+     const far=ds.length?Math.min.apply(null,ds.map(o=>Math.hypot(o.x-v[0],o.y-v[1]))):0;
+     if(!best||seen>best.seen||(seen===best.seen&&far>best.far))best={q,seen,far};});
+   if(!best)return [];const r=sugHostWall(e.level,best.q[0],best.q[1]),wi=r?wallInfo(r):null;
+   const side=wi?(((best.q[0]-(r.x0+r.x1)/2)*wi.perp[0]+(best.q[1]-(r.y0+r.y1)/2)*wi.perp[1])>=0?1:-1):1;
+   return [{kind:'pt',x:Math.round(best.q[0]),y:Math.round(best.q[1]),h:Math.min(R.h,sugCeil(e,best.q[0],best.q[1])),level:e.level,
+     wall:r?r.id:null,side,mount:'wall',why:R.n+(ds.length?' ('+best.seen+'/'+ds.length+' ajtó)':'')}];},
+ // S5: above the entrance, on the OUTER face, hinge side — out of reach
+ entryOuter(R,e,rid){const out=[];needOpenings(rid,'door').forEach(o=>{if(mrkOpeningTags(o.id).indexOf('bejarat')<0)return;
+   const D=sugDoor(o,rid),p=sugDoorPt(D,-D.hd*(D.w+R.off),R.h,R.n);if(p){p.side=-p.side;out.push(p);}});return out;},
  avoid(R,e,rid){const out=[];if(typeof mrkList!=='function')return out;
    sugFaces(e).forEach(f=>{mrkAt(e.level,f.r.id,f.side,null,null).forEach(x=>{if(x.pol!=='ban'&&x.pol!=='minus')return;
      if(x.kind==='wall'||x.kind==='side')out.push({kind:'cover',level:e.level,wall:f.r.id,side:f.side,u0:f.u0,u1:f.u1,pol:x.pol,why:(x.tags||[]).join(', ')});
@@ -8783,7 +9072,8 @@ function eloSchedule(boardId,o){const opt=eloOpt(o),R=ELO_RULES,b=byId('devices'
   return {board:boardId,ref:b?(b.ref||b.id):boardId,phase:opt.phase,perWay:opt.perWay,feed,ways,rcd,totalMod,rows,free,phases,warnings};}
 
 // ---- checks ---------------------------------------------------------------------------------------------------------------
-(STK_CHECKS['sys:MAINS']=STK_CHECKS['sys:MAINS']||[]).push(S=>{const out=[];
+// M1: about ways and modules — one registration (on the dedicated layer) is enough for the three Erősáram roles
+(STK_CHECKS['sys:DED']=STK_CHECKS['sys:DED']||[]).push(S=>{const out=[];
   hwList('rbx').forEach(x=>hwServes(x).forEach(r=>{const e=mrkRoomById(r);if(!e||needKind(e.rm)!=='konyha')return;
     const n=epCircuits(r,S.id).filter(c=>c.members.some(id=>epCodeOf(byId('devices',id))==='SOC')).length;
     if(n&&n<ELO_RULES.socketKitchen)out.push({sev:'info',msg:hwRoomLabel(r)+': '+n+' dugaljkör — S04 szerint a konyhába '+ELO_RULES.socketKitchen+' javasolt (pult A, B + sziget).'});}));
@@ -8821,7 +9111,7 @@ registerActions([
  {id:'elo.export',alias:'eloszto export json vrg-cabinet din',label:'Elosztó exportálása (JSON)',icon:'⬇',group:'Feltöltés',
   need:'Legalább egy Elosztószekrény kell.',when:c=>hwList('board').length>0,run:()=>download('vrg-cabinet.json',JSON.stringify(eloExportObj(),null,1))}
 ]);
-(STK_GROUPS['+sys:MAINS']=STK_GROUPS['+sys:MAINS']||[]).push('Feltöltés');
+MNS_ROLES.forEach(r=>(STK_GROUPS['+'+r]=STK_GROUPS['+'+r]||[]).push('Feltöltés'));
 
 // test hooks
 window.ELO_RULES=ELO_RULES;window.eloFeeds=eloFeeds;window.eloWays=eloWays;window.eloSchedule=eloSchedule;window.eloBalance=eloBalance;
@@ -8942,6 +9232,18 @@ const ICO_MARK={
  avp:     {d:'M-3.2 -2.2 H3.2 V2.2 H-3.2 Z M-0.8 -0.9 L1.2 0 L-0.8 0.9 Z'},
  usb:     {d:'M0 3.2 V-3.2 M0 -0.9 L-2.1 0.9 M0 -0.9 L2.1 0.9 M-0.7 3.2 A0.7 0.7 0 1 0 0.7 3.2 A0.7 0.7 0 1 0 -0.7 3.2 M-2.1 0.9 V2 M2.1 0.9 L2.1 2'},
  shield:  {d:'M0 -3.3 L2.9 -1.9 V0.7 C2.9 2.5 0 3.4 0 3.4 C0 3.4 -2.9 2.5 -2.9 0.7 V-1.9 Z'},
+ // S5 — security marks on the shared body: MOT a fan of rays · DWC reed + magnet bars · GLB a cracked pane · SRN a horn ·
+ // KPD a 3×3 grid · PNC "!" · LCK a padlock · SMK a ring with three dots · COA "CO" · DBL a bell
+ motion:  {d:'M-3 2.8 L3.4 -1.2 M-3 2.8 L2 -3.2 M-3 2.8 L3.6 1.6 M-3 2.8 m-0.6 0 a0.6 0.6 0 1 0 1.2 0 a0.6 0.6 0 1 0 -1.2 0'},
+ contact: {d:'M-2.9 -3 H-0.9 V3 H-2.9 Z M0.9 -3 H2.9 V3 H0.9 Z'},
+ glass:   {d:'M-3 -3 H3 V3 H-3 Z M-0.4 -3 L0.6 -0.8 L-0.7 0.7 L0.5 3'},
+ siren:   {d:'M-3.2 -1 H-1.2 L2.2 -3 V3 L-1.2 1 H-3.2 Z M3.3 -2.2 V2.2'},
+ keypad:  {d:'M-2.2 -2.2 h0.01 M0 -2.2 h0.01 M2.2 -2.2 h0.01 M-2.2 0 h0.01 M0 0 h0.01 M2.2 0 h0.01 M-2.2 2.2 h0.01 M0 2.2 h0.01 M2.2 2.2 h0.01'},
+ panic:   {d:'M0 -3.2 V1 M0 2.6 V2.7'},
+ lock:    {d:'M-2.5 -0.3 H2.5 V3.1 H-2.5 Z M-1.5 -0.3 V-1.7 A1.5 1.5 0 0 1 1.5 -1.7 V-0.3 M0 1 V1.9'},
+ smoke:   {d:'M-3 0 A3 3 0 1 0 3 0 A3 3 0 1 0 -3 0 M-1.3 0 h0.01 M0 0 h0.01 M1.3 0 h0.01'},
+ coalarm: {d:'M-0.7 -1.4 A1.7 1.7 0 1 0 -0.7 1.4 M0.4 0 A1.35 1.35 0 1 0 3.1 0 A1.35 1.35 0 1 0 0.4 0'},
+ bell:    {d:'M-2.5 1.6 C-2.5 -3.4 2.5 -3.4 2.5 1.6 Z M-3.2 1.6 H3.2 M-0.7 2.4 A0.7 0.7 0 0 0 0.7 2.4'},
  junction:{d:'M-3.8 0 H-1.5 M1.5 0 H3.8 M0 -3.8 V-1.5 M0 1.5 V3.8 M-1 0 A1 1 0 1 0 1 0 A1 1 0 1 0 -1 0',f:0},
  rbx:     {d:'M-2.8 -3.2 H2.8 V3.2 H-2.8 Z M1.1 -3.2 V3.2 M-0.2 0 H0.4'},
  base:    {d:'M-3.2 -2.6 H3.2 M-3.2 0 H3.2 M-3.2 2.6 H3.2 M-3.2 -3.4 V3.4 M3.2 -3.4 V3.4'},
@@ -8954,11 +9256,12 @@ const ICO_MARK={
 // MAINS lamp and a BUSB escape light); the colour separates them, the mark stays the same thing.
 const ICO_BY_CODE={LMP:'light',SWI:'switch',SOC:'socket',DED:'dedicat',SHU:'shutter',LNR:'ledline',
  UEP:'uep',NTL:'notify',POR:'portal',ACP:'wifi',ETH:'eth',CAM:'cam',ACT:'knx',SEN:'sensor',
- PAN:'panel',THR:'thermo',SPK:'speaker',SCR:'screen',AVP:'avp',USB:'usb',SEC:'shield'};
+ PAN:'panel',THR:'thermo',SPK:'speaker',SCR:'screen',AVP:'avp',USB:'usb',SEC:'shield',
+ MOT:'motion',DWC:'contact',GLB:'glass',SRN:'siren',KPD:'keypad',PNC:'panic',LCK:'lock',SMK:'smoke',COA:'coalarm',DBL:'bell'};   // S5
 const ICO_BY_TYPE={socket:'socket',switch:'switch',light:'light',junction:'junction',box:'generic',
  board:'board',rbx:'rbx',base:'base',meter:'meter',entry:'entry',ssc:'shield'};
 // which codes live on the plane above rather than on a wall — they get the round ceiling body
-const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK'];
+const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK','SMK'];
 
 // ---- what a device is --------------------------------------------------------------------------
 function icoHw(d){return !!(d&&typeof HW_TYPES!=='undefined'&&HW_TYPES[d.type]);}
@@ -8991,7 +9294,7 @@ function icoSizeOf(d,fam){
 // its devices can never disagree.
 function icoRoleCol(d){
   if(typeof epRoleOf==='function'){const r=epRoleOf(d);
-    if(r&&typeof stkRoleCol==='function'){const c=stkRoleCol(r);if(c)return c;}}
+    if(r&&typeof stkRoleCol==='function'){const c=stkRoleCol(r,typeof epCodeOf==='function'?epCodeOf(d):null);if(c)return c;}}
   if(icoHw(d)&&typeof stkRoleCol==='function'){
     const role=(typeof HW_DEF!=='undefined'&&HW_DEF[d.type]||{}).role||'hw';
     const c=stkRoleCol(role);if(c)return c;}
@@ -9051,8 +9354,10 @@ function icoSym(d,x,y,k,back){
   const fill=back?(dark?'#121a23':'#f2f4f6')
     :dark?'#0e141b':(paint?tintMix(paint,0.45):icoMix(base,0.14));
   // an empty szerelvénydoboz is drawn open: there is nothing in it yet
+  const pp=(!back&&d.type!=='box'&&typeof prnActive==='function'&&prnActive()&&typeof stkPrintOf==='function')?stkPrintOf(typeof epRoleOf==='function'?epRoleOf(d):null,typeof epCodeOf==='function'?epCodeOf(d):null):null;
   const dash=back?` stroke-dasharray="${vsDash('2.5 2')}"`
-    :(d.type==='box'?` stroke-dasharray="${vsDash('3 2')}"`:'');
+    :(d.type==='box'?` stroke-dasharray="${vsDash('3 2')}"`
+    :(pp&&STK_PRINT_DASH[pp.p]?` stroke-dasharray="${vsDash(STK_PRINT_DASH[pp.p])}"`:''));   // M1: the print pattern
   let s='',r;
   if(icoMmMode()&&size.mm){                                    // real millimetres, on the wall
     const z=dz(d.level,d.h||0),pts=icoFoot(d,size.mm,size.round,z);
@@ -10182,7 +10487,7 @@ const CLS_ZONES={low:{n:'alsó (200–500)',h:300},mid:{n:'középső (800–140
 const CLS_GAP=300;              // IDEA-001 §3: one box width plus a gap
 const CLS_HOSTS=['cluster','portal','rbx','base'];
 function clsZoneOf(h){return (h||0)<650?'low':(h||0)<1750?'mid':'high';}
-function clsHigher(role){return !!role&&role.indexOf('sys:')===0&&role!=='sys:MAINS'&&role!=='sys:RF';}
+function clsHigher(role){return !!role&&role.indexOf('sys:')===0&&!mnsIs(role)&&role!=='sys:RF';}
 function clsList(level){return data.devices.filter(d=>d&&d.type==='cluster'&&(!level||d.level===level));}
 function clsMembers(node){return node?data.devices.filter(d=>d&&d.host===node.id):[];}
 
@@ -10226,7 +10531,7 @@ function clsGroups(level){const by={};
       if(cur.length>=2)out.push(clsFromGroup(level,cur));if(i<a.length)cur=[a[i]];}});
   return out;}
 function clsFromGroup(level,cur){const r=cur[0].r,side=cur[0].side,u=Math.round(cur.reduce((s,x)=>s+x.u,0)/cur.length),h=Math.round(cur.reduce((s,x)=>s+(x.d.h||0),0)/cur.length/50)*50;
-  const roles=[...new Set(cur.map(x=>epRoleOf(x.d)))],mains=roles.indexOf('sys:MAINS')>=0,other=roles.some(x=>x!=='sys:MAINS');
+  const roles=[...new Set(cur.map(x=>epRoleOf(x.d)))],mains=roles.some(mnsIs),other=roles.some(x=>!mnsIs(x));
   const cls=(mains&&other)?'K3':cur.length<=3?'K1':cur.length<=6?'K2':'K3',wi=wallInfo(r),p=mrkFacePt(r,side,u,-wi.thick/2);
   return {kind:'cluster',level,r,wall:r.id,side,u,h,zone:cur[0].z,cls,members:cur.map(x=>x.d.id),x:Math.round(p[0]),y:Math.round(p[1]),mount:'wall',
     why:cur.length+' végpont · '+cur.map(x=>epCodeOf(x.d)).join(' ')+(mains&&other?' · erős + gyenge → K3':'')};}
@@ -10411,7 +10716,7 @@ STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d)return;
   clsList().forEach(d=>{const ms=clsMembers(d),K=CLS_K[d.cls]||CLS_K.K2,roles=[...new Set(ms.map(m=>epRoleOf(m)))];
     if(!ms.length)out.push({sev:'info',msg:(d.ref||d.id)+': üres klaszterdoboz (tartalék hely).'});
     if(ms.length>K.max)out.push({sev:'warn',msg:(d.ref||d.id)+': '+ms.length+' tag > '+K.max+' — nagyobb osztály kell.'});
-    if(d.cls!=='K3'&&roles.indexOf('sys:MAINS')>=0&&roles.some(r=>r!=='sys:MAINS'))out.push({sev:'warn',msg:(d.ref||d.id)+': erős- és gyengeáram egy rekeszben — K3 (osztott) kell (EN 50174-2).'});});
+    if(d.cls!=='K3'&&roles.some(mnsIs)&&roles.some(r=>!mnsIs(r)))out.push({sev:'warn',msg:(d.ref||d.id)+': erős- és gyengeáram egy rekeszben — K3 (osztott) kell (EN 50174-2).'});});
   const n=clsGroups(state.active).length;if(n)out.push({sev:'info',msg:n+' végpont-csoport még nincs dobozban — Klaszterek a végpontokból.'});
   return out;});
 
@@ -14721,12 +15026,12 @@ $('bSave').onclick=()=>{for(const l of ORD)B.walls[l]=(WALLS[l]||[]).map(rectArr
 $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);
   Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
-  UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
+  UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);if(typeof stkMigrateRoles==='function')stkMigrateRoles();syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
 function syncUI(){vsApply();if(typeof kbdApplyLayout==='function')kbdApplyLayout();   // U4: the saved layout's keys and hints
   if(typeof pnlWideSync==='function')pnlWideSync();   // U5: a project left in wide mode opens in it
   if($('devHover'))$('devHover').checked=!!state.devHover;   // U6
   if($('viewScale'))$('viewScale').value=String(vsOk(state.viewScale));
-  camLockAcc=0;setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;cutSyncRow();if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;wmgSyncBox();if($('openingStyle'))$('openingStyle').value=opnWide()?'wide':'line';$('explode').checked=state.exploded;
+  camLockAcc=0;setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;cutSyncRow();if($('printPal'))$('printPal').checked=state.printPal!==false;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;wmgSyncBox();if($('openingStyle'))$('openingStyle').value=opnWide()?'wide':'line';$('explode').checked=state.exploded;
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   $('lvBase').checked=state.levels.basement;$('lvGround').checked=state.levels.ground;$('lvUpper').checked=state.levels.upper;
   $('hBase').value=LH.basement;$('hGround').value=LH.ground;$('hUpper').value=LH.upper;if(typeof dcSync==='function')dcSync();
@@ -14740,12 +15045,23 @@ function syncUI(){vsApply();if(typeof kbdApplyLayout==='function')kbdApplyLayout
   $('guideBox').querySelectorAll('input').forEach(c=>c.checked=!!guideOn[c.dataset.g]);
   if($('isoGrid'))$('isoGrid').checked=state.isoGrid;if(typeof bpUI==='function'){if(!state.bp)state.bp={dims:true,title:true,proj:'',addr:'',by:''};bpUI();}if($('showRefs'))$('showRefs').checked=state.showRefs;if($('hDisp'))$('hDisp').value=state.hDisp||'hover';if($('gizSnap'))$('gizSnap').checked=state.gizmoSnap!==false;if($('objWallSnap'))$('objWallSnap').checked=state.objWallSnap!==false;if($('multiSel'))$('multiSel').checked=!!state.multiSelect;if($('autoLayout'))$('autoLayout').classList.toggle('on',autoLayout);if(typeof renderLayers==='function')renderLayers();}
 function download(n,t){const b=new Blob([t],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
-function exportPNG(grey){const clone=stage.cloneNode(true);clone.setAttribute('width',1754);clone.setAttribute('height',1240);
+function exportPNG(grey){let clone;
+  try{if(grey&&typeof prnSet==='function')prnSet(true);             // M1: grey-safe palette for this snapshot only
+    clone=stage.cloneNode(true);
+    if(grey&&typeof prnActive==='function'&&prnActive()&&typeof prnLegendSvg==='function'){const lg=prnLegendSvg(12,12);
+      if(lg)clone.insertAdjacentHTML('beforeend',lg);}}
+  finally{if(typeof prnSet==='function')prnSet(false);}
+  clone.setAttribute('width',1754);clone.setAttribute('height',1240);
   const xml=new XMLSerializer().serializeToString(clone);const img=new Image();
   img.onload=()=>{const cv=document.createElement('canvas');cv.width=1754;cv.height=1240;const cx=cv.getContext('2d');
     cx.fillStyle='#fff';cx.fillRect(0,0,1754,1240);if(grey)cx.filter='grayscale(1) contrast(1.05)';cx.drawImage(img,0,0,1754,1240);
     cv.toBlob(bl=>{const u=URL.createObjectURL(bl);const a=document.createElement('a');a.href=u;a.download=grey?'terv_A4_grey.png':'terv_A4.png';a.click();URL.revokeObjectURL(u);});};
   img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml);}
+window.addEventListener('beforeprint',()=>{if(typeof prnSet!=='function')return;prnSet(true);
+  if(prnActive()&&typeof prnLegendSvg==='function'){const lg=prnLegendSvg(12,12);if(lg)stage.insertAdjacentHTML('beforeend',lg);}});
+window.addEventListener('afterprint',()=>{const g=document.getElementById('prnLegend');if(g)g.remove();if(typeof prnSet==='function')prnSet(false);});
+if($('printPal'))$('printPal').onchange=e=>{state.printPal=e.target.checked;
+  $('hud').textContent=state.printPal?'Szürke-biztos nyomtatási paletta: nyomtatáskor és szürke PNG-nél minden rendszer külön szürkeárnyalat + vonalminta.':'Nyomtatás valódi színekkel.';};
 $('bPNG').onclick=()=>exportPNG(false);$('bPNGg').onclick=()=>exportPNG(true);$('bPrint').onclick=()=>window.print();
 
 
@@ -15524,6 +15840,7 @@ function applyProjectData(o){ // o = a sessionObj payload
   data.noteHide=(o.data&&o.data.noteHide)?JSON.parse(JSON.stringify(o.data.noteHide)):{};
   data.seq=(o.data&&+o.data.seq)||0;data.v=(o.data&&+o.data.v)||0;
   migrate(data);                                        // an older file still opens
+  if(typeof stkMigrateRoles==='function')stkMigrateRoles();   // M1: one Erősáram layer → three
   selected=null;undo.length=0;redo.length=0;
   draft=null;pathDraft=null;measureDraft=null;cursor=null;dragItem=null;objGhost=null;buildGhost=null;
   if(typeof WV!=='undefined'&&WV){if(WV.keyFn)document.removeEventListener('keydown',WV.keyFn,true);WV=null;}
@@ -15603,7 +15920,7 @@ function restoreSession(){try{const raw=localStorage.getItem(LS_KEY);if(!raw)ret
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.refB)refB=o.refB;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);
   data.noteHide=(o.data&&o.data.noteHide)||{};data.seq=(o.data&&+o.data.seq)||0;data.v=(o.data&&+o.data.v)||0;
-  migrate(data);
+  migrate(data);if(typeof stkMigrateRoles==='function')stkMigrateRoles();
   syncUI();renderLayers();renderRefList();if(typeof renderDashboard==='function')renderDashboard();draw();
   $('hud').textContent='Munkamenet visszaállítva.'+idRepairNote();return true;}catch(_){return false;}}
 $('bNew').onclick=()=>{if(!confirm('Üres munkaterület? A nem mentett változások elvesznek.'))return;newBlankProject();};
@@ -15753,5 +16070,76 @@ $('bToolsLoc').onclick=()=>{const tp=PANELS.find(p=>p.label==='Tools');if(!tp)re
 $('objSearch').oninput=()=>renderObjList();renderObjList();
 buildDashboard();window.__dashReady=true;stampVersion();renderLayers();kbdApplyLayout();restoreSession();if(autoLayout)applyToolLayout(state.mode);
 if(typeof preloadBoot==="function")preloadBoot();   // a build with plans baked in (tools/make-preload.js) offers them first
+const RLI_TEXT={
+ construct:{cel:'A ház geometriája: falak, padló és helyiségek, ajtók, ablakok, lépcső, tárgyak. Minden más réteg erre épül — fal-gazda, helyiség-azonosítás, portálgráf.',
+   hol:'Minden helyiség zárt padlópoligonnal és számmal (R01…). Minden nyílászáró a saját falán.',
+   klaszter:'—  (alap; a Jelölés réteg olvassa)'},
+ mark:{cel:'Szabályok a rajzon: tiltott (⛔), előnyös (+) és kerülendő (−) falak és sávok; RBX / BASE / Elosztó helye sávok; padló- és mennyezetzónák; mozgásnyomok; nyílászáró-címkék (bejárat, külső, portál P2/P3, redőny).',
+   hol:'A bejárat jelölése kötelező (a portálgráf horgonya). Minden nedves helyiség, minden tervezett RBX-fal sávval.',
+   klaszter:'Minden második fázisú réteg olvassa (a helyiség-igények levezetése innen jön).'},
+ hw:{cel:'Elosztószekrény, mérőóra, adatbelépés (ISP), RBX dobozok, biztonsági központ (SSC).',
+   hol:'1 Elosztó lakásonként. Minden helyiséget pontosan egy RBX szolgál ki — 1 RBX 1–2 helyiségre, lehetőleg két helyiség közös belső falán. RBX alja ≥ 1900 mm (RB-M közép 2150). SSC védett, nem bejárható helyen. [H, W]',
+   klaszter:'BASE (a Csatornán át); közös falszakasz BASE-zel megengedett, de kerülendő, ha a BASE mindhárom egysége egy oszlopban van.'},
+ base:{cel:'A rendszer szíve: NET (kommunikáció) · COMP (koordinátor) · MEDIA (tárolás, streamek).',
+   hol:'Száraz helyiség; Elosztó ≤ 8 m; NET az adatbelépéstől ≤ 10 m; az egységek egy oszlopban (≤ 1 m), hacsak nem szándékosan osztott; a szint közepéhez közel; minden RBX ≤ 90 m Cat6A nyomvonalon. Lakásonként 1. [H]',
+   klaszter:'Hardver (RBX közös falszakasz — lásd ott), Csatorna.'},
+ channel:{cel:'Arany pálya: fizikai összeköttetés két hardverpont között (Elosztó → BASE → RBX lánc). Hordozók: C1 adat M25 · C2 média M40 · C3 vezérlés M20 · C4b B busz M20 · C5 KNX M20; a 230 V-os világítási füzér külön sávon. [A2 §4]',
+   hol:'Gerinc a mennyezet alatt 300 mm-rel; minden T-pontban kötődoboz. Minden RBX-et el kell érnie. [W]',
+   klaszter:'Az ARM pályák (ezüst) ágaznak le róla.'},
+ 'sys:MAINS':{cel:'Erősáram, 230 V: lámpák, kapcsolók, dugaljak, dedikált fogyasztók, redőnymotorok.',
+   hol:'Kapcsoló 1100 mm (a kilincs oldalán), dugalj 300 mm, lámpa a mennyezeten. Hálók köre külön; nagyobb szobánként 1–2 dugaljkör; egy világítási füzér az egész lakásra; a füzér nem kell, hogy minden RBX-et érintsen, és szükség esetén szobai dugaljkörrel is osztozhat. [W, N]',
+   klaszter:'Csak erősárammal közös pályán és csőben — SELV és adat soha. Ahol családok találkoznak: osztott szerelvénydoboz. [A2 §4, I2 K3]'},
+ 'sys:DED':{cel:'Dedikált körök (bronz pálya): sütő, mosogatógép, mosógép, bojler, klíma, főzőlap, AV pozíció, alelosztó betáp — mind saját kör, egyenesen az Elosztóba.',
+   hol:'A fogyasztó mellett, 300 mm-en, vagy a gyártó szerinti helyen. Konyha 2–4, mosókonyha / fürdő 1–2, klíma beltéri egységenként 1. Cső: M25 (16 A), M32 (32 A főzőlap, betáp). A redőnymotor nem dedikált kör. [A2 Step 1]',
+   klaszter:'Dugalj, Világítás (230 V). SELV és adat soha egy csőben.'},
+ 'sys:SOC':{cel:'Dugaljkörök: szobai, konyhai munkalap, fürdő, kültéri.',
+   hol:'300 mm; konyhapult felett 1050–1100. Hálók köre külön, nagyobb szobánként 1–2 kör, konyhán 3 munkalap-kör (A, B + sziget). Szobánként jellemzően 3–6 dugaljhely. [W, ELO_RULES]',
+   klaszter:'Dedikált, Világítás (230 V). Más család mellé osztott dobozban. [I2 K3]'},
+ 'sys:LIGHT':{cel:'Világítás: lámpahelyek és kapcsolók együtt, a redőnymotorokkal (kapcsolt terhelés). Előbb köthetők hagyományosan (kapcsoló → lámpa), később RBX bistabil bemenetre (a kapcsoló az RBX bemenete). [Q29]',
+   hol:'Kapcsoló 1100 mm a kilincs oldalán, ajtónként 1 kapcsolóhely; lámpa a mennyezeten, helyiségenként ≥ 1. Egy világítási füzér az egész lakásra; nem kell minden RBX-et érintenie, és szükség esetén szobai dugaljkörrel is osztozhat. [W]',
+   klaszter:'Dugalj (230 V). A kapcsoló fölé, a 1300-as sávba kerülhet az okos vezérlés (Vezérlés, NTL) — közös klaszterdoboz K1/K2. [I2]'},
+ 'sys:LV':{cel:'Törpefeszültség, A busz (kényelmi SELV 24/12/5 V): LED-vonalak, univerzális végpontok (UEP), USB-C töltők.',
+   hol:'LED rejtett világítás mennyezeten / pult alatt (nappali, konyha, fürdő); UEP 300 mm-en (háló, dolgozó, nappali). UEP mellé mindig egy üres M16 tartalék. [A2 Step 2, N]',
+   klaszter:'Minden SELV és adat réteggel közös pályán, saját csőben.'},
+ 'sys:BUSB':{cel:'Biztosított 24 V, B busz: menekülési és lépcsőfény, kapaszkodó LED, értesítő fény (NTL).',
+   hol:'Közlekedő, lépcső, előszoba; NTL szemmagasságban 1100–1200; az éjszakai mozgásnyomok mentén. [N, STD-008]',
+   klaszter:'SELV és adat — de soha nem az A busz csövében. [A2 §4]'},
+ 'sys:CONTROL':{cel:'Vezérlés, BRIDGE_LINK (RS-485): portál vezérlőpontok; a Csatornában C3.',
+   hol:'Portál ajtók (P2/P3 címke) felső sarkában, 2150 mm, a kilincs oldalán — 10×10-es portáldobozba. [W]',
+   klaszter:'Érzékelők portál pontja (ugyanabba a dobozba), minden SELV és adat.'},
+ 'sys:DATA':{cel:'Adat és PoE: WiFi hozzáférési pont, adataljzat, kamera.',
+   hol:'AP a mennyezeten, szintenként 1–2; adataljzat 300 mm (nappali, dolgozó, háló); kamera 2400 mm. [N]',
+   klaszter:'Minden SELV és adat, Média, USB.'},
+ 'sys:KNX':{cel:'KNX busz — csak ha a projekt KNX-et választ (P33-ban nem).',
+   hol:'Vonal vagy fa, soha nem hurok. [A2 Step 7]',
+   klaszter:'Minden SELV és adat.'},
+ 'sys:SENSOR':{cel:'Érzékelők: jelenlét (mmWave), CO₂, PIR, vízszivárgás, hőkamera (fürdő), ágy-életjel, portál ToF.',
+   hol:'Helyiségenként 1 jelenlét a mennyezeten; szivárgás padlószinten a gép mellett; portál pont az ajtó felső sarkában. [N]',
+   klaszter:'SELV és adat; portálnál a Vezérléssel közös dobozban.'},
+ 'sys:RF':{cel:'Rádiós lefedettségi terv — nincs cső: Thread, BLE, ESP-NOW, WiFi, UWB.',
+   hol:'RBX-enként; nagy helyiségben UWB. Az RBX elhelyezése dönti el. [A2 Step 9]',
+   klaszter:'Hardver (RBX).'},
+ 'sys:HMI':{cel:'Kezelőfelületek: érintőpanel, termosztát, belépési pont.',
+   hol:'A ≈ 1300-as okos sávban (panel 1450, termosztát 1500); bejárat, nappali, háló. [W]',
+   klaszter:'A Világítás kapcsolóival egy oszlopban, közös klaszterdobozban (K1/K2); Adat (PoE). [I2]'},
+ 'sys:MEDIA':{cel:'Média és hang: hangszóró, képernyő, AV pozíció.',
+   hol:'Nappali médiafal (képernyő 1200, AV 300), háló; hangszóró a mennyezeten. Médiafal útvonal M50–M63 vagy kétrekeszes parapet. [A2 Step 11]',
+   klaszter:'Adat, USB.'},
+ 'sys:USB':{cel:'USB adatpontok (nem az IT hálózaton): asztal, médiafal.',
+   hol:'300 mm vagy asztalmagasság; dolgozó, nappali. [N]',
+   klaszter:'Média, Adat.'},
+ 'sys:SECURITY':{cel:'Biztonságtechnika — Home Assistant + ESPHome alapú riasztó: mozgás-, nyitás-, üvegtörés-érzékelők, szirénák, kezelő, füst- / CO-érzékelők, pánikgomb, kaputelefon, zár.',
+   hol:'Alap kivitel: a határvédelem (nyitás, üvegtörés, sziréna, kezelő, zár) csillagban az SSC-ig, a belső mozgásérzékelők és a pánikgomb a helyiség RBX-éhez. Prémium: minden behatolás-érzékelő csillagban az SSC-ig, saját kábelen. Bejárat: nyitásérzékelő + kezelő (1450) + beltéri sziréna; minden külső nyílászáró: nyitásérzékelő; sarok-mozgásérzékelő 2200-on a bejárati útvonalra nézve; füst a hálók és közlekedők mennyezetén; CO a tüzelőberendezés terében. Mindig utolsó réteg. [S5]',
+   klaszter:'Saját cső (M16 / érzékelő); a kaputelefon és a kamera az Adat családban fut. Életvédelem (füst, CO): a tanúsított önálló jelző az elsődleges, a HA csak értesít.'},
+ cluster:{cel:'Klaszterpontok: több réteg végpontjai egy közös süllyesztett házban (K1 · K2 · K3) — kapcsoló + okos sáv, portál, médiapont. [IDEA-001/002/003]',
+   hol:'Ahol a családok egy oszlopban találkoznak: a kapcsoló fölött a 1300-as sáv, portál ajtók felső sarka, médiafal. Rekeszelve: erősáram és SELV soha egy rekeszben.',
+   klaszter:'Világítás, Vezérlés, Érzékelők, Adat — rekeszenként elválasztva.'},
+ arm:{cel:'Ezüst pályák: egyvonalas pályák az RBX-től minden végpontig. Egy ARM több réteget visz, külön csövekben (ezt a feltöltés számolja).',
+   hol:'Minden második fázisú végpontot el kell érnie (a hiányzókat a réteg jelzi).',
+   klaszter:'Minden második fázisú réteg.'},
+ 'sys:EXTRA':{cel:'Extrák és ötletek: előkészített végpontok — a P33 extrák (#1–#11) és a SmartFrame slotjai. Cső és doboz most, a hardver később.',
+   hol:'Az ideális helyek ✦-gal jelölve (jobb klikk egy ✦ helyen: elhelyezés). Minden extra a saját helyiségének RBX-éhez fut.',
+   klaszter:'Törpefeszültség (A busz) családjával, saját csőben.'}};
+window.RLI_TEXT=RLI_TEXT;
 </script>
 </body></html>

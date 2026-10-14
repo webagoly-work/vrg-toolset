@@ -21,7 +21,7 @@ setTimeout(async()=>{
   const lvl='ground';w.confirm=()=>true;w.alert=()=>{};
   w.newBlankProject();
   const st=w.__state,D=w.__data,stage=$('stage');st.zoom=1;st.active=lvl;st.devHover=false;w.setMode('select');
-  const S=w.stkCreate({name:'H'});const LM=w.eval('layers').find(l=>l.role==='sys:MAINS');
+  const S=w.stkCreate({name:'H'});const LM=w.eval('layers').find(l=>l.role==='sys:SOC');   // M1
   D.floors.push({level:lvl,poly:[[0,0],[4000,0],[4000,4000],[0,4000]],num:'R03',name:'Konyha',layer:'L0'});
   const sock={type:'socket',level:lvl,x:2000,y:2000,h:300,layer:LM?LM.id:'L0',side:0,ref:'D7'};D.devices.push(sock);w.ensureIds(D);
   D.circuits=D.circuits||[];D.circuits.push({id:'C9',ref:'A3',name:'Konyha dugalj',mcb:{poles:1,curve:'C',amps:16},members:[sock.id]});
@@ -32,7 +32,7 @@ setTimeout(async()=>{
   ok('title = ref · name',(w.hovFacts(sock)[0]||{}).v==='D7 · Aljzat',(w.hovFacts(sock)[0]||{}).v);
   ok('Típus row',!!f['Típus'],f['Típus']);
   ok('Áramkör = A3 … · 1C 16A',/^A3 .* · 1C 16A$/.test(f['Áramkör']||''),f['Áramkör']);
-  ok('Réteg names the stack Erősáram layer',/Erősáram/.test(f['Réteg']||''),f['Réteg']);
+  ok('Réteg names the stack Dugaljak layer',/Dugaljak/.test(f['Réteg']||''),f['Réteg']);
   ok('Helyiség = R03 Konyha',f['Helyiség']==='R03 Konyha',f['Helyiség']);
   ok('Magasság = 300 mm · alacsony',f['Magasság']==='300 mm · alacsony',f['Magasság']);
   ok('at most 8 rows, none empty',w.hovFacts(sock).length<=8&&w.hovFacts(sock).every(r=>r.v!==''));

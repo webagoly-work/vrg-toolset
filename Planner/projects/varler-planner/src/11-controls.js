@@ -233,12 +233,12 @@ $('bSave').onclick=()=>{for(const l of ORD)B.walls[l]=(WALLS[l]||[]).map(rectArr
 $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);
   Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
-  UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
+  UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);if(typeof stkMigrateRoles==='function')stkMigrateRoles();syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
 function syncUI(){vsApply();if(typeof kbdApplyLayout==='function')kbdApplyLayout();   // U4: the saved layout's keys and hints
   if(typeof pnlWideSync==='function')pnlWideSync();   // U5: a project left in wide mode opens in it
   if($('devHover'))$('devHover').checked=!!state.devHover;   // U6
   if($('viewScale'))$('viewScale').value=String(vsOk(state.viewScale));
-  camLockAcc=0;setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;cutSyncRow();if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;wmgSyncBox();if($('openingStyle'))$('openingStyle').value=opnWide()?'wide':'line';$('explode').checked=state.exploded;
+  camLockAcc=0;setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;cutSyncRow();if($('printPal'))$('printPal').checked=state.printPal!==false;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;wmgSyncBox();if($('openingStyle'))$('openingStyle').value=opnWide()?'wide':'line';$('explode').checked=state.exploded;
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   $('lvBase').checked=state.levels.basement;$('lvGround').checked=state.levels.ground;$('lvUpper').checked=state.levels.upper;
   $('hBase').value=LH.basement;$('hGround').value=LH.ground;$('hUpper').value=LH.upper;if(typeof dcSync==='function')dcSync();
@@ -252,12 +252,23 @@ function syncUI(){vsApply();if(typeof kbdApplyLayout==='function')kbdApplyLayout
   $('guideBox').querySelectorAll('input').forEach(c=>c.checked=!!guideOn[c.dataset.g]);
   if($('isoGrid'))$('isoGrid').checked=state.isoGrid;if(typeof bpUI==='function'){if(!state.bp)state.bp={dims:true,title:true,proj:'',addr:'',by:''};bpUI();}if($('showRefs'))$('showRefs').checked=state.showRefs;if($('hDisp'))$('hDisp').value=state.hDisp||'hover';if($('gizSnap'))$('gizSnap').checked=state.gizmoSnap!==false;if($('objWallSnap'))$('objWallSnap').checked=state.objWallSnap!==false;if($('multiSel'))$('multiSel').checked=!!state.multiSelect;if($('autoLayout'))$('autoLayout').classList.toggle('on',autoLayout);if(typeof renderLayers==='function')renderLayers();}
 function download(n,t){const b=new Blob([t],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
-function exportPNG(grey){const clone=stage.cloneNode(true);clone.setAttribute('width',1754);clone.setAttribute('height',1240);
+function exportPNG(grey){let clone;
+  try{if(grey&&typeof prnSet==='function')prnSet(true);             // M1: grey-safe palette for this snapshot only
+    clone=stage.cloneNode(true);
+    if(grey&&typeof prnActive==='function'&&prnActive()&&typeof prnLegendSvg==='function'){const lg=prnLegendSvg(12,12);
+      if(lg)clone.insertAdjacentHTML('beforeend',lg);}}
+  finally{if(typeof prnSet==='function')prnSet(false);}
+  clone.setAttribute('width',1754);clone.setAttribute('height',1240);
   const xml=new XMLSerializer().serializeToString(clone);const img=new Image();
   img.onload=()=>{const cv=document.createElement('canvas');cv.width=1754;cv.height=1240;const cx=cv.getContext('2d');
     cx.fillStyle='#fff';cx.fillRect(0,0,1754,1240);if(grey)cx.filter='grayscale(1) contrast(1.05)';cx.drawImage(img,0,0,1754,1240);
     cv.toBlob(bl=>{const u=URL.createObjectURL(bl);const a=document.createElement('a');a.href=u;a.download=grey?'terv_A4_grey.png':'terv_A4.png';a.click();URL.revokeObjectURL(u);});};
   img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml);}
+window.addEventListener('beforeprint',()=>{if(typeof prnSet!=='function')return;prnSet(true);
+  if(prnActive()&&typeof prnLegendSvg==='function'){const lg=prnLegendSvg(12,12);if(lg)stage.insertAdjacentHTML('beforeend',lg);}});
+window.addEventListener('afterprint',()=>{const g=document.getElementById('prnLegend');if(g)g.remove();if(typeof prnSet==='function')prnSet(false);});
+if($('printPal'))$('printPal').onchange=e=>{state.printPal=e.target.checked;
+  $('hud').textContent=state.printPal?'Szürke-biztos nyomtatási paletta: nyomtatáskor és szürke PNG-nél minden rendszer külön szürkeárnyalat + vonalminta.':'Nyomtatás valódi színekkel.';};
 $('bPNG').onclick=()=>exportPNG(false);$('bPNGg').onclick=()=>exportPNG(true);$('bPrint').onclick=()=>window.print();
 
 

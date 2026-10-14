@@ -27,7 +27,7 @@ setTimeout(()=>{
   const link=(a,b)=>{const p={route:'channel',nodes:[{level:lvl,x:a.x,y:a.y,h:2600},{level:lvl,x:b.x,y:b.y,h:2600}],sections:[{build:'sull_gege'}]};D().paths.push(p);w.ensureIds(D());
     w.addLink(a,p.id,p.nodes[0].id);w.addLink(b,p.id,p.nodes[1].id);return p;};
   link(board,base);link(board,ssc);rbx.forEach(x=>link(board,x));
-  const ep=(code,role,room,o)=>dev(Object.assign({type:w.epTypeFor(code),code,var:w.epEntry(code,role).vars[0].k,x:room*3000+1000+Math.random()*0,y:1000,layer:L(role)},o||{}));
+  const ep=(code,role,room,o)=>{role=(role==='sys:MAINS')?w.mnsRoleOf(code):role;return dev(Object.assign({type:w.epTypeFor(code),code,var:w.epEntry(code,role).vars[0].k,x:room*3000+1000+Math.random()*0,y:1000,layer:L(role)},o||{}));};
   // sockets: kitchen 3 circuits · living, bedroom, bathroom, upper 1 each (implicit) · hall + pantry share one circuit = 8
   const k1=ep('SOC','sys:MAINS',0,{x:500}),k2=ep('SOC','sys:MAINS',0,{x:1000}),k3=ep('SOC','sys:MAINS',0,{x:1500});
   ['A','B','sziget'].forEach((n,i)=>{const c=w.cktCreate({name:'Pult '+n});w.cktAssign(c,[k1,k2,k3][i]);if(i===0)c.mcb=w.mcbParse('1C 16A');});
@@ -53,7 +53,7 @@ setTimeout(()=>{
   ok('RCBO devices are named from the mcb',S1.ways.find(x=>x.kind==='light').device==='RCBO 1P C10 30 mA A');
   ok('grouped RCDs: ceil(24 / 4) = 6 RCDs, modules recomputed',(function(){const s=w.eloSchedule(board.id,{phase:'1f',perWay:'rcd'});return s.rcd.length===6&&s.totalMod===5+s.ways.reduce((a,x)=>a+x.mod,0)+12;})());
   ok('export: vrg-cabinet v1 with the vrg-circuits payload inside',(function(){const o=w.eloExportObj(board.id);return o.format==='vrg-cabinet'&&o.v===1&&o.schedule.ways.length>0&&o.circuits&&Array.isArray(o.circuits.circuits||o.circuits.list||[]);})());
-  ok('kitchen check: fewer than 3 socket circuits is flagged',(function(){const cA=D().circuits.find(x=>x.name==='Pult A'),cI=D().circuits.find(x=>x.name==='Pult sziget');w.cktAssign(cA,k3);const f=w.stkCheck(S,'sys:MAINS').some(x=>/S04/.test(x.msg));w.cktAssign(cI,k3);return f;})());
+  ok('kitchen check: fewer than 3 socket circuits is flagged',(function(){const cA=D().circuits.find(x=>x.name==='Pult A'),cI=D().circuits.find(x=>x.name==='Pult sziget');w.cktAssign(cA,k3);const f=w.stkCheck(S,'sys:DED').some(x=>/S04/.test(x.msg));w.cktAssign(cI,k3);return f;})());
   ok('reg: draw()',(function(){try{w.draw();return true;}catch(e){return 'ERR '+e.message;}})()===true);
  }catch(e){R.push(['EXCEPTION',false,e.stack.split('\n').slice(0,4).join(' | ')]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x?'   ['+x+']':''));});

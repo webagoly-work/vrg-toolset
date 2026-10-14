@@ -17,20 +17,20 @@
 
 const EP_CAT=[
  // ---- MAINS ----
- {code:'LMP',role:'sys:MAINS',n:'Lámpa',cat:'light',mount:'ceiling',topo:'chain',from:'rbx',vars:[
+ {code:'LMP',role:'sys:LIGHT',n:'Lámpa',cat:'light',mount:'ceiling',topo:'chain',from:'rbx',vars:[
    {k:'230',n:'230 V lámpahely',cab:[{c:'NYM3x15',w:'M20'}]}]},
- {code:'SWI',role:'sys:MAINS',n:'Kapcsoló (bemenet)',cat:'switch',mount:'wall',h:1100,topo:'star',from:'rbx',vars:[
+ {code:'SWI',role:'sys:LIGHT',n:'Kapcsoló (bemenet)',cat:'switch',mount:'wall',h:1100,topo:'star',from:'rbx',vars:[
    {k:'230', n:'230 V nyomó (RC-szűrt, BRIDGE-DN)',cab:[{c:'NYM3x15',w:'M20'}]},            // default [Q29]
    {k:'selv',n:'SELV nyomó → bistabil bemenet',    cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
- {code:'SOC',role:'sys:MAINS',n:'Dugalj',cat:'socket',mount:'wall',h:300,topo:'chain',from:'rbx',vars:[
+ {code:'SOC',role:'sys:SOC',n:'Dugalj',cat:'socket',mount:'wall',h:300,topo:'chain',from:'rbx',vars:[
    {k:'s04',n:'1,5 mm² kör (S04)',cab:[{c:'NYM3x15',w:'M20'}]},
    {k:'25', n:'2,5 mm² kör',      cab:[{c:'NYM3x25',w:'M25'}]}]},
- {code:'DED',new:true,role:'sys:MAINS',n:'Dedikált fogyasztó',cat:'device',mount:'wall',h:300,topo:'star',from:'board',vars:[
+ {code:'DED',new:true,role:'sys:DED',n:'Dedikált fogyasztó',cat:'device',mount:'wall',h:300,topo:'star',from:'board',vars:[
    {k:'g16',  n:'16 A — sütő, mosogatógép, mosógép, bojler, klíma, AV',cab:[{c:'NYM3x25',w:'M25'}]},
    {k:'hob32',n:'Indukciós főzőlap 32 A, 1 fázis',cab:[{c:'NYM3x6',w:'M32'}]},
    {k:'hob2l',n:'Indukciós főzőlap 2L+2N / 3 fázis',cab:[{c:'NYM5x25',w:'M25'}]},
    {k:'alelo',n:'Alelosztó betáp, 3 fázis',cab:[{c:'NYM5x6',w:'M32'}]}]},
- {code:'SHU',role:'sys:MAINS',n:'Redőnymotor',cat:'device',mount:'wall',h:2300,topo:'star',from:'rbx',vars:[
+ {code:'SHU',role:'sys:LIGHT',n:'Redőnymotor',cat:'device',mount:'wall',h:2300,topo:'star',from:'rbx',vars:[
    {k:'230',n:'Fel · le · N · PE',cab:[{c:'NYM4x15',w:'M20'}]}]},
  // ---- LV, bus A ----
  {code:'LNR',role:'sys:LV',n:'LED-vonal / rejtett világítás',cat:'light',mount:'ceiling',topo:'star',from:'rbx',vars:[
@@ -100,15 +100,76 @@ const EP_CAT=[
    {k:'det',    n:'Mozgásérzékelő',cab:[{c:'ALARM6',w:'M16'}]},
    {k:'contact',n:'Nyitásérzékelő',cab:[{c:'ALARM6',w:'M16'}]},
    {k:'siren',  n:'Kültéri sziréna',cab:[{c:'SIREN4',w:'M16'}]},
-   {k:'keypad', n:'Kezelő / buszeszköz',cab:[{c:'BUS4',w:'M16'}]}]}];
+   {k:'keypad', n:'Kezelő / buszeszköz',cab:[{c:'BUS4',w:'M16'}]}]},   // stays: third-party systems
+ // ---- SECURITY — Home Assistant / ESPHome (round 2026-10-10, WP-S5). /*r*/ heights are reasoned; ⚑ before client use.
+ // from = the PREMIUM (star) origin; epFromOf() gives 'rbx' for MOT and PNC in the default Alap tier (answer S01).
+ // An empty cab list is legal: a battery Zigbee / Thread variant carries no cable, makes no run, and still counts as placed.
+ {code:'MOT',new:true,role:'sys:SECURITY',n:'Mozgásérzékelő (behatolás)',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: corner, 2.0–2.4 m
+   {k:'pir', n:'PIR, vezetékes (ESPHome gpio)',          cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'dual',n:'PIR + mikrohullám (kettős technológia)', cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'pet', n:'Kisállatbarát PIR',                       cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'mmw', n:'mmWave jelenlét + behatolás (LD2410 / LD2450)',cab:[{c:'LIYCY4x05',w:'M16'}]}]},
+ {code:'DWC',new:true,role:'sys:SECURITY',n:'Nyitásérzékelő (ajtó / ablak)',cat:'device',mount:'wall',h:2050,topo:'star',from:'ssc',vars:[   // r: frame top, latch side
+   {k:'reed',n:'Reed + szabotázs, vezetékes',      cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'roll',n:'Redőny / görgős nyitásérzékelő',  cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'zb',  n:'Elemes, Zigbee / Thread (nincs kábel)',cab:[]}]},
+ {code:'GLB',new:true,role:'sys:SECURITY',n:'Üvegtörés-érzékelő',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: facing the glazing ≤ 6 m ⚑
+   {k:'wired',n:'Vezetékes (akusztikus)',cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'zb',   n:'Elemes, Zigbee / Thread',cab:[]}]},
+ {code:'SRN',new:true,role:'sys:SECURITY',n:'Sziréna',cat:'device',mount:'wall',h:2300,topo:'star',from:'ssc',vars:[
+   {k:'bel',n:'Beltéri sziréna (12 V)',                 cab:[{c:'SIREN4',w:'M16'}]},
+   {k:'kul',n:'Kültéri sziréna villogóval, akkus, szabotázs',h:2800,cab:[{c:'SIREN4',w:'M16'}]}]},   // r: outdoor: out of reach
+ {code:'KPD',new:true,role:'sys:SECURITY',n:'Kezelő / belépési pont',cat:'device',mount:'wall',h:1450,topo:'star',from:'ssc',vars:[   // the ≈1300 smart band [W]; S07 = B: the HMI panel's entry variant stays too
+   {k:'kod',n:'Kódbillentyűzet (matrix_keypad / Wiegand)',cab:[{c:'JY4x2x08',w:'M16'}]},
+   {k:'nfc',n:'NFC / RFID olvasó (PN532 / RC522)',        cab:[{c:'JY4x2x08',w:'M16'}]},
+   {k:'ujj',n:'Ujjlenyomat-olvasó',                       cab:[{c:'JY4x2x08',w:'M16'}]},
+   {k:'pan',n:'Érintőpanel riasztó-felülettel (PoE)',      cab:[{c:'CAT6A_S',w:'M20',fam:'DATA'}]}]},
+ {code:'PNC',new:true,role:'sys:SECURITY',n:'Pánikgomb',cat:'device',mount:'wall',h:900,topo:'star',from:'ssc',vars:[   // r: bedside / entry
+   {k:'wired',n:'Vezetékes',cab:[{c:'ALARM6',w:'M16'}]},
+   {k:'zb',   n:'Elemes, Zigbee / Thread',cab:[]}]},
+ {code:'LCK',new:true,role:'sys:SECURITY',n:'Zár / zárnyelv-állapot',cat:'device',mount:'wall',h:1050,topo:'star',from:'ssc',vars:[   // r: door frame, latch side
+   {k:'str',n:'Elektromos zárfogadó + állapotjelzés (12 V)',cab:[{c:'JY2x2x08',w:'M16'}]},
+   {k:'mot',n:'Motoros okoszár, elemes (Zigbee / Thread / Matter)',cab:[]}]},
+ {code:'SMK',new:true,role:'sys:SECURITY',n:'Füst- / hőérzékelő (EN 14604)',cat:'device',mount:'ceiling',topo:'star',from:'rbx',vars:[   // life safety: the certified standalone alarm is primary, HA only notifies
+   {k:'zb',  n:'Elemes füstjelző, rádiós összekötéssel + HA (Zigbee / Thread)',cab:[]},
+   {k:'ilk', n:'230 V összekötött füstjelző + relékimenet az RBX bemenetre',cab:[{c:'NYM3x15',w:'M20',fam:'MAINS',from:'board'},{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]},
+   {k:'heat',n:'Hőérzékelő (konyha, garázs)',cab:[]}]},
+ {code:'COA',new:true,role:'sys:SECURITY',n:'CO-érzékelő (EN 50291)',cat:'device',mount:'wall',h:2000,topo:'star',from:'rbx',vars:[   // r: ⚑ EN 50292: high on the wall, ≥150 mm below the ceiling, 1–3 m from the appliance
+   {k:'zb', n:'Elemes, Zigbee / Thread',cab:[]},
+   {k:'ilk',n:'Hálózati + relékimenet az RBX bemenetre',cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
+ {code:'DBL',new:true,role:'sys:SECURITY',n:'Videós kaputelefon / csengő',cat:'device',mount:'wall',h:1500,topo:'star',from:'rbx',vars:[   // local: ONVIF / Reolink [CoreRef]
+   {k:'poe',n:'PoE, helyi (ONVIF)',cab:[{c:'CAT6A_U',w:'M20',fam:'DATA'}]}]}];
+// the security tier (answer S01): Alap (default, mixed) — the interior detectors (MOT, PNC) go to the room's
+// RBX; Prémium (star) — every intrusion point to the SSC. Every reader of entry.from goes through here.
+const EP_SEC_INTERIOR=['MOT','PNC'];
+function epSecTier(d){const S=d&&typeof stkOfLayer==='function'?stkOfLayer(d.layer):null,A=S||(typeof stkActive==='function'?stkActive():null);
+  return (A&&A.secTier)==='premium'?'premium':'alap';}
+function epSecTierSet(stackId,v){const S=stkById(stackId);if(!S)return false;v=v==='premium'?'premium':'alap';if((S.secTier||'alap')===v)return false;
+  lyrPushUndo();S.secTier=v;if(typeof invalidateShell==='function')invalidateShell();draw();
+  lyrHud('Biztonsági kivitel: '+(v==='premium'?'Prémium — minden behatolás-érzékelő csillagban az SSC-ig.':'Alap — a belső mozgásérzékelők és a pánikgomb a helyiség RBX-éhez.'));return true;}
+// the SSC hardware node (Q-S06): an ESPHome alarm node (Ethernet, battery, optional GSM — default) or a third-party panel.
+// Label and Info only; no new geometry.
+const EP_SSC_KIND={ha:'ESPHome riasztó-csomópont (Ethernet, akku, opcionális GSM)','3p':'Harmadik fél riasztóközpontja'};
+function epSscKind(d){return d&&d.sscKind==='3p'?'3p':'ha';}
+STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d||d.type!=='ssc')return;const S=stkOfLayer(d.layer)||stkActive();
+  const k=epSscKind(d),o=k==='ha'?'3p':'ha';
+  items.push({label:'SSC: '+EP_SSC_KIND[k]+' → váltás: '+EP_SSC_KIND[o].split(' (')[0],act:()=>{pushUndo(['devices']);if(o==='3p')d.sscKind='3p';else delete d.sscKind;draw();
+    lyrHud('SSC: '+EP_SSC_KIND[o]);}});
+  if(S){const t=S.secTier==='premium'?'premium':'alap';
+    items.push({label:'Biztonsági kivitel: '+(t==='premium'?'Prémium':'Alap')+' → '+(t==='premium'?'Alap':'Prémium'),act:()=>epSecTierSet(S.id,t==='premium'?'alap':'premium')});}});
+function epFromOf(entry,d){if(!entry)return null;
+  if(entry.role==='sys:SECURITY'&&EP_SEC_INTERIOR.indexOf(entry.code)>=0&&epSecTier(d)==='alap')return 'rbx';
+  return entry.from;}
 // symbol colour per role — one source of truth, STK_COL in 05m (which loads first)
 const EP_ROLE_COL=stkSysCols();
 const EP_CLASSIC={LMP:'light',SWI:'switch',SOC:'socket'};
 const EP_FROM_TYPE={light:'LMP',switch:'SWI',socket:'SOC'};
 
 // ---- the catalogue ------------------------------------------------------------------------------------------------
-function epEntry(code,role){return EP_CAT.find(e=>e.code===code&&(!role||e.role===role))||null;}
-function epOfRole(role){return EP_CAT.filter(e=>e.role===role);}
+// role 'sys:MAINS' is a read-only alias for the three Erősáram roles (WP-M1): an old caller still finds LMP, SWI, SOC, DED, SHU
+function epRoleIs(e,role){return e.role===role||(role==='sys:MAINS'&&typeof mnsIs==='function'&&mnsIs(e.role));}
+function epEntry(code,role){return EP_CAT.find(e=>e.code===code&&(!role||epRoleIs(e,role)))||null;}
+function epOfRole(role){return EP_CAT.filter(e=>epRoleIs(e,role));}
 function epTypeFor(code){return EP_CLASSIC[code]||'ep';}
 // the code of a device: its own, or the classic type's (a socket drawn with the old Device tool is a SOC)
 function epCodeOf(d){return d?(d.code||EP_FROM_TYPE[d.type]||null):null;}
@@ -119,7 +180,7 @@ function epEntryOf(d){const c=epCodeOf(d);return c?(epEntry(c,epRoleOf(d))||epEn
 function epVar(d){const e=epEntryOf(d);if(!e)return null;return e.vars.find(v=>v.k===d.var)||e.vars[0];}
 // [{c, w, fam, n, from}] with the defaults filled: fam = the role's family, n = 1, from = the entry's origin
 function epCables(d){const e=epEntryOf(d),v=epVar(d);if(!e||!v)return [];const R=stkRole(e.role)||{};
-  return v.cab.map(c=>({c:c.c,w:c.w,fam:c.fam||R.fam||null,n:c.n||1,from:c.from||e.from}));}
+  return (v.cab||[]).map(c=>({c:c.c,w:c.w,fam:c.fam||R.fam||null,n:c.n||1,from:c.from||epFromOf(e,d)}));}
 // the display code: '<code><n>', n = running number of that code in its room (derived — STD-004 R03.LMP2)
 function epRef(d){const c=epCodeOf(d);if(!c)return d.ref||'';const r=roomOfDevice(d),rid=r&&stkRoomId(r);
   const same=data.devices.filter(x=>epCodeOf(x)===c&&x.level===d.level&&(()=>{const rr=roomOfDevice(x);return (rr&&stkRoomId(rr))===rid;})());
@@ -134,9 +195,10 @@ function epCeilH(level,x,y){const e=(typeof mrkRoomAtPt==='function')?mrkRoomAtP
 // the ghost: a wall endpoint on the wall centreline (face in side), a ceiling / floor one at the plan point
 function epGhost(e){const en=epEntry(EP_T.code,EP_T.role);if(!en)return null;const level=state.active;
   let g;
-  if(en.mount==='wall'){const pk=hwPick(e,en.h||1100);if(!pk)return null;
+  const vh=((en.vars||[]).find(v=>v.k===EP_T.var)||{}).h;   // S5: a variant may carry its own height (outdoor siren 2800)
+  if(en.mount==='wall'){const pk=hwPick(e,vh||en.h||1100);if(!pk)return null;
     const p=mrkFacePt(pk.r,pk.side,pk.u,-wallInfo(pk.r).thick/2);
-    g={level,x:Math.round(p[0]),y:Math.round(p[1]),h:en.h||1100,side:pk.side>0?1:0,wall:pk.id,u:Math.round(pk.u),wallSide:pk.side,mount:'wall'};}
+    g={level,x:Math.round(p[0]),y:Math.round(p[1]),h:vh||en.h||1100,side:pk.side>0?1:0,wall:pk.id,u:Math.round(pk.u),wallSide:pk.side,mount:'wall'};}
   else{const z0=en.mount==='floor'?0:wallH(level),[bx,by]=clientToBase(e),p=baseToPlan(bx,by,dz(level,z0));
     g={level,x:Math.round(p[0]),y:Math.round(p[1]),h:en.mount==='floor'?0:epCeilH(level,p[0],p[1]),mount:en.mount};}
   if(typeof sugSnap==='function'&&!e.altKey)g=sugSnap(g,EP_T.code,EP_T.role)||g;       // D3 — Alt places freely
@@ -169,9 +231,9 @@ STK_TOOLS.push({k:'epPlace',active:()=>{if(!EP_T.on)return false;if(state.mode!=
   mode(){epToolOff();},esc(){epToolOff();draw();}});
 // the picker: every code of the role, variants as radio buttons
 function epPicker(role){const S=(typeof stkActive==='function')?stkActive():null,L=lyrLayer(state.activeLayer);
-  role=role||(L&&L.role&&L.role.indexOf('sys:')===0?L.role:'sys:MAINS');const list=epOfRole(role);
+  role=role||(L&&L.role&&L.role.indexOf('sys:')===0?L.role:'sys:SOC');const list=epOfRole(role);
   openModal('Végpont — '+((stkRole(role)||{n:role}).n),
-    list.map((en,i)=>`<div class="mrow" style="align-items:flex-start"><label style="width:200px"><input type="radio" name="epC" value="${en.code}" ${i===0?'checked':''}> <b style="color:${EP_ROLE_COL[role]}">${en.code}</b> ${esc(en.n)}${en.new?' <span style="color:#999">(új kód)</span>':''}</label>`
+    list.map((en,i)=>`<div class="mrow" style="align-items:flex-start"><label style="width:200px"><input type="radio" name="epC" value="${en.code}" ${i===0?'checked':''}> <b style="color:${stkRoleCol(role,en.code)||EP_ROLE_COL[role]}">${en.code}</b> ${esc(en.n)}${en.new?' <span style="color:#999">(új kód)</span>':''}</label>`
       +`<span>`+en.vars.map((v,j)=>`<label style="display:block;font-size:11.5px"><input type="radio" name="epV_${en.code}" value="${v.k}" ${j===0?'checked':''}> ${esc(v.n)}</label>`).join('')+`</span></div>`).join('')
     +(list.length?'':`<div class="mrow">Ennek a szerepnek nincs végpontja (a lefedettség a Rádió nézetben).</div>`),
     ()=>{const c=(document.querySelector('input[name=epC]:checked')||{}).value;if(!c)return;
@@ -179,12 +241,12 @@ function epPicker(role){const S=(typeof stkActive==='function')?stkActive():null
 
 // ---- symbols ----------------------------------------------------------------------------------------------------------------
 function epSymbol(d,x,y,k,back){if(!d||d.type!=='ep')return null;
-  const R=v=>+(v*k).toFixed(2),col=back?'#9299a0':(EP_ROLE_COL[epRoleOf(d)]||'#444');
+  const R=v=>+(v*k).toFixed(2),col=back?'#9299a0':(stkRoleCol(epRoleOf(d),epCodeOf(d))||'#444');
   return `<rect x="${x-R(7)}" y="${y-R(7)}" width="${R(14)}" height="${R(14)}" rx="${R(3)}" fill="#fff" stroke="${col}" stroke-width="${R(1.6)}"${back?' stroke-dasharray="'+vsDash('2.5 2')+'"':''}/>`
     +`<text x="${x}" y="${(y+R(2.6)).toFixed(2)}" font-size="${R(6.8)}" text-anchor="middle" font-weight="700" fill="${col}">${esc(d.code||'?')}</text>`;}
 STK_DEVSYM.push(epSymbol);
 function epWvBox(dv,x,y,sc,col,back){const d=data.devices[dv.di];if(!d||d.type!=='ep')return null;
-  const r=35*sc,c=back?'#b0b4b8':(EP_ROLE_COL[epRoleOf(d)]||col);
+  const r=35*sc,c=back?'#b0b4b8':(stkRoleCol(epRoleOf(d),epCodeOf(d))||col);
   return `<rect x="${(x-r).toFixed(1)}" y="${(y-r).toFixed(1)}" width="${(2*r).toFixed(1)}" height="${(2*r).toFixed(1)}" rx="3" fill="#fff" stroke="${c}" stroke-width="${vsP(1.5)}"${back?' stroke-dasharray="'+vsDash('3 2')+'"':''}/>`
     +`<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="${Math.max(7,r*0.55).toFixed(1)}" text-anchor="middle" font-weight="700" fill="${c}">${esc(d.code||'?')}</text>`;}
 STK_WVBOX.push(epWvBox);
@@ -218,10 +280,14 @@ VALIDATORS.push({code:'ep.*',run:()=>{const out=[];
 //   LMP / LNR → the RBX's lighting circuit (ELO_RULES.lightPerRbx)
 // control groups (BRIDGE): a switch is an INPUT of the RoomBox bistable, each lamp group an OUTPUT — there is no
 // switch-to-lamp wire [Q29]. sw.ctl = [lamp ids] says which lamps the switch controls.
-(STK_GROUPS['+sys:MAINS']=STK_GROUPS['+sys:MAINS']||[]).push('Áramkör','Vezérlés');
+MNS_ROLES.forEach(r=>(STK_GROUPS['+'+r]=STK_GROUPS['+'+r]||[]).push('Áramkör','Vezérlés'));   // M1: all three Erősáram layers
 function epRoomOf(d){const r=roomOfDevice(d);return r?stkRoomId(r):null;}
 // devices of a room on a role's layer of the active (or given) stack
-function epInRoom(roomId,role,stackId){const S=stackId?stkById(stackId):((typeof stkActive==='function')?stkActive():null);
+function epInRoom(roomId,role,stackId){
+  // M1: 'sys:MAINS' is the union of the three Erősáram roles (plus a not-yet-migrated MAINS layer)
+  if(role==='sys:MAINS'){const seen=new Set(),out=[];MNS_ROLES.concat(['sys:MAINS!']).forEach(r=>epInRoom(roomId,r,stackId).forEach(d=>{if(!seen.has(d)){seen.add(d);out.push(d);}}));return out;}
+  if(role==='sys:MAINS!')role='sys:MAINS';
+  const S=stackId?stkById(stackId):((typeof stkActive==='function')?stkActive():null);
   const L=S?stkLayer(S.id,role):null;
   return data.devices.filter(d=>d&&epCodeOf(d)&&(L?d.layer===L.id:epRoleOf(d)===role)&&epRoomOf(d)===roomId);}
 function epCircuitOf(d){const c=(typeof cktOfDevice==='function')?cktOfDevice(d):null;if(c)return c.id;
@@ -240,7 +306,7 @@ function epCircuits(roomId,stackId){const by={};
   return Object.keys(by).sort().map(k=>by[k]);}
 // output groups: lamps grouped by the identical SET of switches controlling them; uncontrolled lamps alone
 function epCtlOf(lampId){return data.devices.filter(s=>Array.isArray(s.ctl)&&s.ctl.indexOf(lampId)>=0).map(s=>s.id).sort();}
-function epLampGroups(roomId,stackId,role){const lamps=epInRoom(roomId,role||'sys:MAINS',stackId).filter(d=>epCodeOf(d)==='LMP');
+function epLampGroups(roomId,stackId,role){const lamps=epInRoom(roomId,role||'sys:LIGHT',stackId).filter(d=>epCodeOf(d)==='LMP');
   const g={};lamps.forEach(l=>{const sig=epCtlOf(l.id).join(',')||('alone:'+l.id);(g[sig]=g[sig]||[]).push(l.id);});
   return Object.keys(g).map(k=>g[k].sort(prtIdCmp)).sort((a,b)=>prtIdCmp(a[0],b[0]));}
 // THE input for the fill (E3): [{key, code, topo, members:[ids], from}] for one room and role
@@ -249,11 +315,11 @@ function epGroupsFor(roomId,role,stackId){const devs=epInRoom(roomId,role,stackI
   Object.keys(byCode).sort().forEach(code=>{const en=epEntry(code,role)||epEntry(code),ds=byCode[code];
     if(!en)return;
     if(en.topo==='chain'){
-      if(code==='LMP')epLampGroups(roomId,stackId,role).forEach((g,i)=>out.push({key:role+':LMP:'+g[0],code,topo:g.length>1?'chain':'star',members:g,from:en.from}));
+      if(code==='LMP')epLampGroups(roomId,stackId,role).forEach((g,i)=>out.push({key:role+':LMP:'+g[0],code,topo:g.length>1?'chain':'star',members:g,from:epFromOf(en,ds[0])}));
       else if(code==='SOC'){const by={};ds.forEach(d=>{const k=epCircuitOf(d)||('room:'+roomId);(by[k]=by[k]||[]).push(d.id);});
-        Object.keys(by).sort().forEach(k=>out.push({key:role+':SOC:'+k,code,topo:by[k].length>1?'chain':'star',members:by[k].sort(prtIdCmp),from:en.from}));}
-      else out.push({key:role+':'+code+':'+roomId,code,topo:ds.length>1?'chain':'star',members:ds.map(d=>d.id).sort(prtIdCmp),from:en.from});}
-    else ds.slice().sort((a,b)=>prtIdCmp(a.id,b.id)).forEach(d=>out.push({key:role+':'+code+':'+d.id,code,topo:'star',members:[d.id],from:en.from}));});
+        Object.keys(by).sort().forEach(k=>out.push({key:role+':SOC:'+k,code,topo:by[k].length>1?'chain':'star',members:by[k].sort(prtIdCmp),from:epFromOf(en,ds[0])}));}
+      else out.push({key:role+':'+code+':'+roomId,code,topo:ds.length>1?'chain':'star',members:ds.map(d=>d.id).sort(prtIdCmp),from:epFromOf(en,ds[0])});}
+    else ds.slice().sort((a,b)=>prtIdCmp(a.id,b.id)).forEach(d=>out.push({key:role+':'+code+':'+d.id,code,topo:'star',members:[d.id],from:epFromOf(en,d)}));});
   return out;}
 
 // the control pick mode: clicking a lamp toggles it in the switch's ctl list
@@ -277,11 +343,14 @@ STK_OVERLAY.push(()=>{const sel=(typeof selected!=='undefined'&&selected&&select
   (sw.ctl||[]).forEach(id=>{const l=byId('devices',id);if(!l||!state.levels[l.level])return;const b=planToBase(l.x,l.y,dz(l.level,l.h||0));
     s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#d1493f" stroke-width="${vsP(1)}" stroke-dasharray="${vsDash('4 3')}"/>`;});
   return s?`<g pointer-events="none">${s}</g>`:'';});
-(STK_CHECKS['sys:MAINS']=STK_CHECKS['sys:MAINS']||[]).push(S=>{const out=[],L=stkLayer(S.id,'sys:MAINS');if(!L)return out;
+// M1: the switch / lamp control checks belong to the lighting layer; the dedicated-circuit check to the dedicated one
+(STK_CHECKS['sys:LIGHT']=STK_CHECKS['sys:LIGHT']||[]).push(S=>{const out=[],L=stkLayer(S.id,'sys:LIGHT')||stkLayer(S.id,'sys:MAINS');if(!L)return out;
   const on=data.devices.filter(d=>d.layer===L.id);
   on.forEach(d=>{const c=epCodeOf(d);
     if(c==='SWI'&&!(d.ctl&&d.ctl.length))out.push({sev:'info',msg:(d.ref||d.id)+': nem vezérel semmit'});
     if(c==='LMP'&&!epCtlOf(d.id).length)out.push({sev:'info',msg:(d.ref||d.id)+': egy kapcsoló sem vezérli'});});
+  return out;});
+(STK_CHECKS['sys:DED']=STK_CHECKS['sys:DED']||[]).push(S=>{const out=[];
   if(typeof cktList==='function')cktList().forEach(c=>{if(c.dedicated&&(c.members||[]).length>1)out.push({sev:'warn',msg:(c.name||c.id)+': dedikált kör, de '+c.members.length+' tagja van'});});
   return out;});
 
@@ -299,6 +368,6 @@ registerActions([
 
 // test hooks
 window.EP_CAT=EP_CAT;window.EP_PLACED=EP_PLACED;window.EP_ROLE_COL=EP_ROLE_COL;window.EP_T=EP_T;window.epEntry=epEntry;window.epOfRole=epOfRole;window.epTypeFor=epTypeFor;window.epCodeOf=epCodeOf;window.epRoleOf=epRoleOf;
-window.epVar=epVar;window.epCables=epCables;window.epRef=epRef;window.epMake=epMake;window.epPlace=epPlace;window.epToolStart=epToolStart;window.epGhost=epGhost;
+window.epFromOf=epFromOf;window.epSecTierSet=epSecTierSet;window.epSscKind=epSscKind;window.epVar=epVar;window.epCables=epCables;window.epRef=epRef;window.epMake=epMake;window.epPlace=epPlace;window.epToolStart=epToolStart;window.epGhost=epGhost;
 window.epSymbol=epSymbol;window.epCircuitOf=epCircuitOf;window.epCircuits=epCircuits;window.epLampGroups=epLampGroups;window.epGroupsFor=epGroupsFor;
 window.epCtlPick=epCtlPick;window.epCtlToggle=epCtlToggle;window.epInRoom=epInRoom;window.epCtlOf=epCtlOf;window.epRoomOf=epRoomOf;

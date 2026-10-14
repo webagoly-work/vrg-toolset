@@ -49,7 +49,7 @@ setTimeout(()=>{
   const gs=w.clsGroups(lvl);
   ok('P33 v2 has endpoint groups to cluster (same face, same zone, ≤ 300 mm)',gs.length>0&&gs.every(g=>g.members.length>=2),gs.length);
   ok('a group mixing MAINS and SELV gets K3; a pure group of ≤ 3 gets K1',gs.every(g=>{const roles=[...new Set(g.members.map(id=>w.epRoleOf(D().devices.find(d=>d.id===id))))];
-    const mixed=roles.indexOf('sys:MAINS')>=0&&roles.some(r=>r!=='sys:MAINS');return mixed?g.cls==='K3':(g.members.length<=3?g.cls==='K1':g.cls!=='K1');}));
+    const mixed=roles.some(w.mnsIs)&&roles.some(r=>!w.mnsIs(r));return mixed?g.cls==='K3':(g.members.length<=3?g.cls==='K1':g.cls!=='K1');}));
   const nc=w.clsAutoAll(lvl);
   ok('Klaszterek a végpontokból: one box per group, members hosted, boxes on the cluster layer',nc===gs.length&&w.clsList(lvl).length===nc&&
     w.clsList(lvl).every(c=>w.clsMembers(c).length>=2&&c.layer===w.stkLayer(S.id,'cluster').id&&!c.sec));
@@ -61,7 +61,7 @@ setTimeout(()=>{
   ok('a higher-layer endpoint on a custom spot opens a secondary K1 box and moves into it',sec&&sec.type==='cluster'&&sec.sec&&sec.cls==='K1'&&Math.abs(sec.h-1500)<1,J(sec||null));
   const next=w.epPlace({level:lvl,x:10300,y:3580,h:1450,side:0,mount:'wall'},'PAN','sys:HMI');
   ok('the next endpoint beside it joins that box instead of opening another',next.host===sec.id&&w.clsList(lvl).filter(c=>c.sec).length===1);
-  const mains=w.epPlace({level:lvl,x:10300,y:2800,h:300,side:0,mount:'wall'},'SOC','sys:MAINS');
+  const mains=w.epPlace({level:lvl,x:10300,y:2800,h:300,side:0,mount:'wall'},'SOC','sys:SOC');
   ok('a MAINS endpoint never opens a box',!mains.host);
   ok('an ideal spot (snapped) is not a custom place',(function(){const d=w.epPlace({level:lvl,x:10300,y:5200,h:1500,side:0,mount:'wall',snapped:true},'THR','sys:HMI');return !d.host;})());
   ok('Másodlagos be / ki: off → no box',(function(){w.__state.clsAuto=false;const d=w.epPlace({level:lvl,x:10300,y:4700,h:2200,side:0,mount:'wall'},'CAM','sys:DATA');w.__state.clsAuto=true;return !d.host;})());
@@ -72,9 +72,9 @@ setTimeout(()=>{
   ok('a second device at the same height takes the next slot along the wall',m1.host===pA.id&&Math.hypot(tg2.x-tg1.x,tg2.y-tg1.y)>80);
   ok('a ceiling code at a node lands 400 mm in front of it at ceiling height',(function(){const g=w.clsTargetG({kind:'node',node:pA},w.epEntry('SEN','sys:SENSOR'));return g&&g.mount==='ceiling'&&g.h>2000&&Math.hypot(g.x-pA.x,g.y-pA.y)>300;})());
   // ---- ideal spots ----
-  const LM=w.stkLayer(S.id,'sys:MAINS');w.__state.activeLayer=LM.id;
+  const LM=w.stkLayer(S.id,'sys:LIGHT');w.__state.activeLayer=LM.id;   // M1: lamps + switches carry the point hints (sockets get bands)
   const im=w.idealSpots(LM,lvl);
-  ok('MAINS has ideal spots, every one an endpoint spot of a MAINS code',im.length>0&&im.every(s=>s.kind==='ep'&&w.epEntry(s.code,'sys:MAINS')),im.length);
+  ok('Világítás has ideal spots, every one an endpoint spot of an Erősáram code',im.length>0&&im.every(s=>s.kind==='ep'&&w.epEntry(s.code,'sys:MAINS')),im.length);
   ok('a layer can hide its spots (✦ off) and they are only drawn for the active layer',w.idealShown(LM)&&!w.idealShown(w.stkLayer(S.id,'sys:HMI'))&&(function(){LM.ideal=false;const a=w.idealShown(LM);LM.ideal=true;return !a;})());
   ok('the overlay draws them dashed',w.idealSvg().indexOf('class="ideal"')>=0);
   ok('placing an ideal spot takes it off the list',(function(){const s=im[0],n=w.idealSpots(LM,lvl).length;const d=w.idealPlace(s);return d&&d.code===s.code&&w.idealSpots(LM,lvl).length===n-1;})());

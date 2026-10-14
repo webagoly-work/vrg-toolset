@@ -31,19 +31,19 @@ const NEED_KINDS=[
  {k:'egyeb',    n:'Egyéb',     re:/.*/}];
 // kind → role → codes. The kind's entry REPLACES '*' for that role ([] = nothing ticked).
 const NEED_DEFAULTS={
- '*':        {'sys:MAINS':['LMP','SWI','SOC'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread'],'sys:MEDIA':['SPK']},
- eloszoba:   {'sys:BUSB':['LMP'],'sys:HMI':['PAN'],'sys:DATA':['CAM'],'sys:SECURITY':['SEC'],'sys:MEDIA':[]},
- konyha:     {'sys:MAINS':['LMP','SWI','SOC','DED'],'sys:LV':['LNR'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread','uwb']},
+ '*':        {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread'],'sys:MEDIA':['SPK']},
+ eloszoba:   {'sys:BUSB':['LMP'],'sys:HMI':['PAN'],'sys:DATA':['CAM'],'sys:SECURITY':['DWC','KPD','SRN','MOT'],'sys:MEDIA':[]},   // S5: replaces ['SEC']
+ konyha:     {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:LV':['LNR'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['SMK']},   // SMK 'heat' suggested here
  etkezo:     {'sys:RF':['wifi','thread','uwb']},
- nappali:    {'sys:LV':['LNR','UEP'],'sys:DATA':['ETH','ACP'],'sys:HMI':['PAN','THR'],'sys:MEDIA':['SPK','SCR','AVP'],'sys:USB':['USB'],'sys:RF':['wifi','thread','uwb']},
- halo:       {'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:HMI':['THR']},
+ nappali:    {'sys:LV':['LNR','UEP'],'sys:DATA':['ETH','ACP'],'sys:HMI':['PAN','THR'],'sys:MEDIA':['SPK','SCR','AVP'],'sys:USB':['USB'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['MOT']},
+ halo:       {'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:HMI':['THR'],'sys:SECURITY':['SMK']},
  dolgozo:    {'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:USB':['USB']},
  furdo:      {'sys:LV':['LNR'],'sys:HMI':['THR']},
- wc:         {'sys:MAINS':['LMP','SWI'],'sys:MEDIA':[]},
- kamra:      {'sys:MAINS':['LMP','SWI'],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[]},
- kozlekedo:  {'sys:MAINS':['LMP','SWI'],'sys:BUSB':['LMP','NTL'],'sys:MEDIA':[]},
- kulter:     {'sys:MAINS':['LMP','SOC'],'sys:DATA':['CAM'],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[]},
- gepeszet:   {'sys:MAINS':['LMP','SWI','SOC','DED'],'sys:SENSOR':['SEN'],'sys:MEDIA':[]},
+ wc:         {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:MEDIA':[]},
+ kamra:      {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[]},
+ kozlekedo:  {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:BUSB':['LMP','NTL'],'sys:MEDIA':[],'sys:SECURITY':['SMK','MOT']},
+ kulter:     {'sys:LIGHT':['LMP'],'sys:SOC':['SOC'],'sys:DATA':['CAM'],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[],'sys:SECURITY':['SRN','MOT']},
+ gepeszet:   {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:SENSOR':['SEN'],'sys:MEDIA':[],'sys:SECURITY':['SMK','COA']},
  egyeb:      {}};
 const NEED_STATUS={off:{n:'ki',c:'#9aa0a6'},empty:{n:'nincs igény',c:'#9aa0a6'},open:{n:'hiányos',c:'#d08a1e'},done:{n:'kész',c:'#2e9e5b'}};
 
@@ -60,15 +60,21 @@ function needTagged(list,tags){return list.some(o=>{const t=mrkOpeningTags(o.id)
 function needDerived(rm){const e=needRoomEntry(rm),rid=e&&stkRoomId(e),out={};if(!rid||typeof mrkOpeningTags!=='function')return out;
   const add=(role,code)=>{(out[role]=out[role]||[]);if(out[role].indexOf(code)<0)out[role].push(code);};
   const wins=needOpenings(rid,'window'),doors=needOpenings(rid,'door'),all=needOpenings(rid);
-  if(needTagged(wins,['redony','arnyekolo']))add('sys:MAINS','SHU');
+  if(needTagged(wins,['redony','arnyekolo']))add('sys:LIGHT','SHU');
   if(needTagged(doors,['portal','bejarat','lepcso']))add('sys:BUSB','NTL');
   if(needTagged(doors,['p2','p3'])){add('sys:CONTROL','POR');add('sys:SENSOR','POR');}
-  if(needTagged(all,['kulso','bejarat','nyitaserz','vedett']))add('sys:SECURITY','SEC');
+  // S5: the entrance gets contact + keypad + doorbell; every perimeter opening a contact; a protected window glass-break
+  if(needTagged(doors,['bejarat'])){add('sys:SECURITY','DWC');add('sys:SECURITY','KPD');add('sys:SECURITY','DBL');}
+  if(needTagged(all,['kulso','nyitaserz','vedett']))add('sys:SECURITY','DWC');
+  if(needTagged(wins,['vedett']))add('sys:SECURITY','GLB');
   if(typeof trcList==='function'&&trcList().some(t=>t.level===e.level&&(t.tags||[]).some(k=>k==='ejszakai'||k==='lepcso')&&
      (t.pts||[]).some(p=>pointInPoly(p[0],p[1],rm.poly))))add('sys:BUSB','LMP');
   return out;}
 // role → [codes] with the derived ones marked: {codes:[…], derived:[…]}
-function needDefaults(rm,role){const k=needKind(rm),base=NEED_DEFAULTS['*'][role]||[],own=(NEED_DEFAULTS[k]||{})[role];
+function needDefaults(rm,role){
+  if(role==='sys:MAINS'&&typeof MNS_ROLES!=='undefined'){const o={codes:[],derived:[]};   // M1 alias: lighting, sockets, dedicated
+    ['sys:LIGHT','sys:SOC','sys:DED'].forEach(r=>{const x=needDefaults(rm,r);x.codes.forEach(c=>{if(o.codes.indexOf(c)<0)o.codes.push(c);});x.derived.forEach(c=>o.derived.push(c));});return o;}
+  const k=needKind(rm),base=NEED_DEFAULTS['*'][role]||[],own=(NEED_DEFAULTS[k]||{})[role];
   const codes=(own!==undefined?own:base).slice(),derived=(needDerived(rm)[role]||[]).filter(c=>codes.indexOf(c)<0);
   return {codes:codes.concat(derived),derived};}
 // {code:true} — the saved checklist of that layer, else the defaults
@@ -159,7 +165,7 @@ function needReport(stackId){const S=stackId?stkById(stackId):stkActive();if(!S)
 const SUG_RULES=[
  {code:'SWI', anchor:'doorHandle',  h:1100, off:150, n:'Kilincs felőli oldal, 150 mm-re a toktól'},
  {code:'SOC', anchor:'hband',       h:300,  n:'Dugaljsáv a + jelölt oldalakon, L-forma előnyben'},
- {code:'LMP', role:'sys:MAINS', anchor:'roomCentre', n:'Mennyezet közepe / lámpasor sáv'},
+ {code:'LMP', role:'sys:LIGHT', anchor:'roomCentre', n:'Mennyezet közepe / lámpasor sáv'},
  {code:'SEN', anchor:'farCorner',   h:2200, n:'Az ajtóval átlós sarok'},
  {code:'POR', anchor:'doorLintel',  h:2150, n:'Ajtó szemöldök fölött (ToF pár)'},
  {code:'NTL', anchor:'doorFlank',   h:1150, off:200, n:'Minden portál mellett'},
@@ -170,6 +176,13 @@ const SUG_RULES=[
  {code:'ACP', anchor:'coverageGap', n:'Mennyezet, a WiFi lefedettség hiányának közepe'},
  {code:'LNR', role:'sys:LV', anchor:'hstripTag', tag:'cove', n:'Mennyezet alatti sáv'},
  {code:'LMP', role:'sys:BUSB', anchor:'traceTag', tag:'ejszakai', h:300, n:'Éjszakai útvonal mentén, lábfény magasság'},
+ // S5 — security (Home Assistant / ESPHome). DWC on the frame top, latch side; KPD inside the entrance next to the panel;
+ // MOT in the corner that sees the most doors; SRN: indoors high and visible, outdoors above the entrance at 2800.
+ {code:'DWC', anchor:'openingLatch', h:2050, off:120, n:'Tok teteje, a kilincs felőli oldalon'},
+ {code:'KPD', anchor:'doorHandle',  h:1450, off:600, n:'Bejárat mellett, kilincs felől (a panel mellett)'},
+ {code:'MOT', anchor:'doorCorner',  h:2200, n:'A legtöbb ajtót belátó sarok'},
+ {code:'SRN', anchor:'farCorner',   h:2300, n:'Beltéri sziréna: magas, jól hallható pont'},
+ {code:'SRN', anchor:'entryOuter',  h:2800, off:400, n:'Kültéri sziréna: a bejárat fölött, kívül, elérhetetlen magasságban'},
  {code:'*',   anchor:'avoid',       n:'Tilos / kerülendő jelölés'}];
 
 // geometry helpers -------------------------------------------------------------------------------------------------------------------
@@ -191,7 +204,7 @@ function sugCeil(e,x,y){return epCeilH(e.level,x,y);}
 
 // anchors → hints [{kind:'pt'|'band'|'strip'|'cover', …, why}] -------------------------------------------------------------------------
 const SUG_ANCHORS={
- doorHandle(R,e,rid){const out=[];needOpenings(rid,'door').forEach(o=>{if(R.code==='PAN'&&mrkOpeningTags(o.id).indexOf('bejarat')<0)return;
+ doorHandle(R,e,rid){const out=[];needOpenings(rid,'door').forEach(o=>{if((R.code==='PAN'||R.code==='KPD')&&mrkOpeningTags(o.id).indexOf('bejarat')<0)return;
    const D=sugDoor(o,rid),p=sugDoorPt(D,D.hd*(D.w+R.off),R.h,R.n);if(p)out.push(p);});return out;},
  doorFlank(R,e,rid){const out=[];needOpenings(rid,'door').forEach(o=>{const t=mrkOpeningTags(o.id);if(!['portal','bejarat','lepcso'].some(k=>t.indexOf(k)>=0))return;
    const D=sugDoor(o,rid),p=sugDoorPt(D,D.hd*(D.w+R.off),R.h,R.n);if(p)out.push(p);});return out;},
@@ -248,6 +261,26 @@ const SUG_ANCHORS={
        if(!best)return;const wi=wallInfo(best.r),u=mrkU(best.r,q.x,q.y),off=(q.x-wi.seg[0][0])*wi.perp[0]+(q.y-wi.seg[0][1])*wi.perp[1],side=off>=0?1:-1,p=mrkFacePt(best.r,side,u,-wi.thick/2);
        out.push({kind:'pt',x:Math.round(p[0]),y:Math.round(p[1]),h:R.h,level:e.level,wall:best.r.id,side,mount:'wall',why:R.n});});});
    return out;},
+ // S5: the latch-side top corner of every perimeter opening (doors at the frame top, windows above the head)
+ openingLatch(R,e,rid){const out=[];needOpenings(rid).forEach(o=>{const t=mrkOpeningTags(o.id);
+   if(!['kulso','bejarat','nyitaserz','vedett'].some(k=>t.indexOf(k)>=0))return;
+   const D=sugDoor(o,rid),h=o.type==='window'?((o.sill!=null?o.sill:WIN_SILL)+(o.h||WIN_H)+50):R.h,p=sugDoorPt(D,D.hd*Math.max(0,D.w-R.off),h,R.n);if(p)out.push(p);});return out;},
+ // S5: the convex room corner whose view (the quadrant between its two walls) holds the most door centres
+ doorCorner(R,e,rid){const P=e.rm.poly,ds=needOpenings(rid,'door');if(P.length<3)return [];let best=null;
+   P.forEach((v,i)=>{const a=P[(i+P.length-1)%P.length],b=P[(i+1)%P.length],ua=[a[0]-v[0],a[1]-v[1]],ub=[b[0]-v[0],b[1]-v[1]];
+     const la=Math.hypot(ua[0],ua[1])||1,lb=Math.hypot(ub[0],ub[1])||1,na=[ua[0]/la,ua[1]/la],nb=[ub[0]/lb,ub[1]/lb];
+     let bx=na[0]+nb[0],by=na[1]+nb[1];const bl=Math.hypot(bx,by);if(bl<1e-6)return;bx/=bl;by/=bl;
+     const q=[v[0]+bx*150,v[1]+by*150];if(!pointInPoly(q[0],q[1],P))return;            // a reflex corner looks into the wall
+     const seen=ds.filter(o=>{const dx=o.x-v[0],dy=o.y-v[1];return dx*na[0]+dy*na[1]>=0&&dx*nb[0]+dy*nb[1]>=0;}).length;
+     const far=ds.length?Math.min.apply(null,ds.map(o=>Math.hypot(o.x-v[0],o.y-v[1]))):0;
+     if(!best||seen>best.seen||(seen===best.seen&&far>best.far))best={q,seen,far};});
+   if(!best)return [];const r=sugHostWall(e.level,best.q[0],best.q[1]),wi=r?wallInfo(r):null;
+   const side=wi?(((best.q[0]-(r.x0+r.x1)/2)*wi.perp[0]+(best.q[1]-(r.y0+r.y1)/2)*wi.perp[1])>=0?1:-1):1;
+   return [{kind:'pt',x:Math.round(best.q[0]),y:Math.round(best.q[1]),h:Math.min(R.h,sugCeil(e,best.q[0],best.q[1])),level:e.level,
+     wall:r?r.id:null,side,mount:'wall',why:R.n+(ds.length?' ('+best.seen+'/'+ds.length+' ajtó)':'')}];},
+ // S5: above the entrance, on the OUTER face, hinge side — out of reach
+ entryOuter(R,e,rid){const out=[];needOpenings(rid,'door').forEach(o=>{if(mrkOpeningTags(o.id).indexOf('bejarat')<0)return;
+   const D=sugDoor(o,rid),p=sugDoorPt(D,-D.hd*(D.w+R.off),R.h,R.n);if(p){p.side=-p.side;out.push(p);}});return out;},
  avoid(R,e,rid){const out=[];if(typeof mrkList!=='function')return out;
    sugFaces(e).forEach(f=>{mrkAt(e.level,f.r.id,f.side,null,null).forEach(x=>{if(x.pol!=='ban'&&x.pol!=='minus')return;
      if(x.kind==='wall'||x.kind==='side')out.push({kind:'cover',level:e.level,wall:f.r.id,side:f.side,u0:f.u0,u1:f.u1,pol:x.pol,why:(x.tags||[]).join(', ')});

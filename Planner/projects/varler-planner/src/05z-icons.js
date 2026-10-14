@@ -65,6 +65,18 @@ const ICO_MARK={
  avp:     {d:'M-3.2 -2.2 H3.2 V2.2 H-3.2 Z M-0.8 -0.9 L1.2 0 L-0.8 0.9 Z'},
  usb:     {d:'M0 3.2 V-3.2 M0 -0.9 L-2.1 0.9 M0 -0.9 L2.1 0.9 M-0.7 3.2 A0.7 0.7 0 1 0 0.7 3.2 A0.7 0.7 0 1 0 -0.7 3.2 M-2.1 0.9 V2 M2.1 0.9 L2.1 2'},
  shield:  {d:'M0 -3.3 L2.9 -1.9 V0.7 C2.9 2.5 0 3.4 0 3.4 C0 3.4 -2.9 2.5 -2.9 0.7 V-1.9 Z'},
+ // S5 — security marks on the shared body: MOT a fan of rays · DWC reed + magnet bars · GLB a cracked pane · SRN a horn ·
+ // KPD a 3×3 grid · PNC "!" · LCK a padlock · SMK a ring with three dots · COA "CO" · DBL a bell
+ motion:  {d:'M-3 2.8 L3.4 -1.2 M-3 2.8 L2 -3.2 M-3 2.8 L3.6 1.6 M-3 2.8 m-0.6 0 a0.6 0.6 0 1 0 1.2 0 a0.6 0.6 0 1 0 -1.2 0'},
+ contact: {d:'M-2.9 -3 H-0.9 V3 H-2.9 Z M0.9 -3 H2.9 V3 H0.9 Z'},
+ glass:   {d:'M-3 -3 H3 V3 H-3 Z M-0.4 -3 L0.6 -0.8 L-0.7 0.7 L0.5 3'},
+ siren:   {d:'M-3.2 -1 H-1.2 L2.2 -3 V3 L-1.2 1 H-3.2 Z M3.3 -2.2 V2.2'},
+ keypad:  {d:'M-2.2 -2.2 h0.01 M0 -2.2 h0.01 M2.2 -2.2 h0.01 M-2.2 0 h0.01 M0 0 h0.01 M2.2 0 h0.01 M-2.2 2.2 h0.01 M0 2.2 h0.01 M2.2 2.2 h0.01'},
+ panic:   {d:'M0 -3.2 V1 M0 2.6 V2.7'},
+ lock:    {d:'M-2.5 -0.3 H2.5 V3.1 H-2.5 Z M-1.5 -0.3 V-1.7 A1.5 1.5 0 0 1 1.5 -1.7 V-0.3 M0 1 V1.9'},
+ smoke:   {d:'M-3 0 A3 3 0 1 0 3 0 A3 3 0 1 0 -3 0 M-1.3 0 h0.01 M0 0 h0.01 M1.3 0 h0.01'},
+ coalarm: {d:'M-0.7 -1.4 A1.7 1.7 0 1 0 -0.7 1.4 M0.4 0 A1.35 1.35 0 1 0 3.1 0 A1.35 1.35 0 1 0 0.4 0'},
+ bell:    {d:'M-2.5 1.6 C-2.5 -3.4 2.5 -3.4 2.5 1.6 Z M-3.2 1.6 H3.2 M-0.7 2.4 A0.7 0.7 0 0 0 0.7 2.4'},
  junction:{d:'M-3.8 0 H-1.5 M1.5 0 H3.8 M0 -3.8 V-1.5 M0 1.5 V3.8 M-1 0 A1 1 0 1 0 1 0 A1 1 0 1 0 -1 0',f:0},
  rbx:     {d:'M-2.8 -3.2 H2.8 V3.2 H-2.8 Z M1.1 -3.2 V3.2 M-0.2 0 H0.4'},
  base:    {d:'M-3.2 -2.6 H3.2 M-3.2 0 H3.2 M-3.2 2.6 H3.2 M-3.2 -3.4 V3.4 M3.2 -3.4 V3.4'},
@@ -77,11 +89,12 @@ const ICO_MARK={
 // MAINS lamp and a BUSB escape light); the colour separates them, the mark stays the same thing.
 const ICO_BY_CODE={LMP:'light',SWI:'switch',SOC:'socket',DED:'dedicat',SHU:'shutter',LNR:'ledline',
  UEP:'uep',NTL:'notify',POR:'portal',ACP:'wifi',ETH:'eth',CAM:'cam',ACT:'knx',SEN:'sensor',
- PAN:'panel',THR:'thermo',SPK:'speaker',SCR:'screen',AVP:'avp',USB:'usb',SEC:'shield'};
+ PAN:'panel',THR:'thermo',SPK:'speaker',SCR:'screen',AVP:'avp',USB:'usb',SEC:'shield',
+ MOT:'motion',DWC:'contact',GLB:'glass',SRN:'siren',KPD:'keypad',PNC:'panic',LCK:'lock',SMK:'smoke',COA:'coalarm',DBL:'bell'};   // S5
 const ICO_BY_TYPE={socket:'socket',switch:'switch',light:'light',junction:'junction',box:'generic',
  board:'board',rbx:'rbx',base:'base',meter:'meter',entry:'entry',ssc:'shield'};
 // which codes live on the plane above rather than on a wall — they get the round ceiling body
-const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK'];
+const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK','SMK'];
 
 // ---- what a device is --------------------------------------------------------------------------
 function icoHw(d){return !!(d&&typeof HW_TYPES!=='undefined'&&HW_TYPES[d.type]);}
@@ -114,7 +127,7 @@ function icoSizeOf(d,fam){
 // its devices can never disagree.
 function icoRoleCol(d){
   if(typeof epRoleOf==='function'){const r=epRoleOf(d);
-    if(r&&typeof stkRoleCol==='function'){const c=stkRoleCol(r);if(c)return c;}}
+    if(r&&typeof stkRoleCol==='function'){const c=stkRoleCol(r,typeof epCodeOf==='function'?epCodeOf(d):null);if(c)return c;}}
   if(icoHw(d)&&typeof stkRoleCol==='function'){
     const role=(typeof HW_DEF!=='undefined'&&HW_DEF[d.type]||{}).role||'hw';
     const c=stkRoleCol(role);if(c)return c;}
@@ -174,8 +187,10 @@ function icoSym(d,x,y,k,back){
   const fill=back?(dark?'#121a23':'#f2f4f6')
     :dark?'#0e141b':(paint?tintMix(paint,0.45):icoMix(base,0.14));
   // an empty szerelvénydoboz is drawn open: there is nothing in it yet
+  const pp=(!back&&d.type!=='box'&&typeof prnActive==='function'&&prnActive()&&typeof stkPrintOf==='function')?stkPrintOf(typeof epRoleOf==='function'?epRoleOf(d):null,typeof epCodeOf==='function'?epCodeOf(d):null):null;
   const dash=back?` stroke-dasharray="${vsDash('2.5 2')}"`
-    :(d.type==='box'?` stroke-dasharray="${vsDash('3 2')}"`:'');
+    :(d.type==='box'?` stroke-dasharray="${vsDash('3 2')}"`
+    :(pp&&STK_PRINT_DASH[pp.p]?` stroke-dasharray="${vsDash(STK_PRINT_DASH[pp.p])}"`:''));   // M1: the print pattern
   let s='',r;
   if(icoMmMode()&&size.mm){                                    // real millimetres, on the wall
     const z=dz(d.level,d.h||0),pts=icoFoot(d,size.mm,size.round,z);

@@ -227,6 +227,7 @@ function applyProjectData(o){ // o = a sessionObj payload
   data.noteHide=(o.data&&o.data.noteHide)?JSON.parse(JSON.stringify(o.data.noteHide)):{};
   data.seq=(o.data&&+o.data.seq)||0;data.v=(o.data&&+o.data.v)||0;
   migrate(data);                                        // an older file still opens
+  if(typeof stkMigrateRoles==='function')stkMigrateRoles();   // M1: one Erősáram layer → three
   selected=null;undo.length=0;redo.length=0;
   draft=null;pathDraft=null;measureDraft=null;cursor=null;dragItem=null;objGhost=null;buildGhost=null;
   if(typeof WV!=='undefined'&&WV){if(WV.keyFn)document.removeEventListener('keydown',WV.keyFn,true);WV=null;}
@@ -306,7 +307,7 @@ function restoreSession(){try{const raw=localStorage.getItem(LS_KEY);if(!raw)ret
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.refB)refB=o.refB;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);
   data.noteHide=(o.data&&o.data.noteHide)||{};data.seq=(o.data&&+o.data.seq)||0;data.v=(o.data&&+o.data.v)||0;
-  migrate(data);
+  migrate(data);if(typeof stkMigrateRoles==='function')stkMigrateRoles();
   syncUI();renderLayers();renderRefList();if(typeof renderDashboard==='function')renderDashboard();draw();
   $('hud').textContent='Munkamenet visszaállítva.'+idRepairNote();return true;}catch(_){return false;}}
 $('bNew').onclick=()=>{if(!confirm('Üres munkaterület? A nem mentett változások elvesznek.'))return;newBlankProject();};

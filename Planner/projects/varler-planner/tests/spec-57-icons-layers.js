@@ -81,8 +81,8 @@ setTimeout(()=>{
     const v=w.STK_ROLES.map(r=>w.stkRoleCol(r.k));return new Set(v).size===v.length;})());
   ok('a stack layer takes its role colour, not its position',(function(){
     const S=w.stkCreate({name:'Teszt'});
-    const a=w.stkLayer(S.id,'sys:MAINS'),b=w.stkLayer(S.id,'sys:DATA');
-    const good=w.lyrColor(a)===w.STK_COL['sys:MAINS']&&w.lyrColor(b)===w.STK_COL['sys:DATA'];
+    const a=w.stkLayer(S.id,'sys:SOC'),b=w.stkLayer(S.id,'sys:DATA');
+    const good=w.lyrColor(a)===w.STK_COL['sys:SOC']&&w.lyrColor(b)===w.STK_COL['sys:DATA'];
     w.stkDissolve(S.id);return good;})());
   ok('an ordinary layer still gets a colour of its own',/^#[0-9a-f]{6}$/i.test(w.lyrColor(w.lyrLayer('L0'))));
   ok('a hand-picked tint beats the automatic colour',(function(){

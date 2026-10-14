@@ -27,7 +27,7 @@ setTimeout(()=>{
   w.ensureIds(D());w.eval('for(const l of ORD)SNAP[l]=centerlines(WALLS[l]);');
   const [E,N,K]=D().floors.map(f=>f.id),[d1,d2,dIn,win]=D().openings;
   const S=w.stkCreate({name:'E2E'}),L=r=>w.stkLayer(S.id,r).id;
-  ok('1 · the stack has its 19 layers and the construct checks pass',S.layers.length===19&&!w.stkCheck(S,'construct').some(c=>c.sev==='error'));
+  ok('1 · the stack has its 21 layers and the construct checks pass',S.layers.length===21&&!w.stkCheck(S,'construct').some(c=>c.sev==='error'));
   // ---- marking ----
   const M=o=>{w.mrkList().push(Object.assign({level:lvl,layer:L('mark'),pol:'none',tags:[]},o));w.ensureIds(D());};
   M({kind:'opening',op:dIn.id,tags:['bejarat','portal','p3']});M({kind:'opening',op:d1.id,tags:['portal','p2']});M({kind:'opening',op:win.id,tags:['redony']});
@@ -52,11 +52,11 @@ setTimeout(()=>{
   ok('3 · a single bus-B pair in its M20 is NOT an overfill (1.4 × OD rule)',!w.stkCheck(S,'channel').some(c=>c.msg.indexOf('C4b túltelítve (RBX01~RBX03)')>=0));
   ok('3 · the BASE guideline rules: no errors',!w.hwBaseRules(base).some(r=>!r.ok&&r.sev==='error'),J(w.hwBaseRules(base).filter(r=>!r.ok)));
   // ---- endpoints, needs ----
-  const put=(code,role,x,y,side)=>{const en=w.epEntry(code,role);return w.epPlace({level:lvl,x,y,h:en.h||2700,mount:en.mount,side:en.mount==='wall'?(side==null?1:side):undefined},code,role);};
+  const put=(code,role,x,y,side)=>{role=(role==='sys:MAINS')?w.mnsRoleOf(code):role;const en=w.epEntry(code,role);return w.epPlace({level:lvl,x,y,h:en.h||2700,mount:en.mount,side:en.mount==='wall'?(side==null?1:side):undefined},code,role);};
   const lN=put('LMP','sys:MAINS',6000,2000),swN=put('SWI','sys:MAINS',4000,2600,1),sN1=put('SOC','sys:MAINS',6000,4000,0),sN2=put('SOC','sys:MAINS',7000,4000,0);
   const shu=put('SHU','sys:MAINS',6000,0,1),sen=put('SEN','sys:SENSOR',5000,3500),lK=put('LMP','sys:MAINS',10000,2000),oven=put('DED','sys:MAINS',12000,1000,0);
   w.epCtlPick(swN);w.epCtlToggle(lN);w.eval('EP_CTL=null');
-  ok('4 · the living room MAINS layer is done (LMP SWI SOC + derived SHU)',w.needStatus(D().floors[1],'sys:MAINS')==='done');
+  ok('4 · the living room Erősáram is done (Világítás LMP SWI + derived SHU · Dugaljak SOC)',w.needStatus(D().floors[1],'sys:LIGHT')==='done'&&w.needStatus(D().floors[1],'sys:SOC')==='done');
   // ---- ARM routes, fill, channel fill, cabinet ----
   const arm=pts=>route('armToolStart',pts);
   arm([at(rA),P(4300,600),P(4300,2000),at(lN)]);arm([P(4300,2000),at(swN)]);arm([P(4300,2000),P(5500,3700),at(sN1)]);arm([at(sN1),at(sN2)]);

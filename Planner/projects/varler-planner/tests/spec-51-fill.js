@@ -29,7 +29,7 @@ setTimeout(()=>{
   w.ensureIds(D());w.eval('for(const l of ORD)SNAP[l]=centerlines(WALLS[l]);');
   const K=D().floors[0].id,S=w.stkCreate({name:'F'});
   const rbx=w.hwPlace(w.hwGhostAt('rbx',lvl,100,2000)),board=w.hwPlace(w.hwGhostAt('board',lvl,500,3900));
-  const put=(code,role,x,y,side,v)=>{const en=w.epEntry(code,role);return w.epPlace({level:lvl,x,y,h:en.h||2700,mount:en.mount,side:en.mount==='wall'?(side==null?1:side):undefined},code,role,v);};
+  const put=(code,role,x,y,side,v)=>{role=(role==='sys:MAINS')?w.mnsRoleOf(code):role;const en=w.epEntry(code,role);return w.epPlace({level:lvl,x,y,h:en.h||2700,mount:en.mount,side:en.mount==='wall'?(side==null?1:side):undefined},code,role,v);};
   const soc1=put('SOC','sys:MAINS',2000,0,1),soc2=put('SOC','sys:MAINS',3000,0,1),sen=put('SEN','sys:SENSOR',4000,2000),eth=put('ETH','sys:DATA',0,1000,1,'2'),ded=put('DED','sys:MAINS',6000,2000,0);
   const at=(d,h)=>({level:lvl,x:d.x,y:d.y,h:h||2600,dev:d.id}),P=(x,y)=>({level:lvl,x,y,h:2600});
   const drawArm=pts=>{w.armToolStart();pts.forEach(p=>w.eval('pathAddNode('+J(p)+')'));w.eval('finishPath()');return D().paths[D().paths.length-1];};

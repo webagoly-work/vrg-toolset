@@ -439,6 +439,7 @@ function lyrLayerMenu(e,id){const L=lyrLayer(id);if(!L)return;const i=layers.ind
   if(L.link){items.push({label:'Csatolt rétegek egyesítése',act:()=>lyrMergeLinked(id)});items.push({label:'Csatolás bontása',act:()=>lyrUnlink(id)});}
   if(layers.length>1)items.push({label:'Csatolás…',act:()=>lyrLinkDialog(id)});
   items.push({label:L.lock?'Zárolás feloldása':'Zárolás',act:()=>lyrToggleLock(id)});
+  if(L.stack&&L.role&&typeof stkLayerMenu==='function'){items.push({label:'—',act:()=>{}});stkLayerMenu(L,items);}   // S1
   ctxMenu(e,items);}
 registerActions([
  {id:'layer.duplicate',alias:'reteg masolas duplicate layer copy',label:'Réteg másolása…',icon:'⧉',group:'Réteg',
