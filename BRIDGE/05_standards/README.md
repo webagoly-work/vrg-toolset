@@ -28,6 +28,7 @@ the control-authority model — bistable memory element, manual-first, ζ/η fam
 |---|---|---|
 | **STD-001** | [Physical Standardisation](BRIDGE-STD-001_Physical-Standardisation.md) | RoomBox internal layout on an 18 mm module with a row-pitch rule · uniform 110 mm depth · zone order · CHANNEL bundle and construction · ARM composition per room class · the Edge RoomBox · the per-room buildup sequence · reserved AV and bed-sensor envelopes |
 | **— A1** | [Passive Thermal Design](BRIDGE-STD-001-A1_Passive-Thermal-Design.md) | why a chimney above the box cannot work, what free area is actually needed, and where empty pipes genuinely help |
+| **— A2** | [Layer Wiring Reference](BRIDGE-STD-001-A2_Layer-Wiring-Reference.md) | every layer in buildup order: cable per need, the wireway each cable needs on its own, typical conduit and cable diameters, and which layers may share a route — never a conduit |
 | **STD-002** | [Light and Scene](BRIDGE-STD-002_Light-and-Scene.md) | the five light layers · perceptual dimming · IEEE 1789 flicker · colour, Duv and tunable white · the 24 V convenience/assured buses · the scene model · 17 integrated lighting types |
 | **STD-003** | [Presence and Identity](BRIDGE-STD-003_Presence-and-Identity.md) | the portal graph · log-odds sensor fusion with weights and decay · Trinity identity and its tiers · audio that follows |
 | **STD-004** | [Naming and Control Backbone](BRIDGE-STD-004_Naming-and-Control-Backbone.md) | the reference scheme · address, VLAN and IP allocation · BRIDGE_LINK as a real protocol · the centralise/distribute rule |
@@ -35,6 +36,7 @@ the control-authority model — bistable memory element, manual-first, ζ/η fam
 | **STD-006** | [Arbitration, Failure and Security](BRIDGE-STD-006_Arbitration-Failure-Security.md) | the eight-tier precedence ladder · per-domain hold-off · the failure-mode matrix · the third-party alarm boundary |
 | **STD-007** | [Media and Audio](BRIDGE-STD-007_Media-and-Audio.md) | the two audio paths and why one cannot serve both · amplifier and speaker engineering · TOSLINK against eARC · video distribution · the USB layer · the MEDIA pack |
 | **STD-008** | [Notification Lights](BRIDGE-STD-008_Notification-Lights.md) | a universal visual output layer: four RGBW pixels in a flush box · the signalling alphabet · stationary, transit and node placement · ESP-NOW · and the egress wayfinding it gives for free |
+| **STD-009** | [Shading and Passive Climate](BRIDGE-STD-009_Shading-and-Passive-Climate.md) | shutters as climate equipment: GAIN / NEUTRAL / SHADE by the room’s thermal need · pre-emptive shading by façade · occupancy limits · wind, frost and duty · floor-heating anticipation · P33’s split-row R06 glazing and the void |
 
 ---
 

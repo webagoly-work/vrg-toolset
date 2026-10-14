@@ -297,7 +297,7 @@ partitions are thin — which is what put RBX03 + BASE in a joinery build-out.
    ├── 02_bridge-dn/      the built 48-module cabinet · buildup PDFs
    ├── 03_omnicomm-hub/   CM5 hardware line · KiCad · datasheets
    ├── 04_related-hardware/  VRG line · ESP32 sensor list · presence building blocks
-   ├── 05_standards/      STD-001…008 + A1 thermal annex + README index
+   ├── 05_standards/      STD-001…009 + A1 thermal + A2 wiring annexes + README index
    ├── 06_reference-images/  17 lighting type folders, awaiting photographs
    ├── 07_P33/            ** LOCAL ONLY, NOT IN GIT ** — client property. Blueprints, the
    │                      electrical plan, the room survey. The design knowledge is in
