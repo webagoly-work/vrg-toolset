@@ -80,7 +80,7 @@ function drawAlaprajzGeom(){const level=state.active,z=dz(level,0),c=apCut();
   // rooms and floors: white
   (ROOMSB[level]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level}))return;
     s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],z]))}" fill="#fff" stroke="none"/>`;});
-  data.floors.forEach((fl,i)=>{if(fl.level!==level||!fl.poly||fl.poly.length<3)return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level}))return;
+  data.floors.forEach((fl,i)=>{if(fl.level!==level||!fl.poly||fl.poly.length<3||fl.stage==='outline')return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level}))return;
     s+=`<polygon points="${p2b(fl.poly.map(p=>[p[0],p[1],z]))}" fill="#fff" stroke="none"/>`;});
   // objects, under the walls
   data.objects.forEach(o=>{if(o.level!==level||!layerShows(o,'object'))return;if(isGenObject(o)&&!genObjectsVisible())return;

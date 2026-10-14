@@ -137,6 +137,7 @@ function migrate(d){if(!d||typeof d!=='object')return d;
     dv.links=Array.isArray(dv.links)?dv.links:[];
     if(!dv.links.some(x=>x.p===l.p&&x.n===l.n))dv.links.unshift({p:l.p,n:l.n,glue:true});});
   ensureIds(d);
+  if(typeof swNumMigrate==='function')swNumMigrate(d);   // HU switch codes corrected 2026-10-14 (02-state.js) — once per device
   d.v=SCHEMA_VERSION;
   return d;}
 

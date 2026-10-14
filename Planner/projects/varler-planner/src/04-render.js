@@ -103,7 +103,7 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0);
     if(SLAB[l])pushFloor(faces,SLAB[l],fz,'#dedcd3','#8f8a80',null,1);
     else (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;pushFloor(faces,rm.poly,fz,rm.fill,'#8f8a80',null,1);});
-    data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build'))return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;const n0=faces.length;pushFloor(faces,fl.poly,fz+(fl.z||0),fl.fill||'#e2ddd0','#8f8a80',null,1);lyrFaces(faces,n0,fl,'floor');});
+    data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build')||fl.stage==='outline')return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;const n0=faces.length;pushFloor(faces,fl.poly,fz+(fl.z||0),fl.fill||'#e2ddd0','#8f8a80',null,1);lyrFaces(faces,n0,fl,'floor');});
     if(GHOST[l])pushFloor(faces,GHOST[l],fz,'#000000','#8a857b','7 6',0.07);
     // álmennyezet: a translucent plane at its own height, per room where it applies
     if(state.showDropCeil!==false){
@@ -435,7 +435,7 @@ function drawBlueprintIso(){const faces=[];let s=bpDefs();
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0),H=wallH(l);
     if(SLAB[l])pushFloor(faces,SLAB[l],fz,'#fff','#111',null,1);
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;pushFloor(faces,rm.poly,fz,'#fff','#111',null,1);});
-    data.floors.forEach((fl,i)=>{if(fl.level!==l)return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;pushFloor(faces,fl.poly,fz+(fl.z||0),'#fff','#111',null,1);});
+    data.floors.forEach((fl,i)=>{if(fl.level!==l||fl.stage==='outline')return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;pushFloor(faces,fl.poly,fz+(fl.z||0),'#fff','#111',null,1);});
     // walls split by openings -> real 3D voids
     (WALLS[l]||[]).forEach(r=>{if(!layerShows(r,'wall')||!soloWallOk(r,l))return;
       const n0=faces.length;
@@ -638,7 +638,7 @@ function drawPreviewGeom(){
     if(SLAB[l])s+=`<polygon points="${p2b(SLAB[l].map(p=>[p[0],p[1],fz]))}" fill="${PREV.slab}" fill-opacity="0.55" stroke="${PREV.line}" stroke-opacity="0.40" stroke-width="${vsP(0.9)}"/>`;
     (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;
       s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],fz]))}" fill="${PREV.slab}" fill-opacity="0.45" stroke="${PREV.line}" stroke-opacity="0.24" stroke-width="${vsP(0.7)}"/>`;});
-    data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build'))return;
+    data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build')||fl.stage==='outline')return;
       if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;const s0=s.length;
       s+=`<polygon points="${p2b(fl.poly.map(p=>[p[0],p[1],fz+(fl.z||0)]))}" fill="${PREV.slab}" fill-opacity="0.5" stroke="${PREV.line}" stroke-opacity="0.30" stroke-width="${vsP(0.7)}"/>`;
       s=lyrWrapFrom(s,s0,fl,'floor');});

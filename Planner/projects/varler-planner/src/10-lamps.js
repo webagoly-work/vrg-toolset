@@ -244,7 +244,7 @@ function regateAll(){data.paths.forEach(pa=>{(pa.sections||[]).forEach((sec,si)=
       c.passing=!tapped; // passing = runs through uninterrupted (rendered lighter)
     });});});}
 function deviceLabel(dv){return (dv.ref||DEV[dv.type]||'')+(dv.type==='light'?' (lámpa)':dv.type==='socket'?' (aljzat)':'');}
-function editSwitchType(i){const D=data.devices[i];D.swType=D.swType||'101';D.swMap=D.swMap||{};
+function editSwitchType(i){const D=data.devices[i];D.swType=D.swType||'101';D.swNum=2;D.swMap=D.swMap||{};   // swNum:2 = the corrected HU codes (02-state)
   const rowsHtml=()=>{const t=switchType(D.swType);
     return t.terms.map(tm=>{
       const tgd=devByRef(D.swMap[tm.id]);const tdev=tgd?deviceLabel(tgd):null;

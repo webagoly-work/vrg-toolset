@@ -144,7 +144,7 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
       if(!last||Math.hypot(p[0]-last[0],p[1]-last[1])>=20)floorDraft.push(p);
       $('hud').textContent=floorDraftHud(null);draw();}}
   else if(state.mode==='roof'){const p=wallPointSnap(e);if(!roofStart)roofStart=p;else{addRoof(roofStart,p);roofStart=null;}draw();}
-  else if(state.mode==='build'){const w=snapWall(e,state.active,0);if(w){pushUndo();const o={type:state.buildType,level:state.active,x:w.x,y:w.y,ang:w.ang,variant:0,layer:curLayer()};if(state.buildType==='stairs')Object.assign(o,state.stairDef);data.openings.push(o);draw();}}
+  else if(state.mode==='build'){const w=snapWall(e,state.active,0);if(w){pushUndo();const o=Object.assign({type:state.buildType,level:state.active,x:w.x,y:w.y,ang:w.ang,variant:0,layer:curLayer()},typeof opnPickOf==='function'?opnPickOf(state.buildType):{});if(state.buildType==='stairs')Object.assign(o,state.stairDef);data.openings.push(o);draw();}}
   else if(state.mode==='note'){const p=snap(e,state.active);const t=prompt('Note:');if(t){pushUndo();data.notes.push({level:p.level,x:p.x,y:p.y,text:t,layer:curLayer()});}draw();}
   else if(state.mode==='measure'){const p=snap(e,state.active);if(!measureDraft)measureDraft=[{level:p.level,x:p.x,y:p.y}];
     else{measureDraft.push({level:p.level,x:p.x,y:p.y});pushUndo();data.measures.push(measureDraft);measureDraft=null;}draw();}});
@@ -262,7 +262,7 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
     state.hoverR=state.wallErase?wallHitRect(e):null;state.hoverL=state.active;drawSoon();}
   else if(state.mode==='object'){const p=objSnap(e);objGhost={level:p.level,x:p.x,y:p.y,z:p.z||0,gang:(p.ang!=null?p.ang:null),wall:p.wall};drawSoon();}
   else if(state.mode==='build'){const w=snapWall(e,state.active,0);
-    buildGhost=w?Object.assign({type:state.buildType,level:state.active,x:w.x,y:w.y,ang:w.ang,variant:0},
+    buildGhost=w?Object.assign({type:state.buildType,level:state.active,x:w.x,y:w.y,ang:w.ang,variant:0},typeof opnPickOf==='function'?opnPickOf(state.buildType):{},
       (state.buildType==='stairs'?(state.stairDef||{}):{})):null;
     cursor=w?{x:w.x,y:w.y,level:state.active,h:0}:null;drawSoon();}
   else if(state.mode==='select'&&!dragItem&&!gizDrag){/* hover only */}

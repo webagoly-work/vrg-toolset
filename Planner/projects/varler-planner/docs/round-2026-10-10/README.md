@@ -189,7 +189,7 @@ any golden render (they render the default, merge off).
 | S4 | Routes follow hardware | todo |
 | S5 | Security catalogue (HA / ESPHome) | built — 2026-10-13 — spec-71; tier select in the Info dialog + SSC right-click menu (not an inspector) |
 | M1 | Erősáram split + print palette | built — 2026-10-13 — spec-72; owed: print patterns on route strokes |
-| M2 | Circuit presets | todo |
+| M2 | Circuit presets | **built 2026-10-14** (uncommitted) — `src/08o-cpr.js` (not in 05j: STK_DEVMENU is declared in 05m, a TDZ), `data.eloPresets` via `11c-wf-keys.js`, spec-94 (36: tests 1–9 + mcbParse round-trip). Circuits link to their ROW (`presetRow`) as well as the key, so NV4's three klíma rows stay three circuits. Cabinet check: 05x never reads `data.circuits` → no double count. Catalogue `ev` / `napelem` use `NYM5x6` (NYM5x4 does not exist in 05w). Golden: the 6 `/session` captures re-baselined (+`"eloPresets":[]`). Room reminder lives in STK_CHECKS (`cpr.wait`); the 05t needs table line was not added. Browser-checked: dialog, B/C toggle |
 
 **Answers (2026-10-10, tuner, 23 / 24) — resolved into the WPs and MATERIAL:**
 

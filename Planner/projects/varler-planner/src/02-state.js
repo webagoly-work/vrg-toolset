@@ -58,18 +58,31 @@ function layerShows(item,cat){const L=layerById((item&&item.layer)||'L0');cat=ly
 const CIRC={lighting:{c:'#e6a800',dash:'',name:'Világítás'},sockets:{c:'#2f79c9',dash:'',name:'Dugalj'},
  power3:{c:'#d1493f',dash:'7 4',name:'3 fázis'},data:{c:'#16a085',dash:'2 4',name:'Adat'}};
 const DEV={socket:'Aljzat',switch:'Kapcsoló',light:'Lámpa',board:'Elosztószekrény',junction:'Kötődoboz',box:'Szerelvénydoboz'};
-// EU/HU kapcsolótípusok: each defines terminals. in[] = supply points, out[] = switched outputs (each routable to a Device)
+// HU kapcsolótípusok: each defines terminals. in[] = supply points, out[] = switched outputs (each routable to a Device)
+// ⚠ DO NOT CHANGE THESE NUMBERS. They are the Hungarian switch codes in current use, given by the user (2026-10-14) after
+// the SECOND time an assistant got them wrong. The code has GAPS — the numbers are not a 1, 2, 3 … list of kinds:
+//   100 impulzuskapcsoló · 101 egypólusú · 102 kétpólusú (+N) · 103 háromfázisú · 104 régi szabvány, nem használt ·
+//   105 CSILLÁR ("101+1") · 106 VÁLTÓ · 107 keresztkapcsoló · 108 dupla váltó ("106+6")
+// 105 is the csillár, NOT the váltó; 106 is the váltó, NOT a double. The shutter switch has no number here ('redony').
+// Until 2026-10-14 this table had 103 csillár / 104 nyomó / 105 váltó / 106 kettős váltó / 108 redőny — swNumMigrate()
+// maps a device saved with those keys once (marked swNum:2). See docs/workflow/01_MATERIAL.md §5.
 const SWITCH_TYPES=[
-  {k:'101',l:'101 – Egypólusú (egysarkú)',        terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'1',kind:'out',l:'kapcsolt kimenet'}]},
-  {k:'102',l:'102 – Kétpólusú',                   terms:[{id:'P1',kind:'in',l:'fázis 1'},{id:'P2',kind:'in',l:'fázis 2'},{id:'1',kind:'out',l:'kimenet 1'},{id:'2',kind:'out',l:'kimenet 2'}]},
-  {k:'103',l:'103 – Csillár (kétáramkörös)',      terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'1',kind:'out',l:'kimenet 1'},{id:'2',kind:'out',l:'kimenet 2'}]},
-  {k:'104',l:'104 – Nyomó (csengő)',              terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'1',kind:'out',l:'nyomó kimenet'}]},
-  {k:'105',l:'105 – Váltó (alternatív)',          terms:[{id:'L',kind:'in',l:'közös (érkező)'},{id:'a',kind:'out',l:'járat a'},{id:'b',kind:'out',l:'járat b'}]},
-  {k:'106',l:'106 – Kettős váltó',                terms:[{id:'L1',kind:'in',l:'közös 1'},{id:'a1',kind:'out',l:'1/a'},{id:'b1',kind:'out',l:'1/b'},{id:'L2',kind:'in',l:'közös 2'},{id:'a2',kind:'out',l:'2/a'},{id:'b2',kind:'out',l:'2/b'}]},
+  {k:'100',l:'100 – Impulzuskapcsoló (nyomó)',    terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'1',kind:'out',l:'nyomó kimenet'}]},
+  {k:'101',l:'101 – Egypólusú',                   terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'1',kind:'out',l:'kapcsolt kimenet'}]},
+  {k:'102',l:'102 – Kétpólusú (+N)',              terms:[{id:'P1',kind:'in',l:'fázis 1'},{id:'P2',kind:'in',l:'fázis 2'},{id:'1',kind:'out',l:'kimenet 1'},{id:'2',kind:'out',l:'kimenet 2'}]},
+  {k:'103',l:'103 – Háromfázisú',                 terms:[{id:'L1',kind:'in',l:'L1'},{id:'L2',kind:'in',l:'L2'},{id:'L3',kind:'in',l:'L3'},{id:'1',kind:'out',l:'L1 ki'},{id:'2',kind:'out',l:'L2 ki'},{id:'3',kind:'out',l:'L3 ki'}]},
+  {k:'105',l:'105 – Csillárkapcsoló (101+1)',     terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'1',kind:'out',l:'kimenet 1'},{id:'2',kind:'out',l:'kimenet 2'}]},
+  {k:'106',l:'106 – Váltókapcsoló',               terms:[{id:'L',kind:'in',l:'közös (érkező)'},{id:'a',kind:'out',l:'járat a'},{id:'b',kind:'out',l:'járat b'}]},
   {k:'107',l:'107 – Keresztkapcsoló',             terms:[{id:'1',kind:'in',l:'érkező 1'},{id:'2',kind:'in',l:'érkező 2'},{id:'3',kind:'out',l:'menő 1'},{id:'4',kind:'out',l:'menő 2'}]},
-  {k:'108',l:'108 – Redőny (fel/le)',             terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'up',kind:'out',l:'fel'},{id:'dn',kind:'out',l:'le'}]}
+  {k:'108',l:'108 – Dupla váltókapcsoló (106+6)', terms:[{id:'L1',kind:'in',l:'közös 1'},{id:'a1',kind:'out',l:'1/a'},{id:'b1',kind:'out',l:'1/b'},{id:'L2',kind:'in',l:'közös 2'},{id:'a2',kind:'out',l:'2/a'},{id:'b2',kind:'out',l:'2/b'}]},
+  {k:'redony',l:'Redőnykapcsoló (fel/le)',        terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'up',kind:'out',l:'fel'},{id:'dn',kind:'out',l:'le'}]}
 ];
-function switchType(k){return SWITCH_TYPES.find(t=>t.k===k)||SWITCH_TYPES[0];}
+function switchType(k){return SWITCH_TYPES.find(t=>t.k===k)||SWITCH_TYPES.find(t=>t.k==='101');}
+// a switch saved under the OLD (wrong) keys gets the right one, once — swNum:2 marks a device already on the new code
+const SW_OLD_TO_NEW={'103':'105','104':'100','105':'106','106':'108','108':'redony'};
+// only a switch that HAS a type and no marker is touched — a current file passes through unchanged
+function swNumMigrate(d){let n=0;((d&&d.devices)||[]).forEach(x=>{if(!x||x.type!=='switch'||!x.swType||x.swNum===2)return;
+  if(SW_OLD_TO_NEW[x.swType]){x.swType=SW_OLD_TO_NEW[x.swType];n++;}x.swNum=2;});return n;}
 const PATH_TYPES={gege:'Gégecső',csat:'Kábelcsatorna',mbcu:'MBCu falban',mu:'MŰ cső',custom:'Egyéb'};
 const BUILDS=[{k:'sull_gege',l:'Süllyesztett – gégecső'},{k:'sull_mbcu',l:'Süllyesztett – MBCu'},
  {k:'kv_csat_kicsi',l:'Falon kívül – kábelcsatorna kicsi'},{k:'kv_csat_szeles',l:'Falon kívül – kábelcsatorna széles'},
