@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BRIDGE okosotthon-katalógus</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#22201c;--mute:#6d675d;--line:#e2ddd2;--acc:#1f6f8b;--chip:#efeae0;--warn:#a5520f;--ok:#2e7d32;--bad:#b23a32}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171a;--card:#1d2024;--ink:#e6e2da;--mute:#9a948a;--line:#30343a;--acc:#5fb3cf;--chip:#262a30;--warn:#e0a060;--ok:#7fc683;--bad:#e2786f}}
+:root[data-theme="dark"]{--bg:#15171a;--card:#1d2024;--ink:#e6e2da;--mute:#9a948a;--line:#30343a;--acc:#5fb3cf;--chip:#262a30;--warn:#e0a060;--ok:#7fc683;--bad:#e2786f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+header{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px}
+h1{font-size:17px;margin:0 0 6px}h1 small{color:var(--mute);font-weight:400}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.bar input,.bar select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
+.bar input{flex:1 1 220px}
+nav{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+nav button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:4px 9px;border-radius:14px;cursor:pointer}
+nav button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+main{padding:12px 16px 40px;max-width:1400px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.card h3{margin:0 0 4px;font-size:14px}.card .k{color:var(--mute);font:12px ui-monospace,Consolas,monospace}
+.row{margin:3px 0}.lbl{color:var(--mute);font-size:12px;margin-right:4px}
+.chip{display:inline-block;background:var(--chip);border-radius:10px;padding:0 7px;margin:1px 2px 1px 0;font-size:12px}
+.pro{color:var(--ok)}.con{color:var(--bad)}.flag{color:var(--warn)}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:13px}th,td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+th{position:sticky;top:0;background:var(--chip)}.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.note{color:var(--mute);margin:0 0 10px}ul.tight{margin:4px 0;padding-left:18px}
+@media (max-width:600px){header,main{padding-left:16px;padding-right:16px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+ <h1>BRIDGE okosotthon-katalógus <small id="meta"></small></h1>
+ <div class="bar"><input id="q" type="search" placeholder="Keresés (név, alkatrész, megjegyzés)…" aria-label="Keresés">
+  <select id="room" aria-label="Helyiség"></select></div>
+ <nav id="tabs"></nav>
+</header>
+<main id="out"></main>
+<script>
+const DB=/*__DB__*/null;
+const $=s=>document.querySelector(s), esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const RN=k=>k==='*'?'mindenhol':(DB.rooms.find(r=>r.k===k)||{n:k}).n;
+const chips=(a,f)=>(a||[]).map(x=>`<span class="chip">${esc(f?f(x):x)}</span>`).join('');
+const flag=s=>esc(s).replace(/⚑/g,'<span class="flag">⚑</span>');
+const MN=k=>DB.vocab.multinode[k]?.n||k, BT=k=>DB.vocab.battery[k]?.n||k, ZN=k=>DB.vocab.zones[k]?.n||k, PW=k=>DB.vocab.power[k]?.n||k;
+const name=k=>{for(const L of [DB.sensors,DB.lighting,DB.switches,DB.abus,DB.control,DB.multisensors,DB.fleet]){const x=L.find(i=>i.k===k);if(x)return x.n;}return k;};
+let tab='rooms', q='', room='';
+const inRoom=rs=>!room||(rs||[]).includes('*')||(rs||[]).includes(room);
+const hit=o=>!q||JSON.stringify(o).toLowerCase().includes(q);
+const TABS={
+ rooms:['Szobák',()=>DB.rooms.filter(r=>(!room||r.k===room)&&hit(r)).map(r=>`<div class="card"><h3>${esc(r.n)}</h3><div class="k">${r.k}</div>
+  <div class="row"><span class="lbl">Ma elérhető</span><ul class="tight">${r.now.map(x=>`<li>${flag(x)}</li>`).join('')}</ul></div>
+  <div class="row"><span class="lbl">Előkészítendő</span><ul class="tight">${r.future.map(x=>`<li>${flag(x)}</li>`).join('')}</ul></div>
+  <div class="row"><span class="lbl">Fő</span>${chips(r.light.main,name)}</div><div class="row"><span class="lbl">Kiegészítő</span>${chips(r.light.extra,name)}</div>
+  <div class="row"><span class="lbl">Hangulat</span>${chips(r.light.ambient,name)}</div>
+  <div class="row"><span class="lbl">Egészség</span>${chips(r.health,h=>{const g=DB.gases.find(x=>x.k===h.gas);return g.n+(h.note?' — '+h.note:'');})}</div>
+  <div class="row"><span class="lbl">Érzékelők</span>${chips(r.sense,name)}</div><div class="row"><span class="lbl">A busz</span>${chips(r.abus,name)}</div>
+  <div class="row"><span class="lbl">Kapcsolók</span>${chips(r.sw,name)}</div>
+  <div class="row"><span class="lbl">Tuya</span>${chips(DB.roomIndex[r.k].tuya,c=>DB.tuya.cats.find(x=>x.code===c).hu)}</div></div>`).join(''),'grid'],
+ sensors:['Érzékelők',()=>DB.sensors.filter(s=>inRoom(s.rooms)&&hit(s)).map(s=>`<div class="card"><h3>${esc(s.n)}</h3><div class="k">${s.k} · ${esc(DB.sensorGroups[s.grp])} · ${s.layer}${s.code?' · '+s.code+(s.var?'/'+s.var:''):''}${s.health?' · egészség':''}</div>
+  <div class="row"><span class="lbl">Mér</span>${esc(s.meas)} <span class="lbl">· ${esc(s.ifc)}</span></div><div class="row"><span class="lbl">Példa</span>${flag(s.parts)}</div>
+  <div class="row"><span class="lbl">Hely</span>${chips(s.zone,ZN)} ${flag(s.h)}</div><div class="row"><span class="lbl">Táp</span>${chips(s.pwr,PW)} <span class="lbl">Elem:</span>${esc(BT(s.batt))}</div>
+  <div class="row"><span class="lbl">Szobák</span>${chips(s.rooms,RN)}${s.avoid&&s.avoid.length?' <span class="lbl">kerüld:</span>'+chips(s.avoid,RN):''}</div>
+  <div class="row"><span class="lbl">Multiszenzor-társak</span>${chips(s.partners,name)}</div>
+  <div class="row"><span class="lbl">Multinode</span><b>${esc(MN(s.mn))}</b> — ${flag(s.mnNote)}</div>
+  <div class="row pro">+ ${flag(s.pro)}</div><div class="row con">− ${flag(s.con)}</div></div>`).join(''),'grid'],
+ gases:['Gázok',()=>`<p class="note">Vertikális szabály: könnyebb a levegőnél → mennyezet; keveredik → légzési zóna; nehezebb → padló.</p><div class="tw"><table><tr><th>Gáz</th><th>Sűrűség / levegő</th><th>Hely</th><th>Magasság (mm)</th><th>Forrás</th><th>Elhelyezés</th><th>Norma</th></tr>${DB.gases.filter(g=>inRoom(g.rooms)&&hit(g)).map(g=>`<tr><td><b>${esc(g.n)}</b></td><td>${g.rel??'—'}</td><td>${{ceiling:'mennyezet',breathing:'légzési zóna',floor:'padló'}[g.pos]}</td><td>${g.h?g.h.join('–'):'mennyezet'}</td><td>${esc(g.src)}</td><td>${flag(g.place)}</td><td>${flag(g.norm)}</td></tr>`).join('')}</table></div>`,''],
+ combos:['Multiszenzor + flotta',()=>`<h3>Portál flotta-modulok</h3><div class="grid">${DB.fleet.filter(hit).map(f=>`<div class="card"><h3>${esc(f.k)} — ${esc(f.n)}</h3><div class="k">${esc(f.slot)} · ${f.h} mm · ${f.fleet==='primary'?'egységes típus-jelölt':'másodlagos'}</div>
+  <div class="row"><span class="lbl">Tagok</span>${chips(f.members,name)}</div><div class="row"><span class="lbl">Opció</span>${chips(f.opt,name)}</div>
+  <div class="row"><span class="lbl">Alap</span>${chips(f.tiers.alap,name)}</div><div class="row"><span class="lbl">Prémium</span>${chips(f.tiers.premium,name)}</div>
+  <div class="row">${flag(f.why)}</div>${f.caveat?`<div class="row flag">${esc(f.caveat)}</div>`:''}<div class="row"><span class="lbl">Kábel</span>${esc(f.cable)}</div></div>`).join('')}</div>
+  <h3>Szokásos multiszenzorok</h3><div class="grid">${DB.multisensors.filter(m=>inRoom(m.rooms)&&hit(m)).map(m=>`<div class="card"><h3>${esc(m.n)}</h3><div class="row"><span class="lbl">Tagok</span>${chips(m.members,name)}</div><div class="row"><span class="lbl">Opció</span>${chips(m.opt,name)}</div><div class="row">${flag(m.why)}</div></div>`).join('')}</div>`,''],
+ switches:['Kapcsolók',()=>DB.switches.filter(s=>inRoom(s.rooms)&&hit(s)).map(s=>`<div class="card"><h3>${esc(s.n)}${s.hidden?' <span class="chip">rejtett</span>':''}</h3><div class="k">${s.k} · ${s.bridge.code}/${s.bridge.var}${s.bridge.proposal?' (javaslat)':''}</div>
+  <div class="row"><span class="lbl">Táp</span>${chips(s.pwr,PW)} <span class="lbl">Szerelés</span>${esc(s.mount)}${s.h?' · '+s.h+' mm':''}</div><div class="row"><span class="lbl">Szobák</span>${chips(s.rooms,RN)}</div>
+  <div class="row pro">+ ${flag(s.pro)}</div><div class="row con">− ${flag(s.con)}</div></div>`).join(''),'grid'],
+ lighting:['Világítás',()=>['main','extra','ambient','path','notify'].map(kd=>`<h3>${{main:'Fővilágítás',extra:'Kiegészítő',ambient:'Hangulatfény',path:'Mozgásvonal / útvonal',notify:'Értesítő'}[kd]}</h3><div class="grid">${DB.lighting.filter(l=>l.kind===kd&&inRoom(l.rooms)&&hit(l)).map(l=>`<div class="card"><h3>${esc(l.n)}</h3><div class="k">${l.k} · ${l.bus} · ${l.code}</div><div class="row"><span class="lbl">ESPHome</span>${esc(DB.lightingDrives[l.drive].esphome)}</div><div class="row"><span class="lbl">Szobák</span>${chips(l.rooms,RN)}</div><div class="row">${flag(l.note)}</div></div>`).join('')}</div>`).join(''),''],
+ abus:['A busz + hangulat',()=>`<h3>Az A busz felhasználásai</h3><div class="grid">${DB.abus.filter(u=>inRoom(u.rooms)&&hit(u)).map(u=>`<div class="card"><h3>${esc(u.n)}</h3><div class="k">${u.k} · ${ZN(u.zone)} · ${esc(u.h)}${u.segment?' · szakasz':''}</div><div class="row">${flag(u.pts)}</div><div class="row"><span class="lbl">Szobák</span>${chips(u.rooms,RN)}</div></div>`).join('')}</div>
+  <h3>Hangulatfény tipikus pontjai</h3><div class="tw"><table><tr><th>Pont / szakasz</th><th>Típus</th><th>Zóna</th><th>Szobák</th></tr>${DB.ambientPoints.filter(a=>inRoom(a.rooms)&&hit(a)).map(a=>`<tr><td>${esc(a.n)}</td><td>${a.type==='segment'?'szakasz':'pont'}</td><td>${ZN(a.zone)}</td><td>${chips(a.rooms,RN)}</td></tr>`).join('')}</table></div>`,''],
+ seqled:['Mozgásvonal',()=>{const R=DB.seqled.rules;return `<div class="card"><h3>Szabályok</h3><div class="row"><span class="lbl">Szakasz</span>${R.segment.min}–${R.segment.max} mm, alap ${R.segment.def} — ${flag(R.segment.note)}</div>
+  <div class="row"><span class="lbl">Áttűnés</span>${R.fade.ms.join('–')} ms, ${esc(R.fade.curve)}; ${esc(R.fade.note)}</div><div class="row"><span class="lbl">Dobozok</span><ul class="tight">${R.boxes.map(b=>`<li>${flag(b)}</li>`).join('')}</ul></div>
+  <div class="row"><span class="lbl">Iránymeghatározás</span><ul class="tight">${R.sensing.map(s=>`<li><b>${esc(s.n)}</b> — ${esc(s.why)}</li>`).join('')}</ul></div></div><br>
+  <div class="tw"><table><tr><th>Módszer</th><th>Költség</th><th>Erek</th><th>Doboz</th><th>≥ 3 kHz</th><th>Mellette</th><th>Ellene</th></tr>${DB.seqled.methods.filter(hit).map(m=>`<tr><td><b>${m.k}</b> ${esc(m.n)}</td><td>${'€'.repeat(m.cost)}</td><td>${esc(m.wires)}</td><td>${flag(m.box)}</td><td>${flag(m.flick)}</td><td class="pro">${flag(m.pro)}</td><td class="con">${flag(m.con)}</td></tr>`).join('')}</table></div>`;},''],
+ control:['Vezérlés',()=>`<p class="note">A volt Kezelőfelületek (HMI) réteg elemei 2026-10-11 óta a Vezérlés rétegen.</p><div class="tw"><table><tr><th>Eszköz</th><th>Kód</th><th>mm</th><th>Táp</th><th>Szobák</th><th>Megjegyzés</th></tr>${DB.control.filter(c=>inRoom(c.rooms)&&hit(c)).map(c=>`<tr><td>${esc(c.n)}</td><td>${c.code}/${c.var}${c.proposal?' *':''}</td><td>${c.h}</td><td>${chips(c.pwr,PW)}</td><td>${chips(c.rooms,RN)}</td><td>${flag(c.note)}</td></tr>`).join('')}</table></div>
+  <h3>Funkciók</h3><div class="grid">${DB.features.filter(hit).map(f=>`<div class="card"><h3>${esc(f.n)}</h3><div class="k">${f.layers.join(' · ')}</div><ul class="tight">${f.behaviour.map(b=>`<li>${flag(b)}</li>`).join('')}</ul>${f.conflict?`<div class="row flag">Döntés: ${esc(f.conflict)}</div>`:''}</div>`).join('')}</div>`,''],
+ tuya:['Tuya',()=>{const c=DB.counts.tuya;return `<p class="note">${c.official} hivatalos kategória (Tuya Standard Instruction Set, 11 csoport) + ${c.documentedElsewhere} máshol dokumentált + ${c.field} terepi kód = ${c.total} (Home Assistant 2026.10.0). A csoportbesorolás a Tuya táblázat sorrendjéből következtetett ⚑.</p>
+  <div class="tw"><table><tr><th>Kód</th><th>Név</th><th>Csoport</th><th>Státusz</th><th>Viszony</th><th>Réteg</th><th>Zóna</th><th>Táp</th><th>Szobák</th><th>Katalógus</th></tr>${DB.tuya.cats.filter(t=>inRoom(t.rooms)&&hit(t)).map(t=>`<tr><td><code>${esc(t.code)}</code></td><td>${esc(t.hu)}<br><span class="k">${esc(t.en)}</span></td><td>${esc(DB.tuya.groups[t.grp])}</td><td>${{official:'hivatalos',documented:'dokumentált',field:'terepi'}[t.status]}</td><td>${{bridge:'BRIDGE saját',integrate:'integrálható',appliance:'készülék',out:'nem releváns'}[t.rel]}</td><td>${t.layer}</td><td>${ZN(t.zone)}</td><td>${chips(t.pwr,PW)}${t.batt?' 🔋':''}</td><td>${chips(t.rooms,RN)}</td><td>${t.ref?esc(name(t.ref)):''}</td></tr>`).join('')}</table></div>`;},''],
+ ulp:['Elemes / ULP',()=>`<p class="note">Elemes eszköz oda, ahová kábel nem jut (ajtólap, ablakszárny, bútor, utólag, kültér), vagy ahol ez a biztonságosabb termék (10 éves zárt riasztók). Biztonsági eszköznél a kimaradó életjel maga is riasztás.</p><div class="tw"><table><tr><th>Eszköz</th><th>Rádió</th><th>Elem</th><th>Élettartam</th><th>Szobák</th></tr>${DB.ulp.filter(u=>inRoom(u.rooms)&&hit(u)).map(u=>`<tr><td>${esc(u.n)}${u.note?`<br><span class="k">${esc(u.note)}</span>`:''}</td><td>${chips(u.radio)}</td><td>${esc(u.cell)}</td><td>${flag(u.life)}</td><td>${chips(u.rooms,RN)}</td></tr>`).join('')}</table></div>`,'']
+};
+function render(){const [,f,cls]=TABS[tab];$('#out').className=cls;$('#out').innerHTML=f()||'<p class="note">Nincs találat.</p>';
+ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+ try{localStorage.setItem('shdb.tab',tab);}catch(_){}}
+$('#meta').textContent=`${DB.id} ${DB.rev} · ${DB.date}`;
+$('#room').innerHTML='<option value="">Minden helyiség</option>'+DB.rooms.map(r=>`<option value="${r.k}">${esc(r.n)}</option>`).join('');
+$('#tabs').innerHTML=Object.entries(TABS).map(([k,[n]])=>`<button data-t="${k}">${n}</button>`).join('');
+$('#tabs').onclick=e=>{if(e.target.dataset.t){tab=e.target.dataset.t;render();}};
+$('#q').oninput=e=>{q=e.target.value.trim().toLowerCase();render();};
+$('#room').onchange=e=>{room=e.target.value;render();};
+try{const t=localStorage.getItem('shdb.tab');if(t&&TABS[t])tab=t;}catch(_){}
+render();
+</script>
+</body>
+</html>
