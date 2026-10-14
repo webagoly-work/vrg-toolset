@@ -164,3 +164,7 @@ symbols grey while every class was correct and every test passed.
 - **`GO FRAME`** — read `GO-FRAME.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
   and do what it says: the BRIDGE SmartFrame (BSF) concept: research, IDEA-003, tune with the user,
   then the BRIDGE doc and (after round 2026-10-10 is built) the Planner pack. No code.
+- **`GO V2`** — read `GO-V2.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
+  and do what it says: the P33 second version — v1 (VG-2026-PT33-01) fully built + every other BRIDGE layer
+  prepared (conduit, cable pulled, boxes, niches; no hardware), quick survey-precision quantities and prices vs v1,
+  a per-room ESPHome marketing list; then hand the fair-price calculation to the Workflow Kit session (V2_FELADAT.md).

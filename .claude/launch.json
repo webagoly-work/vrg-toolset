@@ -4,15 +4,29 @@
     {
       "name": "mindmap",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["MindMap/serve.js"],
+      "runtimeArgs": [
+        "MindMap/serve.js"
+      ],
       "port": 8124
     },
     {
       "name": "planner",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["Planner/projects/varler-planner/tools/serve.js"],
+      "runtimeArgs": [
+        "Planner/projects/varler-planner/tools/serve.js"
+      ],
       "port": 8131,
       "url": "http://localhost:8131"
+    },
+    {
+      "name": "planner-stack-dist",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-e",
+        "process.env.PORT='8138';require('./Planner/projects/varler-planner/tools/serve.js')"
+      ],
+      "port": 8138,
+      "url": "http://localhost:8138"
     }
   ]
 }
