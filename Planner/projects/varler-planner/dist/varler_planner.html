@@ -434,7 +434,8 @@
    <div class="row" title="A rajz alap-léptéke. Nagyobb lépték = ugyanaz a képernyőterület kevesebb millimétert mutat, azaz közelebb lehet menni. A tollak és a készülékjelek képernyőmérete nem változik.">Nézeti lépték <select id="viewScale">
      <option value="1">1× — teljes terv</option><option value="2">2×</option><option value="5">5×</option><option value="10">10× — részlet</option></select></div>
    <div class="row">Render <select id="style">
-     <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option><option value="preview">Ügyfél-előnézet (sötét)</option><option value="tiszta">Tiszta axo (3D)</option></select></div>
+     <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option><option value="preview">Ügyfél-előnézet (sötét)</option><option value="tiszta">Tiszta axo (3D)</option><option value="alaprajz">Alaprajz (2D)</option></select></div>
+   <div class="row" id="apCutRow" style="display:none;flex-wrap:wrap;gap:4px" title="Alaprajz: ennél a magasságnál vágjuk el a szintet. Ami alatta van, teljes vonallal; ami fölötte, szaggatva vagy halványan (a végpontok is).">Vágási magasság <input type="range" id="apCut" min="100" max="2700" step="50" value="1200" style="width:110px"> <input type="number" id="apCutN" min="100" max="2700" step="50" value="1200" style="width:58px"> mm <button class="apPre" data-v="300">300</button><button class="apPre" data-v="1100">1100</button><button class="apPre" data-v="1200">1200</button><button class="apPre" data-v="1500">1500</button> <label title="Méretláncok a szint két külső oldalán (falak és nyílások széle, alatta a teljes méret)."><input type="checkbox" id="apDims" checked> méretláncok</label> <label title="A végpontok rövid kódja (NTL, DED, …) a jel mellett; ütközés nélkül, szükség esetén vezetővonallal."><input type="checkbox" id="apCodes" checked> végpont-kódok</label> <label title="Alapból a terv tiszta: épület, tárgyak, helyiségnevek, végpontok. Bekapcsolva az útvonalak, a jegyzetek és a BRIDGE rétegek is rákerülnek."><input type="checkbox" id="apAll"> útvonalak, rétegek is</label></div>
    <div class="row">Walls <select id="wallMode">
      <option value="translucent">translucent</option><option value="solid">solid</option>
      <option value="hidden">hidden</option><option value="cutaway">kivágás (Sims)</option></select>
@@ -1046,7 +1047,7 @@ const state={rot:90,zoom:.5,panX:250,panY:180,exploded:true,wallMode:'translucen
  grid:false,gridSize:250,cableType:'lighting',drawHKey:'s1100',freeHeight:false,freeMm:1100,chaseFactor:1.6,chasePad:4,boxDepth:45,buildType:'door',
  flat:false,showLabels:true,labelSize:1,labelRot:0,
  side:0,wallLock:true,midFree:false,showDropCeil:true,wallThick:100,wallErase:false,pathType:'gege',toolsLoc:'side',
- waste:10,price:{},hoverR:null,hoverL:'ground',stairDef:{w:1000,riser:180,going:250,th:300},isoGrid:false,activeLayer:'L0',showRefs:false,pitch:30,flat:false,soloRoom:null,showRoomText:true,bg:null,bp:{dims:true,title:true,proj:'',addr:'',by:''},bpScale:50,bpFine:1,hDisp:'hover',objAng:0,gizmoSnap:true,mobile:false,objWallSnap:true,multiSelect:false,circHoverInfo:true,circHidden:{},circHi:null,devScale:0.72,pathScale:1,viewScale:1,camPreset:null,camLock:false,camLockPitch:null,cutH:1500,cutNearH:1000,printPal:true};
+ waste:10,price:{},hoverR:null,hoverL:'ground',stairDef:{w:1000,riser:180,going:250,th:300},isoGrid:false,activeLayer:'L0',showRefs:false,pitch:30,flat:false,soloRoom:null,showRoomText:true,bg:null,bp:{dims:true,title:true,proj:'',addr:'',by:''},bpScale:50,bpFine:1,hDisp:'hover',objAng:0,gizmoSnap:true,mobile:false,objWallSnap:true,multiSelect:false,circHoverInfo:true,circHidden:{},circHi:null,devScale:0.72,pathScale:1,viewScale:1,camPreset:null,camLock:false,camLockPitch:null,cutH:1500,cutNearH:1000,planCutH:1200,printPal:true};
 // ---- keyboard layouts (round 2026-10-10, WP-U4) ----
 // Plain W A S D / Q E are the camera, always — they used to move the selection in Move mode and a selected object in
 // Select mode, so the same key panned or nudged depending on what happened to be selected. The selection now moves
@@ -2058,6 +2059,19 @@ function bpDimChain(vals,fixed,axis,z,flip){ // axis 'x': stations along x at y=
     const m=(vals[i]+vals[i-1])/2,px=axis==='x'?m:fixed,py=axis==='x'?fixed:m;
     s+=bpTxt(px,py,z,(d/1000).toFixed(2).replace('.',','),BP_TXT.body,400,'middle',bpU(flip?3:-1.2));}
   return s;}
+// a stair in plan: outline, treads, walking line. cut (V9a/b Alaprajz): treads whose top (i × riser) is above it are
+// dashed and a break line crosses the stair at the cut tread; without a cut the blueprint drawing, byte for byte
+function bpStairsSvg(o,z,level,cut){let s='';
+  const riser=o.riser||RISER,Wd=o.w||STAIR_W,going=o.going||GOING,n=Math.max(3,Math.round((o.h||wallH(level))/riser));
+  const d=[Math.cos(o.ang),Math.sin(o.ang)],p=[-Math.sin(o.ang),Math.cos(o.ang)],rev=(o.variant&1)?-1:1;
+  const P=(u,v)=>[o.x+d[0]*u*rev+p[0]*v, o.y+d[1]*u*rev+p[1]*v, z];
+  s+=`<polygon points="${p2b([P(0,0),P(n*going,0),P(n*going,Wd),P(0,Wd)])}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
+  for(let i=1;i<n;i++){const hid=cut!=null&&i*riser>cut;
+    s+=`<polyline points="${p2b([P(i*going,0),P(i*going,Wd)])}" fill="none" stroke="#111" stroke-width="${bpSW(hid?BP_PEN.hair:BP_PEN.fine)}"${hid?` stroke-dasharray="${bpU(1.2).toFixed(3)} ${bpU(.8).toFixed(3)}" class="ap-tread-hid"`:cut!=null?' class="ap-tread"':''}/>`;}
+  s+=`<polyline points="${p2b([P(going*0.6,Wd/2),P(n*going-going*0.6,Wd/2)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;
+  if(cut!=null){const k=Math.floor(cut/riser);if(k>0&&k<n)
+    s+=`<polyline class="ap-break" points="${p2b([P(k*going,0),P((k+0.4)*going,Wd*0.45),P((k+0.6)*going,Wd*0.55),P((k+1)*going,Wd)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.fine)}"/>`;}
+  return s;}
 function bpBBox(level){let b={x0:1e9,y0:1e9,x1:-1e9,y1:-1e9},any=false;
   const add=p=>{b.x0=Math.min(b.x0,p[0]);b.x1=Math.max(b.x1,p[0]);b.y0=Math.min(b.y0,p[1]);b.y1=Math.max(b.y1,p[1]);any=true;};
   (WALLS[level]||[]).forEach(r=>{add([r.x0,r.y0]);add([r.x1,r.y1]);});
@@ -2103,13 +2117,7 @@ function drawBlueprintPlan(){const level=state.active;const z=dz(level,0);
   s=lyrWrapOp(s,s0,+k);});
   // ---- stairs in plan: treads + direction arrow ----
   data.openings.forEach(o=>{if(o.level!==level||o.type!=='stairs'||!layerShows(o,'build'))return;
-    const s0=s.length;
-    const Wd=o.w||STAIR_W,going=o.going||GOING,n=Math.max(3,Math.round((o.h||wallH(level))/(o.riser||RISER)));
-    const d=[Math.cos(o.ang),Math.sin(o.ang)],p=[-Math.sin(o.ang),Math.cos(o.ang)],rev=(o.variant&1)?-1:1;
-    const P=(u,v)=>[o.x+d[0]*u*rev+p[0]*v, o.y+d[1]*u*rev+p[1]*v, z];
-    s+=`<polygon points="${p2b([P(0,0),P(n*going,0),P(n*going,Wd),P(0,Wd)])}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
-    for(let i=1;i<n;i++)s+=`<polyline points="${p2b([P(i*going,0),P(i*going,Wd)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.fine)}"/>`;
-    s+=`<polyline points="${p2b([P(going*0.6,Wd/2),P(n*going-going*0.6,Wd/2)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;
+    const s0=s.length;s+=bpStairsSvg(o,z,level);
     s=lyrWrapFrom(s,s0,o,'build');});
   // ---- room labels: NAME / burkolat / area ----
   if(state.showRoomText)rooms.forEach(rm=>{if(rm.noText)return;
@@ -2426,7 +2434,7 @@ function devSym(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),x=b[0],y=b[1];
   sym=wrap(sym);
   if(typeof cktRingSvg==='function')sym=cktRingSvg(d,x,y,k,back)+sym;   // circuit end point ring, under the symbol
   if(typeof lyrSpotIs==='function'&&lyrSpotIs(d))sym=lyrSpotRing(d,x,y,k)+sym;   // layer spotlight (05l), furthest back
-  if(d.kind||d.lv){const code=(d.kind&&DEVKIND[d.kind]?DEVKIND[d.kind].s:'LV');
+  if((d.kind||d.lv)&&!alaprajzOn()){const code=(d.kind&&DEVKIND[d.kind]?DEVKIND[d.kind].s:'LV');
     sym+=`<text x="${x}" y="${y+R(15)}" font-size="${R(8)}" text-anchor="middle" fill="#5a5348" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.4)}" opacity="${fillA}">${esc(code)}</text>`;}
   if(state.showRefs&&d.ref)sym+=`<text x="${x+R(9)}" y="${y-R(8)}" font-size="${R(9.5)}" fill="#0a2b6b" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}" opacity="${fillA}">${esc(d.ref)}</text>`;
   return sym;}
@@ -2644,7 +2652,7 @@ function drawSoon(){if(_drawPending)return;_drawPending=true;
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(run);else run();}
 function draw(){
   if(stage&&stage.classList){stage.classList.toggle('prev',prevOn());stage.classList.toggle('tiszta',tisztaOn());}   // the dark ground is CSS on the stage, not a rect inside the drawing
-  let s = bgSvg() + (tisztaOn()?drawTisztaGeom():state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom()
+  let s = bgSvg() + (tisztaOn()?drawTisztaGeom():alaprajzOn()?drawAlaprajzGeom():state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom()
                     :prevOn()?drawPreviewGeom():drawNormalGeom());
   s+=drawGuides();
   // hovered / locked wall highlight
@@ -2838,14 +2846,18 @@ function draw(){
         if(segHitsRect(d.x,d.y,v[0],v[1],20000,r)){d.faceBack=true;break;}}}
     }
   } else for(const d of data.devices)d.faceBack=false;
+  const sDv0=s.length;
   // board connection rectangles (the whole rectangle is one connection point along the expected underside)
   for(const b of data.devices){if(b.type!=='board'||!state.levels[b.level]||!layerShows(b,'device'))continue;
+    if(alaprajzOn()&&!state.apAll&&b.level!==state.active)continue;   // V9a: the plan shows the active level only
     const s0=s.length;
     const poly=boardRectPoly(b).map(p=>planToBase(p[0],p[1],dz(b.level,b.z||BOARD_DEFAULT_Z)));
     s+=`<polygon points="${poly.map(p=>p[0]+','+p[1]).join(' ')}" fill="#ffe9b0" fill-opacity="0.5" stroke="#b8901f" stroke-width="${vsP(1.3)}" stroke-dasharray="${vsDash('4 2')}"/>`;
     const c=planToBase(b.x,b.y,dz(b.level,b.z||BOARD_DEFAULT_Z));
-    s+=`<text x="${c[0]}" y="${c[1]+vsP(3)}" font-size="${vsP(8.5)}" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.4)}">${esc(b.ref||'EL')}</text>`;s=lyrWrapFrom(s,s0,b,'device');}
-  for(const d of data.devices){if(state.levels[d.level]&&layerShows(d,'device')&&soloOk(d.x,d.y,d.level))s+=lyrWrap(d,'device',devSym(d));}
+    if(!alaprajzOn())s+=`<text x="${c[0]}" y="${c[1]+vsP(3)}" font-size="${vsP(8.5)}" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.4)}">${esc(b.ref||'EL')}</text>`;s=lyrWrapFrom(s,s0,b,'device');}
+  for(const d of data.devices){if(state.levels[d.level]&&layerShows(d,'device')&&soloOk(d.x,d.y,d.level))s+=lyrWrap(d,'device',apDevWrap(d,devSym(d)));}   // V9a: above the Alaprajz cut → hidden (D-V9-5 3C)
+  if(alaprajzOn())s+=apAnnotSvg();   // V9b: room tags, codes, dimensions, north — placed together
+  const sDv1=s.length;
   // notes
   for(const [ni,n] of data.notes.entries()){if(!state.levels[n.level])continue;
     if(typeof ntVisible==='function'&&!ntVisible(n))continue;
@@ -2888,7 +2900,9 @@ function draw(){
     ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(13)}" fill="none" stroke="#e8641c" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}"/>`
       +`<text x="${b[0]}" y="${b[1]-vsP(18)}" font-size="${vsP(10)}" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">🖌 forrás</text>`;}
   if(tisztaOn())s=s.slice(0,sTr)+s.slice(sDr0,sDr1);   // a presentation look: no routes, notes, measures or stack scene layer
-  if(typeof stkHookSvg==='function'){if(!tisztaOn())s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
+  const apClean=alaprajzOn()&&!state.apAll;   // V9a: the plan output = building, objects, room labels, endpoints (+ the draft)
+  if(apClean)s=s.slice(0,sTr)+s.slice(sDr0,sDr1)+s.slice(sDv0,sDv1);   // no text yet: room tags + placed codes are V9b
+  if(typeof stkHookSvg==='function'){if(!tisztaOn()&&!apClean)s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
   const changed=paintLayers(s,ov);
   setTransform();
   if(typeof statusBar==='function')statusBar();
@@ -9415,6 +9429,7 @@ function icoSym(d,x,y,k,back){
     else if(d.type==='base'&&typeof hwUnits==='function')lab.push(hwUnits(d).map(u=>u[0]).join('·'));}
   else if(d.type==='ep')lab.push(d.code||'?');
   const halo=dark?(typeof PREV!=='undefined'?PREV.ground:'#0a0e13'):'#fff';
+  if(typeof alaprajzOn==='function'&&alaprajzOn())return s;   // V9a: the plan output carries no codes until V9b places them
   lab.filter(Boolean).forEach((t,i)=>{
     s+=`<text x="${x.toFixed(1)}" y="${(y+r+vsP(8)+i*vsP(8.5)).toFixed(1)}" font-size="${vsP(i?7:8)}" text-anchor="middle"`
       +` font-weight="${i?400:700}" fill="${col}" paint-order="stroke" stroke="${halo}" stroke-width="${vsP(2.4)}">${esc(t)}</text>`;});
@@ -9484,6 +9499,268 @@ window.ICO_MM_FROM=ICO_MM_FROM;window.icoSym=icoSym;window.icoFamOf=icoFamOf;win
 window.icoCol=icoCol;window.icoRoleCol=icoRoleCol;window.icoMmMode=icoMmMode;window.icoSizeOf=icoSizeOf;
 window.icoLegendRows=icoLegendRows;window.icoLegend=icoLegend;window.icoMix=icoMix;
 window.icoBodyR=icoBodyR;window.icoRingU=icoRingU;
+
+// The clean, colourless elevation look: four classes and nothing else, so a style sheet decides how
+// it prints (objArtCss gives the default one, line widths in paper mm at 1 : k).
+//   oa-out  outline 0.35 · oa-det  detail 0.18 · oa-hid  hidden 0.13 dashed · oa-fill  white fill
+// Hidden lines come from painting back to front with oa-fill; oa-hid only where a hidden part is worth showing.
+//
+// Every view is drawn in its own 2-D frame (a across, b up) in mm, and the pen maps it to SVG (y = −b):
+//   F  a = across (−w/2 … w/2), b = height       viewBox −w/2 −h w h   origin bottom-centre-front
+//   L  a = depth from the front, drawn leftwards  viewBox −d −h d h     the front is the right edge
+//   R  the same side drawing, drawn rightwards    viewBox 0 −h d h      (sym objects: R = L mirrored)
+//   T  a = across, b = depth from the front       viewBox −w/2 −d w d   the front is the bottom edge
+// The front is the front-most point including handles, so nothing pokes out of the box. No SVG transforms:
+// every coordinate is computed from w/d/h, so line weights never distort when an object is resized.
+// Resizing rule (DECISIONS D-V8-1): parts are recounted from w/d/h where the family has parts to count;
+// small details keep a fixed mm size in every family; a family with nothing to count (WC) stretches.
+
+const OA_W={out:.35,det:.18,hid:.13};   // paper mm
+const OA_DASH=[1.2,.8];                  // paper mm, the oa-hid dash
+function objArtCss(k){k=k||20;const r=v=>+(v*k).toFixed(3);
+  return '.oa-out,.oa-det,.oa-hid{fill:none;stroke:#000;stroke-linecap:round;stroke-linejoin:round}'+
+    '.oa-out{stroke-width:'+r(OA_W.out)+'}.oa-det{stroke-width:'+r(OA_W.det)+'}'+
+    '.oa-hid{stroke-width:'+r(OA_W.hid)+';stroke-dasharray:'+r(OA_DASH[0])+' '+r(OA_DASH[1])+'}.oa-fill{fill:#fff}';}
+
+// symmetric rounding to 0.1 mm (so a mirrored view is exactly the negated one), no −0
+function oaNum(v){const r=Math.sign(v)*Math.round(Math.abs(v)*10)/10;return r===0?0:r;}
+
+// The pen: rect / line / poly / path / circ in the view's (a, b) frame. cls = 'out' | 'det' | 'hid', with
+// '+fill' for a shape that hides what is behind it. o.part tags a counted part; o.rx all corners, o.rt / o.rb
+// the top / bottom corners (top = up in the drawing).
+function oaPen(map){
+  const prims=[],parts={};let body='';
+  const pt=(a,b)=>{const p=map(a,b);return [oaNum(p[0]),oaNum(-p[1])];};
+  const cl=c=>{const q=c.split('+');return 'oa-'+q[0]+(q[1]==='fill'?' oa-fill':'');};
+  const put=(kind,cls,pts,o,s)=>{const part=o&&o.part||null;prims.push({kind,cls:cl(cls),pts,part});
+    if(part)parts[part]=(parts[part]||0)+1;body+=s;};
+  return {parts,prims,body:()=>body,
+    rect(a0,b0,a1,b1,cls,o){o=o||{};const p=pt(a0,b0),q=pt(a1,b1);
+      const x0=Math.min(p[0],q[0]),x1=Math.max(p[0],q[0]),y0=Math.min(p[1],q[1]),y1=Math.max(p[1],q[1]);
+      const pts=[[x0,y0],[x1,y0],[x1,y1],[x0,y1]],lim=Math.min(x1-x0,y1-y0)/2;
+      const rt=oaNum(Math.min(lim,o.rt!=null?o.rt:o.rx||0)),rb=oaNum(Math.min(lim,o.rb!=null?o.rb:o.rx||0));
+      if(!rt&&!rb)return put('rect',cls,pts,o,`<rect x="${x0}" y="${y0}" width="${oaNum(x1-x0)}" height="${oaNum(y1-y0)}" class="${cl(cls)}"/>`);
+      const d=`M${oaNum(x0+rt)} ${y0}H${oaNum(x1-rt)}Q${x1} ${y0} ${x1} ${oaNum(y0+rt)}V${oaNum(y1-rb)}Q${x1} ${y1} ${oaNum(x1-rb)} ${y1}`+
+        `H${oaNum(x0+rb)}Q${x0} ${y1} ${x0} ${oaNum(y1-rb)}V${oaNum(y0+rt)}Q${x0} ${y0} ${oaNum(x0+rt)} ${y0}Z`;
+      put('rect',cls,pts,o,`<path d="${d}" class="${cl(cls)}"/>`);},
+    line(a0,b0,a1,b1,cls,o){const p=pt(a0,b0),q=pt(a1,b1);
+      put('line',cls,[p,q],o,`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" class="${cl(cls)}"/>`);},
+    poly(list,cls,o){o=o||{};const pts=list.map(v=>pt(v[0],v[1]));
+      put('poly',cls,pts,o,`<${o.close?'polygon':'polyline'} points="${pts.map(v=>v.join(',')).join(' ')}" class="${cl(cls)}"/>`);},
+    // segs: ['M',a,b] ['L',a,b] ['Q',a1,b1,a,b] ['C',a1,b1,a2,b2,a,b] ['Z']
+    path(segs,cls,o){const pts=[];let d='';
+      for(const g of segs){d+=g[0];for(let k=1;k<g.length;k+=2){const p=pt(g[k],g[k+1]);pts.push(p);d+=(k>1?' ':'')+p[0]+' '+p[1];}}
+      put('path',cls,pts,o,`<path d="${d}" class="${cl(cls)}"/>`);},
+    circ(a,b,r,cls,o){const p=pt(a,b);r=oaNum(r);
+      put('circ',cls,[[oaNum(p[0]-r),oaNum(p[1]-r)],[oaNum(p[0]+r),oaNum(p[1]+r)]],o,`<circle cx="${p[0]}" cy="${p[1]}" r="${r}" class="${cl(cls)}"/>`);}};}
+
+const OA_VIEWS={
+  F:{map:(a,b)=>[a,b],  vb:s=>[-s.w/2,-s.h,s.w,s.h]},
+  L:{map:(a,b)=>[-a,b], vb:s=>[-s.d,-s.h,s.d,s.h]},
+  R:{map:(a,b)=>[a,b],  vb:s=>[0,-s.h,s.d,s.h]},
+  T:{map:(a,b)=>[a,b],  vb:s=>[-s.w/2,-s.d,s.w,s.d]}};
+
+// ---------- parametric helpers ----------
+// units across a width: n = ceil(w / max), equal widths (600 → 1, 1100 → 2, 1200 → 2, 1800 → 3)
+function oaSplit(w,max){const n=Math.max(1,Math.ceil(w/(max||600)-1e-9));return {n,u:w/n};}
+// sofa cushions over a seat width: n = round(seat / pref), at least 1 (1840 → 3, 2440 → 4)
+function oaCushions(seatW,pref){return Math.max(1,Math.round(seatW/(pref||650)));}
+// a bar handle: horizontal (dir 'h') or vertical ('v'), centred on (a, b), fixed 12 mm thick
+function oaHandle(P,a,b,len,dir){const t=6;
+  if(dir==='v')P.rect(a-t,b-len/2,a+t,b+len/2,'det+fill',{rx:t});else P.rect(a-len/2,b-t,a+len/2,b+t,'det+fill',{rx:t});}
+// the elevation swing mark: dashed lines from the opening side's corners to the middle of the hinge side
+function oaSwing(P,a0,a1,b0,b1,hinge){const h=hinge==='right'?a1:a0,o=hinge==='right'?a0:a1;
+  P.poly([[o,b1],[h,(b0+b1)/2],[o,b0]],'hid');}
+// a row of doors across [a0, a1] × [b0, b1]: n from oaSplit (or o.n), gap 2, handle 160 (≤ door − 80) at
+// o.handle 'top' (50 below the top) / 'bottom' (o.hy above b0, default 58) / 'side' (vertical, o.hlen long,
+// o.hb its centre); hinge: the left half of the doors hinge left, the rest right (o.hinge forces one side)
+function oaDoors(P,a0,a1,b0,b1,o){o=o||{};const g=o.gap!=null?o.gap:2,sp=o.n?{n:o.n,u:(a1-a0)/o.n}:oaSplit(a1-a0,o.max);
+  for(let i=0;i<sp.n;i++){const x0=a0+i*sp.u+g,x1=a0+(i+1)*sp.u-g,y0=b0+g,y1=b1-g;
+    const hinge=o.hinge||(i<sp.n/2?'left':'right'),xc=(x0+x1)/2,hl=Math.min(160,x1-x0-80);
+    P.rect(x0,y0,x1,y1,'det+fill',{part:'door',rt:o.rt||0});
+    oaSwing(P,x0,x1,y0,y1,hinge);
+    if(o.handle==='side'){const xa=hinge==='left'?x1-45:x0+45;oaHandle(P,xa,o.hb,o.hlen,'v');}
+    else if(o.handle==='bottom')oaHandle(P,xc,b0+(o.hy!=null?o.hy:58),hl,'h');
+    else oaHandle(P,xc,y1-50,hl,'h');}
+  return sp;}
+// drawer fronts stacked in [b0, b1] over the units of [a0, a1]: rows = o.rows or round((b1 − b0) / o.dh)
+function oaDrawers(P,a0,a1,b0,b1,o){o=o||{};const g=o.gap!=null?o.gap:2,sp=o.n?{n:o.n,u:(a1-a0)/o.n}:oaSplit(a1-a0,o.max);
+  const rows=o.rows||Math.max(1,Math.round((b1-b0)/(o.dh||180))),rh=(b1-b0)/rows;
+  for(let i=0;i<sp.n;i++)for(let r=0;r<rows;r++){const x0=a0+i*sp.u+g,x1=a0+(i+1)*sp.u-g,y0=b0+r*rh+g,y1=b0+(r+1)*rh-g;
+    P.rect(x0,y0,x1,y1,'det+fill',{part:'drawer'});oaHandle(P,(x0+x1)/2,(y0+y1)/2,Math.min(160,x1-x0-80),'h');}
+  return {n:sp.n,rows};}
+
+// ---------- the families ----------
+// Each is {resize, F, S (the side, for L and R), T}, drawing functions (P, s) with s = {w, d, h}.
+const OA_FAM={
+  // Kanapé: arms 180 (≤ w/6), legs 120, seat top 430, arm top 620, back frame h − 80, back 220 deep (≤ 0.3 d);
+  // cushions n = round((w − 2·arm) / 650), a seat and a back cushion each
+  kanape:{resize:'param',
+    k(s){const arm=Math.min(180,s.w/6),seat=Math.min(430,s.h*.55),n=oaCushions(s.w-2*arm);
+      return {arm,seat,n,cw:(s.w-2*arm)/n,leg:Math.min(120,s.h*.15),armH:Math.min(s.h-100,Math.max(seat+120,620)),
+        top:s.h-80,back:Math.min(220,s.d*.3),x0:-s.w/2+arm};},
+    F(P,s){const k=this.k(s);
+      P.rect(-s.w/2,k.leg,s.w/2,k.top,'out+fill',{rt:40});
+      for(let i=0;i<k.n;i++)P.rect(k.x0+i*k.cw+6,k.seat-20,k.x0+(i+1)*k.cw-6,s.h,'det+fill',{rt:60,rb:20,part:'back'});
+      P.rect(k.x0,k.leg,-k.x0,k.seat-150,'out+fill');
+      for(let i=0;i<k.n;i++)P.rect(k.x0+i*k.cw+6,k.seat-150,k.x0+(i+1)*k.cw-6,k.seat,'det+fill',{rx:30,part:'seat'});
+      P.rect(-s.w/2,k.leg,k.x0,k.armH,'out+fill',{rt:60});P.rect(-k.x0,k.leg,s.w/2,k.armH,'out+fill',{rt:60});
+      P.rect(-s.w/2+50,0,-s.w/2+90,k.leg,'out+fill');P.rect(s.w/2-90,0,s.w/2-50,k.leg,'out+fill');},
+    S(P,s){const k=this.k(s),bf=s.d-k.back;
+      P.path([['M',bf-190,k.seat],['L',bf-120,s.h-40],['Q',bf-110,s.h,bf-60,s.h],['L',bf,s.h],['L',bf,k.seat],['Z']],'det+fill');
+      P.rect(bf,k.leg,s.d,k.top,'out+fill',{rt:40});
+      P.rect(0,k.leg,s.d,k.armH,'out+fill',{rt:60});
+      P.rect(30,k.seat-150,bf,k.seat,'hid',{rx:30});                       // the seat cushion behind the arm
+      P.rect(30,0,70,k.leg,'out+fill');P.rect(s.d-70,0,s.d-30,k.leg,'out+fill');},
+    T(P,s){const k=this.k(s),bf=s.d-k.back;
+      for(let i=0;i<k.n;i++)P.rect(k.x0+i*k.cw+6,30,k.x0+(i+1)*k.cw-6,bf,'det+fill',{rx:40,part:'seat'});
+      P.rect(-s.w/2,0,k.x0,s.d,'out+fill',{rx:40});P.rect(-k.x0,0,s.w/2,s.d,'out+fill',{rx:40});
+      P.rect(-s.w/2,bf,s.w/2,s.d,'out+fill',{rx:30});
+      for(let i=0;i<k.n;i++)P.rect(k.x0+i*k.cw+6,bf-190,k.x0+(i+1)*k.cw-6,bf,'det+fill',{rx:50,part:'back'});}},
+
+  // Ágy: the front is the foot end. Legs 100, rail top min(300, 0.55 h), mattress 180 to min(rail + 180, h − 60),
+  // head panel 60 deep to h; pillows n = w ≥ 1200 ? 2 : 1, up to 700 wide, 40 apart
+  agy:{resize:'param',
+    k(s){const rail=Math.min(300,s.h*.55),mt=Math.min(rail+180,s.h-60),pn=s.w>=1200?2:1,pw=Math.min(700,(s.w-80-(pn-1)*40)/pn);
+      return {leg:Math.min(100,s.h*.2),rail,mt,mb:rail-60,head:60,pn,pw,px0:-(pn*pw+(pn-1)*40)/2};},
+    F(P,s){const k=this.k(s);
+      P.rect(-s.w/2,k.leg,s.w/2,s.h,'out+fill',{rt:20});
+      for(let i=0;i<k.pn;i++){const x=k.px0+i*(k.pw+40);P.rect(x,k.mt-40,x+k.pw,s.h-10,'det+fill',{rx:40,part:'pillow'});}
+      P.rect(-s.w/2+15,k.mb,s.w/2-15,k.mt,'det+fill',{rx:40});
+      P.rect(-s.w/2,k.leg,s.w/2,k.rail,'out+fill');
+      P.rect(-s.w/2+30,0,-s.w/2+90,k.leg,'out+fill');P.rect(s.w/2-90,0,s.w/2-30,k.leg,'out+fill');},
+    S(P,s){const k=this.k(s),hp=s.d-k.head;
+      P.rect(hp,k.leg,s.d,s.h,'out+fill',{rt:20});
+      P.rect(hp-480,k.mt-40,hp-20,s.h-10,'det+fill',{rx:50});
+      P.rect(15,k.mb,hp,k.mt,'det+fill',{rx:40});
+      P.line(hp-600,k.mb+20,hp-600,k.mt,'det');                            // the duvet turned back
+      P.rect(0,k.leg,hp,k.rail,'out+fill');
+      P.rect(20,0,80,k.leg,'out+fill');P.rect(s.d-55,0,s.d-15,k.leg,'out+fill');},
+    T(P,s){const k=this.k(s),hp=s.d-k.head;
+      P.rect(-s.w/2,0,s.w/2,s.d,'out+fill');
+      P.rect(-s.w/2+15,15,s.w/2-15,hp,'det+fill',{rx:40});
+      P.rect(-s.w/2+5,5,s.w/2-5,hp-600,'det+fill',{rx:40});
+      P.line(-s.w/2+5,hp-880,s.w/2-5,hp-880,'det');
+      for(let i=0;i<k.pn;i++){const x=k.px0+i*(k.pw+40);P.rect(x,hp-480,x+k.pw,hp-20,'det+fill',{rx:60,part:'pillow'});}
+      P.rect(-s.w/2,hp,s.w/2,s.d,'out+fill');}},
+
+  // WC csésze (close-coupled): nothing to count, so it stretches with w/d/h (D-V8-1); fixed: seat 15, lid 30,
+  // cistern lid 25, flush button r 30. Rim at h/2 − 45, cistern from 0.48 h, 0.25 d deep, bowl ±0.45 w
+  wc:{resize:'stretch',
+    k(s){const rim=s.h/2-45;return {rim,r42:Math.min(s.h*.42,rim),cb:s.h*.48,cd:s.d*.25,bw:s.w*.45};},
+    F(P,s){const k=this.k(s),w=s.w,h=s.h;
+      P.rect(-.475*w,k.cb,.475*w,h,'out+fill',{rt:15});P.line(-.475*w,h-25,.475*w,h-25,'det');
+      P.path([['M',-.25*w,0],['C',-.25*w,.25*h,-k.bw,.3*h,-k.bw,k.r42],['L',-k.bw,k.rim],['L',k.bw,k.rim],['L',k.bw,k.r42],
+        ['C',k.bw,.3*h,.25*w,.25*h,.25*w,0],['Z']],'out+fill');
+      P.rect(-k.bw,k.rim,k.bw,k.rim+15,'det+fill',{rx:5});
+      P.rect(-k.bw+10,k.rim+15,k.bw-10,k.rim+45,'out+fill',{rt:12});},
+    S(P,s){const k=this.k(s),d=s.d,h=s.h,cf=d-k.cd;
+      P.path([['M',.3*d,0],['C',.26*d,.2*h,0,.26*h,0,k.r42],['L',0,k.rim],['L',cf,k.rim],['L',cf,k.cb],['L',.9*d,k.cb],
+        ['C',.9*d,.3*h,.72*d,.15*h,.72*d,0],['Z']],'out+fill');
+      P.rect(cf,k.cb,d,h,'out+fill',{rt:15});P.line(cf,h-25,d,h-25,'det');
+      P.rect(0,k.rim,cf,k.rim+15,'det+fill',{rx:5});
+      P.rect(.01*d,k.rim+15,cf-10,k.rim+45,'out+fill',{rt:12});
+      P.path([['M',.33*d,k.rim-40],['C',.3*d,.12*h,.5*d,.1*h,.6*d,.16*h],['L',.72*d,.18*h]],'hid');},   // the trap
+    T(P,s){const k=this.k(s),w=s.w,d=s.d,cf=d-k.cd;
+      P.rect(-.475*w,cf,.475*w,d,'out+fill',{rx:15});
+      P.circ(0,d-k.cd/2,30,'det',{part:'button'});
+      P.path([['M',-k.bw,cf],['C',-k.bw,.3*d,-.3*w,0,0,0],['C',.3*w,0,k.bw,.3*d,k.bw,cf],['Z']],'out+fill',{part:'bowl'});
+      P.path([['M',-k.bw+12,cf-10],['C',-k.bw+12,.3*d,-.3*w+8,12,0,12],['C',.3*w-8,12,k.bw-12,.3*d,k.bw-12,cf-10],['Z']],'det');
+      P.line(-k.bw+30,cf-40,k.bw-30,cf-40,'det');}},
+
+  // Konyhapult (base unit run): worktop 40 with a 30 front overhang, plinth 100 set back 50, door 18, top drawer
+  // 140, gaps 2, bar handles 160; units n = ceil(w / 600), a drawer and a door each; a hidden shelf in the side
+  pult:{resize:'param',
+    k(s){const wt=40,ov=30,door=18,pl=Math.min(100,s.h*.15),dTop=s.h-wt,dBot=dTop-144;
+      return {wt,ov,door,pl,dTop,dBot,sp:oaSplit(s.w,600)};},
+    F(P,s){const k=this.k(s);
+      P.rect(-s.w/2,0,s.w/2,k.pl,'det+fill');
+      P.rect(-s.w/2,k.pl,s.w/2,s.h-k.wt,'out+fill');
+      oaDrawers(P,-s.w/2,s.w/2,k.dBot,k.dTop,{n:k.sp.n,rows:1});
+      oaDoors(P,-s.w/2,s.w/2,k.pl,k.dBot,{n:k.sp.n,handle:'top'});
+      P.rect(-s.w/2,s.h-k.wt,s.w/2,s.h,'out+fill');},
+    S(P,s){const k=this.k(s),f=k.ov+k.door,dm=(k.dBot+k.dTop)/2,hy=k.dBot-52;
+      P.rect(f,k.pl,s.d,s.h-k.wt,'out+fill');
+      P.rect(k.ov,k.dBot+2,f,k.dTop-2,'det+fill');P.rect(k.ov,k.pl+2,f,k.dBot-2,'det+fill');
+      P.rect(2,dm-6,k.ov,dm+6,'det+fill');P.rect(2,hy-6,k.ov,hy+6,'det+fill');
+      P.rect(k.ov+50,0,k.ov+68,k.pl,'det+fill');P.rect(f+60,0,f+90,k.pl,'det');P.rect(s.d-60,0,s.d-30,k.pl,'det');
+      P.line(f+18,(k.pl+k.dBot)/2,s.d-18,(k.pl+k.dBot)/2,'hid',{part:'shelf'});
+      P.rect(0,s.h-k.wt,s.d,s.h,'out+fill');},
+    T(P,s){const k=this.k(s);
+      P.rect(-s.w/2,0,s.w/2,s.d,'out+fill');
+      P.line(-s.w/2,k.ov,s.w/2,k.ov,'hid');                                // the fronts under the overhang
+      for(let i=1;i<k.sp.n;i++){const x=-s.w/2+i*k.sp.u;P.line(x,k.ov,x,s.d,'hid',{part:'joint'});}}},
+
+  // Felsőszekrény (wall unit, origin = its own bottom): handle zone 20, door 18, handle 58 above the bottom;
+  // doors n = ceil(w / 600), shelves = max(0, round(h / 350) − 1), hidden in the side view
+  felso:{resize:'param',
+    k(s){return {hz:20,door:18,sp:oaSplit(s.w,600),sh:Math.max(0,Math.round(s.h/350)-1)};},
+    F(P,s){const k=this.k(s);
+      P.rect(-s.w/2,0,s.w/2,s.h,'out+fill');
+      oaDoors(P,-s.w/2,s.w/2,0,s.h,{n:k.sp.n,handle:'bottom',hy:60});},
+    S(P,s){const k=this.k(s),f=k.hz+k.door;
+      P.rect(f,0,s.d,s.h,'out+fill');
+      P.rect(k.hz,2,f,s.h-2,'det+fill');
+      P.rect(2,54,k.hz,66,'det+fill');
+      for(let j=1;j<=k.sh;j++){const y=s.h*j/(k.sh+1);P.line(f+18,y,s.d-18,y,'hid',{part:'shelf'});}},
+    T(P,s){const k=this.k(s),f=k.hz+k.door;
+      P.rect(-s.w/2,f,s.w/2,s.d,'out+fill');
+      for(let i=0;i<k.sp.n;i++){const x0=-s.w/2+i*k.sp.u+2,x1=-s.w/2+(i+1)*k.sp.u-2,hl=Math.min(160,x1-x0-80);
+        P.rect(x0,k.hz,x1,f,'det+fill');P.rect((x0+x1)/2-hl/2,2,(x0+x1)/2+hl/2,k.hz,'det+fill');}}},
+
+  // Hűtő (freestanding): handle zone 30, door 60, kick strip 60 with vent slots, hinge left, compressor hidden in
+  // the side; doors = h ≥ 1500 ? 2 (freezer below, split at 0.38 h) : 1; handle ≤ 400 (0.4 of the door)
+  huto:{resize:'param',
+    k(s){const kick=60,sp=Math.round(s.h*.38),two=s.h>=1500;
+      const doors=two?[{b0:kick,b1:sp,at:'top'},{b0:sp,b1:s.h,at:'bottom'}]:[{b0:kick,b1:s.h,at:'top'}];
+      doors.forEach(o=>{o.hl=Math.min(400,(o.b1-o.b0)*.4);o.hb=o.at==='top'?o.b1-62-o.hl/2:o.b0+62+o.hl/2;});
+      return {hz:30,door:60,kick,doors};},
+    F(P,s){const k=this.k(s);
+      P.rect(-s.w/2,0,s.w/2,s.h,'out+fill',{rt:10});
+      P.rect(-s.w/2+20,8,s.w/2-20,k.kick-8,'det');
+      for(let x=-s.w/2+60;x<=s.w/2-60+1e-6;x+=40)P.line(x,20,x,k.kick-20,'det');
+      for(const o of k.doors)oaDoors(P,-s.w/2,s.w/2,o.b0,o.b1,{n:1,hinge:'left',handle:'side',hb:o.hb,hlen:o.hl,rt:o.b1===s.h?8:0});},
+    S(P,s){const k=this.k(s),f=k.hz+k.door;
+      P.rect(f,0,s.d,s.h,'out+fill',{rt:10});
+      P.rect(f-20,8,f,k.kick-2,'det+fill');
+      for(const o of k.doors){P.rect(k.hz,o.b0+2,f,o.b1-2,'det+fill',{rt:o.b1===s.h?6:0});
+        const y0=o.hb-o.hl/2,y1=o.hb+o.hl/2;
+        P.rect(2,y0,16,y1,'det+fill',{rx:6});P.rect(16,y0,k.hz,y0+20,'det+fill');P.rect(16,y1-20,k.hz,y1,'det+fill');}
+      P.rect(s.d-220,30,s.d-40,260,'hid',{rx:20});},                       // the compressor
+    T(P,s){const k=this.k(s),f=k.hz+k.door;
+      P.rect(-s.w/2,f,s.w/2,s.d,'out+fill',{rx:10});
+      P.rect(-s.w/2+2,k.hz,s.w/2-2,f,'det+fill');
+      P.rect(s.w/2-55,2,s.w/2-35,k.hz,'det+fill');}}};
+
+// ---------- the store ----------
+// OBJART[name] = {fam, front, left, right, top}: each view a (s) → {vb, body, parts, prims} function.
+const OBJART={};
+function oaDraw(fam,view,s){const F=OA_FAM[fam],V=OA_VIEWS[view];if(!F||!V)return null;
+  const fn=F[view]||((view==='L'||view==='R')?F.S:null);if(!fn)return null;
+  const P=oaPen(V.map);fn.call(F,P,s);
+  return {vb:V.vb(s).map(oaNum),body:P.body(),parts:P.parts,prims:P.prims};}
+function oaReg(fam,names){for(const n of names)OBJART[n]={fam,
+  front:s=>oaDraw(fam,'F',s),left:s=>oaDraw(fam,'L',s),right:s=>oaDraw(fam,'R',s),top:s=>oaDraw(fam,'T',s)};}
+oaReg('kanape',['Kanapé 3ü']);
+oaReg('agy',['Ágy 200×160']);
+oaReg('wc',['WC csésze']);
+oaReg('pult',['Konyhapult 60','Konyhapult 120','Konyhapult']);
+oaReg('felso',['Felsőszekrény']);
+oaReg('huto',['Hűtő 60']);
+
+function objArtItem(name){for(const g of OBJLIB)for(const it of g.items)if(it.n===name)return it;return null;}
+
+// objArt(name, 'F'|'L'|'R'|'T', size?, {k, css}) → {name, view, size, vb, body, svg, parts, prims} or null.
+// size defaults to the catalogue size; opt.k = paper scale 1 : k (adds width / height in mm); opt.css false = no <style>.
+function objArt(name,view,size,opt){
+  const e=OBJART[name],key={F:'front',L:'left',R:'right',T:'top'}[view];if(!e||!key)return null;
+  const it=objArtItem(name)||{},z=size||{};opt=opt||{};
+  const s={w:+(z.w||it.w),d:+(z.d||it.d),h:+(z.h||it.h)};
+  const r=e[key](s);if(!r)return null;
+  const mm=v=>+(v/opt.k).toFixed(2)+'mm';
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${r.vb.join(' ')}"${opt.k?` width="${mm(r.vb[2])}" height="${mm(r.vb[3])}"`:''}>`+
+    (opt.css===false?'':`<style>${objArtCss(opt.k||20)}</style>`)+`<g class="oa">${r.body}</g></svg>`;
+  return {name,view,size:s,vb:r.vb,body:r.body,svg,parts:r.parts,prims:r.prims};}
 // ---- Wall View: 2D elevation of a selected wall ----
 function devMini(type,x,y,col){
   if(type==='socket')return `<circle cx="${x}" cy="${y}" r="6" fill="#fff" stroke="${col}" stroke-width="1.4"/><line x1="${x-3}" y1="${y}" x2="${x+3}" y2="${y}" stroke="${col}" stroke-width="1.4"/>`;
@@ -11297,6 +11574,235 @@ function vexpMenuToggle(on){const m=$('expMenu');if(!m)return false;const show=o
   if($('expPrint'))$('expPrint').onclick=()=>{vexpPrint();vexpMenuToggle(false);};})();
 
 window.vexpSheet=vexpSheet;window.VEXP_VIEWS=VEXP_VIEWS;
+
+// A 2D style (state.style 'alaprajz', 2D only) that replaces the scene geometry, like the blueprint does, and draws the
+// active level cut at state.planCutH:
+//   walls    cut (z0 < c < top) → poché + ONE contour around their union · beyond (top ≤ c) → outline · above → dashed
+//   openings in a cut wall (its opnHost only): cut (sill < c < top) → a gap + its symbol · otherwise hidden → white dashes over the poché
+//   objects  above the cut → dashed footprint · else the V8 top view where OBJART has one · else a white footprint
+//   endpoints (draw()'s own loop): above the cut → not drawn, counted in the HUD (D-V9-5 3C); no kind codes under the symbols
+// The clean output (state.apAll off) keeps only the geometry, the draft and the endpoints: no routes, notes, measures,
+// stack layers, and no text at all until V9b places room tags and codes with a collision-avoiding placer.
+// Pens are the blueprint's paper millimetres (state.bpScale), weights per PRIMER §4.5: cut 0.5 > beyond 0.25 > furniture
+// 0.18 > hidden 0.13. The front of an object comes from apFront (D-V9-3 A).
+
+const AP_PEN={cut:0.5,beyond:0.25,glass:0.18,obj:0.18,det:0.13,hid:0.13};   // paper mm
+const AP_POCHE='#9a9a9a';   // D-V9-5 1B: mid-grey, so endpoints on the walls read
+const AP_DOOR_PEN={c:'#111',sw:bpSW,body:AP_PEN.beyond,thin:AP_PEN.glass,wall:AP_PEN.cut,fill:'#fff',arc:''};
+let AP_LAST=null;   // the stats of the last Alaprajz render (tests, HUD)
+
+function alaprajzOn(){return state.style==='alaprajz'&&state.pitch>=88;}
+function apCut(){const v=+state.planCutH;return v>0?Math.max(100,Math.min(2700,v)):1200;}
+function apCutSet(v){state.planCutH=Math.max(100,Math.min(2700,Math.round(+v||1200)));apSyncRow();draw();apHud();}
+function apSyncRow(){const on=state.style==='alaprajz';if($('apCutRow'))$('apCutRow').style.display=on?'flex':'none';
+  if($('apCut'))$('apCut').value=apCut();if($('apCutN'))$('apCutN').value=apCut();}
+function apHud(){if(!$('hud'))return;const S=AP_LAST;
+  $('hud').textContent=alaprajzOn()?'Alaprajz — vágás '+apCut()+' mm'+(S?' · végpontok a vágás alatt '+S.dev.full+' · a vágás fölött '+S.dev.above+' rejtve':'')
+    :'Alaprajz — 2D felülnézetben jelenik meg; 3D-ben a normál rajz marad.';}
+
+// against the cut c: a wall {z0, h} and an opening (sill, top)
+function apWallState(r,level,c){const z0=r.z0||0,top=z0+(r.h||wallH(level));return z0<c&&c<top?'cut':top<=c?'beyond':'above';}
+function apOpenRange(o){const win=o.type==='window',sill=o.sill!=null?o.sill:(win?WIN_SILL:0);return [sill,sill+(o.h||(win?WIN_H:DOOR_H))];}
+function apOpenState(o,c){const [a,b]=apOpenRange(o);return a<c&&c<b?'cut':'hidden';}
+
+// D-V9-3 A: the front of an object, a unit vector in plan mm. o.front (0 → −y, 90 → +x, 180 → +y, 270 → −x) wins;
+// else its back goes to the nearest wall whose face is ≤ 600 mm from the footprint box and whose span overlaps it
+// (within 100 mm of the nearest, the one with the longest overlap); else local −d (ang 0 → −y).
+const AP_FRONT={0:[0,-1],90:[1,0],180:[0,1],270:[-1,0]};
+function apFront(o){
+  if(o.front!=null&&AP_FRONT[o.front])return AP_FRONT[o.front].slice();
+  const P=objFootprint(o),bx0=Math.min(...P.map(p=>p[0])),bx1=Math.max(...P.map(p=>p[0])),by0=Math.min(...P.map(p=>p[1])),by1=Math.max(...P.map(p=>p[1]));
+  const cand=[];
+  for(const r of (WALLS[o.level]||[])){const horiz=(r.x1-r.x0)>=(r.y1-r.y0);
+    if(horiz){const ov=Math.min(bx1,r.x1)-Math.max(bx0,r.x0);if(ov<=0)continue;
+      if(r.y1<=by0+50)cand.push({gap:Math.max(0,by0-r.y1),ov,f:[0,1]});
+      else if(r.y0>=by1-50)cand.push({gap:Math.max(0,r.y0-by1),ov,f:[0,-1]});}
+    else{const ov=Math.min(by1,r.y1)-Math.max(by0,r.y0);if(ov<=0)continue;
+      if(r.x1<=bx0+50)cand.push({gap:Math.max(0,bx0-r.x1),ov,f:[1,0]});
+      else if(r.x0>=bx1-50)cand.push({gap:Math.max(0,r.x0-bx1),ov,f:[-1,0]});}}
+  const near=cand.filter(k=>k.gap<=600);
+  if(near.length){const g0=Math.min(...near.map(k=>k.gap));return near.filter(k=>k.gap<=g0+100).sort((a,b)=>b.ov-a.ov)[0].f.slice();}
+  const a=o.ang||0;return [+Math.sin(a).toFixed(12),+(-Math.cos(a)).toFixed(12)];}
+
+// the art of an object placed in the plan: the T view's (x, y) (front edge at y = 0, back at −d) → plan mm → base units.
+// world = c + f·(d/2 + y) + r·x with r = (f.y, −f.x), then the 2D projection (affine at pitch 90)
+function apArtMatrix(o,f,depth){const z=dz(o.level,0),s0=planToBase(0,0,z),X=planToBase(1000,0,z),Y=planToBase(0,1000,z);
+  const sx=[(X[0]-s0[0])/1000,(X[1]-s0[1])/1000],sy=[(Y[0]-s0[0])/1000,(Y[1]-s0[1])/1000],r=[f[1],-f[0]];
+  const T=[o.x+f[0]*depth/2,o.y+f[1]*depth/2];
+  return [sx[0]*r[0]+sy[0]*r[1],sx[1]*r[0]+sy[1]*r[1],sx[0]*f[0]+sy[0]*f[1],sx[1]*f[0]+sy[1]*f[1],
+    s0[0]+sx[0]*T[0]+sy[0]*T[1],s0[1]+sx[1]*T[0]+sy[1]*T[1]];}
+function apArtSize(o,f){const a=o.ang||0,along=Math.abs(f[0]*Math.cos(a)+f[1]*Math.sin(a))>=0.5;   // front along the w axis → swap
+  return along?{w:o.d||600,d:o.w||600,h:o.ht||600}:{w:o.w||600,d:o.d||600,h:o.ht||600};}
+
+// the style sheet: art pens in art millimetres (the matrix carries the plan scale), the above-cut endpoint look
+function apCss(){const k=bpScaleN()*bpFine(),m=v=>+(v*k).toFixed(3);
+  return `<style>.ap-art .oa-out,.ap-art .oa-det,.ap-art .oa-hid{fill:none;stroke:#111;stroke-linecap:round;stroke-linejoin:round}`+
+    `.ap-art .oa-out{stroke-width:${m(AP_PEN.obj)}}.ap-art .oa-det{stroke-width:${m(AP_PEN.det)}}`+
+    `.ap-art .oa-hid{stroke-width:${m(AP_PEN.hid)};stroke-dasharray:${m(1.2)} ${m(.8)}}.ap-art .oa-fill{fill:#fff}</style>`;}
+
+function drawAlaprajzGeom(){const level=state.active,z=dz(level,0),c=apCut();
+  const S={cut:c,walls:{cut:0,beyond:0,above:0},open:{cut:0,hidden:0},obj:{art:0,outline:0,above:0},fronts:[],dev:{full:0,above:0},drawn:[],stairs:0};
+  const dash=`${bpU(1.2).toFixed(3)} ${bpU(.8).toFixed(3)}`;
+  let s=apCss();
+  // rooms and floors: white
+  (ROOMSB[level]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level}))return;
+    s+=`<polygon points="${p2b(rm.poly.map(p=>[p[0],p[1],z]))}" fill="#fff" stroke="none"/>`;});
+  data.floors.forEach((fl,i)=>{if(fl.level!==level||!fl.poly||fl.poly.length<3)return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level}))return;
+    s+=`<polygon points="${p2b(fl.poly.map(p=>[p[0],p[1],z]))}" fill="#fff" stroke="none"/>`;});
+  // objects, under the walls
+  data.objects.forEach(o=>{if(o.level!==level||!layerShows(o,'object'))return;if(isGenObject(o)&&!genObjectsVisible())return;
+    const z0=o.z||0,fp=p2b(objFootprint(o));
+    if(z0>=c){S.obj.above++;s+=lyrWrap(o,'object',`<polygon points="${fp}" fill="none" stroke="#111" stroke-width="${bpSW(AP_PEN.hid)}" stroke-dasharray="${dash}"/>`);return;}
+    if(typeof OBJART!=='undefined'&&OBJART[o.name]){const f=apFront(o),sz=apArtSize(o,f),A=objArt(o.name,'T',sz,{css:false});
+      if(A){S.obj.art++;S.fronts.push({name:o.name,f});const M=apArtMatrix(o,f,sz.d).map(v=>+v.toFixed(4));
+        s+=lyrWrap(o,'object',`<g class="ap-art" transform="matrix(${M.join(' ')})">${A.body}</g>`);return;}}
+    S.obj.outline++;s+=lyrWrap(o,'object',`<polygon points="${fp}" fill="#fff" stroke="#111" stroke-width="${bpSW(AP_PEN.obj)}"/>`);});
+  // stairs (V9b): the blueprint stair, dashed above the cut, with a break line
+  data.openings.forEach(o=>{if(o.level!==level||o.type!=='stairs'||!layerShows(o,'build'))return;S.stairs++;s+=lyrWrap(o,'build',bpStairsSvg(o,z,level,c));});
+  // walls
+  const pieces=[];let sym='',low='';
+  (WALLS[level]||[]).forEach(r=>{if(!layerShows(r,'wall')||!soloWallOk(r,level))return;
+    const st=apWallState(r,level,c);S.walls[st]++;
+    if(st!=='cut'){low+=`<polygon points="${bpRect(r,z)}" fill="none" stroke="#111" stroke-width="${bpSW(st==='beyond'?AP_PEN.beyond:AP_PEN.hid)}"${st==='above'?` stroke-dasharray="${dash}"`:''}/>`;return;}
+    const W=bpWallSpans(r,level);let u=0;
+    W.spans.forEach(sp=>{const q=bpSeg(r,W.horiz,sp.u0,sp.u1),o=sp.o;
+      const host=opnHost(o);if(host&&host!==r)return;   // one host per opening (bpWallSpans also catches a door that grazes a butting wall)
+      if(apOpenState(o,c)!=='cut'){S.open.hidden++;
+        sym+=`<polygon points="${bpRect(q,z)}" fill="none" stroke="#fff" stroke-width="${bpSW(AP_PEN.glass)}" stroke-dasharray="${dash}"/>`;return;}
+      S.open.cut++;if(sp.u0-u>1)pieces.push(bpSeg(r,W.horiz,u,sp.u0));u=Math.max(u,sp.u1);
+      const a=[q.x0,q.y0],b2=W.horiz?[q.x1,q.y0]:[q.x0,q.y1],c2=[q.x1,q.y1],d2=W.horiz?[q.x0,q.y1]:[q.x1,q.y0];
+      sym+=`<polygon points="${bpRect(q,z)}" fill="#fff" stroke="none"/>`;
+      if(o.type==='window'){const m0=W.horiz?[q.x0,(q.y0+q.y1)/2]:[(q.x0+q.x1)/2,q.y0],m1=W.horiz?[q.x1,(q.y0+q.y1)/2]:[(q.x0+q.x1)/2,q.y1];
+        sym+=`<polyline points="${p2b([[a[0],a[1],z],[b2[0],b2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(AP_PEN.beyond)}"/>`
+          +`<polyline points="${p2b([[d2[0],d2[1],z],[c2[0],c2[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(AP_PEN.beyond)}"/>`
+          +`<polyline points="${p2b([[m0[0],m0[1],z],[m1[0],m1[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(AP_PEN.glass)}"/>`;}
+      else sym+=bpDoorSymbol(q,W,o,sp.u1-sp.u0,z,[a,b2,c2,d2],AP_DOOR_PEN);});
+    if(W.len-u>1)pieces.push(bpSeg(r,W.horiz,u,W.len));});
+  s+=low;
+  pieces.forEach(q=>{s+=`<polygon points="${bpRect(q,z)}" fill="${AP_POCHE}" stroke="${AP_POCHE}" stroke-width="${bpSW(AP_PEN.hid)}"/>`;});
+  s+=sym;
+  const segs=rectsUnionSegs(pieces);
+  if(segs.length)s+=`<path class="ap-contour" d="${segs.map(g=>{const A=planToBase(g[0],g[1],z),B=planToBase(g[2],g[3],z);
+    return 'M'+A[0].toFixed(2)+' '+A[1].toFixed(2)+'L'+B[0].toFixed(2)+' '+B[1].toFixed(2);}).join('')}" fill="none" stroke="#111" stroke-width="${bpSW(AP_PEN.cut)}" stroke-linecap="square"/>`;
+  S.pieces=pieces.length;AP_LAST=S;
+  return s;}
+// draw()'s endpoint loop: a device above the cut on the active level is not drawn, only counted (D-V9-5 3C)
+function apDevWrap(d,svg){if(!alaprajzOn())return svg;if(d.level!==state.active)return state.apAll?svg:'';   // the clean plan: the active level only
+  if((d.h||0)>apCut()){if(AP_LAST)AP_LAST.dev.above++;return '';}
+  if(AP_LAST){AP_LAST.dev.full++;AP_LAST.drawn.push({d,svg});}return svg;}
+// the object menu's Eleje entry: auto → ↑ → → → ↓ → ← → auto (o.front absent = derived)
+const AP_FRONT_ORD=[undefined,0,90,180,270],AP_FRONT_ARR={0:'↑',90:'→',180:'↓',270:'←'};
+function apFrontCycle(o){const i=AP_FRONT_ORD.indexOf(o.front),n=AP_FRONT_ORD[(i+1)%AP_FRONT_ORD.length];if(n===undefined)delete o.front;else o.front=n;return o.front;}
+function apFrontLabel(o){return o.front!=null&&AP_FRONT_ARR[o.front]?AP_FRONT_ARR[o.front]+' (kézi)':'automatikus';}
+
+// ---------- V9b: the annotation, every text through one placer ----------
+// Sizes are paper mm at state.bpScale (bpU / bpFS); the placer works in base units (screen y down). Greedy: texts in
+// priority order (room tags, codes, dimension texts), each tries rings of spots around its anchor and takes the first
+// that touches no placed text and no block (endpoint symbols, chain lines, the north arrow), else the least overlap;
+// a text moved off its anchor gets a leader, which later texts also keep off.
+const AP_TXT={room:3.5,area:2.5,code:1.8,dim:2.5,north:3.5};   // paper mm
+function apTextW(t,fs){return [...String(t)].reduce((a,c)=>a+(/[0-9]/.test(c)?.56:/[A-ZÁÉÍÓÖŐÚÜŰ]/.test(c)?.68:/[mwMW]/.test(c)?.84
+  :/[ilj.,:;'|!·]/.test(c)?.3:c===' '?.3:c==='²'?.36:.56),0)*fs;}
+function apBoxOv(a,b){return Math.max(0,Math.min(a[2],b[2])-Math.max(a[0],b[0]))*Math.max(0,Math.min(a[3],b[3])-Math.max(a[1],b[1]));}
+// the box of a drawn symbol: circles, rects, lines, polygons in the svg string (no text: Alaprajz prints none there)
+function apSvgBox(svg){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;const add=(x,y)=>{x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);};
+  const num=(e,k)=>{const m=e.match(new RegExp('\\s'+k+'="(-?[\\d.]+)"'));return m?+m[1]:null;};
+  for(const e of svg.match(/<(circle|rect|line|polygon|polyline|ellipse)\b[^>]*>/g)||[]){const t=e.slice(1).split(/\s/)[0];
+    if(t==='circle'||t==='ellipse'){const r=num(e,'r'),cx=num(e,'cx'),cy=num(e,'cy'),rx=r!=null?r:num(e,'rx'),ry=r!=null?r:num(e,'ry');
+      if(cx!=null&&cy!=null&&rx!=null&&ry!=null){add(cx-rx,cy-ry);add(cx+rx,cy+ry);}}
+    else if(t==='rect'){const x=num(e,'x'),y=num(e,'y'),w=num(e,'width'),h=num(e,'height');if(x!=null&&y!=null&&w!=null&&h!=null){add(x,y);add(x+w,y+h);}}
+    else if(t==='line'){const a=num(e,'x1'),b=num(e,'y1'),c=num(e,'x2'),d=num(e,'y2');if(a!=null&&b!=null&&c!=null&&d!=null){add(a,b);add(c,d);}}
+    else{const m=e.match(/points="([^"]*)"/);if(m)m[1].trim().split(/\s+/).forEach(q=>{const v=q.split(',').map(Number);if(v.length===2&&!isNaN(v[0])&&!isNaN(v[1]))add(v[0],v[1]);});}}
+  return x1>=x0?[x0,y0,x1,y1]:null;}
+function apPlacer(){const placed=[],blocks=[],leads=[];let svg='',nLead=0;
+  const cost=b=>placed.reduce((k,p)=>k+apBoxOv(b,p.b),0)*4+blocks.reduce((k,q)=>k+apBoxOv(b,q.b),0)+leads.reduce((k,q)=>k+apBoxOv(b,q),0)*2;
+  const txt=(x,y,l)=>{const a=`x="${x.toFixed(2)}" y="${y.toFixed(2)}" font-size="${l.fs.toFixed(2)}" font-weight="${l.w||400}" text-anchor="middle" dominant-baseline="central" font-family="Arial,Segoe UI"`;
+    return `<text ${a} fill="#fff" stroke="#fff" stroke-width="${(l.fs*.3).toFixed(2)}" stroke-linejoin="round">${esc(l.t)}</text><text ${a} fill="${l.col||'#111'}">${esc(l.t)}</text>`;};
+  return {
+    block(b,kind){if(b)blocks.push({b,kind:kind||'x'});},
+    // it = {x, y, lines:[{t, fs, w, col}], r (clearance), pref (screen degrees), center, kind}
+    add(it){const W=Math.max(...it.lines.map(l=>apTextW(l.t,l.fs)))+it.lines[0].fs*.35,H=it.lines.reduce((a,l)=>a+l.fs*1.18,0)+it.lines[0].fs*.1;
+      const step=it.lines[0].fs*.7,angs=(it.pref||[]).concat([90,0,180,270,45,135,225,315,30,60,120,150,210,240,300,330]);let best=null;
+      const at=(cx,cy,ring)=>{const b=[cx-W/2,cy-H/2,cx+W/2,cy+H/2],k=cost(b);if(!best||k<best.k-1e-9)best={b,k,cx,cy,ring};return k===0;};
+      if(!(it.center&&at(it.x,it.y,0)))
+        outer:for(let ring=0;ring<14;ring++){const dd=(it.r||0)+ring*step;
+          for(const a of angs){const c=Math.cos(a*Math.PI/180),sn=Math.sin(a*Math.PI/180);
+            if(at(it.x+c*(dd+W/2*Math.abs(c)),it.y+sn*(dd+H/2*Math.abs(sn)),it.center?ring+1:ring))break outer;}}
+      placed.push({b:best.b,kind:it.kind});
+      const moved=Math.hypot(best.cx-it.x,best.cy-it.y)>(it.center?H:(it.r||0)+Math.max(W,H)/2+step*1.5);
+      if(moved){nLead++;const lx=Math.max(best.b[0],Math.min(it.x,best.b[2])),ly=Math.max(best.b[1],Math.min(it.y,best.b[3]));
+        svg+=`<line class="ap-lead" x1="${it.x.toFixed(2)}" y1="${it.y.toFixed(2)}" x2="${lx.toFixed(2)}" y2="${ly.toFixed(2)}" stroke="#555" stroke-width="${bpSW(AP_PEN.hid)}"/>`;
+        const L=Math.hypot(lx-it.x,ly-it.y),n=Math.max(1,Math.ceil(L/(step*2))),r=step*.6;
+        for(let k=1;k<n;k++){const x=it.x+(lx-it.x)*k/n,y=it.y+(ly-it.y)*k/n;leads.push([x-r,y-r,x+r,y+r]);}}
+      let y=best.cy-H/2+it.lines[0].fs*.05;
+      for(const l of it.lines){y+=l.fs*.59;svg+=txt(best.cx,y,l);y+=l.fs*.59;}
+      return best;},
+    // a text that stays where it is (the north letter): drawn as given, the others avoid it
+    fixed(x,y,l,kind){const W=apTextW(l.t,l.fs)+l.fs*.35,H=l.fs*1.2;placed.push({b:[x-W/2,y-H/2,x+W/2,y+H/2],kind:kind||'fixed'});svg+=txt(x,y,l);},
+    stats(){let ov=0;for(let i=0;i<placed.length;i++){for(let j=i+1;j<placed.length;j++)if(apBoxOv(placed[i].b,placed[j].b)>1e-6)ov++;
+        for(const q of blocks)if(q.kind==='ep'&&apBoxOv(placed[i].b,q.b)>1e-6)ov++;}
+      return {texts:placed.length,leaders:nLead,overlaps:ov};},
+    boxes:()=>placed.slice(),
+    svg:()=>svg};}
+
+// the code the Normal view prints under a device's symbol (its first <text>), and that text's colour
+function apDevCode(d){const st=state.style,sr=state.showRefs;state.style='normal';state.showRefs=false;let sv='';
+  try{sv=devSym(d);}finally{state.style=st;state.showRefs=sr;}
+  const m=sv.match(/<text\b([^>]*)>([^<]*)<\/text>/);if(!m||!m[2].trim())return null;
+  const c=m[1].match(/\sfill="([^"]+)"/);
+  return {t:m[2].replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&'),col:c&&c[1]!=='#fff'?c[1]:'#333'};}
+
+function apAnnotSvg(){const S=AP_LAST;if(!S)return '';const level=state.active,z=dz(level,0),Pl=apPlacer(),fs=v=>bpU(v);
+  const L={rooms:0,codes:0,dims:0,chains:0,north:0};let s='';
+  // blocks: every drawn endpoint symbol
+  for(const e of S.drawn)Pl.block(apSvgBox(e.svg),'ep');
+  // dimension chains (lines first, so every text keeps off them)
+  const bb=bpBBox(level),dimTxt=[];
+  if(bb&&state.apDims!==false){const xs=new Set(),ys=new Set();
+    // the façade on that side: walls within 400 mm of the level box edge (their edges = corners and set-backs) and the
+    // openings hosted in them; the box edges always
+    const band=400,WL=(WALLS[level]||[]),onTop=r=>r.y0<=bb.y0+band,onLeft=r=>r.x0<=bb.x0+band;
+    xs.add(Math.round(bb.x0));xs.add(Math.round(bb.x1));ys.add(Math.round(bb.y0));ys.add(Math.round(bb.y1));
+    WL.forEach(r=>{if(onTop(r)){xs.add(Math.round(r.x0));xs.add(Math.round(r.x1));}if(onLeft(r)){ys.add(Math.round(r.y0));ys.add(Math.round(r.y1));}});
+    data.openings.forEach(o=>{if(o.level!==level||o.type==='stairs')return;const h=opnHost(o);if(!h)return;const w=o.w||(o.type==='window'?WIN_W:DOOR_W);
+      const horiz=(h.x1-h.x0)>=(h.y1-h.y0);
+      if(horiz&&onTop(h)){xs.add(Math.round(o.x-w/2));xs.add(Math.round(o.x+w/2));}
+      if(!horiz&&onLeft(h)){ys.add(Math.round(o.y-w/2));ys.add(Math.round(o.y+w/2));}});
+    const X=[...xs].sort((a,b)=>a-b),Y=[...ys].sort((a,b)=>a-b);
+    const chain=(vals,fixed,axis)=>{if(vals.length<2)return;L.chains++;
+      const A=axis==='x'?[vals[0],fixed]:[fixed,vals[0]],B=axis==='x'?[vals[vals.length-1],fixed]:[fixed,vals[vals.length-1]];
+      s+=`<polyline class="ap-dim" points="${p2b([[A[0],A[1],z],[B[0],B[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(AP_PEN.beyond)}"/>`;
+      const a=planToBase(A[0],A[1],z),b=planToBase(B[0],B[1],z),t=bpU(.5);
+      Pl.block([Math.min(a[0],b[0])-t,Math.min(a[1],b[1])-t,Math.max(a[0],b[0])+t,Math.max(a[1],b[1])+t],'dim');
+      vals.forEach(v=>{const px=axis==='x'?v:fixed,py=axis==='x'?fixed:v;s+=bpTick(px,py,z,axis==='x'?Math.PI/4:-Math.PI/4);});
+      // the outer side (plan −y for the x chains, −x for the y chains) in screen degrees
+      const o0=planToBase(A[0],A[1],z),o1=planToBase(A[0]-(axis==='y'?1000:0),A[1]-(axis==='x'?1000:0),z);
+      const ang=Math.round(Math.atan2(o1[1]-o0[1],o1[0]-o0[0])*180/Math.PI);
+      for(let i=1;i<vals.length;i++){const dv=Math.round(vals[i]-vals[i-1]);if(dv<60)continue;const m=(vals[i]+vals[i-1])/2;
+        const q=planToBase(axis==='x'?m:fixed,axis==='x'?fixed:m,z);dimTxt.push({x:q[0],y:q[1],t:(dv/1000).toFixed(2).replace('.',','),ang});}};
+    chain(X,bb.y0-900,'x');chain([bb.x0,bb.x1],bb.y0-1900,'x');chain(Y,bb.x0-900,'y');chain([bb.y0,bb.y1],bb.x0-1900,'y');}
+  // north arrow (the blueprint convention: north = plan −y)
+  if(bb){const nx=bb.x1+2200,ny=bb.y0+300;L.north=1;
+    s+=`<g class="ap-north"><polyline points="${p2b([[nx,ny+900,z],[nx,ny-900,z]])}" fill="none" stroke="#111" stroke-width="${bpSW(AP_PEN.beyond)}"/>`
+      +`<polygon points="${p2b([[nx,ny-1150,z],[nx-260,ny-500,z],[nx+260,ny-500,z]])}" fill="#111"/></g>`;
+    const a=planToBase(nx-300,ny-1150,z),b=planToBase(nx+300,ny+900,z);Pl.block([Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1])],'north');
+    const q=planToBase(nx,ny-1550,z);Pl.fixed(q[0],q[1],{t:'É',fs:fs(AP_TXT.north),w:700},'north');}
+  // room tags
+  const rooms=[];(ROOMSB[level]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level}))return;rooms.push(rm);});
+  data.floors.forEach((fl,i)=>{if(fl.level!==level||!fl.poly||fl.poly.length<3)return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level}))return;rooms.push(fl);});
+  for(const rm of rooms){if(rm.noText||!rm.name)continue;
+    let cx=0,cy=0;rm.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=rm.poly.length;cy/=rm.poly.length;
+    const c=planToBase(cx,cy,z),lines=[{t:((rm.num?rm.num+'  ':'')+rm.name).toUpperCase(),fs:fs(AP_TXT.room),w:700},
+      {t:(polyArea(rm.poly)/1e6).toFixed(2).replace('.',',')+' m²',fs:fs(AP_TXT.area)}];
+    if(rm.mat)lines.push({t:rm.mat,fs:fs(AP_TXT.area)});
+    Pl.add({x:c[0],y:c[1],lines,center:true,kind:'room'});L.rooms++;}
+  // endpoint codes
+  if(state.apCodes!==false)for(const e of S.drawn){const k=apDevCode(e.d),b=apSvgBox(e.svg);if(!k||!b)continue;
+    Pl.add({x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,r:Math.max(b[2]-b[0],b[3]-b[1])/2+bpU(.3),lines:[{t:k.t,fs:fs(AP_TXT.code),w:700,col:k.col}],pref:[90,0,180,270],kind:'code'});L.codes++;}
+  // dimension texts, on the outer side of their chain
+  for(const t of dimTxt){Pl.add({x:t.x,y:t.y,r:bpU(.6),lines:[{t:t.t,fs:fs(AP_TXT.dim)}],pref:[t.ang],kind:'dim'});L.dims++;}
+  S.labels=Object.assign(L,Pl.stats());S.boxes=Pl.boxes();
+  return `<g class="ap-annot">${s}${Pl.svg()}</g>`;}
 //////////////////// FLOOR / CEILING PLANE EDITOR (top-down) ////////////////////
 // Same editing model as the wall elevation editor, but projected top-down onto a height BAND:
 //   Padló   → everything from just under the slab up to +tol
@@ -14493,6 +14999,7 @@ stage.addEventListener('contextmenu',e=>{e.preventDefault();if(ctxSuppress){ctxS
   if(oh&&oh.t==='objects'){const O=data.objects[oh.i];ctxMenu(e,[
     {label:'📐 Méretek',act:()=>objDimModal('Objektum méretei',{n:O.name,w:O.w,d:O.d,ht:O.ht,z:O.z||0},v=>{pushUndo();O.name=v.n;O.w=v.w;O.d=v.d;O.ht=v.ht;O.z=v.z;draw();})},
     {label:'↻ Forgatás 15°',act:()=>{pushUndo();O.ang=(O.ang||0)+Math.PI/12;draw();}},
+    {label:'⤾ Eleje: '+apFrontLabel(O)+' (vált)',act:()=>{pushUndo();apFrontCycle(O);draw();}},   // V9a, D-V9-3 A
     {label:'⧉ Másolás',act:()=>{pushUndo();data.objects.push(Object.assign(copyRecord('objects',O),{x:O.x+(O.w||600)+200}));draw();}},
     {label:'→ Réteg…',act:()=>sendToLayer(O)},
     {label:'⬆ Előre hozás (floor fölé)',act:()=>{pushUndo();O.zord=(O.zord||0)+1;draw();}},
@@ -15052,7 +15559,14 @@ $('style').onchange=e=>{state.style=e.target.value;bpUI();
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   if(state.style==='blueprint'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();
     $('hud').textContent='Blueprint nézet — 2D felülnézetre váltottam.';}
-  draw();if(state.style==='tiszta')tisztaHud();};
+  if(state.style==='alaprajz'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();}   // V9a: a 2D style
+  apSyncRow();draw();if(state.style==='tiszta')tisztaHud();if(state.style==='alaprajz')apHud();};
+if($('apCut'))$('apCut').oninput=e=>apCutSet(e.target.value);
+if($('apCutN'))$('apCutN').onchange=e=>apCutSet(e.target.value);
+if($('apAll'))$('apAll').onchange=e=>{state.apAll=e.target.checked;draw();};
+if($('apDims'))$('apDims').onchange=e=>{state.apDims=e.target.checked;draw();};
+if($('apCodes'))$('apCodes').onchange=e=>{state.apCodes=e.target.checked;draw();};
+document.querySelectorAll('.apPre').forEach(b=>{b.onclick=()=>apCutSet(+b.dataset.v);});
 // V4: Tiszta axo is a 3D look; in 2D the normal drawing stays, and the HUD says why
 function tisztaHud(){if($('hud'))$('hud').textContent=tisztaOn()?'Tiszta axo — az aktív szint, kivágással ('+(state.cutH||1500)+' / '+(state.cutNearH||1000)+' mm); útvonalak és jegyzetek nélkül.'
   :'Tiszta axo — 3D nézetben jelenik meg; 2D-ben a normál rajz marad.';}

@@ -20,7 +20,7 @@
 //
 // The old pattern silently EXCLUDES every one of those. The build succeeds and
 // produces a planner with no i18n, no settings panel, no action registry.
-// The pattern below accepts an optional letter, and the guard further down
+// The pattern below accepts up to two letters (05zb once 05z was taken), and the guard further down
 // refuses to build if any .js file in src/ was left out for any reason.
 // ==========================================================================
 
@@ -30,7 +30,7 @@ const ROOT = __dirname;
 const SRC = path.join(ROOT, 'src');
 const OUT = path.join(ROOT, 'dist', 'varler_planner.html');
 
-const MODULE_RE = /^\d\d[a-z]?-.*\.js$/;            // 00-core.js, 00b-i18n.js, 11b-backup.js
+const MODULE_RE = /^\d\d[a-z]{0,2}-.*\.js$/;       // 00-core.js, 00b-i18n.js, 11b-backup.js, 05zb-objart.js (2 letters: after 05z)
 const BANNER = /^\/\/ ={10,}[\s\S]*?\/\/ ={10,}\n/; // the per-module header comment
 
 function allJs() {
@@ -49,7 +49,7 @@ function guard(files) {
     console.error('\n  These .js files in src/ do NOT match the module naming');
     console.error('  convention and would be left out of the build:\n');
     skipped.forEach(f => console.error('    ' + f));
-    console.error('\n  Expected: NN-name.js or NNx-name.js  (e.g. 07-plane-editor.js, 07b-phone-camera.js)');
+    console.error('\n  Expected: NN-name.js, NNx-name.js or NNxy-name.js  (e.g. 07-plane-editor.js, 07b-phone-camera.js, 05zb-objart.js)');
     console.error('  Rename them, move them to tools/, or fix MODULE_RE.\n');
     throw new Error('unrecognised files in src/ — refusing to build a partial app');
   }

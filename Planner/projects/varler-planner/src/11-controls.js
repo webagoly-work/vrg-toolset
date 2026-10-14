@@ -23,7 +23,14 @@ $('style').onchange=e=>{state.style=e.target.value;bpUI();
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   if(state.style==='blueprint'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();
     $('hud').textContent='Blueprint nézet — 2D felülnézetre váltottam.';}
-  draw();if(state.style==='tiszta')tisztaHud();};
+  if(state.style==='alaprajz'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();}   // V9a: a 2D style
+  apSyncRow();draw();if(state.style==='tiszta')tisztaHud();if(state.style==='alaprajz')apHud();};
+if($('apCut'))$('apCut').oninput=e=>apCutSet(e.target.value);
+if($('apCutN'))$('apCutN').onchange=e=>apCutSet(e.target.value);
+if($('apAll'))$('apAll').onchange=e=>{state.apAll=e.target.checked;draw();};
+if($('apDims'))$('apDims').onchange=e=>{state.apDims=e.target.checked;draw();};
+if($('apCodes'))$('apCodes').onchange=e=>{state.apCodes=e.target.checked;draw();};
+document.querySelectorAll('.apPre').forEach(b=>{b.onclick=()=>apCutSet(+b.dataset.v);});
 // V4: Tiszta axo is a 3D look; in 2D the normal drawing stays, and the HUD says why
 function tisztaHud(){if($('hud'))$('hud').textContent=tisztaOn()?'Tiszta axo — az aktív szint, kivágással ('+(state.cutH||1500)+' / '+(state.cutNearH||1000)+' mm); útvonalak és jegyzetek nélkül.'
   :'Tiszta axo — 3D nézetben jelenik meg; 2D-ben a normál rajz marad.';}

@@ -463,6 +463,7 @@ stage.addEventListener('contextmenu',e=>{e.preventDefault();if(ctxSuppress){ctxS
   if(oh&&oh.t==='objects'){const O=data.objects[oh.i];ctxMenu(e,[
     {label:'📐 Méretek',act:()=>objDimModal('Objektum méretei',{n:O.name,w:O.w,d:O.d,ht:O.ht,z:O.z||0},v=>{pushUndo();O.name=v.n;O.w=v.w;O.d=v.d;O.ht=v.ht;O.z=v.z;draw();})},
     {label:'↻ Forgatás 15°',act:()=>{pushUndo();O.ang=(O.ang||0)+Math.PI/12;draw();}},
+    {label:'⤾ Eleje: '+apFrontLabel(O)+' (vált)',act:()=>{pushUndo();apFrontCycle(O);draw();}},   // V9a, D-V9-3 A
     {label:'⧉ Másolás',act:()=>{pushUndo();data.objects.push(Object.assign(copyRecord('objects',O),{x:O.x+(O.w||600)+200}));draw();}},
     {label:'→ Réteg…',act:()=>sendToLayer(O)},
     {label:'⬆ Előre hozás (floor fölé)',act:()=>{pushUndo();O.zord=(O.zord||0)+1;draw();}},

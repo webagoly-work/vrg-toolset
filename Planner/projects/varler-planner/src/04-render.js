@@ -320,6 +320,19 @@ function bpDimChain(vals,fixed,axis,z,flip){ // axis 'x': stations along x at y=
     const m=(vals[i]+vals[i-1])/2,px=axis==='x'?m:fixed,py=axis==='x'?fixed:m;
     s+=bpTxt(px,py,z,(d/1000).toFixed(2).replace('.',','),BP_TXT.body,400,'middle',bpU(flip?3:-1.2));}
   return s;}
+// a stair in plan: outline, treads, walking line. cut (V9a/b Alaprajz): treads whose top (i × riser) is above it are
+// dashed and a break line crosses the stair at the cut tread; without a cut the blueprint drawing, byte for byte
+function bpStairsSvg(o,z,level,cut){let s='';
+  const riser=o.riser||RISER,Wd=o.w||STAIR_W,going=o.going||GOING,n=Math.max(3,Math.round((o.h||wallH(level))/riser));
+  const d=[Math.cos(o.ang),Math.sin(o.ang)],p=[-Math.sin(o.ang),Math.cos(o.ang)],rev=(o.variant&1)?-1:1;
+  const P=(u,v)=>[o.x+d[0]*u*rev+p[0]*v, o.y+d[1]*u*rev+p[1]*v, z];
+  s+=`<polygon points="${p2b([P(0,0),P(n*going,0),P(n*going,Wd),P(0,Wd)])}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
+  for(let i=1;i<n;i++){const hid=cut!=null&&i*riser>cut;
+    s+=`<polyline points="${p2b([P(i*going,0),P(i*going,Wd)])}" fill="none" stroke="#111" stroke-width="${bpSW(hid?BP_PEN.hair:BP_PEN.fine)}"${hid?` stroke-dasharray="${bpU(1.2).toFixed(3)} ${bpU(.8).toFixed(3)}" class="ap-tread-hid"`:cut!=null?' class="ap-tread"':''}/>`;}
+  s+=`<polyline points="${p2b([P(going*0.6,Wd/2),P(n*going-going*0.6,Wd/2)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;
+  if(cut!=null){const k=Math.floor(cut/riser);if(k>0&&k<n)
+    s+=`<polyline class="ap-break" points="${p2b([P(k*going,0),P((k+0.4)*going,Wd*0.45),P((k+0.6)*going,Wd*0.55),P((k+1)*going,Wd)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.fine)}"/>`;}
+  return s;}
 function bpBBox(level){let b={x0:1e9,y0:1e9,x1:-1e9,y1:-1e9},any=false;
   const add=p=>{b.x0=Math.min(b.x0,p[0]);b.x1=Math.max(b.x1,p[0]);b.y0=Math.min(b.y0,p[1]);b.y1=Math.max(b.y1,p[1]);any=true;};
   (WALLS[level]||[]).forEach(r=>{add([r.x0,r.y0]);add([r.x1,r.y1]);});
@@ -365,13 +378,7 @@ function drawBlueprintPlan(){const level=state.active;const z=dz(level,0);
   s=lyrWrapOp(s,s0,+k);});
   // ---- stairs in plan: treads + direction arrow ----
   data.openings.forEach(o=>{if(o.level!==level||o.type!=='stairs'||!layerShows(o,'build'))return;
-    const s0=s.length;
-    const Wd=o.w||STAIR_W,going=o.going||GOING,n=Math.max(3,Math.round((o.h||wallH(level))/(o.riser||RISER)));
-    const d=[Math.cos(o.ang),Math.sin(o.ang)],p=[-Math.sin(o.ang),Math.cos(o.ang)],rev=(o.variant&1)?-1:1;
-    const P=(u,v)=>[o.x+d[0]*u*rev+p[0]*v, o.y+d[1]*u*rev+p[1]*v, z];
-    s+=`<polygon points="${p2b([P(0,0),P(n*going,0),P(n*going,Wd),P(0,Wd)])}" fill="#fff" stroke="#111" stroke-width="${bpSW(BP_PEN.body)}"/>`;
-    for(let i=1;i<n;i++)s+=`<polyline points="${p2b([P(i*going,0),P(i*going,Wd)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.fine)}"/>`;
-    s+=`<polyline points="${p2b([P(going*0.6,Wd/2),P(n*going-going*0.6,Wd/2)])}" fill="none" stroke="#111" stroke-width="${bpSW(BP_PEN.thin)}"/>`;
+    const s0=s.length;s+=bpStairsSvg(o,z,level);
     s=lyrWrapFrom(s,s0,o,'build');});
   // ---- room labels: NAME / burkolat / area ----
   if(state.showRoomText)rooms.forEach(rm=>{if(rm.noText)return;
@@ -688,7 +695,7 @@ function devSym(d){const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),x=b[0],y=b[1];
   sym=wrap(sym);
   if(typeof cktRingSvg==='function')sym=cktRingSvg(d,x,y,k,back)+sym;   // circuit end point ring, under the symbol
   if(typeof lyrSpotIs==='function'&&lyrSpotIs(d))sym=lyrSpotRing(d,x,y,k)+sym;   // layer spotlight (05l), furthest back
-  if(d.kind||d.lv){const code=(d.kind&&DEVKIND[d.kind]?DEVKIND[d.kind].s:'LV');
+  if((d.kind||d.lv)&&!alaprajzOn()){const code=(d.kind&&DEVKIND[d.kind]?DEVKIND[d.kind].s:'LV');
     sym+=`<text x="${x}" y="${y+R(15)}" font-size="${R(8)}" text-anchor="middle" fill="#5a5348" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.4)}" opacity="${fillA}">${esc(code)}</text>`;}
   if(state.showRefs&&d.ref)sym+=`<text x="${x+R(9)}" y="${y-R(8)}" font-size="${R(9.5)}" fill="#0a2b6b" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.6)}" opacity="${fillA}">${esc(d.ref)}</text>`;
   return sym;}
@@ -906,7 +913,7 @@ function drawSoon(){if(_drawPending)return;_drawPending=true;
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(run);else run();}
 function draw(){
   if(stage&&stage.classList){stage.classList.toggle('prev',prevOn());stage.classList.toggle('tiszta',tisztaOn());}   // the dark ground is CSS on the stage, not a rect inside the drawing
-  let s = bgSvg() + (tisztaOn()?drawTisztaGeom():state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom()
+  let s = bgSvg() + (tisztaOn()?drawTisztaGeom():alaprajzOn()?drawAlaprajzGeom():state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom()
                     :prevOn()?drawPreviewGeom():drawNormalGeom());
   s+=drawGuides();
   // hovered / locked wall highlight
@@ -1100,14 +1107,18 @@ function draw(){
         if(segHitsRect(d.x,d.y,v[0],v[1],20000,r)){d.faceBack=true;break;}}}
     }
   } else for(const d of data.devices)d.faceBack=false;
+  const sDv0=s.length;
   // board connection rectangles (the whole rectangle is one connection point along the expected underside)
   for(const b of data.devices){if(b.type!=='board'||!state.levels[b.level]||!layerShows(b,'device'))continue;
+    if(alaprajzOn()&&!state.apAll&&b.level!==state.active)continue;   // V9a: the plan shows the active level only
     const s0=s.length;
     const poly=boardRectPoly(b).map(p=>planToBase(p[0],p[1],dz(b.level,b.z||BOARD_DEFAULT_Z)));
     s+=`<polygon points="${poly.map(p=>p[0]+','+p[1]).join(' ')}" fill="#ffe9b0" fill-opacity="0.5" stroke="#b8901f" stroke-width="${vsP(1.3)}" stroke-dasharray="${vsDash('4 2')}"/>`;
     const c=planToBase(b.x,b.y,dz(b.level,b.z||BOARD_DEFAULT_Z));
-    s+=`<text x="${c[0]}" y="${c[1]+vsP(3)}" font-size="${vsP(8.5)}" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.4)}">${esc(b.ref||'EL')}</text>`;s=lyrWrapFrom(s,s0,b,'device');}
-  for(const d of data.devices){if(state.levels[d.level]&&layerShows(d,'device')&&soloOk(d.x,d.y,d.level))s+=lyrWrap(d,'device',devSym(d));}
+    if(!alaprajzOn())s+=`<text x="${c[0]}" y="${c[1]+vsP(3)}" font-size="${vsP(8.5)}" text-anchor="middle" fill="#7a5c0a" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2.4)}">${esc(b.ref||'EL')}</text>`;s=lyrWrapFrom(s,s0,b,'device');}
+  for(const d of data.devices){if(state.levels[d.level]&&layerShows(d,'device')&&soloOk(d.x,d.y,d.level))s+=lyrWrap(d,'device',apDevWrap(d,devSym(d)));}   // V9a: above the Alaprajz cut → hidden (D-V9-5 3C)
+  if(alaprajzOn())s+=apAnnotSvg();   // V9b: room tags, codes, dimensions, north — placed together
+  const sDv1=s.length;
   // notes
   for(const [ni,n] of data.notes.entries()){if(!state.levels[n.level])continue;
     if(typeof ntVisible==='function'&&!ntVisible(n))continue;
@@ -1150,7 +1161,9 @@ function draw(){
     ov+=`<circle cx="${b[0]}" cy="${b[1]}" r="${vsP(13)}" fill="none" stroke="#e8641c" stroke-width="${vsP(2.5)}" stroke-dasharray="${vsDash('4 3')}"/>`
       +`<text x="${b[0]}" y="${b[1]-vsP(18)}" font-size="${vsP(10)}" text-anchor="middle" fill="#e8641c" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="${vsP(3)}">🖌 forrás</text>`;}
   if(tisztaOn())s=s.slice(0,sTr)+s.slice(sDr0,sDr1);   // a presentation look: no routes, notes, measures or stack scene layer
-  if(typeof stkHookSvg==='function'){if(!tisztaOn())s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
+  const apClean=alaprajzOn()&&!state.apAll;   // V9a: the plan output = building, objects, room labels, endpoints (+ the draft)
+  if(apClean)s=s.slice(0,sTr)+s.slice(sDr0,sDr1)+s.slice(sDv0,sDv1);   // no text yet: room tags + placed codes are V9b
+  if(typeof stkHookSvg==='function'){if(!tisztaOn()&&!apClean)s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
   const changed=paintLayers(s,ov);
   setTransform();
   if(typeof statusBar==='function')statusBar();

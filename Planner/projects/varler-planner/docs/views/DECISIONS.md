@@ -186,3 +186,80 @@ plates overlap ≈ 90 % and read as a dense translucent stack.
 - **A (chosen)** — objects whose footprint lies within **600 mm** of the wall face and inside the wall's span.
   Parallel to the wall → front view; perpendicular → side view (L/R by orientation).
 - B — A plus a per-wall *Megjelenítés* tick list. C — only objects marked manually.
+
+---
+
+## D-V8-1 · Resizing rule for object line-art — answered 2026-10-14: **A** (as built)
+
+The brief: parametric where the family allows; otherwise decide stretch vs fixed detail and write it down.
+Built as **A** (spec-78 checks it):
+
+- **A (built, default)**: families with parts to count recompute them from w/d/h (sofa cushions = round(seat / 650),
+  bed pillows 1 / 2 at w 1200, base units = ceil(w / 600) each with a drawer + door, wall-unit doors = ceil(w / 600)
+  and shelves = round(h / 350) − 1, fridge 2 doors from h 1500). **Every** family keeps its small details at a fixed mm
+  size: legs, handles 160 × 12, plinth 100, worktop 40, drawer 140, gaps 2, seat 15, lid 30, flush button r 30.
+  A family with nothing to count (**WC**) **stretches**: its shape is fractions of w/d/h, with the fixed details above.
+  No SVG transform anywhere, so line weights never distort.
+- **B**: non-countable families keep the catalogue drawing **fixed**, centred in the resized box, with the box as a thin
+  outline (honest about a product that comes in one size; looks wrong when the box is much bigger).
+- **C**: non-countable families scale **uniformly** by the smaller ratio (keeps proportions, leaves a gap on one axis).
+
+## D-V8-2 · ⏸ look on the first five (fig/objart-first5.png) — answered 2026-10-14: **2a A, 2b A, 2c A** (approved as built)
+
+Kanapé 3ü, Ágy 200×160, WC csésze, Konyhapult 120 (+ 60 / 1100), Felsőszekrény, Hűtő 60, at catalogue size and resized,
+at 1 : 25. Three things to look at:
+
+- **2a · overall register** — **A (recommended)** approve as is, roll on with V8b batches · **B** heavier (contour 0.5,
+  detail 0.25) · **C** lighter / fewer details (drop seams, vent slots, fold line).
+- **2b · swing marks** (the dashed hinge triangles) — **A (recommended)** keep them on every door (the elevation
+  convention; they tell the installer which side opens) · **B** wall units and appliances only, not base units · **C** none.
+- **2c · hinge default** — **A (recommended)** the left half of a run hinges left, the right half right; single doors
+  and the fridge hinge left · **B** every single door hinges right · **C** a per-object *Nyitás* (bal / jobb) field
+  later in the Planner (V10 needs it anyway for real projects).
+
+---
+
+## D-V9-3 · Which side of a placed object is its front? — answered 2026-10-14: **A**
+
+V9a draws furniture in the plan with the V8 top view (front at the bottom of T), and V10 picks F vs L/R by it. The
+model does not know the front: an object is `{x, y, w, d, ht, ang}`; wall-snapping sets `ang` 0 for a horizontal wall
+on **either** side (π/2 for a vertical one), and every one of P33's 31 ground-floor objects has `ang` 0 (4 fotels around
+a table, 6 chairs, the sofa, the fridge …). So today a sofa against a south wall and one against a north wall are
+the same record.
+
+- **A (recommended)** — a derived front plus an override: an object whose footprint lies within 600 mm of a wall face
+  (the D-V10-1 rule) has its **back to the nearest wall**; a free-standing one faces local −d (`ang` 0 → the front looks
+  toward −y, i.e. up in the plan); a new optional field `front` (0 / 90 / 180 / 270, set from the object's context menu,
+  HU *Eleje: ↑ → ↓ ←*) overrides both. Nothing changes in saved files until the user sets it.
+- **B** — derived only (A without the field). Free-standing chairs and fotels around a table will often face wrong.
+- **C** — no art in the plan: footprint outlines (+ name) only, as the blueprint plan does today; the front question
+  is left for V10.
+
+## D-V9-4 · Endpoints and the cut height in *Alaprajz* — answered 2026-10-14: **A**
+
+The cut height (*Vágási magasság*, presets 300 / 1100 / 1200 / 1500) makes the building section; the brief says
+electrical work cares what sits at 300 / 1100 / 1300 mm. P33 ground has 165 endpoints: 23 at ≤ 500, 19 at 501–1250,
+28 at 1251–2000 and **95 above 2000** (ceiling lights), so the rule matters.
+
+- **A (recommended)** — every endpoint is drawn (it is an electrical plan); those at or below the cut in full, those
+  above it in the faint *above-cut* variant (outline only, 50 % ink), so moving the cut highlights the band you care
+  about without hiding the lights.
+- **B** — a band: only endpoints within ± 300 mm of the cut in full, all others faint.
+- **C** — the cut moves the building only; every endpoint is always drawn in full.
+
+## D-V9-5 · ⏸ look on the Alaprajz samples (fig/p33-plan-1200.png, fig/p33-plan-300.png) — answered 2026-10-14: **1 B, 2 A, 3 C** (built)
+
+**Answer (user):** walls **B** mid-grey poché (`#9a9a9a`, contour unchanged) · content **A** as built · endpoints above the
+cut **C** hidden, counted in the HUD (*a vágás fölött N rejtve*). Built the same day; samples re-rendered; spec-79 (40).
+
+*Original question:*
+
+P33 ground at 1:50, cut 1200 and 300. Built as specified (D-V9-3 A, D-V9-4 A); the clean output carries no text until V9b.
+
+- **5a · walls** — **A (recommended)** solid dark poché (#262626) with one 0.5 contour, as built · **B** mid-grey poché
+  (lighter print, endpoints on the walls read better) · **C** the blueprint's 45° hatch.
+- **5b · what the clean plan shows** — **A (recommended)** building + objects + the active level's endpoints; routes,
+  portals and stack layers only with *útvonalak, rétegek is* (as built) · **B** routes (paths / cables) always on,
+  portals and stack layers on the tick · **C** everything the Normal view draws.
+- **5c · endpoints above the cut** — **A (recommended)** 50 % ink, outline only (as built) · **B** fainter (30 %) so the
+  band under the cut stands out more · **C** hidden, with a count in the HUD.

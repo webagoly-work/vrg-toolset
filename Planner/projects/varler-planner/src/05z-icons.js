@@ -211,6 +211,7 @@ function icoSym(d,x,y,k,back){
     else if(d.type==='base'&&typeof hwUnits==='function')lab.push(hwUnits(d).map(u=>u[0]).join('·'));}
   else if(d.type==='ep')lab.push(d.code||'?');
   const halo=dark?(typeof PREV!=='undefined'?PREV.ground:'#0a0e13'):'#fff';
+  if(typeof alaprajzOn==='function'&&alaprajzOn())return s;   // V9a: the plan output carries no codes until V9b places them
   lab.filter(Boolean).forEach((t,i)=>{
     s+=`<text x="${x.toFixed(1)}" y="${(y+r+vsP(8)+i*vsP(8.5)).toFixed(1)}" font-size="${vsP(i?7:8)}" text-anchor="middle"`
       +` font-weight="${i?400:700}" fill="${col}" paint-order="stroke" stroke="${halo}" stroke-width="${vsP(2.4)}">${esc(t)}</text>`;});

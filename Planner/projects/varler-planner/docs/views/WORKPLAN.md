@@ -19,8 +19,8 @@ show pieces.
 | V5 | **Room-by-room explode** (static, then animated) | C2 | V4 | M | ◐ slice 1 (static) built 2026-10-14 · animation answered (D-V5-2), not built · ⏸ motion |
 | V6 | **Stack plates** exploded upward with leaders | C3 | V5 | M | ✅ built 2026-10-14 · look approved after D-V6-5 A (todo) |
 | V7 | **Object library extension** (`OBJECTS-CATALOGUE.md` → `OBJLIB`) | A2 | — (independent) | S | ✅ built 2026-10-12 |
-| V8 | **Object line-art** set: front / left / right / top SVG per object | A2 | V7 | L (rolling) | ⏸ first 5 |
-| V9 | **Floor-plan output** with adjustable cut height, poché, weights, title block, paper scale | A1 | V1 | L | ⏸ look |
+| V8 | **Object line-art** set: front / left / right / top SVG per object | A2 | V7 | L (rolling) | ◐ V8a built 2026-10-14 (machinery + first 5) · first 5 approved (D-V8-2 A A A) · V8b–h next in order |
+| V9 | **Floor-plan output** with adjustable cut height, poché, weights, title block, paper scale | A1 | V1 | L | ◐ V9a + V9b built 2026-10-14 · look answered (D-V9-5) · V9c next ⏸ |
 | V10 | **Interior elevation sheet** from the wall view, with object line-art and dimensions | A2 | V8 V9 | M | ⏸ look |
 | V11 | **Time-of-day palettes** + offline sunrise/sunset, live mode | B5 | V4 | M | ⏸ palettes |
 | V12 | **Local relight** on switch toggle | B6 | V11 | M | ⏸ motion |
@@ -244,12 +244,234 @@ Per object, four views drawn by us: **front, left, right, top**. Rules:
 
 **⏸ first 5:** kanapé, ágy, WC, konyhapult + felső, hűtő. Then rolling batches of ~10.
 
+Split (2026-10-14): **V8a** machinery + the first 5 ⏸ · **V8b–h** room-group batches (Konyha, Fürdő, Nappali,
+Háló + Gyerek, Dolgozó + Étkező + Előszoba, Gépészet, Kültér + Építészeti).
+
+### V8a · work-package spec (written 2026-10-14, before the build)
+
+**Goal.** The OBJART store and its drawing machinery in the Planner, plus a contact-sheet tool, and the first five
+objects drawn with it, every view in each item's `art[]`, correct at the catalogue size and when resized.
+
+**Files and anchors.**
+- new `src/05zb-objart.js` (after `05z-icons.js`, before `06-wall-editor.js`; reads `OBJLIB` from `02-state.js`, no DOM).
+- `build.js` + `tools/check-globals.js`: `MODULE_RE` accepts one **or two** letters after the number
+  (`/^\d\d[a-z]{0,2}-.*\.js$/`), so `05zb-` is a module and not refused by the guard. Nothing else changes in the order.
+- new `tools/objart-sheet.js` → `docs/views/fig/objart-<batch>.svg` (+ `.png` with `--png`, the headless Chrome of
+  `p33-axo.js`); boots the built Planner in jsdom; labels through `tools/baseline/labels.js`.
+- new `tests/spec-78-objart.js`.
+
+**Conventions.**
+- Units mm. Each view is drawn in its own 2-D frame, *up* = +b, rendered with SVG y = −b:
+  - **F** (front): a = across (−w/2 … w/2), b = height (0 … h) → `viewBox="-w/2 -h w h"`.
+  - **L** (seen from the object's left): a = depth from the front (0 … d) drawn to the **left** (x = −a), b = height →
+    `viewBox="-d -h d h"`; the front is the right edge.
+  - **R**: the same with x = +a → `viewBox="0 -h d h"`; the front is the left edge. For `sym` objects R = L mirrored
+    (the same side drawing through x = +a), so a family draws one side.
+  - **T** (top): a = across, b = depth from the front (0 … d) → `viewBox="-w/2 -d w d"`; the front is the bottom edge
+    (third-angle: T sits above F and their front edges meet).
+  - The origin is the bottom-centre-front in F, the bottom-front in L/R, the front-centre in T. The *front* is the
+    front-most point including handles (so nothing pokes out of the box).
+- Classes only, no colours in the art: `oa-out` (outline, 0.35 paper mm), `oa-det` (detail, 0.18), `oa-hid` (hidden,
+  0.13, dashed 1.2 / 0.8 paper mm), `oa-fill` (white fill, added to closed shapes that hide what is behind them).
+  Hidden lines are made by painting back to front with `oa-fill`; `oa-hid` only where a hidden part is worth showing.
+- Line widths are paper mm: `objArtCss(k)` returns the stylesheet for a drawing at 1 : k (stroke = paper mm × k model mm).
+- No SVG transforms: every coordinate is computed from w/d/h, so line weights never distort when resized.
+- **Resizing rule.** Parametric families recompute their parts from w/d/h (counts below); every family keeps its
+  small details at a fixed mm size (legs, handles, plinth, worktop, drawer height, gaps, seat and lid thickness).
+  A family with nothing to count (WC) stretches its shape with w/d/h and keeps the fixed details → DECISIONS D-V8-1.
+
+**Functions** (all global, prefixes `OA_` / `oa` / `objArt`).
+- `OA_W = {out:.35, det:.18, hid:.13}`, `OA_DASH = [1.2, .8]` (paper mm).
+- `objArtCss(k = 20)` → CSS text for `.oa-out/.oa-det/.oa-hid/.oa-fill`.
+- `oaPen(map)` → pen in the view's (a, b) frame: `rect(a0,b0,a1,b1,cls,{rx,rt,rb,part})` (rt / rb = top / bottom corner
+  radius), `line`, `poly(pts,cls,{close})`, `path(segs,cls)` (M L Q C Z only), `circ(a,b,r,cls)`; `cls` = `out|det|hid`
+  with an optional `+fill`; each call may tag a `part`, counted in `parts`; keeps `prims` (mapped points) and `body`.
+- `OA_FAM[fam] = {F, S, T, resize}` drawing functions `(P, s)` (S = the side, used for L and R); `OBJART[name] =
+  {fam, front, left, right, top}` (the WORKPLAN shape; each view a `(s) → result` function).
+- `objArtItem(name)` → the `OBJLIB` item or null. `objArt(name, view, size?, opt?)` → `{name, view, size, vb, body,
+  svg, parts, prims}` or null (unknown name / view); `size` defaults to the catalogue size; `opt.k` = paper scale
+  (adds `width`/`height` in mm and the stylesheet), `opt.css === false` leaves the stylesheet out.
+
+**The first five** (names as in OBJLIB; *fixed* = mm that do not scale).
+- `Kanapé 3ü` → `kanape`: arms 180 (≤ w/6), legs 120, seat top 430, back frame top h − 80, back depth 220 (≤ 0.3 d);
+  **cushions n = max(1, round((w − 2·arm)/650))**, seat and back cushion per n.
+- `Ágy 200×160` → `agy`: front = the foot end; legs 100, rail top min(300, 0.55 h), mattress top min(rail + 220, h − 30),
+  head panel 60 deep, h high; **pillows n = w ≥ 1200 ? 2 : 1**.
+- `WC csésze` → `wc`: close-coupled; bowl, seat 15, lid 30, cistern (back 0.25 d, from 0.48 h), cistern lid 25,
+  flush button r 30, trap hidden in the side view; stretches (D-V8-1).
+- `Konyhapult 60`, `Konyhapult 120`, `Konyhapult` → `pult`: worktop 40 with 30 front overhang, plinth 100 set back,
+  door 18, top drawer 140, gaps 2, bar handles 160; **units n = ceil(w / 600)**, one drawer + one door per unit,
+  a hidden shelf in the side view; swing marks (`oa-hid`) point to the hinge (left half of the units hinge left).
+- `Felsőszekrény` → `felso`: wall cabinet, origin = its own bottom; door 18 behind a 20 handle zone, bar handle 60
+  above the bottom; **doors n = ceil(w / 600)**, **shelves = max(0, round(h / 350) − 1)** (hidden, side view).
+- `Hűtő 60` → `huto`: handle zone 30, door 60, kick strip 60 with vent slots, compressor hidden in the side view;
+  **doors = h ≥ 1500 ? 2 (freezer below, split at 0.38 h) : 1**; hinge left.
+
+**Tests (spec-78, exact values).**
+1. OBJART has exactly the 8 names above; each is in OBJLIB; every view in its `art[]` renders, plus R.
+2. viewBox: Kanapé 3ü F `-1100 -850 2200 850`, L `-900 -850 900 850`, R `0 -850 900 850`, T `-1100 -900 2200 900`;
+   resized 2800×950×850 F `-1400 -850 2800 850`, T `-1400 -950 2800 950`; Hűtő 60 F `-300 -1850 600 1850`.
+3. Every drawn point of every view of the 8 names, at catalogue size and at the resized size, lies inside its viewBox
+   (± 0.01).
+4. Classes: every element carries `oa-out`, `oa-det` or `oa-hid` (+ optional `oa-fill`) and nothing else; no `fill=` /
+   `stroke=` attributes; every view has an `oa-out`; `oa-hid` appears in Kanapé L, Konyhapult L and T, Felső F and L,
+   Hűtő F and L, WC L.
+5. Parametric counts: Kanapé F seat 3 → 4 at w 2800 (back the same, T the same); Ágy T pillow 2 → 1 at w 900;
+   Konyhapult F door/drawer 1 @ 600, 2 @ 1100, 2 @ 1200, 3 @ 1800; Felső F door 1 @ 600 → 2 @ 1000, L shelf 1 @ h 700 →
+   2 @ h 900; Hűtő F door 2 @ h 1850 → 1 @ h 850.
+6. WC (stretch): T bowl half-width 180 at w 400 → 225 at w 500; the flush button r 30 at both.
+7. R = L mirrored: same parts and prim count, every R x = −(L x), same y.
+8. `objArt('nincs','F')` and `objArt('Kanapé 3ü','X')` → null; default size = the OBJLIB size; `opt.k 25` → width
+   `88mm` height `34mm` (Kanapé F); `objArtCss(25)` has `.oa-out{stroke-width:8.75`; deterministic; OBJLIB untouched.
+
+**Contact sheet.** `node tools/objart-sheet.js --batch=first5 --png`: per object a row, two blocks (catalogue size,
+resized), each third-angle (T above F, L left of F, R right of F when listed), at 1 : 25, 3 px per paper mm; captions
+through `labels.js`, no overlaps. Resized sizes: Kanapé 2800×950×850 · Ágy 900×2000×550 · WC 500×650×800 ·
+Konyhapult 120 → 1800×600×900 · Felső 1000×350×900 · Hűtő 600×600×850.
+
+**Out of scope.** Using the art anywhere in the Planner (V10 does: elevation sheet), the other 98 items (V8b–h),
+editing / picking art in the UI, colours / styles beyond the four classes, asymmetric families (sarok, L-sofa).
+
+**Built 2026-10-14** (uncommitted) as specified: `src/05zb-objart.js` (6 families, 8 names), `tools/objart-sheet.js`
+→ `fig/objart-first5.svg/png` (1843 × 1238, 48 labels, no overlaps), spec-78 (35); suite 72 / 2684 green, golden 70/70.
+`MODULE_RE` widened to two letters in build.js + check-globals.js (05zb was refused by the one-letter rule).
+Resizing rule = D-V8-1 A (built default). ⏸ look: DECISIONS D-V8-2. Next: V9a (after the ⏸), then V8b/c.
+
 ## V9 · Floor-plan output
 
 A cut-plane plan at an adjustable height (*Vágási magasság* slider, presets 300 / 1100 / 1200 / 1500).
 Poché in cut walls, weights per PRIMER §4.5, dashed above-cut items, door swings, room tags with
 area, dimension strings, a north arrow, a title block, and paper sizes A3/A4 at 1:50 / 1:100. The
 `whiteout` and `blueprint` styles become style sheets of the same view.
+
+Split (2026-10-14): **V9a** the cut-plane plan core + *Alaprajz* in the 2D Stílus menu (D-V9-1 A): *Vágási magasság*
+slider + presets 300 / 1100 / 1200 / 1500, poché in cut walls, PRIMER §4.5 weights, openings cut / beyond / above-cut
+dashed, door swings (the existing `variant` hinge / side bits), objects in plan (OBJART top view where drawn, else the
+footprint), endpoints by the cut rule ⏸ look · **V9b** room tags with area, chained dimension strings, north arrow ·
+**V9c** title block, A3 / A4 at 1:50 / 1:100, export next to the V4 ones ⏸ · **V9d** whiteout / blueprint as style
+sheets (optional, D-V9-2 A).
+D-V9-3 and D-V9-4 answered A (2026-10-14).
+
+### V9a · work-package spec (written 2026-10-14, before the build)
+
+**Goal.** *Alaprajz*: a professional cut-plane plan of the active level as a 2D style, at an adjustable cut height,
+with poché, the PRIMER §4.5 weights, openings and objects classified against the cut, door swings, the V8 line-art for
+objects that have it (front by D-V9-3 A), and endpoints by D-V9-4 A. Default view unchanged; goldens identical.
+
+**Files and anchors.**
+- new `src/06e-view-plan.js` (prefix `ap` / `AP_`): reads `WALLS`, `ROOMSB`, `data.floors/openings/objects`, the
+  blueprint helpers `bpWallSpans` `bpSeg` `bpRect` `bpDoorSymbol` `bpSW` `bpScaleN` `bpFine` `rectsUnionSegs`, and
+  `objArt` (05zb). Same pens as the blueprint (paper mm at `state.bpScale`), so 1:50 / 1:100 already applies.
+- `04-render.js` `draw()`: `alaprajzOn() ? drawAlaprajzGeom()` before the whiteout branch; the device loop wraps an endpoint
+  above the cut in `<g class="ap-above" opacity="0.5">` when `alaprajzOn()`.
+- `shell.html`: Render option *Alaprajz (2D)*; row `apCutRow` (only with that style): *Vágási magasság* range
+  100–2700 step 50 + number + preset buttons 300 · 1100 · 1200 · 1500.
+- `11-controls.js`: the style handler switches to 2D like Blueprint does; `apCutSet(v)`.
+- `10-lamps.js` object context menu: *Eleje: …* (cycles auto → ↑ → → → ↓ → ← → auto; sets / deletes `O.front`).
+- `02-state.js`: `state.planCutH: 1200`.
+
+**Rules.**
+- `alaprajzOn()` = `state.style==='alaprajz' && state.pitch >= 88` (in 3D the normal drawing, like Tiszta in 2D).
+- Cut c = `state.planCutH` (clamped 100…2700). A wall (z0, top = z0 + (h || wallH)) is **cut** if z0 < c < top,
+  **beyond** if top ≤ c (outline 0.25, no fill), **above** if z0 ≥ c (dashed 0.13).
+- An opening in a cut wall (sill, top) is **cut** if sill < c < top → a gap in the poché with its symbol (window: two
+  face lines 0.25 + glass 0.18; door: `bpDoorSymbol` with the plan pen); otherwise **hidden** (the wall is solid at c)
+  → its outline dashed in white over the poché.
+- Poché: cut pieces filled `#262626`, then ONE contour (0.5) around the union of all cut pieces of the level.
+- Rooms and floors: white, no stroke. Stairs: not in V9a (V9b).
+- Objects (blueprint filter): z0 ≥ c → **above**, footprint dashed 0.13; else the V8 top view if `OBJART[name]` exists
+  (**art**), else the footprint 0.18 with white fill (**outline**). Art pens: oa-out 0.18, oa-det 0.13, oa-hid 0.13
+  dashed (furniture under beyond, PRIMER §4.5); art sits in a `<g transform="matrix(…)">` (rotation + plan scale only).
+- Front (D-V9-3 A), `apFront(o)` → a unit vector in plan mm: `o.front` (0 → −y, 90 → +x, 180 → +y, 270 → −x) if set;
+  else the nearest wall of the level whose face is ≤ 600 mm from the object's footprint box and whose span overlaps it
+  → the front points away from that wall; else local −d (`ang` 0 → −y). Across = w and depth = d when the front is
+  along the object's d axis, else swapped.
+- Endpoints (D-V9-4 A): `h ≤ c` full; `h > c` 50 % ink, outline only (`.ap-above :not(text){fill-opacity:0}`).
+- `AP_LAST` = the stats of the last render: `{cut, walls:{cut,beyond,above}, open:{cut,hidden}, obj:{art,outline,above},
+  fronts:[{name,f}], dev:{full,faint}}`.
+
+**Tests (spec-79, P33 v2 ground, 2D).**
+1. Default style untouched: Normal draws no `ap-` markup; switching to Alaprajz from 3D lands at pitch 90; in 3D with
+   the style set, `alaprajzOn()` is false and the normal geometry is drawn.
+2. Cut 1200: walls cut 19 / beyond 0 / above 0; openings cut 11 (7 doors + 4 windows) / hidden 0; objects art 6
+   (Kanapé 3ü, Ágy 200×160, WC csésze × 2, Konyhapult, Hűtő 60), above 1 (Elosztószekrény 1600–2400), outline 24;
+   endpoints full 42 / faint 123.
+3. Cut 300: openings cut 7 / hidden 4 (the windows, sill 900); endpoints 22 / 143. Cut 2200: openings cut 4 / hidden 7
+   (the doors, top 2100); endpoints 81 / 84. Cut 1500: endpoints 63 / 102.
+4. One contour: the poché is one `<path>`/polylines set with stroke-width = bpSW(0.5) and fill #262626 pieces = cut pieces.
+5. Front: `o.front` 90 → (1, 0); a free object with `ang` 0 → (0, −1); an object 100 mm from a horizontal wall below it
+   (larger y) → (0, −1), from one above it → (0, 1); a vertical wall to its left → (1, 0); 700 mm away → the free rule.
+6. Art transform: a Kanapé's art matrix maps its art origin (front centre) to the plan point c + f·d/2 (± 0.5 base units).
+7. The *Eleje* menu cycles undefined → 0 → 90 → 180 → 270 → undefined; saved in the object; undo restores it.
+8. Presets set 300 / 1100 / 1200 / 1500 and redraw; the number input clamps to 100…2700.
+9. Normal / whiteout / blueprint / tiszta output byte-identical with and without a `front` field on every object; golden 70/70.
+
+**Out of scope.** Room tags with area, dimension strings, north arrow, stairs (V9b); title block, paper frame, export (V9c);
+whiteout / blueprint as style sheets (V9d); art for the other 98 objects (V8b–h).
+
+**Built 2026-10-14** (uncommitted) as specified, plus three things the P33 sample showed:
+- **One host per opening:** `bpWallSpans` also caught door B103 in partition W18 (its edge runs 57 mm past where the
+  partition starts), which cut a sliver; Alaprajz keeps an opening only in its `opnHost` wall. The blueprint plan
+  still has the sliver (golden-covered, left alone).
+- **Clean output:** with everything on top (routes, portals, stack layers, cluster labels) the plan drowned, so like
+  Tiszta the clean Alaprajz keeps only the geometry, the draft and the **active level's** endpoints; a tick
+  *útvonalak, rétegek is* (`state.apAll`) brings the rest back.
+- **No text yet:** the endpoint codes (NTL, SEN …), the board caption and the old painted room labels overlapped each
+  other; Alaprajz drops them until V9b places room tags and codes with a collision-avoiding placer.
+Samples `tools/p33-plan.js --cut=1200|300 --png` → `fig/p33-plan-1200.png`, `fig/p33-plan-300.png`. spec-79 (39);
+suite 73 / 2723 green, golden 70/70. ⏸ look: DECISIONS D-V9-5 — answered 1 B, 2 A, 3 C and built (poché `#9a9a9a`;
+endpoints above the cut not drawn, counted in the HUD); spec-79 (40), suite 73 / 2724, golden 70/70. Next: V9b.
+
+### V9b · work-package spec (written 2026-10-14, before the build)
+
+**Goal.** The annotation of the Alaprajz: room tags with area, the endpoint codes back, outer dimension chains, a
+north arrow and stairs, with **every text placed by one collision-avoiding placer** (the legible-sheets rule: no text
+on another text or on an endpoint symbol; a displaced text gets a leader). No ⏸ (V9c is the next look).
+
+**Files and anchors.** `src/06e-view-plan.js` (all new code); `04-render.js`: the blueprint stairs block becomes
+`bpStairsSvg(o, z, pen, cut)` used by both (blueprint output byte-identical: goldens); `draw()`: when the clean
+Alaprajz is on, the annotation is appended after the endpoints (`apAnnotSvg()`); `shell.html` apCutRow: ticks
+*méretláncok* (`state.apDims`, default on) and *végpont-kódok* (`state.apCodes`, default on).
+
+**Rules.**
+- Sizes in paper mm at `state.bpScale` (bpFS / bpU): room tag title 3.5 bold, area 2.5; codes 1.8 bold in the endpoint's
+  role colour; dimension text 2.5; north letter 3.5. Every text: a white halo pass, then the fill pass.
+- **Room tag** (rooms and floors of the active level with a name, `noText` skipped): line 1 `NUM  NAME` upper case,
+  line 2 `12,34 m²` (area of the polygon, 2 decimals, comma); a third line with `rm.mat` only when it is set. Anchored
+  at the polygon centroid, candidates in rings inside the room; leader when moved more than one line height.
+- **Codes**: for each endpoint drawn (at or below the cut, active level) the first text the Normal view prints under its
+  symbol (`apDevCode(d)`: the symbol rendered in Normal, its first `<text>`); none → no code. Anchored at the symbol,
+  preferred below, then right, left, above; leader when displaced.
+- **Blocks** for the placer: every drawn endpoint symbol (a square of 2 × its radius), the north arrow, each dimension
+  chain line. Order: room tags, then codes, then dimension texts.
+- **Dimension chains** (`state.apDims`): chain 1 at 900 mm outside the level box on the −y and −x sides with the
+  **façade of that side** (walls within 400 mm of the box edge: their edges; the openings hosted in them; the box edges)
+  — every wall face of the level read as a barcode on P33 (changed during the build), the overall chain at 1900 mm; ticks at 45°; a segment's text
+  in metres with a comma (2 decimals), anchored at its middle on the outer side; segments < 60 mm get no text.
+- **North arrow:** the blueprint convention (north = plan −y), 1800 mm long, at the level box's +x / −y corner + 2200 mm.
+- **Stairs** (type `stairs` on the level): the blueprint outline, treads and walking line; with a cut: treads whose
+  top (i × riser) is below the cut are solid, the rest dashed (0.13), and a break line across the stair at the cut tread.
+- `AP_LAST.labels = {rooms, codes, dims, leaders, overlaps}` where overlaps = pairs of placed text boxes that intersect
+  plus texts on endpoint blocks (must be 0).
+
+**Tests (spec-80, P33 v2 ground, cut 1200, 1:50).**
+1. Room tags 8 (R01 R03 R04 R05 R03L R06 R07 R08) with the areas of their polygons (e.g. R06 `18,27 m²` = polyArea).
+2. Codes = the endpoints drawn that have one; each code equals the Normal view's first text for that device.
+3. overlaps 0 at cuts 300 / 1200 / 1500 and at 1:50 and 1:100.
+4. Dimension chains: 4 chain lines when apDims, 0 when off; the overall chains read the level box size in metres.
+5. North arrow present once, its letter É.
+6. Stairs (a test stair, riser 180, 16 treads, cut 1200): 6 solid tread lines + 9 dashed + 1 break line; cut 2700 (max):
+   15 solid, 0 dashed, 1 break.
+7. Ticks: apDims / apCodes off remove dims / codes; room tags stay. Blueprint stairs byte-identical (goldens 70/70).
+
+**Out of scope.** Title block, paper frame, export (V9c); per-wall interior dimension chains; editable tag positions.
+
+**Built 2026-10-14** (uncommitted) as specified, plus: chain 1 dimensions the **façade** of its side (every wall face read
+as a barcode on P33); one placer `apPlacer` in base units (room tags → codes → dimension texts, blocks = endpoint symbols
+via `apSvgBox`, chain lines, the north arrow); `bpStairsSvg` shared with the blueprint (goldens identical). P33 cut 1200:
+8 room tags, 24 codes of 42 endpoints, 26 dimension texts, 4 chains, 59 texts, 3 leaders, **0 overlaps** (also at 1:100 and
+cuts 300 / 1500). Sample `fig/p33-plan-1200.png`. spec-80 (18), spec-79 adjusted (no text outside the annotation group);
+suite 74 / 2742 green, golden 70/70. Next: V9c (title block, paper, export) ⏸.
 
 ## V10 · Interior elevation sheet
 

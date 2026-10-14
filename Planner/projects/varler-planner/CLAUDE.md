@@ -51,7 +51,7 @@ runtime boundaries — every top-level name lives in one shared scope.
 - **Names are global.** Grep before adding a new top-level function/const — collisions fail silently
   at boot (e.g. a duplicate `SC` once broke the whole app). `node build.js && node --check
   dist/varler_planner.html` catches syntax breaks fast.
-- Module filenames must match `/^\d\d[a-z]?-.*\.js$/` (`00-core.js`, `00b-i18n.js`, `11b-backup.js`).
+- Module filenames must match `/^\d\d[a-z]{0,2}-.*\.js$/` (`00-core.js`, `00b-i18n.js`, `11b-backup.js`, `05zb-objart.js`).
   This lets a file be inserted between two numbers (`05b`, `05c`, ...) without renumbering everything
   after it. `build.js` refuses to build if any `.js` in `src/` doesn't match — that guard exists
   because the old stricter pattern once silently excluded i18n/settings/actions from a build.

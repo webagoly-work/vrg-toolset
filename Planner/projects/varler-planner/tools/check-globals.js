@@ -22,7 +22,7 @@ const path = require('path');
 const vm = require('vm');
 
 const SRC = path.join(__dirname, '..', 'src');
-const MODULE_RE = /^\d\d[a-z]?-.*\.js$/;          // the same rule build.js applies
+const MODULE_RE = /^\d\d[a-z]{0,2}-.*\.js$/;     // the same rule build.js applies
 const files = fs.readdirSync(SRC).filter(f => /\.js$/.test(f)).sort().filter(f => MODULE_RE.test(f));
 
 const DECL = [
