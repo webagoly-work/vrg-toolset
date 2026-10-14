@@ -1,0 +1,97 @@
+{
+  "manifest_version": 1,
+  "updated": "2026-10-09",
+  "doc": "Upstream sources for the BRIDGE core reference database. Routing is enforced by tools/harvest.js: a source whose licence class is 'restricted' may NEVER be written into the repo, and never shipped to a client. The client side stores its URL only.",
+
+  "destinations": {
+    "repo": {
+      "path": "CoreRef/data",
+      "accepts": ["permissive"],
+      "note": "regenerable, gitignored, safe to ship with a BRIDGE install"
+    },
+    "personal": {
+      "path": "../_refmirror",
+      "accepts": ["restricted"],
+      "note": "OUTSIDE the repo. Personal-use reading mirror only. Never committed, never shipped, never bundled. Hungarian text written from it later is our own work and may ship."
+    }
+  },
+
+  "sources": [
+    {
+      "id": "esphome-core",
+      "class": "permissive",
+      "licence": "MIT (.c/.cpp/.h/.hpp/.tcc/.ino runtime) + GPL-3.0 (Python)",
+      "licence_url": "https://github.com/esphome/esphome/blob/dev/LICENSE",
+      "kind": "github-tree",
+      "repo": "esphome/esphome",
+      "pin": "latest-release",
+      "paths": ["esphome/components"],
+      "gives": "authoritative component list; CODEOWNERS"
+    },
+    {
+      "id": "esphome-schema",
+      "class": "permissive",
+      "licence": "generated from esphome (MIT/GPL-3.0)",
+      "licence_url": "https://github.com/esphome/esphome/blob/dev/LICENSE",
+      "kind": "http-per-component",
+      "base": "https://schema.esphome.io",
+      "pin": "match-esphome-release",
+      "gives": "every config var per component: key/type/default + inline docs text + doc URL"
+    },
+    {
+      "id": "ha-core",
+      "class": "permissive",
+      "licence": "Apache-2.0",
+      "licence_url": "https://github.com/home-assistant/core/blob/dev/LICENSE.md",
+      "kind": "github-raw",
+      "repo": "home-assistant/core",
+      "pin": "latest-release",
+      "files": [
+        "homeassistant/generated/integrations.json",
+        "homeassistant/generated/zeroconf.py",
+        "homeassistant/generated/bluetooth.py",
+        "homeassistant/generated/dhcp.py",
+        "homeassistant/generated/usb.py"
+      ],
+      "per_component_file": "manifest.json",
+      "gives": "brand/integration index with iot_class + iot_standards; per-integration manifests; device discovery fingerprints"
+    },
+
+    {
+      "id": "esphome-docs",
+      "class": "restricted",
+      "licence": "CC-BY-NC-SA-4.0",
+      "licence_url": "https://github.com/esphome/esphome-docs/blob/dev/LICENSE.md",
+      "kind": "github-repo",
+      "repo": "esphome/esphome-docs",
+      "format": "MDX / Astro + Starlight",
+      "canonical_base": "https://esphome.io",
+      "phase0_fetch": false,
+      "policy": "links-only on the client; personal mirror into destinations.personal"
+    },
+    {
+      "id": "ha-user-docs",
+      "class": "restricted",
+      "licence": "CC-BY-NC-SA-4.0",
+      "licence_url": "https://github.com/home-assistant/home-assistant.io/blob/current/LICENSE.md",
+      "kind": "github-repo",
+      "repo": "home-assistant/home-assistant.io",
+      "format": "Markdown / Jekyll",
+      "canonical_base": "https://www.home-assistant.io",
+      "phase0_fetch": false,
+      "policy": "links-only on the client; personal mirror into destinations.personal"
+    },
+    {
+      "id": "ha-dev-docs",
+      "class": "restricted",
+      "licence": "CC-BY-NC-SA-4.0",
+      "licence_url": "https://github.com/home-assistant/developers.home-assistant/blob/master/LICENSE.md",
+      "kind": "github-repo",
+      "repo": "home-assistant/developers.home-assistant",
+      "format": "Markdown / Docusaurus",
+      "canonical_base": "https://developers.home-assistant.io",
+      "phase0_fetch": false,
+      "policy": "links-only on the client; personal mirror into destinations.personal"
+    }
+  ]
+}

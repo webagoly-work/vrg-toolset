@@ -42,3 +42,9 @@ Inventory/price-check-*.json
 # room-by-room survey. The design knowledge is generalised into 05_standards
 # and BRIDGE-OUTLINE-001 §4, which is de-identified.
 BRIDGE/07_P33/
+
+# --- CoreRef: harvested upstream data is regenerable, not source ---
+# `node CoreRef/tools/harvest.js` rebuilds both from pinned release tags.
+# The manifest, the harvester and the report ARE committed; the payload is not.
+CoreRef/data/
+CoreRef/db/
