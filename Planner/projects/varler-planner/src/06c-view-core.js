@@ -389,7 +389,12 @@ const VIEW_ROLE_HU={'sys:MAINS':'Erősáram','sys:DED':'Dedikált körök','sys:
 const VIEW_LEVEL_HU={basement:'PINCE',ground:'FÖLDSZINT',upper:'EMELET'};
 const VIEW_SHEET={margin:70,legend:270,top:40,row:17};
 // opts.scale draws the body at that factor (the export keeps the on-screen zoom); the frame stays in px.
-function viewSheetSvg(R,opts){const o=opts||{},def=R.def,S=VIEW_STYLES[def.style]||VIEW_STYLES.tiszta,k=o.scale||1,b0=R.bounds,
+// the two title lines every sheet shares: t1 = (title · level) upper case, t2 = opts.sub or the axo description
+function viewSheetTitles(R,o){const def=R.def,lv=VIEW_LEVEL_HU[def.level]||def.level;
+  return {t1:esc((o.title?o.title+' · '+lv:lv).toUpperCase()),
+    t2:esc(o.sub!=null?o.sub:`Axonometria · nézet ${def.yaw}° / ${def.pitch}° · vágás ${def.cut} / ${def.nearCut} mm · ${R.stats.devices} végpont`)};}
+function viewSheetSvg(R,opts){const o=opts||{};if(o.paper)return viewPaperSheet(R,o);   // V9c: the plan on ISO paper at a true scale
+  const def=R.def,S=VIEW_STYLES[def.style]||VIEW_STYLES.tiszta,k=o.scale||1,b0=R.bounds,
   b={minX:b0.minX*k,minY:b0.minY*k,maxX:b0.maxX*k,maxY:b0.maxY*k};
   const M=VIEW_SHEET.margin,LEG=VIEW_SHEET.legend,top=VIEW_SHEET.top,RW=VIEW_SHEET.row,H=o.H!=null?o.H:wallH(def.level);
   const W=Math.ceil(b.maxX-b.minX+2*M+LEG),HH=Math.ceil(b.maxY-b.minY+2*M+top);
@@ -408,14 +413,42 @@ function viewSheetSvg(R,opts){const o=opts||{},def=R.def,S=VIEW_STYLES[def.style
   leg+=`<text class="lh" x="0" y="${y3}">FALAK</text>`
     +`<rect x="0" y="${y3+9}" width="9" height="9" fill="#fff" stroke="${S.ink}" stroke-width="0.8"/><text class="lt" x="16" y="${y3+17}">Távoli külső fal — teljes ${H} mm</text>`
     +`<rect x="0" y="${y3+26}" width="9" height="9" fill="${S.face['wall.top.cut']}" stroke="${S.ink}" stroke-width="0.8"/><text class="lt" x="16" y="${y3+34}">Vágott fal — belső ${def.cut} · kamera felőli külső ${def.nearCut} mm</text></g>`;
-  const lv=VIEW_LEVEL_HU[def.level]||def.level,t1=esc((o.title?o.title+' · '+lv:lv).toUpperCase());
-  const t2=esc(o.sub!=null?o.sub:`Axonometria · nézet ${def.yaw}° / ${def.pitch}° · vágás ${def.cut} / ${def.nearCut} mm · ${R.stats.devices} végpont`);
+  const {t1,t2}=viewSheetTitles(R,o);
   const title=`<g transform="translate(${M},${M-18})"><text class="t1" x="0" y="0">${t1}</text><text class="t2" x="0" y="18">${t2}</text></g>`;
   const defs=viewDefs(S).replace('</style>',`.t1{font-family:Marcellus,Georgia,serif;font-size:22px;letter-spacing:3px}.t2{font-size:10.5px;fill:${S.inkSoft};letter-spacing:.4px}`
     +`.lh{font-size:8.4px;letter-spacing:1.6px;font-weight:600}.lt{font-size:8.6px;fill:#3b3a36}</style>`);
   return {W,H:HH,roles,svg:`<svg xmlns="http://www.w3.org/2000/svg" class="vw" width="${W}" height="${HH}" viewBox="0 0 ${W} ${HH}">${defs}`
     +`<rect width="100%" height="100%" fill="${S.paper}"/>${title}`
     +`<g transform="translate(${(M-b.minX).toFixed(1)},${(M+top-b.minY).toFixed(1)})${k!==1?' scale('+(+k.toFixed(4))+')':''}" stroke-linejoin="round">${R.body}</g>${leg}</svg>`};}
+
+// V9c: a sheet in paper millimetres. R.body is in base units; o.k = paper mm per base unit (1 / (SC · N)), o.box = the
+// framed base box [x0, y0, x1, y1], o.paper = {w, h, name} (already oriented), o.N the scale, o.date. ISO 5457 frame (20 left,
+// 10 elsewhere), a 180 × 30 title block in the bottom-right corner, the drawing centred above the 30 mm band, a 0–5 m bar.
+const VIEW_PAPER={frameL:20,frame:10,band:30,tbW:180};
+function viewPaperArea(w,h){const P=VIEW_PAPER;return {x:P.frameL,y:P.frame,w:w-P.frameL-P.frame,h:h-2*P.frame-P.band};}
+function viewPaperSheet(R,o){const P=VIEW_PAPER,W=o.paper.w,H=o.paper.h,A=viewPaperArea(W,H),k=o.k,[x0,y0,x1,y1]=o.box,f=v=>+v.toFixed(3);
+  const dw=(x1-x0)*k,dh=(y1-y0)*k,ox=A.x+(A.w-dw)/2,oy=A.y+(A.h-dh)/2;
+  const {t1,t2}=viewSheetTitles(R,o),tx=W-P.frame-P.tbW,ty=H-P.frame-P.band;
+  const T=(x,y,s,t,wt,anchor)=>'<text x="'+f(x)+'" y="'+f(y)+'" font-size="'+s+'" font-weight="'+(wt||400)+'"'+(anchor?' text-anchor="'+anchor+'"':'')
+    +' font-family="Arial,Segoe UI" fill="#111">'+t+'</text>';
+  const ln=(a,b,c,d,sw)=>'<line x1="'+f(a)+'" y1="'+f(b)+'" x2="'+f(c)+'" y2="'+f(d)+'" stroke="#111" stroke-width="'+sw+'"/>';
+  const cells=[['Lépték','1:'+o.N,40],['Lap',esc(o.paper.name),30],['Dátum',esc(o.date||''),55],['','Varler Planner',55]];
+  let tb='<g class="vw-tb"><rect x="'+tx+'" y="'+ty+'" width="'+P.tbW+'" height="'+P.band+'" fill="#fff" stroke="#111" stroke-width="0.5"/>'
+    +ln(tx,ty+20,tx+P.tbW,ty+20,0.25)+T(tx+3,ty+8,5,t1,700)+T(tx+3,ty+15.5,2.8,t2);
+  let cx=tx;cells.forEach(([h,v,cw],i)=>{if(i)tb+=ln(cx,ty+20,cx,ty+P.band,0.25);
+    tb+=(h?T(cx+2,ty+23.6,1.8,h):'')+T(cx+2,ty+(h?28:26.4),h?2.8:3,v,700);cx+=cw;});
+  tb+='</g>';
+  // the scale bar: 0–5 m, 1 m cells alternating, in the band left of the title block
+  const L=5000/o.N,bx=A.x+4,by=ty+12;let bar='<g class="vw-bar">';
+  for(let i=0;i<5;i++)bar+='<rect x="'+f(bx+i*L/5)+'" y="'+by+'" width="'+f(L/5)+'" height="2" fill="'+(i%2?'#fff':'#111')+'" stroke="#111" stroke-width="0.25"/>';
+  for(let i=0;i<=5;i++)bar+=T(bx+i*L/5,by+5.6,2.2,i+(i===5?' m':''),400,'middle');
+  bar+='<rect class="vw-bar-len" x="'+f(bx)+'" y="'+by+'" width="'+f(L)+'" height="2" fill="none" stroke="#111" stroke-width="0.35"/></g>';
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'mm" height="'+H+'mm" viewBox="0 0 '+W+' '+H+'">'
+    +'<rect width="'+W+'" height="'+H+'" fill="#fff"/>'
+    +'<g class="vw-plan" transform="translate('+f(ox)+','+f(oy)+') scale('+(+k.toPrecision(8))+') translate('+f(-x0)+','+f(-y0)+')">'+R.body+'</g>'
+    +'<rect class="vw-frame" x="'+P.frameL+'" y="'+P.frame+'" width="'+(W-P.frameL-P.frame)+'" height="'+(H-2*P.frame)+'" fill="none" stroke="#111" stroke-width="0.7"/>'
+    +tb+bar+'</svg>';
+  return {W,H,svg,mm:true,area:A,draw:[dw,dh],map:(px,py)=>[ox+(px-x0)*k,oy+(py-y0)*k]};}
 
 window.viewSheetSvg=viewSheetSvg;window.viewPlateRoles=viewPlateRoles;window.viewFootprint=viewFootprint;window.viewExplodeOrder=viewExplodeOrder;window.viewExplodeStep=viewExplodeStep;window.VIEW_EXPLODE_STEPS=VIEW_EXPLODE_STEPS;window.VIEW_ROLE_HU=VIEW_ROLE_HU;window.VIEW_LEVEL_HU=VIEW_LEVEL_HU;
 window.viewRender=viewRender;window.viewWallClass=viewWallClass;window.viewWallTops=viewWallTops;window.viewModel=viewModel;

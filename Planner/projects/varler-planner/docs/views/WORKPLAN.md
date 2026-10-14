@@ -20,7 +20,7 @@ show pieces.
 | V6 | **Stack plates** exploded upward with leaders | C3 | V5 | M | ✅ built 2026-10-14 · look approved after D-V6-5 A (todo) |
 | V7 | **Object library extension** (`OBJECTS-CATALOGUE.md` → `OBJLIB`) | A2 | — (independent) | S | ✅ built 2026-10-12 |
 | V8 | **Object line-art** set: front / left / right / top SVG per object | A2 | V7 | L (rolling) | ◐ V8a built 2026-10-14 (machinery + first 5) · first 5 approved (D-V8-2 A A A) · V8b–h next in order |
-| V9 | **Floor-plan output** with adjustable cut height, poché, weights, title block, paper scale | A1 | V1 | L | ◐ V9a + V9b built 2026-10-14 · look answered (D-V9-5) · V9c next ⏸ |
+| V9 | **Floor-plan output** with adjustable cut height, poché, weights, title block, paper scale | A1 | V1 | L | ◐ V9a–c built 2026-10-14 · ⏸ sheet look (D-V9-6) · V9d optional |
 | V10 | **Interior elevation sheet** from the wall view, with object line-art and dimensions | A2 | V8 V9 | M | ⏸ look |
 | V11 | **Time-of-day palettes** + offline sunrise/sunset, live mode | B5 | V4 | M | ⏸ palettes |
 | V12 | **Local relight** on switch toggle | B6 | V11 | M | ⏸ motion |
@@ -472,6 +472,56 @@ via `apSvgBox`, chain lines, the north arrow); `bpStairsSvg` shared with the blu
 8 room tags, 24 codes of 42 endpoints, 26 dimension texts, 4 chains, 59 texts, 3 leaders, **0 overlaps** (also at 1:100 and
 cuts 300 / 1500). Sample `fig/p33-plan-1200.png`. spec-80 (18), spec-79 adjusted (no text outside the annotation group);
 suite 74 / 2742 green, golden 70/70. Next: V9c (title block, paper, export) ⏸.
+
+### V9c · work-package spec (written 2026-10-14, before the build)
+
+**Goal.** The Alaprajz as a printable sheet: ISO paper A3 / A4 at a **true** 1:50 / 1:100, frame, title block (the V4 title
+source: the Exportálás *Cím* field, blank = the level only), a scale bar, and SVG / PNG / Nyomtatás from the same
+Exportálás menu as the V4 axo. If the plan does not fit, the menu says so in Hungarian and nothing is exported.
+
+**Anchors.** `06c-view-core.js` `viewSheetSvg(R, opts)`: **extended** with `opts.paper` (the same title lines t1 / t2,
+then the paper layout instead of the px axo frame; the axo output stays byte-identical). `06d-view-export.js`: a tick
+*Alaprajz-lap* (`expPlan`; `VEXP_VIEWS` stays as spec-75 pins it), `vexpPlanSheet(paper, N, title, opts)`, `vexpPlanFit`; the
+existing `vexpSvg / vexpPng / vexpPrint` branch on the tick. `06-wall-editor.js` `printSVG(svg, title, page)`: an optional `@page` size.
+`shell.html`: rows *Papír* A3 / A4 · *Lépték* 1:50 / 1:100 (`expPaperRow`) and the fit line `expFit`, shown when the tick is on;
+the Forgatás choice applies to it; Nézet / Szétszedve / Rétegek are greyed out for it.
+
+**Rules.**
+- Paper (mm): A3 420 × 297, A4 297 × 210. Frame: 20 left, 10 elsewhere (ISO 5457). Title block 180 × 30 in the
+  bottom-right corner of the frame; the drawing area = the frame interior above a 30 mm bottom band.
+- Scale: the plan is the Alaprajz scene (the live renderer, `state.bpScale` = N while rendering, pitch 90, rotation =
+  Forgatás) mapped by **1 / (SC · N) mm per base unit**, so 1000 mm of plan = 1000 / N mm of paper; pens and texts are
+  paper mm by construction.
+- What is framed: the level box + 2600 mm on −x / −y (dimension chains) + 2900 on +x and 300 on +y (north arrow),
+  projected; centred in the drawing area.
+- Orientation: landscape if it fits, else portrait if that fits, else **no fit**: the line reads
+  `Nem fér el: A4 1:50 → a rajz 311 × 203 mm, a rajzterület 267 × 160 mm (álló: 180 × 247 mm). Válassz nagyobb lapot vagy kisebb léptéket.`
+  (numbers rounded to mm) and SVG / PNG / Nyomtatás do nothing but keep the line; a fit shows `A3 fekvő · 1:50 · rajz 311 × 203 mm`.
+- Title block lines: t1 = (Cím · szint) upper case; t2 = `Alaprajz · vágás C mm · N végpont a vágás alatt`; cells
+  `Lépték 1:N` · `Lap A3` · `Dátum YYYY-MM-DD` · `Varler Planner`. Scale bar 0–5 m (5000 / N mm) left of the title block.
+- PNG at 150 dpi (A3 → 2480 × 1754 px); print with `@page {size: A3 landscape; margin: 0}`.
+
+**Tests (spec-81, P33 v2 ground, NV4 ground).**
+1. Sheet sizes: A3 → `width="420mm" height="297mm" viewBox="0 0 420 297"` (landscape); A4 landscape 297 × 210; a portrait
+   case swaps them.
+2. True scale: a 1000 mm segment maps to 20.000 mm at 1:50 and 10.000 mm at 1:100 (± 0.001), at rotation 0 and 90.
+3. Fit: P33 A3 1:50 fits landscape (311 × 203 mm); P33 A4 1:50 no fit with the exact line above; P33 A4 1:100 fits
+   landscape; NV4 A3 1:100 fits. No fit → the export functions return null.
+4. Frame and title block geometry: frame rect 20 / 10 / 390 × 277 on A3; title block at x 230, y 257, 180 × 30.
+5. Scale bar length 100 mm at 1:50, 50 mm at 1:100. Title t1 = `P33 · FÖLDSZINT` with Cím P33.
+6. State restored after a sheet: style, pitch, rot, bpScale, the scene string.
+7. The V4 axo sheet byte-identical (vexpSheet for top / axo before and after); goldens 70/70.
+
+**Out of scope.** Multi-sheet sets, a sheet index, custom title-block fields (project address, author): later with V16.
+
+**Built 2026-10-14** (uncommitted) as specified. `viewSheetSvg` gained `opts.paper` (`viewPaperSheet`, shared title lines
+`viewSheetTitles`; the axo sheet byte-identical); `06d`: `vexpPlanBox / vexpPlanFit / vexpPlanSheet / vexpFitSync`, the tick
+*Alaprajz-lap* + Papír / Lépték + the fit line; `printSVG(svg, title, page)` takes an `@page` size. Found on NV4: the traced
+background (`bgSvg`) leaked into the clean plan → the clean Alaprajz drops it (the tick brings it back). P33 A3 1:50 = 311 × 203 mm
+landscape, NV4 A3 1:100 = 155 × 111 mm; P33 A4 1:50 → the no-fit line. `tools/p33-plan.js --paper=A3 --scale=50` →
+`fig/p33-sheet-A3-50.png`, `fig/nv4-sheet-A3-100.png`. spec-81 (26); suite 75 / 2768 green (spec-16's idle-redraw budget
+read 20.1 ms once under the parallel runner, 8.3–8.8 ms alone), golden 70/70 unchanged (no golden renders the plan
+sheet). Browser check on 8138 (launch entry *planner-stack-dist* added). ⏸ look: DECISIONS D-V9-6.
 
 ## V10 · Interior elevation sheet
 

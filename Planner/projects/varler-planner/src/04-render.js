@@ -913,7 +913,7 @@ function drawSoon(){if(_drawPending)return;_drawPending=true;
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(run);else run();}
 function draw(){
   if(stage&&stage.classList){stage.classList.toggle('prev',prevOn());stage.classList.toggle('tiszta',tisztaOn());}   // the dark ground is CSS on the stage, not a rect inside the drawing
-  let s = bgSvg() + (tisztaOn()?drawTisztaGeom():alaprajzOn()?drawAlaprajzGeom():state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom()
+  let s = (alaprajzOn()&&!state.apAll?'':bgSvg()) + (tisztaOn()?drawTisztaGeom():alaprajzOn()?drawAlaprajzGeom():state.style==='whiteout'?drawWhiteout():state.style==='blueprint'?drawBlueprintGeom()
                     :prevOn()?drawPreviewGeom():drawNormalGeom());
   s+=drawGuides();
   // hovered / locked wall highlight

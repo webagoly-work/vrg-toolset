@@ -263,3 +263,14 @@ P33 ground at 1:50, cut 1200 and 300. Built as specified (D-V9-3 A, D-V9-4 A); t
   portals and stack layers on the tick · **C** everything the Normal view draws.
 - **5c · endpoints above the cut** — **A (recommended)** 50 % ink, outline only (as built) · **B** fainter (30 %) so the
   band under the cut stands out more · **C** hidden, with a count in the HUD.
+
+## D-V9-6 · ⏸ look on the plan sheets (fig/p33-sheet-A3-50.png, fig/nv4-sheet-A3-100.png) — open
+
+Built as V9c specified: ISO frame, a 180 × 30 title block, a 0–5 m bar, true 1:50 / 1:100, the fit line instead of a shrink.
+
+- **6a · title block** — **A (recommended)** as built: title · level, the Alaprajz line, Lépték / Lap / Dátum / Varler Planner ·
+  **B** also the project address and the author (the blueprint's *proj / addr / by* fields) in a second cell row · **C** a
+  logo cell (VRG Title Card look) in place of *Varler Planner*.
+- **6b · endpoint symbols on paper** — **A (recommended)** as built: they follow the drawing scale (≈ 4 mm across at 1:50,
+  ≈ 2 mm at 1:100, as a plan symbol should) · **B** one fixed paper size at every scale (≈ 3 mm) · **C** as built, but
+  1.5 × at 1:100 so the NV4 sheet reads without a loupe.
