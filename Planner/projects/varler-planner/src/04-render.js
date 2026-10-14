@@ -64,8 +64,26 @@ function floorLabel(room,level){ // isometric text painted on the floor
    +body+`</text></g>`;}
 function area_dec(a){return a<2e6?1:0;}
 
+// ---- Kivágás (Sims-style cutaway, Views WP V3): walls between the camera and the rooms drop, far walls stay up.
+// The camera side of each plan axis is read from depthOf (larger = nearer), so the cutaway follows every rotation;
+// the classification itself is the view core's (viewWallClass, 06c), the heights are state.cutH / state.cutNearH.
+function cutCamSides(){const d0=depthOf(CXv,CYv,0),sg=v=>Math.abs(v)<1?0:Math.sign(v);
+  return [sg(depthOf(CXv+1000,CYv,0)-d0),sg(depthOf(CXv,CYv+1000,0)-d0)];}
+const CUT_MEMO=new WeakMap();   // walls array → {key, tops}: one classification per camera quadrant, not per opening
+function cutTops(l){const [cx,cy]=cutCamSides(),walls=WALLS[l]||[],rooms=allRooms(l).map(e=>e.rm).filter(rm=>rm.poly&&rm.poly.length>2);
+  const key=[cx,cy,wallH(l),state.cutH||1500,state.cutNearH||1000,walls.length,walls.reduce((k,r)=>k+r.x0+2*r.y0+3*r.x1+5*r.y1+7*(r.h||0),0).toFixed(1),
+    rooms.length,rooms.reduce((k,r)=>k+r.poly.reduce((q,p)=>q+p[0]+3*p[1],0),0).toFixed(1)].join('|'),m=CUT_MEMO.get(walls);
+  if(m&&m.key===key)return m.tops;
+  const tops=viewWallTops(walls,viewWallClass(walls,rooms,cx,cy),wallH(l),state.cutH||1500,state.cutNearH||1000);
+  CUT_MEMO.set(walls,{key,tops});return tops;}
+// an opening clipped to its lowered host wall; null when the whole opening sits above the cut
+function cutOpening(o){if(o.type==='stairs')return o;const host=opnHost(o);if(!host)return o;
+  const top=cutTops(o.level).get(host);if(top==null)return o;
+  const win=o.type==='window',wh=o.h||(win?WIN_H:DOOR_H),sill=(o.sill!=null?o.sill:(win?WIN_SILL:0));
+  if(sill+wh<=top)return o;if(sill>=top-1)return null;
+  return Object.assign({},o,{h:top-sill});}
 function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[];
-  const op=wm==='solid'?1:wm==='translucent'?0.5:0;
+  const op=wm==='solid'||wm==='cutaway'?1:wm==='translucent'?0.5:0;
   for(const l of ORD){if(!state.levels[l])continue;const fz=dz(l,0);
     if(SLAB[l])pushFloor(faces,SLAB[l],fz,'#dedcd3','#8f8a80',null,1);
     else (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;pushFloor(faces,rm.poly,fz,rm.fill,'#8f8a80',null,1);});
@@ -84,9 +102,10 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
         const n0=faces.length;pushFloor(faces,fl.poly,fz+mm,dcC,'#8fa0a8','4 3',dcO);lyrFaces(faces,n0,fl,'floor');});}
     if(wm!=='hidden'){const wrs=(WALLS[l]||[]).filter(r=>layerShows(r,'wall')&&soloWallOk(r,l));
       const merge=wallMergeOn()&&wm!=='hidden';   // U7: was solid-only, so in the default translucent mode the box did nothing
-      const sibs=merge?wrs.map((r,k)=>({r,k,z0:fz+(r.z0||0),z1:fz+(r.z0||0)+(r.h||wallH(l))})):null;
+      const ct=wm==='cutaway'?cutTops(l):null,wTop=r=>(r.z0||0)+(r.h||wallH(l)),zTop=r=>fz+(ct?Math.min(wTop(r),ct.get(r)):wTop(r));   // V3
+      const sibs=merge?wrs.map((r,k)=>({r,k,z0:fz+(r.z0||0),z1:zTop(r)})):null;
       const flat=merge&&state.pitch>=88;
-      wrs.forEach((r,k)=>{const n0=faces.length;pushBox(faces,r,fz+(r.z0||0),fz+(r.z0||0)+(r.h||wallH(l)),op,false,merge?{sibs,flat,clip:op<1,k}:null);lyrFaces(faces,n0,r,'wall');});
+      wrs.forEach((r,k)=>{if(zTop(r)<=fz+(r.z0||0)+1)return;const n0=faces.length;pushBox(faces,r,fz+(r.z0||0),zTop(r),op,false,merge?{sibs,flat,clip:op<1,k}:null);lyrFaces(faces,n0,r,'wall');});
       // from above, one contour around the whole wall body instead of a line per rectangle
       if(flat)rectsUnionSegs(wrs).forEach(g=>{const zt=fz+wallH(l);
         faces.push({pts:[[g[0],g[1],zt],[g[2],g[3],zt]],fill:'none',stroke:'#514c43',op:1,dash:null,key:depthOf((g[0]+g[2])/2,(g[1]+g[3])/2,zt)+40});});}
@@ -95,7 +114,8 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
       for(const r of WALLS[l])if((r.z0||0)>0&&layerShows(r,'wall')&&soloWallOk(r,l))raised.push({r,mm:r.z0,kind:'w',l});
       data.floors.forEach((fl,i)=>{if(fl.level===l&&(fl.z||0)>0&&layerShows(fl,'build'))raised.push({fl,mm:fl.z,kind:'f',l});});}
     for(const rf of (ROOFS[l]||[]))pushRoof(faces,rf,l);}
-  if(state.style!=='whiteout')for(const o of data.openings)if(state.levels[o.level]&&layerShows(o,'build')&&soloOk(o.x,o.y,o.level)){const n0=faces.length;pushOpening(faces,o);lyrFaces(faces,n0,o,'build');}
+  if(state.style!=='whiteout')for(const o0 of data.openings)if(state.levels[o0.level]&&layerShows(o0,'build')&&soloOk(o0.x,o0.y,o0.level)){
+    const o=wm==='cutaway'?cutOpening(o0):o0;if(!o)continue;const n0=faces.length;pushOpening(faces,o);lyrFaces(faces,n0,o0,'build');}
   for(const rf of (data.roofs||[]))if(state.levels[rf.level]&&layerShows(rf,'build')){const n0=faces.length;
     pushUserRoof(faces,rf,selected&&selected.t==='roofs'&&data.roofs[selected.i]===rf);lyrFaces(faces,n0,rf,'roof');}
   for(const o of data.objects)if(state.levels[o.level]&&layerShows(o,'object')&&soloOk(o.x,o.y,o.level)&&!(isGenObject(o)&&!genObjectsVisible())){const n0=faces.length;

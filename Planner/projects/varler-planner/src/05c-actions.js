@@ -267,6 +267,14 @@ registerActions([
    hint:'Széles: az ajtó falsíktól falsíkig rés a nyitásívvel, az ablak a falsíkoktól beljebb álló üvegsáv. Vonal: a régi falközépi vonal.',
    run:()=>{state.openingStyle=opnWide()?'line':'wide';if($('openingStyle'))$('openingStyle').value=state.openingStyle;draw();
      $('hud').textContent='Nyílászárók: '+(opnWide()?'széles':'vonal');}},
+  ...CAM_PRESETS.map(p=>({id:'view.cam.'+p.k,alias:'vetulet projection camera kamera '+p.k+' '+p.n.toLowerCase(),label:'Vetület: '+p.n,icon:'◇',group:'Nézet',
+   hint:p.hint,run:()=>camPresetApply(p.k)})),
+  {id:'view.cutaway',alias:'cutaway sims walls down kivagas falak le',label:'Falak: kivágás (Sims) be/ki',icon:'🏠',group:'Nézet',
+   hint:'A kamera felőli falak lesüllyednek, a távoli külső falak teljes magasak; forgatáskor követi a kamerát.',
+   run:()=>{state.wallMode=state.wallMode==='cutaway'?(state.wallModePrev||'translucent'):(state.wallModePrev=state.wallMode,'cutaway');
+     $('wallMode').value=state.wallMode;wmgSyncBox();cutSyncRow();draw();$('hud').textContent=state.wallMode==='cutaway'?'Kivágás bekapcsolva.':'Kivágás kikapcsolva.';}},
+  {id:'view.cam.lock',alias:'rotation lock 90 forgatas zar negyed',label:'Forgatás 90°-onként be/ki',icon:'⟳',group:'Nézet',
+   hint:'A forgatás negyedenként ugrik, a dőlés rögzített; 2D nézetből előbb 3D-be vált.',run:()=>camLockSet(!state.camLock)},
   {id:'view.reset',alias:'reset view fit zoom',label:'Nézet visszaállítása',icon:'⟲',group:'Nézet',run:()=>{resetView();draw();}},
   {id:'view.fine',label:'Finomhangolt mozgatás be/ki',icon:'🔍',group:'Nézet',
    hint:'1 mm-es lépés, 5× lassabb mozgatás. Tartva: Alt vagy F.',run:()=>fineToggle()},

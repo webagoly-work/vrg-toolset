@@ -12,7 +12,7 @@ const state={rot:90,zoom:.5,panX:250,panY:180,exploded:true,wallMode:'translucen
  grid:false,gridSize:250,cableType:'lighting',drawHKey:'s1100',freeHeight:false,freeMm:1100,chaseFactor:1.6,chasePad:4,boxDepth:45,buildType:'door',
  flat:false,showLabels:true,labelSize:1,labelRot:0,
  side:0,wallLock:true,midFree:false,showDropCeil:true,wallThick:100,wallErase:false,pathType:'gege',toolsLoc:'side',
- waste:10,price:{},hoverR:null,hoverL:'ground',stairDef:{w:1000,riser:180,going:250,th:300},isoGrid:false,activeLayer:'L0',showRefs:false,pitch:30,flat:false,soloRoom:null,showRoomText:true,bg:null,bp:{dims:true,title:true,proj:'',addr:'',by:''},bpScale:50,bpFine:1,hDisp:'hover',objAng:0,gizmoSnap:true,mobile:false,objWallSnap:true,multiSelect:false,circHoverInfo:true,circHidden:{},circHi:null,devScale:0.72,pathScale:1,viewScale:1};
+ waste:10,price:{},hoverR:null,hoverL:'ground',stairDef:{w:1000,riser:180,going:250,th:300},isoGrid:false,activeLayer:'L0',showRefs:false,pitch:30,flat:false,soloRoom:null,showRoomText:true,bg:null,bp:{dims:true,title:true,proj:'',addr:'',by:''},bpScale:50,bpFine:1,hDisp:'hover',objAng:0,gizmoSnap:true,mobile:false,objWallSnap:true,multiSelect:false,circHoverInfo:true,circHidden:{},circHi:null,devScale:0.72,pathScale:1,viewScale:1,camPreset:null,camLock:false,camLockPitch:null,cutH:1500,cutNearH:1000};
 // ---- keyboard layouts (round 2026-10-10, WP-U4) ----
 // Plain W A S D / Q E are the camera, always — they used to move the selection in Move mode and a selected object in
 // Select mode, so the same key panned or nudged depending on what happened to be selected. The selection now moves
@@ -129,35 +129,138 @@ function editCircuit(k){const grp=collectCircuits().find(c=>c.key===k);if(!grp)r
   setTimeout(()=>{const sel=$('cCol'),sw=$('cColSw');if(sel&&sw)sel.onchange=()=>{const f=CIRCUIT_COLORS.find(x=>x.k===sel.value);sw.style.background=f?f.c:'#1f9d55';};},30);}
 const DATA_KINDS=['UTP','USB','HDMI','koax','kisfeszültség'];
 const PATHW=60;   // mm lane offset between parallel paths
-const OBJLIB=[
- {cat:'Egyedi',items:[{n:'Egyedi méret…',custom:true,w:1000,d:600,h:800}]},
- {cat:'Bútor',items:[
-  {n:'Ágy 200×160',w:1600,d:2000,h:550},{n:'Ágy 200×90',w:900,d:2000,h:550},
-  {n:'Éjjeliszekrény',w:450,d:400,h:550},{n:'Szekrény 120',w:1200,d:600,h:2100},
-  {n:'Gardrób 240',w:2400,d:600,h:2400},{n:'Komód',w:1000,d:450,h:800},
-  {n:'Íróasztal',w:1400,d:700,h:750},{n:'Szék',w:450,d:450,h:900},
-  {n:'Étkezőasztal 160',w:1600,d:900,h:750},{n:'Kanapé 3ü',w:2200,d:900,h:850},
-  {n:'Fotel',w:800,d:800,h:850},{n:'Dohányzóasztal',w:1100,d:600,h:420},
-  {n:'Könyvespolc',w:800,d:300,h:1800},{n:'TV szekrény',w:1600,d:400,h:500}]},
+const OBJLIB=[   // generated from docs/views/OBJECTS-CATALOGUE.md by tools/objlib-gen.js — edit the catalogue, not this
+ {cat:'Egyedi',items:[
+  {n:'Egyedi méret…',custom:true,w:1000,d:600,h:800}
+ ]},
+ {cat:'Nappali',items:[
+  {n:'Kanapé 3ü',w:2200,d:900,h:850,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Kanapé 2ü',w:1600,d:900,h:850,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Sarokkanapé L',w:2700,d:1700,h:850,room:'Nappali',art:['F','L','R','T']},
+  {n:'Fotel',w:800,d:800,h:850,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Dohányzóasztal',w:1100,d:600,h:420,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Kisasztal Ø50',w:500,d:500,h:600,room:'Nappali',art:['F','T']},
+  {n:'TV szekrény',w:1600,d:400,h:500,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'TV 65" (falon)',w:1450,d:60,h:830,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Médiafal / beépített',w:3000,d:450,h:2400,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Könyvespolc',w:800,d:300,h:1800,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Komód / polc',w:2800,d:300,h:800,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Polc',w:800,d:300,h:800,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Vitrin',w:900,d:400,h:1900,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Állólámpa',w:400,d:400,h:1600,room:'Nappali',art:['F','T']},
+  {n:'Hangfal álló',w:250,d:300,h:1000,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Kandalló',w:900,d:500,h:1200,room:'Nappali',art:['F','L','T'],sym:true},
+  {n:'Zongora (pianínó)',w:1500,d:600,h:1250,room:'Nappali',art:['F','L','T'],sym:true}
+ ]},
+ {cat:'Hálószoba',items:[
+  {n:'Ágy 200×160',w:1600,d:2000,h:550,room:'Hálószoba',art:['F','L','T'],sym:true},
+  {n:'Ágy 200×180',w:1800,d:2000,h:550,room:'Hálószoba',art:['F','L','T'],sym:true},
+  {n:'Ágy 200×90',w:900,d:2000,h:550,room:'Hálószoba',art:['F','L','T'],sym:true},
+  {n:'Ágy fejvéggel (1100)',w:1700,d:2100,h:1100,room:'Hálószoba',art:['F','L','T'],sym:true},
+  {n:'Éjjeliszekrény',w:450,d:400,h:550,room:'Hálószoba',art:['F','L','T'],sym:true},
+  {n:'Szekrény 120',w:1200,d:600,h:2100,room:'Hálószoba',art:['F','L','T'],sym:true},
+  {n:'Gardrób 240',w:2400,d:600,h:2400,room:'Hálószoba',art:['F','L','T'],sym:true},
+  {n:'Tolóajtós gardrób 300',w:3000,d:650,h:2600,room:'Hálószoba',art:['F','L','T'],sym:true},
+  {n:'Komód',w:1000,d:450,h:800,room:'Hálószoba',art:['F','L','T'],sym:true},
+  {n:'Fésülködőasztal',w:1000,d:450,h:750,room:'Hálószoba',art:['F','L','T'],sym:true},
+  {n:'Tükör álló',w:600,d:50,h:1700,room:'Hálószoba',art:['F','L'],sym:true}
+ ]},
+ {cat:'Gyerekszoba',items:[
+  {n:'Emeletes ágy',w:1000,d:2000,h:1600,room:'Gyerekszoba',art:['F','L','T'],sym:true},
+  {n:'Kiságy',w:700,d:1300,h:900,room:'Gyerekszoba',art:['F','L','T'],sym:true},
+  {n:'Pelenkázó',w:900,d:550,h:950,room:'Gyerekszoba',art:['F','L','T'],sym:true},
+  {n:'Játéktároló',w:1000,d:400,h:900,room:'Gyerekszoba',art:['F','L','T'],sym:true}
+ ]},
+ {cat:'Dolgozó',items:[
+  {n:'Íróasztal',w:1400,d:700,h:750,room:'Dolgozó',art:['F','L','T'],sym:true},
+  {n:'Állítható íróasztal',w:1600,d:800,h:650,room:'Dolgozó',art:['F','L','T'],sym:true},
+  {n:'Irodai szék',w:650,d:650,h:1100,room:'Dolgozó',art:['F','L','T'],sym:true},
+  {n:'Monitor 27"',w:620,d:200,h:520,room:'Dolgozó',art:['F','L','T'],sym:true},
+  {n:'Iratszekrény',w:800,d:400,h:1200,room:'Dolgozó',art:['F','L','T'],sym:true}
+ ]},
+ {cat:'Étkező',items:[
+  {n:'Étkezőasztal 160',w:1600,d:900,h:750,room:'Étkező',art:['F','L','T'],sym:true},
+  {n:'Étkezőasztal 120',w:1200,d:800,h:750,room:'Étkező',art:['F','L','T'],sym:true},
+  {n:'Kerek asztal Ø110',w:1100,d:1100,h:750,room:'Étkező',art:['F','T']},
+  {n:'Szék',w:450,d:450,h:900,room:'Étkező',art:['F','L','T'],sym:true},
+  {n:'Bárszék',w:400,d:400,h:750,room:'Étkező',art:['F','L','T'],sym:true},
+  {n:'Tálalószekrény',w:1600,d:450,h:850,room:'Étkező',art:['F','L','T'],sym:true},
+  {n:'Függeszték (asztal fölé)',w:1200,d:300,h:600,room:'Étkező',art:['F','L','T'],sym:true}
+ ]},
  {cat:'Konyha',items:[
-  {n:'Konyhapult 60',w:600,d:600,h:900},{n:'Konyhapult 120',w:1200,d:600,h:900},
-  {n:'Mosogató',w:600,d:500,h:900},{n:'Tűzhely 60',w:600,d:600,h:900},
-  {n:'Sütő beépített',w:600,d:600,h:600},{n:'Hűtő 60',w:600,d:650,h:1850},
-  {n:'Mosogatógép 60',w:600,d:600,h:850},{n:'Páraelszívó',w:600,d:500,h:600},
-  {n:'Felsőszekrény',w:600,d:350,h:700}]},
+  {n:'Konyhapult 60',w:600,d:600,h:900,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Konyhapult 120',w:1200,d:600,h:900,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Konyhapult',w:1100,d:600,h:900,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Konyhapult (sarok)',w:600,d:600,h:900,room:'Konyha',art:['F','L','R','T']},
+  {n:'Fiókos alsó 60',w:600,d:600,h:900,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Felsőszekrény',w:600,d:350,h:700,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Magas szekrény (beépítő)',w:600,d:600,h:2200,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Kamrapolc',w:860,d:400,h:1800,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Konyhasziget',w:1800,d:900,h:900,room:'Konyha',art:['F','L','R','T']},
+  {n:'Mosogató',w:600,d:500,h:900,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Tűzhely 60',w:600,d:600,h:900,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Indukciós főzőlap (sziget)',w:770,d:520,h:60,room:'Konyha',art:['F','T']},
+  {n:'Sütő beépített',w:600,d:600,h:600,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Mikró beépített',w:600,d:400,h:380,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Hűtő 60',w:600,d:650,h:1850,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Amerikai hűtő',w:900,d:700,h:1780,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Mosogatógép 60',w:600,d:600,h:850,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Páraelszívó',w:600,d:500,h:600,room:'Konyha',art:['F','L','T'],sym:true},
+  {n:'Kávégép (pult)',w:300,d:450,h:380,room:'Konyha',art:['F','L','T'],sym:true}
+ ]},
  {cat:'Fürdő / WC',items:[
-  {n:'Kád 170×75',w:1700,d:750,h:600},{n:'Zuhanytálca 90×90',w:900,d:900,h:150},
-  {n:'Mosdó 60',w:600,d:450,h:850},{n:'WC csésze',w:400,d:700,h:800},
-  {n:'Bidé',w:400,d:600,h:400},{n:'Mosógép 60',w:600,d:600,h:850},
-  {n:'Szárítógép 60',w:600,d:600,h:850},{n:'Törölközőradiátor',w:500,d:100,h:1200}]},
- {cat:'Gépészet',items:[
-  {n:'Elosztószekrény',w:600,d:150,h:800},{n:'Kazán fali',w:450,d:350,h:800},
-  {n:'HMV tároló 200l',w:600,d:600,h:1500},{n:'Hőszivattyú kültéri',w:1000,d:400,h:900},
-  {n:'Szellőzőgép',w:800,d:600,h:1200},{n:'Radiátor 1000',w:1000,d:100,h:600},
-  {n:'Villanyóra szekrény',w:400,d:200,h:600}]},
- {cat:'Egyéb',items:[
-  {n:'Oszlop 30×30',w:300,d:300,h:2700},{n:'Kandalló',w:900,d:500,h:1200},
-  {n:'Beépített szekrény',w:2000,d:600,h:2700},{n:'Doboz / raklap',w:1200,d:800,h:1000}]}];
+  {n:'WC csésze',w:400,d:700,h:800,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Fali WC + tartály (beépített)',w:360,d:540,h:400,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Bidé',w:400,d:600,h:400,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Mosdó 60',w:600,d:450,h:850,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Mosdó 40',w:350,d:400,h:850,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Kézmosó',w:450,d:300,h:850,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Mosdószekrény 80',w:800,d:460,h:850,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Tükrös szekrény',w:800,d:150,h:700,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Kád 170×75',w:1700,d:750,h:600,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Zuhanytálca 90×90',w:900,d:900,h:150,room:'Fürdő / WC',art:['F','T']},
+  {n:'Zuhanytálca 80×80',w:800,d:800,h:150,room:'Fürdő / WC',art:['F','T']},
+  {n:'Zuhanyfal (walk-in)',w:1200,d:10,h:2000,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Mosógép 60',w:600,d:600,h:850,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Szárítógép 60',w:600,d:600,h:850,room:'Fürdő / WC',art:['F','L','T'],sym:true},
+  {n:'Törölközőradiátor',w:500,d:100,h:1200,room:'Fürdő / WC',art:['F','L'],sym:true}
+ ]},
+ {cat:'Előszoba',items:[
+  {n:'Cipősszekrény',w:1400,d:300,h:900,room:'Előszoba',art:['F','L','T'],sym:true},
+  {n:'Fogas / előszobafal',w:1200,d:350,h:1900,room:'Előszoba',art:['F','L','T'],sym:true},
+  {n:'Pad',w:1000,d:350,h:450,room:'Előszoba',art:['F','L','T'],sym:true}
+ ]},
+ {cat:'Gépészet / BRIDGE',items:[
+  {n:'Elosztószekrény',w:600,d:150,h:800,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'BASE szekrény (NET/COMP/MEDIA)',w:600,d:400,h:900,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'RBX doboz',w:400,d:120,h:300,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Rack 19" 12U (fali)',w:600,d:450,h:640,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Villanyóra szekrény',w:400,d:200,h:600,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Kazán fali',w:450,d:350,h:800,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'HMV tároló 200l',w:600,d:600,h:1500,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Hőszivattyú kültéri',w:1000,d:400,h:900,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Klíma beltéri',w:900,d:220,h:300,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Klíma kültéri',w:800,d:300,h:550,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Szellőzőgép',w:800,d:600,h:1200,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Radiátor 1000',w:1000,d:100,h:600,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Padlófűtés osztó',w:600,d:110,h:450,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Napelem inverter',w:450,d:200,h:600,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true},
+  {n:'Akkumulátor (otthoni)',w:600,d:200,h:1000,room:'Gépészet / BRIDGE',art:['F','L','T'],sym:true}
+ ]},
+ {cat:'Kültér / terasz',items:[
+  {n:'Kerti asztal 70×70',w:700,d:700,h:740,room:'Kültér / terasz',art:['F','L','T'],sym:true},
+  {n:'Kerti szék',w:450,d:450,h:850,room:'Kültér / terasz',art:['F','L','T'],sym:true},
+  {n:'Napozóágy',w:700,d:1900,h:350,room:'Kültér / terasz',art:['F','L','T'],sym:true},
+  {n:'Növény (cserepes)',w:500,d:500,h:1200,room:'Kültér / terasz',art:['F','T']},
+  {n:'Kaputelefon kültéri',w:120,d:40,h:300,room:'Kültér / terasz',art:['F','L'],sym:true}
+ ]},
+ {cat:'Építészeti / egyéb',items:[
+  {n:'Oszlop 30×30',w:300,d:300,h:2700,room:'Építészeti / egyéb',art:['F','T']},
+  {n:'Beépített szekrény',w:2000,d:600,h:2700,room:'Építészeti / egyéb',art:['F','L','T'],sym:true},
+  {n:'Doboz / raklap',w:1200,d:800,h:1000,room:'Építészeti / egyéb',art:['F','T']},
+  {n:'Függöny / roló (ablak)',w:1400,d:100,h:2400,room:'Építészeti / egyéb',art:['F','L'],sym:true}
+ ]}
+];
 let objPick={n:'Egyedi méret…',custom:true,w:1000,d:600,h:800};
 const circOn={lighting:true,sockets:true,power3:true,data:true};
 let GUIDES=[{k:'floor',mm:0,l:'Padló 0',c:'#8a5a2b',vis:false,jump:true,sys:true},

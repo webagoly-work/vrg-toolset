@@ -72,6 +72,56 @@ function camK(){const p=Math.max(5,Math.min(90,state.pitch)),t=Math.max(0,Math.m
   return {p,rad:p*Math.PI/180,extra:45*(1-t),kx:1.2247+(1-1.2247)*t,ky:1.4142+(1-1.4142)*t,kz:Math.cos(p*Math.PI/180)/Math.cos(Math.PI/6)};}
 function project(x,y,z,deg){const c=camK();const [rx,ry]=rot(x,y,deg+c.extra);
   return [rx*c.kx, ry*Math.sin(c.rad)*c.ky - z*c.kz];}
+// ---- camera presets + 90° rotation lock (Views WP V2, docs/views/WORKPLAN.md) ----
+// state.pitch is NOT a true view angle: camK blends a true isometric at 30 (with a hidden +45° yaw,
+// `extra`) into the plan at 90. So a preset is a (pitch, phase) pair in the Planner's own terms, and
+// the lock snaps the EFFECTIVE yaw (rot + extra) to phase + k·90. Pitches are chosen so extra is a
+// whole degree (setRot rounds): extra = 0.75·(90 − p) for p in 30…90, 45 below 30.
+const CAM_PRESETS=[
+ {k:'iso', n:'Izometrikus',           pitch:30, phase:45, hint:'Egyenlő tengelyek — a klasszikus 30°-os rajz.'},
+ {k:'dim', n:'Dimetrikus (alacsony)', pitch:20, phase:45, hint:'Alacsonyabb, nyugodtabb rálátás; a falak magasabbnak látszanak.'},
+ {k:'axo', n:'Axonometria',           pitch:46, phase:45, hint:'Meredekebb rálátás: a helyiségek alaprajzként olvashatók, magassággal.'},
+ {k:'mil', n:'Katonai (alaprajz-hű)', pitch:70, phase:45, hint:'Az alaprajz szinte torzítatlan, a magasság rövidítve — rajzoláshoz.'},
+ {k:'elev',n:'Homlokzati',            pitch:15, phase:0,  hint:'Szemből egy falra, enyhe rálátással.'}];
+function camPreset(k){return CAM_PRESETS.find(p=>p.k===k)||null;}
+function camExtraAt(p){const q=Math.max(5,Math.min(90,p)),t=Math.max(0,Math.min(1,(q-30)/60));return 45*(1-t);}   // = camK().extra
+function camNorm(d){return ((Math.round(d)%360)+360)%360;}
+// the rot nearest to `rot` whose effective yaw sits on phase + k·90 at this pitch
+function camQuadRot(rot,pitch,phase){const base=phase-camExtraAt(pitch);return camNorm(base+90*Math.round((rot-base)/90));}
+function camLockOn(){return !!state.camLock&&state.pitch<88;}            // 2D has nothing to rotate
+function camLockPhase(){const p=camPreset(state.camPreset);return p?p.phase:45;}
+let camLockAcc=0;   // drag degrees gathered toward the next quadrant step
+// every yaw write goes through here: free → unchanged; locked → a whole quadrant or nothing
+function camLockYaw(deg){if(!camLockOn())return deg;
+  const cur=state.rot,ph=camLockPhase(),d=((deg-cur)%360+540)%360-180;
+  if(Math.abs(d)>=60){camLockAcc=0;return camQuadRot(deg,state.pitch,ph);}   // a jump (±90 key, 0°/90° button): land on it
+  camLockAcc+=d;
+  if(Math.abs(camLockAcc)>=45){const s=Math.sign(camLockAcc);camLockAcc=0;return camQuadRot(cur+90*s,state.pitch,ph);}
+  return camQuadRot(cur,state.pitch,ph);}
+function camLockPitch(v){return camLockOn()&&state.camLockPitch!=null?state.camLockPitch:v;}
+function camRotStep(){return camLockOn()?90:15;}
+// the preset the camera currently matches, or null (a free camera)
+function camPresetNow(){if(state.pitch>=88)return null;
+  return CAM_PRESETS.find(p=>Math.abs(state.pitch-p.pitch)<0.5&&camQuadRot(state.rot,p.pitch,p.phase)===camNorm(state.rot))||null;}
+function camPresetApply(k){const p=camPreset(k);
+  if(!p){state.camPreset=null;draw();camSyncUI();return false;}
+  state.camPreset=k;state.camLockPitch=p.pitch;camLockAcc=0;
+  const lock=state.camLock;state.camLock=false;                // the preset itself may move pitch and yaw
+  if(typeof recentrePivot==='function')recentrePivot();
+  state.pitch=p.pitch;state.flat=false;if($('view3d'))$('view3d').textContent='2D';
+  setRot(camQuadRot(state.rot,p.pitch,p.phase));state.camLock=lock;camSyncUI();
+  if($('hud'))$('hud').textContent='Vetület: '+p.n+(lock?' · forgatás 90°-onként':'')+' — '+p.hint;
+  return true;}
+function camLockSet(on){state.camLock=!!on;camLockAcc=0;
+  if(state.camLock){if(state.pitch>=88)$('view3d')&&$('view3d').onclick();   // the lock is a 3D thing: leave 2D first
+    const p=camPreset(state.camPreset);state.camLockPitch=p?p.pitch:state.pitch;
+    state.pitch=state.camLockPitch;setRot(camQuadRot(state.rot,state.pitch,camLockPhase()));}
+  camSyncUI();
+  if($('hud'))$('hud').textContent=state.camLock?'Forgatás 90°-onként — a dőlés rögzítve ('+Math.round(state.pitch)+'°); jobb gombos húzás vagy ←/→ negyedet fordít.'
+    :'Szabad kamera.';
+  return state.camLock;}
+function camSyncUI(){const s=$('camPreset'),b=$('camLock'),p=camPresetNow();
+  if(s)s.value=p?p.k:'';if(b)b.checked=!!state.camLock;}
 function floorRealZ(l){let z=0;for(const k of ORD){if(k===l)break;z+=LH[k];}return z;}
 function floorDispZ(l){let z=0;for(const k of ORD){if(k===l)break;z+=LH[k]+(state.exploded?GAP:0);}return z;}
 function wallH(l){return LH[l];}

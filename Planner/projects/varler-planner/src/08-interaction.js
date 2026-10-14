@@ -321,8 +321,9 @@ function applyFormat(h){if(!fmtSource){return false;}
   if(fmtSource.t==='wall'&&fmtSource.snap.__thick){const [w,dd]=pGetWD(h),long=Math.max(w,dd),th=fmtSource.snap.__thick;
     pSetWD(h, w>=dd?long:th, w>=dd?th:long);SNAP[h.level]=centerlines(WALLS[h.level]);}
   draw();$('hud').textContent='Formátum másolva ('+fmtSource.label+').';return true;}
-function setPitch(v){state.pitch=Math.max(5,Math.min(90,v));state.flat=state.pitch>=88;
-  $('view3d').textContent=state.pitch>=88?'3D':'2D';$('hud').textContent='Kameradőlés: '+Math.round(state.pitch)+'°';draw();}
+function setPitch(v){const want=v;v=camLockPitch(v);state.pitch=Math.max(5,Math.min(90,v));state.flat=state.pitch>=88;
+  $('view3d').textContent=state.pitch>=88?'3D':'2D';
+  $('hud').textContent=(v!==want?'Forgatási zár: a dőlés rögzítve — ':'Kameradőlés: ')+Math.round(state.pitch)+'°';camSyncUI();draw();}
 function panBy(dx,dy){state.panX+=dx;state.panY+=dy;setTransform();}
 function zoomBy(f){state.zoom=vsClamp(state.zoom*f);setTransform();}
 // ---- the selection nudge (round 2026-10-10, WP-U4) ----
@@ -404,7 +405,7 @@ window.addEventListener('keydown',e=>{
       $('devType').value=DEVORDER[i];$('hud').textContent='Készülék → '+$('devType').selectedOptions[0].text;draw();return;}
     if(state.mode==='build'){e.preventDefault();let i=BUILDORDER.indexOf(state.buildType);i=(i+dir+BUILDORDER.length)%BUILDORDER.length;
       state.buildType=BUILDORDER[i];$('buildType').value=BUILDORDER[i];$('hud').textContent='Beépített → '+$('buildType').selectedOptions[0].text;draw();return;}
-    e.preventDefault();recentrePivot();setRot(state.rot+dir*15);return;} // else rotate around screen centre
+    e.preventDefault();recentrePivot();setRot(state.rot+dir*camRotStep());return;} // else rotate around screen centre (a quadrant when locked)
   if(e.key==='ArrowUp'||e.key==='ArrowDown'){
     const stepping=(state.mode==='cable'||state.mode==='path'||state.mode==='device'||(state.mode==='object'&&state.objWallSnap))&&!e.shiftKey;
     if(stepping){e.preventDefault();stepHeight(e.key==='ArrowUp'?1:-1);return;}
@@ -561,7 +562,7 @@ stage.addEventListener('touchmove',e=>{
 stage.addEventListener('touchend',e=>{clearTimeout(longPressT);
   if(e.touches.length<2)touchG=null;
   if(e.touches.length===0)lpStart=null;},{passive:false});
-function setRotSilent(deg){deg=((Math.round(deg)%360)+360)%360;state.rot=deg;const r=$('rot');if(r){r.value=deg;$('rotVal').textContent=deg+'°';}}
+function setRotSilent(deg){deg=camLockYaw(deg);deg=((Math.round(deg)%360)+360)%360;state.rot=deg;const r=$('rot');if(r){r.value=deg;$('rotVal').textContent=deg+'°';}}
 // two-finger vertical pitch pad (mobile): a dedicated on-screen control instead of ambiguous gesture
 function openCtxAt(ev){ // reuse the contextmenu pipeline via a synthetic event
   const evt=new MouseEvent('contextmenu',{clientX:ev.clientX,clientY:ev.clientY,bubbles:true,cancelable:true});
@@ -600,7 +601,7 @@ function camDraw(){ (typeof drawSoon==='function'?drawSoon:draw)(); }
 // pitch — same clamp and flat/2D-3D handling as setPitch(), minus the HUD
 // write and the synchronous draw
 function camSetPitch(v){
-  state.pitch=Math.max(5,Math.min(90,v));
+  state.pitch=Math.max(5,Math.min(90,camLockPitch(v)));
   state.flat=state.pitch>=88;
   const b=$('view3d'); if(b)b.textContent=state.flat?'3D':'2D';
   camDraw();

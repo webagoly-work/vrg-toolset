@@ -420,14 +420,19 @@
    <div class="row" style="gap:4px">
      <button class="preset" data-deg="0">0°</button><button class="preset" data-deg="90">90°</button>
      <button class="preset" data-deg="180">180°</button><button class="preset" data-deg="270">270°</button></div>
+   <div class="row" title="Névvel ellátott vetület: a kamera a hozzá tartozó dőlésre és átlós (vagy szemből néző) irányra ugrik.">Vetület <select id="camPreset">
+     <option value="">Szabad</option><option value="iso">Izometrikus</option><option value="dim">Dimetrikus (alacsony)</option>
+     <option value="axo">Axonometria</option><option value="mil">Katonai (alaprajz-hű)</option><option value="elev">Homlokzati</option></select>
+    <label style="margin-left:8px" title="A forgatás negyedenként (90°) ugrik, a dőlés rögzített. Jobb gombos húzás vagy ←/→ egy negyedet fordít."><input type="checkbox" id="camLock"> 90°-onként</label></div>
    <div class="row" title="A rajz alap-léptéke. Nagyobb lépték = ugyanaz a képernyőterület kevesebb millimétert mutat, azaz közelebb lehet menni. A tollak és a készülékjelek képernyőmérete nem változik.">Nézeti lépték <select id="viewScale">
      <option value="1">1× — teljes terv</option><option value="2">2×</option><option value="5">5×</option><option value="10">10× — részlet</option></select></div>
    <div class="row">Render <select id="style">
      <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option><option value="preview">Ügyfél-előnézet (sötét)</option></select></div>
    <div class="row">Walls <select id="wallMode">
      <option value="translucent">translucent</option><option value="solid">solid</option>
-     <option value="hidden">hidden</option></select>
+     <option value="hidden">hidden</option><option value="cutaway">kivágás (Sims)</option></select>
     <label id="wallMergeL" style="margin-left:8px" title="A falak egy testként jelennek meg: nincs sarokvarrat. A hivatalos nézet mindig így rajzol; a falak egyenként kijelölhetők maradnak. Áttetsző és tömör falaknál is működik."><input type="checkbox" id="wallMerge"> Falak egyesítve</label></div>
+   <div class="row" id="cutRow" style="display:none" title="Kivágás: a kamera felőli falak lesüllyednek, a távoli külső falak teljes magasak maradnak. Forgatáskor a kivágás követi a kamerát.">Kivágás belső <input type="number" id="cutH" min="300" max="2700" step="100" value="1500" style="width:58px"> külső <input type="number" id="cutNearH" min="0" max="2700" step="100" value="1000" style="width:58px"> mm</div>
    <div class="row" title="Széles: az ajtó falsíktól falsíkig rés a nyitásívvel, az ablak a falsíkoktól kicsit beljebb álló üvegsáv. Vonal: a régi, falközépi vonal.">Nyílászárók <select id="openingStyle">
      <option value="wide">széles</option><option value="line">vonal</option></select></div>
    <div class="row"><label><input type="checkbox" id="explode" checked>Exploded</label>

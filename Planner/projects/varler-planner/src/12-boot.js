@@ -337,8 +337,8 @@ $('mbRedo').onclick=()=>$('bRedo').click();
 $('mbDel').onclick=()=>{if(selected){pushUndo();removeHit(selected);selected=null;draw();}};
 $('mbTop').onclick=()=>$('view3d').click();
 (function bindPad(){const pad=$('mbPad');if(!pad)return;let hold=null;
-  const act=n=>{if(n==='rotL'){recentrePivot();setRot(state.rot-15);}
-    else if(n==='rotR'){recentrePivot();setRot(state.rot+15);}
+  const act=n=>{if(n==='rotL'){recentrePivot();setRot(state.rot-camRotStep());}
+    else if(n==='rotR'){recentrePivot();setRot(state.rot+camRotStep());}
     else if(n==='up')setPitch(state.pitch+6);else if(n==='down')setPitch(state.pitch-6);
     else if(n==='zin')zoomBy(1.15);else if(n==='zout')zoomBy(1/1.15);};
   pad.querySelectorAll('button').forEach(btn=>{

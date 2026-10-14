@@ -7,10 +7,12 @@
 // tests/golden.js — const/let are subject to temporal dead zones.
 // ==========================================================================
 //////////////////// controls ////////////////////
-function setRot(deg){deg=((Math.round(deg)%360)+360)%360;state.rot=deg;$('rot').value=deg;$('rotVal').textContent=deg+'°';
-  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('on',+b.dataset.deg===deg));draw();}
-$('rot').oninput=e=>setRot(+e.target.value);$('rotL').onclick=()=>setRot(state.rot-15);$('rotR').onclick=()=>setRot(state.rot+15);
+function setRot(deg){deg=camLockYaw(deg);deg=((Math.round(deg)%360)+360)%360;state.rot=deg;$('rot').value=deg;$('rotVal').textContent=deg+'°';
+  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('on',+b.dataset.deg===deg));camSyncUI();draw();}
+$('rot').oninput=e=>setRot(+e.target.value);$('rotL').onclick=()=>setRot(state.rot-camRotStep());$('rotR').onclick=()=>setRot(state.rot+camRotStep());
 document.querySelectorAll('.preset').forEach(b=>b.onclick=()=>setRot(+b.dataset.deg));
+if($('camPreset'))$('camPreset').onchange=e=>camPresetApply(e.target.value||null);   // Views V2
+if($('camLock'))$('camLock').onchange=e=>camLockSet(e.target.checked);
 if($('lyrSpot'))$('lyrSpot').onchange=()=>lyrSpotToggle();
 if($('devHover'))$('devHover').onchange=()=>hovToggle($('devHover').checked);   // U6
 if($('lyrPaintAll'))$('lyrPaintAll').onchange=e=>lyrPaintAll(e.target.checked);
@@ -22,7 +24,13 @@ $('style').onchange=e=>{state.style=e.target.value;bpUI();
   if(state.style==='blueprint'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();
     $('hud').textContent='Blueprint nézet — 2D felülnézetre váltottam.';}
   draw();};
-$('wallMode').onchange=e=>{state.wallMode=e.target.value;wmgSyncBox();draw();};
+$('wallMode').onchange=e=>{state.wallMode=e.target.value;wmgSyncBox();cutSyncRow();draw();
+  if(state.wallMode==='cutaway')$('hud').textContent='Kivágás: a kamera felőli falak '+(state.cutNearH||1000)+' mm, a belsők '+(state.cutH||1500)+' mm magasak — forgatáskor követi a kamerát.';};
+// V3: the cutaway heights row shows only in that wall mode
+function cutSyncRow(){const r=$('cutRow');if(r)r.style.display=state.wallMode==='cutaway'?'':'none';
+  if($('cutH'))$('cutH').value=state.cutH||1500;if($('cutNearH'))$('cutNearH').value=state.cutNearH||1000;}
+if($('cutH'))$('cutH').onchange=e=>{state.cutH=Math.max(300,Math.min(2700,+e.target.value||1500));draw();};
+if($('cutNearH'))$('cutNearH').onchange=e=>{state.cutNearH=Math.max(0,Math.min(2700,+e.target.value||1000));draw();};
 if($('openingStyle'))$('openingStyle').onchange=e=>{state.openingStyle=e.target.value;draw();};   // G1
 // U7: nothing to merge when the walls are not drawn — say so instead of a box that silently does nothing
 function wmgSyncBox(){const b=$('wallMerge'),L=$('wallMergeL');if(!b)return;const off=state.wallMode==='hidden';b.disabled=off;
@@ -230,7 +238,7 @@ function syncUI(){vsApply();if(typeof kbdApplyLayout==='function')kbdApplyLayout
   if(typeof pnlWideSync==='function')pnlWideSync();   // U5: a project left in wide mode opens in it
   if($('devHover'))$('devHover').checked=!!state.devHover;   // U6
   if($('viewScale'))$('viewScale').value=String(vsOk(state.viewScale));
-  setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;wmgSyncBox();if($('openingStyle'))$('openingStyle').value=opnWide()?'wide':'line';$('explode').checked=state.exploded;
+  camLockAcc=0;setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;cutSyncRow();if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;wmgSyncBox();if($('openingStyle'))$('openingStyle').value=opnWide()?'wide':'line';$('explode').checked=state.exploded;
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   $('lvBase').checked=state.levels.basement;$('lvGround').checked=state.levels.ground;$('lvUpper').checked=state.levels.upper;
   $('hBase').value=LH.basement;$('hGround').value=LH.ground;$('hUpper').value=LH.upper;if(typeof dcSync==='function')dcSync();
