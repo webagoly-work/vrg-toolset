@@ -55,6 +55,12 @@ setlocal EnableDelayedExpansion
 ::  marks and endpoints; of the hardware only the Eloszto) and opens that.
 ::  A letter again, for the same reason as W). check-start.js now counts a
 ::  page an action opens (set "TFULL=%WT_DIR%\...") as registered.
+::
+::  2026-10-16 - planner-stack merged into main (e37f856): tool 1 now opens the
+::  full working version - the workflow phases, the UI tidy (T1-T8), the marker
+::  pen, circuit suggestions, the Erosaram engine (Palyak / Vezetekek buttons)
+::  and the Aloszto per level. Same file, same key 1 (projects\varler-planner\dist).
+::  W) and E) still work while the worktree exists.
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -86,7 +92,7 @@ set "ZEN_EXE=%ROOT%\apps\zen-browser\zen.exe"
 :: convention - fix any that don't match reality, the launcher will tell
 :: you exactly which one is wrong and where it looked.
 
-set "T1_NAME=Varler Planner"
+set "T1_NAME=Varler Planner (munkaverzio 2026-10-16)"
 set "T1_PATH=projects\varler-planner\dist\varler_planner.html"
 
 set "T2_NAME=Panel anyagar kalkulator (varlerAron)"
