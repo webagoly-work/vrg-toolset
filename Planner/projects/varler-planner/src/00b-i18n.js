@@ -21,6 +21,7 @@ const L10N={hu:{},en:{
   // shell
   'stage.build':'Structure','stage.rooms':'Rooms','stage.devices':'Devices',
   'stage.paths':'Runs','stage.doc':'Documentation',
+  'phase.alap':'Foundation','phase.nyil':'Openings','phase.szab':'Rules','phase.vill':'Electrical','phase.paly':'Runs','phase.ki':'Output',
   'stage.build.hint':'Walls, openings, levels, floors.',
   'stage.rooms.hint':'Naming, use, environment (IP), finishes, default heights.',
   'stage.devices.hint':'Sockets, switches, lights, boxes and their heights.',
@@ -49,6 +50,8 @@ const L10N={hu:{},en:{
 function lang(){return (state&&state.lang)||'hu';}
 function t(key,hu){const d=L10N[lang()];const v=d&&d[key];return (v!=null&&v!=='')?v:(hu!=null?hu:key);}
 function setLang(l){if(!LANGS[l])return;state.lang=l;
+  // the shell caches its markup and its check() messages, and both are translated
+  if(typeof invalidateShell==='function')invalidateShell();
   if(typeof renderShell==='function')renderShell();
   if(typeof statusBar==='function')statusBar();
   if(typeof draw==='function')draw();

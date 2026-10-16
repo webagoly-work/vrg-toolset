@@ -1,0 +1,47 @@
+
+/* ── Viewer layout (on top of the design system's tokens and components) ── */
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { overflow: hidden; background: radial-gradient(120% 90% at 30% 20%, var(--ground-raised) 0%, var(--ground) 62%, var(--ground-deep) 100%); }
+#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+#gl.is-hover { cursor: pointer; }
+#gl.is-drag { cursor: grabbing; }
+
+.cpv-top { position: fixed; left: var(--space-6); right: var(--space-6); top: calc(var(--space-5) + env(safe-area-inset-top, 0px));
+  display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); pointer-events: none; }
+.cpv-top > * { pointer-events: auto; }
+.cpv-brand { display: flex; gap: var(--space-3); align-items: flex-start; }
+.cpv-mark { width: 40px; height: 40px; color: var(--ink); flex: none; margin-top: -6px; }
+.cpv-mark-acc { fill: var(--sand); }
+.cpv-name { margin: 2px 0 0; font: 400 30px/34px var(--font-display); letter-spacing: .02em; }
+.cpv-actions { display: flex; gap: var(--space-1); }
+
+.cpv-room { position: fixed; right: var(--space-6); bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px)); width: min(340px, calc(100vw - 2 * var(--space-6)));
+}
+@media (max-height: 640px) { .cpv-room { max-height: calc(100vh - 120px); overflow: hidden auto; } }
+.cpv-room .vrg-chips { margin-bottom: var(--space-3); }
+.cpv-room-foot { display: flex; justify-content: flex-end; }
+
+.cpv-legend { position: fixed; left: var(--space-6); bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px)); padding: var(--space-3) var(--space-4); max-width: min(420px, calc(100vw - 2 * var(--space-6))); }
+.cpv-legend .vrg-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px var(--space-4); }
+.cpv-legend li { font-size: 13px; line-height: 20px; }
+.vrg-glyph--junction { background: var(--ink-faint); }
+.vrg-glyph--ghost { width: 14px; height: 9px; border: 1px solid var(--line-strong); opacity: .6; }
+
+.cpv-hint { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  font: 500 10px/14px var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; pointer-events: none; }
+
+#tags { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.cpv-tag { position: absolute; left: 0; top: 0; font: 500 10px/14px var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-muted); white-space: nowrap; will-change: transform; }
+.cpv-tag--ghost { color: var(--ink-faint); }
+.cpv-tag--room { color: var(--halo); }
+
+.cpv-empty { position: fixed; inset: 0; display: grid; place-items: center; padding: var(--space-6); }
+.cpv-empty .vrg-glass { max-width: 420px; }
+.cpv-empty.is-drop .vrg-glass { border-color: var(--sand); }
+
+@media (max-width: 760px) {
+  .cpv-legend, .cpv-hint { display: none; }
+  .cpv-name { font-size: 22px; line-height: 28px; }
+  .cpv-room { left: var(--space-4); right: var(--space-4); width: auto; bottom: var(--space-4); }
+}

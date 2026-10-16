@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Egyszerű felület — minta</title>
+<style>
+/* Static look mock-up for the Simplified UI pack (docs/simple-ui). The tokens are 01_DESIGN §7 verbatim. */
+:root{
+ --sm-glass:rgba(214,224,232,.80);--sm-glass-hi:rgba(234,241,247,.94);--sm-glass-back:rgba(196,208,219,.86);
+ --sm-edge-hi:rgba(255,255,255,.90);--sm-edge-lo:rgba(110,130,150,.45);--sm-ink:#1c2833;--sm-ink-dim:#5b6d7e;
+ --sm-accent:#3a8ac4;--sm-glow:0 0 0 1px rgba(255,255,255,.55),0 0 16px rgba(130,185,228,.45);--sm-warn:#c0530f;
+ --sm-scan:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px);
+ --sm-font:"Bahnschrift SemiCondensed","Bahnschrift","Segoe UI",sans-serif;--sm-num:"Cascadia Mono","Consolas",monospace;
+}
+body{margin:0;background:#d9d6cf;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#222;padding:16px}
+h1{font-size:16px;margin:0 0 4px}p.note{margin:0 0 14px;font-size:12.5px;color:#555;max-width:900px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:16px}
+figure{margin:0}figcaption{font-size:12px;color:#444;margin:6px 2px 0}
+.scr{position:relative;height:440px;border-radius:6px;overflow:hidden;box-shadow:0 2px 10px #0003;background:#eceae4}
+.scr.dark{background:#1b1f24}
+.plan{position:absolute;inset:0;width:100%;height:100%}
+/* dial */
+.dial{position:absolute;left:0;bottom:0;width:96px;height:96px;overflow:visible}.dial .warn{font-size:12px}
+.dial .q{fill:var(--sm-glass);stroke:var(--sm-edge-lo);stroke-width:2}
+.dial .r2{fill:none;stroke:var(--sm-edge-lo);stroke-width:1}
+.dial .core{fill:var(--sm-glass-hi);stroke:var(--sm-edge-hi);stroke-width:1}
+.dial .tk{stroke:var(--sm-ink-dim);stroke-opacity:.5;stroke-width:1.2}
+.dial .dp{fill:none;stroke:var(--sm-edge-lo);stroke-width:5;stroke-opacity:.6}
+.dial .dp.on{stroke:var(--sm-accent);stroke-opacity:1}
+.dial .g{font:20px var(--sm-font);fill:var(--sm-ink)}
+.dial.tool .q{stroke:var(--sm-accent);filter:drop-shadow(0 0 6px rgba(130,185,228,.8))}
+.dial .warn{font:bold 11px var(--sm-font);fill:var(--sm-warn)}
+/* column */
+.col{position:absolute;left:20px;bottom:100px;width:248px;display:flex;flex-direction:column;gap:6px;font-family:var(--sm-font)}
+.crumb{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--sm-ink-dim);padding:0 2px;height:18px;display:flex;align-items:flex-end;justify-content:space-between}
+.dark .crumb{color:#9fb0c0}
+.crumb b{color:var(--sm-ink);font-weight:600}.dark .crumb b{color:#dfe8ef}
+.it{position:relative;height:48px;display:flex;align-items:center;gap:10px;padding:0 12px 0 14px;border-radius:2px;
+ background:var(--sm-scan),var(--sm-glass);backdrop-filter:blur(6px) saturate(1.1);
+ border:1px solid;border-color:var(--sm-edge-hi) var(--sm-edge-lo) var(--sm-edge-lo) var(--sm-edge-hi);color:var(--sm-ink)}
+.it .ix{font:11px var(--sm-num);color:var(--sm-ink-dim);width:18px}
+.it .ic{font-size:16px;width:20px;text-align:center;filter:grayscale(1) brightness(.4) contrast(1.3)}
+.it .lb{flex:1;font-size:14px;letter-spacing:.08em;text-transform:uppercase;line-height:1.1}
+.it .lb{min-width:0}.it .lb small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px;letter-spacing:.02em;text-transform:none;color:var(--sm-ink-dim)}
+.it .ch{color:var(--sm-ink-dim);font-size:15px}
+.it.foc{background:var(--sm-scan),var(--sm-glass-hi);box-shadow:var(--sm-glow)}
+.it.foc::before{content:'';position:absolute;left:-1px;top:-1px;bottom:-1px;width:3px;background:var(--sm-accent)}
+.it.back{background:var(--sm-scan),var(--sm-glass-back)}
+.it.dis>*{opacity:.45}
+.it .run{width:7px;height:7px;border-radius:50%;background:var(--sm-accent);box-shadow:0 0 8px var(--sm-accent)}
+.q-line{font-size:13px;letter-spacing:.06em;color:var(--sm-ink);text-transform:none}
+.dark .q-line{color:#dfe8ef}
+.caret{display:inline-block;width:1px;height:13px;background:currentColor;vertical-align:-2px;animation:bl 1s step-end infinite}
+@keyframes bl{50%{opacity:0}}
+.hint{position:absolute;left:100px;bottom:14px;max-width:min(560px,60%);height:30px;line-height:30px;display:block;padding:0 12px;box-sizing:border-box;
+ font:12.5px var(--sm-font);color:var(--sm-ink);background:var(--sm-glass);border:1px solid;
+ border-color:var(--sm-edge-hi) var(--sm-edge-lo) var(--sm-edge-lo) var(--sm-edge-hi);border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (prefers-reduced-motion:reduce){.caret{animation:none}}
+</style></head>
+<body>
+<h1>Egyszerű felület — minta (static mock-up)</h1>
+<p class="note">Reference for WP-S1 (dial geometry) and WP-S6 (look). Tokens = 01_DESIGN §7. The drawing is a placeholder;
+the real canvas stays exactly as in Normal mode. Inspired by the Zion operator panels (pale, cool, glassy), drawn from scratch.</p>
+<div class="grid" id="grid"></div>
+<script>
+// one function renders every state, so S1 can lift the dial geometry as is
+function dialSvg(st){const C=[0,96],P=(r,deg)=>{const a=deg*Math.PI/180;return [(r*Math.sin(a)).toFixed(2),(96-r*Math.cos(a)).toFixed(2)];};
+ const arc=(r,a0,a1)=>{const p0=P(r,a0),p1=P(r,a1);return `M${p0[0]},${p0[1]} A${r},${r} 0 0 1 ${p1[0]},${p1[1]}`;};
+ let s=`<path class="q" d="M0,96 L0,8 A88,88 0 0 1 88,96 Z"/>`+`<path class="r2" d="${arc(64,0,90)}"/>`;
+ for(let i=0;i<10;i++){const a=4.5+i*9,p=P(88,a),q=P(82,a);s+=`<line class="tk" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}"/>`;}
+ for(let i=0;i<4;i++){const a0=1.25+i*22.5,a1=a0+20;s+=`<path class="dp${i<st.depth?' on':''}" d="${arc(76,a0,a1)}"/>`;}
+ s+=`<path class="core" d="M0,96 L0,56 A40,40 0 0 1 40,96 Z"/>`;
+ s+=`<text class="g" x="9" y="88">${st.glyph}</text>`;
+ if(st.warn){const p=P(100,45);s+=`<text class="warn" x="${p[0]}" y="${p[1]}" text-anchor="middle">${st.warn}</text>`;}
+ return `<svg class="dial${st.tool?' tool':''}" viewBox="0 0 96 96">${s}</svg>`;}
+function item(i,ic,lb,o){o=o||{};return `<div class="it${o.foc?' foc':''}${o.back?' back':''}${o.dis?' dis':''}"><span class="ix">${String(i).padStart(2,'0')}</span>`
+ +`<span class="ic">${ic}</span><span class="lb">${lb}${o.l2?`<small>${o.l2}</small>`:''}</span>${o.run?'<span class="run"></span>':''}<span class="ch">${o.ch||''}</span></div>`;}
+function plan(dark){const c=dark?'#56606b':'#9b958a',f=dark?'#262c33':'#f6f4ef';
+ return `<svg class="plan" viewBox="0 0 640 440" preserveAspectRatio="xMidYMid slice"><g fill="${f}" stroke="${c}" stroke-width="6">
+ <rect x="150" y="70" width="210" height="150"/><rect x="360" y="70" width="170" height="150"/><rect x="150" y="220" width="150" height="140"/>
+ <rect x="300" y="220" width="230" height="140"/></g><g fill="none" stroke="${dark?'#7e8a96':'#c9c3b6'}" stroke-width="1.5">
+ <path d="M300 260 a40 40 0 0 1 40 -40"/><path d="M360 150 a40 40 0 0 0 -40 40"/></g>
+ <g fill="${dark?'#8fb3d6':'#2f79c9'}"><circle cx="255" cy="145" r="5"/><circle cx="445" cy="145" r="5"/><circle cx="415" cy="290" r="5"/></g>
+ <g font-family="Segoe UI" font-size="11" fill="${dark?'#9aa6b2':'#8a8478'}"><text x="225" y="200">Nappali</text><text x="420" y="200">Háló</text><text x="190" y="345">Fürdő</text><text x="390" y="345">Konyha</text></g></svg>`;}
+const S=[
+ {cap:'1 · Idle — only the dial. Click it, press Ctrl+K, or Y on the controller.',body:'',dial:{glyph:'≡',depth:0}},
+ {cap:'2 · Root open — four items + Bezár (the bottom slot, touching the dial).',
+  body:`<div class="col"><div class="crumb"><b>Menü</b></div>${item(1,'🧱','Épület',{ch:'›',foc:1})}${item(2,'⚡','Villamosság',{ch:'›'})}${item(3,'🛠','Eszközök',{ch:'›'})}${item(4,'⚙','Rendszer',{ch:'›'})}${item(5,'✕','Bezár',{back:1})}</div>`,dial:{glyph:'×',depth:1}},
+ {cap:'3 · Submenu — Villamosság › Kapcsolás. The column was replaced; Back sits where Bezár was.',
+  body:`<div class="col"><div class="crumb"><span>Menü / Villamosság / <b>Kapcsolás</b></span></div>${item(1,'🔗','Kapcsolások')}${item(2,'✨','Javaslat',{foc:1})}${item(3,'〰','Mennyezeti út')}${item(4,'▭','Padló út')}${item(5,'◂','Vissza',{back:1})}</div>`,dial:{glyph:'×',depth:3}},
+ {cap:'4 · Paged level — Szabálykészlet › Fal, page 2 of 3: 3 items + Tovább, then Vissza. A disabled item shows its reason.',
+  body:`<div class="col"><div class="crumb"><span>… / Szabálykészlet / <b>Fal</b></span><span>(2/3)</span></div>${item(1,'🚫','Tilos',{foc:1})}${item(2,'📺','Médiafal')}${item(3,'▬','Munkalap',{dis:1,l2:'Előbb rajzolj falakat'})}${item(4,'›','Tovább',{ch:'›'})}${item(5,'◂','Vissza',{back:1})}</div>`,dial:{glyph:'×',depth:4}},
+ {cap:'5 · Search — typing turns the column into hits (the ⌘K half). Line 2 = where it lives in the tree.',
+  body:`<div class="col"><div class="crumb"><span class="q-line">⌕ kap<span class="caret"></span></span><span>1–4 / 9</span></div>${item(1,'🔗','Kapcsolások',{foc:1,l2:'Villamosság / Kapcsolás'})}${item(2,'✨','Javaslat',{l2:'Villamosság / Kapcsolás'})}${item(3,'◉','Kapcsoló → lámpák',{l2:'Vezérlés'})}${item(4,'◉','SWI — Kapcsoló',{l2:'Villamosság / Végpontok / Minden végpont'})}${item(5,'◂','Vissza',{back:1})}</div>`,dial:{glyph:'⌕',depth:1}},
+ {cap:'6 · A tool running — the dial shows it (click the core = stop); the hint pill fades after 6 s. 2 errors flagged on the ring.',
+  body:`<div class="hint">Vezethető fal — kattints egy falra: az egész fal vezethető · húzás = szakasz · Esc: kész</div>`,dial:{glyph:'🟩',depth:0,tool:1,warn:2}},
+ {cap:'7 · The same root on the dark Ügyfél-előnézet style — light glass on dark, by design.',dark:1,
+  body:`<div class="col"><div class="crumb"><b>Menü</b></div>${item(1,'🧱','Épület',{ch:'›'})}${item(2,'⚡','Villamosság',{ch:'›',foc:1})}${item(3,'🛠','Eszközök',{ch:'›'})}${item(4,'⚙','Rendszer',{ch:'›'})}${item(5,'✕','Bezár',{back:1})}</div>`,dial:{glyph:'×',depth:1}},
+];
+document.getElementById('grid').innerHTML=S.map(s=>`<figure><div class="scr${s.dark?' dark':''}">${plan(s.dark)}${s.body}${dialSvg(s.dial)}</div><figcaption>${s.cap}</figcaption></figure>`).join('');
+</script>
+</body></html>

@@ -124,17 +124,26 @@ function paletteKeyLabel(k){return (k||'').replace('mod','Ctrl').replace('shift'
   .replace(/\+/g,'+').replace('space','Space').toUpperCase();}
 
 // ---- status bar: what is true right now ----
+// Validation walks the whole model, so it is cached against the scene version: a pan, a
+// hover or a camera move cannot change the counts, and draw() runs on every pointermove.
+let _vsVer=-1,_vsCache=null;
+// the cache key: the scene version AND a cheap model fingerprint — a change that draws nothing (a one-node path,
+// a renamed room) must still refresh the checks and the validation chip
+function shellModelKey(){let s=sceneVer+'|'+(data.seq||0)+'|'+undo.length+'|'+redo.length;UKEYS.forEach(k=>{s+='|'+((data[k]||[]).length);});return s;}
+function statusValidate(){const key=shellModelKey();if(_vsVer===key&&_vsCache)return _vsCache;
+  _vsVer=key;_vsCache=(typeof validateSummary==='function')?validateSummary():{error:0,warn:0};return _vsCache;}
+let _sbHtml=null;
 function statusBar(){const el=$('statusBar');if(!el)return;
   const E=(typeof edCur==='function')?edCur():null;
   const hmm=(typeof drawHmm==='function')?drawHmm(state.active):0;
   const gd=GUIDES.find(x=>x.k===state.drawHKey);
   const n=(typeof selList==='function')?selList().length:0;
-  const v=(typeof validateSummary==='function')?validateSummary():{error:0,warn:0};
+  const v=statusValidate();
   const chip=(txt,col)=>`<span class="sbChip"${col?` style="color:${col}"`:''}>${txt}</span>`;
-  el.innerHTML=
-     chip('▣ '+(MODENAME[state.mode]||state.mode))
+  const html=
+     chip('▣ '+esc(((typeof toolSync==='function'?toolSync():null)||{label:MODENAME.select}).label))
     +chip(t('sb.level','szint')+': '+state.active)
-    +chip(t('sb.height','magasság')+': '+Math.round(hmm)+' mm'+(gd?' ('+esc(gd.l)+')':''))
+    +chip(t('sb.height','magasság')+': '+Math.round(hmm)+' mm'+(gd?' ('+esc(guideLabel(gd))+')':''))
     +chip(state.midFree?t('sb.free','szabad rajzolás'):t('sb.bound','falhoz köt'))
     +(fineAnchor?chip('🔍 '+t('sb.fine','finom 1 mm'),'#c0530f'):'')
     +(E?chip(t('sb.editor','szerkesztő')+': '+(E===WV?t('sb.wall','fal'):t('sb.plane','sík'))+(E.dirty?' ●':''),'#c0530f'):'')
@@ -142,9 +151,12 @@ function statusBar(){const el=$('statusBar');if(!el)return;
     +(v.error?chip('⛔ '+v.error+' '+t('sb.error','hiba'),'#c0392b'):'')
     +(v.warn?chip('⚠ '+v.warn+' '+t('sb.warn','figyelmeztetés'),'#c0530f'):'')
     +`<span style="flex:1"></span>`
-    +chip('⌘K / Ctrl+K — '+t('sb.cmd','parancsok'),'#777');}
+    +chip('⌘K / Ctrl+K — '+t('sb.cmd','parancsok'),'#777');
+  if(typeof layoutSync==='function')layoutSync();   // T3: the phases, the lit buttons, the context panel (cheap when unchanged)
+  if(html===_sbHtml)return;                 // nothing to say that it is not already saying
+  _sbHtml=html;el.innerHTML=html;}
 const MODENAME={select:'Kijelölés',grab:'Mozgatás',wall:'Fal',floor:'Padló',build:'Építés',device:'Készülék',
-  path:'Pálya',cable:'Kábel',measure:'Mérés',note:'Jegyzet',object:'Objektum',roof:'Tető',format:'Formátum'};
+  path:'Pálya',cable:'Kábel',measure:'Mérés',note:'Jegyzet',object:'Objektum',roof:'Tető',format:'Formátum',room:'Helyiség-toll'};
 
 
 // ===================== THE CATALOGUE =====================
@@ -157,17 +169,23 @@ function _mode(m,label,icon,keys,hint){return {id:'mode.'+m,label,icon,group:'Es
 
 registerActions([
   // ---- tools ----
-  _mode('select','Kijelölés','⬚',['v'],'Elemek kiválasztása és tulajdonságaik elérése.'),
+  _mode('select','Kijelölés','▖',['v'],'Elemek kiválasztása és tulajdonságaik elérése.'),
   _mode('grab','Mozgatás','✥',['m'],'Kijelölt elem mozgatása a nyilakkal és a gizmóval.'),
-  _mode('wall','Fal rajzolása','🧱',['w'],'Falak húzása; a végpontok a meglévő falak tengelyére ugranak.'),
-  _mode('floor','Padló rajzolása','▦',null,'Helyiség padlójának kijelölése.'),
-  _mode('build','Építés (ajtó/ablak/lépcső)','🚪',['b'],'Nyílászáró elhelyezése a falon; a szellemkép mutatja, hova kerül.'),
-  _mode('device','Készülék','🔌',['d'],'Aljzat, kapcsoló, lámpa, kötődoboz elhelyezése.'),
-  _mode('path','Pálya','〰',['p'],'Kábelpálya rajzolása; Space letesz egy dobozt, ←/→ vált a palettán.'),
-  _mode('cable','Kábel / áramkör','⚡',['c'],'Vezetékek behúzása a meglévő pályákra.'),
-  _mode('measure','Mérés','📏',null,'Két pont közti távolság.'),
+  // W and D were the Wall and Device keys since the first version, so pressing them switched tool AND panned; they are
+  // camera keys now (round 2026-10-10, U4 — answered in the build session). The tools keep 5 and 3 and Ctrl+K.
+  _mode('wall','Fal rajzolása','🧱',null,'Falak húzása; a végpontok a meglévő falak tengelyére ugranak.'),
+  _mode('floor','Padló rajzolása','⬜',null,'Pont után pont, élő Terület/Kerület; az első pontra kattintva zárul.'),
+  {id:'floor.fromwalls',alias:'floor from walls enclosed room fill padlo',label:'Padló a falak közé',icon:'▦',group:'Rajz',
+   need:'Vidd a kurzort egy falakkal zárt térbe (Padló eszköz), vagy jobb klikk a rajzon.',
+   hint:'A falakkal körbezárt tér belső kontúrját veszi át padlónak — sarkokkal együtt.',
+   when:()=>!!cursor,run:()=>floorFromWalls(cursor.x,cursor.y,state.active)},
+  _mode('build','Építés (ajtó/ablak/lépcső)','🧰',['b'],'Nyílászáró elhelyezése a falon; a szellemkép mutatja, hova kerül.'),
+  _mode('device','Készülék','◈',null,'Aljzat, kapcsoló, lámpa, kötődoboz elhelyezése.'),
+  _mode('path','Pálya','➰',['p'],'Kábelpálya rajzolása; Space letesz egy dobozt, ←/→ vált a palettán.'),
+  _mode('cable','Kábel / áramkör','╱',['c'],'Vezetékek behúzása a meglévő pályákra.'),
+  _mode('measure','Mérés','↔',null,'Két pont közti távolság.'),
   _mode('object','Objektum','🧊',null,'Bútor és berendezés elhelyezése.'),
-  _mode('roof','Tető','🏠',null,'Tetősík felvétele.'),
+  _mode('roof','Tető','🛖',null,'Tetősík felvétele.'),
   _mode('format','Formátum másoló','🖌',null,'Egy elem beállításainak átmásolása másikra.'),
 
   // ---- history ----
@@ -179,13 +197,26 @@ registerActions([
   {id:'edit.delete',alias:'delete remove',need:'Jelölj ki egy elemet.',label:'Kijelölt törlése',icon:'🗑',group:'Szerkesztés',
    when:c=>!!c.sel&&!c.inEditor,run:()=>{pushUndo();removeHit(selected);selected=null;draw();}},
 
+  // ---- closing an open run ----
+  // Enter and a double-click already did this, and neither is discoverable —
+  // nor reachable at all from a controller, where Esc (B) would DISCARD the
+  // draft rather than close it. Registering it is what the architecture rule
+  // asks for: an unregistered capability is a feature nobody can find.
+  {id:'draw.finish',alias:'finish close run path cable lezar befejez',
+   label:'Futó pálya / kábel lezárása',icon:'⏎',group:'Rajz',keys:['enter'],
+   need:'Csak rajzolás közben, ha már van legalább két pont.',
+   hint:'Ugyanaz, mint az Enter vagy a dupla kattintás.',
+   when:c=>(c.mode==='path'&&typeof pathDraft!=='undefined'&&pathDraft&&pathDraft.nodes.length>=2)
+         ||(c.mode==='cable'&&typeof draft!=='undefined'&&draft&&draft.nodes.length>=2),
+   run:c=>{if(c.mode==='path')finishPath();else finishCable();}},
+
   // ---- view ----
   {id:'view.toggle3d',alias:'3d 2d view toggle',label:'2D ↔ 3D',icon:'⬒',group:'Nézet',keys:['mod+3'],
    hint:'A két nézet külön kameraállást őriz.',run:()=>$('view3d').onclick()},
   {id:'view.style.plan',alias:'normal plan view',label:'Normál nézet',icon:'🖼',group:'Nézet',
-   when:c=>c.style!=='plan',run:()=>{state.style='plan';if($('style'))$('style').value='plan';
+   when:c=>c.style!=='normal',run:()=>{state.style='normal';if($('style'))$('style').value='normal';
      if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();}},
-  {id:'view.style.blueprint',alias:'blueprint official plan',label:'Hivatalos (blueprint) nézet',icon:'📐',group:'Nézet',
+  {id:'view.style.blueprint',alias:'blueprint official plan',label:'Hivatalos (blueprint) nézet',icon:'📘',group:'Nézet',
    hint:'A hivatalos 2D rajzi jelkulcs szerinti megjelenítés.',
    when:c=>c.style!=='blueprint',run:()=>{state.style='blueprint';if($('style'))$('style').value='blueprint';
      if($('styleToggle'))$('styleToggle').classList.add('on');
@@ -193,6 +224,72 @@ registerActions([
   {id:'view.style.whiteout',label:'Fehér (whiteout) nézet',icon:'⬜',group:'Nézet',
    when:c=>c.style!=='whiteout',run:()=>{state.style='whiteout';if($('style'))$('style').value='whiteout';
      if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();}},
+  {id:'view.style.preview',alias:'ugyfel elonezet client preview sotet dark',label:'Ügyfél-előnézet (sötét)',icon:'🌑',group:'Nézet',
+   hint:'Ugyanaz a terv abban a megjelenésben, amiben az ügyfél a 3D előnézetben látja: sötét alap, vékony drótváz, világító végpontok.',
+   when:c=>c.style!=='preview',run:()=>{state.style='preview';if($('style'))$('style').value='preview';
+     if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();
+     $('hud').textContent='Ügyfél-előnézet — a kliens 3D nézetének megjelenése a terven.';}},
+  {id:'view.style.tiszta',alias:'tiszta axo axonometria clean presentation kivagas',label:'Tiszta axo nézet (3D)',icon:'🏠',group:'Nézet',
+   hint:'A tiszta axonometrikus megjelenés az aktív szinten: fehér falak, kivágás, színes végpontok, helyiségcímkék. Csak 3D-ben; útvonalak nélkül.',
+   when:c=>c.style!=='tiszta',run:()=>{state.style='tiszta';if($('style'))$('style').value='tiszta';
+     if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();tisztaHud();}},
+  {id:'view.export.menu',alias:'export exportalas axonometria svg png print nyomtatas',label:'Exportálás… (axonometria lap)',icon:'🔷',group:'Nézet',
+   hint:'A tiszta axonometria lapja az aktív szintről; a nézet választható (alapból felülnézet), a nagyítás a képernyőé, a rajz középen.',
+   run:()=>vexpMenuToggle(true)},
+  {id:'view.export.svg',alias:'export axonometria svg',label:'Axonometria SVG',icon:'📤',group:'Nézet',run:()=>vexpSvg()},
+  {id:'view.export.png',alias:'export axonometria png',label:'Axonometria PNG',icon:'📤',group:'Nézet',run:()=>vexpPng()},
+  {id:'view.export.print',alias:'export axonometria print nyomtatas',label:'Axonometria nyomtatás',icon:'🖨',group:'Nézet',run:()=>vexpPrint()},
+  {id:'view.bp.scale',alias:'scale page drawing meretarany blueprint',label:'Rajzi méretarány (M 1:50…)',icon:'⚖',group:'Nézet',
+   hint:'A hivatalos nézet vonalvastagságai és feliratai papír-milliméterben, a választott méretarányhoz.',
+   run:()=>{const opts=BP_SCALES.map(v=>`<option value="${v}" ${v===bpScaleN()?'selected':''}>M 1:${v}</option>`).join('');
+     openModal('Rajzi méretarány',
+       `<div class="mrow"><label style="width:110px">Méretarány</label><select id="bsSel" style="width:110px">${opts}</select></div>`
+      +`<div class="mrow"><label style="width:110px">Vonalvastagság</label><input id="bsFine" type="range" min="0.6" max="1.8" step="0.05" value="${bpFine()}" style="width:140px"> <span id="bsFineV">${bpFine().toFixed(2).replace('.',',')}×</span></div>`
+      +`<div class="mrow" style="font-size:10.5px;color:#888">ISO tollvastagságok: fal 0,5 · általános 0,35 · vékony 0,25 · sraffozás 0,13 mm papíron. Feliratok 1,8–4,5 mm.</div>`,
+       ()=>{state.bpScale=+$('bsSel').value||50;state.bpFine=+$('bsFine').value||1;bpUI&&bpUI();draw();
+         $('hud').textContent='Méretarány M 1:'+bpScaleN()+'.';});
+     $('bsFine').oninput=()=>{$('bsFineV').textContent=(+$('bsFine').value).toFixed(2).replace('.',',')+'×';};}},
+  {id:'view.scale.step',alias:'nezeti leptek view scale resolution felbontas kozelebb',label:'Nézeti lépték (1× … 10×)',icon:'🔎',group:'Nézet',
+   hint:'A rajz alap-léptéke. Nagyobb lépték: ugyanaz a képernyőterület kevesebb millimétert mutat, tehát közelebb lehet menni. A tollak és a készülékjelek képernyőmérete nem változik.',
+   run:()=>{const cur=vsOk(state.viewScale);
+     openModal('Nézeti lépték',
+       `<div class="mrow"><label style="width:110px">Lépték</label><select id="vsSel" style="width:150px">`
+      +VIEW_SCALES.map(v=>`<option value="${v}" ${v===cur?'selected':''}>${v}× ${v===1?'— teljes terv':v===10?'— részlet':''}</option>`).join('')+`</select></div>`
+      +`<div class="mrow" style="font-size:10.5px;color:#888">1× a legtávolabbi nézet: a teljes terv belefér. Minden lépés ugyanannyiszor közelebb engedi a nagyítást, a vonalvastagság és a készülékjelek képernyőmérete változatlanul.</div>`,
+       ()=>{vsSet(+$('vsSel').value);if($('viewScale'))$('viewScale').value=String(vsK());
+         $('hud').textContent='Nézeti lépték '+vsK()+'×.';});}},
+  {id:'view.scale.up',alias:'leptek fel kozelebb scale up',label:'Nézeti lépték feljebb',icon:'🔎',group:'Nézet',
+   when:c=>vsOk(state.viewScale)!==VIEW_SCALES[VIEW_SCALES.length-1],need:'A legnagyobb léptéknél vagy.',
+   run:()=>{const i=VIEW_SCALES.indexOf(vsOk(state.viewScale));vsSet(VIEW_SCALES[Math.min(VIEW_SCALES.length-1,i+1)]);
+     if($('viewScale'))$('viewScale').value=String(vsK());$('hud').textContent='Nézeti lépték '+vsK()+'×.';}},
+  {id:'view.scale.down',alias:'leptek le tavolabb scale down',label:'Nézeti lépték lejjebb',icon:'🔎',group:'Nézet',
+   when:c=>vsOk(state.viewScale)!==VIEW_SCALES[0],need:'Már a legtávolabbi léptéken vagy.',
+   run:()=>{const i=VIEW_SCALES.indexOf(vsOk(state.viewScale));vsSet(VIEW_SCALES[Math.max(0,i-1)]);
+     if($('viewScale'))$('viewScale').value=String(vsK());$('hud').textContent='Nézeti lépték '+vsK()+'×.';}},
+  {id:'view.bp.scaleview',alias:'scale view zoom meretarany',label:'Nézet a méretarány szerint',icon:'⤢',group:'Nézet',
+   hint:'A nagyítást úgy állítja, hogy a képernyőn (96 dpi) kb. valós méretarányban legyen a rajz.',
+   run:()=>bpScaleView()},
+  {id:'view.wallmerge',alias:'wall merge corners egyesites falak',label:'Falak egyesítve (vizuális)',icon:'🧱',group:'Nézet',
+   hint:'A falak egy testként jelennek meg, sarokvarratok nélkül. A hivatalos nézet mindig így rajzol. A falak külön kijelölhetők maradnak. Áttetsző és tömör falaknál is működik.',
+   need:'Rejtett falaknál nincs mit egyesíteni (és a hivatalos nézet mindig egyesít).',
+   when:c=>c.style!=='blueprint'&&state.wallMode!=='hidden',run:()=>{state.wallMerge=!state.wallMerge;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;draw();
+     $('hud').textContent=state.wallMerge?'Falak egyesítve.':'Falak külön rajzolva.';}},
+  {id:'view.openings',alias:'doors windows openings wide line nyilaszarok ajto ablak szeles vonal',label:'Nyílászárók: széles ↔ vonal',icon:'🚪',group:'Nézet',
+   hint:'Széles: az ajtó falsíktól falsíkig rés a nyitásívvel, az ablak a falsíkoktól beljebb álló üvegsáv. Vonal: a régi falközépi vonal.',
+   run:()=>{state.openingStyle=opnWide()?'line':'wide';if($('openingStyle'))$('openingStyle').value=state.openingStyle;draw();
+     $('hud').textContent='Nyílászárók: '+(opnWide()?'széles':'vonal');}},
+  ...CAM_PRESETS.map(p=>({id:'view.cam.'+p.k,alias:'vetulet projection camera kamera '+p.k+' '+p.n.toLowerCase(),label:'Vetület: '+p.n,icon:'◇',group:'Nézet',
+   hint:p.hint,run:()=>camPresetApply(p.k)})),
+  {id:'doc.printPalette',alias:'print palette grey gray nyomtatas szurke paletta',label:'Szürke-biztos nyomtatási paletta be/ki',icon:'🖨',group:'Nézet',
+   hint:'Nyomtatáskor és szürke PNG-nél minden rendszer külön szürkeárnyalat + vonalminta, jelmagyarázattal. A képernyő nem változik.',
+   run:()=>{state.printPal=state.printPal===false;if($('printPal'))$('printPal').checked=state.printPal;
+     $('hud').textContent='Nyomtatási paletta: '+(state.printPal?'szürke-biztos':'valódi színek');}},
+  {id:'view.cutaway',alias:'cutaway sims walls down kivagas falak le',label:'Falak: kivágás (Sims) be/ki',icon:'🏠',group:'Nézet',
+   hint:'A kamera felőli falak lesüllyednek, a távoli külső falak teljes magasak; forgatáskor követi a kamerát.',
+   run:()=>{state.wallMode=state.wallMode==='cutaway'?(state.wallModePrev||'translucent'):(state.wallModePrev=state.wallMode,'cutaway');
+     $('wallMode').value=state.wallMode;wmgSyncBox();cutSyncRow();draw();$('hud').textContent=state.wallMode==='cutaway'?'Kivágás bekapcsolva.':'Kivágás kikapcsolva.';}},
+  {id:'view.cam.lock',alias:'rotation lock 90 forgatas zar negyed',label:'Forgatás 90°-onként be/ki',icon:'⟳',group:'Nézet',
+   hint:'A forgatás negyedenként ugrik, a dőlés rögzített; 2D nézetből előbb 3D-be vált.',run:()=>camLockSet(!state.camLock)},
   {id:'view.reset',alias:'reset view fit zoom',label:'Nézet visszaállítása',icon:'⟲',group:'Nézet',run:()=>{resetView();draw();}},
   {id:'view.fine',label:'Finomhangolt mozgatás be/ki',icon:'🔍',group:'Nézet',
    hint:'1 mm-es lépés, 5× lassabb mozgatás. Tartva: Alt vagy F.',run:()=>fineToggle()},
@@ -253,16 +350,26 @@ registerActions([
   {id:'help.palette',alias:'command palette search',label:'Parancsok keresése',icon:'⌘',group:'Súgó',keys:['mod+k'],
    hint:'Minden funkció egy helyen, kereshetően.',run:()=>paletteOpen()},
   {id:'help.keys',alias:'keyboard shortcuts keys help',label:'Billentyűk',icon:'⌨',group:'Súgó',
-   run:()=>openModal('Billentyűk',
+   run:()=>{const N=kbdNames();openModal('Billentyűk',
      `<div style="font-size:12px;line-height:1.9">`
      +[['Bal egér','kijelölés / rajzolás'],['Jobb egér','helyi menü arra, ami a kurzor alatt van'],
-       ['Space','a kiválasztott doboz letétele rajzolás közben'],['←/→','paletta vagy variáns váltása'],
+       ['W A S D · Q / E','kamera: mozgatás · nagyítás (mindig)'],
+       [N.mv,'a kijelölés mozgatása 100 mm (finom módban 10 mm)'],[N.rot,'a kijelölés forgatása 15° (Tárgy eszköz: a szellem)'],
+       ['R','az eszköz második módja (süllyesztett ↔ csatorna, padló ↔ mennyezet)'],
+       ['Tab','széles munkanézet: oldalsávok és panelek el / vissza'],
+       ['Space','a kiválasztott doboz letétele rajzolás közben'],['←/→','paletta, típus vagy variáns váltása (RBX osztály, végpont-variáns is)'],
        ['↑/↓','rajzolási magasság'],['Alt vagy F','finomhangolt mozgatás (1 mm)'],
        ['Shift','tengelyre kényszerítés'],['Ctrl','a fal másik oldala / snap felülbírálás'],
-       ['Dupla kattintás','tulajdonságok'],['Esc','egy szintet kilép — soha nem dob el munkát'],
+       ['Alt + kattintás','átfedő elemek: a kurzor alatti következő elem kijelölése'],
+       ['Kék középpont','a kijelölt elem szabad mozgatása (Move)'],
+       ['Dupla kattintás','tulajdonságok'],[N.ckt,'áramkör végpontjainak kijelölése a rajzon (újra '+N.ckt+' = kész)'],
+       [N.mark+' / Shift+'+N.mark,'fal jelölése / előző jelölési mód'],
+       ['Shift + kattintás','Készülék: a legközelebbi azonos doboz sorába, 72 mm-re (csatolva)'],
+       ['Pálya csomópont dobozon','a doboz a csomóponthoz kötődik, amikor a pálya lezárul'],
+       ['Esc','egy szintet kilép — soha nem dob el munkát'],
        ['Ctrl+Z / Ctrl+Shift+Z','visszavonás / újra'],['Ctrl+K','parancskereső']]
        .map(r=>`<div><b style="display:inline-block;min-width:170px">${r[0]}</b> ${r[1]}</div>`).join('')
-     +`</div>`,()=>{},'Bezár')}
+     +`</div>`,()=>{},'Bezár');}}
 ]);
 
 // ---- palette + status wiring ----
@@ -335,7 +442,7 @@ registerActions([
   {id:'room.dropview',need:'Jelölj ki egy helyiséget (padlót).',label:'Álmennyezet nézet (felülnézet)',icon:'⬓⬒',group:'Helyiség',
    when:c=>c.selType==='floors'&&!c.inEditor,
    run:c=>openPlaneView(data.floors[c.sel.i],pieceLevel(c.sel),'drop')},
-  {id:'wall.props',alias:'wall properties thickness',need:'Jelölj ki egy falat.',label:'Fal tulajdonságai (vastagság, magasság, indulás)',icon:'📐',group:'Fal',
+  {id:'wall.props',alias:'wall properties thickness',need:'Jelölj ki egy falat.',label:'Fal tulajdonságai (vastagság, magasság, indulás)',icon:'▯',group:'Fal',
    hint:'Pengefal, lebegő fal, anyag — élő m²/m³ kijelzéssel.',
    when:c=>c.selType==='wall',run:c=>wallPropsDialog(pieceRef(c.sel),pieceLevel(c.sel))},
   {id:'wall.pengefal',need:'Jelölj ki egy falat.',label:'Pengefal 100 mm',icon:'🔪',group:'Fal',

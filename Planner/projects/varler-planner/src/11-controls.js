@@ -7,16 +7,46 @@
 // tests/golden.js — const/let are subject to temporal dead zones.
 // ==========================================================================
 //////////////////// controls ////////////////////
-function setRot(deg){deg=((Math.round(deg)%360)+360)%360;state.rot=deg;$('rot').value=deg;$('rotVal').textContent=deg+'°';
-  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('on',+b.dataset.deg===deg));draw();}
-$('rot').oninput=e=>setRot(+e.target.value);$('rotL').onclick=()=>setRot(state.rot-15);$('rotR').onclick=()=>setRot(state.rot+15);
+function setRot(deg){deg=camLockYaw(deg);deg=((Math.round(deg)%360)+360)%360;state.rot=deg;$('rot').value=deg;$('rotVal').textContent=deg+'°';if($('qvRot'))$('qvRot').textContent=deg+'°';
+  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('on',+b.dataset.deg===deg));camSyncUI();draw();}
+$('rot').oninput=e=>setRot(+e.target.value);$('rotL').onclick=()=>setRot(state.rot-camRotStep());$('rotR').onclick=()=>setRot(state.rot+camRotStep());
 document.querySelectorAll('.preset').forEach(b=>b.onclick=()=>setRot(+b.dataset.deg));
+if($('camPreset'))$('camPreset').onchange=e=>camPresetApply(e.target.value||null);   // Views V2
+if($('camLock'))$('camLock').onchange=e=>camLockSet(e.target.checked);
+if($('lyrSpot'))$('lyrSpot').onchange=()=>lyrSpotToggle();
+if($('devHover'))$('devHover').onchange=()=>hovToggle($('devHover').checked);   // U6
+if($('lyrPaintAll'))$('lyrPaintAll').onchange=e=>lyrPaintAll(e.target.checked);
+if($('viewScale'))$('viewScale').onchange=e=>{vsSet(+e.target.value);
+  $('hud').textContent='Nézeti lépték '+vsK()+'× — '+(vsK()===1?'a teljes terv belefér; innen lehet feljebb lépni.'
+    :'a nagyítás '+vsK()+'-szer közelebb ér; a tollak és jelek mérete nem változott.');};
 $('style').onchange=e=>{state.style=e.target.value;bpUI();
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   if(state.style==='blueprint'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();
     $('hud').textContent='Blueprint nézet — 2D felülnézetre váltottam.';}
-  draw();};
-$('wallMode').onchange=e=>{state.wallMode=e.target.value;draw();};
+  if(state.style==='alaprajz'&&state.pitch<88){state.pitch=90;state.flat=true;$('view3d').textContent='3D';resetView();}   // V9a: a 2D style
+  apSyncRow();draw();if(state.style==='tiszta')tisztaHud();if(state.style==='alaprajz')apHud();};
+if($('apCut'))$('apCut').oninput=e=>apCutSet(e.target.value);
+if($('apCutN'))$('apCutN').onchange=e=>apCutSet(e.target.value);
+if($('apAll'))$('apAll').onchange=e=>{state.apAll=e.target.checked;draw();};
+if($('apDims'))$('apDims').onchange=e=>{state.apDims=e.target.checked;draw();};
+if($('apCodes'))$('apCodes').onchange=e=>{state.apCodes=e.target.checked;draw();};
+document.querySelectorAll('.apPre').forEach(b=>{b.onclick=()=>apCutSet(+b.dataset.v);});
+// V4: Tiszta axo is a 3D look; in 2D the normal drawing stays, and the HUD says why
+function tisztaHud(){if($('hud'))$('hud').textContent=tisztaOn()?'Tiszta axo — az aktív szint, kivágással ('+(state.cutH||1500)+' / '+(state.cutNearH||1000)+' mm); útvonalak és jegyzetek nélkül.'
+  :'Tiszta axo — 3D nézetben jelenik meg; 2D-ben a normál rajz marad.';}
+$('wallMode').onchange=e=>{state.wallMode=e.target.value;wmgSyncBox();cutSyncRow();draw();
+  if(state.wallMode==='cutaway')$('hud').textContent='Kivágás: a kamera felőli falak '+(state.cutNearH||1000)+' mm, a belsők '+(state.cutH||1500)+' mm magasak — forgatáskor követi a kamerát.';};
+// V3: the cutaway heights row shows only in that wall mode
+function cutSyncRow(){const r=$('cutRow');if(r)r.style.display=state.wallMode==='cutaway'?'':'none';
+  if($('cutH'))$('cutH').value=state.cutH||1500;if($('cutNearH'))$('cutNearH').value=state.cutNearH||1000;}
+if($('cutH'))$('cutH').onchange=e=>{state.cutH=Math.max(300,Math.min(2700,+e.target.value||1500));draw();};
+if($('cutNearH'))$('cutNearH').onchange=e=>{state.cutNearH=Math.max(0,Math.min(2700,+e.target.value||1000));draw();};
+if($('openingStyle'))$('openingStyle').onchange=e=>{state.openingStyle=e.target.value;draw();};   // G1
+// U7: nothing to merge when the walls are not drawn — say so instead of a box that silently does nothing
+function wmgSyncBox(){const b=$('wallMerge'),L=$('wallMergeL');if(!b)return;const off=state.wallMode==='hidden';b.disabled=off;
+  if(L){if(!L.dataset.t)L.dataset.t=L.title;L.title=off?'Rejtett falaknál nincs mit egyesíteni.':L.dataset.t;L.style.opacity=off?'0.5':'';}}
+if($('wallMerge'))$('wallMerge').onchange=e=>{state.wallMerge=e.target.checked;draw();
+  $('hud').textContent=state.wallMerge?'Falak egyesítve — csak a külső kontúr látszik, a falak külön kijelölhetők maradnak.':'Falak külön rajzolva.';};
 $('explode').onchange=e=>{state.exploded=e.target.checked;draw();};
 $('grid').onchange=e=>state.grid=e.target.checked;$('gridSize').onchange=e=>state.gridSize=+e.target.value;
 $('isoGrid').onchange=e=>{state.isoGrid=e.target.checked;draw();};
@@ -37,7 +67,26 @@ $('bpEdit').onclick=()=>openModal('Címblokk',
  +`<div class="mrow">Készítette <input id="tpB" value="${esc(state.bp.by||'Varler Group')}" style="width:220px"></div>`,
   ()=>{state.bp.proj=$('tpP').value;state.bp.addr=$('tpA').value;state.bp.by=$('tpB').value;draw();});
 function bpUI(){const on=state.style==='blueprint';$('bpOpts').style.display=on?'flex':'none';
-  $('bpDims').checked=state.bp.dims;$('bpTitle').checked=state.bp.title;}
+  $('bpDims').checked=state.bp.dims;$('bpTitle').checked=state.bp.title;
+  // the drawing scale drives the modelling view's pens and labels too, so it is always offered
+  ['bpScaleRow','bpFineRow'].forEach(id=>{if($(id))$(id).style.display='flex';});
+  const sel=$('bpScale');
+  if(sel){if(!sel.options.length)sel.innerHTML=BP_SCALES.map(v=>`<option value="${v}">M 1:${v}</option>`).join('');
+    sel.value=String(bpScaleN());}
+  if($('bpFine')){$('bpFine').value=bpFine();$('bpFineV').textContent=bpFine().toFixed(2).replace('.',',')+'×';}}
+if($('bpScale'))$('bpScale').onchange=e=>{state.bpScale=+e.target.value||50;draw();
+  $('hud').textContent='Méretarány M 1:'+bpScaleN()+' — a vonalvastagságok és feliratok papír-milliméterben, mindkét nézetben.';};
+if($('bpFine'))$('bpFine').oninput=e=>{state.bpFine=+e.target.value||1;
+  $('bpFineV').textContent=bpFine().toFixed(2).replace('.',',')+'×';draw();};
+if($('bpFit'))$('bpFit').onclick=()=>bpScaleView();
+// Zoom so the drawing is really at its scale on screen: one paper mm = one screen mm (96 dpi).
+// SC is base units per model mm, and the stage <svg> maps W base units onto its client width.
+function bpScaleView(){const el=$('stage'),k=el?(el.getBoundingClientRect().width/W)||1:1;
+  const px=96/25.4;                                  // CSS px per physical mm
+  const z=px/(bpScaleN()*SC*k);
+  const cx=(W/2-state.panX)/state.zoom, cy=(Hh/2-state.panY)/state.zoom;   // keep the view centre
+  state.zoom=z;state.panX=W/2-cx*z;state.panY=Hh/2-cy*z;setTransform();draw();
+  $('hud').textContent='Nézet M 1:'+bpScaleN()+' szerint — a képernyőn kb. valós méretarány (96 dpi).';}
 $('bNumber').onclick=()=>autoNumber();$('bCableList').onclick=()=>showCableList();$('bSched').onclick=()=>showSchedule();$('bWireList').onclick=()=>showWireList();
 if($('bSwitchRep'))$('bSwitchRep').onclick=()=>showSwitchReport();
 $('showRefs').onchange=e=>{state.showRefs=e.target.checked;draw();};
@@ -65,7 +114,7 @@ $('pathType').onchange=e=>{state.pathType=e.target.value;if(pathDraft)pathDraft.
 $('gap').oninput=e=>{GAP=+e.target.value;$('gapV').textContent=(GAP/1000).toFixed(1)+' m';draw();};
 $('hideL').onclick=()=>{const el=document.querySelector('.side:not(.r)');el.classList.toggle('hide');$('hideL').textContent=el.classList.contains('hide')?'▶':'◀';};
 $('hideR').onclick=()=>{const el=document.querySelector('.side.r');el.classList.toggle('hide');$('hideR').textContent=el.classList.contains('hide')?'◀':'▶';};
-$('bPanels').onclick=()=>{const any=document.querySelector('.side:not(.hide)');document.querySelectorAll('.side').forEach(el=>el.classList.toggle('hide',!!any));$('bPanels').textContent=any?'⤡ Panels':'⤢ Full view';};
+$('bPanels').onclick=()=>{const any=document.querySelector('.side:not(.hide)');document.querySelectorAll('.side').forEach(el=>el.classList.toggle('hide',!!any));$('bPanels').textContent=any?'⤡':'⤢';$('bPanels').title=any?'Oldalsávok vissza':'Teljes nézet: az oldalsávok elrejtése';};
 $('drawH').onchange=e=>{state.freeHeight=false;state.drawHKey=e.target.value;syncHeightUI();if(typeof renderGuides==='function')renderGuides();};
 $('devType').onchange=e=>{};$('buildType').onchange=e=>state.buildType=e.target.value;
 $('lblShow').onchange=e=>{state.showLabels=e.target.checked;draw();};
@@ -99,27 +148,30 @@ $('styleToggle').onclick=()=>{const toBlueprint=state.style!=='blueprint';
 $('bRiserUp').onclick=()=>riser(1);$('bRiserDn').onclick=()=>riser(-1);
 function riser(dir){let i=ORD.indexOf(state.active)+dir;if(i<0||i>2)return;state.active=ORD[i];
   document.querySelector(`input[name=al][value=${ORD[i]}]`).checked=true;$('hud').textContent='Active level → '+ORD[i]+' (riser continues here).';}
-const UKEYS=['cables','paths','devices','notes','measures','openings','floors','objects','roofs','wallNotes'];
+const UKEYS=['cables','paths','devices','notes','measures','openings','floors','objects','roofs','wallNotes','circuits','marks','traces','runs'];
 // per-surface note visibility travels with the project but is a map, not a list
 function noteHideSnap(){return JSON.parse(JSON.stringify(data.noteHide||{}));}
 // A snapshot may be SCOPED to the collections a command actually touches. Moving a
 // device no longer deep-clones every lamp thumbnail in the project; the entry records
 // its own scope so applySnap restores exactly what it captured.
 function snap_(scope){ensureIds(data);                  // nothing is snapshotted without an id
-  const keys=(scope&&scope.length)?scope.filter(k=>UKEYS.indexOf(k)>=0):UKEYS;
+  const sc=(scope&&scope.length)?scope:null,ks=sc?sc.filter(k=>UKEYS.indexOf(k)>=0):[];
+  const keys=ks.length?ks:UKEYS;
   const o=keys.reduce((o,k)=>(o[k]=data[k],o),{});
-  o.__scope=(scope&&scope.length)?keys.slice():null;
-  if(!scope||scope.indexOf('__walls')>=0||!scope.length){o.__walls={};for(const l of ORD)o.__walls[l]=WALLS[l]||[];}
+  o.__scope=sc?sc.slice():null;                                 // markers kept → redo is symmetric
+  if(!sc||sc.indexOf('__walls')>=0){o.__walls={};for(const l of ORD)o.__walls[l]=WALLS[l]||[];}
+  if(sc&&sc.indexOf('__layers')>=0)o.__layers={layers,stacks};  // opt-in only — a plain pushUndo() must not carry layers
   o.__noteHide=data.noteHide||{};o.__seq=data.seq||0;o.__v=data.v||SCHEMA_VERSION;
   return JSON.parse(JSON.stringify(o));}
 function snapBytes(sn){try{return JSON.stringify(sn).length;}catch(_){return 0;}}
 function applySnap(sn){
-  const keys=sn.__scope||UKEYS;                          // a scoped entry restores only what it holds
+  const ks=(sn.__scope||UKEYS).filter(k=>UKEYS.indexOf(k)>=0),keys=ks.length?ks:UKEYS;   // a scoped entry restores only what it holds
   keys.forEach(k=>{if(sn[k])data[k]=sn[k];});
   if(sn.__noteHide)data.noteHide=sn.__noteHide;
   data.seq=Math.max(+sn.__seq||0,data.seq||0);data.v=sn.__v||SCHEMA_VERSION;   // ids must never be reissued
   pruneLinks();
   if(sn.__walls){for(const l of ORD){WALLS[l]=(sn.__walls[l]||[]).map(wr);SNAP[l]=centerlines(WALLS[l]);}}
+  if(sn.__layers){layers=sn.__layers.layers;stacks=sn.__layers.stacks||[];if(!layers.some(l=>l.id===state.activeLayer))state.activeLayer=layers[0]?layers[0].id:'L0';if(typeof renderLayers==='function')renderLayers();}
   reselectAfterSnap();}
 // applySnap rebuilds every wall object, so anything holding a wall REFERENCE — the
 // selection, a gizmo drag — would silently keep editing an orphan. Re-resolve by
@@ -153,7 +205,7 @@ function renderGuides(){const box=$('guideBox');if(!box)return;const level=state
       +`<button class="gvis" data-g="${gd.k}" title="vonal láthatóság" style="font-size:12px;padding:1px 3px">${gd.vis?'👁':'🚫'}</button>`
       +`<button class="gjump" data-g="${gd.k}" title="↑/↓ ide ugorjon" style="font-size:11px;padding:1px 3px;opacity:${gd.jump!==false?1:0.35}">⭱</button>`
       +`<span class="swatch" style="background:${gd.c};width:11px;height:11px;border-radius:2px;flex:none"></span>`
-      +`<span class="gname" data-g="${gd.k}" title="dupla-katt átnevez" style="flex:1;font-size:11.5px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(gd.l)}</span>`
+      +`<span class="gname" data-g="${gd.k}" title="dupla-katt átnevez" style="flex:1;font-size:11.5px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(guideLabel(gd,level))}${guideStd(gd)?' <span title="A Szabványok táblából" style="color:#9a8f7a">📏</span>':''}</span>`
       +`<span style="font-size:10px;color:#999;min-width:42px;text-align:right">${mm} mm</span>`
       +`<button class="gpick" data-g="${gd.k}" title="rajz erre a magasságra" style="font-size:10.5px;padding:1px 4px">${active?'●':'○'}</button>`
       +`<button class="greset" data-g="${gd.k}" title="eredeti magasság" style="font-size:10px;padding:1px 3px">↺</button>`
@@ -168,10 +220,11 @@ function renderGuides(){const box=$('guideBox');if(!box)return;const level=state
   box.querySelectorAll('.gdel').forEach(b=>b.onclick=()=>{GUIDES=GUIDES.filter(x=>x.k!==b.dataset.g);if(state.drawHKey===b.dataset.g)state.drawHKey='s1100';rebuildDrawH();renderGuides();draw();});
   box.querySelectorAll('.gname').forEach(sp=>sp.ondblclick=()=>{const g=guideByKey(sp.dataset.g);
     openModal('Átnevezés + magasság',`<div class="mrow">Név <input id="grn" value="${esc(g.l)}" style="width:100%"></div>`
-      +(g.sys?'':`<div class="mrow">Magasság <input id="grmm" type="number" value="${typeof g.mm==='number'?g.mm:0}" style="width:90px"> mm</div>`)
+      +(g.sys?'':guideStd(g)?`<div class="mrow" style="font-size:12px;color:#666">Magasság: <b>${resolveMm(g,state.active)} mm</b> — a Szabványok táblából (${esc((stdRow(guideStd(g)[0],guideStd(g)[1])||{}).n||'')}); ott írd át: 📐 Szabványok.</div>`
+        :`<div class="mrow">Magasság <input id="grmm" type="number" value="${typeof g.mm==='number'?g.mm:0}" style="width:90px"> mm</div>`)
       +`<div class="mrow">Szín <input id="grc" type="color" value="${g.c}" style="width:44px;height:24px"></div>`,
-      ()=>{g.l=$('grn').value||g.l;if(!g.sys&&$('grmm'))g.mm=+$('grmm').value||0;g.c=$('grc').value;rebuildDrawH();renderGuides();draw();});});}
-function rebuildDrawH(){const sel=$('drawH');if(!sel)return;sel.innerHTML=GUIDES.map(g=>`<option value="${g.k}">${esc(g.l)}</option>`).join('');sel.value=state.drawHKey;}
+      ()=>{g.l=$('grn').value||g.l;if(!g.sys&&!guideStd(g)&&$('grmm'))g.mm=+$('grmm').value||0;g.c=$('grc').value;rebuildDrawH();renderGuides();draw();});});}
+function rebuildDrawH(){const sel=$('drawH');if(!sel)return;sel.innerHTML=GUIDES.map(g=>`<option value="${g.k}">${esc(guideLabel(g))}</option>`).join('');sel.value=state.drawHKey;}
 (function initGuides(){renderGuides();rebuildDrawH();})();
 $('addG').onclick=()=>{const v=+$('custG').value;if(v>0){const nm=$('custGName').value.trim()||('Egyéni '+v);
   const k='g'+Date.now();GUIDES.push({k,mm:v,l:nm,c:'#7a5cc0',vis:false,jump:true});
@@ -187,12 +240,16 @@ $('bBOM').onclick=()=>{const t=bomText();navigator.clipboard.writeText(t).then((
 $('bBOMcsv').onclick=()=>download('bom.csv',bomCSV());
 $('bBOMj').onclick=()=>download('bom.json',JSON.stringify(bomJSON(),null,2));
 $('bSave').onclick=()=>{for(const l of ORD)B.walls[l]=(WALLS[l]||[]).map(rectArr);
-  download('villanyterv.json',JSON.stringify({state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,panelLoc},null,2));};
+  download('villanyterv.json',JSON.stringify({state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc},null,2));};
 $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);
   Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
-  if(o.layers)layers=o.layers;if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
-  UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
-function syncUI(){setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;$('explode').checked=state.exploded;
+  if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
+  UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);if(typeof stkMigrateRoles==='function')stkMigrateRoles();if(typeof swNumMigrate==='function')swNumMigrate(data);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
+function syncUI(){vsApply();if(typeof kbdApplyLayout==='function')kbdApplyLayout();   // U4: the saved layout's keys and hints
+  if(typeof pnlWideSync==='function')pnlWideSync();   // U5: a project left in wide mode opens in it
+  if($('devHover'))$('devHover').checked=!!state.devHover;   // U6
+  if($('viewScale'))$('viewScale').value=String(vsOk(state.viewScale));
+  camLockAcc=0;setRot(state.rot);$('style').value=state.style;$('wallMode').value=state.wallMode;cutSyncRow();if($('printPal'))$('printPal').checked=state.printPal!==false;if($('wallMerge'))$('wallMerge').checked=!!state.wallMerge;wmgSyncBox();if($('openingStyle'))$('openingStyle').value=opnWide()?'wide':'line';$('explode').checked=state.exploded;
   if($('styleToggle'))$('styleToggle').classList.toggle('on',state.style==='blueprint');
   $('lvBase').checked=state.levels.basement;$('lvGround').checked=state.levels.ground;$('lvUpper').checked=state.levels.upper;
   $('hBase').value=LH.basement;$('hGround').value=LH.ground;$('hUpper').value=LH.upper;if(typeof dcSync==='function')dcSync();
@@ -206,12 +263,23 @@ function syncUI(){setRot(state.rot);$('style').value=state.style;$('wallMode').v
   $('guideBox').querySelectorAll('input').forEach(c=>c.checked=!!guideOn[c.dataset.g]);
   if($('isoGrid'))$('isoGrid').checked=state.isoGrid;if(typeof bpUI==='function'){if(!state.bp)state.bp={dims:true,title:true,proj:'',addr:'',by:''};bpUI();}if($('showRefs'))$('showRefs').checked=state.showRefs;if($('hDisp'))$('hDisp').value=state.hDisp||'hover';if($('gizSnap'))$('gizSnap').checked=state.gizmoSnap!==false;if($('objWallSnap'))$('objWallSnap').checked=state.objWallSnap!==false;if($('multiSel'))$('multiSel').checked=!!state.multiSelect;if($('autoLayout'))$('autoLayout').classList.toggle('on',autoLayout);if(typeof renderLayers==='function')renderLayers();}
 function download(n,t){const b=new Blob([t],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
-function exportPNG(grey){const clone=stage.cloneNode(true);clone.setAttribute('width',1754);clone.setAttribute('height',1240);
+function exportPNG(grey){let clone;
+  try{if(grey&&typeof prnSet==='function')prnSet(true);             // M1: grey-safe palette for this snapshot only
+    clone=stage.cloneNode(true);
+    if(grey&&typeof prnActive==='function'&&prnActive()&&typeof prnLegendSvg==='function'){const lg=prnLegendSvg(12,12);
+      if(lg)clone.insertAdjacentHTML('beforeend',lg);}}
+  finally{if(typeof prnSet==='function')prnSet(false);}
+  clone.setAttribute('width',1754);clone.setAttribute('height',1240);
   const xml=new XMLSerializer().serializeToString(clone);const img=new Image();
   img.onload=()=>{const cv=document.createElement('canvas');cv.width=1754;cv.height=1240;const cx=cv.getContext('2d');
     cx.fillStyle='#fff';cx.fillRect(0,0,1754,1240);if(grey)cx.filter='grayscale(1) contrast(1.05)';cx.drawImage(img,0,0,1754,1240);
     cv.toBlob(bl=>{const u=URL.createObjectURL(bl);const a=document.createElement('a');a.href=u;a.download=grey?'terv_A4_grey.png':'terv_A4.png';a.click();URL.revokeObjectURL(u);});};
   img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml);}
+window.addEventListener('beforeprint',()=>{if(typeof prnSet!=='function')return;prnSet(true);
+  if(prnActive()&&typeof prnLegendSvg==='function'){const lg=prnLegendSvg(12,12);if(lg)stage.insertAdjacentHTML('beforeend',lg);}});
+window.addEventListener('afterprint',()=>{const g=document.getElementById('prnLegend');if(g)g.remove();if(typeof prnSet==='function')prnSet(false);});
+if($('printPal'))$('printPal').onchange=e=>{state.printPal=e.target.checked;
+  $('hud').textContent=state.printPal?'Szürke-biztos nyomtatási paletta: nyomtatáskor és szürke PNG-nél minden rendszer külön szürkeárnyalat + vonalminta.':'Nyomtatás valódi színekkel.';};
 $('bPNG').onclick=()=>exportPNG(false);$('bPNGg').onclick=()=>exportPNG(true);$('bPrint').onclick=()=>window.print();
 
 

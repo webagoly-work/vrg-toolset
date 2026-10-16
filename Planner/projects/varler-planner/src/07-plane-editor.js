@@ -29,21 +29,21 @@ function planeViewData(room,level,kind,tol){
   const ins=(x,y)=>x>=bb.x0&&x<=bb.x1&&y>=bb.y0&&y<=bb.y1;
   const devs=[],ghosts=[],secs=[],risers=[],ops=[];
   data.devices.forEach((dv,di)=>{if(dv.level!==level||!ins(dv.x,dv.y))return;
-    const rec={di,type:dv.type,ref:dv.ref,u:dv.x,h:dv.y,z:dv.h||0,back:false,devDef:dv.devDef,boxColor:dv.boxColor,
-      jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:dv.link};
+    const rec=lyrTagOp({di,type:dv.type,ref:dv.ref,u:dv.x,h:dv.y,z:dv.h||0,back:false,devDef:dv.devDef,boxColor:dv.boxColor,
+      jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null},dv,'device');
     (inb(dv.h||0)?devs:ghosts).push(rec);});
   data.paths.forEach((pa,pi)=>{for(let i=0;i<pa.nodes.length-1;i++){
     const a=pa.nodes[i],c=pa.nodes[i+1];if(a.level!==level&&c.level!==level)continue;
     const sec=pa.sections[i]||{};
     const ia=inb(a.h||0)&&ins(a.x,a.y),ic=inb(c.h||0)&&ins(c.x,c.y);
-    if(ia&&ic)secs.push({pi,na:i,nb:i+1,ua:a.x,ha:a.y,ub:c.x,hb:c.y,build:sec.build||'sull_gege',
+    if(ia&&ic)secs.push(lyrTagOp({pi,na:i,nb:i+1,ua:a.x,ha:a.y,ub:c.x,hb:c.y,build:sec.build||'sull_gege',
       dia:sec.dia,cd:sec.cd,carried:(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]),back:false,
-      za:a.h||0,zb:c.h||0});
+      za:a.h||0,zb:c.h||0},pa,'path'));
     else if(ia)risers.push({pi,ni:i,u:a.x,h:a.y,z:a.h||0,to:c.h||0});
     else if(ic)risers.push({pi,ni:i+1,u:c.x,h:c.y,z:c.h||0,to:a.h||0});}});
   (data.openings||[]).forEach((o,oi)=>{if(o.level!==level||!ins(o.x,o.y))return;
     if(o.type!=='door'&&o.type!=='window')return;
-    ops.push({oi,type:o.type,x:o.x,y:o.y,ang:o.ang||0,w:o.w||(o.type==='window'?WIN_W:DOOR_W)});});
+    ops.push(lyrTagOp({oi,type:o.type,x:o.x,y:o.y,ang:o.ang||0,w:o.w||(o.type==='window'?WIN_W:DOOR_W)},o,'build'));});
   const notes=noteSurfaceHidden(key)?[]:(data.wallNotes||[]).map((n,i)=>({...n,i})).filter(n=>n.wallKey===key)
     .map(n=>({i:n.i,u:n.u,h:n.h,text:n.text,kind:n.kind,tag:n.tag}));
   return {room,level,kind,band,key,poly,bb,pb,walls:roomWalls(poly,level),devs,ghosts,secs,risers,ops,notes,
@@ -79,10 +79,10 @@ function planeViewSVG(d,dims){const M=56;
             :`fill="#ded9cc" stroke="#8f887a" stroke-width="0.9"`)+`/>`;
     s+=`<text x="${((x0+x1)/2).toFixed(1)}" y="${((y0+y1)/2+3).toFixed(1)}" font-size="8" text-anchor="middle" fill="#9a9184">${w.side}</text>`;});
   // door/window footprints, for orientation
-  d.ops.forEach(o=>{const dx=Math.cos(o.ang),dy=Math.sin(o.ang),hw=o.w/2;
+  d.ops.forEach(o=>{const s0=s.length;const dx=Math.cos(o.ang),dy=Math.sin(o.ang),hw=o.w/2;
     const ax=X(o.x-dx*hw),ay=Y(o.y-dy*hw),bx=X(o.x+dx*hw),by=Y(o.y+dy*hw);
     s+=`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="${o.type==='window'?'#2f6fb0':'#fff'}" stroke-width="4" stroke-linecap="butt"/>`
-      +`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="#7d7466" stroke-width="0.7" stroke-dasharray="3 2"/>`;});
+      +`<line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="#7d7466" stroke-width="0.7" stroke-dasharray="3 2"/>`;s=lyrWrapOp(s,s0,o.op);});
   // ---- CHASE LAYER (shared with the wall editor) ----
   if(L.cuts&&chS.length){
     s+=`<clipPath id="cutclip">`+chS.map(S=>`<polygon points="${S.poly.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}"/>`).join('')+`</clipPath>`;
@@ -103,12 +103,12 @@ function planeViewSVG(d,dims){const M=56;
   // ---- INSTALLED ----
   const warpPi=(PV&&PV.warp)?PV.warp.pi:null;
   if(L.installed!==false){
-    d.secs.forEach(t=>{const col=((t.build||'').indexOf('kv_')===0?'#c0761d':'#6f757d');
+    d.secs.forEach(t=>{const s0=s.length;const col=((t.build||'').indexOf('kv_')===0?'#c0761d':'#6f757d');
       const sw=((t.build||'').indexOf('sull')>=0?Math.max(1.5,+(chaseDia(t.build,t)*sc).toFixed(2)):2.4);
       s+=`<line x1="${X(t.ua)}" y1="${Y(t.ha)}" x2="${X(t.ub)}" y2="${Y(t.hb)}" stroke="${col}" stroke-width="${sw}" stroke-dasharray="${(t.build||'').indexOf('kv_')===0?'':'6 3'}" stroke-linecap="round"/>`
         +`<line class="wvseg" data-pi="${t.pi}" data-na="${t.na}" data-nb="${t.nb}" x1="${X(t.ua)}" y1="${Y(t.ha)}" x2="${X(t.ub)}" y2="${Y(t.hb)}" stroke="transparent" stroke-width="14" stroke-linecap="round" pointer-events="stroke" style="cursor:grab"/>`;
       if(t.carried&&t.carried.length){const mx=(X(t.ua)+X(t.ub))/2,my=(Y(t.ha)+Y(t.hb))/2,c=t.carried[0],n=t.carried.reduce((a,x)=>a+(x.count||1),0);
-        s+=pvText(mx.toFixed(1),(my-5).toFixed(1),esc((c.name||'')+(c.num?' '+c.num:''))+' '+n+'ér',9,'#0a5c33');}});
+        s+=pvText(mx.toFixed(1),(my-5).toFixed(1),esc((c.name||'')+(c.num?' '+c.num:''))+' '+n+'ér',9,'#0a5c33');}s=lyrWrapOp(s,s0,t.op);});
     d.secs.forEach(t=>{const col=((t.build||'').indexOf('kv_')===0?'#c0761d':'#6f757d'),hi=(t.pi===warpPi);
       s+=`<circle class="wvnode" data-pi="${t.pi}" data-ni="${t.na}" cx="${X(t.ua)}" cy="${Y(t.ha)}" r="4.5" fill="${hi?'#fff3d6':'#fff'}" stroke="${hi?'#e8641c':col}" stroke-width="1.6" style="cursor:move"/>`
         +`<circle class="wvnode" data-pi="${t.pi}" data-ni="${t.nb}" cx="${X(t.ub)}" cy="${Y(t.hb)}" r="4.5" fill="${hi?'#fff3d6':'#fff'}" stroke="${hi?'#e8641c':col}" stroke-width="1.6" style="cursor:move"/>`;});
@@ -117,10 +117,10 @@ function planeViewSVG(d,dims){const M=56;
       s+=`<circle class="pvriser" cx="${x}" cy="${y}" r="10" fill="#fff" stroke="#2f6fb0" stroke-width="1.8"/>`
         +`<text x="${x}" y="${y+4.6}" font-size="13" font-weight="700" text-anchor="middle" fill="#2f6fb0">${up?'↑':'↓'}</text>`
         +pvText((x+13).toFixed(1),(y-11).toFixed(1),Math.round(r.to)+' mm',9,'#2f6fb0','start');});
-    d.devs.forEach(dv=>{const x=X(dv.u),y=Y(dv.h);
+    d.devs.forEach(dv=>{const s0=s.length;const x=X(dv.u),y=Y(dv.h);
       s+=`<g class="wvdev" data-di="${dv.di}" style="cursor:move">`+wvDevBox(dv,x,y,sc,'#0a2b6b',false)+`</g>`;
       s+=pvText(x,(y-(DEV_BOX_W/2)*sc-5).toFixed(1),esc(dv.ref||''),9,'#0a2b6b');
-      if(dv.link)s+=`<circle cx="${x}" cy="${y}" r="${(DEV_BOX_W/2)*sc+3}" fill="none" stroke="#c0530f" stroke-width="0.9" stroke-dasharray="2 2"/>`;});
+      if(dv.link)s+=`<circle cx="${x}" cy="${y}" r="${(DEV_BOX_W/2)*sc+3}" fill="none" stroke="#c0530f" stroke-width="0.9" stroke-dasharray="2 2"/>`;s=lyrWrapOp(s,s0,dv.op);});
     // warp box
     if(warpPi!=null){const bx=wvWarpBox(d,warpPi);
       if(bx){const x0=Math.min(X(bx.u0),X(bx.u1)),x1=Math.max(X(bx.u0),X(bx.u1)),y0=Math.min(Y(bx.h0),Y(bx.h1)),y1=Math.max(Y(bx.h0),Y(bx.h1));
@@ -130,6 +130,7 @@ function planeViewSVG(d,dims){const M=56;
           const cur=(hx===0.5?'ns-resize':hy===0.5?'ew-resize':'nwse-resize');
           s+=`<rect class="wvwarp" data-pi="${warpPi}" data-hx="${hx}" data-hy="${hy}" x="${(px-4).toFixed(1)}" y="${(py-4).toFixed(1)}" width="8" height="8" fill="#fff" stroke="#e8641c" stroke-width="1.4" style="cursor:${cur}"/>`;});}}
   }
+  if(typeof stkHookSvg==='function')s+=stkHookSvg(STK_PV,{d,X,Y,sc});   // BRIDGE Stack plane marks (05n), in plan mm
   // ---- NOTES ----
   if(L.notes!==false)d.notes.forEach(n=>{s+=noteBox(n,X(n.u),Y(n.h));});
   // ---- dims + caption ----

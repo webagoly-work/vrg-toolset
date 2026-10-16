@@ -208,7 +208,7 @@
       "priority": 1,
       "vendor": "fetch",
       "target": "pdfjs",
-      "note": "Helyettesíti a tools/pdf2.js 62 sorát. getTextContent() pozícióval adja a szöveget — pont az, amit a pdfrows.js vár. Type0/CID betűkészleteket is kezel."
+      "note": "Helyettesíti a tools/pdf2.js 62 sorát. getTextContent() pozícióval adja a szöveget — pont az, amit a pdfrows.js vár. Type0/CID betűkészleteket is kezel. A tárolót nem töltjük le: 100 MB teszt-PDF, a letöltés meg is szakad. A pdfjs-dist npm-csomag ugyanaz a könyvtár, 8 MB, rögzített verzióval és ellenőrzőösszeggel. FONTOS: a legacy/build/pdf.mjs-t használd, ne a build/pdf.mjs-t — a modern build Uint8Array.prototype.toHex()-et hív, ami ezen a Node-on (v24.18.0) nincs meg, és betöltéskor elszáll. A legacy buildet leteszteltük: 201 pozicionált szövegelem, az ő betű helyesen dekódolva."
     },
     {
       "slug": "iconv-lite",
@@ -464,6 +464,51 @@
       "vendor": "reference",
       "target": null,
       "note": "3D építészeti szerkesztő MCP-vel, ügynöknek tervezve. Next.js + three.js, tehát ÁTVENNI NEM LEHET — a dokumentummodelljét érdemes elolvasni a 2_0_architecture.md mellé."
+    },
+    {
+      "slug": "mind-elixir",
+      "name": "Mind Elixir",
+      "repo": "SSShooter/mind-elixir-core",
+      "npm": null,
+      "license": "MIT",
+      "stars": 3163,
+      "pushed": "2026-09-16",
+      "aspect": "MindMap",
+      "build": "egyfajlos-offline",
+      "priority": 1,
+      "vendor": "fetch",
+      "target": "mind-elixir",
+      "note": "Keretrendszer-független gondolattérkép mag, nulla függőséggel. A FORRÁST hozzuk le (v5.15.1 címke), mert a cél egyes funkciók átemelése a vrg_mindmap.html-be — az npm-csomag dist buildjében a változónevek összenyomottak (ss, is, rs, ls), olvashatatlan. Ha valaha futásidejű könyvtárként kellene: npm mind-elixir@5.15.1, dist/MindElixir.js, 105 kB. MIT — az átvett kóddal a szerzői jogi fejlécet is vinni kell (c) 2019 DjZhou."
+    },
+    {
+      "slug": "jsmind",
+      "name": "jsMind",
+      "repo": "hizzgdev/jsmind",
+      "npm": null,
+      "license": "BSD-3-Clause",
+      "stars": 3794,
+      "pushed": "2026-05-18",
+      "aspect": "MindMap",
+      "build": "egyfajlos-offline",
+      "priority": 2,
+      "vendor": "fetch",
+      "target": "jsmind",
+      "note": "A minimalista változat: nulla függőség, régóta stabil. A FORRÁST hozzuk le (v0.9.1 címke) — az npm-csomag es6/jsmind.js-e teljesen minifikált (10 sor), átemelésre alkalmatlan. A GitHub API NOASSERTION-t jelez, de a LICENSE fájl egyértelmű: BSD-3-Clause, (c) 2014-2025 ZHANG ZHIGANG. BSD-3: az átvett kóddal a szerzői jogi fejlécet ÉS a három feltételt is vinni kell."
+    },
+    {
+      "slug": "three",
+      "name": "three.js",
+      "repo": "mrdoob/three.js",
+      "npm": null,
+      "license": "MIT",
+      "stars": null,
+      "pushed": null,
+      "aspect": "Planner",
+      "build": "egyfajlos-offline",
+      "priority": 1,
+      "vendor": "fetch",
+      "target": "three",
+      "note": "Az ügyfél-előnézet (3D túra) renderelője. A build/three.module.min.js-t és az examples/jsm/lines vonalait a client-preview build fűzi egyetlen <script type=\"module\">-ba, ezért az export offline, egy fájlban fut. A régi UMD build (three.min.js) r160 óta nincs. A tárolót nem töltjük le (több száz MB példa); az npm-csomag rögzített verzióval és ellenőrzőösszeggel jön. MIT — a beágyazott kóddal a szerzői jogi fejléc is megy: (c) 2010-2024 three.js authors."
     }
   ];
   /*__COMPONENTS_END__*/

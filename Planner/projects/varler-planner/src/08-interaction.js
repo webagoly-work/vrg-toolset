@@ -8,22 +8,24 @@
 // ==========================================================================
 //////////////////// interaction ////////////////////
 const $=id=>document.getElementById(id);
-const HINTS={select:'Select — drag pan, wheel zoom. Click cable/device to delete. Right-click object/wall for menu.',
+const HINTS={select:'Kijelölés — kattints egy elemre: kiemelve, a jobb oldali panel mutatja. Húzás: mozgatás · Ctrl: több elem · Alt: átfedő elemek közt vált · jobb klikk: menü.',
  path:'Path — draw the empty pathway (snaps to wall & height, Ctrl flips side, ↑/↓ height, ←/→ rotate). Right-click a section for build/circuit/kötődoboz/parallel. Enter finish.',
  cable:'Cable — snaps along the locked wall; Ctrl flips to the other side (sticky). ↑/↓ height line · ←/→ rotate · Space kötődoboz · Enter finish · Esc cancel.',
  device:'Device — click to drop the selected symbol on the active level.',
  wall:'Wall — click two points to draw a wall on the active level (axis-aligned). Tick radír to erase by clicking. Right-click a wall to delete.',
  build:'Build — click a wall to place the selected object; it snaps & aligns. Right-click it to Rotate/Delete.',
  format:'Formátummásoló — 1) jelölj ki egy forráselemet (Select vagy kattints rá itt), 2) kattints egy AZONOS TÍPUSÚ elemre, hogy átvegye a forma-jellemzőit (méret, típus, magasság). Ajtó→ajtó, ablak→ablak, objektum→objektum, stb.',
- grab:'Move (KSP-mód) — kattints bármely elemre (fal, padló, ajtó, ablak, lépcső, tető, objektum). Nyilak: eltolás · kék gyűrű: forgatás · lila: emelés · sárga sarok: átméretezés. Billentyű: WASD tol, Q/E forgat, ↑/↓ emel, Del töröl, Ctrl+D másol.',
+ grab:'Move (KSP-mód) — kattints bármely elemre (fal, padló, ajtó, ablak, lépcső, tető, objektum). Kék középpont: szabad mozgatás · Nyilak: eltolás · kék gyűrű: forgatás · lila: emelés · sárga sarok: átméretezés. Billentyű: WASD tol, Q/E forgat, ↑/↓ emel, Del töröl, Ctrl+D másol.',
  object:'Object — pick an item in the Objects panel, then click to place. Select it to move with WASD, rotate Q/E, lift ↑/↓; right-click for size.',
  roof:'Roof — click two points to span a roof over that area, then pick type (lapos/félnyereg/nyereg/konty), eave + ridge height and overhang. Right-click it to edit.',
- floor:'Floor — click two points to drop a floor section on the active level. Draw walls on it to make a room. Backspace cancels.',
+ floor:'Padló — pont után pont, mint a térképes területmérő; élő Terület/Kerület. Az első pontra kattintva (vagy Enterrel) zárul, Backspace visszavesz egy pontot. Falakkal zárt térbe: jobb klikk → Padló a falak közé.',
  measure:'Measure — click two points for the distance.',note:'Note — click a spot, then type text. Tip: hold LEFT+RIGHT mouse to pan while drawing; Backspace = undo last click.'};
-function setMode(m){state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorStart=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();
+function setMode(m){if(typeof toolsOff==='function')toolsOff();   // T1: picking any mode ends every sub-tool (05cb)
+  if(m!=='select'&&typeof cktPick!=='undefined'&&cktPick)cktPick=null;if(typeof stkToolEvent==='function')stkToolEvent('mode',{mode:m});   // another tool ends end point picking
+  state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();lampHoverHide();
   document.querySelectorAll('.tool[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
   const wo=$('wallOpts');if(wo)wo.style.display=(m==='wall')?'flex':'none';
-  $('modeHint').textContent=HINTS[m];$('modeTip').textContent=HINTS[m];if(window.__dashReady)applyToolLayout(m);
+  $('modeHint').textContent=HINTS[m];if($('modeTip'))$('modeTip').textContent=HINTS[m];if(window.__dashReady)applyToolLayout(m);
   // 2.0-a: tell a connected phone the tool changed. Self-suppressing —
   // returns immediately if nothing changed or no phone asked for state.
   if(window.PLANNER_LINK)window.PLANNER_LINK.pushState(false);
@@ -55,8 +57,17 @@ function rotateGroup(list,ang,piv){const cs=Math.cos(ang),sn=Math.sin(ang);
     // also spin each piece about its own centre so it stays oriented with the group
     if(h.t==='objects'||h.t==='openings')pRot(h,ang);});
   const lv=new Set(list.filter(h=>h.t==='wall').map(h=>h.level));lv.forEach(l=>SNAP[l]=centerlines(WALLS[l]));}
-function cloneMulti(list){const out=[];list.forEach(h=>{const nh=clonePiece(h);if(nh)out.push(nh);});return out;}
+// a copy leaves its clip row behind (copyRecord); boxes copied together with row partners form a row of their own
+function cloneMulti(list){const out=[],rows={};
+  list.forEach(h=>{const src=h.t==='devices'?pieceRef(h):null,nh=clonePiece(h);if(!nh)return;out.push(nh);
+    if(src&&src.clip)(rows[src.clip]=rows[src.clip]||[]).push(pieceRef(nh));});
+  const stamp=Date.now().toString(36);
+  Object.keys(rows).forEach((g,k)=>{if(rows[g].length>1)rows[g].forEach(d=>{d.clip='clip'+stamp+'c'+k;});});
+  return out;}
 stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
+  // a tap lights the layer too — a touch screen never sends the hover that drives it
+  if(e.button===0&&typeof lyrSpotOn==='function'&&lyrSpotOn())lyrSpotSet(lyrSpotOfDevice(devHitIdx(e)));
+  if(typeof stkToolEvent==='function'&&stkToolEvent('down',e))return;
   if((e.buttons&3)===3){camDrag={m:'pitch',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(e.button===2){camDrag={m:'yaw',moved:false};last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(e.button!==0)return;
@@ -72,9 +83,13 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
     applyFormat(h); draw(); return;}
   if(state.mode==='grab'){
     const g=e.target&&e.target.closest?e.target.closest('.giz'):null;
-    if(g&&(selected||selList().length)){pushUndo();gizDrag={ax:g.dataset.ax,rd:g.dataset.rd||'',sg:+(g.dataset.sg||0),cx:+(g.dataset.cx||0),cy:+(g.dataset.cy||0),
-      last:[e.clientX,e.clientY],startC:selected?pGetC(selected):groupCentroid(selList()),startWD:selected?pGetWD(selected):[0,0],startZ:selected?pGetZ(selected):0,
-      group:selList().length>1?selList():null,piv:groupCentroid(selList())};
+    if(g&&(selected||selList().length)){pushUndo();const grp=selList().length>1?selList():null;
+      gizDrag={ax:g.dataset.ax,rd:g.dataset.rd||'',sg:+(g.dataset.sg||0),cx:+(g.dataset.cx||0),cy:+(g.dataset.cy||0),
+      last:[e.clientX,e.clientY],startC:grp?groupCentroid(grp):(selected?pGetC(selected):groupCentroid(selList())),startWD:selected?pGetWD(selected):[0,0],startZ:selected?pGetZ(selected):0,
+      group:grp,piv:groupCentroid(selList())};
+      // U3: a move handle (the centre dot, a group arrow) drags by the offset under the cursor, like a click on the
+      // piece does. Without `grab` the move branch of pointermove threw — the group gizmo's arrows never moved anything.
+      if(gizDrag.ax==='move'&&selected)gizDrag.grab=baseToPlan(...clientToBase(e),dz(pieceLevel(selected),pGetZ(selected)));
       try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
     const h=hitTest(e);
     // Ctrl+click toggles a piece in the multi-selection (unless it turns into a drag → clone below)
@@ -91,29 +106,28 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
     if(!e.ctrlKey){selected=null;clearMulti();}
     selBox={x0:e.clientX,y0:e.clientY,x1:e.clientX,y1:e.clientY};dragging=true;moved=false;last=[e.clientX,e.clientY];
     try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
-  if(state.mode==='select'){const h=hitTest(e);
+  if(state.mode==='select'){let h=hitTest(e);
+    // end point picking (05j-circuits.js): a device click toggles it; anything else pans as empty space would
+    if(cktPick){if(h&&h.t==='devices'){cktPickToggle(h.i);return;}h=null;}
     if(switchPick&&h&&h.t==='devices'){const D=data.devices[switchPick.di];D.swMap=D.swMap||{};D.swMap[switchPick.term]=devIdOf(h.i);
       const di=switchPick.di;switchPick=null;$('modeHint').textContent=HINTS.select;draw();editSwitchType(di);return;}
     if(pendingRoute&&h&&h.t==='devices'){routeDevice(pendingRoute.dev,'pick',data.devices[h.i]);pendingRoute=null;$('modeHint').textContent=HINTS.select;return;}
     if(h&&e.ctrlKey){ // Ctrl: toggle multi on click, or clone on drag — decide on move
       selected=h;last=[e.clientX,e.clientY];moved=false;ctrlToggle={h,client:[e.clientX,e.clientY]};dragItem=null;
       try{stage.setPointerCapture(e.pointerId);}catch(_){}draw();return;}
-    if(h){
-      if(inMulti(h)&&selList().length>1){dragItem={h,pushed:false,group:selList(),grab:baseToPlan(...clientToBase(e),dz(pieceLevel(h),pGetZ(h)))};selected=h;}
-      else{clearMulti();dragItem={h,pushed:false};selected=h;}
-      moved=false;last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
-    selected=null;clearMulti();
+    // U2: the click draws at once (aura + inspector) — it used to wait for some other redraw. A drag only starts
+    // past 4 px (dragItem.live), so a shaky click no longer nudges the piece and records an undo step.
+    if(h){const at={x0:e.clientX,y0:e.clientY,live:false};
+      if(inMulti(h)&&selList().length>1){dragItem=Object.assign({h,pushed:false,group:selList(),grab:baseToPlan(...clientToBase(e),dz(pieceLevel(h),pGetZ(h)))},at);selected=h;}
+      else{clearMulti();dragItem=Object.assign({h,pushed:false},at);selected=h;}
+      moved=false;last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}draw();return;}
+    selected=null;clearMulti();draw();
     if(state.multiSelect){selBox={x0:e.clientX,y0:e.clientY,x1:e.clientX,y1:e.clientY};dragging=true;}
     else{dragging=true;} // multi-select off → empty drag pans the view
     moved=false;last=[e.clientX,e.clientY];try{stage.setPointerCapture(e.pointerId);}catch(_){}return;}
   if(state.mode==='cable'){const p=cableSnap(e);if(!draft){pushUndo();draft={type:state.cableType,nodes:[],layer:curLayer()};}draft.nodes.push({level:p.level,x:p.x,y:p.y,h:p.h});draw();}
-  else if(state.mode==='path'){const p=cableSnap(e);if(!pathDraft){pushUndo();pathDraft={ptype:state.pathType,nodes:[],sections:[],layer:curLayer()};}
-    if(pathDraft.nodes.length)pathDraft.sections.push({build:'sull_gege',circuit:null});
-    pathDraft.nodes.push({level:p.level,x:p.x,y:p.y,h:p.h});draw();}
-  else if(state.mode==='device'){const p=cableSnap(e);const ty=$('devType').value;pushUndo();
-    const dev={type:ty,level:p.level,x:p.x,y:p.y,h:p.h,layer:curLayer(),ref:nextRef(ty)};
-    if(p.wall){dev.side=state.side?1:0;}   // remember which wall side (like path sections)
-    data.devices.push(dev);draw();}
+  else if(state.mode==='path')pathAddNode(placeSnap(e));             // on a box: marked, linked at finish (05k)
+  else if(state.mode==='device')placeDevice(placeSnap(e),$('devType').value);   // Shift: joins the row (05k)
   else if(state.mode==='wall'){
     if(state.wallErase){const r=wallHitRect(e);if(r){pushUndo();const a=WALLS[state.active];a.splice(a.indexOf(r),1);SNAP[state.active]=centerlines(a);draw();}return;}
     const p=wallPointSnap(e,wallStart);
@@ -123,16 +137,26 @@ stage.addEventListener('pointerdown',e=>{lampHoverHide();hideCtx();
       pushUndo();addWall(wallStart,p);wallStart=null;$('hud').textContent='Fal létrehozva.';}
     draw();}
   else if(state.mode==='object'){placeObject(e);}
-  else if(state.mode==='floor'){const p=wallPointSnap(e);if(!floorStart)floorStart=p;else{pushUndo();addFloor(floorStart,p);floorStart=null;}draw();}
+  else if(state.mode==='floor'){const p=floorSnap(e);
+    // point after point; clicking the first point again closes the outline and makes the floor
+    if(floorDraft&&floorDraft.length>=3&&floorNearFirst(p)){finishFloorDraft();}
+    else{if(!floorDraft)floorDraft=[];
+      const last=floorDraft[floorDraft.length-1];
+      if(!last||Math.hypot(p[0]-last[0],p[1]-last[1])>=20)floorDraft.push(p);
+      $('hud').textContent=floorDraftHud(null);draw();}}
   else if(state.mode==='roof'){const p=wallPointSnap(e);if(!roofStart)roofStart=p;else{addRoof(roofStart,p);roofStart=null;}draw();}
-  else if(state.mode==='build'){const w=snapWall(e,state.active,0);if(w){pushUndo();const o={type:state.buildType,level:state.active,x:w.x,y:w.y,ang:w.ang,variant:0,layer:curLayer()};if(state.buildType==='stairs')Object.assign(o,state.stairDef);data.openings.push(o);draw();}}
+  else if(state.mode==='build'){const w=snapWall(e,state.active,0);if(w){pushUndo();const o=Object.assign({type:state.buildType,level:state.active,x:w.x,y:w.y,ang:w.ang,variant:0,layer:curLayer()},typeof opnPickOf==='function'?opnPickOf(state.buildType):{});if(state.buildType==='stairs')Object.assign(o,state.stairDef);data.openings.push(o);draw();}}
   else if(state.mode==='note'){const p=snap(e,state.active);const t=prompt('Note:');if(t){pushUndo();data.notes.push({level:p.level,x:p.x,y:p.y,text:t,layer:curLayer()});}draw();}
   else if(state.mode==='measure'){const p=snap(e,state.active);if(!measureDraft)measureDraft=[{level:p.level,x:p.x,y:p.y}];
     else{measureDraft.push({level:p.level,x:p.x,y:p.y});pushUndo();data.measures.push(measureDraft);measureDraft=null;}draw();}});
 stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
-  if(state.mode==='select'||state.mode==='grab'){const li=lampAt(e.clientX,e.clientY);
-    if(li!=null)lampHoverShow(data.devices[li],e.clientX,e.clientY);else lampHoverHide();}
+  if(typeof stkToolEvent==='function'&&stkToolEvent('move',e))return;
+  if(state.mode==='select'||state.mode==='grab'){
+    if(state.devHover){if(e.buttons)hovHide();else hovMove(e);}   // U6: the device card (a lamp's photo rides on it)
+    else{const li=lampAt(e.clientX,e.clientY);if(li!=null)lampHoverShow(data.devices[li],e.clientX,e.clientY);else lampHoverHide();}}
   else lampHoverHide();
+  // layer spotlight (05l): the device under the pointer lights its whole layer, panel row included
+  if(typeof lyrSpotOn==='function'&&lyrSpotOn())lyrSpotSet(lyrSpotOfDevice(devHitIdx(e)));
   const bts=e.buttons&3;
   if(bts===3||bts===2){ // 3 = both -> pitch, 2 = right only -> yaw
     if(!camDrag){camDrag={m:bts===3?'pitch':'yaw',moved:false,pivotCursor:pivotAtCursor(e)};last=[e.clientX,e.clientY];return;}
@@ -148,9 +172,10 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
   // Ctrl held on a piece: a small drag turns the ctrl-click into a clone (Ctrl+drag = copy)
   if(ctrlToggle){const mv=Math.abs(e.clientX-ctrlToggle.client[0])+Math.abs(e.clientY-ctrlToggle.client[1]);
     if(mv>4){const h=ctrlToggle.h;ctrlToggle=null;pushUndo();
-      const nh=clonePiece(h);if(nh){selected=nh;clearMulti();dragItem={h:nh,pushed:true};}
+      const nh=clonePiece(h);if(nh){selected=nh;clearMulti();dragItem={h:nh,pushed:true,live:true};}
       last=[e.clientX,e.clientY];moved=true;return;}
   }
+  if(dragItem&&dragItem.live===false){if(Math.hypot(e.clientX-dragItem.x0,e.clientY-dragItem.y0)<4)return;dragItem.live=true;}
   if(dragItem&&dragItem.group&&dragItem.group.length>1){moved=true;if(!dragItem.pushed){pushUndo();dragItem.pushed=true;}
     const p=baseToPlan(...clientToBase(e),dz(pieceLevel(dragItem.h),pGetZ(dragItem.h)));
     if(!dragItem.gc)dragItem.gc=groupCentroid(dragItem.group);
@@ -225,7 +250,7 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
     drawSoon();return;}
   if(dragging){const dx=e.clientX-last[0],dy=e.clientY-last[1];if(Math.abs(dx)+Math.abs(dy)>2)moved=true;
     state.panX+=dx;state.panY+=dy;last=[e.clientX,e.clientY];setTransform();return;}
-  if(state.mode==='cable'||state.mode==='path'||state.mode==='device'){const p=cableSnap(e);cursor=p;state.hoverR=p.wall||null;state.hoverL=state.active;
+  if(state.mode==='cable'||state.mode==='path'||state.mode==='device'){const p=placeSnap(e);cursor=p;state.hoverR=p.wall||null;state.hoverL=state.active;
     const dr=state.mode==='path'?pathDraft:draft;
     let msg=`x ${(p.x/1000).toFixed(2)} · y ${(p.y/1000).toFixed(2)} m · ${p.snap} · h ${(p.h/1000).toFixed(2)} m`;
     if(dr&&dr.nodes.length){const t={nodes:dr.nodes.concat([{level:p.level,x:p.x,y:p.y,h:p.h}])};msg+=`\nrun: ${cableLen(t).toFixed(2)} m`;}
@@ -238,13 +263,16 @@ stage.addEventListener('pointermove',e=>{lastPtr=[e.clientX,e.clientY];
     state.hoverR=state.wallErase?wallHitRect(e):null;state.hoverL=state.active;drawSoon();}
   else if(state.mode==='object'){const p=objSnap(e);objGhost={level:p.level,x:p.x,y:p.y,z:p.z||0,gang:(p.ang!=null?p.ang:null),wall:p.wall};drawSoon();}
   else if(state.mode==='build'){const w=snapWall(e,state.active,0);
-    buildGhost=w?Object.assign({type:state.buildType,level:state.active,x:w.x,y:w.y,ang:w.ang,variant:0},
+    buildGhost=w?Object.assign({type:state.buildType,level:state.active,x:w.x,y:w.y,ang:w.ang,variant:0},typeof opnPickOf==='function'?opnPickOf(state.buildType):{},
       (state.buildType==='stairs'?(state.stairDef||{}):{})):null;
     cursor=w?{x:w.x,y:w.y,level:state.active,h:0}:null;drawSoon();}
   else if(state.mode==='select'&&!dragItem&&!gizDrag){/* hover only */}
-  else if(state.mode==='floor'||state.mode==='roof'){const p=wallPointSnap(e);cursor={x:p[0],y:p[1],level:state.active,h:0};drawSoon();}
+  else if(state.mode==='floor'||state.mode==='roof'){const p=(state.mode==='floor')?floorSnap(e):wallPointSnap(e);
+    cursor={x:p[0],y:p[1],level:state.active,h:0};
+    if(state.mode==='floor')$('hud').textContent=floorDraftHud(true);drawSoon();}
   else if(state.mode==='select'){const r=wallHitRect(e);if(r!==state.hoverR){state.hoverR=r;state.hoverL=state.active;drawSoon();}}});
-stage.addEventListener('pointerup',()=>{
+stage.addEventListener('pointerup',(e)=>{
+  if(typeof stkToolEvent==='function'&&stkToolEvent('up',e))return;
   if(ctrlToggle){ // a ctrl+click that did NOT turn into a drag-clone → toggle multi-selection
     toggleMulti(ctrlToggle.h);selected=inMulti(ctrlToggle.h)?ctrlToggle.h:(selMulti[selMulti.length-1]||null);
     if(selMulti.length)$('hud').textContent=selList().length+' elem kijelölve.';ctrlToggle=null;draw();}
@@ -258,8 +286,8 @@ function finishSelBox(){if(!selBox)return;const x0=Math.min(selBox.x0,selBox.x1)
     const sx=b[0]*state.zoom+state.panX, sy=b[1]*state.zoom+state.panY;return sx>=x0&&sx<=x1&&sy>=y0&&sy<=y1;};
   const hits=[];
   ['objects','devices','openings','roofs','floors','notes'].forEach(t=>{(data[t]||[]).forEach((o,i)=>{
-    if(o.level&&!state.levels[o.level])return;const h={t,i};if(test(h))hits.push(h);});});
-  (WALLS[state.active]||[]).forEach(r=>{const h={t:'wall',level:state.active,ref:r};if(test(h))hits.push(h);});
+    if(!hitOkRec(t,o,i))return;const h={t,i};if(test(h))hits.push(h);});});   // what is not drawn is not boxed (U1)
+  (WALLS[state.active]||[]).forEach(r=>{if(!hitOkWall(r,state.active))return;const h={t:'wall',level:state.active,ref:r};if(test(h))hits.push(h);});
   hits.forEach(addMulti);
   if(selMulti.length){selected=selMulti[0];$('hud').textContent=selMulti.length+' elem kijelölve (mozgatás/forgatás együtt).';}
   draw();}
@@ -294,25 +322,61 @@ function applyFormat(h){if(!fmtSource){return false;}
   if(fmtSource.t==='wall'&&fmtSource.snap.__thick){const [w,dd]=pGetWD(h),long=Math.max(w,dd),th=fmtSource.snap.__thick;
     pSetWD(h, w>=dd?long:th, w>=dd?th:long);SNAP[h.level]=centerlines(WALLS[h.level]);}
   draw();$('hud').textContent='Formátum másolva ('+fmtSource.label+').';return true;}
-function setPitch(v){state.pitch=Math.max(5,Math.min(90,v));state.flat=state.pitch>=88;
-  $('view3d').textContent=state.pitch>=88?'3D':'2D';$('hud').textContent='Kameradőlés: '+Math.round(state.pitch)+'°';draw();}
+function setPitch(v){const want=v;v=camLockPitch(v);state.pitch=Math.max(5,Math.min(90,v));state.flat=state.pitch>=88;
+  $('view3d').textContent=state.pitch>=88?'3D':'2D';
+  $('hud').textContent=(v!==want?'Forgatási zár: a dőlés rögzítve — ':'Kameradőlés: ')+Math.round(state.pitch)+'°';camSyncUI();draw();}
 function panBy(dx,dy){state.panX+=dx;state.panY+=dy;setTransform();}
-function zoomBy(f){state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));setTransform();}
+function zoomBy(f){state.zoom=vsClamp(state.zoom*f);setTransform();}
+// ---- the selection nudge (round 2026-10-10, WP-U4) ----
+// {mv:[sx,sy]} (screen directions) or {rot:±1} for a key of the active layout, else null. Ctrl / Alt / ⌘ never nudge
+// (Ctrl+Shift+W closes a Chrome window; Alt is the fine-mode key).
+function kbdNudgeKey(e){if(e.ctrlKey||e.metaKey||e.altKey)return null;const k=(e.key||'').toLowerCase(),L=KBD_LAYOUTS[kbdLayout()];
+  const T=e.shiftKey?KBD_SHIFT:L;if(!T.move)return null;
+  if(T.move[k])return {mv:T.move[k]};if(T.rot[k])return {rot:T.rot[k]};return null;}
+// Shift + W A S D moves the selection, Shift + Q / E turns it — plain W A S D / Q / E are the camera, always [Q-U03].
+// Step 100 mm; 10 mm in fine mode (F / Alt held or the 🔍 lock), like every other drag. Move mode moves the whole
+// multi-selection; the Object tool's ghost only turns. One undo step per press, taken BEFORE the change (the old WASD
+// nudge pushed it after, so Ctrl+Z could not take a keyboard move back).
+function kbdNudge(e){const n=kbdNudgeKey(e);if(!n)return false;
+  if(state.mode==='object'&&objGhost&&!(selected&&selected.t==='objects')){if(!n.rot)return false;
+    e.preventDefault();state.objAng=(state.objAng||0)+n.rot*Math.PI/12;draw();return true;}
+  if(state.mode!=='grab'&&state.mode!=='select')return false;
+  const list=state.mode==='grab'?selList():(selected?[selected]:[]);if(!list.length)return false;
+  e.preventDefault();pushUndo();
+  if(n.mv){const st=(fineAnchor||state.fineLock)?10:100,rr=state.rot*Math.PI/180,cs=Math.cos(rr),sn=Math.sin(rr);
+    const dx=n.mv[0]*st,dy=n.mv[1]*st,px=dx*cs+dy*sn,py=-dx*sn+dy*cs;   // screen → plan, rotation-aware as before
+    if(list.length>1)moveGroup(list,px,py);else{const c=pGetC(list[0]);pSetC(list[0],c[0]+px,c[1]+py);}}
+  else{const a=n.rot*Math.PI/12;if(list.length>1)rotateGroup(list,a,groupCentroid(list));else pRot(list[0],a);}
+  draw();$('hud').textContent=list.length>1?list.length+' elem':pLabel(list[0]);return true;}
+// the key names every hint and help line uses, from the active layout
+function kbdNames(){const ij=kbdLayout()==='ijkl';
+  return {mv:ij?'IJKL (vagy Shift+WASD)':'Shift+WASD',rot:ij?'U/O (vagy Shift+Q/E)':'Shift+Q/E',mark:kbdKey('markWall'),ckt:kbdKey('circuit')};}
+// runs on load (syncUI) and when the layout changes: moves the two registry keys and rewrites every text naming them
+function kbdApplyLayout(){const L=KBD_LAYOUTS[kbdLayout()],N=kbdNames(),A=id=>(typeof actionById==='function')?actionById(id):null;
+  const mw=A('mark.wall'),mb=A('mark.wallBack'),cp=A('circuit.pick');
+  if(mw){mw.keys=[L.markWall];mw.hint=`Fal / falfelület / függőleges sáv / vízszintes sáv címkézése + vagy − jellel. ${N.mark} váltja a módot, Shift+kattintás az előző címkékkel jelöl.`;}
+  if(mb){mb.keys=['shift+'+L.markWall];mb.need=`Indítsd el a Fal jelölése eszközt (${N.mark}).`;}
+  if(cp){cp.keys=[L.circuit];cp.hint=`Kattints a készülékekre a rajzon: az aktív áramkör végpontjai lesznek. ${N.ckt} vagy Esc = kész.`;}
+  HINTS.grab=`Mozgatás — kattints egy elemre. ${N.mv} tol (F: finom), ${N.rot} forgat, ↑/↓ emel · kék középpont: szabad mozgatás, kék gyűrű: forgatás, lila: emelés, sárga sarok: méret · Del töröl, Ctrl+D másol. WASD/QE: kamera.`;
+  HINTS.object=`Tárgy — válassz egyet a Tárgyak panelen, majd kattints a lerakáshoz; ${N.rot} forgatja. Kijelölve: ${N.mv} tol, ↑/↓ emel, jobb klikk: méret. WASD/QE: kamera.`;
+  if(HINTS[state.mode]&&$('modeHint')&&(state.mode==='grab'||state.mode==='object')){$('modeHint').textContent=HINTS[state.mode];if($('modeTip'))$('modeTip').textContent=HINTS[state.mode];}
+  if(typeof invalidateShell==='function')invalidateShell();}
 window.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorStart=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();if(state.mode!=='select')setMode('select');draw();return;}
+  if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();lampHoverHide();
+    draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;lock=null;state.hoverR=null;dragItem=null;selected=null;pendingRoute=null;clearMulti();selBox=null;hideCtx();closeModal();
+    if(typeof stkToolEvent==='function')stkToolEvent('esc',e);   // a stack tool stops on Esc (after the dialogs are closed — a finishing tool may open its own); it never discards data
+    if(state.mode!=='select')setMode('select');draw();return;}
   const tag=(e.target&&e.target.tagName)||'';if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return; // don't hijack while typing
+  if(typeof stkToolEvent==='function'&&stkToolEvent('key',e))return;
   if(state.lockTouch){ // locked: allow camera keys (WASD/QE/arrows) + undo/redo, block edits (Delete, Ctrl+D, tool keys already harmless)
     const k=e.key.toLowerCase();
     if(e.key==='Delete'||e.key==='Backspace'||(e.ctrlKey&&k==='d')){e.preventDefault();return;}
   }
   if(e.key>='1'&&e.key<='9'&&!e.ctrlKey&&!e.altKey){const t=TOOLKEYS[+e.key-1];if(t){e.preventDefault();setMode(t);return;}}
-  if(state.mode==='grab'&&selected){const k=e.key.toLowerCase(),st=e.shiftKey?10:100;const c=pGetC(selected);let used=true;
-    const rr=state.rot*Math.PI/180,cs=Math.cos(rr),sn=Math.sin(rr);
-    const mv=(dx,dy)=>{pSetC(selected,c[0]+dx*cs+dy*sn,c[1]-dx*sn+dy*cs);};
-    if(!e.ctrlKey&&k==='w')mv(0,-st);else if(!e.ctrlKey&&k==='s')mv(0,st);else if(!e.ctrlKey&&k==='a')mv(-st,0);else if(!e.ctrlKey&&k==='d'){mv(st,0);}
-    else if(k==='q')pRot(selected,-Math.PI/12);else if(k==='e')pRot(selected,Math.PI/12);
-    else if(e.key==='ArrowUp'&&pLiftable(selected))pSetZ(selected,pGetZ(selected)+(e.shiftKey?10:50));
-    else if(e.key==='ArrowDown'&&pLiftable(selected))pSetZ(selected,Math.max(0,pGetZ(selected)-(e.shiftKey?10:50)));
+  if(!state.lockTouch&&kbdNudge(e))return;   // U4: Shift+WASD/QE (or IJKL/UO) — plain WASD/QE fall through to the camera below
+  if(state.mode==='grab'&&selected){const k=e.key.toLowerCase();let used=true;
+    const lift=e.key==='ArrowUp'?1:e.key==='ArrowDown'?-1:0;
+    if(lift&&pLiftable(selected)){pushUndo();pSetZ(selected,Math.max(0,pGetZ(selected)+lift*(e.shiftKey?10:50)));}   // undo BEFORE the change
     else if(e.key==='Delete'){pushUndo();const gl=selList();
       if(gl.length>1){ // remove all — sort so index-based removals don't shift each other
         const byArr={};gl.forEach(h=>{if(h.t==='wall'){const a=WALLS[h.level];const idx=a.indexOf(h.ref);if(idx>=0){a.splice(idx,1);}}else{(byArr[h.t]=byArr[h.t]||[]).push(h.i);}});
@@ -324,18 +388,11 @@ window.addEventListener('keydown',e=>{
       if(gl.length>1){const clones=cloneMulti(gl);clones.forEach(h=>{const c=pGetC(h);pSetC(h,c[0]+300,c[1]+300);});clearMulti();clones.forEach(addMulti);selected=clones[0]||null;draw();return;}
       const nh=clonePiece(selected);if(nh){selected=nh;pSetC(nh,pGetC(nh)[0]+300,pGetC(nh)[1]+300);}draw();return;}
     else used=false;
-    if(used){e.preventDefault();pushUndo();draw();$('hud').textContent=pLabel(selected);return;}}
-  if(state.mode==='object'&&objGhost&&!(selected&&selected.t==='objects')){const k=e.key.toLowerCase();
-    if(k==='q'){e.preventDefault();state.objAng=(state.objAng||0)-Math.PI/12;draw();return;}
-    if(k==='e'){e.preventDefault();state.objAng=(state.objAng||0)+Math.PI/12;draw();return;}}
+    if(used){e.preventDefault();draw();$('hud').textContent=pLabel(selected);return;}}
   const selObj=(state.mode==='select'&&selected&&selected.t==='objects')?data.objects[selected.i]:null;
-  if(selObj){const k=e.key.toLowerCase(),st=e.shiftKey?10:100;let used=true;
-    const c=Math.cos(state.rot*Math.PI/180),sn=Math.sin(state.rot*Math.PI/180);
-    const mv=(dx,dy)=>{selObj.x+=dx*c+dy*sn;selObj.y+=-dx*sn+dy*c;};
-    if(k==='w')mv(0,-st);else if(k==='s')mv(0,st);else if(k==='a')mv(-st,0);else if(k==='d')mv(st,0);
-    else if(k==='q')selObj.ang=(selObj.ang||0)-Math.PI/12;else if(k==='e')selObj.ang=(selObj.ang||0)+Math.PI/12;
-    else if(e.key==='ArrowUp')selObj.z=(selObj.z||0)+(e.shiftKey?10:50);
-    else if(e.key==='ArrowDown')selObj.z=Math.max(0,(selObj.z||0)-(e.shiftKey?10:50));
+  if(selObj){let used=true;   // ↑/↓ lift a selected object (its W A S D / Q E moved to kbdNudge with Shift)
+    if(e.key==='ArrowUp'){pushUndo();selObj.z=(selObj.z||0)+(e.shiftKey?10:50);}
+    else if(e.key==='ArrowDown'){pushUndo();selObj.z=Math.max(0,(selObj.z||0)-(e.shiftKey?10:50));}
     else used=false;
     if(used){e.preventDefault();draw();$('hud').textContent=`${selObj.name||'Objektum'} — ${Math.round(selObj.w)}×${Math.round(selObj.d)}×${Math.round(selObj.ht)} mm · padlótól ${Math.round(selObj.z||0)} · ${Math.round((selObj.ang||0)*180/Math.PI)}°`;return;}}
   const K=e.key.toLowerCase(),STEP=42;
@@ -349,17 +406,19 @@ window.addEventListener('keydown',e=>{
       $('devType').value=DEVORDER[i];$('hud').textContent='Készülék → '+$('devType').selectedOptions[0].text;draw();return;}
     if(state.mode==='build'){e.preventDefault();let i=BUILDORDER.indexOf(state.buildType);i=(i+dir+BUILDORDER.length)%BUILDORDER.length;
       state.buildType=BUILDORDER[i];$('buildType').value=BUILDORDER[i];$('hud').textContent='Beépített → '+$('buildType').selectedOptions[0].text;draw();return;}
-    e.preventDefault();recentrePivot();setRot(state.rot+dir*15);return;} // else rotate around screen centre
+    e.preventDefault();recentrePivot();setRot(state.rot+dir*camRotStep());return;} // else rotate around screen centre (a quadrant when locked)
   if(e.key==='ArrowUp'||e.key==='ArrowDown'){
     const stepping=(state.mode==='cable'||state.mode==='path'||state.mode==='device'||(state.mode==='object'&&state.objWallSnap))&&!e.shiftKey;
     if(stepping){e.preventDefault();stepHeight(e.key==='ArrowUp'?1:-1);return;}
     e.preventDefault();setPitch(state.pitch+(e.key==='ArrowUp'?5:-5));return;}
-  if(e.key==='Enter'){if(state.mode==='cable')finishCable();else if(state.mode==='path')finishPath();return;}
+  if(e.key==='Enter'){if(state.mode==='cable')finishCable();else if(state.mode==='path')finishPath();
+    else if(state.mode==='floor'&&floorDraft)finishFloorDraft();return;}
   if(e.key==='Backspace'){
     if(state.mode==='path'&&pathDraft&&pathDraft.nodes.length){e.preventDefault();pathDraft.nodes.pop();if(pathDraft.sections.length)pathDraft.sections.pop();draw();return;}
     if(state.mode==='cable'&&draft&&draft.nodes.length){e.preventDefault();draft.nodes.pop();draw();return;}
     if(state.mode==='wall'&&wallStart){e.preventDefault();wallStart=null;draw();return;}
-    if(state.mode==='floor'&&floorStart){e.preventDefault();floorStart=null;draw();return;}
+    if(state.mode==='floor'&&floorDraft&&floorDraft.length){e.preventDefault();floorDraft.pop();
+      if(!floorDraft.length)floorDraft=null;$('hud').textContent=floorDraftHud(null);draw();return;}
     if(state.mode==='roof'&&roofStart){e.preventDefault();roofStart=null;draw();return;}}
   if(e.key==='Delete'&&state.mode==='select'&&selected){e.preventDefault();pushUndo();removeHit(selected);selected=null;draw();return;}
   if(state.mode==='grab'&&selected&&selected.t==='objects'&&e.key==='Control'){
@@ -414,12 +473,53 @@ function computeStackOffset(np){
 function nearestOnSegPlain(px,py,x0,y0,x1,y1){const dx=x1-x0,dy=y1-y0,L2=dx*dx+dy*dy||1;
   let t=((px-x0)*dx+(py-y0)*dy)/L2;t=Math.max(0,Math.min(1,t));const cx=x0+t*dx,cy=y0+t*dy;
   return {d:Math.hypot(px-cx,py-cy),t};}
-function finishPath(){if(pathDraft&&pathDraft.nodes.length>=2){pathDraft.id='p'+Date.now().toString(36);pathDraft.lane=0;
+// ---- floor drawing: a polygon, like the Google Maps measure tool ----
+// Snapping is the wall snap plus the draft's own points, so an outline closes exactly on
+// its first point and edges line up with the walls they follow.
+const FLOOR_CLOSE_PX=14;
+function floorSnap(e){const p=wallPointSnap(e);
+  if(floorDraft&&floorDraft.length){const tol=Math.max(80,FLOOR_CLOSE_PX/state.zoom/SC);
+    let best=null,bd=tol;
+    floorDraft.forEach(q=>{const d=Math.hypot(p[0]-q[0],p[1]-q[1]);if(d<bd){bd=d;best=q;}});
+    if(best)return [best[0],best[1]];}
+  return p;}
+function floorNearFirst(p){if(!floorDraft||!floorDraft.length)return false;
+  const tol=Math.max(80,FLOOR_CLOSE_PX/state.zoom/SC);
+  return Math.hypot(p[0]-floorDraft[0][0],p[1]-floorDraft[0][1])<=tol;}
+// live Terület / Kerület of the draft, optionally including the point under the cursor
+function floorDraftMetrics(withCursor){const pts=(floorDraft||[]).slice();
+  if(withCursor&&cursor)pts.push([cursor.x,cursor.y]);
+  return {n:pts.length,area:pts.length>=3?polyAreaMM(pts)/1e6:0,
+    per:polyPerimMM(pts,pts.length>=3)/1000,pts};}
+function floorDraftHud(withCursor){const m=floorDraftMetrics(withCursor);
+  if(!m.n)return 'Padló: kattints az első pontra. (a falakra és sarkokra illeszkedik)';
+  if(m.n<3)return 'Padló: '+m.n+' pont · kerület '+m.per.toFixed(2)+' m — Backspace: vissza, Esc: elvet';
+  return 'Padló: '+m.n+' pont · terület '+m.area.toFixed(2)+' m² · kerület '+m.per.toFixed(2)
+    +' m — az első pontra kattintva zárul (Enter is), Backspace: vissza';}
+function finishFloorDraft(){if(!floorDraft||floorDraft.length<3){$('hud').textContent='Legalább 3 pont kell a padlóhoz.';return false;}
+  pushUndo(UNDO_SCOPE.floor);
+  const ix=addFloorPoly(floorDraft,{level:state.active});
+  const m=floorDraftMetrics(false);floorDraft=null;
+  if(ix<0){draw();$('hud').textContent='Túl kicsi terület — nem jött létre padló.';return false;}
+  selected={t:'floors',i:ix,level:state.active};draw();
+  $('hud').textContent='Padló kész: '+m.area.toFixed(2)+' m² · kerület '+m.per.toFixed(2)+' m. Nevet az adatlapon adhatsz neki.';
+  return true;}
+// one click inside a space closed by walls: the floor takes its whole inner outline
+function floorFromWalls(x,y,level){level=level||state.active;
+  const poly=enclosedOutlineAt(x,y,level);
+  if(!poly){$('hud').textContent='Itt nincs falakkal zárt tér — rajzold körbe kézzel (Padló eszköz), vagy zárd be a falakat.';return false;}
+  pushUndo(UNDO_SCOPE.floor);
+  const ix=addFloorPoly(poly,{level});
+  if(ix<0){$('hud').textContent='A zárt tér túl kicsi.';return false;}
+  selected={t:'floors',i:ix,level};draw();
+  $('hud').textContent='Padló a falak közé: '+(polyAreaMM(poly)/1e6).toFixed(2)+' m² · kerület '+(polyPerimMM(poly,true)/1000).toFixed(2)+' m.';
+  return true;}
+function finishPath(){if(pathDraft&&pathDraft.nodes.length>=2){delete pathDraft.id;pathDraft.lane=0;   // the id comes from data.seq below (a timestamp id repeated within one ms)
     const off=computeStackOffset(pathDraft);
     if(off!==0){pathDraft.zoff=off;   // push every node down by |off| mm so it renders under the existing path
       pathDraft.nodes.forEach(n=>{n.h=Math.max(0,(n.h||0)+off);});
       $('hud').textContent=`Pálya ${-off} mm-rel a meglévő alá helyezve.`;}
-    data.paths.push(pathDraft);}pathDraft=null;lock=null;state.hoverR=null;draw();}
+    data.paths.push(pathDraft);ensureIds(data);linkMarkedNodes(pathDraft);if(typeof chnPathFinished==='function')chnPathFinished(pathDraft);}pathDraft=null;lock=null;state.hoverR=null;draw();}
 // ============ MOBILE TOUCH GESTURES ============
 // 1 finger: acts as the current tool (pointer events already handle draw/select/drag).
 // 2 fingers: pinch = zoom, twist = rotate (yaw), drag = pan; vertical spread while
@@ -450,7 +550,7 @@ stage.addEventListener('touchmove',e=>{
     // pan by mid-point movement (always active — this is the primary two-finger action)
     state.panX=touchG.panX0+(m[0]-touchG.m0[0]);state.panY=touchG.panY0+(m[1]-touchG.m0[1]);
     // pinch zoom — only past a spread threshold so a straight drag doesn't creep-zoom
-    if(touchG.d0>10&&Math.abs(d-touchG.d0)>14){state.zoom=Math.max(0.15,Math.min(5,touchG.zoom0*(d/touchG.d0)));}
+    if(touchG.d0>10&&Math.abs(d-touchG.d0)>14){state.zoom=vsClamp(touchG.zoom0*(d/touchG.d0));}
     // twist rotate (yaw) — dead-zone so a straight pan doesn't spin the view
     let dA=(ang-touchG.a0)*180/Math.PI;while(dA>180)dA-=360;while(dA<-180)dA+=360;
     if(Math.abs(dA)>7)setRotSilent(touchG.rot0+dA);
@@ -463,13 +563,13 @@ stage.addEventListener('touchmove',e=>{
 stage.addEventListener('touchend',e=>{clearTimeout(longPressT);
   if(e.touches.length<2)touchG=null;
   if(e.touches.length===0)lpStart=null;},{passive:false});
-function setRotSilent(deg){deg=((Math.round(deg)%360)+360)%360;state.rot=deg;const r=$('rot');if(r){r.value=deg;$('rotVal').textContent=deg+'°';}}
+function setRotSilent(deg){deg=camLockYaw(deg);deg=((Math.round(deg)%360)+360)%360;state.rot=deg;const r=$('rot');if(r){r.value=deg;$('rotVal').textContent=deg+'°';}const q=$('qvRot');if(q)q.textContent=deg+'°';}
 // two-finger vertical pitch pad (mobile): a dedicated on-screen control instead of ambiguous gesture
 function openCtxAt(ev){ // reuse the contextmenu pipeline via a synthetic event
   const evt=new MouseEvent('contextmenu',{clientX:ev.clientX,clientY:ev.clientY,bubbles:true,cancelable:true});
   stage.dispatchEvent(evt);}
-stage.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY<0?1.12:1/1.12,before=state.zoom;
-  state.zoom=Math.max(0.15,Math.min(5,state.zoom*f));const p=stage.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
+stage.addEventListener('wheel',e=>{e.preventDefault();lampHoverHide();const f=e.deltaY<0?1.12:1/1.12,before=state.zoom;
+  state.zoom=vsClamp(state.zoom*f);const p=stage.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
   const u=p.matrixTransform(stage.getScreenCTM().inverse());
   state.panX=u.x-(u.x-state.panX)*(state.zoom/before);state.panY=u.y-(u.y-state.panY)*(state.zoom/before);setTransform();},{passive:false});
 stage.addEventListener('click',e=>{if(state.mode!=='select')return;moved=false;});
@@ -502,7 +602,7 @@ function camDraw(){ (typeof drawSoon==='function'?drawSoon:draw)(); }
 // pitch — same clamp and flat/2D-3D handling as setPitch(), minus the HUD
 // write and the synchronous draw
 function camSetPitch(v){
-  state.pitch=Math.max(5,Math.min(90,v));
+  state.pitch=Math.max(5,Math.min(90,camLockPitch(v)));
   state.flat=state.pitch>=88;
   const b=$('view3d'); if(b)b.textContent=state.flat?'3D':'2D';
   camDraw();
@@ -537,7 +637,7 @@ function camIsOverUI(x,y){
 // so the HUD readout and a synchronous draw are wanted.
 function camReset(){
   setRotSilent(90);
-  state.zoom=0.5; state.panX=250; state.panY=180;
+  const hv=vsHomeView();state.zoom=hv.zoom;state.panX=hv.panX;state.panY=hv.panY;
   setTransform();
   setPitch(30);
   const h=$('hud'); if(h) h.textContent='Nézet visszaállítva.';
@@ -598,3 +698,120 @@ window.PLANNER_CAM={
   read(){ return {yaw:state.rot,pitch:state.pitch,zoom:state.zoom,
                   panX:state.panX,panY:state.panY,flat:state.flat}; }
 };
+
+// ==========================================================================
+// PLANNER_INPUT — the input adapter for 08b-gamepad.js
+//
+// PLANNER_CAM (above) moves the camera. A controller also has to do what the
+// MOUSE does — hover, click, drag, open a context menu — and what the ARROW
+// KEYS do — step the drawing height, cycle the place palette. Those verbs
+// live here so the gamepad driver can stay exactly what 07b-phone-camera.js
+// already is: a module that talks only to an adapter and never reaches into
+// this file's internals. With one shared scope that discipline is worth
+// keeping — see the SC / UNDO_SCOPE collision in docs/ARCHITECTURE.md.
+//
+// NO NEW TOP-LEVEL NAMES. Everything below is a method on one exported
+// object, so there is nothing here that can collide with anything.
+//
+// WHY SYNTHETIC POINTER EVENTS instead of calling the handlers directly:
+// the stage's pointerdown/move/up handlers are ~200 lines of mode-specific
+// placement, snapping and drag logic. Re-implementing any of it for the
+// controller would create a second code path to keep in sync — the bug
+// factory this project keeps designing away from. So the driver moves a
+// virtual cursor and the adapter replays it as the events a mouse sends:
+// A pressed = pointerdown, A released = pointerup. Click, drag and
+// gizmo-drag then all work with no controller-specific placement code at
+// all. setPointerCapture() rejects a synthetic pointerId, which is exactly
+// why every call site above already wraps it in try/catch.
+//
+// WHY SYNTHETIC KEY EVENTS for the editing verbs: same reason camUndo()
+// dispatches Ctrl+Z rather than calling doUndo(). The keyboard handler
+// decides, per mode, whether ArrowUp means "step the drawing height" or
+// "tilt the camera"; that decision is already made and already tested.
+// Dispatching the key reuses it. It also gives the D-pad one honest rule a
+// user can hold in their head: THE D-PAD IS THE ARROW KEYS.
+// ==========================================================================
+window.PLANNER_INPUT=(function(){
+  const PEV=(typeof PointerEvent==='function')?PointerEvent
+           :(typeof MouseEvent==='function')?MouseEvent:null;
+  const PID=9001;                       // a pointerId no real device will use
+
+  function pev(type,x,y,extra){
+    if(!PEV)return null;
+    const o=Object.assign({clientX:x,clientY:y,screenX:x,screenY:y,bubbles:true,cancelable:true,
+      pointerId:PID,pointerType:'mouse',isPrimary:true,button:0,buttons:0},extra||{});
+    let e;try{e=new PEV(type,o);}catch(_){return null;}
+    // jsdom's MouseEvent drops pointerId; put it back so the capture paths behave
+    if(e.pointerId===undefined){try{Object.defineProperty(e,'pointerId',{value:PID});}catch(_){}}
+    return e;}
+
+  function toStage(type,x,y,extra){
+    const e=pev(type,x,y,extra);
+    if(e&&typeof stage!=='undefined'&&stage&&stage.dispatchEvent)stage.dispatchEvent(e);
+    return !!e;}
+
+  // Dispatch on DOCUMENT, not window: the planner's keydown listeners are split
+  // across both (the main map on window, undo/redo and fine mode on document),
+  // and document→window bubbling is the only route that reaches all of them.
+  function keyev(key,opts){
+    if(typeof KeyboardEvent!=='function')return false;
+    let e;try{e=new KeyboardEvent('keydown',Object.assign({key,bubbles:true,cancelable:true},opts||{}));}
+    catch(_){return false;}
+    document.dispatchEvent(e);return true;}
+
+  let held=false;                        // is the virtual button down?
+
+  return {
+    // ---- what the driver has to know ----
+    mode(){return state.mode;},
+    modeLabel(){return (typeof MODENAME!=='undefined'&&MODENAME[state.mode])||state.mode;},
+
+    // Something else owns the input right now. The editors keep their own
+    // pointer handling and their own history; a modal and the palette are
+    // keyboard surfaces. The driver stands down rather than firing events
+    // into them from behind.
+    busy(){
+      if(typeof edCur==='function'&&edCur())return 'editor';
+      if(typeof modalBg!=='undefined'&&modalBg&&modalBg.style){
+        const d=modalBg.style.display;if(d&&d!=='none')return 'modal';}
+      if(typeof paletteIsOpen==='function'&&paletteIsOpen())return 'palette';
+      return null;},
+
+    stageRect(){
+      if(typeof stage==='undefined'||!stage||!stage.getBoundingClientRect)return null;
+      const r=stage.getBoundingClientRect();
+      return (r&&r.width>0&&r.height>0)?r:null;},
+
+    // ---- the mouse verbs ----
+    hover(x,y){return toStage('pointermove',x,y,{buttons:held?1:0});},
+    press(x,y){held=true;return toStage('pointerdown',x,y,{button:0,buttons:1});},
+    release(x,y){held=false;return toStage('pointerup',x,y,{button:0,buttons:0});},
+    isHeld(){return held;},
+    context(x,y){if(typeof openCtxAt==='function'){openCtxAt({clientX:x,clientY:y});return true;}return false;},
+    hitAt(x,y){try{return (typeof hitTest==='function')?hitTest({clientX:x,clientY:y}):null;}catch(_){return null;}},
+
+    // ---- the keyboard verbs, taking the same route the keys take ----
+    escape(){return keyev('Escape');},
+    heightStep(d){return keyev(d>0?'ArrowUp':'ArrowDown');},
+    cyclePick(d){return keyev(d>0?'ArrowRight':'ArrowLeft');},
+    drop(){return keyev(' ');},                       // Space — the place palette
+    flipSide(){return keyev('Control');},             // near/far wall face
+    finish(){return keyev('Enter');},                 // close an open path/cable run
+
+    // fine mode is called straight through: it needs the cursor's screen
+    // position, which a synthetic Alt keypress has no way to carry.
+    fine(on,x,y){
+      if(on){if(typeof fineOn==='function')fineOn(x,y);}
+      else{if(typeof fineOff==='function')fineOff();}
+      return true;},
+
+    // ---- readouts for the legend ----
+    sel(){
+      const n=(typeof selList==='function')?selList().length:0;
+      const l=(n&&typeof selected!=='undefined'&&selected&&typeof pLabel==='function')?pLabel(selected):'';
+      return {count:n,label:l,type:(typeof selected!=='undefined'&&selected&&selected.t)||null};},
+    hasCursor(){return (typeof cursor!=='undefined')&&!!cursor;},
+    hud(msg){const h=$('hud');if(h)h.textContent=msg;},
+    repaint(){(typeof drawSoon==='function'?drawSoon:draw)();}
+  };
+})();

@@ -149,7 +149,7 @@ function ntMenuItems(i, items) {
   items.push({ label: '🎚 Méret és átlátszóság…', act: () => ntSizeDialog(i) });
   items.push({ label: n.hidden ? '👁 Mutatás' : '🚫 Elrejtés', act: () => set(() => { n.hidden = !n.hidden; }) });
   items.push({ label: '⧉ Másolás', act: () => set(() => {
-    const c = Object.assign({}, n, { x: n.x + 300, y: n.y + 300 }); delete c.ord;
+    const c = Object.assign(copyRecord('notes', n), { x: n.x + 300, y: n.y + 300 }); delete c.ord;
     data.notes.push(c);
   }) });
   items.push({ label: '⇧ Előre a listában', act: () => set(() => { const p = ntNumber(n) - 1; ntReorder(p, Math.max(0, p - 1)); }) });

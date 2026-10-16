@@ -20,7 +20,7 @@
 //
 // The old pattern silently EXCLUDES every one of those. The build succeeds and
 // produces a planner with no i18n, no settings panel, no action registry.
-// The pattern below accepts an optional letter, and the guard further down
+// The pattern below accepts up to two letters (05zb once 05z was taken), and the guard further down
 // refuses to build if any .js file in src/ was left out for any reason.
 // ==========================================================================
 
@@ -30,7 +30,7 @@ const ROOT = __dirname;
 const SRC = path.join(ROOT, 'src');
 const OUT = path.join(ROOT, 'dist', 'varler_planner.html');
 
-const MODULE_RE = /^\d\d[a-z]?-.*\.js$/;            // 00-core.js, 00b-i18n.js, 11b-backup.js
+const MODULE_RE = /^\d\d[a-z]{0,2}-.*\.js$/;       // 00-core.js, 00b-i18n.js, 11b-backup.js, 05zb-objart.js (2 letters: after 05z)
 const BANNER = /^\/\/ ={10,}[\s\S]*?\/\/ ={10,}\n/; // the per-module header comment
 
 function allJs() {
@@ -49,11 +49,28 @@ function guard(files) {
     console.error('\n  These .js files in src/ do NOT match the module naming');
     console.error('  convention and would be left out of the build:\n');
     skipped.forEach(f => console.error('    ' + f));
-    console.error('\n  Expected: NN-name.js or NNx-name.js  (e.g. 07-plane-editor.js, 07b-phone-camera.js)');
+    console.error('\n  Expected: NN-name.js, NNx-name.js or NNxy-name.js  (e.g. 07-plane-editor.js, 07b-phone-camera.js, 05zb-objart.js)');
     console.error('  Rename them, move them to tools/, or fix MODULE_RE.\n');
     throw new Error('unrecognised files in src/ — refusing to build a partial app');
   }
   if (!files.length) throw new Error('no modules found in src/');
+}
+
+// tools/baseline → one expression: `const BL=(function(){…})();` exposing {rules, geom, network, prep, plan}.
+// Only the five pure modules (no fs, no DOM); a require() of anything else throws, so a new dependency shows at once.
+const BASELINE_MODS = ['rules', 'geom', 'network', 'prep', 'plan'];
+function baselineBundle() {
+  const dir = path.join(ROOT, 'tools', 'baseline');
+  const body = BASELINE_MODS.map(m => {
+    const src = fs.readFileSync(path.join(dir, m + '.js'), 'utf8');
+    if (/<\/script/i.test(src)) throw new Error('tools/baseline/' + m + '.js contains </script — cannot inline');
+    return `S[${JSON.stringify(m)}]=function(module,exports,require){\n${src}\n};\n`;
+  }).join('');
+  return 'const BL=(function(){const S={},C={};\n'
+    + 'function require(n){const k=String(n).replace(/^\\.\\//,\'\').replace(/\\.js$/,\'\');if(!S[k])throw new Error(\'BL: no module \'+n);'
+    + 'if(C[k])return C[k].exports;const m=C[k]={exports:{}};S[k](m,m.exports,require);return m.exports;}\n'
+    + body
+    + 'return {' + BASELINE_MODS.map(m => m + ':require(' + JSON.stringify(m) + ')').join(',') + '};})();\n';
 }
 
 function build() {
@@ -69,9 +86,12 @@ function build() {
   guard(files);
 
   // strip each module's banner: it documents the source tree, not the product
-  const js = files.map(f => fs.readFileSync(path.join(SRC, f), 'utf8').replace(BANNER, '')).join('');
+  // WP-E5 (Q-E05 = A, "bundle, don't port"): the module that holds the /*__BASELINE__*/ marker gets the Erősáram
+  // engine of tools/baseline, each CommonJS file wrapped in a tiny require shim — one engine for the CLI and the page
+  const js = files.map(f => fs.readFileSync(path.join(SRC, f), 'utf8').replace(BANNER, ''))
+    .map(s => s.indexOf('/*__BASELINE__*/') >= 0 ? s.replace('/*__BASELINE__*/', () => baselineBundle()) : s).join('');
 
-  const html = shell.replace('\n/*__SRC__*/\n', js);
+  const html = shell.replace('\n/*__SRC__*/\n', () => js);    // a function: "$&" / "$'" in a source are never patterns
   if (html.indexOf('/*__SRC__*/') >= 0) throw new Error('shell.html marker not replaced');
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });

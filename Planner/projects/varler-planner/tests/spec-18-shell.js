@@ -22,20 +22,20 @@ setTimeout(()=>{
   w.ensureIds(w.__data);w.draw();
 
   // ---------- the rail ----------
-  ok('five stages, in the order the job happens',
-     w.STAGES.map(s=>s.n).join('→')==='Épület→Helyiségek→Kiosztás→Pályák→Dokumentáció');
+  ok('six stages, in the order the job happens',
+     w.STAGES.map(s=>s.n).join('→')==='Épület→Helyiségek→Kiosztás→Áramkörök→Pályák→Dokumentáció');
   ok('every stage explains itself and can self-check',
      w.STAGES.every(s=>s.hint&&typeof s.check==='function'&&s.icon));
-  ok('the rail renders',(function(){const r=$('stageRail');
-    return r&&r.style.display==='flex'&&r.querySelectorAll('.stg[data-k]').length===5;})());
-  ok('the current stage is marked',(function(){w.setStage('paths');
-    const on=$('stageRail').querySelector('.stg.on');return on&&on.dataset.k==='paths';})());
-  ok('clicking a stage switches it',(function(){
-    $('stageRail').querySelector('.stg[data-k="rooms"]').onclick();
-    return w.__state.stage==='rooms';})());
-  ok('the rail carries a palette and a hide button',!!$('stgPal')&&!!$('stgOff'));
-  ok('hiding the shell hides both panels',(function(){$('stgOff').onclick();
-    const hidden=$('stageRail').style.display==='none'&&$('inspector').style.display==='none';
+  // T2 (2026-10-15): the six phases of the fixed frame replaced the rail; a phase picks the inspector's stage
+  ok('the six phases render',$('phaseNav').querySelectorAll('.phB[data-ph]').length===6);
+  ok('the current phase is marked and sets the stage',(function(){w.phSet('paly');
+    const on=$('phaseNav').querySelector('.phB.on');return on&&on.dataset.ph==='paly'&&w.__state.stage==='paths';})());
+  ok('clicking a phase switches it',(function(){
+    $('phaseNav').querySelector('.phB[data-ph="szab"]').click();
+    return w.__state.wfPhase==='szab'&&w.__state.stage==='rooms';})());
+  ok('the rail is gone',!$('stageRail'));
+  ok('hiding the shell hides the inspector',(function(){w.runAction('shell.toggle');
+    const hidden=$('inspector').style.display==='none';
     w.runAction('shell.toggle');return hidden&&w.shellOn();})());
   ok('shell state persists with the project',(function(){w.__state.shell=false;
     const so=JSON.parse(JSON.stringify(w.sessionObj()));w.__state.shell=true;w.renderShell();
@@ -46,9 +46,9 @@ setTimeout(()=>{
     return /nincs neve/.test(txt());})());
   ok('the flag clears when fixed',(function(){w.__data.floors[0].name='Nappali';w.renderShell();
     return !/nincs neve/.test(txt());})());
-  ok('the badge counts warnings on the rail',(function(){w.__data.floors.push({level:lvl,poly:[[0,0],[10,0],[10,10],[0,10]]});
-    w.renderShell();const b=$('stageRail').querySelector('.stg[data-k="rooms"] .stgB');
-    const has=!!b&&b.textContent==='1';w.__data.floors.pop();w.renderShell();return has;})());
+  ok('the badge counts warnings on the phase',(function(){w.__data.floors.push({level:lvl,poly:[[0,0],[10,0],[10,10],[0,10]]});
+    w.invalidateShell();w.layoutSync(true);const b=$('phaseNav').querySelector('.phB[data-ph="szab"] .bd');
+    const has=!!b&&b.textContent==='1';w.__data.floors.pop();w.invalidateShell();w.layoutSync(true);return has;})());
   ok('the documentation stage reports the validation state',(function(){w.setStage('doc');
     return /nem talált kifogásolni valót|hiba|figyelmeztetés/.test(txt());})());
   ok('a real error surfaces there',(function(){

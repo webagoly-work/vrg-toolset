@@ -1,0 +1,97 @@
+{
+"pack":"PLANNER-R1010-Q-001",
+"title":"Planner round 2026-10-10 — build decisions",
+"rev":"r0",
+"date":"2026-10-10",
+"sections":[
+
+{"id":"U","title":"Interaction (Wave U)","note":"General Planner behaviour — WPs U1–U7. The recommended option is what gets built if you do not answer.","questions":[
+ {"id":"U01","q":"Hidden things cannot be clicked. Should drawing tools also stop SNAPPING to hidden items?","why":"Selection, hover, right-click and box-select ignore hidden layers after U1. Snapping is different: you may hide a wall layer on purpose and still draw along it.","rec":"A","opts":[
+  {"k":"A","t":"Only clicking stops","d":"Hidden = cannot be selected, hovered, menu'd or boxed. Wall and box snapping keep working on hidden geometry."},
+  {"k":"B","t":"Snapping stops too","d":"A hidden box is never snapped to or linked by the path tool. Walls still snap."},
+  {"k":"C","t":"Everything stops","d":"Hidden walls stop snapping too. Strict, but drawing on a hidden construction layer becomes impossible."}]},
+ {"id":"U02","q":"Selection glow when SEVERAL pieces are selected?","why":"One selected piece gets the soft aura (U2). Multi-selection today shows a blue circle per piece.","rec":"A","opts":[
+  {"k":"A","t":"Keep the circles for multi","d":"Aura for a single selection only; multi keeps today's circles."},
+  {"k":"B","t":"Aura on every selected piece","d":"Consistent look; busier screen with many pieces."}]},
+ {"id":"U03","q":"How do you move the selection by keyboard once W A S D / Q / E are always the camera?","why":"IJKL collides with J (mark wall) and K (circuit pick); Ctrl+Shift+W closes the browser window.","rec":"A","opts":[
+  {"k":"A","t":"Shift + W A S D, Shift + Q / E","d":"100 mm steps, 10 mm in fine mode (F held or the lock). No other key changes meaning."},
+  {"k":"B","t":"I J K L + U / O","d":"A second cluster for the right hand; J and K tools move to other letters (mark wall → M, circuit pick → C)."},
+  {"k":"C","t":"Arrow keys with Shift","d":"Shift+arrows move, plain arrows keep height / cycling. Shift+↑/↓ is today's 10 mm lift, so lift would need another key."}]},
+ {"id":"U04","q":"Keep a setting that brings back the old 'WASD moves the selection' behaviour?","rec":"A","opts":[
+  {"k":"A","t":"Yes, for one release","d":"Settings → 'Régi billentyűk'. Off by default; removed in a later round."},
+  {"k":"B","t":"No","d":"Cleaner; no way back if the new layout bothers you."}]},
+ {"id":"U05","q":"What should the toolbar '⤢ Full view' button do after Tab exists?","rec":"A","opts":[
+  {"k":"A","t":"Unchanged — sidebars only","d":"Tab = everything (sidebars + rail + inspector); the button keeps hiding only the two sidebars."},
+  {"k":"B","t":"Same as Tab","d":"One meaning; the button becomes the mouse version of Tab."}]},
+ {"id":"U06","q":"'Falak egyesítve' — on or off by default once it works in translucent mode?","rec":"A","opts":[
+  {"k":"A","t":"Off, as today","d":"Nothing changes until you tick it."},
+  {"k":"B","t":"On for NEW projects","d":"Existing projects keep their setting."}]}]},
+
+{"id":"G","title":"Walls and openings (Wave G)","note":"G1 moves the golden renders (once, deliberately); G2 rewrites wall ends after a dry run.","questions":[
+ {"id":"G01","q":"Wide doors and windows — which look?","why":"MATERIAL §7. Door: a white gap through the whole wall with jambs and the swing arc. Window: a pale-blue pane inset ≈ 12 % from each face, with a double glass line, no arc.","rec":"A","opts":[
+  {"k":"A","t":"As in MATERIAL §7","d":"Door = gap + swing; window = inset pane + double glass line."},
+  {"k":"B","t":"No swing arc in the Normal view","d":"Arcs only in the Blueprint; the working view stays calmer."},
+  {"k":"C","t":"Window also full thickness","d":"Doors and windows differ only by fill colour and the glass line."}]},
+ {"id":"G02","q":"Wall refine — what is the exact form of a junction?","why":"Measured on P33 teszt v2: 27 junctions (12 L, 15 T), 33 moves, max 308 mm; 12 ends sit on the partner's centreline (the wall tool's snap), which leaves a notch at outer corners.","rec":"A","opts":[
+  {"k":"A","t":"L = full corner square, T = stem butts on the face","d":"Every corner is the square of the two walls; every T stem stops exactly on the through wall's face. One house style."},
+  {"k":"B","t":"Nearest exact form","d":"Per junction, the exact form that needs the least movement (ties → A). Respects how each corner was drawn; mixed styles remain."},
+  {"k":"C","t":"L = square, T = stem through to the far face","d":"T stems overlap the whole thickness of the through wall."}]},
+ {"id":"G03","q":"Wall refine — scope and rounding","rec":"A","opts":[
+  {"k":"A","t":"Visible, unlocked walls; round to 1 mm first","d":"The plan's fractional coordinates (from turning it 180°) become whole millimetres; equal values stay equal."},
+  {"k":"B","t":"Visible, unlocked walls; no rounding","d":"Coordinates stay fractional; refine is exact but a second run may still find sub-mm moves."},
+  {"k":"C","t":"Every wall of the level, hidden ones too","d":"Hidden walls are refined as well."}]}]},
+
+{"id":"S","title":"Stack (Wave S)","note":"Layer menus, RBX, BASE, route following, security.","questions":[
+ {"id":"S01","q":"Security (Home Assistant / ESPHome): how are the detectors wired?","why":"Classic alarm practice is a star to one protected controller (a cut cable is detectable, tamper loops possible). The RBX already holds an ESPHome node, but it is reachable and serves comfort functions.","rec":"A","opts":[
+  {"k":"A","t":"Star to the SSC (ESPHome security node)","d":"Every intrusion device has its own cable to the SSC: Ethernet, battery, optional GSM; HA template alarm panel."},
+  {"k":"B","t":"To the room's RBX","d":"Shorter cables, no SSC; weaker against tampering."},
+  {"k":"C","t":"Mixed","d":"Perimeter (contacts, sirens, keypad) to the SSC; interior motion to the RBX."}]},
+ {"id":"S02","q":"'Delete contents' on a LOCKED layer?","rec":"A","opts":[
+  {"k":"A","t":"Refuse","d":"Shows the lock message; unlock first."},
+  {"k":"B","t":"Ask to unlock and delete","d":"One dialog does both."}]},
+ {"id":"S03","q":"One-room RBX (one size smaller): set by hand or automatically?","rec":"A","opts":[
+  {"k":"A","t":"By hand + a reminder","d":"Right-click → Egyszobás kivitel; a check suggests it when an RBX serves exactly one room."},
+  {"k":"B","t":"Automatic at placement","d":"Ticked when the ghost serves one room; you can untick it."}]},
+ {"id":"S04","q":"BASE with all three units in one column + an RBX on the same wall section — how strong is the warning?","rec":"A","opts":[
+  {"k":"A","t":"Warning","d":"Allowed, shown as a warning (heat, service access)."},
+  {"k":"B","t":"Info only","d":"A note, no warning badge."},
+  {"k":"C","t":"Error","d":"Allowed to place, but the stage shows an error until moved."}]},
+ {"id":"S05","q":"Which devices drag their linked route ends along when moved?","rec":"A","opts":[
+  {"k":"A","t":"Hardware only","d":"RBX, BASE, Elosztó, SSC — golden and silver route ends follow."},
+  {"k":"B","t":"Every linked device","d":"Endpoints too: a socket moved along the wall pulls its ARM end."}]},
+ {"id":"S06","q":"Security controller (SSC) default kind","rec":"A","opts":[
+  {"k":"A","t":"Home Assistant / ESPHome node","d":"Our own; Ethernet + battery + optional GSM."},
+  {"k":"B","t":"Third-party alarm panel","d":"A certified panel; HA integrates it."}]},
+ {"id":"S07","q":"Entry keypad: the Security KPD and the HMI panel's 'Belépési pont' variant overlap. Which wins?","rec":"A","opts":[
+  {"k":"A","t":"KPD (Security) for new plans","d":"PAN keeps 'Érintőpanel'; its entry variant stays readable for old plans only."},
+  {"k":"B","t":"Keep both","d":"You choose per project."}]}]},
+
+{"id":"M","title":"Erősáram split and circuit presets (Wave M)","note":"The largest changes of the round. M1 migrates every existing stack.","questions":[
+ {"id":"M01","q":"Split Erősáram how?","why":"Your text: three layers (dedikált / dugalj / világítás) with four colours. The cheap alternative colours the existing sub-layers.","rec":"A","opts":[
+  {"k":"A","t":"Three stack layers","d":"Dedikált körök · Dugaljak · Világítás (lamp + switch). Existing stacks are migrated on load."},
+  {"k":"B","t":"One layer, four coloured sub-layers","d":"No migration, ten times cheaper; not what the draft says."}]},
+ {"id":"M02","q":"Migration: which new layer keeps the old Erősáram layer's id (and its visibility, lock, tint)?","rec":"A","opts":[
+  {"k":"A","t":"Dugaljak","d":"The two others are created next to it with the same settings."},
+  {"k":"B","t":"Világítás","d":"Same, different keeper."},
+  {"k":"C","t":"None","d":"Three new layers; the old one is removed once empty."}]},
+ {"id":"M03","q":"Shutter motors (SHU) go on which layer?","rec":"A","opts":[
+  {"k":"A","t":"Világítás","d":"A switched load with the same input logic as lamps."},
+  {"k":"B","t":"Dugaljak","d":"A 230 V point on a room circuit."},
+  {"k":"C","t":"Dedikált","d":"Its own circuit."}]},
+ {"id":"M04","q":"Colours","why":"Dedikált #6d4c41 (barna, darker than the B-bus #b07a2a) · Dugalj #c62828 (vörös) · Lámpa #ef7b72 (világospiros) · Kapcsoló #f08c2e (narancs).","rec":"A","opts":[
+  {"k":"A","t":"As listed","d":""},
+  {"k":"B","t":"Deeper orange switch #e8590c","d":"If #f08c2e looks too close to the A-bus amber #e6a800."},
+  {"k":"C","t":"I'll give my own (note)","d":""}]},
+ {"id":"M05","q":"Lamps and switches wired together first, an RBX later — build that wiring path now?","why":"Today the fill routes lamps and switches from the RBX (switch = RBX input, Q29).","rec":"A","opts":[
+  {"k":"A","t":"Later round","d":"M1 only splits layers and colours; the fill still routes both from the RBX."},
+  {"k":"B","t":"Now, inside M1","d":"The fill routes switch → lamp directly in rooms with no RBX."}]},
+ {"id":"M06","q":"Default MCB curve in the circuit list","why":"The cabinet calculation already uses C (ELO_RULES.mcb: '1C 10A', '1C 16A'). You mentioned B and C; every row can be toggled.","rec":"A","opts":[
+  {"k":"A","t":"C, as the cabinet calculation","d":"Consistent with the existing cabinet numbers."},
+  {"k":"B","t":"B for lighting and sockets, C for motors and dedicated","d":"Common domestic practice."}]},
+ {"id":"M07","q":"Right-click a szerelvénydoboz → pick a circuit type. Then?","rec":"A","opts":[
+  {"k":"A","t":"The box joins it, then pick mode","d":"The box becomes an endpoint; your next clicks add the circuit's other endpoints (K / Esc ends)."},
+  {"k":"B","t":"Only activate the circuit","d":"The circuit waits for endpoints; the box is not added."}]},
+ {"id":"M08","q":"The preset catalogue (MATERIAL §5: 11 basic, 11 additional, 9 special)","rec":"A","opts":[
+  {"k":"A","t":"Build as written","d":"You edit it later in the app (it is editable and exportable)."},
+  {"k":"B","t":"Changes in the note","d":"Write the rows to add, remove or re-rate."}]}]}
+]}

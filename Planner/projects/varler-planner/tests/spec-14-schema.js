@@ -49,7 +49,8 @@ setTimeout(()=>{
 
   // ---------- links by id ----------
   w.setLink(D.devices[0],p0.id,p0.nodes[0].id);
-  ok('setLink stores ids',D.devices[0].link.p===p0.id&&D.devices[0].link.n===p0.nodes[0].id);
+  ok('setLink stores ids, as a glued link in the list',(function(){const l=(D.devices[0].links||[])[0];
+    return !D.devices[0].link&&l&&l.p===p0.id&&l.n===p0.nodes[0].id&&l.glue===true;})());
   ok('linkTarget resolves both ends',(function(){const t=w.linkTarget(D.devices[0]);
     return t&&t.path===p0&&t.node===p0.nodes[0]&&t.ni===0;})());
   ok('linkLabel is human readable',w.linkLabel(D.devices[0])===p0.id+'/'+p0.nodes[0].id);
@@ -59,15 +60,17 @@ setTimeout(()=>{
     w.ensureIds(D);const t=w.linkTarget(D.devices[0]);
     const good=t&&t.path===p0;D.paths.shift();return good;})());
   ok('deleting the target leaves a dangling link that resolves to null',(function(){
-    const keep=JSON.parse(JSON.stringify(D.devices[0].link));
+    const keep=JSON.parse(JSON.stringify(D.devices[0].links));
     const ix=D.paths.indexOf(p0);D.paths.splice(ix,1);
-    const t=w.linkTarget(D.devices[0]);D.paths.splice(ix,0,p0);D.devices[0].link=keep;
+    const t=w.linkTarget(D.devices[0]);D.paths.splice(ix,0,p0);D.devices[0].links=keep;
     return t===null;})());
   ok('pruneLinks clears only the dangling ones',(function(){
     w.setLink(D.devices[1],p0.id,p0.nodes[2].id);
-    D.devices[0].link={p:'P9999',n:'n9999'};
+    D.devices[0].links=[{p:'P9999',n:'n9999'}];
     w.pruneLinks();
-    return !D.devices[0].link&&!!D.devices[1].link;})());
+    return !w.devLinks(D.devices[0]).length&&w.devLinks(D.devices[1]).length===1;})());
+  ok('a legacy single link is still read, as glued',(function(){const dv={link:{p:p0.id,n:p0.nodes[1].id}};
+    const t=w.linkTarget(dv);return t&&t.node===p0.nodes[1]&&t.glue===true;})());
   w.setLink(D.devices[0],p0.id,p0.nodes[0].id);
   ok('the old index-repair function is now a one-liner',typeof w.wvRelinkAfterPathRemoval==='function');
 
@@ -79,7 +82,14 @@ setTimeout(()=>{
              {nodes:[{x:5,y:5,h:0,level:lvl},{x:6,y:6,h:0,level:lvl}],sections:[{build:'sull_gege'}]}]};
     w.migrate(old);
     const dv=old.devices[0],target=old.paths[1].nodes[1];
-    return old.v===w.SCHEMA_VERSION&&dv.link.p===old.paths[1].id&&dv.link.n===target.id;})());
+    const l=(dv.links||[])[0];
+    return old.v===w.SCHEMA_VERSION&&!dv.link&&l&&l.p===old.paths[1].id&&l.n===target.id&&l.glue===true;})());
+  ok('a single link from a v2 file becomes a one-item glued list',(function(){
+    const o={v:2,devices:[{type:'socket',id:'D1',x:1,y:1,h:0,level:lvl,link:{p:'P2',n:'n3'}}],
+      paths:[{id:'P2',nodes:[{id:'n3',x:1,y:1,h:0,level:lvl},{id:'n4',x:2,y:1,h:0,level:lvl}],sections:[{build:'sull_gege'}]}],
+      cables:[],notes:[],measures:[],openings:[],floors:[],objects:[],roofs:[],wallNotes:[]};
+    w.migrate(o);const dv=o.devices[0];
+    return !dv.link&&dv.links.length===1&&dv.links[0].p==='P2'&&dv.links[0].glue===true;})());
   ok('a v0 link pointing at nothing is dropped, not left broken',(function(){
     const old={v:0,devices:[{type:'socket',x:1,y:1,h:0,level:lvl,link:{pi:7,ni:0}}],paths:[],
       cables:[],notes:[],measures:[],openings:[],floors:[],objects:[],roofs:[],wallNotes:[]};
@@ -104,7 +114,7 @@ setTimeout(()=>{
   ok('a link survives a save/load round trip',(function(){
     const so=JSON.parse(JSON.stringify(w.sessionObj()));
     w.applyProjectData(so);
-    const dv=w.__data.devices.find(d=>d.link);return !!dv&&!!w.linkTarget(dv);})());
+    const dv=w.__data.devices.find(d=>w.devLinks(d).length);return !!dv&&!!w.linkTarget(dv);})());
 
   // ---------- connectivity seam ----------
   const g=w.connectivity();
@@ -116,8 +126,8 @@ setTimeout(()=>{
     return /^P\d+:\d+$/.test(s.id)&&/^n\d+$/.test(s.a)&&/^n\d+$/.test(s.b)&&s.dia>0&&s.len>0;})(),
      JSON.stringify(g.segments[0]||{}).slice(0,90));
   ok('a linked device is attached to its node',(function(){
-    const dv=w.__data.devices.find(d=>d.link);if(!dv)return false;
-    const key=dv.link.p+'/'+dv.link.n;return (g.at[key]||[]).includes(dv.id);})());
+    const dv=w.__data.devices.find(d=>w.devLinks(d).length);if(!dv)return false;
+    const l=w.devLinks(dv)[0],key=l.p+'/'+l.n;return (g.at[key]||[]).includes(dv.id);})());
   ok('coincident devices attach without an explicit link',(function(){
     const p=w.__data.paths[0],n=p.nodes[p.nodes.length-1];
     w.__data.devices.push({type:'junction',ref:'KDx',x:n.x,y:n.y,h:n.h,level:n.level});

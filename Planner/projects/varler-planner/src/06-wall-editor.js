@@ -98,6 +98,7 @@ function chaseSummary(shapes){const grp={},pk={};
 // rectangle overlaid on top when dv.devDef is set. sc = mm→px scale. col = stroke; boxCol = optional per-box fill.
 function wvKindCode(dv){return (dv.kind&&DEVKIND[dv.kind])?DEVKIND[dv.kind].s:(dv.lv?'LV':'');}
 function wvDevBox(dv,x,y,sc,col,back){const r=(DEV_BOX_W/2)*sc;let s='';
+  if(typeof stkWvBox==='function'){const st=stkWvBox(dv,x,y,sc,col,back);if(st)return st;}   // BRIDGE Stack device types (05m hooks)
   const fill=dv.boxColor||'#fff';
   // Kötődoboz: 80mm circle OR rectangle (dv.jbShape)
   if(dv.type==='junction'){const jr=((dv.jbSize||80)/2)*sc;
@@ -125,14 +126,14 @@ function wallElevationData(r,level){const z0=r.z0||0,H=z0+(r.h||wallH(level));
   const uOf=(X,Y)=>(X-ox)*ax+(Y-oy)*ay,sOfRaw=(X,Y)=>(X-cx)*px+(Y-cy)*py,tol=thick/2+250,inR=u=>u>-200&&u<len+200;
   const sflip=(typeof WV!=='undefined'&&WV&&WV.flipSide)?-1:1;const sOf=(X,Y)=>sOfRaw(X,Y)*sflip;
   const ops=[];data.openings.forEach((o,oi)=>{if(o.level!==level||o.type==='stairs'||!layerShows(o,'build'))return;const u=uOf(o.x,o.y);
-    if(Math.abs(sOf(o.x,o.y))<tol&&inR(u)){const win=o.type==='window';ops.push({oi,type:o.type,u,w:o.w||(win?WIN_W:DOOR_W),h:o.h||(win?WIN_H:DOOR_H),sill:win?(o.sill!=null?o.sill:WIN_SILL):0});}});
+    if(Math.abs(sOf(o.x,o.y))<tol&&inR(u)){const win=o.type==='window';ops.push(lyrTagOp({oi,type:o.type,u,w:o.w||(win?WIN_W:DOOR_W),h:o.h||(win?WIN_H:DOOR_H),sill:win?(o.sill!=null?o.sill:WIN_SILL):0},o,'build'));}});
   const devs=[];data.devices.forEach(dv=>{if(dv.level!==level||!layerShows(dv,'device'))return;const u=uOf(dv.x,dv.y),ss=sOf(dv.x,dv.y);
-    if(Math.abs(ss)<tol&&inR(u))devs.push({di:data.devices.indexOf(dv),type:dv.type,ref:dv.ref||'',u,h:dv.h||0,back:ss<-1,
-      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:dv.link});});
+    if(Math.abs(ss)<tol&&inR(u))devs.push(lyrTagOp({di:data.devices.indexOf(dv),type:dv.type,ref:dv.ref||'',u,h:dv.h||0,back:ss<-1,
+      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null},dv,'device'));});
   const secs=[];data.paths.forEach((pa,pi)=>{if(!layerShows(pa,'path'))return;for(let i=0;i<pa.nodes.length-1;i++){const a=pa.nodes[i],b=pa.nodes[i+1];if(a.level!==level||b.level!==level)continue;
     const sa=sOf(a.x,a.y),sb=sOf(b.x,b.y);if(Math.abs(sa)<tol&&Math.abs(sb)<tol){const ua=uOf(a.x,a.y),ub=uOf(b.x,b.y);
       if(inR(Math.max(ua,ub))&&inR(Math.min(ua,ub))){const sec=pa.sections[i]||{build:'sull_gege'};
-        secs.push({pi,na:i,nb:i+1,ua,ub,ha:a.h||0,hb:b.h||0,build:sec.build,dia:sec.dia,cd:sec.cd,carried:(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]),back:(sa+sb)/2<-1});}}}});
+        secs.push(lyrTagOp({pi,na:i,nb:i+1,ua,ub,ha:a.h||0,hb:b.h||0,build:sec.build,dia:sec.dia,cd:sec.cd,carried:(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]),back:(sa+sb)/2<-1},pa,'path'));}}}});
   const notes=[];const __nk=wallKey(r,level);
   if(!noteSurfaceHidden(__nk))(data.wallNotes||[]).forEach((nt,i)=>{if(nt.wallKey!==__nk)return;
     notes.push({i,u:nt.u,h:nt.h,text:nt.text,kind:nt.kind,tag:nt.tag});});
@@ -233,29 +234,29 @@ function wallElevationSVG(d,showFar,dims){const M=56,H=d.H,len=d.len;
   if(L.installed){
   const warpPi=(WV&&WV.warp)?WV.warp.pi:null;
   const drawSec=back=>{const arr=d.secs.filter(x=>x.back===back);
-    arr.forEach(t=>{const col=back?'#b0b4b8':(t.build.indexOf('kv_')===0?'#c0761d':'#6f757d');
+    arr.forEach(t=>{const s0=s.length;const col=back?'#b0b4b8':(t.build.indexOf('kv_')===0?'#c0761d':'#6f757d');
       const sw=((t.build||'').indexOf('sull')>=0?Math.max(1.5,+(chaseDia(t.build,t)*sc).toFixed(2)):2.4);   // real conduit ⌀
       s+=`<line x1="${X(t.ua)}" y1="${Y(t.ha)}" x2="${X(t.ub)}" y2="${Y(t.hb)}" stroke="${col}" stroke-width="${sw}" stroke-dasharray="${t.build.indexOf('kv_')===0?'':'6 3'}" stroke-linecap="round"/>`;
       // invisible fat grab line: drag = move the WHOLE section, Alt+click = warp mode for this path
       if(!back)s+=`<line class="wvseg" data-pi="${t.pi}" data-na="${t.na}" data-nb="${t.nb}" x1="${X(t.ua)}" y1="${Y(t.ha)}" x2="${X(t.ub)}" y2="${Y(t.hb)}" stroke="transparent" stroke-width="14" stroke-linecap="round" pointer-events="stroke" style="cursor:grab"/>`;
       if(t.carried.length){const mx=(X(t.ua)+X(t.ub))/2,my=(Y(t.ha)+Y(t.hb))/2,c=t.carried[0],n=t.carried.reduce((a,x)=>a+(x.count||1),0);
-        s+=`<text x="${mx}" y="${my-4}" font-size="9" text-anchor="middle" fill="${back?'#b0b4b8':'#0a5c33'}" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc((c.name||'')+(c.num?' '+c.num:''))} ${n}ér</text>`;}});
+        s+=`<text x="${mx}" y="${my-4}" font-size="9" text-anchor="middle" fill="${back?'#b0b4b8':'#0a5c33'}" paint-order="stroke" stroke="#fff" stroke-width="2.4">${esc((c.name||'')+(c.num?' '+c.num:''))} ${n}ér</text>`;}s=lyrWrapOp(s,s0,t.op);});
     if(!back)arr.forEach(t=>{const col=(t.build.indexOf('kv_')===0?'#c0761d':'#6f757d'),hi=(t.pi===warpPi);
       s+=`<circle class="wvnode" data-pi="${t.pi}" data-ni="${t.na}" cx="${X(t.ua)}" cy="${Y(t.ha)}" r="4.5" fill="${hi?'#fff3d6':'#fff'}" stroke="${hi?'#e8641c':col}" stroke-width="1.6" style="cursor:move"/>`
         +`<circle class="wvnode" data-pi="${t.pi}" data-ni="${t.nb}" cx="${X(t.ub)}" cy="${Y(t.hb)}" r="4.5" fill="${hi?'#fff3d6':'#fff'}" stroke="${hi?'#e8641c':col}" stroke-width="1.6" style="cursor:move"/>`;});};
   if(showFar)drawSec(true);drawSec(false);
-  d.ops.forEach(o=>{const x=Math.min(X(o.u-o.w/2),X(o.u+o.w/2)),y=Y(o.sill+o.h),w=(o.w*sc).toFixed(1),h=(o.h*sc).toFixed(1);
+  d.ops.forEach(o=>{const s0=s.length;const x=Math.min(X(o.u-o.w/2),X(o.u+o.w/2)),y=Y(o.sill+o.h),w=(o.w*sc).toFixed(1),h=(o.h*sc).toFixed(1);
     s+=`<g class="wvop" data-oi="${o.oi}" style="cursor:ew-resize">`
       +`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#fff" stroke="#111" stroke-width="1.4"/>`;
     if(o.type==='window')s+=`<line x1="${x}" y1="${Y(o.sill+o.h/2)}" x2="${(+x+ +w)}" y2="${Y(o.sill+o.h/2)}" stroke="#2f6fb0"/><line x1="${X(o.u)}" y1="${y}" x2="${X(o.u)}" y2="${(+y+ +h)}" stroke="#2f6fb0"/>`;
-    s+=`<text x="${X(o.u)}" y="${y-3}" font-size="9" text-anchor="middle" fill="#111">${o.type==='window'?'Ablak':'Ajtó'} ${o.w}×${o.h}${o.sill?'/'+o.sill:''}</text></g>`;});
-  const drawDev=back=>d.devs.filter(x=>x.back===back).forEach(dv=>{const col=back?'#b0b4b8':'#111',x=X(dv.u),y=Y(dv.h);
+    s+=`<text x="${X(o.u)}" y="${y-3}" font-size="9" text-anchor="middle" fill="#111">${o.type==='window'?'Ablak':'Ajtó'} ${o.w}×${o.h}${o.sill?'/'+o.sill:''}</text></g>`;s=lyrWrapOp(s,s0,o.op);});
+  const drawDev=back=>d.devs.filter(x=>x.back===back).forEach(dv=>{const s0=s.length;const col=back?'#b0b4b8':'#111',x=X(dv.u),y=Y(dv.h);
     s+=`<g class="wvdev" data-di="${dv.di}" style="cursor:move">`+wvDevBox(dv,x,y,sc,col,back)
       +`<text x="${x+DEV_BOX_W/2*sc+3}" y="${y-7}" font-size="9" fill="${back?'#b0b4b8':'#0a2b6b'}" font-weight="700">${esc(dv.ref)}</text>`;
     const def=deviceCat(dv.devDef);if(def&&!back)s+=`<text x="${x+DEV_BOX_W/2*sc+3}" y="${y+4}" font-size="7.5" fill="#666">${esc(def.cikk)}</text>`;
     if(dv.link&&!back)s+=`<circle cx="${x}" cy="${y}" r="${(DEV_BOX_W/2)*sc+3}" fill="none" stroke="#c0530f" stroke-width="0.9" stroke-dasharray="2 2"/>`;
     s+=`</g>`;
-    s+=`<line x1="${X(0)}" y1="${y}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="0.4" stroke-dasharray="2 3" opacity="0.5"/><text x="${X(0)+2}" y="${y-2}" font-size="8" fill="${col}">${Math.round(dv.h)}</text>`;});
+    s+=`<line x1="${X(0)}" y1="${y}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="0.4" stroke-dasharray="2 3" opacity="0.5"/><text x="${X(0)+2}" y="${y-2}" font-size="8" fill="${col}">${Math.round(dv.h)}</text>`;s=lyrWrapOp(s,s0,dv.op);});
   if(showFar)drawDev(true);drawDev(false);
   // ---- WARP (Photoshop-style free transform of one path's nodes on this wall) ----
   if(warpPi!=null){const bb=wvWarpBox(d,warpPi);
@@ -269,6 +270,7 @@ function wallElevationSVG(d,showFar,dims){const M=56,H=d.H,len=d.len;
       s+=`<text x="${wx}" y="${wy}" font-size="9" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">${wl}</text>`
         +`<text x="${wx}" y="${wy}" font-size="9" text-anchor="middle" fill="#c0530f">${wl}</text>`;}}
   } // end installed layer
+  if(typeof stkHookSvg==='function')s+=stkHookSvg(STK_WV,{d,X,Y,sc,len,H});   // BRIDGE Stack marks (05n), in elevation mm
   // ---- NOTES LAYER (draggable wall notes) ----
   if(L.notes&&d.notes)d.notes.forEach(nt=>{s+=noteBox(nt,X(nt.u),Y(nt.h));});
   // ---- LIVE MEASURE overlay (while dragging an item): distance from left, right, and ground ----
@@ -301,7 +303,7 @@ function wallElevationSVG(d,showFar,dims){const M=56,H=d.H,len=d.len;
   s+=`<line x1="${X(0)}" y1="${yb}" x2="${X(len)}" y2="${yb}" stroke="#555"/><line x1="${X(0)}" y1="${yb-4}" x2="${X(0)}" y2="${yb+4}" stroke="#555"/><line x1="${X(len)}" y1="${yb-4}" x2="${X(len)}" y2="${yb+4}" stroke="#555"/><text x="${(X(0)+X(len))/2}" y="${yb-4}" font-size="10" text-anchor="middle" fill="#555">${Math.round(len)} mm</text>`;
   return {svg:s+'</svg>',w:Wpx,h:Hpx,M,sc,H,len};}
 function svgToPng(svgStr,w,h,name){const img=new Image();img.onload=()=>{const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,w,h);cx.drawImage(img,0,0,w,h);cv.toBlob(b=>{const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);});};img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);}
-function printSVG(svgStr,title){const wnd=window.open('','_blank');if(!wnd)return;wnd.document.write('<html><head><title>'+title+'</title></head><body style="margin:0;text-align:center">'+svgStr+'<scr'+'ipt>window.onload=function(){window.print();}</scr'+'ipt></body></html>');wnd.document.close();}
+function printSVG(svgStr,title,page){const wnd=window.open('','_blank');if(!wnd)return;wnd.document.write('<html><head><title>'+title+'</title>'+(page?'<style>@page{size:'+page+';margin:0}</style>':'')+'</head><body style="margin:0;text-align:center">'+svgStr+'<scr'+'ipt>window.onload=function(){window.print();}</scr'+'ipt></body></html>');wnd.document.close();}
 const VERSION='1.0.0';                   // 1.0 — the coherent foundation
 let WV=null,PV=null;                     // WV = wall elevation editor, PV = floor/ceiling plane editor
 function edCur(){return WV||PV;}         // whichever editor session is open
@@ -358,8 +360,9 @@ function wvDeviceItems(di){const D=data.devices[di];const items=[];
     act:()=>wvOpenModal('Magasság a padlótól',`<div class="mrow"><input id="pvz" type="number" step="10" value="${Math.round(D.h||0)}" style="width:90px"> mm</div>`
       +`<div class="mrow" style="font-size:11px;color:#777">Felülnézetben a magasság nem látszik — itt állítható. A síkhoz kötött sávon kívülre állítva a készülék halványan, kontextusként jelenik meg.</div>`,
       ()=>{wvPush();pvSetDeviceZ(di,+$('pvz').value||0);draw();})});
-  items.push({label:(D.link?'🔗 Kötés áthelyezése…':'🔗 Csatlakoztatás pályához…'),act:()=>wvLinkDevice(di)});
-  if(D.link)items.push({label:'🔗✕ Kötés bontása ('+linkLabel(D)+')',act:()=>{wvPush();delete D.link;edRender();draw();}});
+  const glued=devLinks(D).some(l=>l.glue);
+  items.push({label:(glued?'🔗 Kötés áthelyezése…':'🔗 Csatlakoztatás pályához…'),act:()=>wvLinkDevice(di)});
+  if(devLinks(D).length)items.push({label:'🔗✕ Kötések bontása ('+linkLabel(D)+')',act:()=>{wvPush();clearLinks(D);edRender();draw();}});
   items.push({label:'🗑 Törlés',act:()=>{wvPush();data.devices.splice(di,1);edRender();draw();}});
   return items;}
 function wvDistSeg(px,py,x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,L=dx*dx+dy*dy;
@@ -524,12 +527,14 @@ function wvSetDevice(di,u,h,raw){const dv=data.devices[di];if(!dv)return;const r
   wvPushLinkedNodes(grp);}
 // along-wall coordinate of a path node (+ its height) in the current wall's basis
 // ---- device ↔ path-node links: the node follows the device and vice versa ----
-function wvPushLinkedNodes(indices){indices.forEach(i=>{const g=data.devices[i];if(!g||!g.link)return;
-  const t=linkTarget(g);if(!t)return;const n=t.node;
-  n.x=g.x;n.y=g.y;n.h=g.h||0;});}
+// A glued node sits exactly on its box, height included. A plan-only node (auto-link: a ceiling
+// route above the box) follows the box in plan and keeps its own height.
+function wvPushLinkedNodes(indices){indices.forEach(i=>{const g=data.devices[i];if(!g)return;
+  linkTargets(g).forEach(t=>{const n=t.node;n.x=g.x;n.y=g.y;if(t.glue)n.h=g.h||0;});});}
+// Dragging a node drags only the boxes GLUED to it — a ceiling node never pulls a socket off its wall.
 function wvPullLinkedDev(pi,ni){const pa=data.paths[pi],n=pa&&pa.nodes[ni];if(!n)return;
   const pid=(data.paths[pi]||{}).id,nid=n.id;
-  data.devices.forEach(dv=>{if(dv.link&&dv.link.p===pid&&dv.link.n===nid){dv.x=n.x;dv.y=n.y;dv.h=n.h||0;}});}
+  data.devices.forEach(dv=>{if(devLinks(dv).some(l=>l.glue&&l.p===pid&&l.n===nid)){dv.x=n.x;dv.y=n.y;dv.h=n.h||0;}});}
 // ids made this trivial: a link whose target is gone simply resolves to nothing.
 function wvRelinkAfterPathRemoval(){pruneLinks();}
 // candidate path nodes on this wall, nearest first
@@ -727,7 +732,7 @@ function renderWallView(){const d=wallElevationData(WV.r,WV.level),out=wallEleva
   if($('wvDrawEnd'))$('wvDrawEnd').onclick=()=>wvFinishPath();
   // per-preset-height-line toggles inside the viewer
   if(!WV.hLines){WV.hLines={};GUIDES.forEach(g=>WV.hLines[g.k]=guideOn[g.k]);}
-  const hl=$('wvHLines');if(hl){GUIDES.forEach(g=>{const b=document.createElement('button');b.textContent=g.l;
+  const hl=$('wvHLines');if(hl){GUIDES.forEach(g=>{const b=document.createElement('button');b.textContent=guideLabel(g);
     b.style.cssText='font-size:10px;padding:1px 5px;border-radius:4px;border:1px solid '+g.c+';'+(WV.hLines[g.k]?('background:'+g.c+';color:#fff'):('background:#fff;color:'+g.c));
     b.onclick=()=>{WV.hLines[g.k]=!WV.hLines[g.k];renderWallView();};hl.appendChild(b);});}
   $('wvDims').onchange=e=>{WV.dims=e.target.checked;renderWallView();};

@@ -102,8 +102,11 @@ function placeAtCursor(){if(!cursor)return;const it=placeItem(),base=it.mk();if(
   dev.ref=nextRef(dev.type);
   if(dev.type==='board'){dev.h=BOARD_DEFAULT_Z;if(typeof ensureBoardObject==='function'){data.devices.push(dev);ensureBoardObject(dev);draw();
     $('hud').textContent=it.n+' elhelyezve.';return data.devices.length-1;}}
-  data.devices.push(dev);draw();
+  data.devices.push(dev);
   $('hud').textContent=it.n+' elhelyezve — '+(dev.ref||'')+' · '+Math.round(dev.h)+' mm';
+  // Shift held in the Device tool: the cursor already sits in a row slot (05k) — join it if it is the same box
+  if(cursor.row&&typeof rowJoin==='function'&&(byId('devices',cursor.row)||{}).type===dev.type)rowJoin(dev,cursor.row);
+  draw();
   return data.devices.length-1;}
 function nextRef(type){let n=0;data.devices.forEach(d=>{if(d.type===type&&d.ref)n++;});return (REFPRE[type]||'X')+(n+1);}
 function autoNumber(){pushUndo();const c={};data.devices.forEach(d=>{c[d.type]=(c[d.type]||0)+1;d.ref=(REFPRE[d.type]||'X')+c[d.type];});

@@ -35,7 +35,7 @@ function deviceHostWall(d){if(d.side==null)return null;
     // which face: the device's actual offset wins; d.side only breaks a tie on the centreline
     const off=(d.x-px)*wi.perp[0]+(d.y-py)*wi.perp[1];
     const s=Math.abs(off)>1?Math.sign(off):(d.side?1:-1);
-    best={wi,dist,px,py,nx:wi.perp[0]*s,ny:wi.perp[1]*s};});
+    best={r,wi,dist,px,py,nx:wi.perp[0]*s,ny:wi.perp[1]*s};});
   return best;}
 // the plan point that decides the room
 function deviceRoomPoint(d){const h=deviceHostWall(d);if(!h)return [d.x,d.y];

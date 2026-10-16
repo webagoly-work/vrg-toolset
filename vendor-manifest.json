@@ -404,6 +404,24 @@
       "note": "A minimalista változat: nulla függőség, régóta stabil. A FORRÁST hozzuk le (v0.9.1 címke) — az npm-csomag es6/jsmind.js-e teljesen minifikált (10 sor), átemelésre alkalmatlan. A GitHub API NOASSERTION-t jelez, de a LICENSE fájl egyértelmű: BSD-3-Clause, (c) 2014-2025 ZHANG ZHIGANG. BSD-3: az átvett kóddal a szerzői jogi fejlécet ÉS a három feltételt is vinni kell.",
       "ref": "v0.9.1",
       "refType": "tag"
+    },
+    {
+      "slug": "three",
+      "name": "three.js",
+      "repo": "mrdoob/three.js",
+      "license": "MIT",
+      "stars": null,
+      "pushed": null,
+      "aspect": "Planner",
+      "build": "egyfajlos-offline",
+      "priority": 1,
+      "vendor": "fetch",
+      "target": "three",
+      "source": "npm",
+      "npmPackage": "three",
+      "npmVersion": "0.169.0",
+      "entry": "build/three.module.min.js",
+      "note": "Az ügyfél-előnézet (3D túra) renderelője. A build/three.module.min.js-t és az examples/jsm/lines vonalait a client-preview build fűzi egyetlen <script type=\"module\">-ba, ezért az export offline, egy fájlban fut. A régi UMD build (three.min.js) r160 óta nincs. A tárolót nem töltjük le (több száz MB példa); az npm-csomag rögzített verzióval és ellenőrzőösszeggel jön. MIT — a beágyazott kóddal a szerzői jogi fejléc is megy: (c) 2010-2024 three.js authors."
     }
   ]
 }

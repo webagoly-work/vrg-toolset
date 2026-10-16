@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Normál felület — T2 + T3 elrendezés</title>
+<style>
+/* Static mock-up of the fixed layout (docs/ui-tidy T2 + T3). Colours are the Planner's own (shell.html). */
+*{box-sizing:border-box}
+body{margin:0;background:#cfcbc2;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#222;padding:14px}
+h1{font-size:15px;margin:0 0 4px}p.n{font-size:12px;color:#444;margin:0 0 10px;max-width:1500px}
+.win{width:1600px;height:900px;display:flex;flex-direction:column;background:#eceae4;box-shadow:0 2px 12px #0004;margin-bottom:8px;overflow:hidden}
+.cap{font-size:12px;color:#333;margin:0 0 18px}
+header{background:#2c2c2c;color:#fff;height:42px;display:flex;align-items:center;gap:8px;padding:0 12px;flex:none}
+header h1{font-size:15px;margin:0;color:#fff}header .sp{flex:1}
+.hb{border:1px solid #555;background:#3a3a3a;color:#fff;border-radius:7px;padding:4px 9px;font-size:12.5px}
+.wrap{flex:1;display:flex;min-height:0}
+.L{width:300px;background:#f7f5f0;border-right:1px solid #ddd8cd;display:flex;flex-direction:column;min-height:0}
+.R{width:288px;background:#f7f5f0;border-left:1px solid #ddd8cd;display:flex;flex-direction:column;min-height:0}
+.stage{flex:1;position:relative;background:#f3f1ec}
+.ph{padding:8px 8px 6px;border-bottom:1px solid #ddd8cd;display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#efece4}
+.pt{display:flex;align-items:center;gap:6px;border:1px solid #cfc9bd;background:#fff;border-radius:7px;padding:5px 7px;font-size:12px;position:relative}
+.pt .no{font-weight:700;color:#8a8478;width:12px}.pt.on{background:#2c2c2c;color:#fff;border-color:#2c2c2c}.pt.on .no{color:#bbb}
+.bd{margin-left:auto;font-size:10.5px;font-weight:700;border-radius:8px;padding:0 5px}.bd.w{background:#f3d7b5;color:#8a4a0c}.bd.ok{color:#2e9e5b}
+.sec{padding:8px;border-bottom:1px solid #e4dfd4}
+.sec h3{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#8a8478;display:flex;justify-content:space-between}
+.always{display:flex;gap:4px}
+.tb{border:1px solid #cfc9bd;background:#fff;border-radius:7px;padding:5px 8px;font-size:12.3px;white-space:nowrap}
+.tb.on{background:#2c2c2c;color:#fff;border-color:#2c2c2c}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.tools .tb{text-align:left}
+.legacy{font-size:11.5px;color:#8a8478;margin-top:6px}
+.ctx{flex:1;overflow:auto;padding:8px}
+.ctx h3{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#8a8478}
+.card{border:1px solid #e4dfd4;border-radius:9px;background:#fff;padding:8px;margin-bottom:8px;font-size:12px}
+.li{display:flex;align-items:center;gap:6px;padding:4px 2px;border-bottom:1px solid #f0ece4}.li:last-child{border:none}
+.dot{width:9px;height:9px;border-radius:50%}
+.small{font-size:11px;color:#8a8478}
+.insp{padding:10px;border-bottom:1px solid #ddd8cd;background:#fff}
+.insp b{font-size:13px}.f{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin:5px 0}.f input{width:90px;border:1px solid #cfc9bd;border-radius:5px;padding:2px 5px}
+.acts{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.tabs{display:flex;border-bottom:1px solid #ddd8cd;background:#efece4}.tab{flex:1;text-align:center;font-size:12px;padding:7px 0;color:#666}.tab.on{background:#f7f5f0;color:#222;font-weight:600;border-bottom:2px solid #2c2c2c}
+.lay{padding:8px;font-size:12px}
+.sb{position:absolute;left:0;right:0;bottom:0;height:24px;background:#fff;border-top:1px solid #ddd8cd;display:flex;align-items:center;gap:6px;padding:0 8px;font-size:11.5px;color:#444}
+.chip{padding:1px 7px;border-radius:9px;background:#f1eee7}.chip.t{background:#2c2c2c;color:#fff}
+.hint{position:absolute;left:12px;top:10px;background:#2c2c2ce6;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;max-width:430px}
+.qv{position:absolute;right:12px;top:10px;display:flex;gap:4px}.qv span{background:#fff;border:1px solid #cfc9bd;border-radius:7px;padding:4px 9px;font-size:12px;font-weight:700;box-shadow:0 2px 6px #0002}
+.ann{position:absolute;background:#c0530f;color:#fff;font-size:11px;font-weight:600;border-radius:10px;padding:2px 8px;box-shadow:0 1px 4px #0003;white-space:nowrap}
+</style></head><body>
+<h1>Normál felület — T2 + T3 fixed layout (mock-up)</h1>
+<p class="n">The left column is always three parts in the same place. At the top, the <b>6 phases</b>: this one navigator replaces the stage rail and the workflow bar. Below them the <b>tools of the phase</b>, with Kijelölés / Mozgatás / Vissza / Előre always first. At the bottom, <b>one context panel</b> for the running tool, or the phase's own panel. The right column is the <b>inspector</b> (the selection) with <b>tabs</b> below it. Nothing jumps: only the contents change. The canvas is free of overlays apart from the tool hint and the 2D / 📐 buttons.</p>
+<div id="out"></div>
+<script>
+const PH=[['1','Alapozás',''],['2','Nyílászárók',''],['3','Szabályok','w2'],['4','Villamosság','w3'],['5','Pályák',''],['6','Kimenet','ok']];
+const TOOLS={
+ '3':['🏷 Helyiségtípus','🟩 Vezethető fal','📐 Szabályok','📏 Szabványok','🚩 Fal jelölése (J)','▭ Padló / menny. (G)'],
+ '4':['⚡ Dugaljak','💡 Lámpák + kapcsolók','🔌 Dedikált','◉ Végpont…','🔀 Kapcsolások','✨ Javaslat','〰 Mennyezeti út','▭ Padló út','▣ Szobadoboz','▣ Kötődoboz','⚡ Elosztó','K Végpontok kijelölése']};
+function phases(cur){return `<div class="ph">${PH.map(p=>`<div class="pt${p[0]===cur?' on':''}"><span class="no">${p[0]}</span>${p[1]}${p[2]==='ok'?'<span class="bd ok">✔</span>':p[2]?`<span class="bd w">${p[2].slice(1)}</span>`:''}</div>`).join('')}</div>`;}
+function left(cur,live,ctx){return `<div class="L">${phases(cur)}
+ <div class="sec"><h3>Eszközök <span>${PH[+cur-1][1]}</span></h3>
+  <div class="always" style="margin-bottom:6px"><span class="tb${live?'':' on'}">▖ Kijelölés</span><span class="tb">✥ Mozgatás</span><span class="tb">↩</span><span class="tb">↪</span><span class="tb">📌</span></div>
+  <div class="tools">${TOOLS[cur].map(t=>`<span class="tb${t.indexOf(live)>=0&&live?' on':''}">${t}</span>`).join('')}</div>
+  <div class="legacy">▸ Régi eszközök</div></div>
+ <div class="ctx">${ctx}</div></div>`;}
+function right(insp,tab){return `<div class="R"><div class="insp">${insp}</div>
+ <div class="tabs">${['Rétegek','Kimutatás','Nézet','Projekt'].map(t=>`<div class="tab${t===tab?' on':''}">${t}</div>`).join('')}</div>
+ <div class="lay">${tab==='Rétegek'?`<div class="card"><div class="li">👁 🔓 <span class="dot" style="background:#7c7468"></span> Szerkezet</div><div class="li">👁 🔓 <span class="dot" style="background:#c0530f"></span> Jelölés</div><div class="li" style="font-weight:600">👁 🔓 <span class="dot" style="background:#e0b020"></span> Világítás <span class="small">· aktív</span></div><div class="li">👁 🔓 <span class="dot" style="background:#d04040"></span> Dugaljak</div><div class="li">👁 🔓 <span class="dot" style="background:#8a3a9a"></span> Dedikált körök</div><div class="li small">+ 12 BRIDGE réteg (összecsukva)</div></div><div class="small">The BRIDGE stack steps that the stage rail used to show live here, as the role layers they already are.</div>`
+  :`<div class="card"><div class="li"><b>Kábel</b><span style="margin-left:auto">NYM-J 3×1,5 · 142 m</span></div><div class="li"><span></span><span style="margin-left:auto">NYM-J 3×2,5 · 96 m</span></div></div><div class="card"><div class="li"><b>Eszközök</b><span style="margin-left:auto">38 db</span></div></div><div class="card"><div class="li"><b>BOM</b><span style="margin-left:auto">Hulladék 10 %</span></div></div>`}</div></div>`;}
+function plan(){return `<svg viewBox="0 0 1012 834" style="position:absolute;inset:0;width:100%;height:calc(100% - 24px)"><g fill="#fbfaf7" stroke="#8f897d" stroke-width="7">
+ <rect x="230" y="150" width="300" height="230"/><rect x="530" y="150" width="250" height="230"/><rect x="230" y="380" width="220" height="210"/><rect x="450" y="380" width="330" height="210"/></g>
+ <g fill="none" stroke="#c9c3b6" stroke-width="2"><path d="M450 440 a50 50 0 0 1 50 -60"/><path d="M530 250 a50 50 0 0 0 -50 50"/></g>
+ <g stroke="#2f79c9" stroke-width="2" stroke-dasharray="7 4" fill="none"><path d="M380 265 L470 205 L520 205"/><path d="M655 265 L560 205"/></g>
+ <g fill="#e0b020" stroke="#8a6a00"><circle cx="380" cy="265" r="9"/><circle cx="655" cy="265" r="9"/></g>
+ <rect x="512" y="196" width="16" height="16" fill="#fff" stroke="#2c2c2c" stroke-width="2"/>
+ <g font-size="13" fill="#8a8478"><text x="330" y="360">Nappali</text><text x="625" y="360">Háló</text><text x="300" y="570">Fürdő</text><text x="580" y="570">Konyha</text></g></svg>`;}
+function win(o){return `<div class="win"><header><h1>⚡ Varler Planner</h1><span style="font-size:11px;opacity:.55">v1.0.0</span><span class="hb">📁 Projekt ▾</span><span class="hb">↩</span><span class="hb">↪</span><span class="hb">📤 Kimenet ▾</span><span class="sp"></span><span class="hb">⌘K Parancsok</span><span class="hb">◔ Egyszerű (F2)</span><span class="hb">⛶ Tab</span></header>
+ <div class="wrap">${left(o.cur,o.live,o.ctx)}<div class="stage">${plan()}${o.hint?`<div class="hint">${o.hint}</div>`:''}<div class="qv"><span>2D</span><span>📐</span></div>
+ <div class="sb"><span class="chip t">▣ ${o.tool}</span><span class="chip">szint: Földszint ▾</span><span class="chip">magasság: 1100 mm</span><span class="chip" style="color:#c0530f">⚠ 3 figyelmeztetés</span><span style="flex:1"></span><span class="chip">⌘K / Ctrl+K — parancsok</span></div>${o.ann||''}</div>
+ ${right(o.insp,o.tab)}</div></div><div class="cap">${o.cap}</div>`;}
+const A=(x,y,t)=>`<div class="ann" style="left:${x}px;top:${y}px">${t}</div>`;
+document.getElementById('out').innerHTML=
+ win({cur:'4',live:'Kapcsolások',tool:'Kapcsolások',tab:'Rétegek',
+  hint:'Kapcsolások — kattints lámpákra (2 kijelölve) · C: összekötés egy ágba · utána egy ajtó L1 helye vagy egy kapcsoló',
+  ctx:`<h3>Kapcsolások — ágak</h3><div class="card"><div class="li"><span class="dot" style="background:#e0b020"></span><b>G1</b> Nappali mennyezet ×2<span style="margin-left:auto" class="small">106 váltó</span></div><div class="li"><span class="dot" style="background:#e0b020"></span><b>G2</b> Háló mennyezet<span style="margin-left:auto" class="small">101</span></div><div class="li"><span class="dot" style="background:#ccc"></span><span class="small">3 lámpa ág nélkül</span></div></div>
+   <h3>Ellenőrzés</h3><div class="card small">⚠ Fürdő: a kapcsoló a vizes oldalon — javaslat: a száraz oldal (✨)</div>
+   <div class="small">The context panel follows the running tool. With no tool running it shows the phase's panel; for Villamosság that is the Áramkörök list.</div>`,
+  insp:`<b>L3 · Lámpa</b> <span class="small">· mennyezeti · Nappali</span><div class="f">Jelölés <input value="L3"></div><div class="f">Magasság (mm) <input value="2700"></div><div class="acts"><span class="tb">💡 Lámpa adatlap</span><span class="tb">⚡ Áramkör</span><span class="tb">🔀 Ág</span></div>`,
+  cap:'State A — phase 4 Villamosság, the Kapcsolások tool running: its button is lit, its panel is in the context slot, and the status bar names the tool. Right: a lamp is selected; the Rétegek tab is open.'})
+ +win({cur:'3',live:'Szabályok',tool:'Szabály: Vizes fal',tab:'Kimutatás',
+  ctx:`<h3>Szabályok</h3>${['Fal','Nyílászáró','Egyéb területek'].map((s,i)=>`<div class="small" style="margin:6px 0 3px;text-transform:uppercase">${s}</div><div class="card" style="padding:4px 6px">${(i===0?['Vezethető fal','L-forma oldal','Belső fal','Kerülendő','Tilos','Médiafal']:i===1?['Redőny','Portál']:['Vizes fal','Gépészet a falban','Gázvezeték','Fűtőtest'])
+     .map(n=>`<div class="li"${n==='Vizes fal'?' style="background:#2c2c2c;color:#fff;border-radius:5px;padding-left:5px"':''}><span class="dot" style="background:${/Tilos|Vizes|Gáz|Gépészet/.test(n)?'#c0392b':/Kerülendő|Fűtőtest/.test(n)?'#d08a1e':'#2e9e5b'}"></span>${n}</div>`).join('')}</div>`).join('')}<div class="small">Docked, not floating: the old #rbPanel no longer covers the sidebar.</div>`,
+  insp:`<b>Nincs kijelölés</b><div class="small" style="margin-top:4px">3 · Szabályok — falak, nyílászárók, egyéb területek.</div><div class="card small" style="margin:6px 0 0">⚠ 2 helyiség típus nélkül</div>`,
+  cap:'State B — phase 3 Szabályok with the Vizes fal rule live. The rules palette is docked in the context slot. Nothing is selected, so the inspector shows the phase checks. The Kimutatás tab (KábelΣ + Eszközök + BOM in one) is open.'});
+</script></body></html>

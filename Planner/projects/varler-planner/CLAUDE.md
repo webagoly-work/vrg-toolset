@@ -15,7 +15,7 @@ npm install               # once — jsdom (tests) + ws (phone relay)
 npm run build              # src/ → dist/varler_planner.html
 node build.js --check      # build, diff against ./planner.html (or $REF) — verifies a pure/no-op change
 node build.js --list       # show module list + build order without building
-npm test                   # build + run every tests/spec-*.js + golden.js (595+ assertions, 70 golden renders)
+npm test                   # build + run every tests/spec-*.js + golden.js (2000+ assertions in 48 suites, 70 golden renders)
 node tests/run.js --golden-update   # accept intentional rendering changes (updates tests/golden.json)
 node tests/spec-14-schema.js        # run a single suite directly (any spec-*.js works the same way)
 npm run manifest            # node tools/manifest.js
@@ -28,6 +28,11 @@ There is no lint script. `node build.js --check` (comparing against a saved refe
 project's substitute for "did I break anything structurally."
 
 ## Architecture
+
+**New to this codebase? Read `docs/PRIMER.md` first** — the on-ramp: which of the three checkouts
+you are in, the build/check/test loop, **what the 70 golden renders do and do not cover**, how to
+measure the drawing in a real browser, and the traps that have cost real time. It is the
+experience; the two files below are the map and the reasons.
 
 **Read `docs/ARCHITECTURE.md` before editing anything non-trivial** — it's the canonical module map
 and invariant list; this section is a condensed pointer to it. `docs/DECISIONS.md` explains *why*
@@ -46,7 +51,7 @@ runtime boundaries — every top-level name lives in one shared scope.
 - **Names are global.** Grep before adding a new top-level function/const — collisions fail silently
   at boot (e.g. a duplicate `SC` once broke the whole app). `node build.js && node --check
   dist/varler_planner.html` catches syntax breaks fast.
-- Module filenames must match `/^\d\d[a-z]?-.*\.js$/` (`00-core.js`, `00b-i18n.js`, `11b-backup.js`).
+- Module filenames must match `/^\d\d[a-z]{0,2}-.*\.js$/` (`00-core.js`, `00b-i18n.js`, `11b-backup.js`, `05zb-objart.js`).
   This lets a file be inserted between two numbers (`05b`, `05c`, ...) without renumbering everything
   after it. `build.js` refuses to build if any `.js` in `src/` doesn't match — that guard exists
   because the old stricter pattern once silently excluded i18n/settings/actions from a build.

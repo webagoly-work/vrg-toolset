@@ -125,7 +125,8 @@ function wallPropsDialog(r,level){const g=wallGeom(r),fullH=wallH(level);
   info();}
 function wallHitRect(e){const [bx,by]=clientToBase(e),lvl=state.active,arr=WALLS[lvl]||[];const zz=dz(lvl,0);
   const [px,py]=baseToPlan(bx,by,zz);
-  for(const r of arr){if(px>=r.x0-30&&px<=r.x1+30&&py>=r.y0-30&&py<=r.y1+30)return r;}return null;}
+  for(const r of arr){if(!hitOkWall(r,lvl))continue;          // a wall that is not drawn is not hit (U1, 09-menus)
+    if(px>=r.x0-30&&px<=r.x1+30&&py>=r.y0-30&&py<=r.y1+30)return r;}return null;}
 function wallPointSnap(e,startPt){const lvl=state.active,zz=dz(lvl,0);let [x,y]=baseToPlan(...clientToBase(e),zz);
   // snap tolerance is a fixed SCREEN distance (px) converted to plan mm, so it stays sane at any zoom
   const tolMM=Math.min(600,140/state.zoom/SC*1);   // ~fixed on screen, capped so it never eats open space
@@ -150,6 +151,47 @@ function addWall(a,b){const T=state.wallThick,dx=Math.abs(b[0]-a[0]),dy=Math.abs
   else{const x=a[0];r={x0:x-T/2,y0:Math.min(a[1],b[1]),x1:x+T/2,y1:Math.max(a[1],b[1])};}
   const len=Math.max(Math.abs(r.x1-r.x0),Math.abs(r.y1-r.y0));if(len<120)return;
   r.layer=curLayer();WALLS[state.active].push(r);SNAP[state.active]=centerlines(WALLS[state.active]);draw&&draw();}
+// ---- floor as a polygon: point after point, closing on the first point ----
+function polyAreaMM(p){let a=0;for(let i=0,j=p.length-1;i<p.length;j=i++)a+=(p[j][0]*p[i][1]-p[i][0]*p[j][1]);return Math.abs(a/2);}
+function polyPerimMM(p,closed){let L=0;for(let i=1;i<p.length;i++)L+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);
+  if(closed&&p.length>2)L+=Math.hypot(p[0][0]-p[p.length-1][0],p[0][1]-p[p.length-1][1]);return L;}
+function addFloorPoly(poly,opt){opt=opt||{};
+  if(!poly||poly.length<3||polyAreaMM(poly)<1e5)return -1;      // under 0.1 m² is a misclick, not a room
+  data.floors.push({level:opt.level||state.active,poly:poly.map(p=>[p[0],p[1]]),
+    fill:opt.fill||'#e2ddd0',name:opt.name||'',layer:curLayer()});
+  return data.floors.length-1;}
+// ---- the space enclosed by walls around a point ----
+// The wall edges cut the plan into a grid of cells; the cells reachable from the clicked one
+// without crossing a wall ARE the room. If the flood reaches the outside, the space is not
+// closed and the caller says so instead of drawing a floor over half the drawing.
+function enclosedOutlineAt(px,py,level){
+  const walls=(WALLS[level]||[]).filter(r=>layerShows(r,'wall'));
+  if(!walls.length)return null;
+  const M=2000;                                   // margin ring, so "escaped to the outside" is detectable
+  const xs=new Set(),ys=new Set();
+  walls.forEach(r=>{xs.add(r.x0);xs.add(r.x1);ys.add(r.y0);ys.add(r.y1);});
+  const bb={x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys)};
+  if(px<bb.x0-M||px>bb.x1+M||py<bb.y0-M||py>bb.y1+M)return null;
+  xs.add(bb.x0-M);xs.add(bb.x1+M);ys.add(bb.y0-M);ys.add(bb.y1+M);
+  const X=[...xs].sort((a,b)=>a-b),Y=[...ys].sort((a,b)=>a-b);
+  const nx=X.length-1,ny=Y.length-1;
+  const solid=(i,j)=>{const cx=(X[i]+X[i+1])/2,cy=(Y[j]+Y[j+1])/2;
+    return walls.some(r=>cx>r.x0&&cx<r.x1&&cy>r.y0&&cy<r.y1);};
+  let ci=-1,cj=-1;
+  for(let i=0;i<nx;i++)if(px>=X[i]&&px<=X[i+1]){ci=i;break;}
+  for(let j=0;j<ny;j++)if(py>=Y[j]&&py<=Y[j+1]){cj=j;break;}
+  if(ci<0||cj<0||solid(ci,cj))return null;         // clicked inside a wall
+  const seen=new Set(),stack=[[ci,cj]],cells=[];let escaped=false;
+  while(stack.length){const [i,j]=stack.pop(),k=i+','+j;
+    if(seen.has(k))continue;seen.add(k);
+    if(i<0||j<0||i>=nx||j>=ny){escaped=true;continue;}
+    if(solid(i,j))continue;
+    if(i===0||j===0||i===nx-1||j===ny-1)escaped=true;   // reached the margin ring: open to the outside
+    cells.push({x0:X[i],y0:Y[j],x1:X[i+1],y1:Y[j+1]});
+    stack.push([i+1,j],[i-1,j],[i,j+1],[i,j-1]);}
+  if(escaped||!cells.length)return null;
+  const poly=rectsUnionOutline(cells);
+  return (poly&&poly.length>=3)?poly:null;}
 function addFloor(a,b){if(Math.abs(b[0]-a[0])<200||Math.abs(b[1]-a[1])<200)return;
   const x0=Math.min(a[0],b[0]),x1=Math.max(a[0],b[0]),y0=Math.min(a[1],b[1]),y1=Math.max(a[1],b[1]);
   data.floors.push({level:state.active,poly:[[x0,y0],[x1,y0],[x1,y1],[x0,y1]],fill:'#e2ddd0',layer:curLayer()});}
@@ -199,6 +241,114 @@ function snapRectToWalls(rc,level){ // shift a rect so its nearest edge sticks t
     if(horiz){[rc.y0,rc.y1].forEach(ry=>{const dd=Math.abs(ry-cy);if(dd<bestY){bestY=dd;dy=cy-ry;}});}
     else{[rc.x0,rc.x1].forEach(rx=>{const dd=Math.abs(rx-cx);if(dd<bestX){bestX=dd;dx=cx-rx;}});}});
   return {x0:rc.x0+dx,y0:rc.y0+dy,x1:rc.x1+dx,y1:rc.y1+dy};}
+// ---- visual wall merge: the outline of a union of axis-aligned rectangles ----
+// Walls overlap at every corner and butt end-to-end along a run, so drawing each
+// rectangle's own outline leaves the seams that make a finished plan look chopped up.
+// This keeps only the edge pieces that are genuinely on the OUTSIDE: an edge piece is
+// dropped when the space just outside it belongs to another rectangle. Corners come out
+// symmetric for free, because the surviving pieces meet on the union boundary.
+// Nothing is stored — the walls themselves are untouched and stay individually selectable.
+const WMERGE_EPS=0.6;   // mm — how far outside an edge we look for a neighbour
+function rectsUnionSegs(rects){const out=[];
+  const inside=(x,y,q)=>x>q.x0+WMERGE_EPS&&x<q.x1-WMERGE_EPS&&y>q.y0+WMERGE_EPS&&y<q.y1-WMERGE_EPS;
+  rects.forEach((r,ri)=>{
+    // each edge, with the outward normal that says which side is "not this rectangle"
+    const edges=[{a:[r.x0,r.y0],b:[r.x1,r.y0],n:[0,-1],horiz:true},
+                 {a:[r.x0,r.y1],b:[r.x1,r.y1],n:[0, 1],horiz:true},
+                 {a:[r.x0,r.y0],b:[r.x0,r.y1],n:[-1,0],horiz:false},
+                 {a:[r.x1,r.y0],b:[r.x1,r.y1],n:[ 1,0],horiz:false}];
+    edges.forEach(e=>{
+      const lo=e.horiz?e.a[0]:e.a[1], hi=e.horiz?e.b[0]:e.b[1];
+      // cut the edge wherever a neighbour starts or ends, then judge each piece on its own
+      const cuts=[lo,hi];
+      rects.forEach((q,qi)=>{if(qi===ri)return;
+        (e.horiz?[q.x0,q.x1]:[q.y0,q.y1]).forEach(v=>{if(v>lo+WMERGE_EPS&&v<hi-WMERGE_EPS)cuts.push(v);});});
+      cuts.sort((x,y)=>x-y);
+      let run=null;   // merge adjacent surviving pieces back into one segment
+      for(let i=0;i<cuts.length-1;i++){const c0=cuts[i],c1=cuts[i+1];if(c1-c0<WMERGE_EPS)continue;
+        const m=(c0+c1)/2;
+        const px=(e.horiz?m:e.a[0])+e.n[0]*WMERGE_EPS*2, py=(e.horiz?e.a[1]:m)+e.n[1]*WMERGE_EPS*2;
+        const buried=rects.some((q,qi)=>qi!==ri&&inside(px,py,q));
+        if(buried){if(run){out.push(run);run=null;}continue;}
+        if(run)run[e.horiz?2:3]=c1;
+        else run=e.horiz?[c0,e.a[1],c1,e.a[1]]:[e.a[0],c0,e.a[0],c1];}
+      if(run)out.push(run);});});
+  return out;}
+// the wall rectangles of a level that are actually drawn, as plain rects
+function wallMergeOn(){return state.style==='blueprint'||state.wallMerge===true;}
+
+// ---- wall refine — the PLAN (round 2026-10-10, WP-G2; rules in docs/round-2026-10-10/01_MATERIAL §6) ----
+// Pure: reads WALLS[level], returns what refining would move, mutates nothing. Every L corner becomes the full square of
+// the two bands, every T stem stops exactly on the through wall's face (Q-G02 = A; B = the nearest exact form per
+// junction, C = stems through to the far face). The wall tool snaps to the partner's CENTRELINE, which leaves a notch
+// outside and half an overlap inside every L — that is the "not clean" corner this fixes.
+// Coordinates are first rounded to 1 mm (P33's were fractional after a 180° turn), so targets are whole mm and a second
+// run finds nothing to do. The result: {round, junctions[{type,a,b,moves,multi?}], collinear[], skipped[{ids,why}], moves}.
+function wrfPlan(level,opt){opt=opt||{};const form=opt.form||'A',H=wallH(level);
+  const all=(WALLS[level]||[]).filter(r=>r&&r.id&&(!opt.layer||(r.layer||'L0')===opt.layer)&&layerShows(r,'wall'));
+  const R={},round=[];   // id → the wall after the 1 mm pre-pass
+  all.forEach(r=>{const q={id:r.id,x0:Math.round(r.x0),x1:Math.round(r.x1),y0:Math.round(r.y0),y1:Math.round(r.y1),z0:r.z0||0,h:r.h||H,
+    lock:!!layerById(r.layer||'L0').lock,horiz:(r.x1-r.x0)>=(r.y1-r.y0)};R[r.id]=q;
+    if(q.x0!==r.x0||q.x1!==r.x1||q.y0!==r.y0||q.y1!==r.y1)round.push(r.id);});
+  const W=Object.values(R),Hs=W.filter(q=>q.horiz),Vs=W.filter(q=>!q.horiz);
+  const out={round,junctions:[],collinear:[],skipped:[],moves:[]},cand=[];   // cand: {id,end,to,j,dist}
+  for(const A of Hs)for(const B of Vs){
+    if(Math.abs(A.z0-B.z0)>10||A.z0>10||B.z0>10)continue;          // raised walls (lebegő fal, pengefal) take no part
+    const tA=A.y1-A.y0,tB=B.x1-B.x0,TOL=Math.max(60,1.5*Math.max(tA,tB));
+    if(!(A.x0<=B.x1+TOL&&A.x1>=B.x0-TOL&&B.y0<=A.y1+TOL&&B.y1>=A.y0-TOL))continue;
+    const passA=A.x0<B.x0-TOL&&A.x1>B.x1+TOL,passB=B.y0<A.y0-TOL&&B.y1>A.y1+TOL;
+    const type=passA&&passB?'X':(passA||passB)?'T':'L',j={type,a:A.id,b:B.id,moves:[]};out.junctions.push(j);
+    if(type==='X')continue;
+    if(A.lock||B.lock){out.skipped.push({ids:[A.id,B.id],why:'zárolt'});j.skip=true;continue;}
+    const cA=(A.y0+A.y1)/2,cB=(B.x0+B.x1)/2;
+    const aEnd=Math.abs(A.x0-cB)<=Math.abs(A.x1-cB)?'x0':'x1',bEnd=Math.abs(B.y0-cA)<=Math.abs(B.y1-cA)?'y0':'y1';
+    // B's faces seen from A's near end: the one towards A's body (near) and away from it (outer); likewise for A
+    const bNear=aEnd==='x0'?B.x1:B.x0,bOuter=aEnd==='x0'?B.x0:B.x1,aNear=bEnd==='y0'?A.y1:A.y0,aOuter=bEnd==='y0'?A.y0:A.y1;
+    const cost=ms=>ms.reduce((s,m)=>s+Math.abs(R[m.id][m.end]-m.to),0);
+    let ms;
+    if(type==='T'){const stem=passA?{id:B.id,end:bEnd,near:aNear,far:aOuter}:{id:A.id,end:aEnd,near:bNear,far:bOuter};
+      const butt=[{id:stem.id,end:stem.end,to:stem.near}],thru=[{id:stem.id,end:stem.end,to:stem.far}];
+      ms=form==='C'?thru:form==='B'?(cost(thru)<cost(butt)?thru:butt):butt;}
+    else{const square=[{id:A.id,end:aEnd,to:bOuter},{id:B.id,end:bEnd,to:aOuter}],
+        aOwns=[{id:A.id,end:aEnd,to:bOuter},{id:B.id,end:bEnd,to:aNear}],bOwns=[{id:A.id,end:aEnd,to:bNear},{id:B.id,end:bEnd,to:aOuter}];
+      ms=form==='B'?[square,aOwns,bOwns].reduce((best,f)=>cost(f)<cost(best)?f:best,square):square;}
+    ms.forEach(m=>{const w=R[m.id],dist=m.id===A.id?Math.abs(w[m.end]-cB):Math.abs(w[m.end]-cA);cand.push({...m,j,dist});});}
+  // one end, two junctions (a three-wall meeting): the end belongs to the junction whose partner band is nearest
+  const byEnd={};cand.forEach(c=>{(byEnd[c.id+'.'+c.end]=byEnd[c.id+'.'+c.end]||[]).push(c);});
+  const keep=[];Object.values(byEnd).forEach(L=>{L.sort((p,q)=>p.dist-q.dist);keep.push(L[0]);
+    L[0].js=L.filter(c=>c.to===L[0].to).map(c=>c.j);   // a shared end (same target from two junctions) counts for both
+    if(L.some(c=>c.to!==L[0].to)){L.forEach(c=>{c.j.multi=true;});out.skipped.push({ids:[...new Set(L.flatMap(c=>[c.j.a,c.j.b]))],why:'többszörös csomópont'});}});
+  // collinear pairs: same orientation, bands overlapping, ends within TOL — a ≤ 20 mm band offset is snapped and the gap closed
+  [[Hs,'x','y'],[Vs,'y','x']].forEach(([L,u,v])=>{for(let i=0;i<L.length;i++)for(let k=i+1;k<L.length;k++){const P=L[i],Q=L[k];
+    if(!(P[v+'0']<Q[v+'1']&&Q[v+'0']<P[v+'1']))continue;
+    const TOL=Math.max(60,1.5*Math.max(P[v+'1']-P[v+'0'],Q[v+'1']-Q[v+'0']));
+    const [l,r]=P[u+'0']<=Q[u+'0']?[P,Q]:[Q,P],gap=r[u+'0']-l[u+'1'];if(Math.abs(gap)>TOL)continue;
+    const off=Math.abs((P[v+'0']+P[v+'1'])/2-(Q[v+'0']+Q[v+'1'])/2),entry={a:P.id,b:Q.id,offset:Math.round(off),gap:Math.round(gap)};out.collinear.push(entry);
+    if(off>20||(off<0.5&&gap===0))continue;                          // a deliberate step in the wall, or already exact
+    if(P.lock||Q.lock){out.skipped.push({ids:[P.id,Q.id],why:'zárolt'});continue;}
+    const [lo,hi]=(P[u+'1']-P[u+'0'])<(Q[u+'1']-Q[u+'0'])?[P,Q]:[Q,P],dv=(hi[v+'0']+hi[v+'1'])/2-(lo[v+'0']+lo[v+'1'])/2;
+    entry.band=Math.round(dv);
+    keep.push({id:lo.id,end:v+'0',to:lo[v+'0']+dv,band:true},{id:lo.id,end:v+'1',to:lo[v+'1']+dv,band:true});
+    if(gap!==0)keep.push(lo===l?{id:lo.id,end:u+'1',to:r[u+'0']}:{id:lo.id,end:u+'0',to:l[u+'1']});}});
+  // guards: a move longer than max(300, 2 × thickness), a wall left under 120 mm, an opening left outside its wall
+  const next={};W.forEach(q=>{next[q.id]={...q};});
+  const real=keep.filter(m=>Math.abs(R[m.id][m.end]-m.to)>=0.5);
+  const bad=new Set();
+  real.forEach(m=>{const q=R[m.id],t=q.horiz?q.y1-q.y0:q.x1-q.x0;if(!m.band&&Math.abs(q[m.end]-m.to)>Math.max(300,2*t)){bad.add(m);out.skipped.push({ids:[m.id],why:'kézi ellenőrzés — '+Math.round(Math.abs(q[m.end]-m.to))+' mm mozgás'});}});
+  real.filter(m=>!bad.has(m)).forEach(m=>{next[m.id][m.end]=m.to;});
+  W.forEach(q=>{const n=next[q.id],len=q.horiz?n.x1-n.x0:n.y1-n.y0;let why=null;
+    if(len<120)why='túl rövid fal ('+Math.round(len)+' mm)';
+    else (data.openings||[]).forEach(o=>{if(o.level!==level||why||opnHost(o)!==WALLS[level].find(r=>r.id===q.id))return;
+      const w=o.w||(o.type==='window'?WIN_W:DOOR_W),u=q.horiz?o.x:o.y;if(u-w/2<(q.horiz?n.x0:n.y0)-1||u+w/2>(q.horiz?n.x1:n.y1)+1)why='nyílászáró a falon kívül';});
+    if(why){real.filter(m=>m.id===q.id&&!bad.has(m)).forEach(m=>bad.add(m));out.skipped.push({ids:[q.id],why});}});
+  out.moves=real.filter(m=>!bad.has(m)).map(m=>({id:m.id,end:m.end,from:R[m.id][m.end],to:m.to,band:!!m.band,js:m.js||[]}));
+  out.moves.forEach(m=>{m.js.forEach(j=>j.moves.push({id:m.id,end:m.end,from:m.from,to:m.to}));delete m.js;});
+  return out;}
+// the dry-run numbers the dialog (and the ⏸ report) show
+function wrfSummary(p){const n=t=>p.junctions.filter(j=>j.type===t).length,big=p.moves.reduce((m,x)=>Math.max(m,Math.abs(x.to-x.from)),0);
+  return {L:n('L'),T:n('T'),X:n('X'),collinear:p.collinear.length,exact:p.junctions.filter(j=>j.type!=='X'&&!j.skip&&!j.multi&&!j.moves.length).length,
+    moves:p.moves.length,maxMove:Math.round(big),rounded:p.round.length,
+    multi:p.skipped.filter(s=>s.why==='többszörös csomópont').length,skipped:p.skipped.map(s=>s.ids.join('+')+': '+s.why)};}
 function createRoom(opt){ // opt {rects:[{w,d,ox,oy}]|w,d, name,mat,walls,thick,cx,cy,level,snap}
   const lvl=opt.level||state.active;
   let cx=opt.cx,cy=opt.cy;if(cx==null||cy==null){const c=viewCentrePlan();cx=c[0];cy=c[1];}

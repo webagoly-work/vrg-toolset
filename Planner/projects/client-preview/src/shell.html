@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="hu" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ügyfél-előnézet</title>
+<!-- Fonts: hosted for now; the export will embed them so the page is fully offline (phase 5). -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500&family=Azeret+Mono:wght@400;500&display=swap">
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<canvas id="gl" aria-label="A ház 3D modellje"></canvas>
+<div id="tags" aria-hidden="true"></div>
+
+<header class="cpv-top">
+  <div class="cpv-brand">
+    <svg class="cpv-mark" viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="14" width="32" height="3" fill="currentColor"/><rect x="8" y="23" width="21" height="3" fill="currentColor" fill-opacity=".6"/><rect x="8" y="32" width="11" height="3" class="cpv-mark-acc"/></svg>
+    <div>
+      <div class="vrg-eyebrow"><span data-i18n="crumb">Ügyfél-előnézet</span></div>
+      <h1 class="cpv-name" id="cpvName">Terv</h1>
+    </div>
+  </div>
+  <div class="cpv-actions">
+    <button class="vrg-btn vrg-btn--ghost" id="cpvLang" type="button">EN</button>
+    <button class="vrg-btn vrg-btn--ghost" id="cpvTheme" type="button" data-i18n="light">Világos</button>
+  </div>
+</header>
+
+<section class="vrg-glass cpv-room" id="cpvRoom" hidden aria-live="polite">
+  <div class="vrg-eyebrow"><span id="cpvRoomLevel"></span><span id="cpvRoomIdx"></span></div>
+  <h2 class="vrg-glass__title" id="cpvRoomName"></h2>
+  <div class="vrg-glass__sub" id="cpvRoomSub"></div>
+  <dl class="vrg-stats" id="cpvRoomStats"></dl>
+  <div class="vrg-chips" id="cpvRoomChips"></div>
+  <div class="cpv-room-foot"><button class="vrg-btn vrg-btn--ghost" id="cpvRoomClose" type="button" data-i18n="close">Bezárás</button></div>
+</section>
+
+<aside class="vrg-glass vrg-glass--plain cpv-legend" aria-label="Jelmagyarázat">
+  <ul class="vrg-legend" id="cpvLegend"></ul>
+</aside>
+
+<div class="cpv-hint" id="cpvHint" data-i18n="hint">Húzás: forgatás · Jobb gomb: mozgatás · Görgő: nagyítás · Kattints egy helyiségre</div>
+
+<div class="cpv-empty" id="cpvEmpty" hidden>
+  <div class="vrg-glass">
+    <div class="vrg-eyebrow"><span>Ügyfél-előnézet</span></div>
+    <h2 class="vrg-glass__title">Nincs betöltött terv</h2>
+    <p class="vrg-glass__body">Húzz ide egy előnézeti modellt (.json), vagy exportáld a Plannerből.</p>
+  </div>
+</div>
+
+<script type="application/json" id="cpv-model">/*__MODEL__*/{}</script>
+<script type="module">/*__SCRIPT__*/</script>
+</body>
+</html>

@@ -39,13 +39,16 @@ const STAGES=[
     const lamps=data.devices.filter(d=>d.type==='light'&&!d.lampName).length;
     if(lamps)out.push({sev:'info',msg:lamps+' lámpa nincs meghatározva (adatlap).'});
     return out;}},
- {k:'paths', n:'Pályák',       icon:'〰', groups:['Véset'],
+ {k:'circuits',n:'Áramkörök',  icon:'⚡', groups:['Áramkör'],
+  hint:'Végpontok: dedikált vagy több pontos áramkörök, kismegszakító. K = kijelölés a rajzon.',
+  check:()=>cktChecks()},
+ {k:'paths', n:'Pályák',       icon:'〰', groups:['Véset','Pálya'],
   hint:'Kábelpályák, vésetek, áramkörök.',
   check:()=>{const out=[];
     if(!data.paths.length)out.push({sev:'info',msg:'Még nincs pálya rajzolva.'});
     const empty=data.paths.filter(p=>(p.sections||[]).every(s=>!s.circuit&&!(s.circuits||[]).length)).length;
     if(empty)out.push({sev:'info',msg:empty+' pálya üres (nincs benne áramkör).'});
-    const unlinked=data.devices.filter(d=>d.type!=='board'&&!d.link).length;
+    const unlinked=data.devices.filter(d=>d.type!=='board'&&!devLinks(d).length).length;
     if(unlinked)out.push({sev:'info',msg:unlinked+' készülék nincs pályához kötve.'});
     return out;}},
  {k:'doc',   n:'Dokumentáció', icon:'📄', groups:['Dokumentáció','Ellenőrzés','Projekt'],
@@ -56,33 +59,76 @@ const STAGES=[
     if(!v.error&&!v.warn)out.push({sev:'ok',msg:'Az ellenőrzés nem talált kifogásolni valót.'});
     return out;}}
 ];
-function stageByKey(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
+// With a BRIDGE Stack active (05m) the rail shows the stack's steps instead of the general stages [Q11=A].
+// shellStages()/shellKey() are the ONLY places that decide which list the rail, the inspector and the
+// next/previous actions read.
+function shellStages(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkStages(S):null;
+  return (L&&L.length)?L:STAGES;}            // a stack with no role layer left (all deleted) falls back to the general stages
+function shellKey(){const L=shellStages();
+  return L===STAGES?(state.stage||'build'):stkCurrentKey(stkActive());}
+function stageByKey(k){const L=shellStages();return L.find(s=>s.k===k)||L[0];}
 // stage names and hints run through the seam, so the rail follows the language
 function stageName(s){return t('stage.'+s.k,s.n);}
 function stageHint(s){return t('stage.'+s.k+'.hint',s.hint);}
-function setStage(k){state.stage=k;const st=stageByKey(k);
+function setStage(k){state.stage=k;
+  if(k.indexOf('stk:')===0&&typeof stkEnterRole==='function')stkEnterRole(k.slice(4));   // the role's layer becomes the active layer
+  const st=stageByKey(k);
   $('hud').textContent=stageName(st)+' — '+stageHint(st);renderShell();}
 function shellOn(){return state.shell!==false;}
 
-function renderShell(){
-  const rail=$('stageRail'),insp=$('inspector');
-  if(!rail||!insp)return;
-  if(!shellOn()){rail.style.display='none';insp.style.display='none';return;}
-  rail.style.display='flex';
-  const cur=state.stage||'build';
-  rail.innerHTML=STAGES.map((s,i)=>
-    `<button class="stg${s.k===cur?' on':''}" data-k="${s.k}" title="${esc(stageHint(s))}">`
-    +`<span class="stgIc">${s.icon}</span><span class="stgN">${i+1}. ${esc(stageName(s))}</span>`
-    +stageBadge(s)+`</button>`).join('')
-   +`<div style="flex:1"></div>`
-   +`<button class="stg" id="stgPal" title="Minden parancs (Ctrl+K)"><span class="stgIc">⌘</span><span class="stgN">Parancsok</span></button>`
-   +`<button class="stg" id="stgOff" title="A munkafolyamat-sáv elrejtése"><span class="stgIc">✕</span><span class="stgN">Elrejt</span></button>`;
-  rail.querySelectorAll('.stg[data-k]').forEach(b=>b.onclick=()=>setStage(b.dataset.k));
-  $('stgPal').onclick=()=>paletteOpen();
-  $('stgOff').onclick=()=>{state.shell=false;renderShell();};
-  renderInspector();}
+// draw() calls renderShell() on every pointermove. Rebuilding the rail and the inspector
+// there threw away whatever the user was doing in them: an <input> being typed into lost
+// its focus and its half-typed value, the inspector scrolled back to the top, and every
+// stage re-ran its check() over the whole model. Both are now built as strings and only
+// written to the DOM when they actually differ, with the checks cached per scene version.
+let _chkVer=-1,_chkMap=null,_railHtml=null,_inspHtml=null;
+function stageChecks(st){const key=shellModelKey();if(_chkVer!==key||!_chkMap){_chkVer=key;_chkMap={};}
+  if(!(st.k in _chkMap)){try{_chkMap[st.k]=st.check()||[];}catch(_){_chkMap[st.k]=[];}}
+  return _chkMap[st.k];}
+function invalidateShell(){_chkVer=-1;_chkMap=null;_railHtml=null;_inspHtml=null;try{_phChk.key=null;_layKey=null;}catch(_){}   // 05db's caches
+  if(typeof _sbHtml!=='undefined')_sbHtml=null;}
+const RAIL_MIN=330,INSP_MIN=520;      // px of stage needed before each overlay earns its place (at the default widths)
+// A width of 0 means the page has not been laid out yet (or we are in jsdom) — that is not
+// a narrow screen, so nothing is hidden on the strength of it.
+function stageW(){const el=document.querySelector('.stage-wrap');if(!el)return 9999;
+  const wpx=el.getBoundingClientRect().width;return wpx>0?wpx:9999;}
+function inspRoom(){const i=$('inspector');if(i&&i.closest('.side'))return true;   // T3: docked in the right column, always room
+  return stageW()>=INSP_MIN-PNL_DEF.insp+pnlW('insp');}
+
+// ---- panel widths + wide work mode (round 2026-10-10, WP-U5) ----
+// The rail and the inspector are resized by a 6 px grip on their inner edge. The grips live in .stage-wrap, not in
+// the panels: both panels are rebuilt from cached HTML, which would throw a grip — and its pointer capture — away.
+const PNL_DEF={rail:104,insp:238},PNL_LIM={rail:[80,260],insp:[200,520]};
+function pnlW(p){const v=+state[p==='rail'?'railW':'inspW'],L=PNL_LIM[p];return v?Math.max(L[0],Math.min(L[1],v)):PNL_DEF[p];}
+function pnlSetW(p,w){const L=PNL_LIM[p];w=Math.round(Math.max(L[0],Math.min(L[1],+w||PNL_DEF[p])));
+  state[p==='rail'?'railW':'inspW']=w;pnlApply();return w;}
+// T3: the inspector is docked in the right column and the sidebars have their own resizers, so the overlay grips of U5
+// are gone; this only clears an inline width a saved project may still carry.
+function pnlApply(){const insp=$('inspector');if(!insp)return;if(insp.style.width)insp.style.width='';
+  document.querySelectorAll('.pnlGrip').forEach(g=>g.remove());}
+// Tab: hide both sidebars, the rail and the inspector; Tab again restores EXACTLY what was showing — a sidebar the user
+// had already closed stays closed. The stage SVG is xMidYMid-fitted, so the plan point at its centre stays put.
+function pnlWideOn(){return !!state.wideWork;}
+function pnlSides(){return {l:document.querySelector('.side:not(.r)'),r:document.querySelector('.side.r')};}
+function pnlSyncArrows(){const S=pnlSides(),hl=$('hideL'),hr=$('hideR'),bp=$('bPanels');
+  if(hl&&S.l)hl.textContent=S.l.classList.contains('hide')?'▶':'◀';if(hr&&S.r)hr.textContent=S.r.classList.contains('hide')?'◀':'▶';
+  if(bp){const on=!!document.querySelector('.side:not(.hide)');bp.textContent=on?'⤢':'⤡';bp.title=on?'Teljes nézet: az oldalsávok elrejtése':'Oldalsávok vissza';}}
+function pnlWide(){const S=pnlSides();
+  if(!state.wideWork){state.wideWork={l:!!(S.l&&S.l.classList.contains('hide')),r:!!(S.r&&S.r.classList.contains('hide')),rail:shellOn(),insp:shellOn()};
+    if(S.l)S.l.classList.add('hide');if(S.r)S.r.classList.add('hide');state.shell=false;}
+  else{const s=state.wideWork;state.wideWork=null;
+    if(S.l)S.l.classList.toggle('hide',!!s.l);if(S.r)S.r.classList.toggle('hide',!!s.r);state.shell=!!(s.rail||s.insp);}
+  pnlSyncArrows();renderShell();setTransform();$('hud').textContent=pnlWideOn()?'Széles munkanézet — Tab: vissza':'Panelek vissza.';return pnlWideOn();}
+// a saved project that was left in wide mode opens in wide mode (the sidebars' hidden state lives in the DOM, not state)
+function pnlWideSync(){if(!state.wideWork)return;const S=pnlSides();if(S.l)S.l.classList.add('hide');if(S.r)S.r.classList.add('hide');pnlSyncArrows();}
+// T2 (docs/ui-tidy): the six phases of 05db replaced the stage rail, so only the inspector is rendered here. Stages
+// (and the stack roles) still decide what the inspector offers; a phase picks its stage (PH_LIST.stage).
+function renderShell(fromDraw){if(!fromDraw)_chkMap=null;
+  const insp=$('inspector');if(!insp)return;
+  if(!shellOn()){insp.style.display='none';pnlApply();return;}
+  renderInspector();pnlApply();}
 function stageBadge(s){let bad=0,warn=0;
-  try{(s.check()||[]).forEach(i=>{if(i.sev==='error')bad++;else if(i.sev==='warn')warn++;});}catch(_){}
+  stageChecks(s).forEach(i=>{if(i.sev==='error')bad++;else if(i.sev==='warn')warn++;});
   if(bad)return `<span class="stgB err">${bad}</span>`;
   if(warn)return `<span class="stgB wrn">${warn}</span>`;
   return '';}
@@ -127,18 +173,18 @@ function inspectorFields(sel){
     N('ins_oz',t('f.base','Alja a padlótól (mm)'),Math.round(o.z||0),v=>{o.z=Math.max(0,v);},50)];
   return [];}
 function inspectorActions(sel){
-  const ctx=actionCtx(),st=stageByKey(state.stage||'build');
+  const ctx=actionCtx(),st=stageByKey(shellKey());
   const selGroups=['Fal','Készülék','Helyiség','Nyílászáró','Szerkesztő'];
   return actionsFor(ctx).filter(a=>st.groups.indexOf(a.group)>=0||(sel&&selGroups.indexOf(a.group)>=0));}
 function renderInspector(){
   const insp=$('inspector');if(!insp)return;
-  if(!shellOn()){insp.style.display='none';return;}
+  if(!shellOn()||!inspRoom()){insp.style.display='none';return;}
   const sel=(typeof selected!=='undefined')?selected:null;
-  const st=stageByKey(state.stage||'build');
-  const chk=(()=>{try{return st.check()||[];}catch(_){return [];}})();
+  const st=stageByKey(shellKey());
+  const chk=stageChecks(st);
   const ttl=inspectorTitle(sel),fields=inspectorFields(sel),acts=inspectorActions(sel);
   insp.style.display='block';
-  insp.innerHTML=
+  const html=
      `<div class="insHead"><b>${esc(st.icon+' '+stageName(st))}</b><span class="insSub">${esc(stageHint(st))}</span></div>`
     +(chk.length?`<div class="insChk">`+chk.map(i=>
         `<div class="ck ${i.sev}">${i.sev==='error'?'⛔':i.sev==='warn'?'⚠':i.sev==='ok'?'✔':'•'} ${esc(i.msg)}</div>`).join('')+`</div>`:'')
@@ -149,25 +195,34 @@ function renderInspector(){
                 :`<input id="${f.id}" type="number" step="${f.step}" value="${f.val}">`)+`</label>`).join('')+`</div>`:'')
     +(sel&&sel.t==='floors'&&data.floors[sel.i]
         ?roomBreakdownHtml({rm:data.floors[sel.i],src:'F',i:sel.i,level:data.floors[sel.i].level}):'')
+    +cktInspectorHtml(sel,st.k)+linkInspectorHtml(sel)
     +(acts.length?`<div class="insActs">`+acts.map(a=>
         `<button class="insA" data-id="${a.id}" title="${esc(a.hint||'')}">${a.icon||'•'} ${esc(a.label)}</button>`).join('')+`</div>`
       :`<div class="insSub" style="padding:6px 10px">${esc(t('insp.pick','Válassz elemet a rajzon.'))}</div>`);
+  if(html===_inspHtml)return;               // leave the panel — and its focused input — alone
+  const sc=insp.scrollTop;_inspHtml=html;insp.innerHTML=html;insp.scrollTop=sc;
   fields.forEach(f=>{const el=$(f.id);if(!el)return;
     el.onchange=()=>{pushUndo();f.set(f.text?el.value:(+el.value||0));draw();};
     el.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();el.blur();}};});
-  insp.querySelectorAll('.insA').forEach(b=>b.onclick=()=>runAction(b.dataset.id));}
+  insp.querySelectorAll('.insA').forEach(b=>b.onclick=()=>runAction(b.dataset.id));
+  cktBindInspector(insp);}
 
+window.addEventListener('resize',()=>{if(typeof renderShell==='function')renderShell();});
 registerActions([
  {id:'shell.toggle',label:'Munkafolyamat-sáv be/ki',icon:'▤',group:'Nézet',alias:'shell rail workflow inspector',
   hint:'A bal oldali szakasz-sáv és a jobb oldali tulajdonság-panel.',
   run:()=>{state.shell=!shellOn();renderShell();}},
+ // U5: Tab is free since U4 moved the five tool uses to ←/→ and R. A modal or an editor keeps Tab for its own fields.
+ {id:'view.wide',alias:'wide full screen focus tab panels sidebars hide szeles teljes',label:'Széles munkanézet',icon:'⛶',group:'Nézet',keys:['tab'],
+  hint:'Az oldalsávok, a munkafolyamat-sáv és a jobb oldali panel el / vissza — Tab. Pontosan azt hozza vissza, ami látszott.',
+  when:c=>!c.inEditor&&!(modalBg&&modalBg.style.display==='flex'),run:()=>pnlWide()},
  {id:'shell.next',label:'Következő szakasz',icon:'▶',group:'Nézet',keys:['mod+arrowright'],
-  run:()=>{const i=STAGES.findIndex(s=>s.k===(state.stage||'build'));setStage(STAGES[Math.min(i+1,STAGES.length-1)].k);}},
+  run:()=>{const L=shellStages(),i=L.findIndex(s=>s.k===shellKey());setStage(L[Math.min(i+1,L.length-1)].k);}},
  {id:'shell.prev',label:'Előző szakasz',icon:'◀',group:'Nézet',keys:['mod+arrowleft'],
-  run:()=>{const i=STAGES.findIndex(s=>s.k===(state.stage||'build'));setStage(STAGES[Math.max(i-1,0)].k);}}
+  run:()=>{const L=shellStages(),i=L.findIndex(s=>s.k===shellKey());setStage(L[Math.max(i-1,0)].k);}}
 ]);
 
 // test hooks
 window.STAGES=STAGES;window.setStage=setStage;window.renderShell=renderShell;window.renderInspector=renderInspector;
 window.inspectorFields=inspectorFields;window.inspectorTitle=inspectorTitle;window.inspectorActions=inspectorActions;
-window.shellOn=shellOn;window.stageByKey=stageByKey;
+window.shellOn=shellOn;window.stageByKey=stageByKey;window.shellStages=shellStages;window.shellKey=shellKey;

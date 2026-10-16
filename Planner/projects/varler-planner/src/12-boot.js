@@ -7,11 +7,11 @@
 // tests/golden.js — const/let are subject to temporal dead zones.
 // ==========================================================================
 //////////////////// go ////////////////////
-function resetView(){state.zoom=.5;state.panX=(1-.5)*W/2;state.panY=(1-.5)*Hh/2;setTransform();}
+function resetView(){const h=vsHomeView();state.zoom=h.zoom;state.panX=h.panX;state.panY=h.panY;setTransform();}
 // ---------------- camera memory: 2D and 3D each remember their own view ----------------
 function camSnap(){return {pitch:state.pitch,rot:state.rot,zoom:state.zoom,panX:state.panX,panY:state.panY};}
 function camApply(c){state.rot=c.rot;state.zoom=c.zoom;state.panX=c.panX;state.panY=c.panY;
-  $('rot').value=state.rot;$('rotVal').textContent=state.rot+'°';
+  $('rot').value=state.rot;$('rotVal').textContent=state.rot+'°';if($('qvRot'))$('qvRot').textContent=state.rot+'°';
   document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('on',+b.dataset.deg===state.rot));
   setTransform();}
 function switchBuilding(o){loadBuilding(o);state.levels={basement:true,ground:true,upper:true};
@@ -42,9 +42,11 @@ function renderObjList(){const el=$('objList');if(!el)return;const q=(($('objSea
 // below read/write centre (cx,cy), footprint (w,d), rotation (ang), base z and
 // height (ht) uniformly across walls / floors / openings / stairs / roofs /
 // objects / devices, so one gizmo can grab-offset-rotate-resize them all.
-function clonePiece(h){if(!h)return null;
-  if(h.t==='wall'){const a=WALLS[h.level],c=JSON.parse(JSON.stringify(a[a.indexOf(h.ref)]));a.push(c);SNAP[h.level]=centerlines(a);return {t:'wall',level:h.level,ref:c};}
-  const arr=data[h.t];if(!arr)return null;const c=JSON.parse(JSON.stringify(arr[h.i]));arr.push(c);return {t:h.t,i:arr.length-1};}
+// Ctrl+drag and Ctrl+D copy through here; the copy gets its own id from the counter at once
+function clonePiece(h){if(!h)return null;let nh;
+  if(h.t==='wall'){const a=WALLS[h.level],c=copyRecord('walls',a[a.indexOf(h.ref)]);a.push(c);SNAP[h.level]=centerlines(a);nh={t:'wall',level:h.level,ref:c};}
+  else{const arr=data[h.t];if(!arr)return null;arr.push(copyRecord(h.t,arr[h.i]));nh={t:h.t,i:arr.length-1};}
+  ensureIds(data);return nh;}
 function pieceRef(h){if(!h)return null;
   if(h.t==='wall')return h.ref;
   const arr=data[h.t];return arr?arr[h.i]:null;}
@@ -109,6 +111,13 @@ function pLiftable(h){return h && (h.t==='objects'||h.t==='devices'||h.t==='roof
   ||h.t==='wall'||h.t==='floors'||(h.t==='openings'&&pieceRef(h)&&pieceRef(h).type!=='stairs'));}
 
 // ---- gizmo rendering: hovering arrows anchored to the piece centre ----
+// The blue centre dot is a free-move handle (round 2026-10-10, WP-U3). It had no class="giz", so a click on it fell
+// through to hitTest, which picked whichever piece's centre was nearest — often a neighbour. It is drawn LAST: all four
+// arrow shafts start at the centre, so underneath them the dot could never be reached; on top, its 8 px target only
+// takes the first 8 px of each 46 px shaft. Near-zero fill, not fill="none" — an unfilled circle is not hit-testable.
+function gizCentre(C,r){return `<g class="giz" data-ax="move" style="cursor:move">`
+  +`<circle cx="${C[0]}" cy="${C[1]}" r="8" fill="#000" fill-opacity="0.001"/>`
+  +`<circle cx="${C[0]}" cy="${C[1]}" r="${r}" fill="#2f6fb0"/></g>`;}
 function gizmoSvgAt(C,count){ // simplified move+rotate gizmo at base-coord C for a group
   const ex=[C[0]+1,C[1]],nrm=v=>{const m=Math.hypot(v[0],v[1])||1;return[v[0]/m,v[1]/m];};
   // screen axes: derive plan +X/+Y directions at this point
@@ -123,9 +132,9 @@ function gizmoSvgAt(C,count){ // simplified move+rotate gizmo at base-coord C fo
   g+=arrow(ux,'#e2483a')+arrow([-ux[0],-ux[1]],'#e2483a')+arrow(uy,'#3fae55')+arrow([-uy[0],-uy[1]],'#3fae55');
   g+=`<circle class="giz" data-ax="rot" cx="${C[0]}" cy="${C[1]-62}" r="7" fill="#fff" stroke="#2f6fb0" stroke-width="2.4" style="cursor:grab"/>`
     +`<path d="M ${C[0]-7} ${C[1]-62} A 7 7 0 1 1 ${C[0]} ${C[1]-55}" fill="none" stroke="#2f6fb0" stroke-width="2"/>`;
-  g+=`<circle cx="${C[0]}" cy="${C[1]}" r="4" fill="#2f6fb0"/></g>`;
+  g+=gizCentre(C,4)+`</g>`;
   g+=`<text x="${C[0]}" y="${C[1]+46}" font-size="10.5" text-anchor="middle" fill="#111" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${count} elem együtt</text>`;
-  return g;}
+  return vsBadge(C[0],C[1],g);}
 function gizmoSvg(h){if(!h)return'';const o=pieceRef(h);if(!o)return'';
   const [cx,cy]=pGetC(h),z=dz(pieceLevel(h),pGetZ(h)+ (h.t==='objects'?(o.ht||0)/2:0));
   const C=planToBase(cx,cy,z);
@@ -155,11 +164,10 @@ function gizmoSvg(h){if(!h)return'';const o=pieceRef(h);if(!o)return'';
     [[-1,0,'w'],[1,0,'w'],[0,-1,'d'],[0,1,'d']].forEach(c=>{const b=planToBase(cx+c[0]*hw,cy+c[1]*hd,z);
       const col=c[2]==='w'?'#e2483a':'#3fae55';
       g+=`<rect class="giz" data-ax="rs" data-rd="${c[2]}" data-cx="${c[0]}" data-cy="${c[1]}" x="${b[0]-5}" y="${b[1]-5}" width="10" height="10" rx="2" fill="#fff" stroke="${col}" stroke-width="2" style="cursor:${c[2]==='w'?'ew':'ns'}-resize"/>`;});}
-  // centre dot
-  g+=`<circle cx="${C[0]}" cy="${C[1]}" r="3.5" fill="#2f6fb0"/></g>`;
+  g+=gizCentre(C,3.5)+`</g>`;
   // label
   g+=`<text x="${C[0]}" y="${C[1]+44}" font-size="10.5" text-anchor="middle" fill="#111" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">${esc(pLabel(h))}</text>`;
-  return g;}
+  return vsBadge(C[0],C[1],g);}
 
 function objSnap(e){const lvl=state.active;const [bx,by]=clientToBase(e);
   const walls=WALLS[lvl]||[];
@@ -196,20 +204,8 @@ function objDimModal(title,cur,ok){openModal(title,
   +`<div class="mrow">Magasság <input id="odH" type="number" value="${cur.ht}" style="width:80px"> mm</div>`
   +`<div class="mrow">Padlótól <input id="odZ" type="number" value="${cur.z||0}" style="width:80px"> mm</div>`,
   ()=>ok({n:$('odN').value,w:+$('odW').value||600,d:+$('odD').value||600,ht:+$('odH').value||600,z:+$('odZ').value||0}));}
-// ---- layers UI ----
-function renderLayers(){const el=$('layerList');if(!el)return;const cats=['path','device','cable','wall','build','object'];
-  el.innerHTML=layers.map(L=>{const cs=cats.map(c=>`<button data-lc="${L.id}:${c}" class="lcat ${L.cats[c]!==false?'on':''}" title="${c}">${c[0].toUpperCase()}</button>`).join('');
-    return `<div class="lblock ${L.id===state.activeLayer?'lactive':''}"><div class="lrow"><input type="radio" name="alayer" ${L.id===state.activeLayer?'checked':''} data-la="${L.id}" title="aktív">`
-     +`<button data-lv="${L.id}" title="show/hide">${L.visible?'👁':'🚫'}</button>`
-     +`<input class="lname" data-ln="${L.id}" value="${L.name.replace(/"/g,'')}">`
-     +(L.id!=='L0'?`<button data-lx="${L.id}" title="törlés">✕</button>`:'')+`</div>`
-     +`<div class="lcats">${cs}</div></div>`;}).join('');
-  el.querySelectorAll('[data-la]').forEach(r=>r.onchange=()=>{state.activeLayer=r.dataset.la;});
-  el.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const L=layerById(b.dataset.lv);L.visible=!L.visible;renderLayers();draw();});
-  el.querySelectorAll('[data-ln]').forEach(i=>i.onchange=()=>{layerById(i.dataset.ln).name=i.value;});
-  el.querySelectorAll('[data-lc]').forEach(b=>b.onclick=()=>{const p=b.dataset.lc.split(':'),L=layerById(p[0]);L.cats[p[1]]=(L.cats[p[1]]===false);renderLayers();draw();});
-  el.querySelectorAll('[data-lx]').forEach(b=>b.onclick=()=>{const id=b.dataset.lx;layers=layers.filter(l=>l.id!==id);if(state.activeLayer===id)state.activeLayer='L0';renderLayers();draw();});}
-$('addLayer').onclick=()=>{const id='L'+Date.now().toString(36);layers.push({id,name:'Réteg '+(layers.length+1),visible:true,cats:{path:true,device:true,cable:true,wall:true,build:true,object:true}});state.activeLayer=id;renderLayers();};
+// ---- layers UI: renderLayers lives in 05l-layers.js ----
+$('addLayer').onclick=()=>{const id='L'+Date.now().toString(36);layers.push({id,name:'Réteg '+(layers.length+1),visible:true,cats:layerCatsAll()});state.activeLayer=id;renderLayers();};
 // ---- project library (named save slots) ----
 const PROJ_KEY='villanyterv_projects_v1';   // {id:{name,ts,data}}
 const CURRENT_KEY='villanyterv_current_v1';  // id of last-open project (for autosave)
@@ -222,15 +218,16 @@ function saveProject(name,id){const ix=loadProjIndex();id=id||('p'+Date.now().to
   try{localStorage.setItem(CURRENT_KEY,id);}catch(_){}
   renderProjects();$('hud').textContent='Mentve: '+snap.name;return id;}
 function applyProjectData(o){ // o = a sessionObj payload
-  Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
+  Object.assign(state,o.state||{});vsApply();Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
-  layers=o.layers||[{id:'L0',name:'Alap',visible:true,cats:{path:true,device:true,cable:true,wall:true,build:true,object:true}}];
+  layers=o.layers||[{id:'L0',name:'Alap',visible:true,cats:layerCatsAll()}];stacks=o.stacks||[];lyrMigrateAll();
   if(o.panelLoc)panelLoc=o.panelLoc;refB=o.refB||[];
   loadBuilding(o.building||blankBuilding(),true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])?JSON.parse(JSON.stringify(o.data[k])):[]);
   data.noteHide=(o.data&&o.data.noteHide)?JSON.parse(JSON.stringify(o.data.noteHide)):{};
   data.seq=(o.data&&+o.data.seq)||0;data.v=(o.data&&+o.data.v)||0;
   migrate(data);                                        // an older file still opens
+  if(typeof stkMigrateRoles==='function')stkMigrateRoles();   // M1: one Erősáram layer → three
   selected=null;undo.length=0;redo.length=0;
   draft=null;pathDraft=null;measureDraft=null;cursor=null;dragItem=null;objGhost=null;buildGhost=null;
   if(typeof WV!=='undefined'&&WV){if(WV.keyFn)document.removeEventListener('keydown',WV.keyFn,true);WV=null;}
@@ -239,7 +236,7 @@ function applyProjectData(o){ // o = a sessionObj payload
 function loadProject(id){const ix=loadProjIndex();const p=ix[id];if(!p)return;
   hardResetWorkspace();
   applyProjectData(p.data);currentProjId=id;try{localStorage.setItem(CURRENT_KEY,id);}catch(_){}
-  renderProjects();$('hud').textContent='Betöltve: '+p.name;}
+  renderProjects();$('hud').textContent='Betöltve: '+p.name+idRepairNote();}
 function deleteProject(id){const ix=loadProjIndex();if(!ix[id])return;
   if(!confirm('Törlöd ezt a tervet: "'+ix[id].name+'"? Nem visszavonható.'))return;
   delete ix[id];saveProjIndex(ix);if(currentProjId===id)currentProjId=null;renderProjects();}
@@ -253,13 +250,14 @@ function hardResetWorkspace(){
   if(typeof PV!=='undefined'&&PV){if(PV.keyFn)document.removeEventListener('keydown',PV.keyFn,true);PV=null;}
   try{closeModal();}catch(_){}
   UKEYS.forEach(k=>{data[k].length=0;});                       // in place: other code holds references
+  stacks=[];
   data.noteHide={};
   for(const l of ORD){WALLS[l]=[];SLAB[l]=null;GHOST[l]=null;ROOMSB[l]=[];ROOFS[l]=[];SNAP[l]=centerlines([]);}
   DROPC.basement=0;DROPC.ground=0;DROPC.upper=0;
   undo.length=0;redo.length=0;                                 // no stepping back into another project
   selected=null;clearMulti&&clearMulti();
   draft=null;pathDraft=null;measureDraft=null;cursor=null;lock=null;
-  wallStart=null;floorStart=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;
+  wallStart=null;floorDraft=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;
   state.soloRoom=null;state.bg=null;state.warp=null;refB=[];
   try{lampHoverHide();}catch(_){}
   try{hideCtx();}catch(_){}}
@@ -300,18 +298,18 @@ const LS_KEY='villanyterv_autosave_v1';let saveTimer=null;
 function sessionObj(){ensureIds(data);data.v=SCHEMA_VERSION;
   for(const l of ORD){B.walls[l]=(WALLS[l]||[]).map(rectArr);
   B.rooms=B.rooms||{};B.rooms[l]=ROOMSB[l]||[];}   // room-sheet edits on building rooms persist too
-  return {v:1,state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,panelLoc,refB};}
+  return {v:1,state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc,refB};}
 function saveSession(){try{if(currentProjId){const ix=loadProjIndex();if(ix[currentProjId]){ix[currentProjId].data=sessionObj();ix[currentProjId].ts=Date.now();saveProjIndex(ix);}}else{localStorage.setItem(LS_KEY,JSON.stringify(sessionObj()));}}catch(_){}}
 function scheduleSave(){try{clearTimeout(saveTimer);saveTimer=setTimeout(saveSession,1200);}catch(_){}}
 function restoreSession(){try{const raw=localStorage.getItem(LS_KEY);if(!raw)return false;const o=JSON.parse(raw);
   Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
-  if(o.layers)layers=o.layers;if(o.panelLoc)panelLoc=o.panelLoc;if(o.refB)refB=o.refB;if(o.building)loadBuilding(o.building,true);
+  if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.refB)refB=o.refB;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);
   data.noteHide=(o.data&&o.data.noteHide)||{};data.seq=(o.data&&+o.data.seq)||0;data.v=(o.data&&+o.data.v)||0;
-  migrate(data);
+  migrate(data);if(typeof stkMigrateRoles==='function')stkMigrateRoles();
   syncUI();renderLayers();renderRefList();if(typeof renderDashboard==='function')renderDashboard();draw();
-  $('hud').textContent='Munkamenet visszaállítva.';return true;}catch(_){return false;}}
+  $('hud').textContent='Munkamenet visszaállítva.'+idRepairNote();return true;}catch(_){return false;}}
 $('bNew').onclick=()=>{if(!confirm('Üres munkaterület? A nem mentett változások elvesznek.'))return;newBlankProject();};
 $('pjSave').onclick=()=>{if(currentProjId){saveProject(loadProjIndex()[currentProjId].name,currentProjId);}else{const nm=prompt('Terv neve:',B.name||'Új terv');if(nm==null)return;saveProject(nm.trim()||'Új terv');}};
 $('pjSaveAs').onclick=()=>{const nm=prompt('Új terv neve:',(B.name||'Terv')+' másolat');if(nm==null)return;saveProject(nm.trim()||'Terv');};
@@ -340,8 +338,8 @@ $('mbRedo').onclick=()=>$('bRedo').click();
 $('mbDel').onclick=()=>{if(selected){pushUndo();removeHit(selected);selected=null;draw();}};
 $('mbTop').onclick=()=>$('view3d').click();
 (function bindPad(){const pad=$('mbPad');if(!pad)return;let hold=null;
-  const act=n=>{if(n==='rotL'){recentrePivot();setRot(state.rot-15);}
-    else if(n==='rotR'){recentrePivot();setRot(state.rot+15);}
+  const act=n=>{if(n==='rotL'){recentrePivot();setRot(state.rot-camRotStep());}
+    else if(n==='rotR'){recentrePivot();setRot(state.rot+camRotStep());}
     else if(n==='up')setPitch(state.pitch+6);else if(n==='down')setPitch(state.pitch-6);
     else if(n==='zin')zoomBy(1.15);else if(n==='zout')zoomBy(1/1.15);};
   pad.querySelectorAll('button').forEach(btn=>{
@@ -360,12 +358,7 @@ $('mbTop').onclick=()=>$('view3d').click();
 (function restoreLock(){try{if(localStorage.getItem('villanyterv_lock')==='1')setLockTouch(true);}catch(_){}})();
 window.__proj={save:saveProject,load:loadProject,list:loadProjIndex,del:deleteProject,blank:newBlankProject,importFile:importProjectFile,snap:projSnapshot};
 
-window.__H=HOUSE;window.__G=GARAGE;window.__data=data;window.__state=state;window.__getWalls=()=>WALLS;window.__setSel=(h)=>{selected=h;draw();};window.__getSel=()=>selected;window.__panels=()=>PANELS;window.__panelLoc=()=>panelLoc;window.__wallStart=()=>wallStart;window.__objGhost=()=>objGhost;window.__cursor=()=>cursor;window.__cursorSnap=()=>cursor&&cursor.snap;window.__fmtSrc=()=>fmtSource;window.__selCount=()=>selList().length;window.__selMulti=()=>selMulti.map(h=>h.t+(h.i!==undefined?h.i:""));window.__sel=()=>selected;window.__addMulti=(h)=>addMulti(h);window.__centroid=()=>groupCentroid(selList());window.__rotateGroup=(l,a,p)=>rotateGroup(l,a,p);window.__selListArr=()=>selList();window.__clearMulti=()=>{clearMulti();selected=null;};window.hitTestAt=(x,y)=>hitTest({clientX:x,clientY:y});window.__touchG=()=>touchG;window.__WV=()=>WV;window.__PV=()=>PV;window.__setCursor=c=>{cursor=c;};window.__undoLen=()=>undo.length;window.__redoLen=()=>redo.length;window.VERSION=VERSION;window.drawNormalGeom=drawNormalGeom;window.PLACE_ITEMS=PLACE_ITEMS;window.WALL_PRESETS=WALL_PRESETS;window.NOTEKIND=NOTEKIND;window.LAMP_MOUNT=LAMP_MOUNT;window.DROPC=DROPC;window.GUIDES_REF=()=>GUIDES;window.LAMP_FIX=LAMP_FIX;window.ROOM_ENV=ROOM_ENV;window.ROOM_USE=ROOM_USE;window.ROOM_FLOOR=ROOM_FLOOR;window.ROOM_HEAT=ROOM_HEAT;window.__ROOMSB=()=>ROOMSB;window.DOORTYPE=DOORTYPE;window.__snap=(scope)=>snap_(scope);window.__applySnap=sn=>applySnap(sn);window.DEV=DEV;window.REFPRE=REFPRE;window.DEVKIND=DEVKIND;window.BUILDNAME=BUILDNAME;window.__buildGhost=()=>buildGhost;window.__setBuildGhost=g=>{buildGhost=g;};window.__LH=()=>LH;window.__guides=()=>GUIDES;window.__setWV=(k,v)=>{WV[k]=v;};window.__selBox=()=>selBox;window.__setBox=(b)=>{selBox=b;};window.__finishBox=()=>finishSelBox();window.__objPick=()=>objPick;window.loadBuilding=loadBuilding;
-function placeTools(loc){const g=$('toolsGrp'),bar=$('toolbarRow'),rs=document.querySelector('.side.r');
-  if(loc==='top'){bar.appendChild(g);bar.classList.add('show');$('bToolsLoc').textContent='⧉ Tools: oldalt';}
-  else{rs.appendChild(g);bar.classList.remove('show');$('bToolsLoc').textContent='⧉ Tools: fent';}
-  state.toolsLoc=loc;}
-$('bToolsLoc').onclick=()=>placeTools(state.toolsLoc==='top'?'side':'top');
+window.__H=HOUSE;window.__G=GARAGE;window.__data=data;window.__state=state;window.__getWalls=()=>WALLS;window.__setSel=(h)=>{selected=h;draw();};window.__getSel=()=>selected;window.__panels=()=>PANELS;window.__panelLoc=()=>panelLoc;window.__wallStart=()=>wallStart;window.__objGhost=()=>objGhost;window.__cursor=()=>cursor;window.__cursorSnap=()=>cursor&&cursor.snap;window.__fmtSrc=()=>fmtSource;window.__selCount=()=>selList().length;window.__selMulti=()=>selMulti.map(h=>h.t+(h.i!==undefined?h.i:""));window.__sel=()=>selected;window.__addMulti=(h)=>addMulti(h);window.__centroid=()=>groupCentroid(selList());window.__rotateGroup=(l,a,p)=>rotateGroup(l,a,p);window.__selListArr=()=>selList();window.__clearMulti=()=>{clearMulti();selected=null;};window.hitTestAt=(x,y)=>hitTest({clientX:x,clientY:y});window.__touchG=()=>touchG;window.__WV=()=>WV;window.__PV=()=>PV;window.__setCursor=c=>{cursor=c;};window.__undoLen=()=>undo.length;window.__redoLen=()=>redo.length;window.VERSION=VERSION;window.drawNormalGeom=drawNormalGeom;window.PLACE_ITEMS=PLACE_ITEMS;window.WALL_PRESETS=WALL_PRESETS;window.NOTEKIND=NOTEKIND;window.LAMP_MOUNT=LAMP_MOUNT;window.DROPC=DROPC;window.GUIDES_REF=()=>GUIDES;window.LAMP_FIX=LAMP_FIX;window.ROOM_ENV=ROOM_ENV;window.ROOM_USE=ROOM_USE;window.ROOM_FLOOR=ROOM_FLOOR;window.ROOM_HEAT=ROOM_HEAT;window.__ROOMSB=()=>ROOMSB;window.DOORTYPE=DOORTYPE;window.__snap=(scope)=>snap_(scope);window.__applySnap=sn=>applySnap(sn);window.DEV=DEV;window.REFPRE=REFPRE;window.DEVKIND=DEVKIND;window.BUILDNAME=BUILDNAME;window.__buildGhost=()=>buildGhost;window.__setBuildGhost=g=>{buildGhost=g;};window.__LH=()=>LH;window.__guides=()=>GUIDES;window.__setWV=(k,v)=>{WV[k]=v;};window.__selBox=()=>selBox;window.__setBox=(b)=>{selBox=b;};window.__finishBox=()=>finishSelBox();window.__objPick=()=>objPick;window.loadBuilding=loadBuilding;window.__sceneVer=()=>sceneVer;window.__pens=()=>({NV_PEN,NV_TXT,BP_PEN,BP_TXT,BP_SCALES});window.VIEW_SCALES=VIEW_SCALES;window.PREV=PREV;window.LAYER_CATS=LAYER_CATS;window.__SC=()=>SC;window.LBL_EM=LBL_EM;window.__floorDraft=()=>floorDraft;window.__setFloorDraft=v=>{floorDraft=v;};
 // default: blank workspace (the example house is available in the Projects list if saved)
 function stampVersion(){const el=$('verTag');if(el)el.textContent='v'+VERSION;}
 function initWorkspace(){
@@ -383,7 +376,6 @@ function initWorkspace(){
   else{loadBuilding(blankBuilding());}
   setMode('select');setRot(90);renderProjects();}
 setTimeout(initWorkspace,0);
-$('autoLayout').onclick=()=>setAutoLayout(!autoLayout);
 $('bClearRoute').onclick=()=>clearRouting();
 $('bRecalc').onclick=()=>recomputeRouting();
 // resizable sidebars
@@ -404,51 +396,15 @@ const PANELS_DEF=[{m:'Tools',label:'Tools',def:'left'},{m:'Layers',label:'Layers
 function matchPanel(h3){let best=null;for(const p of PANELS_DEF)if(h3.indexOf(p.m)===0&&(!best||p.m.length>best.m.length))best=p;
   if(!best)for(const p of PANELS_DEF)if(h3.indexOf(p.m)>=0&&(!best||p.m.length>best.m.length))best=p;return best;}
 function pslug(t){return t.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,18)||'p';}
-let PANELS=[],panelLoc={},panelPool=null,userPanelLoc=null;
-const TOOL_LAYOUT={
- select:{left:['projektek','tools','layers','view'],right:['activelevelnewitem','rajnlatbom']},
- grab:{left:['tools','layers','view'],right:['activelevelnewitem']},
- path:  {left:['tools','pathplyaelsdleges','activelevelnewitem','routing'],right:['heightguidelines','rajnlatbom']},
- cable: {left:['tools','cablemsodlagos','activelevelnewitem'],right:['heightguidelines','cabletotalsm']},
- device:{left:['tools','device','activelevelnewitem','dokumentci'],right:['devicesdb','rajnlatbom']},
- wall:  {left:['tools','activelevelnewitem','buildinglayout'],right:['view']},
- build: {left:['tools','buildsnapstowall','activelevelnewitem'],right:['view']},
- object:{left:['tools','objects','activelevelnewitem'],right:['view']},
- floor: {left:['tools','activelevelnewitem','buildinglayout'],right:['view']},
- roof:  {left:['tools','buildinglayout','activelevelnewitem'],right:['view']}};
-function pidByLabelKey(k){const p=PANELS.find(x=>x.pid===k);return p?p.pid:null;}
-function applyToolLayout(mode){if(!autoLayout)return;const L=TOOL_LAYOUT[mode];if(!L)return;
-  if(!userPanelLoc)userPanelLoc=JSON.parse(JSON.stringify(panelLoc));
-  const toolsDock=panelLoc['tools'];  // preserve the user's Tools placement (e.g. 'top' = Tools:fent)
-  const nl={};PANELS.forEach(p=>nl[p.pid]='off');
-  (L.left||[]).forEach(pid=>{if(PANELS.some(p=>p.pid===pid))nl[pid]='left';});
-  (L.right||[]).forEach(pid=>{if(PANELS.some(p=>p.pid===pid))nl[pid]='right';});
-  if(toolsDock==='top')nl['tools']='top';  // keep Tools on top if the user docked it there
-  panelLoc=nl;renderDashboard();}
-function setAutoLayout(on){autoLayout=on;const b=$('autoLayout');if(b)b.classList.toggle('on',on);
-  if(on){applyToolLayout(state.mode);}else if(userPanelLoc){panelLoc=userPanelLoc;userPanelLoc=null;renderDashboard();}
-  scheduleSave&&scheduleSave();}
+let PANELS=[],panelLoc={};   // panelLoc: kept only so old saved projects still load; the frame is fixed now (T3)
+// T3 (docs/ui-tidy): no picker, no Auto-panel — every panel has one home (05db PANEL_HOME) and the frame never re-deals
+function applyToolLayout(){}
+function renderDashboard(){if(typeof layoutSync==='function')layoutSync(true);}
 function buildDashboard(){
-  const L=document.querySelector('.side:not(.r)'),R=document.querySelector('.side.r');
-  panelPool=document.createElement('div');panelPool.id='panelPool';panelPool.style.display='none';document.body.appendChild(panelPool);
   const grps=[...document.querySelectorAll('.side .grp')];
   PANELS=grps.map(el=>{const h3el=el.querySelector('h3'),h3=h3el?h3el.textContent.trim():'?';const m=matchPanel(h3)||{label:h3.slice(0,7),def:'left'};
-    const pid=pslug(h3);el.dataset.pid=pid;el.remove();return {pid,label:m.label,el,def:m.def};});
-  [L,R].forEach(side=>{side.innerHTML='';const pk=document.createElement('div');pk.className='picker';side.appendChild(pk);
-    const pn=document.createElement('div');pn.className='panels';side.appendChild(pn);});
-  if(!Object.keys(panelLoc).length)PANELS.forEach(p=>panelLoc[p.pid]=p.def);
-  renderDashboard();}
-function renderDashboard(){
-  const L=document.querySelector('.side:not(.r)'),R=document.querySelector('.side.r');
-  if(!L||!R||!panelPool)return;const lp=L.querySelector('.panels'),rp=R.querySelector('.panels');
-  const tb=$('toolbarRow');
-  PANELS.forEach(p=>{const loc=panelLoc[p.pid];(loc==='left'?lp:loc==='right'?rp:loc==='top'?tb:panelPool).appendChild(p.el);});
-  tb.classList.toggle('show',tb.children.length>0);
-  const tp=PANELS.find(p=>p.label==='Tools');if(tp)$('bToolsLoc').textContent=(panelLoc[tp.pid]==='top')?'⧉ Tools: oldalt':'⧉ Tools: fent';
-  [['left',L],['right',R]].forEach(a=>{const side=a[0],pk=a[1].querySelector('.picker');
-    pk.innerHTML=PANELS.map(p=>`<button class="pbtn ${panelLoc[p.pid]===side?'on':''}" data-pp="${p.pid}" data-ps="${side}">${p.label}</button>`).join('');
-    pk.querySelectorAll('.pbtn').forEach(b=>b.onclick=()=>{const pid=b.dataset.pp,sd=b.dataset.ps;panelLoc[pid]=(panelLoc[pid]===sd)?'off':sd;renderDashboard();if(typeof scheduleSave==='function')scheduleSave();});});}
-$('bToolsLoc').onclick=()=>{const tp=PANELS.find(p=>p.label==='Tools');if(!tp)return;
-  panelLoc[tp.pid]=(panelLoc[tp.pid]==='top')?'left':'top';renderDashboard();scheduleSave();};
+    const pid=el.dataset.pid||pslug(h3);el.dataset.pid=pid;   /* T8: a renamed heading keeps its panel id */return {pid,label:m.label,el,def:m.def};});
+  layoutBuild(PANELS);}
 $('objSearch').oninput=()=>renderObjList();renderObjList();
-buildDashboard();window.__dashReady=true;stampVersion();renderLayers();restoreSession();if(autoLayout)applyToolLayout(state.mode);
+buildDashboard();window.__dashReady=true;stampVersion();renderLayers();kbdApplyLayout();restoreSession();if(autoLayout)applyToolLayout(state.mode);
+if(typeof preloadBoot==="function")preloadBoot();   // a build with plans baked in (tools/make-preload.js) offers them first

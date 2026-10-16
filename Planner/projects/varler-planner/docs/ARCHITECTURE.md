@@ -39,26 +39,47 @@ This is deliberate for now: it made the split from a single file provably safe (
 
 | file | ~lines | what lives here |
 |---|---|---|
-| `00-core.js` | 114 | isometric projection maths, level table (`LH`, `ORD`, `DROPC`), the building model, example house geometry |
+| `00-core.js` | 166 | isometric projection maths, level table (`LH`, `ORD`, `DROPC`), the building model, example house geometry, **the view scale** (`SC` / `vsSet` / `vsP` / `vsBadge`) |
 | `00b-i18n.js` | 60 | **the translation seam** — `t(key, hu)`, the hu/en dictionaries, `setLang` |
 | `01-schema.js` | 110 | **document schema** — ids, migrations, reference resolution, connectivity graph, validation |
 | `02-state.js` | 168 | the `state` object, layer system, circuits sidebar, legacy shims |
 | `03-geometry.js` | 249 | geometry helpers, fine mode (Alt), snapping, wall geometry and the wall property sheet |
-| `04-render.js` | 772 | the entire draw pipeline: normal 3D, blueprint plan and iso, whiteout, device and opening symbols, ghosts, raised-element badges |
+| `04-render.js` | 1012 | the entire draw pipeline: normal 3D, blueprint plan and iso, whiteout, **client preview (dark wireframe)**, device and opening symbols, ghosts, raised-element badges, **room-label fit** (`lblFit`) |
 | `05-totals.js` | 215 | totals, BOM, auto-numbering, wire and switch reports |
 | `05c-actions.js` | 250 | the action registry, the ⌘K palette and the status bar |
 | `05e-settings.js` | 90 | **the standards panel** — every domain number in one dialog |
 | `05d-shell.js` | 190 | **the workflow shell** — stage rail and contextual inspector, generated from the registry |
  **the action registry**, the ⌘K palette and the status bar |
 | `05h-rooms.js` | 80 | **room membership** — which room each device belongs to (wall devices by the face they look into), per-room type/count breakdown |
+| `05j-circuits.js` | 250 | **circuit end points** — `data.circuits` (name, colour, dedikált, kismegszakító, member device ids), `K` pick mode, plan rings, per-layer device tint, the Áramkörök stage, JSON export for the Inventory / Elosztó tool |
+| `05k-room-auto.js` | 230 | **room-wide Wall View automation** — Sorolás: rows of boxes on one wall face become 72 mm clip groups; Pálya-kötés: route nodes sitting on a box (in plan, ≤25 mm) become plan-only links, per route layer and device layer, stacked boxes decided by height. Both per room or all rooms, previewed, one undo step. While drawing: Device tool + Shift places the box in the nearest same-type row (72 mm, clipped); a Path tool node put down on a box snaps onto it and becomes its link when the path is finished (`placeSnap`, used by `08-interaction.js`) |
+| `05l-layers.js` | 472 | **layer model v2 + layer panel** (BRIDGE Stack, WP-A1–A3) — the 16 sub-layer categories (`LAYER_CATS` itself sits in `02-state.js`), v1→v2 migration, per-category opacity (`lyrOp` / `lyrWrap` / `lyrFaces`), `lyrPushUndo` (layers + stacks in undo, opt-in via the `__layers` scope marker); `renderLayers` (vertical sub-layer rows, hold-drag), `lyrSwapCat` / `lyrMoveCat`, `lyrDuplicate` / `lyrMerge*` / `lyrLink` / lock (`lyrLockHit` is called from `hitTest`); **the colour code** — `lyrColor` (a stack layer takes its ROLE colour from `STK_COL`, an ordinary one an evenly spaced hue, a hand tint beats both), the per-layer paint switch (`L.paint`) and **the spotlight** (`state.lyrSpot`: the device under the pointer lights every device of its layer and the layer block in the panel — view state, never saved, never undoable) |
+| `05m-stack.js` | 259 | **BRIDGE Stack** (WP-B1) — `stacks` (session global) over ordinary layers carrying `L.stack`/`L.role`; `STK_ROLES`, wizard `stack.create`, adopt/dissolve, the stack stage rail (`shellStages()` in 05d), construct checks, and the shared hooks later stack work packages plug into: `STK_SCENE` / `STK_OVERLAY` (04 `draw()`), `STK_TOOLS` (08 pointer + keys), `STK_CTX` (10 right-click), `STK_WV` / `STK_PV`, `STK_CHECKS`; `VALIDATORS` lives in 01-schema |
+| `05n-marks.js` | 639 | **marking layer** (BRIDGE Stack, WP-B2/B3) — `data.marks`: wall / side / vstrip / hstrip / hband marks, door and window tags, floor and ceiling strips and zones; `mrkAt()` is the query later layers use; tools `mrkWall` (J) and `mrkPlane` (G / Tab) through `STK_TOOLS`, drawing through `STK_SCENE` / `STK_OVERLAY` / `STK_WV` / `STK_PV`, right-click through `STK_CTX`; tag tables `MRK_TAGS` |
+| `05o-traces.js` | 318 | **movement traces + portal graph** (BRIDGE Stack, WP-B4/B5) — `data.traces`: 45° line / freehand / smoothed freehand modes of the plane tool (RDP + end-fixed Chaikin), door snapping; `prtGraph(level)` is a pure derived JSON (doors as nodes, line of sight, A* over the 500 mm grid, trace encoding in each door frame, heat map) with two default-off overlays and a JSON export |
+| `05p-hardware.js` | 366 | **hardware nodes** (BRIDGE Stack, WP-C1/C2/C4) — device types `rbx` `base` `meter` `entry` `ssc` (+ the existing `board`) placed on a wall FACE by the `hwPlace` tool (vstrip attraction, ban warning); their 3D boxes are DERIVED at draw time (`STK_BOXES`), never stored; RBX room serving with one owner per room (manual > faced > behind the wall), pick mode, coverage ghost; BASE units, guideline rules and highlights |
+| `05q-rf.js` | 142 | **radio coverage** (WP-C3) — simplified COST-231 multi-wall model on the 500 mm grid; wall loss from the Marking layer's material tags, else from thickness; memoised on a basis string; the RF view, settings, per-RBX radios, coverage checks |
+| `05r-channel.js` | 148 | **channel topology** (WP-C5) — routes between hardware nodes are ordinary paths drawn with the Path tool while `CHN_T` is on (`route:'channel'`, `rule`); the carrier is derived from the two end types; names `A~B`, `/b` for parallels; `chnTree` (shortest channel paths from BASE, physical chain) and `chnLenToBase`; `CHN_PATH_HOOKS` is the finishPath hook E1 shares |
+| `05s-endpoints.js` | 301 | **endpoints** (WP-D1/D4) — `EP_CAT`: BRIDGE type codes per system role with variants that fix the cables and own conduits (STD-001-A2); LMP/SWI/SOC stay classic light/switch/socket, every other code is type `ep`; an endpoint always lands on its code's role layer; `epCables`; circuits reused from 05j with implicit defaults; BRIDGE control groups `sw.ctl` (the switch is an RBX input — no switch-to-lamp wire); `epGroupsFor(room, role)` is the fill's input |
+| `05t-needs.js` | 309 | **room needs + placement suggestions** (WP-D2/D3) — room kind from Rendeltetés, then name; per-layer checklists with defaults + ticks derived from the Marking layer; a saved layer is a full object; status off/empty/open/done; overview, dialog, checks, `needReport`; `SUG_ANCHORS` (door handle side, window head, far corner, media-wall pair, night-trace leg lights, coverage gap…) as overlay hints + soft snap (Alt = free) |
+| `05u-arms.js` | 123 | **ARM routes + stack view** (WP-E1) — paths with `route:'arm'` drawn by the Path tool while `ARM_T` is on; an end within 150 mm of another route branches from it through an explicit join `n.j={p,n}` (its segment is split when needed); `state.stkView` fades every non-stack layer to 30 % through `lyrOp`; ARM refs `A<n>` per room; ban-wall and unreached-endpoint checks |
+| `05v-graph.js` | 116 | **route graph** (WP-E2) — pure: explicit edges only (route segments, joins, device links with their vertical drop, ≤ 1 mm coincidence); Dijkstra (binary heap), daisy chain by graph distance, Steiner tree by KMB, tree legs; deterministic by key order |
+| `05w-fill.js` | 306 | **auto-fill** (WP-E3/E4) — a pipe only starts and ends at a box: one pipe per run leg, merged only for the same family between the same two boxes; sizing by STD-001-A2 (1.4 × OD single, 40 % / 33 % fill, plug minimums); `data.runs` + `sec.cont.auto` entries owned by `src`, manual kept, basis for staleness; share / ban / overfill warnings; the CHANNEL bundle with chain accumulation, MAINS feed packing (M32 bins, M25 minimum), the security trunk; report and export |
+| `05x-cabinet.js` | 133 | **Elosztószekrény** (WP-E5) — ways from the channel topology (system, RBX lighting, RBX socket circuits, big loads), RCBO per way or grouped RCDs, feed + SPD + bell, rows and spare modules, greedy phase balance; `vrg-cabinet` v1 export wrapping `vrg-circuits`; reproduces P33 (24 ways, 29 / 34 modules) |
+| `05y-client-preview.js` | 58 | **Client preview model** — `cpvModel({scope})`, a pure read of the open plan into the `vrg-client-preview` v1 JSON the WebGL page (`projects/client-preview`) renders: levels with scope in / ghost / skip (default: shown → in, hidden with geometry → ghost, empty → skip), rooms with area and devices, wall rectangles, openings, devices with room and facing; `circuits` empty until phase 3 |
+| `05z-icons.js` | 252 | **the symbol set** — body = family and real size (szerelvény 68 mm < kötődoboz < mennyezeti pont < hardver), mark = which device (`ICO_MARK`, our own paths in a −5…5 box), colour = which system (`STK_COL` through `icoCol`); hybrid sizing — fixed screen tiers up to view scale 2, real plan footprints from 2× (`ICO_MM_FROM`); registered FIRST on `STK_DEVSYM`, so `hwSymbol` and `epSymbol` remain the fallback; `icoLegend()` lists what a plan actually uses |
 | `05b-editor-core.js` | 130 | **the editor surface layer** — one pointer/drag/warp/menu implementation, driven by a projection |
 | `06-wall-editor.js` | 850 | wall elevation editor — chase model, notes, action rail, session, links, coordinate list, **wall projection** |
+| `06a-portals.js` | 183 | **Portals** (IDEA-003 SmartFrame): hardware type `portal` on a door face — nest at the hinge-side upper corner, latch side when < 300 mm of wall beyond the hinge (H0-3), height = rail line `max(ceil−450, head+280)+50`; classes PT-S/D/E/W/B, tiers SF-0…3; the **Silver Rail** (`route:'rail'`, a Path-tool variant like the channel); node tiers gold / silver / bronze (`ndTier`) |
+| `06b-clusters.js` | 350 | **cluster boxes** (type `cluster`, K1/K2/K3, on the Klaszterpontok layer; `d.host` = membership), clustering existing endpoints (IDEA-001 rule), corner cluster points of an L room; **ideal spots** per stack layer (✦ toggle in 05l, right-click places); the device list at a node or custom point; a custom higher-layer endpoint opens a **secondary** box (`EP_PLACED` hook in 05s); the **Extrák** layer catalogue (`XTR_CAT`); preloaded plans (`window.VRG_PRELOAD`, `tools/make-preload.js`) |
 | `07-plane-editor.js` | 364 | floor / álmennyezet / ceiling plane editor, **plane projection** |
-| `08-interaction.js` | 463 | pointer and keyboard handling, gizmo, format painter, touch gestures |
+| `08-interaction.js` | 724 | pointer and keyboard handling, gizmo, format painter, touch gestures, and the two input adapters (`PLANNER_CAM`, `PLANNER_INPUT`) |
+| `08b-gamepad.js` | 601 | **the controller scheme** — virtual cursor, action wheel, button legend |
 | `09-menus.js` | 118 | hit-test, context menus, modal helper, room / wall / opening actions |
 | `10-lamps.js` | 400 | lamp data sheet, generated objects, hover preview |
 | `11-controls.js` | 167 | sidebar controls, projects, panels, persistence |
 | `12-boot.js` | 440 | startup wiring |
+| `13-role-info.js` | 83 | data only: the stack layer Info texts (`RLI_TEXT`), loaded last — every use is inside a function |
 
 **Where do I put a new feature?** By subject, not by size. A new door type goes in `04-render.js` next to the other door symbols; a new editor action goes in `06-` or `07-`; a new standard or catalogue table goes in `00-core.js` for now (it gets its own module later).
 
@@ -74,6 +95,13 @@ WALLS[level]  SLAB[level]  GHOST[level]  ROOMSB[level]  ROOFS[level]  SNAP[level
 per-document counter that only moves forward, so an id is never reused. `ensureIds()` is
 idempotent and runs wherever a document is snapshotted, saved or loaded, rather than at every
 creation site. `data.v` is the schema version; `migrate()` upgrades older files on load.
+Because `ensureIds()` only fills in *missing* ids, **every copy must go through
+`copyRecord(coll, rec)`**, which drops the id (and, for a device, its links and clip row) — a
+plain `JSON.parse(JSON.stringify(x))` or `Object.assign({}, x)` copy keeps the original's id,
+which is how NV4 ended up with three sockets called `D131`. Files saved before that fix are
+mended on load by `repairDupIds()` (called from `migrate()`, no version step): the first record
+keeps the id, the rest get fresh ones, and a Behúzás entry moves to a copy only when that is
+unambiguous; anything else stays with the first and is reported (`idRepairReport()`, console, HUD).
 
 **Cross-references are ids, not indices.** `dev.link = {p:'P3', n:'n12'}`; resolve with
 `linkTarget(dev)`, which returns `null` when either end is gone. Deleting anything is therefore
@@ -156,6 +184,51 @@ list of buttons to maintain.
 **The shell is chrome, not drawing.** A test asserts the scene layer is byte-identical with the
 shell on and off.
 
+## Input adapters and the controller
+
+Two objects at the bottom of `08-interaction.js` are the only surface any alternative input device
+talks to:
+
+- **`PLANNER_CAM`** — camera and history: `setPitch` / `setYaw` / `zoomBy` / `panBy` / `pivotAt` /
+  `resetView` / `undo` / `redo` / `selectTool`. Built for the phone gyro, shared with the gamepad.
+- **`PLANNER_INPUT`** — everything else a device needs: `hover` / `press` / `release` / `context`
+  for the mouse verbs, `escape` / `heightStep` / `cyclePick` / `drop` / `del` for the keyboard ones,
+  plus `busy()`, `stageRect()` and the readouts the legend needs.
+
+Neither adds a top-level name (they are `window.X = {...}`), which matters in a single shared scope.
+
+**Why a device driver never calls a handler directly.** The stage's pointer handlers are ~200 lines
+of mode-specific placement, snapping and drag logic, and the keyboard handler already decides, per
+mode, whether `ArrowUp` means "step the drawing height" or "tilt the camera". Re-implementing any of
+that for a second device would create a parallel code path to keep in sync. So `PLANNER_INPUT`
+*replays* — it dispatches the same pointer and key events a mouse and keyboard send, exactly as
+`camUndo()` already dispatches Ctrl+Z rather than calling `doUndo()`. Two consequences worth
+knowing:
+
+- A press is `pointerdown` and a release is `pointerup`, so **click, drag and gizmo-drag all work
+  with no controller-specific code**. `setPointerCapture()` rejects a synthetic `pointerId`, which
+  is why every call site in that file already wraps it in `try/catch`.
+- The D-pad is literally the arrow keys, which is also the rule the user is taught.
+
+`08b-gamepad.js` is then a pure driver: one rAF loop polling `navigator.getGamepads()` (the Gamepad
+API has no axis events), dead zone and response curve, a virtual cursor, the wheel and the legend.
+It talks to nothing but the two adapters, the way `07b-phone-camera.js` talks to nothing but
+`PLANNER_CAM`.
+
+**One mechanism for two cursor models.** The cursor roams inside a box centred on the stage and
+pushing past the edge drags the camera. A box of `0` collapses that to a reticle fixed at screen
+centre with the world moving under it. Selection modes use a 0.55 box (a free cursor), every drawing
+mode uses 0 (a locked reticle, steadier for placing). Same code path, one number per mode, both
+exposed as settings — there is no second mode to maintain.
+
+**The reticle, wheel and legend are DOM chrome over `.stage-wrap`, never SVG inside `draw()`** —
+the same rule as the shell, for the same reason. That is what makes it structurally impossible for
+the controller to move a golden hash.
+
+Its config lives in its own `localStorage` key, **not in `state`**: `sessionObj()` serialises the
+whole `state` object into every saved project, and a per-PC input preference has no business
+travelling inside a client's plan file.
+
 ## Surfaces and projections
 
 A wall elevation and the three plan planes are the same abstraction: **a projection of the model
@@ -190,6 +263,24 @@ when 1.1 needs one. Don't reach for `modalEl` directly in editor code.
   *that* cheaper needs per-item DOM updates, which is a later job.
 - **`updateTotals()` only runs when the scene string changed.** Totals derive from the model, so
   a camera move or a hover can't affect them.
+- **`SC` is a variable now, and a size belongs to one of three kinds.** The view scale (`vsSet`,
+  `VIEW_SCALES` = 1, 2, 5, 10) grows the model in base space and divides the zoom by the same
+  factor, so the picture never jumps; what moves is the band the zoom range covers — step 10
+  reaches ten times closer before the ceiling. Which means any size you write has to say which
+  kind it is:
+  - **model mm** (geometry, `nvMM` room text) — scales with the model, right by construction;
+  - **paper mm** (`bpU` / `nvSW` / `bpSW` / `bpFS`) — already carries `SC`, right by construction;
+  - **base units written as a literal** — would shrink on screen; pass it through **`vsP()`**
+    (or `vsDash()` for a dash pattern, `devK()` / `pathK()` for the symbol scales).
+  Anything of the form `C/state.zoom` is already screen-constant and needs nothing. A screen-sized
+  BADGE — a label, a node dot, a cursor read-out — is wrapped in **`vsBadge(x,y,svg)`** instead, so
+  its small ±n offsets travel with its sizes; never put model-true geometry through `vsBadge`.
+  Step 1 is the identity for all of it, which is why the golden renders did not move.
+- **A room label is fitted to its room** (`lblFit`, `lblBox`). The size is still model mm from the
+  paper scale, so it holds against the building at any zoom — but it is shrunk until the block fits
+  the room, and never grown. The advance widths are *estimated*, not measured: `draw()` runs on
+  every pointer move and there is no text metric without a layout pass. The estimate is good to
+  about 8 %, which the 0.86 margin covers.
 - **`drawSoon()`** is the rAF-coalesced draw, used by the pointermove handlers. `draw()` itself
   stays synchronous, so the other ~200 call sites and every test behave as before.
 - **Undo snapshots can be scoped.** `pushUndo(['paths'])` clones only that collection and the

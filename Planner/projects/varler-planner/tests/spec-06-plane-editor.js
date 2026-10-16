@@ -102,7 +102,7 @@ setTimeout(()=>{
   ok('linked node follows in plan',w.__data.paths[0].nodes[0].x===1800&&w.__data.paths[0].nodes[0].y===1400);
   w.pvSetNode(0,0,2100,1550,true);
   ok('device follows its node in plan',w.__data.devices[0].x===2100&&w.__data.devices[0].y===1550);
-  delete w.__data.devices[0].link;
+  w.clearLinks(w.__data.devices[0]);
 
   // ---------- warp in plan ----------
   d=w.planeViewData(room,lvl,'ceiling',300);

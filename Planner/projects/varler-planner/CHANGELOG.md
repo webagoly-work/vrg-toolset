@@ -1,5 +1,108 @@
 # Changelog
 
+## Unreleased — round 2026-10-10: S1 · S5 · M1
+- **Stack layer menu + Info (S1).** Right-click a stack layer (panel row or rail button): Info (purpose, device types live from the catalogue, where and how many with this plan's counts, what it clusters with), Aktiválás, Csak ez látszik, Kiemelés, Elemek kijelölése, Ellenőrzés, Helyiség-igények, Tartalom törlése (one undo; a locked layer refuses). Texts in `src/13-role-info.js`.
+- **Security catalogue (S5).** Ten Home Assistant / ESPHome codes (MOT DWC GLB SRN KPD PNC LCK SMK COA DBL) with symbols, room needs, placement hints and an Alap / Prémium tier (`secTier` on the stack). Battery variants carry no cable. Life safety: certified standalone smoke / CO alarms first, HA only notifies.
+- **Erősáram split (M1).** One `sys:MAINS` layer becomes Dedikált körök · Dugaljak · Világítás (lamps, switches, shutter motors), all still `fam:'MAINS'`. **Plans migrate on load** (`stkMigrateRoles`): the old layer keeps its id as Dugaljak, devices move by code, room checklists split. **A plan saved after this opens in an older build with the three new roles shown as plain layers.** `sys:MAINS` stays a read-only alias in the catalogue and needs. Grey-safe print palette (`STK_PRINT`, `state.printPal`) for printing and PNG grey, with a legend; route strokes do not carry the patterns yet.
+
+## Unreleased — the drawing starts to look like itself
+Five complaints about the *look* of the plan, which turned out to be four causes.
+
+- **Nézeti lépték (view scale), 1× / 2× / 5× / 10×.** `SC` was a constant, so the zoom ceiling put
+  a floor under how close you could work: at full zoom a screen rectangle showed 500 mm and no
+  less. A step grows the model in base space and divides the zoom by the same factor, so the
+  picture does not move — what moves is the band the zoom covers. At 10× that same rectangle shows
+  50 mm. Pens, device symbols and labels keep their size on screen throughout, because every size
+  in the drawing now declares whether it is model millimetres, paper millimetres or base units
+  (`vsP` / `vsDash` / `vsBadge` / `devK` / `pathK`). Step 1 is the identity: the 70 golden renders
+  did not move.
+- **Room labels fit the room.** A name was sized from the paper scale with no regard for the room,
+  so a WC wore a label 1.8× its own width and a lépcső 1.9×, spilling across their neighbours —
+  which is what actually made the plan look coarse, not the big rooms. The block is now measured
+  and shrunk to fit, never grown. Measured on P33: every label went from 0.83–1.90 of the room
+  width to 0.26–0.94. The official view got the same treatment.
+- **A symbol set of our own.** Everything that was not a socket, a switch, a lamp or a board drew
+  as one generic square-with-a-dot — érzékelő, kamera, hangszóró and kezelőpanel were the same
+  picture. A symbol now says three things: **body** = what kind of thing and how big it really is
+  (szerelvény 68 mm < kötődoboz < mennyezeti pont < hardver), **mark** = which device (24 drawn
+  pictograms, ours, no icon font — the product is still one offline file), **colour** = which
+  system. Sizing is hybrid: fixed screen tiers up to 2×, real plan footprints aligned to the host
+  wall from 2× upward. Nothing the plan used to say in words was lost — the hardware labels and
+  the STD-004 endpoint codes are still on the drawing. `Jelkulcs` (⌘K) lists what a plan uses.
+- **One colour per system, everywhere.** `STK_COL` fixes a colour per stack role — Erősáram is the
+  same red in every project, on the panel, on the symbols and in the BRIDGE sheets — and
+  `EP_ROLE_COL` now reads from it instead of keeping a second copy. Each layer row carries its
+  colour as a disc; clicking it paints that layer's devices in it, and `Mind színezve` does the
+  lot. A hand-picked tint still beats both.
+- **Réteg-kiemelés (the spotlight).** With it on, the device under the pointer lights up every
+  device that shares its layer, and that layer's block in the panel glows the same colour — one
+  gesture answers "what else is on this run?". View state: never saved, never undoable.
+- **A fourth render: Ügyfél-előnézet.** The same plan in the look the client meets in the WebGL
+  preview — near-black ground, thin cool wireframe, warm openings, glowing endpoints — built on
+  the same edge pass as the white-out sketch (`wireEdges`). The glow is two stroke passes, not a
+  filter, because that is the first thing an SVG exporter throws away.
+- Fixed: `Normál nézet` in the palette set `state.style='plan'`, a value nothing renders and the
+  Render selector has no option for.
+- **2117 assertions across 51 suites, 70 golden renders.**
+
+## Unreleased — controller support
+
+An **Xbox-compatible USB controller** as an alternative to keyboard and mouse, off by default,
+switched on with the 🎮 button in the header, ⌘K → "kontroller", or the Kontroller section of the
+settings panel. Modelled on Tropico 5's scheme, which got three things right: the sticks mean the
+same thing on every screen, a button legend is always visible and always current, and nothing is
+deeper than two presses.
+
+- **The map is anchored on one rule the user can hold in their head: the D-pad is the arrow keys.**
+  In this app the arrows already mean "step the drawing height" and "cycle the place palette" —
+  the two most-repeated operations there are. Left stick cursor, right stick yaw/pitch pivoting at
+  the cursor, analog triggers zoom, A primary click, B `Esc`, X context menu (or drop the place item
+  while drawing), Y the action wheel, LB/RB undo/redo, LS fine mode, RS recentre, Start the palette.
+- **A is the mouse button, not a "place" command**: press is `pointerdown`, release is `pointerup`.
+  Click, drag and gizmo-drag therefore all work without one line of controller-specific placement
+  code, because they go through the handlers the mouse already goes through.
+- **Free cursor and fixed reticle are one mechanism.** The cursor roams inside a box and pushing
+  past the edge drags the camera; a box of 0 collapses to a reticle locked at screen centre with the
+  world moving under it. Selection modes get a free cursor, drawing modes a locked reticle. Both
+  numbers are settings.
+- **Sticky targeting.** A thumbstick cannot hit a millimetre and does not have to — `cableSnap()`
+  already snaps. On top of that, pressing A with nothing directly under the reticle hit-tests a ring
+  around it and clicks the nearest target instead. It runs on press, not per frame; a low-rate scan
+  tints the reticle green when a target is in reach, so the stickiness is visible before you commit.
+- **The action wheel is generated from the action registry**, like the palette and the inspector —
+  a new action appears in it the moment it is registered, with nothing to maintain. Two rules shape
+  it, and they pull against each other:
+  - **The top ring is fixed** — the same eight sectors in the same places regardless of context,
+    because muscle memory is most of what makes a controller fast and it cannot learn a ring that
+    rearranges itself. Seven named groups plus Egyéb. A curated fixed-eight ring is a setting.
+  - **Unavailable actions are dimmed, not hidden**, per the registry's own rule. Pressing A on a
+    greyed entry tells you what it needs and leaves the wheel open, rather than eating the press.
+  Eight sectors of twelve is not every action and is not trying to be — the wheel is the speed
+  surface and ⌘K is the complete one — but every action is *assigned* to a sector
+  (`sum(sector.full) === ACTIONS.length`, asserted), and a full ring says how many it is not showing
+  and where they are. When a ring does overflow it keeps the runnable entries and cuts the greyed
+  ones, so a cut can never cost you something you could have run.
+  The sector pick is sticky, so recentring your thumb between aiming and pressing A doesn't lose it.
+- **The button legend** re-labels itself per mode and is most of why the scheme is quick to pick up.
+- **Two new input adapters** at the bottom of `08-interaction.js`: `PLANNER_INPUT` joins the
+  existing `PLANNER_CAM`, and `08b-gamepad.js` talks to nothing else — the same discipline
+  `07b-phone-camera.js` follows. Neither adapter adds a top-level name.
+- The reticle, wheel and legend are DOM chrome over the stage, never SVG inside `draw()`, so the
+  scene layer is untouched and no golden hash can move.
+- Config lives in its own `localStorage` key rather than in `state`, which is serialised into every
+  saved project — a per-PC input preference should not travel inside a client's plan.
+- **One change outside the controller, and it is worth knowing about.** Closing an open path or
+  cable run was only ever Enter or a double-click — registered nowhere, so findable by nobody, and
+  unreachable from a controller entirely (B is `Esc`, and `Esc` *discards* the draft). It is now a
+  registered action, `draw.finish`, which puts it in ⌘K, the status bar and the wheel as well as on
+  RS. It appears only while a run with at least two points is open.
+- **74 new assertions** (`tests/spec-67-gamepad.js`) driving the frame with a scripted pad: dead
+  zone and response curve, both cursor models, camera and clamps, placement, drag, undo/redo, the
+  wheel at both levels, the ring cut, closing a run, standing down behind a modal, off-means-off,
+  and the two invariants that matter: the scene layer is byte-identical with the controller on and off, and no
+  controller surface appears inside the stage SVG. What no test can see — whether the browser hands
+  us a pad at all — is group **G** of the browser checklist.
+
 ## 1.0.0 — the coherent foundation
 Phase 6, and the end of the refactor. Everything built before this is now standing on a structure
 that can absorb the next fifty features.

@@ -444,6 +444,114 @@ items you haven't reached yet; everything else you already answered `A` stands.
 
 Version is now shown next to the title in the header (`v0.9.1`) — quote it in any further report.
 
+## G — Controller (Xbox / standard USB pad)
+
+Nothing in this group can be tested without a real controller, and **G1 is the one that decides
+whether the feature works at all** — the rest is tuning. Turn it on with the 🎮 Kontroller button in
+the header (or ⌘K → "kontroller"), then press a button on the pad.
+
+**G1 ★★ Does the browser see the pad at all?** Plug it in, press A, watch the 🎮 button and the HUD.
+- A — the HUD says a controller was detected, and the reticle appears once I turn it on
+- B — nothing happens until I reload the page, then it works
+- C — nothing happens at all, even after reload
+- D — other
+
+*(If C: open the console and type `navigator.getGamepads()`. The Gamepad API is gated to secure
+contexts, and the planner runs from `file://`. Chrome treats `file://` as trustworthy so it should
+be fine, but if this is where it dies, the fix is to serve the folder over http rather than to
+change any of the controller code.)*
+
+**G2 ★ The camera.** Right stick in any direction, then both triggers.
+- A — yaw and pitch follow smoothly, triggers zoom in and out, no stutter
+- B — moves but in visible steps / lags behind the stick
+- C — one axis is inverted or swapped
+- D — other
+
+**G3 ★ The free cursor (Kijelölés mode).** Move the left stick around, then push it hard to one side.
+- A — the reticle moves, and pushing to the edge starts dragging the view
+- B — the reticle moves but the view never pans
+- C — the reticle is too fast / too slow to aim with
+- D — other
+
+**G4 ★ The locked reticle (Készülék mode).** Switch to the device tool, move the left stick.
+- A — the reticle stays dead centre and the building slides under it
+- B — the reticle drifts off centre
+- D — other
+
+**G5 ★ Placing.** In Készülék mode, aim at a wall and press A.
+- A — the device lands where the reticle is, snapped to the wall like a mouse click
+- B — it lands but in the wrong place
+- C — nothing is placed
+- D — other
+
+**G6 ★ Dragging.** In Mozgatás mode, put the reticle on a device, hold A, move the left stick, release.
+- A — the device follows the reticle and drops where I release
+- B — it picks up but stops following partway
+- C — it never picks up
+- D — other
+
+**G7 ○ Sticky targeting.** In Kijelölés mode, aim *near* a device but not exactly on it, press A.
+- A — it selects the device anyway, and the reticle turned green before I pressed
+- B — the reticle turns green but A selects nothing
+- C — no green, no selection — I have to be pixel-exact
+- D — other
+
+**G8 ★ The D-pad.** In Készülék mode press D-pad up/down, then in Pálya mode press left/right.
+- A — up/down walks the drawing height, left/right cycles the place palette, and holding repeats
+- B — works but the repeat is too fast / too slow
+- C — one of the four directions does nothing
+- D — other
+
+**G8b ★ Closing a run.** In Pálya mode place three points, then click the right stick (RS).
+- A — the run is closed and kept, exactly like pressing Enter
+- B — the run vanishes (that would mean it discarded instead of closing)
+- C — nothing happens
+- D — other
+
+**G8c ○ The other face of X.** In Készülék mode, aim at a wall and press X, then place with A.
+- A — the device goes on the other side of the wall; pressing X again puts it back
+- B — X did something else / nothing
+- D — other
+
+**G9 ★ The wheel.** Press Y, point the stick at a sector, press A, then A again on an action.
+- A — opens, the sector under the stick highlights, A descends, A runs it, B backs out
+- B — opens but the stick doesn't highlight anything
+- C — the sectors are there but the labels are cut off or unreadable
+- D — other
+
+**G10 ○ The wheel, fast.** Hold Y, flick the stick to a sector, release Y without pressing anything.
+- A — it drops straight into that sector's ring
+- B — it just closes
+- D — other
+
+**G11 ★ The legend.** Watch the pill above the status bar while switching tools.
+- A — it's there, centred, clear of the rail and the inspector, and the labels change with the tool
+- B — it's there but overlaps something, or gets cut off
+- C — I can't see it at all
+- D — other
+
+**G12 ★ Standing down.** Open any dialog (⌘, for the settings), then waggle both sticks and press A.
+- A — the dialog is unaffected and nothing happens behind it; B closes it
+- B — something behind the dialog moved
+- D — other
+
+**G13 ○ Rumble.** Place a device, run an action from the wheel.
+- A — short buzz on each
+- B — no buzz at all (say which pad you're using)
+- D — other
+
+**G14 ○ Off means off.** Turn the 🎮 button off, then waggle everything.
+- A — reticle, legend and wheel all disappear and nothing responds
+- B — something still responds
+- D — other
+
+**G15 ○ Tuning.** ⌘, → Kontroller. Change cursor speed and the dead zone, save, try again.
+- A — the change takes effect and survives a reload
+- B — takes effect but is forgotten on reload
+- D — other
+
+---
+
 ## Reporting shorthand
 
 ```

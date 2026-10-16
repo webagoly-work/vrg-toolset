@@ -1,0 +1,576 @@
+{
+ "pack": "PLANNER-WF-Q-001",
+ "title": "Planner workflow round (WF) — build decisions",
+ "rev": "r2",
+ "date": "2026-10-14",
+ "sections": [
+  {
+   "id": "F",
+   "title": "Alapozás (Wave F)",
+   "note": "Room pen, shared edges, Create Walls / Floors. The recommended option is built if you do not answer.",
+   "questions": [
+    {
+     "id": "F01",
+     "q": "The lines you draw: inner (measured) sizes or wall centrelines?",
+     "why": "You measure inner wall to inner wall, but centrelines make clean joints. Both can be true if Create Walls pushes rooms apart by the wall thickness.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Inner sizes kept",
+       "d": "What you draw and type is the clear (inner) size. Create Walls puts the walls OUTSIDE it and shifts neighbouring rooms by the wall thickness, so every room keeps its measured size. The move list is shown before applying."
+      },
+      {
+       "k": "B",
+       "t": "Centrelines",
+       "d": "The lines are wall centrelines and nothing moves. Rooms lose half a wall per side; the label shows both: 'tengely 3 600 · belméret 3 350'."
+      },
+      {
+       "k": "C",
+       "t": "Per room",
+       "d": "A switch per room (default A). More freedom, more to explain."
+      }
+     ]
+    },
+    {
+     "id": "F02",
+     "q": "45° lines: what happens to them at Create Walls?",
+     "why": "Planner walls are axis-aligned boxes. The 3D view, the cut plan, marks and the wall editor all rely on it. A diagonal wall is a model change.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Outline only for now",
+       "d": "45° edges are allowed in the room outline and the floor, but Create Walls skips them ('ferde él — fal később'). Diagonal walls become their own work package later."
+      },
+      {
+       "k": "B",
+       "t": "Stair-stepped walls",
+       "d": "A 45° edge becomes small orthogonal wall pieces. Works today, looks rough."
+      },
+      {
+       "k": "C",
+       "t": "Real diagonal walls now",
+       "d": "Extend the wall model in this round. Large: touches render, views, marks, wall editor."
+      }
+     ]
+    },
+    {
+     "id": "F03",
+     "q": "'Hold and drag to select area like with multiple selection' — what should the drag do with the room pen?",
+     "why": "The sentence can mean two things.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Drag = rectangle room",
+       "d": "Like Prison Architect: press, drag, release = a rectangular room in one gesture. Box-selection stays in the Select tool."
+      },
+      {
+       "k": "B",
+       "t": "Drag = select nodes/edges",
+       "d": "Box-select nodes and edges of existing rooms to move them together."
+      },
+      {
+       "k": "C",
+       "t": "Both",
+       "d": "Drag on empty space = new rectangle room; drag starting on an existing room = select its nodes."
+      }
+     ]
+    },
+    {
+     "id": "F04",
+     "q": "Default wall thickness for Create Walls?",
+     "why": "You said 20 or 30 cm. Which goes where?",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Outer 300, inner 200",
+       "d": "Edges no other room touches = 300; shared edges = 200."
+      },
+      {
+       "k": "B",
+       "t": "All 200",
+       "d": "Change outer ones afterwards with today's tools."
+      },
+      {
+       "k": "C",
+       "t": "Outer 300, inner 100",
+       "d": "Inner = válaszfal 10 cm (closer to real partitions); 200 only where you set it."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "O",
+   "title": "Nyílászárók (Wave O)",
+   "note": "Door and window tools, the door as a portal.",
+   "questions": [
+    {
+     "id": "O01",
+     "q": "The arrow keys while a door/window ghost is shown",
+     "why": "The arrows already have meanings after the new keyboard layout (U4).",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Arrows cycle while the ghost is shown",
+       "d": "←/→ type, ↑/↓ opening side, only in the Ajtó/Ablak tool with a ghost on screen. Elsewhere unchanged."
+      },
+      {
+       "k": "B",
+       "t": "Other keys",
+       "d": "[ ] for the type, , . for the side; the arrows keep their meaning everywhere."
+      }
+     ]
+    },
+    {
+     "id": "O02",
+     "q": "When does a door become a portal?",
+     "why": "Portals already exist as devices bound to a door. The question is only when they are created.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "At placement",
+       "d": "Every new door gets its portal (SF-0 'előkészítve') on both faces at once; its slots exist from the first click."
+      },
+      {
+       "k": "B",
+       "t": "When first used",
+       "d": "Slots are drawn as ghosts; the portal device is created when something links to a slot."
+      }
+     ]
+    },
+    {
+     "id": "O03",
+     "q": "The window's redőny feed slot",
+     "why": "You want it activated only if the room gets redőny.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Hidden until the room has redőny",
+       "d": "The slot does not exist until the room (or the window) has the redőny rule."
+      },
+      {
+       "k": "B",
+       "t": "Always shown faint",
+       "d": "Visible as a pale ghost on every window, active when redőny is set."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "R",
+   "title": "Szabályok (Wave R)",
+   "note": "Room types, routing walls, rules palette, Standards.",
+   "questions": [
+    {
+     "id": "R01",
+     "q": "Order of the room-type wheel",
+     "why": "Muscle memory needs fixed places. Draft in MATERIAL §2: ring 1 = Nappali, Konyha, Háló, Fürdő, (South: more), WC, Előszoba, Közlekedő.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "As drafted",
+       "d": "MATERIAL §2 order."
+      },
+      {
+       "k": "B",
+       "t": "I'll reorder it",
+       "d": "Write your order in the note."
+      }
+     ]
+    },
+    {
+     "id": "R02",
+     "q": "New room types in the wheel: Gyerekszoba, Gardrób, Mosókonyha?",
+     "why": "Today they fold into Háló, Kamra and Gépészet.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Add them",
+       "d": "Own types, inheriting the defaults of Háló / Kamra / Gépészet."
+      },
+      {
+       "k": "B",
+       "t": "Keep the 13 types",
+       "d": "No new types; the ring-2 places get other kinds."
+      }
+     ]
+    },
+    {
+     "id": "R03",
+     "q": "Where are 'vezethető fal' (routing wall) selections stored?",
+     "why": "P33's engine already reads Jelölés marks; a separate store would be cleaner to query but is one more thing.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "As marks on the Jelölés layer",
+       "d": "New tag 'vezetheto' + a part-of-wall kind. One store, existing undo/hide/colour."
+      },
+      {
+       "k": "B",
+       "t": "Own collection",
+       "d": "data.routeWalls — separate from the other marks."
+      }
+     ]
+    },
+    {
+     "id": "R04",
+     "q": "Standards: one dugalj with height variants, or separate dugalj items?",
+     "why": "Your question. Auto-pick from context worked on P33.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "One device, variants",
+       "d": "Dugalj stays one item; the variant (garázs 500, éjjeli 750, fürdő 1400…) is picked from the room and marks automatically; ↑/↓ on a selected device cycles variants, Shift+↑/↓ moves the height by 50."
+      },
+      {
+       "k": "B",
+       "t": "Separate catalogue items",
+       "d": "'Dugalj — garázs 500' etc. as their own items in the device list."
+      }
+     ]
+    },
+    {
+     "id": "R05",
+     "q": "'Konyha dugalj is below pult height' — which did you mean?",
+     "why": "The usual kitchen rule is above the worktop (900 + 200 = 1100).",
+     "rec": "C",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Above the worktop, 1100",
+       "d": "The standard worktop socket."
+      },
+      {
+       "k": "B",
+       "t": "Under the worktop, 300",
+       "d": "For built-in appliances in the base cabinets."
+      },
+      {
+       "k": "C",
+       "t": "Both variants",
+       "d": "'pult' 1100 and 'pult-alatt' 300, picked by what the socket feeds."
+      }
+     ]
+    },
+    {
+     "id": "R06",
+     "q": "Bathroom socket height",
+     "why": "Your draft says 1400; the P33 engine used 1100 (outside zones 0–2, MSZ HD 60364-7-701 — the zone is a distance rule, the height is a choice).",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "1400",
+       "d": "Your number. The zone check (≥ 600 mm from bath/shower) stays a separate check."
+      },
+      {
+       "k": "B",
+       "t": "1100",
+       "d": "Keep the P33 value."
+      }
+     ]
+    },
+    {
+     "id": "R07",
+     "q": "New rule tags for the palette: Kerülendő, Tilos (face), Médiafal, Munkalap, Sziget",
+     "why": "Munkalap and Sziget replace hand-written lists in p33.config.js, so the engine can read them from the plan.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "All five",
+       "d": "As in MATERIAL §7."
+      },
+      {
+       "k": "B",
+       "t": "Only Kerülendő + Tilos",
+       "d": "Worktop / island / media wall stay engine config for now."
+      }
+     ]
+    },
+    {
+     "id": "R08",
+     "q": "When does LMB on a room open the type wheel?",
+     "why": "Plain selecting should not keep popping a wheel.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Room tool, or Alt+click in Select",
+       "d": "In the Helyiség tool every click on a room opens it; in Select only with Alt."
+      },
+      {
+       "k": "B",
+       "t": "Any click on an untyped room",
+       "d": "In Select too, but only while the room has no type."
+      },
+      {
+       "k": "C",
+       "t": "Any click on a room's empty area",
+       "d": "Always. Fastest, noisiest."
+      }
+     ]
+    },
+    {
+     "id": "R09",
+     "q": "Bathroom sockets that are NOT beside the mirror/sink",
+     "why": "You set 1400 for the borotválkozó dugalj.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "1100",
+       "d": "Like the P33 engine."
+      },
+      {
+       "k": "B",
+       "t": "1400 as well",
+       "d": "One height for the whole bathroom."
+      }
+     ]
+    },
+    {
+     "id": "R10",
+     "q": "The room-type wheel in the Select tool",
+     "why": "Built: in the Helyiség-toll a click inside a room opens the wheel. In Select, Alt+click (R08 A) already means \"cycle overlapping items\".",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Double-click a room",
+       "d": "In Select, a double-click on a room's empty floor opens the wheel; Alt keeps its old meaning."
+      },
+      {
+       "k": "B",
+       "t": "Alt anyway",
+       "d": "Alt+click on a room opens the wheel; overlap cycling moves to another key."
+      },
+      {
+       "k": "C",
+       "t": "Room tool only",
+       "d": "Leave Select alone."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "E",
+   "title": "Villamosság / Erősáram (Wave E)",
+   "note": "Workflow bar, lamp-switch links, boxes, circuits, the engine.",
+   "questions": [
+    {
+     "id": "E01",
+     "q": "Phase 4.1 — dugalj and lámpa+kapcsoló",
+     "why": "They are separate stack layers since M1 (sys:SOC, sys:LIGHT).",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Two buttons",
+       "d": "'Dugaljak' and 'Lámpák + kapcsolók' switch the active layer; both stay visible."
+      },
+      {
+       "k": "B",
+       "t": "One combined step",
+       "d": "The tool picks the layer from the device type you place."
+      }
+     ]
+    },
+    {
+     "id": "E02",
+     "q": "Suggest lamp → switch links automatically?",
+     "why": "On P33 the engine inferred them (nearest door, wet rooms switched from the dry side, two-way pairs) and you approved a table.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Yes, as a table to approve",
+       "d": "A 'Kapcsolások javaslata' button; nothing applied without Alkalmaz."
+      },
+      {
+       "k": "B",
+       "t": "Manual only",
+       "d": "You link every group yourself."
+      }
+     ]
+    },
+    {
+     "id": "E03",
+     "q": "A switch sitting in a portal slot when the door moves or flips",
+     "why": "Slots follow the door's hinge side.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Follows the door",
+       "d": "It reseats to the same slot (L1) on the new latch side."
+      },
+      {
+       "k": "B",
+       "t": "Stays put",
+       "d": "It leaves the slot and becomes a free switch."
+      }
+     ]
+    },
+    {
+     "id": "E04",
+     "q": "Lighting circuits in the suggestion list",
+     "why": "P33 used two zones; WORKSHOP-001 says one string touching every RBX.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Two zones: V1 day, V2 night",
+       "d": "Night = bedrooms + bath. The P33 decision."
+      },
+      {
+       "k": "B",
+       "t": "One string",
+       "d": "One lighting circuit for the whole flat (WORKSHOP-001)."
+      },
+      {
+       "k": "C",
+       "t": "One per floor",
+       "d": "Multi-storey houses; single floor = one."
+      }
+     ]
+    },
+    {
+     "id": "E05",
+     "q": "How does the P33 engine get into the Planner?",
+     "why": "It is 1 267 lines of plain Node code without DOM, and it produced the real P33 offers.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Bundle it",
+       "d": "build.js wraps the engine files into the page. One engine for the command line and the Planner; fixes land in both."
+      },
+      {
+       "k": "B",
+       "t": "Port it into src modules",
+       "d": "Rewrite into Planner modules (Planner style, shared helpers); the CLI copy then drifts."
+      },
+      {
+       "k": "C",
+       "t": "Keep it outside",
+       "d": "Export → run the engine → import. No change to the Planner, but no buttons."
+      }
+     ]
+    },
+    {
+     "id": "E06",
+     "q": "The 'pre-RBX' kötődoboz",
+     "why": "It stands in for an RBX while only Erősáram exists.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Own type, upgraded later",
+       "d": "A box type that a later layer upgrades in place to an RBX (same id, position and links)."
+      },
+      {
+       "k": "B",
+       "t": "An RBX marked 'pre'",
+       "d": "An RBX from the start with pre:true; BOM counts it as a box until upgraded."
+      }
+     ]
+    },
+    {
+     "id": "E07",
+     "q": "'Redőny control is on a different layer from now on' — which layer?",
+     "why": "Today the shutter motor (SHU) is on sys:LIGHT. STD-009 Shading (draft) exists.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Own layer: Árnyékolás",
+       "d": "New role sys:SHADE (motor feed + control), migrated like M1 did."
+      },
+      {
+       "k": "B",
+       "t": "Vezérlés (sys:CONTROL)",
+       "d": "Control moves to BRIDGE_LINK; the motor feed stays in Erősáram."
+      },
+      {
+       "k": "C",
+       "t": "Stays, engine skips it",
+       "d": "No new layer; the Erősáram engine just leaves SHU out."
+      }
+     ]
+    },
+    {
+     "id": "E08",
+     "q": "The szobadoboz (pre-evolution RBX): size and name?",
+     "why": "Bigger than 10×10, smaller than RB-S (300×400). IDEA-002 found 200×200 is the only size that is both a stock flush box and a stock revision hatch.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "200×200, \"Szobadoboz (RBX-0)\"",
+       "d": "Stock flush box + stock hatch; upgrades in place to an RBX later."
+      },
+      {
+       "k": "B",
+       "t": "150×150",
+       "d": "Smaller, fewer wires; may be tight for 3 crossings + a switch group."
+      },
+      {
+       "k": "C",
+       "t": "Two sizes",
+       "d": "150×150 for one function, 200×200 when it does crossing + feed + switching."
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "answered": "2026-10-14",
+ "answers": {
+  "F01": "A",
+  "F02": "A",
+  "F03": "A",
+  "F04": "A",
+  "O01": "A",
+  "O02": "A",
+  "O03": "A",
+  "R01": "A",
+  "R02": "A",
+  "R03": "A",
+  "R04": "B",
+  "R05": "A+",
+  "R06": "A*",
+  "R07": "A+",
+  "R08": "A",
+  "E01": "A",
+  "E02": "A",
+  "E03": "A",
+  "E04": "A",
+  "E05": "A",
+  "E06": "C",
+  "E07": "A",
+  "E08": "C",
+  "R09": "A",
+  "R10": "A"
+ },
+ "answerNotes": {
+  "R04": "not sure — go with separate catalogue items",
+  "R05": "above the worktop = 1100; below-worktop sockets are appliance sockets (kitchen / bathroom / laundry) with a designated device (hűtő, mosogatógép…) — their own items",
+  "R06": "1400 is for the mirror/sink-adjacent borotválkozó dugalj",
+  "R07": "all five + the non-electrical areas (wet walls etc.) as rules too",
+  "E06": "own answer: a lower-level RBX (\"pre-evolution\"): bigger than 10×10, smaller than an RBX; does wall crossing, room feed, lamp↔switch interconnection — NOT socket circuit distribution: with room socket circuits + V1 (or V1+V2) lighting, sockets chain Elosztó → first room socket → … → last (single-layer classic, non-BRIDGE)"
+ }
+}

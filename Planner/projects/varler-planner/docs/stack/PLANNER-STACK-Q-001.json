@@ -1,0 +1,166 @@
+{
+"pack":"PLANNER-STACK-Q-001",
+"title":"Planner BRIDGE Stack — build decisions",
+"rev":"r1",
+"date":"2026-10-06",
+"sections":[
+
+{"id":"L","title":"Layers (Wave A)","note":"General Planner layer rework — useful with or without a stack.","questions":[
+ {"id":"Q01","q":"Sub-layer drag/RCO onto another layer: what happens?","why":"Your text says the two layers' sub-layers change place. Moving one way is also useful.","rec":"A","opts":[
+  {"k":"A","t":"Drag = swap, Ctrl+drag = move; menu offers both","d":"Swap is the default gesture, as written."},
+  {"k":"B","t":"Drag = move, Ctrl+drag = swap","d":"Move is the more common operation in Photoshop terms."},
+  {"k":"C","t":"Swap only","d":"Exactly as written, no move."}]},
+ {"id":"Q02","q":"Which sub-layer rows show under a layer?","why":"Your 9 + windows, plus floors, roofs, notes, legacy cables, marks, traces = 16 rows.","rec":"A","opts":[
+  {"k":"A","t":"Your 9 + Ablakok always; the rest only when the layer has such items","d":"Compact; nothing hidden that has content."},
+  {"k":"B","t":"All 16 always","d":"Predictable, long."},
+  {"k":"C","t":"Only rows that have content","d":"Shortest, but rows appear and disappear."}]},
+ {"id":"Q03","q":"Opacity buttons","rec":"A","opts":[
+  {"k":"A","t":"±10 %, from 10 % to 100 %","d":"0 % is what the eye button is for."},
+  {"k":"B","t":"±10 %, 0–100 %","d":"0 % keeps it selectable but invisible."}]},
+ {"id":"Q04","q":"What does 'link layers' mean in the Planner?","why":"Photoshop links move together; the Planner has no whole-layer move.","rec":"A","opts":[
+  {"k":"A","t":"Shared visibility, opacity and lock","d":"Toggling one toggles the group."},
+  {"k":"B","t":"A + a 'move linked layers' offset tool","d":"Adds whole-layer moving (new feature, more work)."},
+  {"k":"C","t":"Link = merge-on-save group","d":"Linked layers merge when the stack is finalised."}]},
+ {"id":"Q05","q":"Merge variants","rec":"A","opts":[
+  {"k":"A","t":"Merge down + merge linked","d":"Both, as in Photoshop."},
+  {"k":"B","t":"Merge into a chosen target only","d":"One dialog, any target."}]},
+ {"id":"Q06","q":"Duplicate a layer — copy its walls too?","why":"A copied wall lies exactly on the original; walls merge visually.","rec":"A","opts":[
+  {"k":"A","t":"Off by default, checkbox to include","d":"Safest."},
+  {"k":"B","t":"Always copy everything","d":"Photoshop-literal."}]},
+ {"id":"Q07","q":"Add a layer lock (not in the draft)?","why":"Marking on top of a construction layer invites accidental wall drags.","rec":"A","opts":[
+  {"k":"A","t":"Yes — locked items draw and snap but cannot be selected","d":"Small, useful for the Szerkezet layer."},
+  {"k":"B","t":"No","d":"Keep the scope as written."}]},
+ {"id":"Q08","q":"Layer panel folding","rec":"A","opts":[
+  {"k":"A","t":"Only the active layer expanded","d":"Vertical sub-layer lists get long."},
+  {"k":"B","t":"Every layer expanded","d":"Everything visible, much scrolling."}]}]},
+
+{"id":"M","title":"Marking layer (Wave B)","note":"Rules, restrictions and preferences that later layers read.","questions":[
+ {"id":"Q09","q":"Mark polarity levels","why":"Load-bearing walls are a hard 'no', not just 'avoid'.","rec":"A","opts":[
+  {"k":"A","t":"Four: + előnyös · − kerülendő · ⛔ tilos · semleges","d":"Tilos raises warnings on routes and placements."},
+  {"k":"B","t":"Two: + and − as in the draft","d":"Simpler; tartófal becomes just '−'."}]},
+ {"id":"Q14","q":"Keys for the two marking tools","why":"J (jelölés) and G (padló/grid) look free; verified at build time.","rec":"A","opts":[
+  {"k":"A","t":"J = wall tool (J again cycles), G = floor/ceiling tool, Tab = floor↔ceiling","d":"Two hands, no mouse travel."},
+  {"k":"B","t":"No keys, buttons only","d":"Palette and stage buttons."}]},
+ {"id":"Q15","q":"Whole-wall tags","rec":"A","opts":[
+  {"k":"A","t":"One wall mark per wall per layer; a second click edits it","d":"Material is one fact about a wall."},
+  {"k":"B","t":"Any number of wall marks","d":"Free-form."}]},
+ {"id":"Q16","q":"Trace end snaps to a door within…","rec":"A","opts":[
+  {"k":"A","t":"600 mm, end placed 250 mm inside the room","d":"Door attachment without fiddling."},
+  {"k":"B","t":"400 mm","d":"Tighter."},
+  {"k":"C","t":"900 mm","d":"Looser — risk of grabbing the wrong door in a corridor."}]},
+ {"id":"Q17","q":"Smoothing for the smoothed freehand mode","rec":"A","opts":[
+  {"k":"A","t":"Ramer–Douglas–Peucker 50 mm, then Chaikin ×2","d":"Removes jitter, keeps the shape, ends fixed."},
+  {"k":"B","t":"Moving average","d":"Simpler, rounds corners more."}]},
+ {"id":"Q18","q":"Trace encoding","why":"Your description: doors relative to each other, traces on a 500 mm grid around them.","rec":"A","opts":[
+  {"k":"A","t":"Directional by default; grid frame at the start door (u along wall, v into room)","d":"Bidirectional is a per-trace toggle."},
+  {"k":"B","t":"Undirected by default","d":"Direction added only when wanted."}]},
+ {"id":"Q19","q":"Window tags to keep (my suggestions)","multi":true,"opts":[
+  {"k":"A","t":"Nyitható","d":""},{"k":"B","t":"Fix, nem nyitható","d":""},
+  {"k":"C","t":"Redőny motorral","d":"→ shutter endpoint need"},
+  {"k":"D","t":"Árnyékoló / reluxa / függönymotor","d":"→ shutter need"},
+  {"k":"E","t":"Nyitásérzékelő kell","d":"→ security contact + heating off when open"},
+  {"k":"F","t":"Napsütötte (D/Ny)","d":"shading automation"},
+  {"k":"G","t":"Menekülési nyílás","d":""},
+  {"k":"H","t":"Szellőztető ablak","d":"CO₂ / humidity logic"},
+  {"k":"I","t":"Alatta fűtőtest","d":"no boxes below the sill, thermostat away"},
+  {"k":"J","t":"Tükröződés","d":"no screen facing it"},
+  {"k":"K","t":"Kültéri érzékelő helye","d":"light / rain / temperature"},
+  {"k":"L","t":"Fokozott védelem","d":"bars, glass-break detector"},
+  {"k":"M","t":"Tetőablak","d":""}]},
+ {"id":"Q20","q":"Whole-wall tags to keep","multi":true,"why":"Door, strip and floor/ceiling tag lists are in 01_CATALOGUES §3 — edit them freely.","opts":[
+  {"k":"A","t":"Tartófal — nem véshető","d":"⛔, 15 dB"},{"k":"B","t":"Vastag fal / főfal","d":"−, 12 dB"},
+  {"k":"C","t":"Vékony válaszfal","d":"5 dB"},{"k":"D","t":"Gipszkarton / szerelt fal","d":"+, 3 dB"},
+  {"k":"E","t":"Előtétfal / installációs fal","d":"+"},{"k":"F","t":"Belső fal","d":""},
+  {"k":"G","t":"Szomszéd felé (közös fal)","d":"⛔"},{"k":"H","t":"Homlokzati / külső fal","d":"−, 15 dB"},
+  {"k":"I","t":"Gépészet a falban","d":"⛔ water, gas, heating"},{"k":"J","t":"Kémény / szellőzőkürtő","d":"⛔"},
+  {"k":"K","t":"Tűzfal / tűzszakasz határ","d":"−"},{"k":"L","t":"Üvegfal / üvegtégla","d":"⛔"}]},
+ {"id":"Q20B","q":"Wall-side tags to keep","multi":true,"opts":[
+  {"k":"A","t":"L-forma — preferált sarok","d":"your example"},{"k":"B","t":"Média / TV fal","d":"your example"},
+  {"k":"C","t":"Ágy fejvége","d":""},{"k":"D","t":"Konyhapult fala","d":""},{"k":"E","t":"Íróasztal fala","d":""},
+  {"k":"F","t":"Bútor takarja","d":""},{"k":"G","t":"Ajtólap mögé esik","d":""},{"k":"H","t":"Fűtőtest előtte","d":""},
+  {"k":"I","t":"Csempézett","d":""},{"k":"J","t":"Vizes zóna (fürdő 0–2)","d":""},{"k":"K","t":"Díszfal","d":""}]}]},
+
+{"id":"S","title":"Stack frame (Wave B)","questions":[
+ {"id":"Q10","q":"What is a BRIDGE Stack in the data?","rec":"A","opts":[
+  {"k":"A","t":"Ordinary layers with a role, grouped","d":"Every existing tool works on every stack layer."},
+  {"k":"B","t":"One special layer with internal sub-layers","d":"Closer to 'a special layer type', but every tool needs teaching."}]},
+ {"id":"Q11","q":"When a stack is active, the left stage rail…","rec":"A","opts":[
+  {"k":"A","t":"…shows the stack's steps (Szerkezet → … → Biztonság → ARM)","d":"'◂ Általános' returns to the normal stages."},
+  {"k":"B","t":"…stays; the stack gets its own panel","d":"Two navigation systems."}]},
+ {"id":"Q12","q":"Using existing layers in a new stack","rec":"A","opts":[
+  {"k":"A","t":"Reference them (they join the stack); several can be merged first","d":"No copies."},
+  {"k":"B","t":"Copy them into the stack","d":"Originals untouched; two copies of the walls."}]},
+ {"id":"Q13","q":"Rooms from the building model have no stable id","rec":"A","opts":[
+  {"k":"A","t":"Give them ids automatically (Y…)","d":"Invisible to you; marks and RBX assignments can point at them."},
+  {"k":"B","t":"Require converting them to drawn floors","d":"One kind of room only."}]},
+ {"id":"Q26","q":"Order of the phase-2 system layers","why":"Your draft starts with the simplest and puts SECURITY last.","rec":"A","opts":[
+  {"k":"A","t":"BRIDGE build order: Erősáram, A busz, B busz, Vezérlés, Adat, (KNX), Érzékelők, Rádió, Kezelők, Média, USB, Biztonság","d":"STD-001 §6; every step needs nothing from a later one."},
+  {"k":"B","t":"Simplest first, my own order","d":"Note the order."}]}]},
+
+{"id":"H","title":"Hardware, BASE, channel (Wave C)","questions":[
+ {"id":"Q21","q":"Which rooms does a newly placed RBX serve automatically?","rec":"A","opts":[
+  {"k":"A","t":"The room it faces + the room behind its wall","d":"'Common-wall rooms get it automatically.'"},
+  {"k":"B","t":"Only the room it faces","d":"Everything else by RCO."}]},
+ {"id":"Q22","q":"Rooms per RBX","rec":"A","opts":[
+  {"k":"A","t":"Every room exactly one RBX","d":"Moving a room to another box asks."},
+  {"k":"B","t":"A room may have several","d":"Large open spaces."}]},
+ {"id":"Q23","q":"Wireless coverage model","rec":"B","opts":[
+  {"k":"A","t":"Plain circles per radio","d":"Fast, ignores walls."},
+  {"k":"B","t":"Multi-wall model: distance + loss per wall, from your wall tags","d":"Tartófal costs more than gipszkarton. Typical values, editable."}]},
+ {"id":"Q24","q":"BASE units in the data","rec":"A","opts":[
+  {"k":"A","t":"One device per placed group, units = any of NET/COMP/MEDIA","d":"Whole BASE = one device; split = up to three."},
+  {"k":"B","t":"Three device types always","d":"Unit-level everything."}]},
+ {"id":"Q25","q":"What a channel route carries","rec":"A","opts":[
+  {"k":"A","t":"Derived from the two end types (BASE–RBX = CHANNEL bundle, board–RBX = room circuits…), overridable","d":"You draw geometry only."},
+  {"k":"B","t":"Chosen per route when drawing","d":"One more click per route."}]},
+ {"id":"Q37","q":"Chained RoomBox: the upstream bundle carries downstream rooms' uplinks — C1 M25 holds two Cat6A","why":"STD-001 fixes the bundle sizes but does not say what a chain does. This is a gap in the standard, found while specifying the fill.","rec":"A","opts":[
+  {"k":"A","t":"Fill as specified and warn on overfill","d":"Decide case by case; nothing silent."},
+  {"k":"B","t":"A second, parallel bundle per chained room","d":"Logical star made physical."},
+  {"k":"C","t":"Upsize C1–C3 on chain segments","d":"Breaks the 'fixed sizes' rule of STD-001 §3.1."}]}]},
+
+{"id":"P","title":"Room fill-up (Wave D)","questions":[
+ {"id":"Q27","q":"Checklist gating between layers","rec":"A","opts":[
+  {"k":"A","t":"Soft — badges and hints, never blocks","d":"You decide when to move on."},
+  {"k":"B","t":"Hard — next layer locked until the previous is done","d":"Strict."}]},
+ {"id":"Q28","q":"Room kind (drives default ticks)","rec":"A","opts":[
+  {"k":"A","t":"From the room name (konyha, fürdő…), overridable per room","d":"Zero extra input."},
+  {"k":"B","t":"Always chosen by hand","d":""}]},
+ {"id":"Q29","q":"Switches in a BRIDGE stack","why":"Manual-first: the switch is an input to the RoomBox's bistable; lamps are outputs. No switch-to-lamp wire.","rec":"A","opts":[
+  {"k":"A","t":"Switch = input (own run to RBX), lamp groups by 'what does this switch control' — default 230 V pushbutton","d":"BRIDGE-DN style RC-snubbed pushbutton."},
+  {"k":"B","t":"Same, default SELV pushbutton","d":"J-Y(St)Y to the bistable input."},
+  {"k":"C","t":"Conventional 101/105 wiring (NV4 style)","d":"That is wiring-pipeline S6 — a separate, later job."}]},
+ {"id":"Q30","q":"Placement suggestions","rec":"A","opts":[
+  {"k":"A","t":"On, with soft snapping (Alt disables)","d":""},
+  {"k":"B","t":"On, hints only, no snapping","d":""},
+  {"k":"C","t":"Off by default","d":""}]},
+ {"id":"Q31","q":"Wiring topology per code","rec":"A","opts":[
+  {"k":"A","t":"Sockets and lamp groups daisy-chained, KNX a line, everything else a home run","d":"Steiner tree kept for future 'tree' cases."},
+  {"k":"B","t":"Everything a home run","d":"Most cable, simplest."}]},
+ {"id":"Q36","q":"Six new type codes for STD-004","why":"No code exists for these: DED big load, ETH data outlet, SCR screen, AVP AV position, USB data point, SEC security point.","rec":"A","opts":[
+  {"k":"A","t":"Accept all six","d":"Three letters, no collisions."},
+  {"k":"B","t":"Accept, but rename some","d":"Write the names in the note."},
+  {"k":"C","t":"Map them onto existing codes (UEP/ACT)","d":"Fewer codes, less precise labels."}]}]},
+
+{"id":"F","title":"Auto-fill and cabinet (Wave E)","questions":[
+ {"id":"Q32","q":"Re-running the fill","rec":"A","opts":[
+  {"k":"A","t":"Replace the automatic result, never touch manual edits (flag them when stale)","d":"Wiring-pipeline decision 3."},
+  {"k":"B","t":"Ask every time","d":""}]},
+ {"id":"Q34","q":"Pipes on a shared route","why":"A cable can only leave its conduit at a box.","rec":"A","opts":[
+  {"k":"A","t":"One pipe per run leg; same family between the same two boxes share","d":"Physically exact; more small pipes side by side."},
+  {"k":"B","t":"Merge same-family cables on shared segments","d":"Fewer pipes, but needs a box at every branch."}]},
+ {"id":"Q35","q":"Cable length","rec":"A","opts":[
+  {"k":"A","t":"Route length + 0.5 m per end + waste % from settings, labelled tájékoztató","d":"Wiring-pipeline decision 6."},
+  {"k":"B","t":"Route length only","d":""}]},
+ {"id":"Q38","q":"Room-circuit feed to a RoomBox: pipe packing","why":"STD-001 says M25 per circuit group; A2 says two S04 circuits → M32.","rec":"A","opts":[
+  {"k":"A","t":"Pack up to M32, minimum M25 per pipe","d":"3 circuits → M32 (2) + M25 (1)."},
+  {"k":"B","t":"One circuit per M25","d":"More pipes."}]},
+ {"id":"Q33","q":"Protection per way","rec":"A","opts":[
+  {"k":"A","t":"1-module RCBO on every way (K31)","d":"One earth fault trips one circuit."},
+  {"k":"B","t":"MCB + grouped RCDs","d":"Cheaper, wider trips."}]},
+ {"id":"Q39","q":"Three-phase balancing","rec":"A","opts":[
+  {"k":"A","t":"Greedy by typical kW, hob split over two phases","d":"A starting plan; edit afterwards."},
+  {"k":"B","t":"No balancing, I assign phases","d":""}]},
+ {"id":"Q40","q":"Stack view ('draw on the stack as one layer')","rec":"A","opts":[
+  {"k":"A","t":"All stack layers shown, other layers faded to 30 %","d":"Endpoints of every layer snappable."},
+  {"k":"B","t":"Other layers hidden","d":""}]}]}
+]}
