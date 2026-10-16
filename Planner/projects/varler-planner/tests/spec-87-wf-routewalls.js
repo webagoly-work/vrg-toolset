@@ -50,8 +50,8 @@ setTimeout(()=>{
   ok('a Create Walls re-run keeps the wall ids',W.ground.map(r=>r.id).sort().join()===ids);
   ok('… so the marks still resolve',w.rwlAllowed('ground').length===3);
   // the tool switches on and off
-  w.rwlToolStart();ok('the tool is on in Select',w.eval('RWL.on')&&st.mode==='select');
-  w.setMode('wall');ok('another tool turns it off',!w.eval('RWL.on'));
+  w.rwlToolStart();ok('the tool is on in Select (since R5: the marker pen with the Vezethető fal ink)',w.MKP.on&&w.MKP.ink==='vezetheto'&&st.mode==='select');
+  w.setMode('wall');ok('another tool turns it off',!w.MKP.on);
  }catch(err){R.push(['exception',false,err.stack]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x&&!c?'   ['+x+']':''));});
  console.log(bad?('\n'+bad+' FAILED'):'\nALL PASS ('+R.length+')');

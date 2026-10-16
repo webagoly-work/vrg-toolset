@@ -27,7 +27,8 @@ setTimeout(()=>{
 
   // ---------- the shell holds still while the camera moves ----------
   const pan=()=>{for(let i=0;i<20;i++){st.panX+=0.3;w.draw();}};
-  ok('20 pans do not rebuild the stage rail',churn('stageRail',pan)===0);
+  ok('20 pans do not rebuild the phases',churn('phaseNav',pan)===0);
+  ok('20 pans do not rebuild the phase tools',churn('phaseTools',pan)===0);
   ok('20 pans do not rebuild the inspector',churn('inspector',pan)===0);
   ok('20 pans do not rebuild the status bar',churn('statusBar',pan)===0);
 
@@ -46,9 +47,9 @@ setTimeout(()=>{
     const ins=$('inspector');ins.scrollTop=17;w.draw();return ins.scrollTop===17;})());
 
   // ---------- but real changes still land ----------
-  ok('changing the stage does redraw the rail',(function(){
-    const before=$('stageRail').innerHTML;w.setStage(w.STAGES[2].k);
-    const after=$('stageRail').innerHTML;w.setStage('build');return before!==after;})());
+  ok('changing the phase does redraw the phases',(function(){
+    const before=$('phaseNav').innerHTML;w.phSet('szab');
+    const after=$('phaseNav').innerHTML;w.phSet('alap');return before!==after;})());
   ok('a new device does redraw the status bar',(function(){
     const before=$('statusBar').innerHTML;
     w.__data.devices.push({type:'socket',ref:'ZZ9',x:500,y:-40,h:300,level:lvl,side:0});

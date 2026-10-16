@@ -25,24 +25,10 @@ setTimeout(()=>{
   const tab=(target,o)=>{const e=new w.KeyboardEvent('keydown',Object.assign({key:'Tab',bubbles:true,cancelable:true},o||{}));(target||w.document).dispatchEvent(e);return e;};
   const sides=()=>[...w.document.querySelectorAll('.side')];
 
-  ok('both grips exist, outside the panels (a panel repaint cannot destroy them)',!!grip('rail')&&!!grip('insp')&&!$('stageRail').contains(grip('rail'))&&!$('inspector').contains(grip('insp')));
-  ok('the defaults are 104 / 238 px, set inline',$('stageRail').style.width==='104px'&&$('inspector').style.width==='238px');
-
-  // 1 + 2 — drag, clamp, double-click
-  drag('rail',60);
-  ok('a +60 px drag on the rail grip → railW 164, width 164px',st.railW===164&&$('stageRail').style.width==='164px',st.railW);
-  ok('the grip follows the edge',grip('rail').style.left==='161px',grip('rail').style.left);
-  ok('the mode hint moves clear of the wider rail',$('modeHint').style.left==='176px',$('modeHint').style.left);
-  drag('rail',500);ok('the rail clamps at 260',st.railW===260);
-  drag('insp',400);ok('the inspector: dragging its left grip 400 px right clamps at 200',st.inspW===200&&$('inspector').style.width==='200px',st.inspW);
-  drag('insp',-900);ok('… and 900 px left clamps at 520',st.inspW===520);
-  grip('insp').dispatchEvent(new w.MouseEvent('dblclick',{bubbles:true}));
-  ok('double-click → back to 238',st.inspW===238&&$('inspector').style.width==='238px');
-  grip('rail').dispatchEvent(new w.MouseEvent('dblclick',{bubbles:true}));
-  ok('double-click on the rail grip → back to 104',st.railW===104);
-  ok('the room thresholds move with the widths',(function(){st.railW=260;const a=w.eval('RAIL_MIN')-104+260;
-    const real=w.stageW;w.stageW=()=>a-1;const no=w.railRoom();w.stageW=()=>a;const yes=w.railRoom();w.stageW=real;st.railW=104;return !no&&yes;})());
-  ok('widths are plain state, so they save with the project',(function(){st.inspW=300;const s=JSON.parse(JSON.stringify(w.sessionObj())).state;st.inspW=238;return s.inspW===300;})());
+  // T3 (2026-10-15): the rail is gone and the inspector is docked in the right column — the U5 overlay grips went with them
+  ok('T3: the inspector is docked in the right column, no grips, no inline width',$('rInsp').contains($('inspector'))&&!grip('rail')&&!grip('insp')&&$('inspector').style.width==='');
+  ok('… the sidebars keep their own two resizers',w.document.querySelectorAll('.resizer').length===2);
+  ok('a saved inspector width is cleared, not applied',(function(){$('inspector').style.width='300px';w.renderShell();return $('inspector').style.width==='';})());
 
   // 3 — Tab: wide mode and back, keeping a sidebar the user had closed
   w.renderShell();
@@ -50,8 +36,7 @@ setTimeout(()=>{
   const l0=sides()[0].classList.contains('hide');
   let e=tab();
   ok('Tab: both sidebars hidden, rail and inspector off, snapshot stored',
-     sides().every(s=>s.classList.contains('hide'))&&$('modeHint').style.left==='12px'&&$('stageRail').style.display==='none'&&$('inspector').style.display==='none'&&!!st.wideWork&&e.defaultPrevented);
-  ok('… and the grips go with the panels',grip('rail').style.display==='none'&&grip('insp').style.display==='none');
+     sides().every(s=>s.classList.contains('hide'))&&$('inspector').style.display==='none'&&!!st.wideWork&&e.defaultPrevented);
   e=tab();
   ok('Tab again: everything back as it was — the left sidebar the user closed stays closed',
      l0===true&&sides()[0].classList.contains('hide')&&!sides()[1].classList.contains('hide')&&st.shell===true&&st.wideWork===null&&$('inspector').style.display==='block');

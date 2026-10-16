@@ -1,6 +1,6 @@
 # WP-E5 — Finish Erősáram: the P33 engine in the Planner (Pályák → Vezetékek)
 
-Status: todo · Wave E · Depends: R2, R4, E1–E4 · Size: L (~300 lines of glue; the engine itself is reused) · Spec: next
+Status: **built 2026-10-15** (stage 1 engine fixes + stage 2 bundle / buttons + P33 acceptance step A: 167/167 legs, 97/97 boxes; uncommitted) — step B (redraw) open · Wave E · Depends: R2, R4, E1–E4 · Size: L (~300 lines of glue; the engine itself is reused) · Spec: next
 free · Decisions: Q-E05, Q-E07 · **⏸ after build: P33 acceptance**
 
 ## Goal

@@ -12,7 +12,8 @@
 // 00_CONTRACT §3.2) and drawn through the shared stack hooks of 05m (STK_SCENE / STK_OVERLAY / STK_TOOLS /
 // STK_CTX / STK_WV). Prefix: mrk. Tables are read inside functions only.
 
-const MRK_POL={plus:{n:'Előnyös',c:'#2e9e5b',s:'+'},minus:{n:'Kerülendő',c:'#d08a1e',s:'−'},
+// 2026-10-15 (user): green belongs to Vezethető fal alone, so 'preferred' is blue now; per-tag looks are in MRK_STYLE
+const MRK_POL={plus:{n:'Előnyös',c:'#3f7fbf',s:'+'},minus:{n:'Kerülendő',c:'#d08a1e',s:'−'},
                ban:{n:'Tilos',c:'#c8372d',s:'⛔'},none:{n:'Semleges',c:'#6f7f95',s:'·'}};
 const MRK_TAGS={
  wall:[ // whole wall — material and status
@@ -23,7 +24,7 @@ const MRK_TAGS={
   {k:'elotet',     n:'Előtétfal / installációs fal',     pol:'plus', rf:3},
   {k:'belso',      n:'Belső fal',                        pol:'none'},
   {k:'szomszed',   n:'Szomszéd felé (közös fal)',        pol:'ban',  rf:12},
-  {k:'homlokzat',  n:'Homlokzati / külső fal',           pol:'minus',rf:15},
+  {k:'homlokzat',  n:'Külső fal (homlokzat)',           pol:'minus',rf:15},
   {k:'gepeszet',   n:'Gépészet a falban (víz, gáz, fűtés)',pol:'ban'},
   {k:'kemeny',     n:'Kémény / szellőzőkürtő',           pol:'ban'},
   {k:'tuzfal',     n:'Tűzfal / tűzszakasz határ',        pol:'minus'},
@@ -142,7 +143,9 @@ function mrkRoomById(id){if(!id)return null;
 function mrkVAbs(v,r,level){const H=mrkWallH(r,level);return v[0]<0?[H+v[0],H+v[1]]:[v[0],v[1]];}
 function mrkTag(kind,k){return (MRK_TAGS[kind]||[]).find(t=>t.k===k)||null;}
 function mrkTagName(m,k){const kind=m.kind==='hband'?'hstrip':(m.kind==='opening'?mrkOpeningKind(m):(m.kind==='pstrip'||m.kind==='zone')?'plane':m.kind);
-  const t=mrkTag(kind,k);return t?t.n:k;}
+  // a face span drawn with the Szabályok tool is stored as a strip but carries a face tag: look in every list before
+  // falling back to the raw key (the screenshot of 2026-10-15 showed 'kerulendo')
+  let t=mrkTag(kind,k);if(!t)for(const K in MRK_TAGS){t=MRK_TAGS[K].find(x=>x.k===k);if(t)break;}return t?t.n:k;}
 function mrkSnap(v){return Math.round(v/MRK_DEF.snap)*MRK_DEF.snap;}
 
 // every mark covering that point of a wall face: THE query the later layers use.
@@ -150,6 +153,7 @@ function mrkSnap(v){return Math.round(v/MRK_DEF.snap)*MRK_DEF.snap;}
 function mrkAt(level,wallId,side,u,v){const out=[],r=mrkWallById(level,wallId);let room;
   mrkList().forEach(m=>{if(m.level!==level)return;let hit=false;
     if(m.kind==='wall')hit=m.wall===wallId;
+    else if(m.kind==='wspan')hit=m.wall===wallId&&(u==null||(u>=Math.min(m.u0,m.u1)&&u<=Math.max(m.u0,m.u1)));
     else if(m.kind==='side')hit=m.wall===wallId&&m.side===side;
     else if(m.kind==='vstrip')hit=m.wall===wallId&&m.side===side&&(u==null||(u>=m.u0&&u<=m.u1));
     else if(m.kind==='hstrip')hit=m.wall===wallId&&m.side===side&&(v==null||(v>=m.v0&&v<=m.v1));
@@ -175,6 +179,9 @@ function mrkBandFaces(m){const room=mrkRoomById(m.room);if(!room)return [];
 // → {level, faces:[{r,side,u0,u1,off}], rect?} or null when the wall is gone
 function mrkGeom(m){
   if(m.kind==='wall'){const r=mrkWallById(m.level,m.wall);return r?{level:m.level,rect:r,faces:[]}:null;}
+  // a part of a wall, both faces (the marker pen's whole-wall inks, R5; R2's vezethető spans): the box between u0 and u1
+  if(m.kind==='wspan'){const r=mrkWallById(m.level,m.wall);if(!r)return null;const wi=wallInfo(r),a=Math.min(m.u0,m.u1),b=Math.max(m.u0,m.u1);
+    return {level:m.level,rect:wi.horiz?{x0:r.x0+a,x1:r.x0+b,y0:r.y0,y1:r.y1}:{x0:r.x0,x1:r.x1,y0:r.y0+a,y1:r.y0+b},faces:[]};}
   if(m.kind==='side'){const r=mrkWallById(m.level,m.wall);return r?{level:m.level,faces:[{r,side:m.side,u0:0,u1:mrkWallLen(r),off:0}]}:null;}
   if(m.kind==='vstrip'){const r=mrkWallById(m.level,m.wall);return r?{level:m.level,faces:[{r,side:m.side,u0:m.u0,u1:m.u1,off:25}]}:null;}
   if(m.kind==='hstrip'){const r=mrkWallById(m.level,m.wall);return r?{level:m.level,faces:[{r,side:m.side,u0:0,u1:mrkWallLen(r),off:0}]}:null;}
@@ -183,7 +190,22 @@ function mrkGeom(m){
   return null;}
 
 // ---- drawing: plan --------------------------------------------------------------------------------------------
-function mrkCol(m){return (MRK_POL[m.pol]||MRK_POL.none).c;}
+// The look of a mark: its first tag with a style here, else its polarity colour. Only the LOOK — the polarity still
+// decides routing. Colour coding by the user, 2026-10-15: only Vezethető fal is green; L-forma light blue; Külső fal
+// grey; Közlekedő an opaque purple tint; Kémény / strang off-black brown; Padlófűtés a tinted, horizontally striped
+// zone; Fűtőtest a heavy white zig-zag with a thin black contour (a radiator).
+const MRK_STYLE={vezetheto:{c:'#2e9e5b'},lforma:{c:'#6cb8ea'},media:{c:'#2f5e9e'},homlokzat:{c:'#8a8f96',op:0.22},belso:{c:'#8a8f96'},
+  folyoso:{c:'#8458b8',op:0.32},kemeny:{c:'#3b2f29',op:0.42},strang:{c:'#3b2f29',op:0.42},
+  padlofutes:{c:'#cf5a3c',op:0.2,pat:'hstripes'},radiator:{c:'#1e1e1e',pat:'radiator'}};
+function mrkStyle(m){for(const k of (m&&m.tags)||[])if(MRK_STYLE[k])return MRK_STYLE[k];return null;}
+function mrkCol(m){const st=mrkStyle(m);return st?st.c:(MRK_POL[m.pol]||MRK_POL.none).c;}
+function mrkOp(m,def){const st=mrkStyle(m);return st&&st.op!=null?st.op:def;}
+// Fűtőtest: a zig-zag 40–140 mm in front of the face, drawn as a thin black contour under a white body
+function mrkRadiator(f,z){const pts=[],u0=Math.min(f.u0,f.u1),u1=Math.max(f.u0,f.u1),step=70;let i=0;
+  for(let u=u0;u<u1;u+=step,i++){const p=mrkFacePt(f.r,f.side,u,f.off+(i%2?140:40));pts.push([p[0],p[1],z]);}
+  const e=mrkFacePt(f.r,f.side,u1,f.off+(i%2?140:40));pts.push([e[0],e[1],z]);const P=p2b(pts);
+  return `<polyline points="${P}" fill="none" stroke="#1e1e1e" stroke-width="${vsP(5.2)}" stroke-linejoin="miter" stroke-linecap="square"/>`
+    +`<polyline points="${P}" fill="none" stroke="#fff" stroke-width="${vsP(3.4)}" stroke-linejoin="miter" stroke-linecap="square"/>`;}
 function mrkLine(a,b,z,col,w,dash){w=vsP(w);dash=dash?vsDash(dash):dash;return `<polyline points="${p2b([[a[0],a[1],z],[b[0],b[1],z]])}" fill="none" stroke="${col}" stroke-width="${w}"${dash?` stroke-dasharray="${dash}"`:''} stroke-linecap="round"/>`;}
 // haloed text: a stroke pass, then a fill pass (exporters ignore paint-order)
 function mrkText(x,y,z,txt,col,size,anchor){size=vsP(size);const b=planToBase(x,y,z),a=anchor||'middle',t=esc(String(txt));
@@ -194,12 +216,13 @@ function mrkTrunc(s,n){return s.length>n?s.slice(0,n-1)+'…':s;}
 function mrkBand(m){return '↕ '+Math.round(m.v0)+'–'+Math.round(m.v1);}
 // the SVG of one wall-related mark (also used, un-wrapped, for the hover / drag preview)
 function mrkWallSvg(m){const g=mrkGeom(m);if(!g)return '';const z=dz(g.level,0),col=mrkCol(m);let s='';
-  if(m.kind==='wall'){const r=g.rect;
-    s+=`<polygon points="${p2b([[r.x0,r.y0,z],[r.x1,r.y0,z],[r.x1,r.y1,z],[r.x0,r.y1,z]])}" fill="${col}" fill-opacity="0.12" stroke="${col}" stroke-width="${vsP(2)}"/>`;
+  if(m.kind==='wall'||m.kind==='wspan'){const r=g.rect;
+    s+=`<polygon points="${p2b([[r.x0,r.y0,z],[r.x1,r.y0,z],[r.x1,r.y1,z],[r.x0,r.y1,z]])}" fill="${col}" fill-opacity="${mrkOp(m,0.12)}" stroke="${col}" stroke-width="${vsP(2)}"/>`;
     const lbl=mrkTrunc(mrkFirstTag(m)||MRK_POL[m.pol].s,14);
     s+=mrkText((r.x0+r.x1)/2,(r.y0+r.y1)/2,z,lbl,col,9);return s;}
   g.faces.forEach(f=>{const a=mrkFacePt(f.r,f.side,f.u0,f.off),b=mrkFacePt(f.r,f.side,f.u1,f.off);
-    if(m.kind==='side')s+=mrkLine(a,b,z,col,3);
+    if((m.kind==='side'||m.kind==='vstrip')&&(mrkStyle(m)||{}).pat==='radiator')s+=mrkRadiator(f,z);   // a dragged face span too
+    else if(m.kind==='side')s+=mrkLine(a,b,z,col,3);
     else if(m.kind==='vstrip')s+=mrkLine(a,b,z,col,6);
     else s+=mrkLine(a,b,z,col,2,'6 4');
     if(m.kind==='hstrip'||m.kind==='hband')s+=mrkText((a[0]+b[0])/2,(a[1]+b[1])/2,z,mrkBand(m),col,9);});
@@ -218,7 +241,7 @@ function mrkLMark(m,f,z,col){
 function mrkSceneSvg(){let s='';
   mrkList().forEach(m=>{if(!state.levels[m.level]||!layerShows(m,'mark'))return;
     let svg='';
-    if(m.kind==='wall'||m.kind==='side'||m.kind==='vstrip'||m.kind==='hstrip'||m.kind==='hband')svg=mrkWallSvg(m);
+    if(m.kind==='wall'||m.kind==='wspan'||m.kind==='side'||m.kind==='vstrip'||m.kind==='hstrip'||m.kind==='hband')svg=mrkWallSvg(m);
     else if(typeof mrkOpeningSvg==='function'&&m.kind==='opening')svg=mrkOpeningSvg(m);
     else if(typeof mrkPlaneSvg==='function'&&(m.kind==='pstrip'||m.kind==='zone'))svg=mrkPlaneSvg(m);
     if(svg)s+=lyrWrap(m,'mark',svg);});
@@ -322,7 +345,7 @@ function mrkHint(){const mh=$('modeHint');if(!mh)return;
   mh.textContent=MRK_T.on?mrkModeName()+' · '+kbdKey('markWall')+' váltja a módot · + − 0 x polaritás · Shift+kattintás = az előző címkékkel · Esc kilép'
                          :(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}
 function mrkToolsOff(){MRK_T.on=false;MRK_DRAG=null;MRK_H=null;if(typeof trcCancel==='function')trcCancel();if(typeof MRK_P!=='undefined')MRK_P.on=false;mrkHint();}
-function mrkToolStart(mode){if(typeof mrkToolsOff==='function')mrkToolsOff();
+function mrkToolStart(mode){toolsOff();mrkToolsOff();
   if(state.mode!=='select')setMode('select');
   MRK_T.on=true;if(mode)MRK_T.mode=mode;mrkHint();$('hud').textContent=mrkModeName();draw();}
 function mrkCycle(dir){if(!MRK_T.on)return;const i=MRK_MODES.findIndex(m=>m.k===MRK_T.mode);
@@ -492,7 +515,7 @@ function mrkPlaneName(){const m=MRK_PLANE_MODES.find(x=>x.k===MRK_P.mode);return
 function mrkPlaneZ(level,plane){return dz(level,plane==='ceiling'?wallH(level):0);}
 function mrkPlanePt(e){const level=state.active,[bx,by]=clientToBase(e),p=baseToPlan(bx,by,mrkPlaneZ(level,MRK_P.plane));return {level,x:p[0],y:p[1]};}
 function mrkRoomAtPt(level,x,y){const list=allRooms(level);for(let k=list.length-1;k>=0;k--)if(pointInPoly(x,y,list[k].rm.poly))return list[k];return null;}
-function mrkPlaneStart(mode){mrkToolsOff();if(state.mode!=='select')setMode('select');
+function mrkPlaneStart(mode){toolsOff();mrkToolsOff();if(state.mode!=='select')setMode('select');
   MRK_P.on=true;if(mode)MRK_P.mode=mode;mrkHint();$('hud').textContent=mrkPlaneName();draw();}
 function mrkPlaneCycle(dir){if(!MRK_P.on)return;const i=MRK_PLANE_MODES.findIndex(m=>m.k===MRK_P.mode);
   MRK_P.mode=MRK_PLANE_MODES[(i+dir+MRK_PLANE_MODES.length)%MRK_PLANE_MODES.length].k;MRK_PD=null;MRK_PH=null;mrkHint();$('hud').textContent=mrkPlaneName();draw();}
@@ -537,13 +560,16 @@ function mrkCirclePoly(cx,cy,r){const p=[];for(let i=0;i<48;i++){const a=i*Math.
 // plan drawing. A ceiling mark floats in an iso view, so there it is drawn at floor level with a dashed outline.
 function mrkPlaneSvg(m){if(!state.levels[m.level])return '';
   const flat=state.flat||state.pitch>=88,float=(m.plane==='ceiling'&&!flat),z=float?dz(m.level,0):mrkPlaneZ(m.level,m.plane),col=mrkCol(m);
-  const dash=float?' stroke-dasharray="'+vsDash('5 4')+'"':'',attrs=`fill="${col}" fill-opacity="0.14" stroke="${col}" stroke-width="${vsP(0.5)}"${dash}`;let s='',cx,cy;
+  const dash=float?' stroke-dasharray="'+vsDash('5 4')+'"':'',attrs=`fill="${col}" fill-opacity="${mrkOp(m,0.14)}" stroke="${col}" stroke-width="${vsP(0.5)}"${dash}`;let s='',cx,cy;
   if(m.kind==='pstrip'){const b=mrkPstripBox(m);if(!b)return '';
     const id='mrkc-'+m.id;
     s+=`<clipPath id="${id}"><polygon points="${p2b(b.poly.map(p=>[p[0],p[1],z]))}"/></clipPath>`
       +`<g clip-path="url(#${id})"><polygon points="${p2b([[b.x0,b.y0,z],[b.x1,b.y0,z],[b.x1,b.y1,z],[b.x0,b.y1,z]])}" ${attrs}/></g>`;
     cx=(b.x0+b.x1)/2;cy=(b.y0+b.y1)/2;}
-  else if(m.shape==='rect'){s+=`<polygon points="${p2b([[m.x0,m.y0,z],[m.x1,m.y0,z],[m.x1,m.y1,z],[m.x0,m.y1,z]])}" ${attrs}/>`;cx=(m.x0+m.x1)/2;cy=(m.y0+m.y1)/2;}
+  else if(m.shape==='rect'){s+=`<polygon points="${p2b([[m.x0,m.y0,z],[m.x1,m.y0,z],[m.x1,m.y1,z],[m.x0,m.y1,z]])}" ${attrs}/>`;cx=(m.x0+m.x1)/2;cy=(m.y0+m.y1)/2;
+    if((mrkStyle(m)||{}).pat==='hstripes'){const y0=Math.min(m.y0,m.y1),y1=Math.max(m.y0,m.y1);let st='';   // padlófűtés: a stripe every 150 mm
+      for(let y=y0+75;y<y1;y+=150)st+=`<polyline points="${p2b([[m.x0,y,z],[m.x1,y,z]])}"/>`;
+      s+=`<g fill="none" stroke="${col}" stroke-width="${vsP(0.9)}" stroke-opacity="0.7">${st}</g>`;}}
   else{s+=`<polygon points="${p2b(mrkCirclePoly(m.cx,m.cy,m.r).map(p=>[p[0],p[1],z]))}" ${attrs}/>`;cx=m.cx;cy=m.cy;}
   const t=(m.tags||[])[0];if(t)s+=mrkText(cx,cy,z,mrkTrunc(mrkTagName(m,t).replace(/ [—(].*$/,''),16),col,9);
   return s;}
@@ -619,10 +645,10 @@ function mrkDanglingOther(m){
     out.push({sev:'warn',msg:'Nincs bejárat jelölve — a portálgráf horgonya hiányzik.'});
   return out;});
 registerActions([
- {id:'mark.plane',alias:'jeloles padlo mennyezet floor ceiling zone strip zona',label:'Padló / mennyezet jelölése',icon:'▦',group:'Jelölés',keys:['g'],
+ {id:'mark.plane',alias:'jeloles padlo mennyezet floor ceiling zone strip zona',label:'Padló / mennyezet jelölése',icon:'◩',group:'Jelölés',keys:['g'],
   hint:'Sávok és zónák (téglalap, kör) a padlón vagy a mennyezeten. G váltja a módot, R a padló ↔ mennyezet között.',
   run:()=>{if(MRK_P.on)mrkPlaneCycle(1);else mrkPlaneStart(MRK_P.mode);}},
- {id:'mark.planeBack',alias:'jeloles elozo mod padlo previous mode plane',label:'Padló / mennyezet: előző mód',icon:'▦',group:'Jelölés',keys:['shift+g'],
+ {id:'mark.planeBack',alias:'jeloles elozo mod padlo previous mode plane',label:'Padló / mennyezet: előző mód',icon:'◩',group:'Jelölés',keys:['shift+g'],
   need:'Indítsd el a Padló / mennyezet jelölése eszközt (G).',when:c=>MRK_P.on,run:()=>mrkPlaneCycle(-1)}
 ]);
 window.MRK_PLANE_MODES=MRK_PLANE_MODES;window.MRK_P=MRK_P;window.mrkOpeningTags=mrkOpeningTags;window.mrkDoorTier=mrkDoorTier;window.mrkDoorRooms=mrkDoorRooms;

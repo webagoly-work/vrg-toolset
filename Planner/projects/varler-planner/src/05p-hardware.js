@@ -129,7 +129,7 @@ function hwUnserved(level){const own=hwServeMap().own;return stkRooms(level).fil
 // pick mode: clicks on rooms toggle them in the box's own list
 let HW_SP=null;                                       // {id: rbx device id, pushed}
 function hwServePick(d){if(!d||d.type!=='rbx')return;if(state.mode!=='select')setMode('select');
-  if(typeof mrkToolsOff==='function')mrkToolsOff();HW_T.on=false;
+  toolsOff();
   HW_SP={id:d.id,pushed:false};lyrHud('Helyiségek hozzárendelése: '+(d.ref||d.id)+' — kattints a helyiségekre · Enter / Esc: kész');draw();}
 function hwServeToggle(rid){const d=byId('devices',HW_SP&&HW_SP.id);if(!d||!rid)return false;
   if(!HW_SP.pushed){pushUndo(['devices']);HW_SP.pushed=true;}
@@ -196,7 +196,7 @@ function hwPlace(g){if(!g)return null;const d=hwFromGhost(g);
   draw();
   lyrHud((HW_TYPES[d.type]||DEV[d.type]||d.type)+' elhelyezve: '+d.ref+(g.ban&&g.ban.length?' — figyelem: tilos zóna ('+g.ban.map(b=>(b.tags||[]).join(',')||'⛔').join('; ')+')':''));
   return d;}
-function hwToolStart(type){if(typeof mrkToolsOff==='function')mrkToolsOff();HW_SP=null;
+function hwToolStart(type){toolsOff();
   if(state.mode!=='select')setMode('select');
   if(type==='base'){hwBaseUnitPicker(units=>{Object.assign(HW_T,{on:true,type,units,g:null});hwHint();draw();});return;}
   HW_T.on=true;HW_T.type=type;HW_T.g=null;hwHint();draw();}
@@ -346,7 +346,7 @@ STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!hwIs(d))return;
 
 // ---- actions ----------------------------------------------------------------------------------------------------------------------------
 registerActions([
- {id:'hw.rbx',alias:'rbx roombox elhelyezes place room box',label:'RBX elhelyezése',icon:'▣',group:'Hardver',
+ {id:'hw.rbx',alias:'rbx roombox elhelyezes place room box',label:'RBX elhelyezése',icon:'◫',group:'Hardver',
   hint:'RoomBox a falra; a jelölt „RBX helye” sáv vonzza. ←/→: RB osztály. A szellem mutatja, mely helyiségeket szolgálja ki.',run:()=>hwToolStart('rbx')},
  {id:'hw.board',alias:'elosztoszekreny elhelyezes board place',label:'Elosztószekrény elhelyezése',icon:'▤',group:'Hardver',run:()=>hwToolStart('board')},
  {id:'hw.meter',alias:'meroora villanyora meter place',label:'Mérőóra elhelyezése',icon:'◔',group:'Hardver',run:()=>hwToolStart('meter')},
@@ -354,7 +354,7 @@ registerActions([
  {id:'hw.ssc',alias:'biztonsagi kozpont ssc security place',label:'Biztonsági központ (SSC) elhelyezése',icon:'⛨',group:'Hardver',run:()=>hwToolStart('ssc')},
  {id:'hw.base',alias:'base net comp media elhelyezes place',label:'BASE elhelyezése',icon:'🖧',group:'Hardver',
   hint:'NET · COMP · MEDIA egyenként vagy együtt; a szellem az irányelveket mutatja (Elosztó közelsége, száraz helyiség, oszlop, középpont).',run:()=>hwToolStart('base')},
- {id:'hw.serve',alias:'rbx helyiseg hozzarendeles serve rooms assign',label:'RBX: helyiségek hozzárendelése',icon:'▣',group:'Hardver',
+ {id:'hw.serve',alias:'rbx helyiseg hozzarendeles serve rooms assign',label:'RBX: helyiségek hozzárendelése',icon:'◫',group:'Hardver',
   need:'Jelölj ki egy RBX-et.',when:c=>c.selType==='devices'&&data.devices[c.sel.i]&&data.devices[c.sel.i].type==='rbx',run:c=>hwServePick(data.devices[c.sel.i])},
  {id:'hw.cloud',alias:'vezetek nelkuli lefedettseg wireless cloud rf',label:'Vezeték nélküli lefedettség (RBX)',icon:'☁',group:'Rádió',
   hint:'A kijelölt / elhelyezés alatt álló RBX rádiós lefedettsége a szellemen.',

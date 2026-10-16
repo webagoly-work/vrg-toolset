@@ -142,7 +142,9 @@ heights from the Standards table instead of `rules.js`). E0 can be built any tim
 | E1 | **built 2026-10-14** (uncommitted) | spec-91 (29) | `src/08l-wf-switches.js`; Kapcsolások tool (click lamps → C = one leg → click a door L1 slot / a switch / Alt + wall: the switch is created there), type from the links on the existing `swType`, slot switches follow their door, ✨ Kapcsolások javaslata (one leg per room → every room door's L1; wet room → dry face), lsw.none check; bar 4.2 live. **Fixed on the way:** the Planner's SWITCH_TYPES had the Hungarian codes wrong (103 csillár / 105 váltó…) — now 105 csillár · 106 váltó · 107 kereszt · 108 dupla váltó, with a do-not-change note and a one-time migration of saved keys (`swNumMigrate`, `swNum:2`) |
 | E2 | **built 2026-10-14** (uncommitted) | spec-92 (29) | `src/08m-wf-ceiling.js`; **+ ▭ Padló út** (user, same mechanics: to any endpoint that is not a ceiling lamp, h 0, refused across a Padlófűtés zone; brown, ceiling blue; `flineFor`); 〰 Mennyezeti út: start on a Vezethető fal point / door MAINS slot / box / switch, bends (45°), finish on a ceiling lamp; one line per lamp (replace = one undo step); height = the room ceiling, void:true above an álmennyezet; cln.none check; `clineFor(lamp)` for E5. **Deviation:** click-click like the room pen instead of press-drag |
 | E3 | **built 2026-10-14** (uncommitted) | spec-93 (25) | `src/08n-wf-boxes.js`; Szobadoboz (d.jb szoba, 2150; jobs feed / crossing / switching → 150 or 200, sizeFix), Kötődoboz (100), Elosztó (board); `jbServicePoints` (Elosztó + portal boxes + szobadobozok + RBX/BASE), `jbMeet` (chosen → szobadoboz → switch's portal box; sockets = classic chain), ⊙ Kötődoboz ehhez a kapcsoláshoz (⌀80 on the leg's ceiling line, pins the leg), jb.none check; bar 4.3 live. **Deviation:** the portal box is DERIVED (L4 of a door face with an Erősáram device in a slot) — E5 materialises it with the wiring |
-| E4 E5 | todo | — | E4 unblocked: R1010 M2 built 2026-10-14 (`cprActivate`, `cprRows`, `presetRow`) · E5 ⏸ P33 |
+| E4 | **built** 2026-10-15 | spec-97 | 08oa-wf-eloplan.js — click the Elosztó (Villamosság) → the table → Alkalmaz |
+| E5 | **built 2026-10-15** (uncommitted) — P33 acceptance A passed (167/167 legs, 97/97 boxes; E5_ENGINE_REVIEW §9), B (redraw) open | spec-98 (39) | engine fixes in `tools/baseline` (E5_ENGINE_REVIEW §6–7, Q1–Q11); bundled by `build.js` into `src/08ob-wf-engine.js` (`BL`, `blInput`, `blRun`); ⚙ Pályák kiszámítása + 🧵 Vezetékek (Eszköz / Helyiség / Ház) in phase 5; gen:'bl' paths + boxes; checks table. Bundle = CLI on P33 exactly. Next: E5-Q12, then WP-E6 Alosztó |
+| E6 | **built 2026-10-15/16** (uncommitted) — answered Q1 A+C (suggestion), Q3 own (feeder RCDs, one main switch), Q4 B (chained) | spec-99 (38) | `src/08oc-wf-alloszto.js`: a board on another level = Alosztó (AL1…) + its feed point below (DED alelo) + the 3C 25A / NYM-J 5×6 feeder circuit, one undo; per-level circuit suggestions; Alosztó cabinet (own main switch, SPD T2); engine per level from the Alosztó (feed leg through the slab), the feeder ΔU added upstairs; kivitel szekrény / DIN-sínes RBX. WP-E6_alloszto.md |
 
 ### Session log — 2026-10-14 build (one hour, the user's request)
 
@@ -178,3 +180,13 @@ New questions opened by the answers (r1, recommended default built if unanswered
 **r2 (2026-10-14):** Q-E08 = **C** — the szobadoboz comes in two sizes: 150×150 when it does one function, 200×200 when it
 does several (crossing + feed + switching); E3 picks by function count, the user can override. Q-R09 = **A** — other bathroom
 sockets 1100. Q-R10 = **A** — in Select, a double-click on a room's empty floor opens the type wheel (built, spec-85).
+- 2026-10-15 (user review of the first test):
+  - **O2 Q-O02 withdrawn:** a new door gets no portal devices and the slot dots are gone. The slots stay derived, and
+    a wall endpoint within 300 mm of a slot that takes its code snaps into it (08g `ptSlotSnap`).
+  - **R3 colour coding** per the user (05n `MRK_STYLE`); Belső fal became Külső fal.
+  - **WP-R5 Jelölő toll** (marker pen on a wall-line network) is planned; the R5-Q decisions are open.
+  - Mennyezeti út / Padló út moved to phase 3.
+- 2026-10-15: **R5 built** (all A). The marker pen replaces the R2 / R3 click tools for wall, face and route inks. spec-96.
+  Full suite: 90 suites, 3164 checks, golden 70/70.
+- 2026-10-15: **E4 built** (Q-E04 = A). The Elosztó suggests circuits from the unassigned endpoints, and the user ticks
+  them in a table. Full suite: 91 suites, 3183 checks, golden 70/70.

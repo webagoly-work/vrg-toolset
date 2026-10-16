@@ -202,6 +202,7 @@ function epGhost(e){const en=epEntry(EP_T.code,EP_T.role);if(!en)return null;con
   else{const z0=en.mount==='floor'?0:wallH(level),[bx,by]=clientToBase(e),p=baseToPlan(bx,by,dz(level,z0));
     g={level,x:Math.round(p[0]),y:Math.round(p[1]),h:en.mount==='floor'?0:epCeilH(level,p[0],p[1]),mount:en.mount};}
   if(typeof sugSnap==='function'&&!e.altKey)g=sugSnap(g,EP_T.code,EP_T.role)||g;       // D3 — Alt places freely
+  if(typeof ptSlotSnap==='function'&&!e.altKey)g=ptSlotSnap(g,EP_T.code)||g;          // a door's slot within 300 mm wins (08g)
   return g;}
 function epMake(g,code,role,vk){const type=epTypeFor(code),L=epRoleLayer(role);
   const d={type,code,var:vk||epEntry(code,role).vars[0].k,level:g.level,x:g.x,y:g.y,h:g.h,layer:L?L.id:state.activeLayer};
@@ -216,7 +217,7 @@ function epPlace(g,code,role,vk){if(!g)return null;code=code||EP_T.code;role=rol
   EP_PLACED.forEach(f=>{try{f(d,g);}catch(_){}});
   draw();const v=epVar(d);lyrHud(code+' · '+epEntry(code,role).n+' · '+(v?v.n:'')+(g.why?' — '+g.why:''));return d;}
 function epToolStart(code,role,vk){const en=epEntry(code,role);if(!en)return;
-  if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();
+  toolsOff();
   if(state.mode!=='select')setMode('select');
   Object.assign(EP_T,{on:true,code,role:en.role,var:vk||en.vars[0].k,g:null});epHint();draw();}
 function epHint(){const mh=$('modeHint');if(!mh)return;const en=EP_T.on?epEntry(EP_T.code,EP_T.role):null;
@@ -325,7 +326,7 @@ function epGroupsFor(roomId,role,stackId){const devs=epInRoom(roomId,role,stackI
 // the control pick mode: clicking a lamp toggles it in the switch's ctl list
 let EP_CTL=null;                                         // {id: switch id, pushed}
 function epCtlPick(sw){if(!sw)return;if(state.mode!=='select')setMode('select');
-  if(typeof mrkToolsOff==='function')mrkToolsOff();epToolOff();
+  toolsOff();
   EP_CTL={id:sw.id,pushed:false};lyrHud('Mit vezérel '+(sw.ref||sw.id)+'? Kattints a lámpákra · Enter / Esc: kész');draw();}
 function epIsLamp(d){const c=epCodeOf(d);return c==='LMP'||c==='LNR'||c==='SHU';}
 function epCtlToggle(lamp){const sw=byId('devices',EP_CTL&&EP_CTL.id);if(!sw||!epIsLamp(lamp))return false;

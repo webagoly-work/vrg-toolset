@@ -66,7 +66,7 @@ setTimeout(()=>{
   ok('an előszoba lamp still meets (its room has a szobadoboz)',!msgs.some(x=>x.code==='jb.none'));
   D.devices.splice(D.devices.indexOf(sz3),1);const msgs2=(w.STK_CHECKS['sys:LIGHT']||[]).flatMap(f=>{try{return f()||[];}catch(_){return [];}});
   ok('… without it: jb.none',msgs2.some(x=>x.code==='jb.none'));
-  w.wfBarDraw();ok('the bar offers Szobadoboz / Kötődoboz / Elosztó; only 4.4 and 4.5 greyed',/4\.3 Szobadoboz/.test($('wfBar').innerHTML)&&$('wfBar').querySelectorAll('button[disabled]').length===2);
+  ok('the Villamosság phase offers Szobadoboz / Kötődoboz / Elosztó',/wf.boxSzoba,wf.boxKot,wf.board/.test([...w.document.querySelectorAll('#phBody .phGrid[data-ph="vill"] .tool')].map(b=>b.dataset.a).join()));
   w.jbToolStart('kot');ok('the tool runs',w.eval('JB_T.on')&&w.eval('JB_T.kind')==='kot');w.setMode('wall');ok('another tool ends it',!w.eval('JB_T.on'));
   st.pitch=90;st.style='normal';st.wfPhase='vill';w.draw();ok('draws without errors',$('vp').firstChild.innerHTML.length>0);
  }catch(err){R.push(['exception',false,err.stack]);}

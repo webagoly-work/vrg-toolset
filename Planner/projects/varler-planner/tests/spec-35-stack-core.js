@@ -24,7 +24,8 @@ setTimeout(()=>{
   const addWall=(layer,x)=>{w.__getWalls()[lvl].push({x0:x,y0:0,x1:x+1000,y1:100,layer});w.ensureIds(D());};
   const addDev=(o)=>{D().devices.push(Object.assign({type:'socket',level:lvl,x:100,y:100,h:300,layer:'L0',side:0},o));w.ensureIds(D());return D().devices[D().devices.length-1];};
   const roleKeys=w.STK_ROLES.map(r=>r.k);
-  const railBtns=()=>[...w.document.querySelectorAll('#stageRail .stg[data-k]')];
+  // T2 (2026-10-15): the rail is gone; the stack's roles are still the inspector's stages, so these checks read the stage list
+  const railBtns=()=>w.shellStages().map(s=>({dataset:{k:s.k},textContent:s.n,classList:{contains:c=>c==='on'&&s.k===w.shellKey()}}));
 
   // 1 — create
   fresh();const n0=LY().length,u0=undoLen();
@@ -99,9 +100,9 @@ setTimeout(()=>{
 
   // 5 — the stage rail
   fresh();
-  ok('without a stack the rail shows the six general stages',railBtns().length===6&&w.shellStages()===w.STAGES&&!$('stgBack'));
+  ok('without a stack the rail shows the six general stages',railBtns().length===6&&w.shellStages()===w.STAGES&&!w.stkActive());
   const S5=w.stkCreate({});
-  ok('with the stack active the rail shows 21 role buttons and a back button',railBtns().length===21&&!!$('stgBack')&&railBtns()[0].textContent.indexOf('Szerkezet')>=0&&railBtns()[1].textContent.indexOf('Jelölés')>=0);
+  ok('with the stack active the rail shows 21 role buttons and a back button',railBtns().length===21&&!!w.stkActive()&&railBtns()[0].textContent.indexOf('Szerkezet')>=0&&railBtns()[1].textContent.indexOf('Jelölés')>=0);
   ok('the Szerkezet button is the current one',railBtns().find(b=>b.classList.contains('on')).dataset.k==='stk:construct');
   w.setStage('stk:mark');
   ok("setStage('stk:mark') makes the Jelölés layer active and highlights it",LY().find(l=>l.id===w.__state.activeLayer).role==='mark'&&railBtns().find(b=>b.classList.contains('on')).dataset.k==='stk:mark');
@@ -112,8 +113,8 @@ setTimeout(()=>{
   ok('shell.next / shell.prev walk the stack stages',(function(){w.setStage('stk:construct');w.actionById('shell.next').run({});const a=w.shellKey();w.actionById('shell.prev').run({});return a==='stk:mark'&&w.shellKey()==='stk:construct';})());
   ok('the construct role offers the Fal / Helyiség action groups, mark offers none yet',w.stkGroupsOf('construct').indexOf('Fal')>=0&&w.stkGroupsOf('sys:MAINS').slice(0,2).join()==='Végpont,Szükséglet'&&w.stkGroupsOf('mark').join()==='Jelölés');
   ok('STK_GROUPS["+sys:MAINS"] extends one system role only',(function(){w.STK_GROUPS['+sys:MAINS']=['X'];const a=w.stkGroupsOf('sys:MAINS').indexOf('X')>=0&&w.stkGroupsOf('sys:LV').indexOf('X')<0;delete w.STK_GROUPS['+sys:MAINS'];return a;})());
-  click($('stgBack'));
-  ok('"◂ Általános" restores the six general stages',railBtns().length===6&&!$('stgBack')&&w.stkActive()===null&&w.shellStages()===w.STAGES);
+  w.runAction('stack.leave');
+  ok('"◂ Általános" restores the six general stages',railBtns().length===6&&!w.stkActive()&&w.stkActive()===null&&w.shellStages()===w.STAGES);
   ok('the active layer is a non-stack layer again',!LY().find(l=>l.id===w.__state.activeLayer).stack);
   ok('the stack stays in the project after leaving it',ST().length===1);
   w.stkActivate(S5.id);
@@ -185,7 +186,7 @@ setTimeout(()=>{
     D().openings.push({type:'door',level:lvl,x:0,y:0,ang:0,layer:w.stkLayer(S10.id,'construct').id});w.ensureIds(D());return w.stkCheck(S10,'construct').length===0;})());
   ok('a role no work package registered checks for returns none',w.stkCheck(S10,'zz:none').length===0);
   ok('STK_CHECKS[role] functions are concatenated, a throwing one is skipped',(function(){w.STK_CHECKS.hw=[()=>[{sev:'warn',msg:'q'}],()=>{throw new Error('x');}];const c=w.stkCheck(S10,'hw');delete w.STK_CHECKS.hw;return c.length===1&&c[0].msg==='q';})());
-  ok('the stage badge shows the warning count in the rail',(function(){w.STK_CHECKS.mark=[()=>[{sev:'warn',msg:'q'}]];w.invalidateShell();w.renderShell();const b=railBtns().find(x=>x.dataset.k==='stk:mark').querySelector('.stgB');delete w.STK_CHECKS.mark;return !!b&&b.textContent==='1';})());
+  ok('a role check reaches the inspector of that role',(function(){w.STK_CHECKS.mark=[()=>[{sev:'warn',msg:'qq-role-check'}]];w.invalidateShell();w.setStage('stk:mark');w.renderShell();const has=/qq-role-check/.test($('inspector').textContent);delete w.STK_CHECKS.mark;w.invalidateShell();return has;})());
 
   // 11 — persistence
   fresh();const S11=w.stkCreate({name:'P'});

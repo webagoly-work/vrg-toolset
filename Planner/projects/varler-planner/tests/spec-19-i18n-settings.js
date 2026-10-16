@@ -11,7 +11,7 @@ const dom=new JSDOM(fs.readFileSync(HTML,'utf8'),{runScripts:'dangerously',prete
 const w=dom.window;const $=id=>w.document.getElementById(id);
 setTimeout(()=>{
  const R=[];const ok=(n,c,x)=>R.push([n,!!c,x||'']);
- const rail=()=>$('stageRail').textContent.replace(/\s+/g,' ');
+ const rail=()=>$('phaseNav').textContent.replace(/\s+/g,' ');
  const bar=()=>$('statusBar').textContent.replace(/\s+/g,' ');
  try{
   const lvl='ground';w.confirm=()=>true;w.alert=()=>{};
@@ -32,9 +32,9 @@ setTimeout(()=>{
   ok('setLang rejects an unknown language',(function(){w.setLang('de');return w.lang()==='hu';})());
 
   // ---------- what the seam already covers ----------
-  ok('the stage rail follows the language',(function(){
+  ok('the phases follow the language',(function(){
     const hu=rail();w.setLang('en');w.draw();const en=rail();w.setLang('hu');w.draw();
-    return /Épület/.test(hu)&&/Structure/.test(en)&&/Documentation/.test(en);})());
+    return /Alapozás/.test(hu)&&/Foundation/.test(en)&&/Output/.test(en);})());
   ok('the status bar follows the language',(function(){
     const hu=bar();w.setLang('en');w.draw();const en=bar();w.setLang('hu');w.draw();
     return /szint:/.test(hu)&&/level:/.test(en)&&/snapped to walls|free drawing/.test(en);})());
@@ -89,7 +89,7 @@ setTimeout(()=>{
 
   // ---------- regressions ----------
   ok('reg: draw()',(function(){try{w.draw();return true;}catch(e){return 'ERR '+e.message;}})()===true);
-  ok('reg: shell, palette, status bar',!!$('stageRail')&&typeof w.paletteOpen==='function'&&!!$('statusBar'));
+  ok('reg: shell, palette, status bar',!!$('phaseNav')&&typeof w.paletteOpen==='function'&&!!$('statusBar'));
   ok('reg: editors',(function(){try{w.openWallView(WA[0],lvl);w.wvCloseEditor(true);
     w.openPlaneView(w.__data.floors[0],lvl,'ceiling');w.wvCloseEditor(true);return true;}catch(e){return 'ERR '+e.message;}})()===true);
   ok('reg: schema + surface layer',typeof w.linkTarget==='function'&&typeof w.edBindSurface==='function');

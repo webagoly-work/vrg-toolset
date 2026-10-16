@@ -109,7 +109,7 @@ function cktRedraw(){if(typeof invalidateShell==='function')invalidateShell();dr
 var cktPick=null,cktLast=null;
 function cktPickHint(){const c=cktById(cktPick);if(!c)return '';
   return `⚡ ${cktLabel(c)} — kattints a készülékekre (újra kattintva kiveszi) · ${kbdKey('circuit')} vagy Esc = kész`;}
-function cktPickStart(id){const c=cktById(id);if(!c)return false;
+function cktPickStart(id){const c=cktById(id);if(!c)return false;toolsOff();
   if(state.mode!=='select')setMode('select');
   cktPick=c.id;cktLast=c.id;selected=null;if(typeof clearMulti==='function')clearMulti();
   const mh=$('modeHint');if(mh)mh.textContent=cktPickHint();
@@ -213,7 +213,7 @@ function cktChecks(){const out=[],L=cktList();
 
 // ---- actions ----
 registerActions([
- {id:'circuit.pick',alias:'aramkor vegpont endpoint circuit pick kor',label:'Végpontok kijelölése',icon:'⚡',group:'Áramkör',keys:['k'],
+ {id:'circuit.pick',alias:'aramkor vegpont endpoint circuit pick kor',label:'Végpontok kijelölése',icon:'Ⓚ',group:'Áramkör',keys:['k'],
   hint:'Kattints a készülékekre a rajzon: az aktív áramkör végpontjai lesznek. K vagy Esc = kész.',
   when:c=>!c.inEditor,
   run:()=>{if(cktPick){cktPickStop();return;}
@@ -223,7 +223,7 @@ registerActions([
  {id:'circuit.new',alias:'uj aramkor new circuit',label:'Új áramkör',icon:'＋',group:'Áramkör',
   hint:'Új áramkör, és rögtön a végpontjai kijelölése.',
   when:c=>!c.inEditor,run:()=>{pushUndo(['circuits']);const c=cktCreate();cktPickStart(c.id);}},
- {id:'circuit.fromSel',alias:'kijeloltekbol aramkor selection circuit',label:'Kijelöltekből áramkör',icon:'⚡',group:'Áramkör',
+ {id:'circuit.fromSel',alias:'kijeloltekbol aramkor selection circuit',label:'Kijelöltekből áramkör',icon:'➕',group:'Áramkör',
   need:'Jelölj ki egy vagy több készüléket (Ctrl+kattintás).',
   hint:'A kijelölt készülékek egy új áramkör végpontjai lesznek; egy készülék esetén dedikált.',
   when:c=>!c.inEditor&&cktSelDevices().length>0,

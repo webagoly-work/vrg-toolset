@@ -56,6 +56,23 @@ function guard(files) {
   if (!files.length) throw new Error('no modules found in src/');
 }
 
+// tools/baseline → one expression: `const BL=(function(){…})();` exposing {rules, geom, network, prep, plan}.
+// Only the five pure modules (no fs, no DOM); a require() of anything else throws, so a new dependency shows at once.
+const BASELINE_MODS = ['rules', 'geom', 'network', 'prep', 'plan'];
+function baselineBundle() {
+  const dir = path.join(ROOT, 'tools', 'baseline');
+  const body = BASELINE_MODS.map(m => {
+    const src = fs.readFileSync(path.join(dir, m + '.js'), 'utf8');
+    if (/<\/script/i.test(src)) throw new Error('tools/baseline/' + m + '.js contains </script — cannot inline');
+    return `S[${JSON.stringify(m)}]=function(module,exports,require){\n${src}\n};\n`;
+  }).join('');
+  return 'const BL=(function(){const S={},C={};\n'
+    + 'function require(n){const k=String(n).replace(/^\\.\\//,\'\').replace(/\\.js$/,\'\');if(!S[k])throw new Error(\'BL: no module \'+n);'
+    + 'if(C[k])return C[k].exports;const m=C[k]={exports:{}};S[k](m,m.exports,require);return m.exports;}\n'
+    + body
+    + 'return {' + BASELINE_MODS.map(m => m + ':require(' + JSON.stringify(m) + ')').join(',') + '};})();\n';
+}
+
 function build() {
   const shellPath = path.join(SRC, 'shell.html');
   if (!fs.existsSync(shellPath))
@@ -69,9 +86,12 @@ function build() {
   guard(files);
 
   // strip each module's banner: it documents the source tree, not the product
-  const js = files.map(f => fs.readFileSync(path.join(SRC, f), 'utf8').replace(BANNER, '')).join('');
+  // WP-E5 (Q-E05 = A, "bundle, don't port"): the module that holds the /*__BASELINE__*/ marker gets the Erősáram
+  // engine of tools/baseline, each CommonJS file wrapped in a tiny require shim — one engine for the CLI and the page
+  const js = files.map(f => fs.readFileSync(path.join(SRC, f), 'utf8').replace(BANNER, ''))
+    .map(s => s.indexOf('/*__BASELINE__*/') >= 0 ? s.replace('/*__BASELINE__*/', () => baselineBundle()) : s).join('');
 
-  const html = shell.replace('\n/*__SRC__*/\n', js);
+  const html = shell.replace('\n/*__SRC__*/\n', () => js);    // a function: "$&" / "$'" in a source are never patterns
   if (html.indexOf('/*__SRC__*/') >= 0) throw new Error('shell.html marker not replaced');
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });

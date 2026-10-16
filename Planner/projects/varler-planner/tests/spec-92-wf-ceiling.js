@@ -49,7 +49,7 @@ setTimeout(()=>{
   st.pitch=90;st.style='normal';w.draw();const sc=$('vp').firstChild.innerHTML;
   ok('both lines draw',(sc.match(/class="cln cln-ceil"/g)||[]).length===2);
   let err=null;try{w.mrkListDialog();w.closeModal&&w.closeModal();}catch(e){err=e.message;}ok('the marks list tolerates the new kind',!err,err);
-  w.wfBarDraw();ok('the bar offers Mennyezeti út',/Mennyezeti út/.test($('wfBar').innerHTML));
+  ok('the Szabályok phase offers Mennyezeti út',/wf.ceilLine/.test([...w.document.querySelectorAll('#phBody .phGrid[data-ph="szab"] .tool')].map(b=>b.dataset.a).join()));
   w.clnToolStart();ok('the tool runs',w.eval('CLN.on'));w.setMode('wall');ok('another tool ends it',!w.eval('CLN.on'));
   // 5. colours: ceiling blue, floor brown (the user's choice)
   w.draw();let sc2=$('vp').firstChild.innerHTML;
@@ -70,7 +70,7 @@ setTimeout(()=>{
   ok('a floor line across a Padlófűtés zone is refused',w.clnCommit([[2000,-150],[2000,2000]],{wall:top.id,u:2300},soc2,'floor')===null&&D.marks.length===n0);
   ok('… around it is fine',!!w.clnCommit([[600,-150]],{wall:top.id,u:900},soc2,'floor'));
   ok('the ceiling ignores floor heating',!!w.clnCommit([[1200,-150],[1200,1500]],{wall:top.id,u:1500},A));
-  w.wfBarDraw();ok('the bar offers Padló út',/Padló út/.test($('wfBar').innerHTML));
+  ok('the Szabályok phase offers Padló út',/wf.floorLine/.test([...w.document.querySelectorAll('#phBody .phGrid[data-ph="szab"] .tool')].map(b=>b.dataset.a).join()));
   w.clnToolStart('floor');ok('the floor tool runs',w.eval('CLN.on')&&w.eval('CLN.plane')==='floor');w.setMode('wall');
  }catch(err){R.push(['exception',false,err.stack]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x&&!c?'   ['+x+']':''));});

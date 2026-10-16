@@ -37,12 +37,14 @@ function eloFeeds(boardId){const out={rbx:[],base:[],ssc:[]};
     const d=byId('devices',o);if(d&&out[d.type]&&out[d.type].indexOf(d)<0)out[d.type].push(d);});
   ['rbx','base','ssc'].forEach(k=>out[k].sort((a,b)=>prtIdCmp(a.id,b.id)));return out;}
 // the board a big load hangs on: the origin of its fill run, else the only / nearest board
-function eloLoadBoard(d){const r=afillRuns().find(x=>x.stage==='stack'&&x.to===d.id&&(byId('devices',x.from)||{}).type==='board');
+function eloLoadBoard(d){const ck=d&&d.var==='alelo'&&typeof cktOfDevice==='function'?cktOfDevice(d):null;if(ck&&ck.board&&byId('devices',ck.board))return ck.board;
+  const r=afillRuns().find(x=>x.stage==='stack'&&x.to===d.id&&(byId('devices',x.from)||{}).type==='board');
   if(r)return r.from;const bs=hwList('board');if(bs.length===1)return bs[0].id;
   let best=null,bd=1e18;bs.forEach(b=>{const dd=Math.hypot(b.x-d.x,b.y-d.y)+(b.level===d.level?0:1e9);if(dd<bd){bd=dd;best=b;}});return best?best.id:null;}
 function eloMcbOf(dev,fallback){const c=dev&&typeof cktOfDevice==='function'?cktOfDevice(dev):null;return (c&&c.mcb&&c.mcb.curve)?mcbText(c.mcb):fallback;}
 function eloLoadKw(d){const v=d.var||'',txt=needFold([d.name,d.lampName,d.note,d.ref].filter(Boolean).join(' '));
-  if(v==='hob2l'||v==='hob32')return ELO_RULES.kw[v];if(v==='alelo')return ELO_RULES.kw.alelo;if(epCodeOf(d)==='AVP')return ELO_RULES.kw.avp;
+  if(v==='hob2l'||v==='hob32')return ELO_RULES.kw[v];
+  if(v==='alelo')return (d.feeds&&typeof alsFloorKw==='function'&&byId('devices',d.feeds)?+(alsFloorKw(d.feeds)*ALS_DIVERSITY).toFixed(2):0)||ELO_RULES.kw.alelo;   // E6: the floor's loadif(epCodeOf(d)==='AVP')return ELO_RULES.kw.avp;
   const hit=ELO_KW_WORDS.find(w=>w[0].test(txt));return hit?ELO_RULES.kw[hit[1]]:ELO_RULES.kw.g16;}
 // → [{key, label, kind, mcb, kw, phases:1|2, feeds:[ids]}] — one entry per way (a 2L+2N hob on 3 phases = two ways)
 function eloWays(boardId,opt){opt=eloOpt(opt);const F=eloFeeds(boardId),S=stkActive(),R=ELO_RULES,ways=[];
@@ -59,6 +61,13 @@ function eloWays(boardId,opt){opt=eloOpt(opt);const F=eloFeeds(boardId),S=stkAct
     const kitchen=hwServes(x).some(r=>{const e=mrkRoomById(r);return e&&needKind(e.rm)==='konyha'&&(!real||members.some(m=>{const d=byId('devices',m);return d&&epRoomOf(d)===r;}));});
     add('socket:'+c.key,c.name||'dugalj','socket',(real&&real.mcb&&real.mcb.curve)?mcbText(real.mcb):(c.cable==='NYM3x25'?R.mcb.socket25:R.mcb.socket15),
       kitchen?R.kw.socketKitchen:R.kw.socket,members);});});
+  // the workflow's own circuits (E4, classic — not through an RBX): one way each, on the board of their level (WP-E6)
+  (typeof cktList==='function'?cktList():[]).forEach(c=>{if(seen.has(c.id))return;const ms=(c.members||[]).map(id=>byId('devices',id)).filter(Boolean);
+    if(!ms.length||ms.some(d=>{const k=epCodeOf(d);return k==='DED'||k==='AVP';}))return;
+    if((c.board||eloLoadBoard(ms[0]))!==boardId)return;
+    const light=ms.every(d=>{const k=epCodeOf(d);return k==='LMP'||k==='SWI'||k==='SHU';}),kitchen=ms.some(d=>{const e=roomOfDevice(d);return e&&e.rm&&needKind(e.rm)==='konyha';});
+    const kw=light?ms.reduce((a,d)=>a+({LMP:0.06,SHU:0.15}[epCodeOf(d)]||0),0):(kitchen?R.kw.socketKitchen:R.kw.socket);
+    add('ckt:'+c.id,(c.ref||'')+' '+(c.name||''),light?'light':'socket',(c.mcb&&c.mcb.curve)?mcbText(c.mcb):(light?R.mcb.lighting:R.mcb.socket25),+kw.toFixed(2),ms.map(d=>d.id));});
   data.devices.forEach(d=>{const c=d&&epCodeOf(d);if(c!=='DED'&&c!=='AVP')return;if(eloLoadBoard(d)!==boardId)return;
     const v=d.var||'',kw=eloLoadKw(d),lbl=(d.ref||d.id)+' — '+((epVar(d)||{}).n||'').split(' — ')[0];
     if(v==='hob2l'&&opt.phase==='3f'){for(let i=1;i<=2;i++)add('load:'+d.id+':'+i,lbl+' ('+i+'/2)','load',eloMcbOf(d,R.mcb.hob2l),kw/2,[d.id]);}
@@ -73,11 +82,20 @@ function eloBalance(ways){const ph={L1:0,L2:0,L3:0},keys=['L1','L2','L3'];const 
     if(/^load:.*:[12]$/.test(w.key))hob[base]=hob[base]||p;w.phase=p;ph[p]+=w.kw;});
   return ph;}
 // the schedule: plain JSON
+// E6-Q3 (the user): one main switch, in the main Elosztó; every Alosztó feeder leaves its cabinet through its own RCD —
+// the floor's RCD — so an Alosztó has no main switch and its ways are plain MCBs.
+function eloIsFeeder(w){return (w.feeds||[]).some(id=>{const d=byId('devices',id);return d&&d.var==='alelo';});}
+function eloFeederDevice(mcb){const m=mcbParse(mcb);if(!m||!m.curve)return mcb;const p=m.poles>=3?'4P':'2P',a=[25,40,63].find(x=>x>=m.amps)||63;
+  return {n:'RCD '+p+' '+a+'A '+ELO_RULES.rcd.ma+' mA '+ELO_RULES.rcd.type+' + MCB '+mcbText(m),mod:(m.poles>=3?4:2)+mcbModules(m)};}
 function eloSchedule(boardId,o){const opt=eloOpt(o),R=ELO_RULES,b=byId('devices',boardId);
-  const ways=eloWays(boardId,opt).map(w=>Object.assign({},w,{device:eloDevice(w.mcb,opt.perWay),
-    mod:opt.perWay==='rcbo'?R.rcbo.mod:mcbModules(mcbParse(w.mcb))||1,phase:null}));
-  const feed=R.feed[opt.phase].map(f=>({n:f.n,mod:f.mod}));if(R.bell.on)feed.push({n:R.bell.n,mod:R.bell.mod});
-  const rcd=[];if(opt.perWay==='rcd'){for(let i=0;i<ways.length;i+=R.rcd.maxWays)rcd.push({n:'RCD '+R.rcd.amps+'A '+R.rcd.ma+' mA '+R.rcd.type,mod:R.rcd.mod,ways:ways.slice(i,i+R.rcd.maxWays).map(w=>w.key)});}
+  if(b&&b.sub)opt.perWay='mcb';                       // E6-Q3: the floor is protected by its feeder's RCD upstream
+  const ways=eloWays(boardId,opt).map(w=>{const f=eloIsFeeder(w)?eloFeederDevice(w.mcb):null;
+    return Object.assign({},w,{device:f?f.n:eloDevice(w.mcb,opt.perWay),feeder:!!f,
+    mod:f?f.mod:opt.perWay==='rcbo'?R.rcbo.mod:mcbModules(mcbParse(w.mcb))||1,phase:null});});
+  const sub=!!(b&&b.sub);   // WP-E6: an Alosztó — no main switch (Q3), a type-2 SPD only, no bell
+  const feed=sub?[{n:'Túlfeszültség-védelem '+(opt.phase==='3f'?'3P+N':'1P+N')+' (T2)',mod:opt.phase==='3f'?4:2}]
+    :R.feed[opt.phase].map(f=>({n:f.n,mod:f.mod}));if(R.bell.on&&!sub)feed.push({n:R.bell.n,mod:R.bell.mod});
+  const rcd=[],grp=ways.filter(w=>!w.feeder);if(opt.perWay==='rcd'){for(let i=0;i<grp.length;i+=R.rcd.maxWays)rcd.push({n:'RCD '+R.rcd.amps+'A '+R.rcd.ma+' mA '+R.rcd.type,mod:R.rcd.mod,ways:grp.slice(i,i+R.rcd.maxWays).map(w=>w.key)});}
   const totalMod=feed.reduce((s,f)=>s+f.mod,0)+ways.reduce((s,w)=>s+w.mod,0)+rcd.reduce((s,r)=>s+r.mod,0);
   const rows=Math.max(1,Math.ceil(totalMod/R.rowModules)),free=rows*R.rowModules-totalMod,warnings=[];
   let phases=null;

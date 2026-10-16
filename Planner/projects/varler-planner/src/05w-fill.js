@@ -284,10 +284,10 @@ STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d||d.type!=='rbx'||!s
   afillChannelPlan(S.id).warns.forEach(w=>out.push({sev:w.sev,msg:w.msg}));return out;});
 
 registerActions([
- {id:'fill.room',alias:'helyiseg feltoltese fill room cables conduits',label:'Helyiség feltöltése…',icon:'⚙',group:'Feltöltés',
+ {id:'fill.room',alias:'helyiseg feltoltese fill room cables conduits',label:'Helyiség feltöltése…',icon:'🧵',group:'Feltöltés',
   hint:'A kijelölt helyiség minden rendszer-rétegének futásai, csövei és kábelei az ARM pályákon (előnézet, majd Alkalmaz).',
   need:'Jelölj ki egy helyiséget (padlót).',when:c=>!!stkActive()&&c.selType==='floors',run:c=>afillRoomUI(data.floors[c.sel.i].id)},
- {id:'fill.all',alias:'teljes stack feltoltese fill all',label:'Teljes stack feltöltése…',icon:'⚙',group:'Feltöltés',
+ {id:'fill.all',alias:'teljes stack feltoltese fill all',label:'Teljes stack feltöltése…',icon:'🪡',group:'Feltöltés',
   need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>afillAllUI()},
  {id:'fill.channel',alias:'csatornak feltoltese fill channel bundle',label:'Csatornák feltöltése…',icon:'⇋',group:'Feltöltés',
   hint:'CHANNEL köteg (C1…C5) a BASE-től minden RBX-ig a láncon át, az RBX-ek erősáramú betápja, a biztonsági törzs.',

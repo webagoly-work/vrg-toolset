@@ -11,7 +11,7 @@ const [, , inFile, outDir, cfgFile] = process.argv;
 if (!inFile || !outDir) { console.error('usage: run.js <in.vplan.json> <outDir> [config.js]'); process.exit(2); }
 const cfg = require(path.resolve(cfgFile || path.join(__dirname, 'p33.config.js')));
 const doc = JSON.parse(fs.readFileSync(inFile, 'utf8'));
-applyEdits(doc, cfg);
+prep.applyEdits(doc, cfg);
 const G = geom.load(doc, cfg.level);
 const { allowed, offWall } = geom.allowedFromSketch(G, G.D.paths);
 (cfg.allowExtra || []).forEach(a => (allowed[a.wall] = allowed[a.wall] || []).push(a.iv));
@@ -21,27 +21,6 @@ const R = plan(G, E, PT, cfg, allowed);
 fs.mkdirSync(outDir, { recursive: true });
 const ctx = { G, E, PT, R, cfg, allowed, offWall, doc, inFile, outDir };
 module.exports = ctx;
-// the user's answers as edits on the sketch itself: new points get real ids (so the output .vplan carries them),
-// moves change x / y, hFix pins a height. "N:name" references in the config resolve to those ids.
-function applyEdits(doc, cfg) {
-  const D = doc.project.data, P = doc.project, L_MAINS = (P.layers.find(l => l.role === 'sys:MAINS') || {}).id, ids = {};
-  (cfg.edits || []).forEach(ed => {
-    if (ed.move) { const d = D.devices.find(x => x.id === ed.move); if (!d) return;
-      if (ed.x != null) d.x = ed.x; if (ed.y != null) d.y = ed.y; if (ed.hFix != null) { d.h = ed.hFix; d.hFix = true; }
-      if (ed.setNote != null) d.note = ed.setNote;                                 // a corrected note replaces the old one (R09)
-      d.note = ((d.note || '') + ' · ' + ed.note).replace(/^ · /, ''); d.edited = true; return; }
-    if (ed.add) { const at = ed.at && D.devices.find(x => x.id === ed.at), id = 'D' + (++D.seq);
-      D.devices.push({ type: ed.type, code: ed.code || (ed.type === 'switch' ? 'SWI' : undefined), var: ed.var || (ed.type === 'switch' ? '230' : undefined), kind: ed.kind,
-        level: cfg.level, x: at ? at.x : ed.x, y: at ? at.y : ed.y, h: ed.hFix != null ? ed.hFix : (at ? at.h : 1100), hFix: ed.hFix != null, layer: L_MAINS, id, ref: ed.ref, note: ed.note, faceBack: false, added: true });
-      ids['N:' + ed.add] = id; } });
-  const res = v => (typeof v === 'string' && ids[v]) || v;
-  (cfg.switchGroups || []).forEach(g => { g.lamps = g.lamps.map(res); g.chain = g.chain.map(res); });
-  (cfg.floorGroups || []).forEach(g => { if (g.members) g.members = g.members.map(res); });
-  (cfg.socketPlan || []).forEach(p => { if (p.members) p.members = p.members.map(res); if (p.add) p.add = p.add.map(res); });
-  if (cfg.rbxSwitched) cfg.rbxSwitched = Object.fromEntries(Object.entries(cfg.rbxSwitched).map(([k, v]) => [res(k), v]));
-  cfg._ids = ids;
-}
-
 if (require.main === module) {
   require('./emit').all(ctx);
   if (cfg.data || cfg.led || cfg.oldPlan) { const X = require('./emit-data').all(ctx);

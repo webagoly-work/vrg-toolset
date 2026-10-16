@@ -38,7 +38,7 @@ function settingsPanel(){
 
     +`<h4 style="margin:12px 0 4px">${esc(t('set.heights','Szabvány magasságok'))}</h4>`
     +`<div style="font-size:11.5px;columns:2;column-gap:18px">`
-    +g.map(x=>`<div>${esc(x.l)} — <b>${x.mm==='ceil'?'belmagasság':x.mm==='gerinc'?'menny.−300':x.mm==='alcell'?'álmennyezet':x.mm+' mm'}</b></div>`).join('')
+    +g.map(x=>`<div>${esc(String(x.l).replace(/^\s*\d+\s*/,''))} — <b>${x.mm==='ceil'?'belmagasság':x.mm==='alcell'?'álmennyezet':resolveMm(x,state.active)+' mm'}</b>${guideStd(x)||x.mm==='gerinc'?' <span style="color:#9a8f7a" title="A Szabványok táblából / az E5 pálya-magasságból">📏</span>':''}</div>`).join('')
     +`</div>`
 
     +`<h4 style="margin:12px 0 4px">${esc(t('set.env','Környezet és IP'))}</h4>`
@@ -48,6 +48,10 @@ function settingsPanel(){
     +`<div style="font-size:11.5px;columns:2;column-gap:18px">`
     +WALL_PRESETS.map(w=>`<div>${esc(w.n)} — <b>${w.th} mm</b></div>`).join('')+`</div>`
 
+    // T5 (docs/ui-tidy): the behaviour toggles live here; the real checkboxes stay (hidden) where their bindings are
+    +`<h4 style="margin:12px 0 4px">${esc(t('set.behave','Viselkedés'))}</h4>`
+    +row('Mozgatás rácshoz illesztés',`<input type="checkbox" id="stGiz" ${($('gizSnap')||{}).checked?'checked':''}>`,'Mozgatás eszköz')
+    +row('Kijelölő keret (kihúzás)',`<input type="checkbox" id="stMulti" ${($('multiSel')||{}).checked?'checked':''}>`,'Kijelölés eszköz')
     +`<h4 style="margin:12px 0 4px">${esc(t('set.keys','Billentyűzet'))}</h4>`
     +row('Billentyűkiosztás',`<select id="stKbd" style="width:140px">`
       +Object.keys(KBD_LAYOUTS).map(k=>`<option value="${k}" ${kbdLayout()===k?'selected':''}>${esc(KBD_LAYOUTS[k].n)}</option>`).join('')
@@ -64,6 +68,7 @@ function settingsPanel(){
       state.boxDepth=Math.max(10,+$('stBox').value||45);
       state.boardZ=Math.max(0,+$('stBoard').value||BOARD_DEFAULT_Z);
       state.plenum=Math.max(0,+$('stPlen').value||DROP_PLENUM);
+      [['stGiz','gizSnap'],['stMulti','multiSel']].forEach(([a,b])=>{const s=$(a),d=$(b);if(s&&d&&s.checked!==d.checked){d.checked=s.checked;d.dispatchEvent(new Event('change'));}});
       const kb=$('stKbd').value;if(kb!==kbdLayout()){state.kbdLayout=kb;kbdApplyLayout();}
       const L=$('stLang').value;if(L!==lang())setLang(L);
       gpSettingsSave();

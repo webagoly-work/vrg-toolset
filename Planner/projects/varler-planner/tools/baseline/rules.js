@@ -24,7 +24,7 @@ function stdHeight(d, ctx) {
       if (ctx.worktop) return { h: LEVEL.worktop + 200, rule: 'pult fölött: munkalap 900 + 200 = 1100' };
       if (ctx.bed) return d.h >= 600 ? { h: 750, rule: 'ágy melletti dugalj, éjjeliszekrény fölött 750' } : { h: 300, rule: 'ágy melletti alsó dugalj 300' };
       if (ctx.wet) return { h: 1100, rule: 'vizes helyiség: 1100, a 0–2. zónán kívül ⚑ MSZ HD 60364-7-701' };
-      if (ctx.room === 'R05') return { h: 1100, rule: 'kamra: polcmagasság 1100' };
+      if ((ctx.kinds || []).some(k => k === 'kamra' || k === 'gardrob')) return { h: 1100, rule: 'kamra: polcmagasság 1100' };
       return { h: 300, rule: 'dugalj 300 (EP_CAT)' }; }
     if (code === 'DED') { const n = (ctx.circuitName || '').toLowerCase();
       if (v === 'hob2l' || v === 'hob32' || /főzőlap/.test(n)) return { h: 600, rule: 'főzőlap csatlakozó a főzőlap alatti szekrényben 600' };
@@ -106,7 +106,26 @@ function sizeConduit(cables, lenMm) {
 }
 
 // ---- which cable a circuit / leg uses ----
-const CIRCUIT_CABLE = { light: 'NYM3x15', s04: 'NYM3x15', s25: 'NYM3x25', ded16: 'NYM3x25', hob2l: 'NYM5x25', hob32: 'NYM3x6' };
+const CIRCUIT_CABLE = { light: 'NYM3x15', s04: 'NYM3x15', s25: 'NYM3x25', ded16: 'NYM3x25', hob2l: 'NYM5x25', hob32: 'NYM3x6', alelo: 'NYM5x6' };   // alelo: WP-E6 Alosztó feeder
 const SWITCH_LEG = { 1: 'NYM3x15', 2: 'NYM4x15', 3: 'NYM5x15', twoway: 'NYM4x15', shutter: 'NYM4x15' };
 
-module.exports = { LEVEL, stdHeight, PORTAL_SLOTS, PORTAL_ZONE, BOX, CABLES, CONDUITS, FILL, sizeConduit, CIRCUIT_CABLE, SWITCH_LEG };
+// ---- E5-Q3 = A: run heights follow the ceiling (P33: 2850 → trunk 2600, distribution 2450) ----
+function runHeights(cfg) { const C = (cfg && cfg.ceiling) || LEVEL.ceilingDefault;
+  return { trunk: (cfg && cfg.trunkH) || C - 250, dist: (cfg && cfg.distH) || C - 400, ceiling: C }; }
+
+// ---- E5-Q1 = A: current-carrying capacity (Ib ≤ In ≤ Iz · k) ⚑ ----
+// Iz: PVC-insulated multi-core cable in conduit in / on a wall (reference method B2), 30 °C, copper — IEC 60364-5-52
+// table B.52.4 values, by loaded conductors (2 = single phase, 3 = three phase). ⚑ to confirm against MSZ HD 60364-5-52.
+const IZ = { 2: { 1.5: 16.5, 2.5: 23, 4: 30, 6: 38, 10: 52, 16: 69, 25: 90 }, 3: { 1.5: 15, 2.5: 20, 4: 27, 6: 34, 10: 46, 16: 62, 25: 80 } };   // 25: WP-E6 feeders
+// grouping: circuits bunched in one chase / enclosure — IEC 60364-5-52 table B.52.17 row 1 ⚑
+const GROUP_K = [1, 1, 0.80, 0.70, 0.65, 0.60, 0.57, 0.54, 0.52, 0.50, 0.48, 0.45];
+const groupK = n => n < GROUP_K.length ? GROUP_K[Math.max(1, n)] : 0.41;
+const cableMm2 = c => { const m = /x(\d+)$/.exec(c || ''); if (!m) return null; const v = m[1]; return v === '15' ? 1.5 : v === '25' ? 2.5 : +v; };
+const loadedCores = c => /^NYM5x/.test(c || '') ? 3 : 2;
+const mcbAmps = s => { const m = /(\d+)\s*A?\s*$/.exec(String(s || '').trim()); return m ? +m[1] : null; };
+// ---- E5-Q2 = B: voltage drop, one limit ----
+const VDROP = { limitPct: 4, rho: 0.0225 /* Ω·mm²/m, copper at 70 °C ⚑ */ };
+function vdropPct(lenM, amps, mm2, cores3) { if (!lenM || !amps || !mm2) return 0;
+  return cores3 ? Math.sqrt(3) * lenM * amps * VDROP.rho / mm2 / 400 * 100 : 2 * lenM * amps * VDROP.rho / mm2 / 230 * 100; }
+
+module.exports = { runHeights, IZ, groupK, cableMm2, loadedCores, mcbAmps, VDROP, vdropPct, LEVEL, stdHeight, PORTAL_SLOTS, PORTAL_ZONE, BOX, CABLES, CONDUITS, FILL, sizeConduit, CIRCUIT_CABLE, SWITCH_LEG };

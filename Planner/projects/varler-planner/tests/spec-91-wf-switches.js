@@ -75,7 +75,7 @@ setTimeout(()=>{
   // 6. checks + bar
   lamp(3000,500);const msgs=(w.STK_CHECKS['sys:LIGHT']||[]).flatMap(f=>{try{return f()||[];}catch(_){return [];}});
   ok('an unswitched lamp is reported (lsw.none)',msgs.some(m=>m.code==='lsw.none'));
-  w.wfBarDraw();ok('the bar offers 4.2 Kapcsolások and the suggestion',/4\.2 Kapcsolások/.test($('wfBar').innerHTML)&&/Kapcsolások javaslata/.test($('wfBar').innerHTML)&&![...$('wfBar').querySelectorAll('button[disabled]')].some(x=>/4.2/.test(x.textContent)));
+  ok('the Villamosság phase offers Kapcsolások and the suggestion',/wf.switches,wf.switchSuggest/.test([...w.document.querySelectorAll('#phBody .phGrid[data-ph="vill"] .tool')].map(b=>b.dataset.a).join()));
   w.lswToolStart();ok('the tool runs on the lighting layer',w.eval('LSW.on')&&w.lyrLayer(st.activeLayer).role==='sys:LIGHT');
   w.setMode('wall');ok('another tool ends it',!w.eval('LSW.on'));
  }catch(err){R.push(['exception',false,err.stack]);}

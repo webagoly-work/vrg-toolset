@@ -20,11 +20,12 @@ const HINTS={select:'Kijelölés — kattints egy elemre: kiemelve, a jobb oldal
  roof:'Roof — click two points to span a roof over that area, then pick type (lapos/félnyereg/nyereg/konty), eave + ridge height and overhang. Right-click it to edit.',
  floor:'Padló — pont után pont, mint a térképes területmérő; élő Terület/Kerület. Az első pontra kattintva (vagy Enterrel) zárul, Backspace visszavesz egy pontot. Falakkal zárt térbe: jobb klikk → Padló a falak közé.',
  measure:'Measure — click two points for the distance.',note:'Note — click a spot, then type text. Tip: hold LEFT+RIGHT mouse to pan while drawing; Backspace = undo last click.'};
-function setMode(m){if(m!=='select'&&typeof cktPick!=='undefined'&&cktPick)cktPick=null;if(typeof stkToolEvent==='function')stkToolEvent('mode',{mode:m});   // another tool ends end point picking
+function setMode(m){if(typeof toolsOff==='function')toolsOff();   // T1: picking any mode ends every sub-tool (05cb)
+  if(m!=='select'&&typeof cktPick!=='undefined'&&cktPick)cktPick=null;if(typeof stkToolEvent==='function')stkToolEvent('mode',{mode:m});   // another tool ends end point picking
   state.mode=m;draft=null;pathDraft=null;measureDraft=null;wallStart=null;floorDraft=null;roofStart=null;dragItem=null;objGhost=null;buildGhost=null;gizDrag=null;lock=null;state.hoverR=null;if(m!=='format')fmtSource=null;else if(selected){pickFormatSource(selected);if(fmtSource)$('hud').textContent='Forrás: '+fmtSource.label+' — kattints egy azonos típusú elemre.';}if(m!=='grab'&&m!=='select'&&m!=='format')selected=null;if(m!=='grab'&&m!=='select')clearMulti();hideCtx();lampHoverHide();
   document.querySelectorAll('.tool[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
   const wo=$('wallOpts');if(wo)wo.style.display=(m==='wall')?'flex':'none';
-  $('modeHint').textContent=HINTS[m];$('modeTip').textContent=HINTS[m];if(window.__dashReady)applyToolLayout(m);
+  $('modeHint').textContent=HINTS[m];if($('modeTip'))$('modeTip').textContent=HINTS[m];if(window.__dashReady)applyToolLayout(m);
   // 2.0-a: tell a connected phone the tool changed. Self-suppressing —
   // returns immediately if nothing changed or no phone asked for state.
   if(window.PLANNER_LINK)window.PLANNER_LINK.pushState(false);
@@ -358,7 +359,7 @@ function kbdApplyLayout(){const L=KBD_LAYOUTS[kbdLayout()],N=kbdNames(),A=id=>(t
   if(cp){cp.keys=[L.circuit];cp.hint=`Kattints a készülékekre a rajzon: az aktív áramkör végpontjai lesznek. ${N.ckt} vagy Esc = kész.`;}
   HINTS.grab=`Mozgatás — kattints egy elemre. ${N.mv} tol (F: finom), ${N.rot} forgat, ↑/↓ emel · kék középpont: szabad mozgatás, kék gyűrű: forgatás, lila: emelés, sárga sarok: méret · Del töröl, Ctrl+D másol. WASD/QE: kamera.`;
   HINTS.object=`Tárgy — válassz egyet a Tárgyak panelen, majd kattints a lerakáshoz; ${N.rot} forgatja. Kijelölve: ${N.mv} tol, ↑/↓ emel, jobb klikk: méret. WASD/QE: kamera.`;
-  if(HINTS[state.mode]&&$('modeHint')&&(state.mode==='grab'||state.mode==='object')){$('modeHint').textContent=HINTS[state.mode];$('modeTip').textContent=HINTS[state.mode];}
+  if(HINTS[state.mode]&&$('modeHint')&&(state.mode==='grab'||state.mode==='object')){$('modeHint').textContent=HINTS[state.mode];if($('modeTip'))$('modeTip').textContent=HINTS[state.mode];}
   if(typeof invalidateShell==='function')invalidateShell();}
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(typeof cktPickStop==='function')cktPickStop();lampHoverHide();
@@ -562,7 +563,7 @@ stage.addEventListener('touchmove',e=>{
 stage.addEventListener('touchend',e=>{clearTimeout(longPressT);
   if(e.touches.length<2)touchG=null;
   if(e.touches.length===0)lpStart=null;},{passive:false});
-function setRotSilent(deg){deg=camLockYaw(deg);deg=((Math.round(deg)%360)+360)%360;state.rot=deg;const r=$('rot');if(r){r.value=deg;$('rotVal').textContent=deg+'°';}}
+function setRotSilent(deg){deg=camLockYaw(deg);deg=((Math.round(deg)%360)+360)%360;state.rot=deg;const r=$('rot');if(r){r.value=deg;$('rotVal').textContent=deg+'°';}const q=$('qvRot');if(q)q.textContent=deg+'°';}
 // two-finger vertical pitch pad (mobile): a dedicated on-screen control instead of ambiguous gesture
 function openCtxAt(ev){ // reuse the contextmenu pipeline via a synthetic event
   const evt=new MouseEvent('contextmenu',{clientX:ev.clientX,clientY:ev.clientY,bubbles:true,cancelable:true});

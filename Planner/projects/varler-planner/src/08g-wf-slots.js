@@ -56,15 +56,17 @@ function ptSlotAt(p,level,fams){level=level||state.active;fams=fams||ptSlotFams(
   (data.openings||[]).forEach(o=>{if(o.level!==level)return;(o.type==='door'?ptSlots(o):[ptWinSlot(o)]).forEach(s=>{if(!s||fams.indexOf(s.fam)<0)return;
     const d=Math.hypot(s.x-p[0],s.y-p[1]);if(d<bd){bd=d;best=s;}});});return best;}
 
-// a door placed with the Ajtó tool gets its portals in the placement's own undo step (that pushUndo() was unscoped)
-let PT_AUTO_N=-1;   // openings count at pointer-down: only a door THIS click added gets portals
-STK_TOOLS.push({k:'ptAutoDoor',active:()=>state.mode==='build'&&state.buildType==='door',
-  down:()=>{PT_AUTO_N=(data.openings||[]).length;return false;},
-  up:()=>{const n=(data.openings||[]).length,o=data.openings[n-1];if(PT_AUTO_N>=0&&n>PT_AUTO_N&&o&&o.type==='door'){if(ptAutoDoor(o))draw();}PT_AUTO_N=-1;return false;}});
-// faint slot dots for the families the active layer uses
-STK_OVERLAY.push(()=>{const fams=ptSlotFams();if(!fams.length)return '';let s='';const lvl=state.active;
-  (data.openings||[]).forEach(o=>{if(o.level!==lvl)return;(o.type==='door'?ptSlots(o):[ptWinSlot(o)]).forEach(t=>{if(!t||fams.indexOf(t.fam)<0)return;
-    const b=planToBase(t.x,t.y,dz(lvl,0)),col=t.fam==='MAINS'?'#d1493f':'#7a5cc0';
-    s+=`<g class="pt-slot"><circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${vsP(3.2)}" fill="#fff" stroke="${col}" stroke-width="${vsP(1.2)}" stroke-dasharray="${vsDash('2 1.5')}"/>`
-      +`<text x="${(b[0]+vsP(5)).toFixed(1)}" y="${(b[1]-vsP(4)).toFixed(1)}" font-size="${vsP(7.5)}" fill="${col}" paint-order="stroke" stroke="#fff" stroke-width="${vsP(2)}">${t.k}</text></g>`;});});
-  return s;});
+// 2026-10-15 (user): "do not put szerelvény next to doors, just note their invisible space for later — if the user wants
+// to put a switch there, it snaps into position from 300 mm." So a new door no longer gets SF-0 portal devices (Q-O02 is
+// withdrawn; ptAutoDoor stays for the explicit Portálok a jelölt ajtókhoz action), and the slots are no longer drawn.
+// They stay what they always were — derived positions — and a wall endpoint placed within PT_SNAP_MM of a slot that
+// takes its code lands exactly in it, at the slot's height, and remembers the slot (so it follows the door, E1 reseat).
+const PT_SNAP_MM=300;
+function ptSlotSnap(g,code){if(!g||g.mount!=='wall'||!code)return null;const c=String(code).split(':')[0];let best=null,bd=PT_SNAP_MM;
+  (data.openings||[]).forEach(o=>{if(o.level!==g.level)return;(o.type==='door'?ptSlots(o):[ptWinSlot(o)]).forEach(s=>{
+    if(!s||!(s.codes||[]).some(x=>x.split(':')[0]===c))return;if(s.wall!==g.wall||s.face!==g.wallSide)return;
+    const d=Math.hypot(s.x-g.x,s.y-g.y);if(d<bd){bd=d;best=s;}});});
+  if(!best)return null;
+  return Object.assign({},g,{x:best.x,y:best.y,u:best.u,h:best.h,why:'ajtó melletti hely ('+best.k+')',
+    slot:best.door?{door:best.door,face:best.face,k:best.k}:{window:best.window,face:best.face,k:best.k}});}
+EP_PLACED.push((d,g)=>{if(g&&g.slot)d.slot=g.slot;});

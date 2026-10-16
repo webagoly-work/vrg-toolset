@@ -26,8 +26,9 @@ function allowedOn(allowed, f, uA, uB, wallById) {
   const iv = allowed[f.wall]; if (!iv) return false;
   const w = wallById && wallById[f.wall];
   // a face on the END of a wall runs across the wall's axis: test its position, not its span
-  if (w && (w.axis === 'x') !== f.horiz) return iv.some(([a, b]) => f.fix >= a - PAD && f.fix <= b + PAD);
-  const lo = Math.min(uA, uB), hi = Math.max(uA, uB); return iv.some(([a, b]) => lo >= a - PAD && hi <= b + PAD);
+  // an interval from a mark is exact (third element); one from a loose sketch line gets PAD
+  if (w && (w.axis === 'x') !== f.horiz) return iv.some(([a, b, x]) => f.fix >= a - (x ? 1 : PAD) && f.fix <= b + (x ? 1 : PAD));
+  const lo = Math.min(uA, uB), hi = Math.max(uA, uB); return iv.some(([a, b, x]) => lo >= a - (x ? 1 : PAD) && hi <= b + (x ? 1 : PAD));
 }
 const SOFT = 4;            // a wall face the sketch did not mark costs this many times its length (used only if nothing else reaches)
 
@@ -52,9 +53,13 @@ function build(G, allowed, anchors) {
   G.rooms.forEach(r => {
     const bends = cornerS(r);
     const S = new Map();                                    // s(rounded) → {s, keys[]}
-    const put = (s, key) => { s = ((s % r.perim) + r.perim) % r.perim; const k = Math.round(s); const o = S.get(k) || { s, keys: [] }; if (key) o.keys.push(key); S.set(k, o); };
+    // points within 2 mm along the perimeter are one node (an anchor 1 mm off a corner IS the corner: one box, not two)
+    const put = (s, key) => { s = ((s % r.perim) + r.perim) % r.perim; let k = Math.round(s);
+      for (let d = -2; d <= 2; d++) { const q = (((k + d) % Math.round(r.perim)) + Math.round(r.perim)) % Math.round(r.perim); if (S.has(q)) { k = q; break; } }
+      const o = S.get(k) || { s, keys: [] }; if (key) o.keys.push(key); S.set(k, o); };
     r.faces.forEach(f => { put(f.s0);
-      (allowed[f.wall] || []).forEach(([a, b]) => { [a - PAD, b + PAD].forEach(v => { if (v > f.lo && v < f.hi) put(f.uToS(v)); }); }); });
+      (allowed[f.wall] || []).forEach(([a, b, x]) => { [a - (x ? 0 : PAD), b + (x ? 0 : PAD)].forEach(v => { if (v > f.lo + 2 && v < f.hi - 2) put(f.uToS(v)); }); }); });
+    // (a split within 2 mm of a face end is that end: a span rounded to whole mm once made a 0,6 mm edge and two corner boxes)
     anchors.filter(a => a.room === r.id).forEach(a => put(a.s, a.key));
     const list = [...S.values()].sort((p, q) => p.s - q.s);
     const ids = list.map(o => { const pt = sToPt(r, o.s);
@@ -93,8 +98,9 @@ function cornerS(r) {
 // Both ends are anchors on the room's faces; the link costs its plan length + the rise to the ceiling and back.
 // Kind 'over': the trunk and the data use it, the distribution does not (plan.js filters it out).
 function ceilAnchors(G, cfg, pre, anchors) {
-  (cfg.ceilLinks || []).forEach((cl, k) => ['a', 'b'].forEach(e => { const [x, y] = cl[e], nf = geom.nearestFace(G, x, y, cl.room);
-    anchors.push({ key: `${pre}:${k}:${e}`, room: cl.room, s: nf.face.uToS(nf.u) }); }));
+  // each end on its own room's face (aRoom / bRoom: a crossing over a stair void joins two rooms); P33 gives one room
+  (cfg.ceilLinks || []).forEach((cl, k) => ['a', 'b'].forEach(e => { const [x, y] = cl[e], nf = geom.nearestFace(G, x, y, cl[e + 'Room'] || cl.room); if (!nf) return;
+    anchors.push({ key: `${pre}:${k}:${e}`, room: nf.face.room, s: nf.face.uToS(nf.u) }); }));
 }
 function ceilLinks(G, cfg, pre, net, h) {
   const ends = new Map(), g = net.g, C = cfg.ceiling || 2850;

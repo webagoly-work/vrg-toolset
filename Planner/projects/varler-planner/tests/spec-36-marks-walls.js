@@ -145,9 +145,9 @@ setTimeout(()=>{
   w.MRK_T.mode='wall';w.MRK_T.tags=['tartofal'];w.MRK_T.pol='ban';w.mrkCommit(pt(W.right,1,100),{shift:true});
   w.MRK_T.mode='side';w.MRK_T.tags=['media'];w.MRK_T.pol='plus';w.mrkCommit(pt(W.top,1,100),{shift:true});
   w.__state.rot=0;w.__state.pitch=90;w.__state.flat=true;w.draw();
-  ok('the scene contains the mark elements when the mark layer is visible',(function(){const s=w.eval('_lastScene');return s.indexOf('stroke-width="6"')>=0&&s.indexOf('fill-opacity="0.12"')>=0&&s.indexOf('#c8372d')>=0&&s.indexOf('#2e9e5b')>=0;})());
+  ok('the scene contains the mark elements when the mark layer is visible',(function(){const s=w.eval('_lastScene');return s.indexOf('stroke-width="6"')>=0&&s.indexOf('fill-opacity="0.12"')>=0&&s.indexOf('#c8372d')>=0&&s.indexOf('#3f7fbf')>=0;})());
   ok('a wall mark carries a badge with the first tag (truncated to 14)',w.eval('_lastScene').indexOf('Tartófal')>=0);
-  ok('polarity colours: plus green, ban red',w.mrkSceneSvg().indexOf('#2e9e5b')>=0&&w.mrkSceneSvg().indexOf('#c8372d')>=0);
+  ok('polarity colours: plus blue (green is Vezethető fal only, 2026-10-15), ban red',w.mrkSceneSvg().indexOf('#3f7fbf')>=0&&w.mrkSceneSvg().indexOf('#c8372d')>=0);
   const withMarks=w.eval('_lastScene');w.eval('layers[0].cats.mark=false');w.draw();
   ok('none of it is drawn when cats.mark=false',w.mrkSceneSvg()===''&&w.eval('_lastScene').indexOf('stroke-width="6"')<0&&w.eval('_lastScene').length<withMarks.length);
   w.eval('layers[0].cats.mark=true');w.lyrSetOp('L0','mark',0.5);w.draw();

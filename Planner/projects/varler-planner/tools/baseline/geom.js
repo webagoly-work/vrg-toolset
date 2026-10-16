@@ -16,7 +16,13 @@ function load(doc, level = 'ground') {
   const P = doc.project, D = P.data, B = P.building;
   const walls = (B.walls[level] || []).map(w => ({ ...w, x0: Math.min(w.x0, w.x1), x1: Math.max(w.x0, w.x1), y0: Math.min(w.y0, w.y1), y1: Math.max(w.y0, w.y1) }));
   walls.forEach(w => { w.axis = wallAxis(w); w.thk = w.axis === 'x' ? w.y1 - w.y0 : w.x1 - w.x0; });
-  const rooms = D.floors.filter(f => f.level === level).map(f => ({ id: f.num, name: f.name, fid: f.id, poly: f.poly.map(p => [p[0], p[1]]) }));
+  const rooms = D.floors.filter(f => f.level === level).map(f => ({ id: f.num || f.id, name: f.name, fid: f.id, poly: f.poly.map(p => [p[0], p[1]]),
+    kinds: Array.isArray(f.kinds) && f.kinds.length ? f.kinds.slice() : (f.kind ? [f.kind] : []) }));
+  // F8 (2026-10-15): a 45° outline edge (allowed since F02 = A) becomes an orthogonal step for routing purposes. The step
+  // lies on no wall, so no pipe runs along it; plan.js warns. Before, one diagonal edge stopped the whole run.
+  rooms.forEach(r => { const P2 = []; let diag = 0;
+    r.poly.forEach((a, i) => { const b = r.poly[(i + 1) % r.poly.length]; P2.push(a); if (!near(a[0], b[0]) && !near(a[1], b[1])) { P2.push([b[0], a[1]]); diag++; } });
+    if (diag) { r.poly = P2; r.diag = diag; } });
   rooms.forEach(r => { r.faces = [];
     for (let i = 0; i < r.poly.length; i++) { const a = r.poly[i], b = r.poly[(i + 1) % r.poly.length];
       const horiz = near(a[1], b[1]); if (!horiz && !near(a[0], b[0])) throw new Error(`room ${r.id}: non-orthogonal edge`);
@@ -44,9 +50,13 @@ function load(doc, level = 'ground') {
 // the walls (and the intervals along them) the user's sketch lines run on; off-wall segments are reported apart
 function allowedFromSketch(G, paths, pad = 150) {
   const allowed = {}, offWall = [];
-  // walls the Jelölés layer marks as preferred (pol plus: a whole wall, or one side of it) — the whole wall may carry paths
-  (G.D.marks || []).filter(m => m.level === G.level && m.pol === 'plus' && (m.kind === 'wall' || m.kind === 'side') && G.wallById[m.wall])
-    .forEach(m => { const w = G.wallById[m.wall]; (allowed[w.id] = allowed[w.id] || []).push(w.axis === 'x' ? [w.x0, w.x1] : [w.y0, w.y1]); });
+  // E5-Q7 = A (2026-10-15): only Vezethető fal opens a wall — a whole-wall mark, or a span (wspan: u from the wall's start).
+  // Mark intervals are EXACT (third element true: no PAD in network.js); sketch lines stay loose. A legacy 'belso' whole-wall
+  // mark counts too: in the P33 round "Belső fal" meant exactly this (R3 has since renamed the preset). L-forma and the
+  // other plus marks no longer open a wall — they say "a preferred spot", not "a run may go here" (finding F1).
+  (G.D.marks || []).filter(m => m.level === G.level && G.wallById[m.wall] && (((m.tags || []).includes('vezetheto') && (m.kind === 'wall' || m.kind === 'wspan')) || (m.kind === 'wall' && (m.tags || []).includes('belso'))))
+    .forEach(m => { const w = G.wallById[m.wall], a0 = w.axis === 'x' ? w.x0 : w.y0;
+      (allowed[w.id] = allowed[w.id] || []).push(m.kind === 'wspan' ? [a0 + Math.min(m.u0, m.u1), a0 + Math.max(m.u0, m.u1), true] : [w.axis === 'x' ? w.x0 : w.y0, w.axis === 'x' ? w.x1 : w.y1, true]); });
   const add = (w, a, b) => { (allowed[w.id] = allowed[w.id] || []).push([Math.min(a, b), Math.max(a, b)]); };
   paths.forEach(p => { const n = (p.nodes || []).filter(q => q.level === G.level);
     for (let i = 0; i < n.length - 1; i++) { const a = n[i], b = n[i + 1], L = Math.hypot(b.x - a.x, b.y - a.y); if (L < 1) continue;
@@ -59,7 +69,7 @@ function allowedFromSketch(G, paths, pad = 150) {
       if (off.length > 2) offWall.push({ path: p.id, a: off[0], b: off[off.length - 1] }); } });
   // merge overlapping intervals per wall
   Object.keys(allowed).forEach(k => { const iv = allowed[k].sort((p, q) => p[0] - q[0]), out = [];
-    iv.forEach(v => { const last = out[out.length - 1]; if (last && v[0] <= last[1] + 300) last[1] = Math.max(last[1], v[1]); else out.push([...v]); });
+    iv.forEach(v => { const last = out[out.length - 1]; if (last && v[0] <= last[1] + (last[2] && v[2] ? 1 : 300)) { last[1] = Math.max(last[1], v[1]); last[2] = !!(last[2] && v[2]); } else out.push([...v]); });
     allowed[k] = out; });
   return { allowed, offWall };
 }

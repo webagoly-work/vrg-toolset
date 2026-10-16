@@ -201,7 +201,7 @@ STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d)return;
   div.innerHTML='Elosztó-szintű áramkörök: jobb klikk az Elosztón → Áramkör-lista. <button id="cprOpen" style="font-size:11px">Áramkör-lista…</button>';
   L.parentNode.insertBefore(div,L);const b=$('cprOpen');if(b)b.onclick=()=>{const bd=data.devices.find(x=>x&&x.type==='board');cprDialog(bd&&bd.id);};})();
 registerActions([
- {id:'circuit.presets',label:'Áramkör-lista (Elosztó)…',icon:'⚡',group:'Áramkör',alias:'circuit presets elosztolista aramkor lista',
+ {id:'circuit.presets',label:'Áramkör-lista (Elosztó)…',icon:'📑',group:'Áramkör',alias:'circuit presets elosztolista aramkor lista',
   hint:'A szokásos áramkörök: aktív / B-C / amper / helyiségek; emlékeztet a hiányzó alapkörökre.',when:c=>!c.inEditor,run:()=>{const bd=data.devices.find(x=>x&&x.type==='board');cprDialog(bd&&bd.id);}},
  {id:'circuit.presetsExport',label:'Elosztó-lista exportálása',icon:'⬇',group:'Áramkör',alias:'export presets',hint:'vrg-elo-presets JSON.',run:()=>cprExport()},
  {id:'circuit.presetsImport',label:'Elosztó-lista importálása',icon:'📥',group:'Áramkör',alias:'import presets',hint:'vrg-elo-presets JSON, összefésülve.',run:()=>cprImportFile()}]);

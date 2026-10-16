@@ -37,14 +37,19 @@ setTimeout(()=>{
   const L1b=F2.find(s=>s.k==='L1').u;
   ok('variant 2 (hinge at the far jamb) moves L1 to the other jamb',Math.abs(L1a-L1b)===1200,L1a+' → '+L1b);
   door.variant=0;
-  // auto-portal: the Ajtó tool's up-hook after a placement
-  D.devices.length=0;w.opnTool('door');
-  const tool=w.eval("STK_TOOLS.find(t=>t.k==='ptAutoDoor')");
-  D.openings.pop();tool.down();D.openings.push(door);tool.up();
-  const P=D.devices.filter(d=>d.type==='portal');
-  ok('placing a door makes a portal on both faces',P.length===2,P.length);
-  ok('tier SF-0 (előkészítve)',P.every(d=>d.tier==='SF-0'));
-  tool.down();tool.up();ok('a click that adds no door adds no portal',D.devices.filter(d=>d.type==='portal').length===2);
+  // 2026-10-15: no portal devices next to a new door; the slots stay invisible and snap a fitting from 300 mm
+  D.devices.length=0;
+  ok('the Ajtó tool no longer places portal devices',!w.eval("STK_TOOLS.some(t=>t.k==='ptAutoDoor')")&&D.devices.filter(d=>d.type==='portal').length===0);
+  const L1=by('L1'),near=dy=>({level:'ground',mount:'wall',wall:L1.wall,wallSide:L1.face,x:L1.x,y:L1.y+dy,h:1100,u:L1.u+dy});   // the partition runs along y
+  const sn=w.ptSlotSnap(near(250),'SWI');
+  ok('a switch 250 mm from L1 snaps into it (position, height, slot)',sn&&sn.y===L1.y&&sn.u===L1.u&&sn.h===1100&&sn.slot&&sn.slot.k==='L1',JSON.stringify(sn));
+  ok('… 350 mm away it does not',w.ptSlotSnap(near(-350),'SWI')===null||w.ptSlotSnap(near(-350),'SWI').slot.k!=='L1');
+  ok('the other face of the wall does not snap',w.ptSlotSnap(Object.assign(near(0),{wallSide:-L1.face}),'SWI')===null||w.ptSlotSnap(Object.assign(near(0),{wallSide:-L1.face}),'SWI').slot.face!==L1.face);
+  const g1=near(0);g1.h=300;
+  ok('a socket does not snap into the switch slot',(()=>{const r=w.ptSlotSnap(g1,'SOC');return !r||r.slot.k!=='L1';})());
+  const L3=by('L3'),s3=w.ptSlotSnap({level:'ground',mount:'wall',wall:L3.wall,wallSide:L3.face,x:L3.x,y:L3.y,h:300,u:L3.u},'SOC');
+  ok('a socket snaps into L3 at 300',s3&&s3.slot.k==='L3'&&s3.h===300);
+  ok('the slot overlay is gone (nothing drawn next to doors)',!w.eval("STK_OVERLAY.map(f=>{try{return f()}catch(_){return ''}}).join('')").includes('pt-slot'));
   // the window slot
   D.openings.push({type:'window',level:'ground',x:1800,y:-150,ang:0,w:1200,h:1500,sill:900,layer:'L0'});w.ensureIds(D);
   const win=D.openings[D.openings.length-1];
@@ -55,7 +60,6 @@ setTimeout(()=>{
   ok('the redőny tag is read',tagged);
   ok('redőny tag → W1 at 2500, 150 beyond the window edge',(ws&&ws.h===2500&&Math.abs(Math.abs(ws.u-w.mrkU(w.opnHost(win),win.x,win.y))-750)<=1),JSON.stringify(ws)+' tagged='+tagged);
   // drawing: families by the active layer
-  ok('no layer role → no slot drawing',w.ptSlotFams().length===0||!!w.lyrLayer(st.activeLayer).role);
  }catch(err){R.push(['exception',false,err.stack]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x&&!c?'   ['+x+']':''));});
  console.log(bad?('\n'+bad+' FAILED'):'\nALL PASS ('+R.length+')');

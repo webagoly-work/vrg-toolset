@@ -106,7 +106,7 @@ function lswSuggestDialog(){const rows=lswSuggest();if(!rows.length){$('hud').te
   openModal('Kapcsolások javaslata',body,()=>{const on=[...document.querySelectorAll('.lswRow')].filter(c=>c.checked).map(c=>rows[+c.dataset.i]);lswSuggestApply(on);},'Alkalmaz');}
 
 // ---- the tool: click lamps into a set, then click an L1 slot / a switch / Alt + a wall ------------------------------------
-function lswToolStart(){['mrkToolsOff','epToolOff','rwlToolOff','rbOff'].forEach(f=>{if(typeof window[f]==='function')try{window[f]();}catch(_){}});
+function lswToolStart(){toolsOff();
   if(state.mode!=='select')setMode('select');if(typeof wfLayer==='function')wfLayer('sys:LIGHT');LSW.on=true;LSW.set=[];lswHint();draw();}
 function lswHint(){const mh=$('modeHint');if(!mh)return;
   mh.textContent=LSW.on?('Kapcsolások — kattints lámpákra ('+LSW.set.length+' kijelölve) · C: összekötés egy ágba · utána kattints egy ajtó L1 helyére vagy egy kapcsolóra · Alt+kattintás a falon: saját kapcsolóhely · Esc: kész')
@@ -144,9 +144,7 @@ STK_OVERLAY.push(()=>{const lvl=state.active,z=h=>dz(lvl,h||0);let s='';
 (STK_CHECKS['sys:LIGHT']=STK_CHECKS['sys:LIGHT']||[]).push(()=>{const sw=new Set();data.devices.forEach(s=>{if(lswSw(s))(s.ctl||[]).forEach(id=>sw.add(id));});
   return data.devices.filter(d=>d&&epCodeOf(d)==='LMP'&&!sw.has(d.id)).map(d=>({sev:'info',code:'lsw.none',msg:(d.ref||d.id)+': a lámpának nincs kapcsolója.'}));});
 
-// the bar's 4.2 step comes alive
-(function(){if(typeof WF_PHASES==='undefined')return;const P=WF_PHASES.find(p=>p.k==='vill');if(!P)return;const i=P.tools.findIndex(t=>t.off==='E1');
-  if(i>=0)P.tools.splice(i,1,{n:'4.2 Kapcsolások',run:()=>lswToolStart()},{n:'✨ Kapcsolások javaslata',run:()=>lswSuggestDialog()});})();
+// (the phase buttons are the fixed frame's table now, 05db PH_LIST)
 registerActions([{id:'wf.switches',label:'Kapcsolások',icon:'🔀',group:'Készülék',alias:'switches lamps kapcsolo osszekotes',
   hint:'Lámpák kapcsolóhoz: kattints lámpákra, majd egy ajtó L1 helyére; C = egy ágba kötés.',when:c=>!c.inEditor,run:()=>lswToolStart()},
   {id:'wf.switchSuggest',label:'Kapcsolások javaslata',icon:'✨',group:'Készülék',alias:'suggest switches javaslat',

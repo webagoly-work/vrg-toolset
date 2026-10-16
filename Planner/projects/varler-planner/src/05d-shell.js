@@ -85,15 +85,15 @@ let _chkVer=-1,_chkMap=null,_railHtml=null,_inspHtml=null;
 function stageChecks(st){const key=shellModelKey();if(_chkVer!==key||!_chkMap){_chkVer=key;_chkMap={};}
   if(!(st.k in _chkMap)){try{_chkMap[st.k]=st.check()||[];}catch(_){_chkMap[st.k]=[];}}
   return _chkMap[st.k];}
-function invalidateShell(){_chkVer=-1;_chkMap=null;_railHtml=null;_inspHtml=null;
+function invalidateShell(){_chkVer=-1;_chkMap=null;_railHtml=null;_inspHtml=null;try{_phChk.key=null;_layKey=null;}catch(_){}   // 05db's caches
   if(typeof _sbHtml!=='undefined')_sbHtml=null;}
 const RAIL_MIN=330,INSP_MIN=520;      // px of stage needed before each overlay earns its place (at the default widths)
 // A width of 0 means the page has not been laid out yet (or we are in jsdom) — that is not
 // a narrow screen, so nothing is hidden on the strength of it.
 function stageW(){const el=document.querySelector('.stage-wrap');if(!el)return 9999;
   const wpx=el.getBoundingClientRect().width;return wpx>0?wpx:9999;}
-function railRoom(){return stageW()>=RAIL_MIN-PNL_DEF.rail+pnlW('rail');}   // the thresholds move with the panels (U5)
-function inspRoom(){return stageW()>=INSP_MIN-PNL_DEF.insp+pnlW('insp');}
+function inspRoom(){const i=$('inspector');if(i&&i.closest('.side'))return true;   // T3: docked in the right column, always room
+  return stageW()>=INSP_MIN-PNL_DEF.insp+pnlW('insp');}
 
 // ---- panel widths + wide work mode (round 2026-10-10, WP-U5) ----
 // The rail and the inspector are resized by a 6 px grip on their inner edge. The grips live in .stage-wrap, not in
@@ -102,24 +102,17 @@ const PNL_DEF={rail:104,insp:238},PNL_LIM={rail:[80,260],insp:[200,520]};
 function pnlW(p){const v=+state[p==='rail'?'railW':'inspW'],L=PNL_LIM[p];return v?Math.max(L[0],Math.min(L[1],v)):PNL_DEF[p];}
 function pnlSetW(p,w){const L=PNL_LIM[p];w=Math.round(Math.max(L[0],Math.min(L[1],+w||PNL_DEF[p])));
   state[p==='rail'?'railW':'inspW']=w;pnlApply();return w;}
-function pnlApply(){const rail=$('stageRail'),insp=$('inspector'),wrap=document.querySelector('.stage-wrap');if(!rail||!insp||!wrap)return;
-  const rw=pnlW('rail')+'px',iw=pnlW('insp')+'px';if(rail.style.width!==rw)rail.style.width=rw;if(insp.style.width!==iw)insp.style.width=iw;
-  [['rail',rail],['insp',insp]].forEach(([p,el])=>{let g=wrap.querySelector(`.pnlGrip[data-p="${p}"]`);
-    if(!g){g=document.createElement('div');g.className='pnlGrip';g.dataset.p=p;g.title='Húzd: szélesség · dupla kattintás: alapméret';wrap.appendChild(g);pnlBindGrip(g);}
-    const on=el.style.display==='flex'||el.style.display==='block',d=on?'block':'none';if(g.style.display!==d)g.style.display=d;
-    const pos=(pnlW(p)-3)+'px';if(p==='rail'){if(g.style.left!==pos)g.style.left=pos;}else if(g.style.right!==pos)g.style.right=pos;});}
-function pnlBindGrip(g){let d=null;const p=g.dataset.p;
-  g.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();d={x:e.clientX,w:pnlW(p)};try{g.setPointerCapture(e.pointerId);}catch(_){}});
-  g.addEventListener('pointermove',e=>{if(!d)return;const dx=e.clientX-d.x;pnlSetW(p,p==='rail'?d.w+dx:d.w-dx);});
-  g.addEventListener('pointerup',()=>{if(!d)return;d=null;renderShell();});
-  g.addEventListener('dblclick',()=>{pnlSetW(p,PNL_DEF[p]);renderShell();});}
+// T3: the inspector is docked in the right column and the sidebars have their own resizers, so the overlay grips of U5
+// are gone; this only clears an inline width a saved project may still carry.
+function pnlApply(){const insp=$('inspector');if(!insp)return;if(insp.style.width)insp.style.width='';
+  document.querySelectorAll('.pnlGrip').forEach(g=>g.remove());}
 // Tab: hide both sidebars, the rail and the inspector; Tab again restores EXACTLY what was showing — a sidebar the user
 // had already closed stays closed. The stage SVG is xMidYMid-fitted, so the plan point at its centre stays put.
 function pnlWideOn(){return !!state.wideWork;}
 function pnlSides(){return {l:document.querySelector('.side:not(.r)'),r:document.querySelector('.side.r')};}
 function pnlSyncArrows(){const S=pnlSides(),hl=$('hideL'),hr=$('hideR'),bp=$('bPanels');
   if(hl&&S.l)hl.textContent=S.l.classList.contains('hide')?'▶':'◀';if(hr&&S.r)hr.textContent=S.r.classList.contains('hide')?'◀':'▶';
-  if(bp)bp.textContent=document.querySelector('.side:not(.hide)')?'⤢ Full view':'⤡ Panels';}
+  if(bp){const on=!!document.querySelector('.side:not(.hide)');bp.textContent=on?'⤢':'⤡';bp.title=on?'Teljes nézet: az oldalsávok elrejtése':'Oldalsávok vissza';}}
 function pnlWide(){const S=pnlSides();
   if(!state.wideWork){state.wideWork={l:!!(S.l&&S.l.classList.contains('hide')),r:!!(S.r&&S.r.classList.contains('hide')),rail:shellOn(),insp:shellOn()};
     if(S.l)S.l.classList.add('hide');if(S.r)S.r.classList.add('hide');state.shell=false;}
@@ -128,32 +121,11 @@ function pnlWide(){const S=pnlSides();
   pnlSyncArrows();renderShell();setTransform();$('hud').textContent=pnlWideOn()?'Széles munkanézet — Tab: vissza':'Panelek vissza.';return pnlWideOn();}
 // a saved project that was left in wide mode opens in wide mode (the sidebars' hidden state lives in the DOM, not state)
 function pnlWideSync(){if(!state.wideWork)return;const S=pnlSides();if(S.l)S.l.classList.add('hide');if(S.r)S.r.classList.add('hide');pnlSyncArrows();}
-function renderShell(fromDraw){if(!fromDraw)_chkMap=null;   // an explicit call recomputes the checks; draw() passes true and keeps the cache
-  const rail=$('stageRail'),insp=$('inspector');
-  if(!rail||!insp)return;
-  if(!shellOn()){rail.style.display='none';insp.style.display='none';pnlApply();
-    const mh0=$('modeHint');if(mh0)mh0.style.left='12px';return;}   // no rail to keep clear of (wide mode, Elrejt)
-  const showRail=railRoom();
-  rail.style.display=showRail?'flex':'none';
-  const mh=$('modeHint');if(mh)mh.style.left=showRail?(pnlW('rail')+12)+'px':'12px';   // clear of the rail
-
-  const cur=shellKey(),SL=shellStages(),inStack=SL!==STAGES;
-  const railHtml=(inStack?`<button class="stg stk" id="stgBack" title="Vissza az általános szakaszokhoz"><span class="stgIc">◂</span><span class="stgN">Általános</span></button>`:'')
-   +SL.map((s,i)=>
-    `<button class="stg${inStack?' stk':''}${s.k===cur?' on':''}" data-k="${s.k}" title="${esc(stageHint(s))}">`
-    +`<span class="stgIc">${s.icon}</span><span class="stgN">${i+1}. ${esc(stageName(s))}</span>`
-    +stageBadge(s)+`</button>`).join('')
-   +`<div style="flex:1"></div>`
-   +`<button class="stg" id="stgPal" title="Minden parancs (Ctrl+K)"><span class="stgIc">⌘</span><span class="stgN">Parancsok</span></button>`
-   +`<button class="stg" id="stgOff" title="A munkafolyamat-sáv elrejtése"><span class="stgIc">✕</span><span class="stgN">Elrejt</span></button>`;
-  if(railHtml!==_railHtml){_railHtml=railHtml;rail.innerHTML=railHtml;
-    rail.querySelectorAll('.stg[data-k]').forEach(b=>{b.onclick=()=>setStage(b.dataset.k);
-      // S1: a stack stage's button opens its role layer's menu (the same one as the Layers panel row)
-      b.addEventListener('contextmenu',e=>{const k=b.dataset.k;if(k.indexOf('stk:')!==0||typeof stkActive!=='function')return;
-        const S=stkActive(),L=S&&stkLayer(S.id,k.slice(4));if(!L)return;e.preventDefault();e.stopPropagation();lyrLayerMenu(e,L.id);});});
-    if($('stgBack'))$('stgBack').onclick=()=>stkLeave();
-    $('stgPal').onclick=()=>paletteOpen();
-    $('stgOff').onclick=()=>{state.shell=false;renderShell();};}
+// T2 (docs/ui-tidy): the six phases of 05db replaced the stage rail, so only the inspector is rendered here. Stages
+// (and the stack roles) still decide what the inspector offers; a phase picks its stage (PH_LIST.stage).
+function renderShell(fromDraw){if(!fromDraw)_chkMap=null;
+  const insp=$('inspector');if(!insp)return;
+  if(!shellOn()){insp.style.display='none';pnlApply();return;}
   renderInspector();pnlApply();}
 function stageBadge(s){let bad=0,warn=0;
   stageChecks(s).forEach(i=>{if(i.sev==='error')bad++;else if(i.sev==='warn')warn++;});

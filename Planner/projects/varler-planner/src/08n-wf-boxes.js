@@ -63,7 +63,8 @@ function jbMake(kind,o){const L=typeof epRoleLayer==='function'?epRoleLayer('sys
     :{type:'junction',jb:kind,level:o.level,x:Math.round(o.x),y:Math.round(o.y),h:o.h!=null?o.h:JB_H[kind],jbSize:kind==='ceiling'?80:kind==='kot'?100:150,
       jbShape:kind==='ceiling'?'circle':'square',layer:L?L.id:state.activeLayer};
   if(o.side!=null)d.side=o.side;data.devices.push(d);ensureIds(data);d.ref=typeof nextRef==='function'?nextRef(d.type):d.id;return d;}
-function jbPlace(kind,o){pushUndo(['devices']);const d=jbMake(kind,o);jbResize();draw();
+function jbPlace(kind,o){pushUndo(kind==='board'?['devices','circuits']:['devices']);const d=jbMake(kind,o);
+  const al=kind==='board'&&typeof alsOnBoard==='function'?alsOnBoard(d,!!(o&&o.sub)):null;jbResize();draw();if(al||(kind==='board'&&o&&o.sub))return d;      // the Alosztó said its own
   $('hud').textContent=JB_N[kind]+' '+(d.ref||d.id)+(jbIs(d,'szoba')?' · '+d.jbSize+'×'+d.jbSize+' ('+jbJobs(d).join(', ')+')':'');return d;}
 function jbSetSize(d,s){if(!d||d.type!=='junction')return false;pushUndo(['devices']);if(s==null){delete d.sizeFix;jbResize();}else{d.jbSize=Math.max(100,+s);d.sizeFix=true;}draw();return true;}
 // "Kötődoboz ehhez a kapcsoláshoz": a ceiling box for the leg, on its ceiling line when there is one, else at the centroid
@@ -76,14 +77,14 @@ function jbCeilBox(lampId){const l=byId('devices',lampId);if(!lswLamp(l))return 
   $('hud').textContent='Mennyezeti kötődoboz '+(d.ref||d.id)+' · '+leg.length+' lámpa találkozik benne';return d;}
 
 // ---- the tool: click a wall face for a szobadoboz / kötődoboz / Elosztó ----------------------------------------------------------
-function jbToolStart(kind){['mrkToolsOff','epToolOff','rwlToolOff','rbOff','lswToolOff','clnOff'].forEach(f=>{if(typeof window[f]==='function')try{window[f]();}catch(_){}});
-  if(state.mode!=='select')setMode('select');JB_T.on=true;JB_T.kind=kind||'szoba';
+function jbToolStart(kind){toolsOff();
+  if(state.mode!=='select')setMode('select');JB_T.on=true;JB_T.kind=kind||'szoba';JB_T.sub=false;
   const mh=$('modeHint');if(mh)mh.textContent=JB_N[JB_T.kind]+' — kattints a fal oldalára, ahová kerül'+(JB_T.kind==='szoba'?' (két helyiség közötti falon faláttörés is)':'')+' · Esc: kész';draw();}
 function jbToolOff(){JB_T.on=false;const mh=$('modeHint');if(mh)mh.textContent=HINTS[state.mode]||'';}
 STK_TOOLS.push({k:'jbTool',active:()=>{if(!JB_T.on)return false;if(state.mode!=='select'||(typeof WV!=='undefined'&&WV)){jbToolOff();return false;}return true;},
   down(e){if(e.button!==0)return false;const pk=mrkPick(e);if(!pk||pk.opening){$('hud').textContent='Kattints egy fal oldalára.';return true;}
     const r=mrkWallById(pk.level,pk.id),q=mrkFacePt(r,pk.side,pk.u,-wallInfo(r).thick/2);
-    jbPlace(JB_T.kind,{level:pk.level,x:q[0],y:q[1],side:pk.side>0?1:0});return true;},
+    jbPlace(JB_T.kind,{level:pk.level,x:q[0],y:q[1],side:pk.side>0?1:0,sub:JB_T.sub});return true;},
   esc(){jbToolOff();draw();},mode(){jbToolOff();}});
 // overlay while in the electrical phase: service points (diamond) and where each leg meets (dotted)
 STK_OVERLAY.push(()=>{if(!(JB_T.on||(typeof LSW!=='undefined'&&LSW.on)||state.wfPhase==='vill'))return '';const lvl=state.active,z=h=>dz(lvl,h||0);let s='';
@@ -100,9 +101,7 @@ STK_OVERLAY.push(()=>{if(!(JB_T.on||(typeof LSW!=='undefined'&&LSW.on)||state.wf
 if(typeof STK_DEVMENU!=='undefined')STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(lswLamp(d))items.push({label:'⊙ Kötődoboz ehhez a kapcsoláshoz',act:()=>jbCeilBox(d.id)});
   if(jbIs(d,'szoba'))items.push({label:'↔ Szobadoboz mérete: '+(d.sizeFix?'kézi — vissza automatikusra':'automatikus ('+d.jbSize+')'),act:()=>jbSetSize(d,d.sizeFix?null:(d.jbSize===150?200:150))});});
 
-(function(){if(typeof WF_PHASES==='undefined')return;const P=WF_PHASES.find(p=>p.k==='vill');if(!P)return;const i=P.tools.findIndex(t=>t.off==='E3');
-  if(i>=0)P.tools.splice(i,1,{n:'4.3 Szobadoboz',run:()=>jbToolStart('szoba')},{n:'▣ Kötődoboz',run:()=>jbToolStart('kot')},{n:'⚡ Elosztó',run:()=>jbToolStart('board')});})();
 registerActions([{id:'wf.boxSzoba',label:'Szobadoboz',icon:'▣',group:'Készülék',alias:'room box szobadoboz pre rbx',
   hint:'Faláttörés, szoba betáplálás, lámpák és kapcsolók összekötése — dugaljt nem oszt. 150×150 egy feladatra, 200×200 többre.',when:c=>!c.inEditor,run:()=>jbToolStart('szoba')},
-  {id:'wf.boxKot',label:'Kötődoboz lerakása',icon:'▣',group:'Készülék',alias:'junction box kotodoboz',hint:'Kötődoboz (min. 100×100) a fal egyik oldalán.',when:c=>!c.inEditor,run:()=>jbToolStart('kot')},
-  {id:'wf.board',label:'Elosztó lerakása',icon:'⚡',group:'Készülék',alias:'board elosztoszekreny',hint:'Az Elosztó helye a falon.',when:c=>!c.inEditor,run:()=>jbToolStart('board')}]);
+  {id:'wf.boxKot',label:'Kötődoboz lerakása',icon:'⊡',group:'Készülék',alias:'junction box kotodoboz',hint:'Kötődoboz (min. 100×100) a fal egyik oldalán.',when:c=>!c.inEditor,run:()=>jbToolStart('kot')},
+  {id:'wf.board',label:'Elosztó lerakása',icon:'🗃',group:'Készülék',alias:'board elosztoszekreny',hint:'Az Elosztó helye a falon.',when:c=>!c.inEditor,run:()=>jbToolStart('board')}]);

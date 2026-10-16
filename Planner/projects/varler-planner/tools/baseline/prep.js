@@ -6,12 +6,16 @@ const ROLE_OF = (P, id) => { const l = P.layers.find(y => y.id === id); return l
 const codeOf = d => d.code || ({ light: 'LMP', switch: 'SWI', socket: 'SOC' })[d.type] || d.type;
 
 let CFG = {};
+// a room's kinds: the plan's own (Planner rooms carry kinds) + the config's (P33: R05 = kamra) — no room ids in rules (F7)
+function kindsOf(G, cfg, rid) { const r = G.rooms.find(x => x.id === rid); return [...((r && r.kinds) || []), ...(((cfg || {}).roomKinds || {})[rid] || [])]; }
+const WET_KINDS = ['furdo', 'wc'];
+function isWet(G, cfg, rid) { return ((cfg || {}).wetRooms || []).includes(rid) || kindsOf(G, cfg, rid).some(k => WET_KINDS.includes(k)); }
 function endpoints(G, cfg) {
   CFG = cfg;
   const P = G.P, D = G.D, out = [];
   const circName = {}; D.circuits.forEach(c => c.members.forEach(m => circName[m] = c.name));
   const island = cfg.island && D.objects.find(o => o.id === cfg.island.object);
-  const bedMark = D.marks.find(m => m.kind === 'zone' && (m.tags || []).includes(cfg.bedZoneMark));
+  const bedMarks = (D.marks || []).filter(m => m.kind === 'zone' && (m.level == null || m.level === G.level) && (m.tags || []).includes(cfg.bedZoneMark));
   D.devices.filter(d => d.level === G.level).forEach(d => {
     let role = ROLE_OF(P, d.layer);
     if ((cfg.adoptSwitches || []).includes(d.id)) role = 'sys:MAINS';
@@ -19,13 +23,15 @@ function endpoints(G, cfg) {
     const nf = geom.nearestFace(G, d.x, d.y), onWall = nf && nf.d <= 260;      // ≤ ½ of the thickest wall (400) + margin: sits in / on a wall
     let room = onWall ? nf.face.room : geom.roomOf(G, d.x, d.y), face = onWall ? nf.face : null, u = onWall ? nf.u : null;
     let fixed = null;
-    if (cfg.fixFace && cfg.fixFace[d.id]) { const f = geom.nearestFace(G, d.x, d.y, cfg.fixFace[d.id]); room = f.face.room; face = f.face; u = f.u; fixed = f; }
-    const ctx = { role, wall: !!onWall, room, ceiling: cfg.ceiling, note: d.note || d.ref || '', circuitName: circName[d.id] || '',
-      wet: (cfg.wetRooms || []).includes(room), window: false, portal: false,
+    // F15 (2026-10-15): a point pinned to a face IS on the wall — before, one placed > 260 off the wall kept onWall false and
+    // silently got no drop, no cable (P33 v1: socket D339 / D23 in R01, found by the Planner acceptance run)
+    if (cfg.fixFace && cfg.fixFace[d.id]) { const f = geom.nearestFace(G, d.x, d.y, cfg.fixFace[d.id]); if (f) { room = f.face.room; face = f.face; u = f.u; fixed = f; } }
+    const ctx = { role, wall: !!onWall, room, kinds: kindsOf(G, cfg, room), ceiling: cfg.ceiling, note: d.note || d.ref || '', circuitName: circName[d.id] || '',
+      wet: isWet(G, cfg, room), window: false, portal: false,
       worktop: !!(face && (cfg.worktop || []).some(w => w.room === room && face.wall === w.wall && u >= w.from - 50 && u <= w.to + 50)),
       island: !!(island && !onWall && codeOf(d) !== 'LMP' && Math.abs(d.x - island.x) <= island.w / 2 + 50 && Math.abs(d.y - island.y) <= island.d / 2 + 50),
-      bed: !!(bedMark && face && bedTouches(bedMark, face, u)) };
-    out.push({ id: d.id, dev: d, role, code: codeOf(d), v: d.var || '', ref: d.ref || '', room, face, u, onWall: !!onWall,
+      bed: !!(face && bedMarks.some(m => bedTouches(m, face, u))) };
+    out.push({ id: d.id, dev: d, role, code: codeOf(d), v: d.var || '', ref: d.ref || '', room, face, u, onWall: !!onWall || !!fixed,
       floorGroup: floorGroupOf(cfg, d, ctx),
       x: fixed ? fixed.x : d.x, y: fixed ? fixed.y : d.y, moved: !!fixed, fixedFace: !!fixed, h0: d.h, ctx, adopted: (cfg.adoptSwitches || []).includes(d.id) });
   });
@@ -94,7 +100,7 @@ function portalMembers(G, PT, E) {
     const counts = {}; mem.forEach(e => { const s = sideOf(e); if (s) counts[s] = (counts[s] || 0) + 1; });
     const major = (counts[1] || 0) >= (counts[-1] || 0) ? 1 : -1;
     // a WC / bathroom door: the switch and the notification light (occupancy) belong OUTSIDE, on the dry face
-    const wetFace = p.faces.find(f => (CFG.wetRooms || []).includes(f.room)), dryFace = p.faces.find(f => !(CFG.wetRooms || []).includes(f.room));
+    const wetFace = p.faces.find(f => isWet(G, CFG, f.room)), dryFace = p.faces.find(f => !isWet(G, CFG, f.room));
     const drySign = (wetFace && dryFace) ? Math.sign(dryFace.fix - p.mid) : 0;
     // per code, which sides already hold one (a duplicate placed on the door means "both faces")
     const has = {}; mem.forEach(e => { const s = sideOf(e); if (s) (has[e.code + e.v] = has[e.code + e.v] || new Set()).add(s); });
@@ -131,4 +137,25 @@ function placeInPortals(G, PT, E) {
   });
 }
 
-module.exports = { endpoints, applyHeights, portals, portalMembers, placeInPortals, codeOf };
+// the user's answers as edits on the sketch itself: new points get real ids (so the output .vplan carries them),
+// moves change x / y, hFix pins a height. "N:name" references in the config resolve to those ids.
+function applyEdits(doc, cfg) {
+  const D = doc.project.data, P = doc.project, L_MAINS = (P.layers.find(l => l.role === 'sys:MAINS') || {}).id, ids = {};
+  (cfg.edits || []).forEach(ed => {
+    if (ed.move) { const d = D.devices.find(x => x.id === ed.move); if (!d) return;
+      if (ed.x != null) d.x = ed.x; if (ed.y != null) d.y = ed.y; if (ed.hFix != null) { d.h = ed.hFix; d.hFix = true; }
+      if (ed.setNote != null) d.note = ed.setNote;                                 // a corrected note replaces the old one (R09)
+      d.note = ((d.note || '') + ' · ' + ed.note).replace(/^ · /, ''); d.edited = true; return; }
+    if (ed.add) { const at = ed.at && D.devices.find(x => x.id === ed.at), id = 'D' + (++D.seq);
+      D.devices.push({ type: ed.type, code: ed.code || (ed.type === 'switch' ? 'SWI' : undefined), var: ed.var || (ed.type === 'switch' ? '230' : undefined), kind: ed.kind,
+        level: cfg.level, x: at ? at.x : ed.x, y: at ? at.y : ed.y, h: ed.hFix != null ? ed.hFix : (at ? at.h : 1100), hFix: ed.hFix != null, layer: L_MAINS, id, ref: ed.ref, note: ed.note, faceBack: false, added: true });
+      ids['N:' + ed.add] = id; } });
+  const res = v => (typeof v === 'string' && ids[v]) || v;
+  (cfg.switchGroups || []).forEach(g => { g.lamps = g.lamps.map(res); g.chain = g.chain.map(res); });
+  (cfg.floorGroups || []).forEach(g => { if (g.members) g.members = g.members.map(res); });
+  (cfg.socketPlan || []).forEach(p => { if (p.members) p.members = p.members.map(res); if (p.add) p.add = p.add.map(res); });
+  if (cfg.rbxSwitched) cfg.rbxSwitched = Object.fromEntries(Object.entries(cfg.rbxSwitched).map(([k, v]) => [res(k), v]));
+  cfg._ids = ids;
+}
+
+module.exports = { applyEdits, kindsOf, isWet, endpoints, applyHeights, portals, portalMembers, placeInPortals, codeOf };

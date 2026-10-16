@@ -7,7 +7,7 @@
 // tests/golden.js — const/let are subject to temporal dead zones.
 // ==========================================================================
 //////////////////// controls ////////////////////
-function setRot(deg){deg=camLockYaw(deg);deg=((Math.round(deg)%360)+360)%360;state.rot=deg;$('rot').value=deg;$('rotVal').textContent=deg+'°';
+function setRot(deg){deg=camLockYaw(deg);deg=((Math.round(deg)%360)+360)%360;state.rot=deg;$('rot').value=deg;$('rotVal').textContent=deg+'°';if($('qvRot'))$('qvRot').textContent=deg+'°';
   document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('on',+b.dataset.deg===deg));camSyncUI();draw();}
 $('rot').oninput=e=>setRot(+e.target.value);$('rotL').onclick=()=>setRot(state.rot-camRotStep());$('rotR').onclick=()=>setRot(state.rot+camRotStep());
 document.querySelectorAll('.preset').forEach(b=>b.onclick=()=>setRot(+b.dataset.deg));
@@ -114,7 +114,7 @@ $('pathType').onchange=e=>{state.pathType=e.target.value;if(pathDraft)pathDraft.
 $('gap').oninput=e=>{GAP=+e.target.value;$('gapV').textContent=(GAP/1000).toFixed(1)+' m';draw();};
 $('hideL').onclick=()=>{const el=document.querySelector('.side:not(.r)');el.classList.toggle('hide');$('hideL').textContent=el.classList.contains('hide')?'▶':'◀';};
 $('hideR').onclick=()=>{const el=document.querySelector('.side.r');el.classList.toggle('hide');$('hideR').textContent=el.classList.contains('hide')?'◀':'▶';};
-$('bPanels').onclick=()=>{const any=document.querySelector('.side:not(.hide)');document.querySelectorAll('.side').forEach(el=>el.classList.toggle('hide',!!any));$('bPanels').textContent=any?'⤡ Panels':'⤢ Full view';};
+$('bPanels').onclick=()=>{const any=document.querySelector('.side:not(.hide)');document.querySelectorAll('.side').forEach(el=>el.classList.toggle('hide',!!any));$('bPanels').textContent=any?'⤡':'⤢';$('bPanels').title=any?'Oldalsávok vissza':'Teljes nézet: az oldalsávok elrejtése';};
 $('drawH').onchange=e=>{state.freeHeight=false;state.drawHKey=e.target.value;syncHeightUI();if(typeof renderGuides==='function')renderGuides();};
 $('devType').onchange=e=>{};$('buildType').onchange=e=>state.buildType=e.target.value;
 $('lblShow').onchange=e=>{state.showLabels=e.target.checked;draw();};
@@ -205,7 +205,7 @@ function renderGuides(){const box=$('guideBox');if(!box)return;const level=state
       +`<button class="gvis" data-g="${gd.k}" title="vonal láthatóság" style="font-size:12px;padding:1px 3px">${gd.vis?'👁':'🚫'}</button>`
       +`<button class="gjump" data-g="${gd.k}" title="↑/↓ ide ugorjon" style="font-size:11px;padding:1px 3px;opacity:${gd.jump!==false?1:0.35}">⭱</button>`
       +`<span class="swatch" style="background:${gd.c};width:11px;height:11px;border-radius:2px;flex:none"></span>`
-      +`<span class="gname" data-g="${gd.k}" title="dupla-katt átnevez" style="flex:1;font-size:11.5px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(gd.l)}</span>`
+      +`<span class="gname" data-g="${gd.k}" title="dupla-katt átnevez" style="flex:1;font-size:11.5px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(guideLabel(gd,level))}${guideStd(gd)?' <span title="A Szabványok táblából" style="color:#9a8f7a">📏</span>':''}</span>`
       +`<span style="font-size:10px;color:#999;min-width:42px;text-align:right">${mm} mm</span>`
       +`<button class="gpick" data-g="${gd.k}" title="rajz erre a magasságra" style="font-size:10.5px;padding:1px 4px">${active?'●':'○'}</button>`
       +`<button class="greset" data-g="${gd.k}" title="eredeti magasság" style="font-size:10px;padding:1px 3px">↺</button>`
@@ -220,10 +220,11 @@ function renderGuides(){const box=$('guideBox');if(!box)return;const level=state
   box.querySelectorAll('.gdel').forEach(b=>b.onclick=()=>{GUIDES=GUIDES.filter(x=>x.k!==b.dataset.g);if(state.drawHKey===b.dataset.g)state.drawHKey='s1100';rebuildDrawH();renderGuides();draw();});
   box.querySelectorAll('.gname').forEach(sp=>sp.ondblclick=()=>{const g=guideByKey(sp.dataset.g);
     openModal('Átnevezés + magasság',`<div class="mrow">Név <input id="grn" value="${esc(g.l)}" style="width:100%"></div>`
-      +(g.sys?'':`<div class="mrow">Magasság <input id="grmm" type="number" value="${typeof g.mm==='number'?g.mm:0}" style="width:90px"> mm</div>`)
+      +(g.sys?'':guideStd(g)?`<div class="mrow" style="font-size:12px;color:#666">Magasság: <b>${resolveMm(g,state.active)} mm</b> — a Szabványok táblából (${esc((stdRow(guideStd(g)[0],guideStd(g)[1])||{}).n||'')}); ott írd át: 📐 Szabványok.</div>`
+        :`<div class="mrow">Magasság <input id="grmm" type="number" value="${typeof g.mm==='number'?g.mm:0}" style="width:90px"> mm</div>`)
       +`<div class="mrow">Szín <input id="grc" type="color" value="${g.c}" style="width:44px;height:24px"></div>`,
-      ()=>{g.l=$('grn').value||g.l;if(!g.sys&&$('grmm'))g.mm=+$('grmm').value||0;g.c=$('grc').value;rebuildDrawH();renderGuides();draw();});});}
-function rebuildDrawH(){const sel=$('drawH');if(!sel)return;sel.innerHTML=GUIDES.map(g=>`<option value="${g.k}">${esc(g.l)}</option>`).join('');sel.value=state.drawHKey;}
+      ()=>{g.l=$('grn').value||g.l;if(!g.sys&&!guideStd(g)&&$('grmm'))g.mm=+$('grmm').value||0;g.c=$('grc').value;rebuildDrawH();renderGuides();draw();});});}
+function rebuildDrawH(){const sel=$('drawH');if(!sel)return;sel.innerHTML=GUIDES.map(g=>`<option value="${g.k}">${esc(guideLabel(g))}</option>`).join('');sel.value=state.drawHKey;}
 (function initGuides(){renderGuides();rebuildDrawH();})();
 $('addG').onclick=()=>{const v=+$('custG').value;if(v>0){const nm=$('custGName').value.trim()||('Egyéni '+v);
   const k='g'+Date.now();GUIDES.push({k,mm:v,l:nm,c:'#7a5cc0',vis:false,jump:true});

@@ -91,7 +91,7 @@ function ptGhost(e){const level=state.active,[bx,by]=clientToBase(e),p=baseToPla
   const re=(typeof mrkRoomAtPt==='function')?mrkRoomAtPt(level,p[0],p[1]):null,rid=re&&stkRoomId(re);if(!rid)return null;
   let best=null,bd=1500;(typeof needOpenings==='function'?needOpenings(rid,'door'):[]).forEach(o=>{if(o.level!==level)return;const dd=Math.hypot(o.x-p[0],o.y-p[1]);if(dd<bd){bd=dd;best=o;}});
   return best?ptDoorGeo(best,rid):null;}
-function ptToolStart(){if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();if(typeof epToolOff==='function')epToolOff();
+function ptToolStart(){toolsOff();
   if(state.mode!=='select')setMode('select');const L=ptLayerId();if(L&&lyrLayer(L)){state.activeLayer=L;renderLayers();}
   PT_T.on=true;PT_T.g=null;const mh=$('modeHint');if(mh)mh.textContent='Portál: vidd az egeret az ajtó mellé, a kiszolgált helyiség oldalán · kattintás: elhelyezés · Esc kilép';}
 function ptToolOff(){PT_T.on=false;PT_T.g=null;const mh=$('modeHint');if(mh)mh.textContent=(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}

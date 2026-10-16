@@ -37,11 +37,7 @@ setTimeout(()=>{
   ok('a plain layer gets no stack items',(function(){const id=w.eval('lyrNewId')();layers().push({id,name:'Sima',visible:true,cats:{}});
     w.lyrLayerMenu(ev,id);const r=!menu.some(i=>/Info|Tartalom törlése/.test(i.label));
     w.eval('layers=layers.filter(l=>l.id!=="'+id+'")');return r;})());
-  ok('the rail stage button opens the same menu',(function(){menu=null;w.renderShell&&w.renderShell();
-    const b=[...w.document.querySelectorAll('#stageRail .stg[data-k]')].find(x=>x.dataset.k==='stk:sys:SENSOR');
-    if(!b)return 'no rail button (rail hidden in jsdom?)';
-    b.dispatchEvent(new w.MouseEvent('contextmenu',{bubbles:true,cancelable:true}));
-    return !!(menu&&menu.some(i=>/^ℹ Info — Érzékelők/.test(i.label)));})()===true);
+  // (the stage rail's role buttons opened this menu too; the rail is gone since T2, 2026-10-15 — the layer row is the one place)
 
   // ---------- Info ----------
   const html=w.rliInfoHtml('sys:SENSOR',sen.stack),codes=[...new Set(w.eval('EP_CAT').filter(e=>e.role==='sys:SENSOR').map(e=>e.code))];

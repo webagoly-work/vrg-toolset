@@ -34,6 +34,11 @@ Szabályok röviden (a felhasználó döntései, 2026-10-12):
 - A leágazó 2450-en fut. Minden leállásnál 2 szerelvényes kötődoboz van. A lámpa és a kapcsolója a kapcsoló leállás-dobozában találkozik.
 - Tartalékdoboz kerül minden sarokba, ahová pálya ér, és minden pálya végére. Sarok csak a valódi irányváltás: két egy vonalban álló fal csatlakozása vagy egy 60 mm alatti falvastagság-ugrás nem sarok (javítva 2026-10-12).
 - A csőben legfeljebb `maxCablesPerPipe` (P33: 3) kábel lehet. A méretezés: 1 kábelnél a cső belső átmérője ≥ 1,4 × a kábel átmérője; több kábelnél a töltés ≤ 40 %, 10 m felett ≤ 33 %.
+- Terhelhetőség (E5-Q1, Q10 = A, 2026-10-15): a csoportosítás csövenként számít. Egy gerinccsőbe annyi kör kerül, amennyinél a leggyengébb kábel még bírja a kismegszakítóját (In ≤ Iz·k). 1,5 mm²-es kábel mellé legfeljebb még egy kör kerülhet (`maxCirc15`, 2). Iz / k: IEC 60364-5-52 ⚑. A `groupBy: 'chase'` beállítás csak összehasonlításra való.
+- Feszültségesés (E5-Q2, Q11 = A): a határ 4 %, a kör leghosszabb ágán. Világításnál a várható terheléssel számol: `loadW`, alapból lámpapontonként 60 W, redőnymotoronként 150 W. A szigorúbb, kismegszakító-áramos számítás: `lightCurrent: 'mcb'`.
+- A Planner ugyanezt a motort futtatja (`build.js` → `src/08ob-wf-engine.js`, `BL`). Ezért ebben a mappában csak tiszta modul lehet: fs és DOM nélkül.
+- `to-planner.js <be.vplan> <ki.vplan> [config]`: a konfiguráció válaszait közönséges Planner-adattá írja: pontok, magasságok, körök, kapcsolások, vezethető fal, padló út, mennyezeti átvezetés. Ez a P33 elfogadási próba (E5_ENGINE_REVIEW §9).
+- F15 (2026-10-15): a `fixFace`-szel falra tett pont fali pont. A P33 v1-ben a D339 (D23) emiatt bekötetlen maradt.
 - A portálon a zsanéroldal csak SELV, a kilincsoldal 230 V. A panel külön SELV oszlopban ül. Lásd `portal-sablon.png`.
 
 Az ADATRETEG-Q-001 válaszai után (2026-10-12, 2. kör):

@@ -292,9 +292,19 @@ const GUIDES_DEFAULT=JSON.parse(JSON.stringify(GUIDES)); // for per-guide "reset
 const guideOn=new Proxy({},{get:(_,k)=>{const g=GUIDES.find(x=>x.k===k);return g?g.vis:false;},set:(_,k,v)=>{const g=GUIDES.find(x=>x.k===k);if(g)g.vis=!!v;return true;}});
 const customG=[];
 function guideByKey(k){return GUIDES.find(x=>x.k===k);}
-function resolveMm(def,level){if(def.mm==='ceil')return wallH(level);if(def.mm==='gerinc')return Math.max(0,wallH(level)-300);
+// T6 (docs/ui-tidy): ONE height source. A guide line that stands for a Standards row (08j STD_H) takes that row's height
+// — the project's value, else the table's — so the guide, the draw height (↑/↓) and the placed devices never disagree.
+// 'gerinc' is the trunk height the E5 engine uses: the project's PATH trunk value, else the ceiling − 250 (E5-Q3).
+// A guide the user made keeps its own number. The numbers in the default labels follow the value (guideLabel).
+const GUIDE_STD={s300:['SOC','alap'],s500:['SOC','garazs'],s1100:['SWI','alap'],s1300:['PAN','alap'],s1400:['SOC','borotva'],s1900:['LMP','fali']};
+function guideStd(def){return def&&GUIDE_STD[def.k]&&typeof stdH==='function'?GUIDE_STD[def.k]:null;}
+function resolveMm(def,level){if(def.mm==='ceil')return wallH(level);
+  if(def.mm==='gerinc'){const o=typeof stdList==='function'?stdList().find(x=>x.code==='PATH'&&x.hv==='trunk'&&x.scope==='project'):null;return o?+o.h:Math.max(0,wallH(level)-250);}
   if(def.mm==='alcell')return dropCeilOrDefault(level,null);
+  const sd=guideStd(def);if(sd){const h=stdH(sd[0],sd[1]);if(typeof h==='number'&&isFinite(h))return h;}
   if(def.mm!=null)return def.mm;return 0;}
+function guideLabel(def,level){if(!def)return '';if(!guideStd(def))return def.l;
+  return resolveMm(def,level==null?state.active:level)+' '+String(def.l||'').replace(/^\s*\d+\s*/,'');}
 function isFreeHeight(){if(state.freeHeight)return true;
   if(state.drawHKey==='floor'||state.drawHKey==='ceiling')return true;
   // optional: nothing between Padló and Mennyezet is bound to a wall either
@@ -309,14 +319,14 @@ function freeCoincides(level){if(!state.freeHeight)return null;const mm=drawHmm(
 function jumpList(level){return GUIDES.filter(g=>g.jump!==false).map(g=>({g,mm:resolveMm(g,level)})).sort((a,b)=>a.mm-b.mm);}
 function stepHeight(dir){const level=state.active;
   if(state.freeHeight){state.freeMm=Math.max(0,Math.round(((state.freeMm||0)+dir*100)/100)*100);
-    const co=freeCoincides(level);$('hud').textContent='Szabad magasság → '+state.freeMm+' mm'+(co?(' (= '+co.l+')'):'');draw();syncHeightUI();return;}
+    const co=freeCoincides(level);$('hud').textContent='Szabad magasság → '+state.freeMm+' mm'+(co?(' (= '+guideLabel(co,level)+')'):'');draw();syncHeightUI();return;}
   const list=jumpList(level);if(!list.length)return;
   const cur=drawHmm(level);let idx=list.findIndex(x=>x.g.k===state.drawHKey);
   if(idx<0){ // current key not in jump list — snap to nearest by mm in the step direction
     idx=0;let best=1e9;list.forEach((x,i)=>{const dd=Math.abs(x.mm-cur);if(dd<best){best=dd;idx=i;}});}
   else idx=Math.max(0,Math.min(list.length-1,idx+dir));
   state.drawHKey=list[idx].g.k;const sel=$('drawH');if(sel)sel.value=state.drawHKey;
-  $('hud').textContent='Rajz magasság → '+list[idx].g.l+' ('+list[idx].mm+' mm)';draw();syncHeightUI();}
+  $('hud').textContent='Rajz magasság → '+guideLabel(list[idx].g,level)+' ('+list[idx].mm+' mm)';draw();syncHeightUI();}
 function syncHeightUI(){const sel=$('drawH');if(sel&&!state.freeHeight)sel.value=state.drawHKey;
   const fc=$('freeHeightChk');if(fc)fc.checked=!!state.freeHeight;
   const fm=$('freeMmBox');if(fm)fm.style.display=state.freeHeight?'flex':'none';

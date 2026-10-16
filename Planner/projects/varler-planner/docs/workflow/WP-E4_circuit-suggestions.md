@@ -1,6 +1,6 @@
 # WP-E4 — Click the Elosztó → suggested circuits
 
-Status: todo · Wave E · Depends: **R1010 M2 (circuit presets — not built yet)**, E3 · Size: M (~170 lines) · Spec: next
+Status: **BUILT 2026-10-15** (src/08oa-wf-eloplan.js, tests/spec-97, 19 checks; a real click on the Elosztó verified in Edge) · Wave E · Depends: **R1010 M2 (circuit presets — not built yet)**, E3 · Size: M (~170 lines) · Spec: next
 free · Decisions: Q-E04
 
 ## Goal
@@ -31,3 +31,20 @@ R1010 `WP-M2_circuit-presets.md` (the preset catalogue `eloPresets`, `data.circu
 2. Unticking a row leaves its endpoints unassigned and listed.
 3. P33 v1 sketch → the suggestion matches the approved 16 circuits (A2–A15, V1, V2) in member sets (the spec reads them
    from `Calculator/P33-baseline/v1_2026-10-12/kimenet`).
+
+## Built — notes
+
+- **Entry points:**
+  - a click on the Elosztó in phase Villamosság, with nothing else running and at least one endpoint without a circuit;
+  - the Elosztó right-click menu (🧮 Áramkörök javaslata…);
+  - the phase-4 button;
+  - the action circuit.suggest (⌘K).
+- **Policy as built:**
+  - large = over 20 m² with at least 4 sockets, or over 8 sockets; a large room gets ceil(n / 8) circuits, at least 2,
+    split along the room's perimeter;
+  - small rooms pool by adjacency (outlines within 450 mm) up to 8 sockets;
+  - the worktop = hVar pult or a kitchen socket at 900–1300 mm;
+  - a DED's preset comes from hVar, var, or a word in its name, else a generic 16 A;
+  - V2 = halo, gyerek, furdo; a lamp follows its switch's zone.
+- **Test 3** (the P33 cross-check) is not a spec: P33's approved socket plan is hand-configured (p33.config.js
+  socketPlan), and the client data is not in the repo.

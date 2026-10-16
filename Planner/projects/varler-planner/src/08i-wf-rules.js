@@ -21,7 +21,7 @@
 const RB_PRESETS=[
   {k:'vezetheto',n:'Vezethető fal',sec:'Fal',kind:'route',pol:'plus'},
   {k:'lforma',n:'L-forma oldal',sec:'Fal',kind:'side',tag:'lforma',pol:'plus'},
-  {k:'belso',n:'Belső fal',sec:'Fal',kind:'wall',tag:'belso',pol:'plus'},
+  {k:'kulso',n:'Külső fal',sec:'Fal',kind:'wall',tag:'homlokzat',pol:'minus'},     // was Belső fal (user, 2026-10-15)
   {k:'kerulendo',n:'Kerülendő',sec:'Fal',kind:'side',tag:'kerulendo',pol:'minus'},
   {k:'tilos',n:'Tilos',sec:'Fal',kind:'side',tag:'tilos',pol:'ban'},
   {k:'media',n:'Médiafal',sec:'Fal',kind:'side',tag:'media',pol:'plus'},
@@ -40,6 +40,8 @@ const RB_PRESETS=[
   {k:'strang',n:'Lefolyó / strang',sec:'Egyéb területek',kind:'zone',tag:'strang',pol:'ban'},
   {k:'butor',n:'Bútor / szekrénysor',sec:'Egyéb területek',kind:'side',tag:'butor',pol:'minus'},
   {k:'padlo',n:'Padló szabályok — fejlesztés alatt',sec:'Padló',kind:'off'}];
+// a preset's colour = the look its marks get (05n MRK_STYLE), Vezethető fal green
+function rbCol(p){if(p.kind==='route')return MRK_STYLE.vezetheto.c;const st=p.tag&&MRK_STYLE[p.tag];return st?st.c:(MRK_POL[p.pol]||MRK_POL.none).c;}
 const RB={on:false,preset:null,press:null,hover:null,panel:false};
 
 function rbPreset(k){return RB_PRESETS.find(p=>p.k===k)||null;}
@@ -68,8 +70,9 @@ function rbZoneCommit(p,level,a,b){const g=mrkPlaneGeo('rect',{x:a[0],y:a[1]},{x
 
 // ---- the tool ------------------------------------------------------------------------------------------------------------
 function rbPick(k){const p=rbPreset(k);if(!p||p.kind==='off')return false;
-  if(p.kind==='route'){RB.on=false;RB.preset=null;rbPanelDraw();rwlToolStart();return true;}
-  if(typeof rwlToolOff==='function'&&RWL.on)rwlToolOff();if(typeof mrkToolsOff==='function')mrkToolsOff();
+  // R5: whole-wall, face and route presets are inks of the marker pen (08ia); zones and openings keep this tool
+  if(typeof mkpIsPen==='function'&&mkpIsPen(k)){RB.on=false;RB.preset=null;mkpStart(k);rbPanelDraw();return true;}
+  toolsOff();
   if(state.mode!=='select')setMode('select');RB.on=true;RB.preset=p.k;RB.press=null;
   const how=p.kind==='wall'?'kattints egy falra (mindkét oldal)':p.kind==='side'?'kattints a fal egyik oldalára, vagy húzd végig a szakaszon':
     p.kind==='zone'?'húzz egy téglalapot a padlón':p.kind==='door'?'kattints egy ajtóra':'kattints egy ablakra';
@@ -97,7 +100,7 @@ STK_TOOLS.push({k:'rbRules',active:()=>{if(!RB.on)return false;if(state.mode!=='
     rbPanelDraw();draw();return true;},
   esc(){rbOff();draw();},mode(){rbOff();}});
 STK_OVERLAY.push(()=>{if(!RB.on)return '';const p=rbPreset(RB.preset),P=RB.press,lvl=state.active,z=dz(lvl,0);if(!p)return '';
-  const col=(MRK_POL[p.pol]||MRK_POL.none).c;
+  const col=rbCol(p);
   if(p.kind==='zone'&&P&&P.drag&&P.p1){const a=P.p0,b=P.p1,R=[[a[0],a[1]],[b[0],a[1]],[b[0],b[1]],[a[0],b[1]]];
     return `<polygon points="${p2b(R.map(q=>[q[0],q[1],z]))}" fill="${col}" fill-opacity="0.15" stroke="${col}" stroke-width="${vsP(1.4)}" stroke-dasharray="${vsDash('5 3')}"/>`;}
   const h=P&&P.pt?P.pt:RB.hover;if(!h||h.opening||(p.kind!=='wall'&&p.kind!=='side'))return '';
@@ -121,7 +124,7 @@ function rbPanelHost(){let h=$('rbPanel');if(!h){h=document.createElement('div')
 function rbPanelDraw(){const h=rbPanelHost();if(!RB.panel){h.style.display='none';return;}let s='<h4>Szabályok <button class="x" title="Bezár">✕</button></h4>',sec='';
   RB_PRESETS.forEach(p=>{if(p.sec!==sec){sec=p.sec;s+=`<h5>${esc(sec)}</h5>`;}
     if(p.kind==='off'){s+=`<button class="rb" disabled>${esc(p.n)}</button>`;return;}
-    const col=(MRK_POL[p.pol]||MRK_POL.none).c,on=RB.on&&RB.preset===p.k||(p.kind==='route'&&typeof RWL!=='undefined'&&RWL.on),n=rbCount(p.k);
+    const col=rbCol(p),on=RB.on&&RB.preset===p.k||(typeof MKP!=='undefined'&&MKP.on&&MKP.ink===p.k),n=rbCount(p.k);
     s+=`<button class="rb${on?' on':''}" data-rb="${p.k}"><span class="dot" style="background:${col}"></span>${esc(p.n)}<span class="n">${n||''}</span></button>`;});
   h.innerHTML=s;h.style.display='block';}
 function rbPanel(on){RB.panel=on==null?!RB.panel:!!on;if(!RB.panel)rbOff();rbPanelDraw();return RB.panel;}

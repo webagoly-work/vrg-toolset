@@ -732,7 +732,7 @@ function renderWallView(){const d=wallElevationData(WV.r,WV.level),out=wallEleva
   if($('wvDrawEnd'))$('wvDrawEnd').onclick=()=>wvFinishPath();
   // per-preset-height-line toggles inside the viewer
   if(!WV.hLines){WV.hLines={};GUIDES.forEach(g=>WV.hLines[g.k]=guideOn[g.k]);}
-  const hl=$('wvHLines');if(hl){GUIDES.forEach(g=>{const b=document.createElement('button');b.textContent=g.l;
+  const hl=$('wvHLines');if(hl){GUIDES.forEach(g=>{const b=document.createElement('button');b.textContent=guideLabel(g);
     b.style.cssText='font-size:10px;padding:1px 5px;border-radius:4px;border:1px solid '+g.c+';'+(WV.hLines[g.k]?('background:'+g.c+';color:#fff'):('background:#fff;color:'+g.c));
     b.onclick=()=>{WV.hLines[g.k]=!WV.hLines[g.k];renderWallView();};hl.appendChild(b);});}
   $('wvDims').onchange=e=>{WV.dims=e.target.checked;renderWallView();};

@@ -57,8 +57,9 @@ setTimeout(()=>{
   ok('Redőny again → taken off',w.rbOpeningCommit(P('redony'),win)===null&&w.mrkOpeningTags(win.id).length===0);
   // counts + the route hand-over
   w.rbPanelDraw();ok('the panel counts (Ágy zóna 1)',/data-rb="agy">.*?<span class="n">1<\/span>/.test($('rbPanel').innerHTML));
-  w.rbPick('vezetheto');ok('Vezethető fal hands over to the R2 tool',w.eval('RWL.on')&&!w.eval('RB.on'));
-  w.rbPick('tilos');ok('a preset turns the R2 tool off and itself on',!w.eval('RWL.on')&&w.eval('RB.on')&&w.eval('RB.preset')==='tilos');
+  w.rbPick('vezetheto');ok('Vezethető fal hands over to the marker pen (R5)',w.MKP.on&&w.MKP.ink==='vezetheto'&&!w.eval('RB.on'));
+  w.rbPick('tilos');ok('a face preset is a pen ink too (R5)',w.MKP.on&&w.MKP.ink==='tilos'&&!w.eval('RB.on'));
+  w.rbPick('agy');ok('a zone preset keeps the rules tool on',!w.MKP.on&&w.eval('RB.on')&&w.eval('RB.preset')==='agy');
   w.setMode('wall');ok('another tool turns it off',!w.eval('RB.on'));
   w.rbPanel(false);ok('the panel closes',$('rbPanel').style.display==='none');
   st.pitch=90;st.style='normal';w.draw();ok('the marks draw without errors',$('vp').firstChild.innerHTML.length>0);

@@ -11,7 +11,7 @@ function resetView(){const h=vsHomeView();state.zoom=h.zoom;state.panX=h.panX;st
 // ---------------- camera memory: 2D and 3D each remember their own view ----------------
 function camSnap(){return {pitch:state.pitch,rot:state.rot,zoom:state.zoom,panX:state.panX,panY:state.panY};}
 function camApply(c){state.rot=c.rot;state.zoom=c.zoom;state.panX=c.panX;state.panY=c.panY;
-  $('rot').value=state.rot;$('rotVal').textContent=state.rot+'°';
+  $('rot').value=state.rot;$('rotVal').textContent=state.rot+'°';if($('qvRot'))$('qvRot').textContent=state.rot+'°';
   document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('on',+b.dataset.deg===state.rot));
   setTransform();}
 function switchBuilding(o){loadBuilding(o);state.levels={basement:true,ground:true,upper:true};
@@ -359,11 +359,6 @@ $('mbTop').onclick=()=>$('view3d').click();
 window.__proj={save:saveProject,load:loadProject,list:loadProjIndex,del:deleteProject,blank:newBlankProject,importFile:importProjectFile,snap:projSnapshot};
 
 window.__H=HOUSE;window.__G=GARAGE;window.__data=data;window.__state=state;window.__getWalls=()=>WALLS;window.__setSel=(h)=>{selected=h;draw();};window.__getSel=()=>selected;window.__panels=()=>PANELS;window.__panelLoc=()=>panelLoc;window.__wallStart=()=>wallStart;window.__objGhost=()=>objGhost;window.__cursor=()=>cursor;window.__cursorSnap=()=>cursor&&cursor.snap;window.__fmtSrc=()=>fmtSource;window.__selCount=()=>selList().length;window.__selMulti=()=>selMulti.map(h=>h.t+(h.i!==undefined?h.i:""));window.__sel=()=>selected;window.__addMulti=(h)=>addMulti(h);window.__centroid=()=>groupCentroid(selList());window.__rotateGroup=(l,a,p)=>rotateGroup(l,a,p);window.__selListArr=()=>selList();window.__clearMulti=()=>{clearMulti();selected=null;};window.hitTestAt=(x,y)=>hitTest({clientX:x,clientY:y});window.__touchG=()=>touchG;window.__WV=()=>WV;window.__PV=()=>PV;window.__setCursor=c=>{cursor=c;};window.__undoLen=()=>undo.length;window.__redoLen=()=>redo.length;window.VERSION=VERSION;window.drawNormalGeom=drawNormalGeom;window.PLACE_ITEMS=PLACE_ITEMS;window.WALL_PRESETS=WALL_PRESETS;window.NOTEKIND=NOTEKIND;window.LAMP_MOUNT=LAMP_MOUNT;window.DROPC=DROPC;window.GUIDES_REF=()=>GUIDES;window.LAMP_FIX=LAMP_FIX;window.ROOM_ENV=ROOM_ENV;window.ROOM_USE=ROOM_USE;window.ROOM_FLOOR=ROOM_FLOOR;window.ROOM_HEAT=ROOM_HEAT;window.__ROOMSB=()=>ROOMSB;window.DOORTYPE=DOORTYPE;window.__snap=(scope)=>snap_(scope);window.__applySnap=sn=>applySnap(sn);window.DEV=DEV;window.REFPRE=REFPRE;window.DEVKIND=DEVKIND;window.BUILDNAME=BUILDNAME;window.__buildGhost=()=>buildGhost;window.__setBuildGhost=g=>{buildGhost=g;};window.__LH=()=>LH;window.__guides=()=>GUIDES;window.__setWV=(k,v)=>{WV[k]=v;};window.__selBox=()=>selBox;window.__setBox=(b)=>{selBox=b;};window.__finishBox=()=>finishSelBox();window.__objPick=()=>objPick;window.loadBuilding=loadBuilding;window.__sceneVer=()=>sceneVer;window.__pens=()=>({NV_PEN,NV_TXT,BP_PEN,BP_TXT,BP_SCALES});window.VIEW_SCALES=VIEW_SCALES;window.PREV=PREV;window.LAYER_CATS=LAYER_CATS;window.__SC=()=>SC;window.LBL_EM=LBL_EM;window.__floorDraft=()=>floorDraft;window.__setFloorDraft=v=>{floorDraft=v;};
-function placeTools(loc){const g=$('toolsGrp'),bar=$('toolbarRow'),rs=document.querySelector('.side.r');
-  if(loc==='top'){bar.appendChild(g);bar.classList.add('show');$('bToolsLoc').textContent='⧉ Tools: oldalt';}
-  else{rs.appendChild(g);bar.classList.remove('show');$('bToolsLoc').textContent='⧉ Tools: fent';}
-  state.toolsLoc=loc;}
-$('bToolsLoc').onclick=()=>placeTools(state.toolsLoc==='top'?'side':'top');
 // default: blank workspace (the example house is available in the Projects list if saved)
 function stampVersion(){const el=$('verTag');if(el)el.textContent='v'+VERSION;}
 function initWorkspace(){
@@ -381,7 +376,6 @@ function initWorkspace(){
   else{loadBuilding(blankBuilding());}
   setMode('select');setRot(90);renderProjects();}
 setTimeout(initWorkspace,0);
-$('autoLayout').onclick=()=>setAutoLayout(!autoLayout);
 $('bClearRoute').onclick=()=>clearRouting();
 $('bRecalc').onclick=()=>recomputeRouting();
 // resizable sidebars
@@ -402,58 +396,15 @@ const PANELS_DEF=[{m:'Tools',label:'Tools',def:'left'},{m:'Layers',label:'Layers
 function matchPanel(h3){let best=null;for(const p of PANELS_DEF)if(h3.indexOf(p.m)===0&&(!best||p.m.length>best.m.length))best=p;
   if(!best)for(const p of PANELS_DEF)if(h3.indexOf(p.m)>=0&&(!best||p.m.length>best.m.length))best=p;return best;}
 function pslug(t){return t.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,18)||'p';}
-let PANELS=[],panelLoc={},panelPool=null,userPanelLoc=null;
-const TOOL_LAYOUT={
- select:{left:['projektek','tools','layers','view'],right:['activelevelnewitem','rajnlatbom']},
- grab:{left:['tools','layers','view'],right:['activelevelnewitem']},
- path:  {left:['tools','pathplyaelsdleges','activelevelnewitem','routing'],right:['heightguidelines','rajnlatbom']},
- cable: {left:['tools','cablemsodlagos','activelevelnewitem'],right:['heightguidelines','cabletotalsm']},
- device:{left:['tools','device','activelevelnewitem','dokumentci'],right:['devicesdb','rajnlatbom']},
- wall:  {left:['tools','activelevelnewitem','buildinglayout'],right:['view']},
- build: {left:['tools','buildsnapstowall','activelevelnewitem'],right:['view']},
- object:{left:['tools','objects','activelevelnewitem'],right:['view']},
- floor: {left:['tools','activelevelnewitem','buildinglayout'],right:['view']},
- roof:  {left:['tools','buildinglayout','activelevelnewitem'],right:['view']}};
-function pidByLabelKey(k){const p=PANELS.find(x=>x.pid===k);return p?p.pid:null;}
-function applyToolLayout(mode){if(!autoLayout)return;const L=TOOL_LAYOUT[mode];if(!L)return;
-  if(!userPanelLoc)userPanelLoc=JSON.parse(JSON.stringify(panelLoc));
-  const toolsDock=panelLoc['tools'];  // preserve the user's Tools placement (e.g. 'top' = Tools:fent)
-  const nl={};PANELS.forEach(p=>nl[p.pid]='off');
-  (L.left||[]).forEach(pid=>{if(PANELS.some(p=>p.pid===pid))nl[pid]='left';});
-  (L.right||[]).forEach(pid=>{if(PANELS.some(p=>p.pid===pid))nl[pid]='right';});
-  if(toolsDock==='top')nl['tools']='top';  // keep Tools on top if the user docked it there
-  panelLoc=nl;renderDashboard();}
-function setAutoLayout(on){autoLayout=on;const b=$('autoLayout');if(b)b.classList.toggle('on',on);
-  if(on){applyToolLayout(state.mode);}else if(userPanelLoc){panelLoc=userPanelLoc;userPanelLoc=null;renderDashboard();}
-  scheduleSave&&scheduleSave();}
+let PANELS=[],panelLoc={};   // panelLoc: kept only so old saved projects still load; the frame is fixed now (T3)
+// T3 (docs/ui-tidy): no picker, no Auto-panel — every panel has one home (05db PANEL_HOME) and the frame never re-deals
+function applyToolLayout(){}
+function renderDashboard(){if(typeof layoutSync==='function')layoutSync(true);}
 function buildDashboard(){
-  const L=document.querySelector('.side:not(.r)'),R=document.querySelector('.side.r');
-  panelPool=document.createElement('div');panelPool.id='panelPool';panelPool.style.display='none';document.body.appendChild(panelPool);
   const grps=[...document.querySelectorAll('.side .grp')];
   PANELS=grps.map(el=>{const h3el=el.querySelector('h3'),h3=h3el?h3el.textContent.trim():'?';const m=matchPanel(h3)||{label:h3.slice(0,7),def:'left'};
-    const pid=pslug(h3);el.dataset.pid=pid;el.remove();return {pid,label:m.label,el,def:m.def};});
-  [L,R].forEach(side=>{side.innerHTML='';const pk=document.createElement('div');pk.className='picker';side.appendChild(pk);
-    const pn=document.createElement('div');pn.className='panels';side.appendChild(pn);});
-  if(!Object.keys(panelLoc).length)PANELS.forEach(p=>panelLoc[p.pid]=p.def);
-  renderDashboard();}
-function renderDashboard(){
-  const L=document.querySelector('.side:not(.r)'),R=document.querySelector('.side.r');
-  if(!L||!R||!panelPool)return;const lp=L.querySelector('.panels'),rp=R.querySelector('.panels');
-  const tb=$('toolbarRow');
-  PANELS.forEach(p=>{const loc=panelLoc[p.pid];(loc==='left'?lp:loc==='right'?rp:loc==='top'?tb:panelPool).appendChild(p.el);});
-  tb.classList.toggle('show',tb.children.length>0);
-  const tp=PANELS.find(p=>p.label==='Tools');if(tp)$('bToolsLoc').textContent=(panelLoc[tp.pid]==='top')?'⧉ Tools: oldalt':'⧉ Tools: fent';
-  // The picker is the same 20 buttons every time; only which of them are lit changes.
-  // Rebuilding them on every render (so on every tool switch, via applyToolLayout) made
-  // the whole strip flash and dropped the hover state out from under the pointer.
-  [['left',L],['right',R]].forEach(a=>{const side=a[0],pk=a[1].querySelector('.picker');
-    if(pk.children.length!==PANELS.length){
-      pk.innerHTML=PANELS.map(p=>`<button class="pbtn" data-pp="${p.pid}" data-ps="${side}">${p.label}</button>`).join('');
-      pk.querySelectorAll('.pbtn').forEach(b=>b.onclick=()=>{const pid=b.dataset.pp,sd=b.dataset.ps;
-        panelLoc[pid]=(panelLoc[pid]===sd)?'off':sd;renderDashboard();if(typeof scheduleSave==='function')scheduleSave();});}
-    pk.querySelectorAll('.pbtn').forEach(b=>b.classList.toggle('on',panelLoc[b.dataset.pp]===side));});}
-$('bToolsLoc').onclick=()=>{const tp=PANELS.find(p=>p.label==='Tools');if(!tp)return;
-  panelLoc[tp.pid]=(panelLoc[tp.pid]==='top')?'left':'top';renderDashboard();scheduleSave();};
+    const pid=el.dataset.pid||pslug(h3);el.dataset.pid=pid;   /* T8: a renamed heading keeps its panel id */return {pid,label:m.label,el,def:m.def};});
+  layoutBuild(PANELS);}
 $('objSearch').oninput=()=>renderObjList();renderObjList();
 buildDashboard();window.__dashReady=true;stampVersion();renderLayers();kbdApplyLayout();restoreSession();if(autoLayout)applyToolLayout(state.mode);
 if(typeof preloadBoot==="function")preloadBoot();   // a build with plans baked in (tools/make-preload.js) offers them first

@@ -64,13 +64,17 @@ function clnCommit(pts,from,dev,plane){plane=plane==='floor'?'floor':'ceil';if(!
   const rec={kind:'cline',level:dev.level,pts:P,to:dev.id,from,h:H.h,void:H.void,pol:'plus',tags:[CLN_PLANES[plane].tag],layer:mrkLayer()};
   if(plane==='floor')rec.plane='floor';else rec.lamp=dev.id;
   mrkList().push(rec);ensureIds(data);draw();return rec;}
+// a wall-to-wall crossing (Q9): no target device; E5 turns it into a trunk ceiling link with a pull box at each end
+function clnCommitCross(pts,from,toWall,level){const P=pts.map(q=>[Math.round(q[0]),Math.round(q[1])]);pushUndo(['marks']);
+  const rec={kind:'cline',level,pts:P,from,toWall,cross:true,h:wallH(level),void:false,pol:'plus',tags:[CLN_PLANES.ceil.tag],layer:mrkLayer()};
+  mrkList().push(rec);ensureIds(data);draw();return rec;}
 function clnLen(m){let L=0;for(let i=1;i<m.pts.length;i++)L+=Math.hypot(m.pts[i][0]-m.pts[i-1][0],m.pts[i][1]-m.pts[i-1][1]);return L;}
 
-function clnToolStart(plane){['mrkToolsOff','epToolOff','rwlToolOff','rbOff','lswToolOff'].forEach(f=>{if(typeof window[f]==='function')try{window[f]();}catch(_){}});
+function clnToolStart(plane){toolsOff();
   if(state.mode!=='select')setMode('select');CLN.on=true;CLN.plane=plane==='floor'?'floor':'ceil';CLN.pts=null;CLN.from=null;clnHint();draw();}
 function clnHint(){const mh=$('modeHint');if(!mh)return;const P=CLN_PLANES[CLN.plane];
   mh.textContent=!CLN.on?(HINTS[state.mode]||''):!CLN.pts?P.n+' — kattints a kezdőpontra: vezethető fal, ajtó portálhelye, doboz vagy kapcsoló · Esc kilép'
-    :P.n+' — töréspont kattintással (45°, Shift = szabad) · kattints a '+P.to+' a befejezéshez · Backspace: vissza · Esc: elvet';}
+    :P.n+' — töréspont kattintással (45°, Shift = szabad) · kattints a '+P.to+' a befejezéshez'+(CLN.plane==='ceil'&&CLN.from&&CLN.from.wall?' (vagy egy másik vezethető falra: átvezetés)':'')+' · Backspace: vissza · Esc: elvet';}
 function clnOff(){CLN.on=false;CLN.pts=null;CLN.from=null;CLN.cur=null;clnHint();}
 STK_TOOLS.push({k:'clnTool',active:()=>{if(!CLN.on)return false;if(state.mode!=='select'||(typeof WV!=='undefined'&&WV)){clnOff();return false;}return true;},
   down(e){if(e.button!==0)return false;const lvl=state.active,p=clnPt(e),PL=CLN_PLANES[CLN.plane];
@@ -81,6 +85,10 @@ STK_TOOLS.push({k:'clnTool',active:()=>{if(!CLN.on)return false;if(state.mode!==
       if(!m){$('hud').textContent=CLN_HEAT_MSG;return true;}
       CLN.pts=null;CLN.from=null;clnHint();
       $('hud').textContent=PL.n+' → '+(dev.ref||dev.id)+' · '+wfpMm(clnLen(m))+' mm · '+(m.void?'álmennyezet fölött':PL.done);draw();return true;}
+    // E5-Q9 = A: a ceiling line that starts AND ends on a Vezethető fal is a trunk ceiling crossing (the stair void)
+    if(CLN.plane==='ceil'&&CLN.from&&CLN.from.wall){const s=clnStartAt(p,lvl),last=CLN.pts[CLN.pts.length-1];
+      if(s&&s.from&&s.from.wall&&Math.hypot(s.p[0]-last[0],s.p[1]-last[1])>clnTol()*2){const m=clnCommitCross(CLN.pts.concat([s.p]),CLN.from,s.from,lvl);
+        CLN.pts=null;CLN.from=null;clnHint();$('hud').textContent='Mennyezeti átvezetés falról falra · '+wfpMm(clnLen(m))+' mm — a gerinc használhatja';draw();return true;}}
     const q=clnSnap(p,e.shiftKey);
     if(CLN.plane==='floor'&&clnHeatHit([CLN.pts[CLN.pts.length-1],q],lvl)){$('hud').textContent=CLN_HEAT_MSG;return true;}
     CLN.pts.push(q);draw();return true;},
@@ -100,9 +108,6 @@ STK_OVERLAY.push(()=>{if(!CLN.on||!CLN.pts)return '';const z=dz(state.active,0),
 (STK_CHECKS['sys:LIGHT']=STK_CHECKS['sys:LIGHT']||[]).push(()=>data.devices.filter(d=>d&&typeof epCodeOf==='function'&&epCodeOf(d)==='LMP'&&d.side==null&&!clineFor(d.id))
   .map(d=>({sev:'info',code:'cln.none',msg:(d.ref||d.id)+': nincs mennyezeti útja — a legközelebbi vezethető falpontról indul.'})));
 
-(function(){if(typeof WF_PHASES==='undefined')return;const P=WF_PHASES.find(p=>p.k==='vill');if(!P)return;
-  const i=P.tools.findIndex(t=>/Kapcsolások javaslata/.test(t.n||''));
-  P.tools.splice(i+1,0,{n:'〰 Mennyezeti út',run:()=>clnToolStart('ceil')},{n:'▭ Padló út',run:()=>clnToolStart('floor')});})();
 registerActions([{id:'wf.ceilLine',label:'Mennyezeti út',icon:'〰',group:'Véset',alias:'ceiling route reach mennyezeti ut',
   hint:'Vonal a vezethető falról / portálból / dobozból a mennyezeten át a lámpához; álmennyezetnél fölötte.',when:c=>!c.inEditor,run:()=>clnToolStart('ceil')},
   {id:'wf.floorLine',label:'Padló út',icon:'▭',group:'Véset',alias:'floor route padlo ut sziget',

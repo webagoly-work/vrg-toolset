@@ -1044,7 +1044,7 @@ function draw(){
         +`<rect x="${bx0}" y="${by0}" width="150" height="${boxH}" rx="5" fill="#fffef8" stroke="#d8d2c4"/>`
         +`<rect x="${bx0}" y="${by0}" width="6" height="${boxH}" fill="${gc}"/>`
         +`<text x="${bx0+13}" y="${by0+16}" font-size="12" font-weight="700" fill="#111">↧ ${(cursor.h/1000).toFixed(2)} m</text>`
-        +`<text x="${bx0+13}" y="${by0+31}" font-size="10" fill="#666">${esc(gd?gd.l:'')}</text>`
+        +`<text x="${bx0+13}" y="${by0+31}" font-size="10" fill="#666">${esc(gd?guideLabel(gd):'')}</text>`
         +(lastH!=null&&Math.abs(lastH-cursor.h)>1?`<text x="${bx0+146}" y="${by0+16}" font-size="10" text-anchor="end" fill="#999">előző ${(lastH/1000).toFixed(2)}</text>`:'')
         +(showSide?`<text x="${bx0+13}" y="${by0+48}" font-size="9.5" fill="#2f6fb0">▣ ${state.side?'túloldal':'közeli oldal'} · Ctrl vált</text>`:'')
         +(pal?paletteBadge(bx0,by0+(showSide?56:40),pal):'')
@@ -1176,7 +1176,7 @@ function draw(){
     const nh=cursor?cursor.h:drawHmm(state.active),lastH=(dr&&dr.nodes.length)?dr.nodes[dr.nodes.length-1].h:null;
     hb.style.display='block';
     hb.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:26px;border-radius:3px;background:${gc};display:inline-block"></span>`
-      +`<div><div style="font-size:16px;font-weight:700">${(nh/1000).toFixed(2)} m</div><div style="font-size:11px;color:#666">${esc(gd?gd.l:'')}</div></div></div>`
+      +`<div><div style="font-size:16px;font-weight:700">${(nh/1000).toFixed(2)} m</div><div style="font-size:11px;color:#666">${esc(gd?guideLabel(gd):'')}</div></div></div>`
       +(lastH!=null?`<div style="font-size:11px;color:#888;margin-top:4px">előző pont: ${(lastH/1000).toFixed(2)} m${Math.abs(lastH-nh)>1?' → '+(nh>lastH?'emelkedik ↑':'süllyed ↓'):''}</div>`:'');
   }else hb.style.display='none';}
   scheduleSave();}

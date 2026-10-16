@@ -1,0 +1,223 @@
+{
+ "pack": "PLANNER-SUI-Q-001",
+ "title": "Simplified UI (Egyszerű felület) — build decisions",
+ "rev": "r1",
+ "date": "2026-10-15",
+ "sections": [
+  {
+   "id": "S",
+   "title": "Egyszerű felület",
+   "note": "The recommended option is built if you do not answer. S01, S03 and S06 shape the first WPs; the rest can wait until the S6 look checkpoint.",
+   "questions": [
+    {
+     "id": "S01",
+     "q": "Which corner holds the dial?",
+     "why": "You wrote 'corner left'. Bottom-left puts the Back slot directly above the dial, so it is always in the same spot, the shortest move from the dial. Top-left reads like a classic menu dropping down.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Bottom-left",
+       "d": "The column rises above the dial. Back is the bottom item, touching the dial."
+      },
+      {
+       "k": "B",
+       "t": "Top-left",
+       "d": "The column hangs below the dial. Back is the bottom item, so it is the farthest from the dial."
+      },
+      {
+       "k": "C",
+       "t": "Bottom-right",
+       "d": "Mirror of A, for right-handed touch use. The hint pill moves left."
+      }
+     ]
+    },
+    {
+     "id": "S02",
+     "q": "Dial size?",
+     "why": "88 px reads as a deliberate object without eating the drawing; on a phone a quarter of 88 px is still a 60+ px target.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "88 px radius",
+       "d": "As designed (01_DESIGN §2)."
+      },
+      {
+       "k": "B",
+       "t": "64 px radius",
+       "d": "Smaller, quieter; the core glyph shrinks to 16 px."
+      },
+      {
+       "k": "C",
+       "t": "112 px radius",
+       "d": "Bigger, more 'console'; better for touch."
+      }
+     ]
+    },
+    {
+     "id": "S03",
+     "q": "The four root items?",
+     "why": "Four slots plus Bezár. Option A keeps everyday tools (undo, select, note) one level away; B gives View and Project their own roots but pushes those tools into search.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Épület · Villamosság · Eszközök · Rendszer",
+       "d": "Rendszer holds Nézet, Projekt, Kimenet, Beállítások (02_MENU-TREE §2)."
+      },
+      {
+       "k": "B",
+       "t": "Épület · Villamosság · Nézet · Projekt",
+       "d": "Undo / Mozgatás / Jegyzet only by keys and search."
+      },
+      {
+       "k": "C",
+       "t": "By phase",
+       "d": "Alapozás · Nyílászárók+Szabályok · Villamosság · Rendszer — mirrors the workflow bar."
+      }
+     ]
+    },
+    {
+     "id": "S04",
+     "q": "The hint pill next to the dial while a tool runs?",
+     "why": "With every panel gone, the one-line tool hint is the only instruction left. Always-on is clutter; never is guesswork.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Shows on start and on every message, fades after 6 s",
+       "d": "Hovering the dial brings it back."
+      },
+      {
+       "k": "B",
+       "t": "Always visible while a tool runs",
+       "d": "One line, ellipsis."
+      },
+      {
+       "k": "C",
+       "t": "Never",
+       "d": "The dial icon only; hints via search help."
+      }
+     ]
+    },
+    {
+     "id": "S05",
+     "q": "Selection actions in simple mode?",
+     "why": "A stable root builds muscle memory. The canvas right-click menus already carry every selection action.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Right-click menus only; root stays fixed",
+       "d": "Double-click a room still opens the type wheel."
+      },
+      {
+       "k": "B",
+       "t": "Root slot 1 becomes 'Kijelölt: <name>' while something is selected",
+       "d": "The other root items shift down by one."
+      }
+     ]
+    },
+    {
+     "id": "S06",
+     "q": "The toggle key?",
+     "why": "Needs a free combination that a browser does not take. Ctrl+Shift+E is free in Chrome on Windows (to be confirmed in S0).",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Ctrl+Shift+E",
+       "d": "E = Egyszerű. Also the ◔ header button and the menu item Rendszer › Beállítások › Normál felület."
+      },
+      {
+       "k": "B",
+       "t": "F2",
+       "d": "One key, but F2 is 'rename' muscle memory for many."
+      },
+      {
+       "k": "C",
+       "t": "No key",
+       "d": "Button and menu only."
+      }
+     ]
+    },
+    {
+     "id": "S07",
+     "q": "When does the menu close after a pick?",
+     "why": "Toggles you try one after another (2D/3D, styles, layers) are tedious if the menu closes each time; tools want the canvas immediately.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Tools and actions close it; toggles stay open",
+       "d": "Marked ↺ in the item."
+      },
+      {
+       "k": "B",
+       "t": "Everything closes it",
+       "d": "Simplest rule."
+      }
+     ]
+    },
+    {
+     "id": "S08",
+     "q": "Typeface?",
+     "why": "The Zion screens read as a clean condensed technical face. Bahnschrift ships with Windows 10/11 (offline, no download); Segoe UI is what the rest of the Planner uses.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Bahnschrift SemiCondensed, caps, wide tracking",
+       "d": "Falls back to Segoe UI elsewhere."
+      },
+      {
+       "k": "B",
+       "t": "Segoe UI, caps",
+       "d": "Same family as Normal mode."
+      }
+     ]
+    },
+    {
+     "id": "S09",
+     "q": "Entering simple mode changes the view?",
+     "why": "A clean screen invites a clean view, but changing the camera behind the user's back breaks 'the drawing never changes'.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "No — the view stays as it was",
+       "d": "2D/3D is one menu pick away."
+      },
+      {
+       "k": "B",
+       "t": "Switch to the 2D plan on entry",
+       "d": "And restore the camera on exit."
+      }
+     ]
+    },
+    {
+     "id": "S10",
+     "q": "Dialogs (tables like Áramkör-lista, Ellenőrzés) in simple mode?",
+     "why": "They are big and shared with Normal mode; restyling them is a separate job.",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Keep the normal dialog look for now",
+       "d": "A later round may give them the glass style."
+      },
+      {
+       "k": "B",
+       "t": "Glass style in simple mode (S6 extra)",
+       "d": "Adds CSS for #modal under body.ui-simple; more screenshots at the ⏸."
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "answers": {
+  "S06": "B"
+ }
+}

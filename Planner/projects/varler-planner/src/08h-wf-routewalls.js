@@ -14,7 +14,6 @@
 // marks every wall whose middle is inside. rwlAllowed(level) is the ONE query the router (E2 / E5) reads.
 MRK_KINDS.wspan='Falszakasz (mindkét oldal)';
 if(MRK_TAGS.wall&&!MRK_TAGS.wall.some(t=>t.k==='vezetheto'))MRK_TAGS.wall.unshift({k:'vezetheto',n:'Vezethető fal (vízszintes pálya)',pol:'plus'});
-const RWL={on:false,press:null,cur:null};
 const RWL_SNAP=50,RWL_BAND=60,RWL_COL='#2e9e5b';
 
 function rwlIs(m){return !!m&&(m.tags||[]).indexOf('vezetheto')>=0&&(m.kind==='wall'||m.kind==='wspan');}
@@ -35,29 +34,11 @@ function rwlAddSpan(r,level,u0,u1){const a=Math.min(u0,u1),b=Math.max(u0,u1);if(
   mrkAdd({kind:'wspan',level,wall:r.id,u0:a,u1:b,pol:'plus',tags:['vezetheto']});return mrkList()[mrkList().length-1];}
 function rwlBoxWalls(level,x0,y0,x1,y1){const X0=Math.min(x0,x1),X1=Math.max(x0,x1),Y0=Math.min(y0,y1),Y1=Math.max(y0,y1);
   return (WALLS[level]||[]).filter(r=>{const cx=(r.x0+r.x1)/2,cy=(r.y0+r.y1)/2;return cx>=X0&&cx<=X1&&cy>=Y0&&cy<=Y1;});}
-function rwlSnapU(u){return Math.round(u/RWL_SNAP)*RWL_SNAP;}
 
-function rwlToolStart(){if(typeof mrkToolsOff==='function')mrkToolsOff();if(state.mode!=='select')setMode('select');RWL.on=true;RWL.press=null;
-  const mh=$('modeHint');if(mh)mh.textContent='Vezethető fal — kattints egy falra: az egész fal (mindkét oldal) vezethető, újra kattintva leveszed. '
-    +'Nyomva tartva húzd a fal mentén: csak az a szakasz. Shift + keret üres helyen: minden fal benne. Esc: kész.';draw();}
-function rwlToolOff(){RWL.on=false;RWL.press=null;RWL.cur=null;const mh=$('modeHint');if(mh)mh.textContent=HINTS[state.mode]||'';}
-function rwlPlanPt(e){const [bx,by]=clientToBase(e),p=baseToPlan(bx,by,dz(state.active,0));return p;}
-STK_TOOLS.push({k:'rwlTool',active:()=>{if(!RWL.on)return false;if(state.mode!=='select'||(typeof WV!=='undefined'&&WV)){rwlToolOff();return false;}return true;},
-  down(e){if(e.button!==0)return false;const p=rwlPlanPt(e),r=wallHitRect(e);
-    RWL.press={client:[e.clientX,e.clientY],p,wall:r?r.id:null,u0:r?rwlSnapU(mrkU(r,p[0],p[1])):0,shift:!!e.shiftKey,drag:false};
-    try{stage.setPointerCapture(e.pointerId);}catch(_){}return true;},
-  move(e){const P=RWL.press;if(!P||!(e.buttons&1))return false;const p=rwlPlanPt(e);
-    if(!P.drag&&Math.hypot(e.clientX-P.client[0],e.clientY-P.client[1])>6)P.drag=true;
-    if(P.drag){const r=P.wall&&mrkWallById(state.active,P.wall);P.p1=p;if(r)P.u1=rwlSnapU(mrkU(r,p[0],p[1]));draw();}return true;},
-  up(e){const P=RWL.press;RWL.press=null;if(!P)return false;try{stage.releasePointerCapture(e.pointerId);}catch(_){}
-    const lvl=state.active,r=P.wall&&mrkWallById(lvl,P.wall);
-    if(P.drag&&!r&&P.shift&&P.p1){const ws=rwlBoxWalls(lvl,P.p[0],P.p[1],P.p1[0],P.p1[1]);let n=0;
-      ws.forEach(w=>{if(!mrkList().some(m=>rwlIs(m)&&m.kind==='wall'&&m.wall===w.id)){mrkAdd({kind:'wall',level:lvl,wall:w.id,pol:'plus',tags:['vezetheto']});n++;}});
-      $('hud').textContent='Vezethető fal: '+n+' fal jelölve a keretben.';draw();return true;}
-    if(!r){draw();return true;}
-    if(P.drag&&P.u1!=null){const m=rwlAddSpan(r,lvl,P.u0,P.u1);$('hud').textContent=m?'Vezethető szakasz: '+wfpMm(Math.abs(m.u1-m.u0))+' mm ('+r.id+')':'Legalább 100 mm-es szakaszt húzz.';draw();return true;}
-    const on=rwlToggleWall(r,lvl);$('hud').textContent=(on?'Vezethető fal: ':'Levéve: ')+r.id+' ('+wfpMm(mrkWallLen(r))+' mm, mindkét oldal)';draw();return true;},
-  esc(){rwlToolOff();draw();},mode(){rwlToolOff();}});
+// R5 (2026-10-15): the routing-wall tool is the marker pen with the Vezethető fal ink (08ia) — drag along the centreline,
+// a click marks one wall of one room. The data API above (rwlAllowed / rwlCovers / rwlToggleWall / rwlAddSpan) is unchanged.
+function rwlToolStart(){return mkpStart('vezetheto');}
+function rwlToolOff(){if(typeof MKP!=='undefined'&&MKP.on&&MKP.ink==='vezetheto')mkpOff();}
 
 // the green band on the centreline (both faces) — persisted drawing, so the scene
 function rwlBandSvg(level,u0,u1,r,col,op){const wi=wallInfo(r),a=wi.seg[0],z=dz(level,0),h=RWL_BAND/2;
@@ -65,12 +46,6 @@ function rwlBandSvg(level,u0,u1,r,col,op){const wi=wallInfo(r),a=wi.seg[0],z=dz(
   return `<polygon class="rwl-band" points="${p2b(P.map(q=>[q[0],q[1],z]))}" fill="${col}" fill-opacity="${op}" stroke="${col}" stroke-width="${vsP(0.8)}"/>`;}
 STK_SCENE.push(()=>{let s='';for(const l of ORD){if(!state.levels[l])continue;
   rwlAllowed(l).forEach(a=>{const r=mrkWallById(l,a.wall);if(r)s+=rwlBandSvg(l,a.u0,a.u1,r,RWL_COL,0.55);});}return s;});
-STK_OVERLAY.push(()=>{const P=RWL.on&&RWL.press;if(!P||!P.drag)return '';const lvl=state.active,r=P.wall&&mrkWallById(lvl,P.wall);
-  if(r&&P.u1!=null)return rwlBandSvg(lvl,Math.min(P.u0,P.u1),Math.max(P.u0,P.u1),r,'#e8641c',0.6);
-  if(!r&&P.shift&&P.p1){const z=dz(lvl,0),R=[[P.p[0],P.p[1]],[P.p1[0],P.p[1]],[P.p1[0],P.p1[1]],[P.p[0],P.p1[1]]];
-    return `<polygon points="${p2b(R.map(q=>[q[0],q[1],z]))}" fill="${RWL_COL}" fill-opacity="0.08" stroke="${RWL_COL}" stroke-width="${vsP(1.2)}" stroke-dasharray="${vsDash('5 3')}"/>`;}
-  return '';});
-
 registerActions([{id:'wf.routeWalls',label:'Vezethető fal',icon:'🟩',group:'Véset',alias:'routing walls vezetheto fal palya',
   hint:'Mely falak mentén futhat vízszintes pálya — kattintás: egész fal, húzás: szakasz.',when:c=>!c.inEditor,run:()=>rwlToolStart()}]);
 (function(){const b=$('rwlBtn');if(b)b.onclick=()=>rwlToolStart();})();

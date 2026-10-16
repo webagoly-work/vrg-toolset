@@ -141,9 +141,9 @@ function statusBar(){const el=$('statusBar');if(!el)return;
   const v=statusValidate();
   const chip=(txt,col)=>`<span class="sbChip"${col?` style="color:${col}"`:''}>${txt}</span>`;
   const html=
-     chip('▣ '+(MODENAME[state.mode]||state.mode))
+     chip('▣ '+esc(((typeof toolSync==='function'?toolSync():null)||{label:MODENAME.select}).label))
     +chip(t('sb.level','szint')+': '+state.active)
-    +chip(t('sb.height','magasság')+': '+Math.round(hmm)+' mm'+(gd?' ('+esc(gd.l)+')':''))
+    +chip(t('sb.height','magasság')+': '+Math.round(hmm)+' mm'+(gd?' ('+esc(guideLabel(gd))+')':''))
     +chip(state.midFree?t('sb.free','szabad rajzolás'):t('sb.bound','falhoz köt'))
     +(fineAnchor?chip('🔍 '+t('sb.fine','finom 1 mm'),'#c0530f'):'')
     +(E?chip(t('sb.editor','szerkesztő')+': '+(E===WV?t('sb.wall','fal'):t('sb.plane','sík'))+(E.dirty?' ●':''),'#c0530f'):'')
@@ -152,10 +152,11 @@ function statusBar(){const el=$('statusBar');if(!el)return;
     +(v.warn?chip('⚠ '+v.warn+' '+t('sb.warn','figyelmeztetés'),'#c0530f'):'')
     +`<span style="flex:1"></span>`
     +chip('⌘K / Ctrl+K — '+t('sb.cmd','parancsok'),'#777');
+  if(typeof layoutSync==='function')layoutSync();   // T3: the phases, the lit buttons, the context panel (cheap when unchanged)
   if(html===_sbHtml)return;                 // nothing to say that it is not already saying
   _sbHtml=html;el.innerHTML=html;}
 const MODENAME={select:'Kijelölés',grab:'Mozgatás',wall:'Fal',floor:'Padló',build:'Építés',device:'Készülék',
-  path:'Pálya',cable:'Kábel',measure:'Mérés',note:'Jegyzet',object:'Objektum',roof:'Tető',format:'Formátum'};
+  path:'Pálya',cable:'Kábel',measure:'Mérés',note:'Jegyzet',object:'Objektum',roof:'Tető',format:'Formátum',room:'Helyiség-toll'};
 
 
 // ===================== THE CATALOGUE =====================
@@ -168,23 +169,23 @@ function _mode(m,label,icon,keys,hint){return {id:'mode.'+m,label,icon,group:'Es
 
 registerActions([
   // ---- tools ----
-  _mode('select','Kijelölés','⬚',['v'],'Elemek kiválasztása és tulajdonságaik elérése.'),
+  _mode('select','Kijelölés','▖',['v'],'Elemek kiválasztása és tulajdonságaik elérése.'),
   _mode('grab','Mozgatás','✥',['m'],'Kijelölt elem mozgatása a nyilakkal és a gizmóval.'),
   // W and D were the Wall and Device keys since the first version, so pressing them switched tool AND panned; they are
   // camera keys now (round 2026-10-10, U4 — answered in the build session). The tools keep 5 and 3 and Ctrl+K.
   _mode('wall','Fal rajzolása','🧱',null,'Falak húzása; a végpontok a meglévő falak tengelyére ugranak.'),
-  _mode('floor','Padló rajzolása','▦',null,'Pont után pont, élő Terület/Kerület; az első pontra kattintva zárul.'),
+  _mode('floor','Padló rajzolása','⬜',null,'Pont után pont, élő Terület/Kerület; az első pontra kattintva zárul.'),
   {id:'floor.fromwalls',alias:'floor from walls enclosed room fill padlo',label:'Padló a falak közé',icon:'▦',group:'Rajz',
    need:'Vidd a kurzort egy falakkal zárt térbe (Padló eszköz), vagy jobb klikk a rajzon.',
    hint:'A falakkal körbezárt tér belső kontúrját veszi át padlónak — sarkokkal együtt.',
    when:()=>!!cursor,run:()=>floorFromWalls(cursor.x,cursor.y,state.active)},
-  _mode('build','Építés (ajtó/ablak/lépcső)','🚪',['b'],'Nyílászáró elhelyezése a falon; a szellemkép mutatja, hova kerül.'),
-  _mode('device','Készülék','🔌',null,'Aljzat, kapcsoló, lámpa, kötődoboz elhelyezése.'),
-  _mode('path','Pálya','〰',['p'],'Kábelpálya rajzolása; Space letesz egy dobozt, ←/→ vált a palettán.'),
-  _mode('cable','Kábel / áramkör','⚡',['c'],'Vezetékek behúzása a meglévő pályákra.'),
-  _mode('measure','Mérés','📏',null,'Két pont közti távolság.'),
+  _mode('build','Építés (ajtó/ablak/lépcső)','🧰',['b'],'Nyílászáró elhelyezése a falon; a szellemkép mutatja, hova kerül.'),
+  _mode('device','Készülék','◈',null,'Aljzat, kapcsoló, lámpa, kötődoboz elhelyezése.'),
+  _mode('path','Pálya','➰',['p'],'Kábelpálya rajzolása; Space letesz egy dobozt, ←/→ vált a palettán.'),
+  _mode('cable','Kábel / áramkör','╱',['c'],'Vezetékek behúzása a meglévő pályákra.'),
+  _mode('measure','Mérés','↔',null,'Két pont közti távolság.'),
   _mode('object','Objektum','🧊',null,'Bútor és berendezés elhelyezése.'),
-  _mode('roof','Tető','🏠',null,'Tetősík felvétele.'),
+  _mode('roof','Tető','🛖',null,'Tetősík felvétele.'),
   _mode('format','Formátum másoló','🖌',null,'Egy elem beállításainak átmásolása másikra.'),
 
   // ---- history ----
@@ -215,7 +216,7 @@ registerActions([
   {id:'view.style.plan',alias:'normal plan view',label:'Normál nézet',icon:'🖼',group:'Nézet',
    when:c=>c.style!=='normal',run:()=>{state.style='normal';if($('style'))$('style').value='normal';
      if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();}},
-  {id:'view.style.blueprint',alias:'blueprint official plan',label:'Hivatalos (blueprint) nézet',icon:'📐',group:'Nézet',
+  {id:'view.style.blueprint',alias:'blueprint official plan',label:'Hivatalos (blueprint) nézet',icon:'📘',group:'Nézet',
    hint:'A hivatalos 2D rajzi jelkulcs szerinti megjelenítés.',
    when:c=>c.style!=='blueprint',run:()=>{state.style='blueprint';if($('style'))$('style').value='blueprint';
      if($('styleToggle'))$('styleToggle').classList.add('on');
@@ -232,13 +233,13 @@ registerActions([
    hint:'A tiszta axonometrikus megjelenés az aktív szinten: fehér falak, kivágás, színes végpontok, helyiségcímkék. Csak 3D-ben; útvonalak nélkül.',
    when:c=>c.style!=='tiszta',run:()=>{state.style='tiszta';if($('style'))$('style').value='tiszta';
      if($('styleToggle'))$('styleToggle').classList.remove('on');bpUI&&bpUI();draw();tisztaHud();}},
-  {id:'view.export.menu',alias:'export exportalas axonometria svg png print nyomtatas',label:'Exportálás… (axonometria lap)',icon:'📤',group:'Nézet',
+  {id:'view.export.menu',alias:'export exportalas axonometria svg png print nyomtatas',label:'Exportálás… (axonometria lap)',icon:'🔷',group:'Nézet',
    hint:'A tiszta axonometria lapja az aktív szintről; a nézet választható (alapból felülnézet), a nagyítás a képernyőé, a rajz középen.',
    run:()=>vexpMenuToggle(true)},
   {id:'view.export.svg',alias:'export axonometria svg',label:'Axonometria SVG',icon:'📤',group:'Nézet',run:()=>vexpSvg()},
   {id:'view.export.png',alias:'export axonometria png',label:'Axonometria PNG',icon:'📤',group:'Nézet',run:()=>vexpPng()},
   {id:'view.export.print',alias:'export axonometria print nyomtatas',label:'Axonometria nyomtatás',icon:'🖨',group:'Nézet',run:()=>vexpPrint()},
-  {id:'view.bp.scale',alias:'scale page drawing meretarany blueprint',label:'Rajzi méretarány (M 1:50…)',icon:'📏',group:'Nézet',
+  {id:'view.bp.scale',alias:'scale page drawing meretarany blueprint',label:'Rajzi méretarány (M 1:50…)',icon:'⚖',group:'Nézet',
    hint:'A hivatalos nézet vonalvastagságai és feliratai papír-milliméterben, a választott méretarányhoz.',
    run:()=>{const opts=BP_SCALES.map(v=>`<option value="${v}" ${v===bpScaleN()?'selected':''}>M 1:${v}</option>`).join('');
      openModal('Rajzi méretarány',
@@ -441,7 +442,7 @@ registerActions([
   {id:'room.dropview',need:'Jelölj ki egy helyiséget (padlót).',label:'Álmennyezet nézet (felülnézet)',icon:'⬓⬒',group:'Helyiség',
    when:c=>c.selType==='floors'&&!c.inEditor,
    run:c=>openPlaneView(data.floors[c.sel.i],pieceLevel(c.sel),'drop')},
-  {id:'wall.props',alias:'wall properties thickness',need:'Jelölj ki egy falat.',label:'Fal tulajdonságai (vastagság, magasság, indulás)',icon:'📐',group:'Fal',
+  {id:'wall.props',alias:'wall properties thickness',need:'Jelölj ki egy falat.',label:'Fal tulajdonságai (vastagság, magasság, indulás)',icon:'▯',group:'Fal',
    hint:'Pengefal, lebegő fal, anyag — élő m²/m³ kijelzéssel.',
    when:c=>c.selType==='wall',run:c=>wallPropsDialog(pieceRef(c.sel),pieceLevel(c.sel))},
   {id:'wall.pengefal',need:'Jelölj ki egy falat.',label:'Pengefal 100 mm',icon:'🔪',group:'Fal',

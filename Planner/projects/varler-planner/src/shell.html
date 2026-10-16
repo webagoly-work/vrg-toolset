@@ -8,19 +8,40 @@
  header{background:#2c2c2c;color:#fff;padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
  header h1{font-size:15px;margin:0;font-weight:700}
  header .sp{flex:1}
+ /* T7: header menus */
+ .hm{position:relative}
+ .hmD{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:70;background:#fff;color:#222;border:1px solid #d8d2c6;border-radius:9px;box-shadow:0 8px 22px #0003;padding:6px;min-width:190px}
+ .hmD.right{left:auto;right:0}
+ .hmD.wide{width:330px;max-height:78vh;overflow:auto}
+ .hm.open .hmD{display:block}
+ .hmD > button{display:block;width:100%;text-align:left;margin:2px 0}
+ .hmD .grp{margin:0;border:none;box-shadow:none;padding:4px}
+ /* T5: the quick-view widget and the Megjelenés panel */
+ #qv{position:absolute;right:12px;top:12px;display:flex;gap:4px;align-items:center;z-index:12;background:#ffffffd9;border:1px solid #e0dbd0;border-radius:9px;padding:3px;box-shadow:0 2px 6px #0002}
+ #qv button{padding:3px 7px;min-width:30px}
+ #qv #view3d{font-weight:700;min-width:40px}
+ #qv select{font-size:11.5px;max-width:112px}
+ #qvRot{font-size:11px;min-width:30px;text-align:center;color:#555}
+ #mgj{position:absolute;right:12px;top:54px;width:320px;max-height:calc(100% - 120px);overflow:auto;z-index:13;background:#fff;border:1px solid #d8d2c6;border-radius:10px;box-shadow:0 8px 22px #0003;display:none}
+ #mgj.on{display:block}
+ #mgj .mgjHead{position:sticky;top:0;background:#f7f5f0;border-bottom:1px solid #e4dfd4;padding:6px 10px;font-weight:600;font-size:12.5px;display:flex;justify-content:space-between;align-items:center}
+ #mgj .grp{margin:0;border:none;box-shadow:none}
+ #mgj{font-size:12.5px} #mgj .row{font-size:12px} #mgj select,#mgj input{font-size:12px}   /* the same type size as the sidebars */
  button{border:1px solid #cfc9bd;background:#fff;border-radius:7px;padding:5px 9px;font-size:12.5px;cursor:pointer}
  button:hover{background:#f1eee7}
  button.on{background:#2c2c2c;color:#fff;border-color:#2c2c2c}
  #lockBtn.on{background:#c86a1a;border-color:#c86a1a;color:#fff}
  .wrap{flex:1;display:flex;min-height:0}
- .side{width:252px;background:#f7f5f0;border-right:1px solid #ddd8cd;overflow:auto;padding:0}
+ .side{width:300px;background:#f7f5f0;border-right:1px solid #ddd8cd;overflow:auto;padding:0}
  .picker{display:flex;flex-wrap:wrap;gap:3px;padding:6px;position:sticky;top:0;background:#efece4;border-bottom:1px solid #ddd8cd;z-index:2}
  .pbtn{font-size:10.5px;padding:2px 6px;border:1px solid #cfc9bd;border-radius:5px;background:#fff;opacity:0.5;cursor:pointer}
  .pbtn.on{opacity:1;background:#2c2c2c;color:#fff;border-color:#2c2c2c}
  .panels{padding:9px}
  .panels:empty::after{content:'⬑ Válassz panelt fentről a testre szabáshoz';display:block;color:#a8a293;font-size:12px;padding:16px 6px;text-align:center}
- .side.r{border-right:none;border-left:1px solid #ddd8cd;width:236px}
+ .side.r{border-right:none;border-left:1px solid #ddd8cd;width:288px}
  .grp{margin-bottom:10px;border:1px solid #e4dfd4;border-radius:9px;background:#fff;padding:8px}
+ details.legacy{margin:4px 0 2px;font-size:11.5px;color:#8a8478} details.legacy summary{cursor:pointer;user-select:none}
+ details.legacy[open] summary{margin-bottom:3px}
  .grp h3{margin:0 0 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:#8a8478}
  .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:3px 0}
  label{font-size:12px;display:flex;gap:5px;align-items:center}
@@ -229,12 +250,43 @@
  .pnlGrip{position:absolute;top:0;bottom:24px;width:6px;cursor:col-resize;z-index:7;display:none;background:transparent}
  .pnlGrip:hover,.pnlGrip:active{background:linear-gradient(#ddd8cd,#cfc9bd)}
  .side{flex:0 0 auto}
+ /* T2 + T3 (docs/ui-tidy): the fixed frame. Left: phases · the phase's tools · one context panel. Right: inspector · tabs. */
+ .side{display:flex;flex-direction:column}
+ #phaseNav{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:8px 8px 6px;background:#efece4;border-bottom:1px solid #ddd8cd;position:relative;flex:none}
+ #phaseNav.list{grid-template-columns:1fr}
+ .phB{display:flex;align-items:center;gap:6px;border:1px solid #cfc9bd;background:#fff;border-radius:7px;padding:5px 7px;font-size:12px;cursor:pointer;text-align:left;position:relative}
+ .phB .no{font-weight:700;color:#8a8478;width:12px}.phB.on{background:#2c2c2c;color:#fff;border-color:#2c2c2c}.phB.on .no{color:#bbb}
+ .phB .bd{margin-left:auto;font-size:10.5px;font-weight:700;border-radius:8px;padding:0 5px;background:#f3d7b5;color:#8a4a0c}.phB .bd.err{background:#f2b8b2;color:#8e1d14}
+ #phLayout{position:absolute;right:3px;bottom:-9px;width:18px;height:18px;padding:0;border-radius:50%;font-size:10px;line-height:16px;z-index:3;color:#8a8478}
+ #phaseTools{padding:8px;border-bottom:1px solid #ddd8cd;flex:none}
+ .phRow{display:flex;gap:3px;flex-wrap:nowrap;margin-bottom:6px}.phRow .tool{flex:none;min-width:0;padding:4px 7px}.phRow .tool[data-mode=select],.phRow .tool[data-mode=grab]{flex:1}
+ .phGrid{display:none;grid-template-columns:1fr 1fr;gap:4px}.phGrid.on{display:grid}
+ .phGrid .tool{min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:5px 7px}
+ .phHead{display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#8a8478;margin:0 0 6px}
+ .phCk{font-size:10.5px;color:#8a8478;margin-top:5px;text-transform:none;letter-spacing:0}
+ #ctxPanel{flex:1;overflow:auto;padding:8px;min-height:120px}
+ #ctxHead{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#8a8478;margin:0 0 6px}
+ .ctxItem{display:none}.ctxItem.on{display:block}
+ .ctxHint{border:1px solid #e4dfd4;border-radius:9px;background:#fff;padding:8px;font-size:12px;color:#555}
+ #ctxPanel #rbPanel,#ctxPanel #stdPanel{position:static!important;width:auto!important;max-height:none!important;box-shadow:none!important;left:auto!important;right:auto!important;top:auto!important;z-index:auto!important}
+ #ctxPanel #rbPanel .x{display:none}
+ #rInsp{flex:none;max-height:58%;overflow:auto;border-bottom:1px solid #ddd8cd;background:#fff}
+ #rInsp #inspector{position:static!important;width:auto!important;display:block;bottom:auto;top:auto;right:auto;box-shadow:none;border:none;background:#fff}
+ #rTabs{display:flex;border-bottom:1px solid #ddd8cd;background:#efece4;flex:none}
+ .rTab{flex:1;border:none;border-radius:0;background:none;font-size:12px;padding:7px 0;color:#666;border-bottom:2px solid transparent}
+ .rTab.on{background:#f7f5f0;color:#222;font-weight:600;border-bottom-color:#2c2c2c}
+ #rTabBody{flex:1;overflow:auto;padding:8px}
+ .rTabPane{display:none}.rTabPane.on{display:block}
+
  #ctx button{display:block;width:100%;text-align:left;border:0;border-radius:0;padding:7px 14px}
  .swatch{width:11px;height:11px;border-radius:3px;display:inline-block}
  table{width:100%;border-collapse:collapse;font-size:12px}
  td{padding:2px 3px;border-bottom:1px solid #f0ece2}
  td.n{text-align:right;font-variant-numeric:tabular-nums}
  .tool{flex:1;min-width:70px;text-align:center}
+ #phaseTools .phRow .tool{flex:none;min-width:0}
+ #phaseTools .phRow .tool[data-mode=select]{flex:1;white-space:nowrap}
+ #phaseTools .phGrid .tool{min-width:0}
  small{color:#8a8478;font-size:11px;line-height:1.35;display:block;margin-top:4px}
  @media print{header,.side,#modeHint,#hud,#ctx,#gpLegend,#gpCursor,#gpWheel{display:none!important}.wrap,.stage-wrap,body{height:auto}
    svg#stage{filter:grayscale(1)}@page{size:A4 landscape;margin:8mm}}
@@ -242,10 +294,19 @@
 <body>
 <header>
   <h1>⚡ Varler Planner <span id="verTag" style="font-size:11px;font-weight:400;opacity:.55"></span></h1>
- <button id="bSave">💾 Save</button>
- <label style="color:#fff;font-size:12px">📂 Load<input id="bLoad" type="file" accept="application/json" style="display:none"></label>
- <button id="bPNG">🖼 PNG A4</button><button id="bPNGg">🖼 PNG grey</button><button id="bPrint">🖨 Print</button><button id="bExport" title="A tiszta axonometria lapja (cím, jelmagyarázat) az aktív szintről: SVG, PNG vagy nyomtatás. A nagyítás a képernyőé, a rajz mindig középen.">📤 Exportálás ▾</button>
- <span class="sp"></span><button id="bNew">🗑 New</button><button id="bToolsLoc">⧉ Tools: fent</button><button id="autoLayout" class="on" title="Eszközhöz igazítja a paneleket">🎛 Auto-panel</button><button id="lockBtn" title="Építmény zárolása — csak nézegetés, véletlen kijelölés nélkül">🔒 Zár</button><button id="mobileBtn" title="Érintőképernyős mód">📱 Mobil</button><button id="gpBtn" title="Kontroller mód (Xbox-kompatibilis USB kontroller)">🎮 Kontroller</button><button id="bPanels">⤢ Full view</button><button id="bReset">Reset view</button>
+ <!-- T7 (docs/ui-tidy): five header items. The menus hold the existing buttons (same ids, same bindings). -->
+ <div class="hm" id="hmProj"><button class="hmB" title="Mentés, megnyitás, új terv, tervlista, épület-sablon, referencia">📁 Projekt ▾</button><div class="hmD wide" id="projBody"></div></div>
+ <button id="bUndo" title="Visszavonás (Ctrl+Z)">↩</button><button id="bRedo" title="Újra (Ctrl+Y)">↪</button>
+ <div class="hm" id="hmOut"><button class="hmB" title="Kép, nyomtatás, axonometria lap, anyagkimutatás">📤 Kimenet ▾</button><div class="hmD">
+  <button id="bPNG">🖼 PNG kép (A4)</button><button id="bPNGg">🖼 PNG szürke</button><button id="bPrint">🖨 Nyomtatás / PDF</button>
+  <button id="bExport" title="A tiszta axonometria lapja (cím, jelmagyarázat) az aktív szintről: SVG, PNG vagy nyomtatás. A nagyítás a képernyőé, a rajz mindig középen.">🔷 Axonometria lap…</button>
+  <button data-a="doc.totals">📋 Anyagkimutatás</button></div></div>
+ <button id="bCmdK" title="Parancskereső — minden funkció név szerint (Ctrl+K)">⌘K</button>
+ <span class="sp"></span>
+ <div class="hm" id="hmIn"><button class="hmB" title="Érintőképernyő, kontroller, zárolás">🕹 Bevitel ▾</button><div class="hmD right">
+  <button id="mobileBtn" title="Érintőképernyős mód">📱 Mobil</button><button id="gpBtn" title="Kontroller mód (Xbox-kompatibilis USB kontroller)">🎮 Kontroller</button>
+  <button id="lockBtn" title="Építmény zárolása — csak nézegetés, véletlen kijelölés nélkül">🔒 Zár</button></div></div>
+ <div id="hdrLegacy" hidden><button id="bSave">💾 Mentés (régi formátum)</button><input id="bLoad" type="file" accept="application/json"><button id="bNew">🗑 Új</button></div>
 </header>
 <div id="expMenu" style="display:none;position:fixed;z-index:60;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 6px 18px #0002;padding:8px 10px;font-size:12.5px;color:#333">
  <div class="row">Nézet <select id="expView"></select></div>
@@ -257,7 +318,6 @@
  <div class="row" id="expFit" style="display:none;font-size:11.5px;max-width:300px"></div>
  <div class="row">Cím <input id="expTitle" type="text" placeholder="(csak a szint neve)" style="width:150px"></div>
  <div class="row"><button id="expSvg">SVG</button> <button id="expPng">PNG</button> <button id="expPrint">🖨 Nyomtatás</button></div></div>
-<div id="toolbarRow" class="tbrow"></div>
 <div class="wrap">
  <div class="side">
   <div class="grp"><h3>Projektek</h3>
@@ -268,72 +328,53 @@
    </div>
    <div class="row" style="gap:4px">
      <label style="font-size:12px;cursor:pointer">📥 Fájl import<input id="pjImport" type="file" accept=".json,application/json" style="display:none"></label>
-     <button id="pjExport" title="Aktuális terv letöltése fájlba">⬇ Export</button>
+     <button id="pjExport" title="Aktuális terv letöltése fájlba (.vplan.json)">📦 Letöltés fájlba</button>
    </div>
    <div id="projList" style="max-height:200px;overflow:auto;border:1px solid #e4dfd4;border-radius:6px;background:#fff;margin-top:4px"></div>
-   <small>A tervek a böngésződben tárolódnak. „⬇ Export” ad egy .vplan.json fájlt, amit később „📥 Fájl import”-tal tölthetsz vissza.</small>
+   <small>A tervek a böngésződben tárolódnak. „📦 Letöltés fájlba” ad egy .vplan.json fájlt, amit később „📥 Fájl import”-tal tölthetsz vissza.</small>
   </div>
 
-  <div class="grp" id="toolsGrp"><h3>Tools</h3>
-   <div class="row">
-    <button class="tool on" data-mode="select">▖ Select</button>
-    <button class="tool" data-mode="grab">✥ Move</button>
-    <button class="tool" data-mode="format" title="Formátummásoló: jelölj ki egy elemet, kattints ide, majd egy azonos típusú elemre">🖌 Formátum</button>
-    <button class="tool" data-mode="path">➰ Path</button>
-    <button class="tool" data-mode="device">◈ Device</button></div>
-   <div class="row">
-    <button class="tool" data-mode="cable">╱ Cable</button>
-    <button class="tool" data-mode="room" title="Helyiség-toll: pontról pontra, 45°, 100 mm; téglalap húzással">⬚ Helyiség</button>
-    <button class="tool" data-mode="wall">▤ Wall</button>
-    <button class="tool" id="wfWallsBtn" title="Falak létrehozása a helyiség-körvonalak köré (belméretek megmaradnak)">🧱 Falak létrehozása</button>
-    <button class="tool" id="wfFloorsBtn" title="Padló a körvonal-helyiségekbe, típus szerinti színnel">▦ Padló létrehozása</button>
-    <button class="tool" id="rwlBtn" title="Vezethető fal: kattintás = egész fal, húzás = szakasz">🟩 Vezethető fal</button>
-    <button class="tool" id="rbBtn" title="Szabályok: falak, nyílászárók, egyéb területek egy kattintással">📐 Szabályok</button>
-    <button class="tool" id="stdBtn" title="Szabványmagasságok: minden eszköz, pálya és szint magassága">📏 Szabványok</button>
-    <button class="tool" id="opnDoorBtn" title="Ajtó: ←/→ típus, ↑/↓ nyitásirány">🚪 Ajtó</button>
-    <button class="tool" id="opnWinBtn" title="Ablak: ←/→ típus, ↑/↓ nyitásirány">🪟 Ablak</button>
-    <button class="tool" data-mode="build">🪜 Build</button></div>
-   <div class="row">
-    <button class="tool" data-mode="object">🪑 Object</button>
-    <button class="tool" data-mode="floor">▦ Floor</button>
-    <button class="tool" data-mode="roof">🏠 Roof</button>
-    <button class="tool" data-mode="measure">📏 Measure</button>
-    <button class="tool" data-mode="note">📌 Note</button></div>
-   <div class="row">
-    <button id="bUndo">↩ Undo</button>
-    <button id="bRedo">↪ Redo</button></div>
-   <div class="row" id="wallOpts" style="display:none">Fal <input type="number" id="wallThick" value="100" step="10" style="width:54px"> mm
-     <label><input type="checkbox" id="wallErase"> radír/erase</label></div>
-   <small id="modeTip"></small>
+  <div id="phaseNav"></div>
+  <div id="phaseTools"><div id="phAlways" class="phRow"></div><div id="phBody"></div>
+   <details id="legacyTools" class="legacy"><summary title="A kiváltott eszközök. A billentyűk és a ⌘K parancskereső továbbra is eléri őket, a régi tervek is működnek.">Régi eszközök</summary>
+    <div class="row"><button class="tool" data-mode="cable">╱ Kábel</button> <button class="tool" data-mode="device">◈ Készülék</button> <button class="tool" data-mode="build">🧰 Építés</button> <button class="tool" data-mode="floor">⬜ Padló (kézi)</button> <button class="tool" data-mode="roof">🛖 Tető</button></div>
+    <div class="row"><button id="bCreateRoom">➕ Helyiség méretre</button> <button id="bHouse">🏠 Ház</button><button id="bGarage">🚗 Garázs</button></div>
+    <div class="row"><button id="bRecalc">↻ Újraszámol</button><button id="bClearRoute">🧹 Útvonalak törlése</button></div></details>
   </div>
+  <div id="ctxPanel"><div id="ctxHead"></div><div id="ctxBody"></div></div>
 
-  <div class="grp"><h3>Layers</h3>
+  <div class="grp"><h3>Fal rajzolása</h3>
+   <div class="row" id="wallOpts">Fal <input type="number" id="wallThick" value="100" step="10" style="width:54px"> mm
+     <label><input type="checkbox" id="wallErase"> radír</label></div>
+     </div>
+
+  <div class="grp" data-pid="layers"><h3>Rétegek</h3>
    <div class="row" style="gap:10px;font-size:11.5px">
      <label title="Vidd a kurzort (vagy kattints) bármelyik készülékre: az összes rétegtársa felvillan, és a réteg sora is kigyullad a réteg színével."><input type="checkbox" id="lyrSpot"> Réteg-kiemelés</label>
      <label title="Kijelölés vagy Mozgatás közben egy készülékre mutatva kis ablak mutatja: név, típus, áramkör, réteg, helyiség, magasság, egyéb adatok."><input type="checkbox" id="devHover"> Lebegő infó (eszközök)</label>
      <label title="Minden réteg készülékei a réteg saját színét kapják. Rétegenként is kapcsolható a sor színkorongjával."><input type="checkbox" id="lyrPaintAll"> Mind színezve</label></div>
    <div id="layerList"></div>
-   <div class="row"><button id="addLayer">+ Layer</button></div>
+   <div class="row"><button id="addLayer">＋ Réteg</button></div>
    <small>Az aktív réteg kapja az új elemeket. 👁 = látható / rejtett · 🔒 zárolás · − / + = átlátszóság 10 %-onként. Alréteg: tartsd nyomva és húzd másik rétegre (csere; Ctrl = áthelyezés) · jobb klikk = menü.</small>
   </div>
 
-  <div class="grp"><h3>Active level (new items)</h3>
+  <div class="grp" data-pid="activelevelnewitem"><h3>Aktív szint (új elemek)</h3>
    <div class="row">
     <label><input type="radio" name="al" value="basement">Pince</label>
     <label><input type="radio" name="al" value="ground" checked>Földszint</label>
     <label><input type="radio" name="al" value="upper">Emelet</label></div>
   </div>
 
-  <div class="grp"><h3>Path (pálya – elsődleges)</h3>
+  <div class="grp" data-pid="pathplyaelsdleges"><h3>Pálya</h3>
    <div class="row"><select id="pathType">
      <option value="gege">Gégecső</option><option value="csat">Kábelcsatorna</option>
      <option value="mbcu">MBCu falban</option><option value="mu">MŰ cső</option><option value="custom">Egyéb</option></select></div>
    <div class="row">Magasság-kijelző <select id="hDisp"><option value="hover">lebegő a vonalon</option><option value="side">oldalsáv</option><option value="off">ki</option></select></div>
    <div id="hBox" style="display:none;margin:4px 0;padding:8px;border-radius:8px;background:#fffef8;border:1px solid #e4dfd4"></div>
-   <small>Draw the empty pathway first (same snapping/heights as cable). ↑/↓ = rajz magasság · Ctrl = fal másik oldala · Enter = kész.</small>
+   <small>Előbb az üres pálya (ugyanazok az illesztések és magasságok, mint a kábelnél). ↑/↓ = rajz magasság · Ctrl = fal másik oldala · Enter = kész.</small>
   </div>
 
-  <div class="grp"><h3>Cable (másodlagos)</h3>
+  <div class="grp" data-pid="cablemsodlagos"><h3>Kábel (régi eszköz)</h3>
    <div class="row"><select id="cableType">
      <option value="lighting">Világítás</option><option value="sockets">Dugalj</option>
      <option value="power3">3 fázis</option><option value="data">Adat</option></select></div>
@@ -343,24 +384,19 @@
      <option value="s1300">1300 Panel</option><option value="s1400">1400 IP44</option>
      <option value="s1900">1900 Lámpa</option><option value="gerinc">Gerinc (menny.−300)</option>
      <option value="ceiling">Mennyezet (fal teteje)</option></select></div>
-   <div class="row"><button id="bRiserUp">Riser ↑</button><button id="bRiserDn">Riser ↓</button>
+   <div class="row"><button id="bRiserUp">Felszálló ↑</button><button id="bRiserDn">Felszálló ↓</button>
      <label><input type="checkbox" id="wallLock" checked> falhoz köt</label></div>
    <div class="row" style="font-size:11px"><label title="Padló és Mennyezet magasságban eddig sem kötött falhoz — ezzel a köztes magasságok is szabaddá válnak (pl. szabadon átvezetett gerinc, tálca, álmennyezet feletti szakasz).">
      <input type="checkbox" id="midFree"> szabad köztes magasságban (nincs falhoz kötés)</label>
      <button id="fineBtn" title="Finomhangolt mozgatás: 1 mm-es lépés, 5× lassabb. Tartsd az Alt vagy F billentyűt, vagy kapcsold be itt.">🔍 finom</button></div>
-   <small><b>Ctrl</b> = wall's other side (sticky) · <b>↑/↓</b> = height line · <b>←/→</b> = rotate · <b>Space</b> = kötődoboz · Enter = finish · Esc = cancel.</small>
+   <small><b>Ctrl</b> = a fal másik oldala (marad) · <b>↑/↓</b> = magasságvonal · <b>←/→</b> = forgatás · <b>Space</b> = kötődoboz · Enter = kész · Esc = elvet.</small>
   </div>
 
-  <div class="grp"><h3>Device</h3>
+  <div class="grp" data-pid="device"><h3>Készülék (régi eszköz)</h3>
    <div class="row"><select id="devType">
      <option value="socket">Aljzat</option><option value="switch">Kapcsoló</option>
      <option value="light">Lámpa</option><option value="junction">Kötődoboz</option></select></div>
    <small>Falra téve a Ctrl a fal két oldala közt vált (mint a pályánál). ↑/↓ magasság, ←/→ típus. Elosztószekrény: jobb klikk a falon → „Elosztószekrény ide".</small>
-  </div>
-
-  <div class="grp"><h3>Routing</h3>
-   <div class="row"><button id="bRecalc">↻ Újraszámol</button><button id="bClearRoute">🧹 Útvonalak törlése</button></div>
-   <small>Recompute re-runs every device (Szükséges erek) to its board. Clear removes routed wires (keeps manual section circuits).</small>
   </div>
 
   <div class="grp"><h3>Áramkörök</h3>
@@ -374,34 +410,32 @@
    <div class="row"><button id="bCableList">📄 Kábellista</button><button id="bWireList">📄 Vezetéklista</button></div>
    <div class="row"><button id="bSched" style="width:100%">⚡ Elosztó tábla (méretezés)</button></div>
    <div class="row"><button id="bSwitchRep" style="width:100%">🎚 Kapcsoló riport (kapcsok/erek)</button></div>
-   <small>Számozás → D1, K1, L1, EL1… + circuit sorszám. Lists come from the routed circuits (Copy / CSV).</small>
+   <small>Számozás → D1, K1, L1, EL1… + az áramkör sorszáma. A listák a bekötött áramkörökből készülnek (másolás / CSV).</small>
   </div>
 
-  <div class="grp"><h3>Objects</h3>
+  <div class="grp" data-pid="objects"><h3>Tárgyak</h3>
    <div class="row"><input id="objSearch" placeholder="keresés…" style="flex:1"></div>
    <div class="row"><label><input type="checkbox" id="objWallSnap" checked> Falhoz illesztés (magasság: ↑/↓, oldal: Ctrl)</label></div>
    <div id="objList" style="max-height:190px;overflow:auto;border:1px solid #e4dfd4;border-radius:6px;background:#fff"></div>
    <div class="row" style="font-size:11px;color:#8a8478">Kiválasztás → kattints a rajzra. Kijelölve: <b>WASD</b> mozgat · <b>Q/E</b> forgat · <b>↑/↓</b> emel · jobb klikk → méret.</div>
   </div>
 
-  <div class="grp"><h3>Build (snaps to wall)</h3>
+  <div class="grp" data-pid="buildsnapstowall"><h3>Nyílászáró, lépcső (falhoz illeszt)</h3>
    <div class="row"><select id="buildType">
-     <option value="door">Ajtó / door</option><option value="window">Ablak / window</option>
-     <option value="stairs">Lépcső / stairs</option></select></div>
-   <small>Click a wall to place. Right-click an object → Rotate / Delete.</small>
+     <option value="door">Ajtó</option><option value="window">Ablak</option>
+     <option value="stairs">Lépcső</option></select></div>
+   <small>Kattints egy falra a lerakáshoz. Jobb klikk egy elemen → Forgatás / Törlés.</small>
   </div>
 
-  <div class="grp"><h3>Building / layout</h3>
-   <div class="row"><button id="bCreateRoom" style="width:100%">➕ Helyiség létrehozása</button></div>
-   <div class="row"><button id="bHouse">🏠 Ház</button><button id="bGarage">🚗 Garázs</button></div>
-   <div class="row"><label style="font-size:12px">📂 Load<input id="loadLayout" type="file" accept="application/json" style="display:none"></label>
-     <button id="saveLayout">⬇ Save layout</button></div>
+  <div class="grp" data-pid="buildinglayout"><h3>Épület-sablon és referencia</h3>
+      <div class="row"><label style="font-size:12px">📂 Épület betöltése<input id="loadLayout" type="file" accept="application/json" style="display:none"></label>
+     <button id="saveLayout">⬇ Épület mentése</button></div>
    <div class="row"><label style="font-size:12px">➕ Referencia terv<input id="loadRef" type="file" accept="application/json" style="display:none"></label></div>
    <div id="refList"></div>
-   <small>Roof lives on <b>Emelet</b> — hide that level for the roof-off view.</small>
+   <small>A tető az <b>Emelet</b> szinten van — a tető nélküli nézethez rejtsd el azt a szintet.</small>
   </div>
 
-  <div class="grp"><h3>Show levels &amp; height (mm)</h3>
+  <div class="grp" data-pid="showlevelsheightmm"><h3>Szintek és belmagasság (mm)</h3>
    <div class="row"><label><input type="checkbox" id="lvUpper" checked>Emelet</label>
      <input type="number" id="hUpper" value="2700" step="50" style="width:66px"></div>
    <div class="row"><label><input type="checkbox" id="lvGround" checked>Földszint</label>
@@ -417,7 +451,7 @@
    <div class="row" style="font-size:10.5px;color:#888" id="dcInfo"></div>
   </div>
 
-  <div class="grp"><h3>Height guide lines</h3>
+  <div class="grp" data-pid="heightguidelines"><h3>Magasság-vezetővonalak</h3>
    <div class="row" style="font-size:11px"><label><input type="checkbox" id="freeHeightChk"> Szabad magasság (±100 mm, ↑/↓)</label></div>
    <div class="row" id="freeMmBox" style="display:none;font-size:11px;gap:6px;align-items:center">Aktuális: <b id="freeMmVal">1100 mm</b> <button id="freeMmUp">+100</button><button id="freeMmDn">−100</button></div>
    <div style="font-size:10.5px;color:#888;margin:2px 0">👁 = vonal látszik · ⭱ = ↑/↓ ide ugrik · dupla-katt a névre = átnevez</div>
@@ -425,42 +459,37 @@
    <div class="row" style="gap:4px"><input type="number" id="custG" placeholder="mm" style="width:64px"><input type="text" id="custGName" placeholder="név" style="width:80px"><button id="addG">+ magasság</button></div>
   </div>
 
-  <div class="grp"><h3>Floor labels</h3>
-   <div class="row"><label><input type="checkbox" id="lblShow" checked> Show text on floors</label></div>
-   <div class="row">Size <input type="range" id="lblSize" min="0.4" max="2.2" step="0.1" value="1"></div>
-   <div class="row">Rotate <input type="range" id="lblRot" min="0" max="360" step="5" value="0"> <span id="lblRotV">0°</span></div>
+  <div class="grp" data-pid="floorlabels"><h3>Padlófeliratok</h3>
+   <div class="row"><label><input type="checkbox" id="lblShow" checked> Feliratok a padlón</label></div>
+   <div class="row">Méret <input type="range" id="lblSize" min="0.4" max="2.2" step="0.1" value="1"></div>
+   <div class="row">Forgatás <input type="range" id="lblRot" min="0" max="360" step="5" value="0"> <span id="lblRotV">0°</span></div>
   </div>
 
-  <div class="grp"><h3>View</h3>
-   <div class="row"><label style="flex:1">Rotate <span id="rotVal">90°</span></label></div>
-   <div class="row"><button id="rotL" title="−15°">◀</button>
-     <input id="rot" type="range" min="0" max="360" value="90"><button id="rotR" title="+15°">▶</button></div>
+  <div class="grp" data-pid="view"><h3>Nézet</h3>
+   <div class="row"><label style="flex:1">Forgatás <span id="rotVal">90°</span></label></div>
+   <div class="row"><input id="rot" type="range" min="0" max="360" value="90" style="flex:1"></div>
    <div class="row" style="gap:4px">
      <button class="preset" data-deg="0">0°</button><button class="preset" data-deg="90">90°</button>
      <button class="preset" data-deg="180">180°</button><button class="preset" data-deg="270">270°</button></div>
-   <div class="row" title="Névvel ellátott vetület: a kamera a hozzá tartozó dőlésre és átlós (vagy szemből néző) irányra ugrik.">Vetület <select id="camPreset">
-     <option value="">Szabad</option><option value="iso">Izometrikus</option><option value="dim">Dimetrikus (alacsony)</option>
-     <option value="axo">Axonometria</option><option value="mil">Katonai (alaprajz-hű)</option><option value="elev">Homlokzati</option></select>
-    <label style="margin-left:8px" title="A forgatás negyedenként (90°) ugrik, a dőlés rögzített. Jobb gombos húzás vagy ←/→ egy negyedet fordít."><input type="checkbox" id="camLock"> 90°-onként</label></div>
+   <div class="row"><label title="A forgatás negyedenként (90°) ugrik, a dőlés rögzített. Jobb gombos húzás vagy ←/→ egy negyedet fordít."><input type="checkbox" id="camLock"> Forgatás 90°-onként</label></div>
    <div class="row" title="A rajz alap-léptéke. Nagyobb lépték = ugyanaz a képernyőterület kevesebb millimétert mutat, azaz közelebb lehet menni. A tollak és a készülékjelek képernyőmérete nem változik.">Nézeti lépték <select id="viewScale">
      <option value="1">1× — teljes terv</option><option value="2">2×</option><option value="5">5×</option><option value="10">10× — részlet</option></select></div>
-   <div class="row">Render <select id="style">
-     <option value="normal">Normal</option><option value="whiteout">White-out (line)</option><option value="blueprint">Blueprint (hivatalos)</option><option value="preview">Ügyfél-előnézet (sötét)</option><option value="tiszta">Tiszta axo (3D)</option><option value="alaprajz">Alaprajz (2D)</option></select></div>
+   <div class="row">Stílus <select id="style">
+     <option value="normal">Normál</option><option value="whiteout">Fehér vonalas</option><option value="blueprint">Hivatalos (blueprint)</option><option value="preview">Ügyfél-előnézet (sötét)</option><option value="tiszta">Tiszta axo (3D)</option><option value="alaprajz">Alaprajz (2D)</option></select></div>
    <div class="row" id="apCutRow" style="display:none;flex-wrap:wrap;gap:4px" title="Alaprajz: ennél a magasságnál vágjuk el a szintet. Ami alatta van, teljes vonallal; ami fölötte, szaggatva vagy halványan (a végpontok is).">Vágási magasság <input type="range" id="apCut" min="100" max="2700" step="50" value="1200" style="width:110px"> <input type="number" id="apCutN" min="100" max="2700" step="50" value="1200" style="width:58px"> mm <button class="apPre" data-v="300">300</button><button class="apPre" data-v="1100">1100</button><button class="apPre" data-v="1200">1200</button><button class="apPre" data-v="1500">1500</button> <label title="Méretláncok a szint két külső oldalán (falak és nyílások széle, alatta a teljes méret)."><input type="checkbox" id="apDims" checked> méretláncok</label> <label title="A végpontok rövid kódja (NTL, DED, …) a jel mellett; ütközés nélkül, szükség esetén vezetővonallal."><input type="checkbox" id="apCodes" checked> végpont-kódok</label> <label title="Alapból a terv tiszta: épület, tárgyak, helyiségnevek, végpontok. Bekapcsolva az útvonalak, a jegyzetek és a BRIDGE rétegek is rákerülnek."><input type="checkbox" id="apAll"> útvonalak, rétegek is</label></div>
-   <div class="row">Walls <select id="wallMode">
-     <option value="translucent">translucent</option><option value="solid">solid</option>
-     <option value="hidden">hidden</option><option value="cutaway">kivágás (Sims)</option></select>
+   <div class="row">Falak <select id="wallMode">
+     <option value="translucent">áttetsző</option><option value="solid">tömör</option>
+     <option value="hidden">rejtett</option><option value="cutaway">kivágás (Sims)</option></select>
     <label id="wallMergeL" style="margin-left:8px" title="A falak egy testként jelennek meg: nincs sarokvarrat. A hivatalos nézet mindig így rajzol; a falak egyenként kijelölhetők maradnak. Áttetsző és tömör falaknál is működik."><input type="checkbox" id="wallMerge"> Falak egyesítve</label></div>
    <div class="row" title="Nyomtatáskor és szürke PNG-nél a rendszerszínek egymástól jól elváló szürkeárnyalatokra és vonalmintákra váltanak; a képernyő nem változik."><label><input type="checkbox" id="printPal" checked> Szürke-biztos nyomtatási paletta</label></div>
    <div class="row" id="cutRow" style="display:none" title="Kivágás: a kamera felőli falak lesüllyednek, a távoli külső falak teljes magasak maradnak. Forgatáskor a kivágás követi a kamerát.">Kivágás belső <input type="number" id="cutH" min="300" max="2700" step="100" value="1500" style="width:58px"> külső <input type="number" id="cutNearH" min="0" max="2700" step="100" value="1000" style="width:58px"> mm</div>
    <div class="row" title="Széles: az ajtó falsíktól falsíkig rés a nyitásívvel, az ablak a falsíkoktól kicsit beljebb álló üvegsáv. Vonal: a régi, falközépi vonal.">Nyílászárók <select id="openingStyle">
      <option value="wide">széles</option><option value="line">vonal</option></select></div>
-   <div class="row"><label><input type="checkbox" id="explode" checked>Exploded</label>
-     <label><input type="checkbox" id="grid">Grid</label>
+   <div class="row"><label><input type="checkbox" id="explode" checked>Szintek szétnyitva</label>
+     <label><input type="checkbox" id="grid">Rács</label>
      <input id="gridSize" type="number" value="250" step="50" style="width:58px"></div>
    <div class="row"><label><input type="checkbox" id="isoGrid"> Izometrikus rács a földszinten</label></div>
-   <div class="row"><label><input type="checkbox" id="gizSnap" checked> Mozgatás rácshoz illesztés (Move)</label></div>
-   <div class="row"><label><input type="checkbox" id="multiSel"> Kijelölő keret a Select eszközben (kihúzás)</label></div>
+   <div hidden id="behHidden"><input type="checkbox" id="gizSnap" checked><input type="checkbox" id="multiSel"></div>
    <div class="row" style="font-size:11px">Eszköz méret <input id="devScale" type="range" min="0.4" max="1.2" step="0.04" value="0.72" style="width:90px"></div>
    <div class="row" style="font-size:11px">Pálya vastagság <input id="pathScale" type="range" min="0.5" max="1.6" step="0.05" value="1" style="width:90px"></div>
    <div class="row" style="font-size:11px">Pálya szín <input id="pathColor" type="color" value="#6f757d" style="width:40px;height:22px;padding:0;vertical-align:middle"> <button id="pathColorReset" style="font-size:10.5px">alap</button></div>
@@ -495,12 +524,22 @@
        <button id="mbTools" class="wide" title="Eszközök">🧰 Eszköz</button>
      </div>
    </div>
-  <button id="view3d" style="position:absolute;right:12px;top:12px;font-weight:700;min-width:40px;box-shadow:0 2px 6px #0003">2D</button>
-  <button id="styleToggle" title="Normál ↔ Hivatalos (blueprint) nézet" style="position:absolute;right:60px;top:12px;font-weight:700;min-width:40px;box-shadow:0 2px 6px #0003">📐</button>
+  <!-- T5 (docs/ui-tidy): the quick-view widget; the rest of Nézet is the ⚙ Megjelenés panel below it -->
+  <div id="qv">
+   <button id="rotL" title="Forgatás −15°">⟲</button><span id="qvRot" title="Forgatás">90°</span><button id="rotR" title="Forgatás +15°">⟳</button>
+   <select id="camPreset" title="Névvel ellátott vetület: a kamera a hozzá tartozó dőlésre és átlós (vagy szemből néző) irányra ugrik.">
+     <option value="">Szabad vetület</option><option value="iso">Izometrikus</option><option value="dim">Dimetrikus (alacsony)</option>
+     <option value="axo">Axonometria</option><option value="mil">Katonai (alaprajz-hű)</option><option value="elev">Homlokzati</option></select>
+   <button id="styleToggle" title="Normál ↔ Hivatalos (blueprint) nézet">📘</button>
+   <button id="view3d" title="2D ↔ 3D">2D</button>
+   <button id="bReset" title="Nézet visszaállítása">🎯</button>
+   <button id="bPanels" title="Teljes nézet: az oldalsávok elrejtése">⤢</button>
+   <button id="qvMgj" title="Megjelenés: stílus, falak, rács, léptékek, feliratok">🎛</button>
+  </div>
+  <div id="mgj"><div class="mgjHead">Megjelenés <button id="mgjX" title="Bezár" style="padding:1px 7px">✕</button></div><div id="mgjBody"></div></div>
   <button id="hideL" class="edge" style="left:0">◀</button>
   <button id="hideR" class="edge r" style="right:0">▶</button>
   <div id="modeHint"></div><div id="hud"></div><div id="ctx"></div>
-  <div id="stageRail"></div>
   <div id="inspector"></div>
   <div id="statusBar"></div>
   <div id="gpLegend"></div>
@@ -511,13 +550,14 @@
  <div class="resizer" data-r="right"></div>
 
  <div class="side r">
-  <div class="grp"><h3>Cable totals (m)</h3><table id="tblCable"></table></div>
-  <div class="grp"><h3>Devices (db)</h3><table id="tblDev"></table></div>
-  <div class="grp"><h3>Árajánlat / BOM</h3>
+  <div id="rInsp"></div><div id="rTabs"></div><div id="rTabBody"></div>
+  <div class="grp" data-pid="cabletotalsm"><h3>Kábelösszesítő (m)</h3><table id="tblCable"></table></div>
+  <div class="grp" data-pid="devicesdb"><h3>Készülékek (db)</h3><table id="tblDev"></table></div>
+  <div class="grp" data-pid="rajnlatbom"><h3>Anyaglista / árajánlat</h3>
    <div class="row">Hulladék % <input type="number" id="waste" value="10" step="1" style="width:54px"></div>
    <table id="tblBOM"></table>
-   <div class="row" style="margin-top:6px"><button id="bBOM">📋 Copy</button><button id="bBOMcsv">⬇ CSV</button><button id="bBOMj">⬇ JSON</button></div>
-   <small>Fill Ft/egység to price it. Cable length includes device drops (dugalj +0.3 m, kapcsoló +1.1 m, lámpa +0.5 m) and waste %.</small></div>
+   <div class="row" style="margin-top:6px"><button id="bBOM">📋 Másolás</button><button id="bBOMcsv">⬇ CSV</button><button id="bBOMj">⬇ JSON</button></div>
+   <small>Az árhoz töltsd ki a Ft/egység oszlopot. A kábelhossz tartalmazza a leállásokat (dugalj +0,3 m, kapcsoló +1,1 m, lámpa +0,5 m) és a hulladék %-ot.</small></div>
  </div>
 </div>
 

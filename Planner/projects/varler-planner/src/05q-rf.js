@@ -131,7 +131,7 @@ registerActions([
  {id:'rf.view',alias:'radio lefedettseg rf coverage wifi thread view',label:'Rádió-lefedettség mutatása',icon:'📶',group:'Rádió',
   hint:'Halvány zónák az RBX-ektől és hozzáférési pontoktól; a Rádió szakaszban magától bekapcsol.',
   run:()=>{state.rfShow=!state.rfShow;draw();lyrHud('Rádió-lefedettség '+(state.rfShow?'be':'ki'));}},
- {id:'rf.settings',alias:'radios beallitasok rf settings range',label:'Rádiós beállítások…',icon:'⚙',group:'Rádió',run:()=>rfSettingsDialog()}
+ {id:'rf.settings',alias:'radios beallitasok rf settings range',label:'Rádiós beállítások…',icon:'📡',group:'Rádió',run:()=>rfSettingsDialog()}
 ]);
 // the RF stage gets the radio actions too
 (STK_GROUPS['+sys:RF']=STK_GROUPS['+sys:RF']||[]).push('Rádió');

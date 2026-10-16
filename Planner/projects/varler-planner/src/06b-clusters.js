@@ -113,7 +113,7 @@ function clsSpots(level){return clsGroups(level).concat(clsCornerSpots(level));}
 let CL_T={on:false,cls:'K2',zone:'mid',g:null};
 function clsGhost(e){const h=CLS_ZONES[CL_T.zone].h,pk=hwPick(e,h);if(!pk)return null;
   return Object.assign(clsMake(pk.level,pk.r,pk.side,pk.u,{cls:CL_T.cls,zone:CL_T.zone,layer:'ghost'}),{pk});}
-function clsToolStart(){if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();if(typeof ptToolOff==='function')ptToolOff();
+function clsToolStart(){toolsOff();
   if(state.mode!=='select')setMode('select');const L=clsLayerId();if(L&&lyrLayer(L)){state.activeLayer=L;renderLayers();}
   CL_T.on=true;CL_T.g=null;clsHint();}
 function clsHint(){const mh=$('modeHint');if(!mh)return;mh.textContent=CL_T.on?('Klaszterdoboz: '+CLS_K[CL_T.cls].n+' · '+CLS_ZONES[CL_T.zone].n+' · ←/→: osztály · ↑/↓: zóna · Esc kilép'):(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}
