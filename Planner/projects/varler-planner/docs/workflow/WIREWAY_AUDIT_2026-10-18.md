@@ -529,3 +529,28 @@ User, 2026-10-19: "proceed, make an effort for a larger batch" — the ⏸ befor
 So the tree reproduces today's plan exactly when it is today's plan, and the congestion term spreads the home runs
 a little (+9,5 m of trunk for one pipe less at the garage crossing and two less at the kitchen). P33 (CLI, congest 0,
 no tree) is identical to T1, leg by leg.
+
+---
+
+## Part 8 — T3 built (2026-10-19): leader sockets, the chain, masters
+
+`src/08oe-wf-leaders.js`, spec `tests/spec-103-leaders.js` (18). Full suite: 98 suites, 3 400 checks, golden 70 / 70.
+
+- **The classic socket chain (Q5 = A)** is now the suggestion for every socket circuit, per room: the leader is the
+  clicked socket (📍 Vezető dugalj, `d.lead`, one per circuit and room) or the drop nearest its feed; from it, each
+  next socket hangs on the nearest unvisited one along the routable walls — rgChain's rule (05v), on the engine's wall
+  graph. The leader hangs on a door's L4 or the board, **never on a szobadoboz** (08n). Dedicated circuits keep their
+  home run. It lives inside `upSuggest` (`UP_SUGGEST`), so a refill and Pályák keep it; rögzített links are untouched.
+- **The engine follows it** (T2). A chain is per member: one box may hold a socket chained to its neighbour and a
+  switch fed from the door (found on Domoszló: K10 / D22 — a false "chain into another circuit" before the fix).
+- **Masters (K1):** ▣ Szobadoboz-javaslat lists every room with no hub and ≥ 4 drops, the spot with the shortest run to
+  its drops plus the home run, on a Vezethető wall. Pre-ticked only where a door box overfills (the F7 funnel); the
+  rest is offered unticked. Placing = a szobadoboz (on the board, a master) + a refill. The dashed squares show while
+  the betáp-fa is shown.
+
+**Domoszló, Pályák with T3 (chains, congest 0,05):** 429,7 m (dist 152,5 · trunk 142,0 · drop 98,6 · ceil 36,6), 104
+boxes, cable 3×1,5 303,2 m · 3×2,5 154,4 m; 24 socket links in chains, 10 leaders on door L4s; not stale after drawing.
+Warnings 4: three door-box overfills (B32 ×2, B33) and **A4 (Háló dugalj) at 4,83 % voltage drop** — the chain
+lengthens its longest branch to 28,5 m on 1,5 mm² / 13 A; the check proposes 2,5 mm² or a split (a real consequence of
+Q5, for the user). Master suggestions: Garázs, Háló, Konyha / étkező, Veranda, Nagyszoba, Közlekedő — Garázs, Konyha
+and Közlekedő pre-ticked (their door boxes overfill). None placed in the fixture.

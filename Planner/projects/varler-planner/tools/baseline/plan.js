@@ -115,20 +115,22 @@ function plan(G, E, PT, cfg, allowed) {
       if (isFinite(r.dist[di])) best = { sp: '__board', face: boardSp().faces[0], len: r.dist[di] }; }
     return best; };
   const treeBad = (d, e, u, why) => { warn.push({ sev: 'err', msg: `${e.ref || e.id} — ${rn(d.room)}: a betápja (${u.id}${u.room ? ' ' + u.room : ''}) ${why}`, room: d.room, at: [Math.round(e.x), Math.round(e.y)], ids: [e.id], tree: true }); };
-  // the tree's answer for one drop: {sp, face, len} | {parent: drop} | null (no usable up)
-  const fromTree = d => { const di = node(d.key), z = zone[d.room];
+  // the tree's answer for one drop: {sp, face, len} | {parent: drop} | null (no usable up). A chain is PER MEMBER (per
+  // circuit): one box may hold a socket chained to its neighbour and a switch fed from the door — d.parentOf[e.id].
+  const fromTree = d => { const di = node(d.key), z = zone[d.room]; let own = null, firstPar = null;
     for (const e of d.members) { const u = upOf(e.id); if (!u) continue;
       const pd = dropOfId[u.id]; if (pd === d) continue;                    // a vertical chain inside this box
       if (pd && e.code === 'LMP') continue;                                // a lamp on a switch / lamp: its leg (L.units), not a feed
-      if (pd) { if (zone[pd.room] !== z) { treeBad(d, e, u, 'másik helyiségzónában van — onnan csak szervizponton át jöhet'); return null; }
-        if (!reach(node(pd.key), di, z)) { treeBad(d, e, u, 'nem érhető el vezethető falon' + banNote(d.room)); return null; }
-        return { parent: pd, e, u }; }
+      if (pd) { if (zone[pd.room] !== z) { treeBad(d, e, u, 'másik helyiségzónában van — onnan csak szervizponton át jöhet'); continue; }
+        if (!reach(node(pd.key), di, z)) { treeBad(d, e, u, 'nem érhető el vezethető falon' + banNote(d.room)); continue; }
+        (d.parentOf = d.parentOf || {})[e.id] = pd; if (!firstPar) firstPar = pd; continue; }
+      if (own) continue;
       const sp = u.id === board.id ? boardSp() : SP.find(s => s.id === u.id); if (!sp) continue;   // a ceiling box, a lamp …: not a wall feed
       const f = sp.faces.find(f => (!u.room || f.room === u.room) && zone[f.room] === z) || sp.faces.find(f => zone[f.room] === z);
-      if (!f) { treeBad(d, e, u, 'nem ebben a helyiségzónában van'); return null; }
-      const r = reach(node(f.key), di, z); if (!r) { treeBad(d, e, u, 'nem érhető el vezethető falon' + banNote(d.room)); return null; }
-      return { sp: sp.id, face: f, len: r.len, tree: true }; }
-    return null; };
+      if (!f) { treeBad(d, e, u, 'nem ebben a helyiségzónában van'); continue; }
+      const r = reach(node(f.key), di, z); if (!r) { treeBad(d, e, u, 'nem érhető el vezethető falon' + banNote(d.room)); continue; }
+      own = { sp: sp.id, face: f, len: r.len, tree: true }; }
+    return own || (firstPar ? { parent: firstPar } : null); };
   drops.forEach(d => { const t = TREE ? fromTree(d) : null;
     if (t && t.parent) { d.parent = t.parent; return; }
     const best = t || nearest(d);
@@ -138,8 +140,10 @@ function plan(G, E, PT, cfg, allowed) {
   // a chain drop takes the service point of the chain's root (its home run comes from there); a loop in the chain or a
   // root with no service point falls back to today's rule
   drops.filter(d => d.parent).forEach(d => { let r = d, n = 0; while (r.parent && n++ < 50) r = r.parent;
-    if (r.parent || !r.sp) { delete d.parent; const b = nearest(d); d.sp = b && b.sp; d.spFace = b && b.face; d.spLen = b && b.len; return; }
+    if (r.parent || !r.sp) { delete d.parent; delete d.parentOf; const b = nearest(d); d.sp = b && b.sp; d.spFace = b && b.face; d.spLen = b && b.len; return; }
     d.sp = r.sp; d.spFace = r.spFace; d.depth = n; d.byTree = true; });
+  // the depth of a mixed drop (its own feed + a chained member) follows its chain parent, so parents route first
+  drops.filter(d => !d.parent && d.parentOf).forEach(d => { let n = 0, r = Object.values(d.parentOf)[0]; while (r && n++ < 50) r = r.parent || (r.parentOf && Object.values(r.parentOf)[0]); d.depth = n; });
 
   // ---- 4. lamp → switch (explicit ctl, wet rooms from the dry face, nearest, two-way pairs) ----
   const L = inferLamps(G, M, cfg, warn, zone);
@@ -201,9 +205,10 @@ function plan(G, E, PT, cfg, allowed) {
       chanTo(spId).cables.push({ c: c.cable, circ: c.ref, kind: 'feed' }); used.add(spId);
       // T2: a chain drop (its up in another drop) is fed from that drop when the same circuit feeds it — parents first
       ds.sort((a, b) => (a.depth || 0) - (b.depth || 0) || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)).forEach(d => {
-        const par = d.parent && fed.has(d.parent.key) ? d.parent : null, from = par ? node(par.key) : node(d.spFace.key);
-        if (d.parent && !par && !chainWarned.has(d.key + c.ref)) { chainWarned.add(d.key + c.ref); const e0 = d.members.find(e => (C.byMember[e.id] || {}).ref === c.ref) || d.members[0];
-          warn.push({ sev: 'warn', msg: `${e0.ref || e0.id} (${c.ref}) — ${rn(d.room)}: a lánca másik körbe lép (${d.parent.members.map(x => x.ref || x.id).join('+')}) — a szervizpontból kap betápot`, room: d.room, at: [Math.round(e0.x), Math.round(e0.y)], ids: [e0.id], tree: true }); }
+        const pm = d.parentOf && d.members.find(e => (C.byMember[e.id] || {}).ref === c.ref && d.parentOf[e.id]), pd = pm && d.parentOf[pm.id];
+        const par = pd && fed.has(pd.key) ? pd : null, from = par ? node(par.key) : node(d.spFace.key);
+        if (pd && !par && !chainWarned.has(d.key + c.ref)) { chainWarned.add(d.key + c.ref);
+          warn.push({ sev: 'warn', msg: `${pm.ref || pm.id} (${c.ref}) — ${rn(d.room)}: a lánca másik körbe lép (${pd.members.map(x => x.ref || x.id).join('+')}) — a szervizpontból kap betápot`, room: d.room, at: [Math.round(pm.x), Math.round(pm.y)], ids: [pm.id], tree: true }); }
         const p = P(from, node(d.key), { ok: inZone(zone[d.room]) });
         if (p) { addLoad(p.nodes, { c: c.cable, circ: c.ref, kind: 'feed', key: c.ref + '@' + spId }); d.feedGeo = (par ? (par.feedGeo || 0) : 0) + geoLen(g, p.nodes); }
         if (!par) (feedAt[c.ref] = feedAt[c.ref] || new Set()).add(node(d.spFace.key)); });

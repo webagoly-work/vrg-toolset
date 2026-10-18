@@ -17,6 +17,7 @@
 // service point); the engine reads `up` only from T2. Invariants (guard rail 2): one upstream per node (one field), no
 // loops — upSet refuses them with a plain Hungarian reason.
 const UP={view:false,tool:false};
+const UP_SUGGEST=[];   // fn(map, run, level): refine the suggestions in place (T3 socket chains)
 
 function upDev(id){const d=id&&byId('devices',id);return d&&d.gen!=='bl'?d:null;}
 function upDoor(id){return id?(data.openings||[]).find(o=>o&&o.id===id&&o.type==='door')||null:null;}
@@ -87,6 +88,8 @@ function upSuggest(level,run){level=level||state.active;run=run||(typeof blRun==
   data.devices.forEach(d=>{if(!d||d.level!==level||d.gen==='bl'||!(d.type==='junction'||upIsHub(d)))return;
     if(upIsHub(d)&&board)map[d.id]={id:board.id,why:(d.type==='junction'?'szobadoboz':d.type.toUpperCase())+' = mester, az Elosztóból'};
     else if(d.jb==='ceiling'){const l=data.devices.find(x=>x&&x.meet===d.id),h=l&&R.L.ctlOf[l.id]&&R.L.ctlOf[l.id][0];if(h&&upDev(h))map[d.id]={id:h,why:'a kapcsoló dobozából'};}});
+  // later work packages refine the suggestion (T3: the socket chain from the leader socket) — fn(map, run, level)
+  UP_SUGGEST.forEach(fn=>{try{fn(map,run,level);}catch(err){if(typeof console!=='undefined')console.error(err);}});
   return {map,run};}
 // apply the suggestions to every node that has no rögzített up; an old suggestion with nothing behind it goes. ONE undo.
 // opt.run: an engine run to read (Pályák passes its own); opt.noUndo: inside the caller's undo step (and no view switch)

@@ -16060,20 +16060,22 @@ function plan(G, E, PT, cfg, allowed) {
       if (isFinite(r.dist[di])) best = { sp: '__board', face: boardSp().faces[0], len: r.dist[di] }; }
     return best; };
   const treeBad = (d, e, u, why) => { warn.push({ sev: 'err', msg: `${e.ref || e.id} — ${rn(d.room)}: a betápja (${u.id}${u.room ? ' ' + u.room : ''}) ${why}`, room: d.room, at: [Math.round(e.x), Math.round(e.y)], ids: [e.id], tree: true }); };
-  // the tree's answer for one drop: {sp, face, len} | {parent: drop} | null (no usable up)
-  const fromTree = d => { const di = node(d.key), z = zone[d.room];
+  // the tree's answer for one drop: {sp, face, len} | {parent: drop} | null (no usable up). A chain is PER MEMBER (per
+  // circuit): one box may hold a socket chained to its neighbour and a switch fed from the door — d.parentOf[e.id].
+  const fromTree = d => { const di = node(d.key), z = zone[d.room]; let own = null, firstPar = null;
     for (const e of d.members) { const u = upOf(e.id); if (!u) continue;
       const pd = dropOfId[u.id]; if (pd === d) continue;                    // a vertical chain inside this box
       if (pd && e.code === 'LMP') continue;                                // a lamp on a switch / lamp: its leg (L.units), not a feed
-      if (pd) { if (zone[pd.room] !== z) { treeBad(d, e, u, 'másik helyiségzónában van — onnan csak szervizponton át jöhet'); return null; }
-        if (!reach(node(pd.key), di, z)) { treeBad(d, e, u, 'nem érhető el vezethető falon' + banNote(d.room)); return null; }
-        return { parent: pd, e, u }; }
+      if (pd) { if (zone[pd.room] !== z) { treeBad(d, e, u, 'másik helyiségzónában van — onnan csak szervizponton át jöhet'); continue; }
+        if (!reach(node(pd.key), di, z)) { treeBad(d, e, u, 'nem érhető el vezethető falon' + banNote(d.room)); continue; }
+        (d.parentOf = d.parentOf || {})[e.id] = pd; if (!firstPar) firstPar = pd; continue; }
+      if (own) continue;
       const sp = u.id === board.id ? boardSp() : SP.find(s => s.id === u.id); if (!sp) continue;   // a ceiling box, a lamp …: not a wall feed
       const f = sp.faces.find(f => (!u.room || f.room === u.room) && zone[f.room] === z) || sp.faces.find(f => zone[f.room] === z);
-      if (!f) { treeBad(d, e, u, 'nem ebben a helyiségzónában van'); return null; }
-      const r = reach(node(f.key), di, z); if (!r) { treeBad(d, e, u, 'nem érhető el vezethető falon' + banNote(d.room)); return null; }
-      return { sp: sp.id, face: f, len: r.len, tree: true }; }
-    return null; };
+      if (!f) { treeBad(d, e, u, 'nem ebben a helyiségzónában van'); continue; }
+      const r = reach(node(f.key), di, z); if (!r) { treeBad(d, e, u, 'nem érhető el vezethető falon' + banNote(d.room)); continue; }
+      own = { sp: sp.id, face: f, len: r.len, tree: true }; }
+    return own || (firstPar ? { parent: firstPar } : null); };
   drops.forEach(d => { const t = TREE ? fromTree(d) : null;
     if (t && t.parent) { d.parent = t.parent; return; }
     const best = t || nearest(d);
@@ -16083,8 +16085,10 @@ function plan(G, E, PT, cfg, allowed) {
   // a chain drop takes the service point of the chain's root (its home run comes from there); a loop in the chain or a
   // root with no service point falls back to today's rule
   drops.filter(d => d.parent).forEach(d => { let r = d, n = 0; while (r.parent && n++ < 50) r = r.parent;
-    if (r.parent || !r.sp) { delete d.parent; const b = nearest(d); d.sp = b && b.sp; d.spFace = b && b.face; d.spLen = b && b.len; return; }
+    if (r.parent || !r.sp) { delete d.parent; delete d.parentOf; const b = nearest(d); d.sp = b && b.sp; d.spFace = b && b.face; d.spLen = b && b.len; return; }
     d.sp = r.sp; d.spFace = r.spFace; d.depth = n; d.byTree = true; });
+  // the depth of a mixed drop (its own feed + a chained member) follows its chain parent, so parents route first
+  drops.filter(d => !d.parent && d.parentOf).forEach(d => { let n = 0, r = Object.values(d.parentOf)[0]; while (r && n++ < 50) r = r.parent || (r.parentOf && Object.values(r.parentOf)[0]); d.depth = n; });
 
   // ---- 4. lamp → switch (explicit ctl, wet rooms from the dry face, nearest, two-way pairs) ----
   const L = inferLamps(G, M, cfg, warn, zone);
@@ -16146,9 +16150,10 @@ function plan(G, E, PT, cfg, allowed) {
       chanTo(spId).cables.push({ c: c.cable, circ: c.ref, kind: 'feed' }); used.add(spId);
       // T2: a chain drop (its up in another drop) is fed from that drop when the same circuit feeds it — parents first
       ds.sort((a, b) => (a.depth || 0) - (b.depth || 0) || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)).forEach(d => {
-        const par = d.parent && fed.has(d.parent.key) ? d.parent : null, from = par ? node(par.key) : node(d.spFace.key);
-        if (d.parent && !par && !chainWarned.has(d.key + c.ref)) { chainWarned.add(d.key + c.ref); const e0 = d.members.find(e => (C.byMember[e.id] || {}).ref === c.ref) || d.members[0];
-          warn.push({ sev: 'warn', msg: `${e0.ref || e0.id} (${c.ref}) — ${rn(d.room)}: a lánca másik körbe lép (${d.parent.members.map(x => x.ref || x.id).join('+')}) — a szervizpontból kap betápot`, room: d.room, at: [Math.round(e0.x), Math.round(e0.y)], ids: [e0.id], tree: true }); }
+        const pm = d.parentOf && d.members.find(e => (C.byMember[e.id] || {}).ref === c.ref && d.parentOf[e.id]), pd = pm && d.parentOf[pm.id];
+        const par = pd && fed.has(pd.key) ? pd : null, from = par ? node(par.key) : node(d.spFace.key);
+        if (pd && !par && !chainWarned.has(d.key + c.ref)) { chainWarned.add(d.key + c.ref);
+          warn.push({ sev: 'warn', msg: `${pm.ref || pm.id} (${c.ref}) — ${rn(d.room)}: a lánca másik körbe lép (${pd.members.map(x => x.ref || x.id).join('+')}) — a szervizpontból kap betápot`, room: d.room, at: [Math.round(pm.x), Math.round(pm.y)], ids: [pm.id], tree: true }); }
         const p = P(from, node(d.key), { ok: inZone(zone[d.room]) });
         if (p) { addLoad(p.nodes, { c: c.cable, circ: c.ref, kind: 'feed', key: c.ref + '@' + spId }); d.feedGeo = (par ? (par.feedGeo || 0) : 0) + geoLen(g, p.nodes); }
         if (!par) (feedAt[c.ref] = feedAt[c.ref] || new Set()).add(node(d.spFace.key)); });
@@ -18481,6 +18486,7 @@ window.alsSuggest=alsSuggest;window.alsFloorKw=alsFloorKw;window.alsOnBoard=alsO
 // service point); the engine reads `up` only from T2. Invariants (guard rail 2): one upstream per node (one field), no
 // loops — upSet refuses them with a plain Hungarian reason.
 const UP={view:false,tool:false};
+const UP_SUGGEST=[];   // fn(map, run, level): refine the suggestions in place (T3 socket chains)
 
 function upDev(id){const d=id&&byId('devices',id);return d&&d.gen!=='bl'?d:null;}
 function upDoor(id){return id?(data.openings||[]).find(o=>o&&o.id===id&&o.type==='door')||null:null;}
@@ -18551,6 +18557,8 @@ function upSuggest(level,run){level=level||state.active;run=run||(typeof blRun==
   data.devices.forEach(d=>{if(!d||d.level!==level||d.gen==='bl'||!(d.type==='junction'||upIsHub(d)))return;
     if(upIsHub(d)&&board)map[d.id]={id:board.id,why:(d.type==='junction'?'szobadoboz':d.type.toUpperCase())+' = mester, az Elosztóból'};
     else if(d.jb==='ceiling'){const l=data.devices.find(x=>x&&x.meet===d.id),h=l&&R.L.ctlOf[l.id]&&R.L.ctlOf[l.id][0];if(h&&upDev(h))map[d.id]={id:h,why:'a kapcsoló dobozából'};}});
+  // later work packages refine the suggestion (T3: the socket chain from the leader socket) — fn(map, run, level)
+  UP_SUGGEST.forEach(fn=>{try{fn(map,run,level);}catch(err){if(typeof console!=='undefined')console.error(err);}});
   return {map,run};}
 // apply the suggestions to every node that has no rögzített up; an old suggestion with nothing behind it goes. ONE undo.
 // opt.run: an engine run to read (Pályák passes its own); opt.noUndo: inside the caller's undo step (and no view switch)
@@ -18624,6 +18632,115 @@ registerActions([
 
 window.upSet=upSet;window.upClear=upClear;window.upFix=upFix;window.upChain=upChain;window.upRole=upRole;window.upSuggest=upSuggest;
 window.upFill=upFill;window.upAcceptRoom=upAcceptRoom;window.upCheck=upCheck;window.upState=upState;window.UP=UP;
+
+// Q5 = A (2026-10-18): sockets follow the CLASSIC CHAIN from a leader socket — Elosztó → the first room socket → … →
+// the last (08n's rule), not the engine's old star from the door. Per circuit and room:
+//   leader   the socket the user clicked (📍 Vezető dugalj, d.lead), else the one nearest its feed (shown javasolt)
+//   order    from the leader, always the nearest unvisited socket of that circuit in the room, measured along the
+//            routable walls (rgChain's rule, 05v — on the engine's wall graph, since 05v's graph knows drawn routes only)
+//   feed     the leader hangs on a door's L4 or the board — never on a szobadoboz (08n: it does crossing, room feed and
+//            lamp ↔ switch, NOT socket distribution); a dedicated circuit keeps its own home run
+// The chain is a SUGGESTION (dashed) like every T1 link: rögzített links are never replaced, and a re-fill keeps the chain
+// because it is computed here, inside upSuggest (UP_SUGGEST).
+// Masters (K1): a room with no hub and several drops gets a dashed szobadoboz suggestion at the spot with the shortest
+// run to its drops plus home run; the list is ticked and placed (the E4 pattern) — nothing is placed silently.
+const LD={tool:false,masters:null};
+const LD_MASTER_MIN=4;
+
+function ldZoneRun(g,zone,src,z){for(const strict of [true,false]){const r=g.run(src,{ok:i=>zone[g.N[i].room]===z,edge:e=>e.kind!=='over'&&(!strict||e.kind!=='soft')});
+  if(r.dist.some((d,i)=>i!==src&&isFinite(d)))return r;}return g.run(src,{ok:i=>zone[g.N[i].room]===z,edge:e=>e.kind!=='over'});}
+function ldNodeOf(R,key){return (R.net.byKey[key]||[])[0];}
+// the suggestion refinement (UP_SUGGEST): socket chains from the leader socket
+function ldChains(map,run,level){const R=run.R,g=R.net.g,zone=BL.network.zones(run.G,R.net),ref=id=>{const d=byId('devices',id);return d?(d.ref||d.id):id;};
+  const dropBy={};R.drops.forEach(d=>dropBy[d.key]=d);
+  R.C.list.forEach(c=>{if(c.kind!=='socket')return;
+    const groups={};c.members.forEach(e=>{if(e.code!=='SOC'||!e.drop||!dropBy[e.drop])return;(groups[e.room]=groups[e.room]||new Map()).set(e.drop,dropBy[e.drop]);});
+    Object.values(groups).forEach(gm=>{const ds=[...gm.values()];
+      // the drop's head for this circuit: its member whose suggestion leaves the drop (the box feeds it first)
+      const head=d=>{const ms=d.members.filter(e=>(R.C.byMember[e.id]||{}).ref===c.ref);return (ms.find(e=>{const u=map[e.id];return !u||!d.members.some(x=>x.id===u.id);})||ms[0]);};
+      const z=zone[ds[0].room];
+      // the leader: the clicked one, else the drop nearest its feed
+      let lead=ds.find(d=>d.members.some(e=>{const l=byId('devices',e.id);return l&&l.lead&&(R.C.byMember[e.id]||{}).ref===c.ref;}));
+      if(!lead)lead=ds.slice().sort((a,b)=>((a.spLen==null?1e12:a.spLen)-(b.spLen==null?1e12:b.spLen))||(a.key<b.key?-1:1))[0];
+      // the leader's feed: a door's L4 or the board, never a szobadoboz (08n)
+      const lh=head(lead),lu=map[lh.id],lt=lu&&byId('devices',lu.id);
+      if(lt&&lt.type==='junction'&&lt.jb==='szoba'){const ln=ldNodeOf(R,lead.key);let best=null;
+        R.SP.filter(s=>s.type==='portal'||s.type==='board').forEach(s=>s.faces.forEach(f=>{if(zone[f.room]!==z)return;const fi=ldNodeOf(R,f.key);if(fi==null)return;
+          const r=ldZoneRun(g,zone,fi,z);if(isFinite(r.dist[ln])&&(!best||r.dist[ln]<best.d))best={d:r.dist[ln],s,f};}));
+        if(best)map[lh.id]=best.s.id==='__board'?{id:(data.devices.find(x=>x&&x.type==='board'&&x.level===level)||{}).id,why:'vezető dugalj — az Elosztóból (szobadoboz nem oszt dugaljat)'}
+          :{id:best.s.id,room:best.f.room,why:'vezető dugalj — az ajtó L4 dobozából (szobadoboz nem oszt dugaljat)'};}
+      if(map[lh.id])map[lh.id].why=(map[lh.id].why||'')+(map[lh.id].why&&/vezető/.test(map[lh.id].why)?'':' · vezető dugalj');
+      if(ds.length<2)return;
+      // the order: nearest unvisited along the walls
+      let cur=lead;const rest=ds.filter(d=>d!==lead);
+      while(rest.length){const r=ldZoneRun(g,zone,ldNodeOf(R,cur.key),z);let k=-1,bd=Infinity;
+        rest.forEach((d,i)=>{const v=r.dist[ldNodeOf(R,d.key)];if(isFinite(v)&&(v<bd-1e-9||(Math.abs(v-bd)<=1e-9&&k>=0&&d.key<rest[k].key))){bd=v;k=i;}});
+        if(k<0)break;const nx=rest.splice(k,1)[0];map[head(nx).id]={id:head(cur).id,why:'klasszikus lánc a vezető dugaljtól ('+ref(lh.id)+')'};cur=nx;}});});}
+UP_SUGGEST.push(ldChains);
+
+// ---- 📍 the leader socket: one click ----------------------------------------------------------------------------------
+function ldRoomOf(d){return typeof upRoomOfDev==='function'?upRoomOfDev(d):null;}
+// toggle d.lead; one leader per circuit and room. Then the suggestions are refilled (the chain follows at once).
+function ldSetLeader(id,on){const d=byId('devices',id);if(!d||epCodeOf(d)!=='SOC')return {err:'Vezető csak dugalj lehet.'};const c=cktOfDevice(d);
+  if(!c)return {err:(d.ref||d.id)+': nincs áramkörben — előbb a kör (Elosztó → körök).'};
+  pushUndo(['devices']);const rid=ldRoomOf(d);on=on==null?!d.lead:!!on;
+  data.devices.forEach(x=>{if(x&&x!==d&&x.lead&&cktOfDevice(x)===c&&ldRoomOf(x)===rid)delete x.lead;});
+  if(on)d.lead=true;else delete d.lead;
+  const f=typeof upFill==='function'?upFill(d.level,{noUndo:true}):null;UP.view=true;draw();
+  return {ok:true,lead:on,chain:f&&!f.err?f.set:0};}
+function ldToolStart(){toolsOff();if(state.mode!=='select')setMode('select');LD.tool=true;UP.view=true;
+  const mh=$('modeHint');if(mh)mh.textContent='Vezető dugalj — kattints egy dugaljra: a köre ebben a helyiségben tőle indul, láncban · újra kattintva leveszed · Esc: kész';draw();}
+function ldToolOff(){LD.tool=false;const mh=$('modeHint');if(mh)mh.textContent=HINTS[state.mode]||'';}
+STK_TOOLS.push({k:'ldTool',active:()=>{if(!LD.tool)return false;if(state.mode!=='select'||(typeof WV!=='undefined'&&WV)){ldToolOff();return false;}return true;},
+  down(e){if(e.button!==0)return false;const [bx,by]=clientToBase(e),C=typeof hitCands==='function'?hitCands(e,bx,by):[];
+    const c=C.find(c=>c.h&&c.h.t==='devices'&&epCodeOf(data.devices[c.h.i])==='SOC'),d=c?data.devices[c.h.i]:null;
+    if(!d){$('hud').textContent='Kattints egy dugaljra.';return true;}
+    const r=ldSetLeader(d.id);$('hud').textContent=r.err||((d.ref||d.id)+(r.lead?' a vezető dugalj — a lánc tőle indul':' már nem vezető')+' · '+r.chain+' javaslat');return true;},
+  esc(){ldToolOff();draw();},mode(){ldToolOff();}});
+
+// ---- masters: a szobadoboz suggestion per room ------------------------------------------------------------------------
+// → [{room, name, x, y, side, wall, drops, m}] — rooms with no hub (szobadoboz / RBX / BASE) and ≥ LD_MASTER_MIN drops
+function ldMasters(level,run){level=level||state.active;run=run||blRun(level);if(run.err)return {err:run.err};
+  const R=run.R,g=R.net.g,G=run.G,zone=BL.network.zones(G,R.net);
+  const hub=new Set();R.SP.filter(s=>s.type==='szoba'||s.type==='rbx'||s.type==='base').forEach(s=>s.faces.forEach(f=>hub.add(f.room)));
+  const bi=ldNodeOf(R,'board'),TB=g.run(bi,{edge:e=>e.kind!=='soft'&&e.kind!=='floor'&&e.kind!=='over'});
+  const byRoom={};R.drops.forEach(d=>{if(d.members.some(e=>R.C.byMember[e.id]))(byRoom[d.room]=byRoom[d.room]||[]).push(d);});
+  // pre-ticked only where a door box overfills (F7, the funnel a master removes); the rest is offered unticked
+  const busy=new Set(((R.report&&R.report.fill)||[]).filter(f=>f.total>6).map(f=>f.room));
+  const out=[];Object.entries(byRoom).forEach(([rid,ds])=>{if(hub.has(rid)||ds.length<LD_MASTER_MIN)return;const z=zone[rid];
+    const runs=ds.map(d=>ldZoneRun(g,zone,ldNodeOf(R,d.key),z));
+    let best=null;(R.net.roomNodes[rid]||[]).forEach(i=>{if(!g.adj[i].some(e=>e.kind==='face'))return;if(!isFinite(TB.dist[i]))return;
+      let s=TB.dist[i];for(const r of runs){if(!isFinite(r.dist[i])){s=Infinity;break;}s+=r.dist[i];}
+      if(isFinite(s)&&(!best||s<best.s))best={i,s};});
+    if(!best)return;const n=g.N[best.i],room=G.rooms.find(r=>r.id===rid),f=BL.network.sToPt(room,n.s).face,w=f&&f.wall&&G.wallById[f.wall];if(!w)return;
+    const X=w.axis==='x',cx=X?n.x:(w.x0+w.x1)/2,cy=X?(w.y0+w.y1)/2:n.y,side=(X?Math.sign(n.y-cy):Math.sign(n.x-cx))>0?1:0;
+    out.push({room:rid,name:(room&&room.name)||rid,x:Math.round(cx),y:Math.round(cy),side,wall:w.id,drops:ds.length,m:Math.round(best.s/100)/10,on:busy.has(rid),funnel:busy.has(rid)});});
+  LD.masters={level,list:out};return {list:out,run};}
+function ldPlaceMasters(list,level){level=level||state.active;const pick=(list||[]).filter(m=>m.on!==false);if(!pick.length)return {placed:0};
+  pushUndo(['devices']);const made=pick.map(m=>jbMake('szoba',{level,x:m.x,y:m.y,h:JB_H.szoba,side:m.side}));
+  if(typeof jbResize==='function')jbResize();const f=typeof upFill==='function'?upFill(level,{noUndo:true}):null;LD.masters=null;UP.view=true;draw();
+  return {placed:made.length,ids:made.map(d=>d.id),links:f&&!f.err?f.set:0};}
+function ldMastersDialog(){const r=ldMasters(state.active);if(r.err){$('hud').textContent=r.err;return null;}const L=r.list;
+  openModal('Szobadoboz-javaslat (mester)',L.length?`<div style="font-size:12px">Helyiségek szobadoboz nélkül, legalább ${LD_MASTER_MIN} leállással. A javasolt hely: a legrövidebb út a leállásokig és az Elosztóig (vezethető falon). Pipáld ki, amit lerakjak — utána a betáp-fa újra javasol.</div>`
+    +L.map((m,k)=>`<label style="display:block;font-size:12px;margin-top:4px"><input type="checkbox" data-ldm="${k}"${m.on?' checked':''}> <b>${esc(m.name)}</b> (${esc(m.room)}) — ${m.drops} leállás · ${String(m.m).replace('.',',')} m · ${esc(m.wall)} fal${m.funnel?' · <span style="color:#8a5a00">túltelt ajtódoboz</span>':''}${blShowLink({at:[m.x,m.y]},state.active)}</label>`).join('')
+    :`<div style="font-size:12px">Nincs javaslat: minden helyiségnek van szobadoboza / RBX-e, vagy kevesebb mint ${LD_MASTER_MIN} leállása van.</div>`,()=>{
+      document.querySelectorAll('[data-ldm]').forEach(cb=>{L[+cb.dataset.ldm].on=cb.checked;});const p=ldPlaceMasters(L,state.active);
+      $('hud').textContent='Szobadoboz: '+p.placed+' lerakva'+(p.placed?' · betáp-fa: '+p.links+' javaslat':'');},L.length?'Lerakom':'Rendben');return r;}
+// the suggestions drawn as dashed squares while the betáp-fa is shown
+STK_OVERLAY.push(()=>{const M=LD.masters;if(!M||M.level!==state.active||!(UP.view||UP.tool||LD.tool))return '';const z=dz(state.active,JB_H.szoba);let s='';
+  M.list.forEach(m=>{const b=planToBase(m.x,m.y,z),r=vsP(9);s+=`<rect x="${(b[0]-r).toFixed(1)}" y="${(b[1]-r).toFixed(1)}" width="${(2*r).toFixed(1)}" height="${(2*r).toFixed(1)}" fill="none" stroke="#7a6a55" stroke-width="${vsP(1.2)}" stroke-dasharray="${vsDash('3 2')}"/>`;});
+  return s?`<g pointer-events="none">${s}</g>`:'';});
+// the leader is marked with a small flag ring
+STK_OVERLAY.push(()=>{if(!(UP.view||UP.tool||LD.tool))return '';const lvl=state.active;let s='';
+  data.devices.forEach(d=>{if(!d||!d.lead||d.level!==lvl)return;const b=planToBase(d.x,d.y,dz(lvl,d.h||0));s+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${vsP(9)}" fill="none" stroke="#e8641c" stroke-width="${vsP(1.6)}"/>`;});
+  return s?`<g pointer-events="none">${s}</g>`:'';});
+
+STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d||epCodeOf(d)!=='SOC'||!cktOfDevice(d))return;
+  items.push({label:(d.lead?'📍 Vezető dugalj — levétel':'📍 Vezető dugalj: a köre innen indul, láncban'),act:()=>{const r=ldSetLeader(d.id);$('hud').textContent=r.err||((d.ref||d.id)+(r.lead?' a vezető dugalj':' már nem vezető'));}});});
+registerActions([
+ {id:'ld.tool',label:'Vezető dugalj',icon:'📍',group:'Pálya',alias:'leader socket vezeto dugalj lanc chain',hint:'Kattints egy dugaljra: a köre ebben a helyiségben tőle indul, klasszikus láncban (Q5 = A).',when:c=>!c.inEditor,run:()=>ldToolStart()},
+ {id:'ld.masters',label:'Szobadoboz-javaslat',icon:'▣',group:'Pálya',alias:'master room box suggestion szobadoboz javaslat mester',hint:'Helyiségenként egy javasolt szobadoboz-hely; kipipálod, és lerakja.',when:c=>!c.inEditor,run:()=>ldMastersDialog()}]);
+window.ldSetLeader=ldSetLeader;window.ldMasters=ldMasters;window.ldPlaceMasters=ldPlaceMasters;window.LD=LD;
 //////////////////// hit-test + context menu ////////////////////
 // ---- what can be touched (round 2026-10-10, WP-U1) ----
 // The hit side of what 04-render draws: a level that is off, a layer or sub-layer that is hidden, a solo room that
