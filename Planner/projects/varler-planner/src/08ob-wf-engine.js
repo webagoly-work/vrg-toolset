@@ -178,8 +178,11 @@ function blApplyRoutes(run,opt){const R=run.R,lv=run.level,L=blTargetLayers(lv),
     data.paths.push({ptype:'gege',nodes,sections:nodes.slice(1).map(()=>({build:'sull_gege',cond:p.cond,fill:p.fill,leg:l.id,kind:l.kind})),
       layer:l.kind==='trunk'||l.kind==='feed'?L.ch:L.arm,lane:k,route:l.kind==='trunk'?'channel':'arm',color:BL_KCOL[l.kind]||'#555',gen:'bl',
       bl:{run:run.sig,leg:l.id,kind:l.kind,pipe:k,circ:p.circ.slice()}});np++;}));
-  ensureIds(data);if(typeof invalidateShell==='function')invalidateShell();draw();
-  return {boxes:R.boxes.filter(b=>b.kind!=='rbx').length,paths:np,replaced:gone};}
+  ensureIds(data);
+  // T1 (guard rail 7): the run refreshes the javasolt betáp links in the same undo step; the rögzített ones stay
+  const up=typeof upFill==='function'?upFill(lv,{run,noUndo:true}):null;
+  if(typeof invalidateShell==='function')invalidateShell();draw();
+  return {boxes:R.boxes.filter(b=>b.kind!=='rbx').length,paths:np,replaced:gone,up:up&&!up.err?up.set:0};}
 
 // ---- button 2: the cables, by scope ----------------------------------------------------------------------------------
 // which legs a scope covers: Ház = all; Helyiség = the legs touching the room (their boxes, their device, their run);

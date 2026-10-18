@@ -462,3 +462,41 @@ drop regrouped under the sort-and-sweep rule. Total 243,8 → 237,7 m, boxes 97 
    only floor runs, hstrip bands are not read. A: keep for now (★); B: read the hstrip band against the run heights now.
 
 **⏸ T0 checkpoint.** T1 (the `up` field) starts after the answers above.
+
+**Answered 2026-10-18 by the user: all A** ("approved, continue") — the latch stays with the door; W23 is Vezethető around
+B39 (in `build-dom.js`, span 300–3000, and the acceptance file is rebuilt from it — the previous one is kept as
+`Domoszlo_erosaram_claude_preQ2.vplan.json`); előnyben opens an unmarked face; the strang / padlófűtés scope stays.
+With W23 marked: 409,9 m, 108 boxes, 0 m on unmarked walls, only the 5 box-overfill warnings left.
+
+---
+
+## Part 6 — T1 built (2026-10-18): the `up` field
+
+`src/08od-wf-uptree.js`, spec `tests/spec-101-uptree.js` (26 checks). Full suite: 96 suites, 3 360 checks, golden 70 / 70.
+
+| Piece | What it is |
+|---|---|
+| Data | `d.up = {id, room?, via?, fix?}` on every node: Erősáram endpoints, junctions (szobadoboz / kötődoboz / mennyezeti), RBX, BASE, an Alosztó. `id` = a device, the board, or a **door** (its L4 on face `room` — K1's derived master). `fix` = rögzített; none = javasolt. `via` stored for T6. Saved with the plan, undoable |
+| Roles (derived, `upRole`) | master = a szobadoboz / RBX / BASE fed from the board; leader = the first node below a master, a door or the board; member = the rest. `upChain` walks to the root |
+| ⚙ Betáp-fa javaslat (`up.fill`) | reads one engine run: the device's first leg — the previous device of a vertical / ceiling chain **of the same circuit** (a switched lamp feeds only lamps of its own switching unit), else the drop's service point; a switched lamp hangs on the box its leg meets in (08n jbMeet), else its head switch; masters on the board. Replaces only javasolt links, ONE undo step. ⚒ Pályák refreshes them too, in its own undo step |
+| Invariants (`upSet`) | one upstream (one field); no loop (refused, the chain spelled out: "Hurok: …"); not itself; the board is the root; a source must exist, be a node, and be on the same level |
+| States | none · javasolt (dashed ring and link) · rögzített (solid) · bekötetlen (red ring, from the last run's `R.unreached`). 🌳 shows them; 📌 Betáp-fa rögzítése: one click on a node flips javasolt ↔ rögzített; the device menu: rögzítés / feloldás / törlés, and **Elfogadom mind ebben a helyiségben** |
+| Checks (`upCheck`, Dugaljak layer) | a loop (err), a source no longer in the plan (warn), a chain into another circuit (warn), circuit members with no upstream (info; redőny left out — its own layer) |
+
+The engine does **not** read `up` yet — that is T2. So T1 changes no route: on Domoszló every leg, box, metre and warning
+is identical before and after T1 (checked).
+
+**On Domoszló:** 106 links suggested, 0 refused; 64 leaders on door L4s, 42 members (switched lamps on their switch
+boxes, vertical chains), chains at most 4 deep, no loop, no check line. **On P33 (the converted plan, in the browser):**
+105 links, 0 refused, 4 masters (the RBXs and the BASE), no check line; a real click with 📌 flips a lamp to rögzített
+and the drawing turns solid.
+
+Found while building (fixed): a vertical chain in one box passes devices of other circuits, so "the previous device"
+is not always the power source (K10 under D22, DED2 under D28 on Domoszló); a wall lamp above its own switch in one
+box would make the switch hang on its lamp — a loop upSet refused (P33 K1 / L13); RBX and BASE were not accepted as
+nodes. **Also noted for T2/T3:** today's engine feeds a room's sockets through its szobadoboz, against 08n ("a
+szobadoboz never distributes sockets") — T3's socket chain from the leader socket replaces it.
+
+**⏸ Checkpoint before T2** (GO-WIRE): T2 makes the engine fit this tree (only each link's path is searched). The
+Domoszló figures it starts from: 16 circuits, 208 legs, 409,9 m of conduit (dist 139,6 · trunk 135,0 · drop 98,6 ·
+ceil 36,6), 108 boxes, 5 warnings (box overfill at B31 / B32 / B33), 0 m on unmarked walls.
