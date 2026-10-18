@@ -387,3 +387,7 @@ it was used. It is the user's flow line made checkable, and it costs one row in 
    - A: the chain from the leader socket (08n's rule)
    - B: keep the star
    - C: per circuit, as a setting
+
+**Answered 2026-10-18 by the user: all A** — K1 with `up` from day one · the "előnyben" mark instead of flow lines ·
+each click sets `up`, no revisits · the non-blocking Elosztó tray · the classic socket chain from the leader socket.
+Build continues from `GO-WIRE.md` (repo root of the worktree): T0 first.

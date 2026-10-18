@@ -168,3 +168,6 @@ symbols grey while every class was correct and every test passed.
   and do what it says: the P33 second version — v1 (VG-2026-PT33-01) fully built + every other BRIDGE layer
   prepared (conduit, cable pulled, boxes, niches; no hardware), quick survey-precision quantities and prices vs v1,
   a per-room ESPHome marketing list; then hand the fair-price calculation to the Workflow Kit session (V2_FELADAT.md).
+- **`GO WIRE`** — read `GO-WIRE.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
+  and do what it says: the wireway routing rebuild — the dual model, configuration K1 (decisions 2026-10-18, all A),
+  build order T0–T7 from `docs/workflow/WIREWAY_AUDIT_2026-10-18.md`; T0 first, stop at its checkpoint.
