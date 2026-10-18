@@ -218,7 +218,7 @@ function saveProject(name,id){const ix=loadProjIndex();id=id||('p'+Date.now().to
   try{localStorage.setItem(CURRENT_KEY,id);}catch(_){}
   renderProjects();$('hud').textContent='Mentve: '+snap.name;return id;}
 function applyProjectData(o){ // o = a sessionObj payload
-  Object.assign(state,o.state||{});vsApply();Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
+  Object.assign(state,o.state||{});vsApply();Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});slbGet(o);if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   layers=o.layers||[{id:'L0',name:'Alap',visible:true,cats:layerCatsAll()}];stacks=o.stacks||[];lyrMigrateAll();
   if(o.panelLoc)panelLoc=o.panelLoc;refB=o.refB||[];
@@ -253,7 +253,7 @@ function hardResetWorkspace(){
   stacks=[];
   data.noteHide={};
   for(const l of ORD){WALLS[l]=[];SLAB[l]=null;GHOST[l]=null;ROOMSB[l]=[];ROOFS[l]=[];SNAP[l]=centerlines([]);}
-  DROPC.basement=0;DROPC.ground=0;DROPC.upper=0;
+  DROPC.basement=0;DROPC.ground=0;DROPC.upper=0;slbGet({});
   undo.length=0;redo.length=0;                                 // no stepping back into another project
   selected=null;clearMulti&&clearMulti();
   draft=null;pathDraft=null;measureDraft=null;cursor=null;lock=null;
@@ -298,11 +298,11 @@ const LS_KEY='villanyterv_autosave_v1';let saveTimer=null;
 function sessionObj(){ensureIds(data);data.v=SCHEMA_VERSION;
   for(const l of ORD){B.walls[l]=(WALLS[l]||[]).map(rectArr);
   B.rooms=B.rooms||{};B.rooms[l]=ROOMSB[l]||[];}   // room-sheet edits on building rooms persist too
-  return {v:1,state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc,refB};}
+  return slbPut({v:1,state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc,refB});}
 function saveSession(){try{if(currentProjId){const ix=loadProjIndex();if(ix[currentProjId]){ix[currentProjId].data=sessionObj();ix[currentProjId].ts=Date.now();saveProjIndex(ix);}}else{localStorage.setItem(LS_KEY,JSON.stringify(sessionObj()));}}catch(_){}}
 function scheduleSave(){try{clearTimeout(saveTimer);saveTimer=setTimeout(saveSession,1200);}catch(_){}}
 function restoreSession(){try{const raw=localStorage.getItem(LS_KEY);if(!raw)return false;const o=JSON.parse(raw);
-  Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
+  Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});slbGet(o);if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.refB)refB=o.refB;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);

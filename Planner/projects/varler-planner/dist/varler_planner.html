@@ -442,6 +442,8 @@
      <input type="number" id="hGround" value="2700" step="50" style="width:66px"></div>
    <div class="row"><label><input type="checkbox" id="lvBase" checked>Pince</label>
      <input type="number" id="hBase" value="2500" step="50" style="width:66px"></div>
+   <div class="row" style="font-size:11px" title="A födém a szint padlója alá kerül; a belmagasság marad, a felette lévő szintek feljebb kerülnek."><label><input type="checkbox" id="slbLvlOn"> Födém a(z) <span id="slbLvlName">Földszint</span> alatt</label>
+     <input type="number" id="slbLvlT" value="300" step="10" min="0" style="width:56px"> mm</div>
    <div class="row" style="font-size:11px;border-top:1px solid #eee;padding-top:4px">Álmennyezet
      <select id="dcLevel" style="width:78px"><option value="upper">Emelet</option><option value="ground" selected>Fszt.</option><option value="basement">Pince</option></select>
      <input type="number" id="dcVal" value="0" step="50" min="0" style="width:66px" title="0 = nincs álmennyezet ezen a szinten"> mm
@@ -615,6 +617,13 @@ const LH={basement:2500,ground:2700,upper:2700};
 // usually only covers part of a storey (fürdő, közlekedő), so the room wins where it is set.
 const DROPC={basement:0,ground:0,upper:0};
 const DROP_PLENUM=250;                                   // default gap under the slab when none is given
+// Födém (round 2026-10-18, WP-S1, answer S1 = B): LH[l] is the INNER height of a level; a slab of thickness t is ADDED
+// under a level, so the step between two levels is LH[below] + t. The slab of the lowest level hangs below 0 (S4 = B)
+// and does not move anything. Off everywhere = the model as it always was (every z byte-identical).
+const SLAB_T_DEFAULT=300;
+const SLABS={basement:{on:false,t:SLAB_T_DEFAULT},ground:{on:false,t:SLAB_T_DEFAULT},upper:{on:false,t:SLAB_T_DEFAULT}};
+function slbT(l){const s=SLABS[l];return s&&s.on?Math.max(0,+s.t||0):0;}
+function slbStep(l){return ORD.indexOf(l)>0?slbT(l):0;}   // what the slab under l adds to the level step
 function dropCeilMm(level,rm){if(rm&&rm.dropC>0)return rm.dropC;
   const v=DROPC[level]||0;return v>0?v:0;}
 function dropCeilOrDefault(level,rm){const v=dropCeilMm(level,rm);
@@ -677,8 +686,8 @@ function camLockSet(on){state.camLock=!!on;camLockAcc=0;
   return state.camLock;}
 function camSyncUI(){const s=$('camPreset'),b=$('camLock'),p=camPresetNow();
   if(s)s.value=p?p.k:'';if(b)b.checked=!!state.camLock;}
-function floorRealZ(l){let z=0;for(const k of ORD){if(k===l)break;z+=LH[k];}return z;}
-function floorDispZ(l){let z=0;for(const k of ORD){if(k===l)break;z+=LH[k]+(state.exploded?GAP:0);}return z;}
+function floorRealZ(l){let z=0;for(const k of ORD){z+=slbStep(k);if(k===l)break;z+=LH[k];}return z;}
+function floorDispZ(l){let z=0;for(const k of ORD){z+=slbStep(k);if(k===l)break;z+=LH[k]+(state.exploded?GAP:0);}return z;}
 function wallH(l){return LH[l];}
 function dz(l,h){return floorDispZ(l)+(h||0);}
 function wz(l,h){return floorRealZ(l)+(h||0);}
@@ -1379,7 +1388,7 @@ const GUIDES_DEFAULT=JSON.parse(JSON.stringify(GUIDES)); // for per-guide "reset
 // legacy shims so old code paths keep working while we migrate
 const guideOn=new Proxy({},{get:(_,k)=>{const g=GUIDES.find(x=>x.k===k);return g?g.vis:false;},set:(_,k,v)=>{const g=GUIDES.find(x=>x.k===k);if(g)g.vis=!!v;return true;}});
 const customG=[];
-function guideByKey(k){return GUIDES.find(x=>x.k===k);}
+function guideByKey(k){return GUIDES.find(x=>x.k===k)||(k==='slab'&&typeof SLB_GUIDE!=='undefined'?SLB_GUIDE:undefined);}   // 08p: the födém-alja pseudo guide
 // T6 (docs/ui-tidy): ONE height source. A guide line that stands for a Standards row (08j STD_H) takes that row's height
 // — the project's value, else the table's — so the guide, the draw height (↑/↓) and the placed devices never disagree.
 // 'gerinc' is the trunk height the E5 engine uses: the project's PATH trunk value, else the ceiling − 250 (E5-Q3).
@@ -1387,6 +1396,7 @@ function guideByKey(k){return GUIDES.find(x=>x.k===k);}
 const GUIDE_STD={s300:['SOC','alap'],s500:['SOC','garazs'],s1100:['SWI','alap'],s1300:['PAN','alap'],s1400:['SOC','borotva'],s1900:['LMP','fali']};
 function guideStd(def){return def&&GUIDE_STD[def.k]&&typeof stdH==='function'?GUIDE_STD[def.k]:null;}
 function resolveMm(def,level){if(def.mm==='ceil')return wallH(level);
+  if(def.mm==='slab')return -slbT(level);
   if(def.mm==='gerinc'){const o=typeof stdList==='function'?stdList().find(x=>x.code==='PATH'&&x.hv==='trunk'&&x.scope==='project'):null;return o?+o.h:Math.max(0,wallH(level)-250);}
   if(def.mm==='alcell')return dropCeilOrDefault(level,null);
   const sd=guideStd(def);if(sd){const h=stdH(sd[0],sd[1]);if(typeof h==='number'&&isFinite(h))return h;}
@@ -1399,14 +1409,16 @@ function isFreeHeight(){if(state.freeHeight)return true;
   if(state.midFree){const l=state.active,mm=drawHmm(l);
     if(mm>1&&mm<wallH(l)-1)return true;}
   return false;}
-function drawHmm(level){if(state.freeHeight)return Math.max(0,state.freeMm||0);
+function drawHmm(level){if(state.freeHeight)return Math.max(-slbT(level),state.freeMm||0);
   const d=guideByKey(state.drawHKey);return d?resolveMm(d,level):0;}
 // which preset (if any) does the current free-mode height coincide with?
 function freeCoincides(level){if(!state.freeHeight)return null;const mm=drawHmm(level);
   return GUIDES.find(g=>Math.abs(resolveMm(g,level)-mm)<1)||null;}
-function jumpList(level){return GUIDES.filter(g=>g.jump!==false).map(g=>({g,mm:resolveMm(g,level)})).sort((a,b)=>a.mm-b.mm);}
+function jumpList(level){const L=GUIDES.filter(g=>g.jump!==false).map(g=>({g,mm:resolveMm(g,level)}));
+  if(slbT(level)>0&&typeof SLB_GUIDE!=='undefined')L.push({g:SLB_GUIDE,mm:-slbT(level)});   // 08p: through the slab, down to the lower ceiling
+  return L.sort((a,b)=>a.mm-b.mm);}
 function stepHeight(dir){const level=state.active;
-  if(state.freeHeight){state.freeMm=Math.max(0,Math.round(((state.freeMm||0)+dir*100)/100)*100);
+  if(state.freeHeight){state.freeMm=Math.max(-slbT(level),Math.round(((state.freeMm||0)+dir*100)/100)*100);
     const co=freeCoincides(level);$('hud').textContent='Szabad magasság → '+state.freeMm+' mm'+(co?(' (= '+guideLabel(co,level)+')'):'');draw();syncHeightUI();return;}
   const list=jumpList(level);if(!list.length)return;
   const cur=drawHmm(level);let idx=list.findIndex(x=>x.g.k===state.drawHKey);
@@ -1920,6 +1932,7 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
     else (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;pushFloor(faces,rm.poly,fz,rm.fill,'#8f8a80',null,1);});
     data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build')||fl.stage==='outline')return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;const n0=faces.length;pushFloor(faces,fl.poly,fz+(fl.z||0),fl.fill||'#e2ddd0','#8f8a80',null,1);lyrFaces(faces,n0,fl,'floor');});
     if(GHOST[l])pushFloor(faces,GHOST[l],fz,'#000000','#8a857b','7 6',0.07);
+    if(slbT(l)>0)slbPushFaces(faces,l,fz);                 // födém: the slab body under this level (08p)
     // álmennyezet: a translucent plane at its own height, per room where it applies
     if(state.showDropCeil!==false){
       const dl=DROPC[l]||0;
@@ -4128,7 +4141,7 @@ window.shellOn=shellOn;window.stageByKey=stageByKey;window.shellStages=shellStag
 const PH_LIST=[
  {k:'alap',n:'Alapozás',stage:'build',ctx:'levels',tools:[
    {a:'mode.room',n:'⬚ Helyiség-toll',mode:'room'},{a:'wf.walls',n:'🧱 Falak létrehozása',id:'wfWallsBtn'},
-   {a:'wf.floors',n:'▦ Padló létrehozása',id:'wfFloorsBtn'},{a:'mode.wall',n:'▤ Fal',mode:'wall'},{a:'mode.object',n:'🪑 Objektum',mode:'object'}]},
+   {a:'wf.floors',n:'▦ Padló létrehozása',id:'wfFloorsBtn'},{a:'slab.level',n:'▬ Födém',id:'slbBtn'},{a:'mode.wall',n:'▤ Fal',mode:'wall'},{a:'mode.object',n:'🪑 Objektum',mode:'object'}]},
  {k:'nyil',n:'Nyílászárók',stage:'build',ctx:'openings',tools:[
    {a:'wf.door',n:'🚪 Ajtó',id:'opnDoorBtn'},{a:'wf.window',n:'🪟 Ablak',id:'opnWinBtn'},{a:'wf.stairs',n:'🪜 Lépcső'},{a:'pt.place',n:'⛩ Portál'}]},
  {k:'szab',n:'Szabályok',stage:'rooms',ctx:'rules',tools:[
@@ -6314,7 +6327,7 @@ function stkCreate(opts){opts=opts||{};
   // new layers: one contiguous block after the last existing layer, in STK_ROLES order
   STK_ROLES.forEach(r=>{
     if(r.k==='construct'){if(!cl){cl=stkMakeLayer(S,r);layers.push(cl);}return;}
-    if(r.ph===1||want.indexOf(r.k)>=0)layers.push(stkMakeLayer(S,r));});
+    if((r.ph===1&&!r.opt)||want.indexOf(r.k)>=0)layers.push(stkMakeLayer(S,r));});   // opt: added on demand (08q Igények)
   stkSync(S);
   state.stack=S.id;state.stkOff=false;state.activeLayer=cl.id;state.stage='stk:construct';
   lyrRefresh();
@@ -6785,7 +6798,7 @@ function mrkWallSvg(m){const g=mrkGeom(m);if(!g)return '';const z=dz(g.level,0),
     if(m.kind==='hstrip'||m.kind==='hband')s+=mrkText((a[0]+b[0])/2,(a[1]+b[1])/2,z,mrkBand(m),col,9);});
   if(m.kind==='side'&&(m.tags||[]).indexOf('lforma')>=0&&g.faces[0])s+=mrkLMark(m,g.faces[0],z,col);
   if(m.kind==='side'||m.kind==='vstrip'){const f=g.faces[0],a=mrkFacePt(f.r,f.side,(f.u0+f.u1)/2,f.off+60),t=mrkFirstTag(m);
-    if(t)s+=mrkText(a[0],a[1],z,mrkTrunc(t,14),col,8.5);}
+    if(t&&!(mrkStyle(m)||{}).noText)s+=mrkText(a[0],a[1],z,mrkTrunc(t,14),col,8.5);}   // noText: an ink whose colour says it (08r Mozi fal)
   return s;}
 // L-forma: a small L at the end of this face that lies nearest another lforma face
 function mrkLMark(m,f,z,col){
@@ -8364,6 +8377,7 @@ function epGhost(e){const en=epEntry(EP_T.code,EP_T.role);if(!en)return null;con
     g={level,x:Math.round(p[0]),y:Math.round(p[1]),h:en.mount==='floor'?0:epCeilH(level,p[0],p[1]),mount:en.mount};}
   if(typeof sugSnap==='function'&&!e.altKey)g=sugSnap(g,EP_T.code,EP_T.role)||g;       // D3 — Alt places freely
   if(typeof ptSlotSnap==='function'&&!e.altKey)g=ptSlotSnap(g,EP_T.code)||g;          // a door's slot within 300 mm wins (08g)
+  if(typeof cinSnap==='function'&&!e.altKey)g=cinSnap(g,EP_T.code)||g;              // 08r: a cinema node snaps to its suggestion
   return g;}
 function epMake(g,code,role,vk){const type=epTypeFor(code),L=epRoleLayer(role);
   const d={type,code,var:vk||epEntry(code,role).vars[0].k,level:g.level,x:g.x,y:g.y,h:g.h,layer:L?L.id:state.activeLayer};
@@ -8588,6 +8602,7 @@ function needDerived(rm){const e=needRoomEntry(rm),rid=e&&stkRoomId(e),out={};if
   const add=(role,code)=>{(out[role]=out[role]||[]);if(out[role].indexOf(code)<0)out[role].push(code);};
   const wins=needOpenings(rid,'window'),doors=needOpenings(rid,'door'),all=needOpenings(rid);
   if(needTagged(wins,['redony','arnyekolo']))add('sys:LIGHT','SHU');
+  if(typeof cinRoomIds==='function'&&cinRoomIds().indexOf(rid)>=0)add('sys:DED','DED');   // 08r: a cinema room needs its AV circuit(s)
   if(needTagged(doors,['portal','bejarat','lepcso']))add('sys:BUSB','NTL');
   if(needTagged(doors,['p2','p3'])){add('sys:CONTROL','POR');add('sys:SENSOR','POR');}
   // S5: the entrance gets contact + keypad + doorbell; every perimeter opening a contact; a protected window glass-break
@@ -8606,6 +8621,7 @@ function needDefaults(rm,role){
   return {codes:codes.concat(derived),derived};}
 // {code:true} — the saved checklist of that layer, else the defaults
 function needOf(rm,role){if(rm&&rm.needs&&rm.needs[role])return Object.assign({},rm.needs[role]);
+  if(typeof reqNeedOf==='function'){const r=reqNeedOf(rm,role);if(r)return r;}   // 08q (N1 A): a room with an igénylista ticks from its counts
   const o={};needDefaults(rm,role).codes.forEach(c=>{o[c]=true;});return o;}
 function needSaved(rm,role){return !!(rm&&rm.needs&&rm.needs[role]);}
 function needSet(rm,role,code,on){if(!rm)return false;const isFloor=data.floors.indexOf(rm)>=0;
@@ -8664,7 +8680,7 @@ function needOverview(){const S=stkActive();if(!S){lyrHud('Aktív BRIDGE Stack k
       +roles.map(x=>{const st=needStatus(r.rm,x.k,S.id);return `<td align="center" style="color:${NEED_STATUS[st].c}" title="${esc(x.n)}: ${NEED_STATUS[st].n}">●</td>`;}).join('')+`</tr>`).join('')
     +`</table></div>`,()=>{},'Bezár');
   document.querySelectorAll('.ndRoom').forEach(tr=>tr.onclick=()=>{const e=mrkRoomById(tr.dataset.id);closeModal();if(e)needDialog(e.rm);});}
-STK_ROOMMENU.push((rh,items)=>{if(!stkActive())return;items.push({label:'☑ Helyiség igényei…',act:()=>needDialog(rh.rm)});});
+STK_ROOMMENU.push((rh,items)=>{if(!stkActive())return;items.push({label:'☑ Rétegenkénti igények (pipák)…',act:()=>needDialog(rh.rm)});});
 
 // ---- checks: one per system role ----------------------------------------------------------------------------------------------
 function needChecks(role){return S=>{const out=[];if(!stkLayer(S.id,role))return out;
@@ -9409,7 +9425,8 @@ const ELO_RULES={
  rowModules:12, spareMin:2,
  // typical connected load per way, kW — B1 §14.4 (BUILD-002 replaces them with nameplates)
  kw:{hob2l:7.4, hob32:7.4, g16:2.0, oven:3.5, washer:2.2, dishwasher:2.0, bojler:2.0, klima:1.2, avp:0.5,
-     socketKitchen:1.0, socket:0.7, light:0.15, sys:0.1, alelo:5.0}};   /*r*/
+     socketKitchen:1.0, socket:0.7, light:0.15, sys:0.1, alelo:5.0,
+     av:{'AV-1':0.3,'AV-2':0.5,'AV-3':0.4}}};   /*r*/ // C7: the guide's §7.1 realistic continuous loads
 const ELO_KW_WORDS=[[/sut|oven/,'oven'],[/mosogat|dishwash/,'dishwasher'],[/mosogep|washer/,'washer'],[/bojler|boiler/,'bojler'],[/klima|split|hvac/,'klima']];
 
 function eloOpt(o){const s=state.elo||{};return {phase:(o&&o.phase)||s.phase||ELO_RULES.phase,perWay:(o&&o.perWay)||s.perWay||ELO_RULES.perWay};}
@@ -9419,14 +9436,16 @@ function eloFeeds(boardId){const out={rbx:[],base:[],ssc:[]};
     const d=byId('devices',o);if(d&&out[d.type]&&out[d.type].indexOf(d)<0)out[d.type].push(d);});
   ['rbx','base','ssc'].forEach(k=>out[k].sort((a,b)=>prtIdCmp(a.id,b.id)));return out;}
 // the board a big load hangs on: the origin of its fill run, else the only / nearest board
-function eloLoadBoard(d){const ck=d&&d.var==='alelo'&&typeof cktOfDevice==='function'?cktOfDevice(d):null;if(ck&&ck.board&&byId('devices',ck.board))return ck.board;
+function eloLoadBoard(d){if(d&&d.cin&&d.cin.av){const fp=data.paths.find(p=>p&&p.cin&&p.cin.kind==='feed'&&p.layer===d.cin.of);if(fp&&byId('devices',fp.cin.to))return fp.cin.to;}   // C7: the cinema's own feed
+  const ck=d&&d.var==='alelo'&&typeof cktOfDevice==='function'?cktOfDevice(d):null;if(ck&&ck.board&&byId('devices',ck.board))return ck.board;
   const r=afillRuns().find(x=>x.stage==='stack'&&x.to===d.id&&(byId('devices',x.from)||{}).type==='board');
   if(r)return r.from;const bs=hwList('board');if(bs.length===1)return bs[0].id;
   let best=null,bd=1e18;bs.forEach(b=>{const dd=Math.hypot(b.x-d.x,b.y-d.y)+(b.level===d.level?0:1e9);if(dd<bd){bd=dd;best=b;}});return best?best.id:null;}
 function eloMcbOf(dev,fallback){const c=dev&&typeof cktOfDevice==='function'?cktOfDevice(dev):null;return (c&&c.mcb&&c.mcb.curve)?mcbText(c.mcb):fallback;}
 function eloLoadKw(d){const v=d.var||'',txt=needFold([d.name,d.lampName,d.note,d.ref].filter(Boolean).join(' '));
   if(v==='hob2l'||v==='hob32')return ELO_RULES.kw[v];
-  if(v==='alelo')return (d.feeds&&typeof alsFloorKw==='function'&&byId('devices',d.feeds)?+(alsFloorKw(d.feeds)*ALS_DIVERSITY).toFixed(2):0)||ELO_RULES.kw.alelo;   // E6: the floor's loadif(epCodeOf(d)==='AVP')return ELO_RULES.kw.avp;
+  if(v==='alelo')return (d.feeds&&typeof alsFloorKw==='function'&&byId('devices',d.feeds)?+(alsFloorKw(d.feeds)*ALS_DIVERSITY).toFixed(2):0)||ELO_RULES.kw.alelo;   // E6: the floor's load
+  if(epCodeOf(d)==='AVP')return ELO_RULES.kw.avp;
   const hit=ELO_KW_WORDS.find(w=>w[0].test(txt));return hit?ELO_RULES.kw[hit[1]]:ELO_RULES.kw.g16;}
 // → [{key, label, kind, mcb, kw, phases:1|2, feeds:[ids]}] — one entry per way (a 2L+2N hob on 3 phases = two ways)
 function eloWays(boardId,opt){opt=eloOpt(opt);const F=eloFeeds(boardId),S=stkActive(),R=ELO_RULES,ways=[];
@@ -9452,6 +9471,8 @@ function eloWays(boardId,opt){opt=eloOpt(opt);const F=eloFeeds(boardId),S=stkAct
     add('ckt:'+c.id,(c.ref||'')+' '+(c.name||''),light?'light':'socket',(c.mcb&&c.mcb.curve)?mcbText(c.mcb):(light?R.mcb.lighting:R.mcb.socket25),+kw.toFixed(2),ms.map(d=>d.id));});
   data.devices.forEach(d=>{const c=d&&epCodeOf(d);if(c!=='DED'&&c!=='AVP')return;if(eloLoadBoard(d)!==boardId)return;
     const v=d.var||'',kw=eloLoadKw(d),lbl=(d.ref||d.id)+' — '+((epVar(d)||{}).n||'').split(' — ')[0];
+    // C7: a cinema AV circuit (08r d.cin) — its own group: one phase, one busbar, its own type A RCD (guide §7.2 / §7.3)
+    if(d.cin&&d.cin.av){const w={key:'av:'+d.id,label:(d.ref||d.id)+' — '+(d.name||d.cin.av),kind:'av',mcb:'1'+(d.cin.curve||'B')+' 16A',kw:(R.kw.av||{})[d.cin.av]||0.3,feeds:[d.id],group:d.cin.phaseGroup||'AV'};ways.push(w);return;}
     if(v==='hob2l'&&opt.phase==='3f'){for(let i=1;i<=2;i++)add('load:'+d.id+':'+i,lbl+' ('+i+'/2)','load',eloMcbOf(d,R.mcb.hob2l),kw/2,[d.id]);}
     else add('load:'+d.id,lbl,'load',eloMcbOf(d,c==='AVP'?R.mcb.avp:(R.mcb[v]||R.mcb.g16)),kw,[d.id]);});
   return ways;}
@@ -9459,8 +9480,10 @@ function eloDevice(mcb,perWay){const m=mcbParse(mcb);if(!m||!m.curve)return mcb;
   return perWay==='rcbo'?'RCBO '+(m.poles+(m.n?'P+N':'P'))+' '+m.curve+m.amps+' '+ELO_RULES.rcbo.ma+' mA '+ELO_RULES.rcbo.type:'MCB '+mcbText(m);}
 // greedy: largest load first onto the least loaded phase; the two halves of a hob onto two different phases
 function eloBalance(ways){const ph={L1:0,L2:0,L3:0},keys=['L1','L2','L3'];const pick=ex=>keys.filter(k=>k!==ex).sort((a,b)=>ph[a]-ph[b]||(a<b?-1:1))[0];
-  const order=ways.slice().sort((a,b)=>b.kw-a.kw||(a.key<b.key?-1:1));const hob={};
-  order.forEach(w=>{const base=w.key.replace(/:\d$/,'');let p;if(/^load:.*:[12]$/.test(w.key)&&hob[base])p=pick(hob[base]);else p=pick(null);
+  // C7: the ways of a phase group (the cinema's AV circuits) go on ONE phase, placed as their summed load
+  const gkw={},gph={};ways.forEach(w=>{if(w.group)gkw[w.group]=(gkw[w.group]||0)+w.kw;});const kwOf=w=>w.group?gkw[w.group]:w.kw;
+  const order=ways.slice().sort((a,b)=>kwOf(b)-kwOf(a)||((a.group||'')<(b.group||'')?-1:(a.group||'')>(b.group||'')?1:0)||(a.key<b.key?-1:1));const hob={};
+  order.forEach(w=>{if(w.group){if(!gph[w.group])gph[w.group]=pick(null);w.phase=gph[w.group];ph[w.phase]+=w.kw;return;}const base=w.key.replace(/:\d$/,'');let p;if(/^load:.*:[12]$/.test(w.key)&&hob[base])p=pick(hob[base]);else p=pick(null);
     if(/^load:.*:[12]$/.test(w.key))hob[base]=hob[base]||p;w.phase=p;ph[p]+=w.kw;});
   return ph;}
 // the schedule: plain JSON
@@ -9477,13 +9500,16 @@ function eloSchedule(boardId,o){const opt=eloOpt(o),R=ELO_RULES,b=byId('devices'
   const sub=!!(b&&b.sub);   // WP-E6: an Alosztó — no main switch (Q3), a type-2 SPD only, no bell
   const feed=sub?[{n:'Túlfeszültség-védelem '+(opt.phase==='3f'?'3P+N':'1P+N')+' (T2)',mod:opt.phase==='3f'?4:2}]
     :R.feed[opt.phase].map(f=>({n:f.n,mod:f.mod}));if(R.bell.on&&!sub)feed.push({n:R.bell.n,mod:R.bell.mod});
-  const rcd=[],grp=ways.filter(w=>!w.feeder);if(opt.perWay==='rcd'){for(let i=0;i<grp.length;i+=R.rcd.maxWays)rcd.push({n:'RCD '+R.rcd.amps+'A '+R.rcd.ma+' mA '+R.rcd.type,mod:R.rcd.mod,ways:grp.slice(i,i+R.rcd.maxWays).map(w=>w.key)});}
+  const rcd=[],grp=ways.filter(w=>!w.feeder&&!w.group);if(opt.perWay==='rcd'){for(let i=0;i<grp.length;i+=R.rcd.maxWays)rcd.push({n:'RCD '+R.rcd.amps+'A '+R.rcd.ma+' mA '+R.rcd.type,mod:R.rcd.mod,ways:grp.slice(i,i+R.rcd.maxWays).map(w=>w.key)});
+    // C7: a phase group (AV) never shares its RCD with the rest of the dwelling (guide §7.3)
+    [...new Set(ways.filter(w=>w.group).map(w=>w.group))].forEach(g=>{const gw=ways.filter(w=>w.group===g);for(let i=0;i<gw.length;i+=R.rcd.maxWays)rcd.push({n:'RCD '+R.rcd.amps+'A '+R.rcd.ma+' mA '+R.rcd.type+' ('+g+')',mod:R.rcd.mod,group:g,ways:gw.slice(i,i+R.rcd.maxWays).map(w=>w.key)});});}
   const totalMod=feed.reduce((s,f)=>s+f.mod,0)+ways.reduce((s,w)=>s+w.mod,0)+rcd.reduce((s,r)=>s+r.mod,0);
   const rows=Math.max(1,Math.ceil(totalMod/R.rowModules)),free=rows*R.rowModules-totalMod,warnings=[];
   let phases=null;
   if(opt.phase==='3f'){phases=eloBalance(ways);const v=Object.values(phases),mx=Math.max(...v),mn=Math.min(...v);
     Object.keys(phases).forEach(k=>{phases[k]=Math.round(phases[k]*100)/100;});
     if(mn>0&&mx/mn>1.5)warnings.push({sev:'warn',code:'elo.phase',msg:'Fázisaszimmetria: '+Object.keys(phases).map(k=>k+' '+phases[k]+' kW').join(' · ')});}
+  if(ways.some(w=>w.kind==='av'))warnings.push({sev:'info',code:'elo.av',msg:'AV körök (házimozi): mind ugyanarról a fázisról és gyűjtősínről'+(phases?' ('+ways.find(w=>w.kind==='av').phase+')':'')+', saját A típusú 30 mA védelemmel'+(opt.perWay==='rcd'?' (külön ÁVK)':' (RCBO körönként)')+' — írd rá a kiosztásra, mert különben önkényesnek tűnik (§7.2).'});
   if(free<R.spareMin)warnings.push({sev:'warn',code:'elo.spare',msg:'Csak '+free+' szabad modul — következő sor / nagyobb szekrény.'});
   return {board:boardId,ref:b?(b.ref||b.id):boardId,phase:opt.phase,perWay:opt.perWay,feed,ways,rcd,totalMod,rows,free,phases,warnings};}
 
@@ -9494,13 +9520,14 @@ function eloSchedule(boardId,o){const opt=eloOpt(o),R=ELO_RULES,b=byId('devices'
     const n=epCircuits(r,S.id).filter(c=>c.members.some(id=>epCodeOf(byId('devices',id))==='SOC')).length;
     if(n&&n<ELO_RULES.socketKitchen)out.push({sev:'info',msg:hwRoomLabel(r)+': '+n+' dugaljkör — S04 szerint a konyhába '+ELO_RULES.socketKitchen+' javasolt (pult A, B + sziget).'});}));
   if(afillRuns().length)data.devices.forEach(d=>{const c=epCodeOf(d);if(c!=='DED'&&c!=='AVP')return;
+    if(d.cin&&d.cin.av&&data.paths.some(p=>p&&p.cin&&p.cin.kind==='feed'&&p.layer===d.cin.of))return;   // C7: on the cinema's own feed
     if(!afillRuns().some(r=>r.stage==='stack'&&r.to===d.id&&(byId('devices',r.from)||{}).type==='board'))out.push({sev:'warn',msg:(d.ref||d.id)+': nincs útvonal az Elosztószekrénytől.'});});
   return out;});
 
 // ---- UI and export ----------------------------------------------------------------------------------------------------------
 function eloDialog(boardId){const bs=hwList('board');if(!bs.length){lyrHud('Nincs Elosztószekrény.');return;}
   boardId=boardId||bs[0].id;const opt=eloOpt();const S=eloSchedule(boardId,opt);
-  const kinds={sys:'Rendszer',light:'RBX világítás',socket:'RBX dugaljkörök',load:'Nagy fogyasztók'};
+  const kinds={sys:'Rendszer',light:'RBX világítás',socket:'RBX dugaljkörök',load:'Nagy fogyasztók',av:'AV körök (házimozi — egy fázis, saját ÁVK)'};
   openModal('Elosztószekrény összeállítás — '+S.ref,
     `<div class="mrow">Szekrény <select id="eloB">${bs.map(b=>`<option value="${b.id}" ${b.id===boardId?'selected':''}>${esc(b.ref||b.id)}</option>`).join('')}</select>`
     +` Betáp <select id="eloP"><option value="1f" ${opt.phase==='1f'?'selected':''}>1 fázis</option><option value="3f" ${opt.phase==='3f'?'selected':''}>3 fázis</option></select>`
@@ -9556,8 +9583,9 @@ function cpvDefaultScope(){const o={};
   ORD.forEach(l=>{o[l]=state.levels&&state.levels[l]?'in':(cpvHasGeometry(l)?'ghost':'skip');});return o;}
 // floor elevation of each level in mm, ground = 0, real (never exploded) spacing
 function cpvLevelZ(l){const g=ORD.indexOf('ground'),i=ORD.indexOf(l);let z=0;
-  if(i>g)for(let k=g;k<i;k++)z+=LH[ORD[k]]+CPV_SLAB;
-  else for(let k=i;k<g;k++)z-=LH[ORD[k]]+CPV_SLAB;
+  const sl=k=>slbAny()?slbStep(ORD[k+1]):CPV_SLAB;   // 08p: the real födém when the project has one
+  if(i>g)for(let k=g;k<i;k++)z+=LH[ORD[k]]+sl(k);
+  else for(let k=i;k<g;k++)z-=LH[ORD[k]]+sl(k);
   return z;}
 const cpvR=v=>Math.round(v);
 function cpvDevLabel(d){const en=d.code&&typeof epEntry==='function'?epEntry(d.code):null;
@@ -10324,6 +10352,7 @@ function wallElevationSVG(d,showFar,dims){const M=56,H=d.H,len=d.len;
   let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${Wpx}" height="${Hpx}" viewBox="0 0 ${Wpx} ${Hpx}" font-family="Segoe UI,Arial"><defs><pattern id="chaseh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#f7e2ce"/><line x1="0" y1="0" x2="0" y2="5" stroke="#c0794f" stroke-width="1"/><line x1="2.5" y1="0" x2="2.5" y2="5" stroke="#dfae8e" stroke-width="0.6"/></pattern></defs><rect width="${Wpx}" height="${Hpx}" fill="#fff"/>`;
   const z0=d.z0||0;
   s+=`<rect x="${Math.min(X(0),X(len))}" y="${Y(H)}" width="${(len*sc).toFixed(1)}" height="${((H-z0)*sc).toFixed(1)}" fill="#f4f2eb" stroke="#111" stroke-width="1.5"/>`;
+  if(typeof slbElevBand==='function')s+=slbElevBand(d,X,Y,sc,len);   // 08p: the födém above this wall
   if(z0>0){ // the wall starts above the floor — the band underneath is open
     s+=`<rect x="${Math.min(X(0),X(len))}" y="${Y(z0)}" width="${(len*sc).toFixed(1)}" height="${(z0*sc).toFixed(1)}" fill="#fff" stroke="#999" stroke-width="0.8" stroke-dasharray="6 4"/>`
       +`<text x="${((X(0)+X(len))/2).toFixed(1)}" y="${(Y(z0/2)+3).toFixed(1)}" font-size="9.5" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">nyitott sáv — a fal ${Math.round(z0)} mm-en indul</text>`
@@ -11282,11 +11311,12 @@ STK_WVBOX.unshift(clsWvBox);
 // ==================================================================================================================
 // ideal spots
 // ==================================================================================================================
-function idealCap(L){return !!(L&&L.stack&&L.role&&((L.role.indexOf('sys:')===0&&L.role!=='sys:RF')||L.role==='hw'||L.role==='cluster'));}
+function idealCap(L){return !!(L&&L.cinema&&L.cinema.spots)||!!(L&&L.stack&&L.role&&((L.role.indexOf('sys:')===0&&L.role!=='sys:RF')||L.role==='hw'||L.role==='cluster'));}   // 08r: a cinema layer with made spots too
 function idealShown(L){return idealCap(L)&&L.visible!==false&&L.ideal!==false&&(L.id===state.activeLayer||!!state.idealAll);}
 function idealTaken(L,code,h){return data.devices.some(d=>d&&d.layer===L.id&&epCodeOf(d)===code&&d.level===h.level&&Math.hypot(d.x-h.x,d.y-h.y)<250&&Math.abs((d.h||0)-(h.h||0))<400);}
 // [{key, kind:'ep'|'portal'|'cluster', role, layer, code?, x, y, h, level, mount, side?, wall?, why, …}]
 function idealSpots(L,level){if(!idealCap(L))return [];const role=L.role,seen={},out=[];
+  if(L.cinema&&L.cinema.spots)return L.cinema.spots.filter(s=>s.level===level&&!idealTaken(L,s.code,s)).map(s=>Object.assign({},s,{layer:L.id,role:'sys:CINEMA'}));   // 08r (C5 A)
   const add=s=>{if(seen[s.key])return;seen[s.key]=1;s.layer=L.id;s.role=role;out.push(s);};
   if(role==='hw'){(typeof ptCandidates==='function'?ptCandidates(level):[]).forEach(G=>add({key:'pt:'+G.o.id+':'+G.wallSide,kind:'portal',code:'PT',
       x:G.x,y:G.y,h:G.h,level,mount:'wall',side:G.wallSide,wall:G.wall,why:'Portál · '+G.cls+' · '+(G.at==='hinge'?'zsanér':'kilincs')+' oldal',G}));return out;}
@@ -12126,6 +12156,8 @@ function drawAlaprajzGeom(){const level=state.active,z=dz(level,0),c=apCut();
   const segs=rectsUnionSegs(pieces);
   if(segs.length)s+=`<path class="ap-contour" d="${segs.map(g=>{const A=planToBase(g[0],g[1],z),B=planToBase(g[2],g[3],z);
     return 'M'+A[0].toFixed(2)+' '+A[1].toFixed(2)+'L'+B[0].toFixed(2)+' '+B[1].toFixed(2);}).join('')}" fill="none" stroke="#111" stroke-width="${bpSW(AP_PEN.cut)}" stroke-linecap="square"/>`;
+  // 08p: födém holes — over the walls, since a hole the size of a room has its outline on the wall faces
+  if(typeof slbPlanEdges==='function'){const E=slbPlanEdges(level,z,dash);S.slabEdges=E.n;s+=E.svg;}
   S.pieces=pieces.length;AP_LAST=S;
   return s;}
 // draw()'s endpoint loop: a device above the cut on the active level is not drawn, only counted (D-V9-5 3C)
@@ -12285,7 +12317,8 @@ function planeViewData(room,level,kind,tol){
     ops.push(lyrTagOp({oi,type:o.type,x:o.x,y:o.y,ang:o.ang||0,w:o.w||(o.type==='window'?WIN_W:DOOR_W)},o,'build'));});
   const notes=noteSurfaceHidden(key)?[]:(data.wallNotes||[]).map((n,i)=>({...n,i})).filter(n=>n.wallKey===key)
     .map(n=>({i:n.i,u:n.u,h:n.h,text:n.text,kind:n.kind,tag:n.tag}));
-  return {room,level,kind,band,key,poly,bb,pb,walls:roomWalls(poly,level),devs,ghosts,secs,risers,ops,notes,
+  const thru=(kind==='ceiling'&&typeof slbThruInto==='function')?slbThruInto(level,bb):[];   // 08p: nodes of the level above, through the slab
+  return {room,level,kind,band,key,poly,bb,pb,walls:roomWalls(poly,level),devs,ghosts,secs,risers,ops,notes,thru,
     W:bb.x1-bb.x0,D:bb.y1-bb.y0,RW:pb.x1-pb.x0,RD:pb.y1-pb.y0};}
 
 function pvText(x,y,txt,size,fill,anchor,rot){const tr=rot?` transform="rotate(${rot} ${x} ${y})"`:'';
@@ -12369,6 +12402,7 @@ function planeViewSVG(d,dims){const M=56;
           const cur=(hx===0.5?'ns-resize':hy===0.5?'ew-resize':'nwse-resize');
           s+=`<rect class="wvwarp" data-pi="${warpPi}" data-hx="${hx}" data-hy="${hy}" x="${(px-4).toFixed(1)}" y="${(py-4).toFixed(1)}" width="8" height="8" fill="#fff" stroke="#e8641c" stroke-width="1.4" style="cursor:${cur}"/>`;});}}
   }
+  if(d.thru&&d.thru.length&&typeof slbThruSvg==='function')s+=slbThruSvg(d,X,Y);   // 08p: through-slab nodes from the level above
   if(typeof stkHookSvg==='function')s+=stkHookSvg(STK_PV,{d,X,Y,sc});   // BRIDGE Stack plane marks (05n), in plan mm
   // ---- NOTES ----
   if(L.notes!==false)d.notes.forEach(n=>{s+=noteBox(n,X(n.u),Y(n.h));});
@@ -12382,7 +12416,7 @@ function planeViewSVG(d,dims){const M=56;
       +`<line x1="${xL-4}" y1="${ya}" x2="${xL+4}" y2="${ya}" stroke="#666" stroke-width="0.8"/><line x1="${xL-4}" y1="${yb}" x2="${xL+4}" y2="${yb}" stroke="#666" stroke-width="0.8"/>`
       +pvText((xL-4).toFixed(1),((ya+yb)/2).toFixed(1),Math.round(d.RD)+' mm',9,'#555','middle','-90');}
   const cap=drop?('Álmennyezet — felülnézet, a falakon átnézve · sík '+Math.round(d.band.ref)+' mm · plénum '+Math.round(d.band.plenum||0)+' mm a födém alatt')
-    :(ceil?'Mennyezet — felülnézet, a falakon átnézve (a padlóval azonos állás)':'Padló — felülnézet');
+    :(ceil?'Mennyezet — felülnézet, a falakon átnézve (a padlóval azonos állás)'+(typeof slbCeilNote==='function'?slbCeilNote(d.level):''):'Padló — felülnézet');
   const band=`sáv: ${Math.round(d.band.lo)}–${Math.round(d.band.hi)} mm${mir?' · tükrözve':''}`;
   if((cap+band).length>78){   // keep the caption inside the sheet on the narrower planes
     s+=`<text x="${M}" y="14" font-size="10" fill="#6b6357">${cap}</text>`
@@ -15685,7 +15719,8 @@ function wlnRanges(level,pieces){const by={};
 
 // ---- inks and marks ----
 const MKP={on:false,ink:null,press:null,hover:null};
-function mkpInk(k){const p=typeof rbPreset==='function'?rbPreset(k):null;if(!p)return null;
+function mkpInk(k){if(k==='mozi'&&typeof CIN_INK!=='undefined')return CIN_INK;   // 08r: the Mozi fal ink (per face)
+  const p=typeof rbPreset==='function'?rbPreset(k):null;if(!p)return null;
   if(p.kind==='route')return {k,n:p.n,net:'c',tag:'vezetheto',pol:'plus',col:rbCol(p)};
   if(p.kind==='wall')return {k,n:p.n,net:'c',tag:p.tag,pol:p.pol,col:rbCol(p)};
   if(p.kind==='side')return {k,n:p.n,net:'f',tag:p.tag,pol:p.pol,col:rbCol(p)};
@@ -17866,14 +17901,16 @@ function blInput(level){level=level||state.active;
   D.devices=(D.devices||[]).filter(d=>d&&d.gen!=='bl');D.paths=[];
   // layers: one MAINS layer for the engine (M1 split it in three), hardware off the endpoint list, redőny out
   P.layers=(P.layers||[]).concat([{id:'bl:mains',role:'sys:MAINS'},{id:'bl:hw',role:'bl:hw'},{id:'bl:off',role:'bl:off'}]);
-  let shu=0;
+  let shu=0,avc=0;
   D.devices.forEach(d=>{const live=byId('devices',d.id)||d,code=epCodeOf(live);
     if(!code){d.layer='bl:hw';return;}
     const role=epRoleOf(live);
     if(code==='SHU'){if(d.level===level)shu++;d.layer='bl:off';return;}
+    if(live.cin&&live.cin.av){if(d.level===level)avc++;d.layer='bl:off';return;}   // C7: the cinema's own pass routes its AV circuits (08r)
     if(mnsIs(role))d.layer='bl:mains';
     d.hFix=true;});                                  // heights: as placed — the Standards (R4) set them, not the engine
   if(shu)notes.push(shu+' redőny végpont kimarad: a redőnyvezérlés külön rétegen van (WP-E5 6.).');
+  if(avc)notes.push(avc+' házimozi AV kör kimarad: a Házimozi réteg saját útvonalon vezeti az Elosztóig (C7).');
   const off=new Set(D.devices.filter(d=>d.layer==='bl:off').map(d=>d.id));
   // WP-E6: a level's own circuits only (a circuit with end points on two levels is listed — each level has its own board)
   const onLv=new Set(D.devices.filter(d=>d.level===level).map(d=>d.id));
@@ -17890,7 +17927,7 @@ function blInput(level){level=level||state.active;
   const pv=hv=>{const o=(typeof stdList==='function'?stdList():[]).find(o=>o.code==='PATH'&&o.hv===hv&&o.scope==='project');return o?o.h:null;};
   const cfg={level,ceiling:LH[level]||2850,trunkH:pv('trunk'),distH:pv('dist'),cornerBoxes:BL_OPT.cornerAll?'all':'pull',maxCablesPerPipe:3,
     bedZoneMark:'agy',shutterSwitch:false,mainFeed:true,floorGroups:[],ceilLinks:[]};
-  if(feedEp)cfg.subFeed={x:feedEp.x,y:feedEp.y,n:'Felszálló '+(feedEp.ref||feedEp.id),cable:'NYM5x6',slab:300,ep:feedEp.id,fromAbove:ORD.indexOf(feedEp.level)>ORD.indexOf(level)};
+  if(feedEp)cfg.subFeed={x:feedEp.x,y:feedEp.y,n:'Felszálló '+(feedEp.ref||feedEp.id),cable:'NYM5x6',slab:Math.max(slbT(level),slbT(feedEp.level))||300,ep:feedEp.id,fromAbove:ORD.indexOf(feedEp.level)>ORD.indexOf(level)};
   // switching (E1): sw.ctl + lamp legs (d.grp) + sw.swType → the engine's explicit switch groups. Switches sharing a leg
   // are one unit (2 = váltó, more = kereszt in the middle); one switch with two legs = csillár. chain[0] = the box the
   // lamps hang from: the switch marked swHead, else the end nearest to the lamps.
@@ -18150,6 +18187,913 @@ registerActions([{id:'wf.subBoard',label:'Alosztó lerakása',icon:'🗂',group:
   hint:'Szintenként saját Alosztó (saját RCD-védelem). A betáp-pont és a 3C 25A / NYM-J 5×6 kör a fő Elosztó szintjén, alatta jön létre.',
   when:c=>!c.inEditor,run:()=>alsToolStart()}]);
 window.alsSuggest=alsSuggest;window.alsFloorKw=alsFloorKw;window.alsOnBoard=alsOnBoard;window.alsMain=alsMain;window.alsSubs=alsSubs;
+
+// The table and the level step live in 00-core.js (SLABS, slbT, slbStep — floorRealZ / floorDispZ read them). Answer
+// S1 = B: LH[l] stays the inner height, a common-thickness slab is ADDED between two levels. Here:
+//   - save / load (a file only carries SLABS when one is on, so every older file and capture stays byte-identical);
+//   - the slab body in 3D: the union of the level's floors and walls, extruded DOWN from the floor by t;
+//     a floor with fl.slab === false is a hole (stair, void) — drawing only, the level step cannot vary per floor;
+//   - the switches: room RCO, the ▬ Födém tool (Alapozás, next to Padló létrehozása), the Szintek panel row;
+//   - S3: the slab underside as a drawing height of the upper level (h = −t = the lower level's mennyezet, the lowest
+//     point a path of the upper level reaches), and the cross-level coincidence query. Prefix: slb.
+
+function slbAny(){return ORD.some(l=>slbT(l)>0);}
+// a file carries SLABS only when it matters (golden /session captures unchanged otherwise)
+function slbPut(o){if(slbAny())o.SLABS=JSON.parse(JSON.stringify(SLABS));return o;}
+// load: start from all-off (a file without SLABS has no slab), then take what the file says
+function slbGet(o){ORD.forEach(l=>{SLABS[l]={on:false,t:SLAB_T_DEFAULT};});
+  const src=o&&o.SLABS;if(src)ORD.forEach(l=>{const v=src[l];if(v)SLABS[l]={on:!!v.on,t:Math.max(0,+v.t||SLAB_T_DEFAULT)};});
+  if(typeof slbSyncUI==='function')slbSyncUI();}
+function slbUnderside(l){return floorRealZ(l)-slbT(l);}
+function slbBelow(l){const i=ORD.indexOf(l);return i>0?ORD[i-1]:null;}
+// the one change for every slab switch: the whole model moves (every z above it); the undo entry opts in to SLABS
+function slbSet(levels,on,t){pushUndo(['__slabs']);levels.forEach(l=>{const s=SLABS[l]||(SLABS[l]={on:false,t:SLAB_T_DEFAULT});
+  if(on!=null)s.on=!!on;if(t!=null)s.t=Math.max(0,Math.round(+t||0));});
+  slbSyncUI();if(typeof rebuildDrawH==='function')rebuildDrawH();draw();}
+function slbFloorHole(fl,hole){pushUndo(['floors']);if(hole)fl.slab=false;else delete fl.slab;draw();}
+
+// ---- the slab body: an axis-aligned cell grid over the level's floors + walls --------------------------------------
+// Rooms drawn with the workflow tools are inner faces with the walls between them, so the slab must run under the
+// walls too: a cell is slab when its centre is inside a wall, or inside a floor that is not a hole. Only the outline
+// of that union gets side faces (two neighbouring rooms must not draw a face between them). Polygons that are not
+// axis-aligned come out as a staircase of cells — fine for a slab edge.
+const SLB_MEMO=new Map();
+function slbInputs(l){const walls=(WALLS[l]||[]).map(wr),polys=[],holes=[];
+  data.floors.forEach(fl=>{if(fl.level!==l||!fl.poly||fl.poly.length<3||fl.stage==='outline')return;(fl.slab===false?holes:polys).push(fl.poly);});
+  if(SLAB[l])polys.push(SLAB[l]);(ROOMSB[l]||[]).forEach(rm=>{if(rm.poly&&rm.poly.length>=3)polys.push(rm.poly);});
+  return {walls,polys,holes};}
+function slbOutline(l){const I=slbInputs(l),key=JSON.stringify(I);
+  if(SLB_MEMO.has(key))return SLB_MEMO.get(key);
+  const xs=new Set(),ys=new Set();
+  I.walls.forEach(r=>{xs.add(r.x0);xs.add(r.x1);ys.add(r.y0);ys.add(r.y1);});
+  I.polys.concat(I.holes).forEach(p=>p.forEach(q=>{xs.add(q[0]);ys.add(q[1]);}));
+  const X=[...xs].sort((a,b)=>a-b),Y=[...ys].sort((a,b)=>a-b),nx=X.length-1,ny=Y.length-1,cell=[];
+  const inW=(x,y)=>I.walls.some(r=>x>Math.min(r.x0,r.x1)&&x<Math.max(r.x0,r.x1)&&y>Math.min(r.y0,r.y1)&&y<Math.max(r.y0,r.y1));
+  for(let j=0;j<ny;j++){const row=[];const cy=(Y[j]+Y[j+1])/2;
+    for(let i=0;i<nx;i++){const cx=(X[i]+X[i+1])/2;
+      row.push(inW(cx,cy)||(I.polys.some(p=>pointInPoly(cx,cy,p))&&!I.holes.some(p=>pointInPoly(cx,cy,p))));}
+    cell.push(row);}
+  const on=(i,j)=>i>=0&&j>=0&&i<nx&&j<ny&&cell[j][i];
+  // boundary edges, merged into runs: {a:[x,y], b:[x,y], out:[dx,dy]}
+  const edges=[];
+  for(let j=0;j<=ny;j++){let run=null;for(let i=0;i<=nx;i++){            // horizontal edges at y = Y[j]
+    const up=on(i,j-1),dn=on(i,j),side=(i<nx&&up!==dn)?(dn?-1:1):0;
+    if(run&&run.side!==side){edges.push({a:[X[run.i0],Y[j]],b:[X[i],Y[j]],out:[0,run.side]});run=null;}
+    if(side&&!run)run={i0:i,side};}}
+  for(let i=0;i<=nx;i++){let run=null;for(let j=0;j<=ny;j++){            // vertical edges at x = X[i]
+    const lf=on(i-1,j),rt=on(i,j),side=(j<ny&&lf!==rt)?(rt?-1:1):0;
+    if(run&&run.side!==side){edges.push({a:[X[i],Y[run.j0]],b:[X[i],Y[j]],out:[run.side,0]});run=null;}
+    if(side&&!run)run={j0:j,side};}}
+  const out={edges,cells:cell.reduce((n,r)=>n+r.filter(Boolean).length,0)};
+  if(SLB_MEMO.size>24)SLB_MEMO.clear();SLB_MEMO.set(key,out);return out;}
+// the side faces under the floor (the top is the floors themselves; the underside is never seen from the cameras)
+function slbPushFaces(faces,l,fz){const t=slbT(l);if(!t)return;const z0=fz-t,z1=fz;
+  slbOutline(l).edges.forEach(e=>{let pts=[[e.a[0],e.a[1],z0],[e.b[0],e.b[1],z0],[e.b[0],e.b[1],z1],[e.a[0],e.a[1],z1]];
+    let n0=newell(pts);if(n0[0]*e.out[0]+n0[1]*e.out[1]<0){pts=pts.reverse();n0=newell(pts);}
+    if(!faceVisible(n0))return;const n=rotN(n0,state.rot);
+    faces.push({pts,fill:shade([172,168,158],n),stroke:'#6b665c',op:1,dash:null,
+      key:depthOf((e.a[0]+e.b[0])/2,(e.a[1]+e.b[1])/2,(z0+z1)/2)});});}
+
+// ---- S3: the slab underside as a drawing height ----------------------------------------------------------------------
+// A pseudo guide (never stored in GUIDES, so saved files and the guide panel stay as they were): on a level with a slab
+// it resolves to −t — the lower level's ceiling, the lowest point a path of this level can reach through the slab.
+const SLB_GUIDE={k:'slab',mm:'slab',l:'Födém alja (alsó mennyezet)',c:'#6b5b95',vis:false,jump:true,sys:true};
+// world z of a path node (real spacing, never the exploded display gap)
+function slbNodeZ(level,n){return floorRealZ(level)+(n.h||0);}
+// nodes of two adjacent levels at the same world point (±5 mm): the path between the levels
+function slbThru(){const out=[],ns=[];
+  data.paths.forEach(p=>(p.nodes||[]).forEach(n=>{const l=n.level||p.level;if(l)ns.push({p:p.id,n,l,z:slbNodeZ(l,n)});}));
+  const lower=ns.filter(o=>ns.some(u=>slbBelow(u.l)===o.l));
+  ns.forEach(u=>{if((u.n.h||0)>=0||!slbT(u.l))return;const pl=slbBelow(u.l);
+    lower.forEach(o=>{if(o.l===pl&&Math.abs(o.n.x-u.n.x)<=5&&Math.abs(o.n.y-u.n.y)<=5&&Math.abs(o.z-u.z)<=5)out.push({up:{p:u.p,n:u.n.id,level:u.l},down:{p:o.p,n:o.n.id,level:o.l}});});});
+  return out;}
+// where a riser is welcome: the Jelölés vertical strips tagged felszálló (either level of the crossing)
+function slbRiserSpots(){if(typeof mrkList!=='function')return [];const out=[];
+  mrkList().forEach(m=>{if(m.kind!=='vstrip'||(m.tags||[]).indexOf('felszallo')<0)return;const r=mrkWallById(m.level,m.wall);if(!r)return;
+    const p=mrkFacePt(r,m.side,(m.u0+m.u1)/2,0);const lv=[m.level];const up=ORD[ORD.indexOf(m.level)+1];if(up)lv.push(up);
+    lv.forEach(level=>out.push({level,x:p[0],y:p[1]}));});
+  return out;}
+VALIDATORS.push({code:'slb.*',run:()=>{const out=[];if(!slbAny())return out;
+  const fels=slbRiserSpots();
+  data.paths.forEach(p=>(p.nodes||[]).forEach(n=>{const l=n.level||p.level,h=n.h||0;if(!l||h>=0)return;const t=slbT(l);
+    if(h<-t-0.5)out.push({sev:'error',code:'slb.deep',ref:p.id,msg:'Pálya csomópont a födém alatt ('+h+' mm, födém '+t+' mm) — '+p.id});
+    else if(!fels.some(m=>m.level===l&&Math.hypot(m.x-n.x,m.y-n.y)<=500))
+      out.push({sev:'info',code:'slb.thru',ref:p.id,msg:'Födémáttörés felszálló-jelölés nélkül — '+p.id});}));
+  return out;}});
+
+
+// ---- the slab in the other views ---------------------------------------------------------------------------------------
+function slbAbove(l){const i=ORD.indexOf(l);return i>=0&&i<ORD.length-1?ORD[i+1]:null;}
+// wall elevation (06): the slab of the level above sits on top of a full-height wall, as a hatched band. The band is
+// capped at 40 px so it never leaves the sheet's top margin; its label quotes the real thickness.
+function slbElevBand(d,X,Y,sc,len){const up=slbAbove(d.level),t=up?slbT(up):0;if(!t)return '';
+  const top=wallH(d.level);if(Math.abs((d.H||0)-top)>1)return '';            // a lower wall does not carry the slab
+  const x0=Math.min(X(0),X(len)),w=+(len*sc).toFixed(1),hp=+Math.min(t*sc,40).toFixed(1),y1=Y(top),y0=+(y1-hp).toFixed(1);
+  return `<g class="slb-band"><pattern id="slbh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#e4e1d8"/><line x1="0" y1="0" x2="0" y2="6" stroke="#9a9488" stroke-width="0.8"/></pattern>`
+    +`<rect x="${x0}" y="${y0}" width="${w}" height="${hp}" fill="url(#slbh)" stroke="#6b665c" stroke-width="0.9"/>`
+    +`<text x="${(x0+w/2).toFixed(1)}" y="${(y0+hp/2+3).toFixed(1)}" font-size="9" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">Födém ${t} mm</text>`
+    +`<text x="${(x0+w/2).toFixed(1)}" y="${(y0+hp/2+3).toFixed(1)}" font-size="9" text-anchor="middle" fill="#4f4a42">Födém ${t} mm</text></g>`;}
+// Alaprajz (06e): a hole in the floor you stand on (fl.slab === false) is a void — its edge as a "beyond" line and the
+// void cross; a hole in the slab above is above the cut — outline and cross dashed. Geometry only: the clean plan carries no text.
+function slbPlanEdges(level,z,dash){let svg='',n=0;const pg=(poly,w,da)=>`<polygon points="${p2b(poly.map(p=>[p[0],p[1],z]))}" fill="none" stroke="#111" stroke-width="${bpSW(w)}"${da?` stroke-dasharray="${da}"`:''}/>`;
+  // the void cross: the two diagonals of the hole's bounding box (a hole the size of a room hides its outline in the walls)
+  const cross=(poly,da)=>{const b=polyBBox(poly),ln=(p,q)=>`<polyline points="${p2b([[p[0],p[1],z],[q[0],q[1],z]])}" fill="none" stroke="#111" stroke-width="${bpSW(AP_PEN.hid)}"${da?` stroke-dasharray="${da}"`:''}/>`;
+    return ln([b.x0,b.y0],[b.x1,b.y1])+ln([b.x1,b.y0],[b.x0,b.y1]);};
+  if(slbT(level))data.floors.forEach(fl=>{if(fl.level!==level||fl.slab!==false||!fl.poly||fl.poly.length<3)return;n++;
+    svg+=pg(fl.poly,AP_PEN.beyond,null)+cross(fl.poly,null);});
+  const up=slbAbove(level);
+  if(up&&slbT(up))data.floors.forEach(fl=>{if(fl.level!==up||fl.slab!==false||!fl.poly||fl.poly.length<3)return;n++;svg+=pg(fl.poly,AP_PEN.hid,dash)+cross(fl.poly,dash);});
+  return {svg:svg?`<g class="slb-edge">${svg}</g>`:'',n};}
+// Mennyezet plane (07): path nodes (label: "Emelet ⇣" = through to this ceiling, "Emelet −120" = stops in the slab) of the level above that reach down into its slab. A node at h = −t is ON this
+// ceiling (the lowest point the upper level reaches); a shallower one stops inside the slab. Shown, not editable here.
+function slbThruInto(level,bb){const up=slbAbove(level),t=up?slbT(up):0,out=[];if(!t)return out;
+  data.paths.forEach((p,pi)=>(p.nodes||[]).forEach((n,ni)=>{if((n.level||p.level)!==up||(n.h||0)>=0)return;
+    if(bb&&(n.x<bb.x0||n.x>bb.x1||n.y<bb.y0||n.y>bb.y1))return;
+    out.push({pi,ni,u:n.x,h:n.y,z:n.h||0,on:(n.h||0)<=-t+0.5,level:up});}));
+  return out;}
+function slbThruSvg(d,X,Y){const nm=slbLevelName(d.thru[0].level);return d.thru.map(r=>{const x=X(r.u),y=Y(r.h),col=r.on?'#6b5b95':'#a99cc4';
+  return `<g class="slb-thru"><circle cx="${x}" cy="${y}" r="10" fill="#fff" stroke="${col}" stroke-width="1.8"/><circle cx="${x}" cy="${y}" r="5" fill="none" stroke="${col}" stroke-width="1.2"/>`
+    // short label, on the side of the room with more space (a narrow room otherwise pushes it into the wall)
+    +(()=>{const left=x>X((d.pb.x0+d.pb.x1)/2);return pvText((left?x-13:x+13).toFixed(1),(y+4).toFixed(1),esc(nm+(r.on?' ⇣':' '+Math.round(r.z))),9,col,left?'end':'start');})()+`</g>`;}).join('');}
+function slbCeilNote(level){const up=slbAbove(level),t=up?slbT(up):0;return t?' · a felső födém alja ('+t+' mm)':'';}
+
+// ---- the switches ----------------------------------------------------------------------------------------------------
+function slbLevelName(l){return {basement:'Pince',ground:'Földszint',upper:'Emelet'}[l]||l;}
+function slbRoomMenu(rh,items){const l=rh.level,t=slbT(l);
+  items.push({label:t?('▬ Födém levétele e szint alól ('+t+' mm)'):('▬ Födém e szint alá ('+(SLABS[l].t||SLAB_T_DEFAULT)+' mm)'),act:()=>slbSet([l],!t)});
+  if(t&&rh.src==='F'){const fl=data.floors[rh.i];if(fl)items.push({label:fl.slab===false?'▬ Födém e padló alatt is':'▬ Födém kihagyása e padló alatt (lépcső, áttörés)',act:()=>slbFloorHole(fl,fl.slab!==false)});}}
+function slbDialog(){const row=l=>`<div class="mrow"><label style="width:110px;display:inline-block"><input type="checkbox" class="slbOn" data-l="${l}" ${SLABS[l].on?'checked':''}> ${slbLevelName(l)}</label>`
+    +`<input type="number" class="slbTv" data-l="${l}" value="${SLABS[l].t}" step="10" min="0" style="width:70px"> mm</div>`;
+  openModal('Födém — a szintek alatt',
+    `<div class="mrow" style="font-size:11.5px;color:#666">A belmagasság nem változik: a födém a két szint <b>közé</b> kerül, a felső szint padlója a vastagsággal feljebb kerül. A legalsó szint födéme 0 alá lóg.</div>`
+    +[...ORD].reverse().map(row).join('')
+    +`<div class="mrow"><button id="slbAll">Födém minden szintre (${SLAB_T_DEFAULT} mm)</button> <button id="slbNone">Mind ki</button></div>`,
+    ()=>{pushUndo(['__slabs']);document.querySelectorAll('.slbOn').forEach(c=>{SLABS[c.dataset.l].on=c.checked;});
+      document.querySelectorAll('.slbTv').forEach(i=>{SLABS[i.dataset.l].t=Math.max(0,Math.round(+i.value||0));});
+      slbSyncUI();if(typeof rebuildDrawH==='function')rebuildDrawH();draw();},'Alkalmaz');
+  $('slbAll').onclick=()=>{closeModal();slbSet(ORD,true,SLAB_T_DEFAULT);};
+  $('slbNone').onclick=()=>{closeModal();slbSet(ORD,false);};}
+function slbSyncUI(){const c=$('slbLvlOn'),i=$('slbLvlT');if(!c||!i)return;const l=state.active||'ground';
+  c.checked=!!SLABS[l].on;i.value=SLABS[l].t;const lb=$('slbLvlName');if(lb)lb.textContent=slbLevelName(l);}
+registerActions([{id:'slab.level',label:'Födém',icon:'▬',group:'Helyiség',alias:'fodem slab floor thickness',
+  hint:'Födém a szintek között: a padló alá kerül, a belmagasság marad, a felső szint feljebb kerül.',when:()=>true,run:()=>slbDialog()}]);
+(function(){const b=$('slbBtn');if(b)b.onclick=()=>slbDialog();
+  const c=$('slbLvlOn'),i=$('slbLvlT');
+  if(c)c.onchange=()=>slbSet([state.active],c.checked);
+  if(i)i.onchange=()=>slbSet([state.active],null,i.value);
+  document.querySelectorAll('input[name=al]').forEach(r=>r.addEventListener('change',slbSyncUI));
+  slbSyncUI();})();
+window.slbT=slbT;window.SLABS=SLABS;window.slbSet=slbSet;window.slbOutline=slbOutline;window.slbThru=slbThru;window.slbUnderside=slbUnderside;
+
+// A COUNTED request list per room: "dugalj 4 · lámpa 2 on 2 kapcsolási kör / 1 világítási kör · kapcsolók 105, 106".
+// It extends 05t (ticks per role × room) instead of duplicating it — the room kind (needKind), the openings and their
+// Jelölés tags come from there. Answers: N1 A (one system; 05t reads the counts in N4), N2 A (works without a BRIDGE
+// stack), N3 B (no house data: Ház = the sum of the rooms), N4 B (the világítási kör is asked too; the number of
+// kapcsolási kör is the primary number, the pairing is optional), N5 B (a switch row is its type only), N6 A (soft:
+// nothing is created). Erősáram only in this round; the other layers join by adding REQ_ITEMS rows (40_INTEGRATION).
+//
+// The layer: role 'need' (*Igények*) right after Jelölés, OPTIONAL (opt:true — a new stack does not get it; the user
+// adds it), or a plain layer {req:true} when there is no stack. The data lives on the room (rm.req), so it survives
+// the layer. Prefix: req.
+
+STK_ROLES.splice(STK_ROLES.findIndex(r=>r.k==='mark')+1,0,
+  {k:'need', n:'Igények', ph:1, opt:true, cats:['mark'], hint:'Helyiségenkénti igénylista: mi kell és hány darab (dugalj, lámpa, kapcsolási kör, kapcsoló). A Ház = a helyiségek összege.'});
+STK_ICONS.need='☑';STK_COL.need='#5d6d7e';
+// its Info text (RLI_TEXT.need) is in 13-role-info.js — that const is still in its TDZ here
+
+// ---- N2: the Erősáram items --------------------------------------------------------------------------------------------
+// kind: n = a count · rows = a list (each row its own spec) · lamp = n lámpa / k kapcsolási kör / v világítási kör
+const REQ_ITEMS=[
+ {k:'soc',    n:'Dugalj',                     role:'sys:SOC',  code:'SOC', kind:'n',    f:{n:'db',dbl:'ebből dupla'}},
+ {k:'soc_app',n:'Készülék dugalj',            role:'sys:SOC',  code:'SOC', kind:'rows', f:{n:'készülék',h:'magasság'}},
+ {k:'lmp',    n:'Lámpa',                      role:'sys:LIGHT',code:'LMP', kind:'lamp', f:{n:'lámpa',k:'kapcsolási kör',v:'világítási kör'}},
+ {k:'swi',    n:'Kapcsoló',                   role:'sys:LIGHT',code:'SWI', kind:'rows', f:{type:'típus'}},
+ {k:'shu',    n:'Redőny / árnyékoló',         role:'sys:LIGHT',code:'SHU', kind:'n',    f:{n:'db'}},
+ {k:'ded',    n:'Dedikált fogyasztó',         role:'sys:DED',  code:'DED', kind:'rows', f:{n:'fogyasztó',A:'A',ph:'fázis'}},
+ // R1 (2026-10-18): at a bedside spot — a socket + a 101 switch + the reading light above it, per side. It adds to the
+ // dugalj / lámpa / kapcsoló totals (one kapcsolási kör per side), it is not a device of its own.
+ {k:'read',   n:'Olvasólámpa az ágy mellett (dugalj + 101 + lámpa)', role:'sys:LIGHT', code:null, kind:'n', f:{n:'oldal'}}];
+// the switch types a row may take (the HU codes — 105 csillár · 106 váltó · 107 kereszt · 108 dupla váltó; never renumber)
+const REQ_SW_TYPES=['101','105','106','107','108','100','redony'];
+function reqItem(k){return REQ_ITEMS.find(x=>x.k===k)||null;}
+
+// room kind → the suggestion. Numbers = the WF R4 standards practice; ⏸ the user reviews this table before N3.
+// lmp: [n lámpa, k kapcsolási kör]; swi: 'auto' = from k and the door count; a list = fixed rows.
+const REQ_SUGGEST={
+ eloszoba: {soc:{n:1},          lmp:[1,1], swi:'auto'},
+ nappali:  {soc:{n:6,dbl:2},    lmp:[3,2], swi:['105']},
+ konyha:   {soc:{n:5},          soc_app:[{n:'hűtő'},{n:'mosogatógép'},{n:'páraelszívó',h:1900}], lmp:[2,2], swi:['105'],
+            ded:[{n:'sütő',A:16,ph:1},{n:'főzőlap',A:16,ph:3}]},
+ etkezo:   {soc:{n:2},          lmp:[1,1], swi:'auto'},
+ halo:     {soc:{n:4,dbl:2},    lmp:[1,1], swi:['106','107','106'], opt:{read:2}},   // R1: one string ajtó → ágy egyik oldala → másik oldala; option: olvasólámpa per side
+ dolgozo:  {soc:{n:4},          lmp:[1,1], swi:'auto'},
+ furdo:    {soc:{n:0},          soc_app:[{n:'borotva',h:1400},{n:'mosógép'}], lmp:[2,2], swi:['105']},   // tükör külön kör
+ wc:       {soc:{n:0},          lmp:[1,1], swi:['101']},
+ kamra:    {soc:{n:0},          lmp:[1,1], swi:['101']},
+ kozlekedo:{soc:{n:1},          lmp:['len',1], swi:'auto'},            // 1 lámpa / 3 m a hosszabb oldalon
+ gepeszet: {soc:{n:2},          lmp:[1,1], swi:['101'], ded:[{n:'kazán',A:10,ph:1}]},
+ kulter:   {soc:{n:1},          lmp:[1,1], swi:['101']},                // IP44, a kapcsoló belül
+ egyeb:    {soc:{n:2},          lmp:[1,1], swi:'auto'}};
+
+// switch rows from the number of kapcsolási kör and doors: 1 door → 101 (k 1) / 105 (k 2) / 101 + 105… ; 2 doors → a 106
+// pair (k 2: 108 pair); 3+ doors → 106 + 107 × (doors − 2) + 106. More than 2 kör from one door: one 105 per two kör.
+function reqSwAuto(k,doors){k=Math.max(1,k|0);doors=Math.max(1,doors|0);
+  if(doors===1){const out=[];let left=k;while(left>0){out.push(left>=2?'105':'101');left-=2;}return out;}
+  const end=k>=2?'108':'106',mid=[];for(let i=0;i<doors-2;i++)mid.push('107');
+  return [end].concat(mid,[end]);}
+function reqRoomId(rm){const e=typeof needRoomEntry==='function'?needRoomEntry(rm):null;return e&&stkRoomId(e);}
+function reqDoors(rm){const rid=reqRoomId(rm);return rid&&typeof needOpenings==='function'?needOpenings(rid,'door').length:1;}
+function reqShutters(rm){const rid=reqRoomId(rm);if(!rid||typeof needOpenings!=='function'||typeof mrkOpeningTags!=='function')return 0;
+  return needOpenings(rid,'window').filter(o=>{const t=mrkOpeningTags(o.id);return t.indexOf('redony')>=0||t.indexOf('arnyekolo')>=0;}).length;}
+// the suggestion for one room, as a full rm.req.items object
+function reqSuggest(rm){const kind=typeof needKind==='function'?needKind(rm):'egyeb',S=REQ_SUGGEST[kind]||REQ_SUGGEST.egyeb,it={};
+  const copy=o=>JSON.parse(JSON.stringify(o));
+  if(S.soc&&S.soc.n>0)it.soc=Object.assign({n:0,dbl:0},copy(S.soc));
+  if(S.soc_app)it.soc_app={rows:copy(S.soc_app)};
+  if(S.lmp){let n=S.lmp[0];if(n==='len'){const b=rm&&rm.poly?polyBBox(rm.poly):null;n=b?Math.max(1,Math.round(Math.max(b.x1-b.x0,b.y1-b.y0)/3000)):1;}
+    it.lmp={n,k:Math.min(n,S.lmp[1]),v:1};}
+  const rows=S.swi==='auto'?reqSwAuto(it.lmp?it.lmp.k:1,reqDoors(rm)):(S.swi||[]);
+  if(rows.length)it.swi={rows:rows.map(t=>({type:t}))};
+  const sh=reqShutters(rm);if(sh)it.shu={n:sh};
+  if(S.ded)it.ded={rows:copy(S.ded)};
+  return {kind,items:it,opt:S.opt?copy(S.opt):{}};}   // opt: offered, not applied by reqTake (the bedside reading light)
+
+// ---- N1: the data ------------------------------------------------------------------------------------------------------
+function reqOf(rm){return rm&&rm.req&&rm.req.items?rm.req:null;}
+function reqSaved(rm){return !!reqOf(rm);}
+// what the room asks for: the saved list, else nothing (a suggestion is only taken by the user — N6 A)
+function reqItems(rm){const r=reqOf(rm);return r?r.items:{};}
+function reqUndo(rm,label){const isFloor=data.floors.indexOf(rm)>=0;if(isFloor)pushUndo(['floors']);
+  else if(typeof lyrHud==='function')lyrHud('Épületmodell-helyiség: ez a módosítás nem vonható vissza.');
+  if(typeof invalidateShell==='function')invalidateShell();}
+// one item: spec = null removes it; n / k / v are clamped (k ≤ n, v ≤ k), rows keep only known switch types
+function reqClean(key,spec){const I=reqItem(key);if(!I||spec==null)return null;const o=JSON.parse(JSON.stringify(spec));
+  const nn=v=>Math.max(0,Math.round(+v||0));
+  if(I.kind==='n'){o.n=nn(o.n);if(o.dbl!=null)o.dbl=Math.min(o.n,nn(o.dbl));}
+  if(I.kind==='lamp'){o.n=nn(o.n);o.k=Math.min(o.n,Math.max(o.n?1:0,nn(o.k)));o.v=Math.min(Math.max(o.k,o.k?1:0),Math.max(o.k?1:0,nn(o.v||1)));
+    if(Array.isArray(o.pair))o.pair=o.pair.filter(p=>p&&p.kk>=1&&p.kk<=o.k&&p.vk>=1&&p.vk<=o.v);}
+  if(I.kind==='rows'){o.rows=(o.rows||[]).filter(Boolean);if(key==='swi')o.rows=o.rows.filter(r=>REQ_SW_TYPES.indexOf(String(r.type))>=0);}
+  return o;}
+function reqSet(rm,key,spec){if(!rm||!reqItem(key))return false;reqUndo(rm);
+  rm.req=rm.req||{v:1,items:{}};const c=reqClean(key,spec);if(c)rm.req.items[key]=c;else delete rm.req.items[key];
+  return true;}
+// take the suggestion (one undo step); keep = keys the user already set stay as they are
+function reqTake(rm,keep){if(!rm)return false;const S=reqSuggest(rm);reqUndo(rm);
+  const old=reqItems(rm),items={};Object.keys(S.items).forEach(k=>{items[k]=reqClean(k,S.items[k]);});
+  if(keep)Object.keys(old).forEach(k=>{items[k]=old[k];});
+  rm.req={v:1,items};return true;}
+function reqClear(rm){if(!rm||!rm.req)return false;reqUndo(rm);delete rm.req;return true;}
+// how many units an item asks for (rows → row count; soc_app counts as sockets, ded as consumers)
+function reqCount(key,spec){const I=reqItem(key);if(!I||!spec)return 0;return I.kind==='rows'?(spec.rows||[]).length:(+spec.n||0);}
+// N3 B: the house is the sum of every room — no data of its own
+function reqRooms(){const out=[];ORD.forEach(l=>allRooms(l).forEach(e=>{if(reqOf(e.rm))out.push({level:l,rm:e.rm});}));return out;}
+function reqHouseSum(){const sum={},sw={};
+  reqRooms().forEach(({rm})=>{const it=reqItems(rm);Object.keys(it).forEach(k=>{
+    const s=sum[k]||(sum[k]={key:k,n:0,rooms:0});s.n+=reqCount(k,it[k]);s.rooms++;
+    if(k==='soc'){s.dbl=(s.dbl||0)+(+it[k].dbl||0);}
+    if(k==='lmp'){s.k=(s.k||0)+(+it[k].k||0);s.v=(s.v||0)+(+it[k].v||0);}
+    if(k==='swi')(it[k].rows||[]).forEach(r=>{sw[r.type]=(sw[r.type]||0)+1;});});});
+  if(sum.swi)sum.swi.byType=sw;
+  return sum;}
+
+// ---- the layer -----------------------------------------------------------------------------------------------------------
+function reqLayer(){const S=typeof stkActive==='function'?stkActive():null;
+  return (S&&stkLayer(S.id,'need'))||layers.find(l=>l.req)||null;}
+// add it: inside the active stack right after Jelölés (role need); without a stack a plain layer {req:true}
+function reqLayerAdd(){const ex=reqLayer();if(ex){state.activeLayer=ex.id;lyrRefresh();return ex;}
+  lyrPushUndo();const S=typeof stkActive==='function'?stkActive():null;let L;
+  if(S){L=stkMakeLayer(S,stkRole('need'));const mk=stkLayer(S.id,'mark');const at=mk?layers.indexOf(mk)+1:layers.length;layers.splice(at,0,L);stkSync(S);}
+  else{L={id:lyrNewId(),name:'Igények',visible:true,cats:layerCatsAll(),req:true};layers.push(L);}
+  state.activeLayer=L.id;lyrRefresh();if(typeof lyrHud==='function')lyrHud('Igények réteg: jobb klikk egy helyiségen → Igénylista.');
+  return L;}
+registerActions([{id:'req.layer',label:'Igénylista réteg',icon:'☑',group:'Réteg',alias:'igenylista igenyek checklist needs requests layer',
+  hint:'Helyiségenkénti igénylista darabszámokkal (dugalj, lámpa, kapcsolási kör, kapcsoló). Stackben a Jelölés után.',
+  when:()=>true,run:()=>reqLayerAdd()}]);
+if(typeof STK_LAYERMENU!=='undefined')STK_LAYERMENU.push((L,items)=>{if(L.role==='mark'&&L.stack&&!stkLayer(L.stack,'need'))
+  items.push({label:'☑ Igények réteg hozzáadása',act:()=>{state.activeLayer=L.id;reqLayerAdd();}});});
+window.REQ_ITEMS=REQ_ITEMS;window.REQ_SUGGEST=REQ_SUGGEST;
+
+// ---- N4: what the room has vs what it asks for ---------------------------------------------------------------------------
+// the totals a request adds up to (the bedside reading light adds a socket, a lamp, a kapcsolási kör and a 101 per side)
+function reqTotals(rm){const it=reqItems(rm),rd=+((it.read||{}).n)||0,T={SOC:0,LMP:0,KK:0,VK:0,SWI:0,SHU:0,DED:0,sw:{}};
+  if(it.soc)T.SOC+=+it.soc.n||0;if(it.soc_app)T.SOC+=(it.soc_app.rows||[]).length;T.SOC+=rd;
+  if(it.lmp){T.LMP+=+it.lmp.n||0;T.KK+=+it.lmp.k||0;T.VK+=+it.lmp.v||0;}T.LMP+=rd;T.KK+=rd;
+  ((it.swi&&it.swi.rows)||[]).forEach(r=>{T.SWI++;T.sw[r.type]=(T.sw[r.type]||0)+1;});
+  if(rd){T.SWI+=rd;T.sw['101']=(T.sw['101']||0)+rd;}
+  if(it.shu)T.SHU+=+it.shu.n||0;if(it.ded)T.DED+=(it.ded.rows||[]).length;
+  return T;}
+// devices standing in the room (any layer — the list works without a stack): counts by code, kapcsolási kör = the
+// distinct lamp groups (d.grp, set by the Kapcsolások tool E1), switches by their type
+function reqHave(rm){const e=typeof needRoomEntry==='function'?needRoomEntry(rm):null,H={SOC:0,LMP:0,KK:0,SWI:0,SHU:0,DED:0,sw:{}};if(!e)return H;
+  const grp=new Set();
+  data.devices.forEach(d=>{if(!d||d.level!==e.level)return;const r=roomOfDevice(d);if(!r||r.rm!==rm)return;
+    const c=epCodeOf(d);if(c==='SWI'||d.type==='switch'){H.SWI++;const t=d.swType||'101';H.sw[t]=(H.sw[t]||0)+1;return;}
+    if(c&&c!=='sw'&&c in H){H[c]++;if(c==='LMP'&&d.grp!=null)grp.add(d.grp);}});
+  H.KK=grp.size;return H;}
+// rows of the comparison; soft rows (kör, types) are shown but never hold the room back (N6 A: soft)
+const REQ_ROWS=[{k:'SOC',n:'Dugalj'},{k:'LMP',n:'Lámpa'},{k:'KK',n:'Kapcsolási kör',soft:true},{k:'SWI',n:'Kapcsoló'},{k:'SHU',n:'Redőny'},{k:'DED',n:'Dedikált'}];
+function reqStatus(rm){if(!reqOf(rm))return {st:'off',rows:[]};const T=reqTotals(rm),H=reqHave(rm);
+  const rows=REQ_ROWS.filter(r=>T[r.k]>0).map(r=>({k:r.k,n:r.n,need:T[r.k],have:H[r.k],soft:!!r.soft,ok:H[r.k]>=T[r.k]}));
+  Object.keys(T.sw).forEach(t=>rows.push({k:'sw'+t,n:'· '+t,need:T.sw[t],have:H.sw[t]||0,soft:true,ok:(H.sw[t]||0)>=T.sw[t]}));
+  const hard=rows.filter(r=>!r.soft);
+  return {st:!hard.length?'empty':hard.every(r=>r.ok)?'done':'open',rows};}
+// N1 A: the 05t tick list of an Erősáram role, read from the counts (a role saved in rm.needs still wins in 05t)
+const REQ_CODE_ROLE={SOC:'sys:SOC',LMP:'sys:LIGHT',SWI:'sys:LIGHT',SHU:'sys:LIGHT',DED:'sys:DED'};
+function reqNeedOf(rm,role){if(!reqOf(rm))return null;const T=reqTotals(rm);let any=false;const o={};
+  Object.keys(REQ_CODE_ROLE).forEach(c=>{if(REQ_CODE_ROLE[c]===role){any=true;if(T[c]>0)o[c]=true;}});
+  return any?o:null;}
+
+// ---- N3: the dialog ------------------------------------------------------------------------------------------------------
+const REQ_ST={off:{n:'nincs lista',c:'#9aa0a6'},empty:{n:'üres',c:'#9aa0a6'},open:{n:'hiányos',c:'#d08a1e'},done:{n:'kész',c:'#2e9e5b'}};
+function reqRoomName(rm){return (rm.num?rm.num+' ':'')+(rm.name||rm.id||'Helyiség');}
+function reqSugText(key,v){if(v==null)return '';const I=reqItem(key);if(!I)return '';
+  if(I.kind==='n')return v.n+(v.dbl?' ('+v.dbl+' dupla)':'');
+  if(I.kind==='lamp')return v.n+' lámpa / '+v.k+' kör / '+v.v+' vil. kör';
+  return (v.rows||[]).map(r=>key==='swi'?r.type:(r.n+(r.A?' '+(r.ph===3?'3×':'')+r.A+' A':'')+(r.h?' '+r.h:''))).join(', ')||'—';}
+function reqSwLabel(t){if(t==='redony')return 'redőny';const s=typeof switchType==='function'?switchType(t):null;return s&&s.k===t?s.l:t;}
+function reqInput(key,f,val,i,w){const di=i==null?'':` data-i="${i}"`;
+  if(key==='swi'&&f==='type')return `<select class="rqF" data-k="${key}" data-f="${f}"${di}>`
+    +REQ_SW_TYPES.map(t=>`<option value="${t}" ${String(val)===t?'selected':''}>${esc(reqSwLabel(t))}</option>`).join('')+`</select>`;
+  const num=!(f==='n'&&reqItem(key).kind==='rows');
+  return `<input class="rqF" data-k="${key}" data-f="${f}"${di} ${num?'type="number" min="0" step="1"':''} value="${esc(val==null?'':String(val))}" style="width:${w||(num?52:110)}px">`;}
+function reqSugOf(sug,k){return sug.items[k]!=null?sug.items[k]:(sug.opt&&sug.opt[k]!=null?{n:sug.opt[k]}:null);}
+function reqRowHtml(rm,I,sug){const it=reqItems(rm),v=it[I.k],on=!!v,sv=reqSugOf(sug,I.k);
+  let body='';
+  if(on&&I.kind==='n')body=Object.keys(I.f).map(f=>`${reqInput(I.k,f,v[f]||0)} ${esc(I.f[f])}`).join(' &nbsp; ');
+  if(on&&I.kind==='lamp'){body=`${reqInput(I.k,'n',v.n)} lámpa · ${reqInput(I.k,'k',v.k)} <b>kapcsolási kör</b> · ${reqInput(I.k,'v',v.v)} világítási kör`;
+    if(v.k>1&&v.v>1){const pr=v.pair||[];body+=`<details style="margin-top:3px"><summary style="font-size:11px;color:#666">Párosítás (nem kötelező)</summary>`
+      +Array.from({length:v.k},(_,i)=>{const p=pr.find(x=>x.kk===i+1);return `<span style="font-size:11px;margin-right:8px">${i+1}. kapcsolási kör → <select class="rqP" data-kk="${i+1}"><option value="">—</option>`
+        +Array.from({length:v.v},(_,j)=>`<option value="${j+1}" ${p&&p.vk===j+1?'selected':''}>${j+1}. vil. kör</option>`).join('')+`</select></span>`;}).join('')+`</details>`;}}
+  if(on&&I.kind==='rows')body=(v.rows||[]).map((r,i)=>`<div>`+Object.keys(I.f).map(f=>reqInput(I.k,f,r[f],i,f==='n'?110:48)+(f==='type'?'':' <span style="font-size:11px;color:#888">'+esc(I.f[f])+'</span>')).join(' ')
+      +` <a href="#" class="rqDel" data-k="${I.k}" data-i="${i}" title="sor törlése">✕</a></div>`).join('')+`<a href="#" class="rqAdd" data-k="${I.k}" style="font-size:11px">+ sor</a>`;
+  return `<div style="margin:5px 0;padding:4px 0;border-top:1px solid #eee"><label><input type="checkbox" class="rqOn" data-k="${I.k}" ${on?'checked':''}> <b>${esc(I.n)}</b></label>`
+    +(sv?` <span style="font-size:11px;color:#888">javaslat: ${esc(reqSugText(I.k,sv))}</span>`:'')
+    +(body?`<div style="margin:3px 0 0 20px">${body}</div>`:'')+`</div>`;}
+// the item a ticked checkbox starts from: the suggestion, else a one-unit default
+function reqStart(sug,k){const I=reqItem(k),sv=reqSugOf(sug,k);if(sv)return sv;
+  return I.kind==='rows'?{rows:[k==='swi'?{type:'101'}:{n:''}]}:I.kind==='lamp'?{n:1,k:1,v:1}:{n:1};}
+function reqDialog(rm){if(!rm)return;const sug=reqSuggest(rm),S=reqStatus(rm),kn=(typeof NEED_KINDS!=='undefined'&&(NEED_KINDS.find(k=>k.k===sug.kind)||{}).n)||sug.kind;
+  const tbl=S.rows.length?`<table style="font-size:11.5px;border-collapse:collapse;margin-top:4px"><tr><th align="left">tétel</th><th>kell</th><th>van</th></tr>`
+    +S.rows.map(r=>`<tr style="color:${r.ok?'#2e9e5b':r.soft?'#888':'#d08a1e'}"><td>${esc(r.n)}</td><td align="center">${r.need}</td><td align="center">${r.have}${r.ok?' ✓':''}</td></tr>`).join('')+`</table>`:'';
+  const stk=typeof stkActive==='function'&&stkActive();
+  openModal('☑ Igénylista — '+esc(reqRoomName(rm)),
+    `<div class="mrow" style="font-size:12px">Fajta: <b>${esc(kn)}</b> · <span style="color:${REQ_ST[S.st].c}">● ${REQ_ST[S.st].n}</span></div>`
+    +`<div class="mrow"><button id="rqTake">Javaslat átvétele</button> <button id="rqKeep" title="A már beállított tételek maradnak">Javaslat a hiányzókra</button> <button id="rqClr">Lista törlése</button>`
+    +(stk?` <a href="#" id="rqOld" style="font-size:11px">rétegenkénti pipák…</a>`:'')+`</div>`
+    +`<div id="rqBody" style="max-height:380px;overflow:auto">`+REQ_ITEMS.map(I=>reqRowHtml(rm,I,sug)).join('')+tbl+`</div>`
+    +`<div class="mrow" style="font-size:11px;color:#888">A lista nem hoz létre készüléket — a rétegeken elhelyezett készülékek teljesítik. A kapcsolási kör és a típusok tájékoztató sorok.</div>`,
+    ()=>{},'Bezár');
+  const again=()=>{const b=$('rqBody'),y=b?b.scrollTop:0;closeModal();reqDialog(rm);const b2=$('rqBody');if(b2)b2.scrollTop=y;if(typeof draw==='function')draw();};
+  const cur=k=>JSON.parse(JSON.stringify(reqItems(rm)[k]||{}));
+  document.querySelectorAll('.rqOn').forEach(c=>c.onchange=()=>{const k=c.dataset.k;reqSet(rm,k,c.checked?reqStart(sug,k):null);again();});
+  document.querySelectorAll('.rqF').forEach(inp=>inp.onchange=()=>{const k=inp.dataset.k,f=inp.dataset.f,i=inp.dataset.i,o=cur(k);
+    const val=inp.type==='number'?(+inp.value||0):inp.value;
+    if(i!=null&&i!==''){o.rows=o.rows||[];o.rows[+i]=Object.assign({},o.rows[+i],{[f]:val});}else o[f]=val;
+    reqSet(rm,k,o);again();});
+  document.querySelectorAll('.rqP').forEach(sel=>sel.onchange=()=>{const o=cur('lmp'),kk=+sel.dataset.kk;o.pair=(o.pair||[]).filter(p=>p.kk!==kk);
+    if(sel.value)o.pair.push({kk,vk:+sel.value});o.pair.sort((a,b)=>a.kk-b.kk);reqSet(rm,'lmp',o);again();});
+  document.querySelectorAll('.rqAdd').forEach(a=>a.onclick=ev=>{ev.preventDefault();const k=a.dataset.k,o=cur(k);o.rows=(o.rows||[]).concat([k==='swi'?{type:'101'}:{n:''}]);reqSet(rm,k,o);again();});
+  document.querySelectorAll('.rqDel').forEach(a=>a.onclick=ev=>{ev.preventDefault();const k=a.dataset.k,o=cur(k);o.rows.splice(+a.dataset.i,1);reqSet(rm,k,o.rows.length?o:null);again();});
+  $('rqTake').onclick=()=>{reqTake(rm);again();};
+  $('rqKeep').onclick=()=>{reqTake(rm,true);again();};
+  $('rqClr').onclick=()=>{reqClear(rm);again();};
+  if($('rqOld'))$('rqOld').onclick=ev=>{ev.preventDefault();closeModal();needDialog(rm);};}
+// the house: the sum of the rooms (N3 B) + every room with its status
+function reqHouseTotals(){const T={SOC:0,LMP:0,KK:0,VK:0,SWI:0,SHU:0,DED:0,sw:{}};
+  reqRooms().forEach(({rm})=>{const t=reqTotals(rm);Object.keys(T).forEach(k=>{if(k==='sw')Object.keys(t.sw).forEach(s=>{T.sw[s]=(T.sw[s]||0)+t.sw[s];});else T[k]+=t[k];});});
+  return T;}
+function reqHouseDialog(){const T=reqHouseTotals(),rooms=[];ORD.forEach(l=>allRooms(l).forEach(e=>{if(e.rm.poly&&e.rm.poly.length>=3)rooms.push(e);}));
+  const line=(n,v)=>`<tr><td>${esc(n)}</td><td align="right"><b>${v}</b></td></tr>`;
+  openModal('☑ Ház összesítő — a helyiségek igénylistáinak összege',
+    `<table style="font-size:12px;border-collapse:collapse;min-width:260px">`
+    +line('Dugalj (készülék és olvasó dugaljjal)',T.SOC)+line('Lámpa',T.LMP)+line('Kapcsolási kör',T.KK)+line('Világítási kör (helyiségenként összeadva)',T.VK)
+    +line('Kapcsoló',T.SWI)+Object.keys(T.sw).sort().map(t=>line(' · '+reqSwLabel(t),T.sw[t])).join('')+line('Redőny',T.SHU)+line('Dedikált fogyasztó',T.DED)+`</table>`
+    +`<div style="max-height:260px;overflow:auto;margin-top:8px"><table style="font-size:11.5px">`
+    +rooms.map((e,i)=>{const st=reqStatus(e.rm).st;return `<tr class="rqRoom" data-i="${i}" style="cursor:pointer"><td>${esc(reqRoomName(e.rm))}</td><td style="color:${REQ_ST[st].c}">● ${REQ_ST[st].n}</td></tr>`;}).join('')
+    +`</table></div><div class="mrow" style="font-size:11px;color:#888">Kattints egy helyiségre a listájáért.${reqRooms().length?'':' Még egy helyiségnek sincs listája.'}</div>`,()=>{},'Bezár');
+  document.querySelectorAll('.rqRoom').forEach(tr=>tr.onclick=()=>{const e=rooms[+tr.dataset.i];closeModal();reqDialog(e.rm);});}
+function reqRoomMenu(rh,items){items.push({label:'☑ Igénylista… (darabszámok)',act:()=>reqDialog(rh.rm)});}
+registerActions([{id:'req.house',label:'Ház összesítő (igénylista)',icon:'☑',group:'Helyiség',alias:'haz osszesito igenylista house summary requests',
+  hint:'A helyiségek igénylistáinak összege és állapota.',when:()=>true,run:()=>reqHouseDialog()}]);
+
+// A special-rules layer (30_MOZI.md). C1: role sys:CINEMA right after Média és hang (C1 A), off by default — added on
+// demand, inside the active stack or as a plain layer without one. C2: the setup — pick the room, DRAG the screen line
+// in it (C2 B: it snaps parallel to the nearest wall; that wall is the screen wall, the distance is x_scr), confirm
+// the cinema zone rectangle (C3 D: starts as the largest rectangle on the screen wall), then "javaslat?" with the
+// format / display / eye height / angle (C4: 7.1 always allowed, a warning note when it does not fit).
+// C4: the suggestion is a DRAWING-ONLY overlay at 30 % (C5 B) — speakers, subs, projector, rack, the seat, the beam
+// keep-out wedge and the track-light band at 12 %; room RCO *Javasolt helyek létrehozása* turns it into ideal spots
+// (C5 A on demand). Layer data: L.cinema (mm, plan coordinates). The numbers come from cinCalc (08ra). Prefix: cin.
+
+STK_ROLES.splice(STK_ROLES.findIndex(r=>r.k==='sys:MEDIA')+1,0,
+  {k:'sys:CINEMA',n:'Házimozi',ph:2,fam:'MEDIA',off:true,hint:'Hangszórók, projektor, vászon, rack — saját pálya, saját kör (C1–C7).'});
+STK_ICONS['sys:CINEMA']='🎬';STK_COL['sys:CINEMA']='#5b3f8c';
+// the cinema nodes (C5 catalogue); the signal cables are family CINEMA (C7, 08rb), the 230 V feeds MAINS
+[{code:'CLR',n:'Front hangfal (L / C / R)',mount:'wall',h:1150,vars:[{k:'25',n:'Hangszórókábel 2×2,5',cab:[{c:'SPK2x25',w:'M20',fam:'CINEMA'}]}]},
+ {code:'CSR',n:'Oldalsó surround (Ls / Rs)',mount:'wall',h:1750,vars:[{k:'25',n:'Hangszórókábel 2×2,5',cab:[{c:'SPK2x25',w:'M20',fam:'CINEMA'}]}]},
+ {code:'CBK',n:'Hátsó surround (Lb / Rb)',mount:'wall',h:1750,vars:[{k:'25',n:'Hangszórókábel 2×2,5',cab:[{c:'SPK2x25',w:'M20',fam:'CINEMA'}]}]},
+ {code:'CSW',n:'Mélysugárzó',mount:'floor',h:0,vars:[{k:'lfe',n:'LFE + 230 V a padlóban',cab:[{c:'LFE',w:'M25',fam:'CINEMA'},{c:'NYM3x25',w:'M20',fam:'MAINS',from:'board'}]}]},
+ {code:'CPJ',n:'Projektor',mount:'ceiling',vars:[{k:'aoc',n:'HDMI AOC + Cat6A + 230 V (Ø40 gerinc)',cab:[{c:'AOC_FIX',w:'M40',fam:'CINEMA'},{c:'CAT6A_U',w:'M20',fam:'CINEMA'},{c:'NYM3x25',w:'M20',fam:'MAINS',from:'board'}]}]},
+ {code:'CSC',n:'Motoros vászon',mount:'ceiling',vars:[{k:'mot',n:'230 V + vezérlő érpár',cab:[{c:'NYM3x25',w:'M20',fam:'MAINS',from:'board'},{c:'TRIG2x075',w:'M20',fam:'CINEMA'}]}]},
+ {code:'CTV',n:'TV (síkképernyő)',mount:'wall',h:1200,vars:[{k:'aoc',n:'HDMI AOC + Cat6A + 230 V',cab:[{c:'AOC_FIX',w:'M40',fam:'CINEMA'},{c:'CAT6A_U',w:'M20',fam:'CINEMA'},{c:'NYM3x25',w:'M20',fam:'MAINS',from:'board'}]}]},
+ {code:'CRK',n:'AV rack / erősítő',mount:'wall',h:300,vars:[{k:'std',n:'Rack: 2 dedikált kör + 2 × Cat6A',cab:[{c:'NYM3x25',w:'M25',fam:'MAINS',from:'board'},{c:'CAT6A_U',n:2,w:'M25',fam:'DATA'}]}]}]
+ .forEach(e=>{if(!EP_CAT.some(x=>x.code===e.code))EP_CAT.push(Object.assign({new:true,role:'sys:CINEMA',cat:'device',topo:'star',from:'rbx'},e));});
+Object.assign(ICO_BY_CODE,{CLR:'speaker',CSR:'speaker',CBK:'speaker',CSW:'speaker',CPJ:'screen',CSC:'screen',CTV:'screen',CRK:'avp'});   // 05z marks
+
+// ---- C1: the layer -----------------------------------------------------------------------------------------------------
+function cinLayers(){return layers.filter(l=>l.role==='sys:CINEMA');}
+function cinLayer(){const S=typeof stkActive==='function'?stkActive():null;const A=lyrLayer(state.activeLayer);
+  if(A&&A.role==='sys:CINEMA')return A;return (S&&stkLayer(S.id,'sys:CINEMA'))||cinLayers()[0]||null;}
+function cinLayerAdd(){lyrPushUndo();const S=typeof stkActive==='function'?stkActive():null;let L;
+  if(S){L=stkMakeLayer(S,stkRole('sys:CINEMA'));const md=stkLayer(S.id,'sys:MEDIA');let at=layers.length;
+    if(md)at=layers.indexOf(md)+1;else{const after=S.layers.map(lyrLayer).filter(x=>x&&stkRoleIx(x.role)<stkRoleIx('sys:CINEMA')).pop();if(after)at=layers.indexOf(after)+1;}
+    layers.splice(at,0,L);stkSync(S);}
+  else{L={id:lyrNewId(),name:'Házimozi',visible:true,cats:layerCatsAll(),role:'sys:CINEMA'};layers.push(L);}
+  state.activeLayer=L.id;lyrRefresh();return L;}
+// the room record of a cinema (rooms are found by id; building-model rooms have Y ids)
+function cinRoom(C){if(!C)return null;for(const l of ORD){const e=allRooms(l).find(x=>x.rm&&x.rm.id===C.room);if(e)return e;}return null;}
+
+// ---- C2: geometry — screen side, zone, the frame the calculator works in -----------------------------------------------
+// n = into the room; t = the VIEWER'S LEFT (facing the screen = facing −n; plan y grows down the screen): +y of the guide
+const CIN_SIDES={y0:{n:[0,1],t:[-1,0]},y1:{n:[0,-1],t:[1,0]},x0:{n:[1,0],t:[0,1]},x1:{n:[-1,0],t:[0,-1]}};
+// the drag line → screen side + x_scr. A line more horizontal than vertical faces a y side, the nearer bbox edge wins.
+function cinLineSide(rm,p0,p1){const b=polyBBox(rm.poly),hz=Math.abs(p1[0]-p0[0])>=Math.abs(p1[1]-p0[1]);
+  const m=[(p0[0]+p1[0])/2,(p0[1]+p1[1])/2];let side,dist;
+  if(hz){const a=m[1]-b.y0,c=b.y1-m[1];side=a<=c?'y0':'y1';dist=Math.min(a,c);}
+  else{const a=m[0]-b.x0,c=b.x1-m[0];side=a<=c?'x0':'x1';dist=Math.min(a,c);}
+  return {side,xScr:Math.max(0,Math.round(dist/50)*50),mid:m};}
+// C3 D (start = A): the largest rectangle that stands on the screen side — the lateral run of the room along that edge
+// through the line's middle, then as deep as that whole width stays inside the room. Samples every 50 mm.
+function cinZoneA(rm,side,mid){const b=polyBBox(rm.poly),S=CIN_SIDES[side],P=rm.poly,st=50;
+  const edge=side==='y0'?b.y0:side==='y1'?b.y1:side==='x0'?b.x0:b.x1,horiz=side[0]==='y';
+  const pt=(u,d)=>horiz?[u,edge+S.n[1]*d]:[edge+S.n[0]*d,u];const inP=(u,d)=>pointInPoly(pt(u,d)[0],pt(u,d)[1],P);
+  // strips of 50 mm tested at their centre, so a run ends exactly on a wall face (an edge point would be ambiguous)
+  const u0=horiz?b.x0:b.y0,u1=horiz?b.x1:b.y1,mu=horiz?mid[0]:mid[1],um=u0+Math.round((Math.max(u0,Math.min(u1,mu))-u0)/st)*st;
+  let lo=um,hi=um;while(lo>u0&&inP(lo-st/2,st/2))lo-=st;while(hi<u1&&inP(hi+st/2,st/2))hi+=st;
+  if(lo>u0&&lo-u0<st&&inP((lo+u0)/2,st/2))lo=u0;if(hi<u1&&u1-hi<st&&inP((hi+u1)/2,st/2))hi=u1;   // a last strip narrower than 50 mm
+  lo=Math.max(lo,u0);hi=Math.min(hi,u1);
+  const deep=horiz?b.y1-b.y0:b.x1-b.x0;
+  const rowIn=dd=>{for(let u=lo+st/2;u<hi;u+=st)if(!inP(u,dd))return false;return true;};
+  let d=0;while(d<deep&&rowIn(d+st/2))d+=st;if(d<deep&&deep-d<st&&rowIn((d+deep)/2))d=deep;d=Math.min(d,deep);
+  return {L:Math.round(d),W:Math.round(hi-lo),off:Math.round((lo+hi)/2-(u0+u1)/2),u0:lo,u1:hi};}
+// the frame: origin at the middle of the zone's screen-wall edge; x into the room (mm), y along the wall to the left
+function cinFrame(C){const R=cinRoom(C);if(!R)return null;const b=polyBBox(R.rm.poly),S=CIN_SIDES[C.side],horiz=C.side[0]==='y';
+  const edge=C.side==='y0'?b.y0:C.side==='y1'?b.y1:C.side==='x0'?b.x0:b.x1,uc=(horiz?(b.x0+b.x1):(b.y0+b.y1))/2+(C.zone.off||0);
+  const o=horiz?[uc,edge]:[edge,uc];
+  return {o,n:S.n,t:S.t,level:R.level,rm:R.rm,P:(x,y)=>[o[0]+S.n[0]*x+S.t[0]*y,o[1]+S.n[1]*x+S.t[1]*y]};}
+// ceiling height of the room (m): the álmennyezet if there is one, else the level's inner height
+function cinHf(level,rm){const d=typeof dropCeilMm==='function'?dropCeilMm(level,rm):0;return (d>0?d:wallH(level))/1000;}
+function cinCompute(L){const C=L&&L.cinema;if(!C||!C.zone)return null;const F=cinFrame(C);if(!F)return null;
+  const r=cinCalc({L:C.zone.L/1000,W:C.zone.W/1000,Hf:cinHf(F.level,F.rm),xScr:(C.xScr||0)/1000,fmt:C.fmt,disp:C.disp,
+    hEye:(C.hEye||1150)/1000,thetaMax:C.theta||40});
+  r.checks=r.checks.concat(cinDoorChecks(C,F,r));return r;}
+// §3.10 check 12: a wall speaker within 0.7 m of a door or window on its level (swing / park zone, glass)
+function cinDoorChecks(C,F,r){const out=[],ops=(data.openings||[]).filter(o=>o&&o.level===F.level&&(o.type==='door'||o.type==='window'));
+  const pts=Object.keys(r.spk).map(k=>({k,s:r.spk[k]}));
+  pts.forEach(({k,s})=>{const p=F.P(s.x*1000,s.y*1000);const hit=ops.find(o=>Math.hypot(o.x-p[0],o.y-p[1])<(o.w||900)/2+700);
+    if(hit)out.push({n:12,ok:false,sev:'warn',msg:k+': '+(hit.type==='door'?'ajtó':'ablak')+' mellett ('+(hit.ref||hit.id||'')+') — tedd arrébb vagy más rögzítés.'});});
+  if(!out.length)out.push({n:12,ok:true,sev:'warn',msg:'Ajtók, ablakok: rendben.'});
+  return out;}
+
+// ---- C2: the setup wizard ----------------------------------------------------------------------------------------------
+let CIN_PICK=null;   // {step:'room'|'line', L, rm, level, p0, p1}
+function cinStart(){let L=cinLayer();if(!L)L=cinLayerAdd();else{state.activeLayer=L.id;lyrRefresh();}
+  if(typeof toolsOff==='function')toolsOff();if(state.mode!=='select')setMode('select');
+  CIN_PICK={step:'room',L:L.id,level:state.active};$('hud').textContent='Házimozi: kattints a helyiségre, ahová a mozi kerül.';draw();return L;}
+function cinPt(e){const level=state.active,[bx,by]=clientToBase(e),p=baseToPlan(bx,by,dz(level,0));return [p[0],p[1]];}
+STK_TOOLS.push({k:'cinPick',active:()=>!!CIN_PICK,
+  down(e){if(e.button!==0)return false;const p=cinPt(e);
+    if(CIN_PICK.step==='room'){const R=mrkRoomAtPt(state.active,p[0],p[1]);if(!R){$('hud').textContent='Ez nem helyiség — kattints egy helyiségre.';return true;}
+      CIN_PICK=Object.assign(CIN_PICK,{step:'line',rm:R.rm,level:R.level});
+      $('hud').textContent='Házimozi — '+(R.rm.name||'')+': húzd meg a vászon / TV vonalát a helyiségben (a legközelebbi falhoz igazodik).';draw();return true;}
+    if(!pointInPoly(p[0],p[1],CIN_PICK.rm.poly))return true;
+    CIN_PICK.p0=p;CIN_PICK.p1=p;try{stage.setPointerCapture(e.pointerId);}catch(_){}return true;},
+  move(e){if(!CIN_PICK||!CIN_PICK.p0)return false;CIN_PICK.p1=cinPt(e);
+    const s=cinLineSide(CIN_PICK.rm,CIN_PICK.p0,CIN_PICK.p1);$('hud').textContent='Vászon síkja a faltól: '+s.xScr+' mm';draw();return true;},
+  up(e){if(!CIN_PICK||!CIN_PICK.p0)return false;CIN_PICK.p1=cinPt(e);const K=CIN_PICK;CIN_PICK=null;
+    const s=cinLineSide(K.rm,K.p0,K.p1),z=cinZoneA(K.rm,s.side,s.mid);draw();
+    cinSetupDialog(lyrLayer(K.L),{room:K.rm.id,level:K.level,side:s.side,xScr:s.xScr,zone:{L:z.L,W:z.W,off:z.off}});return true;},
+  esc(){CIN_PICK=null;draw();},mode(){CIN_PICK=null;}});
+// the preview of the line while it is dragged (and the picked room)
+STK_OVERLAY.push(()=>{if(!CIN_PICK)return '';let s='';const z=dz(CIN_PICK.level||state.active,0);
+  if(CIN_PICK.rm)s+=`<polygon points="${p2b(CIN_PICK.rm.poly.map(p=>[p[0],p[1],z]))}" fill="#5b3f8c" fill-opacity="0.08" stroke="#5b3f8c" stroke-width="${vsP(1.2)}" stroke-dasharray="${vsDash('6 4')}"/>`;
+  if(CIN_PICK.p0&&CIN_PICK.p1){const s0=cinLineSide(CIN_PICK.rm,CIN_PICK.p0,CIN_PICK.p1),b=polyBBox(CIN_PICK.rm.poly),hz=s0.side[0]==='y';
+    const c=hz?(s0.side==='y0'?b.y0+s0.xScr:b.y1-s0.xScr):(s0.side==='x0'?b.x0+s0.xScr:b.x1-s0.xScr);
+    const a=hz?[CIN_PICK.p0[0],c]:[c,CIN_PICK.p0[1]],q=hz?[CIN_PICK.p1[0],c]:[c,CIN_PICK.p1[1]];
+    s+=`<polyline points="${p2b([[a[0],a[1],z],[q[0],q[1],z]])}" fill="none" stroke="#5b3f8c" stroke-width="${vsP(3)}"/>`;}
+  return `<g class="cin-pick" pointer-events="none">${s}</g>`;});
+function cinSetupDialog(L,init){if(!L)return;const C=Object.assign({fmt:'5.1',disp:'pj',hEye:1150,theta:40,suggest:true},L.cinema||{},init||{});
+  const R=cinRoom(C),z=C.zone;
+  const opt=(id,v,list)=>`<select id="${id}">`+list.map(o=>`<option value="${o[0]}" ${String(v)===String(o[0])?'selected':''}>${esc(o[1])}</option>`).join('')+`</select>`;
+  openModal('🎬 Házimozi — '+esc(R?(R.rm.name||R.rm.id):''),
+    `<div class="mrow">Vászon / TV fala: <b>${{y0:'felső',y1:'alsó',x0:'bal',x1:'jobb'}[C.side]||C.side}</b> (a rajzon) · vászon síkja a faltól <input id="cinX" type="number" step="50" min="0" value="${C.xScr}" style="width:70px"> mm</div>`
+    +`<div class="mrow" style="font-size:12px"><b>Mozi zóna</b> (C3 D — a vászonfalon álló legnagyobb téglalap; igazíthatod):<br>mélység L <input id="cinL" type="number" step="50" value="${z.L}" style="width:70px"> · szélesség W <input id="cinW" type="number" step="50" value="${z.W}" style="width:70px"> · eltolás <input id="cinO" type="number" step="50" value="${z.off||0}" style="width:60px"> mm</div>`
+    +`<div class="mrow"><label><input type="checkbox" id="cinSug" ${C.suggest!==false?'checked':''}> Javasoljunk elhelyezést a helyiség méretei alapján?</label></div>`
+    +`<div class="mrow">Formátum ${opt('cinFmt',C.fmt,[['5.1','5.1'],['7.1','7.1']])} · Kép ${opt('cinDisp',C.disp,[['pj','projektor + vászon'],['tv','TV']])}`
+    +` · Szemmagasság ${opt('cinEye',C.hEye,[[1150,'1150 (kanapé)'],[1200,'1200 (mozi fotel)']])} · Látószög max ${opt('cinTh',C.theta,[[30,'30°'],[36,'36°'],[40,'40°']])}</div>`
+    +`<div class="mrow" style="font-size:11px;color:#888">A 7.1 mindig választható; ha a helyiség rövid hozzá, figyelmeztetés marad a rétegen.</div>`,
+    ()=>{lyrPushUndo();const zone={L:Math.max(1000,+$('cinL').value||z.L),W:Math.max(1000,+$('cinW').value||z.W),off:+$('cinO').value||0};
+      L.cinema={room:C.room,level:C.level,side:C.side,xScr:Math.max(0,+$('cinX').value||0),zone,suggest:$('cinSug').checked,
+        fmt:$('cinFmt').value,disp:$('cinDisp').value,hEye:+$('cinEye').value,theta:+$('cinTh').value,spots:null};
+      const r=cinCompute(L),R2=cinRoom(L.cinema),bb=R2&&polyBBox(R2.rm.poly),full=bb&&Math.abs((L.cinema.side[0]==='y'?bb.y1-bb.y0:bb.x1-bb.x0)-zone.L)<60&&Math.abs((L.cinema.side[0]==='y'?bb.x1-bb.x0:bb.y1-bb.y0)-zone.W)<60;
+      const bad=r?r.checks.filter(c=>!c.ok):[];
+      $('hud').textContent='Házimozi: '+(r?('MLP '+Math.round(r.xMLP*1000)+' mm · kép '+Math.round(r.Ws*1000)+' mm'+(bad.length?' · '+bad.length+' figyelmeztetés (jobb klikk a rétegen → Mozi ellenőrzés)':' · minden ellenőrzés rendben')):'')
+        +(full?'':' · a mozi zóna kisebb a helyiségnél — a mélyhang számítás közelítő');
+      renderLayers();draw();},'Kész');}
+
+// ---- C4: the overlay (30 %) --------------------------------------------------------------------------------------------
+const CIN_LBL={L:'L',C:'C',R:'R',Ls:'Ls',Rs:'Rs',Lb:'Lb',Rb:'Rb'};
+function cinSvgFor(L){const C=L.cinema;if(!C||!C.zone||C.suggest===false)return '';const r=cinCompute(L),F=cinFrame(C);if(!r||!F)return '';
+  const lv=F.level;if(!state.levels[lv])return '';const fz=dz(lv,0),col='#5b3f8c',k=typeof devK==='function'?devK():1,Rk=v=>+(v*k).toFixed(2);
+  const W=(x,y,zmm)=>{const p=F.P(x*1000,y*1000);return planToBase(p[0],p[1],dz(lv,zmm||0));};
+  const poly=(pts,zmm)=>pts.map(q=>{const b=W(q[0],q[1],zmm);return b[0].toFixed(1)+','+b[1].toFixed(1);}).join(' ');
+  const HfMM=r.in.Hf*1000;let s='';
+  // the zone and the screen plane
+  const Lz=C.zone.L/1000,Wz=C.zone.W/1000;
+  s+=`<polygon points="${poly([[0,-Wz/2],[Lz,-Wz/2],[Lz,Wz/2],[0,Wz/2]],0)}" fill="none" stroke="${col}" stroke-width="${vsP(1)}" stroke-dasharray="${vsDash('7 4')}"/>`;
+  s+=`<polyline points="${poly([[r.in.xScr,-r.Ws/2],[r.in.xScr,r.Ws/2]],r.zBot*1000)}" fill="none" stroke="${col}" stroke-width="${vsP(4)}"/>`;
+  // §3.8 beam keep-out (red 12 %) and the track-light bands (green 12 %), at the ceiling
+  if(r.beam)s+=`<polygon points="${poly(r.beam.poly,HfMM)}" fill="#E24B4A" fill-opacity="0.12" stroke="#A32D2D" stroke-width="${vsP(0.8)}" stroke-dasharray="${vsDash('5 4')}"/>`;
+  if(r.band&&r.band.ok)[1,-1].forEach(sg=>{s+=`<polygon points="${poly([[r.band.x0,sg*r.band.yIn],[r.band.x1,sg*r.band.yIn],[r.band.x1,sg*r.band.yOut],[r.band.x0,sg*r.band.yOut]],HfMM)}" fill="#639922" fill-opacity="0.12" stroke="#3B6D11" stroke-width="${vsP(0.8)}" stroke-dasharray="${vsDash('5 4')}"/>`;});
+  // the markers at 30 %: speakers, subs, projector, rack, the seat
+  const mark=(x,y,zmm,lbl,shape)=>{const b=W(x,y,zmm),w=Rk(16);
+    return (shape==='o'?`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${w/2}" fill="#fff" stroke="${col}" stroke-width="${Rk(1.4)}"/>`
+      :`<rect x="${(b[0]-w/2).toFixed(1)}" y="${(b[1]-w/2).toFixed(1)}" width="${w}" height="${w}" rx="${Rk(3)}" fill="#fff" stroke="${col}" stroke-width="${Rk(1.4)}"/>`)
+      +`<text x="${b[0].toFixed(1)}" y="${(b[1]+Rk(2.6)).toFixed(1)}" font-size="${Rk(lbl.length>2?5.5:7)}" text-anchor="middle" font-weight="700" fill="${col}">${esc(lbl)}</text>`;};
+  let m='';Object.keys(r.spk).forEach(kk=>{const p=r.spk[kk];m+=mark(p.x,p.y,p.z*1000,CIN_LBL[kk]||kk);});
+  r.subs.forEach((p,i)=>{m+=mark(p.x,p.y,0,'SW'+(i+1));});
+  if(r.pj)m+=mark(r.pj.x,0,r.pj.z*1000,'PJ');
+  m+=mark(Lz-0.05,0,300,'AV');
+  {const b=W(r.xMLP,0,r.in.hEye*1000);m+=`<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${Rk(5)}" fill="none" stroke="${col}" stroke-width="${Rk(1.6)}"/><circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${Rk(1.5)}" fill="${col}"/>`
+    +`<text x="${b[0].toFixed(1)}" y="${(b[1]+Rk(13)).toFixed(1)}" font-size="${Rk(6)}" text-anchor="middle" font-weight="700" fill="${col}">MLP</text>`;}   // the seat: a ring, label under it
+  return `<g class="cin-ovl" pointer-events="none">${s}<g opacity="0.3">${m}</g></g>`;}
+STK_OVERLAY.push(()=>cinLayers().filter(L=>L.visible!==false&&L.cinema).map(cinSvgFor).join(''));
+
+// ---- C4 on demand (C5 A): the overlay as ideal spots -------------------------------------------------------------------
+function cinSpotList(L){const C=L.cinema,r=cinCompute(L),F=cinFrame(C);if(!r||!F)return [];const out=[];
+  const add=(code,x,y,zmm,lbl,mount)=>{const p=F.P(x*1000,y*1000);out.push({key:'cin:'+lbl,kind:'ep',code,role:'sys:CINEMA',x:Math.round(p[0]),y:Math.round(p[1]),
+    h:Math.round(zmm),level:F.level,mount,why:'Házimozi '+lbl,room:C.room});};
+  ['L','C','R'].forEach(k=>add('CLR',r.spk[k].x,r.spk[k].y,r.spk[k].z*1000,k,'wall'));
+  ['Ls','Rs'].forEach(k=>add('CSR',r.spk[k].x,r.spk[k].y,r.spk[k].z*1000,k,'wall'));
+  ['Lb','Rb'].forEach(k=>{if(r.spk[k])add('CBK',r.spk[k].x,r.spk[k].y,r.spk[k].z*1000,k,'wall');});
+  r.subs.forEach((p,i)=>add('CSW',p.x,p.y,0,'SW'+(i+1),'floor'));
+  if(r.pj){add('CPJ',r.pj.x,0,r.pj.z*1000,'PJ','ceiling');add('CSC',r.in.xScr,0,r.in.Hf*1000-100,'Vászon','ceiling');}
+  else add('CTV',r.in.xScr,0,(r.zBot+r.Hs/2)*1000,'TV','wall');
+  add('CRK',C.zone.L/1000-0.05,0,300,'AV rack','wall');
+  return out;}
+function cinMakeSpots(L){if(!L||!L.cinema)return 0;lyrPushUndo();L.cinema.spots=cinSpotList(L);L.ideal=true;state.activeLayer=L.id;renderLayers();draw();
+  $('hud').textContent='Házimozi: '+L.cinema.spots.length+' javasolt hely — jobb klikk egy ✦ helyen, és készülék lesz belőle.';return L.cinema.spots.length;}
+// the room menu: set up a cinema here / make the suggested spots / the checks
+function cinRoomMenu(rh,items){const L=cinLayers().find(x=>x.cinema&&x.cinema.room===rh.rm.id);
+  if(!L){items.push({label:'🎬 Házimozi ebben a helyiségben…',act:()=>{const N=cinStart();CIN_PICK=Object.assign(CIN_PICK,{step:'line',rm:rh.rm,level:rh.level,L:N.id});
+    $('hud').textContent='Házimozi — '+(rh.rm.name||'')+': húzd meg a vászon / TV vonalát a helyiségben.';}});return;}
+  items.push({label:'🎬 Javasolt helyek létrehozása (ideális helyek)',act:()=>cinMakeSpots(L)});
+  items.push({label:'🎬 Mozi beállítások…',act:()=>cinSetupDialog(L)});
+  items.push({label:'🎬 Mozi ellenőrzés…',act:()=>cinChecksDialog(L)});}
+function cinChecksDialog(L){const r=cinCompute(L);if(!r)return;
+  openModal('🎬 Házimozi — ellenőrzés (§3.10)',
+    `<div class="mrow" style="font-size:12px">MLP ${Math.round(r.xMLP*1000)} mm a vászonfaltól · látótáv ${Math.round(r.D*1000)} · kép ${Math.round(r.Ws*1000)} × ${Math.round(r.Hs*1000)} mm (${r.bind==='angle'?'a látószög köti':'a belmagasság köti'}) · kép alja ${Math.round(r.zBot*1000)}</div>`
+    +`<div class="mrow" style="font-size:12px">Front φ ${r.phi.toFixed(1)}° · oldalsó α ${r.alpha}°${r.rear?' · hátsó β '+r.rear.beta+'°':''} · surround magasság ${Math.round(r.spk.Ls.z*1000)} mm · módusok ${r.modes.fL.toFixed(1)} / ${r.modes.fW.toFixed(1)} / ${r.modes.fH.toFixed(1)} Hz</div>`
+    +`<table style="font-size:12px">`+r.checks.map(c=>`<tr style="color:${c.ok?'#2e9e5b':'#d08a1e'}"><td>${c.ok?'✓':'⚠'}</td><td>${esc(String(c.n))}</td><td>${c.ok?'rendben':esc(c.msg)}</td></tr>`).join('')+`</table>`,()=>{},'Bezár');}
+if(typeof STK_LAYERMENU!=='undefined')STK_LAYERMENU.push((L,items)=>{if(L.role==='sys:CINEMA'&&L.cinema){items.push({label:'🎬 Mozi beállítások…',act:()=>cinSetupDialog(L)},{label:'🎬 Mozi ellenőrzés…',act:()=>cinChecksDialog(L)},{label:'🎬 Javasolt helyek létrehozása',act:()=>cinMakeSpots(L)});}});
+registerActions([{id:'cinema.layer',label:'Házimozi réteg',icon:'🎬',group:'Réteg',alias:'hazimozi mozi home cinema layer',
+  hint:'Házimozi: válassz helyiséget, húzd meg a vászon vonalát, és a méretekből javaslatot kapsz a hangfalak, mélysugárzók, projektor helyére.',
+  when:()=>true,run:()=>cinStart()}]);
+window.cinCompute=cinCompute;window.cinSpotList=cinSpotList;
+
+// ---- C5: the node checklist → the device tool → Kész ----------------------------------------------------------------------
+// the keypads at the door and at the seat (§8.7: CAT6A to both)
+if(!EP_CAT.some(x=>x.code==='CKP'))EP_CAT.push({code:'CKP',new:true,role:'sys:CINEMA',n:'Mozi kezelő (ajtó / ülés)',cat:'device',mount:'wall',h:1100,topo:'star',from:'rbx',
+  vars:[{k:'cat',n:'Cat6A',cab:[{c:'CAT6A_U',w:'M20',fam:'CINEMA'}]}]});
+ICO_BY_CODE.CKP='keypad';
+// the rows of the list: what the layout needs (C5 catalogue in 30_MOZI.md); 5.1 still lists the rear pair as "előkészítés" (§6.3)
+function cinNodes(L){const C=L&&L.cinema,r=C?cinCompute(L):null;if(!r)return [];const pj=r.in.disp!=='tv';
+  return [{code:'CLR',n:'Front L / C / R',need:3},{code:'CSR',n:'Oldalsó surround Ls / Rs',need:2},
+    {code:'CBK',n:'Hátsó surround Lb / Rb'+(C.fmt==='7.1'?'':' (5.1: előkészítés)'),need:2,opt:C.fmt!=='7.1'},
+    {code:'CSW',n:'Mélysugárzó',need:r.subs.length},
+    pj?{code:'CPJ',n:'Projektor',need:1}:{code:'CTV',n:'TV',need:1},pj?{code:'CSC',n:'Motoros vászon',need:1}:null,
+    {code:'CRK',n:'AV rack',need:1},{code:'CKP',n:'Mozi kezelő (ajtó + ülés)',need:2}].filter(Boolean)
+    .map(x=>Object.assign(x,{have:data.devices.filter(d=>d&&d.layer===L.id&&d.code===x.code).length}));}
+// while placing a cinema code, the ghost snaps to the nearest suggestion of that code within 700 mm (Alt: free)
+function cinSnap(g,code){if(!g||!/^C(LR|SR|BK|SW|PJ|SC|TV|RK|KP)$/.test(code))return null;const L=cinLayer();if(!L||!L.cinema)return null;
+  let best=null,bd=700;cinSpotList(L).forEach(s=>{if(s.code!==code||s.level!==g.level)return;const d=Math.hypot(s.x-g.x,s.y-g.y);if(d<bd){bd=d;best=s;}});
+  if(!best)return null;return Object.assign({},g,{x:best.x,y:best.y,h:best.h,why:best.why,snapped:true});}
+function cinPlaceStart(L,code){state.activeLayer=L.id;lyrRefresh();epToolStart(code,'sys:CINEMA');}
+// the floating list (bottom left of the stage) while the active layer is a cinema with a layout
+function cinPanelSync(){let el=$('cinPanel');const L=lyrLayer(state.activeLayer),C=L&&L.role==='sys:CINEMA'&&L.cinema;
+  if(!C||C.step==='done'){if(el)el.style.display='none';return;}
+  if(!el){const host=(typeof stage!=='undefined'&&stage&&stage.parentElement)||document.body;el=document.createElement('div');el.id='cinPanel';
+    el.style.cssText='position:absolute;right:10px;bottom:34px;z-index:20;background:rgba(255,255,255,.96);border:1px solid #c9bfe0;border-radius:6px;padding:5px 7px;font-size:11.5px;line-height:1.35;box-shadow:0 2px 8px rgba(0,0,0,.12);width:250px';   // bottom right: the plan is usually centred left of it
+    host.appendChild(el);}
+  el.style.display='block';let h;
+  if(C.step!=='walls'){const N=cinNodes(L);
+    h=`<b style="color:#5b3f8c">🎬 Mozi elemek</b><div style="color:#888;font-size:11px">Kattints egy sorra: az eszköz a javasolt helyre ugrik (Alt: szabadon).</div>`
+      +N.map(x=>`<div class="cinRow" data-c="${x.code}" style="cursor:pointer;padding:2px 0;color:${x.have>=x.need?'#2e9e5b':x.opt?'#888':'#333'}">${x.have>=x.need?'☑':'☐'} ${esc(x.n)} <span style="float:right">${x.have} / ${x.need}</span></div>`).join('')
+      +`<div style="margin-top:5px;text-align:right"><button id="cinDone">Kész → falak</button></div>`;}
+  else h=`<b style="color:#5b3f8c">🎬 Mozi falak</b><div style="font-size:11px;color:#555;margin:2px 0 5px">Jelöld a falfelületeket, amelyeken a mozi kábelei futhatnak — a helyiség belső és KÜLSŐ oldala is, egészen az Elosztóig. Mennyezet / padló: a Mennyezeti út / Padló út szabályai.</div>`
+      +`<button id="cinPen">🖊 Mozi fal toll</button> <button id="cinRoute">Útvonal + kör</button> <button id="cinBack">◂ elemek</button>`;
+  if(el.__h!==h){el.innerHTML=h;el.__h=h;
+    el.querySelectorAll('.cinRow').forEach(r=>r.onclick=()=>cinPlaceStart(L,r.dataset.c));
+    if($('cinDone'))$('cinDone').onclick=()=>{if(typeof epToolOff==='function')epToolOff();C.step='walls';mkpStart('mozi');draw();};
+    if($('cinPen'))$('cinPen').onclick=()=>mkpStart('mozi');
+    if($('cinBack'))$('cinBack').onclick=()=>{C.step='place';if(typeof mkpOff==='function')mkpOff();draw();};
+    if($('cinRoute'))$('cinRoute').onclick=()=>{if(typeof mkpOff==='function')mkpOff();cinRouteDialog(L);};}}
+STK_OVERLAY.push(()=>{try{cinPanelSync();}catch(_){}return '';});
+
+// ---- C6: the cinema walls (Mozi fal ink of the marker pen, 08ia: per face — the inner AND the outer side) ---------------
+const CIN_INK={k:'mozi',n:'Mozi fal (felület)',net:'f',tag:'mozi',pol:'plus',col:'#5b3f8c'};
+MRK_STYLE.mozi={c:'#5b3f8c',noText:true};   // the cinema purple; no label on every piece (the panel names it)
+function cinFaceMarks(level){return mrkList().filter(m=>m.level===level&&(m.tags||[]).indexOf('mozi')>=0&&(m.kind==='vstrip'||m.kind==='side'));}
+// the allowed face ranges [{wall, side, u0, u1}]: the Mozi fal marks; with useGeneral also both faces of every Vezethető fal
+function cinAllowed(level,useGeneral){const out=[];
+  cinFaceMarks(level).forEach(m=>{const r=mrkWallById(level,m.wall);if(!r)return;const L=mrkWallLen(r);
+    out.push({wall:m.wall,side:m.side,u0:m.kind==='side'?0:Math.min(m.u0,m.u1),u1:m.kind==='side'?L:Math.max(m.u0,m.u1)});});
+  if(useGeneral&&typeof rwlAllowed==='function')rwlAllowed(level).forEach(a=>{[1,-1].forEach(side=>out.push({wall:a.wall,side,u0:a.u0,u1:a.u1}));});
+  return out;}
+// the graph: the allowed pieces of the face net, split wherever a parallel piece within 700 mm starts or ends; the two
+// faces of a wall are joined straight through it (cost thickness + 300). A wall may be a STACK of parallel wall records
+// (P33: 105 + 95 + 100 mm layers), so the crossing goes face to face across the union — the low face (outward −) to the
+// next high face (outward +) at the same position, ≤ 700 mm apart, solid wall all the way. Corners join by coinciding ends.
+const CIN_THRU=700;
+function cinGraph(level,useGeneral){const al=cinAllowed(level,useGeneral),net=wlnNet(level).f,pcs=[],walls=WALLS[level]||[];
+  net.forEach(e=>{if(!e.wall||!e.side)return;const r=mrkWallById(level,e.wall);if(!r)return;
+    const ua=mrkU(r,e.a[0],e.a[1]),ub=mrkU(r,e.b[0],e.b[1]),lo=Math.min(ua,ub),hi=Math.max(ua,ub);
+    al.filter(a=>a.wall===e.wall&&a.side===e.side).forEach(a=>{const u0=Math.max(lo,a.u0),u1=Math.min(hi,a.u1);if(u1-u0<1)return;
+      const A=mrkFacePt(r,e.side,u0,0),B=mrkFacePt(r,e.side,u1,0),hz=Math.abs(A[1]-B[1])<0.5,c=hz?(r.y0+r.y1)/2:(r.x0+r.x1)/2,across=hz?A[1]:A[0];
+      pcs.push({hz,across,n:Math.sign(across-c)||1,a0:Math.min(hz?A[0]:A[1],hz?B[0]:B[1]),a1:Math.max(hz?A[0]:A[1],hz?B[0]:B[1])});});});
+  const P=(p,t)=>p.hz?[t,p.across]:[p.across,t];
+  const adj={},pt={},edges=[],link=(a,b,w,face)=>{(adj[a]=adj[a]||[]).push({to:b,w});(adj[b]=adj[b]||[]).push({to:a,w});if(face)edges.push({a,b});};
+  const node=q=>{const k=wlnKey(q);pt[k]=q;return k;},byPos={};
+  pcs.forEach(p=>{const cuts=new Set([p.a0,p.a1]);
+    pcs.forEach(q=>{if(q.hz!==p.hz||Math.abs(q.across-p.across)>CIN_THRU)return;[q.a0,q.a1].forEach(t=>{if(t>p.a0+0.5&&t<p.a1-0.5)cuts.add(t);});});
+    const ts=[...cuts].sort((a,b)=>a-b);
+    for(let i=0;i+1<ts.length;i++){const a=node(P(p,ts[i])),b=node(P(p,ts[i+1]));link(a,b,ts[i+1]-ts[i],true);}
+    ts.forEach(t=>{const g=(p.hz?'h':'v')+Math.round(t);(byPos[g]=byPos[g]||[]).push({across:p.across,n:p.n,k:wlnKey(P(p,t)),p,t});});});
+  // a wall's END CAP (a face piece with no side, ≤ 700 mm) joins the faces around the end of a wall: free to turn on, never a foot
+  net.forEach(e=>{if(!e.wall||e.side||e.len>CIN_THRU)return;const ka=wlnKey(e.a),kb=wlnKey(e.b);if(pt[ka]||pt[kb]){pt[ka]=pt[ka]||e.a;pt[kb]=pt[kb]||e.b;link(ka,kb,e.len);}});
+  const solid=(x,y)=>walls.some(r=>x>=r.x0-0.5&&x<=r.x1+0.5&&y>=r.y0-0.5&&y<=r.y1+0.5);
+  Object.values(byPos).forEach(L=>{L.sort((a,b)=>a.across-b.across);
+    L.forEach(lo=>{if(lo.n!==-1)return;const hi=L.find(h=>h.n===1&&h.across>lo.across&&h.across-lo.across<=CIN_THRU);if(!hi)return;
+      let ok=true;for(let c=lo.across+10;c<hi.across;c+=20){const q=P(lo.p,lo.t);if(!(lo.p.hz?solid(q[0],c):solid(c,q[1]))){ok=false;break;}}
+      if(ok)link(lo.k,hi.k,hi.across-lo.across+300);});});
+  return {adj,pt,pcs,edges};}
+// the nearest point ON a face piece: {a, b (node keys), pt, d, wa, wb (walking distances to the two ends)}
+function cinNearest(G,p){let best=null;G.edges.forEach(e=>{const A=G.pt[e.a],B=G.pt[e.b],r=wlnProj({a:A,b:B},p);
+    if(!best||r.d<best.d)best={a:e.a,b:e.b,pt:r.pt,d:r.d,wa:Math.hypot(r.pt[0]-A[0],r.pt[1]-A[1]),wb:Math.hypot(r.pt[0]-B[0],r.pt[1]-B[1])};});return best;}
+// maxA / maxB: how far a device may sit from the nearest allowed face point — a wall device or the board must be ON a
+// marked face (600 mm), a ceiling / floor node joins the nearest one at its own height (Mennyezeti / Padló út: no limit)
+function cinRoute(level,a,b,useGeneral,o){o=o||{};const G=cinGraph(level,useGeneral),s=cinNearest(G,a),t=cinNearest(G,b);if(!s||!t)return null;
+  if(s.d>(o.maxA!=null?o.maxA:600)||t.d>(o.maxB!=null?o.maxB:600))return null;
+  // two virtual nodes on the pieces: S (the start's foot) and T (the end's foot)
+  const adj=Object.assign({},G.adj),pt=Object.assign({},G.pt,{S:s.pt,T:t.pt}),add=(a,b,w)=>{adj[a]=(adj[a]||[]).concat([{to:b,w}]);adj[b]=(adj[b]||[]).concat([{to:a,w}]);};
+  add('S',s.a,s.wa);add('S',s.b,s.wb);add('T',t.a,t.wa);add('T',t.b,t.wb);
+  if(s.a===t.a&&s.b===t.b)add('S','T',Math.hypot(s.pt[0]-t.pt[0],s.pt[1]-t.pt[1]));
+  const dist={S:0},prev={},done={};
+  for(;;){let u=null;for(const k in dist)if(!done[k]&&(u===null||dist[k]<dist[u]))u=k;if(u===null||u==='T')break;done[u]=true;
+    (adj[u]||[]).forEach(n=>{const d=dist[u]+n.w;if(dist[n.to]===undefined||d<dist[n.to]){dist[n.to]=d;prev[n.to]=u;}});}
+  if(dist.T===undefined)return null;const out=[];let k='T';while(k!==undefined){out.unshift(pt[k]);k=prev[k];}
+  // drop collinear middle points
+  const pts=[a].concat(out,[b]),clean=[pts[0]];for(let i=1;i<pts.length-1;i++){const p=clean[clean.length-1],q=pts[i],r=pts[i+1];
+    if(Math.abs((q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]))>1)clean.push(q);}clean.push(pts[pts.length-1]);
+  return {pts:clean,len:dist.T+s.d+t.d};}
+// a route → a Planner path on the cinema layer: up from the device to the run height, along, down to the other end
+function cinPath(L,level,pts,hA,hB,hRun,tag){const nodes=[];const push=(p,h)=>nodes.push({level,x:Math.round(p[0]),y:Math.round(p[1]),h:Math.round(h)});
+  push(pts[0],hA);if(Math.abs(hA-hRun)>1)push(pts[0],hRun);for(let i=1;i<pts.length-1;i++)push(pts[i],hRun);
+  push(pts[pts.length-1],hRun);if(Math.abs(hB-hRun)>1)push(pts[pts.length-1],hB);
+  return {ptype:'gege',level,layer:L.id,nodes,sections:nodes.slice(1).map(()=>({build:'sull_gege'})),cin:tag};}
+function cinRunH(level){const g=guideByKey('gerinc');return g?resolveMm(g,level):Math.max(0,wallH(level)-250);}
+// §7.2 — 5.1 modest: 2 circuits; 7.1 or two subs: 3. AV-1 rack B16 · AV-2 amplifier + subs C16 · AV-3 projector + screen B16
+function cinCircuitDefault(L){const C=L.cinema,r=cinCompute(L);return (C.fmt==='7.1'||(r&&r.subs.length>=2))?3:2;}
+const CIN_AV=[{k:'AV-1',n:'AV-1 rack (B16)',curve:'B',at:'CRK'},{k:'AV-2',n:'AV-2 erősítő + mélysugárzók (C16)',curve:'C',at:'CRK'},{k:'AV-3',n:'AV-3 projektor + vászon (B16)',curve:'B',at:'CPJ'}];
+function cinRouteDialog(L){const C=L.cinema,def=cinCircuitDefault(L);
+  openModal('🎬 Útvonal és dedikált kör',
+    `<div class="mrow">Dedikált körök száma <select id="cinNC">${[1,2,3].map(n=>`<option ${n===def?'selected':''}>${n}</option>`).join('')}</select> <span style="font-size:11px;color:#888">(javaslat: ${def} — §7.2)</span></div>`
+    +`<div class="mrow" style="font-size:11px;color:#666">Mind ugyanarról a fázisról és gyűjtősínről, saját A típusú 30 mA ÁVK-val (a szekrény AV csoportja). A mozi világítás nem kerül AV körre.</div>`,
+    ()=>{const res=cinRouteAll(L,{circuits:+$('cinNC').value});
+      $('hud').textContent=res.err?res.err:('Házimozi: '+res.paths+' pálya ('+Math.round(res.len/100)/10+' m), '+res.ded+' dedikált kör'+(res.miss.length?' · útvonal nélkül: '+res.miss.join(', '):''));},'Létrehozás');}
+// everything at once, one undo step: the AV circuits at the rack / projector, the rack → Elosztó feed, every node → rack
+function cinRouteAll(L,opt){opt=opt||{};const C=L.cinema,F=cinFrame(C);if(!F)return {err:'Nincs mozi beállítva.'};const lv=F.level;
+  const devs=data.devices.filter(d=>d&&d.layer===L.id&&d.level===lv&&/^C(LR|SR|BK|SW|PJ|SC|TV|KP)$/.test(d.code||''));
+  const rack=data.devices.find(d=>d&&d.layer===L.id&&d.code==='CRK');if(!rack)return {err:'Előbb helyezd el az AV rack-et (CRK).'};
+  const board=data.devices.find(d=>d&&d.type==='board'&&d.level===lv&&!d.sub)||data.devices.find(d=>d&&d.type==='board'&&d.level===lv);
+  let useG=!!C.useGeneral;
+  const tryRoute=(a,b,o)=>cinRoute(lv,a,b,useG,o);
+  // C7 A on prompt: when the cinema walls alone do not reach the Elosztó, ask once before the general walls are used
+  if(board&&!tryRoute([rack.x,rack.y],[board.x,board.y])&&!useG){
+    const n=typeof rwlAllowed==='function'?rwlAllowed(lv).length:0;
+    if(n&&(opt.useGeneral!=null?opt.useGeneral:window.confirm('A mozi falak nem érik el az Elosztót. Használhatja a mozi útvonala az általános Vezethető falakat is? ('+n+' fal)'))){useG=true;C.useGeneral=true;}}
+  pushUndo();
+  // a re-run replaces this cinema's paths and AV circuits (in place: other code holds the arrays)
+  for(let i=data.paths.length-1;i>=0;i--)if(data.paths[i]&&data.paths[i].cin&&data.paths[i].layer===L.id)data.paths.splice(i,1);
+  for(let i=data.devices.length-1;i>=0;i--){const d=data.devices[i];if(d&&d.cin&&d.cin.av&&d.cin.of===L.id)data.devices.splice(i,1);}
+  const hRun=cinRunH(lv),miss=[];let len=0,np=0,nd=0;
+  // the AV circuits
+  const nC=Math.max(1,Math.min(3,opt.circuits||cinCircuitDefault(L))),pj=devs.find(d=>d.code==='CPJ');
+  CIN_AV.slice(0,nC).forEach((c,i)=>{const host=c.at==='CPJ'&&pj?pj:rack;
+    const off=host===rack?(i-0.5)*300:0;   // along the rear wall (the frame tangent), 300 mm apart
+    const g={level:lv,x:Math.round(host.x+F.t[0]*off),y:Math.round(host.y+F.t[1]*off),h:host===rack?300:host.h,mount:'wall',side:host.side,wall:host.wall};
+    const d=epMake(g,'DED','sys:DED','g16');d.cin={av:c.k,of:L.id,phaseGroup:'AV',rcd:'AV',curve:c.curve};d.name=c.n;data.devices.push(d);nd++;});
+  ensureIds(data);
+  // rack → Elosztó (the dedicated circuits run with it)
+  if(board){const r=tryRoute([rack.x,rack.y],[board.x,board.y]);
+    if(r){data.paths.push(cinPath(L,lv,r.pts,rack.h||300,board.h||1600,hRun,{kind:'feed',from:rack.id,to:board.id}));np++;len+=r.len;}else miss.push('Elosztó');}
+  else miss.push('Elosztó (nincs ezen a szinten)');
+  // every node → rack: wall nodes along the cinema walls; ceiling / floor nodes join the nearest wall point at their height
+  devs.forEach(d=>{const free=/^C(SW|PJ|SC)$/.test(d.code),r=tryRoute([d.x,d.y],[rack.x,rack.y],{maxA:free?1e9:600});if(!r){miss.push(d.code+' '+(d.ref||d.id));return;}
+    const hn=d.code==='CSW'?0:(d.code==='CPJ'||d.code==='CSC')?(d.h||hRun):(d.h||1100),run=d.code==='CSW'?0:hRun;
+    data.paths.push(cinPath(L,lv,r.pts,hn,rack.h||300,run,{kind:'node',from:d.id,to:rack.id}));np++;len+=r.len;});
+  ensureIds(data);if(typeof cinWApply==='function')cinWApply(L);   // C7: the pipes and cables of the new paths, same undo step
+  C.step='done';draw();renderLayers();
+  return {paths:np,ded:nd,len,miss};}
+// the room carries a cinema → the Dedikált körök layer asks for a DED there (05t derived tick)
+function cinRoomIds(){return cinLayers().filter(L=>L.cinema).map(L=>L.cinema.room);}
+window.cinRoute=cinRoute;window.cinRouteAll=cinRouteAll;window.cinNodes=cinNodes;
+
+// Pure functions, no DOM, no Planner data. The authority for every number is the guide
+// (docs/round-2026-10-18/src/home-cinema-part1-architectural-base.md, § below). Units: METRES here, the layer (08r)
+// converts. Coordinates as in the guide's worked example: x = distance from the FRONT (screen) wall into the room
+// (the screen plane is at x = xScr, D = xMLP − xScr), y = from the room centreline, z = above the finished floor.
+// Set A only (§3.1 — only the room is known); Sets B–E later. Every failed §3.10 check is a WARNING (C4: 7.1 is always
+// allowed, a failing viability test only leaves a note). Prefix: cin.
+
+const CIN_DEF={hEye:1.15,AR:1.78,thetaMax:40,thetaMin:30,cLens:0.32,t:0.05,mlpFrac:0.60,dMount:0.20,TR:1.5,margin:0.25,
+  phiMin:22,phiMax:30,side51:[100,110],side71:[90,100],rear71:[135,150]};
+const cinRad=d=>d*Math.PI/180,cinDeg=r=>r*180/Math.PI,cinR3=v=>Math.round(v*1000)/1000;
+
+// §3.1 step 1: the seat — preferred band, never in 0.5 L ± 0.05 L, rear clearance ≥ 1.20
+function cinSeat(L,frac){let x=L*frac;
+  if(Math.abs(x-0.5*L)<=0.05*L)x=0.55*L+0.01;               // out of the length-mode null
+  if(L-x<1.2)x=L-1.2;
+  if(Math.abs(x-0.5*L)<=0.05*L)x=0.45*L-0.01;               // a short room: the "38 %" side of the null
+  return x;}
+// the full Set A layout. o = {L, W, Hf, xScr, fmt:'5.1'|'7.1', disp:'pj'|'tv', hEye, thetaMax, …}
+function cinCalc(o){const P=Object.assign({},CIN_DEF,o||{}),L=+P.L,W=+P.W,Hf=+P.Hf,xs=+P.xScr||0,t=P.t,he=P.hEye,AR=P.AR;
+  const checks=[],warn=(n,ok,msg)=>checks.push({n,ok:!!ok,sev:'warn',msg});
+  const xM=P.xMLP!=null?+P.xMLP:cinSeat(L,P.mlpFrac),D=xM-xs;
+  // §3.1 steps 3–5: image width = the binding of the viewing angle and the ceiling height
+  const WsAng=2*D*Math.tan(cinRad(P.thetaMax/2)),cl=P.disp==='tv'?0.10:P.cLens,WsH=AR*1.5*(Hf-cl-he);
+  const Ws=Math.max(0,Math.min(WsAng,WsH)),Hs=Ws/AR,zBot=he-Hs/3,zTop=zBot+Hs,bind=WsAng<=WsH?'angle':'height';
+  // §3.6 fronts: outside the image edge, φ ≥ 22°, side-wall clearance
+  const yMax=W/2-0.6,yLR=Math.max(Ws/2+0.15,D*Math.tan(cinRad(P.phiMin)));
+  const yL=Math.min(yLR,Math.max(0,yMax)),phi=cinDeg(Math.atan2(yL,D));
+  // the centre: under a non-AT screen, as high as possible but ≥ 0.6
+  const zC=P.disp==='tv'?Math.max(0.6,zBot-0.20):Math.max(0.6,zBot-0.15);
+  // §3.6 side surrounds: 5.1 → 110° first, 7.1 → 90°; stepped down 5° while x_S > L − 0.30
+  const zS=Math.min(he+0.6,Hf-0.3),ySide=W/2-t;
+  const sideX=a=>Math.abs(a-90)<1e-6?xM:xM-ySide/Math.tan(cinRad(a));
+  let a=P.fmt==='7.1'?P.side71[0]:P.side51[1];while(sideX(a)>L-0.3&&a>90)a-=5;
+  const xS=sideX(a);
+  // §3.6 rears (7.1): β from 135°, widened while |y_B| > W/2 − 0.50
+  let rear=null;if(P.fmt==='7.1'){const dx=(L-t)-xM;let b=P.rear71[0];const yb=bb=>dx*Math.tan(cinRad(180-bb));
+    while(Math.abs(yb(b))>W/2-0.5&&b<P.rear71[1])b+=5;rear={x:L-t,y:yb(b),z:zS,beta:b,dx};}
+  // §3.9 subwoofers: L ≈ W (within 10 %) → 2 at the side-wall midpoints (4 recommended); else 2 the same way
+  const square=Math.abs(L-W)/Math.max(L,W)<=0.10,nSubs=P.nSubs||2;
+  const subs=nSubs===1?[{x:t,y:W/4,z:0}]:[{x:L/2,y:ySide,z:0},{x:L/2,y:-ySide,z:0}];
+  // §3.8 projector, beam keep-out, track-light band
+  let pj=null,beam=null,band=null;
+  if(P.disp!=='tv'){const xP=Math.min(xs+P.TR*Ws,L-0.3),T=xP-xs,zL=Hf-P.dMount;
+    pj={x:xP,y:0,z:zL,T,shiftPct:Hs>0?(zL-(zBot+Hs/2))/Hs*100:0};
+    beam={apex:[xP,0],base:[[xs,-Ws/2],[xs,Ws/2]],margin:P.margin,poly:[[xP+P.margin,0],[xs,Ws/2+P.margin],[xs,-Ws/2-P.margin]]};
+    const yi=Ws/2+P.margin,yo=W/2-0.6;band={ok:yo>yi,yIn:yi,yOut:yo,x0:xs+0.4,x1:xP-0.1};}
+  const spk={L:{x:xs,y:yL,z:he},C:{x:xs,y:0,z:zC},R:{x:xs,y:-yL,z:he},Ls:{x:xS,y:ySide,z:zS},Rs:{x:xS,y:-ySide,z:zS}};
+  if(rear){spk.Lb={x:rear.x,y:Math.abs(rear.y),z:zS};spk.Rb={x:rear.x,y:-Math.abs(rear.y),z:zS};}
+  // §3.7 the distances the processor needs
+  const dist={};Object.keys(spk).forEach(k=>{const s=spk[k];dist[k]=Math.hypot(xM-s.x,s.y,he-s.z);});
+  // §3.9 axial modes
+  const modes={fL:343/(2*L),fW:343/(2*W),fH:343/(2*Hf)};
+  // §3.10 the sweep (12 = doors, park zones, windows: 08r checks it against the room's openings)
+  warn(1,zBot>=0.6,'A kép alja '+cinR3(zBot)+' m — legalább 0,60 m kell: kisebb kép vagy magasabb ülés.');
+  warn(2,P.disp==='tv'||zTop+cl<=Hf+1e-9,'A kép teteje + lencse nem fér a mennyezet alá: kisebb kép.');
+  warn(3,Math.abs(xM-0.5*L)>0.05*L,'A hallgatási pont a hossz felénél van (módus-nulla): tolj rajta 0,3 m-t.');
+  warn(4,L-xM>=1.2-1e-9,'A hallgatási pont mögött kevesebb mint 1,20 m van.');
+  warn(5,yLR<=yMax+1e-9,'A front hangfalak 0,60 m-nél közelebb kerülnének az oldalfalhoz: kisebb szög vagy előrébb ülés.');
+  warn(6,yL>=Ws/2+0.15-1e-9,'A front hangfalak a kép szélén belül vannak: kisebb kép.');
+  if(P.fmt==='7.1'){warn('7.1',L-xM>=1.5-1e-9,'7.1: a hallgatási pont mögött csak '+cinR3(L-xM)+' m van (1,50 kell) — az 5.1 jobb lehet.');
+    warn(7,2*Math.abs(rear.y)>=1.0,'7.1: a hátsó pár '+cinR3(2*Math.abs(rear.y))+' m-re van egymástól (1,00 kell) — 5.1 javasolt.');}
+  warn(8,xS<=L-0.3+1e-9&&(!pj||pj.x<=L-0.3+1e-9),'Az oldalsó surround vagy a projektor túl közel a hátsó falhoz.');
+  if(band)warn(10,band.ok,'Nincs sín-világításra alkalmas mennyezeti sáv a sugár mellett: fal- vagy rejtett világítás.');
+  warn(11,!square,'Négyzetes helyiség (H ≈ Sz): legalább 2, inkább 4 mélysugárzó.');
+  return {in:P,xMLP:xM,D,Ws,WsAng,WsH,bind,Hs,zBot,zTop,phi,alpha:a,rear,spk,subs,pj,beam,band,dist,modes,square,checks,
+    viable71:L-xM>=1.5-1e-9};}
+window.cinCalc=cinCalc;window.CIN_DEF=CIN_DEF;
+
+// The cinema's own pass after C6 has drawn its paths: one row per node with its cables (guide §6.2), the speaker
+// section sized once for every channel (§6.1), the signal conduit sized by the guide's own fill (§5.2: one cable 53 %,
+// two 31 %, three or more 40 %; an HDMI head needs Ø40, §5.1) and the mains in a SEPARATE conduit (§6.2). The signal
+// pipes are family CINEMA, the mains MAINS (they stay Erősáram: the cabinet's AV group, 05x). Written into the paths'
+// sec.cont like 05w (src 'cin:<layer id>') plus data.runs stage 'cinema'. §5.5 separation is an info check.
+// Lengths: path + 500 mm per end, tájékoztató (as 05w). Prefix: cinW / cinSep.
+
+AFILL_FAMS.CINEMA={n:'Házimozi',cls:'sig',c:'#5b3f8c'};
+Object.assign(AFILL_CABLES,{SPK2x40:{n:'Hangszóró 2×4',od:9.5/*r*/},SPK2x60:{n:'Hangszóró 2×6',od:11/*r*/},
+  LFE:{n:'LFE koax (RG6 típus)',od:6.9},TRIG2x075:{n:'Vezérlő érpár 2×0,75',od:5.5/*r*/}});
+// the speaker cables by section (mm²)
+const CINW_SPK=[[1.5,'SPK2x15'],[2.5,'SPK2x25'],[4,'SPK2x40'],[6,'SPK2x60']];
+// §5.2 k by the number of cables
+function cinWK(n){return n<=1?0.53:n===2?0.31:0.40;}
+// the guide's conduit: the smallest corrugated size whose area holds Σ cable area / k, never below the heads' minimum
+function cinWSize(cables,minK){const real=cables.filter(c=>AFILL_CABLES[c.c]&&!AFILL_CABLES[c.c].empty);let need=minK?afillCondIx(minK):0;
+  cables.forEach(c=>{const C=AFILL_CABLES[c.c];if(C&&C.minW)need=Math.max(need,afillCondIx(C.minW));});
+  const n=real.reduce((s,c)=>s+(c.n||1),0),area=real.reduce((s,c)=>s+(c.n||1)*afillArea(AFILL_CABLES[c.c].od),0),k=cinWK(n);
+  const lbl=cables.map(c=>((c.n||1)>1?c.n+'×':'')+afillCabName(c.c)).join(' + ');
+  for(let i=need;i<AFILL_CONDUITS.length;i++){const C=AFILL_CONDUITS[i],f=area/afillArea(C.id);
+    if(f<=k+1e-9)return {size:C.k,fill:+f.toFixed(3),why:lbl+': '+Math.round(f*100)+' % ≤ '+Math.round(k*100)+' %'+(i===need&&need>0?' (min. '+C.k+')':'')+' → '+C.k};}
+  const C=AFILL_CONDUITS[AFILL_CONDUITS.length-1];return {size:C.k,fill:+(area/afillArea(C.id)).toFixed(3),why:lbl+': túltelített M63 is',over:true};}
+// §6.1: A ≥ 0.712 · l / Z_min, the same section on every channel (the longest run decides)
+function cinWSpk(lMax,zMin){const A=0.712*lMax/(zMin||4),hit=CINW_SPK.find(s=>s[0]>=A-1e-9)||CINW_SPK[CINW_SPK.length-1];
+  return {A:+A.toFixed(2),mm2:hit[0],cable:hit[1],over:A>CINW_SPK[CINW_SPK.length-1][0]+1e-9};}
+function cinWRef(d){const r=d.ref||(typeof epRef==='function'?epRef(d):'');return r?r+' ('+d.id+')':d.id;}
+function cinWPathLen(p){let s=0;for(let i=1;i<p.nodes.length;i++){const a=p.nodes[i-1],b=p.nodes[i];s+=Math.hypot(b.x-a.x,b.y-a.y,(b.h||0)-(a.h||0));}return s;}
+// which AV circuit feeds what (§7.2 / §7.4): 1 circuit = all on AV-1; 2 = subs on AV-2, projector on AV-1; 3 = projector + screen on AV-3
+function cinWCkt(nC,what){if(what==='sub')return nC>=2?'AV-2':'AV-1';if(what==='pj')return nC>=3?'AV-3':'AV-1';return 'AV-1';}
+const CINW_SIG={CLR:'spk',CSR:'spk',CBK:'spk'};
+// → {rows:[{dev, code, ref, path, len, sig:{cables,size,fill,why}, mains?:{…, ckt}, notes[]}], spk, feed, warns}
+function cinWiring(L){const C=L&&L.cinema;if(!C)return null;const pathOf=(kind,id)=>data.paths.find(p=>p&&p.layer===L.id&&p.cin&&p.cin.kind===kind&&p.cin.from===id);
+  const devs=data.devices.filter(d=>d&&d.layer===L.id&&/^C(LR|SR|BK|SW|PJ|SC|TV|KP)$/.test(d.code||'')).sort((a,b)=>prtIdCmp(a.id,b.id));
+  const nC=data.devices.filter(d=>d&&d.cin&&d.cin.av&&d.cin.of===L.id).length||cinCircuitDefault(L),warns=[];
+  const lenOf=p=>p?Math.round(cinWPathLen(p)+2*AFILL_RULE.slackPerEnd):null;
+  const spkLens=devs.filter(d=>CINW_SIG[d.code]).map(d=>lenOf(pathOf('node',d.id))).filter(x=>x!=null);
+  const spk=cinWSpk(spkLens.length?Math.max(...spkLens)/1000:0,C.zMin||4);
+  if(spk.over)warns.push({sev:'warn',msg:'Hangszórókábel: '+spk.A+' mm² kellene — 6 mm²-nél vastagabb; rövidebb út vagy erősítő a hangfal közelében.'});
+  const rows=devs.map(d=>{const p=pathOf('node',d.id),len=lenOf(p),notes=[];let sig=[],mains=null,minK=null;
+    if(CINW_SIG[d.code]){sig=[{c:spk.cable,n:1}];if(d.code==='CBK'&&C.fmt!=='7.1')notes.push('5.1: előkészítés — a hátsó pár kábelét most húzd be (§6.3).');}
+    else if(d.code==='CSW'){sig=[{c:'LFE',n:1}];minK='M25';mains={c:'NYM3x25',ckt:cinWCkt(nC,'sub')};
+      if(len!=null&&len>10000)notes.push('10 m felett szimmetrikus (XLR) LFE (§6.2).');}
+    else if(d.code==='CPJ'){sig=[{c:'AOC_FIX',n:1},{c:'CAT6A_U',n:1},{c:'SPARE',n:1}];minK='M40';mains={c:'NYM3x25',ckt:cinWCkt(nC,'pj')};}
+    else if(d.code==='CSC'){sig=[{c:'TRIG2x075',n:1},{c:'CAT6A_U',n:1}];mains={c:'NYM3x15',ckt:cinWCkt(nC,'pj')};notes.push('Cat6A a vászonhoz: hálózati vezérlés (§6.3).');}
+    else if(d.code==='CTV'){sig=[{c:'AOC_FIX',n:1},{c:'CAT6A_U',n:1}];minK='M40';mains={c:'NYM3x25',ckt:'AV-1'};}
+    else if(d.code==='CKP')sig=[{c:'CAT6A_U',n:1}];
+    const S=Object.assign({cables:sig},cinWSize(sig,minK));
+    const M=mains?Object.assign({cables:[{c:mains.c,n:1}],ckt:mains.ckt},cinWSize([{c:mains.c,n:1}],'M20')):null;
+    if(!p)notes.push('Nincs útvonal — futtasd az Útvonal + kör lépést.');
+    return {dev:d.id,code:d.code,ref:cinWRef(d),path:p?p.id:null,len,sig:S,mains:M,notes};});
+  // matched LFE lengths (§6.2)
+  const sw=rows.filter(r=>r.code==='CSW'&&r.len!=null);if(sw.length>=2){const a=Math.min(...sw.map(r=>r.len)),b=Math.max(...sw.map(r=>r.len));
+    if(b-a>1000)warns.push({sev:'info',msg:'Mélysugárzók: az LFE kábelek hossza '+(a/1000).toFixed(1)+' és '+(b/1000).toFixed(1)+' m — egyezzenek, vagy a processzor kompenzálja (§6.2).'});}
+  // the rack: its AV circuits to the Elosztó (mains, its own pipe) and 2 × Cat6A to the network
+  const rack=data.devices.find(d=>d&&d.layer===L.id&&d.code==='CRK'),fp=rack?pathOf('feed',rack.id):null;
+  const feed=rack?{dev:rack.id,ref:cinWRef(rack),path:fp?fp.id:null,len:lenOf(fp),to:fp?fp.cin.to:null,
+    mains:Object.assign({cables:[{c:'NYM3x25',n:nC}],ckt:CIN_AV.slice(0,nC).map(c=>c.k).join(' + ')},cinWSize([{c:'NYM3x25',n:nC}],'M25')),
+    data:{cables:[{c:'CAT6A_U',n:2}],note:'a hálózati rackig — az Adat / PoE réteg útján'}}:null;
+  if(rack&&!fp)warns.push({sev:'warn',msg:'AV rack: nincs útvonal az Elosztóig.'});
+  return {layer:L.id,fmt:C.fmt,zMin:C.zMin||4,nC,spk,rows,feed,warns};}
+
+// ---- apply: the pipes into the paths (05w's sec.cont, src 'cin:<layer>') and the runs (stage 'cinema') ----------------------
+function cinWApply(L,W){W=W||cinWiring(L);if(!W)return 0;const src='cin:'+L.id;afillDropSrc(src);
+  data.runs=afillRuns().filter(r=>!(r.stage==='cinema'&&r.layer===L.id));let n=0;
+  const put=(pid,key,fam,P,from,to,len)=>{const p=pathById(pid);if(!p)return;
+    afillPutPipe({key,fam,size:P.size,fill:P.fill,cables:P.cables,segs:afillSegsOf(p)},src,'');
+    P.cables.forEach(c=>{if(AFILL_CABLES[c.c]&&AFILL_CABLES[c.c].empty)return;
+      afillRuns().push({stage:'cinema',layer:L.id,fam,from,to,via:afillSegsOf(p).map(s=>({p:s.p,a:s.a,b:s.b})),cable:{c:c.c,n:c.n||1},len,pipe:key});n++;});};
+  W.rows.forEach(r=>{if(!r.path)return;const rack=(pathById(r.path).cin||{}).to;
+    put(r.path,'CIN|'+r.dev,'CINEMA',r.sig,r.dev,rack,r.len);if(r.mains)put(r.path,'MAINS|'+r.dev+'|'+r.mains.ckt,'MAINS',r.mains,r.dev,rack,r.len);});
+  if(W.feed&&W.feed.path)put(W.feed.path,'MAINS|'+W.feed.dev+'|AV','MAINS',W.feed.mains,W.feed.dev,W.feed.to,W.feed.len);
+  return n;}
+
+// ---- §5.5 separation: a cinema signal run parallel to an Erősáram path closer than 300 mm (screened only: 150 mm) ------------
+const CINW_SCREENED=new Set(['LFE','AOC_FIX','AOC_DET','CAT6A_S']);
+function cinSepLimit(cables){return cables.some(c=>!CINW_SCREENED.has(c.c)&&!(AFILL_CABLES[c.c]||{}).empty)?300:150;}
+function cinSepMainsPath(p){if(!p||p.cin||!p.nodes||p.nodes.length<2)return false;const l=typeof lyrLayer==='function'?lyrLayer(p.layer):null;
+  return !l||!l.role||mnsIs(l.role);}
+function cinSepSegs(p){const out=[];for(let i=1;i<p.nodes.length;i++){const a=p.nodes[i-1],b=p.nodes[i];
+  if(a.level!==b.level||Math.hypot(b.x-a.x,b.y-a.y)<200)continue;out.push({a,b,level:a.level,h:((a.h||0)+(b.h||0))/2});}return out;}
+// parallel (≤ 10°), plan + height offset under the limit, overlapping ≥ 500 mm → the overlap length
+function cinSepPair(s,m,lim){if(s.level!==m.level)return 0;const dx=s.b.x-s.a.x,dy=s.b.y-s.a.y,l=Math.hypot(dx,dy),ux=dx/l,uy=dy/l;
+  const mx=m.b.x-m.a.x,my=m.b.y-m.a.y,ml=Math.hypot(mx,my);if(Math.abs(ux*my-uy*mx)/ml>Math.sin(10*Math.PI/180))return 0;
+  const off=Math.abs(-uy*(((m.a.x+m.b.x)/2)-s.a.x)+ux*(((m.a.y+m.b.y)/2)-s.a.y)),d=Math.hypot(off,m.h-s.h);if(d>=lim)return 0;
+  const t1=ux*(m.a.x-s.a.x)+uy*(m.a.y-s.a.y),t2=ux*(m.b.x-s.a.x)+uy*(m.b.y-s.a.y);
+  const ov=Math.min(l,Math.max(t1,t2))-Math.max(0,Math.min(t1,t2));return ov>=500?ov:0;}
+function cinSepChecks(L,W){W=W||cinWiring(L);if(!W)return [];const out=[];
+  const mains=data.paths.filter(cinSepMainsPath).map(p=>({p,segs:cinSepSegs(p)}));
+  W.rows.forEach(r=>{const p=r.path&&pathById(r.path);if(!p)return;const lim=cinSepLimit(r.sig.cables),ss=cinSepSegs(p);
+    mains.forEach(M=>{let ov=0;ss.forEach(s=>M.segs.forEach(m=>{ov+=cinSepPair(s,m,lim);}));
+      if(ov)out.push({sev:'info',code:'cin.sep',ref:r.dev,msg:'Házimozi '+r.ref+': a jelvezeték '+(ov/1000).toFixed(1).replace('.',',')+' m hosszan '+lim+' mm-nél közelebb fut az erősáramú '+M.p.id+' pályához — §5.5: '+(lim===300?'árnyékolatlan jel 300 mm':'árnyékolt jel 150 mm')+', keresztezés 90°-ban.'});});});
+  return out;}
+(STK_CHECKS['sys:CINEMA']=STK_CHECKS['sys:CINEMA']||[]).push(()=>{const out=[];cinLayers().forEach(L=>{if(!L.cinema)return;const W=cinWiring(L);
+  W.warns.forEach(w=>out.push(w));cinSepChecks(L,W).forEach(w=>out.push(w));});return out;});
+
+// ---- UI: the wiring list ------------------------------------------------------------------------------------------------------
+function cinWireDialog(L){const W=cinWiring(L);if(!W)return;const m=x=>x==null?'—':(x/1000).toFixed(1).replace('.',',')+' m';
+  const cab=cs=>cs.map(c=>((c.n||1)>1?c.n+' × ':'')+esc(afillCabName(c.c))).join(' + ');
+  const sep=cinSepChecks(L,W);
+  openModal('🎬 Házimozi — kábellista (§6)',
+    `<div class="mrow" style="font-size:12px">Hangszórókábel minden csatornán: <b>${String(W.spk.mm2).replace('.',',')} mm²</b> (A ≥ 0,712 · l / Z = ${String(W.spk.A).replace('.',',')} mm²) · Z<sub>min</sub> <select id="cinZ"><option ${W.zMin===4?'selected':''} value="4">4 Ω</option><option ${W.zMin===8?'selected':''} value="8">8 Ω</option></select> · ${W.nC} AV kör</div>`
+    +`<div style="max-height:360px;overflow:auto"><table style="font-size:11.5px;width:100%"><tr><th align="left">Végpont</th><th align="left">Jel (CINEMA)</th><th>Cső</th><th align="left">230 V (külön cső)</th><th>Hossz</th></tr>`
+    +W.rows.map(r=>`<tr><td>${esc(r.ref)}</td><td>${cab(r.sig.cables)}</td><td align="center" title="${esc(r.sig.why)}">${r.sig.size}</td>`
+      +`<td>${r.mains?cab(r.mains.cables)+' · '+r.mains.ckt+' · '+r.mains.size:''}</td><td align="center">${m(r.len)}</td></tr>`
+      +(r.notes.length?`<tr><td></td><td colspan="4" style="color:#888">${r.notes.map(esc).join(' ')}</td></tr>`:'')).join('')
+    +(W.feed?`<tr><td><b>${esc(W.feed.ref)}</b> → Elosztó</td><td>2 × Cat6A U/FTP <span style="color:#888">(${esc(W.feed.data.note)})</span></td><td></td><td>${cab(W.feed.mains.cables)} · ${esc(W.feed.mains.ckt)} · ${W.feed.mains.size}</td><td align="center">${m(W.feed.len)}</td></tr>`:'')
+    +`</table></div>`
+    +W.warns.concat(sep).map(x=>`<div style="color:${x.sev==='info'?'#666':'#b05a00'};font-size:11.5px">${x.sev==='info'?'ℹ':'⚠'} ${esc(x.msg)}</div>`).join('')
+    +`<div class="mrow" style="font-size:11px;color:#888">Cső: §5.2 (1 kábel 53 %, 2 kábel 31 %, 3+ 40 %), HDMI fej → Ø40 (§5.1). Minden csőben behúzószál. Hossz: pálya + 2 × ${AFILL_RULE.slackPerEnd} mm, tájékoztató.</div>`,
+    ()=>{pushUndo(['paths','runs']);const n=cinWApply(L,cinWiring(L));draw();$('hud').textContent='Házimozi: '+n+' kábel a mozi csöveiben.';},'Csövekbe írás');
+  $('cinZ').onchange=()=>{L.cinema.zMin=+$('cinZ').value;closeModal();cinWireDialog(L);};}
+if(typeof STK_LAYERMENU!=='undefined')STK_LAYERMENU.push((L,items)=>{if(L.role==='sys:CINEMA'&&L.cinema)items.push({label:'🎬 Kábellista…',act:()=>cinWireDialog(L)});});
+registerActions([{id:'cinema.wiring',label:'Házimozi kábellista',icon:'🎬',group:'Feltöltés',alias:'hazimozi kabellista cinema wiring cable list',
+  hint:'A mozi végpontjainak kábelei (§6.2), a közös hangszórókábel-keresztmetszet (§6.1), a csőméretek (§5.2) és az erősáram-távolság (§5.5).',
+  need:'Előbb egy Házimozi réteg kell.',when:()=>cinLayers().some(L=>L.cinema),run:()=>{const L=lyrLayer(state.activeLayer);cinWireDialog(L&&L.role==='sys:CINEMA'&&L.cinema?L:cinLayers().find(x=>x.cinema));}}]);
+
+window.cinWiring=cinWiring;window.cinWApply=cinWApply;window.cinWSize=cinWSize;window.cinWSpk=cinWSpk;window.cinSepChecks=cinSepChecks;window.cinSepPair=cinSepPair;window.cinWPathLen=cinWPathLen;
 //////////////////// hit-test + context menu ////////////////////
 // ---- what can be touched (round 2026-10-10, WP-U1) ----
 // The hit side of what 04-render draws: a level that is off, a layer or sub-layer that is hidden, a solo room that
@@ -18861,6 +19805,9 @@ function roomMenuItems(rh){const rm=rh.rm,solo=soloRoomIs(rh);const items=[
       act:()=>{pushUndo();const on=noteSurfaceToggle(k);draw();
         $('hud').textContent='A '+nm+' jegyzetei '+(on?'láthatók':'elrejtve')+'.';}});});
     if(rh.src==='F')items.push({label:'🗑 Padló törlése',act:()=>{pushUndo();data.floors.splice(rh.i,1);draw();}});
+    if(typeof slbRoomMenu==='function')slbRoomMenu(rh,items);     // födém items (08p)
+    if(typeof reqRoomMenu==='function')reqRoomMenu(rh,items);     // igénylista (08q)
+    if(typeof cinRoomMenu==='function')cinRoomMenu(rh,items);     // házimozi (08r)
     if(typeof stkRoomMenu==='function')stkRoomMenu(rh,items);   // BRIDGE Stack room items (05m hooks)
     qrMenu(items,'floors',{rm:rm});                                     // QR: 05g on:['floors']
     return items;}
@@ -19482,7 +20429,8 @@ function snap_(scope){ensureIds(data);                  // nothing is snapshotte
   const o=keys.reduce((o,k)=>(o[k]=data[k],o),{});
   o.__scope=sc?sc.slice():null;                                 // markers kept → redo is symmetric
   if(!sc||sc.indexOf('__walls')>=0){o.__walls={};for(const l of ORD)o.__walls[l]=WALLS[l]||[];}
-  if(sc&&sc.indexOf('__layers')>=0)o.__layers={layers,stacks};  // opt-in only — a plain pushUndo() must not carry layers
+  if(sc&&sc.indexOf('__layers')>=0)o.__layers={layers,stacks};
+  if(sc&&sc.indexOf('__slabs')>=0)o.__slabs=JSON.parse(JSON.stringify(SLABS));   // 08p: a födém switch (opt-in)  // opt-in only — a plain pushUndo() must not carry layers
   o.__noteHide=data.noteHide||{};o.__seq=data.seq||0;o.__v=data.v||SCHEMA_VERSION;
   return JSON.parse(JSON.stringify(o));}
 function snapBytes(sn){try{return JSON.stringify(sn).length;}catch(_){return 0;}}
@@ -19492,6 +20440,7 @@ function applySnap(sn){
   if(sn.__noteHide)data.noteHide=sn.__noteHide;
   data.seq=Math.max(+sn.__seq||0,data.seq||0);data.v=sn.__v||SCHEMA_VERSION;   // ids must never be reissued
   pruneLinks();
+  if(sn.__slabs){ORD.forEach(l=>{SLABS[l]=Object.assign({},sn.__slabs[l]);});if(typeof slbSyncUI==='function')slbSyncUI();if(typeof rebuildDrawH==='function')rebuildDrawH();}
   if(sn.__walls){for(const l of ORD){WALLS[l]=(sn.__walls[l]||[]).map(wr);SNAP[l]=centerlines(WALLS[l]);}}
   if(sn.__layers){layers=sn.__layers.layers;stacks=sn.__layers.stacks||[];if(!layers.some(l=>l.id===state.activeLayer))state.activeLayer=layers[0]?layers[0].id:'L0';if(typeof renderLayers==='function')renderLayers();}
   reselectAfterSnap();}
@@ -19546,7 +20495,8 @@ function renderGuides(){const box=$('guideBox');if(!box)return;const level=state
         :`<div class="mrow">Magasság <input id="grmm" type="number" value="${typeof g.mm==='number'?g.mm:0}" style="width:90px"> mm</div>`)
       +`<div class="mrow">Szín <input id="grc" type="color" value="${g.c}" style="width:44px;height:24px"></div>`,
       ()=>{g.l=$('grn').value||g.l;if(!g.sys&&!guideStd(g)&&$('grmm'))g.mm=+$('grmm').value||0;g.c=$('grc').value;rebuildDrawH();renderGuides();draw();});});}
-function rebuildDrawH(){const sel=$('drawH');if(!sel)return;sel.innerHTML=GUIDES.map(g=>`<option value="${g.k}">${esc(guideLabel(g))}</option>`).join('');sel.value=state.drawHKey;}
+function rebuildDrawH(){const sel=$('drawH');if(!sel)return;sel.innerHTML=GUIDES.map(g=>`<option value="${g.k}">${esc(guideLabel(g))}</option>`).join('')
+  +(typeof slbAny==='function'&&slbAny()?`<option value="slab">${esc(SLB_GUIDE.l)}</option>`:'');sel.value=state.drawHKey;}
 (function initGuides(){renderGuides();rebuildDrawH();})();
 $('addG').onclick=()=>{const v=+$('custG').value;if(v>0){const nm=$('custGName').value.trim()||('Egyéni '+v);
   const k='g'+Date.now();GUIDES.push({k,mm:v,l:nm,c:'#7a5cc0',vis:false,jump:true});
@@ -19562,9 +20512,9 @@ $('bBOM').onclick=()=>{const t=bomText();navigator.clipboard.writeText(t).then((
 $('bBOMcsv').onclick=()=>download('bom.csv',bomCSV());
 $('bBOMj').onclick=()=>download('bom.json',JSON.stringify(bomJSON(),null,2));
 $('bSave').onclick=()=>{for(const l of ORD)B.walls[l]=(WALLS[l]||[]).map(rectArr);
-  download('villanyterv.json',JSON.stringify({state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc},null,2));};
+  download('villanyterv.json',JSON.stringify(slbPut({state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc}),null,2));};
 $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);
-  Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
+  Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});slbGet(o);if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);if(typeof stkMigrateRoles==='function')stkMigrateRoles();if(typeof swNumMigrate==='function')swNumMigrate(data);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
 function syncUI(){vsApply();if(typeof kbdApplyLayout==='function')kbdApplyLayout();   // U4: the saved layout's keys and hints
@@ -20382,7 +21332,7 @@ function saveProject(name,id){const ix=loadProjIndex();id=id||('p'+Date.now().to
   try{localStorage.setItem(CURRENT_KEY,id);}catch(_){}
   renderProjects();$('hud').textContent='Mentve: '+snap.name;return id;}
 function applyProjectData(o){ // o = a sessionObj payload
-  Object.assign(state,o.state||{});vsApply();Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
+  Object.assign(state,o.state||{});vsApply();Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});slbGet(o);if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   layers=o.layers||[{id:'L0',name:'Alap',visible:true,cats:layerCatsAll()}];stacks=o.stacks||[];lyrMigrateAll();
   if(o.panelLoc)panelLoc=o.panelLoc;refB=o.refB||[];
@@ -20417,7 +21367,7 @@ function hardResetWorkspace(){
   stacks=[];
   data.noteHide={};
   for(const l of ORD){WALLS[l]=[];SLAB[l]=null;GHOST[l]=null;ROOMSB[l]=[];ROOFS[l]=[];SNAP[l]=centerlines([]);}
-  DROPC.basement=0;DROPC.ground=0;DROPC.upper=0;
+  DROPC.basement=0;DROPC.ground=0;DROPC.upper=0;slbGet({});
   undo.length=0;redo.length=0;                                 // no stepping back into another project
   selected=null;clearMulti&&clearMulti();
   draft=null;pathDraft=null;measureDraft=null;cursor=null;lock=null;
@@ -20462,11 +21412,11 @@ const LS_KEY='villanyterv_autosave_v1';let saveTimer=null;
 function sessionObj(){ensureIds(data);data.v=SCHEMA_VERSION;
   for(const l of ORD){B.walls[l]=(WALLS[l]||[]).map(rectArr);
   B.rooms=B.rooms||{};B.rooms[l]=ROOMSB[l]||[];}   // room-sheet edits on building rooms persist too
-  return {v:1,state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc,refB};}
+  return slbPut({v:1,state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc,refB});}
 function saveSession(){try{if(currentProjId){const ix=loadProjIndex();if(ix[currentProjId]){ix[currentProjId].data=sessionObj();ix[currentProjId].ts=Date.now();saveProjIndex(ix);}}else{localStorage.setItem(LS_KEY,JSON.stringify(sessionObj()));}}catch(_){}}
 function scheduleSave(){try{clearTimeout(saveTimer);saveTimer=setTimeout(saveSession,1200);}catch(_){}}
 function restoreSession(){try{const raw=localStorage.getItem(LS_KEY);if(!raw)return false;const o=JSON.parse(raw);
-  Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;
+  Object.assign(state,o.state||{});Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});slbGet(o);if(typeof o.GAP==='number')GAP=o.GAP;
   if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.refB)refB=o.refB;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);
@@ -20579,6 +21529,12 @@ const RLI_TEXT={
  mark:{cel:'Szabályok a rajzon: tiltott (⛔), előnyös (+) és kerülendő (−) falak és sávok; RBX / BASE / Elosztó helye sávok; padló- és mennyezetzónák; mozgásnyomok; nyílászáró-címkék (bejárat, külső, portál P2/P3, redőny).',
    hol:'A bejárat jelölése kötelező (a portálgráf horgonya). Minden nedves helyiség, minden tervezett RBX-fal sávval.',
    klaszter:'Minden második fázisú réteg olvassa (a helyiség-igények levezetése innen jön).'},
+ need:{cel:'Helyiségenkénti igénylista darabszámokkal: dugalj, készülék dugalj, lámpa (kapcsolási kör, világítási kör), kapcsoló típusonként, redőny, dedikált fogyasztó.',
+  hol:'Jobb klikk a helyiségen → Igénylista. A javaslat a helyiség fajtájából jön; a Ház összesítő a helyiségek összege.',
+  klaszter:'A Világítás / Dugaljak / Dedikált rétegek ezt teljesítik; a helyiség állapota (hiányos / kész) a darabszámokból jön.'}, // round 2026-10-18 WP-N1 (08q)
+ 'sys:CINEMA':{cel:'Házimozi: a helyiség méreteiből javasolt hangfal-, mélysugárzó-, projektor- és rack-helyek (30 %-os jelölők), a projektor sugarának tiltott zónája és a sínvilágítás sávja.',
+   hol:'Jobb klikk a helyiségen → Házimozi ebben a helyiségben…; húzd meg a vászon vonalát, igazítsd a mozi zónát. Jobb klikk → Javasolt helyek létrehozása, ha készülék kell belőlük.',
+   klaszter:'Saját pálya, saját kör (C6–C7); a dedikált kör a Dedikált körök rétegre kerül.'}, // round 2026-10-18 WP-C1 (08r)
  hw:{cel:'Elosztószekrény, mérőóra, adatbelépés (ISP), RBX dobozok, biztonsági központ (SSC).',
    hol:'1 Elosztó lakásonként. Minden helyiséget pontosan egy RBX szolgál ki — 1 RBX 1–2 helyiségre, lehetőleg két helyiség közös belső falán. RBX alja ≥ 1900 mm (RB-M közép 2150). SSC védett, nem bejárható helyen. [H, W]',
    klaszter:'BASE (a Csatornán át); közös falszakasz BASE-zel megengedett, de kerülendő, ha a BASE mindhárom egysége egy oszlopban van.'},

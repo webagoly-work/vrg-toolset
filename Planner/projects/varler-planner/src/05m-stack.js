@@ -198,7 +198,7 @@ function stkCreate(opts){opts=opts||{};
   // new layers: one contiguous block after the last existing layer, in STK_ROLES order
   STK_ROLES.forEach(r=>{
     if(r.k==='construct'){if(!cl){cl=stkMakeLayer(S,r);layers.push(cl);}return;}
-    if(r.ph===1||want.indexOf(r.k)>=0)layers.push(stkMakeLayer(S,r));});
+    if((r.ph===1&&!r.opt)||want.indexOf(r.k)>=0)layers.push(stkMakeLayer(S,r));});   // opt: added on demand (08q Igények)
   stkSync(S);
   state.stack=S.id;state.stkOff=false;state.activeLayer=cl.id;state.stage='stk:construct';
   lyrRefresh();

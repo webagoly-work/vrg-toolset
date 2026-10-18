@@ -539,6 +539,9 @@ function roomMenuItems(rh){const rm=rh.rm,solo=soloRoomIs(rh);const items=[
       act:()=>{pushUndo();const on=noteSurfaceToggle(k);draw();
         $('hud').textContent='A '+nm+' jegyzetei '+(on?'láthatók':'elrejtve')+'.';}});});
     if(rh.src==='F')items.push({label:'🗑 Padló törlése',act:()=>{pushUndo();data.floors.splice(rh.i,1);draw();}});
+    if(typeof slbRoomMenu==='function')slbRoomMenu(rh,items);     // födém items (08p)
+    if(typeof reqRoomMenu==='function')reqRoomMenu(rh,items);     // igénylista (08q)
+    if(typeof cinRoomMenu==='function')cinRoomMenu(rh,items);     // házimozi (08r)
     if(typeof stkRoomMenu==='function')stkRoomMenu(rh,items);   // BRIDGE Stack room items (05m hooks)
     qrMenu(items,'floors',{rm:rm});                                     // QR: 05g on:['floors']
     return items;}

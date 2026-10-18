@@ -50,7 +50,7 @@ setTimeout(()=>{
   ok('needNextRole = the first open system layer in stack order',w.needNextRole(rm2())==='sys:LV');
   ok('MAINS-stage checks list what a room is missing',(function(){const c=w.stkCheck(S,'sys:LV');return c.some(x=>/hiányzik/.test(x.msg));})());
   ok('needReport is plain JSON with one entry per room',(function(){const r=w.needReport();return r.length===1&&r[0].room.kind==='nappali'&&J(JSON.parse(J(r)))===J(r);})());
-  ok('the room menu offers the checklist',(function(){const it=w.roomMenuItems({rm:rm2(),src:'F',i:0,level:lvl});return it.some(x=>/Helyiség igényei/.test(x.label));})());
+  ok('the room menu offers the checklist (renamed Rétegenkénti igények since the 08q Igénylista)',(function(){const it=w.roomMenuItems({rm:rm2(),src:'F',i:0,level:lvl});return it.some(x=>/Rétegenkénti igények/.test(x.label));})());
   ok('the checklist dialog renders a row per system layer',(function(){w.needDialog(rm2());const n=w.document.querySelectorAll('.ndC').length;w.eval('closeModal()');return n>20;})());
   // ---- D3: suggestions ----
   const bottom=WA[1],left=WA[2],right=WA[3],top=WA[0];

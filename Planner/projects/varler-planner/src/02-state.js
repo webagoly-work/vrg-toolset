@@ -291,7 +291,7 @@ const GUIDES_DEFAULT=JSON.parse(JSON.stringify(GUIDES)); // for per-guide "reset
 // legacy shims so old code paths keep working while we migrate
 const guideOn=new Proxy({},{get:(_,k)=>{const g=GUIDES.find(x=>x.k===k);return g?g.vis:false;},set:(_,k,v)=>{const g=GUIDES.find(x=>x.k===k);if(g)g.vis=!!v;return true;}});
 const customG=[];
-function guideByKey(k){return GUIDES.find(x=>x.k===k);}
+function guideByKey(k){return GUIDES.find(x=>x.k===k)||(k==='slab'&&typeof SLB_GUIDE!=='undefined'?SLB_GUIDE:undefined);}   // 08p: the födém-alja pseudo guide
 // T6 (docs/ui-tidy): ONE height source. A guide line that stands for a Standards row (08j STD_H) takes that row's height
 // — the project's value, else the table's — so the guide, the draw height (↑/↓) and the placed devices never disagree.
 // 'gerinc' is the trunk height the E5 engine uses: the project's PATH trunk value, else the ceiling − 250 (E5-Q3).
@@ -299,6 +299,7 @@ function guideByKey(k){return GUIDES.find(x=>x.k===k);}
 const GUIDE_STD={s300:['SOC','alap'],s500:['SOC','garazs'],s1100:['SWI','alap'],s1300:['PAN','alap'],s1400:['SOC','borotva'],s1900:['LMP','fali']};
 function guideStd(def){return def&&GUIDE_STD[def.k]&&typeof stdH==='function'?GUIDE_STD[def.k]:null;}
 function resolveMm(def,level){if(def.mm==='ceil')return wallH(level);
+  if(def.mm==='slab')return -slbT(level);
   if(def.mm==='gerinc'){const o=typeof stdList==='function'?stdList().find(x=>x.code==='PATH'&&x.hv==='trunk'&&x.scope==='project'):null;return o?+o.h:Math.max(0,wallH(level)-250);}
   if(def.mm==='alcell')return dropCeilOrDefault(level,null);
   const sd=guideStd(def);if(sd){const h=stdH(sd[0],sd[1]);if(typeof h==='number'&&isFinite(h))return h;}
@@ -311,14 +312,16 @@ function isFreeHeight(){if(state.freeHeight)return true;
   if(state.midFree){const l=state.active,mm=drawHmm(l);
     if(mm>1&&mm<wallH(l)-1)return true;}
   return false;}
-function drawHmm(level){if(state.freeHeight)return Math.max(0,state.freeMm||0);
+function drawHmm(level){if(state.freeHeight)return Math.max(-slbT(level),state.freeMm||0);
   const d=guideByKey(state.drawHKey);return d?resolveMm(d,level):0;}
 // which preset (if any) does the current free-mode height coincide with?
 function freeCoincides(level){if(!state.freeHeight)return null;const mm=drawHmm(level);
   return GUIDES.find(g=>Math.abs(resolveMm(g,level)-mm)<1)||null;}
-function jumpList(level){return GUIDES.filter(g=>g.jump!==false).map(g=>({g,mm:resolveMm(g,level)})).sort((a,b)=>a.mm-b.mm);}
+function jumpList(level){const L=GUIDES.filter(g=>g.jump!==false).map(g=>({g,mm:resolveMm(g,level)}));
+  if(slbT(level)>0&&typeof SLB_GUIDE!=='undefined')L.push({g:SLB_GUIDE,mm:-slbT(level)});   // 08p: through the slab, down to the lower ceiling
+  return L.sort((a,b)=>a.mm-b.mm);}
 function stepHeight(dir){const level=state.active;
-  if(state.freeHeight){state.freeMm=Math.max(0,Math.round(((state.freeMm||0)+dir*100)/100)*100);
+  if(state.freeHeight){state.freeMm=Math.max(-slbT(level),Math.round(((state.freeMm||0)+dir*100)/100)*100);
     const co=freeCoincides(level);$('hud').textContent='Szabad magasság → '+state.freeMm+' mm'+(co?(' (= '+guideLabel(co,level)+')'):'');draw();syncHeightUI();return;}
   const list=jumpList(level);if(!list.length)return;
   const cur=drawHmm(level);let idx=list.findIndex(x=>x.g.k===state.drawHKey);

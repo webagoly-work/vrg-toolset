@@ -44,14 +44,16 @@ function blInput(level){level=level||state.active;
   D.devices=(D.devices||[]).filter(d=>d&&d.gen!=='bl');D.paths=[];
   // layers: one MAINS layer for the engine (M1 split it in three), hardware off the endpoint list, redőny out
   P.layers=(P.layers||[]).concat([{id:'bl:mains',role:'sys:MAINS'},{id:'bl:hw',role:'bl:hw'},{id:'bl:off',role:'bl:off'}]);
-  let shu=0;
+  let shu=0,avc=0;
   D.devices.forEach(d=>{const live=byId('devices',d.id)||d,code=epCodeOf(live);
     if(!code){d.layer='bl:hw';return;}
     const role=epRoleOf(live);
     if(code==='SHU'){if(d.level===level)shu++;d.layer='bl:off';return;}
+    if(live.cin&&live.cin.av){if(d.level===level)avc++;d.layer='bl:off';return;}   // C7: the cinema's own pass routes its AV circuits (08r)
     if(mnsIs(role))d.layer='bl:mains';
     d.hFix=true;});                                  // heights: as placed — the Standards (R4) set them, not the engine
   if(shu)notes.push(shu+' redőny végpont kimarad: a redőnyvezérlés külön rétegen van (WP-E5 6.).');
+  if(avc)notes.push(avc+' házimozi AV kör kimarad: a Házimozi réteg saját útvonalon vezeti az Elosztóig (C7).');
   const off=new Set(D.devices.filter(d=>d.layer==='bl:off').map(d=>d.id));
   // WP-E6: a level's own circuits only (a circuit with end points on two levels is listed — each level has its own board)
   const onLv=new Set(D.devices.filter(d=>d.level===level).map(d=>d.id));
@@ -68,7 +70,7 @@ function blInput(level){level=level||state.active;
   const pv=hv=>{const o=(typeof stdList==='function'?stdList():[]).find(o=>o.code==='PATH'&&o.hv===hv&&o.scope==='project');return o?o.h:null;};
   const cfg={level,ceiling:LH[level]||2850,trunkH:pv('trunk'),distH:pv('dist'),cornerBoxes:BL_OPT.cornerAll?'all':'pull',maxCablesPerPipe:3,
     bedZoneMark:'agy',shutterSwitch:false,mainFeed:true,floorGroups:[],ceilLinks:[]};
-  if(feedEp)cfg.subFeed={x:feedEp.x,y:feedEp.y,n:'Felszálló '+(feedEp.ref||feedEp.id),cable:'NYM5x6',slab:300,ep:feedEp.id,fromAbove:ORD.indexOf(feedEp.level)>ORD.indexOf(level)};
+  if(feedEp)cfg.subFeed={x:feedEp.x,y:feedEp.y,n:'Felszálló '+(feedEp.ref||feedEp.id),cable:'NYM5x6',slab:Math.max(slbT(level),slbT(feedEp.level))||300,ep:feedEp.id,fromAbove:ORD.indexOf(feedEp.level)>ORD.indexOf(level)};
   // switching (E1): sw.ctl + lamp legs (d.grp) + sw.swType → the engine's explicit switch groups. Switches sharing a leg
   // are one unit (2 = váltó, more = kereszt in the middle); one switch with two legs = csillár. chain[0] = the box the
   // lamps hang from: the switch marked swHead, else the end nearest to the lamps.

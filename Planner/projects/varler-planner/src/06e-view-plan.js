@@ -117,6 +117,8 @@ function drawAlaprajzGeom(){const level=state.active,z=dz(level,0),c=apCut();
   const segs=rectsUnionSegs(pieces);
   if(segs.length)s+=`<path class="ap-contour" d="${segs.map(g=>{const A=planToBase(g[0],g[1],z),B=planToBase(g[2],g[3],z);
     return 'M'+A[0].toFixed(2)+' '+A[1].toFixed(2)+'L'+B[0].toFixed(2)+' '+B[1].toFixed(2);}).join('')}" fill="none" stroke="#111" stroke-width="${bpSW(AP_PEN.cut)}" stroke-linecap="square"/>`;
+  // 08p: födém holes — over the walls, since a hole the size of a room has its outline on the wall faces
+  if(typeof slbPlanEdges==='function'){const E=slbPlanEdges(level,z,dash);S.slabEdges=E.n;s+=E.svg;}
   S.pieces=pieces.length;AP_LAST=S;
   return s;}
 // draw()'s endpoint loop: a device above the cut on the active level is not drawn, only counted (D-V9-5 3C)

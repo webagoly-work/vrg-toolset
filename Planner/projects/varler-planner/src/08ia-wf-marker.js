@@ -101,7 +101,8 @@ function wlnRanges(level,pieces){const by={};
 
 // ---- inks and marks ----
 const MKP={on:false,ink:null,press:null,hover:null};
-function mkpInk(k){const p=typeof rbPreset==='function'?rbPreset(k):null;if(!p)return null;
+function mkpInk(k){if(k==='mozi'&&typeof CIN_INK!=='undefined')return CIN_INK;   // 08r: the Mozi fal ink (per face)
+  const p=typeof rbPreset==='function'?rbPreset(k):null;if(!p)return null;
   if(p.kind==='route')return {k,n:p.n,net:'c',tag:'vezetheto',pol:'plus',col:rbCol(p)};
   if(p.kind==='wall')return {k,n:p.n,net:'c',tag:p.tag,pol:p.pol,col:rbCol(p)};
   if(p.kind==='side')return {k,n:p.n,net:'f',tag:p.tag,pol:p.pol,col:rbCol(p)};

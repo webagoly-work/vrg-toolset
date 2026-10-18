@@ -16,6 +16,12 @@ const RLI_TEXT={
  mark:{cel:'Szabályok a rajzon: tiltott (⛔), előnyös (+) és kerülendő (−) falak és sávok; RBX / BASE / Elosztó helye sávok; padló- és mennyezetzónák; mozgásnyomok; nyílászáró-címkék (bejárat, külső, portál P2/P3, redőny).',
    hol:'A bejárat jelölése kötelező (a portálgráf horgonya). Minden nedves helyiség, minden tervezett RBX-fal sávval.',
    klaszter:'Minden második fázisú réteg olvassa (a helyiség-igények levezetése innen jön).'},
+ need:{cel:'Helyiségenkénti igénylista darabszámokkal: dugalj, készülék dugalj, lámpa (kapcsolási kör, világítási kör), kapcsoló típusonként, redőny, dedikált fogyasztó.',
+  hol:'Jobb klikk a helyiségen → Igénylista. A javaslat a helyiség fajtájából jön; a Ház összesítő a helyiségek összege.',
+  klaszter:'A Világítás / Dugaljak / Dedikált rétegek ezt teljesítik; a helyiség állapota (hiányos / kész) a darabszámokból jön.'}, // round 2026-10-18 WP-N1 (08q)
+ 'sys:CINEMA':{cel:'Házimozi: a helyiség méreteiből javasolt hangfal-, mélysugárzó-, projektor- és rack-helyek (30 %-os jelölők), a projektor sugarának tiltott zónája és a sínvilágítás sávja.',
+   hol:'Jobb klikk a helyiségen → Házimozi ebben a helyiségben…; húzd meg a vászon vonalát, igazítsd a mozi zónát. Jobb klikk → Javasolt helyek létrehozása, ha készülék kell belőlük.',
+   klaszter:'Saját pálya, saját kör (C6–C7); a dedikált kör a Dedikált körök rétegre kerül.'}, // round 2026-10-18 WP-C1 (08r)
  hw:{cel:'Elosztószekrény, mérőóra, adatbelépés (ISP), RBX dobozok, biztonsági központ (SSC).',
    hol:'1 Elosztó lakásonként. Minden helyiséget pontosan egy RBX szolgál ki — 1 RBX 1–2 helyiségre, lehetőleg két helyiség közös belső falán. RBX alja ≥ 1900 mm (RB-M közép 2150). SSC védett, nem bejárható helyen. [H, W]',
    klaszter:'BASE (a Csatornán át); közös falszakasz BASE-zel megengedett, de kerülendő, ha a BASE mindhárom egysége egy oszlopban van.'},

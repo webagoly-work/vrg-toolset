@@ -204,6 +204,7 @@ function wallElevationSVG(d,showFar,dims){const M=56,H=d.H,len=d.len;
   let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${Wpx}" height="${Hpx}" viewBox="0 0 ${Wpx} ${Hpx}" font-family="Segoe UI,Arial"><defs><pattern id="chaseh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#f7e2ce"/><line x1="0" y1="0" x2="0" y2="5" stroke="#c0794f" stroke-width="1"/><line x1="2.5" y1="0" x2="2.5" y2="5" stroke="#dfae8e" stroke-width="0.6"/></pattern></defs><rect width="${Wpx}" height="${Hpx}" fill="#fff"/>`;
   const z0=d.z0||0;
   s+=`<rect x="${Math.min(X(0),X(len))}" y="${Y(H)}" width="${(len*sc).toFixed(1)}" height="${((H-z0)*sc).toFixed(1)}" fill="#f4f2eb" stroke="#111" stroke-width="1.5"/>`;
+  if(typeof slbElevBand==='function')s+=slbElevBand(d,X,Y,sc,len);   // 08p: the födém above this wall
   if(z0>0){ // the wall starts above the floor — the band underneath is open
     s+=`<rect x="${Math.min(X(0),X(len))}" y="${Y(z0)}" width="${(len*sc).toFixed(1)}" height="${(z0*sc).toFixed(1)}" fill="#fff" stroke="#999" stroke-width="0.8" stroke-dasharray="6 4"/>`
       +`<text x="${((X(0)+X(len))/2).toFixed(1)}" y="${(Y(z0/2)+3).toFixed(1)}" font-size="9.5" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">nyitott sáv — a fal ${Math.round(z0)} mm-en indul</text>`

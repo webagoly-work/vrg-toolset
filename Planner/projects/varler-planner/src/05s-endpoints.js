@@ -203,6 +203,7 @@ function epGhost(e){const en=epEntry(EP_T.code,EP_T.role);if(!en)return null;con
     g={level,x:Math.round(p[0]),y:Math.round(p[1]),h:en.mount==='floor'?0:epCeilH(level,p[0],p[1]),mount:en.mount};}
   if(typeof sugSnap==='function'&&!e.altKey)g=sugSnap(g,EP_T.code,EP_T.role)||g;       // D3 — Alt places freely
   if(typeof ptSlotSnap==='function'&&!e.altKey)g=ptSlotSnap(g,EP_T.code)||g;          // a door's slot within 300 mm wins (08g)
+  if(typeof cinSnap==='function'&&!e.altKey)g=cinSnap(g,EP_T.code)||g;              // 08r: a cinema node snaps to its suggestion
   return g;}
 function epMake(g,code,role,vk){const type=epTypeFor(code),L=epRoleLayer(role);
   const d={type,code,var:vk||epEntry(code,role).vars[0].k,level:g.level,x:g.x,y:g.y,h:g.h,layer:L?L.id:state.activeLayer};
