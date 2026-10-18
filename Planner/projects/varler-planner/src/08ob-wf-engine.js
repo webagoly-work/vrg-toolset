@@ -80,7 +80,7 @@ function blInput(level){level=level||state.active;
   // T2 (K1): the tree — every node's up (08od), and for a lamp with none, the box its leg was pinned to (08n lamp.meet).
   // The engine fits each link into the walls; a node with no up keeps today's rule. The congestion term spreads the home runs.
   cfg.tree={};cfg.congest=BL_OPT.congest;D.devices.forEach(d=>{if(d.level!==level)return;
-    if(d.up&&d.up.id)cfg.tree[d.id]={id:d.up.id,room:d.up.room||undefined,fix:!!d.up.fix};else if(d.meet&&d.layer==='bl:mains')cfg.tree[d.id]={id:d.meet};});
+    if(d.up&&d.up.id)cfg.tree[d.id]={id:d.up.id,room:d.up.room||undefined,fix:!!d.up.fix,via:d.up.via||undefined};else if(d.meet&&d.layer==='bl:mains')cfg.tree[d.id]={id:d.meet};});
   cfg.switchGroups=blSwitchGroups(D,level);cfg.rbxSwitched={};
   D.devices.forEach(d=>{if(d.level===level&&d.rbxSw&&d.layer==='bl:mains')cfg.rbxSwitched[d.id]='RBX-kimenetről kapcsolt (Planner)';});
   // Padló út (E2) → floor groups: from the service point down into the floor, along the line, up at its junction. A line
@@ -260,6 +260,8 @@ function blReportHtml(run){const R=run.R,P=R.report;if(!P)return '';const n=v=>S
   out.push(sec('Fal nélküli helyiségél (25 mm-en belül nincs fal)',P.bare.map(x=>li(`⚠ ${esc(x.n)}: ${x.len} mm-es él falon kívül — rajta nem futhat pálya`,x,'#8a5a00')),'nincs'));
   out.push(sec('Nyílás-ütközések (tájékoztató — az ablakfej most nem tiltó)',P.clashes.map(x=>li(`ℹ ${esc(x.leg)} ${x.h} mm-en a ${esc(x.opening)} ${x.type==='door'?'ajtó':'ablak'} sávjában (${x.band[0]}–${x.band[1]}) — ${esc(x.n)}`,x)),'nincs'));
   const dc=run.dropChange;out.push(sec('Leállás-csoportok az előző futás óta',dc&&(dc.gone.length||dc.added.length)?[`<div>${dc.gone.length} megszűnt, ${dc.added.length} új: ${dc.added.slice(0,8).map(esc).join(' · ')}</div>`]:[],dc?'nincs változás':'első futás ezen a szinten'));
+  // T6: the drawn routes the links asked for, and how much of each the result followed
+  if(P.via&&P.via.length)out.push(sec('Rajzolt betáp-útvonalak',P.via.map(v=>li((v.missing?'⚠ ':v.pct<90?'⚠ ':'✓ ')+esc(v.ref)+' ('+(v.what||'')+') — '+esc(v.n)+': '+esc(v.via)+(v.missing?' már nincs a tervben':' — '+v.pct+' %-ban követve'),v,v.missing||v.pct<90?'#8a5a00':''))));
   out.push(sec('Kábel helyiségenként',[`<div>${P.rooms.map(r=>esc(r.n)+' '+n(r.m)+' m').join(' · ')}</div>`]));
   return out.join('');}
 function blReportDialog(){const run=blRun(state.active);if(run.err){$('hud').textContent=run.err;openModal('Pálya-ellenőrzés',`<div style="font-size:12px">${esc(run.err)}</div>`,()=>{},'Rendben');return null;}

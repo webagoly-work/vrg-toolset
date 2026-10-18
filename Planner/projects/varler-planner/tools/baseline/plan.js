@@ -155,6 +155,26 @@ function plan(G, E, PT, cfg, allowed) {
   const used = new Set();
   const loads = new Map();                                            // dist edge key → [{circ, cable, kind}]
   const ek = (a, b) => a < b ? a + '-' + b : b + '-' + a;
+  // ---- T6 (K3's drawn routes): a link's up.via names one of the user's own paths (ARM / channel, kept in the input).
+  // The wall-graph edges lying along it (both ends within VIA_TOL of one of its segments) cost ×viaK (0,25) for THAT
+  // link's search only — preferred, never forced, and never through a ban (a ban has no edge). The report says how much
+  // of the drawn route the result followed.
+  const VIA_K = cfg.viaK || 0.25, VIA_TOL = 200, viaRows = [], viaEdges = {};
+  const viaPts = id => { const p = (D.paths || []).find(x => x && x.id === id); return p ? (p.nodes || []).filter(n => n.level == null || n.level === G.level).map(n => [n.x, n.y]) : null; };
+  const segD = (q, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy, t = L2 ? Math.max(0, Math.min(1, ((q[0] - a[0]) * dx + (q[1] - a[1]) * dy) / L2)) : 0;
+    return Math.hypot(q[0] - a[0] - t * dx, q[1] - a[1] - t * dy); };
+  const onVia = pid => { if (viaEdges[pid]) return viaEdges[pid]; const Pp = viaPts(pid), S = new Set(); viaEdges[pid] = S; if (!Pp || Pp.length < 2) return S;
+    g.adj.forEach((es, a) => es.forEach(e => { if (a > e.to) return; const A = [g.N[a].x, g.N[a].y], B = [g.N[e.to].x, g.N[e.to].y];
+      for (let k = 1; k < Pp.length; k++) if (segD(A, Pp[k - 1], Pp[k]) <= VIA_TOL && segD(B, Pp[k - 1], Pp[k]) <= VIA_TOL) { S.add(ek(a, e.to)); break; } })); return S; };
+  const viaExtra = pid => { const S = onVia(pid); return (e, u) => S.has(ek(u, e.to)) ? -(1 - VIA_K) * e.w : 0; };
+  const viaLen = pid => { const Pp = viaPts(pid) || []; let L = 0; for (let k = 1; k < Pp.length; k++) L += Math.hypot(Pp[k][0] - Pp[k - 1][0], Pp[k][1] - Pp[k - 1][1]); return L; };
+  const viaRep = (e, pid, nodes, room, what) => { const S = onVia(pid), Lv = viaLen(pid); let cov = 0;
+    for (let k = 1; k < nodes.length; k++) if (S.has(ek(nodes[k - 1], nodes[k]))) cov += (g.adj[nodes[k - 1]].find(x => x.to === nodes[k]) || {}).geo || 0;
+    const pct = Lv ? Math.min(100, Math.round(cov / Lv * 100)) : 0, row = { id: e.id, ref: e.ref || e.id, via: pid, pct, room, n: rn(room), at: [Math.round(e.x), Math.round(e.y)], what };
+    if (!viaPts(pid)) row.missing = true; viaRows.push(row);
+    if (row.missing) warn.push({ sev: 'warn', msg: `${row.ref} — ${row.n}: a rajzolt pálya (${pid}) már nincs a tervben`, room, at: row.at, ids: [e.id] });
+    else if (pct < 90) warn.push({ sev: 'warn', msg: `${row.ref} — ${row.n}: a rajzolt pályát (${pid}) csak ${pct} %-ban követi — ahol eltér, ott a pálya nem vezethető falon, tiltón vagy szervizponton kívül fut át`, room, at: row.at, ids: [e.id] });
+    return row; };
   const addLoad = (nodes, cab) => { for (let k = 0; k < nodes.length - 1; k++) { const key = ek(nodes[k], nodes[k + 1]);
     (loads.get(key) || loads.set(key, []).get(key)).push(cab); } };
   const channel = {};                                                  // sp id → {nodes, len, cables[]} = its path on the trunk tree
@@ -169,16 +189,19 @@ function plan(G, E, PT, cfg, allowed) {
   // T2 (§4.6): the home runs in a stable order (nearest first, then id), each with a light congestion term — cfg.congest ×
   // the stretch's length × the cables already on it — so parallel home runs may spread over doors instead of all
   // funnelling through one (F7). congest 0 (the CLI default) is today's single shortest-path tree, exactly.
+  // T6: a hub's home run follows its up.via (the master → board link drawn by the user)
+  const chanVia = spId => { const sp = SP.find(x => x.id === spId), dv = sp && sp.dev; const u = dv && upOf(dv.id); return u && u.via ? { via: u.via, dev: dv } : null; };
   function routeChannels() { const K = +cfg.congest || 0, onEdge = new Map();
     const order = Object.values(channel).map(ch => { const sp = SP.find(x => x.id === ch.sp), ts = sp.faces.map(f => node(f.key)).filter(i => i != null);
       const T = ts.some(i => isFinite(T1.dist[i])) ? T1 : T2; let t = ts[0]; ts.forEach(i => { if (T.dist[i] < T.dist[t]) t = i; });
       return { ch, ts, t, T, d: T.dist[t] }; }).sort((a, b) => a.d - b.d || (a.ch.sp < b.ch.sp ? -1 : a.ch.sp > b.ch.sp ? 1 : 0));
-    order.forEach(o => { let nodes, len, t = o.t;
-      if (!K) { nodes = g.path(o.T.prev, t); len = o.T.dist[t]; }
-      else { const soft = o.T === T2, ex = (e, u) => (e.geo || 0) * K * (onEdge.get(ek(u, e.to)) || 0);
+    order.forEach(o => { let nodes, len, t = o.t; const cv = chanVia(o.ch.sp), vx = cv ? viaExtra(cv.via) : null;
+      if (!K && !cv) { nodes = g.path(o.T.prev, t); len = o.T.dist[t]; }
+      else { const soft = o.T === T2, ex = (e, u) => (e.geo || 0) * K * (onEdge.get(ek(u, e.to)) || 0) + (vx ? vx(e, u) : 0);
         const Rc = g.run(node('board'), { penalty: penAll, extra: ex, edge: e => e.kind !== 'floor' && (soft || e.kind !== 'soft') });
         t = o.ts.reduce((a, i) => Rc.dist[i] < Rc.dist[a] ? i : a, o.ts[0]); nodes = g.path(Rc.prev, t); len = Rc.dist[t]; }
       const n = Math.max(1, o.ch.cables.length); for (let k = 1; k < nodes.length; k++) { const key = ek(nodes[k - 1], nodes[k]); onEdge.set(key, (onEdge.get(key) || 0) + n); }
+      if (cv) viaRep(cv.dev, cv.via, nodes, g.N[t].room, 'gerinc');
       Object.assign(o.ch, { nodes, len, passes: [...new Set(nodes.map(i => spOfNode[i]).filter(x => x && x !== o.ch.sp))], soft: o.T === T2 }); }); }
 
   // ---- 7. cable routes per circuit ----
@@ -209,7 +232,10 @@ function plan(G, E, PT, cfg, allowed) {
         const par = pd && fed.has(pd.key) ? pd : null, from = par ? node(par.key) : node(d.spFace.key);
         if (pd && !par && !chainWarned.has(d.key + c.ref)) { chainWarned.add(d.key + c.ref);
           warn.push({ sev: 'warn', msg: `${pm.ref || pm.id} (${c.ref}) — ${rn(d.room)}: a lánca másik körbe lép (${pd.members.map(x => x.ref || x.id).join('+')}) — a szervizpontból kap betápot`, room: d.room, at: [Math.round(pm.x), Math.round(pm.y)], ids: [pm.id], tree: true }); }
-        const p = P(from, node(d.key), { ok: inZone(zone[d.room]) });
+        // T6: the link's drawn route, when it has one (the member of this circuit whose up carries via)
+        const vm = d.members.find(e => (C.byMember[e.id] || {}).ref === c.ref && upOf(e.id) && upOf(e.id).via), via = vm && upOf(vm.id).via;
+        const p = P(from, node(d.key), Object.assign({ ok: inZone(zone[d.room]) }, via ? { extra: viaExtra(via) } : {}));
+        if (p && via) viaRep(vm, via, p.nodes, d.room, 'leágazó');
         if (p) { addLoad(p.nodes, { c: c.cable, circ: c.ref, kind: 'feed', key: c.ref + '@' + spId }); d.feedGeo = (par ? (par.feedGeo || 0) : 0) + geoLen(g, p.nodes); }
         if (!par) (feedAt[c.ref] = feedAt[c.ref] || new Set()).add(node(d.spFace.key)); });
     });
@@ -566,6 +592,7 @@ function plan(G, E, PT, cfg, allowed) {
   const checks = cableChecks(G, g, C, drops, channel, loads, tload, legs, W, bTop, node, warn, cfg);
 
   const report = pathReport(G, g, { legs, boxes, drops, M, unreached, fm, W, rn });
+  report.via = viaRows;
   // L10: a snap that stacked two endpoints on one spot is said, not silent
   report.stacks.forEach(x => warn.push({ sev: 'info', msg: `${x.refs.join(' · ')} egy helyen — ${x.n}: egy keret, közös doboz`, room: x.room, at: x.at, ids: x.ids }));
   return { net, SP, drops, channel, boxes, legs, L, C, warn, used, prep, spans, checks, W, unreached, report };

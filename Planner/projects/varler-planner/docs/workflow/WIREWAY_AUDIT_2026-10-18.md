@@ -579,3 +579,32 @@ The first click, a click on a node already in this chain, on the board, a hub or
 or Shift + click starts from there without linking — a branch is two nodes with the same up. A loop is refused with
 upSet's reason and the chain keeps its place; every link is one undo step. The engine follows the drawn chain (T2):
 drawn topology → ⚡ the tray gives it circuits (T4) → ⚒ Pályák fits it into the walls.
+
+---
+
+## Part 11 — T6 built (2026-10-19): drawn routes on links
+
+Engine (plan.js §6–7) + `src/08oh-wf-via.js`, spec `tests/spec-106-via.js` (13). A node's `up.via` names one of the
+user's own drawn paths (ARM / channel; never the engine's `gen:'bl'` output). For that link only, the wall-graph edges
+lying along it (both ends within 200 mm of one of its segments) cost ×0,25 (`cfg.viaK`) — preferred, never forced, and
+never through a ban (a ban has no edge). It works for a room run (the link's member in that circuit) and for a hub's
+home run (gerinc). `R.report.via` lists every via with the share followed; below 90 %, or a via no longer in the plan,
+warns; the 🔎 report has a "Rajzolt betáp-útvonalak" section. Setting it: the device menu "↝ Rajzolt pálya ehhez a
+betáphoz" → click a path (the link becomes rögzített); the same menu takes it off.
+
+**Browser pass (P33 converted plan, real clicks):** ⚒ Pályák draws 227 paths and fills 105 links; two sockets taken out of
+their circuit show **⚡ Elosztóra vár: 2**; opening the tray and clicking Hozzárendel made A16 "Szoba dugalj" (2) and the
+tray hid itself. The ⛓ chain tool: a click on L26 starts there; a click on K3 would put K3 under its own lamp — refused
+with "Hurok: L26 már K3 alól kap betápot (L26 → K3b → K3 → B171)", the chain keeping its place. No console errors.
+
+## The batch T2–T6, in one line each
+
+| WP | Commit | What the user does now |
+|---|---|---|
+| T2 | `2c24af1` | nothing new — the engine follows whatever tree there is (auto, or drawn) |
+| T3 | `931b0ad` | 📍 Vezető dugalj (one click) · ▣ Szobadoboz-javaslat (tick and place) |
+| T4 | `e11ac36` | ⚡ Elosztóra vár: N — assign circuits to what reached the board, in one click |
+| T5 | `007b39f` | ⛓ Betáp-lánc — click the source, then each node in order |
+| T6 | this one | ↝ Rajzolt pálya ehhez a betáphoz — a drawn path for one link |
+
+T7 (per-layer mark precedence) stays deferred until a second layer autoroutes.
