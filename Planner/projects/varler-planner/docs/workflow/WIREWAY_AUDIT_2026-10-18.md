@@ -554,3 +554,17 @@ Warnings 4: three door-box overfills (B32 ×2, B33) and **A4 (Háló dugalj) at 
 lengthens its longest branch to 28,5 m on 1,5 mm² / 13 A; the check proposes 2,5 mm² or a split (a real consequence of
 Q5, for the user). Master suggestions: Garázs, Háló, Konyha / étkező, Veranda, Nagyszoba, Közlekedő — Garázs, Konyha
 and Közlekedő pre-ticked (their door boxes overfill). None placed in the fixture.
+
+---
+
+## Part 9 — T4 built (2026-10-19): the Elosztó tray
+
+`src/08of-wf-tray.js`, spec `tests/spec-104-tray.js` (11). Q4 = A: no modal on every link to the board — a small
+fixed panel **⚡ Elosztóra vár: N** (shown in Villamosság, or with the betáp-fa), opened inline:
+- **waiting** = an endpoint with no circuit whose up chain reaches the board — straight, through a door's L4, or
+  through a master. No up = not yet waiting (it has not reached the board).
+- **rows** = 08oa's circuit suggestion (E4, MATERIAL §6) cut to the waiting endpoints, pre-ticked; each row's target is
+  the suggested new circuit or any existing one (the socket added to a room that already has its circuit).
+- **Hozzárendel**: new circuits through `elpApply` and joins by `cktAssign`, in ONE undo step.
+On Domoszló nothing waits (every endpoint has its circuit); the tray matters once the chain tool (T5) builds topology
+before circuits.
