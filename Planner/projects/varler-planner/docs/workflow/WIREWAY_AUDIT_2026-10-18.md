@@ -568,3 +568,14 @@ fixed panel **⚡ Elosztóra vár: N** (shown in Villamosság, or with the betá
 - **Hozzárendel**: new circuits through `elpApply` and joins by `cktAssign`, in ONE undo step.
 On Domoszló nothing waits (every endpoint has its circuit); the tray matters once the chain tool (T5) builds topology
 before circuits.
+
+---
+
+## Part 10 — T5 built (2026-10-19): the chain tool
+
+`src/08og-wf-chaintool.js` (⛓ Betáp-lánc, prefix `bfl` — `chn` is 05r's channel code), spec
+`tests/spec-105-chaintool.js` (15). Q3 = A: **each click sets up = the previously clicked node** (rögzített); no revisits.
+The first click, a click on a node already in this chain, on the board, a hub or a door (its L4 on the side clicked),
+or Shift + click starts from there without linking — a branch is two nodes with the same up. A loop is refused with
+upSet's reason and the chain keeps its place; every link is one undo step. The engine follows the drawn chain (T2):
+drawn topology → ⚡ the tray gives it circuits (T4) → ⚒ Pályák fits it into the walls.
