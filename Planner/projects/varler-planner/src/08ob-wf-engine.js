@@ -191,7 +191,8 @@ function blApplyRoutes(run,opt){const lv=run.level,L=blTargetLayers(lv),errs=blE
   ensureIds(data);
   // T1 (guard rail 7): the run refreshes the javasolt betáp links in the same undo step; the rögzített ones stay
   if(typeof invalidateShell==='function')invalidateShell();draw();
-  return {boxes:R.boxes.filter(b=>b.kind!=='rbx').length,paths:np,replaced:gone,up:upn,run};}
+  // the run is handed back for the caller, but not enumerable: a JSON log of the result stays small
+  return Object.defineProperty({boxes:R.boxes.filter(b=>b.kind!=='rbx').length,paths:np,replaced:gone,up:upn},'run',{value:run,enumerable:false});}
 
 // ---- button 2: the cables, by scope ----------------------------------------------------------------------------------
 // which legs a scope covers: Ház = all; Helyiség = the legs touching the room (their boxes, their device, their run);
