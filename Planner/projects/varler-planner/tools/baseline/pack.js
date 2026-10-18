@@ -48,7 +48,7 @@ function build(ctx) {
 
   // ---- W: runs on unmarked walls ----
   const W = []; n = 0;
-  const byRoom = {}; R.warn.filter(w => /jelöletlen falon/.test(w.msg)).forEach(w => { const m = w.msg.match(/: (\S+) (\S+) —/); if (m) (byRoom[m[1]] = byRoom[m[1]] || []).push(m[2]); });
+  const byRoom = {}; R.warn.filter(w => /jelöletlen falon/.test(w.msg) && w.room).forEach(w => (byRoom[w.room] = byRoom[w.room] || []).push(...(w.walls || [])));   // T0: room / walls are fields now
   const RN = { R03L: 'lépcső (L23 lámpa, D25 dugalj) — a lépcsőházi falak mentén körbe', R08: 'fürdő alsó fala (mosógép D282)' };
   Object.entries(byRoom).forEach(([room, ws]) => W.push({ id: ID('W', ++n), q: `${room}: ${RN[room] || 'leágazó'} — jelöletlen fal: ${[...new Set(ws)].join(', ')}`, why: 'A vázlat ezt a falszakaszt nem jelölte; a motor csak itt érte el a végpontot.', rec: 'A',
     opts: [{ k: 'A', t: 'Jóváhagyom ezt a falat', d: 'A szakasz maradhat; a következő futás jelöltként kezeli.' }, { k: 'B', t: 'Berajzolom a vázlatba', d: 'Te jelölöd, a motor újrafut.' },
@@ -102,7 +102,7 @@ function buildOpen(ctx) {
       { k: 'C', t: 'A váltó-összekötések a mennyezeten át', d: 'Kevesebb cső a falban.' }] }));
   if ((cfg.edits || []).some(e => /hármas keret/.test(e.note)) && !ok('frame')) Q.push({ id: ID(), q: 'Fürdő függőleges hármas keret: kapcsoló 1171 · dugalj 1100 · dugalj 1029 mm — jó?', why: 'L02: a K12 és a D14 + D15 egy keretben, a keret közepe 1100-on.', rec: 'A',
     opts: [{ k: 'A', t: 'Jó', d: '' }, { k: 'B', t: 'Az egész keret feljebb: közép 1200', d: 'Kapcsoló 1271, dugaljak 1200 / 1129.' }, { k: 'X', t: 'Másképp', d: '' }] });
-  R.warn.filter(w => /jelöletlen falon/.test(w.msg)).forEach(w => Q.push({ id: ID(), q: w.msg.replace(/ — rajzold be.*/, ''), why: 'Új jelöletlen falszakasz a válaszok beépítése után.', rec: 'A',
+  R.warn.filter(w => /jelöletlen falon/.test(w.msg)).forEach(w => Q.push({ id: ID(), q: w.msg.replace(/: jelöld .*/, ''), why: 'Új jelöletlen falszakasz a válaszok beépítése után.', rec: 'A',
     opts: [{ k: 'A', t: 'Jóváhagyom', d: '' }, { k: 'B', t: 'Berajzolom', d: '' }, { k: 'C', t: 'Más út', d: 'Megjegyzésbe.' }] }));
   return { pack: 'P33BASEQ002', title: 'P33 — Erősáram alapréteg: 2. kör (nyitott pontok)', rev: 'r1', date: new Date().toISOString().slice(0, 10),
     sections: [{ id: 'N', title: 'Nyitott pontok az első kör után', note: 'Az első kör válaszai beépültek (lásd ALAPRETEG.md). Ezek maradtak.', questions: Q }] };

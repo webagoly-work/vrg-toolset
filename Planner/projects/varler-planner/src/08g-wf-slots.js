@@ -8,22 +8,14 @@
 // A door carries the positions of every later layer from the moment it is placed: latch (kilincs) side 230 V, hinge
 // (zsanér) side SELV / LV, the head in the middle — the all-in-one Portal of the P33 baseline engine. PT_SLOTS is that
 // engine's table (tools/baseline/rules.js PORTAL_SLOTS, u = mm from the opening EDGE, from the centre for the head);
-// spec-86 keeps the two equal until E5 makes the engine read this copy. NOTE: 06a's own zone offset PT_OFF is 200 mm;
+// Since T0 it IS that table (below). NOTE: 06a's own zone offset PT_OFF is 200 mm;
 // the slots use the engine's 150 (450 for the panel column), which is what the P33 offers were built on.
 // Q-O02 = A: placing a door makes its portal on every face that has a room (tier SF-0 „előkészítve”), in the same undo
 // step as the door. Slots are POSITIONS, not devices — drawn as faint dots while a layer that uses them is active.
 // Q-O03 = A: a window's W1 (redőny betáp) slot exists only when the window carries the redőny tag.
-const PT_SLOTS=[
-  {k:'H0',side:'hinge',u:150,h:2450,fam:'CONTROL',n:'Fészek — portál vezérlőpont, SELV átvezetés',codes:['POR:rs485']},
-  {k:'H3',side:'hinge',u:150,h:1450,fam:'SENSOR',n:'Levegő-modul (FLT-A) / termosztát',codes:['THR','SEN:co2']},
-  {k:'H2',side:'hinge',u:150,h:1150,fam:'BUSB',n:'Értesítő fény + közeledés / kopogás (FLT-N)',codes:['NTL']},
-  {k:'H1',side:'hinge',u:150,h:300,fam:'BUSB',n:'Lábfény + alacsony PIR (FLT-L)',codes:['LMP:b']},
-  {k:'T1',side:'head',u:0,h:2150,fam:'SENSOR',n:'Fej-modul: ToF pár, függöny-PIR, lux (FLT-H)',codes:['POR:tof']},
-  {k:'T2',side:'head',u:0,h:2400,fam:'MEDIA',n:'Fejzseb: hangszóró / sziréna / tartalék',codes:['SPK']},
-  {k:'L4',side:'latch',u:150,h:2450,fam:'MAINS',n:'Erősáramú leállás-doboz (2 szerelvényes), 230 V átvezetés',codes:[]},
-  {k:'L1',side:'latch',u:150,h:1100,fam:'MAINS',n:'Kapcsoló (1–3 gang, váltó)',codes:['SWI']},
-  {k:'L3',side:'latch',u:150,h:300,fam:'MAINS',n:'Ajtó melletti dugalj',codes:['SOC']},
-  {k:'L2',side:'latch',u:450,h:1450,fam:'CONTROL',n:'Kezelőpanel / belépési pont (külön SELV oszlop)',codes:['PAN']}];
+// T0 / F4 (2026-10-18): ONE table — the engine's own (the bundle sits in 08fz, before this file). Before, two copies were
+// kept equal by spec-86 while the engine itself never read the door's geometry.
+const PT_SLOTS=BL.rules.PORTAL_SLOTS;
 const PT_WIN_SLOT={k:'W1',u:150,h:2500,fam:'MAINS',n:'Redőny betáp (a redőnyszekrény mellett)',codes:['SHU']};
 const PT_FAM_ROLES={MAINS:['sys:MAINS','sys:SOC','sys:LIGHT','sys:DED'],CONTROL:['sys:CONTROL','sys:HMI'],SENSOR:['sys:SENSOR'],BUSB:['sys:BUSB'],MEDIA:['sys:MEDIA']};
 
@@ -67,6 +59,9 @@ function ptSlotSnap(g,code){if(!g||g.mount!=='wall'||!code)return null;const c=S
     if(!s||!(s.codes||[]).some(x=>x.split(':')[0]===c))return;if(s.wall!==g.wall||s.face!==g.wallSide)return;
     const d=Math.hypot(s.x-g.x,s.y-g.y);if(d<bd){bd=d;best=s;}});});
   if(!best)return null;
-  return Object.assign({},g,{x:best.x,y:best.y,u:best.u,h:best.h,why:'ajtó melletti hely ('+best.k+')',
+  // T0 / L10: say how far the point jumped, and when the slot already holds a device (two gangs, one box)
+  const mate=(data.devices||[]).find(d=>d&&d.level===g.level&&Math.hypot(d.x-best.x,d.y-best.y)<5&&Math.abs((d.h||0)-best.h)<60);
+  const why='ajtó melletti hely ('+best.k+(bd>=5?', '+Math.round(bd)+' mm-t ugrott':'')+')'+(mate?' — közös keret: '+(mate.ref||mate.id):'');
+  return Object.assign({},g,{x:best.x,y:best.y,u:best.u,h:best.h,why,
     slot:best.door?{door:best.door,face:best.face,k:best.k}:{window:best.window,face:best.face,k:best.k}});}
 EP_PLACED.push((d,g)=>{if(g&&g.slot)d.slot=g.slot;});

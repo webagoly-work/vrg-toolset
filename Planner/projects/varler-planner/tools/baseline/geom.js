@@ -74,6 +74,38 @@ function allowedFromSketch(G, paths, pad = 150) {
   return { allowed, offWall };
 }
 
+// T0 / F3 (2026-10-18): the R3 rule marks reach the router per face. Before, the router read only Vezethető fal, so a
+// face the user painted Tilos stayed a legal route.
+//   pol 'ban'  (tilos, gáz, kémény, vizes, gépészet, strang …)   → no edge at all
+//   pol 'minus' (kerülendő, fűtőtest, külső fal, bútor)          → the face costs ×minusK (2)
+//   tag 'elonyben' (Q2 = A, the user's flow line made checkable)  → ×prefK (0.5), and the face may be used
+// Other plus / none marks (L-forma, médiafal, munkalap …) say where a DEVICE goes, not where a run may go: no effect.
+// Intervals are absolute along the wall axis (like `allowed`); side = the face's sign across the wall (+1 = the larger
+// x / y, the Planner's wallInfo.perp), 0 = both faces. Not read yet: hstrip height bands, zones other than a strang ban
+// (a padlófűtés zone forbids FLOOR runs — E2 already refuses a Padló út across one — not a wall chase).
+function faceMarks(G) {
+  const out = {}, put = (w, side, a, b, pol, m) => (out[w.id] = out[w.id] || []).push({ side, lo: Math.min(a, b), hi: Math.max(a, b), pol, tag: (m.tags || [])[0] || '', id: m.id || null });
+  (G.D.marks || []).filter(m => m.level == null || m.level === G.level).forEach(m => {
+    const tags = m.tags || [], pol = m.pol === 'ban' ? 'ban' : tags.includes('elonyben') ? 'pref' : m.pol === 'minus' ? 'minus' : null;
+    if (!pol || tags.includes('vezetheto')) return;
+    if (m.kind === 'zone') { if (pol !== 'ban' || tags.includes('padlofutes') || m.x0 == null) return;
+      // a ban zone on the floor (a drain stack in a corner) bans the faces it touches, within 100 mm
+      G.walls.forEach(w => { const x = w.axis === 'x', c0 = x ? w.y0 : w.x0, c1 = x ? w.y1 : w.x1, z0 = x ? m.y0 : m.x0, z1 = x ? m.y1 : m.x1;
+        const lo = Math.max(x ? w.x0 : w.y0, x ? m.x0 : m.y0), hi = Math.min(x ? w.x1 : w.y1, x ? m.x1 : m.y1); if (hi - lo < 1) return;
+        if (z1 >= c0 - 100 && z0 <= c0 + 1) put(w, -1, lo, hi, pol, m);
+        if (z0 <= c1 + 100 && z1 >= c1 - 1) put(w, 1, lo, hi, pol, m); });
+      return; }
+    const w = G.wallById[m.wall]; if (!w) return; const a0 = w.axis === 'x' ? w.x0 : w.y0, a1 = w.axis === 'x' ? w.x1 : w.y1;
+    if (m.kind === 'wall') put(w, 0, a0, a1, pol, m);
+    else if (m.kind === 'wspan') put(w, 0, a0 + m.u0, a0 + m.u1, pol, m);
+    else if (m.kind === 'side') put(w, m.side, a0, a1, pol, m);
+    else if (m.kind === 'vstrip') put(w, m.side, a0 + m.u0, a0 + m.u1, pol, m); });
+  return out;
+}
+// the face's side across its wall (+1 = the larger coordinate), 0 for a face on a wall's end
+function faceSide(G, f) { const w = f.wall && G.wallById[f.wall]; if (!w || (w.axis === 'x') !== f.horiz) return 0;
+  return Math.sign(f.fix - (f.horiz ? (w.y0 + w.y1) / 2 : (w.x0 + w.x1) / 2)) || 1; }
+
 // which rooms a point on / in a wall touches (for service points = wall crossings)
 function roomsAround(G, x, y, reach = 460) {
   const hits = new Set();
@@ -92,4 +124,4 @@ function nearestFace(G, x, y, roomId) {
   return best;
 }
 
-module.exports = { load, allowedFromSketch, roomsAround, roomOf, nearestFace, inPoly, inRect, near };
+module.exports = { load, allowedFromSketch, faceMarks, faceSide, roomsAround, roomOf, nearestFace, inPoly, inRect, near };

@@ -391,3 +391,74 @@ it was used. It is the user's flow line made checkable, and it costs one row in 
 **Answered 2026-10-18 by the user: all A** — K1 with `up` from day one · the "előnyben" mark instead of flow lines ·
 each click sets `up`, no revisits · the non-blocking Elosztó tray · the classic socket chain from the leader socket.
 Build continues from `GO-WIRE.md` (repo root of the worktree): T0 first.
+
+---
+
+## Part 5 — T0 built (2026-10-18)
+
+All seven T0 items are in `tools/baseline` (so the CLI and the Planner run the same engine) plus the Planner glue.
+Spec: `tests/spec-100-wireway-t0.js` (44 checks). Full suite: 95 suites, 3 334 checks, golden 70 / 70 identical.
+
+| # | Item | Where | What changed |
+|---|---|---|---|
+| 1 | Geometric lengths (F1) | network.js `link(…, geo)`, plan.js `edgeW` | every edge carries its real length; legs, spans, cable metres and the prepared route read `geo`; `w` is search-only |
+| 2 | Unreached = error (F2) | plan.js, `R.unreached` | every circuit member without a conduit: ⛔ with the reason (off the wall by N mm, outside every room, no route to a service point, switchless lamp with no service point, its switch not wired) |
+| 3 | Marks per face (F3, F6) | geom.js `faceMarks` / `faceSide`, network.js | ban (tilos, gáz, kémény, vizes, gépészet, a strang zone) = no edge, listed in `g.banned`; minus ×2 (`cfg.minusK`); **előnyben** ×0.5 (`cfg.prefK`), a new R3 preset and face ink; unmarked ×4 is now fallback-only for the distribution too (`P()` and drop → service point: marked first). L-forma / médiafal / munkalap marks change nothing |
+| 4 | Latch from the door (F4) | prep.js `doorLatch`, `08fz-wf-baseline.js` | the latch follows `door.variant` / `ang` exactly as the Planner draws its slots (spec: 2 doors × 4 variants × 2 angles); the bundle moved before 08g, so `PT_SLOTS` **is** `BL.rules.PORTAL_SLOTS`; an info line where the switches stand on the hinge side; `cfg.latchFrom:'switches'` keeps the old vote (P33 v1 uses it) |
+| 5 | The wall a warning names (F5, L13) | network.js edge `wall`, plan.js | the soft edge knows its wall; warnings say the room's name and carry `{room, at, ids, walls}`; the Planner shows a **mutasd** link that centres the view and rings the place (`blShow`) |
+| 6 | Pálya-ellenőrzés (§3.4, F10) | plan.js `pathReport` → `R.report`; 08ob `blReportHtml`, 🔎 action `bl.check` | unreached, metres by surface (geometric vs weighted), előnyben used or not, the five busiest chases and crossings (with the ⚑ per-chase note, E5-Q10 stays per pipe), box fill **with the pipes passing by**, stacked endpoints, room edges with no wall, opening clashes (informational), drop-group changes since the last run, the stale flag (`blStale`), cable metres per room. **Errors block "Pályák felrajzolása"** unless the confirm box is ticked (`blApplyRoutes(run, {confirm})`) |
+| 7 | Order and input (L10–L12) | plan.js, 08g, 08ob | drop groups: sort (room, face, u, id) then sweep; pipe packing and the váltó head break ties by id, not file order; a wall point above ceiling − 100 warns; one ref on several endpoints warns; endpoints stacked on one spot (same face, place, height) are an info line; the door-slot snap HUD says how far it jumped and whose frame it shares |
+
+### The Domoszló diff (the acceptance file, ground floor)
+
+| | before T0 | after T0 |
+|---|---|---|
+| circuits / endpoints / drops | 16 / 107 / 78 | 16 / 107 / 78 |
+| legs (dist · trunk · drop · ceil) | 82 · 21 · 86 · 18 = 207 | 83 · 21 · 86 · 18 = 208 |
+| conduit metres (dist · trunk · drop · ceil) | 132,4 · 131,0 · 98,6 · 36,4 = **398,4 m** | 147,5 · 128,0 · 98,6 · 36,6 = **410,7 m** |
+| cable metres 3×1,5 · 3×2,5 · 3×6 · 4×1,5 · 5×1,5 | 280,3 · 154,4 · 10,5 · 81,3 · 4,8 | 297,0 · 146,6 · 10,5 · 85,5 · 4,8 |
+| boxes (sp · drop · end) | 17 · 75 · 19 = 111 | 17 · 74 · 15 = 106 |
+| warnings / errors | 5 / 0 | 17 / 0 (9 warn, 8 info) |
+
+**The whole difference is F4.** The same T0 engine with `latchFrom:'switches'` gives the pre-T0 plan exactly (398,4 m, 111
+boxes, the same 5 warnings). F1, F6 and the grouping change nothing on Domoszló: it had no soft leg and no order-sensitive
+drop. Seven doors move their L4 box to the door's latch side: B33 B34 B35 B46 by 1 200 mm, B43 by 1,5–1,7 m, B39 by 2,15 m,
+B45 by 2,8 m. On five of them (B33 B34 B35 B39 B46) the user's switches stand on the hinge side — an info line each. At
+B39 the latch face lies on **W23, which is not Vezethető**: the trunk now reaches B39 only over 10 m of unmarked wall (3
+warnings). The end-to-end rebuild (`build-dom.js`) runs unchanged and gives the same 106 boxes, 226 paths.
+
+Report figures: 262 m of horizontal route (248 on Vezethető walls, 10 unmarked, 3,7 crossings; the search weighted it
+292 m); busiest chase at the board in the garage, 14 pipes / 16 circuits; busiest crossing B32, 11 pipes; box fill X3 and
+X4 9 in + 9 passing; 5 runs inside a window band (informational); no unreached endpoint, no wall-less room edge.
+
+### The red team, re-run
+
+| Script | Finding | Before | After |
+|---|---|---|---|
+| t9 (off-wall, exterior, outer-face socket) | F2 | no leg, no message | ⛔ each, with the distance / "helyiségen kívül"; blocks the drawing (t9b) |
+| t9 case 3 (room 40 mm inside its walls) | F9 | 7 misleading "no marked wall" lines | ⛔ per drop + the report's wall-less edges |
+| t6 / t10 (a mark removed) | F5 | "W20" / "W28" named | the wall the run is on (W21 / W26), with the room |
+| t11 (3 m unmarked vs 20 m marked) | F6 | the unmarked wall | the marked route (20,4 m) |
+| t7 / t5 (device order reversed) | L10 | drops and pipes changed | identical (drops, legs, boxes, switch groups — t5b) |
+| t7 (engine L4 vs Planner slot) | F4 | 1,1–2,8 m apart on 9 of 11 doors | the same place along the wall (75–150 mm = half the wall, face vs centreline) |
+| t12 / t13 (openings) | F8 | unseen | listed in the report (informational, as instructed) |
+
+**P33 v1 (CLI, `p33.config`):** the latch keeps the switch vote (`latchFrom:'switches'`), and the converter turns each
+door's handle to P33's latch side, so spec-98's parity holds (167 → 171 legs on both sides). The CLI plan itself moves:
+one room run in R06 / R03 had been counted 12,4 m (×4) for 2,9 m of soft wall and now takes the marked route; one R08
+drop regrouped under the sort-and-sweep rule. Total 243,8 → 237,7 m, boxes 97 → 89. The delivered v1 is untouched
+(E5-Q13 = B). P33's own warnings now show three duplicated refs (D2, D17, DED1 — three each).
+
+### Open questions from T0
+
+1. **Q-T0-1, the Domoszló doors whose switches stand on the hinge side (B33 B34 B35 B39 B46):**
+   - A: the doors are drawn right — keep the latch from the door; the switches move to the latch side when you redraw
+     (★ — it is what F4 asked for);
+   - B: the switches are right — flip those doors' hinge (variant), and the L4 box follows;
+   - C: where switches stand beside a door, let them decide the latch (make `latchFrom:'switches'` the default).
+2. **Q-T0-2, B39's latch face on W23:** A: mark W23 Vezethető around B39 (★); B: decided by Q-T0-1 B (flip B39).
+3. **Q-T0-3, előnyben on an unmarked wall:** A: it opens the face at ×0.5 (built ★); B: it only discounts a Vezethető face.
+4. **Q-T0-4, height bands and floor zones:** built: a strang zone bans the faces within 100 mm, a padlófűtés zone bans
+   only floor runs, hstrip bands are not read. A: keep for now (★); B: read the hstrip band against the run heights now.
+
+**⏸ T0 checkpoint.** T1 (the `up` field) starts after the answers above.
