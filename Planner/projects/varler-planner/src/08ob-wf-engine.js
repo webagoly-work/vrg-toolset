@@ -19,7 +19,7 @@
 const BL_KCOL={trunk:'#c0392b',dist:'#e67e22',drop:'#8e44ad',ceil:'#2980b9',floor:'#16a085',island:'#16a085',riser:'#7f8c8d',feed:'#2c3e50'};
 const BL_BOX_HU={sp:'szervizpont',drop:'leállás',corner:'sarok',end:'pályavég',pull:'húzódoboz',tj:'gerinc elágazó',island:'padló út vége',rbx:'RBX'};
 const BL_KIND_HU={trunk:'gerinc',dist:'leágazó',drop:'leállás',ceil:'mennyezet',floor:'padló',island:'padló út vége',riser:'felszálló',feed:'fővezeték'};
-const BL_OPT={cornerAll:false};                       // E5-Q4: the P33 rule (a box at every corner) — the BRIDGE option
+const BL_OPT={cornerAll:false,congest:0.05};   // T2: the trunk's congestion term (× length × cables already there)                       // E5-Q4: the P33 rule (a box at every corner) — the BRIDGE option
 let BL_LAST=null;                                     // the last run: {level, sig, R, ...} — button 2 reads it
 
 function blFloorId(f){return f.num||f.id;}
@@ -41,7 +41,8 @@ function blMcbStr(m){return m&&typeof m==='object'?mcbText(m):String(m||'');}
 function blInput(level){level=level||state.active;
   const P=JSON.parse(JSON.stringify(sessionObj())),D=P.data,notes=[];
   // the engine's own earlier output is not input
-  D.devices=(D.devices||[]).filter(d=>d&&d.gen!=='bl');D.paths=[];
+  // T2: the user's own paths stay in the input (the via routes of T6); only the engine's earlier output goes
+  D.devices=(D.devices||[]).filter(d=>d&&d.gen!=='bl');D.paths=(D.paths||[]).filter(p=>p&&p.gen!=='bl');
   // layers: one MAINS layer for the engine (M1 split it in three), hardware off the endpoint list, redőny out
   P.layers=(P.layers||[]).concat([{id:'bl:mains',role:'sys:MAINS'},{id:'bl:hw',role:'bl:hw'},{id:'bl:off',role:'bl:off'}]);
   let shu=0;
@@ -76,6 +77,10 @@ function blInput(level){level=level||state.active;
   // centreline) — not merely the nearest face, which is a coin toss at a corner
   cfg.fixFace={};D.devices.forEach(d=>{if(d.level!==level||d.layer!=='bl:mains')return;const live=byId('devices',d.id);if(!live||live.side==null)return;
     const r=typeof roomOfDevice==='function'?roomOfDevice(live):null;if(r&&r.rm&&(data.floors||[]).indexOf(r.rm)>=0)cfg.fixFace[d.id]=blFloorId(r.rm);});
+  // T2 (K1): the tree — every node's up (08od), and for a lamp with none, the box its leg was pinned to (08n lamp.meet).
+  // The engine fits each link into the walls; a node with no up keeps today's rule. The congestion term spreads the home runs.
+  cfg.tree={};cfg.congest=BL_OPT.congest;D.devices.forEach(d=>{if(d.level!==level)return;
+    if(d.up&&d.up.id)cfg.tree[d.id]={id:d.up.id,room:d.up.room||undefined,fix:!!d.up.fix};else if(d.meet&&d.layer==='bl:mains')cfg.tree[d.id]={id:d.meet};});
   cfg.switchGroups=blSwitchGroups(D,level);cfg.rbxSwitched={};
   D.devices.forEach(d=>{if(d.level===level&&d.rbxSw&&d.layer==='bl:mains')cfg.rbxSwitched[d.id]='RBX-kimenetről kapcsolt (Planner)';});
   // Padló út (E2) → floor groups: from the service point down into the floor, along the line, up at its junction. A line
@@ -167,9 +172,14 @@ function blClear(level){const n0=data.devices.length+data.paths.length;
 // T0 / §4.6 guard rail 6: errors (an unreached endpoint, a drop with no way to its service point …) block the drawing
 // unless the user confirms them — opt.confirm. Before, a plan with missing devices was drawn as if complete.
 function blErrors(run){return ((run&&run.R&&run.R.warn)||[]).filter(w=>w.sev==='err');}
-function blApplyRoutes(run,opt){const R=run.R,lv=run.level,L=blTargetLayers(lv),errs=blErrors(run);
+function blApplyRoutes(run,opt){const lv=run.level,L=blTargetLayers(lv),errs=blErrors(run);
   if(errs.length&&!(opt&&opt.confirm))return {err:errs.length+' hiba van a számításban (pl. '+errs[0].msg+') — nézd meg a Pálya-ellenőrzést, vagy erősítsd meg a felrajzolást.',blocked:true,errors:errs.length};
   pushUndo(['devices','paths']);const gone=blClear(lv);
+  // T1 / T2 (guard rail 7): the run refreshes the javasolt betáp links in the same undo step, and the engine READS them —
+  // so fill, run again on the new tree, until the suggestions stop changing (≤ 3 rounds). What is drawn is the run of
+  // the tree as it now stands, so it is not stale the moment it is drawn. The rögzített links are never touched.
+  let upn=0;if(typeof upFill==='function')for(let i=0;i<3;i++){const f=upFill(lv,{run,noUndo:true});if(f.err)break;upn+=f.changed;if(!f.changed)break;const r2=blRun(lv);if(r2.err)break;run=r2;}
+  const R=run.R;
   R.boxes.filter(b=>b.kind!=='rbx').forEach(b=>{const sz=BL.rules.BOX[b.kind==='sp'?'portalMains':b.size]||BL.rules.BOX.gang2;
     data.devices.push({type:'junction',jbShape:'rect',jbSize:b.kind==='pull'?200:sz.jbSize,level:lv,x:Math.round(b.x),y:Math.round(b.y),h:Math.round(b.h),
       layer:L.box,ref:b.id,note:b.n+' ['+(BL_BOX_HU[b.kind]||b.kind)+']',faceBack:false,gen:'bl',bl:{run:run.sig,box:b.id,kind:b.kind}});});
@@ -180,9 +190,8 @@ function blApplyRoutes(run,opt){const R=run.R,lv=run.level,L=blTargetLayers(lv),
       bl:{run:run.sig,leg:l.id,kind:l.kind,pipe:k,circ:p.circ.slice()}});np++;}));
   ensureIds(data);
   // T1 (guard rail 7): the run refreshes the javasolt betáp links in the same undo step; the rögzített ones stay
-  const up=typeof upFill==='function'?upFill(lv,{run,noUndo:true}):null;
   if(typeof invalidateShell==='function')invalidateShell();draw();
-  return {boxes:R.boxes.filter(b=>b.kind!=='rbx').length,paths:np,replaced:gone,up:up&&!up.err?up.set:0};}
+  return {boxes:R.boxes.filter(b=>b.kind!=='rbx').length,paths:np,replaced:gone,up:upn,run};}
 
 // ---- button 2: the cables, by scope ----------------------------------------------------------------------------------
 // which legs a scope covers: Ház = all; Helyiség = the legs touching the room (their boxes, their device, their run);

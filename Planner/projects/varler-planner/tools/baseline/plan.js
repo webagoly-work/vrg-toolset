@@ -90,9 +90,21 @@ function plan(G, E, PT, cfg, allowed) {
       if (isFinite(r.dist[b])) return { len: r.dist[b], nodes: g.path(r.prev, b), soft: !strict }; }
     return null; };
 
-  // ---- 3. every drop → its service point (shortest along the room, no crossing) ----
+  // ---- 3. every drop → its service point ----
+  // T2 (K1, 2026-10-19): the user's tree first. cfg.tree = {nodeId: {id, room?}} is the Planner's d.up: a drop whose member
+  // hangs on a door (its L4 on face `room`), a hub (szobadoboz / RBX / BASE) or the board is fed from there; one whose member
+  // hangs on a device in ANOTHER drop is fed from that drop (the classic socket chain). Only the fit of each link into the
+  // walls is searched. A node with no up keeps today's rule — the nearest service point — so a half-drawn tree still routes.
   const errIds = new Set();                                            // members an error already names (T0 / F2)
-  drops.forEach(d => { const di = node(d.key), z = zone[d.room]; let best = null;
+  const TREE = cfg.tree || null, upOf = id => (TREE && TREE[id] && TREE[id].id) ? TREE[id] : null;
+  const dropOfId = {}; drops.forEach(d => d.members.forEach(e => { dropOfId[e.id] = d; }));
+  const boardSp = () => { let s = SP.find(x => x.id === '__board');
+    if (!s) { s = { id: '__board', type: 'board', faces: [{ room: bf.face.room, face: bf.face, u: bf.u, key: 'board' }] }; SP.push(s); spOfNode[node('board')] = '__board'; }
+    return s; };
+  const reach = (si, di, z) => { for (const strict of [true, false]) { const r = g.run(si, { ok: inZone(z), edge: e => noOver(e) && (!strict || noSoft(e)) });
+    if (isFinite(r.dist[di])) return { len: r.dist[di], soft: !strict }; } return null; };
+  const banNote = room => { const b = [...new Set((g.banned || []).filter(x => x.room === room).map(x => x.tag))]; return b.length ? ' — tiltó jelölés a helyiségben: ' + b.join(', ') : ''; };
+  const nearest = d => { const di = node(d.key), z = zone[d.room]; let best = null;
     // marked faces first (T0 / F6); only a drop no service point reaches that way may use unmarked walls
     for (const strict of [true, false]) { if (best) break;
       SP.forEach(sp => sp.faces.filter(f => zone[f.room] === z).forEach(f => { const si = node(f.key); if (si == null) return;
@@ -100,11 +112,34 @@ function plan(G, E, PT, cfg, allowed) {
     // no door / RBX / szobadoboz in reach, but the board stands in this zone (a one-room level, the Alosztó's room —
     // WP-E6): the run starts at the board itself. Only as a fallback, so a plan with service points is unchanged.
     if (!best && zone[d.room] === zone[bf.face.room]) { const bi = node('board'), r = g.run(bi, { ok: inZone(z), edge: noOver });
-      if (isFinite(r.dist[di])) { if (!SP.some(s => s.id === '__board')) { SP.push({ id: '__board', type: 'board', faces: [{ room: bf.face.room, face: bf.face, u: bf.u, key: 'board' }] }); spOfNode[bi] = '__board'; }
-        best = { sp: '__board', face: SP.find(s => s.id === '__board').faces[0], len: r.dist[di] }; } }
+      if (isFinite(r.dist[di])) best = { sp: '__board', face: boardSp().faces[0], len: r.dist[di] }; }
+    return best; };
+  const treeBad = (d, e, u, why) => { warn.push({ sev: 'err', msg: `${e.ref || e.id} — ${rn(d.room)}: a betápja (${u.id}${u.room ? ' ' + u.room : ''}) ${why}`, room: d.room, at: [Math.round(e.x), Math.round(e.y)], ids: [e.id], tree: true }); };
+  // the tree's answer for one drop: {sp, face, len} | {parent: drop} | null (no usable up)
+  const fromTree = d => { const di = node(d.key), z = zone[d.room];
+    for (const e of d.members) { const u = upOf(e.id); if (!u) continue;
+      const pd = dropOfId[u.id]; if (pd === d) continue;                    // a vertical chain inside this box
+      if (pd && e.code === 'LMP') continue;                                // a lamp on a switch / lamp: its leg (L.units), not a feed
+      if (pd) { if (zone[pd.room] !== z) { treeBad(d, e, u, 'másik helyiségzónában van — onnan csak szervizponton át jöhet'); return null; }
+        if (!reach(node(pd.key), di, z)) { treeBad(d, e, u, 'nem érhető el vezethető falon' + banNote(d.room)); return null; }
+        return { parent: pd, e, u }; }
+      const sp = u.id === board.id ? boardSp() : SP.find(s => s.id === u.id); if (!sp) continue;   // a ceiling box, a lamp …: not a wall feed
+      const f = sp.faces.find(f => (!u.room || f.room === u.room) && zone[f.room] === z) || sp.faces.find(f => zone[f.room] === z);
+      if (!f) { treeBad(d, e, u, 'nem ebben a helyiségzónában van'); return null; }
+      const r = reach(node(f.key), di, z); if (!r) { treeBad(d, e, u, 'nem érhető el vezethető falon' + banNote(d.room)); return null; }
+      return { sp: sp.id, face: f, len: r.len, tree: true }; }
+    return null; };
+  drops.forEach(d => { const t = TREE ? fromTree(d) : null;
+    if (t && t.parent) { d.parent = t.parent; return; }
+    const best = t || nearest(d);
     if (!best) { d.members.forEach(e => errIds.add(e.id));
       warn.push({ sev: 'err', msg: `${d.members.map(e => e.ref || e.id).join('+')}: nincs engedélyezett falszakasz a szervizpontig — ${rn(d.room)}`, room: d.room, at: [Math.round(d.members[0].x), Math.round(d.members[0].y)], ids: d.members.map(e => e.id) }); }
-    d.sp = best && best.sp; d.spFace = best && best.face; d.spLen = best && best.len; });
+    d.sp = best && best.sp; d.spFace = best && best.face; d.spLen = best && best.len; d.byTree = !!(t && t.tree); });
+  // a chain drop takes the service point of the chain's root (its home run comes from there); a loop in the chain or a
+  // root with no service point falls back to today's rule
+  drops.filter(d => d.parent).forEach(d => { let r = d, n = 0; while (r.parent && n++ < 50) r = r.parent;
+    if (r.parent || !r.sp) { delete d.parent; const b = nearest(d); d.sp = b && b.sp; d.spFace = b && b.face; d.spLen = b && b.len; return; }
+    d.sp = r.sp; d.spFace = r.spFace; d.depth = n; d.byTree = true; });
 
   // ---- 4. lamp → switch (explicit ctl, wet rooms from the dry face, nearest, two-way pairs) ----
   const L = inferLamps(G, M, cfg, warn, zone);
@@ -125,12 +160,22 @@ function plan(G, E, PT, cfg, allowed) {
   const penAll = i => spOfNode[i] ? 3000 : 0;
   // floor links serve the distribution only (W01) — the trunk never dives under the floor
   const T1 = g.run(node('board'), { penalty: penAll, edge: e => e.kind !== 'soft' && e.kind !== 'floor' }), T2 = g.run(node('board'), { penalty: penAll, edge: e => e.kind !== 'floor' });
-  const chanTo = spId => { if (channel[spId]) return channel[spId];
-    const sp = SP.find(s => s.id === spId), targets = sp.faces.map(f => node(f.key)).filter(i => i != null);
-    const T = targets.some(i => isFinite(T1.dist[i])) ? T1 : T2;
-    let t = targets[0]; targets.forEach(i => { if (T.dist[i] < T.dist[t]) t = i; });
-    const nodes = g.path(T.prev, t), passes = [...new Set(nodes.map(i => spOfNode[i]).filter(s => s && s !== spId))];
-    return (channel[spId] = { sp: spId, nodes, len: T.dist[t], cables: [], passes, soft: T === T2 }); };
+  // T2: a channel is only collected here; its path is found once every circuit has said where it goes (routeChannels)
+  const chanTo = spId => channel[spId] || (channel[spId] = { sp: spId, nodes: null, len: 0, cables: [], passes: [], soft: false });
+  // T2 (§4.6): the home runs in a stable order (nearest first, then id), each with a light congestion term — cfg.congest ×
+  // the stretch's length × the cables already on it — so parallel home runs may spread over doors instead of all
+  // funnelling through one (F7). congest 0 (the CLI default) is today's single shortest-path tree, exactly.
+  function routeChannels() { const K = +cfg.congest || 0, onEdge = new Map();
+    const order = Object.values(channel).map(ch => { const sp = SP.find(x => x.id === ch.sp), ts = sp.faces.map(f => node(f.key)).filter(i => i != null);
+      const T = ts.some(i => isFinite(T1.dist[i])) ? T1 : T2; let t = ts[0]; ts.forEach(i => { if (T.dist[i] < T.dist[t]) t = i; });
+      return { ch, ts, t, T, d: T.dist[t] }; }).sort((a, b) => a.d - b.d || (a.ch.sp < b.ch.sp ? -1 : a.ch.sp > b.ch.sp ? 1 : 0));
+    order.forEach(o => { let nodes, len, t = o.t;
+      if (!K) { nodes = g.path(o.T.prev, t); len = o.T.dist[t]; }
+      else { const soft = o.T === T2, ex = (e, u) => (e.geo || 0) * K * (onEdge.get(ek(u, e.to)) || 0);
+        const Rc = g.run(node('board'), { penalty: penAll, extra: ex, edge: e => e.kind !== 'floor' && (soft || e.kind !== 'soft') });
+        t = o.ts.reduce((a, i) => Rc.dist[i] < Rc.dist[a] ? i : a, o.ts[0]); nodes = g.path(Rc.prev, t); len = Rc.dist[t]; }
+      const n = Math.max(1, o.ch.cables.length); for (let k = 1; k < nodes.length; k++) { const key = ek(nodes[k - 1], nodes[k]); onEdge.set(key, (onEdge.get(key) || 0) + n); }
+      Object.assign(o.ch, { nodes, len, passes: [...new Set(nodes.map(i => spOfNode[i]).filter(x => x && x !== o.ch.sp))], soft: o.T === T2 }); }); }
 
   // ---- 7. cable routes per circuit ----
   const dropOf = e => drops.find(d => d.key === e.drop);
@@ -140,6 +185,7 @@ function plan(G, E, PT, cfg, allowed) {
   const dropCab = {};     // drop key → e.id → [{c, circ, kind}]
   const addDrop = (d, e, cab) => { ((dropCab[d.key] = dropCab[d.key] || {})[e.id] = dropCab[d.key][e.id] || []).push(cab); };
 
+  const chainWarned = new Set();
   C.list.forEach(c => {
     // which drops this circuit FEEDS (switch boxes for lighting, the device drops otherwise)
     const fed = new Map();                                             // drop key → drop
@@ -153,8 +199,14 @@ function plan(G, E, PT, cfg, allowed) {
     const bySp = {}; fed.forEach(d => { if (!d.sp) return; (bySp[d.sp] = bySp[d.sp] || []).push(d); });
     Object.entries(bySp).forEach(([spId, ds]) => {
       chanTo(spId).cables.push({ c: c.cable, circ: c.ref, kind: 'feed' }); used.add(spId);
-      ds.forEach(d => { const p = P(node(d.spFace.key), node(d.key), { ok: inZone(zone[d.room]) }); if (p) { addLoad(p.nodes, { c: c.cable, circ: c.ref, kind: 'feed', key: c.ref + '@' + spId }); d.feedGeo = geoLen(g, p.nodes); }
-        (feedAt[c.ref] = feedAt[c.ref] || new Set()).add(node(d.spFace.key)); });
+      // T2: a chain drop (its up in another drop) is fed from that drop when the same circuit feeds it — parents first
+      ds.sort((a, b) => (a.depth || 0) - (b.depth || 0) || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0)).forEach(d => {
+        const par = d.parent && fed.has(d.parent.key) ? d.parent : null, from = par ? node(par.key) : node(d.spFace.key);
+        if (d.parent && !par && !chainWarned.has(d.key + c.ref)) { chainWarned.add(d.key + c.ref); const e0 = d.members.find(e => (C.byMember[e.id] || {}).ref === c.ref) || d.members[0];
+          warn.push({ sev: 'warn', msg: `${e0.ref || e0.id} (${c.ref}) — ${rn(d.room)}: a lánca másik körbe lép (${d.parent.members.map(x => x.ref || x.id).join('+')}) — a szervizpontból kap betápot`, room: d.room, at: [Math.round(e0.x), Math.round(e0.y)], ids: [e0.id], tree: true }); }
+        const p = P(from, node(d.key), { ok: inZone(zone[d.room]) });
+        if (p) { addLoad(p.nodes, { c: c.cable, circ: c.ref, kind: 'feed', key: c.ref + '@' + spId }); d.feedGeo = (par ? (par.feedGeo || 0) : 0) + geoLen(g, p.nodes); }
+        if (!par) (feedAt[c.ref] = feedAt[c.ref] || new Set()).add(node(d.spFace.key)); });
     });
     // switchless ceiling lamps hang directly off their service point
     c.members.filter(e => c.kind === 'light' && e.code === 'LMP' && !e.onWall && !L.ctlOf[e.id]).forEach(e => {
@@ -195,13 +247,24 @@ function plan(G, E, PT, cfg, allowed) {
       const p = P(node(ad.key), node(od.key)); if (p) { addLoad(p.nodes, { c: 'NYM4x15', circ, kind: 'trav', key: 'trav:' + pid + '-' + id }); markCross(p.nodes); }
       else warn.push({ sev: 'warn', msg: `váltó-összekötés nem vezethető falon: ${a.ref} → ${o.ref}` }); });
     const wallL = u.lamps.map(id => M.find(e => e.id === id)).filter(e => e && e.onWall), ceilL = u.lamps.map(id => M.find(e => e.id === id)).filter(e => e && !e.onWall);
+    // T2: where the leg MEETS — the up of the unit's lamps (the Planner's lamp.meet, 08n): a service point on the wall graph
+    // (szobadoboz, a door's L4, RBX) or a ceiling junction; else the switch box (today's rule). From a meeting box a switch
+    // leg runs to the switch box, unless the switch is fed from that very box (then the feed cable is the switch leg).
+    const mu = u.lamps.map(id => upOf(id)).find(x => x && !u.lamps.includes(x.id) && !u.switches.includes(x.id));
+    const lz = zone[(ceilL[0] || wallL[0] || head).room], msp = mu && (mu.id === board.id ? null : SP.find(s => s.id === mu.id));
+    const mFace = msp && (msp.faces.find(f => (!mu.room || f.room === mu.room) && zone[f.room] === lz) || msp.faces.find(f => zone[f.room] === lz));
+    const mJ = mu && !msp && D.devices.find(x => x.id === mu.id && x.type === 'junction');
+    const oKey = mFace ? mFace.key : hd.key;
+    if (mFace) { const swUp = upOf(head.id);
+      if (!(swUp && swUp.id === msp.id)) { const p = P(node(mFace.key), node(hd.key)); if (p) { addLoad(p.nodes, { c: u.mode === 'double' ? 'NYM4x15' : 'NYM3x15', circ, kind: 'swleg', key: 'swleg:' + head.id }); markCross(p.nodes); } } }
     wallL.forEach(e => { if (e.floorGroup) { special.push({ kind: 'floor', group: e.floorGroup, e, cable: 'NYM3x15', circ, lamp: true }); return; }
-      const d = dropOf(e); if (d !== hd) { const p = P(node(hd.key), node(d.key)); if (p) { addLoad(p.nodes, { c: 'NYM3x15', circ, kind: 'lamp', key: 'lamp:' + e.id }); markCross(p.nodes); } }
+      const d = dropOf(e); if (d !== hd || mFace) { const p = P(node(oKey), node(d.key)); if (p) { addLoad(p.nodes, { c: 'NYM3x15', circ, kind: 'lamp', key: 'lamp:' + e.id }); markCross(p.nodes); } }
       addDrop(d, e, { c: 'NYM3x15', circ, kind: 'lamp' }); });
     if (ceilL.length) {
-      // the riser: from the switch box if the lamps are in its room, else from the nearest node of the lamps' room
+      // the riser: from the meeting box, else the switch box if the lamps are in its room, else the nearest node of their room
       const lr = ceilL[0].room;
-      if (zone[lr] === zone[hd.room]) ceil.push({ fromKey: hd.key, lamps: ceilL, cable: 'NYM3x15', circ });
+      if (mFace) ceil.push({ fromKey: oKey, lamps: ceilL, cable: 'NYM3x15', circ });
+      else if (zone[lr] === zone[hd.room]) ceil.push({ fromKey: hd.key, lamps: ceilL, cable: 'NYM3x15', circ, via: mJ || null });
       else { const sp = nearestSpFace(G, SP, ceilL[0], zone), p = sp && P(node(hd.key), node(sp.face.key));
         if (p) { addLoad(p.nodes, { c: 'NYM3x15', circ, kind: 'lamp', key: 'lamp:' + ceilL[0].id }); markCross(p.nodes); }
         ceil.push({ fromKey: sp ? sp.face.key : hd.key, lamps: ceilL, cable: 'NYM3x15', circ }); } }
@@ -213,6 +276,7 @@ function plan(G, E, PT, cfg, allowed) {
     if (md) addDrop(md, e, { c: R.SWITCH_LEG.shutter, circ, kind: 'motor' }); });
   function markCross(nodes) { nodes.forEach(i => { if (spOfNode[i]) used.add(spOfNode[i]); }); }
 
+  routeChannels();
   // ---- 8. boxes ----
   const boxes = []; const boxAt = {};                                   // node index → box
   const mk = (b) => { b.id = 'X' + (boxes.length + 1); boxes.push(b); return b; };
@@ -394,13 +458,24 @@ function plan(G, E, PT, cfg, allowed) {
         leg({ kind: 'drop', from, to: e.id, len: Math.round(Math.abs(fromH - e.h)), bends: 0, h: null, poly: [[box.x, box.y, fromH], [box.x, box.y, e.h]], cables: mergeCables(rest), dev: e.id });
         from = e.id; fromH = e.h; }); }); });
   // ceiling: box → riser → lamps (nearest-neighbour chain)
-  ceil.forEach(c => { const i = node(c.fromKey), b = boxAt[i]; if (!b) return; let px = b.x, py = b.y, from = b.id, first = true;
-    const rest = [...c.lamps];
-    while (rest.length) { rest.sort((a, z) => Math.hypot(a.x - px, a.y - py) - Math.hypot(z.x - px, z.y - py)); const e = rest.shift();
-      const flat = Math.hypot(e.x - px, e.y - py), len = Math.round(flat + (first ? (cfg.ceiling - W.dist) : 0));
-      leg({ kind: 'ceil', from, to: e.id, len, bends: first ? 2 : 0, h: cfg.ceiling, poly: first ? [[px, py, W.dist], [px, py, cfg.ceiling], [e.x, e.y, cfg.ceiling]] : [[px, py, cfg.ceiling], [e.x, e.y, cfg.ceiling]],
-        cables: [{ c: c.cable, n: 1, circ: [c.circ] }], dev: e.id });
-      px = e.x; py = e.y; from = e.id; first = false; } });
+  // T2: a lamp whose up is a lamp of this chain waits for it and hangs on it; one whose up is the source (the box, a door,
+  // a junction) takes its own riser from there; with no up, today's nearest-neighbour chain. A ceiling junction the leg
+  // meets in (via) comes first: box → riser → junction → lamps.
+  ceil.forEach(c => { const i = node(c.fromKey), b = boxAt[i]; if (!b) return; const Ch = cfg.ceiling, cab = () => [{ c: c.cable, n: 1, circ: [c.circ] }];
+    let px = b.x, py = b.y, from = b.id, first = true;
+    if (c.via) { const J = c.via; leg({ kind: 'ceil', from: b.id, to: J.id, len: Math.round(Math.hypot(J.x - b.x, J.y - b.y) + (Ch - W.dist)), bends: 2, h: Ch,
+      poly: [[b.x, b.y, W.dist], [b.x, b.y, Ch], [J.x, J.y, Ch]], cables: cab(), meet: J.id }); px = J.x; py = J.y; from = J.id; first = false; }
+    const src = { x: px, y: py, id: from, first }, inSet = new Set(c.lamps.map(e => e.id)), done = new Map(), rest = [...c.lamps];
+    while (rest.length) { rest.sort((a, z) => Math.hypot(a.x - px, a.y - py) - Math.hypot(z.x - px, z.y - py) || (a.id < z.id ? -1 : a.id > z.id ? 1 : 0));
+      let k = rest.findIndex(e => { const u = upOf(e.id); return !u || !inSet.has(u.id) || done.has(u.id); }); if (k < 0) k = 0;
+      const e = rest.splice(k, 1)[0], u = upOf(e.id);
+      let fx = px, fy = py, fid = from, rise = first;
+      if (u && done.has(u.id)) { const q = done.get(u.id); fx = q.x; fy = q.y; fid = u.id; rise = false; }
+      else if (u && !inSet.has(u.id) && done.size) { fx = src.x; fy = src.y; fid = src.id; rise = src.first; }
+      const flat = Math.hypot(e.x - fx, e.y - fy), len = Math.round(flat + (rise ? (Ch - W.dist) : 0));
+      leg({ kind: 'ceil', from: fid, to: e.id, len, bends: rise ? 2 : 0, h: Ch, poly: rise ? [[fx, fy, W.dist], [fx, fy, Ch], [e.x, e.y, Ch]] : [[fx, fy, Ch], [e.x, e.y, Ch]],
+        cables: cab(), dev: e.id });
+      done.set(e.id, { x: e.x, y: e.y }); px = e.x; py = e.y; from = e.id; first = false; } });
   // floor groups (the island, the stair foot): SP box → down → across the floor → junction box → devices
   (cfg.floorGroups || []).forEach(grp => { const items = special.filter(x => x.kind === 'floor' && x.group === grp.name); if (!items.length) return;
     const sp = SP.find(x => x.id === grp.sp); if (!sp || !sp.faces.length) return;

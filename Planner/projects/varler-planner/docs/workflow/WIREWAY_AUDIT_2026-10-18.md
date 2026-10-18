@@ -500,3 +500,32 @@ szobadoboz never distributes sockets") — T3's socket chain from the leader soc
 **⏸ Checkpoint before T2** (GO-WIRE): T2 makes the engine fit this tree (only each link's path is searched). The
 Domoszló figures it starts from: 16 circuits, 208 legs, 409,9 m of conduit (dist 139,6 · trunk 135,0 · drop 98,6 ·
 ceil 36,6), 108 boxes, 5 warnings (box overfill at B31 / B32 / B33), 0 m on unmarked walls.
+
+---
+
+## Part 7 — T2 built (2026-10-19): the engine fits the tree
+
+User, 2026-10-19: "proceed, make an effort for a larger batch" — the ⏸ before T2 was passed on that word. Spec
+`tests/spec-102-tree-fit.js` (22). Full suite: 97 suites, 3 382 checks, golden 70 / 70.
+
+| Piece | Where | What |
+|---|---|---|
+| The tree in | 08ob `blInput` | `cfg.tree` = every node's `up` on the level; a lamp with none but a pinned `meet` box gets that box. The tree is in the stale signature. The user's own `D.paths` stay in the input (T6), only `gen:'bl'` goes |
+| Drops | plan.js §3 `fromTree` | a member's up names the drop's feed: a door's L4 on face `room`, a hub (szobadoboz / RBX / BASE), the board, or a device in ANOTHER drop = a chain (fed from that drop; the root's service point carries the home run, `depth` kept). Unreachable, another zone, or no route on Vezethető walls → ⛔ naming why (and the room's ban marks); the drop then falls back to today's nearest rule. No up = today's rule. A lamp on a switch is its leg, not a feed |
+| Room runs | §7 | parents first; a chain drop's run starts at its parent's box when the same circuit feeds it (else a warning, and the service point); the voltage drop sums the chain |
+| Lamps | §7 units | the leg starts where it meets: a service point on the wall graph (szobadoboz, door L4, RBX) — with a switch leg (NYM-J 3×1,5, 4×1,5 for a double) from there to the switch box unless the switch is fed from that box — or a ceiling junction (box → riser → junction → lamps). Ceiling lamps follow the up order: chain or star |
+| Home runs | §6 `routeChannels` | collected first, then routed in a stable order (nearest first, id) with a congestion term `cfg.congest × length × cables already there`. `congest` 0 (CLI, P33) = today's single tree exactly; the Planner uses 0,05 (`BL_OPT.congest`) |
+| Fixed point | 08ob `blApplyRoutes` | fill the javasolt links from the run, run again on the new tree, until they stop changing (≤ 3): what is drawn is the run of the tree as it stands — not stale the moment it is drawn |
+
+**Domoszló** (the Q-T0-2 fixture):
+
+| | no tree | auto tree, congest 0 | auto tree, congest 0,05 (Planner) |
+|---|---|---|---|
+| conduit (dist · trunk · ceil) | 139,6 · 135,0 · 36,6 → **409,9 m** | identical, leg by leg | 139,6 · 144,5 · 36,6 → **419,4 m** |
+| cable 3×1,5 · 3×2,5 | 291,9 · 162,9 | identical | 295,4 · 168,3 |
+| busiest chase · crossings | garázs 14 pipes / 16 circuits · garázs 11, konyha 5, közlekedő 2 | identical | garázs 13 / 16 · garázs 10, konyha 3, konyha 3 |
+| boxes · warnings · errors | 108 · 5 · 0 | 108 · 5 · 0 | 108 · 5 · 0 |
+
+So the tree reproduces today's plan exactly when it is today's plan, and the congestion term spreads the home runs
+a little (+9,5 m of trunk for one pipe less at the garage crossing and two less at the kitchen). P33 (CLI, congest 0,
+no tree) is identical to T1, leg by leg.

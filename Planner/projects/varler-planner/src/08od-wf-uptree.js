@@ -68,7 +68,9 @@ function upSuggest(level,run){level=level||state.active;run=run||(typeof blRun==
   const firstLeg={};R.legs.forEach(l=>{const k=l.dev||(upDev(l.to)?l.to:null);if(k&&!firstLeg[k])firstLeg[k]=l;});
   run.E.forEach(e=>{const live=upDev(e.id);if(!live||!R.C.byMember[e.id])return;let s=null,why='';
     const head=R.L.ctlOf[e.id]&&R.L.ctlOf[e.id][0];
-    if(e.code==='LMP'&&head&&upDev(head)){const m=typeof jbMeet==='function'?jbMeet(live):null;
+    // a switched ceiling lamp further down its chain hangs on the lamp before it (T2 keeps the chain, not a star)
+    const fl=firstLeg[e.id];if(e.code==='LMP'&&head&&fl&&fl.kind==='ceil'&&upDev(fl.from)&&R.L.ctlOf[fl.from]&&R.L.ctlOf[fl.from].join('+')===R.L.ctlOf[e.id].join('+')){s={id:fl.from};why='mennyezeti lánc (ugyanaz a kapcsolás)';}
+    if(!s&&e.code==='LMP'&&head&&upDev(head)){const m=typeof jbMeet==='function'?jbMeet(live):null;
       s=m&&m.box&&upDev(m.box.id)?{id:m.box.id}:{id:head};why=m&&m.box?'a lámpaág találkozási doboza':'a kapcsolója dobozán át';}
     // a chain passes devices of OTHER circuits too (one box, one vertical conduit): power comes from the previous device of
     // the same circuit only — else from the drop's service point. A plate switch without a leg of its own: the same.
@@ -89,13 +91,15 @@ function upSuggest(level,run){level=level||state.active;run=run||(typeof blRun==
 // apply the suggestions to every node that has no rögzített up; an old suggestion with nothing behind it goes. ONE undo.
 // opt.run: an engine run to read (Pályák passes its own); opt.noUndo: inside the caller's undo step (and no view switch)
 function upFill(level,opt){opt=opt||{};level=level||state.active;const S=upSuggest(level,opt.run);if(S.err)return {err:S.err};
-  if(!opt.noUndo)pushUndo(['devices']);let set=0,kept=0,gone=0,refused=[];
+  if(!opt.noUndo)pushUndo(['devices']);let set=0,kept=0,gone=0,refused=[];const was={};
+  data.devices.forEach(d=>{if(d&&d.level===level&&upIsNode(d))was[d.id]=JSON.stringify(d.up||null);});
   data.devices.forEach(d=>{if(!d||d.level!==level||!upIsNode(d)||(d.up&&d.up.fix))return;if(d.up&&!S.map[d.id]){delete d.up;gone++;}});
   // in two passes so a loop check sees the new tree: clear the auto ones first, then set
   Object.keys(S.map).forEach(id=>{const d=upDev(id);if(d&&d.up&&!d.up.fix)delete d.up;});
   Object.entries(S.map).forEach(([id,s])=>{const d=upDev(id);if(!d)return;if(d.up&&d.up.fix){kept++;return;}
     const r=upSet(id,{id:s.id,room:s.room},{noUndo:true});if(r.ok)set++;else refused.push((d.ref||d.id)+': '+r.err);});
-  if(!opt.noUndo){UP.view=true;draw();}return {set,kept,gone,refused,run:S.run};}
+  const changed=Object.keys(was).filter(id=>{const d=upDev(id);return d&&JSON.stringify(d.up||null)!==was[id];}).length;
+  if(!opt.noUndo){UP.view=true;draw();}return {set,kept,gone,changed,refused,run:S.run};}
 // "Elfogadom mind" for one room: every suggestion there becomes rögzített (guard rail 1)
 function upAcceptRoom(rid,level){level=level||state.active;pushUndo(['devices']);let n=0;
   data.devices.forEach(d=>{if(!d||d.level!==level||!d.up||d.up.fix)return;if(upRoomOfDev(d)===rid){d.up.fix=true;n++;}});

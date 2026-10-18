@@ -42,7 +42,7 @@ setTimeout(()=>{
   ok('1 the first socket of a drop hangs on the door L4 of its room',live(sA2).up&&live(sA2).up.id===D.openings[0].id&&live(sA2).up.room==='RA',JSON.stringify(live(sA2).up));
   ok('1 the socket below it in the same drop hangs on it, past the other circuit socket between them',live(sA).up&&live(sA).up.id===sA2.id,JSON.stringify(live(sA).up));
   ok('1 the other circuit socket in that drop hangs on the service point, not on the chain',live(sC).up&&live(sC).up.id===D.openings[0].id,JSON.stringify(live(sC).up));
-  ok('1 the switched lamps hang on the box their leg meets in (the room\'s szobadoboz)',live(lamp).up&&live(lamp).up.id===sz.id&&live(lamp2).up&&live(lamp2).up.id===sz.id,JSON.stringify([live(lamp).up,live(lamp2).up]));
+  ok('1 the first switched lamp hangs on the box its leg meets in (the room szobadoboz), the next on it (the ceiling chain)',live(lamp).up&&live(lamp).up.id===sz.id&&live(lamp2).up&&live(lamp2).up.id===lamp.id,JSON.stringify([live(lamp).up,live(lamp2).up]));
   ok('1 the szobadoboz hangs on the board',live(sz).up&&live(sz).up.id===board.id);
   ok('1 every suggestion is javasolt (no fix)',[sA,sB,lamp,sz].every(d=>live(d).up&&!live(d).up.fix));
   // ---- 2. roles ----

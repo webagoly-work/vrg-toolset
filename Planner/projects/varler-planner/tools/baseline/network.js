@@ -41,13 +41,14 @@ class Graph {
   // never w — one unmarked wall once turned a 5,6 m route into 14,6 m of cable). geo defaults to w (cross, open, floor, over).
   link(a, b, w, kind, geo, ex) { if (a === b) return; const o = Object.assign({ w, kind, geo: geo == null ? w : geo }, ex || {});
     this.adj[a].push(Object.assign({ to: b }, o)); this.adj[b].push(Object.assign({ to: a }, o)); }
-  // Dijkstra; opt.ok(i) limits the nodes, opt.penalty(i) adds a cost for passing node i
+  // Dijkstra; opt.ok(i) limits the nodes, opt.penalty(i) adds a cost for passing node i, opt.extra(e, u) for taking edge e
+  // from u (T2: the trunk's congestion term)
   run(src, opt = {}) { const n = this.N.length, dist = new Float64Array(n).fill(Infinity), prev = new Int32Array(n).fill(-1), done = new Uint8Array(n);
     dist[src] = 0;
     for (;;) { let u = -1, best = Infinity; for (let i = 0; i < n; i++) if (!done[i] && dist[i] < best) { best = dist[i]; u = i; }
       if (u < 0) break; done[u] = 1;
       for (const e of this.adj[u]) { if (opt.ok && !opt.ok(e.to)) continue; if (opt.edge && !opt.edge(e)) continue;
-        const nd = dist[u] + e.w + (opt.penalty ? opt.penalty(e.to, u) : 0); if (nd < dist[e.to]) { dist[e.to] = nd; prev[e.to] = u; } } }
+        const nd = dist[u] + e.w + (opt.penalty ? opt.penalty(e.to, u) : 0) + (opt.extra ? opt.extra(e, u) : 0); if (nd < dist[e.to]) { dist[e.to] = nd; prev[e.to] = u; } } }
     return { dist, prev }; }
   path(prev, t) { const p = []; for (let v = t; v >= 0; v = prev[v]) p.unshift(v); return p; }
 }
