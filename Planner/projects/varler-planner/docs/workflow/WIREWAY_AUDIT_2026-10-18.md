@@ -236,3 +236,154 @@ Items 1–5 together are about two days and turn silent wrong results into visib
 No open-source building-conduit autorouter turned up. The tools that exist are commercial: CYPE Open BIM Cable Routing
 (manual layout) and Stabicad autorouting. The engine itself is the asset; the libraries above fill single holes: a heap,
 a Steiner tree, nudging.
+
+---
+
+## Part 4 — Follow-up: the user's routing model, reviewed by the red team (2026-10-18)
+
+The user's proposal: a **dual connecting system**.
+1. **Topology** — the electrical connections the user defines:
+   - groups (socket strings, lamp + switch groups), each with a leader;
+   - a Group Order sequence inside each group;
+   - master points (junction boxes fed directly from the Elosztó);
+   - leaders hang on a master or on the Elosztó;
+   - reaching the Elosztó prompts a circuit, from a pre-ticked checklist.
+2. **Physical space** — where conduit may go:
+   - open and blocked walls and sides, on the overlay and per sublayer;
+   - directional flow lines (soft), *or* drawn preferred paths bound to the Master / Leader → Elosztó links;
+   - manual junction points as nodes.
+
+The autoroute then fits the topology into the physical space, layer by layer.
+
+The red team re-reviewed its own earlier proposals against this. I verified its three load-bearing claims in the code.
+
+### 4.1 The decisive fact: most of the model already exists as data, and the engine ignores it
+
+| Already in the Planner | Read by the engine? |
+|---|---|
+| lamp groups `d.grp`, switch links `sw.ctl`, the leader switch `swHead` (08l) | yes (`blSwitchGroups`) |
+| the szobadoboz as **room feed** (08n:9-13, "szoba betáplálás") | **no** — only as a wall crossing (plan.js:14) |
+| `lamp.meet`, the box where a lamp leg meets its switches (08n) | **no** — "meet" appears in plan.js only in a comment (:163) [V] |
+| the classic socket chain "Elosztó → first room socket → … → last" (08n:11) | **no** — the engine builds a star from the door, a union of shortest paths (plan.js:129-133) [V] |
+| hand-drawn ARM / channel routes with explicit joins `n.j` (05u), chain / star / Steiner over them (05v) | **no** — `blInput` sets `D.paths=[]` (08ob:44) [V] |
+| marks with a `layer` | only the overlay `vezetheto` / `belso` |
+
+So the user's model is not new machinery. It is the structure the Planner already half-declares and the router never
+consumes. That is the strongest argument for it.
+
+### 4.2 Verdict per idea (red team; my position where it differs)
+
+| Idea | Verdict | Why |
+|---|---|---|
+| Groups + leader (dedicated → Elosztó, socket strings with a leader socket, lamp + switch groups with a leader switch) | **foundation** | it records what the electrician decides anyway and the engine now guesses (nearest door, star). Lamp groups and the leader switch exist; the leader socket is new. Safe only if every unset group is auto-filled. |
+| Master points | **foundation** — exists as the szobadoboz | it replaces the "nearest door" guess and fixes the hub-door funnel at the source: home runs end at masters, so a door is only a crossing. A plain kötődoboz must not silently become a wall crossing. |
+| Manual junction points (⌀80 / 100×100) as nodes | **foundation** — exists (08n kot / szoba / ceiling) | the engine must take them as graph and tree nodes |
+| The dual system as the base contract | **foundation** | it turns the router from an *inference* engine into an *embedding* engine — far more predictable. Holds only if every topological piece is optional and auto-filled. |
+| Elosztó prompts a circuit + checklist | **build, but as a tray** | the checklist exists (08oa). A modal on every link to the board will be clicked away blindly → a non-blocking "Elosztóra vár: 3" tray with batch assign. |
+| Master / Leader → Elosztó link with wall-snapped intermediate nodes (the "more defined way") | **build** | a hand-drawn route bound to one link: unambiguous, checkable ("route left at wall X"), already buildable on ARM / channel + 05v. |
+| Group Order tool with re-visits | **postpone the tool, keep the data** | a sequence with revisits is a walk the engine must reinterpret as a tree; two users draw the same tree two ways. Simpler: **each click sets `up` = the previously clicked node**, so a branch is two nodes with the same `up`. Default order from `rgChain` (exists). |
+| Marks on every sublayer | **postpone** | needed for BRIDGE (SELV on the hinge side, mains on the latch side), overbuilt for Erősáram. Simpler: the overlay applies to all layers; a sublayer mark is only an exception ("tilos here" / "only here"). |
+| Free flow lines (soft, directional, may overlap or contradict) | **red team: drop** | an invisible discount the user can neither predict nor check; near-equal preferences flip on small edits. |
+
+**My position on flow lines.** I agree that free, directional flow lines should not be built: a tree's cost is the
+same in both directions, so the direction adds nothing the router can use. But the user's real need — "I prefer the
+routes here" — deserves a predictable form. The honest equivalent is a **third mark strength, "előnyben" (preferred)**,
+which costs ×0.5 on a wall or side. It has no direction, may overlap and may go unused, and the report shows whether
+it was used. It is the user's flow line made checkable, and it costs one row in the R3 palette.
+
+### 4.3 What the red team revised in its own earlier suggestions
+- **Conceded: the room-box star.** It is no longer a separate engine mode; it becomes the **automatic default master**
+  when the user sets none.
+- **Conceded: the capacity-aware Steiner trunk.** Once leaders and masters fix the tree, it is not needed. The engine
+  only fits the fixed links in, with a congestion cost. KMB (05v) stays only for auto-placing a master.
+- **Conceded: "drop → service point ignores trunk cost" and the "Gerinc fal" ink.** Masters, the ban / minus marks
+  and the drawn link routes cover them.
+- **Held: the top-10 bug fixes come first** — the new structure must not sit on a router that counts unmarked metres
+  ×4 and drops devices silently.
+- **Held: engine-proposed crossing points.** A master in a room with one door still funnels through that door. The
+  accepted form of a proposal is simply one of the user's junctions, flagged szobadoboz.
+- **Held: the Pálya-ellenőrzés gate** — more important with two models that can contradict each other.
+
+### 4.4 The minimal data model — no new device types, one new field
+
+| Entity | Stored as | Rule |
+|---|---|---|
+| **Node** | existing devices: endpoints, `junction` (`jb` szoba / kot / ceiling), `board` | + **`up: {id, via?, fix?}`** — exactly one upstream per node, except the board; loops refused when drawn |
+| Group, leader, sequence, master | **derived** from the `up` chain | leader = first node below a master or the board; master = a junction whose `up` is the board; sequence = the chain; a branch = siblings |
+| Control (switching) | `sw.ctl`, `d.grp`, `swHead` — unchanged | **separate from power.** The leader switch is `swHead`; a leg's meeting box is `lamp.meet` (finally read) |
+| Circuit | `data.circuits`, `c.members` stays the source of truth | an `up` chain stays inside its circuit until a junction or the board; mismatch = a check, never a silent re-membership; `c.rooms` derived on read |
+| Preferred physical path | existing `data.paths` (ARM / channel, joins) and `cline` marks | `up.via` = a path id; honoured if feasible, a deviation is reported |
+| Marks | existing marks (`kind`, `tags`, `pol`, `layer`, `side`) | precedence per layer: **ban > own-layer plus > overlay plus > előnyben (×0.5) > minus (×2) > unmarked (×4, fallback only)**; a ban is never softened |
+
+### 4.5 The configurations — each a superset of the last, all on the same data and report
+
+| | Name | The user does | The engine does | Effort |
+|---|---|---|---|---|
+| **K0** | Csak jelölés (marks only) | marks, ban marks, endpoints, switching, board, circuits — as today | today's routing with the top-10 fixes; fills every `up` automatically so later steps can show it | ~1 week |
+| **K1** ★ | Szobadoboz-mester (masters) | K0 + optionally one szobadoboz per room (or accepts the dashed suggestion) + optionally a leader socket per socket circuit (one click) | home run Elosztó → master per circuit; leader switch box → master; socket strings in `rgChain` order; dedicated → board; with no master, the latch L4 of the door is the master (today's behaviour, made explicit); **only the fit of each link into the walls is searched** | +1–2 weeks |
+| **K2** | Topológia (explicit tree) | K1 + the chain tool (each click sets `up`; a click on a chain node starts a branch) + the Elosztó tray (default from the checklist) | as K1 — more of the tree is user-fixed | +2–3 weeks |
+| **K3** | Teljes kettős (full dual) | K2 + drawn routes on any link (`via`, the existing ARM pen) + per-layer exception marks | prefers `via` (×0.25, never through a ban); per-layer precedence; layers in a fixed order with shared-chase congestion | when a second layer autoroutes |
+
+**Recommended base: K1, with K2's `up` field written from day one.**
+- It delivers the essence of the user's model: masters and leaders, which the engine ignores today.
+- It costs two optional clicks per room.
+- It removes the hub-door funnel structurally.
+- With only marks drawn, it still routes exactly as K0.
+- K2 then adds only a tool, not a migration.
+
+### 4.6 Engine and foolproofing (agreed)
+- **Fitting a fixed tree:**
+  - each link child → parent gets one shortest path in the wall graph;
+  - links are processed in a stable order (circuit, depth, id);
+  - a light congestion term (+c × pipes already there, two passes) spreads parallel home runs across doors;
+  - lengths are always geometric.
+- **Blocking checks before routing:**
+  - a loop or two upstreams;
+  - a leader or master that cannot reach its parent (naming the blocking ban mark or the missing wall mark);
+  - a chain that crosses circuits;
+  - a leader switch outside its own lighting circuit.
+- **Warnings:** a group spanning rooms, a master with no board link (auto-linked, dashed), `c.members` ≠ the `up` set
+  (with a "javít" button), a `via` route only partly honoured.
+- **Guard rails:**
+  1. Only marks, the board and the circuits are mandatory. Everything else is auto-filled and drawn **dashed**
+     ("javasolt"); one click makes it **solid** ("rögzített"); "Elfogadom mind" per room.
+  2. The editor cannot break the tree: one upstream per node, loops refused with a plain Hungarian reason.
+  3. Four visible device states: unassigned / suggested / fixed / unreached.
+  4. Ban is hard and red; unmarked-wall legs are drawn hatched and counted in the report.
+  5. The non-blocking Elosztó tray instead of modal prompts.
+  6. The Pálya-ellenőrzés gate: errors block "Felrajzolás", warnings need one acknowledgement per run.
+  7. Re-runs regenerate only `auto` items, with stable generated ids; drawn items show a stale state after an edit.
+  8. Every snap and merge is announced.
+
+### 4.7 Build order (fits the workflow phases)
+
+| WP | Phase | Content | Effort |
+|---|---|---|---|
+| T0 | Pályák | the top-10 fixes (geometric lengths, unreached = error, ban / minus + előnyben marks, latch from the door, the wrong-wall fix, the report + stale flag + error gate) + order-independent drop grouping | S–M |
+| T1 | Villamosság | the `up` field, auto-fill from today's logic, invariants, dashed / solid states | M |
+| T2 | Pályák | the engine fits a fixed tree; masters as room feeds; reads `lamp.meet`; keeps user `D.paths` | M |
+| T3 | Villamosság | master suggestion per room; the leader-socket click; `rgChain` default order | S–M |
+| T4 | Villamosság | the Elosztó tray + checklist binding (on 08oa) | S–M |
+| T5 | Villamosság | the chain tool (Group Order without revisits) | M |
+| T6 | Pályák | drawn routes (`via`) as preferred fits, with a deviation report | M |
+| T7 | Szabályok | per-layer mark precedence — only when a second layer autoroutes | M–L |
+
+### 4.8 Decisions for the user
+1. **Base configuration:**
+   - A: K1 with the `up` field from day one (recommended by both sides)
+   - B: K0 only, decide K1 later
+   - C: go straight to K2
+2. **Flow lines:**
+   - A: the "előnyben" mark (×0.5, no direction) instead of flow lines — my proposal
+   - B: drop entirely — the red team's view
+   - C: build directional flow lines as drawn
+3. **Group Order:**
+   - A: each click sets `up`, no revisits (recommended)
+   - B: sequences with revisits, as drawn
+4. **Elosztó prompt:**
+   - A: the non-blocking tray (recommended)
+   - B: a modal on every link to the board
+5. **Socket topology:** the engine today builds a star from the door, against the classic chain written in 08n.
+   - A: the chain from the leader socket (08n's rule)
+   - B: keep the star
+   - C: per circuit, as a setting
