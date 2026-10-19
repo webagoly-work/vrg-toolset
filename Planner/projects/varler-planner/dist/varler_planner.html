@@ -16531,7 +16531,9 @@ function plan(G, E, PT, cfg, allowed) {
   // ---- 10. checks ----
   // a box the user already enlarged (cfg.spBoxSize, e.g. B103 150 × 150) takes 12 runs, a 2-gang one 6
   boxes.filter(b => b.kind === 'sp' || b.kind === 'drop').forEach(b => { const n = legs.filter(l => l.from === b.id || l.to === b.id).length;
-    const ov = b.kind === 'sp' && ((cfg.spBoxSize || {})[b.sp + ':' + b.room] || (cfg.spBoxSize || {})[b.sp]);
+    const spx = b.kind === 'sp' && SP.find(x => x.id === b.sp);
+    // a szobadoboz is itself the big box (150 × 150 / 200 × 200, 08n) — not a 2-gang one (found on Domoszló: KD2, 11 pipes)
+    const ov = b.kind === 'sp' && ((cfg.spBoxSize || {})[b.sp + ':' + b.room] || (cfg.spBoxSize || {})[b.sp] || (spx && spx.type === 'szoba' ? (spx.dev.jbSize || 150) : 0));
     if (n > (ov ? 12 : 6)) warn.push({ sev: 'warn', msg: `${b.id} (${b.n}${ov ? ', ' + ov + ' × ' + ov : ''}) — ${rn(b.room)}: ${n} cső fut be — ${ov ? 'ennél is' : '2 szerelvényesnél'} nagyobb doboz kell`, room: b.room, at: [Math.round(b.x), Math.round(b.y)] }); });
   M.filter(e => !C.byMember[e.id]).forEach(e => warn.push({ sev: 'warn', msg: `${e.ref || e.id} ${e.code} — ${rn(e.room)}: nincs áramkörben`, room: e.room, at: [Math.round(e.x), Math.round(e.y)], ids: [e.id] }));
   const checks = cableChecks(G, g, C, drops, channel, loads, tload, legs, W, bTop, node, warn, cfg);

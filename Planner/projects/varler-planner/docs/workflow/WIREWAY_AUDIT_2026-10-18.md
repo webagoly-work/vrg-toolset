@@ -608,3 +608,11 @@ with "Hurok: L26 már K3 alól kap betápot (L26 → K3b → K3 → B171)", the 
 | T6 | this one | ↝ Rajzolt pálya ehhez a betáphoz — a drawn path for one link |
 
 T7 (per-layer mark precedence) stays deferred until a second layer autoroutes.
+
+**Q2 = A (user, 2026-10-19): the three szobadobozok placed** (Garázs @W30, Konyha / étkező @W21, Közlekedő @W28), in
+`build-dom.js` before Pályák. Domoszló now: 451,5 m (dist 150,2 · trunk 155,3 · drop 98,6 · ceil 47,4), 105 boxes,
+cable 3×1,5 355,4 m · 3×2,5 154,1 m. The masters do NOT remove the garage funnel — the garage is the board's own room,
+so B32 still carries 11 pipes; the other door boxes ease (B33 off the overfill list). Warnings: X3 / X4 at B32, and A4.
+Fixed on the way: a szobadoboz box was checked as a 2-gang box (6 pipes); it is the big box (≤ 12). Q1 (A4) still open.
+A Planner copy with Domoszló baked in (finished · test run without routes · base) is built by
+`_script/make-dom-preload.js` into the client folder — never in git.
