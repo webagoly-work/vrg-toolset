@@ -79,6 +79,12 @@ setTimeout(()=>{
   ok('the upper node at −300 and the ground ceiling node are the same world point',w.slbNodeZ('upper',up)===w.slbNodeZ('ground',dn)&&w.slbNodeZ('ground',dn)===5200);
   const th=w.slbThru();
   ok('slbThru joins them (the path between the levels)',th.length===1&&th[0].up.n===up.id&&th[0].down.n===dn.id,JSON.stringify(th));
+  D.paths[0].route='arm';D.paths[1].route='arm';
+  const G=w.rgBuild(),ku=D.paths[0].id+'/'+up.id,kd=D.paths[1].id+'/'+dn.id,far=D.paths[1].id+'/'+D.paths[1].nodes[1].id;
+  ok('05v: the route graph joins the slab pair (0 mm, a join edge) — the upper path reaches the ground path',(G.adj.get(ku)||[]).some(e=>e.to===kd&&e.w===0&&e.e.slab)&&w.rgReach(G,D.paths[0].id+'/'+D.paths[0].nodes[1].id).has(far));
+  w.slbSet(['upper'],false,300);
+  ok('…no slab → no cross-level join',!(w.rgBuild().adj.get(ku)||[]).some(e=>e.to===kd));
+  w.slbSet(['upper'],true,300);delete D.paths[0].route;delete D.paths[1].route;
   let v=w.validate().filter(x=>/^slb\./.test(x.code));
   ok('a crossing without a felszálló mark is an info',v.length===1&&v[0].code==='slb.thru'&&v[0].sev==='info');
   D.marks.push({kind:'vstrip',wall:'W4',side:-1,u0:1400,u1:1700,level:'ground',tags:['felszallo'],pol:'plus',layer:'L0'});

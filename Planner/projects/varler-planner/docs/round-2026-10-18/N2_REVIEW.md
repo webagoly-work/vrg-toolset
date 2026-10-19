@@ -34,4 +34,4 @@ Open review questions: R1–R6 in the chat reply of 2026-10-18 (same text below)
 
 - R1 **B**: Háló switches = one string 106 (door) + 107 (one bed side) + 106 (other bed side). Option at each bedside spot: a socket + a 101 switch + the reading light above it (item `read`, offered with 2 sides, not applied by *Javaslat átvétele*).
 - R2–R5: not answered → A.
-- R6: left open for the next housekeeping (2+ doors with k = 2 currently gives a 108 pair).
+- R6 **A** (2026-10-19): 2+ doors with k = 2 → a 108 pair (dupla váltó) — `reqSwAuto` and the E1 hand-off already do this; no code change.

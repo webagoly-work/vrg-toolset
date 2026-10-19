@@ -34,6 +34,9 @@ function rgBuild(opt){opt=opt||{};const routes=opt.routes||['arm','channel'];
   const byPos={};G.nodes.forEach((o,k)=>{if(o.kind!=='node')return;const pk=Math.round(o.x)+','+Math.round(o.y)+'@'+o.level;(byPos[pk]=byPos[pk]||[]).push(k);});
   Object.keys(byPos).forEach(pk=>{const ks=byPos[pk];for(let i=0;i<ks.length;i++)for(let j=i+1;j<ks.length;j++){
     const a=G.nodes.get(ks[i]),b=G.nodes.get(ks[j]);if(a.p!==b.p&&Math.abs(a.h-b.h)<=1)addE(ks[i],ks[j],0,{k:'join'});}});
+  // round 2026-10-18 S3: through the slab — a node drawn down to the Födém alja meets the lower level's node at the same
+  // world point (08p slbThru, ±5 mm); exact coincidence again, only across two levels
+  if(typeof slbThru==='function')slbThru().forEach(t=>addE(t.up.p+'/'+t.up.n,t.down.p+'/'+t.down.n,0,{k:'join',slab:true}));
   G.adj.forEach(l=>l.sort((x,y)=>x.to<y.to?-1:x.to>y.to?1:x.w-y.w));
   return G;}
 function rgDevKey(id){return 'D:'+id;}

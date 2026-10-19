@@ -9,10 +9,12 @@
 // (docs/round-2026-10-18/src/home-cinema-part1-architectural-base.md, § below). Units: METRES here, the layer (08r)
 // converts. Coordinates as in the guide's worked example: x = distance from the FRONT (screen) wall into the room
 // (the screen plane is at x = xScr, D = xMLP − xScr), y = from the room centreline, z = above the finished floor.
-// Set A only (§3.1 — only the room is known); Sets B–E later. Every failed §3.10 check is a WARNING (C4: 7.1 is always
-// allowed, a failing viability test only leaves a note). Prefix: cin.
+// Sets (§3.1–3.5): A only the room is known · B the screen is fixed (o.Ws) · C the seat is fixed (o.xMLP) · D the
+// projector is owned (o.trMin / o.trMax, optional fixed o.xPJ and o.shiftMax %) · E the ceiling binds. A set only
+// decides x_MLP and W_s; everything downstream (§3.6–3.10) is the same. Every failed check is a WARNING (C4: 7.1 is
+// always allowed, a failing viability test only leaves a note). Prefix: cin.
 
-const CIN_DEF={hEye:1.15,AR:1.78,thetaMax:40,thetaMin:30,cLens:0.32,t:0.05,mlpFrac:0.60,dMount:0.20,TR:1.5,margin:0.25,
+const CIN_DEF={set:'A',trMin:1.3,trMax:2.0,hEye:1.15,AR:1.78,thetaMax:40,thetaMin:30,cLens:0.32,t:0.05,mlpFrac:0.60,dMount:0.20,TR:1.5,margin:0.25,
   phiMin:22,phiMax:30,side51:[100,110],side71:[90,100],rear71:[135,150]};
 const cinRad=d=>d*Math.PI/180,cinDeg=r=>r*180/Math.PI,cinR3=v=>Math.round(v*1000)/1000;
 
@@ -22,13 +24,36 @@ function cinSeat(L,frac){let x=L*frac;
   if(L-x<1.2)x=L-1.2;
   if(Math.abs(x-0.5*L)<=0.05*L)x=0.45*L-0.01;               // a short room: the "38 %" side of the null
   return x;}
-// the full Set A layout. o = {L, W, Hf, xScr, fmt:'5.1'|'7.1', disp:'pj'|'tv', hEye, thetaMax, …}
+// a seat inside a band [lo, hi] (x from the front wall): the preferred seat if it fits, never in 0.5 L ± 0.05 L, never
+// closer than 1.20 to the rear wall; null when the band misses the room
+function cinSeatIn(L,lo,hi,frac){hi=Math.min(hi,L-1.2);if(lo>hi+1e-9)return null;let x=Math.min(hi,Math.max(lo,cinSeat(L,frac)));
+  if(Math.abs(x-0.5*L)<=0.05*L){const c=[0.45*L-0.01,0.55*L+0.01].filter(v=>v>=lo-1e-9&&v<=hi+1e-9).sort((a,b)=>Math.abs(a-x)-Math.abs(b-x));if(c.length)x=c[0];}
+  return x;}
+// the full layout. o = {set, L, W, Hf, xScr, fmt:'5.1'|'7.1', disp:'pj'|'tv', hEye, thetaMax, Ws (B), xMLP (C), trMin/trMax/xPJ/shiftMax (D), …}
 function cinCalc(o){const P=Object.assign({},CIN_DEF,o||{}),L=+P.L,W=+P.W,Hf=+P.Hf,xs=+P.xScr||0,t=P.t,he=P.hEye,AR=P.AR;
-  const checks=[],warn=(n,ok,msg)=>checks.push({n,ok:!!ok,sev:'warn',msg});
-  const xM=P.xMLP!=null?+P.xMLP:cinSeat(L,P.mlpFrac),D=xM-xs;
-  // §3.1 steps 3–5: image width = the binding of the viewing angle and the ceiling height
-  const WsAng=2*D*Math.tan(cinRad(P.thetaMax/2)),cl=P.disp==='tv'?0.10:P.cLens,WsH=AR*1.5*(Hf-cl-he);
-  const Ws=Math.max(0,Math.min(WsAng,WsH)),Hs=Ws/AR,zBot=he-Hs/3,zTop=zBot+Hs,bind=WsAng<=WsH?'angle':'height';
+  const checks=[],warn=(n,ok,msg)=>checks.push({n,ok:!!ok,sev:'warn',msg}),r3=v=>String(cinR3(v)).replace('.',',');
+  const set=P.disp==='tv'&&P.set==='D'?'A':(P.set||'A'),tMax=Math.tan(cinRad(P.thetaMax/2)),tMin=Math.tan(cinRad(P.thetaMin/2));
+  const cl=P.disp==='tv'?0.10:P.cLens,WsH=AR*1.5*(Hf-cl-he);
+  let xM,Ws,bind,sband=null,wsRange=null,trUse=P.TR,pjAt=null;
+  // A / C / D start the same way: the seat (C: measured), then the binding of the viewing angle and the ceiling (§3.1 steps 3–5)
+  const fromSeat=x=>{const D=x-xs,a=2*D*tMax;return {Ws:Math.max(0,Math.min(a,WsH)),bind:a<=WsH?'angle':'height',lo:Math.max(0,Math.min(2*D*tMin,WsH))};};
+  if(set==='B'){Ws=+P.Ws||0;bind='fixed';sband={lo:xs+Ws/(2*tMax),hi:xs+Ws/(2*tMin)};               // §3.2 the screen is fixed
+    xM=cinSeatIn(L,sband.lo,sband.hi,P.mlpFrac);
+    if(xM==null){xM=L-1.2;const fit=2*(L-1.2-xs)*tMax;warn('B',false,'A vászon nagy a helyiséghez: a 40°-os ülés is 1,20 m-en belül lenne a hátsó falhoz — legfeljebb '+r3(fit)+' m széles kép ('+r3(Ws-fit)+' m-rel kisebb).');}
+    else warn('B',true,'Ülősáv a vászonhoz: '+r3(sband.lo)+' – '+r3(Math.min(sband.hi,L-1.2))+' m.');}
+  else if(set==='E'){Ws=Math.max(0,WsH);bind='height';sband={lo:xs+Ws/(2*tMax),hi:xs+Ws/(2*tMin)};   // §3.5 the ceiling binds
+    xM=cinSeatIn(L,sband.lo,sband.hi,P.mlpFrac);
+    if(xM==null){xM=cinSeat(L,P.mlpFrac);const f=fromSeat(xM);Ws=f.Ws;bind=f.bind;warn('E',false,'A belmagasság szerinti kép ülősávja nem fér a helyiségbe — kisebb kép (A szerint).');}
+    else warn('E',true,'Ülősáv a belmagassághoz: '+r3(sband.lo)+' – '+r3(Math.min(sband.hi,L-1.2))+' m.');}
+  else{xM=P.xMLP!=null?+P.xMLP:cinSeat(L,P.mlpFrac);const f=fromSeat(xM);Ws=f.Ws;bind=f.bind;wsRange=[f.lo,f.Ws];   // A, C
+    if(set==='D'){const T0=P.xPJ!=null?+P.xPJ-xs:null,maxT=L-0.3-xs;                                      // §3.4 the projector is owned
+      const rng=T0!=null?[T0/P.trMax,T0/P.trMin]:[0,maxT/P.trMin],lo=Math.max(f.lo,rng[0]),hi=Math.min(f.Ws,rng[1]);
+      if(lo<=hi+1e-9){Ws=hi;warn('D',true,'A projektor képe '+r3(rng[0])+' – '+r3(rng[1])+' m; a választott kép '+r3(Ws)+' m.');}
+      else{Ws=Math.min(Math.max(f.Ws,rng[0]),rng[1]);
+        warn('D',false,rng[1]<f.lo?'A projektor túl hosszú vetítésű a helyiséghez: legfeljebb '+r3(rng[1])+' m kép, a 30°-hoz '+r3(f.lo)+' m kellene.'
+          :'A projektor ezen a helyen túl nagy képet ad (legalább '+r3(rng[0])+' m) — előrébb kell szerelni.');}
+      bind='projector';trUse=T0!=null?T0/Ws:Math.min(P.trMax,maxT/Ws);if(T0!=null)pjAt=+P.xPJ;}}
+  const D=xM-xs,WsAng=2*D*tMax,Hs=Ws/AR,zBot=he-Hs/3,zTop=zBot+Hs;
   // §3.6 fronts: outside the image edge, φ ≥ 22°, side-wall clearance
   const yMax=W/2-0.6,yLR=Math.max(Ws/2+0.15,D*Math.tan(cinRad(P.phiMin)));
   const yL=Math.min(yLR,Math.max(0,yMax)),phi=cinDeg(Math.atan2(yL,D));
@@ -47,7 +72,7 @@ function cinCalc(o){const P=Object.assign({},CIN_DEF,o||{}),L=+P.L,W=+P.W,Hf=+P.
   const subs=nSubs===1?[{x:t,y:W/4,z:0}]:[{x:L/2,y:ySide,z:0},{x:L/2,y:-ySide,z:0}];
   // §3.8 projector, beam keep-out, track-light band
   let pj=null,beam=null,band=null;
-  if(P.disp!=='tv'){const xP=Math.min(xs+P.TR*Ws,L-0.3),T=xP-xs,zL=Hf-P.dMount;
+  if(P.disp!=='tv'){const xP=pjAt!=null?pjAt:Math.min(xs+trUse*Ws,L-0.3),T=xP-xs,zL=Hf-P.dMount;
     pj={x:xP,y:0,z:zL,T,shiftPct:Hs>0?(zL-(zBot+Hs/2))/Hs*100:0};
     beam={apex:[xP,0],base:[[xs,-Ws/2],[xs,Ws/2]],margin:P.margin,poly:[[xP+P.margin,0],[xs,Ws/2+P.margin],[xs,-Ws/2-P.margin]]};
     const yi=Ws/2+P.margin,yo=W/2-0.6;band={ok:yo>yi,yIn:yi,yOut:yo,x0:xs+0.4,x1:xP-0.1};}
@@ -67,8 +92,10 @@ function cinCalc(o){const P=Object.assign({},CIN_DEF,o||{}),L=+P.L,W=+P.W,Hf=+P.
   if(P.fmt==='7.1'){warn('7.1',L-xM>=1.5-1e-9,'7.1: a hallgatási pont mögött csak '+cinR3(L-xM)+' m van (1,50 kell) — az 5.1 jobb lehet.');
     warn(7,2*Math.abs(rear.y)>=1.0,'7.1: a hátsó pár '+cinR3(2*Math.abs(rear.y))+' m-re van egymástól (1,00 kell) — 5.1 javasolt.');}
   warn(8,xS<=L-0.3+1e-9&&(!pj||pj.x<=L-0.3+1e-9),'Az oldalsó surround vagy a projektor túl közel a hátsó falhoz.');
+  if(set==='D'&&pj&&P.shiftMax!=null)warn('D-shift',Math.abs(pj.shiftPct)<=+P.shiftMax+1e-9,'Lencse-eltolás: '+Math.round(pj.shiftPct)+' % kellene, a projektor '+P.shiftMax+' %-ot tud — lejjebb kell szerelni (rúd), ami a sugár helyét eszi (§3.8).');
   if(band)warn(10,band.ok,'Nincs sín-világításra alkalmas mennyezeti sáv a sugár mellett: fal- vagy rejtett világítás.');
   warn(11,!square,'Négyzetes helyiség (H ≈ Sz): legalább 2, inkább 4 mélysugárzó.');
-  return {in:P,xMLP:xM,D,Ws,WsAng,WsH,bind,Hs,zBot,zTop,phi,alpha:a,rear,spk,subs,pj,beam,band,dist,modes,square,checks,
+  checks.forEach(c=>{if(c.ok&&(c.n==='B'||c.n==='D'||c.n==='E'))c.note=true;});   // the set's own line: shown even when fine
+  return {in:P,set,seatBand:sband,wsRange,xMLP:xM,D,Ws,WsAng,WsH,bind,Hs,zBot,zTop,phi,alpha:a,rear,spk,subs,pj,beam,band,dist,modes,square,checks,
     viable71:L-xM>=1.5-1e-9};}
 window.cinCalc=cinCalc;window.CIN_DEF=CIN_DEF;

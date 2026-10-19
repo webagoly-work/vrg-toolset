@@ -235,3 +235,31 @@ function reqHouseDialog(){const T=reqHouseTotals(),rooms=[];ORD.forEach(l=>allRo
 function reqRoomMenu(rh,items){items.push({label:'☑ Igénylista… (darabszámok)',act:()=>reqDialog(rh.rm)});}
 registerActions([{id:'req.house',label:'Ház összesítő (igénylista)',icon:'☑',group:'Helyiség',alias:'haz osszesito igenylista house summary requests',
   hint:'A helyiségek igénylistáinak összege és állapota.',when:()=>true,run:()=>reqHouseDialog()}]);
+
+// ---- N4 hand-off: the switch suggestion (08l, E1) and the circuit suggestion (08oa, E4) read the counts ----------------------
+// Soft, as everything here (N6 A): the list only shapes a suggestion the user still ticks; lamps already in a kapcsolási
+// kör (d.grp) keep it, only the ungrouped ones are split. A kör index (kk) = the order of the groups along the room's
+// longer axis — the same order E1 makes them in, so a pairing typed in the dialog lands where it reads.
+function reqLampSpec(rm){const it=reqItems(rm);return it&&it.lmp&&(+it.lmp.k||0)>=1?it.lmp:null;}
+function reqAxisSort(rm,list){const b=rm&&rm.poly?polyBBox(rm.poly):null,ax=b&&(b.y1-b.y0)>(b.x1-b.x0)?'y':'x';
+  return list.slice().sort((a,c)=>(a[ax]-c[ax])||(a.id<c.id?-1:a.id>c.id?1:0));}
+// E1: lamps → k groups. → {k, groups:[[lamp]], types (the list's switch rows), auto (the types the doors give), note}
+function reqLswPlan(rm,lamps,nSlots){const S=reqLampSpec(rm);if(!S||!lamps||!lamps.length)return null;const k=+S.k;
+  const byG=new Map(),free=[];lamps.forEach(l=>{if(l.grp){if(!byG.has(l.grp))byG.set(l.grp,[]);byG.get(l.grp).push(l);}else free.push(l);});
+  const groups=[...byG.values()];
+  if(free.length){const n=Math.max(1,Math.min(free.length,k-groups.length)),s=reqAxisSort(rm,free);
+    for(let i=0;i<n;i++)groups.push(s.slice(Math.floor(i*s.length/n),Math.floor((i+1)*s.length/n)));}
+  const it=reqItems(rm),types=it.swi&&Array.isArray(it.swi.rows)?it.swi.rows.map(r=>r.type).filter(Boolean):[];
+  const auto=nSlots?reqSwAuto(groups.length,nSlots):[];
+  let note='Igénylista: '+k+' kapcsolási kör';
+  if(groups.length!==k)note+=' — '+groups.length+' lett ('+(groups.length<k?'kevés lámpa':'meglévő ágak')+')';
+  if(types.length)note+=' · a listán: '+types.join(' + ');
+  if(types.length>nSlots)note+=' · '+(types.length-nSlots)+' kapcsoló nem ajtónál (pl. ágy mellett) — kézzel';
+  return {k,groups,types,auto,note};}
+// E4: lamp id → világítási kör (vk) when the room asks for 2 or more; kk → vk by the pairing, else kk i → min(i, v)
+function reqLightVk(rm,lamps){const S=reqLampSpec(rm),v=S?Math.max(1,+S.v||1):1;if(v<2||!lamps||!lamps.length)return null;
+  const byG=new Map();reqAxisSort(rm,lamps).forEach(l=>{const g=l.grp||('L:'+l.id);if(!byG.has(g))byG.set(g,[]);byG.get(g).push(l);});
+  const pair=Array.isArray(S.pair)?S.pair:[],vk=new Map();let i=0;
+  byG.forEach(ls=>{i++;const p=pair.find(x=>+x.kk===i);const n=p?+p.vk:Math.min(i,v);ls.forEach(l=>vk.set(l.id,n));});
+  return {v,vk,paired:pair.length>0};}
+window.reqLswPlan=reqLswPlan;window.reqLightVk=reqLightVk;

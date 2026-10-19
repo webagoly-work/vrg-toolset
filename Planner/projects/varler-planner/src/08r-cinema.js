@@ -74,7 +74,10 @@ function cinFrame(C){const R=cinRoom(C);if(!R)return null;const b=polyBBox(R.rm.
 function cinHf(level,rm){const d=typeof dropCeilMm==='function'?dropCeilMm(level,rm):0;return (d>0?d:wallH(level))/1000;}
 function cinCompute(L){const C=L&&L.cinema;if(!C||!C.zone)return null;const F=cinFrame(C);if(!F)return null;
   const r=cinCalc({L:C.zone.L/1000,W:C.zone.W/1000,Hf:cinHf(F.level,F.rm),xScr:(C.xScr||0)/1000,fmt:C.fmt,disp:C.disp,
-    hEye:(C.hEye||1150)/1000,thetaMax:C.theta||40});
+    hEye:(C.hEye||1150)/1000,thetaMax:C.theta||40,set:C.set||'A',
+    // Sets B–E (§3.2–3.5): mm on the layer, metres in the calculator; x_MLP and x_PJ are measured from the screen wall
+    Ws:C.Ws!=null?C.Ws/1000:undefined,xMLP:C.set==='C'&&C.xMLP!=null?C.xMLP/1000:undefined,
+    trMin:C.trMin||undefined,trMax:C.trMax||undefined,xPJ:C.set==='D'&&C.xPJ?C.xPJ/1000:undefined,shiftMax:C.set==='D'&&C.shiftMax?C.shiftMax:undefined});
   r.checks=r.checks.concat(cinDoorChecks(C,F,r));return r;}
 // §3.10 check 12: a wall speaker within 0.7 m of a door or window on its level (swing / park zone, glass)
 function cinDoorChecks(C,F,r){const out=[],ops=(data.openings||[]).filter(o=>o&&o.level===F.level&&(o.type==='door'||o.type==='window'));
@@ -120,15 +123,24 @@ function cinSetupDialog(L,init){if(!L)return;const C=Object.assign({fmt:'5.1',di
     +`<div class="mrow"><label><input type="checkbox" id="cinSug" ${C.suggest!==false?'checked':''}> Javasoljunk elhelyezést a helyiség méretei alapján?</label></div>`
     +`<div class="mrow">Formátum ${opt('cinFmt',C.fmt,[['5.1','5.1'],['7.1','7.1']])} · Kép ${opt('cinDisp',C.disp,[['pj','projektor + vászon'],['tv','TV']])}`
     +` · Szemmagasság ${opt('cinEye',C.hEye,[[1150,'1150 (kanapé)'],[1200,'1200 (mozi fotel)']])} · Látószög max ${opt('cinTh',C.theta,[[30,'30°'],[36,'36°'],[40,'40°']])}</div>`
+    +`<div class="mrow">Kiindulás ${opt('cinSet',C.set||'A',[['A','A — csak a helyiség ismert'],['B','B — a vászon mérete adott'],['C','C — az ülés helye adott'],['D','D — a projektor adott'],['E','E — a belmagasság köt']])}`
+    +` <span id="cinSetB">· vászon szélesség <input id="cinWs" type="number" step="10" value="${C.Ws||2100}" style="width:65px"> mm</span>`
+    +` <span id="cinSetC">· ülés (MLP) a vászonfaltól <input id="cinMlp" type="number" step="50" value="${C.xMLP||3600}" style="width:65px"> mm</span>`
+    +` <span id="cinSetD">· vetítési arány <input id="cinTr0" type="number" step="0.01" value="${C.trMin||1.3}" style="width:50px"> – <input id="cinTr1" type="number" step="0.01" value="${C.trMax||2.0}" style="width:50px">`
+    +` · helye a vászonfaltól <input id="cinPjX" type="number" step="50" value="${C.xPJ||''}" placeholder="szabad" style="width:72px"> mm · eltolás max <input id="cinShift" type="number" step="5" value="${C.shiftMax||''}" placeholder="—" style="width:45px"> %</span></div>`
     +`<div class="mrow" style="font-size:11px;color:#888">A 7.1 mindig választható; ha a helyiség rövid hozzá, figyelmeztetés marad a rétegen.</div>`,
     ()=>{lyrPushUndo();const zone={L:Math.max(1000,+$('cinL').value||z.L),W:Math.max(1000,+$('cinW').value||z.W),off:+$('cinO').value||0};
-      L.cinema={room:C.room,level:C.level,side:C.side,xScr:Math.max(0,+$('cinX').value||0),zone,suggest:$('cinSug').checked,
-        fmt:$('cinFmt').value,disp:$('cinDisp').value,hEye:+$('cinEye').value,theta:+$('cinTh').value,spots:null};
+      const num=id=>{const v=$(id).value;return v===''?null:+v;};
+      // keeps what the later steps stored (step, useGeneral, zMin); the spots are recomputed on demand
+      L.cinema=Object.assign({},L.cinema||{},{room:C.room,level:C.level,side:C.side,xScr:Math.max(0,+$('cinX').value||0),zone,suggest:$('cinSug').checked,
+        fmt:$('cinFmt').value,disp:$('cinDisp').value,hEye:+$('cinEye').value,theta:+$('cinTh').value,spots:null,
+        set:$('cinSet').value,Ws:num('cinWs'),xMLP:num('cinMlp'),trMin:num('cinTr0'),trMax:num('cinTr1'),xPJ:num('cinPjX'),shiftMax:num('cinShift')});
       const r=cinCompute(L),R2=cinRoom(L.cinema),bb=R2&&polyBBox(R2.rm.poly),full=bb&&Math.abs((L.cinema.side[0]==='y'?bb.y1-bb.y0:bb.x1-bb.x0)-zone.L)<60&&Math.abs((L.cinema.side[0]==='y'?bb.x1-bb.x0:bb.y1-bb.y0)-zone.W)<60;
       const bad=r?r.checks.filter(c=>!c.ok):[];
       $('hud').textContent='Házimozi: '+(r?('MLP '+Math.round(r.xMLP*1000)+' mm · kép '+Math.round(r.Ws*1000)+' mm'+(bad.length?' · '+bad.length+' figyelmeztetés (jobb klikk a rétegen → Mozi ellenőrzés)':' · minden ellenőrzés rendben')):'')
         +(full?'':' · a mozi zóna kisebb a helyiségnél — a mélyhang számítás közelítő');
-      renderLayers();draw();},'Kész');}
+      renderLayers();draw();},'Kész');
+  const vis=()=>{const v=$('cinSet').value;['B','C','D'].forEach(k=>{const e=$('cinSet'+k);if(e)e.style.display=v===k?'':'none';});};$('cinSet').onchange=vis;vis();}
 
 // ---- C4: the overlay (30 %) --------------------------------------------------------------------------------------------
 const CIN_LBL={L:'L',C:'C',R:'R',Ls:'Ls',Rs:'Rs',Lb:'Lb',Rb:'Rb'};
@@ -181,9 +193,9 @@ function cinRoomMenu(rh,items){const L=cinLayers().find(x=>x.cinema&&x.cinema.ro
   items.push({label:'🎬 Mozi ellenőrzés…',act:()=>cinChecksDialog(L)});}
 function cinChecksDialog(L){const r=cinCompute(L);if(!r)return;
   openModal('🎬 Házimozi — ellenőrzés (§3.10)',
-    `<div class="mrow" style="font-size:12px">MLP ${Math.round(r.xMLP*1000)} mm a vászonfaltól · látótáv ${Math.round(r.D*1000)} · kép ${Math.round(r.Ws*1000)} × ${Math.round(r.Hs*1000)} mm (${r.bind==='angle'?'a látószög köti':'a belmagasság köti'}) · kép alja ${Math.round(r.zBot*1000)}</div>`
+    `<div class="mrow" style="font-size:12px">Kiindulás ${r.set} · MLP ${Math.round(r.xMLP*1000)} mm a vászonfaltól · látótáv ${Math.round(r.D*1000)} · kép ${Math.round(r.Ws*1000)} × ${Math.round(r.Hs*1000)} mm (${{angle:'a látószög köti',height:'a belmagasság köti',fixed:'adott vászon',projector:'a projektor köti'}[r.bind]||r.bind}) · kép alja ${Math.round(r.zBot*1000)}</div>`
     +`<div class="mrow" style="font-size:12px">Front φ ${r.phi.toFixed(1)}° · oldalsó α ${r.alpha}°${r.rear?' · hátsó β '+r.rear.beta+'°':''} · surround magasság ${Math.round(r.spk.Ls.z*1000)} mm · módusok ${r.modes.fL.toFixed(1)} / ${r.modes.fW.toFixed(1)} / ${r.modes.fH.toFixed(1)} Hz</div>`
-    +`<table style="font-size:12px">`+r.checks.map(c=>`<tr style="color:${c.ok?'#2e9e5b':'#d08a1e'}"><td>${c.ok?'✓':'⚠'}</td><td>${esc(String(c.n))}</td><td>${c.ok?'rendben':esc(c.msg)}</td></tr>`).join('')+`</table>`,()=>{},'Bezár');}
+    +`<table style="font-size:12px">`+r.checks.map(c=>`<tr style="color:${c.ok?'#2e9e5b':'#d08a1e'}"><td>${c.ok?'✓':'⚠'}</td><td>${esc(String(c.n))}</td><td>${c.ok&&!c.note?'rendben':esc(c.msg)}</td></tr>`).join('')+`</table>`,()=>{},'Bezár');}
 if(typeof STK_LAYERMENU!=='undefined')STK_LAYERMENU.push((L,items)=>{if(L.role==='sys:CINEMA'&&L.cinema){items.push({label:'🎬 Mozi beállítások…',act:()=>cinSetupDialog(L)},{label:'🎬 Mozi ellenőrzés…',act:()=>cinChecksDialog(L)},{label:'🎬 Javasolt helyek létrehozása',act:()=>cinMakeSpots(L)});}});
 registerActions([{id:'cinema.layer',label:'Házimozi réteg',icon:'🎬',group:'Réteg',alias:'hazimozi mozi home cinema layer',
   hint:'Házimozi: válassz helyiséget, húzd meg a vászon vonalát, és a méretekből javaslatot kapsz a hangfalak, mélysugárzók, projektor helyére.',

@@ -87,12 +87,15 @@ function lswSuggest(level){level=level||state.active;const rows=[];
     const slots=[];doors.forEach(o=>{const S=ptSlots(o).filter(s=>s.k==='L1');
       const own=S.find(s=>s.room===rm.id),dry=S.find(s=>s.room!==rm.id);const pick=wet?(dry||own):own;if(pick)slots.push(pick);});
     if(!slots.length){rows.push({room:rm,lamps,slots:[],type:'—',why:'nincs ajtó / portálhely — RBX-kimenetről kapcsolt, vagy rakj kapcsolót kézzel'});return;}
-    const type=slots.length===1?'101':slots.length===2?'106 + 106':'106 + '+(slots.length-2)+'× 107 + 106';
-    rows.push({room:rm,lamps,slots,type,why:(wet?'vizes helyiség: az ajtó száraz oldalán':'az ajtó kilincsoldalán (L1)')+(slots.length>1?' · '+slots.length+' ajtó = több helyről':'')});});
+    // N4: a room with an Igénylista (08q) starts from its k kapcsolási kör — the lamps split into k groups
+    const P=typeof reqLswPlan==='function'?reqLswPlan(rm,lamps,slots.length):null;
+    const type=P&&P.groups.length>1?P.auto.join(' + '):slots.length===1?'101':slots.length===2?'106 + 106':'106 + '+(slots.length-2)+'× 107 + 106';
+    rows.push({room:rm,lamps,slots,type,groups:P?P.groups:null,why:(wet?'vizes helyiség: az ajtó száraz oldalán':'az ajtó kilincsoldalán (L1)')+(slots.length>1?' · '+slots.length+' ajtó = több helyről':'')+(P?' · '+P.note:'')});});
   return rows;}
 function lswSuggestApply(rows){let n=0;if(!rows.length)return 0;pushUndo(['devices']);
   rows.forEach(r=>{if(!r.slots.length)return;const ids=r.lamps.map(l=>l.id);
-    if(ids.length>1&&!r.lamps.every(l=>l.grp&&l.grp===r.lamps[0].grp)){const g=lswNextGrp();r.lamps.forEach(l=>l.grp=g);}
+    if(r.groups&&r.groups.length>1)r.groups.forEach(G=>{if(G.length>1&&!G.every(l=>l.grp&&l.grp===G[0].grp)){const g=lswNextGrp();G.forEach(l=>l.grp=g);}});   // N4: k groups
+    else if(ids.length>1&&!r.lamps.every(l=>l.grp&&l.grp===r.lamps[0].grp)){const g=lswNextGrp();r.lamps.forEach(l=>l.grp=g);}
     r.slots.forEach(s=>{lswLink(ids,{slot:s},true);n++;});});
   lswRetypeAll();draw();$('hud').textContent='Kapcsolások: '+n+' kapcsolóhely bekötve.';return n;}
 function lswSuggestDialog(){const rows=lswSuggest();if(!rows.length){$('hud').textContent='Minden lámpának van kapcsolója.';return;}

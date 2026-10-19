@@ -168,3 +168,6 @@ symbols grey while every class was correct and every test passed.
   and do what it says: the P33 second version — v1 (VG-2026-PT33-01) fully built + every other BRIDGE layer
   prepared (conduit, cable pulled, boxes, niches; no hardware), quick survey-precision quantities and prices vs v1,
   a per-room ESPHome marketing list; then hand the fair-price calculation to the Workflow Kit session (V2_FELADAT.md).
+- **`GO R1018`** — read `GO-R1018.md` at the repo root (main checkout, branch `main`) and do what it says:
+  continue the Planner round 2026-10-18 (Födém · Igénylista · Házimozi, all built + committed 2026-10-19):
+  only the C6 Mozi fal pen feel is open.

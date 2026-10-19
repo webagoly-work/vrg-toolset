@@ -9026,6 +9026,9 @@ function rgBuild(opt){opt=opt||{};const routes=opt.routes||['arm','channel'];
   const byPos={};G.nodes.forEach((o,k)=>{if(o.kind!=='node')return;const pk=Math.round(o.x)+','+Math.round(o.y)+'@'+o.level;(byPos[pk]=byPos[pk]||[]).push(k);});
   Object.keys(byPos).forEach(pk=>{const ks=byPos[pk];for(let i=0;i<ks.length;i++)for(let j=i+1;j<ks.length;j++){
     const a=G.nodes.get(ks[i]),b=G.nodes.get(ks[j]);if(a.p!==b.p&&Math.abs(a.h-b.h)<=1)addE(ks[i],ks[j],0,{k:'join'});}});
+  // round 2026-10-18 S3: through the slab — a node drawn down to the Födém alja meets the lower level's node at the same
+  // world point (08p slbThru, ±5 mm); exact coincidence again, only across two levels
+  if(typeof slbThru==='function')slbThru().forEach(t=>addE(t.up.p+'/'+t.up.n,t.down.p+'/'+t.down.n,0,{k:'join',slab:true}));
   G.adj.forEach(l=>l.sort((x,y)=>x.to<y.to?-1:x.to>y.to?1:x.w-y.w));
   return G;}
 function rgDevKey(id){return 'D:'+id;}
@@ -16130,12 +16133,15 @@ function lswSuggest(level){level=level||state.active;const rows=[];
     const slots=[];doors.forEach(o=>{const S=ptSlots(o).filter(s=>s.k==='L1');
       const own=S.find(s=>s.room===rm.id),dry=S.find(s=>s.room!==rm.id);const pick=wet?(dry||own):own;if(pick)slots.push(pick);});
     if(!slots.length){rows.push({room:rm,lamps,slots:[],type:'—',why:'nincs ajtó / portálhely — RBX-kimenetről kapcsolt, vagy rakj kapcsolót kézzel'});return;}
-    const type=slots.length===1?'101':slots.length===2?'106 + 106':'106 + '+(slots.length-2)+'× 107 + 106';
-    rows.push({room:rm,lamps,slots,type,why:(wet?'vizes helyiség: az ajtó száraz oldalán':'az ajtó kilincsoldalán (L1)')+(slots.length>1?' · '+slots.length+' ajtó = több helyről':'')});});
+    // N4: a room with an Igénylista (08q) starts from its k kapcsolási kör — the lamps split into k groups
+    const P=typeof reqLswPlan==='function'?reqLswPlan(rm,lamps,slots.length):null;
+    const type=P&&P.groups.length>1?P.auto.join(' + '):slots.length===1?'101':slots.length===2?'106 + 106':'106 + '+(slots.length-2)+'× 107 + 106';
+    rows.push({room:rm,lamps,slots,type,groups:P?P.groups:null,why:(wet?'vizes helyiség: az ajtó száraz oldalán':'az ajtó kilincsoldalán (L1)')+(slots.length>1?' · '+slots.length+' ajtó = több helyről':'')+(P?' · '+P.note:'')});});
   return rows;}
 function lswSuggestApply(rows){let n=0;if(!rows.length)return 0;pushUndo(['devices']);
   rows.forEach(r=>{if(!r.slots.length)return;const ids=r.lamps.map(l=>l.id);
-    if(ids.length>1&&!r.lamps.every(l=>l.grp&&l.grp===r.lamps[0].grp)){const g=lswNextGrp();r.lamps.forEach(l=>l.grp=g);}
+    if(r.groups&&r.groups.length>1)r.groups.forEach(G=>{if(G.length>1&&!G.every(l=>l.grp&&l.grp===G[0].grp)){const g=lswNextGrp();G.forEach(l=>l.grp=g);}});   // N4: k groups
+    else if(ids.length>1&&!r.lamps.every(l=>l.grp&&l.grp===r.lamps[0].grp)){const g=lswNextGrp();r.lamps.forEach(l=>l.grp=g);}
     r.slots.forEach(s=>{lswLink(ids,{slot:s},true);n++;});});
   lswRetypeAll();draw();$('hud').textContent='Kapcsolások: '+n+' kapcsolóhely bekötve.';return n;}
 function lswSuggestDialog(){const rows=lswSuggest();if(!rows.length){$('hud').textContent='Minden lámpának van kapcsolója.';return;}
@@ -16680,8 +16686,17 @@ function elpSuggest(boardId){
   const L=eps.filter(d=>{const c=epCodeOf(d);return c==='LMP'||c==='SWI'||c==='SHU';}),zone={};
   L.forEach(d=>{zone[d.id]=elpIs(room(d),ELP_NIGHT)?2:1;});
   data.devices.forEach(sw=>{if(!sw||!Array.isArray(sw.ctl)||!(sw.id in zone))return;sw.ctl.forEach(id=>{if(id in zone)zone[id]=zone[sw.id];});});
+  // N4: a room whose Igénylista (08q) asks for 2+ világítási kör — vk 1 stays in its zone, vk 2… get their own circuit;
+  // a switch goes with them when everything it controls does
+  const extra=[];if(typeof reqLightVk==='function'){const byRm=new Map();L.forEach(d=>{if(epCodeOf(d)!=='LMP')return;const r=room(d);if(!r)return;if(!byRm.has(r))byRm.set(r,[]);byRm.get(r).push(d);});
+    byRm.forEach((ls,rm)=>{const P=reqLightVk(rm,ls);if(!P)return;const take=new Map();
+      ls.forEach(l=>{const vk=P.vk.get(l.id);if(vk>=2){if(!take.has(vk))take.set(vk,[]);take.get(vk).push(l);}});
+      [...take.keys()].sort((a,b)=>a-b).forEach(vk=>{const lamps=take.get(vk),ids=new Set(lamps.map(l=>l.id));
+        const sws=L.filter(s=>epCodeOf(s)==='SWI'&&Array.isArray(s.ctl)&&s.ctl.length&&s.ctl.every(id=>ids.has(id)));
+        const ms=lamps.concat(sws);ms.forEach(d=>{zone[d.id]=0;});extra.push({rm,vk,ms,v:P.v,paired:P.paired});});});}
   [1,2].forEach(z=>{const ms=L.filter(d=>zone[d.id]===z);if(!ms.filter(d=>epCodeOf(d)==='LMP').length)return;
     row('vil',z===1?'Világítás — nappali zóna':'Világítás — éjszakai zóna',ms,(z===1?'nappali zóna':'éjszakai zóna: hálók, fürdők')+' (Q-E04 = A)',{kind:'light',ref:'V'+z});});
+  extra.forEach(x=>row('vil','Világítás — '+elpRoomName(x.rm)+' '+x.vk,x.ms,'Igénylista: '+x.v+' világítási kör, ez a '+x.vk+'. ('+(x.paired?'párosítás szerint':'a kapcsolási körök sorrendjében')+')',{kind:'light'}));
   return rows;}
 
 // tick → circuits. One undo step; lighting keeps V1 / V2 when that ref is free.
@@ -18576,6 +18591,34 @@ function reqRoomMenu(rh,items){items.push({label:'☑ Igénylista… (darabszám
 registerActions([{id:'req.house',label:'Ház összesítő (igénylista)',icon:'☑',group:'Helyiség',alias:'haz osszesito igenylista house summary requests',
   hint:'A helyiségek igénylistáinak összege és állapota.',when:()=>true,run:()=>reqHouseDialog()}]);
 
+// ---- N4 hand-off: the switch suggestion (08l, E1) and the circuit suggestion (08oa, E4) read the counts ----------------------
+// Soft, as everything here (N6 A): the list only shapes a suggestion the user still ticks; lamps already in a kapcsolási
+// kör (d.grp) keep it, only the ungrouped ones are split. A kör index (kk) = the order of the groups along the room's
+// longer axis — the same order E1 makes them in, so a pairing typed in the dialog lands where it reads.
+function reqLampSpec(rm){const it=reqItems(rm);return it&&it.lmp&&(+it.lmp.k||0)>=1?it.lmp:null;}
+function reqAxisSort(rm,list){const b=rm&&rm.poly?polyBBox(rm.poly):null,ax=b&&(b.y1-b.y0)>(b.x1-b.x0)?'y':'x';
+  return list.slice().sort((a,c)=>(a[ax]-c[ax])||(a.id<c.id?-1:a.id>c.id?1:0));}
+// E1: lamps → k groups. → {k, groups:[[lamp]], types (the list's switch rows), auto (the types the doors give), note}
+function reqLswPlan(rm,lamps,nSlots){const S=reqLampSpec(rm);if(!S||!lamps||!lamps.length)return null;const k=+S.k;
+  const byG=new Map(),free=[];lamps.forEach(l=>{if(l.grp){if(!byG.has(l.grp))byG.set(l.grp,[]);byG.get(l.grp).push(l);}else free.push(l);});
+  const groups=[...byG.values()];
+  if(free.length){const n=Math.max(1,Math.min(free.length,k-groups.length)),s=reqAxisSort(rm,free);
+    for(let i=0;i<n;i++)groups.push(s.slice(Math.floor(i*s.length/n),Math.floor((i+1)*s.length/n)));}
+  const it=reqItems(rm),types=it.swi&&Array.isArray(it.swi.rows)?it.swi.rows.map(r=>r.type).filter(Boolean):[];
+  const auto=nSlots?reqSwAuto(groups.length,nSlots):[];
+  let note='Igénylista: '+k+' kapcsolási kör';
+  if(groups.length!==k)note+=' — '+groups.length+' lett ('+(groups.length<k?'kevés lámpa':'meglévő ágak')+')';
+  if(types.length)note+=' · a listán: '+types.join(' + ');
+  if(types.length>nSlots)note+=' · '+(types.length-nSlots)+' kapcsoló nem ajtónál (pl. ágy mellett) — kézzel';
+  return {k,groups,types,auto,note};}
+// E4: lamp id → világítási kör (vk) when the room asks for 2 or more; kk → vk by the pairing, else kk i → min(i, v)
+function reqLightVk(rm,lamps){const S=reqLampSpec(rm),v=S?Math.max(1,+S.v||1):1;if(v<2||!lamps||!lamps.length)return null;
+  const byG=new Map();reqAxisSort(rm,lamps).forEach(l=>{const g=l.grp||('L:'+l.id);if(!byG.has(g))byG.set(g,[]);byG.get(g).push(l);});
+  const pair=Array.isArray(S.pair)?S.pair:[],vk=new Map();let i=0;
+  byG.forEach(ls=>{i++;const p=pair.find(x=>+x.kk===i);const n=p?+p.vk:Math.min(i,v);ls.forEach(l=>vk.set(l.id,n));});
+  return {v,vk,paired:pair.length>0};}
+window.reqLswPlan=reqLswPlan;window.reqLightVk=reqLightVk;
+
 // A special-rules layer (30_MOZI.md). C1: role sys:CINEMA right after Média és hang (C1 A), off by default — added on
 // demand, inside the active stack or as a plain layer without one. C2: the setup — pick the room, DRAG the screen line
 // in it (C2 B: it snaps parallel to the nearest wall; that wall is the screen wall, the distance is x_scr), confirm
@@ -18645,7 +18688,10 @@ function cinFrame(C){const R=cinRoom(C);if(!R)return null;const b=polyBBox(R.rm.
 function cinHf(level,rm){const d=typeof dropCeilMm==='function'?dropCeilMm(level,rm):0;return (d>0?d:wallH(level))/1000;}
 function cinCompute(L){const C=L&&L.cinema;if(!C||!C.zone)return null;const F=cinFrame(C);if(!F)return null;
   const r=cinCalc({L:C.zone.L/1000,W:C.zone.W/1000,Hf:cinHf(F.level,F.rm),xScr:(C.xScr||0)/1000,fmt:C.fmt,disp:C.disp,
-    hEye:(C.hEye||1150)/1000,thetaMax:C.theta||40});
+    hEye:(C.hEye||1150)/1000,thetaMax:C.theta||40,set:C.set||'A',
+    // Sets B–E (§3.2–3.5): mm on the layer, metres in the calculator; x_MLP and x_PJ are measured from the screen wall
+    Ws:C.Ws!=null?C.Ws/1000:undefined,xMLP:C.set==='C'&&C.xMLP!=null?C.xMLP/1000:undefined,
+    trMin:C.trMin||undefined,trMax:C.trMax||undefined,xPJ:C.set==='D'&&C.xPJ?C.xPJ/1000:undefined,shiftMax:C.set==='D'&&C.shiftMax?C.shiftMax:undefined});
   r.checks=r.checks.concat(cinDoorChecks(C,F,r));return r;}
 // §3.10 check 12: a wall speaker within 0.7 m of a door or window on its level (swing / park zone, glass)
 function cinDoorChecks(C,F,r){const out=[],ops=(data.openings||[]).filter(o=>o&&o.level===F.level&&(o.type==='door'||o.type==='window'));
@@ -18691,15 +18737,24 @@ function cinSetupDialog(L,init){if(!L)return;const C=Object.assign({fmt:'5.1',di
     +`<div class="mrow"><label><input type="checkbox" id="cinSug" ${C.suggest!==false?'checked':''}> Javasoljunk elhelyezést a helyiség méretei alapján?</label></div>`
     +`<div class="mrow">Formátum ${opt('cinFmt',C.fmt,[['5.1','5.1'],['7.1','7.1']])} · Kép ${opt('cinDisp',C.disp,[['pj','projektor + vászon'],['tv','TV']])}`
     +` · Szemmagasság ${opt('cinEye',C.hEye,[[1150,'1150 (kanapé)'],[1200,'1200 (mozi fotel)']])} · Látószög max ${opt('cinTh',C.theta,[[30,'30°'],[36,'36°'],[40,'40°']])}</div>`
+    +`<div class="mrow">Kiindulás ${opt('cinSet',C.set||'A',[['A','A — csak a helyiség ismert'],['B','B — a vászon mérete adott'],['C','C — az ülés helye adott'],['D','D — a projektor adott'],['E','E — a belmagasság köt']])}`
+    +` <span id="cinSetB">· vászon szélesség <input id="cinWs" type="number" step="10" value="${C.Ws||2100}" style="width:65px"> mm</span>`
+    +` <span id="cinSetC">· ülés (MLP) a vászonfaltól <input id="cinMlp" type="number" step="50" value="${C.xMLP||3600}" style="width:65px"> mm</span>`
+    +` <span id="cinSetD">· vetítési arány <input id="cinTr0" type="number" step="0.01" value="${C.trMin||1.3}" style="width:50px"> – <input id="cinTr1" type="number" step="0.01" value="${C.trMax||2.0}" style="width:50px">`
+    +` · helye a vászonfaltól <input id="cinPjX" type="number" step="50" value="${C.xPJ||''}" placeholder="szabad" style="width:72px"> mm · eltolás max <input id="cinShift" type="number" step="5" value="${C.shiftMax||''}" placeholder="—" style="width:45px"> %</span></div>`
     +`<div class="mrow" style="font-size:11px;color:#888">A 7.1 mindig választható; ha a helyiség rövid hozzá, figyelmeztetés marad a rétegen.</div>`,
     ()=>{lyrPushUndo();const zone={L:Math.max(1000,+$('cinL').value||z.L),W:Math.max(1000,+$('cinW').value||z.W),off:+$('cinO').value||0};
-      L.cinema={room:C.room,level:C.level,side:C.side,xScr:Math.max(0,+$('cinX').value||0),zone,suggest:$('cinSug').checked,
-        fmt:$('cinFmt').value,disp:$('cinDisp').value,hEye:+$('cinEye').value,theta:+$('cinTh').value,spots:null};
+      const num=id=>{const v=$(id).value;return v===''?null:+v;};
+      // keeps what the later steps stored (step, useGeneral, zMin); the spots are recomputed on demand
+      L.cinema=Object.assign({},L.cinema||{},{room:C.room,level:C.level,side:C.side,xScr:Math.max(0,+$('cinX').value||0),zone,suggest:$('cinSug').checked,
+        fmt:$('cinFmt').value,disp:$('cinDisp').value,hEye:+$('cinEye').value,theta:+$('cinTh').value,spots:null,
+        set:$('cinSet').value,Ws:num('cinWs'),xMLP:num('cinMlp'),trMin:num('cinTr0'),trMax:num('cinTr1'),xPJ:num('cinPjX'),shiftMax:num('cinShift')});
       const r=cinCompute(L),R2=cinRoom(L.cinema),bb=R2&&polyBBox(R2.rm.poly),full=bb&&Math.abs((L.cinema.side[0]==='y'?bb.y1-bb.y0:bb.x1-bb.x0)-zone.L)<60&&Math.abs((L.cinema.side[0]==='y'?bb.x1-bb.x0:bb.y1-bb.y0)-zone.W)<60;
       const bad=r?r.checks.filter(c=>!c.ok):[];
       $('hud').textContent='Házimozi: '+(r?('MLP '+Math.round(r.xMLP*1000)+' mm · kép '+Math.round(r.Ws*1000)+' mm'+(bad.length?' · '+bad.length+' figyelmeztetés (jobb klikk a rétegen → Mozi ellenőrzés)':' · minden ellenőrzés rendben')):'')
         +(full?'':' · a mozi zóna kisebb a helyiségnél — a mélyhang számítás közelítő');
-      renderLayers();draw();},'Kész');}
+      renderLayers();draw();},'Kész');
+  const vis=()=>{const v=$('cinSet').value;['B','C','D'].forEach(k=>{const e=$('cinSet'+k);if(e)e.style.display=v===k?'':'none';});};$('cinSet').onchange=vis;vis();}
 
 // ---- C4: the overlay (30 %) --------------------------------------------------------------------------------------------
 const CIN_LBL={L:'L',C:'C',R:'R',Ls:'Ls',Rs:'Rs',Lb:'Lb',Rb:'Rb'};
@@ -18752,9 +18807,9 @@ function cinRoomMenu(rh,items){const L=cinLayers().find(x=>x.cinema&&x.cinema.ro
   items.push({label:'🎬 Mozi ellenőrzés…',act:()=>cinChecksDialog(L)});}
 function cinChecksDialog(L){const r=cinCompute(L);if(!r)return;
   openModal('🎬 Házimozi — ellenőrzés (§3.10)',
-    `<div class="mrow" style="font-size:12px">MLP ${Math.round(r.xMLP*1000)} mm a vászonfaltól · látótáv ${Math.round(r.D*1000)} · kép ${Math.round(r.Ws*1000)} × ${Math.round(r.Hs*1000)} mm (${r.bind==='angle'?'a látószög köti':'a belmagasság köti'}) · kép alja ${Math.round(r.zBot*1000)}</div>`
+    `<div class="mrow" style="font-size:12px">Kiindulás ${r.set} · MLP ${Math.round(r.xMLP*1000)} mm a vászonfaltól · látótáv ${Math.round(r.D*1000)} · kép ${Math.round(r.Ws*1000)} × ${Math.round(r.Hs*1000)} mm (${{angle:'a látószög köti',height:'a belmagasság köti',fixed:'adott vászon',projector:'a projektor köti'}[r.bind]||r.bind}) · kép alja ${Math.round(r.zBot*1000)}</div>`
     +`<div class="mrow" style="font-size:12px">Front φ ${r.phi.toFixed(1)}° · oldalsó α ${r.alpha}°${r.rear?' · hátsó β '+r.rear.beta+'°':''} · surround magasság ${Math.round(r.spk.Ls.z*1000)} mm · módusok ${r.modes.fL.toFixed(1)} / ${r.modes.fW.toFixed(1)} / ${r.modes.fH.toFixed(1)} Hz</div>`
-    +`<table style="font-size:12px">`+r.checks.map(c=>`<tr style="color:${c.ok?'#2e9e5b':'#d08a1e'}"><td>${c.ok?'✓':'⚠'}</td><td>${esc(String(c.n))}</td><td>${c.ok?'rendben':esc(c.msg)}</td></tr>`).join('')+`</table>`,()=>{},'Bezár');}
+    +`<table style="font-size:12px">`+r.checks.map(c=>`<tr style="color:${c.ok?'#2e9e5b':'#d08a1e'}"><td>${c.ok?'✓':'⚠'}</td><td>${esc(String(c.n))}</td><td>${c.ok&&!c.note?'rendben':esc(c.msg)}</td></tr>`).join('')+`</table>`,()=>{},'Bezár');}
 if(typeof STK_LAYERMENU!=='undefined')STK_LAYERMENU.push((L,items)=>{if(L.role==='sys:CINEMA'&&L.cinema){items.push({label:'🎬 Mozi beállítások…',act:()=>cinSetupDialog(L)},{label:'🎬 Mozi ellenőrzés…',act:()=>cinChecksDialog(L)},{label:'🎬 Javasolt helyek létrehozása',act:()=>cinMakeSpots(L)});}});
 registerActions([{id:'cinema.layer',label:'Házimozi réteg',icon:'🎬',group:'Réteg',alias:'hazimozi mozi home cinema layer',
   hint:'Házimozi: válassz helyiséget, húzd meg a vászon vonalát, és a méretekből javaslatot kapsz a hangfalak, mélysugárzók, projektor helyére.',
@@ -18913,10 +18968,12 @@ window.cinRoute=cinRoute;window.cinRouteAll=cinRouteAll;window.cinNodes=cinNodes
 // (docs/round-2026-10-18/src/home-cinema-part1-architectural-base.md, § below). Units: METRES here, the layer (08r)
 // converts. Coordinates as in the guide's worked example: x = distance from the FRONT (screen) wall into the room
 // (the screen plane is at x = xScr, D = xMLP − xScr), y = from the room centreline, z = above the finished floor.
-// Set A only (§3.1 — only the room is known); Sets B–E later. Every failed §3.10 check is a WARNING (C4: 7.1 is always
-// allowed, a failing viability test only leaves a note). Prefix: cin.
+// Sets (§3.1–3.5): A only the room is known · B the screen is fixed (o.Ws) · C the seat is fixed (o.xMLP) · D the
+// projector is owned (o.trMin / o.trMax, optional fixed o.xPJ and o.shiftMax %) · E the ceiling binds. A set only
+// decides x_MLP and W_s; everything downstream (§3.6–3.10) is the same. Every failed check is a WARNING (C4: 7.1 is
+// always allowed, a failing viability test only leaves a note). Prefix: cin.
 
-const CIN_DEF={hEye:1.15,AR:1.78,thetaMax:40,thetaMin:30,cLens:0.32,t:0.05,mlpFrac:0.60,dMount:0.20,TR:1.5,margin:0.25,
+const CIN_DEF={set:'A',trMin:1.3,trMax:2.0,hEye:1.15,AR:1.78,thetaMax:40,thetaMin:30,cLens:0.32,t:0.05,mlpFrac:0.60,dMount:0.20,TR:1.5,margin:0.25,
   phiMin:22,phiMax:30,side51:[100,110],side71:[90,100],rear71:[135,150]};
 const cinRad=d=>d*Math.PI/180,cinDeg=r=>r*180/Math.PI,cinR3=v=>Math.round(v*1000)/1000;
 
@@ -18926,13 +18983,36 @@ function cinSeat(L,frac){let x=L*frac;
   if(L-x<1.2)x=L-1.2;
   if(Math.abs(x-0.5*L)<=0.05*L)x=0.45*L-0.01;               // a short room: the "38 %" side of the null
   return x;}
-// the full Set A layout. o = {L, W, Hf, xScr, fmt:'5.1'|'7.1', disp:'pj'|'tv', hEye, thetaMax, …}
+// a seat inside a band [lo, hi] (x from the front wall): the preferred seat if it fits, never in 0.5 L ± 0.05 L, never
+// closer than 1.20 to the rear wall; null when the band misses the room
+function cinSeatIn(L,lo,hi,frac){hi=Math.min(hi,L-1.2);if(lo>hi+1e-9)return null;let x=Math.min(hi,Math.max(lo,cinSeat(L,frac)));
+  if(Math.abs(x-0.5*L)<=0.05*L){const c=[0.45*L-0.01,0.55*L+0.01].filter(v=>v>=lo-1e-9&&v<=hi+1e-9).sort((a,b)=>Math.abs(a-x)-Math.abs(b-x));if(c.length)x=c[0];}
+  return x;}
+// the full layout. o = {set, L, W, Hf, xScr, fmt:'5.1'|'7.1', disp:'pj'|'tv', hEye, thetaMax, Ws (B), xMLP (C), trMin/trMax/xPJ/shiftMax (D), …}
 function cinCalc(o){const P=Object.assign({},CIN_DEF,o||{}),L=+P.L,W=+P.W,Hf=+P.Hf,xs=+P.xScr||0,t=P.t,he=P.hEye,AR=P.AR;
-  const checks=[],warn=(n,ok,msg)=>checks.push({n,ok:!!ok,sev:'warn',msg});
-  const xM=P.xMLP!=null?+P.xMLP:cinSeat(L,P.mlpFrac),D=xM-xs;
-  // §3.1 steps 3–5: image width = the binding of the viewing angle and the ceiling height
-  const WsAng=2*D*Math.tan(cinRad(P.thetaMax/2)),cl=P.disp==='tv'?0.10:P.cLens,WsH=AR*1.5*(Hf-cl-he);
-  const Ws=Math.max(0,Math.min(WsAng,WsH)),Hs=Ws/AR,zBot=he-Hs/3,zTop=zBot+Hs,bind=WsAng<=WsH?'angle':'height';
+  const checks=[],warn=(n,ok,msg)=>checks.push({n,ok:!!ok,sev:'warn',msg}),r3=v=>String(cinR3(v)).replace('.',',');
+  const set=P.disp==='tv'&&P.set==='D'?'A':(P.set||'A'),tMax=Math.tan(cinRad(P.thetaMax/2)),tMin=Math.tan(cinRad(P.thetaMin/2));
+  const cl=P.disp==='tv'?0.10:P.cLens,WsH=AR*1.5*(Hf-cl-he);
+  let xM,Ws,bind,sband=null,wsRange=null,trUse=P.TR,pjAt=null;
+  // A / C / D start the same way: the seat (C: measured), then the binding of the viewing angle and the ceiling (§3.1 steps 3–5)
+  const fromSeat=x=>{const D=x-xs,a=2*D*tMax;return {Ws:Math.max(0,Math.min(a,WsH)),bind:a<=WsH?'angle':'height',lo:Math.max(0,Math.min(2*D*tMin,WsH))};};
+  if(set==='B'){Ws=+P.Ws||0;bind='fixed';sband={lo:xs+Ws/(2*tMax),hi:xs+Ws/(2*tMin)};               // §3.2 the screen is fixed
+    xM=cinSeatIn(L,sband.lo,sband.hi,P.mlpFrac);
+    if(xM==null){xM=L-1.2;const fit=2*(L-1.2-xs)*tMax;warn('B',false,'A vászon nagy a helyiséghez: a 40°-os ülés is 1,20 m-en belül lenne a hátsó falhoz — legfeljebb '+r3(fit)+' m széles kép ('+r3(Ws-fit)+' m-rel kisebb).');}
+    else warn('B',true,'Ülősáv a vászonhoz: '+r3(sband.lo)+' – '+r3(Math.min(sband.hi,L-1.2))+' m.');}
+  else if(set==='E'){Ws=Math.max(0,WsH);bind='height';sband={lo:xs+Ws/(2*tMax),hi:xs+Ws/(2*tMin)};   // §3.5 the ceiling binds
+    xM=cinSeatIn(L,sband.lo,sband.hi,P.mlpFrac);
+    if(xM==null){xM=cinSeat(L,P.mlpFrac);const f=fromSeat(xM);Ws=f.Ws;bind=f.bind;warn('E',false,'A belmagasság szerinti kép ülősávja nem fér a helyiségbe — kisebb kép (A szerint).');}
+    else warn('E',true,'Ülősáv a belmagassághoz: '+r3(sband.lo)+' – '+r3(Math.min(sband.hi,L-1.2))+' m.');}
+  else{xM=P.xMLP!=null?+P.xMLP:cinSeat(L,P.mlpFrac);const f=fromSeat(xM);Ws=f.Ws;bind=f.bind;wsRange=[f.lo,f.Ws];   // A, C
+    if(set==='D'){const T0=P.xPJ!=null?+P.xPJ-xs:null,maxT=L-0.3-xs;                                      // §3.4 the projector is owned
+      const rng=T0!=null?[T0/P.trMax,T0/P.trMin]:[0,maxT/P.trMin],lo=Math.max(f.lo,rng[0]),hi=Math.min(f.Ws,rng[1]);
+      if(lo<=hi+1e-9){Ws=hi;warn('D',true,'A projektor képe '+r3(rng[0])+' – '+r3(rng[1])+' m; a választott kép '+r3(Ws)+' m.');}
+      else{Ws=Math.min(Math.max(f.Ws,rng[0]),rng[1]);
+        warn('D',false,rng[1]<f.lo?'A projektor túl hosszú vetítésű a helyiséghez: legfeljebb '+r3(rng[1])+' m kép, a 30°-hoz '+r3(f.lo)+' m kellene.'
+          :'A projektor ezen a helyen túl nagy képet ad (legalább '+r3(rng[0])+' m) — előrébb kell szerelni.');}
+      bind='projector';trUse=T0!=null?T0/Ws:Math.min(P.trMax,maxT/Ws);if(T0!=null)pjAt=+P.xPJ;}}
+  const D=xM-xs,WsAng=2*D*tMax,Hs=Ws/AR,zBot=he-Hs/3,zTop=zBot+Hs;
   // §3.6 fronts: outside the image edge, φ ≥ 22°, side-wall clearance
   const yMax=W/2-0.6,yLR=Math.max(Ws/2+0.15,D*Math.tan(cinRad(P.phiMin)));
   const yL=Math.min(yLR,Math.max(0,yMax)),phi=cinDeg(Math.atan2(yL,D));
@@ -18951,7 +19031,7 @@ function cinCalc(o){const P=Object.assign({},CIN_DEF,o||{}),L=+P.L,W=+P.W,Hf=+P.
   const subs=nSubs===1?[{x:t,y:W/4,z:0}]:[{x:L/2,y:ySide,z:0},{x:L/2,y:-ySide,z:0}];
   // §3.8 projector, beam keep-out, track-light band
   let pj=null,beam=null,band=null;
-  if(P.disp!=='tv'){const xP=Math.min(xs+P.TR*Ws,L-0.3),T=xP-xs,zL=Hf-P.dMount;
+  if(P.disp!=='tv'){const xP=pjAt!=null?pjAt:Math.min(xs+trUse*Ws,L-0.3),T=xP-xs,zL=Hf-P.dMount;
     pj={x:xP,y:0,z:zL,T,shiftPct:Hs>0?(zL-(zBot+Hs/2))/Hs*100:0};
     beam={apex:[xP,0],base:[[xs,-Ws/2],[xs,Ws/2]],margin:P.margin,poly:[[xP+P.margin,0],[xs,Ws/2+P.margin],[xs,-Ws/2-P.margin]]};
     const yi=Ws/2+P.margin,yo=W/2-0.6;band={ok:yo>yi,yIn:yi,yOut:yo,x0:xs+0.4,x1:xP-0.1};}
@@ -18971,9 +19051,11 @@ function cinCalc(o){const P=Object.assign({},CIN_DEF,o||{}),L=+P.L,W=+P.W,Hf=+P.
   if(P.fmt==='7.1'){warn('7.1',L-xM>=1.5-1e-9,'7.1: a hallgatási pont mögött csak '+cinR3(L-xM)+' m van (1,50 kell) — az 5.1 jobb lehet.');
     warn(7,2*Math.abs(rear.y)>=1.0,'7.1: a hátsó pár '+cinR3(2*Math.abs(rear.y))+' m-re van egymástól (1,00 kell) — 5.1 javasolt.');}
   warn(8,xS<=L-0.3+1e-9&&(!pj||pj.x<=L-0.3+1e-9),'Az oldalsó surround vagy a projektor túl közel a hátsó falhoz.');
+  if(set==='D'&&pj&&P.shiftMax!=null)warn('D-shift',Math.abs(pj.shiftPct)<=+P.shiftMax+1e-9,'Lencse-eltolás: '+Math.round(pj.shiftPct)+' % kellene, a projektor '+P.shiftMax+' %-ot tud — lejjebb kell szerelni (rúd), ami a sugár helyét eszi (§3.8).');
   if(band)warn(10,band.ok,'Nincs sín-világításra alkalmas mennyezeti sáv a sugár mellett: fal- vagy rejtett világítás.');
   warn(11,!square,'Négyzetes helyiség (H ≈ Sz): legalább 2, inkább 4 mélysugárzó.');
-  return {in:P,xMLP:xM,D,Ws,WsAng,WsH,bind,Hs,zBot,zTop,phi,alpha:a,rear,spk,subs,pj,beam,band,dist,modes,square,checks,
+  checks.forEach(c=>{if(c.ok&&(c.n==='B'||c.n==='D'||c.n==='E'))c.note=true;});   // the set's own line: shown even when fine
+  return {in:P,set,seatBand:sband,wsRange,xMLP:xM,D,Ws,WsAng,WsH,bind,Hs,zBot,zTop,phi,alpha:a,rear,spk,subs,pj,beam,band,dist,modes,square,checks,
     viable71:L-xM>=1.5-1e-9};}
 window.cinCalc=cinCalc;window.CIN_DEF=CIN_DEF;
 
