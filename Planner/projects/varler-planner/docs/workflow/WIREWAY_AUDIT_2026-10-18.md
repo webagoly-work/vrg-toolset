@@ -616,3 +616,8 @@ so B32 still carries 11 pipes; the other door boxes ease (B33 off the overfill l
 Fixed on the way: a szobadoboz box was checked as a 2-gang box (6 pipes); it is the big box (≤ 12). Q1 (A4) still open.
 A Planner copy with Domoszló baked in (finished · test run without routes · base) is built by
 `_script/make-dom-preload.js` into the client folder — never in git.
+
+**Q1 = A (user, 2026-10-19): A4 Háló dugalj on 2,5 mm²** (its 13 A breaker kept). The engine now honours a circuit's own
+cross-section (05j `c.mm2`, the circuit form) before the breaker-text rule (E5 F5, partly). A4: NYM-J 3×2,5, Iz·k 18,4 A,
+28,5 m, **2,9 %** ✓. Domoszló: 451,5 m, 105 boxes, cable 3×1,5 328,0 m · 3×2,5 181,5 m; warnings left: the two B32 door
+boxes (7 / 8 pipes). Both open questions of the batch are answered.

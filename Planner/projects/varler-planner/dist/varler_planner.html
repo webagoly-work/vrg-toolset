@@ -16734,6 +16734,9 @@ function portalRooms(G, pid) { const o = G.D.openings.find(x => x.id === pid); r
 function circuits(D, M, L, cfg, warn) {
   const list = [], byMember = {};
   const cableFor = (c, ms) => { if (c.dedicated) { const v = (ms[0] && ms[0].v) || ''; return R.CIRCUIT_CABLE[v === 'hob2l' ? 'hob2l' : v === 'hob32' ? 'hob32' : v === 'alelo' ? 'alelo' : 'ded16']; }
+    // the circuit's own cross-section (05j c.mm2, the circuit form) wins over the breaker-text rule (E5 F5, user Q1 = A
+    // 2026-10-19: Domoszló A4 on 2,5 mm² with its 13 A breaker, for the voltage drop of the socket chain)
+    if (+c.mm2 >= 2.5) return 'NYM3x25'; if (+c.mm2 === 1.5) return 'NYM3x15';
     return /13A/.test(c.mcb || '') ? 'NYM3x15' : 'NYM3x25'; };
   const plan = {}; (cfg.socketPlan || []).forEach(p => plan[p.ref] = p);
   const get = id => M.find(e => e.id === id);

@@ -75,6 +75,9 @@ function engine(){
   const k1=run(JSON.parse(JSON.stringify(two)),{congest:0.5}),k1b=run(JSON.parse(JSON.stringify(two)),{congest:0.5});
   ok('3 with congestion the result is deterministic',sig(k1)===sig(k1b));
   const busy=r=>{const m=new Map();r.legs.filter(l=>l.kind==='trunk').forEach(l=>l.tpts.forEach((p,k)=>{if(k){const key=Math.min(p,l.tpts[k-1])+'-'+Math.max(p,l.tpts[k-1]);m.set(key,(m.get(key)||0)+l.pipes.length);}}));return Math.max(0,...m.values());};
+  // the circuit's own cross-section (05j c.mm2) wins over the breaker text (Q1 = A, Domoszló A4: 2,5 mm² on 13 A)
+  const cs=(mm2,mcb)=>run(mk({devices:[soc('S9',6000,0)],circuits:[Object.assign({ref:'A1',name:'dug',mcb,members:['S9']},mm2?{mm2}:{})]})).C.list[0].cable;
+  ok('3 c.mm2 2,5 on a 13 A breaker → NYM-J 3×2,5; none → the breaker rule (13 A → 3×1,5, 16 A → 3×2,5)',cs(2.5,'1C 13A')==='NYM3x25'&&cs(0,'1C 13A')==='NYM3x15'&&cs(0,'1C 16A')==='NYM3x25'&&cs(1.5,'1C 16A')==='NYM3x15');
   ok('3 the congestion term never makes the busiest trunk stretch busier',busy(k1)<=busy(k0),busy(k1)+' vs '+busy(k0));
 }
 try{engine();}catch(err){R.push(['engine exception',false,err.stack]);}
