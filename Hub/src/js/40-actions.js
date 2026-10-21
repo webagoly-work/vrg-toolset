@@ -93,6 +93,11 @@ function kpTarget(c) {
     const p = ((n.src || {}).paths || [])[0];
     return p ? kpLinkFor({ repo: p }, ctx) : {};
   }
+  if (n.kind === 'branch') {
+    const r = kpData.topology.repo, s = n.src || {};
+    return { href: 'https://github.com/' + r.owner + '/' + r.name + '/tree/' + encodeURIComponent(s.branch) + (s.path ? '/' + s.path : ''), kind: 'url' };
+  }
+  if (n.kind === 'roadmap' && n.src && n.src.url) return { href: n.src.url, kind: 'url' };
   return {};
 }
 
@@ -111,7 +116,9 @@ function kpMainAction(node) {
   const c = kpCtx(node.id);
   if (!c) return;
   if (node.kind === 'summary') { kpBoard.collapsed = kpBoard.collapsed.filter(d => d !== node.dept); kpStore.set('collapsed', kpBoard.collapsed); kpBoardRender(); return; }
+  if (node.kind === 'roadmap' && node.src && node.src.url) { kpOpen(node.src.url); return; }
   if (node.kind === 'roadmap' || node.kind === 'slot') { kpDrawerOpen(node.id, 'short'); return; }
+  if (node.kind === 'branch' && !kpL1Open()) { kpGatePopover(node); return; }
   if (node.kind === 'go') { kpCopy(kpStartPrompt(c), 'Az indító prompt a vágólapon — illeszd be a Claude Code-ba'); return; }
   if (node.kind === 'program' && !kpL1Open()) { kpGatePopover(node); return; }
   const t = kpTarget(c);

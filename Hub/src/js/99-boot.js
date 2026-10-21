@@ -35,10 +35,12 @@ function kpBoot() {
   kpSetTheme(kpStore.get('theme', 'amber'));
   kpRenderRail();
   kpGhLoad();
+  kpRefreshRestore();
   kpBoardInit();
   kpNavInit();
-  kpSigninInit();
+  kpSigninInit().then(kpRefreshBoot);
   kpRenderStrip();
+  kpMainMenuInit();
   document.getElementById('kpSearchBtn').addEventListener('click', kpSearchOpen);
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
 }

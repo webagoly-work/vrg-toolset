@@ -41,8 +41,9 @@ async function kpGhFetch(path, opts) {
   try { res = await fetch(KP_GH_API + path, { headers, cache: 'no-store' }); }
   catch (e) { return { status: 0, error: 'Nincs kapcsolat a GitHubbal' }; }
   const h = n => (res.headers && res.headers.get ? res.headers.get(n) : null);
-  const rate = h('x-ratelimit-remaining');
+  const rate = h('x-ratelimit-remaining'), limit = h('x-ratelimit-limit');
   if (rate != null) kpGh.rate = +rate;
+  if (limit != null) kpGh.rateLimit = +limit;
   const out = { status: res.status, etag: h('etag'), rateRemaining: rate == null ? null : +rate };
   if (res.status === 401) { kpGhSignOut('A token lejárt vagy hibás'); out.error = kpGh.error; return out; }
   if (res.status === 304 && cached) return Object.assign(out, cached.body, { etag: cached.etag, fromCache: true });

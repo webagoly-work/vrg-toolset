@@ -33,6 +33,12 @@ module.exports = [
     assert.strictEqual(kpStore.get('theme', 'amber'), 'slate');
     assert.ok(ls.m.has('vrgKapu.theme'));
   } },
+  { name: 'kpGroup: Hungarian digit grouping', fn() {
+    const { kpGroup } = kpLoad(['00-core.js']);
+    assert.strictEqual(kpGroup(4912), '4 912');
+    assert.strictEqual(kpGroup(5000), '5 000');
+    assert.strictEqual(kpGroup(999), '999');
+  } },
   { name: 'kpFmtDate gives the Hungarian order', fn() {
     const { kpFmtDate } = kpLoad(['00-core.js']);
     assert.strictEqual(kpFmtDate('2026-10-21'), '2026. 10. 21.');

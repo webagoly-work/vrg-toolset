@@ -113,8 +113,11 @@ function kpLayout(cols, opts) {
     if (layer === 'L4' && p.git) {
       const paths = p.git.paths || [];
       const last = (paths[0] || '').split('/').filter(Boolean).pop() || 'git';
-      return [{ kind: 'git', title: [kpCut(last, L.subChars)], full: paths.join(', '),
-        d: paths.join(' · ') + ' — ág: ' + (p.git.branch || 'main'), src: p.git, key: 'g' }];
+      const dec = p.decisions || 0;
+      return [{ kind: 'git', title: [kpCut(last, dec ? L.subChars - 4 : L.subChars)], full: paths.join(', '), decisions: dec,
+        d: paths.join(' · ') + ' — ág: ' + (p.git.branch || 'main') + (dec ? ' · ' + dec + ' döntési fájl' : ''), src: p.git, key: 'g' }]
+        .concat((p.branches || []).map((b, i) => ({ kind: 'branch', title: [kpCut(b, L.subChars)], full: b,
+          d: 'fejlesztés alatt', dEn: 'in development', src: { branch: b, path: paths[0] || '' }, key: 'b' + i })));
     }
     return [];
   };
@@ -135,7 +138,7 @@ function kpLayout(cols, opts) {
         : it.kind === 'summary' || it.kind === 'slot' ? L.cardH : L.subH;
       const n = describe({ id: (it.progId || col.p.id || 'slot:' + col.dept.id) + ':' + layerKey + (it.key ? ':' + it.key : ''),
         kind: it.kind, x: col.x + L.cardX, y: cy, w: L.cardW, h, layer, dept: col.dept.id, hue: col.dept.hue,
-        progId: col.p.id, title: it.title, full: it.full, status: it.status || null, src: it.src || null }, it.d, it.dEn,
+        progId: col.p.id, title: it.title, full: it.full, status: it.status || null, src: it.src || null, decisions: it.decisions || 0 }, it.d, it.dEn,
         h === L.subH ? L.subLines : L.descLines);
       nodes.push(n);
       placed.push(n);

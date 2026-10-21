@@ -51,6 +51,7 @@ function kpSigninOpen() {
     ? ['ellenőrizve: ', kpEl('b', {}, kpGh.login), ' · hozzáférés: ' + (KP_GH_ACCESS_HU[kpGh.access] || '?')]
     : [kpGh.error || (kpGh.token ? 'ellenőrzés…' : 'nincs belépve')];
   const ghDot = kpGhHasRepo() ? 'ok' : kpGh.login ? 'warn' : 'off';
+  if (kpGh.rate != null) gh.push(kpEl('div', { class: 'kp-muted' }, 'GitHub keret: ' + kpGroup(kpGh.rate) + ' / ' + kpGroup(kpGh.rateLimit || 5000)));
   const od = kpEl('label', { class: 'kp-si-tick' }, kpEl('input', { type: 'checkbox', checked: kpOdTick(),
     onchange: e => { kpStore.set('odTick', e.target.checked); kpSigninChanged(); kpSigninOpen(); } }), ' Be vagyok jelentkezve');
   kpModalOpen('Belépések',
@@ -127,6 +128,9 @@ function kpBanner() {
   const msgs = [];
   if (kpIsFile() || !kpStore.available()) msgs.push(kpMdInline(KP_FILE_BANNER));
   if (kpAccess.state === 'invalid') msgs.push(kpEsc(KP_GATE_BADSIG));
+  const last = kpStore.get('lastRefresh', null), live = kpStore.get('live', null);
+  if (kpStore.get('stale', false) && last) msgs.push(kpEsc('Nincs internet — a ' + kpFmtDate(last) + ' állapotot látod.'));
+  if (live && live.self && live.self !== KP_BUILD) msgs.push(kpEsc('Új Kapu verzió elérhető — frissíts: git pull (vagy a Kapu segéd), aztán nyisd meg újra.'));
   el.hidden = !msgs.length;
   el.innerHTML = msgs.join('<br>');
 }

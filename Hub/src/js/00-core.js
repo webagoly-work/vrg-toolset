@@ -59,3 +59,8 @@ function kpEmbedded(id) {
   if (!el) return null;
   try { return JSON.parse(el.textContent); } catch (e) { return null; }
 }
+
+// 4912 -> "4 912" (Hungarian grouping, also for four digits)
+function kpGroup(n) {
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}

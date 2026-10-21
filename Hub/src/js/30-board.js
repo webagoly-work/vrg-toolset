@@ -1,6 +1,6 @@
 // Board renderer + camera. Geometry comes from kpLayout; this file only draws and listens.
 
-const KP_ICON = { program: '▣', third: '⧉', folder: '☁', local: '📁', agent: '🤖', go: '▶', git: '⎇', summary: '▸', slot: '○' };
+const KP_ICON = { program: '▣', third: '⧉', folder: '☁', local: '📁', agent: '🤖', go: '▶', git: '⎇', branch: '⎇', summary: '▸', slot: '○' };
 const KP_STATUS_HU = { live: 'használatban', dev: 'fejlesztés alatt', idea: 'tervezett', v2: 'jövőkép' };
 const KP_STATUS_DOT = { live: '●', dev: '◐', idea: '○', v2: '◌' };
 const KP_ZOOM = { min: 0.05, max: 3, descOff: 0.5, cardsOff: 0.3, step: 1.25 };
@@ -21,7 +21,7 @@ function kpBoardRender() {
   const topo = kpData.topology;
   const svg = document.getElementById('kpBoard');
   if (!topo) { svg.replaceChildren(); return; }
-  let cols = kpVisible(kpResolveRefs(topo), kpBoard.view);
+  let cols = kpVisible(kpApplyLive(kpResolveRefs(topo), kpLive()), kpBoard.view);
   if (kpBoard.focus) cols = cols.filter(c => c.dept.id === kpBoard.focus);
   const lay = kpLayout(cols, { layers: kpBoard.layers, collapsed: kpBoard.focus ? [] : kpBoard.collapsed, expanded: kpBoard.expanded, en: true });
   kpBoard.layout = lay;
@@ -106,7 +106,7 @@ function kpNodeEl(n) {
     if (n.kind === 'program') {
       const open = kpL1Open();
       g.classList.toggle('kp-locked', !open);
-      g.append(kpEl('text', { class: 'kp-lock', x: n.x + n.w - 8, y: n.y + n.h - 9 }, open ? '🔓' : '⛔'));
+      g.append(kpEl('text', { class: 'kp-lock' + (open ? ' open' : ''), x: n.x + n.w - 8, y: n.y + n.h - 9 }, open ? '🔓' : '⛔'));
     }
     if (n.status) {
       g.append(kpEl('text', { class: 'kp-status', x: n.x + 28, y: n.y + n.h - 9 }, KP_STATUS_DOT[n.status] + ' ' + KP_STATUS_HU[n.status]));
@@ -114,9 +114,12 @@ function kpNodeEl(n) {
   } else {
     g.append(kpEl('text', { class: 'kp-icon', x: n.x + 9, y: n.y + 21 }, icon),
       kpEl('text', { class: 'kp-sub-t', x: n.x + 28, y: n.y + 21 }, n.title[0]));
-    const lock = kpLayerLock(n.layer);
+    // a branch is unreleased program code: it opens like layer 1 (allowed list), not like layer 4
+    const lock = n.kind === 'branch' ? (kpL1Open() ? null : '⛔') : kpLayerLock(n.layer) ? '🔒' : null;
     g.classList.toggle('kp-locked', !!lock);
-    g.append(kpEl('text', { class: 'kp-lock', x: n.x + n.w - 8, y: n.y + 21 }, lock ? '🔒' : '🔓'));
+    g.append(kpEl('text', { class: 'kp-lock' + (lock ? '' : ' open'), x: n.x + n.w - 8, y: n.y + 21 }, lock || '🔓'));
+    if (n.decisions) g.append(kpEl('text', { class: 'kp-chip-dec', x: n.x + n.w - 26, y: n.y + 21 }, '? ' + n.decisions,
+      kpEl('title', {}, n.decisions + ' döntési / kérdés fájl ebben a mappában')));
   }
   if (n.text) {
     const desc = kpEl('g', { class: 'kp-desc' });
