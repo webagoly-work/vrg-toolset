@@ -104,3 +104,11 @@
 .kp-dirty-t{fill:var(--accent)}
 .kp-claim-b{fill:var(--accent);font-size:11px;font-weight:600;text-anchor:end}
 .kp-claim-b.old{fill:var(--muted);text-decoration:line-through}
+
+/* work log */
+.kp-log{width:min(760px,96vw)}
+.kp-log-progs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px 12px;max-height:120px;overflow:auto;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12.5px;margin:4px 0 8px}
+.kp-wrap{flex-wrap:wrap}
+.kp-log-e{border-top:1px solid var(--line);padding:6px 0}
+.kp-log-e summary{cursor:pointer;font-weight:600}
+.kp-log-e h5{margin:8px 0 2px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}

@@ -131,8 +131,9 @@ function kpStripExtras() {
   const topo = kpViewTopology();
   const today = kpToday();
   const claims = (topo.programs || []).filter(p => p.claim && p.claim.until >= today);
-  if (claims.length) out.push(kpEl('span', { class: 'kp-strip-l' }, 'Ki min dolgozik?'),
-    ...claims.map(p => kpEl('span', { class: 'kp-claim-s' }, p.claim.by + ': ' + p.t + ' (' + p.claim.until.slice(5) + '-ig)')), kpEl('span', { class: 'kp-strip-sep' }));
+  const logs = typeof kpLogStrip === 'function' ? kpLogStrip() : [];
+  if (claims.length || logs.length) out.push(kpEl('span', { class: 'kp-strip-l' }, 'Ki min dolgozik?'),
+    ...claims.map(p => kpEl('span', { class: 'kp-claim-s' }, '⚑ ' + p.claim.by + ': ' + p.t + ' (' + p.claim.until.slice(5) + '-ig)')), ...logs, kpEl('span', { class: 'kp-strip-sep' }));
   const n = kpPending().length;
   if (n) out.push(kpEl('span', { class: 'kp-pending' }, '✎ ' + n + ' nem mentett változás'),
     kpEl('button', { class: 'kp-btn kp-primary', onclick: () => kpSave() }, 'Mentés GitHubra'),

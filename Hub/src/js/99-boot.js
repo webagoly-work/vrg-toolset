@@ -41,6 +41,7 @@ function kpBoot() {
   kpSigninInit().then(kpRefreshBoot);
   kpRenderStrip();
   kpMainMenuInit();
+  kpLogInit();
   document.getElementById('kpSearchBtn').addEventListener('click', kpSearchOpen);
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
 }

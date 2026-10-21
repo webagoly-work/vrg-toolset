@@ -30,12 +30,14 @@ function kpDrawerOpen(nodeId, tab) {
   const tabs = kpEl('div', { class: 'kp-tabs', role: 'tablist' });
   const show = t => {
     for (const b of tabs.children) b.classList.toggle('on', b.dataset.tab === t);
-    body.replaceChildren(t === 'long' ? html(long[0], long[1]) : html(short[0], short[1]));
+    body.replaceChildren(t === 'log' ? kpDrawerLogs(p.id) : t === 'long' ? html(long[0], long[1]) : html(short[0], short[1]));
     body.dataset.tab = t;
   };
-  tabs.append(
+  tabs.append(...[
     kpEl('button', { role: 'tab', 'data-tab': 'short', onclick: () => show('short') }, 'Rövid'),
-    kpEl('button', { role: 'tab', 'data-tab': 'long', onclick: () => show('long') }, 'Részletes'));
+    kpEl('button', { role: 'tab', 'data-tab': 'long', onclick: () => show('long') }, 'Részletes'),
+    isProg ? kpEl('button', { role: 'tab', 'data-tab': 'log', onclick: () => show('log') }, 'Napló' + (kpLogsFor(p.id).length ? ' (' + kpLogsFor(p.id).length + ')' : '')) : null
+  ].filter(Boolean));
 
   const title = isProg ? p.t : n.kind === 'dept' ? dept.t : (n.full || n.title.join(' '));
   const meta = [KP_KIND_LABEL[n.kind] || n.kind, dept ? dept.t : null,
@@ -73,4 +75,14 @@ function kpDrawerLinks(c) {
   }
   if (!rows.length) return null;
   return kpEl('div', { class: 'kp-drawer-links' }, kpEl('div', { class: 'kp-drawer-sub' }, 'Linkek'), kpEl('ul', {}, ...rows));
+}
+
+function kpDrawerLogs(progId) {
+  const list = kpLogsFor(progId);
+  if (!list.length) return kpEl('div', { class: 'kp-muted' }, 'Még nincs napló ehhez a programhoz. 📝 Munkanapló — vagy Importálás… a meglévőkhöz.');
+  return kpEl('div', { class: 'kp-logs' }, ...list.map(l => {
+    const e = l.entry, box = kpEl('div', { class: 'kp-md' });
+    box.innerHTML = KP_LOG_SECTIONS.filter(([k]) => e[k]).map(([k, h]) => '<h5>' + kpEsc(h) + '</h5>' + kpMd(e[k])).join('');
+    return kpEl('details', { class: 'kp-log-e' }, kpEl('summary', {}, kpFmtDate(e.date) + ' · ' + e.by + (l.remote ? ' · GitHub' : ' · beolvasva')), box);
+  }));
 }

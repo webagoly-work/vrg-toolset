@@ -32,7 +32,7 @@ const KP_ACT = [
   ] },
   { id: 'claim', label: 'Foglalás…', alt: 'Foglalás feloldása', g: 'work', at: ['rco'], need: 'ghWrite',
     toggled: c => !!(c.prog && c.prog.claim), when: c => !!c.prog, whyNot: 'Csak programot lehet foglalni', run: c => kpClaimAction(c) },
-  { id: 'log', label: 'Bejegyzés a munkanaplóba', g: 'work', at: ['rco'], need: 'log', run: () => {} },
+  { id: 'log', label: 'Bejegyzés a munkanaplóba', g: 'work', at: ['rco'], need: 'log', run: c => kpLogOpen(c.prog ? c.prog.id : null) },
   { id: 'fav', label: 'Kedvencekhez', alt: 'Kedvencek közül ki', g: 'work', at: ['rco'],
     toggled: c => kpFavs().includes(c.node.id), when: c => kpFavable(c.node), whyNot: 'Ezt nem lehet kedvencnek jelölni',
     run: c => kpFavToggle(c.node.id) },

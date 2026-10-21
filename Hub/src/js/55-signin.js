@@ -123,6 +123,7 @@ async function kpSigninChanged() {
   kpBanner();
   kpRenderSigninDots();
   if (kpBoard.layout) kpBoardRender();
+  kpRenderStrip();
 }
 
 function kpBanner() {

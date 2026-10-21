@@ -109,9 +109,25 @@ async function kpRefreshCore(topoNow, accessNow, pubkey, onStep) {
   step('Ágak', br.ok ? others.length + ' fejlesztési ág' : 'nem elérhető');
 
   // 5. decision files
-  const tr = await kpGhCached(base + '/git/trees/main?recursive=1', 'tree', j => (j.tree || []).filter(x => x.type === 'blob' && KP_DECISION_RE.test(x.path)).map(x => x.path), {}, stats);
-  if (tr.value) live.decisions = kpDecisionCounts(topology, tr.value);
+  const tr = await kpGhCached(base + '/git/trees/main?recursive=1', 'tree2', j => {
+    const blobs = (j.tree || []).filter(x => x.type === 'blob');
+    return { dec: blobs.filter(x => KP_DECISION_RE.test(x.path)).map(x => x.path), logs: blobs.filter(x => /^Hub\/logs\/[^/]+\.md$/.test(x.path)).map(x => x.path) };
+  }, {}, stats);
+  if (tr.value) live.decisions = kpDecisionCounts(topology, tr.value.dec);
   step('Döntési fájlok', tr.value ? '✓' : 'nem elérhető');
+
+  // 5b. the newest work log per user (the file name starts with date_login_)
+  live.latest = {};
+  const newest = {};
+  for (const p of (tr.value && tr.value.logs) || []) {
+    const m = p.match(/^Hub\/logs\/(\d{4}-\d{2}-\d{2})_([^_]+)_/);
+    if (m && (!newest[m[2]] || p > newest[m[2]])) newest[m[2]] = p;
+  }
+  for (const [login, p] of Object.entries(newest)) {
+    const l = await kpGhCached(base + '/contents/' + p.split('/').map(encodeURIComponent).join('/') + '?ref=main', 'log.' + login, x => ({ name: p.split('/').pop(), entry: kpMdToLog(x) }), { raw: true }, stats);
+    if (l.value) live.latest[login] = l.value;
+  }
+  if (Object.keys(newest).length) step('Munkanaplók', Object.keys(live.latest).length + ' felhasználó');
 
   // 6. our own version
   const self = await kpGhCached(base + '/contents/' + KP_SELF_PATH + '?ref=main', 'self', x => ((String(x).match(/const KP_BUILD = "([0-9a-f]{12})"/) || [])[1] || null), { raw: true }, stats);
