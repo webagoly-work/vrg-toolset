@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="hu" data-theme="amber">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Kapu</title>
+<style>
+/* 00-themes.css */
+/* The four VRG themes, verbatim from Modder/vrg-buildtree.html. */
+:root{
+  --bg:#14100c; --panel:#1d1712; --panel2:#241d16; --ink:#f4e9d6; --muted:#a8977d;
+  --accent:#e6a532; --accent-dim:#8a6a2a; --line:#3a2f22;
+  --green:#5b8c3e; --green-ink:#9ed46f; --amberflag:#c8912d; --red:#c8492d; --red-ink:#e88b73; --violet:#9a6cc0;
+}
+[data-theme="light"]{
+  --bg:#f4efe6; --panel:#fff; --panel2:#f7f2e8; --ink:#221c14; --muted:#6d6252;
+  --accent:#a9781a; --accent-dim:#a9781a; --line:#d8cdb8;
+  --green:#4f7d34; --green-ink:#3c6a22; --amberflag:#9a6a10; --red:#b33f22; --red-ink:#8f3016; --violet:#7a4fa8;
+}
+[data-theme="slate"]{
+  --bg:#0f1417; --panel:#161d22; --panel2:#1c252b; --ink:#e6edf2; --muted:#8fa2ad;
+  --accent:#4fb0d0; --accent-dim:#2f6f86; --line:#26323a;
+  --green:#4f9d6a; --green-ink:#7fd8a0; --amberflag:#c8912d; --red:#d0574a; --red-ink:#ec8b80; --violet:#8f7cd0;
+}
+[data-theme="green"]{
+  --bg:#0b120d; --panel:#111a13; --panel2:#16211a; --ink:#d7f0dc; --muted:#7fa088;
+  --accent:#57c07a; --accent-dim:#2f6f45; --line:#20301f; --green:#57c07a; --green-ink:#9ff0b6;
+  --amberflag:#c8b02d; --red:#c85a4a; --red-ink:#ec9384; --violet:#7cc0a0;
+}
+
+/* Department hues (hub-seed.json "hue"). Four reuse the theme's own colours;
+   the other five are new and set per theme so they keep contrast. */
+:root{
+  --hue-amber:var(--amberflag); --hue-green:var(--green-ink); --hue-red:var(--red-ink); --hue-purple:var(--violet);
+  --hue-teal:#4fb8a8; --hue-coral:#e2876a; --hue-blue:#6a9ee0; --hue-pink:#d683b4; --hue-gray:#9a9084;
+}
+[data-theme="light"]{
+  --hue-teal:#1f7d70; --hue-coral:#b4532f; --hue-blue:#2f5fa8; --hue-pink:#a3437c; --hue-gray:#6d6252;
+}
+[data-theme="slate"]{
+  --hue-teal:#4fc0b0; --hue-coral:#e48f74; --hue-blue:#78a8ec; --hue-pink:#d98cbc; --hue-gray:#8fa2ad;
+}
+[data-theme="green"]{
+  --hue-teal:#5cc8b0; --hue-coral:#e0907a; --hue-blue:#7aa8e0; --hue-pink:#d890b8; --hue-gray:#8fa894;
+}
+
+/* 10-layout.css */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.45;display:flex;flex-direction:column;overflow:hidden}
+
+.kp-top{display:flex;align-items:center;gap:16px;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+.kp-brand{font-weight:700;font-size:17px;letter-spacing:.02em;color:var(--accent)}
+.kp-top-mid{flex:1;display:flex;gap:8px;align-items:center}
+.kp-top-right{display:flex;gap:8px;align-items:center}
+
+.kp-themes{display:flex;gap:6px}
+.kp-swatch{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
+.kp-swatch.sel{border-color:var(--ink)}
+
+.kp-strip{padding:4px 16px;background:var(--panel2);border-bottom:1px solid var(--line);color:var(--muted);font-size:12px;min-height:8px}
+.kp-strip:empty{display:none}
+
+.kp-main{flex:1;display:flex;min-height:0}
+.kp-rail{width:44px;display:flex;flex-direction:column;gap:4px;padding:8px 4px;background:var(--panel);border-right:1px solid var(--line)}
+.kp-rail button{height:32px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--muted);font:inherit;font-size:12px;cursor:pointer}
+.kp-rail button.on{color:var(--ink);border-color:var(--accent-dim)}
+.kp-stage{flex:1;position:relative;min-width:0}
+.kp-board{position:absolute;inset:0;width:100%;height:100%;display:block}
+.kp-drawer{width:360px;max-width:90vw;background:var(--panel);border-left:1px solid var(--line);overflow:auto}
+
+.kp-foot{display:flex;gap:16px;justify-content:space-between;padding:2px 16px;background:var(--panel);border-top:1px solid var(--line);color:var(--muted);font-size:11px}
+.kp-modal-root:empty{display:none}
+</style>
+</head>
+<body>
+<header id="kpTop" class="kp-top">
+  <div class="kp-brand">VRG Kapu</div>
+  <div class="kp-top-mid"></div>
+  <div class="kp-top-right">
+    <div id="kpThemes" class="kp-themes" role="group" aria-label="Téma"></div>
+  </div>
+</header>
+<div id="kpStrip" class="kp-strip"></div>
+<main class="kp-main">
+  <nav id="kpRail" class="kp-rail" aria-label="Rétegek"></nav>
+  <div class="kp-stage">
+    <svg id="kpBoard" class="kp-board" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <aside id="kpDrawer" class="kp-drawer" hidden></aside>
+</main>
+<footer class="kp-foot"><span id="kpBuild"></span><span id="kpMode"></span></footer>
+<div id="kpModal" class="kp-modal-root"></div>
+<script type="application/json" id="kpTopology">null</script>
+<script type="application/json" id="kpAccess">null</script>
+<script type="application/json" id="kpPubkey">null</script>
+<script>
+"use strict";
+const KP_BUILD = "864c2352e1d4";
+// ---- 00-core.js
+// Core helpers shared by every module. Pure where possible, so Hub/test can run them in Node.
+
+const KP_PREFIX = 'vrgKapu.';
+
+// Every storage access goes through here: file:// and locked-down profiles throw on
+// localStorage, and the page must still render ("csak linkek" mode).
+const kpStore = {
+  available() {
+    try { const k = KP_PREFIX + '__t'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
+    catch (e) { return false; }
+  },
+  get(key, def) {
+    try {
+      const v = localStorage.getItem(KP_PREFIX + key);
+      return v == null ? def : JSON.parse(v);
+    } catch (e) { return def; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(KP_PREFIX + key, JSON.stringify(value)); return true; }
+    catch (e) { return false; }
+  }
+};
+
+const KP_ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+function kpEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => KP_ESC[c]);
+}
+
+// kpEl('button', { class: 'x', onclick: fn }, 'text', childNode)
+function kpEl(tag, attrs, ...kids) {
+  const svg = ['svg', 'g', 'path', 'rect', 'circle', 'line', 'text', 'tspan'].includes(tag);
+  const el = svg ? document.createElementNS('http://www.w3.org/2000/svg', tag) : document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+
+// "2026-10-21" or a Date -> "2026. 10. 21." (Hungarian order); bad input -> ''
+function kpFmtDate(d) {
+  const m = typeof d === 'string' ? d.match(/^(\d{4})-(\d{2})-(\d{2})/) : null;
+  if (m) return m[1] + '. ' + m[2] + '. ' + m[3] + '.';
+  if (d instanceof Date && !isNaN(d)) {
+    const p = n => String(n).padStart(2, '0');
+    return d.getFullYear() + '. ' + p(d.getMonth() + 1) + '. ' + p(d.getDate()) + '.';
+  }
+  return '';
+}
+
+// The JSON blocks the build bakes in; null when a file did not exist at build time.
+function kpEmbedded(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  try { return JSON.parse(el.textContent); } catch (e) { return null; }
+}
+
+// ---- 99-boot.js
+// Boot: theme, embedded data, shell. Later WPs hang their init off kpBoot.
+
+const KP_THEMES = [['amber', '#e6a532'], ['light', '#f4efe6'], ['slate', '#4fb0d0'], ['green', '#57c07a']];
+const KP_THEME_NAMES = { amber: 'Borostyán', light: 'Világos', slate: 'Pala', green: 'Zöld' };
+const KP_LAYERS = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+
+const kpData = { topology: null, access: null, pubkey: null };
+
+function kpSetTheme(t) {
+  if (!KP_THEMES.some(([n]) => n === t)) t = 'amber';
+  document.documentElement.setAttribute('data-theme', t);
+  kpStore.set('theme', t);
+  kpRenderThemes();
+}
+
+function kpRenderThemes() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const box = document.getElementById('kpThemes');
+  box.replaceChildren(...KP_THEMES.map(([t, c]) => kpEl('button', {
+    class: 'kp-swatch' + (t === cur ? ' sel' : ''), style: 'background:' + c,
+    title: KP_THEME_NAMES[t], 'aria-label': KP_THEME_NAMES[t], 'data-t': t,
+    onclick: () => kpSetTheme(t)
+  })));
+}
+
+function kpRenderRail() {
+  document.getElementById('kpRail').replaceChildren(...KP_LAYERS.map(l =>
+    kpEl('button', { class: 'on', 'data-layer': l, title: l + ' réteg' }, l)));
+}
+
+function kpBoot() {
+  kpData.topology = kpEmbedded('kpTopology');
+  kpData.access = kpEmbedded('kpAccess');
+  kpData.pubkey = kpEmbedded('kpPubkey');
+  kpSetTheme(kpStore.get('theme', 'amber'));
+  kpRenderRail();
+  document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
+  document.getElementById('kpMode').textContent = kpStore.available() ? '' : 'csak linkek — a böngésző nem enged menteni';
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', kpBoot);
+  else kpBoot();
+}
+</script>
+</body>
+</html>

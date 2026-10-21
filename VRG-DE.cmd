@@ -89,7 +89,11 @@ set "L4_NAME=VRG BuildTree (modder)"
 set "L4_PATH=Modder\vrg-buildtree.html"
 set "L4_MENU=PLAIN"
 
-set "LEADCOUNT=4"
+set "L5_NAME=VRG Kapu (kozponti terkep)"
+set "L5_PATH=Hub\dist\vrg-kapu.html"
+set "L5_MENU=PLAIN"
+
+set "LEADCOUNT=5"
 
 :: -- UNDER-DEV --
 set "D1_NAME=Kalkulator (osszevonas alatt)"
@@ -472,7 +476,7 @@ echo   csoportonkent, a lapok mar megnyitva benne. A Zen-ben utana egy
 echo   mozdulattal mappaba huzhatod oket.
 echo.
 echo     1^) Online munkahely  ^(Gmail + GitHub + Claude^)
-echo     2^) LEAD projektek elonezete   ^(4 lap egy ablakban^)
+echo     2^) LEAD projektek elonezete   ^(5 lap egy ablakban^)
 echo     3^) UNDER-DEV elonezet         ^(kulon ablakban^)
 echo     4^) Mind a harom egyszerre
 echo     0^) Vissza
