@@ -71,12 +71,82 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 
 .kp-foot{display:flex;gap:16px;justify-content:space-between;padding:2px 16px;background:var(--panel);border-top:1px solid var(--line);color:var(--muted);font-size:11px}
 .kp-modal-root:empty{display:none}
+
+/* 20-board.css */
+.hue-gray{--h:var(--hue-gray)} .hue-purple{--h:var(--hue-purple)} .hue-coral{--h:var(--hue-coral)}
+.hue-teal{--h:var(--hue-teal)} .hue-amber{--h:var(--hue-amber)} .hue-green{--h:var(--hue-green)}
+.hue-blue{--h:var(--hue-blue)} .hue-pink{--h:var(--hue-pink)} .hue-red{--h:var(--hue-red)}
+
+.kp-seg{display:flex;align-items:center;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.kp-seg-l{padding:0 8px;color:var(--muted);font-size:12px}
+.kp-seg button,.kp-btn{border:0;background:var(--panel2);color:var(--muted);font:inherit;font-size:12px;padding:4px 10px;cursor:pointer}
+.kp-seg button.on{background:var(--accent-dim);color:var(--ink)}
+.kp-btn{border:1px solid var(--line);border-radius:6px}
+.kp-btn:hover,.kp-seg button:hover{color:var(--ink)}
+.kp-focus{color:var(--accent);font-size:12px}
+
+.kp-board{cursor:default;user-select:none;font-family:"Segoe UI",Roboto,"DejaVu Sans",sans-serif}
+.kp-board.space{cursor:grab} .kp-board.panning{cursor:grabbing}
+
+.kp-edge{fill:none;stroke:var(--h);stroke-width:1.2;opacity:.75}
+.kp-edge-curve{stroke-width:1.6}
+.kp-edge-tick{opacity:.55}
+
+.kp-card{fill:var(--panel);stroke:var(--h);stroke-width:1.5}
+.kp-sub{fill:var(--panel2);stroke:var(--line);stroke-width:1}
+.st-idea .kp-card{stroke-dasharray:6 4}
+.st-v2{opacity:.6} .st-v2 .kp-card{stroke-dasharray:2 3}
+.kp-slot .kp-card,.kp-summary .kp-card{fill:none;stroke-dasharray:6 4}
+
+.kp-origin .kp-card{fill:var(--accent);stroke:var(--accent)}
+.kp-origin-t{fill:var(--bg);font-weight:800;font-size:18px;text-anchor:middle;letter-spacing:.08em}
+.kp-dept{cursor:pointer}
+.kp-dept .kp-card{fill:var(--panel2)}
+.kp-dept-bar{fill:var(--h)}
+.kp-dept-t{fill:var(--ink);font-weight:700;font-size:13px}
+.kp-dept-n{fill:var(--muted);font-size:12px;text-anchor:end}
+
+.kp-icon{fill:var(--h);font-size:13px}
+.kp-title{fill:var(--ink);font-weight:600;font-size:12.5px}
+.kp-status{fill:var(--muted);font-size:11px}
+.kp-sub-t{fill:var(--ink);font-size:12px}
+.kp-d{fill:var(--muted);font-size:12px}
+.kp-den{fill:var(--muted);font-size:12px;font-style:italic;opacity:.8}
+
+.kp-rm-dot{fill:var(--h)}
+.kp-rm-date{fill:var(--muted);font-size:11px;font-weight:600}
+.kp-rm-t{fill:var(--ink);font-size:12px}
+
+.kp-more{cursor:pointer}
+.kp-chip{fill:var(--panel2);stroke:var(--h)}
+.kp-chip-t{fill:var(--ink);font-size:11.5px;text-anchor:middle}
+
+.kp-band-r{fill:none;stroke:var(--line);stroke-dasharray:4 4}
+.kp-band-t{fill:var(--ink);font-weight:600;font-size:13px}
+.kp-band-s{fill:var(--muted);font-size:12px}
+
+.kp-layer-l{fill:var(--muted);font-size:12px;font-weight:600;text-anchor:end;letter-spacing:.03em}
+
+/* level of detail: far out, descriptions go first, then everything but the branches */
+.lod-desc .kp-desc{display:none}
+.lod-cards .kp-node:not(.kp-dept):not(.kp-origin),.lod-cards .kp-edge-tick,.lod-cards .kp-layer-labels{display:none}
+
+/* overview (far out): department areas + screen-size labels */
+.kp-area{fill:var(--h);opacity:0;stroke:none}
+.lod-cards .kp-area{opacity:.16}
+.kp-ov-t{fill:var(--ink);font-weight:700}
+.kp-ov-n{fill:var(--muted)}
+.lod-cards .kp-dept text{display:none}
 </style>
 </head>
 <body>
 <header id="kpTop" class="kp-top">
   <div class="kp-brand">VRG Kapu</div>
-  <div class="kp-top-mid"></div>
+  <div class="kp-top-mid">
+    <div id="kpView" class="kp-seg" role="group" aria-label="Nézet"><span class="kp-seg-l">Nézet:</span><button data-view="now">Jelenlegi</button><button data-view="vision">Bővített jövőkép</button></div>
+    <button id="kpFit" class="kp-btn" title="Az egész térkép (0)">⤢ Egész</button>
+    <span id="kpFocus" class="kp-focus" hidden></span>
+  </div>
   <div class="kp-top-right">
     <div id="kpThemes" class="kp-themes" role="group" aria-label="Téma"></div>
   </div>
@@ -96,7 +166,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 <script type="application/json" id="kpPubkey">null</script>
 <script>
 "use strict";
-const KP_BUILD = "7ed3baedbffe";
+const KP_BUILD = "7aaff778d1ac";
 // ---- 00-core.js
 // Core helpers shared by every module. Pure where possible, so Hub/test can run them in Node.
 
@@ -241,6 +311,540 @@ function kpLinkFor(node, ctx) {
 
 if (typeof module !== 'undefined') module.exports = { kpValidate, kpResolveRefs, kpVisible, kpLinkFor, KP_STATUS };
 
+// ---- 20-layout.js
+// Board layout: pure geometry from the visible topology. Every number lives in KP_LAYOUT.
+// Rows start at the 03_UI §2 defaults and grow when a cell's stack needs more room:
+// no label may ever overlap another.
+
+const KP_LAYOUT = {
+  colW: 200, colGap: 24, deptGap: 16,
+  originW: 120, originH: 48, originGap: 60, headerH: 44,
+  rowTop: 200, rowStep: 150, rowPad: 28,
+  roadmapGap: 90, roadmapRow: 34, roadmapChars: 30,
+  cardX: 12, cardW: 176, cardH: 52, cardH2: 66, titleChars: 22,
+  subH: 32, subChars: 24,
+  stackGap: 6, stackMax: 3, chipH: 22,
+  descGap: 4, lineH: 15, descChars: 30, descLines: 3, subLines: 2, charW: 6.2,
+  spineX: 4, bandGap: 48, bandH: 64
+};
+
+const KP_LAYER_NAMES = {
+  L1: 'Programok', L2: 'Megosztott mappák', L3: 'AI dokumentumok', L4: 'Git és ütemterv',
+  L5: 'Saját linkek', L6: 'Helyi célmappa'
+};
+
+// Word wrap to `max` chars per line, at most `lines` lines; the last kept line ends in … when cut.
+function kpWrap(text, max, lines) {
+  const words = String(text || '').split(/\s+/).filter(Boolean);
+  const out = [];
+  let cur = '';
+  for (let w of words) {
+    while (w.length > max) {
+      if (cur) { out.push(cur); cur = ''; }
+      out.push(w.slice(0, max - 1) + '-');
+      w = w.slice(max - 1);
+    }
+    if (!cur) cur = w;
+    else if (cur.length + 1 + w.length <= max) cur += ' ' + w;
+    else { out.push(cur); cur = w; }
+  }
+  if (cur) out.push(cur);
+  if (out.length <= lines) return out;
+  const kept = out.slice(0, lines);
+  let last = kept[lines - 1];
+  if (last.length > max - 1) last = last.slice(0, max - 1);
+  kept[lines - 1] = last.replace(/[\s,.;:·-]+$/, '') + '…';
+  return kept;
+}
+
+function kpCut(text, max) {
+  const s = String(text || '');
+  return s.length <= max ? s : s.slice(0, max - 1).replace(/\s+$/, '') + '…';
+}
+
+// opts: { layers: {L1..L6: bool}, collapsed: [deptId], expanded: [cellKey], en: bool }
+function kpLayout(cols, opts) {
+  const L = KP_LAYOUT;
+  const o = Object.assign({ layers: {}, collapsed: [], expanded: [], en: true }, opts || {});
+  const on = l => o.layers[l] !== false;
+  const nodes = [], edges = [];
+
+  // text block under a card: d, then dEn in italics (max lines each)
+  function describe(n, d, dEn, max) {
+    n.lines = d ? kpWrap(d, L.descChars, max) : [];
+    n.en = o.en && dEn ? kpWrap(dEn, L.descChars, max) : [];
+    const all = n.lines.concat(n.en);
+    n.text = all.length ? {
+      x: n.x, y: n.y + n.h + L.descGap,
+      w: Math.ceil(Math.max(...all.map(s => s.length)) * L.charW), h: all.length * L.lineH
+    } : null;
+    return n;
+  }
+  const blockH = n => n.h + (n.text ? L.descGap + n.text.h : 0);
+
+  // 1. columns
+  const columns = [];
+  const heads = [];
+  let x = 0;
+  for (const c of cols) {
+    const d = c.dept;
+    const collapsed = o.collapsed.includes(d.id);
+    const kinds = collapsed ? [{ summary: c.programs.length }] : c.programs.length ? c.programs : [{ slot: true }];
+    const w = kinds.length * L.colW + (kinds.length - 1) * L.colGap;
+    heads.push({ dept: d, x, w, collapsed, count: c.programs.length });
+    kinds.forEach((p, i) => columns.push({ dept: d, x: x + i * (L.colW + L.colGap), p }));
+    x += w + L.colGap + L.deptGap;
+  }
+  const width = Math.max(0, x - L.colGap - L.deptGap);
+
+  // 2. origin + headers
+  const origin = { id: 'origin', kind: 'origin', x: width / 2 - L.originW / 2, y: 0, w: L.originW, h: L.originH, title: ['VRG'] };
+  nodes.push(origin);
+  const headY = L.originH + L.originGap;
+  for (const h of heads) {
+    const n = { id: 'dept:' + h.dept.id, kind: 'dept', x: h.x, y: headY, w: h.w, h: L.headerH, dept: h.dept.id,
+      hue: h.dept.hue, title: [h.dept.t], collapsed: h.collapsed, count: h.count };
+    nodes.push(n);
+    edges.push({ from: origin.id, to: n.id, kind: 'curve', hue: h.dept.hue,
+      pts: [[origin.x + L.originW / 2, origin.y + L.originH], [h.x + h.w / 2, headY]] });
+  }
+
+  // 3. cells: what each column holds per layer, before y is known
+  const cardOf = (col) => {
+    const p = col.p, d = col.dept;
+    if (p.summary != null) return { kind: 'summary', title: ['▸ ' + p.summary + ' program'], d: 'Összecsukva — kattints a fejlécre.', status: null };
+    if (p.slot) return { kind: 'slot', title: ['○ még üres'], d: 'Ebben az osztályban ebben a nézetben nincs program.', status: null };
+    const t = kpWrap(p.t, L.titleChars, 2);
+    return { kind: 'program', progId: p.id, title: t, status: p.status, d: p.d, dEn: p.dEn, src: p };
+  };
+  const subsOf = (col, layer) => {
+    const p = col.p;
+    if (p.summary != null || p.slot) return [];
+    if (layer === 'L2') return (p.folders || []).map((f, i) => ({ kind: f.local && !f.url && !f.ref ? 'local' : 'folder',
+      title: [kpCut(f.t || f.path || f.ref, L.subChars)], full: f.t || f.path || f.ref, d: f.d, dEn: f.dEn, src: f, key: 'f' + i }));
+    if (layer === 'L3') return (p.agent || []).map((a, i) => ({ kind: a.go ? 'go' : 'agent',
+      title: [kpCut(a.t, L.subChars)], full: a.t, d: a.d, dEn: a.dEn, src: a, key: 'a' + i }));
+    if (layer === 'L4' && p.git) {
+      const paths = p.git.paths || [];
+      const last = (paths[0] || '').split('/').filter(Boolean).pop() || 'git';
+      return [{ kind: 'git', title: [kpCut(last, L.subChars)], full: paths.join(', '),
+        d: paths.join(' · ') + ' — ág: ' + (p.git.branch || 'main'), src: p.git, key: 'g' }];
+    }
+    return [];
+  };
+
+  // build one stacked cell at y; returns its height
+  function placeCell(col, layer, y, items, layerKey) {
+    const key = col.p.id + ':' + layerKey;
+    let list = items;
+    let more = 0;
+    if (items.length > L.stackMax && !o.expanded.includes(key)) {
+      list = items.slice(0, L.stackMax);
+      more = items.length - L.stackMax;
+    }
+    let cy = y;
+    const placed = [];
+    for (const it of list) {
+      const h = it.kind === 'program' ? (it.title.length > 1 ? L.cardH2 : L.cardH)
+        : it.kind === 'summary' || it.kind === 'slot' ? L.cardH : L.subH;
+      const n = describe({ id: (it.progId || col.p.id || 'slot:' + col.dept.id) + ':' + layerKey + (it.key ? ':' + it.key : ''),
+        kind: it.kind, x: col.x + L.cardX, y: cy, w: L.cardW, h, layer, dept: col.dept.id, hue: col.dept.hue,
+        progId: col.p.id, title: it.title, full: it.full, status: it.status || null, src: it.src || null }, it.d, it.dEn,
+        h === L.subH ? L.subLines : L.descLines);
+      nodes.push(n);
+      placed.push(n);
+      cy += blockH(n) + L.stackGap;
+    }
+    if (more) {
+      const n = { id: key + ':more', kind: 'more', x: col.x + L.cardX, y: cy, w: 96, h: L.chipH, layer, dept: col.dept.id,
+        hue: col.dept.hue, progId: col.p.id, title: ['+' + more + ' további'], cell: key, text: null };
+      nodes.push(n);
+      placed.push(n);
+      cy += L.chipH + L.stackGap;
+    }
+    return { h: placed.length ? cy - L.stackGap - y : 0, placed };
+  }
+
+  // 4. rows, top to bottom; each row as tall as its tallest cell
+  const placedBy = columns.map(() => []);
+  let rowY = L.rowTop, prevY = null, prevH = 0;
+  const rows = {};
+  for (const layer of ['L1', 'L2', 'L3', 'L4']) {
+    if (!on(layer)) continue;
+    if (prevY != null) rowY = Math.max(prevY + L.rowStep, prevY + prevH + L.rowPad);
+    let maxH = 0;
+    columns.forEach((col, ci) => {
+      const items = layer === 'L1' ? [cardOf(col)] : subsOf(col, layer);
+      const r = placeCell(col, layer, rowY, items, layer);
+      placedBy[ci].push(...r.placed);
+      maxH = Math.max(maxH, r.h);
+    });
+    rows[layer] = { y: rowY, h: maxH };
+    prevY = rowY; prevH = maxH;
+  }
+
+  // 5. roadmap under L4, newest first
+  let bottom = prevY == null ? headY + L.headerH : prevY + prevH;
+  if (on('L4')) {
+    const r4 = rows.L4;
+    const top = Math.max(r4.y + L.roadmapGap, r4.y + r4.h + L.rowPad);
+    let maxN = 0;
+    columns.forEach((col, ci) => {
+      const rm = (col.p.roadmap || []).slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      rm.forEach((e, i) => {
+        const n = { id: col.p.id + ':rm:' + i, kind: 'roadmap', x: col.x + L.cardX, y: top + i * L.roadmapRow,
+          w: L.colW - L.cardX, h: L.roadmapRow - 4, layer: 'L4', dept: col.dept.id, hue: col.dept.hue, progId: col.p.id,
+          date: e.date, title: [kpCut(e.t, L.roadmapChars)], full: e.t, src: e, text: null };
+        nodes.push(n);
+        placedBy[ci].push(n);
+      });
+      maxN = Math.max(maxN, rm.length);
+    });
+    rows.roadmap = { y: top, h: maxN * L.roadmapRow };
+    if (maxN) bottom = top + maxN * L.roadmapRow;
+  }
+
+  // 6. personal bands (filled by H8)
+  const bands = ['L5', 'L6'].filter(on);
+  if (bands.length) {
+    const by = bottom + L.bandGap;
+    const bw = bands.length === 2 ? (width - L.colGap) / 2 : width;
+    bands.forEach((l, i) => nodes.push({ id: 'band:' + l, kind: 'band', layer: l, x: i * (bw + L.colGap), y: by, w: bw, h: L.bandH,
+      title: [KP_LAYER_NAMES[l]], text: null }));
+    bottom = by + L.bandH;
+  }
+
+  // 7. spines: header bottom down the left edge of each column, a tick into every node
+  columns.forEach((col, ci) => {
+    const list = placedBy[ci];
+    if (!list.length) return;
+    const sx = col.x + L.spineX;
+    const last = list[list.length - 1];
+    edges.push({ from: 'dept:' + col.dept.id, to: last.id, kind: 'spine', hue: col.dept.hue,
+      pts: [[sx, headY + L.headerH], [sx, last.y + last.h / 2]] });
+    for (const n of list) {
+      if (n.kind === 'roadmap') continue;
+      edges.push({ from: 'dept:' + col.dept.id, to: n.id, kind: 'tick', hue: col.dept.hue,
+        pts: [[sx, n.y + n.h / 2], [n.x, n.y + n.h / 2]] });
+    }
+  });
+
+  return { nodes, edges, width, height: bottom, rows };
+}
+
+// Pairwise overlap check over every card and text box (tests + a debug aid).
+function kpOverlaps(layout) {
+  const boxes = [];
+  for (const n of layout.nodes) {
+    if (n.kind === 'origin' || n.kind === 'band') continue;
+    boxes.push({ id: n.id, part: 'card', x: n.x, y: n.y, w: n.w, h: n.h });
+    if (n.text) boxes.push({ id: n.id, part: 'text', x: n.text.x, y: n.text.y, w: n.text.w, h: n.text.h });
+  }
+  const hits = [];
+  for (let i = 0; i < boxes.length; i++) {
+    for (let j = i + 1; j < boxes.length; j++) {
+      const a = boxes[i], b = boxes[j];
+      if (a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h) hits.push([a.id + '/' + a.part, b.id + '/' + b.part]);
+    }
+  }
+  return hits;
+}
+
+if (typeof module !== 'undefined') module.exports = { KP_LAYOUT, KP_LAYER_NAMES, kpWrap, kpCut, kpLayout, kpOverlaps };
+
+// ---- 30-board.js
+// Board renderer + camera. Geometry comes from kpLayout; this file only draws and listens.
+
+const KP_ICON = { program: '▣', third: '⧉', folder: '☁', local: '📁', agent: '🤖', go: '▶', git: '⎇', summary: '▸', slot: '○' };
+const KP_STATUS_HU = { live: 'használatban', dev: 'fejlesztés alatt', idea: 'tervezett', v2: 'jövőkép' };
+const KP_STATUS_DOT = { live: '●', dev: '◐', idea: '○', v2: '◌' };
+const KP_ZOOM = { min: 0.05, max: 3, descOff: 0.5, cardsOff: 0.3, step: 1.25 };
+const KP_LABEL_X = -24;
+
+const kpBoard = {
+  view: 'now', layers: {}, collapsed: [], expanded: [], focus: null,
+  cam: { x: 0, y: 0, k: 1 }, layout: null, fitted: false
+};
+
+function kpBoardLoad() {
+  kpBoard.view = kpStore.get('view', 'now') === 'vision' ? 'vision' : 'now';
+  kpBoard.layers = Object.assign({ L1: true, L2: true, L3: true, L4: true, L5: true, L6: true }, kpStore.get('layers', {}));
+  kpBoard.collapsed = kpStore.get('collapsed', []);
+}
+
+function kpBoardRender() {
+  const topo = kpData.topology;
+  const svg = document.getElementById('kpBoard');
+  if (!topo) { svg.replaceChildren(); return; }
+  let cols = kpVisible(kpResolveRefs(topo), kpBoard.view);
+  if (kpBoard.focus) cols = cols.filter(c => c.dept.id === kpBoard.focus);
+  const lay = kpLayout(cols, { layers: kpBoard.layers, collapsed: kpBoard.focus ? [] : kpBoard.collapsed, expanded: kpBoard.expanded, en: true });
+  kpBoard.layout = lay;
+
+  const g = kpEl('g', { id: 'kpCam' });
+  const gEdges = kpEl('g', { class: 'kp-edges' });
+  const gNodes = kpEl('g', { class: 'kp-nodes' });
+  for (const e of lay.edges) gEdges.append(kpEdgeEl(e));
+  for (const n of lay.nodes) gNodes.append(kpNodeEl(n));
+  g.append(kpLayerLabels(lay), kpOverviewAreas(lay), gEdges, gNodes, kpEl('g', { id: 'kpOverview', class: 'kp-overview' }));
+  svg.replaceChildren(g);
+  kpRenderChrome();
+  if (!kpBoard.fitted) { kpFit(); kpBoard.fitted = true; } else kpApplyCam();
+}
+
+function kpHue(h) { return 'hue-' + (h || 'gray'); }
+
+function kpEdgeEl(e) {
+  const [[x1, y1], [x2, y2]] = e.pts;
+  const cls = 'kp-edge kp-edge-' + e.kind + ' ' + kpHue(e.hue);
+  if (e.kind === 'curve') {
+    const my = (y1 + y2) / 2;
+    return kpEl('path', { class: cls, d: `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}` });
+  }
+  return kpEl('line', { class: cls, x1, y1, x2, y2 });
+}
+
+function kpText(x, y, lines, cls, lh) {
+  const t = kpEl('text', { x, y, class: cls });
+  lines.forEach((s, i) => t.append(kpEl('tspan', { x, dy: i ? lh : 0 }, s)));
+  return t;
+}
+
+function kpNodeEl(n) {
+  const L = KP_LAYOUT;
+  const g = kpEl('g', { class: 'kp-node kp-' + n.kind + ' ' + kpHue(n.hue) + (n.status ? ' st-' + n.status : ''), 'data-id': n.id });
+  if (n.full && n.full !== n.title.join(' ')) g.append(kpEl('title', {}, n.full));
+
+  if (n.kind === 'origin') {
+    g.append(kpEl('rect', { class: 'kp-card', x: n.x, y: n.y, width: n.w, height: n.h, rx: 10 }),
+      kpEl('text', { class: 'kp-origin-t', x: n.x + n.w / 2, y: n.y + n.h / 2 + 6 }, 'VRG'));
+    return g;
+  }
+  if (n.kind === 'dept') {
+    const maxC = Math.max(8, Math.floor((n.w - 40) / 7.6));
+    const t = kpWrap(n.title[0], maxC, 2);
+    g.append(kpEl('rect', { class: 'kp-card', x: n.x, y: n.y, width: n.w, height: n.h, rx: 8 }),
+      kpEl('rect', { class: 'kp-dept-bar', x: n.x, y: n.y, width: n.w, height: 4, rx: 2 }),
+      kpText(n.x + 12, n.y + (t.length > 1 ? 20 : 27), t, 'kp-dept-t', 15),
+      kpEl('text', { class: 'kp-dept-n', x: n.x + n.w - 10, y: n.y + 27 }, (n.collapsed ? '▸ ' : '▾ ') + n.count));
+    g.addEventListener('click', () => kpHeaderClick(n.dept));
+    g.addEventListener('dblclick', () => kpHeaderDbl(n.dept));
+    return g;
+  }
+  if (n.kind === 'roadmap') {
+    const cx = n.x - L.cardX + L.spineX;
+    g.append(kpEl('circle', { class: 'kp-rm-dot', cx, cy: n.y + 8, r: 4 }),
+      kpEl('text', { class: 'kp-rm-date', x: n.x, y: n.y + 12 }, kpFmtDate(n.date)),
+      kpEl('text', { class: 'kp-rm-t', x: n.x, y: n.y + 26 }, n.title[0]));
+    return g;
+  }
+  if (n.kind === 'band') {
+    g.append(kpEl('rect', { class: 'kp-band-r', x: n.x, y: n.y, width: n.w, height: n.h, rx: 8 }),
+      kpEl('text', { class: 'kp-band-t', x: n.x + 16, y: n.y + 26 }, (n.layer === 'L5' ? '★ ' : '📁 ') + n.layer + ' · ' + n.title[0]),
+      kpEl('text', { class: 'kp-band-s', x: n.x + 16, y: n.y + 46 }, 'Csak te látod — még üres.'));
+    return g;
+  }
+  if (n.kind === 'more') {
+    g.append(kpEl('rect', { class: 'kp-chip', x: n.x, y: n.y, width: n.w, height: n.h, rx: n.h / 2 }),
+      kpEl('text', { class: 'kp-chip-t', x: n.x + n.w / 2, y: n.y + 15 }, n.title[0]));
+    g.addEventListener('click', () => { kpBoard.expanded.push(n.cell); kpBoardRender(); });
+    return g;
+  }
+
+  // cards: program / summary / slot / folder / local / agent / go / git
+  const big = n.kind === 'program' || n.kind === 'summary' || n.kind === 'slot';
+  g.append(kpEl('rect', { class: 'kp-card' + (big ? '' : ' kp-sub'), x: n.x, y: n.y, width: n.w, height: n.h, rx: big ? 8 : 6 }));
+  const icon = KP_ICON[n.kind] || '▣';
+  if (big) {
+    g.append(kpEl('text', { class: 'kp-icon', x: n.x + 10, y: n.y + 19 }, icon),
+      kpText(n.x + 28, n.y + 19, n.title, 'kp-title', 15));
+    if (n.status) {
+      g.append(kpEl('text', { class: 'kp-status', x: n.x + 28, y: n.y + n.h - 9 }, KP_STATUS_DOT[n.status] + ' ' + KP_STATUS_HU[n.status]));
+    }
+  } else {
+    g.append(kpEl('text', { class: 'kp-icon', x: n.x + 9, y: n.y + 21 }, icon),
+      kpEl('text', { class: 'kp-sub-t', x: n.x + 28, y: n.y + 21 }, n.title[0]));
+  }
+  if (n.text) {
+    const desc = kpEl('g', { class: 'kp-desc' });
+    if (n.lines.length) desc.append(kpText(n.text.x, n.text.y + 11, n.lines, 'kp-d', L.lineH));
+    if (n.en.length) desc.append(kpText(n.text.x, n.text.y + 11 + n.lines.length * L.lineH, n.en, 'kp-den', L.lineH));
+    g.append(desc);
+  }
+  return g;
+}
+
+// Far out only the branches remain; each department becomes an area as tall as its content,
+// with a label kept at screen size (kpOverviewLabels, redrawn on zoom).
+function kpOverviewAreas(lay) {
+  const g = kpEl('g', { class: 'kp-areas' });
+  for (const h of lay.nodes.filter(n => n.kind === 'dept')) {
+    const own = lay.nodes.filter(n => n.dept === h.dept && n.kind !== 'dept');
+    const bottom = Math.max(h.y + h.h + 40, ...own.map(n => n.y + n.h + (n.text ? n.text.h + KP_LAYOUT.descGap : 0)));
+    g.append(kpEl('rect', { class: 'kp-area ' + kpHue(h.hue), x: h.x, y: h.y, width: h.w, height: bottom - h.y, rx: 10, 'data-dept': h.dept }));
+  }
+  return g;
+}
+
+function kpOverviewLabels() {
+  const g = document.getElementById('kpOverview');
+  if (!g) return;
+  const k = kpBoard.cam.k;
+  if (k >= KP_ZOOM.cardsOff) { g.replaceChildren(); return; }
+  const fs = 13 / k, lh = 16 / k, pad = 8 / k;
+  const out = [];
+  for (const r of document.querySelectorAll('#kpCam .kp-area')) {
+    const x = +r.getAttribute('x'), y = +r.getAttribute('y'), w = +r.getAttribute('width'), h = +r.getAttribute('height');
+    const d = kpBoard.layout.nodes.find(n => n.dept === r.dataset.dept && n.kind === 'dept');
+    const name = d.title[0], count = d.count + ' program';
+    const perLine = Math.floor((w * k - 16) / 7.4);
+    if (perLine >= 12) {
+      const lines = kpWrap(name, perLine, 3);
+      out.push(kpText(x + pad, y + pad + fs, lines, 'kp-ov-t', lh), kpEl('text', { class: 'kp-ov-n', x: x + pad, y: y + pad + fs + lines.length * lh + 2 / k }, count));
+      out[out.length - 2].setAttribute('font-size', fs); out[out.length - 1].setAttribute('font-size', fs * 0.85);
+    } else {
+      const t = kpEl('text', { class: 'kp-ov-t', 'font-size': fs, transform: 'translate(' + (x + w / 2 + fs * 0.35) + ',' + (y + pad) + ') rotate(90)' }, kpCut(name, Math.floor(((kpBoard.layout.height - y) * k - 16) / 7.4)));
+      out.push(t);
+    }
+  }
+  g.replaceChildren(...out);
+}
+
+function kpLayerLabels(lay) {
+  const g = kpEl('g', { class: 'kp-layer-labels' });
+  const add = (y, t) => g.append(kpEl('text', { class: 'kp-layer-l', x: KP_LABEL_X, y: y + 18 }, t));
+  for (const l of ['L1', 'L2', 'L3', 'L4']) if (lay.rows[l]) add(lay.rows[l].y, l + ' · ' + KP_LAYER_NAMES[l]);
+  if (lay.rows.roadmap && lay.rows.roadmap.h) add(lay.rows.roadmap.y, 'Ütemterv ↓');
+  return g;
+}
+
+// ---- header click = collapse, double-click = focus (click waits so a double-click is not two toggles)
+let kpClickTimer = null;
+function kpHeaderClick(dept) {
+  clearTimeout(kpClickTimer);
+  kpClickTimer = setTimeout(() => {
+    if (kpBoard.focus) return;
+    const c = kpBoard.collapsed;
+    kpBoard.collapsed = c.includes(dept) ? c.filter(d => d !== dept) : c.concat(dept);
+    kpStore.set('collapsed', kpBoard.collapsed);
+    kpBoardRender();
+  }, 250);
+}
+function kpHeaderDbl(dept) {
+  clearTimeout(kpClickTimer);
+  kpBoard.focus = kpBoard.focus === dept ? null : dept;
+  kpBoard.fitted = false;
+  kpBoardRender();
+}
+
+// ---- chrome: rail, view toggle, focus note
+function kpRenderChrome() {
+  for (const b of document.querySelectorAll('#kpRail button')) b.classList.toggle('on', kpBoard.layers[b.dataset.layer] !== false);
+  for (const b of document.querySelectorAll('#kpView button')) b.classList.toggle('on', b.dataset.view === kpBoard.view);
+  const f = document.getElementById('kpFocus');
+  if (kpBoard.focus) {
+    const d = kpData.topology.departments.find(x => x.id === kpBoard.focus);
+    f.textContent = 'Fókusz: ' + (d ? d.t : kpBoard.focus) + ' — Esc: vissza';
+    f.hidden = false;
+  } else f.hidden = true;
+}
+
+function kpSetView(v) {
+  kpBoard.view = v;
+  kpStore.set('view', v);
+  kpBoard.fitted = false;
+  kpBoardRender();
+}
+
+function kpToggleLayer(l) {
+  kpBoard.layers[l] = kpBoard.layers[l] === false;
+  kpStore.set('layers', kpBoard.layers);
+  kpBoardRender();
+}
+
+// ---- camera
+function kpApplyCam() {
+  const c = kpBoard.cam;
+  const g = document.getElementById('kpCam');
+  if (g) g.setAttribute('transform', `translate(${c.x},${c.y}) scale(${c.k})`);
+  const svg = document.getElementById('kpBoard');
+  svg.classList.toggle('lod-desc', c.k < KP_ZOOM.descOff);
+  svg.classList.toggle('lod-cards', c.k < KP_ZOOM.cardsOff);
+  kpOverviewLabels();
+}
+
+function kpFit() {
+  const lay = kpBoard.layout;
+  const svg = document.getElementById('kpBoard');
+  const r = svg.getBoundingClientRect();
+  if (!lay || !r.width) return;
+  const pad = 24, minX = KP_LABEL_X - 150;
+  const w = lay.width - minX, h = lay.height;
+  const k = Math.max(KP_ZOOM.min, Math.min(KP_ZOOM.max, Math.min((r.width - 2 * pad) / w, (r.height - 2 * pad) / h)));
+  kpBoard.cam = { k, x: (r.width - w * k) / 2 - minX * k, y: pad };
+  kpApplyCam();
+}
+
+function kpZoomAt(mx, my, factor) {
+  const c = kpBoard.cam;
+  const k = Math.max(KP_ZOOM.min, Math.min(KP_ZOOM.max, c.k * factor));
+  kpBoard.cam = { k, x: mx - (mx - c.x) * k / c.k, y: my - (my - c.y) * k / c.k };
+  kpApplyCam();
+}
+
+// put a board point at screen point (used by tests / later "jump to node")
+function kpCenterOn(bx, by, k) {
+  const r = document.getElementById('kpBoard').getBoundingClientRect();
+  kpBoard.cam = { k, x: r.width / 2 - bx * k, y: r.height / 2 - by * k };
+  kpApplyCam();
+}
+
+function kpBoardInit() {
+  kpBoardLoad();
+  const svg = document.getElementById('kpBoard');
+  let drag = null, space = false;
+
+  svg.addEventListener('wheel', e => {
+    e.preventDefault();
+    const r = svg.getBoundingClientRect();
+    kpZoomAt(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0015));
+  }, { passive: false });
+  svg.addEventListener('pointerdown', e => {
+    if (e.button === 1 || (e.button === 0 && space)) {
+      e.preventDefault();
+      drag = { x: e.clientX, y: e.clientY, cx: kpBoard.cam.x, cy: kpBoard.cam.y };
+      svg.setPointerCapture(e.pointerId);
+      svg.classList.add('panning');
+    }
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!drag) return;
+    kpBoard.cam.x = drag.cx + e.clientX - drag.x;
+    kpBoard.cam.y = drag.cy + e.clientY - drag.y;
+    kpApplyCam();
+  });
+  const end = () => { drag = null; svg.classList.remove('panning'); };
+  svg.addEventListener('pointerup', end);
+  svg.addEventListener('pointercancel', end);
+  svg.addEventListener('auxclick', e => { if (e.button === 1) e.preventDefault(); });
+
+  window.addEventListener('keydown', e => {
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    const r = svg.getBoundingClientRect();
+    if (e.code === 'Space') { space = true; svg.classList.add('space'); e.preventDefault(); }
+    else if (e.key === '0') kpFit();
+    else if (e.key === '+' || e.key === '=') kpZoomAt(r.width / 2, r.height / 2, KP_ZOOM.step);
+    else if (e.key === '-') kpZoomAt(r.width / 2, r.height / 2, 1 / KP_ZOOM.step);
+    else if (e.key === 'Escape' && kpBoard.focus) { kpBoard.focus = null; kpBoard.fitted = false; kpBoardRender(); }
+  });
+  window.addEventListener('keyup', e => { if (e.code === 'Space') { space = false; svg.classList.remove('space'); } });
+  window.addEventListener('resize', () => kpApplyCam());
+
+  for (const b of document.querySelectorAll('#kpView button')) b.addEventListener('click', () => kpSetView(b.dataset.view));
+  document.getElementById('kpFit').addEventListener('click', kpFit);
+  kpBoardRender();
+}
+
 // ---- 99-boot.js
 // Boot: theme, embedded data, shell. Later WPs hang their init off kpBoot.
 
@@ -269,7 +873,7 @@ function kpRenderThemes() {
 
 function kpRenderRail() {
   document.getElementById('kpRail').replaceChildren(...KP_LAYERS.map(l =>
-    kpEl('button', { class: 'on', 'data-layer': l, title: l + ' réteg' }, l)));
+    kpEl('button', { class: 'on', 'data-layer': l, title: l + ' · ' + KP_LAYER_NAMES[l] + ' — megjelenítés / elrejtés', onclick: () => kpToggleLayer(l) }, l)));
 }
 
 function kpBoot() {
@@ -278,6 +882,7 @@ function kpBoot() {
   kpData.pubkey = kpEmbedded('kpPubkey');
   kpSetTheme(kpStore.get('theme', 'amber'));
   kpRenderRail();
+  kpBoardInit();
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
   document.getElementById('kpMode').textContent = kpStore.available() ? '' : 'csak linkek — a böngésző nem enged menteni';
 }

@@ -59,7 +59,7 @@ Cheaper model fine: H0 H1 H8 H9 H12. Strong model: HA H2 H5 H6 H7 H10 + every VE
 | HA | done | 2026-10-21 | Audit clean (no real secrets); one new finding — `varler-planner` (407 files) + 1 email not covered by the original Q10 draft. See `AUDIT-2026-10-21.md`, HUB-Q10 reopened. |
 | H0 | done | 2026-10-21 | Skeleton builds to one 8.8 kB file; tests 4/4, check-hub OK, check-start OK; four themes verified in headless Edge (4 distinct computed backgrounds). START.cmd `H`, VRG-DE.cmd `L5`. |
 | H1 | done | 2026-10-21 | topology.json from the seed; kpValidate/ResolveRefs/Visible/LinkFor; tests 12/12; check-hub validates + checks 75 repo paths — 16 are still uncommitted work in the main checkout (docs/research, docs/client-look, BRIDGE/10_media-wall, Firmware/*): warning now, error under `--strict` (H13). |
-| H2 | open | | |
+| H2 | ⏸ look | 2026-10-21 | Board built: layout (pure) + renderer + camera + LOD overview; tests 21/21; real-geometry audit in Edge: 0 overflows, 0 collisions (now 247 / vision 283 boxes). Waiting for the user's look approval. |
 | H3 | open | | |
 | H4 | open | | |
 | H5 | open | | |

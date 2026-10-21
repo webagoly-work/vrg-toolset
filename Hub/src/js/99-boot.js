@@ -25,7 +25,7 @@ function kpRenderThemes() {
 
 function kpRenderRail() {
   document.getElementById('kpRail').replaceChildren(...KP_LAYERS.map(l =>
-    kpEl('button', { class: 'on', 'data-layer': l, title: l + ' réteg' }, l)));
+    kpEl('button', { class: 'on', 'data-layer': l, title: l + ' · ' + KP_LAYER_NAMES[l] + ' — megjelenítés / elrejtés', onclick: () => kpToggleLayer(l) }, l)));
 }
 
 function kpBoot() {
@@ -34,6 +34,7 @@ function kpBoot() {
   kpData.pubkey = kpEmbedded('kpPubkey');
   kpSetTheme(kpStore.get('theme', 'amber'));
   kpRenderRail();
+  kpBoardInit();
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
   document.getElementById('kpMode').textContent = kpStore.available() ? '' : 'csak linkek — a böngésző nem enged menteni';
 }
