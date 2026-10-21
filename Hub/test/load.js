@@ -13,7 +13,7 @@ function kpLoad(files, globals) {
   const ctx = vm.createContext(Object.assign({ console }, globals || {}));
   const src = files.map(f => fs.readFileSync(path.join(JS, f), 'utf8')).join('\n');
   // top-level const/function become reachable through the returned object
-  const names = [...src.matchAll(/^(?:const|let|function)\s+([A-Za-z_$][\w$]*)/gm)].map(m => m[1]);
+  const names = [...src.matchAll(/^(?:const|let|(?:async\s+)?function)\s+([A-Za-z_$][\w$]*)/gm)].map(m => m[1]);
   vm.runInContext(src + '\n;({' + names.join(',') + '})', ctx);
   return vm.runInContext('({' + names.join(',') + '})', ctx);
 }

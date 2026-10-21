@@ -55,9 +55,11 @@ function kpTipShow(id, x, y) {
     : n.kind === 'roadmap' ? s.t : s.d || n.full;
   const t = kpTarget(c);
   const where = t.href ? t.href.replace(/^https?:\/\//, '') : t.path || (n.kind === 'dept' ? 'kattintás: össze/kinyit · dupla: Fókusz' : '');
+  const lock = n.layer && n.kind !== 'roadmap' ? kpLayerLock(n.layer) : null;
   const tip = kpEl('div', { id: 'kpTip', class: 'kp-tip', role: 'tooltip' },
     kpEl('div', { class: 'kp-tip-t' }, n.full || n.title.join(' ')), text ? kpEl('div', {}, text) : null,
-    where ? kpEl('div', { class: 'kp-tip-w' }, '→ ' + where) : null);
+    where ? kpEl('div', { class: 'kp-tip-w' }, '→ ' + where) : null,
+    lock ? kpEl('div', { class: 'kp-tip-lock' }, '🔒 Előbb lépj be: ' + lock) : null);
   document.body.append(tip);
   tip.style.left = Math.min(x + 14, innerWidth - tip.offsetWidth - 8) + 'px';
   tip.style.top = Math.min(y + 18, innerHeight - tip.offsetHeight - 8) + 'px';
@@ -116,6 +118,7 @@ function kpNavInit() {
     const menu = document.getElementById('kpMenu');
     if (menu) { kpMenuKeys(e, menu); return; }
     if (e.key === 'Escape') {
+      if (document.getElementById('kpModal').children.length) { kpModalClose(); e.stopImmediatePropagation(); return; }
       if (document.getElementById('kpPop')) { kpPopoverClose(); e.stopImmediatePropagation(); return; }
       if (!document.getElementById('kpDrawer').hidden) { kpDrawerClose(); e.stopImmediatePropagation(); return; }
     }

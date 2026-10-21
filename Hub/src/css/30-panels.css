@@ -58,3 +58,27 @@
 .kp-search-r.sel,.kp-search-r:hover{background:var(--panel2)}
 .kp-search-k{color:var(--muted);font-size:12px;white-space:nowrap}
 .kp-search-none{padding:10px 14px;color:var(--muted)}
+
+/* dialogs: Belépések, token wizard */
+.kp-dialog{width:min(640px,94vw);max-height:84vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.kp-dialog-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.kp-dialog-t{font-weight:700;font-size:16px}
+.kp-si-row{display:grid;grid-template-columns:150px 18px 1fr;gap:4px 8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.kp-si-name{font-weight:600}
+.kp-si-btns{grid-column:3;display:flex;gap:6px;flex-wrap:wrap}
+.kp-si-tick{margin-left:10px;color:var(--ink)}
+.kp-dot{font-size:12px}
+.kp-dot.ok{color:var(--green-ink)} .kp-dot.warn{color:var(--amberflag)} .kp-dot.off,.kp-dot.none{color:var(--muted)}
+.kp-signin .kp-dot{margin-left:2px}
+.kp-wiz{padding-left:20px} .kp-wiz li{margin:6px 0}
+.kp-wiz-msg{min-height:18px;margin-top:8px;font-size:13px}
+.kp-wiz-msg.ok{color:var(--green-ink)} .kp-wiz-msg.bad{color:var(--red-ink)}
+.kp-note{font-size:12px;color:var(--muted);border-left:3px solid var(--accent-dim);padding-left:8px}
+.kp-primary{background:var(--accent-dim);color:var(--ink)}
+
+/* banner + locks */
+.kp-banner{padding:6px 16px;background:var(--accent-dim);color:var(--ink);font-size:13px}
+.kp-banner code{background:var(--bg);padding:0 4px;border-radius:3px}
+.kp-lock{font-size:11px;text-anchor:end}
+.kp-locked .kp-sub-t{fill:var(--muted)}
+.kp-tip-lock{margin-top:4px;color:var(--amberflag)}

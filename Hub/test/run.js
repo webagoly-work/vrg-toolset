@@ -15,17 +15,18 @@ const specs = fs.readdirSync(DIR).filter(f => /^spec-.*\.js$/.test(f)).sort();
 let pass = 0, total = 0;
 const failed = [];
 
-for (const file of specs) {
-  let cases;
-  try { cases = require(path.join(DIR, file)); }
-  catch (e) { failed.push(file + ': ' + e.message); total++; continue; }
-  for (const c of cases) {
-    total++;
-    try { c.fn(); pass++; }
-    catch (e) { failed.push(file + ' / ' + c.name + ': ' + e.message); }
+(async () => {
+  for (const file of specs) {
+    let cases;
+    try { cases = require(path.join(DIR, file)); }
+    catch (e) { failed.push(file + ': ' + e.message); total++; continue; }
+    for (const c of cases) {
+      total++;
+      try { await c.fn(); pass++; }   // a spec may be async
+      catch (e) { failed.push(file + ' / ' + c.name + ': ' + e.message); }
+    }
   }
-}
-
-for (const f of failed) console.log('  FAIL  ' + f);
-console.log(pass + '/' + total + (failed.length ? '  ·  ' + failed.length + ' failing' : '  ·  all green'));
-process.exit(failed.length ? 1 : 0);
+  for (const f of failed) console.log('  FAIL  ' + f);
+  console.log(pass + '/' + total + (failed.length ? '  ·  ' + failed.length + ' failing' : '  ·  all green'));
+  process.exit(failed.length ? 1 : 0);
+})();

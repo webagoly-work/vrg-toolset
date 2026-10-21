@@ -45,6 +45,7 @@
 }
 
 /* 10-layout.css */
+[hidden]{display:none!important}
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.45;display:flex;flex-direction:column;overflow:hidden}
@@ -205,6 +206,30 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 .kp-search-r.sel,.kp-search-r:hover{background:var(--panel2)}
 .kp-search-k{color:var(--muted);font-size:12px;white-space:nowrap}
 .kp-search-none{padding:10px 14px;color:var(--muted)}
+
+/* dialogs: Belépések, token wizard */
+.kp-dialog{width:min(640px,94vw);max-height:84vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.kp-dialog-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.kp-dialog-t{font-weight:700;font-size:16px}
+.kp-si-row{display:grid;grid-template-columns:150px 18px 1fr;gap:4px 8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.kp-si-name{font-weight:600}
+.kp-si-btns{grid-column:3;display:flex;gap:6px;flex-wrap:wrap}
+.kp-si-tick{margin-left:10px;color:var(--ink)}
+.kp-dot{font-size:12px}
+.kp-dot.ok{color:var(--green-ink)} .kp-dot.warn{color:var(--amberflag)} .kp-dot.off,.kp-dot.none{color:var(--muted)}
+.kp-signin .kp-dot{margin-left:2px}
+.kp-wiz{padding-left:20px} .kp-wiz li{margin:6px 0}
+.kp-wiz-msg{min-height:18px;margin-top:8px;font-size:13px}
+.kp-wiz-msg.ok{color:var(--green-ink)} .kp-wiz-msg.bad{color:var(--red-ink)}
+.kp-note{font-size:12px;color:var(--muted);border-left:3px solid var(--accent-dim);padding-left:8px}
+.kp-primary{background:var(--accent-dim);color:var(--ink)}
+
+/* banner + locks */
+.kp-banner{padding:6px 16px;background:var(--accent-dim);color:var(--ink);font-size:13px}
+.kp-banner code{background:var(--bg);padding:0 4px;border-radius:3px}
+.kp-lock{font-size:11px;text-anchor:end}
+.kp-locked .kp-sub-t{fill:var(--muted)}
+.kp-tip-lock{margin-top:4px;color:var(--amberflag)}
 </style>
 </head>
 <body>
@@ -217,9 +242,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
     <span id="kpFocus" class="kp-focus" hidden></span>
   </div>
   <div class="kp-top-right">
+    <button id="kpSignin" class="kp-btn kp-signin">Belépések</button>
     <div id="kpThemes" class="kp-themes" role="group" aria-label="Téma"></div>
   </div>
 </header>
+<div id="kpBanner" class="kp-banner" role="status" hidden></div>
 <div id="kpStrip" class="kp-strip"></div>
 <main class="kp-main">
   <nav id="kpRail" class="kp-rail" aria-label="Rétegek"></nav>
@@ -235,7 +262,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 <script type="application/json" id="kpPubkey">null</script>
 <script>
 "use strict";
-const KP_BUILD = "49178f78af9c";
+const KP_BUILD = "4ee7a5f4c958";
 // ---- 00-core.js
 // Core helpers shared by every module. Pure where possible, so Hub/test can run them in Node.
 
@@ -391,7 +418,7 @@ const KP_LAYOUT = {
   rowTop: 200, rowStep: 150, rowPad: 28,
   roadmapGap: 90, roadmapRow: 34, roadmapChars: 30,
   cardX: 12, cardW: 176, cardH: 52, cardH2: 66, titleChars: 22,
-  subH: 32, subChars: 24,
+  subH: 32, subChars: 20,
   stackGap: 6, stackMax: 3, chipH: 22,
   descGap: 4, lineH: 15, descChars: 30, descLines: 3, subLines: 2, charW: 6.2,
   spineX: 4, bandGap: 48, bandH: 64
@@ -733,6 +760,9 @@ function kpNodeEl(n) {
   } else {
     g.append(kpEl('text', { class: 'kp-icon', x: n.x + 9, y: n.y + 21 }, icon),
       kpEl('text', { class: 'kp-sub-t', x: n.x + 28, y: n.y + 21 }, n.title[0]));
+    const lock = kpLayerLock(n.layer);
+    g.classList.toggle('kp-locked', !!lock);
+    g.append(kpEl('text', { class: 'kp-lock', x: n.x + n.w - 8, y: n.y + 21 }, lock ? '🔒' : '🔓'));
   }
   if (n.text) {
     const desc = kpEl('g', { class: 'kp-desc' });
@@ -1452,9 +1482,11 @@ function kpTipShow(id, x, y) {
     : n.kind === 'roadmap' ? s.t : s.d || n.full;
   const t = kpTarget(c);
   const where = t.href ? t.href.replace(/^https?:\/\//, '') : t.path || (n.kind === 'dept' ? 'kattintás: össze/kinyit · dupla: Fókusz' : '');
+  const lock = n.layer && n.kind !== 'roadmap' ? kpLayerLock(n.layer) : null;
   const tip = kpEl('div', { id: 'kpTip', class: 'kp-tip', role: 'tooltip' },
     kpEl('div', { class: 'kp-tip-t' }, n.full || n.title.join(' ')), text ? kpEl('div', {}, text) : null,
-    where ? kpEl('div', { class: 'kp-tip-w' }, '→ ' + where) : null);
+    where ? kpEl('div', { class: 'kp-tip-w' }, '→ ' + where) : null,
+    lock ? kpEl('div', { class: 'kp-tip-lock' }, '🔒 Előbb lépj be: ' + lock) : null);
   document.body.append(tip);
   tip.style.left = Math.min(x + 14, innerWidth - tip.offsetWidth - 8) + 'px';
   tip.style.top = Math.min(y + 18, innerHeight - tip.offsetHeight - 8) + 'px';
@@ -1513,6 +1545,7 @@ function kpNavInit() {
     const menu = document.getElementById('kpMenu');
     if (menu) { kpMenuKeys(e, menu); return; }
     if (e.key === 'Escape') {
+      if (document.getElementById('kpModal').children.length) { kpModalClose(); e.stopImmediatePropagation(); return; }
       if (document.getElementById('kpPop')) { kpPopoverClose(); e.stopImmediatePropagation(); return; }
       if (!document.getElementById('kpDrawer').hidden) { kpDrawerClose(); e.stopImmediatePropagation(); return; }
     }
@@ -1542,6 +1575,222 @@ function kpMenuKeys(e, menu) {
   else return;
   e.preventDefault();
   e.stopImmediatePropagation();
+}
+
+// ---- 50-github.js
+// GitHub: token, identity, API calls. The token lives only in this browser's storage and in memory;
+// it is never logged, never put in an error text, never written anywhere else.
+
+const KP_GH_API = 'https://api.github.com';
+const KP_GH_TOKEN_RE = /^(github_pat_|ghp_)[A-Za-z0-9_]{20,}$/;
+const KP_GH_ACCESS_HU = { write: 'írás', read: 'olvasás', none: 'nincs hozzáférés a repóhoz' };
+
+const kpGh = { token: null, login: null, name: null, access: null, rate: null, error: null };
+const kpGhCache = new Map();   // path -> { etag, body }
+
+const kpGhTokenOk = t => KP_GH_TOKEN_RE.test(String(t || '').trim());
+
+function kpGhLoad() {
+  const t = kpStore.get('ghToken', null);
+  if (kpGhTokenOk(t)) kpGh.token = t;
+  const who = kpStore.get('ghWho', null);
+  if (kpGh.token && who) Object.assign(kpGh, { login: who.login, name: who.name, access: who.access });
+}
+
+function kpGhSignOut(reason) {
+  Object.assign(kpGh, { token: null, login: null, name: null, access: null, error: reason || null });
+  kpGhCache.clear();
+  kpStore.set('ghToken', null);
+  kpStore.set('ghWho', null);
+}
+
+// -> { status, json | text, etag, rateRemaining, error? }. 304 answers come from the cache.
+async function kpGhFetch(path, opts) {
+  const o = opts || {};
+  if (!kpGh.token) return { status: 0, error: 'Nincs GitHub belépés' };
+  const headers = {
+    Authorization: 'Bearer ' + kpGh.token,
+    Accept: o.raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+  const key = (o.raw ? 'raw:' : '') + path;
+  const cached = kpGhCache.get(key);
+  const etag = o.etag || (cached && cached.etag);
+  if (etag) headers['If-None-Match'] = etag;
+  let res;
+  try { res = await fetch(KP_GH_API + path, { headers, cache: 'no-store' }); }
+  catch (e) { return { status: 0, error: 'Nincs kapcsolat a GitHubbal' }; }
+  const h = n => (res.headers && res.headers.get ? res.headers.get(n) : null);
+  const rate = h('x-ratelimit-remaining');
+  if (rate != null) kpGh.rate = +rate;
+  const out = { status: res.status, etag: h('etag'), rateRemaining: rate == null ? null : +rate };
+  if (res.status === 401) { kpGhSignOut('A token lejárt vagy hibás'); out.error = kpGh.error; return out; }
+  if (res.status === 304 && cached) return Object.assign(out, cached.body, { etag: cached.etag, fromCache: true });
+  if (res.status >= 200 && res.status < 300) {
+    const body = o.raw ? { text: await res.text() } : { json: await res.json() };
+    if (out.etag) kpGhCache.set(key, { etag: out.etag, body });
+    return Object.assign(out, body);
+  }
+  return out;
+}
+
+// who is this token, and what may it do with the repo
+async function kpGhIdentify(repo) {
+  kpGh.error = null;
+  const u = await kpGhFetch('/user');
+  if (u.status !== 200) {
+    if (u.status !== 401) kpGh.error = u.error || 'A GitHub nem válaszolt (' + u.status + ')';
+    return kpGh;
+  }
+  kpGh.login = u.json.login;
+  kpGh.name = u.json.name || null;
+  const r = await kpGhFetch('/repos/' + repo.owner + '/' + repo.name);
+  if (r.status === 401) return kpGh;
+  kpGh.access = r.status === 200 ? (r.json.permissions && r.json.permissions.push ? 'write' : 'read') : r.status === 404 ? 'none' : null;
+  if (!kpGh.access) kpGh.error = r.error || 'A repó nem ellenőrizhető (' + r.status + ')';
+  kpStore.set('ghWho', { login: kpGh.login, name: kpGh.name, access: kpGh.access });
+  return kpGh;
+}
+
+async function kpGhSetToken(t, repo) {
+  t = String(t || '').trim();
+  if (!kpGhTokenOk(t)) return { ok: false, error: 'Ez nem GitHub token formátum (github_pat_… vagy ghp_…)' };
+  kpGhSignOut();
+  kpGh.token = t;
+  kpStore.set('ghToken', t);
+  await kpGhIdentify(repo);
+  if (!kpGh.token) return { ok: false, error: kpGh.error || 'A token lejárt vagy hibás' };
+  return { ok: !!kpGh.login, error: kpGh.error };
+}
+
+const kpGhHasRepo = () => !!kpGh.login && (kpGh.access === 'write' || kpGh.access === 'read');
+
+if (typeof module !== 'undefined') module.exports = { kpGh, kpGhFetch, kpGhIdentify, kpGhSetToken, kpGhTokenOk, kpGhSignOut, kpGhCache };
+
+// ---- 55-signin.js
+// Belépések: one row per platform, the token wizard, the three top-bar dots, layer gating v1.
+
+const KP_LOGIN = {
+  github: 'https://github.com/login',
+  ghToken: 'https://github.com/settings/personal-access-tokens/new',
+  onedrive: 'https://onedrive.live.com/',
+  claude: 'https://claude.ai/code'
+};
+const KP_FILE_BANNER = 'Csak linkek mód — a beállítások nem maradnak meg. Teljes mód: indítsd a `Hub\\VRG Kapu.cmd`-t.';
+const KP_TOKEN_NOTE = 'A token csak ebben a böngészőben marad. Ne küldd el senkinek, ne tedd fájlba.';
+const KP_WIZARD = [
+  ['Nyisd meg a GitHubot, és lépj be a saját fiókoddal.', 'github.com → jobb felül a profilképed → Settings'],
+  ['Bal oldalt, legalul: Developer settings.', 'Personal access tokens → Fine-grained tokens → Generate new token'],
+  ['Adj nevet (pl. „VRG Kapu”), lejárat: 90 nap.', 'Repository access: Only select repositories → vrg-toolset'],
+  ['Jogosultságok a repóhoz:', 'Permissions → Contents: Read and write · Metadata: Read-only'],
+  ['Generate token → másold ki, és illeszd be ide lent.', 'A token egyszer látszik — ha elveszik, csinálj újat']
+];
+
+const kpOdTick = () => kpStore.get('odTick', false) === true;
+const kpIsFile = () => typeof location !== 'undefined' && location.protocol === 'file:';
+
+// which platform a layer waits for; null when it is open
+function kpLayerLock(layer) {
+  if ((layer === 'L3' || layer === 'L4') && !kpGhHasRepo()) return 'GitHub';
+  if (layer === 'L2' && !kpOdTick()) return 'OneDrive';
+  return null;
+}
+
+function kpModalOpen(title, ...body) {
+  const root = document.getElementById('kpModal');
+  const close = () => root.replaceChildren();
+  const box = kpEl('div', { class: 'kp-dialog', role: 'dialog', 'aria-label': title },
+    kpEl('div', { class: 'kp-dialog-h' }, kpEl('div', { class: 'kp-dialog-t' }, title),
+      kpEl('button', { class: 'kp-x', title: 'Bezárás (Esc)', onclick: close }, '×')),
+    ...body.filter(Boolean));
+  const back = kpEl('div', { class: 'kp-backdrop', onclick: e => { if (e.target === back) close(); } }, box);
+  root.replaceChildren(back);
+  return box;
+}
+const kpModalClose = () => document.getElementById('kpModal').replaceChildren();
+
+function kpDot(state) { return kpEl('span', { class: 'kp-dot ' + state }, state === 'ok' ? '●' : state === 'warn' ? '◐' : '○'); }
+
+function kpSigninRow(name, dot, status, ...buttons) {
+  return kpEl('div', { class: 'kp-si-row' }, kpEl('div', { class: 'kp-si-name' }, name), dot,
+    kpEl('div', { class: 'kp-si-status' }, ...[].concat(status)), kpEl('div', { class: 'kp-si-btns' }, ...buttons.filter(Boolean)));
+}
+
+function kpSigninOpen() {
+  const gh = kpGh.login
+    ? ['ellenőrizve: ', kpEl('b', {}, kpGh.login), ' · hozzáférés: ' + (KP_GH_ACCESS_HU[kpGh.access] || '?')]
+    : [kpGh.error || (kpGh.token ? 'ellenőrzés…' : 'nincs belépve')];
+  const ghDot = kpGhHasRepo() ? 'ok' : kpGh.login ? 'warn' : 'off';
+  const od = kpEl('label', { class: 'kp-si-tick' }, kpEl('input', { type: 'checkbox', checked: kpOdTick(),
+    onchange: e => { kpStore.set('odTick', e.target.checked); kpSigninChanged(); kpSigninOpen(); } }), ' Be vagyok jelentkezve');
+  kpModalOpen('Belépések',
+    kpEl('p', { class: 'kp-muted' }, 'Minden réteg a saját platformján nyílik ki. A Kapu nem tárol jelszót.'),
+    kpSigninRow('GitHub', kpDot(ghDot), gh,
+      kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(KP_LOGIN.github) }, 'Bejelentkezés (új ablak)'),
+      kpEl('button', { class: 'kp-btn', onclick: kpWizardOpen }, kpGh.token ? 'Új token…' : 'Token…'),
+      kpGh.token ? kpEl('button', { class: 'kp-btn', onclick: () => { kpGhSignOut(); kpSigninChanged(); kpSigninOpen(); } }, 'Kijelentkezés') : null),
+    kpSigninRow('OneDrive', kpDot(kpOdTick() ? 'ok' : 'off'), [kpOdTick() ? 'jelölve ebben a böngészőben' : 'nincs ellenőrizve', od],
+      kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(KP_LOGIN.onedrive) }, 'Bejelentkezés (új ablak)')),
+    kpSigninRow('Claude', kpDot('none'), '– saját fiók',
+      kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(KP_LOGIN.claude) }, 'Claude Code megnyitása')),
+    kpSigninRow('Engedélyezett lista', kpDot('off'), 'még nincs beállítva'),
+    kpSigninRow('Kapu segéd', kpDot('off'), 'nem fut',
+      kpEl('button', { class: 'kp-btn', onclick: () => kpToast('Indítsd a Hub\\VRG Kapu.cmd-vel — a segéd a következő lépésekben készül el') }, 'Hogyan indítom?')));
+}
+
+function kpWizardOpen() {
+  const input = kpEl('input', { class: 'kp-in', type: 'password', autocomplete: 'off', spellcheck: 'false', placeholder: 'github_pat_…', 'aria-label': 'GitHub token' });
+  const msg = kpEl('div', { class: 'kp-wiz-msg', role: 'status' });
+  const save = kpEl('button', { class: 'kp-btn kp-primary' }, 'Ellenőrzés és mentés');
+  save.addEventListener('click', async () => {
+    save.disabled = true;
+    msg.textContent = 'Ellenőrzés a GitHubon…';
+    const r = await kpGhSetToken(input.value, kpData.topology.repo);
+    input.value = '';
+    save.disabled = false;
+    kpSigninChanged();
+    if (!r.ok) { msg.textContent = r.error; msg.className = 'kp-wiz-msg bad'; return; }
+    msg.className = 'kp-wiz-msg ok';
+    msg.textContent = 'Rendben: ' + kpGh.login + ' · ' + (KP_GH_ACCESS_HU[kpGh.access] || '') + (kpStore.available() ? '' : ' — csak ennek a lapnak a bezárásáig (csak linkek mód)');
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') save.click(); e.stopPropagation(); });
+  kpModalOpen('GitHub token — 5 lépés',
+    kpEl('ol', { class: 'kp-wiz' }, ...KP_WIZARD.map(([a, b]) => kpEl('li', {}, a, kpEl('div', { class: 'kp-muted' }, b)))),
+    kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(KP_LOGIN.ghToken) }, 'Token oldal megnyitása (új ablak)')),
+    kpEl('div', { class: 'kp-pop-row' }, input, save),
+    msg,
+    kpEl('p', { class: 'kp-note' }, KP_TOKEN_NOTE),
+    kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: kpSigninOpen }, '← Vissza a Belépésekhez')));
+  input.focus();
+}
+
+// top-bar dots: GitHub · OneDrive · allowed list
+function kpRenderSigninDots() {
+  const b = document.getElementById('kpSignin');
+  if (!b) return;
+  const gh = kpGhHasRepo() ? 'ok' : kpGh.login ? 'warn' : 'off';
+  b.replaceChildren('Belépések ', kpDot(gh), kpDot(kpOdTick() ? 'ok' : 'off'), kpDot('off'));
+  b.title = 'GitHub: ' + (kpGh.login ? kpGh.login + ' · ' + (KP_GH_ACCESS_HU[kpGh.access] || '?') : 'nincs belépve') +
+    ' · OneDrive: ' + (kpOdTick() ? 'jelölve' : 'nincs jelölve') + ' · Engedélyezett lista: még nincs';
+}
+
+function kpSigninChanged() {
+  kpRenderSigninDots();
+  if (kpBoard.layout) kpBoardRender();
+}
+
+function kpBanner() {
+  const el = document.getElementById('kpBanner');
+  const show = kpIsFile() || !kpStore.available();
+  el.hidden = !show;
+  if (show) el.innerHTML = kpMdInline(KP_FILE_BANNER);
+}
+
+async function kpSigninInit() {
+  document.getElementById('kpSignin').addEventListener('click', kpSigninOpen);
+  kpRenderSigninDots();
+  kpBanner();
+  if (kpGh.token) { await kpGhIdentify(kpData.topology.repo); kpSigninChanged(); }
 }
 
 // ---- 99-boot.js
@@ -1581,12 +1830,13 @@ function kpBoot() {
   kpData.pubkey = kpEmbedded('kpPubkey');
   kpSetTheme(kpStore.get('theme', 'amber'));
   kpRenderRail();
+  kpGhLoad();
   kpBoardInit();
   kpNavInit();
+  kpSigninInit();
   kpRenderStrip();
   document.getElementById('kpSearchBtn').addEventListener('click', kpSearchOpen);
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
-  document.getElementById('kpMode').textContent = kpStore.available() ? '' : 'csak linkek — a böngésző nem enged menteni';
 }
 
 if (typeof document !== 'undefined') {

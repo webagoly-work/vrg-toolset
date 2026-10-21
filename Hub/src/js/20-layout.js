@@ -8,7 +8,7 @@ const KP_LAYOUT = {
   rowTop: 200, rowStep: 150, rowPad: 28,
   roadmapGap: 90, roadmapRow: 34, roadmapChars: 30,
   cardX: 12, cardW: 176, cardH: 52, cardH2: 66, titleChars: 22,
-  subH: 32, subChars: 24,
+  subH: 32, subChars: 20,
   stackGap: 6, stackMax: 3, chipH: 22,
   descGap: 4, lineH: 15, descChars: 30, descLines: 3, subLines: 2, charW: 6.2,
   spineX: 4, bandGap: 48, bandH: 64

@@ -109,6 +109,9 @@ function kpNodeEl(n) {
   } else {
     g.append(kpEl('text', { class: 'kp-icon', x: n.x + 9, y: n.y + 21 }, icon),
       kpEl('text', { class: 'kp-sub-t', x: n.x + 28, y: n.y + 21 }, n.title[0]));
+    const lock = kpLayerLock(n.layer);
+    g.classList.toggle('kp-locked', !!lock);
+    g.append(kpEl('text', { class: 'kp-lock', x: n.x + n.w - 8, y: n.y + 21 }, lock ? '🔒' : '🔓'));
   }
   if (n.text) {
     const desc = kpEl('g', { class: 'kp-desc' });

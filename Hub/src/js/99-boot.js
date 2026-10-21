@@ -34,12 +34,13 @@ function kpBoot() {
   kpData.pubkey = kpEmbedded('kpPubkey');
   kpSetTheme(kpStore.get('theme', 'amber'));
   kpRenderRail();
+  kpGhLoad();
   kpBoardInit();
   kpNavInit();
+  kpSigninInit();
   kpRenderStrip();
   document.getElementById('kpSearchBtn').addEventListener('click', kpSearchOpen);
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
-  document.getElementById('kpMode').textContent = kpStore.available() ? '' : 'csak linkek — a böngésző nem enged menteni';
 }
 
 if (typeof document !== 'undefined') {
