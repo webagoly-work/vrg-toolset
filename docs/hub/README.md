@@ -62,7 +62,7 @@ Cheaper model fine: H0 H1 H8 H9 H12. Strong model: HA H2 H5 H6 H7 H10 + every VE
 | H2 | done | 2026-10-21 | Board: layout + renderer + camera + overview; tests 21/21; Edge getBBox audit 0 overflow / 0 collision. Look approved (Q19 A aligned rows, Q20 A width-fit overview). |
 | H3 | done | 2026-10-21 | KP_ACT registry (13 RCO items, string-exact vs 03_UI §5), click per kind, popover, drawer + kpMd, Ctrl+K accent-free search + fly, arrow focus, tooltip, favourites; tests 32/32; Edge real-input check all green. Companion / GitHub / log items greyed with their reason until H4–H10. |
 | H4 | done | 2026-10-21 | 50-github (token only in browser storage, ETag cache, 401 clears), Belépések modal (5 rows), 5-step token wizard, 3 top-bar dots, L2/L3/L4 🔒 gating, file:// banner (§7 exact); tests 38/38; Edge: locks open on OneDrive tick / mocked GitHub, token never in DOM. Also fixed: `[hidden]` was overridden by the drawer CSS (empty drawer since H3). |
-| H5 | done | 2026-10-22 | Signed list live: 2 people (webagoly-work owner, anikovi-work member), owner key at H:cwebuser_adminkeys (outside repo/OneDrive); verified by hub-sign --verify, check-hub and the page WebCrypto path. kpCanon shared, L1 gate with reasons, tests 46/46. |
+| H5 | done | 2026-10-22 | Signed list live: 2 people (webagoly-work owner, anikovi-work member), owner key at `H:\cwebuser\_admin\keys` (outside repo/OneDrive); verified by hub-sign --verify, check-hub and the page WebCrypto path. kpCanon shared, L1 gate with reasons, tests 46/46. |
 | H6 | open | | |
 | H7 | open | | |
 | H8 | open | | |
