@@ -87,7 +87,8 @@ Answered 2026-10-21 by the user: **all A** (the recommended option of every ques
 | Q07 | A — OneDrive links only in v1 |
 | Q08 | A — Kapu segéd on localhost:8795 |
 | Q09 | A — Hungarian, English below in italics |
-| Q10 | A — share as is; new client jobs only on OneDrive `10_Projektek`, by job code |
+| Q10 | ~~A~~ → **B** (2026-10-21, after the audit) — anonymise the client job codes before the invite; Q10b A: `varler-planner` is our own name and stays, only `P33`/`NV4` + the e-mail go, via `tools/anonymise.js`. New client jobs only on OneDrive `10_Projektek`, by job code |
+| Q10c | open — when the anonymiser runs (A recommended: on `main` right before the invite) |
 | Q11 | A — both save straight to `main` with a conflict check |
 | Q12 | A — Open MCT as a separate slot |
 | Q13 | A — the 12 departments + Általános as drafted |

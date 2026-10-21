@@ -48,3 +48,6 @@ BRIDGE/07_P33/
 # The manifest, the harvester and the report ARE committed; the payload is not.
 CoreRef/data/
 CoreRef/db/
+
+# --- tools/anonymise.js: the code mapping is itself the secret ---
+tools/anonymise.map.json

@@ -19,6 +19,7 @@ their own browser. If a password ever lands in a chat or a file, change it.
 | 1 | you + Claude | Answer the questions in `DECISIONS.md` (one line: `Q01 A, Q02 A, …`). | README §5 filled |
 | 2 | Claude | **WP-HA pre-share audit**: secrets, client data and size check over the working tree **and the history**. | report says "OK to share" or lists fixes |
 | 3 | you | Commit what you want shared, then `git push` (main is 2 commits ahead of GitHub today; worktree branches are not pushed). | GitHub shows today's commit |
+| 3a | you + Claude | **Anonymise** (HUB-Q10): in the main checkout, after `secacc` is merged — `node tools/anonymise.js` (dry run), then `--apply`, then the Planner tests and `node tools/check-start.js`, then commit. Needs the local `tools/anonymise.map.json`. | prints "No leftovers", tests green |
 | 4 | you | GitHub → repo → Settings → Collaborators → **Add people** → colleague's username (role: Write). | colleague accepted the invite |
 | 5 | you | Turn on **two-factor authentication** on your GitHub account, ask the colleague to do the same. | both accounts show 2FA |
 | 6 | you | OneDrive: create `VRG-Megosztott` with the folders in `hub-seed.json` → `onedrive.folders`. Share each with **"Adott személyek"** (specific people) → colleague's Microsoft email. Never "Bárki, akinél a link van". | colleague opens a folder link |

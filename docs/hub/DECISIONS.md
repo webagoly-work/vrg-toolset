@@ -60,6 +60,25 @@ WP-HA audit list.* Today 61 tracked repo files carry "P33" (plans, BRIDGE build 
 - B Anonymise before inviting (rename P33 → a neutral code in tracked files; history keeps the old names).
 - C Keep client jobs out of both until the GDPR register (v2 *Lobby*) exists.
 
+> **Answered 2026-10-21: B**, then **Q10b = A**. The WP-HA audit had taken `varler-planner` for a
+> client name; it is our own (Varler Group = VRG), so it stays. Only the client job codes go:
+> `P33`/`PT33` → `CLA`, `NV4` → `CLANV4` (one identifier-safe form everywhere — the codes live in JS
+> names, file names and in data the Planner builds file names from), plus the one e-mail address.
+> Done by `tools/anonymise.js`; the mapping sits in the gitignored `tools/anonymise.map.json`, since a
+> committed mapping would be the leak. Verified on a throwaway copy: 1257 replacements in 215 files,
+> 64 `git mv`, a second run changes nothing, Planner 3481 assertions + 70 golden renders green,
+> Inventory 201/201, `check-start.js` OK.
+> **History is not rewritten** — anyone with repo access can still read the old codes in old commits.
+> The client's own documents (`BRIDGE/07_P33/`: blueprints, address, survey) never entered git.
+> **When it runs: Q10c below.**
+
+**Q10c — When does the anonymiser run?** *Blocks setup step 3a.*
+- **A** **On `main`, just before the invite** (setup step 3a), after `secacc` is merged — one clean
+  pass that also catches every code the primary account adds until then, and no clash with the Planner
+  work going on in `main` meanwhile.
+- B Now, on `secacc` — the 64 renames and 215 edited files then have to merge against everything the
+  primary account changes in the same files, and new codes added in `main` slip through anyway.
+
 **Q11 — How does the colleague save edits to the map?** *Blocks H7.*
 - **A** **Both save straight to `main`**, with a conflict check (nothing is overwritten silently).
 - B The colleague saves to a branch and opens a pull request; you merge.
