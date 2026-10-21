@@ -1,6 +1,6 @@
 // Board renderer + camera. Geometry comes from kpLayout; this file only draws and listens.
 
-const KP_ICON = { program: '▣', third: '⧉', folder: '☁', local: '📁', agent: '🤖', go: '▶', git: '⎇', branch: '⎇', summary: '▸', slot: '○' };
+const KP_ICON = { program: '▣', third: '⧉', folder: '☁', local: '📁', agent: '🤖', go: '▶', git: '⎇', branch: '⎇', l5link: '★', l6folder: '📁', summary: '▸', slot: '○' };
 const KP_STATUS_HU = { live: 'használatban', dev: 'fejlesztés alatt', idea: 'tervezett', v2: 'jövőkép' };
 const KP_STATUS_DOT = { live: '●', dev: '◐', idea: '○', v2: '◌' };
 const KP_ZOOM = { min: 0.05, max: 3, descOff: 0.5, cardsOff: 0.3, step: 1.25 };
@@ -23,7 +23,7 @@ function kpBoardRender() {
   if (!topo) { svg.replaceChildren(); return; }
   let cols = kpVisible(kpApplyLive(kpResolveRefs(kpViewTopology()), kpLive()), kpBoard.view);
   if (kpBoard.focus) cols = cols.filter(c => c.dept.id === kpBoard.focus);
-  const lay = kpLayout(cols, { layers: kpBoard.layers, collapsed: kpBoard.focus ? [] : kpBoard.collapsed, expanded: kpBoard.expanded, en: true });
+  const lay = kpLayout(cols, { layers: kpBoard.layers, collapsed: kpBoard.focus ? [] : kpBoard.collapsed, expanded: kpBoard.expanded, en: true, personal: kpPersonal() });
   kpBoard.layout = lay;
 
   const g = kpEl('g', { id: 'kpCam' });
@@ -85,8 +85,8 @@ function kpNodeEl(n) {
   }
   if (n.kind === 'band') {
     g.append(kpEl('rect', { class: 'kp-band-r', x: n.x, y: n.y, width: n.w, height: n.h, rx: 8 }),
-      kpEl('text', { class: 'kp-band-t', x: n.x + 16, y: n.y + 26 }, (n.layer === 'L5' ? '★ ' : '📁 ') + n.layer + ' · ' + n.title[0]),
-      kpEl('text', { class: 'kp-band-s', x: n.x + 16, y: n.y + 46 }, 'Csak te látod — még üres.'));
+      kpEl('text', { class: 'kp-band-t', x: n.x + 16, y: n.y + 26 }, (n.layer === 'L5' ? '★ ' : '📁 ') + n.layer + ' · ' + n.title[0],
+        kpEl('tspan', { class: 'kp-band-s' }, '  — csak te látod, ebben a böngészőben' + (n.empty ? ' · jobb klikk: Új saját link…' : ''))));
     return g;
   }
   if (n.kind === 'more') {
@@ -126,7 +126,7 @@ function kpNodeEl(n) {
     // a branch is unreleased program code: it opens like layer 1 (allowed list), not like layer 4
     const lock = n.kind === 'branch' ? (kpL1Open() ? null : '⛔') : kpLayerLock(n.layer) ? '🔒' : null;
     g.classList.toggle('kp-locked', !!lock);
-    g.append(kpEl('text', { class: 'kp-lock' + (lock ? '' : ' open'), x: n.x + n.w - 8, y: n.y + 21 }, lock || '🔓'));
+    if (n.layer !== 'L5' && n.layer !== 'L6') g.append(kpEl('text', { class: 'kp-lock' + (lock ? '' : ' open'), x: n.x + n.w - 8, y: n.y + 21 }, lock || '🔓'));
     if (n.decisions) g.append(kpEl('text', { class: 'kp-chip-dec', x: n.x + n.w - 26, y: n.y + 21 }, '? ' + n.decisions,
       kpEl('title', {}, n.decisions + ' döntési / kérdés fájl ebben a mappában')));
   }

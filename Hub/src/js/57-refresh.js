@@ -226,7 +226,11 @@ const KP_MAIN_MENU = [
   { label: 'Frissítés most', run: () => kpRefresh({ keep: true }) },
   { label: 'Exportálás JSON', run: () => kpExport() },
   { label: 'Importálás JSON…', run: () => kpImport() },
-  { label: 'Elrejtett elemek…', run: () => kpHiddenOpen() }
+  { label: 'Elrejtett elemek…', run: () => kpHiddenOpen() },
+  { label: 'Új saját link…', run: () => kpL5Edit(null) },
+  { label: 'Saját linkek exportálása', run: () => kpL5Export() },
+  { label: 'Saját linkek importálása…', run: () => kpL5Import() },
+  { label: 'Helyi célmappa…', run: () => kpDest.pick() }
 ];
 function kpMainMenuInit() {
   const b = document.getElementById('kpMenuBtn');

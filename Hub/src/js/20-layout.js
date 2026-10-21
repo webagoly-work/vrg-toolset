@@ -11,7 +11,7 @@ const KP_LAYOUT = {
   subH: 32, subChars: 20,
   stackGap: 6, stackMax: 3, chipH: 22,
   descGap: 4, lineH: 15, descChars: 30, descLines: 3, subLines: 2, charW: 6.2,
-  spineX: 4, bandGap: 48, bandH: 64
+  spineX: 4, bandGap: 48, bandH: 64, bandHead: 40
 };
 
 const KP_LAYER_NAMES = {
@@ -193,14 +193,41 @@ function kpLayout(cols, opts) {
     if (maxN) bottom = top + maxN * L.roadmapRow;
   }
 
-  // 6. personal bands (filled by H8)
-  const bands = ['L5', 'L6'].filter(on);
-  if (bands.length) {
-    const by = bottom + L.bandGap;
-    const bw = bands.length === 2 ? (width - L.colGap) / 2 : width;
-    bands.forEach((l, i) => nodes.push({ id: 'band:' + l, kind: 'band', layer: l, x: i * (bw + L.colGap), y: by, w: bw, h: L.bandH,
-      title: [KP_LAYER_NAMES[l]], text: null }));
-    bottom = by + L.bandH;
+  // 6. personal bands, full width. L5: a "Saját" row of free links at the left, then links attached
+  //    to a program stacked under that program's column. L6: the target folder.
+  const per = Object.assign({ links: [], folder: null }, o.personal);
+  const bandIn = (band, list) => { band.h = Math.max(L.bandH, Math.max(band.y + L.bandHead, ...list.map(n => n.y + blockH(n))) - band.y + 16); };
+  if (on('L5')) {
+    const band = { id: 'band:L5', kind: 'band', layer: 'L5', x: 0, y: bottom + L.bandGap, w: width, h: L.bandH, title: [KP_LAYER_NAMES.L5], empty: !per.links.length, text: null };
+    nodes.push(band);
+    const colOf = id => columns.findIndex(c => c.p.id === id);
+    const card = (k, x, y) => describe({ id: 'l5:' + k.id, kind: 'l5link', layer: 'L5', x, y, w: L.cardW, h: L.subH,
+      title: [kpCut(k.t, L.subChars)], full: k.t, src: k }, k.d, null, L.subLines);
+    const placed = [];
+    let y = band.y + L.bandHead;
+    const free = per.links.filter(k => !k.attach || colOf(k.attach) < 0);
+    free.forEach((k, i) => placed.push(card(k, i * (L.colW + L.colGap) + L.cardX, y)));
+    if (free.length) y = Math.max(...placed.map(n => n.y + blockH(n))) + L.rowPad;
+    const stack = {};
+    for (const k of per.links.filter(k => k.attach && colOf(k.attach) >= 0)) {
+      const ci = colOf(k.attach), n = card(k, columns[ci].x + L.cardX, y + (stack[ci] || 0));
+      stack[ci] = (stack[ci] || 0) + blockH(n) + L.stackGap;
+      placed.push(n);
+    }
+    nodes.push(...placed);
+    bandIn(band, placed);
+    bottom = band.y + band.h;
+  }
+  if (on('L6')) {
+    const band = { id: 'band:L6', kind: 'band', layer: 'L6', x: 0, y: bottom + (on('L5') ? L.colGap : L.bandGap), w: width, h: L.bandH, title: [KP_LAYER_NAMES.L6], text: null };
+    nodes.push(band);
+    const f = per.folder;
+    const n = describe({ id: 'l6:folder', kind: 'l6folder', layer: 'L6', x: L.cardX, y: band.y + L.bandHead, w: L.cardW, h: L.subH,
+      title: [kpCut(f ? f.name : 'Nincs célmappa', L.subChars)], full: f ? f.name : null, src: f },
+      f ? 'Ide ír a Munkanapló, ha kéred.' + (f.path ? ' ' + f.path : '') : 'Jobb klikk: Célmappa választása…', null, L.subLines);
+    nodes.push(n);
+    bandIn(band, [n]);
+    bottom = band.y + band.h;
   }
 
   // 7. spines: header bottom down the left edge of each column, a tick into every node

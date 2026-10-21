@@ -286,7 +286,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 <script type="application/json" id="kpPubkey">{"kty":"EC","crv":"P-256","x":"ikStJoalzFg4yLwv3gHx7XYai5Yxhf-thW772g0_M20","y":"T97A6TH3XHXksdStfZ00KJSWjdI7DFs5Ha5ZZvejPJ0"}</script>
 <script>
 "use strict";
-const KP_BUILD = "162ea0346cec";
+const KP_BUILD = "75d46fa98776";
 // ---- 00-core.js
 // Core helpers shared by every module. Pure where possible, so Hub/test can run them in Node.
 
@@ -458,7 +458,7 @@ const KP_LAYOUT = {
   subH: 32, subChars: 20,
   stackGap: 6, stackMax: 3, chipH: 22,
   descGap: 4, lineH: 15, descChars: 30, descLines: 3, subLines: 2, charW: 6.2,
-  spineX: 4, bandGap: 48, bandH: 64
+  spineX: 4, bandGap: 48, bandH: 64, bandHead: 40
 };
 
 const KP_LAYER_NAMES = {
@@ -640,14 +640,41 @@ function kpLayout(cols, opts) {
     if (maxN) bottom = top + maxN * L.roadmapRow;
   }
 
-  // 6. personal bands (filled by H8)
-  const bands = ['L5', 'L6'].filter(on);
-  if (bands.length) {
-    const by = bottom + L.bandGap;
-    const bw = bands.length === 2 ? (width - L.colGap) / 2 : width;
-    bands.forEach((l, i) => nodes.push({ id: 'band:' + l, kind: 'band', layer: l, x: i * (bw + L.colGap), y: by, w: bw, h: L.bandH,
-      title: [KP_LAYER_NAMES[l]], text: null }));
-    bottom = by + L.bandH;
+  // 6. personal bands, full width. L5: a "Saját" row of free links at the left, then links attached
+  //    to a program stacked under that program's column. L6: the target folder.
+  const per = Object.assign({ links: [], folder: null }, o.personal);
+  const bandIn = (band, list) => { band.h = Math.max(L.bandH, Math.max(band.y + L.bandHead, ...list.map(n => n.y + blockH(n))) - band.y + 16); };
+  if (on('L5')) {
+    const band = { id: 'band:L5', kind: 'band', layer: 'L5', x: 0, y: bottom + L.bandGap, w: width, h: L.bandH, title: [KP_LAYER_NAMES.L5], empty: !per.links.length, text: null };
+    nodes.push(band);
+    const colOf = id => columns.findIndex(c => c.p.id === id);
+    const card = (k, x, y) => describe({ id: 'l5:' + k.id, kind: 'l5link', layer: 'L5', x, y, w: L.cardW, h: L.subH,
+      title: [kpCut(k.t, L.subChars)], full: k.t, src: k }, k.d, null, L.subLines);
+    const placed = [];
+    let y = band.y + L.bandHead;
+    const free = per.links.filter(k => !k.attach || colOf(k.attach) < 0);
+    free.forEach((k, i) => placed.push(card(k, i * (L.colW + L.colGap) + L.cardX, y)));
+    if (free.length) y = Math.max(...placed.map(n => n.y + blockH(n))) + L.rowPad;
+    const stack = {};
+    for (const k of per.links.filter(k => k.attach && colOf(k.attach) >= 0)) {
+      const ci = colOf(k.attach), n = card(k, columns[ci].x + L.cardX, y + (stack[ci] || 0));
+      stack[ci] = (stack[ci] || 0) + blockH(n) + L.stackGap;
+      placed.push(n);
+    }
+    nodes.push(...placed);
+    bandIn(band, placed);
+    bottom = band.y + band.h;
+  }
+  if (on('L6')) {
+    const band = { id: 'band:L6', kind: 'band', layer: 'L6', x: 0, y: bottom + (on('L5') ? L.colGap : L.bandGap), w: width, h: L.bandH, title: [KP_LAYER_NAMES.L6], text: null };
+    nodes.push(band);
+    const f = per.folder;
+    const n = describe({ id: 'l6:folder', kind: 'l6folder', layer: 'L6', x: L.cardX, y: band.y + L.bandHead, w: L.cardW, h: L.subH,
+      title: [kpCut(f ? f.name : 'Nincs célmappa', L.subChars)], full: f ? f.name : null, src: f },
+      f ? 'Ide ír a Munkanapló, ha kéred.' + (f.path ? ' ' + f.path : '') : 'Jobb klikk: Célmappa választása…', null, L.subLines);
+    nodes.push(n);
+    bandIn(band, [n]);
+    bottom = band.y + band.h;
   }
 
   // 7. spines: header bottom down the left edge of each column, a tick into every node
@@ -691,7 +718,7 @@ if (typeof module !== 'undefined') module.exports = { KP_LAYOUT, KP_LAYER_NAMES,
 // ---- 30-board.js
 // Board renderer + camera. Geometry comes from kpLayout; this file only draws and listens.
 
-const KP_ICON = { program: '▣', third: '⧉', folder: '☁', local: '📁', agent: '🤖', go: '▶', git: '⎇', branch: '⎇', summary: '▸', slot: '○' };
+const KP_ICON = { program: '▣', third: '⧉', folder: '☁', local: '📁', agent: '🤖', go: '▶', git: '⎇', branch: '⎇', l5link: '★', l6folder: '📁', summary: '▸', slot: '○' };
 const KP_STATUS_HU = { live: 'használatban', dev: 'fejlesztés alatt', idea: 'tervezett', v2: 'jövőkép' };
 const KP_STATUS_DOT = { live: '●', dev: '◐', idea: '○', v2: '◌' };
 const KP_ZOOM = { min: 0.05, max: 3, descOff: 0.5, cardsOff: 0.3, step: 1.25 };
@@ -714,7 +741,7 @@ function kpBoardRender() {
   if (!topo) { svg.replaceChildren(); return; }
   let cols = kpVisible(kpApplyLive(kpResolveRefs(kpViewTopology()), kpLive()), kpBoard.view);
   if (kpBoard.focus) cols = cols.filter(c => c.dept.id === kpBoard.focus);
-  const lay = kpLayout(cols, { layers: kpBoard.layers, collapsed: kpBoard.focus ? [] : kpBoard.collapsed, expanded: kpBoard.expanded, en: true });
+  const lay = kpLayout(cols, { layers: kpBoard.layers, collapsed: kpBoard.focus ? [] : kpBoard.collapsed, expanded: kpBoard.expanded, en: true, personal: kpPersonal() });
   kpBoard.layout = lay;
 
   const g = kpEl('g', { id: 'kpCam' });
@@ -776,8 +803,8 @@ function kpNodeEl(n) {
   }
   if (n.kind === 'band') {
     g.append(kpEl('rect', { class: 'kp-band-r', x: n.x, y: n.y, width: n.w, height: n.h, rx: 8 }),
-      kpEl('text', { class: 'kp-band-t', x: n.x + 16, y: n.y + 26 }, (n.layer === 'L5' ? '★ ' : '📁 ') + n.layer + ' · ' + n.title[0]),
-      kpEl('text', { class: 'kp-band-s', x: n.x + 16, y: n.y + 46 }, 'Csak te látod — még üres.'));
+      kpEl('text', { class: 'kp-band-t', x: n.x + 16, y: n.y + 26 }, (n.layer === 'L5' ? '★ ' : '📁 ') + n.layer + ' · ' + n.title[0],
+        kpEl('tspan', { class: 'kp-band-s' }, '  — csak te látod, ebben a böngészőben' + (n.empty ? ' · jobb klikk: Új saját link…' : ''))));
     return g;
   }
   if (n.kind === 'more') {
@@ -817,7 +844,7 @@ function kpNodeEl(n) {
     // a branch is unreleased program code: it opens like layer 1 (allowed list), not like layer 4
     const lock = n.kind === 'branch' ? (kpL1Open() ? null : '⛔') : kpLayerLock(n.layer) ? '🔒' : null;
     g.classList.toggle('kp-locked', !!lock);
-    g.append(kpEl('text', { class: 'kp-lock' + (lock ? '' : ' open'), x: n.x + n.w - 8, y: n.y + 21 }, lock || '🔓'));
+    if (n.layer !== 'L5' && n.layer !== 'L6') g.append(kpEl('text', { class: 'kp-lock' + (lock ? '' : ' open'), x: n.x + n.w - 8, y: n.y + 21 }, lock || '🔓'));
     if (n.decisions) g.append(kpEl('text', { class: 'kp-chip-dec', x: n.x + n.w - 26, y: n.y + 21 }, '? ' + n.decisions,
       kpEl('title', {}, n.decisions + ' döntési / kérdés fájl ebben a mappában')));
   }
@@ -1122,6 +1149,7 @@ function kpStartPrompt(c) {
 function kpMainAction(node) {
   const c = kpCtx(node.id);
   if (!c) return;
+  if (node.kind === 'l5link' || node.kind === 'l6folder') { kpPersonalClick(node); return; }
   if (node.kind === 'summary') { kpBoard.collapsed = kpBoard.collapsed.filter(d => d !== node.dept); kpStore.set('collapsed', kpBoard.collapsed); kpBoardRender(); return; }
   if (node.kind === 'roadmap' && node.src && node.src.url) { kpOpen(node.src.url); return; }
   if (node.kind === 'roadmap' || node.kind === 'slot') { kpDrawerOpen(node.id, 'short'); return; }
@@ -1221,6 +1249,7 @@ function kpMenuClose() { const m = document.getElementById('kpMenu'); if (m) m.r
 
 function kpMenuOpen(nodeId, x, y) {
   const c = kpCtx(nodeId);
+  if (c && (c.node.layer === 'L5' || c.node.layer === 'L6')) { kpPersonalMenuOpen(c.node, x, y); return; }
   if (!c || ['origin', 'band', 'more'].includes(c.node.kind)) return;
   kpMenuClose();
   kpPopoverClose();
@@ -2125,7 +2154,11 @@ const KP_MAIN_MENU = [
   { label: 'Frissítés most', run: () => kpRefresh({ keep: true }) },
   { label: 'Exportálás JSON', run: () => kpExport() },
   { label: 'Importálás JSON…', run: () => kpImport() },
-  { label: 'Elrejtett elemek…', run: () => kpHiddenOpen() }
+  { label: 'Elrejtett elemek…', run: () => kpHiddenOpen() },
+  { label: 'Új saját link…', run: () => kpL5Edit(null) },
+  { label: 'Saját linkek exportálása', run: () => kpL5Export() },
+  { label: 'Saját linkek importálása…', run: () => kpL5Import() },
+  { label: 'Helyi célmappa…', run: () => kpDest.pick() }
 ];
 function kpMainMenuInit() {
   const b = document.getElementById('kpMenuBtn');
@@ -2527,6 +2560,203 @@ async function kpPreview(c) {
 }
 
 if (typeof module !== 'undefined') module.exports = { kpApply, kpTopoDiff, kpCommitMsg, kpSavePrep, kpToday };
+
+// ---- 80-personal.js
+// Personal layers, never shared and never saved to GitHub:
+//   L5 Saját linkek  — the user's own links, in kpStore ('l5'), export / import as a file
+//   L6 Helyi célmappa — a folder on this PC (File System Access handle in IndexedDB) the hub can write to
+
+const KP_L5_FILE = 'vrg-kapu-sajat-linkek.json';
+const KP_L5_URL_RE = /^(https?:\/\/|file:\/\/\/)/i;
+const KP_L6_NOAPI = 'Ez a böngésző nem engedi a mappa választást — a Munkanapló letöltéssel mentsd.';
+const KP_L6_TESTFILE = 'vrg-kapu-teszt.txt';
+
+const kpL5 = () => kpStore.get('l5', []);
+const kpL5Ok = k => !!(k && k.id && k.t && KP_L5_URL_RE.test(String(k.url || '')));
+
+// merge by id: -> { list, added, updated, rejected }
+function kpL5Merge(existing, incoming) {
+  const list = existing.slice();
+  let added = 0, updated = 0, rejected = 0;
+  for (const k of Array.isArray(incoming) ? incoming : []) {
+    if (!kpL5Ok(k)) { rejected++; continue; }
+    const clean = { id: String(k.id), t: String(k.t), url: String(k.url) };
+    if (k.d) clean.d = String(k.d);
+    if (k.attach) clean.attach = String(k.attach);
+    const i = list.findIndex(x => x.id === clean.id);
+    if (i >= 0) { list[i] = clean; updated++; } else { list.push(clean); added++; }
+  }
+  return { list, added, updated, rejected };
+}
+const kpL5Report = r => r.added + ' új, ' + r.updated + ' frissített' + (r.rejected ? ', ' + r.rejected + ' elutasítva (csak http(s) és file:/// link)' : '');
+
+function kpPersonal() {
+  return { links: kpL5(), folder: kpStore.get('l6', null) };
+}
+
+// ---- L5 UI
+function kpL5Edit(link, attach) {
+  const k = link || { id: 'l' + Date.now().toString(36), t: '', url: '', attach: attach || '' };
+  const t = kpEl('input', { class: 'kp-in', value: k.t }), url = kpEl('input', { class: 'kp-in', value: k.url, placeholder: 'https://… vagy file:///…' });
+  const d = kpEl('input', { class: 'kp-in', value: k.d || '' });
+  const at = kpEl('select', { class: 'kp-in' }, kpEl('option', { value: '' }, '— a Saját csoportba —'),
+    ...(kpData.topology.programs || []).filter(p => !p.hidden).map(p => kpEl('option', { value: p.id, selected: k.attach === p.id }, p.t)));
+  const row = (l, el) => kpEl('label', { class: 'kp-ed-row' }, kpEl('span', { class: 'kp-ed-l' }, l), el);
+  kpModalOpen(link ? 'Saját link szerkesztése' : 'Új saját link',
+    kpEl('p', { class: 'kp-muted' }, 'Csak te látod, csak ebben a böngészőben. Mentéshez: ☰ → Saját linkek exportálása.'),
+    row('Név', t), row('Link', url), row('Leírás', d), row('Melyik program alá', at),
+    kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn kp-primary', onclick: () => {
+      const next = { id: k.id, t: t.value.trim(), url: url.value.trim(), d: d.value.trim(), attach: at.value };
+      if (!kpL5Ok(next)) { kpToast('Név és http(s):// vagy file:/// link kell'); return; }
+      const r = kpL5Merge(kpL5(), [next]);
+      kpStore.set('l5', r.list);
+      kpModalClose();
+      kpBoardRender();
+    } }, 'Mentés')));
+  t.focus();
+}
+
+function kpL5Delete(id) {
+  kpStore.set('l5', kpL5().filter(k => k.id !== id));
+  kpBoardRender();
+}
+
+function kpL5Export() {
+  const blob = new Blob([JSON.stringify(kpL5(), null, 2) + '\n'], { type: 'application/json' });
+  const a = kpEl('a', { href: URL.createObjectURL(blob), download: KP_L5_FILE });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function kpL5Import() {
+  const inp = kpEl('input', { type: 'file', accept: '.json,application/json' });
+  inp.addEventListener('change', async () => {
+    let data;
+    try { data = JSON.parse(await inp.files[0].text()); } catch (e) { kpToast('Ez nem JSON fájl'); return; }
+    const r = kpL5Merge(kpL5(), data);
+    kpStore.set('l5', r.list);
+    kpBoardRender();
+    kpToast('Saját linkek: ' + kpL5Report(r));
+  });
+  inp.click();
+}
+
+// ---- L6: the target folder (kpDest; the WP called it kpTarget, a name the click target already has)
+const KP_IDB = { db: 'vrgKapu', store: 'handles', key: 'dest' };
+
+function kpIdb(mode, fn) {
+  return new Promise((resolve, reject) => {
+    let req;
+    try { req = indexedDB.open(KP_IDB.db, 1); } catch (e) { reject(e); return; }
+    req.onupgradeneeded = () => req.result.createObjectStore(KP_IDB.store);
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => {
+      const tx = req.result.transaction(KP_IDB.store, mode);
+      const r = fn(tx.objectStore(KP_IDB.store));
+      tx.oncomplete = () => resolve(r && 'result' in r ? r.result : undefined);
+      tx.onerror = () => reject(tx.error);
+    };
+  });
+}
+
+const kpDest = {
+  supported: () => typeof window !== 'undefined' && typeof window.showDirectoryPicker === 'function',
+  async handle() { try { return await kpIdb('readonly', s => s.get(KP_IDB.key)); } catch (e) { return null; } },
+  async set(h, path) {
+    await kpIdb('readwrite', s => s.put(h, KP_IDB.key));
+    kpStore.set('l6', { name: h.name, path: path || (kpStore.get('l6', {}) || {}).path || '' });
+  },
+  async pick() {
+    if (!kpDest.supported()) { kpToast(KP_L6_NOAPI); return null; }
+    try {
+      const h = await window.showDirectoryPicker({ mode: 'readwrite', id: 'vrg-kapu-dest' });
+      await kpDest.set(h);
+      kpBoardRender();
+      kpToast('Célmappa: ' + h.name);
+      return h;
+    } catch (e) { if (e.name !== 'AbortError') kpToast(KP_L6_NOAPI); return null; }
+  },
+  // the browser forgets the grant between visits; ask again on use (needs a click)
+  async writable() {
+    const h = await kpDest.handle();
+    if (!h) return null;
+    const opt = { mode: 'readwrite' };
+    if (h.queryPermission && (await h.queryPermission(opt)) !== 'granted') {
+      if (!h.requestPermission || (await h.requestPermission(opt)) !== 'granted') return null;
+    }
+    return h;
+  },
+  async write(name, text) {
+    const h = await kpDest.writable();
+    if (!h) return { ok: false, error: kpStore.get('l6', null) ? 'A böngésző nem adott írási engedélyt a mappára' : 'Nincs célmappa — ☰ Helyi célmappa…' };
+    try {
+      const f = await h.getFileHandle(name, { create: true });
+      const w = await f.createWritable();
+      await w.write(text);
+      await w.close();
+      return { ok: true, name: h.name + '/' + name };
+    } catch (e) { return { ok: false, error: 'Írás sikertelen: ' + e.message }; }
+  },
+  // Future entry point for AI / session exports into this folder. Deliberately empty until that
+  // gets its own decision (WP-H8 out of scope): it must not write anything today.
+  inbox() { return null; }
+};
+
+async function kpDestTest() {
+  const r = await kpDest.write(KP_L6_TESTFILE, 'VRG Kapu teszt — ' + new Date().toISOString() + '\n');
+  kpToast(r.ok ? 'Megírva: ' + r.name : r.error);
+  return r;
+}
+
+function kpDestPath() {
+  const cur = kpStore.get('l6', null) || {};
+  const inp = kpEl('input', { class: 'kp-in', value: cur.path || '', placeholder: 'pl. D:\\VRG-exportok' });
+  kpModalOpen('A célmappa teljes útvonala',
+    kpEl('p', { class: 'kp-muted' }, 'A böngésző nem árulja el a teljes útvonalat. Ha a Kapu segéd megnyissa a mappát, add meg egyszer.'),
+    inp, kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn kp-primary', onclick: () => {
+      kpStore.set('l6', Object.assign({}, cur, { path: inp.value.trim() })); kpModalClose(); kpBoardRender(); } }, 'Mentés')));
+}
+
+// ---- menus for the personal layers (instead of the shared RCO list)
+function kpPersonalMenu(node) {
+  const L5 = node.layer === 'L5';
+  const link = node.kind === 'l5link' ? node.src : null;
+  const hasDest = !!kpStore.get('l6', null);
+  return L5 ? [
+    ['Új saját link…', () => kpL5Edit(null, link && link.attach)],
+    link ? ['Szerkesztés…', () => kpL5Edit(link)] : null,
+    link ? ['Törlés', () => kpL5Delete(link.id)] : null,
+    ['Saját linkek exportálása', kpL5Export],
+    ['Saját linkek importálása…', kpL5Import]
+  ].filter(Boolean) : [
+    [hasDest ? 'Másik célmappa…' : 'Célmappa választása…', () => kpDest.pick()],
+    hasDest ? ['Teszt fájl írása', kpDestTest] : null,
+    hasDest ? ['Teljes útvonal megadása…', kpDestPath] : null
+  ].filter(Boolean);
+}
+
+function kpPersonalMenuOpen(node, x, y) {
+  kpMenuClose();
+  const m = kpEl('div', { id: 'kpMenu', class: 'kp-menu', role: 'menu' }, ...kpPersonalMenu(node).map(([label, run]) =>
+    kpEl('div', { class: 'kp-mi', role: 'menuitem', tabindex: '-1', onclick: e => { e.stopPropagation(); kpMenuClose(); run(); } }, label)));
+  document.body.append(m);
+  m.style.left = Math.min(x, innerWidth - m.offsetWidth - 8) + 'px';
+  m.style.top = Math.min(y, innerHeight - m.offsetHeight - 8) + 'px';
+  m.querySelector('.kp-mi').focus();
+}
+
+function kpPersonalClick(node) {
+  if (node.kind === 'l5link') { kpOpen(node.src.url); return; }
+  if (node.kind === 'l6folder') {
+    if (!kpStore.get('l6', null)) { kpDest.pick(); return; }
+    kpPopover(node, kpEl('div', { class: 'kp-pop-h' }, '📁 ' + node.full),
+      kpEl('div', { class: 'kp-pop-row kp-muted' }, 'Megnyitás a Kapu segéddel lesz elérhető' + (kpStore.get('l6').path ? ': ' + kpStore.get('l6').path : '') + '.'),
+      kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: kpDestTest }, 'Teszt fájl írása'),
+        kpEl('button', { class: 'kp-btn', onclick: () => kpDest.pick() }, 'Másik mappa…')));
+  }
+}
+
+if (typeof module !== 'undefined') module.exports = { kpL5Merge, kpL5Ok, kpL5Report };
 
 // ---- 99-boot.js
 // Boot: theme, embedded data, shell. Later WPs hang their init off kpBoot.

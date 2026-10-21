@@ -118,6 +118,7 @@ function kpStartPrompt(c) {
 function kpMainAction(node) {
   const c = kpCtx(node.id);
   if (!c) return;
+  if (node.kind === 'l5link' || node.kind === 'l6folder') { kpPersonalClick(node); return; }
   if (node.kind === 'summary') { kpBoard.collapsed = kpBoard.collapsed.filter(d => d !== node.dept); kpStore.set('collapsed', kpBoard.collapsed); kpBoardRender(); return; }
   if (node.kind === 'roadmap' && node.src && node.src.url) { kpOpen(node.src.url); return; }
   if (node.kind === 'roadmap' || node.kind === 'slot') { kpDrawerOpen(node.id, 'short'); return; }
@@ -217,6 +218,7 @@ function kpMenuClose() { const m = document.getElementById('kpMenu'); if (m) m.r
 
 function kpMenuOpen(nodeId, x, y) {
   const c = kpCtx(nodeId);
+  if (c && (c.node.layer === 'L5' || c.node.layer === 'L6')) { kpPersonalMenuOpen(c.node, x, y); return; }
   if (!c || ['origin', 'band', 'more'].includes(c.node.kind)) return;
   kpMenuClose();
   kpPopoverClose();
