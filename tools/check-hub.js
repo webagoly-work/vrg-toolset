@@ -72,6 +72,21 @@ if (!fs.existsSync(TOPO)) {
   }
 }
 
+// the allowed list: a bad signature fails, a missing or unsigned list only warns
+const ACCESS = path.join(HUB, 'data', 'access.json'), PUB = path.join(HUB, 'src', 'access-pubkey.json');
+if (!fs.existsSync(ACCESS)) console.log('  warn  no Hub/data/access.json yet - every program stays closed (WP-H5)');
+else {
+  const a = JSON.parse(fs.readFileSync(ACCESS, 'utf8'));
+  if (!a.sig || !fs.existsSync(PUB)) console.log('  warn  access.json is not signed - run node tools/hub-sign.js');
+  else {
+    const crypto = require('crypto');
+    const { kpCanon } = require(path.join(HUB, 'src', 'js', '10-model.js'));
+    const key = crypto.createPublicKey({ key: JSON.parse(fs.readFileSync(PUB, 'utf8')), format: 'jwk' });
+    if (crypto.verify('sha256', Buffer.from(kpCanon(a.body)), { key, dsaEncoding: 'ieee-p1363' }, Buffer.from(a.sig, 'base64'))) ok('access.json signature valid (' + a.body.people.length + ' people)');
+    else bad('access.json signature INVALID - changed after signing?');
+  }
+}
+
 const scan = [DIST, path.join(HUB, 'data')].filter(fs.existsSync).flatMap(function walk(p) {
   return fs.statSync(p).isDirectory() ? fs.readdirSync(p).flatMap(f => walk(path.join(p, f))) : [p];
 });

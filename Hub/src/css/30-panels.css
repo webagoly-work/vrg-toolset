@@ -82,3 +82,4 @@
 .kp-lock{font-size:11px;text-anchor:end}
 .kp-locked .kp-sub-t{fill:var(--muted)}
 .kp-tip-lock{margin-top:4px;color:var(--amberflag)}
+.kp-dot.bad{color:var(--red-ink)}

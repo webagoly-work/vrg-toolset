@@ -63,9 +63,20 @@ function kpSigninOpen() {
       kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(KP_LOGIN.onedrive) }, 'Bejelentkezés (új ablak)')),
     kpSigninRow('Claude', kpDot('none'), '– saját fiók',
       kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(KP_LOGIN.claude) }, 'Claude Code megnyitása')),
-    kpSigninRow('Engedélyezett lista', kpDot('off'), 'még nincs beállítva'),
+    kpSigninRow('Engedélyezett lista', kpDot(kpListDot()), kpListText()),
     kpSigninRow('Kapu segéd', kpDot('off'), 'nem fut',
-      kpEl('button', { class: 'kp-btn', onclick: () => kpToast('Indítsd a Hub\\VRG Kapu.cmd-vel — a segéd a következő lépésekben készül el') }, 'Hogyan indítom?')));
+      kpEl('button', { class: 'kp-btn', onclick: () => kpToast('Indítsd a Hub\\VRG Kapu.cmd-vel — a segéd a következő lépésekben készül el') }, 'Hogyan indítom?')),
+    kpEl('p', { class: 'kp-note' }, KP_ACCESS_NOTE));
+}
+
+const kpListDot = () => kpAccess.state === 'valid' ? (kpL1Open() ? 'ok' : 'warn') : kpAccess.state === 'none' ? 'off' : 'bad';
+function kpListText() {
+  const a = kpAccess;
+  if (a.state === 'none') return 'még nincs beállítva';
+  if (a.state === 'unsigned') return 'nincs aláírva — a programok zárva maradnak';
+  if (a.state === 'invalid') return '✗ aláírás érvénytelen — a programok zárva maradnak';
+  if (a.state === 'nocrypto') return 'ez a böngésző nem tud aláírást ellenőrizni';
+  return '✓ aláírás rendben · ' + a.people + ' fő · ' + (a.me ? 'te: ' + (a.role === 'owner' ? 'Tulajdonos' : 'tag') : kpGh.login ? 'te nem szerepelsz rajta' : 'lépj be a GitHubbal');
 }
 
 function kpWizardOpen() {
@@ -99,26 +110,29 @@ function kpRenderSigninDots() {
   const b = document.getElementById('kpSignin');
   if (!b) return;
   const gh = kpGhHasRepo() ? 'ok' : kpGh.login ? 'warn' : 'off';
-  b.replaceChildren('Belépések ', kpDot(gh), kpDot(kpOdTick() ? 'ok' : 'off'), kpDot('off'));
+  b.replaceChildren('Belépések ', kpDot(gh), kpDot(kpOdTick() ? 'ok' : 'off'), kpDot(kpListDot()));
   b.title = 'GitHub: ' + (kpGh.login ? kpGh.login + ' · ' + (KP_GH_ACCESS_HU[kpGh.access] || '?') : 'nincs belépve') +
-    ' · OneDrive: ' + (kpOdTick() ? 'jelölve' : 'nincs jelölve') + ' · Engedélyezett lista: még nincs';
+    ' · OneDrive: ' + (kpOdTick() ? 'jelölve' : 'nincs jelölve') + ' · Engedélyezett lista: ' + kpListText();
 }
 
-function kpSigninChanged() {
+async function kpSigninChanged() {
+  await kpAccessRefresh();
+  kpBanner();
   kpRenderSigninDots();
   if (kpBoard.layout) kpBoardRender();
 }
 
 function kpBanner() {
   const el = document.getElementById('kpBanner');
-  const show = kpIsFile() || !kpStore.available();
-  el.hidden = !show;
-  if (show) el.innerHTML = kpMdInline(KP_FILE_BANNER);
+  const msgs = [];
+  if (kpIsFile() || !kpStore.available()) msgs.push(kpMdInline(KP_FILE_BANNER));
+  if (kpAccess.state === 'invalid') msgs.push(kpEsc(KP_GATE_BADSIG));
+  el.hidden = !msgs.length;
+  el.innerHTML = msgs.join('<br>');
 }
 
 async function kpSigninInit() {
   document.getElementById('kpSignin').addEventListener('click', kpSigninOpen);
-  kpRenderSigninDots();
-  kpBanner();
-  if (kpGh.token) { await kpGhIdentify(kpData.topology.repo); kpSigninChanged(); }
+  await kpSigninChanged();
+  if (kpGh.token) { await kpGhIdentify(kpData.topology.repo); await kpSigninChanged(); }
 }

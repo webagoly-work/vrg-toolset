@@ -55,11 +55,11 @@ function kpTipShow(id, x, y) {
     : n.kind === 'roadmap' ? s.t : s.d || n.full;
   const t = kpTarget(c);
   const where = t.href ? t.href.replace(/^https?:\/\//, '') : t.path || (n.kind === 'dept' ? 'kattintás: össze/kinyit · dupla: Fókusz' : '');
-  const lock = n.layer && n.kind !== 'roadmap' ? kpLayerLock(n.layer) : null;
+  const lock = n.kind === 'program' ? (kpL1Open() ? null : 'gate') : n.layer && n.kind !== 'roadmap' ? kpLayerLock(n.layer) : null;
   const tip = kpEl('div', { id: 'kpTip', class: 'kp-tip', role: 'tooltip' },
     kpEl('div', { class: 'kp-tip-t' }, n.full || n.title.join(' ')), text ? kpEl('div', {}, text) : null,
     where ? kpEl('div', { class: 'kp-tip-w' }, '→ ' + where) : null,
-    lock ? kpEl('div', { class: 'kp-tip-lock' }, '🔒 Előbb lépj be: ' + lock) : null);
+    lock === 'gate' ? kpEl('div', { class: 'kp-tip-lock' }, '⛔ ' + kpL1Why()) : lock ? kpEl('div', { class: 'kp-tip-lock' }, '🔒 Előbb lépj be: ' + lock) : null);
   document.body.append(tip);
   tip.style.left = Math.min(x + 14, innerWidth - tip.offsetWidth - 8) + 'px';
   tip.style.top = Math.min(y + 18, innerHeight - tip.offsetHeight - 8) + 'px';

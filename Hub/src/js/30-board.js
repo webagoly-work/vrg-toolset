@@ -103,6 +103,11 @@ function kpNodeEl(n) {
   if (big) {
     g.append(kpEl('text', { class: 'kp-icon', x: n.x + 10, y: n.y + 19 }, icon),
       kpText(n.x + 28, n.y + 19, n.title, 'kp-title', 15));
+    if (n.kind === 'program') {
+      const open = kpL1Open();
+      g.classList.toggle('kp-locked', !open);
+      g.append(kpEl('text', { class: 'kp-lock', x: n.x + n.w - 8, y: n.y + n.h - 9 }, open ? '🔓' : '⛔'));
+    }
     if (n.status) {
       g.append(kpEl('text', { class: 'kp-status', x: n.x + 28, y: n.y + n.h - 9 }, KP_STATUS_DOT[n.status] + ' ' + KP_STATUS_HU[n.status]));
     }

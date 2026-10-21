@@ -15,9 +15,9 @@ const KP_CLAUDE_WEB = 'https://claude.ai/code';
 const KP_ACT = [
   { id: 'short', label: 'Rövid leírás', g: 'info', at: ['rco'], run: c => kpDrawerOpen(c.node.id, 'short') },
   { id: 'long', label: 'Részletes leírás', g: 'info', at: ['rco'], run: c => kpDrawerOpen(c.node.id, 'long') },
-  { id: 'open', label: 'Megnyitás új ablakban', g: 'open', at: ['rco'], when: c => !!kpTarget(c).kind, whyNot: 'Ennek az elemnek nincs megnyitható célja',
+  { id: 'open', label: 'Megnyitás új ablakban', g: 'open', at: ['rco'], gate: 'L1', when: c => !!kpTarget(c).kind, whyNot: 'Ennek az elemnek nincs megnyitható célja',
     run: c => kpMainAction(c.node) },
-  { id: 'preview', label: 'Előnézet (legfrissebb a GitHubról)', g: 'open', at: ['rco'], need: 'github',
+  { id: 'preview', label: 'Előnézet (legfrissebb a GitHubról)', g: 'open', at: ['rco'], gate: 'L1', need: 'github',
     when: c => c.node.kind === 'program' && !!(c.prog && c.prog.open && c.prog.open.repo), whyNot: 'Csak a repóban lévő programoknál',
     run: c => kpToast('Előnézet — itt ne dolgozz, nem marad meg') },
   { id: 'copy', label: 'Link másolása', g: 'open', at: ['rco'], when: c => !!(kpTarget(c).href || kpTarget(c).path), whyNot: 'Ennek az elemnek nincs linkje',
@@ -41,6 +41,7 @@ const KP_ACT = [
 
 // enabled + reason for one action in one context
 function kpActState(a, c) {
+  if (a.gate === 'L1' && c.node.kind === 'program' && !kpL1Open()) return { on: false, why: '⛔ ' + kpL1Why() };
   if (a.need && !kpCaps[a.need]) return { on: false, why: KP_WHY[a.need] };
   if (a.when && !a.when(c)) return { on: false, why: a.whyNot || '' };
   return { on: true, why: '' };
@@ -112,6 +113,7 @@ function kpMainAction(node) {
   if (node.kind === 'summary') { kpBoard.collapsed = kpBoard.collapsed.filter(d => d !== node.dept); kpStore.set('collapsed', kpBoard.collapsed); kpBoardRender(); return; }
   if (node.kind === 'roadmap' || node.kind === 'slot') { kpDrawerOpen(node.id, 'short'); return; }
   if (node.kind === 'go') { kpCopy(kpStartPrompt(c), 'Az indító prompt a vágólapon — illeszd be a Claude Code-ba'); return; }
+  if (node.kind === 'program' && !kpL1Open()) { kpGatePopover(node); return; }
   const t = kpTarget(c);
   if (t.kind === 'repo-tool') { kpToolPopover(node, t); return; }
   if (t.kind === 'local') { kpPathPopover(node, t.path, 'Helyi mappa — a Kapu segéd nélkül másold ki az útvonalat.'); return; }
@@ -182,6 +184,14 @@ function kpToolPopover(node, t) {
     kpEl('div', { class: 'kp-pop-row' }, kpEl('label', { class: 'kp-muted' }, 'Helyi repó mappa'), rootIn,
       kpEl('button', { class: 'kp-btn', onclick: () => { kpStore.set('repoRoot', rootIn.value.trim()); kpToolPopover(node, kpTarget(kpCtx(node.id))); } }, 'Mentés')),
     kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(t.href) }, 'Megnyitás a GitHubon')));
+}
+
+function kpGatePopover(node) {
+  kpPopover(node,
+    kpEl('div', { class: 'kp-pop-h' }, '⛔ ' + node.title.join(' ')),
+    kpEl('div', { class: 'kp-pop-row' }, kpL1Why()),
+    kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: () => { kpPopoverClose(); kpSigninOpen(); } }, 'Belépések'),
+      kpEl('button', { class: 'kp-btn', onclick: () => kpDrawerOpen(node.id, 'long') }, 'Részletes leírás')));
 }
 
 function kpPathPopover(node, path, note) {

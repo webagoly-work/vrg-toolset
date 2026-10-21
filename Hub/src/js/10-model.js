@@ -76,4 +76,12 @@ function kpLinkFor(node, ctx) {
   return { href: null, kind: 'none' };
 }
 
-if (typeof module !== 'undefined') module.exports = { kpValidate, kpResolveRefs, kpVisible, kpLinkFor, KP_STATUS };
+// Canonical JSON: keys sorted at every level, no whitespace. The one form that gets signed
+// (tools/hub-sign.js) and verified (the page) — both use this function.
+function kpCanon(v) {
+  if (Array.isArray(v)) return '[' + v.map(kpCanon).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + kpCanon(v[k])).join(',') + '}';
+  return JSON.stringify(v);
+}
+
+if (typeof module !== 'undefined') module.exports = { kpValidate, kpResolveRefs, kpVisible, kpLinkFor, kpCanon, KP_STATUS };

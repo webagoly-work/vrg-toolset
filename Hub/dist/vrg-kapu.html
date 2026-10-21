@@ -230,6 +230,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 .kp-lock{font-size:11px;text-anchor:end}
 .kp-locked .kp-sub-t{fill:var(--muted)}
 .kp-tip-lock{margin-top:4px;color:var(--amberflag)}
+.kp-dot.bad{color:var(--red-ink)}
 </style>
 </head>
 <body>
@@ -262,7 +263,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 <script type="application/json" id="kpPubkey">null</script>
 <script>
 "use strict";
-const KP_BUILD = "4ee7a5f4c958";
+const KP_BUILD = "24b349774722";
 // ---- 00-core.js
 // Core helpers shared by every module. Pure where possible, so Hub/test can run them in Node.
 
@@ -405,7 +406,15 @@ function kpLinkFor(node, ctx) {
   return { href: null, kind: 'none' };
 }
 
-if (typeof module !== 'undefined') module.exports = { kpValidate, kpResolveRefs, kpVisible, kpLinkFor, KP_STATUS };
+// Canonical JSON: keys sorted at every level, no whitespace. The one form that gets signed
+// (tools/hub-sign.js) and verified (the page) — both use this function.
+function kpCanon(v) {
+  if (Array.isArray(v)) return '[' + v.map(kpCanon).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + kpCanon(v[k])).join(',') + '}';
+  return JSON.stringify(v);
+}
+
+if (typeof module !== 'undefined') module.exports = { kpValidate, kpResolveRefs, kpVisible, kpLinkFor, kpCanon, KP_STATUS };
 
 // ---- 20-layout.js
 // Board layout: pure geometry from the visible topology. Every number lives in KP_LAYOUT.
@@ -754,6 +763,11 @@ function kpNodeEl(n) {
   if (big) {
     g.append(kpEl('text', { class: 'kp-icon', x: n.x + 10, y: n.y + 19 }, icon),
       kpText(n.x + 28, n.y + 19, n.title, 'kp-title', 15));
+    if (n.kind === 'program') {
+      const open = kpL1Open();
+      g.classList.toggle('kp-locked', !open);
+      g.append(kpEl('text', { class: 'kp-lock', x: n.x + n.w - 8, y: n.y + n.h - 9 }, open ? '🔓' : '⛔'));
+    }
     if (n.status) {
       g.append(kpEl('text', { class: 'kp-status', x: n.x + 28, y: n.y + n.h - 9 }, KP_STATUS_DOT[n.status] + ' ' + KP_STATUS_HU[n.status]));
     }
@@ -962,9 +976,9 @@ const KP_CLAUDE_WEB = 'https://claude.ai/code';
 const KP_ACT = [
   { id: 'short', label: 'Rövid leírás', g: 'info', at: ['rco'], run: c => kpDrawerOpen(c.node.id, 'short') },
   { id: 'long', label: 'Részletes leírás', g: 'info', at: ['rco'], run: c => kpDrawerOpen(c.node.id, 'long') },
-  { id: 'open', label: 'Megnyitás új ablakban', g: 'open', at: ['rco'], when: c => !!kpTarget(c).kind, whyNot: 'Ennek az elemnek nincs megnyitható célja',
+  { id: 'open', label: 'Megnyitás új ablakban', g: 'open', at: ['rco'], gate: 'L1', when: c => !!kpTarget(c).kind, whyNot: 'Ennek az elemnek nincs megnyitható célja',
     run: c => kpMainAction(c.node) },
-  { id: 'preview', label: 'Előnézet (legfrissebb a GitHubról)', g: 'open', at: ['rco'], need: 'github',
+  { id: 'preview', label: 'Előnézet (legfrissebb a GitHubról)', g: 'open', at: ['rco'], gate: 'L1', need: 'github',
     when: c => c.node.kind === 'program' && !!(c.prog && c.prog.open && c.prog.open.repo), whyNot: 'Csak a repóban lévő programoknál',
     run: c => kpToast('Előnézet — itt ne dolgozz, nem marad meg') },
   { id: 'copy', label: 'Link másolása', g: 'open', at: ['rco'], when: c => !!(kpTarget(c).href || kpTarget(c).path), whyNot: 'Ennek az elemnek nincs linkje',
@@ -988,6 +1002,7 @@ const KP_ACT = [
 
 // enabled + reason for one action in one context
 function kpActState(a, c) {
+  if (a.gate === 'L1' && c.node.kind === 'program' && !kpL1Open()) return { on: false, why: '⛔ ' + kpL1Why() };
   if (a.need && !kpCaps[a.need]) return { on: false, why: KP_WHY[a.need] };
   if (a.when && !a.when(c)) return { on: false, why: a.whyNot || '' };
   return { on: true, why: '' };
@@ -1059,6 +1074,7 @@ function kpMainAction(node) {
   if (node.kind === 'summary') { kpBoard.collapsed = kpBoard.collapsed.filter(d => d !== node.dept); kpStore.set('collapsed', kpBoard.collapsed); kpBoardRender(); return; }
   if (node.kind === 'roadmap' || node.kind === 'slot') { kpDrawerOpen(node.id, 'short'); return; }
   if (node.kind === 'go') { kpCopy(kpStartPrompt(c), 'Az indító prompt a vágólapon — illeszd be a Claude Code-ba'); return; }
+  if (node.kind === 'program' && !kpL1Open()) { kpGatePopover(node); return; }
   const t = kpTarget(c);
   if (t.kind === 'repo-tool') { kpToolPopover(node, t); return; }
   if (t.kind === 'local') { kpPathPopover(node, t.path, 'Helyi mappa — a Kapu segéd nélkül másold ki az útvonalat.'); return; }
@@ -1129,6 +1145,14 @@ function kpToolPopover(node, t) {
     kpEl('div', { class: 'kp-pop-row' }, kpEl('label', { class: 'kp-muted' }, 'Helyi repó mappa'), rootIn,
       kpEl('button', { class: 'kp-btn', onclick: () => { kpStore.set('repoRoot', rootIn.value.trim()); kpToolPopover(node, kpTarget(kpCtx(node.id))); } }, 'Mentés')),
     kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(t.href) }, 'Megnyitás a GitHubon')));
+}
+
+function kpGatePopover(node) {
+  kpPopover(node,
+    kpEl('div', { class: 'kp-pop-h' }, '⛔ ' + node.title.join(' ')),
+    kpEl('div', { class: 'kp-pop-row' }, kpL1Why()),
+    kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: () => { kpPopoverClose(); kpSigninOpen(); } }, 'Belépések'),
+      kpEl('button', { class: 'kp-btn', onclick: () => kpDrawerOpen(node.id, 'long') }, 'Részletes leírás')));
 }
 
 function kpPathPopover(node, path, note) {
@@ -1482,11 +1506,11 @@ function kpTipShow(id, x, y) {
     : n.kind === 'roadmap' ? s.t : s.d || n.full;
   const t = kpTarget(c);
   const where = t.href ? t.href.replace(/^https?:\/\//, '') : t.path || (n.kind === 'dept' ? 'kattintás: össze/kinyit · dupla: Fókusz' : '');
-  const lock = n.layer && n.kind !== 'roadmap' ? kpLayerLock(n.layer) : null;
+  const lock = n.kind === 'program' ? (kpL1Open() ? null : 'gate') : n.layer && n.kind !== 'roadmap' ? kpLayerLock(n.layer) : null;
   const tip = kpEl('div', { id: 'kpTip', class: 'kp-tip', role: 'tooltip' },
     kpEl('div', { class: 'kp-tip-t' }, n.full || n.title.join(' ')), text ? kpEl('div', {}, text) : null,
     where ? kpEl('div', { class: 'kp-tip-w' }, '→ ' + where) : null,
-    lock ? kpEl('div', { class: 'kp-tip-lock' }, '🔒 Előbb lépj be: ' + lock) : null);
+    lock === 'gate' ? kpEl('div', { class: 'kp-tip-lock' }, '⛔ ' + kpL1Why()) : lock ? kpEl('div', { class: 'kp-tip-lock' }, '🔒 Előbb lépj be: ' + lock) : null);
   document.body.append(tip);
   tip.style.left = Math.min(x + 14, innerWidth - tip.offsetWidth - 8) + 'px';
   tip.style.top = Math.min(y + 18, innerHeight - tip.offsetHeight - 8) + 'px';
@@ -1733,9 +1757,20 @@ function kpSigninOpen() {
       kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(KP_LOGIN.onedrive) }, 'Bejelentkezés (új ablak)')),
     kpSigninRow('Claude', kpDot('none'), '– saját fiók',
       kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(KP_LOGIN.claude) }, 'Claude Code megnyitása')),
-    kpSigninRow('Engedélyezett lista', kpDot('off'), 'még nincs beállítva'),
+    kpSigninRow('Engedélyezett lista', kpDot(kpListDot()), kpListText()),
     kpSigninRow('Kapu segéd', kpDot('off'), 'nem fut',
-      kpEl('button', { class: 'kp-btn', onclick: () => kpToast('Indítsd a Hub\\VRG Kapu.cmd-vel — a segéd a következő lépésekben készül el') }, 'Hogyan indítom?')));
+      kpEl('button', { class: 'kp-btn', onclick: () => kpToast('Indítsd a Hub\\VRG Kapu.cmd-vel — a segéd a következő lépésekben készül el') }, 'Hogyan indítom?')),
+    kpEl('p', { class: 'kp-note' }, KP_ACCESS_NOTE));
+}
+
+const kpListDot = () => kpAccess.state === 'valid' ? (kpL1Open() ? 'ok' : 'warn') : kpAccess.state === 'none' ? 'off' : 'bad';
+function kpListText() {
+  const a = kpAccess;
+  if (a.state === 'none') return 'még nincs beállítva';
+  if (a.state === 'unsigned') return 'nincs aláírva — a programok zárva maradnak';
+  if (a.state === 'invalid') return '✗ aláírás érvénytelen — a programok zárva maradnak';
+  if (a.state === 'nocrypto') return 'ez a böngésző nem tud aláírást ellenőrizni';
+  return '✓ aláírás rendben · ' + a.people + ' fő · ' + (a.me ? 'te: ' + (a.role === 'owner' ? 'Tulajdonos' : 'tag') : kpGh.login ? 'te nem szerepelsz rajta' : 'lépj be a GitHubbal');
 }
 
 function kpWizardOpen() {
@@ -1769,29 +1804,83 @@ function kpRenderSigninDots() {
   const b = document.getElementById('kpSignin');
   if (!b) return;
   const gh = kpGhHasRepo() ? 'ok' : kpGh.login ? 'warn' : 'off';
-  b.replaceChildren('Belépések ', kpDot(gh), kpDot(kpOdTick() ? 'ok' : 'off'), kpDot('off'));
+  b.replaceChildren('Belépések ', kpDot(gh), kpDot(kpOdTick() ? 'ok' : 'off'), kpDot(kpListDot()));
   b.title = 'GitHub: ' + (kpGh.login ? kpGh.login + ' · ' + (KP_GH_ACCESS_HU[kpGh.access] || '?') : 'nincs belépve') +
-    ' · OneDrive: ' + (kpOdTick() ? 'jelölve' : 'nincs jelölve') + ' · Engedélyezett lista: még nincs';
+    ' · OneDrive: ' + (kpOdTick() ? 'jelölve' : 'nincs jelölve') + ' · Engedélyezett lista: ' + kpListText();
 }
 
-function kpSigninChanged() {
+async function kpSigninChanged() {
+  await kpAccessRefresh();
+  kpBanner();
   kpRenderSigninDots();
   if (kpBoard.layout) kpBoardRender();
 }
 
 function kpBanner() {
   const el = document.getElementById('kpBanner');
-  const show = kpIsFile() || !kpStore.available();
-  el.hidden = !show;
-  if (show) el.innerHTML = kpMdInline(KP_FILE_BANNER);
+  const msgs = [];
+  if (kpIsFile() || !kpStore.available()) msgs.push(kpMdInline(KP_FILE_BANNER));
+  if (kpAccess.state === 'invalid') msgs.push(kpEsc(KP_GATE_BADSIG));
+  el.hidden = !msgs.length;
+  el.innerHTML = msgs.join('<br>');
 }
 
 async function kpSigninInit() {
   document.getElementById('kpSignin').addEventListener('click', kpSigninOpen);
-  kpRenderSigninDots();
-  kpBanner();
-  if (kpGh.token) { await kpGhIdentify(kpData.topology.repo); kpSigninChanged(); }
+  await kpSigninChanged();
+  if (kpGh.token) { await kpGhIdentify(kpData.topology.repo); await kpSigninChanged(); }
 }
+
+// ---- 60-access.js
+// The signed allowed list: verify with the embedded public key, find "me", gate layer 1.
+// Honest scope: this decides what the Kapu opens. The real locks are GitHub and OneDrive.
+
+const KP_ACCESS_SCHEMA = 'vrg-hub-access/1';
+const KP_GATE_NO = 'Nem szerepelsz az engedélyezett listán — kérd a tulajdonost.';
+const KP_GATE_BADSIG = 'A hozzáférési lista aláírása érvénytelen — a programok zárva maradnak.';
+const KP_ACCESS_NOTE = 'A valódi zár a GitHub és a OneDrive jogosultság; ez a lista azt mutatja, kinek nyit a Kapu.';
+
+const kpAccess = { state: 'none', valid: false, me: null, role: null, people: 0 };
+
+function kpB64Bytes(b64) {
+  const s = atob(b64);
+  const out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+
+// -> { state: 'none'|'unsigned'|'invalid'|'nocrypto'|'valid', valid, me, role, people }
+async function kpAccessCheck(access, pubkey, login) {
+  const r = { state: 'none', valid: false, me: null, role: null, people: 0 };
+  if (!access || access.schema !== KP_ACCESS_SCHEMA || !access.body) return r;
+  if (!access.sig || !pubkey) return Object.assign(r, { state: 'unsigned' });
+  const subtle = typeof crypto !== 'undefined' && crypto.subtle;
+  if (!subtle) return Object.assign(r, { state: 'nocrypto' });
+  let ok = false;
+  try {
+    const key = await subtle.importKey('jwk', { kty: pubkey.kty, crv: pubkey.crv, x: pubkey.x, y: pubkey.y }, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+    ok = await subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, key, kpB64Bytes(access.sig), new TextEncoder().encode(kpCanon(access.body)));
+  } catch (e) { ok = false; }
+  if (!ok) return Object.assign(r, { state: 'invalid' });
+  const people = access.body.people || [];
+  const me = login ? people.find(p => String(p.github || '').toLowerCase() === String(login).toLowerCase()) || null : null;
+  return { state: 'valid', valid: true, me, role: me ? me.role : null, people: people.length };
+}
+
+// may this browser's user open layer-1 things?
+const kpL1Open = () => !!(kpAccess.valid && kpAccess.me && (kpAccess.me.layers || []).includes('L1'));
+function kpL1Why() {
+  if (kpAccess.state === 'invalid') return KP_GATE_BADSIG;
+  if (kpAccess.state !== 'valid') return 'Még nincs aláírt engedélyezett lista — a programok zárva maradnak.';
+  if (!kpGh.login) return 'Előbb lépj be: GitHub';
+  return KP_GATE_NO;
+}
+
+async function kpAccessRefresh() {
+  Object.assign(kpAccess, await kpAccessCheck(kpData.access, kpData.pubkey, kpGh.login));
+}
+
+if (typeof module !== 'undefined') module.exports = { kpAccessCheck, kpB64Bytes, KP_GATE_NO, KP_GATE_BADSIG };
 
 // ---- 99-boot.js
 // Boot: theme, embedded data, shell. Later WPs hang their init off kpBoot.
