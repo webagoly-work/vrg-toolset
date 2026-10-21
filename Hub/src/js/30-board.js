@@ -21,7 +21,7 @@ function kpBoardRender() {
   const topo = kpData.topology;
   const svg = document.getElementById('kpBoard');
   if (!topo) { svg.replaceChildren(); return; }
-  let cols = kpVisible(kpApplyLive(kpResolveRefs(topo), kpLive()), kpBoard.view);
+  let cols = kpVisible(kpApplyLive(kpResolveRefs(kpViewTopology()), kpLive()), kpBoard.view);
   if (kpBoard.focus) cols = cols.filter(c => c.dept.id === kpBoard.focus);
   const lay = kpLayout(cols, { layers: kpBoard.layers, collapsed: kpBoard.focus ? [] : kpBoard.collapsed, expanded: kpBoard.expanded, en: true });
   kpBoard.layout = lay;
@@ -108,8 +108,17 @@ function kpNodeEl(n) {
       g.classList.toggle('kp-locked', !open);
       g.append(kpEl('text', { class: 'kp-lock' + (open ? ' open' : ''), x: n.x + n.w - 8, y: n.y + n.h - 9 }, open ? '🔓' : '⛔'));
     }
-    if (n.status) {
+    const dirty = n.kind === 'program' && kpDirty.has(n.progId);
+    if (dirty) g.append(kpEl('text', { class: 'kp-status kp-dirty-t', x: n.x + 28, y: n.y + n.h - 9 }, '✎ nem mentett'));
+    else if (n.status) {
       g.append(kpEl('text', { class: 'kp-status', x: n.x + 28, y: n.y + n.h - 9 }, KP_STATUS_DOT[n.status] + ' ' + KP_STATUS_HU[n.status]));
+    }
+    g.classList.toggle('kp-dirty', dirty);
+    const claim = n.kind === 'program' && n.src && n.src.claim;
+    if (claim) {
+      const old = claim.until < kpToday();
+      g.append(kpEl('text', { class: 'kp-claim-b' + (old ? ' old' : ''), x: n.x + n.w, y: n.y - 5 },
+        '⚑ ' + claim.by + '-ig ' + String(claim.until).slice(5), kpEl('title', {}, (claim.note || '') + (old ? ' (lejárt — a következő mentés törli)' : ''))));
     }
   } else {
     g.append(kpEl('text', { class: 'kp-icon', x: n.x + 9, y: n.y + 21 }, icon),

@@ -90,3 +90,17 @@
 .kp-chip-dec{fill:var(--amberflag);font-size:11px;font-weight:700;text-anchor:end}
 .kp-ch{margin:8px 0} .kp-ch ul{margin:4px 0;padding-left:18px}
 .kp-lock.open{opacity:.3}
+
+/* editor, pending, claims */
+.kp-ed-row{display:grid;grid-template-columns:190px 1fr;gap:8px;align-items:center;margin:6px 0}
+.kp-ed-l{color:var(--muted);font-size:12.5px}
+.kp-ta{resize:vertical;font-family:inherit}
+.kp-danger{color:var(--red-ink);border-color:var(--red)}
+.kp-warn{color:var(--amberflag)}
+.kp-pending{color:var(--accent);font-weight:600}
+.kp-strip-sep{width:1px;height:16px;background:var(--line);margin:0 4px}
+.kp-claim-s{border:1px solid var(--accent-dim);border-radius:12px;padding:0 8px;font-size:12px}
+.kp-dirty .kp-card{stroke:var(--accent);stroke-dasharray:4 3}
+.kp-dirty-t{fill:var(--accent)}
+.kp-claim-b{fill:var(--accent);font-size:11px;font-weight:600;text-anchor:end}
+.kp-claim-b.old{fill:var(--muted);text-decoration:line-through}

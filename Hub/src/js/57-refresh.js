@@ -223,7 +223,10 @@ if (typeof module !== 'undefined') module.exports = { kpMergeRoadmap, kpDecision
 // ---- ☰ menu (H11 adds the rest of 03_UI §7)
 const KP_MAIN_MENU = [
   { label: 'Mi változott?', run: () => kpChangesOpen() },
-  { label: 'Frissítés most', run: () => kpRefresh({ keep: true }) }
+  { label: 'Frissítés most', run: () => kpRefresh({ keep: true }) },
+  { label: 'Exportálás JSON', run: () => kpExport() },
+  { label: 'Importálás JSON…', run: () => kpImport() },
+  { label: 'Elrejtett elemek…', run: () => kpHiddenOpen() }
 ];
 function kpMainMenuInit() {
   const b = document.getElementById('kpMenuBtn');

@@ -3,10 +3,11 @@
 //   at (surfaces), need ('companion' | 'github' | 'log': greyed with the reason until it exists),
 //   when(ctx) -> false greys it with whyNot, sub (submenu), run(ctx)
 
-const kpCaps = { companion: false, github: false, log: false };
+const kpCaps = { companion: false, ghRead: false, ghWrite: false, log: false };
 const KP_WHY = {
   companion: 'Ehhez fusson a Kapu segéd — indítsd a VRG Kapu.cmd-vel',
-  github: 'Ehhez GitHub belépés kell — Belépések',
+  ghRead: 'Ehhez GitHub belépés kell — Belépések',
+  ghWrite: 'Ehhez GitHub belépés kell, írási joggal — Belépések',
   log: 'A Munkanapló a következő lépésekben készül el'
 };
 const KP_FAV_MAX = 8;
@@ -17,9 +18,9 @@ const KP_ACT = [
   { id: 'long', label: 'Részletes leírás', g: 'info', at: ['rco'], run: c => kpDrawerOpen(c.node.id, 'long') },
   { id: 'open', label: 'Megnyitás új ablakban', g: 'open', at: ['rco'], gate: 'L1', when: c => !!kpTarget(c).kind, whyNot: 'Ennek az elemnek nincs megnyitható célja',
     run: c => kpMainAction(c.node) },
-  { id: 'preview', label: 'Előnézet (legfrissebb a GitHubról)', g: 'open', at: ['rco'], gate: 'L1', need: 'github',
+  { id: 'preview', label: 'Előnézet (legfrissebb a GitHubról)', g: 'open', at: ['rco'], gate: 'L1', need: 'ghRead',
     when: c => c.node.kind === 'program' && !!(c.prog && c.prog.open && c.prog.open.repo), whyNot: 'Csak a repóban lévő programoknál',
-    run: c => kpToast('Előnézet — itt ne dolgozz, nem marad meg') },
+    run: c => kpPreview(c) },
   { id: 'copy', label: 'Link másolása', g: 'open', at: ['rco'], when: c => !!(kpTarget(c).href || kpTarget(c).path), whyNot: 'Ennek az elemnek nincs linkje',
     run: c => { const t = kpTarget(c); kpCopy(t.href || t.path); } },
   { id: 'folder', label: 'Mappa megnyitása ezen a gépen', g: 'open', at: ['rco'], need: 'companion', run: () => {} },
@@ -29,14 +30,16 @@ const KP_ACT = [
     { id: 'claude-web', label: 'web', run: () => kpOpen(KP_CLAUDE_WEB) },
     { id: 'claude-prompt', label: 'indító prompt másolása', run: c => kpCopy(kpStartPrompt(c), 'Az indító prompt a vágólapon') }
   ] },
-  { id: 'claim', label: 'Foglalás…', alt: 'Foglalás feloldása', g: 'work', at: ['rco'], need: 'github',
-    toggled: c => !!(c.prog && c.prog.claim), when: c => !!c.prog, whyNot: 'Csak programot lehet foglalni', run: () => {} },
+  { id: 'claim', label: 'Foglalás…', alt: 'Foglalás feloldása', g: 'work', at: ['rco'], need: 'ghWrite',
+    toggled: c => !!(c.prog && c.prog.claim), when: c => !!c.prog, whyNot: 'Csak programot lehet foglalni', run: c => kpClaimAction(c) },
   { id: 'log', label: 'Bejegyzés a munkanaplóba', g: 'work', at: ['rco'], need: 'log', run: () => {} },
   { id: 'fav', label: 'Kedvencekhez', alt: 'Kedvencek közül ki', g: 'work', at: ['rco'],
     toggled: c => kpFavs().includes(c.node.id), when: c => kpFavable(c.node), whyNot: 'Ezt nem lehet kedvencnek jelölni',
     run: c => kpFavToggle(c.node.id) },
-  { id: 'edit', label: 'Szerkesztés…', g: 'edit', at: ['rco'], need: 'github', run: () => {} },
-  { id: 'add', label: 'Új elem ide…', g: 'edit', at: ['rco'], need: 'github', run: () => {} }
+  { id: 'edit', label: 'Szerkesztés…', g: 'edit', at: ['rco'], need: 'ghWrite', when: c => !!c.prog || c.node.kind === 'dept', whyNot: 'Ezt az elemet nem lehet szerkeszteni',
+    run: c => kpEditorOpen(c) },
+  { id: 'add', label: 'Új elem ide…', g: 'edit', at: ['rco'], need: 'ghWrite', when: c => kpAddTarget(c) !== null, whyNot: 'Ide nem lehet új elemet tenni',
+    run: c => kpAddOpen(c) }
 ];
 
 // enabled + reason for one action in one context
@@ -269,8 +272,9 @@ function kpFavTitle(id) {
 function kpRenderStrip() {
   const strip = document.getElementById('kpStrip');
   const favs = kpFavs().map(id => ({ id, t: kpFavTitle(id) })).filter(f => f.t);
-  if (!favs.length) { strip.replaceChildren(); return; }
-  strip.replaceChildren(kpEl('span', { class: 'kp-strip-l' }, '★ Kedvencek:'),
+  const extra = typeof kpStripExtras === 'function' ? kpStripExtras() : [];
+  if (!favs.length) { strip.replaceChildren(...extra); return; }
+  strip.replaceChildren(...extra, kpEl('span', { class: 'kp-strip-l' }, '★ Kedvencek:'),
     ...favs.map(f => kpEl('button', { class: 'kp-fav', onclick: () => {
       const it = kpSearchItems(kpResolveRefs(kpData.topology), 'vision').find(x => x.id === f.id);
       if (it && it.kind === 'program' && kpBoard.view === 'now' && (kpData.topology.programs.find(p => p.id === it.progId) || {}).status === 'v2') kpSetView('vision');

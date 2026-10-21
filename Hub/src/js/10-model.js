@@ -53,7 +53,7 @@ function kpResolveRefs(topo) {
 
 // 'now' hides the v2 vision; every department stays, in seed order, even when empty.
 function kpVisible(topo, view) {
-  const progs = (topo.programs || []).filter(p => view === 'vision' || p.status !== 'v2');
+  const progs = (topo.programs || []).filter(p => !p.hidden && (view === 'vision' || p.status !== 'v2'));
   return (topo.departments || []).map(d => ({ dept: d, programs: progs.filter(p => p.dept === d.id) }));
 }
 

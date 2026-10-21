@@ -117,6 +117,8 @@ function kpRenderSigninDots() {
 }
 
 async function kpSigninChanged() {
+  kpCaps.ghRead = kpGhHasRepo();
+  kpCaps.ghWrite = kpGhHasRepo() && kpGh.access === 'write';
   await kpAccessRefresh();
   kpBanner();
   kpRenderSigninDots();

@@ -33,12 +33,15 @@ async function kpGhFetch(path, opts) {
     Accept: o.raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28'
   };
+  const method = o.method || 'GET';
   const key = (o.raw ? 'raw:' : '') + path;
-  const cached = kpGhCache.get(key);
-  const etag = o.etag || (cached && cached.etag);
+  const cached = method === 'GET' && !o.nocache ? kpGhCache.get(key) : null;
+  const etag = method === 'GET' && !o.nocache ? o.etag || (cached && cached.etag) : null;
   if (etag) headers['If-None-Match'] = etag;
+  const init = { method, headers, cache: 'no-store' };
+  if (o.body !== undefined) { headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(o.body); }
   let res;
-  try { res = await fetch(KP_GH_API + path, { headers, cache: 'no-store' }); }
+  try { res = await fetch(KP_GH_API + path, init); }
   catch (e) { return { status: 0, error: 'Nincs kapcsolat a GitHubbal' }; }
   const h = n => (res.headers && res.headers.get ? res.headers.get(n) : null);
   const rate = h('x-ratelimit-remaining'), limit = h('x-ratelimit-limit');
@@ -49,9 +52,10 @@ async function kpGhFetch(path, opts) {
   if (res.status === 304 && cached) return Object.assign(out, cached.body, { etag: cached.etag, fromCache: true });
   if (res.status >= 200 && res.status < 300) {
     const body = o.raw ? { text: await res.text() } : { json: await res.json() };
-    if (out.etag) kpGhCache.set(key, { etag: out.etag, body });
+    if (out.etag && method === 'GET' && !o.nocache) kpGhCache.set(key, { etag: out.etag, body });
     return Object.assign(out, body);
   }
+  try { out.json = await res.json(); } catch (e) { /* no body */ }
   return out;
 }
 
