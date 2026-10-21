@@ -72,7 +72,7 @@ WP-HA audit list.* Today 61 tracked repo files carry "P33" (plans, BRIDGE build 
 > The client's own documents (`BRIDGE/07_P33/`: blueprints, address, survey) never entered git.
 > **When it runs: Q10c below.**
 
-**Q10c — When does the anonymiser run?** *Blocks setup step 3a.*
+**Q10c — When does the anonymiser run?** *Blocks setup step 3a.* **Answered 2026-10-21: A.**
 - **A** **On `main`, just before the invite** (setup step 3a), after `secacc` is merged — one clean
   pass that also catches every code the primary account adds until then, and no clash with the Planner
   work going on in `main` meanwhile.
