@@ -123,3 +123,9 @@ WP-HA audit list.* Today 61 tracked repo files carry "P33" (plans, BRIDGE build 
 **Q18 — Foglalás (claims: "I am working on this until …").** *Blocks H7.*
 - **A** **Yes** — a soft badge on a program, expires by date, locks nothing.
 - B No.
+
+## Look (WP-H2, 2026-10-21)
+
+**Q19 — Aligned layer rows?** **Answered: A** — L1–L4 rows line up across the board even when one tall cell leaves gaps elsewhere. (B: each column flows; C: stacks of 2.)
+
+**Q20 — What does "0 / Egész" show?** **Answered: A** — fit the width: the department overview; zoom in to read. (B: fit the height, scroll sideways.)

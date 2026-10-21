@@ -59,7 +59,7 @@ Cheaper model fine: H0 H1 H8 H9 H12. Strong model: HA H2 H5 H6 H7 H10 + every VE
 | HA | done | 2026-10-21 | Audit clean (no real secrets); one new finding — `varler-planner` (407 files) + 1 email not covered by the original Q10 draft. See `AUDIT-2026-10-21.md`, HUB-Q10 reopened. |
 | H0 | done | 2026-10-21 | Skeleton builds to one 8.8 kB file; tests 4/4, check-hub OK, check-start OK; four themes verified in headless Edge (4 distinct computed backgrounds). START.cmd `H`, VRG-DE.cmd `L5`. |
 | H1 | done | 2026-10-21 | topology.json from the seed; kpValidate/ResolveRefs/Visible/LinkFor; tests 12/12; check-hub validates + checks 75 repo paths — 16 are still uncommitted work in the main checkout (docs/research, docs/client-look, BRIDGE/10_media-wall, Firmware/*): warning now, error under `--strict` (H13). |
-| H2 | ⏸ look | 2026-10-21 | Board built: layout (pure) + renderer + camera + LOD overview; tests 21/21; real-geometry audit in Edge: 0 overflows, 0 collisions (now 247 / vision 283 boxes). Waiting for the user's look approval. |
+| H2 | done | 2026-10-21 | Board: layout + renderer + camera + overview; tests 21/21; Edge getBBox audit 0 overflow / 0 collision. Look approved (Q19 A aligned rows, Q20 A width-fit overview). |
 | H3 | open | | |
 | H4 | open | | |
 | H5 | open | | |
@@ -88,6 +88,8 @@ Answered 2026-10-21 by the user: **all A** (the recommended option of every ques
 | Q08 | A — Kapu segéd on localhost:8795 |
 | Q09 | A — Hungarian, English below in italics |
 | Q10 | ~~A~~ → **B** (2026-10-21, after the audit) — anonymise the client job codes before the invite; Q10b A: `varler-planner` is our own name and stays, only `P33`/`NV4` + the e-mail go, via `tools/anonymise.js`. New client jobs only on OneDrive `10_Projektek`, by job code |
+| Q19 | A — layer rows stay aligned across the board (H2 look) |
+| Q20 | A — "0 / Egész" fits the width: the department overview (H2 look) |
 | Q10c | A — the anonymiser runs on `main` right before the invite (setup step 3a), after `secacc` is merged |
 | Q11 | A — both save straight to `main` with a conflict check |
 | Q12 | A — Open MCT as a separate slot |
