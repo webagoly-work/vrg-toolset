@@ -4,9 +4,12 @@
 //
 //   1. Hub/dist/vrg-kapu.html exists and carries a KP_BUILD stamp
 //   2. no token / key pattern anywhere in the built page or the hub data
-//   (later WPs add: topology schema, every repo path resolves)
+//   3. topology.json passes kpValidate (errors fail, warnings print)
+//   4. every repo path in the topology exists in this checkout. Paths that are
+//      still uncommitted work elsewhere only warn; --strict (before handing the
+//      hub out, WP-H13) makes them errors, since GitHub would 404 on them.
 //
-//   node tools/check-hub.js
+//   node tools/check-hub.js [--strict]
 //
 // Exit code 1 if anything is wrong, so it can gate a commit.
 // ---------------------------------------------------------------------------
@@ -19,6 +22,7 @@ const path = require('path');
 const REPO = path.resolve(__dirname, '..');
 const HUB = path.join(REPO, 'Hub');
 const DIST = path.join(HUB, 'dist', 'vrg-kapu.html');
+const STRICT = process.argv.includes('--strict');
 
 const SECRETS = /ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-ant-[A-Za-z0-9_-]{10,}|BEGIN [A-Z ]*PRIVATE KEY/;
 
@@ -34,6 +38,38 @@ if (!fs.existsSync(DIST)) {
   const html = fs.readFileSync(DIST, 'utf8');
   const m = html.match(/const KP_BUILD = "([0-9a-f]{12})"/);
   if (m) ok('build ' + m[1]); else bad('dist has no KP_BUILD stamp');
+}
+
+const TOPO = path.join(HUB, 'data', 'topology.json');
+if (!fs.existsSync(TOPO)) {
+  bad('Hub/data/topology.json missing');
+} else {
+  const { kpValidate } = require(path.join(HUB, 'src', 'js', '10-model.js'));
+  let topo = null;
+  try { topo = JSON.parse(fs.readFileSync(TOPO, 'utf8')); } catch (e) { bad('topology.json: ' + e.message); }
+  if (topo) {
+    const r = kpValidate(topo);
+    r.errors.forEach(e => bad('topology: ' + e));
+    if (r.ok) ok('topology valid (' + topo.departments.length + ' departments, ' + topo.programs.length + ' programs)');
+    if (r.warnings.length) console.log('  warn  ' + r.warnings.length + ' warning(s), e.g. ' + r.warnings[0]);
+
+    // every repo path must exist; the hub's own build output may not exist before the first build
+    const repoPaths = [];
+    const add = (where, p) => p && repoPaths.push([where, p]);
+    for (const p of topo.programs) {
+      add(p.id + '.open', p.open && p.open.repo);
+      for (const a of p.agent || []) add(p.id + '.agent', a.repo);
+      for (const f of p.folders || []) add(p.id + '.folder', f.repo);
+      for (const g of (p.git && p.git.paths) || []) add(p.id + '.git', g);
+    }
+    const missing = repoPaths.filter(([, p]) => !p.startsWith('Hub/dist/') && !fs.existsSync(path.join(REPO, p)));
+    if (STRICT) missing.forEach(([w, p]) => bad('repo path missing: ' + p + '  (' + w + ')'));
+    else if (missing.length) {
+      console.log('  warn  ' + missing.length + ' of ' + repoPaths.length + ' repo paths not in this checkout (yet):');
+      [...new Set(missing.map(([, p]) => p))].forEach(p => console.log('          ' + p));
+    }
+    if (!missing.length) ok(repoPaths.length + ' repo paths exist');
+  }
 }
 
 const scan = [DIST, path.join(HUB, 'data')].filter(fs.existsSync).flatMap(function walk(p) {
