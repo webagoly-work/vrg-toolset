@@ -62,3 +62,9 @@
 .kp-ov-t{fill:var(--ink);font-weight:700}
 .kp-ov-n{fill:var(--muted)}
 .lod-cards .kp-dept text{display:none}
+
+/* focus + pulse */
+.kp-focused .kp-card{stroke:var(--accent);stroke-width:3}
+.kp-pulse .kp-card{animation:kpPulse .6s ease-in-out 3}
+@keyframes kpPulse{50%{stroke-width:6;stroke:var(--accent)}}
+.kp-node:not(.kp-origin):not(.kp-band){cursor:pointer}

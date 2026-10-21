@@ -35,6 +35,9 @@ function kpBoot() {
   kpSetTheme(kpStore.get('theme', 'amber'));
   kpRenderRail();
   kpBoardInit();
+  kpNavInit();
+  kpRenderStrip();
+  document.getElementById('kpSearchBtn').addEventListener('click', kpSearchOpen);
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
   document.getElementById('kpMode').textContent = kpStore.available() ? '' : 'csak linkek — a böngésző nem enged menteni';
 }

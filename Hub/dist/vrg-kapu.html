@@ -137,12 +137,81 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 .kp-ov-t{fill:var(--ink);font-weight:700}
 .kp-ov-n{fill:var(--muted)}
 .lod-cards .kp-dept text{display:none}
+
+/* focus + pulse */
+.kp-focused .kp-card{stroke:var(--accent);stroke-width:3}
+.kp-pulse .kp-card{animation:kpPulse .6s ease-in-out 3}
+@keyframes kpPulse{50%{stroke-width:6;stroke:var(--accent)}}
+.kp-node:not(.kp-origin):not(.kp-band){cursor:pointer}
+
+/* 30-panels.css */
+.kp-search-btn kbd{font:inherit;font-size:10px;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:6px;color:var(--muted)}
+.kp-muted{color:var(--muted)}
+.kp-x{border:0;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:0 4px}
+.kp-x:hover{color:var(--ink)}
+.kp-in{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font:inherit;font-size:12px;min-width:0;flex:1}
+.kp-path{font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:2px 6px;word-break:break-all}
+
+/* RCO menu */
+.kp-menu,.kp-submenu{position:fixed;z-index:50;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:13px}
+.kp-mi{position:relative;padding:6px 12px;border-radius:5px;cursor:pointer;outline:none;white-space:nowrap}
+.kp-mi:hover,.kp-mi:focus{background:var(--panel2)}
+.kp-mi.off{color:var(--muted);opacity:.55;cursor:default}
+.kp-mi-arrow{float:right;color:var(--muted)}
+.kp-submenu{display:none;position:absolute;left:100%;top:-5px;min-width:200px}
+.kp-mi.has-sub:hover>.kp-submenu,.kp-mi.has-sub:focus-within>.kp-submenu{display:block}
+.kp-sep{height:1px;background:var(--line);margin:4px 6px}
+
+/* popover */
+.kp-pop{position:fixed;z-index:45;max-width:440px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:13px}
+.kp-pop .kp-x{position:absolute;right:6px;top:4px}
+.kp-pop-h{font-weight:700;margin:0 24px 6px 0}
+.kp-pop-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+
+/* drawer */
+.kp-drawer{display:flex;flex-direction:column;width:380px;padding:12px 16px;gap:10px}
+.kp-drawer-head{display:flex;justify-content:space-between;gap:8px}
+.kp-drawer-t{font-weight:700;font-size:16px}
+.kp-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.kp-tabs button{border:0;background:none;color:var(--muted);font:inherit;padding:6px 10px;cursor:pointer;border-bottom:2px solid transparent}
+.kp-tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.kp-md{line-height:1.55}
+.kp-md code{font-size:12px;background:var(--bg);padding:0 4px;border-radius:3px}
+.kp-md a,.kp-drawer-links a{color:var(--accent)}
+.kp-en{margin-top:10px;font-style:italic;color:var(--muted)}
+.kp-drawer-sub{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.kp-drawer-links ul{margin:4px 0 0;padding-left:18px}
+.kp-drawer-links li{margin:3px 0}
+.kp-claim{background:var(--panel2);border-left:3px solid var(--accent);padding:6px 8px;font-size:12.5px}
+
+/* tooltip + toast */
+.kp-tip{position:fixed;z-index:60;max-width:320px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.kp-tip-t{font-weight:700}
+.kp-tip-w{color:var(--muted);margin-top:4px;word-break:break-all}
+.kp-toast{position:fixed;z-index:70;left:50%;bottom:36px;transform:translateX(-50%) translateY(20px);opacity:0;transition:.2s;background:var(--panel2);border:1px solid var(--accent-dim);color:var(--ink);padding:8px 14px;border-radius:8px;font-size:13px;pointer-events:none}
+.kp-toast.on{opacity:1;transform:translateX(-50%)}
+
+/* favourites strip */
+.kp-strip{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.kp-strip-l{color:var(--accent)}
+.kp-fav{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:1px 10px;font:inherit;font-size:12px;cursor:pointer}
+
+/* search */
+.kp-backdrop{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.35);display:flex;justify-content:center;align-items:flex-start;padding-top:12vh}
+.kp-search{width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.kp-search-in{width:100%;border:0;border-bottom:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-size:15px;padding:12px 14px;outline:none}
+.kp-search-list{max-height:50vh;overflow:auto}
+.kp-search-r{display:flex;justify-content:space-between;gap:12px;padding:7px 14px;cursor:pointer}
+.kp-search-r.sel,.kp-search-r:hover{background:var(--panel2)}
+.kp-search-k{color:var(--muted);font-size:12px;white-space:nowrap}
+.kp-search-none{padding:10px 14px;color:var(--muted)}
 </style>
 </head>
 <body>
 <header id="kpTop" class="kp-top">
   <div class="kp-brand">VRG Kapu</div>
   <div class="kp-top-mid">
+    <button id="kpSearchBtn" class="kp-btn kp-search-btn" title="Keresés (Ctrl+K)">🔎 Keresés… <kbd>Ctrl+K</kbd></button>
     <div id="kpView" class="kp-seg" role="group" aria-label="Nézet"><span class="kp-seg-l">Nézet:</span><button data-view="now">Jelenlegi</button><button data-view="vision">Bővített jövőkép</button></div>
     <button id="kpFit" class="kp-btn" title="Az egész térkép (0)">⤢ Egész</button>
     <span id="kpFocus" class="kp-focus" hidden></span>
@@ -166,7 +235,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 <script type="application/json" id="kpPubkey">null</script>
 <script>
 "use strict";
-const KP_BUILD = "7aaff778d1ac";
+const KP_BUILD = "49178f78af9c";
 // ---- 00-core.js
 // Core helpers shared by every module. Pure where possible, so Hub/test can run them in Node.
 
@@ -845,6 +914,636 @@ function kpBoardInit() {
   kpBoardRender();
 }
 
+// ---- 40-actions.js
+// Actions: one registry for every surface (RCO menu now; top bar and palette later).
+//   id, label (UI text), alt (label when toggled), g (group: menus separate groups),
+//   at (surfaces), need ('companion' | 'github' | 'log': greyed with the reason until it exists),
+//   when(ctx) -> false greys it with whyNot, sub (submenu), run(ctx)
+
+const kpCaps = { companion: false, github: false, log: false };
+const KP_WHY = {
+  companion: 'Ehhez fusson a Kapu segéd — indítsd a VRG Kapu.cmd-vel',
+  github: 'Ehhez GitHub belépés kell — Belépések',
+  log: 'A Munkanapló a következő lépésekben készül el'
+};
+const KP_FAV_MAX = 8;
+const KP_CLAUDE_WEB = 'https://claude.ai/code';
+
+const KP_ACT = [
+  { id: 'short', label: 'Rövid leírás', g: 'info', at: ['rco'], run: c => kpDrawerOpen(c.node.id, 'short') },
+  { id: 'long', label: 'Részletes leírás', g: 'info', at: ['rco'], run: c => kpDrawerOpen(c.node.id, 'long') },
+  { id: 'open', label: 'Megnyitás új ablakban', g: 'open', at: ['rco'], when: c => !!kpTarget(c).kind, whyNot: 'Ennek az elemnek nincs megnyitható célja',
+    run: c => kpMainAction(c.node) },
+  { id: 'preview', label: 'Előnézet (legfrissebb a GitHubról)', g: 'open', at: ['rco'], need: 'github',
+    when: c => c.node.kind === 'program' && !!(c.prog && c.prog.open && c.prog.open.repo), whyNot: 'Csak a repóban lévő programoknál',
+    run: c => kpToast('Előnézet — itt ne dolgozz, nem marad meg') },
+  { id: 'copy', label: 'Link másolása', g: 'open', at: ['rco'], when: c => !!(kpTarget(c).href || kpTarget(c).path), whyNot: 'Ennek az elemnek nincs linkje',
+    run: c => { const t = kpTarget(c); kpCopy(t.href || t.path); } },
+  { id: 'folder', label: 'Mappa megnyitása ezen a gépen', g: 'open', at: ['rco'], need: 'companion', run: () => {} },
+  { id: 'term', label: 'Terminál itt', g: 'open', at: ['rco'], need: 'companion', run: () => {} },
+  { id: 'claude', label: 'Claude Code itt', g: 'open', at: ['rco'], sub: [
+    { id: 'claude-local', label: 'helyi', need: 'companion', run: () => {} },
+    { id: 'claude-web', label: 'web', run: () => kpOpen(KP_CLAUDE_WEB) },
+    { id: 'claude-prompt', label: 'indító prompt másolása', run: c => kpCopy(kpStartPrompt(c), 'Az indító prompt a vágólapon') }
+  ] },
+  { id: 'claim', label: 'Foglalás…', alt: 'Foglalás feloldása', g: 'work', at: ['rco'], need: 'github',
+    toggled: c => !!(c.prog && c.prog.claim), when: c => !!c.prog, whyNot: 'Csak programot lehet foglalni', run: () => {} },
+  { id: 'log', label: 'Bejegyzés a munkanaplóba', g: 'work', at: ['rco'], need: 'log', run: () => {} },
+  { id: 'fav', label: 'Kedvencekhez', alt: 'Kedvencek közül ki', g: 'work', at: ['rco'],
+    toggled: c => kpFavs().includes(c.node.id), when: c => kpFavable(c.node), whyNot: 'Ezt nem lehet kedvencnek jelölni',
+    run: c => kpFavToggle(c.node.id) },
+  { id: 'edit', label: 'Szerkesztés…', g: 'edit', at: ['rco'], need: 'github', run: () => {} },
+  { id: 'add', label: 'Új elem ide…', g: 'edit', at: ['rco'], need: 'github', run: () => {} }
+];
+
+// enabled + reason for one action in one context
+function kpActState(a, c) {
+  if (a.need && !kpCaps[a.need]) return { on: false, why: KP_WHY[a.need] };
+  if (a.when && !a.when(c)) return { on: false, why: a.whyNot || '' };
+  return { on: true, why: '' };
+}
+
+// ---- context: the layout node + its program / source record
+function kpCtx(nodeId) {
+  const node = kpBoard.layout && kpBoard.layout.nodes.find(n => n.id === nodeId);
+  if (!node) return null;
+  const prog = node.progId ? (kpData.topology.programs || []).find(p => p.id === node.progId) || null : null;
+  return { node, prog, src: node.src || prog };
+}
+
+function kpRepoRoot() {
+  const saved = kpStore.get('repoRoot', '');
+  if (saved) return saved;
+  if (typeof location !== 'undefined' && location.protocol === 'file:') {
+    const p = decodeURIComponent(location.pathname).replace(/^\/([A-Za-z]:)/, '$1');
+    const i = p.toLowerCase().lastIndexOf('/hub/dist/');
+    if (i > 0) return p.slice(0, i).replace(/\//g, '\\');
+  }
+  return '';
+}
+// 'local' paths in the topology are relative to the VRG-DE folder, the repo's parent
+const kpLocalRoot = () => kpRepoRoot().replace(/[\\/][^\\/]+[\\/]?$/, '');
+
+// what a click on this node reaches: {href, kind, path?}
+function kpTarget(c) {
+  const n = c.node, ctx = { repo: kpData.topology.repo, localRoot: kpLocalRoot() };
+  if (n.kind === 'program') {
+    const o = (c.prog && c.prog.open) || {};
+    if (o.url) return { href: o.url, kind: 'url' };
+    if (o.repo) {
+      const gh = kpLinkFor({ repo: o.repo }, ctx);
+      const root = kpRepoRoot();
+      return { href: gh.href, kind: 'repo-tool', path: root ? root + '\\' + o.repo.replace(/\//g, '\\') : '', repo: o.repo };
+    }
+    if (o.local) return kpLinkFor({ local: o.local }, ctx);
+    return {};
+  }
+  if (n.kind === 'folder' || n.kind === 'local') {
+    const f = n.src || {};
+    if (f.url) return { href: f.url, kind: 'url' };
+    if (f.local) return kpLinkFor({ local: f.local }, ctx);
+    return { kind: 'empty-folder' };
+  }
+  if (n.kind === 'agent' || n.kind === 'go') return n.src && n.src.repo ? kpLinkFor({ repo: n.src.repo }, ctx) : n.src && n.src.local ? kpLinkFor({ local: n.src.local }, ctx) : {};
+  if (n.kind === 'git') {
+    const p = ((n.src || {}).paths || [])[0];
+    return p ? kpLinkFor({ repo: p }, ctx) : {};
+  }
+  return {};
+}
+
+function kpStartPrompt(c) {
+  const p = c.prog;
+  const docs = (p && p.agent) || [];
+  const go = docs.find(a => a.go);
+  if (go) return '`' + go.go + '` — olvasd el a `' + go.repo + '`-t és csináld, amit ír.';
+  const first = docs.find(a => a.repo);
+  const name = p ? p.t : c.node.title.join(' ');
+  return first ? 'Olvasd el a `' + first.repo + '`-t, aztán dolgozzunk ezen: ' + name + '.' : 'Dolgozzunk ezen: ' + name + '.';
+}
+
+// ---- main action (click / Enter)
+function kpMainAction(node) {
+  const c = kpCtx(node.id);
+  if (!c) return;
+  if (node.kind === 'summary') { kpBoard.collapsed = kpBoard.collapsed.filter(d => d !== node.dept); kpStore.set('collapsed', kpBoard.collapsed); kpBoardRender(); return; }
+  if (node.kind === 'roadmap' || node.kind === 'slot') { kpDrawerOpen(node.id, 'short'); return; }
+  if (node.kind === 'go') { kpCopy(kpStartPrompt(c), 'Az indító prompt a vágólapon — illeszd be a Claude Code-ba'); return; }
+  const t = kpTarget(c);
+  if (t.kind === 'repo-tool') { kpToolPopover(node, t); return; }
+  if (t.kind === 'local') { kpPathPopover(node, t.path, 'Helyi mappa — a Kapu segéd nélkül másold ki az útvonalat.'); return; }
+  if (t.kind === 'empty-folder' || (node.kind === 'folder' && !t.href)) { kpToast('Még nincs megosztási link — Szerkesztés'); return; }
+  if (t.href) { kpOpen(t.href); return; }
+  kpDrawerOpen(node.id, 'short');
+}
+
+function kpOpen(href) { window.open(href, '_blank', 'noopener'); }
+
+function kpCopy(text, msg) {
+  const done = () => kpToast(msg || 'Másolva');
+  try {
+    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(text).then(done, () => kpCopyOld(text, done)); return; }
+  } catch (e) { /* fall through */ }
+  kpCopyOld(text, done);
+}
+function kpCopyOld(text, done) {
+  const ta = kpEl('textarea', { style: 'position:fixed;left:-9999px' });
+  ta.value = text;
+  document.body.append(ta);
+  ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) { kpToast('Nem sikerült másolni'); }
+  ta.remove();
+}
+
+let kpToastTimer = null;
+function kpToast(msg) {
+  let t = document.getElementById('kpToast');
+  if (!t) { t = kpEl('div', { id: 'kpToast', class: 'kp-toast', role: 'status' }); document.body.append(t); }
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(kpToastTimer);
+  kpToastTimer = setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+// ---- popovers (anchored under a node)
+function kpNodeScreenRect(node) {
+  const g = document.querySelector('#kpCam [data-id="' + CSS.escape(node.id) + '"]');
+  return g ? g.getBoundingClientRect() : { left: innerWidth / 2, bottom: innerHeight / 2, top: innerHeight / 2 };
+}
+
+function kpPopoverClose() { const p = document.getElementById('kpPop'); if (p) p.remove(); }
+
+function kpPopover(node, ...kids) {
+  kpPopoverClose();
+  kpMenuClose();
+  const r = kpNodeScreenRect(node);
+  const p = kpEl('div', { id: 'kpPop', class: 'kp-pop', role: 'dialog' },
+    kpEl('button', { class: 'kp-x', title: 'Bezárás (Esc)', onclick: kpPopoverClose }, '×'), ...kids);
+  document.body.append(p);
+  const w = p.offsetWidth, h = p.offsetHeight;
+  p.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + 'px';
+  p.style.top = (r.bottom + 6 + h < innerHeight ? r.bottom + 6 : Math.max(8, r.top - h - 6)) + 'px';
+  return p;
+}
+
+function kpToolPopover(node, t) {
+  const pathRow = t.path
+    ? kpEl('div', { class: 'kp-pop-row' }, kpEl('code', { class: 'kp-path' }, 'file:///' + t.path.replace(/\\/g, '/')),
+        kpEl('button', { class: 'kp-btn', onclick: () => kpCopy('file:///' + t.path.replace(/\\/g, '/')) }, 'Másolás'))
+    : kpEl('div', { class: 'kp-pop-row kp-muted' }, 'Add meg egyszer, hol van a repó ezen a gépen:');
+  const rootIn = kpEl('input', { class: 'kp-in', value: kpRepoRoot(), placeholder: 'pl. H:\\Dev-VRG\\VRG-DE\\Planner_VRG_U100' });
+  kpPopover(node,
+    kpEl('div', { class: 'kp-pop-h' }, node.title.join(' ')),
+    kpEl('div', { class: 'kp-pop-row kp-muted' }, 'A helyi példány nyílik, ahogy a START.cmd nyitja.' + (t.path ? ' A Kapu segéd nélkül másold be a böngészőbe:' : '')),
+    pathRow,
+    kpEl('div', { class: 'kp-pop-row' }, kpEl('label', { class: 'kp-muted' }, 'Helyi repó mappa'), rootIn,
+      kpEl('button', { class: 'kp-btn', onclick: () => { kpStore.set('repoRoot', rootIn.value.trim()); kpToolPopover(node, kpTarget(kpCtx(node.id))); } }, 'Mentés')),
+    kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(t.href) }, 'Megnyitás a GitHubon')));
+}
+
+function kpPathPopover(node, path, note) {
+  kpPopover(node,
+    kpEl('div', { class: 'kp-pop-h' }, node.title.join(' ')),
+    kpEl('div', { class: 'kp-pop-row kp-muted' }, note),
+    kpEl('div', { class: 'kp-pop-row' }, kpEl('code', { class: 'kp-path' }, path || '(add meg a helyi repó mappát)'),
+      path ? kpEl('button', { class: 'kp-btn', onclick: () => kpCopy(path) }, 'Másolás') : null));
+}
+
+// ---- RCO menu
+function kpMenuClose() { const m = document.getElementById('kpMenu'); if (m) m.remove(); }
+
+function kpMenuOpen(nodeId, x, y) {
+  const c = kpCtx(nodeId);
+  if (!c || ['origin', 'band', 'more'].includes(c.node.kind)) return;
+  kpMenuClose();
+  kpPopoverClose();
+  const items = [];
+  let lastG = null;
+  for (const a of KP_ACT.filter(a => a.at.includes('rco'))) {
+    if (lastG && a.g !== lastG) items.push(kpEl('div', { class: 'kp-sep', role: 'separator' }));
+    lastG = a.g;
+    items.push(kpMenuItem(a, c));
+  }
+  const m = kpEl('div', { id: 'kpMenu', class: 'kp-menu', role: 'menu' }, ...items);
+  document.body.append(m);
+  m.style.left = Math.min(x, innerWidth - m.offsetWidth - 8) + 'px';
+  m.style.top = Math.min(y, innerHeight - m.offsetHeight - 8) + 'px';
+  const first = m.querySelector('.kp-mi:not(.off)');
+  if (first) first.focus();
+}
+
+function kpMenuItem(a, c) {
+  const st = kpActState(a, c);
+  const label = a.alt && a.toggled && a.toggled(c) ? a.alt : a.label;
+  const el = kpEl('div', { class: 'kp-mi' + (st.on ? '' : ' off') + (a.sub ? ' has-sub' : ''), role: 'menuitem', tabindex: '-1',
+    title: st.why || null, 'aria-disabled': st.on ? null : 'true', 'data-act': a.id }, label);
+  if (a.sub) {
+    el.append(kpEl('span', { class: 'kp-mi-arrow' }, '▸'),
+      kpEl('div', { class: 'kp-submenu', role: 'menu' }, ...a.sub.map(s => kpMenuItem(s, c))));
+    return el;
+  }
+  if (st.on) el.addEventListener('click', e => { e.stopPropagation(); kpMenuClose(); a.run(c); });
+  return el;
+}
+
+// ---- favourites
+const kpFavs = () => kpStore.get('favs', []);
+const kpFavable = n => !['origin', 'band', 'more', 'roadmap', 'summary'].includes(n.kind);
+function kpFavToggle(id) {
+  let f = kpFavs();
+  if (f.includes(id)) f = f.filter(x => x !== id);
+  else if (f.length >= KP_FAV_MAX) { kpToast('Legfeljebb ' + KP_FAV_MAX + ' kedvenc lehet'); return; }
+  else f = f.concat(id);
+  kpStore.set('favs', f);
+  kpRenderStrip();
+}
+
+// title for a favourite even when its node is not drawn right now
+function kpFavTitle(id) {
+  const n = kpBoard.layout && kpBoard.layout.nodes.find(x => x.id === id);
+  if (n) return n.full || n.title.join(' ');
+  const it = kpSearchItems(kpResolveRefs(kpData.topology), 'vision').find(x => x.id === id);
+  return it ? it.t : null;
+}
+
+function kpRenderStrip() {
+  const strip = document.getElementById('kpStrip');
+  const favs = kpFavs().map(id => ({ id, t: kpFavTitle(id) })).filter(f => f.t);
+  if (!favs.length) { strip.replaceChildren(); return; }
+  strip.replaceChildren(kpEl('span', { class: 'kp-strip-l' }, '★ Kedvencek:'),
+    ...favs.map(f => kpEl('button', { class: 'kp-fav', onclick: () => {
+      const it = kpSearchItems(kpResolveRefs(kpData.topology), 'vision').find(x => x.id === f.id);
+      if (it && it.kind === 'program' && kpBoard.view === 'now' && (kpData.topology.programs.find(p => p.id === it.progId) || {}).status === 'v2') kpSetView('vision');
+      if (it) kpFlyTo(it);
+    } }, f.t)));
+}
+
+if (typeof module !== 'undefined') module.exports = { KP_ACT, KP_WHY, kpCaps };
+
+// ---- 41-search.js
+// Search: accent-insensitive over departments, programs and their layer nodes.
+
+// lower case, accents off: "Árvíztűrő" -> "arvizturo"
+function kpNorm(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+const KP_KIND_RANK = { program: 0, dept: 1, agent: 2, go: 2, folder: 3, local: 3, git: 4 };
+
+// Every searchable thing, with the board node id it lands on.
+function kpSearchItems(topo, view) {
+  const items = [];
+  const progs = (topo.programs || []).filter(p => view === 'vision' || p.status !== 'v2');
+  let order = 0;
+  for (const d of topo.departments || []) {
+    items.push({ id: 'dept:' + d.id, kind: 'dept', dept: d.id, t: d.t, body: [d.tEn, d.d, d.dEn], long: '', order: order++ });
+  }
+  for (const p of progs) {
+    items.push({ id: p.id + ':L1', kind: 'program', dept: p.dept, progId: p.id, t: p.t, body: [p.d, p.dEn], long: [p.long, p.longEn].join(' '), order: order++ });
+    (p.folders || []).forEach((f, i) => items.push({ id: p.id + ':L2:f' + i, kind: f.local && !f.url && !f.ref ? 'local' : 'folder', dept: p.dept, progId: p.id,
+      layer: 'L2', cell: p.id + ':L2', idx: i, t: f.t || f.path || f.ref, body: [f.d, f.dEn], long: '', order: order++ }));
+    (p.agent || []).forEach((a, i) => items.push({ id: p.id + ':L3:a' + i, kind: a.go ? 'go' : 'agent', dept: p.dept, progId: p.id,
+      layer: 'L3', cell: p.id + ':L3', idx: i, t: a.t, body: [a.d, a.dEn, a.go], long: '', order: order++ }));
+    if (p.git) items.push({ id: p.id + ':L4:g', kind: 'git', dept: p.dept, progId: p.id, layer: 'L4', t: (p.git.paths || []).join(' '), body: [], long: '', order: order++ });
+  }
+  return items;
+}
+
+// Title hits first, then description, then long text; programs before departments before docs.
+function kpSearch(topo, q, view) {
+  const nq = kpNorm(q).trim();
+  if (!nq) return [];
+  const terms = nq.split(/\s+/);
+  const hit = s => { const n = kpNorm(s); return terms.every(t => n.includes(t)); };
+  const out = [];
+  for (const it of kpSearchItems(topo, view)) {
+    const tier = hit(it.t) ? 3 : hit(it.body.filter(Boolean).join(' ')) ? 2 : hit(it.long) ? 1 : 0;
+    if (tier) out.push(Object.assign({ tier }, it));
+  }
+  return out.sort((a, b) => b.tier - a.tier || KP_KIND_RANK[a.kind] - KP_KIND_RANK[b.kind] || a.order - b.order);
+}
+
+// ---- UI: Ctrl+K panel
+const KP_KIND_HU = { dept: 'részleg', program: 'program', folder: 'mappa', local: 'helyi mappa', agent: 'AI dokumentum', go: 'GO brief', git: 'git' };
+
+function kpSearchOpen() {
+  const root = document.getElementById('kpModal');
+  const input = kpEl('input', { class: 'kp-search-in', type: 'search', placeholder: 'Keresés… (ékezet nélkül is)', 'aria-label': 'Keresés' });
+  const list = kpEl('div', { class: 'kp-search-list', role: 'listbox' });
+  const box = kpEl('div', { class: 'kp-search' }, input, list);
+  const back = kpEl('div', { class: 'kp-backdrop', onclick: e => { if (e.target === back) close(); } }, box);
+  let res = [], sel = 0;
+  function close() { root.replaceChildren(); }
+  function draw() {
+    list.replaceChildren(...res.slice(0, 30).map((r, i) => kpEl('div', {
+      class: 'kp-search-r' + (i === sel ? ' sel' : ''), role: 'option',
+      onclick: () => { close(); kpFlyTo(r); }
+    }, kpEl('span', { class: 'kp-search-t' }, r.t), kpEl('span', { class: 'kp-search-k' }, KP_KIND_HU[r.kind] || r.kind))));
+    if (input.value.trim() && !res.length) list.append(kpEl('div', { class: 'kp-search-none' }, 'Nincs találat ebben a nézetben.'));
+  }
+  input.addEventListener('input', () => { res = kpSearch(kpResolveRefs(kpData.topology), input.value, kpBoard.view); sel = 0; draw(); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { sel = Math.min(sel + 1, Math.max(0, Math.min(res.length, 30) - 1)); draw(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { sel = Math.max(sel - 1, 0); draw(); e.preventDefault(); }
+    else if (e.key === 'Enter' && res[sel]) { close(); kpFlyTo(res[sel]); }
+    else if (e.key === 'Escape') close();
+    e.stopPropagation();
+  });
+  root.replaceChildren(back);
+  input.focus();
+}
+
+// make the target drawable (focus, collapse, layer, stack), then centre on it and pulse
+function kpFlyTo(r) {
+  if (kpBoard.focus && kpBoard.focus !== r.dept) kpBoard.focus = null;
+  kpBoard.collapsed = kpBoard.collapsed.filter(d => d !== r.dept);
+  if (r.layer && kpBoard.layers[r.layer] === false) kpBoard.layers[r.layer] = true;
+  if (r.cell && r.idx >= KP_LAYOUT.stackMax && !kpBoard.expanded.includes(r.cell)) kpBoard.expanded.push(r.cell);
+  kpBoardRender();
+  const n = kpBoard.layout.nodes.find(x => x.id === r.id);
+  if (!n) return;
+  kpCenterOn(n.x + n.w / 2, n.y + n.h / 2, Math.max(kpBoard.cam.k, 1));
+  kpSetFocusNode(n.id);
+  const g = document.querySelector('#kpCam [data-id="' + CSS.escape(n.id) + '"]');
+  if (g) { g.classList.remove('kp-pulse'); void g.getBBox(); g.classList.add('kp-pulse'); }
+}
+
+if (typeof module !== 'undefined') module.exports = { kpNorm, kpSearch, kpSearchItems };
+
+// ---- 42-md.js
+// Tiny markdown for node texts: headings, bold, italics, code, lists, links (http/https only).
+// Everything is escaped first, so no HTML from the data ever reaches the page.
+
+function kpMdInline(s) {
+  const codes = [];
+  let out = kpEsc(s).replace(/`([^`]+)`/g, (m, c) => { codes.push(c); return '\u0000' + (codes.length - 1) + '\u0000'; });
+  out = out
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (m, t, u) => '<a href="' + u + '" target="_blank" rel="noopener">' + t + '</a>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*\w])\*([^*\s][^*]*)\*(?![*\w])/g, '$1<em>$2</em>')
+    .replace(/(^|[^\w])_([^_\s][^_]*)_(?!\w)/g, '$1<em>$2</em>');
+  return out.replace(/\u0000(\d+)\u0000/g, (m, i) => '<code>' + codes[+i] + '</code>');
+}
+
+// One plain paragraph comes back inline (no <p>), so short texts drop into any element.
+function kpMd(src) {
+  const lines = String(src == null ? '' : src).replace(/\r/g, '').split('\n');
+  const blocks = [];
+  let para = [], list = null;
+  const flushPara = () => { if (para.length) { blocks.push({ k: 'p', t: para.join(' ') }); para = []; } };
+  const flushList = () => { if (list) { blocks.push(list); list = null; } };
+  for (const raw of lines) {
+    const line = raw.trim();
+    let m;
+    if (!line) { flushPara(); flushList(); continue; }
+    if ((m = line.match(/^(#{1,4})\s+(.*)$/))) { flushPara(); flushList(); blocks.push({ k: 'h', n: Math.min(m[1].length + 2, 6), t: m[2] }); continue; }
+    if ((m = line.match(/^(?:[-*•]|\d+[.)])\s+(.*)$/))) {
+      flushPara();
+      const ordered = /^\d/.test(line);
+      if (!list || list.ordered !== ordered) { flushList(); list = { k: 'l', ordered, items: [] }; }
+      list.items.push(m[1]);
+      continue;
+    }
+    flushList();
+    para.push(line);
+  }
+  flushPara(); flushList();
+  if (blocks.length === 1 && blocks[0].k === 'p') return kpMdInline(blocks[0].t);
+  return blocks.map(b => b.k === 'p' ? '<p>' + kpMdInline(b.t) + '</p>'
+    : b.k === 'h' ? '<h' + b.n + '>' + kpMdInline(b.t) + '</h' + b.n + '>'
+    : '<' + (b.ordered ? 'ol' : 'ul') + '>' + b.items.map(i => '<li>' + kpMdInline(i) + '</li>').join('') + '</' + (b.ordered ? 'ol' : 'ul') + '>').join('');
+}
+
+if (typeof module !== 'undefined') module.exports = { kpMd, kpMdInline };
+
+// ---- 45-drawer.js
+// Info drawer: Rövid / Részletes tabs, HU then EN, the node's links.
+
+const KP_KIND_LABEL = { program: 'Program', folder: 'Megosztott mappa', local: 'Helyi mappa', agent: 'AI dokumentum', go: 'GO brief',
+  git: 'Git', roadmap: 'Ütemterv', dept: 'Részleg', slot: 'Üres hely', summary: 'Összecsukott részleg' };
+
+function kpDrawerClose() {
+  const d = document.getElementById('kpDrawer');
+  d.hidden = true;
+  d.replaceChildren();
+}
+
+function kpDrawerOpen(nodeId, tab) {
+  const c = kpCtx(nodeId);
+  if (!c) return;
+  kpMenuClose();
+  kpPopoverClose();
+  const n = c.node, p = c.prog, s = n.src || {};
+  const dept = (kpData.topology.departments || []).find(d => d.id === n.dept);
+  const isProg = n.kind === 'program';
+  const short = isProg ? [p.d, p.dEn] : n.kind === 'dept' ? [dept.d, dept.dEn] : n.kind === 'roadmap' ? [s.t, null] : [s.d, s.dEn];
+  const long = isProg ? [p.long || p.d, p.longEn || (p.long ? null : p.dEn)] : short;
+
+  const html = (hu, en) => {
+    const box = kpEl('div', { class: 'kp-md' });
+    box.innerHTML = (hu ? '<div class="kp-hu">' + kpMd(hu) + '</div>' : '<div class="kp-muted">Nincs leírás.</div>') +
+      (en ? '<div class="kp-en">' + kpMd(en) + '</div>' : '');
+    return box;
+  };
+  const body = kpEl('div', { class: 'kp-drawer-body' });
+  const tabs = kpEl('div', { class: 'kp-tabs', role: 'tablist' });
+  const show = t => {
+    for (const b of tabs.children) b.classList.toggle('on', b.dataset.tab === t);
+    body.replaceChildren(t === 'long' ? html(long[0], long[1]) : html(short[0], short[1]));
+    body.dataset.tab = t;
+  };
+  tabs.append(
+    kpEl('button', { role: 'tab', 'data-tab': 'short', onclick: () => show('short') }, 'Rövid'),
+    kpEl('button', { role: 'tab', 'data-tab': 'long', onclick: () => show('long') }, 'Részletes'));
+
+  const title = isProg ? p.t : n.kind === 'dept' ? dept.t : (n.full || n.title.join(' '));
+  const meta = [KP_KIND_LABEL[n.kind] || n.kind, dept ? dept.t : null,
+    isProg ? KP_STATUS_HU[p.status] : null, n.kind === 'roadmap' ? kpFmtDate(s.date) : null].filter(Boolean).join(' · ');
+
+  const links = kpDrawerLinks(c);
+  const claim = p && p.claim ? kpEl('div', { class: 'kp-claim' }, '⚑ ' + p.claim.by + ' foglalja ' + kpFmtDate(p.claim.until) + '-ig' + (p.claim.note ? ' — ' + p.claim.note : '')) : null;
+
+  const d = document.getElementById('kpDrawer');
+  d.replaceChildren(...[
+    kpEl('div', { class: 'kp-drawer-head' },
+      kpEl('div', {}, kpEl('div', { class: 'kp-drawer-t' }, title), kpEl('div', { class: 'kp-muted' }, meta)),
+      kpEl('button', { class: 'kp-x', title: 'Bezárás (Esc)', onclick: kpDrawerClose }, '×')),
+    claim, tabs, body, links].filter(Boolean));
+  d.hidden = false;
+  show(tab === 'long' ? 'long' : 'short');
+}
+
+function kpDrawerLinks(c) {
+  const p = c.prog;
+  const rows = [];
+  const ctx = { repo: kpData.topology.repo, localRoot: kpLocalRoot() };
+  const add = (label, href, path) => rows.push(href
+    ? kpEl('li', {}, kpEl('a', { href, target: '_blank', rel: 'noopener' }, label))
+    : kpEl('li', {}, label + ' — ', kpEl('code', { class: 'kp-path' }, path || 'nincs még link')));
+  const t = kpTarget(c);
+  if (t.href) add('Megnyitás' + (t.kind === 'repo-tool' ? ' a GitHubon' : ''), t.href);
+  if (p && c.node.kind === 'program') {
+    for (const f of kpResolveRefs(kpData.topology).programs.find(x => x.id === p.id).folders || []) {
+      const l = f.url ? { href: f.url } : f.local ? kpLinkFor({ local: f.local }, ctx) : {};
+      add('☁ ' + (f.t || f.path), l.href, l.path);
+    }
+    for (const a of p.agent || []) { const l = a.repo ? kpLinkFor({ repo: a.repo }, ctx) : {}; add('🤖 ' + a.t, l.href, a.local); }
+    for (const g of (p.git && p.git.paths) || []) add('⎇ ' + g, kpLinkFor({ repo: g }, ctx).href);
+  }
+  if (!rows.length) return null;
+  return kpEl('div', { class: 'kp-drawer-links' }, kpEl('div', { class: 'kp-drawer-sub' }, 'Linkek'), kpEl('ul', {}, ...rows));
+}
+
+// ---- 47-nav.js
+// Pointer + keyboard on the board: click, right-click / long-press, arrow focus, tooltip, Ctrl+K.
+
+const KP_LONGPRESS = 500, KP_TIP_DELAY = 400;
+const KP_NOCLICK = ['origin', 'band', 'dept', 'more'];
+
+function kpNodeAt(target) {
+  const g = target.closest && target.closest('#kpCam .kp-node');
+  return g ? g.dataset.id : null;
+}
+
+function kpSetFocusNode(id) {
+  kpBoard.focusId = id;
+  for (const g of document.querySelectorAll('#kpCam .kp-focused')) g.classList.remove('kp-focused');
+  const g = id && document.querySelector('#kpCam [data-id="' + CSS.escape(id) + '"]');
+  if (g) g.classList.add('kp-focused');
+}
+
+// nearest node in a direction: alignment cubed beats distance; half-plane fallback (as in MindMap)
+function kpHop(dx, dy) {
+  const nodes = kpBoard.layout.nodes.filter(n => !['origin', 'band'].includes(n.kind));
+  let from = nodes.find(n => n.id === kpBoard.focusId);
+  if (!from) { from = nodes.find(n => n.kind === 'program') || nodes[0]; kpSetFocusNode(from.id); kpKeepInView(from); return; }
+  const cx = from.x + from.w / 2, cy = from.y + from.h / 2;
+  let best = null, wide = null;
+  for (const m of nodes) {
+    if (m.id === from.id) continue;
+    const vx = m.x + m.w / 2 - cx, vy = m.y + m.h / 2 - cy, d = Math.hypot(vx, vy);
+    if (d < 1) continue;
+    const cos = (vx * dx + vy * dy) / d;
+    if (cos <= 0.08) continue;
+    const score = d / Math.pow(Math.max(cos, 0.12), 3);
+    if (!wide || score < wide.score) wide = { n: m, score };
+    if (cos >= 0.5 && (!best || score < best.score)) best = { n: m, score };
+  }
+  const t = best || wide;
+  if (!t) return;
+  kpSetFocusNode(t.n.id);
+  kpKeepInView(t.n);
+}
+
+function kpKeepInView(n) {
+  const r = document.getElementById('kpBoard').getBoundingClientRect(), c = kpBoard.cam;
+  const sx = n.x * c.k + c.x, sy = n.y * c.k + c.y;
+  if (sx < 40 || sy < 40 || sx + n.w * c.k > r.width - 40 || sy + n.h * c.k > r.height - 40) kpCenterOn(n.x + n.w / 2, n.y + n.h / 2, Math.max(c.k, 0.6));
+}
+
+// ---- tooltip
+let kpTipTimer = null;
+function kpTipHide() { clearTimeout(kpTipTimer); const t = document.getElementById('kpTip'); if (t) t.remove(); }
+function kpTipShow(id, x, y) {
+  const c = kpCtx(id);
+  if (!c || ['origin', 'band'].includes(c.node.kind)) return;
+  const n = c.node, s = n.src || {};
+  const text = n.kind === 'program' ? c.prog.d : n.kind === 'dept' ? (kpData.topology.departments.find(d => d.id === n.dept) || {}).d
+    : n.kind === 'roadmap' ? s.t : s.d || n.full;
+  const t = kpTarget(c);
+  const where = t.href ? t.href.replace(/^https?:\/\//, '') : t.path || (n.kind === 'dept' ? 'kattintás: össze/kinyit · dupla: Fókusz' : '');
+  const tip = kpEl('div', { id: 'kpTip', class: 'kp-tip', role: 'tooltip' },
+    kpEl('div', { class: 'kp-tip-t' }, n.full || n.title.join(' ')), text ? kpEl('div', {}, text) : null,
+    where ? kpEl('div', { class: 'kp-tip-w' }, '→ ' + where) : null);
+  document.body.append(tip);
+  tip.style.left = Math.min(x + 14, innerWidth - tip.offsetWidth - 8) + 'px';
+  tip.style.top = Math.min(y + 18, innerHeight - tip.offsetHeight - 8) + 'px';
+}
+
+function kpNavInit() {
+  const svg = document.getElementById('kpBoard');
+  let press = null, tipFor = null, moved = false, downAt = null;
+
+  svg.addEventListener('pointerdown', e => {
+    downAt = { x: e.clientX, y: e.clientY };
+    moved = false;
+    kpTipHide();
+    if (e.pointerType === 'touch') {
+      const id = kpNodeAt(e.target);
+      if (id) press = setTimeout(() => { press = 'fired'; kpMenuOpen(id, e.clientX, e.clientY); }, KP_LONGPRESS);
+    }
+  });
+  svg.addEventListener('pointermove', e => {
+    if (downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 5) { moved = true; if (press && press !== 'fired') { clearTimeout(press); press = null; } }
+    const id = kpNodeAt(e.target);
+    if (id !== tipFor) {
+      kpTipHide();
+      tipFor = id;
+      if (id && e.pointerType !== 'touch') kpTipTimer = setTimeout(() => kpTipShow(id, e.clientX, e.clientY), KP_TIP_DELAY);
+    }
+  });
+  svg.addEventListener('pointerleave', () => { tipFor = null; kpTipHide(); });
+  svg.addEventListener('pointerup', () => { if (press && press !== 'fired') clearTimeout(press); downAt = null; });
+
+  svg.addEventListener('click', e => {
+    if (press === 'fired') { press = null; return; }
+    press = null;
+    if (moved || e.button !== 0) return;
+    const id = kpNodeAt(e.target);
+    if (!id) { kpPopoverClose(); kpMenuClose(); return; }
+    const n = kpBoard.layout.nodes.find(x => x.id === id);
+    kpSetFocusNode(id);
+    if (n && !KP_NOCLICK.includes(n.kind)) kpMainAction(n);
+  });
+  svg.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const id = kpNodeAt(e.target);
+    kpTipHide();
+    if (id) { kpSetFocusNode(id); kpMenuOpen(id, e.clientX, e.clientY); }
+  });
+
+  document.addEventListener('pointerdown', e => {
+    if (!e.target.closest('#kpMenu')) kpMenuClose();
+    if (!e.target.closest('#kpPop') && !e.target.closest('#kpBoard')) kpPopoverClose();
+  });
+
+  window.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); kpSearchOpen(); return; }
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    const menu = document.getElementById('kpMenu');
+    if (menu) { kpMenuKeys(e, menu); return; }
+    if (e.key === 'Escape') {
+      if (document.getElementById('kpPop')) { kpPopoverClose(); e.stopImmediatePropagation(); return; }
+      if (!document.getElementById('kpDrawer').hidden) { kpDrawerClose(); e.stopImmediatePropagation(); return; }
+    }
+    const dirs = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    if (dirs[e.key]) { e.preventDefault(); kpHop(...dirs[e.key]); return; }
+    const n = kpBoard.focusId && kpBoard.layout.nodes.find(x => x.id === kpBoard.focusId);
+    if (!n) return;
+    if (e.key === 'Enter') { e.preventDefault(); if (n.kind === 'dept') kpHeaderClick(n.dept); else if (!KP_NOCLICK.includes(n.kind)) kpMainAction(n); }
+    else if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) {
+      e.preventDefault();
+      const r = kpNodeScreenRect(n);
+      kpMenuOpen(n.id, r.left + 12, r.bottom + 4);
+    }
+  }, true);
+}
+
+function kpMenuKeys(e, menu) {
+  const items = [...menu.querySelectorAll(':scope > .kp-mi')];
+  const i = items.indexOf(document.activeElement);
+  if (e.key === 'Escape') { kpMenuClose(); }
+  else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    const step = e.key === 'ArrowDown' ? 1 : -1;
+    let j = i;
+    do { j = (j + step + items.length) % items.length; } while (items[j].classList.contains('off') && j !== i);
+    items[j].focus();
+  } else if (e.key === 'Enter' && i >= 0) items[i].click();
+  else return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+}
+
 // ---- 99-boot.js
 // Boot: theme, embedded data, shell. Later WPs hang their init off kpBoot.
 
@@ -883,6 +1582,9 @@ function kpBoot() {
   kpSetTheme(kpStore.get('theme', 'amber'));
   kpRenderRail();
   kpBoardInit();
+  kpNavInit();
+  kpRenderStrip();
+  document.getElementById('kpSearchBtn').addEventListener('click', kpSearchOpen);
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
   document.getElementById('kpMode').textContent = kpStore.available() ? '' : 'csak linkek — a böngésző nem enged menteni';
 }

@@ -60,7 +60,7 @@ Cheaper model fine: H0 H1 H8 H9 H12. Strong model: HA H2 H5 H6 H7 H10 + every VE
 | H0 | done | 2026-10-21 | Skeleton builds to one 8.8 kB file; tests 4/4, check-hub OK, check-start OK; four themes verified in headless Edge (4 distinct computed backgrounds). START.cmd `H`, VRG-DE.cmd `L5`. |
 | H1 | done | 2026-10-21 | topology.json from the seed; kpValidate/ResolveRefs/Visible/LinkFor; tests 12/12; check-hub validates + checks 75 repo paths — 16 are still uncommitted work in the main checkout (docs/research, docs/client-look, BRIDGE/10_media-wall, Firmware/*): warning now, error under `--strict` (H13). |
 | H2 | done | 2026-10-21 | Board: layout + renderer + camera + overview; tests 21/21; Edge getBBox audit 0 overflow / 0 collision. Look approved (Q19 A aligned rows, Q20 A width-fit overview). |
-| H3 | open | | |
+| H3 | done | 2026-10-21 | KP_ACT registry (13 RCO items, string-exact vs 03_UI §5), click per kind, popover, drawer + kpMd, Ctrl+K accent-free search + fly, arrow focus, tooltip, favourites; tests 32/32; Edge real-input check all green. Companion / GitHub / log items greyed with their reason until H4–H10. |
 | H4 | open | | |
 | H5 | open | | |
 | H6 | open | | |

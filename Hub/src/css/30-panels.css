@@ -1,0 +1,60 @@
+.kp-search-btn kbd{font:inherit;font-size:10px;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:6px;color:var(--muted)}
+.kp-muted{color:var(--muted)}
+.kp-x{border:0;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:0 4px}
+.kp-x:hover{color:var(--ink)}
+.kp-in{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font:inherit;font-size:12px;min-width:0;flex:1}
+.kp-path{font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:2px 6px;word-break:break-all}
+
+/* RCO menu */
+.kp-menu,.kp-submenu{position:fixed;z-index:50;min-width:260px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:13px}
+.kp-mi{position:relative;padding:6px 12px;border-radius:5px;cursor:pointer;outline:none;white-space:nowrap}
+.kp-mi:hover,.kp-mi:focus{background:var(--panel2)}
+.kp-mi.off{color:var(--muted);opacity:.55;cursor:default}
+.kp-mi-arrow{float:right;color:var(--muted)}
+.kp-submenu{display:none;position:absolute;left:100%;top:-5px;min-width:200px}
+.kp-mi.has-sub:hover>.kp-submenu,.kp-mi.has-sub:focus-within>.kp-submenu{display:block}
+.kp-sep{height:1px;background:var(--line);margin:4px 6px}
+
+/* popover */
+.kp-pop{position:fixed;z-index:45;max-width:440px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:13px}
+.kp-pop .kp-x{position:absolute;right:6px;top:4px}
+.kp-pop-h{font-weight:700;margin:0 24px 6px 0}
+.kp-pop-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+
+/* drawer */
+.kp-drawer{display:flex;flex-direction:column;width:380px;padding:12px 16px;gap:10px}
+.kp-drawer-head{display:flex;justify-content:space-between;gap:8px}
+.kp-drawer-t{font-weight:700;font-size:16px}
+.kp-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.kp-tabs button{border:0;background:none;color:var(--muted);font:inherit;padding:6px 10px;cursor:pointer;border-bottom:2px solid transparent}
+.kp-tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.kp-md{line-height:1.55}
+.kp-md code{font-size:12px;background:var(--bg);padding:0 4px;border-radius:3px}
+.kp-md a,.kp-drawer-links a{color:var(--accent)}
+.kp-en{margin-top:10px;font-style:italic;color:var(--muted)}
+.kp-drawer-sub{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.kp-drawer-links ul{margin:4px 0 0;padding-left:18px}
+.kp-drawer-links li{margin:3px 0}
+.kp-claim{background:var(--panel2);border-left:3px solid var(--accent);padding:6px 8px;font-size:12.5px}
+
+/* tooltip + toast */
+.kp-tip{position:fixed;z-index:60;max-width:320px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.kp-tip-t{font-weight:700}
+.kp-tip-w{color:var(--muted);margin-top:4px;word-break:break-all}
+.kp-toast{position:fixed;z-index:70;left:50%;bottom:36px;transform:translateX(-50%) translateY(20px);opacity:0;transition:.2s;background:var(--panel2);border:1px solid var(--accent-dim);color:var(--ink);padding:8px 14px;border-radius:8px;font-size:13px;pointer-events:none}
+.kp-toast.on{opacity:1;transform:translateX(-50%)}
+
+/* favourites strip */
+.kp-strip{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.kp-strip-l{color:var(--accent)}
+.kp-fav{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:1px 10px;font:inherit;font-size:12px;cursor:pointer}
+
+/* search */
+.kp-backdrop{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.35);display:flex;justify-content:center;align-items:flex-start;padding-top:12vh}
+.kp-search{width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.kp-search-in{width:100%;border:0;border-bottom:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-size:15px;padding:12px 14px;outline:none}
+.kp-search-list{max-height:50vh;overflow:auto}
+.kp-search-r{display:flex;justify-content:space-between;gap:12px;padding:7px 14px;cursor:pointer}
+.kp-search-r.sel,.kp-search-r:hover{background:var(--panel2)}
+.kp-search-k{color:var(--muted);font-size:12px;white-space:nowrap}
+.kp-search-none{padding:10px 14px;color:var(--muted)}
