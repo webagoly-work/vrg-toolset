@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 430" width="980" height="430" font-family="Segoe UI,Arial,sans-serif">
+  <title>The same flat: blueprint (geometric) and Topology View (topological)</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6d6a63"/></marker>
+    <g id="soc"><circle r="6.5" fill="#fff" stroke="#1d9e75" stroke-width="2.2"/></g>
+    <g id="lmp"><circle r="7.5" fill="#fff" stroke="#2f79c9" stroke-width="2"/><path d="M-5.3,-5.3 L5.3,5.3 M5.3,-5.3 L-5.3,5.3" stroke="#2f79c9" stroke-width="1.5"/></g>
+    <g id="swi"><rect x="-6" y="-6" width="12" height="12" fill="#fff" stroke="#7f77dd" stroke-width="2"/></g>
+    <g id="ded"><path d="M0,-8 l8,8 l-8,8 l-8,-8 z" fill="#fff" stroke="#d85a30" stroke-width="2"/></g>
+    <g id="kd"><rect x="-7" y="-7" width="14" height="14" fill="#e67e22"/></g>
+  </defs>
+  <rect width="980" height="430" fill="#fbfaf6"/>
+
+  <!-- ===== left: blueprint ===== -->
+  <text x="20" y="26" font-size="15" font-weight="700" fill="#262624">Alaprajz — geometrikus</text>
+  <text x="20" y="44" font-size="11" fill="#6d6a63">falak, valódi helyek, a vezethető falak mentén futó pálya (szürke)</text>
+  <g transform="translate(20,60)">
+    <!-- walls -->
+    <rect x="0" y="0" width="420" height="330" fill="none" stroke="#8a857a" stroke-width="9"/>
+    <path d="M160,0 V330 M160,180 H420" stroke="#8a857a" stroke-width="7"/>
+    <!-- doors (gaps) -->
+    <rect x="155" y="58" width="10" height="44" fill="#fbfaf6"/><rect x="155" y="228" width="10" height="44" fill="#fbfaf6"/>
+    <path d="M160,58 a44,44 0 0 1 44,44" fill="none" stroke="#b9b4a8" stroke-dasharray="3 3"/>
+    <path d="M160,228 a44,44 0 0 1 44,44" fill="none" stroke="#b9b4a8" stroke-dasharray="3 3"/>
+    <!-- room names -->
+    <g font-size="12" fill="#6d6a63" font-weight="600"><text x="30" y="160">Előszoba</text><text x="200" y="70">Szoba</text><text x="200" y="240">Fürdő</text></g>
+    <!-- routable path along the walls -->
+    <g fill="none" stroke="#b9b4a8" stroke-width="3" stroke-linecap="round">
+      <path d="M14,14 H146 V316 H14 Z"/>
+      <path d="M174,14 H406 V166 H174 Z"/>
+      <path d="M174,194 H406 V316 H174 Z"/>
+      <path d="M146,44 H174 M146,214 H174"/>
+    </g>
+    <!-- devices -->
+    <rect x="4" y="262" width="14" height="40" rx="2" fill="#2c3e50"/><text x="22" y="290" font-size="10" fill="#2c3e50" font-weight="700">Elosztó</text>
+    <use href="#kd" x="160" y="44"/><text x="128" y="36" font-size="9.5" fill="#b0600f">PB1</text>
+    <use href="#kd" x="160" y="214"/><text x="128" y="206" font-size="9.5" fill="#b0600f">PB2</text>
+    <use href="#soc" x="230" y="10"/><use href="#soc" x="330" y="10"/><use href="#soc" x="411" y="110"/><use href="#soc" x="290" y="171"/>
+    <g font-size="9.5" fill="#1d9e75"><text x="222" y="30">S1</text><text x="322" y="30">S2</text><text x="388" y="114">S3</text><text x="300" y="164">S4</text></g>
+    <use href="#swi" x="172" y="118"/><text x="182" y="132" font-size="9.5" fill="#7f77dd">K1</text>
+    <use href="#lmp" x="290" y="90"/><text x="302" y="86" font-size="9.5" fill="#2f79c9">L1</text>
+    <use href="#lmp" x="290" y="255"/><text x="302" y="251" font-size="9.5" fill="#2f79c9">L2</text>
+    <use href="#swi" x="148" y="292"/><text x="120" y="310" font-size="9.5" fill="#7f77dd">K2</text>
+    <use href="#ded" x="380" y="320"/><text x="350" y="310" font-size="9.5" fill="#d85a30">M1</text>
+    <use href="#soc" x="80" y="320"/><text x="72" y="310" font-size="9.5" fill="#1d9e75">S5</text>
+    <use href="#lmp" x="80" y="100"/><text x="92" y="96" font-size="9.5" fill="#2f79c9">L0</text>
+    <use href="#swi" x="10" y="200"/><text x="20" y="214" font-size="9.5" fill="#7f77dd">K0</text>
+    <!-- ceiling reach (E2) -->
+    <g fill="none" stroke="#2f79c9" stroke-width="1.2" stroke-dasharray="2 3"><path d="M174,44 L284,86"/><path d="M174,214 L284,250"/><path d="M14,200 L74,104"/></g>
+  </g>
+
+  <!-- divider -->
+  <path d="M478,60 V400" stroke="#d8d4ca" stroke-width="1.5"/>
+  <path d="M462,225 L494,225" stroke="#6d6a63" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- ===== right: topology ===== -->
+  <text x="510" y="26" font-size="15" font-weight="700" fill="#262624">Topológia nézet — topologikus</text>
+  <text x="510" y="44" font-size="11" fill="#6d6a63">balról jobbra: upstream → közép → downstream; sávok = helyiségek</text>
+  <g font-size="10" fill="#6d6a63" font-weight="600">
+    <text x="522" y="72">Elosztó</text><text x="604" y="72">közép (doboz)</text><text x="716" y="72">leader</text><text x="790" y="72">…</text><text x="876" y="72">tail</text>
+  </g>
+  <!-- swimlanes -->
+  <g>
+    <rect x="590" y="82" width="376" height="96" fill="#f3f1ea"/><text x="958" y="98" font-size="10" fill="#6d6a63" text-anchor="end">Előszoba</text>
+    <rect x="590" y="182" width="376" height="122" fill="#eef5f1"/><text x="958" y="198" font-size="10" fill="#6d6a63" text-anchor="end">Szoba</text>
+    <rect x="590" y="308" width="376" height="92" fill="#eef2f8"/><text x="958" y="324" font-size="10" fill="#6d6a63" text-anchor="end">Fürdő</text>
+  </g>
+  <!-- links -->
+  <g fill="none" stroke-width="2.4" stroke-linecap="round">
+    <!-- V1 house string: board → PB1 → PB2, lamp groups mastered there -->
+    <path d="M548,236 C580,236 590,240 614,240" stroke="#2f79c9"/>
+    <path d="M622,248 L622,346" stroke="#2f79c9" stroke-dasharray="7 3"/>
+    <path d="M548,236 C575,236 590,124 718,124" stroke="#2f79c9"/>
+    <path d="M630,240 C660,240 680,270 712,270" stroke="#2f79c9"/><path d="M726,270 L784,270" stroke="#2f79c9"/>
+    <path d="M630,354 C660,354 680,340 712,340" stroke="#2f79c9"/><path d="M726,340 L784,340" stroke="#2f79c9"/>
+    <path d="M726,124 L784,124" stroke="#2f79c9"/>
+    <!-- A1 Szoba socket chain: board → S2 leader → S1 → S4 → S3 tail? (order by horizontal travel) -->
+    <path d="M548,228 C580,228 600,214 714,214" stroke="#1d9e75"/>
+    <path d="M726,214 L786,214 M800,214 L856,214 M870,214 L930,214" stroke="#1d9e75"/>
+    <!-- A2 Előszoba socket -->
+    <path d="M548,232 C578,232 600,152 714,152" stroke="#16a3b8"/>
+    <!-- A3 DED mosógép: home run through PB2 uncut -->
+    <path d="M548,244 C578,244 600,380 714,380" stroke="#d85a30" stroke-dasharray="6 3"/>
+  </g>
+  <!-- nodes -->
+  <rect x="532" y="214" width="16" height="42" rx="2" fill="#2c3e50"/>
+  <use href="#kd" x="622" y="240"/><text x="632" y="236" font-size="9.5" fill="#b0600f">PB1</text>
+  <use href="#kd" x="622" y="354"/><text x="632" y="372" font-size="9.5" fill="#b0600f">PB2</text>
+  <use href="#swi" x="720" y="124"/><use href="#lmp" x="792" y="124"/>
+  <use href="#soc" x="720" y="152"/>
+  <use href="#soc" x="720" y="214"/><use href="#soc" x="793" y="214"/><use href="#soc" x="863" y="214"/><use href="#soc" x="937" y="214"/>
+  <use href="#swi" x="720" y="270"/><use href="#lmp" x="792" y="270"/>
+  <use href="#swi" x="720" y="340"/><use href="#lmp" x="792" y="340"/>
+  <use href="#ded" x="720" y="380"/>
+  <g font-size="9.5">
+    <text x="708" y="116" fill="#7f77dd">K0</text><text x="782" y="112" fill="#2f79c9">L0</text>
+    <text x="708" y="170" fill="#1d9e75">S5</text>
+    <text x="706" y="232" fill="#1d9e75">S1</text><text x="781" y="232" fill="#1d9e75">S2</text><text x="851" y="232" fill="#1d9e75">S3</text><text x="925" y="232" fill="#1d9e75">S4</text>
+    <text x="708" y="288" fill="#7f77dd">K1</text><text x="782" y="288" fill="#2f79c9">L1</text>
+    <text x="708" y="358" fill="#7f77dd">K2</text><text x="782" y="358" fill="#2f79c9">L2</text>
+    <text x="732" y="384" fill="#d85a30">M1 — dedikált, PB2-n bontás nélkül át</text>
+  </g>
+  <g font-size="10" fill="#262624">
+    <circle cx="520" cy="412" r="4" fill="#2f79c9"/><text x="528" y="416">V1 ház-füzér (PB1 → PB2 = betáp pontok)</text>
+    <circle cx="760" cy="412" r="4" fill="#1d9e75"/><text x="768" y="416">A1 lánc</text>
+    <circle cx="820" cy="412" r="4" fill="#16a3b8"/><text x="828" y="416">A2</text>
+    <circle cx="862" cy="412" r="4" fill="#d85a30"/><text x="870" y="416">A3 DED</text>
+  </g>
+</svg>

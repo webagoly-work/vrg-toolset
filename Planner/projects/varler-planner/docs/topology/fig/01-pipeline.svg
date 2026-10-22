@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 340" width="980" height="340" font-family="Segoe UI,Arial,sans-serif">
+  <title>Topology View: the four-stage pipeline</title>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6d6a63"/></marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1d9e75"/></marker>
+    <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2f79c9"/></marker>
+    <marker id="ad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#d85a30"/></marker>
+    <!-- the same mini network, reused in every panel -->
+    <g id="nodes">
+      <rect x="12" y="98" width="16" height="26" rx="2" fill="#2c3e50"/>
+      <rect x="83" y="53" width="14" height="14" fill="#e67e22"/>
+      <rect x="83" y="153" width="14" height="14" fill="#e67e22"/>
+      <circle cx="150" cy="30" r="7" fill="#fff" stroke="#1d9e75" stroke-width="2.2"/>
+      <circle cx="195" cy="62" r="7" fill="#fff" stroke="#1d9e75" stroke-width="2.2"/>
+      <circle cx="150" cy="100" r="7" fill="#fff" stroke="#1d9e75" stroke-width="2.2"/>
+      <g transform="translate(165,150)"><circle r="8" fill="#fff" stroke="#2f79c9" stroke-width="2"/><path d="M-5.6,-5.6 L5.6,5.6 M5.6,-5.6 L-5.6,5.6" stroke="#2f79c9" stroke-width="1.6"/></g>
+      <rect x="133" y="183" width="13" height="13" fill="#fff" stroke="#7f77dd" stroke-width="2"/>
+      <path d="M200,194 l8,8 l-8,8 l-8,-8 z" fill="#fff" stroke="#d85a30" stroke-width="2"/>
+    </g>
+    <g id="pathgraph" stroke="#b9b4a8" stroke-width="3" fill="none" stroke-linecap="round">
+      <path d="M28,105 L83,62"/><path d="M28,118 L83,160"/>
+      <path d="M97,58 L143,32"/><path d="M97,62 L143,98"/><path d="M157,32 L188,58"/><path d="M157,98 L188,66"/>
+      <path d="M97,162 L157,152"/><path d="M95,167 L135,186"/><path d="M146,190 L158,157"/><path d="M97,165 L193,200"/>
+    </g>
+  </defs>
+
+  <rect width="980" height="340" fill="#fbfaf6"/>
+
+  <!-- panel 1 -->
+  <g transform="translate(16,16)">
+    <rect width="222" height="300" rx="8" fill="#fff" stroke="#d8d4ca"/>
+    <text x="12" y="24" font-size="14" font-weight="700" fill="#262624">1 · Pályák</text>
+    <text x="12" y="41" font-size="11" fill="#6d6a63">pálya-gráf — a geometriai bizonyíték</text>
+    <g transform="translate(14,52) scale(0.88)"><use href="#pathgraph"/><use href="#nodes"/></g>
+    <text x="12" y="262" font-size="10.5" fill="#262624">1 vonal = 1 falszakasz két pont között.</text>
+    <text x="12" y="276" font-size="10.5" fill="#262624">Minden pont elérhető vezethető falon;</text>
+    <text x="12" y="290" font-size="10.5" fill="#262624">falon át csak szervizponton.</text>
+  </g>
+
+  <!-- panel 2 -->
+  <g transform="translate(264,16)">
+    <rect width="222" height="300" rx="8" fill="#fff" stroke="#d8d4ca"/>
+    <text x="12" y="24" font-size="14" font-weight="700" fill="#262624">2 · Kapcsolatok</text>
+    <text x="12" y="41" font-size="11" fill="#6d6a63">topológia — körönként egy fa</text>
+    <g transform="translate(14,52) scale(0.88)">
+      <g opacity="0.35"><use href="#pathgraph"/></g>
+      <g fill="none" stroke-width="2.4" stroke-linecap="round">
+        <path d="M28,103 L81,63" stroke="#1d9e75" marker-end="url(#ag)"/>
+        <path d="M97,64 L141,96" stroke="#1d9e75" marker-end="url(#ag)"/>
+        <path d="M157,97 L186,68" stroke="#1d9e75" marker-end="url(#ag)"/>
+        <path d="M188,57 L159,35" stroke="#1d9e75" marker-end="url(#ag)"/>
+        <path d="M28,116 L81,155" stroke="#2f79c9" marker-end="url(#ab)"/>
+        <path d="M95,168 L131,186" stroke="#2f79c9" marker-end="url(#ab)"/>
+        <path d="M146,188 L158,159" stroke="#2f79c9" marker-end="url(#ab)"/>
+        <path d="M28,121 C70,190 120,205 190,203" stroke="#d85a30" stroke-dasharray="6 3" marker-end="url(#ad)"/>
+      </g>
+      <use href="#nodes"/>
+      <text x="40" y="70" font-size="9.5" fill="#1d9e75">betáp</text>
+      <text x="46" y="112" font-size="9.5" fill="#1d9e75">master→leader</text>
+      <text x="182" y="88" font-size="9.5" fill="#1d9e75">lánc</text>
+      <text x="200" y="38" font-size="9.5" fill="#1d9e75">tail</text>
+    </g>
+    <text x="12" y="276" font-size="10.5" fill="#262624">Elosztó → (kötődoboz) → leader → … → tail.</text>
+    <text x="12" y="290" font-size="10.5" fill="#262624">A felhasználó állítja; a motor csak ellenőriz.</text>
+  </g>
+
+  <!-- panel 3 -->
+  <g transform="translate(512,16)">
+    <rect width="222" height="300" rx="8" fill="#fff" stroke="#d8d4ca"/>
+    <text x="12" y="24" font-size="14" font-weight="700" fill="#262624">3 · Csőközösség</text>
+    <text x="12" y="41" font-size="11" fill="#6d6a63">közös szakasz → cső, méret, darab</text>
+    <g transform="translate(14,52) scale(0.88)">
+      <g opacity="0.35"><use href="#pathgraph"/></g>
+      <g fill="none" stroke-linecap="round">
+        <path d="M28,105 L83,62" stroke="#1d9e75" stroke-width="3"/>
+        <path d="M28,118 L83,160" stroke="#262624" stroke-width="7"/>
+        <path d="M28,118 L83,160" stroke="#fff" stroke-width="2.4"/>
+        <path d="M97,62 L143,98" stroke="#1d9e75" stroke-width="3"/><path d="M157,98 L188,66" stroke="#1d9e75" stroke-width="3"/><path d="M188,58 L157,32" stroke="#1d9e75" stroke-width="3"/>
+        <path d="M95,167 L135,186" stroke="#2f79c9" stroke-width="3"/><path d="M146,190 L158,157" stroke="#2f79c9" stroke-width="3"/>
+        <path d="M97,165 L193,200" stroke="#d85a30" stroke-width="3"/>
+      </g>
+      <use href="#nodes"/>
+      <rect x="-2" y="176" width="80" height="30" rx="4" fill="#fff" stroke="#262624" stroke-width="0.8"/>
+      <text x="3" y="189" font-size="9.5" fill="#262624">V1 + A3: 2 kör</text>
+      <text x="3" y="201" font-size="9.5" font-weight="700" fill="#262624">1 × M20 · 31 %</text>
+      <circle cx="90" cy="160" r="13" fill="none" stroke="#1d9e75" stroke-width="1.6" stroke-dasharray="3 2"/>
+      <text x="100" y="128" font-size="9.5" fill="#1d9e75">szétválás: dobozban ✓</text>
+    </g>
+    <text x="12" y="276" font-size="10.5" fill="#262624">Kör csak dobozban léphet ki a közös csőből;</text>
+    <text x="12" y="290" font-size="10.5" fill="#262624">töltés, terhelhetőség, ívszám = E5 szabályai.</text>
+  </g>
+
+  <!-- panel 4 -->
+  <g transform="translate(760,16)">
+    <rect width="204" height="300" rx="8" fill="#fff" stroke="#d8d4ca"/>
+    <text x="12" y="24" font-size="14" font-weight="700" fill="#262624">4 · Bekötés</text>
+    <text x="12" y="41" font-size="11" fill="#6d6a63">körönként lejátszva → összkép</text>
+    <g font-size="10.5" fill="#262624">
+      <rect x="14" y="62" width="176" height="26" rx="4" fill="#e9f6f1"/><circle cx="28" cy="75" r="5" fill="#1d9e75"/><text x="40" y="79">A1 dugaljkör · 4 pont</text>
+      <rect x="14" y="94" width="176" height="26" rx="4" fill="#fbeee8"/><circle cx="28" cy="107" r="5" fill="#d85a30"/><text x="40" y="111">A3 mosógép · dedikált</text>
+      <rect x="14" y="126" width="176" height="26" rx="4" fill="#eaf1fa"/><circle cx="28" cy="139" r="5" fill="#2f79c9"/><text x="40" y="143">V1 világítás · 1 csoport</text>
+      <rect x="14" y="158" width="176" height="26" rx="4" fill="#f1f0ec"/><text x="28" y="175" font-weight="700">Σ összkép: 5 cső · 18,4 m</text>
+    </g>
+    <g transform="translate(14,198)">
+      <rect width="176" height="8" rx="4" fill="#ece9e1"/><rect width="118" height="8" rx="4" fill="#2f79c9"/>
+      <text y="26" font-size="10" fill="#6d6a63">▶ ⏸ ⏭  ·  sebesség 1×</text>
+    </g>
+    <text x="12" y="262" font-size="10.5" fill="#262624">A motor (E5) a kapcsolatok</text>
+    <text x="12" y="276" font-size="10.5" fill="#262624">mentén huzaloz; a táblák</text>
+    <text x="12" y="290" font-size="10.5" fill="#262624">jóváhagyhatók.</text>
+  </g>
+
+  <g stroke="#6d6a63" stroke-width="1.8" fill="none">
+    <path d="M240,166 L260,166" marker-end="url(#ar)"/><path d="M488,166 L508,166" marker-end="url(#ar)"/><path d="M736,166 L756,166" marker-end="url(#ar)"/>
+  </g>
+</svg>
