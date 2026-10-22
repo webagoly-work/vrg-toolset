@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Board Console</title>
+<style>
+  :root {
+    --bg:#0c0f15; --panel:#151a24; --panel2:#1b2230; --line:#283143; --text:#eef2f8; --muted:#8c96a8; --soft:#b9c2d0;
+    --accent:#4f8cff; --ok:#3cc47c; --bad:#ff5a5a; --warn:#f0b429; color-scheme:dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) { --bg:#f2f0ea; --panel:#fffdf8; --panel2:#f6f3ec; --line:#ddd7c9; --text:#1d1d1b; --muted:#6b665c; --soft:#3f3b34; --accent:#2b5faf; --ok:#2f855a; --bad:#c53030; --warn:#b7791f; color-scheme:light; }
+  }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.4 "Segoe UI", system-ui, sans-serif; }
+  .en { display:block; font-style:italic; font-size:.78em; color:var(--muted); font-weight:400; }
+  .hu-en .en { display:inline; margin-left:6px; }
+  header { display:flex; gap:14px; align-items:center; flex-wrap:wrap; padding:10px 16px; border-bottom:1px solid var(--line); background:var(--panel); }
+  header h1 { font-size:18px; margin:0; line-height:1.15; } header h1 b { color:var(--accent); }
+  #setupBadge { padding:4px 10px; border-radius:999px; background:var(--panel2); border:1px solid var(--line); font-size:13px; }
+  #setupBadge.dirty::after { content:" ●"; color:var(--warn); }
+  #status { margin-left:auto; color:var(--muted); font-size:12px; text-align:right; }
+  button, select, input, textarea { font:inherit; color:var(--text); }
+  button { background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:5px 10px; cursor:pointer; line-height:1.15; }
+  button:hover { border-color:var(--accent); } button.primary { background:var(--accent); border-color:var(--accent); color:#fff; } button.primary .en { color:#dfe8ff; }
+  button:disabled { opacity:.4; cursor:default; }
+  select, input[type=text], textarea { background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:5px 7px; min-width:0; }
+  main { display:grid; grid-template-columns:minmax(0, 1fr) 440px; gap:12px; padding:12px; height:calc(100% - 62px); }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; min-height:0; display:flex; flex-direction:column; }
+  .toolbar { display:flex; gap:6px; align-items:center; flex-wrap:wrap; padding:8px 10px; border-bottom:1px solid var(--line); }
+  .seg { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .seg button { border:0; border-radius:0; background:transparent; } .seg button.on { background:var(--accent); color:#fff; } .seg button.on .en { color:#dfe8ff; }
+  .spacer { flex:1; }
+  .toolbar select { max-width:230px; }
+  #viewBox { position:relative; flex:1; min-height:0; overflow:hidden; touch-action:none; background:#0a0d12; border-radius:0 0 12px 12px; }
+  #viewBox svg { width:100%; height:100%; display:block; cursor:grab; user-select:none; }
+  #viewBox svg.dragging { cursor:grabbing; }
+  #legend { position:absolute; left:10px; bottom:10px; background:#000a; color:#eef2f8; border-radius:8px; padding:6px 10px; font-size:12px; display:flex; gap:12px; flex-wrap:wrap; pointer-events:none; }
+  #legend i { display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+  #tip { position:absolute; pointer-events:none; background:#000d; color:#fff; padding:5px 8px; border-radius:6px; font-size:12px; display:none; white-space:nowrap; z-index:5; }
+  .tabs { display:flex; border-bottom:1px solid var(--line); overflow-x:auto; }
+  .tabs button { border:0; border-radius:0; background:transparent; padding:8px 12px; border-bottom:2px solid transparent; white-space:nowrap; }
+  .tabs button.on { border-bottom-color:var(--accent); }
+  .pane { flex:1; overflow:auto; padding:10px 12px; min-height:0; }
+  #info { border-bottom:1px solid var(--line); padding:10px 12px; max-height:44%; overflow:auto; }
+  #info:empty { display:none; }
+  #info h3 { margin:0 0 4px; font-size:15px; }
+  .muted { color:var(--muted); } .bad { color:var(--bad); } .ok { color:var(--ok); } .warn { color:var(--warn); }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; }
+  th, td { border-bottom:1px solid var(--line); padding:4px 6px; text-align:left; vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  .grp { margin:12px 0 4px; font-weight:700; font-size:13px; display:flex; align-items:center; gap:8px; }
+  .grp i { width:12px; height:12px; border-radius:3px; display:inline-block; }
+  .crow { display:grid; grid-template-columns:auto 62px 1fr; gap:4px 8px; align-items:center; padding:6px 6px; border-radius:8px; cursor:pointer; }
+  .crow:hover { background:var(--panel2); } .crow.sel { background:var(--panel2); outline:1px solid var(--accent); }
+  .crow .id { font-weight:700; } .crow .pins { color:var(--muted); font-size:12px; }
+  .crow .mod { grid-column:2 / -1; display:flex; gap:6px; align-items:center; }
+  .crow .mod select { flex:1; font-size:12.5px; padding:3px 5px; }
+  .crow.conflict .id { color:var(--bad); }
+  .tag { font-size:11px; padding:1px 6px; border-radius:999px; border:1px solid var(--line); color:var(--muted); white-space:nowrap; }
+  .tag.bad { border-color:var(--bad); color:var(--bad); } .tag.warn { border-color:var(--warn); color:var(--warn); } .tag.ok { border-color:var(--ok); color:var(--ok); }
+  .sw { position:relative; width:34px; height:20px; flex:none; }
+  .sw input { opacity:0; width:0; height:0; position:absolute; }
+  .sw span { position:absolute; inset:0; background:var(--line); border-radius:999px; transition:.15s; }
+  .sw span::after { content:""; position:absolute; width:14px; height:14px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.15s; }
+  .sw input:checked + span { background:var(--ok); } .sw input:checked + span::after { transform:translateX(14px); }
+  .row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin:6px 0; }
+  .list-item { display:flex; gap:6px; align-items:center; padding:6px 0; border-bottom:1px solid var(--line); }
+  .list-item .name { flex:1; min-width:0; }
+  pre { background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:10px; overflow:auto; font:12px/1.45 Consolas, "Cascadia Mono", monospace; margin:6px 0; }
+  #msg { font-size:12px; min-height:16px; }
+  /* ---- phase 3a: live link */
+  #liveChip { padding:4px 10px; border-radius:999px; border:1px solid var(--line); background:var(--panel2); font-size:13px; cursor:pointer; }
+  #liveChip.on { border-color:var(--ok); color:var(--ok); } #liveChip.err { border-color:var(--bad); color:var(--bad); }
+  #conLog { height:calc(100% - 70px); min-height:200px; max-height:none; white-space:pre-wrap; word-break:break-word; }
+  #conLog .out { color:var(--accent); } #conLog .sys { color:var(--muted); font-style:italic; }
+  .warnbox { border:1px solid var(--warn); border-radius:8px; padding:6px 9px; margin:6px 0; font-size:12.5px; }
+  .warnbox.bad { border-color:var(--bad); }
+  /* ---- phase 2: firmware screen */
+  #fwMain { display:none; grid-template-columns:minmax(0, 1.25fr) minmax(0, 1fr); gap:12px; padding:12px; height:calc(100% - 62px); }
+  body.fw #fwMain { display:grid; } body.fw main:not(#fwMain) { display:none; }
+  .card h2 { font-size:15px; margin:0; padding:10px 12px; border-bottom:1px solid var(--line); }
+  .fwcard { border:1px solid var(--line); border-radius:10px; padding:9px 11px; margin:0 0 8px; background:var(--panel2); }
+  .fwcard.sel { outline:2px solid var(--accent); }
+  .fwcard .top { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .fwcard .top b { font-size:14px; }
+  .fwcard .parts { font:11.5px Consolas, monospace; color:var(--muted); margin:4px 0; }
+  .fwcard textarea, .fwcard input[type=text] { width:100%; }
+  details.add { margin:0 0 10px; border:1px dashed var(--line); border-radius:10px; padding:6px 10px; }
+  details.add summary { cursor:pointer; font-weight:600; padding:4px 0; }
+  .kv { display:grid; grid-template-columns:auto 1fr; gap:2px 10px; font-size:13px; }
+  .kv span:nth-child(odd) { color:var(--muted); }
+  .bar { height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:999px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--accent); width:0; transition:width .3s; }
+  #jobLog { max-height:260px; min-height:80px; }
+  button.danger { background:#b42318; border-color:#b42318; color:#fff; } button.danger .en { color:#ffd9d4; }
+  .sec { padding:10px 12px; border-bottom:1px solid var(--line); }
+  .sec h3 { font-size:13.5px; margin:0 0 6px; }
+  @media (max-width: 980px) {
+    #fwMain { grid-template-columns:minmax(0, 1fr); height:auto; padding:8px; }
+    main { grid-template-columns:minmax(0, 1fr); height:auto; padding:8px; }
+    #status .en { overflow-wrap:anywhere; }
+    #legend { font-size:11px; gap:8px; padding:4px 8px; }
+    .toolbar select { flex:1 1 140px; }
+    #viewCard { height:62vh; }
+    #sideCard { min-height:70vh; }
+    #status { margin-left:0; text-align:left; width:100%; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Board <b>Console</b><span class="en">ESP32-S3 fejlesztőlap · universal dev board</span></h1>
+  <div class="seg" id="modeSeg">
+    <button data-m="layout" class="on">Kiosztás<span class="en">Layout</span></button>
+    <button data-m="fw">Firmware<span class="en">library · flash</span></button>
+  </div>
+  <span id="setupBadge">—</span>
+  <button id="liveChip" title="Élő kapcsolat · Live link">Élő: ki<span class="en">Live: off</span></button>
+  <button class="primary" id="saveBtn">Mentés<span class="en">Save</span></button>
+  <div id="status">betöltés…<span class="en">loading…</span></div>
+</header>
+<main>
+  <section class="card" id="viewCard">
+    <div class="toolbar">
+      <div class="seg" id="viewSeg">
+        <button data-v="panel" class="on">Csatlakozópanel<span class="en">Connector panel</span></button>
+        <button data-v="dev">Fejlesztőlap<span class="en">Dev board</span></button>
+      </div>
+      <select id="fPanel" title="Panel változat / Panel variant" aria-label="panel"></select>
+      <select id="fType" title="Típus / Type"></select>
+      <select id="fShow" title="Mutat / Show">
+        <option value="all">Mind · All</option>
+        <option value="active">Aktív · Active</option>
+        <option value="free">Szabad · Free</option>
+        <option value="conflict">Ütközés · Conflict</option>
+      </select>
+      <span class="spacer"></span>
+      <button id="zIn" title="Nagyítás / Zoom in">+</button>
+      <button id="zOut" title="Kicsinyítés / Zoom out">−</button>
+      <button id="zFit">Igazítás<span class="en">Fit</span></button>
+    </div>
+    <div id="viewBox"><div id="tip"></div><div id="legend"></div></div>
+  </section>
+
+  <section class="card" id="sideCard">
+    <div id="info"></div>
+    <div class="tabs" id="tabs">
+      <button data-t="conns" class="on">Csatlakozók<span class="en">Connectors</span></button>
+      <button data-t="gpio">GPIO<span class="en">pins</span></button>
+      <button data-t="setups">Összeállítások<span class="en">Setups</span></button>
+      <button data-t="header">board_pins.h<span class="en">pin header</span></button>
+      <button data-t="live">Élő<span class="en">Live</span></button>
+      <button data-t="console">Konzol<span class="en">Console</span></button>
+    </div>
+    <div class="pane" id="pane"></div>
+  </section>
+</main>
+<main id="fwMain">
+  <section class="card">
+    <h2>Firmware-könyvtár<span class="en">Firmware library</span></h2>
+    <div class="pane" id="libPane"></div>
+  </section>
+  <section class="card">
+    <h2>Eszköz és írás<span class="en">Device and flashing</span></h2>
+    <div class="pane" id="devPane" style="padding:0"></div>
+  </section>
+</main>
+
+<script>
+'use strict';
+// ====================================================================== data + state
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const bi = (hu, en) => `${esc(hu)}<span class="en">${esc(en)}</span>`;
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+
+const GROUPS = {
+  power: ['Tápellátás', 'Power', '#b23a3a'], analog: ['Analóg bemenet · 3 eres', 'Analog in · 3-wire', '#2f9e5b'],
+  joy: ['Joystick · 5 eres', 'Joystick · 5-wire', '#3d8b6b'], digital: ['Digitális I/O · 3 eres (3,3 V)', 'Digital I/O · 3-wire (3.3 V)', '#2f6fd6'],
+  digital5: ['Digitális, 5 V-os modul', 'Digital, 5 V-powered module', '#4a57c9'], switch: ['Kapcsoló / gomb · 2 eres', 'Switch / button · 2-wire', '#5b6b8c'],
+  encoder: ['Forgóenkóder · 5 eres', 'Rotary encoder · 5-wire', '#c27c0e'], serial3: ['3 vezetékes soros panel', '3-wire serial panel', '#b8860b'],
+  led: ['LED-lánc · 3 eres', 'LED chain · 3-wire', '#d6409f'], i2c: ['I2C · 4 eres', 'I2C · 4-wire', '#8e4ec6'],
+  uart: ['UART · 4 eres', 'UART · 4-wire', '#0b7fab'], spi: ['SPI · 6 / 8 eres', 'SPI · 6 / 8-wire', '#12a594'], usb: ['USB host · 4 eres', 'USB host · 4-wire', '#6e56cf']
+};
+const POWER_C = { GND: '#2a2a2a', '3V3': '#e5484d', '5V': '#f08c00' };
+// which module interfaces fit which connector group (a soft hint, not a rule)
+const FIT = { i2c: /I2C/i, spi: /SPI/i, uart: /UART|serial/i, analog: /ADC|analog/i, joy: /ADC/i, digital: /GPIO|PWM|1-Wire|switched/i, digital5: /GPIO|PWM/i,
+  switch: /GPIO/i, encoder: /GPIO|encoder/i, serial3: /3-wire|serial|GPIO/i, led: /LED|WS2812|PWM/i, usb: /USB/i, power: /power/i };
+
+let B = null, CONN = [], CBY = {}, SHARED = new Set(), MODS = [], MBY = {};
+let S = { name: '', notes: '', active: {}, modules: {} };   // the open setup
+let dirty = false, view = 'panel', sel = null, tab = 'conns';
+let D = null;   // derived state (compute())
+
+// ====================================================================== derived state
+function compute() {
+  const owners = new Map();   // gpio -> [connector ids] (active only)
+  for (const c of CONN) if (S.active[c.id]) for (const [, n] of c.pins) if (typeof n === 'number') {
+    if (!owners.has(n)) owners.set(n, []);
+    owners.get(n).push(c.id);
+  }
+  const conflictGpio = new Set(), conflictConn = new Set(), clashes = [];
+  for (const [g, list] of owners) if (!SHARED.has(g) && list.length > 1) {
+    conflictGpio.add(g); list.forEach(id => conflictConn.add(id)); clashes.push({ gpio: g, conns: list });
+  }
+  // a connector is "free" (usable now) when none of its exclusive lines is taken by another active one
+  const free = new Set();
+  for (const c of CONN) if (!S.active[c.id]) {
+    const taken = c.pins.some(([, n]) => typeof n === 'number' && !SHARED.has(n) && owners.has(n));
+    if (!taken) free.add(c.id);
+  }
+  const misfit = new Set();
+  for (const [cid, mid] of Object.entries(S.modules)) {
+    const c = CBY[cid], m = MBY[mid];
+    if (c && m && FIT[c.group] && !FIT[c.group].test(`${m.interface || ''} ${m.hook || ''}`)) misfit.add(cid);
+  }
+  D = { owners, conflictGpio, conflictConn, clashes, free, misfit };
+}
+const stateOf = id => D.conflictConn.has(id) ? 'conflict' : S.active[id] ? 'active' : D.free.has(id) ? 'free' : 'blocked';
+
+// ====================================================================== panel view (SVG)
+const PX = 14, MX = 40, MY = 40;   // px per mm, margins
+let pz = {};                       // pan/zoom per view: {x, y, w, h, W, H}
+
+function panelSvg() {
+  const P = B.panel.board, items = B.panel.items;
+  const gx = c => P.w / 2 - (P.cols - 1) * P.pitch / 2 + c * P.pitch, gy = r => P.h / 2 - (P.rows - 1) * P.pitch / 2 + r * P.pitch;
+  const X = mm => MX + mm * PX, Y = mm => MY + mm * PX, PS = P.pitch * PX * 0.86;
+  const W = MX * 2 + P.w * PX, H = MY * 2 + P.h * PX;
+  const o = [`<rect x="${X(0)}" y="${Y(0)}" width="${P.w * PX}" height="${P.h * PX}" rx="20" fill="#1f5a3a" stroke="#174a2f" stroke-width="3"/>`];
+  const used = new Set(items.flatMap(it => it.pins.map(p => p.hole.join(','))));
+  const near = (c, r) => P.mountingHoles.some(([x, y]) => Math.hypot(gx(c) - x, gy(r) - y) < 3.6);
+  for (let c = 0; c < P.cols; c++) for (let r = 0; r < P.rows; r++)
+    if (!used.has(c + ',' + r) && !near(c, r)) o.push(`<circle cx="${X(gx(c))}" cy="${Y(gy(r))}" r="${PX * 0.42}" fill="#c9a557" opacity=".38"/>`);
+  P.mountingHoles.forEach(([x, y]) => o.push(`<circle cx="${X(x)}" cy="${Y(y)}" r="${PX * 1.6}" fill="#0a0d12" stroke="#c9a557" stroke-width="3"/>`));
+
+  const ft = $('#fType').value, fs = $('#fShow').value;
+  const ownerOfJumper = { JP1: 'USB-H', JP2: 'USB-H', JP3: 'D3', R1: 'D3' };
+  for (const it of items) {
+    const c = CBY[it.id], cid = c ? c.id : ownerOfJumper[it.id];
+    const conn = CBY[cid];
+    let st = conn ? stateOf(cid) : 'harness';
+    let dim = false;
+    if (conn) {
+      if (ft !== 'all' && conn.group !== ft) dim = true;
+      if (fs === 'active' && !S.active[cid]) dim = true;
+      if (fs === 'free' && st !== 'free') dim = true;
+      if (fs === 'conflict' && st !== 'conflict') dim = true;
+    } else if (fs !== 'all' || ft !== 'all') dim = true;
+    const gcol = conn ? GROUPS[conn.group][2] : '#5f5a50';
+    const on = conn ? !!S.active[cid] : true;
+    const isSel = sel && sel.type === 'conn' && sel.id === cid;
+    o.push(`<g class="item" data-id="${esc(cid || it.id)}" opacity="${dim ? 0.16 : 1}" style="cursor:pointer">`);
+    // a hit area behind the header, so taps between pins still select it
+    const xs = it.pins.map(p => X(gx(p.hole[0]))), ys = it.pins.map(p => Y(gy(p.hole[1])));
+    const x0 = Math.min(...xs) - PS / 2 - 4, y0 = Math.min(...ys) - PS / 2 - 22, x1 = Math.max(...xs) + PS / 2 + 4, y1 = Math.max(...ys) + PS / 2 + 16;
+    if (conn && LV && LV.open && LV.uses.includes(cid) && it.id === cid)   // the running firmware uses this connector
+      o.push(`<rect x="${x0 - 4}" y="${y0 - 4}" width="${x1 - x0 + 8}" height="${y1 - y0 + 8}" rx="8" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-dasharray="3 3"/>`);
+    o.push(`<rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}" rx="6" fill="${isSel ? '#ffffff22' : 'transparent'}" stroke="${isSel ? '#fff' : st === 'conflict' ? '#ff5a5a' : 'none'}" stroke-width="${isSel ? 2 : 2.5}"${st === 'conflict' && !isSel ? ' stroke-dasharray="6 4"' : ''}/>`);
+    if (it.kind === 'resistor' && it.pins.length === 2) {
+      const [a, b] = it.pins;
+      o.push(`<line x1="${X(gx(a.hole[0]))}" y1="${Y(gy(a.hole[1]))}" x2="${X(gx(b.hole[0]))}" y2="${Y(gy(b.hole[1]))}" stroke="#d9d2bf" stroke-width="3"/>` +
+        `<rect x="${X(gx(a.hole[0] + 1)) - 6}" y="${Y(gy(a.hole[1])) - 9}" width="${X(gx(a.hole[0] + 3)) - X(gx(a.hole[0] + 1)) + 12}" height="18" rx="7" fill="#d8c08f" stroke="#8a7650"/>` +
+        `<text x="${X(gx(a.hole[0] + 2))}" y="${Y(gy(a.hole[1])) + 4}" font-size="10" text-anchor="middle" fill="#3a2f1a">4.7k</text>`);
+    }
+    // label: id (+ module)
+    const lx = it.vertical ? (it.pins[0].hole[0] === 0 ? Math.min(...xs) - PS / 2 : Math.max(...xs) + PS / 2) : Math.min(...xs) - PS / 2;
+    const anchor = it.vertical && it.pins[0].hole[0] !== 0 ? 'end' : 'start';
+    const mod = conn && S.modules[cid] && it.id === cid ? ` · ${S.modules[cid]}` : '';
+    o.push(`<text x="${lx}" y="${Math.min(...ys) - PS / 2 - 6}" font-size="12.5" font-weight="700" text-anchor="${anchor}" fill="${st === 'conflict' ? '#ff8a8a' : '#fff'}">${esc(it.id + mod)}</text>`);
+    it.pins.forEach((p, k) => {
+      const cx = X(gx(p.hole[0])), cy = Y(gy(p.hole[1]));
+      let f = POWER_C[p.net] || (it.kind === 'harness' ? '#5f5a50' : it.kind === 'jumper' || it.kind === 'resistor' ? '#7a7466' : gcol);
+      let live = on;
+      if (it.kind === 'harness') live = typeof p.net !== 'number' || D.owners.has(p.net);
+      if (!live) f = '#33443a';
+      const tipTxt = `${it.id}.${k + 1} · ${p.sig}${typeof p.net === 'number' ? ' · GPIO' + p.net : ' · ' + p.net}${p.from ? ' ← ' + p.from : ''}`;
+      o.push(`<g data-tip="${esc(tipTxt)}"><rect x="${cx - PS / 2}" y="${cy - PS / 2}" width="${PS}" height="${PS}" rx="${k === 0 ? 1 : 6}" fill="${f}" stroke="${live ? (k === 0 ? '#fff' : 'none') : gcol}" stroke-width="${k === 0 ? 2 : 1.5}"/>` +
+        `<text x="${cx}" y="${cy + 3.5}" font-size="${String(p.sig).length > 3 ? 9 : 10}" font-weight="700" text-anchor="middle" fill="${live ? '#fff' : '#9fb3a6'}">${esc(p.sig)}</text></g>`);
+      const lv = typeof p.net === 'number' ? liveVal(p.net) : null;
+      if (lv) o.push(liveDot(cx + PS / 2 - 3, cy - PS / 2 + 3, lv));
+      if (typeof p.net === 'number' && it.kind === 'conn') {
+        const clash = on && D.conflictGpio.has(p.net);
+        o.push(`<text x="${cx}" y="${cy + PS / 2 + 11}" font-size="10" text-anchor="middle" fill="${clash ? '#ff8a8a' : '#e9f2ea'}" font-weight="${clash ? 700 : 400}">${p.net}</text>`);
+      }
+    });
+    o.push(`</g>`);
+  }
+  return { W, H, body: o.join('') };
+}
+
+// ====================================================================== dev board view
+const DEVCLASS_C = { psram: '#5a5a5a', usb: '#8e4ec6', uart0: '#0090ff', strap: '#e2a336', rgb: '#d6409f' };
+function devOverlay() {
+  const o = [];
+  const byG = Object.fromEntries(B.devboard.gpio.map(r => [r.gpio, r]));
+  for (const p of B.devboard.pins) {
+    if (p.gpio === null) continue;
+    const r = byG[p.gpio], x = p.x * 10 + 40, y = p.y * 10 + 110;
+    const own = D.owners.get(p.gpio);
+    let col, w = 4, dash = '';
+    if (D.conflictGpio.has(p.gpio)) { col = '#ff2d2d'; w = 6; }
+    else if (own) col = '#1fd17a';
+    else if (r && r.class !== 'free' && r.class !== 'jtag') { col = DEVCLASS_C[r.class] || '#888'; dash = ' stroke-dasharray="3 3"'; w = 2.5; }
+    else col = '#9aa3b2';
+    const isSel = sel && sel.type === 'gpio' && sel.id === p.gpio;
+    const tip = `GPIO${p.gpio} · ${p.id}${own ? ' · ' + own.join(', ') : r && r.class !== 'free' ? ' · ' + r.class : ' · szabad / free'}`;
+    const lv = liveVal(p.gpio), lm = LV && LV.open && LV.pins[p.gpio];
+    o.push(`<g class="gp" data-gpio="${p.gpio}" data-tip="${esc(tip + (lm ? ' · fw: ' + lm + (lv ? ' = ' + lv.v : '') : ''))}" style="cursor:pointer"><circle cx="${x}" cy="${y}" r="${isSel ? 19 : 15}" fill="${own ? col + '44' : 'transparent'}" stroke="${isSel ? '#ffffff' : col}" stroke-width="${isSel ? 4 : w}"${dash}/>` +
+      (lm ? `<circle cx="${x}" cy="${y}" r="20" fill="none" stroke="#22d3ee" stroke-width="2" stroke-dasharray="3 3"/>` : '') + (lv ? liveDot(x + 11, y - 11, lv, 1.4) : '') + `</g>`);
+  }
+  return o.join('');
+}
+
+// ====================================================================== render the view
+function renderView() {
+  const box = $('#viewBox');
+  let W, H, inner;
+  if (view === 'panel') { const p = panelSvg(); W = p.W; H = p.H; inner = p.body; }
+  else {
+    const m = B.devSvg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+    W = +m[1]; H = +m[2];
+    // prefix the drawing's own ids (it has a #legend too) so they never clash with the page's
+    const body = B.devSvg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '').replace(/ id="/g, ' id="dv-');
+    inner = `<g>${body}</g><g id="ovl">${devOverlay()}</g>`;
+  }
+  const v = pz[view] && pz[view].W === W ? pz[view] : (pz[view] = { x: 0, y: 0, w: W, h: H, W, H });
+  const old = box.querySelector('svg'); if (old) old.remove();
+  box.insertAdjacentHTML('afterbegin', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${v.x} ${v.y} ${v.w} ${v.h}" preserveAspectRatio="xMidYMid meet" font-family="Segoe UI, Arial, sans-serif">${inner}</svg>`);
+  renderLegend();
+}
+
+function renderLegend() {
+  const L = view === 'panel'
+    ? [['#1fd17a', 'aktív · active'], ['#33443a', 'kikapcsolva · off'], ['#ff5a5a', 'ütközés · conflict'], ['#ffffff', 'kijelölve · selected']]
+    : [['#1fd17a', 'használt · used'], ['#9aa3b2', 'szabad · free'], ['#ff2d2d', 'ütközés · conflict'], ['#e2a336', 'boot (strap)'], ['#5a5a5a', 'PSRAM'], ['#8e4ec6', 'USB'], ['#0090ff', 'UART0']];
+  $('#legend').innerHTML = L.map(([c, t]) => `<span><i style="background:${c}"></i>${esc(t)}</span>`).join('');
+}
+
+// pan + zoom (viewBox)
+function zoom(f, cx, cy) {
+  const v = pz[view]; if (!v) return;
+  const nw = Math.min(v.W * 1.2, Math.max(v.W / 12, v.w * f)), nh = nw * v.h / v.w;
+  cx = cx ?? v.x + v.w / 2; cy = cy ?? v.y + v.h / 2;
+  v.x = cx - (cx - v.x) * nw / v.w; v.y = cy - (cy - v.y) * nh / v.h; v.w = nw; v.h = nh;
+  applyVB();
+}
+function applyVB() { const v = pz[view], s = $('#viewBox svg'); if (s) s.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`); }
+function toSvg(e) {
+  const s = $('#viewBox svg'), r = s.getBoundingClientRect(), v = pz[view];
+  const k = Math.max(v.w / r.width, v.h / r.height);   // meet scaling
+  const ox = (r.width - v.w / k) / 2, oy = (r.height - v.h / k) / 2;
+  return [v.x + (e.clientX - r.left - ox) * k, v.y + (e.clientY - r.top - oy) * k, k];
+}
+(function bindPanZoom() {
+  const box = $('#viewBox');
+  let drag = null, moved = false;
+  box.addEventListener('wheel', e => { e.preventDefault(); const [x, y] = toSvg(e); zoom(e.deltaY > 0 ? 1.15 : 1 / 1.15, x, y); }, { passive: false });
+  const pts = new Map();
+  box.addEventListener('pointerdown', e => {
+    pts.set(e.pointerId, e);
+    if (pts.size === 1) { const [, , k] = toSvg(e); drag = { sx: e.clientX, sy: e.clientY, x: pz[view].x, y: pz[view].y, k }; moved = false; }
+    box.setPointerCapture(e.pointerId);
+  });
+  box.addEventListener('pointermove', e => {
+    if (pts.size === 2 && pts.has(e.pointerId)) {   // pinch
+      const [a, b] = [...pts.values()], d0 = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      pts.set(e.pointerId, e);
+      const [c, d] = [...pts.values()], d1 = Math.hypot(c.clientX - d.clientX, c.clientY - d.clientY);
+      if (d0 > 0 && d1 > 0) zoom(d0 / d1); moved = true; return;
+    }
+    if (drag) {
+      const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+      if (Math.abs(dx) + Math.abs(dy) > 4) { moved = true; $('#viewBox svg')?.classList.add('dragging'); }
+      if (moved) { pz[view].x = drag.x - dx * drag.k; pz[view].y = drag.y - dy * drag.k; applyVB(); }
+    } else showTip(e);
+  });
+  const end = e => {
+    pts.delete(e.pointerId);
+    if (drag && !moved && pts.size === 0) onTap(e);
+    if (pts.size === 0) drag = null;
+    $('#viewBox svg')?.classList.remove('dragging');
+  };
+  box.addEventListener('pointerup', end);
+  box.addEventListener('pointercancel', end);
+  box.addEventListener('pointerleave', () => { $('#tip').style.display = 'none'; });
+})();
+function showTip(e) {
+  const t = e.target.closest && e.target.closest('[data-tip]'), tip = $('#tip');
+  if (!t) { tip.style.display = 'none'; return; }
+  const r = $('#viewBox').getBoundingClientRect();
+  tip.textContent = t.dataset.tip; tip.style.display = 'block';
+  tip.style.left = Math.min(e.clientX - r.left + 12, r.width - tip.offsetWidth - 6) + 'px';
+  tip.style.top = (e.clientY - r.top + 14) + 'px';
+}
+function onTap(e) {
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const it = el && el.closest('.item'), gp = el && el.closest('.gp');
+  if (it && CBY[it.dataset.id]) select({ type: 'conn', id: it.dataset.id });
+  else if (gp) select({ type: 'gpio', id: +gp.dataset.gpio });
+  else if (it) select({ type: 'item', id: it.dataset.id });
+  else select(null);
+}
+
+// ====================================================================== selection + info card
+function select(s) { sel = s; renderView(); renderInfo(); if (tab === 'conns' && s && s.type === 'conn') { renderPane(); const r = document.querySelector(`.crow[data-id="${s.id}"]`); r && r.scrollIntoView({ block: 'nearest' }); } }
+
+const harnessOf = g => {
+  for (const it of B.panel.items) if (it.kind === 'harness') { const k = it.pins.findIndex(p => p.net === g); if (k >= 0) return { pin: `${it.id}.${k + 1}`, from: it.pins[k].from }; }
+  return null;
+};
+function renderInfo() {
+  const box = $('#info');
+  if (!sel) { box.innerHTML = ''; return; }
+  if (sel.type === 'conn') {
+    const c = CBY[sel.id], st = stateOf(c.id), it = B.panel.items.find(i => i.id === c.id), m = MBY[S.modules[c.id]];
+    const clash = D.clashes.filter(x => x.conns.includes(c.id));
+    box.innerHTML = `<h3>${esc(c.id)} <span class="tag ${st === 'conflict' ? 'bad' : st === 'active' ? 'ok' : ''}">${{ conflict: 'ütközés · conflict', active: 'aktív · active', free: 'szabad · free', blocked: 'foglalt vonal · line taken' }[st]}</span></h3>
+      <div class="muted">${esc(c.title)}${c.via ? ' · ' + esc(c.via) : ''}${c.note ? ' · ' + esc(c.note) : ''}</div>
+      <div class="row"><label class="sw"><input type="checkbox" id="infoOn" aria-label="Bekapcsolva / Active" ${S.active[c.id] ? 'checked' : ''}><span></span></label> ${bi('Bekapcsolva', 'Active in this setup')}</div>
+      <table><tr><th>#</th><th>Jel<span class="en">Signal</span></th><th>GPIO / háló<span class="en">net</span></th><th>Hám<span class="en">Harness</span></th></tr>
+      ${c.pins.map(([s, n], k) => { const h = typeof n === 'number' ? harnessOf(n) : null; return `<tr><td>${k + 1}</td><td>${esc(s)}</td><td class="${typeof n === 'number' && D.conflictGpio.has(n) && S.active[c.id] ? 'bad' : ''}">${typeof n === 'number' ? 'GPIO' + n + (SHARED.has(n) ? ' · busz' : '') : esc(n)}</td><td>${h ? esc(h.pin) + ' ← <code>' + esc(h.from) + '</code>' : '—'}</td></tr>`; }).join('')}</table>
+      ${it ? `<div class="muted" style="margin-top:6px">Panel: ${esc(it.at)} · ${it.pins.length} tüske / pins</div>` : ''}
+      ${clash.length ? `<div class="bad" style="margin-top:6px">${clash.map(x => `GPIO${x.gpio}: ${x.conns.join(', ')}`).join('<br>')}</div>` : ''}
+      <div class="muted" style="margin-top:6px">Nem használható együtt / can't be used with: ${esc((c.conflictsWith || []).join(', ') || '—')}</div>
+      ${m ? `<div style="margin-top:8px"><b>${esc(m.id)}</b> ${esc(m.name)} <span class="muted">(${m.qty} db)</span>${D.misfit.has(c.id) ? ' <span class="tag warn">illesztés? · fit?</span>' : ''}
+        <div class="muted">${esc(m.interface || '')}</div><div>${esc(m.pins || '')}</div><div class="muted">${esc(m.hook || '')}</div>${m.caution ? `<div class="warn">${esc(m.caution)}</div>` : ''}</div>` : ''}`;
+    $('#infoOn').onchange = e => toggle(c.id, e.target.checked);
+  } else if (sel.type === 'gpio') {
+    const r = B.devboard.gpio.find(x => x.gpio === sel.id), own = D.owners.get(sel.id) || [], h = harnessOf(sel.id);
+    const conns = CONN.filter(c => c.pins.some(([, n]) => n === sel.id)).map(c => c.id);
+    box.innerHTML = `<h3>GPIO${sel.id} <span class="tag">${esc(r.class)}</span>${D.conflictGpio.has(sel.id) ? ' <span class="tag bad">ütközés · conflict</span>' : ''}</h3>
+      <div class="muted">${esc(r.classText)}</div>
+      <div>${esc(r.role)}${r.adc ? ' · ' + esc(r.adc) : ''}${r.touch ? ' · ' + esc(r.touch) : ''}</div>
+      <div class="muted">${esc([...r.devkit, ...r.inner, ...r.breakout].join(' · '))}${h ? ' → ' + esc(h.pin) : ''}</div>
+      <div style="margin-top:6px">${bi('Aktív most', 'Active now')}: <b>${esc(own.join(', ') || '—')}</b></div>
+      <div class="muted">${bi('Csatlakozók ezen a vonalon', 'Connectors on this line')}: ${esc(conns.join(', ') || '— (nincs bekötve · not wired)')}</div>`;
+  } else {
+    const it = B.panel.items.find(i => i.id === sel.id);
+    box.innerHTML = it ? `<h3>${esc(it.id)}</h3><div class="muted">${esc(it.title)} · ${esc(it.at)}</div>` +
+      (it.kind === 'harness' ? `<table><tr><th>#</th><th>Jel</th><th>${bi('Honnan', 'From')}</th></tr>${it.pins.map((p, k) => `<tr><td>${k + 1}</td><td>${esc(p.sig)}</td><td><code>${esc(p.from)}</code></td></tr>`).join('')}</table>` : '') : '';
+  }
+}
+
+// ====================================================================== side panes
+function renderPane() {
+  const pane = $('#pane');
+  if (tab === 'conns') {
+    // modules whose interface fits this connector type first, the rest below
+    const opt = (m, sel) => `<option value="${esc(m.id)}"${m.id === sel ? ' selected' : ''}>${esc(m.id)} · ${esc(m.name)}</option>`;
+    const modOpts = (sel, group) => {
+      const fits = m => FIT[group] && FIT[group].test(`${m.interface || ''} ${m.hook || ''}`);
+      return `<option value="">— modul · module —</option>` +
+        `<optgroup label="Illik ide · Fits here">${MODS.filter(fits).map(m => opt(m, sel)).join('')}</optgroup>` +
+        `<optgroup label="Többi · Others">${MODS.filter(m => !fits(m)).map(m => opt(m, sel)).join('')}</optgroup>`;
+    };
+    let h = `<div class="row muted">${D.clashes.length ? `<span class="tag bad">${D.clashes.length} ütközés · conflicts</span>` : '<span class="tag ok">nincs ütközés · no conflicts</span>'}
+      <span>${Object.keys(S.active).length} aktív · active</span><span class="spacer"></span>
+      <button id="allOff">Mind ki<span class="en">All off</span></button></div>`;
+    for (const [g, [hu, en, col]] of Object.entries(GROUPS)) {
+      const list = CONN.filter(c => c.group === g);
+      if (!list.length) continue;
+      h += `<div class="grp"><i style="background:${col}"></i><span>${esc(hu)}<span class="en">${esc(en)}</span></span></div>`;
+      for (const c of list) {
+        const st = stateOf(c.id);
+        h += `<div class="crow ${st}${sel && sel.id === c.id ? ' sel' : ''}" data-id="${c.id}">
+          <label class="sw" onclick="event.stopPropagation()"><input type="checkbox" data-t="${c.id}" aria-label="${c.id} be / on" ${S.active[c.id] ? 'checked' : ''}><span></span></label>
+          <span class="id">${esc(c.id)}</span>
+          <span class="pins">${c.pins.map(([s, n]) => typeof n === 'number' ? `${esc(s)}<b>${n}</b>` : esc(s)).join(' ')}
+            ${st === 'conflict' ? '<span class="tag bad">ütközés</span>' : st === 'blocked' ? '<span class="tag">foglalt · taken</span>' : ''}${D.misfit.has(c.id) ? ' <span class="tag warn">illesztés?</span>' : ''}</span>
+          ${S.active[c.id] ? `<div class="mod" onclick="event.stopPropagation()"><select data-m="${c.id}" aria-label="${c.id} modul / module">${modOpts(S.modules[c.id], c.group)}</select></div>` : ''}
+        </div>`;
+      }
+    }
+    pane.innerHTML = h;
+    pane.querySelectorAll('input[data-t]').forEach(i => i.onchange = () => toggle(i.dataset.t, i.checked));
+    pane.querySelectorAll('select[data-m]').forEach(s => s.onchange = () => { if (s.value) S.modules[s.dataset.m] = s.value; else delete S.modules[s.dataset.m]; changed(); });
+    pane.querySelectorAll('.crow').forEach(r => r.onclick = () => select({ type: 'conn', id: r.dataset.id }));
+    $('#allOff').onclick = () => { S.active = {}; changed(); };
+  } else if (tab === 'gpio') {
+    const rows = B.devboard.gpio.map(r => {
+      const own = D.owners.get(r.gpio), wired = CONN.filter(c => c.pins.some(([, n]) => n === r.gpio)).length;
+      const st = D.conflictGpio.has(r.gpio) ? '<span class="bad">ütközés · conflict</span>' : own ? `<span class="ok">${esc(own.join(', '))}</span>`
+        : !wired ? `<span class="muted">nincs kivezetve · not on the panel</span>` : '<span class="muted">szabad · free</span>';
+      return `<tr data-g="${r.gpio}" style="cursor:pointer"><td><b>${r.gpio}</b></td><td>${esc(r.class)}</td><td>${esc(r.role)}</td><td>${st}</td></tr>`;
+    }).join('');
+    pane.innerHTML = `<table><tr><th>GPIO</th><th>${bi('Osztály', 'Class')}</th><th>${bi('Alapszerep', 'Default role')}</th><th>${bi('Állapot', 'State')}</th></tr>${rows}</table>`;
+    pane.querySelectorAll('tr[data-g]').forEach(r => r.onclick = () => { if (view !== 'dev') setView('dev'); select({ type: 'gpio', id: +r.dataset.g }); });
+  } else if (tab === 'setups') renderSetups();
+  else if (tab === 'live') renderLive();
+  else if (tab === 'console') renderConsole();
+  else if (tab === 'header') {
+    const txt = pinHeader();
+    pane.innerHTML = `<div class="row"><button id="hCopy">Másolás<span class="en">Copy</span></button><button id="hSave">Letöltés<span class="en">Download</span></button>
+      <span class="muted">${bi('A bekapcsolt csatlakozókból', 'From the active connectors')}</span></div><pre id="hTxt">${esc(txt)}</pre>`;
+    $('#hCopy').onclick = () => navigator.clipboard.writeText(txt).then(() => msg('Vágólapra másolva · copied', 'ok'));
+    $('#hSave').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' })); a.download = 'board_pins.h'; a.click(); };
+  }
+}
+
+function toggle(id, on) {
+  if (on) S.active[id] = true; else { delete S.active[id]; delete S.modules[id]; }
+  changed();
+}
+function changed() { dirty = true; compute(); renderBadge(); renderView(); renderInfo(); renderPane(); }
+
+// ---------------------------------------------------------------- setups
+let SETUPS = [];
+async function api(url, body) {
+  const r = await fetch(url, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {});
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.status);
+  return j;
+}
+function msg(t, cls) { const m = $('#msg'); if (m) { m.textContent = t; m.className = cls || ''; } }
+function renderSetups() {
+  const ex = B.connectors.scenarios || [];
+  $('#pane').innerHTML = `
+    <div class="row"><input type="text" id="sName" placeholder="Név · name" value="${esc(S.name)}" style="flex:1"></div>
+    <textarea id="sNotes" rows="3" style="width:100%" placeholder="Megjegyzés · notes">${esc(S.notes)}</textarea>
+    <div class="row"><button class="primary" id="sSave">Mentés<span class="en">Save</span></button><button id="sNew">Új, üres<span class="en">New, empty</span></button><span id="msg"></span></div>
+    <div class="grp">${bi('Mentett összeállítások', 'Saved setups')}</div>
+    ${SETUPS.length ? SETUPS.map(s => `<div class="list-item"><span class="name"><b>${esc(s.name)}</b> <span class="muted">· ${s.active} aktív · ${esc((s.savedAt || '').slice(0, 16).replace('T', ' '))}</span></span>
+      <button data-load="${esc(s.name)}">Megnyitás<span class="en">Open</span></button><button data-del="${esc(s.name)}">Törlés<span class="en">Delete</span></button></div>`).join('') : `<div class="muted">${bi('Még nincs mentett összeállítás.', 'No saved setups yet.')}</div>`}
+    <div class="grp">${bi('Példák (a topológiából)', 'Examples (from the topology)')}</div>
+    ${ex.map((s, i) => `<div class="list-item"><span class="name"><b>${esc(s.name)}</b> <span class="muted">· ${Object.keys(s.use).join(', ')}</span>${s.clash && s.clash.length ? ' <span class="tag bad">ütközik · clashes</span>' : ''}</span>
+      <button data-ex="${i}">Betöltés<span class="en">Load</span></button></div>`).join('')}`;
+  $('#sName').oninput = e => { S.name = e.target.value; dirty = true; renderBadge(); };
+  $('#sNotes').oninput = e => { S.notes = e.target.value; dirty = true; renderBadge(); };
+  $('#sSave').onclick = save;
+  $('#sNew').onclick = () => { if (dirty && !confirm('Nincs mentve. Elveted? · Not saved. Discard?')) return; S = { name: '', notes: '', active: {}, modules: {} }; dirty = false; changed(); dirty = false; renderBadge(); };
+  $('#pane').querySelectorAll('[data-load]').forEach(b => b.onclick = () => load(b.dataset.load));
+  $('#pane').querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if (!confirm(`Törlöd: ${b.dataset.del}? · Delete?`)) return;
+    try { SETUPS = (await api('/api/setup/delete', { name: b.dataset.del })).setups; renderSetups(); } catch (e) { msg(e.message, 'bad'); }
+  });
+  $('#pane').querySelectorAll('[data-ex]').forEach(b => b.onclick = () => {
+    if (dirty && !confirm('Nincs mentve. Elveted? · Not saved. Discard?')) return;
+    const s = ex[+b.dataset.ex];
+    S = { name: s.name, notes: Object.entries(s.use).map(([k, v]) => `${k}: ${v}`).join('\n'), active: Object.fromEntries(Object.keys(s.use).map(k => [k, true])), modules: {} };
+    changed();
+  });
+}
+async function save() {
+  if (!S.name.trim()) { tab = 'setups'; renderTabs(); renderPane(); msg('Adj nevet · give it a name', 'bad'); $('#sName')?.focus(); return; }
+  try {
+    const r = await api('/api/setup', S);
+    SETUPS = r.setups; dirty = false; store.set('bc.setup', r.setup.name);
+    renderBadge(); if (tab === 'setups') renderSetups();
+    msg('Elmentve · saved', 'ok'); flashStatus('Elmentve · saved');
+  } catch (e) { msg('Hiba · error: ' + e.message, 'bad'); flashStatus('Hiba · error: ' + e.message); }
+}
+async function load(name) {
+  if (dirty && !confirm('Nincs mentve. Elveted? · Not saved. Discard?')) return;
+  try {
+    const s = await api('/api/setup?name=' + encodeURIComponent(name));
+    S = { name: s.name, notes: s.notes || '', active: s.active || {}, modules: s.modules || {} };
+    // drop connectors that no longer exist in the topology
+    for (const k of Object.keys(S.active)) if (!CBY[k]) delete S.active[k];
+    store.set('bc.setup', s.name);
+    changed(); dirty = false; renderBadge();
+  } catch (e) { msg(e.message, 'bad'); }
+}
+
+// ---------------------------------------------------------------- board_pins.h
+function pinHeader() {
+  const d = new Date(), p2 = n => String(n).padStart(2, '0');
+  const now = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}`;   // local time
+  const act0 = CONN.filter(c => S.active[c.id]).map(c => c.id);
+  const L = [`// board_pins.h - generated by Board Console ${now}`, `// setup: "${S.name || '(unsaved)'}"`, `// board: ${B.devboard.name}`, '#pragma once',
+    `#define VRG_SETUP "${String(S.name || 'unsaved').replace(/"/g, "'")}"`, `#define VRG_USES "${act0.join(',')}"`, ''];
+  for (const x of D.clashes) L.push(`#error "conflict on GPIO${x.gpio}: ${x.conns.join(', ')}"`);
+  if (D.clashes.length) L.push('');
+  const act = CONN.filter(c => S.active[c.id]);
+  if (!act.length) { L.push('// no active connectors'); return L.join('\n'); }
+  const used = new Set(act.flatMap(c => c.pins.map(p => p[1]).filter(n => typeof n === 'number')));
+  const bus = [];
+  for (const [name, def] of Object.entries(B.devboard.buses)) for (const [sig, v] of Object.entries(def)) {
+    if (sig === 'note' || typeof v !== 'number' || !used.has(v)) continue;
+    bus.push(`#define ${name}_${sig}`.padEnd(30) + ` ${v}`);
+  }
+  if (bus.length) L.push('// ---- buses', ...bus, '');
+  for (const c of act) {
+    const m = MBY[S.modules[c.id]];
+    L.push(`// ---- ${c.id}: ${c.title}${m ? ` - module: ${m.id} (${m.name})` : ''}`);
+    const nm = c.id.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    for (const [s, n] of c.pins) if (typeof n === 'number') L.push(`#define PIN_${nm}_${String(s).replace(/[^A-Za-z0-9]/g, '_').toUpperCase()}`.padEnd(30) + ` ${n}`);
+    L.push('');
+  }
+  return L.join('\n');
+}
+
+// ====================================================================== shell
+function renderBadge() { const b = $('#setupBadge'); b.textContent = S.name || 'mentetlen összeállítás · unsaved setup'; b.classList.toggle('dirty', dirty); }
+function renderTabs() { document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === tab)); }
+function setView(v) { view = v; document.querySelectorAll('#viewSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); renderView(); }
+let statusBase = '';
+function flashStatus(t) { $('#status').textContent = t; setTimeout(() => { $('#status').innerHTML = statusBase; }, 2500); }
+
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = async () => {
+  tab = b.dataset.t; renderTabs();
+  if (tab === 'setups') { try { SETUPS = (await api('/api/setups')).setups; } catch (e) {} }
+  renderPane();
+});
+document.querySelectorAll('#viewSeg button').forEach(b => b.onclick = () => setView(b.dataset.v));
+$('#zIn').onclick = () => zoom(1 / 1.3);
+$('#zOut').onclick = () => zoom(1.3);
+$('#zFit').onclick = () => { const v = pz[view]; Object.assign(v, { x: 0, y: 0, w: v.W, h: v.H }); applyVB(); };
+$('#fType').onchange = $('#fShow').onchange = () => renderView();
+$('#saveBtn').onclick = save;
+window.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); save(); } if (e.key === 'Escape') select(null); });
+window.onbeforeunload = () => dirty ? 'Nincs mentve.' : undefined;
+
+// ====================================================================== phase 3a: live link
+let LV = null, liveSeq = 0, liveLog = [], liveTimer = null, liveVer = -1;
+const LIVE_STATE = { port: store.get('bc.livePort') || '', baud: store.get('bc.liveBaud') || '115200', follow: true };
+// a GPIO's live value (only while the link is open and the firmware set the pin up)
+function liveVal(g) {
+  if (!LV || !LV.open) return null;
+  const v = LV.values[g];
+  return v ? v : null;
+}
+function liveDot(x, y, lv, k) {
+  k = k || 1;
+  if (lv.kind === 'A' || lv.kind === 'D') {   // a bar: ADC 0..4095, duty 0..255 (8-bit default)
+    const f = Math.max(0, Math.min(1, lv.v / (lv.kind === 'A' ? 4095 : 255)));
+    return `<rect x="${x - 9 * k}" y="${y - 3 * k}" width="${18 * k}" height="${6 * k}" fill="#0b1220" stroke="#22d3ee" stroke-width="1"/><rect x="${x - 9 * k}" y="${y - 3 * k}" width="${18 * k * f}" height="${6 * k}" fill="#22d3ee"/>`;
+  }
+  return `<circle cx="${x}" cy="${y}" r="${4.5 * k}" fill="${lv.v ? '#4ade80' : '#0b1220'}" stroke="${lv.v ? '#bbf7d0' : '#22d3ee'}" stroke-width="1.5"/>`;
+}
+// what the firmware uses vs the setup and the panel
+function liveWarnings() {
+  if (!LV || !LV.open || !LV.hello) return [];
+  const W = [];
+  const unknown = LV.uses.filter(u => !CBY[u]);
+  if (unknown.length) W.push(['bad', `Ismeretlen csatlakozó a firmware-ben · unknown connector: ${unknown.join(', ')}`]);
+  const off = LV.uses.filter(u => CBY[u] && !S.active[u]);
+  if (off.length) W.push(['warn', `A firmware használja, a kiosztásban nincs bekapcsolva · used by the firmware, off in the setup: ${off.join(', ')}`]);
+  const usesG = new Set(LV.uses.filter(u => CBY[u]).flatMap(u => CBY[u].pins.map(p => p[1]).filter(n => typeof n === 'number')));
+  const onPanel = new Set(CONN.flatMap(c => c.pins.map(p => p[1]).filter(n => typeof n === 'number')));
+  for (const g of Object.keys(LV.pins).map(Number)) {
+    if ([43, 44].includes(g)) continue;   // UART0 = the agent's own link
+    if (!onPanel.has(g)) W.push(['warn', `GPIO${g} (${LV.pins[g]}) nincs kivezetve a panelre · is not on the panel`]);
+    else if (!usesG.has(g)) W.push(['warn', `GPIO${g} (${LV.pins[g]}): egyik használt csatlakozón sincs · on none of the connectors in USES (${CONN.filter(c => c.pins.some(p => p[1] === g)).map(c => c.id).join(', ')})`]);
+  }
+  // two connectors in USES on one exclusive line
+  const seen = {};
+  for (const u of LV.uses) if (CBY[u]) for (const [, n] of CBY[u].pins) if (typeof n === 'number' && !SHARED.has(n)) (seen[n] = seen[n] || []).push(u);
+  for (const [g, l] of Object.entries(seen)) if (l.length > 1) W.push(['bad', `Ütközés a firmware-ben · clash in the firmware: GPIO${g} on ${l.join(', ')}`]);
+  return W;
+}
+function liveFw() {
+  if (!LV || !LV.hello) return null;
+  const lib = typeof FWD !== 'undefined' && FWD ? FWD.library.find(f => f.id === LV.hello.fw || f.versions.some(v => v.name === LV.hello.fw)) : null;
+  const ver = lib ? lib.versions.find(v => v.version === LV.hello.ver) : null;
+  return { lib, ver };
+}
+function renderLiveChip() {
+  const c = $('#liveChip');
+  if (!LV || !LV.want) { c.className = ''; c.innerHTML = bi('Élő: ki', 'Live: off'); return; }
+  if (!LV.open) { c.className = 'err'; c.innerHTML = bi(`Élő: ${LV.want.port} …`, LV.error ? LV.error.slice(0, 40) : 'connecting'); return; }
+  const h = LV.hello, stale = Date.now() - (LV.lastLineAt || 0) > 5000 + (LV.now - Date.now());
+  c.className = 'on';
+  c.innerHTML = bi(h ? `Élő: ${h.fw} ${h.ver}` : `Élő: ${LV.want.port}`, h ? `${LV.want.port} · ${h.chip}` : 'no agent yet');
+}
+async function liveSync() {
+  try {
+    const r = await (await fetch('/api/live?since=' + liveSeq)).json();
+    for (const l of r.log) liveLog.push(l);
+    if (liveLog.length > 1500) liveLog.splice(0, liveLog.length - 1500);
+    if (r.log.length) liveSeq = r.log[r.log.length - 1].seq;
+    LV = r;
+    renderLiveChip();
+    if (r.ver !== liveVer) { liveVer = r.ver; if (r.open) renderView(); if (tab === 'live') renderLive(); }
+    if (tab === 'console' && r.log.length) appendConsole(r.log);
+  } catch (e) {}
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(liveSync, LV && LV.want ? 150 : 2000);
+}
+async function liveOpen() {
+  try { LV = await api('/api/live/open', { port: LIVE_STATE.port, baud: LIVE_STATE.baud }); store.set('bc.livePort', LIVE_STATE.port); store.set('bc.liveBaud', LIVE_STATE.baud); }
+  catch (e) { flashStatus('Hiba · error: ' + e.message); }
+  liveSync();
+}
+async function liveStop() { try { LV = await api('/api/live/stop', {}); } catch (e) {} renderLiveChip(); renderView(); if (tab === 'live') renderLive(); }
+
+function renderLive() {
+  const pane = $('#pane');
+  const ports = (typeof PORTS !== 'undefined' ? PORTS : []);
+  const fw = liveFw(), h = LV && LV.hello;
+  const W = liveWarnings();
+  const known = ports.some(p => p.port === LIVE_STATE.port);
+  pane.innerHTML = `
+    <div class="row"><select id="lvPort" style="flex:1" aria-label="port">${ports.map(p => `<option value="${p.port}"${p.port === LIVE_STATE.port ? ' selected' : ''}>${p.port} · ${esc(p.name)}</option>`).join('')}
+        <option value="__custom"${!known ? ' selected' : ''}>egyéb · other (tcp:…)</option></select>
+      <select id="lvBaud" aria-label="baud">${[115200, 921600, 460800, 57600, 9600].map(b => `<option${String(b) === LIVE_STATE.baud ? ' selected' : ''}>${b}</option>`).join('')}</select>
+      <button id="lvPorts" title="Portok frissítése / Refresh ports">↻</button></div>
+    ${!known ? `<div class="row"><input type="text" id="lvCustom" value="${esc(LIVE_STATE.port)}" placeholder="COM5 vagy · or tcp:127.0.0.1:7801" style="flex:1"></div>` : ''}
+    <div class="row">${LV && LV.want ? '<button id="lvStop">Leválasztás<span class="en">Disconnect</span></button>' : '<button class="primary" id="lvGo">Csatlakozás<span class="en">Connect</span></button>'}
+      <button id="lvAsk"${LV && LV.open ? '' : ' disabled'} title="? küldése / send ?">Újraolvasás<span class="en">Ask again</span></button>
+      <span class="muted">${LV && LV.open ? 'kapcsolódva · connected' : LV && LV.want ? esc(LV.error || 'kapcsolódás… · connecting…') : ''}</span></div>
+    <div class="muted" style="font-size:12px">A firmware-írás idejére a Console magától elengedi a portot, utána visszakapcsolódik · during a flash the Console releases the port and reconnects afterwards.</div>
+    ${h ? `<div class="grp">${bi('Futó firmware', 'Running firmware')}</div>
+      <div class="kv"><span>Firmware</span><span><b>${esc(h.fw)} ${esc(h.ver)}</b> ${fw && fw.ver ? '<span class="tag ok">könyvtárban · in the library</span>' : fw && fw.lib ? '<span class="tag warn">más verzió a könyvtárban · other version in the library</span>' : '<span class="tag">nincs a könyvtárban · not in the library</span>'}</span>
+        <span>Chip</span><span>${esc(h.chip)} · <code>${esc(h.mac)}</code></span>
+        <span>${bi('Összeállítás', 'Setup')}</span><span>${esc(h.setup || '—')}${h.setup && S.name && h.setup !== S.name ? ' <span class="tag warn">a nyitott: · open: ' + esc(S.name) + '</span>' : ''}</span>
+        <span>${bi('Csatlakozók', 'Connectors')}</span><span>${LV.uses.length ? LV.uses.map(u => `<span class="tag">${esc(u)}</span>`).join(' ') : '—'}</span></div>
+      <div class="row"><button id="lvToSetup"${LV.uses.length ? '' : ' disabled'}>Kiosztás a firmware-ből<span class="en">Setup from the firmware</span></button></div>
+      ${W.map(([k, t]) => `<div class="warnbox ${k}">${esc(t)}</div>`).join('') || '<div class="ok" style="font-size:13px">A firmware és a kiosztás egyezik · firmware and setup agree.</div>'}
+      <div class="grp">${bi('Lábak élőben', 'Pins live')}</div>
+      <table><tr><th>GPIO</th><th>${bi('Mód', 'Mode')}</th><th>${bi('Érték', 'Value')}</th><th>${bi('Csatlakozók', 'Connectors')}</th></tr>
+      ${Object.keys(LV.pins).map(Number).sort((a, b) => a - b).map(g => { const v = LV.values[g]; return `<tr><td><b>${g}</b></td><td>${esc(LV.pins[g])}</td><td>${v ? (v.kind === 'P' ? (v.v ? '<span class="ok">1 ●</span>' : '0 ○') : v.v) : '—'}</td><td class="muted">${esc(CONN.filter(c => c.pins.some(p => p[1] === g)).map(c => c.id).join(', ') || '—')}</td></tr>`; }).join('')}</table>`
+    : LV && LV.open ? `<div class="warnbox">${bi('Kapcsolódva, de nem jött ügynök-üzenet (#HELLO). Fut a lapon VrgAgent-es firmware? Próbáld az Újraolvasást.', 'Connected, but no agent message (#HELLO) yet. Does the firmware include VrgAgent? Try Ask again.')}</div>` : ''}`;
+  const portVal = () => { const v = $('#lvPort').value; return v === '__custom' ? ($('#lvCustom') ? $('#lvCustom').value.trim() : '') : v; };
+  $('#lvPort').onchange = () => { LIVE_STATE.port = $('#lvPort').value === '__custom' ? '' : $('#lvPort').value; renderLive(); };
+  $('#lvBaud').onchange = e => { LIVE_STATE.baud = e.target.value; };
+  $('#lvPorts').onclick = async () => { await portsLoad(); renderLive(); };
+  if ($('#lvCustom')) $('#lvCustom').oninput = e => { LIVE_STATE.port = e.target.value.trim(); };
+  if ($('#lvGo')) $('#lvGo').onclick = () => { LIVE_STATE.port = portVal(); liveOpen(); };
+  if ($('#lvStop')) $('#lvStop').onclick = liveStop;
+  $('#lvAsk').onclick = () => api('/api/live/send', { line: '?' }).catch(e => flashStatus(e.message));
+  if ($('#lvToSetup')) $('#lvToSetup').onclick = () => {
+    if (dirty && !confirm('A kiosztás nincs mentve. Lecseréled? · The setup is not saved. Replace it?')) return;
+    S = { name: '', notes: `${LV.hello.fw} ${LV.hello.ver}`, active: Object.fromEntries(LV.uses.filter(u => CBY[u]).map(u => [u, true])), modules: {} };
+    changed();
+  };
+}
+function conLine(l) {
+  const t = new Date(l.t).toLocaleTimeString('hu-HU');
+  return `<span class="${l.dir}">${t} ${l.dir === 'out' ? '→ ' : ''}${esc(l.line)}</span>`;
+}
+function renderConsole() {
+  $('#pane').innerHTML = `<div class="row"><input type="text" id="conIn" placeholder="Sor küldése · send a line (Enter)" style="flex:1"${LV && LV.open ? '' : ' disabled'}>
+      <button id="conAsk"${LV && LV.open ? '' : ' disabled'}>?</button>
+      <label class="muted" style="font-size:12px"><input type="checkbox" id="conFollow"${LIVE_STATE.follow ? ' checked' : ''}> ${bi('követés', 'follow')}</label>
+      <button id="conClear">Törlés<span class="en">Clear</span></button></div>
+    <pre id="conLog">${liveLog.slice(-600).map(conLine).join('\n')}</pre>
+    ${LV && LV.want ? '' : `<div class="muted">${bi('Nincs kapcsolat: az Élő fülön csatlakozz.', 'Not connected: connect on the Live tab.')}</div>`}`;
+  const lg = $('#conLog'); lg.scrollTop = lg.scrollHeight;
+  $('#conIn').onkeydown = async e => { if (e.key !== 'Enter' || !e.target.value) return; try { await api('/api/live/send', { line: e.target.value }); e.target.value = ''; } catch (x) { flashStatus(x.message); } };
+  $('#conAsk').onclick = () => api('/api/live/send', { line: '?' }).catch(e => flashStatus(e.message));
+  $('#conFollow').onchange = e => { LIVE_STATE.follow = e.target.checked; };
+  $('#conClear').onclick = () => { liveLog = []; renderConsole(); };
+}
+function appendConsole(lines) {
+  const lg = $('#conLog'); if (!lg) return;
+  lg.insertAdjacentHTML('beforeend', (lg.innerHTML ? '\n' : '') + lines.map(conLine).join('\n'));
+  if (LIVE_STATE.follow) lg.scrollTop = lg.scrollHeight;
+}
+$('#liveChip').onclick = async () => { if (document.body.classList.contains('fw')) setMode('layout'); tab = 'live'; renderTabs(); if (!PORTS.length) await portsLoad(); renderPane(); };
+
+// ====================================================================== phase 2: firmware
+let FWD = null, PORTS = [], fwSel = null, editing = null, devInfo = null, jobTimer = null;
+const DEV_STATE = { port: store.get('bc.port') || '', baud: store.get('bc.baud') || '921600', erase: false, skip: false };
+const hexo = n => '0x' + Number(n).toString(16);
+const kb = n => n >= 1 << 20 ? (n / (1 << 20)).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB';
+const when = t => t ? new Date(t).toLocaleString('hu-HU', { dateStyle: 'short', timeStyle: 'short' }) : '';
+const SRC = { 'arduino-build': 'Arduino build', upload: 'feltöltve · uploaded', file: 'fájl · file', backup: 'mentés · backup' };
+
+async function fwLoad() { FWD = await api('/api/fw'); renderLib(); renderDev(); if (FWD.job && FWD.job.state === 'running') pollJob(); }
+async function portsLoad() { try { PORTS = (await api('/api/ports')).ports; } catch (e) { PORTS = []; } if (!DEV_STATE.port || !PORTS.some(p => p.port === DEV_STATE.port)) DEV_STATE.port = (PORTS.find(p => p.esp) || {}).port || ''; renderDev(); }
+
+function setMode(m) {
+  document.body.classList.toggle('fw', m === 'fw');
+  document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  store.set('bc.mode', m);
+  if (m === 'fw' && !FWD) { $('#libPane').innerHTML = $('#devPane').innerHTML = '<div class="muted" style="padding:12px">betöltés… · loading…</div>'; }
+  if (m === 'fw') { fwLoad().catch(e => flashStatus('Hiba · error: ' + e.message)); portsLoad(); }
+}
+document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+
+// ---- library
+function compat(m) {
+  const uses = m.uses || [], missing = uses.filter(u => !S.active[u]);
+  if (!uses.length) return '<span class="tag">nincs megadva útvonal · no paths set</span>';
+  return missing.length ? `<span class="tag warn" title="${esc(missing.join(', '))}">hiányzik a kiosztásból · not in the setup: ${esc(missing.join(', '))}</span>` : '<span class="tag ok">illik a kiosztáshoz · fits the setup</span>';
+}
+function renderLib() {
+  if (!FWD) return;
+  const b = FWD.builds, L = FWD.library;
+  let h = `<details class="add"${L.length ? '' : ' open'}><summary>+ Hozzáadás<span class="en">Add firmware</span></summary>
+    <div class="row"><input type="text" id="aName" placeholder="Név · name (üresen: a fájlból)" style="flex:2"><input type="text" id="aVer" placeholder="Verzió · version (üresen: dátum)" style="flex:1"></div>
+    <div class="grp">${bi('Arduino buildek ezen a gépen', 'Arduino builds on this PC')}</div>
+    ${b.length ? b.map((x, i) => `<div class="list-item"><span class="name"><b>${esc(x.sketch)}</b> <span class="tag">${esc(x.chip || '?')}</span> <span class="muted">· ${esc(when(x.built))}</span><br><code class="muted" style="font-size:11px">${esc(x.path)}</code></span><button data-build="${i}">Hozzáadás<span class="en">Add</span></button></div>`).join('') : '<div class="muted">—</div>'}
+    <div class="grp">${bi('Mappa vagy .bin útvonala', 'Folder or .bin path')}</div>
+    <div class="row"><input type="text" id="aPath" placeholder="H:\\...\\build\\sketch  vagy · or  ...\\firmware.bin" style="flex:1"><button id="aPathBtn">Hozzáadás<span class="en">Add</span></button></div>
+    <div class="grp">${bi('.bin feltöltése (pl. letöltött firmware)', 'Upload a .bin (e.g. a downloaded firmware)')}</div>
+    <div class="row"><input type="file" id="aFile" accept=".bin" style="flex:1;min-width:0"><input type="text" id="aOff" placeholder="cím · offset (auto)" style="width:120px"><button id="aFileBtn">Feltöltés<span class="en">Upload</span></button></div>
+    <div class="muted" style="font-size:12px">A cím magától: teljes kép 0x0, csak alkalmazás 0x10000 · offset is automatic: full image 0x0, app only 0x10000.</div>
+    ${FWD.backups.length ? `<div class="grp">${bi('Mentésből', 'From a backup')}</div>` + FWD.backups.map(x => `<div class="list-item"><span class="name">${esc(x.chip)} <code>${esc(x.mac)}</code> <span class="muted">· ${kb(x.size)} · ${esc(when(x.at))}</span></span><button data-bk="${esc(x.file)}">Könyvtárba<span class="en">To library</span></button></div>`).join('') : ''}
+    <div id="aMsg" class="muted"></div></details>`;
+  if (!L.length) h += `<div class="muted">${bi('Még üres a könyvtár.', 'The library is empty.')}</div>`;
+  for (const f of L) {
+    const vsel = (fwSel && fwSel.id === f.id ? fwSel.version : null) || f.versions[0].version;
+    const m = f.versions.find(v => v.version === vsel) || f.versions[0];
+    const isSel = fwSel && fwSel.id === f.id && fwSel.version === m.version;
+    h += `<div class="fwcard${isSel ? ' sel' : ''}" data-id="${esc(f.id)}">
+      <div class="top"><b>${esc(m.name)}</b><span class="tag">${esc(m.chipFamily)}</span>
+        <select data-ver="${esc(f.id)}" aria-label="verzió / version">${f.versions.map(v => `<option${v.version === m.version ? ' selected' : ''}>${esc(v.version)}</option>`).join('')}</select>
+        <span class="muted">${esc(SRC[m.source && m.source.kind] || '')} · ${esc(when(m.added))}</span></div>
+      ${m.description ? `<div style="margin:4px 0">${esc(m.description)}</div>` : ''}
+      <div class="parts">${m.parts.map(p => `${hexo(p.offset)}  ${esc(p.path)}  ${kb(p.size)}`).join('<br>')}</div>
+      <div class="row">${compat(m)}${(m.uses || []).map(u => `<span class="tag">${esc(u)}</span>`).join('')}</div>
+      ${editing === f.id + '/' + m.version ? `
+        <div class="row"><input type="text" id="eName" value="${esc(m.name)}" aria-label="név / name"></div>
+        <textarea id="eDesc" rows="2" placeholder="Leírás · description">${esc(m.description)}</textarea>
+        <textarea id="eNotes" rows="2" placeholder="Jegyzet · notes">${esc(m.notes)}</textarea>
+        <div class="row"><input type="text" id="eUses" value="${esc((m.uses || []).join(', '))}" placeholder="Használt csatlakozók · connectors used (Q0-A, ENC-2 …)" style="flex:1">
+          <button id="eFromSetup">A kiosztásból<span class="en">From the setup</span></button></div>
+        <div class="row"><select id="eChip">${['ESP32', 'ESP32-S2', 'ESP32-S3', 'ESP32-C3', 'ESP32-C2', 'ESP32-C6', 'ESP32-H2'].map(c => `<option${c === m.chipFamily ? ' selected' : ''}>${c}</option>`).join('')}</select>
+          <button class="primary" id="eSave">Mentés<span class="en">Save</span></button><button id="eCancel">Mégse<span class="en">Cancel</span></button></div>` : `
+        <div class="row">
+          <button class="primary" data-pick="${esc(f.id)}|${esc(m.version)}">${isSel ? 'Kiválasztva' : 'Kiválasztás írásra'}<span class="en">${isSel ? 'Selected' : 'Select to flash'}</span></button>
+          <button data-show="${esc(f.id)}|${esc(m.version)}"${(m.uses || []).length ? '' : ' disabled'}>Útvonalak a kiosztáson<span class="en">Show its paths</span></button>
+          <button data-edit="${esc(f.id)}|${esc(m.version)}">Szerkesztés<span class="en">Edit</span></button>
+          <button data-del="${esc(f.id)}|${esc(m.version)}">Törlés<span class="en">Delete</span></button>
+        </div>`}
+    </div>`;
+  }
+  const pane = $('#libPane'); pane.innerHTML = h;
+  const amsg = (t, c) => { const e = $('#aMsg'); e.textContent = t; e.className = c || 'muted'; };
+  const meta = () => ({ name: $('#aName').value.trim() || undefined, version: $('#aVer').value.trim() || undefined });
+  const added = r => { FWD.library = r.library; fwSel = { id: r.firmware.id, version: r.firmware.version }; renderLib(); renderDev(); flashStatus('Hozzáadva · added: ' + r.firmware.name + ' ' + r.firmware.version); };
+  pane.querySelectorAll('[data-build]').forEach(x => x.onclick = async () => { try { added(await api('/api/fw/import', Object.assign({ path: FWD.builds[+x.dataset.build].path }, meta()))); } catch (e) { amsg(e.message, 'bad'); } });
+  $('#aPathBtn').onclick = async () => { try { added(await api('/api/fw/import', Object.assign({ path: $('#aPath').value.trim() }, meta()))); } catch (e) { amsg(e.message, 'bad'); } };
+  $('#aFileBtn').onclick = async () => {
+    const f = $('#aFile').files[0]; if (!f) return amsg('Válassz fájlt · pick a file', 'bad');
+    const q = new URLSearchParams({ file: f.name, name: meta().name || f.name.replace(/\.bin$/i, ''), version: meta().version || '' });
+    const off = $('#aOff').value.trim(); if (off) q.set('offset', off.replace(/^0x/i, ''));
+    try {
+      const r = await fetch('/api/fw/upload?' + q, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Board-Console': '1' }, body: await f.arrayBuffer() });
+      const j = await r.json(); if (!r.ok) throw new Error(j.error); added(j);
+    } catch (e) { amsg(e.message, 'bad'); }
+  };
+  pane.querySelectorAll('[data-bk]').forEach(x => x.onclick = async () => { try { added(await api('/api/fw/from-backup', { file: x.dataset.bk })); } catch (e) { amsg(e.message, 'bad'); } });
+  pane.querySelectorAll('[data-ver]').forEach(x => x.onchange = () => { fwSel = { id: x.dataset.ver, version: x.value }; renderLib(); renderDev(); });
+  const pv = v => v.split('|');
+  pane.querySelectorAll('[data-pick]').forEach(x => x.onclick = () => { const [id, version] = pv(x.dataset.pick); fwSel = { id, version }; renderLib(); renderDev(); });
+  pane.querySelectorAll('[data-edit]').forEach(x => x.onclick = () => { editing = x.dataset.edit.replace('|', '/'); renderLib(); });
+  pane.querySelectorAll('[data-show]').forEach(x => x.onclick = () => {
+    const [id, version] = pv(x.dataset.show), m = findFw(id, version);
+    if (dirty && !confirm('A kiosztás nincs mentve. Lecseréled? · The setup is not saved. Replace it?')) return;
+    S = { name: '', notes: `${m.name} ${m.version}`, active: Object.fromEntries(m.uses.filter(u => CBY[u]).map(u => [u, true])), modules: {} };
+    changed(); setMode('layout');
+  });
+  pane.querySelectorAll('[data-del]').forEach(x => x.onclick = async () => {
+    const [id, version] = pv(x.dataset.del);
+    if (!confirm(`Törlöd a könyvtárból: ${id} ${version}? · Delete from the library?`)) return;
+    try { FWD.library = (await api('/api/fw/delete', { id, version })).library; if (fwSel && fwSel.id === id && fwSel.version === version) fwSel = null; renderLib(); renderDev(); } catch (e) { flashStatus(e.message); }
+  });
+  if (editing) {
+    const [id, version] = editing.split('/');
+    $('#eFromSetup').onclick = () => { $('#eUses').value = Object.keys(S.active).join(', '); };
+    $('#eCancel').onclick = () => { editing = null; renderLib(); };
+    $('#eSave').onclick = async () => {
+      try {
+        const r = await api('/api/fw/update', { id, version, name: $('#eName').value, description: $('#eDesc').value, notes: $('#eNotes').value,
+          uses: $('#eUses').value.split(/[\s,;]+/).map(x => x.trim().toUpperCase()).filter(Boolean), chipFamily: $('#eChip').value });
+        FWD.library = r.library; editing = null; renderLib(); renderDev();
+      } catch (e) { flashStatus(e.message); }
+    };
+  }
+}
+function findFw(id, version) { const f = FWD && FWD.library.find(x => x.id === id); return f && f.versions.find(v => v.version === version); }
+
+// ---- device + flash + job
+function renderDev() {
+  if (!FWD) return;
+  const job = FWD.job, running = job && job.state === 'running';
+  const m = fwSel && findFw(fwSel.id, fwSel.version);
+  const known = Object.values(FWD.devices || {}).sort((a, b) => String(b.lastSeen).localeCompare(String(a.lastSeen)));
+  const i = devInfo;
+  const appOnly = m && m.parts.length === 1 && m.parts[0].offset === 0x10000;
+  $('#devPane').innerHTML = `
+    <div class="sec"><h3>${bi('Kapcsolat', 'Connection')}</h3>
+      <div class="row"><select id="dPort" style="flex:1" aria-label="port">${PORTS.length ? PORTS.map(p => `<option value="${p.port}"${p.port === DEV_STATE.port ? ' selected' : ''}>${p.port} · ${esc(p.name)} · ${esc(p.kind)}</option>`).join('') : '<option value="">nincs port · no ports</option>'}</select>
+        <select id="dBaud" aria-label="baud">${[921600, 460800, 115200].map(b => `<option${String(b) === DEV_STATE.baud ? ' selected' : ''}>${b}</option>`).join('')}</select>
+        <button id="dRefresh" title="Portok frissítése / Refresh ports">↻</button></div>
+      <div class="row"><button id="dInfo"${running || !DEV_STATE.port ? ' disabled' : ''}>Chip infó<span class="en">Chip info</span></button>
+        <button id="dBackup"${running || !DEV_STATE.port ? ' disabled' : ''}>Teljes mentés<span class="en">Full backup</span></button></div>
+      ${i ? `<div class="kv"><span>Chip</span><span><b>${esc(i.chipFull || i.chip)}</b></span><span>MAC</span><span><code>${esc(i.mac)}</code></span><span>Flash</span><span>${esc(i.flashSize)}</span>
+        ${i.features ? `<span>${bi('Jellemzők', 'Features')}</span><span>${esc(i.features)}</span>` : ''}
+        <span>${bi('Tartalom', 'Content')}</span><span>${i.contentKnown ? `<span class="ok">ismert · known</span>${i.lastFlash ? ' · ' + esc(i.lastFlash.fw.name + ' ' + i.lastFlash.fw.version) : ''}` : '<span class="warn">ismeretlen: írás előtt mentés · unknown: backed up before a flash</span>'}</span></div>` : ''}
+    </div>
+    <div class="sec"><h3>${bi('Írás a lapra', 'Flash the board')}</h3>
+      ${m ? `<div><b>${esc(m.name)}</b> ${esc(m.version)} <span class="tag">${esc(m.chipFamily)}</span>${i && i.chip && i.chip !== m.chipFamily ? ' <span class="tag bad">más chip · other chip: ' + esc(i.chip) + '</span>' : ''}</div>
+        <div class="parts" style="font:11.5px Consolas,monospace;color:var(--muted)">${m.parts.map(p => hexo(p.offset) + '  ' + esc(p.path)).join('<br>')}</div>
+        ${appOnly ? '<div class="warn" style="font-size:12.5px">Csak alkalmazás: a lapon már kell lennie bootloadernek · app only: the board needs a bootloader already.</div>' : ''}`
+      : `<div class="muted">${bi('Válassz firmware-t a könyvtárból.', 'Pick a firmware in the library.')}</div>`}
+      <div class="row"><label><input type="checkbox" id="dErase"${DEV_STATE.erase ? ' checked' : ''}> ${bi('Teljes törlés előtte', 'Erase all first (also settings)')}</label></div>
+      <div class="row"><label><input type="checkbox" id="dSkip"${DEV_STATE.skip ? ' checked' : ''}> <span class="warn">${bi('Mentés kihagyása (nem ajánlott)', 'Skip the backup (not recommended)')}</span></label></div>
+      <div class="muted" style="font-size:12px">Írás előtt a Console ellenőrzi a lapon, hogy a mostani tartalom el van-e már mentve; ha nincs, előbb teljes mentést készít · before writing, the Console checks on the chip whether the current content is already saved; if not, it makes a full backup first.</div>
+      <div class="row"><button class="danger" id="dFlash"${running || !m || !DEV_STATE.port ? ' disabled' : ''}>Írás a lapra<span class="en">Flash</span></button></div>
+    </div>
+    <div class="sec"><h3>${job ? esc(job.title) : bi('Művelet', 'Job')}</h3>
+      ${job ? `<div class="row"><span class="${job.state === 'error' ? 'bad' : job.state === 'done' ? 'ok' : ''}">${esc({ running: 'fut · running', done: 'kész · done', error: 'hiba · error', cancelled: 'megszakítva · cancelled' }[job.state] || job.state)}</span>
+          <span class="muted">${esc(job.step || '')}</span><span class="spacer"></span>${running ? '<button id="dCancel">Megszakítás<span class="en">Cancel</span></button>' : ''}</div>
+        <div class="bar"><i style="width:${job.progress || 0}%"></i></div>
+        ${job.error ? `<div class="bad" style="margin-top:6px">${esc(job.error)}</div>` : ''}
+        <pre id="jobLog">${esc((job.log || []).join('\n'))}</pre>` : `<div class="muted">${bi('Még nem futott semmi.', 'Nothing has run yet.')}</div>`}
+    </div>
+    <div class="sec"><h3>${bi('Ismert lapok', 'Known boards')}</h3>
+      ${known.length ? `<table><tr><th>MAC</th><th>Chip</th><th>${bi('Utoljára', 'Last')}</th></tr>${known.map(d => { const l = d.history[d.history.length - 1]; return `<tr><td><code>${esc(d.mac)}</code></td><td>${esc(d.chip)} ${esc(d.flashSize || '')}</td><td>${l ? esc(l.action + (l.fw ? ': ' + l.fw.name + ' ' + l.fw.version : '') + ' · ' + when(l.at)) : ''}</td></tr>`; }).join('')}</table>` : '<div class="muted">—</div>'}
+    </div>
+    <div class="sec" style="border:0"><h3>${bi('Mentések', 'Backups')} <span class="muted" style="font-weight:400">data/backups</span></h3>
+      ${FWD.backups.length ? `<table><tr><th>${bi('Fájl', 'File')}</th><th>${bi('Méret', 'Size')}</th><th>${bi('Mikor', 'When')}</th></tr>${FWD.backups.map(x => `<tr><td><code style="font-size:11px">${esc(x.file)}</code></td><td>${kb(x.size)}</td><td>${esc(when(x.at))}</td></tr>`).join('')}</table>` : '<div class="muted">—</div>'}
+    </div>`;
+  const lg = $('#jobLog'); if (lg) lg.scrollTop = lg.scrollHeight;
+  $('#dPort').onchange = e => { DEV_STATE.port = e.target.value; store.set('bc.port', DEV_STATE.port); devInfo = null; renderDev(); };
+  $('#dBaud').onchange = e => { DEV_STATE.baud = e.target.value; store.set('bc.baud', DEV_STATE.baud); };
+  $('#dRefresh').onclick = portsLoad;
+  $('#dErase').onchange = e => { DEV_STATE.erase = e.target.checked; };
+  $('#dSkip').onchange = e => { DEV_STATE.skip = e.target.checked; };
+  const go = async (url, body) => { try { FWD.job = (await api(url, body)).job; renderDev(); pollJob(); } catch (e) { flashStatus('Hiba · error: ' + e.message); } };
+  $('#dInfo').onclick = () => go('/api/job/info', { port: DEV_STATE.port, baud: DEV_STATE.baud });
+  $('#dBackup').onclick = () => go('/api/job/backup', { port: DEV_STATE.port, baud: DEV_STATE.baud });
+  $('#dFlash').onclick = () => {
+    const txt = `Írás · Flash: ${m.name} ${m.version} (${m.chipFamily})\n→ ${DEV_STATE.port}${DEV_STATE.erase ? '\nTELJES TÖRLÉS ELŐTTE · ERASE ALL FIRST' : ''}${DEV_STATE.skip ? '\nMENTÉS NÉLKÜL · NO BACKUP' : ''}\n\nMehet? · Go?`;
+    if (!confirm(txt)) return;
+    go('/api/job/flash', { port: DEV_STATE.port, baud: DEV_STATE.baud, id: m.id, version: m.version, erase: DEV_STATE.erase, skipBackup: DEV_STATE.skip });
+  };
+  const c = $('#dCancel'); if (c) c.onclick = () => go('/api/job/cancel', {});
+}
+function pollJob() {
+  clearTimeout(jobTimer);
+  jobTimer = setTimeout(async () => {
+    try {
+      const j = (await api('/api/job')).job; FWD.job = j;
+      if (j && j.state !== 'running') {
+        if (j.result && j.result.info) devInfo = j.result.info; else if (j.kind === 'info' && j.result) devInfo = j.result;
+        await fwLoad(); return;
+      }
+      renderDev(); pollJob();
+    } catch (e) { pollJob(); }
+  }, 600);
+}
+
+(async function init() {
+  try {
+    B = await api('/api/board');
+  } catch (e) { $('#status').innerHTML = bi('A tábla adatai nem töltődtek be', 'Board data did not load') + `<span class="bad">${esc(e.message)}</span>`; return; }
+  CONN = B.connectors.connectors; CBY = Object.fromEntries(CONN.map(c => [c.id, c]));
+  // panel variant: B (150 x 80) is the primary; A (90 x 100) stacks
+  const pv = store.get('bc.panel'), PV = B.panels && Object.keys(B.panels).length ? (B.panels[pv] ? pv : B.panels.B ? 'B' : 'A') : null;
+  if (PV) B.panel = B.panels[PV];
+  $('#fPanel').innerHTML = Object.keys(B.panels || {}).map(v => `<option value="${v}"${v === PV ? ' selected' : ''}>Panel ${v} · ${v === 'B' ? '150 × 80' : '90 × 100'}</option>`).join('');
+  $('#fPanel').onchange = e => { B.panel = B.panels[e.target.value]; store.set('bc.panel', e.target.value); delete pz.panel; renderView(); };
+  SHARED = new Set(B.connectors.sharedGpio);
+  MODS = B.modules; MBY = Object.fromEntries(MODS.map(m => [m.id, m]));
+  $('#fType').innerHTML = `<option value="all">Minden típus · All types</option>` + Object.entries(GROUPS).filter(([g]) => CONN.some(c => c.group === g)).map(([g, [hu, en]]) => `<option value="${g}">${esc(hu)} · ${esc(en)}</option>`).join('');
+  statusBase = `${CONN.length} csatlakozó · ${B.devboard.gpio.length} GPIO · ${MODS.length} modul<span class="en">${esc(B.boardDir)}</span>`;
+  $('#status').innerHTML = statusBase;
+  try { SETUPS = (await api('/api/setups')).setups; } catch (e) {}
+  compute(); renderBadge(); setView('panel'); renderPane();
+  if (store.get('bc.mode') === 'fw') setMode('fw');
+  liveSync();
+  const last = store.get('bc.setup');
+  if (last && SETUPS.some(s => s.name === last)) await load(last);
+})();
+</script>
+</body>
+</html>
