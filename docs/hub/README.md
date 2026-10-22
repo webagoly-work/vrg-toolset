@@ -46,7 +46,7 @@ two users and cuts it into small work packages for another Claude account to bui
 | 3 | **H8** | Saját linkek (L5) + Helyi célmappa (L6) | Q15 | |
 | 3 | **H9** | Munkanapló create / save / upload / import | Q16 | |
 | 4 | **H10** | Kapu segéd: serve, open tool / folder / terminal / Claude Code, git status/pull | Q08 Q05 | |
-| 4 | **H11** | Tour, glossary, installers, Open MCT slot, export, link check | Q12 | ⏸ look |
+| 4 | **H11** | Tour, glossary, installers, Open MCT slot, export, link check | Q12 | done |
 | 4 | **H12** | Layer 3 agent init docs per program + `GO HUB` codephrase | — | |
 | 5 | **H13** | OneDrive links, 00_START copy, colleague guide, clean-profile verify | your links | |
 
@@ -68,7 +68,7 @@ Cheaper model fine: H0 H1 H8 H9 H12. Strong model: HA H2 H5 H6 H7 H10 + every VE
 | H8 | done | 2026-10-22 | 80-personal: L5 own links (kpStore, http(s)/file:/// only, export/import merge by id, Saját row + under their program), L6 target folder (File System Access handle in IndexedDB, permission re-asked on use, test file, path for the companion), personal right-click menu, ☰ entries. Helper named kpDest (kpTarget was taken); inbox() an empty documented stub. Tests 64/64; Edge: real OPFS handle wrote + read back after reload, overlap audit with links 0. |
 | H9 | done | 2026-10-22 | 90-log: form (draft every 5 s + on close, cleared after upload), kpLogToMd / kpMdToLog exact §6 template, lossless + extra sections, names date_login_5-word-slug with -2/-3, outputs download · target folder · GitHub Hub/logs (clash → -2) · OneDrive link, import → drawer Napló tab, newest log per user (via Frissítés) in Ki min dolgozik?. Tests 69/69 (byte-exact fixture); Edge with a fake GitHub + OPFS: all flows, full regression green. |
 | H10 | done | 2026-10-22 | Hub/companion/server.js (no deps): 127.0.0.1 only, Host + Origin + per-install token (.token, gitignored), whitelisted actions with exact shapes, realpath inside roots (repo + VRG-DE), argument-array detached spawns, folder as cwd (never on a command line), 16 KB limit, KP_DRY_RUN; page: 92-companion (actions alive, ⌨ Terminál, ✳ Claude Code, git pull in ☰, Belépések row with branch/dirty/behind); VRG Kapu.cmd starts it (CRLF, ASCII). Tests 76/76 (real server, random port, dry run); Edge against :8795 dry run green; token never in dist. |
-| H11 | ⏸ look | 2026-10-22 | 97-extras: Első lépések tour (6 steps on real elements, first visit, ?notour for checks), Szótár (25 entries, glossary.json embedded; first occurrence underlined in the drawer), Telepítők, Open MCT long text (§9), Linkellenőrzés (repo paths vs the GitHub tree, local via companion, empty links; red dot), PNG export (theme colours inlined, 1.3 MB at full board) + print (all departments open, restored), Téma, Névjegy, Nyitott kérdések; ☰ grouped. Tests 80/80; Edge checkpoint pass + full regression green. Waiting for the user's look. |
+| H11 | done | 2026-10-22 | 97-extras: Első lépések tour (6 steps on real elements, first visit, ?notour for checks), Szótár (25 entries, glossary.json embedded; first occurrence underlined in the drawer), Telepítők, Open MCT long text (§9), Linkellenőrzés (repo paths vs the GitHub tree, local via companion, empty links; red dot), PNG export (theme colours inlined, 1.3 MB at full board) + print (all departments open, restored), Téma, Névjegy, Nyitott kérdések; ☰ grouped. Tests 80/80; Edge checkpoint pass + full regression green. Look approved (Q22 A tour on first visit, Q23 A ⛔ stays on the card). |
 | H12 | open | | |
 | H13 | open | | |
 
@@ -91,6 +91,8 @@ Answered 2026-10-21 by the user: **all A** (the recommended option of every ques
 | Q19 | A — layer rows stay aligned across the board (H2 look) |
 | Q20 | A — "0 / Egész" fits the width: the department overview (H2 look) |
 | Q21 | A (default) — before a signed list exists everything stays ⛔ (now moot: the list is signed) |
+| Q22 | A — tour on the first visit per browser, then from ☰ (H11 look) |
+| Q23 | A — ⛔ stays on the card when signed out (H11 look) |
 | Q10c | A — the anonymiser runs on `main` right before the invite (setup step 3a), after `secacc` is merged |
 | Q11 | A — both save straight to `main` with a conflict check |
 | Q12 | A — Open MCT as a separate slot |

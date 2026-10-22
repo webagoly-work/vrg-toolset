@@ -129,3 +129,9 @@ WP-HA audit list.* Today 61 tracked repo files carry "P33" (plans, BRIDGE build 
 **Q19 — Aligned layer rows?** **Answered: A** — L1–L4 rows line up across the board even when one tall cell leaves gaps elsewhere. (B: each column flows; C: stacks of 2.)
 
 **Q20 — What does "0 / Egész" show?** **Answered: A** — fit the width: the department overview; zoom in to read. (B: fit the height, scroll sideways.)
+
+## Look (WP-H11, 2026-10-22)
+
+**Q22 — When does the tour start?** **Answered: A** — on the first visit in each browser, afterwards only from ☰ → Első lépések. (B: only from ☰.)
+
+**Q23 — ⛔ on every card when nobody is signed in?** **Answered: A** — keep ⛔ on the card; tour step 4 explains Belépések. (B: a faint padlock, reason on hover.)
