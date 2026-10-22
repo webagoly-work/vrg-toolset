@@ -171,3 +171,6 @@ symbols grey while every class was correct and every test passed.
 - **`GO R1018`** — read `GO-R1018.md` at the repo root (main checkout, branch `main`) and do what it says:
   continue the Planner round 2026-10-18 (Födém · Igénylista · Házimozi, all built + committed 2026-10-19):
   only the C6 Mozi fal pen feel is open.
+- **`GO WIRE`** — read `GO-WIRE.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
+  and do what it says: the wireway routing rebuild — the dual model, configuration K1 (decisions 2026-10-18, all A),
+  build order T0–T7 from `docs/workflow/WIREWAY_AUDIT_2026-10-18.md`; T0 first, stop at its checkpoint.

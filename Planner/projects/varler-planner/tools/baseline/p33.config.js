@@ -12,6 +12,7 @@ module.exports = {
   bedZoneMark: 'agy',                             // floor zone mark tag; wall devices beside it are "bed" devices
   wetRooms: ['R04', 'R08'],
   roomKinds: { R05: ['kamra'] },                  // F7 (2026-10-15): the rules no longer know room ids; the pantry is a kind
+  latchFrom: 'switches',                          // T0 / F4: P33 v1 voted the latch from the switches; the default is now the door's variant
   cornerBoxes: 'all',                             // E5-Q4: the P33 rule (a box at every corner) — now an option, the default is pull boxes only
   // lighting circuits (user 2026-10-12): V1 day zone, V2 night zone
   lighting: [{ ref: 'V1', name: 'Világítás — nappali zóna (előszoba, WC, lépcső, kamra, konyha-étkező, nappali)', rooms: ['R01', 'R04', 'R03L', 'R05', 'R03', 'R06'], mcb: 'B10' },

@@ -31,25 +31,36 @@ function allowedOn(allowed, f, uA, uB, wallById) {
   const lo = Math.min(uA, uB), hi = Math.max(uA, uB); return iv.some(([a, b, x]) => lo >= a - (x ? 1 : PAD) && hi <= b + (x ? 1 : PAD));
 }
 const SOFT = 4;            // a wall face the sketch did not mark costs this many times its length (used only if nothing else reaches)
+// T0 / F3: the rule-mark factors (geom.faceMarks) — a minus face ×2, an előnyben face ×0.5; a ban face has no edge
+const MINUS_K = 2, PREF_K = 0.5;
 
 class Graph {
   constructor() { this.N = []; this.adj = []; }
   add(n) { n.i = this.N.length; this.N.push(n); this.adj.push([]); return n.i; }
-  link(a, b, w, kind) { if (a === b) return; this.adj[a].push({ to: b, w, kind }); this.adj[b].push({ to: a, w, kind }); }
-  // Dijkstra; opt.ok(i) limits the nodes, opt.penalty(i) adds a cost for passing node i
+  // w = the search weight (soft ×4, the mark factors); geo = the real length the conduit has (T0 / F1: quantities read geo,
+  // never w — one unmarked wall once turned a 5,6 m route into 14,6 m of cable). geo defaults to w (cross, open, floor, over).
+  link(a, b, w, kind, geo, ex) { if (a === b) return; const o = Object.assign({ w, kind, geo: geo == null ? w : geo }, ex || {});
+    this.adj[a].push(Object.assign({ to: b }, o)); this.adj[b].push(Object.assign({ to: a }, o)); }
+  // Dijkstra; opt.ok(i) limits the nodes, opt.penalty(i) adds a cost for passing node i, opt.extra(e, u) for taking edge e
+  // from u (T2: the trunk's congestion term)
   run(src, opt = {}) { const n = this.N.length, dist = new Float64Array(n).fill(Infinity), prev = new Int32Array(n).fill(-1), done = new Uint8Array(n);
     dist[src] = 0;
     for (;;) { let u = -1, best = Infinity; for (let i = 0; i < n; i++) if (!done[i] && dist[i] < best) { best = dist[i]; u = i; }
       if (u < 0) break; done[u] = 1;
       for (const e of this.adj[u]) { if (opt.ok && !opt.ok(e.to)) continue; if (opt.edge && !opt.edge(e)) continue;
-        const nd = dist[u] + e.w + (opt.penalty ? opt.penalty(e.to, u) : 0); if (nd < dist[e.to]) { dist[e.to] = nd; prev[e.to] = u; } } }
+        const nd = dist[u] + e.w + (opt.penalty ? opt.penalty(e.to, u) : 0) + (opt.extra ? opt.extra(e, u) : 0); if (nd < dist[e.to]) { dist[e.to] = nd; prev[e.to] = u; } } }
     return { dist, prev }; }
   path(prev, t) { const p = []; for (let v = t; v >= 0; v = prev[v]) p.unshift(v); return p; }
 }
 
 // anchors: [{key, room, s?, x, y, kind, ref}] — s computed here when missing
-function build(G, allowed, anchors) {
-  const g = new Graph(), byKey = {}, roomNodes = {};
+// fm = geom.faceMarks(G) (optional); opt.minusK / opt.prefK override the factors. g.banned lists the faces a ban removed.
+function build(G, allowed, anchors, fm, opt) {
+  const g = new Graph(), byKey = {}, roomNodes = {}; fm = fm || {}; opt = opt || {}; g.banned = [];
+  const mK = opt.minusK || MINUS_K, pK = opt.prefK || PREF_K;
+  // the marks on this face covering u (end faces of a wall take only the both-sides marks)
+  const marksAt = (f, u) => { if (!f || !f.wall) return []; const side = geom.faceSide(G, f);
+    return (fm[f.wall] || []).filter(m => (m.side === 0 || m.side === side) && (side !== 0 || m.side === 0) && (side === 0 ? f.fix >= m.lo - 1 && f.fix <= m.hi + 1 : u > m.lo && u < m.hi)); };
   G.rooms.forEach(r => {
     const bends = cornerS(r);
     const S = new Map();                                    // s(rounded) → {s, keys[]}
@@ -58,7 +69,8 @@ function build(G, allowed, anchors) {
       for (let d = -2; d <= 2; d++) { const q = (((k + d) % Math.round(r.perim)) + Math.round(r.perim)) % Math.round(r.perim); if (S.has(q)) { k = q; break; } }
       const o = S.get(k) || { s, keys: [] }; if (key) o.keys.push(key); S.set(k, o); };
     r.faces.forEach(f => { put(f.s0);
-      (allowed[f.wall] || []).forEach(([a, b, x]) => { [a - (x ? 0 : PAD), b + (x ? 0 : PAD)].forEach(v => { if (v > f.lo + 2 && v < f.hi - 2) put(f.uToS(v)); }); }); });
+      (allowed[f.wall] || []).forEach(([a, b, x]) => { [a - (x ? 0 : PAD), b + (x ? 0 : PAD)].forEach(v => { if (v > f.lo + 2 && v < f.hi - 2) put(f.uToS(v)); }); });
+      (fm[f.wall] || []).forEach(m => [m.lo, m.hi].forEach(v => { if (v > f.lo + 2 && v < f.hi - 2) put(f.uToS(v)); })); });
     // (a split within 2 mm of a face end is that end: a span rounded to whole mm once made a 0,6 mm edge and two corner boxes)
     anchors.filter(a => a.room === r.id).forEach(a => put(a.s, a.key));
     const list = [...S.values()].sort((p, q) => p.s - q.s);
@@ -69,8 +81,14 @@ function build(G, allowed, anchors) {
     for (let k = 0; k < ids.length; k++) { const a = g.N[ids[k]], b = g.N[ids[(k + 1) % ids.length]];
       const sb = k + 1 < ids.length ? b.s : b.s + r.perim, sm = (a.s + sb) / 2, f = faceAt(r, sm);
       const ua = sToPt(r, a.s + 0.01).u, ub = sToPt(r, sb - 0.01).u;
-      if (allowedOn(allowed, f, ua, ub, G.wallById)) g.link(ids[k], ids[(k + 1) % ids.length], sb - a.s, 'face');
-      else if (f && f.wall) g.link(ids[k], ids[(k + 1) % ids.length], (sb - a.s) * SOFT, 'soft'); }
+      const L = sb - a.s, ms = marksAt(f, (ua + ub) / 2), ban = ms.find(m => m.pol === 'ban'), pref = ms.some(m => m.pol === 'pref'), minus = ms.some(m => m.pol === 'minus');
+      const A = ids[k], B = ids[(k + 1) % ids.length];
+      if (ban) { g.banned.push({ room: r.id, wall: f.wall, tag: ban.tag, mark: ban.id, len: L, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }); continue; }
+      // előnyben opens a face (the user says "runs go here") and wins over a minus on the same stretch; minus only
+      // dearer-izes a routable face — an unmarked one is ×4 already
+      if (pref) g.link(A, B, L * pK, 'face', L, { wall: f.wall, mark: 'pref' });
+      else if (allowedOn(allowed, f, ua, ub, G.wallById)) g.link(A, B, minus ? L * mK : L, 'face', L, minus ? { wall: f.wall, mark: 'minus' } : { wall: f.wall });
+      else if (f && f.wall) g.link(A, B, L * SOFT, 'soft', L, { wall: f.wall }); }
   });
   // open boundaries (no wall between two rooms): coincident nodes of different rooms link at zero cost
   G.rooms.forEach(r => r.faces.filter(f => !f.wall && f.len >= 60).forEach(f => {
@@ -125,4 +143,4 @@ function zones(G, net) {
   return zone;
 }
 
-module.exports = { build, zones, sToPt, Graph, MERGE, PAD, SOFT, ceilAnchors, ceilLinks, polyAt };
+module.exports = { build, zones, sToPt, Graph, MERGE, PAD, SOFT, MINUS_K, PREF_K, ceilAnchors, ceilLinks, polyAt };

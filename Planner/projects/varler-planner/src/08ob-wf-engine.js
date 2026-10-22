@@ -6,7 +6,8 @@
 // ==========================================================================
 
 // The P33 baseline engine (tools/baseline: rules · geom · network · prep · plan) runs here unchanged: build.js puts it in
-// place of the marker below as `BL` (Q-E05 = A, bundle, don't port). This file is only the glue:
+// 08fz-wf-baseline.js as `BL` (Q-E05 = A, bundle, don't port; moved before 08g by T0 so the slots are its table). This
+// file is only the glue:
 //   blInput(level)  the Planner's own data → the engine's sketch shape (E5_ENGINE_REVIEW §4): Vezethető fal marks only
 //                   (Q7), room kinds, sw.ctl, data.circuits, the szobadoboz as a service point (Q5), Padló út lines →
 //                   floor groups, Mennyezeti út crossings → ceiling links (Q9), heights as placed (R4 owns them)
@@ -14,12 +15,11 @@
 //                   re-run replaces only gen:'bl' items. The result table + the Q1 / Q2 checks.
 //   button 2        "Vezetékek": the cables into those conduits — scope Eszköz | Helyiség | Ház.
 // Redőny (SHU) endpoints are left out: their control is on another layer now (WP-E5 item 6).
-/*__BASELINE__*/
 
 const BL_KCOL={trunk:'#c0392b',dist:'#e67e22',drop:'#8e44ad',ceil:'#2980b9',floor:'#16a085',island:'#16a085',riser:'#7f8c8d',feed:'#2c3e50'};
 const BL_BOX_HU={sp:'szervizpont',drop:'leállás',corner:'sarok',end:'pályavég',pull:'húzódoboz',tj:'gerinc elágazó',island:'padló út vége',rbx:'RBX'};
 const BL_KIND_HU={trunk:'gerinc',dist:'leágazó',drop:'leállás',ceil:'mennyezet',floor:'padló',island:'padló út vége',riser:'felszálló',feed:'fővezeték'};
-const BL_OPT={cornerAll:false};                       // E5-Q4: the P33 rule (a box at every corner) — the BRIDGE option
+const BL_OPT={cornerAll:false,congest:0.05};   // T2: the trunk's congestion term (× length × cables already there)                       // E5-Q4: the P33 rule (a box at every corner) — the BRIDGE option
 let BL_LAST=null;                                     // the last run: {level, sig, R, ...} — button 2 reads it
 
 function blFloorId(f){return f.num||f.id;}
@@ -41,7 +41,8 @@ function blMcbStr(m){return m&&typeof m==='object'?mcbText(m):String(m||'');}
 function blInput(level){level=level||state.active;
   const P=JSON.parse(JSON.stringify(sessionObj())),D=P.data,notes=[];
   // the engine's own earlier output is not input
-  D.devices=(D.devices||[]).filter(d=>d&&d.gen!=='bl');D.paths=[];
+  // T2: the user's own paths stay in the input (the via routes of T6); only the engine's earlier output goes
+  D.devices=(D.devices||[]).filter(d=>d&&d.gen!=='bl');D.paths=(D.paths||[]).filter(p=>p&&p.gen!=='bl');
   // layers: one MAINS layer for the engine (M1 split it in three), hardware off the endpoint list, redőny out
   P.layers=(P.layers||[]).concat([{id:'bl:mains',role:'sys:MAINS'},{id:'bl:hw',role:'bl:hw'},{id:'bl:off',role:'bl:off'}]);
   let shu=0,avc=0;
@@ -78,6 +79,10 @@ function blInput(level){level=level||state.active;
   // centreline) — not merely the nearest face, which is a coin toss at a corner
   cfg.fixFace={};D.devices.forEach(d=>{if(d.level!==level||d.layer!=='bl:mains')return;const live=byId('devices',d.id);if(!live||live.side==null)return;
     const r=typeof roomOfDevice==='function'?roomOfDevice(live):null;if(r&&r.rm&&(data.floors||[]).indexOf(r.rm)>=0)cfg.fixFace[d.id]=blFloorId(r.rm);});
+  // T2 (K1): the tree — every node's up (08od), and for a lamp with none, the box its leg was pinned to (08n lamp.meet).
+  // The engine fits each link into the walls; a node with no up keeps today's rule. The congestion term spreads the home runs.
+  cfg.tree={};cfg.congest=BL_OPT.congest;D.devices.forEach(d=>{if(d.level!==level)return;
+    if(d.up&&d.up.id)cfg.tree[d.id]={id:d.up.id,room:d.up.room||undefined,fix:!!d.up.fix,via:d.up.via||undefined};else if(d.meet&&d.layer==='bl:mains')cfg.tree[d.id]={id:d.meet};});
   cfg.switchGroups=blSwitchGroups(D,level);cfg.rbxSwitched={};
   D.devices.forEach(d=>{if(d.level===level&&d.rbxSw&&d.layer==='bl:mains')cfg.rbxSwitched[d.id]='RBX-kimenetről kapcsolt (Planner)';});
   // Padló út (E2) → floor groups: from the service point down into the floor, along the line, up at its junction. A line
@@ -110,12 +115,22 @@ function blSwitchGroups(D,level){const mains=new Map();D.devices.forEach(d=>{if(
   return Object.values(units).map(u=>{const L=[...u.lamps].map(id=>mains.get(id)),cx=L.reduce((a,l)=>a+l.x,0)/L.length,cy=L.reduce((a,l)=>a+l.y,0)/L.length;
     const S=u.sw.map(id=>mains.get(id)),t=s=>String(s.swType||''),dist=s=>Math.hypot(s.x-cx,s.y-cy);
     let chain;if(S.length===1)chain=[S[0].id];
-    else{const mid=S.filter(s=>t(s)==='107'),ends=S.filter(s=>t(s)!=='107').sort((a,b)=>(b.swHead?1:0)-(a.swHead?1:0)||dist(a)-dist(b));
+    // T0 / L10: ties go by id, and the kereszt switches by their distance from the head — before, both followed the file
+    // order, so reversing data.devices swapped the head of the Domoszló veranda pair (red team t5)
+    else{const byId=(a,b)=>a.id<b.id?-1:a.id>b.id?1:0,ends=S.filter(s=>t(s)!=='107').sort((a,b)=>(b.swHead?1:0)-(a.swHead?1:0)||dist(a)-dist(b)||byId(a,b));
+      const h=ends[0],mid=S.filter(s=>t(s)==='107').sort((a,b)=>(h?Math.hypot(a.x-h.x,a.y-h.y)-Math.hypot(b.x-h.x,b.y-h.y):0)||byId(a,b));
       chain=[ends[0]].concat(mid,ends.slice(1)).map(s=>s.id);}
     return {lamps:[...u.lamps],chain,mode:S.length>2?'3way':S.length===2?'2way':u.legs>1?'double':'single',why:'Planner kapcsolás'};});}
 
 // ---- run --------------------------------------------------------------------------------------------------------------
-function blRun(level){const r=blRunRaw(level,0);return r.err?r:(BL_LAST=r);}
+// T0 / §3.4: the drop groups of the previous run per level — the report lists what regrouped since
+const BL_DROPS={};
+function blRun(level){const r=blRunRaw(level,0);if(r.err)return r;const now=r.R.report&&r.R.report.drops,prev=BL_DROPS[r.level];
+  if(now){r.dropChange=prev?{gone:prev.filter(x=>now.indexOf(x)<0),added:now.filter(x=>prev.indexOf(x)<0)}:null;BL_DROPS[r.level]=now.slice();}
+  return (BL_LAST=r);}
+// T0 / F10: drawn gen:'bl' items made from another plan are STALE — {drawn, stale} (stale = how many no longer match)
+function blStale(level,sig){level=level||state.active;const mine=data.paths.filter(p=>p&&p.gen==='bl'&&p.bl&&(p.nodes||[]).some(n=>n.level===level));
+  if(!mine.length)return {drawn:0,stale:0};sig=sig||blInput(level).sig;return {drawn:mine.length,stale:mine.filter(p=>p.bl.run!==sig).length};}
 // WP-E6: on an Alosztó's level the feeder's own drop (its circuit on the level below) is added to every circuit here
 function blRunRaw(level,depth){const I=blInput(level),cfg=I.cfg,t0=Date.now();
   if(cfg.subFeed&&depth<3){const ep=byId('devices',cfg.subFeed.ep),up=ep?blRunRaw(ep.level,depth+1):null,c=ep&&cktOfDevice(ep);
@@ -156,8 +171,17 @@ function blClear(level){const n0=data.devices.length+data.paths.length;
   data.devices=data.devices.filter(d=>!(d&&d.gen==='bl'&&d.level===level));
   data.paths=data.paths.filter(p=>!(p&&p.gen==='bl'&&(p.nodes||[]).some(n=>n.level===level)));
   return n0-data.devices.length-data.paths.length;}
-function blApplyRoutes(run){const R=run.R,lv=run.level,L=blTargetLayers(lv);
+// T0 / §4.6 guard rail 6: errors (an unreached endpoint, a drop with no way to its service point …) block the drawing
+// unless the user confirms them — opt.confirm. Before, a plan with missing devices was drawn as if complete.
+function blErrors(run){return ((run&&run.R&&run.R.warn)||[]).filter(w=>w.sev==='err');}
+function blApplyRoutes(run,opt){const lv=run.level,L=blTargetLayers(lv),errs=blErrors(run);
+  if(errs.length&&!(opt&&opt.confirm))return {err:errs.length+' hiba van a számításban (pl. '+errs[0].msg+') — nézd meg a Pálya-ellenőrzést, vagy erősítsd meg a felrajzolást.',blocked:true,errors:errs.length};
   pushUndo(['devices','paths']);const gone=blClear(lv);
+  // T1 / T2 (guard rail 7): the run refreshes the javasolt betáp links in the same undo step, and the engine READS them —
+  // so fill, run again on the new tree, until the suggestions stop changing (≤ 3 rounds). What is drawn is the run of
+  // the tree as it now stands, so it is not stale the moment it is drawn. The rögzített links are never touched.
+  let upn=0;if(typeof upFill==='function')for(let i=0;i<3;i++){const f=upFill(lv,{run,noUndo:true});if(f.err)break;upn+=f.changed;if(!f.changed)break;const r2=blRun(lv);if(r2.err)break;run=r2;}
+  const R=run.R;
   R.boxes.filter(b=>b.kind!=='rbx').forEach(b=>{const sz=BL.rules.BOX[b.kind==='sp'?'portalMains':b.size]||BL.rules.BOX.gang2;
     data.devices.push({type:'junction',jbShape:'rect',jbSize:b.kind==='pull'?200:sz.jbSize,level:lv,x:Math.round(b.x),y:Math.round(b.y),h:Math.round(b.h),
       layer:L.box,ref:b.id,note:b.n+' ['+(BL_BOX_HU[b.kind]||b.kind)+']',faceBack:false,gen:'bl',bl:{run:run.sig,box:b.id,kind:b.kind}});});
@@ -166,8 +190,11 @@ function blApplyRoutes(run){const R=run.R,lv=run.level,L=blTargetLayers(lv);
     data.paths.push({ptype:'gege',nodes,sections:nodes.slice(1).map(()=>({build:'sull_gege',cond:p.cond,fill:p.fill,leg:l.id,kind:l.kind})),
       layer:l.kind==='trunk'||l.kind==='feed'?L.ch:L.arm,lane:k,route:l.kind==='trunk'?'channel':'arm',color:BL_KCOL[l.kind]||'#555',gen:'bl',
       bl:{run:run.sig,leg:l.id,kind:l.kind,pipe:k,circ:p.circ.slice()}});np++;}));
-  ensureIds(data);if(typeof invalidateShell==='function')invalidateShell();draw();
-  return {boxes:R.boxes.filter(b=>b.kind!=='rbx').length,paths:np,replaced:gone};}
+  ensureIds(data);
+  // T1 (guard rail 7): the run refreshes the javasolt betáp links in the same undo step; the rögzített ones stay
+  if(typeof invalidateShell==='function')invalidateShell();draw();
+  // the run is handed back for the caller, but not enumerable: a JSON log of the result stays small
+  return Object.defineProperty({boxes:R.boxes.filter(b=>b.kind!=='rbx').length,paths:np,replaced:gone,up:upn},'run',{value:run,enumerable:false});}
 
 // ---- button 2: the cables, by scope ----------------------------------------------------------------------------------
 // which legs a scope covers: Ház = all; Helyiség = the legs touching the room (their boxes, their device, their run);
@@ -201,22 +228,61 @@ function blChecksHtml(R){const ck=R.checks||[];if(!ck.length)return '';const n=v
     +`<table class="blChk" style="font-size:11px;width:100%;border-collapse:collapse;margin-top:3px"><tr style="color:#777"><td>Kör</td><td>In</td><td>mm²</td><td>kör/cső</td><td>Iz·k</td><td></td><td>m</td><td>ΔU %</td><td></td></tr>`
     +ck.map(r=>`<tr${r.okI&&r.okU?'':' style="background:#fdecea"'}><td><b>${esc(r.circ)}</b></td><td>${r.In}${r.Ib<r.In?' <span style="color:#888">('+n(r.Ib.toFixed(1))+')</span>':''}</td><td>${n(r.mm2)}</td><td>${r.n}</td><td>${r.Izk==null?'—':n(r.Izk)}</td><td>${r.okI?'✓':'✗'}</td>`
       +`<td>${n(r.Lm)}</td><td>${n(r.dU)}</td><td>${r.okU?'✓':'✗ '+esc(r.fixU||'')}</td></tr>`).join('')+`</table>`;}
+// T0 / L13: a warning that knows its place ({at:[x,y]}) gets a "mutasd" link — the view centres there and rings it
+function blShowLink(w,level){return w&&w.at&&isFinite(w.at[0])?` <a href="#" data-blshow="${Math.round(w.at[0])},${Math.round(w.at[1])},${esc(level||state.active)}" style="color:#2c6fbb">mutasd</a>`:'';}
 function blWarnHtml(run){const W=run.notes.map(m=>({sev:'info',msg:m})).concat(run.R.warn);if(!W.length)return '';
   return `<div style="margin-top:8px;font-size:12px"><b>${W.length} figyelmeztetés</b></div><div style="max-height:22vh;overflow:auto;font-size:11px">`
-    +W.map(w=>`<div style="color:${w.sev==='err'?'#b00020':w.sev==='warn'?'#8a5a00':'#666'}">${w.sev==='err'?'⛔':w.sev==='warn'?'⚠':'ℹ'} ${esc(w.msg)}</div>`).join('')+`</div>`;}
+    +W.map(w=>`<div style="color:${w.sev==='err'?'#b00020':w.sev==='warn'?'#8a5a00':'#666'}">${w.sev==='err'?'⛔':w.sev==='warn'?'⚠':'ℹ'} ${esc(w.msg)}${blShowLink(w,run.level)}</div>`).join('')+`</div>`;}
+const BL_FLASH={x:0,y:0,level:null,until:0};
+function blShow(x,y,level){level=level||state.active;if(level!==state.active){state.active=level;const r=document.querySelector('input[name=al][value="'+level+'"]');if(r)r.checked=true;}
+  CXv=x;CYv=y;const now=planToBase(x,y,dz(level,0));state.panX=W/2-now[0]*state.zoom;state.panY=Hh/2-now[1]*state.zoom;setTransform();
+  Object.assign(BL_FLASH,{x,y,level,until:Date.now()+4000});draw();setTimeout(()=>{if(Date.now()>=BL_FLASH.until)draw();},4100);return true;}
+STK_OVERLAY.push(()=>{if(BL_FLASH.level!==state.active||Date.now()>BL_FLASH.until)return '';const p=planToBase(BL_FLASH.x,BL_FLASH.y,dz(state.active,0)),r=18/state.zoom;
+  return `<circle cx="${p[0]}" cy="${p[1]}" r="${r}" fill="none" stroke="#e8641c" stroke-width="${3/state.zoom}" pointer-events="none"/>`;});
+document.addEventListener('click',e=>{const a=e.target&&e.target.closest&&e.target.closest('[data-blshow]');if(!a)return;e.preventDefault();
+  const [x,y,lv]=a.dataset.blshow.split(',');blShow(+x,+y,lv);});
 function blSummary(R){const cnt=(a,k)=>a.filter(x=>x.kind===k).length,bx=R.boxes.filter(b=>b.kind!=='rbx');
   const parts=['sp','drop','pull','corner','end','tj','island'].map(k=>[k,cnt(bx,k)]).filter(x=>x[1]).map(x=>x[1]+' '+(BL_BOX_HU[x[0]]||x[0]));
   return `${R.C.list.length} kör · ${R.legs.reduce((a,l)=>a+(l.pipes||[]).length,0)} csőszakasz (${R.legs.length} szakasz, ${Math.round(R.legs.reduce((a,l)=>a+l.len,0)/1000)} m) · ${bx.length} doboz (${parts.join(', ')})`;}
+// ---- T0 / §3.4: Pálya-ellenőrzés — one table for what the Domoszló build checked by script. Every row: room + mutasd ----
+function blReportHtml(run){const R=run.R,P=R.report;if(!P)return '';const n=v=>String(v).replace('.',','),lv=run.level;
+  const sec=(t,rows,empty)=>`<div style="margin-top:8px;font-size:12px"><b>${t}</b></div>`+(rows.length?`<div style="font-size:11px">${rows.join('')}</div>`:`<div style="font-size:11px;color:#888">${empty||'—'}</div>`);
+  const li=(txt,w,col)=>`<div${col?' style="color:'+col+'"':''}>${txt}${blShowLink(w,lv)}</div>`;
+  const st=blStale(lv,run.sig),M=P.metres,out=[];
+  if(st.drawn)out.push(`<div style="font-size:12px;margin-top:6px;${st.stale?'color:#b00020':'color:#2e7d32'}">${st.stale?'⛔ A felrajzolt pályák elavultak: a terv változott a felrajzolás óta ('+st.stale+' / '+st.drawn+' cső).':'✓ A felrajzolt pályák ehhez a tervhez készültek.'}</div>`);
+  out.push(sec('Bekötetlen végpontok',P.unreached.map(u=>li(`⛔ ${esc(u.ref||u.id)} ${esc(u.code)} (${esc(u.circ)}) — ${esc(u.n)}: ${esc(u.why)}`,u,'#b00020')),'✓ minden végpont kap vezetéket'));
+  out.push(sec('Pálya-méterek (geometriai)',[`<div>vezethető falon ${n(M.face)} m · előnyben ${n(M.pref)} m · kerülendőn ${n(M.minus)} m · <b style="color:${M.soft?'#8a5a00':'inherit'}">jelöletlen falon ${n(M.soft)} m</b> · átvezetés ${n(M.cross)} m</div>`,
+    `<div style="color:#888">összesen ${n(M.geo)} m — a keresés súlyozva ${n(M.weighted)} m-nek számolta (jelöletlen ×4, kerülendő ×2, előnyben ×0,5)</div>`,
+    P.pref.marks?`<div>Előnyben jelölés: ${P.pref.marks} db — ${P.pref.usedM?'használva, '+n(P.pref.usedM)+' m':'egyik pálya sem használta'}</div>`:'']
+    .concat(P.softLegs.map(l=>li(`⚠ ${esc(l.leg)} (${l.kind==='trunk'?'gerinc':'leágazó'}) — ${esc(l.n)}: ${n(l.m)} m jelöletlen falon`,l,'#8a5a00')))
+    .concat(P.minusLegs.map(l=>li(`− ${esc(l.leg)} — ${esc(l.n)}: ${n(l.m)} m kerülendő felületen`,l)))));
+  out.push(sec('Legterheltebb csatornák (horony)',P.chases.map(c=>li(`${c.pipes} cső (gerinc ${c.trunk}, leágazó ${c.dist}) · ${c.circuits} kör egy csatornában — ${esc(c.n)}`,c)).concat(P.chases.length?[`<div style="color:#888">A terhelhetőség csövenként számol (E5-Q10 = A); a csatornánkénti körszám ⚑ vetendő össze az MSZ HD 60364-5-52 csoportosítási táblájával.</div>`]:[])));
+  out.push(sec('Legterheltebb falátvezetések',P.crossings.map(c=>li(`${c.pipes} cső · ${c.circuits} kör — ${esc(c.n)}`,c))));
+  out.push(sec('Doboztöltés (az elhaladó csövekkel együtt)',P.fill.map(b=>li(`${esc(b.box)} ${esc(b.name)} — ${esc(b.n)}: ${b.end} cső be / ki + ${b.pass} elhalad = ${b.total}`,b,b.total>6?'#8a5a00':''))));
+  out.push(sec('Egy helyre került végpontok (ajtó-hely beugrás, összevonás)',P.stacks.map(x=>li(`ℹ ${x.refs.map(esc).join(' · ')} egy helyen — ${esc(x.n)}`,x)),'nincs'));
+  out.push(sec('Fal nélküli helyiségél (25 mm-en belül nincs fal)',P.bare.map(x=>li(`⚠ ${esc(x.n)}: ${x.len} mm-es él falon kívül — rajta nem futhat pálya`,x,'#8a5a00')),'nincs'));
+  out.push(sec('Nyílás-ütközések (tájékoztató — az ablakfej most nem tiltó)',P.clashes.map(x=>li(`ℹ ${esc(x.leg)} ${x.h} mm-en a ${esc(x.opening)} ${x.type==='door'?'ajtó':'ablak'} sávjában (${x.band[0]}–${x.band[1]}) — ${esc(x.n)}`,x)),'nincs'));
+  const dc=run.dropChange;out.push(sec('Leállás-csoportok az előző futás óta',dc&&(dc.gone.length||dc.added.length)?[`<div>${dc.gone.length} megszűnt, ${dc.added.length} új: ${dc.added.slice(0,8).map(esc).join(' · ')}</div>`]:[],dc?'nincs változás':'első futás ezen a szinten'));
+  // T6: the drawn routes the links asked for, and how much of each the result followed
+  if(P.via&&P.via.length)out.push(sec('Rajzolt betáp-útvonalak',P.via.map(v=>li((v.missing?'⚠ ':v.pct<90?'⚠ ':'✓ ')+esc(v.ref)+' ('+(v.what||'')+') — '+esc(v.n)+': '+esc(v.via)+(v.missing?' már nincs a tervben':' — '+v.pct+' %-ban követve'),v,v.missing||v.pct<90?'#8a5a00':''))));
+  out.push(sec('Kábel helyiségenként',[`<div>${P.rooms.map(r=>esc(r.n)+' '+n(r.m)+' m').join(' · ')}</div>`]));
+  return out.join('');}
+function blReportDialog(){const run=blRun(state.active);if(run.err){$('hud').textContent=run.err;openModal('Pálya-ellenőrzés',`<div style="font-size:12px">${esc(run.err)}</div>`,()=>{},'Rendben');return null;}
+  openModal('Pálya-ellenőrzés',`<div style="font-size:12px">${blSummary(run.R)}</div><div style="max-height:62vh;overflow:auto">${blReportHtml(run)}</div>`,()=>{},'Rendben');return run;}
 function blRoutesDialog(){const run=blRun(state.active);if(run.err){$('hud').textContent=run.err;openModal('Pályák kiszámítása',`<div style="font-size:12px">${esc(run.err)}</div>`,()=>{},'Rendben');return null;}
-  const have=data.paths.some(p=>p&&p.gen==='bl'&&(p.nodes||[]).some(n=>n.level===run.level));
+  const have=data.paths.some(p=>p&&p.gen==='bl'&&(p.nodes||[]).some(n=>n.level===run.level)),errs=blErrors(run);
   openModal('Pályák kiszámítása',`<div style="font-size:12px">${blSummary(run.R)} <span style="color:#888">· ${run.ms} ms</span></div>`
     +`<div style="font-size:11px;color:#666;margin-top:4px">Gerinc ${run.R.W.trunk} · leágazó ${run.R.W.dist} mm (mennyezet ${run.cfg.ceiling} − 250 / − 400) · csak a vezethető falakon (🟩) · `
     +`a gerinc a Csatorna, a többi az ARM rétegre kerül.${have?' Az előző számítás pályái és dobozai lecserélődnek; a kézzel rajzolt pályák maradnak.':''}</div>`
     +`<label style="display:block;font-size:12px;margin-top:6px"><input type="checkbox" id="blCornerAll"${BL_OPT.cornerAll?' checked':''}> Doboz minden saroknál (BRIDGE rétegek, E5-Q4 A)</label>`
-    +blChecksHtml(run.R)+blWarnHtml(run),()=>{
-      const cb=document.getElementById('blCornerAll'),want=!!(cb&&cb.checked);let r=run;
+    +(errs.length?`<label style="display:block;font-size:12px;margin-top:6px;color:#b00020"><input type="checkbox" id="blConfirmErr"> ⛔ ${errs.length} hiba — a hibák ellenére felrajzolom</label>`:'')
+    +blChecksHtml(run.R)+blWarnHtml(run)
+    +`<details style="margin-top:8px"><summary style="font-size:12px;cursor:pointer"><b>Pálya-ellenőrzés</b></summary>${blReportHtml(run)}</details>`,()=>{
+      const cb=document.getElementById('blCornerAll'),want=!!(cb&&cb.checked),ce=document.getElementById('blConfirmErr');let r=run;
+      if(errs.length&&!(ce&&ce.checked)){$('hud').textContent='⛔ '+errs.length+' hiba: nézd meg őket, vagy pipáld be a megerősítést.';return false;}
       if(want!==BL_OPT.cornerAll){BL_OPT.cornerAll=want;r=blRun(run.level);if(r.err){$('hud').textContent=r.err;return;}}
-      const res=blApplyRoutes(r);$('hud').textContent='Pályák: '+res.paths+' cső, '+res.boxes+' doboz'+(res.replaced?' (az előző '+res.replaced+' elem lecserélve)':'')+' — Vezetékek: 🧵';},'Pályák felrajzolása');
+      const res=blApplyRoutes(r,{confirm:!!(ce&&ce.checked)});if(res.err){$('hud').textContent=res.err;return false;}
+      $('hud').textContent='Pályák: '+res.paths+' cső, '+res.boxes+' doboz'+(res.replaced?' (az előző '+res.replaced+' elem lecserélve)':'')+' — Vezetékek: 🧵';},'Pályák felrajzolása');
   return run;}
 function blWiresDialog(){const sel=selected&&selected.t==='devices'?data.devices[selected.i]:null,fl=selected&&selected.t==='floors'?data.floors[selected.i]:null;
   const dev=sel&&epCodeOf(sel)?sel:null,rm=fl?blFloorId(fl):(dev?blRoomAt(dev.x,dev.y,dev.level):null);
@@ -233,10 +299,13 @@ registerActions([
  {id:'bl.routes',label:'Pályák kiszámítása',icon:'⚒',group:'Pálya',alias:'engine wireways routes compute palyak szamitas erosaram baseline',
   hint:'Az Erősáram pályái a vezethető falakon: gerinc az Elosztótól, leágazók, leállások, dobozok, csőméret — és az ellenőrzés (terhelhetőség, feszültségesés).',
   when:c=>!c.inEditor,run:()=>blRoutesDialog()},
+ {id:'bl.check',label:'Pálya-ellenőrzés',icon:'🔎',group:'Pálya',alias:'wireway report check palya ellenorzes jelentes',
+  hint:'Bekötetlen végpontok, jelöletlen falon futó méterek, a legterheltebb csatornák és dobozok, egy helyre került pontok, nyílás-ütközések, kábel helyiségenként.',
+  when:c=>!c.inEditor,run:()=>blReportDialog()},
  {id:'bl.wires',label:'Vezetékek',icon:'🧶',group:'Pálya',alias:'wiring cables vezetekek kabel behuzas',
   hint:'A kábelek a kiszámított pályákba: a kijelölt eszközé, a helyiségé vagy az egész házé.',when:c=>!c.inEditor,run:()=>blWiresDialog()}]);
 
-window.blInput=blInput;window.blRun=blRun;window.blApplyRoutes=blApplyRoutes;window.blApplyWires=blApplyWires;window.blScopeLegs=blScopeLegs;
+window.blShow=blShow;window.blStale=blStale;window.blReportHtml=blReportHtml;window.blErrors=blErrors;window.blInput=blInput;window.blRun=blRun;window.blApplyRoutes=blApplyRoutes;window.blApplyWires=blApplyWires;window.blScopeLegs=blScopeLegs;
 window.BL=BL;window.BL_OPT=BL_OPT;
 // a lamp with no wall switch, switched by an RBX output (P33: the bathroom fan, the wardrobe light) — the engine then
 // does not guess a switch for it
