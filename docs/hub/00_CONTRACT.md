@@ -12,7 +12,10 @@
   `Planner/START.cmd` and `VRG-DE.cmd`, and a `vrg-kapu` config in `.claude/launch.json`.
 - **Never touch** other tools' files. Known dirty files that are not yours (do not stage, do not
   "fix"): see `git status` at start and report what you find before working.
-- Commit to `secacc` after each finished WP. Never push, never merge, never switch branch, never stash.
+- Commit to `secacc` after each finished WP, message `Kapu WP-Hn: …` (the same rule as `GO-HUB.md`
+  §1 and `PROMPTS.md` §2/§4). Never push, never merge, never switch branch, never stash.
+- A file outside the list above (e.g. `VRG-DE.cmd`, `tools/prompts/*`, the root `CLAUDE.md`, a `GO-*.md`)
+  only when the user asks for it in the session, each change in its own commit that says what and why.
 
 ## 2. Conventions
 
