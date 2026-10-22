@@ -21,7 +21,17 @@
   <div id="tip" hidden></div>
   <aside id="panel" hidden></aside>
   <div id="legend"></div>
-  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek</div>
+  <div id="board" aria-hidden="true"><div id="board-1"></div><div id="board-2"></div></div>
+  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek · Szóköz: lejátszás · ← →: lépés</div>
+  <div id="timeline" hidden>
+    <button id="tl-back" class="btn" title="Előző commit (←)">⏮</button>
+    <button id="tl-play" class="btn" title="Lejátszás (Szóköz)">▶</button>
+    <button id="tl-step" class="btn" title="Következő commit (→)">⏭</button>
+    <button id="tl-latest" class="btn" title="A mai állapot (End)">Most</button>
+    <button id="tl-speed" class="btn" title="Sebesség">1×</button>
+    <div id="tl-track"><canvas id="tl-strip"></canvas><input id="tl-range" type="range" min="0" max="0" step="1" aria-label="Idővonal"></div>
+    <span id="tl-pos"></span>
+  </div>
 </main>
 <script>window.CITY = /*__CITY__*/null;</script>
 <script type="module">/*__SCRIPT__*/</script>

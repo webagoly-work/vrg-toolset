@@ -63,7 +63,9 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 | C1 | DONE | 2026-10-22 | |
 | C2 | DONE | 2026-10-22 | look check passed ("promising") |
 | C3 | DONE ⏸ | 2026-10-22 | procedural windows (lit ~ recency², distance LOD), night sky + vignette, beacon, `#cam=…&sel=…` links + Link button, freshness badge, START.cmd **K** (T11). Waiting for the look check |
-| C4–C10 | open | | |
+| C4 | DONE | 2026-10-22 | every file instanced (ghosts too), height/footprint/windows at commit T, tween, roof flash, Step/Play/Most + speed + activity strip, split-flap board, `#t=<hash>` links, panel "Ezen a ponton"; `tools/selftest.js` (rename/delete/agent fixture, 8 checks) |
+| C5 | in progress | 2026-10-22 | |
+| C6–C10 | open | | |
 
 ## 5. Decisions
 
@@ -82,4 +84,5 @@ node tools/fetch-vendor.js three                       # once: three.js into Ven
 node CodeCity/scan.js <repo> --html CodeCity/dist/<name>.html
 node CodeCity/build.js                                 # the empty template that opens a *.city.json
 node CodeCity/tools/shot.js "CodeCity/dist/<name>.html#pick=0.45,0.6"   # headless check incl. picking
+node CodeCity/tools/selftest.js                        # scanner: rename / delete / agent trailer
 ```

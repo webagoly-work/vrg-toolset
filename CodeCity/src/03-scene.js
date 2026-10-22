@@ -78,14 +78,14 @@ function buildingMaterial() {
   mat.onBeforeCompile = sh => {
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
-attribute float aLit;
-varying float vLit; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;`)
+attribute float aLit; attribute float aFlash;
+varying float vLit; varying float vFlash; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>
-vLit = aLit; vONrm = objectNormal; vSeed = float(gl_InstanceID);
+vLit = aLit; vFlash = aFlash; vONrm = objectNormal; vSeed = float(gl_InstanceID);
 vWPos = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
-varying float vLit; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;
+varying float vLit; varying float vFlash; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;
 // fract-only hash (no sin of large numbers: that amplified float noise into speckled windows);
 // the seed is flat and every input is rounded, so a window cell is one value end to end
 float cityHash(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }`)
@@ -101,6 +101,8 @@ if (abs(vONrm.y) < 0.5) {
   win = mix(win, 0.3, far); on = mix(on, vLit, far);
   diffuseColor.rgb *= mix(1.0, 0.35, win);
   totalEmissiveRadiance += win * on * vec3(1.0, 0.78, 0.42) * 1.1;
+} else if (vONrm.y > 0.5) {
+  totalEmissiveRadiance += vFlash * vec3(1.0, 0.92, 0.7) * 1.6;   // roof flash: touched by this commit
 }`);
   };
   return mat;
@@ -124,28 +126,29 @@ function showCity(model) {
     plates.setColorAt(i, col.setHSL(0.64, 0.25, 0.07 + Math.min(d.depth, 6) * 0.025));
   });
 
-  const live = model.city.files.filter(f => !f.gone);
+  // every file that ever existed gets an instance (index = file index); 05-replay sizes them,
+  // and a file that does not exist at the shown commit is scaled to nothing
+  const all = model.city.files;
   const geo = unitBox.clone();
-  const lit = new Float32Array(live.length);
-  const buildings = new THREE.InstancedMesh(geo, buildingMaterial(), live.length);
+  const buildings = new THREE.InstancedMesh(geo, buildingMaterial(), all.length);
+  buildings.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   const baseColor = [];
-  live.forEach((f, i) => {
-    const { x, z, w, h } = f.rect;
-    m.makeScale(w, heightOf(f), h).setPosition(x + w / 2, f.base, z + h / 2);
-    buildings.setMatrixAt(i, m);
+  all.forEach((f, i) => {
     col.setHex(langColor(f.lang)).multiplyScalar(0.62);   // night: the body recedes, windows carry the light
     baseColor.push(col.clone());
     buildings.setColorAt(i, col);
-    lit[i] = litOf(f, model);
   });
-  geo.setAttribute('aLit', new THREE.InstancedBufferAttribute(lit, 1));
+  geo.setAttribute('aLit', new THREE.InstancedBufferAttribute(new Float32Array(all.length), 1).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('aFlash', new THREE.InstancedBufferAttribute(new Float32Array(all.length), 1).setUsage(THREE.DynamicDrawUsage));
 
   const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 12, 1, true).translate(0, 0.5, 0),
     new THREE.MeshBasicMaterial({ color: 0xffcf5a, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
   beacon.visible = false;
   group.add(plates, buildings, beacon);
   scene.add(group);
-  world = { group, buildings, plates, fileOf: live, dirOf: dirs, baseColor, beacon };
+  world = { group, buildings, plates, fileOf: all, dirOf: dirs, baseColor, beacon };
+  replayPrepare(model);
+  applyTime(replay.last, false);
 
   scene.fog = new THREE.Fog(HORIZON, model.side * 1.1, model.side * 3.2);
   orbit.target.set(0, 0, 0);
@@ -153,14 +156,19 @@ function showCity(model) {
   placeCamera();
 }
 
-// a light column over the selected building, as tall as the city is wide
+// a light column over the selected building, as tall as the city is wide; follows the replay
+let beaconFile = null;
 function setBeacon(f) {
-  const b = world.beacon;
-  b.visible = !!f;
-  if (f) {
-    const { x, z, w, h } = f.rect, r = Math.max(0.6, Math.min(w, h) * 0.18);
+  beaconFile = f;
+  placeBeacon();
+}
+function placeBeacon() {
+  const b = world.beacon, f = beaconFile, h = f ? replay.cur[f.i * 3] : 0;
+  b.visible = !!f && h > 0;
+  if (b.visible) {
+    const { x, z, w, h: d } = f.rect, r = Math.max(0.6, Math.min(w, d) * 0.18);
     b.scale.set(r, current.side * 0.6, r);
-    b.position.set(x + w / 2, f.base + heightOf(f), z + h / 2);
+    b.position.set(x + w / 2, f.base + h, z + d / 2);
   }
   requestRender();
 }
@@ -172,7 +180,9 @@ function pickAt(e) {
   const r = canvas.getBoundingClientRect();
   ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
-  const hit = ray.intersectObjects([world.buildings, world.plates], false)[0];
+  // a building scaled to nothing (not born yet / deleted) has a singular matrix: never a real hit
+  const hit = ray.intersectObjects([world.buildings, world.plates], false)
+    .find(h => h.object !== world.buildings || replay.cur[h.instanceId * 3] > 0);
   if (!hit) return null;
   return hit.object === world.buildings ? { file: world.fileOf[hit.instanceId], i: hit.instanceId } : { dir: world.dirOf[hit.instanceId] };
 }

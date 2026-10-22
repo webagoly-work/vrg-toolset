@@ -52,6 +52,21 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 @media (max-width: 600px) { #help { display: none; } #legend { bottom: 12px; } }
 .dim { color: var(--dim); }
 #panel, #legend, #tip, #help, #drop { z-index: 2; }
+/* replay: split-flap board (top left) and the timeline bar (bottom) */
+#board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;
+  background: #05070de6; border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; letter-spacing: .06em; }
+#board-1 { color: var(--accent); font-weight: bold; white-space: pre; overflow: hidden; }
+#board-2 { color: var(--text); white-space: pre; overflow: hidden; text-overflow: ellipsis; }
+#timeline { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; gap: 6px; align-items: center;
+  padding: 6px 12px; background: var(--panel); border-top: 1px solid var(--line); }
+#timeline .btn { min-width: 34px; padding: 3px 8px; }
+#tl-track { position: relative; flex: 1; height: 30px; }
+#tl-strip { position: absolute; inset: 0; width: 100%; height: 100%; }
+#tl-range { position: absolute; inset: 0; width: 100%; margin: 0; opacity: 0; cursor: pointer; }
+#tl-pos { color: var(--dim); font-size: 12px; min-width: 70px; text-align: right; }
+#stage:has(#timeline:not([hidden])) #legend { bottom: 78px; }
+#stage:has(#timeline:not([hidden])) #help { bottom: 52px; }
+@media (max-width: 700px) { #board { max-width: calc(100% - 24px); min-width: 0; } #tl-pos { display: none; } }
 </style>
 </head>
 <body>
@@ -69,7 +84,17 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   <div id="tip" hidden></div>
   <aside id="panel" hidden></aside>
   <div id="legend"></div>
-  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek</div>
+  <div id="board" aria-hidden="true"><div id="board-1"></div><div id="board-2"></div></div>
+  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek · Szóköz: lejátszás · ← →: lépés</div>
+  <div id="timeline" hidden>
+    <button id="tl-back" class="btn" title="Előző commit (←)">⏮</button>
+    <button id="tl-play" class="btn" title="Lejátszás (Szóköz)">▶</button>
+    <button id="tl-step" class="btn" title="Következő commit (→)">⏭</button>
+    <button id="tl-latest" class="btn" title="A mai állapot (End)">Most</button>
+    <button id="tl-speed" class="btn" title="Sebesség">1×</button>
+    <div id="tl-track"><canvas id="tl-strip"></canvas><input id="tl-range" type="range" min="0" max="0" step="1" aria-label="Idővonal"></div>
+    <span id="tl-pos"></span>
+  </div>
 </main>
 <script>window.CITY = null;</script>
 <script type="module">/* three.js r169 (npm three@0.169.0) — https://threejs.org
@@ -188,18 +213,8 @@ function layoutCity(model) {
   model.side = side;
 }
 
-// height from commit count — switchable in a later WP
-const heightOf = f => 1.5 + 5 * Math.log2(1 + f.n);
-
-// share of lit windows: how recently the file changed, on the repo's own clock (first..last commit),
-// squared so only genuinely recent work lights up; a few windows always burn
-function litOf(f, model) {
-  const c = model.city.commits;
-  if (!c.length || f.last < 0) return 0.06;
-  const t0 = c[0][0], t1 = c[c.length - 1][0], span = Math.max(1, t1 - t0);
-  const r = 1 - (t1 - c[f.last][0]) / span;
-  return 0.06 + 0.86 * r * r;
-}
+// height from commit count (at the commit being shown) — switchable in a later WP
+const heightN = n => 1.5 + 5 * Math.log2(1 + n);
 
 // ==== src/03-scene.js
 // 03-scene.js — renderer, orbit camera, district plates and instanced buildings, picking.
@@ -282,14 +297,14 @@ function buildingMaterial() {
   mat.onBeforeCompile = sh => {
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
-attribute float aLit;
-varying float vLit; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;`)
+attribute float aLit; attribute float aFlash;
+varying float vLit; varying float vFlash; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>
-vLit = aLit; vONrm = objectNormal; vSeed = float(gl_InstanceID);
+vLit = aLit; vFlash = aFlash; vONrm = objectNormal; vSeed = float(gl_InstanceID);
 vWPos = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
-varying float vLit; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;
+varying float vLit; varying float vFlash; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;
 // fract-only hash (no sin of large numbers: that amplified float noise into speckled windows);
 // the seed is flat and every input is rounded, so a window cell is one value end to end
 float cityHash(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }`)
@@ -305,6 +320,8 @@ if (abs(vONrm.y) < 0.5) {
   win = mix(win, 0.3, far); on = mix(on, vLit, far);
   diffuseColor.rgb *= mix(1.0, 0.35, win);
   totalEmissiveRadiance += win * on * vec3(1.0, 0.78, 0.42) * 1.1;
+} else if (vONrm.y > 0.5) {
+  totalEmissiveRadiance += vFlash * vec3(1.0, 0.92, 0.7) * 1.6;   // roof flash: touched by this commit
 }`);
   };
   return mat;
@@ -328,28 +345,29 @@ function showCity(model) {
     plates.setColorAt(i, col.setHSL(0.64, 0.25, 0.07 + Math.min(d.depth, 6) * 0.025));
   });
 
-  const live = model.city.files.filter(f => !f.gone);
+  // every file that ever existed gets an instance (index = file index); 05-replay sizes them,
+  // and a file that does not exist at the shown commit is scaled to nothing
+  const all = model.city.files;
   const geo = unitBox.clone();
-  const lit = new Float32Array(live.length);
-  const buildings = new THREE.InstancedMesh(geo, buildingMaterial(), live.length);
+  const buildings = new THREE.InstancedMesh(geo, buildingMaterial(), all.length);
+  buildings.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   const baseColor = [];
-  live.forEach((f, i) => {
-    const { x, z, w, h } = f.rect;
-    m.makeScale(w, heightOf(f), h).setPosition(x + w / 2, f.base, z + h / 2);
-    buildings.setMatrixAt(i, m);
+  all.forEach((f, i) => {
     col.setHex(langColor(f.lang)).multiplyScalar(0.62);   // night: the body recedes, windows carry the light
     baseColor.push(col.clone());
     buildings.setColorAt(i, col);
-    lit[i] = litOf(f, model);
   });
-  geo.setAttribute('aLit', new THREE.InstancedBufferAttribute(lit, 1));
+  geo.setAttribute('aLit', new THREE.InstancedBufferAttribute(new Float32Array(all.length), 1).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('aFlash', new THREE.InstancedBufferAttribute(new Float32Array(all.length), 1).setUsage(THREE.DynamicDrawUsage));
 
   const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 12, 1, true).translate(0, 0.5, 0),
     new THREE.MeshBasicMaterial({ color: 0xffcf5a, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
   beacon.visible = false;
   group.add(plates, buildings, beacon);
   scene.add(group);
-  world = { group, buildings, plates, fileOf: live, dirOf: dirs, baseColor, beacon };
+  world = { group, buildings, plates, fileOf: all, dirOf: dirs, baseColor, beacon };
+  replayPrepare(model);
+  applyTime(replay.last, false);
 
   scene.fog = new THREE.Fog(HORIZON, model.side * 1.1, model.side * 3.2);
   orbit.target.set(0, 0, 0);
@@ -357,14 +375,19 @@ function showCity(model) {
   placeCamera();
 }
 
-// a light column over the selected building, as tall as the city is wide
+// a light column over the selected building, as tall as the city is wide; follows the replay
+let beaconFile = null;
 function setBeacon(f) {
-  const b = world.beacon;
-  b.visible = !!f;
-  if (f) {
-    const { x, z, w, h } = f.rect, r = Math.max(0.6, Math.min(w, h) * 0.18);
+  beaconFile = f;
+  placeBeacon();
+}
+function placeBeacon() {
+  const b = world.beacon, f = beaconFile, h = f ? replay.cur[f.i * 3] : 0;
+  b.visible = !!f && h > 0;
+  if (b.visible) {
+    const { x, z, w, h: d } = f.rect, r = Math.max(0.6, Math.min(w, d) * 0.18);
     b.scale.set(r, current.side * 0.6, r);
-    b.position.set(x + w / 2, f.base + heightOf(f), z + h / 2);
+    b.position.set(x + w / 2, f.base + h, z + d / 2);
   }
   requestRender();
 }
@@ -376,7 +399,9 @@ function pickAt(e) {
   const r = canvas.getBoundingClientRect();
   ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
-  const hit = ray.intersectObjects([world.buildings, world.plates], false)[0];
+  // a building scaled to nothing (not born yet / deleted) has a singular matrix: never a real hit
+  const hit = ray.intersectObjects([world.buildings, world.plates], false)
+    .find(h => h.object !== world.buildings || replay.cur[h.instanceId * 3] > 0);
   if (!hit) return null;
   return hit.object === world.buildings ? { file: world.fileOf[hit.instanceId], i: hit.instanceId } : { dir: world.dirOf[hit.instanceId] };
 }
@@ -427,8 +452,9 @@ function openPanel(title, rows) {
   panel.querySelector('.x').onclick = closePanel;
   panel.hidden = false;
 }
+let shownFile = null;   // the file whose panel is open, refreshed when the replay moves
 function closePanel() {
-  $('panel').hidden = true;
+  $('panel').hidden = true; shownFile = null;
   share.sel = ''; setBeacon(null); writeHashSoon();
 }
 function showFile(f) {
@@ -436,11 +462,13 @@ function showFile(f) {
   openPanel(f.p, [['Nyelv', f.lang], ['Sorok', hu(f.loc)], ['Commitok', hu(f.n)],
     ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
     ['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
-    ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—']]);
-  share.sel = f.p; setBeacon(f); writeHashSoon();
+    ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—'],
+    ...(fileAtT(f) ? [['Ezen a ponton', `${hu(fileAtT(f)[0])} commit · ~${hu(fileAtT(f)[1])} sor`]] : [])]);
+  shownFile = f; share.sel = f.p; setBeacon(f); writeHashSoon();
 }
 function showDir(d) {
   const s = dirStats(d);
+  shownFile = null;
   openPanel((d.path || current.city.repo.name) + '/', [['Fájlok', hu(s.files)], ['Sorok', hu(s.loc)], ['Almappák', hu(d.dirs.size)]]);
   share.sel = ''; setBeacon(null); writeHashSoon();
 }
@@ -464,6 +492,7 @@ function writeHashSoon() {
     const t = orbit.target, q = new URLSearchParams();
     q.set('cam', [t.x, t.z, orbit.theta, orbit.phi, orbit.r].map(v => +v.toFixed(2)).join(','));
     if (share.sel) q.set('sel', share.sel);
+    if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
     history.replaceState(null, '', '#' + q.toString());
   }, 250);
 }
@@ -476,6 +505,8 @@ function readHash() {
     [orbit.theta, orbit.phi, orbit.r] = cam.slice(2);
     placeCamera();
   }
+  const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
+  if (ti >= 0) applyTime(ti, 0);
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
   hashRead = true;
   if (f) showFile(f);
@@ -504,6 +535,7 @@ function load(city) {
   showCity(current);
   legend(city);
   freshness(city);
+  tlSetup();
   const live = city.files.filter(f => !f.gone).length;
   $('title').textContent = `${city.repo.name}${city.repo.head ? ' @ ' + city.repo.head : ''} · ${hu(live)} fájl · ${hu(city.commits.length)} commit · ${hu(city.authors.length)} szerző`;
   document.title = `${city.repo.name} — VRG Kódváros`;
@@ -522,6 +554,233 @@ stage.addEventListener('drop', e => {
   e.preventDefault(); $('drop').classList.remove('over');
   if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
 });
+
+// ==== src/05-replay.js
+// 05-replay.js — the city at commit T: which files exist, how tall, how wide, how lit.
+// Height = commits so far, footprint = lines so far (inside the fixed plot), windows = recency on
+// the clock at T. Between commits the city is tweened, not jumped (God's Eye View interpolates
+// its live feeds the same way). The plot itself never moves — that is the layout's promise.
+// replay.cur holds [height, footprint scale, lit] per file; height 0 = does not exist at T.
+
+const replay = { T: -1, last: -1, touch: [], locAt: [], cur: new Float32Array(0), flash: new Float32Array(0), raf: 0 };
+
+function replayPrepare(model) {
+  const { files, commits } = model.city;
+  const touch = files.map(() => []), delta = files.map(() => []);
+  commits.forEach((c, ci) => {
+    const ch = c[5];
+    for (let i = 0; i < ch.length; i += 3) { touch[ch[i]].push(ci); delta[ch[i]].push(ch[i + 1] - ch[i + 2]); }
+  });
+  replay.touch = touch;
+  replay.locAt = delta.map(d => { let s = 0; return d.map(x => (s = Math.max(0, s + x))); }); // LOC after each touch
+  replay.last = Math.max(0, commits.length - 1);   // an empty history still shows "now"
+  replay.T = -1;
+  replay.cur = new Float32Array(files.length * 3);
+  replay.flash = new Float32Array(files.length);
+}
+
+// number of entries in sorted a that are <= t
+function countUpTo(a, t) { let lo = 0, hi = a.length; while (lo < hi) { const m = (lo + hi) >> 1; if (a[m] <= t) lo = m + 1; else hi = m; } return lo; }
+
+function litAt(ci, T) {
+  const c = current.city.commits;
+  if (ci < 0 || !c[T]) return 0.06;
+  const span = Math.max(1, c[T][0] - c[0][0]);
+  const r = Math.max(0, 1 - (c[T][0] - c[ci][0]) / span);
+  return 0.06 + 0.86 * r * r;
+}
+
+// [height, footprint scale, lit] of file i at commit T (T = replay.last means "now", from disk)
+function stateAt(f, i, T) {
+  const now = T >= replay.last, tl = replay.touch[i], k = countUpTo(tl, T);
+  if (f.gone ? f.goneAt <= T || k === 0 : k === 0 && !(now || tl.length === 0)) return [0, 0, 0];
+  const n = now ? f.n : k;
+  const loc = now ? f.loc : replay.locAt[i][k - 1];
+  const s = Math.sqrt(Math.min(1, Math.max(0.15, loc / Math.max(1, f.maxLoc))));
+  return [heightN(n), s, litAt(k ? tl[k - 1] : -1, T)];
+}
+
+const _m = new THREE.Matrix4();
+function writeInstances(vals) {
+  const b = world.buildings, files = current.city.files, lit = b.geometry.attributes.aLit, fl = b.geometry.attributes.aFlash;
+  for (let i = 0; i < files.length; i++) {
+    const h = vals[i * 3], s = vals[i * 3 + 1], { x, z, w, h: d } = files[i].rect;
+    if (h <= 0) _m.makeScale(0, 0, 0);
+    else _m.makeScale(w * s, h, d * s).setPosition(x + w / 2, files[i].base, z + d / 2);
+    b.setMatrixAt(i, _m);
+    lit.array[i] = vals[i * 3 + 2];
+    fl.array[i] = replay.flash[i];
+  }
+  b.instanceMatrix.needsUpdate = lit.needsUpdate = fl.needsUpdate = true;
+  b.boundingSphere = null; b.boundingBox = null;   // raycast recomputes them from the new matrices
+  replay.cur.set(vals);
+  placeBeacon();
+}
+
+// show commit T; animate = tween length in ms (0 = jump)
+function applyTime(T, animate = 0) {
+  T = Math.max(0, Math.min(replay.last, T));
+  const files = current.city.files, target = new Float32Array(files.length * 3);
+  for (let i = 0; i < files.length; i++) target.set(stateAt(files[i], i, T), i * 3);
+  // roof flash: the files this commit touched; older flashes fade as the replay moves on
+  // (a plain jump to "now" shows no flash: the present city has no current commit to point at)
+  for (let i = 0; i < replay.flash.length; i++) replay.flash[i] *= 0.45;
+  if (animate || T < replay.last) { const ch = (current.city.commits[T] || [])[5] || []; for (let i = 0; i < ch.length; i += 3) replay.flash[ch[i]] = 1; }
+  else replay.flash.fill(0);
+  replay.T = T;
+  cancelAnimationFrame(replay.raf);
+  if (!animate || replay.cur.every(v => v === 0)) { writeInstances(target); onTimeChanged(); return; }
+  const from = replay.cur.slice(), t0 = performance.now(), tmp = new Float32Array(target.length);
+  const step = now => {
+    const k = Math.min(1, (now - t0) / animate), e = k * (2 - k);   // ease-out
+    for (let j = 0; j < tmp.length; j++) {
+      // a building being born grows from the ground; one disappearing sinks into it
+      tmp[j] = from[j] + (target[j] - from[j]) * e;
+    }
+    writeInstances(k < 1 ? tmp : target);
+    if (k < 1) replay.raf = requestAnimationFrame(step);
+  };
+  replay.raf = requestAnimationFrame(step);
+  onTimeChanged();
+}
+let onTimeChanged = () => {};   // 06-timeline and 04-ui hook in
+
+// the file at the shown commit, for the info panel: [commits so far, lines so far] or null at "now"
+function fileAtT(f) {
+  if (replay.T >= replay.last) return null;
+  const k = countUpTo(replay.touch[f.i], replay.T);
+  return [k, k ? replay.locAt[f.i][k - 1] : 0];
+}
+
+// ==== src/06-timeline.js
+// 06-timeline.js — replay controls: Step / Play / Latest (God's Eye View's weather timeline verbs),
+// speed, a scrubber over an activity strip, and the split-flap commit board.
+// Keys: Space play/pause · ← → step · Home first commit · End now.
+
+const tl = { playing: false, timer: 0, speed: 1 };
+const SPEEDS = [1, 2, 4];
+const AGENT_BAR = '#7dffb0', HUMAN_BAR = '#8fa6d8';   // the strip's bars: agent-assisted vs not
+
+// base pause between commits: the whole history in ~25 s at 1×, never faster than 8 commits/s
+const baseInterval = () => Math.max(120, Math.min(900, 25000 / Math.max(1, replay.last + 1)));
+
+function tlStep(d) { tlPause(); applyTime(replay.T + d, 260); }
+function tlLatest() { tlPause(); applyTime(replay.last, 260); }
+function tlPlay() {
+  if (tl.playing) return;
+  if (replay.T >= replay.last) applyTime(0, 0);      // from the end, a play starts over
+  tl.playing = true; $('tl-play').textContent = '⏸'; $('tl-play').title = 'Megállítás (Szóköz)';
+  const tick = () => {
+    if (!tl.playing) return;
+    if (replay.T >= replay.last) { tlPause(); return; }
+    const iv = baseInterval() / tl.speed;
+    applyTime(replay.T + 1, Math.min(400, iv * 0.9));
+    tl.timer = setTimeout(tick, iv);
+  };
+  tick();
+}
+function tlPause() {
+  tl.playing = false; clearTimeout(tl.timer);
+  $('tl-play').textContent = '▶'; $('tl-play').title = 'Lejátszás (Szóköz)';
+}
+
+// ---- split-flap board (after God's Eye View's splitFlap.js): changed characters spin through
+// the alphabet and settle left to right; unchanged ones stay put. Reduced motion: plain text.
+const FLAP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:·-/';
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+function flapTo(el, text, budget) {
+  const from = el.dataset.text || '';
+  el.dataset.text = text;
+  cancelAnimationFrame(el._raf);
+  if (reduceMotion.matches || !from) { el.textContent = text; return; }
+  const len = Math.max(from.length, text.length), per = Math.max(4, Math.min(22, budget / (len + 6))), t0 = performance.now();
+  const frame = now => {
+    const settled = (now - t0) / per - 6;   // index up to which characters have landed
+    let out = '';
+    for (let i = 0; i < len; i++) {
+      const to = text[i] || ' ', was = from[i] || ' ';
+      out += i < settled || to === was ? to : FLAP[(Math.random() * FLAP.length) | 0];
+    }
+    el.textContent = out.trimEnd();
+    if (settled < len) el._raf = requestAnimationFrame(frame); else el.textContent = text;
+  };
+  el._raf = requestAnimationFrame(frame);
+  // a frame clock that stalls (background tab, headless capture) must not leave the board scrambled
+  clearTimeout(el._land);
+  el._land = setTimeout(() => { cancelAnimationFrame(el._raf); el.textContent = el.dataset.text; }, per * (len + 6) + 150);
+}
+
+function boardText() {
+  const c = current.city.commits;
+  if ((replay.T >= replay.last && !tl.playing) || !c.length) {
+    return [`MOST · ${current.city.repo.head || ''}`.trim(), `${hu(c.length)} commit · ${current.city.repo.branch || ''}`.trim()];
+  }
+  const k = c[replay.T];
+  const who = current.city.authors[k[1]] + (k[2] >= 0 ? ' + ' + current.city.agents[k[2]] : '');
+  return [`${k[4]} · ${new Date(k[0] * 1000).toLocaleDateString('hu-HU')} · ${who}`, k[3].slice(0, 70)];
+}
+
+function tlRender() {
+  if (!current) return;
+  $('tl-range').value = replay.T;
+  const [a, b] = boardText(), budget = tl.playing ? baseInterval() / tl.speed * 0.9 : 700;
+  flapTo($('board-1'), a.toUpperCase(), budget);
+  flapTo($('board-2'), b, budget);
+  $('tl-pos').textContent = `${replay.T + 1} / ${replay.last + 1}`;
+  drawStrip();
+}
+
+// activity strip: one bar per commit, height ~ log(lines changed), the shown commit marked
+function drawStrip() {
+  const cv = $('tl-strip'), r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio, 2);
+  if (!r.width) return;
+  cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+  const g = cv.getContext('2d'), c = current.city.commits, n = c.length, W = cv.width, H = cv.height;
+  g.clearRect(0, 0, W, H);
+  const size = c.map(k => { let s = 0; for (let i = 1; i < k[5].length; i += 3) s += k[5][i] + k[5][i + 1]; return Math.log2(1 + s); });
+  const max = Math.max(1, ...size), bw = W / Math.max(1, n);
+  c.forEach((k, i) => {
+    const h = Math.max(1.5 * dpr, (size[i] / max) * (H - 2 * dpr));
+    g.globalAlpha = i <= replay.T ? 0.95 : 0.3;
+    g.fillStyle = k[2] >= 0 ? AGENT_BAR : HUMAN_BAR;
+    g.fillRect(i * bw + bw * 0.15, H - h, Math.max(1, bw * 0.7), h);
+  });
+  g.globalAlpha = 1;
+  if (replay.T < replay.last) { g.fillStyle = '#ffcf5a'; g.fillRect((replay.T + 0.5) * bw - dpr, 0, 2 * dpr, H); }
+}
+
+function tlSetup() {
+  const rg = $('tl-range');
+  rg.max = replay.last; rg.value = replay.T;
+  $('timeline').hidden = current.city.commits.length < 2;
+  delete $('board-1').dataset.text; delete $('board-2').dataset.text;
+  tlRender();
+}
+
+$('tl-back').onclick = () => tlStep(-1);
+$('tl-step').onclick = () => tlStep(1);
+$('tl-latest').onclick = tlLatest;
+$('tl-play').onclick = () => (tl.playing ? tlPause() : tlPlay());
+$('tl-speed').onclick = () => {
+  tl.speed = SPEEDS[(SPEEDS.indexOf(tl.speed) + 1) % SPEEDS.length];
+  $('tl-speed').textContent = tl.speed + '×';
+};
+$('tl-range').addEventListener('input', e => { tlPause(); applyTime(+e.target.value, 120); });
+addEventListener('resize', () => current && drawStrip());
+addEventListener('keydown', e => {
+  if (!current || e.target.closest('input:not([type=range]), textarea') || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key;
+  if (k === ' ') { e.preventDefault(); tl.playing ? tlPause() : tlPlay(); }
+  else if (k === 'ArrowLeft') { e.preventDefault(); tlStep(-1); }
+  else if (k === 'ArrowRight') { e.preventDefault(); tlStep(1); }
+  else if (k === 'Home') { tlPause(); applyTime(0, 260); }
+  else if (k === 'End') tlLatest();
+});
+
+// ==== src/09-boot.js
+// 09-boot.js — runs last, so every module above is initialised before the first city loads.
+
+onTimeChanged = () => { tlRender(); writeHashSoon(); if (shownFile) showFile(shownFile); };
 
 if (window.CITY) {
   load(window.CITY);

@@ -33,8 +33,9 @@ function openPanel(title, rows) {
   panel.querySelector('.x').onclick = closePanel;
   panel.hidden = false;
 }
+let shownFile = null;   // the file whose panel is open, refreshed when the replay moves
 function closePanel() {
-  $('panel').hidden = true;
+  $('panel').hidden = true; shownFile = null;
   share.sel = ''; setBeacon(null); writeHashSoon();
 }
 function showFile(f) {
@@ -42,11 +43,13 @@ function showFile(f) {
   openPanel(f.p, [['Nyelv', f.lang], ['Sorok', hu(f.loc)], ['Commitok', hu(f.n)],
     ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
     ['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
-    ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—']]);
-  share.sel = f.p; setBeacon(f); writeHashSoon();
+    ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—'],
+    ...(fileAtT(f) ? [['Ezen a ponton', `${hu(fileAtT(f)[0])} commit · ~${hu(fileAtT(f)[1])} sor`]] : [])]);
+  shownFile = f; share.sel = f.p; setBeacon(f); writeHashSoon();
 }
 function showDir(d) {
   const s = dirStats(d);
+  shownFile = null;
   openPanel((d.path || current.city.repo.name) + '/', [['Fájlok', hu(s.files)], ['Sorok', hu(s.loc)], ['Almappák', hu(d.dirs.size)]]);
   share.sel = ''; setBeacon(null); writeHashSoon();
 }
@@ -70,6 +73,7 @@ function writeHashSoon() {
     const t = orbit.target, q = new URLSearchParams();
     q.set('cam', [t.x, t.z, orbit.theta, orbit.phi, orbit.r].map(v => +v.toFixed(2)).join(','));
     if (share.sel) q.set('sel', share.sel);
+    if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
     history.replaceState(null, '', '#' + q.toString());
   }, 250);
 }
@@ -82,6 +86,8 @@ function readHash() {
     [orbit.theta, orbit.phi, orbit.r] = cam.slice(2);
     placeCamera();
   }
+  const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
+  if (ti >= 0) applyTime(ti, 0);
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
   hashRead = true;
   if (f) showFile(f);
@@ -110,6 +116,7 @@ function load(city) {
   showCity(current);
   legend(city);
   freshness(city);
+  tlSetup();
   const live = city.files.filter(f => !f.gone).length;
   $('title').textContent = `${city.repo.name}${city.repo.head ? ' @ ' + city.repo.head : ''} · ${hu(live)} fájl · ${hu(city.commits.length)} commit · ${hu(city.authors.length)} szerző`;
   document.title = `${city.repo.name} — VRG Kódváros`;
@@ -128,18 +135,3 @@ stage.addEventListener('drop', e => {
   e.preventDefault(); $('drop').classList.remove('over');
   if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
 });
-
-if (window.CITY) {
-  load(window.CITY);
-  // after the first resize, so the camera has its real aspect
-  setTimeout(() => {
-    const q = readHash();
-    // test hook: #pick=0.5,0.6 hovers and clicks at that fraction of the canvas (tools/shot.js)
-    const pk = (q.get('pick') || '').split(',').map(Number);
-    if (pk.length === 2 && pk.every(Number.isFinite)) {
-      const r = canvas.getBoundingClientRect();
-      const e = { clientX: r.left + r.width * pk[0], clientY: r.top + r.height * pk[1] };
-      onHover(e); onPick(e);
-    }
-  }, 300);
-} else $('drop').hidden = false;
