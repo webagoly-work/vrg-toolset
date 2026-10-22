@@ -13,7 +13,7 @@
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.4 var(--font); }
 body { display: flex; flex-direction: column; overflow: hidden; }
 #bar { display: flex; gap: 12px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); }
-#bar b { color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
+#bar > b { color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
 #title { color: var(--dim); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .btn { border: 1px solid var(--line); padding: 3px 10px; cursor: pointer; border-radius: 3px; }
 .btn:hover { border-color: var(--accent); }
@@ -96,16 +96,38 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #panel ol.nb { margin: 0; padding-left: 20px; max-height: 180px; overflow: auto; }
 #panel ol.nb li { cursor: pointer; padding: 1px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #panel ol.nb li:hover { color: var(--accent); }
+
+/* query bar (header), its results, the brackets overlay and the HUD line */
+#qwrap { position: relative; flex: 0 1 460px; min-width: 160px; }
+#q { width: 100%; background: #0a0f1c; color: var(--text); border: 1px solid var(--line); border-radius: 3px; padding: 4px 8px; font: inherit; font-size: 12px; }
+#q:focus { outline: none; border-color: var(--accent); }
+#qres { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 5; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 4px; max-height: min(60vh, 420px); overflow: auto; font-size: 12px; }
+#qres .sum { padding: 6px 10px; color: var(--accent); border-bottom: 1px solid var(--line); }
+#qres ol { margin: 0; padding: 4px 0 4px 32px; }
+#qres li { cursor: pointer; padding: 2px 10px 2px 0; display: flex; gap: 8px; justify-content: space-between; }
+#qres li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#qres li b { color: var(--dim); font-weight: normal; white-space: nowrap; }
+#qres li:hover span { color: var(--accent); }
+#brk { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+#hud { position: absolute; right: 12px; bottom: 74px; z-index: 2; color: var(--accent); font-size: 12px; letter-spacing: .06em;
+  text-shadow: 0 0 6px #000; white-space: nowrap; max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
+#stage:not(:has(#timeline:not([hidden]))) #hud { bottom: 30px; }
+@media (max-width: 900px) { #bar #title { display: none; } #hud { max-width: calc(100% - 24px); bottom: 74px; } }
 </style>
 </head>
 <body>
 <header id="bar">
-  <b>Kódváros</b><span id="title">—</span><span id="fresh" hidden></span>
+  <b>Kódváros</b><span id="title">—</span>
+  <div id="qwrap"><input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Keresés ( / ) — pl. legnagyobb Planner · forró · régi 30 nap · >500 sor" aria-label="Keresés a városban"><div id="qres" hidden></div></div>
+  <span id="fresh" hidden></span>
   <button id="link" class="btn" hidden title="A nézet linkjének másolása (kamera + kijelölés)">Link</button>
   <label class="btn">Megnyitás…<input id="file" type="file" accept=".json" hidden></label>
 </header>
 <main id="stage">
   <canvas id="gl"></canvas>
+  <canvas id="brk" aria-hidden="true"></canvas>
+  <div id="hud" aria-live="off"></div>
   <div id="drop" hidden>
     <p>Húzd ide a <code>*.city.json</code> fájlt, vagy válaszd ki a <b>Megnyitás…</b> gombbal.</p>
     <p class="hint">Készítése: <code>node CodeCity/scan.js &lt;mappa&gt;</code></p>
@@ -264,10 +286,11 @@ moon.position.set(-0.6, 2, 0.9);
 scene.add(moon);
 
 let renderQueued = false;
+let afterRender = () => {};                   // screen-space overlays (10-query brackets, 11-hud) hook in
 function requestRender() {
   if (renderQueued) return;
   renderQueued = true;
-  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); });
+  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); afterRender(); });
 }
 new ResizeObserver(() => {
   const r = canvas.parentElement.getBoundingClientRect();
@@ -523,6 +546,7 @@ function writeHashSoon() {
     if (share.sel) q.set('sel', share.sel);
     if (lens.id !== 'alap') q.set('lens', lens.id);
     if (roads.all) q.set('roads', '1');
+    if (query.text) q.set('q', query.text);
     if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
     history.replaceState(null, '', '#' + q.toString());
   }, 250);
@@ -538,6 +562,7 @@ function readHash() {
   }
   if (q.get('lens')) setLens(q.get('lens'));
   if (q.get('roads') === '1' && !roads.all) toggleRoads();
+  if (q.get('q')) { $('q').value = q.get('q'); showQuery(q.get('q')); }
   const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
   if (ti >= 0) applyTime(ti, 0);
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
@@ -566,6 +591,7 @@ function load(city) {
   current = cityModel(city);
   layoutCity(current);
   roadsPrepare(current);
+  hudPrepare();
   showCity(current);
   freshness(city);
   tlSetup();
@@ -1075,10 +1101,181 @@ addEventListener('keydown', e => {
   if (e.key === 'u' || e.key === 'U') toggleRoads();
 });
 
-// ==== src/09-boot.js
+// ==== src/10-query.js
+// 10-query.js — the query bar: questions over the data already loaded, no AI, no network
+// (God's Eye View's analyst engine: a pure query function returns stable ids, and the surfaces —
+// result list, brackets — only draw them). Hungarian words, combined with AND:
+//   Planner, Inventory/src     path or name contains
+//   html, javascript, nyelv:md language
+//   csak claude / ügynök       agent-assisted (all / some commits) · ember: no agent record
+//   forró                      heavy recent churn
+//   régi 30 nap · friss 2 hét  untouched for / touched within (nap, hét, hónap, év)
+//   >500 sor · <20 sor · >5 commit
+//   legnagyobb · legaktívabb · legimportáltabb · legrégebbi   sort (default: lines)
+//   top 5 / 5                  how many
+// Brackets (God's Eye View's detection overlay) mark the results that are on screen.
+
+const UNIT_DAYS = { nap: 1, napja: 1, hét: 7, het: 7, hete: 7, hónap: 30, honap: 30, hó: 30, hónapja: 30, év: 365, ev: 365, éve: 365 };
+const SORTS = {
+  legnagyobb: ['loc', 'sorok'], legtöbb: ['loc', 'sorok'], legaktívabb: ['n', 'commitok'],
+  legimportáltabb: ['imp', 'importálók'], központi: ['imp', 'importálók'], legrégebbi: ['age', 'kor'], legfrissebb: ['fresh', 'frissesség'],
+};
+
+function runQuery(text) {
+  const files = current.city.files, c = current.city.commits, T = replay.T;
+  const words = text.toLowerCase().replace(/[„”"]/g, ' ').split(/\s+/).filter(Boolean);
+  const tests = [], said = [];
+  let sort = ['loc', 'sorok'], limit = 12;
+  const heat = heatCounts(), maxHeat = Math.max(1, ...heat);
+  const lastTouch = i => { const k = countUpTo(replay.touch[i], T); return k ? c[replay.touch[i][k - 1]][0] : -Infinity; };
+  const nowT = c.length ? c[T][0] : Date.now() / 1000;
+  const langs = new Set(files.map(f => f.lang.toLowerCase()));
+  const ext = { js: 'javascript', ts: 'typescript', md: 'markdown', py: 'python', css: 'css', html: 'html', json: 'json' };
+
+  for (let w = 0; w < words.length; w++) {
+    const word = words[w], next = words[w + 1], unit = words[w + 2];
+    let m;
+    if (word === 'top' && /^\d+$/.test(next || '')) { limit = +next; w++; }
+    else if (/^\d+$/.test(word) && !(next && (UNIT_DAYS[next] || /^(sor|commit)/.test(next)))) limit = +word;
+    else if ((m = /^([<>])(\d+)$/.exec(word)) && /^(sor|commit)/.test(next || '')) {
+      const key = next.startsWith('sor') ? 'loc' : 'n', v = +m[2], gt = m[1] === '>';
+      tests.push(i => { const val = key === 'loc' ? (fileAtT(files[i]) || [0, files[i].loc])[1] : (fileAtT(files[i]) || [files[i].n])[0]; return gt ? val > v : val < v; });
+      said.push(`${m[1]}${v} ${next}`); w++;
+    } else if ((word === 'régi' || word === 'regi' || word === 'érintetlen') && /^\d+$/.test(next || '') && UNIT_DAYS[unit]) {
+      const s = +next * UNIT_DAYS[unit] * 86400; tests.push(i => nowT - lastTouch(i) > s); said.push(`${next} ${unit} óta érintetlen`); w += 2;
+    } else if (word === 'friss' && /^\d+$/.test(next || '') && UNIT_DAYS[unit]) {
+      const s = +next * UNIT_DAYS[unit] * 86400; tests.push(i => nowT - lastTouch(i) <= s); said.push(`${next} ${unit} alatt érintve`); w += 2;
+    } else if (word === 'nem' && next === 'nyúlt') { words[w + 1] = 'régi'; }
+    else if (word === 'forró') { tests.push(i => heat[i] >= Math.max(2, maxHeat * 0.5)); said.push('forró'); }
+    else if (word === 'csak' && next) { const ag = next; tests.push(i => agentShareOf(i) === 1 && files[i].n > 0 && current.city.agents.some(a => a.toLowerCase() === ag)); said.push(`csak ${next}`); w++; }
+    else if (word === 'ügynök' || word === 'ugynok') { tests.push(i => agentShareOf(i) > 0); said.push('ügynökkel'); }
+    else if (word === 'ember') { tests.push(i => countUpTo(replay.touch[i], T) > 0 && agentShareOf(i) === 0); said.push('ügynök nélkül'); }
+    else if (SORTS[word]) sort = SORTS[word];
+    else if ((m = /^nyelv:(.+)$/.exec(word)) || langs.has(word) || ext[word]) {
+      const l = m ? (ext[m[1]] || m[1]) : (ext[word] || word); tests.push(i => files[i].lang.toLowerCase() === l); said.push(l);
+    } else if (/^(sor|sorok|commit|commitok|és|a|az|fájl|fájlok|mappában|ban|ben)$/.test(word)) { /* filler */ }
+    else { tests.push(i => files[i].p.toLowerCase().includes(word)); said.push(`„${word}”`); }
+  }
+
+  const alive = files.map((f, i) => i).filter(i => stateAt(files[i], i, T)[0] > 0);
+  const hits = alive.filter(i => tests.every(t => t(i)));
+  const key = {
+    loc: i => (fileAtT(files[i]) || [0, files[i].loc])[1], n: i => countUpTo(replay.touch[i], T),
+    imp: i => roads.importers[i].length, age: i => -lastTouch(i), fresh: i => lastTouch(i),
+  }[sort[0]];
+  hits.sort((a, b) => key(b) - key(a));
+  const items = hits.slice(0, Math.max(1, Math.min(200, limit)));
+  const summary = `${hu(hits.length)} találat ${hu(alive.length)} fájlból` + (said.length ? ` · ${said.join(' · ')}` : '') + ` · rendezés: ${sort[1]}`
+    + (hits.length > items.length ? ` · első ${items.length}` : '');
+  return { items, summary, metric: i => `${hu(key(i) < 0 ? 0 : sort[0] === 'age' || sort[0] === 'fresh' ? Math.round((nowT - lastTouch(i)) / 86400) : key(i))}${sort[0] === 'loc' ? ' sor' : sort[0] === 'n' ? ' commit' : sort[0] === 'imp' ? ' importáló' : ' napja'}` };
+}
+
+// ---- surfaces: the result list and the brackets
+const query = { items: [], text: '' };
+function showQuery(text) {
+  query.text = text.trim();
+  const box = $('qres');
+  if (!query.text || !current) { query.items = []; box.hidden = true; requestRender(); writeHashSoon(); return; }
+  const r = runQuery(query.text), files = current.city.files;
+  query.items = r.items;
+  box.innerHTML = `<div class="sum">${esc(r.summary)}</div><ol>${r.items.map(i =>
+    `<li data-i="${i}" title="${esc(files[i].p)}"><span>${esc(files[i].p)}</span><b>${r.metric(i)}</b></li>`).join('')}</ol>`;
+  box.hidden = false;
+  requestRender();
+  writeHashSoon();
+}
+$('q').addEventListener('input', e => showQuery(e.target.value));
+$('q').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.target.value = ''; showQuery(''); e.target.blur(); }
+  if (e.key === 'Enter' && query.items.length) pickResult(query.items[0]);
+});
+// the list steps aside when you go back to the city; the brackets stay until the query is cleared
+$('q').addEventListener('focus', () => { if (query.items.length || query.text) $('qres').hidden = false; });
+$('q').addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== $('q')) $('qres').hidden = true; }, 200));
+$('qres').addEventListener('mousedown', e => e.preventDefault());   // a click in the list must not blur the box first
+$('qres').addEventListener('click', e => { const li = e.target.closest('li[data-i]'); if (li) pickResult(+li.dataset.i); });
+function pickResult(i) { const f = current.city.files[i]; showFile(f); flyTo(f); }
+addEventListener('keydown', e => {
+  if (e.key === '/' && current && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus(); $('q').select(); }
+});
+
+// brackets: corner marks around each result's on-screen box, numbered like the list
+const brk = $('brk'), bctx = brk.getContext('2d'), _v = new THREE.Vector3();
+function drawBrackets() {
+  const r = brk.parentElement.getBoundingClientRect(), dpr = Math.min(devicePixelRatio, 2);
+  if (brk.width !== Math.round(r.width * dpr) || brk.height !== Math.round(r.height * dpr)) { brk.width = Math.round(r.width * dpr); brk.height = Math.round(r.height * dpr); }
+  bctx.clearRect(0, 0, brk.width, brk.height);
+  if (!query.items.length || !current) return;
+  bctx.lineWidth = 1.5 * dpr; bctx.strokeStyle = '#ffcf5a'; bctx.fillStyle = '#ffcf5a'; bctx.font = `${11 * dpr}px ui-monospace, Consolas, monospace`;
+  query.items.slice(0, 40).forEach((i, n) => {
+    const f = current.city.files[i], [h, s] = stateAt(f, i, replay.T);
+    if (h <= 0) return;
+    const { x, z, w, h: d } = f.rect, cx = x + w / 2, cz = z + d / 2, hw = w * s / 2, hd = d * s / 2;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, behind = false;
+    for (const [dx, dy, dz] of [[-1, 0, -1], [1, 0, -1], [-1, 0, 1], [1, 0, 1], [-1, 1, -1], [1, 1, -1], [-1, 1, 1], [1, 1, 1]]) {
+      _v.set(cx + dx * hw, f.base + dy * h, cz + dz * hd).project(camera);
+      if (_v.z > 1) behind = true;
+      const px = (_v.x + 1) / 2 * brk.width, py = (1 - _v.y) / 2 * brk.height;
+      x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py);
+    }
+    if (behind || x1 < 0 || y1 < 0 || x0 > brk.width || y0 > brk.height) return;
+    const pad = 3 * dpr, L = Math.max(4 * dpr, Math.min(12 * dpr, (x1 - x0) / 3));
+    x0 -= pad; y0 -= pad; x1 += pad; y1 += pad;
+    bctx.beginPath();
+    for (const [px, py, sx, sy] of [[x0, y0, 1, 1], [x1, y0, -1, 1], [x0, y1, 1, -1], [x1, y1, -1, -1]]) {
+      bctx.moveTo(px + sx * L, py); bctx.lineTo(px, py); bctx.lineTo(px, py + sy * L);
+    }
+    bctx.stroke();
+    bctx.fillText(String(n + 1), x1 + 3 * dpr, y0 + 9 * dpr);
+  });
+}
+
+// ==== src/11-hud.js
+// 11-hud.js — one HUD line that rewrites itself as you move (God's Eye View's HUD summary and
+// its "NEAR <landmark>" locality): the district under the camera's aim, how many files it holds
+// at the shown commit, how many are hot, and the nearest landmark (the most-imported files).
+
+let landmarks = [];
+function hudPrepare() {
+  landmarks = roads.importers.map((im, i) => [i, im.length]).filter(([, n]) => n >= 3)
+    .sort((a, b) => b[1] - a[1]).slice(0, 24).map(([i]) => i);
+}
+
+function districtAt(x, z) {
+  let d = current.root;
+  for (;;) {
+    const next = [...d.dirs.values()].find(c => { const r = c.rect; return x >= r.x && x <= r.x + r.w && z >= r.z && z <= r.z + r.h; });
+    if (!next) return d;
+    d = next;
+  }
+}
+
+function hudUpdate() {
+  if (!current) return;
+  const t = orbit.target, d = districtAt(t.x, t.z), files = current.city.files;
+  const heat = heatCounts(), hotMin = Math.max(2, Math.max(1, ...heat) * 0.5);
+  let n = 0, hot = 0;
+  (function walk(x) {
+    for (const f of x.files) if (stateAt(f, f.i, replay.T)[0] > 0) { n++; if (heat[f.i] >= hotMin) hot++; }
+    x.dirs.forEach(walk);
+  })(d);
+  // nearest landmark that exists now, within a fifth of the city of the aim point
+  let near = null, best = current.side * 0.2;
+  for (const i of landmarks) {
+    if (stateAt(files[i], i, replay.T)[0] <= 0) continue;
+    const { x, z, w, h } = files[i].rect, dist = Math.hypot(x + w / 2 - t.x, z + h / 2 - t.z);
+    if (dist < best) { best = dist; near = files[i]; }
+  }
+  $('hud').textContent = `KÖRZET ${(d.path || current.city.repo.name)}/ · ${hu(n)} fájl · ${hu(hot)} forró` + (near ? ` · NEAR ${near.name}` : '');
+}
+let hudTimer = 0;
+function hudSoon() { clearTimeout(hudTimer); hudTimer = setTimeout(hudUpdate, 120); }
+afterRender = () => { drawBrackets(); hudSoon(); };
+
+// ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
-onTimeChanged = () => { tlRender(); lensApply(); roadsRefresh(); writeHashSoon(); if (shownFile) showFile(shownFile); };
+onTimeChanged = () => { tlRender(); lensApply(); roadsRefresh(); if (query.text) showQuery(query.text); writeHashSoon(); if (shownFile) showFile(shownFile); };
 
 if (window.CITY) {
   load(window.CITY);

@@ -1,6 +1,6 @@
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
-onTimeChanged = () => { tlRender(); lensApply(); roadsRefresh(); writeHashSoon(); if (shownFile) showFile(shownFile); };
+onTimeChanged = () => { tlRender(); lensApply(); roadsRefresh(); if (query.text) showQuery(query.text); writeHashSoon(); if (shownFile) showFile(shownFile); };
 
 if (window.CITY) {
   load(window.CITY);

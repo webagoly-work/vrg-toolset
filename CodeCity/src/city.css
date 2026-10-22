@@ -7,7 +7,7 @@
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.4 var(--font); }
 body { display: flex; flex-direction: column; overflow: hidden; }
 #bar { display: flex; gap: 12px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); }
-#bar b { color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
+#bar > b { color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
 #title { color: var(--dim); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .btn { border: 1px solid var(--line); padding: 3px 10px; cursor: pointer; border-radius: 3px; }
 .btn:hover { border-color: var(--accent); }
@@ -90,3 +90,21 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #panel ol.nb { margin: 0; padding-left: 20px; max-height: 180px; overflow: auto; }
 #panel ol.nb li { cursor: pointer; padding: 1px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #panel ol.nb li:hover { color: var(--accent); }
+
+/* query bar (header), its results, the brackets overlay and the HUD line */
+#qwrap { position: relative; flex: 0 1 460px; min-width: 160px; }
+#q { width: 100%; background: #0a0f1c; color: var(--text); border: 1px solid var(--line); border-radius: 3px; padding: 4px 8px; font: inherit; font-size: 12px; }
+#q:focus { outline: none; border-color: var(--accent); }
+#qres { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 5; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 4px; max-height: min(60vh, 420px); overflow: auto; font-size: 12px; }
+#qres .sum { padding: 6px 10px; color: var(--accent); border-bottom: 1px solid var(--line); }
+#qres ol { margin: 0; padding: 4px 0 4px 32px; }
+#qres li { cursor: pointer; padding: 2px 10px 2px 0; display: flex; gap: 8px; justify-content: space-between; }
+#qres li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#qres li b { color: var(--dim); font-weight: normal; white-space: nowrap; }
+#qres li:hover span { color: var(--accent); }
+#brk { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+#hud { position: absolute; right: 12px; bottom: 74px; z-index: 2; color: var(--accent); font-size: 12px; letter-spacing: .06em;
+  text-shadow: 0 0 6px #000; white-space: nowrap; max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
+#stage:not(:has(#timeline:not([hidden]))) #hud { bottom: 30px; }
+@media (max-width: 900px) { #bar #title { display: none; } #hud { max-width: calc(100% - 24px); bottom: 74px; } }

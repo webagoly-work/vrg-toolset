@@ -8,12 +8,16 @@
 </head>
 <body>
 <header id="bar">
-  <b>Kódváros</b><span id="title">—</span><span id="fresh" hidden></span>
+  <b>Kódváros</b><span id="title">—</span>
+  <div id="qwrap"><input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Keresés ( / ) — pl. legnagyobb Planner · forró · régi 30 nap · >500 sor" aria-label="Keresés a városban"><div id="qres" hidden></div></div>
+  <span id="fresh" hidden></span>
   <button id="link" class="btn" hidden title="A nézet linkjének másolása (kamera + kijelölés)">Link</button>
   <label class="btn">Megnyitás…<input id="file" type="file" accept=".json" hidden></label>
 </header>
 <main id="stage">
   <canvas id="gl"></canvas>
+  <canvas id="brk" aria-hidden="true"></canvas>
+  <div id="hud" aria-live="off"></div>
   <div id="drop" hidden>
     <p>Húzd ide a <code>*.city.json</code> fájlt, vagy válaszd ki a <b>Megnyitás…</b> gombbal.</p>
     <p class="hint">Készítése: <code>node CodeCity/scan.js &lt;mappa&gt;</code></p>

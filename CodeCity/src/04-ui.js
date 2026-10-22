@@ -68,6 +68,7 @@ function writeHashSoon() {
     if (share.sel) q.set('sel', share.sel);
     if (lens.id !== 'alap') q.set('lens', lens.id);
     if (roads.all) q.set('roads', '1');
+    if (query.text) q.set('q', query.text);
     if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
     history.replaceState(null, '', '#' + q.toString());
   }, 250);
@@ -83,6 +84,7 @@ function readHash() {
   }
   if (q.get('lens')) setLens(q.get('lens'));
   if (q.get('roads') === '1' && !roads.all) toggleRoads();
+  if (q.get('q')) { $('q').value = q.get('q'); showQuery(q.get('q')); }
   const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
   if (ti >= 0) applyTime(ti, 0);
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
@@ -111,6 +113,7 @@ function load(city) {
   current = cityModel(city);
   layoutCity(current);
   roadsPrepare(current);
+  hudPrepare();
   showCity(current);
   freshness(city);
   tlSetup();

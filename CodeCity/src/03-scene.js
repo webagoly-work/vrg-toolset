@@ -15,10 +15,11 @@ moon.position.set(-0.6, 2, 0.9);
 scene.add(moon);
 
 let renderQueued = false;
+let afterRender = () => {};                   // screen-space overlays (10-query brackets, 11-hud) hook in
 function requestRender() {
   if (renderQueued) return;
   renderQueued = true;
-  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); });
+  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); afterRender(); });
 }
 new ResizeObserver(() => {
   const r = canvas.parentElement.getBoundingClientRect();

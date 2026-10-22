@@ -66,7 +66,8 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 | C4 | DONE | 2026-10-22 | every file instanced (ghosts too), height/footprint/windows at commit T, tween, roof flash, Step/Play/Most + speed + activity strip, split-flap board, `#t=<hash>` links, panel "Ezen a ponton"; `tools/selftest.js` (rename/delete/agent fixture, 8 checks) |
 | C5 | DONE | 2026-10-22 | 6 looks on keys 1–6 (body + windows + glow + plates + sky + fog), time-aware heat/age/agent, cranes on the hottest buildings, ruins (2 y untouched: dark windows), legends, `#lens=` links. Look check passed; default Alap (CITY-D6) |
 | C6 | DONE | 2026-10-22 | regex imports in scan.js (JS/TS, HTML, CSS, Python, Markdown links; relative only — 221 roads here), arcs on selection (amber imports · cyan importers · violet co-change), U = all roads, Szomszédok list (click flies there), `#roads=1`; selftest 9 checks |
-| C7 | in progress | 2026-10-22 | |
+| C7 | DONE | 2026-10-22 | query bar ( / ): offline Hungarian parser — path words, language, csak/ügynök/ember, forró, régi/friss N nap·hét·hónap·év, >N sor/commit, legnagyobb/legaktívabb/legimportáltabb/legrégebbi, top N; summary + list (click flies), numbered brackets on screen, `#q=` links; HUD line `KÖRZET · fájl · forró · NEAR <landmark>` |
+| C8 | in progress | 2026-10-22 | |
 | C7–C10 | open | | |
 
 ## 5. Decisions
