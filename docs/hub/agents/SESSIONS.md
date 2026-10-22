@@ -19,5 +19,6 @@ For a single program without a running job, the program's file in this folder is
 | `GO R1018` | `GO-R1018.md` | main checkout, `main` | Continue the Planner round 2026-10-18 (Födém · Igénylista · Házimozi); only the C6 Mozi fal pen feel is open. |
 | `GO ADAT` | `GO-ADAT.md` | `wt-planner-stack` | P33: from the power base layer to Data/PoE, LED feeds and the old plan. Not in root `CLAUDE.md`; paste the file into a new session. |
 | `GO HUB` | `GO-HUB.md` | SecAcc worktree, `secacc` | Build VRG Kapu from `docs/hub/`, next open WP, stopping at every ⏸. |
+| `GO STRICT` | `GO-STRICT.md` | main checkout, `main` | Commit the five uncommitted programs the Kapu links to (HUB-Q24). Not in root `CLAUDE.md`; until `secacc` is merged, the file is in the SecAcc worktree. |
 
 Source: the header of each GO file and the root `CLAUDE.md` "Codephrases", 2026-10-22.
