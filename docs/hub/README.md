@@ -48,7 +48,7 @@ two users and cuts it into small work packages for another Claude account to bui
 | 4 | **H10** | Kapu segéd: serve, open tool / folder / terminal / Claude Code, git status/pull | Q08 Q05 | |
 | 4 | **H11** | Tour, glossary, installers, Open MCT slot, export, link check | Q12 | done |
 | 4 | **H12** | Layer 3 agent init docs per program + `GO HUB` codephrase | — | done |
-| 5 | **H13** | OneDrive links, 00_START copy, colleague guide, clean-profile verify | your links | |
+| 5 | **H13** | OneDrive links, 00_START copy, colleague guide, clean-profile verify | your links | partial |
 
 Cheaper model fine: H0 H1 H8 H9 H12. Strong model: HA H2 H5 H6 H7 H10 + every VERIFY.
 
@@ -70,7 +70,7 @@ Cheaper model fine: H0 H1 H8 H9 H12. Strong model: HA H2 H5 H6 H7 H10 + every VE
 | H10 | done | 2026-10-22 | Hub/companion/server.js (no deps): 127.0.0.1 only, Host + Origin + per-install token (.token, gitignored), whitelisted actions with exact shapes, realpath inside roots (repo + VRG-DE), argument-array detached spawns, folder as cwd (never on a command line), 16 KB limit, KP_DRY_RUN; page: 92-companion (actions alive, ⌨ Terminál, ✳ Claude Code, git pull in ☰, Belépések row with branch/dirty/behind); VRG Kapu.cmd starts it (CRLF, ASCII). Tests 76/76 (real server, random port, dry run); Edge against :8795 dry run green; token never in dist. |
 | H11 | done | 2026-10-22 | 97-extras: Első lépések tour (6 steps on real elements, first visit, ?notour for checks), Szótár (25 entries, glossary.json embedded; first occurrence underlined in the drawer), Telepítők, Open MCT long text (§9), Linkellenőrzés (repo paths vs the GitHub tree, local via companion, empty links; red dot), PNG export (theme colours inlined, 1.3 MB at full board) + print (all departments open, restored), Téma, Névjegy, Nyitott kérdések; ☰ grouped. Tests 80/80; Edge checkpoint pass + full regression green. Look approved (Q22 A tour on first visit, Q23 A ⛔ stays on the card). |
 | H12 | done | 2026-10-22 | `docs/hub/agents/`: 25 agent init docs (every live/dev program with a repo path; fixed 7-heading template, ≤ 60 lines, facts only from the files read, "— (nincs leírva)" where none, Forrás line), README (own Claude Code on-ramp) + SESSIONS (links are per account; the 6 GO files). Each is the first `agent[]` entry ("Ügynök indító"); the RCO "indító prompt másolása" now hands out that file, a GO node its codephrase. check-hub checks the template. 5 of the 25 describe work that is still uncommitted in the main checkout (research, client-look, media-wall, planner-cyd, board-console), read there read-only. GO-HUB.md gained §5 Status; the root CLAUDE.md `GO HUB` line still matches. Tests 82/82; spot check: catalogue --check, Inventory 201/201, check-start OK; Edge overlap audit 0/0 with the new cards, full regression green. |
-| H13 | open | | |
+| H13 | partial | 2026-10-22 | Done without the user: `build-hub.js --onedrive <00_START folder>` (folder must exist, never guessed; sha256-identical copy + generated `OLVASS_EL.md`, HU + EN italic, owner by GitHub name, no e-mail), `docs/hub/KOLLEGA-INDULAS.md` (8 steps + Claude Code, HU + EN italic, 5 screenshots from a scratch Edge profile in `docs/hub/img/`), §6 Hogyan tovább. Tests 84/84. **Waiting for the user:** setup steps 3–8, the OneDrive share links (12 empty), the real 00_START path, the clean-profile verify with their own token. `check-hub --strict`: 16 errors, all the main checkout's uncommitted paths (research, client-look, media-wall, planner-cyd, board-console). |
 
 ## 5. Answers
 
@@ -105,7 +105,18 @@ Answered 2026-10-21 by the user: **all A** (the recommended option of every ques
 
 Still needed from the user later (not decisions): the OneDrive share links (WP-H13).
 
-## 6. After the hub
+## 6. Hogyan tovább
 
-The v2 programs (`02_BUSINESS-TOPOLOGY.md` §3) each get their own pack later. Suggested first:
-Desk (notepad) · Lobby (GDPR) · Picker · Forge.
+**To finish v1 (WP-H13, the user's part):** setup checklist steps 3–8 (push, invite, 2FA, OneDrive
+shares, links). Then the share links go into `topology.json`;
+`node tools/build-hub.js --onedrive <…\VRG-Megosztott\00_START>` copies the page plus `OLVASS_EL.md`;
+the clean-profile verify runs with the user typing their own token. `node tools/check-hub.js --strict`
+must be clean before the invite, so the main checkout's uncommitted paths must be committed and
+pushed by then.
+
+**v2** (`02_BUSINESS-TOPOLOGY.md` §5; each program gets its own pack later), in the suggested order:
+1. **Desk** — the notepad (small, daily value)
+2. **Lobby** — GDPR, needed before client data spreads to a second person
+3. **Picker** — closes the Planner → order gap
+4. **Forge** — cuts token cost for everything after
+5. **Proof** — then the rest of the v2 list in `02_BUSINESS-TOPOLOGY.md` §3
