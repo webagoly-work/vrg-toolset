@@ -168,3 +168,6 @@ symbols grey while every class was correct and every test passed.
   and do what it says: the P33 second version — v1 (VG-2026-PT33-01) fully built + every other BRIDGE layer
   prepared (conduit, cable pulled, boxes, niches; no hardware), quick survey-precision quantities and prices vs v1,
   a per-room ESPHome marketing list; then hand the fair-price calculation to the Workflow Kit session (V2_FELADAT.md).
+- **`GO CITY`** — read `GO-CITY.md` at the repo root (branch `worktree-codecity`, worktree
+  `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\.claude\worktrees\codecity`, until merged) and do what it
+  says: build VRG Kódváros, the codebase-as-a-city viewer, one WP at a time from `docs/city/README.md` §3.
