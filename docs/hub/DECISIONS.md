@@ -135,3 +135,5 @@ WP-HA audit list.* Today 61 tracked repo files carry "P33" (plans, BRIDGE build 
 **Q22 — When does the tour start?** **Answered: A** — on the first visit in each browser, afterwards only from ☰ → Első lépések. (B: only from ☰.)
 
 **Q23 — ⛔ on every card when nobody is signed in?** **Answered: A** — keep ⛔ on the card; tour step 4 explains Belépések. (B: a faint padlock, reason on hover.)
+
+**Q24 — The `--strict` errors (2026-10-22).** **Answered: A** — the primary account commits and pushes the five programs that exist only as uncommitted work in the main checkout (research, client-look, media-wall, planner-cyd, board-console), deciding on `planner-cyd/app/bridge/macros.json` and `Firmware/.gitignore`. Nothing is copied onto `secacc`. (B: snapshot copy on secacc; C: a "pending" flag that skips them.)

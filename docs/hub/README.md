@@ -93,6 +93,7 @@ Answered 2026-10-21 by the user: **all A** (the recommended option of every ques
 | Q21 | A (default) — before a signed list exists everything stays ⛔ (now moot: the list is signed) |
 | Q22 | A — tour on the first visit per browser, then from ☰ (H11 look) |
 | Q23 | A — ⛔ stays on the card when signed out (H11 look) |
+| Q24 | A — the main checkout commits the 5 uncommitted programs; --strict is clean after that |
 | Q10c | A — the anonymiser runs on `main` right before the invite (setup step 3a), after `secacc` is merged |
 | Q11 | A — both save straight to `main` with a conflict check |
 | Q12 | A — Open MCT as a separate slot |
