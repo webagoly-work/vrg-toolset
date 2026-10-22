@@ -175,3 +175,7 @@ symbols grey while every class was correct and every test passed.
   `H:\cwebuser\projects\VRG-DE\SecAcc`, branch `secacc`, secondary account) and do what it says:
   build VRG Kapu, the shared Homepage / Business Topology board, from the pack in `docs/hub/`
   (next open WP in its README §3 order; stop at every ⏸).
+- **`GO STRICT`** — read `GO-STRICT.md` at the repo root (until `secacc` is merged it is only in the
+  SecAcc worktree: `H:\cwebuser\projects\VRG-DE\SecAcc\GO-STRICT.md`) and do what it says, in the
+  **main checkout**, branch `main`: commit the five uncommitted programs VRG Kapu links to
+  (research, client-look, media-wall, planner-cyd, board-console), asking about `macros.json` first.
