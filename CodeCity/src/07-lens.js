@@ -71,11 +71,12 @@ function lensApply() {
   if (!world) return;
   const files = current.city.files, b = world.buildings;
   const heat = heatCounts(), ctx = { heat, maxHeat: Math.max(1, ...heat) };   // cranes need heat in every lens
-  files.forEach((f, i) => { world.baseColor[i] = lens.color(f, i, ctx); b.setColorAt(i, world.baseColor[i]); });
+  const delta = compareDeltas();   // 14-compare: when a base is pinned, the change since it wins over the lens
+  files.forEach((f, i) => { world.baseColor[i] = (delta && compareColor(i, delta)) || lens.color(f, i, ctx); b.setColorAt(i, world.baseColor[i]); });
   if (hovered >= 0) b.setColorAt(hovered, _c1.copy(world.baseColor[hovered]).lerp(_c2.setHex(0xffffff), 0.55));
   b.instanceColor.needsUpdate = true;
   const u = b.material.userData.uniforms;
-  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = lens.gain; u.uBodyGlow.value = lens.glow;
+  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = delta ? 0.3 : lens.gain; u.uBodyGlow.value = delta ? 0.4 : lens.glow;
   const [ph, ps, pl] = lens.plate;
   world.dirOf.forEach((d, i) => world.plates.setColorAt(i, _c1.setHSL(ph, ps, pl + Math.min(d.depth, 6) * 0.025)));
   world.plates.instanceColor.needsUpdate = true;
@@ -84,9 +85,10 @@ function lensApply() {
   st.classList.remove('lens-heat', 'lens-nvg', 'lens-noir');
   if (lens.sky) st.classList.add(lens.sky);
   st.style.setProperty('--horizon', hex(new THREE.Color(lens.horizon)));
-  $('legend').innerHTML = lens.legend();
+  $('legend').innerHTML = delta ? compareLegend(delta) : lens.legend();
   document.querySelectorAll('#lenses button').forEach(x => x.classList.toggle('on', x.dataset.lens === lens.id));
   placeCranes(ctx);
+  compareGhosts(delta);
   requestRender();
 }
 

@@ -91,6 +91,7 @@ function drawStrip() {
     g.fillRect(i * bw + bw * 0.15, H - h, Math.max(1, bw * 0.7), h);
   });
   g.globalAlpha = 1;
+  if (compare.base !== null) { g.fillStyle = '#ff5a5a'; g.fillRect((compare.base + 0.5) * bw - dpr, 0, 2 * dpr, H); }
   if (replay.T < replay.last) { g.fillStyle = '#ffcf5a'; g.fillRect((replay.T + 0.5) * bw - dpr, 0, 2 * dpr, H); }
 }
 

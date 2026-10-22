@@ -72,7 +72,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #lenses kbd { font: inherit; color: var(--dim); margin-right: 4px; }
 #legend .ramp { height: 8px; width: 150px; margin: 4px 0 2px; border-radius: 2px; }
 #legend .ends { display: flex; justify-content: space-between; color: var(--dim); font-size: 11px; }
-@media (max-width: 1250px) { #lenses { top: auto; bottom: 108px; } #lenses small { display: none; } }
+@media (max-width: 1500px) { #lenses { top: auto; bottom: 108px; } #lenses small { display: none; } }
 @media (max-width: 700px) { #lenses kbd { display: none; } }
 /* the sky follows the look */
 #stage.lens-heat { background: radial-gradient(1px 1px at 37% 9%, #ffd8a066 50%, transparent 51%),
@@ -128,3 +128,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #caption .cap-n, #caption .cap-hint { color: var(--dim); font-size: 11px; }
 #caption .cap-hint { margin-top: 4px; }
 .touring #help, .touring #legend, .touring #lenses { opacity: .2; transition: opacity .4s; }
+
+/* C9: compare pin and the follow picker in the timeline bar */
+#tl-base.on { border-color: #ff5a5a; color: #ff5a5a; }
+#follow { background: #0a0f1c; color: var(--text); max-width: 150px; }

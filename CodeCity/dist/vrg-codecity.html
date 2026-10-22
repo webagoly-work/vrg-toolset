@@ -78,7 +78,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #lenses kbd { font: inherit; color: var(--dim); margin-right: 4px; }
 #legend .ramp { height: 8px; width: 150px; margin: 4px 0 2px; border-radius: 2px; }
 #legend .ends { display: flex; justify-content: space-between; color: var(--dim); font-size: 11px; }
-@media (max-width: 1250px) { #lenses { top: auto; bottom: 108px; } #lenses small { display: none; } }
+@media (max-width: 1500px) { #lenses { top: auto; bottom: 108px; } #lenses small { display: none; } }
 @media (max-width: 700px) { #lenses kbd { display: none; } }
 /* the sky follows the look */
 #stage.lens-heat { background: radial-gradient(1px 1px at 37% 9%, #ffd8a066 50%, transparent 51%),
@@ -134,6 +134,10 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #caption .cap-n, #caption .cap-hint { color: var(--dim); font-size: 11px; }
 #caption .cap-hint { margin-top: 4px; }
 .touring #help, .touring #legend, .touring #lenses { opacity: .2; transition: opacity .4s; }
+
+/* C9: compare pin and the follow picker in the timeline bar */
+#tl-base.on { border-color: #ff5a5a; color: #ff5a5a; }
+#follow { background: #0a0f1c; color: var(--text); max-width: 150px; }
 </style>
 </head>
 <body>
@@ -161,13 +165,15 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   <div id="legend"></div>
   <nav id="lenses" aria-label="Nézetek"></nav>
   <div id="board" aria-hidden="true"><div id="board-1"></div><div id="board-2"></div></div>
-  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek · Szóköz: lejátszás · ← →: lépés · 1–6: nézet · U: utak</div>
+  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek · Szóköz: lejátszás · ← →: lépés · 1–6: nézet · U: utak · B: összevetés</div>
   <div id="timeline" hidden>
     <button id="tl-back" class="btn" title="Előző commit (←)">⏮</button>
     <button id="tl-play" class="btn" title="Lejátszás (Szóköz)">▶</button>
     <button id="tl-step" class="btn" title="Következő commit (→)">⏭</button>
     <button id="tl-latest" class="btn" title="A mai állapot (End)">Most</button>
     <button id="tl-speed" class="btn" title="Sebesség">1×</button>
+    <button id="tl-base" class="btn" title="Összevetés: a mostani commit lesz a bázis (B)">Δ</button>
+    <select id="follow" class="btn" aria-label="Követés"></select>
     <div id="tl-track"><canvas id="tl-strip"></canvas><input id="tl-range" type="range" min="0" max="0" step="1" aria-label="Idővonal"></div>
     <span id="tl-pos"></span>
   </div>
@@ -570,6 +576,8 @@ function viewState() {
   if (roads.all) q.set('roads', '1');
   if (query.text) q.set('q', query.text);
   if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
+  if (compare.base !== null) q.set('base', current.city.commits[compare.base][4]);
+  if (follow.who) q.set('follow', follow.who.kind + follow.who.idx);
   return q;
 }
 function writeHashSoon() {
@@ -592,6 +600,10 @@ function applyView(q, ms = 0) {
   $('q').value = q.get('q') || ''; showQuery(q.get('q') || '');
   const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
   applyTime(ti >= 0 ? ti : replay.last, ms ? 300 : 0);
+  const bi = current.city.commits.findIndex(c => c[4] === q.get('base'));
+  if ((bi >= 0 ? bi : null) !== compare.base) setBase(bi >= 0 ? bi : null);
+  const fw = /^([ag])(\d+)$/.exec(q.get('follow') || '');
+  $('follow').value = fw ? fw[0] : ''; follow.who = fw ? { kind: fw[1], idx: +fw[2] } : null; followRefresh();
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
   if (f) showFile(f); else if (shownFile) closePanel();
 }
@@ -642,7 +654,9 @@ function load(city) {
   showCity(current);
   freshness(city);
   tlSetup();
+  compare.base = null; $('tl-base').classList.remove('on');
   lensApply();
+  followOptions();
   toursLoad();
   const live = city.files.filter(f => !f.gone).length;
   $('title').textContent = `${city.repo.name}${city.repo.head ? ' @ ' + city.repo.head : ''} · ${hu(live)} fájl · ${hu(city.commits.length)} commit · ${hu(city.authors.length)} szerző`;
@@ -857,6 +871,7 @@ function drawStrip() {
     g.fillRect(i * bw + bw * 0.15, H - h, Math.max(1, bw * 0.7), h);
   });
   g.globalAlpha = 1;
+  if (compare.base !== null) { g.fillStyle = '#ff5a5a'; g.fillRect((compare.base + 0.5) * bw - dpr, 0, 2 * dpr, H); }
   if (replay.T < replay.last) { g.fillStyle = '#ffcf5a'; g.fillRect((replay.T + 0.5) * bw - dpr, 0, 2 * dpr, H); }
 }
 
@@ -962,11 +977,12 @@ function lensApply() {
   if (!world) return;
   const files = current.city.files, b = world.buildings;
   const heat = heatCounts(), ctx = { heat, maxHeat: Math.max(1, ...heat) };   // cranes need heat in every lens
-  files.forEach((f, i) => { world.baseColor[i] = lens.color(f, i, ctx); b.setColorAt(i, world.baseColor[i]); });
+  const delta = compareDeltas();   // 14-compare: when a base is pinned, the change since it wins over the lens
+  files.forEach((f, i) => { world.baseColor[i] = (delta && compareColor(i, delta)) || lens.color(f, i, ctx); b.setColorAt(i, world.baseColor[i]); });
   if (hovered >= 0) b.setColorAt(hovered, _c1.copy(world.baseColor[hovered]).lerp(_c2.setHex(0xffffff), 0.55));
   b.instanceColor.needsUpdate = true;
   const u = b.material.userData.uniforms;
-  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = lens.gain; u.uBodyGlow.value = lens.glow;
+  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = delta ? 0.3 : lens.gain; u.uBodyGlow.value = delta ? 0.4 : lens.glow;
   const [ph, ps, pl] = lens.plate;
   world.dirOf.forEach((d, i) => world.plates.setColorAt(i, _c1.setHSL(ph, ps, pl + Math.min(d.depth, 6) * 0.025)));
   world.plates.instanceColor.needsUpdate = true;
@@ -975,9 +991,10 @@ function lensApply() {
   st.classList.remove('lens-heat', 'lens-nvg', 'lens-noir');
   if (lens.sky) st.classList.add(lens.sky);
   st.style.setProperty('--horizon', hex(new THREE.Color(lens.horizon)));
-  $('legend').innerHTML = lens.legend();
+  $('legend').innerHTML = delta ? compareLegend(delta) : lens.legend();
   document.querySelectorAll('#lenses button').forEach(x => x.classList.toggle('on', x.dataset.lens === lens.id));
   placeCranes(ctx);
+  compareGhosts(delta);
   requestRender();
 }
 
@@ -1521,10 +1538,149 @@ function makeCard() {
 function shareCard() { makeCard().toBlob(b => downloadFile(`${current.city.repo.name}-kodvaros.png`, b), 'image/png'); }
 $('card-btn').onclick = shareCard;
 
+// ==== src/14-compare.js
+// 14-compare.js — Összevetés: pin a base commit, then the city shows the change from base to the
+// shown commit (CodeCharta's delta map): green grew · red shrank · bright green new · grey unchanged,
+// and files deleted since the base stand as red glass ghosts. Lines are numstat running sums at both
+// ends, so the two sides are measured the same way. Δ pins/unpins; the strip marks the base in red.
+
+const compare = { base: null, ghosts: null };
+const GROW = 0x5fe08a, SHRINK = 0xff5a5a, NEW = 0xb6ffc8, SAME = 0x3a3f4f;
+
+const locAtT = (i, T) => { const k = countUpTo(replay.touch[i], T); return k ? replay.locAt[i][k - 1] : 0; };
+const aliveAt = (i, T) => stateAt(current.city.files[i], i, T)[0] > 0;
+
+// null when no base is pinned; else per file: {kind: 'new'|'gone'|'diff'|'none', d}
+function compareDeltas() {
+  if (compare.base === null || !current) return null;
+  const B = compare.base, T = replay.T, files = current.city.files;
+  const out = files.map((f, i) => {
+    const a = aliveAt(i, B), b = aliveAt(i, T);
+    if (!a && !b) return { kind: 'none', d: 0 };
+    if (!a) return { kind: 'new', d: locAtT(i, T) };
+    if (!b) return { kind: 'gone', d: -locAtT(i, B) };
+    return { kind: 'diff', d: locAtT(i, T) - locAtT(i, B) };
+  });
+  out.maxAbs = Math.max(1, ...out.filter(x => x.kind === 'diff').map(x => Math.abs(x.d)));
+  return out;
+}
+
+function compareColor(i, delta) {
+  const x = delta[i];
+  if (x.kind === 'new') return new THREE.Color(NEW);
+  if (x.kind !== 'diff') return null;
+  if (!x.d) return new THREE.Color(SAME);
+  const k = 0.35 + 0.65 * Math.log2(1 + Math.abs(x.d)) / Math.log2(1 + delta.maxAbs);
+  return new THREE.Color(SAME).lerp(new THREE.Color(x.d > 0 ? GROW : SHRINK), k);
+}
+
+function compareLegend(delta) {
+  const n = k => delta.filter(x => x.kind === k).length;
+  const up = delta.filter(x => x.kind === 'diff' && x.d > 0).length, down = delta.filter(x => x.kind === 'diff' && x.d < 0).length;
+  const c = current.city.commits, bc = c[compare.base], tc = c[replay.T];
+  const sw = h => `<i style="background:#${h.toString(16).padStart(6, '0')}"></i>`;
+  return `<b>Összevetés</b><div class="dim">${bc[4]} → ${tc ? tc[4] : 'most'}</div>`
+    + `<div>${sw(NEW)}új: ${hu(n('new'))}</div><div>${sw(GROW)}nőtt: ${hu(up)}</div><div>${sw(SHRINK)}csökkent: ${hu(down)}</div>`
+    + `<div>${sw(0x8a2a2a)}törölt (szellem): ${hu(n('gone'))}</div><div>${sw(SAME)}változatlan</div>`;
+}
+
+// red glass where a file stood at the base but is gone now
+function compareGhosts(delta) {
+  if (!compare.ghosts) {
+    compare.ghosts = new THREE.InstancedMesh(unitBox, new THREE.MeshBasicMaterial({ color: SHRINK, transparent: true, opacity: 0.22, depthWrite: false }), Math.max(1, current.city.files.length));
+    compare.ghosts.raycast = () => {};
+    scene.add(compare.ghosts);
+  }
+  const g = compare.ghosts, m = new THREE.Matrix4(), files = current.city.files;
+  let n = 0;
+  if (delta) files.forEach((f, i) => {
+    if (delta[i].kind !== 'gone' || n >= g.instanceMatrix.count) return;
+    const [h, s] = stateAt(f, i, compare.base), { x, z, w, h: d } = f.rect;
+    g.setMatrixAt(n++, m.makeScale(w * s, h, d * s).setPosition(x + w / 2, f.base, z + d / 2));
+  });
+  g.count = n;
+  g.instanceMatrix.needsUpdate = true;
+}
+
+function setBase(B) {
+  compare.base = B === null || B === undefined ? null : Math.max(0, Math.min(replay.last, B));
+  $('tl-base').classList.toggle('on', compare.base !== null);
+  $('tl-base').title = compare.base === null ? 'Összevetés: a mostani commit lesz a bázis (B)' : `Bázis: ${current.city.commits[compare.base][4]} — kattintásra megszűnik (B)`;
+  lensApply(); drawStrip(); writeHashSoon();
+}
+$('tl-base').onclick = () => setBase(compare.base === null ? replay.T : null);
+addEventListener('keydown', e => {
+  if (!current || e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input:not([type=range]), textarea, select')) return;
+  if (e.key === 'b' || e.key === 'B') setBase(compare.base === null ? replay.T : null);
+});
+
+// ==== src/15-follow.js
+// 15-follow.js — Követés: follow one author or one agent through the city (God's Eye View's
+// click-to-track with a fading trail). Each of their commits up to the shown one becomes a stop on
+// the roof of the file it changed most; the last 40 stops are joined, old ones fading, the newest
+// marked. Play the replay and the trail walks.
+
+const follow = { who: null, obj: null };   // who = { kind: 'a' | 'g', idx }
+const TRAIL_MAX = 40;
+
+function followOptions() {
+  const c = current.city, sel = $('follow');
+  sel.innerHTML = '<option value="">Követés: —</option>'
+    + c.authors.map((a, i) => `<option value="a${i}">${esc(a)}</option>`).join('')
+    + c.agents.map((a, i) => `<option value="g${i}">${esc(a)} (ügynök)</option>`).join('');
+  sel.value = '';
+  follow.who = null;
+}
+
+function followStops() {
+  const c = current.city.commits, who = follow.who, stops = [];
+  for (let ci = 0; ci <= replay.T && ci < c.length; ci++) {
+    const k = c[ci];
+    if (who.kind === 'a' ? k[1] !== who.idx : k[2] !== who.idx) continue;
+    let best = -1, size = -1;   // the file this commit changed most that still stands
+    for (let j = 0; j < k[5].length; j += 3) {
+      const n = k[5][j + 1] + k[5][j + 2];
+      if (n > size && roofOf(k[5][j])) { size = n; best = k[5][j]; }
+    }
+    if (best >= 0) stops.push(roofOf(best).add(new THREE.Vector3(0, 3, 0)));
+  }
+  return stops.slice(-TRAIL_MAX);
+}
+
+function followRefresh() {
+  if (follow.obj) { scene.remove(follow.obj); follow.obj.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); follow.obj = null; }
+  if (!follow.who || !current) { requestRender(); return; }
+  const stops = followStops();
+  if (!stops.length) { requestRender(); return; }
+  const tint = new THREE.Color(follow.who.kind === 'g' ? 0x7dff9a : 0xffcf5a), pos = [], col = [];
+  stops.forEach((p, n) => {
+    const a = 0.15 + 0.85 * (n + 1) / stops.length;   // fade: oldest dim, newest bright
+    pos.push(p.x, p.y, p.z); col.push(tint.r * a, tint.g * a, tint.b * a);
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  const group = new THREE.Group();
+  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  const dots = new THREE.Points(geo.clone(), new THREE.PointsMaterial({ size: 5, sizeAttenuation: false, vertexColors: true, depthWrite: false }));
+  const head = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(pos.slice(-3), 3)),
+    new THREE.PointsMaterial({ size: 13, sizeAttenuation: false, color: tint, depthWrite: false }));
+  for (const o of [line, dots, head]) { o.raycast = () => {}; group.add(o); }
+  follow.obj = group;
+  scene.add(group);
+  requestRender();
+}
+
+$('follow').onchange = e => {
+  const v = e.target.value;
+  follow.who = v ? { kind: v[0], idx: +v.slice(1) } : null;
+  followRefresh(); writeHashSoon();
+};
+
 // ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
-onTimeChanged = () => { tlRender(); lensApply(); roadsRefresh(); if (query.text) showQuery(query.text); writeHashSoon(); if (shownFile) showFile(shownFile); };
+onTimeChanged = () => { tlRender(); lensApply(); roadsRefresh(); followRefresh(); if (query.text) showQuery(query.text); writeHashSoon(); if (shownFile) showFile(shownFile); };
 
 if (window.CITY) {
   load(window.CITY);

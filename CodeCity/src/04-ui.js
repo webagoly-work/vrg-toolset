@@ -68,6 +68,8 @@ function viewState() {
   if (roads.all) q.set('roads', '1');
   if (query.text) q.set('q', query.text);
   if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
+  if (compare.base !== null) q.set('base', current.city.commits[compare.base][4]);
+  if (follow.who) q.set('follow', follow.who.kind + follow.who.idx);
   return q;
 }
 function writeHashSoon() {
@@ -90,6 +92,10 @@ function applyView(q, ms = 0) {
   $('q').value = q.get('q') || ''; showQuery(q.get('q') || '');
   const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
   applyTime(ti >= 0 ? ti : replay.last, ms ? 300 : 0);
+  const bi = current.city.commits.findIndex(c => c[4] === q.get('base'));
+  if ((bi >= 0 ? bi : null) !== compare.base) setBase(bi >= 0 ? bi : null);
+  const fw = /^([ag])(\d+)$/.exec(q.get('follow') || '');
+  $('follow').value = fw ? fw[0] : ''; follow.who = fw ? { kind: fw[1], idx: +fw[2] } : null; followRefresh();
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
   if (f) showFile(f); else if (shownFile) closePanel();
 }
@@ -140,7 +146,9 @@ function load(city) {
   showCity(current);
   freshness(city);
   tlSetup();
+  compare.base = null; $('tl-base').classList.remove('on');
   lensApply();
+  followOptions();
   toursLoad();
   const live = city.files.filter(f => !f.gone).length;
   $('title').textContent = `${city.repo.name}${city.repo.head ? ' @ ' + city.repo.head : ''} · ${hu(live)} fájl · ${hu(city.commits.length)} commit · ${hu(city.authors.length)} szerző`;

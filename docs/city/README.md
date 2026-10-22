@@ -67,7 +67,8 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 | C5 | DONE | 2026-10-22 | 6 looks on keys 1–6 (body + windows + glow + plates + sky + fog), time-aware heat/age/agent, cranes on the hottest buildings, ruins (2 y untouched: dark windows), legends, `#lens=` links. Look check passed; default Alap (CITY-D6) |
 | C6 | DONE | 2026-10-22 | regex imports in scan.js (JS/TS, HTML, CSS, Python, Markdown links; relative only — 221 roads here), arcs on selection (amber imports · cyan importers · violet co-change), U = all roads, Szomszédok list (click flies there), `#roads=1`; selftest 9 checks |
 | C7 | DONE | 2026-10-22 | query bar ( / ): offline Hungarian parser — path words, language, csak/ügynök/ember, forró, régi/friss N nap·hét·hónap·év, >N sor/commit, legnagyobb/legaktívabb/legimportáltabb/legrégebbi, top N; summary + list (click flies), numbered brackets on screen, `#q=` links; HUD line `KÖRZET · fájl · forró · NEAR <landmark>` |
-| C8 | DONE ⏸ | 2026-10-22 | Városnézés: a shot = a share-link view + title + caption + fly/hold; automatic tour from the data (9 shots: overview, biggest district, 3 landmarks, hot district, first / middle commit, today); own tours: + Jelenet, export/import JSON, `scan.js --tour` bakes them in; `#tour=auto&loop=1` = wallboard; lower-third captions, Esc / touch stops. "Kép": 1200×630 PNG card. Fixed on the way: animations used the rAF stamp against performance.now (negative progress threw the camera off), HUD debounce → throttle. Waiting for the look check |
+| C8 | DONE ⏸ | 2026-10-22 | Városnézés: a shot = a share-link view + title + caption + fly/hold; automatic tour from the data (9 shots: overview, biggest district, 3 landmarks, hot district, first / middle commit, today); own tours: + Jelenet, export/import JSON, `scan.js --tour` bakes them in; `#tour=auto&loop=1` = wallboard; lower-third captions, Esc / touch stops. "Kép": 1200×630 PNG card. Fixed on the way: animations used the rAF stamp against performance.now (negative progress threw the camera off), HUD debounce → throttle. Look check passed |
+| C9 | DONE (part) ⏸ | 2026-10-22 | Δ Összevetés (B): pin a base, buildings show base → shown commit (új / nőtt / csökkent / változatlan), red glass ghosts for files deleted since, red base tick on the strip, `#base=`; Követés: author or agent trail (last 40 commits, fading, head marker), `#follow=a0/g0`. Verified on the selftest fixture (KEEP_FIXTURE=1): ghost + born/gone render. **Open: agent-session replay — CITY-D7** |
 | C7–C10 | open | | |
 
 ## 5. Decisions
@@ -80,6 +81,12 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 - CITY-D5 God's Eye View is an idea source only (Vendor, priority 3). Its code is MIT and may be
   adapted with the notice; its data and models are never taken.
 - CITY-D6 **Alap** is the default look (user, 2026-10-22).
+- CITY-D7 **open** — agent-session replay (mindwalk-style: what an agent *read, searched, edited* in one
+  session, as light moving over the city). Needs Claude Code transcripts (`~/.claude/projects/<repo>/*.jsonl`),
+  which hold your prompts and tool output. A) `scan.js --sessions` reads them locally and keeps only
+  file paths + read/edit kind + timestamps, nothing else, **opt-in per scan** (recommended) ·
+  B) skip it; agent share from commit trailers is enough · C) full transcripts incl. text (not recommended:
+  the page would carry your conversations).
 
 ## 6. Use
 

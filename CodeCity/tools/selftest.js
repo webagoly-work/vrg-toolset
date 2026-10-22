@@ -3,7 +3,8 @@
 //
 //   node CodeCity/tools/selftest.js
 //
-// The fixture lives in the OS temp folder and is removed afterwards. Exit code 1 on any failure.
+// The fixture lives in the OS temp folder and is removed afterwards (KEEP_FIXTURE=1 keeps it and prints
+// its path, e.g. to render it: node CodeCity/scan.js <path> --html x.html). Exit code 1 on any failure.
 'use strict';
 const fs = require('fs'), os = require('os'), path = require('path'), { execFileSync } = require('child_process');
 
@@ -42,7 +43,8 @@ try {
   const touched = city.commits[2][5].filter((_, i) => i % 3 === 0).map(i => city.files[i].p);
   check(touched.join() === 'src/a2.js', `the rename commit touches src/a2.js (got ${touched.join()})`);
 } finally {
-  fs.rmSync(dir, { recursive: true, force: true });
+  if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
+  else fs.rmSync(dir, { recursive: true, force: true });
 }
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);
