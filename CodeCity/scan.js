@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // scan.js — read a git repository into city.json, the data behind VRG Kódváros.
 //
-//   node CodeCity/scan.js [repo=.] [--out file.city.json] [--html page.html] [--all]
+//   node CodeCity/scan.js [repo=.] [--out file.city.json] [--html page.html] [--tour tours.json] [--all]
 //
 // Two git calls: `git ls-files` for what exists now, and one `git log --numstat --summary -M`
 // walked oldest -> newest. Renames are followed, so a file keeps ONE id through its whole life;
@@ -14,7 +14,7 @@ const fs = require('fs'), path = require('path'), { execFileSync } = require('ch
 const argv = process.argv.slice(2);
 const opt = k => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : null; };
 const flag = k => argv.includes(k);
-const REPO = path.resolve(argv.find((a, i) => !a.startsWith('--') && !['--out', '--html'].includes(argv[i - 1])) || '.');
+const REPO = path.resolve(argv.find((a, i) => !a.startsWith('--') && !['--out', '--html', '--tour'].includes(argv[i - 1])) || '.');
 const ALL = flag('--all');
 const MAX_BYTES = 2 * 1024 * 1024;
 
@@ -175,6 +175,12 @@ const city = {
   repo: { name: path.basename(REPO), head, branch, scannedAt: new Date().toISOString() },
   authors, agents: agentNames, commits, files: outFiles,
 };
+// --tour file.json: bake Városnézés tours (exported from the viewer) into the city
+if (opt('--tour')) {
+  const doc = JSON.parse(fs.readFileSync(opt('--tour'), 'utf8'));
+  if (doc.kind !== 'vrg-codecity-tours') throw new Error(opt('--tour') + ' is not a Városnézés file');
+  city.tours = doc.tours;
+}
 
 const name = city.repo.name.replace(/[^\w.-]+/g, '_');
 const out = opt('--out') || path.join(__dirname, 'dist', `${name}.city.json`);

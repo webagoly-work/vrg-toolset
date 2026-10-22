@@ -33,8 +33,10 @@ function hudUpdate() {
     const { x, z, w, h } = files[i].rect, dist = Math.hypot(x + w / 2 - t.x, z + h / 2 - t.z);
     if (dist < best) { best = dist; near = files[i]; }
   }
+  $('hud').dataset.aim = `${t.x.toFixed(1)},${t.z.toFixed(1)}`;   // for headless checks
   $('hud').textContent = `KÖRZET ${(d.path || current.city.repo.name)}/ · ${hu(n)} fájl · ${hu(hot)} forró` + (near ? ` · NEAR ${near.name}` : '');
 }
+// a throttle, not a debounce: while frames keep coming (a fly, a replay) a debounce never fires
 let hudTimer = 0;
-function hudSoon() { clearTimeout(hudTimer); hudTimer = setTimeout(hudUpdate, 120); }
+function hudSoon() { if (!hudTimer) hudTimer = setTimeout(() => { hudTimer = 0; hudUpdate(); }, 150); }
 afterRender = () => { drawBrackets(); hudSoon(); };

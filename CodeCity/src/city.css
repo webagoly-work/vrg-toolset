@@ -108,3 +108,23 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   text-shadow: 0 0 6px #000; white-space: nowrap; max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
 #stage:not(:has(#timeline:not([hidden]))) #hud { bottom: 30px; }
 @media (max-width: 900px) { #bar #title { display: none; } #hud { max-width: calc(100% - 24px); bottom: 74px; } }
+
+/* Városnézés: the drawer (left) and the lower-third caption */
+#tours { position: absolute; top: 112px; left: 12px; z-index: 3; width: min(300px, calc(100% - 24px)); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; font-size: 12px; }
+#tours h3 { margin: 0 0 8px; font-size: 13px; color: var(--accent); }
+#tours .x { position: absolute; top: 6px; right: 10px; cursor: pointer; color: var(--dim); }
+#tours select { width: 100%; background: #0a0f1c; color: var(--text); border: 1px solid var(--line); font: inherit; padding: 3px; }
+#tours .row { display: flex; gap: 6px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+#tours ol.shots { margin: 4px 0; padding-left: 22px; max-height: 220px; overflow: auto; }
+#tours ol.shots li { cursor: pointer; display: flex; justify-content: space-between; gap: 6px; padding: 1px 0; }
+#tours ol.shots li:hover span { color: var(--accent); }
+#tours .del { background: none; border: 0; color: var(--dim); cursor: pointer; font: inherit; }
+#tours .small { font-size: 11px; }
+#caption { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 3; width: min(720px, calc(100% - 24px));
+  background: linear-gradient(90deg, rgba(5,7,13,.92), rgba(5,7,13,.75)); border-left: 3px solid var(--accent); padding: 10px 16px; }
+#caption h2 { margin: 2px 0 4px; font-size: 18px; color: var(--accent); letter-spacing: .03em; }
+#caption p { margin: 0; color: var(--text); }
+#caption .cap-n, #caption .cap-hint { color: var(--dim); font-size: 11px; }
+#caption .cap-hint { margin-top: 4px; }
+.touring #help, .touring #legend, .touring #lenses { opacity: .2; transition: opacity .4s; }

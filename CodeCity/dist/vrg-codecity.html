@@ -114,6 +114,26 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   text-shadow: 0 0 6px #000; white-space: nowrap; max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
 #stage:not(:has(#timeline:not([hidden]))) #hud { bottom: 30px; }
 @media (max-width: 900px) { #bar #title { display: none; } #hud { max-width: calc(100% - 24px); bottom: 74px; } }
+
+/* Városnézés: the drawer (left) and the lower-third caption */
+#tours { position: absolute; top: 112px; left: 12px; z-index: 3; width: min(300px, calc(100% - 24px)); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; font-size: 12px; }
+#tours h3 { margin: 0 0 8px; font-size: 13px; color: var(--accent); }
+#tours .x { position: absolute; top: 6px; right: 10px; cursor: pointer; color: var(--dim); }
+#tours select { width: 100%; background: #0a0f1c; color: var(--text); border: 1px solid var(--line); font: inherit; padding: 3px; }
+#tours .row { display: flex; gap: 6px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+#tours ol.shots { margin: 4px 0; padding-left: 22px; max-height: 220px; overflow: auto; }
+#tours ol.shots li { cursor: pointer; display: flex; justify-content: space-between; gap: 6px; padding: 1px 0; }
+#tours ol.shots li:hover span { color: var(--accent); }
+#tours .del { background: none; border: 0; color: var(--dim); cursor: pointer; font: inherit; }
+#tours .small { font-size: 11px; }
+#caption { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 3; width: min(720px, calc(100% - 24px));
+  background: linear-gradient(90deg, rgba(5,7,13,.92), rgba(5,7,13,.75)); border-left: 3px solid var(--accent); padding: 10px 16px; }
+#caption h2 { margin: 2px 0 4px; font-size: 18px; color: var(--accent); letter-spacing: .03em; }
+#caption p { margin: 0; color: var(--text); }
+#caption .cap-n, #caption .cap-hint { color: var(--dim); font-size: 11px; }
+#caption .cap-hint { margin-top: 4px; }
+.touring #help, .touring #legend, .touring #lenses { opacity: .2; transition: opacity .4s; }
 </style>
 </head>
 <body>
@@ -121,6 +141,8 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   <b>Kódváros</b><span id="title">—</span>
   <div id="qwrap"><input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Keresés ( / ) — pl. legnagyobb Planner · forró · régi 30 nap · >500 sor" aria-label="Keresés a városban"><div id="qres" hidden></div></div>
   <span id="fresh" hidden></span>
+  <button id="tour-btn" class="btn" title="Városnézés: túrák a városban">Városnézés</button>
+  <button id="card-btn" class="btn" title="A mostani nézet képként (PNG, 1200×630)">Kép</button>
   <button id="link" class="btn" hidden title="A nézet linkjének másolása (kamera + kijelölés)">Link</button>
   <label class="btn">Megnyitás…<input id="file" type="file" accept=".json" hidden></label>
 </header>
@@ -134,6 +156,8 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   </div>
   <div id="tip" hidden></div>
   <aside id="panel" hidden></aside>
+  <aside id="tours" hidden></aside>
+  <div id="caption" hidden></div>
   <div id="legend"></div>
   <nav id="lenses" aria-label="Nézetek"></nav>
   <div id="board" aria-hidden="true"><div id="board-1"></div><div id="board-2"></div></div>
@@ -537,37 +561,60 @@ function showDir(d) {
 // a city opened from a file has no stable address to come back to.
 const share = { sel: '' };
 let hashTimer = 0, hashRead = false;       // never write before the incoming link has been read
+// the whole view as URL parameters: the share link, and (12-tour) one shot of a tour
+function viewState() {
+  const t = orbit.target, q = new URLSearchParams();
+  q.set('cam', [t.x, t.z, orbit.theta, orbit.phi, orbit.r].map(v => +v.toFixed(2)).join(','));
+  if (share.sel) q.set('sel', share.sel);
+  if (lens.id !== 'alap') q.set('lens', lens.id);
+  if (roads.all) q.set('roads', '1');
+  if (query.text) q.set('q', query.text);
+  if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
+  return q;
+}
 function writeHashSoon() {
   if (!window.CITY || !current || !hashRead) return;
   clearTimeout(hashTimer);
   hashTimer = setTimeout(() => {
-    const t = orbit.target, q = new URLSearchParams();
-    q.set('cam', [t.x, t.z, orbit.theta, orbit.phi, orbit.r].map(v => +v.toFixed(2)).join(','));
-    if (share.sel) q.set('sel', share.sel);
-    if (lens.id !== 'alap') q.set('lens', lens.id);
-    if (roads.all) q.set('roads', '1');
-    if (query.text) q.set('q', query.text);
-    if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
+    const q = viewState(), keep = new URLSearchParams(location.hash.slice(1));
+    for (const k of ['tour', 'loop']) if (keep.get(k)) q.set(k, keep.get(k));   // a wallboard link stays one
     history.replaceState(null, '', '#' + q.toString());
   }, 250);
 }
 onCameraMoved = writeHashSoon;
+// apply a view; a missing key means its default, so a view is complete on its own.
+// ms > 0 flies the camera there instead of jumping
+function applyView(q, ms = 0) {
+  const cam = (q.get('cam') || '').split(',').map(Number);
+  if (cam.length === 5 && cam.every(Number.isFinite)) flyCamera(cam, ms);
+  setLens(q.get('lens') || 'alap');
+  if ((q.get('roads') === '1') !== roads.all) toggleRoads();
+  $('q').value = q.get('q') || ''; showQuery(q.get('q') || '');
+  const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
+  applyTime(ti >= 0 ? ti : replay.last, ms ? 300 : 0);
+  const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
+  if (f) showFile(f); else if (shownFile) closePanel();
+}
+function flyCamera([x, z, theta, phi, r], ms) {
+  if (!ms) { orbit.target.set(x, 0, z); Object.assign(orbit, { theta, phi, r }); placeCamera(); return; }
+  const a = { x: orbit.target.x, z: orbit.target.z, theta: orbit.theta, phi: orbit.phi, r: orbit.r }, t0 = performance.now();
+  // turn the short way round
+  let dt = theta - a.theta; dt = ((dt + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+  const step = () => {   // performance.now(), not the rAF stamp: the two clocks can disagree
+    const k = Math.min(1, Math.max(0, (performance.now() - t0) / ms)), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;   // ease in-out
+    orbit.target.set(a.x + (x - a.x) * e, 0, a.z + (z - a.z) * e);
+    orbit.theta = a.theta + dt * e; orbit.phi = a.phi + (phi - a.phi) * e; orbit.r = a.r + (r - a.r) * e;
+    placeCamera();
+    if (k < 1) flyCamera.raf = requestAnimationFrame(step);
+  };
+  cancelAnimationFrame(flyCamera.raf);
+  flyCamera.raf = requestAnimationFrame(step);
+}
 function readHash() {
   const q = new URLSearchParams(location.hash.slice(1));
-  const cam = (q.get('cam') || '').split(',').map(Number);
-  if (cam.length === 5 && cam.every(Number.isFinite)) {
-    orbit.target.set(cam[0], 0, cam[1]);
-    [orbit.theta, orbit.phi, orbit.r] = cam.slice(2);
-    placeCamera();
-  }
-  if (q.get('lens')) setLens(q.get('lens'));
-  if (q.get('roads') === '1' && !roads.all) toggleRoads();
-  if (q.get('q')) { $('q').value = q.get('q'); showQuery(q.get('q')); }
-  const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
-  if (ti >= 0) applyTime(ti, 0);
-  const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
+  applyView(q);
   hashRead = true;
-  if (f) showFile(f);
+  writeHashSoon();
   return q;
 }
 $('link').addEventListener('click', () => {
@@ -596,6 +643,7 @@ function load(city) {
   freshness(city);
   tlSetup();
   lensApply();
+  toursLoad();
   const live = city.files.filter(f => !f.gone).length;
   $('title').textContent = `${city.repo.name}${city.repo.head ? ' @ ' + city.repo.head : ''} · ${hu(live)} fájl · ${hu(city.commits.length)} commit · ${hu(city.authors.length)} szerző`;
   document.title = `${city.repo.name} — VRG Kódváros`;
@@ -694,8 +742,8 @@ function applyTime(T, animate = 0) {
   cancelAnimationFrame(replay.raf);
   if (!animate || replay.cur.every(v => v === 0)) { writeInstances(target); onTimeChanged(); return; }
   const from = replay.cur.slice(), t0 = performance.now(), tmp = new Float32Array(target.length);
-  const step = now => {
-    const k = Math.min(1, (now - t0) / animate), e = k * (2 - k);   // ease-out
+  const step = () => {   // performance.now(), not the rAF stamp: the two clocks can disagree
+    const k = Math.min(1, Math.max(0, (performance.now() - t0) / animate)), e = k * (2 - k);   // ease-out
     for (let j = 0; j < tmp.length; j++) {
       // a building being born grows from the ground; one disappearing sinks into it
       tmp[j] = from[j] + (target[j] - from[j]) * e;
@@ -1080,8 +1128,8 @@ function roadsPanelHtml(f) {
 function flyTo(f) {
   const { x, z, w, h } = f.rect, to = new THREE.Vector3(x + w / 2, 0, z + h / 2), from = orbit.target.clone();
   const r0 = orbit.r, r1 = Math.min(r0, Math.max(60, Math.sqrt(w * h) * 6)), t0 = performance.now();
-  const step = now => {
-    const k = Math.min(1, (now - t0) / 450), e = k * (2 - k);
+  const step = () => {   // performance.now(), not the rAF stamp: the two clocks can disagree
+    const k = Math.min(1, Math.max(0, (performance.now() - t0) / 450)), e = k * (2 - k);
     orbit.target.lerpVectors(from, to, e); orbit.r = r0 + (r1 - r0) * e;
     placeCamera();
     if (k < 1) requestAnimationFrame(step);
@@ -1266,11 +1314,212 @@ function hudUpdate() {
     const { x, z, w, h } = files[i].rect, dist = Math.hypot(x + w / 2 - t.x, z + h / 2 - t.z);
     if (dist < best) { best = dist; near = files[i]; }
   }
+  $('hud').dataset.aim = `${t.x.toFixed(1)},${t.z.toFixed(1)}`;   // for headless checks
   $('hud').textContent = `KÖRZET ${(d.path || current.city.repo.name)}/ · ${hu(n)} fájl · ${hu(hot)} forró` + (near ? ` · NEAR ${near.name}` : '');
 }
+// a throttle, not a debounce: while frames keep coming (a fly, a replay) a debounce never fires
 let hudTimer = 0;
-function hudSoon() { clearTimeout(hudTimer); hudTimer = setTimeout(hudUpdate, 120); }
+function hudSoon() { if (!hudTimer) hudTimer = setTimeout(() => { hudTimer = 0; hudUpdate(); }, 150); }
 afterRender = () => { drawBrackets(); hudSoon(); };
+
+// ==== src/12-tour.js
+// 12-tour.js — Városnézés: authored tours through the city (God's Eye View's Scene Director, small).
+// A shot is a VIEW — exactly what a share link holds (camera, look, commit, selection, query, roads) —
+// plus a title, a caption and timings: fly seconds, then hold seconds. So any link is a shot.
+// Tours come from three places: the automatic one (generated from the data), the ones scan.js baked in
+// (--tour file.json), and the viewer's own (kept in memory; exported/imported as JSON, because
+// localStorage does not survive file:// pages). #tour=auto&loop=1 plays on open: a wallboard.
+
+const tours = { list: [], sel: 0, playing: null };
+const TOUR_KIND = 'vrg-codecity-tours';
+
+function autoTour() {
+  const c = current.city, files = c.files, T = replay.last, side = current.side;
+  const v = o => { const q = new URLSearchParams(); for (const [k, x] of Object.entries(o)) if (x !== undefined && x !== '') q.set(k, x); return q.toString(); };
+  const camOn = (rect, r) => [rect.x + rect.w / 2, rect.z + rect.h / 2, 0.8, 0.9, r].map(x => +x.toFixed(2)).join(',');
+  const live = files.filter(f => stateAt(f, f.i, T)[0] > 0);
+  const shots = [{ title: 'Áttekintés', text: `${c.repo.name}: ${hu(live.length)} fájl, ${hu(c.commits.length)} commit, ${hu(c.authors.length)} szerző.`,
+    view: v({ cam: camOn({ x: -side / 2, z: -side / 2, w: side, h: side }, side * 1.25) }), fly: 2, hold: 4 }];
+  const tops = [...current.root.dirs.values()].map(d => [d, dirStats(d)]).sort((a, b) => b[1].loc - a[1].loc);
+  if (tops[0]) {
+    const [d, s] = tops[0];
+    shots.push({ title: `A legnagyobb körzet: ${d.name}/`, text: `${hu(s.files)} fájl, ${hu(s.loc)} sor. A színek a nyelvet mutatják.`,
+      view: v({ cam: camOn(d.rect, Math.max(d.rect.w, d.rect.h) * 1.4), lens: 'nyelv' }), fly: 3, hold: 5 });
+  }
+  landmarks.slice(0, 3).forEach((i, n) => {
+    const f = files[i];
+    shots.push({ title: `${n + 1}. tájékozódási pont: ${f.name}`, text: `${hu(roads.importers[i].length)} fájl importálja — cián ívek jönnek be, borostyán ívek mennek ki.`,
+      view: v({ cam: camOn(f.rect, Math.max(60, Math.sqrt(f.rect.w * f.rect.h) * 7)), sel: f.p }), fly: 3, hold: 5 });
+  });
+  const heat = heatCounts(), hotDirs = [];
+  (function walk(d) { if (d.depth === 2 || (d.depth === 1 && !d.dirs.size)) { let h = 0; (function sum(x) { x.files.forEach(f => { h += heat[f.i]; }); x.dirs.forEach(sum); })(d); hotDirs.push([d, h]); } if (d.depth < 2) d.dirs.forEach(walk); })(current.root);
+  hotDirs.sort((a, b) => b[1] - a[1]);
+  if (hotDirs[0] && hotDirs[0][1] > 0) {
+    const [d] = hotDirs[0];
+    shots.push({ title: `Itt folyik most a munka: ${d.path}/`, text: 'Hő nézet: a friss változások izzanak; a darus házakon a legtöbb.',
+      view: v({ cam: camOn(d.rect, Math.max(d.rect.w, d.rect.h) * 1.6), lens: 'ho' }), fly: 3, hold: 5 });
+  }
+  if (c.commits.length > 2) {
+    const first = c.commits[0], mid = c.commits[Math.floor(c.commits.length / 2)];
+    shots.push({ title: 'Így kezdődött', text: `Az első commit: ${new Date(first[0] * 1000).toLocaleDateString('hu-HU')} — „${first[3]}”.`,
+      view: v({ cam: camOn({ x: -side / 2, z: -side / 2, w: side, h: side }, side * 1.1), t: first[4], lens: 'kor' }), fly: 2.5, hold: 4 });
+    shots.push({ title: 'Félúton', text: `${new Date(mid[0] * 1000).toLocaleDateString('hu-HU')} — „${mid[3]}”.`,
+      view: v({ cam: camOn({ x: -side / 2, z: -side / 2, w: side, h: side }, side * 1.1), t: mid[4], lens: 'kor' }), fly: 2, hold: 4 });
+  }
+  shots.push({ title: 'Ma', text: 'Az ablakok ott világítanak, ahol mostanában dolgoztak.', view: v({ cam: camOn({ x: -side / 2, z: -side / 2, w: side, h: side }, side * 1.25) }), fly: 3, hold: 5 });
+  return { id: 'auto', title: 'Automatikus városnézés', shots, auto: true };
+}
+
+function toursLoad() {
+  tours.list = [autoTour(), ...(current.city.tours || []).map((t, i) => ({ ...t, id: 'beepitett-' + i, baked: true }))];
+  try { const own = JSON.parse(localStorage.getItem(tourKey()) || '[]'); tours.list.push(...own); } catch { /* file:// or blocked: memory only */ }
+  tours.sel = 0;
+  tourRender();
+}
+const tourKey = () => 'kodvaros-tours:' + current.city.repo.name;
+function toursSave() {
+  try { localStorage.setItem(tourKey(), JSON.stringify(tours.list.filter(t => !t.auto && !t.baked))); } catch { /* memory only */ }
+}
+
+// ---- playback
+const sleep = (ms, token) => new Promise(res => { const id = setTimeout(res, ms); token.cancel = () => { clearTimeout(id); res(); }; });
+async function playTour(t, loop = false) {
+  stopTour();
+  const token = {};
+  tours.playing = token;
+  $('stage').classList.add('touring');
+  do {
+    for (let n = 0; n < t.shots.length; n++) {
+      if (tours.playing !== token) return;
+      const s = t.shots[n];
+      caption(s, n, t.shots.length);
+      const view = new URLSearchParams(s.view);
+      applyView(view, (s.fly || 2) * 1000);
+      await sleep((s.fly || 2) * 1000, token);
+      if (tours.playing !== token) return;
+      // land exactly on the shot, even if frames were throttled (background tab, TV browser)
+      const cam = (view.get('cam') || '').split(',').map(Number);
+      if (cam.length === 5 && cam.every(Number.isFinite)) { cancelAnimationFrame(flyCamera.raf); flyCamera(cam, 0); }
+      await sleep((s.hold || 4) * 1000, token);
+    }
+  } while (loop && tours.playing === token);
+  if (tours.playing === token) stopTour();
+}
+function stopTour() {
+  if (tours.playing && tours.playing.cancel) tours.playing.cancel();
+  tours.playing = null;
+  $('caption').hidden = true;
+  $('stage').classList.remove('touring');
+  tourRender();
+}
+function caption(s, n, total) {
+  $('caption').innerHTML = `<div class="cap-n">${n + 1} / ${total}</div><h2>${esc(s.title)}</h2>${s.text ? `<p>${esc(s.text)}</p>` : ''}<div class="cap-hint">Esc: megállítás</div>`;
+  $('caption').hidden = false;
+}
+
+// ---- the drawer
+function tourRender() {
+  const box = $('tours');
+  if (box.hidden || !current) return;
+  const t = tours.list[tours.sel] || tours.list[0];
+  box.innerHTML = `<span class="x" title="Bezárás">×</span><h3>Városnézés</h3>
+    <select id="tour-sel">${tours.list.map((x, i) => `<option value="${i}"${i === tours.sel ? ' selected' : ''}>${esc(x.title)}${x.baked ? ' (beépített)' : ''}</option>`).join('')}</select>
+    <div class="row"><button class="btn" id="tour-play">${tours.playing ? '⏹ Megállítás' : '▶ Lejátszás'}</button>
+      <label><input type="checkbox" id="tour-loop"> ismétlés</label></div>
+    <ol class="shots">${t.shots.map((s, i) => `<li data-shot="${i}"><span>${esc(s.title)}</span>${t.auto || t.baked ? '' : `<button class="del" data-del="${i}" title="Törlés">✕</button>`}</li>`).join('')}</ol>
+    <div class="row"><button class="btn" id="tour-add" title="A mostani nézet új jelenet lesz">+ Jelenet</button>
+      <button class="btn" id="tour-export">Mentés…</button><label class="btn">Betöltés…<input id="tour-import" type="file" accept=".json" hidden></label></div>
+    <div class="dim small">${t.auto ? 'Az automatikus túra az adatokból készül; a „+ Jelenet” saját túrát indít.' : 'Fájlból megnyitott oldalon a túrák csak Mentés… után maradnak meg.'}</div>`;
+  box.querySelector('.x').onclick = () => { box.hidden = true; };
+  $('tour-sel').onchange = e => { tours.sel = +e.target.value; tourRender(); };
+  $('tour-play').onclick = () => (tours.playing ? stopTour() : playTour(t, $('tour-loop').checked));
+  $('tour-add').onclick = () => addShot();
+  $('tour-export').onclick = exportTours;
+  $('tour-import').onchange = e => e.target.files[0] && importTours(e.target.files[0]);
+  box.querySelector('.shots').onclick = e => {
+    const del = e.target.closest('[data-del]');
+    if (del) { t.shots.splice(+del.dataset.del, 1); toursSave(); tourRender(); return; }
+    const li = e.target.closest('[data-shot]');
+    if (li) { stopTour(); const s = t.shots[+li.dataset.shot]; caption(s, +li.dataset.shot, t.shots.length); applyView(new URLSearchParams(s.view), 1200); }
+  };
+}
+function addShot() {
+  let t = tours.list[tours.sel];
+  if (!t || t.auto || t.baked) {
+    t = { id: 'sajat-' + Date.now(), title: 'Saját túra ' + (tours.list.filter(x => !x.auto && !x.baked).length + 1), shots: [] };
+    tours.list.push(t); tours.sel = tours.list.length - 1;
+  }
+  const title = prompt('A jelenet címe:', shownFile ? shownFile.name : `Jelenet ${t.shots.length + 1}`);
+  if (title === null) return;
+  const text = prompt('Felirat (elhagyható):', '') || '';
+  t.shots.push({ title, text, view: viewState().toString(), fly: 2.5, hold: 5 });
+  toursSave(); tourRender();
+}
+function exportTours() {
+  const own = tours.list.filter(t => !t.auto);
+  const doc = { kind: TOUR_KIND, version: 1, repo: current.city.repo.name, tours: own.map(({ title, shots }) => ({ title, shots })) };
+  downloadFile(`${current.city.repo.name}-varosnezes.json`, new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));
+}
+function importTours(file) {
+  file.text().then(txt => {
+    const doc = JSON.parse(txt);
+    if (doc.kind !== TOUR_KIND || !Array.isArray(doc.tours)) throw new Error('ez nem Városnézés-fájl');
+    for (const t of doc.tours) {
+      if (!t || typeof t.title !== 'string' || !Array.isArray(t.shots)) continue;
+      const shots = t.shots.filter(s => s && typeof s.title === 'string' && typeof s.view === 'string')
+        .map(s => ({ title: s.title, text: String(s.text || ''), view: s.view, fly: +s.fly || 2.5, hold: +s.hold || 5 }));
+      tours.list.push({ id: 'import-' + Date.now() + '-' + tours.list.length, title: t.title, shots });
+    }
+    tours.sel = tours.list.length - 1; toursSave(); tourRender();
+  }).catch(err => alert('Nem tölthető be: ' + err.message));
+}
+function downloadFile(name, blob) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+$('tour-btn').onclick = () => { const b = $('tours'); b.hidden = !b.hidden; tourRender(); };
+addEventListener('keydown', e => { if (e.key === 'Escape' && tours.playing) stopTour(); });
+canvas.addEventListener('pointerdown', () => { if (tours.playing) stopTour(); });   // touching the city takes the wheel back
+
+// ==== src/13-card.js
+// 13-card.js — "Kép": a 1200 × 630 PNG share card of the current view (city, brackets, board, HUD).
+// The WebGL canvas keeps no drawing buffer, so the frame is rendered and copied in the same task.
+
+function makeCard() {
+  const W = 1200, H = 630, cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  renderer.render(scene, camera);
+  drawBrackets();
+  g.fillStyle = '#0d1220'; g.fillRect(0, 0, W, H);
+  // the sky is CSS, so paint a matching gradient under the transparent city
+  const sky = g.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#070a16'); sky.addColorStop(0.55, getComputedStyle($('stage')).getPropertyValue('--horizon').trim() || '#1b2442'); sky.addColorStop(1, '#0d1220');
+  g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  const src = canvas, k = Math.max(W / src.width, H / src.height), sw = W / k, sh = H / k;
+  const sx = (src.width - sw) / 2, sy = (src.height - sh) / 2;
+  g.drawImage(src, sx, sy, sw, sh, 0, 0, W, H);
+  g.drawImage(brk, sx * brk.width / src.width, sy * brk.height / src.height, sw * brk.width / src.width, sh * brk.height / src.height, 0, 0, W, H);
+  // top band: brand + repo; bottom band: board text + HUD + look
+  const band = (y, h) => { const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(y ? 0 : 1, 'rgba(5,7,13,0)'); gr.addColorStop(y ? 1 : 0, 'rgba(5,7,13,.92)'); g.fillStyle = gr; g.fillRect(0, y, W, h); };
+  band(0, 110); band(H - 130, 130);
+  g.font = 'bold 22px ui-monospace, Consolas, monospace'; g.fillStyle = '#ffcf5a'; g.fillText('KÓDVÁROS', 32, 46);
+  g.font = '20px ui-monospace, Consolas, monospace'; g.fillStyle = '#dde4f5';
+  g.fillText($('title').textContent.slice(0, 80), 32, 78);
+  g.fillStyle = '#ffcf5a'; g.font = 'bold 20px ui-monospace, Consolas, monospace';
+  g.fillText(($('board-1').dataset.text || '').slice(0, 70), 32, H - 76);
+  g.fillStyle = '#dde4f5'; g.font = '18px ui-monospace, Consolas, monospace';
+  g.fillText(($('board-2').dataset.text || '').slice(0, 90), 32, H - 50);
+  g.fillStyle = '#8b97b5'; g.font = '15px ui-monospace, Consolas, monospace';
+  g.fillText(`${lens.name} nézet · ${$('hud').textContent}`.slice(0, 120), 32, H - 22);
+  if (query.text) { g.textAlign = 'right'; g.fillStyle = '#ffcf5a'; g.fillText(`„${query.text}”`.slice(0, 60), W - 32, 46); g.textAlign = 'left'; }
+  return cv;
+}
+function shareCard() { makeCard().toBlob(b => downloadFile(`${current.city.repo.name}-kodvaros.png`, b), 'image/png'); }
+$('card-btn').onclick = shareCard;
 
 // ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
@@ -1282,6 +1531,11 @@ if (window.CITY) {
   // after the first resize, so the camera has its real aspect
   setTimeout(() => {
     const q = readHash();
+    // #tour=auto (or the tour's number in the list) plays on open; &loop=1 repeats it — a wallboard
+    const tt = q.get('tour'), t = tt && (tours.list.find(x => x.id === tt) || tours.list[+tt]);
+    if (t) playTour(t, q.get('loop') === '1');
+    // test hook: #cardtest=1 shows the share card on the page instead of downloading it (tools/shot.js)
+    if (q.get('cardtest')) setTimeout(() => { const img = new Image(); img.src = makeCard().toDataURL(); img.id = 'cardtest'; img.style.cssText = 'position:fixed;inset:40px;z-index:9;width:calc(100% - 80px);outline:2px solid #ffcf5a'; document.body.append(img); }, 600);
     // test hook: #pick=0.5,0.6 hovers and clicks at that fraction of the canvas (tools/shot.js)
     const pk = (q.get('pick') || '').split(',').map(Number);
     if (pk.length === 2 && pk.every(Number.isFinite)) {

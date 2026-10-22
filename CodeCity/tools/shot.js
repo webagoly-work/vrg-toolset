@@ -19,7 +19,11 @@ if (!chrome) { console.error('headless Chrome not found; set CHROME=<path to chr
 
 const [file, hash = ''] = page.split('#'); // a #pick=x,y test hook rides along on the URL
 const out = path.resolve(outArg || file.replace(/\.html$/, '.png'));
-execFileSync(chrome, ['--headless', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--hide-scrollbars',
-  `--window-size=${size.replace('x', ',')}`, '--virtual-time-budget=8000', `--screenshot=${out}`,
-  'file:///' + path.resolve(file).replace(/\\/g, '/') + (hash ? '#' + hash : '')],{ stdio: 'ignore', timeout: 60000 });
+// SHOT_MS sets the virtual time budget (default 8000 ms; a tour needs more).
+// Headless-shell prints no page console on Windows: to inspect state, run it with --dump-dom and read
+// the DOM (e.g. #hud carries data-aim="x,z"). In virtual time rAF barely ticks, so animations lag the
+// clock — tours snap the camera at the end of each fly, so the held shot is always exact.
+require('child_process').spawnSync(chrome, ['--headless', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--hide-scrollbars',
+  `--window-size=${size.replace('x', ',')}`, `--virtual-time-budget=${process.env.SHOT_MS || 8000}`, `--screenshot=${out}`,
+  'file:///' + path.resolve(file).replace(/\\/g, '/') + (hash ? '#' + hash : '')], { stdio: 'ignore', timeout: 90000 });
 console.log(`shot -> ${path.relative(process.cwd(), out)}`);

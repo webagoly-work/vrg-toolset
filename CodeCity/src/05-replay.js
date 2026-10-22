@@ -76,8 +76,8 @@ function applyTime(T, animate = 0) {
   cancelAnimationFrame(replay.raf);
   if (!animate || replay.cur.every(v => v === 0)) { writeInstances(target); onTimeChanged(); return; }
   const from = replay.cur.slice(), t0 = performance.now(), tmp = new Float32Array(target.length);
-  const step = now => {
-    const k = Math.min(1, (now - t0) / animate), e = k * (2 - k);   // ease-out
+  const step = () => {   // performance.now(), not the rAF stamp: the two clocks can disagree
+    const k = Math.min(1, Math.max(0, (performance.now() - t0) / animate)), e = k * (2 - k);   // ease-out
     for (let j = 0; j < tmp.length; j++) {
       // a building being born grows from the ground; one disappearing sinks into it
       tmp[j] = from[j] + (target[j] - from[j]) * e;

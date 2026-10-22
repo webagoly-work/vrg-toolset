@@ -93,8 +93,8 @@ function roadsPanelHtml(f) {
 function flyTo(f) {
   const { x, z, w, h } = f.rect, to = new THREE.Vector3(x + w / 2, 0, z + h / 2), from = orbit.target.clone();
   const r0 = orbit.r, r1 = Math.min(r0, Math.max(60, Math.sqrt(w * h) * 6)), t0 = performance.now();
-  const step = now => {
-    const k = Math.min(1, (now - t0) / 450), e = k * (2 - k);
+  const step = () => {   // performance.now(), not the rAF stamp: the two clocks can disagree
+    const k = Math.min(1, Math.max(0, (performance.now() - t0) / 450)), e = k * (2 - k);
     orbit.target.lerpVectors(from, to, e); orbit.r = r0 + (r1 - r0) * e;
     placeCamera();
     if (k < 1) requestAnimationFrame(step);

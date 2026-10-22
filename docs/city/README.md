@@ -67,7 +67,7 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 | C5 | DONE | 2026-10-22 | 6 looks on keys 1–6 (body + windows + glow + plates + sky + fog), time-aware heat/age/agent, cranes on the hottest buildings, ruins (2 y untouched: dark windows), legends, `#lens=` links. Look check passed; default Alap (CITY-D6) |
 | C6 | DONE | 2026-10-22 | regex imports in scan.js (JS/TS, HTML, CSS, Python, Markdown links; relative only — 221 roads here), arcs on selection (amber imports · cyan importers · violet co-change), U = all roads, Szomszédok list (click flies there), `#roads=1`; selftest 9 checks |
 | C7 | DONE | 2026-10-22 | query bar ( / ): offline Hungarian parser — path words, language, csak/ügynök/ember, forró, régi/friss N nap·hét·hónap·év, >N sor/commit, legnagyobb/legaktívabb/legimportáltabb/legrégebbi, top N; summary + list (click flies), numbered brackets on screen, `#q=` links; HUD line `KÖRZET · fájl · forró · NEAR <landmark>` |
-| C8 | in progress | 2026-10-22 | |
+| C8 | DONE ⏸ | 2026-10-22 | Városnézés: a shot = a share-link view + title + caption + fly/hold; automatic tour from the data (9 shots: overview, biggest district, 3 landmarks, hot district, first / middle commit, today); own tours: + Jelenet, export/import JSON, `scan.js --tour` bakes them in; `#tour=auto&loop=1` = wallboard; lower-third captions, Esc / touch stops. "Kép": 1200×630 PNG card. Fixed on the way: animations used the rAF stamp against performance.now (negative progress threw the camera off), HUD debounce → throttle. Waiting for the look check |
 | C7–C10 | open | | |
 
 ## 5. Decisions
@@ -88,5 +88,8 @@ node tools/fetch-vendor.js three                       # once: three.js into Ven
 node CodeCity/scan.js <repo> --html CodeCity/dist/<name>.html
 node CodeCity/build.js                                 # the empty template that opens a *.city.json
 node CodeCity/tools/shot.js "CodeCity/dist/<name>.html#pick=0.45,0.6"   # headless check incl. picking
-node CodeCity/tools/selftest.js                        # scanner: rename / delete / agent trailer
+node CodeCity/tools/selftest.js                        # scanner: rename / delete / agent trailer / imports
+node CodeCity/scan.js <repo> --tour tours.json --html … # bake exported Városnézés tours into the page
+# page.html#tour=auto&loop=1                           # wallboard: the automatic tour, forever
+# page.html#cardtest=1                                 # headless check of the PNG card (shows it on the page)
 ```
