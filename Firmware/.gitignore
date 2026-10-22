@@ -1,2 +1,9 @@
 # arduino-cli build output
 build/
+# planner-cyd: compiled images (3 - Flash CYD firmware.bat rebuilds them)
+planner-cyd/firmware/
+# planner-cyd: each PC's own MAKRÓK button sets (the bridge writes the defaults on first run)
+planner-cyd/app/bridge/macros.json
+
+# board-console: setups saved from the page (personal, like macros.json)
+board-console/data/
