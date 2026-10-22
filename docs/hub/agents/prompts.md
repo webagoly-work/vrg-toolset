@@ -18,8 +18,8 @@ No build — plain text files.
 
 ## 5. Rules and traps
 - Plain ASCII text, no accents (the files themselves).
-- `05-munkamenet-inditas.txt` still names `H:\Planner_VRG_U100\CLAUDE.md`, which root CLAUDE.md
-  calls the backup copy; the working copy is `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`.
+- Point prompts at the working copy `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`, never at
+  `H:\Planner_VRG_U100`, which is the backup (root CLAUDE.md).
 
 ## 6. Current state
 - 2026-09-21 VRG-DE: one umbrella launcher over the whole environment
