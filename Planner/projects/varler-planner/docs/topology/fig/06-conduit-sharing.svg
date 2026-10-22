@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 520" width="980" height="520" font-family="Segoe UI,Arial,sans-serif">
+  <title>Conduit sharing: runs, departures, preferred and mandatory junction boxes</title>
+  <defs>
+    <g id="B"><rect x="-8" y="-22" width="16" height="44" rx="2" fill="#2c3e50"/></g>
+    <g id="kd"><rect x="-10" y="-10" width="20" height="20" fill="#e67e22"/></g>
+  </defs>
+  <rect width="980" height="520" fill="#fbfaf6"/>
+  <text x="20" y="26" font-size="15" font-weight="700" fill="#262624">Csőközösség — közös szakasz, kilépés, kötődoboz</text>
+  <text x="20" y="44" font-size="11" fill="#6d6a63">szakasz (run) = a pálya azon darabja, ahol ugyanaz a körkészlet halad · kör csak dobozban léphet ki a közös csőből (SR-2)</text>
+
+  <!-- row 1: no box -->
+  <g transform="translate(20,64)">
+    <text x="0" y="14" font-size="12" font-weight="700" fill="#262624">a) kötődoboz nélkül</text>
+    <use href="#B" x="30" y="70"/>
+    <path d="M40,70 H880" stroke="#ece9e1" stroke-width="22" stroke-linecap="round"/>
+    <g fill="none" stroke-width="2.4">
+      <path d="M40,63 H420 Q430,63 430,73 V150" stroke="#1d9e75"/>
+      <path d="M40,70 H880" stroke="#16a3b8"/>
+      <path d="M40,77 H700 Q710,77 710,87 V150" stroke="#2f79c9"/>
+    </g>
+    <rect x="700" y="58" width="22" height="22" fill="#e67e22"/><text x="728" y="52" font-size="10" fill="#b0600f">PB (doboz) — V1 kilép ✓</text>
+    <circle cx="430" cy="70" r="18" fill="none" stroke="#c0392b" stroke-width="2.2"/>
+    <text x="456" y="112" font-size="10.5" fill="#c0392b" font-weight="700">⚠ doboz kell: A1 itt lép ki, de nincs doboz</text>
+    <text x="456" y="127" font-size="10" fill="#c0392b">→ javaslat: KD ide (gen:'tpo'), vagy húzd egy meglévőhöz</text>
+  </g>
+
+  <!-- row 2: preferred KD -->
+  <g transform="translate(20,222)">
+    <text x="0" y="14" font-size="12" font-weight="700" fill="#262624">b) preferált kötődobozzal</text>
+    <use href="#B" x="30" y="70"/>
+    <path d="M40,70 H880" stroke="#ece9e1" stroke-width="22" stroke-linecap="round"/>
+    <g fill="none" stroke-width="2.4">
+      <path d="M40,63 H520 Q530,63 530,73 V150" stroke="#1d9e75"/>
+      <path d="M40,70 H880" stroke="#16a3b8"/>
+      <path d="M40,77 H700 Q710,77 710,87 V150" stroke="#2f79c9"/>
+    </g>
+    <use href="#kd" x="530" y="70"/><circle cx="530" cy="70" r="15" fill="none" stroke="#e67e22" stroke-dasharray="3 2"/>
+    <text x="546" y="104" font-size="10.5" fill="#1d9e75" font-weight="700">✓ A1 a preferált KD-ban lép ki</text>
+    <text x="546" y="119" font-size="10" fill="#262624">a szétválás a ≤ 600 mm-en belüli preferált KD-ra húz (Q-T08)</text>
+    <rect x="700" y="58" width="22" height="22" fill="#e67e22"/>
+    <g font-size="10" fill="#262624" text-anchor="middle">
+      <text x="270" y="40">1. szakasz: A1 · A2 · V1</text><text x="615" y="40">2. szakasz: A2 · V1</text><text x="800" y="40">3.: A2</text>
+    </g>
+    <path d="M40,46 V54 M520,46 V54 M700,46 V54 M880,46 V54" stroke="#6d6a63"/>
+  </g>
+
+  <!-- legend: mandatory / pass-through -->
+  <g transform="translate(20,378)">
+    <rect width="300" height="124" rx="6" fill="#fff" stroke="#d8d4ca"/>
+    <text x="12" y="20" font-size="12" font-weight="700" fill="#262624">Doboz-szerepek (SR-3)</text>
+    <rect x="14" y="34" width="16" height="16" fill="#e67e22"/><text x="38" y="46" font-size="10.5" fill="#262624">átmenő: a cső a doboz MELLETT halad</text>
+    <rect x="14" y="60" width="16" height="16" fill="#e67e22"/><circle cx="22" cy="68" r="12" fill="none" stroke="#e67e22" stroke-dasharray="3 2"/><text x="38" y="72" font-size="10.5" fill="#262624">preferált: ide húzza a szétválást</text>
+    <rect x="14" y="86" width="16" height="16" fill="#e67e22" stroke="#262624" stroke-width="2"/><text x="22" y="98" font-size="11" fill="#fff" font-weight="700" text-anchor="middle">!</text>
+    <text x="38" y="98" font-size="10.5" fill="#262624">kötelező: minden áthaladó kör belép,</text><text x="38" y="112" font-size="10.5" fill="#262624">a cső itt megszakad</text>
+  </g>
+
+  <!-- table -->
+  <g transform="translate(340,378)">
+    <rect width="620" height="124" rx="6" fill="#fff" stroke="#d8d4ca"/>
+    <g font-size="10.5" fill="#262624">
+      <text x="12" y="20" font-weight="700">Szakasz</text><text x="120" y="20" font-weight="700">Körök</text><text x="250" y="20" font-weight="700">Csövek (E5 pakolás: In ≤ Iz·k, 1,5 mm² ≤ 2 kör/cső)</text>
+      <path d="M8,28 H612" stroke="#d8d4ca"/>
+      <text x="12" y="48">1 · Elosztó → KD</text><text x="120" y="48">A1 · A2 · V1</text><text x="250" y="48">A2+A1 → 1 × M32 (32 %) · V1 → 1 × M20</text>
+      <text x="12" y="70">2 · KD → PB</text><text x="120" y="70">A2 · V1</text><text x="250" y="70">A2 → 1 × M25 · V1 → 1 × M20 (saját cső)</text>
+      <text x="12" y="92">3 · PB → tovább</text><text x="120" y="92">A2</text><text x="250" y="92">A2 → 1 × M25</text>
+      <text x="12" y="114" fill="#6d6a63">A számok a tools/baseline/rules.js sizeConduit eredményei (3 m, NYM-J 3×1,5 / 3×2,5); a V1 ház-füzér saját csőben (Q-T07).</text>
+    </g>
+  </g>
+</svg>

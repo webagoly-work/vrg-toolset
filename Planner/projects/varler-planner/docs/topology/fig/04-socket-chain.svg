@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 420" width="980" height="420" font-family="Segoe UI,Arial,sans-serif">
+  <title>Socket chain: leader to tail as arcs beside the gerinc</title>
+  <defs>
+    <g id="soc"><rect x="-9" y="-9" width="18" height="18" rx="3" fill="#fff" stroke="#1d9e75" stroke-width="2.2"/><circle r="3" fill="#1d9e75"/></g>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1d9e75"/></marker>
+  </defs>
+  <rect width="980" height="420" fill="#fbfaf6"/>
+  <text x="20" y="26" font-size="15" font-weight="700" fill="#262624">Dugaljkör lánca — kiterített falnézet (Szoba, É → K → D fal)</text>
+  <text x="20" y="44" font-size="11" fill="#6d6a63">minden ugrás: függőlegesen fel → vízszintesen a gerinc mellett → függőlegesen le; a topológia nézetben ez egyetlen vonal</text>
+
+  <g transform="translate(20,60)">
+    <!-- wall faces -->
+    <rect x="0" y="0" width="940" height="250" fill="#fff" stroke="#d8d4ca"/>
+    <path d="M330,0 V250 M640,0 V250" stroke="#b9b4a8" stroke-dasharray="4 4"/>
+    <g font-size="10" fill="#6d6a63"><text x="8" y="244">É fal</text><text x="338" y="244">K fal (sarok →)</text><text x="648" y="244">D fal</text></g>
+    <!-- heights -->
+    <path d="M0,22 H940" stroke="#c9c3b6" stroke-width="8"/>
+    <text x="944" y="26" font-size="9.5" fill="#6d6a63" text-anchor="end" dy="-8">gerinc (mennyezet − 250)</text>
+    <path d="M0,46 H940" stroke="#e6d6bf" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="936" y="60" font-size="9.5" fill="#6d6a63" text-anchor="end">leágazó sáv (gerinc − 150)</text>
+    <path d="M0,222 H940" stroke="#d8d4ca"/><text x="936" y="216" font-size="9.5" fill="#6d6a63" text-anchor="end">dugalj 300</text>
+    <!-- master box (portal L4) -->
+    <rect x="40" y="38" width="26" height="16" fill="#e67e22"/><text x="34" y="74" font-size="10" fill="#b0600f">master / betáp (PB L4)</text>
+    <!-- sockets -->
+    <use href="#soc" x="150" y="222"/><use href="#soc" x="290" y="222"/><use href="#soc" x="470" y="222"/><use href="#soc" x="800" y="222"/>
+    <g font-size="10" font-weight="600" fill="#1d9e75"><text x="164" y="250">1 leader</text><text x="304" y="250">2</text><text x="484" y="250">3</text><text x="814" y="250">4 tail</text></g>
+    <!-- arcs -->
+    <g fill="none" stroke="#1d9e75" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M66,48 H134 Q144,48 144,58 V208" marker-end="url(#g)"/>
+      <path d="M156,212 V66 Q156,56 166,56 H274 Q284,56 284,66 V208" marker-end="url(#g)"/>
+      <path d="M296,212 V66 Q296,56 306,56 H454 Q464,56 464,66 V208" marker-end="url(#g)"/>
+      <path d="M476,212 V66 Q476,56 486,56 H784 Q794,56 794,66 V208" marker-end="url(#g)"/>
+    </g>
+    <g font-size="9.5" fill="#262624">
+      <text x="162" y="140">fel (ki)</text><text x="228" y="140">le (be)</text>
+      <text x="520" y="50">vízszintes szakasz a gerinc mellett, sarkon át</text>
+    </g>
+    <!-- corner marker -->
+    <circle cx="330" cy="56" r="5" fill="none" stroke="#6d6a63"/><text x="338" y="88" font-size="9.5" fill="#6d6a63">sarok: nincs doboz</text>
+  </g>
+
+  <!-- order rule -->
+  <g transform="translate(20,326)">
+    <rect width="940" height="78" rx="6" fill="#fff" stroke="#d8d4ca"/>
+    <text x="14" y="22" font-size="12" font-weight="700" fill="#262624">Sorrend-szabály (TR-S3)</text>
+    <text x="14" y="42" font-size="11" fill="#262624">leader = a masterhez (vagy az Elosztóhoz) a pálya-gráfon legközelebbi dugalj · következő = a még be nem kötött dugaljak közül a legkisebb</text>
+    <text x="14" y="58" font-size="11" fill="#262624">vízszintes út a vezethető falak mentén (ívhossz s, nem légvonal) · tail = az utolsó. Kézi átrendezés felülírja (fix:true) — Q-T16.</text>
+    <text x="14" y="73" font-size="10" fill="#6d6a63">Ugrásonként 2 függőleges cső (be + ki) a dugalj dobozába; leállás-doboz nélkül (Q-T02 A).</text>
+  </g>
+</svg>
