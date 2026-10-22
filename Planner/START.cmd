@@ -62,10 +62,23 @@ setlocal EnableDelayedExpansion
 ::  and the Aloszto per level. Same file, same key 1 (projects\varler-planner\dist).
 ::  W) and E) still work while the worktree exists.
 ::
+::  2026-10-17 - Y) added (was K until 2026-10-22, see below): the Planner CYD desk dashboard (Firmware\planner-cyd).
+::  Not a tool page but three launchers - the bridge with the Planner, the
+::  demo, and flashing the CYD - so it is a letter with a small submenu.
+::  Later the same day: 4) the macropad (also picks up the Planner), 5) its settings page
+::  (http://localhost:8788: buttons, preset library, start with Windows).
+::
+::  2026-10-18 - U) added: Board Console (Firmware\board-console), the control page for
+::  the universal ESP32-S3 dev board at http://localhost:8790 (phase 1: layout, connectors,
+::  setups, board_pins.h). It reads the board model from H:\VRG_Visual_Base\...\Topology_Starter.
+::
 ::  2026-10-21 - H) added: VRG Kapu, the shared homepage / business map
 ::  (Hub\VRG Kapu.cmd -> Hub\dist\vrg-kapu.html, built by tools\build-hub.js).
 ::  A letter, not a number: the numbered slots are full at ten. Tool numbers
 ::  1-10 unchanged. Built on the secacc branch (docs\hub, WP-H0).
+::
+::  2026-10-22 - the CYD desk dashboard moved from K) to Y): K is taken by tool 11
+::  (VRG Kodvaros, branch worktree-codecity). Board Console stays on U).
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -137,7 +150,7 @@ set "TOOLKEYS="
 for /L %%i in (1,1,%TOOLCOUNT%) do (
     if %%i LSS 10 ( set "TOOLKEYS=!TOOLKEYS!%%i" ) else ( set "TOOLKEYS=!TOOLKEYS!0" )
 )
-set "ACTIONKEYS=BWETGVMCINSPLDRHQ"
+set "ACTIONKEYS=BWETGVMCINSPLDRYUHQ"
 set "MENUKEYS=!TOOLKEYS!%ACTIONKEYS%"
 
 if %TOOLCOUNT% GTR 10 (
@@ -171,6 +184,11 @@ set "WT_DIR=%DEROOT%\wt-planner-stack\Planner\projects\varler-planner"
 :: egy fuggetlen Node szkript a repo gyokereben.
 set "INVENTORY_DIR=%REPO%\Inventory"
 set "FETCH_VENDOR_JS=%REPO%\tools\fetch-vendor.js"
+
+:: --------------------- PLANNER CYD (asztali kijelzo) ----------------------
+:: Sajat inditofajlok a Firmware\planner-cyd mappaban; a Y) menu csak ezeket hivja.
+set "CYD_DIR=%REPO%\Firmware\planner-cyd"
+set "BOARD_DIR=%REPO%\Firmware\board-console"
 
 goto MENU
 
@@ -215,6 +233,10 @@ echo  -- Egyeb / Other --
 echo   R^) Teljes VRG toolset megnyitasa VS Code-ban  ^(repo gyoker^)
 echo   H^) VRG Kapu  ^(kozponti terkep - minden program egy helyen^)
 echo.
+echo  -- Hardver / Hardware --
+echo   Y^) Planner CYD asztali kijelzo  ^(USB, Firmware\planner-cyd^)
+echo   U^) Board Console - univerzalis fejlesztolap  ^(http://localhost:8790^)
+echo.
 echo   Q^) Kilepes / Quit
 echo.
 :: WHY choice AND NOT set /p:
@@ -249,6 +271,8 @@ if /I "%K%"=="P" goto DO_INV_PRICECHECK
 if /I "%K%"=="L" goto DO_VENDOR_LIST
 if /I "%K%"=="D" goto DO_VENDOR_FETCH
 if /I "%K%"=="R" goto DO_VSCODE_REPO
+if /I "%K%"=="Y" goto DO_CYD
+if /I "%K%"=="U" goto DO_BOARD
 if /I "%K%"=="H" goto DO_HUB
 
 :: Only keys in MENUKEYS can get this far, so a digit here is always a real
@@ -528,6 +552,39 @@ if not exist "%VSCODE_EXE%" (
     goto MENU
 )
 start "" "%VSCODE_EXE%" "%REPO%"
+goto MENU
+
+:: ========================= PLANNER CYD KIJELZO ==============================
+:: Mindharom a sajat uj ablakaban fut, a menu itt marad.
+:DO_BOARD
+if not exist "%BOARD_DIR%\Board Console.bat" (
+    echo   HIBA: nem talalhato: %BOARD_DIR%
+    pause
+    goto MENU
+)
+start "Board Console" /min "%BOARD_DIR%\Board Console.bat"
+goto MENU
+
+:DO_CYD
+if not exist "%CYD_DIR%" (
+    echo   HIBA: nem talalhato: %CYD_DIR%
+    pause
+    goto MENU
+)
+echo.
+echo   1^) Inditas a Plannerrel  ^(relay + bridge, utana nyisd meg a Plannert^)
+echo   2^) Demo  ^(kitalalt Planner, bongeszo nelkul^)
+echo   3^) CYD firmware feltoltese  ^(lecsereli a Rocket League kijelzot^)
+echo   4^) Makropad  ^(MAKROK oldal Windowshoz; a Plannert is felveszi^)
+echo   5^) Makropad beallitasa  ^(gombok, gyujtemeny, inditas a Windowszal^)
+echo   X^) Vissza
+choice /C 12345X /N /M "Valasztas: "
+set "CK=%ERRORLEVEL%"
+if "%CK%"=="1" start "Planner CYD" "%CYD_DIR%\1 - USB - Planner.bat"
+if "%CK%"=="2" start "Planner CYD demo" "%CYD_DIR%\2 - USB - Demo.bat"
+if "%CK%"=="3" start "Planner CYD flash" "%CYD_DIR%\3 - Flash CYD firmware.bat"
+if "%CK%"=="4" start "Planner CYD makropad" "%CYD_DIR%\4 - USB - Makropad.bat"
+if "%CK%"=="5" start "Planner CYD makropad settings" "%CYD_DIR%\5 - Makropad beallitasa.bat"
 goto MENU
 
 :: ====================== KESZLET / INVENTORY MUVELETEK ========================
