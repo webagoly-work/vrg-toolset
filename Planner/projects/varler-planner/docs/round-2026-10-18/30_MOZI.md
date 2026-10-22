@@ -80,7 +80,7 @@ t 0.05, x_MLP = 0.60 L) — `tests/spec-104-cinema-calc.js`, tolerance 0.005 m:
 - Failed sweep checks listed in the layer HUD with the guide's remedy; check 12 (doors / park zones / windows /
   radiators) uses the room's openings — a spot inside a door swing is red.
 
-⏸ Look on a real room (NV4 or P33 nappali).
+⏸ Look on a real room (CLANV4 or CLA nappali).
 
 ## WP-C5 — node checklist → place → Kész
 

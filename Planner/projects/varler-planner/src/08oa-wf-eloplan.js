@@ -7,7 +7,7 @@
 
 // The user: "the first opportunity to create the circuits is clicking on the Elosztó — the program makes a list of
 // suggested circuits (based on our usual policy and what endpoints have been put down). Users select the ones they see
-// fit, maybe adding a few more to complete the set."  Policy = MATERIAL §6, the P33 rounds (ALAPRETEG Q-001 / Q-002):
+// fit, maybe adding a few more to complete the set."  Policy = MATERIAL §6, the CLA rounds (ALAPRETEG Q-001 / Q-002):
 //   1 every DED endpoint → its own circuit (preset by appliance)        2 bedrooms → one socket circuit each
 //   3 large rooms (> 20 m² or > 8 sockets) → 2 socket circuits; small rooms share by adjacency, ≤ 8 sockets a circuit
 //   4 the kitchen worktop → its own circuit (2,5 mm²)                     5 wet rooms → their own socket circuit

@@ -8,7 +8,7 @@ for me."* — Answer in README §3. The fix makes it do what the user expects in
 
 ## Root cause
 `04-render.js` line 86: `const merge = wallMergeOn() && wm === 'solid';` — the default `wallMode` is
-`'translucent'`, so the toggle is a no-op there (measured byte-identical on P33 v2).
+`'translucent'`, so the toggle is a no-op there (measured byte-identical on CLA v2).
 
 Simply widening the gate is **not enough**: `faceBuried()` (line 495) tests a face's *centroid*, so it
 drops end caps that sit inside another wall but keeps the two **top faces** that overlap at every

@@ -51,7 +51,7 @@ setlocal EnableDelayedExpansion
 ::  checks for it and explains itself instead of failing.
 ::
 ::  2026-10-10 - E) added: the same worktree build, then tools\make-preload.js
-::  bakes P33 teszt v1 + v2 into dist\varler_planner_P33.html (blueprint,
+::  bakes CLA teszt v1 + v2 into dist\varler_planner_CLA.html (blueprint,
 ::  marks and endpoints; of the hardware only the Eloszto) and opens that.
 ::  A letter again, for the same reason as W). check-start.js now counts a
 ::  page an action opens (set "TFULL=%WT_DIR%\...") as registered.
@@ -212,7 +212,7 @@ echo.
 echo  -- Planner muveletek / Planner actions --
 echo   B^) Build          ^(npm run build^)
 echo   W^) Build + megnyitas - fejlesztoi ag ^(wt-planner-stack^)
-echo   E^) P33 elotoltve - fejlesztoi ag ^(v1 + v2, csak az Eloszto^)
+echo   E^) CLA elotoltve - fejlesztoi ag ^(v1 + v2, csak az Eloszto^)
 echo   T^) Test           ^(npm test^)
 echo   G^) Gyro relay szerver inditasa
 echo   V^) Planner projekt megnyitasa VS Code-ban
@@ -258,7 +258,7 @@ if not defined K goto MENU
 if /I "%K%"=="Q" exit /b 0
 if /I "%K%"=="B" goto DO_BUILD
 if /I "%K%"=="W" goto DO_WT_BUILD
-if /I "%K%"=="E" goto DO_WT_P33
+if /I "%K%"=="E" goto DO_WT_CLA
 if /I "%K%"=="T" goto DO_TEST
 if /I "%K%"=="G" goto DO_GYRO
 if /I "%K%"=="V" goto DO_VSCODE
@@ -420,14 +420,14 @@ if not exist "%TFULL%" (
 )
 goto BROWSER_MENU
 
-:: E) the worktree build with the P33 plans baked in (tools\make-preload.js)
-:DO_WT_P33
+:: E) the worktree build with the CLA plans baked in (tools\make-preload.js)
+:DO_WT_CLA
 call :CHECK_NODE || goto MENU
 if not exist "%WT_DIR%\tools\make-preload.js" (
     echo.
     echo   Nincs ilyen fajl:
     echo     %WT_DIR%\tools\make-preload.js
-    echo   Az elotoltott P33 build a planner-stack worktree-ben keszul. Ha az ag
+    echo   Az elotoltott CLA build a planner-stack worktree-ben keszul. Ha az ag
     echo   mar be lett olvasztva, ez az elem felesleges.
     echo.
     pause
@@ -448,8 +448,8 @@ if not "%RC%"=="0" (
     pause
     goto MENU
 )
-set "TNAME=Varler Planner - P33 elotoltve (wt-planner-stack)"
-set "TFULL=%WT_DIR%\dist\varler_planner_P33.html"
+set "TNAME=Varler Planner - CLA elotoltve (wt-planner-stack)"
+set "TFULL=%WT_DIR%\dist\varler_planner_CLA.html"
 if not exist "%TFULL%" (
     echo.
     echo   HIBA: lefutott, de nincs fajl itt:

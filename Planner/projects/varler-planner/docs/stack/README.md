@@ -51,7 +51,7 @@ finished WP is what counts, not per session.
 | A1 | Layer model v2 + schema seed | — | M | verified — 2026-10-06 — 58c3ecc · 1 fix (active layer after undo) · follow-ups: whiteout walls + Wall View notes ignore opacity |
 | A2 | Layer panel: vertical sub-layers, opacity, swap/move | A1 | M | built — 2026-10-06 — 552148c |
 | A3 | Duplicate, merge, link, lock | A2 | M | built — 2026-10-06 — 552148c |
-| ⏸ | **checkpoint — use the new layer panel on NV4 / P33** | | | |
+| ⏸ | **checkpoint — use the new layer panel on CLANV4 / CLA** | | | |
 | B1 | Stack model, wizard, panel group, stage rail, shared hooks | A3 | L | built — 2026-10-07 — d5cbf43 |
 | B2 | Marks: walls, sides, vertical/horizontal strips | B1 | L | built — 2026-10-07 — fc5e894 |
 | B3 | Marks: doors, windows, floor/ceiling strips and zones | B2 | M | built — 2026-10-07 — fc5e894 |
@@ -147,7 +147,7 @@ stack was then reviewed as one piece. What that review changed in code that exis
    upstream bundle carries. Default: warn, never upsize silently.
 3. **STD-001 and A2 read differently on room-circuit feeds** (Q38): "M25 per circuit group" vs "two
    S04 circuits → M32". Default packing satisfies both.
-4. **NV4's switch–lamp wiring does not apply in a BRIDGE stack** (Q29): the switch is an input to the
+4. **CLANV4's switch–lamp wiring does not apply in a BRIDGE stack** (Q29): the switch is an input to the
    RoomBox bistable and each lamp group an output, so there is no switch-to-lamp cable. The 101/105
    schemes stay with the conventional wiring pipeline (slice S6).
 5. **Six type codes are missing from STD-004** (Q36): DED, ETH, SCR, AVP, USB, SEC.
@@ -155,7 +155,7 @@ stack was then reviewed as one piece. What that review changed in code that exis
    tags (`zona_v`, `zona_f`), so the marking layer can start from the norm.
 7. **Undo had to be designed carefully:** layers become undoable only for layer operations; otherwise
    undoing a device move would also undo a visibility toggle made after it.
-8. **Acceptance anchored to a real design:** E5's test reproduces P33's settled cabinet (24 ways,
+8. **Acceptance anchored to a real design:** E5's test reproduces CLA's settled cabinet (24 ways,
    29 modules single-phase, 34 three-phase).
 9. **STD-001's fixed C1 size meets A2 only up to 10 m** (found while building E4): C1 M25 with two
    Cat6A is 34 %; A2 §1 allows 40 %, but only 33 % on a run over 10 m. The fill keeps STD-001's
@@ -167,9 +167,9 @@ stack was then reviewed as one piece. What that review changed in code that exis
 
 ## After the pack — test plans and the routing workshop (2026-10-09)
 
-- **P33 test plans**, generated through the Planner's own functions by `tools/testplans/p33-teszt.js`
-  (v1) and `p33-teszt-v2.js` (v2), into `Calculator/P33-teszt_v1.vplan.json` and `_v2`.
-  - **v1:** P33 turned 180° with the remodel applied; hardware nodes, the golden path (CHANNEL lane +
+- **CLA test plans**, generated through the Planner's own functions by `tools/testplans/cla-teszt.js`
+  (v1) and `cla-teszt-v2.js` (v2), into `Calculator/CLA-teszt_v1.vplan.json` and `_v2`.
+  - **v1:** CLA turned 180° with the remodel applied; hardware nodes, the golden path (CHANNEL lane +
     230 V lane), the client's new endpoints only, circuits, and a portal box per door.
   - **v2:** v1 plus every higher layer at ideal positions, and spine T-boxes; it clears every room-needs
     checklist.
@@ -196,8 +196,8 @@ Concept: [IDEA-003](IDEA-003_smartframe.md). Built on request in the same sessio
 | ideal spots | `src/06b-clusters.js`, ✦ in `05l` | every stack layer's ideal places as dashed ghosts; right-click one to place it; ⌘K *Ideális helyek: minden réteg* |
 | device list | `src/06b-clusters.js` | right-click a Portal / RBX / box / BASE on a system layer, or a custom point on a higher layer → one-click list |
 | secondary boxes | `EP_PLACED` hook in `05s` | a higher-layer endpoint on a custom spot opens a dashed K1 box; the next one beside it joins it |
-| Extrák layer | `XTR_CAT` in `06b` | the top role `sys:EXTRA`: P33-ADD-001 #1–#11 and the SmartFrame slots as provisioned endpoints |
-| preloaded build | `tools/make-preload.js` | `dist/varler_planner_P33.html`: P33 v1 + v2 with only the Elosztó placed, ceiling 2850 |
+| Extrák layer | `XTR_CAT` in `06b` | the top role `sys:EXTRA`: CLA-ADD-001 #1–#11 and the SmartFrame slots as provisioned endpoints |
+| preloaded build | `tools/make-preload.js` | `dist/varler_planner_CLA.html`: CLA v1 + v2 with only the Elosztó placed, ceiling 2850 |
 
 Tests: `spec-66-portals-clusters.js`; spec-35 / 54 count the two new roles. The fill (E3/E4) does not read rails or
 hosts yet — a later round decides how a Portal-served endpoint is filled (`from:'frame'`, IDEA-003 §8 P-5).

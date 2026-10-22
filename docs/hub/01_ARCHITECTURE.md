@@ -25,7 +25,7 @@ repo, so either user can update it, and it falls back to the copy baked into the
        │          │        │       │      │          │      │
  L1  Repo·Drive   Planner  Valena  Panel  LED …     Invent. BuildTree   programs, side by side
        │           │        │       │                  │                 (dashed = planned / empty)
- L2  ☁ folders    ☁ Planner_projektek  ☁ P33_ajanlat …                    shared OneDrive folders
+ L2  ☁ folders    ☁ Planner_projektek  ☁ CLA_ajanlat …                    shared OneDrive folders
        │           │
  L3  🤖 docs      🤖 PRIMER · CLAUDE.md · GO-R1018 · "Claude Code-ban" button   AI / agent documents
        │           │

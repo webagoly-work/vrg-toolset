@@ -26,7 +26,7 @@ function createMockPlanner(onMessage, log, opts) {
   const idleAfterS = (opts && opts.idleAfterS) || 0;
   let workFrom = Date.now(), inputAt = Date.now(), resting = false;
   const st = {
-    proj: 'P33 demo', level: 0, phase: 3, tool: null, layer: 'Dugaljak', sel: 0, err: 2, warn: 5, flat: true,
+    proj: 'CLA demo', level: 0, phase: 3, tool: null, layer: 'Dugaljak', sel: 0, err: 2, warn: 5, flat: true,
     totals: { dev: 140, paths: 38, circuits: 16, cables: 0, notes: 12 }, undo: 0
   };
   let lastJson = '', lastAt = 0, tick = 0;

@@ -87,7 +87,7 @@ Answered 2026-10-21 by the user: **all A** (the recommended option of every ques
 | Q07 | A — OneDrive links only in v1 |
 | Q08 | A — Kapu segéd on localhost:8795 |
 | Q09 | A — Hungarian, English below in italics |
-| Q10 | ~~A~~ → **B** (2026-10-21, after the audit) — anonymise the client job codes before the invite; Q10b A: `varler-planner` is our own name and stays, only `P33`/`NV4` + the e-mail go, via `tools/anonymise.js`. New client jobs only on OneDrive `10_Projektek`, by job code |
+| Q10 | ~~A~~ → **B** (2026-10-21, after the audit) — anonymise the client job codes before the invite; Q10b A: `varler-planner` is our own name and stays, only `CLA`/`CLANV4` + the e-mail go, via `tools/anonymise.js`. New client jobs only on OneDrive `10_Projektek`, by job code |
 | Q19 | A — layer rows stay aligned across the board (H2 look) |
 | Q20 | A — "0 / Egész" fits the width: the department overview (H2 look) |
 | Q21 | A (default) — before a signed list exists everything stays ⛔ (now moot: the list is signed) |

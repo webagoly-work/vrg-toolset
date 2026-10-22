@@ -2,12 +2,12 @@
 
 **Doc:** BRIDGE-OUTLINE-001 · r2 · 2026-10-06 · English · r2 applies round K (upper floor, R07, BASE, riser, box naming)
 **Role:** the top of the document set. What the system is, in what order it is built, and where
-every detail lives. **P33 is the worked instance** carried alongside.
-**Integrates:** `P33-D1 r1` answers (47/47, 2026-10-05) · the P33 floorplan (held locally) · the
+every detail lives. **CLA is the worked instance** carried alongside.
+**Integrates:** `CLA-D1 r1` answers (47/47, 2026-10-05) · the CLA floorplan (held locally) · the
 dining-as-corridor brief.
 
-> **G08 = C.** This is the **general plan** first; P33 is the instance that proves it. Where the two
-> differ, the general rule is in §1–§3 and the P33 fact is in §4.
+> **G08 = C.** This is the **general plan** first; CLA is the instance that proves it. Where the two
+> differ, the general rule is in §1–§3 and the CLA fact is in §4.
 
 ---
 
@@ -129,7 +129,7 @@ Classes: **RB-M** 400×500×110 · **RB-L** 500×600×110 · **RB-H** 600×600×
 
 ---
 
-## 4. P33 — the worked instance
+## 4. CLA — the worked instance
 
 ### 4.1 The dwelling
 
@@ -241,11 +241,11 @@ penetration.
 
 **The cabinet fits after all (K31, K32).** S04 doubles socket circuits to keep 1.5 mm² cable, and
 the 48-module cabinet was full at V2 — but V2's fourth row holds the **centralised** variant's
-core, which a distributed house like P33 does not need. That row becomes the PANEL LINK row. With
+core, which a distributed house like CLA does not need. That row becomes the PANEL LINK row. With
 **one-module RCBOs on every way**, BASE on two system ways, and S04's doubling **kept only where the
 load concentrates** (the kitchen worktop and island), the house needs **24 ways: 29 of 36 modules
 on single phase, 34 of 36 three-phase-ready.** No second enclosure. Derivation and the supply
-calculation for both cases: `P33-BUILD-001` §14. *This reverses r2's "second enclosure required".*
+calculation for both cases: `CLA-BUILD-001` §14. *This reverses r2's "second enclosure required".*
 
 **The hob is induction, on the island (K20).** S06 omitted it; the plan put it in the island. It
 takes its own big-load circuit from the cabinet to the island, never through a RoomBox, and the
@@ -284,7 +284,7 @@ partitions are thin — which is what put RBX03 + BASE in a joinery build-out.
 | 3 | **The media wall's position** in R06 | the AV position and RBX06's exact wall |
 | 4 | **H10** Snapcast placement, to be measured not argued · **D9** the security provider and `alarm_type` | |
 
-**Next build step:** `P33-BUILD-001` — the topology and hardware composition. Nothing above blocks it.
+**Next build step:** `CLA-BUILD-001` — the topology and hardware composition. Nothing above blocks it.
 
 ---
 
@@ -299,17 +299,17 @@ partitions are thin — which is what put RBX03 + BASE in a joinery build-out.
    ├── 04_related-hardware/  VRG line · ESP32 sensor list · presence building blocks
    ├── 05_standards/      STD-001…009 + A1 thermal + A2 wiring annexes + README index
    ├── 06_reference-images/  17 lighting type folders, awaiting photographs
-   ├── 07_P33/            ** LOCAL ONLY, NOT IN GIT ** — client property. Blueprints, the
+   ├── 07_CLA/            ** LOCAL ONLY, NOT IN GIT ** — client property. Blueprints, the
    │                      electrical plan, the room survey. The design knowledge is in
    │                      05_standards and in §4 above, de-identified
-   ├── 08_builds/         P33-BUILD-001 topology + composition · fig/ · src/ (figure generators)
+   ├── 08_builds/         CLA-BUILD-001 topology + composition · fig/ · src/ (figure generators)
    ├── _build/            the register, decision records, briefings
    └── _tuner/            the question tool and packs
 ```
 
 **Authority chain:** ARCH-001 (doctrine, S-A) → **ARCH-002** (architecture, S-C) →
 **Smart Switch r1** (control authority, supersedes ARCH-A1) → **STD-001…008**. ARCH-A1 and
-P33-BRIDGE-ARCH-01 are history, marked superseded, never cited as current.
+CLA-BRIDGE-ARCH-01 are history, marked superseded, never cited as current.
 
 **Read in this order:** this outline → `05_standards/README.md` → STD-001 → 004 → 005 → 006 →
 002 → 003 → 007 → 008. Open items live per-document and in `_build/BRIDGE_infobase.md` by ID —

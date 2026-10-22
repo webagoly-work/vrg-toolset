@@ -1,6 +1,6 @@
 // WP-M1 (round 2026-10-10): Erősáram split into Dedikált · Dugaljak · Világítás + the grey-safe print palette.
 //
-// Fixture: the committed P33 v2 plan, saved BEFORE the split (one "B1 · Erősáram" layer) — the real migration case.
+// Fixture: the committed CLA v2 plan, saved BEFORE the split (one "B1 · Erősáram" layer) — the real migration case.
 // What must hold:
 //   * a new stack has the three roles in order and no sys:MAINS; the old key still resolves read-only;
 //   * loading an old plan migrates once: the old layer id becomes Dugaljak, DED / LIGHT get new layers, every
@@ -14,7 +14,7 @@ function findPlanner(){
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2.vplan.json');
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;
 setTimeout(()=>{

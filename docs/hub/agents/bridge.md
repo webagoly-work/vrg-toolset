@@ -3,7 +3,7 @@
 
 ## 1. What it is
 A complete design for BRIDGE, a smart-home architecture documented to buildable depth. The doctrine
-is manual-first, implemented in hardware. P33 is the first real instance (a two-storey flat).
+is manual-first, implemented in hardware. CLA is the first real instance (a two-storey flat).
 
 ## 2. Where
 - `BRIDGE/` in the repo, on `main`. Standards in `BRIDGE/05_standards/`, open items in
@@ -32,12 +32,12 @@ is manual-first, implemented in hardware. P33 is the first real instance (a two-
 
 ## 6. Current state
 - 2026-10-21 Media Wall MW-001 r0
-- 2026-10-14 P33-BUILD-001: K33 media wall — R06 upper wall + bedroom unit on the R07 face (§16)
+- 2026-10-14 CLA-BUILD-001: K33 media wall — R06 upper wall + bedroom unit on the R07 face (§16)
 - 2026-10-14 BRIDGE standards: STD-001-A2 Layer Wiring Reference, STD-009 Shading and Passive Climate
 - Decision file: `BRIDGE/_tuner/BRIDGE-Q-001.json`. Open items: PRIMER §7.
 
 ## 7. Do not touch
-- P33 client documents: excluded from version control, they live only at `BRIDGE/07_P33/` on this PC
+- CLA client documents: excluded from version control, they live only at `BRIDGE/07_CLA/` on this PC
   (PRIMER §2).
 - `*.pdf` — never committed (root CLAUDE.md).
 

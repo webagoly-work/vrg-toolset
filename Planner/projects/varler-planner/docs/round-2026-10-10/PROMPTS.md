@@ -13,7 +13,7 @@ docs/round-2026-10-10/00_CONTRACT.md. Then, per WP, only that WP file and the 01
 sections it names.
 Rules: work only in the wt-planner-stack worktree; run the CONTRACT §1 loop after every edit batch;
 golden must stay identical except where G1 says; never commit; Hungarian UI, English code.
-Order: U1 U2 U3 U4 U5 U6 U7 → G1 (⏸ show the look mock first) → G2 (⏸ dry-run report on P33 v2) →
+Order: U1 U2 U3 U4 U5 U6 U7 → G1 (⏸ show the look mock first) → G2 (⏸ dry-run report on CLA v2) →
 S1 S2 S3 S4 S5 → M1 → M2 (decisions answered 2026-10-10, see README §4).
 After each WP: the CONTRACT §7 report in chat, the README §4 status line, then continue.
 At each ⏸: stop, show, wait for me.
@@ -46,7 +46,7 @@ wt-planner-stack worktree, Planner/projects/varler-planner only).
    · node tests/run.js.
 2. Check every Build item and every test line of the WP against the code: present, correct, tested.
 3. Hunt the WP's "Verifier focus"; check golden is identical (or changed only as G1 allows).
-4. Do the WP's browser checks in the pane (config planner-serve, P33-teszt_v2, 1600 × 950) and give
+4. Do the WP's browser checks in the pane (config planner-serve, CLA-teszt_v2, 1600 × 950) and give
    numbers or a screenshot.
 5. Fix defects with the smallest change and a test per fix.
 Report: confirmed · fixed (what, why) · still open. Set README §4 to "verified — <date>" only if

@@ -740,7 +740,7 @@
       "status": "live",
       "d": "Árajánlat-munkafolyamat: kérdéssor → Költségvetési Tervezet és Árajánlat PDF.",
       "dEn": "Quote workflow: question funnel → cost plan and quote PDFs.",
-      "long": "A Git-en kívül él (`Varler_Workflow_Kit`). Olvasható, verziózott kit + egy kis Esetlap munkánként. Három kérdéskör, utána a dokumentumok az NV4 minta szerint, ellenőrzővel. Ügyféladat van benne — csak OneDrive-on, a két felhasználónak.",
+      "long": "A Git-en kívül él (`Varler_Workflow_Kit`). Olvasható, verziózott kit + egy kis Esetlap munkánként. Három kérdéskör, utána a dokumentumok az CLANV4 minta szerint, ellenőrzővel. Ügyféladat van benne — csak OneDrive-on, a két felhasználónak.",
       "open": {
         "local": "Varler_Workflow_Kit/README.md"
       },
@@ -770,11 +770,11 @@
       "roadmap": [
         {
           "date": "2026-10-11",
-          "t": "Kit indul az NV4 munkából"
+          "t": "Kit indul az CLANV4 munkából"
         },
         {
           "date": "2026-10-12",
-          "t": "1–4. lépés + P33 Tervezet átadva"
+          "t": "1–4. lépés + CLA Tervezet átadva"
         },
         {
           "date": "2026-10-14",
@@ -898,22 +898,22 @@
       "dept": "KIV",
       "t": "Ügyfélmunkák",
       "status": "live",
-      "d": "Átadott munkacsomagok (P33, NV4). Ügyféladat — csak a két felhasználó.",
-      "dEn": "Delivered job packages (P33, NV4). Client data — two users only.",
+      "d": "Átadott munkacsomagok (CLA, CLANV4). Ügyféladat — csak a két felhasználó.",
+      "dEn": "Delivered job packages (CLA, CLANV4). Client data — two users only.",
       "folders": [
         {
-          "t": "P33 ajánlat",
-          "local": "P33_ajanlat",
+          "t": "CLA ajánlat",
+          "local": "CLA_ajanlat",
           "url": ""
         },
         {
-          "t": "P33 költségvetési tervezet",
-          "local": "P33_koltsegvetesi_tervezet",
+          "t": "CLA költségvetési tervezet",
+          "local": "CLA_koltsegvetesi_tervezet",
           "url": ""
         },
         {
-          "t": "NV4 ajánlat",
-          "local": "NV4_ajanlat",
+          "t": "CLANV4 ajánlat",
+          "local": "CLANV4_ajanlat",
           "url": ""
         },
         {
@@ -950,16 +950,16 @@
       "dept": "TFEJ",
       "t": "BRIDGE okosotthon",
       "status": "dev",
-      "d": "Saját okosotthon rendszer: architektúra, szabványok, P33 építés.",
-      "dEn": "Own smart-home system: architecture, standards, P33 build.",
-      "long": "Kilenc szabvány (STD-001…009), egységflotta, P33 mint első épület. A kiinduló olvasmány a primer; a `01_`–`04_` forrás korpuszt nem kell olvasni.",
+      "d": "Saját okosotthon rendszer: architektúra, szabványok, CLA építés.",
+      "dEn": "Own smart-home system: architecture, standards, CLA build.",
+      "long": "Kilenc szabvány (STD-001…009), egységflotta, CLA mint első épület. A kiinduló olvasmány a primer; a `01_`–`04_` forrás korpuszt nem kell olvasni.",
       "open": {
         "repo": "BRIDGE/README.md"
       },
       "folders": [
         {
           "t": "BRIDGE nagy fájlok",
-          "d": "PDF-ek, render, P33 alaprajz (Git-en kívül).",
+          "d": "PDF-ek, render, CLA alaprajz (Git-en kívül).",
           "url": ""
         }
       ],
@@ -1169,7 +1169,7 @@
       "roadmap": [
         {
           "date": "2026-10-20",
-          "t": "Kísérlet működik P33-on"
+          "t": "Kísérlet működik CLA-on"
         }
       ],
       "long": "Az **Open MCT** a NASA nyílt forrású telemetria-konzolja: idősorok, grafikonok, határértékek, hibalisták — élő eszközadatokra való. Ezért **külön program**, nem a Kapu alapja: nincs magyar felülete, saját szerver kell neki, és a BRIDGE élő adataihoz erős, nem kezdőknek szóló linktérképnek (HUB-Q12 A). Most a kutatásra mutat; a kész konzol a `Console/` mappába kerül.",
@@ -1213,7 +1213,7 @@
       "folders": [
         {
           "t": "Workflow Kit védett szövegek",
-          "local": "Varler_Workflow_Kit/01_nv4_build/02_golden_nv4",
+          "local": "Varler_Workflow_Kit/01_clanv4_build/02_golden_clanv4",
           "url": ""
         }
       ]

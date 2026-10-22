@@ -8,7 +8,7 @@
 // Extends the 05j circuits (data.circuits), not the legacy route-section circuits of the sidebar panel.
 // Right-click the Elosztó → Áramkör-lista: the usual circuits of a home in three tiers (Alap · Kiegészítő · Speciális),
 // each with ☐ aktív, B/C + amps + poles, scope (Ház / rooms) and its status. Ticking creates a 05j circuit with
-// c.preset (catalogue key), c.presetRow (the project row — NV4 has three klíma rows of one key) and c.rooms
+// c.preset (catalogue key), c.presetRow (the project row — CLANV4 has three klíma rows of one key) and c.rooms
 // ([roomId] | ['*']). "Waiting for its endpoint" is derived (no members). Unticking a circuit WITH members asks and only
 // deactivates it (c.off, members released) — wiring decisions are never silently deleted.
 // The project list lives in data.eloPresets (prefix E, registered in 11c-wf-keys.js); absent = the built-in CPR_CAT,
@@ -38,7 +38,7 @@ const CPR_CAT=[
  {key:'mikro',  tier:2,kind:'ded',   n:'Mikrohullámú sütő',                  mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['konyha'], codes:['DED:g16']},
  {key:'szarit', tier:2,kind:'ded',   n:'Szárítógép',                         mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['furdo','gepeszet','mosokonyha'], codes:['DED:g16']},
  {key:'bojler', tier:2,kind:'ded',   n:'Villanybojler',                      mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['furdo','gepeszet','kamra'], codes:['DED:g16']},
- {key:'szobakor',tier:2,kind:'socket',n:'Szobakör — dugaljak + világítás (felújítás, NV4-minta)',mcb:'1C 16A',mm2:2.5,cab:'NYM3x25', scope:'room', kinds:['nappali','halo','dolgozo'], codes:['SOC','LMP','SWI']},
+ {key:'szobakor',tier:2,kind:'socket',n:'Szobakör — dugaljak + világítás (felújítás, CLANV4-minta)',mcb:'1C 16A',mm2:2.5,cab:'NYM3x25', scope:'room', kinds:['nappali','halo','dolgozo'], codes:['SOC','LMP','SWI']},
  {key:'av',     tier:2,kind:'ded',   n:'AV pozíció (médiafal)',              mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['nappali'], codes:['AVP']},
  {key:'kulter', tier:2,kind:'socket',n:'Kültéri dugalj (IP44)',              mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'room', kinds:['kulter'], codes:['SOC']},
  {key:'garazs', tier:2,kind:'socket',n:'Garázs / műhely dugalj',             mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'room', kinds:['gepeszet'], codes:['SOC']},
@@ -54,8 +54,8 @@ const CPR_CAT=[
  {key:'medence',tier:3,kind:'ded',   n:'Medence- / kerti szivattyú',         mcb:'1C 10A',  mm2:1.5, cab:'NYM3x15', scope:'unit', codes:['DED:g16'], note:'C görbe a motor miatt'},
  {key:'napelem',tier:3,kind:'ded',   n:'Napelemes inverter',                 mcb:'3C 16A',  mm2:4,   cab:'NYM5x6',  scope:'unit', codes:['DED'], note:'inverter adatlap szerint ⚑'},
  {key:'alelo',  tier:3,kind:'ded',   n:'Alelosztó betáp, 3 fázis',           mcb:'3C 25A',  mm2:6,   cab:'NYM5x6',  scope:'unit', codes:['DED:alelo']}];
-// the bundled NV4 sample (docs/round-2026-10-10/samples/NV4-minta.vrg-elo-presets.json) — no client data in it
-const CPR_SAMPLE_NV4={format:'vrg-elo-presets',v:1,project:'NV4 minta — panellakás, nappali + 2 szoba, teljes felújítás',items:[
+// the bundled CLANV4 sample (docs/round-2026-10-10/samples/CLANV4-minta.vrg-elo-presets.json) — no client data in it
+const CPR_SAMPLE_CLANV4={format:'vrg-elo-presets',v:1,project:'CLANV4 minta — panellakás, nappali + 2 szoba, teljes felújítás',items:[
  {key:'vil',n:'Világítás (előszoba, konyha, fürdő, WC) + előszobai dugalj',kind:'light',tier:1,mcb:'1B 10A',mm2:1.5,cab:'NYM3x15',scope:'house',codes:['LMP','SWI','SOC']},
  {key:'szobakor',n:'Nappali — dugaljak, világítás',kind:'socket',tier:2,mcb:'1C 16A',mm2:2.5,cab:'NYM3x25',scope:'room',kinds:['nappali'],codes:['SOC','LMP','SWI']},
  {key:'szobakor',n:'Szoba (02) — dugaljak, világítás',kind:'socket',tier:2,mcb:'1C 16A',mm2:2.5,cab:'NYM3x25',scope:'room',kinds:['halo'],codes:['SOC','LMP','SWI']},
@@ -129,7 +129,7 @@ function cprImport(obj,onConflict){if(!obj||obj.format!=='vrg-elo-presets'||!Arr
 function cprImportFile(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
   inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{let o;try{o=JSON.parse(rd.result);}catch(_){$('hud').textContent='Hibás JSON.';return;}
     const r=cprImport(o);$('hud').textContent=r.err||('Importálva: +'+r.added+' kör'+(r.replaced?' · '+r.replaced+' csere':'')+(r.kept?' · '+r.kept+' megtartva':''));cprDialogRefresh();};rd.readAsText(f);};inp.click();}
-function cprLoadSample(onConflict){return cprImport(CPR_SAMPLE_NV4,onConflict||(()=>'keep'));}
+function cprLoadSample(onConflict){return cprImport(CPR_SAMPLE_CLANV4,onConflict||(()=>'keep'));}
 
 // ---- the Elosztó dialog ------------------------------------------------------------------------------------------------------
 let CPR_UI={open:{1:true,2:false,3:false},board:null};
@@ -146,7 +146,7 @@ function cprDialogBody(){const rem=cprReminders();let s=`<div style="font-size:1
   [1,2,3].forEach(t=>{const R=cprRows().filter(r=>r.tier===t);if(!R.length)return;
     s+=`<div class="cprT" data-t="${t}" style="font-weight:700;margin:6px 0 2px;cursor:pointer">${CPR_UI.open[t]?'▾':'▸'} ${CPR_TIER[t]} (${R.length})</div>`;
     if(CPR_UI.open[t])s+=`<table style="font-size:12px;width:100%;border-collapse:collapse">${R.map(cprRowHtml).join('')}</table>`;});
-  return s+`<div class="mrow" style="gap:6px;margin-top:6px"><button id="cprAdd">＋ Saját kör</button><button id="cprExp">⬇ Export</button><button id="cprImp">📥 Import</button><button id="cprNV4">Minta betöltése (NV4)</button></div>`;}
+  return s+`<div class="mrow" style="gap:6px;margin-top:6px"><button id="cprAdd">＋ Saját kör</button><button id="cprExp">⬇ Export</button><button id="cprImp">📥 Import</button><button id="cprCLANV4">Minta betöltése (CLANV4)</button></div>`;}
 function cprDialogRefresh(){const host=$('cprBody');if(!host)return;host.innerHTML=cprDialogBody();cprBind(host);}
 function cprBind(host){const rid=el=>el.closest('[data-r]').dataset.r;
   host.querySelectorAll('.cprT').forEach(b=>b.onclick=()=>{CPR_UI.open[b.dataset.t]=!CPR_UI.open[b.dataset.t];cprDialogRefresh();});
@@ -160,7 +160,7 @@ function cprBind(host){const rid=el=>el.closest('[data-r]').dataset.r;
   if(g('cprAdd'))g('cprAdd').onclick=()=>{cprAddCustom();CPR_UI.open[3]=true;cprDialogRefresh();};
   if(g('cprExp'))g('cprExp').onclick=()=>cprExport();
   if(g('cprImp'))g('cprImp').onclick=()=>cprImportFile();
-  if(g('cprNV4'))g('cprNV4').onclick=()=>{const r=cprLoadSample();$('hud').textContent='NV4 minta: +'+r.added+' kör';CPR_UI.open[2]=true;cprDialogRefresh();};}
+  if(g('cprCLANV4'))g('cprCLANV4').onclick=()=>{const r=cprLoadSample();$('hud').textContent='CLANV4 minta: +'+r.added+' kör';CPR_UI.open[2]=true;cprDialogRefresh();};}
 function cprDialog(boardId){CPR_UI.board=boardId||null;openModal('Áramkör-lista (Elosztó)',`<div id="cprBody" style="max-height:60vh;overflow-y:auto;overflow-x:hidden"></div>`,()=>{},'Kész');cprDialogRefresh();}
 
 // ---- the box / endpoint menu: Áramkör ehhez… --------------------------------------------------------------------------------

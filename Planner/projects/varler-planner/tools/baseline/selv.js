@@ -1,6 +1,6 @@
 // selv.js — every further BRIDGE layer, PREPARED (v2): conduit, pulled cable, boxes, niches — no hardware
 //
-// Model (P33 v2, GO-V2.md, 2026-10-12):
+// Model (CLA v2, GO-V2.md, 2026-10-12):
 //  · each SELV layer is its own run of the data algorithm (data.js): endpoint → nearest RBX / BASE along the walls at
 //    the 2700 band, one layer = its own conduits (STD-001-A2 §0: one layer, one conduit), several cables of ONE layer
 //    may share a conduit sized for them (perPipe). The cable type comes from the endpoint (e.cable).

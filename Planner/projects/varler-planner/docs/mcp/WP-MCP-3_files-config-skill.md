@@ -7,11 +7,11 @@ skill ~150 lines, ~250 specs) · Specs: 125, 126 · Decisions: Q-14, Q-15, Q-16,
 
 Let an agent open a plan, save it and write its exports — and nothing else on the disk. Then make the
 server one line away for every session (`.mcp.json`) and teach agents the Planner (a skill), so the next
-P33 job is "use the planner tools", not a page of jsdom setup.
+CLA job is "use the planner tools", not a page of jsdom setup.
 
 ## What exists
 
-- Plan files: `Calculator/*.vplan.json` (P33-teszt v1 / v2 / v2_butor …) in the `downloadProject` format
+- Plan files: `Calculator/*.vplan.json` (CLA-teszt v1 / v2 / v2_butor …) in the `downloadProject` format
   `{format:'varler-planner', version:1, name, saved, project}` (`src/12-boot.js:274`); older files are a
   bare `sessionObj()` payload — `applyProjectData(o.project || o)` takes both.
 - **`Calculator/` also holds client PDFs** (quotes with names and addresses; `*.pdf` is git-ignored for
@@ -89,7 +89,7 @@ P33 job is "use the planner tools", not a page of jsdom setup.
      pointer input — not available; say so), `needs-confirm` (ask the user, then `confirm:true`);
    - a short map of action groups (Eszköz, Nézet, Réteg, Stack, Végpont, Áramkör, Feltöltés…) with 2–3
      ids each, generated once from `list_actions` and dated — not a full copy of the registry;
-   - the P33 recipe: open `Calculator/P33-teszt_v2.vplan.json`, `run_checks`, device counts per room,
+   - the CLA recipe: open `Calculator/CLA-teszt_v2.vplan.json`, `run_checks`, device counts per room,
      render the ground floor;
    - traps: ids not indices; never hold a wall id across a geometry change without re-reading; the plan
      in a live tab is the user's — `batch` with rollback for multi-step edits; no file outside the allowlist.
@@ -117,7 +117,7 @@ P33 job is "use the planner tools", not a page of jsdom setup.
    with a note if the test cannot create links without elevation).
 
 `tests/spec-126-mcp-files.js` — headless server with a scratch `--allow-path`:
-1. `open_project` P33-teszt_v2 → counts as in spec-122.
+1. `open_project` CLA-teszt_v2 → counts as in spec-122.
 2. `save_project` to scratch → the file parses, `format==='varler-planner'`, re-`open_project` gives the
    same counts; saving again without `overwrite` → `path-refused`/exists; with `overwrite` → a `.bak.json`
    appears.
@@ -135,5 +135,5 @@ outside scratch when no file tool is called (run spec-122 and diff the repo's `g
 ## Live check (owed)
 
 A fresh Claude Code session in the repo: it offers the `planner` server from `.mcp.json`; ask it to open
-P33-teszt_v2, list the validation errors and save a copy to scratch. Then with the live server: the same
+CLA-teszt_v2, list the validation errors and save a copy to scratch. Then with the live server: the same
 session drives the open tab while the user watches.

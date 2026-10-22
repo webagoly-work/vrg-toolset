@@ -40,10 +40,10 @@ module.exports = {
   // ---- the stack roles a catalogue item may land on (05m-stack.js STK_ROLES; HMI folded into CONTROL 2026-10-11) ----
   layers: ['hw', 'base', 'sys:MAINS', 'sys:LV', 'sys:BUSB', 'sys:CONTROL', 'sys:DATA', 'sys:KNX', 'sys:SENSOR', 'sys:RF',
            'sys:MEDIA', 'sys:USB', 'sys:SECURITY', 'cluster', 'sys:EXTRA', '-'],
-  // ---- generic room types; P33 refs map onto them (P33-D1 Table A) ----
+  // ---- generic room types; CLA refs map onto them (CLA-D1 Table A) ----
   roomTypes: ['eloszoba', 'konyha', 'etkezo', 'nappali', 'halo', 'gyerek', 'dolgozo', 'furdo', 'wc', 'kamra', 'gardrob',
               'kozlekedo', 'lepcso', 'mosokonyha', 'gepesz', 'terasz', 'tarolo', 'garazs', 'kert'],
-  p33: {
+  cla: {
     R01: { type: 'eloszoba', n: 'Előszoba', m2: 2.55 },  R02: { type: 'konyha', n: 'Konyha', m2: 5.05 },
     R03: { type: 'etkezo',   n: 'Étkező (+ átjáró)', m2: 10.16, also: ['kozlekedo'] },
     R04: { type: 'wc',       n: 'WC', m2: 1.36 },          R05: { type: 'kamra', n: 'Kamra (lépcső alatt, felszálló)', m2: 1.36, also: ['lepcso'] },

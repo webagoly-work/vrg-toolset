@@ -2,7 +2,7 @@
 
 The Erősáram items (WP-N2) set the pattern: **an item = a role + an endpoint code + what is counted + a few spec
 fields**. Every other layer joins by adding rows to `REQ_ITEMS` and columns to `REQ_SUGGEST`; the dialog, status and
-overview need no new code. Ordered by value for a typical P33/NV4 job:
+overview need no new code. Ordered by value for a typical CLA/CLANV4 job:
 
 1. **Adat / PoE** — `eth` RJ45 db (dupla?), `ap` WiFi AP (mennyezet), `cam` kamera, `tv` TV-pont (ETH + koax). With no house list (N3 B),
    building-wide points (*adatbelépés*, *rack*) are items of the room that holds them (usually Gépészet). Fulfilment = 05s ETH/ACP/CAM counts.
@@ -18,7 +18,7 @@ overview need no new code. Ordered by value for a typical P33/NV4 job:
    the length.
 7. **Gépészet requests that are not ours but drive ours** (fűtés zónák, redőnyök, szellőzés): items of the room
    that holds the equipment, whose only effect is a DED / CONTROL endpoint suggestion.
-8. **Extrák** — the P33 extras and SmartFrame ideas are already a checklist (06b xtr); their rows become req items of
+8. **Extrák** — the CLA extras and SmartFrame ideas are already a checklist (06b xtr); their rows become req items of
    role `sys:EXTRA`, so one dialog shows everything a room was promised.
 
 Cross-cutting ideas:

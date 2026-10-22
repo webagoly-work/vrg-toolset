@@ -21,7 +21,7 @@ WP's line in README §4.
 Verify WP-MCP-<n> of the Planner MCP pack as a reviewer, not the builder.
 Read Planner/projects/varler-planner/docs/mcp/00_CONTRACT.md and the WP's "Tests", "Verifier focus" and "Live check" sections.
 Re-run its spec and the full suite; check golden 70/70 and check-globals. Then do the live check the WP
-owes (planner-serve on port 8131, P33-teszt_v2), measuring rather than eyeballing. Report what holds,
+owes (planner-serve on port 8131, CLA-teszt_v2), measuring rather than eyeballing. Report what holds,
 what does not, and what you could not check. Change nothing unless I ask.
 ```
 

@@ -17,8 +17,8 @@ with the findings).
    commit + pattern, never the matched value.
 3. **Personal / client data**: tracked files whose name or content holds client names, street
    addresses, phone numbers, emails other than the two users' (regex for `+36`, `@`, `utca|út|tér` +
-   number). List `git ls-files | grep -iE 'p33|nv4|peterdy'` with sizes. Known today: 61 tracked
-   paths match `p33` (Calculator `*.vplan.json`, `BRIDGE/08_builds/fig/*`, BRIDGE P33 docs) and
+   number). List `git ls-files | grep -iE 'cla|clanv4|peterdy'` with sizes. Known today: 61 tracked
+   paths match `cla` (Calculator `*.vplan.json`, `BRIDGE/08_builds/fig/*`, BRIDGE CLA docs) and
    some BRIDGE PDFs are tracked despite `*.pdf` in `.gitignore`.
 4. **Size**: largest 20 blobs in history (`git rev-list --objects --all | git cat-file --batch-check`),
    total `.git` size.

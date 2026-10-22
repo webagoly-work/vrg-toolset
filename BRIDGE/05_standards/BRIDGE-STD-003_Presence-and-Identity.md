@@ -516,4 +516,4 @@ Pager.** Three devices are converging on one indicator language and one radio st
 **Closed in r2:** D01 D02 D03 D04 D05 D06 D07 D08 D09 D10 D11 D12 D14 D15 D16 D17 D18 D19 D20 D21
 D22 D23 D24 D25 D26 D27 D28 D29 D30. **U12** is now STD-005 §3, which also allocates **ESP-NOW on
 channel 1** for the notification swarm. **U3**'s general ladder is STD-006 §1. **U1** is STD-004 §1,
-and the portal reference is `P33.POR.R02.R03` with direction implied by the order.
+and the portal reference is `CLA.POR.R02.R03` with direction implied by the order.

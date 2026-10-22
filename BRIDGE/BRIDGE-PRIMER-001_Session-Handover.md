@@ -25,7 +25,7 @@ holds the live Planner work · `planner-device-id-repair` is a **stale pointer**
 
 **Read exactly these, in this order, and then start working:**
 
-1. `BRIDGE-OUTLINE-001_General-Outline.md` — the whole system and the P33 instance. **~15 min read.**
+1. `BRIDGE-OUTLINE-001_General-Outline.md` — the whole system and the CLA instance. **~15 min read.**
 2. `05_standards/README.md` — the index, the authority chain, the cross-references that matter.
 3. `_build/BRIDGE_infobase.md` **§2 only** — the open-items register by ID.
 
@@ -41,11 +41,11 @@ you nothing the standards do not.
 
 A complete design for **BRIDGE**, a smart-home architecture, documented to buildable depth. The user
 is an electrician and developer in Hungary who builds Hungarian-UI single-file HTML tools for
-electrical planning. BRIDGE is the home-automation architecture he is developing; **P33** is the
+electrical planning. BRIDGE is the home-automation architecture he is developing; **CLA** is the
 first real instance — a two-storey flat.
 
-> **P33 is a client property.** Its documents — blueprints, the electrical plan, the room survey —
-> are **excluded from version control** and live only at `BRIDGE/07_P33/` on this PC. The design
+> **CLA is a client property.** Its documents — blueprints, the electrical plan, the room survey —
+> are **excluded from version control** and live only at `BRIDGE/07_CLA/` on this PC. The design
 > knowledge is generalised into the standards, and `BRIDGE-OUTLINE-001` §4 carries the instance
 > de-identified: room geometry without the address. **Keep it that way** — the repo's own rule is
 > that client documents stay on this PC, and it exists because quotes and plans carry names and
@@ -69,7 +69,7 @@ run their own route. This is the most commonly misunderstood thing in the design
 
 | | |
 |---|---|
-| `BRIDGE-OUTLINE-001` | the general outline + P33 instance |
+| `BRIDGE-OUTLINE-001` | the general outline + CLA instance |
 | `05_standards/STD-001` **r2** | physical standardisation · **+ Annex A1** passive thermal |
 | `STD-002` **r2** | light and scene |
 | `STD-003` **r2** | presence and identity |
@@ -91,8 +91,8 @@ This matters more than what to do, because the expensive failure mode here is re
 
 - **Do not re-ask a settled question.** Every decision carries an ID — `A01`–`A08`, `B01`–`B28`,
   `C01`–`C30`, `D01`–`D30`, `E01`–`E11`, `F01`–`F10`, `G01`–`G11`, `H01`–`H12` for design; and the
-  P33 round uses `G` `L` `A` `N` `S` `P`. Records: `_build/BRIDGE-A-002_decisions.md` and
-  `07_P33/P33-D1.json`. If you want to know why something is the way it is,
+  CLA round uses `G` `L` `A` `N` `S` `P`. Records: `_build/BRIDGE-A-002_decisions.md` and
+  `07_CLA/CLA-D1.json`. If you want to know why something is the way it is,
   `_build/BRIDGE-E-002_open-items-briefing.md` explains 19 of them at length.
 - **Do not re-derive the architecture from the source corpus.** It was done once, carefully, and
   produced findings that are now written down. Three of them were corrections to earlier
@@ -132,7 +132,7 @@ formal; penetrating questions; no theatrics. Keep that register.
 `https://claude.ai/artifact/LRu8Q9GJFkxjH2iyFdzrRx` — a published page with a **pack selector**
 carrying two question packs. He answers on his phone and pastes back ~1.2 KB of
 `QID=key ~ note` lines. Source on disk: `_tuner/bridge-tuner.html`, `_tuner/BRIDGE-Q-001.json`,
-`07_P33/P33-D1.json`.
+`07_CLA/CLA-D1.json`.
 
 **To run another round:** write a new pack JSON in the same shape, add it to the `PACKS` array in
 the artifact's source, republish to the same URL. One small file, not a new tool. *Note: the
@@ -143,7 +143,7 @@ published page.*
 
 ## 7. Open items, in the order they matter
 
-> **Updated 2026-10-06.** Round K (K00–K20, recorded in `07_P33/P33-D1_Room-Schedule.md` §9 and
+> **Updated 2026-10-06.** Round K (K00–K20, recorded in `07_CLA/CLA-D1_Room-Schedule.md` §9 and
 > applied in the outline r2) closed the upper floor, R07, the BASE position, the riser, box naming
 > and the hob. **RoomBoxes are now keyed to their room: RBX03 · RBX06 · RBX08 · RBX09.** The
 > upper floor is one room, a bathroom, a hall, a roof terrace and a store (R09–R13), not two
@@ -155,7 +155,7 @@ published page.*
 | **2** | **RBX08's wall** in the redrawn bathroom · **the R06 media wall's position** | R08 ARMs · AV position |
 | **3** | **H10** Snapcast placement, *to be measured not argued* · **D9** security provider and `alarm_type` |  |
 
-**`P33-BUILD-001`** — topology and hardware composition — is the current build document.
+**`CLA-BUILD-001`** — topology and hardware composition — is the current build document.
 
 ---
 
@@ -176,7 +176,7 @@ The ones that will otherwise be re-discovered expensively.
   per-room estimate into a **constrained graph**, which gives the "graph veto" that cures mmWave
   ghosting. But the chosen P-1 default supplies direction without count, which weakens it —
   **if ghosting appears in commissioning, D01 is the first thing to revisit.**
-- **P33's R03 (ÉTKEZŐ) is the articulation point of the house** — half-open to the kitchen, half a
+- **CLA's R03 (ÉTKEZŐ) is the articulation point of the house** — half-open to the kitchen, half a
   corridor linking entrance, stairs, living and pantry. It needs two graph zones, a hall's grace
   period rather than a dining room's, and P-3 portal instrumentation; and **the stairway portal is
   the second count anchor** alongside the entry door.

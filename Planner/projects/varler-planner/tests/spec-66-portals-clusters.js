@@ -8,7 +8,7 @@ function findPlanner(){
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
 const HTML=findPlanner();
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2.vplan.json');
 const dom=new JSDOM(fs.readFileSync(HTML,'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;
 setTimeout(()=>{
@@ -21,11 +21,11 @@ setTimeout(()=>{
     return k.indexOf('cluster')===k.indexOf('arm')-1&&k[k.length-1]==='sys:EXTRA';})());
   ok('the Extras catalogue: 14 provisioned codes on sys:EXTRA, XTT client-requested',(function(){const x=w.EP_CAT.filter(e=>e.role==='sys:EXTRA');
     return x.length===14&&x.every(e=>e.prov&&e.vars.length===2)&&x.find(e=>e.code==='XTT').req===true;})());
-  // ---- P33 v2 ----
+  // ---- CLA v2 ----
   const P=JSON.parse(fs.readFileSync(PLAN,'utf8'));w.hardResetWorkspace();w.applyProjectData(P.project);
   const S=w.stkActive()||w.eval('stacks')[0];
   const room=num=>D().floors.find(f=>f.num===num).id,op=id=>D().openings.find(o=>o.id===id);
-  ok('the P33 file predates the roles; stkEnsureRole adds both to its stack',(function(){const a=!w.stkLayer(S.id,'cluster');
+  ok('the CLA file predates the roles; stkEnsureRole adds both to its stack',(function(){const a=!w.stkLayer(S.id,'cluster');
     const L1=w.stkEnsureRole(S,'cluster'),L2=w.stkEnsureRole(S,'sys:EXTRA');return a&&L1&&L2&&L1.role==='cluster'&&w.stkEnsureRole(S,'cluster')===L1&&S.layers.indexOf(L1.id)>=0;})());
   // ---- door geometry (IDEA-003 §3.2) ----
   const g103=w.ptDoorGeo(op('B103'),room('R06')),g171=w.ptDoorGeo(op('B171'),room('R06')),g109=w.ptDoorGeo(op('B109'),room('R07'));
@@ -47,7 +47,7 @@ setTimeout(()=>{
     w.RAIL_T.on=true;w.chnPathFinished(p);w.RAIL_T.on=false;return p.route==='rail'&&p.color==='#8c96a0';})());
   // ---- clustering the endpoints already there ----
   const gs=w.clsGroups(lvl);
-  ok('P33 v2 has endpoint groups to cluster (same face, same zone, ≤ 300 mm)',gs.length>0&&gs.every(g=>g.members.length>=2),gs.length);
+  ok('CLA v2 has endpoint groups to cluster (same face, same zone, ≤ 300 mm)',gs.length>0&&gs.every(g=>g.members.length>=2),gs.length);
   ok('a group mixing MAINS and SELV gets K3; a pure group of ≤ 3 gets K1',gs.every(g=>{const roles=[...new Set(g.members.map(id=>w.epRoleOf(D().devices.find(d=>d.id===id))))];
     const mixed=roles.some(w.mnsIs)&&roles.some(r=>!w.mnsIs(r));return mixed?g.cls==='K3':(g.members.length<=3?g.cls==='K1':g.cls!=='K1');}));
   const nc=w.clsAutoAll(lvl);

@@ -86,7 +86,7 @@
     const levels = [...new Set([].concat(rooms.map(r => r.level), (d.devices || []).map(x => x.level)))]
       .filter(Boolean).sort((a, b) => ['basement', 'ground', 'upper'].indexOf(a) - ['basement', 'ground', 'upper'].indexOf(b));
     const projName = file.name || (Bld.name) || 'Planner terv';
-    const code = (String(projName).match(/^[A-Z]+[0-9]+/) || ['PRJ'])[0];   // STD-004 reference prefix: P33
+    const code = (String(projName).match(/^[A-Z]+[0-9]+/) || ['PRJ'])[0];   // STD-004 reference prefix: CLA
 
     const levelIds = levels.map(L => {
       const lvRooms = rooms.filter(r => r.level === L);

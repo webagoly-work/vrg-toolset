@@ -2,7 +2,7 @@
 'use strict';
 const fs = require('fs'), geom = require('./geom'), prep = require('./prep');
 const [, , inFile, cfgFile] = process.argv;
-const cfg = require(require('path').resolve(cfgFile || __dirname + '/p33.config.js'));
+const cfg = require(require('path').resolve(cfgFile || __dirname + '/cla.config.js'));
 const G = geom.load(JSON.parse(fs.readFileSync(inFile, 'utf8')), cfg.level);
 const E = prep.endpoints(G, cfg); prep.applyHeights(E);
 const PT = prep.portals(G, E); prep.portalMembers(G, PT, E); prep.placeInPortals(G, PT, E);

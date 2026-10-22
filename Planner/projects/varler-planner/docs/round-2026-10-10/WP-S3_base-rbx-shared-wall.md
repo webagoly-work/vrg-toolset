@@ -7,10 +7,10 @@ Status: todo · Wave S · Depends: U1, U3 · Size: S (~70 lines) · Spec: 69 · 
 should be noted that it is to avoid it if all three BASE parts are in one unit)."*
 
 ## Reproduce first (README F8)
-The model already allows it: `hwGhostAt('rbx', base.level, base.x, base.y)` on P33 v2 returns a valid
+The model already allows it: `hwGhostAt('rbx', base.level, base.x, base.y)` on CLA v2 returns a valid
 ghost at the BASE's spot; vertically BASE (3 units) spans 0–1800 mm, RB-M 1900–2400. So find what
 actually blocks the user, in the browser, before writing code:
-1. P33 v2, RBX tool (Hardver stage) → hover the BASE's wall segment → is a ghost shown? Click → placed?
+1. CLA v2, RBX tool (Hardver stage) → hover the BASE's wall segment → is a ghost shown? Click → placed?
 2. If placed: are both symbols visible in plan? Can each be clicked / right-clicked / dragged? (the
    likely failure: two symbols on one plan point, one hides the other and `hitTest` returns the same
    one every time).

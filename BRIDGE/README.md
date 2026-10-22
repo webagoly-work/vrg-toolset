@@ -29,7 +29,7 @@ A fájlok **másolatok** — az eredetiek érintetlenül a helyükön maradtak
       `_gate-figures.svg`, `_peer-figures.svg`, `_peer-figures-2.svg`.
       A hiányzó négy ábra sehol nem található a gépen. *(Az `ARCH-A1_diagrams.svg` külön dokumentum ábrája.)*
 - [x] `BRIDGE_Project_Planner_Digest.md` → `01_architecture/`
-- [x] `P33_BRIDGE_Inline_Architecture.md` → `01_architecture/`
+- [x] `CLA_BRIDGE_Inline_Architecture.md` → `01_architecture/`
 - [x] Magyar jegyzet a gyengeáramú szobai központi dobozról → `01_architecture/RoomBox_synopsys.md` (+ `.pdf`)
 - [ ] `BRIDGE-ARCH-002_Foundational-Architecture-Plan.md` — **az angol eredeti NINCS meg a gépen.**
       Csak a magyar változat van meg. Ha volt, csak beszélgetésben létezik — exportálni kell.

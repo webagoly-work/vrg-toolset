@@ -13,11 +13,11 @@ For a single program without a running job, the program's file in this folder is
 
 | Codephrase | File | Working copy | What it starts |
 |---|---|---|---|
-| `GO R1010` | `GO-R1010.md` | `wt-planner-stack` | A work session on the Planner round 2026-10-10, then the P33-ADD-001 extras. |
+| `GO R1010` | `GO-R1010.md` | `wt-planner-stack` | A work session on the Planner round 2026-10-10, then the CLA-ADD-001 extras. |
 | `GO FRAME` | `GO-FRAME.md` | `wt-planner-stack` | The BRIDGE SmartFrame (BSF) concept: research, tuning with the user, then the docs. No code. |
-| `GO V2` | `GO-V2.md` | `wt-planner-stack` | P33 second version: v1 fully built plus every further layer prepared, quick-survey quantities and prices. |
+| `GO V2` | `GO-V2.md` | `wt-planner-stack` | CLA second version: v1 fully built plus every further layer prepared, quick-survey quantities and prices. |
 | `GO R1018` | `GO-R1018.md` | main checkout, `main` | Continue the Planner round 2026-10-18 (Födém · Igénylista · Házimozi); only the C6 Mozi fal pen feel is open. |
-| `GO ADAT` | `GO-ADAT.md` | `wt-planner-stack` | P33: from the power base layer to Data/PoE, LED feeds and the old plan. Not in root `CLAUDE.md`; paste the file into a new session. |
+| `GO ADAT` | `GO-ADAT.md` | `wt-planner-stack` | CLA: from the power base layer to Data/PoE, LED feeds and the old plan. Not in root `CLAUDE.md`; paste the file into a new session. |
 | `GO HUB` | `GO-HUB.md` | SecAcc worktree, `secacc` | Build VRG Kapu from `docs/hub/`, next open WP, stopping at every ⏸. |
 | `GO STRICT` | `GO-STRICT.md` | main checkout, `main` | Commit the five uncommitted programs the Kapu links to (HUB-Q24). Until `secacc` is merged, the file and its `CLAUDE.md` line are only in the SecAcc worktree. |
 

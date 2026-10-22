@@ -109,7 +109,7 @@ function sizeConduit(cables, lenMm) {
 const CIRCUIT_CABLE = { light: 'NYM3x15', s04: 'NYM3x15', s25: 'NYM3x25', ded16: 'NYM3x25', hob2l: 'NYM5x25', hob32: 'NYM3x6', alelo: 'NYM5x6' };   // alelo: WP-E6 Alosztó feeder
 const SWITCH_LEG = { 1: 'NYM3x15', 2: 'NYM4x15', 3: 'NYM5x15', twoway: 'NYM4x15', shutter: 'NYM4x15' };
 
-// ---- E5-Q3 = A: run heights follow the ceiling (P33: 2850 → trunk 2600, distribution 2450) ----
+// ---- E5-Q3 = A: run heights follow the ceiling (CLA: 2850 → trunk 2600, distribution 2450) ----
 function runHeights(cfg) { const C = (cfg && cfg.ceiling) || LEVEL.ceilingDefault;
   return { trunk: (cfg && cfg.trunkH) || C - 250, dist: (cfg && cfg.distH) || C - 400, ceiling: C }; }
 

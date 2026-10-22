@@ -106,7 +106,7 @@ Rating: ★★★ use as-is · ★★ use with a small adapter · ★ nice to kn
 |---|---|---|
 | project (`.vplan.json`, `B.name`) | root object | one root per project; namespace `vrg.<project>` |
 | level (`basement/ground/upper`) | folder | |
-| room (`data.floors[]`: `num`, `name`, `poly`) | folder + its plan polygon | device → room by point-in-polygon (the spike does this; P33 gets 8 rooms) |
+| room (`data.floors[]`: `num`, `name`, `poly`) | folder + its plan polygon | device → room by point-in-polygon (the spike does this; CLA gets 8 rooms) |
 | device (`data.devices[]`: `type`, `code`, `ref`, `id`, x/y/h) | object | RBX/BASE = node; `ep` with `code` SEN/THR/POR/SHU/LMP… = endpoint |
 | STD-004 register (not in the Planner) | telemetry point | **this is the gap the Planner must fill** (§5.1) |
 | stack layer (`layers[]`, role `sys:MAINS`…) | tag / folder / Plan swimlane | the spike uses roles as Gantt lanes |
@@ -119,7 +119,7 @@ Rating: ★★★ use as-is · ★★ use with a small adapter · ★ nice to kn
 ### 4.2 What it honestly gives the Planner now
 
 1. **A "digital twin" skeleton of every planned installation** — every RBX, sensor, portal and
-   lamp of P33 as a browsable, searchable object with its room, height and note, *before* it exists.
+   lamp of CLA as a browsable, searchable object with its room, height and note, *before* it exists.
    Useful as the commissioning to-do list and the as-built record.
 2. **A site schedule** derived from the plan (the spike's Gantt: one lane per stack layer, one bar per
    room, workload from device counts). Rough, but generated, not typed.
@@ -138,20 +138,20 @@ in the Planner, the Workflow Kit and the client-preview render.
 ### 5.1 The dictionary — the Planner's new export
 
 Everything in Open MCT hangs off identifiers. STD-004 already defines them: reference scheme
-`P33.R03.LU2` (canonical `.`, label `-`, machine `_`), three-letter type codes, room numbers stable
+`CLA.R03.LU2` (canonical `.`, label `-`, machine `_`), three-letter type codes, room numbers stable
 and never reused, node address = room number. So the Planner should export a **BRIDGE dictionary**:
 
 ```jsonc
-{ "format": "vrg-bridge-dict", "v": 1, "project": "P33", "planner": { "file": "...", "seq": 411 },
+{ "format": "vrg-bridge-dict", "v": 1, "project": "CLA", "planner": { "file": "...", "seq": 411 },
   "levels": [{ "key": "ground", "name": "Földszint", "sheet": "ground.svg", "mmToPx": 0.09, "origin": [x0, y0] }],
-  "rooms":  [{ "ref": "P33.R03", "name": "Konyha · étkező", "level": "ground", "poly": [[…]] }],
-  "nodes":  [{ "ref": "P33.R03.RBX01", "dev": "D199", "class": "RB-H", "addr": 3, "channel": 1,
-               "serves": ["P33.R01", "P33.R03", "…"], "radios": ["thread", "ble", "espnow", "uwb"],
+  "rooms":  [{ "ref": "CLA.R03", "name": "Konyha · étkező", "level": "ground", "poly": [[…]] }],
+  "nodes":  [{ "ref": "CLA.R03.RBX01", "dev": "D199", "class": "RB-H", "addr": 3, "channel": 1,
+               "serves": ["CLA.R01", "CLA.R03", "…"], "radios": ["thread", "ble", "espnow", "uwb"],
                "points": [{ "key": "airT", "reg": "IR5", "scale": 0.1, "unit": "°C", "limits": {…} }, …] }],
-  "endpoints": [{ "ref": "P33.R03.SEN1", "dev": "D2xx", "code": "SEN", "node": "P33.R03.RBX01",
+  "endpoints": [{ "ref": "CLA.R03.SEN1", "dev": "D2xx", "code": "SEN", "node": "CLA.R03.RBX01",
                   "channel": "IR16-21", "points": [ … ] }],
-  "portals": [{ "ref": "P33.R03.POR2", "op": "B107", "tier": "P-3", "node": "…", "ringIndex": 2 }],
-  "circuits": [{ "ref": "A1", "mcb": "1C 10A", "members": ["P33.R03.LMP1", "…"] }]
+  "portals": [{ "ref": "CLA.R03.POR2", "op": "B107", "tier": "P-3", "node": "…", "ringIndex": 2 }],
+  "circuits": [{ "ref": "A1", "mcb": "1C 10A", "members": ["CLA.R03.LMP1", "…"] }]
 }
 ```
 
@@ -256,9 +256,9 @@ exist) and checked with `tools/check-start.js`. Open MCT itself stays in `Vendor
 
 | Phase | What | Output | Effort | Gate |
 |---|---|---|---|---|
-| **OM-0** spike | done today: P33 → tree, simulated register telemetry, floor layouts, limits, faults, Gantt | `docs/research/openmct-spike/` | — | user looks at it |
-| **OM-1** dictionary export | Planner action "BRIDGE szótár exportálása": rooms, nodes, endpoints, portals, circuits, STD-004 refs; V9c sheet per level with its mm map; optional Open MCT tree JSON | `src/05?-bridge-dict.js` + spec (jsdom, P33 golden) | S–M | P33 dict reviewed against BUILD-001 |
-| **OM-2** console shell | `Console/` with `serve` + `index.html` + `vrg-dictionary` reading the export; START.cmd entry | runs offline from START.cmd | S | opens P33 |
+| **OM-0** spike | done today: CLA → tree, simulated register telemetry, floor layouts, limits, faults, Gantt | `docs/research/openmct-spike/` | — | user looks at it |
+| **OM-1** dictionary export | Planner action "BRIDGE szótár exportálása": rooms, nodes, endpoints, portals, circuits, STD-004 refs; V9c sheet per level with its mm map; optional Open MCT tree JSON | `src/05?-bridge-dict.js` + spec (jsdom, CLA golden) | S–M | CLA dict reviewed against BUILD-001 |
+| **OM-2** console shell | `Console/` with `serve` + `index.html` + `vrg-dictionary` reading the export; START.cmd entry | runs offline from START.cmd | S | opens CLA |
 | **OM-3** telemetry service + bench inputs | `vrg-telemetry` with `sim`, `relay` (Planner dash → design-progress points) and `board-agent` (Board Console serial agent) inputs; history in `node:sqlite` | real plots of a real board | M | 24 h soak, no gaps |
 | **OM-4** BRIDGE allocation | Planner: per-node channel allocation (relay outputs, inputs, sensor slots, ring indices) — the commissioning sheet | Planner feature + dict v2 | M–L | answers to the OM questions; design-heavy → checkpoint |
 | **OM-5** faults, limits, conditions, events | STD-006 severities, STD-001-A1 limits per class, IR3 bit conditions, event timestrip | four plugins | M | demo with `sim` faults |
@@ -283,10 +283,10 @@ Run:
 node docs/research/openmct-spike/serve.js
 ```
 
-then open `http://localhost:8150/?plan=P33-teszt_v2` (also START config `openmct-spike` in
+then open `http://localhost:8150/?plan=CLA-teszt_v2` (also START config `openmct-spike` in
 `.claude/launch.json`).
 
-It reads `P33-teszt_v2.vplan.json` read-only and shows: the tree *P33 → Földszint/Emelet → Alaprajz — élő
+It reads `CLA-teszt_v2.vplan.json` read-only and shows: the tree *CLA → Földszint/Emelet → Alaprajz — élő
 · R01…R08 → RBX01, SEN…, POR…, LMP…, SHU… → points*; each point with its STD-004 register in the
 notes; simulated history and live values (deterministic — a reload shows the same curve); a
 Display Layout per level with the room plan and live values at each node / sensor; limits
@@ -298,7 +298,7 @@ What it proves: the object provider, telemetry provider, limits, fault provider 
 layout all work against our real data with **no build step and no Vue**. What it does not prove:
 anything about real BRIDGE data rates, the dictionary format, or persistence.
 
-Checked in the browser pane on 2026-10-20 (P33-teszt_v2: 1 level, 8 rooms, 57 devices with signals,
+Checked in the browser pane on 2026-10-20 (CLA-teszt_v2: 1 level, 8 rooms, 57 devices with signals,
 14 alarms in the last hour, 5 Gantt lanes); no console errors after the fixes below.
 
 ### 8.1 What the spike taught — each one a rule for OM-1/OM-2
@@ -306,7 +306,7 @@ Checked in the browser pane on 2026-10-20 (P33-teszt_v2: 1 level, 8 rooms, 57 de
 | # | Finding | Rule |
 |---|---|---|
 | S1 | **31 of 57 devices fell outside every room** by point-in-polygon: portals sit in door openings, wall-mounted endpoints and RoomBoxes sit *on* the wall line. The spike patches only nodes (first `serves` room); BASE and the wall endpoints stay under "Helyiségen kívül". | The Planner already answers this: `roomOfDevice()` (`src/05h-rooms.js:45`) probes from the face of the host wall. **The dictionary must be exported by the Planner**, which has that function, not rebuilt by the console from the raw file (→ Q5 = A). |
-| S2 | Refs repeat per room (`SEN1` in R01, R03, R04, R06…), so alarms read "SEN1 · CO₂" ×9. | Key and label by the **STD-004 reference** `P33.R03.SEN1` (→ Q4 = A). |
+| S2 | Refs repeat per room (`SEN1` in R01, R03, R04, R06…), so alarms read "SEN1 · CO₂" ×9. | Key and label by the **STD-004 reference** `CLA.R03.SEN1` (→ Q4 = A). |
 | S3 | Only `folder`-typed containers get the built-in grid/list views; a custom type shows an empty pane. | Use `folder` for containers; custom types only where we also ship a view. |
 | S4 | Display Layout is **not** a default plugin (Plot, Table, Condition, Gauge, Folder, Tabs, Flexible layout, Imagery, WebPage are; see `src/MCT.js`). Installing a default twice duplicates it. | The console's `index.html` installs exactly the non-defaults. |
 | S5 | `ImageView` runs `encodeURI()` over the image URL, so a percent-encoded SVG data URI breaks. | Background sheets as **base64** data URIs, or as files served next to the dict. |
@@ -342,7 +342,7 @@ Each with a recommended **A**.
   later modbus/HA) · B: Home Assistant adapter only · C: MQTT direct.
 - **OMCT-Q3 · Where the console lives.** A: new `Console/` tool at the repo root + START.cmd entry ·
   B: inside `BRIDGE/` as `10_console/` · C: inside `Firmware/` next to Board Console.
-- **OMCT-Q4 · Object identity.** A: STD-004 ref (`P33.R03.RBX01`) as the key, Planner `D` id kept
+- **OMCT-Q4 · Object identity.** A: STD-004 ref (`CLA.R03.RBX01`) as the key, Planner `D` id kept
   beside it · B: Planner id as the key.
 - **OMCT-Q5 · Dictionary delivery.** A: Planner exports `vrg-bridge-dict.json` **and** an Open MCT
   tree JSON · B: dict only (console builds the tree) · C: console reads `.vplan.json` directly (as the

@@ -6,14 +6,14 @@ Decisions: Q-02 (answered C), Q-03 (answered B)
 ## Goal
 
 A Model Context Protocol server any Claude Code session can start: it boots the built Planner in jsdom
-— exactly the way every spec and `tools/p33-plan.js` already do — loads a plan, and exposes the
+— exactly the way every spec and `tools/cla-plan.js` already do — loads a plan, and exposes the
 read-only tools plus `run_action` over stdio. No window, no relay, no file writes. This replaces the
-ad-hoc jsdom scripts and `javascript_tool` sessions that drive the Planner today for P33 checks and
+ad-hoc jsdom scripts and `javascript_tool` sessions that drive the Planner today for CLA checks and
 takeoffs.
 
 ## What exists
 
-- The boot recipe (`tools/p33-plan.js` lines 20–27, `tests/spec-95-tool-controller.js` lines 4–12):
+- The boot recipe (`tools/cla-plan.js` lines 20–27, `tests/spec-95-tool-controller.js` lines 4–12):
   `new JSDOM(html, {runScripts:'dangerously', pretendToBeVisual:true, url:'http://localhost/'})`, stub
   `alert` / `confirm` / `prompt`, wait, `hardResetWorkspace(); applyProjectData(doc.project || doc)`.
   `url:'http://localhost/'` matters — it gives jsdom a real origin, so `localStorage` works.
@@ -100,7 +100,7 @@ takeoffs.
 
 ## Tests — `tests/spec-122-mcp-headless.js`
 
-Spawns `node tools/planner-mcp.js --in <repo>/Calculator/P33-teszt_v2.vplan.json` with `NODE_PATH`
+Spawns `node tools/planner-mcp.js --in <repo>/Calculator/CLA-teszt_v2.vplan.json` with `NODE_PATH`
 in `env`, talks to it line by line, kills it in `finally`.
 1. `initialize` (2025-06-18) → same revision back, `serverInfo.name==='varler-planner'`; an unknown
    revision (`1999-01-01`) → `2025-06-18`.
@@ -129,7 +129,7 @@ cwd: start it from `H:\` and from the repo root. `NODE_PATH` fallback message on
 
 Add it to a Claude Code session by hand (no `.mcp.json` yet — that is MCP-3):
 ```bash
-claude mcp add planner-test -- node H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/tools/planner-mcp.js --in H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Calculator/P33-teszt_v2.vplan.json
+claude mcp add planner-test -- node H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/tools/planner-mcp.js --in H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Calculator/CLA-teszt_v2.vplan.json
 ```
-and ask that session for the P33 device count per room and the validation errors. Remove it afterwards
+and ask that session for the CLA device count per room and the validation errors. Remove it afterwards
 (`claude mcp remove planner-test`).

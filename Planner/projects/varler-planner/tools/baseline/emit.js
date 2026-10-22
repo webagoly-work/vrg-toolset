@@ -55,7 +55,7 @@ function networkSheet(ctx, file) {
   R.SP.filter(sp => sp.type !== 'portal').forEach(sp => { const f = sp.faces[0]; if (!f) return; const x = f.face.horiz ? f.u : f.face.fix, y = f.face.horiz ? f.face.fix : f.u;
     lp.add({ x, y, text: (sp.type === 'base' ? '■ BASE' : '■ ' + hwName(sp.dev)), size: 90, weight: 700, color: '#5a3fa0', r: 170, pri: 60 }); });
   put(lp.render());
-  title(put, 'P33 — Erősáram alapréteg: pályák és dobozok', 'gerinc 2600, egy fa az Elosztóból (kék) · leágazó 2450 (piros, szaggatott = jelöletlen falon) · mennyezet (narancs) · sziget a padlón (barna)');
+  title(put, 'CLA — Erősáram alapréteg: pályák és dobozok', 'gerinc 2600, egy fa az Elosztóból (kék) · leágazó 2450 (piros, szaggatott = jelöletlen falon) · mennyezet (narancs) · sziget a padlón (barna)');
   legend(put, [['Gerinc 2600', KCOL.trunk], ['Leágazó 2450', KCOL.dist], ['Jelöletlen falon', KCOL.dist, '70 40'], ['Mennyezet', KCOL.ceil, '90 60'], ['Padló / sziget', KCOL.floor, '40 40']]
     .concat((R.prep || []).length ? [['Előkészítés', PREPCOL, '50 35']] : []), Object.entries(BOX_HU).map(([k, n]) => [n, BCOL[k]]));
   sheet.write(file, s, VIEW, { px: 3000 });
@@ -85,7 +85,7 @@ function circuitSheet(ctx, file) {
   groupAt(E.filter(e => e.role === 'sys:MAINS'), 30, e => (R.C.byMember[e.id] || {}).ref || '').forEach(gr => { const c = R.C.byMember[gr[0].id], k = c ? col[c.ref] : '#999';
     lp.add({ x: gr[0].x, y: gr[0].y, text: [...new Set(gr.map(e => e.ref || e.id))].sort((a, b) => a.localeCompare(b, 'hu', { numeric: true })).join(' · ') + (c ? ' · ' + c.ref : ''), size: 70, color: k, weight: 600, r: 80, pri: 20 }); });
   put(lp.render());
-  title(put, 'P33 — Erősáram áramkörök', 'végpontok és csövek az áramkör színével · egy cső = egy áramkör');
+  title(put, 'CLA — Erősáram áramkörök', 'végpontok és csövek az áramkör színével · egy cső = egy áramkör');
   const items = R.C.list.map(c => [c.ref, col[c.ref]]); let y = 9450;
   items.forEach(([n, c], k) => { const x = 600 + (k % 9) * 1100, yy = y + Math.floor(k / 9) * 230; put(`<rect x="${x}" y="${yy - 110}" width="140" height="140" fill="${c}"/><text x="${x + 190}" y="${yy}" font-size="115">${esc(n)}</text>`); });
   sheet.write(file, s, VIEW, { px: 3000 });
@@ -220,7 +220,7 @@ function vplan(ctx, file) {
           layer: lp.id, lane: k, id: nid('P'), route: 'arm', color: PREPCOL }); })); }); }
   // the layers this round fills are shown
   P.layers.forEach(l => { if ([L_MAINS, L_CH, L_ARM].includes(l.id)) l.visible = true; });
-  out.name = (doc.name || 'P33') + ' — erősáram alapréteg'; out.saved = new Date().toISOString();
+  out.name = (doc.name || 'CLA') + ' — erősáram alapréteg'; out.saved = new Date().toISOString();
   fs.writeFileSync(file, JSON.stringify(out));
 }
 

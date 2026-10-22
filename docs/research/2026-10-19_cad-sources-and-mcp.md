@@ -37,7 +37,7 @@ Ranked by value to us:
 | 1 | **DXF writer** (R12 / R2000) | `crates/dxf` (≈ 1 100 lines tag reader/writer) + `crates/io` (entity mapping) | The Planner has **no DXF at all** (`grep -i dxf src/` is empty). Architects and other trades work in AutoCAD / ArchiCAD; a DXF of the plan (walls, openings, device symbols as blocks, routes on their stack layers) is what they can open. R12 ASCII is a few hundred lines of JS. | M |
 | 2 | **DXF reader** for the architect's plan | same crates | Today a plan comes in as a PDF (`Vendor/pdfjs`) and the walls are redrawn. Reading the architect's DXF lines on the wall layer would seed the walls directly. | M–L |
 | 3 | Pick-point **regions with islands** | `crates/geom/src/region.rs` (714 lines) | The hatch boundary finder = "the closed area around this point, minus what is inside it". Same problem as room-from-walls (`floorFromWalls`) and the Födém / slab outlines. | M |
-| 4 | **Spatial index** | `crates/engine/src/spatial.rs` (565 lines) | `hitCands` scans every device, note, cable, measure on every pointer event. P33 is fine; a 300-device house will not be. | S–M |
+| 4 | **Spatial index** | `crates/engine/src/spatial.rs` (565 lines) | `hitCands` scans every device, note, cable, measure on every pointer event. CLA is fine; a 300-device house will not be. | S–M |
 | 5 | **Snap modes + polar tracking** | `crates/engine/src/snap/*`, `snap.rs` | Perpendicular, tangent, intersection, and deferred snaps, plus tracking lines. The Planner snaps to walls and strips; tracking ("line up with that socket") is missing. | M |
 | 6 | Dimension / linetype / hatch rendering | `crates/render/src/dim.rs`, `linetype.rs`, `hatch.rs` | Blueprint view polish: proper dimension chains and pattern hatches for the print palette (M1 owes "print patterns on route strokes"). | M |
 | 7 | Geometric constraints solver | `crates/constraints` (Levenberg–Marquardt, DOF) | Maybe later for G2 wall refine; heavier than what G2 needs today. | L — park |
@@ -58,7 +58,7 @@ What is useful:
   `window.solidcraft.execute / commands / inspect / request`, using the same command ids and undo
   history. That is exactly the shape a single-file HTML app needs.
 - `skills/` — agent skills (modeling, editing, checking) that teach an agent the app. Same idea
-  would work for the Planner ("how to place a BRIDGE stack", "how to run the P33 acceptance").
+  would work for the Planner ("how to place a BRIDGE stack", "how to run the CLA acceptance").
 - `crates/doc` — the parameter / expression / timeline evaluation. Interesting if the Planner ever
   gets "parametric" rooms (dimensions that drive walls). Not now.
 
@@ -98,7 +98,7 @@ The two CAD apps converged on the same design, and it fits us:
    `ACTIONS`, with `when(ctx)` evaluated) and `actions.run {id, params}`.
 2. **Two modes.**
    - *headless*: `tools/planner-mcp.js` loads `dist/varler_planner.html` in jsdom, exactly like the
-     specs do — batch jobs, P33 checks, takeoffs, no window;
+     specs do — batch jobs, CLA checks, takeoffs, no window;
    - *bridged*: the same server connects to the relay and drives the tab the user is looking at,
      so they watch the agent work (CADCraft `--connect`, SolidCraft `--control`).
 3. **First tools** (small set, annotated):
@@ -110,7 +110,7 @@ The two CAD apps converged on the same design, and it fits us:
    `Calculator/`, a scratch folder) — never `H:\` itself, `.ssh`, `Planner/home`, `.credentials.json`;
    tool annotations so the client asks before destructive calls; the relay stays LAN / localhost only.
 
-Why it is worth it here: the P33 jobs, takeoffs and acceptance runs are done today by sessions that
+Why it is worth it here: the CLA jobs, takeoffs and acceptance runs are done today by sessions that
 script the Planner by hand through `javascript_tool` in a browser or ad-hoc jsdom scripts. An MCP
 turns that into a stable interface any session (or the second account) can use, with the same
 undo history and checks as the UI. It also gives the CYD dashboard / Board Console a cleaner path to

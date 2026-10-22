@@ -156,7 +156,7 @@ already use it after this WP.
 
 ## Tests
 
-`tests/spec-120-planner-api.js` (jsdom, P33-teszt_v2 loaded the PRIMER §4 way from `../../../../Calculator/`):
+`tests/spec-120-planner-api.js` (jsdom, CLA-teszt_v2 loaded the PRIMER §4 way from `../../../../Calculator/`):
 1. `commands()` length === `ACTIONS.length`; `commands({filter:'lampa'})[0].id==='lamp.sheet'` (it is
    `paletteMatches('lampa')`'s first hit today, disabled with no lamp selected); a disabled row carries
    its `need`.
@@ -201,7 +201,7 @@ while it is, and that `dialog-gone` fires on every way a modal can close (Mégse
 
 ## Live check (owed)
 
-`planner-serve` (port 8131), load P33-teszt_v2, then in the browser console:
+`planner-serve` (port 8131), load CLA-teszt_v2, then in the browser console:
 `await planner.commands({filter:'lámpa'})`, `await planner.execute('dev.height')` with a socket
 selected (the dialog opens in the tab with the `🤖 Az ügynök tölti ki` line; the reply lists its fields),
 then `await planner.request('dialog.submit', {token, fields:{dzq:1100}})` — the dialog closes and the

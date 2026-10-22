@@ -44,7 +44,7 @@ What already exists in the Planner (`planner-stack` branch):
 | view scale + real-mm symbols | visual round 2026-10-09 (`vsP`, `devK`, `05z-icons.js`) | sizes already declare model mm vs paper mm |
 | fixed role colours | `STK_COL` in `05m-stack.js` | one colour per stack role, shared by every view |
 | client preview (WebGL, three.js) | `projects/client-preview/` | the interactive client viewer; it shares *view definitions* with this plan, not code |
-| **V0 prototype** | `tools/p33-axo.js` → `docs/views/fig/p33-axo.svg/png` | P33 ground floor in the simplified axonometric look, with a Sims-style cutaway; it proves §4.2 |
+| **V0 prototype** | `tools/cla-axo.js` → `docs/views/fig/cla-axo.svg/png` | CLA ground floor in the simplified axonometric look, with a Sims-style cutaway; it proves §4.2 |
 
 Two facts make the whole plan cheaper than it looks:
 
@@ -126,7 +126,7 @@ already exists in the data (`ctl`, `serves`, rooms), so this is a demo of the mo
 
 **C1 · Simplified axonometric of the home.** The WJEC / exploded-diagram look: white walls with fine
 black outlines, pastel floors per room type, a base plate, small furniture blocks, endpoints coloured
-by system. V0 is the first try (`fig/p33-axo.png`).
+by system. V0 is the first try (`fig/cla-axo.png`).
 
 **C2 · Room-by-room disassembly.** Each room is its own SVG group (floor, its walls, its furniture,
 its endpoints). The animation lifts rooms in a sequence (entrance first) with eased `translateY`.
@@ -187,7 +187,7 @@ isn't solid there, or its own face isn't exposed. Fills carry a same-colour hair
 Endpoints are drawn right after the cell in front of their wall face, so walls in front hide them
 correctly.
 
-Out of grid: rotated objects (the P33 terrace set at 45°), stairs and roofs. These are drawn as
+Out of grid: rotated objects (the CLA terrace set at 45°), stairs and roofs. These are drawn as
 small painter-sorted sprites after the cell under their centre. That is good enough for furniture,
 and true HLR (`three-edge-projection`) is the fallback only if a real need appears.
 

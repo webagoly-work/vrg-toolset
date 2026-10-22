@@ -32,7 +32,7 @@
   {"k":"A","t":"As in MATERIAL §7","d":"Door = gap + swing; window = inset pane + double glass line."},
   {"k":"B","t":"No swing arc in the Normal view","d":"Arcs only in the Blueprint; the working view stays calmer."},
   {"k":"C","t":"Window also full thickness","d":"Doors and windows differ only by fill colour and the glass line."}]},
- {"id":"G02","q":"Wall refine — what is the exact form of a junction?","why":"Measured on P33 teszt v2: 27 junctions (12 L, 15 T), 33 moves, max 308 mm; 12 ends sit on the partner's centreline (the wall tool's snap), which leaves a notch at outer corners.","rec":"A","opts":[
+ {"id":"G02","q":"Wall refine — what is the exact form of a junction?","why":"Measured on CLA teszt v2: 27 junctions (12 L, 15 T), 33 moves, max 308 mm; 12 ends sit on the partner's centreline (the wall tool's snap), which leaves a notch at outer corners.","rec":"A","opts":[
   {"k":"A","t":"L = full corner square, T = stem butts on the face","d":"Every corner is the square of the two walls; every T stem stops exactly on the through wall's face. One house style."},
   {"k":"B","t":"Nearest exact form","d":"Per junction, the exact form that needs the least movement (ties → A). Respects how each corner was drawn; mixed styles remain."},
   {"k":"C","t":"L = square, T = stem through to the far face","d":"T stems overlap the whole thickness of the through wall."}]},

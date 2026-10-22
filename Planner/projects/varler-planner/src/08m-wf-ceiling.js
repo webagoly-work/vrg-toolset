@@ -7,7 +7,7 @@
 
 // The second half of the "horizontal intent by hand" rule: a lamp in the middle of a ceiling is reached by a line the
 // user draws OUT of an allowed wall — from a Vezethető fal point (R2), a door's MAINS slot (O2), a box or a switch —
-// across the ceiling to the lamp. On P33 these were the 6 off-wall sketch lines. Click the start, click bends (45° lock,
+// across the ceiling to the lamp. On CLA these were the 6 off-wall sketch lines. Click the start, click bends (45° lock,
 // Shift = free), click the target to finish; Backspace takes a bend back, Esc cancels. One line per target (a new one
 // replaces the old, in one undo step). In a room with an álmennyezet the route runs ABOVE it, in the plenum (void:true).
 // The same tool for the FLOOR (the user, 2026-10-14: "do the same for padló"): Padló út runs in the floor / screed to any

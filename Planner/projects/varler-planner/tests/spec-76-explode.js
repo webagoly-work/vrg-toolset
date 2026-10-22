@@ -1,7 +1,7 @@
 // Views V5 slice 1 — the static exploded view (docs/views/WORKPLAN.md WP V5, DECISIONS D-V5-1),
 // plus the two V4 look fixes (D-V4-3: no empty legend heading, Felülnézet rotation in the export).
 //
-// Fixture: the committed P33 v2 furnished plan (Calculator/P33-teszt_v2_butor.vplan.json), ground floor.
+// Fixture: the committed CLA v2 furnished plan (Calculator/CLA-teszt_v2_butor.vplan.json), ground floor.
 // Core camera (default def): yaw 225, pitch 50, k 0.105 → a lift of L mm moves a point by −L·cos50°·0.105 on screen.
 const {JSDOM}=require('jsdom');const path=require('path');const fs=require('fs');
 function findPlanner(){
@@ -9,7 +9,7 @@ function findPlanner(){
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2_butor.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2_butor.vplan.json');
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;
 setTimeout(()=>{
@@ -26,7 +26,7 @@ setTimeout(()=>{
   ok('lifts = (rank + 1) × 900',JSON.stringify(B.stats.lifts)===JSON.stringify(LIFTS),JSON.stringify(B.stats.lifts));
   ok('8 ground rooms, each once',B.stats.order.length===8&&new Set(B.stats.order).size===8&&w.viewModel('ground').rooms.length===8);
   ok('step 600 → R01 600, R07 4800',(function(){const C=w.viewRender({explode:{step:600}});return C.stats.lifts.R01===600&&C.stats.lifts.R07===4800;})());
-  ok('step options: 900 · 600 · falmagasság (2850 on P33)',w.VIEW_EXPLODE_STEPS.map(e=>e.n).join(' · ')==='900 mm · 600 mm · falmagasság'
+  ok('step options: 900 · 600 · falmagasság (2850 on CLA)',w.VIEW_EXPLODE_STEPS.map(e=>e.n).join(' · ')==='900 mm · 600 mm · falmagasság'
     &&w.viewExplodeStep('ground','900')===900&&w.viewExplodeStep('ground','600')===600&&w.viewExplodeStep('ground','wall')===2850);
   ok('explode off = the plain render, byte for byte',w.viewRender({explode:null}).svg===A.svg);
   ok('shared walls split: the grid grows 78×78 → 83×81',A.stats.grid.join('x')==='78x78'&&B.stats.grid.join('x')==='83x81',B.stats.grid.join('x'));
@@ -52,8 +52,8 @@ setTimeout(()=>{
   ok('menu: Szétszedve + Emelés lépcsője (900 default)',!!$('expExplode')&&$('expStep').options.length===3&&$('expStep').value==='900');
   ok('unticked → no explode',E('vexpExplode')()===null);
   ok('ticked + 600 → {step:600}',(function(){$('expExplode').checked=true;$('expStep').value='600';const e=E('vexpExplode')();$('expExplode').checked=false;$('expStep').value='900';return e&&e.step===600;})());
-  ok('the export subtitle says so',w.vexpSheet('axo','P33',{explode:{step:900}}).svg.includes(' · szétszedve, lépcső 900 mm</text>'));
-  ok('the exploded export file name ends _szet',(function(){$('expExplode').checked=true;$('expView').value='axo';$('expTitle').value='P33';const n=E('vexpName')('svg');$('expExplode').checked=false;return n==='axo_P33_axo_szet.svg'?true:n;})()===true);
+  ok('the export subtitle says so',w.vexpSheet('axo','CLA',{explode:{step:900}}).svg.includes(' · szétszedve, lépcső 900 mm</text>'));
+  ok('the exploded export file name ends _szet',(function(){$('expExplode').checked=true;$('expView').value='axo';$('expTitle').value='CLA';const n=E('vexpName')('svg');$('expExplode').checked=false;return n==='axo_CLA_axo_szet.svg'?true:n;})()===true);
   // D-V4-3 fixes
   ok('Felülnézet: rotation 0 by default, 90 when asked',w.vexpSheet('top','').R.def.yaw===0&&w.vexpSheet('top','',{rot:90}).R.def.yaw===90&&w.vexpSheet('top','',{rot:45}).R.def.yaw===0);
   ok('Forgatás row: 0° 90° 180° 270°, shown only for Felülnézet',(function(){const r=$('expRot'),row=$('expRotRow'),v=$('expView');

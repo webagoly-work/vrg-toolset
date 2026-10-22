@@ -57,7 +57,7 @@ spans −300…0; all off → 0 / 2500 / 5200 exactly as today; old fixture → 
 - Wall elevation (06-wall-editor): hatched band of the slab above the wall top, label *Födém 300*.
 - Plane editor Mennyezet: caption *mennyezet = a felső födém alja, belmagasság 2700 mm*.
 
-⏸ Look on P33 (two levels): slab visible, stair hole reads right, total height = Σ LH + Σ t.
+⏸ Look on CLA (two levels): slab visible, stair hole reads right, total height = Σ LH + Σ t.
 
 ## WP-S3 — paths through the slab
 

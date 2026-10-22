@@ -54,5 +54,5 @@ rule; `soloOk` called with a wall rect (walls use `soloWallOk`); nothing in the 
 identical).
 
 ## Browser (owed)
-P33 v2: hide "Erősáram" (or a sub-layer row) → click where a socket was → nothing selected, no menu
+CLA v2: hide "Erősáram" (or a sub-layer row) → click where a socket was → nothing selected, no menu
 on right-click, no lamp thumbnail on hover.

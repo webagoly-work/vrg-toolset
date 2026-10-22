@@ -12,8 +12,8 @@
 //    cls:'PT-S'|'PT-D'|'PT-E'|'PT-W'|'PT-B', tier:'SF-0'…'SF-3', level, x, y, h, side}
 // Where the nest goes is IDEA-003 §3.3: H0-1 the hinge-side upper corner on the served room's face; H0-3 the latch
 // side when the wall beyond the hinge jamb is shorter than 300 mm (a 200 box needs 100–300 from the edge — four of
-// the seven P33 doors). Its height is the rail line: max(ZW-o lower line, lintel top + 150) + 50, which is 2450 under
-// the 2850 P33 ceiling and stays clear of the lintel under a lower one.
+// the seven CLA doors). Its height is the rail line: max(ZW-o lower line, lintel top + 150) + 50, which is 2450 under
+// the 2850 CLA ceiling and stays clear of the lintel under a lower one.
 // The Silver Rail is an ordinary path (route:'rail') drawn with the Path tool, like a channel (05r): RBX ↔ Portals.
 // Node tiers (IDEA-003 §8): gold = Elosztó, mérőóra, ISP, BASE, SSC · silver = RBX, Portal · bronze = endpoints and
 // the cluster boxes that house them. A path takes the tier of the node it leaves. Prefix: pt / rail / nd.

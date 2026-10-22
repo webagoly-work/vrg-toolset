@@ -5,7 +5,7 @@
 // by build.js into a single <script>, so they share one scope.
 // ==========================================================================
 
-// The P33 lesson: the user places devices as stickers, the heights are a STANDARD. R04 = B (answered 2026-10-14):
+// The CLA lesson: the user places devices as stickers, the heights are a STANDARD. R04 = B (answered 2026-10-14):
 // every height variant is its OWN catalogue item — `Dugalj · garázs · 500`, `Borotválkozó dugalj · 1400` — placed from
 // the Szabványok panel. The item is stored on the device as d.hVar (d.var stays the ELECTRICAL variant of 05s).
 // The table owns the heights: change a row → every placed item of that kind follows on Alkalmaz, except devices moved
@@ -64,12 +64,12 @@ const STD_H=[
  {code:'ETH',hv:'media',n:'Adataljzat · médiafal',h:1200,auto:{tag:'media'},src:'MATERIAL §3'},
  {code:'USB',hv:'alap',n:'USB aljzat',h:300,auto:{},src:'rules.js'},
  // ---- pályák, dobozok, szintek (E5 reads these)
- {code:'PATH',hv:'trunk',n:'Gerinc (Elosztó ↔ szervizpont)',h:2600,src:'P33 döntés'},
- {code:'PATH',hv:'dist',n:'Leágazó (szervizpont ↔ végpont)',h:2450,src:'P33 döntés'},
+ {code:'PATH',hv:'trunk',n:'Gerinc (Elosztó ↔ szervizpont)',h:2600,src:'CLA döntés'},
+ {code:'PATH',hv:'dist',n:'Leágazó (szervizpont ↔ végpont)',h:2450,src:'CLA döntés'},
  {code:'PATH',hv:'data',n:'Adat sáv',h:2700,src:'ADATRETEG'},
  {code:'BOX',hv:'rbx',n:'RBX dobozközép (alja ≥ 1900)',h:2150,src:'STD-001-A1'},
- {code:'BOX',hv:'drop',n:'Leállás-doboz (2 szerelvényes)',h:2450,src:'P33'},
- {code:'LVL',hv:'ceiling',n:'Belmagasság (alap)',h:2850,src:'P33'},
+ {code:'BOX',hv:'drop',n:'Leállás-doboz (2 szerelvényes)',h:2450,src:'CLA'},
+ {code:'LVL',hv:'ceiling',n:'Belmagasság (alap)',h:2850,src:'CLA'},
  {code:'LVL',hv:'worktop',n:'Munkalap',h:900,src:'rules.js'},
  {code:'LVL',hv:'lintel',n:'Szemöldök',h:2100,src:'rules.js'}];
 const STD_GROUP={SOC:'Dugalj',DED:'Dedikált',SWI:'Kapcsoló',PAN:'Kezelőpanel',THR:'Termosztát',LMP:'Lámpa',SHU:'Redőny',NTL:'Értesítő fény',

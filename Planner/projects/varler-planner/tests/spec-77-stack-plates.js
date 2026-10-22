@@ -1,6 +1,6 @@
 // Views V6 — the stack plates (docs/views/WORKPLAN.md WP V6, DECISIONS D-V6-1…4).
 //
-// Fixture: the committed P33 v2 furnished plan (Calculator/P33-teszt_v2_butor.vplan.json), ground floor (H 2850).
+// Fixture: the committed CLA v2 furnished plan (Calculator/CLA-teszt_v2_butor.vplan.json), ground floor (H 2850).
 // Core camera (default def): yaw 225, pitch 50, k 0.105 → Δz mm moves a point by −Δz·cos50°·0.105 on screen.
 const {JSDOM}=require('jsdom');const path=require('path');const fs=require('fs');
 function findPlanner(){
@@ -8,7 +8,7 @@ function findPlanner(){
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2_butor.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2_butor.vplan.json');
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;
 setTimeout(()=>{
@@ -51,9 +51,9 @@ setTimeout(()=>{
   ok('menu: Rétegek + minden elemhez vezetővonal, both off',!!$('expPlates')&&!!$('expLeadAll')&&!$('expPlates').checked&&!$('expLeadAll').checked&&E('vexpPlates')()===null);
   ok('ticked → {step 900, key}; with all → leaders all',(function(){$('expPlates').checked=true;const a=E('vexpPlates')();$('expLeadAll').checked=true;const b=E('vexpPlates')();
     $('expPlates').checked=false;$('expLeadAll').checked=false;return a.step===900&&a.leaders==='key'&&b.leaders==='all';})());
-  ok('the export subtitle and file name say so',(function(){const S=w.vexpSheet('axo','P33',{plates:{step:900,leaders:'key'}});
-    $('expPlates').checked=true;$('expView').value='axo';$('expTitle').value='P33';const n=E('vexpName')('png');$('expPlates').checked=false;
-    return S.svg.includes(' · rétegek 16, lépcső 900 mm</text>')&&n==='axo_P33_axo_retegek.png'?true:n;})()===true);
+  ok('the export subtitle and file name say so',(function(){const S=w.vexpSheet('axo','CLA',{plates:{step:900,leaders:'key'}});
+    $('expPlates').checked=true;$('expView').value='axo';$('expTitle').value='CLA';const n=E('vexpName')('png');$('expPlates').checked=false;
+    return S.svg.includes(' · rétegek 16, lépcső 900 mm</text>')&&n==='axo_CLA_axo_retegek.png'?true:n;})()===true);
   ok('the data is untouched',JSON.stringify(w.__data)===before);
  }catch(e){R.push(['EXCEPTION',false,e.stack.split('\n').slice(0,4).join(' | ')]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x?'   ['+x+']':''));});

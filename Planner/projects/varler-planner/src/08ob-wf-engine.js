@@ -5,7 +5,7 @@
 // by build.js into a single <script>, so they share one scope.
 // ==========================================================================
 
-// The P33 baseline engine (tools/baseline: rules · geom · network · prep · plan) runs here unchanged: build.js puts it in
+// The CLA baseline engine (tools/baseline: rules · geom · network · prep · plan) runs here unchanged: build.js puts it in
 // place of the marker below as `BL` (Q-E05 = A, bundle, don't port). This file is only the glue:
 //   blInput(level)  the Planner's own data → the engine's sketch shape (E5_ENGINE_REVIEW §4): Vezethető fal marks only
 //                   (Q7), room kinds, sw.ctl, data.circuits, the szobadoboz as a service point (Q5), Padló út lines →
@@ -19,7 +19,7 @@
 const BL_KCOL={trunk:'#c0392b',dist:'#e67e22',drop:'#8e44ad',ceil:'#2980b9',floor:'#16a085',island:'#16a085',riser:'#7f8c8d',feed:'#2c3e50'};
 const BL_BOX_HU={sp:'szervizpont',drop:'leállás',corner:'sarok',end:'pályavég',pull:'húzódoboz',tj:'gerinc elágazó',island:'padló út vége',rbx:'RBX'};
 const BL_KIND_HU={trunk:'gerinc',dist:'leágazó',drop:'leállás',ceil:'mennyezet',floor:'padló',island:'padló út vége',riser:'felszálló',feed:'fővezeték'};
-const BL_OPT={cornerAll:false};                       // E5-Q4: the P33 rule (a box at every corner) — the BRIDGE option
+const BL_OPT={cornerAll:false};                       // E5-Q4: the CLA rule (a box at every corner) — the BRIDGE option
 let BL_LAST=null;                                     // the last run: {level, sig, R, ...} — button 2 reads it
 
 function blFloorId(f){return f.num||f.id;}
@@ -91,7 +91,7 @@ function blInput(level){level=level||state.active;
     cfg.floorGroups.push(fg[key]={name:'PU:'+m.id,sp,room:blRoomAt(a[0]+Math.sign(m.pts[1][0]-a[0])*200,a[1]+Math.sign(m.pts[1][1]-a[1])*200,level)||undefined,members:[d.id],
       box:{x:j[0],y:j[1],h:m.boxH||(bend?300:Math.min(300,d.h||300)),n:'Padló út '+(bend?'kötődoboz':'vége — '+(d.ref||d.id))},line:bend?m.pts.slice(0,-1):m.pts});});
   // Mennyezeti út between two wall points (Q9 = A) → a trunk ceiling crossing. It hops OVER something (the stair void),
-  // so each end lands on the far face of its wall — the room on the side away from the line (P33: R03 at both ends);
+  // so each end lands on the far face of its wall — the room on the side away from the line (CLA: R03 at both ends);
   // an end with nothing beyond (an outside wall) stays in the room the line enters
   (typeof clnMarks==='function'?clnMarks(level,'ceil'):[]).filter(m=>m.cross&&m.pts&&m.pts.length>=2).forEach(m=>{const P2=m.pts,a=P2[0],b=P2[P2.length-1],a1=P2[1],b1=P2[P2.length-2];
     const probe=(p,q)=>blRoomAt(p[0]-Math.sign(q[0]-p[0])*250,p[1]-Math.sign(q[1]-p[1])*250,level)||blRoomAt(p[0]+Math.sign(q[0]-p[0])*250,p[1]+Math.sign(q[1]-p[1])*250,level);
@@ -238,7 +238,7 @@ registerActions([
 
 window.blInput=blInput;window.blRun=blRun;window.blApplyRoutes=blApplyRoutes;window.blApplyWires=blApplyWires;window.blScopeLegs=blScopeLegs;
 window.BL=BL;window.BL_OPT=BL_OPT;
-// a lamp with no wall switch, switched by an RBX output (P33: the bathroom fan, the wardrobe light) — the engine then
+// a lamp with no wall switch, switched by an RBX output (CLA: the bathroom fan, the wardrobe light) — the engine then
 // does not guess a switch for it
 STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d||epCodeOf(d)!=='LMP')return;
   items.push({label:(d.rbxSw?'✓ ':'')+'RBX-kimenetről kapcsolt (nincs fali kapcsoló)',act:()=>{pushUndo(['devices']);if(d.rbxSw)delete d.rbxSw;else d.rbxSw=true;draw();}});});

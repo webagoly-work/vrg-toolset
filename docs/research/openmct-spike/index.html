@@ -13,7 +13,7 @@
   // Spike, 2026-10-20 — docs/research/2026-10-20_openmct-planner-bridge.md §6.
   // The Planner plan (?plan=<name> → Calculator/<name>.vplan.json) becomes an Open MCT object tree;
   // its BRIDGE nodes and sensors get SIMULATED telemetry shaped like the STD-004 §3.4 register map.
-  const plan = new URLSearchParams(location.search).get('plan') || 'P33-teszt_v2';
+  const plan = new URLSearchParams(location.search).get('plan') || 'CLA-teszt_v2';
   const ONE_HOUR = 60 * 60 * 1000;
 
   openmct.setAssetPath('/mct/');

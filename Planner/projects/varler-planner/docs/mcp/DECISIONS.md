@@ -58,7 +58,7 @@ Facts that shape the answer: the CYD bridge connects from this PC (`ws://127.0.0
 - C the first one that connected.
 
 **Q-09 — pictures (`render`).**
-- **A** SVG always; PNG headless through the portable `chrome-headless-shell` (as `tools/p33-axo.js` already does), bridged through the tab's own canvas.
+- **A** SVG always; PNG headless through the portable `chrome-headless-shell` (as `tools/cla-axo.js` already does), bridged through the tab's own canvas.
 - B SVG only.
 - C a rasteriser package: **resvg**, an SVG-to-PNG renderer written in Rust, used from Node as `@resvg/resvg-js` (a prebuilt native module per platform) or `@resvg/resvg-wasm` (WebAssembly, no native binary). The server turns any SVG string into a PNG in tens of milliseconds, with no browser. One renderer for **both** modes (bridged: the tab hands over the SVG, the server rasterises), so a headless and a live picture of the same plan match pixel for pixel; it works in any checkout (the portable Chrome exists only in the main checkout's git-ignored `Planner/apps`). Costs: one npm dependency pinned with its integrity (a few MB); text uses the system fonts, so accented Hungarian labels depend on Windows fonts being found (`loadSystemFonts`) — the spec must check an `ő` / `ű` label renders; resvg reads SVG presentation attributes and a subset of CSS, which suits the Planner's exporter-safe drawing rules (no filters, no `mask`, no `paint-order`).
 

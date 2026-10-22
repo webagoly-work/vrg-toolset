@@ -73,7 +73,7 @@ setTimeout(()=>{
   ok('object / opening / roof copies drop the id, keep the rest (deep)',['objects','openings','roofs'].every(k=>{
     const src={id:'X9',x:1,nested:{a:1}},c=w.copyRecord(k,src);c.nested.a=2;return c.id===undefined&&c.x===1&&src.nested.a===1;}));
 
-  // ---------- repair on load: NV4 in miniature ----------
+  // ---------- repair on load: CLANV4 in miniature ----------
   // three boxes under one id (the old Ctrl+drag), 18 cm apart, all on the same route node; the first and
   // third carry wire data and were routed while they shared the id, the middle one has a glued link
   d=mk();

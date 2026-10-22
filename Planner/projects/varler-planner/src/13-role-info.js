@@ -55,7 +55,7 @@ const RLI_TEXT={
  'sys:DATA':{cel:'Adat és PoE: WiFi hozzáférési pont, adataljzat, kamera.',
    hol:'AP a mennyezeten, szintenként 1–2; adataljzat 300 mm (nappali, dolgozó, háló); kamera 2400 mm. [N]',
    klaszter:'Minden SELV és adat, Média, USB.'},
- 'sys:KNX':{cel:'KNX busz — csak ha a projekt KNX-et választ (P33-ban nem).',
+ 'sys:KNX':{cel:'KNX busz — csak ha a projekt KNX-et választ (CLA-ban nem).',
    hol:'Vonal vagy fa, soha nem hurok. [A2 Step 7]',
    klaszter:'Minden SELV és adat.'},
  'sys:SENSOR':{cel:'Érzékelők: jelenlét (mmWave), CO₂, PIR, vízszivárgás, hőkamera (fürdő), ágy-életjel, portál ToF.',
@@ -82,7 +82,7 @@ const RLI_TEXT={
  arm:{cel:'Ezüst pályák: egyvonalas pályák az RBX-től minden végpontig. Egy ARM több réteget visz, külön csövekben (ezt a feltöltés számolja).',
    hol:'Minden második fázisú végpontot el kell érnie (a hiányzókat a réteg jelzi).',
    klaszter:'Minden második fázisú réteg.'},
- 'sys:EXTRA':{cel:'Extrák és ötletek: előkészített végpontok — a P33 extrák (#1–#11) és a SmartFrame slotjai. Cső és doboz most, a hardver később.',
+ 'sys:EXTRA':{cel:'Extrák és ötletek: előkészített végpontok — a CLA extrák (#1–#11) és a SmartFrame slotjai. Cső és doboz most, a hardver később.',
    hol:'Az ideális helyek ✦-gal jelölve (jobb klikk egy ✦ helyen: elhelyezés). Minden extra a saját helyiségének RBX-éhez fut.',
    klaszter:'Törpefeszültség (A busz) családjával, saját csőben.'}};
 window.RLI_TEXT=RLI_TEXT;

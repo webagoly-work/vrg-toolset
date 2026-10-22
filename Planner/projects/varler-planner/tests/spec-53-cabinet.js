@@ -1,4 +1,4 @@
-// spec-53 — the Elosztószekrény: ways, protection, modules, phases (WP-E5) — reproduces P33's settled cabinet
+// spec-53 — the Elosztószekrény: ways, protection, modules, phases (WP-E5) — reproduces CLA's settled cabinet
 const {JSDOM}=require('jsdom');const path=require('path');const fs=require('fs');
 function findPlanner(){
   if(process.env.PLANNER)return process.env.PLANNER;
@@ -15,7 +15,7 @@ setTimeout(()=>{
  try{
   const lvl='ground',D=()=>w.__data,J=o=>JSON.stringify(o);w.confirm=()=>true;w.alert=()=>{};
   w.newBlankProject();
-  // eight rooms in a row, 3000 × 4000 each (P33-like: kitchen, living, bedroom, bathroom, hall, pantry, upper room, WC)
+  // eight rooms in a row, 3000 × 4000 each (CLA-like: kitchen, living, bedroom, bathroom, hall, pantry, upper room, WC)
   const names=['KONYHA','NAPPALI','SZOBA','FÜRDŐ','ELŐSZOBA','KAMRA','FELSŐ SZOBA','WC'];
   names.forEach((n,i)=>D().floors.push({level:lvl,name:n,num:'1.0'+(i+1),poly:[[i*3000,0],[(i+1)*3000,0],[(i+1)*3000,4000],[i*3000,4000]]}));
   w.ensureIds(D());const RM=i=>D().floors[i].id;

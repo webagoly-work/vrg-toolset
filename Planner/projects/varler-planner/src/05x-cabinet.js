@@ -7,7 +7,7 @@
 // tests/golden.js — const/let are subject to temporal dead zones.
 // ==========================================================================
 
-// The defaults are P33's settled cabinet (P33-BUILD-001 §14, K31/K32): a one-module RCBO on every way, a
+// The defaults are CLA's settled cabinet (CLA-BUILD-001 §14, K31/K32): a one-module RCBO on every way, a
 // three-phase-ready feed, way groups system / RoomBox lighting / RoomBox sockets / big loads. Ratings and loads
 // are typical (reasoned) and a 05j circuit's own `mcb` always wins. The result is a schedule and a JSON the future
 // DIN-rail tool reads (format vrg-cabinet v1, wrapping the existing vrg-circuits payload). Prefix: elo.

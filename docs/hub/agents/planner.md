@@ -9,7 +9,7 @@ identifiers English.
 ## 2. Where
 - Source: `Planner/projects/varler-planner/src/*.js` + `src/shell.html` → `dist/varler_planner.html`
 - Opened from `Planner/START.cmd` key **1**, or VRG-DE.cmd **L1**. START.cmd **W** builds and opens
-  the worktree build, **E** the P33-preloaded one, **B** build, **T** test, **G** gyro relay.
+  the worktree build, **E** the CLA-preloaded one, **B** build, **T** test, **G** gyro relay.
 - Three checkouts exist; check `git rev-parse --show-toplevel && git branch --show-current` first.
 
 ## 3. Read first

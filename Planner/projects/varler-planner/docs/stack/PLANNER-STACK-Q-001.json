@@ -128,7 +128,7 @@
  {"id":"Q29","q":"Switches in a BRIDGE stack","why":"Manual-first: the switch is an input to the RoomBox's bistable; lamps are outputs. No switch-to-lamp wire.","rec":"A","opts":[
   {"k":"A","t":"Switch = input (own run to RBX), lamp groups by 'what does this switch control' — default 230 V pushbutton","d":"BRIDGE-DN style RC-snubbed pushbutton."},
   {"k":"B","t":"Same, default SELV pushbutton","d":"J-Y(St)Y to the bistable input."},
-  {"k":"C","t":"Conventional 101/105 wiring (NV4 style)","d":"That is wiring-pipeline S6 — a separate, later job."}]},
+  {"k":"C","t":"Conventional 101/105 wiring (CLANV4 style)","d":"That is wiring-pipeline S6 — a separate, later job."}]},
  {"id":"Q30","q":"Placement suggestions","rec":"A","opts":[
   {"k":"A","t":"On, with soft snapping (Alt disables)","d":""},
   {"k":"B","t":"On, hints only, no snapping","d":""},

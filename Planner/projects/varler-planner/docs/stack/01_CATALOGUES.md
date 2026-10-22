@@ -3,7 +3,7 @@
 Data tables, written as JS so a builder can paste them. Each table names the module it lives in.
 Values marked `/*r*/` are **reasoned, not measured** — keep the marker as a comment in the code.
 Source tags: `A2` = BRIDGE-STD-001-A2 Layer Wiring Reference · `S1` = STD-001 · `S3` = STD-003 ·
-`S4` = STD-004 · `S5` = STD-005 · `S8` = STD-008 · `B1` = P33-BUILD-001 · `Qnn` = decision pack default.
+`S4` = STD-004 · `S5` = STD-005 · `S8` = STD-008 · `B1` = CLA-BUILD-001 · `Qnn` = decision pack default.
 
 ---
 
@@ -59,7 +59,7 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:BUSB',   n:'Biztosított 24 V — B busz',ph:2, fam:'BUSB'},
  {k:'sys:CONTROL',n:'Vezérlés (BRIDGE_LINK)', ph:2, fam:'CONTROL'},
  {k:'sys:DATA',   n:'Adat / PoE',             ph:2, fam:'DATA'},
- {k:'sys:KNX',    n:'KNX',                    ph:2, fam:'KNX', off:true},   // P33: not taken
+ {k:'sys:KNX',    n:'KNX',                    ph:2, fam:'KNX', off:true},   // CLA: not taken
  {k:'sys:SENSOR', n:'Érzékelők',              ph:2, fam:'SENSOR'},
  {k:'sys:RF',     n:'Rádió — lefedettség',    ph:2, fam:null},             // a coverage plan, no conduit (A2 step 9)
  {k:'sys:HMI',    n:'Kezelőfelületek',        ph:2, fam:'CONTROL'},
@@ -465,7 +465,7 @@ const SUG_RULES=[
 
 ## §12 Elosztószekrény rules — `05x-cabinet.js` (WP-E5)
 
-Defaults are P33's settled answers (B1 §14, K31/K32). Ratings `/*r*/` — typical, check against the
+Defaults are CLA's settled answers (B1 §14, K31/K32). Ratings `/*r*/` — typical, check against the
 design; `05j` circuits that already carry an `mcb` keep theirs.
 
 ```js

@@ -5,7 +5,7 @@ logic, to make sure it will scale well and the rules are applied correctly."*
 
 **What I did:**
 - read geom.js, network.js, prep.js, plan.js and rules.js in full (about 950 lines);
-- measured the engine on the P33 ground floor;
+- measured the engine on the CLA ground floor;
 - measured it on 2×, 4×, 8× and 16× tiled copies of that plan;
 - benchmarked one shortest-path search on connected graphs of 128–4 000 nodes.
 
@@ -44,9 +44,9 @@ Nothing was changed.
 
 | Plan | Rooms | Endpoints | Graph nodes | Searches | Total |
 |---|---|---|---|---|---|
-| P33 ground floor | 8 | 152 | 128 | 226 | **62 ms** |
-| 4 × P33 | 32 | 596 | 509 | 826 | 134 ms |
-| 16 × P33 (copies not connected) | 128 | 2 372 | 2 033 | 3 274 | 0.85 s |
+| CLA ground floor | 8 | 152 | 128 | 226 | **62 ms** |
+| 4 × CLA | 32 | 596 | 509 | 826 | 134 ms |
+| 16 × CLA (copies not connected) | 128 | 2 372 | 2 033 | 3 274 | 0.85 s |
 
 The tiled copies flatter the engine: each search explores only its own copy.
 
@@ -73,7 +73,7 @@ The fix is small and changes no result:
 - **one** search per service-point face, reused for every drop, instead of one per drop × face.
 
 Together those take the 16× case from about 3 300 searches to about 180, each about 50× cheaper. They can be checked
-for byte-identical output on P33 (E5-Q6 below).
+for byte-identical output on CLA (E5-Q6 below).
 
 ## 3. Findings, most serious first
 
@@ -85,18 +85,18 @@ for byte-identical output on P33 (E5-Q6 below).
 | F4 | Med | **Fixed heights 2600 / 2450 whatever the ceiling.** A 2 500 basement or a drop ceiling puts the trunk above the ceiling | Wrong drawing and quantities on real projects | From the room ceiling (E5-Q3) |
 | F5 | Med | **Cable chosen from the breaker TEXT:** `/13A/` → 1,5 mm², else 2,5 mm²; DED by variant | Fragile. A 10 A lighting-socket mix or an edited preset gives the wrong cable | Take mm² / cable from the circuit's M2 preset (`c.preset` → CPR row `mm2`, `cab`) |
 | F6 | Med | **Trunk-only corners get their box at 2450** (dist height; plan.js corner boxes take `W.dist`) | The box sits 150 mm below the pipe it serves | The box height = the height of the runs through that corner |
-| F7 | Med | **P33 hard-codes:** `ctx.room === 'R05'` (kamra 1100) in rules.stdHeight; `'R03' / 'R03L'` same-zone in inferLamps | Wrong on every other project | Room kinds (R1) and network zones (they already exist: `NW.zones`) |
+| F7 | Med | **CLA hard-codes:** `ctx.room === 'R05'` (kamra 1100) in rules.stdHeight; `'R03' / 'R03L'` same-zone in inferLamps | Wrong on every other project | Room kinds (R1) and network zones (they already exist: `NW.zones`) |
 | F8 | Med | **A non-orthogonal room edge throws** (geom.js: "non-orthogonal edge"). F02 = A allows 45° room outlines | One diagonal room → the whole run crashes | Skip 45° faces as non-routable (a warning), keep the room |
 | F9 | Med | **One level, one Elosztó.** `cfg.level` only; no sub-board (alelosztó); upper floors only as empty riser conduits | Two-storey houses get no runs upstairs | Per level, with risers as the trunk's vertical links; sub-board = a service point fed by a DED (E5-Q8) |
 | F10 | Low | **The end provision box** goes 180 mm past the last box, with no check that the spot is a routable wall | Can land in a doorway or a corner | Clamp to the routable interval |
 | F11 | Low | **Wet rooms: only the height rule** (1100); no 0–2 zone geometry | R3's Vizes marks exist now | Warn on a socket or switch inside a Vizes zone / face |
 | F12 | Low | **Ceiling lamps:** straight lines, nearest-first chain from the riser; the user's Mennyezeti út / Padló út lines (E2) are not used | The routes the user drew are ignored | Follow the cline marks when present, else the current chain |
-| F13 | Low | **maxCablesPerPipe:** the code default is 2; P33 config and README say 3 | Two sources of one number | One Standard (R4 table / settings) |
+| F13 | Low | **maxCablesPerPipe:** the code default is 2; CLA config and README say 3 | Two sources of one number | One Standard (R4 table / settings) |
 | F14 | Info | **Lamp → switch inference heuristics:** `busy`, a 900 mm "mates" penalty, kind-106 pairing | In the Planner, E1's explicit links (`sw.ctl`, `grp`) are the source | E5 reads the links only; the inference stays E1's suggestion table, never silent |
 
-## 4. What the Planner already has that replaces the P33 config
+## 4. What the Planner already has that replaces the CLA config
 
-| p33.config.js | Planner source (this round) |
+| cla.config.js | Planner source (this round) |
 |---|---|
 | allowed (sketch lines + plus marks) | **rwlAllowed** (R2 / R5 Vezethető fal) — F1 |
 | wetRooms | room kinds furdo / wc (R1) |
@@ -111,7 +111,7 @@ for byte-identical output on P33 (E5-Q6 below).
 | PORTAL_SLOTS | 08g PT_SLOTS (spec-86 keeps them equal) |
 | service points: portal, RBX, BASE | + the **szobadoboz** (E3, "does wall crossing") — **decision: E5-Q5** |
 | heights (rules.stdHeight) | the Standards table (R4, `stdH`): one source — **decision: E5-Q3** |
-| fixFace, adoptSwitches, edits, spBoxSize, risers, prepared | sketch repairs for P33 — not carried over (risers → F9) |
+| fixFace, adoptSwitches, edits, spBoxSize, risers, prepared | sketch repairs for CLA — not carried over (risers → F9) |
 
 ## 5. Decisions before E5
 
@@ -127,13 +127,13 @@ for byte-identical output on P33 (E5-Q6 below).
    - A) from the room ceiling: trunk = ceiling − 250, dist = trunk − 150, with the R4 table as the override **★**;
    - B) fixed 2600 / 2450, with an error below a 2 750 ceiling.
 4. **E5-Q4, corner boxes:**
-   - A) keep a box at every corner (the P33 rule; P33 had 107 boxes for 152 endpoints) **★**;
+   - A) keep a box at every corner (the CLA rule; CLA had 107 boxes for 152 endpoints) **★**;
    - B) only where a pull box is needed (more than 3 bends) or the run branches.
 5. **E5-Q5, the szobadoboz:**
    - A) is a service point — walls may be crossed there **★**;
    - B) not a crossing point.
 6. **E5-Q6, the speed fix** (heap + one search per source):
-   - A) do it in E5 and prove byte-identical P33 output **★**;
+   - A) do it in E5 and prove byte-identical CLA output **★**;
    - B) later.
 7. **E5-Q7, routable walls:**
    - A) rwlAllowed only; unmarked walls stay a ×4 fallback with a warning **★**;
@@ -145,7 +145,7 @@ for byte-identical output on P33 (E5-Q6 below).
    - A) a Mennyezeti út line drawn between two wall points is a trunk ceiling crossing **★**;
    - B) a separate mark.
 
-**The P33 parity check:** E5 must reproduce the v1 legs / boxes / circuits of `Calculator/P33-baseline/v1_2026-10-12`
+**The CLA parity check:** E5 must reproduce the v1 legs / boxes / circuits of `Calculator/CLA-baseline/v1_2026-10-12`
 (local only — client data). Differences are allowed only where a decision above changes a rule, and each one is listed.
 
 ## 6. Answers (user, 2026-10-15)
@@ -154,15 +154,15 @@ for byte-identical output on P33 (E5-Q6 below).
 |---|---|---|
 | E5-Q1 | **A** | Current capacity: per pipe and per chase, In ≤ Iz · k(grouping). Warn and propose the fix (the next cross-section, or fewer circuits in the chase). Iz / k tables ⚑ (IEC 60364-5-52 values, to confirm against MSZ) |
 | E5-Q2 | **B** | Voltage drop: one limit, **4 %**, per circuit along its longest branch |
-| E5-Q3 | **A** | Run heights from the ceiling: trunk = ceiling − 250, distribution = trunk − 150. The R4 Standards can override. P33 (2850) keeps 2600 / 2450 |
-| E5-Q4 | **B by default, A as an option** | Default: no box at a plain corner; a pull box only where a run has more than 3 bends, plus branch / end boxes. The P33 rule (a box at every corner) becomes an option for the **BRIDGE layers** (`cornerBoxes:'all'`) |
+| E5-Q3 | **A** | Run heights from the ceiling: trunk = ceiling − 250, distribution = trunk − 150. The R4 Standards can override. CLA (2850) keeps 2600 / 2450 |
+| E5-Q4 | **B by default, A as an option** | Default: no box at a plain corner; a pull box only where a run has more than 3 bends, plus branch / end boxes. The CLA rule (a box at every corner) becomes an option for the **BRIDGE layers** (`cornerBoxes:'all'`) |
 | E5-Q5 | **A** | The szobadoboz (E3, `jb:'szoba'`) is a service point: walls may be crossed there |
 | E5-Q6 | **B** | The speed fix comes later (the engine stays O(V²) for now; fine at house size) |
 | E5-Q7 | **A** | Routable = Vezethető fal only (rwlAllowed: whole wall / spans). L-forma and other plus marks no longer open a wall. Unmarked walls stay a ×4 fallback with a warning |
 | E5-Q8 | **own answer** | **Every further level gets its own sub-board, the Alosztó** (or a DIN-rail RBX variant), so each floor has its own RCD protection. The main Elosztó feeds the Alosztó with a dedicated feeder; each level's runs start from its own Alosztó. Planned as **WP-E6** after E5 |
 | E5-Q9 | **A** | A Mennyezeti út line drawn between two wall points is a trunk ceiling crossing |
 
-## 7. Stage 1 built — the engine fixes (2026-10-15), measured on P33
+## 7. Stage 1 built — the engine fixes (2026-10-15), measured on CLA
 
 Changed in `tools/baseline`:
 - **geom:** F1 / Q7 routable walls, exact mark spans, F8 45° steps, room kinds;
@@ -171,17 +171,17 @@ Changed in `tools/baseline`:
 - **prep:** kinds, wet rooms by kind;
 - **plan:** Q3 heights, F7 zones, F8 warning, Q4 `cornerBoxes`, F6, F10, F13 (default 3), Q5 szobadoboz, the Q1 / Q2
   `cableChecks`.
-- **p33.config:** `roomKinds {R05: kamra}` and `cornerBoxes: 'all'`, so P33 stays reproducible.
+- **cla.config:** `roomKinds {R05: kamra}` and `cornerBoxes: 'all'`, so CLA stays reproducible.
 
-**Parity with the delivered v1** (`Calculator/P33-baseline/v1_2026-10-12/kimenet`):
+**Parity with the delivered v1** (`Calculator/CLA-baseline/v1_2026-10-12/kimenet`):
 - Same 16 circuits, same 185 legs, the same takeoff.
 - **5 trunk legs are 150 mm shorter.** One trunk-only corner box (X76) now sits at the trunk height, 2600, not 2450 (F6).
-- No route changed. P33's sketch lines already cover the walls the L-forma marks used to open.
+- No route changed. CLA's sketch lines already cover the walls the L-forma marks used to open.
 
-**Q4 default (pull boxes only) on P33:** 107 → **81 boxes**. The 23 plain-corner boxes go; no distribution run passes
+**Q4 default (pull boxes only) on CLA:** 107 → **81 boxes**. The 23 plain-corner boxes go; no distribution run passes
 3 bends, so no new pull box is added. Routes and cable metres are unchanged.
 
-**Q1 / Q2 on P33 — needs the user's ruling (E5-Q10, E5-Q11):**
+**Q1 / Q2 on CLA — needs the user's ruling (E5-Q10, E5-Q11):**
 
 | Circuit | In / mm² | Circuits in its pipe | Circuits in its chase | Iz · k, per pipe | Iz · k, per chase | Longest branch | ΔU |
 |---|---|---|---|---|---|---|---|
@@ -206,7 +206,7 @@ Changed in `tools/baseline`:
 | E5-Q10 | **A** — grouping per pipe | `cableChecks` counts per pipe (`cfg.groupBy:'chase'` kept for comparison). Trunk pipes are packed by capacity: a pipe takes only as many circuits as its weakest cable still carries its breaker at (In ≤ Iz·k(n)), and a 1,5 mm² cable shares its pipe with at most one other circuit (`cfg.maxCirc15`, 2). The strongest cables are packed first. |
 | E5-Q11 | **A** — lighting drop from the real load | `cfg.loadW` (LMP 60 W a point, SHU 150 W a motor); `cfg.lightCurrent:'mcb'` gives the strict reading. The capacity check still uses the breaker. |
 
-**P33 after Q10 / Q11:** every capacity check passes (A4 / A5 / A14 / A7 at 2 circuits per pipe → 13,2 A; the A8 hob at 2 →
+**CLA after Q10 / Q11:** every capacity check passes (A4 / A5 / A14 / A7 at 2 circuits per pipe → 13,2 A; the A8 hob at 2 →
 16,0 A). Pipes: M20 120 → 128, M25 58 → 55, M32 22 → 38, M40 25 → 13. Circuits, boxes, legs, lengths and cable metres
 are unchanged. One warning is left: **V1, 4,14 %** (38 m, 8,3 A estimated load, 1,5 mm²), with the suggested fix
 "2,5 mm² or split the circuit".
@@ -238,27 +238,27 @@ are unchanged. One warning is left: **V1, 4,14 %** (38 m, 8,3 A estimated load, 
 - **Button 2, 🧵 Vezetékek** (scope Eszköz | Helyiség | Ház):
   - writes the cable text and circuits into the sections and totals the metres per cable type;
   - refuses to run when the plan has changed since the Pályák run (input hash).
-- **spec-98**: 28 checks. On the P33 v1 sketch (when present), the bundled engine and the CLI give the same plan
+- **spec-98**: 28 checks. On the CLA v1 sketch (when present), the bundled engine and the CLI give the same plan
   exactly. Full suite: 92 suites, 3 211 checks, golden 70 / 70.
 
-**⏸ P33 acceptance — the v1 sketch alone is not enough.** I loaded the v1 sketch into the Planner and turned its
+**⏸ CLA acceptance — the v1 sketch alone is not enough.** I loaded the v1 sketch into the Planner and turned its
 sketch lines into Vezethető fal spans. The engine then runs, but it gives:
 - 11 circuits instead of 16 (no V1 / V2);
 - 82 endpoints instead of 111;
 - 69 warnings.
 
-The missing pieces are the answers that live only in `p33.config.js`: the lighting zones, the socket plan, the added
+The missing pieces are the answers that live only in `cla.config.js`: the lighting zones, the socket plan, the added
 and moved points, the switch groups, the floor groups and the stair crossing. The comparison needs those answers as
 Planner data first. See decision E5-Q12.
 
 **Open (found in the browser):** the Planner's "N készülék nincs pályához kötve" check does not see the gen:'bl' paths.
 The engine's paths end at boxes, not at device links.
 
-## 9. P33 acceptance, step A: the converter (E5-Q12 = C, 2026-10-15)
+## 9. CLA acceptance, step A: the converter (E5-Q12 = C, 2026-10-15)
 
-`tools/baseline/to-planner.js` writes `p33.config.js`'s answers as ordinary Planner data:
+`tools/baseline/to-planner.js` writes `cla.config.js`'s answers as ordinary Planner data:
 
-| P33 answer | Becomes, in the Planner |
+| CLA answer | Becomes, in the Planner |
 |---|---|
 | edits, heights, portal placement | the devices themselves |
 | socket plan + lighting zones | `data.circuits` (lighting: preset `vil`) |
@@ -288,18 +288,18 @@ switches / motors (their own layer).
 spec-98 checks this on every run (when the client file is present).
 
 **Found along the way — and fixed in the engine:**
-- **F15:** P33 v1 socket **D339 (D23, R01, A7) was never wired**. Its sketch point lay 290 mm off the wall, and
+- **F15:** CLA v1 socket **D339 (D23, R01, A7) was never wired**. Its sketch point lay 290 mm off the wall, and
   `fixFace` moved it onto the R01 face but left `onWall` false, so it got no drop and no cable, silently.
-  - With the fix, the P33 CLI result gains 1 drop box, a 340 mm room run and a 2150 mm drop (+3 m NYM-J 3×1,5, +2 M20).
+  - With the fix, the CLA CLI result gains 1 drop box, a 340 mm room run and a 2150 mm drop (+3 m NYM-J 3×1,5, +2 M20).
   - One corner box goes, because the drop box now sits on that corner.
   - **The delivered v1 outputs (kimenet, takeoff) predate this fix.**
 - **Network:**
   - a span end within 2 mm of a face end no longer splits the face;
   - points within 2 mm on a face are one node.
-  - On P33 these change nothing; on rounded Planner spans they removed a 0,6 mm edge and a duplicate corner box.
+  - On CLA these change nothing; on rounded Planner spans they removed a 0,6 mm edge and a duplicate corner box.
 
-The converted file is `Calculator/P33-baseline/v1_2026-10-12/planner/P33_v1_planner-adat.vplan.json` (client data,
-local only). Load it in the Planner to try the two buttons; tick "Doboz minden saroknál" for the P33 rule.
-**Step B (the user redraws P33 with the workflow tools) stays open.**
+The converted file is `Calculator/CLA-baseline/v1_2026-10-12/planner/CLA_v1_planner-adat.vplan.json` (client data,
+local only). Load it in the Planner to try the two buttons; tick "Doboz minden saroknál" for the CLA rule.
+**Step B (the user redraws CLA with the workflow tools) stays open.**
 
-**E5-Q13 = B (user, 2026-10-15):** v1 stays as delivered; D339 is picked up the next time P33 is priced (the engine fix is in).
+**E5-Q13 = B (user, 2026-10-15):** v1 stays as delivered; D339 is picked up the next time CLA is priced (the engine fix is in).

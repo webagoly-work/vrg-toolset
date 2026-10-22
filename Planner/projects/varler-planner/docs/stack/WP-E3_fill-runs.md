@@ -121,7 +121,7 @@ channel `mains` route that ends at the RBX.
 Identical (fixtures have no stack).
 
 ## Browser-only checks (for the human)
-Preview readable for a whole P33 floor · pipe lines legible at zoom · fill time on P33 < 1 s.
+Preview readable for a whole CLA floor · pipe lines legible at zoom · fill time on CLA < 1 s.
 
 ## Verifier focus
 Pass-through rule only for board/ssc origins. Pipe grouping key `(fam, from, to)` — not by route.

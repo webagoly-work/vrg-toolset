@@ -10,7 +10,7 @@
 //
 // Run:  node docs/research/openmct-spike/serve.js            (port 8150)
 //       node docs/research/openmct-spike/serve.js 8151 --repo H:/Dev-VRG/VRG-DE/Planner_VRG_U100
-// Open: http://localhost:8150/?plan=P33-teszt_v2
+// Open: http://localhost:8150/?plan=CLA-teszt_v2
 //
 // Loopback only. Nothing here ships.
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -54,4 +54,4 @@ http.createServer((req, res) => {
       'Cache-Control': 'no-store' });
     res.end(buf);
   });
-}).listen(PORT, '127.0.0.1', () => console.log('Open MCT spike on http://localhost:' + PORT + '/?plan=P33-teszt_v2'));
+}).listen(PORT, '127.0.0.1', () => console.log('Open MCT spike on http://localhost:' + PORT + '/?plan=CLA-teszt_v2'));

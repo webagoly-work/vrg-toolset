@@ -68,11 +68,11 @@ the **Általános** (General) branch for things every department uses.
 - ○ (empty slots for v2 *Picker* and *Radar*)
 
 ### Kivitelezés és szerviz (KIV)
-- ● **Ügyféljob mappák** (outside git: `P33_ajanlat`, `NV4_ajanlat`, `P33_koltsegvetesi_tervezet`) — delivered job packages. *Client data — see HUB-Q10.*
+- ● **Ügyféljob mappák** (outside git: `CLA_ajanlat`, `CLANV4_ajanlat`, `CLA_koltsegvetesi_tervezet`) — delivered job packages. *Client data — see HUB-Q10.*
 - ○ (empty slots for v2 *Shift*, *Proof*, *Care*)
 
 ### Termékfejlesztés — BRIDGE (TFEJ)
-- ◐ **BRIDGE okosotthon rendszer** (`BRIDGE/`) — architecture, standards STD-001…009, P33 build, catalogue.
+- ◐ **BRIDGE okosotthon rendszer** (`BRIDGE/`) — architecture, standards STD-001…009, CLA build, catalogue.
 - ◐ **BRIDGE Media Wall** (`BRIDGE/10_media-wall`) — the 3-tier media wall concept.
 - ◐ **Okosotthon katalógus** (`BRIDGE/09_catalogue`) — smart-home device database + page.
 - ◐ **Planner CYD** (`Firmware/planner-cyd`) — desk dashboard / remote / macropad for the Planner.
@@ -123,7 +123,7 @@ function. `◇` = new slot on the board in *Bővített jövőkép* view. **★ =
 **◇ Lobby — client register, GDPR-safe** *(from: Reception)*
 - client cards: contact, address, jobs, documents — personal data in one place only
 - consent and purpose record per client; retention dates; export/delete on request
-- the other programs refer to a client by a code (e.g. `P33`), never by name
+- the other programs refer to a client by a code (e.g. `CLA`), never by name
 - intake form for a new enquiry → creates the job folder + Esetlap for the Workflow Kit
 
 **◇ Scout — site survey ★**

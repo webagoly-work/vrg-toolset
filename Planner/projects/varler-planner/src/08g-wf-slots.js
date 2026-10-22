@@ -6,10 +6,10 @@
 // ==========================================================================
 
 // A door carries the positions of every later layer from the moment it is placed: latch (kilincs) side 230 V, hinge
-// (zsanér) side SELV / LV, the head in the middle — the all-in-one Portal of the P33 baseline engine. PT_SLOTS is that
+// (zsanér) side SELV / LV, the head in the middle — the all-in-one Portal of the CLA baseline engine. PT_SLOTS is that
 // engine's table (tools/baseline/rules.js PORTAL_SLOTS, u = mm from the opening EDGE, from the centre for the head);
 // spec-86 keeps the two equal until E5 makes the engine read this copy. NOTE: 06a's own zone offset PT_OFF is 200 mm;
-// the slots use the engine's 150 (450 for the panel column), which is what the P33 offers were built on.
+// the slots use the engine's 150 (450 for the panel column), which is what the CLA offers were built on.
 // Q-O02 = A: placing a door makes its portal on every face that has a room (tier SF-0 „előkészítve”), in the same undo
 // step as the door. Slots are POSITIONS, not devices — drawn as faint dots while a layer that uses them is active.
 // Q-O03 = A: a window's W1 (redőny betáp) slot exists only when the window carries the redőny tag.

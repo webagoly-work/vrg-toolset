@@ -29,8 +29,8 @@ Nothing is ported from them; the shapes are borrowed.
 
 ## 1. What it is for
 
-Today P33 jobs, takeoffs and acceptance runs are done by sessions that script the Planner by hand —
-`javascript_tool` in a browser pane or a one-off jsdom script (`tools/p33-plan.js`, `p33-axo.js` and
+Today CLA jobs, takeoffs and acceptance runs are done by sessions that script the Planner by hand —
+`javascript_tool` in a browser pane or a one-off jsdom script (`tools/cla-plan.js`, `cla-axo.js` and
 friends each re-invent the boot). After this pack any session (or the second account) gets a stable
 interface with the same action ids, undo history and checks as the UI:
 
@@ -86,7 +86,7 @@ would also close the existing gap — the user's call, since it touches `07e`.
 
 **F5 · jsdom cannot make a PNG.** No canvas; `svgToPng` and `vexpPng` go through `Image` + canvas + an
 anchor click. Headless PNG needs the portable `chrome-headless-shell` (`Planner/apps/…`, git-ignored, main
-checkout only) the way `tools/p33-axo.js:36` already uses it, or a rasteriser package (Q-09).
+checkout only) the way `tools/cla-axo.js:36` already uses it, or a rasteriser package (Q-09).
 
 **F6 · Every file output has one choke point.** `download(name, text)` (`11-controls.js:268`) and
 `svgToPng` (`06-wall-editor.js:306`) — capture there and every export action becomes an agent export

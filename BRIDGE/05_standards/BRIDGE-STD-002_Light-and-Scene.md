@@ -611,7 +611,7 @@ real money, it is an addition rather than a rebuild.
 | **U20+** | The per-room scene schedule — §8.4 gives the sets, not the values per room. Needs D1 |
 | **C29** | Certified emergency luminaires on the stairs: confirm with the electrician what OTSZ actually requires here, at the same time as the A08 certification conversation |
 | — | Melanopic EDI figures in §6 follow current consensus and should be checked against the latest CIE position before being quoted to anyone else |
-| — | Fixture schedule per room, which depends on D1 and on P33's hardware composition (U22) |
+| — | Fixture schedule per room, which depends on D1 and on CLA's hardware composition (U22) |
 | — | The moonlight channel's 0–8 % ceiling (§5.4) is judgement, not measurement. Worth setting by eye on the first installed run and then fixing the number |
 
 **Closed in r2:** C01 *(by C20)* · C02 C03 C04 C05 C06 C07 C08 C09 · C10 *(by C08)* · C11 C12 ·

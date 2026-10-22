@@ -969,7 +969,7 @@ function migrate(d){if(!d||typeof d!=='object')return d;
   return d;}
 
 // ---- repair: several records under one id ----
-// Files saved before copyRecord() existed can hold them (NV4: three sockets all "D131"). On load
+// Files saved before copyRecord() existed can hold them (CLANV4: three sockets all "D131"). On load
 // the FIRST keeps the id and every later one gets a fresh id from the counter. What pointed at it:
 //  - a device's links live on the device itself, so they simply travel with it;
 //  - a Behúzás entry (sec.circuits[].dev) moves to a copy only when that is unambiguous, for the
@@ -1710,7 +1710,7 @@ function wallMergeOn(){return state.style==='blueprint'||state.wallMerge===true;
 // the two bands, every T stem stops exactly on the through wall's face (Q-G02 = A; B = the nearest exact form per
 // junction, C = stems through to the far face). The wall tool snaps to the partner's CENTRELINE, which leaves a notch
 // outside and half an overlap inside every L — that is the "not clean" corner this fixes.
-// Coordinates are first rounded to 1 mm (P33's were fractional after a 180° turn), so targets are whole mm and a second
+// Coordinates are first rounded to 1 mm (CLA's were fractional after a 180° turn), so targets are whole mm and a second
 // run finds nothing to do. The result: {round, junctions[{type,a,b,moves,multi?}], collinear[], skipped[{ids,why}], moves}.
 function wrfPlan(level,opt){opt=opt||{};const form=opt.form||'A',H=wallH(level);
   const all=(WALLS[level]||[]).filter(r=>r&&r.id&&(!opt.layer||(r.layer||'L0')===opt.layer)&&layerShows(r,'wall'));
@@ -4932,7 +4932,7 @@ function roomBreakdownHtml(entry){const rows=roomBreakdown(entry),tot=rows.reduc
 // ---- renumbering: a room's devices get template refs, counted per type, in id order ----
 // Only the display `ref` changes — never the id — so links, wiring and undo are untouched.
 // The existing refs play no part: whatever they were, the room is numbered from 1 again.
-// The Elosztószekrény is skipped by default: it sits above rooms (P33-EL1), not in one.
+// The Elosztószekrény is skipped by default: it sits above rooms (CLA-EL1), not in one.
 const ROOM_REF_TPL='{szám}-{típus}{n}';
 const ROOM_REF_TOKENS=[
   ['projekt','projektkód (Dokumentáció → projekt)'],['szám','helyiség száma, ha nincs: neve'],
@@ -6156,7 +6156,7 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:BUSB',   n:'Biztosított 24 V — B busz',ph:2, fam:'BUSB'},
  {k:'sys:CONTROL',n:'Vezérlés (BRIDGE_LINK)', ph:2, fam:'CONTROL'},
  {k:'sys:DATA',   n:'Adat / PoE',             ph:2, fam:'DATA'},
- {k:'sys:KNX',    n:'KNX',                    ph:2, fam:'KNX', off:true},   // P33: not taken
+ {k:'sys:KNX',    n:'KNX',                    ph:2, fam:'KNX', off:true},   // CLA: not taken
  {k:'sys:SENSOR', n:'Érzékelők',              ph:2, fam:'SENSOR'},
  {k:'sys:RF',     n:'Rádió — lefedettség',    ph:2, fam:null},             // a coverage plan, no conduit (A2 step 9)
  {k:'sys:HMI',    n:'Kezelőfelületek',        ph:2, fam:'CONTROL'},
@@ -6165,8 +6165,8 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:SECURITY',n:'Biztonságtechnika',     ph:2, fam:'SECURITY', last:true}, // always last [user]
  {k:'cluster',    n:'Klaszterpontok', ph:2, cats:['device'], hint:'Klaszterdobozok (K1 · K2 · K3): több réteg végpontjai egy süllyesztett házban — IDEA-001/002/003.'},
  {k:'arm',        n:'ARM pályák',  ph:2, cats:['path'], hint:'Egyvonalas pályák az RBX-től minden végpontig.'},
- // the top of the stack: the gathered extras and SmartFrame ideas as provisioned endpoints (P33-ADD-001, IDEA-003)
- {k:'sys:EXTRA',  n:'Extrák és ötletek',      ph:2, fam:'LV', hint:'Előkészített végpontok: P33 extrák (#1–#11) és a SmartFrame slotjai. Az ideális helyek ✦-gal.'}];
+ // the top of the stack: the gathered extras and SmartFrame ideas as provisioned endpoints (CLA-ADD-001, IDEA-003)
+ {k:'sys:EXTRA',  n:'Extrák és ötletek',      ph:2, fam:'LV', hint:'Előkészített végpontok: CLA extrák (#1–#11) és a SmartFrame slotjai. Az ideális helyek ✦-gal.'}];
 const STK_ICONS={construct:'🧱',mark:'🚩',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:DED':'🔌','sys:SOC':'⚡','sys:LIGHT':'💡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
   'sys:DATA':'🌐','sys:KNX':'⌘','sys:SENSOR':'📡','sys:RF':'📶','sys:HMI':'🖲','sys:MEDIA':'🔊','sys:USB':'🔌','sys:SECURITY':'🛡',cluster:'▦',arm:'🌿','sys:EXTRA':'✧'};
 // One colour per role, fixed [user]: Erősáram is the same red in every project, on the panel, on the
@@ -9408,7 +9408,7 @@ window.afillRuns=afillRuns;window.afillSize=afillSize;window.afillPlanRoom=afill
 window.afillSecPipes=afillSecPipes;window.afillReport=afillReport;window.afillChannelPlan=afillChannelPlan;window.afillChannelApply=afillChannelApply;window.afillPackMains=afillPackMains;
 window.afillRbxCircuits=afillRbxCircuits;window.afillManualStale=afillManualStale;window.afillHash=afillHash;window.afillSceneSvg=afillSceneSvg;
 
-// The defaults are P33's settled cabinet (P33-BUILD-001 §14, K31/K32): a one-module RCBO on every way, a
+// The defaults are CLA's settled cabinet (CLA-BUILD-001 §14, K31/K32): a one-module RCBO on every way, a
 // three-phase-ready feed, way groups system / RoomBox lighting / RoomBox sockets / big loads. Ratings and loads
 // are typical (reasoned) and a 05j circuit's own `mcb` always wins. The result is a schedule and a JSON the future
 // DIN-rail tool reads (format vrg-cabinet v1, wrapping the existing vrg-circuits payload). Prefix: elo.
@@ -9571,7 +9571,7 @@ window.eloExportObj=eloExportObj;window.eloLoadBoard=eloLoadBoard;window.eloDial
 // Levels have a scope: 'in' (the work; solid and clickable), 'ghost' (part of the
 // building but outside the work; drawn faint, never clickable) or 'skip' (left
 // out). Default: a level shown in the Planner is 'in'; a hidden level that has
-// geometry is 'ghost'; an empty level is 'skip'. P33: ground in, upper ghost,
+// geometry is 'ghost'; an empty level is 'skip'. CLA: ground in, upper ghost,
 // basement skipped.
 const CPV_VERSION=1;
 const CPV_SLAB=300;            // mm between one level's ceiling and the next level's floor
@@ -11011,8 +11011,8 @@ function roomWalls(poly,level){const bb=polyBBox(poly),T=420,out=[];
 //    cls:'PT-S'|'PT-D'|'PT-E'|'PT-W'|'PT-B', tier:'SF-0'…'SF-3', level, x, y, h, side}
 // Where the nest goes is IDEA-003 §3.3: H0-1 the hinge-side upper corner on the served room's face; H0-3 the latch
 // side when the wall beyond the hinge jamb is shorter than 300 mm (a 200 box needs 100–300 from the edge — four of
-// the seven P33 doors). Its height is the rail line: max(ZW-o lower line, lintel top + 150) + 50, which is 2450 under
-// the 2850 P33 ceiling and stays clear of the lintel under a lower one.
+// the seven CLA doors). Its height is the rail line: max(ZW-o lower line, lintel top + 150) + 50, which is 2450 under
+// the 2850 CLA ceiling and stays clear of the lintel under a lower one.
 // The Silver Rail is an ordinary path (route:'rail') drawn with the Path tool, like a channel (05r): RBX ↔ Portals.
 // Node tiers (IDEA-003 §8): gold = Elosztó, mérőóra, ISP, BASE, SSC · silver = RBX, Portal · bronze = endpoints and
 // the cluster boxes that house them. A path takes the tier of the node it leaves. Prefix: pt / rail / nd.
@@ -11433,7 +11433,7 @@ STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d)return;
   return out;});
 
 // ==================================================================================================================
-// the Extras layer: P33-ADD-001 extras and the SmartFrame slots as provisioned endpoints
+// the Extras layer: CLA-ADD-001 extras and the SmartFrame slots as provisioned endpoints
 // ==================================================================================================================
 // prov = provisioned (box + conduit, device later); req = client-requested (the user's *). Cables are what the box needs
 // pulled now. Each code finds its ideal spot through the 05t suggestion machinery (anchors below).
@@ -11510,7 +11510,7 @@ registerActions([
   run:()=>{state.idealOff=!state.idealOff;lyrHud('Ideális helyek '+(state.idealOff?'ki':'be'));draw();}},
  {id:'stack.ensure',alias:'hianyzo reteg klaszter extra stack layers add',label:'Klaszter + Extrák réteg a stackhez',icon:'▤',group:'Stack',
   need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>{const S=stkActive();['cluster','sys:EXTRA'].forEach(k=>stkEnsureRole(S,k));draw();lyrHud('Rétegek rendben: Klaszterpontok, Extrák és ötletek.');}},
- {id:'preload.open',alias:'elotoltott terv p33 preload plan',label:'Előtöltött terv…',icon:'📂',group:'Projekt',
+ {id:'preload.open',alias:'elotoltott terv cla preload plan',label:'Előtöltött terv…',icon:'📂',group:'Projekt',
   need:'Ebben a buildben nincs előtöltött terv.',when:()=>preList().length>0,run:()=>preOffer()}
 ]);
 
@@ -11886,7 +11886,7 @@ function viewSvg(R,S){const b=R.bounds,pad=R.def.pad,W=Math.ceil(b.maxX-b.minX+2
   return `<svg xmlns="http://www.w3.org/2000/svg" class="vw" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${viewDefs(S)}`
     +`<rect width="100%" height="100%" fill="${S.paper}"/><g transform="translate(${(pad-b.minX).toFixed(1)},${(pad-b.minY).toFixed(1)})" stroke-linejoin="round">${R.body}</g></svg>`;}
 
-// ---- the sheet: title, the drawing, the legend (V4; the frame tools/p33-axo.js used to draw) ----
+// ---- the sheet: title, the drawing, the legend (V4; the frame tools/cla-axo.js used to draw) ----
 // The legend lists only the roles actually present (R.roles order); the wall rows quote the view's own heights.
 const VIEW_ROLE_HU={'sys:MAINS':'Erősáram','sys:DED':'Dedikált körök','sys:SOC':'Dugaljak','sys:LIGHT':'Világítás','sys:LV':'Törpefeszültség (A)','sys:BUSB':'Biztosított 24 V (B)',
   'sys:CONTROL':'Vezérlés','sys:DATA':'Adat / PoE','sys:SENSOR':'Érzékelők','sys:HMI':'Kezelőfelületek',
@@ -11904,7 +11904,7 @@ function viewSheetSvg(R,opts){const o=opts||{};if(o.paper)return viewPaperSheet(
   const M=VIEW_SHEET.margin,LEG=VIEW_SHEET.legend,top=VIEW_SHEET.top,RW=VIEW_SHEET.row,H=o.H!=null?o.H:wallH(def.level);
   const W=Math.ceil(b.maxX-b.minX+2*M+LEG),HH=Math.ceil(b.maxY-b.minY+2*M+top);
   const roles=R.roles.filter(r=>VIEW_ROLE_HU[r]);
-  // no role rows (a plan without stack layers, NV4): no heading either, JELEK moves to the top (D-V4-3)
+  // no role rows (a plan without stack layers, CLANV4): no heading either, JELEK moves to the top (D-V4-3)
   let leg=`<g transform="translate(${W-LEG+10},${M+top})">`+(roles.length?`<text class="lh" x="0" y="0">VÉGPONTOK RENDSZERENKÉNT</text>`:'');
   roles.forEach((r,k)=>{const y=20+k*RW;leg+=`<rect x="0" y="${y-7}" width="9" height="9" fill="${STK_COL[r]}"/><text class="lt" x="16" y="${y+1}">${VIEW_ROLE_HU[r]}</text>`;});
   const y2=roles.length?20+roles.length*RW+18:0;leg+=`<text class="lh" x="0" y="${y2}">JELEK</text>`;
@@ -14959,7 +14959,7 @@ window.PLANNER_INPUT=(function(){
 
 })();
 
-// The Helyiség-toll draws ROOMS, not walls (the P33 lesson: draw intent first, build later).
+// The Helyiség-toll draws ROOMS, not walls (the CLA lesson: draw intent first, build later).
 // - Click, click, click like the Maps distance tool; 45° direction lock and 100 mm steps; the first
 //   node closes the room. Press + drag on empty space = a rectangle room in one gesture (Prison
 //   Architect). Digits type the exact length of the open segment.
@@ -15502,10 +15502,10 @@ function rwDblHit(e){if(state.mode!=='select'||(typeof WV!=='undefined'&&WV))ret
 stage.addEventListener('dblclick',e=>{const r=rwDblHit(e);if(r){e.preventDefault();rwOpenRoom(r,e.clientX,e.clientY);}});
 
 // A door carries the positions of every later layer from the moment it is placed: latch (kilincs) side 230 V, hinge
-// (zsanér) side SELV / LV, the head in the middle — the all-in-one Portal of the P33 baseline engine. PT_SLOTS is that
+// (zsanér) side SELV / LV, the head in the middle — the all-in-one Portal of the CLA baseline engine. PT_SLOTS is that
 // engine's table (tools/baseline/rules.js PORTAL_SLOTS, u = mm from the opening EDGE, from the centre for the head);
 // spec-86 keeps the two equal until E5 makes the engine read this copy. NOTE: 06a's own zone offset PT_OFF is 200 mm;
-// the slots use the engine's 150 (450 for the panel column), which is what the P33 offers were built on.
+// the slots use the engine's 150 (450 for the panel column), which is what the CLA offers were built on.
 // Q-O02 = A: placing a door makes its portal on every face that has a room (tier SF-0 „előkészítve”), in the same undo
 // step as the door. Slots are POSITIONS, not devices — drawn as faint dots while a layer that uses them is active.
 // Q-O03 = A: a window's W1 (redőny betáp) slot exists only when the window carries the redőny tag.
@@ -15568,7 +15568,7 @@ function ptSlotSnap(g,code){if(!g||g.mount!=='wall'||!code)return null;const c=S
 EP_PLACED.push((d,g)=>{if(g&&g.slot)d.slot=g.slot;});
 
 // THE key feature of the workflow: the user draws only the HORIZONTAL intent — which walls a route may run along — and
-// every height comes from the standards. On P33 this was 24 loose Csatorna lines matched to walls with ±500 mm; here it
+// every height comes from the standards. On CLA this was 24 loose Csatorna lines matched to walls with ±500 mm; here it
 // is recorded exactly, on the wall itself, as Jelölés marks (Q-R03 = A):
 //   whole wall, both faces → {kind:'wall', wall, tags:['vezetheto'], pol:'plus'}
 //   part of a wall         → {kind:'wspan', wall, u0, u1, tags:['vezetheto'], pol:'plus'}   (u = mm along the centreline)
@@ -15612,7 +15612,7 @@ registerActions([{id:'wf.routeWalls',label:'Vezethető fal',icon:'🟩',group:'V
   hint:'Mely falak mentén futhat vízszintes pálya — kattintás: egész fal, húzás: szakasz.',when:c=>!c.inEditor,run:()=>rwlToolStart()}]);
 (function(){const b=$('rwlBtn');if(b)b.onclick=()=>rwlToolStart();})();
 
-// The colour-coded marks the user put on P33 (and the non-electrical areas, R07 answer) as one-click presets. Every
+// The colour-coded marks the user put on CLA (and the non-electrical areas, R07 answer) as one-click presets. Every
 // preset writes an ordinary Jelölés mark (05n) — same store, colours (MRK_POL), undo, layer, list — so the engine and
 // every later layer read them like any mark. Selection rule (the user's): LMB = the FACE nearest the pointer (half wall),
 // hold + drag along it = only that part; whole-wall presets take both faces; zones are dragged rectangles on the floor;
@@ -15918,7 +15918,7 @@ STK_OVERLAY.push(()=>{if(!MKP.on)return '';const ink=mkpInk(MKP.ink);if(!ink)ret
 window.wlnNet=wlnNet;window.wlnNearest=wlnNearest;window.wlnRoute=wlnRoute;window.wlnUnit=wlnUnit;window.wlnRanges=wlnRanges;
 window.mkpStart=mkpStart;window.mkpOff=mkpOff;window.mkpApply=mkpApply;window.mkpInk=mkpInk;window.mkpCovered=mkpCovered;window.MKP=MKP;
 
-// The P33 lesson: the user places devices as stickers, the heights are a STANDARD. R04 = B (answered 2026-10-14):
+// The CLA lesson: the user places devices as stickers, the heights are a STANDARD. R04 = B (answered 2026-10-14):
 // every height variant is its OWN catalogue item — `Dugalj · garázs · 500`, `Borotválkozó dugalj · 1400` — placed from
 // the Szabványok panel. The item is stored on the device as d.hVar (d.var stays the ELECTRICAL variant of 05s).
 // The table owns the heights: change a row → every placed item of that kind follows on Alkalmaz, except devices moved
@@ -15977,12 +15977,12 @@ const STD_H=[
  {code:'ETH',hv:'media',n:'Adataljzat · médiafal',h:1200,auto:{tag:'media'},src:'MATERIAL §3'},
  {code:'USB',hv:'alap',n:'USB aljzat',h:300,auto:{},src:'rules.js'},
  // ---- pályák, dobozok, szintek (E5 reads these)
- {code:'PATH',hv:'trunk',n:'Gerinc (Elosztó ↔ szervizpont)',h:2600,src:'P33 döntés'},
- {code:'PATH',hv:'dist',n:'Leágazó (szervizpont ↔ végpont)',h:2450,src:'P33 döntés'},
+ {code:'PATH',hv:'trunk',n:'Gerinc (Elosztó ↔ szervizpont)',h:2600,src:'CLA döntés'},
+ {code:'PATH',hv:'dist',n:'Leágazó (szervizpont ↔ végpont)',h:2450,src:'CLA döntés'},
  {code:'PATH',hv:'data',n:'Adat sáv',h:2700,src:'ADATRETEG'},
  {code:'BOX',hv:'rbx',n:'RBX dobozközép (alja ≥ 1900)',h:2150,src:'STD-001-A1'},
- {code:'BOX',hv:'drop',n:'Leállás-doboz (2 szerelvényes)',h:2450,src:'P33'},
- {code:'LVL',hv:'ceiling',n:'Belmagasság (alap)',h:2850,src:'P33'},
+ {code:'BOX',hv:'drop',n:'Leállás-doboz (2 szerelvényes)',h:2450,src:'CLA'},
+ {code:'LVL',hv:'ceiling',n:'Belmagasság (alap)',h:2850,src:'CLA'},
  {code:'LVL',hv:'worktop',n:'Munkalap',h:900,src:'rules.js'},
  {code:'LVL',hv:'lintel',n:'Szemöldök',h:2100,src:'rules.js'}];
 const STD_GROUP={SOC:'Dugalj',DED:'Dedikált',SWI:'Kapcsoló',PAN:'Kezelőpanel',THR:'Termosztát',LMP:'Lámpa',SHU:'Redőny',NTL:'Értesítő fény',
@@ -16175,7 +16175,7 @@ registerActions([{id:'wf.electric',label:'Villamosság: Erősáram',icon:'⚡',g
 // ⚠ THE NUMBERS ARE THE HUNGARIAN CODES AND MUST NOT BE CHANGED: 105 = CSILLÁR, 106 = VÁLTÓ, 108 = DUPLA VÁLTÓ (the code
 // has gaps — 103 is háromfázisú, 104 is unused). The user corrected this twice; see the note at SWITCH_TYPES in 02-state.js. A type the user set by hand stays (sw.typeFix). A switch in a slot follows its door (E03 = A).
 // "Kapcsolások javaslata" (E02 = A): every room's unswitched lamps → one leg → the L1 slot of each room door (two doors =
-// two-way); a wet room's lamps → the dry face of its door (the P33 engine's rule) — shown as a table, nothing silent.
+// two-way); a wet room's lamps → the dry face of its door (the CLA engine's rule) — shown as a table, nothing silent.
 const LSW={on:false,set:[],hover:null};
 
 function lswLamp(d){return !!d&&typeof epIsLamp==='function'&&epIsLamp(d);}
@@ -16315,7 +16315,7 @@ registerActions([{id:'wf.switches',label:'Kapcsolások',icon:'🔀',group:'Kész
 
 // The second half of the "horizontal intent by hand" rule: a lamp in the middle of a ceiling is reached by a line the
 // user draws OUT of an allowed wall — from a Vezethető fal point (R2), a door's MAINS slot (O2), a box or a switch —
-// across the ceiling to the lamp. On P33 these were the 6 off-wall sketch lines. Click the start, click bends (45° lock,
+// across the ceiling to the lamp. On CLA these were the 6 off-wall sketch lines. Click the start, click bends (45° lock,
 // Shift = free), click the target to finish; Backspace takes a bend back, Esc cancels. One line per target (a new one
 // replaces the old, in one undo step). In a room with an álmennyezet the route runs ABOVE it, in the plenum (void:true).
 // The same tool for the FLOOR (the user, 2026-10-14: "do the same for padló"): Padló út runs in the floor / screed to any
@@ -16525,7 +16525,7 @@ registerActions([{id:'wf.boxSzoba',label:'Szobadoboz',icon:'▣',group:'Készül
 // Extends the 05j circuits (data.circuits), not the legacy route-section circuits of the sidebar panel.
 // Right-click the Elosztó → Áramkör-lista: the usual circuits of a home in three tiers (Alap · Kiegészítő · Speciális),
 // each with ☐ aktív, B/C + amps + poles, scope (Ház / rooms) and its status. Ticking creates a 05j circuit with
-// c.preset (catalogue key), c.presetRow (the project row — NV4 has three klíma rows of one key) and c.rooms
+// c.preset (catalogue key), c.presetRow (the project row — CLANV4 has three klíma rows of one key) and c.rooms
 // ([roomId] | ['*']). "Waiting for its endpoint" is derived (no members). Unticking a circuit WITH members asks and only
 // deactivates it (c.off, members released) — wiring decisions are never silently deleted.
 // The project list lives in data.eloPresets (prefix E, registered in 11c-wf-keys.js); absent = the built-in CPR_CAT,
@@ -16555,7 +16555,7 @@ const CPR_CAT=[
  {key:'mikro',  tier:2,kind:'ded',   n:'Mikrohullámú sütő',                  mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['konyha'], codes:['DED:g16']},
  {key:'szarit', tier:2,kind:'ded',   n:'Szárítógép',                         mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['furdo','gepeszet','mosokonyha'], codes:['DED:g16']},
  {key:'bojler', tier:2,kind:'ded',   n:'Villanybojler',                      mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['furdo','gepeszet','kamra'], codes:['DED:g16']},
- {key:'szobakor',tier:2,kind:'socket',n:'Szobakör — dugaljak + világítás (felújítás, NV4-minta)',mcb:'1C 16A',mm2:2.5,cab:'NYM3x25', scope:'room', kinds:['nappali','halo','dolgozo'], codes:['SOC','LMP','SWI']},
+ {key:'szobakor',tier:2,kind:'socket',n:'Szobakör — dugaljak + világítás (felújítás, CLANV4-minta)',mcb:'1C 16A',mm2:2.5,cab:'NYM3x25', scope:'room', kinds:['nappali','halo','dolgozo'], codes:['SOC','LMP','SWI']},
  {key:'av',     tier:2,kind:'ded',   n:'AV pozíció (médiafal)',              mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['nappali'], codes:['AVP']},
  {key:'kulter', tier:2,kind:'socket',n:'Kültéri dugalj (IP44)',              mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'room', kinds:['kulter'], codes:['SOC']},
  {key:'garazs', tier:2,kind:'socket',n:'Garázs / műhely dugalj',             mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'room', kinds:['gepeszet'], codes:['SOC']},
@@ -16571,8 +16571,8 @@ const CPR_CAT=[
  {key:'medence',tier:3,kind:'ded',   n:'Medence- / kerti szivattyú',         mcb:'1C 10A',  mm2:1.5, cab:'NYM3x15', scope:'unit', codes:['DED:g16'], note:'C görbe a motor miatt'},
  {key:'napelem',tier:3,kind:'ded',   n:'Napelemes inverter',                 mcb:'3C 16A',  mm2:4,   cab:'NYM5x6',  scope:'unit', codes:['DED'], note:'inverter adatlap szerint ⚑'},
  {key:'alelo',  tier:3,kind:'ded',   n:'Alelosztó betáp, 3 fázis',           mcb:'3C 25A',  mm2:6,   cab:'NYM5x6',  scope:'unit', codes:['DED:alelo']}];
-// the bundled NV4 sample (docs/round-2026-10-10/samples/NV4-minta.vrg-elo-presets.json) — no client data in it
-const CPR_SAMPLE_NV4={format:'vrg-elo-presets',v:1,project:'NV4 minta — panellakás, nappali + 2 szoba, teljes felújítás',items:[
+// the bundled CLANV4 sample (docs/round-2026-10-10/samples/CLANV4-minta.vrg-elo-presets.json) — no client data in it
+const CPR_SAMPLE_CLANV4={format:'vrg-elo-presets',v:1,project:'CLANV4 minta — panellakás, nappali + 2 szoba, teljes felújítás',items:[
  {key:'vil',n:'Világítás (előszoba, konyha, fürdő, WC) + előszobai dugalj',kind:'light',tier:1,mcb:'1B 10A',mm2:1.5,cab:'NYM3x15',scope:'house',codes:['LMP','SWI','SOC']},
  {key:'szobakor',n:'Nappali — dugaljak, világítás',kind:'socket',tier:2,mcb:'1C 16A',mm2:2.5,cab:'NYM3x25',scope:'room',kinds:['nappali'],codes:['SOC','LMP','SWI']},
  {key:'szobakor',n:'Szoba (02) — dugaljak, világítás',kind:'socket',tier:2,mcb:'1C 16A',mm2:2.5,cab:'NYM3x25',scope:'room',kinds:['halo'],codes:['SOC','LMP','SWI']},
@@ -16646,7 +16646,7 @@ function cprImport(obj,onConflict){if(!obj||obj.format!=='vrg-elo-presets'||!Arr
 function cprImportFile(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
   inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{let o;try{o=JSON.parse(rd.result);}catch(_){$('hud').textContent='Hibás JSON.';return;}
     const r=cprImport(o);$('hud').textContent=r.err||('Importálva: +'+r.added+' kör'+(r.replaced?' · '+r.replaced+' csere':'')+(r.kept?' · '+r.kept+' megtartva':''));cprDialogRefresh();};rd.readAsText(f);};inp.click();}
-function cprLoadSample(onConflict){return cprImport(CPR_SAMPLE_NV4,onConflict||(()=>'keep'));}
+function cprLoadSample(onConflict){return cprImport(CPR_SAMPLE_CLANV4,onConflict||(()=>'keep'));}
 
 // ---- the Elosztó dialog ------------------------------------------------------------------------------------------------------
 let CPR_UI={open:{1:true,2:false,3:false},board:null};
@@ -16663,7 +16663,7 @@ function cprDialogBody(){const rem=cprReminders();let s=`<div style="font-size:1
   [1,2,3].forEach(t=>{const R=cprRows().filter(r=>r.tier===t);if(!R.length)return;
     s+=`<div class="cprT" data-t="${t}" style="font-weight:700;margin:6px 0 2px;cursor:pointer">${CPR_UI.open[t]?'▾':'▸'} ${CPR_TIER[t]} (${R.length})</div>`;
     if(CPR_UI.open[t])s+=`<table style="font-size:12px;width:100%;border-collapse:collapse">${R.map(cprRowHtml).join('')}</table>`;});
-  return s+`<div class="mrow" style="gap:6px;margin-top:6px"><button id="cprAdd">＋ Saját kör</button><button id="cprExp">⬇ Export</button><button id="cprImp">📥 Import</button><button id="cprNV4">Minta betöltése (NV4)</button></div>`;}
+  return s+`<div class="mrow" style="gap:6px;margin-top:6px"><button id="cprAdd">＋ Saját kör</button><button id="cprExp">⬇ Export</button><button id="cprImp">📥 Import</button><button id="cprCLANV4">Minta betöltése (CLANV4)</button></div>`;}
 function cprDialogRefresh(){const host=$('cprBody');if(!host)return;host.innerHTML=cprDialogBody();cprBind(host);}
 function cprBind(host){const rid=el=>el.closest('[data-r]').dataset.r;
   host.querySelectorAll('.cprT').forEach(b=>b.onclick=()=>{CPR_UI.open[b.dataset.t]=!CPR_UI.open[b.dataset.t];cprDialogRefresh();});
@@ -16677,7 +16677,7 @@ function cprBind(host){const rid=el=>el.closest('[data-r]').dataset.r;
   if(g('cprAdd'))g('cprAdd').onclick=()=>{cprAddCustom();CPR_UI.open[3]=true;cprDialogRefresh();};
   if(g('cprExp'))g('cprExp').onclick=()=>cprExport();
   if(g('cprImp'))g('cprImp').onclick=()=>cprImportFile();
-  if(g('cprNV4'))g('cprNV4').onclick=()=>{const r=cprLoadSample();$('hud').textContent='NV4 minta: +'+r.added+' kör';CPR_UI.open[2]=true;cprDialogRefresh();};}
+  if(g('cprCLANV4'))g('cprCLANV4').onclick=()=>{const r=cprLoadSample();$('hud').textContent='CLANV4 minta: +'+r.added+' kör';CPR_UI.open[2]=true;cprDialogRefresh();};}
 function cprDialog(boardId){CPR_UI.board=boardId||null;openModal('Áramkör-lista (Elosztó)',`<div id="cprBody" style="max-height:60vh;overflow-y:auto;overflow-x:hidden"></div>`,()=>{},'Kész');cprDialogRefresh();}
 
 // ---- the box / endpoint menu: Áramkör ehhez… --------------------------------------------------------------------------------
@@ -16725,7 +16725,7 @@ registerActions([
 
 // The user: "the first opportunity to create the circuits is clicking on the Elosztó — the program makes a list of
 // suggested circuits (based on our usual policy and what endpoints have been put down). Users select the ones they see
-// fit, maybe adding a few more to complete the set."  Policy = MATERIAL §6, the P33 rounds (ALAPRETEG Q-001 / Q-002):
+// fit, maybe adding a few more to complete the set."  Policy = MATERIAL §6, the CLA rounds (ALAPRETEG Q-001 / Q-002):
 //   1 every DED endpoint → its own circuit (preset by appliance)        2 bedrooms → one socket circuit each
 //   3 large rooms (> 20 m² or > 8 sockets) → 2 socket circuits; small rooms share by adjacency, ≤ 8 sockets a circuit
 //   4 the kitchen worktop → its own circuit (2,5 mm²)                     5 wet rooms → their own socket circuit
@@ -16863,7 +16863,7 @@ registerActions([{id:'circuit.suggest',label:'Áramkörök javaslata',icon:'🧮
 
 window.elpSuggest=elpSuggest;window.elpApply=elpApply;window.elpDialog=elpDialog;window.elpUnassigned=elpUnassigned;
 
-// The P33 baseline engine (tools/baseline: rules · geom · network · prep · plan) runs here unchanged: build.js puts it in
+// The CLA baseline engine (tools/baseline: rules · geom · network · prep · plan) runs here unchanged: build.js puts it in
 // place of the marker below as `BL` (Q-E05 = A, bundle, don't port). This file is only the glue:
 //   blInput(level)  the Planner's own data → the engine's sketch shape (E5_ENGINE_REVIEW §4): Vezethető fal marks only
 //                   (Q7), room kinds, sw.ctl, data.circuits, the szobadoboz as a service point (Q5), Padló út lines →
@@ -16986,7 +16986,7 @@ function sizeConduit(cables, lenMm) {
 const CIRCUIT_CABLE = { light: 'NYM3x15', s04: 'NYM3x15', s25: 'NYM3x25', ded16: 'NYM3x25', hob2l: 'NYM5x25', hob32: 'NYM3x6', alelo: 'NYM5x6' };   // alelo: WP-E6 Alosztó feeder
 const SWITCH_LEG = { 1: 'NYM3x15', 2: 'NYM4x15', 3: 'NYM5x15', twoway: 'NYM4x15', shutter: 'NYM4x15' };
 
-// ---- E5-Q3 = A: run heights follow the ceiling (P33: 2850 → trunk 2600, distribution 2450) ----
+// ---- E5-Q3 = A: run heights follow the ceiling (CLA: 2850 → trunk 2600, distribution 2450) ----
 function runHeights(cfg) { const C = (cfg && cfg.ceiling) || LEVEL.ceilingDefault;
   return { trunk: (cfg && cfg.trunkH) || C - 250, dist: (cfg && cfg.distH) || C - 400, ceiling: C }; }
 
@@ -17063,7 +17063,7 @@ function allowedFromSketch(G, paths, pad = 150) {
   const allowed = {}, offWall = [];
   // E5-Q7 = A (2026-10-15): only Vezethető fal opens a wall — a whole-wall mark, or a span (wspan: u from the wall's start).
   // Mark intervals are EXACT (third element true: no PAD in network.js); sketch lines stay loose. A legacy 'belso' whole-wall
-  // mark counts too: in the P33 round "Belső fal" meant exactly this (R3 has since renamed the preset). L-forma and the
+  // mark counts too: in the CLA round "Belső fal" meant exactly this (R3 has since renamed the preset). L-forma and the
   // other plus marks no longer open a wall — they say "a preferred spot", not "a run may go here" (finding F1).
   (G.D.marks || []).filter(m => m.level === G.level && G.wallById[m.wall] && (((m.tags || []).includes('vezetheto') && (m.kind === 'wall' || m.kind === 'wspan')) || (m.kind === 'wall' && (m.tags || []).includes('belso'))))
     .forEach(m => { const w = G.wallById[m.wall], a0 = w.axis === 'x' ? w.x0 : w.y0;
@@ -17207,7 +17207,7 @@ function cornerS(r) {
 // Both ends are anchors on the room's faces; the link costs its plan length + the rise to the ceiling and back.
 // Kind 'over': the trunk and the data use it, the distribution does not (plan.js filters it out).
 function ceilAnchors(G, cfg, pre, anchors) {
-  // each end on its own room's face (aRoom / bRoom: a crossing over a stair void joins two rooms); P33 gives one room
+  // each end on its own room's face (aRoom / bRoom: a crossing over a stair void joins two rooms); CLA gives one room
   (cfg.ceilLinks || []).forEach((cl, k) => ['a', 'b'].forEach(e => { const [x, y] = cl[e], nf = geom.nearestFace(G, x, y, cl[e + 'Room'] || cl.room); if (!nf) return;
     anchors.push({ key: `${pre}:${k}:${e}`, room: nf.face.room, s: nf.face.uToS(nf.u) }); }));
 }
@@ -17246,7 +17246,7 @@ const ROLE_OF = (P, id) => { const l = P.layers.find(y => y.id === id); return l
 const codeOf = d => d.code || ({ light: 'LMP', switch: 'SWI', socket: 'SOC' })[d.type] || d.type;
 
 let CFG = {};
-// a room's kinds: the plan's own (Planner rooms carry kinds) + the config's (P33: R05 = kamra) — no room ids in rules (F7)
+// a room's kinds: the plan's own (Planner rooms carry kinds) + the config's (CLA: R05 = kamra) — no room ids in rules (F7)
 function kindsOf(G, cfg, rid) { const r = G.rooms.find(x => x.id === rid); return [...((r && r.kinds) || []), ...(((cfg || {}).roomKinds || {})[rid] || [])]; }
 const WET_KINDS = ['furdo', 'wc'];
 function isWet(G, cfg, rid) { return ((cfg || {}).wetRooms || []).includes(rid) || kindsOf(G, cfg, rid).some(k => WET_KINDS.includes(k)); }
@@ -17264,7 +17264,7 @@ function endpoints(G, cfg) {
     let room = onWall ? nf.face.room : geom.roomOf(G, d.x, d.y), face = onWall ? nf.face : null, u = onWall ? nf.u : null;
     let fixed = null;
     // F15 (2026-10-15): a point pinned to a face IS on the wall — before, one placed > 260 off the wall kept onWall false and
-    // silently got no drop, no cable (P33 v1: socket D339 / D23 in R01, found by the Planner acceptance run)
+    // silently got no drop, no cable (CLA v1: socket D339 / D23 in R01, found by the Planner acceptance run)
     if (cfg.fixFace && cfg.fixFace[d.id]) { const f = geom.nearestFace(G, d.x, d.y, cfg.fixFace[d.id]); if (f) { room = f.face.room; face = f.face; u = f.u; fixed = f; } }
     const ctx = { role, wall: !!onWall, room, kinds: kindsOf(G, cfg, room), ceiling: cfg.ceiling, note: d.note || d.ref || '', circuitName: circName[d.id] || '',
       wet: isWet(G, cfg, room), window: false, portal: false,
@@ -17409,8 +17409,8 @@ const geom = require('./geom'), R = require('./rules'), NW = require('./network'
 const isMains = e => e.role === 'sys:MAINS';
 function plan(G, E, PT, cfg, allowed) {
   const warn = [], D = G.D;
-  const W = R.runHeights(cfg);                                         // E5-Q3 = A: from the ceiling (P33 2850 → 2600 / 2450)
-  const cornerAll = cfg.cornerBoxes === 'all';                         // E5-Q4: the P33 rule (a box at every corner) is the BRIDGE option
+  const W = R.runHeights(cfg);                                         // E5-Q3 = A: from the ceiling (CLA 2850 → 2600 / 2450)
+  const cornerAll = cfg.cornerBoxes === 'all';                         // E5-Q4: the CLA rule (a box at every corner) is the BRIDGE option
   G.rooms.filter(r => r.diag).forEach(r => warn.push({ sev: 'warn', msg: `${r.id}: ${r.diag} ferde él — rajta nem fut pálya (a 45° fal később jön)` }));
   const hw = D.devices.filter(d => d.level === G.level);
   const board = hw.find(d => d.type === 'board'), meter = hw.find(d => d.type === 'meter');
@@ -17610,7 +17610,7 @@ function plan(G, E, PT, cfg, allowed) {
     boxAt[i] = mk({ kind: 'drop', room: d.room, x: g.N[i].x, y: g.N[i].y, h: W.dist, node: i, size: 'gang2', drop: d.key,
       n: 'Leállás — ' + d.members.map(e => e.ref || e.id).join(' + ') }); });
   // corners the horizontal paths pass (distribution and trunk)
-  // E5-Q4: a box at every corner only in the 'all' mode (the P33 rule, kept for the BRIDGE layers); by default a corner
+  // E5-Q4: a box at every corner only in the 'all' mode (the CLA rule, kept for the BRIDGE layers); by default a corner
   // gets a box only when a run needs a pull box there (more than maxBends, below). F6: a corner only the trunk passes
   // takes its box at the trunk height.
   if (cornerAll) { const distC = new Set(), cornerNodes = new Set();
@@ -17940,7 +17940,7 @@ function inferLamps(G, M, cfg, warn, zone) {
     const near = cand.length ? cand : sws.filter(s => !s.ctx.bed && !isWet(s.room) && nbr.has(s.room) && Math.hypot(s.x - e.x, s.y - e.y) < 3000);
     if (near.length) { near.sort((a, b) => Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y)); assign(e.id, near[0].id, 'vizes helyiség: kapcsoló kívül, az ajtó száraz oldalán'); busy.add(near[0].id); } });
   // (d) the rest: nearest switch unit in the same room zone (bed switches excluded, units with ctl kept as they are)
-  // one routing zone = rooms joined by an open boundary (network.zones) — before: the P33 ids R03 / R03L by hand (F7)
+  // one routing zone = rooms joined by an open boundary (network.zones) — before: the CLA ids R03 / R03L by hand (F7)
   const sameZone = (a, b) => a === b || (!!zone && zone[a] != null && zone[a] === zone[b]);
   lamps.filter(e => !ctlOf[e.id]).forEach(e => {
     // switched by an RBX output (the user's answer): no wall switch, whatever stands in the room
@@ -18005,7 +18005,7 @@ return {rules:require("rules"),geom:require("geom"),network:require("network"),p
 const BL_KCOL={trunk:'#c0392b',dist:'#e67e22',drop:'#8e44ad',ceil:'#2980b9',floor:'#16a085',island:'#16a085',riser:'#7f8c8d',feed:'#2c3e50'};
 const BL_BOX_HU={sp:'szervizpont',drop:'leállás',corner:'sarok',end:'pályavég',pull:'húzódoboz',tj:'gerinc elágazó',island:'padló út vége',rbx:'RBX'};
 const BL_KIND_HU={trunk:'gerinc',dist:'leágazó',drop:'leállás',ceil:'mennyezet',floor:'padló',island:'padló út vége',riser:'felszálló',feed:'fővezeték'};
-const BL_OPT={cornerAll:false};                       // E5-Q4: the P33 rule (a box at every corner) — the BRIDGE option
+const BL_OPT={cornerAll:false};                       // E5-Q4: the CLA rule (a box at every corner) — the BRIDGE option
 let BL_LAST=null;                                     // the last run: {level, sig, R, ...} — button 2 reads it
 
 function blFloorId(f){return f.num||f.id;}
@@ -18077,7 +18077,7 @@ function blInput(level){level=level||state.active;
     cfg.floorGroups.push(fg[key]={name:'PU:'+m.id,sp,room:blRoomAt(a[0]+Math.sign(m.pts[1][0]-a[0])*200,a[1]+Math.sign(m.pts[1][1]-a[1])*200,level)||undefined,members:[d.id],
       box:{x:j[0],y:j[1],h:m.boxH||(bend?300:Math.min(300,d.h||300)),n:'Padló út '+(bend?'kötődoboz':'vége — '+(d.ref||d.id))},line:bend?m.pts.slice(0,-1):m.pts});});
   // Mennyezeti út between two wall points (Q9 = A) → a trunk ceiling crossing. It hops OVER something (the stair void),
-  // so each end lands on the far face of its wall — the room on the side away from the line (P33: R03 at both ends);
+  // so each end lands on the far face of its wall — the room on the side away from the line (CLA: R03 at both ends);
   // an end with nothing beyond (an outside wall) stays in the room the line enters
   (typeof clnMarks==='function'?clnMarks(level,'ceil'):[]).filter(m=>m.cross&&m.pts&&m.pts.length>=2).forEach(m=>{const P2=m.pts,a=P2[0],b=P2[P2.length-1],a1=P2[1],b1=P2[P2.length-2];
     const probe=(p,q)=>blRoomAt(p[0]-Math.sign(q[0]-p[0])*250,p[1]-Math.sign(q[1]-p[1])*250,level)||blRoomAt(p[0]+Math.sign(q[0]-p[0])*250,p[1]+Math.sign(q[1]-p[1])*250,level);
@@ -18224,7 +18224,7 @@ registerActions([
 
 window.blInput=blInput;window.blRun=blRun;window.blApplyRoutes=blApplyRoutes;window.blApplyWires=blApplyWires;window.blScopeLegs=blScopeLegs;
 window.BL=BL;window.BL_OPT=BL_OPT;
-// a lamp with no wall switch, switched by an RBX output (P33: the bathroom fan, the wardrobe light) — the engine then
+// a lamp with no wall switch, switched by an RBX output (CLA: the bathroom fan, the wardrobe light) — the engine then
 // does not guess a switch for it
 STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d||epCodeOf(d)!=='LMP')return;
   items.push({label:(d.rbxSw?'✓ ':'')+'RBX-kimenetről kapcsolt (nincs fali kapcsoló)',act:()=>{pushUndo(['devices']);if(d.rbxSw)delete d.rbxSw;else d.rbxSw=true;draw();}});});
@@ -18981,7 +18981,7 @@ function cinAllowed(level,useGeneral){const out=[];
   return out;}
 // the graph: the allowed pieces of the face net, split wherever a parallel piece within 700 mm starts or ends; the two
 // faces of a wall are joined straight through it (cost thickness + 300). A wall may be a STACK of parallel wall records
-// (P33: 105 + 95 + 100 mm layers), so the crossing goes face to face across the union — the low face (outward −) to the
+// (CLA: 105 + 95 + 100 mm layers), so the crossing goes face to face across the union — the low face (outward −) to the
 // next high face (outward +) at the same position, ≤ 700 mm apart, solid wall all the way. Corners join by coinciding ends.
 const CIN_THRU=700;
 function cinGraph(level,useGeneral){const al=cinAllowed(level,useGeneral),net=wlnNet(level).f,pcs=[],walls=WALLS[level]||[];
@@ -21764,7 +21764,7 @@ const RLI_TEXT={
  'sys:DATA':{cel:'Adat és PoE: WiFi hozzáférési pont, adataljzat, kamera.',
    hol:'AP a mennyezeten, szintenként 1–2; adataljzat 300 mm (nappali, dolgozó, háló); kamera 2400 mm. [N]',
    klaszter:'Minden SELV és adat, Média, USB.'},
- 'sys:KNX':{cel:'KNX busz — csak ha a projekt KNX-et választ (P33-ban nem).',
+ 'sys:KNX':{cel:'KNX busz — csak ha a projekt KNX-et választ (CLA-ban nem).',
    hol:'Vonal vagy fa, soha nem hurok. [A2 Step 7]',
    klaszter:'Minden SELV és adat.'},
  'sys:SENSOR':{cel:'Érzékelők: jelenlét (mmWave), CO₂, PIR, vízszivárgás, hőkamera (fürdő), ágy-életjel, portál ToF.',
@@ -21791,7 +21791,7 @@ const RLI_TEXT={
  arm:{cel:'Ezüst pályák: egyvonalas pályák az RBX-től minden végpontig. Egy ARM több réteget visz, külön csövekben (ezt a feltöltés számolja).',
    hol:'Minden második fázisú végpontot el kell érnie (a hiányzókat a réteg jelzi).',
    klaszter:'Minden második fázisú réteg.'},
- 'sys:EXTRA':{cel:'Extrák és ötletek: előkészített végpontok — a P33 extrák (#1–#11) és a SmartFrame slotjai. Cső és doboz most, a hardver később.',
+ 'sys:EXTRA':{cel:'Extrák és ötletek: előkészített végpontok — a CLA extrák (#1–#11) és a SmartFrame slotjai. Cső és doboz most, a hardver később.',
    hol:'Az ideális helyek ✦-gal jelölve (jobb klikk egy ✦ helyen: elhelyezés). Minden extra a saját helyiségének RBX-éhez fut.',
    klaszter:'Törpefeszültség (A busz) családjával, saját csőben.'}};
 window.RLI_TEXT=RLI_TEXT;

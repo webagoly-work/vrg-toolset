@@ -825,7 +825,7 @@ tolerant; "logic: 3.3" = 3.3V only. Only Section 1 counts as stock.
       alkatrész: 2/2 megvan · hiányzik: Planner oldali bekötés: PLANNER_CAM vezérlése a /state értékekből (szoftver, nem alkatrész).
 
   * NFC munkakártyák — kártyaérintésre betöltött munka
-      Egy „P33" kártyát a pultra érintve megnyílik a P33 Planner-fájl, az árazási mappa, és a pult a munka billentyűrétegére vált.
+      Egy „CLA" kártyát a pultra érintve megnyílik a CLA Planner-fájl, az árazási mappa, és a pult a munka billentyűrétegére vált.
       alkatrész: 2/3 megvan · hiányzik: Extra 13,56 MHz (MIFARE Classic / NTAG) kártyák vagy matricák — a modulhoz általában csak 1 kártya + 1 kulcstartó jár.
 
   * Walk-away zár — radar zárolja a PC-t

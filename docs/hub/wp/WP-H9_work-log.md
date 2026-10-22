@@ -24,9 +24,9 @@ H6 (GitHub write), H8 (target folder). **HUB-Q16** (A = commit to `Hub/logs/` + 
 ## Tests (`spec-90-log.js`)
 - `kpLogToMd` of the fixture entry equals `Hub/test/fixtures/log-expected.md` byte for byte.
 - `kpMdToLog(kpLogToMd(e))` deep-equals `e`; a file with an extra `## Megjegyzés` keeps it in `extra`.
-- file name for date 2026-10-21, login `webagoly-work`, text "Födém toll finomítása a P33 nappaliban"
-  → `2026-10-21_webagoly-work_fodem-toll-finomitasa-a-p33.md`.
-- clash: existing `…p33.md` → `…p33-2.md`.
+- file name for date 2026-10-21, login `webagoly-work`, text "Födém toll finomítása a CLA nappaliban"
+  → `2026-10-21_webagoly-work_fodem-toll-finomitasa-a-cla.md`.
+- clash: existing `…cla.md` → `…cla-2.md`.
 
 ## Out of scope
 Rendering a timeline per person (that is the v2 *Crew* program).

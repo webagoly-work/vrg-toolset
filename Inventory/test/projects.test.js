@@ -15,7 +15,7 @@ const ROOT = path.join(path.dirname(url.fileURLToPath(import.meta.url)), '..');
 const raw = () => JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'vrg-inventory.json'), 'utf8'));
 
 /** The real Planner export that lives in the repo. */
-const PLAN_FILE = path.join(ROOT, '..', 'Calculator', 'P33_vplan_updated.json');
+const PLAN_FILE = path.join(ROOT, '..', 'Calculator', 'CLA_vplan_updated.json');
 const planJson = () => JSON.parse(fs.readFileSync(PLAN_FILE, 'utf8'));
 
 function setup() {
@@ -31,7 +31,7 @@ function setup() {
 test('the real Planner export parses', () => {
   const plan = pi.parsePlan(planJson());
   assert.equal(plan.forras, 'varler-planner');
-  assert.equal(plan.nev, 'P33');
+  assert.equal(plan.nev, 'CLA');
   assert.equal(plan.osszegzes.eszkoz, 84);
   assert.equal(plan.osszegzes.helyiseg, 11);
   assert.ok(plan.igenyek.length > 0);
@@ -88,7 +88,7 @@ test('an unrecognised device type is reported, never dropped', () => {
 test('progress counts only items whose category answers the requirement', () => {
   const { store, lists } = setup();
   const plan = pi.parsePlan(planJson());
-  lists.create('P33');
+  lists.create('CLA');
 
   const socket = store.items.find(i => i.kategoria.al === 'Csatlakozóaljzatok');
   const cable = store.items.find(i => (i.kategoria.al || '').startsWith('Erősáramú'));
@@ -106,7 +106,7 @@ test('progress counts only items whose category answers the requirement', () => 
 test('a requirement is finished when the quantity is met, and surplus is reported', () => {
   const { store, lists } = setup();
   const plan = pi.parsePlan(planJson());
-  lists.create('P33');
+  lists.create('CLA');
   const box = store.items.find(i => i.kategoria.al === 'Süllyesztett kötődobozok és fedelek');
   lists.setQty(box.vrg_id, 40);
 
@@ -121,7 +121,7 @@ test('a requirement is finished when the quantity is met, and surplus is reporte
 test('autofill prefers a favourite, and says why', () => {
   const { store, userdata, lists } = setup();
   const plan = pi.parsePlan(planJson());
-  lists.create('P33');
+  lists.create('CLA');
 
   const sockets = store.items.filter(i => i.kategoria.al === 'Csatlakozóaljzatok');
   assert.ok(sockets.length > 1, 'more than one candidate, so the choice is meaningful');
@@ -140,7 +140,7 @@ test('autofill prefers a favourite, and says why', () => {
 test('with no favourite, autofill takes the most frequently ordered', () => {
   const { store, lists } = setup();
   const plan = pi.parsePlan(planJson());
-  lists.create('P33');
+  lists.create('CLA');
   const prog = pi.progress(plan, lists.rows());
   const filled = pi.autofillPlan(prog, store);
   const s = filled.javaslatok.find(j => j.igeny.kulcs === 'dev:socket');
@@ -154,7 +154,7 @@ test('with no favourite, autofill takes the most frequently ordered', () => {
 test('autofill proposes but does not write', () => {
   const { store, lists } = setup();
   const plan = pi.parsePlan(planJson());
-  const l = lists.create('P33');
+  const l = lists.create('CLA');
   pi.autofillPlan(pi.progress(plan, lists.rows()), store);
   assert.equal(Object.keys(lists.get(l.id).sorok).length, 0, 'planning an autofill changes nothing');
 });
@@ -162,7 +162,7 @@ test('autofill proposes but does not write', () => {
 test('autofill reports the requirements it cannot answer', () => {
   const { store, lists } = setup();
   const plan = pi.parsePlan(planJson());
-  lists.create('P33');
+  lists.create('CLA');
   const filled = pi.autofillPlan(pi.progress(plan, lists.rows()), store);
   // an unclassified requirement can never be autofilled
   const unknown = plan.igenyek.filter(i => i.ismeretlen);
@@ -209,7 +209,7 @@ test('importing the real plan, then autofilling, drives the counters to zero', (
 test('a project and its plan survive an export/import round-trip', () => {
   const { userdata, lists, projects, store } = setup();
   const plan = pi.parsePlan(planJson());
-  const p = projects.create({ nev: 'P33', cim: 'Peterdy 33', terv: { forras: plan.forras, nev: plan.nev, mentve: plan.mentve, igenyek: plan.igenyek } });
+  const p = projects.create({ nev: 'CLA', cim: 'Peterdy 33', terv: { forras: plan.forras, nev: plan.nev, mentve: plan.mentve, igenyek: plan.igenyek } });
   const l = projects.ensureList(p.id);
   lists.setQty(store.items[0].vrg_id, 3, l.id);
 
@@ -223,7 +223,7 @@ test('a project and its plan survive an export/import round-trip', () => {
   const projects2 = createProjects({ userdata: ud2, lists: lists2 });
 
   const p2 = projects2.all()[0];
-  assert.equal(p2.nev, 'P33');
+  assert.equal(p2.nev, 'CLA');
   assert.equal(p2.cim, 'Peterdy 33');
   assert.equal(p2.terv.igenyek.length, plan.igenyek.length);
   assert.equal(p2.listaId, l.id, 'the project still points at its list');
@@ -295,7 +295,7 @@ test('kinds answered by the same categories merge into one requirement', () => {
 test('one item cannot satisfy two different requirements', () => {
   const { store, lists } = setup();
   const plan = pi.parsePlan(planJson());
-  lists.create('P33');
+  lists.create('CLA');
   const box = store.items.find(i => i.kategoria.al === 'Süllyesztett kötődobozok és fedelek');
   lists.setQty(box.vrg_id, 5);
 
@@ -330,7 +330,7 @@ test('a drawing with no geometry reports itself instead of rendering nothing', (
 test('THE DoD: every symbol’s state equals its requirement’s state', () => {
   const { store, lists } = setup();
   const plan = pi.parsePlan(planJson());
-  lists.create('P33');
+  lists.create('CLA');
   // satisfy exactly one requirement, and part of another
   const socket = store.items.find(i => i.kategoria.al === 'Csatlakozóaljzatok');
   const sw = store.items.find(i => i.kategoria.al === 'Kapcsolók');
@@ -355,7 +355,7 @@ test('THE DoD: every symbol’s state equals its requirement’s state', () => {
 test('the diagram holds no state of its own — same inputs, same output', () => {
   const { store, lists } = setup();
   const plan = pi.parsePlan(planJson());
-  lists.create('P33');
+  lists.create('CLA');
   const socket = store.items.find(i => i.kategoria.al === 'Csatlakozóaljzatok');
   lists.setQty(socket.vrg_id, 10);
 
@@ -404,7 +404,7 @@ test('a merged requirement still owns its symbols', () => {
 test('the drawing survives an export/import round-trip', () => {
   const { userdata, projects, store } = setup();
   const plan = pi.parsePlan(planJson());
-  projects.create({ nev: 'P33', terv: { forras: plan.forras, nev: plan.nev, mentve: plan.mentve, igenyek: plan.igenyek, rajz: plan.rajz } });
+  projects.create({ nev: 'CLA', terv: { forras: plan.forras, nev: plan.nev, mentve: plan.mentve, igenyek: plan.igenyek, rajz: plan.rajz } });
 
   const { doc } = sanitize(JSON.parse(JSON.stringify(userdata.serialize())), id => !!store.get(id));
   const r = Object.values(doc.projects)[0].terv.rajz;

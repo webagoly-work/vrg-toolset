@@ -3,7 +3,7 @@
 // objArt() (src/05zb-objart.js).
 //
 //   node tools/objart-sheet.js [--batch=first5] [--out=file.svg] [--png]
-//     → docs/views/fig/objart-<batch>.svg (+ .png at 2×, the headless Chrome p33-axo.js uses)
+//     → docs/views/fig/objart-<batch>.svg (+ .png at 2×, the headless Chrome cla-axo.js uses)
 //
 // Scale 1 : 25 at 3 px per paper mm, so the art's paper-mm line widths (objArtCss(25)) print true. Captions go
 // through tools/baseline/labels.js (the legible-sheets rule: nothing on top of anything). Boots the built Planner

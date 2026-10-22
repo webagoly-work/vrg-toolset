@@ -67,4 +67,4 @@ Shift+letters arrive as uppercase `e.key` — compare with `toLowerCase()`; the 
 `actionForKey`); Shift+J / Shift+G stay the mark tools' "previous mode"; nothing else changed meaning.
 
 ## Browser (owed)
-Move tool on P33: select the BASE, press W A S D → camera pans, BASE stays; Shift+D → BASE moves.
+Move tool on CLA: select the BASE, press W A S D → camera pans, BASE stays; Shift+D → BASE moves.

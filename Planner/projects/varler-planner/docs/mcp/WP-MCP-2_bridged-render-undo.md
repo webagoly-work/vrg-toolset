@@ -84,7 +84,7 @@ changes things: a picture of the result, undo / redo, an all-or-nothing batch, a
 14. **`plan.render {view, level?, wall?, room?, plane?, format='svg', width?, symbols=true}`** (Q-09 A, Q-10 A):
     - `view:'plan'` — the live scene the user sees in Normal style, i.e. `draw()`'s `#lyScene` content
       with device symbols (`symbols:false` → `drawNormalGeom()` only, the golden path), framed around
-      the level's walls the way `tools/p33-plan.js` frames its sheet (copy the framing into
+      the level's walls the way `tools/cla-plan.js` frames its sheet (copy the framing into
       `tools/mcp/render.js` for the headless side — read it, do not import a CLI script);
     - `view:'blueprint'` → `drawBlueprintPlan()`; `view:'iso'` → the scene at the 45° preset
       (`camPresetApply`), restoring the user's camera afterwards **in bridged mode** (the user must not
@@ -94,7 +94,7 @@ changes things: a picture of the result, undo / redo, an all-or-nothing batch, a
     - `format:'png'`: **bridged** — the tab rasterises through the `svgToPng` path into a data URL instead
       of a download (a variant `svgToPngData` beside it, same canvas code); **headless** — the server writes
       the SVG to its scratch folder and runs the portable `chrome-headless-shell` the way
-      `tools/p33-axo.js` line 36–39 does (`Planner/apps/chrome-headless-shell/chrome-headless-shell.exe`,
+      `tools/cla-axo.js` line 36–39 does (`Planner/apps/chrome-headless-shell/chrome-headless-shell.exe`,
       git-ignored, present only in the main checkout). Missing shell → `ok:false`, `code:'no-rasterizer'`,
       with the SVG still attached.
     - MCP result: an `image` content block (`image/png`, base64) for PNG; for SVG a `text` block with the
@@ -133,7 +133,7 @@ change that for three tools).
 `tests/spec-124-mcp-render-undo.js` — headless server:
 1. `render {view:'plan', level:'ground'}` → SVG text contains the scene's wall rect count for that level
    and at least one device symbol group; `symbols:false` contains none.
-2. `render {view:'elevation', wall:<a P33 wall id>}` → SVG; unknown wall → `not-found`.
+2. `render {view:'elevation', wall:<a CLA wall id>}` → SVG; unknown wall → `not-found`.
 3. `render {format:'png'}` → an image block whose base64 starts `iVBOR` when the shell exists; the test
    skips (counted as skipped, not passed) when `Planner/apps/chrome-headless-shell` is absent.
 4. `set_device {id, fields:{h:900}}` then `undo` → `h` back; `redo` → 900 again; `set_device {fields:{foo:1}}` → `bad-params` naming the allowed fields.

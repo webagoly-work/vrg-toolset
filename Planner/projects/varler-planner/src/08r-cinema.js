@@ -253,7 +253,7 @@ function cinAllowed(level,useGeneral){const out=[];
   return out;}
 // the graph: the allowed pieces of the face net, split wherever a parallel piece within 700 mm starts or ends; the two
 // faces of a wall are joined straight through it (cost thickness + 300). A wall may be a STACK of parallel wall records
-// (P33: 105 + 95 + 100 mm layers), so the crossing goes face to face across the union — the low face (outward −) to the
+// (CLA: 105 + 95 + 100 mm layers), so the crossing goes face to face across the union — the low face (outward −) to the
 // next high face (outward +) at the same position, ≤ 700 mm apart, solid wall all the way. Corners join by coinciding ends.
 const CIN_THRU=700;
 function cinGraph(level,useGeneral){const al=cinAllowed(level,useGeneral),net=wlnNet(level).f,pcs=[],walls=WALLS[level]||[];

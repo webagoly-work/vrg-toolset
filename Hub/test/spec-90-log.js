@@ -24,13 +24,13 @@ module.exports = [
     assert.strictEqual(m.kpLogToMd(e), withExtra, 'extra survives a second write');
   } },
   { name: 'file name: date_login_first-5-words, accents folded', fn() {
-    const e = Object.assign(ENTRY(), { did: 'Födém toll finomítása a P33 nappaliban' });
-    assert.strictEqual(m.kpLogName(e, []), '2026-10-21_webagoly-work_fodem-toll-finomitasa-a-p33.md');
+    const e = Object.assign(ENTRY(), { did: 'Födém toll finomítása a CLA nappaliban' });
+    assert.strictEqual(m.kpLogName(e, []), '2026-10-21_webagoly-work_fodem-toll-finomitasa-a-cla.md');
   } },
   { name: 'name clash -> -2, then -3', fn() {
-    const e = Object.assign(ENTRY(), { did: 'Födém toll finomítása a P33 nappaliban' });
-    const a = '2026-10-21_webagoly-work_fodem-toll-finomitasa-a-p33.md';
-    assert.strictEqual(m.kpLogName(e, [a]), '2026-10-21_webagoly-work_fodem-toll-finomitasa-a-p33-2.md');
+    const e = Object.assign(ENTRY(), { did: 'Födém toll finomítása a CLA nappaliban' });
+    const a = '2026-10-21_webagoly-work_fodem-toll-finomitasa-a-cla.md';
+    assert.strictEqual(m.kpLogName(e, [a]), '2026-10-21_webagoly-work_fodem-toll-finomitasa-a-cla-2.md');
     assert.strictEqual(m.kpLogName(e, [a, a.replace('.md', '-2.md')]), a.replace('.md', '-3.md'));
   } },
   { name: 'relative day words', fn() {

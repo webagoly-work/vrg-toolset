@@ -29,7 +29,7 @@ First task: close the last three gaps in the room schedule — the upper floor
 (two bedrooms and a small hall: areas, lamp counts, and whether RBX04 really is
 a terminal node), R07 SZOBA's shared wall (served from RBX01 or RBX02), and the
 BASE arrangement (G04/G05, one unit or split). Ask me, don't guess. Those three
-are what stand between us and P33-BUILD-001.
+are what stand between us and CLA-BUILD-001.
 ```
 
 ---
@@ -39,7 +39,7 @@ are what stand between us and P33-BUILD-001.
 | | Task | Why now |
 |---|---|---|
 | **1** | **Close the last three D1 gaps** — upper floor, R07's shared wall, BASE arrangement | A short exchange. They are the only thing blocking the first build document |
-| **2** | **Write `P33-BUILD-001`** — the hardware composition | The first real test of all eight standards against an actual building. Errors surface here or they surface on site |
+| **2** | **Write `CLA-BUILD-001`** — the hardware composition | The first real test of all eight standards against an actual building. Errors surface here or they surface on site |
 | **3** | **The G06 wall-construction visuals** | Explicitly asked for and still owed. Unblocks chase depth, the cross-vent and the 110 mm envelope |
 | **4** | **Fill `06_reference-images/`** | Unblocks five lighting items at once — C23, C23B, C10, C11, C13. `_bad-examples/` is the folder that actually decides them |
 | **5** | **Unify the indicator language** | Notification light, Site Pager, follow pendant and HID DECK are four projects converging on four RGBW indicators. STD-008 §2 has the vocabulary; settle it before any is built |

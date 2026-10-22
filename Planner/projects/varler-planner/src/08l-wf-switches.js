@@ -15,7 +15,7 @@
 // ⚠ THE NUMBERS ARE THE HUNGARIAN CODES AND MUST NOT BE CHANGED: 105 = CSILLÁR, 106 = VÁLTÓ, 108 = DUPLA VÁLTÓ (the code
 // has gaps — 103 is háromfázisú, 104 is unused). The user corrected this twice; see the note at SWITCH_TYPES in 02-state.js. A type the user set by hand stays (sw.typeFix). A switch in a slot follows its door (E03 = A).
 // "Kapcsolások javaslata" (E02 = A): every room's unswitched lamps → one leg → the L1 slot of each room door (two doors =
-// two-way); a wet room's lamps → the dry face of its door (the P33 engine's rule) — shown as a table, nothing silent.
+// two-way); a wet room's lamps → the dry face of its door (the CLA engine's rule) — shown as a table, nothing silent.
 const LSW={on:false,set:[],hover:null};
 
 function lswLamp(d){return !!d&&typeof epIsLamp==='function'&&epIsLamp(d);}

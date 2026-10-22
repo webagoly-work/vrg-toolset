@@ -71,7 +71,7 @@ Fixture: two rooms side by side, 4000 wide each, partition 100 mm (untagged → 
 Identical (view default off).
 
 ## Browser-only checks (for the human)
-Performance on P33's ground floor (should redraw in well under 100 ms after the first compute) ·
+Performance on CLA's ground floor (should redraw in well under 100 ms after the first compute) ·
 tints pale enough to keep the plan readable.
 
 ## Verifier focus

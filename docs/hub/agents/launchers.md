@@ -34,7 +34,7 @@ node tools/check-start.js     # exit 1 when a path, TOOLCOUNT or the registry is
 ## 6. Current state
 - 2026-10-18 U) Board Console bejegyzés
 - 2026-10-16 START.cmd: tool 1 = the merged working Planner (2026-10-16), dated note
-- 2026-10-10 START.cmd: E) builds and opens the P33-preloaded Planner from the worktree
+- 2026-10-10 START.cmd: E) builds and opens the CLA-preloaded Planner from the worktree
 - Decision files: none.
 
 ## 7. Do not touch

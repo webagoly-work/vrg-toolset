@@ -96,7 +96,7 @@ refused with a named reason.
 Every result carries: target path + SHA-256, tool + version actually run, locations (offsets, file +
 line, record ordinal), `coverage` (`complete` / `partial` / `unknown`), `limitations`, and links to
 the retained complete record when only a summary was returned. Missing coverage is reported as
-*unknown*, never as *absent*. That is exactly the discipline our acceptance runs and P33 checks need
+*unknown*, never as *absent*. That is exactly the discipline our acceptance runs and CLA checks need
 (see §2.1).
 
 ---

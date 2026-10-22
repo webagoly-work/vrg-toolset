@@ -1,7 +1,7 @@
 # BRIDGE — Alapozó Architektúra Terv
 
 **Dok.:** BRIDGE-ARCH-002 · r1 · v1.0 tervezet · 2026-09-21 · magyar változat
-**Felváltja:** P33-BRIDGE-ARCH-01 (a P33 falba épített vázlat ennek a tervnek az első *alkalmazása* lesz)
+**Felváltja:** CLA-BRIDGE-ARCH-01 (a CLA falba épített vázlat ennek a tervnek az első *alkalmazása* lesz)
 **Szülő / testvér dokumentumok:** BRIDGE-ARCH-001 (egységflotta-alapozó) · BRIDGE-ARCH-A1 (bistabil kapcsolótopológiák) · BRIDGE — Smart Switch (ζ/η családok) · BRIDGE-DN és OmniComm Hub specifikációk (hub hardver, protokollrádiók, tápláncolat, hálózati mag)
 **Nyelvi megjegyzés:** az angol eredeti (BRIDGE-ARCH-002) a mérvadó rendszertervezési nyelv. A rétegek, elemek és protokollok nevei (BASE, NET, COMP, MEDIA, CHANNEL, ROOMBOX, ARM, PANEL LINK stb.) szándékosan angolul maradnak, hogy a két változat egy az egyben megfeleltethető legyen.
 
@@ -632,7 +632,7 @@ A BRIDGE / OmniComm / VRG munka eddig ismert fájljai, amelyeket egy mappába ke
 - `BRIDGE-ARCH-A1_parallel-control-topologies.md` — bistabil topológia-áttekintés
 - `BRIDGE_Smart-Switch.md` + hét SVG ábra `BRIDGE_Smart-Switch_*`
 - `BRIDGE_Project_Planner_Digest.md` — szálakon átívelő összefoglaló
-- `P33_BRIDGE_Inline_Architecture.md` — P33 BASE / ROOM CHANNEL / ROOM BOX vázlat
+- `CLA_BRIDGE_Inline_Architecture.md` — CLA BASE / ROOM CHANNEL / ROOM BOX vázlat
 - Magyar jegyzet a gyengeáramú elválasztással rendelkező szobai központi dobozról (Ethernet + koax vezetése a rackhez)
 - `BRIDGE-ARCH-002_Foundational-Architecture-Plan.md` — az angol eredeti
 - `BRIDGE-ARCH-002_Alapozo-Architektura-Terv_HU.md` — ez a dokumentum

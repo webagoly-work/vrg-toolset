@@ -1,8 +1,8 @@
 # WORKSHOP-001 — Routing: layer selection, ghost wireways, wall / floor rules
 
 Status: **r1 · answered 2026-10-09 (17 / 17, §7)** · plan only, nothing built · the next round can start at R1
-Test bed: `Calculator/P33-teszt_v1.vplan.json` (client endpoints only, 55) and
-`Calculator/P33-teszt_v2.vplan.json` (every layer filled, 124 endpoints + 30 spine T-boxes)
+Test bed: `Calculator/CLA-teszt_v1.vplan.json` (client endpoints only, 55) and
+`Calculator/CLA-teszt_v2.vplan.json` (every layer filled, 124 endpoints + 30 spine T-boxes)
 Related: `IDEA-001_cluster-flush-boxes.md` · WP-E1 (ARM) · E2 (route graph) · E3 / E4 (fill)
 Answer in the tuner: `_inbox/BRIDGE Tuner - WORKSHOP-001.html`, pack `PLANNER-ROUTE-Q-001` — `M01` is
 the method question of §2, `R01`…`R16` are Q-R01…Q-R16 below (the tuner's answer format allows no
@@ -14,7 +14,7 @@ dash in an id). The two earlier packs ride along with their recorded answers pre
 
 | user's word | in the Planner today | what it is |
 |---|---|---|
-| **golden path** | `route:'channel'` paths | connects every hardware node, ends at the terminal RBX. In P33 teszt it has **two lanes**: the CHANNEL lane (Elosztó → BASE → RBX01 → RBX02: data, control, bus B) and the **230 V lane** (Elosztó → RBX01 → RBX02: the lighting string that feeds the boxes), on opposite sides, with separate penetrations of the spine (BUILD-001 T1) |
+| **golden path** | `route:'channel'` paths | connects every hardware node, ends at the terminal RBX. In CLA teszt it has **two lanes**: the CHANNEL lane (Elosztó → BASE → RBX01 → RBX02: data, control, bus B) and the **230 V lane** (Elosztó → RBX01 → RBX02: the lighting string that feeds the boxes), on opposite sides, with separate penetrations of the spine (BUILD-001 T1) |
 | **silver path** | `route:'arm'` paths | endpoint → its RBX |
 | **bronze path** | today also drawn as ARM, the fill sees `from:'board'` | heavy / dedicated loads straight to the Elosztó, never through a RoomBox (DED, AVP) |
 | route · run · pipe | path · `data.runs` · E3 pipe | a drawn line · one cable pull between two boxes · one conduit, box to box |
@@ -144,7 +144,7 @@ user-editable like `AFILL_RULE`, not code.
   walls.
 
 ### 4.5 Penetrations and fire
-- **R16** Count penetrations; one shared penetration per golden lane through a masonry wall (P33:
+- **R16** Count penetrations; one shared penetration per golden lane through a masonry wall (CLA:
   one CHANNEL and one 230 V hole through the spine). Slab penetrations are fire-stopped (OTSZ ⚑).
 
 ### 4.6 Cost model (what "best" means)
@@ -169,10 +169,10 @@ user-editable like `AFILL_RULE`, not code.
 | # | question | my default |
 |---|---|---|
 | Q-R01 | Spine height: a fixed line at ceiling − 300 (2400), or anywhere in the 15–45 cm upper zone? | fixed line, ceiling − 300 |
-| Q-R02 | House switch height: your v1 switches use **1300**; the textbook says ≈ 1100 and DIN 105 cm; accessibility 85–110 cm. Which is the standard? | 1300 for P33 (yours), stored as a project setting |
+| Q-R02 | House switch height: your v1 switches use **1300**; the textbook says ≈ 1100 and DIN 105 cm; accessibility 85–110 cm. Which is the standard? | 1300 for CLA (yours), stored as a project setting |
 | Q-R03 | Floor routes: strictly parallel to walls, or diagonal across open floor where shorter? | parallel only |
 | Q-R04 | Is a third type, ceiling (álmennyezet), wanted now, or only W and F? | W and F now; C when a room has an álmennyezet mark |
-| Q-R05 | Default type per room: W everywhere; F where the floor is renewed anyway? Is P33's floor renewed? | W default; F per room when you tick "new screed" |
+| Q-R05 | Default type per room: W everywhere; F where the floor is renewed anyway? Is CLA's floor renewed? | W default; F per room when you tick "new screed" |
 | Q-R06 | Mixed-mode split granularity: per run, per family, or per cluster? | per family (MAINS on walls, SELV / data in floor) |
 | Q-R07 | Chase capacity: how many pipes side by side in one wall chase before a second chase (or trunking)? | 4 × M20 / 3 × M25 ⚑ |
 | Q-R08 | May two neighbouring clusters share one vertical riser (within 300 mm)? | yes, if the families allow it (R11) |
@@ -228,7 +228,7 @@ needs only runs, which E3 already produces, and your hand-drawn bronze path in v
 - R6's mixed mode is the default from the start rather than an option.
 - R7 uses partitioned K3 housings wherever families meet, and reports the smallest sufficient housing.
 
-**Effect on the P33 test plans:**
-- `P33-teszt_v1` / `_v2` still place switches at 1300 (the old default).
+**Effect on the CLA test plans:**
+- `CLA-teszt_v1` / `_v2` still place switches at 1300 (the old default).
 - R02 moves them to 1100 and turns 1300 into the smart band. v2's door columns then read SWI 1100 · NTL / PAN / THR in the 1300 band.
 - Regenerating the two plans is one command each; it waits for your go, because v1 may already carry your hand-drawn bronze path.

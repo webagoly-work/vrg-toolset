@@ -131,7 +131,7 @@ mains, by design.** 12 V and 24 V are separate supplies, separate fuses and **se
 
 ### Step 2b · Bus B — assured 24 V
 
-**What.** From the central LiFePO4 pack (in P33, R05). Secondary control, egress, step and
+**What.** From the central LiFePO4 pack (in CLA, R05). Secondary control, egress, step and
 handrail light, essential sensors, **NTL-TR notification lights**. Survives mains loss; the
 hardwired latch lights egress with no controller in the path.
 
@@ -185,7 +185,7 @@ Switches, APs, VLANs and addressing ride on DATA. No wireway of their own.
 | KNX trunk | YCYM 2 × 2 × 0.8, green, KNX-certified | **C5 M20** in the CHANNEL |
 | Room line | the same | M16, line or tree — never a loop |
 
-**In P33 KNX is not taken.** C5 is installed empty, and it holds the **DALI reservation** (K25).
+**In CLA KNX is not taken.** C5 is installed empty, and it holds the **DALI reservation** (K25).
 
 ### Step 8 · SENSOR
 
@@ -288,7 +288,7 @@ where conduit is impractical.
 
 ---
 
-## 6. Worked example — a media wall on a thin partition (P33 R06, K33)
+## 6. Worked example — a media wall on a thin partition (CLA R06, K33)
 
 The R06 media wall stands on a decoupled build-out in front of the R06 / R07 partition. Every
 layer reaching it travels **in the build-out's cavity, each in its own conduit**:

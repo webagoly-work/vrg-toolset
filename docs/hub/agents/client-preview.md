@@ -18,7 +18,7 @@ click a room for its halo and room card. Hungarian first, English switch, dark a
 ```bash
 cd Planner/projects/client-preview
 node build.js                                          # dist/client-preview.template.html
-node build.js --model dev/p33.model.json --out dev/p33.html
+node build.js --model dev/cla.model.json --out dev/cla.html
 ```
 The model comes from `tools/model-from-vplan.js` (README "Dev loop").
 

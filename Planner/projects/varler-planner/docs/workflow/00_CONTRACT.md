@@ -22,7 +22,7 @@ Write the number into README §4.
 1. **Reuse before you write.** Every WP names the existing helper it extends (Floor tool, `createRoom`, `rectWalls`,
    `wrfPlan`, 06a portals, 05n marks, the gamepad wheel, 05j circuits, M2 presets). A parallel copy of an existing
    mechanism is a defect.
-2. **Every automatic step ends in a table** the user can approve or override (the P33 lesson: lamp→switch, circuits,
+2. **Every automatic step ends in a table** the user can approve or override (the CLA lesson: lamp→switch, circuits,
    heights were all approved as tables). The table is a modal list with ☑ per row and "Alkalmaz"; nothing silent.
 3. **Intent by hand, the derivable by rule.** Tools in this round record only what the user means (outline, allowed
    wall, link, group). Heights, boxes, switch types, cables are derived — and a derived value the user overrides is

@@ -282,7 +282,7 @@ function wallMergeOn(){return state.style==='blueprint'||state.wallMerge===true;
 // the two bands, every T stem stops exactly on the through wall's face (Q-G02 = A; B = the nearest exact form per
 // junction, C = stems through to the far face). The wall tool snaps to the partner's CENTRELINE, which leaves a notch
 // outside and half an overlap inside every L — that is the "not clean" corner this fixes.
-// Coordinates are first rounded to 1 mm (P33's were fractional after a 180° turn), so targets are whole mm and a second
+// Coordinates are first rounded to 1 mm (CLA's were fractional after a 180° turn), so targets are whole mm and a second
 // run finds nothing to do. The result: {round, junctions[{type,a,b,moves,multi?}], collinear[], skipped[{ids,why}], moves}.
 function wrfPlan(level,opt){opt=opt||{};const form=opt.form||'A',H=wallH(level);
   const all=(WALLS[level]||[]).filter(r=>r&&r.id&&(!opt.layer||(r.layer||'L0')===opt.layer)&&layerShows(r,'wall'));

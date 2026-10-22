@@ -25,7 +25,7 @@ MATERIAL §4.
    (E0 sets `state.wfPhase`; before E0 lands, show MAINS slots when the Erősáram layer is active, all slots when the
    Hardver layer is active).
 5. Window slot `W1` (MATERIAL §4): computed the same way; drawn and offered only when the room has the `redony` rule
-   (R3) or the opening tag `redony` (P33's mark). Otherwise it does not exist (Q-O03).
+   (R3) or the opening tag `redony` (CLA's mark). Otherwise it does not exist (Q-O03).
 6. Slot hit-test: `ptSlotAt(e)` → `{door, face, k}` for E1 linking (no UI here beyond the hover label
    `'L1 · kapcsoló (kilincsoldal) · 1100'`).
 

@@ -142,7 +142,7 @@ function migrate(d){if(!d||typeof d!=='object')return d;
   return d;}
 
 // ---- repair: several records under one id ----
-// Files saved before copyRecord() existed can hold them (NV4: three sockets all "D131"). On load
+// Files saved before copyRecord() existed can hold them (CLANV4: three sockets all "D131"). On load
 // the FIRST keeps the id and every later one gets a fresh id from the counter. What pointed at it:
 //  - a device's links live on the device itself, so they simply travel with it;
 //  - a Behúzás entry (sec.circuits[].dev) moves to a copy only when that is unambiguous, for the

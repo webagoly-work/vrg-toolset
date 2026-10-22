@@ -260,7 +260,7 @@ STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d)return;
   return out;});
 
 // ==================================================================================================================
-// the Extras layer: P33-ADD-001 extras and the SmartFrame slots as provisioned endpoints
+// the Extras layer: CLA-ADD-001 extras and the SmartFrame slots as provisioned endpoints
 // ==================================================================================================================
 // prov = provisioned (box + conduit, device later); req = client-requested (the user's *). Cables are what the box needs
 // pulled now. Each code finds its ideal spot through the 05t suggestion machinery (anchors below).
@@ -337,7 +337,7 @@ registerActions([
   run:()=>{state.idealOff=!state.idealOff;lyrHud('Ideális helyek '+(state.idealOff?'ki':'be'));draw();}},
  {id:'stack.ensure',alias:'hianyzo reteg klaszter extra stack layers add',label:'Klaszter + Extrák réteg a stackhez',icon:'▤',group:'Stack',
   need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>{const S=stkActive();['cluster','sys:EXTRA'].forEach(k=>stkEnsureRole(S,k));draw();lyrHud('Rétegek rendben: Klaszterpontok, Extrák és ötletek.');}},
- {id:'preload.open',alias:'elotoltott terv p33 preload plan',label:'Előtöltött terv…',icon:'📂',group:'Projekt',
+ {id:'preload.open',alias:'elotoltott terv cla preload plan',label:'Előtöltött terv…',icon:'📂',group:'Projekt',
   need:'Ebben a buildben nincs előtöltött terv.',when:()=>preList().length>0,run:()=>preOffer()}
 ]);
 

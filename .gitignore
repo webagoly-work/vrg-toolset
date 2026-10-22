@@ -34,14 +34,15 @@ Inventory/price-check-*.json
 
 # --- BRIDGE: the PDFs here are source material, not client documents ---
 # Four *_buildup_BRIDGE.pdf files are the only surviving form of two lost
-# documents, and the P33 blueprints are irreplaceable. Override the *.pdf rule.
+# documents, and the CLA blueprints are irreplaceable. Override the *.pdf rule.
 !BRIDGE/**/*.pdf
 
-# --- BRIDGE: P33 is a client property — its documents stay on this PC ---
+# --- BRIDGE: CLA is a client property — its documents stay on this PC ---
 # Blueprints, the vplan and the room schedule carry an address and a
 # room-by-room survey. The design knowledge is generalised into 05_standards
 # and BRIDGE-OUTLINE-001 §4, which is de-identified.
 BRIDGE/07_P33/
+BRIDGE/07_CLA/
 
 # --- CoreRef: harvested upstream data is regenerable, not source ---
 # `node CoreRef/tools/harvest.js` rebuilds both from pinned release tags.

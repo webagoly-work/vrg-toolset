@@ -6,7 +6,7 @@
 // under Calculator/ are reachable from one origin:
 //
 //   http://localhost:8131/Planner/projects/varler-planner/dist/varler_planner.html
-//   http://localhost:8131/Calculator/P33-teszt_v2.vplan.json
+//   http://localhost:8131/Calculator/CLA-teszt_v2.vplan.json
 //
 // Nothing here ships: the product is still the one offline HTML file.
 const http = require('http'), fs = require('fs'), path = require('path');

@@ -6,7 +6,7 @@ const ROLE_OF = (P, id) => { const l = P.layers.find(y => y.id === id); return l
 const codeOf = d => d.code || ({ light: 'LMP', switch: 'SWI', socket: 'SOC' })[d.type] || d.type;
 
 let CFG = {};
-// a room's kinds: the plan's own (Planner rooms carry kinds) + the config's (P33: R05 = kamra) — no room ids in rules (F7)
+// a room's kinds: the plan's own (Planner rooms carry kinds) + the config's (CLA: R05 = kamra) — no room ids in rules (F7)
 function kindsOf(G, cfg, rid) { const r = G.rooms.find(x => x.id === rid); return [...((r && r.kinds) || []), ...(((cfg || {}).roomKinds || {})[rid] || [])]; }
 const WET_KINDS = ['furdo', 'wc'];
 function isWet(G, cfg, rid) { return ((cfg || {}).wetRooms || []).includes(rid) || kindsOf(G, cfg, rid).some(k => WET_KINDS.includes(k)); }
@@ -24,7 +24,7 @@ function endpoints(G, cfg) {
     let room = onWall ? nf.face.room : geom.roomOf(G, d.x, d.y), face = onWall ? nf.face : null, u = onWall ? nf.u : null;
     let fixed = null;
     // F15 (2026-10-15): a point pinned to a face IS on the wall — before, one placed > 260 off the wall kept onWall false and
-    // silently got no drop, no cable (P33 v1: socket D339 / D23 in R01, found by the Planner acceptance run)
+    // silently got no drop, no cable (CLA v1: socket D339 / D23 in R01, found by the Planner acceptance run)
     if (cfg.fixFace && cfg.fixFace[d.id]) { const f = geom.nearestFace(G, d.x, d.y, cfg.fixFace[d.id]); if (f) { room = f.face.room; face = f.face; u = f.u; fixed = f; } }
     const ctx = { role, wall: !!onWall, room, kinds: kindsOf(G, cfg, room), ceiling: cfg.ceiling, note: d.note || d.ref || '', circuitName: circName[d.id] || '',
       wet: isWet(G, cfg, room), window: false, portal: false,

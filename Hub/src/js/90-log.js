@@ -38,7 +38,7 @@ function kpMdToLog(text) {
   return e;
 }
 
-// "Födém toll finomítása a P33 nappaliban" -> "fodem-toll-finomitasa-a-p33"
+// "Födém toll finomítása a CLA nappaliban" -> "fodem-toll-finomitasa-a-cla"
 function kpLogSlug(text) {
   const words = kpNorm(text).replace(/[^a-z0-9]+/g, ' ').trim().split(/\s+/).filter(Boolean).slice(0, 5);
   return words.join('-') || 'naplo';

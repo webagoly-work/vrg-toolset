@@ -153,7 +153,7 @@ const S = [
  { k: 'ch4', n: 'Földgáz / metán', grp: 'gas', meas: '%LEL CH₄', parts: 'Figaro TGS2611, MQ-4; kész EN 50194 riasztó', ifc: 'analóg',
    pwr: ['lv', 'mains'], batt: 'no', zone: ['ceiling', 'high'], h: 'mennyezettől ≤ 0,3 m',
    rooms: ['konyha', 'gepesz'], avoid: [], partners: ['co_ec', 'heat'], ms: true, mn: 'ok', mnNote: '—',
-   pro: 'Szivárgáskor gázszelep-zárás (BRIDGE vízőr mintájára).', con: 'Fűtött érzékelő ~ 0,3–0,8 W — nem elemes; P33-ban indukciós főzőlap, csak gázkészülék esetén kell.', layer: 'sys:SENSOR', code: 'SEN', var: 'gas', gas: ['ch4'], health: true },
+   pro: 'Szivárgáskor gázszelep-zárás (BRIDGE vízőr mintájára).', con: 'Fűtött érzékelő ~ 0,3–0,8 W — nem elemes; CLA-ban indukciós főzőlap, csak gázkészülék esetén kell.', layer: 'sys:SENSOR', code: 'SEN', var: 'gas', gas: ['ch4'], health: true },
  { k: 'lpg', n: 'PB-gáz (propán / bután)', grp: 'gas', meas: '%LEL', parts: 'Figaro TGS2610, MQ-6', ifc: 'analóg',
    pwr: ['lv', 'mains'], batt: 'no', zone: ['floor'], h: 'padlótól 0,1–0,3 m',
    rooms: ['konyha', 'terasz', 'tarolo', 'garazs'], avoid: [], partners: ['heat'], ms: false, mn: 'ok', mnNote: '—',

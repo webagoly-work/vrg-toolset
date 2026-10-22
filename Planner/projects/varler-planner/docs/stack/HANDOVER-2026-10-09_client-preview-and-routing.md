@@ -1,4 +1,4 @@
-# HANDOVER — client preview · P33 test plans · routing workshop
+# HANDOVER — client preview · CLA test plans · routing workshop
 
 *On-ramp for a fresh session picking up these threads. Written 2026-10-09 at the end of the session
 that built them (archived). About five minutes to read. For the Planner codebase itself, read
@@ -27,7 +27,7 @@ that built them (archived). About five minutes to read. For the Planner codebase
 |---|---|---|
 | **Design system "VRG Title Card"** | done, v3. Direction A (dark-first, Marcellus / Jost / Azeret Mono, one sand accent). v3 dropped the Pince from the stack demo and added the rule that out-of-scope levels ghost | artifact https://claude.ai/artifact/WqPYqR62uexttguVKRUJbP — read `project/README.md`; to change it, `Artifact read` the files, edit, republish (Design System type rules). Copies in `projects/client-preview/src/ds/` |
 | **Client preview (WebGL)** | phases 1–2 of 5 done, at the look checkpoint | `projects/client-preview/README.md` (dev loop, module table, phases) · Planner side `src/05y-client-preview.js` (`cpvModel`), `tests/spec-55` |
-| **P33 test plans** | v1 + v2 committed | `Calculator/P33-teszt_v1.vplan.json`, `_v2` · generators `tools/testplans/p33-teszt.js`, `p33-teszt-v2.js` · review sheet `render-plan.js` |
+| **CLA test plans** | v1 + v2 committed | `Calculator/CLA-teszt_v1.vplan.json`, `_v2` · generators `tools/testplans/cla-teszt.js`, `cla-teszt-v2.js` · review sheet `render-plan.js` |
 | **Routing workshop** | answered 17 / 17 — next build round can start | `docs/stack/WORKSHOP-001_routing.md` (§7 answers, §6 round plan) |
 | **Cluster housings / flush covers** | IDEA-001 later round · IDEA-002 answered, 3 items open | `docs/stack/IDEA-001…`, `IDEA-002…` (§10 answers), `FLUSH-COVERS-001.json` |
 | **Tuner copy** | sent to the user | `H:\Dev-VRG\VRG-DE\_inbox\BRIDGE Tuner - WORKSHOP-001.html` — 4 packs: routing, design (140/141 preloaded), rooms (45/47 preloaded), flush covers |
@@ -36,12 +36,12 @@ that built them (archived). About five minutes to read. For the Planner codebase
 
 **Client preview.**
 - **Libraries and placement:** three.js 0.169.0, vendored via `vendor-manifest.json` (npm, sha512); the export lives inside the Planner.
-- **P33 upper floor:** imported from the BRIDGE sheet as a ghost (`client-preview/tools/p33-upper-import.js`).
+- **CLA upper floor:** imported from the BRIDGE sheet as a ghost (`client-preview/tools/cla-upper-import.js`).
 - **Level scope:** in / ghost / skip; a hidden level with geometry ghosts, an empty one is skipped.
 - **Cutaway:** walls cut at 1.2 m on in-scope levels.
 
 **Test plans.**
-- **Orientation:** P33 turned 180°, because that is how the user describes it. The Planner and the BRIDGE sheets show szoba top-left.
+- **Orientation:** CLA turned 180°, because that is how the user describes it. The Planner and the BRIDGE sheets show szoba top-left.
 - **Rooms:** exact walls, WC / kamra / lépcső kept.
 - **Dedicated circuits:** kitchen + klíma + washing machine.
 - **Client endpoints:** the plan's orange Order layer, plus its notes, plus sheet r2. The bathroom LED goes in the walls.
@@ -64,7 +64,7 @@ that built them (archived). About five minutes to read. For the Planner codebase
 
 ## 3. Next steps, in order
 
-1. **Regenerate the P33 test plans for switches at 1100.** v2's door columns become SWI 1100 ·
+1. **Regenerate the CLA test plans for switches at 1100.** v2's door columns become SWI 1100 ·
    NTL / PAN / THR in the 1300 band. *Ask first:* v1 may hold the user's hand-drawn bronze path.
    Either regenerate only v2, or v1 into a new file. Commands in §4.
 2. **Client preview phase 3:** endpoint hover / click lights its circuit to the Elosztó, in its
@@ -75,7 +75,7 @@ that built them (archived). About five minutes to read. For the Planner codebase
 3. **Client preview phase 4:**
    - Start Tour → top-down overview + summary → Next room by room (camera eases, halo,
      RoomBrief).
-   - Then a float back out to the thank-you slide, with **varler.group@gmail.com** as selectable
+   - Then a float back out to the thank-you slide, with **a cég e-mail címe** as selectable
      text.
 4. **Client preview phase 5:**
    - A Planner menu action, a per-level scope dialog, and the template injected at the Planner's
@@ -86,7 +86,7 @@ that built them (archived). About five minutes to read. For the Planner codebase
      → F + C routers → usage sets, installed = used, provisioned `SPARE` → layer selection UI
      → mixed mode by default → IDEA-001 housings.
    - **Acceptance pair:** v2 with every layer above MAINS off must equal routing v1 directly.
-6. **Brochure** (BRIDGE, P33-led, philosophy not manual) — after the viewer.
+6. **Brochure** (BRIDGE, CLA-led, philosophy not manual) — after the viewer.
 
 ## 4. Commands
 
@@ -95,18 +95,18 @@ cd H:/Dev-VRG/VRG-DE/wt-planner-stack/Planner/projects/varler-planner
 export NODE_PATH=H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
 node build.js && node tests/run.js                                  # suite + golden
 # test plans (v2 reads v1)
-node tools/testplans/p33-teszt.js v1 ../../../Calculator/P33_vplan_updated.json ../../../Calculator/P33-teszt_v1.vplan.json
-node tools/testplans/p33-teszt.js v2 ../../../Calculator/P33-teszt_v1.vplan.json ../../../Calculator/P33-teszt_v2.vplan.json
-node tools/testplans/render-plan.js ../../../Calculator/P33-teszt_v2.vplan.json ../client-preview/dev/v2-plan.html
+node tools/testplans/cla-teszt.js v1 ../../../Calculator/CLA_vplan_updated.json ../../../Calculator/CLA-teszt_v1.vplan.json
+node tools/testplans/cla-teszt.js v2 ../../../Calculator/CLA-teszt_v1.vplan.json ../../../Calculator/CLA-teszt_v2.vplan.json
+node tools/testplans/render-plan.js ../../../Calculator/CLA-teszt_v2.vplan.json ../client-preview/dev/v2-plan.html
 # client preview
 cd ../client-preview
-node tools/p33-upper-import.js ../../../Calculator/P33_vplan_updated.json ../../../Calculator/P33_vplan_upper-ghost.json
-node tools/model-from-vplan.js ../../../Calculator/P33_vplan_upper-ghost.json dev/p33.model.json
-node build.js --model dev/p33.model.json --out dev/p33.html
+node tools/cla-upper-import.js ../../../Calculator/CLA_vplan_updated.json ../../../Calculator/CLA_vplan_upper-ghost.json
+node tools/model-from-vplan.js ../../../Calculator/CLA_vplan_upper-ghost.json dev/cla.model.json
+node build.js --model dev/cla.model.json --out dev/cla.html
 ```
 
 Browser pane: launch configs in `H:\.claude\launch.json` — `client-preview-dev` (port 8139, serves
-`projects/client-preview`, opens `dev/p33.html`) and `planner-stack-dist` (8138, the worktree build;
+`projects/client-preview`, opens `dev/cla.html`) and `planner-stack-dist` (8138, the worktree build;
 load a plan with `hardResetWorkspace(); applyProjectData(o.project)`). The pane is narrow: judge
 plans with `render-plan.js` sheets, not Planner screenshots.
 
@@ -117,7 +117,7 @@ plans with `render-plan.js` sheets, not Planner screenshots.
   parse-checks it.
 - **The browser pane serves `file://` pages as stale `data:` snapshots.** Use the launch-config
   servers.
-- **`P33_vplan_updated.json`'s notes sit 180° rotated** against its walls and devices; map back
+- **`CLA_vplan_updated.json`'s notes sit 180° rotated** against its walls and devices; map back
   with `(10758 − x, 11130 − y)`. Its devices are fine.
 - **Device `side` is stored 1 / 0** (+perp / −perp). Suggestion helpers return ±1, so convert.
   Wall devices sit on the wall *centreline*.
@@ -139,7 +139,7 @@ plans with `render-plan.js` sheets, not Planner screenshots.
 | 2026-10-07 | Design direction picked (A · Title Card); design system published, v1 | artifact |
 | 2026-10-07 | Client preview phase 1 (`cpvModel`, spec-55) and phase 2 (viewer shell); three.js vendored | `1d5569a` |
 | 2026-10-09 | Design system v3: Pince removed, out-of-scope levels ghost | artifact |
-| 2026-10-09 | P33 test plans v1 (client endpoints) and v2 (every layer), generators and review sheet | `7764b36` |
+| 2026-10-09 | CLA test plans v1 (client endpoints) and v2 (every layer), generators and review sheet | `7764b36` |
 | 2026-10-09 | WORKSHOP-001 routing method + rulebook; IDEA-001 cluster housings; IDEA-002 flush covers (from a parallel session) | `7764b36` |
 | 2026-10-09 | Tuner copy with four packs sent; the user answered routing 17 / 17 and flush covers 6 / 6; answers recorded | `7764b36` |
 | 2026-10-09 | This handover written; session archived | uncommitted |

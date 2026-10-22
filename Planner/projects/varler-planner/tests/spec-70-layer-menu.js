@@ -1,6 +1,6 @@
 // WP-S1 (round 2026-10-10): the stack layer right-click menu + Info.
 //
-// Fixture: the committed P33 v2 plan (a BRIDGE Stack with 17 role layers).
+// Fixture: the committed CLA v2 plan (a BRIDGE Stack with 17 role layers).
 // What must hold:
 //   * a role layer's menu (panel row and rail stage button) carries Info and Tartalom törlése with the
 //     right count; a plain layer gets none of the stack items;
@@ -13,7 +13,7 @@ function findPlanner(){
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2.vplan.json');
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;
 setTimeout(()=>{

@@ -2,13 +2,13 @@
 
 Status: **concept r1, 2026-10-10 · the §13 questions answered (all defaults, Q1 and Q2 confirmed) · the Planner part built
 the same day (§15)** · feeds the future **BRIDGE-STD-009** (Q-SF-02) and the
-Planner pack `docs/round-p33-add-001/` (after round 2026-10-10 is built)
-Brief: [`../round-2026-10-10/NEXT-P33-ADD-001-SF_smartframe-brief.md`](../round-2026-10-10/NEXT-P33-ADD-001-SF_smartframe-brief.md)
+Planner pack `docs/round-cla-add-001/` (after round 2026-10-10 is built)
+Brief: [`../round-2026-10-10/NEXT-CLA-ADD-001-SF_smartframe-brief.md`](../round-2026-10-10/NEXT-CLA-ADD-001-SF_smartframe-brief.md)
 Related: [IDEA-001](IDEA-001_cluster-flush-boxes.md) (cluster points) · [IDEA-002](IDEA-002_flush-cover-standard.md)
 (housings, Ladder D / H) · [WORKSHOP-001](WORKSHOP-001_routing.md) (paths, provisioned state) ·
 BRIDGE STD-001 / STD-003 / STD-005 / STD-008 · ARCH-001
 Figures (generated, never hand-edited): [F1 door elevation](fig/IDEA-003_F1_door-elevation.svg) ·
-[F2 P33 room pattern](fig/IDEA-003_F2_room-pattern.svg) · [F3 floor-plan cut](fig/IDEA-003_F3_plan-cut.svg) ·
+[F2 CLA room pattern](fig/IDEA-003_F2_room-pattern.svg) · [F3 floor-plan cut](fig/IDEA-003_F3_plan-cut.svg) ·
 [F4 the L unfolded](fig/IDEA-003_F4_wall-unfold.svg) · [set-cover tables](fig/IDEA-003_setcover.md) —
 sources in `fig/src/idea-003-figs.js` and `fig/src/idea-003-setcover.js`
 
@@ -53,7 +53,7 @@ The shape is called the **frame shape** below: two verticals and one horizontal 
 | Q-SF-11 | SF-0/1 = Alap, SF-2/3 = Prémium | §4.2 |
 | Q-SF-12 | merge BRIDGE SECURITY (ADD-001 #11) and the ghost network | §9.5, a later research doc |
 | hinge zone | **(a)**: declare it as a documented BRIDGE zone | §2.2 |
-| ceiling | P33 normal **2850**; the R06 open area ≈ 5400 | §2.3 |
+| ceiling | CLA normal **2850**; the R06 open area ≈ 5400 | §2.3 |
 
 ---
 
@@ -106,7 +106,7 @@ cm from the raw opening edge, floor to the rail. It is only legitimate if it is 
 
 Rule 4 is new and worth confirming (open question 4).
 
-### 2.3 Heights for P33 (reference ceiling 2850)
+### 2.3 Heights for CLA (reference ceiling 2850)
 
 | line | height | rule |
 |---|---|---|
@@ -143,7 +143,7 @@ geometry is computed from them (pack item; not touched now).
 ### 3.2 What the model already knows
 
 Handing is in the data: `variant` bit1 = hinge at the far jamb, bit0 = swing side (`04-render.js`
-`bpDoorSymbol`). `fig/src/idea-003-figs.js` derives, for every P33 ground door, the hinge jamb, the
+`bpDoorSymbol`). `fig/src/idea-003-figs.js` derives, for every CLA ground door, the hinge jamb, the
 swing face and **how much free wall lies beyond the hinge jamb** before the next wall:
 
 | door | between | swing into | free wall beyond the hinge jamb | H0 at the hinge side? |
@@ -156,8 +156,8 @@ swing face and **how much free wall lies beyond the hinge jamb** before the next
 | B171 | R06 ↔ R07 | R06 | 163 | **no** → H0-3 |
 | B109 | R07 ↔ R08 | R07 | 443 | yes |
 
-**Four of seven P33 doors are hung with the hinge tight against a corner** — the normal way to hang a
-door, so this is not a P33 accident. The hinge-corner rule therefore needs a fallback.
+**Four of seven CLA doors are hung with the hinge tight against a corner** — the normal way to hang a
+door, so this is not a CLA accident. The hinge-corner rule therefore needs a fallback.
 
 ### 3.3 Where the nest goes (Q-SF-08 answered "hinge side"; three rules)
 
@@ -294,7 +294,7 @@ New ideas "like the 700 box" (provisioned, cheap now, expensive later):
 11. **The second H1 pocket empty**, for a later speaker or siren.
 12. **A test point in the nest**: bus B voltage and RS-485 A/B on a small terminal, so a service visit
     needs no tools.
-13. **The nest label** (§2.2) printed with the Portal's reference (`P33.PT.R06.B103`), its class and tier.
+13. **The nest label** (§2.2) printed with the Portal's reference (`CLA.PT.R06.B103`), its class and tier.
 14. **A floor-level Ø68 under the threshold line on the swing face**, for a future threshold strip or
     floor-contact mat (child / pet gate logic) — low priority.
 
@@ -318,7 +318,7 @@ where STD-001's *corner radio nodes ×2* and *UWB anchors ×3* for living rooms 
 | **more than two doors** | the two doors that best form an L are the arms; the others join as PT-S spurs from the nearest rail point | ⚑ not yet discussed |
 | **no door on a wall that the L needs** | PT-B | as above |
 
-### 7.3 P33: R06 nappali and R07 szoba (F2)
+### 7.3 CLA: R06 nappali and R07 szoba (F2)
 
 The test plan already carries the user's **L-forma marks** on exactly these rooms:
 - **R06**: W12's east face (door B103) + W15's north face (door B171) — an L with its corner at the
@@ -333,11 +333,11 @@ The test plan already carries the user's **L-forma marks** on exactly these room
 
 ### 7.4 Q-SF-01, "both variants" ⚑
 
-The cut-off sentence (*"…the living room and the bedroom of P33 will have wall clusters in the …"*)
+The cut-off sentence (*"…the living room and the bedroom of CLA will have wall clusters in the …"*)
 was answered *"both variants"*. This document reads it as **both cluster placements the pattern
 produces**: (i) the **corner clusters** in the corners the L leaves out, and (ii) a cluster at the
 **inner corner of the L** beside the RBX. In R06 and R07 the two variants appear together (F2). **If
-"both variants" meant something else** (both P33 rooms as two variants of the L, the convex R06 and
+"both variants" meant something else** (both CLA rooms as two variants of the L, the convex R06 and
 the notched R07, or two of the other guesses), say so and §7 changes accordingly.
 
 ## 8. Tiers, paths and rails (Q-SF-05)
@@ -474,7 +474,7 @@ Either accept that (core only), or take VL53L1X through an external component af
 
 Draft figures ⚑ (to be replaced by measured values; buck efficiency 85 %):
 
-| | per Portal | P33 ground floor (7 Portals) |
+| | per Portal | CLA ground floor (7 Portals) |
 |---|---|---|
 | SF-1 (head + SAT-P + LD2450) | ≈ 1.5 W | B104, B105 → 3.0 W |
 | SF-2 (+ SAT-E, SAT-L, CYD dimmed, amp idle) | ≈ 3.2 W | B106, B103, B171, B109 → 12.8 W |
@@ -511,7 +511,7 @@ the 24 V input makes every Portal a bus B monitor point.
 **Answers:** 1 yes · 2 **general rule** (a shared circuit is always a silver path, a dedicated one gold) · 3–10 the
 defaults below. So: PT-S/D/E/W/B (PT-D/W for a double Portal with a wet face) · ZS-t(h) carries SELV and data only ·
 H0-3 = latch side · core `vl53l0x` first, `vl53l1x` after a licence check · M3 to the latch side on a swing face ·
-more than two doors: the best L, others as spurs · the P33 list below · `STYLE` is the draft figure standard.
+more than two doors: the best L, others as spurs · the CLA list below · `STYLE` is the draft figure standard.
 
 The questions as asked:
 
@@ -523,7 +523,7 @@ The questions as asked:
 6. **ToF**: core `vl53l0x` (no pet return) or external `vl53l1x` after a licence check?
 7. **H0-2**: on a swing face, M3 to the latch side — agreed?
 8. **More than two doors in a room** (§7.2): the two that best form an L, others as spurs?
-9. **P33 Portal list** as in §3.2 / §11 (B107 PT-E SF-3; B106, B103, B171 PT-D SF-2; B109 PT-D with a
+9. **CLA Portal list** as in §3.2 / §11 (B107 PT-E SF-3; B106, B103, B171 PT-D SF-2; B109 PT-D with a
    wet R08 face, SF-2; B105 PT-W SF-1; B104 PT-S SF-1, beside the bus B pack)?
 10. The **figure style** (`STYLE` in `fig/src/idea-003-figs.js`): accept as the draft standard for
     SmartFrame illustrations, or align it with the "VRG Title Card" design system first?
@@ -532,7 +532,7 @@ The questions as asked:
 
 **Phase 2** (after the user's go): **BRIDGE-STD-009 SmartFrame** in the main checkout, plus amendments
 to STD-003 §2.4, the STD-001 room table and WORKSHOP-001 §0/§1. **Phase 3** (after round 2026-10-10 is
-built): the Planner pack `docs/round-p33-add-001/` with the other P33-ADD-001 items — model items:
+built): the Planner pack `docs/round-cla-add-001/` with the other CLA-ADD-001 items — model items:
 `hwNode.kind:'portal'`, `route:'rail'`, endpoint `from:'frame'`, door-face selection, wall `material`
 (the lintel rule), per-wall `refCeiling`, tier / provisioned state, ground height 2850.
 
@@ -573,5 +573,5 @@ Localisation: [Bermuda (MIT)](https://github.com/agittins/bermuda) ·
 See `docs/stack/README.md` → *SmartFrame, clusters and ideal spots*. What the drawings F3 / F4 show is what the
 Planner computes: the nest rules H0-1 / H0-3, the cluster rule of IDEA-001 (same face, same zone, ≤ 300 mm;
 MAINS + SELV → K3), the corner points of an L room (three outer corners plus the inner one, never over an opening),
-and the tiers. Found while drawing F4: **P33 v2's POR sensors sit at 2150, inside the lintel band** — the Portal's
+and the tiers. Found while drawing F4: **CLA v2's POR sensors sit at 2150, inside the lintel band** — the Portal's
 H1 pocket at 2400 is where they belong.

@@ -9,7 +9,7 @@ lamps (with an Álmennyezet set in a room, the tool automatically places the rou
 
 ## Read
 WP-R2 (`rwlAllowed`, `rwlCovers`) · `05n-marks.js` plane modes (`MRK_PLANE_MODES`, 487) · `07-plane-editor.js` (the
-álmennyezet plane, how its height is known — grep `almenny`) · `tools/baseline/geom.js` (the 6 off-wall P33 lines =
+álmennyezet plane, how its height is known — grep `almenny`) · `tools/baseline/geom.js` (the 6 off-wall CLA lines =
 ceiling reach) · `ceilLinks` in `tools/baseline/README.md` (the D07 ceiling hop).
 
 ## Build
