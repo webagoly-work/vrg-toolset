@@ -38,7 +38,7 @@ depends on; a WP builds the default until an answer arrives here.
 - **A** a new pair `rpc` / `rpc.result` with a request id, addressed `to` one tab; phone and CYD messages unchanged and never see agent traffic.
 - B extend today's `cmd` / `ack` with `rid` and `result` (one format, but phone, CYD and agent share the channel and the existing `ack` consumers see the new fields).
 
-**Q-07 — who may drive the tab as an agent?** — *under debate (2026-10-22); revised options*
+**Q-07 — who may drive the tab as an agent?** — *answered **C** (2026-10-22), after the options were revised*
 
 The relay listens on the LAN for the phone; today `dash.action` already lets any client of the relay run any action. Two ways in, and the first draft of this question only covered one:
 
@@ -57,7 +57,7 @@ Facts that shape the answer: the CYD bridge connects from this PC (`ws://127.0.0
 - B refuse and list the tabs; the agent must pass `tab`.
 - C the first one that connected.
 
-**Q-09 — pictures (`render`).**
+**Q-09 — pictures (`render`).** — *answered **C** (2026-10-22): `@resvg/resvg-wasm`*
 - **A** SVG always; PNG headless through the portable `chrome-headless-shell` (as `tools/cla-axo.js` already does), bridged through the tab's own canvas.
 - B SVG only.
 - C a rasteriser package: **resvg**, an SVG-to-PNG renderer written in Rust, used from Node as `@resvg/resvg-js` (a prebuilt native module per platform) or `@resvg/resvg-wasm` (WebAssembly, no native binary). The server turns any SVG string into a PNG in tens of milliseconds, with no browser. One renderer for **both** modes (bridged: the tab hands over the SVG, the server rasterises), so a headless and a live picture of the same plan match pixel for pixel; it works in any checkout (the portable Chrome exists only in the main checkout's git-ignored `Planner/apps`). Costs: one npm dependency pinned with its integrity (a few MB); text uses the system fonts, so accented Hungarian labels depend on Windows fonts being found (`loadSystemFonts`) — the spec must check an `ő` / `ű` label renders; resvg reads SVG presentation attributes and a subset of CSS, which suits the Planner's exporter-safe drawing rules (no filters, no `mask`, no `paint-order`).
@@ -111,7 +111,7 @@ Facts that shape the answer: the CYD bridge connects from this PC (`ws://127.0.0
 |---|---|---|
 | Q-02 | **C** — own JSON-RPC code now, the official SDK when a trigger is hit | CONTRACT §3 · WP-MCP-1 step 1 (the seam: `tools.js` protocol-free; the triggers as a comment in `jsonrpc.js`; spec 122 tests the wire so it survives the switch) |
 | Q-03 | **B** — the dialog stays open; `dialog.read` / `dialog.submit` / `dialog.cancel` | CONTRACT §4 (name table), §5 (codes `dialog-open`, `dialog-gone`), §6 · WP-MCP-0 step 5, new step 5b (token per modal generation, `dialog-open` refusal, the `🤖 Az ügynök tölti ki` line), tests 3–3c, live check · WP-MCP-1 tools `dialog_read` / `dialog_submit` / `dialog_cancel`, instructions, test 6 · WP-MCP-2 `batch` steps · WP-MCP-3 skill text |
-| Q-07 | under debate — options revised (A+ added, recommended) | this file |
-| Q-09 | open — option C explained | this file |
+| Q-07 | **C** — Origin check at the relay, agents from loopback only, a relay `via` stamp; `rpc` and the CYD's `dash.*` run only when `via==='local'`; the phone's four `cmd`s unchanged | WP-MCP-2 step 3 (3a–3e), spec-123 test 6 · README F4 · `07e` is committed now (`bf50e01`), so 3e no longer touches open work |
+| Q-09 | **C** — resvg in the server for both modes (the wasm build, no native binary) | WP-MCP-2 step 14, spec-124 test 3 (ő / ű fonts, determinism), spec-123 test 7 (live = headless pixels) · CONTRACT §3 (the one npm exception) · README F5 |
 
 The rest still default to A.

@@ -57,7 +57,8 @@ status bar — chrome, outside the scene string. If a golden moves, you changed 
 | Client config | `.mcp.json` at the **repo root** (MCP-3) | |
 | Agent skill | `.claude/skills/planner-drive/SKILL.md` (MCP-3, Q-17) | |
 
-**No new npm dependency for now** (Q-02 C, answered 2026-10-22): JSON-RPC 2.0 over stdio is ~150 lines;
+**No new npm dependency for now** (Q-02 C, answered 2026-10-22) — with **one** exception,
+`@resvg/resvg-wasm` for PNG pictures (Q-09 C, WP-MCP-2 step 14), pinned exactly. Otherwise: JSON-RPC 2.0 over stdio is ~150 lines;
 jsdom and ws are already in `package.json`. The official SDK comes later, when one of the triggers written
 in WP-MCP-1 step 1 is hit — keep `tools/mcp/tools.js` free of protocol code so that switch touches two
 files. When it happens: exact version and integrity in `package-lock.json`.

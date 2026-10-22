@@ -81,12 +81,13 @@ unchanged.
 **F4 · The relay is open on the LAN, and `dash.action` already runs any action.** The relay binds all
 interfaces (the phone needs that), has no auth, and rebroadcasts to every other role. `07e-dash-link.js`
 (main, uncommitted, another session's work) registers `dash.action`, which runs any registered action for
-any client that sends a `cmd`. The MCP must not widen that (Q-07, under debate: loopback alone does not stop a web page, which also connects from 127.0.0.1 — see DECISIONS); Q-07 C
+any client that sends a `cmd`. The MCP must not widen that. Q-07 C (answered) adds an Origin check, loopback-only agents and a relay
+`via` stamp — a web page also connects from 127.0.0.1, so loopback alone would not do — and
 would also close the existing gap — the user's call, since it touches `07e`.
 
 **F5 · jsdom cannot make a PNG.** No canvas; `svgToPng` and `vexpPng` go through `Image` + canvas + an
-anchor click. Headless PNG needs the portable `chrome-headless-shell` (`Planner/apps/…`, git-ignored, main
-checkout only) the way `tools/cla-axo.js:36` already uses it, or a rasteriser package (Q-09).
+anchor click. Q-09 C (answered): the server rasterises every PNG with resvg (`@resvg/resvg-wasm`), in both
+modes, instead of the portable `chrome-headless-shell` that `tools/cla-axo.js:36` uses (main checkout only).
 
 **F6 · Every file output has one choke point.** `download(name, text)` (`11-controls.js:268`) and
 `svgToPng` (`06-wall-editor.js:306`) — capture there and every export action becomes an agent export
@@ -142,7 +143,5 @@ after MCP-1 batch jobs work; MCP-2 and MCP-3 add the live view and the disk.
 
 ## 5. Answers
 
-2026-10-22: **Q-02 C**, **Q-03 B** — recorded with their effects in `DECISIONS.md` "Answers". Q-07 is under
-debate (options revised: a web page can reach the relay through 127.0.0.1, so loopback alone is not
-enough — A+ adds an Origin check and a `via` stamp). Q-09 asked about C (resvg), explained there. All
-others still A.
+2026-10-22: **Q-02 C**, **Q-03 B**, **Q-07 C**, **Q-09 C** — recorded with their effects in `DECISIONS.md`
+"Answers". All others still A.

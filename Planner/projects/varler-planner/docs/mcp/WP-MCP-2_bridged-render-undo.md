@@ -1,6 +1,6 @@
 # WP-MCP-2 — bridged mode through the relay, `render`, `undo` / `redo`, `batch`, `set_device`
 
-Status: todo · Depends: MCP-1 · Size: L (~250 lines `tools/`, ~120 `src/`, ~40 relay, ~300 specs) ·
+Status: todo · Depends: MCP-1 · Size: L (~250 lines `tools/`, ~120 `src/`, ~70 relay, ~300 specs) ·
 Specs: 123, 124 · Decisions: Q-06, Q-07, Q-08, Q-09, Q-10, Q-12, Q-13
 
 ## Goal
@@ -26,7 +26,7 @@ changes things: a picture of the result, undo / redo, an all-or-nothing batch, a
 
 ## Build
 
-### A. Wire and relay (Q-06 A, Q-07 A, Q-08 A)
+### A. Wire and relay (Q-06 A, Q-07 C, Q-08 A)
 
 1. **Addressed messages.** An envelope may carry `to: '<role>'` or `to: '<role>#<instance>'`. The relay
    delivers an addressed message **only** to matching sockets; unaddressed messages keep today's
@@ -35,9 +35,34 @@ changes things: a picture of the result, undo / redo, an all-or-nothing batch, a
    `sessionStorage` so a reload keeps it) and the page's `VERSION` and project name. The relay records
    `ws.__inst`. The relay answers a new `{type:'peers'}` request with `[{role, instance, app, ip, since}]`
    — only to a loopback socket.
-3. **The agent gate (Q-07 — under debate; the text below is option A, A+ in DECISIONS adds an Origin check and a `via` stamp).** A socket whose `hello` says `role:'agent'` is accepted only from
-   `127.0.0.1` / `::1`; from any other address the relay sends one error envelope and closes it. Messages
-   of type `rpc` from a non-agent socket are dropped and logged. Log lines stay ASCII.
+3. **The gate (Q-07 C, answered 2026-10-22).** Two ways reach the relay: a device on the LAN, and a web
+   page in the user's browser — which connects from **127.0.0.1**, because WebSockets are not bound by
+   CORS. So the gate has three parts in `tools/phone-relay-server.js` and one in each consumer:
+   - **3a · Origin check, at the upgrade.** `new WebSocketServer({server, verifyClient})`: accept a
+     connection whose `Origin` header is **absent** (Node clients: the MCP server, the CYD bridge), `null`
+     (the Planner opened from `file://`), `http://localhost:8131` / `http://127.0.0.1:8131` (planner-serve),
+     or the relay's **own** origin `http://<any of this PC's addresses>:<bound port>` (the phone page it
+     serves). Anything else → HTTP 403 and one ASCII log line naming the origin. Extra origins only through
+     `RELAY_ORIGINS=a,b` (env), never a wildcard. `/whoami` keeps its `Access-Control-Allow-Origin: *` —
+     it hands out addresses only, and `file://` needs it.
+   - **3b · Loopback for agents.** A socket whose `hello` says `role:'agent'` is accepted only from
+     `127.0.0.1` / `::1` / `::ffff:127.0.0.1` (helper `isLoopback(ip)`); from anywhere else one error
+     envelope, then close. `rpc` from a socket whose role is not `agent` is dropped and logged.
+   - **3c · The `via` stamp.** Every JSON envelope the relay forwards gets `via:'local'` (sender is
+     loopback) or `via:'lan'` — **overwriting** any `via` the sender wrote, so a client cannot claim to be
+     local. Non-JSON payloads (legacy one-way phones) pass through unstamped and count as `lan`.
+   - **3d · The tab enforces it** (`07f-agent.js`): `rpc` runs only when `via==='local'` **and**
+     `from==='agent'`, else `rpc.result {ok:false, code:'forbidden'}`. An envelope with no `via` at all
+     (an old relay) is refused too: the stamp is the proof the gate ran.
+   - **3e · Close today's gap in `07e-dash-link.js`** (committed in `bf50e01`, so no longer another
+     session's open work — still run `tests/spec-101-dash-link.js`): `dash.action`, `dash.phase` and
+     `dash.stop` run only when the envelope's `via==='local'`; otherwise they `return false` (the ack says
+     not ok) and leave the HUD alone. The CYD bridge always connects from this PC
+     (`Firmware/planner-cyd/app/bridge/bridge.js` probes `ws://127.0.0.1:47291…`), so the CYD keeps working.
+     The phone's four `cmd`s (`tool.select`, `edit.undo`, `edit.redo`, `view.reset`) stay allowed from
+     the LAN, unchanged. For this, `PLANNER_LINK`'s `runCommand` (07a) passes the whole envelope as a
+     second argument, `fn(payload, envelope)` — today handlers get only the payload.
+   Log lines stay ASCII.
 4. **`07a-link.js` peers map.** `peers[role] = {role, app, caps, instance}`; `peer` stays as an alias of
    `peers.phone || first non-agent peer` so `07d`'s panel keeps showing the phone, and `peerWants(cap)`
    checks the phone's caps as before. Expose `peers()` in the API. An agent `hello` must not change
@@ -91,12 +116,20 @@ changes things: a picture of the result, undo / redo, an all-or-nothing batch, a
       lose their view to an agent's picture);
     - `view:'elevation', wall:'W12'` → `wallElevationSVG(...)`; `view:'plane', room:'F3', plane:'floor'|'ceiling'|'drop'` → `planeViewSVG(...)`;
     - the overlay (selection, hover, gizmo) is never included.
-    - `format:'png'`: **bridged** — the tab rasterises through the `svgToPng` path into a data URL instead
-      of a download (a variant `svgToPngData` beside it, same canvas code); **headless** — the server writes
-      the SVG to its scratch folder and runs the portable `chrome-headless-shell` the way
-      `tools/cla-axo.js` line 36–39 does (`Planner/apps/chrome-headless-shell/chrome-headless-shell.exe`,
-      git-ignored, present only in the main checkout). Missing shell → `ok:false`, `code:'no-rasterizer'`,
-      with the SVG still attached.
+    - `format:'png'` (Q-09 C, answered 2026-10-22): **resvg, in the server, for both modes.** The tab (or
+      the jsdom window) only ever produces the SVG; `tools/mcp/render.js` rasterises it with
+      `@resvg/resvg-wasm` — the WebAssembly build, chosen over the native `@resvg/resvg-js` because it has
+      no per-platform binary to go stale on a portable drive. One renderer means a headless and a live
+      picture of the same plan are the same pixels, and it works in every checkout (the portable Chrome
+      lives only in the main checkout's git-ignored `Planner/apps`). Details:
+      - the pack's one exception to "no new npm dependency" (CONTRACT §3): exact version in
+        `package.json` (no `^`), `npm install` once in the main checkout, the integrity digest lands in
+        `package-lock.json`; record the version and the date in the WP report;
+      - fonts: hand resvg the Windows font folder (`%WINDIR%\Fonts`) and the family the Planner's SVG asks
+        for; a missing family falls back silently, so spec-124 test 3 checks a label with `ő` / `ű`;
+      - `width` (default 1600 px, max 4096) sets the PNG width; the height follows the SVG's aspect;
+      - the wasm module is initialised once per server process, lazily, on the first PNG;
+      - nothing changes in the tab: `svgToPng` stays as it is for the user's own PNG export.
     - MCP result: an `image` content block (`image/png`, base64) for PNG; for SVG a `text` block with the
       SVG when ≤ 200 KB, else a summary and the scratch path (headless) — never a 2 MB string in context.
     - Tool `render`: readOnly (it restores the camera), idempotent.
@@ -126,16 +159,26 @@ change that for three tools).
    calls work again without restarting the server.
 5. Start the server with no relay at all → `tools/list` works, `inspect_plan` → `no-planner` with the
    start-the-relay sentence.
-6. Relay gate: an `agent` hello from a non-loopback address is refused — simulate by binding a second
-   test-only listen address if the machine has one, otherwise unit-test the relay's `isLoopback()` helper
-   with `::ffff:192.168.1.5`, `192.168.0.2`, `127.0.0.1`, `::1`.
+6. Relay gate (Q-07 C):
+   - a WebSocket opened with `Origin: https://example.com` → refused at the upgrade (403); with no Origin,
+     `null`, `http://localhost:8131` and the relay's own `http://127.0.0.1:<port>` → accepted;
+   - `isLoopback()` unit cases: `::ffff:192.168.1.5` ✗, `192.168.0.2` ✗, `127.0.0.1` ✓, `::1` ✓, `::ffff:127.0.0.1` ✓;
+   - the stamp function with a fake LAN address and a client-written `via:'local'` → `lan` wins;
+   - the tab refuses `rpc` carrying `via:'lan'`, and `rpc` with no `via` (`forbidden`);
+   - 07e: `dash.action` with `via:'lan'` → ack `ok:false`, the action did not run; with `via:'local'` → it
+     runs; a phone `cmd` `edit.undo` with `via:'lan'` → still runs.
+7. `render {format:'png'}` through the live tab and through a headless server on the same plan →
+   identical PNG bytes.
 
 `tests/spec-124-mcp-render-undo.js` — headless server:
 1. `render {view:'plan', level:'ground'}` → SVG text contains the scene's wall rect count for that level
    and at least one device symbol group; `symbols:false` contains none.
 2. `render {view:'elevation', wall:<a CLA wall id>}` → SVG; unknown wall → `not-found`.
-3. `render {format:'png'}` → an image block whose base64 starts `iVBOR` when the shell exists; the test
-   skips (counted as skipped, not passed) when `Planner/apps/chrome-headless-shell` is absent.
+3. `render {format:'png'}` → an image block whose base64 starts `iVBOR`; decoded width === the requested
+   `width`. **Fonts:** render a small SVG with the label `Fürdőszoba – ű ő` through the same `render.js`
+   function and check there are dark pixels inside the text's box (with resvg a missing font gives an
+   empty box) — read them from resvg's own raw pixel output, no image library. The same PNG twice →
+   identical bytes (determinism; spec-123 test 7 relies on it).
 4. `set_device {id, fields:{h:900}}` then `undo` → `h` back; `redo` → 900 again; `set_device {fields:{foo:1}}` → `bad-params` naming the allowed fields.
 5. `batch` with three steps where step 2 is an unknown action → `failed.index===1`, the device changed in
    step 1 is back to its old value, `undo` depth equals the depth before the batch.
