@@ -250,8 +250,9 @@ function kpExtrasInit() {
     { label: 'Névjegy', run: kpAboutOpen });
   window.addEventListener('beforeprint', kpPrintPrep);
   window.addEventListener('afterprint', kpPrintDone);
-  // first visit in this browser: the tour (automated checks open the page with ?notour)
-  if (!kpStore.get('tourDone', false) && kpStore.available() && !/[?&]notour\b/.test(location.search)) setTimeout(kpTourStart, 600);
+  // first visit in this browser: the tour (automated checks open the page with ?notour). Not from file://:
+  // the "csak linkek" banner says settings are not kept, so "tour done" would not be either (it is in ☰)
+  if (!kpStore.get('tourDone', false) && kpStore.available() && location.protocol !== 'file:' && !/[?&]notour\b/.test(location.search)) setTimeout(kpTourStart, 600);
 }
 
 if (typeof module !== 'undefined') module.exports = { kpGlossMark, kpLinkRefs };
