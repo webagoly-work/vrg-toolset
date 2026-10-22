@@ -33,7 +33,7 @@ node tools/check-hub.js          # --strict before handing the hub out (WP-H13)
 - Hungarian UI text, English code (GO-HUB.md §4).
 
 ## 6. Current state
-- H0–H11 done; H12 (this file's WP) and H13 open (docs/hub/README.md §4).
+- H0–H12 done; H13 (distribution) open, waiting for the OneDrive share links (docs/hub/README.md §4).
 - 2026-10-21 Terv + Business Topology + build pack
 - Decision files: `docs/hub/DECISIONS.md`, `docs/hub/HUB-Q-001.json`.
 
