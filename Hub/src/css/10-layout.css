@@ -1,0 +1,27 @@
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.45;display:flex;flex-direction:column;overflow:hidden}
+
+.kp-top{display:flex;align-items:center;gap:16px;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+.kp-brand{font-weight:700;font-size:17px;letter-spacing:.02em;color:var(--accent)}
+.kp-top-mid{flex:1;display:flex;gap:8px;align-items:center}
+.kp-top-right{display:flex;gap:8px;align-items:center}
+
+.kp-themes{display:flex;gap:6px}
+.kp-swatch{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
+.kp-swatch.sel{border-color:var(--ink)}
+
+.kp-strip{padding:4px 16px;background:var(--panel2);border-bottom:1px solid var(--line);color:var(--muted);font-size:12px;min-height:8px}
+.kp-strip:empty{display:none}
+
+.kp-main{flex:1;display:flex;min-height:0}
+.kp-rail{width:44px;display:flex;flex-direction:column;gap:4px;padding:8px 4px;background:var(--panel);border-right:1px solid var(--line)}
+.kp-rail button{height:32px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--muted);font:inherit;font-size:12px;cursor:pointer}
+.kp-rail button.on{color:var(--ink);border-color:var(--accent-dim)}
+.kp-stage{flex:1;position:relative;min-width:0}
+.kp-board{position:absolute;inset:0;width:100%;height:100%;display:block}
+.kp-drawer{width:360px;max-width:90vw;background:var(--panel);border-left:1px solid var(--line);overflow:auto}
+
+.kp-foot{display:flex;gap:16px;justify-content:space-between;padding:2px 16px;background:var(--panel);border-top:1px solid var(--line);color:var(--muted);font-size:11px}
+.kp-modal-root:empty{display:none}

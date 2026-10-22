@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="hu" data-theme="amber">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Kapu</title>
+<!--@css-->
+</head>
+<body>
+<header id="kpTop" class="kp-top">
+  <div class="kp-brand">VRG Kapu</div>
+  <div class="kp-top-mid">
+    <button id="kpSearchBtn" class="kp-btn kp-search-btn" title="Keresés (Ctrl+K)">🔎 Keresés… <kbd>Ctrl+K</kbd></button>
+    <div id="kpView" class="kp-seg" role="group" aria-label="Nézet"><span class="kp-seg-l">Nézet:</span><button data-view="now">Jelenlegi</button><button data-view="vision">Bővített jövőkép</button></div>
+    <button id="kpFit" class="kp-btn" title="Az egész térkép (0)">⤢ Egész</button>
+    <span id="kpFocus" class="kp-focus" hidden></span>
+  </div>
+  <div class="kp-top-right">
+    <button id="kpTermBtn" class="kp-btn" title="Parancssor a repó mappájában">⌨ Terminál</button>
+    <button id="kpClaudeBtn" class="kp-btn" title="helyi · web · indító prompt">✳ Claude Code</button>
+    <button id="kpLogBtn" class="kp-btn" title="Mai munka rögzítése markdown fájlba">📝 Munkanapló</button>
+    <button id="kpRefresh" class="kp-btn">⟳ Frissítés</button>
+    <button id="kpSignin" class="kp-btn kp-signin">Belépések</button>
+    <button id="kpMenuBtn" class="kp-btn" title="Menü" aria-haspopup="menu">☰</button>
+    <div id="kpThemes" class="kp-themes" role="group" aria-label="Téma"></div>
+  </div>
+</header>
+<div id="kpBanner" class="kp-banner" role="status" hidden></div>
+<div id="kpStrip" class="kp-strip"></div>
+<main class="kp-main">
+  <nav id="kpRail" class="kp-rail" aria-label="Rétegek"></nav>
+  <div class="kp-stage">
+    <svg id="kpBoard" class="kp-board" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <aside id="kpDrawer" class="kp-drawer" hidden></aside>
+</main>
+<footer class="kp-foot"><span id="kpBuild"></span><span id="kpMode"></span></footer>
+<div id="kpModal" class="kp-modal-root"></div>
+<!--@data-->
+<!--@js-->
+</body>
+</html>

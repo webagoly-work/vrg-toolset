@@ -89,7 +89,11 @@ set "L4_NAME=VRG BuildTree (modder)"
 set "L4_PATH=Modder\vrg-buildtree.html"
 set "L4_MENU=PLAIN"
 
-set "LEADCOUNT=4"
+set "L5_NAME=VRG Kapu (kozponti terkep)"
+set "L5_PATH=Hub\dist\vrg-kapu.html"
+set "L5_MENU=PLAIN"
+
+set "LEADCOUNT=5"
 
 :: -- UNDER-DEV --
 set "D1_NAME=Kalkulator (osszevonas alatt)"
@@ -194,7 +198,7 @@ if defined SEL_FOUND goto PROJECT
 
 echo.
 echo   Nem ervenyes valasztas.
-ping -n 2 127.0.0.1 >/dev/null 2>&1
+ping -n 2 127.0.0.1 >nul 2>&1
 goto MAIN
 
 :: ============================ PROJEKT ALMENU ===============================
@@ -310,7 +314,7 @@ if defined CSEL (
 )
 
 echo   Nem ervenyes valasztas.
-ping -n 2 127.0.0.1 >/dev/null 2>&1
+ping -n 2 127.0.0.1 >nul 2>&1
 goto PROJECT
 
 :: ========================= FEJLESZTOI ESZKOZOK =============================
@@ -472,7 +476,7 @@ echo   csoportonkent, a lapok mar megnyitva benne. A Zen-ben utana egy
 echo   mozdulattal mappaba huzhatod oket.
 echo.
 echo     1^) Online munkahely  ^(Gmail + GitHub + Claude^)
-echo     2^) LEAD projektek elonezete   ^(4 lap egy ablakban^)
+echo     2^) LEAD projektek elonezete   ^(5 lap egy ablakban^)
 echo     3^) UNDER-DEV elonezet         ^(kulon ablakban^)
 echo     4^) Mind a harom egyszerre
 echo     0^) Vissza
@@ -539,7 +543,7 @@ exit /b 0
 :: A Zen-nek kell egy pillanat, amig az elso ablak felall; addig a
 :: -new-tab hivasok elvesznenek.
 :ZWAIT
-ping -n 4 127.0.0.1 >/dev/null 2>&1
+ping -n 4 127.0.0.1 >nul 2>&1
 exit /b 0
 
 :: =========================== ONALLO PROGRAMOK ==============================

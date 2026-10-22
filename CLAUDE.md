@@ -171,3 +171,11 @@ symbols grey while every class was correct and every test passed.
 - **`GO R1018`** — read `GO-R1018.md` at the repo root (main checkout, branch `main`) and do what it says:
   continue the Planner round 2026-10-18 (Födém · Igénylista · Házimozi, all built + committed 2026-10-19):
   only the C6 Mozi fal pen feel is open.
+- **`GO HUB`** — read `GO-HUB.md` at the repo root (the **SecAcc worktree**
+  `H:\cwebuser\projects\VRG-DE\SecAcc`, branch `secacc`, secondary account) and do what it says:
+  build VRG Kapu, the shared Homepage / Business Topology board, from the pack in `docs/hub/`
+  (next open WP in its README §3 order; stop at every ⏸).
+- **`GO STRICT`** — read `GO-STRICT.md` at the repo root (until `secacc` is merged it is only in the
+  SecAcc worktree: `H:\cwebuser\projects\VRG-DE\SecAcc\GO-STRICT.md`) and do what it says, in the
+  **main checkout**, branch `main`: commit the five uncommitted programs VRG Kapu links to
+  (research, client-look, media-wall, planner-cyd, board-console), asking about `macros.json` first.
