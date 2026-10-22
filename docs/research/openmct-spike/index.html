@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+  <title>VRG · Open MCT spike</title>
+  <!-- Open MCT 4.3.1 from Vendor/ (node tools/fetch-vendor.js openmct), Apache-2.0, (c) 2014-2024 NASA -->
+  <script src="/mct/openmct.js"></script>
+  <script src="/vrg-planner.js"></script>
+</head>
+<body>
+<script>
+  // Spike, 2026-10-20 — docs/research/2026-10-20_openmct-planner-bridge.md §6.
+  // The Planner plan (?plan=<name> → Calculator/<name>.vplan.json) becomes an Open MCT object tree;
+  // its BRIDGE nodes and sensors get SIMULATED telemetry shaped like the STD-004 §3.4 register map.
+  const plan = new URLSearchParams(location.search).get('plan') || 'P33-teszt_v2';
+  const ONE_HOUR = 60 * 60 * 1000;
+
+  openmct.setAssetPath('/mct/');
+  openmct.install(openmct.plugins.LocalStorage());          // My Items: the user's own copies
+  openmct.install(openmct.plugins.MyItems());
+  openmct.install(openmct.plugins.UTCTimeSystem());
+  openmct.install(openmct.plugins.LocalTimeSystem());
+  openmct.install(openmct.plugins.Espresso());
+  openmct.install(openmct.plugins.PlanLayout({ creatable: true }));
+  openmct.install(openmct.plugins.Timeline());
+  openmct.install(openmct.plugins.Timelist());
+  openmct.install(openmct.plugins.FaultManagement());
+  openmct.install(openmct.plugins.Notebook());
+  openmct.install(openmct.plugins.DisplayLayout({ showAsView: ['summary-widget'] }));
+  openmct.install(openmct.plugins.LADTable());
+  openmct.install(openmct.plugins.ClearData());
+  openmct.install(openmct.plugins.Conductor({
+    menuOptions: [
+      { name: 'Valós idő', timeSystem: 'utc', clock: 'local',
+        clockOffsets: { start: -ONE_HOUR, end: 0 } },
+      { name: 'Rögzített', timeSystem: 'utc',
+        bounds: { start: Date.now() - 6 * ONE_HOUR, end: Date.now() } }
+    ]
+  }));
+  openmct.install(VrgPlannerPlugin({ planUrl: '/plan/' + encodeURIComponent(plan) }));
+  openmct.time.setClock('local');
+  openmct.start();
+</script>
+</body>
+</html>
