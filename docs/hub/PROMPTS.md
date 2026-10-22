@@ -63,8 +63,19 @@ END — build the Kapu pack in order, stopping at every ⏸.
 
 ## 5. Parallel lanes (two sessions at once, no shared files)
 
-Lane 1 (page): H0 → H1 → H2 ⏸ → H3 → H4 → H5 → H6 → H7 → H8 → H9 → H11 ⏸ → H13
-Lane 2 (independent): HA (any time, first) · H12 agent docs (after H1) · H10 companion (after H3)
+**Status 2026-10-22:** both lanes are built on `secacc` (✓ = done). Only H13 is left, and it waits
+for the user, not for a lane.
+
+Lane 1 (page): H0 ✓ → H1 ✓ → H2 ⏸ ✓ → H3 ✓ → H4 ✓ → H5 ✓ → H6 ✓ → H7 ✓ → H8 ✓ → H9 ✓ → H11 ⏸ ✓ → H13 (partial)
+Lane 2 (independent): HA ✓ · H12 agent docs ✓ · H10 companion ✓
+Lane 3 (main checkout, `GO STRICT`, HUB-Q24 A): commit research, client-look, media-wall,
+planner-cyd and board-console, then merge `secacc`. It touches no hub file, so it can run any time
+before H13's `check-hub --strict`.
+
+H13 still needs from the user: setup steps 3–8, the OneDrive share links and the real 00_START path,
+and the clean-profile verify with their own token (README §4).
+
+The lane rules below are kept for a rebuild:
 Lane 2 touches only `docs/hub/agents/**`, `Hub/companion/**`, `Hub/VRG Kapu.cmd`, `GO-HUB.md`
 and the `agent[]` entries of `Hub/data/topology.json` (H12 — coordinate: lane 1
 must not be editing that file at the same moment) — never `Hub/src/**`. H10's page-side part (step 4) waits for lane 1.
