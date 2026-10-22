@@ -1,0 +1,252 @@
+{
+ "schema": "vrg-hub/1",
+ "rev": 1,
+ "updated": "2026-10-21",
+ "updatedBy": "fixture",
+ "repo": {
+  "owner": "webagoly-work",
+  "name": "vrg-toolset",
+  "branch": "main",
+  "web": "https://github.com/webagoly-work/vrg-toolset"
+ },
+ "onedrive": {
+  "root": "",
+  "folders": [
+   {
+    "id": "od-start",
+    "path": "00_START",
+    "d": "A Kapu fájl és az első lépések leírása.",
+    "dEn": "The hub file and the getting-started note."
+   },
+   {
+    "id": "od-jobs",
+    "path": "10_Projektek",
+    "d": "Ügyfélmunkák mappái (ügyféladat — csak a két felhasználó).",
+    "dEn": "Client job folders (client data — the two users only)."
+   },
+   {
+    "id": "od-inst",
+    "path": "20_Telepitok",
+    "d": "Telepítők és a cwebuser kit.",
+    "dEn": "Installers and the cwebuser kit."
+   },
+   {
+    "id": "od-big",
+    "path": "30_Nagy_fajlok",
+    "d": "Tervrajzok, renderek, nagy adatcsomagok — ami nem fér a Gitbe.",
+    "dEn": "Blueprints, renders, big data — what does not fit in Git."
+   },
+   {
+    "id": "od-vis",
+    "path": "40_Vizualis",
+    "d": "A VRG Visual Base másolata.",
+    "dEn": "A copy of the VRG Visual Base."
+   },
+   {
+    "id": "od-res",
+    "path": "50_Kutatas",
+    "d": "Kutatási anyagok, letöltött források (nem publikus).",
+    "dEn": "Research material, downloaded sources (not public)."
+   },
+   {
+    "id": "od-logs",
+    "path": "90_Naplok",
+    "d": "Munkanaplók, ha nem a Gitbe mennek.",
+    "dEn": "Work logs, when they do not go to Git."
+   }
+  ]
+ },
+ "departments": [
+  {
+   "id": "ALT",
+   "t": "Általános",
+   "tEn": "General",
+   "hue": "gray",
+   "d": "Ami mindenkié: a kódtár, a közös mappa, az indítók, a telepítők.",
+   "dEn": "Shared by all: the repo, the shared drive, launchers, installers."
+  },
+  {
+   "id": "VEZ",
+   "t": "Vezetés és stratégia",
+   "tEn": "Management & strategy",
+   "hue": "purple",
+   "d": "Irány, ütemterv, gondolkodó eszközök, a munka összehangolása.",
+   "dEn": "Direction, roadmaps, thinking tools, coordination."
+  },
+  {
+   "id": "ERT",
+   "t": "Értékesítés és ügyfél",
+   "tEn": "Sales & customers",
+   "hue": "coral",
+   "d": "Amit az ügyfél lát: előnézet, brosúra, ügyfélfelvétel.",
+   "dEn": "What the client sees: previews, brochures, intake."
+  },
+  {
+   "id": "TERV",
+   "t": "Tervezés és mérnökség",
+   "tEn": "Design & engineering",
+   "hue": "teal",
+   "d": "Villamos tervek, termékválasztás, elosztó kiosztás.",
+   "dEn": "Electrical plans, product choice, board layout."
+  },
+  {
+   "id": "KALK",
+   "t": "Kalkuláció és pénzügy",
+   "tEn": "Estimating & finance",
+   "hue": "amber",
+   "d": "Anyag- és munkadíj, árajánlat, költségvetés, fizetések.",
+   "dEn": "Material and labour prices, quotes, cost plans, payments."
+  },
+  {
+   "id": "BESZ",
+   "t": "Beszerzés és raktár",
+   "tEn": "Procurement & stock",
+   "hue": "green",
+   "d": "Anyag adatbázis, beszállítók, rendelés, készlet, árfigyelés.",
+   "dEn": "Item database, suppliers, orders, stock, price watch."
+  },
+  {
+   "id": "KIV",
+   "t": "Kivitelezés és szerviz",
+   "tEn": "Field work & service",
+   "hue": "blue",
+   "d": "Ütemezés, helyszíni munka, átadás, mérések, utókövetés.",
+   "dEn": "Scheduling, site work, handover, measurements, after-sales."
+  },
+  {
+   "id": "TFEJ",
+   "t": "Termékfejlesztés (BRIDGE)",
+   "tEn": "Product R&D (BRIDGE)",
+   "hue": "pink",
+   "d": "A BRIDGE okosotthon rendszer, hardver, firmware, konzolok.",
+   "dEn": "The BRIDGE smart-home system, hardware, firmware, consoles."
+  },
+  {
+   "id": "JOG",
+   "t": "Jog és megfelelőség",
+   "tEn": "Legal & compliance",
+   "hue": "red",
+   "d": "Szabványok, kimenő dokumentumok, GDPR, licencek.",
+   "dEn": "Standards, outgoing documents, GDPR, licences."
+  },
+  {
+   "id": "ARC",
+   "t": "Arculat és vizuális tartalom",
+   "tEn": "Brand & visuals",
+   "hue": "purple",
+   "d": "Arculat, képtár, nézegetők, ügyfélnek szóló megjelenés.",
+   "dEn": "Design system, visual library, viewers, client look."
+  },
+  {
+   "id": "TUD",
+   "t": "Tudásbázis",
+   "tEn": "Knowledge",
+   "hue": "teal",
+   "d": "Offline referenciák, katalógusok, kutatás, ügynök-készségek.",
+   "dEn": "Offline references, catalogues, research, agent skills."
+  },
+  {
+   "id": "IT",
+   "t": "IT és infrastruktúra",
+   "tEn": "IT & infrastructure",
+   "hue": "gray",
+   "d": "Fejlesztői eszközök, külső könyvtárak, mentés, biztonság.",
+   "dEn": "Dev tooling, vendored libraries, backups, security."
+  },
+  {
+   "id": "IRO",
+   "t": "Iroda és csapat",
+   "tEn": "Office & people",
+   "hue": "coral",
+   "d": "Jegyzetek, emlékeztetők, levelek, névjegyek, dolgozói portál.",
+   "dEn": "Notes, reminders, mail, contacts, staff portal."
+  }
+ ],
+ "programs": [
+  {
+   "id": "mindmap",
+   "dept": "VEZ",
+   "t": "VRG MindMap",
+   "status": "live",
+   "d": "Gondolattérkép rétegekkel, keretekkel és jegyzetekkel.",
+   "git": {
+    "paths": [
+     "MindMap"
+    ],
+    "branch": "main"
+   },
+   "roadmap": [
+    {
+     "date": "2026-09-16",
+     "t": "A–E ütemterv: témák, menük, rétegek, jegyzetek, helix"
+    },
+    {
+     "date": "2026-09-22",
+     "t": "Új kezelés: keretek, egér, kétkezes billentyűzet"
+    }
+   ]
+  },
+  {
+   "id": "planner",
+   "dept": "TERV",
+   "t": "Varler Planner",
+   "status": "live",
+   "d": "A fő tervezőprogram: alaprajz, eszközök, körök, vezetékezés, BRIDGE, nézetek.",
+   "git": {
+    "paths": [
+     "Planner/projects/varler-planner"
+    ],
+    "branch": "main"
+   },
+   "roadmap": [
+    {
+     "date": "2026-10-07",
+     "t": "BRIDGE Stack A1–E5"
+    },
+    {
+     "date": "2026-10-10",
+     "t": "Kör 2026-10-10: U1–U7 + G1"
+    },
+    {
+     "date": "2026-10-14",
+     "t": "Nézetek V1–V7, munkafolyamat F1–F4 O1 O2 R1–R4 E0–E3"
+    },
+    {
+     "date": "2026-10-16",
+     "t": "Egyesített munkaverzió a main ágon (eszköz 1)"
+    },
+    {
+     "date": "2026-10-18",
+     "t": "Födém · Igénylista · Házimozi C1–C7"
+    },
+    {
+     "date": "2026-10-19",
+     "t": "Vezetékcsatorna T0–T6; kör utómunka"
+    }
+   ]
+  },
+  {
+   "id": "inventory",
+   "dept": "BESZ",
+   "t": "VRG Inventory",
+   "status": "live",
+   "d": "Az anyag adatbázis: 221 tétel, beszállító-független.",
+   "git": {
+    "paths": [
+     "Inventory"
+    ],
+    "branch": "main"
+   },
+   "roadmap": [
+    {
+     "date": "2026-09-19",
+     "t": "Nyers kinyerés 53 levélből"
+    },
+    {
+     "date": "2026-09-20",
+     "t": "Mind a 10 fázis kész"
+    }
+   ]
+  }
+ ]
+}

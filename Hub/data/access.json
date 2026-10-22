@@ -1,0 +1,39 @@
+{
+  "schema": "vrg-hub-access/1",
+  "body": {
+    "rev": 1,
+    "updated": "2026-10-22",
+    "people": [
+      {
+        "name": "Webagoly",
+        "github": "webagoly-work",
+        "emails": [
+          "webagoly@gmail.com",
+          "webagoly.work@gmail.com"
+        ],
+        "role": "owner",
+        "layers": [
+          "L1",
+          "L2",
+          "L3",
+          "L4"
+        ]
+      },
+      {
+        "name": "Anikovi",
+        "github": "anikovi-work",
+        "emails": [
+          "anikovi.work@gmail.com"
+        ],
+        "role": "member",
+        "layers": [
+          "L1",
+          "L2",
+          "L3",
+          "L4"
+        ]
+      }
+    ]
+  },
+  "sig": "fiuB6Z0IsDadFUArQDGHGktpB5GjVKXL1CJ9lr+pLk3BUpeM/YCEl1ejFLLZ5ELiAT9DuLX69G1vKXVEgWe4Gg=="
+}

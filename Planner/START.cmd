@@ -61,6 +61,11 @@ setlocal EnableDelayedExpansion
 ::  pen, circuit suggestions, the Erosaram engine (Palyak / Vezetekek buttons)
 ::  and the Aloszto per level. Same file, same key 1 (projects\varler-planner\dist).
 ::  W) and E) still work while the worktree exists.
+::
+::  2026-10-21 - H) added: VRG Kapu, the shared homepage / business map
+::  (Hub\VRG Kapu.cmd -> Hub\dist\vrg-kapu.html, built by tools\build-hub.js).
+::  A letter, not a number: the numbered slots are full at ten. Tool numbers
+::  1-10 unchanged. Built on the secacc branch (docs\hub, WP-H0).
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -132,7 +137,7 @@ set "TOOLKEYS="
 for /L %%i in (1,1,%TOOLCOUNT%) do (
     if %%i LSS 10 ( set "TOOLKEYS=!TOOLKEYS!%%i" ) else ( set "TOOLKEYS=!TOOLKEYS!0" )
 )
-set "ACTIONKEYS=BWETGVMCINSPLDRQ"
+set "ACTIONKEYS=BWETGVMCINSPLDRHQ"
 set "MENUKEYS=!TOOLKEYS!%ACTIONKEYS%"
 
 if %TOOLCOUNT% GTR 10 (
@@ -208,6 +213,7 @@ echo   D^) Komponensek letoltese  ^(Vendor mappa + oldal, halozat kell^)
 echo.
 echo  -- Egyeb / Other --
 echo   R^) Teljes VRG toolset megnyitasa VS Code-ban  ^(repo gyoker^)
+echo   H^) VRG Kapu  ^(kozponti terkep - minden program egy helyen^)
 echo.
 echo   Q^) Kilepes / Quit
 echo.
@@ -243,6 +249,7 @@ if /I "%K%"=="P" goto DO_INV_PRICECHECK
 if /I "%K%"=="L" goto DO_VENDOR_LIST
 if /I "%K%"=="D" goto DO_VENDOR_FETCH
 if /I "%K%"=="R" goto DO_VSCODE_REPO
+if /I "%K%"=="H" goto DO_HUB
 
 :: Only keys in MENUKEYS can get this far, so a digit here is always a real
 :: tool: 1-9 as printed, and 0 meaning the tenth entry.
@@ -503,6 +510,15 @@ if not exist "%PLANNER_DIR%" (
     goto MENU
 )
 start "Claude Code" /D "%PLANNER_DIR%" cmd /k call "%CLAUDE_CMD%"
+goto MENU
+
+:DO_HUB
+if exist "%REPO%\Hub\VRG Kapu.cmd" goto DO_HUB_RUN
+echo   HIBA: nem talalhato: Hub\VRG Kapu.cmd
+pause
+goto MENU
+:DO_HUB_RUN
+call "%REPO%\Hub\VRG Kapu.cmd"
 goto MENU
 
 :DO_VSCODE_REPO

@@ -174,3 +174,11 @@ symbols grey while every class was correct and every test passed.
 - **`GO WIRE`** — read `GO-WIRE.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
   and do what it says: the wireway routing rebuild — the dual model, configuration K1 (decisions 2026-10-18, all A),
   build order T0–T7 from `docs/workflow/WIREWAY_AUDIT_2026-10-18.md`; T0 first, stop at its checkpoint.
+- **`GO HUB`** — read `GO-HUB.md` at the repo root (the **SecAcc worktree**
+  `H:\cwebuser\projects\VRG-DE\SecAcc`, branch `secacc`, secondary account) and do what it says:
+  build VRG Kapu, the shared Homepage / Business Topology board, from the pack in `docs/hub/`
+  (next open WP in its README §3 order; stop at every ⏸).
+- **`GO STRICT`** — read `GO-STRICT.md` at the repo root (until `secacc` is merged it is only in the
+  SecAcc worktree: `H:\cwebuser\projects\VRG-DE\SecAcc\GO-STRICT.md`) and do what it says, in the
+  **main checkout**, branch `main`: commit the five uncommitted programs VRG Kapu links to
+  (research, client-look, media-wall, planner-cyd, board-console), asking about `macros.json` first.
