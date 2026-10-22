@@ -61,6 +61,11 @@ setlocal EnableDelayedExpansion
 ::  pen, circuit suggestions, the Erosaram engine (Palyak / Vezetekek buttons)
 ::  and the Aloszto per level. Same file, same key 1 (projects\varler-planner\dist).
 ::  W) and E) still work while the worktree exists.
+::
+::  2026-10-22 - tool 11: VRG Kodvaros (the codebase as a 3D city, CodeCity\dist).
+::  The first tool beyond ten, so it is the first with a LETTER: K. TOOLKEYS,
+::  the menu line and the dispatch each map 11 -> K; a twelfth tool would need
+::  the same three touches (see BILLENTYUK).
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -122,7 +127,10 @@ set "T9_PATH=..\Modder\vrg-buildtree.html"
 set "T10_NAME=VRG Vendor (kulso komponensek katalogusa)"
 set "T10_PATH=..\vrg-vendor.html"
 
-set "TOOLCOUNT=10"
+set "T11_NAME=VRG Kodvaros (a kodbazis 3D varoskent)"
+set "T11_PATH=..\CodeCity\dist\vrg-codecity.html"
+
+set "TOOLCOUNT=11"
 
 :: ------------------------- BILLENTYUK / MENU KEYS -------------------------
 :: A menu egy billentyure reagal (choice.exe), nem sort olvas. Ezert minden
@@ -130,16 +138,16 @@ set "TOOLCOUNT=10"
 :: eszkoz lesz, a 11. sajat betujelet igenyel itt es a DISPATCH reszben is.
 set "TOOLKEYS="
 for /L %%i in (1,1,%TOOLCOUNT%) do (
-    if %%i LSS 10 ( set "TOOLKEYS=!TOOLKEYS!%%i" ) else ( set "TOOLKEYS=!TOOLKEYS!0" )
+    if %%i LSS 10 ( set "TOOLKEYS=!TOOLKEYS!%%i" ) else if %%i EQU 10 ( set "TOOLKEYS=!TOOLKEYS!0" ) else if %%i EQU 11 ( set "TOOLKEYS=!TOOLKEYS!K" )
 )
 set "ACTIONKEYS=BWETGVMCINSPLDRQ"
 set "MENUKEYS=!TOOLKEYS!%ACTIONKEYS%"
 
-if %TOOLCOUNT% GTR 10 (
+if %TOOLCOUNT% GTR 11 (
     echo.
-    echo   FIGYELEM: a menu egy billentyus valasztast hasznal, igy 10 eszkozt
-    echo   tud kezelni ^(1-9 es 0^). A TOOLCOUNT jelenleg %TOOLCOUNT%, tehat a
-    echo   10. feletti eszkozok nem valaszthatok, amig nem kapnak sajat
+    echo   FIGYELEM: a menu egy billentyus valasztast hasznal, igy 11 eszkozt
+    echo   tud kezelni ^(1-9, 0 es K^). A TOOLCOUNT jelenleg %TOOLCOUNT%, tehat a
+    echo   11. feletti eszkozok nem valaszthatok, amig nem kapnak sajat
     echo   betujelet. Lasd a BILLENTYUK reszt a START.cmd elejen.
     echo.
     pause
@@ -181,8 +189,10 @@ echo  -- Eszkozok / Tools --
 for /L %%i in (1,1,%TOOLCOUNT%) do (
     if %%i LSS 10 (
         echo   %%i^) !T%%i_NAME!
-    ) else (
+    ) else if %%i EQU 10 (
         echo   0^) !T%%i_NAME!
+    ) else (
+        echo   K^) !T%%i_NAME!
     )
 )
 echo.
@@ -247,6 +257,7 @@ if /I "%K%"=="R" goto DO_VSCODE_REPO
 :: Only keys in MENUKEYS can get this far, so a digit here is always a real
 :: tool: 1-9 as printed, and 0 meaning the tenth entry.
 set "PICKNUM="
+if /I "%K%"=="K" set "PICKNUM=11"
 if "%K%"=="0" (
     set "PICKNUM=10"
 ) else (

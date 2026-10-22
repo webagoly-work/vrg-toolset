@@ -64,3 +64,13 @@ function layoutCity(model) {
 
 // height from commit count — switchable in a later WP
 const heightOf = f => 1.5 + 5 * Math.log2(1 + f.n);
+
+// share of lit windows: how recently the file changed, on the repo's own clock (first..last commit),
+// squared so only genuinely recent work lights up; a few windows always burn
+function litOf(f, model) {
+  const c = model.city.commits;
+  if (!c.length || f.last < 0) return 0.06;
+  const t0 = c[0][0], t1 = c[c.length - 1][0], span = Math.max(1, t1 - t0);
+  const r = 1 - (t1 - c[f.last][0]) / span;
+  return 0.06 + 0.86 * r * r;
+}

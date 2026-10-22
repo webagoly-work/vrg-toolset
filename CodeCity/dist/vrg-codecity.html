@@ -6,7 +6,7 @@
 <title>VRG Kódváros</title>
 <style>:root {
   --bg: #0d1220; --panel: rgba(16, 22, 38, .92); --line: #2a3552; --text: #dde4f5; --dim: #8b97b5;
-  --accent: #ffcf5a; --font: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --accent: #ffcf5a; --horizon: #1b2442; --font: ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -17,7 +17,20 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #title { color: var(--dim); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .btn { border: 1px solid var(--line); padding: 3px 10px; cursor: pointer; border-radius: 3px; }
 .btn:hover { border-color: var(--accent); }
-#stage { position: relative; flex: 1; min-height: 0; }
+.btn { background: none; color: inherit; font: inherit; }
+.badge { font-size: 11px; padding: 1px 7px; border-radius: 9px; border: 1px solid var(--line); color: var(--dim); white-space: nowrap; }
+.badge.old { color: var(--accent); border-color: var(--accent); }
+/* night sky behind the transparent canvas; --horizon = HORIZON in 03-scene.js (fog colour) */
+#stage { position: relative; flex: 1; min-height: 0;
+  background:
+    radial-gradient(1px 1px at 12% 18%, #fff8 50%, transparent 51%), radial-gradient(1px 1px at 37% 9%, #fff6 50%, transparent 51%),
+    radial-gradient(1px 1px at 61% 22%, #fff7 50%, transparent 51%), radial-gradient(1px 1px at 83% 12%, #fff5 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 72% 31%, #fff9 50%, transparent 51%), radial-gradient(1px 1px at 24% 33%, #fff4 50%, transparent 51%),
+    radial-gradient(1px 1px at 92% 27%, #fff6 50%, transparent 51%), radial-gradient(1px 1px at 5% 40%, #fff4 50%, transparent 51%),
+    linear-gradient(#070a16 0%, #0d1430 45%, var(--horizon) 75%, #0d1220 100%); }
+/* scope vignette (God's Eye View's scopeMask, as plain CSS) */
+#stage::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 55%, transparent 55%, rgba(0, 0, 0, .55) 100%); }
 #gl { display: block; width: 100%; height: 100%; touch-action: none; }
 #drop { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; color: var(--dim); }
 #drop.over { outline: 2px dashed var(--accent); outline-offset: -16px; }
@@ -38,11 +51,13 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #help { position: absolute; left: 12px; bottom: 8px; color: var(--dim); font-size: 11px; }
 @media (max-width: 600px) { #help { display: none; } #legend { bottom: 12px; } }
 .dim { color: var(--dim); }
+#panel, #legend, #tip, #help, #drop { z-index: 2; }
 </style>
 </head>
 <body>
 <header id="bar">
-  <b>Kódváros</b><span id="title">—</span>
+  <b>Kódváros</b><span id="title">—</span><span id="fresh" hidden></span>
+  <button id="link" class="btn" hidden title="A nézet linkjének másolása (kamera + kijelölés)">Link</button>
   <label class="btn">Megnyitás…<input id="file" type="file" accept=".json" hidden></label>
 </header>
 <main id="stage">
@@ -176,21 +191,32 @@ function layoutCity(model) {
 // height from commit count — switchable in a later WP
 const heightOf = f => 1.5 + 5 * Math.log2(1 + f.n);
 
+// share of lit windows: how recently the file changed, on the repo's own clock (first..last commit),
+// squared so only genuinely recent work lights up; a few windows always burn
+function litOf(f, model) {
+  const c = model.city.commits;
+  if (!c.length || f.last < 0) return 0.06;
+  const t0 = c[0][0], t1 = c[c.length - 1][0], span = Math.max(1, t1 - t0);
+  const r = 1 - (t1 - c[f.last][0]) / span;
+  return 0.06 + 0.86 * r * r;
+}
+
 // ==== src/03-scene.js
 // 03-scene.js — renderer, orbit camera, district plates and instanced buildings, picking.
 // Renders on demand only (requestRender): an idle city costs nothing.
+// Night look (WP-C3): the sky is CSS behind a transparent canvas; windows are procedural (shader),
+// lit in proportion to how recently the file changed — Git City's idea, re-implemented.
 
 const canvas = document.getElementById('gl');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 const scene = new THREE.Scene();
-const BG = 0x0d1220;
-scene.background = new THREE.Color(BG);
+const HORIZON = 0x1b2442;                     // = --horizon in city.css, so fog melts into the sky
 const camera = new THREE.PerspectiveCamera(45, 1, 0.5, 5000);
-scene.add(new THREE.HemisphereLight(0xc8d8ff, 0x1a1a28, 1.1));
-const sun = new THREE.DirectionalLight(0xffffff, 1.7);
-sun.position.set(0.8, 2, 0.5);
-scene.add(sun);
+scene.add(new THREE.HemisphereLight(0x8aa0ff, 0x10101a, 0.75));
+const moon = new THREE.DirectionalLight(0xc8d4ff, 1.1);
+moon.position.set(-0.6, 2, 0.9);
+scene.add(moon);
 
 let renderQueued = false;
 function requestRender() {
@@ -208,11 +234,13 @@ new ResizeObserver(() => {
 
 // ---- orbit camera: left drag rotates, right drag or Shift pans, wheel zooms
 const orbit = { target: new THREE.Vector3(), theta: 0.8, phi: 0.95, r: 300 };
+let onCameraMoved = () => {};                 // 04-ui hooks the share link in here
 function placeCamera() {
   const { target: t, theta, phi, r } = orbit;
   camera.position.set(t.x + r * Math.sin(phi) * Math.sin(theta), t.y + r * Math.cos(phi), t.z + r * Math.sin(phi) * Math.cos(theta));
   camera.lookAt(t);
   requestRender();
+  onCameraMoved();
 }
 let drag = null;
 canvas.addEventListener('contextmenu', e => e.preventDefault());
@@ -244,9 +272,47 @@ canvas.addEventListener('wheel', e => {
   placeCamera();
 }, { passive: false });
 
+// ---- building material: Lambert + procedural windows
+// aLit (per instance, 0..1) = share of windows that are lit. Windows sit on a world-space grid
+// (1.1 wide, 1.4 per floor) so floors line up across the city. When a window cell gets smaller
+// than a few pixels, it fades to its average brightness — that is the LOD, and it stops the
+// distant city from shimmering.
+function buildingMaterial() {
+  const mat = new THREE.MeshLambertMaterial();
+  mat.onBeforeCompile = sh => {
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', `#include <common>
+attribute float aLit;
+varying float vLit; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+vLit = aLit; vONrm = objectNormal; vSeed = float(gl_InstanceID);
+vWPos = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;`);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>
+varying float vLit; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;
+// fract-only hash (no sin of large numbers: that amplified float noise into speckled windows);
+// the seed is flat and every input is rounded, so a window cell is one value end to end
+float cityHash(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }`)
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+if (abs(vONrm.y) < 0.5) {
+  float u = abs(vONrm.x) > 0.5 ? vWPos.z : vWPos.x;
+  vec2 cell = vec2(u / 1.1, vWPos.y / 1.4);
+  vec2 f = fract(cell);
+  float win = step(0.22, f.x) * step(f.x, 0.78) * step(0.28, f.y) * step(f.y, 0.78);
+  float face = dot(floor(vONrm + 0.5), vec3(1.0, 2.0, 3.0));
+  float on = step(cityHash(vec3(floor(cell), vSeed * 7.0 + face)), vLit);
+  float far = smoothstep(0.25, 0.6, max(fwidth(cell.x), fwidth(cell.y)));
+  win = mix(win, 0.3, far); on = mix(on, vLit, far);
+  diffuseColor.rgb *= mix(1.0, 0.35, win);
+  totalEmissiveRadiance += win * on * vec3(1.0, 0.78, 0.42) * 1.1;
+}`);
+  };
+  return mat;
+}
+
 // ---- the city
 const unitBox = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0); // base at y=0
-let world = null; // { group, buildings, plates, fileOf[], dirOf[], baseColor[] }
+let world = null; // { group, buildings, plates, fileOf[], dirOf[], baseColor[], beacon }
 
 function showCity(model) {
   if (world) { scene.remove(world.group); world.buildings.dispose(); world.plates.dispose(); }
@@ -259,28 +325,48 @@ function showCity(model) {
     const { x, z, w, h } = d.rect;
     m.makeScale(w, PLATE, h).setPosition(x + w / 2, d.depth * PLATE, z + h / 2);
     plates.setMatrixAt(i, m);
-    plates.setColorAt(i, col.setHSL(0.62, 0.18, 0.13 + Math.min(d.depth, 6) * 0.035));
+    plates.setColorAt(i, col.setHSL(0.64, 0.25, 0.07 + Math.min(d.depth, 6) * 0.025));
   });
 
   const live = model.city.files.filter(f => !f.gone);
-  const buildings = new THREE.InstancedMesh(unitBox, new THREE.MeshLambertMaterial(), live.length);
+  const geo = unitBox.clone();
+  const lit = new Float32Array(live.length);
+  const buildings = new THREE.InstancedMesh(geo, buildingMaterial(), live.length);
   const baseColor = [];
   live.forEach((f, i) => {
     const { x, z, w, h } = f.rect;
     m.makeScale(w, heightOf(f), h).setPosition(x + w / 2, f.base, z + h / 2);
     buildings.setMatrixAt(i, m);
-    col.setHex(langColor(f.lang));
+    col.setHex(langColor(f.lang)).multiplyScalar(0.62);   // night: the body recedes, windows carry the light
     baseColor.push(col.clone());
     buildings.setColorAt(i, col);
+    lit[i] = litOf(f, model);
   });
-  group.add(plates, buildings);
-  scene.add(group);
-  world = { group, buildings, plates, fileOf: live, dirOf: dirs, baseColor };
+  geo.setAttribute('aLit', new THREE.InstancedBufferAttribute(lit, 1));
 
-  scene.fog = new THREE.Fog(BG, model.side * 1.2, model.side * 3.5);
+  const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 12, 1, true).translate(0, 0.5, 0),
+    new THREE.MeshBasicMaterial({ color: 0xffcf5a, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  beacon.visible = false;
+  group.add(plates, buildings, beacon);
+  scene.add(group);
+  world = { group, buildings, plates, fileOf: live, dirOf: dirs, baseColor, beacon };
+
+  scene.fog = new THREE.Fog(HORIZON, model.side * 1.1, model.side * 3.2);
   orbit.target.set(0, 0, 0);
   orbit.r = model.side * 1.25;
   placeCamera();
+}
+
+// a light column over the selected building, as tall as the city is wide
+function setBeacon(f) {
+  const b = world.beacon;
+  b.visible = !!f;
+  if (f) {
+    const { x, z, w, h } = f.rect, r = Math.max(0.6, Math.min(w, h) * 0.18);
+    b.scale.set(r, current.side * 0.6, r);
+    b.position.set(x + w / 2, f.base + heightOf(f), z + h / 2);
+  }
+  requestRender();
 }
 
 // ---- picking
@@ -306,7 +392,7 @@ function setHover(i) {
 }
 
 // ==== src/04-ui.js
-// 04-ui.js — title, legend, hover tip, info panel, opening a city.json; boot.
+// 04-ui.js — title, legend, hover tip, info panel, share link, opening a city.json; boot.
 
 const $ = id => document.getElementById(id);
 let current = null;
@@ -329,25 +415,34 @@ function onHover(e) {
 }
 
 function onPick(e) {
-  const hit = pickAt(e), panel = $('panel');
-  if (!hit) { panel.hidden = true; return; }
-  const c = current.city, rows = [];
-  let title;
-  if (hit.file) {
-    const f = hit.file;
-    title = f.p;
-    rows.push(['Nyelv', f.lang], ['Sorok', hu(f.loc)], ['Commitok', hu(f.n)],
-      ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
-      ['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
-      ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—']);
-  } else {
-    const d = hit.dir, s = dirStats(d);
-    title = (d.path || c.repo.name) + '/';
-    rows.push(['Fájlok', hu(s.files)], ['Sorok', hu(s.loc)], ['Almappák', hu(d.dirs.size)]);
-  }
+  const hit = pickAt(e);
+  if (!hit) closePanel();
+  else if (hit.file) showFile(hit.file);
+  else showDir(hit.dir);
+}
+
+function openPanel(title, rows) {
+  const panel = $('panel');
   panel.innerHTML = `<span class="x" title="Bezárás">×</span><h3>${esc(title)}</h3><table>${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`;
-  panel.querySelector('.x').onclick = () => { panel.hidden = true; };
+  panel.querySelector('.x').onclick = closePanel;
   panel.hidden = false;
+}
+function closePanel() {
+  $('panel').hidden = true;
+  share.sel = ''; setBeacon(null); writeHashSoon();
+}
+function showFile(f) {
+  const c = current.city;
+  openPanel(f.p, [['Nyelv', f.lang], ['Sorok', hu(f.loc)], ['Commitok', hu(f.n)],
+    ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
+    ['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
+    ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—']]);
+  share.sel = f.p; setBeacon(f); writeHashSoon();
+}
+function showDir(d) {
+  const s = dirStats(d);
+  openPanel((d.path || current.city.repo.name) + '/', [['Fájlok', hu(s.files)], ['Sorok', hu(s.loc)], ['Almappák', hu(d.dirs.size)]]);
+  share.sel = ''; setBeacon(null); writeHashSoon();
 }
 
 function legend(city) {
@@ -357,20 +452,67 @@ function legend(city) {
   $('legend').innerHTML = top.map(([l]) => `<div><i style="background:#${langColor(l).toString(16).padStart(6, '0')}"></i>${esc(l)}</div>`).join('');
 }
 
+// ---- share link: camera + selection live in the #hash (God's Eye View's sharelink idea), so a
+// link from Kapu, the Dashboard or a chat opens the city exactly there. Only for embedded cities:
+// a city opened from a file has no stable address to come back to.
+const share = { sel: '' };
+let hashTimer = 0, hashRead = false;       // never write before the incoming link has been read
+function writeHashSoon() {
+  if (!window.CITY || !current || !hashRead) return;
+  clearTimeout(hashTimer);
+  hashTimer = setTimeout(() => {
+    const t = orbit.target, q = new URLSearchParams();
+    q.set('cam', [t.x, t.z, orbit.theta, orbit.phi, orbit.r].map(v => +v.toFixed(2)).join(','));
+    if (share.sel) q.set('sel', share.sel);
+    history.replaceState(null, '', '#' + q.toString());
+  }, 250);
+}
+onCameraMoved = writeHashSoon;
+function readHash() {
+  const q = new URLSearchParams(location.hash.slice(1));
+  const cam = (q.get('cam') || '').split(',').map(Number);
+  if (cam.length === 5 && cam.every(Number.isFinite)) {
+    orbit.target.set(cam[0], 0, cam[1]);
+    [orbit.theta, orbit.phi, orbit.r] = cam.slice(2);
+    placeCamera();
+  }
+  const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
+  hashRead = true;
+  if (f) showFile(f);
+  return q;
+}
+$('link').addEventListener('click', () => {
+  const done = () => { $('link').textContent = 'Másolva ✓'; setTimeout(() => { $('link').textContent = 'Link'; }, 1500); };
+  if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(done, () => prompt('Link:', location.href));
+  else prompt('Link:', location.href);
+});
+
+// ---- freshness: the city is a snapshot; say how old (God's Eye View's stale-feed honesty)
+function freshness(city) {
+  const days = Math.floor((Date.now() - Date.parse(city.repo.scannedAt)) / 86400000);
+  const el = $('fresh');
+  el.textContent = days < 1 ? 'friss felmérés' : `${days} napos felmérés`;
+  el.className = 'badge' + (days > 7 ? ' old' : '');
+  el.title = `Felmérve: ${new Date(city.repo.scannedAt).toLocaleString('hu-HU')} — újra: node CodeCity/scan.js`;
+  el.hidden = false;
+}
+
 function load(city) {
   if (!city || city.kind !== 'vrg-codecity') { alert('Ez nem Kódváros-fájl (city.json).'); return; }
   current = cityModel(city);
   layoutCity(current);
   showCity(current);
   legend(city);
+  freshness(city);
   const live = city.files.filter(f => !f.gone).length;
   $('title').textContent = `${city.repo.name}${city.repo.head ? ' @ ' + city.repo.head : ''} · ${hu(live)} fájl · ${hu(city.commits.length)} commit · ${hu(city.authors.length)} szerző`;
   document.title = `${city.repo.name} — VRG Kódváros`;
   $('drop').hidden = true; $('panel').hidden = true;
+  $('link').hidden = !window.CITY;
 }
 
 function readFile(file) {
-  file.text().then(t => load(JSON.parse(t))).catch(err => alert('Nem olvasható: ' + err.message));
+  file.text().then(t => { window.CITY = null; load(JSON.parse(t)); }).catch(err => alert('Nem olvasható: ' + err.message));
 }
 $('file').addEventListener('change', e => e.target.files[0] && readFile(e.target.files[0]));
 const stage = $('stage');
@@ -381,15 +523,20 @@ stage.addEventListener('drop', e => {
   if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
 });
 
-if (window.CITY) load(window.CITY); else $('drop').hidden = false;
-
-// test hook: page.html#pick=0.5,0.6 hovers and clicks at that fraction of the canvas (tools/shot.js)
-const pickHook = /#pick=([\d.]+),([\d.]+)/.exec(location.hash);
-if (pickHook && window.CITY) setTimeout(() => {
-  const r = canvas.getBoundingClientRect();
-  const e = { clientX: r.left + r.width * pickHook[1], clientY: r.top + r.height * pickHook[2] };
-  onHover(e); onPick(e);
-}, 300);
+if (window.CITY) {
+  load(window.CITY);
+  // after the first resize, so the camera has its real aspect
+  setTimeout(() => {
+    const q = readHash();
+    // test hook: #pick=0.5,0.6 hovers and clicks at that fraction of the canvas (tools/shot.js)
+    const pk = (q.get('pick') || '').split(',').map(Number);
+    if (pk.length === 2 && pk.every(Number.isFinite)) {
+      const r = canvas.getBoundingClientRect();
+      const e = { clientX: r.left + r.width * pk[0], clientY: r.top + r.height * pk[1] };
+      onHover(e); onPick(e);
+    }
+  }, 300);
+} else $('drop').hidden = false;
 </script>
 </body>
 </html>

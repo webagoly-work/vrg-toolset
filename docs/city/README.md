@@ -62,7 +62,7 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 |---|---|---|---|
 | C1 | DONE | 2026-10-22 | |
 | C2 | DONE | 2026-10-22 | look check passed ("promising") |
-| C3 | in progress | 2026-10-22 | |
+| C3 | DONE ⏸ | 2026-10-22 | procedural windows (lit ~ recency², distance LOD), night sky + vignette, beacon, `#cam=…&sel=…` links + Link button, freshness badge, START.cmd **K** (T11). Waiting for the look check |
 | C4–C10 | open | | |
 
 ## 5. Decisions
