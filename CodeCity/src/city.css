@@ -61,3 +61,24 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #stage:has(#timeline:not([hidden])) #legend { bottom: 78px; }
 #stage:has(#timeline:not([hidden])) #help { bottom: 52px; }
 @media (max-width: 700px) { #board { max-width: calc(100% - 24px); min-width: 0; } #tl-pos { display: none; } }
+
+/* lenses: the bar (top centre) and their legends */
+#lenses { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; gap: 10px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; }
+#lenses .grp { display: flex; gap: 3px; align-items: center; }
+#lenses small { color: var(--dim); font-size: 10px; text-transform: uppercase; margin-right: 3px; }
+#lenses .btn { padding: 2px 7px; font-size: 12px; }
+#lenses .btn.on { border-color: var(--accent); color: var(--accent); }
+#lenses kbd { font: inherit; color: var(--dim); margin-right: 4px; }
+#legend .ramp { height: 8px; width: 150px; margin: 4px 0 2px; border-radius: 2px; }
+#legend .ends { display: flex; justify-content: space-between; color: var(--dim); font-size: 11px; }
+@media (max-width: 1250px) { #lenses { top: auto; bottom: 108px; } #lenses small { display: none; } }
+@media (max-width: 700px) { #lenses kbd { display: none; } }
+/* the sky follows the look */
+#stage.lens-heat { background: radial-gradient(1px 1px at 37% 9%, #ffd8a066 50%, transparent 51%),
+  linear-gradient(#030008 0%, #10031c 50%, var(--horizon) 75%, #070010 100%); }
+#stage.lens-nvg { background: linear-gradient(#010803 0%, #03150a 50%, var(--horizon) 75%, #020a04 100%); }
+#stage.lens-nvg::after { background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .18) 0 1px, transparent 1px 3px),
+  radial-gradient(ellipse at 50% 55%, transparent 50%, rgba(0, 20, 5, .75) 100%); }
+#stage.lens-noir { background: linear-gradient(#050506 0%, #0e0e11 50%, var(--horizon) 75%, #08080a 100%); }
+#stage.lens-noir #gl { filter: contrast(1.12); }

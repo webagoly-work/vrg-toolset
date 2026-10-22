@@ -54,13 +54,6 @@ function showDir(d) {
   share.sel = ''; setBeacon(null); writeHashSoon();
 }
 
-function legend(city) {
-  const by = {};
-  for (const f of city.files) if (!f.gone) by[f.lang] = (by[f.lang] || 0) + f.loc;
-  const top = Object.entries(by).sort((a, b) => b[1] - a[1]).slice(0, 9);
-  $('legend').innerHTML = top.map(([l]) => `<div><i style="background:#${langColor(l).toString(16).padStart(6, '0')}"></i>${esc(l)}</div>`).join('');
-}
-
 // ---- share link: camera + selection live in the #hash (God's Eye View's sharelink idea), so a
 // link from Kapu, the Dashboard or a chat opens the city exactly there. Only for embedded cities:
 // a city opened from a file has no stable address to come back to.
@@ -73,6 +66,7 @@ function writeHashSoon() {
     const t = orbit.target, q = new URLSearchParams();
     q.set('cam', [t.x, t.z, orbit.theta, orbit.phi, orbit.r].map(v => +v.toFixed(2)).join(','));
     if (share.sel) q.set('sel', share.sel);
+    if (lens.id !== 'nyelv') q.set('lens', lens.id);
     if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
     history.replaceState(null, '', '#' + q.toString());
   }, 250);
@@ -86,6 +80,7 @@ function readHash() {
     [orbit.theta, orbit.phi, orbit.r] = cam.slice(2);
     placeCamera();
   }
+  if (q.get('lens')) setLens(q.get('lens'));
   const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
   if (ti >= 0) applyTime(ti, 0);
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
@@ -114,9 +109,9 @@ function load(city) {
   current = cityModel(city);
   layoutCity(current);
   showCity(current);
-  legend(city);
   freshness(city);
   tlSetup();
+  lensApply();
   const live = city.files.filter(f => !f.gone).length;
   $('title').textContent = `${city.repo.name}${city.repo.head ? ' @ ' + city.repo.head : ''} · ${hu(live)} fájl · ${hu(city.commits.length)} commit · ${hu(city.authors.length)} szerző`;
   document.title = `${city.repo.name} — VRG Kódváros`;

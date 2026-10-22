@@ -4,16 +4,17 @@
 // its live feeds the same way). The plot itself never moves — that is the layout's promise.
 // replay.cur holds [height, footprint scale, lit] per file; height 0 = does not exist at T.
 
-const replay = { T: -1, last: -1, touch: [], locAt: [], cur: new Float32Array(0), flash: new Float32Array(0), raf: 0 };
+const replay = { T: -1, last: -1, touch: [], locAt: [], agentAt: [], cur: new Float32Array(0), flash: new Float32Array(0), raf: 0 };
 
 function replayPrepare(model) {
   const { files, commits } = model.city;
-  const touch = files.map(() => []), delta = files.map(() => []);
+  const touch = files.map(() => []), delta = files.map(() => []), agent = files.map(() => []);
   commits.forEach((c, ci) => {
     const ch = c[5];
-    for (let i = 0; i < ch.length; i += 3) { touch[ch[i]].push(ci); delta[ch[i]].push(ch[i + 1] - ch[i + 2]); }
+    for (let i = 0; i < ch.length; i += 3) { touch[ch[i]].push(ci); delta[ch[i]].push(ch[i + 1] - ch[i + 2]); agent[ch[i]].push(c[2] >= 0 ? 1 : 0); }
   });
   replay.touch = touch;
+  replay.agentAt = agent.map(a => { let s = 0; return a.map(x => (s += x)); });                        // agent commits so far
   replay.locAt = delta.map(d => { let s = 0; return d.map(x => (s = Math.max(0, s + x))); }); // LOC after each touch
   replay.last = Math.max(0, commits.length - 1);   // an empty history still shows "now"
   replay.T = -1;
@@ -24,9 +25,11 @@ function replayPrepare(model) {
 // number of entries in sorted a that are <= t
 function countUpTo(a, t) { let lo = 0, hi = a.length; while (lo < hi) { const m = (lo + hi) >> 1; if (a[m] <= t) lo = m + 1; else hi = m; } return lo; }
 
+const RUIN_SECONDS = 2 * 365 * 86400;
 function litAt(ci, T) {
   const c = current.city.commits;
   if (ci < 0 || !c[T]) return 0.06;
+  if (c[T][0] - c[ci][0] > RUIN_SECONDS) return 0;   // a ruin: untouched for two years, every window dark
   const span = Math.max(1, c[T][0] - c[0][0]);
   const r = Math.max(0, 1 - (c[T][0] - c[ci][0]) / span);
   return 0.06 + 0.86 * r * r;

@@ -75,7 +75,11 @@ canvas.addEventListener('wheel', e => {
 // distant city from shimmering.
 function buildingMaterial() {
   const mat = new THREE.MeshLambertMaterial();
+  // the look (07-lens) drives these: window colour and strength, and how much the body glows itself
+  const uniforms = { uWinColor: { value: new THREE.Color(1.0, 0.78, 0.42) }, uWinGain: { value: 1.1 }, uBodyGlow: { value: 0 } };
+  mat.userData.uniforms = uniforms;
   mat.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, uniforms);
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
 attribute float aLit; attribute float aFlash;
@@ -88,6 +92,7 @@ vWPos = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;`);
 varying float vLit; varying float vFlash; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;
 // fract-only hash (no sin of large numbers: that amplified float noise into speckled windows);
 // the seed is flat and every input is rounded, so a window cell is one value end to end
+uniform vec3 uWinColor; uniform float uWinGain; uniform float uBodyGlow;
 float cityHash(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
 if (abs(vONrm.y) < 0.5) {
@@ -100,10 +105,11 @@ if (abs(vONrm.y) < 0.5) {
   float far = smoothstep(0.25, 0.6, max(fwidth(cell.x), fwidth(cell.y)));
   win = mix(win, 0.3, far); on = mix(on, vLit, far);
   diffuseColor.rgb *= mix(1.0, 0.35, win);
-  totalEmissiveRadiance += win * on * vec3(1.0, 0.78, 0.42) * 1.1;
+  totalEmissiveRadiance += win * on * uWinColor * uWinGain;
 } else if (vONrm.y > 0.5) {
   totalEmissiveRadiance += vFlash * vec3(1.0, 0.92, 0.7) * 1.6;   // roof flash: touched by this commit
-}`);
+}
+totalEmissiveRadiance += diffuseColor.rgb * uBodyGlow;`);
   };
   return mat;
 }
@@ -146,11 +152,11 @@ function showCity(model) {
   beacon.visible = false;
   group.add(plates, buildings, beacon);
   scene.add(group);
+  scene.fog = new THREE.Fog(HORIZON, model.side * 1.1, model.side * 3.2);
   world = { group, buildings, plates, fileOf: all, dirOf: dirs, baseColor, beacon };
   replayPrepare(model);
   applyTime(replay.last, false);
 
-  scene.fog = new THREE.Fog(HORIZON, model.side * 1.1, model.side * 3.2);
   orbit.target.set(0, 0, 0);
   orbit.r = model.side * 1.25;
   placeCamera();

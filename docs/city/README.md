@@ -49,7 +49,7 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 | C2 | `build.js` + static city: stable treemap, instanced buildings, orbit camera, hover + info panel | ⏸ look ✔ |
 | C3 | Night look: lit windows (recent = lit), night sky, vignette, emissive glow · START.cmd key **K** · share-link `#hash` state (GEV 3) · freshness badge (GEV 16) | ⏸ look check |
 | C4 | Replay: scrubber with Step / Play / Latest (GEV 4), tweened heights (GEV 5), roof flash, born/gone, split-flap commit board (GEV 2) | |
-| C5 | Lenses as looks on keys 1–6: Ironbow churn · NVG agent · Noir age · owner · language (GEV 1); grouped lens panel; cranes and ruins | ⏸ |
+| C5 | Lenses as looks on keys 1–6: Alap · Hő (Ironbow churn) · Kor (Noir age) · Ügynök (NVG agent) · Tulaj · Nyelv (GEV 1); grouped lens panel; cranes and ruins | ⏸ |
 | C6 | Roads: regex imports + co-change arcs; Szomszédok panel (GEV 10) | |
 | C7 | Query bar over loaded data (GEV 6), brackets on results (GEV 7), HUD line with landmarks (GEV 8) | |
 | C8 | Városnézés: authored tours, JSON, play/stop (GEV 9); PNG share card | ⏸ |
@@ -64,7 +64,7 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 | C2 | DONE | 2026-10-22 | look check passed ("promising") |
 | C3 | DONE ⏸ | 2026-10-22 | procedural windows (lit ~ recency², distance LOD), night sky + vignette, beacon, `#cam=…&sel=…` links + Link button, freshness badge, START.cmd **K** (T11). Waiting for the look check |
 | C4 | DONE | 2026-10-22 | every file instanced (ghosts too), height/footprint/windows at commit T, tween, roof flash, Step/Play/Most + speed + activity strip, split-flap board, `#t=<hash>` links, panel "Ezen a ponton"; `tools/selftest.js` (rename/delete/agent fixture, 8 checks) |
-| C5 | in progress | 2026-10-22 | |
+| C5 | DONE ⏸ | 2026-10-22 | 6 looks on keys 1–6 (body + windows + glow + plates + sky + fog), time-aware heat/age/agent, cranes on the hottest buildings, ruins (2 y untouched: dark windows), legends, `#lens=` links. Default stays Nyelv (the approved C3 look). Waiting for the look check |
 | C6–C10 | open | | |
 
 ## 5. Decisions
