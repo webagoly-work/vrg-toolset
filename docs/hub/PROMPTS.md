@@ -33,7 +33,8 @@ docs/hub/wp/WP-H<n>_*.md · only the 01_ARCHITECTURE / 03_UI sections that WP na
 Start with git status and tell me what is dirty before touching anything. Own only the contract §1
 files. Follow the WP exactly; a deviation goes in the report, not silently in the code.
 Run the contract §3 loop after every edit batch. At a ⏸: stop, show, wait.
-Finish with the contract §5 report and the README §4 status line. Do not commit.
+Finish with the contract §5 report and the README §4 status line, then commit to secacc
+("Kapu WP-H<n>: …"). Work only in the SecAcc worktree, branch secacc; never push, merge or switch branch.
 END — BUILD WP-H<n> only.
 ```
 
@@ -56,8 +57,11 @@ TASK: build the VRG Kapu pack WP by WP in README §3 order, from the first one n
 stopping at every ⏸ (H2 look, H11 look) and whenever a decision is missing.
 READ FIRST: docs/hub/00_CONTRACT.md · docs/hub/README.md · then per WP only its file and the
 sections it names. After each WP: the contract §5 report + README §4 line, then continue.
-Never commit, never push. Questions to me: lettered A/B/C options, plus a simple SVG picture when
-the question is visual.
+WHERE: the SecAcc worktree (H:\cwebuser\projects\VRG-DE\SecAcc), branch secacc; never the main
+checkout. Commit to secacc after each finished WP ("Kapu WP-Hn: …"); never push, never merge, never
+switch branch. Never ask for, type or store a password or token. Questions to me: numbered, with the
+DECISIONS.md id and lettered A/B/C options (A recommended), plus a simple SVG picture when the
+question is visual.
 END — build the Kapu pack in order, stopping at every ⏸.
 ```
 
