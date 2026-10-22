@@ -27,15 +27,15 @@ function onPick(e) {
   else showDir(hit.dir);
 }
 
-function openPanel(title, rows) {
+function openPanel(title, rows, extra = '') {
   const panel = $('panel');
-  panel.innerHTML = `<span class="x" title="Bezárás">×</span><h3>${esc(title)}</h3><table>${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`;
+  panel.innerHTML = `<span class="x" title="Bezárás">×</span><h3>${esc(title)}</h3><table>${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>${extra}`;
   panel.querySelector('.x').onclick = closePanel;
   panel.hidden = false;
 }
 let shownFile = null;   // the file whose panel is open, refreshed when the replay moves
 function closePanel() {
-  $('panel').hidden = true; shownFile = null;
+  $('panel').hidden = true; shownFile = null; roadsRefresh();
   share.sel = ''; setBeacon(null); writeHashSoon();
 }
 function showFile(f) {
@@ -44,12 +44,12 @@ function showFile(f) {
     ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
     ['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
     ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—'],
-    ...(fileAtT(f) ? [['Ezen a ponton', `${hu(fileAtT(f)[0])} commit · ~${hu(fileAtT(f)[1])} sor`]] : [])]);
-  shownFile = f; share.sel = f.p; setBeacon(f); writeHashSoon();
+    ...(fileAtT(f) ? [['Ezen a ponton', `${hu(fileAtT(f)[0])} commit · ~${hu(fileAtT(f)[1])} sor`]] : [])], roadsPanelHtml(f));
+  shownFile = f; roadsRefresh(); share.sel = f.p; setBeacon(f); writeHashSoon();
 }
 function showDir(d) {
   const s = dirStats(d);
-  shownFile = null;
+  shownFile = null; roadsRefresh();
   openPanel((d.path || current.city.repo.name) + '/', [['Fájlok', hu(s.files)], ['Sorok', hu(s.loc)], ['Almappák', hu(d.dirs.size)]]);
   share.sel = ''; setBeacon(null); writeHashSoon();
 }
@@ -66,7 +66,8 @@ function writeHashSoon() {
     const t = orbit.target, q = new URLSearchParams();
     q.set('cam', [t.x, t.z, orbit.theta, orbit.phi, orbit.r].map(v => +v.toFixed(2)).join(','));
     if (share.sel) q.set('sel', share.sel);
-    if (lens.id !== 'nyelv') q.set('lens', lens.id);
+    if (lens.id !== 'alap') q.set('lens', lens.id);
+    if (roads.all) q.set('roads', '1');
     if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
     history.replaceState(null, '', '#' + q.toString());
   }, 250);
@@ -81,6 +82,7 @@ function readHash() {
     placeCamera();
   }
   if (q.get('lens')) setLens(q.get('lens'));
+  if (q.get('roads') === '1' && !roads.all) toggleRoads();
   const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
   if (ti >= 0) applyTime(ti, 0);
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
@@ -108,6 +110,7 @@ function load(city) {
   if (!city || city.kind !== 'vrg-codecity') { alert('Ez nem Kódváros-fájl (city.json).'); return; }
   current = cityModel(city);
   layoutCity(current);
+  roadsPrepare(current);
   showCity(current);
   freshness(city);
   tlSetup();

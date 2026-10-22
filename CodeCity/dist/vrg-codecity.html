@@ -88,6 +88,14 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   radial-gradient(ellipse at 50% 55%, transparent 50%, rgba(0, 20, 5, .75) 100%); }
 #stage.lens-noir { background: linear-gradient(#050506 0%, #0e0e11 50%, var(--horizon) 75%, #08080a 100%); }
 #stage.lens-noir #gl { filter: contrast(1.12); }
+
+/* roads section of the info panel */
+#panel .roads { margin-top: 8px; color: var(--dim); font-size: 12px; }
+#panel h4 { margin: 10px 0 4px; font-size: 12px; font-weight: normal; }
+#panel i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: 0; border-radius: 50%; }
+#panel ol.nb { margin: 0; padding-left: 20px; max-height: 180px; overflow: auto; }
+#panel ol.nb li { cursor: pointer; padding: 1px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#panel ol.nb li:hover { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -107,7 +115,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   <div id="legend"></div>
   <nav id="lenses" aria-label="Nézetek"></nav>
   <div id="board" aria-hidden="true"><div id="board-1"></div><div id="board-2"></div></div>
-  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek · Szóköz: lejátszás · ← →: lépés</div>
+  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek · Szóköz: lejátszás · ← →: lépés · 1–6: nézet · U: utak</div>
   <div id="timeline" hidden>
     <button id="tl-back" class="btn" title="Előző commit (←)">⏮</button>
     <button id="tl-play" class="btn" title="Lejátszás (Szóköz)">▶</button>
@@ -474,15 +482,15 @@ function onPick(e) {
   else showDir(hit.dir);
 }
 
-function openPanel(title, rows) {
+function openPanel(title, rows, extra = '') {
   const panel = $('panel');
-  panel.innerHTML = `<span class="x" title="Bezárás">×</span><h3>${esc(title)}</h3><table>${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`;
+  panel.innerHTML = `<span class="x" title="Bezárás">×</span><h3>${esc(title)}</h3><table>${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>${extra}`;
   panel.querySelector('.x').onclick = closePanel;
   panel.hidden = false;
 }
 let shownFile = null;   // the file whose panel is open, refreshed when the replay moves
 function closePanel() {
-  $('panel').hidden = true; shownFile = null;
+  $('panel').hidden = true; shownFile = null; roadsRefresh();
   share.sel = ''; setBeacon(null); writeHashSoon();
 }
 function showFile(f) {
@@ -491,12 +499,12 @@ function showFile(f) {
     ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
     ['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
     ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—'],
-    ...(fileAtT(f) ? [['Ezen a ponton', `${hu(fileAtT(f)[0])} commit · ~${hu(fileAtT(f)[1])} sor`]] : [])]);
-  shownFile = f; share.sel = f.p; setBeacon(f); writeHashSoon();
+    ...(fileAtT(f) ? [['Ezen a ponton', `${hu(fileAtT(f)[0])} commit · ~${hu(fileAtT(f)[1])} sor`]] : [])], roadsPanelHtml(f));
+  shownFile = f; roadsRefresh(); share.sel = f.p; setBeacon(f); writeHashSoon();
 }
 function showDir(d) {
   const s = dirStats(d);
-  shownFile = null;
+  shownFile = null; roadsRefresh();
   openPanel((d.path || current.city.repo.name) + '/', [['Fájlok', hu(s.files)], ['Sorok', hu(s.loc)], ['Almappák', hu(d.dirs.size)]]);
   share.sel = ''; setBeacon(null); writeHashSoon();
 }
@@ -513,7 +521,8 @@ function writeHashSoon() {
     const t = orbit.target, q = new URLSearchParams();
     q.set('cam', [t.x, t.z, orbit.theta, orbit.phi, orbit.r].map(v => +v.toFixed(2)).join(','));
     if (share.sel) q.set('sel', share.sel);
-    if (lens.id !== 'nyelv') q.set('lens', lens.id);
+    if (lens.id !== 'alap') q.set('lens', lens.id);
+    if (roads.all) q.set('roads', '1');
     if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
     history.replaceState(null, '', '#' + q.toString());
   }, 250);
@@ -528,6 +537,7 @@ function readHash() {
     placeCamera();
   }
   if (q.get('lens')) setLens(q.get('lens'));
+  if (q.get('roads') === '1' && !roads.all) toggleRoads();
   const ti = current.city.commits.findIndex(c => c[4] === q.get('t'));
   if (ti >= 0) applyTime(ti, 0);
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
@@ -555,6 +565,7 @@ function load(city) {
   if (!city || city.kind !== 'vrg-codecity') { alert('Ez nem Kódváros-fájl (city.json).'); return; }
   current = cityModel(city);
   layoutCity(current);
+  roadsPrepare(current);
   showCity(current);
   freshness(city);
   tlSetup();
@@ -871,7 +882,7 @@ const LENSES = [
         .map(([l]) => `<div><i style="background:#${langColor(l).toString(16).padStart(6, '0')}"></i>${esc(l)}</div>`).join('');
     } },
 ];
-let lens = LENSES.find(l => l.id === 'nyelv');   // Nyelv: the look approved at the C3 check stays the default
+let lens = LENSES.find(l => l.id === 'alap');   // CITY-D6: the plain Git City night is the default   // Nyelv: the look approved at the C3 check stays the default
 
 function lensApply() {
   if (!world) return;
@@ -937,7 +948,8 @@ function placeCranes(ctx) {
 function lensBar() {
   const groups = [...new Set(LENSES.map(l => l.group))];
   $('lenses').innerHTML = groups.map(g => `<span class="grp">${g ? `<small>${g}</small>` : ''}${LENSES.filter(l => l.group === g)
-    .map(l => `<button class="btn" data-lens="${l.id}" title="${l.name} (${l.key})"><kbd>${l.key}</kbd>${l.name}</button>`).join('')}</span>`).join('');
+    .map(l => `<button class="btn" data-lens="${l.id}" title="${l.name} (${l.key})"><kbd>${l.key}</kbd>${l.name}</button>`).join('')}</span>`).join('')
+    + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>';
   $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt) setLens(bt.dataset.lens); };
 }
 lensBar();
@@ -946,10 +958,127 @@ addEventListener('keydown', e => {
   if (/^[1-6]$/.test(e.key)) setLens(e.key);
 });
 
+// ==== src/08-roads.js
+// 08-roads.js — relations drawn as arcs between roofs (SEE / CodeCharta edges):
+//   amber = files the selected one imports · cyan = files that import it · violet = change together.
+// U toggles every import road at once, faintly. "Szomszédok" (God's Eye View's contacts panel):
+// the files that most often change in the same commit as the selected one.
+
+const ROAD_COLORS = { out: 0xffb547, in: 0x5ad0e6, co: 0xc58bff, all: 0x8fa6d8 };
+const COCHANGE_MAX_FILES = 30;      // a commit touching more files is a sweep, not a relation
+const roads = { group: new THREE.Group(), all: false, importers: [] };
+scene.add(roads.group);
+
+function roadsPrepare(model) {
+  roads.importers = model.city.files.map(() => []);
+  model.city.files.forEach((f, i) => (f.imp || []).forEach(j => roads.importers[j].push(i)));
+}
+
+// files changed together with file i up to the shown commit: [[j, together, share of i's commits]]
+function neighboursOf(i) {
+  const c = current.city.commits, count = new Map();
+  let mine = 0;
+  for (const ci of replay.touch[i]) {
+    if (ci > replay.T) break;
+    const ch = c[ci][5];
+    if (ch.length / 3 > COCHANGE_MAX_FILES) continue;
+    mine++;
+    for (let k = 0; k < ch.length; k += 3) if (ch[k] !== i) count.set(ch[k], (count.get(ch[k]) || 0) + 1);
+  }
+  return [...count].filter(([, n]) => n >= 2).map(([j, n]) => [j, n, n / Math.max(1, mine)])
+    .sort((a, b) => b[1] - a[1] || b[2] - a[2]).slice(0, 8);
+}
+
+const roofOf = i => {
+  const f = current.city.files[i], { x, z, w, h } = f.rect, bh = stateAt(f, i, replay.T)[0];
+  return bh > 0 ? new THREE.Vector3(x + w / 2, f.base + bh, z + h / 2) : null;
+};
+// one arc per pair, as line segments: a parabola lifted in proportion to its length
+function arcs(pairs, color, opacity) {
+  const pts = [], SEG = 20;
+  for (const [a, b] of pairs) {
+    const p = roofOf(a), q = roofOf(b);
+    if (!p || !q) continue;
+    const lift = Math.max(p.y, q.y) + p.distanceTo(q) * 0.3 + 2;
+    let prev = p;
+    for (let s = 1; s <= SEG; s++) {
+      const t = s / SEG, x = p.x + (q.x - p.x) * t, z = p.z + (q.z - p.z) * t;
+      const y = (1 - t) * (1 - t) * p.y + 2 * (1 - t) * t * lift + t * t * q.y;
+      pts.push(prev.x, prev.y, prev.z, x, y, z);
+      prev = new THREE.Vector3(x, y, z);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  const line = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false }));
+  line.raycast = () => {};
+  return line;
+}
+
+function roadsRefresh() {
+  for (const o of [...roads.group.children]) { roads.group.remove(o); o.geometry.dispose(); o.material.dispose(); }
+  if (!current) return;
+  const files = current.city.files;
+  if (roads.all) {
+    const all = [];
+    files.forEach((f, i) => (f.imp || []).forEach(j => all.length < 4000 && all.push([i, j])));
+    roads.group.add(arcs(all, ROAD_COLORS.all, 0.22));
+  }
+  const f = shownFile;
+  if (f) {
+    roads.group.add(arcs((f.imp || []).map(j => [f.i, j]), ROAD_COLORS.out, 0.9));
+    roads.group.add(arcs(roads.importers[f.i].map(j => [j, f.i]), ROAD_COLORS.in, 0.9));
+    roads.group.add(arcs(neighboursOf(f.i).map(([j]) => [f.i, j]), ROAD_COLORS.co, 0.6));
+  }
+  requestRender();
+}
+
+function toggleRoads() {
+  roads.all = !roads.all;
+  $('roads-btn').classList.toggle('on', roads.all);
+  roadsRefresh();
+  writeHashSoon();
+}
+
+// the extra panel section for a file: road counts and the neighbour list (click = fly there)
+function roadsPanelHtml(f) {
+  const nb = neighboursOf(f.i), files = current.city.files;
+  const sw = c => `<i style="background:#${c.toString(16).padStart(6, '0')}"></i>`;
+  const rows = nb.map(([j, n, s]) => `<li data-path="${esc(files[j].p)}" title="${esc(files[j].p)}">${esc(files[j].name)} <span class="dim">${n}× · ${Math.round(s * 100)} %</span></li>`).join('');
+  return `<div class="roads">${sw(ROAD_COLORS.out)}importál: ${(f.imp || []).length} · ${sw(ROAD_COLORS.in)}importálják: ${roads.importers[f.i].length}</div>`
+    + `<h4>${sw(ROAD_COLORS.co)}Szomszédok <span class="dim">— együtt változnak</span></h4>`
+    + (rows ? `<ol class="nb">${rows}</ol>` : '<div class="dim">nincs (legalább 2 közös commit kell)</div>');
+}
+
+// fly the orbit target to a building (and close in, if far out)
+function flyTo(f) {
+  const { x, z, w, h } = f.rect, to = new THREE.Vector3(x + w / 2, 0, z + h / 2), from = orbit.target.clone();
+  const r0 = orbit.r, r1 = Math.min(r0, Math.max(60, Math.sqrt(w * h) * 6)), t0 = performance.now();
+  const step = now => {
+    const k = Math.min(1, (now - t0) / 450), e = k * (2 - k);
+    orbit.target.lerpVectors(from, to, e); orbit.r = r0 + (r1 - r0) * e;
+    placeCamera();
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+$('panel').addEventListener('click', e => {
+  const li = e.target.closest('li[data-path]');
+  if (!li) return;
+  const f = current.city.files.find(x => x.p === li.dataset.path);
+  if (f) { showFile(f); flyTo(f); }
+});
+$('roads-btn').onclick = toggleRoads;
+addEventListener('keydown', e => {
+  if (!current || e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input:not([type=range]), textarea')) return;
+  if (e.key === 'u' || e.key === 'U') toggleRoads();
+});
+
 // ==== src/09-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
-onTimeChanged = () => { tlRender(); lensApply(); writeHashSoon(); if (shownFile) showFile(shownFile); };
+onTimeChanged = () => { tlRender(); lensApply(); roadsRefresh(); writeHashSoon(); if (shownFile) showFile(shownFile); };
 
 if (window.CITY) {
   load(window.CITY);

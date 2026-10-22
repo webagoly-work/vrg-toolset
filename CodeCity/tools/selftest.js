@@ -21,13 +21,14 @@ try {
   g('add', '.'); g('commit', '-q', '-m', 'agent work', '-m', 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>');
   fs.mkdirSync(path.join(dir, 'src')); g('mv', 'a.js', 'src/a2.js'); g('commit', '-q', '-m', 'move');
   g('rm', '-q', 'b.md'); g('commit', '-q', '-m', 'delete');
+  put('c.js', "const a = require('./src/a2');\nconst fs = require('fs');\n"); g('add', '.'); g('commit', '-q', '-m', 'import');
 
   const out = path.join(dir, 'out.city.json');
   execFileSync(process.execPath, [path.join(__dirname, '..', 'scan.js'), dir, '--out', out], { stdio: 'ignore' });
   const city = JSON.parse(fs.readFileSync(out, 'utf8'));
   const by = p => city.files.find(f => f.p === p);
 
-  check(city.commits.length === 4, `4 commits (got ${city.commits.length})`);
+  check(city.commits.length === 5, `5 commits (got ${city.commits.length})`);
   check(city.files.length === 3, `3 file identities: a2 (renamed), b (gone), c (got ${city.files.map(f => f.p).join(', ')})`);
   check(!by('a.js'), 'the old name a.js is not a separate building');
   const a = by('src/a2.js');
@@ -35,8 +36,9 @@ try {
   const b = by('b.md');
   check(b && b.gone === 1 && b.goneAt === 3, `b.md is a ghost, gone at commit 3 (got gone=${b && b.gone} goneAt=${b && b.goneAt})`);
   const c = by('c.js');
-  check(c && c.ag === 1 && c.n === 1, `c.js: 1 commit, agent-assisted (got n=${c && c.n} ag=${c && c.ag})`);
+  check(c && c.ag === 1 && c.n === 2, `c.js: 2 commits, 1 agent-assisted (got n=${c && c.n} ag=${c && c.ag})`);
   check(city.agents.join() === 'Claude' && city.commits[1][2] === 0 && city.commits[0][2] === -1, 'only commit 2 is agent-assisted, by Claude');
+  check(c && c.imp && c.imp.length === 1 && city.files[c.imp[0]].p === 'src/a2.js', `c.js has one road, to src/a2.js; the package 'fs' is not a road (got ${c && JSON.stringify(c.imp)})`);
   const touched = city.commits[2][5].filter((_, i) => i % 3 === 0).map(i => city.files[i].p);
   check(touched.join() === 'src/a2.js', `the rename commit touches src/a2.js (got ${touched.join()})`);
 } finally {

@@ -65,7 +65,7 @@ const LENSES = [
         .map(([l]) => `<div><i style="background:#${langColor(l).toString(16).padStart(6, '0')}"></i>${esc(l)}</div>`).join('');
     } },
 ];
-let lens = LENSES.find(l => l.id === 'nyelv');   // Nyelv: the look approved at the C3 check stays the default
+let lens = LENSES.find(l => l.id === 'alap');   // CITY-D6: the plain Git City night is the default   // Nyelv: the look approved at the C3 check stays the default
 
 function lensApply() {
   if (!world) return;
@@ -131,7 +131,8 @@ function placeCranes(ctx) {
 function lensBar() {
   const groups = [...new Set(LENSES.map(l => l.group))];
   $('lenses').innerHTML = groups.map(g => `<span class="grp">${g ? `<small>${g}</small>` : ''}${LENSES.filter(l => l.group === g)
-    .map(l => `<button class="btn" data-lens="${l.id}" title="${l.name} (${l.key})"><kbd>${l.key}</kbd>${l.name}</button>`).join('')}</span>`).join('');
+    .map(l => `<button class="btn" data-lens="${l.id}" title="${l.name} (${l.key})"><kbd>${l.key}</kbd>${l.name}</button>`).join('')}</span>`).join('')
+    + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>';
   $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt) setLens(bt.dataset.lens); };
 }
 lensBar();

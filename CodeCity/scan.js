@@ -129,6 +129,45 @@ const outFiles = keep.map(i => {
   return r;
 });
 
+// ---- imports (roads): regex, not a parser — fast, language-light, and it misses some on purpose:
+// only RELATIVE references are followed, so every edge lands on a file that is really in the repo.
+// f.imp = indices of the files this one references.
+const IMPORT_RES = {
+  JavaScript: [/\bimport\s[^'"`]*?from\s*['"]([^'"]+)['"]/g, /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+    /\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)/g, /\bexport\s[^'"`]*?from\s*['"]([^'"]+)['"]/g, /^\s*import\s+['"]([^'"]+)['"]/gm],
+  HTML: [/<script[^>]+src\s*=\s*["']([^"']+)["']/gi, /<link[^>]+href\s*=\s*["']([^"']+)["']/gi, /<a[^>]+href\s*=\s*["']([^"'#?]+\.html?)["']/gi],
+  CSS: [/@import\s+(?:url\()?\s*['"]?([^'")\s;]+)/g],
+  Markdown: [/\]\(\s*<?([^)\s>#?]+)/g],
+  Python: [/^\s*from\s+(\.+[\w.]*)\s+import/gm],
+};
+IMPORT_RES.TypeScript = IMPORT_RES.JavaScript; IMPORT_RES.Vue = IMPORT_RES.JavaScript; IMPORT_RES.Svelte = IMPORT_RES.JavaScript;
+const TRY_EXT = ['', '.js', '.mjs', '.cjs', '.ts', '.tsx', '.jsx', '.json', '/index.js', '/index.ts', '.py', '/__init__.py'];
+const indexOfPath = new Map(outFiles.map((f, i) => [f.p, i]));
+function resolveRef(from, ref, lang) {
+  if (/^[a-z][\w+.-]*:/i.test(ref) || ref.startsWith('//') || ref.startsWith('/')) return -1;  // URL, protocol, absolute
+  if (lang === 'Python') {                       // from ..pkg.mod import x  ->  ../pkg/mod
+    const dots = /^\.+/.exec(ref)[0].length;
+    ref = '../'.repeat(dots - 1) + './' + ref.slice(dots).replace(/\./g, '/');
+  } else if (lang === 'JavaScript' || lang === 'TypeScript' || lang === 'Vue' || lang === 'Svelte') {
+    if (!ref.startsWith('.')) return -1;         // a package name, not a file of ours
+  }
+  let base;
+  try { base = path.posix.normalize(path.posix.join(path.posix.dirname(from), decodeURIComponent(ref))); } catch { return -1; }
+  for (const ext of TRY_EXT) { const i = indexOfPath.get(base + ext); if (i !== undefined) return i; }
+  return -1;
+}
+let edges = 0;
+outFiles.forEach((f, i) => {
+  const res = IMPORT_RES[f.lang];
+  if (!res || f.gone || f.loc === 0) return;
+  let text;
+  try { text = fs.readFileSync(path.join(REPO, f.p), 'utf8'); } catch { return; }
+  if (text.length > 1024 * 1024) text = text.slice(0, 1024 * 1024);   // a megabyte is plenty to find references
+  const imp = new Set();
+  for (const re of res) for (const m of text.matchAll(re)) { const j = resolveRef(f.p, m[1].trim(), f.lang); if (j >= 0 && j !== i) imp.add(j); }
+  if (imp.size) { f.imp = [...imp].sort((a, b) => a - b); edges += imp.size; }
+});
+
 let head = '', branch = '';
 try { head = git('rev-parse', '--short', 'HEAD').trim(); branch = git('rev-parse', '--abbrev-ref', 'HEAD').trim(); } catch { /* empty repo */ }
 const city = {
@@ -143,7 +182,7 @@ fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, JSON.stringify(city));
 const live = outFiles.filter(f => !f.gone).length;
 console.log(`${city.repo.name}@${head}: ${commits.length} commits, ${authors.length} authors, ${live} files (+${outFiles.length - live} gone), ` +
-  `${commits.filter(c => c[2] >= 0).length} agent commits, ${skipped} skipped -> ${path.relative(process.cwd(), out)}`);
+  `${commits.filter(c => c[2] >= 0).length} agent commits, ${edges} import roads, ${skipped} skipped -> ${path.relative(process.cwd(), out)}`);
 
 if (opt('--html')) {
   const page = require('./build.js').buildPage(city);
