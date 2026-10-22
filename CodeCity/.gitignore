@@ -1,0 +1,4 @@
+# scans of real repos and their pages and screenshots are regenerable and may name private paths;
+# only the empty template page is committed
+dist/*
+!dist/vrg-codecity.html

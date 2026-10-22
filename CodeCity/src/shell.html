@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Kódváros</title>
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<header id="bar">
+  <b>Kódváros</b><span id="title">—</span>
+  <label class="btn">Megnyitás…<input id="file" type="file" accept=".json" hidden></label>
+</header>
+<main id="stage">
+  <canvas id="gl"></canvas>
+  <div id="drop" hidden>
+    <p>Húzd ide a <code>*.city.json</code> fájlt, vagy válaszd ki a <b>Megnyitás…</b> gombbal.</p>
+    <p class="hint">Készítése: <code>node CodeCity/scan.js &lt;mappa&gt;</code></p>
+  </div>
+  <div id="tip" hidden></div>
+  <aside id="panel" hidden></aside>
+  <div id="legend"></div>
+  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek</div>
+</main>
+<script>window.CITY = /*__CITY__*/null;</script>
+<script type="module">/*__SCRIPT__*/</script>
+</body>
+</html>
