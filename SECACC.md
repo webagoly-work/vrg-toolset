@@ -27,14 +27,21 @@ Created 2026-10-21 from `main` at `987b92a`, plus the then-uncommitted Kapu pack
 - Work only in this folder. Check: `git branch --show-current` → `secacc`.
 - **Commit to `secacc` after each finished work package** (`git add <own files>` then
   `git commit -m "Kapu WP-Hn: …"`). The commits are what gets merged back — uncommitted work does not travel.
-- **First commit, before any WP:** `git add docs/hub GO-HUB.md CLAUDE.md SECACC.md` then
-  `git commit -m "Kapu pack + SecAcc workspace"` — the pack is still uncommitted here when SecAcc starts.
-- Never `git push`, never `git merge`, never `git checkout <other branch>`, never touch the main checkout.
+  The same rule is in `GO-HUB.md` §1, `docs/hub/00_CONTRACT.md` §1 and `docs/hub/PROMPTS.md` §2/§4.
+- A file outside the hub's own files (`VRG-DE.cmd`, `tools/prompts/*`, the root `CLAUDE.md`, a
+  `GO-*.md`) only when the user asks for it in the session, each change in its own commit that says
+  what and why (contract §1).
+- ~~First commit, before any WP~~ — done 2026-10-21 (`0d5cd62` "Kapu pack + SecAcc workspace").
+- Never `git push`, never `git merge`, never `git checkout <other branch>`, never `git stash` (the
+  stash is shared with the main checkout), never touch the main checkout.
 - To get newer work from the primary account into SecAcc (only when the primary user asks):
   `git merge main` inside SecAcc. The primary must have committed it on `main` first.
 
 ## C. Merge back into the primary account's checkout (the primary account does this)
 
+0. First run **`GO STRICT`** in the main checkout (HUB-Q24 A): it commits the five programs the Kapu
+   links to (research, client-look, media-wall, planner-cyd, board-console). Until this merge its
+   brief is only here: `H:\cwebuser\projects\VRG-DE\SecAcc\GO-STRICT.md`.
 1. In SecAcc, make sure everything is committed: `git status` must be clean.
 2. In the **main checkout**:
    ```
@@ -54,8 +61,8 @@ Created 2026-10-21 from `main` at `987b92a`, plus the then-uncommitted Kapu pack
 4. Merge: `git merge secacc`.
 5. If git reports conflicts, open the listed files, keep the right lines, `git add` them, then
    `git commit` — or ask a Claude session in the main checkout to resolve them.
-6. Check: `node tools/check-start.js` and, once the hub exists, `node tools/build-hub.js` and
-   `node Hub/test/run.js`.
+6. Check: `node tools/check-start.js`, `node tools/build-hub.js`, `node Hub/test/run.js` and
+   `node tools/check-hub.js --strict` (must say "Rendben").
 7. Afterwards the secondary account continues in SecAcc; to start from the merged state:
    `git merge main` inside SecAcc.
 
