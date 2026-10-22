@@ -37,6 +37,16 @@ their own browser.
 
 ## 5. Status
 
-2026-10-22: WP-H0 to H12 done on `secacc` (H12 = the agent init docs in `docs/hub/agents/`). Open:
-WP-H13 (distribution), which needs the OneDrive share links from the user. The live table is
-`docs/hub/README.md` §4.
+2026-10-22: WP-H0 to H12 done on `secacc` (H12 = the agent init docs in `docs/hub/agents/`).
+WP-H13 partial: `build-hub.js --onedrive` + `OLVASS_EL.md`, `docs/hub/KOLLEGA-INDULAS.md` with
+screenshots, README §6 done. Also fixed: prompt 05 path, `VRG-DE.cmd` `>nul`, no auto tour from file://.
+
+Waiting for the user:
+1. Setup checklist steps 3–8 (push, invite, 2FA, OneDrive shares).
+2. The OneDrive share links (12 empty) and the real `VRG-Megosztott\00_START` path.
+3. The clean-profile verify, with the user typing their own token.
+4. **`GO STRICT`** (HUB-Q24 A) in the main checkout: commit the five uncommitted programs, then merge
+   `secacc`. After that, `node tools/check-hub.js --strict` must say "Rendben" (today: 16 errors,
+   all those five programs).
+
+The live table is `docs/hub/README.md` §4.
