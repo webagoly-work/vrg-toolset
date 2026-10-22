@@ -10,3 +10,11 @@
 4. **Test:** `node CodeCity/scan.js . --html CodeCity/dist/self.html` then screenshot it with
    `node CodeCity/tools/shot.js CodeCity/dist/self.html` (headless Chrome from `Planner/apps`).
 5. **Ask** as numbered items with the CITY-Dn id and lettered options, A recommended.
+6. **Trying it together with everything else:** the branch is pushed to GitHub (2026-10-22). The
+   primary account builds **`dev-all`** (codephrase **GO ALL**, `GO-ALL.md`): every line of work merged
+   into one worktree, `wt-dev-all`, to try every feature at once. Feature work still happens HERE, on
+   `worktree-codecity`; `dev-all` picks it up by merging again (GO-ALL §5). Never commit Kódváros work
+   on `dev-all` itself.
+7. **Paused 2026-10-22 at C9 ⏸.** First question when resuming: **CITY-D7** (agent-session replay,
+   README §5): A paths + read/edit kind + timestamps only, opt-in per scan · B skip · C full text.
+   After that: C10 (Kódváros as MCP tools, ⏸ decide).
