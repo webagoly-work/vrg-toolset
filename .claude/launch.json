@@ -32,6 +32,16 @@
       "name": "vrg-kapu",
       "runtimeExecutable": "node",
       "runtimeArgs": [
+        "Hub/companion/server.js",
+        "--no-open"
+      ],
+      "port": 8795,
+      "url": "http://localhost:8795"
+    },
+    {
+      "name": "vrg-kapu-static",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
         "Hub/test/serve.js"
       ],
       "port": 8796,

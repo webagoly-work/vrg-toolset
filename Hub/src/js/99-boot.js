@@ -38,7 +38,7 @@ function kpBoot() {
   kpRefreshRestore();
   kpBoardInit();
   kpNavInit();
-  kpSigninInit().then(kpRefreshBoot);
+  kpCompInit().then(kpSigninInit).then(kpRefreshBoot);
   kpRenderStrip();
   kpMainMenuInit();
   kpLogInit();

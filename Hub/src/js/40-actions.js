@@ -23,10 +23,12 @@ const KP_ACT = [
     run: c => kpPreview(c) },
   { id: 'copy', label: 'Link másolása', g: 'open', at: ['rco'], when: c => !!(kpTarget(c).href || kpTarget(c).path), whyNot: 'Ennek az elemnek nincs linkje',
     run: c => { const t = kpTarget(c); kpCopy(t.href || t.path); } },
-  { id: 'folder', label: 'Mappa megnyitása ezen a gépen', g: 'open', at: ['rco'], need: 'companion', run: () => {} },
-  { id: 'term', label: 'Terminál itt', g: 'open', at: ['rco'], need: 'companion', run: () => {} },
+  { id: 'folder', label: 'Mappa megnyitása ezen a gépen', g: 'open', at: ['rco'], need: 'companion', when: c => !!kpNodeDir(c), whyNot: 'Ennek az elemnek nincs helyi mappája',
+    run: c => kpCompFolder(kpNodeDir(c)) },
+  { id: 'term', label: 'Terminál itt', g: 'open', at: ['rco'], need: 'companion', when: c => !!kpNodeDir(c), whyNot: 'Ennek az elemnek nincs helyi mappája',
+    run: c => kpCompTerminal(kpNodeDir(c)) },
   { id: 'claude', label: 'Claude Code itt', g: 'open', at: ['rco'], sub: [
-    { id: 'claude-local', label: 'helyi', need: 'companion', run: () => {} },
+    { id: 'claude-local', label: 'helyi', need: 'companion', run: c => kpCompClaude(kpNodeDir(c) || '.') },
     { id: 'claude-web', label: 'web', run: () => kpOpen(KP_CLAUDE_WEB) },
     { id: 'claude-prompt', label: 'indító prompt másolása', run: c => kpCopy(kpStartPrompt(c), 'Az indító prompt a vágólapon') }
   ] },
@@ -126,7 +128,8 @@ function kpMainAction(node) {
   if (node.kind === 'go') { kpCopy(kpStartPrompt(c), 'Az indító prompt a vágólapon — illeszd be a Claude Code-ba'); return; }
   if (node.kind === 'program' && !kpL1Open()) { kpGatePopover(node); return; }
   const t = kpTarget(c);
-  if (t.kind === 'repo-tool') { kpToolPopover(node, t); return; }
+  if (t.kind === 'repo-tool') { if (kpCaps.companion) kpCompTool(t.repo); else kpToolPopover(node, t); return; }
+  if (t.kind === 'local' && kpCaps.companion) { kpCompFolder(kpNodeDir(c)); return; }
   if (t.kind === 'local') { kpPathPopover(node, t.path, 'Helyi mappa — a Kapu segéd nélkül másold ki az útvonalat.'); return; }
   if (t.kind === 'empty-folder' || (node.kind === 'folder' && !t.href)) { kpToast('Még nincs megosztási link — Szerkesztés'); return; }
   if (t.href) { kpOpen(t.href); return; }

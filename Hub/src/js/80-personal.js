@@ -186,8 +186,10 @@ function kpPersonalClick(node) {
   if (node.kind === 'l6folder') {
     if (!kpStore.get('l6', null)) { kpDest.pick(); return; }
     kpPopover(node, kpEl('div', { class: 'kp-pop-h' }, '📁 ' + node.full),
-      kpEl('div', { class: 'kp-pop-row kp-muted' }, 'Megnyitás a Kapu segéddel lesz elérhető' + (kpStore.get('l6').path ? ': ' + kpStore.get('l6').path : '') + '.'),
-      kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: kpDestTest }, 'Teszt fájl írása'),
+      kpEl('div', { class: 'kp-pop-row kp-muted' }, kpStore.get('l6').path ? kpStore.get('l6').path : 'A megnyitáshoz add meg egyszer a teljes útvonalat (jobb klikk).'),
+      kpEl('div', { class: 'kp-pop-row' },
+        kpCaps.companion && kpStore.get('l6').path ? kpEl('button', { class: 'kp-btn', onclick: () => kpCompFolder(kpStore.get('l6').path) }, 'Megnyitás') : null,
+        kpEl('button', { class: 'kp-btn', onclick: kpDestTest }, 'Teszt fájl írása'),
         kpEl('button', { class: 'kp-btn', onclick: () => kpDest.pick() }, 'Másik mappa…')));
   }
 }

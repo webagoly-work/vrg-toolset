@@ -260,6 +260,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 .kp-log-e{border-top:1px solid var(--line);padding:6px 0}
 .kp-log-e summary{cursor:pointer;font-weight:600}
 .kp-log-e h5{margin:8px 0 2px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kp-btn.off{opacity:.5}
+.kp-pre{max-height:40vh;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px;font-size:12px;white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -272,6 +274,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
     <span id="kpFocus" class="kp-focus" hidden></span>
   </div>
   <div class="kp-top-right">
+    <button id="kpTermBtn" class="kp-btn" title="Parancssor a repó mappájában">⌨ Terminál</button>
+    <button id="kpClaudeBtn" class="kp-btn" title="helyi · web · indító prompt">✳ Claude Code</button>
     <button id="kpLogBtn" class="kp-btn" title="Mai munka rögzítése markdown fájlba">📝 Munkanapló</button>
     <button id="kpRefresh" class="kp-btn">⟳ Frissítés</button>
     <button id="kpSignin" class="kp-btn kp-signin">Belépések</button>
@@ -295,7 +299,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 <script type="application/json" id="kpPubkey">{"kty":"EC","crv":"P-256","x":"ikStJoalzFg4yLwv3gHx7XYai5Yxhf-thW772g0_M20","y":"T97A6TH3XHXksdStfZ00KJSWjdI7DFs5Ha5ZZvejPJ0"}</script>
 <script>
 "use strict";
-const KP_BUILD = "d94322541c17";
+const KP_BUILD = "98fa2b5957b4";
 // ---- 00-core.js
 // Core helpers shared by every module. Pure where possible, so Hub/test can run them in Node.
 
@@ -1063,10 +1067,12 @@ const KP_ACT = [
     run: c => kpPreview(c) },
   { id: 'copy', label: 'Link másolása', g: 'open', at: ['rco'], when: c => !!(kpTarget(c).href || kpTarget(c).path), whyNot: 'Ennek az elemnek nincs linkje',
     run: c => { const t = kpTarget(c); kpCopy(t.href || t.path); } },
-  { id: 'folder', label: 'Mappa megnyitása ezen a gépen', g: 'open', at: ['rco'], need: 'companion', run: () => {} },
-  { id: 'term', label: 'Terminál itt', g: 'open', at: ['rco'], need: 'companion', run: () => {} },
+  { id: 'folder', label: 'Mappa megnyitása ezen a gépen', g: 'open', at: ['rco'], need: 'companion', when: c => !!kpNodeDir(c), whyNot: 'Ennek az elemnek nincs helyi mappája',
+    run: c => kpCompFolder(kpNodeDir(c)) },
+  { id: 'term', label: 'Terminál itt', g: 'open', at: ['rco'], need: 'companion', when: c => !!kpNodeDir(c), whyNot: 'Ennek az elemnek nincs helyi mappája',
+    run: c => kpCompTerminal(kpNodeDir(c)) },
   { id: 'claude', label: 'Claude Code itt', g: 'open', at: ['rco'], sub: [
-    { id: 'claude-local', label: 'helyi', need: 'companion', run: () => {} },
+    { id: 'claude-local', label: 'helyi', need: 'companion', run: c => kpCompClaude(kpNodeDir(c) || '.') },
     { id: 'claude-web', label: 'web', run: () => kpOpen(KP_CLAUDE_WEB) },
     { id: 'claude-prompt', label: 'indító prompt másolása', run: c => kpCopy(kpStartPrompt(c), 'Az indító prompt a vágólapon') }
   ] },
@@ -1166,7 +1172,8 @@ function kpMainAction(node) {
   if (node.kind === 'go') { kpCopy(kpStartPrompt(c), 'Az indító prompt a vágólapon — illeszd be a Claude Code-ba'); return; }
   if (node.kind === 'program' && !kpL1Open()) { kpGatePopover(node); return; }
   const t = kpTarget(c);
-  if (t.kind === 'repo-tool') { kpToolPopover(node, t); return; }
+  if (t.kind === 'repo-tool') { if (kpCaps.companion) kpCompTool(t.repo); else kpToolPopover(node, t); return; }
+  if (t.kind === 'local' && kpCaps.companion) { kpCompFolder(kpNodeDir(c)); return; }
   if (t.kind === 'local') { kpPathPopover(node, t.path, 'Helyi mappa — a Kapu segéd nélkül másold ki az útvonalat.'); return; }
   if (t.kind === 'empty-folder' || (node.kind === 'folder' && !t.href)) { kpToast('Még nincs megosztási link — Szerkesztés'); return; }
   if (t.href) { kpOpen(t.href); return; }
@@ -1868,8 +1875,7 @@ function kpSigninOpen() {
     kpSigninRow('Claude', kpDot('none'), '– saját fiók',
       kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(KP_LOGIN.claude) }, 'Claude Code megnyitása')),
     kpSigninRow('Engedélyezett lista', kpDot(kpListDot()), kpListText()),
-    kpSigninRow('Kapu segéd', kpDot('off'), 'nem fut',
-      kpEl('button', { class: 'kp-btn', onclick: () => kpToast('Indítsd a Hub\\VRG Kapu.cmd-vel — a segéd a következő lépésekben készül el') }, 'Hogyan indítom?')),
+    kpSigninRow('Kapu segéd', kpDot(kpComp.on ? 'ok' : 'off'), ...kpCompRow()),
     kpEl('p', { class: 'kp-note' }, KP_ACCESS_NOTE));
 }
 
@@ -2789,8 +2795,10 @@ function kpPersonalClick(node) {
   if (node.kind === 'l6folder') {
     if (!kpStore.get('l6', null)) { kpDest.pick(); return; }
     kpPopover(node, kpEl('div', { class: 'kp-pop-h' }, '📁 ' + node.full),
-      kpEl('div', { class: 'kp-pop-row kp-muted' }, 'Megnyitás a Kapu segéddel lesz elérhető' + (kpStore.get('l6').path ? ': ' + kpStore.get('l6').path : '') + '.'),
-      kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: kpDestTest }, 'Teszt fájl írása'),
+      kpEl('div', { class: 'kp-pop-row kp-muted' }, kpStore.get('l6').path ? kpStore.get('l6').path : 'A megnyitáshoz add meg egyszer a teljes útvonalat (jobb klikk).'),
+      kpEl('div', { class: 'kp-pop-row' },
+        kpCaps.companion && kpStore.get('l6').path ? kpEl('button', { class: 'kp-btn', onclick: () => kpCompFolder(kpStore.get('l6').path) }, 'Megnyitás') : null,
+        kpEl('button', { class: 'kp-btn', onclick: kpDestTest }, 'Teszt fájl írása'),
         kpEl('button', { class: 'kp-btn', onclick: () => kpDest.pick() }, 'Másik mappa…')));
   }
 }
@@ -2974,6 +2982,97 @@ function kpLogInit() {
 
 if (typeof module !== 'undefined') module.exports = { kpLogToMd, kpMdToLog, kpLogName, kpLogSlug, kpRelDay };
 
+// ---- 92-companion.js
+// The page side of the Kapu segéd: present only when the page is served by Hub/companion/server.js
+// (which injects window.KP_COMPANION = {token, port}). Without it every action here stays greyed.
+
+const kpComp = { on: false, status: null };
+
+async function kpCompCall(action, body) {
+  const c = typeof window !== 'undefined' && window.KP_COMPANION;
+  if (!c) return { status: 0, json: { error: 'Kapu segéd nélkül' } };
+  try {
+    const r = await fetch('/api/' + action, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Kapu-Token': c.token }, body: JSON.stringify(body) });
+    return { status: r.status, json: await r.json() };
+  } catch (e) { return { status: 0, json: { error: 'A Kapu segéd nem válaszol' } }; }
+}
+
+async function kpCompStatus() {
+  if (!window.KP_COMPANION) return null;
+  try { const r = await fetch('/api/status'); return r.ok ? await r.json() : null; } catch (e) { return null; }
+}
+
+// the repo-relative folder a node stands for ('.' = repo root); 'local' paths live next to the repo
+function kpNodeDir(c) {
+  const n = c.node, p = c.prog, s = n.src || {};
+  const dirOf = f => f.split('/').slice(0, -1).join('/') || '.';
+  if (n.kind === 'folder' || n.kind === 'local') return s.local ? '../' + s.local : null;
+  if (n.kind === 'agent' || n.kind === 'go') return s.repo ? dirOf(s.repo) : s.local ? '../' + s.local : null;
+  if (n.kind === 'git') return (s.paths || [])[0] || '.';
+  if (n.kind === 'l6folder') return s && s.path ? s.path : null;
+  if (p) {
+    const g = ((p.git && p.git.paths) || [])[0];
+    if (g) return /\.[A-Za-z0-9]+$/.test(g) ? dirOf(g) : g;
+    if (p.open && p.open.repo) return dirOf(p.open.repo);
+    if (p.open && p.open.local) return '../' + p.open.local;
+  }
+  return '.';
+}
+
+function kpCompDone(r, ok) {
+  if (r.status === 200) kpToast(r.json && r.json.dryRun ? 'Próba: ' + r.json.exe + ' ' + (r.json.args || []).join(' ') + (r.json.cwd ? ' @ ' + r.json.cwd : '') : ok);
+  else if (r.status === 403) kpToast('Ez a mappa nincs az engedélyezettek között (Hub/companion/config.json → roots)');
+  else kpToast((r.json && r.json.error) || 'A Kapu segéd hibát jelzett (' + r.status + ')');
+  return r;
+}
+const kpCompFolder = dir => kpCompCall('open-folder', { dir }).then(r => kpCompDone(r, 'Mappa megnyitva'));
+const kpCompTerminal = dir => kpCompCall('open-terminal', { dir }).then(r => kpCompDone(r, 'Terminál megnyitva'));
+const kpCompClaude = dir => kpCompCall('open-claude', { dir }).then(r => kpCompDone(r, 'Claude Code indul'));
+const kpCompTool = path => kpCompCall('open-tool', { path }).then(r => kpCompDone(r, 'Megnyitva, ahogy a START.cmd nyitja'));
+
+async function kpCompPull() {
+  const box = kpModalOpen('Frissítés a GitHubról', kpEl('p', { class: 'kp-muted' }, 'git pull --ff-only fut…'));
+  const r = await kpCompCall('git', { cmd: 'pull' });
+  const out = r.json ? [r.json.out, r.json.err].filter(Boolean).join('\n').trim() : '';
+  box.replaceChildren(box.firstChild,
+    kpEl('p', {}, r.status === 200 && r.json.ok ? 'Kész.' : 'Nem sikerült — lehet, hogy helyi változás akadályozza. A kimenet:'),
+    kpEl('pre', { class: 'kp-pre' }, out || (r.json && r.json.error) || ''),
+    kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn kp-primary', onclick: () => location.reload() }, 'Kapu újratöltése')));
+  kpComp.status = await kpCompStatus();
+}
+
+function kpCompRow() {
+  const s = kpComp.status;
+  if (!kpComp.on) return ['nem fut', kpEl('button', { class: 'kp-btn', onclick: () => kpToast('Indítsd a Hub\\VRG Kapu.cmd-vel (START.cmd: H) — a Kapu ekkor a localhost:8795 címen nyílik') }, 'Hogyan indítom?')];
+  return ['fut (localhost:' + window.KP_COMPANION.port + ')' + (s && s.branch ? ' · ág: ' + s.branch + (s.dirty ? ' · ' + s.dirty + ' helyi változás' : '') + (s.behind ? ' · ' + s.behind + ' új commit a GitHubon' : '') : ''), null];
+}
+
+function kpClaudeMenu(anchor) {
+  kpMenuClose();
+  const r = anchor.getBoundingClientRect();
+  const items = [
+    ['helyi', kpComp.on, () => kpCompClaude('.')],
+    ['web', true, () => kpOpen(KP_CLAUDE_WEB)],
+    ['indító prompt másolása', true, () => kpCopy('Olvasd el a `CLAUDE.md`-t és a `GO-HUB.md`-t, aztán mondd el, hol tartunk.', 'Az indító prompt a vágólapon')]
+  ];
+  const m = kpEl('div', { id: 'kpMenu', class: 'kp-menu', role: 'menu' }, ...items.map(([label, on, run]) =>
+    kpEl('div', { class: 'kp-mi' + (on ? '' : ' off'), role: 'menuitem', tabindex: '-1', title: on ? null : KP_WHY.companion,
+      onclick: e => { e.stopPropagation(); if (!on) return; kpMenuClose(); run(); } }, label)));
+  document.body.append(m);
+  m.style.left = Math.max(8, r.right - m.offsetWidth) + 'px';
+  m.style.top = r.bottom + 4 + 'px';
+}
+
+async function kpCompInit() {
+  document.getElementById('kpTermBtn').addEventListener('click', () => kpComp.on ? kpCompTerminal('.') : kpToast(KP_WHY.companion));
+  document.getElementById('kpClaudeBtn').addEventListener('click', e => kpClaudeMenu(e.currentTarget));
+  kpComp.status = await kpCompStatus();
+  kpComp.on = !!(kpComp.status && kpComp.status.ok);
+  kpCaps.companion = kpComp.on;
+  document.getElementById('kpTermBtn').classList.toggle('off', !kpComp.on);
+  if (kpComp.on) KP_MAIN_MENU.unshift({ label: 'Frissítés a GitHubról (git pull)', run: kpCompPull });
+}
+
 // ---- 99-boot.js
 // Boot: theme, embedded data, shell. Later WPs hang their init off kpBoot.
 
@@ -3015,7 +3114,7 @@ function kpBoot() {
   kpRefreshRestore();
   kpBoardInit();
   kpNavInit();
-  kpSigninInit().then(kpRefreshBoot);
+  kpCompInit().then(kpSigninInit).then(kpRefreshBoot);
   kpRenderStrip();
   kpMainMenuInit();
   kpLogInit();

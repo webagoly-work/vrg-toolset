@@ -51,3 +51,7 @@ CoreRef/db/
 
 # --- tools/anonymise.js: the code mapping is itself the secret ---
 tools/anonymise.map.json
+
+# --- Hub/companion: per-install secret and local settings ---
+Hub/companion/.token
+Hub/companion/config.json

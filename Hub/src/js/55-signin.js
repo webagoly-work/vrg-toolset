@@ -65,8 +65,7 @@ function kpSigninOpen() {
     kpSigninRow('Claude', kpDot('none'), '– saját fiók',
       kpEl('button', { class: 'kp-btn', onclick: () => kpOpen(KP_LOGIN.claude) }, 'Claude Code megnyitása')),
     kpSigninRow('Engedélyezett lista', kpDot(kpListDot()), kpListText()),
-    kpSigninRow('Kapu segéd', kpDot('off'), 'nem fut',
-      kpEl('button', { class: 'kp-btn', onclick: () => kpToast('Indítsd a Hub\\VRG Kapu.cmd-vel — a segéd a következő lépésekben készül el') }, 'Hogyan indítom?')),
+    kpSigninRow('Kapu segéd', kpDot(kpComp.on ? 'ok' : 'off'), ...kpCompRow()),
     kpEl('p', { class: 'kp-note' }, KP_ACCESS_NOTE));
 }
 
