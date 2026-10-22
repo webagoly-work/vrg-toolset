@@ -176,6 +176,11 @@
       },
       "agent": [
         {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/repo.md"
+        },
+        {
           "t": "CLAUDE.md",
           "d": "A repó munkaszabályai — minden AI munkamenet ezt olvassa először.",
           "repo": "CLAUDE.md"
@@ -237,6 +242,11 @@
       },
       "agent": [
         {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/launchers.md"
+        },
+        {
           "t": "check-start.js",
           "d": "Ellenőrzi, hogy a menü minden bejegyzése létező fájlra mutat.",
           "repo": "tools/check-start.js"
@@ -275,7 +285,14 @@
           "tools/prompts"
         ],
         "branch": "main"
-      }
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/prompts.md"
+        }
+      ]
     },
     {
       "id": "kit",
@@ -332,6 +349,11 @@
       },
       "agent": [
         {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/kapu.md"
+        },
+        {
           "t": "Kapu terv (docs/hub)",
           "d": "A Kapu teljes terve és munkacsomagjai.",
           "repo": "docs/hub/README.md"
@@ -382,6 +404,13 @@
           "date": "2026-09-22",
           "t": "Új kezelés: keretek, egér, kétkezes billentyűzet"
         }
+      ],
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/mindmap.md"
+        }
       ]
     },
     {
@@ -395,6 +424,11 @@
         "repo": "docs/research"
       },
       "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/research.md"
+        },
         {
           "t": "Open MCT vizsgálat",
           "d": "Mire jó az Open MCT a BRIDGE-hez.",
@@ -443,6 +477,11 @@
       },
       "agent": [
         {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/client-preview.md"
+        },
+        {
           "t": "README",
           "d": "Hogyan épül és mit tud.",
           "repo": "Planner/projects/client-preview/README.md"
@@ -475,7 +514,14 @@
           "docs/client-look"
         ],
         "branch": "main"
-      }
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/client-look.md"
+        }
+      ]
     },
     {
       "id": "lobby",
@@ -513,6 +559,11 @@
         }
       ],
       "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/planner.md"
+        },
         {
           "t": "PRIMER.md",
           "d": "Az építés/teszt menete, csapdák — először ezt.",
@@ -578,7 +629,14 @@
           "Toolbox"
         ],
         "branch": "main"
-      }
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/valena.md"
+        }
+      ]
     },
     {
       "id": "din-rail",
@@ -599,6 +657,11 @@
         "repo": "Calculator/panel_anyagar_kalkulator.html"
       },
       "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/calc-panel.md"
+        },
         {
           "t": "Kalkulátorok összefoglaló",
           "d": "Mit számol melyik kalkulátor.",
@@ -623,6 +686,11 @@
         "repo": "Calculator/Altalanos_Villanyszerelui_Kalkulator.html"
       },
       "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/calc-general.md"
+        },
         {
           "t": "Árlista (varlerÁron)",
           "d": "Az árak, amikből számol.",
@@ -656,7 +724,14 @@
           "Calculator/led_arkalkulator.html"
         ],
         "branch": "main"
-      }
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/calc-led.md"
+        }
+      ]
     },
     {
       "id": "workflow-kit",
@@ -736,6 +811,11 @@
       },
       "agent": [
         {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/inventory.md"
+        },
+        {
           "t": "Inventory README",
           "d": "Építés, teszt, adatformátum.",
           "repo": "Inventory/README.md"
@@ -769,6 +849,11 @@
         "repo": "Modder/vrg-buildtree.html"
       },
       "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/buildtree.md"
+        },
         {
           "t": "BuildTree átadó",
           "d": "Hogyan kerül be egy Modulshop számla.",
@@ -880,6 +965,11 @@
       ],
       "agent": [
         {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/bridge.md"
+        },
+        {
           "t": "BRIDGE primer",
           "d": "Egyetlen olvasmány a munka előtt.",
           "repo": "BRIDGE/BRIDGE-PRIMER-001_Session-Handover.md"
@@ -931,7 +1021,14 @@
           "BRIDGE/10_media-wall"
         ],
         "branch": "main"
-      }
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/media-wall.md"
+        }
+      ]
     },
     {
       "id": "sh-catalogue",
@@ -948,7 +1045,14 @@
           "BRIDGE/09_catalogue"
         ],
         "branch": "main"
-      }
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/sh-catalogue.md"
+        }
+      ]
     },
     {
       "id": "planner-cyd",
@@ -961,6 +1065,11 @@
         "repo": "Firmware/planner-cyd/README.md"
       },
       "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/planner-cyd.md"
+        },
         {
           "t": "README",
           "d": "Protokoll, indítás, nyitott kérdések.",
@@ -995,7 +1104,14 @@
           "Firmware/knobpad"
         ],
         "branch": "main"
-      }
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/knobpad.md"
+        }
+      ]
     },
     {
       "id": "board-console",
@@ -1017,6 +1133,13 @@
         {
           "date": "2026-10-18",
           "t": "1–2. fázis + 3a (ügynök, élő kapcsolat)"
+        }
+      ],
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/board-console.md"
         }
       ]
     },
@@ -1110,7 +1233,14 @@
           "vendor-manifest.json"
         ],
         "branch": "main"
-      }
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/licences.md"
+        }
+      ]
     },
     {
       "id": "clause",
@@ -1174,6 +1304,11 @@
       },
       "agent": [
         {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/coreref.md"
+        },
+        {
           "t": "CoreRef README",
           "d": "Rétegek, forrás, licenc szétválasztás.",
           "repo": "CoreRef/README.md"
@@ -1208,7 +1343,14 @@
           "tools/fetch-vendor.js"
         ],
         "branch": "main"
-      }
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/vendor.md"
+        }
+      ]
     },
     {
       "id": "atlas",
@@ -1241,7 +1383,14 @@
           "toolbox.html"
         ],
         "branch": "main"
-      }
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/toolbox.md"
+        }
+      ]
     },
     {
       "id": "backups",

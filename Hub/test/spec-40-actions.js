@@ -3,7 +3,8 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { KP_ACT, KP_WHY } = require('../src/js/40-actions.js');
+const { KP_ACT, KP_WHY, kpStartPrompt } = require('../src/js/40-actions.js');
+const SEED = require('../data/topology.json');
 
 // the RCO block of 03_UI §5, one label per line; "A  /  B" is one toggle entry
 function specLabels() {
@@ -28,5 +29,21 @@ module.exports = [
   { name: 'companion actions carry the reason text of §5', fn() {
     assert.strictEqual(KP_WHY.companion, 'Ehhez fusson a Kapu segéd — indítsd a VRG Kapu.cmd-vel');
     for (const id of ['folder', 'term']) assert.strictEqual(KP_ACT.find(a => a.id === id).need, 'companion');
+  } },
+  { name: 'start prompt: a program hands out its agent init, its GO node the codephrase', fn() {
+    const prog = SEED.programs.find(p => p.id === 'planner');
+    assert.strictEqual(kpStartPrompt({ node: { kind: 'program' }, prog }),
+      'Olvasd el a `docs/hub/agents/planner.md`-t, aztán dolgozzunk ezen: Varler Planner.');
+    const go = prog.agent.find(a => a.go);
+    assert.strictEqual(kpStartPrompt({ node: { kind: 'go', src: go }, prog }),
+      '`GO R1018` — olvasd el a `GO-R1018.md`-t és csináld, amit ír.');
+  } },
+  { name: 'every live/dev program with a repo path has an agent init as its first AI doc', fn() {
+    const want = SEED.programs.filter(p => /^(live|dev)$/.test(p.status) && ((p.open && p.open.repo) || ((p.git && p.git.paths) || []).length));
+    assert.ok(want.length >= 24, String(want.length));
+    for (const p of want) {
+      assert.strictEqual(p.agent[0].repo, 'docs/hub/agents/' + p.id + '.md', p.id);
+      assert.ok(fs.existsSync(path.join(__dirname, '..', '..', p.agent[0].repo)), p.id);
+    }
   } }
 ];

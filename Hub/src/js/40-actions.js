@@ -106,12 +106,13 @@ function kpTarget(c) {
   return {};
 }
 
+// a GO node hands out its codephrase; anything else its program's agent init (docs/hub/agents/), else the first doc
 function kpStartPrompt(c) {
   const p = c.prog;
+  const src = c.node.kind === 'go' || c.node.kind === 'agent' ? c.node.src || {} : {};
+  if (src.go) return '`' + src.go + '` — olvasd el a `' + src.repo + '`-t és csináld, amit ír.';
   const docs = (p && p.agent) || [];
-  const go = docs.find(a => a.go);
-  if (go) return '`' + go.go + '` — olvasd el a `' + go.repo + '`-t és csináld, amit ír.';
-  const first = docs.find(a => a.repo);
+  const first = docs.find(a => a.repo && a.repo.startsWith('docs/hub/agents/')) || docs.find(a => a.repo);
   const name = p ? p.t : c.node.title.join(' ');
   return first ? 'Olvasd el a `' + first.repo + '`-t, aztán dolgozzunk ezen: ' + name + '.' : 'Dolgozzunk ezen: ' + name + '.';
 }
@@ -287,4 +288,4 @@ function kpRenderStrip() {
     } }, f.t)));
 }
 
-if (typeof module !== 'undefined') module.exports = { KP_ACT, KP_WHY, kpCaps };
+if (typeof module !== 'undefined') module.exports = { KP_ACT, KP_WHY, kpCaps, kpStartPrompt };

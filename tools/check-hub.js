@@ -87,6 +87,22 @@ else {
   }
 }
 
+// agent init docs (WP-H12): the fixed template's 7 headings in order, at most 60 lines, a Forrás line
+const AGENTS = path.join(REPO, 'docs', 'hub', 'agents');
+const HEADS = ['1. What it is', '2. Where', '3. Read first', '4. Build / test / check', '5. Rules and traps', '6. Current state', '7. Do not touch'];
+if (fs.existsSync(AGENTS)) {
+  const docs = fs.readdirSync(AGENTS).filter(f => f.endsWith('.md') && !['README.md', 'SESSIONS.md'].includes(f));
+  const before = problems.length;
+  for (const f of docs) {
+    const lines = fs.readFileSync(path.join(AGENTS, f), 'utf8').trimEnd().split(/\r?\n/);
+    const got = lines.filter(l => l.startsWith('## ')).map(l => l.slice(3));
+    if (got.length !== HEADS.length || HEADS.some((h, i) => !got[i].startsWith(h))) bad('agents/' + f + ': headings are not the 7 of the template, in order');
+    if (lines.length > 60) bad('agents/' + f + ': ' + lines.length + ' lines (max 60)');
+    if (!/^Forrás: /.test(lines[lines.length - 1])) bad('agents/' + f + ': last line is not "Forrás: ..."');
+  }
+  if (problems.length === before) ok(docs.length + ' agent init docs follow the template');
+}
+
 const scan = [DIST, path.join(HUB, 'data')].filter(fs.existsSync).flatMap(function walk(p) {
   return fs.statSync(p).isDirectory() ? fs.readdirSync(p).flatMap(f => walk(path.join(p, f))) : [p];
 });

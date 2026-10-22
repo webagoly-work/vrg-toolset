@@ -22,7 +22,7 @@ module.exports = [
     const p = r.topo.programs.find(x => x.id === 'planner');
     assert.strictEqual(p.d, 'Új leírás');
     assert.strictEqual(p.open.url, 'https://example.test');
-    assert.strictEqual(p.agent.length, 4);
+    assert.strictEqual(p.agent.length, SEED.programs.find(x => x.id === 'planner').agent.length + 1);
     assert.strictEqual(p.claim.by, 'webagoly-work');
     assert.strictEqual(r.topo.programs.find(x => x.id === 'jegyzet').dept, 'IRO');
     assert.strictEqual(r.topo.departments.find(d => d.id === 'TERV').t, 'Tervezés');

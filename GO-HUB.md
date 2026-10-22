@@ -34,3 +34,9 @@ overlapping labels.
 User working style: phase big work, stop at checkpoints, never commit unasked, Hungarian UI text,
 English code. Never ask for, type or store a password or token — each user enters their own token in
 their own browser.
+
+## 5. Status
+
+2026-10-22: WP-H0 to H12 done on `secacc` (H12 = the agent init docs in `docs/hub/agents/`). Open:
+WP-H13 (distribution), which needs the OneDrive share links from the user. The live table is
+`docs/hub/README.md` §4.
