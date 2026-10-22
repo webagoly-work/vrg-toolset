@@ -198,7 +198,7 @@ if defined SEL_FOUND goto PROJECT
 
 echo.
 echo   Nem ervenyes valasztas.
-ping -n 2 127.0.0.1 >/dev/null 2>&1
+ping -n 2 127.0.0.1 >nul 2>&1
 goto MAIN
 
 :: ============================ PROJEKT ALMENU ===============================
@@ -314,7 +314,7 @@ if defined CSEL (
 )
 
 echo   Nem ervenyes valasztas.
-ping -n 2 127.0.0.1 >/dev/null 2>&1
+ping -n 2 127.0.0.1 >nul 2>&1
 goto PROJECT
 
 :: ========================= FEJLESZTOI ESZKOZOK =============================
@@ -543,7 +543,7 @@ exit /b 0
 :: A Zen-nek kell egy pillanat, amig az elso ablak felall; addig a
 :: -new-tab hivasok elvesznenek.
 :ZWAIT
-ping -n 4 127.0.0.1 >/dev/null 2>&1
+ping -n 4 127.0.0.1 >nul 2>&1
 exit /b 0
 
 :: =========================== ONALLO PROGRAMOK ==============================
