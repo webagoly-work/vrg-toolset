@@ -26,7 +26,8 @@ or with `git show origin/worktree-codecity:GO-ALL.md`.*
 | `planner-stack` | `wt-planner-stack`, on origin | 14 | **GO WIRE**: wireway audit, T0–T6 (up field, chain tool, tray, drawn routes), engine fixes |
 | `secacc` | SecAcc worktree, on origin | 35 | **VRG Kapu** (GO HUB, WP-H0…H13): the Homepage / Business Topology board, `Hub/`, `docs/hub/`, `tools/build-hub.js`, `tools/check-hub.js`, SECACC.md, GO-STRICT.md |
 | `worktree-codecity` | `.claude/worktrees/codecity`, on origin | 11 | **VRG Kódváros** (GO CITY, C1–C9): `CodeCity/`, `docs/city/`, START.cmd tool 11 on key **K**, God's Eye View in the vendor manifest, this file |
-| `origin/claude/new-session-mkexjy` | origin only | 1 | `53b8cc5` Views V8b: object line-art batch Konyha (05zc, 14 objects) — in no other branch |
+| `origin/claude/new-session-mkexjy` | origin only | 1 | `53b8cc5` Views V8b: object line-art batch Konyha (05zc, 14 objects) — in no other branch; cherry-picked into `dev-all` 2026-10-22 (A) |
+| `origin/claude/planner-topological-viewer-f0yhxq` | origin only | 1 | `0424485` Planner Topology View (TPO) design pack: `varler-planner/docs/topology/`, 13 WPs, figures; docs only — merged into `dev-all` 2026-10-22 (A) |
 | `planner-sui`, `planner-circuit-endpoints`, `bridge-docs`, `claude/busy-einstein-…`, `claude/github-repos-recommendation-…` | | 0 | already in `main` — nothing to take |
 
 ## 3. Do
