@@ -32,6 +32,7 @@ function kpBoot() {
   kpData.topology = kpEmbedded('kpTopology');
   kpData.access = kpEmbedded('kpAccess');
   kpData.pubkey = kpEmbedded('kpPubkey');
+  kpData.glossary = kpEmbedded('kpGlossary');
   kpSetTheme(kpStore.get('theme', 'amber'));
   kpRenderRail();
   kpGhLoad();
@@ -42,6 +43,7 @@ function kpBoot() {
   kpRenderStrip();
   kpMainMenuInit();
   kpLogInit();
+  kpExtrasInit();
   document.getElementById('kpSearchBtn').addEventListener('click', kpSearchOpen);
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
 }

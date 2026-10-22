@@ -262,6 +262,29 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 .kp-log-e h5{margin:8px 0 2px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .kp-btn.off{opacity:.5}
 .kp-pre{max-height:40vh;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px;font-size:12px;white-space:pre-wrap}
+
+/* tour */
+.kp-tour{position:fixed;inset:0;z-index:80}
+.kp-tour-hole{position:fixed;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.6);outline:2px solid var(--accent);pointer-events:none}
+.kp-tour-bubble{position:fixed;width:min(360px,90vw);background:var(--panel);border:1px solid var(--accent-dim);border-radius:10px;padding:12px 14px;box-shadow:0 12px 32px rgba(0,0,0,.45)}
+.kp-tour-bubble p{margin:6px 0 4px;font-size:14px}
+/* glossary */
+.kp-gl{text-decoration:underline dotted;text-underline-offset:3px;cursor:help}
+.kp-gloss{max-height:60vh;overflow:auto;margin:8px 0 0}
+.kp-gloss dt{font-weight:700;margin-top:8px}
+.kp-gloss dd{margin:2px 0 0 0}
+.kp-sw{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px}
+/* link check */
+.kp-dead-dot{fill:var(--red)}
+.kp-dead-list{max-height:50vh;overflow:auto;padding-left:18px}
+
+/* print: white paper, black text, only the board */
+@media print{
+  :root,[data-theme]{--bg:#fff;--panel:#fff;--panel2:#f4f4f4;--ink:#000;--muted:#333;--line:#999}
+  .kp-top,.kp-strip,.kp-banner,.kp-rail,.kp-foot,.kp-drawer,.kp-modal-root,.kp-toast,#kpRefreshBox{display:none!important}
+  body{height:auto;overflow:visible}
+  .kp-stage{position:static;height:100vh}
+}
 </style>
 </head>
 <body>
@@ -294,12 +317,13 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"DejaVu Sans",-a
 </main>
 <footer class="kp-foot"><span id="kpBuild"></span><span id="kpMode"></span></footer>
 <div id="kpModal" class="kp-modal-root"></div>
-<script type="application/json" id="kpTopology">{"schema":"vrg-hub/1","rev":1,"updated":"2026-10-21","updatedBy":"webagoly-work","repo":{"owner":"webagoly-work","name":"vrg-toolset","branch":"main","web":"https://github.com/webagoly-work/vrg-toolset"},"onedrive":{"root":"","folders":[{"id":"od-start","path":"00_START","d":"A Kapu fájl és az első lépések leírása.","dEn":"The hub file and the getting-started note."},{"id":"od-jobs","path":"10_Projektek","d":"Ügyfélmunkák mappái (ügyféladat — csak a két felhasználó).","dEn":"Client job folders (client data — the two users only)."},{"id":"od-inst","path":"20_Telepitok","d":"Telepítők és a cwebuser kit.","dEn":"Installers and the cwebuser kit."},{"id":"od-big","path":"30_Nagy_fajlok","d":"Tervrajzok, renderek, nagy adatcsomagok — ami nem fér a Gitbe.","dEn":"Blueprints, renders, big data — what does not fit in Git."},{"id":"od-vis","path":"40_Vizualis","d":"A VRG Visual Base másolata.","dEn":"A copy of the VRG Visual Base."},{"id":"od-res","path":"50_Kutatas","d":"Kutatási anyagok, letöltött források (nem publikus).","dEn":"Research material, downloaded sources (not public)."},{"id":"od-logs","path":"90_Naplok","d":"Munkanaplók, ha nem a Gitbe mennek.","dEn":"Work logs, when they do not go to Git."}]},"departments":[{"id":"ALT","t":"Általános","tEn":"General","hue":"gray","d":"Ami mindenkié: a kódtár, a közös mappa, az indítók, a telepítők.","dEn":"Shared by all: the repo, the shared drive, launchers, installers."},{"id":"VEZ","t":"Vezetés és stratégia","tEn":"Management & strategy","hue":"purple","d":"Irány, ütemterv, gondolkodó eszközök, a munka összehangolása.","dEn":"Direction, roadmaps, thinking tools, coordination."},{"id":"ERT","t":"Értékesítés és ügyfél","tEn":"Sales & customers","hue":"coral","d":"Amit az ügyfél lát: előnézet, brosúra, ügyfélfelvétel.","dEn":"What the client sees: previews, brochures, intake."},{"id":"TERV","t":"Tervezés és mérnökség","tEn":"Design & engineering","hue":"teal","d":"Villamos tervek, termékválasztás, elosztó kiosztás.","dEn":"Electrical plans, product choice, board layout."},{"id":"KALK","t":"Kalkuláció és pénzügy","tEn":"Estimating & finance","hue":"amber","d":"Anyag- és munkadíj, árajánlat, költségvetés, fizetések.","dEn":"Material and labour prices, quotes, cost plans, payments."},{"id":"BESZ","t":"Beszerzés és raktár","tEn":"Procurement & stock","hue":"green","d":"Anyag adatbázis, beszállítók, rendelés, készlet, árfigyelés.","dEn":"Item database, suppliers, orders, stock, price watch."},{"id":"KIV","t":"Kivitelezés és szerviz","tEn":"Field work & service","hue":"blue","d":"Ütemezés, helyszíni munka, átadás, mérések, utókövetés.","dEn":"Scheduling, site work, handover, measurements, after-sales."},{"id":"TFEJ","t":"Termékfejlesztés (BRIDGE)","tEn":"Product R&D (BRIDGE)","hue":"pink","d":"A BRIDGE okosotthon rendszer, hardver, firmware, konzolok.","dEn":"The BRIDGE smart-home system, hardware, firmware, consoles."},{"id":"JOG","t":"Jog és megfelelőség","tEn":"Legal & compliance","hue":"red","d":"Szabványok, kimenő dokumentumok, GDPR, licencek.","dEn":"Standards, outgoing documents, GDPR, licences."},{"id":"ARC","t":"Arculat és vizuális tartalom","tEn":"Brand & visuals","hue":"purple","d":"Arculat, képtár, nézegetők, ügyfélnek szóló megjelenés.","dEn":"Design system, visual library, viewers, client look."},{"id":"TUD","t":"Tudásbázis","tEn":"Knowledge","hue":"teal","d":"Offline referenciák, katalógusok, kutatás, ügynök-készségek.","dEn":"Offline references, catalogues, research, agent skills."},{"id":"IT","t":"IT és infrastruktúra","tEn":"IT & infrastructure","hue":"gray","d":"Fejlesztői eszközök, külső könyvtárak, mentés, biztonság.","dEn":"Dev tooling, vendored libraries, backups, security."},{"id":"IRO","t":"Iroda és csapat","tEn":"Office & people","hue":"coral","d":"Jegyzetek, emlékeztetők, levelek, névjegyek, dolgozói portál.","dEn":"Notes, reminders, mail, contacts, staff portal."}],"programs":[{"id":"repo","dept":"ALT","t":"GitHub kódtár (vrg-toolset)","status":"live","d":"Itt van minden kód és szöveges leírás. Privát: csak meghívottak látják.","dEn":"All code and text docs live here. Private: invited people only.","long":"A **repó** (repository) egy mappa, ami minden változást megjegyez. Minden mentés egy *commit* (dátum, szerző, mi változott). A *branch* egy párhuzamos munkavonal. A `main` a közös, kész állapot. Ide nem kerülhet jelszó, ügyfél PDF, és a hordozható programok mappája (`Planner/apps`, `home`, `data`).","open":{"url":"https://github.com/webagoly-work/vrg-toolset"},"agent":[{"t":"CLAUDE.md","d":"A repó munkaszabályai — minden AI munkamenet ezt olvassa először.","repo":"CLAUDE.md"}],"git":{"paths":[""],"branch":"main"},"roadmap":[{"date":"2026-09-17","t":"Repó létrehozva"},{"date":"2026-09-19","t":"Első feltöltés a GitHubra"},{"date":"2026-10-16","t":"planner-stack beolvasztva a main ágba"}]},{"id":"onedrive","dept":"ALT","t":"Megosztott OneDrive","status":"idea","d":"A nagy fájlok közös helye: tervrajzok, renderek, ügyfélmappák, telepítők.","dEn":"The shared place for big files: plans, renders, job folders, installers.","long":"A Git a kódnak és a szövegnek való; ami nagy vagy ügyféladat, az a OneDrive-ra kerül. Minden mappát csak a két felhasználóval kell megosztani (\"Adott személyek\"). A Kapu a megosztási linkeket mutatja; a hozzáférést a OneDrive dönti el.","open":{"url":""},"folders":[{"ref":"od-start"},{"ref":"od-big"},{"ref":"od-logs"}]},{"id":"launchers","dept":"ALT","t":"Indítópult (START.cmd · VRG-DE.cmd)","status":"live","d":"A parancsablakos menük, amik minden eszközt elindítanak.","dEn":"The command-window menus that start every tool.","open":{"repo":"Planner/START.cmd"},"agent":[{"t":"check-start.js","d":"Ellenőrzi, hogy a menü minden bejegyzése létező fájlra mutat.","repo":"tools/check-start.js"}],"git":{"paths":["Planner/START.cmd","VRG-DE.cmd"],"branch":"main"},"roadmap":[{"date":"2026-09-21","t":"VRG-DE.cmd első változat; START.cmd rendbetéve"},{"date":"2026-10-18","t":"U) Board Console bejegyzés"}]},{"id":"prompts","dept":"ALT","t":"Prompt könyvtár","status":"live","d":"Kész kezdő szövegek Claude Code munkamenetekhez (új funkció, hibakeresés, review…).","dEn":"Ready starting prompts for Claude Code sessions.","open":{"repo":"tools/prompts"},"git":{"paths":["tools/prompts"],"branch":"main"}},{"id":"kit","dept":"ALT","t":"cwebuser kit","status":"live","d":"Hordozható Claude Code munkakörnyezet bármely Windows gépre (pendrive-ról vagy telepítve).","dEn":"Portable Claude Code workspace for any Windows PC.","long":"Két mód: **A** — futtatás pendrive-ról, semmit nem telepít; **B** — telepítés a gép munkameghajtójára egy `cwebuser` mappába. Ezzel tud a kolléga gyorsan nekiállni.","open":{"url":""},"folders":[{"ref":"od-inst"}],"roadmap":[{"date":"2026-10-17","t":"Kit V2 elkészült"},{"date":"2026-10-21","t":"H: meghajtó átrendezés 1. szakasza kész"}]},{"id":"installers","dept":"ALT","t":"Telepítők","status":"idea","d":"Saját programgyűjtemény telepítői — letöltés a OneDrive mappából.","dEn":"The private installer collection — download from the OneDrive folder.","open":{"url":""},"folders":[{"ref":"od-inst"}]},{"id":"kapu","dept":"VEZ","t":"VRG Kapu","status":"dev","d":"Ez az oldal: a közös térkép és kiindulópont.","dEn":"This page: the shared map and front door.","open":{"repo":"Hub/dist/vrg-kapu.html"},"agent":[{"t":"Kapu terv (docs/hub)","d":"A Kapu teljes terve és munkacsomagjai.","repo":"docs/hub/README.md"},{"t":"GO-HUB.md","d":"Indító brief a Kapu építéséhez.","repo":"GO-HUB.md"}],"git":{"paths":["Hub","docs/hub"],"branch":"main"},"roadmap":[{"date":"2026-10-21","t":"Terv + Business Topology + build pack"}]},{"id":"mindmap","dept":"VEZ","t":"VRG MindMap","status":"live","d":"Gondolattérkép rétegekkel, keretekkel és jegyzetekkel.","dEn":"Mind map with layers, frames and notes.","long":"Egyetlen HTML fájl. Buborékok, keretek, színes kapcsolat-rétegek, rétegekhez kötött markdown jegyzetek, és egy spirál (helix) nézet. Billentyűzettel is teljesen kezelhető.","open":{"repo":"MindMap/vrg_mindmap.html"},"git":{"paths":["MindMap"],"branch":"main"},"roadmap":[{"date":"2026-09-16","t":"A–E ütemterv: témák, menük, rétegek, jegyzetek, helix"},{"date":"2026-09-22","t":"Új kezelés: keretek, egér, kétkezes billentyűzet"}]},{"id":"research","dept":"VEZ","t":"Kutatási jegyzetek","status":"live","d":"Hosszabb vizsgálatok: CAD források, Open MCT, REA.","dEn":"Longer studies: CAD sources, Open MCT, REA.","open":{"repo":"docs/research"},"agent":[{"t":"Open MCT vizsgálat","d":"Mire jó az Open MCT a BRIDGE-hez.","repo":"docs/research/2026-10-20_openmct-planner-bridge.md"},{"t":"CAD források + MCP","d":"Hogyan kapjon a Planner DXF-et és MCP-t.","repo":"docs/research/2026-10-19_cad-sources-and-mcp.md"}],"git":{"paths":["docs/research"],"branch":"main"},"roadmap":[{"date":"2026-10-19","t":"CAD források és Planner MCP"},{"date":"2026-10-20","t":"Open MCT + REA vizsgálat"}]},{"id":"dispatch","dept":"VEZ","t":"Dispatch","status":"v2","d":"Ügynök-koordinátor: a feladatot a megfelelő programhoz és briefhez irányítja.","dEn":"Agent coordinator: routes a task to the right program and brief."},{"id":"client-preview","dept":"ERT","t":"Client Preview","status":"dev","d":"3D előnézet a tervről az ügyfélnek, filmes hangulattal.","dEn":"3D preview of the plan for the client, cinematic look.","open":{"repo":"Planner/projects/client-preview"},"agent":[{"t":"README","d":"Hogyan épül és mit tud.","repo":"Planner/projects/client-preview/README.md"},{"t":"Átadó jegyzet 2026-10-09","d":"Előnézet + útvonaltervezés háttere.","repo":"Planner/projects/varler-planner/docs/stack/HANDOVER-2026-10-09_client-preview-and-routing.md"}],"git":{"paths":["Planner/projects/client-preview"],"branch":"main"}},{"id":"client-look","dept":"ERT","t":"Ügyfél megjelenés (Title Card)","status":"dev","d":"Az ügyfélnek szóló anyagok vizuális iránya.","dEn":"The visual direction of client material.","open":{"repo":"docs/client-look/directions.html"},"git":{"paths":["docs/client-look"],"branch":"main"}},{"id":"lobby","dept":"ERT","t":"Lobby","status":"v2","d":"Ügyfélnyilvántartás GDPR szerint: adatok egy helyen, kóddal hivatkozva.","dEn":"GDPR-safe client register: data in one place, referred to by code."},{"id":"scout","dept":"ERT","t":"Scout","status":"v2","d":"Helyszíni felmérés telefonról: fotó, méret, hangjegyzet → Planner és árajánlat.","dEn":"On-site survey from a phone → Planner and quote inputs."},{"id":"planner","dept":"TERV","t":"Varler Planner","status":"live","d":"A fő tervezőprogram: alaprajz, eszközök, körök, vezetékezés, BRIDGE, nézetek.","dEn":"The main design tool: plans, devices, circuits, wiring, BRIDGE, views.","long":"Moduláris forrásból (`src/`) egyetlen HTML-be épül (`dist/varler_planner.html`). Tud: alaprajz és szintek, eszközök és kapcsolók, áramkörök, Erősáram motor (pályák, vezetékek), BRIDGE stack, nézetek (lapos / 2.5D / robbantott), Födém, Igénylista, Házimozi. Építés: `node build.js`, teszt: `node tests/run.js`.","open":{"repo":"Planner/projects/varler-planner/dist/varler_planner.html"},"folders":[{"t":"Planner projektek (2026-10-16)","d":"Mentett tervfájlok.","local":"Planner_projektek_2026-10-16","url":""}],"agent":[{"t":"PRIMER.md","d":"Az építés/teszt menete, csapdák — először ezt.","repo":"Planner/projects/varler-planner/docs/PRIMER.md"},{"t":"Planner CLAUDE.md","d":"A Planner saját munkaszabályai.","repo":"Planner/projects/varler-planner/CLAUDE.md"},{"t":"GO-R1018.md","d":"Folytató brief: Födém · Igénylista · Mozi.","repo":"GO-R1018.md","go":"GO R1018"}],"git":{"paths":["Planner/projects/varler-planner"],"branch":"main"},"roadmap":[{"date":"2026-10-07","t":"BRIDGE Stack A1–E5"},{"date":"2026-10-10","t":"Kör 2026-10-10: U1–U7 + G1"},{"date":"2026-10-14","t":"Nézetek V1–V7, munkafolyamat F1–F4 O1 O2 R1–R4 E0–E3"},{"date":"2026-10-16","t":"Egyesített munkaverzió a main ágon (eszköz 1)"},{"date":"2026-10-18","t":"Födém · Igénylista · Házimozi C1–C7"},{"date":"2026-10-19","t":"Vezetékcsatorna T0–T6; kör utómunka"}]},{"id":"valena","dept":"TERV","t":"Valena választó","status":"live","d":"Legrand Valena Life termékcsalád választó és szerelvénytervező.","dEn":"Legrand Valena Life product picker.","open":{"repo":"Toolbox/valena-life-szerelvenytervezo.html"},"git":{"paths":["Toolbox"],"branch":"main"}},{"id":"din-rail","dept":"TERV","t":"Elosztó DIN-sín tervező","status":"idea","d":"Húzd-és-ejtsd elosztótábla tervező, az Inventory adataiból.","dEn":"Drag-and-drop distribution board builder fed by the Inventory."},{"id":"calc-panel","dept":"KALK","t":"Panel anyagár kalkulátor","status":"live","d":"Panelházas munkák anyagköltsége.","dEn":"Material cost for panel-flat jobs.","open":{"repo":"Calculator/panel_anyagar_kalkulator.html"},"agent":[{"t":"Kalkulátorok összefoglaló","d":"Mit számol melyik kalkulátor.","repo":"Calculator/varleraron_kalkulatorok_osszefoglalo.md"}],"git":{"paths":["Calculator/panel_anyagar_kalkulator.html"],"branch":"main"}},{"id":"calc-general","dept":"KALK","t":"Általános villanyszerelői kalkulátor","status":"live","d":"Munkadíj és anyag tételes számolása.","dEn":"Itemised labour and material calculation.","open":{"repo":"Calculator/Altalanos_Villanyszerelui_Kalkulator.html"},"agent":[{"t":"Árlista (varlerÁron)","d":"Az árak, amikből számol.","repo":"Calculator/Villanyszerelesi_Arlista_VarlerAron.md"},{"t":"Komplexitás faktorok","d":"Nehézségi szorzók könyvtára.","repo":"Calculator/komplexitas_faktorkonyvtar_v1.md"}],"git":{"paths":["Calculator/Altalanos_Villanyszerelui_Kalkulator.html"],"branch":"main"}},{"id":"calc-led","dept":"KALK","t":"LED árkalkulátor","status":"live","d":"LED szalagos világítás költsége.","dEn":"LED strip lighting cost.","open":{"repo":"Calculator/led_arkalkulator.html"},"git":{"paths":["Calculator/led_arkalkulator.html"],"branch":"main"}},{"id":"workflow-kit","dept":"KALK","t":"Varler Workflow Kit","status":"live","d":"Árajánlat-munkafolyamat: kérdéssor → Költségvetési Tervezet és Árajánlat PDF.","dEn":"Quote workflow: question funnel → cost plan and quote PDFs.","long":"A Git-en kívül él (`Varler_Workflow_Kit`). Olvasható, verziózott kit + egy kis Esetlap munkánként. Három kérdéskör, utána a dokumentumok az NV4 minta szerint, ellenőrzővel. Ügyféladat van benne — csak OneDrive-on, a két felhasználónak.","open":{"local":"Varler_Workflow_Kit/README.md"},"folders":[{"t":"Workflow Kit mappa","d":"A kit maga (Git-en kívül).","local":"Varler_Workflow_Kit","url":""},{"ref":"od-jobs"}],"agent":[{"t":"Kit README","d":"Hogyan indíts új munkát a kittel.","local":"Varler_Workflow_Kit/README.md"},{"t":"Folytató prompt","d":"A kit munkamenet indító szövege.","local":"Varler_Workflow_Kit/START_PROMPT_folytatas.md"}],"roadmap":[{"date":"2026-10-11","t":"Kit indul az NV4 munkából"},{"date":"2026-10-12","t":"1–4. lépés + P33 Tervezet átadva"},{"date":"2026-10-14","t":"L-1…L-18 válaszok, kérdéssor v1.2"}]},{"id":"insight","dept":"KALK","t":"Insight","status":"v2","d":"Árajánlatok archívuma, becslés vs. valóság, kalkulátor finomhangolás.","dEn":"Quote archive, estimate vs. actual, calculator calibration."},{"id":"till","dept":"KALK","t":"Till","status":"v2","d":"Számlázás, előleg, fizetési állapot munkánként.","dEn":"Invoicing, deposits, payment status per job."},{"id":"inventory","dept":"BESZ","t":"VRG Inventory","status":"live","d":"Az anyag adatbázis: 221 tétel, beszállító-független.","dEn":"The item database: 221 items, vendor-neutral.","long":"Moduláris forrás, egy fájlos kiadás (`dist/vrg-inventory.html`). A közös mezők felül, a beszállítói adatok külön blokkban. Az ár a Daniella partner nettó ár — nem összevethető webshop bruttóval ÁFA és kedvezmény nélkül.","open":{"repo":"Inventory/dist/vrg-inventory.html"},"agent":[{"t":"Inventory README","d":"Építés, teszt, adatformátum.","repo":"Inventory/README.md"}],"git":{"paths":["Inventory"],"branch":"main"},"roadmap":[{"date":"2026-09-19","t":"Nyers kinyerés 53 levélből"},{"date":"2026-09-20","t":"Mind a 10 fázis kész"}]},{"id":"buildtree","dept":"BESZ","t":"VRG BuildTree","status":"live","d":"Modulshop alkatrészlista, és a programok közös színpalettája.","dEn":"Modulshop part list and the toolset colour palette.","open":{"repo":"Modder/vrg-buildtree.html"},"agent":[{"t":"BuildTree átadó","d":"Hogyan kerül be egy Modulshop számla.","repo":"Modder/VRG-BuildTree-HANDOFF.md"}],"git":{"paths":["Modder"],"branch":"main"},"roadmap":[{"date":"2026-10-09","t":"Készlet export"},{"date":"2026-10-13","t":"Adatbázis export"}]},{"id":"picker","dept":"BESZ","t":"Picker","status":"v2","d":"Igénylistából szedési lista és rendelés-tervezet beszállítónként.","dEn":"Picking list and order drafts per supplier from the request list."},{"id":"radar","dept":"BESZ","t":"Radar","status":"v2","d":"Ár- és készletfigyelő: célár vadászat, értesítés.","dEn":"Price and stock watch: target-price hunting, alerts."},{"id":"jobs","dept":"KIV","t":"Ügyfélmunkák","status":"live","d":"Átadott munkacsomagok (P33, NV4). Ügyféladat — csak a két felhasználó.","dEn":"Delivered job packages (P33, NV4). Client data — two users only.","folders":[{"t":"P33 ajánlat","local":"P33_ajanlat","url":""},{"t":"P33 költségvetési tervezet","local":"P33_koltsegvetesi_tervezet","url":""},{"t":"NV4 ajánlat","local":"NV4_ajanlat","url":""},{"ref":"od-jobs"}]},{"id":"shift","dept":"KIV","t":"Shift","status":"v2","d":"Munkák ütemezése: fázisok, ki hol van, anyag érkezés.","dEn":"Job scheduling: phases, who is where, deliveries."},{"id":"proof","dept":"KIV","t":"Proof","status":"v2","d":"Átadás: mérési jegyzőkönyvek, megvalósulási terv, garancia csomag.","dEn":"Handover: measurement protocols, as-built, warranty pack."},{"id":"care","dept":"KIV","t":"Care","status":"v2","d":"Szerviz és utókövetés: hibajegy, garancia, időszakos felülvizsgálat.","dEn":"Service and after-sales: tickets, warranty, periodic checks."},{"id":"bridge","dept":"TFEJ","t":"BRIDGE okosotthon","status":"dev","d":"Saját okosotthon rendszer: architektúra, szabványok, P33 építés.","dEn":"Own smart-home system: architecture, standards, P33 build.","long":"Kilenc szabvány (STD-001…009), egységflotta, P33 mint első épület. A kiinduló olvasmány a primer; a `01_`–`04_` forrás korpuszt nem kell olvasni.","open":{"repo":"BRIDGE/README.md"},"folders":[{"t":"BRIDGE nagy fájlok","d":"PDF-ek, render, P33 alaprajz (Git-en kívül).","url":""}],"agent":[{"t":"BRIDGE primer","d":"Egyetlen olvasmány a munka előtt.","repo":"BRIDGE/BRIDGE-PRIMER-001_Session-Handover.md"},{"t":"Általános vázlat","d":"A rendszer áttekintése.","repo":"BRIDGE/BRIDGE-OUTLINE-001_General-Outline.md"},{"t":"Szabványok","d":"STD-001…009.","repo":"BRIDGE/05_standards/README.md"}],"git":{"paths":["BRIDGE"],"branch":"main"},"roadmap":[{"date":"2026-10-06","t":"Primer, BRIDGE a repóban"},{"date":"2026-10-11","t":"Okosotthon katalógus kör"},{"date":"2026-10-21","t":"Media Wall MW-001 r0"}]},{"id":"media-wall","dept":"TFEJ","t":"BRIDGE Media Wall","status":"dev","d":"Médiafal koncepció, három kiépítési szint egy vázon.","dEn":"Media wall concept, three tiers on one carcass.","open":{"repo":"BRIDGE/10_media-wall/BRIDGE-MW-001_Media-Wall.md"},"git":{"paths":["BRIDGE/10_media-wall"],"branch":"main"}},{"id":"sh-catalogue","dept":"TFEJ","t":"Okosotthon katalógus","status":"dev","d":"Okosotthon eszköz adatbázis és böngésző oldal.","dEn":"Smart-home device database and browser page.","open":{"repo":"BRIDGE/09_catalogue/smarthome-db.html"},"git":{"paths":["BRIDGE/09_catalogue"],"branch":"main"}},{"id":"planner-cyd","dept":"TFEJ","t":"Planner CYD","status":"dev","d":"Asztali kijelző és távirányító a Plannerhez (ESP32 CYD).","dEn":"Desk display and remote for the Planner (ESP32 CYD).","open":{"repo":"Firmware/planner-cyd/README.md"},"agent":[{"t":"README","d":"Protokoll, indítás, nyitott kérdések.","repo":"Firmware/planner-cyd/README.md"}],"git":{"paths":["Firmware/planner-cyd"],"branch":"main"},"roadmap":[{"date":"2026-10-17","t":"v0.7: KEZDŐLAP, makró készletek, magyar betűk"}]},{"id":"knobpad","dept":"TFEJ","t":"VRG Knob Pad","status":"dev","d":"Három forgatógombos USB vezérlő, webes beállítással.","dEn":"Three-encoder USB controller with web config.","open":{"repo":"Firmware/knobpad/README.md"},"git":{"paths":["Firmware/knobpad"],"branch":"main"}},{"id":"board-console","dept":"TFEJ","t":"Board Console","status":"dev","d":"Vezérlő oldal az univerzális ESP32-S3 fejlesztő panelhez.","dEn":"Control page for the universal ESP32-S3 dev board.","open":{"repo":"Firmware/board-console/README.md"},"git":{"paths":["Firmware/board-console"],"branch":"main"},"roadmap":[{"date":"2026-10-18","t":"1–2. fázis + 3a (ügynök, élő kapcsolat)"}]},{"id":"omct","dept":"TFEJ","t":"Konzol (Open MCT)","status":"idea","d":"Telemetria konzol BRIDGE telepítésekhez — most csak kísérlet.","dEn":"Telemetry console for BRIDGE installs — spike only for now.","open":{"repo":"docs/research/openmct-spike"},"agent":[{"t":"Open MCT vizsgálat","d":"Döntés és terv (OM-1…).","repo":"docs/research/2026-10-20_openmct-planner-bridge.md"}],"git":{"paths":["docs/research/openmct-spike"],"branch":"main"},"roadmap":[{"date":"2026-10-20","t":"Kísérlet működik P33-on"}]},{"id":"esp-lab","dept":"TFEJ","t":"ESP lab + BRIDGEcomp","status":"dev","d":"Hardver kísérletek és az eredeti BRIDGE források (Git-en kívül).","dEn":"Hardware experiments and the original BRIDGE sources (outside Git).","folders":[{"t":"ESP_lab","local":"ESP_lab","url":""},{"t":"BRIDGEcomp","local":"BRIDGEcomp","url":""}]},{"id":"lab","dept":"TFEJ","t":"Lab","status":"v2","d":"Önfejlesztés: naplókból és adatokból javasol új kutatást és szabályt.","dEn":"Self-improvement: proposes research and rules from logs and data."},{"id":"doc-rules","dept":"JOG","t":"Kimenő dokumentum szabályok","status":"live","d":"A Költségvetési Tervezet szövegezési szabályai (soha nem \"ajánlat\", anyagelőleg, kerek árak).","dEn":"Wording rules for cost plans.","folders":[{"t":"Workflow Kit védett szövegek","local":"Varler_Workflow_Kit/01_nv4_build/02_golden_nv4","url":""}]},{"id":"licences","dept":"JOG","t":"Licenc nyilvántartás","status":"live","d":"Minden külső forrás rögzítve, a licenc a kóddal együtt utazik.","dEn":"Every third-party source pinned; the licence travels with the code.","open":{"repo":"vendor-manifest.json"},"git":{"paths":["vendor-manifest.json"],"branch":"main"}},{"id":"clause","dept":"JOG","t":"Clause","status":"v2","d":"Kimenő dokumentum sablonok, védett jogi szövegek, MSZ HD jegyzetek.","dEn":"Outgoing document templates, protected wording, MSZ HD notes."},{"id":"shield","dept":"JOG","t":"Shield","status":"v2","d":"Hozzáférés, titok-ellenőrzés, mentés, GDPR nyilvántartás.","dEn":"Access, secret scanning, backups, GDPR register."},{"id":"visual-base","dept":"ARC","t":"VRG Visual Base","status":"live","d":"Képtár: 252 összegyűjtött vizuál, panel rajzok, topológia kiindulás.","dEn":"Visual library: 252 collected visuals, board drawings, topology starter.","folders":[{"t":"Visual Base","local":"../VRG_Visual_Base","url":""},{"ref":"od-vis"}]},{"id":"studio","dept":"ARC","t":"Studio","status":"v2","d":"Vizuális tartalmak kezelése, arculati komponensek.","dEn":"Visual asset management, design-system components."},{"id":"lens","dept":"ARC","t":"Lens","status":"v2","d":"Univerzális nézegető minden kimeneti formátumhoz.","dEn":"Universal viewer for every output format."},{"id":"coreref","dept":"TUD","t":"CoreRef","status":"dev","d":"Offline ESPHome / Home Assistant referencia adatbázis.","dEn":"Offline ESPHome / Home Assistant reference database.","open":{"repo":"CoreRef/README.md"},"agent":[{"t":"CoreRef README","d":"Rétegek, forrás, licenc szétválasztás.","repo":"CoreRef/README.md"}],"git":{"paths":["CoreRef"],"branch":"main"},"roadmap":[{"date":"2026-10-09","t":"0. fázis: gyűjtés kész"}]},{"id":"vendor","dept":"TUD","t":"VRG Vendor","status":"live","d":"A beemelt külső komponensek katalógusa.","dEn":"Catalogue of vendored third-party components.","open":{"repo":"vrg-vendor.html"},"git":{"paths":["vrg-vendor.html","tools/fetch-vendor.js"],"branch":"main"}},{"id":"atlas","dept":"TUD","t":"Atlas","status":"v2","d":"Offline katalógus mindenről, saját keresővel, import/export.","dEn":"Offline catalogue of everything, with search and import/export."},{"id":"forge","dept":"TUD","t":"Forge","status":"v2","d":"Ügynök-készségek: 3D elrendezés, DXF, topológia és bekötési rajzok.","dEn":"Agent skills: 3D layout, DXF, topology and terminal drawings."},{"id":"toolbox","dept":"IT","t":"Toolbox","status":"live","d":"Kisebb, fejlesztés alatt álló eszközök gyűjtőoldala.","dEn":"Collection page of small tools in development.","open":{"repo":"toolbox.html"},"git":{"paths":["toolbox.html"],"branch":"main"}},{"id":"backups","dept":"IT","t":"Mentések","status":"live","d":"Helyi tükör repó és git mentések. A GitHub a fő másolat.","dEn":"Local mirror remote and git backups. GitHub is the main copy."},{"id":"desk","dept":"IRO","t":"Desk","status":"v2","d":"Jegyzettömb, emlékeztetők, levéltervezetek, névjegyek.","dEn":"Notepad, reminders, mail drafts, contacts."},{"id":"crew","dept":"IRO","t":"Crew","status":"v2","d":"Dolgozói portál és haladásnapló idővonallal.","dEn":"Staff portal and progress logger with a timeline."}]}</script>
+<script type="application/json" id="kpTopology">{"schema":"vrg-hub/1","rev":1,"updated":"2026-10-21","updatedBy":"webagoly-work","repo":{"owner":"webagoly-work","name":"vrg-toolset","branch":"main","web":"https://github.com/webagoly-work/vrg-toolset"},"onedrive":{"root":"","folders":[{"id":"od-start","path":"00_START","d":"A Kapu fájl és az első lépések leírása.","dEn":"The hub file and the getting-started note."},{"id":"od-jobs","path":"10_Projektek","d":"Ügyfélmunkák mappái (ügyféladat — csak a két felhasználó).","dEn":"Client job folders (client data — the two users only)."},{"id":"od-inst","path":"20_Telepitok","d":"Telepítők és a cwebuser kit.","dEn":"Installers and the cwebuser kit."},{"id":"od-big","path":"30_Nagy_fajlok","d":"Tervrajzok, renderek, nagy adatcsomagok — ami nem fér a Gitbe.","dEn":"Blueprints, renders, big data — what does not fit in Git."},{"id":"od-vis","path":"40_Vizualis","d":"A VRG Visual Base másolata.","dEn":"A copy of the VRG Visual Base."},{"id":"od-res","path":"50_Kutatas","d":"Kutatási anyagok, letöltött források (nem publikus).","dEn":"Research material, downloaded sources (not public)."},{"id":"od-logs","path":"90_Naplok","d":"Munkanaplók, ha nem a Gitbe mennek.","dEn":"Work logs, when they do not go to Git."}]},"departments":[{"id":"ALT","t":"Általános","tEn":"General","hue":"gray","d":"Ami mindenkié: a kódtár, a közös mappa, az indítók, a telepítők.","dEn":"Shared by all: the repo, the shared drive, launchers, installers."},{"id":"VEZ","t":"Vezetés és stratégia","tEn":"Management & strategy","hue":"purple","d":"Irány, ütemterv, gondolkodó eszközök, a munka összehangolása.","dEn":"Direction, roadmaps, thinking tools, coordination."},{"id":"ERT","t":"Értékesítés és ügyfél","tEn":"Sales & customers","hue":"coral","d":"Amit az ügyfél lát: előnézet, brosúra, ügyfélfelvétel.","dEn":"What the client sees: previews, brochures, intake."},{"id":"TERV","t":"Tervezés és mérnökség","tEn":"Design & engineering","hue":"teal","d":"Villamos tervek, termékválasztás, elosztó kiosztás.","dEn":"Electrical plans, product choice, board layout."},{"id":"KALK","t":"Kalkuláció és pénzügy","tEn":"Estimating & finance","hue":"amber","d":"Anyag- és munkadíj, árajánlat, költségvetés, fizetések.","dEn":"Material and labour prices, quotes, cost plans, payments."},{"id":"BESZ","t":"Beszerzés és raktár","tEn":"Procurement & stock","hue":"green","d":"Anyag adatbázis, beszállítók, rendelés, készlet, árfigyelés.","dEn":"Item database, suppliers, orders, stock, price watch."},{"id":"KIV","t":"Kivitelezés és szerviz","tEn":"Field work & service","hue":"blue","d":"Ütemezés, helyszíni munka, átadás, mérések, utókövetés.","dEn":"Scheduling, site work, handover, measurements, after-sales."},{"id":"TFEJ","t":"Termékfejlesztés (BRIDGE)","tEn":"Product R&D (BRIDGE)","hue":"pink","d":"A BRIDGE okosotthon rendszer, hardver, firmware, konzolok.","dEn":"The BRIDGE smart-home system, hardware, firmware, consoles."},{"id":"JOG","t":"Jog és megfelelőség","tEn":"Legal & compliance","hue":"red","d":"Szabványok, kimenő dokumentumok, GDPR, licencek.","dEn":"Standards, outgoing documents, GDPR, licences."},{"id":"ARC","t":"Arculat és vizuális tartalom","tEn":"Brand & visuals","hue":"purple","d":"Arculat, képtár, nézegetők, ügyfélnek szóló megjelenés.","dEn":"Design system, visual library, viewers, client look."},{"id":"TUD","t":"Tudásbázis","tEn":"Knowledge","hue":"teal","d":"Offline referenciák, katalógusok, kutatás, ügynök-készségek.","dEn":"Offline references, catalogues, research, agent skills."},{"id":"IT","t":"IT és infrastruktúra","tEn":"IT & infrastructure","hue":"gray","d":"Fejlesztői eszközök, külső könyvtárak, mentés, biztonság.","dEn":"Dev tooling, vendored libraries, backups, security."},{"id":"IRO","t":"Iroda és csapat","tEn":"Office & people","hue":"coral","d":"Jegyzetek, emlékeztetők, levelek, névjegyek, dolgozói portál.","dEn":"Notes, reminders, mail, contacts, staff portal."}],"programs":[{"id":"repo","dept":"ALT","t":"GitHub kódtár (vrg-toolset)","status":"live","d":"Itt van minden kód és szöveges leírás. Privát: csak meghívottak látják.","dEn":"All code and text docs live here. Private: invited people only.","long":"A **repó** (repository) egy mappa, ami minden változást megjegyez. Minden mentés egy *commit* (dátum, szerző, mi változott). A *branch* egy párhuzamos munkavonal. A `main` a közös, kész állapot. Ide nem kerülhet jelszó, ügyfél PDF, és a hordozható programok mappája (`Planner/apps`, `home`, `data`).","open":{"url":"https://github.com/webagoly-work/vrg-toolset"},"agent":[{"t":"CLAUDE.md","d":"A repó munkaszabályai — minden AI munkamenet ezt olvassa először.","repo":"CLAUDE.md"}],"git":{"paths":[""],"branch":"main"},"roadmap":[{"date":"2026-09-17","t":"Repó létrehozva"},{"date":"2026-09-19","t":"Első feltöltés a GitHubra"},{"date":"2026-10-16","t":"planner-stack beolvasztva a main ágba"}]},{"id":"onedrive","dept":"ALT","t":"Megosztott OneDrive","status":"idea","d":"A nagy fájlok közös helye: tervrajzok, renderek, ügyfélmappák, telepítők.","dEn":"The shared place for big files: plans, renders, job folders, installers.","long":"A Git a kódnak és a szövegnek való; ami nagy vagy ügyféladat, az a OneDrive-ra kerül. Minden mappát csak a két felhasználóval kell megosztani (\"Adott személyek\"). A Kapu a megosztási linkeket mutatja; a hozzáférést a OneDrive dönti el.","open":{"url":""},"folders":[{"ref":"od-start"},{"ref":"od-big"},{"ref":"od-logs"}]},{"id":"launchers","dept":"ALT","t":"Indítópult (START.cmd · VRG-DE.cmd)","status":"live","d":"A parancsablakos menük, amik minden eszközt elindítanak.","dEn":"The command-window menus that start every tool.","open":{"repo":"Planner/START.cmd"},"agent":[{"t":"check-start.js","d":"Ellenőrzi, hogy a menü minden bejegyzése létező fájlra mutat.","repo":"tools/check-start.js"}],"git":{"paths":["Planner/START.cmd","VRG-DE.cmd"],"branch":"main"},"roadmap":[{"date":"2026-09-21","t":"VRG-DE.cmd első változat; START.cmd rendbetéve"},{"date":"2026-10-18","t":"U) Board Console bejegyzés"}]},{"id":"prompts","dept":"ALT","t":"Prompt könyvtár","status":"live","d":"Kész kezdő szövegek Claude Code munkamenetekhez (új funkció, hibakeresés, review…).","dEn":"Ready starting prompts for Claude Code sessions.","open":{"repo":"tools/prompts"},"git":{"paths":["tools/prompts"],"branch":"main"}},{"id":"kit","dept":"ALT","t":"cwebuser kit","status":"live","d":"Hordozható Claude Code munkakörnyezet bármely Windows gépre (pendrive-ról vagy telepítve).","dEn":"Portable Claude Code workspace for any Windows PC.","long":"Két mód: **A** — futtatás pendrive-ról, semmit nem telepít; **B** — telepítés a gép munkameghajtójára egy `cwebuser` mappába. Ezzel tud a kolléga gyorsan nekiállni.","open":{"url":""},"folders":[{"ref":"od-inst"}],"roadmap":[{"date":"2026-10-17","t":"Kit V2 elkészült"},{"date":"2026-10-21","t":"H: meghajtó átrendezés 1. szakasza kész"}]},{"id":"installers","dept":"ALT","t":"Telepítők","status":"idea","d":"Saját programgyűjtemény telepítői — letöltés a OneDrive mappából.","dEn":"The private installer collection — download from the OneDrive folder.","open":{"url":""},"folders":[{"ref":"od-inst"}]},{"id":"kapu","dept":"VEZ","t":"VRG Kapu","status":"dev","d":"Ez az oldal: a közös térkép és kiindulópont.","dEn":"This page: the shared map and front door.","open":{"repo":"Hub/dist/vrg-kapu.html"},"agent":[{"t":"Kapu terv (docs/hub)","d":"A Kapu teljes terve és munkacsomagjai.","repo":"docs/hub/README.md"},{"t":"GO-HUB.md","d":"Indító brief a Kapu építéséhez.","repo":"GO-HUB.md"}],"git":{"paths":["Hub","docs/hub"],"branch":"main"},"roadmap":[{"date":"2026-10-21","t":"Terv + Business Topology + build pack"}]},{"id":"mindmap","dept":"VEZ","t":"VRG MindMap","status":"live","d":"Gondolattérkép rétegekkel, keretekkel és jegyzetekkel.","dEn":"Mind map with layers, frames and notes.","long":"Egyetlen HTML fájl. Buborékok, keretek, színes kapcsolat-rétegek, rétegekhez kötött markdown jegyzetek, és egy spirál (helix) nézet. Billentyűzettel is teljesen kezelhető.","open":{"repo":"MindMap/vrg_mindmap.html"},"git":{"paths":["MindMap"],"branch":"main"},"roadmap":[{"date":"2026-09-16","t":"A–E ütemterv: témák, menük, rétegek, jegyzetek, helix"},{"date":"2026-09-22","t":"Új kezelés: keretek, egér, kétkezes billentyűzet"}]},{"id":"research","dept":"VEZ","t":"Kutatási jegyzetek","status":"live","d":"Hosszabb vizsgálatok: CAD források, Open MCT, REA.","dEn":"Longer studies: CAD sources, Open MCT, REA.","open":{"repo":"docs/research"},"agent":[{"t":"Open MCT vizsgálat","d":"Mire jó az Open MCT a BRIDGE-hez.","repo":"docs/research/2026-10-20_openmct-planner-bridge.md"},{"t":"CAD források + MCP","d":"Hogyan kapjon a Planner DXF-et és MCP-t.","repo":"docs/research/2026-10-19_cad-sources-and-mcp.md"}],"git":{"paths":["docs/research"],"branch":"main"},"roadmap":[{"date":"2026-10-19","t":"CAD források és Planner MCP"},{"date":"2026-10-20","t":"Open MCT + REA vizsgálat"}]},{"id":"dispatch","dept":"VEZ","t":"Dispatch","status":"v2","d":"Ügynök-koordinátor: a feladatot a megfelelő programhoz és briefhez irányítja.","dEn":"Agent coordinator: routes a task to the right program and brief."},{"id":"client-preview","dept":"ERT","t":"Client Preview","status":"dev","d":"3D előnézet a tervről az ügyfélnek, filmes hangulattal.","dEn":"3D preview of the plan for the client, cinematic look.","open":{"repo":"Planner/projects/client-preview"},"agent":[{"t":"README","d":"Hogyan épül és mit tud.","repo":"Planner/projects/client-preview/README.md"},{"t":"Átadó jegyzet 2026-10-09","d":"Előnézet + útvonaltervezés háttere.","repo":"Planner/projects/varler-planner/docs/stack/HANDOVER-2026-10-09_client-preview-and-routing.md"}],"git":{"paths":["Planner/projects/client-preview"],"branch":"main"}},{"id":"client-look","dept":"ERT","t":"Ügyfél megjelenés (Title Card)","status":"dev","d":"Az ügyfélnek szóló anyagok vizuális iránya.","dEn":"The visual direction of client material.","open":{"repo":"docs/client-look/directions.html"},"git":{"paths":["docs/client-look"],"branch":"main"}},{"id":"lobby","dept":"ERT","t":"Lobby","status":"v2","d":"Ügyfélnyilvántartás GDPR szerint: adatok egy helyen, kóddal hivatkozva.","dEn":"GDPR-safe client register: data in one place, referred to by code."},{"id":"scout","dept":"ERT","t":"Scout","status":"v2","d":"Helyszíni felmérés telefonról: fotó, méret, hangjegyzet → Planner és árajánlat.","dEn":"On-site survey from a phone → Planner and quote inputs."},{"id":"planner","dept":"TERV","t":"Varler Planner","status":"live","d":"A fő tervezőprogram: alaprajz, eszközök, körök, vezetékezés, BRIDGE, nézetek.","dEn":"The main design tool: plans, devices, circuits, wiring, BRIDGE, views.","long":"Moduláris forrásból (`src/`) egyetlen HTML-be épül (`dist/varler_planner.html`). Tud: alaprajz és szintek, eszközök és kapcsolók, áramkörök, Erősáram motor (pályák, vezetékek), BRIDGE stack, nézetek (lapos / 2.5D / robbantott), Födém, Igénylista, Házimozi. Építés: `node build.js`, teszt: `node tests/run.js`.","open":{"repo":"Planner/projects/varler-planner/dist/varler_planner.html"},"folders":[{"t":"Planner projektek (2026-10-16)","d":"Mentett tervfájlok.","local":"Planner_projektek_2026-10-16","url":""}],"agent":[{"t":"PRIMER.md","d":"Az építés/teszt menete, csapdák — először ezt.","repo":"Planner/projects/varler-planner/docs/PRIMER.md"},{"t":"Planner CLAUDE.md","d":"A Planner saját munkaszabályai.","repo":"Planner/projects/varler-planner/CLAUDE.md"},{"t":"GO-R1018.md","d":"Folytató brief: Födém · Igénylista · Mozi.","repo":"GO-R1018.md","go":"GO R1018"}],"git":{"paths":["Planner/projects/varler-planner"],"branch":"main"},"roadmap":[{"date":"2026-10-07","t":"BRIDGE Stack A1–E5"},{"date":"2026-10-10","t":"Kör 2026-10-10: U1–U7 + G1"},{"date":"2026-10-14","t":"Nézetek V1–V7, munkafolyamat F1–F4 O1 O2 R1–R4 E0–E3"},{"date":"2026-10-16","t":"Egyesített munkaverzió a main ágon (eszköz 1)"},{"date":"2026-10-18","t":"Födém · Igénylista · Házimozi C1–C7"},{"date":"2026-10-19","t":"Vezetékcsatorna T0–T6; kör utómunka"}]},{"id":"valena","dept":"TERV","t":"Valena választó","status":"live","d":"Legrand Valena Life termékcsalád választó és szerelvénytervező.","dEn":"Legrand Valena Life product picker.","open":{"repo":"Toolbox/valena-life-szerelvenytervezo.html"},"git":{"paths":["Toolbox"],"branch":"main"}},{"id":"din-rail","dept":"TERV","t":"Elosztó DIN-sín tervező","status":"idea","d":"Húzd-és-ejtsd elosztótábla tervező, az Inventory adataiból.","dEn":"Drag-and-drop distribution board builder fed by the Inventory."},{"id":"calc-panel","dept":"KALK","t":"Panel anyagár kalkulátor","status":"live","d":"Panelházas munkák anyagköltsége.","dEn":"Material cost for panel-flat jobs.","open":{"repo":"Calculator/panel_anyagar_kalkulator.html"},"agent":[{"t":"Kalkulátorok összefoglaló","d":"Mit számol melyik kalkulátor.","repo":"Calculator/varleraron_kalkulatorok_osszefoglalo.md"}],"git":{"paths":["Calculator/panel_anyagar_kalkulator.html"],"branch":"main"}},{"id":"calc-general","dept":"KALK","t":"Általános villanyszerelői kalkulátor","status":"live","d":"Munkadíj és anyag tételes számolása.","dEn":"Itemised labour and material calculation.","open":{"repo":"Calculator/Altalanos_Villanyszerelui_Kalkulator.html"},"agent":[{"t":"Árlista (varlerÁron)","d":"Az árak, amikből számol.","repo":"Calculator/Villanyszerelesi_Arlista_VarlerAron.md"},{"t":"Komplexitás faktorok","d":"Nehézségi szorzók könyvtára.","repo":"Calculator/komplexitas_faktorkonyvtar_v1.md"}],"git":{"paths":["Calculator/Altalanos_Villanyszerelui_Kalkulator.html"],"branch":"main"}},{"id":"calc-led","dept":"KALK","t":"LED árkalkulátor","status":"live","d":"LED szalagos világítás költsége.","dEn":"LED strip lighting cost.","open":{"repo":"Calculator/led_arkalkulator.html"},"git":{"paths":["Calculator/led_arkalkulator.html"],"branch":"main"}},{"id":"workflow-kit","dept":"KALK","t":"Varler Workflow Kit","status":"live","d":"Árajánlat-munkafolyamat: kérdéssor → Költségvetési Tervezet és Árajánlat PDF.","dEn":"Quote workflow: question funnel → cost plan and quote PDFs.","long":"A Git-en kívül él (`Varler_Workflow_Kit`). Olvasható, verziózott kit + egy kis Esetlap munkánként. Három kérdéskör, utána a dokumentumok az NV4 minta szerint, ellenőrzővel. Ügyféladat van benne — csak OneDrive-on, a két felhasználónak.","open":{"local":"Varler_Workflow_Kit/README.md"},"folders":[{"t":"Workflow Kit mappa","d":"A kit maga (Git-en kívül).","local":"Varler_Workflow_Kit","url":""},{"ref":"od-jobs"}],"agent":[{"t":"Kit README","d":"Hogyan indíts új munkát a kittel.","local":"Varler_Workflow_Kit/README.md"},{"t":"Folytató prompt","d":"A kit munkamenet indító szövege.","local":"Varler_Workflow_Kit/START_PROMPT_folytatas.md"}],"roadmap":[{"date":"2026-10-11","t":"Kit indul az NV4 munkából"},{"date":"2026-10-12","t":"1–4. lépés + P33 Tervezet átadva"},{"date":"2026-10-14","t":"L-1…L-18 válaszok, kérdéssor v1.2"}]},{"id":"insight","dept":"KALK","t":"Insight","status":"v2","d":"Árajánlatok archívuma, becslés vs. valóság, kalkulátor finomhangolás.","dEn":"Quote archive, estimate vs. actual, calculator calibration."},{"id":"till","dept":"KALK","t":"Till","status":"v2","d":"Számlázás, előleg, fizetési állapot munkánként.","dEn":"Invoicing, deposits, payment status per job."},{"id":"inventory","dept":"BESZ","t":"VRG Inventory","status":"live","d":"Az anyag adatbázis: 221 tétel, beszállító-független.","dEn":"The item database: 221 items, vendor-neutral.","long":"Moduláris forrás, egy fájlos kiadás (`dist/vrg-inventory.html`). A közös mezők felül, a beszállítói adatok külön blokkban. Az ár a Daniella partner nettó ár — nem összevethető webshop bruttóval ÁFA és kedvezmény nélkül.","open":{"repo":"Inventory/dist/vrg-inventory.html"},"agent":[{"t":"Inventory README","d":"Építés, teszt, adatformátum.","repo":"Inventory/README.md"}],"git":{"paths":["Inventory"],"branch":"main"},"roadmap":[{"date":"2026-09-19","t":"Nyers kinyerés 53 levélből"},{"date":"2026-09-20","t":"Mind a 10 fázis kész"}]},{"id":"buildtree","dept":"BESZ","t":"VRG BuildTree","status":"live","d":"Modulshop alkatrészlista, és a programok közös színpalettája.","dEn":"Modulshop part list and the toolset colour palette.","open":{"repo":"Modder/vrg-buildtree.html"},"agent":[{"t":"BuildTree átadó","d":"Hogyan kerül be egy Modulshop számla.","repo":"Modder/VRG-BuildTree-HANDOFF.md"}],"git":{"paths":["Modder"],"branch":"main"},"roadmap":[{"date":"2026-10-09","t":"Készlet export"},{"date":"2026-10-13","t":"Adatbázis export"}]},{"id":"picker","dept":"BESZ","t":"Picker","status":"v2","d":"Igénylistából szedési lista és rendelés-tervezet beszállítónként.","dEn":"Picking list and order drafts per supplier from the request list."},{"id":"radar","dept":"BESZ","t":"Radar","status":"v2","d":"Ár- és készletfigyelő: célár vadászat, értesítés.","dEn":"Price and stock watch: target-price hunting, alerts."},{"id":"jobs","dept":"KIV","t":"Ügyfélmunkák","status":"live","d":"Átadott munkacsomagok (P33, NV4). Ügyféladat — csak a két felhasználó.","dEn":"Delivered job packages (P33, NV4). Client data — two users only.","folders":[{"t":"P33 ajánlat","local":"P33_ajanlat","url":""},{"t":"P33 költségvetési tervezet","local":"P33_koltsegvetesi_tervezet","url":""},{"t":"NV4 ajánlat","local":"NV4_ajanlat","url":""},{"ref":"od-jobs"}]},{"id":"shift","dept":"KIV","t":"Shift","status":"v2","d":"Munkák ütemezése: fázisok, ki hol van, anyag érkezés.","dEn":"Job scheduling: phases, who is where, deliveries."},{"id":"proof","dept":"KIV","t":"Proof","status":"v2","d":"Átadás: mérési jegyzőkönyvek, megvalósulási terv, garancia csomag.","dEn":"Handover: measurement protocols, as-built, warranty pack."},{"id":"care","dept":"KIV","t":"Care","status":"v2","d":"Szerviz és utókövetés: hibajegy, garancia, időszakos felülvizsgálat.","dEn":"Service and after-sales: tickets, warranty, periodic checks."},{"id":"bridge","dept":"TFEJ","t":"BRIDGE okosotthon","status":"dev","d":"Saját okosotthon rendszer: architektúra, szabványok, P33 építés.","dEn":"Own smart-home system: architecture, standards, P33 build.","long":"Kilenc szabvány (STD-001…009), egységflotta, P33 mint első épület. A kiinduló olvasmány a primer; a `01_`–`04_` forrás korpuszt nem kell olvasni.","open":{"repo":"BRIDGE/README.md"},"folders":[{"t":"BRIDGE nagy fájlok","d":"PDF-ek, render, P33 alaprajz (Git-en kívül).","url":""}],"agent":[{"t":"BRIDGE primer","d":"Egyetlen olvasmány a munka előtt.","repo":"BRIDGE/BRIDGE-PRIMER-001_Session-Handover.md"},{"t":"Általános vázlat","d":"A rendszer áttekintése.","repo":"BRIDGE/BRIDGE-OUTLINE-001_General-Outline.md"},{"t":"Szabványok","d":"STD-001…009.","repo":"BRIDGE/05_standards/README.md"}],"git":{"paths":["BRIDGE"],"branch":"main"},"roadmap":[{"date":"2026-10-06","t":"Primer, BRIDGE a repóban"},{"date":"2026-10-11","t":"Okosotthon katalógus kör"},{"date":"2026-10-21","t":"Media Wall MW-001 r0"}]},{"id":"media-wall","dept":"TFEJ","t":"BRIDGE Media Wall","status":"dev","d":"Médiafal koncepció, három kiépítési szint egy vázon.","dEn":"Media wall concept, three tiers on one carcass.","open":{"repo":"BRIDGE/10_media-wall/BRIDGE-MW-001_Media-Wall.md"},"git":{"paths":["BRIDGE/10_media-wall"],"branch":"main"}},{"id":"sh-catalogue","dept":"TFEJ","t":"Okosotthon katalógus","status":"dev","d":"Okosotthon eszköz adatbázis és böngésző oldal.","dEn":"Smart-home device database and browser page.","open":{"repo":"BRIDGE/09_catalogue/smarthome-db.html"},"git":{"paths":["BRIDGE/09_catalogue"],"branch":"main"}},{"id":"planner-cyd","dept":"TFEJ","t":"Planner CYD","status":"dev","d":"Asztali kijelző és távirányító a Plannerhez (ESP32 CYD).","dEn":"Desk display and remote for the Planner (ESP32 CYD).","open":{"repo":"Firmware/planner-cyd/README.md"},"agent":[{"t":"README","d":"Protokoll, indítás, nyitott kérdések.","repo":"Firmware/planner-cyd/README.md"}],"git":{"paths":["Firmware/planner-cyd"],"branch":"main"},"roadmap":[{"date":"2026-10-17","t":"v0.7: KEZDŐLAP, makró készletek, magyar betűk"}]},{"id":"knobpad","dept":"TFEJ","t":"VRG Knob Pad","status":"dev","d":"Három forgatógombos USB vezérlő, webes beállítással.","dEn":"Three-encoder USB controller with web config.","open":{"repo":"Firmware/knobpad/README.md"},"git":{"paths":["Firmware/knobpad"],"branch":"main"}},{"id":"board-console","dept":"TFEJ","t":"Board Console","status":"dev","d":"Vezérlő oldal az univerzális ESP32-S3 fejlesztő panelhez.","dEn":"Control page for the universal ESP32-S3 dev board.","open":{"repo":"Firmware/board-console/README.md"},"git":{"paths":["Firmware/board-console"],"branch":"main"},"roadmap":[{"date":"2026-10-18","t":"1–2. fázis + 3a (ügynök, élő kapcsolat)"}]},{"id":"omct","dept":"TFEJ","t":"Konzol (Open MCT)","status":"idea","d":"Telemetria konzol BRIDGE telepítésekhez — most csak kísérlet.","dEn":"Telemetry console for BRIDGE installs — spike only for now.","open":{"repo":"docs/research/openmct-spike"},"agent":[{"t":"Open MCT vizsgálat","d":"Döntés és terv (OM-1…).","repo":"docs/research/2026-10-20_openmct-planner-bridge.md"}],"git":{"paths":["docs/research/openmct-spike"],"branch":"main"},"roadmap":[{"date":"2026-10-20","t":"Kísérlet működik P33-on"}],"long":"Az **Open MCT** a NASA nyílt forrású telemetria-konzolja: idősorok, grafikonok, határértékek, hibalisták — élő eszközadatokra való. Ezért **külön program**, nem a Kapu alapja: nincs magyar felülete, saját szerver kell neki, és a BRIDGE élő adataihoz erős, nem kezdőknek szóló linktérképnek (HUB-Q12 A). Most a kutatásra mutat; a kész konzol a `Console/` mappába kerül.","longEn":"**Open MCT** is NASA's open-source telemetry console: time series, plots, limits, fault lists — made for live device data. So it is **a separate program**, not the base of the hub: no Hungarian UI, it needs its own server, and its strength is live BRIDGE data, not a beginner link map (HUB-Q12 A). For now it points at the research; the finished console goes to `Console/`."},{"id":"esp-lab","dept":"TFEJ","t":"ESP lab + BRIDGEcomp","status":"dev","d":"Hardver kísérletek és az eredeti BRIDGE források (Git-en kívül).","dEn":"Hardware experiments and the original BRIDGE sources (outside Git).","folders":[{"t":"ESP_lab","local":"ESP_lab","url":""},{"t":"BRIDGEcomp","local":"BRIDGEcomp","url":""}]},{"id":"lab","dept":"TFEJ","t":"Lab","status":"v2","d":"Önfejlesztés: naplókból és adatokból javasol új kutatást és szabályt.","dEn":"Self-improvement: proposes research and rules from logs and data."},{"id":"doc-rules","dept":"JOG","t":"Kimenő dokumentum szabályok","status":"live","d":"A Költségvetési Tervezet szövegezési szabályai (soha nem \"ajánlat\", anyagelőleg, kerek árak).","dEn":"Wording rules for cost plans.","folders":[{"t":"Workflow Kit védett szövegek","local":"Varler_Workflow_Kit/01_nv4_build/02_golden_nv4","url":""}]},{"id":"licences","dept":"JOG","t":"Licenc nyilvántartás","status":"live","d":"Minden külső forrás rögzítve, a licenc a kóddal együtt utazik.","dEn":"Every third-party source pinned; the licence travels with the code.","open":{"repo":"vendor-manifest.json"},"git":{"paths":["vendor-manifest.json"],"branch":"main"}},{"id":"clause","dept":"JOG","t":"Clause","status":"v2","d":"Kimenő dokumentum sablonok, védett jogi szövegek, MSZ HD jegyzetek.","dEn":"Outgoing document templates, protected wording, MSZ HD notes."},{"id":"shield","dept":"JOG","t":"Shield","status":"v2","d":"Hozzáférés, titok-ellenőrzés, mentés, GDPR nyilvántartás.","dEn":"Access, secret scanning, backups, GDPR register."},{"id":"visual-base","dept":"ARC","t":"VRG Visual Base","status":"live","d":"Képtár: 252 összegyűjtött vizuál, panel rajzok, topológia kiindulás.","dEn":"Visual library: 252 collected visuals, board drawings, topology starter.","folders":[{"t":"Visual Base","local":"../VRG_Visual_Base","url":""},{"ref":"od-vis"}]},{"id":"studio","dept":"ARC","t":"Studio","status":"v2","d":"Vizuális tartalmak kezelése, arculati komponensek.","dEn":"Visual asset management, design-system components."},{"id":"lens","dept":"ARC","t":"Lens","status":"v2","d":"Univerzális nézegető minden kimeneti formátumhoz.","dEn":"Universal viewer for every output format."},{"id":"coreref","dept":"TUD","t":"CoreRef","status":"dev","d":"Offline ESPHome / Home Assistant referencia adatbázis.","dEn":"Offline ESPHome / Home Assistant reference database.","open":{"repo":"CoreRef/README.md"},"agent":[{"t":"CoreRef README","d":"Rétegek, forrás, licenc szétválasztás.","repo":"CoreRef/README.md"}],"git":{"paths":["CoreRef"],"branch":"main"},"roadmap":[{"date":"2026-10-09","t":"0. fázis: gyűjtés kész"}]},{"id":"vendor","dept":"TUD","t":"VRG Vendor","status":"live","d":"A beemelt külső komponensek katalógusa.","dEn":"Catalogue of vendored third-party components.","open":{"repo":"vrg-vendor.html"},"git":{"paths":["vrg-vendor.html","tools/fetch-vendor.js"],"branch":"main"}},{"id":"atlas","dept":"TUD","t":"Atlas","status":"v2","d":"Offline katalógus mindenről, saját keresővel, import/export.","dEn":"Offline catalogue of everything, with search and import/export."},{"id":"forge","dept":"TUD","t":"Forge","status":"v2","d":"Ügynök-készségek: 3D elrendezés, DXF, topológia és bekötési rajzok.","dEn":"Agent skills: 3D layout, DXF, topology and terminal drawings."},{"id":"toolbox","dept":"IT","t":"Toolbox","status":"live","d":"Kisebb, fejlesztés alatt álló eszközök gyűjtőoldala.","dEn":"Collection page of small tools in development.","open":{"repo":"toolbox.html"},"git":{"paths":["toolbox.html"],"branch":"main"}},{"id":"backups","dept":"IT","t":"Mentések","status":"live","d":"Helyi tükör repó és git mentések. A GitHub a fő másolat.","dEn":"Local mirror remote and git backups. GitHub is the main copy."},{"id":"desk","dept":"IRO","t":"Desk","status":"v2","d":"Jegyzettömb, emlékeztetők, levéltervezetek, névjegyek.","dEn":"Notepad, reminders, mail drafts, contacts."},{"id":"crew","dept":"IRO","t":"Crew","status":"v2","d":"Dolgozói portál és haladásnapló idővonallal.","dEn":"Staff portal and progress logger with a timeline."}]}</script>
 <script type="application/json" id="kpAccess">{"schema":"vrg-hub-access/1","body":{"rev":1,"updated":"2026-10-22","people":[{"name":"Webagoly","github":"webagoly-work","emails":["webagoly@gmail.com","webagoly.work@gmail.com"],"role":"owner","layers":["L1","L2","L3","L4"]},{"name":"Anikovi","github":"anikovi-work","emails":["anikovi.work@gmail.com"],"role":"member","layers":["L1","L2","L3","L4"]}]},"sig":"fiuB6Z0IsDadFUArQDGHGktpB5GjVKXL1CJ9lr+pLk3BUpeM/YCEl1ejFLLZ5ELiAT9DuLX69G1vKXVEgWe4Gg=="}</script>
 <script type="application/json" id="kpPubkey">{"kty":"EC","crv":"P-256","x":"ikStJoalzFg4yLwv3gHx7XYai5Yxhf-thW772g0_M20","y":"T97A6TH3XHXksdStfZ00KJSWjdI7DFs5Ha5ZZvejPJ0"}</script>
+<script type="application/json" id="kpGlossary">{"schema":"vrg-hub-glossary/1","entries":[{"id":"repo","t":"repó","alt":["repository","kódtár"],"d":"Egy mappa, ami minden változást megjegyez. Nálunk: vrg-toolset a GitHubon.","dEn":"A folder that remembers every change. Ours: vrg-toolset on GitHub."},{"id":"commit","t":"commit","alt":[],"d":"Egy mentés a repóban: ki, mikor, mit változtatott, egy rövid üzenettel.","dEn":"One save in the repo: who, when, what changed, with a short message."},{"id":"branch","t":"branch","alt":["ág"],"d":"Párhuzamos munkavonal. Ami ott készül, nem zavarja a közös állapotot.","dEn":"A parallel line of work. What happens there does not disturb the shared state."},{"id":"main","t":"main","alt":[],"d":"A közös, kész állapot ága. Ide kerül, ami már mindenkinek jó.","dEn":"The branch of the shared, finished state. What works for everyone goes here."},{"id":"worktree","t":"worktree","alt":[],"d":"Ugyanannak a repónak egy második munkamappája, egy másik ágon.","dEn":"A second working folder of the same repo, on another branch."},{"id":"push","t":"push","alt":[],"d":"A saját gépen lévő commitok feltöltése a GitHubra.","dEn":"Uploading the commits on your own PC to GitHub."},{"id":"pull","t":"pull","alt":[],"d":"A GitHubon lévő újdonságok letöltése a saját gépre.","dEn":"Downloading what is new on GitHub to your own PC."},{"id":"clone","t":"clone","alt":[],"d":"A repó első letöltése egy gépre, a teljes előzménnyel együtt.","dEn":"The first download of the repo to a PC, with its whole history."},{"id":"pr","t":"PR","alt":["pull request"],"d":"Kérés, hogy egy ág változásai kerüljenek be a mainbe — átnézés után.","dEn":"A request to bring a branch's changes into main, after review."},{"id":"merge","t":"merge","alt":[],"d":"Két ág változásainak összefésülése egybe.","dEn":"Combining the changes of two branches into one."},{"id":"dist","t":"dist","alt":[],"d":"A kész, megnyitható fájlok mappája — amit a build készít.","dEn":"The folder of finished files you can open, made by the build."},{"id":"build","t":"build","alt":["építés"],"d":"A forrásfájlokból egyetlen kész HTML összerakása.","dEn":"Putting the source files together into one finished HTML."},{"id":"token","t":"token","alt":[],"d":"Hosszú titkos kulcs a GitHubhoz. Csak a saját böngésződben marad, senkinek ne add.","dEn":"A long secret key for GitHub. It stays in your own browser; give it to no one."},{"id":"ghdesktop","t":"GitHub Desktop","alt":[],"d":"Ablakos program a pull, commit és push gombnyomásos kezeléséhez.","dEn":"A windowed app to pull, commit and push with buttons."},{"id":"odshare","t":"OneDrive megosztás","alt":["megosztási link"],"d":"Egy OneDrive mappa linkje, ami csak a megadott embereknek nyílik ki.","dEn":"A OneDrive folder link that opens only for the people it is shared with."},{"id":"specific","t":"Adott személyek","alt":[],"d":"A OneDrive megosztás biztonságos módja: csak a megnevezett fiókok nyithatják meg.","dEn":"The safe OneDrive sharing mode: only the named accounts can open it."},{"id":"claudecode","t":"Claude Code","alt":[],"d":"Az AI fejlesztői asszisztens, ami a repó mappájában dolgozik veled.","dEn":"The AI development assistant that works with you in the repo folder."},{"id":"claudemd","t":"CLAUDE.md","alt":[],"d":"A munkaszabályok fájlja, amit Claude minden munkamenet elején elolvas.","dEn":"The file of working rules Claude reads at the start of every session."},{"id":"primer","t":"primer","alt":["PRIMER.md"],"d":"Rövid bevezető egy programhoz: hogyan épül, hogyan teszteljük, mire figyelj.","dEn":"A short intro to one program: how it builds, how to test it, what to watch."},{"id":"gofile","t":"GO fájl","alt":["codephrase","GO brief"],"d":"Egy „GO …” jelszóhoz tartozó leírás: Claude ebből tudja, hol folytassa.","dEn":"The brief behind a 'GO …' phrase: it tells Claude where to continue."},{"id":"decisions","t":"DECISIONS","alt":["DECISIONS.md"],"d":"Nyitott kérdések és döntések fájlja, betűs válaszlehetőségekkel.","dEn":"The file of open questions and decisions, with lettered options."},{"id":"worklog","t":"munkanapló","alt":["Munkanapló"],"d":"Rövid jegyzet a nap végén: mit csináltál, mi maradt nyitva, mi a következő lépés.","dEn":"A short end-of-day note: what you did, what is open, what comes next."},{"id":"claim","t":"foglalás","alt":["Foglalás"],"d":"Jelzés, hogy egy programon most te dolgozol. Nem zár le semmit.","dEn":"A sign that you are working on a program now. It locks nothing."},{"id":"companion","t":"Kapu segéd","alt":[],"d":"Kis helyi program, ami a Kapuból megnyitja a mappákat, a terminált és a programokat.","dEn":"A small local program that opens folders, the terminal and tools from the hub."},{"id":"localhost","t":"localhost","alt":[],"d":"A saját géped címe a böngészőben. Ami ott fut, kívülről nem látszik.","dEn":"Your own PC's address in the browser. What runs there is not visible from outside."}]}</script>
 <script>
 "use strict";
-const KP_BUILD = "98fa2b5957b4";
+const KP_BUILD = "80feaeb236d2";
 // ---- 00-core.js
 // Core helpers shared by every module. Pure where possible, so Hub/test can run them in Node.
 
@@ -756,6 +780,7 @@ function kpBoardRender() {
   if (kpBoard.focus) cols = cols.filter(c => c.dept.id === kpBoard.focus);
   const lay = kpLayout(cols, { layers: kpBoard.layers, collapsed: kpBoard.focus ? [] : kpBoard.collapsed, expanded: kpBoard.expanded, en: true, personal: kpPersonal() });
   kpBoard.layout = lay;
+  kpBoard.dead = kpDead();
 
   const g = kpEl('g', { id: 'kpCam' });
   const gEdges = kpEl('g', { class: 'kp-edges' });
@@ -828,6 +853,7 @@ function kpNodeEl(n) {
   }
 
   // cards: program / summary / slot / folder / local / agent / go / git
+  if (kpBoard.dead && kpBoard.dead.has(n.id)) g.append(kpEl('circle', { class: 'kp-dead-dot', cx: n.x + 2, cy: n.y + 2, r: 5 }, kpEl('title', {}, 'Hibás vagy üres link — ☰ Linkellenőrzés')));
   const big = n.kind === 'program' || n.kind === 'summary' || n.kind === 'slot';
   g.append(kpEl('rect', { class: 'kp-card' + (big ? '' : ' kp-sub'), x: n.x, y: n.y, width: n.w, height: n.h, rx: big ? 8 : 6 }));
   const icon = KP_ICON[n.kind] || '▣';
@@ -1494,7 +1520,7 @@ function kpDrawerOpen(nodeId, tab) {
 
   const html = (hu, en) => {
     const box = kpEl('div', { class: 'kp-md' });
-    box.innerHTML = (hu ? '<div class="kp-hu">' + kpMd(hu) + '</div>' : '<div class="kp-muted">Nincs leírás.</div>') +
+    box.innerHTML = (hu ? '<div class="kp-hu">' + kpGlossMark(kpMd(hu), kpGloss()) + '</div>' : '<div class="kp-muted">Nincs leírás.</div>') +
       (en ? '<div class="kp-en">' + kpMd(en) + '</div>' : '');
     return box;
   };
@@ -2065,11 +2091,16 @@ async function kpRefreshCore(topoNow, accessNow, pubkey, onStep) {
   step('Ágak', br.ok ? others.length + ' fejlesztési ág' : 'nem elérhető');
 
   // 5. decision files
-  const tr = await kpGhCached(base + '/git/trees/main?recursive=1', 'tree2', j => {
+  const tr = await kpGhCached(base + '/git/trees/main?recursive=1', 'tree3', j => {
     const blobs = (j.tree || []).filter(x => x.type === 'blob');
-    return { dec: blobs.filter(x => KP_DECISION_RE.test(x.path)).map(x => x.path), logs: blobs.filter(x => /^Hub\/logs\/[^/]+\.md$/.test(x.path)).map(x => x.path) };
+    return { dec: blobs.filter(x => KP_DECISION_RE.test(x.path)).map(x => x.path), logs: blobs.filter(x => /^Hub\/logs\/[^/]+\.md$/.test(x.path)).map(x => x.path),
+      all: (j.tree || []).map(x => x.path) };   // ~800 paths: what the link check tests repo links against
   }, {}, stats);
-  if (tr.value) live.decisions = kpDecisionCounts(topology, tr.value.dec);
+  if (tr.value) {
+    live.decisions = kpDecisionCounts(topology, tr.value.dec);
+    live.decisionFiles = tr.value.dec;
+    live.repoPaths = tr.value.all || null;
+  }
   step('Döntési fájlok', tr.value ? '✓' : 'nem elérhető');
 
   // 5b. the newest work log per user (the file name starts with date_login_)
@@ -2204,13 +2235,27 @@ const KP_MAIN_MENU = [
   { label: 'Saját linkek importálása…', run: () => kpL5Import() },
   { label: 'Helyi célmappa…', run: () => kpDest.pick() }
 ];
+const KP_MENU_GROUPS = [
+  ['Első lépések', 'Szótár', 'Telepítők'],
+  ['Mi változott?', 'Nyitott kérdések', 'Frissítés a GitHubról (git pull)', 'Frissítés most', 'Linkellenőrzés'],
+  ['Export: kép (PNG)', 'Nyomtatás', 'Exportálás JSON', 'Importálás JSON…', 'Elrejtett elemek…'],
+  ['Új saját link…', 'Saját linkek exportálása', 'Saját linkek importálása…', 'Helyi célmappa…', 'Helyi repó mappa…', 'Téma', 'Névjegy']
+];
+
 function kpMainMenuInit() {
   const b = document.getElementById('kpMenuBtn');
   b.addEventListener('click', () => {
     kpMenuClose();
     const r = b.getBoundingClientRect();
-    const m = kpEl('div', { id: 'kpMenu', class: 'kp-menu', role: 'menu' }, ...KP_MAIN_MENU.map(it =>
-      kpEl('div', { class: 'kp-mi', role: 'menuitem', tabindex: '-1', onclick: e => { e.stopPropagation(); kpMenuClose(); it.run(); } }, it.label)));
+    // grouped for a beginner: help first, then the day's work, the map, own settings
+    const rank = it => { const i = KP_MENU_GROUPS.findIndex(g => g.includes(it.label)); return i < 0 ? KP_MENU_GROUPS.length : i; };
+    const items = KP_MAIN_MENU.slice().sort((a, b) => rank(a) - rank(b));
+    const kids = [];
+    items.forEach((it, i) => {
+      if (i && rank(it) !== rank(items[i - 1])) kids.push(kpEl('div', { class: 'kp-sep', role: 'separator' }));
+      kids.push(kpEl('div', { class: 'kp-mi', role: 'menuitem', tabindex: '-1', onclick: e => { e.stopPropagation(); kpMenuClose(); it.run(); } }, it.label));
+    });
+    const m = kpEl('div', { id: 'kpMenu', class: 'kp-menu', role: 'menu' }, ...kids);
     document.body.append(m);
     m.style.left = Math.max(8, r.right - m.offsetWidth) + 'px';
     m.style.top = r.bottom + 4 + 'px';
@@ -3073,6 +3118,265 @@ async function kpCompInit() {
   if (kpComp.on) KP_MAIN_MENU.unshift({ label: 'Frissítés a GitHubról (git pull)', run: kpCompPull });
 }
 
+// ---- 97-extras.js
+// Extras: first-steps tour, glossary, installers, link check, PNG / print export, theme, about,
+// open questions. Everything a beginner reaches from the ☰ menu.
+
+// ---- glossary
+const kpGloss = () => ((kpData.glossary || {}).entries) || [];
+
+// the first occurrence of each term (or one of its alt forms) in an HTML string gets a dotted
+// underline + tooltip; text inside tags and links is never touched; Hungarian suffixes may follow
+function kpGlossMark(html, entries) {
+  const seen = new Set();
+  const forms = [];
+  for (const e of entries) for (const f of [e.t].concat(e.alt || [])) forms.push({ f, e });
+  forms.sort((a, b) => b.f.length - a.f.length);
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp('(?<![\\p{L}\\d])(' + forms.map(x => esc(kpEsc(x.f))).join('|') + ')(?=-?\\p{Ll}{0,6}(?![\\p{L}\\d]))', 'giu');
+  const byForm = new Map(forms.map(x => [kpEsc(x.f).toLowerCase(), x.e]));
+  let inLink = 0;
+  return html.split(/(<[^>]+>)/).map(part => {
+    if (part.startsWith('<')) { if (/^<a[\s>]/i.test(part)) inLink++; else if (/^<\/a>/i.test(part)) inLink--; return part; }
+    if (inLink) return part;
+    return part.replace(re, m => {
+      const e = byForm.get(m.toLowerCase());
+      if (!e || seen.has(e.id)) return m;
+      seen.add(e.id);
+      return '<abbr class="kp-gl" title="' + kpEsc(e.d) + '">' + m + '</abbr>';
+    });
+  }).join('');
+}
+
+function kpGlossOpen(q) {
+  const input = kpEl('input', { class: 'kp-in', type: 'search', placeholder: 'Keresés a szótárban…', value: q || '' });
+  const list = kpEl('dl', { class: 'kp-gloss' });
+  const draw = () => {
+    const nq = kpNorm(input.value);
+    list.replaceChildren(...kpGloss().filter(e => !nq || kpNorm([e.t].concat(e.alt || [], e.d, e.dEn).join(' ')).includes(nq))
+      .flatMap(e => [kpEl('dt', {}, e.t + ((e.alt || []).length ? ' (' + e.alt.join(', ') + ')' : '')), kpEl('dd', {}, e.d, kpEl('div', { class: 'kp-en' }, e.dEn))]));
+  };
+  input.addEventListener('input', draw);
+  input.addEventListener('keydown', e => e.stopPropagation());
+  kpModalOpen('Szótár', input, list);
+  draw();
+  input.focus();
+}
+
+// ---- first steps (03_UI §6), each step on a real element
+const KP_TOUR = [
+  ['#kpBoard', 'Ez a térkép a cég összes munkája. Fent a részlegek, alattuk a programok.'],
+  ['#kpCam [data-id="planner:L1"]', 'Minden elem alatt egy mondat elmondja, mi az. Jobb klikk: rövid és részletes leírás.'],
+  ['#kpRail', 'A rétegek: programok, közös mappák, AI dokumentumok, kód. Bal oldalt ki-be kapcsolhatod őket.'],
+  ['#kpSignin', 'Belépések: a GitHub fiókoddal nyílnak ki a programok. Kattints ide.'],
+  ['#kpLogBtn', 'Munkanapló: a nap végén írd le, mit csináltál — a másik így látja.'],
+  ['#kpMenuBtn', 'Elakadtál? A ☰ menüben van a Szótár és ez a bemutató.']
+];
+
+function kpTourStart() {
+  const root = document.getElementById('kpModal');
+  let i = 0;
+  const end = () => { root.replaceChildren(); kpStore.set('tourDone', true); };
+  const step = () => {
+    const [sel, text] = KP_TOUR[i];
+    // step 1 needs headers AND program cards readable: a mid zoom over the design department
+    if (i === 0) { const d = kpBoard.layout.nodes.find(x => x.id === 'dept:TERV'); if (d) kpCenterOn(d.x + d.w / 2, d.y + 260, 0.55); }
+    if (i === 1) { const n = kpBoard.layout.nodes.find(x => x.id === 'planner:L1'); if (n) kpCenterOn(n.x + n.w / 2, n.y + 60, 1); }
+    const el = document.querySelector(sel);
+    const r = el ? el.getBoundingClientRect() : { left: innerWidth / 2 - 100, top: innerHeight / 2 - 40, width: 200, height: 80 };
+    const pad = 6;
+    const hole = kpEl('div', { class: 'kp-tour-hole', style: 'left:' + (r.left - pad) + 'px;top:' + (r.top - pad) + 'px;width:' + (r.width + 2 * pad) + 'px;height:' + (r.height + 2 * pad) + 'px' });
+    const bubble = kpEl('div', { class: 'kp-tour-bubble', role: 'dialog', 'aria-label': 'Első lépések' },
+      kpEl('div', { class: 'kp-muted' }, 'Első lépések · ' + (i + 1) + ' / ' + KP_TOUR.length), kpEl('p', {}, text),
+      kpEl('div', { class: 'kp-pop-row' },
+        kpEl('button', { class: 'kp-btn', onclick: end }, 'Kihagyás'),
+        kpEl('button', { class: 'kp-btn kp-primary', onclick: () => { i++; if (i < KP_TOUR.length) step(); else end(); } }, i < KP_TOUR.length - 1 ? 'Tovább' : 'Kész')));
+    root.replaceChildren(kpEl('div', { class: 'kp-tour' }, hole, bubble));
+    // the bubble sits below the highlight when there is room, else above; always on screen
+    const bw = bubble.offsetWidth, bh = bubble.offsetHeight;
+    const below = r.top + r.height + pad + 12;
+    const top = r.height > innerHeight * 0.6 ? innerHeight / 2 - bh / 2 : below + bh < innerHeight - 8 ? below : Math.max(8, r.top - pad - 12 - bh);
+    bubble.style.left = Math.max(8, Math.min(r.left, innerWidth - bw - 8)) + 'px';
+    bubble.style.top = top + 'px';
+    bubble.querySelector('.kp-primary').focus();
+  };
+  step();
+}
+
+// ---- installers
+function kpInstallers() {
+  const f = ((kpData.topology.onedrive || {}).folders || []).find(x => x.id === 'od-inst');
+  if (f && f.url) { kpOpen(f.url); return; }
+  kpModalOpen('Telepítők', kpEl('p', {}, 'A telepítő mappa linkje még nincs megadva.'),
+    kpEl('p', { class: 'kp-muted' }, 'A tulajdonos a OneDrive „20_Telepitok” mappa megosztási linkjét a Telepítők elem szerkesztésével adja meg.'),
+    kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn', onclick: () => { kpModalClose(); const c = kpCtx('installers:L1'); if (c && kpCaps.ghWrite) kpEditorOpen(c); else kpToast(KP_WHY.ghWrite); } }, 'Szerkesztés')));
+}
+
+// ---- link check: repo paths against the last GitHub tree, local paths through the companion,
+// URLs only for being empty (a page cannot test another site's link)
+function kpLinkRefs(topo) {
+  const out = [];
+  for (const p of topo.programs || []) {
+    if (p.hidden) continue;
+    const o = p.open || {};
+    if (o.repo) out.push({ id: p.id + ':L1', t: p.t, kind: 'repo', path: o.repo });
+    if ('url' in o && !o.url && !o.repo && !o.local) out.push({ id: p.id + ':L1', t: p.t, kind: 'empty' });
+    if (o.local) out.push({ id: p.id + ':L1', t: p.t, kind: 'local', path: '../' + o.local });
+    (p.folders || []).forEach((f, i) => {
+      const id = p.id + ':L2:f' + i, t = p.t + ' · ' + (f.t || f.ref);
+      if (f.local) out.push({ id, t, kind: 'local', path: '../' + f.local });
+      else if (f.ref) { const r = ((topo.onedrive || {}).folders || []).find(x => x.id === f.ref); if (r && !r.url) out.push({ id, t, kind: 'empty' }); }
+      else if (!f.url) out.push({ id, t, kind: 'empty' });
+    });
+    (p.agent || []).forEach((a, i) => { if (a.repo) out.push({ id: p.id + ':L3:a' + i, t: p.t + ' · ' + a.t, kind: 'repo', path: a.repo }); });
+    ((p.git && p.git.paths) || []).filter(Boolean).forEach(g => out.push({ id: p.id + ':L4:g', t: p.t + ' · git', kind: 'repo', path: g }));
+  }
+  return out;
+}
+
+async function kpLinkCheck() {
+  const box = kpModalOpen('Linkellenőrzés', kpEl('p', { class: 'kp-muted' }, 'Ellenőrzés…'));
+  const refs = kpLinkRefs(kpData.topology);
+  const live = kpLive();
+  const known = live && live.repoPaths ? new Set(live.repoPaths) : null;
+  const dead = [], unknown = [];
+  for (const r of refs.filter(r => r.kind === 'repo')) {
+    if (!known) { unknown.push(r); continue; }
+    if (!known.has(r.path.replace(/\/+$/, ''))) dead.push(Object.assign({ why: 'nincs a GitHubon (main)' }, r));
+  }
+  const locals = refs.filter(r => r.kind === 'local');
+  if (kpCaps.companion && locals.length) {
+    const c = await kpCompCall('check-paths', { paths: locals.map(r => r.path) });
+    if (c.status === 200) for (const r of locals) if (!c.json[r.path]) dead.push(Object.assign({ why: 'nincs meg ezen a gépen' }, r));
+  } else unknown.push(...locals);
+  for (const r of refs.filter(r => r.kind === 'empty')) dead.push(Object.assign({ why: 'üres link' }, r));
+  kpStore.set('deadLinks', [...new Set(dead.map(d => d.id))]);
+  kpBoardRender();
+  box.replaceChildren(box.firstChild,
+    kpEl('p', {}, refs.length + ' link · ' + dead.length + ' hibás vagy üres' + (unknown.length ? ' · ' + unknown.length + ' nem ellenőrizhető most' : '')),
+    dead.length ? kpEl('ul', { class: 'kp-dead-list' }, ...dead.map(d => kpEl('li', {}, kpEl('a', { href: '#', onclick: e => { e.preventDefault(); kpModalClose();
+      const it = kpSearchItems(kpResolveRefs(kpData.topology), 'vision').find(x => x.id === d.id); if (it) kpFlyTo(it); } }, d.t), ' — ' + d.why + (d.path ? ' · ' + d.path : '')))) : null,
+    unknown.length ? kpEl('p', { class: 'kp-muted' }, (known ? '' : 'A repó útvonalakhoz előbb Frissíts (⟳). ') + (kpCaps.companion ? '' : 'A helyi mappákhoz a Kapu segéd kell.')) : null);
+}
+const kpDead = () => new Set(kpStore.get('deadLinks', []));
+
+// ---- export: the whole board as PNG, theme colours inlined so it looks the same outside the page
+const KP_PNG_PROPS = ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity', 'font-size', 'font-weight', 'font-style', 'font-family', 'text-anchor', 'display'];
+async function kpExportPng(download) {
+  const lay = kpBoard.layout, src = document.getElementById('kpBoard');
+  const minX = KP_LABEL_X - 160, pad = 24, w = Math.ceil(lay.width - minX + 2 * pad), h = Math.ceil(lay.height + 2 * pad);
+  const klass = src.getAttribute('class');
+  src.setAttribute('class', 'kp-board');   // full detail: no level-of-detail classes
+  const cam = src.querySelector('#kpCam'), camT = cam.getAttribute('transform');
+  cam.setAttribute('transform', 'translate(' + (pad - minX) + ',' + pad + ')');
+  const clone = src.cloneNode(true);
+  const a = src.querySelectorAll('*'), b = clone.querySelectorAll('*');
+  for (let i = 0; i < a.length; i++) {
+    const cs = getComputedStyle(a[i]);
+    b[i].setAttribute('style', KP_PNG_PROPS.map(p => p + ':' + cs.getPropertyValue(p)).join(';'));
+    b[i].removeAttribute('class');
+  }
+  cam.setAttribute('transform', camT);
+  src.setAttribute('class', klass);
+  clone.setAttribute('width', w);
+  clone.setAttribute('height', h);
+  clone.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+  clone.insertBefore(kpEl('rect', { x: 0, y: 0, width: w, height: h, style: 'fill:' + getComputedStyle(document.body).backgroundColor }), clone.firstChild);
+  const svgText = new XMLSerializer().serializeToString(clone);
+  const img = new Image();
+  const url = URL.createObjectURL(new Blob([svgText], { type: 'image/svg+xml' }));
+  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  canvas.getContext('2d').drawImage(img, 0, 0);
+  URL.revokeObjectURL(url);
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+  if (download !== false) kpDownloadBlob('vrg-kapu-' + kpToday() + '.png', blob);
+  return blob;
+}
+function kpDownloadBlob(name, blob) {
+  const a = kpEl('a', { href: URL.createObjectURL(blob), download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// print: every department open, the whole board on the page; restored afterwards
+let kpPrintSaved = null;
+function kpPrintPrep() {
+  kpPrintSaved = { collapsed: kpBoard.collapsed, focus: kpBoard.focus, cam: Object.assign({}, kpBoard.cam) };
+  kpBoard.collapsed = []; kpBoard.focus = null;
+  kpBoardRender(); kpFit();
+}
+function kpPrintDone() {
+  if (!kpPrintSaved) return;
+  Object.assign(kpBoard, { collapsed: kpPrintSaved.collapsed, focus: kpPrintSaved.focus });
+  kpBoardRender();
+  kpBoard.cam = kpPrintSaved.cam; kpApplyCam();
+  kpPrintSaved = null;
+}
+
+// ---- theme, about, open questions
+function kpThemeOpen() {
+  kpModalOpen('Téma', kpEl('div', { class: 'kp-pop-row' }, ...KP_THEMES.map(([t, c]) =>
+    kpEl('button', { class: 'kp-btn', onclick: () => { kpSetTheme(t); kpModalClose(); } }, kpEl('span', { class: 'kp-sw', style: 'background:' + c }), ' ' + KP_THEME_NAMES[t]))));
+}
+
+function kpAboutOpen() {
+  const r = kpData.topology.repo, gh = 'https://github.com/' + r.owner + '/' + r.name + '/tree/main/';
+  kpModalOpen('Névjegy',
+    kpEl('p', {}, kpEl('b', {}, 'VRG Kapu'), ' — a VRG eszközök közös térképe.'),
+    kpEl('p', { class: 'kp-muted' }, 'Build ' + KP_BUILD + ' · térkép rev ' + (kpData.topology.rev || '?') + ', ' + kpFmtDate(kpData.topology.updated) + (kpData.topology.updatedBy ? ' · ' + kpData.topology.updatedBy : '')),
+    kpEl('ul', {}, kpEl('li', {}, kpEl('a', { href: gh + 'docs/hub', target: '_blank', rel: 'noopener' }, 'A terv (docs/hub)')),
+      kpEl('li', {}, kpEl('a', { href: gh + 'Hub', target: '_blank', rel: 'noopener' }, 'A forrás (Hub)'))));
+}
+
+function kpQuestionsOpen() {
+  const live = kpLive();
+  if (!live || !live.decisionFiles) { kpModalOpen('Nyitott kérdések', kpEl('p', {}, 'Frissíts (⟳), hogy a GitHubon lévő döntési fájlok listája betöltődjön.')); return; }
+  const r = kpData.topology.repo, base = 'https://github.com/' + r.owner + '/' + r.name + '/blob/main/';
+  const progs = (kpData.topology.programs || []).flatMap(p => ((p.git && p.git.paths) || []).filter(Boolean).map(g => ({ p, pre: g.replace(/\/+$/, '') + '/' })));
+  const groups = new Map();
+  for (const f of live.decisionFiles) {
+    let best = null;
+    for (const x of progs) if (f.startsWith(x.pre) && (!best || x.pre.length > best.pre.length)) best = x;
+    const k = best ? best.p.t : 'Egyéb';
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(f);
+  }
+  kpModalOpen('Nyitott kérdések — döntési fájlok', kpEl('p', { class: 'kp-muted' }, live.decisionFiles.length + ' fájl. A megválaszolatlan kérdések számlálása v2.'),
+    ...[...groups].map(([t, files]) => kpEl('div', { class: 'kp-ch' }, kpEl('b', {}, t),
+      kpEl('ul', {}, ...files.map(f => kpEl('li', {}, kpEl('a', { href: base + f, target: '_blank', rel: 'noopener' }, f)))))));
+}
+
+function kpRepoRootOpen() {
+  const inp = kpEl('input', { class: 'kp-in', value: kpRepoRoot(), placeholder: 'pl. H:\\Dev-VRG\\VRG-DE\\Planner_VRG_U100' });
+  inp.addEventListener('keydown', e => e.stopPropagation());
+  kpModalOpen('Helyi repó mappa',
+    kpEl('p', { class: 'kp-muted' }, 'Hol van a vrg-toolset ezen a gépen? Ebből készül a programok helyi (file:///) útvonala, ha nem fut a Kapu segéd.'),
+    inp, kpEl('div', { class: 'kp-pop-row' }, kpEl('button', { class: 'kp-btn kp-primary', onclick: () => { kpStore.set('repoRoot', inp.value.trim()); kpModalClose(); kpToast('Mentve'); } }, 'Mentés')));
+  inp.focus();
+}
+
+function kpExtrasInit() {
+  KP_MAIN_MENU.push(
+    { label: 'Első lépések', run: kpTourStart },
+    { label: 'Szótár', run: () => kpGlossOpen() },
+    { label: 'Telepítők', run: kpInstallers },
+    { label: 'Nyitott kérdések', run: kpQuestionsOpen },
+    { label: 'Linkellenőrzés', run: kpLinkCheck },
+    { label: 'Export: kép (PNG)', run: () => kpExportPng() },
+    { label: 'Nyomtatás', run: () => window.print() },
+    { label: 'Téma', run: kpThemeOpen },
+    { label: 'Helyi repó mappa…', run: kpRepoRootOpen },
+    { label: 'Névjegy', run: kpAboutOpen });
+  window.addEventListener('beforeprint', kpPrintPrep);
+  window.addEventListener('afterprint', kpPrintDone);
+  // first visit in this browser: the tour (automated checks open the page with ?notour)
+  if (!kpStore.get('tourDone', false) && kpStore.available() && !/[?&]notour\b/.test(location.search)) setTimeout(kpTourStart, 600);
+}
+
+if (typeof module !== 'undefined') module.exports = { kpGlossMark, kpLinkRefs };
+
 // ---- 99-boot.js
 // Boot: theme, embedded data, shell. Later WPs hang their init off kpBoot.
 
@@ -3108,6 +3412,7 @@ function kpBoot() {
   kpData.topology = kpEmbedded('kpTopology');
   kpData.access = kpEmbedded('kpAccess');
   kpData.pubkey = kpEmbedded('kpPubkey');
+  kpData.glossary = kpEmbedded('kpGlossary');
   kpSetTheme(kpStore.get('theme', 'amber'));
   kpRenderRail();
   kpGhLoad();
@@ -3118,6 +3423,7 @@ function kpBoot() {
   kpRenderStrip();
   kpMainMenuInit();
   kpLogInit();
+  kpExtrasInit();
   document.getElementById('kpSearchBtn').addEventListener('click', kpSearchOpen);
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
 }

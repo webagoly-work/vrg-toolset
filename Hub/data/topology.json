@@ -1048,7 +1048,9 @@
           "date": "2026-10-20",
           "t": "Kísérlet működik P33-on"
         }
-      ]
+      ],
+      "long": "Az **Open MCT** a NASA nyílt forrású telemetria-konzolja: idősorok, grafikonok, határértékek, hibalisták — élő eszközadatokra való. Ezért **külön program**, nem a Kapu alapja: nincs magyar felülete, saját szerver kell neki, és a BRIDGE élő adataihoz erős, nem kezdőknek szóló linktérképnek (HUB-Q12 A). Most a kutatásra mutat; a kész konzol a `Console/` mappába kerül.",
+      "longEn": "**Open MCT** is NASA's open-source telemetry console: time series, plots, limits, fault lists — made for live device data. So it is **a separate program**, not the base of the hub: no Hungarian UI, it needs its own server, and its strength is live BRIDGE data, not a beginner link map (HUB-Q12 A). For now it points at the research; the finished console goes to `Console/`."
     },
     {
       "id": "esp-lab",

@@ -4,7 +4,7 @@
 //
 //   Hub/src/index.html   with three markers:
 //     <!--@css-->   every Hub/src/css/*.css, in name order, as one <style>
-//     <!--@data-->  topology / access list / public key as JSON blocks
+//     <!--@data-->  topology / access list / public key / glossary as JSON blocks
 //                   (a file that does not exist yet is embedded as null)
 //     <!--@js-->    every Hub/src/js/*.js, in name order, one shared scope
 //   -> Hub/dist/vrg-kapu.html
@@ -29,7 +29,8 @@ const OUT = path.join(HUB, 'dist', 'vrg-kapu.html');
 const DATA = [
   ['kpTopology', path.join(HUB, 'data', 'topology.json')],
   ['kpAccess', path.join(HUB, 'data', 'access.json')],
-  ['kpPubkey', path.join(SRC, 'access-pubkey.json')]
+  ['kpPubkey', path.join(SRC, 'access-pubkey.json')],
+  ['kpGlossary', path.join(HUB, 'data', 'glossary.json')]
 ];
 
 function fail(msg) { console.error('build-hub: ' + msg); process.exit(1); }

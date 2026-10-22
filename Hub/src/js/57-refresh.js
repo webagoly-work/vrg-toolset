@@ -109,11 +109,16 @@ async function kpRefreshCore(topoNow, accessNow, pubkey, onStep) {
   step('Ágak', br.ok ? others.length + ' fejlesztési ág' : 'nem elérhető');
 
   // 5. decision files
-  const tr = await kpGhCached(base + '/git/trees/main?recursive=1', 'tree2', j => {
+  const tr = await kpGhCached(base + '/git/trees/main?recursive=1', 'tree3', j => {
     const blobs = (j.tree || []).filter(x => x.type === 'blob');
-    return { dec: blobs.filter(x => KP_DECISION_RE.test(x.path)).map(x => x.path), logs: blobs.filter(x => /^Hub\/logs\/[^/]+\.md$/.test(x.path)).map(x => x.path) };
+    return { dec: blobs.filter(x => KP_DECISION_RE.test(x.path)).map(x => x.path), logs: blobs.filter(x => /^Hub\/logs\/[^/]+\.md$/.test(x.path)).map(x => x.path),
+      all: (j.tree || []).map(x => x.path) };   // ~800 paths: what the link check tests repo links against
   }, {}, stats);
-  if (tr.value) live.decisions = kpDecisionCounts(topology, tr.value.dec);
+  if (tr.value) {
+    live.decisions = kpDecisionCounts(topology, tr.value.dec);
+    live.decisionFiles = tr.value.dec;
+    live.repoPaths = tr.value.all || null;
+  }
   step('Döntési fájlok', tr.value ? '✓' : 'nem elérhető');
 
   // 5b. the newest work log per user (the file name starts with date_login_)
@@ -248,13 +253,27 @@ const KP_MAIN_MENU = [
   { label: 'Saját linkek importálása…', run: () => kpL5Import() },
   { label: 'Helyi célmappa…', run: () => kpDest.pick() }
 ];
+const KP_MENU_GROUPS = [
+  ['Első lépések', 'Szótár', 'Telepítők'],
+  ['Mi változott?', 'Nyitott kérdések', 'Frissítés a GitHubról (git pull)', 'Frissítés most', 'Linkellenőrzés'],
+  ['Export: kép (PNG)', 'Nyomtatás', 'Exportálás JSON', 'Importálás JSON…', 'Elrejtett elemek…'],
+  ['Új saját link…', 'Saját linkek exportálása', 'Saját linkek importálása…', 'Helyi célmappa…', 'Helyi repó mappa…', 'Téma', 'Névjegy']
+];
+
 function kpMainMenuInit() {
   const b = document.getElementById('kpMenuBtn');
   b.addEventListener('click', () => {
     kpMenuClose();
     const r = b.getBoundingClientRect();
-    const m = kpEl('div', { id: 'kpMenu', class: 'kp-menu', role: 'menu' }, ...KP_MAIN_MENU.map(it =>
-      kpEl('div', { class: 'kp-mi', role: 'menuitem', tabindex: '-1', onclick: e => { e.stopPropagation(); kpMenuClose(); it.run(); } }, it.label)));
+    // grouped for a beginner: help first, then the day's work, the map, own settings
+    const rank = it => { const i = KP_MENU_GROUPS.findIndex(g => g.includes(it.label)); return i < 0 ? KP_MENU_GROUPS.length : i; };
+    const items = KP_MAIN_MENU.slice().sort((a, b) => rank(a) - rank(b));
+    const kids = [];
+    items.forEach((it, i) => {
+      if (i && rank(it) !== rank(items[i - 1])) kids.push(kpEl('div', { class: 'kp-sep', role: 'separator' }));
+      kids.push(kpEl('div', { class: 'kp-mi', role: 'menuitem', tabindex: '-1', onclick: e => { e.stopPropagation(); kpMenuClose(); it.run(); } }, it.label));
+    });
+    const m = kpEl('div', { id: 'kpMenu', class: 'kp-menu', role: 'menu' }, ...kids);
     document.body.append(m);
     m.style.left = Math.max(8, r.right - m.offsetWidth) + 'px';
     m.style.top = r.bottom + 4 + 'px';

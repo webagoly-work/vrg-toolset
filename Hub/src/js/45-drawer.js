@@ -22,7 +22,7 @@ function kpDrawerOpen(nodeId, tab) {
 
   const html = (hu, en) => {
     const box = kpEl('div', { class: 'kp-md' });
-    box.innerHTML = (hu ? '<div class="kp-hu">' + kpMd(hu) + '</div>' : '<div class="kp-muted">Nincs leírás.</div>') +
+    box.innerHTML = (hu ? '<div class="kp-hu">' + kpGlossMark(kpMd(hu), kpGloss()) + '</div>' : '<div class="kp-muted">Nincs leírás.</div>') +
       (en ? '<div class="kp-en">' + kpMd(en) + '</div>' : '');
     return box;
   };

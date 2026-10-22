@@ -25,6 +25,7 @@ function kpBoardRender() {
   if (kpBoard.focus) cols = cols.filter(c => c.dept.id === kpBoard.focus);
   const lay = kpLayout(cols, { layers: kpBoard.layers, collapsed: kpBoard.focus ? [] : kpBoard.collapsed, expanded: kpBoard.expanded, en: true, personal: kpPersonal() });
   kpBoard.layout = lay;
+  kpBoard.dead = kpDead();
 
   const g = kpEl('g', { id: 'kpCam' });
   const gEdges = kpEl('g', { class: 'kp-edges' });
@@ -97,6 +98,7 @@ function kpNodeEl(n) {
   }
 
   // cards: program / summary / slot / folder / local / agent / go / git
+  if (kpBoard.dead && kpBoard.dead.has(n.id)) g.append(kpEl('circle', { class: 'kp-dead-dot', cx: n.x + 2, cy: n.y + 2, r: 5 }, kpEl('title', {}, 'Hibás vagy üres link — ☰ Linkellenőrzés')));
   const big = n.kind === 'program' || n.kind === 'summary' || n.kind === 'slot';
   g.append(kpEl('rect', { class: 'kp-card' + (big ? '' : ' kp-sub'), x: n.x, y: n.y, width: n.w, height: n.h, rx: big ? 8 : 6 }));
   const icon = KP_ICON[n.kind] || '▣';
