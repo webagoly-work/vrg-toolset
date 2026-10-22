@@ -422,6 +422,22 @@
       "npmVersion": "0.169.0",
       "entry": "build/three.module.min.js",
       "note": "Az ügyfél-előnézet (3D túra) renderelője. A build/three.module.min.js-t és az examples/jsm/lines vonalait a client-preview build fűzi egyetlen <script type=\"module\">-ba, ezért az export offline, egy fájlban fut. A régi UMD build (three.min.js) r160 óta nincs. A tárolót nem töltjük le (több száz MB példa); az npm-csomag rögzített verzióval és ellenőrzőösszeggel jön. MIT — a beágyazott kóddal a szerzői jogi fejléc is megy: (c) 2010-2024 three.js authors."
+    },
+    {
+      "slug": "gods-eye-view",
+      "name": "God's Eye View",
+      "repo": "bilawalsidhu/gods-eye-view",
+      "license": "MIT",
+      "stars": 58848,
+      "pushed": "2026-10-21",
+      "aspect": "Kódváros / Dashboard",
+      "build": "szerver",
+      "priority": 3,
+      "vendor": "fetch",
+      "target": "gods-eye-view",
+      "ref": "v0.2.1",
+      "refType": "tag",
+      "note": "Élő 3D földgömb (CesiumJS + Vite + Node proxy): repülők, hajók, műholdak, kamerák, időjárás, hangvezérelt ügynök, MCP-szerver. Későbbi telepítéshez és ÖTLETFORRÁSNAK hozzuk le (Kódváros, VRG Dashboard), nem ágyazzuk be. A GitHub API NOASSERTION-t jelez: a FORRÁSKÓD MIT ((c) 2026 Bilawal Sidhu), de az adatok NEM — tengeralatti kábelek CC BY-NC-SA 3.0, Bhote Koshi képek CC BY-NC 4.0, adatközpontok/gátak ODbL, public/models/ modellenként saját licenc. Kódot átvenni lehet a fejléccel; adatot és modellt NEM. Telepítés: npm ci, npm run doctor, npm run dev (4173-as port), Node 24.14+; Cesium ion kulcs csak személyes, nem kereskedelmi célra."
     }
   ]
 }

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Kódváros</title>
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<header id="bar">
+  <b>Kódváros</b><span id="title">—</span>
+  <div id="qwrap"><input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Keresés ( / ) — pl. legnagyobb Planner · forró · régi 30 nap · >500 sor" aria-label="Keresés a városban"><div id="qres" hidden></div></div>
+  <span id="fresh" hidden></span>
+  <button id="tour-btn" class="btn" title="Városnézés: túrák a városban">Városnézés</button>
+  <button id="card-btn" class="btn" title="A mostani nézet képként (PNG, 1200×630)">Kép</button>
+  <button id="link" class="btn" hidden title="A nézet linkjének másolása (kamera + kijelölés)">Link</button>
+  <label class="btn">Megnyitás…<input id="file" type="file" accept=".json" hidden></label>
+</header>
+<main id="stage">
+  <canvas id="gl"></canvas>
+  <canvas id="brk" aria-hidden="true"></canvas>
+  <div id="hud" aria-live="off"></div>
+  <div id="drop" hidden>
+    <p>Húzd ide a <code>*.city.json</code> fájlt, vagy válaszd ki a <b>Megnyitás…</b> gombbal.</p>
+    <p class="hint">Készítése: <code>node CodeCity/scan.js &lt;mappa&gt;</code></p>
+  </div>
+  <div id="tip" hidden></div>
+  <aside id="panel" hidden></aside>
+  <aside id="tours" hidden></aside>
+  <div id="caption" hidden></div>
+  <div id="legend"></div>
+  <nav id="lenses" aria-label="Nézetek"></nav>
+  <div id="board" aria-hidden="true"><div id="board-1"></div><div id="board-2"></div></div>
+  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek · Szóköz: lejátszás · ← →: lépés · 1–6: nézet · U: utak · B: összevetés</div>
+  <div id="timeline" hidden>
+    <button id="tl-back" class="btn" title="Előző commit (←)">⏮</button>
+    <button id="tl-play" class="btn" title="Lejátszás (Szóköz)">▶</button>
+    <button id="tl-step" class="btn" title="Következő commit (→)">⏭</button>
+    <button id="tl-latest" class="btn" title="A mai állapot (End)">Most</button>
+    <button id="tl-speed" class="btn" title="Sebesség">1×</button>
+    <button id="tl-base" class="btn" title="Összevetés: a mostani commit lesz a bázis (B)">Δ</button>
+    <select id="follow" class="btn" aria-label="Követés"></select>
+    <div id="tl-track"><canvas id="tl-strip"></canvas><input id="tl-range" type="range" min="0" max="0" step="1" aria-label="Idővonal"></div>
+    <span id="tl-pos"></span>
+  </div>
+</main>
+<script>window.CITY = /*__CITY__*/null;</script>
+<script type="module">/*__SCRIPT__*/</script>
+</body>
+</html>

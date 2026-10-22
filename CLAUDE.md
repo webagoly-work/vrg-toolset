@@ -182,3 +182,10 @@ symbols grey while every class was correct and every test passed.
   SecAcc worktree: `H:\cwebuser\projects\VRG-DE\SecAcc\GO-STRICT.md`) and do what it says, in the
   **main checkout**, branch `main`: commit the five uncommitted programs VRG Kapu links to
   (research, client-look, media-wall, planner-cyd, board-console), asking about `macros.json` first.
+- **`GO CITY`** — read `GO-CITY.md` at the repo root (branch `worktree-codecity`, worktree
+  `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\.claude\worktrees\codecity`, until merged) and do what it
+  says: build VRG Kódváros, the codebase-as-a-city viewer, one WP at a time from `docs/city/README.md` §3.
+- **`GO ALL`** — read `GO-ALL.md` at the repo root (until merged: in the codecity worktree, or
+  `git show origin/worktree-codecity:GO-ALL.md`) and do what it says, as the **primary account in the
+  main checkout**: build `dev-all` in its own worktree `wt-dev-all` — every pushed line of work
+  (planner-stack, secacc, worktree-codecity, …) merged together so every feature can be tried at once.
