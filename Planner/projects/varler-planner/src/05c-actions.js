@@ -402,6 +402,9 @@ registerActions([
     +`<div class="mrow" style="font-size:11px;color:#777">⌀20 → ${chaseWidthOf(20)} mm · ⌀25 → ${chaseWidthOf(25)} mm · ⌀32 → ${chaseWidthOf(32)} mm széles véset.</div>`,
      ()=>{state.chaseFactor=Math.max(1,+$('csF').value||1.6);state.chasePad=Math.max(0,+$('csP').value||0);
        state.boxDepth=Math.max(10,+$('csD').value||45);draw();})},
+  {id:'chase.report',alias:'chase groove totals volume debris',label:'Véset összesítő (fm, fészek, térfogat)',icon:'▤',group:'Véset',
+   hint:'Minden fal, mindkét oldal: vésett méter szélesség×mélység szerint, dobozfészkek, kivésett térfogat és törmelék.',
+   run:()=>showChaseReport()},
   {id:'drop.settings',label:'Álmennyezet beállítása',icon:'⬓',group:'Szint',
    hint:'Szintenkénti álmennyezet-magasság; helyiségenként felülírható az adatlapon.',
    when:()=>!!$('dcVal'),run:()=>{$('dcVal').focus();$('hud').textContent='Álmennyezet: a szint melletti mezőben állítható.';}},

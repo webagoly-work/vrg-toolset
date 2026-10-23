@@ -33,6 +33,8 @@ function computeBOM(){const len={lighting:0,sockets:0,power3:0,data:0};data.cabl
     carried.forEach(c=>{const k=c.data?('d_'+c.data):('m_'+c.mm2);wire[k]=(wire[k]||0)+L*(c.count||1);});}});
   BUILDS.forEach(b=>{if(cond[b.k])rows.push({id:'cond_'+b.k,name:'Pálya – '+b.l,qty:+(cond[b.k]*w).toFixed(1),unit:'m'});});
   Object.keys(wire).forEach(k=>{const nm=k[0]==='d'?('Vezeték – '+k.slice(2)):('Vezeték '+k.slice(2)+' mm²');rows.push({id:'w_'+k,name:nm,qty:+(wire[k]*w).toFixed(1),unit:'m'});});
+  // wall chasing (06 chaseProject): real metres and pockets, no waste factor — labour, not material
+  chaseBOMRows().forEach(r=>rows.push(r));
   return rows;}
 function renderBOM(){const rows=computeBOM();let html=`<tr><td><b>Tétel</b></td><td class="n"><b>Menny.</b></td><td><b>E.</b></td><td class="n"><b>Ft/e.</b></td><td class="n"><b>Összeg</b></td></tr>`,tot=0;
   for(const r of rows){const price=state.price[r.id]||0,sum=price*r.qty;tot+=sum;
