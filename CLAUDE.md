@@ -180,7 +180,9 @@ symbols grey while every class was correct and every test passed.
   **main checkout**, branch `main`: commit the five uncommitted programs VRG Kapu links to
   (research, client-look, media-wall, planner-cyd, board-console), asking about `macros.json` first.
 - **`GO CITY`** — read `GO-CITY.md` at the repo root and do what it says: VRG Kódváros, the codebase-as-a-city
-  viewer (C1–C10 built and merged into `main` 2026-10-23; new WPs go on branch `worktree-codecity`,
+  viewer (C1–C10 built and merged into `main` 2026-10-23; **parked** until the branch consolidation is
+  done: base fine-tuning from the user's dev notes, a later Claude Design batch candidate — README §7;
+  new WPs go on branch `worktree-codecity`,
   worktree `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\.claude\worktrees\codecity`).
 - **`GO ALL`** — read `GO-ALL.md` at the repo root and do what it says, as the **primary account in the
   main checkout**: build `dev-all` in its own worktree `wt-dev-all` — every pushed line of work

@@ -108,3 +108,16 @@ claude mcp add kodvaros -- node <repo>/CodeCity/mcp.js     # [<other repo>] [--d
 # page.html#tour=auto&loop=1                           # wallboard: the automatic tour, forever
 # page.html#cardtest=1                                 # headless check of the PNG card (shows it on the page)
 ```
+
+## 7. Later — circle back (parked 2026-10-23)
+
+**Parked on purpose.** C1–C10 work, and the current priority is elsewhere: merge every working line
+into one main working version and trim the other branches (GO ALL / consolidation). Kódváros waits
+until that list is done.
+
+- **Fine-tuning its base**: the user has dev notes for it, not yet written down here. When this is
+  picked up, ask for those notes first; do not guess at them.
+- **Candidate for a later Claude Design batch** (user, 2026-10-23): the look and feel (night look,
+  lenses, panels, readouts, tour captions, share card) is a good fit for one Claude Design pass
+  rather than more piecemeal WPs. Bring the notes and screenshots of each look (`tools/shot.js`) to it.
+- Until then: no new Kódváros WPs. Fixes only if the consolidation breaks something.

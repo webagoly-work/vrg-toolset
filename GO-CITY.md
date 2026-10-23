@@ -17,5 +17,7 @@
    on `dev-all` itself.
 7. **C1–C10 all DONE 2026-10-23.** C9: session replay (CITY-D7 A). C10: `CodeCity/mcp.js`, the
    zero-dependency MCP server (CITY-D8 A/A/A), registered with `claude mcp add kodvaros -- node
-   <repo>/CodeCity/mcp.js`. The WP list in README §3 is finished: next is the user's call — merge
-   `worktree-codecity` into `main` (and START.cmd K then points at the merged files), or new WPs.
+   <repo>/CodeCity/mcp.js`. The WP list in README §3 is finished, and `main` is merged in (1bf52e7).
+8. **PARKED 2026-10-23** — README §7. The priority is consolidating every line of work into one
+   `main`. Come back later to fine-tune Kódváros's base: ask the user for their dev notes first.
+   It is a **candidate for a later Claude Design batch** (look and feel in one pass, not more WPs).
