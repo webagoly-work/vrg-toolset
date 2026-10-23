@@ -184,6 +184,10 @@ symbols grey while every class was correct and every test passed.
   done: base fine-tuning from the user's dev notes, a later Claude Design batch candidate — README §7;
   new WPs go on branch `worktree-codecity`,
   worktree `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\.claude\worktrees\codecity`).
+- **`GO MAIN`** — read `GO-MAIN.md` at the repo root and do what it says, in the **main checkout**,
+  branch `main`: consolidate every line of work into one `main` (fast-forward Kódváros, three small
+  GitHub-only commits, the GO WIRE merge with its 7 listed conflicts, re-anonymise, verify, push),
+  then trim every other branch and worktree. Supersedes GO ALL. Priority from 2026-10-23.
 - **`GO ALL`** — read `GO-ALL.md` at the repo root and do what it says, as the **primary account in the
   main checkout**: build `dev-all` in its own worktree `wt-dev-all` — every pushed line of work
   (planner-stack, secacc, worktree-codecity, …) merged together so every feature can be tried at once.
