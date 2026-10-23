@@ -42,9 +42,29 @@ try {
   check(c && c.imp && c.imp.length === 1 && city.files[c.imp[0]].p === 'src/a2.js', `c.js has one road, to src/a2.js; the package 'fs' is not a road (got ${c && JSON.stringify(c.imp)})`);
   const touched = city.commits[2][5].filter((_, i) => i % 3 === 0).map(i => city.files[i].p);
   check(touched.join() === 'src/a2.js', `the rename commit touches src/a2.js (got ${touched.join()})`);
+  check(!('sessions' in city), 'no sessions without --sessions (opt-in)');
+
+  // --sessions: a fake transcript with secrets in every field that must NOT travel
+  const line = (o) => JSON.stringify(o) + '\n';
+  const use = (id, name, input, ts) => line({ type: 'assistant', sessionId: 'feedbeef-0000', cwd: dir, timestamp: ts, message: { content: [{ type: 'text', text: 'SECRET-REPLY' }, { type: 'tool_use', id, name, input }] } });
+  put('../' + path.basename(dir) + '-tx/s.jsonl', line({ type: 'user', sessionId: 'feedbeef-0000', cwd: dir, timestamp: '2026-10-23T10:00:00Z', message: { content: 'SECRET-PROMPT' } })
+    + use('t1', 'Read', { file_path: path.join(dir, 'src', 'a2.js') }, '2026-10-23T10:00:05Z')
+    + use('t1', 'Read', { file_path: path.join(dir, 'src', 'a2.js') }, '2026-10-23T10:00:05Z')          // streamed twice
+    + use('t2', 'Edit', { file_path: 'c.js', old_string: 'SECRET-OLD', new_string: 'SECRET-NEW' }, '2026-10-23T10:01:00Z')
+    + use('t3', 'Grep', { pattern: 'SECRET-PATTERN' }, '2026-10-23T10:02:00Z')                       // no path: the cwd
+    + use('t4', 'Read', { file_path: path.join(os.tmpdir(), 'elsewhere.txt') }, '2026-10-23T10:03:00Z')  // outside the repo
+    + use('t5', 'Bash', { command: 'cat SECRET-CMD' }, '2026-10-23T10:04:00Z'));
+  execFileSync(process.execPath, [path.join(__dirname, '..', 'scan.js'), dir, '--out', out, '--sessions', '--sessions-dir', dir + '-tx'], { stdio: 'ignore' });
+  const raw = fs.readFileSync(out, 'utf8'), sc = JSON.parse(raw), s = sc.sessions && sc.sessions[0];
+  check(sc.sessions && sc.sessions.length === 1 && s.id === 'feedbeef', `one session, id cut to 8 chars (got ${JSON.stringify(sc.sessions && sc.sessions.map(x => x.id))})`);
+  const ev = s ? s.ev : [];
+  check(JSON.stringify(ev) === JSON.stringify([0, 0, sc.files.indexOf(sc.files.find(f => f.p === 'src/a2.js')), 55, 2, sc.files.indexOf(sc.files.find(f => f.p === 'c.js')), 115, 1, -1]),
+    `read a2 · edit c.js (relative path) · search the root; duplicate and outside calls dropped (got ${JSON.stringify(ev)}, dirs ${JSON.stringify(s && s.dirs)})`);
+  check(!/SECRET/.test(raw), 'no prompt, reply, pattern, edit text or command in the city');
+  check(Object.keys(s || {}).sort().join() === 'dirs,ev,id,t0', `a session holds only id, t0, dirs, ev (got ${Object.keys(s || {}).join()})`);
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
-  else fs.rmSync(dir, { recursive: true, force: true });
+  else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }
 }
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

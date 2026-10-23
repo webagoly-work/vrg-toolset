@@ -132,3 +132,11 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 /* C9: compare pin and the follow picker in the timeline bar */
 #tl-base.on { border-color: #ff5a5a; color: #ff5a5a; }
 #follow { background: #0a0f1c; color: var(--text); max-width: 150px; }
+
+/* C9: Munkamenet — the agent-session readout, top left under the commit board */
+#sess { background: #0a0f1c; color: var(--text); max-width: 270px; }
+#sess-now { position: absolute; top: 72px; left: 12px; z-index: 2; width: min(420px, calc(100% - 24px)); background: var(--panel);
+  border: 1px solid var(--line); border-left: 3px solid #5ab8ff; border-radius: 4px; padding: 8px 28px 8px 12px; }
+#sess-now .now { margin: 4px 0; word-break: break-all; }
+#sess-now i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; vertical-align: -1px; }
+#sess-now .x { position: absolute; top: 4px; right: 10px; cursor: pointer; color: var(--dim); }

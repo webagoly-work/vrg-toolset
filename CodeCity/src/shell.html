@@ -28,6 +28,7 @@
   <aside id="panel" hidden></aside>
   <aside id="tours" hidden></aside>
   <div id="caption" hidden></div>
+  <div id="sess-now" hidden></div>
   <div id="legend"></div>
   <nav id="lenses" aria-label="Nézetek"></nav>
   <div id="board" aria-hidden="true"><div id="board-1"></div><div id="board-2"></div></div>
@@ -40,6 +41,8 @@
     <button id="tl-speed" class="btn" title="Sebesség">1×</button>
     <button id="tl-base" class="btn" title="Összevetés: a mostani commit lesz a bázis (B)">Δ</button>
     <select id="follow" class="btn" aria-label="Követés"></select>
+    <select id="sess" class="btn" aria-label="Munkamenet" hidden></select>
+    <button id="sess-play" class="btn" title="Munkamenet lejátszása / megállítása" hidden>▶</button>
     <div id="tl-track"><canvas id="tl-strip"></canvas><input id="tl-range" type="range" min="0" max="0" step="1" aria-label="Idővonal"></div>
     <span id="tl-pos"></span>
   </div>

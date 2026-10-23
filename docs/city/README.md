@@ -53,7 +53,7 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 | C6 | Roads: regex imports + co-change arcs; Szomszédok panel (GEV 10) | |
 | C7 | Query bar over loaded data (GEV 6), brackets on results (GEV 7), HUD line with landmarks (GEV 8) | |
 | C8 | Városnézés: authored tours, JSON, play/stop (GEV 9); PNG share card | ⏸ |
-| C9 | Compare two refs (green grew / red shrank); follow an author/agent with a trail (GEV 11); agent-session replay | ⏸ decide scope |
+| C9 | Compare two refs (green grew / red shrank); follow an author/agent with a trail (GEV 11); agent-session replay (CITY-D7 A) | |
 | C10 | Kódváros as MCP tools: answers return a city view link (GEV 12) | ⏸ decide |
 
 ## 4. Status
@@ -68,8 +68,9 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 | C6 | DONE | 2026-10-22 | regex imports in scan.js (JS/TS, HTML, CSS, Python, Markdown links; relative only — 221 roads here), arcs on selection (amber imports · cyan importers · violet co-change), U = all roads, Szomszédok list (click flies there), `#roads=1`; selftest 9 checks |
 | C7 | DONE | 2026-10-22 | query bar ( / ): offline Hungarian parser — path words, language, csak/ügynök/ember, forró, régi/friss N nap·hét·hónap·év, >N sor/commit, legnagyobb/legaktívabb/legimportáltabb/legrégebbi, top N; summary + list (click flies), numbered brackets on screen, `#q=` links; HUD line `KÖRZET · fájl · forró · NEAR <landmark>` |
 | C8 | DONE ⏸ | 2026-10-22 | Városnézés: a shot = a share-link view + title + caption + fly/hold; automatic tour from the data (9 shots: overview, biggest district, 3 landmarks, hot district, first / middle commit, today); own tours: + Jelenet, export/import JSON, `scan.js --tour` bakes them in; `#tour=auto&loop=1` = wallboard; lower-third captions, Esc / touch stops. "Kép": 1200×630 PNG card. Fixed on the way: animations used the rAF stamp against performance.now (negative progress threw the camera off), HUD debounce → throttle. Look check passed |
-| C9 | DONE (part) ⏸ | 2026-10-22 | Δ Összevetés (B): pin a base, buildings show base → shown commit (új / nőtt / csökkent / változatlan), red glass ghosts for files deleted since, red base tick on the strip, `#base=`; Követés: author or agent trail (last 40 commits, fading, head marker), `#follow=a0/g0`. Verified on the selftest fixture (KEEP_FIXTURE=1): ghost + born/gone render. **Open: agent-session replay — CITY-D7** |
-| C7–C10 | open | | |
+| C9 | DONE (part) ⏸ | 2026-10-22 | Δ Összevetés (B): pin a base, buildings show base → shown commit (új / nőtt / csökkent / változatlan), red glass ghosts for files deleted since, red base tick on the strip, `#base=`; Követés: author or agent trail (last 40 commits, fading, head marker), `#follow=a0/g0`. Verified on the selftest fixture (KEEP_FIXTURE=1): ghost + born/gone render. |
+| C9 | DONE | 2026-10-23 | Munkamenet (CITY-D7 A): `scan.js --sessions` (opt-in) reads the local Claude Code transcripts of the repo and its worktrees through `sessions.js` and keeps **only** file/folder path, kind (olvas · keres · szerkeszt) and seconds — no prompts, replies, patterns, edit text or commands; newest 30 sessions with ≥ 3 steps. Viewer: session picker + ▶ in the timeline bar, a light hops roof to roof along a low arc (blue read · violet search · amber edit), touched roofs keep a dot in the strongest colour, a folder search floats over its district's skyline, readout with step / time / path / counts, Esc closes, `#sess=<id>` opens finished. Here: 7 sessions, 153 path events. selftest 14 checks (incl. no-secret check on a fake transcript) |
+| C10 | open ⏸ | | |
 
 ## 5. Decisions
 
@@ -81,7 +82,7 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 - CITY-D5 God's Eye View is an idea source only (Vendor, priority 3). Its code is MIT and may be
   adapted with the notice; its data and models are never taken.
 - CITY-D6 **Alap** is the default look (user, 2026-10-22).
-- CITY-D7 **open** — agent-session replay (mindwalk-style: what an agent *read, searched, edited* in one
+- CITY-D7 **A** (user, 2026-10-23) — agent-session replay (mindwalk-style: what an agent *read, searched, edited* in one
   session, as light moving over the city). Needs Claude Code transcripts (`~/.claude/projects/<repo>/*.jsonl`),
   which hold your prompts and tool output. A) `scan.js --sessions` reads them locally and keeps only
   file paths + read/edit kind + timestamps, nothing else, **opt-in per scan** (recommended) ·
@@ -97,6 +98,9 @@ node CodeCity/build.js                                 # the empty template that
 node CodeCity/tools/shot.js "CodeCity/dist/<name>.html#pick=0.45,0.6"   # headless check incl. picking
 node CodeCity/tools/selftest.js                        # scanner: rename / delete / agent trailer / imports
 node CodeCity/scan.js <repo> --tour tours.json --html … # bake exported Városnézés tours into the page
+node CodeCity/scan.js <repo> --sessions --html …       # opt-in: agent sessions (paths + kind + time only)
+#                                    [--sessions-dir <~/.claude/projects/<folder>>] to name the transcripts
+# page.html#sess=<id>                                  # a session, finished; &sessplay=1 plays it (test hook)
 # page.html#tour=auto&loop=1                           # wallboard: the automatic tour, forever
 # page.html#cardtest=1                                 # headless check of the PNG card (shows it on the page)
 ```

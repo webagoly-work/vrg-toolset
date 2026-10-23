@@ -2,19 +2,22 @@
 // scan.js — read a git repository into city.json, the data behind VRG Kódváros.
 //
 //   node CodeCity/scan.js [repo=.] [--out file.city.json] [--html page.html] [--tour tours.json] [--all]
+//                         [--sessions [--sessions-dir <transcript folder>]]
 //
 // Two git calls: `git ls-files` for what exists now, and one `git log --numstat --summary -M`
 // walked oldest -> newest. Renames are followed, so a file keeps ONE id through its whole life;
 // the layout is computed over every id that ever existed, which is what keeps a building in
 // place during the replay. Deleted files stay in the data as `gone` (ghosts).
 // Binary files and files over 2 MB are left out unless --all.
+// --sessions (opt-in, CITY-D7): agent-session replay from the local Claude Code transcripts — file
+// paths, read/search/edit and timestamps only (sessions.js says exactly what is kept).
 'use strict';
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 
 const argv = process.argv.slice(2);
 const opt = k => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : null; };
 const flag = k => argv.includes(k);
-const REPO = path.resolve(argv.find((a, i) => !a.startsWith('--') && !['--out', '--html', '--tour'].includes(argv[i - 1])) || '.');
+const REPO = path.resolve(argv.find((a, i) => !a.startsWith('--') && !['--out', '--html', '--tour', '--sessions-dir'].includes(argv[i - 1])) || '.');
 const ALL = flag('--all');
 const MAX_BYTES = 2 * 1024 * 1024;
 
@@ -175,6 +178,15 @@ const city = {
   repo: { name: path.basename(REPO), head, branch, scannedAt: new Date().toISOString() },
   authors, agents: agentNames, commits, files: outFiles,
 };
+// --sessions: what agent sessions read, searched and edited here (the repo and every worktree of it)
+if (flag('--sessions')) {
+  let roots = [REPO];
+  try { roots = roots.concat(git('worktree', 'list', '--porcelain').split('\n').filter(l => l.startsWith('worktree ')).map(l => l.slice(9).trim())); } catch { /* no worktrees */ }
+  const { readSessions } = require('./sessions.js');
+  const r = readSessions({ roots, files: outFiles.map(f => f.p), dirs: opt('--sessions-dir') ? [path.resolve(opt('--sessions-dir'))] : undefined });
+  city.sessions = r.sessions;
+  console.log(`sessions: ${r.sessions.length} kept from ${r.stats.transcripts} transcripts — ${r.stats.kept} path events, ${r.stats.outside} outside the city (paths, kind and time only)`);
+}
 // --tour file.json: bake Városnézés tours (exported from the viewer) into the city
 if (opt('--tour')) {
   const doc = JSON.parse(fs.readFileSync(opt('--tour'), 'utf8'));

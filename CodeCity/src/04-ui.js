@@ -70,6 +70,7 @@ function viewState() {
   if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
   if (compare.base !== null) q.set('base', current.city.commits[compare.base][4]);
   if (follow.who) q.set('follow', follow.who.kind + follow.who.idx);
+  if (sess.s) q.set('sess', sess.s.id);
   return q;
 }
 function writeHashSoon() {
@@ -96,6 +97,10 @@ function applyView(q, ms = 0) {
   if ((bi >= 0 ? bi : null) !== compare.base) setBase(bi >= 0 ? bi : null);
   const fw = /^([ag])(\d+)$/.exec(q.get('follow') || '');
   $('follow').value = fw ? fw[0] : ''; follow.who = fw ? { kind: fw[1], idx: +fw[2] } : null; followRefresh();
+  // a session in a link opens finished (every mark, no light); ▶ plays it
+  const si = (current.city.sessions || []).findIndex(s => s.id === q.get('sess'));
+  if (si < 0) { if (sess.s) { $('sess').value = ''; sessStop(); } }
+  else if (!sess.s || sess.s.id !== q.get('sess')) { $('sess').value = String(si); sessSelect(si); sessShowAll(); }
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
   if (f) showFile(f); else if (shownFile) closePanel();
 }
@@ -149,6 +154,7 @@ function load(city) {
   compare.base = null; $('tl-base').classList.remove('on');
   lensApply();
   followOptions();
+  sessOptions();
   toursLoad();
   const live = city.files.filter(f => !f.gone).length;
   $('title').textContent = `${city.repo.name}${city.repo.head ? ' @ ' + city.repo.head : ''} · ${hu(live)} fájl · ${hu(city.commits.length)} commit · ${hu(city.authors.length)} szerző`;

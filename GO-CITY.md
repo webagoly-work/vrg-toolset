@@ -15,6 +15,6 @@
    into one worktree, `wt-dev-all`, to try every feature at once. Feature work still happens HERE, on
    `worktree-codecity`; `dev-all` picks it up by merging again (GO-ALL §5). Never commit Kódváros work
    on `dev-all` itself.
-7. **Paused 2026-10-22 at C9 ⏸.** First question when resuming: **CITY-D7** (agent-session replay,
-   README §5): A paths + read/edit kind + timestamps only, opt-in per scan · B skip · C full text.
-   After that: C10 (Kódváros as MCP tools, ⏸ decide).
+7. **C9 DONE 2026-10-23** (CITY-D7 A: session replay, `scan.js --sessions`, paths + kind + time only).
+   Next: **C10** (Kódváros as MCP tools, ⏸ decide). Its first question when resuming: the scope of
+   the MCP server (which tools, read-only or not, where it runs); ask it as CITY-D8 before any code.
