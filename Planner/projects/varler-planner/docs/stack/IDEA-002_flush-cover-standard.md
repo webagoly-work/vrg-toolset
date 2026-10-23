@@ -235,11 +235,11 @@ exists.
   860 vs 855 mm. Hager FWU62S niche: 957 × 565 vs 952 × 560. Use manufacturer datasheets.
 - **A true 100 × 100 flush box** does not seem to exist. Closest: Kaiser 9195-91 (107 × 107 × 45, 2
   circuits) and Kopos KO 110/L NA (116 × 116 × 45, IP30, lid V 110 L + divider P 110 L). The portal
-  box in P33 v1 is drawn as 10 × 10 — either accept 107 or 116, or move it to Ladder H at 200.
+  box in CLA v1 is drawn as 10 × 10 — either accept 107 or 116, or move it to Ladder H at 200.
 - **RB-O (outdoor, IP65)** was out of scope — no flush IP65 cover family researched.
 - **Tile-plane hatches** (magnetic, frameless, adjustable feet) exist and are the most invisible
   option, but no Hungarian vendor with published sizes and prices was pinned down. Relevant for a
-  bathroom RBX (RB-E/W at P33's R08).
+  bathroom RBX (RB-E/W at CLA's R08).
 
 ## 10. Open questions for the user
 
@@ -262,7 +262,7 @@ exists.
 | 2 | **Chorus ONE for BRIDGE cluster plates, Asfora for plain rewires** | |
 | 3 | **Yes — a second supplier** (Prowallz or TÉTÉNY-KER 87) for the hatches | |
 | 4 | *open — discuss* | stock vs custom hatch sizes still to be settled |
-| 5 | *open, parked* | *"leave it for now, as it is a placeholder for a later dev idea"* — the P33 test plans keep the 10 × 10 placeholder |
+| 5 | *open, parked* | *"leave it for now, as it is a placeholder for a later dev idea"* — the CLA test plans keep the 10 × 10 placeholder |
 | 6 | *open, both kept* | *"in light of the options available, 1 and 3 for more options"* — the standard offers **push-open** and **key on MAINS-bearing hatches (RBX), push-open elsewhere** as two variants; keyed-everywhere is dropped |
 
 Routing answer R13 (WORKSHOP-001 §7) makes the **K3 partitioned housing** the default wherever

@@ -27,7 +27,7 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:BUSB',   n:'Biztosított 24 V — B busz',ph:2, fam:'BUSB'},
  {k:'sys:CONTROL',n:'Vezérlés (BRIDGE_LINK)', ph:2, fam:'CONTROL'},
  {k:'sys:DATA',   n:'Adat / PoE',             ph:2, fam:'DATA'},
- {k:'sys:KNX',    n:'KNX',                    ph:2, fam:'KNX', off:true},   // P33: not taken
+ {k:'sys:KNX',    n:'KNX',                    ph:2, fam:'KNX', off:true},   // CLA: not taken
  {k:'sys:SENSOR', n:'Érzékelők',              ph:2, fam:'SENSOR'},
  {k:'sys:RF',     n:'Rádió — lefedettség',    ph:2, fam:null},             // a coverage plan, no conduit (A2 step 9)
  {k:'sys:HMI',    n:'Kezelőfelületek',        ph:2, fam:'CONTROL'},
@@ -36,8 +36,8 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:SECURITY',n:'Biztonságtechnika',     ph:2, fam:'SECURITY', last:true}, // always last [user]
  {k:'cluster',    n:'Klaszterpontok', ph:2, cats:['device'], hint:'Klaszterdobozok (K1 · K2 · K3): több réteg végpontjai egy süllyesztett házban — IDEA-001/002/003.'},
  {k:'arm',        n:'ARM pályák',  ph:2, cats:['path'], hint:'Egyvonalas pályák az RBX-től minden végpontig.'},
- // the top of the stack: the gathered extras and SmartFrame ideas as provisioned endpoints (P33-ADD-001, IDEA-003)
- {k:'sys:EXTRA',  n:'Extrák és ötletek',      ph:2, fam:'LV', hint:'Előkészített végpontok: P33 extrák (#1–#11) és a SmartFrame slotjai. Az ideális helyek ✦-gal.'}];
+ // the top of the stack: the gathered extras and SmartFrame ideas as provisioned endpoints (CLA-ADD-001, IDEA-003)
+ {k:'sys:EXTRA',  n:'Extrák és ötletek',      ph:2, fam:'LV', hint:'Előkészített végpontok: CLA extrák (#1–#11) és a SmartFrame slotjai. Az ideális helyek ✦-gal.'}];
 const STK_ICONS={construct:'🧱',mark:'🚩',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:DED':'🔌','sys:SOC':'⚡','sys:LIGHT':'💡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
   'sys:DATA':'🌐','sys:KNX':'⌘','sys:SENSOR':'📡','sys:RF':'📶','sys:HMI':'🖲','sys:MEDIA':'🔊','sys:USB':'🔌','sys:SECURITY':'🛡',cluster:'▦',arm:'🌿','sys:EXTRA':'✧'};
 // One colour per role, fixed [user]: Erősáram is the same red in every project, on the panel, on the
@@ -198,7 +198,7 @@ function stkCreate(opts){opts=opts||{};
   // new layers: one contiguous block after the last existing layer, in STK_ROLES order
   STK_ROLES.forEach(r=>{
     if(r.k==='construct'){if(!cl){cl=stkMakeLayer(S,r);layers.push(cl);}return;}
-    if(r.ph===1||want.indexOf(r.k)>=0)layers.push(stkMakeLayer(S,r));});
+    if((r.ph===1&&!r.opt)||want.indexOf(r.k)>=0)layers.push(stkMakeLayer(S,r));});   // opt: added on demand (08q Igények)
   stkSync(S);
   state.stack=S.id;state.stkOff=false;state.activeLayer=cl.id;state.stage='stk:construct';
   lyrRefresh();

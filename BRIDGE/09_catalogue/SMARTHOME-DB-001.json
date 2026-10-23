@@ -215,7 +215,7 @@
    "garazs",
    "kert"
   ],
-  "p33": {
+  "cla": {
    "R01": {
     "type": "eloszoba",
     "n": "Előszoba",
@@ -1777,7 +1777,7 @@
    "mn": "ok",
    "mnNote": "—",
    "pro": "Szivárgáskor gázszelep-zárás (BRIDGE vízőr mintájára).",
-   "con": "Fűtött érzékelő ~ 0,3–0,8 W — nem elemes; P33-ban indukciós főzőlap, csak gázkészülék esetén kell.",
+   "con": "Fűtött érzékelő ~ 0,3–0,8 W — nem elemes; CLA-ban indukciós főzőlap, csak gázkészülék esetén kell.",
    "layer": "sys:SENSOR",
    "code": "SEN",
    "var": "gas",
@@ -4055,7 +4055,7 @@
     "lepcso",
     "terasz"
    ],
-   "note": "P33 nappali: két fali lámpa a déli falon (tervrajz)."
+   "note": "CLA nappali: két fali lámpa a déli falon (tervrajz)."
   },
   {
    "k": "L_reading",
@@ -4069,7 +4069,7 @@
     "gyerek",
     "nappali"
    ],
-   "note": "Keskeny nyaláb, saját kapcsoló az ágynál; P33 R07 két éjjeli lámpa + kapcsoló."
+   "note": "Keskeny nyaláb, saját kapcsoló az ágynál; CLA R07 két éjjeli lámpa + kapcsoló."
   },
   {
    "k": "L_undercab",
@@ -4095,7 +4095,7 @@
     "wc",
     "eloszoba"
    ],
-   "note": "Arcmagasságban oldalról / körben; P33 fürdő „konnektor + tükör lámpa”."
+   "note": "Arcmagasságban oldalról / körben; CLA fürdő „konnektor + tükör lámpa”."
   },
   {
    "k": "L_picture",
@@ -4245,7 +4245,7 @@
    "rooms": [
     "konyha"
    ],
-   "note": "P33: a szigeten pultba épített rész, éjjeli derengés."
+   "note": "CLA: a szigeten pultba épített rész, éjjeli derengés."
   },
   {
    "k": "L_window",
@@ -4299,7 +4299,7 @@
    "rooms": [
     "lepcso"
    ],
-   "note": "Biztosított B busz (menekülés). P33: „LED sor a lépcső mellett”."
+   "note": "Biztosított B busz (menekülés). CLA: „LED sor a lépcső mellett”."
   },
   {
    "k": "L_footlight",
@@ -5482,7 +5482,7 @@
     },
     {
      "gas": "refrig",
-     "note": "P33: klíma a déli falon"
+     "note": "CLA: klíma a déli falon"
     },
     {
      "gas": "smoke"
@@ -5746,7 +5746,7 @@
     "okostükör kijelzővel",
     "termosztatikus okoszuhany",
     "törölközőszárító időzítéssel",
-    "bidé / zuhanyWC melegvíz + 230 V (P33 WC-ben előkészítve)"
+    "bidé / zuhanyWC melegvíz + 230 V (CLA WC-ben előkészítve)"
    ],
    "light": {
     "main": [
@@ -5864,7 +5864,7 @@
     "szivárgás, ha vizes pont van"
    ],
    "future": [
-    "felszálló és SSC hely (P33 R05)",
+    "felszálló és SSC hely (CLA R05)",
     "polcvilágítás"
    ],
    "light": {

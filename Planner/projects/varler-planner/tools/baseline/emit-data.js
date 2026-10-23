@@ -89,7 +89,7 @@ function dataSheet(ctx, X, file) {
     const sk = DA.sinks.find(x => x.id === e.id), via = sk && sk.src ? (sk.src.type === 'base' ? 'BASE' : hwName(sk.src)) : '';
     lp.add({ x: e.x, y: e.y, text: `${e.ref || e.id}${PORTS(e) > 1 ? ' · ' + PORTS(e) + '×' : ''}${via ? ' → ' + via : ''}`, size: 70, color: '#0b5b5c', weight: 600, r: 75, pri: 30 }); });
   put(lp.render());
-  title(put, 'P33 — Adat / PoE réteg', `Cat6A a legközelebbi RBX-be (BASE-be), RBX → BASE ${DA.C.rbxLinks}× Cat6A · vízszintes sáv ${DA.C.h} · átvezetés a portál fészkén (H0)${DA.legs.some(l => l.over) ? ' és a lépcsőnyílás fölött, a mennyezeten' : ''} · halvány: erősáramú alapréteg`);
+  title(put, 'CLA — Adat / PoE réteg', `Cat6A a legközelebbi RBX-be (BASE-be), RBX → BASE ${DA.C.rbxLinks}× Cat6A · vízszintes sáv ${DA.C.h} · átvezetés a portál fészkén (H0)${DA.legs.some(l => l.over) ? ' és a lépcsőnyílás fölött, a mennyezeten' : ''} · halvány: erősáramú alapréteg`);
   legend(put, [['Adat 2700', DCOL], ['Mennyezet (AP)', DCOL, '80 50'], ['BASE felszálló', DCOL, '30 30'], ['Szolgáltatói cső', ISPCOL, '60 40'], ['Erősáram (alap)', '#d9d2c4']],
     Object.entries(DBOX_HU).map(([k, n]) => [n, DBOX[k]]));
   sheet.write(file, s, VIEW, { px: 3000 });
@@ -120,7 +120,7 @@ function ledSheet(ctx, X, file) {
     lp.block(r.start.x, r.start.y, 2 * z + 30, 2 * z + 30);
     lp.add({ x: r.start.x, y: r.start.y, text: `${r.box.id} kezdőpont`, size: 70, badge: '#e8590c', r: 95, pri: 50 }); });
   put(lp.render());
-  put(`<text x="${LVIEW[0] + 150}" y="${LVIEW[1] + 180}" font-size="170" font-weight="700" fill="#222">P33 — LED-betápok: kezdőpont + süllyesztett doboz</text>` +
+  put(`<text x="${LVIEW[0] + 150}" y="${LVIEW[1] + 180}" font-size="170" font-weight="700" fill="#222">CLA — LED-betápok: kezdőpont + süllyesztett doboz</text>` +
     `<text x="${LVIEW[0] + 150}" y="${LVIEW[1] + 360}" font-size="105" fill="#666">sárga = LED-futás · narancs négyzet = kezdőpont és a plusz ⌀68 mélydoboz</text>` +
     `<text x="${LVIEW[0] + 150}" y="${LVIEW[1] + 510}" font-size="105" fill="#666">szaggatott = betáp · pöttyözött barna = a régi terv LED-vonala (ellenőrzésre)</text>`);
   const ly = LVIEW[1] + LVIEW[3] - 380;
@@ -143,7 +143,7 @@ function compareSheet(ctx, X, file) {
   OP.ITEMS.forEach(it => { const [, c] = ST[it.st], big = it.st !== 'ok' && it.st !== 'moved';
     lp.add({ x: it.x, y: it.y, text: String(it.n), size: big ? 86 : 72, badge: c, r: 70, pri: big ? 40 : 20 }); });
   put(lp.render());
-  title(put, 'P33 — Összevetés a korábbi tervvel', 'minden jel a régi tervről, a mostani terv helyén · a szám = a sor az ADATRETEG.md 1. táblázatában · szürke pötty = a mostani terv pontja' +
+  title(put, 'CLA — Összevetés a korábbi tervvel', 'minden jel a régi tervről, a mostani terv helyén · a szám = a sor az ADATRETEG.md 1. táblázatában · szürke pötty = a mostani terv pontja' +
     (OP.ITEMS.some(it => it.answered) ? ' · gyűrű = az 1. kör válasza döntötte el' : ''));
   const y = 9550; put(`<rect x="500" y="${y - 250}" width="9900" height="420" fill="#fff" stroke="#ccc" stroke-width="10"/>`);
   Object.entries(ST).forEach(([k, [n, c, sym]], i) => { const x = 650 + i * 1620; put(`<rect x="${x}" y="${y - 90}" width="220" height="130" rx="40" fill="${c}"/><text x="${x + 110}" y="${y - 25}" font-size="95" fill="#fff" text-anchor="middle" dominant-baseline="central">${sym}</text><text x="${x + 270}" y="${y + 5}" font-size="100">${esc(n)}</text>`); });
@@ -154,7 +154,7 @@ function compareSheet(ctx, X, file) {
 function report(ctx, X, file) {
   const { DA, alt, LE, OP } = X, { E, cfg } = ctx, out = [], P = t => out.push(t);
   const nm = id => { const e = E.find(x => x.id === id); return e ? `${e.ref || e.id} (${e.id})` : id; };
-  P(`# P33 — Adat/PoE réteg, LED-betápok, összevetés a korábbi tervvel\n`);
+  P(`# CLA — Adat/PoE réteg, LED-betápok, összevetés a korábbi tervvel\n`);
   P(`Forrás: \`${path.basename(ctx.inFile)}\` + az erősáramú alapréteg (ALAPRETEG.md) · generálva: ${new Date().toISOString().slice(0, 16).replace('T', ' ')} · motor: \`Planner/projects/varler-planner/tools/baseline/\` (data.js, led.js, emit-data.js)\n`);
   const A = cfg.adatAnswers;
   P(`Lapok: \`osszevetes.png\` (régi terv ↔ mostani), \`led-betap.png\` (LED-kezdőpontok), \`adat-halozat.png\` (Adat/PoE). Kérdések: ${A ? '`ADATRETEG-Q-002.json` (2. kör — csak ami nyitva maradt); az 1. kör válaszai a 0. fejezetben' : '`ADATRETEG-Q-001.json`'} (BRIDGE Tuner). Planner-fájl: \`*_adatreteg.vplan.json\` = az alapréteg + az adatréteg + a LED-dobozok.\n`);
@@ -272,7 +272,7 @@ function pack(ctx, X) {
   ] });
   if (OP) S.push({ id: 'R', title: 'A korábbi terv nyitott pontjai', note: 'Lásd osszevetes.png és ADATRETEG.md 1.1 — a szám a sor száma.', questions: OP.ITEMS.filter(it => it.st === 'ask' || it.st === 'part').filter(it => !/LED|redőnyök vezérlő|fali lámpa a zuhanyfalon/.test(it.what))
     .map((it, k) => q('R' + String(k + 1).padStart(2, '0'), `#${it.n} ${it.room}: ${it.what} — ${it.note}`, `Most: ${it.now}.`, 'A', optsFor(it))) });
-  return { pack: 'P33ADATQ001', title: 'P33 — Adat/PoE réteg, LED-betápok, korábbi terv', rev: 'r1', date: new Date().toISOString().slice(0, 10), sections: S };
+  return { pack: 'CLAADATQ001', title: 'CLA — Adat/PoE réteg, LED-betápok, korábbi terv', rev: 'r1', date: new Date().toISOString().slice(0, 10), sections: S };
 }
 // round 2: only the details the answers left open (⚑ in this round's edits, new clashes, new warnings)
 function packOpen(ctx, X) {
@@ -305,7 +305,7 @@ function packOpen(ctx, X) {
   // whatever the layers still warn about
   [...X.DA.warn, ...R.warn].filter(w => w.sev !== 'info').forEach(w => q(w.msg + ' — mi legyen?', 'Új figyelmeztetés a válaszok beépítése után.', 'A',
     [['A', 'Jóváhagyom', ''], ['B', 'Másképp', 'Megjegyzésbe.']]));
-  return { pack: 'P33ADATQ002', title: 'P33 — Adat/PoE, LED, korábbi terv: 2. kör (nyitott pontok)', rev: 'r1', date: new Date().toISOString().slice(0, 10),
+  return { pack: 'CLAADATQ002', title: 'CLA — Adat/PoE, LED, korábbi terv: 2. kör (nyitott pontok)', rev: 'r1', date: new Date().toISOString().slice(0, 10),
     sections: [{ id: 'N', title: 'Nyitott pontok az 1. kör után', note: 'Az 1. kör (ADATRETEG-Q-001) válaszai beépültek — lásd ADATRETEG.md 0. fejezet. Ezek maradtak.', questions: Q }] };
 }
 function optsFor(it) {
@@ -339,7 +339,7 @@ function vplan(ctx, X, inFile, file) {
   LE.runs.forEach(r => D.devices.push({ type: 'junction', jbShape: 'round', jbSize: 68, level: cfg.level, x: Math.round(r.start.x), y: Math.round(r.start.y), h: r.h, layer: L_LV || L_DATA, id: nid('D'), ref: r.box.id,
     note: `${r.box.n} — ${r.face.wall} ${Math.round(r.lo)}–${Math.round(r.hi)} (${m1(r.len)} m)${r.cont ? `, folytatólagos ~${m1(r.cont.len)} m (${r.cont.txt})` : ''}, ${r.h} mm; betáp: ${r.srcDev ? hwName(r.srcDev) : r.srcTxt} [LED-betáp ⌀68 mélydoboz]`, faceBack: false }));
   P.layers.forEach(l => { if ([L_DATA, L_LV].includes(l.id)) l.visible = true; });
-  out.name = (out.name || 'P33').replace(/ — erősáram alapréteg$/, '') + ' — alapréteg + adat/PoE + LED-betápok'; out.saved = new Date().toISOString();
+  out.name = (out.name || 'CLA').replace(/ — erősáram alapréteg$/, '') + ' — alapréteg + adat/PoE + LED-betápok'; out.saved = new Date().toISOString();
   fs.writeFileSync(file, JSON.stringify(out));
 }
 

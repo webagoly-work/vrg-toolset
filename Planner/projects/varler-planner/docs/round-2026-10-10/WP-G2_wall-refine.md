@@ -1,6 +1,6 @@
 # WP-G2 — Wall refine (Falak finomítása)
 
-Status: todo ⏸ dry-run on P33 before applying · Wave G · Depends: U1 (`hitOk`) · Size: M (~200 lines) ·
+Status: todo ⏸ dry-run on CLA before applying · Wave G · Depends: U1 (`hitOk`) · Size: M (~200 lines) ·
 Spec: 66 · Decisions: Q-G02, Q-G03
 
 ## Goal
@@ -55,7 +55,7 @@ start).
 7. Running `wrfPlan` again after apply → zero moves (idempotent).
 
 ## ⏸ Checkpoint
-Run the dry-run on `Calculator/P33-teszt_v2.vplan.json` in the browser pane and report: junction
+Run the dry-run on `Calculator/CLA-teszt_v2.vplan.json` in the browser pane and report: junction
 counts by type, the largest move, the skipped list. The analysis prototype (MATERIAL §6) measured
 **27 junctions (12 L, 15 T), 33 moves, max 308 mm, two multi-junction ends** with the default rules —
 your numbers should match within the effect of the rounding pre-pass; a big difference means a rule

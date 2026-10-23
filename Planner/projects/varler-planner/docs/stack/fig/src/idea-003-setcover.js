@@ -12,7 +12,7 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 
-// ── functions at a doorway (the user's list, IDEA-003 §1, plus the P33 portal demands) ──
+// ── functions at a doorway (the user's list, IDEA-003 §1, plus the CLA portal demands) ──
 // w = weight. 1 = ordinary; 2 = carries a standard (STD-003 portal tier, STD-008 NTL, egress).
 const F = [
   ['F01', 'lábfény spot / LED lábfény feed',          1, 'low'],
@@ -55,7 +55,7 @@ const R = {
 };
 
 // ── candidate slots: what each can hold, its box, its relative cost, the risers it needs ──
-// Heights are for the P33 reference ceiling 2850 (IDEA-003 §3). A slot covers a function only if
+// Heights are for the CLA reference ceiling 2850 (IDEA-003 §3). A slot covers a function only if
 // the function's zone, voltage class and reach rule allow it there (§5 explains each line).
 const S = [
   ['L0', 'hinge foot 250 · Ø68 deep',              1.3, ['RH'], ['F01', 'F03', 'F04', 'F29']],

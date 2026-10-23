@@ -141,11 +141,12 @@ STK_WVBOX.unshift(clsWvBox);
 // ==================================================================================================================
 // ideal spots
 // ==================================================================================================================
-function idealCap(L){return !!(L&&L.stack&&L.role&&((L.role.indexOf('sys:')===0&&L.role!=='sys:RF')||L.role==='hw'||L.role==='cluster'));}
+function idealCap(L){return !!(L&&L.cinema&&L.cinema.spots)||!!(L&&L.stack&&L.role&&((L.role.indexOf('sys:')===0&&L.role!=='sys:RF')||L.role==='hw'||L.role==='cluster'));}   // 08r: a cinema layer with made spots too
 function idealShown(L){return idealCap(L)&&L.visible!==false&&L.ideal!==false&&(L.id===state.activeLayer||!!state.idealAll);}
 function idealTaken(L,code,h){return data.devices.some(d=>d&&d.layer===L.id&&epCodeOf(d)===code&&d.level===h.level&&Math.hypot(d.x-h.x,d.y-h.y)<250&&Math.abs((d.h||0)-(h.h||0))<400);}
 // [{key, kind:'ep'|'portal'|'cluster', role, layer, code?, x, y, h, level, mount, side?, wall?, why, …}]
 function idealSpots(L,level){if(!idealCap(L))return [];const role=L.role,seen={},out=[];
+  if(L.cinema&&L.cinema.spots)return L.cinema.spots.filter(s=>s.level===level&&!idealTaken(L,s.code,s)).map(s=>Object.assign({},s,{layer:L.id,role:'sys:CINEMA'}));   // 08r (C5 A)
   const add=s=>{if(seen[s.key])return;seen[s.key]=1;s.layer=L.id;s.role=role;out.push(s);};
   if(role==='hw'){(typeof ptCandidates==='function'?ptCandidates(level):[]).forEach(G=>add({key:'pt:'+G.o.id+':'+G.wallSide,kind:'portal',code:'PT',
       x:G.x,y:G.y,h:G.h,level,mount:'wall',side:G.wallSide,wall:G.wall,why:'Portál · '+G.cls+' · '+(G.at==='hinge'?'zsanér':'kilincs')+' oldal',G}));return out;}
@@ -259,7 +260,7 @@ STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d)return;
   return out;});
 
 // ==================================================================================================================
-// the Extras layer: P33-ADD-001 extras and the SmartFrame slots as provisioned endpoints
+// the Extras layer: CLA-ADD-001 extras and the SmartFrame slots as provisioned endpoints
 // ==================================================================================================================
 // prov = provisioned (box + conduit, device later); req = client-requested (the user's *). Cables are what the box needs
 // pulled now. Each code finds its ideal spot through the 05t suggestion machinery (anchors below).
@@ -336,7 +337,7 @@ registerActions([
   run:()=>{state.idealOff=!state.idealOff;lyrHud('Ideális helyek '+(state.idealOff?'ki':'be'));draw();}},
  {id:'stack.ensure',alias:'hianyzo reteg klaszter extra stack layers add',label:'Klaszter + Extrák réteg a stackhez',icon:'▤',group:'Stack',
   need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>{const S=stkActive();['cluster','sys:EXTRA'].forEach(k=>stkEnsureRole(S,k));draw();lyrHud('Rétegek rendben: Klaszterpontok, Extrák és ötletek.');}},
- {id:'preload.open',alias:'elotoltott terv p33 preload plan',label:'Előtöltött terv…',icon:'📂',group:'Projekt',
+ {id:'preload.open',alias:'elotoltott terv cla preload plan',label:'Előtöltött terv…',icon:'📂',group:'Projekt',
   need:'Ebben a buildben nincs előtöltött terv.',when:()=>preList().length>0,run:()=>preOffer()}
 ]);
 

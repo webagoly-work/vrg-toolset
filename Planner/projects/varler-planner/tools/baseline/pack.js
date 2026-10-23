@@ -78,7 +78,7 @@ function build(ctx) {
     { id: 'G03', q: 'Gerinc 2600 / leágazó 2450 — marad?', why: 'A DIN 18015-3 felső sávja (mennyezet alatt 150–450).', rec: 'A',
       opts: [{ k: 'A', t: 'Marad', d: '' }, { k: 'B', t: 'Gerinc 2450 / leágazó 2300', d: '' }] }] });
 
-  return { pack: 'P33BASEQ001', title: 'P33 — Erősáram alapréteg: jóváhagyás', rev: 'r1', date: new Date().toISOString().slice(0, 10), sections: S };
+  return { pack: 'CLABASEQ001', title: 'CLA — Erősáram alapréteg: jóváhagyás', rev: 'r1', date: new Date().toISOString().slice(0, 10), sections: S };
 }
 function write(ctx, file) { fs.writeFileSync(file, JSON.stringify(build(ctx), null, 1)); }
 module.exports = { build, write };
@@ -104,7 +104,7 @@ function buildOpen(ctx) {
     opts: [{ k: 'A', t: 'Jó', d: '' }, { k: 'B', t: 'Az egész keret feljebb: közép 1200', d: 'Kapcsoló 1271, dugaljak 1200 / 1129.' }, { k: 'X', t: 'Másképp', d: '' }] });
   R.warn.filter(w => /jelöletlen falon/.test(w.msg)).forEach(w => Q.push({ id: ID(), q: w.msg.replace(/ — rajzold be.*/, ''), why: 'Új jelöletlen falszakasz a válaszok beépítése után.', rec: 'A',
     opts: [{ k: 'A', t: 'Jóváhagyom', d: '' }, { k: 'B', t: 'Berajzolom', d: '' }, { k: 'C', t: 'Más út', d: 'Megjegyzésbe.' }] }));
-  return { pack: 'P33BASEQ002', title: 'P33 — Erősáram alapréteg: 2. kör (nyitott pontok)', rev: 'r1', date: new Date().toISOString().slice(0, 10),
+  return { pack: 'CLABASEQ002', title: 'CLA — Erősáram alapréteg: 2. kör (nyitott pontok)', rev: 'r1', date: new Date().toISOString().slice(0, 10),
     sections: [{ id: 'N', title: 'Nyitott pontok az első kör után', note: 'Az első kör válaszai beépültek (lásd ALAPRETEG.md). Ezek maradtak.', questions: Q }] };
 }
 module.exports.buildOpen = buildOpen;

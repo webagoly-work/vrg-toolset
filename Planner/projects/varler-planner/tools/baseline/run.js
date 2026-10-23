@@ -9,7 +9,7 @@ const fs = require('fs'), path = require('path');
 const geom = require('./geom'), prep = require('./prep'), { plan } = require('./plan');
 const [, , inFile, outDir, cfgFile] = process.argv;
 if (!inFile || !outDir) { console.error('usage: run.js <in.vplan.json> <outDir> [config.js]'); process.exit(2); }
-const cfg = require(path.resolve(cfgFile || path.join(__dirname, 'p33.config.js')));
+const cfg = require(path.resolve(cfgFile || path.join(__dirname, 'cla.config.js')));
 const doc = JSON.parse(fs.readFileSync(inFile, 'utf8'));
 prep.applyEdits(doc, cfg);
 const G = geom.load(doc, cfg.level);

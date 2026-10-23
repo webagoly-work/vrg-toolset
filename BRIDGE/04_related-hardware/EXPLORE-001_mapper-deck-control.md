@@ -24,7 +24,7 @@ The return arrow is the valuable part. Today the Planner is a one-way design too
 writing **measured runs** back, the deck writing **commissioned node IDs** back, and the CONTROL
 units reporting **live state**, the Planner file becomes the as-built record of the house. That is
 something an electrician can hand over and a client can keep — and it reuses the naming scheme
-STD-004 already fixed (`P33.R03.LU2`).
+STD-004 already fixed (`CLA.R03.LU2`).
 
 Recommendation: develop the three as **one programme with a shared spine** (device bus, L0
 envelope, Planner IDs), not as three hobby builds. Sections 1–3 explore each; section 4 lists the
@@ -218,7 +218,7 @@ door — and it falls straight out of standards already written.
 | Device HTTP API + mDNS + WiFiManager + OTA | deck, CONTROL, mapper master | outlined in chat 2026-10-12 |
 | ESP-NOW link library (pairing, fixed channel 1, struct packets) | all three | channel 1 already fixed by STD-005 |
 | L0 envelope kinds: `cable.map`, `hid.profile`, `node.registry`, `control.config` | Planner import/export | new kinds to register |
-| Planner IDs (`P33.R03.LU2`) carried by every device and every measurement | all three | STD-004 |
+| Planner IDs (`CLA.R03.LU2`) carried by every device and every measurement | all three | STD-004 |
 | Input grammar (rotate / press / long / double / rotate-while-pressed) | deck + CONTROL | define once |
 | STD-008 pixel alphabet | deck status LEDs + CONTROL ring | exists |
 

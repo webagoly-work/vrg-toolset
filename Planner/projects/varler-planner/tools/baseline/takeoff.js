@@ -76,7 +76,7 @@ function build(ctx) {
 
 function md(T) {
   const P = [], t = (h, rows) => { P.push('| ' + h.join(' | ') + ' |', '|' + h.map(() => '---').join('|') + '|'); rows.forEach(r => P.push('| ' + r.join(' | ') + ' |')); P.push(''); };
-  P.push(`# P33 — mennyiségek (ár nélkül)\n`);
+  P.push(`# CLA — mennyiségek (ár nélkül)\n`);
   P.push(`Forrás: \`${T.meta.source}\` · motor: \`${T.meta.engine}\` · ${T.meta.generated}`, '', `Módszer: ${T.meta.rules.method}. ${T.meta.note}`, '');
   P.push(`## Helyiségek — földszint ${String(T.floor_area_m2).replace('.', ',')} m² (a vplan sokszögeiből)\n`); t(['Helyiség', 'Név', 'm²', 'Vizes'], T.rooms.map(r => [r.id, r.name, String(r.area_m2).replace('.', ','), r.wet ? 'igen' : '']));
   P.push(`## Végpontok (erősáram)\n`); t(['Fajta', 'db'], Object.entries(T.endpoints_by_code).map(([k, n]) => [k === 'SWI:shu' ? 'redőnykapcsoló' : (CODE_HU[k] || k), n]));

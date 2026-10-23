@@ -1,4 +1,4 @@
-# GO V2 — P33 második verzió: v1 teljes kiépítés + minden további réteg előkészítése (gyorsított felmérés)
+# GO V2 — CLA második verzió: v1 teljes kiépítés + minden további réteg előkészítése (gyorsított felmérés)
 
 Másold be ezt egy új Claude Code munkamenetbe. Munkakönyvtár: `H:\Dev-VRG\VRG-DE\wt-planner-stack`.
 
@@ -16,12 +16,12 @@ Ez a fájl **önmagában teljes**: a korábbi munkamenetek memóriájára ne sz�
 >
 > Részletes számítások nélkül, felmérés pontossággal írd össze, így kb hány méter cső és milyen típusú vezetékek kellenek, mi változik főbb pontokban az első verzióhoz képest - számítsd ki az anyagárat (méter, darab) és a velejáró munkadíjat és ez alapján - valamint összevetve az első verzió számításaival - adj összefoglalást, miben különbözik (kiépítettségében és áraiban) a második verzió az előzőhöz képest
 >
-> elkészült első verzió: VG-2026-PT33-01
+> elkészült első verzió: VG-2026-CLA-01
 
 ## Hol tartunk
 
-**v1 alapréteg** (az erősáramú motor), kész és fagyasztva: `Calculator/P33-baseline/v1_2026-10-12/`. Olvasd el a `VERSION.md`-t.
-- Benne: a forrás-vázlat, a `motor/` (a motor másolata a `p33.config.js` döntéseivel) és a `kimenet/` (minden kimenet).
+**v1 alapréteg** (az erősáramú motor), kész és fagyasztva: `Calculator/CLA-baseline/v1_2026-10-12/`. Olvasd el a `VERSION.md`-t.
+- Benne: a forrás-vázlat, a `motor/` (a motor másolata a `cla.config.js` döntéseivel) és a `kimenet/` (minden kimenet).
 - A számok:
   - erősáram: 16 kör, 111 végpont, földszint 55,81 m²;
   - süllyesztett gégecső falhoronyban;
@@ -29,10 +29,10 @@ Ez a fájl **önmagában teljes**: a korábbi munkamenetek memóriájára ne sz�
   - 5 LED-betápdoboz;
   - P1 bejárati redőny: csak előkészített útvonal.
 
-**v1 dokumentumok, VG-2026-PT33-01**, a Varler Workflow Kittel, kész és kiszállítva: `H:\Dev-VRG\VRG-DE\P33_ajanlat\`. A munkamappa: `H:\Dev-VRG\VRG-DE\P33_koltsegvetesi_tervezet\job\`.
+**v1 dokumentumok, VG-2026-CLA-01**, a Varler Workflow Kittel, kész és kiszállítva: `H:\Dev-VRG\VRG-DE\CLA_ajanlat\`. A munkamappa: `H:\Dev-VRG\VRG-DE\CLA_koltsegvetesi_tervezet\job\`.
 - Munkadíj **2 585 000 Ft** (P40); anyag **1 130 000 Ft** (1 017 000 – 1 243 000); fizetendő **≈ 3 715 000 Ft**.
 - 284 emberóra, kb. 18–21 munkanap, 46 318 Ft/m².
-- Minden v1-tétel, egységár és norma: `job\offer.json`. A menet: `job\WORKLOG_P33.md`.
+- Minden v1-tétel, egységár és norma: `job\offer.json`. A menet: `job\WORKLOG_CLA.md`.
 
 **Nyitva:** ADATRETEG-Q-002 (N01–N05) kis tervezési kérdései. A v1 a javasolt válaszokkal készült; a v2-t nem akasztják meg.
 
@@ -55,16 +55,16 @@ A v2 a **v1 teljes kiépítése** (változatlanul), és mellé **minden további
 ### A fázis — ebben a munkamenetben, gyorsan, felmérési pontossággal
 
 1. **Olvasd el:**
-   - `Calculator/P33-baseline/v1_2026-10-12/VERSION.md`;
+   - `Calculator/CLA-baseline/v1_2026-10-12/VERSION.md`;
    - `Planner/projects/varler-planner/tools/baseline/README.md`;
    - `…/kimenet/MENNYISEGEK.md`;
-   - `H:\Dev-VRG\VRG-DE\P33_koltsegvetesi_tervezet\job\WORKLOG_P33.md` (vége) és `job\offer.json` (a v1 egységárai, normái, csoportjai).
+   - `H:\Dev-VRG\VRG-DE\CLA_koltsegvetesi_tervezet\job\WORKLOG_CLA.md` (vége) és `job\offer.json` (a v1 egységárai, normái, csoportjai).
 2. **A rétegek és a kábeltípusok forrása:**
    - `H:\Dev-VRG\VRG-DE\Planner_VRG_U100\BRIDGE\05_standards\BRIDGE-STD-001-A2_Layer-Wiring-Reference.md` (rétegenkénti kábelezés);
    - `BRIDGE-STD-001_Physical-Standardisation.md` (RB-S 300×400×90, RB-M 400×500×110, RB-L 500×600×110, RB-H 600×600×120);
    - `01_architecture\BRIDGE-ARCH-002_Alapozo-Architektura-Terv_HU.md`;
-   - `08_builds\P33-BUILD-001_Topology-and-Composition.md`;
-   - `BRIDGE-OUTLINE-001_General-Outline.md` §4 (P33).
+   - `08_builds\CLA-BUILD-001_Topology-and-Composition.md`;
+   - `BRIDGE-OUTLINE-001_General-Outline.md` §4 (CLA).
    
    A vázlat rétegei és végpontjai a forrás vplan-ban vannak: `sys:CONTROL`, `sys:BUSB`, `sys:LV`, `sys:SENSOR`, `sys:HMI`, `sys:MEDIA`, `sys:USB`, `sys:SECURITY`, `sys:DATA`. Ilyen végpontok: POR, NTL, PAN, THR, SEN, SPK, CAM, ACP, ETH, USB, LNR. A motor `prep.js` / `rules.js` a portál-helyeket (H0–H3, T1, T2, L1–L4) már kiosztja.
 3. **Gyors mennyiség, motorral.** Az adatréteg mintájára (`data.js`: végpont → legközelebbi RBX, RBX → BASE, sáv, fészek-átvezetés) az összes SELV-rétegre:
@@ -80,7 +80,7 @@ A v2 a **v1 teljes kiépítése** (változatlanul), és mellé **minden további
    - kiépítettség: mi kerül bele, mi marad későbbre;
    - mennyiségek: cső m, kábel m típusonként, dobozok;
    - anyag, munkadíj, fizetendő: v1 ↔ v2, eltérés Ft-ban és %-ban.
-6. **Marketinglista:** szobánként címszavakban, a P33 helyiségeire (előszoba, konyha-étkező, lépcső, kamra, WC, nappali, szoba, fürdő). A piac legmodernebb okosotthon-lehetőségei, kiélezve az **ESPHome** potenciáljára, pl.:
+6. **Marketinglista:** szobánként címszavakban, a CLA helyiségeire (előszoba, konyha-étkező, lépcső, kamra, WC, nappali, szoba, fürdő). A piac legmodernebb okosotthon-lehetőségei, kiélezve az **ESPHome** potenciáljára, pl.:
    - jelenlét: mmWave;
    - ajtókontakt, portál, ToF;
    - jelenetek és cirkadián világítás;
@@ -93,20 +93,20 @@ A v2 a **v1 teljes kiépítése** (változatlanul), és mellé **minden további
    - helyi vezérlés felhő nélkül (Home Assistant).
    
    Ne legyen állítás, amit a v2 előkészítése nem tesz lehetővé.
-7. **Kimenet:** a `Calculator/P33-baseline/v2_…/` mappa (`V2_FELMERES.md` + a géppel olvasható mennyiségek + lapok, ha vannak). Utána másolat a `H:\Dev-VRG\VRG-DE\P33_koltsegvetesi_tervezet\00_bemenet_v2\` mappába a Kit munkamenetnek, a `V2_FELADAT.md` mellé.
+7. **Kimenet:** a `Calculator/CLA-baseline/v2_…/` mappa (`V2_FELMERES.md` + a géppel olvasható mennyiségek + lapok, ha vannak). Utána másolat a `H:\Dev-VRG\VRG-DE\CLA_koltsegvetesi_tervezet\00_bemenet_v2\` mappába a Kit munkamenetnek, a `V2_FELADAT.md` mellé.
 
 ### B fázis — a Varler Workflow Kit munkamenetben (a felhasználó indítja)
 
 Ezt nem itt kell megcsinálni, csak előkészíteni. A Kit munkamenet a v1-hez hasonlóan:
 - fair árakat számol a közös útvonal elve szerint;
-- elkészíti a VG-2026-PT33-02-t a marketing-oldallal.
+- elkészíti a VG-2026-CLA-02-t a marketing-oldallal.
 
-Az indító szöveg: `H:\Dev-VRG\VRG-DE\P33_koltsegvetesi_tervezet\V2_FELADAT.md`.
+Az indító szöveg: `H:\Dev-VRG\VRG-DE\CLA_koltsegvetesi_tervezet\V2_FELADAT.md`.
 
 ## Futtatás
 
 ```
-node Planner/projects/varler-planner/tools/baseline/run.js "Calculator/P33-baseline/v1_2026-10-12/P33_teszt_v1_m_solat.vplan(3).json" Calculator/P33-baseline
+node Planner/projects/varler-planner/tools/baseline/run.js "Calculator/CLA-baseline/v1_2026-10-12/CLA_teszt_v1_m_solat.vplan(3).json" Calculator/CLA-baseline
 ```
 
 - 0 figyelmeztetéssel kell lefutnia.
@@ -127,7 +127,7 @@ node Planner/projects/varler-planner/tools/baseline/run.js "Calculator/P33-basel
   - A nagy kéréseket bontsd fázisokra, és közben kérdezz.
   - **Commit és push: soha.** Azt a felhasználó csinálja.
   - Tuner-válaszformátum: `ID=kulcs ~ megjegyzés`. A Tuner: `H:\Dev-VRG\VRG-DE\Planner_VRG_U100\BRIDGE\_tuner\bridge-tuner.html`.
-- **Ügyféladat:** a P33 ügyféladat. A `BRIDGE/07_P33`, a `P33_koltsegvetesi_tervezet` és a `P33_ajanlat` nem kerül gitbe, és nem hagyhatja el a gépet. Az `É03 Földszinti alaprajz.pdf` másik projekt (Érd), ne használd.
+- **Ügyféladat:** a CLA ügyféladat. A `BRIDGE/07_CLA`, a `CLA_koltsegvetesi_tervezet` és a `CLA_ajanlat` nem kerül gitbe, és nem hagyhatja el a gépet. Az `É03 Földszinti alaprajz.pdf` másik projekt (Érd), ne használd.
 
 **Kezdd** azzal, hogy elolvasod a fentieket, és 6–8 sorban visszaigazolod:
 - a v1 számait;

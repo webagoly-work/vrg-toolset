@@ -98,7 +98,7 @@ function cornerS(r) {
 // Both ends are anchors on the room's faces; the link costs its plan length + the rise to the ceiling and back.
 // Kind 'over': the trunk and the data use it, the distribution does not (plan.js filters it out).
 function ceilAnchors(G, cfg, pre, anchors) {
-  // each end on its own room's face (aRoom / bRoom: a crossing over a stair void joins two rooms); P33 gives one room
+  // each end on its own room's face (aRoom / bRoom: a crossing over a stair void joins two rooms); CLA gives one room
   (cfg.ceilLinks || []).forEach((cl, k) => ['a', 'b'].forEach(e => { const [x, y] = cl[e], nf = geom.nearestFace(G, x, y, cl[e + 'Room'] || cl.room); if (!nf) return;
     anchors.push({ key: `${pre}:${k}:${e}`, room: nf.face.room, s: nf.face.uToS(nf.u) }); }));
 }

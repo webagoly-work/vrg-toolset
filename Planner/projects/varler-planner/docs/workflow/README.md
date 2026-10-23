@@ -1,6 +1,6 @@
-# Workflow round (WF) — the P33 way of working, built into the Planner
+# Workflow round (WF) — the CLA way of working, built into the Planner
 
-*Build pack for the user's dev log of 2026-10-14: "take the quickened progress of P33 and weave it into the standard
+*Build pack for the user's dev log of 2026-10-14: "take the quickened progress of CLA and weave it into the standard
 workflow of blueprint creation". **Analysis only — nothing here is built.** Priority: **top, after the current
 threads close** (Views V9b…, R1010 M2). Written against `planner-stack` head `87aa5ba` plus the uncommitted Views V8a/V9a
 work in the same worktree; every anchor below was read in that tree.*
@@ -14,7 +14,7 @@ the default unless §5 "Answers" says otherwise.
 
 | File | What |
 |---|---|
-| `README.md` | this — how P33 was really made, the map, the order, checkpoints, status |
+| `README.md` | this — how CLA was really made, the map, the order, checkpoints, status |
 | `00_CONTRACT.md` | where / how to work, data additions, golden policy, report format |
 | `01_MATERIAL.md` | paste-ready content: control model · room-type wheels · Standards table · door/portal slots · switch-type rule · circuit policy · rules palette |
 | `WP-F1…F4`, `WP-O1…O2`, `WP-R1…R4`, `WP-E0…E5` | one small file per work package (16) |
@@ -23,15 +23,15 @@ the default unless §5 "Answers" says otherwise.
 
 ---
 
-## 1. How P33 was really made — and where it left the Planner's expected steps
+## 1. How CLA was really made — and where it left the Planner's expected steps
 
 The Planner's intended path (PRIMER, the BRIDGE Stack pack): draw walls with the 2-click axis-aligned Wall tool or the
 rectangle "Helyiség létrehozása" dialog → Szerkezet → Jelölés → Hardver → BASE → Csatorna → place every endpoint **with
-its height** → draw routes by hand (or ghost) → `05w` fill. What actually happened on P33 (2026-10-09 … 10-12):
+its height** → draw routes by hand (or ghost) → `05w` fill. What actually happened on CLA (2026-10-09 … 10-12):
 
-| # | Expected step | What the user did on P33 | What did the work | Lesson for the workflow |
+| # | Expected step | What the user did on CLA | What did the work | Lesson for the workflow |
 |---|---|---|---|---|
-| 1 | Draw walls, then rooms | Geometry came in pre-made (test plan generator `tools/testplans/p33-teszt*.js`, remodel applied) | a script | Drawing a floor must be as fast as the generator was → **F1–F4** (room pen, Create Walls/Floors) |
+| 1 | Draw walls, then rooms | Geometry came in pre-made (test plan generator `tools/testplans/cla-teszt*.js`, remodel applied) | a script | Drawing a floor must be as fast as the generator was → **F1–F4** (room pen, Create Walls/Floors) |
 | 2 | Doors as plain openings, portals later | Portals were marked **on the doors** (Jelölés opening tags `portal p0/p1/p2`, `bejarat`, `technikai`, `redony`) | 21 marks | The door already *is* the portal: its slots exist from placement → **O2** |
 | 3 | Jelölés as notes | Marks used as **rules**: `wall/plus belso` ×3, `side/plus lforma` ×4, zones `agy`, `folyoso`, `folyoso+padlofutes = ban` | the engine read them | The colour-coded marks are the rules language → **R2, R3** |
 | 4 | Channel = drawn route | 24 loose `gege` lines on the Csatorna layer meaning **"horizontal routing allowed on this wall"**, 6 off-wall lines meaning **"ceiling reach to a lamp"** | `geom.js` (±500 mm tolerance) | Draw only the horizontal intent by hand; nothing else → **R2** (routing walls), **E2** (ceiling reach) |
@@ -44,7 +44,7 @@ its height** → draw routes by hand (or ghost) → `05w` fill. What actually ha
 
 **The one-line reading:** the user drew *intent* (rooms, doors, allowed walls, stickers) and the machine did *the
 derivable* (heights, boxes, circuits, wiring) — with every automatic result shown as a table to approve. The Planner's
-mechanics stay; the WF round adds (a) faster foundation tools, (b) a rules step, (c) the P33 engine behind buttons, and
+mechanics stay; the WF round adds (a) faster foundation tools, (b) a rules step, (c) the CLA engine behind buttons, and
 (d) **a workflow bar** — an overlay that walks the four phases and switches the existing tools for you (**E0**).
 
 **Overlay vs code change** (the user asked me to decide): overlay = the phase bar, the rules palette, the wheel, the
@@ -65,7 +65,7 @@ slots (06a), lamp groups (10-lamps), and the engine port (E5).
 | 2.2–2.3 | Door = portal from placement: latch side 230 V, hinge side LV, middle; window side slot for redőny feed (dormant until the room has redőny) | **O2** | M | slots from `PORTAL_SLOTS` (rules.js) |
 | R | Room type: LMB on a room → 8-sector wheel (7 types + South = more), multi-type toggle; RMB = advanced room settings | **R1** | M | mouse port of the gamepad wheel |
 | R | New tool: walls allowed for routing — LMB whole wall (both sides), hold-drag = part | **R2** | M | **the key feature** |
-| R | Granular colour-coded wall rules (the P33 marks), half-side by default; Floor rules = placeholder | **R3** | S | palette over 05n marks |
+| R | Granular colour-coded wall rules (the CLA marks), half-side by default; Floor rules = placeholder | **R3** | S | palette over 05n marks |
 | R | STANDARDS: every device / path standard height, variants (garázs dugalj 500, fürdő 1400…), project / room / selected | **R4** | M | ⚑ Q-R04 (one device + variants) — candidates in MATERIAL §3 |
 | 3.1 | Electronics starts → first electrical layer Erősáram (dugalj vs kapcsoló+lámpa) | **E0** | S | + the workflow bar; M1 split already built |
 | 3.1 | Lamps ↔ switches: switches untyped, lamp(s) → portal slot(s) or custom spots; group lamps first | **E1** | M | switch type derived (MATERIAL §5) |
@@ -81,7 +81,7 @@ slots (06a), lamp groups (10-lamps), and the engine port (E5).
 Wave F  F1 PEN → F2 SHARED → F3 WALLS ⏸ → F4 FLOORS          (foundation; F3 is the only golden mover)
 Wave O  O1 OPENING-KEYS → O2 DOOR-SLOTS
 Wave R  R1 WHEEL → R2 ROUTING-WALLS → R3 PALETTE → R4 STANDARDS ⏸
-Wave E  E0 BAR → E1 LINKS → E2 CEILING → E3 BOXES → E4 CIRCUITS (needs M2) → E5 ENGINE ⏸ P33
+Wave E  E0 BAR → E1 LINKS → E2 CEILING → E3 BOXES → E4 CIRCUITS (needs M2) → E5 ENGINE ⏸ CLA
 ```
 
 F before O (openings sit on walls F3 makes). R2 before E2 (E2 is R2's ceiling variant). R4 before E5 (the engine reads
@@ -93,7 +93,7 @@ heights from the Standards table instead of `rules.js`). E0 can be built any tim
 |---|---|---|
 | **F3** before build | the inner-size rule on a 2-room sketch: what you typed vs what the walls give, both Q-F01 options | the single biggest look-and-feel decision of the round |
 | **R4** after build | the Standards table filled from MATERIAL §3, every ⚑ row listed | heights are the user's trade knowledge, not mine |
-| **E5** after build | P33 redrawn with F–E tools → engine in the Planner → diff against `Calculator/P33-baseline/v1_2026-10-12` (16 circuits, 111 endpoints, trunk tree) | acceptance: same result as the offline engine |
+| **E5** after build | CLA redrawn with F–E tools → engine in the Planner → diff against `Calculator/CLA-baseline/v1_2026-10-12` (16 circuits, 111 endpoints, trunk tree) | acceptance: same result as the offline engine |
 
 ---
 
@@ -115,14 +115,14 @@ heights from the Standards table instead of `rules.js`). E0 can be built any tim
 - **The gamepad wheel** (08b-gamepad.js:214–372) is the radial the user means: 8 sectors, sector 0 up, clockwise, rings
   with sub-rings, drawn into `#gpWheel`. It lives inside the GP closure → R1 lifts the drawing into a shared helper.
 - **Marks** (05n-marks.js): polarity `plus/minus/ban/none` (green / orange / red / grey) = the colour code; kinds
-  wall/side/vstrip/hstrip/hband/opening/zone. P33 used `opening` tags on doors, `wall`/`side` plus, `zone` for bed and
+  wall/side/vstrip/hstrip/hband/opening/zone. CLA used `opening` tags on doors, `wall`/`side` plus, `zone` for bed and
   corridor. R2/R3 add tags, not a new store.
-- **Two auto-fill engines exist**: the Planner's `05w-fill` (stack E3/E4) and the offline `tools/baseline` (P33,
+- **Two auto-fill engines exist**: the Planner's `05w-fill` (stack E3/E4) and the offline `tools/baseline` (CLA,
   1 267 lines CommonJS, no DOM). E5 bundles the latter via build.js (Q-E05).
 - **Heights live in code** (`stdHeight()` tools/baseline/rules.js:12 and `EP_CAT[].h` 05s-endpoints.js). R4 turns them
   into one data table both read.
 - **Conflicts to settle** (in the decision pack): fürdő dugalj 1400 (draft) vs 1100 (rules.js ⚑ 701); one lighting
-  "string" circuit (WORKSHOP-001) vs V1 day / V2 night (P33 decision); switch 1100 vs the user's old 1300.
+  "string" circuit (WORKSHOP-001) vs V1 day / V2 night (CLA decision); switch 1100 vs the user's old 1300.
 
 ---
 
@@ -135,15 +135,15 @@ heights from the Standards table instead of `rules.js`). E0 can be built any tim
 | O1 | **built 2026-10-14** (uncommitted) | spec-84 (17) | `src/08e-wf-openings.js`; Ajtó / Ablak buttons, ←/→ type (DOORTYPE + new OPN_WINTYPE: 5 window types with size + sill), ↑/↓ side 0→1→3→2; two one-token hooks in 08-interaction (ghost + placement); browser-checked |
 | O2 | **built 2026-10-14** (uncommitted) | spec-86 (15) | `src/08g-wf-slots.js`; PT_SLOTS = engine table (spec-checked), ptSlots / ptWinSlot / ptSlotAt, auto-portal SF-0 on both faces in the door's undo step, faint slot dots by the active layer's families. **Finding:** 06a's PT_OFF is 200 mm, the engine's slots 150 — slots use 150 |
 | R1 | **built 2026-10-14** (uncommitted) | spec-85 (27) | `src/08f-wf-wheel.js`; pen click inside a room → wheel, toggle multi-type, auto name, tint follows; 3 new explicit-only kinds. **Deviations:** the wheel drawing is a copy of the gamepad's (08b untouched, not lifted); the Select-mode trigger is not built — Alt+click there already cycles overlapping items → Q-R10 |
-| R2 | **built 2026-10-14** (uncommitted) | spec-87 (21) | `src/08h-wf-routewalls.js`; 🟩 button, click = whole wall, drag = span, Shift+box; `rwlAllowed` / `rwlCovers`; Create Walls re-run now keeps wall ids so the marks survive. Not yet: the P33 sketch-line converter test (WP test 4) — belongs with E5 |
+| R2 | **built 2026-10-14** (uncommitted) | spec-87 (21) | `src/08h-wf-routewalls.js`; 🟩 button, click = whole wall, drag = span, Shift+box; `rwlAllowed` / `rwlCovers`; Create Walls re-run now keeps wall ids so the marks survive. Not yet: the CLA sketch-line converter test (WP test 4) — belongs with E5 |
 | R3 | **built 2026-10-14** (uncommitted) | spec-88 (28) | `src/08i-wf-rules.js`; 📐 Szabályok panel: Fal · Nyílászáró · Egyéb területek · Padló (placeholder), 20 one-click presets writing plain Jelölés marks; face click = one face, drag = part of it, second click removes; Vezethető fal hands over to R2; live counts. Reused tags: munkalap → `pult`, fűtőtest → `radiator`, vizes → `vizes`; new: kerulendo, tilos, gaz, sziget, strang. Browser-checked |
-| R4 | **built 2026-10-14** (uncommitted) — ⏸ answered: 1B 2A 3A 4A, elszívó dugalj 1900 | spec-89 (31) | `src/08j-wf-standards.js` + `src/11c-wf-keys.js`; 📏 Szabványok panel: 49 rows (devices, appliance sockets, paths, boxes, levels), scope Projekt / Helyiségtípus / Ez a helyiség, ＋ places the row as its own item (`d.hVar`, R04 B; `d.var` stays electrical), suggestions + Csere, Alkalmaz (only item devices, hand-moved ones stay via `hStd`). **Golden:** the 6 `/session` captures re-baselined (+16 chars each = `"stdHeights":[]` in the saved document); all 64 drawings identical. Not done: the P33 equivalence test vs rules.js (needs p33.config contexts → E5) |
+| R4 | **built 2026-10-14** (uncommitted) — ⏸ answered: 1B 2A 3A 4A, elszívó dugalj 1900 | spec-89 (31) | `src/08j-wf-standards.js` + `src/11c-wf-keys.js`; 📏 Szabványok panel: 49 rows (devices, appliance sockets, paths, boxes, levels), scope Projekt / Helyiségtípus / Ez a helyiség, ＋ places the row as its own item (`d.hVar`, R04 B; `d.var` stays electrical), suggestions + Csere, Alkalmaz (only item devices, hand-moved ones stay via `hStd`). **Golden:** the 6 `/session` captures re-baselined (+16 chars each = `"stdHeights":[]` in the saved document); all 64 drawings identical. Not done: the CLA equivalence test vs rules.js (needs cla.config contexts → E5) |
 | E0 | **built 2026-10-14** (uncommitted) | spec-90 (20) | `src/08k-wf-bar.js`; 🧭 bar over the canvas: 1 Alapozás › 2 Nyílászárók › 3 Szabályok › 4 Villamosság, each with its tools + a live check; Villamosság creates a BRIDGE stack adopting the rooms' layer (nothing copied) and activates Erősáram · Dugaljak; Lámpák + kapcsolók / Dedikált switch layers; 4.2–4.5 greyed; sits right of the mode hint; browser-checked |
 | E1 | **built 2026-10-14** (uncommitted) | spec-91 (29) | `src/08l-wf-switches.js`; Kapcsolások tool (click lamps → C = one leg → click a door L1 slot / a switch / Alt + wall: the switch is created there), type from the links on the existing `swType`, slot switches follow their door, ✨ Kapcsolások javaslata (one leg per room → every room door's L1; wet room → dry face), lsw.none check; bar 4.2 live. **Fixed on the way:** the Planner's SWITCH_TYPES had the Hungarian codes wrong (103 csillár / 105 váltó…) — now 105 csillár · 106 váltó · 107 kereszt · 108 dupla váltó, with a do-not-change note and a one-time migration of saved keys (`swNumMigrate`, `swNum:2`) |
 | E2 | **built 2026-10-14** (uncommitted) | spec-92 (29) | `src/08m-wf-ceiling.js`; **+ ▭ Padló út** (user, same mechanics: to any endpoint that is not a ceiling lamp, h 0, refused across a Padlófűtés zone; brown, ceiling blue; `flineFor`); 〰 Mennyezeti út: start on a Vezethető fal point / door MAINS slot / box / switch, bends (45°), finish on a ceiling lamp; one line per lamp (replace = one undo step); height = the room ceiling, void:true above an álmennyezet; cln.none check; `clineFor(lamp)` for E5. **Deviation:** click-click like the room pen instead of press-drag |
 | E3 | **built 2026-10-14** (uncommitted) | spec-93 (25) | `src/08n-wf-boxes.js`; Szobadoboz (d.jb szoba, 2150; jobs feed / crossing / switching → 150 or 200, sizeFix), Kötődoboz (100), Elosztó (board); `jbServicePoints` (Elosztó + portal boxes + szobadobozok + RBX/BASE), `jbMeet` (chosen → szobadoboz → switch's portal box; sockets = classic chain), ⊙ Kötődoboz ehhez a kapcsoláshoz (⌀80 on the leg's ceiling line, pins the leg), jb.none check; bar 4.3 live. **Deviation:** the portal box is DERIVED (L4 of a door face with an Erősáram device in a slot) — E5 materialises it with the wiring |
 | E4 | **built** 2026-10-15 | spec-97 | 08oa-wf-eloplan.js — click the Elosztó (Villamosság) → the table → Alkalmaz |
-| E5 | **built 2026-10-15** (uncommitted) — P33 acceptance A passed (167/167 legs, 97/97 boxes; E5_ENGINE_REVIEW §9), B (redraw) open | spec-98 (39) | engine fixes in `tools/baseline` (E5_ENGINE_REVIEW §6–7, Q1–Q11); bundled by `build.js` into `src/08ob-wf-engine.js` (`BL`, `blInput`, `blRun`); ⚙ Pályák kiszámítása + 🧵 Vezetékek (Eszköz / Helyiség / Ház) in phase 5; gen:'bl' paths + boxes; checks table. Bundle = CLI on P33 exactly. Next: E5-Q12, then WP-E6 Alosztó |
+| E5 | **built 2026-10-15** (uncommitted) — CLA acceptance A passed (167/167 legs, 97/97 boxes; E5_ENGINE_REVIEW §9), B (redraw) open | spec-98 (39) | engine fixes in `tools/baseline` (E5_ENGINE_REVIEW §6–7, Q1–Q11); bundled by `build.js` into `src/08ob-wf-engine.js` (`BL`, `blInput`, `blRun`); ⚙ Pályák kiszámítása + 🧵 Vezetékek (Eszköz / Helyiség / Ház) in phase 5; gen:'bl' paths + boxes; checks table. Bundle = CLI on CLA exactly. Next: E5-Q12, then WP-E6 Alosztó |
 | E6 | **built 2026-10-15/16** (uncommitted) — answered Q1 A+C (suggestion), Q3 own (feeder RCDs, one main switch), Q4 B (chained) | spec-99 (38) | `src/08oc-wf-alloszto.js`: a board on another level = Alosztó (AL1…) + its feed point below (DED alelo) + the 3C 25A / NYM-J 5×6 feeder circuit, one undo; per-level circuit suggestions; Alosztó cabinet (own main switch, SPD T2); engine per level from the Alosztó (feed leg through the slab), the feeder ΔU added upstairs; kivitel szekrény / DIN-sínes RBX. WP-E6_alloszto.md |
 
 ### Session log — 2026-10-14 build (one hour, the user's request)

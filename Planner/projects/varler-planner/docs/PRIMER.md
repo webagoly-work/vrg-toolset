@@ -139,7 +139,7 @@ It serves the **repo root** on `http://localhost:8131/` — deliberately, so a r
 fetched into the page:
 
 ```js
-const r = await fetch('/Calculator/P33-teszt_v2.vplan.json').then(r => r.json());
+const r = await fetch('/Calculator/CLA-teszt_v2.vplan.json').then(r => r.json());
 hardResetWorkspace(); applyProjectData(r.project || r); draw();
 ```
 

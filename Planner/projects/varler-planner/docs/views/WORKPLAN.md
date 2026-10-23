@@ -11,7 +11,7 @@ show pieces.
 
 | # | package | family | depends on | size | ⏸ |
 |---|---|---|---|---|---|
-| V0 | **Prototype:** P33 axo, grid painter, Sims cutaway (`tools/p33-axo.js`) | C1 | — | done | ✅ shown 2026-10-11 |
+| V0 | **Prototype:** CLA axo, grid painter, Sims cutaway (`tools/cla-axo.js`) | C1 | — | done | ✅ shown 2026-10-11 |
 | V1 | **View core** in the Planner: `06c-view-core.js` — view definition, grid painter, tagged primitives, style-sheet application | all | V0 | L | ✅ built 2026-10-12 |
 | V2 | **Camera presets + 90° rotation lock** in the existing 3D view | B1 B2 | — (independent) | S | ✅ built 2026-10-12 |
 | V3 | **Kivágás wall mode** (cutaway follows the camera) in the existing 3D view | B3 | V2 | M | ✅ built 2026-10-12 · ⏸ feel |
@@ -40,8 +40,8 @@ painter for all four quadrants (far cells first per axis; the visible face is on
 edge-on axes draw no faces), rotated objects as painter-sorted sprites, endpoints after the cell in front of their
 face, room / hardware / entrance labels through a greedy collision-avoiding placer (`viewPlaceLabels`: nothing on
 top of a marker or another label), `VIEW_STYLES.tiszta` as data, `viewRoomTone` by Hungarian room name.
-`viewWallClass` / `viewWallTops` are the one classifier (V3 uses them). `tools/p33-axo.js` now boots the build in
-jsdom and calls the core (V0's standalone copy kept as `tools/p33-axo-v0.js`); `--yaw=` renders any quadrant.
+`viewWallClass` / `viewWallTops` are the one classifier (V3 uses them). `tools/cla-axo.js` now boots the build in
+jsdom and calls the core (V0's standalone copy kept as `tools/cla-axo-v0.js`); `--yaw=` renders any quadrant.
 Proof: yaw 225 reproduces V0 exactly (far W6 W7 W9, near W8 W10 W11), yaw 45 swaps them; spec-69.
 
 
@@ -49,16 +49,16 @@ Proof: yaw 225 reproduces V0 exactly (far W6 W7 W9, near W8 W10 W11), yaw 45 swa
 `viewRender(viewDef, model) → {svg, prims}`. The tagged primitive list is the API that every later
 style uses.
 - `viewDef = {kind:'axo'|'plan'|'elev', yaw, pitch, cut, nearCut, scope:{levels, rooms, layers}, style, time}`
-- Grid painter from `tools/p33-axo.js`, generalised to the four yaw quadrants. Rotated objects,
+- Grid painter from `tools/cla-axo.js`, generalised to the four yaw quadrants. Rotated objects,
   stairs and roofs become sprites (PRIMER §4.2).
 - Primitive tags: `wall.top.cut`, `wall.top.full`, `wall.face.lit`, `wall.face.shade`, `plinth.*`,
   `floor.<roomNum>`, `obj.*`, `opening.*`, `ep.<role>.<type>`, `label.*`.
 - Style sheets as data (`VIEW_STYLES`), the first one = V0's look.
 
-**Read first.** `tools/p33-axo.js`; `00-core.js` `camK`/`depthOf`; `04-render.js` `drawPreview*`
+**Read first.** `tools/cla-axo.js`; `00-core.js` `camK`/`depthOf`; `04-render.js` `drawPreview*`
 (the `preview` style shows how a style is plumbed today); `05h-rooms.js` `deviceHostWall`.
 
-**Tests.** P33 v2 fixture → the far-wall set for each quadrant is exact (225°: `W6 W7 W9`). Primitive
+**Tests.** CLA v2 fixture → the far-wall set for each quadrant is exact (225°: `W6 W7 W9`). Primitive
 counts are stable. The default `draw()` is byte-identical (goldens 70/70).
 
 ## V2 · Camera presets + rotation lock
@@ -84,20 +84,20 @@ tops from `cutTops(level)` = `viewWallClass` against the live camera (camera sid
 heights `state.cutH` (1500) / `state.cutNearH` (1000) with a panel row *Kivágás belső … külső … mm* shown only in this
 mode; openings clipped to the lowered host (`cutOpening`, gone when the sill is above the cut); one classification
 per camera quadrant (`CUT_MEMO`, keyed on the camera sides, heights and a wall/room coordinate checksum). Action
-`view.cutaway` toggles and restores the previous mode. Shots: `fig/p33-3d-solid-102.png`, `fig/p33-3d-cutaway-102.png`,
-`fig/p33-3d-cutaway-282.png` (building layer only). Still open: **⏸ feel** — the user draws on P33 with it.
+`view.cutaway` toggles and restores the previous mode. Shots: `fig/cla-3d-solid-102.png`, `fig/cla-3d-cutaway-102.png`,
+`fig/cla-3d-cutaway-282.png` (building layer only). Still open: **⏸ feel** — the user draws on CLA with it.
 Not done: device symbols above the cut on a lowered wall still draw at their height (V4 can fade them).
 
 
 A fourth `wallMode`: `cutaway`. Per wall: classify near / far / interior against the current yaw
 (PRIMER §4.3) and draw at `nearCut` / full / `cut`. Reclassify when the yaw crosses a quadrant (cache
 per quadrant). Device symbols on lowered walls above the cut get the "seen past the cut" treatment.
-**⏸ feel:** the user draws on P33 in iso with it on.
+**⏸ feel:** the user draws on CLA in iso with it on.
 
 ## V4 · "Tiszta axo" style + export
 
 **Slice 1 built 2026-10-14** (uncommitted): `viewSheetSvg(R, {title, sub, H})` in `06c-view-core.js` — the sheet frame
-(title, legend of the roles present, symbol + wall rows) moved from `tools/p33-axo.js` into the Planner; the tool now
+(title, legend of the roles present, symbol + wall rows) moved from `tools/cla-axo.js` into the Planner; the tool now
 calls it (output byte-identical, minus the old "nézeti mag (V1)" note); `VIEW_ROLE_HU`, `VIEW_LEVEL_HU`, `VIEW_SHEET`;
 `tests/spec-73-view-sheet.js` (19). Suite 67/2559 green, golden 70/70.
 **Slices 2–3 built 2026-10-14** (uncommitted), per DECISIONS D-V4-1 A / D-V4-2: Render menu *Tiszta axo (3D)* (`state.style='tiszta'`,
@@ -106,17 +106,17 @@ camera (frame = base / vsK, group `scale(vsK)`), always the cutaway, active leve
 scene layer (the path/cable/device draft block is kept), overlay untouched; memo on camera + model fingerprint (7 ms per
 redraw in Chrome vs 67 ms per render); 2D → normal. `src/06d-view-export.js`: the Exportálás menu, `vexpSheet(k, title)`,
 `viewSheetSvg` gained `opts.scale`. Specs 74 (19) + 75 (21). Look sample: `tools/v4-look.js` →
-`fig/v4-look-p33-nv4.png` (P33 | NV4 × Felülnézet | Axonometria). **⏸ look** open: NV4 has no stack roles, so its legend
-header stands empty; top-down follows the current yaw (NV4's sample came out turned).
+`fig/v4-look-cla-clanv4.png` (CLA | CLANV4 × Felülnézet | Axonometria). **⏸ look** open: CLANV4 has no stack roles, so its legend
+header stands empty; top-down follows the current yaw (CLANV4's sample came out turned).
 *Was stopped on* `DECISIONS.md` D-V4-1 (how the style behaves in the 3D view: live camera, overlay, editing) and D-V4-2
 (export camera, title source, where the actions go). Remaining slices: (2) the style in the 3D view per D-V4-1;
-(3) the three export actions per D-V4-2; (4) ⏸ look — P33 and NV4 side by side.
+(3) the three export actions per D-V4-2; (4) ⏸ look — CLA and CLANV4 side by side.
 
 The V0 look as a selectable style in the 3D view and as an export (*Exportálás → Axonometria
 SVG/PNG/Nyomtatás*), using the existing `svgToPng` / `printSVG`. Includes: title block, legend from
 the roles actually present, room tags, hardware tags, and the entrance marker (from the `bejarat`
 mark tag, not a hard-coded id).
-**⏸ look:** P33 and NV4 side by side.
+**⏸ look:** CLA and CLANV4 side by side.
 
 ## V5 · Room-by-room explode
 
@@ -148,7 +148,7 @@ vertical plane, and the camera-side one is in front whatever their heights, so t
 **HU strings.** *Szétszedve* (checkbox) · *Emelés lépcsője* 900 mm · 600 mm · falmagasság · subtitle suffix
 ` · szétszedve, lépcső N mm`.
 
-**Tests (spec-76, P33 v2 ground).** rank 0 = R01 Előszoba with lift 900; ranks are a permutation of the ground rooms;
+**Tests (spec-76, CLA v2 ground).** rank 0 = R01 Előszoba with lift 900; ranks are a permutation of the ground rooms;
 lifts are (rank + 1) × 900; step 600 → R01 at 600; 'wall' → 2850; explode off → the svg equals the plain render
 byte for byte; every wall cell has exactly one owner; a shared wall gives two half-thickness faces (the grid gains its
 centreline coordinates); devices keep their plan x and are shifted by their room's lift only (screen dy = lift × the
@@ -159,9 +159,9 @@ untouched; the export menu passes the step. Exact counts (rooms, cells) recorded
 
 **Built 2026-10-14** (uncommitted) as specified: `viewExplodeOrder`, `viewWallRooms`, `viewRoomKey`, `VIEW_EXPLODE_STEPS`,
 `viewExplodeStep`; cell owners = room, else a walk off the wall centreline, else a flood from owned neighbours (corners,
-stubs); `stats.lifts / order / step`; prims carry `grp`. P33 ground: order R01 R04 R03L R03 R05 R08 R06 R07, grid
-78×78 → 83×81, 0 unowned cells. Export menu *Szétszedve* + *Emelés lépcsője*; `tools/p33-axo.js --explode=` →
-`fig/p33-explode-900.png`. spec-76 (25, incl. the D-V4-3 fixes: empty legend heading hidden, Felülnézet *Forgatás*).
+stubs); `stats.lifts / order / step`; prims carry `grp`. CLA ground: order R01 R04 R03L R03 R05 R08 R06 R07, grid
+78×78 → 83×81, 0 unowned cells. Export menu *Szétszedve* + *Emelés lépcsője*; `tools/cla-axo.js --explode=` →
+`fig/cla-explode-900.png`. spec-76 (25, incl. the D-V4-3 fixes: empty legend heading hidden, Felülnézet *Forgatás*).
 Slice 2 (Szétszedés) stopped on DECISIONS D-V5-2 (where it plays, how frames are drawn).
 
 Render per-room groups (PRIMER §4.4). Static exploded first (rooms lifted by order × step). Then
@@ -204,7 +204,7 @@ the top, its leaders, its items. A leader crosses the lower plates on top of the
 **HU strings.** Plate label = the `STK_ROLES` name + count (`Világítás · 38`) · menu *Rétegek* (checkbox) ·
 *minden elemhez vezetővonal* (checkbox) · subtitle suffix ` · rétegek N, lépcső S mm`.
 
-**Tests (spec-77, P33 v2 ground).** 16 plates in order mark hw base channel DED SOC LIGHT LV BUSB CONTROL DATA SENSOR
+**Tests (spec-77, CLA v2 ground).** 16 plates in order mark hw base channel DED SOC LIGHT LV BUSB CONTROL DATA SENSOR
 HMI MEDIA USB SECURITY with counts 15 3 1 5 5 18 38 7 11 5 5 16 5 10 1 3; plate k at 2850 + 900 (k + 1) (first 3750,
 last 17250); no construct / arm plate; key leaders 14 (3 + 1 + 2 × 5), all leaders 153 (15 + 128 + 10); an item's
 screen x = its house x, dy = Δz × the camera's z factor; upper ghosted once at 2850; the house part of the primitive
@@ -217,8 +217,8 @@ colour; multi-level plates.
 **Built 2026-10-14** (uncommitted) as specified, plates and leaders in one go: `viewPlateRoles`, `viewFootprint`,
 `viewPlates` in `06c-view-core.js`; new primitive kinds `gline` `lead` `pline` `dot`, `label.plate`; style `plateOp 0.34`
 (0.8 hid the lower plates: at pitch 50 a 900 mm step is ≈ 61 px against a ≈ 700 px plate, so plates overlap ≈ 90 %);
-the frame takes the plate labels in. Export *Rétegek* + *minden elemhez vezetővonal*; `tools/p33-axo.js --plates=` →
-`fig/p33-plates-900.png`. spec-77 (25). Chrome: 107 ms per plates render. ⏸ look questions: DECISIONS D-V6-5.
+the frame takes the plate labels in. Export *Rétegek* + *minden elemhez vezetővonal*; `tools/cla-axo.js --plates=` →
+`fig/cla-plates-900.png`. spec-77 (25). Chrome: 107 ms per plates render. ⏸ look questions: DECISIONS D-V6-5.
 
 ## V7 · Object library extension
 
@@ -257,7 +257,7 @@ objects drawn with it, every view in each item's `art[]`, correct at the catalog
 - `build.js` + `tools/check-globals.js`: `MODULE_RE` accepts one **or two** letters after the number
   (`/^\d\d[a-z]{0,2}-.*\.js$/`), so `05zb-` is a module and not refused by the guard. Nothing else changes in the order.
 - new `tools/objart-sheet.js` → `docs/views/fig/objart-<batch>.svg` (+ `.png` with `--png`, the headless Chrome of
-  `p33-axo.js`); boots the built Planner in jsdom; labels through `tools/baseline/labels.js`.
+  `cla-axo.js`); boots the built Planner in jsdom; labels through `tools/baseline/labels.js`.
 - new `tests/spec-78-objart.js`.
 
 **Conventions.**
@@ -390,7 +390,7 @@ objects that have it (front by D-V9-3 A), and endpoints by D-V9-4 A. Default vie
 - `AP_LAST` = the stats of the last render: `{cut, walls:{cut,beyond,above}, open:{cut,hidden}, obj:{art,outline,above},
   fronts:[{name,f}], dev:{full,faint}}`.
 
-**Tests (spec-79, P33 v2 ground, 2D).**
+**Tests (spec-79, CLA v2 ground, 2D).**
 1. Default style untouched: Normal draws no `ap-` markup; switching to Alaprajz from 3D lands at pitch 90; in 3D with
    the style set, `alaprajzOn()` is false and the normal geometry is drawn.
 2. Cut 1200: walls cut 19 / beyond 0 / above 0; openings cut 11 (7 doors + 4 windows) / hidden 0; objects art 6
@@ -409,7 +409,7 @@ objects that have it (front by D-V9-3 A), and endpoints by D-V9-4 A. Default vie
 **Out of scope.** Room tags with area, dimension strings, north arrow, stairs (V9b); title block, paper frame, export (V9c);
 whiteout / blueprint as style sheets (V9d); art for the other 98 objects (V8b–h).
 
-**Built 2026-10-14** (uncommitted) as specified, plus three things the P33 sample showed:
+**Built 2026-10-14** (uncommitted) as specified, plus three things the CLA sample showed:
 - **One host per opening:** `bpWallSpans` also caught door B103 in partition W18 (its edge runs 57 mm past where the
   partition starts), which cut a sliver; Alaprajz keeps an opening only in its `opnHost` wall. The blueprint plan
   still has the sliver (golden-covered, left alone).
@@ -418,7 +418,7 @@ whiteout / blueprint as style sheets (V9d); art for the other 98 objects (V8b–
   *útvonalak, rétegek is* (`state.apAll`) brings the rest back.
 - **No text yet:** the endpoint codes (NTL, SEN …), the board caption and the old painted room labels overlapped each
   other; Alaprajz drops them until V9b places room tags and codes with a collision-avoiding placer.
-Samples `tools/p33-plan.js --cut=1200|300 --png` → `fig/p33-plan-1200.png`, `fig/p33-plan-300.png`. spec-79 (39);
+Samples `tools/cla-plan.js --cut=1200|300 --png` → `fig/cla-plan-1200.png`, `fig/cla-plan-300.png`. spec-79 (39);
 suite 73 / 2723 green, golden 70/70. ⏸ look: DECISIONS D-V9-5 — answered 1 B, 2 A, 3 C and built (poché `#9a9a9a`;
 endpoints above the cut not drawn, counted in the HUD); spec-79 (40), suite 73 / 2724, golden 70/70. Next: V9b.
 
@@ -446,7 +446,7 @@ Alaprajz is on, the annotation is appended after the endpoints (`apAnnotSvg()`);
   chain line. Order: room tags, then codes, then dimension texts.
 - **Dimension chains** (`state.apDims`): chain 1 at 900 mm outside the level box on the −y and −x sides with the
   **façade of that side** (walls within 400 mm of the box edge: their edges; the openings hosted in them; the box edges)
-  — every wall face of the level read as a barcode on P33 (changed during the build), the overall chain at 1900 mm; ticks at 45°; a segment's text
+  — every wall face of the level read as a barcode on CLA (changed during the build), the overall chain at 1900 mm; ticks at 45°; a segment's text
   in metres with a comma (2 decimals), anchored at its middle on the outer side; segments < 60 mm get no text.
 - **North arrow:** the blueprint convention (north = plan −y), 1800 mm long, at the level box's +x / −y corner + 2200 mm.
 - **Stairs** (type `stairs` on the level): the blueprint outline, treads and walking line; with a cut: treads whose
@@ -454,7 +454,7 @@ Alaprajz is on, the annotation is appended after the endpoints (`apAnnotSvg()`);
 - `AP_LAST.labels = {rooms, codes, dims, leaders, overlaps}` where overlaps = pairs of placed text boxes that intersect
   plus texts on endpoint blocks (must be 0).
 
-**Tests (spec-80, P33 v2 ground, cut 1200, 1:50).**
+**Tests (spec-80, CLA v2 ground, cut 1200, 1:50).**
 1. Room tags 8 (R01 R03 R04 R05 R03L R06 R07 R08) with the areas of their polygons (e.g. R06 `18,27 m²` = polyArea).
 2. Codes = the endpoints drawn that have one; each code equals the Normal view's first text for that device.
 3. overlaps 0 at cuts 300 / 1200 / 1500 and at 1:50 and 1:100.
@@ -467,10 +467,10 @@ Alaprajz is on, the annotation is appended after the endpoints (`apAnnotSvg()`);
 **Out of scope.** Title block, paper frame, export (V9c); per-wall interior dimension chains; editable tag positions.
 
 **Built 2026-10-14** (uncommitted) as specified, plus: chain 1 dimensions the **façade** of its side (every wall face read
-as a barcode on P33); one placer `apPlacer` in base units (room tags → codes → dimension texts, blocks = endpoint symbols
-via `apSvgBox`, chain lines, the north arrow); `bpStairsSvg` shared with the blueprint (goldens identical). P33 cut 1200:
+as a barcode on CLA); one placer `apPlacer` in base units (room tags → codes → dimension texts, blocks = endpoint symbols
+via `apSvgBox`, chain lines, the north arrow); `bpStairsSvg` shared with the blueprint (goldens identical). CLA cut 1200:
 8 room tags, 24 codes of 42 endpoints, 26 dimension texts, 4 chains, 59 texts, 3 leaders, **0 overlaps** (also at 1:100 and
-cuts 300 / 1500). Sample `fig/p33-plan-1200.png`. spec-80 (18), spec-79 adjusted (no text outside the annotation group);
+cuts 300 / 1500). Sample `fig/cla-plan-1200.png`. spec-80 (18), spec-79 adjusted (no text outside the annotation group);
 suite 74 / 2742 green, golden 70/70. Next: V9c (title block, paper, export) ⏸.
 
 ### V9c · work-package spec (written 2026-10-14, before the build)
@@ -501,14 +501,14 @@ the Forgatás choice applies to it; Nézet / Szétszedve / Rétegek are greyed o
   `Lépték 1:N` · `Lap A3` · `Dátum YYYY-MM-DD` · `Varler Planner`. Scale bar 0–5 m (5000 / N mm) left of the title block.
 - PNG at 150 dpi (A3 → 2480 × 1754 px); print with `@page {size: A3 landscape; margin: 0}`.
 
-**Tests (spec-81, P33 v2 ground, NV4 ground).**
+**Tests (spec-81, CLA v2 ground, CLANV4 ground).**
 1. Sheet sizes: A3 → `width="420mm" height="297mm" viewBox="0 0 420 297"` (landscape); A4 landscape 297 × 210; a portrait
    case swaps them.
 2. True scale: a 1000 mm segment maps to 20.000 mm at 1:50 and 10.000 mm at 1:100 (± 0.001), at rotation 0 and 90.
-3. Fit: P33 A3 1:50 fits landscape (311 × 203 mm); P33 A4 1:50 no fit with the exact line above; P33 A4 1:100 fits
-   landscape; NV4 A3 1:100 fits. No fit → the export functions return null.
+3. Fit: CLA A3 1:50 fits landscape (311 × 203 mm); CLA A4 1:50 no fit with the exact line above; CLA A4 1:100 fits
+   landscape; CLANV4 A3 1:100 fits. No fit → the export functions return null.
 4. Frame and title block geometry: frame rect 20 / 10 / 390 × 277 on A3; title block at x 230, y 257, 180 × 30.
-5. Scale bar length 100 mm at 1:50, 50 mm at 1:100. Title t1 = `P33 · FÖLDSZINT` with Cím P33.
+5. Scale bar length 100 mm at 1:50, 50 mm at 1:100. Title t1 = `CLA · FÖLDSZINT` with Cím CLA.
 6. State restored after a sheet: style, pitch, rot, bpScale, the scene string.
 7. The V4 axo sheet byte-identical (vexpSheet for top / axo before and after); goldens 70/70.
 
@@ -516,10 +516,10 @@ the Forgatás choice applies to it; Nézet / Szétszedve / Rétegek are greyed o
 
 **Built 2026-10-14** (uncommitted) as specified. `viewSheetSvg` gained `opts.paper` (`viewPaperSheet`, shared title lines
 `viewSheetTitles`; the axo sheet byte-identical); `06d`: `vexpPlanBox / vexpPlanFit / vexpPlanSheet / vexpFitSync`, the tick
-*Alaprajz-lap* + Papír / Lépték + the fit line; `printSVG(svg, title, page)` takes an `@page` size. Found on NV4: the traced
-background (`bgSvg`) leaked into the clean plan → the clean Alaprajz drops it (the tick brings it back). P33 A3 1:50 = 311 × 203 mm
-landscape, NV4 A3 1:100 = 155 × 111 mm; P33 A4 1:50 → the no-fit line. `tools/p33-plan.js --paper=A3 --scale=50` →
-`fig/p33-sheet-A3-50.png`, `fig/nv4-sheet-A3-100.png`. spec-81 (26); suite 75 / 2768 green (spec-16's idle-redraw budget
+*Alaprajz-lap* + Papír / Lépték + the fit line; `printSVG(svg, title, page)` takes an `@page` size. Found on CLANV4: the traced
+background (`bgSvg`) leaked into the clean plan → the clean Alaprajz drops it (the tick brings it back). CLA A3 1:50 = 311 × 203 mm
+landscape, CLANV4 A3 1:100 = 155 × 111 mm; CLA A4 1:50 → the no-fit line. `tools/cla-plan.js --paper=A3 --scale=50` →
+`fig/cla-sheet-A3-50.png`, `fig/clanv4-sheet-A3-100.png`. spec-81 (26); suite 75 / 2768 green (spec-16's idle-redraw budget
 read 20.1 ms once under the parallel runner, 8.3–8.8 ms alone), golden 70/70 unchanged (no golden renders the plan
 sheet). Browser check on 8138 (launch entry *planner-stack-dist* added). ⏸ look: DECISIONS D-V9-6.
 
@@ -532,7 +532,7 @@ the installer detail.
 
 ## V11 · Time-of-day palettes
 
-Five keyframe palettes over the V4 tags, interpolated. Project fields `lat`, `lon` (P33 default:
+Five keyframe palettes over the V4 tags, interpolated. Project fields `lat`, `lon` (CLA default:
 Budapest). NOAA sunrise/sunset computed locally. *Napszak* control: Kézi (manual slider) / Élő (live
 from the clock). An optional weather API key adds cloud dimming. It is off by default, and the
 offline file never needs it.
@@ -563,7 +563,7 @@ cost share, standards links. Hover highlights the matching endpoints in the hous
 ## V16 · Five-level client style
 
 The client style sheet (calm colour fields, delicate lines, icons in circles, generous margins) over
-V4–V6 and V13, plus the BRIDGE brochure figures rendered from P33 with it.
+V4–V6 and V13, plus the BRIDGE brochure figures rendered from CLA with it.
 
 ---
 

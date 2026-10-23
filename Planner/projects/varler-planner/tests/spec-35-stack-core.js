@@ -31,9 +31,9 @@ setTimeout(()=>{
   fresh();const n0=LY().length,u0=undoLen();
   const S=w.stkCreate({name:'T'});
   const SL=LY().filter(l=>l.stack===S.id);
-  ok('STK_ROLES: 5 phase-1 and 17 phase-2 roles (Erősáram = 3 since M1) (+ Klaszterpontok, Extrák — IDEA-003), KNX off',w.STK_ROLES.filter(r=>r.ph===1).length===5&&w.STK_ROLES.filter(r=>r.ph===2).length===17&&w.STK_ROLES.find(r=>r.k==='sys:KNX').off===true);
+  ok('STK_ROLES: 5 phase-1 (+ the optional Igények, 08q) and 18 phase-2 roles (+ the off-by-default Házimozi, 08r) (Erősáram = 3 since M1) (+ Klaszterpontok, Extrák — IDEA-003), KNX off',w.STK_ROLES.filter(r=>r.ph===1&&!r.opt).length===5&&w.STK_ROLES.filter(r=>r.opt).map(r=>r.k).join()==='need'&&w.STK_ROLES.filter(r=>r.ph===2).length===18&&w.STK_ROLES.find(r=>r.k==='sys:KNX').off===true&&w.STK_ROLES.find(r=>r.k==='sys:CINEMA').off===true);
   ok('stkCreate makes 5 phase-1 + 16 phase-2 layers (KNX off)',SL.length===21&&!SL.some(l=>l.role==='sys:KNX'));
-  ok('the layers come in STK_ROLES order, each with stack and role',J(SL.map(l=>l.role))===J(roleKeys.filter(k=>k!=='sys:KNX'))&&SL.every(l=>l.stack===S.id&&l.role));
+  ok('the layers come in STK_ROLES order, each with stack and role',J(SL.map(l=>l.role))===J(roleKeys.filter(k=>k!=='sys:KNX'&&k!=='need'&&k!=='sys:CINEMA'))&&SL.every(l=>l.stack===S.id&&l.role));
   ok('the new layers are one contiguous block after the existing ones',LY().length===n0+21&&LY().slice(n0).every(l=>l.stack===S.id)&&!LY().slice(0,n0).some(l=>l.stack));
   ok('layers are named "<short> · <role>"',SL[0].name==='B1 · Szerkezet'&&SL[1].name==='B1 · Jelölés');
   ok('the record: kind bridge, scale S-C, phase 1, layers listed in role order',S.kind==='bridge'&&S.scale==='S-C'&&S.phase===1&&J(S.layers)===J(SL.map(l=>l.id))&&ST().length===1&&S.name==='T');
@@ -138,7 +138,7 @@ setTimeout(()=>{
   // 8 — the wizard
   fresh();addL('LW1','Alap fal');addL('LW2','Másik');
   w.actionById('stack.create').run({});
-  ok('the wizard lists the phase-2 roles, KNX unticked',w.document.querySelectorAll('.skR').length===17&&[...w.document.querySelectorAll('.skR')].filter(x=>x.checked).length===16&&!w.document.querySelector('.skR[value="sys:KNX"]').checked);
+  ok('the wizard lists the phase-2 roles, KNX and Házimozi unticked',w.document.querySelectorAll('.skR').length===18&&!w.document.querySelector('.skR[value="sys:CINEMA"]').checked&&[...w.document.querySelectorAll('.skR')].filter(x=>x.checked).length===16&&!w.document.querySelector('.skR[value="sys:KNX"]').checked);
   ok('the name defaults to "BRIDGE Stack <n>"',$('skName').value==='BRIDGE Stack 1');
   ok('the adopt list shows only non-stack layers; merge appears at 2+ ticked',(function(){
     const ad=w.document.querySelector('input[name=skMode][value=adopt]');ad.checked=true;ad.dispatchEvent(new w.Event('change',{bubbles:true}));

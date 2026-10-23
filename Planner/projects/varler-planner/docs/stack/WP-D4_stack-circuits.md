@@ -5,13 +5,13 @@ Decisions: Q29 · Q31=A
 
 ## Goal
 *"Add an option to select devices as path endpoints with a dedicated circuit (the string-connected
-power socket line and the switch–lamp wiring logic from NV4)."*
+power socket line and the switch–lamp wiring logic from CLANV4)."*
 Two groupings feed the fill (E3):
 - **circuits** (`data.circuits`, 05j — already built): a socket string = a multi-point circuit; a big
   load = a dedicated circuit. Reused as is.
 - **control groups** (new, BRIDGE mode): which lamps a switch controls. In BRIDGE the switch is an
   **input** to the RoomBox's bistable and each lamp group is an **output** — there is **no wire from
-  switch to lamp**; NV4's 101/105 wiring schemes apply only to a conventional (non-BRIDGE) plan, which is
+  switch to lamp**; CLANV4's 101/105 wiring schemes apply only to a conventional (non-BRIDGE) plan, which is
   wiring-pipeline slice S6 and out of scope here [Q29].
 
 ## Read (only these)

@@ -93,7 +93,7 @@
         { "code": "KO 125/1L NA", "dims": { "w": 152, "h": 152, "d": 64 } }
       ],
       "wall": "hollow", "priority": 1, "vendors": ["16amper", "daniella"],
-      "note": "A portáldoboz (P33 v1 '10×10') legközelebbi valódi terméke: 116×116. Két áramkör 400 V-ig, válaszfallal elválasztva — pont a portál MAINS+SELV igénye."
+      "note": "A portáldoboz (CLA v1 '10×10') legközelebbi valódi terméke: 116×116. Két áramkör 400 V-ig, válaszfallal elválasztva — pont a portál MAINS+SELV igénye."
     },
     {
       "slug": "box-kaiser-9195-91",
@@ -223,7 +223,7 @@
       "construction": "mágneses tartóelemek menetes szárral / állítható talppal, hogy a csempe a környező fal síkjába álljon",
       "priority": 2, "vendors": [],
       "verify": ["Hungarian vendor with published sizes and prices"],
-      "note": "A legláthatatlanabb megoldás csempézett falon — nincs látható keret vagy pánt. A fürdőszobai RBX (P33 R08, RB-E/W) erre kiált. Magyar forgalmazót publikált mérettel és árral nem találtam — ez nyitott tétel."
+      "note": "A legláthatatlanabb megoldás csempézett falon — nincs látható keret vagy pánt. A fürdőszobai RBX (CLA R08, RB-E/W) erre kiált. Magyar forgalmazót publikált mérettel és árral nem találtam — ez nyitott tétel."
     },
 
     {

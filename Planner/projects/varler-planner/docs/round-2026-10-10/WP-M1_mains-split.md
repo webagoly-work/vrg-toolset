@@ -30,7 +30,7 @@ Q-M01 = A (default).
 4. **Migration** (MATERIAL §4 steps 1–4) in the load path, idempotent, tested twice in a row. It runs
    before `renderLayers`. No undo entry (load-time).
 5. **Fill and cabinet unchanged by design** — the three roles keep `fam:'MAINS'`. Prove it: E5's
-   cabinet on the stack e2e fixture (spec-54) yields the same ways and modules before and after (P33:
+   cabinet on the stack e2e fixture (spec-54) yields the same ways and modules before and after (CLA:
    24 ways, 29 / 34 modules).
 6. CHANGELOG line: a plan saved after this opens in an older build with the three new roles shown as
    plain layers.

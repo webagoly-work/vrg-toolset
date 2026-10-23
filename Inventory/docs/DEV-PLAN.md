@@ -426,7 +426,7 @@ Delivered:
   autofill from favourites.
 * userdata schema **1.4.0** adds `projects` / `activeProject`, with a migration
   and repair of a project pointing at a list that no longer exists.
-* 20 new tests (192 total), run against the **real** `P33_vplan_updated.json`
+* 20 new tests (192 total), run against the **real** `CLA_vplan_updated.json`
   rather than a fixture.
 
 **DoD met end to end in the browser**: importing the real plan produced
@@ -463,7 +463,7 @@ Delivered:
 
 * `plannerimport.extractDrawing()` — pulls the geometry out of a Planner save
   (levels, room polygons, device positions, openings, bounding box). ~10 kB for
-  P33, stored inside the project alongside the requirements.
+  CLA, stored inside the project alongside the requirements.
 * `core/diagram.js` — `buildDiagram({ rajz, progress, szint, kiemeltKategoriak })`
   is a **pure function of geometry and progress**. It keeps no state, so a
   symbol is green because the requirement it belongs to is satisfied, not
@@ -481,7 +481,7 @@ Delivered:
 
 **DoD met — the diagram and the list structurally cannot disagree**, because
 the panel renders both from the *same* `prog` object in the same pass. Verified
-in the browser against the real P33 plan: 11 rooms, 84 symbols, 13 openings,
+in the browser against the real CLA plan: 11 rooms, 84 symbols, 13 openings,
 viewBox `239 1706 10619 7892`. With an empty list all 84 symbols were grey and
 the legend read `Aljzat 0/36, Lámpa 0/26, Kapcsoló 0/15, Szerelvénydoboz 0/5,
 Kötődoboz 0/2`; autofill turned all 84 green with ✓ on every legend row;
@@ -549,12 +549,12 @@ bytes, 53% of a single code. No realistic order list can overflow.
 per-project file is the Phase 9 import target and looks like:
 
 ```jsonc
-{ "format": "varler-planner", "version": 1, "name": "P33",
+{ "format": "varler-planner", "version": 1, "name": "CLA",
   "saved": "2026-09-11T04:50:05.408Z",
   "project": { "v": …, "state": …, "LH": …, "DROPC": …, "GAP": …, "guides": … } }
 ```
 
-A real sample already exists at `Calculator/P33_vplan_updated.json`, so Phase 9
+A real sample already exists at `Calculator/CLA_vplan_updated.json`, so Phase 9
 can be designed against it without waiting for an export. Note the Planner also
 has `docs/qr-subsystem.md` and a `mobile/phone-sender.html` — read both before
 Phase 8 rather than inventing a second QR scheme.

@@ -1,9 +1,9 @@
 // Views V9a — Alaprajz, the cut-plane floor plan (06e-view-plan.js).
 //
-// Fixture: the committed P33 v2 furnished plan (Calculator/P33-teszt_v2_butor.vplan.json), ground floor (H 2850):
+// Fixture: the committed CLA v2 furnished plan (Calculator/CLA-teszt_v2_butor.vplan.json), ground floor (H 2850):
 // 19 walls 0–2850, 7 doors 0–2100, 4 windows 900–2400, 31 objects, 165 endpoints.
 // What must hold (docs/views/WORKPLAN.md § V9a, tests 1–9): opt-in and 2D only; walls / openings / objects / endpoints
-// classified against the cut (endpoints above it hidden, D-V9-5 3C) with the exact P33 counts; one poché contour; the front rule (D-V9-3 A); the art matrix;
+// classified against the cut (endpoints above it hidden, D-V9-5 3C) with the exact CLA counts; one poché contour; the front rule (D-V9-3 A); the art matrix;
 // the Eleje cycle; the cut controls; the other styles untouched by the new `front` field.
 const {JSDOM}=require('jsdom');const path=require('path');const fs=require('fs');
 function findPlanner(){
@@ -11,7 +11,7 @@ function findPlanner(){
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2_butor.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2_butor.vplan.json');
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;const $=id=>w.document.getElementById(id);
 setTimeout(()=>{
@@ -36,7 +36,7 @@ setTimeout(()=>{
   ok('in 3D the style is off and the normal geometry is drawn',!w.alaprajzOn()&&!scene().includes('ap-contour'));
   st.pitch=90;w.draw();
 
-  // ---------- 2–3. the P33 counts ----------
+  // ---------- 2–3. the CLA counts ----------
   let S=cnt(1200);
   ok('cut 1200: walls 19 / 0 / 0',JSON.stringify(S.walls)==='{"cut":19,"beyond":0,"above":0}',JSON.stringify(S.walls));
   ok('cut 1200: openings cut 11 / hidden 0',S.open.cut===11&&S.open.hidden===0,JSON.stringify(S.open));
@@ -83,7 +83,7 @@ setTimeout(()=>{
   const near=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1])<0.5;
   ok('art origin (front centre) → c + f·d/2',near(ap(0,0),w.planToBase(so.x+f[0]*sz.d/2,so.y+f[1]*sz.d/2,z)));
   ok('art (0, −d) → the back centre c − f·d/2',near(ap(0,-sz.d),w.planToBase(so.x-f[0]*sz.d/2,so.y-f[1]*sz.d/2,z)));
-  ok('the P33 sofa: across 1950, depth 850 (front along its d axis)',sz.w===1950&&sz.d===850,JSON.stringify(sz));
+  ok('the CLA sofa: across 1950, depth 850 (front along its d axis)',sz.w===1950&&sz.d===850,JSON.stringify(sz));
   ok('the scene carries its matrix',scene().includes('<g class="ap-art" transform="matrix('+M.map(v=>+v.toFixed(4)).join(' ')+')">'));
 
   // ---------- 7. Eleje ----------

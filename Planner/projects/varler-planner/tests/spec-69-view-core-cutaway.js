@@ -1,6 +1,6 @@
 // Views V1 (the view core, 06c-view-core.js) and V3 (the Kivágás / cutaway wall mode in the 3D view).
 //
-// Fixture: the committed P33 v2 furnished plan (Calculator/P33-teszt_v2_butor.vplan.json).
+// Fixture: the committed CLA v2 furnished plan (Calculator/CLA-teszt_v2_butor.vplan.json).
 // What must hold:
 //   * the core reproduces V0 exactly where V0 was proven (yaw 225: far W6 W7 W9, near W8 W10 W11)
 //     and the classes swap for the opposite camera;
@@ -14,7 +14,7 @@ function findPlanner(){
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2_butor.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2_butor.vplan.json');
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;
 setTimeout(()=>{

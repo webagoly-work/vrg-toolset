@@ -1,5 +1,5 @@
 > **Start at [BRIDGE-OUTLINE-001](../BRIDGE-OUTLINE-001_General-Outline.md)** — the general outline
-> and the P33 worked instance. New sessions: read [BRIDGE-PRIMER-001](../BRIDGE-PRIMER-001_Session-Handover.md) first.
+> and the CLA worked instance. New sessions: read [BRIDGE-PRIMER-001](../BRIDGE-PRIMER-001_Session-Handover.md) first.
 
 # BRIDGE Standards — index
 
@@ -15,7 +15,7 @@ to what*, these say *how big, how deep, how bright, how sure, in what order.*
 
 **Authority chain** — ARCH-001 (doctrine, retrofit scenario S-A) → **ARCH-002** (architecture,
 reference scenario S-C) → **Smart Switch r1** (control authority; supersedes ARCH-A1) →
-**STD-001…006**. ARCH-A1 and P33-BRIDGE-ARCH-01 are history, marked superseded, never cited as
+**STD-001…006**. ARCH-A1 and CLA-BRIDGE-ARCH-01 are history, marked superseded, never cited as
 current.
 
 **Scenario.** All six standards describe **S-C**, the full-infrastructure reference design. S-A
@@ -36,7 +36,7 @@ the control-authority model — bistable memory element, manual-first, ζ/η fam
 | **STD-006** | [Arbitration, Failure and Security](BRIDGE-STD-006_Arbitration-Failure-Security.md) | the eight-tier precedence ladder · per-domain hold-off · the failure-mode matrix · the third-party alarm boundary |
 | **STD-007** | [Media and Audio](BRIDGE-STD-007_Media-and-Audio.md) | the two audio paths and why one cannot serve both · amplifier and speaker engineering · TOSLINK against eARC · video distribution · the USB layer · the MEDIA pack |
 | **STD-008** | [Notification Lights](BRIDGE-STD-008_Notification-Lights.md) | a universal visual output layer: four RGBW pixels in a flush box · the signalling alphabet · stationary, transit and node placement · ESP-NOW · and the egress wayfinding it gives for free |
-| **STD-009** | [Shading and Passive Climate](BRIDGE-STD-009_Shading-and-Passive-Climate.md) | shutters as climate equipment: GAIN / NEUTRAL / SHADE by the room’s thermal need · pre-emptive shading by façade · occupancy limits · wind, frost and duty · floor-heating anticipation · P33’s split-row R06 glazing and the void |
+| **STD-009** | [Shading and Passive Climate](BRIDGE-STD-009_Shading-and-Passive-Climate.md) | shutters as climate equipment: GAIN / NEUTRAL / SHADE by the room’s thermal need · pre-emptive shading by façade · occupancy limits · wind, frost and duty · floor-heating anticipation · CLA’s split-row R06 glazing and the void |
 
 ---
 
@@ -85,7 +85,7 @@ audio. **Every layer now has a test plan.**
 `D1` — the room list with a RoomBox class per room — does not exist, and it gates more than
 anything else: 001 §4 is a template, 003's zone graph is an illustration, 002's scene values are
 unfillable, 004's address allocation has no room numbers to key to, and 005 cannot size AP
-density. `P33-BUILD-001`, the project hardware composition, waits on it and will be the first real
+density. `CLA-BUILD-001`, the project hardware composition, waits on it and will be the first real
 test of all six.
 
 Open items live per-document in each §Open items, and in the register at

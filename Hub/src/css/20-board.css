@@ -1,0 +1,70 @@
+.hue-gray{--h:var(--hue-gray)} .hue-purple{--h:var(--hue-purple)} .hue-coral{--h:var(--hue-coral)}
+.hue-teal{--h:var(--hue-teal)} .hue-amber{--h:var(--hue-amber)} .hue-green{--h:var(--hue-green)}
+.hue-blue{--h:var(--hue-blue)} .hue-pink{--h:var(--hue-pink)} .hue-red{--h:var(--hue-red)}
+
+.kp-seg{display:flex;align-items:center;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.kp-seg-l{padding:0 8px;color:var(--muted);font-size:12px}
+.kp-seg button,.kp-btn{border:0;background:var(--panel2);color:var(--muted);font:inherit;font-size:12px;padding:4px 10px;cursor:pointer}
+.kp-seg button.on{background:var(--accent-dim);color:var(--ink)}
+.kp-btn{border:1px solid var(--line);border-radius:6px}
+.kp-btn:hover,.kp-seg button:hover{color:var(--ink)}
+.kp-focus{color:var(--accent);font-size:12px}
+
+.kp-board{cursor:default;user-select:none;font-family:"Segoe UI",Roboto,"DejaVu Sans",sans-serif}
+.kp-board.space{cursor:grab} .kp-board.panning{cursor:grabbing}
+
+.kp-edge{fill:none;stroke:var(--h);stroke-width:1.2;opacity:.75}
+.kp-edge-curve{stroke-width:1.6}
+.kp-edge-tick{opacity:.55}
+
+.kp-card{fill:var(--panel);stroke:var(--h);stroke-width:1.5}
+.kp-sub{fill:var(--panel2);stroke:var(--line);stroke-width:1}
+.st-idea .kp-card{stroke-dasharray:6 4}
+.st-v2{opacity:.6} .st-v2 .kp-card{stroke-dasharray:2 3}
+.kp-slot .kp-card,.kp-summary .kp-card{fill:none;stroke-dasharray:6 4}
+
+.kp-origin .kp-card{fill:var(--accent);stroke:var(--accent)}
+.kp-origin-t{fill:var(--bg);font-weight:800;font-size:18px;text-anchor:middle;letter-spacing:.08em}
+.kp-dept{cursor:pointer}
+.kp-dept .kp-card{fill:var(--panel2)}
+.kp-dept-bar{fill:var(--h)}
+.kp-dept-t{fill:var(--ink);font-weight:700;font-size:13px}
+.kp-dept-n{fill:var(--muted);font-size:12px;text-anchor:end}
+
+.kp-icon{fill:var(--h);font-size:13px}
+.kp-title{fill:var(--ink);font-weight:600;font-size:12.5px}
+.kp-status{fill:var(--muted);font-size:11px}
+.kp-sub-t{fill:var(--ink);font-size:12px}
+.kp-d{fill:var(--muted);font-size:12px}
+.kp-den{fill:var(--muted);font-size:12px;font-style:italic;opacity:.8}
+
+.kp-rm-dot{fill:var(--h)}
+.kp-rm-date{fill:var(--muted);font-size:11px;font-weight:600}
+.kp-rm-t{fill:var(--ink);font-size:12px}
+
+.kp-more{cursor:pointer}
+.kp-chip{fill:var(--panel2);stroke:var(--h)}
+.kp-chip-t{fill:var(--ink);font-size:11.5px;text-anchor:middle}
+
+.kp-band-r{fill:none;stroke:var(--line);stroke-dasharray:4 4}
+.kp-band-t{fill:var(--ink);font-weight:600;font-size:13px}
+.kp-band-s{fill:var(--muted);font-size:12px}
+
+.kp-layer-l{fill:var(--muted);font-size:12px;font-weight:600;text-anchor:end;letter-spacing:.03em}
+
+/* level of detail: far out, descriptions go first, then everything but the branches */
+.lod-desc .kp-desc{display:none}
+.lod-cards .kp-node:not(.kp-dept):not(.kp-origin),.lod-cards .kp-edge-tick,.lod-cards .kp-layer-labels{display:none}
+
+/* overview (far out): department areas + screen-size labels */
+.kp-area{fill:var(--h);opacity:0;stroke:none}
+.lod-cards .kp-area{opacity:.16}
+.kp-ov-t{fill:var(--ink);font-weight:700}
+.kp-ov-n{fill:var(--muted)}
+.lod-cards .kp-dept text{display:none}
+
+/* focus + pulse */
+.kp-focused .kp-card{stroke:var(--accent);stroke-width:3}
+.kp-pulse .kp-card{animation:kpPulse .6s ease-in-out 3}
+@keyframes kpPulse{50%{stroke-width:6;stroke:var(--accent)}}
+.kp-node:not(.kp-origin):not(.kp-band){cursor:pointer}

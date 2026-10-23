@@ -105,6 +105,7 @@ function drawNormalGeom(){const faces=[];const wm=state.wallMode;const raised=[]
     else (ROOMSB[l]||[]).forEach((rm,i)=>{if(state.soloRoom&&!soloRoomIs({src:'B',i,level:l}))return;pushFloor(faces,rm.poly,fz,rm.fill,'#8f8a80',null,1);});
     data.floors.forEach((fl,i)=>{if(fl.level!==l||!layerShows(fl,'build')||fl.stage==='outline')return;if(state.soloRoom&&!soloRoomIs({src:'F',i,level:l}))return;const n0=faces.length;pushFloor(faces,fl.poly,fz+(fl.z||0),fl.fill||'#e2ddd0','#8f8a80',null,1);lyrFaces(faces,n0,fl,'floor');});
     if(GHOST[l])pushFloor(faces,GHOST[l],fz,'#000000','#8a857b','7 6',0.07);
+    if(slbT(l)>0)slbPushFaces(faces,l,fz);                 // födém: the slab body under this level (08p)
     // álmennyezet: a translucent plane at its own height, per room where it applies
     if(state.showDropCeil!==false){
       const dl=DROPC[l]||0;

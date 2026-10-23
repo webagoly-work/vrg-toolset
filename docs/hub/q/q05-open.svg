@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 680 360" role="img"><title>Q05 where programs open from</title><desc>Opening the local copy keeps the same saved work; opening a GitHub download is a different origin, so saved work looks empty.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<style>
+text{font-family:Segoe UI,Arial,sans-serif;fill:#2C2C2A;stroke:none}
+.th{font-size:14px;font-weight:600}.t{font-size:14px}.ts{font-size:12px;fill:#5F5E5A}
+.c-teal{fill:#E1F5EE;stroke:#0F6E56}.c-blue{fill:#E6F1FB;stroke:#185FA5}.c-purple{fill:#EEEDFE;stroke:#534AB7}
+.c-gray{fill:#F1EFE8;stroke:#5F5E5A}.c-amber{fill:#FAEEDA;stroke:#854F0B}.c-red{fill:#FCEBEB;stroke:#A32D2D}
+.box{fill:#FFFFFF;stroke:#B4B2A9}.arr{stroke:#5F5E5A;stroke-width:1.2;fill:none}
+</style>
+
+<text class="th" x="60" y="30">A — helyi másolat (ajánlott)</text><text class="th" x="380" y="30">B — mindig a GitHubról</text>
+<g class="c-gray"><rect x="60" y="50" width="240" height="56" rx="8" stroke-width="0.5"/><text class="th" x="180" y="69" text-anchor="middle" dominant-baseline="central">Megnyitás</text><text class="ts" x="180" y="88" text-anchor="middle" dominant-baseline="central">START.cmd vagy a Kapu</text></g>
+<g class="c-blue"><rect x="60" y="140" width="240" height="56" rx="8" stroke-width="0.5"/><text class="th" x="180" y="159" text-anchor="middle" dominant-baseline="central">Ugyanaz a fájl</text><text class="ts" x="180" y="178" text-anchor="middle" dominant-baseline="central">a saját repó mappádból</text></g>
+<g class="c-teal"><rect x="60" y="230" width="240" height="56" rx="8" stroke-width="0.5"/><text class="th" x="180" y="249" text-anchor="middle" dominant-baseline="central">Mentett munka</text><text class="ts" x="180" y="268" text-anchor="middle" dominant-baseline="central">mindig ugyanaz</text></g>
+<g class="c-gray"><rect x="380" y="50" width="240" height="56" rx="8" stroke-width="0.5"/><text class="th" x="500" y="69" text-anchor="middle" dominant-baseline="central">Megnyitás</text><text class="ts" x="500" y="88" text-anchor="middle" dominant-baseline="central">letöltés a GitHubról</text></g>
+<g class="c-blue"><rect x="380" y="140" width="240" height="56" rx="8" stroke-width="0.5"/><text class="th" x="500" y="159" text-anchor="middle" dominant-baseline="central">Másik eredet</text><text class="ts" x="500" y="178" text-anchor="middle" dominant-baseline="central">a böngésző másnak látja</text></g>
+<g class="c-red"><rect x="380" y="230" width="240" height="56" rx="8" stroke-width="0.5"/><text class="th" x="500" y="249" text-anchor="middle" dominant-baseline="central">Mentett munka</text><text class="ts" x="500" y="268" text-anchor="middle" dominant-baseline="central">üresnek tűnik</text></g>
+<line class="arr" x1="180" y1="106" x2="180" y2="138" marker-end="url(#arrow)"/><line class="arr" x1="180" y1="196" x2="180" y2="228" marker-end="url(#arrow)"/><line class="arr" x1="500" y1="106" x2="500" y2="138" marker-end="url(#arrow)"/><line class="arr" x1="500" y1="196" x2="500" y2="228" marker-end="url(#arrow)"/>
+<text class="ts" x="60" y="316">A böngésző a mentett munkát aszerint tárolja, honnan nyílt meg a fájl.</text>
+<text class="ts" x="60" y="338">A mellett az Előnézet gomb is mutatja a legfrissebbet — csak nézni.</text>
+</svg>

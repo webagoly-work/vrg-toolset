@@ -1,0 +1,4478 @@
+{
+  "format": "varler-planner",
+  "version": 1,
+  "name": "CLA teszt v2",
+  "saved": "2026-10-09T06:54:47.419Z",
+  "project": {
+    "v": 1,
+    "state": {
+      "rot": 90,
+      "zoom": 0.5,
+      "panX": 250,
+      "panY": 180,
+      "exploded": true,
+      "wallMode": "translucent",
+      "style": "normal",
+      "levels": {
+        "basement": true,
+        "ground": true,
+        "upper": true
+      },
+      "active": "ground",
+      "mode": "path",
+      "grid": false,
+      "gridSize": 250,
+      "cableType": "lighting",
+      "drawHKey": "s1100",
+      "freeHeight": false,
+      "freeMm": 1100,
+      "chaseFactor": 1.6,
+      "chasePad": 4,
+      "boxDepth": 45,
+      "buildType": "door",
+      "flat": false,
+      "showLabels": true,
+      "labelSize": 1,
+      "labelRot": 0,
+      "side": 0,
+      "wallLock": true,
+      "midFree": false,
+      "showDropCeil": true,
+      "wallThick": 100,
+      "wallErase": false,
+      "pathType": "gege",
+      "toolsLoc": "side",
+      "waste": 10,
+      "price": {},
+      "hoverR": null,
+      "hoverL": "ground",
+      "stairDef": {
+        "w": 1000,
+        "riser": 180,
+        "going": 250,
+        "th": 300
+      },
+      "isoGrid": false,
+      "activeLayer": "L0",
+      "showRefs": false,
+      "pitch": 30,
+      "soloRoom": null,
+      "showRoomText": true,
+      "bg": null,
+      "bp": {
+        "dims": true,
+        "title": true,
+        "proj": "",
+        "addr": "",
+        "by": ""
+      },
+      "bpScale": 50,
+      "bpFine": 1,
+      "hDisp": "hover",
+      "objAng": 0,
+      "gizmoSnap": true,
+      "mobile": true,
+      "objWallSnap": true,
+      "multiSelect": false,
+      "circHoverInfo": true,
+      "circHidden": {},
+      "circHi": null,
+      "devScale": 0.72,
+      "pathScale": 1,
+      "warp": null,
+      "stack": "Smv0l44pr",
+      "stkOff": false,
+      "stage": "stk:construct"
+    },
+    "LH": {
+      "basement": 2500,
+      "ground": 2700,
+      "upper": 2700
+    },
+    "DROPC": {
+      "basement": 0,
+      "ground": 0,
+      "upper": 0
+    },
+    "GAP": 2600,
+    "guides": [
+      {
+        "k": "floor",
+        "mm": 0,
+        "l": "Padló 0",
+        "c": "#8a5a2b",
+        "vis": false,
+        "jump": true,
+        "sys": true
+      },
+      {
+        "k": "s300",
+        "mm": 300,
+        "l": "300 Dugalj",
+        "c": "#d21e1e",
+        "vis": false,
+        "jump": true
+      },
+      {
+        "k": "metervonal",
+        "mm": 1000,
+        "l": "Métervonal 1000",
+        "c": "#e8641c",
+        "vis": false,
+        "jump": true
+      },
+      {
+        "k": "s500",
+        "mm": 500,
+        "l": "500 Gépek",
+        "c": "#ef8a12",
+        "vis": false,
+        "jump": true
+      },
+      {
+        "k": "s1100",
+        "mm": 1100,
+        "l": "1100 Kapcsoló",
+        "c": "#e4c412",
+        "vis": false,
+        "jump": true
+      },
+      {
+        "k": "s1300",
+        "mm": 1300,
+        "l": "1300 Panel/termosztát",
+        "c": "#9bbf1a",
+        "vis": false,
+        "jump": true
+      },
+      {
+        "k": "s1400",
+        "mm": 1400,
+        "l": "1400 IP44",
+        "c": "#3fae55",
+        "vis": false,
+        "jump": true
+      },
+      {
+        "k": "s1900",
+        "mm": 1900,
+        "l": "1900 Lámpa/vent.",
+        "c": "#1f9b9b",
+        "vis": false,
+        "jump": true
+      },
+      {
+        "k": "alcell",
+        "mm": "alcell",
+        "l": "Álmennyezet",
+        "c": "#2f9e8f",
+        "vis": false,
+        "jump": true,
+        "sys": true
+      },
+      {
+        "k": "ceiling",
+        "mm": "ceil",
+        "l": "Mennyezet",
+        "c": "#2f6fb0",
+        "vis": false,
+        "jump": true,
+        "sys": true
+      },
+      {
+        "k": "gerinc",
+        "mm": "gerinc",
+        "l": "Süllyesztett gerinc",
+        "c": "#16357a",
+        "vis": false,
+        "jump": true
+      }
+    ],
+    "data": {
+      "v": 2,
+      "seq": 411,
+      "cables": [],
+      "paths": [
+        {
+          "ptype": "gege",
+          "nodes": [
+            {
+              "level": "ground",
+              "x": 2019,
+              "y": 4307,
+              "h": 2400,
+              "id": "n202"
+            },
+            {
+              "level": "ground",
+              "x": 2220,
+              "y": 4182,
+              "h": 2400,
+              "id": "n203"
+            },
+            {
+              "level": "ground",
+              "x": 2220,
+              "y": 2390,
+              "h": 2400,
+              "id": "n204"
+            },
+            {
+              "level": "ground",
+              "x": 1534,
+              "y": 2240,
+              "h": 2400,
+              "id": "n205"
+            }
+          ],
+          "sections": [
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            }
+          ],
+          "layer": "Lmv0l44pu",
+          "lane": 0,
+          "id": "P201",
+          "route": "channel",
+          "rule": "sull",
+          "color": "#7a5cc0"
+        },
+        {
+          "ptype": "gege",
+          "nodes": [
+            {
+              "level": "ground",
+              "x": 1534,
+              "y": 2240,
+              "h": 2370,
+              "id": "n207"
+            },
+            {
+              "level": "ground",
+              "x": 2220,
+              "y": 2390,
+              "h": 2370,
+              "id": "n208"
+            },
+            {
+              "level": "ground",
+              "x": 2220,
+              "y": 4182,
+              "h": 2370,
+              "id": "n209"
+            },
+            {
+              "level": "ground",
+              "x": 2220,
+              "y": 4432,
+              "h": 2370,
+              "id": "n210"
+            },
+            {
+              "level": "ground",
+              "x": 3330,
+              "y": 4432,
+              "h": 2370,
+              "id": "n211"
+            },
+            {
+              "level": "ground",
+              "x": 5027,
+              "y": 4396,
+              "h": 2370,
+              "id": "n212"
+            },
+            {
+              "level": "ground",
+              "x": 5027,
+              "y": 5334,
+              "h": 2370,
+              "id": "n213"
+            },
+            {
+              "level": "ground",
+              "x": 4923,
+              "y": 5334,
+              "h": 2370,
+              "id": "n214"
+            },
+            {
+              "level": "ground",
+              "x": 4923,
+              "y": 6940,
+              "h": 2370,
+              "id": "n215"
+            },
+            {
+              "level": "ground",
+              "x": 3634,
+              "y": 7040,
+              "h": 2370,
+              "id": "n216"
+            }
+          ],
+          "sections": [
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            }
+          ],
+          "layer": "Lmv0l44pu",
+          "lane": 0,
+          "zoff": -30,
+          "id": "P206",
+          "route": "channel",
+          "rule": "sull",
+          "color": "#2f6fb0"
+        },
+        {
+          "ptype": "gege",
+          "nodes": [
+            {
+              "level": "ground",
+              "x": 3634,
+              "y": 7040,
+              "h": 2340,
+              "id": "n218"
+            },
+            {
+              "level": "ground",
+              "x": 4923,
+              "y": 6940,
+              "h": 2340,
+              "id": "n219"
+            },
+            {
+              "level": "ground",
+              "x": 4923,
+              "y": 5590,
+              "h": 2340,
+              "id": "n220"
+            },
+            {
+              "level": "ground",
+              "x": 5327,
+              "y": 5590,
+              "h": 2340,
+              "id": "n221"
+            },
+            {
+              "level": "ground",
+              "x": 5327,
+              "y": 6215,
+              "h": 2340,
+              "id": "n222"
+            },
+            {
+              "level": "ground",
+              "x": 5784,
+              "y": 6340,
+              "h": 2340,
+              "id": "n223"
+            }
+          ],
+          "sections": [
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            }
+          ],
+          "layer": "Lmv0l44pu",
+          "lane": 0,
+          "zoff": -60,
+          "id": "P217",
+          "route": "channel",
+          "rule": "sull",
+          "color": "#2f6fb0"
+        },
+        {
+          "ptype": "gege",
+          "nodes": [
+            {
+              "level": "ground",
+              "x": 2019,
+              "y": 4307,
+              "h": 2370,
+              "id": "n225"
+            },
+            {
+              "level": "ground",
+              "x": 2019,
+              "y": 4432,
+              "h": 2370,
+              "id": "n226"
+            },
+            {
+              "level": "ground",
+              "x": 784,
+              "y": 4432,
+              "h": 2370,
+              "id": "n227"
+            },
+            {
+              "level": "ground",
+              "x": 784,
+              "y": 8271,
+              "h": 2370,
+              "id": "n228"
+            },
+            {
+              "level": "ground",
+              "x": 3085,
+              "y": 8271,
+              "h": 2370,
+              "id": "n229"
+            },
+            {
+              "level": "ground",
+              "x": 3085,
+              "y": 6940,
+              "h": 2370,
+              "id": "n230"
+            },
+            {
+              "level": "ground",
+              "x": 3634,
+              "y": 7040,
+              "h": 2370,
+              "id": "n231"
+            }
+          ],
+          "sections": [
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            }
+          ],
+          "layer": "Lmv0l44pu",
+          "lane": 0,
+          "zoff": -30,
+          "id": "P224",
+          "route": "channel",
+          "rule": "sull",
+          "color": "#d1493f"
+        },
+        {
+          "ptype": "gege",
+          "nodes": [
+            {
+              "level": "ground",
+              "x": 3634,
+              "y": 7040,
+              "h": 2310,
+              "id": "n233"
+            },
+            {
+              "level": "ground",
+              "x": 4923,
+              "y": 6940,
+              "h": 2310,
+              "id": "n234"
+            },
+            {
+              "level": "ground",
+              "x": 4923,
+              "y": 6040,
+              "h": 2310,
+              "id": "n235"
+            },
+            {
+              "level": "ground",
+              "x": 5327,
+              "y": 6040,
+              "h": 2310,
+              "id": "n236"
+            },
+            {
+              "level": "ground",
+              "x": 5784,
+              "y": 6340,
+              "h": 2310,
+              "id": "n237"
+            }
+          ],
+          "sections": [
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            },
+            {
+              "build": "sull_gege",
+              "circuit": null
+            }
+          ],
+          "layer": "Lmv0l44pu",
+          "lane": 0,
+          "zoff": -90,
+          "id": "P232",
+          "route": "channel",
+          "rule": "sull",
+          "color": "#2f6fb0",
+          "carrier": "mains"
+        }
+      ],
+      "devices": [
+        {
+          "type": "board",
+          "level": "ground",
+          "x": 2019,
+          "y": 4307,
+          "h": 2000,
+          "layer": "Lmv0l44ps",
+          "z": 2000,
+          "rw": 600,
+          "rd": 150,
+          "ang": 0,
+          "autoObj": true,
+          "id": "D196",
+          "ref": "EL1",
+          "faceBack": true,
+          "links": [
+            {
+              "p": "P201",
+              "n": "n202"
+            },
+            {
+              "p": "P224",
+              "n": "n225"
+            }
+          ]
+        },
+        {
+          "type": "base",
+          "level": "ground",
+          "x": 1534,
+          "y": 2240,
+          "h": 900,
+          "layer": "Lmv0l44pt",
+          "side": 1,
+          "units": [
+            "NET",
+            "COMP",
+            "MEDIA"
+          ],
+          "id": "D198",
+          "ref": "BASE",
+          "faceBack": true,
+          "links": [
+            {
+              "p": "P201",
+              "n": "n205"
+            },
+            {
+              "p": "P206",
+              "n": "n207"
+            }
+          ]
+        },
+        {
+          "type": "rbx",
+          "level": "ground",
+          "x": 3634,
+          "y": 7040,
+          "h": 2150,
+          "layer": "Lmv0l44ps",
+          "side": 0,
+          "rb": "RB-H",
+          "serves": [
+            "F173",
+            "F179",
+            "F172",
+            "F174",
+            "F175",
+            "F176"
+          ],
+          "radios": [
+            "thread",
+            "ble",
+            "espnow",
+            "uwb"
+          ],
+          "id": "D199",
+          "ref": "RBX01",
+          "faceBack": true,
+          "links": [
+            {
+              "p": "P206",
+              "n": "n216"
+            },
+            {
+              "p": "P217",
+              "n": "n218"
+            },
+            {
+              "p": "P224",
+              "n": "n231"
+            },
+            {
+              "p": "P232",
+              "n": "n233"
+            }
+          ]
+        },
+        {
+          "type": "rbx",
+          "level": "ground",
+          "x": 5784,
+          "y": 6340,
+          "h": 2150,
+          "layer": "Lmv0l44ps",
+          "side": 0,
+          "rb": "RB-H",
+          "serves": [
+            "F177",
+            "F178"
+          ],
+          "radios": [
+            "thread",
+            "ble",
+            "espnow",
+            "uwb"
+          ],
+          "id": "D200",
+          "ref": "RBX02",
+          "faceBack": true,
+          "links": [
+            {
+              "p": "P217",
+              "n": "n223"
+            },
+            {
+              "p": "P232",
+              "n": "n237"
+            }
+          ]
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 9395,
+          "y": 5220,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D238",
+          "ref": "L1",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 9403,
+          "y": 3781,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D239",
+          "ref": "L2",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 5844,
+          "y": 3543,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D240",
+          "ref": "L3",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 4344,
+          "y": 5112,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D241",
+          "ref": "L4",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 3691,
+          "y": 5110,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D242",
+          "ref": "L5",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 2953,
+          "y": 5114,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D243",
+          "ref": "L6",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 2145,
+          "y": 5116,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D244",
+          "ref": "L7",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 1255,
+          "y": 5123,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D245",
+          "ref": "L8",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 1230,
+          "y": 5962,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D246",
+          "ref": "L9",
+          "faceBack": false
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 3028,
+          "y": 6035,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D247",
+          "ref": "L10",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 1329,
+          "y": 6831,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D248",
+          "ref": "L11",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 1918,
+          "y": 7331,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D249",
+          "ref": "L12",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 9352,
+          "y": 9200,
+          "h": 1400,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D250",
+          "ref": "L13",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 7468,
+          "y": 9200,
+          "h": 1400,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D251",
+          "ref": "L14",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 8250,
+          "y": 2240,
+          "h": 1900,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D252",
+          "ref": "L15",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 7052,
+          "y": 2240,
+          "h": 1900,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D253",
+          "ref": "L16",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 4482,
+          "y": 7040,
+          "h": 1900,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D254",
+          "ref": "L17",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 2729,
+          "y": 4307,
+          "h": 1900,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D255",
+          "ref": "L18",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 3934,
+          "y": 8421,
+          "h": 2400,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D256",
+          "ref": "EV1",
+          "faceBack": true,
+          "note": "Elszívó ventilátor — RBX-kapcsolt 230 V kimenet (a katalógusban nincs ventilátor kód)"
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 9159,
+          "y": 9200,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D257",
+          "ref": "K1",
+          "faceBack": true,
+          "ctl": [
+            "D250"
+          ]
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 7270,
+          "y": 9200,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D258",
+          "ref": "K2",
+          "faceBack": true,
+          "ctl": [
+            "D251"
+          ]
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 8944,
+          "y": 6340,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D259",
+          "ref": "K3",
+          "faceBack": true,
+          "ctl": [
+            "D238",
+            "D239",
+            "D240",
+            "D252",
+            "D253"
+          ]
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 8945,
+          "y": 6340,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D260",
+          "ref": "K4",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "s04",
+          "level": "ground",
+          "x": 7010,
+          "y": 9200,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D261",
+          "ref": "D1",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "s04",
+          "level": "ground",
+          "x": 6803,
+          "y": 9200,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D262",
+          "ref": "D2",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "s04",
+          "level": "ground",
+          "x": 8200,
+          "y": 6340,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D263",
+          "ref": "D3",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "s04",
+          "level": "ground",
+          "x": 7977,
+          "y": 6340,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D264",
+          "ref": "D4",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "s04",
+          "level": "ground",
+          "x": 8192,
+          "y": 6340,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D265",
+          "ref": "D5",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "s04",
+          "level": "ground",
+          "x": 7968,
+          "y": 6340,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D266",
+          "ref": "D6",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "25",
+          "level": "ground",
+          "x": 2256,
+          "y": 8421,
+          "h": 1100,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D267",
+          "ref": "D7",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "25",
+          "level": "ground",
+          "x": 1660,
+          "y": 8421,
+          "h": 1100,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D268",
+          "ref": "D8",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "25",
+          "level": "ground",
+          "x": 974,
+          "y": 8421,
+          "h": 1100,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D269",
+          "ref": "D9",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "25",
+          "level": "ground",
+          "x": 4975,
+          "y": 5675,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D270",
+          "ref": "D10",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "25",
+          "level": "ground",
+          "x": 4975,
+          "y": 6563,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D271",
+          "ref": "D11",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "25",
+          "level": "ground",
+          "x": 2032,
+          "y": 6140,
+          "h": 900,
+          "layer": "Lmv0l44pv",
+          "id": "D272",
+          "ref": "D12",
+          "faceBack": true,
+          "note": "Konyhasziget — pultba épített aljzat"
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "25",
+          "level": "ground",
+          "x": 2497,
+          "y": 5789,
+          "h": 2650,
+          "layer": "Lmv0l44pv",
+          "id": "D273",
+          "ref": "D13",
+          "faceBack": true,
+          "note": "Szigetelszívó csatlakozás a mennyezeten"
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "25",
+          "level": "ground",
+          "x": 5177,
+          "y": 7454,
+          "h": 1400,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D274",
+          "ref": "D14",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "25",
+          "level": "ground",
+          "x": 5177,
+          "y": 7279,
+          "h": 1400,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D275",
+          "ref": "D15",
+          "faceBack": true
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "25",
+          "level": "ground",
+          "x": 4434,
+          "y": 8421,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D276",
+          "ref": "D16",
+          "faceBack": true,
+          "note": "Fürdőszobai konvektor"
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "s04",
+          "level": "ground",
+          "x": 2320,
+          "y": 4025,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D277",
+          "ref": "D17",
+          "faceBack": true
+        },
+        {
+          "type": "ep",
+          "code": "DED",
+          "var": "hob2l",
+          "level": "ground",
+          "x": 2497,
+          "y": 5789,
+          "h": 900,
+          "layer": "Lmv0l44pv",
+          "id": "D278",
+          "ref": "DED1",
+          "faceBack": true,
+          "note": "Indukciós főzőlap, sziget (2L+2N, K32)"
+        },
+        {
+          "type": "ep",
+          "code": "DED",
+          "var": "g16",
+          "level": "ground",
+          "x": 1364,
+          "y": 8421,
+          "h": 600,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D279",
+          "ref": "DED2",
+          "faceBack": true,
+          "note": "Sütőtorony"
+        },
+        {
+          "type": "ep",
+          "code": "DED",
+          "var": "g16",
+          "level": "ground",
+          "x": 3210,
+          "y": 7340,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D280",
+          "ref": "DED3",
+          "faceBack": true,
+          "note": "Mosogatógép"
+        },
+        {
+          "type": "ep",
+          "code": "DED",
+          "var": "g16",
+          "level": "ground",
+          "x": 10300,
+          "y": 2857,
+          "h": 2300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D281",
+          "ref": "DED1",
+          "faceBack": true,
+          "note": "Klíma beltéri egység"
+        },
+        {
+          "type": "ep",
+          "code": "DED",
+          "var": "g16",
+          "level": "ground",
+          "x": 4979,
+          "y": 8740,
+          "h": 1000,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D282",
+          "ref": "DED1",
+          "faceBack": true,
+          "note": "Mosógép"
+        },
+        {
+          "type": "ep",
+          "code": "SHU",
+          "var": "230",
+          "level": "ground",
+          "x": 10300,
+          "y": 4420,
+          "h": 2500,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D283",
+          "ref": "SHU1",
+          "faceBack": true
+        },
+        {
+          "type": "ep",
+          "code": "SHU",
+          "var": "230",
+          "level": "ground",
+          "x": 10300,
+          "y": 7997,
+          "h": 2500,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D284",
+          "ref": "SHU1",
+          "faceBack": true
+        },
+        {
+          "type": "ep",
+          "code": "SHU",
+          "var": "230",
+          "level": "ground",
+          "x": 634,
+          "y": 7426,
+          "h": 2500,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D285",
+          "ref": "SHU1",
+          "faceBack": true
+        },
+        {
+          "type": "ep",
+          "code": "SHU",
+          "var": "230",
+          "level": "ground",
+          "x": 634,
+          "y": 5319,
+          "h": 2500,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D286",
+          "ref": "SHU2",
+          "faceBack": true
+        },
+        {
+          "type": "ep",
+          "code": "LNR",
+          "var": "rov",
+          "level": "ground",
+          "x": 3210,
+          "y": 7690,
+          "h": 1600,
+          "layer": "Lmv0l44pw",
+          "side": 1,
+          "id": "D287",
+          "ref": "LNR1",
+          "faceBack": true,
+          "note": "LED a zuhany falában"
+        },
+        {
+          "type": "ep",
+          "code": "LNR",
+          "var": "rov",
+          "level": "ground",
+          "x": 3534,
+          "y": 7040,
+          "h": 2100,
+          "layer": "Lmv0l44pw",
+          "side": 1,
+          "id": "D288",
+          "ref": "LNR2",
+          "faceBack": true,
+          "note": "LED az új fürdőfalban"
+        },
+        {
+          "type": "ep",
+          "code": "LNR",
+          "var": "rov",
+          "level": "ground",
+          "x": 3205,
+          "y": 3140,
+          "h": 400,
+          "layer": "Lmv0l44pw",
+          "side": 1,
+          "id": "D289",
+          "ref": "LNR1",
+          "faceBack": true,
+          "note": "LED-sor a lépcső mellett"
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "b",
+          "level": "ground",
+          "x": 2834,
+          "y": 4307,
+          "h": 300,
+          "layer": "Lmv0l44px",
+          "side": 1,
+          "id": "D290",
+          "ref": "L20",
+          "faceBack": true,
+          "note": "Tájékozódó (jelző) lámpa — közlekedő"
+        },
+        {
+          "type": "ep",
+          "code": "ETH",
+          "var": "2",
+          "level": "ground",
+          "x": 9044,
+          "y": 2240,
+          "h": 300,
+          "layer": "Lmv0l44pz",
+          "side": 1,
+          "id": "D291",
+          "ref": "ETH1",
+          "faceBack": true,
+          "note": "TV + internet — nappali"
+        },
+        {
+          "type": "ep",
+          "code": "ETH",
+          "var": "2",
+          "level": "ground",
+          "x": 8634,
+          "y": 6340,
+          "h": 300,
+          "layer": "Lmv0l44pz",
+          "side": 1,
+          "id": "D292",
+          "ref": "ETH1",
+          "faceBack": true,
+          "note": "TV + internet — szoba, az új ajtónál"
+        },
+        {
+          "type": "junction",
+          "jbShape": "rect",
+          "jbSize": 100,
+          "level": "ground",
+          "x": 634,
+          "y": 2988,
+          "h": 2300,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "PD1",
+          "note": "Portál doboz 10 × 10 — B107, Előszoba felőli oldal",
+          "id": "D305",
+          "faceBack": true
+        },
+        {
+          "type": "junction",
+          "jbShape": "rect",
+          "jbSize": 100,
+          "level": "ground",
+          "x": 1956,
+          "y": 4307,
+          "h": 2300,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "PD2",
+          "note": "Portál doboz 10 × 10 — B106, Konyha · étkező felőli oldal, zsanér felől",
+          "id": "D306",
+          "faceBack": true
+        },
+        {
+          "type": "junction",
+          "jbShape": "rect",
+          "jbSize": 100,
+          "level": "ground",
+          "x": 2320,
+          "y": 2990,
+          "h": 2300,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "PD3",
+          "note": "Portál doboz 10 × 10 — B105, WC felőli oldal",
+          "id": "D307",
+          "faceBack": true
+        },
+        {
+          "type": "junction",
+          "jbShape": "rect",
+          "jbSize": 100,
+          "level": "ground",
+          "x": 3950,
+          "y": 4271,
+          "h": 2300,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "PD4",
+          "note": "Portál doboz 10 × 10 — B104, Konyha · étkező felőli oldal",
+          "id": "D308",
+          "faceBack": true
+        },
+        {
+          "type": "junction",
+          "jbShape": "rect",
+          "jbSize": 100,
+          "level": "ground",
+          "x": 5177,
+          "y": 4341,
+          "h": 2300,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "PD5",
+          "note": "Portál doboz 10 × 10 — B103, Nappali felőli oldal",
+          "id": "D309",
+          "faceBack": true
+        },
+        {
+          "type": "junction",
+          "jbShape": "rect",
+          "jbSize": 100,
+          "level": "ground",
+          "x": 8887,
+          "y": 6340,
+          "h": 2300,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "PD6",
+          "note": "Portál doboz 10 × 10 — B171, Szoba felőli oldal",
+          "id": "D310",
+          "faceBack": true
+        },
+        {
+          "type": "junction",
+          "jbShape": "rect",
+          "jbSize": 100,
+          "level": "ground",
+          "x": 6048,
+          "y": 8757,
+          "h": 2300,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "PD7",
+          "note": "Portál doboz 10 × 10 — B109, Fürdő felőli oldal, zsanér felől",
+          "id": "D311",
+          "faceBack": true
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 1504,
+          "y": 3290,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D312",
+          "ref": "L21",
+          "faceBack": true,
+          "note": "v2: előszoba mennyezet"
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 4596,
+          "y": 3240,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D313",
+          "ref": "L22",
+          "faceBack": true,
+          "note": "v2: kamra mennyezet"
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 3647,
+          "y": 3140,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D314",
+          "ref": "L23",
+          "faceBack": true,
+          "note": "v2: lépcső mennyezet"
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "230",
+          "level": "ground",
+          "x": 8234,
+          "y": 7740,
+          "h": 2700,
+          "layer": "Lmv0l44pv",
+          "id": "D315",
+          "ref": "L24",
+          "faceBack": true,
+          "note": "v2: szoba mennyezet"
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 634,
+          "y": 2988,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D316",
+          "ref": "K5",
+          "faceBack": true,
+          "note": "v2: bejárat, kilincs felől",
+          "ctl": [
+            "D312"
+          ]
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 1956,
+          "y": 4307,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D317",
+          "ref": "K6",
+          "faceBack": true,
+          "note": "v2: előszoba felőli ajtó",
+          "ctl": [
+            "D241",
+            "D242",
+            "D243",
+            "D244",
+            "D245",
+            "D246",
+            "D247",
+            "D248",
+            "D249"
+          ]
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 5177,
+          "y": 4341,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D318",
+          "ref": "K7",
+          "faceBack": true,
+          "note": "v2: étkező felőli ajtó — kétirányú K14-gyel",
+          "ctl": [
+            "D238",
+            "D239",
+            "D240"
+          ]
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 2320,
+          "y": 2990,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D319",
+          "ref": "K8",
+          "faceBack": true,
+          "note": "v2: WC",
+          "ctl": [
+            "D255"
+          ]
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 4065,
+          "y": 3940,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D320",
+          "ref": "K9",
+          "faceBack": true,
+          "note": "v2: kamra, az ajtó melletti falon",
+          "ctl": [
+            "D313"
+          ]
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 3205,
+          "y": 4140,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 1,
+          "id": "D321",
+          "ref": "K10",
+          "faceBack": true,
+          "note": "v2: lépcső alja",
+          "ctl": [
+            "D314"
+          ]
+        },
+        {
+          "type": "switch",
+          "code": "SWI",
+          "var": "230",
+          "level": "ground",
+          "x": 6048,
+          "y": 8757,
+          "h": 1300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D322",
+          "ref": "K11",
+          "faceBack": true,
+          "note": "v2: fürdő",
+          "ctl": [
+            "D256",
+            "D254",
+            "D287",
+            "D288"
+          ]
+        },
+        {
+          "type": "socket",
+          "code": "SOC",
+          "var": "s04",
+          "level": "ground",
+          "x": 2320,
+          "y": 2940,
+          "h": 300,
+          "layer": "Lmv0l44pv",
+          "side": 0,
+          "id": "D323",
+          "ref": "D18",
+          "faceBack": true,
+          "note": "v2: előszoba általános"
+        },
+        {
+          "type": "ep",
+          "code": "NTL",
+          "var": "tr",
+          "level": "ground",
+          "x": 634,
+          "y": 2988,
+          "h": 1150,
+          "layer": "Lmv0l44px",
+          "side": 1,
+          "id": "D324",
+          "ref": "NTL1",
+          "faceBack": true,
+          "note": "v2: értesítő fény a kapcsoló alatt"
+        },
+        {
+          "type": "ep",
+          "code": "NTL",
+          "var": "tr",
+          "level": "ground",
+          "x": 1956,
+          "y": 4307,
+          "h": 1150,
+          "layer": "Lmv0l44px",
+          "side": 1,
+          "id": "D325",
+          "ref": "NTL1",
+          "faceBack": true,
+          "note": "v2: értesítő fény a kapcsoló alatt"
+        },
+        {
+          "type": "ep",
+          "code": "NTL",
+          "var": "tr",
+          "level": "ground",
+          "x": 5177,
+          "y": 4341,
+          "h": 1150,
+          "layer": "Lmv0l44px",
+          "side": 1,
+          "id": "D326",
+          "ref": "NTL1",
+          "faceBack": true,
+          "note": "v2: értesítő fény a kapcsoló alatt"
+        },
+        {
+          "type": "ep",
+          "code": "NTL",
+          "var": "tr",
+          "level": "ground",
+          "x": 8887,
+          "y": 6340,
+          "h": 1150,
+          "layer": "Lmv0l44px",
+          "side": 1,
+          "id": "D327",
+          "ref": "NTL1",
+          "faceBack": true,
+          "note": "v2: értesítő fény a kapcsoló alatt"
+        },
+        {
+          "type": "ep",
+          "code": "NTL",
+          "var": "tr",
+          "level": "ground",
+          "x": 6048,
+          "y": 8757,
+          "h": 1150,
+          "layer": "Lmv0l44px",
+          "side": 0,
+          "id": "D328",
+          "ref": "NTL1",
+          "faceBack": true,
+          "note": "v2: értesítő fény a kapcsoló alatt"
+        },
+        {
+          "type": "ep",
+          "code": "NTL",
+          "var": "tr",
+          "level": "ground",
+          "x": 2320,
+          "y": 2990,
+          "h": 1150,
+          "layer": "Lmv0l44px",
+          "side": 1,
+          "id": "D329",
+          "ref": "NTL1",
+          "faceBack": true,
+          "note": "v2: értesítő fény a kapcsoló alatt"
+        },
+        {
+          "type": "ep",
+          "code": "NTL",
+          "var": "tr",
+          "level": "ground",
+          "x": 4065,
+          "y": 3940,
+          "h": 1150,
+          "layer": "Lmv0l44px",
+          "side": 1,
+          "id": "D330",
+          "ref": "NTL1",
+          "faceBack": true,
+          "note": "v2: értesítő fény a kapcsoló alatt"
+        },
+        {
+          "type": "ep",
+          "code": "NTL",
+          "var": "tr",
+          "level": "ground",
+          "x": 3205,
+          "y": 4140,
+          "h": 1150,
+          "layer": "Lmv0l44px",
+          "side": 1,
+          "id": "D331",
+          "ref": "NTL1",
+          "faceBack": true,
+          "note": "v2: értesítő fény a kapcsoló alatt"
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "b",
+          "level": "ground",
+          "x": 2320,
+          "y": 3240,
+          "h": 300,
+          "layer": "Lmv0l44px",
+          "side": 0,
+          "id": "D332",
+          "ref": "L25",
+          "faceBack": true,
+          "note": "v2: lábfény — éjszakai út a WC felé"
+        },
+        {
+          "type": "light",
+          "code": "LMP",
+          "var": "b",
+          "level": "ground",
+          "x": 4065,
+          "y": 3140,
+          "h": 300,
+          "layer": "Lmv0l44px",
+          "side": 0,
+          "id": "D333",
+          "ref": "L26",
+          "faceBack": true,
+          "note": "v2: lépcső lábfény"
+        },
+        {
+          "type": "ep",
+          "code": "POR",
+          "var": "tof",
+          "level": "ground",
+          "x": 634,
+          "y": 3588,
+          "h": 2150,
+          "layer": "Lmv0l44q0",
+          "side": 1,
+          "id": "D334",
+          "ref": "POR1",
+          "faceBack": true,
+          "note": "v2: portál ToF a szemöldök fölött"
+        },
+        {
+          "type": "ep",
+          "code": "POR",
+          "var": "rs485",
+          "level": "ground",
+          "x": 634,
+          "y": 3588,
+          "h": 2250,
+          "layer": "Lmv0l44py",
+          "side": 1,
+          "id": "D335",
+          "ref": "POR2",
+          "faceBack": true,
+          "note": "v2: portál vezérlőpont, a portál dobozba fut"
+        },
+        {
+          "type": "ep",
+          "code": "POR",
+          "var": "tof",
+          "level": "ground",
+          "x": 1356,
+          "y": 4307,
+          "h": 2150,
+          "layer": "Lmv0l44q0",
+          "side": 1,
+          "id": "D336",
+          "ref": "POR1",
+          "faceBack": true,
+          "note": "v2: portál ToF a szemöldök fölött"
+        },
+        {
+          "type": "ep",
+          "code": "POR",
+          "var": "rs485",
+          "level": "ground",
+          "x": 1356,
+          "y": 4307,
+          "h": 2250,
+          "layer": "Lmv0l44py",
+          "side": 1,
+          "id": "D337",
+          "ref": "POR2",
+          "faceBack": true,
+          "note": "v2: portál vezérlőpont, a portál dobozba fut"
+        },
+        {
+          "type": "ep",
+          "code": "POR",
+          "var": "tof",
+          "level": "ground",
+          "x": 5177,
+          "y": 4941,
+          "h": 2150,
+          "layer": "Lmv0l44q0",
+          "side": 1,
+          "id": "D338",
+          "ref": "POR1",
+          "faceBack": true,
+          "note": "v2: portál ToF a szemöldök fölött"
+        },
+        {
+          "type": "ep",
+          "code": "POR",
+          "var": "rs485",
+          "level": "ground",
+          "x": 5177,
+          "y": 4941,
+          "h": 2250,
+          "layer": "Lmv0l44py",
+          "side": 1,
+          "id": "D339",
+          "ref": "POR2",
+          "faceBack": true,
+          "note": "v2: portál vezérlőpont, a portál dobozba fut"
+        },
+        {
+          "type": "ep",
+          "code": "POR",
+          "var": "tof",
+          "level": "ground",
+          "x": 9487,
+          "y": 6340,
+          "h": 2150,
+          "layer": "Lmv0l44q0",
+          "side": 1,
+          "id": "D340",
+          "ref": "POR1",
+          "faceBack": true,
+          "note": "v2: portál ToF a szemöldök fölött"
+        },
+        {
+          "type": "ep",
+          "code": "POR",
+          "var": "rs485",
+          "level": "ground",
+          "x": 9487,
+          "y": 6340,
+          "h": 2250,
+          "layer": "Lmv0l44py",
+          "side": 1,
+          "id": "D341",
+          "ref": "POR2",
+          "faceBack": true,
+          "note": "v2: portál vezérlőpont, a portál dobozba fut"
+        },
+        {
+          "type": "ep",
+          "code": "POR",
+          "var": "tof",
+          "level": "ground",
+          "x": 6048,
+          "y": 8157,
+          "h": 2150,
+          "layer": "Lmv0l44q0",
+          "side": 0,
+          "id": "D342",
+          "ref": "POR1",
+          "faceBack": true,
+          "note": "v2: portál ToF a szemöldök fölött"
+        },
+        {
+          "type": "ep",
+          "code": "POR",
+          "var": "rs485",
+          "level": "ground",
+          "x": 6048,
+          "y": 8157,
+          "h": 2250,
+          "layer": "Lmv0l44py",
+          "side": 0,
+          "id": "D343",
+          "ref": "POR2",
+          "faceBack": true,
+          "note": "v2: portál vezérlőpont, a portál dobozba fut"
+        },
+        {
+          "type": "ep",
+          "code": "PAN",
+          "var": "entry",
+          "level": "ground",
+          "x": 634,
+          "y": 2838,
+          "h": 1450,
+          "layer": "Lmv0l44q2",
+          "side": 1,
+          "id": "D344",
+          "ref": "PAN1",
+          "faceBack": true,
+          "note": "v2: belépési pont a bejárat mellett"
+        },
+        {
+          "type": "ep",
+          "code": "PAN",
+          "var": "touch",
+          "level": "ground",
+          "x": 5177,
+          "y": 4191,
+          "h": 1450,
+          "layer": "Lmv0l44q2",
+          "side": 1,
+          "id": "D345",
+          "ref": "PAN1",
+          "faceBack": true,
+          "note": "v2: nappali kezelőpanel"
+        },
+        {
+          "type": "ep",
+          "code": "THR",
+          "var": "bus",
+          "level": "ground",
+          "x": 5177,
+          "y": 3540,
+          "h": 1500,
+          "layer": "Lmv0l44q2",
+          "side": 1,
+          "id": "D346",
+          "ref": "THR1",
+          "faceBack": true,
+          "note": "v2: belső fal (gerincfal), ablaktól és klímától távol"
+        },
+        {
+          "type": "ep",
+          "code": "THR",
+          "var": "bus",
+          "level": "ground",
+          "x": 8887,
+          "y": 6340,
+          "h": 1500,
+          "layer": "Lmv0l44q2",
+          "side": 1,
+          "id": "D347",
+          "ref": "THR1",
+          "faceBack": true,
+          "note": "v2: a K15 oszlopában"
+        },
+        {
+          "type": "ep",
+          "code": "THR",
+          "var": "bus",
+          "level": "ground",
+          "x": 5534,
+          "y": 7640,
+          "h": 1500,
+          "layer": "Lmv0l44q2",
+          "side": 1,
+          "id": "D348",
+          "ref": "THR1",
+          "faceBack": true,
+          "note": "v2: fürdő, belső fal"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "mmwave",
+          "level": "ground",
+          "x": 2034,
+          "y": 3940,
+          "h": 2700,
+          "layer": "Lmv0l44q0",
+          "id": "D349",
+          "ref": "SEN1",
+          "faceBack": true,
+          "note": "v2: jelenlét"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "mmwave",
+          "level": "ground",
+          "x": 2334,
+          "y": 5540,
+          "h": 2700,
+          "layer": "Lmv0l44q0",
+          "id": "D350",
+          "ref": "SEN1",
+          "faceBack": true,
+          "note": "v2: jelenlét"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "mmwave",
+          "level": "ground",
+          "x": 2750,
+          "y": 3290,
+          "h": 2700,
+          "layer": "Lmv0l44q0",
+          "id": "D351",
+          "ref": "SEN1",
+          "faceBack": true,
+          "note": "v2: jelenlét"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "mmwave",
+          "level": "ground",
+          "x": 3647,
+          "y": 3840,
+          "h": 2700,
+          "layer": "Lmv0l44q0",
+          "id": "D352",
+          "ref": "SEN1",
+          "faceBack": true,
+          "note": "v2: jelenlét"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "mmwave",
+          "level": "ground",
+          "x": 9634,
+          "y": 5740,
+          "h": 2700,
+          "layer": "Lmv0l44q0",
+          "id": "D353",
+          "ref": "SEN1",
+          "faceBack": true,
+          "note": "v2: jelenlét"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "mmwave",
+          "level": "ground",
+          "x": 7134,
+          "y": 7640,
+          "h": 2700,
+          "layer": "Lmv0l44q0",
+          "id": "D354",
+          "ref": "SEN1",
+          "faceBack": true,
+          "note": "v2: jelenlét"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "mmwave",
+          "level": "ground",
+          "x": 3934,
+          "y": 4640,
+          "h": 2700,
+          "layer": "Lmv0l44q0",
+          "id": "D355",
+          "ref": "SEN2",
+          "faceBack": true,
+          "note": "v2: jelenlét — közlekedő zóna (R03 két zóna)"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "thermal",
+          "level": "ground",
+          "x": 4234,
+          "y": 7740,
+          "h": 2700,
+          "layer": "Lmv0l44q0",
+          "id": "D356",
+          "ref": "SEN1",
+          "faceBack": true,
+          "note": "v2: hőkamera-tömb, fürdő"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "leak",
+          "level": "ground",
+          "x": 3210,
+          "y": 7340,
+          "h": 50,
+          "layer": "Lmv0l44q0",
+          "side": 1,
+          "id": "D357",
+          "ref": "SEN2",
+          "faceBack": true,
+          "note": "v2: vízszivárgás a zuhany mellett (padlózóna)"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "leak",
+          "level": "ground",
+          "x": 3085,
+          "y": 7040,
+          "h": 50,
+          "layer": "Lmv0l44q0",
+          "side": 1,
+          "id": "D358",
+          "ref": "SEN1",
+          "faceBack": true,
+          "note": "v2: vízszivárgás a mosogatógép mellett"
+        },
+        {
+          "type": "ep",
+          "code": "SEN",
+          "var": "co2",
+          "level": "ground",
+          "x": 1956,
+          "y": 4307,
+          "h": 1500,
+          "layer": "Lmv0l44q0",
+          "side": 1,
+          "id": "D359",
+          "ref": "SEN3",
+          "faceBack": true,
+          "note": "v2: levegőminőség, a kapcsolóoszlopban"
+        },
+        {
+          "type": "ep",
+          "code": "ACP",
+          "var": "poe",
+          "level": "ground",
+          "x": 7934,
+          "y": 4040,
+          "h": 2700,
+          "layer": "Lmv0l44pz",
+          "id": "D360",
+          "ref": "ACP1",
+          "faceBack": true,
+          "note": "v2: nappali WiFi"
+        },
+        {
+          "type": "ep",
+          "code": "ACP",
+          "var": "poe",
+          "level": "ground",
+          "x": 4134,
+          "y": 5840,
+          "h": 2700,
+          "layer": "Lmv0l44pz",
+          "id": "D361",
+          "ref": "ACP1",
+          "faceBack": true,
+          "note": "v2: étkező / konyha WiFi"
+        },
+        {
+          "type": "ep",
+          "code": "CAM",
+          "var": "poe",
+          "level": "ground",
+          "x": 2320,
+          "y": 3740,
+          "h": 2400,
+          "layer": "Lmv0l44pz",
+          "side": 0,
+          "id": "D362",
+          "ref": "CAM1",
+          "faceBack": true,
+          "note": "v2: a bejárati ajtóra néz"
+        },
+        {
+          "type": "ep",
+          "code": "LNR",
+          "var": "hosszu",
+          "level": "ground",
+          "x": 2134,
+          "y": 8421,
+          "h": 1950,
+          "layer": "Lmv0l44pw",
+          "side": 0,
+          "id": "D363",
+          "ref": "LNR1",
+          "faceBack": true,
+          "note": "v2: felső szekrény alatt, a pult-aljzatok oszlopában"
+        },
+        {
+          "type": "ep",
+          "code": "LNR",
+          "var": "hosszu",
+          "level": "ground",
+          "x": 5177,
+          "y": 4240,
+          "h": 2550,
+          "layer": "Lmv0l44pw",
+          "side": 1,
+          "id": "D364",
+          "ref": "LNR1",
+          "faceBack": true,
+          "note": "v2: rejtett világítás a gerincfalon (L-fal)"
+        },
+        {
+          "type": "ep",
+          "code": "UEP",
+          "var": "selv",
+          "level": "ground",
+          "x": 6734,
+          "y": 6340,
+          "h": 300,
+          "layer": "Lmv0l44pw",
+          "side": 0,
+          "id": "D365",
+          "ref": "UEP1",
+          "faceBack": true,
+          "note": "v2: médiafal"
+        },
+        {
+          "type": "ep",
+          "code": "UEP",
+          "var": "usbc",
+          "level": "ground",
+          "x": 7270,
+          "y": 9200,
+          "h": 900,
+          "layer": "Lmv0l44pw",
+          "side": 0,
+          "id": "D366",
+          "ref": "UEP1",
+          "faceBack": true,
+          "note": "v2: ágy mellett, K13 oszlopában"
+        },
+        {
+          "type": "ep",
+          "code": "SCR",
+          "var": "aoc",
+          "level": "ground",
+          "x": 7034,
+          "y": 6340,
+          "h": 1200,
+          "layer": "Lmv0l44q3",
+          "side": 0,
+          "id": "D367",
+          "ref": "SCR1",
+          "faceBack": true,
+          "note": "v2: médiafal képernyő (K33)"
+        },
+        {
+          "type": "ep",
+          "code": "AVP",
+          "var": "std",
+          "level": "ground",
+          "x": 7034,
+          "y": 6340,
+          "h": 300,
+          "layer": "Lmv0l44q3",
+          "side": 0,
+          "id": "D368",
+          "ref": "AVP1",
+          "faceBack": true,
+          "note": "v2: AV pozíció, saját kör (bronz)"
+        },
+        {
+          "type": "ep",
+          "code": "USB",
+          "var": "u2",
+          "level": "ground",
+          "x": 7334,
+          "y": 6340,
+          "h": 300,
+          "layer": "Lmv0l44q4",
+          "side": 0,
+          "id": "D369",
+          "ref": "USB1",
+          "faceBack": true,
+          "note": "v2: médiafal"
+        },
+        {
+          "type": "ep",
+          "code": "SCR",
+          "var": "aocd",
+          "level": "ground",
+          "x": 7634,
+          "y": 6340,
+          "h": 1200,
+          "layer": "Lmv0l44q3",
+          "side": 1,
+          "id": "D370",
+          "ref": "SCR1",
+          "faceBack": true,
+          "note": "v2: hálószobai egység, 600 mm-re a nappali dobozaitól (K33)"
+        },
+        {
+          "type": "ep",
+          "code": "SPK",
+          "var": "17",
+          "level": "ground",
+          "x": 7834,
+          "y": 5440,
+          "h": 2700,
+          "layer": "Lmv0l44q3",
+          "id": "D371",
+          "ref": "SPK1",
+          "faceBack": true,
+          "note": "v2: mennyezeti pár"
+        },
+        {
+          "type": "ep",
+          "code": "SPK",
+          "var": "17",
+          "level": "ground",
+          "x": 6234,
+          "y": 5440,
+          "h": 2700,
+          "layer": "Lmv0l44q3",
+          "id": "D372",
+          "ref": "SPK2",
+          "faceBack": true,
+          "note": "v2: mennyezeti pár"
+        },
+        {
+          "type": "ep",
+          "code": "SPK",
+          "var": "17",
+          "level": "ground",
+          "x": 3434,
+          "y": 4740,
+          "h": 2700,
+          "layer": "Lmv0l44q3",
+          "id": "D373",
+          "ref": "SPK1",
+          "faceBack": true,
+          "note": "v2: mennyezeti pár"
+        },
+        {
+          "type": "ep",
+          "code": "SPK",
+          "var": "17",
+          "level": "ground",
+          "x": 1634,
+          "y": 4740,
+          "h": 2700,
+          "layer": "Lmv0l44q3",
+          "id": "D374",
+          "ref": "SPK2",
+          "faceBack": true,
+          "note": "v2: mennyezeti pár"
+        },
+        {
+          "type": "ep",
+          "code": "SPK",
+          "var": "17",
+          "level": "ground",
+          "x": 9134,
+          "y": 7940,
+          "h": 2700,
+          "layer": "Lmv0l44q3",
+          "id": "D375",
+          "ref": "SPK1",
+          "faceBack": true,
+          "note": "v2: mennyezeti pár"
+        },
+        {
+          "type": "ep",
+          "code": "SPK",
+          "var": "17",
+          "level": "ground",
+          "x": 7634,
+          "y": 7940,
+          "h": 2700,
+          "layer": "Lmv0l44q3",
+          "id": "D376",
+          "ref": "SPK2",
+          "faceBack": true,
+          "note": "v2: mennyezeti pár"
+        },
+        {
+          "type": "ep",
+          "code": "SPK",
+          "var": "17",
+          "level": "ground",
+          "x": 4634,
+          "y": 7940,
+          "h": 2700,
+          "layer": "Lmv0l44q3",
+          "id": "D377",
+          "ref": "SPK1",
+          "faceBack": false,
+          "note": "v2: nedves helyiségbe minősített"
+        },
+        {
+          "type": "ep",
+          "code": "SEC",
+          "var": "contact",
+          "level": "ground",
+          "x": 634,
+          "y": 3088,
+          "h": 2150,
+          "layer": "Lmv0l44q5",
+          "side": 1,
+          "id": "D378",
+          "ref": "SEC1",
+          "faceBack": true,
+          "note": "v2: bejárati ajtó nyitásérzékelő, a portál dobozhoz"
+        },
+        {
+          "type": "ep",
+          "code": "SEC",
+          "var": "det",
+          "level": "ground",
+          "x": 2320,
+          "y": 2540,
+          "h": 2200,
+          "layer": "Lmv0l44q5",
+          "side": 0,
+          "id": "D379",
+          "ref": "SEC2",
+          "faceBack": true,
+          "note": "v2: mozgásérzékelő"
+        },
+        {
+          "type": "ep",
+          "code": "SEC",
+          "var": "det",
+          "level": "ground",
+          "x": 5177,
+          "y": 2640,
+          "h": 2200,
+          "layer": "Lmv0l44q5",
+          "side": 1,
+          "id": "D380",
+          "ref": "SEC1",
+          "faceBack": true,
+          "note": "v2: nappali mozgásérzékelő (minden réteg a nappaliban)"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 7165,
+          "y": 9200,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT1",
+          "note": "v2: gerinc T-csomópont — 5 végpont: D2, D1, K2, UEP1, L14",
+          "id": "D382"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 9256,
+          "y": 9200,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT2",
+          "note": "v2: gerinc T-csomópont — 2 végpont: K1, L13",
+          "id": "D383"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 7052,
+          "y": 2240,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT3",
+          "note": "v2: gerinc T-csomópont — 1 végpont: L16",
+          "id": "D384"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 8250,
+          "y": 2240,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT4",
+          "note": "v2: gerinc T-csomópont — 1 végpont: L15",
+          "id": "D385"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 9044,
+          "y": 2240,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT5",
+          "note": "v2: gerinc T-csomópont — 1 végpont: ETH1",
+          "id": "D386"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 3310,
+          "y": 7040,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT6",
+          "note": "v2: gerinc T-csomópont — 2 végpont: SEN1, LNR2",
+          "id": "D387"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 4482,
+          "y": 7040,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT7",
+          "note": "v2: gerinc T-csomópont — 1 végpont: L17",
+          "id": "D388"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 2729,
+          "y": 4307,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT8",
+          "note": "v2: gerinc T-csomópont — 1 végpont: L18",
+          "id": "D389"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 1677,
+          "y": 8421,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT9",
+          "note": "v2: gerinc T-csomópont — 5 végpont: D9, DED2, D8, LNR1, D7",
+          "id": "D390"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 4184,
+          "y": 8421,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT10",
+          "note": "v2: gerinc T-csomópont — 2 végpont: EV1, D16",
+          "id": "D391"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 7034,
+          "y": 6340,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT11",
+          "note": "v2: gerinc T-csomópont — 4 végpont: UEP1, SCR1, AVP1, USB1",
+          "id": "D392"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 8080,
+          "y": 6340,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT12",
+          "note": "v2: gerinc T-csomópont — 2 végpont: D6, D5",
+          "id": "D393"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 8944,
+          "y": 6340,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT13",
+          "note": "v2: gerinc T-csomópont — 1 végpont: K3",
+          "id": "D394"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 4975,
+          "y": 5675,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT14",
+          "note": "v2: gerinc T-csomópont — 1 végpont: D10",
+          "id": "D395"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 4975,
+          "y": 6563,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT15",
+          "note": "v2: gerinc T-csomópont — 1 végpont: D11",
+          "id": "D396"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 5177,
+          "y": 7366,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT16",
+          "note": "v2: gerinc T-csomópont — 2 végpont: D15, D14",
+          "id": "D397"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 2320,
+          "y": 4025,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT17",
+          "note": "v2: gerinc T-csomópont — 1 végpont: D17",
+          "id": "D398"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 3210,
+          "y": 7340,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT18",
+          "note": "v2: gerinc T-csomópont — 1 végpont: DED3",
+          "id": "D399"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 10300,
+          "y": 2857,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT19",
+          "note": "v2: gerinc T-csomópont — 1 végpont: DED1",
+          "id": "D400"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 4979,
+          "y": 8740,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT20",
+          "note": "v2: gerinc T-csomópont — 1 végpont: DED1",
+          "id": "D401"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 3210,
+          "y": 7515,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT21",
+          "note": "v2: gerinc T-csomópont — 2 végpont: SEN2, LNR1",
+          "id": "D402"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 3205,
+          "y": 3140,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT22",
+          "note": "v2: gerinc T-csomópont — 1 végpont: LNR1",
+          "id": "D403"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 3205,
+          "y": 4140,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT23",
+          "note": "v2: gerinc T-csomópont — 2 végpont: K10, NTL1",
+          "id": "D404"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 2834,
+          "y": 4307,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT24",
+          "note": "v2: gerinc T-csomópont — 1 végpont: L20",
+          "id": "D405"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 5177,
+          "y": 2640,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT25",
+          "note": "v2: gerinc T-csomópont — 1 végpont: SEC1",
+          "id": "D406"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 5177,
+          "y": 3540,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT26",
+          "note": "v2: gerinc T-csomópont — 1 végpont: THR1",
+          "id": "D407"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 4065,
+          "y": 3940,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT27",
+          "note": "v2: gerinc T-csomópont — 2 végpont: K9, NTL1",
+          "id": "D408"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 2320,
+          "y": 3115,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT28",
+          "note": "v2: gerinc T-csomópont — 4 végpont: SEC2, D18, L25, CAM1",
+          "id": "D409"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 4065,
+          "y": 3140,
+          "h": 2400,
+          "side": 0,
+          "layer": "Lmv0l44q6",
+          "ref": "GT29",
+          "note": "v2: gerinc T-csomópont — 1 végpont: L26",
+          "id": "D410"
+        },
+        {
+          "type": "junction",
+          "jbShape": "circle",
+          "jbSize": 80,
+          "level": "ground",
+          "x": 5534,
+          "y": 7640,
+          "h": 2400,
+          "side": 1,
+          "layer": "Lmv0l44q6",
+          "ref": "GT30",
+          "note": "v2: gerinc T-csomópont — 1 végpont: THR1",
+          "id": "D411"
+        }
+      ],
+      "notes": [],
+      "measures": [],
+      "openings": [
+        {
+          "type": "door",
+          "level": "ground",
+          "x": 5177,
+          "y": 4941,
+          "ang": 1.5707963267948966,
+          "variant": 3,
+          "layer": "L0",
+          "id": "B103"
+        },
+        {
+          "type": "door",
+          "level": "ground",
+          "x": 4550,
+          "y": 4271,
+          "ang": 0,
+          "variant": 3,
+          "layer": "L0",
+          "id": "B104"
+        },
+        {
+          "type": "door",
+          "level": "ground",
+          "x": 2320,
+          "y": 3590,
+          "ang": 1.5707963267948966,
+          "variant": 3,
+          "layer": "L0",
+          "id": "B105"
+        },
+        {
+          "type": "door",
+          "level": "ground",
+          "x": 1356,
+          "y": 4307,
+          "ang": 0,
+          "variant": 3,
+          "layer": "L0",
+          "id": "B106"
+        },
+        {
+          "type": "door",
+          "level": "ground",
+          "x": 634,
+          "y": 3588,
+          "ang": 1.5707963267948966,
+          "variant": 3,
+          "layer": "L0",
+          "id": "B107"
+        },
+        {
+          "type": "door",
+          "level": "ground",
+          "x": 6048,
+          "y": 8157,
+          "ang": 1.5707963267948966,
+          "variant": 3,
+          "layer": "L0",
+          "id": "B109"
+        },
+        {
+          "type": "window",
+          "level": "ground",
+          "x": 10300,
+          "y": 4420,
+          "ang": 1.5707963267948966,
+          "variant": 3,
+          "layer": "L0",
+          "id": "B112"
+        },
+        {
+          "type": "window",
+          "level": "ground",
+          "x": 10300,
+          "y": 7997,
+          "ang": 1.5707963267948966,
+          "variant": 3,
+          "layer": "L0",
+          "id": "B113"
+        },
+        {
+          "type": "window",
+          "level": "ground",
+          "x": 634,
+          "y": 7426,
+          "ang": 1.5707963267948966,
+          "variant": 3,
+          "layer": "L0",
+          "id": "B114"
+        },
+        {
+          "type": "window",
+          "level": "ground",
+          "x": 634,
+          "y": 5319,
+          "ang": 1.5707963267948966,
+          "variant": 3,
+          "layer": "L0",
+          "id": "B115"
+        },
+        {
+          "type": "door",
+          "level": "ground",
+          "x": 9487,
+          "y": 6340,
+          "ang": 0,
+          "w": 900,
+          "variant": 2,
+          "note": "új ajtónyílás (szoba ↔ nappali)",
+          "id": "B171"
+        }
+      ],
+      "floors": [
+        {
+          "level": "ground",
+          "num": "R01",
+          "name": "Előszoba",
+          "poly": [
+            [
+              2220,
+              4182
+            ],
+            [
+              784,
+              4182
+            ],
+            [
+              784,
+              2390
+            ],
+            [
+              2220,
+              2390
+            ]
+          ],
+          "fill": "#e2ddd0",
+          "id": "F172"
+        },
+        {
+          "level": "ground",
+          "num": "R03",
+          "name": "Konyha · étkező",
+          "poly": [
+            [
+              3085,
+              8271
+            ],
+            [
+              784,
+              8271
+            ],
+            [
+              784,
+              4432
+            ],
+            [
+              3330,
+              4432
+            ],
+            [
+              3330,
+              4396
+            ],
+            [
+              5027,
+              4396
+            ],
+            [
+              5027,
+              5334
+            ],
+            [
+              4923,
+              5334
+            ],
+            [
+              4923,
+              6940
+            ],
+            [
+              3085,
+              6940
+            ]
+          ],
+          "fill": "#e2ddd0",
+          "id": "F173"
+        },
+        {
+          "level": "ground",
+          "num": "R04",
+          "name": "WC",
+          "poly": [
+            [
+              3080,
+              4182
+            ],
+            [
+              2420,
+              4182
+            ],
+            [
+              2420,
+              2390
+            ],
+            [
+              3080,
+              2390
+            ]
+          ],
+          "fill": "#e2ddd0",
+          "id": "F174"
+        },
+        {
+          "level": "ground",
+          "num": "R05",
+          "name": "Kamra",
+          "poly": [
+            [
+              5027,
+              4146
+            ],
+            [
+              4165,
+              4146
+            ],
+            [
+              4165,
+              2390
+            ],
+            [
+              5027,
+              2390
+            ]
+          ],
+          "fill": "#e2ddd0",
+          "id": "F175"
+        },
+        {
+          "level": "ground",
+          "num": "R03L",
+          "name": "Lépcső",
+          "poly": [
+            [
+              3965,
+              4396
+            ],
+            [
+              3330,
+              4396
+            ],
+            [
+              3330,
+              2390
+            ],
+            [
+              3965,
+              2390
+            ]
+          ],
+          "fill": "#e2ddd0",
+          "id": "F176"
+        },
+        {
+          "level": "ground",
+          "num": "R06",
+          "name": "Nappali",
+          "poly": [
+            [
+              10100,
+              6215
+            ],
+            [
+              5327,
+              6215
+            ],
+            [
+              5327,
+              2390
+            ],
+            [
+              10100,
+              2390
+            ]
+          ],
+          "fill": "#e2ddd0",
+          "id": "F177"
+        },
+        {
+          "level": "ground",
+          "num": "R07",
+          "name": "Szoba",
+          "poly": [
+            [
+              10100,
+              9050
+            ],
+            [
+              6198,
+              9050
+            ],
+            [
+              6198,
+              7540
+            ],
+            [
+              5327,
+              7540
+            ],
+            [
+              5327,
+              6465
+            ],
+            [
+              10100,
+              6465
+            ]
+          ],
+          "fill": "#e2ddd0",
+          "id": "F178"
+        },
+        {
+          "level": "ground",
+          "num": "R08",
+          "name": "Fürdő",
+          "poly": [
+            [
+              5898,
+              9050
+            ],
+            [
+              5129,
+              9050
+            ],
+            [
+              5129,
+              8271
+            ],
+            [
+              3335,
+              8271
+            ],
+            [
+              3335,
+              7140
+            ],
+            [
+              5027,
+              7140
+            ],
+            [
+              5027,
+              7740
+            ],
+            [
+              5898,
+              7740
+            ]
+          ],
+          "fill": "#e2ddd0",
+          "id": "F179"
+        }
+      ],
+      "objects": [
+        {
+          "level": "ground",
+          "x": 2019,
+          "y": 4307,
+          "z": 1600,
+          "w": 600,
+          "d": 150,
+          "ht": 800,
+          "ang": 0,
+          "name": "Elosztószekrény",
+          "color": "#d9c48a",
+          "layer": "Lmv0l44ps",
+          "boardFor": {
+            "type": "board",
+            "level": "ground",
+            "x": 2019,
+            "y": 4307,
+            "h": 2000,
+            "layer": "Lmv0l44ps",
+            "z": 2000,
+            "rw": 600,
+            "rd": 150,
+            "ang": 0,
+            "autoObj": true,
+            "id": "D196",
+            "ref": "EL1",
+            "faceBack": true,
+            "links": [
+              {
+                "p": "P201",
+                "n": "n202"
+              },
+              {
+                "p": "P224",
+                "n": "n225"
+              }
+            ]
+          },
+          "onWall": true,
+          "id": "O197"
+        }
+      ],
+      "roofs": [],
+      "wallNotes": [],
+      "circuits": [
+        {
+          "ref": "A1",
+          "name": "Világítás — lakás (RBX01 → RBX02)",
+          "col": "#1d9e75",
+          "dedicated": false,
+          "mcb": "1C 10A",
+          "members": [
+            "D199",
+            "D200"
+          ],
+          "id": "A293"
+        },
+        {
+          "ref": "A2",
+          "name": "R03 konyha — pult",
+          "col": "#d85a30",
+          "dedicated": false,
+          "mcb": "1C 16A",
+          "members": [
+            "D267",
+            "D268",
+            "D269",
+            "D273"
+          ],
+          "id": "A294"
+        },
+        {
+          "ref": "A3",
+          "name": "R03 konyha — sziget + hűtőfülke",
+          "col": "#7f77dd",
+          "dedicated": false,
+          "mcb": "1C 16A",
+          "members": [
+            "D272",
+            "D270",
+            "D271"
+          ],
+          "id": "A295"
+        },
+        {
+          "ref": "A4",
+          "name": "R06 nappali dugalj",
+          "col": "#d4537e",
+          "dedicated": false,
+          "mcb": "1C 13A",
+          "members": [
+            "D265",
+            "D266"
+          ],
+          "id": "A296"
+        },
+        {
+          "ref": "A5",
+          "name": "R07 szoba dugalj",
+          "col": "#2f79c9",
+          "dedicated": false,
+          "mcb": "1C 13A",
+          "members": [
+            "D261",
+            "D262",
+            "D263",
+            "D264"
+          ],
+          "id": "A297"
+        },
+        {
+          "ref": "A6",
+          "name": "R08 fürdő dugalj",
+          "col": "#b8901f",
+          "dedicated": false,
+          "mcb": "1C 16A",
+          "members": [
+            "D274",
+            "D275",
+            "D276"
+          ],
+          "id": "A298"
+        },
+        {
+          "ref": "A7",
+          "name": "R01 · R04 · R05 általános dugalj",
+          "col": "#16a3b8",
+          "dedicated": false,
+          "mcb": "1C 13A",
+          "members": [
+            "D277",
+            "D323"
+          ],
+          "id": "A299"
+        },
+        {
+          "ref": "A8",
+          "name": "Indukciós főzőlap (2L+2N, két RCBO)",
+          "col": "#8e44ad",
+          "dedicated": true,
+          "mcb": "1P-N C16A",
+          "members": [
+            "D278"
+          ],
+          "id": "A300"
+        },
+        {
+          "ref": "A9",
+          "name": "Sütőtorony",
+          "col": "#5d8a1f",
+          "dedicated": true,
+          "mcb": "1C 16A",
+          "members": [
+            "D279"
+          ],
+          "id": "A301"
+        },
+        {
+          "ref": "A10",
+          "name": "Mosogatógép",
+          "col": "#c0392b",
+          "dedicated": true,
+          "mcb": "1C 16A",
+          "members": [
+            "D280"
+          ],
+          "id": "A302"
+        },
+        {
+          "ref": "A11",
+          "name": "Klíma",
+          "col": "#1d9e75",
+          "dedicated": true,
+          "mcb": "1C 16A",
+          "members": [
+            "D281"
+          ],
+          "id": "A303"
+        },
+        {
+          "ref": "A12",
+          "name": "Mosógép",
+          "col": "#d85a30",
+          "dedicated": true,
+          "mcb": "1C 16A",
+          "members": [
+            "D282"
+          ],
+          "id": "A304"
+        },
+        {
+          "ref": "A13",
+          "name": "AV pozíció (médiafal)",
+          "col": "#7f77dd",
+          "dedicated": true,
+          "mcb": "1C 16A",
+          "members": [
+            "D368"
+          ],
+          "id": "A381"
+        }
+      ],
+      "marks": [
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "bejarat",
+            "portal",
+            "p3"
+          ],
+          "kind": "opening",
+          "op": "B107",
+          "id": "J181"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "portal",
+            "p2"
+          ],
+          "kind": "opening",
+          "op": "B106",
+          "id": "J182"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "portal",
+            "p1"
+          ],
+          "kind": "opening",
+          "op": "B105",
+          "id": "J183"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "portal",
+            "p1"
+          ],
+          "kind": "opening",
+          "op": "B104",
+          "id": "J184"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "portal",
+            "p2"
+          ],
+          "kind": "opening",
+          "op": "B103",
+          "id": "J185"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "portal",
+            "p2"
+          ],
+          "kind": "opening",
+          "op": "B171",
+          "id": "J186"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "portal",
+            "p2"
+          ],
+          "kind": "opening",
+          "op": "B109",
+          "id": "J187"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "redony"
+          ],
+          "kind": "opening",
+          "op": "B112",
+          "id": "J188"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "redony"
+          ],
+          "kind": "opening",
+          "op": "B113",
+          "id": "J189"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "redony"
+          ],
+          "kind": "opening",
+          "op": "B114",
+          "id": "J190"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "none",
+          "tags": [
+            "redony"
+          ],
+          "kind": "opening",
+          "op": "B115",
+          "id": "J191"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "plus",
+          "tags": [
+            "lforma"
+          ],
+          "kind": "side",
+          "wall": "W15",
+          "side": 1,
+          "id": "J192"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "plus",
+          "tags": [
+            "lforma"
+          ],
+          "kind": "side",
+          "wall": "W14",
+          "side": 1,
+          "id": "J193"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "plus",
+          "tags": [
+            "lforma"
+          ],
+          "kind": "side",
+          "wall": "W15",
+          "side": -1,
+          "id": "J194"
+        },
+        {
+          "level": "ground",
+          "layer": "Lmv0l44pr",
+          "pol": "plus",
+          "tags": [
+            "lforma"
+          ],
+          "kind": "side",
+          "wall": "W12",
+          "side": 1,
+          "id": "J195"
+        }
+      ],
+      "traces": [],
+      "runs": [],
+      "noteHide": {}
+    },
+    "building": {
+      "name": "CLA teszt v2",
+      "center": [
+        6000,
+        4000
+      ],
+      "heights": {
+        "basement": 2500,
+        "ground": 2700,
+        "upper": 2700
+      },
+      "walls": {
+        "basement": [],
+        "ground": [
+          {
+            "x0": 10099.533346472266,
+            "y0": 2347.8062963493485,
+            "x1": 10499.533346472266,
+            "y1": 9200.221897290783,
+            "id": "W6"
+          },
+          {
+            "x0": 4978.678577006772,
+            "y0": 9050.221897290783,
+            "x1": 10499.533346472266,
+            "y1": 9350.221897290783,
+            "id": "W7"
+          },
+          {
+            "x0": 4828.678577006772,
+            "y0": 8421.238360395506,
+            "x1": 5128.678577006772,
+            "y1": 9350.221897290783,
+            "id": "W8"
+          },
+          {
+            "x0": 476.41731929428715,
+            "y0": 8271.238360395506,
+            "x1": 5128.678577006772,
+            "y1": 8571.238360395506,
+            "id": "W9"
+          },
+          {
+            "x0": 484,
+            "y0": 2140,
+            "x1": 784,
+            "y1": 8540,
+            "id": "W10"
+          },
+          {
+            "x0": 434,
+            "y0": 2090,
+            "x1": 10434,
+            "y1": 2390,
+            "id": "W11"
+          },
+          {
+            "x0": 5026.725516643533,
+            "y0": 2242.181327090897,
+            "x1": 5326.725516643533,
+            "y1": 7668.660821260518,
+            "id": "W12"
+          },
+          {
+            "x0": 5059,
+            "y0": 7540,
+            "x1": 6209,
+            "y1": 7740,
+            "id": "W13"
+          },
+          {
+            "x0": 5898.130779362794,
+            "y0": 7684.44135927565,
+            "x1": 6198.130779362794,
+            "y1": 9334.44135927565,
+            "id": "W14"
+          },
+          {
+            "x0": 5172.596085085634,
+            "y0": 6215,
+            "x1": 10295.403914914366,
+            "y1": 6465,
+            "id": "W15"
+          },
+          {
+            "x0": 3085.259349741171,
+            "y0": 6940,
+            "x1": 3335.259349741171,
+            "y1": 8421.238360395506,
+            "id": "W17"
+          },
+          {
+            "x0": 3965.0976806723256,
+            "y0": 2242.181327090897,
+            "x1": 4165.097680672326,
+            "y1": 4271.361257862694,
+            "id": "W18"
+          },
+          {
+            "x0": 3940.0976806723256,
+            "y0": 4146.361257862694,
+            "x1": 5176.725516643533,
+            "y1": 4396.361257862694,
+            "id": "W19"
+          },
+          {
+            "x0": 3079.537214416775,
+            "y0": 2242.181327090897,
+            "x1": 3329.537214416775,
+            "y1": 4306.726433434509,
+            "id": "W20"
+          },
+          {
+            "x0": 476.41731929428715,
+            "y0": 4181.726433434509,
+            "x1": 3329.537214416775,
+            "y1": 4431.726433434509,
+            "id": "W21"
+          },
+          {
+            "x0": 2220.4008378549825,
+            "y0": 2242.181327090897,
+            "x1": 2420.4008378549825,
+            "y1": 4306.726433434509,
+            "id": "W22"
+          },
+          {
+            "x0": 3085,
+            "y0": 6940,
+            "x1": 5058.370325129415,
+            "y1": 7140,
+            "id": "W169"
+          },
+          {
+            "x0": 3909,
+            "y0": 7090,
+            "x1": 4159,
+            "y1": 7990,
+            "id": "W170"
+          },
+          {
+            "x0": 4923,
+            "y0": 5334,
+            "x1": 5027,
+            "y1": 6940,
+            "id": "W180",
+            "name": "hűtőfülke előtétfal"
+          }
+        ],
+        "upper": []
+      },
+      "slabs": {},
+      "ghosts": {},
+      "rooms": {
+        "basement": [],
+        "ground": [],
+        "upper": []
+      },
+      "roofs": {}
+    },
+    "layers": [
+      {
+        "id": "L0",
+        "name": "Alap",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "construct"
+      },
+      {
+        "id": "Lmv0l44pr",
+        "name": "B1 · Jelölés",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "mark"
+      },
+      {
+        "id": "Lmv0l44ps",
+        "name": "B1 · Hardver",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "hw"
+      },
+      {
+        "id": "Lmv0l44pt",
+        "name": "B1 · BASE",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "base"
+      },
+      {
+        "id": "Lmv0l44pu",
+        "name": "B1 · Csatorna",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "channel"
+      },
+      {
+        "id": "Lmv0l44pv",
+        "name": "B1 · Erősáram",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:MAINS"
+      },
+      {
+        "id": "Lmv0l44pw",
+        "name": "B1 · Törpefeszültség — A busz",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:LV"
+      },
+      {
+        "id": "Lmv0l44px",
+        "name": "B1 · Biztosított 24 V — B busz",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:BUSB"
+      },
+      {
+        "id": "Lmv0l44py",
+        "name": "B1 · Vezérlés (BRIDGE_LINK)",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:CONTROL"
+      },
+      {
+        "id": "Lmv0l44pz",
+        "name": "B1 · Adat / PoE",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:DATA"
+      },
+      {
+        "id": "Lmv0l44q0",
+        "name": "B1 · Érzékelők",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:SENSOR"
+      },
+      {
+        "id": "Lmv0l44q1",
+        "name": "B1 · Rádió — lefedettség",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:RF"
+      },
+      {
+        "id": "Lmv0l44q2",
+        "name": "B1 · Kezelőfelületek",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:HMI"
+      },
+      {
+        "id": "Lmv0l44q3",
+        "name": "B1 · Média és hang",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:MEDIA"
+      },
+      {
+        "id": "Lmv0l44q4",
+        "name": "B1 · USB",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:USB"
+      },
+      {
+        "id": "Lmv0l44q5",
+        "name": "B1 · Biztonságtechnika",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "sys:SECURITY"
+      },
+      {
+        "id": "Lmv0l44q6",
+        "name": "B1 · ARM pályák",
+        "visible": true,
+        "cats": {
+          "path": true,
+          "socket": true,
+          "switch": true,
+          "light": true,
+          "device": true,
+          "wall": true,
+          "door": true,
+          "window": true,
+          "stairs": true,
+          "object": true,
+          "floor": true,
+          "roof": true,
+          "note": true,
+          "cable": true,
+          "mark": true,
+          "trace": true
+        },
+        "stack": "Smv0l44pr",
+        "role": "arm"
+      }
+    ],
+    "stacks": [
+      {
+        "id": "Smv0l44pr",
+        "name": "CLA teszt",
+        "kind": "bridge",
+        "scale": "S-C",
+        "layers": [
+          "L0",
+          "Lmv0l44pr",
+          "Lmv0l44ps",
+          "Lmv0l44pt",
+          "Lmv0l44pu",
+          "Lmv0l44pv",
+          "Lmv0l44pw",
+          "Lmv0l44px",
+          "Lmv0l44py",
+          "Lmv0l44pz",
+          "Lmv0l44q0",
+          "Lmv0l44q1",
+          "Lmv0l44q2",
+          "Lmv0l44q3",
+          "Lmv0l44q4",
+          "Lmv0l44q5",
+          "Lmv0l44q6"
+        ],
+        "phase": 1
+      }
+    ],
+    "panelLoc": {
+      "projektek": "off",
+      "tools": "left",
+      "layers": "off",
+      "activelevelnewitem": "left",
+      "pathplyaelsdleges": "left",
+      "cablemsodlagos": "off",
+      "device": "off",
+      "routing": "left",
+      "ramkrk": "off",
+      "dokumentci": "off",
+      "objects": "off",
+      "buildsnapstowall": "off",
+      "buildinglayout": "off",
+      "showlevelsheightmm": "off",
+      "heightguidelines": "right",
+      "floorlabels": "off",
+      "view": "off",
+      "cabletotalsm": "off",
+      "devicesdb": "off",
+      "rajnlatbom": "right"
+    },
+    "refB": []
+  }
+}

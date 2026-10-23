@@ -44,7 +44,7 @@ also exposed as an MCP server; strict cost caps; an idle render governor.
    telemetry. Contacts panel = "jobs within 30 km" for route planning.
 4. **Five-word HUD.** A one-line summary that rewrites itself as you move: `3 MUNKA KÉSIK ·
    2 AJÁNLAT VÁR`.
-5. **Analyst query bar, offline.** "melyik ajánlat vár 7 napja?", "P33 anyagköltség" — structured
+5. **Analyst query bar, offline.** "melyik ajánlat vár 7 napja?", "CLA anyagköltség" — structured
    queries over the data already loaded (Inventory, quotes, plans), results bracketed on the board.
 6. **Monday briefing as a Director tour.** An authored sequence of views for the weekly meeting,
    played on the office TV or stepped with the **Planner CYD** as a remote (GEV's camera verbs).

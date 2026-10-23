@@ -490,12 +490,29 @@ const ITEMS = [
    note:'Az L7 pakk terhelését ez viszi, nem a forrasztott cellaláb. A Bővítés fülön már csak JST + biztosítéktartó hiányzik.'},
 
   // ---- WIRING / CONSUMABLES ----
-  {id:'hdr_str', role:'consumable', name:'Színes tüskesor 40p (5 csík)', qty:2, logic:null, specs:'egyenes 2,54mm', buses:[]},
+  {id:'hdr_str', role:'consumable', name:'Színes tüskesor 40p (5 csík)', qty:3, logic:null, specs:'egyenes 2,54mm', buses:[]},
   {id:'hdr_ra', role:'consumable', name:'Tüskesor 40p 90°', qty:2, logic:null, specs:'', buses:[]},
   {id:'dupmf', role:'consumable', name:'Dupont M-F 20cm ×40', qty:1, logic:null, specs:'', buses:[]},
   {id:'dupff', role:'consumable', name:'Dupont F-F 20cm ×40', qty:1, logic:null, specs:'', buses:[]},
   {id:'bbjmp', role:'consumable', name:'Breadboard jumper szett 65db', qty:1, logic:null, specs:'merev', buses:[]},
   {id:'heat', role:'consumable', name:'Zsugorcső 328db', qty:1, logic:null, specs:'', buses:[]},
+  // ---- Modulshop rendelés 2026-10-18 (Board Console panel B, 1. kör · 6 960 Ft − 960 hűségpont = 6 000 Ft, SZ szám a számláról pótlandó) ----
+  {id:'nyak915', role:'carrier', name:'Próba NYÁK forrszemes 9×15 cm', qty:3, logic:null, specs:'cikksz. 10-5-3', buses:[], note:'Panel B (150×80-ra vágva), Addon lap, 1 tartalék.'},
+  {id:'fhdr40', role:'connector', name:'Tüskesor aljzat (anya) 1×40 egyenes', qty:5, logic:null, specs:'tördelhető · cikksz. 10-7-45', buses:[], note:'Panel B kötegfejek: 17 + 19 pólusra vágva a breakout S oszlopokra.'},
+  {id:'rahdr40', role:'connector', name:'Hajlított lábas anya sor 1×40', qty:2, logic:null, specs:'cikksz. YXS1716 1x40P', buses:[], note:'Panel élcsatlakozók.'},
+  {id:'fhdr2', role:'connector', name:'Anya fejléc 2,54mm 2-pin (5db/cs)', qty:1, logic:null, specs:'cikksz. 10-7-99', buses:[], note:'Házi jumper (rövidzár-hidak): 2 tüske közé forrasztott drót.'},
+  {id:'kf128_2', role:'connector', name:'KF128 2P csavaros sorkapocs 2,54mm', qty:2, logic:null, specs:'cikksz. YXE850-2P-2.54', buses:[], note:'Panel B 5V / GND bemenet.'},
+  {id:'ss12d00', role:'consumable', name:'Toló kapcsoló mini SS12D00 (10db/cs)', qty:1, logic:null, specs:'3 láb, 3mm · cikksz. 10-7-121', buses:[], note:'Jumperek helyett: tápválasztó, USB-H választó.'},
+  {id:'tact6', role:'consumable', name:'Tactile nyomógomb 6×6×8 mm (10db/cs)', qty:1, logic:null, specs:'4 láb · cikksz. 10-7-119', buses:[]},
+  {id:'res4k7', role:'consumable', name:'Ellenállás 4,7 kΩ 1/4W metal film (10db/cs)', qty:1, logic:null, specs:'cikksz. 10-4-21', buses:[], note:'I2C / 1-Wire felhúzók.'},
+  {id:'res10k', role:'consumable', name:'Ellenállás 10 kΩ 1/4W metal film (10db/cs)', qty:1, logic:null, specs:'cikksz. 10-4-8', buses:[], note:'EN / BOOT / gomb felhúzók.'},
+  {id:'awg24bk', role:'consumable', name:'Vezeték 24 AWG fekete 9,5 m', qty:1, logic:null, specs:'ónozott sodrott · cikksz. 10-7-82', buses:[], note:'Panel hátoldal + GND.'},
+  {id:'awg24bl', role:'consumable', name:'Vezeték 24 AWG kék 9,5 m', qty:1, logic:null, specs:'ónozott sodrott · cikksz. 10-7-84', buses:[], note:'Kötegek jelvezetékei.'},
+  {id:'dupff10', role:'consumable', name:'Dupont F-F 10cm ×40', qty:1, logic:null, specs:'cikksz. 9-1-32', buses:[]},
+  {id:'dupmf10', role:'consumable', name:'Dupont M-F 10cm ×40', qty:1, logic:null, specs:'cikksz. 9-1-33', buses:[]},
+  {id:'dupmm10', role:'consumable', name:'Dupont M-M 10cm ×40', qty:1, logic:null, specs:'cikksz. 9-1-34', buses:[]},
+  {id:'wick15', role:'tool', name:'Ónszívó szalag 1,5mm × 1,5m', qty:1, logic:null, specs:'cikksz. 14-2-16', buses:[]},
+  {id:'ws2812r8', role:'peripheral', name:'WS2812 8 LED-es kör', qty:1, logic:null, specs:'5V, 1 adatvonal · cikksz. 10-3-19', buses:[{t:'GPIO',r:'device'}], note:'LED-1 port élő teszt a Board Console-lal.'},
   {id:'breadboard', role:'carrier', name:'Breadboard 400 lyukas', qty:2, logic:null, fp:'breadboard', specs:'cikksz. 3-1-23 (a 400-as: figyelj a homorúságra)', buses:[]},
 ];
 const VARIANTS = [
@@ -634,7 +651,7 @@ const VARIANTS = [
   {
     group:'A) Enkóder-pult / HID DECK vonal',
     name:'NFC munkakártyák — kártyaérintésre betöltött munka',
-    tagline:'Egy „P33" kártyát a pultra érintve megnyílik a P33 Planner-fájl, az árazási mappa, és a pult a munka billentyűrétegére vált.',
+    tagline:'Egy „CLA" kártyát a pultra érintve megnyílik a CLA Planner-fájl, az árazási mappa, és a pult a munka billentyűrétegére vált.',
     layout:[
       'MFRC-522 olvasó a pult előlapja mögött (a műanyagon átolvas).',
       'Kártya UID → profil a pult NVS-ében; a PC-script megnyitja a hozzárendelt fájlokat.'
@@ -999,7 +1016,7 @@ const CIKK_META = {
  "2-1-22":{sz:"SZ11580",date:"2026-08-26",ft:450},"2-2-22":{sz:"SZ11580",date:"2026-08-26",ft:450},
  "4-1-34":{sz:"SZ11580",date:"2026-08-26",ft:2200},"3-2-24":{sz:"SZ11580",date:"2026-08-26",ft:1500},
  "2-3-23":{sz:"SZ11580",date:"2026-08-26",ft:580},"3-1-38":{sz:"SZ11580",date:"2026-08-26",ft:2400},
- "YXA166":{sz:"SZ11580",date:"2026-08-26",ft:400},"10-7-47":{sz:"SZ11580",date:"2026-08-26",ft:200},
+ "YXA166":{sz:"SZ11580",date:"2026-08-26",ft:400},"10-7-47":{sz:"SZ11580 / rendelés 2026-10-18",date:"2026-08-26 / 2026-10-18",ft:200},
  "10-7-65":{sz:"SZ11580",date:"2026-08-26",ft:50},"9-1-29":{sz:"SZ11580",date:"2026-08-26",ft:500},
  "9-1-28":{sz:"SZ11580",date:"2026-08-26",ft:500},"9-1-16":{sz:"SZ11580",date:"2026-08-26",ft:500},
  "9-1-13":{sz:"SZ11580",date:"2026-08-26",ft:3000},"3-5-15":{sz:"SZ11580",date:"2026-08-26",ft:90},
@@ -1059,10 +1076,13 @@ const CIKK_META = {
  "3-1-54":{sz:"SZ13866",date:"2026-10-02",ft:550},
  /* SZ14217 · 2026-10-07 — 13 800 Ft */
  "1-2-4":{sz:"SZ14217",date:"2026-10-07",ft:1000},"10-7-107":{sz:"SZ14217",date:"2026-10-07",ft:150},
- "6-4-36":{sz:"SZ14217",date:"2026-10-07",ft:2200},"3-2-18":{sz:"SZ14217",date:"2026-10-07",ft:1100}
+ "6-4-36":{sz:"SZ14217",date:"2026-10-07",ft:2200},"3-2-18":{sz:"SZ14217",date:"2026-10-07",ft:1100},
+ /* rendelés 2026-10-18 · 6 960 Ft (− 960 hűségpont = 6 000 Ft), személyes átvétel; SZ szám pótlandó */
+ "10-5-3":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:550},"10-7-45":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:80},"YXS1716-1x40P":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:150},"10-7-99":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:100},"YXE850-2P-2.54":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:110},"10-7-121":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:200},"10-7-119":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:250},"10-4-21":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:50},"10-4-8":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:50},"10-7-82":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:570},"10-7-84":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:570},"9-1-32":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:450},"9-1-33":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:450},"9-1-34":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:450},"14-2-16":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:600},"10-3-19":{sz:"rendelés 2026-10-18",date:"2026-10-18",ft:450}
 };
 /* fallback cikkszám for early items whose specs lack it */
 const ID_TO_CIKK = {
+ rahdr40:"YXS1716-1x40P",kf128_2:"YXE850-2P-2.54",
  ch341a:"3-1-61",lm386:"5-1-49",abuzz:"3-1-10",usbrs485:"3-5-9",cp2102:"2-2-20",pn532:"2-1-18",
  mfrc522:"2-1-17",pcf8575:"2-2-25",pir:"2-1-10",ch340e:"2-2-27",ch343p:"2-2-28",ant24:"2-1-22",
  at24c256:"2-2-22",oled:"4-1-34",nrf905:"3-2-24",lx06la:"2-3-23",stlink:"3-1-38",shifter:"2-2-32",

@@ -244,7 +244,7 @@ the thing that lets the BASE layers be physically split without redesign.
 | Ref | Open |
 |---|---|
 | **D1** | Room list — AP density, port count and the Zigbee/Thread route map all need it |
-| **U22** | P33's switch and AP schedule, which turns §2 from a sizing rule into a bill of materials. **No camera schedule** — D15 fits none, though positions are provisioned (STD-001 §4.1) |
+| **U22** | CLA's switch and AP schedule, which turns §2 from a sizing rule into a bill of materials. **No camera schedule** — D15 fits none, though positions are provisioned (STD-001 §4.1) |
 | — | The §4 duty cycles and §3.3 channel availability need checking against current ETSI and national allocation before any commercial use |
 | — | Whether the Zigbee coordinator sits at NET or in the consumer unit follows from **C2** per house (F06), not from this document |
 

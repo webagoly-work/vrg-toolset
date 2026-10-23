@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 // Bakes plans into a copy of the build, so the file opens straight onto them (06b preloadBoot / preOffer).
 //
-//   node tools/make-preload.js            -> dist/varler_planner_P33.html with P33 teszt v1 + v2
+//   node tools/make-preload.js            -> dist/varler_planner_CLA.html with CLA teszt v1 + v2
 //
-// The P33 plans are trimmed for drawing the routing by hand (the user, 2026-10-10): the blueprint, the marks and the
-// endpoints stay; of the hardware ONLY the Elosztószekrény stays (its cabinet defaults in 05x are P33's own,
+// The CLA plans are trimmed for drawing the routing by hand (the user, 2026-10-10): the blueprint, the marks and the
+// endpoints stay; of the hardware ONLY the Elosztószekrény stays (its cabinet defaults in 05x are CLA's own,
 // BUILD-001 §14). BASE, RBXs, ARM T-boxes, the channel routes and everything that pointed at them go. The ceiling is
 // the user's 2850 (IDEA-003 §2.3; the test files still say 2700), and the stack gets the Klaszterpontok and Extrák
-// layers it predates. Both get the client sheet's furniture and the upper floor (p33-furniture.js furnish()).
+// layers it predates. Both get the client sheet's furniture and the upper floor (cla-furniture.js furnish()).
 // The source files in Calculator/ are not touched.
 'use strict';
 const fs = require('fs'), path = require('path');
-const { furnish } = require('./p33-furniture');   // the client sheet's furniture + the upper floor (tools/p33-furniture.js)
+const { furnish } = require('./cla-furniture');   // the client sheet's furniture + the upper floor (tools/cla-furniture.js)
 const ROOT = path.resolve(__dirname, '..'), REPO = path.resolve(ROOT, '..', '..', '..');
 const DIST = path.join(ROOT, 'dist', 'varler_planner.html');
-const OUT = path.join(ROOT, 'dist', 'varler_planner_P33.html');
+const OUT = path.join(ROOT, 'dist', 'varler_planner_CLA.html');
 const PLANS = [
-  { file: 'Calculator/P33-teszt_v1.vplan.json', name: 'P33 v1 — ügyfél végpontjai · csak Elosztó',
+  { file: 'Calculator/CLA-teszt_v1.vplan.json', name: 'CLA v1 — ügyfél végpontjai · csak Elosztó',
     note: 'Szerkezet, jelölések, az ügyfél 55 végpontja és az eredeti tervlap bútorai (emelettel); a hardverből csak az Elosztószekrény. A BASE, az RBX-ek, a portálok és az útvonalak a tieid.' },
-  { file: 'Calculator/P33-teszt_v2.vplan.json', name: 'P33 v2 — minden réteg · csak Elosztó',
+  { file: 'Calculator/CLA-teszt_v2.vplan.json', name: 'CLA v2 — minden réteg · csak Elosztó',
     note: 'Minden rendszerréteg végpontjai (124) és az eredeti tervlap bútorai (emelettel); a hardverből csak az Elosztószekrény. Rajzold meg a BASE-t, az RBX-eket, a portálokat, a csatornát és az ezüst síneket.' }];
 const DROP_TYPES = ['base', 'rbx', 'junction', 'meter', 'entry', 'ssc', 'portal', 'cluster'];
 const CEIL = 2850;
@@ -68,6 +68,6 @@ const tag = '<script>window.VRG_PRELOAD=' + JSON.stringify(list).replace(/<\/scr
 const at = html.indexOf('<script');
 if (at < 0) { console.error('no <script> in the build'); process.exit(1); }
 html = html.slice(0, at) + tag + html.slice(at);
-html = html.replace(/<title>([^<]*)<\/title>/, (m, t) => '<title>' + t + ' — P33 előtöltve</title>');
+html = html.replace(/<title>([^<]*)<\/title>/, (m, t) => '<title>' + t + ' — CLA előtöltve</title>');
 fs.writeFileSync(OUT, html);
 console.log('wrote ' + path.relative(ROOT, OUT) + ' (' + Math.round(html.length / 1024) + ' kB)');

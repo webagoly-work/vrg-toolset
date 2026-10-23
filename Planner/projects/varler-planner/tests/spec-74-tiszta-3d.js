@@ -1,6 +1,6 @@
 // Views V4, slice 2: "Tiszta axo" as a style in the 3D view (docs/views/DECISIONS.md D-V4-1 A).
 //
-// Fixture: the committed P33 v2 furnished plan (Calculator/P33-teszt_v2_butor.vplan.json).
+// Fixture: the committed CLA v2 furnished plan (Calculator/CLA-teszt_v2_butor.vplan.json).
 // What must hold:
 //   * the scene layer is the view core's drawing of the active level through the LIVE camera:
 //     every core point sits exactly on planToBase(), at any view scale, so overlay + hit-testing stay valid;
@@ -14,7 +14,7 @@ function findPlanner(){
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2_butor.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2_butor.vplan.json');
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;
 setTimeout(()=>{

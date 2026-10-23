@@ -1,7 +1,7 @@
 # WP-M2 — Circuit presets: Elosztó list, szerelvénydoboz menu, rooms, export / import
 
 Status: todo · catalogue accepted 2026-10-10 · Wave M · Depends: M1 (soft) ·
-Size: L (~280 lines) · Spec: 73 · Answers: M06 = C curve default + NV4 sample + klíma 1–2 expected ·
+Size: L (~280 lines) · Spec: 73 · Answers: M06 = C curve default + CLANV4 sample + klíma 1–2 expected ·
 M07 = A with Esc → B · M08 = A
 
 ## Goal
@@ -45,7 +45,7 @@ and leaves (a) alone; the picture-2 panel gets one line pointing to the new list
      same mechanism as `cktExport`, 05j line 170); `📥 Import` reads that file and **merges** by `key`
      (asks on conflicts: keep / replace — a conflict is same key **and** same name; same key with a
      different name is a second circuit of that type, e.g. three klíma);
-   - `Minta betöltése` loads a bundled sample set — the NV4 one (`samples/NV4-minta…json`, inlined at
+   - `Minta betöltése` loads a bundled sample set — the CLANV4 one (`samples/CLANV4-minta…json`, inlined at
      build time as a constant) — through the same import path.
 3. **Szerelvénydoboz right-click** (device `type==='box'`, and any endpoint without a circuit):
    `⚡ Áramkör ehhez…` submenu: first the active circuits whose `rooms` include this box's room (or
@@ -79,9 +79,9 @@ and leaves (a) alone; the picture-2 panel gets one line pointing to the new list
 6. Deactivating a circuit with members asks (stub `confirm`), keeps the record, releases the members.
 7. Box menu → choose → Esc at once → the box is not a member, the circuit is active with 0 members;
    choose → click one more box → Esc → both stay members.
-8. Import `samples/NV4-minta.vrg-elo-presets.json` → 13 rows, `vil` parses as `1B 10A`; three
+8. Import `samples/CLANV4-minta.vrg-elo-presets.json` → 13 rows, `vil` parses as `1B 10A`; three
    `klima` rows active → no klíma reminder; one `klima` → none; zero → the `⚠ alapkör` line.
-9. Duplicate keys in an import (NV4 has three `szobakor` and three `klima`) are kept as separate rows
+9. Duplicate keys in an import (CLANV4 has three `szobakor` and three `klima`) are kept as separate rows
    (merge-by-key applies only to rows whose key **and** name match).
 
 ## Verifier focus

@@ -1,0 +1,9 @@
+{
+  "_note": "Copy to anonymise.map.json (gitignored) and fill in. 'to' must be identifier-safe ([A-Za-z0-9_]); the lower-case twin is derived.",
+  "codes": [
+    { "from": "<CODE>", "to": "CLA" }
+  ],
+  "literals": [
+    { "from": "<literal text>", "to": "<replacement>" }
+  ]
+}

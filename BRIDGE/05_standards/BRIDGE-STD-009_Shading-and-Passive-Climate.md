@@ -6,11 +6,11 @@
 **Origin:** feature 4 of the 2026-10-10 proposals, accepted as **K37** ("write it up")
 **Scope:** how motorised shutters are used as climate equipment. When they close for heat, when
 they open for free heat, how they defer to people, and how they work alongside floor heating,
-the klíma and the lighting. P33 is the worked instance in §9.
+the klíma and the lighting. CLA is the worked instance in §9.
 
 > **Figures marked *reasoned* are typical values or calculations, not measurements.** The sun
 > geometry in §1.2 is calculated for Budapest. The thresholds in §2 are starting values to be tuned
-> at commissioning. Glazing areas for P33 are not yet known.
+> at commissioning. Glazing areas for CLA are not yet known.
 
 ---
 
@@ -206,7 +206,7 @@ product's wind class (EN 13659):
 - A shutter that is OPEN or CLOSED stays as it is.
 - SLIT counts as "down" and stays.
 
-External venetian blinds and awnings are the opposite: they retract. That case is not in P33 and
+External venetian blinds and awnings are the opposite: they retract. That case is not in CLA and
 will be when the terrace (R12) gets an awning.
 
 ### 5.2 Frost
@@ -263,7 +263,7 @@ itself is a separate document**, waiting on K42 (§10).
 ### 6.3 Night cooling
 
 On a summer evening, when the outdoor temperature falls **≥ 2 K below** a warm room (above upper
-comfort − 1 K), the room's NTL-ST shows **blue, slow breathe**: open a window. Windows in P33 are
+comfort − 1 K), the room's NTL-ST shows **blue, slow breathe**: open a window. Windows in CLA are
 manual, so BRIDGE suggests and the person acts. When a frame contact reports the window open, the
 shutter goes to **SLIT**: air through, view blocked, and a visible deterrent. The shutter closes
 again at the next pre-emptive time.
@@ -346,7 +346,7 @@ wall.
 
 ---
 
-## 9. P33 — the worked instance
+## 9. CLA — the worked instance
 
 ### 9.1 Two opposite façades
 
@@ -359,7 +359,7 @@ The flat runs through the building, so its glazing sits on **two opposite façad
 | **Box** | RBX06 (R06, R07) · RBX09 (R09, later) | RBX03 |
 
 **The compass bearing is still open (K43).** "The glazing faces right" places it on the drawing; in
-the BRIDGE sheets façade A is on the left, and in the 180°-turned frame of the P33 test plans it is
+the BRIDGE sheets façade A is on the left, and in the 180°-turned frame of the CLA test plans it is
 on the right. Shading needs the **compass** direction. Because the façades are opposite, one number
 settles both:
 
@@ -407,10 +407,10 @@ temperature sensor** (Zigbee or Thread, battery) placed high on the void wall ne
 R03's façade wall. That is a **P2 group switch** wired to RBX03's inputs: all façade-B shutters,
 plus individual keys. It is an ordinary SWI endpoint at the 1100 mm switch height.
 
-### 9.5 The mast at P33
+### 9.5 The mast at CLA
 
 Final position: **R12 terrace**, the only place with open sky. Its sensor ARM comes from RBX09 with
-the upper floor, so it is provisioned with that work and needs nothing now. **Until then P33 runs
+the upper floor, so it is provisioned with that work and needs nothing now. **Until then CLA runs
 on tiers 1 and 2** (§8.1), which is enough.
 
 ### 9.6 Floor heating is coming (K42)

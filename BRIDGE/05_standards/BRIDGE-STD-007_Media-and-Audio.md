@@ -400,7 +400,7 @@ any local inference live here or on a dedicated compute node — **never on COMP
 | **H10** | **Where the Snapcast server runs — deliberately left open.** On MEDIA it shares CPU and disk with transcoding and continuous NVR writes, and the symptom of getting it wrong is the follow-me layer stuttering whenever someone else watches something: intermittent, correlated, and unpleasant to diagnose after the fact. **This is a measurement, not an argument.** Run the worst transcode the house will actually see, concurrent with multi-room audio, and listen. If it holds you have saved a node and its maintenance; if it stutters you have learned it before it was load-bearing |
 | **H12** | Voice assistant satellites deferred — **reserve the ceiling position and the conduit**, which §6.2 and the SENSOR ARM already provide |
 | **D1** | Room list — speaker positions, screen positions and cable lengths all follow from it |
-| **U22** | P33's AV schedule: which rooms get screens, which gets the AV position, and the measured cable runs |
+| **U22** | CLA's AV schedule: which rooms get screens, which gets the AV position, and the measured cable runs |
 | — | The AV position's **envelope** — ventilation, a dedicated 230 V circuit, an HDMI and eARC path. Now recorded in **STD-001 §4.1** as a named position rather than a RoomBox class, but it still wants a drawn enclosure |
 | — | 5.1 is specified and the 7.1 provision is pulled (§2.4). The processor choice can wait; **the rear ARMs cannot** |
 

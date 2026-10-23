@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 680 410" role="img"><title>Q02 board layout options</title><desc>Option A: departments as columns with layers hanging down and a roadmap below. Option B: department rows with layers in a side drawer.</desc>
+<style>
+text{font-family:Segoe UI,Arial,sans-serif;fill:#2C2C2A;stroke:none}
+.th{font-size:14px;font-weight:600}.t{font-size:14px}.ts{font-size:12px;fill:#5F5E5A}
+.c-teal{fill:#E1F5EE;stroke:#0F6E56}.c-blue{fill:#E6F1FB;stroke:#185FA5}.c-purple{fill:#EEEDFE;stroke:#534AB7}
+.c-gray{fill:#F1EFE8;stroke:#5F5E5A}.c-amber{fill:#FAEEDA;stroke:#854F0B}.c-red{fill:#FCEBEB;stroke:#A32D2D}
+.box{fill:#FFFFFF;stroke:#B4B2A9}.arr{stroke:#5F5E5A;stroke-width:1.2;fill:none}
+</style>
+
+<text class="th" x="30" y="28">A — oszlopok a részlegek alatt (ajánlott)</text>
+<text class="th" x="355" y="28">B — részleg sorok + oldalsó fiók</text>
+<rect class="box" x="20" y="40" width="315" height="300" rx="10" stroke-width="0.5"/>
+<rect class="box" x="345" y="40" width="315" height="300" rx="10" stroke-width="0.5"/>
+<rect class="c-gray" x="147" y="54" width="56" height="24" rx="4" stroke-width="0.5"/>
+<text class="th" x="175" y="66" text-anchor="middle" dominant-baseline="central">VRG</text>
+<path class="arr" d="M175 78 L175 88 L77 88 L77 98 M175 88 L175 98 M175 88 L273 88 L273 98"/>
+<rect class="c-amber" x="36" y="98" width="82" height="22" rx="4" stroke-width="0.5"/>
+<rect class="c-amber" x="134" y="98" width="82" height="22" rx="4" stroke-width="0.5"/>
+<rect class="c-amber" x="232" y="98" width="82" height="22" rx="4" stroke-width="0.5"/>
+<text class="ts" x="77" y="109" text-anchor="middle" dominant-baseline="central">Tervezés</text>
+<text class="ts" x="175" y="109" text-anchor="middle" dominant-baseline="central">Kalkuláció</text>
+<text class="ts" x="273" y="109" text-anchor="middle" dominant-baseline="central">Beszerzés</text>
+<path class="arr" d="M59 120 L59 134 M101 120 L101 134 M157 120 L157 134 M199 120 L199 134 M255 120 L255 134 M297 120 L297 134"/>
+<rect class="c-teal" x="42" y="134" width="34" height="20" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="84" y="134" width="34" height="20" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="140" y="134" width="34" height="20" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="182" y="134" width="34" height="20" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="238" y="134" width="34" height="20" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="280" y="134" width="34" height="20" rx="3" stroke-width="0.5"/>
+<path class="arr" d="M59 154 L59 164 M59 178 L59 192 M59 206 L59 220 M59 234 L59 276 M101 154 L101 164 M101 178 L101 192 M101 206 L101 220 M101 234 L101 248 M157 154 L157 164 M157 178 L157 192 M157 206 L157 220 M157 234 L157 262 M199 154 L199 164 M199 178 L199 192 M199 206 L199 220 M199 234 L199 276 M255 154 L255 164 M255 178 L255 192 M255 206 L255 220 M255 234 L255 248 M297 154 L297 164 M297 178 L297 192 M297 206 L297 220 M297 234 L297 262"/>
+<rect class="c-blue" x="52" y="164" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-blue" x="94" y="164" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-blue" x="150" y="164" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-blue" x="192" y="164" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-blue" x="248" y="164" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-blue" x="290" y="164" width="14" height="14" rx="2" stroke-width="0.5"/>
+<rect class="c-purple" x="52" y="192" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-purple" x="94" y="192" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-purple" x="150" y="192" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-purple" x="192" y="192" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-purple" x="248" y="192" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-purple" x="290" y="192" width="14" height="14" rx="2" stroke-width="0.5"/>
+<rect class="c-gray" x="52" y="220" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-gray" x="94" y="220" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-gray" x="150" y="220" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-gray" x="192" y="220" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-gray" x="248" y="220" width="14" height="14" rx="2" stroke-width="0.5"/><rect class="c-gray" x="290" y="220" width="14" height="14" rx="2" stroke-width="0.5"/>
+<g fill="#854F0B"><circle cx="59" cy="248" r="3"/><circle cx="59" cy="262" r="3"/><circle cx="59" cy="276" r="3"/><circle cx="101" cy="248" r="3"/><circle cx="157" cy="248" r="3"/><circle cx="157" cy="262" r="3"/><circle cx="199" cy="248" r="3"/><circle cx="199" cy="262" r="3"/><circle cx="199" cy="276" r="3"/><circle cx="255" cy="248" r="3"/><circle cx="297" cy="248" r="3"/><circle cx="297" cy="262" r="3"/></g>
+<text class="ts" x="30" y="318">az ütemterv minden oszlop alatt lefelé nő</text>
+<rect class="c-gray" x="360" y="54" width="50" height="24" rx="4" stroke-width="0.5"/>
+<text class="th" x="385" y="66" text-anchor="middle" dominant-baseline="central">VRG</text>
+<path class="arr" d="M385 78 L385 190 M385 110 L398 110 M385 150 L398 150 M385 190 L398 190"/>
+<rect class="c-amber" x="398" y="98" width="76" height="24" rx="4" stroke-width="0.5"/>
+<rect class="c-amber" x="398" y="138" width="76" height="24" rx="4" stroke-width="0.5"/>
+<rect class="c-amber" x="398" y="178" width="76" height="24" rx="4" stroke-width="0.5"/>
+<text class="ts" x="436" y="110" text-anchor="middle" dominant-baseline="central">Tervezés</text>
+<text class="ts" x="436" y="150" text-anchor="middle" dominant-baseline="central">Kalkuláció</text>
+<text class="ts" x="436" y="190" text-anchor="middle" dominant-baseline="central">Beszerzés</text>
+<rect class="c-teal" x="482" y="98" width="30" height="24" rx="3" stroke-width="0.5"/><rect class="c-teal" x="516" y="98" width="30" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="482" y="138" width="30" height="24" rx="3" stroke-width="0.5"/><rect class="c-teal" x="516" y="138" width="30" height="24" rx="3" stroke-width="0.5"/><rect class="c-teal" x="550" y="138" width="30" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="482" y="178" width="30" height="24" rx="3" stroke-width="0.5"/><rect class="c-teal" x="516" y="178" width="30" height="24" rx="3" stroke-width="0.5"/>
+<path class="arr" d="M580 150 L592 150" stroke-dasharray="3 3"/>
+<rect class="c-purple" x="592" y="94" width="58" height="120" rx="6" stroke-width="0.5" stroke-dasharray="4 3"/>
+<text class="ts" x="621" y="146" text-anchor="middle" dominant-baseline="central">rétegek</text>
+<text class="ts" x="621" y="164" text-anchor="middle" dominant-baseline="central">fiókban</text>
+<text class="ts" x="355" y="250">kevésbé széles, de az ütemterv</text>
+<text class="ts" x="355" y="268">nem látszik a táblán</text>
+<rect class="c-amber" x="30" y="356" width="12" height="12" rx="2" stroke-width="0.5"/><text class="ts" x="48" y="366">részleg</text>
+<rect class="c-teal" x="120" y="356" width="12" height="12" rx="2" stroke-width="0.5"/><text class="ts" x="138" y="366">program (L1)</text>
+<rect class="c-blue" x="240" y="356" width="12" height="12" rx="2" stroke-width="0.5"/><text class="ts" x="258" y="366">közös mappa (L2)</text>
+<rect class="c-purple" x="390" y="356" width="12" height="12" rx="2" stroke-width="0.5"/><text class="ts" x="408" y="366">AI dokumentum (L3)</text>
+<rect class="c-gray" x="30" y="380" width="12" height="12" rx="2" stroke-width="0.5"/><text class="ts" x="48" y="390">Git (L4)</text>
+<circle cx="126" cy="386" r="3" fill="#854F0B"/><text class="ts" x="138" y="390">ütemterv</text>
+</svg>

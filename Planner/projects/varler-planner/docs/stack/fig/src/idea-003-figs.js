@@ -3,10 +3,10 @@
 //
 //   node docs/stack/fig/src/idea-003-figs.js
 //     -> docs/stack/fig/IDEA-003_F1_door-elevation.svg   one door, both faces, slots L0…H2
-//     -> docs/stack/fig/IDEA-003_F2_room-pattern.svg     P33 R06 + R07, the L pattern, from the test plan
+//     -> docs/stack/fig/IDEA-003_F2_room-pattern.svg     CLA R06 + R07, the L pattern, from the test plan
 //     -> prints the derived portal geometry (hinge jamb, swing face, H0 fit) as JSON on stdout
 //
-// F2 reads the geometry from Calculator/P33-teszt_v2.vplan.json (walls, floors, openings, the RBX),
+// F2 reads the geometry from Calculator/CLA-teszt_v2.vplan.json (walls, floors, openings, the RBX),
 // so the plan is the model's, not a redraw. Door handing follows 04-render.js bpDoorSymbol():
 // variant bit1 = hinge at the far jamb, bit0 = swing toward +perpendicular.
 //
@@ -26,7 +26,7 @@ const STYLE = {
   t1: 13, t2: 11,                                                  // the only two text sizes
 };
 const ROOT = path.resolve(__dirname, '..', '..', '..', '..');       // varler-planner
-const PLAN = path.resolve(ROOT, '..', '..', '..', 'Calculator', 'P33-teszt_v2.vplan.json');
+const PLAN = path.resolve(ROOT, '..', '..', '..', 'Calculator', 'CLA-teszt_v2.vplan.json');
 const OUT = path.resolve(__dirname, '..');
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -50,7 +50,7 @@ function figElevation() {
   let s = svgOpen(W, H, 'IDEA-003 F1 — SmartFrame door elevation, both faces',
     'One interior door seen from both rooms. Slots L0 to H2, the DIN installation zones, the BRIDGE hinge zone, the lintel, the Silver Rail and the channel.');
   s += `<defs>${hatch('lin', STYLE.lintel)}${hatch('leafh', '#d9cfb9')}</defs>`;
-  s += T(40, 34, 'IDEA-003 · F1 — one door, both faces (P33 reference ceiling 2850)', { size: STYLE.t1, weight: 600 });
+  s += T(40, 34, 'IDEA-003 · F1 — one door, both faces (CLA reference ceiling 2850)', { size: STYLE.t1, weight: 600 });
   s += T(40, 52, 'Heights from finished floor, mm. Face A = the served room, the leaf opens away from it. Face B = the other room, the leaf opens toward it.', { fill: STYLE.faint });
 
   // face(ox, mirror, label, content)  — mirror: hinge on the right as seen from that room
@@ -167,7 +167,7 @@ function figElevation() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════════════════════
-// F2 — P33 R06 + R07 room pattern, from the model
+// F2 — CLA R06 + R07 room pattern, from the model
 // ═════════════════════════════════════════════════════════════════════════════════════════════
 function portalGeometry(doc) {
   const P = doc.project, D = P.data, walls = P.building.walls.ground;
@@ -210,10 +210,10 @@ function figRoomPlan(doc, geo) {
   const k = 0.1, X0 = 4880, Y0 = 2090;
   const X = x => 40 + (x - X0) * k, Y = y => 70 + (y - Y0) * k;
   const W = 960, H = 860;
-  let s = svgOpen(W, H, 'IDEA-003 F2 — the L pattern in P33 R06 nappali and R07 szoba',
-    'Plan of R06 and R07 from the P33 test plan: walls, doors with handing, RBX06, the two rooms\' Silver Rails along their L-forma walls, the Portals and the corner cluster points.');
+  let s = svgOpen(W, H, 'IDEA-003 F2 — the L pattern in CLA R06 nappali and R07 szoba',
+    'Plan of R06 and R07 from the CLA test plan: walls, doors with handing, RBX06, the two rooms\' Silver Rails along their L-forma walls, the Portals and the corner cluster points.');
   s += `<defs><clipPath id="vw"><rect x="40" y="70" width="${f1((10560 - X0) * k)}" height="${f1((9400 - Y0) * k)}"/></clipPath></defs>`;
-  s += T(40, 30, 'IDEA-003 · F2 — the L pattern: P33 R06 nappali + R07 szoba (geometry from P33-teszt_v2)', { size: STYLE.t1, weight: 600 });
+  s += T(40, 30, 'IDEA-003 · F2 — the L pattern: CLA R06 nappali + R07 szoba (geometry from CLA-teszt_v2)', { size: STYLE.t1, weight: 600 });
   s += T(40, 48, 'Plan, 1 px = 10 mm. Thick faces = the user\'s L-forma marks. Both rooms are served by RBX06 on their shared wall W15.', { fill: STYLE.faint });
   let g = '';
   // rooms
@@ -348,16 +348,16 @@ function nestOf(p, face) { const at = face.freeBeyondHinge >= 300 ? 'hinge' : 'l
 const markedDoors = D => new Set((D.marks || []).filter(m => m.kind === 'opening' && (m.tags || []).some(t => ['portal', 'bejarat', 'lepcso', 'p1', 'p2', 'p3'].indexOf(t) >= 0)).map(m => m.op));
 
 // ═════════════════════════════════════════════════════════════════════════════════════════════
-// F3 — the floor-plan cut: every node tier on the whole P33 ground floor
+// F3 — the floor-plan cut: every node tier on the whole CLA ground floor
 // ═════════════════════════════════════════════════════════════════════════════════════════════
 function figPlanCut(doc, geo) {
   const P = doc.project, D = P.data, walls = P.building.walls.ground;
   const k = 0.085, X0 = 380, Y0 = 2040, X = x => 30 + (x - X0) * k, Y = y => 84 + (y - Y0) * k;
   const W = 1250, H = 760;
-  let s = svgOpen(W, H, 'IDEA-003 F3 — P33 ground floor: the node tiers in plan',
-    'Plan cut of the P33 ground floor from the test plan: rooms, walls and doors; gold nodes and the golden channel; RBXs, Portals and Silver Rails; endpoints and the cluster boxes the IDEA-001 rule forms from them; corner cluster points.');
+  let s = svgOpen(W, H, 'IDEA-003 F3 — CLA ground floor: the node tiers in plan',
+    'Plan cut of the CLA ground floor from the test plan: rooms, walls and doors; gold nodes and the golden channel; RBXs, Portals and Silver Rails; endpoints and the cluster boxes the IDEA-001 rule forms from them; corner cluster points.');
   s += `<defs><clipPath id="pc"><rect x="30" y="84" width="${f1((10560 - X0) * k)}" height="${f1((9400 - Y0) * k)}"/></clipPath></defs>`;
-  s += T(30, 32, 'IDEA-003 · F3 — floor-plan cut at 1 m: P33 ground floor, all node tiers (geometry and endpoints from P33-teszt_v2)', { size: STYLE.t1, weight: 600 });
+  s += T(30, 32, 'IDEA-003 · F3 — floor-plan cut at 1 m: CLA ground floor, all node tiers (geometry and endpoints from CLA-teszt_v2)', { size: STYLE.t1, weight: 600 });
   s += T(30, 50, 'Gold = Elosztó, BASE and the channel between them and the RBXs · silver = RBX, Portal, Silver Rail · bronze = endpoints and the cluster boxes that house them.', { fill: STYLE.faint });
   s += T(30, 66, 'R06 / R07 rails are drawn as built along the L; elsewhere the rail is shown as a link (it follows the walls at ≈ 2450).', { fill: STYLE.faint });
   let g = '';
@@ -439,7 +439,7 @@ function figWallUnfold(doc, geo) {
     'Elevation of R06 seen from inside: the north face of W15 and the east face of W12 unfolded round their shared corner, with the DIN zones, the two doors and their Portals, RBX06, the Silver Rail at 2450, the golden channel at 2600, the SmartFrame slots and the real endpoints grouped into cluster boxes.');
   s += `<defs>${hatch('lin4', STYLE.lintel)}${hatch('leaf4', '#d9cfb9')}</defs>`;
   s += T(40, 30, 'IDEA-003 · F4 — wall elevation: R06 nappali, its L unfolded (W15 north face ⟶ corner ⟶ W12 east face), ceiling 2850', { size: STYLE.t1, weight: 600 });
-  s += T(40, 48, 'Seen from inside the room. Endpoints are the real P33-teszt_v2 ones on these two faces; dashed boxes are the cluster boxes the Planner forms from them.', { fill: STYLE.faint });
+  s += T(40, 48, 'Seen from inside the room. Endpoints are the real CLA-teszt_v2 ones on these two faces; dashed boxes are the cluster boxes the Planner forms from them.', { fill: STYLE.faint });
   const total = LEN15 + LEN12;
   s += `<rect x="${f1(Xs(0))}" y="${f1(Y(CEIL))}" width="${f1(total * k)}" height="${f1(CEIL * k)}" fill="${STYLE.roomAlt}" stroke="${STYLE.wallEdge}" stroke-width="0.8"/>`;
   s += `<rect x="${f1(Xs(0))}" y="${f1(Y(2700))}" width="${f1(total * k)}" height="${f1(300 * k)}" fill="${STYLE.zoneH}"/><rect x="${f1(Xs(0))}" y="${f1(Y(450))}" width="${f1(total * k)}" height="${f1(300 * k)}" fill="${STYLE.zoneH}"/>`;
@@ -506,7 +506,7 @@ function figWallUnfold(doc, geo) {
   leg((x, y) => `<line x1="${x}" y1="${y}" x2="${x + 24}" y2="${y}" stroke="${STYLE.gold}" stroke-width="3" stroke-dasharray="10 6"/>`, 'golden channel 2600');
   leg((x, y) => `<rect x="${x + 4}" y="${y - 8}" width="16" height="16" fill="#fff" stroke="${STYLE.selv}" stroke-width="2"/>`, 'Portal nest H0');
   leg((x, y) => `<rect x="${x + 6}" y="${y - 6}" width="12" height="12" fill="#fff" stroke="${STYLE.selv}" stroke-dasharray="3 2"/>`, 'SmartFrame slot (SF-2)');
-  leg((x, y) => `<rect x="${x + 7}" y="${y - 5}" width="10" height="10" fill="#fff" stroke="${STYLE.bronze}" stroke-width="1.4"/>`, 'endpoint (P33 v2)');
+  leg((x, y) => `<rect x="${x + 7}" y="${y - 5}" width="10" height="10" fill="#fff" stroke="${STYLE.bronze}" stroke-width="1.4"/>`, 'endpoint (CLA v2)');
   leg((x, y) => `<rect x="${x}" y="${y - 7}" width="24" height="14" fill="none" stroke="${STYLE.bronze}" stroke-dasharray="4 3"/>`, 'cluster box');
   lx = 40; const ly2 = ly + 24;
   const leg2 = (sw, txt) => { s += sw(lx, ly2); s += T(lx + 30, ly2 + 4, txt); lx += 30 + txt.length * 6.1 + 20; };
@@ -515,7 +515,7 @@ function figWallUnfold(doc, geo) {
   leg2((x, y) => `<rect x="${x}" y="${y - 7}" width="24" height="14" fill="${STYLE.zoneH}"/>`, 'ZW-o / ZW-u (DIN)');
   leg2((x, y) => `<rect x="${x}" y="${y - 7}" width="24" height="14" fill="url(#leaf4)"/>`, 'behind the open leaf');
   leg2((x, y) => `<rect x="${x}" y="${y - 7}" width="24" height="14" fill="${STYLE.lintel}" opacity="0.6"/>`, 'lintel');
-  s += T(40, ly2 + 48, 'P33 v2 puts the POR portal sensors at 2150 — inside the lintel band (2100–2230). The Portal moves them to H1 at 2400, on the rail line above the lintel.', { fill: '#55534d' });
+  s += T(40, ly2 + 48, 'CLA v2 puts the POR portal sensors at 2150 — inside the lintel band (2100–2230). The Portal moves them to H1 at 2400, on the rail line above the lintel.', { fill: '#55534d' });
   s += T(40, ly2 + 30, 'B171: only 163 mm of wall beyond its hinge, so its nest and smart column take the latch side (H0-3). B103: the leaf opens into R06, so its terminal M3 moves to the latch side (H0-2).', { fill: '#55534d' });
   return s + '</svg>\n';
 }

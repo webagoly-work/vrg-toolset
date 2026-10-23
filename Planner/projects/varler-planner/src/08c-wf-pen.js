@@ -5,7 +5,7 @@
 // by build.js into a single <script>, so they share one scope.
 // ==========================================================================
 
-// The Helyiség-toll draws ROOMS, not walls (the P33 lesson: draw intent first, build later).
+// The Helyiség-toll draws ROOMS, not walls (the CLA lesson: draw intent first, build later).
 // - Click, click, click like the Maps distance tool; 45° direction lock and 100 mm steps; the first
 //   node closes the room. Press + drag on empty space = a rectangle room in one gesture (Prison
 //   Architect). Digits type the exact length of the open segment.

@@ -7,7 +7,7 @@
 
 // The user: "the first opportunity to create the circuits is clicking on the Elosztó — the program makes a list of
 // suggested circuits (based on our usual policy and what endpoints have been put down). Users select the ones they see
-// fit, maybe adding a few more to complete the set."  Policy = MATERIAL §6, the P33 rounds (ALAPRETEG Q-001 / Q-002):
+// fit, maybe adding a few more to complete the set."  Policy = MATERIAL §6, the CLA rounds (ALAPRETEG Q-001 / Q-002):
 //   1 every DED endpoint → its own circuit (preset by appliance)        2 bedrooms → one socket circuit each
 //   3 large rooms (> 20 m² or > 8 sockets) → 2 socket circuits; small rooms share by adjacency, ≤ 8 sockets a circuit
 //   4 the kitchen worktop → its own circuit (2,5 mm²)                     5 wet rooms → their own socket circuit
@@ -82,8 +82,17 @@ function elpSuggest(boardId){
   const L=eps.filter(d=>{const c=epCodeOf(d);return c==='LMP'||c==='SWI'||c==='SHU';}),zone={};
   L.forEach(d=>{zone[d.id]=elpIs(room(d),ELP_NIGHT)?2:1;});
   data.devices.forEach(sw=>{if(!sw||!Array.isArray(sw.ctl)||!(sw.id in zone))return;sw.ctl.forEach(id=>{if(id in zone)zone[id]=zone[sw.id];});});
+  // N4: a room whose Igénylista (08q) asks for 2+ világítási kör — vk 1 stays in its zone, vk 2… get their own circuit;
+  // a switch goes with them when everything it controls does
+  const extra=[];if(typeof reqLightVk==='function'){const byRm=new Map();L.forEach(d=>{if(epCodeOf(d)!=='LMP')return;const r=room(d);if(!r)return;if(!byRm.has(r))byRm.set(r,[]);byRm.get(r).push(d);});
+    byRm.forEach((ls,rm)=>{const P=reqLightVk(rm,ls);if(!P)return;const take=new Map();
+      ls.forEach(l=>{const vk=P.vk.get(l.id);if(vk>=2){if(!take.has(vk))take.set(vk,[]);take.get(vk).push(l);}});
+      [...take.keys()].sort((a,b)=>a-b).forEach(vk=>{const lamps=take.get(vk),ids=new Set(lamps.map(l=>l.id));
+        const sws=L.filter(s=>epCodeOf(s)==='SWI'&&Array.isArray(s.ctl)&&s.ctl.length&&s.ctl.every(id=>ids.has(id)));
+        const ms=lamps.concat(sws);ms.forEach(d=>{zone[d.id]=0;});extra.push({rm,vk,ms,v:P.v,paired:P.paired});});});}
   [1,2].forEach(z=>{const ms=L.filter(d=>zone[d.id]===z);if(!ms.filter(d=>epCodeOf(d)==='LMP').length)return;
     row('vil',z===1?'Világítás — nappali zóna':'Világítás — éjszakai zóna',ms,(z===1?'nappali zóna':'éjszakai zóna: hálók, fürdők')+' (Q-E04 = A)',{kind:'light',ref:'V'+z});});
+  extra.forEach(x=>row('vil','Világítás — '+elpRoomName(x.rm)+' '+x.vk,x.ms,'Igénylista: '+x.v+' világítási kör, ez a '+x.vk+'. ('+(x.paired?'párosítás szerint':'a kapcsolási körök sorrendjében')+')',{kind:'light'}));
   return rows;}
 
 // tick → circuits. One undo step; lighting keeps V1 / V2 when that ref is free.

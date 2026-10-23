@@ -2,7 +2,7 @@
 // build.js — the client preview: one offline HTML page from src/ + Vendor/three.
 //
 //   node build.js                         -> dist/client-preview.template.html (no model; the Planner fills it)
-//   node build.js --model dev/p33.model.json [--out dist/p33.html]   -> a page with that model inside
+//   node build.js --model dev/cla.model.json [--out dist/cla.html]   -> a page with that model inside
 //
 // Everything ends up in ONE <script type="module">: three.module.min.js with its final
 // `export{...}` turned into a THREE object, the examples/jsm/lines classes each in their own

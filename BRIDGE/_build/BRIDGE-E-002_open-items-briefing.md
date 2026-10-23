@@ -387,7 +387,7 @@ uppercase, mnemonic, no collisions, and never abbreviate two things to the same 
 | `PAN` | panel / HMI | `UEP` | universal endpoint |
 | `DIS` | zone distributor | `ACT` | actuator, other |
 
-So `P33.R03.LMP2` and `P33.R05.NTL1`. **`A` for ARM and `C1…C5` for conduits keep their short forms**
+So `CLA.R03.LMP2` and `CLA.R05.NTL1`. **`A` for ARM and `C1…C5` for conduits keep their short forms**
 — STD-001 already prints `R<room>-C<n>` on every conduit label, and changing that would invalidate
 labels.
 

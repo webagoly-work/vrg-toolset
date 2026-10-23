@@ -78,7 +78,7 @@ source. ⚑ = the user must confirm. **Bold** = the user's own numbers from the 
 | DED | mosogep | Mosógép | 1100 | `mosógép` | rules.js |
 | DED | klima | Klíma beltéri | 2300 | `klíma` | rules.js |
 | DED | bojler | Bojler / villanybojler | 1800 ⚑ | `bojler` | new ⚑ |
-| DED | szagelszivo | Páraelszívó | 2000 ⚑ | `elszívó` (the "no island hood point" P33 finding) | new ⚑ |
+| DED | szagelszivo | Páraelszívó | 2000 ⚑ | `elszívó` (the "no island hood point" CLA finding) | new ⚑ |
 | SHU | alap | Redőnymotor | 2500 | window slot W1 | rules.js |
 | LMP | mennyezet | Mennyezeti lámpa | = ceiling (2850) | not on a wall | rules.js |
 | LMP | fali | Fali lámpa | 1800 | on a wall | rules.js |
@@ -96,12 +96,12 @@ source. ⚑ = the user must confirm. **Bold** = the user's own numbers from the 
 
 | Code | Név | h | Source |
 |---|---|---|---|
-| PATH:trunk | Gerinc (Elosztó ↔ szervizpont) | 2600 | P33 decision |
-| PATH:dist | Leágazó (szervizpont ↔ végpont) | 2450 | P33 decision |
+| PATH:trunk | Gerinc (Elosztó ↔ szervizpont) | 2600 | CLA decision |
+| PATH:dist | Leágazó (szervizpont ↔ végpont) | 2450 | CLA decision |
 | PATH:data | Adat sáv | 2700 | ADATRETEG |
 | BOX:rbx | RBX dobozközép (alja ≥ 1900) | 2150 | STD-001-A1 |
-| BOX:drop | Leállás-doboz (2 szerelvényes) | = dist (2450) | P33 |
-| LVL:ceiling | Belmagasság (alap) | 2850 | P33 |
+| BOX:drop | Leállás-doboz (2 szerelvényes) | = dist (2450) | CLA |
+| LVL:ceiling | Belmagasság (alap) | 2850 | CLA |
 | LVL:worktop | Munkalap | 900 | rules.js |
 | LVL:lintel | Szemöldök | 2100 | rules.js |
 
@@ -152,7 +152,7 @@ become a real device when something is linked to them (E1) or placed on them.
 
 Window slot: `W1` — beside the window head on the side away from the nearest corner, u 150, h 2500, family MAINS,
 "redőny betáp". **Dormant** (not drawn) unless the window's room has the rule `redony` (R3 palette, or the opening tag
-`redony` P33 used).
+`redony` CLA used).
 
 ## §5 Switch type from links (E1)
 
@@ -176,7 +176,7 @@ A user-set type sticks (`typeFix`).
 
 ## §6 Circuit suggestion policy (E4)
 
-From the P33 rounds (ALAPRETEG Q-001/Q-002) and WORKSHOP-001 — each row becomes a suggested circuit, ☑ by default:
+From the CLA rounds (ALAPRETEG Q-001/Q-002) and WORKSHOP-001 — each row becomes a suggested circuit, ☑ by default:
 
 1. **Every DED endpoint → its own circuit** (preset by appliance: főzőlap 3×2,5 / 5×2,5 / 3×6, sütő, mosogatógép,
    mosógép, klíma, bojler — M2's catalogue).
@@ -187,13 +187,13 @@ From the P33 rounds (ALAPRETEG Q-001/Q-002) and WORKSHOP-001 — each row become
 5. **Wet rooms** → their own socket circuit (RCD 30 mA — all circuits are RCD-protected anyway ⚑).
 5b. **Classic (non-BRIDGE) socket chains** (E06 answer): a room's socket circuit runs Elosztó → first room socket →
    … → last room socket. The szobadoboz does not distribute sockets.
-6. **Lighting** → Q-E04: A = two zones (V1 day, V2 night = háló + fürdő; the P33 decision), B = one string for the
+6. **Lighting** → Q-E04: A = two zones (V1 day, V2 night = háló + fürdő; the CLA decision), B = one string for the
    whole flat (WORKSHOP-001), C = one per floor.
 7. **Outdoor** → own circuit.
 
 Each row: name (`A2 Konyha pult`), members (count), mm², MCB, why. Unassigned endpoints after "Alkalmaz" are listed.
 
-## §7 Rules palette (R3) — the P33 marks as one-click rules
+## §7 Rules palette (R3) — the CLA marks as one-click rules
 
 | Button | Mark written | Colour (MRK_POL) | Default selection |
 |---|---|---|---|
@@ -207,8 +207,8 @@ Each row: name (`A2 Konyha pult`), members (count), mm², MCB, why. Unassigned e
 | Padlófűtés (tilos) | `zone` + `padlofutes` | ban · red | rectangle |
 | Redőny | `opening` + `redony` | none | click a window |
 | Médiafal | `side` + `media` ⚑ new | plus | one face |
-| Munkalap | `side` + `munkalap` ⚑ new (replaces p33.config `worktop`) | none | one face, 600 deep |
-| Sziget | `zone` + `sziget` ⚑ new (replaces p33.config `island`) | none | rectangle |
+| Munkalap | `side` + `munkalap` ⚑ new (replaces cla.config `worktop`) | none | one face, 600 deep |
+| Sziget | `zone` + `sziget` ⚑ new (replaces cla.config `island`) | none | rectangle |
 
 ### §7b Non-electrical areas (user, R07) — section **Egyéb területek** of the palette
 

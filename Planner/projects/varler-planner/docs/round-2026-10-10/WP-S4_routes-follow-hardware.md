@@ -33,7 +33,7 @@ plan-view moves (select drag 08 ≈ 232, `pSetC` 12-boot 61, keyboard nudge U4) 
 4. "Once reached": a route end becomes linked when it is finished on the box (05k `placeSnap` marks
    it, `finishPath` links it — already so); add a one-time repair action `Pálya-végek kötése a
    hardverhez` that links any channel / ARM end lying within `ARM_SNAP` (150 mm) of a hardware box in
-   plan but not linked yet (P33 test plans were generated, so check them).
+   plan but not linked yet (CLA test plans were generated, so check them).
 5. Undo: the existing single undo step of the drag covers the nodes (paths are in `UKEYS`).
 
 ## Tests — `tests/spec-70-follow.js`

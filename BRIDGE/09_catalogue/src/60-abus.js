@@ -45,7 +45,7 @@ const uses = [
  { k: 'A_grow', n: 'Növényvilágítás', light: null, segment: false, zone: 'furniture', h: 'polc fölött', pts: 'Ablak melletti polc.', rooms: ['nappali', 'konyha', 'terasz'] }
 ];
 
-// typical points / segments for secondary (ambient) light — the general list the P33 marks (F4) are drawn from
+// typical points / segments for secondary (ambient) light — the general list the CLA marks (F4) are drawn from
 const ambientPoints = [
  { k: 'AP_ceiling_perim', n: 'Mennyezeti kerület (koronapárkány)', type: 'segment', zone: 'high', rooms: ['nappali', 'halo', 'etkezo'] },
  { k: 'AP_above_upper', n: 'Felső konyhaszekrények teteje', type: 'segment', zone: 'high', rooms: ['konyha'] },

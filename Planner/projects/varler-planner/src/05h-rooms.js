@@ -78,7 +78,7 @@ function roomBreakdownHtml(entry){const rows=roomBreakdown(entry),tot=rows.reduc
 // ---- renumbering: a room's devices get template refs, counted per type, in id order ----
 // Only the display `ref` changes — never the id — so links, wiring and undo are untouched.
 // The existing refs play no part: whatever they were, the room is numbered from 1 again.
-// The Elosztószekrény is skipped by default: it sits above rooms (P33-EL1), not in one.
+// The Elosztószekrény is skipped by default: it sits above rooms (CLA-EL1), not in one.
 const ROOM_REF_TPL='{szám}-{típus}{n}';
 const ROOM_REF_TOKENS=[
   ['projekt','projektkód (Dokumentáció → projekt)'],['szám','helyiség száma, ha nincs: neve'],

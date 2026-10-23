@@ -1,7 +1,7 @@
 # IDEA-001 — Cluster points and flush-box sizing
 
 Status: **idea, written down 2026-10-09 for a later round** · not scheduled · depends on the routing
-round (WORKSHOP-001) · test bed: `Calculator/P33-teszt_v2.vplan.json`
+round (WORKSHOP-001) · test bed: `Calculator/CLA-teszt_v2.vplan.json`
 
 > **Product side done:** [IDEA-002](IDEA-002_flush-cover-standard.md) +
 > `FLUSH-COVERS-001.json` (2026-10-09) carry the real-product catalogue this doc assumes in §3.4
@@ -49,7 +49,7 @@ once: a **smart-up path at each endpoint** (a module can always be fitted where 
    width plus a gap). Ceiling and floor endpoints are not clustered with wall points.
 2. **Zone-check** each column: endpoints in the low (200–500), medium (800–1400) and high
    (1900–2500) zones may share a column but not a housing — a column is a vertical stack of
-   housings, one per occupied zone. (P33 v2's door columns are exactly this: SWI 1300 + NTL 1150
+   housings, one per occupied zone. (CLA v2's door columns are exactly this: SWI 1300 + NTL 1150
    in the medium housing, POR + portal box in the high one.)
 3. **Demand per housing** = Σ over its endpoints of the catalogue's per-code need:
    - gangs (a switch 1, a double socket 2, a touch panel its back box, an NTL 1, a THR 1…);

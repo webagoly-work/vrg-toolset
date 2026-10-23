@@ -6,7 +6,7 @@
 // house, the stack plates, the time-of-day palettes) is a different view definition or a
 // different style over the same primitives; nothing here touches draw() or the 3D view.
 //
-// The geometry is the grid painter proven by tools/p33-axo.js (V0). Planner walls are axis-aligned
+// The geometry is the grid painter proven by tools/cla-axo.js (V0). Planner walls are axis-aligned
 // boxes and rooms are orthogonal, so every edge coordinate becomes a grid line; each cell holds a
 // column of solid z-intervals (plinth, wall, lintel, sill, furniture). For a camera on the (cx, cy)
 // side of the plan, drawing far cells first along each axis is an exact painter's order: two
@@ -381,7 +381,7 @@ function viewSvg(R,S){const b=R.bounds,pad=R.def.pad,W=Math.ceil(b.maxX-b.minX+2
   return `<svg xmlns="http://www.w3.org/2000/svg" class="vw" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${viewDefs(S)}`
     +`<rect width="100%" height="100%" fill="${S.paper}"/><g transform="translate(${(pad-b.minX).toFixed(1)},${(pad-b.minY).toFixed(1)})" stroke-linejoin="round">${R.body}</g></svg>`;}
 
-// ---- the sheet: title, the drawing, the legend (V4; the frame tools/p33-axo.js used to draw) ----
+// ---- the sheet: title, the drawing, the legend (V4; the frame tools/cla-axo.js used to draw) ----
 // The legend lists only the roles actually present (R.roles order); the wall rows quote the view's own heights.
 const VIEW_ROLE_HU={'sys:MAINS':'Erősáram','sys:DED':'Dedikált körök','sys:SOC':'Dugaljak','sys:LIGHT':'Világítás','sys:LV':'Törpefeszültség (A)','sys:BUSB':'Biztosított 24 V (B)',
   'sys:CONTROL':'Vezérlés','sys:DATA':'Adat / PoE','sys:SENSOR':'Érzékelők','sys:HMI':'Kezelőfelületek',
@@ -399,7 +399,7 @@ function viewSheetSvg(R,opts){const o=opts||{};if(o.paper)return viewPaperSheet(
   const M=VIEW_SHEET.margin,LEG=VIEW_SHEET.legend,top=VIEW_SHEET.top,RW=VIEW_SHEET.row,H=o.H!=null?o.H:wallH(def.level);
   const W=Math.ceil(b.maxX-b.minX+2*M+LEG),HH=Math.ceil(b.maxY-b.minY+2*M+top);
   const roles=R.roles.filter(r=>VIEW_ROLE_HU[r]);
-  // no role rows (a plan without stack layers, NV4): no heading either, JELEK moves to the top (D-V4-3)
+  // no role rows (a plan without stack layers, CLANV4): no heading either, JELEK moves to the top (D-V4-3)
   let leg=`<g transform="translate(${W-LEG+10},${M+top})">`+(roles.length?`<text class="lh" x="0" y="0">VÉGPONTOK RENDSZERENKÉNT</text>`:'');
   roles.forEach((r,k)=>{const y=20+k*RW;leg+=`<rect x="0" y="${y-7}" width="9" height="9" fill="${STK_COL[r]}"/><text class="lt" x="16" y="${y+1}">${VIEW_ROLE_HU[r]}</text>`;});
   const y2=roles.length?20+roles.length*RW+18:0;leg+=`<text class="lh" x="0" y="${y2}">JELEK</text>`;

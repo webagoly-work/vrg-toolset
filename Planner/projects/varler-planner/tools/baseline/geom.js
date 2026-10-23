@@ -52,7 +52,7 @@ function allowedFromSketch(G, paths, pad = 150) {
   const allowed = {}, offWall = [];
   // E5-Q7 = A (2026-10-15): only Vezethető fal opens a wall — a whole-wall mark, or a span (wspan: u from the wall's start).
   // Mark intervals are EXACT (third element true: no PAD in network.js); sketch lines stay loose. A legacy 'belso' whole-wall
-  // mark counts too: in the P33 round "Belső fal" meant exactly this (R3 has since renamed the preset). L-forma and the
+  // mark counts too: in the CLA round "Belső fal" meant exactly this (R3 has since renamed the preset). L-forma and the
   // other plus marks no longer open a wall — they say "a preferred spot", not "a run may go here" (finding F1).
   (G.D.marks || []).filter(m => m.level === G.level && G.wallById[m.wall] && (((m.tags || []).includes('vezetheto') && (m.kind === 'wall' || m.kind === 'wspan')) || (m.kind === 'wall' && (m.tags || []).includes('belso'))))
     .forEach(m => { const w = G.wallById[m.wall], a0 = w.axis === 'x' ? w.x0 : w.y0;

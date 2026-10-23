@@ -2,8 +2,8 @@
 // The WP's fixture: 2 bedrooms (4 sockets each), a kitchen (5 worktop sockets + főzőlap DED + sütő DED), a bathroom (2),
 // a 32 m² living room (10 sockets) and 12 lamps → 10 rows: 2 DED · 2 bedroom · 1 kitchen · 1 wet · 2 living · V1 + V2.
 // Then: unticking a row leaves its endpoints unassigned and listed; a re-run suggests only for what is left; one undo.
-// (The WP's P33 cross-check is not a spec: P33's approved socket plan is hand-configured in p33.config.js, and the
-//  client data under Calculator/P33-baseline is not in the repo.)
+// (The WP's CLA cross-check is not a spec: CLA's approved socket plan is hand-configured in cla.config.js, and the
+//  client data under Calculator/CLA-baseline is not in the repo.)
 const {JSDOM}=require('jsdom');const path=require('path');const fs=require('fs');
 function findPlanner(){
   if(process.env.PLANNER)return process.env.PLANNER;

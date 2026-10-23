@@ -19,7 +19,7 @@ the network is not involved.
 ### 1.1 Shape
 
 ```
-    P33  .  R03  .  LMP2
+    CLA  .  R03  .  LMP2
      │       │       │  └─ index within type, 1-based
      │       │       └──── three-letter type code
      │       └──────────── room, two digits, stable, never reused
@@ -28,9 +28,9 @@ the network is not involved.
 
 | Form | Separator | Used for |
 |---|---|---|
-| **Canonical** | `.` | `P33.R03.LMP2` — documents, schedules, the Planner |
-| **Label** | `-` | `P33-R03-LMP2` — printed on hardware; matches STD-001 §3.3's conduit labels |
-| **Machine** | `_`, lowercase | `p33_r03_lmp2` — Home Assistant `unique_id`, MQTT topics, filenames |
+| **Canonical** | `.` | `CLA.R03.LMP2` — documents, schedules, the Planner |
+| **Label** | `-` | `CLA-R03-LMP2` — printed on hardware; matches STD-001 §3.3's conduit labels |
+| **Machine** | `_`, lowercase | `cla_r03_lmp2` — Home Assistant `unique_id`, MQTT topics, filenames |
 
 **Three rules that keep it usable for twenty years.**
 
@@ -61,7 +61,7 @@ abbreviate two different things to the same code.**
 | `NTL` | **notification light** *(STD-008)* | `ACT` | actuator, other |
 | `UEP` | universal endpoint position | | |
 
-**Two exceptions keep their short forms, deliberately.** `A` for ARM — `P33.R03.A2`, flat, with
+**Two exceptions keep their short forms, deliberately.** `A` for ARM — `CLA.R03.A2`, flat, with
 layers as an attribute rather than in the name (B21) — and `C1…C5` for CHANNEL conduits, because
 STD-001 §3.3 already prints `R<room>-C<n>` on every conduit label and changing it would invalidate
 labels already in walls.
@@ -75,15 +75,15 @@ labels already in walls.
 
 | Reference | Means |
 |---|---|
-| `P33.R03.C3` | room 3's CONTROL conduit |
-| `P33.R03.A2` | room 3's second ARM — layers recorded as an attribute, not in the name |
-| `P33.R03.LMP2` | second luminaire position in room 3 |
-| `P33.R03.LNR1` | first linear lighting run in room 3 (a cove, say) |
-| `P33.R03.NTL1` | first notification light in room 3 |
-| `P33.R03.UEP1` | first universal endpoint position in room 3 |
-| `P33.POR.R02.R03` | the portal between rooms 2 and 3 — **order implies direction**: R02→R03 is "in" |
-| `P33.RBX03` | room 3's RoomBox. Boxes are keyed to the room, so no index |
-| `P33.DIS03.1` | first zone distributor in room 3 |
+| `CLA.R03.C3` | room 3's CONTROL conduit |
+| `CLA.R03.A2` | room 3's second ARM — layers recorded as an attribute, not in the name |
+| `CLA.R03.LMP2` | second luminaire position in room 3 |
+| `CLA.R03.LNR1` | first linear lighting run in room 3 (a cove, say) |
+| `CLA.R03.NTL1` | first notification light in room 3 |
+| `CLA.R03.UEP1` | first universal endpoint position in room 3 |
+| `CLA.POR.R02.R03` | the portal between rooms 2 and 3 — **order implies direction**: R02→R03 is "in" |
+| `CLA.RBX03` | room 3's RoomBox. Boxes are keyed to the room, so no index |
+| `CLA.DIS03.1` | first zone distributor in room 3 |
 
 ### 1.4 Shared namespace with the Planner
 
@@ -424,7 +424,7 @@ regardless. **Centralisation is only defensible because manual-first is implemen
 | Ref | Open |
 |---|---|
 | **D1** | The room list. Address allocation is "address = room number" (E09), which needs the room numbers to exist |
-| **U22** | P33's hardware composition — a project build document, not a standard. Proposed as `P33-BUILD-001` |
+| **U22** | CLA's hardware composition — a project build document, not a standard. Proposed as `CLA-BUILD-001` |
 | — | The Planner work the scheme depends on: the **renumber hard block** (§1.4, E02), the **conduit and cable schedule** (B28) and the **as-built photo store** (A07). Three features, one shared room reference |
 
 **Closed in r2:** B21 B22 E01 E02 E03 E04 E05 E06 E07 E08 E09 E10 E11, and the r1 contingency on

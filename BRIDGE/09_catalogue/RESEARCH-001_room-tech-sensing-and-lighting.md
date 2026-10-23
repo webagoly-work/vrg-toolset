@@ -6,7 +6,7 @@
 
 Ez a dokumentum a kutatás *következtetéseit* rögzíti. A tételes adat az adatbázisban van. A következő körre vár:
 - **F3:** BRIDGE szabványszöveg.
-- **F4:** P33 jelölések a v1 és v2 tervbe.
+- **F4:** CLA jelölések a v1 és v2 tervbe.
 - **F5:** Planner kód.
 
 A ⚑ jelölésű számok másodlagos forrásból származnak. Mielőtt BRIDGE szabály lesz belőlük, a szabványszöveggel vagy az eszköz kézikönyvével ellenőrizni kell őket.
@@ -89,10 +89,10 @@ A nézetben a **helyiség-szűrő** minden fülön működik: kiválasztod a WC-
 **Helyiségenként:**
 - **Konyha:** hő-érzékelő (füst helyett), CO, VOC/NOx, PM.
   - Metán csak gázkészüléknél, PB-gáz csak palacknál kell.
-  - P33-ban **indukciós a főzőlap** (K20), így a gázérzékelés csak gázkazán vagy gázos vízmelegítő esetén kell. Lásd D-06.
+  - CLA-ban **indukciós a főzőlap** (K20), így a gázérzékelés csak gázkazán vagy gázos vízmelegítő esetén kell. Lásd D-06.
 - **Fürdő / WC:** páratartalom, H₂S (lent, az összefolyónál) és NH₃ (fent).
   - CO csak gázos vízmelegítőnél kell.
-- **P33 nappali:** **klíma** van a déli falon, ezért hűtőközeg-érzékelő kell lent, a beltéri egység alatt. A radon a földszint miatt kerül a listába.
+- **CLA nappali:** **klíma** van a déli falon, ezért hűtőközeg-érzékelő kell lent, a beltéri egység alatt. A radon a földszint miatt kerül a listába.
 - **CO jogi háttér Magyarországon** (2012. évi XC. tv. és 12/2014. BM rendelet):
   - kötelező nyitott égésterű készüléknél, meghatározott épülettípusokban;
   - **lakásban ajánlott, nem általánosan kötelező** ⚑ (a hatályosságot ellenőrizni kell);
@@ -129,7 +129,7 @@ Az SQ2 és az SQ5a valójában ugyanaz a gondolat. Egy négycsatornás saját ES
 - **B4:** betáp legfeljebb 5 m-enként (feszültségesés).
 - A szakaszhossz egész számú vágási egység legyen (24 V-on jellemzően 50 / 100 mm ⚑).
 
-**P33 előzetes nyomvonal** (pontosan a v1/v2 geometriájából lesz kirajzolva, F4).
+**CLA előzetes nyomvonal** (pontosan a v1/v2 geometriájából lesz kirajzolva, F4).
 
 A dwelling (tartózkodási) területek:
 - konyha + étkező,
@@ -154,7 +154,7 @@ Az útvonal: R02 konyha → R03 étkező → portál → **R06 nappali** a jobb 
 - 24 V DC függönymotor, motoros vízelzáró, EC elszívó, elektromos zárfogadó;
 - kültéri 24 V fény, növényfény.
 
-**P33, a bútorozott alaprajz alapján:**
+**CLA, a bútorozott alaprajz alapján:**
 
 | Helyiség | A busz pontok |
 |---|---|
@@ -213,7 +213,7 @@ Mind a 19 helyiség kap fő / kiegészítő / hangulat opciókat (nézet: *Szob�
 - A szirénát a lakótérben hallani kell.
 - A kezelő (keypad) a bejáratnál van, a központ máshol.
 
-**P33 ajánlás: R05 kamra** (lépcső alatt), a felső hátsó sarokban, zárható takaró mögött.
+**CLA ajánlás: R05 kamra** (lépcső alatt), a felső hátsó sarokban, zárható takaró mögött.
 - A lakás közepén van, a bejárattól nem látszik.
 - Az R03 hub-radar és a kamraajtó nyitásérzékelője lefedi.
 - Mellette van a felszálló (rövid út a felső szintre és minden szobába, csillag topológia `from:'ssc'`).
@@ -232,7 +232,7 @@ Mind a 19 helyiség kap fő / kiegészítő / hangulat opciókat (nézet: *Szob�
   - A vezérlés a legközelebbi RBX-en megy át.
   - Az adatbázisban: `sw_shutter` (javasolt `SWI/shu`) és a `F_shutter_fallback` funkció.
   - A Planner `EP_CAT`-ban a SHU már `from:'rbx'`.
-  - **A te P33_teszt_v1 terved** 4 SHU-t és 5 DED-et tartalmaz. Az F5-ben ellenőrzöm, hogy a SHU-k nem dedikált áramkörön vannak-e.
+  - **A te CLA_teszt_v1 terved** 4 SHU-t és 5 DED-et tartalmaz. Az F5-ben ellenőrzöm, hogy a SHU-k nem dedikált áramkörön vannak-e.
 - **A világítási string áramkör** nem kell, hogy minden RBX-et érintsen. Szükség esetén megosztható a szobák dugaljköreivel.
 - **HMI → Vezérlés.**
   - A panel, a termosztát és az új interfészek (jelenetpanel, forgatógomb, e-papír, hangszatellit, kaputelefon) a `sys:CONTROL` rétegre kerülnek.
@@ -247,7 +247,7 @@ Mind a 19 helyiség kap fő / kiegészítő / hangulat opciókat (nézet: *Szob�
 | **D-03** | Mozgásvonal-kivitel: SQ2 (saját négycsatornás ESPHome-csomópont), SQ5a (kész CCT vezérlő párok) vagy SQ3 (címezhető) | **SQ2**, a szakasz alapból 750 mm |
 | **D-04** | FLT-A levegőmodul a portálnál (kényelmes) vagy belső falon ≥ 1 m-re (pontos) | Portálnál, ajtóállapot-kapuzással; ahol van szabad belső fal, ott a fal |
 | **D-05** | Új kódok / változatok az STD-004-be: `SWI/shu`, `SWI/rf`, `PAN/scene · knob · voice · door`, `DIS/epaper`, `SEN/co · gas` | Felvenni (F3 szabványmódosítás + F5 `EP_CAT`) |
-| **D-06** | Van-e P33-ban gázkészülék (kazán, vízmelegítő)? A K42 padlófűtés nyitott | Ha igen: CO + CH₄ a készülék helyiségében |
+| **D-06** | Van-e CLA-ban gázkészülék (kazán, vízmelegítő)? A K42 padlófűtés nyitott | Ha igen: CO + CH₄ a készülék helyiségében |
 | **D-07** | A mozgásvonal az A buszon fut (kényelem), a menekülést a B buszos lábfény viszi | Igen |
 
 ## 13. Források

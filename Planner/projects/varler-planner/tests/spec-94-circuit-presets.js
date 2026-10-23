@@ -1,5 +1,5 @@
 // Round 2026-10-10 WP-M2 — circuit presets (src/08o-cpr.js). Tests 1–9 of docs/round-2026-10-10/WP-M2_circuit-presets.md
-// (answers M06 C-curve default + NV4 sample + klíma 1–2 expected · M07 A with Esc → B · M08 A) + the verifier's
+// (answers M06 C-curve default + CLANV4 sample + klíma 1–2 expected · M07 A with Esc → B · M08 A) + the verifier's
 // mcbParse round-trip of every catalogue string.
 const {JSDOM}=require('jsdom');const path=require('path');const fs=require('fs');
 function findPlanner(){
@@ -7,7 +7,7 @@ function findPlanner(){
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const NV4=JSON.parse(fs.readFileSync(path.join(__dirname,'..','docs','round-2026-10-10','samples','NV4-minta.vrg-elo-presets.json'),'utf8'));
+const CLANV4=JSON.parse(fs.readFileSync(path.join(__dirname,'..','docs','round-2026-10-10','samples','CLANV4-minta.vrg-elo-presets.json'),'utf8'));
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;
 setTimeout(()=>{
@@ -66,11 +66,11 @@ setTimeout(()=>{
   const r1=w.cprImport({format:'vrg-elo-presets',v:1,items:[Object.assign({},ex.items[0],{mcb:'1B 6A'})]},()=>'keep');
   ok('a conflicting key+name with "keep" → unchanged',r1.kept===1&&JSON.stringify(D.eloPresets.find(r=>r.key==='vil'))===before);
   ok('a bad file is refused',!!w.cprImport({format:'x'}).err);
-  // 8. NV4 sample
-  D.eloPresets=[];D.circuits=[];const r2=w.cprImport(NV4);
-  ok('NV4 → 13 rows',r2.added===13&&D.eloPresets.length===13);
+  // 8. CLANV4 sample
+  D.eloPresets=[];D.circuits=[];const r2=w.cprImport(CLANV4);
+  ok('CLANV4 → 13 rows',r2.added===13&&D.eloPresets.length===13);
   ok('vil parses as 1B 10A',w.mcbText(w.mcbParse(D.eloPresets.find(r=>r.key==='vil').mcb))==='1B 10A');
-  ok('the bundled NV4 equals the sample file',JSON.stringify(w.eval('CPR_SAMPLE_NV4').items)===JSON.stringify(NV4.items));
+  ok('the bundled CLANV4 equals the sample file',JSON.stringify(w.eval('CPR_SAMPLE_CLANV4').items)===JSON.stringify(CLANV4.items));
   // 9. duplicate keys stay separate
   ok('three szobakor and three klima rows kept separately',D.eloPresets.filter(r=>r.key==='szobakor').length===3&&D.eloPresets.filter(r=>r.key==='klima').length===3);
   const kl=D.eloPresets.filter(r=>r.key==='klima'),klW=()=>w.cprReminders().some(x=>x.key==='klima');
@@ -82,7 +82,7 @@ setTimeout(()=>{
   const vw=()=>w.cprReminders().some(x=>x.key==='vil');ok('vil not active → reminder',vw());w.cprDismiss(D.eloPresets.find(r=>r.key==='vil').id);ok('× dismiss → gone',!vw());
   const cu=w.cprAddCustom();ok('＋ Saját kör',cu.custom&&/^sajat\d+$/.test(cu.key)&&/^E\d+$/.test(cu.id));
   w.cprDialog();const body=w.document.getElementById('cprBody');
-  ok('the dialog lists the tiers and the NV4 button',body&&/Alap/.test(body.innerHTML)&&/Minta betöltése/.test(body.innerHTML));
+  ok('the dialog lists the tiers and the CLANV4 button',body&&/Alap/.test(body.innerHTML)&&/Minta betöltése/.test(body.innerHTML));
   ok('the Elosztó panel line exists',!!w.document.getElementById('cprLine'));
  }catch(err){R.push(['exception',false,err.stack]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x&&!c?'   ['+x+']':''));});

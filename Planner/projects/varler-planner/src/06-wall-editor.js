@@ -38,23 +38,62 @@ function chaseDia(build,sec){if(sec&&sec.dia)return +sec.dia;build=build||'';
 function pathDia(build,sec){return chaseDia(build,sec);}                       // legacy alias
 function chaseDepthOf(sec,dia){if(sec&&sec.cd)return +sec.cd;return dia<=25?30:35;}   // 30 mm to ⌀25, 35 mm for ⌀32
 function chaseWidthOf(dia){return Math.max(20,Math.round(dia*(state.chaseFactor||1.6)));}
-// geometry of every chase area on this wall, in PIXEL space (so they can be unioned + masked)
-function wvChaseShapes(d,X,Y,sc){const out=[];
-  d.secs.filter(t=>!t.back&&(t.build||'').indexOf('sull')>=0).forEach(t=>{
+// ---- chase MODEL in mm (docs/research/2026-10-23_chase-sweep-cut-3d.md, O0): the one source for the drawing,
+// the project totals and later the 3D view. Pure read of elevation / plane data d (u along, h up, both mm):
+// one item per sunk run {kind:'path', u0,h0 → u1,h1 centreline} and per box pocket {kind:'box', u0,h0 centre}.
+// sides=true also returns the far face's items (back:true) — the drawing shows one face, the totals count both.
+function chaseModel(d,sides){const out=[];
+  d.secs.filter(t=>(sides||!t.back)&&(t.build||'').indexOf('sull')>=0).forEach(t=>{
     const dia=chaseDia(t.build,t),w=chaseWidthOf(dia),dep=chaseDepthOf(t,dia);
-    const x1=X(t.ua),y1=Y(t.ha),x2=X(t.ub),y2=Y(t.hb),L=Math.hypot(x2-x1,y2-y1);if(L<0.05)return;
-    const ux=(x2-x1)/L,uy=(y2-y1)/L,hw=w*sc/2;
+    out.push({kind:'path',pi:t.pi,na:t.na,dia,w,dep,mm:Math.hypot(t.ub-t.ua,t.hb-t.ha),u0:t.ua,h0:t.ha,u1:t.ub,h1:t.hb,back:!!t.back,sd:t.sd});});
+  const pad=(state.chasePad!=null?state.chasePad:4);
+  d.devs.filter(x=>(sides||!x.back)&&x.type!=='board').forEach(dv=>{
+    const base=(dv.type==='junction'?(dv.jbSize||80):DEV_BOX_W);
+    out.push({kind:'box',di:dv.di,dia:base,w:base+pad,dep:(state.boxDepth||45),mm:0,u0:dv.u,h0:dv.h,u1:dv.u,h1:dv.h,back:!!dv.back,sd:dv.sd});});
+  return out;}
+// footprint of one item on its face, in mm: an axis-aligned rect, or (diagonal run) a centreline + half width
+function chaseRect(c){const hw=c.w/2;
+  if(c.kind==='box')return {x0:c.u0-hw,x1:c.u0+hw,y0:c.h0-hw,y1:c.h0+hw};
+  if(Math.abs(c.u1-c.u0)<0.5||Math.abs(c.h1-c.h0)<0.5)   // square caps, as drawn
+    return {x0:Math.min(c.u0,c.u1)-hw,x1:Math.max(c.u0,c.u1)+hw,y0:Math.min(c.h0,c.h1)-hw,y1:Math.max(c.h0,c.h1)+hw};
+  return {diag:true,x0:Math.min(c.u0,c.u1)-hw,x1:Math.max(c.u0,c.u1)+hw,y0:Math.min(c.h0,c.h1)-hw,y1:Math.max(c.h0,c.h1)+hw};}
+function chaseCovers(c,R,x,y){if(!R.diag)return x>=R.x0&&x<=R.x1&&y>=R.y0&&y<=R.y1;
+  const dx=c.u1-c.u0,dy=c.h1-c.h0,L=Math.hypot(dx,dy),px=x-c.u0,py=y-c.h0,t=(px*dx+py*dy)/L,n=Math.abs(px*dy-py*dx)/L;
+  return t>=-c.w/2&&t<=L+c.w/2&&n<=c.w/2;}
+// union of ONE face's items, each spot counted once under its dominant cut (deepest, then widest):
+// area (mm²), removed volume (mm³) and byGroup — the area each run class 'w×dep' (or 'box') really owns, so
+// coincident runs from several layers on one line give ONE chase, and the part of a run inside a pocket is the pocket's.
+// Exact for axis-aligned items (coordinate compression on every rect edge); a diagonal run adds 5 mm lines over its box.
+const CHASE_UNION_MEMO=new Map();
+function chaseUnion(items){if(!items.length)return {area:0,vol:0,byGroup:{}};
+  const key=items.map(c=>[c.kind,c.u0,c.h0,c.u1,c.h1,c.w,c.dep].join(',')).join(';'),hit=CHASE_UNION_MEMO.get(key);if(hit)return hit;
+  const R=items.map(chaseRect),xs=new Set(),ys=new Set();
+  R.forEach(r=>{xs.add(r.x0);xs.add(r.x1);ys.add(r.y0);ys.add(r.y1);
+    if(r.diag){for(let x=r.x0;x<r.x1;x+=5)xs.add(x);for(let y=r.y0;y<r.y1;y+=5)ys.add(y);}});
+  const X=[...xs].sort((a,b)=>a-b),Y=[...ys].sort((a,b)=>a-b),nY=Y.length-1,own=new Int32Array((X.length-1)*nY).fill(-1);
+  const lo=(A,v)=>{let a=0,b=A.length-1;while(a<b){const m=(a+b)>>1;if(A[m]<v)a=m+1;else b=m;}return a;};
+  const beats=(k,o)=>o<0||items[k].dep>items[o].dep||(items[k].dep===items[o].dep&&items[k].w>items[o].w);
+  items.forEach((c,k)=>{const r=R[k],i0=lo(X,r.x0),i1=lo(X,r.x1),j0=lo(Y,r.y0),j1=lo(Y,r.y1);
+    for(let i=i0;i<i1;i++)for(let j=j0;j<j1;j++){const q=i*nY+j;if(!beats(k,own[q]))continue;
+      if(r.diag&&!chaseCovers(c,r,(X[i]+X[i+1])/2,(Y[j]+Y[j+1])/2))continue;own[q]=k;}});
+  let area=0,vol=0;const byGroup={};
+  for(let i=0;i<X.length-1;i++)for(let j=0;j<nY;j++){const k=own[i*nY+j];if(k<0)continue;
+    const a=(X[i+1]-X[i])*(Y[j+1]-Y[j]),c=items[k],g=c.kind==='box'?'box':c.w+'×'+c.dep;
+    area+=a;vol+=a*c.dep;byGroup[g]=(byGroup[g]||0)+a;}
+  const out={area,vol,byGroup};if(CHASE_UNION_MEMO.size>400)CHASE_UNION_MEMO.clear();CHASE_UNION_MEMO.set(key,out);return out;}
+// geometry of every chase area on this wall, in PIXEL space (so they can be unioned + masked) — a mapping of chaseModel
+function wvChaseShapes(d,X,Y,sc){const out=[];
+  chaseModel(d).forEach(c=>{
+    if(c.kind==='box'){const x=X(c.u0),y=Y(c.h0),hw=c.w*sc/2,hh=c.w*sc/2;
+      out.push({kind:'box',di:c.di,dia:c.dia,w:c.w,dep:c.dep,mm:0,mx:x,my:y,ang:0,
+        poly:[{x:x-hw,y:y-hh},{x:x+hw,y:y-hh},{x:x+hw,y:y+hh},{x:x-hw,y:y+hh}]});return;}
+    const x1=X(c.u0),y1=Y(c.h0),x2=X(c.u1),y2=Y(c.h1),L=Math.hypot(x2-x1,y2-y1);if(L<0.05)return;
+    const ux=(x2-x1)/L,uy=(y2-y1)/L,hw=c.w*sc/2;
     const ax=x1-ux*hw,ay=y1-uy*hw,bx=x2+ux*hw,by=y2+uy*hw;   // square caps → runs merge cleanly at corners/boxes
     const nx=-uy*hw,ny=ux*hw;
-    out.push({kind:'path',pi:t.pi,na:t.na,dia,w,dep,mm:Math.hypot(t.ub-t.ua,t.hb-t.ha),
+    out.push({kind:'path',pi:c.pi,na:c.na,dia:c.dia,w:c.w,dep:c.dep,mm:c.mm,
       mx:(x1+x2)/2,my:(y1+y2)/2,ang:Math.atan2(y2-y1,x2-x1),nx:-uy,ny:ux,hw:hw,
       poly:[{x:ax+nx,y:ay+ny},{x:bx+nx,y:by+ny},{x:bx-nx,y:by-ny},{x:ax-nx,y:ay-ny}]});});
-  const pad=(state.chasePad!=null?state.chasePad:4);
-  d.devs.filter(x=>!x.back&&x.type!=='board').forEach(dv=>{
-    const base=(dv.type==='junction'?(dv.jbSize||80):DEV_BOX_W),bw=base+pad,bh=base+pad;
-    const x=X(dv.u),y=Y(dv.h),hw=bw*sc/2,hh=bh*sc/2;
-    out.push({kind:'box',di:dv.di,dia:base,w:bw,dep:(state.boxDepth||45),mm:0,mx:x,my:y,ang:0,
-      poly:[{x:x-hw,y:y-hh},{x:x+hw,y:y-hh},{x:x+hw,y:y+hh},{x:x-hw,y:y+hh}]});});
   out.forEach(o=>{const xs=o.poly.map(p=>p.x),ys=o.poly.map(p=>p.y);
     o.bb=[Math.min.apply(null,xs),Math.min.apply(null,ys),Math.max.apply(null,xs),Math.max.apply(null,ys)];});
   return out;}
@@ -94,6 +133,46 @@ function chaseSummary(shapes){const grp={},pk={};
   shapes.forEach(S=>{const k=S.w+'×'+S.dep;
     if(S.kind==='box')pk[k]=(pk[k]||0)+1;else grp[k]=(grp[k]||0)+S.mm;});
   return {grp,pk};}
+// ---- PROJECT chase quantities (O1): every wall of every level, both faces, every SHOWN layer (a hidden layer is
+// "off", as in 05t-needs: on P33 the hidden original sketch alone would add 106 m) ----
+// A run or box near a corner lies within reach of two walls; it is counted once, on the wall it sits closest to
+// (smallest sd). Sunk ('sull') sections that no wall claims are floor / ceiling runs: reported apart, never priced
+// as wall chasing. The priced metres come from the union (chaseUnion byGroup ÷ width), not from the section sum:
+// on P33 the stack layers lay up to three conduits on one line, and summing them tripled the chasing. Union metres
+// include the square caps (w/2 per free end), as cut. The section sum stays in grpSec for the report.
+const CHASE_RHO=1600;   // kg/m³ debris, tégla — the wall material is CH-Q2, still open
+function chaseProject(){const claim=new Map(),walls=[];
+  ORD.forEach(l=>(WALLS[l]||[]).forEach((r,wi)=>{const d=wallElevationData(r,l),items=chaseModel(d,true);
+    walls.push({level:l,wi,r,len:d.len,items});
+    items.forEach(c=>{const k=c.kind==='box'?'d'+c.di:'s'+c.pi+'/'+c.na,o=claim.get(k);
+      if(!o||c.sd<o.sd)claim.set(k,{sd:c.sd,w:walls.length-1});});}));
+  const grp={},grpSec={},pk={},onWall=new Set();let vol=0;
+  walls.forEach((W,i)=>{W.items=W.items.filter(c=>{const k=c.kind==='box'?'d'+c.di:'s'+c.pi+'/'+c.na;
+      if(claim.get(k).w!==i)return false;onWall.add(k);return true;});
+    W.sum=chaseSummary(W.items);W.grp={};W.vol=0;
+    [false,true].forEach(back=>{const U=chaseUnion(W.items.filter(c=>c.back===back));W.vol+=U.vol;
+      Object.keys(U.byGroup).forEach(g=>{if(g!=='box')W.grp[g]=(W.grp[g]||0)+U.byGroup[g]/+g.split('×')[0];});});
+    Object.keys(W.grp).forEach(k=>grp[k]=(grp[k]||0)+W.grp[k]);
+    Object.keys(W.sum.grp).forEach(k=>grpSec[k]=(grpSec[k]||0)+W.sum.grp[k]);
+    Object.keys(W.sum.pk).forEach(k=>pk[k]=(pk[k]||0)+W.sum.pk[k]);vol+=W.vol;});
+  let off=0;data.paths.forEach((pa,pi)=>{if(!layerShows(pa,'path'))return;for(let si=0;si<pa.nodes.length-1;si++){const sec=pa.sections[si]||{build:'sull_gege'};
+    if((sec.build||'').indexOf('sull')>=0&&!onWall.has('s'+pi+'/'+si))off+=sectionLen(pa,si);}});
+  return {walls:walls.filter(W=>W.items.length),grp,grpSec,pk,off,vol};}
+// BOM rows: chasing metres per width×depth and pockets per size (ids stay stable, so prices stick in state.price)
+function chaseBOMRows(){const P=chaseProject(),rows=[];
+  Object.keys(P.grp).sort().forEach(k=>rows.push({id:'chase_'+k.replace('×','x'),name:'Falvésés '+k+' mm',qty:+(P.grp[k]/1000).toFixed(1),unit:'m'}));
+  Object.keys(P.pk).sort().forEach(k=>rows.push({id:'chasebox_'+k.replace('×','x'),name:'Dobozfészek vésés '+k+' mm',qty:P.pk[k],unit:'db'}));
+  return rows;}
+function showChaseReport(){const P=chaseProject(),rows=[];
+  const lvl=l=>typeof alsLevelName==='function'?alsLevelName(l):l;
+  const m=G=>Object.keys(G).sort().map(k=>k+': '+(G[k]/1000).toFixed(2)+' m').join(', ')||'—';
+  const pks=G=>Object.keys(G).sort().map(k=>k+': '+G[k]).join(', ')||'—';
+  P.walls.forEach(W=>rows.push([lvl(W.level),(W.r.id||('#'+(W.wi+1)))+' ('+(W.len/1000).toFixed(2)+' m)',m(W.grp),m(W.sum.grp),pks(W.sum.pk),
+    (W.vol/1e6).toFixed(1),(W.vol/1e9*CHASE_RHO).toFixed(1)]));
+  if(!rows.length)rows.push(['—','Nincs süllyesztett pálya vagy doboz falon.','','','','','']);
+  rows.push(['Összesen','',m(P.grp),m(P.grpSec),pks(P.pk),(P.vol/1e6).toFixed(1),(P.vol/1e9*CHASE_RHO).toFixed(1)]);
+  if(P.off>0)rows.push(['Falon kívül','padló / mennyezet süllyesztett szakasz (nem falvésés)','',P.off.toFixed(2)+' m','','','']);
+  showList('Véset összesítő',['Szint','Fal','Véset (szél.×mély., ezt árazzuk)','Szakaszok összege','Fészek','Térfogat (l)','Törmelék (kg, tégla)'],rows,'veset_osszesito.csv');}
 // renders one device in the elevation as a hollow Szerelvénydoboz (68mm ⌀), with the defined wall-mount plate
 // rectangle overlaid on top when dv.devDef is set. sc = mm→px scale. col = stroke; boxCol = optional per-box fill.
 function wvKindCode(dv){return (dv.kind&&DEVKIND[dv.kind])?DEVKIND[dv.kind].s:(dv.lv?'LV':'');}
@@ -129,11 +208,11 @@ function wallElevationData(r,level){const z0=r.z0||0,H=z0+(r.h||wallH(level));
     if(Math.abs(sOf(o.x,o.y))<tol&&inR(u)){const win=o.type==='window';ops.push(lyrTagOp({oi,type:o.type,u,w:o.w||(win?WIN_W:DOOR_W),h:o.h||(win?WIN_H:DOOR_H),sill:win?(o.sill!=null?o.sill:WIN_SILL):0},o,'build'));}});
   const devs=[];data.devices.forEach(dv=>{if(dv.level!==level||!layerShows(dv,'device'))return;const u=uOf(dv.x,dv.y),ss=sOf(dv.x,dv.y);
     if(Math.abs(ss)<tol&&inR(u))devs.push(lyrTagOp({di:data.devices.indexOf(dv),type:dv.type,ref:dv.ref||'',u,h:dv.h||0,back:ss<-1,
-      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null},dv,'device'));});
+      devDef:dv.devDef,boxColor:dv.boxColor,jbShape:dv.jbShape,jbSize:dv.jbSize,clip:dv.clip,link:devLinks(dv)[0]||null,sd:Math.abs(ss)},dv,'device'));});
   const secs=[];data.paths.forEach((pa,pi)=>{if(!layerShows(pa,'path'))return;for(let i=0;i<pa.nodes.length-1;i++){const a=pa.nodes[i],b=pa.nodes[i+1];if(a.level!==level||b.level!==level)continue;
     const sa=sOf(a.x,a.y),sb=sOf(b.x,b.y);if(Math.abs(sa)<tol&&Math.abs(sb)<tol){const ua=uOf(a.x,a.y),ub=uOf(b.x,b.y);
       if(inR(Math.max(ua,ub))&&inR(Math.min(ua,ub))){const sec=pa.sections[i]||{build:'sull_gege'};
-        secs.push(lyrTagOp({pi,na:i,nb:i+1,ua,ub,ha:a.h||0,hb:b.h||0,build:sec.build,dia:sec.dia,cd:sec.cd,carried:(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]),back:(sa+sb)/2<-1},pa,'path'));}}}});
+        secs.push(lyrTagOp({pi,na:i,nb:i+1,ua,ub,ha:a.h||0,hb:b.h||0,build:sec.build,dia:sec.dia,cd:sec.cd,carried:(sec.circuit?[sec.circuit]:[]).concat(sec.circuits||[]),back:(sa+sb)/2<-1,sd:(Math.abs(sa)+Math.abs(sb))/2},pa,'path'));}}}});
   const notes=[];const __nk=wallKey(r,level);
   if(!noteSurfaceHidden(__nk))(data.wallNotes||[]).forEach((nt,i)=>{if(nt.wallKey!==__nk)return;
     notes.push({i,u:nt.u,h:nt.h,text:nt.text,kind:nt.kind,tag:nt.tag});});
@@ -204,6 +283,7 @@ function wallElevationSVG(d,showFar,dims){const M=56,H=d.H,len=d.len;
   let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${Wpx}" height="${Hpx}" viewBox="0 0 ${Wpx} ${Hpx}" font-family="Segoe UI,Arial"><defs><pattern id="chaseh" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#f7e2ce"/><line x1="0" y1="0" x2="0" y2="5" stroke="#c0794f" stroke-width="1"/><line x1="2.5" y1="0" x2="2.5" y2="5" stroke="#dfae8e" stroke-width="0.6"/></pattern></defs><rect width="${Wpx}" height="${Hpx}" fill="#fff"/>`;
   const z0=d.z0||0;
   s+=`<rect x="${Math.min(X(0),X(len))}" y="${Y(H)}" width="${(len*sc).toFixed(1)}" height="${((H-z0)*sc).toFixed(1)}" fill="#f4f2eb" stroke="#111" stroke-width="1.5"/>`;
+  if(typeof slbElevBand==='function')s+=slbElevBand(d,X,Y,sc,len);   // 08p: the födém above this wall
   if(z0>0){ // the wall starts above the floor — the band underneath is open
     s+=`<rect x="${Math.min(X(0),X(len))}" y="${Y(z0)}" width="${(len*sc).toFixed(1)}" height="${(z0*sc).toFixed(1)}" fill="#fff" stroke="#999" stroke-width="0.8" stroke-dasharray="6 4"/>`
       +`<text x="${((X(0)+X(len))/2).toFixed(1)}" y="${(Y(z0/2)+3).toFixed(1)}" font-size="9.5" text-anchor="middle" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round">nyitott sáv — a fal ${Math.round(z0)} mm-en indul</text>`

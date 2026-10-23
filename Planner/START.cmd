@@ -51,7 +51,7 @@ setlocal EnableDelayedExpansion
 ::  checks for it and explains itself instead of failing.
 ::
 ::  2026-10-10 - E) added: the same worktree build, then tools\make-preload.js
-::  bakes P33 teszt v1 + v2 into dist\varler_planner_P33.html (blueprint,
+::  bakes CLA teszt v1 + v2 into dist\varler_planner_CLA.html (blueprint,
 ::  marks and endpoints; of the hardware only the Eloszto) and opens that.
 ::  A letter again, for the same reason as W). check-start.js now counts a
 ::  page an action opens (set "TFULL=%WT_DIR%\...") as registered.
@@ -62,10 +62,28 @@ setlocal EnableDelayedExpansion
 ::  and the Aloszto per level. Same file, same key 1 (projects\varler-planner\dist).
 ::  W) and E) still work while the worktree exists.
 ::
+::  2026-10-17 - Y) added (was K until 2026-10-22, see below): the Planner CYD desk dashboard (Firmware\planner-cyd).
+::  Not a tool page but three launchers - the bridge with the Planner, the
+::  demo, and flashing the CYD - so it is a letter with a small submenu.
+::  Later the same day: 4) the macropad (also picks up the Planner), 5) its settings page
+::  (http://localhost:8788: buttons, preset library, start with Windows).
+::
+::  2026-10-18 - U) added: Board Console (Firmware\board-console), the control page for
+::  the universal ESP32-S3 dev board at http://localhost:8790 (phase 1: layout, connectors,
+::  setups, board_pins.h). It reads the board model from H:\VRG_Visual_Base\...\Topology_Starter.
+::
+::  2026-10-21 - H) added: VRG Kapu, the shared homepage / business map
+::  (Hub\VRG Kapu.cmd -> Hub\dist\vrg-kapu.html, built by tools\build-hub.js).
+::  A letter, not a number: the numbered slots are full at ten. Tool numbers
+::  1-10 unchanged. Built on the secacc branch (docs\hub, WP-H0).
+::
 ::  2026-10-22 - tool 11: VRG Kodvaros (the codebase as a 3D city, CodeCity\dist).
 ::  The first tool beyond ten, so it is the first with a LETTER: K. TOOLKEYS,
 ::  the menu line and the dispatch each map 11 -> K; a twelfth tool would need
 ::  the same three touches (see BILLENTYUK).
+::
+::  2026-10-22 - the CYD desk dashboard moved from K) to Y): K is taken by tool 11
+::  (VRG Kodvaros, branch worktree-codecity). Board Console stays on U).
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -140,7 +158,7 @@ set "TOOLKEYS="
 for /L %%i in (1,1,%TOOLCOUNT%) do (
     if %%i LSS 10 ( set "TOOLKEYS=!TOOLKEYS!%%i" ) else if %%i EQU 10 ( set "TOOLKEYS=!TOOLKEYS!0" ) else if %%i EQU 11 ( set "TOOLKEYS=!TOOLKEYS!K" )
 )
-set "ACTIONKEYS=BWETGVMCINSPLDRQ"
+set "ACTIONKEYS=BWETGVMCINSPLDRYUHQ"
 set "MENUKEYS=!TOOLKEYS!%ACTIONKEYS%"
 
 if %TOOLCOUNT% GTR 11 (
@@ -175,6 +193,11 @@ set "WT_DIR=%DEROOT%\wt-planner-stack\Planner\projects\varler-planner"
 set "INVENTORY_DIR=%REPO%\Inventory"
 set "FETCH_VENDOR_JS=%REPO%\tools\fetch-vendor.js"
 
+:: --------------------- PLANNER CYD (asztali kijelzo) ----------------------
+:: Sajat inditofajlok a Firmware\planner-cyd mappaban; a Y) menu csak ezeket hivja.
+set "CYD_DIR=%REPO%\Firmware\planner-cyd"
+set "BOARD_DIR=%REPO%\Firmware\board-console"
+
 goto MENU
 
 :: ================================ MENU =====================================
@@ -199,7 +222,7 @@ echo.
 echo  -- Planner muveletek / Planner actions --
 echo   B^) Build          ^(npm run build^)
 echo   W^) Build + megnyitas - fejlesztoi ag ^(wt-planner-stack^)
-echo   E^) P33 elotoltve - fejlesztoi ag ^(v1 + v2, csak az Eloszto^)
+echo   E^) CLA elotoltve - fejlesztoi ag ^(v1 + v2, csak az Eloszto^)
 echo   T^) Test           ^(npm test^)
 echo   G^) Gyro relay szerver inditasa
 echo   V^) Planner projekt megnyitasa VS Code-ban
@@ -218,6 +241,11 @@ echo   D^) Komponensek letoltese  ^(Vendor mappa + oldal, halozat kell^)
 echo.
 echo  -- Egyeb / Other --
 echo   R^) Teljes VRG toolset megnyitasa VS Code-ban  ^(repo gyoker^)
+echo   H^) VRG Kapu  ^(kozponti terkep - minden program egy helyen^)
+echo.
+echo  -- Hardver / Hardware --
+echo   Y^) Planner CYD asztali kijelzo  ^(USB, Firmware\planner-cyd^)
+echo   U^) Board Console - univerzalis fejlesztolap  ^(http://localhost:8790^)
 echo.
 echo   Q^) Kilepes / Quit
 echo.
@@ -240,7 +268,7 @@ if not defined K goto MENU
 if /I "%K%"=="Q" exit /b 0
 if /I "%K%"=="B" goto DO_BUILD
 if /I "%K%"=="W" goto DO_WT_BUILD
-if /I "%K%"=="E" goto DO_WT_P33
+if /I "%K%"=="E" goto DO_WT_CLA
 if /I "%K%"=="T" goto DO_TEST
 if /I "%K%"=="G" goto DO_GYRO
 if /I "%K%"=="V" goto DO_VSCODE
@@ -253,6 +281,9 @@ if /I "%K%"=="P" goto DO_INV_PRICECHECK
 if /I "%K%"=="L" goto DO_VENDOR_LIST
 if /I "%K%"=="D" goto DO_VENDOR_FETCH
 if /I "%K%"=="R" goto DO_VSCODE_REPO
+if /I "%K%"=="Y" goto DO_CYD
+if /I "%K%"=="U" goto DO_BOARD
+if /I "%K%"=="H" goto DO_HUB
 
 :: Only keys in MENUKEYS can get this far, so a digit here is always a real
 :: tool: 1-9 as printed, and 0 meaning the tenth entry.
@@ -400,14 +431,14 @@ if not exist "%TFULL%" (
 )
 goto BROWSER_MENU
 
-:: E) the worktree build with the P33 plans baked in (tools\make-preload.js)
-:DO_WT_P33
+:: E) the worktree build with the CLA plans baked in (tools\make-preload.js)
+:DO_WT_CLA
 call :CHECK_NODE || goto MENU
 if not exist "%WT_DIR%\tools\make-preload.js" (
     echo.
     echo   Nincs ilyen fajl:
     echo     %WT_DIR%\tools\make-preload.js
-    echo   Az elotoltott P33 build a planner-stack worktree-ben keszul. Ha az ag
+    echo   Az elotoltott CLA build a planner-stack worktree-ben keszul. Ha az ag
     echo   mar be lett olvasztva, ez az elem felesleges.
     echo.
     pause
@@ -428,8 +459,8 @@ if not "%RC%"=="0" (
     pause
     goto MENU
 )
-set "TNAME=Varler Planner - P33 elotoltve (wt-planner-stack)"
-set "TFULL=%WT_DIR%\dist\varler_planner_P33.html"
+set "TNAME=Varler Planner - CLA elotoltve (wt-planner-stack)"
+set "TFULL=%WT_DIR%\dist\varler_planner_CLA.html"
 if not exist "%TFULL%" (
     echo.
     echo   HIBA: lefutott, de nincs fajl itt:
@@ -516,6 +547,15 @@ if not exist "%PLANNER_DIR%" (
 start "Claude Code" /D "%PLANNER_DIR%" cmd /k call "%CLAUDE_CMD%"
 goto MENU
 
+:DO_HUB
+if exist "%REPO%\Hub\VRG Kapu.cmd" goto DO_HUB_RUN
+echo   HIBA: nem talalhato: Hub\VRG Kapu.cmd
+pause
+goto MENU
+:DO_HUB_RUN
+call "%REPO%\Hub\VRG Kapu.cmd"
+goto MENU
+
 :DO_VSCODE_REPO
 if not exist "%VSCODE_EXE%" (
     echo   HIBA: nem talalhato a VS Code: %VSCODE_EXE%
@@ -523,6 +563,39 @@ if not exist "%VSCODE_EXE%" (
     goto MENU
 )
 start "" "%VSCODE_EXE%" "%REPO%"
+goto MENU
+
+:: ========================= PLANNER CYD KIJELZO ==============================
+:: Mindharom a sajat uj ablakaban fut, a menu itt marad.
+:DO_BOARD
+if not exist "%BOARD_DIR%\Board Console.bat" (
+    echo   HIBA: nem talalhato: %BOARD_DIR%
+    pause
+    goto MENU
+)
+start "Board Console" /min "%BOARD_DIR%\Board Console.bat"
+goto MENU
+
+:DO_CYD
+if not exist "%CYD_DIR%" (
+    echo   HIBA: nem talalhato: %CYD_DIR%
+    pause
+    goto MENU
+)
+echo.
+echo   1^) Inditas a Plannerrel  ^(relay + bridge, utana nyisd meg a Plannert^)
+echo   2^) Demo  ^(kitalalt Planner, bongeszo nelkul^)
+echo   3^) CYD firmware feltoltese  ^(lecsereli a Rocket League kijelzot^)
+echo   4^) Makropad  ^(MAKROK oldal Windowshoz; a Plannert is felveszi^)
+echo   5^) Makropad beallitasa  ^(gombok, gyujtemeny, inditas a Windowszal^)
+echo   X^) Vissza
+choice /C 12345X /N /M "Valasztas: "
+set "CK=%ERRORLEVEL%"
+if "%CK%"=="1" start "Planner CYD" "%CYD_DIR%\1 - USB - Planner.bat"
+if "%CK%"=="2" start "Planner CYD demo" "%CYD_DIR%\2 - USB - Demo.bat"
+if "%CK%"=="3" start "Planner CYD flash" "%CYD_DIR%\3 - Flash CYD firmware.bat"
+if "%CK%"=="4" start "Planner CYD makropad" "%CYD_DIR%\4 - USB - Makropad.bat"
+if "%CK%"=="5" start "Planner CYD makropad settings" "%CYD_DIR%\5 - Makropad beallitasa.bat"
 goto MENU
 
 :: ====================== KESZLET / INVENTORY MUVELETEK ========================

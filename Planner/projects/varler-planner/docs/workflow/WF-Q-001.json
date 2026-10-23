@@ -208,7 +208,7 @@
     {
      "id": "R03",
      "q": "Where are 'vezethető fal' (routing wall) selections stored?",
-     "why": "P33's engine already reads Jelölés marks; a separate store would be cleaner to query but is one more thing.",
+     "why": "CLA's engine already reads Jelölés marks; a separate store would be cleaner to query but is one more thing.",
      "rec": "A",
      "opts": [
       {
@@ -226,7 +226,7 @@
     {
      "id": "R04",
      "q": "Standards: one dugalj with height variants, or separate dugalj items?",
-     "why": "Your question. Auto-pick from context worked on P33.",
+     "why": "Your question. Auto-pick from context worked on CLA.",
      "rec": "A",
      "opts": [
       {
@@ -267,7 +267,7 @@
     {
      "id": "R06",
      "q": "Bathroom socket height",
-     "why": "Your draft says 1400; the P33 engine used 1100 (outside zones 0–2, MSZ HD 60364-7-701 — the zone is a distance rule, the height is a choice).",
+     "why": "Your draft says 1400; the CLA engine used 1100 (outside zones 0–2, MSZ HD 60364-7-701 — the zone is a distance rule, the height is a choice).",
      "rec": "A",
      "opts": [
       {
@@ -278,14 +278,14 @@
       {
        "k": "B",
        "t": "1100",
-       "d": "Keep the P33 value."
+       "d": "Keep the CLA value."
       }
      ]
     },
     {
      "id": "R07",
      "q": "New rule tags for the palette: Kerülendő, Tilos (face), Médiafal, Munkalap, Sziget",
-     "why": "Munkalap and Sziget replace hand-written lists in p33.config.js, so the engine can read them from the plan.",
+     "why": "Munkalap and Sziget replace hand-written lists in cla.config.js, so the engine can read them from the plan.",
      "rec": "A",
      "opts": [
       {
@@ -332,7 +332,7 @@
       {
        "k": "A",
        "t": "1100",
-       "d": "Like the P33 engine."
+       "d": "Like the CLA engine."
       },
       {
        "k": "B",
@@ -392,7 +392,7 @@
     {
      "id": "E02",
      "q": "Suggest lamp → switch links automatically?",
-     "why": "On P33 the engine inferred them (nearest door, wet rooms switched from the dry side, two-way pairs) and you approved a table.",
+     "why": "On CLA the engine inferred them (nearest door, wet rooms switched from the dry side, two-way pairs) and you approved a table.",
      "rec": "A",
      "opts": [
       {
@@ -428,13 +428,13 @@
     {
      "id": "E04",
      "q": "Lighting circuits in the suggestion list",
-     "why": "P33 used two zones; WORKSHOP-001 says one string touching every RBX.",
+     "why": "CLA used two zones; WORKSHOP-001 says one string touching every RBX.",
      "rec": "A",
      "opts": [
       {
        "k": "A",
        "t": "Two zones: V1 day, V2 night",
-       "d": "Night = bedrooms + bath. The P33 decision."
+       "d": "Night = bedrooms + bath. The CLA decision."
       },
       {
        "k": "B",
@@ -450,8 +450,8 @@
     },
     {
      "id": "E05",
-     "q": "How does the P33 engine get into the Planner?",
-     "why": "It is 1 267 lines of plain Node code without DOM, and it produced the real P33 offers.",
+     "q": "How does the CLA engine get into the Planner?",
+     "why": "It is 1 267 lines of plain Node code without DOM, and it produced the real CLA offers.",
      "rec": "A",
      "opts": [
       {

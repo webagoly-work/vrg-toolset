@@ -23,7 +23,7 @@ by reference.
 | **BRIDGE-ARCH-002** *Alapozó Architektúra Terv* (HU) | r1 · 2026-09-21 | Full new-build infrastructure | **Current architectural authority** |
 | **BRIDGE-ARCH-002** (EN original) | — | — | **MISSING** — authoritative language per the HU text |
 | `RoomBox_synopsys.md` | — | — | **Not a spec** — the user brief that generated ARCH-002 |
-| **P33_BRIDGE_Inline_Architecture** | — | First application of ARCH-002 | Superseded as architecture, live as a case |
+| **CLA_BRIDGE_Inline_Architecture** | — | First application of ARCH-002 | Superseded as architecture, live as a case |
 
 ### 0.2 Gaps, corrected
 
@@ -235,7 +235,7 @@ documents themselves declare open, **U** gaps no document names but the system n
 | **C1** | ~~"Shadow Layer" names two opposed things.~~ **RESOLVED 2026-10-02.** S-A / S-B / S-C are declared **three deployment scales**, not three competing answers. **S-C is the reference design** the catalogue describes; S-A and S-B are documented reduced variants with stated omissions. The control-authority model (bistable element, manual-first, ζ/η) is named as the **invariant across all three**. Open sub-task: decide whether the term "Shadow Layer" is retired, or reserved for S-A only. |
 | **C2** | ~~Centralised hub vs distributed node.~~ **RESOLVED 2026-10-02.** **Both topologies are permanent**, selected by dwelling size: small homes centralise (intelligence in the consumer unit, as BRIDGE-DN), large homes distribute (BASE + per-RoomBox sub-controllers). Open sub-task **C2-T**: define the crossover threshold and criteria, and what the centralised variant gives up — chiefly local autonomy and last-state hold. |
 | **C3** | **PANEL LINK has no physical home.** ARCH-002 §6 requires either a free DIN row or a measuring gallery. BRIDGE-DN V2 fills 48/48 modules — a DIN socket no longer fits, and the doc says further expansion needs a second enclosure. Variant B (gallery) or a second cabinet must be chosen. |
-| **C4** | ~~Supersession chain is inconsistent.~~ **PROPOSED 2026-10-02, awaiting a nod.** Smart Switch r1 is dated the same day as ARCH-A1 and states explicitly that it supersedes it, so **ARCH-A1 is superseded** and ARCH-002's listing of it as a live sibling is simply stale. Authority chain: **ARCH-001** (doctrine, S-A) → **ARCH-002** (architecture, S-C) → **Smart Switch r1** (control authority, supersedes ARCH-A1) → **STD-001…006** (dimensioned standards). ARCH-A1 and P33-BRIDGE-ARCH-01 are retained as history, marked superseded, never cited as current. |
+| **C4** | ~~Supersession chain is inconsistent.~~ **PROPOSED 2026-10-02, awaiting a nod.** Smart Switch r1 is dated the same day as ARCH-A1 and states explicitly that it supersedes it, so **ARCH-A1 is superseded** and ARCH-002's listing of it as a live sibling is simply stale. Authority chain: **ARCH-001** (doctrine, S-A) → **ARCH-002** (architecture, S-C) → **Smart Switch r1** (control authority, supersedes ARCH-A1) → **STD-001…006** (dimensioned standards). ARCH-A1 and CLA-BRIDGE-ARCH-01 are retained as history, marked superseded, never cited as current. |
 | **C5** | ~~"OmniComm" is overloaded.~~ **PROPOSED 2026-10-02, awaiting a nod.** Use **OmniComm** for the **CM5 hardware line only** — the carrier board, the hub build spec, the spectrum and wiring drawings. **Retire it as a name for the hub itself**; the hub is BRIDGE, running on COMP. ARCH-001's "the HA hub, Omnicomm" is then read as historical. This keeps every existing OmniComm filename meaningful and removes the collision. |
 
 ### D — Declared open decisions
@@ -294,7 +294,7 @@ These were raised directly rather than inferred from the corpus. Two of them —
 | **U19** | **Audio that follows the occupant.** Music tracking a person between rooms. Requires Snapcast zone handoff, a presence-trigger threshold with hysteresis, a latency and sync budget, and a rule for what happens with two occupants in different rooms. | Depends on U5/U23 being real rather than nominal. |
 | **U20** | **RGB and light-level ambience scene model.** Distinct from U4's photometry: the scene *semantics* — what a scene is, how it composes across fixtures and layers, how level and colour interact, how scenes arbitrate against U3. | |
 | **U21** | **Secondary lighting device and installation catalogue.** A comprehensive design catalogue — coves, niches, under-cabinet, skirting and step, stair, wardrobe, mirror, art and display, plinth, handrail, outdoor grazing — each with mounting, optic, driver, dimming and colour logic. | This is where gaffer practice and colour theory earn their place. |
-| **U22** | **Exact hardware composition of BRIDGE P33.** `P33_BRIDGE_Inline_Architecture.md` exists as an architecture sketch; a concrete, costed hardware composition for the actual property does not. | The second buildable artefact after BRIDGE-DN. |
+| **U22** | **Exact hardware composition of BRIDGE CLA.** `CLA_BRIDGE_Inline_Architecture.md` exists as an architecture sketch; a concrete, costed hardware composition for the actual property does not. | The second buildable artefact after BRIDGE-DN. |
 | **U23** | **Composite presence stack — eight modalities now named.** WiFi CSI · WiFi RSSI · **BLE AoA** · directional PIR · PIR + mmWave dual · acoustic source localisation · tagged-object location via multi-node · WiFi heatmap. Each needs a capability, hardware and accuracy entry, plus the fusion model still owed by U5. **Three carry hardware constraints that change the design** — see the flags below. | Supersedes U5 in scope; U5 remains as the fusion-algorithm gap. |
 | **U24** | **Identity and verification architecture — entirely new.** Primary: PIN on a 4×3 matrix, secondary password. Remote reset by mail/ping to the user's own server. Secondary: offline biometric on a trusted phone, paired to the system. **"Trinity items"** — phone, keychain and wallet, each carrying a readable tag, so identity confidence is multi-factor and carried rather than entered. Plus a behavioural ML profile from logged movement and activity. Goal: **independent confirmation of user presence.** ARCH-002 gestures at this only via a fingerprint module (§10.11) and room-level roles (D10). | Needs a confidence model, an enrolment and revocation path, a privacy boundary for the behavioural profile, and a defined failure mode when confidence is low. |
 
@@ -363,7 +363,7 @@ would otherwise have been built.
 | Ref | Blocked on |
 |---|---|
 | **D1** room list + RoomBox class per room | **you.** Gates more than anything else: STD-001 §4 is a template, STD-003's zone graph is an illustration, STD-002 scene values are unfillable, STD-004 address allocation has no room numbers, STD-005 cannot size AP density, STD-007 cannot schedule screens or measure cable runs |
-| **U22** P33 hardware composition → `P33-BUILD-001` | D1 |
+| **U22** CLA hardware composition → `CLA-BUILD-001` | D1 |
 | AV position envelope | needs an enclosure spec in **STD-001 r2** — ventilation, a 230 V circuit, an HDMI/eARC path. It is not a RoomBox class |
 | Snapcast server placement | on MEDIA it shares fate with transcoding; the follow-me layer dies when a transcode saturates the box. **Test under load before committing** |
 | D3 · D4 · D6–D16 · D18–D21 | the tuner, or D1 |
@@ -372,7 +372,7 @@ would otherwise have been built.
 003 §8 presence · 004 §5 control · 005 §6 data and RF · 006 §4 system and security · 007 §8 media
 and audio.
 
-**Next, once the tuner comes back:** apply the answers across 001–006, then `P33-BUILD-001` as the
+**Next, once the tuner comes back:** apply the answers across 001–006, then `CLA-BUILD-001` as the
 first real test of the whole set. One open architectural question worth settling early — whether
 the §1 arbiter of STD-006 lives inside Home Assistant or as its own small service. A tier model
 that specific is awkward to express in HA automations alone.

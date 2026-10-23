@@ -228,7 +228,7 @@ function mrkWallSvg(m){const g=mrkGeom(m);if(!g)return '';const z=dz(g.level,0),
     if(m.kind==='hstrip'||m.kind==='hband')s+=mrkText((a[0]+b[0])/2,(a[1]+b[1])/2,z,mrkBand(m),col,9);});
   if(m.kind==='side'&&(m.tags||[]).indexOf('lforma')>=0&&g.faces[0])s+=mrkLMark(m,g.faces[0],z,col);
   if(m.kind==='side'||m.kind==='vstrip'){const f=g.faces[0],a=mrkFacePt(f.r,f.side,(f.u0+f.u1)/2,f.off+60),t=mrkFirstTag(m);
-    if(t)s+=mrkText(a[0],a[1],z,mrkTrunc(t,14),col,8.5);}
+    if(t&&!(mrkStyle(m)||{}).noText)s+=mrkText(a[0],a[1],z,mrkTrunc(t,14),col,8.5);}   // noText: an ink whose colour says it (08r Mozi fal)
   return s;}
 // L-forma: a small L at the end of this face that lies nearest another lforma face
 function mrkLMark(m,f,z,col){

@@ -40,7 +40,7 @@ Context no longer changes a device silently — it raises a **suggestion** (chec
 ## Tests
 1. The palette shows `Dugalj · garázs · 500` as its own button; placed → `{code:'SOC', var:'garazs', h:500}`.
    A plain `Dugalj` placed in the garage → `std.suggest` info naming the garázs item.
-2. Every P33 v1 endpoint: `stdPick(d).h` equals what `rules.js stdHeight` gave (read from the v1 vplan output) — except
+2. Every CLA v1 endpoint: `stdPick(d).h` equals what `rules.js stdHeight` gave (read from the v1 vplan output) — except
    rows the user changed in the ⏸ (listed in the spec).
 3. Override `kind:furdo` SOC 1400 → a bathroom socket gets 1400, a kitchen one does not.
 4. Editing the `garazs` row to 550 + `stdApply('project')` → every garázs socket at 550 except `hFix` ones.

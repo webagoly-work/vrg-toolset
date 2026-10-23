@@ -160,18 +160,28 @@ symbols grey while every class was correct and every test passed.
 ## Codephrases
 
 - **`GO R1010`** — read `GO-R1010.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
-  and do what it says: continue the Planner round 2026-10-10, then the P33-ADD-001 extras.
+  and do what it says: continue the Planner round 2026-10-10, then the CLA-ADD-001 extras.
 - **`GO FRAME`** — read `GO-FRAME.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
   and do what it says: the BRIDGE SmartFrame (BSF) concept: research, IDEA-003, tune with the user,
   then the BRIDGE doc and (after round 2026-10-10 is built) the Planner pack. No code.
 - **`GO V2`** — read `GO-V2.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
-  and do what it says: the P33 second version — v1 (VG-2026-PT33-01) fully built + every other BRIDGE layer
+  and do what it says: the CLA second version — v1 (VG-2026-CLA-01) fully built + every other BRIDGE layer
   prepared (conduit, cable pulled, boxes, niches; no hardware), quick survey-precision quantities and prices vs v1,
   a per-room ESPHome marketing list; then hand the fair-price calculation to the Workflow Kit session (V2_FELADAT.md).
-- **`GO CITY`** — read `GO-CITY.md` at the repo root (branch `worktree-codecity`, worktree
-  `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\.claude\worktrees\codecity`, until merged) and do what it
-  says: build VRG Kódváros, the codebase-as-a-city viewer, one WP at a time from `docs/city/README.md` §3.
-- **`GO ALL`** — read `GO-ALL.md` at the repo root (until merged: in the codecity worktree, or
-  `git show origin/worktree-codecity:GO-ALL.md`) and do what it says, as the **primary account in the
+- **`GO R1018`** — read `GO-R1018.md` at the repo root (main checkout, branch `main`) and do what it says:
+  continue the Planner round 2026-10-18 (Födém · Igénylista · Házimozi, all built + committed 2026-10-19):
+  only the C6 Mozi fal pen feel is open.
+- **`GO HUB`** — read `GO-HUB.md` at the repo root (the **SecAcc worktree**
+  `H:\cwebuser\projects\VRG-DE\SecAcc`, branch `secacc`, secondary account) and do what it says:
+  build VRG Kapu, the shared Homepage / Business Topology board, from the pack in `docs/hub/`
+  (next open WP in its README §3 order; stop at every ⏸).
+- **`GO STRICT`** — read `GO-STRICT.md` at the repo root (until `secacc` is merged it is only in the
+  SecAcc worktree: `H:\cwebuser\projects\VRG-DE\SecAcc\GO-STRICT.md`) and do what it says, in the
+  **main checkout**, branch `main`: commit the five uncommitted programs VRG Kapu links to
+  (research, client-look, media-wall, planner-cyd, board-console), asking about `macros.json` first.
+- **`GO CITY`** — read `GO-CITY.md` at the repo root and do what it says: VRG Kódváros, the codebase-as-a-city
+  viewer (C1–C10 built and merged into `main` 2026-10-23; new WPs go on branch `worktree-codecity`,
+  worktree `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\.claude\worktrees\codecity`).
+- **`GO ALL`** — read `GO-ALL.md` at the repo root and do what it says, as the **primary account in the
   main checkout**: build `dev-all` in its own worktree `wt-dev-all` — every pushed line of work
   (planner-stack, secacc, worktree-codecity, …) merged together so every feature can be tried at once.

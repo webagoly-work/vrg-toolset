@@ -281,7 +281,7 @@ about their panel.
 |---|---|
 | **D9** | SSC position and the provider's requirements, including whether `alarm_type` can be supplied (G09). §3.2 degrades safely without it, but degraded |
 | **D1** | Room list — safety scopes in §1.2 are defined per room and cannot be written without it |
-| **U22** | P33 hardware composition — `P33-BUILD-001`, the first real test of 001–008 |
+| **U22** | CLA hardware composition — `CLA-BUILD-001`, the first real test of 001–008 |
 | — | The arbiter service itself: §1.0 settles *that* it is a service, not what it is written in or how HA subscribes to it |
 | — | §2's matrix is reasoned, not tested. **G11 requires walking all of it**, not a sample, and every row becomes a real claim only then |
 

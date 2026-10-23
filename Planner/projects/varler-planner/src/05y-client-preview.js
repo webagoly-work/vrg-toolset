@@ -15,7 +15,7 @@
 // Levels have a scope: 'in' (the work; solid and clickable), 'ghost' (part of the
 // building but outside the work; drawn faint, never clickable) or 'skip' (left
 // out). Default: a level shown in the Planner is 'in'; a hidden level that has
-// geometry is 'ghost'; an empty level is 'skip'. P33: ground in, upper ghost,
+// geometry is 'ghost'; an empty level is 'skip'. CLA: ground in, upper ghost,
 // basement skipped.
 const CPV_VERSION=1;
 const CPV_SLAB=300;            // mm between one level's ceiling and the next level's floor
@@ -30,8 +30,9 @@ function cpvDefaultScope(){const o={};
   ORD.forEach(l=>{o[l]=state.levels&&state.levels[l]?'in':(cpvHasGeometry(l)?'ghost':'skip');});return o;}
 // floor elevation of each level in mm, ground = 0, real (never exploded) spacing
 function cpvLevelZ(l){const g=ORD.indexOf('ground'),i=ORD.indexOf(l);let z=0;
-  if(i>g)for(let k=g;k<i;k++)z+=LH[ORD[k]]+CPV_SLAB;
-  else for(let k=i;k<g;k++)z-=LH[ORD[k]]+CPV_SLAB;
+  const sl=k=>slbAny()?slbStep(ORD[k+1]):CPV_SLAB;   // 08p: the real födém when the project has one
+  if(i>g)for(let k=g;k<i;k++)z+=LH[ORD[k]]+sl(k);
+  else for(let k=i;k<g;k++)z-=LH[ORD[k]]+sl(k);
   return z;}
 const cpvR=v=>Math.round(v);
 function cpvDevLabel(d){const en=d.code&&typeof epEntry==='function'?epEntry(d.code):null;

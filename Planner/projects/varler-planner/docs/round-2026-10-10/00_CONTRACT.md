@@ -74,7 +74,7 @@ read it with a default, and sync its checkbox where `11-controls.js` ≈ line 22
 preview_start  name: planner-serve        (H:\.claude\launch.json, port 8131, serves the REPO ROOT)
 ```
 ```js
-const r = await fetch('/Calculator/P33-teszt_v2.vplan.json').then(r => r.json());
+const r = await fetch('/Calculator/CLA-teszt_v2.vplan.json').then(r => r.json());
 hardResetWorkspace(); applyProjectData(r.project || r); draw();
 ```
 Measure, do not squint (PRIMER §4): read computed styles, `getBBox()`, `selected`, `state.*`.

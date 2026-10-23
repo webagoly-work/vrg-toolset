@@ -128,7 +128,7 @@ const RLI_TEXT={
  'sys:DATA':{cel:'Adat és PoE: WiFi hozzáférési pont, adataljzat, kamera.',
    hol:'AP a mennyezeten, szintenként 1–2; adataljzat 300 mm (nappali, dolgozó, háló); kamera 2400 mm. [N]',
    klaszter:'Minden SELV és adat, Média, USB.'},
- 'sys:KNX':{cel:'KNX busz — csak ha a projekt KNX-et választ (P33-ban nem).',
+ 'sys:KNX':{cel:'KNX busz — csak ha a projekt KNX-et választ (CLA-ban nem).',
    hol:'Vonal vagy fa, soha nem hurok. [A2 Step 7]',
    klaszter:'Minden SELV és adat.'},
  'sys:SENSOR':{cel:'Érzékelők: jelenlét (mmWave), CO₂, PIR, vízszivárgás, hőkamera (fürdő), ágy-életjel, portál ToF.',
@@ -187,7 +187,7 @@ notifies; never make an ESPHome sensor the primary smoke or CO alarm. State this
 in any client material.
 
 **New codes** (all `role:'sys:SECURITY'`, `cat:'device'`; existing `SEC` stays for third-party
-systems). `from:'ssc'` needs an SSC node; P33 has none (10-09 handover) — the fill reports
+systems). `from:'ssc'` needs an SSC node; CLA has none (10-09 handover) — the fill reports
 `fill.unreached` until one is placed, which is the right message.
 
 ```js
@@ -398,7 +398,7 @@ const CPR_CAT=[
  {key:'mikro',  tier:2,kind:'ded',   n:'Mikrohullámú sütő',                  mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['konyha'], codes:['DED:g16']},
  {key:'szarit', tier:2,kind:'ded',   n:'Szárítógép',                         mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['furdo','gepeszet'], codes:['DED:g16']},
  {key:'bojler', tier:2,kind:'ded',   n:'Villanybojler',                      mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['furdo','gepeszet','kamra'], codes:['DED:g16']},
- {key:'szobakor',tier:2,kind:'socket',n:'Szobakör — dugaljak + világítás (felújítás, NV4-minta)',mcb:'1C 16A',mm2:2.5,cab:'NYM3x25', scope:'room', kinds:['nappali','halo','dolgozo'], codes:['SOC','LMP','SWI']},
+ {key:'szobakor',tier:2,kind:'socket',n:'Szobakör — dugaljak + világítás (felújítás, CLANV4-minta)',mcb:'1C 16A',mm2:2.5,cab:'NYM3x25', scope:'room', kinds:['nappali','halo','dolgozo'], codes:['SOC','LMP','SWI']},
  {key:'av',     tier:2,kind:'ded',   n:'AV pozíció (médiafal)',              mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'unit', kinds:['nappali'], codes:['AVP']},
  {key:'kulter', tier:2,kind:'socket',n:'Kültéri dugalj (IP44)',              mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'room', kinds:['kulter'], codes:['SOC']},
  {key:'garazs', tier:2,kind:'socket',n:'Garázs / műhely dugalj',             mcb:'1C 16A',  mm2:2.5, cab:'NYM3x25', scope:'room', kinds:['gepeszet'], codes:['SOC']},
@@ -417,13 +417,13 @@ const CPR_CAT=[
 ```
 `expect:[min,max]` = how many active circuits of this key the reminder expects (absent = `[1,1]` for
 tier 1, `[0,…]` otherwise). Klíma: 1–2 by default (answer M06); 0 active → `⚠ alapkör`, 3+ → no
-warning (NV4 has 3).
+warning (CLANV4 has 3).
 
-**Sample preset (answer M06):** `samples/NV4-minta.vrg-elo-presets.json` — NV4's finalised 13-circuit
+**Sample preset (answer M06):** `samples/CLANV4-minta.vrg-elo-presets.json` — CLANV4's finalised 13-circuit
 schedule (Költségvetési Tervezet 12.3.4: one `1B 10A` lighting circuit for the shared rooms + the hall
 socket, three mixed room circuits, kitchen worktop, oven/hob 16 A, fridge, microwave, bathroom, three
 klíma, washing machine — all `1C 16A` on 2.5 mm²). It carries no client name or address. M2 ships it as
-a built-in "Minta: panellakás felújítás (NV4)" preset set the dialog can load in one click, and as the
+a built-in "Minta: panellakás felújítás (CLANV4)" preset set the dialog can load in one click, and as the
 import test fixture. Note how real practice differs from `ELO_RULES.mcb`: lighting B10, not C10 —
 the dialog's per-row B / C toggle exists for exactly this.
 
@@ -469,7 +469,7 @@ A owns the corner · B owns the corner; T: butt · through to the far face) cost
 movement, ties → A's form; it respects how a plan was drawn but leaves mixed styles. **C** = T stems
 through to the far face (overlap `tB × tA`).
 
-**Measured on `P33-teszt_v2` (ground, 19 walls, thicknesses 104 / 200 / 250 / 300 / 400 mm)** with a
+**Measured on `CLA-teszt_v2` (ground, 19 walls, thicknesses 104 / 200 / 250 / 300 / 400 mm)** with a
 read-only prototype of this table: **27 junctions — 12 L, 15 T, 0 X — only 1 already exact; 33 end
 moves, largest 308 mm; 12 of them are exactly half the partner's thickness.** Those 12 are walls
 joined *at the partner's centreline* — what the wall tool's centreline snap produces. At an L corner a

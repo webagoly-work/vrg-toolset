@@ -1,10 +1,10 @@
-# WP-R3 — Rules palette: the P33 colour-coded marks as one-click rules
+# WP-R3 — Rules palette: the CLA colour-coded marks as one-click rules
 
 Status: todo · Wave R · Depends: R2 · Size: S (~110 lines) · Spec: next free · Decisions: Q-R07
 
 ## Goal
 *"Continue with the more granular wall setting rules based on the colour-coded rules you asked me to mark the walls on
-P33 and features with — it was perfect and I want to integrate it. Options here have half-side wall selection by default
+CLA and features with — it was perfect and I want to integrate it. Options here have half-side wall selection by default
 (same LMB rules). (Floor rules — make the place for it, under dev.)"*
 
 ## Read
@@ -20,7 +20,7 @@ P33 and features with — it was perfect and I want to integrate it. Options her
    (R2) is the only whole-wall default. Zones (ágy, közlekedő, padlófűtés, sziget) draw rectangles (existing `zone`
    plane mode).
 3. New tags (Q-R07 confirms each): `kerulendo`, `tilos`, `media`, `munkalap` (sides), `sziget` (zone). `munkalap` and
-   `sziget` replace `p33.config.js`'s hand-written `worktop` / `island` lists (E5 reads the marks).
+   `sziget` replace `cla.config.js`'s hand-written `worktop` / `island` lists (E5 reads the marks).
 4. The panel shows a live legend with counts: `Vezethető fal 12 · L-forma 4 · Tilos 2 …`.
 
 ## Tests

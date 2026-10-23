@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // to-planner.js — turn a baseline config's ANSWERS into ordinary Planner data (WP-E5 acceptance, E5-Q12 = C, step A)
 //   node tools/baseline/to-planner.js <in.vplan.json> <out.vplan.json> [config.js]
-// The P33 answers lived only in p33.config.js; the Planner's engine reads the plan itself. This writes them as what the
+// The CLA answers lived only in cla.config.js; the Planner's engine reads the plan itself. This writes them as what the
 // Planner's own tools would have made, so the two engines can be compared on equal input:
 //   edits (new / moved points) and the engine's heights + portal placement → the devices themselves
 //   socketPlan + lighting zones                 → data.circuits (lighting: preset 'vil')
@@ -19,7 +19,7 @@ const geom = require('./geom'), prep = require('./prep'), { plan } = require('./
 const [, , inFile, outFile, cfgFile] = process.argv;
 if (require.main === module && (!inFile || !outFile)) { console.error('usage: to-planner.js <in.vplan.json> <out.vplan.json> [config.js]'); process.exit(2); }
 if (require.main === module) {
-  const cfg = require(path.resolve(cfgFile || path.join(__dirname, 'p33.config.js')));
+  const cfg = require(path.resolve(cfgFile || path.join(__dirname, 'cla.config.js')));
   const doc = JSON.parse(fs.readFileSync(inFile, 'utf8'));
   const out = convert(doc, cfg);
   fs.writeFileSync(outFile, JSON.stringify(out.doc));
@@ -91,7 +91,7 @@ function convert(doc, cfg) {
   ['floorLinks', 'risers', 'prepared'].forEach(k => { if ((cfg[k] || []).length) report.notCarried.push(k + ' ' + cfg[k].length); });
   if (cfg.spBoxSize) report.notCarried.push('spBoxSize');
   const shu = E.filter(e => e.isNew).length; if (shu) report.notCarried.push('redőnykapcsoló ' + shu + ' (külön rétegen)');
-  D.seq = seq; doc.name = (doc.name || 'P33') + ' — Planner-adat (to-planner)'; doc.saved = new Date().toISOString();
+  D.seq = seq; doc.name = (doc.name || 'CLA') + ' — Planner-adat (to-planner)'; doc.saved = new Date().toISOString();
   return { doc, report, R };
 }
 module.exports = { convert };

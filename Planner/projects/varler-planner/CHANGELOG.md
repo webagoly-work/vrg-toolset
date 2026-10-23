@@ -19,7 +19,7 @@ Five complaints about the *look* of the plan, which turned out to be four causes
 - **Room labels fit the room.** A name was sized from the paper scale with no regard for the room,
   so a WC wore a label 1.8× its own width and a lépcső 1.9×, spilling across their neighbours —
   which is what actually made the plan look coarse, not the big rooms. The block is now measured
-  and shrunk to fit, never grown. Measured on P33: every label went from 0.83–1.90 of the room
+  and shrunk to fit, never grown. Measured on CLA: every label went from 0.83–1.90 of the room
   width to 0.26–0.94. The official view got the same treatment.
 - **A symbol set of our own.** Everything that was not a socket, a switch, a lamp or a board drew
   as one generic square-with-a-dot — érzékelő, kamera, hangszóró and kezelőpanel were the same

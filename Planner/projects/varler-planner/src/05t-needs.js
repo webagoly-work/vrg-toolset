@@ -61,6 +61,7 @@ function needDerived(rm){const e=needRoomEntry(rm),rid=e&&stkRoomId(e),out={};if
   const add=(role,code)=>{(out[role]=out[role]||[]);if(out[role].indexOf(code)<0)out[role].push(code);};
   const wins=needOpenings(rid,'window'),doors=needOpenings(rid,'door'),all=needOpenings(rid);
   if(needTagged(wins,['redony','arnyekolo']))add('sys:LIGHT','SHU');
+  if(typeof cinRoomIds==='function'&&cinRoomIds().indexOf(rid)>=0)add('sys:DED','DED');   // 08r: a cinema room needs its AV circuit(s)
   if(needTagged(doors,['portal','bejarat','lepcso']))add('sys:BUSB','NTL');
   if(needTagged(doors,['p2','p3'])){add('sys:CONTROL','POR');add('sys:SENSOR','POR');}
   // S5: the entrance gets contact + keypad + doorbell; every perimeter opening a contact; a protected window glass-break
@@ -79,6 +80,7 @@ function needDefaults(rm,role){
   return {codes:codes.concat(derived),derived};}
 // {code:true} — the saved checklist of that layer, else the defaults
 function needOf(rm,role){if(rm&&rm.needs&&rm.needs[role])return Object.assign({},rm.needs[role]);
+  if(typeof reqNeedOf==='function'){const r=reqNeedOf(rm,role);if(r)return r;}   // 08q (N1 A): a room with an igénylista ticks from its counts
   const o={};needDefaults(rm,role).codes.forEach(c=>{o[c]=true;});return o;}
 function needSaved(rm,role){return !!(rm&&rm.needs&&rm.needs[role]);}
 function needSet(rm,role,code,on){if(!rm)return false;const isFloor=data.floors.indexOf(rm)>=0;
@@ -137,7 +139,7 @@ function needOverview(){const S=stkActive();if(!S){lyrHud('Aktív BRIDGE Stack k
       +roles.map(x=>{const st=needStatus(r.rm,x.k,S.id);return `<td align="center" style="color:${NEED_STATUS[st].c}" title="${esc(x.n)}: ${NEED_STATUS[st].n}">●</td>`;}).join('')+`</tr>`).join('')
     +`</table></div>`,()=>{},'Bezár');
   document.querySelectorAll('.ndRoom').forEach(tr=>tr.onclick=()=>{const e=mrkRoomById(tr.dataset.id);closeModal();if(e)needDialog(e.rm);});}
-STK_ROOMMENU.push((rh,items)=>{if(!stkActive())return;items.push({label:'☑ Helyiség igényei…',act:()=>needDialog(rh.rm)});});
+STK_ROOMMENU.push((rh,items)=>{if(!stkActive())return;items.push({label:'☑ Rétegenkénti igények (pipák)…',act:()=>needDialog(rh.rm)});});
 
 // ---- checks: one per system role ----------------------------------------------------------------------------------------------
 function needChecks(role){return S=>{const out=[];if(!stkLayer(S.id,role))return out;

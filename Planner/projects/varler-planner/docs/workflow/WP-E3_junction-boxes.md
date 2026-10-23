@@ -21,7 +21,7 @@ box at the expected point of the mennyezet."*
    `switching` (wall box for one lamp↔switch group), `ceiling` (⌀ 80 lamp box). Placed with the Device tool's `box`
    type + a `jb` field; the E0 bar 4.3 has the four buttons.
 2. **Service points** = the Elosztó, every `portal` box, every `pre-rbx`, RBX, BASE. `jbServicePoints(level)` is the
-   list E5 reads: **a wall is crossed only at a service point** (the P33 rule).
+   list E5 reads: **a wall is crossed only at a service point** (the CLA rule).
 3. **Meeting box per group** (`jbMeet(group)`): the group's lamps and switches meet in the room's RBX / `pre-rbx` if one
    serves the room, else the door portal box of the switch, unless the user set `meet` on the group. Shown on the
    group's inspector: `Találkozás: P2 portáldoboz (L4)`.

@@ -160,7 +160,8 @@ function snap_(scope){ensureIds(data);                  // nothing is snapshotte
   const o=keys.reduce((o,k)=>(o[k]=data[k],o),{});
   o.__scope=sc?sc.slice():null;                                 // markers kept → redo is symmetric
   if(!sc||sc.indexOf('__walls')>=0){o.__walls={};for(const l of ORD)o.__walls[l]=WALLS[l]||[];}
-  if(sc&&sc.indexOf('__layers')>=0)o.__layers={layers,stacks};  // opt-in only — a plain pushUndo() must not carry layers
+  if(sc&&sc.indexOf('__layers')>=0)o.__layers={layers,stacks};
+  if(sc&&sc.indexOf('__slabs')>=0)o.__slabs=JSON.parse(JSON.stringify(SLABS));   // 08p: a födém switch (opt-in)  // opt-in only — a plain pushUndo() must not carry layers
   o.__noteHide=data.noteHide||{};o.__seq=data.seq||0;o.__v=data.v||SCHEMA_VERSION;
   return JSON.parse(JSON.stringify(o));}
 function snapBytes(sn){try{return JSON.stringify(sn).length;}catch(_){return 0;}}
@@ -170,6 +171,7 @@ function applySnap(sn){
   if(sn.__noteHide)data.noteHide=sn.__noteHide;
   data.seq=Math.max(+sn.__seq||0,data.seq||0);data.v=sn.__v||SCHEMA_VERSION;   // ids must never be reissued
   pruneLinks();
+  if(sn.__slabs){ORD.forEach(l=>{SLABS[l]=Object.assign({},sn.__slabs[l]);});if(typeof slbSyncUI==='function')slbSyncUI();if(typeof rebuildDrawH==='function')rebuildDrawH();}
   if(sn.__walls){for(const l of ORD){WALLS[l]=(sn.__walls[l]||[]).map(wr);SNAP[l]=centerlines(WALLS[l]);}}
   if(sn.__layers){layers=sn.__layers.layers;stacks=sn.__layers.stacks||[];if(!layers.some(l=>l.id===state.activeLayer))state.activeLayer=layers[0]?layers[0].id:'L0';if(typeof renderLayers==='function')renderLayers();}
   reselectAfterSnap();}
@@ -224,7 +226,8 @@ function renderGuides(){const box=$('guideBox');if(!box)return;const level=state
         :`<div class="mrow">Magasság <input id="grmm" type="number" value="${typeof g.mm==='number'?g.mm:0}" style="width:90px"> mm</div>`)
       +`<div class="mrow">Szín <input id="grc" type="color" value="${g.c}" style="width:44px;height:24px"></div>`,
       ()=>{g.l=$('grn').value||g.l;if(!g.sys&&!guideStd(g)&&$('grmm'))g.mm=+$('grmm').value||0;g.c=$('grc').value;rebuildDrawH();renderGuides();draw();});});}
-function rebuildDrawH(){const sel=$('drawH');if(!sel)return;sel.innerHTML=GUIDES.map(g=>`<option value="${g.k}">${esc(guideLabel(g))}</option>`).join('');sel.value=state.drawHKey;}
+function rebuildDrawH(){const sel=$('drawH');if(!sel)return;sel.innerHTML=GUIDES.map(g=>`<option value="${g.k}">${esc(guideLabel(g))}</option>`).join('')
+  +(typeof slbAny==='function'&&slbAny()?`<option value="slab">${esc(SLB_GUIDE.l)}</option>`:'');sel.value=state.drawHKey;}
 (function initGuides(){renderGuides();rebuildDrawH();})();
 $('addG').onclick=()=>{const v=+$('custG').value;if(v>0){const nm=$('custGName').value.trim()||('Egyéni '+v);
   const k='g'+Date.now();GUIDES.push({k,mm:v,l:nm,c:'#7a5cc0',vis:false,jump:true});
@@ -240,9 +243,9 @@ $('bBOM').onclick=()=>{const t=bomText();navigator.clipboard.writeText(t).then((
 $('bBOMcsv').onclick=()=>download('bom.csv',bomCSV());
 $('bBOMj').onclick=()=>download('bom.json',JSON.stringify(bomJSON(),null,2));
 $('bSave').onclick=()=>{for(const l of ORD)B.walls[l]=(WALLS[l]||[]).map(rectArr);
-  download('villanyterv.json',JSON.stringify({state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc},null,2));};
+  download('villanyterv.json',JSON.stringify(slbPut({state,LH,DROPC,GAP,guides:GUIDES,data,building:B,layers,stacks,panelLoc}),null,2));};
 $('bLoad').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);
-  Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
+  Object.assign(state,o.state);Object.assign(LH,o.LH||{});Object.assign(DROPC,o.DROPC||{});slbGet(o);if(typeof o.GAP==='number')GAP=o.GAP;if(o.guides&&Array.isArray(o.guides)){GUIDES=o.guides;}else if(o.guideOn){GUIDES.forEach(g=>{if(o.guideOn[g.k]!=null)g.vis=!!o.guideOn[g.k];});(o.customG||[]).forEach(v=>GUIDES.push({k:'g'+Math.random().toString(36).slice(2),mm:v,l:'Egyéni '+v,c:'#7a5cc0',vis:true,jump:true}));}if(typeof renderGuides==='function')renderGuides();if(typeof rebuildDrawH==='function')rebuildDrawH();
   if(o.layers)layers=o.layers;stacks=o.stacks||[];lyrMigrateAll();if(o.panelLoc)panelLoc=o.panelLoc;if(o.building)loadBuilding(o.building,true);
   UKEYS.forEach(k=>data[k]=(o.data&&o.data[k])||[]);if(typeof stkMigrateRoles==='function')stkMigrateRoles();if(typeof swNumMigrate==='function')swNumMigrate(data);syncUI();renderLayers();if(typeof renderDashboard==='function')renderDashboard();draw();}catch(err){alert('Bad file');}};r.readAsText(f);};
 function syncUI(){vsApply();if(typeof kbdApplyLayout==='function')kbdApplyLayout();   // U4: the saved layout's keys and hints

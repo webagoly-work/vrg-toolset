@@ -37,10 +37,10 @@ setTimeout(()=>{
   ok('default template gives 1.02-D1',F(w.ROOM_REF_TPL)==='1.02-D1',F(w.ROOM_REF_TPL));
   ok('{nn} pads to two digits',F('{szám}-{típus}{nn}')==='1.02-D01');
   ok('tokens work without accents too',F('{szam}-{tipus}{n}')==='1.02-D1');
-  ok('project code prefixes when set',F('{projekt}-{szám}-{típus}{n}',{projekt:'P33'})==='P33-1.02-D1');
+  ok('project code prefixes when set',F('{projekt}-{szám}-{típus}{n}',{projekt:'CLA'})==='CLA-1.02-D1');
   ok('an empty project code takes its separator with it',F('{projekt}-{szám}-{típus}{n}')==='1.02-D1',F('{projekt}-{szám}-{típus}{n}'));
   ok('two empty leading tokens leave no stray dash',F('{projekt}-{szám}-{típus}{n}',{szam:''})==='D1',F('{projekt}-{szám}-{típus}{n}',{szam:''}));
-  ok('an empty token in the middle is closed up',F('{projekt}-{szám}-{típus}{n}',{projekt:'P33',szam:''})==='P33-D1');
+  ok('an empty token in the middle is closed up',F('{projekt}-{szám}-{típus}{n}',{projekt:'CLA',szam:''})==='CLA-D1');
   ok('an unknown token is left visible, not swallowed',F('{szám}-{foo}{n}')==='1.02-{foo}1');
 
   // ---------- plan ----------

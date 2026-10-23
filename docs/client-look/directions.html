@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VRG client look — two directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500&family=Azeret+Mono:wght@400;500&family=Michroma&family=Archivo:wdth,wght@100..125,300..700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#1b1d20;color:#ddd;font:15px/1.5 system-ui,sans-serif}
+.intro{max-width:1240px;margin:0 auto;padding:28px 20px 8px;color:#bfc4c8}
+.intro h1{font:500 18px/1.3 system-ui;color:#fff;margin:0 0 4px}
+.intro p{margin:0;max-width:80ch}
+
+/* ───────── Direction A · Title Card (dark-first, serif) ───────── */
+.dirA{
+  --bg:#0A0E13; --bg-2:#111821; --fg:#E7EDF1; --fg-2:#93A1AD; --fg-3:#5D6B77;
+  --line:rgba(214,228,238,.16); --line-2:rgba(214,228,238,.42); --line-3:rgba(214,228,238,.78);
+  --accent:#D8B27A; --accent-ink:#1A1206; --halo:#E9C893;
+  --glass:rgba(17,24,33,.58); --glass-line:rgba(230,240,248,.16);
+  --c-light:#E8C77F; --c-sock:#86C3E6; --c-heat:#E39684; --c-bus:#9FD8B4; --c-tube:#B7A7E0;
+  --l-end:#E7EDF1; --l-rbx:#86C3E6; --l-board:#D8B27A;
+  --f-display:"Marcellus","Cinzel",Georgia,serif;
+  --f-body:"Jost","Futura","Century Gothic",system-ui,sans-serif;
+  --f-mono:"Azeret Mono",ui-monospace,Consolas,monospace;
+}
+.dirA.alt{
+  --bg:#ECEFF0; --bg-2:#F7F8F8; --fg:#10161D; --fg-2:#56636E; --fg-3:#8A959E;
+  --line:rgba(16,22,29,.14); --line-2:rgba(16,22,29,.38); --line-3:rgba(16,22,29,.72);
+  --accent:#9C7134; --accent-ink:#FFF8EC; --halo:#A9792F;
+  --glass:rgba(250,251,251,.62); --glass-line:rgba(16,22,29,.14);
+}
+
+/* ───────── Direction B · Control Tablet (light-first, extended sans) ───────── */
+.dirB{
+  --bg:#F2F3F0; --bg-2:#FFFFFF; --fg:#14181B; --fg-2:#59626A; --fg-3:#8E969C;
+  --line:rgba(20,24,27,.13); --line-2:rgba(20,24,27,.34); --line-3:rgba(20,24,27,.7);
+  --accent:#0F7C8E; --accent-ink:#FFFFFF; --halo:#0F98AE; --live:#F0602B;
+  --glass:rgba(255,255,255,.66); --glass-line:rgba(20,24,27,.12);
+  --c-light:#D9A21B; --c-sock:#2C74C9; --c-heat:#D2553A; --c-bus:#1C9A6B; --c-tube:#7E64C2;
+  --l-end:#14181B; --l-rbx:#2C74C9; --l-board:#F0602B;
+  --f-display:"Michroma","Eurostile","Archivo",sans-serif;
+  --f-body:"Archivo",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+.dirB.alt{
+  --bg:#0D1113; --bg-2:#141A1D; --fg:#E9EEF0; --fg-2:#97A3A9; --fg-3:#5F6B71;
+  --line:rgba(233,238,240,.13); --line-2:rgba(233,238,240,.34); --line-3:rgba(233,238,240,.72);
+  --accent:#5FD0E2; --accent-ink:#04252B; --halo:#5FD0E2; --live:#FF7A47;
+  --glass:rgba(20,27,30,.62); --glass-line:rgba(233,238,240,.14);
+  --c-light:#F2C14E; --c-sock:#6FA8F0; --c-heat:#F08066; --c-bus:#4CC995; --c-tube:#A894EA;
+  --l-end:#E9EEF0; --l-rbx:#6FA8F0; --l-board:#FF7A47;
+}
+
+.board{background:var(--bg);color:var(--fg);font-family:var(--f-body);margin:24px auto;max-width:1240px;border-radius:4px;overflow:hidden}
+.board-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 24px;padding:22px 28px;border-bottom:1px solid var(--line)}
+.tag{font:500 11px/1 var(--f-mono);letter-spacing:.18em;text-transform:uppercase;color:var(--fg-2)}
+.board-head h2{margin:0;font:400 26px/1.1 var(--f-display);letter-spacing:.04em}
+.board-head p{margin:0;color:var(--fg-2);max-width:62ch;font-size:14px}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+/* hero: the levelled stack */
+.hero{position:sticky;top:0;height:min(720px,100vh);min-height:600px;overflow:hidden}
+.spec{border-left:1px solid var(--line)}
+.stack .ghost{opacity:.4}
+.dirA .hero{background:radial-gradient(120% 80% at 30% 20%,#14202c 0%,var(--bg) 60%)}
+.dirB .hero{background:
+  linear-gradient(var(--line) 1px,transparent 1px) 0 0/24px 24px,
+  linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/24px 24px,var(--bg);background-blend-mode:normal}
+.dirB .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 40% 40%,transparent 0,var(--bg) 100%)}
+.hero svg.stack{position:absolute;left:12px;top:70px;width:calc(100% - 24px);height:calc(100% - 96px)}
+.stack .slab{fill:var(--bg-2);fill-opacity:.35;stroke:var(--line-2);stroke-width:1}
+.dirB .stack .slab{fill-opacity:.85}
+.stack .wall{stroke:var(--line-2);stroke-width:.8;fill:none}
+.stack .lvl{font:500 10px var(--f-mono);letter-spacing:.16em;fill:var(--fg-2)}
+.stack .riser{stroke:var(--line);stroke-width:1;stroke-dasharray:2 4}
+.stack .circ{fill:none;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.stack .circ.dim{stroke-width:1;opacity:.35}
+.stack .node{stroke:var(--bg);stroke-width:1.5}
+.stack .halo-fill{fill:var(--halo);fill-opacity:.10}
+.stack .halo-line{fill:none;stroke:var(--halo);stroke-width:1.4}
+.stack .halo-ring{fill:none;stroke:var(--halo);stroke-width:.8;stroke-dasharray:1 5;opacity:.8}
+.dirA .stack .halo-glow{fill:none;stroke:var(--halo);stroke-width:7;opacity:.35;filter:url(#blurA)}
+.dirB .stack .halo-glow{display:none}
+.stack .bracket{fill:none;stroke:var(--halo);stroke-width:1.6}
+.dirA .stack .bracket{display:none}
+.stack .roomlbl{font:500 10px var(--f-mono);letter-spacing:.14em;fill:var(--halo)}
+
+/* top-left chrome */
+.chrome{position:absolute;left:22px;top:20px;right:22px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;z-index:2}
+.crumb{font:500 10.5px/1.6 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--fg-2)}
+.crumb b{color:var(--fg);font-weight:500}
+
+/* glass panel */
+.glass{position:absolute;right:22px;bottom:22px;width:min(320px,calc(100% - 44px));z-index:2;
+  background:var(--glass);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);
+  border:1px solid var(--glass-line);padding:18px 20px 16px}
+.dirA .glass{border-radius:2px}
+.dirA .glass::before,.dirA .glass::after{content:"";position:absolute;width:10px;height:10px;border:1px solid var(--line-3)}
+.dirA .glass::before{left:-1px;top:-1px;border-right:0;border-bottom:0}
+.dirA .glass::after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+.dirB .glass{border-radius:10px;box-shadow:0 12px 40px -18px rgba(0,0,0,.35)}
+.glass .eyebrow{display:flex;justify-content:space-between;font:500 10px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--fg-2)}
+.glass h3{margin:12px 0 2px;font:400 30px/1.05 var(--f-display);letter-spacing:.02em}
+.dirB .glass h3{font-size:21px;letter-spacing:.04em;text-transform:uppercase}
+.glass .en{color:var(--fg-3);font-size:12.5px;margin-bottom:12px}
+.stats{display:grid;grid-template-columns:1fr auto;gap:0;margin:0 0 14px;border-top:1px solid var(--line)}
+.stats dt,.stats dd{margin:0;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.stats dt{color:var(--fg-2)}
+.stats dd{font:500 12.5px var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 10px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fg-2);padding:5px 7px;border:1px solid var(--line)}
+.dirB .chip{border-radius:99px}
+.chip i{width:14px;height:2px;background:currentColor;display:block}
+.dirB .chip i{width:7px;height:7px;border-radius:50%}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+/* buttons */
+.btn{font:500 11.5px/1 var(--f-body);letter-spacing:.16em;text-transform:uppercase;padding:11px 16px;border:1px solid var(--line-2);background:transparent;color:var(--fg);cursor:pointer;display:inline-flex;align-items:center;gap:10px;white-space:nowrap}
+.btn:hover{border-color:var(--line-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn .ar{font-family:var(--f-mono);letter-spacing:0}
+.dirA .btn{border-radius:0}
+.dirA .btn.primary{padding:13px 22px}
+.dirB .btn{border-radius:6px;letter-spacing:.1em;font-family:var(--f-display);font-size:9.5px}
+.dirB .btn.primary{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.dirB .btn.primary .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.step{font:500 11px var(--f-mono);color:var(--fg-2);font-variant-numeric:tabular-nums}
+
+/* right column */
+.spec{padding:24px 28px;display:flex;flex-direction:column;gap:26px;min-width:0}
+.spec section{display:flex;flex-direction:column;gap:10px}
+.marks{display:flex;flex-direction:column;gap:18px;padding:18px 0 4px}
+.marks svg{display:block;max-width:100%;height:auto;color:var(--fg)}
+.type-row{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:baseline;gap:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.type-row .tag{font-size:10px}
+.t-disp{font:400 44px/1.05 var(--f-display);letter-spacing:.02em}
+.dirB .t-disp{font-size:30px;letter-spacing:.03em;text-transform:uppercase}
+.t-h2{font:400 24px/1.2 var(--f-display)}
+.dirB .t-h2{font-size:17px;text-transform:uppercase;letter-spacing:.04em}
+.t-body{font:300 16px/1.6 var(--f-body);color:var(--fg)}
+.dirB .t-body{font-weight:400;font-size:15px}
+.t-lbl{font:500 11px/1 var(--f-mono);letter-spacing:.18em;text-transform:uppercase;color:var(--fg-2)}
+.sw{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+.sw div{aspect-ratio:1/1.1;display:flex;align-items:flex-end;padding:5px;font:500 9px/1.2 var(--f-mono);border:1px solid var(--line)}
+.sw-cap{display:flex;justify-content:space-between}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 14px}
+.legend span{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg-2)}
+.legend i{width:22px;height:2px;display:block;flex:none}
+.legend i.tube{height:0;border-top:2px dashed}
+.legend i.dot{width:9px;height:9px;border-radius:50%}
+.legend i.sq{width:9px;height:9px}
+.legend i.di{width:9px;height:9px;transform:rotate(45deg)}
+.mini{position:relative;padding:18px;border:1px solid var(--line);background:var(--bg);color:var(--fg);display:flex;flex-direction:column;gap:12px}
+.mini .glass{position:relative;right:auto;bottom:auto;width:auto}
+.notes{margin:0;padding-left:18px;color:var(--fg-2);font-size:13.5px;display:flex;flex-direction:column;gap:4px}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>VRG client look: two directions</h1>
+  <p>Same content in both boards: a levelled three-floor stack, one room haloed, one circuit traced from its endpoint down to the Elosztó, the glass room brief, and the tour buttons. Each board shows its main mode large and the other mode as the small card on the right.</p>
+</div>
+
+<!-- ═════════════ A ═════════════ -->
+<div class="board dirA">
+  <div class="board-head">
+    <div><div class="tag">Direction A</div><h2>Title Card</h2></div>
+    <p>Dark-first and cinematic. A flared serif for names and titles, a geometric sans for reading, ice-white hairlines on blue-black, smoked glass with corner ticks. One warm accent, desert-dawn sand, used for the halo, the live circuit and Start Tour.</p>
+  </div>
+  <div class="grid">
+    <div class="hero">
+      <svg class="stack" data-dir="A" viewBox="0 0 700 600" preserveAspectRatio="xMinYMin meet" aria-label="Levelled floor stack"></svg>
+      <div class="chrome">
+        <div class="crumb">CLA · Ügyfélnézet<br><b>Földszint</b> · 2 / 3 szint</div>
+        <button class="btn primary">Túra indítása <span class="ar">→</span></button>
+      </div>
+      <div class="glass">
+        <div class="eyebrow"><span>Földszint · Szoba</span><span>03 / 09</span></div>
+        <h3>Nappali</h3>
+        <div class="en">Living room</div>
+        <dl class="stats">
+          <dt>Alapterület</dt><dd>32,4 m²</dd>
+          <dt>Végpontok</dt><dd>14</dd>
+          <dt>Áramkörök</dt><dd>3</dd>
+          <dt>BRIDGE modulok</dt><dd>2</dd>
+        </dl>
+        <div class="chips"><span class="chip" style="color:var(--c-light)"><i></i>Világítás</span><span class="chip" style="color:var(--c-sock)"><i></i>Dugalj</span><span class="chip" style="color:var(--c-bus)"><i></i>BRIDGE</span></div>
+        <div class="nav"><button class="btn"><span class="ar">←</span> Vissza</button><span class="step">03 / 09</span><button class="btn">Tovább <span class="ar">→</span></button></div>
+      </div>
+    </div>
+    <div class="spec">
+      <section>
+        <div class="tag">Wordmarks</div>
+        <div class="marks">
+          <!-- VRG: wide flared caps over three levelled hairlines -->
+          <svg viewBox="0 0 300 74" width="260" role="img" aria-label="VRG">
+            <text x="0" y="44" style="font:400 50px var(--f-display);letter-spacing:.32em" fill="currentColor">VRG</text>
+            <line x1="2" y1="58" x2="228" y2="58" stroke="currentColor" stroke-width="1"/>
+            <line x1="2" y1="64" x2="150" y2="64" stroke="currentColor" stroke-width="1" opacity=".6"/>
+            <line x1="2" y1="70" x2="76" y2="70" stroke="var(--accent)" stroke-width="1"/>
+          </svg>
+          <!-- BRIDGE: a hairline span between two abutments -->
+          <svg viewBox="0 0 340 70" width="300" role="img" aria-label="BRIDGE">
+            <path d="M6 30 Q170 -6 334 30" fill="none" stroke="var(--accent)" stroke-width="1"/>
+            <circle cx="6" cy="30" r="2.2" fill="var(--accent)"/><circle cx="334" cy="30" r="2.2" fill="var(--accent)"/>
+            <text x="170" y="64" text-anchor="middle" style="font:400 30px var(--f-display);letter-spacing:.42em" fill="currentColor">BRIDGE</text>
+          </svg>
+        </div>
+      </section>
+      <section>
+        <div class="tag">Type</div>
+        <div class="type-row"><span class="tag">Display</span><span class="t-disp">Előkészített hely</span></div>
+        <div class="type-row"><span class="tag">Title</span><span class="t-h2">Minden modulnak helye van</span></div>
+        <div class="type-row"><span class="tag">Body</span><span class="t-body">A rendszer ma annyit tud, amennyit kér, és később bővíthető.</span></div>
+        <div class="type-row"><span class="tag">Label</span><span class="t-lbl">Földszint · 32,4 m² · RBX-02</span></div>
+      </section>
+      <section>
+        <div class="sw-cap"><span class="tag">Palette · dark / light</span></div>
+        <div class="sw">
+          <div style="background:#0A0E13;color:#93A1AD">0A0E13</div><div style="background:#111821;color:#93A1AD">111821</div><div style="background:#E7EDF1;color:#10161D">E7EDF1</div><div style="background:#93A1AD;color:#0A0E13">93A1AD</div><div style="background:#D8B27A;color:#1A1206">D8B27A</div><div style="background:#86C3E6;color:#0A0E13">86C3E6</div>
+          <div style="background:#ECEFF0;color:#56636E">ECEFF0</div><div style="background:#F7F8F8;color:#56636E">F7F8F8</div><div style="background:#10161D;color:#ECEFF0">10161D</div><div style="background:#56636E;color:#ECEFF0">56636E</div><div style="background:#9C7134;color:#FFF8EC">9C7134</div><div style="background:#3E7FA6;color:#fff">3E7FA6</div>
+        </div>
+      </section>
+      <section>
+        <div class="tag">Circuits and layers</div>
+        <div class="legend">
+          <span><i style="background:var(--c-light)"></i>Világítás</span><span><i style="background:var(--c-sock)"></i>Dugalj</span>
+          <span><i style="background:var(--c-heat)"></i>Fűtés, klíma</span><span><i style="background:var(--c-bus)"></i>Gyengeáram, BRIDGE</span>
+          <span><i class="tube" style="color:var(--c-tube)"></i>Védőcső</span><span><i class="dot" style="background:var(--l-end)"></i>Végpont</span>
+          <span><i class="sq" style="background:var(--l-rbx)"></i>RBX</span><span><i class="di" style="background:var(--l-board)"></i>Elosztó</span>
+        </div>
+      </section>
+      <section>
+        <div class="tag">Light mode</div>
+        <div class="mini dirA alt">
+          <div class="glass">
+            <div class="eyebrow"><span>Emelet · Szoba</span><span>06 / 09</span></div>
+            <h3 style="font-size:24px">Hálószoba</h3>
+            <div class="en">Bedroom</div>
+            <div class="nav"><button class="btn"><span class="ar">←</span> Vissza</button><button class="btn primary">Tovább <span class="ar">→</span></button></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════ B ═════════════ -->
+<div class="board dirB">
+  <div class="board-head">
+    <div><div class="tag">Direction B</div><h2>Control Tablet</h2></div>
+    <p>Light-first and technical, the handheld-tablet side. A wide extended display face, a sturdy grotesk, graphite linework on a faint drafting grid, frosted white glass with soft depth. Deep cyan for selection with corner brackets, signal orange for the live circuit trace.</p>
+  </div>
+  <div class="grid">
+    <div class="hero">
+      <svg class="stack" data-dir="B" viewBox="0 0 700 600" preserveAspectRatio="xMinYMin meet" aria-label="Levelled floor stack"></svg>
+      <div class="chrome">
+        <div class="crumb">CLA · Ügyfélnézet<br><b>Földszint</b> · 2 / 3 szint</div>
+        <button class="btn primary"><span class="dot"></span>Túra indítása</button>
+      </div>
+      <div class="glass">
+        <div class="eyebrow"><span>Földszint · Szoba</span><span>03 / 09</span></div>
+        <h3>Nappali</h3>
+        <div class="en">Living room</div>
+        <dl class="stats">
+          <dt>Alapterület</dt><dd>32,4 m²</dd>
+          <dt>Végpontok</dt><dd>14</dd>
+          <dt>Áramkörök</dt><dd>3</dd>
+          <dt>BRIDGE modulok</dt><dd>2</dd>
+        </dl>
+        <div class="chips"><span class="chip" style="color:var(--c-light)"><i></i>Világítás</span><span class="chip" style="color:var(--c-sock)"><i></i>Dugalj</span><span class="chip" style="color:var(--c-bus)"><i></i>BRIDGE</span></div>
+        <div class="nav"><button class="btn">‹ Vissza</button><span class="step">03 / 09</span><button class="btn">Tovább ›</button></div>
+      </div>
+    </div>
+    <div class="spec">
+      <section>
+        <div class="tag">Wordmarks</div>
+        <div class="marks">
+          <!-- VRG: extended caps with a three-step level gauge -->
+          <svg viewBox="0 0 300 60" width="250" role="img" aria-label="VRG">
+            <rect x="0" y="10" width="5" height="10" fill="var(--fg)" opacity=".35"/>
+            <rect x="0" y="23" width="5" height="10" fill="var(--fg)" opacity=".65"/>
+            <rect x="0" y="36" width="5" height="10" fill="var(--accent)"/>
+            <text x="20" y="45" style="font:400 36px var(--f-display);letter-spacing:.14em" fill="currentColor">VRG</text>
+          </svg>
+          <!-- BRIDGE: a bus line running through the word, nodes at the ends -->
+          <svg viewBox="0 0 340 50" width="300" role="img" aria-label="BRIDGE">
+            <line x1="0" y1="25" x2="340" y2="25" stroke="var(--accent)" stroke-width="1.2"/>
+            <rect x="22" y="12" width="296" height="26" fill="var(--bg)"/>
+            <circle cx="6" cy="25" r="3.5" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+            <circle cx="334" cy="25" r="3.5" fill="var(--accent)"/>
+            <text x="170" y="34" text-anchor="middle" style="font:400 22px var(--f-display);letter-spacing:.3em" fill="currentColor">BRIDGE</text>
+          </svg>
+        </div>
+      </section>
+      <section>
+        <div class="tag">Type</div>
+        <div class="type-row"><span class="tag">Display</span><span class="t-disp">Előkészített hely</span></div>
+        <div class="type-row"><span class="tag">Title</span><span class="t-h2">Minden modulnak helye van</span></div>
+        <div class="type-row"><span class="tag">Body</span><span class="t-body">A rendszer ma annyit tud, amennyit kér, és később bővíthető.</span></div>
+        <div class="type-row"><span class="tag">Label</span><span class="t-lbl">Földszint · 32,4 m² · RBX-02</span></div>
+      </section>
+      <section>
+        <div class="sw-cap"><span class="tag">Palette · light / dark</span></div>
+        <div class="sw">
+          <div style="background:#F2F3F0;color:#59626A">F2F3F0</div><div style="background:#FFFFFF;color:#59626A">FFFFFF</div><div style="background:#14181B;color:#F2F3F0">14181B</div><div style="background:#59626A;color:#fff">59626A</div><div style="background:#0F7C8E;color:#fff">0F7C8E</div><div style="background:#F0602B;color:#fff">F0602B</div>
+          <div style="background:#0D1113;color:#97A3A9">0D1113</div><div style="background:#141A1D;color:#97A3A9">141A1D</div><div style="background:#E9EEF0;color:#0D1113">E9EEF0</div><div style="background:#97A3A9;color:#0D1113">97A3A9</div><div style="background:#5FD0E2;color:#04252B">5FD0E2</div><div style="background:#FF7A47;color:#2a0e02">FF7A47</div>
+        </div>
+      </section>
+      <section>
+        <div class="tag">Circuits and layers</div>
+        <div class="legend">
+          <span><i style="background:var(--c-light)"></i>Világítás</span><span><i style="background:var(--c-sock)"></i>Dugalj</span>
+          <span><i style="background:var(--c-heat)"></i>Fűtés, klíma</span><span><i style="background:var(--c-bus)"></i>Gyengeáram, BRIDGE</span>
+          <span><i class="tube" style="color:var(--c-tube)"></i>Védőcső</span><span><i class="dot" style="background:var(--l-end)"></i>Végpont</span>
+          <span><i class="sq" style="background:var(--l-rbx)"></i>RBX</span><span><i class="di" style="background:var(--l-board)"></i>Elosztó</span>
+        </div>
+      </section>
+      <section>
+        <div class="tag">Dark mode</div>
+        <div class="mini dirB alt">
+          <div class="glass">
+            <div class="eyebrow"><span>Emelet · Szoba</span><span>06 / 09</span></div>
+            <h3 style="font-size:18px">Hálószoba</h3>
+            <div class="en">Bedroom</div>
+            <div class="nav"><button class="btn">‹ Vissza</button><button class="btn primary"><span class="dot"></span>Tovább ›</button></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Draw the same levelled stack into each board; colours come from the board's tokens via CSS.
+   Rules shown: floors above the focus go ghost; halo and the live circuit draw last, over everything. */
+const NS='http://www.w3.org/2000/svg';
+const S=17, C=Math.cos(Math.PI/6), GAP=6.5, OX=270, OY=262;
+const iso=(x,y,z)=>[OX+(x-y)*C*S, OY+(x+y)*0.5*S - z*S];
+const pts=a=>a.map(p=>iso(...p).map(v=>v.toFixed(1)).join(',')).join(' ');
+const W=13, D=9, FOCUS=GAP;
+const floors=[
+  {name:'01 · PINCE',    z:0,     walls:[[[5,0],[5,9]],[[5,5],[13,5]]]},
+  {name:'02 · FÖLDSZINT',z:GAP,   walls:[[[7.5,0],[7.5,9]],[[7.5,4],[13,4]],[[10.5,4],[10.5,9]],[[0,6.2],[3.2,6.2]],[[3.2,6.2],[3.2,9]]]},
+  {name:'03 · EMELET',   z:GAP*2, walls:[[[6,0],[6,9]],[[0,4.5],[6,4.5]],[[9.5,0],[9.5,5]],[[6,5],[13,5]]]},
+];
+const roomPoly=[[0,0],[7.5,0],[7.5,9],[3.2,9],[3.2,6.2],[0,6.2]];
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e}
+document.querySelectorAll('svg.stack').forEach(svg=>{
+  const dir=svg.dataset.dir, live=dir==='A'?'var(--accent)':'var(--live)';
+  const f=el('filter',{id:'blurA',x:'-20%',y:'-20%',width:'140%',height:'140%'},el('defs',{},svg));
+  el('feGaussianBlur',{stdDeviation:'5'},f);
+  [[0,0],[W,0],[W,D],[0,D]].forEach(([x,y])=>{const a=iso(x,y,0),b=iso(x,y,GAP*2);el('line',{class:'riser',x1:a[0],y1:a[1],x2:b[0],y2:b[1]},svg)});
+  floors.forEach(fl=>{
+    const g=el('g',{class:fl.z>FOCUS?'ghost':''},svg);
+    el('polygon',{class:'slab',points:pts([[0,0,fl.z],[W,0,fl.z],[W,D,fl.z],[0,D,fl.z]])},g);
+    fl.walls.forEach(([a,b])=>el('polyline',{class:'wall',points:pts([[...a,fl.z],[...b,fl.z]])},g));
+    const lp=iso(W,0,fl.z); el('text',{class:'lvl',x:lp[0]+14,y:lp[1]+4},g).textContent=fl.name;
+    if(fl.z===0) el('polyline',{class:'circ dim',style:'stroke:var(--c-heat)',points:pts([[1.6,7.6,0],[4,7.6,0],[4,2,0]])},g);
+    if(fl.z===FOCUS){
+      el('polyline',{class:'circ dim',style:'stroke:var(--c-sock)',points:pts([[7.2,8.6,FOCUS],[9,8.6,FOCUS],[9,2,FOCUS],[12.4,2,FOCUS]])},g);
+      el('polyline',{class:'circ dim',style:'stroke:var(--c-bus)',points:pts([[7.2,8.6,FOCUS],[7.2,6,FOCUS],[5,6,FOCUS]])},g);
+    }
+  });
+  /* overlay: halo, live circuit, nodes */
+  const rp=pts(roomPoly.map(([x,y])=>[x,y,FOCUS]));
+  el('polygon',{class:'halo-fill',points:rp},svg);
+  el('polygon',{class:'halo-glow',points:rp},svg);
+  el('polygon',{class:'halo-line',points:rp},svg);
+  el('polygon',{class:'halo-ring',points:pts([[-.5,-.5],[8,-.5],[8,9.5],[2.7,9.5],[2.7,6.7],[-.5,6.7]].map(([x,y])=>[x,y,FOCUS]))},svg);
+  [[0,0,1,1],[7.5,0,-1,1],[7.5,9,-1,-1],[0,6.2,1,-1]].forEach(([x,y,dx,dy])=>{
+    const cx=x-dx*.5, cy=y-dy*.5;
+    el('polyline',{class:'bracket',points:pts([[cx+dx*1.6,cy,FOCUS],[cx,cy,FOCUS],[cx,cy+dy*1.6,FOCUS]])},svg);
+  });
+  const board=[1.6,7.9,0], rbx=[7.2,8.6,FOCUS], ep=[1.2,1.0,FOCUS];
+  el('polyline',{class:'circ',style:'stroke:var(--c-tube);stroke-dasharray:4 3;stroke-width:1',points:pts([[7.6,8.9,FOCUS],[7.6,8.9,0],[1.6,8.9,0]])},svg);
+  el('polyline',{class:'circ',style:`stroke:${live}`,points:pts([ep,[1.2,.3,FOCUS],[7.2,.3,FOCUS],rbx,[7.2,8.6,0],[1.6,8.6,0],board])},svg);
+  const [ex,ey]=iso(...ep); el('circle',{cx:ex,cy:ey,r:10,fill:'none',stroke:live,'stroke-width':1},svg);
+  el('circle',{class:'node',cx:ex,cy:ey,r:5,fill:'var(--l-end)'},svg);
+  const [rx,ry]=iso(...rbx); el('rect',{class:'node',x:rx-5,y:ry-5,width:10,height:10,fill:'var(--l-rbx)'},svg);
+  const [bx,by]=iso(...board); el('rect',{class:'node',x:bx-6,y:by-6,width:12,height:12,fill:'var(--l-board)',transform:`rotate(45 ${bx} ${by})`},svg);
+  const t=(x,y,s,cls='lvl')=>{const e=el('text',{class:cls,x,y},svg);e.textContent=s;if(cls==='lvl')e.style.fill='var(--fg)'};
+  t(rx+10,ry+18,'RBX-02'); t(bx-78,by+4,'ELOSZTÓ'); t(ex+12,ey-12,'VP-07');
+  const lb=iso(0,3.1,FOCUS); t(lb[0]-70,lb[1]+4,'NAPPALI','roomlbl');
+  const b=svg.getBBox(); svg.setAttribute('viewBox',`${(b.x-24).toFixed(0)} ${(b.y-12).toFixed(0)} ${(b.width+48).toFixed(0)} ${(b.height+24).toFixed(0)}`);
+});
+</script>
+</body>
+</html>

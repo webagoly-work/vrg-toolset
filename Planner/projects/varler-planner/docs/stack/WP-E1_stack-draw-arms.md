@@ -7,7 +7,7 @@ Decisions: Q40=A
 *"Making use of the layer stack (and a function that lets me draw on it as if it were a single
 layer), I want to draw simple, one-line connected pathways … that branch out on one or multiple
 pathways from the RBX to reach every endpoint in the room, regardless of function or layer."*
-These one-line routes are BRIDGE **ARMs** (STD-004: `P33.R03.A2`, layers as an attribute, never in the
+These one-line routes are BRIDGE **ARMs** (STD-004: `CLA.R03.A2`, layers as an attribute, never in the
 name). One route carries any number of layers — **the same route, separate conduits** (A2 §0) is
 worked out later by the fill (E3); here we only draw geometry and joins.
 

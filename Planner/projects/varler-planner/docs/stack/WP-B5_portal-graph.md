@@ -89,7 +89,7 @@ the bottom of the vertical leg and door on the right end of the horizontal leg.
 Identical (overlays default off).
 
 ## Browser-only checks (for the human)
-Graph overlay readable on a real plan (P33 ground floor) · heatmap tint not overpowering.
+Graph overlay readable on a real plan (CLA ground floor) · heatmap tint not overpowering.
 
 ## Verifier focus
 No-corner-cutting rule in A*. Frame orientation (v into THIS room, per room — the same door has two

@@ -1,8 +1,8 @@
-// Views V4 ⏸ look sample: P33 and NV4 side by side, through the Planner's own export (vexpSheet).
+// Views V4 ⏸ look sample: CLA and CLANV4 side by side, through the Planner's own export (vexpSheet).
 //
-//   node tools/v4-look.js [--zoom=2] [--out=docs/views/fig/v4-look-p33-nv4.svg]   → .svg + .png
+//   node tools/v4-look.js [--zoom=2] [--out=docs/views/fig/v4-look-cla-clanv4.svg]   → .svg + .png
 //
-// Two columns (P33 | NV4), two rows (Felülnézet = the export default | Axonometria preset), each the
+// Two columns (CLA | CLANV4), two rows (Felülnézet = the export default | Axonometria preset), each the
 // framed Tiszta sheet of the plan's busiest level. Needs jsdom: NODE_PATH = the main checkout's
 // Planner/projects/varler-planner/node_modules.
 'use strict';
@@ -10,8 +10,8 @@ const fs = require('fs'), path = require('path'), { execFileSync } = require('ch
 const { JSDOM } = require('jsdom');
 const ROOT = path.resolve(__dirname, '..'), REPO = path.resolve(ROOT, '../../..');
 const args = process.argv.slice(2), opt = k => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.split('=').slice(1).join('=') : null; };
-const OUT = path.resolve(opt('out') || path.join(ROOT, 'docs/views/fig/v4-look-p33-nv4.svg')), ZOOM = +(opt('zoom') || 2);
-const PLANS = [['P33', path.join(REPO, 'Calculator/P33-teszt_v2_butor.vplan.json')], ['NV4', path.resolve(REPO, '../NV4_ajanlat/NV4.vplan(5).json')]];
+const OUT = path.resolve(opt('out') || path.join(ROOT, 'docs/views/fig/v4-look-cla-clanv4.svg')), ZOOM = +(opt('zoom') || 2);
+const PLANS = [['CLA', path.join(REPO, 'Calculator/CLA-teszt_v2_butor.vplan.json')], ['CLANV4', path.resolve(REPO, '../CLANV4_ajanlat/CLANV4.vplan(5).json')]];
 const HTML = process.env.PLANNER || path.join(ROOT, 'dist', 'varler_planner.html');
 
 function sheets(name, file) {

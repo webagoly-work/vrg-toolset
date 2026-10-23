@@ -27,6 +27,35 @@
       ],
       "port": 8138,
       "url": "http://localhost:8138"
+    },
+    {
+      "name": "openmct-spike",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "docs/research/openmct-spike/serve.js",
+        "8150"
+      ],
+      "port": 8150,
+      "url": "http://localhost:8150"
+    },
+    {
+      "name": "vrg-kapu",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "Hub/companion/server.js",
+        "--no-open"
+      ],
+      "port": 8795,
+      "url": "http://localhost:8795"
+    },
+    {
+      "name": "vrg-kapu-static",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "Hub/test/serve.js"
+      ],
+      "port": 8796,
+      "url": "http://127.0.0.1:8796"
     }
   ]
 }

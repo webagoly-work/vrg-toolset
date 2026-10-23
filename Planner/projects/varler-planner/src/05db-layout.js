@@ -25,7 +25,7 @@
 const PH_LIST=[
  {k:'alap',n:'Alapozás',stage:'build',ctx:'levels',tools:[
    {a:'mode.room',n:'⬚ Helyiség-toll',mode:'room'},{a:'wf.walls',n:'🧱 Falak létrehozása',id:'wfWallsBtn'},
-   {a:'wf.floors',n:'▦ Padló létrehozása',id:'wfFloorsBtn'},{a:'mode.wall',n:'▤ Fal',mode:'wall'},{a:'mode.object',n:'🪑 Objektum',mode:'object'}]},
+   {a:'wf.floors',n:'▦ Padló létrehozása',id:'wfFloorsBtn'},{a:'slab.level',n:'▬ Födém',id:'slbBtn'},{a:'mode.wall',n:'▤ Fal',mode:'wall'},{a:'mode.object',n:'🪑 Objektum',mode:'object'}]},
  {k:'nyil',n:'Nyílászárók',stage:'build',ctx:'openings',tools:[
    {a:'wf.door',n:'🚪 Ajtó',id:'opnDoorBtn'},{a:'wf.window',n:'🪟 Ablak',id:'opnWinBtn'},{a:'wf.stairs',n:'🪜 Lépcső'},{a:'pt.place',n:'⛩ Portál'}]},
  {k:'szab',n:'Szabályok',stage:'rooms',ctx:'rules',tools:[

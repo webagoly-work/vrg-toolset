@@ -5,7 +5,7 @@
 // by build.js into a single <script>, so they share one scope.
 // ==========================================================================
 
-// The colour-coded marks the user put on P33 (and the non-electrical areas, R07 answer) as one-click presets. Every
+// The colour-coded marks the user put on CLA (and the non-electrical areas, R07 answer) as one-click presets. Every
 // preset writes an ordinary Jelölés mark (05n) — same store, colours (MRK_POL), undo, layer, list — so the engine and
 // every later layer read them like any mark. Selection rule (the user's): LMB = the FACE nearest the pointer (half wall),
 // hold + drag along it = only that part; whole-wall presets take both faces; zones are dragged rectangles on the floor;

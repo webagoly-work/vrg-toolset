@@ -1,0 +1,436 @@
+{
+ "pack": "VRG-HUB-Q-001",
+ "title": "VRG Kapu (Homepage) — build decisions",
+ "rev": "r1",
+ "date": "2026-10-21",
+ "answeredOn": "2026-10-21",
+ "answers": {
+  "Q01": "A",
+  "Q02": "A",
+  "Q09": "A",
+  "Q13": "A",
+  "Q14": "A",
+  "Q03": "A",
+  "Q04": "A",
+  "Q07": "A",
+  "Q10": "A",
+  "Q11": "A",
+  "Q05": "A",
+  "Q06": "A",
+  "Q08": "A",
+  "Q12": "A",
+  "Q15": "A",
+  "Q16": "A",
+  "Q17": "A",
+  "Q18": "A"
+ },
+ "note": "Unanswered = rec. Same ids and wording as DECISIONS.md (the .md is the readable one). Pictures in q/.",
+ "sections": [
+  {
+   "id": "S",
+   "title": "Shape",
+   "questions": [
+    {
+     "id": "Q01",
+     "q": "Name of the Homepage?",
+     "blocks": "H0",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "VRG Kapu",
+       "d": "vrg-kapu.html — kapu = gate."
+      },
+      {
+       "k": "B",
+       "t": "VRG Központ",
+       "d": ""
+      },
+      {
+       "k": "C",
+       "t": "VRG Home",
+       "d": ""
+      },
+      {
+       "k": "D",
+       "t": "Own name",
+       "d": "Tell me."
+      }
+     ]
+    },
+    {
+     "id": "Q02",
+     "q": "Board layout?",
+     "blocks": "H2",
+     "img": "q/q02-layout.svg",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Columns under departments",
+       "d": "Origin → departments → programs side by side → layers hang down → roadmap downward. Pan/zoom, collapse, Fókusz."
+      },
+      {
+       "k": "B",
+       "t": "Department rows",
+       "d": "One row per department; layers in a side drawer; no roadmap on the board."
+      },
+      {
+       "k": "C",
+       "t": "Radial",
+       "d": "Departments around the origin; the layer stack does not fit."
+      }
+     ]
+    },
+    {
+     "id": "Q09",
+     "q": "Text language on the board?",
+     "blocks": "H2",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "HU + EN italic",
+       "d": "Hungarian UI; descriptions Hungarian with English below in italics (kit standard)."
+      },
+      {
+       "k": "B",
+       "t": "HU only",
+       "d": ""
+      },
+      {
+       "k": "C",
+       "t": "HU UI, EN descriptions",
+       "d": ""
+      }
+     ]
+    },
+    {
+     "id": "Q13",
+     "q": "The departments?",
+     "blocks": "H1",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Accept 12 + Általános",
+       "d": "02_BUSINESS-TOPOLOGY.md §1."
+      },
+      {
+       "k": "B",
+       "t": "Merge to ~8",
+       "d": "Jog→Vezetés, Tudás→TFEJ, Iroda→Vezetés."
+      },
+      {
+       "k": "C",
+       "t": "Change the list",
+       "d": "Tell me which."
+      }
+     ]
+    },
+    {
+     "id": "Q14",
+     "q": "Names of the v2 programs?",
+     "blocks": "-",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "English one-word + HU subtitle",
+       "d": "Dispatch, Picker, Desk, Lens… like Planner/Modder."
+      },
+      {
+       "k": "B",
+       "t": "Hungarian names",
+       "d": ""
+      },
+      {
+       "k": "C",
+       "t": "Own names",
+       "d": ""
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "A",
+   "title": "Access",
+   "questions": [
+    {
+     "id": "Q03",
+     "q": "Identity for the top layer?",
+     "blocks": "H4",
+     "img": "q/q03-access.svg",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "GitHub account",
+       "d": "Real check against the repo; the allowed list maps emails to the GitHub login."
+      },
+      {
+       "k": "B",
+       "t": "Google sign-in",
+       "d": "Needs a Google OAuth client + the Kapu segéd."
+      },
+      {
+       "k": "C",
+       "t": "Both",
+       "d": ""
+      }
+     ]
+    },
+    {
+     "id": "Q04",
+     "q": "Allowed list protection?",
+     "blocks": "H5",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Signed by the owner's key",
+       "d": "Tampered list ignored; the colleague cannot add people."
+      },
+      {
+       "k": "B",
+       "t": "Honour system",
+       "d": "Plain file."
+      }
+     ]
+    },
+    {
+     "id": "Q07",
+     "q": "OneDrive in v1?",
+     "blocks": "H4",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Links only",
+       "d": "OneDrive decides access; manual sign-in tick; live lists in v2."
+      },
+      {
+       "k": "B",
+       "t": "Microsoft sign-in now",
+       "d": "Azure app registration + Kapu segéd."
+      }
+     ]
+    },
+    {
+     "id": "Q10",
+     "q": "Client data in the shared spaces?",
+     "blocks": "invite",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Share as is; new jobs OneDrive-only",
+       "d": "Referred to by job code; never into Git again."
+      },
+      {
+       "k": "B",
+       "t": "Anonymise first",
+       "d": "Rename CLA in tracked files; history keeps old names."
+      },
+      {
+       "k": "C",
+       "t": "Keep jobs out until Lobby",
+       "d": ""
+      }
+     ]
+    },
+    {
+     "id": "Q11",
+     "q": "How does the colleague save map edits?",
+     "blocks": "H7",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Straight to main with conflict check",
+       "d": ""
+      },
+      {
+       "k": "B",
+       "t": "Branch + pull request",
+       "d": "Owner merges."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "R",
+   "title": "Running",
+   "questions": [
+    {
+     "id": "Q05",
+     "q": "Where do programs open from?",
+     "blocks": "H3",
+     "img": "q/q05-open.svg",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Local copy, like START.cmd",
+       "d": "Same saved work always; Előnézet shows GitHub's newest, marked."
+      },
+      {
+       "k": "B",
+       "t": "Always newest from GitHub",
+       "d": "Saved work splits."
+      },
+      {
+       "k": "C",
+       "t": "OneDrive-synced folder",
+       "d": ""
+      }
+     ]
+    },
+    {
+     "id": "Q06",
+     "q": "How does the colleague get the code?",
+     "blocks": "setup 9",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "GitHub Desktop",
+       "d": "+ Frissítés a GitHubról in the hub."
+      },
+      {
+       "k": "B",
+       "t": "cwebuser kit + git CLI",
+       "d": ""
+      },
+      {
+       "k": "C",
+       "t": "OneDrive copies only",
+       "d": "Read-only."
+      }
+     ]
+    },
+    {
+     "id": "Q08",
+     "q": "Terminal and Claude Code buttons?",
+     "blocks": "H10",
+     "img": "q/q08-companion.svg",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Kapu segéd (localhost:8795)",
+       "d": "Fixed list of actions; also lets the hub remember settings."
+      },
+      {
+       "k": "B",
+       "t": "Copy-command only",
+       "d": ""
+      },
+      {
+       "k": "C",
+       "t": "vrg:// link type",
+       "d": "Registry entry; any website could fire it."
+      }
+     ]
+    },
+    {
+     "id": "Q12",
+     "q": "Open MCT?",
+     "blocks": "H11",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Separate slot now, own tool later",
+       "d": ""
+      },
+      {
+       "k": "B",
+       "t": "Hub inside Open MCT",
+       "d": ""
+      }
+     ]
+    },
+    {
+     "id": "Q15",
+     "q": "Personal links storage?",
+     "blocks": "H8",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "This browser + export/import",
+       "d": ""
+      },
+      {
+       "k": "B",
+       "t": "Private gist sync",
+       "d": ""
+      }
+     ]
+    },
+    {
+     "id": "Q16",
+     "q": "Munkanapló default destination?",
+     "blocks": "H9",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Repo Hub/logs + OneDrive button",
+       "d": ""
+      },
+      {
+       "k": "B",
+       "t": "OneDrive only",
+       "d": ""
+      },
+      {
+       "k": "C",
+       "t": "Download only",
+       "d": ""
+      }
+     ]
+    },
+    {
+     "id": "Q17",
+     "q": "Where does the hub live?",
+     "blocks": "H0",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Repo Hub/ + OneDrive 00_START copy",
+       "d": ""
+      },
+      {
+       "k": "B",
+       "t": "Own repository",
+       "d": ""
+      }
+     ]
+    },
+    {
+     "id": "Q18",
+     "q": "Claims (Foglalás)?",
+     "blocks": "H7",
+     "rec": "A",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Yes, soft, expiring",
+       "d": ""
+      },
+      {
+       "k": "B",
+       "t": "No",
+       "d": ""
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

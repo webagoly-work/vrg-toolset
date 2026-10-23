@@ -1,6 +1,6 @@
 // WP-S5 (round 2026-10-10): the security layer's Home Assistant / ESPHome device types.
 //
-// Fixture: the committed P33 v2 plan (stack, rooms R01…R08, the entrance B107 marked `bejarat`).
+// Fixture: the committed CLA v2 plan (stack, rooms R01…R08, the entrance B107 marked `bejarat`).
 // What must hold:
 //   * the 10 new codes are complete (role, origin, height or ceiling, real cable codes) and battery
 //     variants carry no cable — so they make no run and no "unreached" warning;
@@ -13,7 +13,7 @@ function findPlanner(){
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2.vplan.json');
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;
 setTimeout(()=>{

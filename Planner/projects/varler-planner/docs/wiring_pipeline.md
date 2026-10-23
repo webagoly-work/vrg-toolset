@@ -157,13 +157,13 @@ S3 adds `breaker`, `cable`, `voltage`, `board` and `data.runs` to this record ra
 
 ## 5. Naming
 
-Project code comes from the project settings (`state.bp.proj`, e.g. `P33`); room codes from the
+Project code comes from the project settings (`state.bp.proj`, e.g. `CLA`); room codes from the
 room-numbering feature (`05h-rooms.js`, in progress).
 
 | thing | code | rule |
 |---|---|---|
-| terminal | `P33-1.02-D1` | room template `{szám}-{típus}{n}` with project prefix |
-| board | `P33-EL1` | above rooms |
+| terminal | `CLA-1.02-D1` | room template `{szám}-{típus}{n}` with project prefix |
+| board | `CLA-EL1` | above rooms |
 | span | `K3~D1`, parallel `K3~D1/b` | endpoint refs; the board-side end first when known, else natural sort |
 | pipe | `K3~D1.2` | second pipe in the span |
 | circuit | `EL1-F12` once a breaker is set, else its name | breaker label is what is looked for on site |

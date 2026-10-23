@@ -16,6 +16,12 @@ const RLI_TEXT={
  mark:{cel:'Szabályok a rajzon: tiltott (⛔), előnyös (+) és kerülendő (−) falak és sávok; RBX / BASE / Elosztó helye sávok; padló- és mennyezetzónák; mozgásnyomok; nyílászáró-címkék (bejárat, külső, portál P2/P3, redőny).',
    hol:'A bejárat jelölése kötelező (a portálgráf horgonya). Minden nedves helyiség, minden tervezett RBX-fal sávval.',
    klaszter:'Minden második fázisú réteg olvassa (a helyiség-igények levezetése innen jön).'},
+ need:{cel:'Helyiségenkénti igénylista darabszámokkal: dugalj, készülék dugalj, lámpa (kapcsolási kör, világítási kör), kapcsoló típusonként, redőny, dedikált fogyasztó.',
+  hol:'Jobb klikk a helyiségen → Igénylista. A javaslat a helyiség fajtájából jön; a Ház összesítő a helyiségek összege.',
+  klaszter:'A Világítás / Dugaljak / Dedikált rétegek ezt teljesítik; a helyiség állapota (hiányos / kész) a darabszámokból jön.'}, // round 2026-10-18 WP-N1 (08q)
+ 'sys:CINEMA':{cel:'Házimozi: a helyiség méreteiből javasolt hangfal-, mélysugárzó-, projektor- és rack-helyek (30 %-os jelölők), a projektor sugarának tiltott zónája és a sínvilágítás sávja.',
+   hol:'Jobb klikk a helyiségen → Házimozi ebben a helyiségben…; húzd meg a vászon vonalát, igazítsd a mozi zónát. Jobb klikk → Javasolt helyek létrehozása, ha készülék kell belőlük.',
+   klaszter:'Saját pálya, saját kör (C6–C7); a dedikált kör a Dedikált körök rétegre kerül.'}, // round 2026-10-18 WP-C1 (08r)
  hw:{cel:'Elosztószekrény, mérőóra, adatbelépés (ISP), RBX dobozok, biztonsági központ (SSC).',
    hol:'1 Elosztó lakásonként. Minden helyiséget pontosan egy RBX szolgál ki — 1 RBX 1–2 helyiségre, lehetőleg két helyiség közös belső falán. RBX alja ≥ 1900 mm (RB-M közép 2150). SSC védett, nem bejárható helyen. [H, W]',
    klaszter:'BASE (a Csatornán át); közös falszakasz BASE-zel megengedett, de kerülendő, ha a BASE mindhárom egysége egy oszlopban van.'},
@@ -49,7 +55,7 @@ const RLI_TEXT={
  'sys:DATA':{cel:'Adat és PoE: WiFi hozzáférési pont, adataljzat, kamera.',
    hol:'AP a mennyezeten, szintenként 1–2; adataljzat 300 mm (nappali, dolgozó, háló); kamera 2400 mm. [N]',
    klaszter:'Minden SELV és adat, Média, USB.'},
- 'sys:KNX':{cel:'KNX busz — csak ha a projekt KNX-et választ (P33-ban nem).',
+ 'sys:KNX':{cel:'KNX busz — csak ha a projekt KNX-et választ (CLA-ban nem).',
    hol:'Vonal vagy fa, soha nem hurok. [A2 Step 7]',
    klaszter:'Minden SELV és adat.'},
  'sys:SENSOR':{cel:'Érzékelők: jelenlét (mmWave), CO₂, PIR, vízszivárgás, hőkamera (fürdő), ágy-életjel, portál ToF.',
@@ -76,7 +82,7 @@ const RLI_TEXT={
  arm:{cel:'Ezüst pályák: egyvonalas pályák az RBX-től minden végpontig. Egy ARM több réteget visz, külön csövekben (ezt a feltöltés számolja).',
    hol:'Minden második fázisú végpontot el kell érnie (a hiányzókat a réteg jelzi).',
    klaszter:'Minden második fázisú réteg.'},
- 'sys:EXTRA':{cel:'Extrák és ötletek: előkészített végpontok — a P33 extrák (#1–#11) és a SmartFrame slotjai. Cső és doboz most, a hardver később.',
+ 'sys:EXTRA':{cel:'Extrák és ötletek: előkészített végpontok — a CLA extrák (#1–#11) és a SmartFrame slotjai. Cső és doboz most, a hardver később.',
    hol:'Az ideális helyek ✦-gal jelölve (jobb klikk egy ✦ helyen: elhelyezés). Minden extra a saját helyiségének RBX-éhez fut.',
    klaszter:'Törpefeszültség (A busz) családjával, saját csőben.'}};
 window.RLI_TEXT=RLI_TEXT;

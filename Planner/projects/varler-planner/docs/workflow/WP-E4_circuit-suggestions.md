@@ -11,7 +11,7 @@ from the list, maybe adding a few more to complete the set."*
 ## Read
 R1010 `WP-M2_circuit-presets.md` (the preset catalogue `eloPresets`, `data.circuits[].preset`, `rooms`) · `05j-circuits.js`
 28–60 (`cktCreate`, `cktAssign`) · `05x-cabinet.js` 15–45 (`ELO_RULES`, `eloLoadKw`) · `tools/baseline/plan.js` (grep
-`socketPlan`, `lightZones` — the P33 assignment) · MATERIAL §6.
+`socketPlan`, `lightZones` — the CLA assignment) · MATERIAL §6.
 
 ## Build
 1. LMB on the Elosztó in phase Villamosság / step 4.4 (or its menu `Áramkörök javaslata`) → `eloSuggest(boardId)` →
@@ -29,8 +29,8 @@ R1010 `WP-M2_circuit-presets.md` (the preset catalogue `eloPresets`, `data.circu
    (10 sockets), 12 lamps → rows: 2 DED · 2 bedroom · 1 kitchen · 1 wet · 2 living · lighting per Q-E04 A = 2 (V1, V2)
    → 10 rows (exact names in the spec).
 2. Unticking a row leaves its endpoints unassigned and listed.
-3. P33 v1 sketch → the suggestion matches the approved 16 circuits (A2–A15, V1, V2) in member sets (the spec reads them
-   from `Calculator/P33-baseline/v1_2026-10-12/kimenet`).
+3. CLA v1 sketch → the suggestion matches the approved 16 circuits (A2–A15, V1, V2) in member sets (the spec reads them
+   from `Calculator/CLA-baseline/v1_2026-10-12/kimenet`).
 
 ## Built — notes
 
@@ -46,5 +46,5 @@ R1010 `WP-M2_circuit-presets.md` (the preset catalogue `eloPresets`, `data.circu
   - the worktop = hVar pult or a kitchen socket at 900–1300 mm;
   - a DED's preset comes from hVar, var, or a word in its name, else a generic 16 A;
   - V2 = halo, gyerek, furdo; a lamp follows its switch's zone.
-- **Test 3** (the P33 cross-check) is not a spec: P33's approved socket plan is hand-configured (p33.config.js
+- **Test 3** (the CLA cross-check) is not a spec: CLA's approved socket plan is hand-configured (cla.config.js
   socketPlan), and the client data is not in the repo.

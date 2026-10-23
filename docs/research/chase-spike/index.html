@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Véset 3D Spike</title>
+<style>
+:root{
+  --bg:#f3f4f1; --panel:#ffffff; --ink:#1d2321; --muted:#68716d; --line:#d6dad7;
+  --wallF:#d9dcd8; --wallT:#eceeea; --wallS:#bfc3bf; --groove:#8c7262; --grooveS:#a88b78; --grooveD:#6f5849;
+  --cut:#d2483a; --hatch:#e9c9b3; --path:#3a6fb0; --box:#2f8f6b; --accent:#2f8f6b; --grid:#eceeeb; --grid2:#dfe2df;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141816; --panel:#1c2120; --ink:#e4e9e6; --muted:#94a09b; --line:#2c3331;
+    --wallF:#4a504d; --wallT:#5b625e; --wallS:#3a3f3d; --groove:#7c6152; --grooveS:#93766a; --grooveD:#5e4a3e;
+    --cut:#e8604f; --hatch:#9a6650; --path:#79a7e0; --box:#5cc49a; --accent:#5cc49a; --grid:#222826; --grid2:#2b3230;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141816; --panel:#1c2120; --ink:#e4e9e6; --muted:#94a09b; --line:#2c3331;
+  --wallF:#4a504d; --wallT:#5b625e; --wallS:#3a3f3d; --groove:#7c6152; --grooveS:#93766a; --grooveD:#5e4a3e;
+  --cut:#e8604f; --hatch:#9a6650; --path:#79a7e0; --box:#5cc49a; --accent:#5cc49a; --grid:#222826; --grid2:#2b3230;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,Segoe UI,sans-serif}
+header{padding:12px 16px 0}
+h1{font-size:18px;margin:0}
+.en{font-style:italic;color:var(--muted);font-size:12px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 16px}
+button,select{font:inherit}
+button{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:5px 10px;cursor:pointer}
+button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:12px;padding:0 16px 16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px;min-width:0}
+.card h2{font-size:13px;margin:0 0 6px;font-weight:600}
+canvas{width:100%;display:block;touch-action:none}
+table{border-collapse:collapse;font-size:12.5px;width:100%;margin-top:6px}
+td,th{padding:3px 6px;border-bottom:1px solid var(--line);text-align:left}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:820px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Véset 3D — söprés + kivágás előnézet</h1>
+  <div class="en">Wall chase as a swept cut with a Fusion-style translucent preview. VRG clean-room spike, Planner rules (⌀×1.6, 30/35 mm, box pocket 68+4 × 45 mm).</div>
+</header>
+<div class="bar">
+  <button id="mPath" class="on">Út <span class="en">path</span></button>
+  <button id="mBox">Doboz <span class="en">box</span></button>
+  <button id="mDel">Törlés <span class="en">delete</span></button>
+  <label>⌀ <select id="dia"><option>16</option><option selected>20</option><option>25</option><option>32</option></select> mm</label>
+  <label>Anyag <select id="mat"><option value="1600">Tégla</option><option value="2400">Beton</option><option value="550">Ytong</option></select></label>
+  <button id="vCut" class="on">Kivésve <span class="en">carved</span></button>
+  <button id="vPrev">Előnézet <span class="en">preview all</span></button>
+  <button id="preset">Minta</button>
+  <button id="clear">Üres fal</button>
+</div>
+<main>
+  <section class="card">
+    <h2>Falnézet <span class="en">elevation — click points, double-click / Enter ends, Esc cancels</span></h2>
+    <canvas id="ed"></canvas>
+    <table id="qty"></table>
+  </section>
+  <section class="card">
+    <h2>3D <span class="en">drag to orbit — the red body is the cut being drawn</span></h2>
+    <canvas id="v3"></canvas>
+  </section>
+</main>
+<script>
+"use strict";
+// ---- model (mm). u along the wall, h up; y goes INTO the wall from its face ----
+const L = 3600, H = 2700, T = 250, C = 5;           // wall, raster cell
+const NX = L / C, NZ = H / C;
+const BOX = 68 + 4, BOXD = 45;
+const chaseW = dia => Math.max(20, Math.round(dia * 1.6));
+const chaseD = dia => dia <= 25 ? 30 : 35;
+
+let paths = [], boxes = [], draft = null, hover = null, mode = "path", showAll = false;
+
+function preset() {
+  // the Fusion frame: a long run under the ceiling turning down into a box
+  paths = [
+    { dia: 20, pts: [[150, 2450], [2900, 2450], [2900, 1100]] },
+    { dia: 20, pts: [[900, 2450], [900, 1200]] },
+    { dia: 25, pts: [[2900, 1100], [2900, 300], [1700, 300]] },
+  ];
+  boxes = [[2900, 1100], [900, 1200], [1700, 300]];
+  draft = null;
+}
+
+// ---- raster: per-cell cut depth (max of everything covering it) ----
+function rasterize(ps, bs, extra) {
+  const D = new Float32Array(NX * NZ);
+  const put = (i, j, d) => { const k = i * NZ + j; if (d > D[k]) D[k] = d; };
+  const seg = (a, b, w, d) => {
+    const hw = w / 2, dx = b[0] - a[0], dz = b[1] - a[1], len = Math.hypot(dx, dz);
+    if (len < 1) return;
+    const ux = dx / len, uz = dz / len;
+    const i0 = Math.max(0, Math.floor((Math.min(a[0], b[0]) - hw) / C)), i1 = Math.min(NX - 1, Math.floor((Math.max(a[0], b[0]) + hw) / C));
+    const j0 = Math.max(0, Math.floor((Math.min(a[1], b[1]) - hw) / C)), j1 = Math.min(NZ - 1, Math.floor((Math.max(a[1], b[1]) + hw) / C));
+    for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+      const px = (i + 0.5) * C - a[0], pz = (j + 0.5) * C - a[1];
+      const t = px * ux + pz * uz, n = Math.abs(px * uz - pz * ux);
+      if (t >= -hw && t <= len + hw && n <= hw) put(i, j, d);   // square caps: runs merge at corners and boxes
+    }
+  };
+  for (const p of ps) for (let s = 1; s < p.pts.length; s++) seg(p.pts[s - 1], p.pts[s], chaseW(p.dia), chaseD(p.dia));
+  for (const b of bs) {
+    const i0 = Math.max(0, Math.floor((b[0] - BOX / 2) / C)), i1 = Math.min(NX - 1, Math.ceil((b[0] + BOX / 2) / C) - 1);
+    const j0 = Math.max(0, Math.floor((b[1] - BOX / 2) / C)), j1 = Math.min(NZ - 1, Math.ceil((b[1] + BOX / 2) / C) - 1);
+    for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) put(i, j, BOXD);
+  }
+  if (extra) extra(seg);
+  return D;
+}
+const dAt = (D, i, j) => (i < 0 || j < 0 || i >= NX || j >= NZ) ? 0 : D[i * NZ + j];
+
+// ---- faces of the cut volume from a depth raster (merged runs) ----
+// each face: {p:[[x,y,z]...], n:[nx,ny,nz], kind}
+function cutFaces(D, withCap) {
+  const F = [];
+  for (let j = 0; j < NZ; j++) {                       // bottoms (+ front caps) per row, merged runs of equal depth
+    let i = 0;
+    while (i < NX) {
+      const d = dAt(D, i, j); if (!d) { i++; continue; }
+      let e = i; while (e + 1 < NX && dAt(D, e + 1, j) === d) e++;
+      const x0 = i * C, x1 = (e + 1) * C, z0 = j * C, z1 = (j + 1) * C;
+      F.push({ kind: "bottom", n: [0, -1, 0], p: [[x0, d, z0], [x1, d, z0], [x1, d, z1], [x0, d, z1]] });
+      if (withCap) F.push({ kind: "cap", n: [0, -1, 0], p: [[x0, 0, z0], [x1, 0, z0], [x1, 0, z1], [x0, 0, z1]] });
+      i = e + 1;
+    }
+  }
+  for (let i = 0; i <= NX; i++) {                      // walls between x-neighbours, merged along z
+    let j = 0;
+    while (j < NZ) {
+      const a = dAt(D, i - 1, j), b = dAt(D, i, j); if (a === b) { j++; continue; }
+      let e = j; while (e + 1 < NZ && dAt(D, i - 1, e + 1) === a && dAt(D, i, e + 1) === b) e++;
+      const x = i * C, y0 = Math.min(a, b), y1 = Math.max(a, b), z0 = j * C, z1 = (e + 1) * C;
+      F.push({ kind: "side", n: [b > a ? 1 : -1, 0, 0], p: [[x, y0, z0], [x, y1, z0], [x, y1, z1], [x, y0, z1]] });
+      j = e + 1;
+    }
+  }
+  for (let j = 0; j <= NZ; j++) {                      // walls between z-neighbours, merged along x
+    let i = 0;
+    while (i < NX) {
+      const a = dAt(D, i, j - 1), b = dAt(D, i, j); if (a === b) { i++; continue; }
+      let e = i; while (e + 1 < NX && dAt(D, e + 1, j - 1) === a && dAt(D, e + 1, j) === b) e++;
+      const z = j * C, y0 = Math.min(a, b), y1 = Math.max(a, b), x0 = i * C, x1 = (e + 1) * C;
+      F.push({ kind: "side", n: [0, 0, b > a ? 1 : -1], p: [[x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z]] });
+      i = e + 1;
+    }
+  }
+  return F;
+}
+
+// ---- quantities ----
+function quantities(D) {
+  const grp = {};
+  for (const p of paths) {
+    const k = chaseW(p.dia) + "×" + chaseD(p.dia);
+    for (let s = 1; s < p.pts.length; s++) grp[k] = (grp[k] || 0) + Math.hypot(p.pts[s][0] - p.pts[s - 1][0], p.pts[s][1] - p.pts[s - 1][1]);
+  }
+  let naive = boxes.length * BOX * BOX * BOXD;
+  for (const p of paths) for (let s = 1; s < p.pts.length; s++)
+    naive += (Math.hypot(p.pts[s][0] - p.pts[s - 1][0], p.pts[s][1] - p.pts[s - 1][1]) + chaseW(p.dia)) * chaseW(p.dia) * chaseD(p.dia);   // + square caps
+  let vol = 0; for (let k = 0; k < D.length; k++) vol += D[k] * C * C;
+  return { grp, naive: naive / 1e9, vol: vol / 1e9 };     // m³
+}
+
+// ---- 3D view (orthographic, painter's order) ----
+const v3 = document.getElementById("v3"), g3 = v3.getContext("2d");
+let yaw = 0.42, pitch = 0.38, zoom = 1, tx = 0, ty = 0;   // wheel zoom about the cursor, double-click resets
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+function draw3d(Dc, Dd) {
+  const W = v3.width, Hc = v3.height, cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const toCam = [sy * cp, -cy * cp, sp];
+  const pr = q => { const sx = q[0] * cy + q[1] * sy, dh = -q[0] * sy + q[1] * cy; return [sx, q[2] * cp + dh * sp]; };
+  const corners = []; for (const x of [0, L]) for (const y of [0, T]) for (const z of [0, H]) corners.push(pr([x, y, z]));
+  const xs = corners.map(c => c[0]), ys = corners.map(c => c[1]);
+  const s = Math.min((W * 0.9) / (Math.max(...xs) - Math.min(...xs)), (Hc * 0.9) / (Math.max(...ys) - Math.min(...ys)));
+  const ox = W / 2 - s * (Math.max(...xs) + Math.min(...xs)) / 2, oy = Hc / 2 + s * (Math.max(...ys) + Math.min(...ys)) / 2;
+  const P = q => { const r = pr(q); return [ox + r[0] * s, oy - r[1] * s]; };
+  const dist = f => { let a = 0; for (const q of f.p) a -= q[0] * toCam[0] + q[1] * toCam[1] + q[2] * toCam[2]; return a / f.p.length; };
+  const vis = f => f.n[0] * toCam[0] + f.n[1] * toCam[1] + f.n[2] * toCam[2] > 1e-6;
+  const poly = (pts, fill, stroke, alpha) => {
+    g3.globalAlpha = alpha == null ? 1 : alpha; g3.beginPath();
+    pts.forEach((q, k) => { const [X, Y] = P(q); k ? g3.lineTo(X, Y) : g3.moveTo(X, Y); }); g3.closePath();
+    if (fill) { g3.fillStyle = fill; g3.fill(); }
+    if (stroke) { g3.strokeStyle = stroke; g3.lineWidth = 1 / zoom; g3.stroke(); }
+    g3.globalAlpha = 1;
+  };
+  g3.setTransform(1, 0, 0, 1, 0, 0);
+  g3.fillStyle = css("--panel"); g3.fillRect(0, 0, W, Hc);
+  g3.setTransform(zoom, 0, 0, zoom, tx, ty);
+
+  const side = yaw > 0 ? [[0, 0, 0], [0, T, 0], [0, T, H], [0, 0, H]] : [[L, 0, 0], [L, T, 0], [L, T, H], [L, 0, H]];
+  const top = [[0, 0, H], [L, 0, H], [L, T, H], [0, T, H]];
+  const front = [[0, 0, 0], [L, 0, 0], [L, 0, H], [0, 0, H]];
+  const edge = css("--wallS");
+
+  if (showAll) {
+    // Fusion-style: translucent body, the whole cut volume shown in red
+    poly(side, css("--wallS"), edge, 0.55); poly(top, css("--wallT"), edge, 0.55); poly(front, css("--wallF"), edge, 0.45);
+    const F = cutFaces(Dc, true).sort((a, b) => dist(b) - dist(a));
+    for (const f of F) poly(f.p, css("--cut"), null, 0.16);
+    for (const f of cutFaces(Dc, false).filter(f => f.kind === "side" && Math.abs(f.n[2]) === 1)) poly(f.p, null, css("--cut"), 0.5);
+  } else {
+    poly(side, css("--wallS"), edge); poly(top, css("--wallT"), edge);
+    // carved: groove bottoms + visible groove walls far-to-near, then the face WITH HOLES on top
+    const F = cutFaces(Dc, false).filter(f => f.kind === "bottom" || vis(f)).sort((a, b) => dist(b) - dist(a));
+    for (const f of F) {
+      const c = f.kind === "bottom" ? css("--groove") : (f.n[2] ? css("--grooveS") : css("--grooveD"));
+      poly(f.p, c, c);
+    }
+    g3.beginPath();
+    const mv = (q, k) => { const [X, Y] = P(q); k ? g3.lineTo(X, Y) : g3.moveTo(X, Y); };
+    front.forEach(mv); g3.closePath();
+    for (const f of cutFaces(Dc, true)) if (f.kind === "cap") { f.p.forEach(mv); g3.closePath(); }
+    g3.fillStyle = css("--wallF"); g3.fill("evenodd"); g3.strokeStyle = edge; poly(front, null, edge);
+  }
+  if (Dd) {
+    // the draft: what the next click would cut, as a red translucent body
+    const F = cutFaces(Dd, true).sort((a, b) => dist(b) - dist(a));
+    for (const f of F) poly(f.p, css("--cut"), null, 0.35);
+  }
+}
+
+// ---- elevation editor ----
+const ed = document.getElementById("ed"), ge = ed.getContext("2d");
+let es = 1, eox = 0, eoy = 0;
+function drawEd(Dc) {
+  const W = ed.width, Hc = ed.height; es = Math.min((W - 20) / L, (Hc - 20) / H); eox = (W - L * es) / 2; eoy = (Hc + H * es) / 2;
+  const X = u => eox + u * es, Y = h => eoy - h * es;
+  ge.fillStyle = css("--panel"); ge.fillRect(0, 0, W, Hc);
+  ge.fillStyle = css("--wallF"); ge.globalAlpha = 0.35; ge.fillRect(X(0), Y(H), L * es, H * es); ge.globalAlpha = 1;
+  ge.lineWidth = 1;
+  for (let u = 0; u <= L; u += 100) { ge.strokeStyle = css(u % 500 ? "--grid" : "--grid2"); ge.beginPath(); ge.moveTo(X(u) + .5, Y(H)); ge.lineTo(X(u) + .5, Y(0)); ge.stroke(); }
+  for (let h = 0; h <= H; h += 100) { ge.strokeStyle = css(h % 500 ? "--grid" : "--grid2"); ge.beginPath(); ge.moveTo(X(0), Y(h) + .5); ge.lineTo(X(L), Y(h) + .5); ge.stroke(); }
+  ge.fillStyle = css("--hatch"); ge.beginPath();
+  for (let j = 0; j < NZ; j++) { let i = 0; while (i < NX) { if (!Dc[i * NZ + j]) { i++; continue; } let e = i; while (e + 1 < NX && Dc[(e + 1) * NZ + j]) e++; ge.rect(X(i * C), Y((j + 1) * C), (e + 1 - i) * C * es + .5, C * es + .5); i = e + 1; } }
+  ge.fill();
+  ge.strokeStyle = css("--path"); ge.lineWidth = 2;
+  const line = (pts, dash) => { ge.setLineDash(dash || []); ge.beginPath(); pts.forEach((q, k) => k ? ge.lineTo(X(q[0]), Y(q[1])) : ge.moveTo(X(q[0]), Y(q[1]))); ge.stroke(); ge.setLineDash([]); };
+  for (const p of paths) line(p.pts);
+  if (draft) { ge.strokeStyle = css("--cut"); line(hover && mode === "path" ? [...draft.pts, hover] : draft.pts, [6, 4]); }
+  ge.strokeStyle = css("--box"); ge.lineWidth = 2;
+  for (const b of boxes) ge.strokeRect(X(b[0] - 34), Y(b[1] + 34), 68 * es, 68 * es);
+  if (hover && mode === "box") { ge.strokeStyle = css("--cut"); ge.strokeRect(X(hover[0] - 34), Y(hover[1] + 34), 68 * es, 68 * es); }
+  ge.fillStyle = css("--muted"); ge.font = "11px system-ui"; ge.fillText(`${L} × ${H} mm, fal ${T} mm`, X(0), Y(H) - 4);
+}
+
+function snap(e) {
+  const r = ed.getBoundingClientRect(), k = ed.width / r.width;
+  let u = ((e.clientX - r.left) * k - eox) / es, h = (eoy - (e.clientY - r.top) * k) / es;
+  u = Math.round(u / 50) * 50; h = Math.round(h / 50) * 50;
+  const last = draft && draft.pts[draft.pts.length - 1];
+  if (last) { if (Math.abs(u - last[0]) < Math.abs(h - last[1])) u = last[0]; else h = last[1]; }   // orthogonal, like the Planner's chases
+  return [Math.min(Math.max(u, 50), L - 50), Math.min(Math.max(h, 50), H - 50)];
+}
+ed.addEventListener("pointermove", e => { hover = snap(e); render(); });
+ed.addEventListener("pointerleave", () => { hover = null; render(); });
+ed.addEventListener("click", e => {
+  const p = snap(e);
+  if (mode === "path") { if (!draft) draft = { dia: +dia.value, pts: [p] }; else if (p[0] !== draft.pts.at(-1)[0] || p[1] !== draft.pts.at(-1)[1]) draft.pts.push(p); }
+  else if (mode === "box") boxes.push(p);
+  else {
+    const near = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+    const bi = boxes.findIndex(b => near(b, p) < 80);
+    if (bi >= 0) boxes.splice(bi, 1);
+    else { const pi = paths.findIndex(q => q.pts.some((a, k) => k && segDist(p, q.pts[k - 1], a) < 60)); if (pi >= 0) paths.splice(pi, 1); }
+  }
+  render();
+});
+ed.addEventListener("dblclick", finish);
+document.addEventListener("keydown", e => { if (e.key === "Enter") finish(); if (e.key === "Escape") { draft = null; render(); } });
+function finish() { if (draft && draft.pts.length > 1) paths.push(draft); draft = null; render(); }
+function segDist(p, a, b) {
+  const dx = b[0] - a[0], dz = b[1] - a[1], l2 = dx * dx + dz * dz || 1;
+  const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / l2));
+  return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dz);
+}
+
+// 3D orbit
+let drag = null;
+v3.addEventListener("pointerdown", e => { drag = [e.clientX, e.clientY, yaw, pitch]; v3.setPointerCapture(e.pointerId); });
+v3.addEventListener("pointermove", e => {
+  if (!drag) return;
+  yaw = Math.max(-1.2, Math.min(1.2, drag[2] + (e.clientX - drag[0]) * 0.008));
+  pitch = Math.max(0.05, Math.min(1.1, drag[3] + (e.clientY - drag[1]) * 0.006)); render();
+});
+v3.addEventListener("pointerup", () => drag = null);
+v3.addEventListener("wheel", e => {
+  e.preventDefault();
+  const r = v3.getBoundingClientRect(), k = v3.width / r.width, cx = (e.clientX - r.left) * k, cy = (e.clientY - r.top) * k;
+  const f = Math.min(Math.max(Math.exp(-e.deltaY * 0.0015), 0.5), 2), nz = Math.min(Math.max(zoom * f, 1), 40), g = nz / zoom;
+  tx = cx - (cx - tx) * g; ty = cy - (cy - ty) * g; zoom = nz; if (zoom === 1) tx = ty = 0; render();
+}, { passive: false });
+v3.addEventListener("dblclick", () => { zoom = 1; tx = ty = 0; render(); });
+
+// ---- UI ----
+const $ = id => document.getElementById(id), dia = $("dia");
+function setMode(m) { mode = m; for (const [id, k] of [["mPath", "path"], ["mBox", "box"], ["mDel", "del"]]) $(id).classList.toggle("on", k === m); if (m !== "path") draft = null; render(); }
+$("mPath").onclick = () => setMode("path"); $("mBox").onclick = () => setMode("box"); $("mDel").onclick = () => setMode("del");
+$("vCut").onclick = () => { showAll = false; $("vCut").classList.add("on"); $("vPrev").classList.remove("on"); render(); };
+$("vPrev").onclick = () => { showAll = true; $("vPrev").classList.add("on"); $("vCut").classList.remove("on"); render(); };
+$("preset").onclick = () => { preset(); render(); };
+$("clear").onclick = () => { paths = []; boxes = []; draft = null; render(); };
+$("mat").onchange = () => render();
+dia.onchange = () => { if (draft) draft.dia = +dia.value; render(); };
+
+function render() {
+  const Dc = rasterize(paths, boxes);
+  let Dd = null;
+  if (mode === "path" && draft) {
+    const pts = hover ? [...draft.pts, hover] : draft.pts;
+    Dd = rasterize([{ dia: draft.dia, pts }], []);
+  } else if (mode === "box" && hover) Dd = rasterize([], [hover]);
+  drawEd(Dc); draw3d(Dc, Dd);
+  const q = quantities(Dc), rho = +$("mat").value;
+  let rows = `<tr><th>Véset <span class="en">width×depth</span></th><th class="n">m</th></tr>`;
+  for (const k of Object.keys(q.grp).sort()) rows += `<tr><td>${k} mm</td><td class="n">${(q.grp[k] / 1000).toFixed(2)}</td></tr>`;
+  rows += `<tr><td>Dobozfészek ${BOX}×${BOX}×${BOXD} mm</td><td class="n">${boxes.length} db</td></tr>`;
+  rows += `<tr><td>Kivésett térfogat <span class="en">union</span></td><td class="n">${(q.vol * 1000).toFixed(1)} l</td></tr>`;
+  rows += `<tr><td>Egyszerű összeg <span class="en">naive sum, double-counts overlaps</span></td><td class="n">${(q.naive * 1000).toFixed(1)} l</td></tr>`;
+  rows += `<tr><td>Törmelék ≈ <span class="en">debris</span></td><td class="n">${(q.vol * rho).toFixed(1)} kg</td></tr>`;
+  $("qty").innerHTML = rows;
+}
+
+function fit() {
+  const dpr = window.devicePixelRatio || 1;
+  for (const [c, a] of [[ed, H / L], [v3, 0.8]]) { c.width = Math.round(c.clientWidth * dpr); c.height = Math.round(c.clientWidth * a * dpr); }
+  render();
+}
+window.addEventListener("resize", fit);
+preset(); fit();
+</script>
+</body>
+</html>

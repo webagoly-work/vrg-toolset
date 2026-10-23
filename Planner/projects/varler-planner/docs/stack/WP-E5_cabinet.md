@@ -5,7 +5,7 @@ Decisions: Q33=A · Q39=A
 
 ## Goal
 *"This process also generates the Elosztószekrény's inner module count, RCD type, standard DIN rail
-modules like MCB, overvoltage, etc."* Defaults are P33's settled cabinet (BUILD-001 §14, K31/K32):
+modules like MCB, overvoltage, etc."* Defaults are CLA's settled cabinet (BUILD-001 §14, K31/K32):
 one 1-module RCBO per way, three-phase-ready feed, way groups system / RBX lighting / RBX sockets /
 big loads. Output is a schedule and a JSON the future DIN-rail tool can read — no drawing.
 
@@ -62,7 +62,7 @@ schedule:eloSchedule(id), circuits:cktExportObj()}` — `circuits` keeps the exi
 payload unchanged inside, so the Inventory and the future Elosztó DIN tool read one file.
 
 ## Tests — `tests/spec-53-cabinet.js`
-Fixture: P33-like — BASE (fed by board), SSC, one NTL (so a BUSB endpoint exists → the pack way),
+Fixture: CLA-like — BASE (fed by board), SSC, one NTL (so a BUSB endpoint exists → the pack way),
 4 RBX each with lights; socket circuits: kitchen 3,
 three rooms 1 each, one shared circuit for two rooms, upper floor 1 (= 8); big loads: oven `g16`,
 hob `hob2l`, dishwasher, washing machine, bojler, klíma, AV (`AVP`).
@@ -81,10 +81,10 @@ hob `hob2l`, dishwasher, washing machine, bojler, klíma, AV (`AVP`).
 Identical.
 
 ## Browser-only checks (for the human)
-The modal is readable and the numbers match the user's own P33 cabinet sheet.
+The modal is readable and the numbers match the user's own CLA cabinet sheet.
 
 ## Verifier focus
-The P33 reproduction (24 / 29 / 34) is the acceptance test that matters — it ties the rule table to a
+The CLA reproduction (24 / 29 / 34) is the acceptance test that matters — it ties the rule table to a
 settled real design. Kitchen-check wording. No silent rounding of modules.
 
 ## Out of scope

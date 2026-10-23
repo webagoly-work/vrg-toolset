@@ -9,7 +9,7 @@ Egyetlen igazságforrás az eszközökre, érzékelőkre, gázokra, kapcsolókra
 | `tools/viewer.html` | A nézet sablonja |
 | `SMARTHOME-DB-001.json` | Generált — ne kézzel |
 | `smarthome-db.html` | Generált offline nézet (fájlként is megnyitható, szűrő helyiségre és szövegre) |
-| `RESEARCH-001_…md` | A kutatás következtetései, P33 ajánlások, döntési lista (D-01…D-07) |
+| `RESEARCH-001_…md` | A kutatás következtetései, CLA ajánlások, döntési lista (D-01…D-07) |
 
 ```bash
 node BRIDGE/09_catalogue/tools/build.js           # build

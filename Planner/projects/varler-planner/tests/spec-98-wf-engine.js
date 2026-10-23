@@ -1,5 +1,5 @@
 // Workflow round WP-E5 — the Erősáram engine (tools/baseline) bundled into the Planner (src/08ob-wf-engine.js, build.js).
-// 1. the bundle is the CLI engine (same tables; on the P33 v1 sketch — client data, only when present — the same plan);
+// 1. the bundle is the CLI engine (same tables; on the CLA v1 sketch — client data, only when present — the same plan);
 // 2. blInput on a 2-room fixture: the routable walls are its Vezethető fal marks only (Q7); redőny left out; lighting by
 //    preset; Padló út → floor group, a wall-to-wall Mennyezeti út → ceiling link (Q9);
 // 3. Pályák kiszámítása writes gen:'bl' paths + boxes; a re-run replaces only those, a hand-drawn path stays; one undo;
@@ -13,7 +13,7 @@ function findPlanner(){
   throw new Error('planner build not found — run: node build.js');}
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;const BLD=path.join(__dirname,'..','tools','baseline');
-const P33=path.join(__dirname,'..','..','..','..','Calculator','P33-baseline','v1_2026-10-12','P33_teszt_v1_m_solat.vplan(3).json');
+const CLA=path.join(__dirname,'..','..','..','..','Calculator','CLA-baseline','v1_2026-10-12','CLA_teszt_v1_m_solat.vplan(3).json');
 setTimeout(()=>{
  const R=[];const ok=(n,c,x)=>R.push([n,!!c,x||'']);
  try{
@@ -22,8 +22,8 @@ setTimeout(()=>{
   const RU=require(path.join(BLD,'rules.js'));
   ok('the same tables as the CLI (IZ, groupK, VDROP, PORTAL_SLOTS)',JSON.stringify(BL.rules.IZ)===JSON.stringify(RU.IZ)&&BL.rules.groupK(16)===RU.groupK(16)
     &&JSON.stringify(BL.rules.VDROP)===JSON.stringify(RU.VDROP)&&JSON.stringify(BL.rules.PORTAL_SLOTS)===JSON.stringify(RU.PORTAL_SLOTS));
-  if(fs.existsSync(P33)){
-    const raw=fs.readFileSync(P33,'utf8'),cfg0=JSON.stringify(require(path.join(BLD,'p33.config.js')));
+  if(fs.existsSync(CLA)){
+    const raw=fs.readFileSync(CLA,'utf8'),cfg0=JSON.stringify(require(path.join(BLD,'cla.config.js')));
     const pipe=(E5,doc,cfg)=>{E5.prep.applyEdits(doc,cfg);const G=E5.geom.load(doc,cfg.level);const {allowed}=E5.geom.allowedFromSketch(G,G.D.paths);
       (cfg.allowExtra||[]).forEach(a=>(allowed[a.wall]=allowed[a.wall]||[]).push(a.iv));
       const E=E5.prep.endpoints(G,cfg);E5.prep.applyHeights(E);const PT=E5.prep.portals(G,E);E5.prep.portalMembers(G,PT,E);E5.prep.placeInPortals(G,PT,E);
@@ -32,8 +32,8 @@ setTimeout(()=>{
         l:r.legs.map(l=>[l.id,l.kind,l.from,l.to,l.len,l.cond]),k:r.checks,wn:r.warn.map(x=>x.msg)});};
     const node={geom:require(path.join(BLD,'geom.js')),prep:require(path.join(BLD,'prep.js')),plan:require(path.join(BLD,'plan.js'))};
     const a=pipe(node,JSON.parse(raw),JSON.parse(cfg0)),b=pipe(BL,w.JSON.parse(raw),w.JSON.parse(cfg0));
-    ok('P33 v1: the bundled engine gives the CLI plan exactly (circuits, boxes, legs, checks, warnings)',a===b&&a.length>1000,a.length+' vs '+b.length);
-  }else ok('P33 v1 sketch not on this machine — parity check skipped (client data)',true);
+    ok('CLA v1: the bundled engine gives the CLI plan exactly (circuits, boxes, legs, checks, warnings)',a===b&&a.length>1000,a.length+' vs '+b.length);
+  }else ok('CLA v1 sketch not on this machine — parity check skipped (client data)',true);
 
   // ---- 2. the fixture: room A (board, socket) | door | room B (socket, switch → lamp, redőny) ----
   w.confirm=()=>true;w.alert=()=>{};w.hardResetWorkspace();const st=w.__state,D=w.__data;st.active='ground';
@@ -121,24 +121,24 @@ setTimeout(()=>{
   w.closeModal();
   D.marks=D.marks.filter(m=>!(m.tags||[]).includes('vezetheto'));const e=w.blRun('ground');ok('no Vezethető fal → a clear message, no crash',!!e.err&&/vezethető fal/i.test(e.err));
 
-  // ---- 6. P33 acceptance (E5-Q12 = C, step A; client data, only when present) ----
-  // p33.config's answers → Planner data (to-planner.js) → the Planner's engine == the CLI run with the same exclusions
+  // ---- 6. CLA acceptance (E5-Q12 = C, step A; client data, only when present) ----
+  // cla.config's answers → Planner data (to-planner.js) → the Planner's engine == the CLI run with the same exclusions
   // (no shutter switches / motors, floorLinks, risers, prepared routes, spBoxSize — not in the Planner yet)
-  if(fs.existsSync(P33)){const cfgP=()=>JSON.parse(JSON.stringify(require(path.join(BLD,'p33.config.js'))));
-    const conv=require(path.join(BLD,'to-planner.js')).convert(JSON.parse(fs.readFileSync(P33,'utf8')),cfgP()).doc;
+  if(fs.existsSync(CLA)){const cfgP=()=>JSON.parse(JSON.stringify(require(path.join(BLD,'cla.config.js'))));
+    const conv=require(path.join(BLD,'to-planner.js')).convert(JSON.parse(fs.readFileSync(CLA,'utf8')),cfgP()).doc;
     w.applyProjectData(w.JSON.parse(JSON.stringify(conv.project)));w.__state.active='ground';w.BL_OPT.cornerAll=true;const pr=w.blRun('ground');w.BL_OPT.cornerAll=false;
     const node={geom:require(path.join(BLD,'geom.js')),prep:require(path.join(BLD,'prep.js')),plan:require(path.join(BLD,'plan.js'))};
-    const cfg=cfgP(),doc=JSON.parse(fs.readFileSync(P33,'utf8'));node.prep.applyEdits(doc,cfg);Object.assign(cfg,{shutterSwitch:false,floorLinks:[],risers:[],prepared:[]});delete cfg.spBoxSize;
+    const cfg=cfgP(),doc=JSON.parse(fs.readFileSync(CLA,'utf8'));node.prep.applyEdits(doc,cfg);Object.assign(cfg,{shutterSwitch:false,floorLinks:[],risers:[],prepared:[]});delete cfg.spBoxSize;
     const DD=doc.project.data,shu=new Set(DD.devices.filter(d=>d.code==='SHU').map(d=>d.id));DD.devices=DD.devices.filter(d=>!shu.has(d.id));DD.circuits.forEach(c=>c.members=c.members.filter(id=>!shu.has(id)));
     const G=node.geom.load(doc,cfg.level),al2=node.geom.allowedFromSketch(G,G.D.paths).allowed;(cfg.allowExtra||[]).forEach(a=>(al2[a.wall]=al2[a.wall]||[]).push(a.iv));
     const E=node.prep.endpoints(G,cfg);node.prep.applyHeights(E);const PT=node.prep.portals(G,E);node.prep.portalMembers(G,PT,E);node.prep.placeInPortals(G,PT,E);const cr=node.plan.plan(G,E,PT,cfg,al2);
     const legSig=R=>R.legs.map(l=>{const a=l.poly[0],z=l.poly[l.poly.length-1];return [l.kind,Math.round(a[0]/10),Math.round(a[1]/10),Math.round(z[0]/10),Math.round(z[1]/10),Math.round(l.len/10),l.cond].join('|');}).sort().join(';');
     const boxSig=R=>R.boxes.map(b=>[b.kind,Math.round(b.x/10),Math.round(b.y/10),b.h].join('|')).sort().join(';');
-    ok('P33 acceptance: the converted plan runs in the Planner (16 circuits)',!pr.err&&pr.R.C.list.length===16,pr.err||'');
-    ok('P33 acceptance: every leg identical to the CLI ('+cr.legs.length+')',!pr.err&&legSig(pr.R)===legSig(cr));
-    ok('P33 acceptance: every box identical ('+cr.boxes.length+')',!pr.err&&boxSig(pr.R)===boxSig(cr));
-    ok('P33 acceptance: the same checks',!pr.err&&JSON.stringify(pr.R.checks)===JSON.stringify(cr.checks));
-  }else ok('P33 acceptance skipped — client data not on this machine',true);
+    ok('CLA acceptance: the converted plan runs in the Planner (16 circuits)',!pr.err&&pr.R.C.list.length===16,pr.err||'');
+    ok('CLA acceptance: every leg identical to the CLI ('+cr.legs.length+')',!pr.err&&legSig(pr.R)===legSig(cr));
+    ok('CLA acceptance: every box identical ('+cr.boxes.length+')',!pr.err&&boxSig(pr.R)===boxSig(cr));
+    ok('CLA acceptance: the same checks',!pr.err&&JSON.stringify(pr.R.checks)===JSON.stringify(cr.checks));
+  }else ok('CLA acceptance skipped — client data not on this machine',true);
  }catch(err){R.push(['exception',false,err.stack]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x&&!c?'   ['+x+']':''));});
  console.log(bad?('\n'+bad+' FAILED'):'\nALL PASS ('+R.length+')');

@@ -6,7 +6,7 @@
 // ==========================================================================
 
 // THE key feature of the workflow: the user draws only the HORIZONTAL intent — which walls a route may run along — and
-// every height comes from the standards. On P33 this was 24 loose Csatorna lines matched to walls with ±500 mm; here it
+// every height comes from the standards. On CLA this was 24 loose Csatorna lines matched to walls with ±500 mm; here it
 // is recorded exactly, on the wall itself, as Jelölés marks (Q-R03 = A):
 //   whole wall, both faces → {kind:'wall', wall, tags:['vezetheto'], pol:'plus'}
 //   part of a wall         → {kind:'wspan', wall, u0, u1, tags:['vezetheto'], pol:'plus'}   (u = mm along the centreline)

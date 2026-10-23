@@ -42,7 +42,7 @@ protection floor by floor."*
     Alosztó;
   - `CIRCUIT_CABLE.alelo = NYM5x6`;
   - `upstreamDropPct` is added to every circuit's ΔU (`dUup` in the row).
-  - P33 is unchanged.
+  - CLA is unchanged.
 
 ## Answers (user, 2026-10-16) — built
 
@@ -55,7 +55,7 @@ protection floor by floor."*
 
 Also built with the answers:
 - **05x** lists the workflow's own (E4, non-RBX) circuits as cabinet ways, on the board of their level; a feeder's load = its floor's ways (× 0,6).
-- **Engine:** a run with no door / RBX / szobadoboz in reach may start at the board itself (a one-room level, the Alosztó's room) — a fallback only, P33 unchanged; IZ gets 25 mm² ⚑; a feeder may come from above (basement).
+- **Engine:** a run with no door / RBX / szobadoboz in reach may start at the board itself (a one-room level, the Alosztó's room) — a fallback only, CLA unchanged; IZ gets 25 mm² ⚑; a feeder may come from above (basement).
 
 ## The choices as asked (kept for the record)
 - **E6-Q1, the feeder breaker and cable:**

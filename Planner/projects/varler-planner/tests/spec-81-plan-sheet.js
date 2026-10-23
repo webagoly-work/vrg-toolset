@@ -1,14 +1,14 @@
 // Views V9c — the Alaprajz as a sheet: ISO A3 / A4 at a true 1:50 / 1:100, frame, title block, scale bar, fit check,
 // SVG / PNG / Nyomtatás from the Exportálás menu (06c viewSheetSvg opts.paper, 06d vexpPlanSheet / vexpPlanFit).
 //
-// Fixture: the committed P33 v2 furnished plan, ground floor (docs/views/WORKPLAN.md § V9c, tests 1–7).
+// Fixture: the committed CLA v2 furnished plan, ground floor (docs/views/WORKPLAN.md § V9c, tests 1–7).
 const {JSDOM}=require('jsdom');const path=require('path');const fs=require('fs');
 function findPlanner(){
   if(process.env.PLANNER)return process.env.PLANNER;
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2_butor.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2_butor.vplan.json');
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;const $=id=>w.document.getElementById(id);
 setTimeout(()=>{
@@ -18,8 +18,8 @@ setTimeout(()=>{
   const doc=JSON.parse(fs.readFileSync(PLAN,'utf8'));
   w.hardResetWorkspace();w.applyProjectData(doc.project);
   const st=w.__state;st.active='ground';st.style='normal';st.pitch=30;w.draw();
-  const D='2026-10-14',sheet=(p,N,o)=>w.vexpPlanSheet(p,N,'P33',Object.assign({date:D},o||{}));
-  const axoBefore=[w.vexpSheet('top','P33').svg,w.vexpSheet('axo','P33').svg];
+  const D='2026-10-14',sheet=(p,N,o)=>w.vexpPlanSheet(p,N,'CLA',Object.assign({date:D},o||{}));
+  const axoBefore=[w.vexpSheet('top','CLA').svg,w.vexpSheet('axo','CLA').svg];
 
   // ---------- 1. sheet sizes ----------
   const A3=sheet('A3',50);
@@ -41,9 +41,9 @@ setTimeout(()=>{
 
   // ---------- 3. fit ----------
   const F=(p,N,r)=>w.vexpPlanFit(p,N,r||0);
-  ok('P33 A3 1:50 fits landscape: rajz 311 × 203 mm',F('A3',50).ok&&F('A3',50).msg==='A3 fekvő · 1:50 · rajz 311 × 203 mm',F('A3',50).msg);
-  ok('P33 A4 1:50 does not fit, the exact Hungarian line',!F('A4',50).ok&&F('A4',50).msg==='Nem fér el: A4 1:50 → a rajz 311 × 203 mm, a rajzterület 267 × 160 mm (álló: 180 × 247 mm). Válassz nagyobb lapot vagy kisebb léptéket.',F('A4',50).msg);
-  ok('P33 A4 1:100 fits landscape (156 × 102 mm)',F('A4',100).ok&&F('A4',100).orient==='fekvő'&&F('A4',100).msg.endsWith('rajz 156 × 102 mm'));
+  ok('CLA A3 1:50 fits landscape: rajz 311 × 203 mm',F('A3',50).ok&&F('A3',50).msg==='A3 fekvő · 1:50 · rajz 311 × 203 mm',F('A3',50).msg);
+  ok('CLA A4 1:50 does not fit, the exact Hungarian line',!F('A4',50).ok&&F('A4',50).msg==='Nem fér el: A4 1:50 → a rajz 311 × 203 mm, a rajzterület 267 × 160 mm (álló: 180 × 247 mm). Válassz nagyobb lapot vagy kisebb léptéket.',F('A4',50).msg);
+  ok('CLA A4 1:100 fits landscape (156 × 102 mm)',F('A4',100).ok&&F('A4',100).orient==='fekvő'&&F('A4',100).msg.endsWith('rajz 156 × 102 mm'));
   ok('no fit → no sheet',sheet('A4',50).svg===null&&sheet('A4',50).fit.ok===false);
   ok('the drawing is centred in the area',(function(){const a=A3.area,[dw,dh]=A3.draw,m=A3.map(A3.fit.box[0],A3.fit.box[1]);
     return Math.abs(m[0]-(a.x+(a.w-dw)/2))<1e-6&&Math.abs(m[1]-(a.y+(a.h-dh)/2))<1e-6&&dw<=a.w&&dh<=a.h;})());
@@ -52,7 +52,7 @@ setTimeout(()=>{
   ok('A3 frame 20 / 10 / 390 × 277',A3.svg.includes('<rect class="vw-frame" x="20" y="10" width="390" height="277"'));
   ok('title block at x 230, y 257, 180 × 30',A3.svg.includes('<g class="vw-tb"><rect x="230" y="257" width="180" height="30"'));
   ok('A4 title block at x 107, y 170',A4.svg.includes('<g class="vw-tb"><rect x="107" y="170" width="180" height="30"'));
-  ok('t1 = P33 · FÖLDSZINT, the sub line, Lépték 1:50 · Lap A3 · Dátum',A3.svg.includes('>P33 · FÖLDSZINT</text>')&&A3.svg.includes('>Alaprajz · vágás 1200 mm · 42 végpont a vágás alatt</text>')
+  ok('t1 = CLA · FÖLDSZINT, the sub line, Lépték 1:50 · Lap A3 · Dátum',A3.svg.includes('>CLA · FÖLDSZINT</text>')&&A3.svg.includes('>Alaprajz · vágás 1200 mm · 42 végpont a vágás alatt</text>')
     &&A3.svg.includes('>1:50</text>')&&A3.svg.includes('>A3</text>')&&A3.svg.includes('>'+D+'</text>')&&A3.svg.includes('>Varler Planner</text>'));
 
   // ---------- 5. scale bar ----------
@@ -69,14 +69,14 @@ setTimeout(()=>{
   ok('export with no fit → nothing (SVG / PNG / print return null)',w.eval('vexpSvg()')===null&&w.eval('vexpPng()')===null&&w.eval('vexpPrint()')===null);
   $('expScale').value='100';$('expScale').dispatchEvent(new w.Event('change'));
   ok('1:100 → the fit line',$('expFit').textContent==='A4 fekvő · 1:100 · rajz 156 × 102 mm');
-  $('expTitle').value='P33';
-  ok('file name alaprajz_P33_A4_1-100.png',w.eval("vexpName('png')")==='alaprajz_P33_A4_1-100.png');
+  $('expTitle').value='CLA';
+  ok('file name alaprajz_CLA_A4_1-100.png',w.eval("vexpName('png')")==='alaprajz_CLA_A4_1-100.png');
   ok('PNG at 150 dpi: A4 → 1754 × 1240 px',(function(){const S=sheet('A4',100),k=w.eval('vexpPngK')(S);return Math.round(S.W*k)===1754&&Math.round(S.H*k)===1240;})());
   $('expPlan').checked=false;$('expPlan').dispatchEvent(new w.Event('change'));$('expTitle').value='';
   ok('unticked: axo controls back',!$('expView').disabled&&$('expFit').style.display==='none');
 
   // ---------- 7. the V4 axo sheet untouched ----------
-  ok('vexpSheet top / axo byte-identical before and after',w.vexpSheet('top','P33').svg===axoBefore[0]&&w.vexpSheet('axo','P33').svg===axoBefore[1]);
+  ok('vexpSheet top / axo byte-identical before and after',w.vexpSheet('top','CLA').svg===axoBefore[0]&&w.vexpSheet('axo','CLA').svg===axoBefore[1]);
  }catch(e){R.push(['EXCEPTION',false,e.stack.split('\n').slice(0,4).join(' | ')]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x?'   ['+x+']':''));});
  console.log(bad?('\n'+bad+' FAILED'):'\nALL PASS ('+R.length+')');

@@ -60,6 +60,13 @@ const LH={basement:2500,ground:2700,upper:2700};
 // usually only covers part of a storey (fürdő, közlekedő), so the room wins where it is set.
 const DROPC={basement:0,ground:0,upper:0};
 const DROP_PLENUM=250;                                   // default gap under the slab when none is given
+// Födém (round 2026-10-18, WP-S1, answer S1 = B): LH[l] is the INNER height of a level; a slab of thickness t is ADDED
+// under a level, so the step between two levels is LH[below] + t. The slab of the lowest level hangs below 0 (S4 = B)
+// and does not move anything. Off everywhere = the model as it always was (every z byte-identical).
+const SLAB_T_DEFAULT=300;
+const SLABS={basement:{on:false,t:SLAB_T_DEFAULT},ground:{on:false,t:SLAB_T_DEFAULT},upper:{on:false,t:SLAB_T_DEFAULT}};
+function slbT(l){const s=SLABS[l];return s&&s.on?Math.max(0,+s.t||0):0;}
+function slbStep(l){return ORD.indexOf(l)>0?slbT(l):0;}   // what the slab under l adds to the level step
 function dropCeilMm(level,rm){if(rm&&rm.dropC>0)return rm.dropC;
   const v=DROPC[level]||0;return v>0?v:0;}
 function dropCeilOrDefault(level,rm){const v=dropCeilMm(level,rm);
@@ -122,8 +129,8 @@ function camLockSet(on){state.camLock=!!on;camLockAcc=0;
   return state.camLock;}
 function camSyncUI(){const s=$('camPreset'),b=$('camLock'),p=camPresetNow();
   if(s)s.value=p?p.k:'';if(b)b.checked=!!state.camLock;}
-function floorRealZ(l){let z=0;for(const k of ORD){if(k===l)break;z+=LH[k];}return z;}
-function floorDispZ(l){let z=0;for(const k of ORD){if(k===l)break;z+=LH[k]+(state.exploded?GAP:0);}return z;}
+function floorRealZ(l){let z=0;for(const k of ORD){z+=slbStep(k);if(k===l)break;z+=LH[k];}return z;}
+function floorDispZ(l){let z=0;for(const k of ORD){z+=slbStep(k);if(k===l)break;z+=LH[k]+(state.exploded?GAP:0);}return z;}
 function wallH(l){return LH[l];}
 function dz(l,h){return floorDispZ(l)+(h||0);}
 function wz(l,h){return floorRealZ(l)+(h||0);}

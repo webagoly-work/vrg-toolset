@@ -24,7 +24,7 @@ empty level skipped.
 
 ```bash
 node build.js                                          # dist/client-preview.template.html (no model)
-node build.js --model dev/p33.model.json --out dev/p33.html
+node build.js --model dev/cla.model.json --out dev/cla.html
 ```
 
 three.js comes from `Vendor/three` (npm three@0.169.0, sha512-checked): from the repo root run
@@ -35,12 +35,12 @@ parses the result before writing — a page script that fails to parse fails sil
 ## Dev loop with a real plan
 
 ```bash
-# 1. P33 only has the ground floor; add the upper floor from the BRIDGE sheet as a ghost
-node tools/p33-upper-import.js ../../../Calculator/P33_vplan_updated.json ../../../Calculator/P33_vplan_upper-ghost.json
+# 1. CLA only has the ground floor; add the upper floor from the BRIDGE sheet as a ghost
+node tools/cla-upper-import.js ../../../Calculator/CLA_vplan_updated.json ../../../Calculator/CLA_vplan_upper-ghost.json
 # 2. the model, exactly as the Planner will export it (boots the built Planner in jsdom)
-NODE_PATH=<a node_modules with jsdom> node tools/model-from-vplan.js ../../../Calculator/P33_vplan_upper-ghost.json dev/p33.model.json
+NODE_PATH=<a node_modules with jsdom> node tools/model-from-vplan.js ../../../Calculator/CLA_vplan_upper-ghost.json dev/cla.model.json
 # 3. the page
-node build.js --model dev/p33.model.json --out dev/p33.html
+node build.js --model dev/cla.model.json --out dev/cla.html
 ```
 
 `dev/` holds client plans and is gitignored. In the browser console `window.__cpv` exposes the

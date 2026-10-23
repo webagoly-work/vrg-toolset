@@ -1,0 +1,1420 @@
+{
+  "schema": "vrg-hub/1",
+  "rev": 1,
+  "updated": "2026-10-21",
+  "updatedBy": "webagoly-work",
+  "repo": {
+    "owner": "webagoly-work",
+    "name": "vrg-toolset",
+    "branch": "main",
+    "web": "https://github.com/webagoly-work/vrg-toolset"
+  },
+  "onedrive": {
+    "root": "",
+    "folders": [
+      {
+        "id": "od-start",
+        "path": "00_START",
+        "d": "A Kapu fájl és az első lépések leírása.",
+        "dEn": "The hub file and the getting-started note."
+      },
+      {
+        "id": "od-jobs",
+        "path": "10_Projektek",
+        "d": "Ügyfélmunkák mappái (ügyféladat — csak a két felhasználó).",
+        "dEn": "Client job folders (client data — the two users only)."
+      },
+      {
+        "id": "od-inst",
+        "path": "20_Telepitok",
+        "d": "Telepítők és a cwebuser kit.",
+        "dEn": "Installers and the cwebuser kit."
+      },
+      {
+        "id": "od-big",
+        "path": "30_Nagy_fajlok",
+        "d": "Tervrajzok, renderek, nagy adatcsomagok — ami nem fér a Gitbe.",
+        "dEn": "Blueprints, renders, big data — what does not fit in Git."
+      },
+      {
+        "id": "od-vis",
+        "path": "40_Vizualis",
+        "d": "A VRG Visual Base másolata.",
+        "dEn": "A copy of the VRG Visual Base."
+      },
+      {
+        "id": "od-res",
+        "path": "50_Kutatas",
+        "d": "Kutatási anyagok, letöltött források (nem publikus).",
+        "dEn": "Research material, downloaded sources (not public)."
+      },
+      {
+        "id": "od-logs",
+        "path": "90_Naplok",
+        "d": "Munkanaplók, ha nem a Gitbe mennek.",
+        "dEn": "Work logs, when they do not go to Git."
+      }
+    ]
+  },
+  "departments": [
+    {
+      "id": "ALT",
+      "t": "Általános",
+      "tEn": "General",
+      "hue": "gray",
+      "d": "Ami mindenkié: a kódtár, a közös mappa, az indítók, a telepítők.",
+      "dEn": "Shared by all: the repo, the shared drive, launchers, installers."
+    },
+    {
+      "id": "VEZ",
+      "t": "Vezetés és stratégia",
+      "tEn": "Management & strategy",
+      "hue": "purple",
+      "d": "Irány, ütemterv, gondolkodó eszközök, a munka összehangolása.",
+      "dEn": "Direction, roadmaps, thinking tools, coordination."
+    },
+    {
+      "id": "ERT",
+      "t": "Értékesítés és ügyfél",
+      "tEn": "Sales & customers",
+      "hue": "coral",
+      "d": "Amit az ügyfél lát: előnézet, brosúra, ügyfélfelvétel.",
+      "dEn": "What the client sees: previews, brochures, intake."
+    },
+    {
+      "id": "TERV",
+      "t": "Tervezés és mérnökség",
+      "tEn": "Design & engineering",
+      "hue": "teal",
+      "d": "Villamos tervek, termékválasztás, elosztó kiosztás.",
+      "dEn": "Electrical plans, product choice, board layout."
+    },
+    {
+      "id": "KALK",
+      "t": "Kalkuláció és pénzügy",
+      "tEn": "Estimating & finance",
+      "hue": "amber",
+      "d": "Anyag- és munkadíj, árajánlat, költségvetés, fizetések.",
+      "dEn": "Material and labour prices, quotes, cost plans, payments."
+    },
+    {
+      "id": "BESZ",
+      "t": "Beszerzés és raktár",
+      "tEn": "Procurement & stock",
+      "hue": "green",
+      "d": "Anyag adatbázis, beszállítók, rendelés, készlet, árfigyelés.",
+      "dEn": "Item database, suppliers, orders, stock, price watch."
+    },
+    {
+      "id": "KIV",
+      "t": "Kivitelezés és szerviz",
+      "tEn": "Field work & service",
+      "hue": "blue",
+      "d": "Ütemezés, helyszíni munka, átadás, mérések, utókövetés.",
+      "dEn": "Scheduling, site work, handover, measurements, after-sales."
+    },
+    {
+      "id": "TFEJ",
+      "t": "Termékfejlesztés (BRIDGE)",
+      "tEn": "Product R&D (BRIDGE)",
+      "hue": "pink",
+      "d": "A BRIDGE okosotthon rendszer, hardver, firmware, konzolok.",
+      "dEn": "The BRIDGE smart-home system, hardware, firmware, consoles."
+    },
+    {
+      "id": "JOG",
+      "t": "Jog és megfelelőség",
+      "tEn": "Legal & compliance",
+      "hue": "red",
+      "d": "Szabványok, kimenő dokumentumok, GDPR, licencek.",
+      "dEn": "Standards, outgoing documents, GDPR, licences."
+    },
+    {
+      "id": "ARC",
+      "t": "Arculat és vizuális tartalom",
+      "tEn": "Brand & visuals",
+      "hue": "purple",
+      "d": "Arculat, képtár, nézegetők, ügyfélnek szóló megjelenés.",
+      "dEn": "Design system, visual library, viewers, client look."
+    },
+    {
+      "id": "TUD",
+      "t": "Tudásbázis",
+      "tEn": "Knowledge",
+      "hue": "teal",
+      "d": "Offline referenciák, katalógusok, kutatás, ügynök-készségek.",
+      "dEn": "Offline references, catalogues, research, agent skills."
+    },
+    {
+      "id": "IT",
+      "t": "IT és infrastruktúra",
+      "tEn": "IT & infrastructure",
+      "hue": "gray",
+      "d": "Fejlesztői eszközök, külső könyvtárak, mentés, biztonság.",
+      "dEn": "Dev tooling, vendored libraries, backups, security."
+    },
+    {
+      "id": "IRO",
+      "t": "Iroda és csapat",
+      "tEn": "Office & people",
+      "hue": "coral",
+      "d": "Jegyzetek, emlékeztetők, levelek, névjegyek, dolgozói portál.",
+      "dEn": "Notes, reminders, mail, contacts, staff portal."
+    }
+  ],
+  "programs": [
+    {
+      "id": "repo",
+      "dept": "ALT",
+      "t": "GitHub kódtár (vrg-toolset)",
+      "status": "live",
+      "d": "Itt van minden kód és szöveges leírás. Privát: csak meghívottak látják.",
+      "dEn": "All code and text docs live here. Private: invited people only.",
+      "long": "A **repó** (repository) egy mappa, ami minden változást megjegyez. Minden mentés egy *commit* (dátum, szerző, mi változott). A *branch* egy párhuzamos munkavonal. A `main` a közös, kész állapot. Ide nem kerülhet jelszó, ügyfél PDF, és a hordozható programok mappája (`Planner/apps`, `home`, `data`).",
+      "open": {
+        "url": "https://github.com/webagoly-work/vrg-toolset"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/repo.md"
+        },
+        {
+          "t": "CLAUDE.md",
+          "d": "A repó munkaszabályai — minden AI munkamenet ezt olvassa először.",
+          "repo": "CLAUDE.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          ""
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-09-17",
+          "t": "Repó létrehozva"
+        },
+        {
+          "date": "2026-09-19",
+          "t": "Első feltöltés a GitHubra"
+        },
+        {
+          "date": "2026-10-16",
+          "t": "planner-stack beolvasztva a main ágba"
+        }
+      ]
+    },
+    {
+      "id": "onedrive",
+      "dept": "ALT",
+      "t": "Megosztott OneDrive",
+      "status": "idea",
+      "d": "A nagy fájlok közös helye: tervrajzok, renderek, ügyfélmappák, telepítők.",
+      "dEn": "The shared place for big files: plans, renders, job folders, installers.",
+      "long": "A Git a kódnak és a szövegnek való; ami nagy vagy ügyféladat, az a OneDrive-ra kerül. Minden mappát csak a két felhasználóval kell megosztani (\"Adott személyek\"). A Kapu a megosztási linkeket mutatja; a hozzáférést a OneDrive dönti el.",
+      "open": {
+        "url": ""
+      },
+      "folders": [
+        {
+          "ref": "od-start"
+        },
+        {
+          "ref": "od-big"
+        },
+        {
+          "ref": "od-logs"
+        }
+      ]
+    },
+    {
+      "id": "launchers",
+      "dept": "ALT",
+      "t": "Indítópult (START.cmd · VRG-DE.cmd)",
+      "status": "live",
+      "d": "A parancsablakos menük, amik minden eszközt elindítanak.",
+      "dEn": "The command-window menus that start every tool.",
+      "open": {
+        "repo": "Planner/START.cmd"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/launchers.md"
+        },
+        {
+          "t": "check-start.js",
+          "d": "Ellenőrzi, hogy a menü minden bejegyzése létező fájlra mutat.",
+          "repo": "tools/check-start.js"
+        }
+      ],
+      "git": {
+        "paths": [
+          "Planner/START.cmd",
+          "VRG-DE.cmd"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-09-21",
+          "t": "VRG-DE.cmd első változat; START.cmd rendbetéve"
+        },
+        {
+          "date": "2026-10-18",
+          "t": "U) Board Console bejegyzés"
+        }
+      ]
+    },
+    {
+      "id": "prompts",
+      "dept": "ALT",
+      "t": "Prompt könyvtár",
+      "status": "live",
+      "d": "Kész kezdő szövegek Claude Code munkamenetekhez (új funkció, hibakeresés, review…).",
+      "dEn": "Ready starting prompts for Claude Code sessions.",
+      "open": {
+        "repo": "tools/prompts"
+      },
+      "git": {
+        "paths": [
+          "tools/prompts"
+        ],
+        "branch": "main"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/prompts.md"
+        }
+      ]
+    },
+    {
+      "id": "kit",
+      "dept": "ALT",
+      "t": "cwebuser kit",
+      "status": "live",
+      "d": "Hordozható Claude Code munkakörnyezet bármely Windows gépre (pendrive-ról vagy telepítve).",
+      "dEn": "Portable Claude Code workspace for any Windows PC.",
+      "long": "Két mód: **A** — futtatás pendrive-ról, semmit nem telepít; **B** — telepítés a gép munkameghajtójára egy `cwebuser` mappába. Ezzel tud a kolléga gyorsan nekiállni.",
+      "open": {
+        "url": ""
+      },
+      "folders": [
+        {
+          "ref": "od-inst"
+        }
+      ],
+      "roadmap": [
+        {
+          "date": "2026-10-17",
+          "t": "Kit V2 elkészült"
+        },
+        {
+          "date": "2026-10-21",
+          "t": "H: meghajtó átrendezés 1. szakasza kész"
+        }
+      ]
+    },
+    {
+      "id": "installers",
+      "dept": "ALT",
+      "t": "Telepítők",
+      "status": "idea",
+      "d": "Saját programgyűjtemény telepítői — letöltés a OneDrive mappából.",
+      "dEn": "The private installer collection — download from the OneDrive folder.",
+      "open": {
+        "url": ""
+      },
+      "folders": [
+        {
+          "ref": "od-inst"
+        }
+      ]
+    },
+    {
+      "id": "kapu",
+      "dept": "VEZ",
+      "t": "VRG Kapu",
+      "status": "dev",
+      "d": "Ez az oldal: a közös térkép és kiindulópont.",
+      "dEn": "This page: the shared map and front door.",
+      "open": {
+        "repo": "Hub/dist/vrg-kapu.html"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/kapu.md"
+        },
+        {
+          "t": "Kapu terv (docs/hub)",
+          "d": "A Kapu teljes terve és munkacsomagjai.",
+          "repo": "docs/hub/README.md"
+        },
+        {
+          "t": "GO-HUB.md",
+          "d": "Indító brief a Kapu építéséhez.",
+          "repo": "GO-HUB.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "Hub",
+          "docs/hub"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-10-21",
+          "t": "Terv + Business Topology + build pack"
+        }
+      ]
+    },
+    {
+      "id": "mindmap",
+      "dept": "VEZ",
+      "t": "VRG MindMap",
+      "status": "live",
+      "d": "Gondolattérkép rétegekkel, keretekkel és jegyzetekkel.",
+      "dEn": "Mind map with layers, frames and notes.",
+      "long": "Egyetlen HTML fájl. Buborékok, keretek, színes kapcsolat-rétegek, rétegekhez kötött markdown jegyzetek, és egy spirál (helix) nézet. Billentyűzettel is teljesen kezelhető.",
+      "open": {
+        "repo": "MindMap/vrg_mindmap.html"
+      },
+      "git": {
+        "paths": [
+          "MindMap"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-09-16",
+          "t": "A–E ütemterv: témák, menük, rétegek, jegyzetek, helix"
+        },
+        {
+          "date": "2026-09-22",
+          "t": "Új kezelés: keretek, egér, kétkezes billentyűzet"
+        }
+      ],
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/mindmap.md"
+        }
+      ]
+    },
+    {
+      "id": "research",
+      "dept": "VEZ",
+      "t": "Kutatási jegyzetek",
+      "status": "live",
+      "d": "Hosszabb vizsgálatok: CAD források, Open MCT, REA.",
+      "dEn": "Longer studies: CAD sources, Open MCT, REA.",
+      "open": {
+        "repo": "docs/research"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/research.md"
+        },
+        {
+          "t": "Open MCT vizsgálat",
+          "d": "Mire jó az Open MCT a BRIDGE-hez.",
+          "repo": "docs/research/2026-10-20_openmct-planner-bridge.md"
+        },
+        {
+          "t": "CAD források + MCP",
+          "d": "Hogyan kapjon a Planner DXF-et és MCP-t.",
+          "repo": "docs/research/2026-10-19_cad-sources-and-mcp.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "docs/research"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-10-19",
+          "t": "CAD források és Planner MCP"
+        },
+        {
+          "date": "2026-10-20",
+          "t": "Open MCT + REA vizsgálat"
+        }
+      ]
+    },
+    {
+      "id": "dispatch",
+      "dept": "VEZ",
+      "t": "Dispatch",
+      "status": "v2",
+      "d": "Ügynök-koordinátor: a feladatot a megfelelő programhoz és briefhez irányítja.",
+      "dEn": "Agent coordinator: routes a task to the right program and brief."
+    },
+    {
+      "id": "client-preview",
+      "dept": "ERT",
+      "t": "Client Preview",
+      "status": "dev",
+      "d": "3D előnézet a tervről az ügyfélnek, filmes hangulattal.",
+      "dEn": "3D preview of the plan for the client, cinematic look.",
+      "open": {
+        "repo": "Planner/projects/client-preview"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/client-preview.md"
+        },
+        {
+          "t": "README",
+          "d": "Hogyan épül és mit tud.",
+          "repo": "Planner/projects/client-preview/README.md"
+        },
+        {
+          "t": "Átadó jegyzet 2026-10-09",
+          "d": "Előnézet + útvonaltervezés háttere.",
+          "repo": "Planner/projects/varler-planner/docs/stack/HANDOVER-2026-10-09_client-preview-and-routing.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "Planner/projects/client-preview"
+        ],
+        "branch": "main"
+      }
+    },
+    {
+      "id": "client-look",
+      "dept": "ERT",
+      "t": "Ügyfél megjelenés (Title Card)",
+      "status": "dev",
+      "d": "Az ügyfélnek szóló anyagok vizuális iránya.",
+      "dEn": "The visual direction of client material.",
+      "open": {
+        "repo": "docs/client-look/directions.html"
+      },
+      "git": {
+        "paths": [
+          "docs/client-look"
+        ],
+        "branch": "main"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/client-look.md"
+        }
+      ]
+    },
+    {
+      "id": "lobby",
+      "dept": "ERT",
+      "t": "Lobby",
+      "status": "v2",
+      "d": "Ügyfélnyilvántartás GDPR szerint: adatok egy helyen, kóddal hivatkozva.",
+      "dEn": "GDPR-safe client register: data in one place, referred to by code."
+    },
+    {
+      "id": "scout",
+      "dept": "ERT",
+      "t": "Scout",
+      "status": "v2",
+      "d": "Helyszíni felmérés telefonról: fotó, méret, hangjegyzet → Planner és árajánlat.",
+      "dEn": "On-site survey from a phone → Planner and quote inputs."
+    },
+    {
+      "id": "planner",
+      "dept": "TERV",
+      "t": "Varler Planner",
+      "status": "live",
+      "d": "A fő tervezőprogram: alaprajz, eszközök, körök, vezetékezés, BRIDGE, nézetek.",
+      "dEn": "The main design tool: plans, devices, circuits, wiring, BRIDGE, views.",
+      "long": "Moduláris forrásból (`src/`) egyetlen HTML-be épül (`dist/varler_planner.html`). Tud: alaprajz és szintek, eszközök és kapcsolók, áramkörök, Erősáram motor (pályák, vezetékek), BRIDGE stack, nézetek (lapos / 2.5D / robbantott), Födém, Igénylista, Házimozi. Építés: `node build.js`, teszt: `node tests/run.js`.",
+      "open": {
+        "repo": "Planner/projects/varler-planner/dist/varler_planner.html"
+      },
+      "folders": [
+        {
+          "t": "Planner projektek (2026-10-16)",
+          "d": "Mentett tervfájlok.",
+          "local": "Planner_projektek_2026-10-16",
+          "url": ""
+        }
+      ],
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/planner.md"
+        },
+        {
+          "t": "PRIMER.md",
+          "d": "Az építés/teszt menete, csapdák — először ezt.",
+          "repo": "Planner/projects/varler-planner/docs/PRIMER.md"
+        },
+        {
+          "t": "Planner CLAUDE.md",
+          "d": "A Planner saját munkaszabályai.",
+          "repo": "Planner/projects/varler-planner/CLAUDE.md"
+        },
+        {
+          "t": "GO-R1018.md",
+          "d": "Folytató brief: Födém · Igénylista · Mozi.",
+          "repo": "GO-R1018.md",
+          "go": "GO R1018"
+        }
+      ],
+      "git": {
+        "paths": [
+          "Planner/projects/varler-planner"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-10-07",
+          "t": "BRIDGE Stack A1–E5"
+        },
+        {
+          "date": "2026-10-10",
+          "t": "Kör 2026-10-10: U1–U7 + G1"
+        },
+        {
+          "date": "2026-10-14",
+          "t": "Nézetek V1–V7, munkafolyamat F1–F4 O1 O2 R1–R4 E0–E3"
+        },
+        {
+          "date": "2026-10-16",
+          "t": "Egyesített munkaverzió a main ágon (eszköz 1)"
+        },
+        {
+          "date": "2026-10-18",
+          "t": "Födém · Igénylista · Házimozi C1–C7"
+        },
+        {
+          "date": "2026-10-19",
+          "t": "Vezetékcsatorna T0–T6; kör utómunka"
+        }
+      ]
+    },
+    {
+      "id": "valena",
+      "dept": "TERV",
+      "t": "Valena választó",
+      "status": "live",
+      "d": "Legrand Valena Life termékcsalád választó és szerelvénytervező.",
+      "dEn": "Legrand Valena Life product picker.",
+      "open": {
+        "repo": "Toolbox/valena-life-szerelvenytervezo.html"
+      },
+      "git": {
+        "paths": [
+          "Toolbox"
+        ],
+        "branch": "main"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/valena.md"
+        }
+      ]
+    },
+    {
+      "id": "din-rail",
+      "dept": "TERV",
+      "t": "Elosztó DIN-sín tervező",
+      "status": "idea",
+      "d": "Húzd-és-ejtsd elosztótábla tervező, az Inventory adataiból.",
+      "dEn": "Drag-and-drop distribution board builder fed by the Inventory."
+    },
+    {
+      "id": "calc-panel",
+      "dept": "KALK",
+      "t": "Panel anyagár kalkulátor",
+      "status": "live",
+      "d": "Panelházas munkák anyagköltsége.",
+      "dEn": "Material cost for panel-flat jobs.",
+      "open": {
+        "repo": "Calculator/panel_anyagar_kalkulator.html"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/calc-panel.md"
+        },
+        {
+          "t": "Kalkulátorok összefoglaló",
+          "d": "Mit számol melyik kalkulátor.",
+          "repo": "Calculator/varleraron_kalkulatorok_osszefoglalo.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "Calculator/panel_anyagar_kalkulator.html"
+        ],
+        "branch": "main"
+      }
+    },
+    {
+      "id": "calc-general",
+      "dept": "KALK",
+      "t": "Általános villanyszerelői kalkulátor",
+      "status": "live",
+      "d": "Munkadíj és anyag tételes számolása.",
+      "dEn": "Itemised labour and material calculation.",
+      "open": {
+        "repo": "Calculator/Altalanos_Villanyszerelui_Kalkulator.html"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/calc-general.md"
+        },
+        {
+          "t": "Árlista (varlerÁron)",
+          "d": "Az árak, amikből számol.",
+          "repo": "Calculator/Villanyszerelesi_Arlista_VarlerAron.md"
+        },
+        {
+          "t": "Komplexitás faktorok",
+          "d": "Nehézségi szorzók könyvtára.",
+          "repo": "Calculator/komplexitas_faktorkonyvtar_v1.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "Calculator/Altalanos_Villanyszerelui_Kalkulator.html"
+        ],
+        "branch": "main"
+      }
+    },
+    {
+      "id": "calc-led",
+      "dept": "KALK",
+      "t": "LED árkalkulátor",
+      "status": "live",
+      "d": "LED szalagos világítás költsége.",
+      "dEn": "LED strip lighting cost.",
+      "open": {
+        "repo": "Calculator/led_arkalkulator.html"
+      },
+      "git": {
+        "paths": [
+          "Calculator/led_arkalkulator.html"
+        ],
+        "branch": "main"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/calc-led.md"
+        }
+      ]
+    },
+    {
+      "id": "workflow-kit",
+      "dept": "KALK",
+      "t": "Varler Workflow Kit",
+      "status": "live",
+      "d": "Árajánlat-munkafolyamat: kérdéssor → Költségvetési Tervezet és Árajánlat PDF.",
+      "dEn": "Quote workflow: question funnel → cost plan and quote PDFs.",
+      "long": "A Git-en kívül él (`Varler_Workflow_Kit`). Olvasható, verziózott kit + egy kis Esetlap munkánként. Három kérdéskör, utána a dokumentumok az CLANV4 minta szerint, ellenőrzővel. Ügyféladat van benne — csak OneDrive-on, a két felhasználónak.",
+      "open": {
+        "local": "Varler_Workflow_Kit/README.md"
+      },
+      "folders": [
+        {
+          "t": "Workflow Kit mappa",
+          "d": "A kit maga (Git-en kívül).",
+          "local": "Varler_Workflow_Kit",
+          "url": ""
+        },
+        {
+          "ref": "od-jobs"
+        }
+      ],
+      "agent": [
+        {
+          "t": "Kit README",
+          "d": "Hogyan indíts új munkát a kittel.",
+          "local": "Varler_Workflow_Kit/README.md"
+        },
+        {
+          "t": "Folytató prompt",
+          "d": "A kit munkamenet indító szövege.",
+          "local": "Varler_Workflow_Kit/START_PROMPT_folytatas.md"
+        }
+      ],
+      "roadmap": [
+        {
+          "date": "2026-10-11",
+          "t": "Kit indul az CLANV4 munkából"
+        },
+        {
+          "date": "2026-10-12",
+          "t": "1–4. lépés + CLA Tervezet átadva"
+        },
+        {
+          "date": "2026-10-14",
+          "t": "L-1…L-18 válaszok, kérdéssor v1.2"
+        }
+      ]
+    },
+    {
+      "id": "insight",
+      "dept": "KALK",
+      "t": "Insight",
+      "status": "v2",
+      "d": "Árajánlatok archívuma, becslés vs. valóság, kalkulátor finomhangolás.",
+      "dEn": "Quote archive, estimate vs. actual, calculator calibration."
+    },
+    {
+      "id": "till",
+      "dept": "KALK",
+      "t": "Till",
+      "status": "v2",
+      "d": "Számlázás, előleg, fizetési állapot munkánként.",
+      "dEn": "Invoicing, deposits, payment status per job."
+    },
+    {
+      "id": "inventory",
+      "dept": "BESZ",
+      "t": "VRG Inventory",
+      "status": "live",
+      "d": "Az anyag adatbázis: 221 tétel, beszállító-független.",
+      "dEn": "The item database: 221 items, vendor-neutral.",
+      "long": "Moduláris forrás, egy fájlos kiadás (`dist/vrg-inventory.html`). A közös mezők felül, a beszállítói adatok külön blokkban. Az ár a Daniella partner nettó ár — nem összevethető webshop bruttóval ÁFA és kedvezmény nélkül.",
+      "open": {
+        "repo": "Inventory/dist/vrg-inventory.html"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/inventory.md"
+        },
+        {
+          "t": "Inventory README",
+          "d": "Építés, teszt, adatformátum.",
+          "repo": "Inventory/README.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "Inventory"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-09-19",
+          "t": "Nyers kinyerés 53 levélből"
+        },
+        {
+          "date": "2026-09-20",
+          "t": "Mind a 10 fázis kész"
+        }
+      ]
+    },
+    {
+      "id": "buildtree",
+      "dept": "BESZ",
+      "t": "VRG BuildTree",
+      "status": "live",
+      "d": "Modulshop alkatrészlista, és a programok közös színpalettája.",
+      "dEn": "Modulshop part list and the toolset colour palette.",
+      "open": {
+        "repo": "Modder/vrg-buildtree.html"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/buildtree.md"
+        },
+        {
+          "t": "BuildTree átadó",
+          "d": "Hogyan kerül be egy Modulshop számla.",
+          "repo": "Modder/VRG-BuildTree-HANDOFF.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "Modder"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-10-09",
+          "t": "Készlet export"
+        },
+        {
+          "date": "2026-10-13",
+          "t": "Adatbázis export"
+        }
+      ]
+    },
+    {
+      "id": "picker",
+      "dept": "BESZ",
+      "t": "Picker",
+      "status": "v2",
+      "d": "Igénylistából szedési lista és rendelés-tervezet beszállítónként.",
+      "dEn": "Picking list and order drafts per supplier from the request list."
+    },
+    {
+      "id": "radar",
+      "dept": "BESZ",
+      "t": "Radar",
+      "status": "v2",
+      "d": "Ár- és készletfigyelő: célár vadászat, értesítés.",
+      "dEn": "Price and stock watch: target-price hunting, alerts."
+    },
+    {
+      "id": "jobs",
+      "dept": "KIV",
+      "t": "Ügyfélmunkák",
+      "status": "live",
+      "d": "Átadott munkacsomagok (CLA, CLANV4). Ügyféladat — csak a két felhasználó.",
+      "dEn": "Delivered job packages (CLA, CLANV4). Client data — two users only.",
+      "folders": [
+        {
+          "t": "CLA ajánlat",
+          "local": "CLA_ajanlat",
+          "url": ""
+        },
+        {
+          "t": "CLA költségvetési tervezet",
+          "local": "CLA_koltsegvetesi_tervezet",
+          "url": ""
+        },
+        {
+          "t": "CLANV4 ajánlat",
+          "local": "CLANV4_ajanlat",
+          "url": ""
+        },
+        {
+          "ref": "od-jobs"
+        }
+      ]
+    },
+    {
+      "id": "shift",
+      "dept": "KIV",
+      "t": "Shift",
+      "status": "v2",
+      "d": "Munkák ütemezése: fázisok, ki hol van, anyag érkezés.",
+      "dEn": "Job scheduling: phases, who is where, deliveries."
+    },
+    {
+      "id": "proof",
+      "dept": "KIV",
+      "t": "Proof",
+      "status": "v2",
+      "d": "Átadás: mérési jegyzőkönyvek, megvalósulási terv, garancia csomag.",
+      "dEn": "Handover: measurement protocols, as-built, warranty pack."
+    },
+    {
+      "id": "care",
+      "dept": "KIV",
+      "t": "Care",
+      "status": "v2",
+      "d": "Szerviz és utókövetés: hibajegy, garancia, időszakos felülvizsgálat.",
+      "dEn": "Service and after-sales: tickets, warranty, periodic checks."
+    },
+    {
+      "id": "bridge",
+      "dept": "TFEJ",
+      "t": "BRIDGE okosotthon",
+      "status": "dev",
+      "d": "Saját okosotthon rendszer: architektúra, szabványok, CLA építés.",
+      "dEn": "Own smart-home system: architecture, standards, CLA build.",
+      "long": "Kilenc szabvány (STD-001…009), egységflotta, CLA mint első épület. A kiinduló olvasmány a primer; a `01_`–`04_` forrás korpuszt nem kell olvasni.",
+      "open": {
+        "repo": "BRIDGE/README.md"
+      },
+      "folders": [
+        {
+          "t": "BRIDGE nagy fájlok",
+          "d": "PDF-ek, render, CLA alaprajz (Git-en kívül).",
+          "url": ""
+        }
+      ],
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/bridge.md"
+        },
+        {
+          "t": "BRIDGE primer",
+          "d": "Egyetlen olvasmány a munka előtt.",
+          "repo": "BRIDGE/BRIDGE-PRIMER-001_Session-Handover.md"
+        },
+        {
+          "t": "Általános vázlat",
+          "d": "A rendszer áttekintése.",
+          "repo": "BRIDGE/BRIDGE-OUTLINE-001_General-Outline.md"
+        },
+        {
+          "t": "Szabványok",
+          "d": "STD-001…009.",
+          "repo": "BRIDGE/05_standards/README.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "BRIDGE"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-10-06",
+          "t": "Primer, BRIDGE a repóban"
+        },
+        {
+          "date": "2026-10-11",
+          "t": "Okosotthon katalógus kör"
+        },
+        {
+          "date": "2026-10-21",
+          "t": "Media Wall MW-001 r0"
+        }
+      ]
+    },
+    {
+      "id": "media-wall",
+      "dept": "TFEJ",
+      "t": "BRIDGE Media Wall",
+      "status": "dev",
+      "d": "Médiafal koncepció, három kiépítési szint egy vázon.",
+      "dEn": "Media wall concept, three tiers on one carcass.",
+      "open": {
+        "repo": "BRIDGE/10_media-wall/BRIDGE-MW-001_Media-Wall.md"
+      },
+      "git": {
+        "paths": [
+          "BRIDGE/10_media-wall"
+        ],
+        "branch": "main"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/media-wall.md"
+        }
+      ]
+    },
+    {
+      "id": "sh-catalogue",
+      "dept": "TFEJ",
+      "t": "Okosotthon katalógus",
+      "status": "dev",
+      "d": "Okosotthon eszköz adatbázis és böngésző oldal.",
+      "dEn": "Smart-home device database and browser page.",
+      "open": {
+        "repo": "BRIDGE/09_catalogue/smarthome-db.html"
+      },
+      "git": {
+        "paths": [
+          "BRIDGE/09_catalogue"
+        ],
+        "branch": "main"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/sh-catalogue.md"
+        }
+      ]
+    },
+    {
+      "id": "planner-cyd",
+      "dept": "TFEJ",
+      "t": "Planner CYD",
+      "status": "dev",
+      "d": "Asztali kijelző és távirányító a Plannerhez (ESP32 CYD).",
+      "dEn": "Desk display and remote for the Planner (ESP32 CYD).",
+      "open": {
+        "repo": "Firmware/planner-cyd/README.md"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/planner-cyd.md"
+        },
+        {
+          "t": "README",
+          "d": "Protokoll, indítás, nyitott kérdések.",
+          "repo": "Firmware/planner-cyd/README.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "Firmware/planner-cyd"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-10-17",
+          "t": "v0.7: KEZDŐLAP, makró készletek, magyar betűk"
+        }
+      ]
+    },
+    {
+      "id": "knobpad",
+      "dept": "TFEJ",
+      "t": "VRG Knob Pad",
+      "status": "dev",
+      "d": "Három forgatógombos USB vezérlő, webes beállítással.",
+      "dEn": "Three-encoder USB controller with web config.",
+      "open": {
+        "repo": "Firmware/knobpad/README.md"
+      },
+      "git": {
+        "paths": [
+          "Firmware/knobpad"
+        ],
+        "branch": "main"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/knobpad.md"
+        }
+      ]
+    },
+    {
+      "id": "board-console",
+      "dept": "TFEJ",
+      "t": "Board Console",
+      "status": "dev",
+      "d": "Vezérlő oldal az univerzális ESP32-S3 fejlesztő panelhez.",
+      "dEn": "Control page for the universal ESP32-S3 dev board.",
+      "open": {
+        "repo": "Firmware/board-console/README.md"
+      },
+      "git": {
+        "paths": [
+          "Firmware/board-console"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-10-18",
+          "t": "1–2. fázis + 3a (ügynök, élő kapcsolat)"
+        }
+      ],
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/board-console.md"
+        }
+      ]
+    },
+    {
+      "id": "omct",
+      "dept": "TFEJ",
+      "t": "Konzol (Open MCT)",
+      "status": "idea",
+      "d": "Telemetria konzol BRIDGE telepítésekhez — most csak kísérlet.",
+      "dEn": "Telemetry console for BRIDGE installs — spike only for now.",
+      "open": {
+        "repo": "docs/research/openmct-spike"
+      },
+      "agent": [
+        {
+          "t": "Open MCT vizsgálat",
+          "d": "Döntés és terv (OM-1…).",
+          "repo": "docs/research/2026-10-20_openmct-planner-bridge.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "docs/research/openmct-spike"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-10-20",
+          "t": "Kísérlet működik CLA-on"
+        }
+      ],
+      "long": "Az **Open MCT** a NASA nyílt forrású telemetria-konzolja: idősorok, grafikonok, határértékek, hibalisták — élő eszközadatokra való. Ezért **külön program**, nem a Kapu alapja: nincs magyar felülete, saját szerver kell neki, és a BRIDGE élő adataihoz erős, nem kezdőknek szóló linktérképnek (HUB-Q12 A). Most a kutatásra mutat; a kész konzol a `Console/` mappába kerül.",
+      "longEn": "**Open MCT** is NASA's open-source telemetry console: time series, plots, limits, fault lists — made for live device data. So it is **a separate program**, not the base of the hub: no Hungarian UI, it needs its own server, and its strength is live BRIDGE data, not a beginner link map (HUB-Q12 A). For now it points at the research; the finished console goes to `Console/`."
+    },
+    {
+      "id": "esp-lab",
+      "dept": "TFEJ",
+      "t": "ESP lab + BRIDGEcomp",
+      "status": "dev",
+      "d": "Hardver kísérletek és az eredeti BRIDGE források (Git-en kívül).",
+      "dEn": "Hardware experiments and the original BRIDGE sources (outside Git).",
+      "folders": [
+        {
+          "t": "ESP_lab",
+          "local": "ESP_lab",
+          "url": ""
+        },
+        {
+          "t": "BRIDGEcomp",
+          "local": "BRIDGEcomp",
+          "url": ""
+        }
+      ]
+    },
+    {
+      "id": "lab",
+      "dept": "TFEJ",
+      "t": "Lab",
+      "status": "v2",
+      "d": "Önfejlesztés: naplókból és adatokból javasol új kutatást és szabályt.",
+      "dEn": "Self-improvement: proposes research and rules from logs and data."
+    },
+    {
+      "id": "doc-rules",
+      "dept": "JOG",
+      "t": "Kimenő dokumentum szabályok",
+      "status": "live",
+      "d": "A Költségvetési Tervezet szövegezési szabályai (soha nem \"ajánlat\", anyagelőleg, kerek árak).",
+      "dEn": "Wording rules for cost plans.",
+      "folders": [
+        {
+          "t": "Workflow Kit védett szövegek",
+          "local": "Varler_Workflow_Kit/01_clanv4_build/02_golden_clanv4",
+          "url": ""
+        }
+      ]
+    },
+    {
+      "id": "licences",
+      "dept": "JOG",
+      "t": "Licenc nyilvántartás",
+      "status": "live",
+      "d": "Minden külső forrás rögzítve, a licenc a kóddal együtt utazik.",
+      "dEn": "Every third-party source pinned; the licence travels with the code.",
+      "open": {
+        "repo": "vendor-manifest.json"
+      },
+      "git": {
+        "paths": [
+          "vendor-manifest.json"
+        ],
+        "branch": "main"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/licences.md"
+        }
+      ]
+    },
+    {
+      "id": "clause",
+      "dept": "JOG",
+      "t": "Clause",
+      "status": "v2",
+      "d": "Kimenő dokumentum sablonok, védett jogi szövegek, MSZ HD jegyzetek.",
+      "dEn": "Outgoing document templates, protected wording, MSZ HD notes."
+    },
+    {
+      "id": "shield",
+      "dept": "JOG",
+      "t": "Shield",
+      "status": "v2",
+      "d": "Hozzáférés, titok-ellenőrzés, mentés, GDPR nyilvántartás.",
+      "dEn": "Access, secret scanning, backups, GDPR register."
+    },
+    {
+      "id": "visual-base",
+      "dept": "ARC",
+      "t": "VRG Visual Base",
+      "status": "live",
+      "d": "Képtár: 252 összegyűjtött vizuál, panel rajzok, topológia kiindulás.",
+      "dEn": "Visual library: 252 collected visuals, board drawings, topology starter.",
+      "folders": [
+        {
+          "t": "Visual Base",
+          "local": "../VRG_Visual_Base",
+          "url": ""
+        },
+        {
+          "ref": "od-vis"
+        }
+      ]
+    },
+    {
+      "id": "studio",
+      "dept": "ARC",
+      "t": "Studio",
+      "status": "v2",
+      "d": "Vizuális tartalmak kezelése, arculati komponensek.",
+      "dEn": "Visual asset management, design-system components."
+    },
+    {
+      "id": "lens",
+      "dept": "ARC",
+      "t": "Lens",
+      "status": "v2",
+      "d": "Univerzális nézegető minden kimeneti formátumhoz.",
+      "dEn": "Universal viewer for every output format."
+    },
+    {
+      "id": "coreref",
+      "dept": "TUD",
+      "t": "CoreRef",
+      "status": "dev",
+      "d": "Offline ESPHome / Home Assistant referencia adatbázis.",
+      "dEn": "Offline ESPHome / Home Assistant reference database.",
+      "open": {
+        "repo": "CoreRef/README.md"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/coreref.md"
+        },
+        {
+          "t": "CoreRef README",
+          "d": "Rétegek, forrás, licenc szétválasztás.",
+          "repo": "CoreRef/README.md"
+        }
+      ],
+      "git": {
+        "paths": [
+          "CoreRef"
+        ],
+        "branch": "main"
+      },
+      "roadmap": [
+        {
+          "date": "2026-10-09",
+          "t": "0. fázis: gyűjtés kész"
+        }
+      ]
+    },
+    {
+      "id": "vendor",
+      "dept": "TUD",
+      "t": "VRG Vendor",
+      "status": "live",
+      "d": "A beemelt külső komponensek katalógusa.",
+      "dEn": "Catalogue of vendored third-party components.",
+      "open": {
+        "repo": "vrg-vendor.html"
+      },
+      "git": {
+        "paths": [
+          "vrg-vendor.html",
+          "tools/fetch-vendor.js"
+        ],
+        "branch": "main"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/vendor.md"
+        }
+      ]
+    },
+    {
+      "id": "atlas",
+      "dept": "TUD",
+      "t": "Atlas",
+      "status": "v2",
+      "d": "Offline katalógus mindenről, saját keresővel, import/export.",
+      "dEn": "Offline catalogue of everything, with search and import/export."
+    },
+    {
+      "id": "forge",
+      "dept": "TUD",
+      "t": "Forge",
+      "status": "v2",
+      "d": "Ügynök-készségek: 3D elrendezés, DXF, topológia és bekötési rajzok.",
+      "dEn": "Agent skills: 3D layout, DXF, topology and terminal drawings."
+    },
+    {
+      "id": "toolbox",
+      "dept": "IT",
+      "t": "Toolbox",
+      "status": "live",
+      "d": "Kisebb, fejlesztés alatt álló eszközök gyűjtőoldala.",
+      "dEn": "Collection page of small tools in development.",
+      "open": {
+        "repo": "toolbox.html"
+      },
+      "git": {
+        "paths": [
+          "toolbox.html"
+        ],
+        "branch": "main"
+      },
+      "agent": [
+        {
+          "t": "Ügynök indító",
+          "d": "Ezt olvassa el először egy AI munkamenet.",
+          "repo": "docs/hub/agents/toolbox.md"
+        }
+      ]
+    },
+    {
+      "id": "backups",
+      "dept": "IT",
+      "t": "Mentések",
+      "status": "live",
+      "d": "Helyi tükör repó és git mentések. A GitHub a fő másolat.",
+      "dEn": "Local mirror remote and git backups. GitHub is the main copy."
+    },
+    {
+      "id": "desk",
+      "dept": "IRO",
+      "t": "Desk",
+      "status": "v2",
+      "d": "Jegyzettömb, emlékeztetők, levéltervezetek, névjegyek.",
+      "dEn": "Notepad, reminders, mail drafts, contacts."
+    },
+    {
+      "id": "crew",
+      "dept": "IRO",
+      "t": "Crew",
+      "status": "v2",
+      "d": "Dolgozói portál és haladásnapló idővonallal.",
+      "dEn": "Staff portal and progress logger with a timeline."
+    }
+  ]
+}

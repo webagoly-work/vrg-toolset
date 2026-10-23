@@ -43,7 +43,7 @@ invented) · SVG / PNG (2×, ≤ 8192 px) / Nyomtatás. The whole drawing is fra
 
 - **Camera.** Recommended: the export draws what the 3D view shows (the live camera, via the same
   `def.camera` as D-V4-1 A). Alternative: always the core's own camera at the nearest quadrant, pitch 50
-  (= the V0/P33 sheet, comparable between projects).
+  (= the V0/CLA sheet, comparable between projects).
 - **Title.** The Planner keeps no project name in `data`. Recommended: the name of the last loaded /
   saved file without extension (fallback *Terv*), editable in a one-line prompt before the export.
 - **UI.** There is no *Exportálás* menu today (only the action `proj.export`, JSON). Recommended: three
@@ -51,7 +51,7 @@ invented) · SVG / PNG (2×, ≤ 8192 px) / Nyomtatás. The whole drawing is fra
   existing `svgToPng` / `printSVG`, PNG at 2× the sheet size.
 
 Already built without needing these answers (slice 1): `viewSheetSvg(R, {title, sub, H})` in
-`06c-view-core.js` — the frame `tools/p33-axo.js` used to draw (title, legend of the roles present,
+`06c-view-core.js` — the frame `tools/cla-axo.js` used to draw (title, legend of the roles present,
 symbol and wall rows), now in the Planner; the tool calls it (byte-identical output); `tests/spec-73-view-sheet.js`.
 
 ## D-V5-1 · Exploded view: where does a shared wall go? — answered 2026-10-14
@@ -82,7 +82,7 @@ so the sheet grows upward.
 ## D-V4-3 · ⏸ look follow-ups — answered 2026-10-14
 
 **Answer (user):** the look is approved after two fixes (6B):
-- **Legend (4A):** hide the *VÉGPONTOK RENDSZERENKÉNT* heading when no role rows would follow (NV4).
+- **Legend (4A):** hide the *VÉGPONTOK RENDSZERENKÉNT* heading when no role rows would follow (CLANV4).
 - **Felülnézet rotation (5C):** a rotation choice in the Exportálás menu (HU: *Forgatás* 0° / 90° / 180° / 270°).
   Default: 0° (plan north up; the user picked C over A, so A's 0° is the natural starting value).
 
@@ -100,7 +100,7 @@ not, because two things are not settled.
 Facts from the build: the exact picture comes from the per-cell painter (every cell lifted with its room). PRIMER
 §4.4's plan, one `<g>` per room moved with CSS, is **not exact**: an L-shaped room and its neighbour interleave
 in the painter order, so as whole groups one of them is drawn over the other in places. An exact frame costs one
-render: 129 ms for P33 exploded in Chrome (≈ 8 frames/s).
+render: 129 ms for CLA exploded in Chrome (≈ 8 frames/s).
 
 **D-V5-2a · Where it plays**
 - **A (recommended)** — a *Lejátszás* button in the Exportálás menu opens a preview panel over the stage
@@ -112,8 +112,8 @@ render: 129 ms for P33 exploded in Chrome (≈ 8 frames/s).
 **D-V5-2b · How the frames are drawn**
 - **A (recommended)** — CSS groups per room for the motion (smooth, 250 ms per room, eased, as WORKPLAN says),
   then the frame snaps to the exact render when each room lands; small overlaps can show while a room moves.
-- **B** — exact frames only: re-rendered on the fly (≈ 8 frames/s on P33, visibly stepped).
-- **C** — exact frames precomputed before playing (smooth playback; P33 ≈ 6 s of preparing first, then cached).
+- **B** — exact frames only: re-rendered on the fly (≈ 8 frames/s on CLA, visibly stepped).
+- **C** — exact frames precomputed before playing (smooth playback; CLA ≈ 6 s of preparing first, then cached).
 
 ## D-V6 · Stack plates — answered 2026-10-14
 
@@ -125,15 +125,15 @@ from every item) · 4 **A** (other levels with geometry as a faint outline at th
 
 WORKPLAN V6 fixes the order (`STK_ROLES`), "one plate per role present", "only its own primitives", dashed
 leaders, bottom-to-top painting, and the ghost rule (design system v3: a level is *in* = the work, *ghost* = has
-geometry but is outside the work, faint and not clickable, or *skip* = empty). Not fixed, from what P33 ground has
+geometry but is outside the work, faint and not clickable, or *skip* = empty). Not fixed, from what CLA ground has
 (roles with content: mark 15 marks · hw 3 · base 1 · channel 5 paths · DED 5 · SOC 18 · LIGHT 38 · LV 7 · BUSB 11 ·
 CONTROL 5 · DATA 5 · SENSOR 16 · HMI 5 · MEDIA 10 · USB 1 · SECURITY 3 · arm 37 junctions; the upper floor has walls):
 
 **D-V6-1 · Which roles get a plate?**
 - **A (recommended)** — every role with content on the level, except *Szerkezet* (the house below is that plate)
-  and *ARM pályák* (routing junctions, not a system). P33: 16 plates.
-- **B** — infrastructure in one plate (Jelölés + Hardver + BASE + Csatorna), then one per system. P33: 13.
-- **C** — one plate per conduit family (Erősáram = DED + SOC + LIGHT together, …). P33: about 10.
+  and *ARM pályák* (routing junctions, not a system). CLA: 16 plates.
+- **B** — infrastructure in one plate (Jelölés + Hardver + BASE + Csatorna), then one per system. CLA: 13.
+- **C** — one plate per conduit family (Erősáram = DED + SOC + LIGHT together, …). CLA: about 10.
 
 **D-V6-2 · The house below, and the plate spacing**
 - **A (recommended)** — the plain (not exploded) house; the first plate 900 mm above the wall top, then one every
@@ -142,18 +142,18 @@ CONTROL 5 · DATA 5 · SENSOR 16 · HMI 5 · MEDIA 10 · USB 1 · SECURITY 3 · 
 - **C** — the plain house, plates packed tighter (450 mm), for a compact sheet.
 
 **D-V6-3 · Leaders**
-- **A (recommended)** — dashed vertical leaders only from hardware, BASE and the channel ends (P33: ≈ 14); the
+- **A (recommended)** — dashed vertical leaders only from hardware, BASE and the channel ends (CLA: ≈ 14); the
   endpoints on the system plates sit at their true plan position, so the eye lines them up without lines.
-- **B** — a dashed leader from every item on every plate down to its position (P33: ≈ 150 lines).
+- **B** — a dashed leader from every item on every plate down to its position (CLA: ≈ 150 lines).
 - **C** — no item leaders; one dashed line per plate corner down to the house (the reference's look).
 
 **D-V6-4 · The ghost rule here**
-- **A (recommended)** — the other levels with geometry (P33: upper) are drawn as a faint outline at their own
+- **A (recommended)** — the other levels with geometry (CLA: upper) are drawn as a faint outline at their own
   height, under the plates; no plates for them; empty levels skipped.
 - **B** — other levels left out of this view entirely (ghosting stays a client-preview rule).
 - **C** — other levels drawn in full but faint (opacity ghost), plates above the top one.
 
-## D-V6-5 · ⏸ look on the plates sample (fig/p33-plates-900.png) — answered 2026-10-14
+## D-V6-5 · ⏸ look on the plates sample (fig/cla-plates-900.png) — answered 2026-10-14
 
 **Answer (user):** 1 **A** — ticking *Rétegek* sets the step to falmagasság (900 / 600 stay selectable); 2 **B** — the V6
 look is approved once that is in. *To build:* a one-line onchange in 06d + a spec-77 check (not built yet).
@@ -163,7 +163,7 @@ look is approved once that is in. *To build:* a one-line onchange in 06d + a spe
 At the export camera (pitch 50) a 900 mm step lifts a plate ≈ 61 px while a plate is ≈ 700 px deep, so the 16
 plates overlap ≈ 90 % and read as a dense translucent stack.
 - **A (recommended)** — when *Rétegek* is ticked, the step menu defaults to *falmagasság* (2850 mm, ≈ 194 px per
-  plate on P33), so each plate shows a clear band; 900 / 600 stay selectable.
+  plate on CLA), so each plate shows a clear band; 900 / 600 stay selectable.
 - **B** — keep it as it is; the user picks *falmagasság* (2850) in the step menu when the stack has many layers.
 - **C** — plate count drives the step: 900 mm up to 6 plates, then falmagasság.
 
@@ -223,7 +223,7 @@ at 1 : 25. Three things to look at:
 
 V9a draws furniture in the plan with the V8 top view (front at the bottom of T), and V10 picks F vs L/R by it. The
 model does not know the front: an object is `{x, y, w, d, ht, ang}`; wall-snapping sets `ang` 0 for a horizontal wall
-on **either** side (π/2 for a vertical one), and every one of P33's 31 ground-floor objects has `ang` 0 (4 fotels around
+on **either** side (π/2 for a vertical one), and every one of CLA's 31 ground-floor objects has `ang` 0 (4 fotels around
 a table, 6 chairs, the sofa, the fridge …). So today a sofa against a south wall and one against a north wall are
 the same record.
 
@@ -238,7 +238,7 @@ the same record.
 ## D-V9-4 · Endpoints and the cut height in *Alaprajz* — answered 2026-10-14: **A**
 
 The cut height (*Vágási magasság*, presets 300 / 1100 / 1200 / 1500) makes the building section; the brief says
-electrical work cares what sits at 300 / 1100 / 1300 mm. P33 ground has 165 endpoints: 23 at ≤ 500, 19 at 501–1250,
+electrical work cares what sits at 300 / 1100 / 1300 mm. CLA ground has 165 endpoints: 23 at ≤ 500, 19 at 501–1250,
 28 at 1251–2000 and **95 above 2000** (ceiling lights), so the rule matters.
 
 - **A (recommended)** — every endpoint is drawn (it is an electrical plan); those at or below the cut in full, those
@@ -247,14 +247,14 @@ electrical work cares what sits at 300 / 1100 / 1300 mm. P33 ground has 165 endp
 - **B** — a band: only endpoints within ± 300 mm of the cut in full, all others faint.
 - **C** — the cut moves the building only; every endpoint is always drawn in full.
 
-## D-V9-5 · ⏸ look on the Alaprajz samples (fig/p33-plan-1200.png, fig/p33-plan-300.png) — answered 2026-10-14: **1 B, 2 A, 3 C** (built)
+## D-V9-5 · ⏸ look on the Alaprajz samples (fig/cla-plan-1200.png, fig/cla-plan-300.png) — answered 2026-10-14: **1 B, 2 A, 3 C** (built)
 
 **Answer (user):** walls **B** mid-grey poché (`#9a9a9a`, contour unchanged) · content **A** as built · endpoints above the
 cut **C** hidden, counted in the HUD (*a vágás fölött N rejtve*). Built the same day; samples re-rendered; spec-79 (40).
 
 *Original question:*
 
-P33 ground at 1:50, cut 1200 and 300. Built as specified (D-V9-3 A, D-V9-4 A); the clean output carries no text until V9b.
+CLA ground at 1:50, cut 1200 and 300. Built as specified (D-V9-3 A, D-V9-4 A); the clean output carries no text until V9b.
 
 - **5a · walls** — **A (recommended)** solid dark poché (#262626) with one 0.5 contour, as built · **B** mid-grey poché
   (lighter print, endpoints on the walls read better) · **C** the blueprint's 45° hatch.
@@ -264,7 +264,7 @@ P33 ground at 1:50, cut 1200 and 300. Built as specified (D-V9-3 A, D-V9-4 A); t
 - **5c · endpoints above the cut** — **A (recommended)** 50 % ink, outline only (as built) · **B** fainter (30 %) so the
   band under the cut stands out more · **C** hidden, with a count in the HUD.
 
-## D-V9-6 · ⏸ look on the plan sheets (fig/p33-sheet-A3-50.png, fig/nv4-sheet-A3-100.png) — open
+## D-V9-6 · ⏸ look on the plan sheets (fig/cla-sheet-A3-50.png, fig/clanv4-sheet-A3-100.png) — open
 
 Built as V9c specified: ISO frame, a 180 × 30 title block, a 0–5 m bar, true 1:50 / 1:100, the fit line instead of a shrink.
 
@@ -273,4 +273,4 @@ Built as V9c specified: ISO frame, a 180 × 30 title block, a 0–5 m bar, true 
   logo cell (VRG Title Card look) in place of *Varler Planner*.
 - **6b · endpoint symbols on paper** — **A (recommended)** as built: they follow the drawing scale (≈ 4 mm across at 1:50,
   ≈ 2 mm at 1:100, as a plan symbol should) · **B** one fixed paper size at every scale (≈ 3 mm) · **C** as built, but
-  1.5 × at 1:100 so the NV4 sheet reads without a loupe.
+  1.5 × at 1:100 so the CLANV4 sheet reads without a loupe.

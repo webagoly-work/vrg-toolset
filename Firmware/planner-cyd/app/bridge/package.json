@@ -1,0 +1,14 @@
+{
+  "name": "planner-cyd-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Varler Planner -> CYD (ESP32-2432S024R) desk dashboard bridge, over USB serial",
+  "main": "bridge.js",
+  "scripts": {
+    "start": "node bridge.js",
+    "demo": "node bridge.js --demo"
+  },
+  "dependencies": {
+    "serialport": "^12.0.0"
+  }
+}

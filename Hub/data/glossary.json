@@ -1,0 +1,30 @@
+{
+  "schema": "vrg-hub-glossary/1",
+  "entries": [
+    { "id": "repo", "t": "repó", "alt": ["repository", "kódtár"], "d": "Egy mappa, ami minden változást megjegyez. Nálunk: vrg-toolset a GitHubon.", "dEn": "A folder that remembers every change. Ours: vrg-toolset on GitHub." },
+    { "id": "commit", "t": "commit", "alt": [], "d": "Egy mentés a repóban: ki, mikor, mit változtatott, egy rövid üzenettel.", "dEn": "One save in the repo: who, when, what changed, with a short message." },
+    { "id": "branch", "t": "branch", "alt": ["ág"], "d": "Párhuzamos munkavonal. Ami ott készül, nem zavarja a közös állapotot.", "dEn": "A parallel line of work. What happens there does not disturb the shared state." },
+    { "id": "main", "t": "main", "alt": [], "d": "A közös, kész állapot ága. Ide kerül, ami már mindenkinek jó.", "dEn": "The branch of the shared, finished state. What works for everyone goes here." },
+    { "id": "worktree", "t": "worktree", "alt": [], "d": "Ugyanannak a repónak egy második munkamappája, egy másik ágon.", "dEn": "A second working folder of the same repo, on another branch." },
+    { "id": "push", "t": "push", "alt": [], "d": "A saját gépen lévő commitok feltöltése a GitHubra.", "dEn": "Uploading the commits on your own PC to GitHub." },
+    { "id": "pull", "t": "pull", "alt": [], "d": "A GitHubon lévő újdonságok letöltése a saját gépre.", "dEn": "Downloading what is new on GitHub to your own PC." },
+    { "id": "clone", "t": "clone", "alt": [], "d": "A repó első letöltése egy gépre, a teljes előzménnyel együtt.", "dEn": "The first download of the repo to a PC, with its whole history." },
+    { "id": "pr", "t": "PR", "alt": ["pull request"], "d": "Kérés, hogy egy ág változásai kerüljenek be a mainbe — átnézés után.", "dEn": "A request to bring a branch's changes into main, after review." },
+    { "id": "merge", "t": "merge", "alt": [], "d": "Két ág változásainak összefésülése egybe.", "dEn": "Combining the changes of two branches into one." },
+    { "id": "dist", "t": "dist", "alt": [], "d": "A kész, megnyitható fájlok mappája — amit a build készít.", "dEn": "The folder of finished files you can open, made by the build." },
+    { "id": "build", "t": "build", "alt": ["építés"], "d": "A forrásfájlokból egyetlen kész HTML összerakása.", "dEn": "Putting the source files together into one finished HTML." },
+    { "id": "token", "t": "token", "alt": [], "d": "Hosszú titkos kulcs a GitHubhoz. Csak a saját böngésződben marad, senkinek ne add.", "dEn": "A long secret key for GitHub. It stays in your own browser; give it to no one." },
+    { "id": "ghdesktop", "t": "GitHub Desktop", "alt": [], "d": "Ablakos program a pull, commit és push gombnyomásos kezeléséhez.", "dEn": "A windowed app to pull, commit and push with buttons." },
+    { "id": "odshare", "t": "OneDrive megosztás", "alt": ["megosztási link"], "d": "Egy OneDrive mappa linkje, ami csak a megadott embereknek nyílik ki.", "dEn": "A OneDrive folder link that opens only for the people it is shared with." },
+    { "id": "specific", "t": "Adott személyek", "alt": [], "d": "A OneDrive megosztás biztonságos módja: csak a megnevezett fiókok nyithatják meg.", "dEn": "The safe OneDrive sharing mode: only the named accounts can open it." },
+    { "id": "claudecode", "t": "Claude Code", "alt": [], "d": "Az AI fejlesztői asszisztens, ami a repó mappájában dolgozik veled.", "dEn": "The AI development assistant that works with you in the repo folder." },
+    { "id": "claudemd", "t": "CLAUDE.md", "alt": [], "d": "A munkaszabályok fájlja, amit Claude minden munkamenet elején elolvas.", "dEn": "The file of working rules Claude reads at the start of every session." },
+    { "id": "primer", "t": "primer", "alt": ["PRIMER.md"], "d": "Rövid bevezető egy programhoz: hogyan épül, hogyan teszteljük, mire figyelj.", "dEn": "A short intro to one program: how it builds, how to test it, what to watch." },
+    { "id": "gofile", "t": "GO fájl", "alt": ["codephrase", "GO brief"], "d": "Egy „GO …” jelszóhoz tartozó leírás: Claude ebből tudja, hol folytassa.", "dEn": "The brief behind a 'GO …' phrase: it tells Claude where to continue." },
+    { "id": "decisions", "t": "DECISIONS", "alt": ["DECISIONS.md"], "d": "Nyitott kérdések és döntések fájlja, betűs válaszlehetőségekkel.", "dEn": "The file of open questions and decisions, with lettered options." },
+    { "id": "worklog", "t": "munkanapló", "alt": ["Munkanapló"], "d": "Rövid jegyzet a nap végén: mit csináltál, mi maradt nyitva, mi a következő lépés.", "dEn": "A short end-of-day note: what you did, what is open, what comes next." },
+    { "id": "claim", "t": "foglalás", "alt": ["Foglalás"], "d": "Jelzés, hogy egy programon most te dolgozol. Nem zár le semmit.", "dEn": "A sign that you are working on a program now. It locks nothing." },
+    { "id": "companion", "t": "Kapu segéd", "alt": [], "d": "Kis helyi program, ami a Kapuból megnyitja a mappákat, a terminált és a programokat.", "dEn": "A small local program that opens folders, the terminal and tools from the hub." },
+    { "id": "localhost", "t": "localhost", "alt": [], "d": "A saját géped címe a böngészőben. Ami ott fut, kívülről nem látszik.", "dEn": "Your own PC's address in the browser. What runs there is not visible from outside." }
+  ]
+}

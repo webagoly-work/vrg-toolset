@@ -1,7 +1,7 @@
-# WP-E5 — Finish Erősáram: the P33 engine in the Planner (Pályák → Vezetékek)
+# WP-E5 — Finish Erősáram: the CLA engine in the Planner (Pályák → Vezetékek)
 
-Status: **built 2026-10-15** (stage 1 engine fixes + stage 2 bundle / buttons + P33 acceptance step A: 167/167 legs, 97/97 boxes; uncommitted) — step B (redraw) open · Wave E · Depends: R2, R4, E1–E4 · Size: L (~300 lines of glue; the engine itself is reused) · Spec: next
-free · Decisions: Q-E05, Q-E07 · **⏸ after build: P33 acceptance**
+Status: **built 2026-10-15** (stage 1 engine fixes + stage 2 bundle / buttons + CLA acceptance step A: 167/167 legs, 97/97 boxes; uncommitted) — step B (redraw) open · Wave E · Depends: R2, R4, E1–E4 · Size: L (~300 lines of glue; the engine itself is reused) · Spec: next
+free · Decisions: Q-E05, Q-E07 · **⏸ after build: CLA acceptance**
 
 ## Goal
 *"After this we are ready to finish the Erősáram layer (redőny control is on a different layer from now on) — based on
@@ -21,7 +21,7 @@ that device / room-wide / house-wide."*
 2. **Input adapter** `blInput(level)` → the engine's sketch shape, built from Planner data instead of sketch heuristics:
    allowed walls = `rwlAllowed` (R2), ceiling reach = E2 marks, service points = `jbServicePoints` (E3), lamp→switch =
    `sw.ctl` (E1), circuits = `data.circuits` (E4), heights = `stdPick` (R4), worktop / island / wet = R3 marks, the
-   `p33.config` items that have no Planner data yet → `data.blConfig` (empty by default).
+   `cla.config` items that have no Planner data yet → `data.blConfig` (empty by default).
 3. Button 1 **`Pályák kiszámítása`** (step 4.5): runs geom → network → plan up to conduits; writes paths (`route:
    'channel'` trunk 2600 / dist 2450), boxes (drop, corner, end) and conduit sizes on the **Erősáram** layers, tagged
    `gen:'bl'` (a re-run replaces only `gen:'bl'` items). Result table: `16 kör · 289 csőszakasz · 26 sarokdoboz …`
@@ -31,13 +31,13 @@ that device / room-wide / house-wide."*
 5. **Socket circuits are classic chains** (E06 answer): Elosztó → first room socket → … → last, never through the
    szobadoboz; lighting and switch legs meet in the szobadoboz / portal box (E3 `jbMeet`).
 6. Redőny (`SHU`) endpoints are skipped with the note `'redőnyvezérlés: külön rétegen'` (Q-E07 decides which).
-7. **Acceptance (⏸):** P33 redrawn with the WF tools (or the v1 sketch converted: sketch lines → `wspan` via R2's test
-   converter, `p33.config` → marks / `blConfig`) → buttons 1 + 2 → compare with
-   `Calculator/P33-baseline/v1_2026-10-12/kimenet`: circuits 16, endpoints 111, conduit legs, box counts, cable metres
+7. **Acceptance (⏸):** CLA redrawn with the WF tools (or the v1 sketch converted: sketch lines → `wspan` via R2's test
+   converter, `cla.config` → marks / `blConfig`) → buttons 1 + 2 → compare with
+   `Calculator/CLA-baseline/v1_2026-10-12/kimenet`: circuits 16, endpoints 111, conduit legs, box counts, cable metres
    (±1 %). Differences listed, not hidden.
 
 ## Tests
-1. The bundled engine and `node tools/baseline/run.js` give identical `plan` output on the P33 v1 sketch (deep-equal of
+1. The bundled engine and `node tools/baseline/run.js` give identical `plan` output on the CLA v1 sketch (deep-equal of
    the plan object).
 2. `blInput` on a 2-room fixture: allowed walls = its `vezetheto` marks only.
 3. Re-run replaces `gen:'bl'` items and keeps hand-drawn paths.

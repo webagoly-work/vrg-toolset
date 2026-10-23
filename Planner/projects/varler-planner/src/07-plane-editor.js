@@ -46,7 +46,8 @@ function planeViewData(room,level,kind,tol){
     ops.push(lyrTagOp({oi,type:o.type,x:o.x,y:o.y,ang:o.ang||0,w:o.w||(o.type==='window'?WIN_W:DOOR_W)},o,'build'));});
   const notes=noteSurfaceHidden(key)?[]:(data.wallNotes||[]).map((n,i)=>({...n,i})).filter(n=>n.wallKey===key)
     .map(n=>({i:n.i,u:n.u,h:n.h,text:n.text,kind:n.kind,tag:n.tag}));
-  return {room,level,kind,band,key,poly,bb,pb,walls:roomWalls(poly,level),devs,ghosts,secs,risers,ops,notes,
+  const thru=(kind==='ceiling'&&typeof slbThruInto==='function')?slbThruInto(level,bb):[];   // 08p: nodes of the level above, through the slab
+  return {room,level,kind,band,key,poly,bb,pb,walls:roomWalls(poly,level),devs,ghosts,secs,risers,ops,notes,thru,
     W:bb.x1-bb.x0,D:bb.y1-bb.y0,RW:pb.x1-pb.x0,RD:pb.y1-pb.y0};}
 
 function pvText(x,y,txt,size,fill,anchor,rot){const tr=rot?` transform="rotate(${rot} ${x} ${y})"`:'';
@@ -130,6 +131,7 @@ function planeViewSVG(d,dims){const M=56;
           const cur=(hx===0.5?'ns-resize':hy===0.5?'ew-resize':'nwse-resize');
           s+=`<rect class="wvwarp" data-pi="${warpPi}" data-hx="${hx}" data-hy="${hy}" x="${(px-4).toFixed(1)}" y="${(py-4).toFixed(1)}" width="8" height="8" fill="#fff" stroke="#e8641c" stroke-width="1.4" style="cursor:${cur}"/>`;});}}
   }
+  if(d.thru&&d.thru.length&&typeof slbThruSvg==='function')s+=slbThruSvg(d,X,Y);   // 08p: through-slab nodes from the level above
   if(typeof stkHookSvg==='function')s+=stkHookSvg(STK_PV,{d,X,Y,sc});   // BRIDGE Stack plane marks (05n), in plan mm
   // ---- NOTES ----
   if(L.notes!==false)d.notes.forEach(n=>{s+=noteBox(n,X(n.u),Y(n.h));});
@@ -143,7 +145,7 @@ function planeViewSVG(d,dims){const M=56;
       +`<line x1="${xL-4}" y1="${ya}" x2="${xL+4}" y2="${ya}" stroke="#666" stroke-width="0.8"/><line x1="${xL-4}" y1="${yb}" x2="${xL+4}" y2="${yb}" stroke="#666" stroke-width="0.8"/>`
       +pvText((xL-4).toFixed(1),((ya+yb)/2).toFixed(1),Math.round(d.RD)+' mm',9,'#555','middle','-90');}
   const cap=drop?('Álmennyezet — felülnézet, a falakon átnézve · sík '+Math.round(d.band.ref)+' mm · plénum '+Math.round(d.band.plenum||0)+' mm a födém alatt')
-    :(ceil?'Mennyezet — felülnézet, a falakon átnézve (a padlóval azonos állás)':'Padló — felülnézet');
+    :(ceil?'Mennyezet — felülnézet, a falakon átnézve (a padlóval azonos állás)'+(typeof slbCeilNote==='function'?slbCeilNote(d.level):''):'Padló — felülnézet');
   const band=`sáv: ${Math.round(d.band.lo)}–${Math.round(d.band.hi)} mm${mir?' · tükrözve':''}`;
   if((cap+band).length>78){   // keep the caption inside the sheet on the narrower planes
     s+=`<text x="${M}" y="14" font-size="10" fill="#6b6357">${cap}</text>`

@@ -10,7 +10,7 @@ apparent differences."* (picture 3 shows the current line look.)
 
 ## ⏸ Before building
 Draw the MATERIAL §7 door and window (one hinged door, one double door, one window) as a static mock
-— an SVG in the scratchpad, or `openingSym` variants rendered via the browser pane on P33 v2 at top
+— an SVG in the scratchpad, or `openingSym` variants rendered via the browser pane on CLA v2 at top
 view and at 30° — and show the user. Wait for "ok" or for changes to the §7 numbers.
 
 ## Read
@@ -53,5 +53,5 @@ view and at 30° — and show the user. Wait for "ok" or for changes to the §7 
 
 ## Verifier focus
 Hinge side and swing direction for every `variant` (bits 0 and 1 — compare with the blueprint, which
-is right); the 180°-rotated P33 test plan (`variant ^= 3` convention, 10-09 handover); windows on
+is right); the 180°-rotated CLA test plan (`variant ^= 3` convention, 10-09 handover); windows on
 thin partitions; openings whose host wall was deleted.

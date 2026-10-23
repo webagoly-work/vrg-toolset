@@ -5,8 +5,8 @@ const geom = require('./geom'), R = require('./rules'), NW = require('./network'
 const isMains = e => e.role === 'sys:MAINS';
 function plan(G, E, PT, cfg, allowed) {
   const warn = [], D = G.D;
-  const W = R.runHeights(cfg);                                         // E5-Q3 = A: from the ceiling (P33 2850 → 2600 / 2450)
-  const cornerAll = cfg.cornerBoxes === 'all';                         // E5-Q4: the P33 rule (a box at every corner) is the BRIDGE option
+  const W = R.runHeights(cfg);                                         // E5-Q3 = A: from the ceiling (CLA 2850 → 2600 / 2450)
+  const cornerAll = cfg.cornerBoxes === 'all';                         // E5-Q4: the CLA rule (a box at every corner) is the BRIDGE option
   G.rooms.filter(r => r.diag).forEach(r => warn.push({ sev: 'warn', msg: `${r.id}: ${r.diag} ferde él — rajta nem fut pálya (a 45° fal később jön)` }));
   const hw = D.devices.filter(d => d.level === G.level);
   const board = hw.find(d => d.type === 'board'), meter = hw.find(d => d.type === 'meter');
@@ -206,7 +206,7 @@ function plan(G, E, PT, cfg, allowed) {
     boxAt[i] = mk({ kind: 'drop', room: d.room, x: g.N[i].x, y: g.N[i].y, h: W.dist, node: i, size: 'gang2', drop: d.key,
       n: 'Leállás — ' + d.members.map(e => e.ref || e.id).join(' + ') }); });
   // corners the horizontal paths pass (distribution and trunk)
-  // E5-Q4: a box at every corner only in the 'all' mode (the P33 rule, kept for the BRIDGE layers); by default a corner
+  // E5-Q4: a box at every corner only in the 'all' mode (the CLA rule, kept for the BRIDGE layers); by default a corner
   // gets a box only when a run needs a pull box there (more than maxBends, below). F6: a corner only the trunk passes
   // takes its box at the trunk height.
   if (cornerAll) { const distC = new Set(), cornerNodes = new Set();
@@ -536,7 +536,7 @@ function inferLamps(G, M, cfg, warn, zone) {
     const near = cand.length ? cand : sws.filter(s => !s.ctx.bed && !isWet(s.room) && nbr.has(s.room) && Math.hypot(s.x - e.x, s.y - e.y) < 3000);
     if (near.length) { near.sort((a, b) => Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y)); assign(e.id, near[0].id, 'vizes helyiség: kapcsoló kívül, az ajtó száraz oldalán'); busy.add(near[0].id); } });
   // (d) the rest: nearest switch unit in the same room zone (bed switches excluded, units with ctl kept as they are)
-  // one routing zone = rooms joined by an open boundary (network.zones) — before: the P33 ids R03 / R03L by hand (F7)
+  // one routing zone = rooms joined by an open boundary (network.zones) — before: the CLA ids R03 / R03L by hand (F7)
   const sameZone = (a, b) => a === b || (!!zone && zone[a] != null && zone[a] === zone[b]);
   lamps.filter(e => !ctlOf[e.id]).forEach(e => {
     // switched by an RBX output (the user's answer): no wall switch, whatever stands in the room

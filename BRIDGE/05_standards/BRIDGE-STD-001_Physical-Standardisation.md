@@ -351,8 +351,8 @@ back to the RoomBox. **Two per room minimum, four in RB-L (B24)** — it is the 
 future-proofing in the design and the easiest to under-provide.
 
 Endpoints are referenced with the **three-letter type codes** of STD-004 §1.2 — `LMP` `LNR` `SOC`
-`SWI` `SEN` `SPK` `SHU` `PAN` `CAM` `ACP` `THR` `POR` `NTL` `UEP` — so `P33.R03.LMP2`. ARM
-references stay flat: `P33.R03.A2`, with layers as an attribute rather than in the name.
+`SWI` `SEN` `SPK` `SHU` `PAN` `CAM` `ACP` `THR` `POR` `NTL` `UEP` — so `CLA.R03.LMP2`. ARM
+references stay flat: `CLA.R03.A2`, with layers as an attribute rather than in the name.
 
 | Room class | Dedicated ARMs | Bus ARMs | UEP |
 |---|---|---|---|
@@ -543,7 +543,7 @@ BRIDGE-STD-004 and are not in this revision.
 |---|---|
 | **D1** | Room list and RoomBox class per room; which rooms are direct and which chained. Until this exists, §4 is a template rather than a schedule — and it now gates more than anything else in the set. |
 | **D14** *(tuner)* | The stub-out box envelope dimension. Melléklet 1/A fixes the *contents* of a stub-out but not its size; INST-001 is blocked on it. |
-| **U22** | P33's concrete hardware composition, the first real test of §2 and §4. |
+| **U22** | CLA's concrete hardware composition, the first real test of §2 and §4. |
 | Louvre profile | The free-area ratio of the chosen louvre sets the gross slot size, so the cover cannot be drawn until a profile is picked. |
 | Floor-void riser | Whether a riser above a RoomBox is available and what OTSZ requires of the penetration — ask the certifying electrician alongside C29. |
 | Validation | The §2.6 figures want one instrumented RB-M at full load before a cover is tooled. An afternoon's work confirms or corrects the whole annex. |

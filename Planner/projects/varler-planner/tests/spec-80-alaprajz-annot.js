@@ -1,14 +1,14 @@
 // Views V9b — the Alaprajz annotation: room tags, endpoint codes, dimension chains, north arrow, stairs, all texts
 // through one collision-avoiding placer (06e-view-plan.js apAnnotSvg / apPlacer).
 //
-// Fixture: the committed P33 v2 furnished plan, ground floor, cut 1200, 1:50 (docs/views/WORKPLAN.md § V9b, tests 1–7).
+// Fixture: the committed CLA v2 furnished plan, ground floor, cut 1200, 1:50 (docs/views/WORKPLAN.md § V9b, tests 1–7).
 const {JSDOM}=require('jsdom');const path=require('path');const fs=require('fs');
 function findPlanner(){
   if(process.env.PLANNER)return process.env.PLANNER;
   const c=[path.join(__dirname,'..','dist','varler_planner.html'),path.join(__dirname,'..','planner.html')];
   for(const p of c)if(fs.existsSync(p))return p;
   throw new Error('planner build not found — run: node build.js');}
-const PLAN=path.join(__dirname,'..','..','..','..','Calculator','P33-teszt_v2_butor.vplan.json');
+const PLAN=path.join(__dirname,'..','..','..','..','Calculator','CLA-teszt_v2_butor.vplan.json');
 const dom=new JSDOM(fs.readFileSync(findPlanner(),'utf8'),{runScripts:'dangerously',pretendToBeVisual:true,url:'http://localhost/'});
 const w=dom.window;const $=id=>w.document.getElementById(id);
 setTimeout(()=>{
@@ -48,7 +48,7 @@ setTimeout(()=>{
   ok('4 chain lines',L().chains===4&&(scene().match(/class="ap-dim"/g)||[]).length===4);
   ok('the overall chains read the level box: '+((bb.x1-bb.x0)/1000).toFixed(2)+' × '+((bb.y1-bb.y0)/1000).toFixed(2),
     scene().includes('>'+(Math.round(bb.x1-bb.x0)/1000).toFixed(2).replace('.',',')+'</text>')&&scene().includes('>'+(Math.round(bb.y1-bb.y0)/1000).toFixed(2).replace('.',',')+'</text>'));
-  ok('P33: 7,26 × 10,07',scene().includes('>7,26</text>')&&scene().includes('>10,07</text>'));
+  ok('CLA: 7,26 × 10,07',scene().includes('>7,26</text>')&&scene().includes('>10,07</text>'));
 
   // ---------- 5. north ----------
   ok('one north arrow, letter É',(scene().match(/class="ap-north"/g)||[]).length===1&&scene().includes('>É</text>')&&L().north===1);
