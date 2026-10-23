@@ -103,6 +103,7 @@ function applyView(q, ms = 0) {
   else if (!sess.s || sess.s.id !== q.get('sess')) { $('sess').value = String(si); sessSelect(si); sessShowAll(); }
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
   if (f) showFile(f); else if (shownFile) closePanel();
+  if (f && cam.length !== 5) flyTo(f);   // a link without a camera (city_file, city_view_link) flies to its file
 }
 function flyCamera([x, z, theta, phi, r], ms) {
   if (!ms) { orbit.target.set(x, 0, z); Object.assign(orbit, { theta, phi, r }); placeCamera(); return; }

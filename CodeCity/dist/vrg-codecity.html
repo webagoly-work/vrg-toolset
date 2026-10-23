@@ -622,6 +622,7 @@ function applyView(q, ms = 0) {
   else if (!sess.s || sess.s.id !== q.get('sess')) { $('sess').value = String(si); sessSelect(si); sessShowAll(); }
   const f = q.get('sel') && current.city.files.find(x => x.p === q.get('sel') && !x.gone);
   if (f) showFile(f); else if (shownFile) closePanel();
+  if (f && cam.length !== 5) flyTo(f);   // a link without a camera (city_file, city_view_link) flies to its file
 }
 function flyCamera([x, z, theta, phi, r], ms) {
   if (!ms) { orbit.target.set(x, 0, z); Object.assign(orbit, { theta, phi, r }); placeCamera(); return; }
@@ -794,6 +795,22 @@ function fileAtT(f) {
   return [k, k ? replay.locAt[f.i][k - 1] : 0];
 }
 
+// ---- metrics at the shown commit (k = this file's commits so far)
+const HEAT_WINDOW = () => Math.max(3, Math.round((replay.last + 1) * 0.15));  // "recent" = last 15 % of history
+function heatCounts() {
+  const T = replay.T, from = T - HEAT_WINDOW();
+  return replay.touch.map(tl => countUpTo(tl, T) - countUpTo(tl, from));
+}
+function ageOf(i) {   // 0 = touched at T, 1 = untouched since the first commit
+  const c = current.city.commits, k = countUpTo(replay.touch[i], replay.T);
+  if (!k || !c.length) return 1;
+  return Math.min(1, (c[replay.T][0] - c[replay.touch[i][k - 1]][0]) / Math.max(1, c[replay.T][0] - c[0][0]));
+}
+function agentShareOf(i) {
+  const k = countUpTo(replay.touch[i], replay.T);
+  return k ? replay.agentAt[i][k - 1] / k : 0;
+}
+
 // ==== src/06-timeline.js
 // 06-timeline.js — replay controls: Step / Play / Latest (God's Eye View's weather timeline verbs),
 // speed, a scrubber over an activity strip, and the split-flap commit board.
@@ -940,22 +957,6 @@ function ramp(stops, t) {
 }
 const hex = c => '#' + c.getHexString();
 
-// ---- metrics at the shown commit (k = this file's commits so far)
-const HEAT_WINDOW = () => Math.max(3, Math.round((replay.last + 1) * 0.15));  // "recent" = last 15 % of history
-function heatCounts() {
-  const T = replay.T, from = T - HEAT_WINDOW();
-  return replay.touch.map(tl => countUpTo(tl, T) - countUpTo(tl, from));
-}
-function ageOf(i) {   // 0 = touched at T, 1 = untouched since the first commit
-  const c = current.city.commits, k = countUpTo(replay.touch[i], replay.T);
-  if (!k || !c.length) return 1;
-  return Math.min(1, (c[replay.T][0] - c[replay.touch[i][k - 1]][0]) / Math.max(1, c[replay.T][0] - c[0][0]));
-}
-function agentShareOf(i) {
-  const k = countUpTo(replay.touch[i], replay.T);
-  return k ? replay.agentAt[i][k - 1] / k : 0;
-}
-
 // ---- the lenses. color(f, i, ctx) -> THREE.Color; legend() -> html
 const LENSES = [
   { key: '1', id: 'alap', name: 'Alap', group: '', sky: '', horizon: 0x1b2442, plate: [0.64, 0.25, 0.07],
@@ -1073,28 +1074,12 @@ addEventListener('keydown', e => {
 // the files that most often change in the same commit as the selected one.
 
 const ROAD_COLORS = { out: 0xffb547, in: 0x5ad0e6, co: 0xc58bff, all: 0x8fa6d8 };
-const COCHANGE_MAX_FILES = 30;      // a commit touching more files is a sweep, not a relation
 const roads = { group: new THREE.Group(), all: false, importers: [] };
 scene.add(roads.group);
 
 function roadsPrepare(model) {
   roads.importers = model.city.files.map(() => []);
   model.city.files.forEach((f, i) => (f.imp || []).forEach(j => roads.importers[j].push(i)));
-}
-
-// files changed together with file i up to the shown commit: [[j, together, share of i's commits]]
-function neighboursOf(i) {
-  const c = current.city.commits, count = new Map();
-  let mine = 0;
-  for (const ci of replay.touch[i]) {
-    if (ci > replay.T) break;
-    const ch = c[ci][5];
-    if (ch.length / 3 > COCHANGE_MAX_FILES) continue;
-    mine++;
-    for (let k = 0; k < ch.length; k += 3) if (ch[k] !== i) count.set(ch[k], (count.get(ch[k]) || 0) + 1);
-  }
-  return [...count].filter(([, n]) => n >= 2).map(([j, n]) => [j, n, n / Math.max(1, mine)])
-    .sort((a, b) => b[1] - a[1] || b[2] - a[2]).slice(0, 8);
 }
 
 const roofOf = i => {
@@ -1183,8 +1168,8 @@ addEventListener('keydown', e => {
   if (e.key === 'u' || e.key === 'U') toggleRoads();
 });
 
-// ==== src/10-query.js
-// 10-query.js — the query bar: questions over the data already loaded, no AI, no network
+// ==== src/09-ask.js
+// 09-ask.js — the query language: questions over the data already loaded, no AI, no network
 // (God's Eye View's analyst engine: a pure query function returns stable ids, and the surfaces —
 // result list, brackets — only draw them). Hungarian words, combined with AND:
 //   Planner, Inventory/src     path or name contains
@@ -1195,7 +1180,8 @@ addEventListener('keydown', e => {
 //   >500 sor · <20 sor · >5 commit
 //   legnagyobb · legaktívabb · legimportáltabb · legrégebbi   sort (default: lines)
 //   top 5 / 5                  how many
-// Brackets (God's Eye View's detection overlay) mark the results that are on screen.
+// No DOM, no THREE: CodeCity/core.js loads this file in Node too, so the MCP server and the page
+// answer the same question the same way.
 
 const UNIT_DAYS = { nap: 1, napja: 1, hét: 7, het: 7, hete: 7, hónap: 30, honap: 30, hó: 30, hónapja: 30, év: 365, ev: 365, éve: 365 };
 const SORTS = {
@@ -1252,7 +1238,26 @@ function runQuery(text) {
   return { items, summary, metric: i => `${hu(key(i) < 0 ? 0 : sort[0] === 'age' || sort[0] === 'fresh' ? Math.round((nowT - lastTouch(i)) / 86400) : key(i))}${sort[0] === 'loc' ? ' sor' : sort[0] === 'n' ? ' commit' : sort[0] === 'imp' ? ' importáló' : ' napja'}` };
 }
 
-// ---- surfaces: the result list and the brackets
+// files changed together with file i up to the shown commit: [[j, together, share of i's commits]]
+const COCHANGE_MAX_FILES = 30;      // a commit touching more files is a sweep, not a relation
+function neighboursOf(i) {
+  const c = current.city.commits, count = new Map();
+  let mine = 0;
+  for (const ci of replay.touch[i]) {
+    if (ci > replay.T) break;
+    const ch = c[ci][5];
+    if (ch.length / 3 > COCHANGE_MAX_FILES) continue;
+    mine++;
+    for (let k = 0; k < ch.length; k += 3) if (ch[k] !== i) count.set(ch[k], (count.get(ch[k]) || 0) + 1);
+  }
+  return [...count].filter(([, n]) => n >= 2).map(([j, n]) => [j, n, n / Math.max(1, mine)])
+    .sort((a, b) => b[1] - a[1] || b[2] - a[2]).slice(0, 8);
+}
+
+// ==== src/10-query.js
+// 10-query.js — the query bar's surfaces: the result list and the brackets around results on screen.
+// The parser itself (runQuery) is in 09-ask.js, shared with the MCP server (core.js).
+
 const query = { items: [], text: '' };
 function showQuery(text) {
   query.text = text.trim();

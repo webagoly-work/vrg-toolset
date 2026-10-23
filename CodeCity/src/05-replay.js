@@ -96,3 +96,19 @@ function fileAtT(f) {
   const k = countUpTo(replay.touch[f.i], replay.T);
   return [k, k ? replay.locAt[f.i][k - 1] : 0];
 }
+
+// ---- metrics at the shown commit (k = this file's commits so far)
+const HEAT_WINDOW = () => Math.max(3, Math.round((replay.last + 1) * 0.15));  // "recent" = last 15 % of history
+function heatCounts() {
+  const T = replay.T, from = T - HEAT_WINDOW();
+  return replay.touch.map(tl => countUpTo(tl, T) - countUpTo(tl, from));
+}
+function ageOf(i) {   // 0 = touched at T, 1 = untouched since the first commit
+  const c = current.city.commits, k = countUpTo(replay.touch[i], replay.T);
+  if (!k || !c.length) return 1;
+  return Math.min(1, (c[replay.T][0] - c[replay.touch[i][k - 1]][0]) / Math.max(1, c[replay.T][0] - c[0][0]));
+}
+function agentShareOf(i) {
+  const k = countUpTo(replay.touch[i], replay.T);
+  return k ? replay.agentAt[i][k - 1] / k : 0;
+}

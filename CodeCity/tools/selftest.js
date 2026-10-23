@@ -62,6 +62,27 @@ try {
     `read a2 · edit c.js (relative path) · search the root; duplicate and outside calls dropped (got ${JSON.stringify(ev)}, dirs ${JSON.stringify(s && s.dirs)})`);
   check(!/SECRET/.test(raw), 'no prompt, reply, pattern, edit text or command in the city');
   check(Object.keys(s || {}).sort().join() === 'dirs,ev,id,t0', `a session holds only id, t0, dirs, ev (got ${Object.keys(s || {}).join()})`);
+
+  // mcp.js (C10): the whole conversation in one stdin; it scans the fixture into its own dist on first use
+  const dist = path.join(dir, 'kv-dist'), rq = (id, method, params) => JSON.stringify({ jsonrpc: '2.0', id, method, params });
+  const call = (id, name, args) => rq(id, 'tools/call', { name, arguments: args });
+  const input = [rq(1, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'selftest', version: '0' } }),
+    JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }), rq(2, 'tools/list', {}),
+    call(3, 'city_query', { q: 'javascript legnagyobb' }), call(4, 'city_file', { path: 'a2.js' }),
+    call(5, 'city_file', { path: 'b.md' }), call(6, 'city_view_link', { follow: 'claude', lens: 'ugynok' }),
+    call(7, 'city_file', { path: 'nope' }), rq(8, 'no/such', {})].join('\n') + '\n';
+  const res = execFileSync(process.execPath, [path.join(__dirname, '..', 'mcp.js'), dir, '--dist', dist], { input, encoding: 'utf8' })
+    .trim().split('\n').map(l => JSON.parse(l));
+  const R = id => res.find(r => r.id === id) || {}, text = id => ((R(id).result || {}).content || [{}])[0].text || '';
+  check(res.length === 8 && R(1).result && R(1).result.protocolVersion === '2025-06-18', `mcp: 8 answers (the notification gets none), protocol 2025-06-18 (got ${res.length})`);
+  check(R(2).result && R(2).result.tools.map(t => t.name).join() === 'city_summary,city_query,city_file,city_hotspots,city_view_link,city_rescan', 'mcp: the six tools');
+  check(/2 találat/.test(text(3)) && /1\. src\/a2\.js/.test(text(3)) && /#q=javascript\+legnagyobb/.test(text(3)), `mcp: city_query uses the page's parser and links #q= (got ${JSON.stringify(text(3).split('\n').slice(1, 3))})`);
+  check(/src\/a2\.js/.test(text(4)) && /imported by \(1\): c\.js/.test(text(4)) && /#sel=src%2Fa2\.js/.test(text(4)), 'mcp: city_file finds src/a2.js by fragment, with its importer and a #sel= link');
+  check(/deleted at/.test(text(5)), 'mcp: city_file knows b.md is a ghost');
+  check(/#lens=ugynok&follow=g0$/.test(text(6)), `mcp: city_view_link resolves "claude" to the agent trail (got ${text(6).split('\n').pop()})`);
+  check(R(7).result && R(7).result.isError === true, 'mcp: an unknown file is a tool error, not a crash');
+  check(R(8).error && R(8).error.code === -32601, 'mcp: an unknown method is -32601');
+  check(fs.readdirSync(dist).sort().join() === `${path.basename(dir)}.city.json,${path.basename(dir)}.html`, `mcp: wrote only the city and its page into --dist (got ${fs.readdirSync(dist).join()})`);
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
   else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }

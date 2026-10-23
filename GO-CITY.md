@@ -15,6 +15,7 @@
    into one worktree, `wt-dev-all`, to try every feature at once. Feature work still happens HERE, on
    `worktree-codecity`; `dev-all` picks it up by merging again (GO-ALL §5). Never commit Kódváros work
    on `dev-all` itself.
-7. **C9 DONE 2026-10-23** (CITY-D7 A: session replay, `scan.js --sessions`, paths + kind + time only).
-   Next: **C10** (Kódváros as MCP tools, ⏸ decide). Its first question when resuming: the scope of
-   the MCP server (which tools, read-only or not, where it runs); ask it as CITY-D8 before any code.
+7. **C1–C10 all DONE 2026-10-23.** C9: session replay (CITY-D7 A). C10: `CodeCity/mcp.js`, the
+   zero-dependency MCP server (CITY-D8 A/A/A), registered with `claude mcp add kodvaros -- node
+   <repo>/CodeCity/mcp.js`. The WP list in README §3 is finished: next is the user's call — merge
+   `worktree-codecity` into `main` (and START.cmd K then points at the merged files), or new WPs.

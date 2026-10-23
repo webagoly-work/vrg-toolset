@@ -4,28 +4,12 @@
 // the files that most often change in the same commit as the selected one.
 
 const ROAD_COLORS = { out: 0xffb547, in: 0x5ad0e6, co: 0xc58bff, all: 0x8fa6d8 };
-const COCHANGE_MAX_FILES = 30;      // a commit touching more files is a sweep, not a relation
 const roads = { group: new THREE.Group(), all: false, importers: [] };
 scene.add(roads.group);
 
 function roadsPrepare(model) {
   roads.importers = model.city.files.map(() => []);
   model.city.files.forEach((f, i) => (f.imp || []).forEach(j => roads.importers[j].push(i)));
-}
-
-// files changed together with file i up to the shown commit: [[j, together, share of i's commits]]
-function neighboursOf(i) {
-  const c = current.city.commits, count = new Map();
-  let mine = 0;
-  for (const ci of replay.touch[i]) {
-    if (ci > replay.T) break;
-    const ch = c[ci][5];
-    if (ch.length / 3 > COCHANGE_MAX_FILES) continue;
-    mine++;
-    for (let k = 0; k < ch.length; k += 3) if (ch[k] !== i) count.set(ch[k], (count.get(ch[k]) || 0) + 1);
-  }
-  return [...count].filter(([, n]) => n >= 2).map(([j, n]) => [j, n, n / Math.max(1, mine)])
-    .sort((a, b) => b[1] - a[1] || b[2] - a[2]).slice(0, 8);
 }
 
 const roofOf = i => {
