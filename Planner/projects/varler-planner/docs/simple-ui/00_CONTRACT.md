@@ -4,7 +4,9 @@
 
 ## 0. Where you work — and who else is there
 
-Worktree `H:/Dev-VRG/VRG-DE/wt-planner-stack/Planner/projects/varler-planner`, branch `planner-stack`.
+Worktree `H:/Dev-VRG/VRG-DE/wt-planner-sui/Planner/projects/varler-planner`, branch `planner-sui` (cut from main
+2447365 on 2026-10-19; owned by the user's secondary account — see `GO-SUI.md` at the worktree root). *(Originally
+written for `wt-planner-stack`; the parallel T-session below has finished — T1–T8 are on main.)*
 
 **A second session works in the same worktree at the same time** on the UI tidy, T1–T4
 (`docs/ui-tidy/UI-AUDIT.md` §5). It rewrites the tool switching, the stage rail, the sidebars and the Tools panel.
