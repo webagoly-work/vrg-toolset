@@ -1,6 +1,8 @@
 # GO V2 — CLA második verzió: v1 teljes kiépítés + minden további réteg előkészítése (gyorsított felmérés)
 
-Másold be ezt egy új Claude Code munkamenetbe. Munkakönyvtár: `H:\Dev-VRG\VRG-DE\wt-planner-stack`.
+> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
+
+Másold be ezt egy új Claude Code munkamenetbe. Munkakönyvtár: `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`.
 
 Ez a fájl **önmagában teljes**: a korábbi munkamenetek memóriájára ne számíts. Más felhasználói fiókon is működnie kell, ezért minden útvonal `H:\` alatti.
 

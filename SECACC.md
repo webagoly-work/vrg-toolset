@@ -1,5 +1,7 @@
 # SecAcc — the secondary account's workspace
 
+> **Retired 2026-10-24, see `GO-MAIN.md`.** Kept for history; do not run it.
+
 *`H:\cwebuser\projects\VRG-DE\SecAcc` is a **git worktree** of the vrg-toolset repo on its own branch
 **`secacc`**. It is a full copy of the code that shares one history with the primary checkout
 (`…\Planner_VRG_U100`, branch `main`). The secondary account works here; the primary account keeps

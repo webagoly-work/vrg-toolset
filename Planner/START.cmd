@@ -84,6 +84,8 @@ setlocal EnableDelayedExpansion
 ::
 ::  2026-10-22 - the CYD desk dashboard moved from K) to Y): K is taken by tool 11
 ::  (VRG Kodvaros, branch worktree-codecity). Board Console stays on U).
+::
+::  2026-10-24 - consolidated into main (GO MAIN); no tool moved.
 :: ==========================================================================
 
 set "ROOT=%~dp0"

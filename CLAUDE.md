@@ -1,6 +1,7 @@
 # VRG toolset — working rules
 
-The repo root is `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`
+The repo root is `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`
+(the same folder as `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`: see Drive layout)
 (GitHub: `webagoly-work/vrg-toolset`, private). **`H:\Planner_VRG_U100` is a
 backup copy, not a second workspace** — refresh it from time to time, never
 work in it. The two were mixed up once and a full session's work landed in the
@@ -10,6 +11,10 @@ Each tool is a self-contained HTML app; the Planner and Inventory additionally
 have modular sources that build into one file.
 
 ## Drive layout
+
+**One repository, one checkout.** The real folder is `H:\cwebuser\projects\VRG-DE`;
+`H:\Dev-VRG\VRG-DE` is a **junction** to it, so both spellings name the same files. Since GO MAIN
+(2026-10-24) every line of work is on `main` in the main checkout; there are no other worktrees.
 
 ```
 H:\
@@ -159,38 +164,33 @@ symbols grey while every class was correct and every test passed.
 
 ## Codephrases
 
-- **`GO R1010`** — read `GO-R1010.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
+All of them run in the **main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`** (one checkout since GO MAIN, 2026-10-24).
+
+- **`GO R1010`** — read `GO-R1010.md` at the repo root (main checkout, branch `main`)
   and do what it says: continue the Planner round 2026-10-10, then the CLA-ADD-001 extras.
-- **`GO FRAME`** — read `GO-FRAME.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
+- **`GO FRAME`** — read `GO-FRAME.md` at the repo root (main checkout, branch `main`)
   and do what it says: the BRIDGE SmartFrame (BSF) concept: research, IDEA-003, tune with the user,
   then the BRIDGE doc and (after round 2026-10-10 is built) the Planner pack. No code.
-- **`GO V2`** — read `GO-V2.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
+- **`GO V2`** — read `GO-V2.md` at the repo root (main checkout, branch `main`)
   and do what it says: the CLA second version — v1 (VG-2026-CLA-01) fully built + every other BRIDGE layer
   prepared (conduit, cable pulled, boxes, niches; no hardware), quick survey-precision quantities and prices vs v1,
   a per-room ESPHome marketing list; then hand the fair-price calculation to the Workflow Kit session (V2_FELADAT.md).
 - **`GO R1018`** — read `GO-R1018.md` at the repo root (main checkout, branch `main`) and do what it says:
   continue the Planner round 2026-10-18 (Födém · Igénylista · Házimozi, all built + committed 2026-10-19):
   only the C6 Mozi fal pen feel is open.
-- **`GO HUB`** — read `GO-HUB.md` at the repo root (the **SecAcc worktree**
-  `H:\cwebuser\projects\VRG-DE\SecAcc`, branch `secacc`, secondary account) and do what it says:
-  build VRG Kapu, the shared Homepage / Business Topology board, from the pack in `docs/hub/`
-  (next open WP in its README §3 order; stop at every ⏸).
-- **`GO STRICT`** — read `GO-STRICT.md` at the repo root (until `secacc` is merged it is only in the
-  SecAcc worktree: `H:\cwebuser\projects\VRG-DE\SecAcc\GO-STRICT.md`) and do what it says, in the
-  **main checkout**, branch `main`: commit the five uncommitted programs VRG Kapu links to
-  (research, client-look, media-wall, planner-cyd, board-console), asking about `macros.json` first.
-- **`GO CITY`** — read `GO-CITY.md` at the repo root and do what it says: VRG Kódváros, the codebase-as-a-city
-  viewer (C1–C10 built and merged into `main` 2026-10-23; **parked** until the branch consolidation is
-  done: base fine-tuning from the user's dev notes, a later Claude Design batch candidate — README §7;
-  new WPs go on branch `worktree-codecity`,
-  worktree `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\.claude\worktrees\codecity`).
-- **`GO MAIN`** — read `GO-MAIN.md` at the repo root and do what it says, in the **main checkout**,
-  branch `main`: consolidate every line of work into one `main` (fast-forward Kódváros, three small
-  GitHub-only commits, the GO WIRE merge with its 7 listed conflicts, re-anonymise, verify, push),
-  then trim every other branch and worktree. Supersedes GO ALL. Priority from 2026-10-23.
-- **`GO ALL`** — read `GO-ALL.md` at the repo root and do what it says, as the **primary account in the
-  main checkout**: build `dev-all` in its own worktree `wt-dev-all` — every pushed line of work
-  (planner-stack, secacc, worktree-codecity, …) merged together so every feature can be tried at once.
-- **`GO WIRE`** — read `GO-WIRE.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
+- **`GO WIRE`** — read `GO-WIRE.md` at the repo root (main checkout, branch `main`)
   and do what it says: the wireway routing rebuild — the dual model, configuration K1 (decisions 2026-10-18, all A),
-  build order T0–T7 from `docs/workflow/WIREWAY_AUDIT_2026-10-18.md`; T0 first, stop at its checkpoint.
+  build order T0–T7 from `docs/workflow/WIREWAY_AUDIT_2026-10-18.md` (T0–T6 merged into `main` 2026-10-24).
+- **`GO ADAT`** — read `GO-ADAT.md` at the repo root (main checkout, branch `main`) and do what it says.
+- **`GO HUB`** — read `GO-HUB.md` at the repo root (main checkout, branch `main`) and do what it says:
+  build VRG Kapu, the shared Homepage / Business Topology board, from the pack in `docs/hub/`
+  (next open WP in its README §3 order; stop at every ⏸). Its README §4 waiting items (setup steps 3–8,
+  OneDrive links, the clean-profile check) are still open; only the place changed (it was the SecAcc worktree).
+- **`GO CITY`** — read `GO-CITY.md` at the repo root and do what it says: VRG Kódváros, the codebase-as-a-city
+  viewer (C1–C10 on `main`; **parked**: base fine-tuning from the user's dev notes, a later Claude Design
+  batch candidate — README §7). New WPs start from `main`.
+- **`GO STRICT`** — **done**: the five programs VRG Kapu links to are on `main` (`check-hub --strict` → Rendben). Retired.
+- **`GO ALL`** — **retired** 2026-10-24: `dev-all` is replaced by `main`. See GO MAIN.
+- **`GO MAIN`** — **done** 2026-10-24 (`GO-MAIN.md`): every line consolidated into `main`, the other
+  branches and worktrees trimmed. Parked WIP, not in `main`: tags `archive/2026-10-24/planner-stack-wip`
+  (Views plan-sheet / rbx specs) and `archive/2026-10-24/planner-sui-wip` (Simple-UI mode).

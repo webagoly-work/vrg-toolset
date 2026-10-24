@@ -1,5 +1,7 @@
 # GO STRICT — commit the five uncommitted programs so VRG Kapu's links resolve
 
+> **Retired 2026-10-24, see `GO-MAIN.md`.** Kept for history; do not run it.
+
 *You were started with the codephrase **GO STRICT**. This file is the whole briefing; it does not
 depend on any memory note, so it works from any Claude account on this PC. It was written on branch
 `secacc` (decision HUB-Q24 A, 2026-10-22). Until that branch is merged, read it at

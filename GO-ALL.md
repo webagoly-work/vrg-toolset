@@ -1,5 +1,7 @@
 # GO ALL — one working branch with every line of development, to try every feature
 
+> **Retired 2026-10-24, see `GO-MAIN.md`.** Kept for history; do not run it.
+
 *You were started with the codephrase **GO ALL**. This file is the whole briefing; it does not depend
 on any memory note. It was written 2026-10-22 by the secondary account on branch `worktree-codecity`,
 which is pushed to GitHub. Until that branch is merged, read this file at

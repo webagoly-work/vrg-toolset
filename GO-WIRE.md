@@ -1,6 +1,8 @@
 # GO WIRE — pick-up prompt: the wireway routing rebuild (dual model, K1)
 
-Paste this into a new Claude Code session (working directory `H:\Dev-VRG\VRG-DE\wt-planner-stack`).
+> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
+
+Paste this into a new Claude Code session (working directory `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`).
 
 ---
 
@@ -19,7 +21,7 @@ in this order, before any work:
 
 ## Where we are
 
-- **Worktree:** `H:\Dev-VRG\VRG-DE\wt-planner-stack`, branch `planner-stack`, head `85b81f1` or later (the commit that added this file), pushed.
+- **Worktree:** `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `planner-stack`, head `85b81f1` or later (the commit that added this file), pushed.
 - **`main`** (`H:\Dev-VRG\VRG-DE\Planner_VRG_U100`) is at `c421d4e`. That is the 2026-10-16 working version; START.cmd
   tool 1 opens it. Merge into `main` only when I ask for a new working version.
 - **Nothing of T0–T7 is built yet.** Only docs were committed after `c421d4e`.

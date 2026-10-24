@@ -1,5 +1,15 @@
 # GO MAIN — consolidate every line of work into one `main`, then trim the rest
 
+> **Status 2026-10-24: Phases 0–5 done** on branch `gomain`, fast-forwarded into `main`. What differed from the plan:
+> - Phase 0.3 found uncommitted work that was not in `main`, in `wt-planner-stack` (Views plan-sheet / rbx specs) and `wt-planner-sui` (Simple-UI mode).
+>   It was **parked**, not merged: WIP commits on those branches, tags `archive/2026-10-24/planner-stack-wip` / `planner-sui-wip`.
+>   Client data from `wt-planner-stack` (the `Calculator/` baseline folder, `client-preview/dev`) and the companion tokens were copied
+>   outside the repo to `H:/cwebuser/projects/VRG-DE/_parked/2026-10-24/`.
+> - Phase 2: `d390c8f` was already in `main` (empty cherry-pick, skipped).
+> - Phase 3 merged `archive/2026-10-23/planner-stack`, so the parked WIP commit stayed out. Planner: 3673 assertions, all green.
+> - Phase 7 therefore needs `-D` for `planner-stack` and `planner-sui` too (their WIP tips are tagged), and the parked copies
+>   (`Calculator/` baseline folder, `client-preview/dev`) in `wt-planner-stack` have to be removed before its `worktree remove`.
+
 *Codephrase **GO MAIN**. Written 2026-10-23 from a read-only survey of every branch. This file is the
 whole briefing: a step-by-step runbook. Work top to bottom; each step says what to run, what you should
 see, and what to do if you don't.*
@@ -152,8 +162,8 @@ git merge --no-ff origin/claude/new-session-mkexjy -m "Merge Views V8b Konyha li
 git merge --no-ff planner-stack -m "Merge planner-stack (GO WIRE: wireway audit, T0–T6, engine fixes) into main"
 ```
 The dry run gives **7 conflicts**. Every Planner one has the same shape: `planner-stack` added real logic
-(T0 / T2) on lines that `main` had meanwhile **anonymised** (CLA → CLA). The rule each time: **take the
-`planner-stack` side, then write CLA where it says CLA** (`cla.config.js` → `cla.config.js`).
+(T0 / T2) on lines that `main` had meanwhile **anonymised** (the client code → CLA). The rule each time: **take the
+`planner-stack` side, then write CLA where it still has the old client code** (its old config file name → `cla.config.js`).
 
 Paths below are under `Planner/projects/varler-planner/` unless they start at the root.
 
@@ -204,7 +214,7 @@ npm --prefix Planner/projects/varler-planner test
 git add -A
 git commit
 ```
-Keep the default merge message and add one line: "conflicts: planner-stack side + CLA→CLA (GO MAIN
+Keep the default merge message and add one line: "conflicts: planner-stack side + client code→CLA (GO MAIN
 §3); re-anonymised; Planner rebuilt".
 
 ---

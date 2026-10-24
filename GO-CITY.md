@@ -1,5 +1,7 @@
 # GO CITY — build VRG Kódváros (the codebase city)
 
+> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
+
 *You were started with the codephrase **GO CITY**. This file is the whole briefing.*
 
 1. **Where:** branch `worktree-codecity` (worktree `.claude/worktrees/codecity` of the vrg-toolset repo)

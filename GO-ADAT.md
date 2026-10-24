@@ -1,6 +1,8 @@
 # GO ADAT — indító prompt (CLA: erősáram alapréteg → Adat/PoE + LED-betápok + régi terv)
 
-Másold be ezt egy új Claude Code munkamenetbe (munkakönyvtár: `H:\Dev-VRG\VRG-DE\wt-planner-stack`).
+> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
+
+Másold be ezt egy új Claude Code munkamenetbe (munkakönyvtár: `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`).
 
 ---
 
@@ -11,7 +13,7 @@ Folytatjuk a CLA tervezését ott, ahol az előző munkamenet abbahagyta (2026-1
 3. `Calculator/CLA-baseline/ALAPRETEG.md` — az erősáramú alapréteg (2 jóváhagyási kör, Q-001 és Q-002 beépítve).
 4. `Planner/projects/varler-planner/tools/baseline/cla.config.js` — minden eddigi döntésem itt van (edits, switchGroups, floorGroups, data, led, oldPlan…).
 
-**Hol tartunk.** A worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack` (ág: planner-stack). Semmi nincs commitolva: a commitot és a pusht én csinálom, te soha.
+**Hol tartunk.** A worktree `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100` (ág: planner-stack). Semmi nincs commitolva: a commitot és a pusht én csinálom, te soha.
 
 Futtatás:
 

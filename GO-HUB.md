@@ -1,11 +1,13 @@
 # GO HUB — build VRG Kapu (the shared Homepage)
 
+> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
+
 *You were started with the codephrase **GO HUB**. This file is the whole briefing; it does not depend
 on any memory note, so it works from any Claude account on this PC.*
 
 ## 1. Where
 
-- **Secondary account: work ONLY in `H:\cwebuser\projects\VRG-DE\SecAcc`**, branch **`secacc`** (a git
+- **Secondary account: work ONLY in `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`**, branch **`secacc`** (a git
   worktree of the vrg-toolset repo). Never edit the main checkout `…\Planner_VRG_U100` — the primary
   account works there. Confirm with `git rev-parse --show-toplevel` (must end in `SecAcc`) and
   `git branch --show-current` (must say `secacc`).

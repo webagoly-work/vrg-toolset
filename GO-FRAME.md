@@ -1,11 +1,13 @@
 # GO FRAME — start a session on the BRIDGE SmartFrame (BSF) concept
 
+> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
+
 *You were started with the codephrase **GO FRAME**. This file is the whole briefing; it does not
 depend on any memory note, so it works from any Claude account on this PC.*
 
 ## 1. Where
 
-- Git worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`, branch `planner-stack` (project folder
+- Git worktree `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `planner-stack` (project folder
   `Planner\projects\varler-planner`). BRIDGE documents live in the **main checkout**
   `H:\Dev-VRG\VRG-DE\Planner_VRG_U100\BRIDGE` (branch `main`). `H:\Planner_VRG_U100` is a dead
   backup; never work there.
