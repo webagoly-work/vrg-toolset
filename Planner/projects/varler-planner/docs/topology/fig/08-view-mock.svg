@@ -27,7 +27,7 @@
   <!-- left: circuit set -->
   <rect x="10" y="56" width="196" height="440" fill="#f3f1ea"/>
   <text x="22" y="78" font-size="12" font-weight="700" fill="#262624">Körkészlet</text>
-  <rect x="22" y="86" width="172" height="22" rx="4" fill="#fff" stroke="#d8d4ca"/><text x="30" y="101" font-size="10.5" fill="#262624">NV4 minta ▾  (betöltve)</text>
+  <rect x="22" y="86" width="172" height="22" rx="4" fill="#fff" stroke="#d8d4ca"/><text x="30" y="101" font-size="10.5" fill="#262624">CLANV4 minta ▾  (betöltve)</text>
   <g font-size="10.5" fill="#262624">
     <rect x="18" y="116" width="180" height="24" rx="4" fill="#fff" stroke="#1d9e75" stroke-width="1.6"/>
     <circle cx="30" cy="128" r="5" fill="#1d9e75"/><text x="40" y="132">A1 Szoba dugalj</text><text x="190" y="132" text-anchor="end" fill="#1d9e75">4/4 ✓</text>

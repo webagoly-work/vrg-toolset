@@ -1,6 +1,6 @@
 # WP-T12: Engine hand-off (Pályák / Vezetékek follow the topology)
 
-Status: todo · Wave C · Depends: T10 (+ its ⏸ answers) · Size: L (~250 lines across engine + adapter) · Spec: next free · Decisions: Q-T01, Q-T02, Q-T15 · **⏸ after build: P33 parity**
+Status: todo · Wave C · Depends: T10 (+ its ⏸ answers) · Size: L (~250 lines across engine + adapter) · Spec: next free · Decisions: Q-T01, Q-T02, Q-T15 · **⏸ after build: CLA parity**
 
 ## Goal
 *"This should be the basis of the autowiring."*
@@ -38,13 +38,13 @@ The E5 buttons stop inferring what the user has now said explicitly.
    row to E5_ENGINE_REVIEW §4 (the topology replaces `socketPlan` / `switchGroups` / the inference).
 
 ## Tests
-1. **Parity:** the P33 planner file with **no** `topo` → spec-98 stays identical (167 / 167 legs, 97 / 97 boxes).
-2. **Seed parity:** the P33 file with T8's seed **constrained to what the engine already does**, i.e. classic chains in
+1. **Parity:** the CLA planner file with **no** `topo` → spec-98 stays identical (167 / 167 legs, 97 / 97 boxes).
+2. **Seed parity:** the CLA file with T8's seed **constrained to what the engine already does**, i.e. classic chains in
    the engine's own drop order and groups as `blSwitchGroups`. The circuits, boxes at service points and the trunk are
    identical. The legs differ only where Q-T02 / Q-T15 change a rule, and each difference is listed.
 3. One hand edit (A7's chain order reversed) → only A7's legs and the runs it shares change.
 4. A circuit with a `fail` link → the engine warns `'<kör>: link fizikai út nélkül — kihagyva'` and still runs the rest.
 5. The CLI: `node tools/baseline/run.js` with a `topo` in the config gives the same plan as the page (the bundle rule).
 
-**⏸ after build:** the user looks at P33 under the seeded topology, then makes one hand edit, and approves the diff
+**⏸ after build:** the user looks at CLA under the seeded topology, then makes one hand edit, and approves the diff
 table before this becomes the default path for circuits with a topology.

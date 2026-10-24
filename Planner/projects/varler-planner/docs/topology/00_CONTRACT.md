@@ -72,7 +72,7 @@ The pure parts (`08p`, `08pa`, `08pd` without DOM) must run under the jsdom spec
 
 - **Identical, every WP.** The view is an overlay outside `draw()`, and no fixture has `c.topo`. If a golden moves,
   stop.
-- T12 may change engine output **only** for circuits that carry `c.topo`. The P33 parity run (README §5) proves that a
+- T12 may change engine output **only** for circuits that carry `c.topo`. The CLA parity run (README §5) proves that a
   seeded topology reproduces today's legs and boxes exactly.
 - PRIMER §2 still holds: goldens never call `draw()`. The view, its tools and the playback need the browser pane
   (`planner-stack-dist`, port 8138), with a screenshot in the report.

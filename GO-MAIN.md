@@ -152,8 +152,8 @@ git merge --no-ff origin/claude/new-session-mkexjy -m "Merge Views V8b Konyha li
 git merge --no-ff planner-stack -m "Merge planner-stack (GO WIRE: wireway audit, T0–T6, engine fixes) into main"
 ```
 The dry run gives **7 conflicts**. Every Planner one has the same shape: `planner-stack` added real logic
-(T0 / T2) on lines that `main` had meanwhile **anonymised** (P33 → CLA). The rule each time: **take the
-`planner-stack` side, then write CLA where it says P33** (`p33.config.js` → `cla.config.js`).
+(T0 / T2) on lines that `main` had meanwhile **anonymised** (CLA → CLA). The rule each time: **take the
+`planner-stack` side, then write CLA where it says CLA** (`cla.config.js` → `cla.config.js`).
 
 Paths below are under `Planner/projects/varler-planner/` unless they start at the root.
 
@@ -164,7 +164,7 @@ Paths below are under `Planner/projects/varler-planner/` unless they start at th
 | 3a | `src/08ob-wf-engine.js` (~line 8) | planner-stack | the 3-line comment `The CLA baseline engine (…) build.js puts it in 08fz-wf-baseline.js as BL (…; moved before 08g by T0 …)` |
 | 3b | `src/08ob-wf-engine.js` (~line 27) | planner-stack | `const BL_OPT={cornerAll:false,congest:0.05};   // T2: the trunk's congestion term (× length × cables already there) · E5-Q4: cornerAll = the CLA rule (a box at every corner) — the BRIDGE option` (planner-stack glued two comments together; this is them, tidied) |
 | 4 | `tests/spec-98-wf-engine.js` (~line 127) | planner-stack | its three lines (they save and restore `BL_OPT.congest` around the run), with `if(fs.existsSync(CLA))` and `'cla.config.js'`. The `CLA` constant is already defined higher up on main's side. |
-| 5 | `tools/baseline/cla.config.js` (~line 15; git shows it as `p33.config.js` on the planner-stack side because main renamed the file) | planner-stack | both lines: `latchFrom: 'switches', // T0 / F4: CLA v1 voted the latch from the switches; …` and `cornerBoxes: 'all', // E5-Q4: the CLA rule …` |
+| 5 | `tools/baseline/cla.config.js` (~line 15; git shows it as `cla.config.js` on the planner-stack side because main renamed the file) | planner-stack | both lines: `latchFrom: 'switches', // T0 / F4: CLA v1 voted the latch from the switches; …` and `cornerBoxes: 'all', // E5-Q4: the CLA rule …` |
 | 6 | `tools/baseline/plan.js` (~line 8) | planner-stack | the whole block: the `rn` helper (room names in messages), `runHeights` with `(CLA 2850 → 2600 / 2450)`, `cornerAll`, and the T0/F4 door-latch `warn.push(...)` |
 | 7 | `dist/varler_planner.html` | **neither by hand** | it is the build output: `git checkout --ours -- Planner/projects/varler-planner/dist/varler_planner.html`, then rebuild in step 3.3 |
 
@@ -175,7 +175,7 @@ git grep -n -E "^(<<<<<<<|>>>>>>>)" -- Planner CLAUDE.md
 ```
 Both should print nothing.
 
-**3.2 Re-anonymise.** The merge brings P33 back in files that merged cleanly: `GO-WIRE.md`,
+**3.2 Re-anonymise.** The merge brings CLA back in files that merged cleanly: `GO-WIRE.md`,
 `docs/workflow/WIREWAY_AUDIT_2026-10-18.md`, `tools/baseline/README.md`, `prep.js`, `to-planner.js`. Main
 also has a few of its own since the anonymisation (`src/06-wall-editor.js`,
 `docs/research/2026-10-23_chase-sweep-cut-3d.md`).
@@ -204,7 +204,7 @@ npm --prefix Planner/projects/varler-planner test
 git add -A
 git commit
 ```
-Keep the default merge message and add one line: "conflicts: planner-stack side + P33→CLA (GO MAIN
+Keep the default merge message and add one line: "conflicts: planner-stack side + CLA→CLA (GO MAIN
 §3); re-anonymised; Planner rebuilt".
 
 ---

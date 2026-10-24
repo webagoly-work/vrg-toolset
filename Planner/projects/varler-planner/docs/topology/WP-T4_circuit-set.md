@@ -3,11 +3,11 @@
 Status: todo · Wave B · Depends: T3 · Size: S (~110 lines) · Spec: next free · Decisions: none
 
 ## Goal
-*"Create (or choose from a preset of) the list of the circuits that will be used: a common set, like NV4 as an
+*"Create (or choose from a preset of) the list of the circuits that will be used: a common set, like CLANV4 as an
 example of a possible common circuit type, counting only 2 Klíma devices and a custom one if it is needed."*
 
 ## Read
-- `08o-cpr.js`: `CPR_CAT`, `cprRows`, `cprExpect`, `cprActivate`, `cprLoadSample`, `CPR_SAMPLE_NV4`, `cprImport`,
+- `08o-cpr.js`: `CPR_CAT`, `cprRows`, `cprExpect`, `cprActivate`, `cprLoadSample`, `CPR_SAMPLE_CLANV4`, `cprImport`,
   `cprExport`, `cprAddCustom`, `cprDialog`
 - `round-2026-10-10/WP-M2_circuit-presets.md` §Build 2 (sets, duplicate keys, `expect:[1,2]` on klíma)
 - `08oa-wf-eloplan.js` 48 (`elpSuggest`), 90 (`elpApply`), 101 (`elpUnassigned`)
@@ -16,7 +16,7 @@ example of a possible common circuit type, counting only 2 Klíma devices and a 
 ## Build (`src/08pc-tpo-edit.js`, the left panel)
 1. **Set picker** `Készlet: ▾`:
    - `Projekt` (the active circuits);
-   - `NV4 minta`;
+   - `CLANV4 minta`;
    - `Alap (1. szint)`;
    - `Fájlból…`, which uses M2's import.
    - Choosing a set does **not** create circuits. It shows the set's rows with a count per key (klíma: 2, from
@@ -34,7 +34,7 @@ example of a possible common circuit type, counting only 2 Klíma devices and a 
    disabled until then.
 
 ## Tests
-1. Load NV4 → the rows show `szobakor ×3` and `klima ×3`. Untick one klíma and Alkalmaz → 2 klíma circuits are active.
+1. Load CLANV4 → the rows show `szobakor ×3` and `klima ×3`. Untick one klíma and Alkalmaz → 2 klíma circuits are active.
 2. The active circuit is set by a row click and survives a re-render.
 3. Dragging an unassigned socket onto A1 → `cktOfDevice(socket) === A1`, in one undo step.
 4. With no circuits: the panel shows `Nincs áramkör — válassz készletet vagy futtasd a javaslatot.`

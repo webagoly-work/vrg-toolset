@@ -134,11 +134,11 @@ function chaseSummary(shapes){const grp={},pk={};
     if(S.kind==='box')pk[k]=(pk[k]||0)+1;else grp[k]=(grp[k]||0)+S.mm;});
   return {grp,pk};}
 // ---- PROJECT chase quantities (O1): every wall of every level, both faces, every SHOWN layer (a hidden layer is
-// "off", as in 05t-needs: on P33 the hidden original sketch alone would add 106 m) ----
+// "off", as in 05t-needs: on CLA the hidden original sketch alone would add 106 m) ----
 // A run or box near a corner lies within reach of two walls; it is counted once, on the wall it sits closest to
 // (smallest sd). Sunk ('sull') sections that no wall claims are floor / ceiling runs: reported apart, never priced
 // as wall chasing. The priced metres come from the union (chaseUnion byGroup ÷ width), not from the section sum:
-// on P33 the stack layers lay up to three conduits on one line, and summing them tripled the chasing. Union metres
+// on CLA the stack layers lay up to three conduits on one line, and summing them tripled the chasing. Union metres
 // include the square caps (w/2 per free end), as cut. The section sum stays in grpSec for the report.
 const CHASE_RHO=1600;   // kg/m³ debris, tégla — the wall material is CH-Q2, still open
 function chaseProject(){const claim=new Map(),walls=[];

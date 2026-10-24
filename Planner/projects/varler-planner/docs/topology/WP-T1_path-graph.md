@@ -46,4 +46,4 @@ points."*
 3. Remove the door: room B's anchors are `unreachable`.
 4. Cache: two calls with no change return the same object (`===`); moving one socket returns a new one.
 5. `tpoPath` from the board to the far socket equals the sum of its edges and passes the portal anchor.
-6. On the P33 planner file (local, skipped when absent): every anchor whose device the E5 run wires is reachable.
+6. On the CLA planner file (local, skipped when absent): every anchor whose device the E5 run wires is reachable.

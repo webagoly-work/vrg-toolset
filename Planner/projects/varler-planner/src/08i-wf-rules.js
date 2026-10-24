@@ -15,11 +15,14 @@
 (function(){const add=(kind,t)=>{const L=MRK_TAGS[kind];if(L&&!L.some(x=>x.k===t.k))L.push(t);};
   add('side',{k:'kerulendo',n:'Kerülendő falfelület',pol:'minus'});add('side',{k:'tilos',n:'Tilos — nem véshető felület',pol:'ban'});
   add('side',{k:'gaz',n:'Gázvezeték nyomvonala',pol:'ban'});
+  // T0 (Q2 = A, 2026-10-18): the user's "flow line" as a checkable mark — ×0.5 for the router, no direction, may go unused
+  add('side',{k:'elonyben',n:'Előnyben — ide vezessen a pálya',pol:'plus'});
   add('plane',{k:'sziget',n:'Konyhasziget',pl:'floor',pol:'none'});add('plane',{k:'strang',n:'Lefolyó / strang',pl:'floor',pol:'ban'});})();
 
 // {k, n, sec, kind: 'route'|'wall'|'side'|'zone'|'door'|'window'|'off', tag, pol}
 const RB_PRESETS=[
   {k:'vezetheto',n:'Vezethető fal',sec:'Fal',kind:'route',pol:'plus'},
+  {k:'elonyben',n:'Előnyben (preferált pálya)',sec:'Fal',kind:'side',tag:'elonyben',pol:'plus'},
   {k:'lforma',n:'L-forma oldal',sec:'Fal',kind:'side',tag:'lforma',pol:'plus'},
   {k:'kulso',n:'Külső fal',sec:'Fal',kind:'wall',tag:'homlokzat',pol:'minus'},     // was Belső fal (user, 2026-10-15)
   {k:'kerulendo',n:'Kerülendő',sec:'Fal',kind:'side',tag:'kerulendo',pol:'minus'},

@@ -191,3 +191,6 @@ symbols grey while every class was correct and every test passed.
 - **`GO ALL`** — read `GO-ALL.md` at the repo root and do what it says, as the **primary account in the
   main checkout**: build `dev-all` in its own worktree `wt-dev-all` — every pushed line of work
   (planner-stack, secacc, worktree-codecity, …) merged together so every feature can be tried at once.
+- **`GO WIRE`** — read `GO-WIRE.md` at the repo root (worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack`)
+  and do what it says: the wireway routing rebuild — the dual model, configuration K1 (decisions 2026-10-18, all A),
+  build order T0–T7 from `docs/workflow/WIREWAY_AUDIT_2026-10-18.md`; T0 first, stop at its checkpoint.

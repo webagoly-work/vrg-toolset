@@ -33,6 +33,10 @@ function convert(doc, cfg) {
   (cfg.allowExtra || []).forEach(a => (allowed[a.wall] = allowed[a.wall] || []).push(a.iv));
   const E = prep.endpoints(G, cfg); prep.applyHeights(E); const PT = prep.portals(G, E); prep.portalMembers(G, PT, E); prep.placeInPortals(G, PT, E);
   const R = plan(G, E, PT, cfg, allowed);
+  // T0 / F4: the Planner's engine takes the latch from the door, so each door's handle goes where CLA had its 230 V side
+  PT.forEach(p => { if (p.door.variant == null || prep.doorLatch(p.door, p.axis) === p.latch) return;
+    const o = doc.project.data.openings.find(x => x.id === p.id); if (!o) return; o.variant = (o.variant || 0) ^ 2;
+    report.carried.push(`${p.id}: az ajtó kilincse a CLA kilincsoldalára fordítva`); });
   const P = doc.project, D = P.data, dev = id => D.devices.find(d => d.id === id);
   let seq = +D.seq || 0; const nid = p => p + (++seq);
   // 1. devices: the engine's heights and portal positions become the placed values

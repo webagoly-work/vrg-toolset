@@ -126,7 +126,7 @@ setTimeout(()=>{
   // (no shutter switches / motors, floorLinks, risers, prepared routes, spBoxSize — not in the Planner yet)
   if(fs.existsSync(CLA)){const cfgP=()=>JSON.parse(JSON.stringify(require(path.join(BLD,'cla.config.js'))));
     const conv=require(path.join(BLD,'to-planner.js')).convert(JSON.parse(fs.readFileSync(CLA,'utf8')),cfgP()).doc;
-    w.applyProjectData(w.JSON.parse(JSON.stringify(conv.project)));w.__state.active='ground';w.BL_OPT.cornerAll=true;const pr=w.blRun('ground');w.BL_OPT.cornerAll=false;
+    w.applyProjectData(w.JSON.parse(JSON.stringify(conv.project)));w.__state.active='ground';w.BL_OPT.cornerAll=true;const cg=w.BL_OPT.congest;w.BL_OPT.congest=0;const pr=w.blRun('ground');w.BL_OPT.cornerAll=false;w.BL_OPT.congest=cg;   // the CLI has no congestion term
     const node={geom:require(path.join(BLD,'geom.js')),prep:require(path.join(BLD,'prep.js')),plan:require(path.join(BLD,'plan.js'))};
     const cfg=cfgP(),doc=JSON.parse(fs.readFileSync(CLA,'utf8'));node.prep.applyEdits(doc,cfg);Object.assign(cfg,{shutterSwitch:false,floorLinks:[],risers:[],prepared:[]});delete cfg.spBoxSize;
     const DD=doc.project.data,shu=new Set(DD.devices.filter(d=>d.code==='SHU').map(d=>d.id));DD.devices=DD.devices.filter(d=>!shu.has(d.id));DD.circuits.forEach(c=>c.members=c.members.filter(id=>!shu.has(id)));

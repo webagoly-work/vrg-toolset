@@ -37,7 +37,7 @@ Read in this order:
 | 4 | Set **Elosztó → dedicated endpoint** pairs | T5 |
 | 5 | Set **Elosztó → midpoint / Kötődoboz** pairs | T5 |
 | 6 | **Elosztó → kötőpont → kötőpont string** circuits (V1-style house strings; every KD touched becomes a betáp point) | T5 + rules TR-H (`fig/03` P3) |
-| 7 | **Create or choose from a preset** the list of circuits used (a common set like NV4: only 2 Klíma, plus a custom one) | T4, reusing R1010 M2 presets |
+| 7 | **Create or choose from a preset** the list of circuits used (a common set like CLANV4: only 2 Klíma, plus a custom one) | T4, reusing R1010 M2 presets |
 | 8 | **Master → leader** connections | T5 |
 | 9 | **Leader → tail string sequences** of dugalj devices (least horizontal travel, arcs beside the gerinc) | T6 + TR-S (`fig/04`) |
 | 10 | **Light and switch logic**: leader switch → next switch … → lamp(s), or the **star** via a common point (portal box) | T7 + TR-W (`fig/05`) |
@@ -117,7 +117,7 @@ silently rerouted (CK-3).
 | **T9** | Router | M (~150) | `08p` | T1, T3 | every link → a path on `GP` (via KD, pass-by vs enter); per-edge circuit sets |
 | **T10** | Csőközösség | M (~180) | `08pd-tpo-share.js` | T9 | runs, departures (SR-2), pref / must KD (SR-3), packing + sizing via `BL.rules`, the share table ⏸ |
 | **T11** | Lejátszás | S (~130) | `08pb` | T10 | ▶ Bekötés: circuit-by-circuit animation → composite; reduced-motion → composite at once |
-| **T12** | Engine hand-off | L (~250 + engine) | `tools/baseline/plan.js` + `08ob` | T10 | Pályák / Vezetékek honour `c.topo` (`cfg.topo`); P33 parity ⏸ |
+| **T12** | Engine hand-off | L (~250 + engine) | `tools/baseline/plan.js` + `08ob` | T10 | Pályák / Vezetékek honour `c.topo` (`cfg.topo`); CLA parity ⏸ |
 
 Line counts are estimates of new code only. Each WP file lists the anchors to read, so a session reads ~3–6 k tokens of
 pack plus the named code, not the whole tree.
@@ -129,7 +129,7 @@ pack plus the named code, not the whole tree.
 ```
 Wave A (see)     T0 SEAM → T1 PATH GRAPH → T2 VIEW ⏸
 Wave B (set)     T3 MODEL+RULES ⏸ → T4 SET → T5 FEED/MASTER → T6 CHAIN → T7 SWITCHING → T8 SEED
-Wave C (wire)    T9 ROUTER → T10 SHARING ⏸ → T11 PLAYBACK → T12 ENGINE ⏸ P33
+Wave C (wire)    T9 ROUTER → T10 SHARING ⏸ → T11 PLAYBACK → T12 ENGINE ⏸ CLA
 ```
 
 - **Wave A alone is already useful.** It is the pure viewer: does every point connect, and how is the plan wired
@@ -140,10 +140,10 @@ Wave C (wire)    T9 ROUTER → T10 SHARING ⏸ → T11 PLAYBACK → T12 ENGINE �
 
 | ⏸ | Show | Why |
 |---|---|---|
-| **T2** after build | the P33 v1 planner file (`P33_v1_planner-adat.vplan.json`, local) and the 4-room fixture in the view: Pályák tab, screenshot | the layout is the whole point of a viewer; the user judges readability |
+| **T2** after build | the CLA v1 planner file (`CLA_v1_planner-adat.vplan.json`, local) and the 4-room fixture in the view: Pályák tab, screenshot | the layout is the whole point of a viewer; the user judges readability |
 | **T3** before build | `01_RULES.md` §5–§6, every ⚑ row (core counts, N through switch boxes, branching) | these are trade rules, not mine; T3 encodes them as checks |
-| **T10** after build | the share table for P33, next to the E5 Pályák result for the same circuits | sharing must agree with the engine before the engine is changed |
-| **T12** after build | P33: seeded topology → Pályák / Vezetékek **identical** to today's run (167 legs / 97 boxes); then one hand edit and its diff | parity first, then the new freedom |
+| **T10** after build | the share table for CLA, next to the E5 Pályák result for the same circuits | sharing must agree with the engine before the engine is changed |
+| **T12** after build | CLA: seeded topology → Pályák / Vezetékek **identical** to today's run (167 legs / 97 boxes); then one hand edit and its diff | parity first, then the new freedom |
 
 ---
 
@@ -174,7 +174,7 @@ These are the existing pieces the pack reuses. A WP that rewrites one of them ha
   `rooms`. A device is the endpoint of at most one circuit. The Elosztó and junctions are never endpoints (`cktCanJoin`).
   `c.topo` rides on this record, so **no new top-level collection** is needed.
 - **Presets and sets** live in `08o-cpr.js`: `CPR_CAT` (tiers 1–3), `cprRows()`, export / import as `vrg-elo-presets`,
-  and the bundled NV4 sample `CPR_SAMPLE_NV4` (duplicate keys = several circuits of one type, e.g. 3 × klíma). The
+  and the bundled CLANV4 sample `CPR_SAMPLE_CLANV4` (duplicate keys = several circuits of one type, e.g. 3 × klíma). The
   user's "common set" is exactly this file format. T4 adds counts and a set picker, not a new format.
 - **E4 suggestion** `elpSuggest(boardId)` (08oa) already groups endpoints into circuits by policy. **E1** wrote
   `sw.ctl`, lamp `grp`, `swHead` and the derived `swType`. **E3** gives `jbServicePoints(level)` and `jbMeet(d)`. T8
@@ -192,7 +192,7 @@ These are the existing pieces the pack reuses. A WP that rewrites one of them ha
   - T8 builds `tpoTable` on that same pattern, as the one table T8 and T10 both use. Lifting it into a shared
     `wfTable` is an option for later; it is not required here.
 - **Engine speed** (E5_ENGINE_REVIEW §2): O(V²) Dijkstra, fine at house size. T1 runs one search per anchor, about 150
-  on P33, ≈ 50 ms. Recompute on input-hash change only, never per frame.
+  on CLA, ≈ 50 ms. Recompute on input-hash change only, never per frame.
 
 ---
 

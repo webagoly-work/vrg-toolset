@@ -65,14 +65,24 @@ function portals(G, E) {
     const faces = [];
     G.rooms.forEach(r => r.faces.forEach(f => { if (f.wall !== w.id) return; if (f.horiz !== (axis === 'x')) return;
       if (c >= f.lo - 1 && c <= f.hi + 1) faces.push({ room: r.id, fix: f.fix, face: f }); }));
-    // latch side (+1 = toward larger axis values): where the user's MAINS switches are; else away from the nearer corner
+    // latch side (+1 = toward larger axis values). T0 / F4 (2026-10-18): the DOOR says it — its variant's hinge bit, as the
+    // Planner draws it (05t sugDoor: the handle jamb is opposite the hinge, at c + hd·w·d) and as its slots sit (08g). Before,
+    // the engine voted on the switches and missed the Planner's L4 slot by 1,1–2,8 m on 9 of 11 Domoszló doors. A sketch
+    // door without a variant keeps the old rule: where the user's MAINS switches are, else away from the nearer corner.
+    // cfg.latchFrom = 'switches' keeps that old rule for every door (CLA v1 as delivered, like cornerBoxes 'all').
     const sw = E.filter(e => e.role === 'sys:MAINS' && e.code === 'SWI' && e.face && e.face.wall === w.id && Math.abs(e.u - c) <= half + 800);
-    let latch = 0;
-    if (sw.length) { const s = sw.reduce((a, e) => a + Math.sign(e.u - c), 0); latch = s >= 0 ? 1 : -1; }
-    else { const f = faces[0] && faces[0].face, dLo = f ? (c - half) - f.lo : 1e9, dHi = f ? f.hi - (c + half) : 1e9; latch = dLo < dHi ? 1 : -1; }
-    return { id: o.id, door: o, wall: w.id, axis, c, half, mid, thk: w.thk, faces, latch, exterior: faces.length < 2 };
+    let vote = 0;
+    if (sw.length) { const s = sw.reduce((a, e) => a + Math.sign(e.u - c), 0); vote = s >= 0 ? 1 : -1; }
+    else { const f = faces[0] && faces[0].face, dLo = f ? (c - half) - f.lo : 1e9, dHi = f ? f.hi - (c + half) : 1e9; vote = dLo < dHi ? 1 : -1; }
+    const byDoor = o.variant != null && (CFG || {}).latchFrom !== 'switches', latch = byDoor ? doorLatch(o, axis) : vote;
+    return { id: o.id, door: o, wall: w.id, axis, c, half, mid, thk: w.thk, faces, latch, latchFrom: byDoor ? 'door' : (sw.length ? 'switches' : 'corner'),
+      voteLatch: sw.length ? vote : null, exterior: faces.length < 2 };
   }).filter(Boolean);
 }
+
+// the handle (latch) jamb's direction along the wall axis: +1 = toward larger x / y (05t sugDoor, 06a ptDoorGeo)
+function doorLatch(o, axis) { const hd = ((o.variant || 0) & 2) ? -1 : 1, a = o.ang || 0, d = axis === 'x' ? Math.cos(a) : Math.sin(a);
+  return Math.sign(hd * d) || 1; }
 
 // which endpoints belong to which portal (on the door's wall, within 800 of the opening edge, the "portal codes")
 const PORTAL_CODES = e => (e.role === 'sys:MAINS' && (e.code === 'SWI' || e.code === 'SOC')) ||
@@ -158,4 +168,4 @@ function applyEdits(doc, cfg) {
   cfg._ids = ids;
 }
 
-module.exports = { applyEdits, kindsOf, isWet, endpoints, applyHeights, portals, portalMembers, placeInPortals, codeOf };
+module.exports = { applyEdits, kindsOf, isWet, endpoints, applyHeights, portals, doorLatch, portalMembers, placeInPortals, codeOf };

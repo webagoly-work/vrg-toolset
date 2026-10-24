@@ -53,5 +53,5 @@ left to right and up-to-down the devices upstream, mid, and downstream."*
 4. The rendered `#tpoRoot` has one `<g data-id>` per anchor and one `<path data-e>` per edge.
 5. Golden identical.
 
-**⏸ after build:** show the user the P33 planner file and a 4-room fixture in the Pályák tab (screenshots). The layout
+**⏸ after build:** show the user the CLA planner file and a 4-room fixture in the Pályák tab (screenshots). The layout
 is judged by eye; adjust the column and lane rules from their remarks before T3.

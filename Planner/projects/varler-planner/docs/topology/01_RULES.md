@@ -188,7 +188,7 @@ A check row click selects the element in the view and on the blueprint.
 | socket, no mid in its room linked by the user | classic chain (TR-S2, TR-S3) |
 | socket, a mid master already linked | the chain from that mid |
 | lighting `vil` | the V1 string through the mids of the rooms it serves (TR-H4); per group `jbMeet` master; star / chain by TR-L4 |
-| `szobakor` (NV4: sockets + lighting in one circuit) | the socket chain and the room's group, both from the room's mid if one exists, else from B |
+| `szobakor` (CLANV4: sockets + lighting in one circuit) | the socket chain and the room's group, both from the room's mid if one exists, else from B |
 
 Every seeded link has `fix:false`. The suggestion ends in `wfTable`, with one row per circuit: *"A1 · lánc 4 dugalj ·
 leader S1 · Miért: TR-S3"*.

@@ -55,3 +55,10 @@ Az ADATRETEG-Q-001 válaszai után (2026-10-12, 2. kör):
 - Feliratok: az egy helyen álló pontok közös feliratot kapnak („K3 · K3b · K3c”). A ferde vonalak és a vezetővonalak is védenek a feliratok ellen.
 
 Adat/PoE réteg (2026-10-12, alapértékek — mind kérdés az `ADATRETEG-Q-001`-ben): Cat6A, minden port saját kábel; a végpont a legközelebbi RBX-be (silver rail), az RBX 2× Cat6A-val a BASE-be; vízszintes sáv 2700, a gerinc fölött; csövenként legfeljebb 4 Cat6A, legalább M20; elágazó doboz, ahol a cső szétválik, húzódoboz 2 falsarok után; portál mellett elhaladva nem megy a dobozba, falon át csak a fészken (H0).
+
+Pálya-szabályok T0 (2026-10-18, `docs/workflow/WIREWAY_AUDIT_2026-10-18.md` 5. rész):
+- A hosszak geometriaiak: a keresés súlyai (jelöletlen ×4, kerülendő ×2, előnyben ×0,5) a mennyiségekbe nem kerülnek.
+- A Szabályok jelölései felületenként: tiltó (tilos, gáz, kémény, vizes, gépészet, strang) = ott nincs pálya; kerülendő ×2; **előnyben** ×0,5. A jelöletlen fal a leágazónak is csak végső eset.
+- A kilincsoldal az ajtóból jön (`door.variant`), ugyanabból a helytáblából, amit a Planner rajzol (`PT_SLOTS` = `PORTAL_SLOTS`). `latchFrom: 'switches'` a régi szavazás (CLA v1).
+- Minden bekötetlen végpont hiba, okkal; hiba esetén a felrajzolás csak megerősítéssel megy. A `R.report` a Pálya-ellenőrzés adatai.
+- A leállás-csoportok és a csőkiosztás nem függ a végpontok sorrendjétől.

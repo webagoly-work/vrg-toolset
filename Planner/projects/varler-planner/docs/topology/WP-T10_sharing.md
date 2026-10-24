@@ -14,7 +14,7 @@ place them, and they act as preferred or mandatory points)."*
   `cableMm2`, `loadedCores`)
 - `tools/baseline/plan.js` §9 `pack` / `nMaxOf` (≈ lines 250–275): **reuse this logic, do not re-derive it**. If it is
   not reachable from outside `plan()`, lift `pack` + `nMaxOf` into `rules.js` as `packPipes(cables, per, cfg, circuits)`
-  and make plan.js call it. The P33 parity spec-98 must stay byte-identical.
+  and make plan.js call it. The CLA parity spec-98 must stay byte-identical.
 - `08p` (T9)
 
 ## Build (`src/08pd-tpo-share.js`)
@@ -45,9 +45,9 @@ place them, and they act as preferred or mandatory points)."*
 2. A departure 400 mm from a `pref` KD → moved into the KD, with no CK-7. At 900 mm it stays open, and CK-7 gives one
    suggested KD.
 3. Alkalmaz on the suggestion → one new junction with `gen:'tpo'`; the next run has no open departure.
-4. `packPipes`, lifted: spec-98's P33 parity is still byte-identical.
+4. `packPipes`, lifted: spec-98's CLA parity is still byte-identical.
 5. More than 3 corners on a run → a pull box in the run list, as E5-Q4 B does.
 
-**⏸ after build:** run the P33 planner file with the T8 seed. Put the share table next to the E5 Pályák result:
+**⏸ after build:** run the CLA planner file with the T8 seed. Put the share table next to the E5 Pályák result:
 circuits per stretch, pipe counts and sizes. Every difference is listed with the rule that causes it (Q-T02 arcs and
 Q-T15 distribution sharing are the expected ones). The user decides before T12 changes the engine.

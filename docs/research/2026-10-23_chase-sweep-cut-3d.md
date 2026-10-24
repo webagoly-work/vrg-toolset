@@ -87,17 +87,17 @@ In `Planner/projects/varler-planner` (uncommitted):
 - **`tests/spec-108-chase-project.js`**: 23 checks (model = drawing, exact union, corner dedupe, coincident runs,
   hidden layer, BOM, report).
 
-Rules decided while building (on P33 data):
+Rules decided while building (on CLA data):
 - **Priced metres come from the union, not the section sum.** The stack layers lay several conduits on one line,
-  and on P33 baseline the section sum is 297.6 m against 150.1 m of real chase. The sum stays visible in the report
+  and on CLA baseline the section sum is 297.6 m against 150.1 m of real chase. The sum stays visible in the report
   ("Szakaszok összege").
 - **A corner run or box is counted once**, on the wall it sits closest to.
-- **Hidden layers are off**, as in `05t-needs`. The P33 file carries the hidden original sketch ("Vázlat — kézi
+- **Hidden layers are off**, as in `05t-needs`. The CLA file carries the hidden original sketch ("Vázlat — kézi
   vonalak", 106 m of sunk routes), which would otherwise be priced.
-- Sunk sections on no wall (floor/ceiling) are reported as "Falon kívül", never priced as wall chasing. P33: 37.1 m.
+- Sunk sections on no wall (floor/ceiling) are reported as "Falon kívül", never priced as wall chasing. CLA: 37.1 m.
 - Debris uses 1600 kg/m³ (tégla) until CH-Q2 is answered, and appears only in the report (CH-Q3 open).
 
-P33 baseline (`P33_teszt_v1_m_solat_alapreteg`): **150.1 m** wall chase 32×30, pockets 161 × 72, 92 × 144,
+CLA baseline (`CLA_teszt_v1_m_solat_alapreteg`): **150.1 m** wall chase 32×30, pockets 161 × 72, 92 × 144,
 4 × 204, 1 × 154, 270 l removed, ≈ 432 kg. The 2026-10-12 takeoff (`MENNYISEGEK.md`) has 32.1 + 45.3 + 68.5 =
 **145.9 m**, so we're +2.9 %. That is about what the square caps at free run ends (w/2 each) add. It was not reconciled
 run by run.
