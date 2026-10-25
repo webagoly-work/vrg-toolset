@@ -2,6 +2,7 @@
 // build.js — VRG Kódváros: one offline HTML page from src/ + Vendor/three.
 //
 //   node CodeCity/build.js            -> dist/vrg-codecity.html (empty; opens a city.json)
+//     the empty page first tries vrg-codecity.data.js beside it (scan.js --js): this repo, the default view
 //   require('./build.js').buildPage(city)  -> the same page with that city inside (scan.js --html)
 //
 // Same recipe as Planner/projects/client-preview/build.js: three.module.min.js runs in its own
@@ -41,6 +42,8 @@ function buildPage(city) {
   return fs.readFileSync(path.join(srcDir, 'shell.html'), 'utf8')
     .replace('/*__CSS__*/', () => fs.readFileSync(path.join(srcDir, 'city.css'), 'utf8'))
     .replace('/*__CITY__*/null', () => data)
+    // a missing data file is just a failed classic script: the page falls back to the drop zone
+    .replace('<!--__DEFAULT__-->', city ? '' : '<script src="vrg-codecity.data.js"></script>')
     .replace('/*__SCRIPT__*/', () => script);
 }
 module.exports = { buildPage };

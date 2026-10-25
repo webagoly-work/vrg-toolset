@@ -96,6 +96,7 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 node tools/fetch-vendor.js three                       # once: three.js into Vendor/
 node CodeCity/scan.js <repo> --html CodeCity/dist/<name>.html
 node CodeCity/build.js                                 # the empty template that opens a *.city.json
+node CodeCity/scan.js . --js CodeCity/dist/vrg-codecity.data.js  # this repo as the template's default view (START.cmd K runs it on open)
 node CodeCity/tools/shot.js "CodeCity/dist/<name>.html#pick=0.45,0.6"   # headless check incl. picking
 node CodeCity/tools/selftest.js                        # scanner, sessions privacy, MCP server (23 checks)
 node CodeCity/scan.js <repo> --tour tours.json --html … # bake exported Városnézés tours into the page

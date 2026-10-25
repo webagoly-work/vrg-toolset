@@ -2,7 +2,7 @@
 // scan.js — read a git repository into city.json, the data behind VRG Kódváros.
 //
 //   node CodeCity/scan.js [repo=.] [--out file.city.json] [--html page.html] [--tour tours.json] [--all]
-//                         [--sessions [--sessions-dir <transcript folder>]]
+//                         [--js data.js] [--sessions [--sessions-dir <transcript folder>]]
 //
 // Two git calls: `git ls-files` for what exists now, and one `git log --numstat --summary -M`
 // walked oldest -> newest. Renames are followed, so a file keeps ONE id through its whole life;
@@ -11,13 +11,15 @@
 // Binary files and files over 2 MB are left out unless --all.
 // --sessions (opt-in, CITY-D7): agent-session replay from the local Claude Code transcripts — file
 // paths, read/search/edit and timestamps only (sessions.js says exactly what is kept).
+// --js: the city as a script that sets window.CITY. dist/vrg-codecity.data.js is the one the empty
+// template loads on open, so START.cmd K shows this repo without a file picker.
 'use strict';
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 
 const argv = process.argv.slice(2);
 const opt = k => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : null; };
 const flag = k => argv.includes(k);
-const REPO = path.resolve(argv.find((a, i) => !a.startsWith('--') && !['--out', '--html', '--tour', '--sessions-dir'].includes(argv[i - 1])) || '.');
+const REPO = path.resolve(argv.find((a, i) => !a.startsWith('--') && !['--out', '--html', '--js', '--tour', '--sessions-dir'].includes(argv[i - 1])) || '.');
 const ALL = flag('--all');
 const MAX_BYTES = 2 * 1024 * 1024;
 
@@ -202,6 +204,12 @@ const live = outFiles.filter(f => !f.gone).length;
 console.log(`${city.repo.name}@${head}: ${commits.length} commits, ${authors.length} authors, ${live} files (+${outFiles.length - live} gone), ` +
   `${commits.filter(c => c[2] >= 0).length} agent commits, ${edges} import roads, ${skipped} skipped -> ${path.relative(process.cwd(), out)}`);
 
+if (opt('--js')) {
+  fs.mkdirSync(path.dirname(path.resolve(opt('--js'))), { recursive: true });
+  fs.writeFileSync(opt('--js'), `window.CITY = window.CITY || ${JSON.stringify(city)};
+`);
+  console.log(`data -> ${opt('--js')}`);
+}
 if (opt('--html')) {
   const page = require('./build.js').buildPage(city);
   fs.mkdirSync(path.dirname(path.resolve(opt('--html'))), { recursive: true });

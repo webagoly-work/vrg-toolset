@@ -86,6 +86,9 @@ setlocal EnableDelayedExpansion
 ::  (VRG Kodvaros, branch worktree-codecity). Board Console stays on U).
 ::
 ::  2026-10-24 - consolidated into main (GO MAIN); no tool moved.
+::
+::  2026-10-25 - tool 11 (K) opens on this repo by default: OPEN_TOOL rescans it
+::  into CodeCity\dist\vrg-codecity.data.js, which the empty page loads. Path unchanged.
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -304,6 +307,14 @@ goto MENU
 set "TNAME=!T%PICKNUM%_NAME!"
 set "TPATH=!T%PICKNUM%_PATH!"
 set "TFULL=%ROOT%\%TPATH%"
+
+:: Tool 11 (Kodvaros) opens on this repo: refresh the data file its empty page
+:: loads first (CodeCity\dist\vrg-codecity.data.js, scan.js --js). No Node or
+:: git -> the last scan stays, or the page shows its file picker.
+if "%PICKNUM%"=="11" if exist "%NODE_EXE%" (
+    echo   Kodvaros: a repo beolvasasa...
+    "%NODE_EXE%" "%REPO%\CodeCity\scan.js" "%REPO%" --js "%REPO%\CodeCity\dist\vrg-codecity.data.js" >nul || echo   Kodvaros: a beolvasas nem sikerult, a legutobbi adat marad.
+)
 
 if not exist "%TFULL%" (
     echo.

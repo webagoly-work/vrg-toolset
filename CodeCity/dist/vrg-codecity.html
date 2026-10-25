@@ -164,7 +164,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   <div id="hud" aria-live="off"></div>
   <div id="drop" hidden>
     <p>Húzd ide a <code>*.city.json</code> fájlt, vagy válaszd ki a <b>Megnyitás…</b> gombbal.</p>
-    <p class="hint">Készítése: <code>node CodeCity/scan.js &lt;mappa&gt;</code></p>
+    <p class="hint">Készítése: <code>node CodeCity/scan.js &lt;mappa&gt;</code> · a saját repó alapnézete: <code>node CodeCity/scan.js . --js CodeCity/dist/vrg-codecity.data.js</code> (a START.cmd K ezt magától frissíti)</p>
   </div>
   <div id="tip" hidden></div>
   <aside id="panel" hidden></aside>
@@ -190,6 +190,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   </div>
 </main>
 <script>window.CITY = null;</script>
+<script src="vrg-codecity.data.js"></script>
 <script type="module">/* three.js r169 (npm three@0.169.0) — https://threejs.org
    The MIT License — Copyright © 2010-2024 three.js authors */
 const THREE=(()=>{
