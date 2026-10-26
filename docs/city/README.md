@@ -127,3 +127,48 @@ until that list is done.
   Munkanapló, refresh / "Mi változott?", personal links, tour, glossary and helper actions are parked
   in `CodeCity/from-kapu/` (sources, data, tests; README there with first ideas). The plan for
   bringing them in is for its own thread — start from that README.
+
+### 7.1 Metaphor ideas (2026-10-26, ranked, not WPs yet)
+
+Ranked by use for our own work, not by looks. 1–4 are cheap: their data is already in the repo, and
+each catches a mistake this repo has made before. Turn them into WPs only with the user.
+
+**Shows what is invisible today**
+
+1. **City gates = START.cmd.** Each registered tool is a gate in the wall with a road to its page. A
+   tool page with no road to a gate is unregistered (it does not exist for the user); a gate whose
+   road ends in nothing is a broken entry. `tools/check-start.js` as a picture.
+2. **Underground pipes = builds.** Pipes from the Planner / Inventory / Kapu / Kódváros sources to
+   their `dist/` output; a source newer than its build floods the basement (stale build).
+3. **Power plant = `Vendor/`.** One plant per vendored library, power lines to the files that use it;
+   a sign with its licence (MIT, BSD-3) and tag pin, red when pinned to a branch (`vendor-manifest.json`).
+4. **Building sites = the GO plans.** Each `GO-*.md` is a fenced site over the files it touches, with
+   a progress board from its WP table; parked plans are boarded up.
+5. **Construction fences and live traffic, from Kapu.** Kapu's claims fence the claimed buildings so
+   two sessions do not build on the same plot; a live mode (Kapu's companion server) drives a car to
+   each building a Claude session is reading or editing now — sessions are only replayed today.
+   This is where `CodeCity/from-kapu/` comes in; plan it from that README.
+
+**Health as weather and wear**
+
+6. **Smoke from chimneys** — TODO / FIXME / HACK counts per file (a grep in `scan.js`).
+7. **Cracked facades** — very long functions or deep nesting; a rough count is enough.
+8. **Weather over a district** — storm when its selftests fail, clear when they pass, fog where
+   there are no tests.
+9. **Traffic jams** — circular imports as a glowing road loop; much-imported files get wider roads.
+
+**Reading the city**
+
+10. **Zoning lens (Övezet)** — shipped HTML tools commercial, `tools/` industrial, docs residential,
+    data and fixtures parks.
+11. **City hall** — CLAUDE.md and the codephrases as a notice board in the centre; a codephrase
+    flies to its building site.
+12. **Morning newspaper** — Kapu's "Mi változott?" and Munkanapló as a front page on open:
+    yesterday's commits, new buildings, demolitions, the hottest street.
+13. **Museum district outside the walls** — archive tags (`archive/2026-10-24/planner-*-wip`) as
+    boarded-up buildings: what is parked and where.
+14. **Warehouses** — the files the scan skips (binaries, > 2 MB) as a warehouse row, so they do not
+    silently vanish.
+
+**Looks only — for the Claude Design batch:** seasons by repo age, a day/night cycle on the real
+clock, street names from the Kapu glossary.
