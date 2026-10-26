@@ -127,7 +127,10 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
   Spotify API, no login.
 - **KV-21 download approved** (user, 2026-10-26): .NET SDK **10.0.403** win-x64 zip (released 2026-10-25, runtime
   10.0.14, security release, ~300 MB) from builds.dotnet.microsoft.com; check its SHA-512 against
-  `release-metadata/10.0/releases.json`, unzip into `Planner/apps/dotnet` (gitignored). Not downloaded yet.
+  `release-metadata/10.0/releases.json`, unzip into `Planner/apps/dotnet` (gitignored). **Done 2026-10-26 (KV-21):** SHA-512
+  matched, unpacked. The zip has no runtime pack, so a truly self-contained publish needs one more download
+  (Microsoft.NETCore.App.Runtime.win-x64 10.0.14 from nuget.org, not asked yet); until then vrg-probe.exe is
+  framework-dependent and runs on Planner/apps/dotnet's own runtime (the segéd sets DOTNET_ROOT) — no admin, no install.
 - CITY-D17 **A** (user, 2026-10-26, before P11) — nothing elevated until P11; then one read-only vrg-etw.exe started by a
   scheduled task the user creates from written steps (Claude never creates it).
 - CITY-D19 **A** (user, 2026-10-26, before P12) — the user applies the 21H2 → 22H2 enablement package; write the steps first.
@@ -142,7 +145,8 @@ node CodeCity/scan.js <repo> --html CodeCity/dist/<name>.html
 node CodeCity/build.js                                 # the empty template that opens a *.city.json
 node CodeCity/scan.js . --js CodeCity/dist/vrg-codecity.data.js  # this repo as the template's default view (START.cmd K runs it on open)
 node CodeCity/tools/shot.js "CodeCity/dist/<name>.html#pick=0.45,0.6"   # headless check incl. picking
-node CodeCity/tools/selftest.js                        # scanner, sessions privacy, MCP server, companion (32 checks)
+node CodeCity/tools/selftest.js                        # scanner, sessions privacy, MCP server, companion, specs (65 checks)
+node CodeCity/tools/build-probe.js                     # vrg-probe.exe (P10) with the portable SDK in Planner/apps/dotnet, offline
 node CodeCity/companion.js                             # live mode: the city on http://localhost:8797 with local actions (START.cmd K → S)
 node tools/fetch-vendor.js node-pty xterm xterm-fit    # once: the embedded terminal (else Terminál itt opens an outside window)
 node CodeCity/scan.js <repo> --tour tours.json --html … # bake exported Városnézés tours into the page
@@ -323,3 +327,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-18 ✔ 2026-10-26 57e8a07
 - KV-19 ✔ 2026-10-26 3fe20ea (the real USB-stick check is the user's step — wp/p08-land.md)
 - KV-20 ✔ 2026-10-26 1bec540
+- KV-21 ✔ 2026-10-26 (this commit) — framework-dependent until the runtime pack is fetched (§5)

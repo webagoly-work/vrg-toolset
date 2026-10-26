@@ -111,6 +111,14 @@ if (window.CITY) {
       jobEvent({ id: 'codecity-selftest', name: 'Kódváros selftest', kind: 'test', state: fail ? 'hiba' : 'kész', code: fail ? 1 : 0, district: 'CodeCity' });
       hlRibbon();
     }
+    // test hook: #appstest=open|close — Paint opens in front of Explorer (a construct rises), or opens and closes again
+    // (it dissolves); instant, and <body data-apps="key:up|dissolving …"> says what stands (no segéd needed)
+    if (q.get('appstest')) {
+      window.KV_INSTANT = true; landHome(0);
+      powerEvent({ at: Date.now(), cpu: 20, ramMB: 16250, ramFreeMB: 8000, disk: 10, rx: 1e4, tx: 1e3, gpu: 3 });
+      appsEvent({ state: 'on', list: [{ key: 'explorer.exe', name: 'Windows Explorer', n: 2, fg: false }, { key: 'mspaint.exe', name: 'Paint', n: 1, fg: true }] });
+      if (q.get('appstest') === 'close') setTimeout(() => appsEvent({ state: 'on', list: [{ key: 'explorer.exe', name: 'Windows Explorer', n: 2, fg: true }] }), 200);
+    }
     // test hook: #nettest=up|down feeds one power sample and a station/border/shore state (no segéd needed)
     if (q.get('nettest')) {
       const up = q.get('nettest') === 'up';

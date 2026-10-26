@@ -50,11 +50,11 @@ checkout**, with its own login.
 
 ## 3b. State at the handoff (2026-10-26, primary account → secondary account)
 
-- **Done: P0–P9 + P2's embedded terminal** (KV-01 … KV-20), all on `main`, not pushed. README §8 has the table and
-  the done list; `docs/city/wp/` has a stub per phase with its status and notes. Selftest: 61 checks, all green
+- **Done: P0–P9 + P2's embedded terminal** (KV-01 … KV-20) + **KV-21** (2026-10-26, primary account), all on `main`, not pushed. README §8 has the table and
+  the done list; `docs/city/wp/` has a stub per phase with its status and notes. Selftest: 65 checks, all green
   (`node CodeCity/tools/selftest.js`).
-- **Next: KV-21** (P10 sidecar). The download is already approved: .NET SDK 10.0.403 (details in README §5) — do not
-  ask again, just verify the SHA-512 and unzip into `Planner/apps/dotnet`. Then KV-22, KV-23 (D17 = A: write the
+- **Next: KV-22** (P10 stadium, sound towers, devices). The SDK is in `Planner/apps/dotnet`; rebuild the probe with
+  `node CodeCity/tools/build-probe.js` (offline). Self-contained needs the runtime pack from nuget.org — ask first (README §5). Then KV-23 (D17 = A: write the
   scheduled-task steps, never create the task), KV-24 … (P12 needs the user's 22H2 first — D19 A: write the steps).
   Only CITY-D26 is still open (before P13). P3b (VS Code extension, CITY-D9 D) is planned but has no KV prompt yet.
 - **Live mode:** START.cmd → K → S) Élő mód starts `CodeCity/companion.js` on http://localhost:8797. It also runs the

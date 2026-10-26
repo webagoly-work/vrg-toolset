@@ -76,6 +76,11 @@
 // the DNS cache name of the busiest outside address of the moment — memory only, shown blurred (CITY-D27 A).
 // Removable drives and their write rate come with the power sample (USB-falu).
 //
+// Probe sidecar (P10, KV-21; Tier A, unelevated, read-only; CITY-D18 A): while a page listens, CodeCity/probe's
+// vrg-probe.exe (C#, JSON lines on stdio; node CodeCity/tools/build-probe.js) reports the taskbar's windows through
+// SetWinEventHook; it is restarted with a growing wait when it dies, and stopped 30 s after the last page left.
+// The stream gets 'apps': one entry per program (exe, product name, window count, foreground) — no window title.
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -141,6 +146,8 @@ function loadConfig() {
     agentsCmd: user.agentsCmd || [firstExisting([path.join(apps, 'node', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe'),
       process.env.APPDATA && path.join(process.env.APPDATA, 'npm', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe')].filter(Boolean)) || 'claude', 'agents', '--json'],
     transcripts: user.transcripts || null,
+    // vrg-probe (KV-21): a config can name another command (the specs use a fake probe)
+    probeCmd: user.probeCmd || null,
     downloads: user.downloads || path.join(process.env.USERPROFILE || os.homedir(), 'Downloads'),
     // Claude Code needs Git Bash on Windows; the user-level value may point to a folder that is gone
     gitBash: user.gitBash || (exists(process.env.CLAUDE_CODE_GIT_BASH_PATH || '') ? process.env.CLAUDE_CODE_GIT_BASH_PATH
@@ -722,6 +729,64 @@ function powerStart() {
 }
 function powerStop() { if (power.child) { try { power.child.kill(); } catch (e) { /* gone */ } power.child = null; } }
 process.on('exit', powerStop);
+// ---- Tier A: vrg-probe.exe, the open programs (a C# sidecar, while a page listens; restarted when it dies)
+const PROBE_EXE = path.join(CITY, 'probe', 'bin', 'publish', 'vrg-probe.exe'), DOTNET_ROOT = path.join(REPO, 'Planner', 'apps', 'dotnet');
+const probe = { child: null, want: false, timer: null, fails: [], wins: new Map(), fg: 0, state: 'off', sig: '', emitTimer: null };
+function probeStart() {
+  probe.want = true;
+  if (probe.child || probe.timer || DRY) return;
+  const cmd = CFG.probeCmd || (exists(PROBE_EXE) ? [PROBE_EXE] : null);
+  if (!cmd) { probe.state = 'missing'; return probeSoon(); }
+  const child = spawn(cmd[0], cmd.slice(1), { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true,
+    env: Object.assign({}, process.env, { DOTNET_ROOT, DOTNET_CLI_TELEMETRY_OPTOUT: '1' }) });
+  let buf = '';
+  child.stdout.on('data', d => { buf += d; let k; while ((k = buf.indexOf('\n')) >= 0) { const l = buf.slice(0, k).trim(); buf = buf.slice(k + 1);
+    try { probeHandle(JSON.parse(l)); } catch (e) { /* skip */ } } });
+  child.on('exit', () => {
+    if (probe.child !== child) return;
+    probe.child = null; probe.wins.clear(); probe.fg = 0; probe.state = 'off'; probeSoon();
+    if (!probe.want) return;
+    // died on its own: back again after 1, 2, 4 … 30 s (more crashes in the last minute = a longer wait)
+    const now = Date.now(); probe.fails = probe.fails.filter(t => now - t < 60000).concat(now);
+    probe.timer = setTimeout(() => { probe.timer = null; if (probe.want) probeStart(); }, Math.min(30000, 1000 * 2 ** (probe.fails.length - 1)));
+  });
+  child.on('error', () => {});
+  probe.child = child;
+}
+function probeStop() {
+  probe.want = false; clearTimeout(probe.timer); probe.timer = null;
+  if (probe.child) { const c = probe.child; probe.child = null; try { c.stdin.end(); c.kill(); } catch (e) { /* gone */ } }
+  probe.wins.clear(); probe.fg = 0; probe.state = 'off';
+}
+process.on('exit', probeStop);
+function probeHandle(m) {
+  if (m.t === 'hello') { probe.state = 'on'; probe.wins.clear(); }
+  else if (m.t === 'windows') { probe.wins.clear(); for (const w of m.list || []) probe.wins.set(w.h, w); }
+  else if (m.t === 'open') probe.wins.set(m.h, m);
+  else if (m.t === 'close') probe.wins.delete(m.h);
+  else if (m.t === 'fg') probe.fg = m.h;
+  else return;
+  probeSoon();
+}
+// one construct per program (exe): its name, how many windows, whether it has the foreground — no window title ever
+function probeApps() {
+  const by = new Map();
+  for (const w of probe.wins.values()) {
+    const key = String(w.exe || '?').toLowerCase();
+    const a = by.get(key) || { key, name: String(w.name || w.exe || '?').slice(0, 60), n: 0, fg: false };
+    a.n++; if (w.h === probe.fg) a.fg = true;
+    by.set(key, a);
+  }
+  return { state: probe.state, list: [...by.values()].sort((a, b) => a.key < b.key ? -1 : 1) };
+}
+function probeSoon() {
+  if (probe.emitTimer) return;
+  probe.emitTimer = setTimeout(() => {
+    probe.emitTimer = null;
+    const apps = probeApps(), sig = JSON.stringify(apps);
+    if (sig !== probe.sig) { probe.sig = sig; liveEmit('apps', apps); }
+  }, 120);
+}
 // ---- Pályaudvar, Határ, shoreline
 const net = { hops: null, tracing: false, state: null, timer: null, devices: 0, docks: [], countries: [], dbip: undefined, sig: '' };
 const PORTS = (() => { try { return JSON.parse(fs.readFileSync(path.join(CITY, 'ports.json'), 'utf8')).docks; } catch (e) { return [{ id: 'other', name: 'Egyéb', ports: [] }]; } })();
@@ -784,8 +849,8 @@ function netConnections(netstat) {
   net.countries = [...cc].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([c, n]) => ({ cc: c, n }));
 }
 function netStart() {
-  powerStart();
-  if (!net.timer) { net.timer = setInterval(() => { if (!live.clients.size) { if (!net.idle) net.idle = Date.now(); else if (Date.now() - net.idle > 30000) powerStop(); return; } net.idle = 0; powerStart(); netProbe(); }, 10000); net.timer.unref(); }
+  powerStart(); probeStart();
+  if (!net.timer) { net.timer = setInterval(() => { if (!live.clients.size) { if (!net.idle) net.idle = Date.now(); else if (Date.now() - net.idle > 30000) { powerStop(); probeStop(); } return; } net.idle = 0; powerStart(); probeStart(); netProbe(); }, 10000); net.timer.unref(); }
   netProbe();
 }
 
@@ -1021,6 +1086,7 @@ const server = http.createServer((req, res) => {
     cargoStart();
     if (power.last) res.write('event: power\ndata: ' + JSON.stringify(power.last) + '\n\n');
     if (net.state) res.write('event: net\ndata: ' + JSON.stringify(net.state) + '\n\n');
+    if (probe.sig) res.write('event: apps\ndata: ' + probe.sig + '\n\n');
     res.write('event: pipes\ndata: ' + JSON.stringify({ list: pipesList() }) + '\n\n');
     live.clients.add(res);
     agentsStart();

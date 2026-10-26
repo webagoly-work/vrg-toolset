@@ -119,6 +119,7 @@ function liveConnect() {
   live.es.addEventListener('power', e => { if (liveMine()) powerEvent(JSON.parse(e.data)); });   // 30-power: Erőmű
   live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
   live.es.addEventListener('cargo', e => { if (liveMine()) cargoEvent(JSON.parse(e.data)); });   // 31-flows: ships and planes
+  live.es.addEventListener('apps', e => { if (liveMine()) appsEvent(JSON.parse(e.data)); });   // 33-apps: open programs (vrg-probe)
   live.es.onerror = () => { $('live-dot').hidden = true; };
 }
 function liveFsEvent(d) {
