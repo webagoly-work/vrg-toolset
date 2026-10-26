@@ -109,7 +109,15 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
   then opt-in.
 - CITY-D27 **A** — window titles, outside paths, IPs, DNS and device names stay in memory only, with a
   blur mode; nothing persisted.
-- Still open (asked in later prompts): CITY-D17–D26, D28.
+- CITY-D23 **A** (user, 2026-10-26, before P8) — no packet capture: NIC counters + the TCP table + DB-IP Lite;
+  exact bytes only via Tier B, if ever.
+- CITY-D24 **A for now** (user, 2026-10-26) — no router change: NIC counters, tracert, ARP. The user wants to flash
+  OpenWrt anyway: its own thread, codephrase `GO OPENWRT` (`GO-OPENWRT.md`); after that, re-ask D24 as C
+  (read-only router telemetry).
+- CITY-D28 **A** (user, 2026-10-26) — stay on three.js r169; upgrade only when a feature needs it (globe.gl: r179+).
+- **Tárház / H: walk** (user, 2026-10-26, KV-17): memory only, rescanned when the city opens — CITY-D27 A holds;
+  KV-17's "cached H: walker" is not built as a cache.
+- Still open (asked in later prompts): CITY-D17–D22, D25, D26.
 
 ## 6. Use
 
