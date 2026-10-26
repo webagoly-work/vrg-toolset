@@ -194,6 +194,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 8px 12px; font-size: 12px; }
 #landinfo h3 { margin: 0 0 6px; font-size: 13px; color: var(--accent); } #landinfo h4 { margin: 10px 0 4px; font-size: 12px; font-weight: normal; color: var(--dim); }
 #landinfo b { color: var(--text); font-weight: normal; } #landinfo .blur { filter: blur(4px); user-select: none; }
+#landinfo .warn { color: #ffb300; }
 #landinfo .btn { font-size: 11px; padding: 0 8px; margin-left: 6px; }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */

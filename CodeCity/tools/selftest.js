@@ -114,6 +114,10 @@ try {
   const mts = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-metro.js')], { encoding: 'utf8', timeout: 90000 });
   for (const l of String(mts.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
   check(mts.status === 0, `metro spec exit ${mts.status}`);
+  // cargo (P8, KV-19): a 100 MB browser download and a small .exe through a fixture Downloads folder
+  const cgs = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-cargo.js')], { encoding: 'utf8', timeout: 90000 });
+  for (const l of String(cgs.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
+  check(cgs.status === 0, `cargo spec exit ${cgs.status}`);
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
   else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }

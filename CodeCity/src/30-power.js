@@ -80,6 +80,7 @@ function pwDraw() {
       });
     }
   }
+  flUsbDraw();   // 31-flows: USB-falu
   pw.group.traverse(o => { o.raycast = () => {}; });
   world.group.add(pw.group);
   requestRender();
@@ -96,5 +97,5 @@ function pwPanelHtml() {
       (n.docks.length ? `<div><b>Part</b> <span class="dim">${n.docks.map(d => esc(d.name) + ' ' + d.n).join(' · ')}</span></div>` : '') +
       (n.countries.length ? `<div class="dim">Országok: ${n.countries.map(c => esc(c.cc) + ' ' + c.n).join(' · ')} — IP Geolocation by <a href="https://db-ip.com" target="_blank" rel="noopener">DB-IP</a> (CC BY 4.0)</div>` : '') : '');
 }
-function powerEvent(d) { pw.power = d; pwDraw(); if (land.at === 'land') landPanel(); }
+function powerEvent(d) { pw.power = d; pwDraw(); if (d.usb && d.usb.length) flAnimate(); if (land.at === 'land') landPanel(); }
 function netEvent(d) { pw.net = d; pwDraw(); if (land.at === 'land') landPanel(); }

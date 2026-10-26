@@ -118,6 +118,14 @@ if (window.CITY) {
         docks: up ? [{ id: 'web', name: 'Web (HTTPS)', n: 29 }, { id: 'ssh', name: 'SSH / git', n: 2 }] : [],
         countries: up ? [{ cc: 'US', n: 20 }, { cc: 'DE', n: 4 }, { cc: 'HU', n: 3 }] : [], dbip: true });
     }
+    // test hook: #cargotest=1 — a 120 MB ship on its way, a small .exe plane arrived (customs), stick E: being written
+    if (q.get('cargotest')) {
+      powerEvent({ at: Date.now(), cpu: 20, ramMB: 16250, ramFreeMB: 6000, disk: 40, rx: 8e6, tx: 2e5, gpu: 5, usb: [{ drive: 'E:', sizeMB: 30000, freeMB: 12000, writeBps: 6e6 }] });
+      netEvent({ at: Date.now(), station: { up: true }, border: { up: true }, internet: { up: true }, devices: 2, docks: [{ id: 'web', name: 'Web (HTTPS)', n: 12 }], countries: [], dbip: false });
+      cargoEvent({ id: 'c1', kind: 'download', ext: '.iso', size: 120 * 1048576, done: false, from: 'download.example.org' });
+      cargoEvent({ id: 'c2', kind: 'download', ext: '.exe', size: 3 * 1048576, done: false });
+      cargoEvent({ id: 'c2', kind: 'download', ext: '.exe', size: 3 * 1048576, done: true, customs: { motw: 3, internet: true, exec: true } });
+    }
     // test hook: #landtest=1 jumps to the Land's table view (Home)
     if (q.get('landtest') === '1') landHome(0);
     // test hook: #keytest=<key> presses that key once, after the opening flight (e.g. Home from a building); flights are

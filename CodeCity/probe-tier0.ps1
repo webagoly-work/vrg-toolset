@@ -1,6 +1,7 @@
 # probe-tier0.ps1 — Tier 0 sampler for VRG Kódváros (live workspace P8, KV-18; report §1.4). A helper process of
 # CodeCity/companion.js: every 2 s one JSON line on stdout — CPU %, RAM, disk %, NIC bytes/s, GPU 3D % — from the
-# CIM performance classes (their names are not localised, unlike Get-Counter's). Unelevated, read-only; nothing is
+# CIM performance classes (their names are not localised, unlike Get-Counter's) — and the removable drives with their
+# write rate, for USB-falu and its trains (KV-19). Unelevated, read-only; nothing is
 # written. It exits when the companion (the parent PID given) is gone.
 #
 #   powershell -NoProfile -ExecutionPolicy Bypass -File CodeCity\probe-tier0.ps1 <parent pid> [ms=2000]
@@ -14,9 +15,12 @@ while ($true) {
   $nic = Get-CimInstance Win32_PerfFormattedData_Tcpip_NetworkInterface
   $rx = ($nic | Measure-Object -Property BytesReceivedPersec -Sum).Sum
   $tx = ($nic | Measure-Object -Property BytesSentPersec -Sum).Sum
+  $usb = @(Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=2' | ForEach-Object {
+    $w = (Get-CimInstance Win32_PerfFormattedData_PerfDisk_LogicalDisk -Filter "Name='$($_.DeviceID)'").DiskWriteBytesPersec
+    [ordered]@{ drive = $_.DeviceID; sizeMB = [long]($_.Size / 1MB); freeMB = [long]($_.FreeSpace / 1MB); writeBps = [long]$w } })
   $gpu = (Get-CimInstance Win32_PerfFormattedData_GPUPerformanceCounters_GPUEngine | Where-Object { $_.Name -like '*engtype_3D' } | Measure-Object -Property UtilizationPercentage -Sum).Sum
   $o = [ordered]@{ at = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds(); cpu = [int]$cpu; ramMB = [int]($os.TotalVisibleMemorySize / 1024);
-    ramFreeMB = [int]($os.FreePhysicalMemory / 1024); disk = [int][Math]::Min(100, [double]$disk); rx = [long]$rx; tx = [long]$tx; gpu = [int][Math]::Min(100, [double]$gpu) }
-  [Console]::Out.WriteLine(($o | ConvertTo-Json -Compress)); [Console]::Out.Flush()
+    ramFreeMB = [int]($os.FreePhysicalMemory / 1024); disk = [int][Math]::Min(100, [double]$disk); rx = [long]$rx; tx = [long]$tx; gpu = [int][Math]::Min(100, [double]$gpu); usb = $usb }
+  [Console]::Out.WriteLine(($o | ConvertTo-Json -Compress -Depth 4)); [Console]::Out.Flush()
   Start-Sleep -Milliseconds $Every
 }

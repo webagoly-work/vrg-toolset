@@ -118,7 +118,8 @@ function hlRibbon() {
   }
   const claude = ag.list.filter(a => agBay(a.state) === 'dolgozik').length, servers = jb.list.filter(j => j.kind === 'server' && j.state.startsWith('fut')).length;
   const busy = jb.list.filter(j => j.kind !== 'server' && j.state === 'fut').length;
-  const run = [claude && `${hu(claude)} Claude dolgozik`, servers && `${hu(servers)} szerver fut`, busy && `${hu(busy)} build/teszt fut`].filter(Boolean).join(' · ');
+  const ships = [...fl.ships.values()].filter(s => !s.arrived).length;
+  const run = [claude && `${hu(claude)} Claude dolgozik`, servers && `${hu(servers)} szerver fut`, busy && `${hu(busy)} build/teszt fut`, ships && `${hu(ships)} áru úton`].filter(Boolean).join(' · ');
   const adv = hlAdvisors();
   const changed = [live.since.length && `${hu(live.since.length)} új commit`, live.fs.size && `${hu(live.fs.size)} fájl változik élőben`].filter(Boolean).join(' · ');
   hl.el.innerHTML = (run ? `<div class="l run"><b>Most</b> ${esc(run)}</div>` : '') +

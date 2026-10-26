@@ -69,6 +69,13 @@
 // of CodeCity/ports.json (by remote port) and per country (DB-IP Lite in .cache/dbip, if fetched). Only counts go
 // out ('net'): no address, no host name (CITY-D27 A).
 //
+// Cargo (P8, KV-19; report §1.7, §5.2): the Downloads folder and .git/objects/pack are watched; a file that grows
+// is cargo on its way ('cargo': kind, extension, size, rate — never the file name). A browser's .crdownload / .part
+// is the same cargo as the file it becomes. When it stops growing under its final name it has arrived: customs
+// reads its Mark-of-the-Web (the Zone.Identifier stream) and whether it is a program. Where it came from is a guess:
+// the DNS cache name of the busiest outside address of the moment — memory only, shown blurred (CITY-D27 A).
+// Removable drives and their write rate come with the power sample (USB-falu).
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -134,6 +141,7 @@ function loadConfig() {
     agentsCmd: user.agentsCmd || [firstExisting([path.join(apps, 'node', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe'),
       process.env.APPDATA && path.join(process.env.APPDATA, 'npm', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe')].filter(Boolean)) || 'claude', 'agents', '--json'],
     transcripts: user.transcripts || null,
+    downloads: user.downloads || path.join(process.env.USERPROFILE || os.homedir(), 'Downloads'),
     // Claude Code needs Git Bash on Windows; the user-level value may point to a folder that is gone
     gitBash: user.gitBash || (exists(process.env.CLAUDE_CODE_GIT_BASH_PATH || '') ? process.env.CLAUDE_CODE_GIT_BASH_PATH
       : firstExisting([path.join(apps, 'git', 'bin', 'bash.exe'), 'H:\\_desktop\\Git\\bin\\bash.exe']))
@@ -781,6 +789,63 @@ function netStart() {
   netProbe();
 }
 
+// ---- cargo: ships and planes
+const CARGO_TEMP = /\.(crdownload|part|partial|download|tmp)$/i;
+const CARGO_EXEC = /\.(exe|msi|msix|bat|cmd|ps1|vbs|js|jse|wsf|jar|scr|com|lnk|reg|hta|appx|dll)$/i;
+const cargo = { watchers: [], items: new Map(), timer: null, seq: 0 };
+function cargoSeen(dir, name, kind) {
+  const final = name.replace(CARGO_TEMP, ''), key = dir + '|' + final, file = path.join(dir, name);
+  if (kind === 'git' && !/\.(pack|idx)$|^tmp_pack_/.test(name)) return;
+  let st; try { st = fs.statSync(file); } catch (e) { return; }
+  if (!st.isFile()) return;
+  let it = cargo.items.get(key);
+  if (!it) {
+    it = { id: 'c' + (++cargo.seq), key, dir, final, kind, ext: (path.extname(final) || '').toLowerCase().slice(0, 10), t0: Date.now(), size: 0, sent: -1, from: null };
+    cargo.items.set(key, it);
+    if (kind === 'download') cargoFrom(it);
+  }
+  it.size = Math.max(it.size, st.size); it.last = Date.now(); it.temp = CARGO_TEMP.test(name);
+}
+// arrived = no growth for 3 s under its final name; then customs
+function cargoTick() {
+  for (const it of cargo.items.values()) {
+    const fin = path.join(it.dir, it.final);
+    let st = null; try { st = fs.statSync(fin); } catch (e) { /* still a temp name */ }
+    if (st && st.size > it.size) { it.size = st.size; it.last = Date.now(); }
+    if (st && Date.now() - it.last > 3000) {
+      let motw = null;
+      try { const z = /ZoneId=(\d)/.exec(fs.readFileSync(fin + ':Zone.Identifier', 'utf8')); motw = z ? +z[1] : null; } catch (e) { /* no mark */ }
+      liveEmit('cargo', { id: it.id, kind: it.kind, ext: it.ext, size: it.size, done: true, from: it.from, ms: Date.now() - it.t0,
+        customs: { motw, internet: motw === 3 || motw === 4, exec: CARGO_EXEC.test(it.final) } });
+      cargo.items.delete(it.key);
+    } else if (it.size !== it.sent) {
+      liveEmit('cargo', { id: it.id, kind: it.kind, ext: it.ext, size: it.size, done: false, from: it.from, ms: Date.now() - it.t0 });
+      it.sent = it.size;
+    }
+  }
+}
+// the likely source: the DNS cache name of the outside address with the most connections right now
+async function cargoFrom(it) {
+  const [ns, dns] = await Promise.all([run('netstat', ['-ano', '-p', 'TCP'], 10000), run('ipconfig', ['/displaydns'], 15000)]);
+  const count = new Map();
+  for (const m of ns.matchAll(/^\s*TCP\s+\S+\s+(\d+\.\d+\.\d+\.\d+):\d+\s+ESTABLISHED/gm)) if (!isLocal(m[1])) count.set(m[1], (count.get(m[1]) || 0) + 1);
+  const names = new Map();
+  let rec = null;
+  for (const line of dns.split(/\r?\n/)) {
+    const r = /Record Name[ .]*:\s*(\S+)/i.exec(line); if (r) { rec = r[1]; continue; }
+    const a = /\(Host\) Record[ .]*:\s*(\d+\.\d+\.\d+\.\d+)/i.exec(line); if (a && rec && !names.has(a[1])) names.set(a[1], rec);
+  }
+  const best = [...count].filter(([ip]) => names.has(ip)).sort((a, b) => b[1] - a[1])[0];
+  it.from = best ? names.get(best[0]) : null;
+}
+function cargoStart() {
+  if (cargo.timer || DRY || !WATCH) return;
+  for (const [dir, kind] of [[CFG.downloads, 'download'], [path.join(REPO, '.git', 'objects', 'pack'), 'git']]) {
+    try { cargo.watchers.push(fs.watch(dir, (t, name) => { if (name) cargoSeen(dir, String(name), kind); })); } catch (e) { /* no such folder */ }
+  }
+  cargo.timer = setInterval(cargoTick, 1000); cargo.timer.unref();
+}
+
 // ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
 async function catalog() {
   const read = p => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
@@ -953,6 +1018,7 @@ const server = http.createServer((req, res) => {
     worktreesSoon();
     portsStart();
     netStart();
+    cargoStart();
     if (power.last) res.write('event: power\ndata: ' + JSON.stringify(power.last) + '\n\n');
     if (net.state) res.write('event: net\ndata: ' + JSON.stringify(net.state) + '\n\n');
     res.write('event: pipes\ndata: ' + JSON.stringify({ list: pipesList() }) + '\n\n');
