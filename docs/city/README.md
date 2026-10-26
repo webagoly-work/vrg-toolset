@@ -275,7 +275,7 @@ One stub per phase in `docs/city/wp/`.
 | P5 | [Panels: editor and terminal](wp/p05-panels.md) | D10, D14, D15 | Open README.md in a panel and preview it; an edit shows a diff before saving; `claude` runs in the panel and resumes after a companion restart. | DONE |
 | P6 | [Process supervisor](wp/p06-processes.md) | D9 | Start MindMap's server from the city → its gate lights and its log streams; a failing selftest raises a storm; stop kills the whole tree. | DONE |
 | P7 | [Git made visible](wp/p07-git.md) | D10 | A test branch with one commit → a new line with one station; the preview shows touched stations; the reflog lane scrubs back. | DONE |
-| P8 | [The Land](wp/p08-land.md) | D23, D24, D28 | Zoom from the Land to a file floor without jitter; a 100 MB download sails in as a ship; copying to a stick runs a train. | open |
+| P8 | [The Land](wp/p08-land.md) | D23, D24, D28 | Zoom from the Land to a file floor without jitter; a 100 MB download sails in as a ship; copying to a stick runs a train. | DONE |
 | P9 | [GitWorld planet](wp/p09-planet.md) | D21, D22 | The vendored repos sit as foreign cities on their continents with licence colours; offline, the planet renders from the snapshot. | open |
 | P10 | [Probe sidecar (Tier A)](wp/p10-probe.md) | D18, D25, D27 | Spotify playing → the stadium lights; dragging a sound tower changes its volume; Paint raises a construct that dissolves when closed. | open |
 | P11 | [Elevated ETW (Tier B, optional)](wp/p11-etw.md) | D17, D23 | A `git clone` shows the exact cargo per process; a file read inside a Bash command beams to its roof. | open |
@@ -306,3 +306,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-16 ✔ 2026-10-26 5f1a07b
 - KV-17 ✔ 2026-10-26 a3b7b5a
 - KV-18 ✔ 2026-10-26 57e8a07
+- KV-19 ✔ 2026-10-26 3fe20ea (the real USB-stick check is the user's step — wp/p08-land.md)
