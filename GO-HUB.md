@@ -1,5 +1,13 @@
 # GO HUB — build VRG Kapu (the shared Homepage)
 
+> **2026-10-26 — reworked, read this first.** VRG Kapu is now a simple access page: GitHub sign-in,
+> the signed allowed list, then START.cmd (started from the page through the Kapu segéd) and the
+> START.cmd tool list with Megnyitás / Mappa for each. It leads to the dashboard that is still being
+> planned. The board, editor, refresh, Munkanapló, personal links, tour and glossary (WP-H1–H3,
+> H6–H9, H11) were taken out and parked for Kódváros in `CodeCity/from-kapu/` (its README lists
+> them, with ideas). Everything below describes the old, full Kapu: read it as history. A new Kapu
+> session works from `Hub/README.md`; do not rebuild the removed WPs here.
+
 > **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
 
 *You were started with the codephrase **GO HUB**. This file is the whole briefing; it does not depend

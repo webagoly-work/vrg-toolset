@@ -1,51 +1,38 @@
-// Boot: theme, embedded data, shell. Later WPs hang their init off kpBoot.
+// Boot: theme, embedded data, then the gate. The page renders at once from what this browser
+// remembers and re-renders after the companion and GitHub have answered.
 
 const KP_THEMES = [['amber', '#e6a532'], ['light', '#f4efe6'], ['slate', '#4fb0d0'], ['green', '#57c07a']];
 const KP_THEME_NAMES = { amber: 'Borostyán', light: 'Világos', slate: 'Pala', green: 'Zöld' };
-const KP_LAYERS = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
 
-const kpData = { topology: null, access: null, pubkey: null };
+const kpData = { access: null, pubkey: null, tools: [] };
 
 function kpSetTheme(t) {
   if (!KP_THEMES.some(([n]) => n === t)) t = 'amber';
   document.documentElement.setAttribute('data-theme', t);
   kpStore.set('theme', t);
-  kpRenderThemes();
-}
-
-function kpRenderThemes() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const box = document.getElementById('kpThemes');
-  box.replaceChildren(...KP_THEMES.map(([t, c]) => kpEl('button', {
-    class: 'kp-swatch' + (t === cur ? ' sel' : ''), style: 'background:' + c,
-    title: KP_THEME_NAMES[t], 'aria-label': KP_THEME_NAMES[t], 'data-t': t,
-    onclick: () => kpSetTheme(t)
+  document.getElementById('kpThemes').replaceChildren(...KP_THEMES.map(([n, c]) => kpEl('button', {
+    class: 'kp-swatch' + (n === t ? ' sel' : ''), style: 'background:' + c,
+    title: KP_THEME_NAMES[n], 'aria-label': KP_THEME_NAMES[n], onclick: () => kpSetTheme(n)
   })));
 }
 
-function kpRenderRail() {
-  document.getElementById('kpRail').replaceChildren(...KP_LAYERS.map(l =>
-    kpEl('button', { class: 'on', 'data-layer': l, title: l + ' · ' + KP_LAYER_NAMES[l] + ' — megjelenítés / elrejtés', onclick: () => kpToggleLayer(l) }, l)));
-}
-
-function kpBoot() {
-  kpData.topology = kpEmbedded('kpTopology');
+async function kpBoot() {
   kpData.access = kpEmbedded('kpAccess');
   kpData.pubkey = kpEmbedded('kpPubkey');
-  kpData.glossary = kpEmbedded('kpGlossary');
+  kpData.tools = kpEmbedded('kpTools') || [];
   kpSetTheme(kpStore.get('theme', 'amber'));
-  kpRenderRail();
-  kpGhLoad();
-  kpRefreshRestore();
-  kpBoardInit();
-  kpNavInit();
-  kpCompInit().then(kpSigninInit).then(kpRefreshBoot);
-  kpRenderStrip();
-  kpMainMenuInit();
-  kpLogInit();
-  kpExtrasInit();
-  document.getElementById('kpSearchBtn').addEventListener('click', kpSearchOpen);
   document.getElementById('kpBuild').textContent = 'build ' + KP_BUILD;
+  kpGhLoad();
+  await kpAccessRefresh();
+  kpRender();
+  kpComp.status = await kpCompStatus();
+  kpComp.on = !!(kpComp.status && kpComp.status.ok);
+  kpRender();
+  if (kpGh.token) {
+    await kpGhIdentify(KP_REPO);
+    await kpAccessRefresh();
+    kpRender();
+  }
 }
 
 if (typeof document !== 'undefined') {

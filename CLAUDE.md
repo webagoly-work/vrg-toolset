@@ -183,9 +183,10 @@ All of them run in the **main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_
   build order T0–T7 from `docs/workflow/WIREWAY_AUDIT_2026-10-18.md` (T0–T6 merged into `main` 2026-10-24).
 - **`GO ADAT`** — read `GO-ADAT.md` at the repo root (main checkout, branch `main`) and do what it says.
 - **`GO HUB`** — read `GO-HUB.md` at the repo root (main checkout, branch `main`) and do what it says:
-  build VRG Kapu, the shared Homepage / Business Topology board, from the pack in `docs/hub/`
-  (next open WP in its README §3 order; stop at every ⏸). Its README §4 waiting items (setup steps 3–8,
-  OneDrive links, the clean-profile check) are still open; only the place changed (it was the SecAcc worktree).
+  VRG Kapu. **Reworked 2026-10-26**: Kapu is now only the access page (GitHub sign-in + the signed
+  allowed list → START.cmd and its tools) until the dashboard exists. The board, editor, Munkanapló and
+  the rest are parked for Kódváros in `CodeCity/from-kapu/`; the `docs/hub/` pack describes the old,
+  full Kapu. Still open from it: setup steps 3–8, the OneDrive links, the clean-profile check.
 - **`GO CITY`** — read `GO-CITY.md` at the repo root and do what it says: VRG Kódváros, the codebase-as-a-city
   viewer (C1–C10 on `main`; **parked**: base fine-tuning from the user's dev notes, a later Claude Design
   batch candidate — README §7). New WPs start from `main`.

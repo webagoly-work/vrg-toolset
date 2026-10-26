@@ -1,5 +1,9 @@
 # VRG Kapu — the Homepage build pack
 
+> **2026-10-26:** Kapu was cut down to an access page (sign-in + allowed list → START.cmd); see
+> `Hub/README.md`. The features this pack planned beyond that are parked for Kódváros in
+> `CodeCity/from-kapu/`. This pack stays as their design record.
+
 *Analysis session 2026-10-21. **Nothing is built yet.** This pack plans the shared front door for the
 two users and cuts it into small work packages for another Claude account to build.*
 

@@ -4,12 +4,11 @@
 //
 //   1. Hub/dist/vrg-kapu.html exists and carries a KP_BUILD stamp
 //   2. no token / key pattern anywhere in the built page or the hub data
-//   3. topology.json passes kpValidate (errors fail, warnings print)
-//   4. every repo path in the topology exists in this checkout. Paths that are
-//      still uncommitted work elsewhere only warn; --strict (before handing the
-//      hub out, WP-H13) makes them errors, since GitHub would 404 on them.
+//   3. the START.cmd tool list baked into the page, every path existing
+//   4. the allowed list's signature; the agent init docs' template
 //
-//   node tools/check-hub.js [--strict]
+//   node tools/check-hub.js   (--strict is accepted and changes nothing since the
+//                              2026-10-26 rework: there are no topology paths left)
 //
 // Exit code 1 if anything is wrong, so it can gate a commit.
 // ---------------------------------------------------------------------------
@@ -22,7 +21,6 @@ const path = require('path');
 const REPO = path.resolve(__dirname, '..');
 const HUB = path.join(REPO, 'Hub');
 const DIST = path.join(HUB, 'dist', 'vrg-kapu.html');
-const STRICT = process.argv.includes('--strict');
 
 const SECRETS = /ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-ant-[A-Za-z0-9_-]{10,}|BEGIN [A-Z ]*PRIVATE KEY/;
 
@@ -40,35 +38,15 @@ if (!fs.existsSync(DIST)) {
   if (m) ok('build ' + m[1]); else bad('dist has no KP_BUILD stamp');
 }
 
-const TOPO = path.join(HUB, 'data', 'topology.json');
-if (!fs.existsSync(TOPO)) {
-  bad('Hub/data/topology.json missing');
-} else {
-  const { kpValidate } = require(path.join(HUB, 'src', 'js', '10-model.js'));
-  let topo = null;
-  try { topo = JSON.parse(fs.readFileSync(TOPO, 'utf8')); } catch (e) { bad('topology.json: ' + e.message); }
-  if (topo) {
-    const r = kpValidate(topo);
-    r.errors.forEach(e => bad('topology: ' + e));
-    if (r.ok) ok('topology valid (' + topo.departments.length + ' departments, ' + topo.programs.length + ' programs)');
-    if (r.warnings.length) console.log('  warn  ' + r.warnings.length + ' warning(s), e.g. ' + r.warnings[0]);
-
-    // every repo path must exist; the hub's own build output may not exist before the first build
-    const repoPaths = [];
-    const add = (where, p) => p && repoPaths.push([where, p]);
-    for (const p of topo.programs) {
-      add(p.id + '.open', p.open && p.open.repo);
-      for (const a of p.agent || []) add(p.id + '.agent', a.repo);
-      for (const f of p.folders || []) add(p.id + '.folder', f.repo);
-      for (const g of (p.git && p.git.paths) || []) add(p.id + '.git', g);
-    }
-    const missing = repoPaths.filter(([, p]) => !p.startsWith('Hub/dist/') && !fs.existsSync(path.join(REPO, p)));
-    if (STRICT) missing.forEach(([w, p]) => bad('repo path missing: ' + p + '  (' + w + ')'));
-    else if (missing.length) {
-      console.log('  warn  ' + missing.length + ' of ' + repoPaths.length + ' repo paths not in this checkout (yet):');
-      [...new Set(missing.map(([, p]) => p))].forEach(p => console.log('          ' + p));
-    }
-    if (!missing.length) ok(repoPaths.length + ' repo paths exist');
+// the tool list baked from START.cmd: present, and every path still exists
+if (fs.existsSync(DIST)) {
+  const m = fs.readFileSync(DIST, 'utf8').match(/id="kpTools">(.*?)<\/script>/);
+  const tools = m ? JSON.parse(m[1]) : null;
+  if (!tools || !tools.length) bad('dist has no kpTools (the START.cmd tool list) - rebuild');
+  else {
+    const missing = tools.filter(t => !fs.existsSync(path.join(REPO, t.path)));
+    missing.forEach(t => bad('tool ' + t.key + ' path missing: ' + t.path + ' - rebuild after fixing START.cmd'));
+    if (!missing.length) ok(tools.length + ' START.cmd tools, every path exists');
   }
 }
 
@@ -80,7 +58,7 @@ else {
   if (!a.sig || !fs.existsSync(PUB)) console.log('  warn  access.json is not signed - run node tools/hub-sign.js');
   else {
     const crypto = require('crypto');
-    const { kpCanon } = require(path.join(HUB, 'src', 'js', '10-model.js'));
+    const { kpCanon } = require(path.join(HUB, 'src', 'js', '60-access.js'));
     const key = crypto.createPublicKey({ key: JSON.parse(fs.readFileSync(PUB, 'utf8')), format: 'jwk' });
     if (crypto.verify('sha256', Buffer.from(kpCanon(a.body)), { key, dsaEncoding: 'ieee-p1363' }, Buffer.from(a.sig, 'base64'))) ok('access.json signature valid (' + a.body.people.length + ' people)');
     else bad('access.json signature INVALID - changed after signing?');

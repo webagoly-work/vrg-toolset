@@ -2,11 +2,12 @@
 setlocal EnableDelayedExpansion
 
 :: ==========================================================================
-::  VRG Kapu.cmd - opens VRG Kapu (the shared homepage / business map).
+::  VRG Kapu.cmd - opens VRG Kapu (the access page: GitHub sign-in, then
+::  START.cmd and its tools).
 ::
 ::  Full mode: the Kapu seged (Hub\companion\server.js) serves the page on
-::  http://localhost:8795 - settings are remembered there, and the Terminal /
-::  Claude Code / open-tool buttons work. If the seged already runs, this only
+::  http://localhost:8795 - the sign-in is remembered there, and the START.cmd /
+::  open-tool / open-folder buttons work. If the seged already runs, this only
 ::  opens the page. Without Node it falls back to the plain file (links only).
 ::  Console output stays ASCII.
 :: ==========================================================================

@@ -6,6 +6,14 @@ const KP_GATE_NO = 'Nem szerepelsz az engedélyezett listán — kérd a tulajdo
 const KP_GATE_BADSIG = 'A hozzáférési lista aláírása érvénytelen — a programok zárva maradnak.';
 const KP_ACCESS_NOTE = 'A valódi zár a GitHub és a OneDrive jogosultság; ez a lista azt mutatja, kinek nyit a Kapu.';
 
+// Canonical JSON: keys sorted at every level, no whitespace. The one form that gets signed
+// (tools/hub-sign.js) and verified (the page) — both use this function.
+function kpCanon(v) {
+  if (Array.isArray(v)) return '[' + v.map(kpCanon).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + kpCanon(v[k])).join(',') + '}';
+  return JSON.stringify(v);
+}
+
 const kpAccess = { state: 'none', valid: false, me: null, role: null, people: 0 };
 
 function kpB64Bytes(b64) {
@@ -46,4 +54,4 @@ async function kpAccessRefresh() {
   Object.assign(kpAccess, await kpAccessCheck(kpData.access, kpData.pubkey, kpGh.login));
 }
 
-if (typeof module !== 'undefined') module.exports = { kpAccessCheck, kpB64Bytes, KP_GATE_NO, KP_GATE_BADSIG };
+if (typeof module !== 'undefined') module.exports = { kpCanon, kpAccessCheck, kpB64Bytes, KP_GATE_NO, KP_GATE_BADSIG };

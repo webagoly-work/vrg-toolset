@@ -89,7 +89,7 @@ set "L4_NAME=VRG BuildTree (modder)"
 set "L4_PATH=Modder\vrg-buildtree.html"
 set "L4_MENU=PLAIN"
 
-set "L5_NAME=VRG Kapu (kozponti terkep)"
+set "L5_NAME=VRG Kapu (belepes, utana START.cmd)"
 set "L5_PATH=Hub\dist\vrg-kapu.html"
 set "L5_MENU=PLAIN"
 

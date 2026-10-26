@@ -4,8 +4,9 @@
 //
 // Serves Hub/dist/vrg-kapu.html on http://localhost:8795 (a real origin, so the
 // page can remember its settings) and runs a fixed set of local actions the page
-// asks for: open a tool the START.cmd way, open a folder, a terminal, Claude Code,
-// VS Code, a few read-only git commands, and a path check.
+// asks for: start START.cmd, open a tool the START.cmd way, open a folder, a terminal,
+// Claude Code, VS Code, a few read-only git commands, and a path check. Since the
+// 2026-10-26 rework the page uses only the first three; the rest wait for the dashboard.
 //
 //   node Hub/companion/server.js [--port 8795] [--no-open] [--config <file>]
 //
@@ -120,6 +121,12 @@ const ACTIONS = {
     const p = safePath(b.path);
     if (!p || !inRoots(p) || !norm(p).startsWith(norm(fs.realpathSync(REPO)) + path.sep)) return [403, { error: 'a repón kívül' }];
     return [200, openUrlOrFile(pathToFileURL(p).href)];
+  } },
+  // START.cmd in a console of its own; the command is fixed here, the folder goes in as cwd
+  'open-start': { keys: [], async run() {
+    const dir = path.join(REPO, 'Planner');
+    if (!exists(path.join(dir, 'START.cmd'))) return [404, { error: 'Planner/START.cmd hiányzik' }];
+    return [200, launch('cmd.exe', ['/c', 'START.cmd'], dir)];
   } },
   'open-folder': { keys: ['dir'], async run(b) { const d = safeDir(b.dir); return d ? [200, launch('explorer.exe', [d])] : [403, { error: 'nem engedélyezett mappa' }]; } },
   'open-terminal': { keys: ['dir'], async run(b) { const d = safeDir(b.dir); return d ? [200, Object.assign(terminalIn(d), { dir: d })] : [403, { error: 'nem engedélyezett mappa' }]; } },

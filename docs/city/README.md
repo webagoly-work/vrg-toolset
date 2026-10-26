@@ -122,3 +122,8 @@ until that list is done.
   lenses, panels, readouts, tour captions, share card) is a good fit for one Claude Design pass
   rather than more piecemeal WPs. Bring the notes and screenshots of each look (`tools/shot.js`) to it.
 - Until then: no new Kódváros WPs. Fixes only if the consolidation breaks something.
+- **2026-10-26 — Kapu's features come here.** Kódváros is to become more than a viewer: the main tool
+  for our code work. VRG Kapu was cut down to an access page, and its board, editor, claims,
+  Munkanapló, refresh / "Mi változott?", personal links, tour, glossary and helper actions are parked
+  in `CodeCity/from-kapu/` (sources, data, tests; README there with first ideas). The plan for
+  bringing them in is for its own thread — start from that README.

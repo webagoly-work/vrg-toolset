@@ -19,19 +19,3 @@
   --accent:#57c07a; --accent-dim:#2f6f45; --line:#20301f; --green:#57c07a; --green-ink:#9ff0b6;
   --amberflag:#c8b02d; --red:#c85a4a; --red-ink:#ec9384; --violet:#7cc0a0;
 }
-
-/* Department hues (hub-seed.json "hue"). Four reuse the theme's own colours;
-   the other five are new and set per theme so they keep contrast. */
-:root{
-  --hue-amber:var(--amberflag); --hue-green:var(--green-ink); --hue-red:var(--red-ink); --hue-purple:var(--violet);
-  --hue-teal:#4fb8a8; --hue-coral:#e2876a; --hue-blue:#6a9ee0; --hue-pink:#d683b4; --hue-gray:#9a9084;
-}
-[data-theme="light"]{
-  --hue-teal:#1f7d70; --hue-coral:#b4532f; --hue-blue:#2f5fa8; --hue-pink:#a3437c; --hue-gray:#6d6252;
-}
-[data-theme="slate"]{
-  --hue-teal:#4fc0b0; --hue-coral:#e48f74; --hue-blue:#78a8ec; --hue-pink:#d98cbc; --hue-gray:#8fa2ad;
-}
-[data-theme="green"]{
-  --hue-teal:#5cc8b0; --hue-coral:#e0907a; --hue-blue:#7aa8e0; --hue-pink:#d890b8; --hue-gray:#8fa894;
-}

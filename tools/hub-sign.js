@@ -26,7 +26,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { kpCanon } = require('../Hub/src/js/10-model.js');
+const { kpCanon } = require('../Hub/src/js/60-access.js');
 
 const REPO = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);

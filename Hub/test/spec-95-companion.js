@@ -79,6 +79,14 @@ module.exports = [
     assert.ok(/^file:\/\/\/.*\/MindMap\/vrg_mindmap\.html$/.test(r.json.args[r.json.args.length - 1]), JSON.stringify(r.json));
     assert.strictEqual((await post('open-tool', { path: 'CLAUDE.md' })).status, 400);
   } },
+  { name: 'open-start: START.cmd in its own console, Planner as cwd; any field -> 400', async fn() {
+    await start();
+    const r = await post('open-start', {});
+    assert.strictEqual(r.status, 200);
+    assert.deepStrictEqual([r.json.exe, r.json.args], ['cmd.exe', ['/c', 'START.cmd']]);
+    assert.ok(r.json.cwd.toLowerCase().endsWith(path.sep + 'planner'));
+    assert.strictEqual((await post('open-start', { cmd: 'calc' })).status, 400);
+  } },
   { name: 'terminal and Claude: the folder is the cwd, never an argument', async fn() {
     await start();
     const t = await post('open-terminal', { dir: 'Inventory' });

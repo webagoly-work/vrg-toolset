@@ -7,7 +7,7 @@ const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { kpLoad } = require('./load');
-const { kpCanon } = require('../src/js/10-model.js');
+const { kpCanon } = require('../src/js/60-access.js');
 
 const REPO = path.resolve(__dirname, '..', '..');
 const SIGN = path.join(REPO, 'tools', 'hub-sign.js');
@@ -23,7 +23,7 @@ const BODY = () => ({ rev: 1, updated: '2026-10-21', people: [
   { name: 'Owner', github: 'Owner-Login', emails: ['o@example.test'], role: 'owner', layers: ['L1', 'L2', 'L3', 'L4'] },
   { name: 'Member', github: 'member-login', emails: ['m@example.test'], role: 'member', layers: ['L1', 'L2', 'L3', 'L4'] }] });
 
-const page = () => kpLoad(['00-core.js', '10-model.js', '60-access.js'], { crypto: globalThis.crypto, atob, TextEncoder });
+const page = () => kpLoad(['00-core.js', '60-access.js'], { crypto: globalThis.crypto, atob, TextEncoder });
 const run = args => { try { execFileSync(process.execPath, [SIGN, ...args], { cwd: REPO, stdio: 'pipe' }); return 0; } catch (e) { return e.status; } };
 
 module.exports = [
@@ -83,7 +83,7 @@ module.exports = [
   { name: 'gate: member with L1 open; unknown login closed with the ⛔ text', async fn() {
     const k = keys(), body = BODY();
     const access = { schema: 'vrg-hub-access/1', body, sig: sign(body, k.privateKey) };
-    const ctx = kpLoad(['00-core.js', '10-model.js', '50-github.js', '60-access.js'], { crypto: globalThis.crypto, atob, TextEncoder, kpData: { access, pubkey: k.pub } });
+    const ctx = kpLoad(['00-core.js', '50-github.js', '60-access.js'], { crypto: globalThis.crypto, atob, TextEncoder, kpData: { access, pubkey: k.pub } });
     ctx.kpGh.login = 'member-login';
     await ctx.kpAccessRefresh();
     assert.strictEqual(ctx.kpL1Open(), true);

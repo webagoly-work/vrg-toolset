@@ -89,6 +89,18 @@ setlocal EnableDelayedExpansion
 ::
 ::  2026-10-25 - tool 11 (K) opens on this repo by default: OPEN_TOOL rescans it
 ::  into CodeCity\dist\vrg-codecity.data.js, which the empty page loads. Path unchanged.
+::
+::  2026-10-26 - every tool's browser chooser has M) Mappa megnyitasa: Explorer
+::  opens the folder that holds the tool's file, with the file selected. The
+::  Y) CYD submenu got the same M). H) VRG Kapu is now only the access page
+::  (GitHub sign-in + allowed list, then it starts this START.cmd and lists the
+::  tools below); its map/editor/log features are parked for Kodvaros
+::  (CodeCity\from-kapu). No tool number moved.
+::
+::  2026-10-26 - O) Helyi szerverek: every localhost address in the repo in one
+::  list (HELYI SZERVEREK section, LH<n>_*), each marked FUT / nem fut. Picking
+::  one opens it; one that is not running is started first (minimised window
+::  "VRG <port>"). A) opens every running one.
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -163,7 +175,7 @@ set "TOOLKEYS="
 for /L %%i in (1,1,%TOOLCOUNT%) do (
     if %%i LSS 10 ( set "TOOLKEYS=!TOOLKEYS!%%i" ) else if %%i EQU 10 ( set "TOOLKEYS=!TOOLKEYS!0" ) else if %%i EQU 11 ( set "TOOLKEYS=!TOOLKEYS!K" )
 )
-set "ACTIONKEYS=BWETGVMCINSPLDRYUHQ"
+set "ACTIONKEYS=BWETGVMCINSPLDRYUHOQ"
 set "MENUKEYS=!TOOLKEYS!%ACTIONKEYS%"
 
 if %TOOLCOUNT% GTR 11 (
@@ -202,6 +214,67 @@ set "FETCH_VENDOR_JS=%REPO%\tools\fetch-vendor.js"
 :: Sajat inditofajlok a Firmware\planner-cyd mappaban; a Y) menu csak ezeket hivja.
 set "CYD_DIR=%REPO%\Firmware\planner-cyd"
 set "BOARD_DIR=%REPO%\Firmware\board-console"
+
+:: --------------------- HELYI SZERVEREK / LOCALHOST (O menu) ----------------
+:: Every local web address in the repo, in one list. Per entry: NAME, PORT,
+:: PATH (what to open on that port) and how to start it when it is not
+:: running - JS (+ARGS) is a Node script run with the portable Node, BAT a
+:: launcher of its own. SELF=1: that launcher opens the browser itself.
+:: Paths are relative to REPO. Up to ten entries (keys 1-9, 0).
+set "LH1_NAME=Varler Planner - dev szerver"
+set "LH1_PORT=8131"
+set "LH1_PATH=/Planner/projects/varler-planner/dist/varler_planner.html"
+set "LH1_JS=Planner\projects\varler-planner\tools\serve.js"
+
+set "LH2_NAME=VRG Keszlet / Inventory"
+set "LH2_PORT=8123"
+set "LH2_PATH=/"
+set "LH2_JS=Inventory\build\serve.js"
+
+set "LH3_NAME=VRG MindMap"
+set "LH3_PORT=8124"
+set "LH3_PATH=/"
+set "LH3_JS=MindMap\serve.js"
+
+set "LH4_NAME=VRG Kapu - Kapu seged"
+set "LH4_PORT=8795"
+set "LH4_PATH=/"
+set "LH4_JS=Hub\companion\server.js"
+set "LH4_ARGS=--no-open"
+
+set "LH5_NAME=Planner CYD - makropad beallitasa"
+set "LH5_PORT=8788"
+set "LH5_PATH=/"
+set "LH5_BAT=Firmware\planner-cyd\5 - Makropad beallitasa.bat"
+set "LH5_SELF=1"
+
+set "LH6_NAME=Board Console - fejlesztolap"
+set "LH6_PORT=8790"
+set "LH6_PATH=/"
+set "LH6_BAT=Firmware\board-console\Board Console.bat"
+set "LH6_SELF=1"
+
+set "LH7_NAME=Gyro relay - telefon"
+set "LH7_PORT=47291"
+set "LH7_PATH=/"
+set "LH7_JS=Planner\projects\varler-planner\tools\phone-relay-server.js"
+
+set "LH8_NAME=Knob pad - proba szerver"
+set "LH8_PORT=8177"
+set "LH8_PATH=/"
+set "LH8_JS=Firmware\knobpad\mock-server.js"
+
+set "LH9_NAME=Open MCT - kiserlet"
+set "LH9_PORT=8150"
+set "LH9_PATH=/"
+set "LH9_JS=docs\research\openmct-spike\serve.js"
+
+set "LH10_NAME=VRG Kapu - statikus dev"
+set "LH10_PORT=8796"
+set "LH10_PATH=/"
+set "LH10_JS=Hub\test\serve.js"
+
+set "LHCOUNT=10"
 
 goto MENU
 
@@ -246,7 +319,8 @@ echo   D^) Komponensek letoltese  ^(Vendor mappa + oldal, halozat kell^)
 echo.
 echo  -- Egyeb / Other --
 echo   R^) Teljes VRG toolset megnyitasa VS Code-ban  ^(repo gyoker^)
-echo   H^) VRG Kapu  ^(kozponti terkep - minden program egy helyen^)
+echo   H^) VRG Kapu  ^(belepes GitHubbal - utana innen indul minden^)
+echo   O^) Helyi szerverek  ^(minden localhost cim egy helyen - fut / nem fut^)
 echo.
 echo  -- Hardver / Hardware --
 echo   Y^) Planner CYD asztali kijelzo  ^(USB, Firmware\planner-cyd^)
@@ -289,6 +363,7 @@ if /I "%K%"=="R" goto DO_VSCODE_REPO
 if /I "%K%"=="Y" goto DO_CYD
 if /I "%K%"=="U" goto DO_BOARD
 if /I "%K%"=="H" goto DO_HUB
+if /I "%K%"=="O" goto LOCALHOST_MENU
 
 :: Only keys in MENUKEYS can get this far, so a digit here is always a real
 :: tool: 1-9 as printed, and 0 meaning the tenth entry.
@@ -335,14 +410,17 @@ echo   1^) Chrome
 echo   2^) Opera GX
 echo   3^) Zen browser
 echo   4^) Rendszer alapertelmezett bongeszo
+echo.
+echo   M^) Mappa megnyitasa  ^(Explorer, ahol a fajl van^)
 echo   0^) Vissza
 echo.
 :: Egy billentyu, mint a fomenuben - lasd az ottani magyarazatot.
 :: Az errorlevel a /C listaban elfoglalt helyet adja vissza, ezert a
 :: vizsgalat csokkeno sorrendben all: az "if errorlevel N" azt jelenti,
 :: hogy "N vagy nagyobb".
-choice /C 12340 /N /M "Bongeszo: "
-if errorlevel 5 goto MENU
+choice /C 1234M0 /N /M "Bongeszo / mappa: "
+if errorlevel 6 goto MENU
+if errorlevel 5 goto OPEN_FOLDER
 if errorlevel 4 goto OPEN_DEFAULT
 if errorlevel 3 goto OPEN_ZEN
 if errorlevel 2 goto OPEN_OPERAGX
@@ -391,6 +469,12 @@ goto MENU
 
 :OPEN_DEFAULT
 start "" "%TFULL%"
+goto MENU
+
+:: M) the folder that holds the tool's file, with the file selected
+:OPEN_FOLDER
+for %%F in ("%TFULL%") do set "TFILE=%%~fF"
+start "" explorer.exe /select,"%TFILE%"
 goto MENU
 
 :: ============================ PLANNER ACTIONS ================================
@@ -578,6 +662,97 @@ if not exist "%VSCODE_EXE%" (
 start "" "%VSCODE_EXE%" "%REPO%"
 goto MENU
 
+:: ======================= HELYI SZERVEREK / LOCALHOST ========================
+:: The status is a 1-second curl to 127.0.0.1:<port>: any HTTP answer counts as
+:: running (no -f, so a 404 does too). Without curl.exe every entry says
+:: "nem fut", and starting one still works.
+:LOCALHOST_MENU
+cls
+echo ============================================================
+echo   Helyi szerverek / localhost
+echo ============================================================
+echo.
+for /L %%i in (1,1,%LHCOUNT%) do (
+    set "LHST=nem fut"
+    curl.exe -s -o nul -m 1 "http://127.0.0.1:!LH%%i_PORT!/" >nul 2>&1 && set "LHST=FUT    "
+    set "LHKEY=%%i"
+    if %%i EQU 10 set "LHKEY=0"
+    echo   !LHKEY!^) [!LHST!]  http://localhost:!LH%%i_PORT!   !LH%%i_NAME!
+)
+echo.
+echo   A^) Minden futo megnyitasa
+echo   X^) Vissza
+echo.
+echo   Ami nem fut, azt a szamara elinditja, aztan megnyitja.
+echo.
+choice /C 1234567890AX /N /M "Valasztas: "
+set "LHPICK=%ERRORLEVEL%"
+if "%LHPICK%"=="12" goto MENU
+if "%LHPICK%"=="11" goto LH_OPEN_ALL
+if %LHPICK% GTR %LHCOUNT% goto LOCALHOST_MENU
+
+set "LHNAME=!LH%LHPICK%_NAME!"
+set "LHPORT=!LH%LHPICK%_PORT!"
+set "LHURL=http://localhost:!LH%LHPICK%_PORT!!LH%LHPICK%_PATH!"
+set "LHSELF=!LH%LHPICK%_SELF!"
+curl.exe -s -o nul -m 1 "http://127.0.0.1:%LHPORT%/" >nul 2>&1
+if not errorlevel 1 goto LH_OPEN
+
+call :LH_START %LHPICK% || goto LOCALHOST_MENU
+:: its own launcher opens the browser - nothing to wait for here
+if "%LHSELF%"=="1" goto LOCALHOST_MENU
+echo   Inditas: %LHNAME% ^(port %LHPORT%^)...
+set /a "LHTRY=0"
+:LH_WAIT
+set /a "LHTRY+=1"
+ping -n 2 127.0.0.1 >nul
+curl.exe -s -o nul -m 1 "http://127.0.0.1:%LHPORT%/" >nul 2>&1
+if not errorlevel 1 goto LH_OPEN
+if !LHTRY! LSS 10 goto LH_WAIT
+echo.
+echo   A szerver 10 masodperc alatt sem valaszolt.
+echo   Nezd meg a "VRG %LHPORT%" ablakot ^(talcan, kis meretben^).
+echo.
+pause
+goto LOCALHOST_MENU
+
+:LH_OPEN
+start "" "%LHURL%"
+goto LOCALHOST_MENU
+
+:LH_OPEN_ALL
+for /L %%i in (1,1,%LHCOUNT%) do (
+    curl.exe -s -o nul -m 1 "http://127.0.0.1:!LH%%i_PORT!/" >nul 2>&1 && start "" "http://localhost:!LH%%i_PORT!!LH%%i_PATH!"
+)
+goto LOCALHOST_MENU
+
+:: Starts entry %1 minimised in a window titled "VRG <port>". exit 1 = could not.
+:LH_START
+set "LHN=%~1"
+set "LHJS=!LH%LHN%_JS!"
+set "LHBAT=!LH%LHN%_BAT!"
+set "LHARGS=!LH%LHN%_ARGS!"
+set "LHP=!LH%LHN%_PORT!"
+if defined LHBAT goto LH_START_BAT
+if not exist "%NODE_EXE%" goto LH_NO_NODE
+if not exist "%REPO%\%LHJS%" goto LH_NO_FILE
+start "VRG %LHP%" /min "%NODE_EXE%" "%REPO%\%LHJS%" %LHARGS%
+exit /b 0
+:LH_START_BAT
+set "LHJS=%LHBAT%"
+if not exist "%REPO%\%LHBAT%" goto LH_NO_FILE
+start "VRG %LHP%" /min "%REPO%\%LHBAT%"
+exit /b 0
+:LH_NO_NODE
+echo   HIBA: nem talalhato a hordozhato Node: %NODE_EXE%
+pause
+exit /b 1
+:LH_NO_FILE
+echo   HIBA: nem talalhato: %REPO%\%LHJS%
+echo   Javitsd a LH%LHN% bejegyzest a START.cmd HELYI SZERVEREK reszeben.
+pause
+exit /b 1
+
 :: ========================= PLANNER CYD KIJELZO ==============================
 :: Mindharom a sajat uj ablakaban fut, a menu itt marad.
 :DO_BOARD
@@ -601,14 +776,16 @@ echo   2^) Demo  ^(kitalalt Planner, bongeszo nelkul^)
 echo   3^) CYD firmware feltoltese  ^(lecsereli a Rocket League kijelzot^)
 echo   4^) Makropad  ^(MAKROK oldal Windowshoz; a Plannert is felveszi^)
 echo   5^) Makropad beallitasa  ^(gombok, gyujtemeny, inditas a Windowszal^)
+echo   M^) Mappa megnyitasa  ^(Firmware\planner-cyd^)
 echo   X^) Vissza
-choice /C 12345X /N /M "Valasztas: "
+choice /C 12345MX /N /M "Valasztas: "
 set "CK=%ERRORLEVEL%"
 if "%CK%"=="1" start "Planner CYD" "%CYD_DIR%\1 - USB - Planner.bat"
 if "%CK%"=="2" start "Planner CYD demo" "%CYD_DIR%\2 - USB - Demo.bat"
 if "%CK%"=="3" start "Planner CYD flash" "%CYD_DIR%\3 - Flash CYD firmware.bat"
 if "%CK%"=="4" start "Planner CYD makropad" "%CYD_DIR%\4 - USB - Makropad.bat"
 if "%CK%"=="5" start "Planner CYD makropad settings" "%CYD_DIR%\5 - Makropad beallitasa.bat"
+if "%CK%"=="6" start "" explorer.exe "%CYD_DIR%"
 goto MENU
 
 :: ====================== KESZLET / INVENTORY MUVELETEK ========================
