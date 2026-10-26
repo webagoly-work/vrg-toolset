@@ -289,3 +289,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - P2 embedded terminal (CITY-D15 C) ✔ 2026-10-26 764913b — not a KV prompt; added from the user's KV-01 answer
 - KV-08 ✔ 2026-10-26 a62235f
 - KV-09 ✔ 2026-10-26 3b9704d
+- KV-10 ✔ 2026-10-26 263c298 (hooks applied after the user's yes; exec form, onFailure continue)
