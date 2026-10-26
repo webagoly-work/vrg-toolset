@@ -1,0 +1,273 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1030" font-family="Segoe UI, system-ui, -apple-system, sans-serif">
+<title>Varler Workflow Kit — áttekintés</title>
+<style>
+  svg { --bg:#f7f6f2; --panel:#ffffff; --card:#fbfbfa; --ink:#1d232b; --muted:#5d6773; --line:#d3d8de;
+        --a1:#2f6fb0; --a2:#6a4fb3; --a3:#b07216; --a4:#1f8a70; --a5:#b6423a; --a6:#5f6b78;
+        --t1:#e7eff8; --t2:#efeaf8; --t3:#f8efe0; --t4:#e3f3ee; --t5:#f8e6e4; --t6:#eceef1; }
+  @media (prefers-color-scheme: dark) {
+    svg { --bg:#14181d; --panel:#1c2229; --card:#232a32; --ink:#e6e9ec; --muted:#9aa5b1; --line:#36404b;
+          --a1:#6ea8e6; --a2:#a58ee8; --a3:#e0a64c; --a4:#4fc4a1; --a5:#e77d74; --a6:#9aa5b1;
+          --t1:#1d2c3d; --t2:#272240; --t3:#33291a; --t4:#17322b; --t5:#3a2120; --t6:#262d35; }
+  }
+  .bg{fill:var(--bg)} .panel{fill:var(--panel);stroke:var(--line)} .card{fill:var(--card);stroke:var(--line)}
+  .ink{fill:var(--ink)} .mut{fill:var(--muted)}
+  .ttl{font-size:26px;font-weight:700;fill:var(--ink)} .sub{font-size:14px;fill:var(--ink)}
+  .en{font-style:italic;fill:var(--muted)}
+  .h{font-size:16px;font-weight:700} .hb{font-size:13px;font-weight:700;fill:var(--ink)}
+  .b{font-size:12.5px;fill:var(--ink)} .s{font-size:11.5px;fill:var(--muted)} .m{font-family:Consolas, monospace;font-size:12px}
+  .arr{stroke:var(--muted);stroke-width:2;fill:none}
+  .c1{fill:var(--a1)} .c2{fill:var(--a2)} .c3{fill:var(--a3)} .c4{fill:var(--a4)} .c5{fill:var(--a5)} .c6{fill:var(--a6)}
+  .k1{stroke:var(--a1)} .k2{stroke:var(--a2)} .k3{stroke:var(--a3)} .k4{stroke:var(--a4)} .k5{stroke:var(--a5)} .k6{stroke:var(--a6)}
+  .f1{fill:var(--t1)} .f2{fill:var(--t2)} .f3{fill:var(--t3)} .f4{fill:var(--t4)} .f5{fill:var(--t5)} .f6{fill:var(--t6)}
+  .dash{stroke-dasharray:6 4}
+</style>
+<defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/>
+  </marker>
+</defs>
+
+<rect class="bg" width="1500" height="1030"/>
+
+<!-- Title -->
+<text x="43" y="52" class="ttl">Varler Workflow Kit — hogyan működik</text>
+<text x="43" y="80" class="sub">Egy villanyszerelési munka útja a bemenettől a Költségvetési Tervezet / Árajánlat PDF-ig: kevés kérdés, minden más levezetve, az arany mintához mérve.</text>
+<text x="43" y="100" class="s en">How the kit works: from the job's input to the cost-plan / quote PDFs. Ask little, derive the rest, check against the golden standard.</text>
+
+<!-- ============ 1 · BEMENET ============ -->
+<rect x="43" y="130" width="262" height="455" rx="12" class="panel"/>
+<rect x="43" y="130" width="262" height="6" rx="3" class="c1"/>
+<text x="57" y="158" class="h c1">1 · Bemenet</text>
+<text x="57" y="175" class="s en">Input level — what the job comes with</text>
+
+<rect x="53" y="188" width="242" height="88" rx="8" class="card"/><rect x="53" y="188" width="4" height="88" class="c1"/>
+<text x="67" y="208" class="hb">L2 · Varler Planner terv</text>
+<text x="67" y="226" class="b"><tspan class="m">.vplan</tspan> → <tspan class="m">takeoff.json</tspan></text>
+<text x="67" y="243" class="b">végpontok, körök, nyomvonal mm-ben</text>
+<text x="67" y="260" class="s">rajzlapok is készülnek</text>
+
+<rect x="53" y="286" width="242" height="70" rx="8" class="card"/><rect x="53" y="286" width="4" height="70" class="c1"/>
+<text x="67" y="306" class="hb">L1 · Alaprajz (PDF / kép)</text>
+<text x="67" y="324" class="b">végpontok a rajzról, útvonal becsült</text>
+<text x="67" y="341" class="s">rajzlap nélkül</text>
+
+<rect x="53" y="366" width="242" height="70" rx="8" class="card"/><rect x="53" y="366" width="4" height="70" class="c1"/>
+<text x="67" y="386" class="hb">L0 · Típus + m² + szobaszám</text>
+<text x="67" y="404" class="b">archetípus-képletek</text>
+<text x="67" y="421" class="s">„felméréssel pontosítandó”</text>
+
+<rect x="53" y="446" width="242" height="104" rx="8" class="card k1 dash" style="stroke-width:1.5"/>
+<text x="67" y="466" class="hb">+ Szöveges leírás <tspan class="s" font-weight="400">(javaslat)</tspan></text>
+<text x="67" y="484" class="b">3. munka: egy menetben, kérdés-</text>
+<text x="67" y="501" class="b">sor nélkül; utána egy számozott</text>
+<text x="67" y="518" class="b">lista: „mind jó, vagy javítás”</text>
+<text x="67" y="538" class="s">PROPOSAL_one-pass-intake 10-25</text>
+
+<!-- ============ 2 · KÉRDÉSSOR ============ -->
+<rect x="331" y="130" width="262" height="455" rx="12" class="panel"/>
+<rect x="331" y="130" width="262" height="6" rx="3" class="c2"/>
+<text x="345" y="158" class="h c2">2 · Kérdéssor</text>
+<text x="345" y="175" class="s en">Question funnel · 02_question_funnel</text>
+
+<rect x="341" y="188" width="242" height="104" rx="8" class="card"/><rect x="341" y="188" width="4" height="104" class="c2"/>
+<text x="355" y="208" class="hb">1. kör · 7 kérdés, egy üzenetben</text>
+<text x="355" y="226" class="b">terv · cím, épület, lift · panelmunka</text>
+<text x="355" y="243" class="b">lakottság · nagyfogyasztók</text>
+<text x="355" y="260" class="b">dokumentum + változat (A / B)</text>
+<text x="355" y="277" class="s">megrendelő, kezdés, munkadíj-sáv</text>
+
+<rect x="341" y="302" width="242" height="70" rx="8" class="card"/><rect x="341" y="302" width="4" height="70" class="c2"/>
+<text x="355" y="322" class="hb">2. kör · csak ami hiányzik</text>
+<text x="355" y="340" class="b">⛔ STOP-ok elöl, indoklással;</text>
+<text x="355" y="357" class="s">☐ választás, az ajánlott megjelölve</text>
+
+<rect x="341" y="382" width="242" height="70" rx="8" class="card"/><rect x="341" y="382" width="4" height="70" class="c2"/>
+<text x="355" y="402" class="hb">3. kör · megerősítés, árakkal</text>
+<text x="355" y="420" class="b">levezetett értékek, ⚠ sorok elöl</text>
+<text x="355" y="437" class="s">„mind jó, vagy javítás számmal”</text>
+
+<text x="345" y="476" class="s">Bizonyosság minden értéknél</text>
+<rect x="341" y="484" width="118" height="24" rx="12" class="f4"/><text x="351" y="500" class="s"><tspan class="c4" font-weight="700">H</tspan> kimondva / terv</text>
+<rect x="465" y="484" width="118" height="24" rx="12" class="f1"/><text x="475" y="500" class="s"><tspan class="c1" font-weight="700">M</tspan> levezetve</text>
+<rect x="341" y="514" width="118" height="24" rx="12" class="f3"/><text x="351" y="530" class="s"><tspan class="c3" font-weight="700">L</tspan> becslés → kérdés</text>
+<rect x="465" y="514" width="118" height="24" rx="12" class="f5"/><text x="475" y="530" class="s"><tspan class="c5" font-weight="700">⛔</tspan> kívül esik</text>
+<text x="345" y="560" class="b"><tspan class="m">funnel.json</tspan> v1.2 → <tspan class="m">funnel.js</tspan></text>
+<text x="345" y="576" class="s">→ <tspan class="m">pipeline_inputs.json</tspan></text>
+
+<!-- ============ 3 · ÁRAZÁS ============ -->
+<rect x="619" y="130" width="262" height="455" rx="12" class="panel"/>
+<rect x="619" y="130" width="262" height="6" rx="3" class="c3"/>
+<text x="633" y="158" class="h c3">3 · Árazás</text>
+<text x="633" y="175" class="s en">Pricing · 01_nv4_build/pipeline</text>
+
+<rect x="629" y="188" width="242" height="66" rx="8" class="card"/><rect x="629" y="188" width="4" height="66" class="c3"/>
+<text x="643" y="208" class="hb"><tspan class="m">takeoff.js</tspan> <tspan class="s" font-weight="400">· L2-nél a tervből</tspan></text>
+<text x="643" y="226" class="b">mennyiségek: horony, cső,</text>
+<text x="643" y="242" class="b">kábel, doboz, végpont</text>
+<line x1="750" y1="255" x2="750" y2="265" class="arr" marker-end="url(#ah)"/>
+
+<rect x="629" y="266" width="242" height="66" rx="8" class="card"/><rect x="629" y="266" width="4" height="66" class="c3"/>
+<text x="643" y="286" class="hb m">price.js</text>
+<text x="643" y="304" class="b">normák × egységár</text>
+<text x="643" y="320" class="b">+ komplexitás-faktorok</text>
+<line x1="750" y1="333" x2="750" y2="343" class="arr" marker-end="url(#ah)"/>
+
+<rect x="629" y="344" width="242" height="66" rx="8" class="card"/><rect x="629" y="344" width="4" height="66" class="c3"/>
+<text x="643" y="364" class="hb"><tspan class="m">offer.js</tspan> → <tspan class="m">offer.json</tspan></text>
+<text x="643" y="382" class="b">munkadíj + anyag, sávval</text>
+<text x="643" y="398" class="b">árszint: P50 (P40–P60)</text>
+
+<rect x="629" y="422" width="242" height="128" rx="8" class="f3"/>
+<text x="643" y="442" class="hb">Skálázó szabályok</text>
+<text x="643" y="460" class="s">Felmérés: (2,0 + 0,12/kör + 0,13/pont</text>
+<text x="643" y="475" class="s">   + 0,2/ÁVK) óra × 8 860 Ft, ±15 %</text>
+<text x="643" y="495" class="s">Hulladék: max(5, horony m / 1,5) zsák</text>
+<text x="643" y="515" class="s">Egységmutató (csak figyelmeztet):</text>
+<text x="643" y="531" class="s">18–35 e Ft/m² · 18–32 e Ft/végpont</text>
+
+<!-- ============ 4 · DOKUMENTUMOK ============ -->
+<rect x="907" y="130" width="262" height="455" rx="12" class="panel"/>
+<rect x="907" y="130" width="262" height="6" rx="3" class="c4"/>
+<text x="921" y="158" class="h c4">4 · Dokumentumok</text>
+<text x="921" y="175" class="s en">Client documents · build.js → offerdoc.js → PDF</text>
+
+<rect x="917" y="188" width="118" height="28" rx="14" class="f4"/><text x="976" y="206" class="b" text-anchor="middle">Költségv. Tervezet</text>
+<rect x="1041" y="188" width="118" height="28" rx="14" class="f4"/><text x="1100" y="206" class="b" text-anchor="middle">Árajánlat</text>
+<rect x="917" y="222" width="118" height="28" rx="14" class="card"/><text x="976" y="240" class="b" text-anchor="middle">A · anyaggal</text>
+<rect x="1041" y="222" width="118" height="28" rx="14" class="card"/><text x="1100" y="240" class="b" text-anchor="middle">B · csak munkadíj</text>
+<text x="921" y="266" class="s">típus × változat: az 1. kör 6. kérdése</text>
+<text x="921" y="290" class="hb">Egy csomag (típusonként 6 PDF)</text>
+
+<g>
+  <rect x="923" y="300" width="18" height="24" rx="2" class="card k4" style="stroke-width:1.5"/>
+  <text x="951" y="317" class="b">Fő dokumentum <tspan class="s">· 5 oldal</tspan></text>
+  <rect x="923" y="332" width="18" height="24" rx="2" class="card k4" style="stroke-width:1.5"/>
+  <text x="951" y="349" class="b">12.1 Munkadíj tételes bontás</text>
+  <rect x="923" y="364" width="18" height="24" rx="2" class="card k4" style="stroke-width:1.5"/>
+  <text x="951" y="381" class="b">12.2 Anyag tételes lista</text>
+  <rect x="923" y="396" width="18" height="24" rx="2" class="card k4" style="stroke-width:1.5"/>
+  <text x="951" y="413" class="b">12.3 Műszaki leírás</text>
+  <rect x="923" y="428" width="18" height="24" rx="2" class="card k4" style="stroke-width:1.5"/>
+  <text x="951" y="445" class="b">12 Mellékletek egyben</text>
+  <rect x="920" y="460" width="24" height="18" rx="2" class="card k4" style="stroke-width:1.5"/>
+  <text x="951" y="474" class="b">Rajzlapok V-01, V-02 <tspan class="s">· A3</tspan></text>
+</g>
+<text x="921" y="506" class="s">rajzlap csak L2 bemenetnél (Planner terv)</text>
+<text x="921" y="540" class="b">Kód: <tspan class="m">VG-2026-&lt;KÓD&gt;-01</tspan></text>
+<text x="921" y="558" class="s">automatikus, felülírható; ütközés-figyelés</text>
+
+<!-- ============ 5 · ELLENŐRZÉS ============ -->
+<rect x="1195" y="130" width="262" height="455" rx="12" class="panel"/>
+<rect x="1195" y="130" width="262" height="6" rx="3" class="c5"/>
+<text x="1209" y="158" class="h c5">5 · Ellenőrzés</text>
+<text x="1209" y="175" class="s en">Golden check · 02_golden_nv4</text>
+
+<rect x="1205" y="188" width="242" height="70" rx="8" class="card"/><rect x="1205" y="188" width="4" height="70" class="c5"/>
+<text x="1219" y="208" class="hb">Arany minta: NV4</text>
+<text x="1219" y="226" class="b">12 PDF + pontos HTML-forrás</text>
+<text x="1219" y="243" class="s">+ referencia-képek oldalanként</text>
+
+<rect x="1205" y="268" width="242" height="70" rx="8" class="card"/><rect x="1205" y="268" width="4" height="70" class="c5"/>
+<text x="1219" y="288" class="hb m">check_golden.js</text>
+<text x="1219" y="306" class="b">FAIL → javítani</text>
+<text x="1219" y="323" class="b">WARN → megmagyarázni</text>
+
+<rect x="1205" y="348" width="242" height="70" rx="8" class="card"/><rect x="1205" y="348" width="4" height="70" class="c5"/>
+<text x="1219" y="368" class="hb">Védett szövegek</text>
+<text x="1219" y="386" class="b">tiltott szavak; a Tervezet</text>
+<text x="1219" y="403" class="b">soha nem „ajánlat”</text>
+
+<rect x="1205" y="428" width="242" height="54" rx="8" class="card"/><rect x="1205" y="428" width="4" height="54" class="c5"/>
+<text x="1219" y="448" class="hb">Variációs szabályok</text>
+<text x="1219" y="466" class="b">Tervezet ↔ Árajánlat · A ↔ B</text>
+
+<rect x="1205" y="492" width="242" height="54" rx="8" class="card"/><rect x="1205" y="492" width="4" height="54" class="c5"/>
+<text x="1219" y="512" class="hb">Szemrevételezés</text>
+<text x="1219" y="530" class="b">fejléc, táblák, fizetendő sáv</text>
+
+<rect x="1261" y="556" width="130" height="22" rx="11" class="c4"/>
+<text x="1326" y="571" font-size="12" font-weight="700" text-anchor="middle" style="fill:var(--panel)">→ átadás</text>
+
+<!-- arrows between stages -->
+<line x1="307" y1="300" x2="329" y2="300" class="arr" marker-end="url(#ah)"/>
+<line x1="595" y1="300" x2="617" y2="300" class="arr" marker-end="url(#ah)"/>
+<line x1="883" y1="300" x2="905" y2="300" class="arr" marker-end="url(#ah)"/>
+<line x1="1171" y1="300" x2="1193" y2="300" class="arr" marker-end="url(#ah)"/>
+<!-- round-3 loop: priced offer back into the funnel -->
+<path d="M 750 586 C 750 618, 462 618, 462 588" class="arr k3" marker-end="url(#ah)"/>
+<text x="606" y="626" class="s" text-anchor="middle">offer.json → 3. kör (árakkal); árat érintő javítás → újraárazás</text>
+<!-- to the market step -->
+<line x1="1326" y1="586" x2="1326" y2="638" class="arr dash" marker-end="url(#ah)"/>
+
+<!-- ============ Esetlap / napló ============ -->
+<rect x="43" y="646" width="550" height="130" rx="12" class="panel"/>
+<rect x="43" y="646" width="6" height="130" rx="3" class="c6"/>
+<text x="61" y="672" class="h ink">Munkánként: Esetlap és napló</text>
+<text x="61" y="689" class="s en">Per job: the job folder, its answers and its log</text>
+<text x="61" y="712" class="b">job mappa · Esetlap · <tspan class="m">answers_r1 / r2 / r3.json</tspan> (a felhasználó szavaival)</text>
+<text x="61" y="731" class="b"><tspan class="m">WORKLOG</tspan>: minden futás, melyik adattal, mi jött ki; a ⛔ döntések megjelölve</text>
+<text x="61" y="750" class="b"><tspan class="m">job_codes.json</tspan>: csak kód + hash · ügyféladat csak OneDrive-on</text>
+<text x="61" y="767" class="s">a munka végén: tanulság-javaslat a kit szabályaihoz (csak jóváhagyással)</text>
+
+<!-- ============ 9 · Piaci mérés ============ -->
+<rect x="619" y="646" width="838" height="130" rx="12" class="panel k6 dash" style="stroke-width:1.5"/>
+<text x="633" y="672" class="h ink">9 · Utólagos piaci mérés <tspan class="s" font-weight="400">— választható, belső</tspan></text>
+<text x="633" y="689" class="s en">Optional post-hoc market measurement. Internal only, never in a client document.</text>
+
+<rect x="633" y="700" width="250" height="64" rx="8" class="card"/>
+<text x="645" y="719" class="hb">vrg-piacmero ügynök</text>
+<text x="645" y="737" class="b m">market.js compare</text>
+<text x="645" y="754" class="s">&lt;job&gt;/offer.json, a kész munka</text>
+<line x1="885" y1="732" x2="909" y2="732" class="arr" marker-end="url(#ah)"/>
+<rect x="911" y="700" width="250" height="64" rx="8" class="card"/>
+<text x="923" y="719" class="hb m">providers_&lt;dátum&gt;.json</text>
+<text x="923" y="737" class="b">közzétett magyar árlisták</text>
+<text x="923" y="754" class="s">60 napnál régebbi → frissítés</text>
+<line x1="1163" y1="732" x2="1187" y2="732" class="arr" marker-end="url(#ah)"/>
+<rect x="1189" y="700" width="256" height="64" rx="8" class="card"/>
+<text x="1201" y="719" class="hb m">PIACI_OSSZEVETES.md</text>
+<text x="1201" y="737" class="b">+ <tspan class="m">piac.json</tspan> · struktúra 0…1</text>
+<text x="1201" y="754" class="s">→ offer_struktura_&lt;sss&gt;.json (A/B/C)</text>
+
+<!-- ============ Alapok ============ -->
+<rect x="43" y="796" width="1414" height="134" rx="12" class="panel"/>
+<text x="61" y="822" class="h ink">Alapok és tanulási kör</text>
+<text x="250" y="822" class="s en">Foundations and the learning loop: each job makes the next one cheaper</text>
+
+<rect x="57" y="836" width="337" height="82" rx="8" class="f6"/>
+<text x="71" y="856" class="hb">00_precursors</text>
+<text x="71" y="874" class="b">árlisták, komplexitás-faktorkönyvtár,</text>
+<text x="71" y="891" class="b">piackutatás 2026-09-30, P33 visszamérés</text>
+<text x="71" y="908" class="s">ügyfél-PDF-ek: kiadás előtt anonimizálni</text>
+
+<rect x="404" y="836" width="337" height="82" rx="8" class="f2"/>
+<text x="418" y="856" class="hb">Döntések → szabályok</text>
+<text x="418" y="874" class="b">DECISIONS L-1…L-18 → <tspan class="m">funnel.json</tspan></text>
+<text x="418" y="891" class="b">v1.0 → v1.1 (műhely) → v1.2 (2. munka)</text>
+<text x="418" y="908" class="s">visszajátszás: NV4 28/28 · v12 A 12/12 · B 6/6</text>
+
+<rect x="751" y="836" width="337" height="82" rx="8" class="f3"/>
+<text x="765" y="856" class="hb">Kalibráció munkánként</text>
+<text x="765" y="874" class="b">horony m/m² · kábel m/végpont · cső m/pont</text>
+<text x="765" y="891" class="b">minden kész munka +1 sor a táblában</text>
+<text x="765" y="908" class="s">±25 % sáv kb. 5 kalibrált munkáig</text>
+
+<rect x="1098" y="836" width="345" height="82" rx="8" class="f1"/>
+<text x="1112" y="856" class="hb">Kapcsolatok a VRG-ben</text>
+<text x="1112" y="874" class="b">Planner <tspan class="m">takeoff.js</tspan> → MENNYISEGEK.md</text>
+<text x="1112" y="891" class="b">Calculator árlisták · VRG Kapu (KALK)</text>
+<text x="1112" y="908" class="s">a kit Git-en kívül él: Varler_Workflow_Kit</text>
+
+<!-- ============ Állapot ============ -->
+<text x="43" y="958" class="hb">Állapot <tspan class="s" font-weight="400">(README, 2026-10-25)</tspan></text>
+<g font-size="11.5">
+  <rect x="43"   y="968" width="168" height="44" rx="8" class="f4"/><text x="53"   y="986" class="ink" font-weight="700">1 ✓ Mappák, kód</text><text x="53"   y="1003" class="mut">12/12 PDF visszaállítva</text>
+  <rect x="221"  y="968" width="168" height="44" rx="8" class="f4"/><text x="231"  y="986" class="ink" font-weight="700">2 ✓ Leírások</text><text x="231"  y="1003" class="mut">brief, szabályok, napló</text>
+  <rect x="399"  y="968" width="168" height="44" rx="8" class="f4"/><text x="409"  y="986" class="ink" font-weight="700">3 ✓ Arany minta</text><text x="409"  y="1003" class="mut">spec + ellenőrző</text>
+  <rect x="577"  y="968" width="168" height="44" rx="8" class="f4"/><text x="587"  y="986" class="ink" font-weight="700">4 ✓ Kérdéssor</text><text x="587"  y="1003" class="mut">3 kör + táblák</text>
+  <rect x="755"  y="968" width="168" height="44" rx="8" class="f3"/><text x="765"  y="986" class="ink" font-weight="700">5 ● Biztosítékok</text><text x="765"  y="1003" class="mut">Esetlap, forrás-létra</text>
+  <rect x="933"  y="968" width="168" height="44" rx="8" class="card"/><text x="943"  y="986" class="ink" font-weight="700">6 ○ Hordozható kit</text><text x="943"  y="1003" class="mut">START + zip, hidegindítás</text>
+  <rect x="1111" y="968" width="168" height="44" rx="8" class="card"/><text x="1121" y="986" class="ink" font-weight="700">7 ○ Alaprajz-modul</text><text x="1121" y="1003" class="mut">később</text>
+  <rect x="1289" y="968" width="168" height="44" rx="8" class="f4"/><text x="1299" y="986" class="ink" font-weight="700">+ ✓ Piaci mérés</text><text x="1299" y="1003" class="mut">P33 és DM1 tesztelve</text>
+</g>
+</svg>
