@@ -5,6 +5,7 @@ onTimeChanged = () => { if (fen.list.length) fenDraw(); tlRender(); lensApply();
 if (window.CITY) {
   load(window.CITY);
   liveInit();   // 22-live: "Mi változott?" and, when served, the live stream
+  setInterval(hlRibbon, 1500);   // 27-health: the Now ribbon follows sessions, jobs, fences and changes
   // test hook: #livetest=<path> waits for the live stream's hello (and its catch-up swap), closes the stream so
   // headless time runs again, then feeds one fs event for that path and opens "Mi változott?" (served only).
   // Registered here, not in the timer below: an open stream stops headless Chrome's clock before it fires.
@@ -85,6 +86,17 @@ if (window.CITY) {
       fencesEvent({ list: [{ p: f1, owners: [{ kind: 'session', id: 'aaaa1111' }, { kind: 'worktree', id: 'cloudflare-ecosystem' }], conflict: true },
         { p: f2, owners: [{ kind: 'session', id: 'bbbb2222' }], conflict: false }] });
       agToggle(true);
+    }
+    // test hook: #healthtest=fail|pass — the Kódváros selftest failed (storm over CodeCity, a repair tunnel through the
+    // files its output names, a 'needs you' line) or passed (calm); plus one stale build (no segéd needed)
+    if (q.get('healthtest')) {
+      const fail = q.get('healthtest') === 'fail';
+      jb.list = [{ id: 'codecity-selftest', name: 'Kódváros selftest', kind: 'test', state: 'fut', district: 'CodeCity' },
+        { id: 'hub-test', name: 'VRG Kapu tesztek', kind: 'test', state: 'kész', district: 'Hub' }];
+      jb.logs.set('codecity-selftest', ['ok    scanner', 'FAIL  mcp: city_query uses the page parser', '    at CodeCity/core.js:41:7', '    at CodeCity/src/09-ask.js:88', '    at CodeCity/mcp.js:120']);
+      pipesEvent({ list: [{ id: 'hub', name: 'VRG Kapu', out: 'Hub/dist/vrg-kapu.html', job: 'hub-build', src: 'Hub/src', newest: 'Hub/src/js/40-actions.js', stale: true }] });
+      jobEvent({ id: 'codecity-selftest', name: 'Kódváros selftest', kind: 'test', state: fail ? 'hiba' : 'kész', code: fail ? 1 : 0, district: 'CodeCity' });
+      hlRibbon();
     }
     const dt = (q.get('droptest') || '').split(',');
     if (dt.length === 3) dockToggle(true).then(() => {

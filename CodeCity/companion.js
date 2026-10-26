@@ -47,6 +47,9 @@
 // 500-line ring per job and streamed ('job', 'joblog'); stop = taskkill /PID <pid> /T /F (the whole tree).
 // The port street: the TCP LISTEN table (netstat -ano) + process names (tasklist), polled every 5 s while a
 // page listens ('ports'). Only listening ports, never connections.
+// Pipes (P6, KV-15): for each build, the newest source file against the page it builds; a source newer than
+// the page = a stale build ('pipes', rechecked on file changes). Each test and build job names the district
+// it speaks for, so the page can put weather over it.
 //
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
@@ -290,6 +293,7 @@ function liveOn(type, name) {
   }
   clearTimeout(live.timer);
   live.timer = setTimeout(liveFlush, LIVE_DEBOUNCE);
+  pipesSoon();
 }
 function liveStart() {
   if (!WATCH || live.watcher) return;
@@ -510,17 +514,17 @@ function jobDefs() {
   }
   const npm = path.join(REPO, 'Planner', 'apps', 'node', 'node_modules', 'npm', 'bin', 'npm-cli.js');
   const fixed = [
-    ['codecity-build', 'Kódváros oldal (build)', 'build', ['CodeCity/build.js']],
-    ['hub-build', 'VRG Kapu (build)', 'build', ['tools/build-hub.js']],
-    ['planner-build', 'Varler Planner (npm run build)', 'build', [npm, 'run', 'build'], 'Planner/projects/varler-planner'],
-    ['codecity-selftest', 'Kódváros selftest', 'test', ['CodeCity/tools/selftest.js']],
-    ['check-start', 'START.cmd ellenőrzés', 'test', ['tools/check-start.js']],
-    ['hub-test', 'VRG Kapu tesztek', 'test', ['Hub/test/run.js']]
+    ['codecity-build', 'Kódváros oldal (build)', 'build', ['CodeCity/build.js'], null, 'CodeCity'],
+    ['hub-build', 'VRG Kapu (build)', 'build', ['tools/build-hub.js'], null, 'Hub'],
+    ['planner-build', 'Varler Planner (npm run build)', 'build', [npm, 'run', 'build'], 'Planner/projects/varler-planner', 'Planner'],
+    ['codecity-selftest', 'Kódváros selftest', 'test', ['CodeCity/tools/selftest.js'], null, 'CodeCity'],
+    ['check-start', 'START.cmd ellenőrzés', 'test', ['tools/check-start.js'], null, 'Planner'],
+    ['hub-test', 'VRG Kapu tesztek', 'test', ['Hub/test/run.js'], null, 'Hub']
   ];
-  for (const [id, name, kind, argv, cwd] of fixed) {
+  for (const [id, name, kind, argv, cwd, district] of fixed) {
     const script = path.isAbsolute(argv[0]) ? argv[0] : path.join(REPO, argv[0]);
     if (!exists(script)) continue;
-    out.push({ id, name, kind, cmd: [script, ...argv.slice(1)], cwd: cwd ? path.join(REPO, cwd) : REPO, script: argv[0] });
+    out.push({ id, name, kind, cmd: [script, ...argv.slice(1)], cwd: cwd ? path.join(REPO, cwd) : REPO, script: argv[0], district });
   }
   return jobs.list = out;
 }
@@ -528,7 +532,7 @@ const jobState = def => {
   const r = jobs.run.get(def.id), ext = def.port && jobs.ports.find(x => x.port === def.port && (!r || x.pid !== r.pid));
   return { id: def.id, name: def.name, kind: def.kind, port: def.port || null, path: def.path || null, key: def.key || null, why: def.why || null,
     state: r && r.code === null ? 'fut' : ext ? 'fut (máshonnan)' : r ? (r.stopped ? 'leállítva' : r.code === 0 ? 'kész' : 'hiba') : 'áll',
-    code: r ? r.code : null, pid: r && r.code === null ? r.pid : null, startedAt: r ? r.at : null, ownPid: ext ? ext.pid : null, script: def.script || null };
+    code: r ? r.code : null, pid: r && r.code === null ? r.pid : null, startedAt: r ? r.at : null, ownPid: ext ? ext.pid : null, script: def.script || null, district: def.district || null };
 };
 const jobsPub = () => jobDefs().map(jobState);
 function jobLog(r, text) {
@@ -588,6 +592,37 @@ function portsPoll() {
       if (sig !== jobs.portsSig) { jobs.portsSig = sig; liveEmit('ports', { list: jobs.ports }); liveEmit('jobs', { list: jobsPub() }); }
     });
   });
+}
+// ---- pipes: sources -> the page they build; stale when a source is newer than the page
+const PIPES = [
+  { id: 'codecity', name: 'Kódváros oldal', src: ['CodeCity/src', 'CodeCity/build.js'], out: 'CodeCity/dist/vrg-codecity.html', job: 'codecity-build' },
+  { id: 'hub', name: 'VRG Kapu', src: ['Hub/src', 'tools/build-hub.js'], out: 'Hub/dist/vrg-kapu.html', job: 'hub-build' },
+  { id: 'planner', name: 'Varler Planner', src: ['Planner/projects/varler-planner/src'], out: 'Planner/projects/varler-planner/dist/varler_planner.html', job: 'planner-build' },
+  { id: 'inventory', name: 'VRG Készlet', src: ['Inventory/src', 'Inventory/build'], out: 'Inventory/dist/vrg-inventory.html', job: null }
+];
+const pipes = { sig: '', timer: null };
+function newest(rel, depth = 0) {
+  const p = path.join(REPO, rel);
+  let st; try { st = fs.statSync(p); } catch (e) { return null; }
+  if (st.isFile()) return { t: st.mtimeMs, p: rel };
+  if (depth > 6) return null;
+  let best = null;
+  for (const n of fs.readdirSync(p)) { if (n === 'node_modules' || n.startsWith('.')) continue; const x = newest(rel + '/' + n, depth + 1); if (x && (!best || x.t > best.t)) best = x; }
+  return best;
+}
+function pipesList() {
+  return PIPES.map(pp => {
+    let out; try { out = fs.statSync(path.join(REPO, pp.out)).mtimeMs; } catch (e) { out = null; }
+    const src = pp.src.map(x => newest(x)).filter(Boolean).sort((a, b) => b.t - a.t)[0] || null;
+    if (!src && out === null) return null;
+    return { id: pp.id, name: pp.name, out: pp.out, job: pp.job, src: pp.src[0], newest: src ? src.p : null,
+      stale: !!(src && (out === null || src.t > out + 1000)), outAt: out, srcAt: src ? src.t : null };
+  }).filter(Boolean);
+}
+function pipesSoon(ms = 1500) {
+  clearTimeout(pipes.timer);
+  pipes.timer = setTimeout(() => { const list = pipesList(), sig = JSON.stringify(list.map(x => [x.id, x.stale]));
+    if (sig !== pipes.sig) { pipes.sig = sig; liveEmit('pipes', { list }); } }, ms);
 }
 function portsSoon() { setTimeout(portsPoll, 600); }
 function portsStart() { if (!jobs.portTimer) { jobs.portTimer = setInterval(portsPoll, 5000); jobs.portTimer.unref(); } portsPoll(); }
@@ -759,6 +794,7 @@ const server = http.createServer((req, res) => {
     if (fences.sig) res.write('event: fences\ndata: {"list":' + fences.sig + '}\n\n');
     worktreesSoon();
     portsStart();
+    res.write('event: pipes\ndata: ' + JSON.stringify({ list: pipesList() }) + '\n\n');
     live.clients.add(res);
     agentsStart();
     req.on('close', () => live.clients.delete(res));

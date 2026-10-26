@@ -121,8 +121,8 @@ async function jbLoad() {
   } catch (e) { /* the segéd is gone */ }
 }
 function jbJob(st) { const k = jb.list.findIndex(j => j.id === st.id); if (k >= 0) jb.list[k] = st; else jb.list.push(st); jbPanel(); }
-function jobsEvent(d) { jb.list = d.list || []; jbPanel(); jbDraw(); }
-function jobEvent(st) { jbJob(st); jbDraw(); }
+function jobsEvent(d) { jb.list = d.list || []; jbPanel(); jbDraw(); hlDraw(); hlRibbon(); }
+function jobEvent(st) { jbJob(st); jbDraw(); hlJobChanged(st); }   // 27-health: weather, tunnel, ribbon
 function joblogEvent(d) {
   const a = jb.logs.get(d.id) || [];
   a.push(...d.lines); if (a.length > 500) a.splice(0, a.length - 500);

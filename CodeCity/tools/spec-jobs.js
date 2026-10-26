@@ -29,6 +29,9 @@ async function start() {
   // the server starts a child of its own, so 'stop' must take a tree down, not one process
   put(path.join(fx, 'tools', 'srv.js'), `require('child_process').spawn(process.execPath, ['-e', 'setInterval(()=>{},1e9)'], { stdio: 'ignore' });\n` +
     `require('http').createServer((q, r) => r.end('ok')).listen(${P}, '127.0.0.1', () => console.log('fixture server on ${P}'));\n`);
+  // a stand-in selftest: fails until CodeCity/tools/ok exists (the weather check of KV-15)
+  put(path.join(fx, 'CodeCity', 'tools', 'selftest.js'), "const ok = require('fs').existsSync(__dirname + '/ok');\n" +
+    "console.log(ok ? 'all passed' : 'FAIL  scanner\\n    at CodeCity/scan.js:12:5'); process.exit(ok ? 0 : 1);\n");
   put(path.join(fx, 'Planner', 'START.cmd'), ['@echo off', 'set "LH1_NAME=Proba szerver"', `set "LH1_PORT=${P}"`, 'set "LH1_PATH=/"', 'set "LH1_JS=tools\\srv.js"', 'set "LHCOUNT=1"', ''].join('\r\n'));
   const cfg = path.join(fx, 'none.json');
   put(cfg, JSON.stringify({ agentsCmd: [process.execPath, '-e', 'console.log("[]")'] }));
@@ -99,6 +102,17 @@ module.exports = [
     assert.strictEqual(await listening(P), false, 'port free');
     const after = Number(execFileSync('powershell', ['-NoProfile', '-Command', `(Get-CimInstance Win32_Process -Filter "Name='node.exe'" | ? { $_.CommandLine -like '*setInterval*1e9*' } | measure).Count`], { encoding: 'utf8' }).trim());
     assert.ok(after < before, `the server's own child died too (${before} -> ${after})`);
+  } },
+  { name: 'health: a failing selftest job reads hiba for its district, its log names the file; fixed it reads kész; pipes arrive', async fn() {
+    assert.ok(events.some(e => e.name === 'pipes' && Array.isArray(e.data.list)), 'pipes on connect');
+    assert.strictEqual((await req('POST', '/api/job-start', { body: { id: 'codecity-selftest' } })).status, 200);
+    const bad = await waitFor(e => e.name === 'job' && e.data.id === 'codecity-selftest' && e.data.state === 'hiba', 8000);
+    assert.ok(bad && bad.data.district === 'CodeCity', 'storm: ' + JSON.stringify(bad && bad.data));
+    assert.ok(events.some(e => e.name === 'joblog' && e.data.id === 'codecity-selftest' && e.data.lines.some(l => l.includes('CodeCity/scan.js:12'))), 'the tunnel\'s file is in the log');
+    fs.writeFileSync(path.join(fx, 'CodeCity', 'tools', 'ok'), '');
+    events.length = 0;
+    assert.strictEqual((await req('POST', '/api/job-start', { body: { id: 'codecity-selftest' } })).status, 200);
+    assert.ok(await waitFor(e => e.name === 'job' && e.data.id === 'codecity-selftest' && e.data.state === 'kész', 8000), 'calm again');
     srv.stream.destroy(); srv.child.kill();
   } }
 ];

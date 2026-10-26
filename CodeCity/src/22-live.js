@@ -81,7 +81,7 @@ async function liveSwap() {
     if (open) { const f = city.files.find(x => x.p === open); if (f) showFile(f); }
     if (picked) selSetPaths(picked);
     agentsEvent({ list: ag.list });   // the figures stood in the old city
-    fenDraw(); jbDraw();
+    fenDraw(); jbDraw(); hlDraw();
     const n = city.commits.length - was;
     // the new commits flash like a replay step, and their files pulse
     const idx = [];
@@ -114,6 +114,7 @@ function liveConnect() {
   live.es.addEventListener('job', e => { if (liveMine()) jobEvent(JSON.parse(e.data)); });
   live.es.addEventListener('joblog', e => { if (liveMine()) joblogEvent(JSON.parse(e.data)); });
   live.es.addEventListener('ports', e => { if (liveMine()) portsEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('pipes', e => { if (liveMine()) pipesEvent(JSON.parse(e.data)); });   // 27-health
   live.es.onerror = () => { $('live-dot').hidden = true; };
 }
 function liveFsEvent(d) {
