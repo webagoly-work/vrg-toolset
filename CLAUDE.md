@@ -190,6 +190,10 @@ All of them run in the **main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_
 - **`GO CITY`** — read `GO-CITY.md` at the repo root and do what it says: VRG Kódváros, the codebase-as-a-city
   viewer (C1–C10 on `main`; **parked**: base fine-tuning from the user's dev notes, a later Claude Design
   batch candidate — README §7). New WPs start from `main`.
+- **`GO LIVE`** — read `GO-LIVE.md` at the repo root and do what it says: build Kódváros into the live
+  workspace / GitWorld / overlay OS from the prompt series `docs/city/PROMPTS-WORKSPACE.md` (KV-01 …
+  KV-27, research in `docs/research/reports/Kódváros live workspace and GitWorld.md`). Meant for the
+  secondary account (start steps in GO-LIVE §0); one prompt per step, commit, never push.
 - **`GO STRICT`** — **done**: the five programs VRG Kapu links to are on `main` (`check-hub --strict` → Rendben). Retired.
 - **`GO ALL`** — **retired** 2026-10-24: `dev-all` is replaced by `main`. See GO MAIN.
 - **`GO MAIN`** — **done** 2026-10-24 (`GO-MAIN.md`): every line consolidated into `main`, the other
