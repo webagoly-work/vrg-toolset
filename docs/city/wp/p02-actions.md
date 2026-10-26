@@ -7,4 +7,4 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/src/*, CodeCity/from-kapu/src/js/40-actions.js, 41-search.js, 47-nav.js, 92-companion.js, CodeCity/build.js, vendor-manifest.json
 - **Decisions:** D9, D15
 - **Prompts:** KV-05, KV-06, KV-07
-- **Status:** open
+- **Status:** in progress — KV-05 ✔ 0d38244 (RCO menu); KV-06, KV-07 and the embedded terminal (D15 C) next
