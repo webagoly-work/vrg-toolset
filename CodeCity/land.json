@@ -1,0 +1,13 @@
+{
+  "kind": "vrg-land",
+  "version": 1,
+  "_comment": "The Land (L1): everything ours, one hex slot each (axial q, r; Kódváros at 0,0). A slot is assigned once and never moves — a new place takes the next free slot and is appended here. Live data never goes in this file (CITY-D27 A).",
+  "places": [
+    { "id": "kodvaros", "name": "Kódváros", "kind": "city", "slot": [0, 0], "what": "ez a repó, a kód városa" },
+    { "id": "tarhaz", "name": "Tárház", "kind": "disk", "slot": [1, -1], "what": "a H: meghajtó raktárvárosa (csak méretek, csak a memóriában)" },
+    { "id": "eromu", "name": "Erőmű", "kind": "pc", "slot": [1, 0], "what": "ez a gép: CPU, RAM, GPU, lemez (KV-18)" },
+    { "id": "palyaudvar", "name": "Pályaudvar", "kind": "router", "slot": [0, 1], "what": "a TP-Link router, 192.168.0.1 (KV-18)" },
+    { "id": "hatar", "name": "Határ", "kind": "border", "slot": [-1, 1], "what": "a Huawei ONT: kijárat az internetre (KV-18)" },
+    { "id": "usbfalu", "name": "USB-falu", "kind": "usb", "slot": [-1, 0], "what": "a bedugott eszközök falva (megjelenik, ha van)" }
+  ]
+}

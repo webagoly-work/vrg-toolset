@@ -57,6 +57,11 @@
 // merges in memory and touches neither the working tree nor a ref: clean, or the conflicting files. The city
 // never merges (CITY-D10 A); merging is a pre-filled Claude prompt, so no safety ref is ever needed here.
 //
+// The Land (P8, KV-17): GET /api/land = CodeCity/land.json (places on fixed hex slots). GET /api/disk = Tárház:
+// disk-walk.js sums the H: drive's folder sizes in its own process (~45 s, two levels, links not followed,
+// restricted folders walled); the answer is kept in memory only (CITY-D27 A, the user's choice 2026-10-26) and
+// re-walked after 10 minutes; a finished walk goes out on the stream as 'disk'.
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -670,6 +675,22 @@ async function mergePreview(branch) {
   return { code: 200, body: { main, branch, clean: mt.ok, conflicts, both: ours.filter(f => theirs.includes(f)), theirs: theirs.slice(0, 500), ours: ours.length } };
 }
 
+// ---- Tárház: the H: walk, in memory only
+const DISK_ROOT = path.parse(REPO).root, DISK_TTL = 10 * 60 * 1000;
+const disk = { data: null, child: null };
+function diskWalk() {
+  if (disk.child || (disk.data && Date.now() - disk.data.at < DISK_TTL)) return;
+  if (DRY) { disk.data = { root: DISK_ROOT, at: Date.now(), partial: false, dirs: [], dryRun: true }; return; }
+  const child = spawn(process.execPath, [path.join(CITY, 'disk-walk.js'), DISK_ROOT, '45', REPO], { stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+  let out = '';
+  child.stdout.on('data', d => { out += d; });
+  child.on('exit', () => { disk.child = null; try { disk.data = JSON.parse(out); liveEmit('disk', disk.data); } catch (e) { /* keep the last */ } });
+  child.on('error', () => { disk.child = null; });
+  disk.child = child;
+}
+process.on('exit', () => { if (disk.child) try { disk.child.kill(); } catch (e) { /* gone */ } });
+const landJson = () => { try { return JSON.parse(fs.readFileSync(path.join(CITY, 'land.json'), 'utf8')); } catch (e) { return null; } };
+
 // ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
 async function catalog() {
   const read = p => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
@@ -824,9 +845,11 @@ const server = http.createServer((req, res) => {
   if (origin && !ORIGINS.has(origin)) return send(res, 403, { error: 'origin' });
   if (req.method === 'GET' && url.pathname === '/api/status') return status().then(s => send(res, 200, s));
   if (req.method === 'GET' && url.pathname === '/api/catalog') return catalog().then(c => send(res, 200, c));
-  if (req.method === 'GET' && (url.pathname === '/api/stream' || url.pathname === '/api/city' || url.pathname === '/api/file' || url.pathname === '/api/jobs' || url.pathname === '/api/gitmap' || url.pathname === '/api/merge-preview')) {
+  if (req.method === 'GET' && (url.pathname === '/api/stream' || url.pathname === '/api/city' || url.pathname === '/api/file' || url.pathname === '/api/jobs' || url.pathname === '/api/gitmap' || url.pathname === '/api/merge-preview' || url.pathname === '/api/land' || url.pathname === '/api/disk')) {
     const ck = /(?:^|;\s*)kv_t=([0-9a-f]+)/.exec(String(req.headers.cookie || ''));
     if (!ck || ck[1].length !== TOKEN.length || !crypto.timingSafeEqual(Buffer.from(ck[1]), Buffer.from(TOKEN))) return send(res, 401, { error: 'token' });
+    if (url.pathname === '/api/land') { const l = landJson(); return send(res, l ? 200 : 404, l || { error: 'CodeCity/land.json hiányzik' }); }
+    if (url.pathname === '/api/disk') { diskWalk(); return send(res, 200, disk.data ? Object.assign({ walking: !!disk.child }, disk.data) : { walking: true, dirs: [] }); }
     if (url.pathname === '/api/gitmap') return gitMap().then(m => send(res, 200, m));
     if (url.pathname === '/api/merge-preview') return mergePreview(url.searchParams.get('branch')).then(r => send(res, r.code, r.body || { error: r.error }));
     if (url.pathname === '/api/jobs') return send(res, 200, { list: jobsPub(), logs: Object.fromEntries([...jobs.run].map(([id, r]) => [id, r.lines.slice(-200)])), ports: jobs.ports });

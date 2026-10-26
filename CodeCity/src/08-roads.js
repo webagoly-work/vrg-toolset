@@ -81,9 +81,11 @@ function flyTo(f) {
     const k = Math.min(1, Math.max(0, (performance.now() - t0) / 450)), e = k * (2 - k);
     orbit.target.lerpVectors(from, to, e); orbit.r = r0 + (r1 - r0) * e;
     placeCamera();
-    if (k < 1) requestAnimationFrame(step);
+    if (k < 1) flyCamera.raf = requestAnimationFrame(step);
   };
-  requestAnimationFrame(step);
+  // one flight at a time: Home (or any other fly) pressed mid-flight wins, the old flight stops
+  cancelAnimationFrame(flyCamera.raf);
+  flyCamera.raf = requestAnimationFrame(step);
 }
 
 $('panel').addEventListener('click', e => {

@@ -145,6 +145,17 @@ module.exports = [
     const ok = await post('file-save', { path: 'CodeCity/scan.js', text: f.json.text, base: f.json.hash });
     assert.ok(ok.status === 200 && ok.json.dryRun && /^\.cache\/vrg-safety\/\d{8}-\d{6}\/CodeCity\/scan\.js$/.test(ok.json.safety), JSON.stringify(ok.json));
   } },
+  { name: 'land: /api/land gives the places on their slots (Kódváros at 0,0); /api/disk in a dry run walks nothing; both need the cookie', async fn() {
+    await start();
+    const cookie = String(((await req('GET', '/')).headers['set-cookie'] || [''])[0]).split(';')[0];
+    const get = p => new Promise((res, rej) => { const r = http.request({ host: '127.0.0.1', port: srv.port, path: p, headers: { Host: '127.0.0.1:' + srv.port, Cookie: cookie } },
+      x => { let s = ''; x.on('data', d => { s += d; }); x.on('end', () => res({ status: x.statusCode, json: JSON.parse(s) })); }); r.on('error', rej); r.end(); });
+    const l = await get('/api/land');
+    assert.ok(l.status === 200 && l.json.places.some(p => p.id === 'kodvaros' && p.slot.join() === '0,0') && l.json.places.length >= 6, JSON.stringify(l.json).slice(0, 200));
+    const d = await get('/api/disk');
+    assert.ok(d.status === 200 && d.json.dryRun === true && d.json.dirs.length === 0, JSON.stringify(d.json));
+    assert.strictEqual((await req('GET', '/api/land')).status, 401);
+  } },
   { name: 'status answers; check-paths says which repo paths exist', async fn() {
     await start();
     const s = await req('GET', '/api/status');

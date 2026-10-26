@@ -6,6 +6,11 @@ if (window.CITY) {
   load(window.CITY);
   liveInit();   // 22-live: "Mi változott?" and, when served, the live stream
   setInterval(hlRibbon, 1500);   // 27-health: the Now ribbon follows sessions, jobs, fences and changes
+  landDraw();   // 29-land: the places around the city
+  // test hook: #landtest=disk waits for Tárház's walk (served), closes the stream (headless clock), shows the Land
+  if (new URLSearchParams(location.hash.slice(1)).get('landtest') === 'disk') live.ready.then(() => new Promise(res => {
+    if (land.disk && land.disk.dirs && land.disk.dirs.length && !land.disk.walking) res(); else live.es.addEventListener('disk', res, { once: true }); }))
+    .then(() => { live.es.close(); landHome(0); });
   // test hook: #livetest=<path> waits for the live stream's hello (and its catch-up swap), closes the stream so
   // headless time runs again, then feeds one fs event for that path and opens "Mi változott?" (served only).
   // Registered here, not in the timer below: an open stream stops headless Chrome's clock before it fires.
@@ -104,6 +109,15 @@ if (window.CITY) {
       jobEvent({ id: 'codecity-selftest', name: 'Kódváros selftest', kind: 'test', state: fail ? 'hiba' : 'kész', code: fail ? 1 : 0, district: 'CodeCity' });
       hlRibbon();
     }
+    // test hook: #landtest=1 jumps to the Land's table view (Home)
+    if (q.get('landtest') === '1') landHome(0);
+    // test hook: #keytest=<key> presses that key once, after the opening flight (e.g. Home from a building); flights are
+    // instant then (rAF barely ticks headless), and <body data-cam="x,z,r side=… at=land|city"> says where it landed
+    if (q.get('keytest')) window.KV_INSTANT = true;
+    if (q.get('keytest')) setTimeout(() => {
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: q.get('keytest'), bubbles: true }));
+      setTimeout(() => { landUpdate(); document.body.dataset.cam = [orbit.target.x, orbit.target.z, orbit.r].map(v => v.toFixed(1)).join(',') + ' side=' + current.side.toFixed(1) + ' at=' + land.at; }, 400);
+    }, 900);
     const dt = (q.get('droptest') || '').split(',');
     if (dt.length === 3) dockToggle(true).then(() => {
       dock.dry = true;

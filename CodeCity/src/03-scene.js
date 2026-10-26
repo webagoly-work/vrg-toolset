@@ -36,6 +36,7 @@ function placeCamera() {
   const { target: t, theta, phi, r } = orbit;
   camera.position.set(t.x + r * Math.sin(phi) * Math.sin(theta), t.y + r * Math.cos(phi), t.z + r * Math.sin(phi) * Math.cos(theta));
   camera.lookAt(t);
+  landFog();   // 29-land: the fog follows the zoom
   requestRender();
   onCameraMoved();
 }

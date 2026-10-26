@@ -35,6 +35,7 @@ function hudUpdate() {
   }
   $('hud').dataset.aim = `${t.x.toFixed(1)},${t.z.toFixed(1)}`;   // for headless checks
   $('hud').textContent = `KÖRZET ${(d.path || current.city.repo.name)}/ · ${hu(n)} fájl · ${hu(hot)} forró` + (near ? ` · NEAR ${near.name}` : '');
+  landUpdate();   // 29-land: breadcrumb, inset map
 }
 // a throttle, not a debounce: while frames keep coming (a fly, a replay) a debounce never fires
 let hudTimer = 0;

@@ -81,7 +81,7 @@ async function liveSwap() {
     if (open) { const f = city.files.find(x => x.p === open); if (f) showFile(f); }
     if (picked) selSetPaths(picked);
     agentsEvent({ list: ag.list });   // the figures stood in the old city
-    fenDraw(); jbDraw(); hlDraw(); mtDraw();
+    fenDraw(); jbDraw(); hlDraw(); mtDraw(); landDraw();
     const n = city.commits.length - was;
     // the new commits flash like a replay step, and their files pulse
     const idx = [];
@@ -115,6 +115,7 @@ function liveConnect() {
   live.es.addEventListener('joblog', e => { if (liveMine()) joblogEvent(JSON.parse(e.data)); });
   live.es.addEventListener('ports', e => { if (liveMine()) portsEvent(JSON.parse(e.data)); });
   live.es.addEventListener('pipes', e => { if (liveMine()) pipesEvent(JSON.parse(e.data)); });   // 27-health
+  live.es.addEventListener('disk', e => { if (liveMine()) diskEvent(JSON.parse(e.data)); });   // 29-land: Tárház
   live.es.onerror = () => { $('live-dot').hidden = true; };
 }
 function liveFsEvent(d) {
@@ -135,5 +136,6 @@ async function liveInit() {
   termResumeOffer();   // 21-term: Claude tabs from before a restart
   if (kv.match) palCatalog().then(jbLoad);   // 26-jobs: the gates need the START.cmd tools
   if (kv.match) mtLoad();   // 28-metro
+  if (kv.match) landLoad();   // 29-land: the H: walk starts here
 }
 $('news-btn').onclick = liveNews;

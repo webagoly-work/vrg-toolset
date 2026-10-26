@@ -119,6 +119,6 @@ addEventListener('keydown', e => {
   if (k === ' ') { e.preventDefault(); tl.playing ? tlPause() : tlPlay(); }
   else if (k === 'ArrowLeft') { e.preventDefault(); tlStep(-1); }
   else if (k === 'ArrowRight') { e.preventDefault(); tlStep(1); }
-  else if (k === 'Home') { tlPause(); applyTime(0, 260); }
+  else if (k === 'Home' && e.shiftKey) { tlPause(); applyTime(0, 260); }   // Home alone = the Land (29-land)
   else if (k === 'End') tlLatest();
 });
