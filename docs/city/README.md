@@ -172,3 +172,51 @@ each catches a mistake this repo has made before. Turn them into WPs only with t
 
 **Looks only — for the Claude Design batch:** seasons by repo age, a day/night cycle on the real
 clock, street names from the Kapu glossary.
+
+### 7.2 Borrowed ideas (2026-10-26, ranked, not WPs yet)
+
+Source: the user's ChatGPT conversation "Compare visual metaphors" (alternatives to the city for
+BRIDGE, then deliberately poor fits). Its key point: a **metaphor stack** — one world carries the
+structure, other metaphors lend their visual language to single aspects. The city stays the base;
+each idea below is a district, mode or phenomenon inside it. Only what §7.1 does not already cover.
+
+**Strongest — new kinds of answers**
+
+1. **Repair tunnel** (dungeon) — paste a stack trace or failing test output; its files light up as
+   one underground tunnel from the error to its origin. Only paths and line numbers need parsing.
+2. **Blast radius** (clockwork, spider web) — select a building; a shock wave runs ring by ring along
+   the reverse import roads: what a change here affects. A graph walk over data we already have.
+3. **Harbour** (port) — external systems dock at the city edge: GitHub remote, Claude API, npm,
+   OneDrive, later the ESPHome devices. Files that call out (`fetch`, serial, `child_process`) get a
+   road to their dock; Kapu's GitHub sign-in is the customs house. Where BRIDGE hardware enters first.
+4. **Metro line** (subway) — pick two buildings, get the shortest import route as a metro line with
+   stations. From a START.cmd gate (§7.1 #1) it shows how the launcher reaches any file.
+5. **Fog of war** (game world) — districts no Claude session has read in N days are fogged
+   (`--sessions` already records reads): where the agents' knowledge of the code is old.
+
+**Good, medium effort**
+
+6. **Foundation stone** (DNA) — a plaque with the building's lineage: birth commit, renamed from
+   (renames are followed already), adapted from which `Vendor/` code and under what licence.
+7. **City library** (library) — `docs/` as a library; a building shows the docs that mention it,
+   unmentioned buildings are marked undocumented. A path grep over the Markdown.
+8. **Inspector's beacon** (hospital) — one roof lamp summing §7.1's smoke, cracks, weather and stale
+   builds: green / yellow / red / grey. One glance instead of four lenses.
+9. **Building interiors** (arcology, universe zoom) — zoom into a building: one floor per top-level
+   function or section, a cutaway shows sizes. Zoom levels city → district → building → floor.
+10. **Build mode / run mode** (Lego vs factory) — build mode shows sites, scaffolding and "% assembled"
+    from the GO plans; run mode shows traffic, live sessions and the harbour. Keeps them apart.
+
+**Nice touches**
+
+11. **Fireworks** (space launch) — in the replay, merge and tag commits burst over the district they
+    touched; a finished GO plan is a launch.
+12. **Region map** (universe) — zoom out to neighbouring cities (other repos, e.g. `VRG_Visual_Base`)
+    joined by highways where they share files or data. `scan.js` already reads any repo.
+13. **Waypoints and quests** (game world) — bookmarked buildings as waypoints; each GO plan's next
+    open WP as a quest marker over its site.
+14. **Epidemic lens** (petri dish) — follow one pattern (a function name, an old API) as it spreads
+    through the replay. The costliest: needs file contents at every commit, not just line counts.
+
+Left out: orchestra and ant colony (follow and §7.1 #5 cover them); metaphor skins (the same city
+rendered as factory or space station) — the city is the base, but keep the engine skin-neutral.
