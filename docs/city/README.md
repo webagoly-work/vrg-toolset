@@ -117,7 +117,15 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 - CITY-D28 **A** (user, 2026-10-26) — stay on three.js r169; upgrade only when a feature needs it (globe.gl: r179+).
 - **Tárház / H: walk** (user, 2026-10-26, KV-17): memory only, rescanned when the city opens — CITY-D27 A holds;
   KV-17's "cached H: walker" is not built as a cache.
-- Still open (asked in later prompts): CITY-D17–D22, D25, D26.
+- CITY-D21 **A** (user, 2026-10-26, before P9) — an unauthenticated snapshot from vendor-manifest.json + public repo
+  metadata, refreshed rarely; a token only later, from an environment variable, never stored.
+- CITY-D22 **A** (user, 2026-10-26) — placement mix: ecosystem continents, the repos we depend on near our Land, the
+  Map of GitHub as a faint background.
+- CITY-D18 **A** (user, 2026-10-26, before P10; before 2026-11-10) — the .NET 10 SDK unpacked into Planner/apps/dotnet
+  (gitignored, no admin); vrg-probe.exe published self-contained. Name the download to the user first.
+- CITY-D25 **A** (user, 2026-10-26) — Spotify stadium from Windows' own now-playing (GSMTC) + the OS peak meter; no
+  Spotify API, no login.
+- Still open (asked in later prompts): CITY-D17, D19, D20, D26.
 
 ## 6. Use
 
