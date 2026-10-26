@@ -7,7 +7,7 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/sessions.js, CodeCity/hook.js (new), CodeCity/src/16-session.js, .claude/settings.local.json (only after a yes)
 - **Decisions:** D11, D12, D13, D16, D27
 - **Prompts:** KV-09, KV-10, …
-- **Status:** in progress — KV-09 3b9704d (agents + tail), KV-10 ✔ 263c298 (hooks on, user said yes 2026-10-26; outskirts, restricted zones), KV-11 ✔ c9d7474 (fences, conflict radar)
+- **Status:** DONE 2026-10-26 — KV-09 3b9704d (agents + tail), KV-10 ✔ 263c298 (hooks on, user said yes 2026-10-26; outskirts, restricted zones), KV-11 ✔ c9d7474 (fences, conflict radar)
 
 ## Notes (KV-09, 2026-10-26)
 
