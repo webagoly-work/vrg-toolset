@@ -327,4 +327,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-18 ✔ 2026-10-26 57e8a07
 - KV-19 ✔ 2026-10-26 3fe20ea (the real USB-stick check is the user's step — wp/p08-land.md)
 - KV-20 ✔ 2026-10-26 1bec540
-- KV-21 ✔ 2026-10-26 (this commit) — framework-dependent until the runtime pack is fetched (§5)
+- KV-21 ✔ 2026-10-26 0ef5900 — framework-dependent until the runtime pack is fetched (§5)
