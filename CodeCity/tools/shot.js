@@ -2,6 +2,7 @@
 // shot.js — screenshot a Kódváros page with the portable headless Chrome (WebGL via SwiftShader).
 //
 //   node CodeCity/tools/shot.js <page.html> [out.png] [1400x900]
+//   node CodeCity/tools/shot.js http://localhost:8797/ out.png       # served by CodeCity/companion.js
 //
 // Chrome is looked up in $CHROME, then Planner/apps of this checkout, then of the main checkout
 // (Planner/apps is gitignored, so a worktree does not have its own copy).
@@ -18,6 +19,8 @@ const chrome = [process.env.CHROME, path.join(REPO, rel), path.join(common, rel)
 if (!chrome) { console.error('headless Chrome not found; set CHROME=<path to chrome-headless-shell.exe>'); process.exit(1); }
 
 const [file, hash = ''] = page.split('#'); // a #pick=x,y test hook rides along on the URL
+const served = /^https?:\/\//i.test(file);
+if (served && !outArg) { console.error('a served page needs an out.png'); process.exit(2); }
 const out = path.resolve(outArg || file.replace(/\.html$/, '.png'));
 // SHOT_MS sets the virtual time budget (default 8000 ms; a tour needs more).
 // Headless-shell prints no page console on Windows: to inspect state, run it with --dump-dom and read
@@ -25,5 +28,5 @@ const out = path.resolve(outArg || file.replace(/\.html$/, '.png'));
 // clock — tours snap the camera at the end of each fly, so the held shot is always exact.
 require('child_process').spawnSync(chrome, ['--headless', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--hide-scrollbars',
   `--window-size=${size.replace('x', ',')}`, `--virtual-time-budget=${process.env.SHOT_MS || 8000}`, `--screenshot=${out}`,
-  'file:///' + path.resolve(file).replace(/\\/g, '/') + (hash ? '#' + hash : '')], { stdio: 'ignore', timeout: 90000 });
+  (served ? file : 'file:///' + path.resolve(file).replace(/\\/g, '/')) + (hash ? '#' + hash : '')], { stdio: 'ignore', timeout: 90000 });
 console.log(`shot -> ${path.relative(process.cwd(), out)}`);

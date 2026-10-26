@@ -101,6 +101,11 @@ setlocal EnableDelayedExpansion
 ::  list (HELYI SZERVEREK section, LH<n>_*), each marked FUT / nem fut. Picking
 ::  one opens it; one that is not running is started first (minimised window
 ::  "VRG <port>"). A) opens every running one.
+::
+::  2026-10-26 - K) Kodvaros got S) Elo mod in its browser chooser (only for
+::  tool 11): CodeCity\companion.js serves the city on http://localhost:8797
+::  with the local actions (live workspace P1, docs\city\wp). 1-4 still open
+::  the file:// page. No tool number moved.
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -412,13 +417,18 @@ echo   3^) Zen browser
 echo   4^) Rendszer alapertelmezett bongeszo
 echo.
 echo   M^) Mappa megnyitasa  ^(Explorer, ahol a fajl van^)
+if "%PICKNUM%"=="11" echo   S^) Elo mod - Kodvaros seged  ^(helyi szerver, http://localhost:8797^)
 echo   0^) Vissza
 echo.
 :: Egy billentyu, mint a fomenuben - lasd az ottani magyarazatot.
 :: Az errorlevel a /C listaban elfoglalt helyet adja vissza, ezert a
 :: vizsgalat csokkeno sorrendben all: az "if errorlevel N" azt jelenti,
 :: hogy "N vagy nagyobb".
-choice /C 1234M0 /N /M "Bongeszo / mappa: "
+:: S) exists only for tool 11, as the 7th key, so errorlevel 7 can only be S.
+set "BKEYS=1234M0"
+if "%PICKNUM%"=="11" set "BKEYS=1234M0S"
+choice /C !BKEYS! /N /M "Bongeszo / mappa: "
+if errorlevel 7 goto OPEN_CITY_LIVE
 if errorlevel 6 goto MENU
 if errorlevel 5 goto OPEN_FOLDER
 if errorlevel 4 goto OPEN_DEFAULT
@@ -651,6 +661,27 @@ pause
 goto MENU
 :DO_HUB_RUN
 call "%REPO%\Hub\VRG Kapu.cmd"
+goto MENU
+
+:: Tool 11 live mode: CodeCity\companion.js serves the city on port 8797 and
+:: opens the browser itself. Already running -> only open the page.
+:OPEN_CITY_LIVE
+curl.exe -s -o nul -m 1 "http://127.0.0.1:8797/" >nul 2>&1
+if not errorlevel 1 (
+    start "" "http://localhost:8797/"
+    goto MENU
+)
+if not exist "%NODE_EXE%" (
+    echo   HIBA: nem talalhato a hordozhato Node: %NODE_EXE%
+    pause
+    goto MENU
+)
+if not exist "%REPO%\CodeCity\companion.js" (
+    echo   HIBA: nem talalhato: %REPO%\CodeCity\companion.js
+    pause
+    goto MENU
+)
+start "VRG 8797" /min "%NODE_EXE%" "%REPO%\CodeCity\companion.js"
 goto MENU
 
 :DO_VSCODE_REPO

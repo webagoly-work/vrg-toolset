@@ -56,3 +56,7 @@ tools/anonymise.map.json
 # --- Hub/companion: per-install secret and local settings ---
 Hub/companion/.token
 Hub/companion/config.json
+
+# --- CodeCity/companion.js (Kodvaros seged): per-install secret and local settings ---
+CodeCity/.companion-token
+CodeCity/companion.config.json
