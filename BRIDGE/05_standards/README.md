@@ -37,6 +37,7 @@ the control-authority model — bistable memory element, manual-first, ζ/η fam
 | **STD-007** | [Media and Audio](BRIDGE-STD-007_Media-and-Audio.md) | the two audio paths and why one cannot serve both · amplifier and speaker engineering · TOSLINK against eARC · video distribution · the USB layer · the MEDIA pack |
 | **STD-008** | [Notification Lights](BRIDGE-STD-008_Notification-Lights.md) | a universal visual output layer: four RGBW pixels in a flush box · the signalling alphabet · stationary, transit and node placement · ESP-NOW · and the egress wayfinding it gives for free |
 | **STD-009** | [Shading and Passive Climate](BRIDGE-STD-009_Shading-and-Passive-Climate.md) | shutters as climate equipment: GAIN / NEUTRAL / SHADE by the room’s thermal need · pre-emptive shading by façade · occupancy limits · wind, frost and duty · floor-heating anticipation · CLA’s split-row R06 glazing and the void |
+| **STD-010** | [Ambiance Lights and the Effect Box](BRIDGE-STD-010_Ambiance-Effect-Box.md) *(r0.2 outline)* | eight light sources of any type under one programmable box: the unified light model · one open firmware (WLED v16) on three shapes — Open, Guarded, Puck · verified firmware facts · scripting and custom sensors · limits a script cannot cross · the Media Wall tie-in |
 
 ---
 
