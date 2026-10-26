@@ -1,10 +1,13 @@
-// vrg-probe — the Kódváros Tier A sidecar (P10, KV-21; report §1.4, CITY-D18 A). Unelevated, read-only.
+// vrg-probe — the Kódváros Tier A sidecar (P10, KV-21/22; report §1.4, CITY-D18 A, D25 A). Unelevated; reads, and
+// changes nothing but a program's own volume or mute when the segéd asks.
 //
 // JSON lines on stdout: 'hello' once, 'windows' (the whole list, at start and every 15 s as a resync), then
 // 'open' / 'close' / 'fg' as WinEvents arrive (SetWinEventHook needs a message loop, hence a sidecar). A window
 // counts when it is a visible, uncloaked, titled top-level window that is not a tool window — what the taskbar
 // shows. Only the handle, the process id, the exe name and the product name travel; never a window title.
-// Stdin closing (the companion gone) ends it. Nothing is written anywhere.
+// KV-22 adds 'audio' + 'peaks' (Audio.cs), 'media' (Media.cs, GSMTC), 'usb' + 'bt' (Devices.cs), each on its own thread.
+// Stdin: one JSON command per line — {"t":"vol","key":"spotify.exe","v":0.4} or {"t":"mute","key":…,"on":true};
+// stdin closing (the companion gone) ends it. Nothing is written anywhere.
 //
 //   node CodeCity/tools/build-probe.js     -> CodeCity/probe/bin/publish/vrg-probe.exe
 using System.Diagnostics;
@@ -19,6 +22,7 @@ static class Probe
 
     [DllImport("user32.dll")] static extern IntPtr SetWinEventHook(uint min, uint max, IntPtr mod, WinEventProc proc, uint pid, uint tid, uint flags);
     [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc proc, IntPtr lParam);
+    [DllImport("user32.dll")] static extern bool EnumChildWindows(IntPtr parent, EnumProc proc, IntPtr lParam);
     [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
     [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr h, uint cmd);
     [DllImport("user32.dll")] static extern IntPtr GetAncestor(IntPtr h, uint flags);
@@ -46,6 +50,7 @@ static class Probe
     record Win(uint Pid, string Exe, string Name);
     static readonly Dictionary<IntPtr, Win> wins = new();
     static readonly Dictionary<uint, (string exe, string name)> procs = new();
+    static readonly object outLock = new();
     static IntPtr fg;
     static WinEventProc? keep;   // the hook's delegate must outlive the hook
 
@@ -53,14 +58,30 @@ static class Probe
     {
         Console.OutputEncoding = new UTF8Encoding(false);
         uint main = GetCurrentThreadId();
-        new Thread(() => { try { while (Console.In.ReadLine() != null) { } } catch { } PostThreadMessageW(main, WM_QUIT, 0, 0); }) { IsBackground = true }.Start();
-        Emit(new { t = "hello", v = 1, pid = Environment.ProcessId });
+        new Thread(() => { try { string? l; while ((l = Console.In.ReadLine()) != null) Command(l); } catch { } PostThreadMessageW(main, WM_QUIT, 0, 0); }) { IsBackground = true }.Start();
+        Emit(new { t = "hello", v = 2, pid = Environment.ProcessId });
         Resync(true);
+        foreach (ThreadStart run in new ThreadStart[] { Audio.Run, Media.Run, Devices.Run })
+            new Thread(() => { try { run(); } catch (Exception e) { Emit(new { t = "error", where = run.Method.DeclaringType?.Name, e = e.GetType().Name }); } }) { IsBackground = true }.Start();
         keep = OnEvent;
         SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0, keep, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
         SetWinEventHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_UNCLOAKED, 0, keep, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
         SetTimer(0, 0, 15000, 0);
         while (GetMessageW(out var m, 0, 0, 0) > 0) if (m.message == WM_TIMER) Resync(false);
+    }
+
+    // the only things the probe changes: one program's volume (0..1) or mute
+    static void Command(string line)
+    {
+        try
+        {
+            using var d = JsonDocument.Parse(line);
+            var r = d.RootElement;
+            string t = r.GetProperty("t").GetString() ?? "", key = r.GetProperty("key").GetString() ?? "";
+            if (t == "vol") Audio.Command(key, (float)Math.Clamp(r.GetProperty("v").GetDouble(), 0, 1), null);
+            else if (t == "mute") Audio.Command(key, null, r.GetProperty("on").GetBoolean());
+        }
+        catch { }
     }
 
     static void OnEvent(IntPtr hook, uint ev, IntPtr h, int idObject, int idChild, uint thread, uint time)
@@ -111,28 +132,39 @@ static class Probe
     {
         GetWindowThreadProcessId(h, out uint pid);
         if (pid == 0) return null;
-        if (!procs.TryGetValue(pid, out var p))
+        var (exe, name) = ProcName(pid);
+        // a Store app lives in a frame owned by ApplicationFrameHost.exe: its real process owns a child window
+        if (exe.Equals("ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase))
         {
-            string exe = "?", name = "?";
-            IntPtr ph = OpenProcess(0x1000 /* PROCESS_QUERY_LIMITED_INFORMATION */, false, pid);
-            if (ph != 0)
-            {
-                var sb = new StringBuilder(1024); int n = sb.Capacity;
-                if (QueryFullProcessImageNameW(ph, 0, sb, ref n))
-                {
-                    string full = sb.ToString();
-                    exe = Path.GetFileName(full);
-                    try { name = FileVersionInfo.GetVersionInfo(full).FileDescription ?? ""; } catch { name = ""; }
-                    if (string.IsNullOrWhiteSpace(name)) name = Path.GetFileNameWithoutExtension(full);
-                }
-                CloseHandle(ph);
-            }
-            p = (exe, name.Trim());
-            if (procs.Count > 500) procs.Clear();
-            procs[pid] = p;
+            uint inner = 0;
+            EnumChildWindows(h, (c, _) => { GetWindowThreadProcessId(c, out uint p); if (p != pid && p != 0) { inner = p; return false; } return true; }, 0);
+            if (inner != 0) { pid = inner; (exe, name) = ProcName(inner); }
         }
-        return new Win(pid, p.exe, p.name);
+        return new Win(pid, exe, name);
     }
 
-    static void Emit(object o) { Console.Out.Write(JsonSerializer.Serialize(o) + "\n"); Console.Out.Flush(); }
+    // exe file name + product name of a process (cached; also used by the audio thread)
+    public static (string exe, string name) ProcName(uint pid)
+    {
+        lock (procs) if (procs.TryGetValue(pid, out var c)) return c;
+        string exe = "?", name = "?";
+        IntPtr ph = OpenProcess(0x1000 /* PROCESS_QUERY_LIMITED_INFORMATION */, false, pid);
+        if (ph != 0)
+        {
+            var sb = new StringBuilder(1024); int n = sb.Capacity;
+            if (QueryFullProcessImageNameW(ph, 0, sb, ref n))
+            {
+                string full = sb.ToString();
+                exe = Path.GetFileName(full);
+                try { name = FileVersionInfo.GetVersionInfo(full).FileDescription ?? ""; } catch { name = ""; }
+                if (string.IsNullOrWhiteSpace(name)) name = Path.GetFileNameWithoutExtension(full);
+            }
+            CloseHandle(ph);
+        }
+        var p = (exe, name.Trim());
+        lock (procs) { if (procs.Count > 500) procs.Clear(); procs[pid] = p; }
+        return p;
+    }
+
+    public static void Emit(object o) { string s = JsonSerializer.Serialize(o) + "\n"; lock (outLock) { Console.Out.Write(s); Console.Out.Flush(); } }
 }

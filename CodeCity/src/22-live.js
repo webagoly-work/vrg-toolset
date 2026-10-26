@@ -120,6 +120,12 @@ function liveConnect() {
   live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
   live.es.addEventListener('cargo', e => { if (liveMine()) cargoEvent(JSON.parse(e.data)); });   // 31-flows: ships and planes
   live.es.addEventListener('apps', e => { if (liveMine()) appsEvent(JSON.parse(e.data)); });   // 33-apps: open programs (vrg-probe)
+  // 34-stadium: now playing, sound towers and their peaks, Bluetooth buoys, the USB port board (vrg-probe)
+  live.es.addEventListener('media', e => { if (liveMine()) mediaEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('audio', e => { if (liveMine()) audioEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('peaks', e => { if (liveMine()) peaksEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('bt', e => { if (liveMine()) btEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('usb', e => { if (liveMine()) usbEvent(JSON.parse(e.data)); });
   live.es.onerror = () => { $('live-dot').hidden = true; };
 }
 function liveFsEvent(d) {

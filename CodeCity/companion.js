@@ -80,6 +80,10 @@
 // vrg-probe.exe (C#, JSON lines on stdio; node CodeCity/tools/build-probe.js) reports the taskbar's windows through
 // SetWinEventHook; it is restarted with a growing wait when it dies, and stopped 30 s after the last page left.
 // The stream gets 'apps': one entry per program (exe, product name, window count, foreground) — no window title.
+// KV-22: 'audio' (a sound tower per program: volume, mute, active), 'peaks' (~12/s while something sounds), 'media'
+// (Windows' now-playing, GSMTC: app, status, title, artist — no Spotify API), 'bt' (paired devices, battery while
+// connected), 'usb' (the port tree); hashes instead of device ids. POST probe-volume {key, v} / probe-mute {key, on}
+// reach the probe only for a program that has a tower. All of it memory only (CITY-D27 A).
 //
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
@@ -731,7 +735,8 @@ function powerStop() { if (power.child) { try { power.child.kill(); } catch (e) 
 process.on('exit', powerStop);
 // ---- Tier A: vrg-probe.exe, the open programs (a C# sidecar, while a page listens; restarted when it dies)
 const PROBE_EXE = path.join(CITY, 'probe', 'bin', 'publish', 'vrg-probe.exe'), DOTNET_ROOT = path.join(REPO, 'Planner', 'apps', 'dotnet');
-const probe = { child: null, want: false, timer: null, fails: [], wins: new Map(), fg: 0, state: 'off', sig: '', emitTimer: null };
+const probe = { child: null, want: false, timer: null, fails: [], wins: new Map(), fg: 0, state: 'off', sig: '', emitTimer: null, last: {} };
+const PROBE_FEEDS = ['audio', 'media', 'bt', 'usb'];   // KV-22: kept for a page that joins later; 'peaks' only streams
 function probeStart() {
   probe.want = true;
   if (probe.child || probe.timer || DRY) return;
@@ -744,7 +749,7 @@ function probeStart() {
     try { probeHandle(JSON.parse(l)); } catch (e) { /* skip */ } } });
   child.on('exit', () => {
     if (probe.child !== child) return;
-    probe.child = null; probe.wins.clear(); probe.fg = 0; probe.state = 'off'; probeSoon();
+    probe.child = null; probe.wins.clear(); probe.fg = 0; probe.state = 'off'; probe.last = {}; probeSoon();
     if (!probe.want) return;
     // died on its own: back again after 1, 2, 4 … 30 s (more crashes in the last minute = a longer wait)
     const now = Date.now(); probe.fails = probe.fails.filter(t => now - t < 60000).concat(now);
@@ -756,15 +761,26 @@ function probeStart() {
 function probeStop() {
   probe.want = false; clearTimeout(probe.timer); probe.timer = null;
   if (probe.child) { const c = probe.child; probe.child = null; try { c.stdin.end(); c.kill(); } catch (e) { /* gone */ } }
-  probe.wins.clear(); probe.fg = 0; probe.state = 'off';
+  probe.wins.clear(); probe.fg = 0; probe.state = 'off'; probe.last = {};
 }
 process.on('exit', probeStop);
+// the page's volume drag / mute (KV-22): only for a program that has a sound tower right now
+function probeSend(cmd) {
+  const towers = (probe.last.audio && probe.last.audio.list) || [];
+  if (typeof cmd.key !== 'string' || !towers.some(a => a.key === cmd.key)) return [404, { error: 'nincs ilyen hangtorony' }];
+  if (DRY) return [200, Object.assign({ dryRun: true }, cmd)];
+  if (!probe.child) return [503, { error: 'a szonda nem fut' }];
+  probe.child.stdin.write(JSON.stringify(cmd) + '\n');
+  return [200, { ok: true }];
+}
 function probeHandle(m) {
   if (m.t === 'hello') { probe.state = 'on'; probe.wins.clear(); }
   else if (m.t === 'windows') { probe.wins.clear(); for (const w of m.list || []) probe.wins.set(w.h, w); }
   else if (m.t === 'open') probe.wins.set(m.h, m);
   else if (m.t === 'close') probe.wins.delete(m.h);
   else if (m.t === 'fg') probe.fg = m.h;
+  else if (PROBE_FEEDS.includes(m.t)) { const { t, ...d } = m; probe.last[t] = d; return liveEmit(t, d); }
+  else if (m.t === 'peaks') return liveEmit('peaks', { m: +m.m || 0, s: m.s || {} });
   else return;
   probeSoon();
 }
@@ -1018,6 +1034,11 @@ const ACTIONS = {
     return [200, { ok: true, path: f.rel, hash: sha1(Buffer.from(text)), safety: path.relative(REPO, safety).replace(/\\/g, '/') }];
   } },
   'job-start': { keys: ['id'], async run(b) { return typeof b.id === 'string' ? jobStart(b.id) : [400, { error: 'id' }]; } },
+  // a sound tower dragged (KV-22): that program's volume 0..1, or its mute — nothing else reaches the probe
+  'probe-volume': { keys: ['key', 'v'], async run(b) {
+    return typeof b.v === 'number' && b.v >= 0 && b.v <= 1 ? probeSend({ t: 'vol', key: b.key, v: Math.round(b.v * 100) / 100 }) : [400, { error: 'v: 0..1' }];
+  } },
+  'probe-mute': { keys: ['key', 'on'], async run(b) { return typeof b.on === 'boolean' ? probeSend({ t: 'mute', key: b.key, on: b.on }) : [400, { error: 'on: true/false' }]; } },
   'job-stop': { keys: ['id'], async run(b) { return typeof b.id === 'string' ? jobStop(b.id) : [400, { error: 'id' }]; } },
   'check-paths': { keys: ['paths'], async run(b) {
     if (!Array.isArray(b.paths) || b.paths.length > 500 || !b.paths.every(p => typeof p === 'string')) return [400, { error: 'paths: legfeljebb 500 szöveg' }];
@@ -1087,6 +1108,7 @@ const server = http.createServer((req, res) => {
     if (power.last) res.write('event: power\ndata: ' + JSON.stringify(power.last) + '\n\n');
     if (net.state) res.write('event: net\ndata: ' + JSON.stringify(net.state) + '\n\n');
     if (probe.sig) res.write('event: apps\ndata: ' + probe.sig + '\n\n');
+    for (const t of PROBE_FEEDS) if (probe.last[t]) res.write('event: ' + t + '\ndata: ' + JSON.stringify(probe.last[t]) + '\n\n');
     res.write('event: pipes\ndata: ' + JSON.stringify({ list: pipesList() }) + '\n\n');
     live.clients.add(res);
     agentsStart();

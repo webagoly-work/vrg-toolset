@@ -82,6 +82,7 @@ function pwDraw() {
   }
   flUsbDraw();   // 31-flows: USB-falu
   if (ap.list.length) appsEvent({ state: ap.state, list: ap.list });   // 33-apps: rebuilt if the world was
+  stRedraw();   // 34-stadium: rebuilt if the world was (pwDraw has its own local st)
   pw.group.traverse(o => { o.raycast = () => {}; });
   world.group.add(pw.group);
   requestRender();

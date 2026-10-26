@@ -119,6 +119,30 @@ if (window.CITY) {
       appsEvent({ state: 'on', list: [{ key: 'explorer.exe', name: 'Windows Explorer', n: 2, fg: false }, { key: 'mspaint.exe', name: 'Paint', n: 1, fg: true }] });
       if (q.get('appstest') === 'close') setTimeout(() => appsEvent({ state: 'on', list: [{ key: 'explorer.exe', name: 'Windows Explorer', n: 2, fg: true }] }), 200);
     }
+    // test hook: #stadiumtest=play|pause|drag — Spotify playing (floodlights, a flaring tower) or paused, two BT buoys,
+    // a USB board; drag presses the Spotify tower and pulls it up 60 px (no segéd: <body data-vol="key:v">), and
+    // <body data-stadium="playing|dark:key towers=…"> says what stands
+    if (q.get('stadiumtest')) {
+      const mode = q.get('stadiumtest');
+      window.KV_INSTANT = true; landHome(0);
+      powerEvent({ at: Date.now(), cpu: 20, ramMB: 16250, ramFreeMB: 8000, disk: 10, rx: 1e4, tx: 1e3, gpu: 3 });
+      mediaEvent({ ok: true, list: [{ app: 'Spotify.exe', key: 'spotify.exe', status: mode === 'pause' ? 'paused' : 'playing', title: 'Teszt dal', artist: 'Teszt előadó', current: true }] });
+      audioEvent({ list: [{ key: 'spotify.exe', name: 'Spotify', vol: 0.5, mute: false, active: true, n: 1 }, { key: 'zen.exe', name: 'Zen', vol: 1, mute: false, active: false, n: 1 },
+        { key: 'system', name: 'Rendszerhangok', vol: 0.1, mute: true, active: false, n: 1 }] });
+      peaksEvent({ m: 0.6, s: mode === 'pause' ? {} : { 'spotify.exe': 0.55 } });
+      btEvent({ list: [{ id: 'a', name: 'TTSK E1 A1', le: false, battery: 80, connected: true }, { id: 'b', name: 'HUAWEI Band', le: true, battery: null, connected: false, last: '2026-07-19T07:40:05Z' }] });
+      usbEvent({ roots: 1, list: [{ id: '1', name: 'usb keyboard', cls: 'USB', root: 0, chain: [7] }, { id: '2', name: 'USB 2.0 Hub', cls: 'USB', root: 0, chain: [3] },
+        { id: '3', name: 'BT DONGLE10', cls: 'Bluetooth', root: 0, chain: [3, 3] }] });
+      if (mode === 'drag') setTimeout(() => {
+        window.KV_DRYVOL = true;
+        const t = st.towers.find(x => x.key === 'spotify.exe'), c = new THREE.Box3().setFromObject(t.shell).getCenter(new THREE.Vector3());
+        camera.updateMatrixWorld(); c.project(camera);
+        const r = canvas.getBoundingClientRect(), x = r.left + (c.x + 1) / 2 * r.width, y = r.top + (1 - c.y) / 2 * r.height;
+        canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: x, clientY: y, button: 0, bubbles: true }));
+        dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y - 60, bubbles: true }));
+        dispatchEvent(new PointerEvent('pointerup', { clientX: x, clientY: y - 60, bubbles: true }));
+      }, 300);
+    }
     // test hook: #nettest=up|down feeds one power sample and a station/border/shore state (no segéd needed)
     if (q.get('nettest')) {
       const up = q.get('nettest') === 'up';

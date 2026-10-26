@@ -8,6 +8,7 @@
     { "id": "eromu", "name": "Erőmű", "kind": "pc", "slot": [1, 0], "what": "ez a gép: CPU, RAM, GPU, lemez (KV-18)" },
     { "id": "palyaudvar", "name": "Pályaudvar", "kind": "router", "slot": [0, 1], "what": "a TP-Link router, 192.168.0.1 (KV-18)" },
     { "id": "hatar", "name": "Határ", "kind": "border", "slot": [-1, 1], "what": "a Huawei ONT: kijárat az internetre (KV-18)" },
-    { "id": "usbfalu", "name": "USB-falu", "kind": "usb", "slot": [-1, 0], "what": "a bedugott eszközök falva (megjelenik, ha van)" }
+    { "id": "usbfalu", "name": "USB-falu", "kind": "usb", "slot": [-1, 0], "what": "a bedugott eszközök falva (megjelenik, ha van)" },
+    { "id": "stadion", "name": "Stadion", "kind": "stadium", "slot": [0, -1], "what": "ami most szól: a Windows lejátszója és a programok hangtornyai (KV-22)" }
   ]
 }
