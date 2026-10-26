@@ -67,6 +67,21 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 .kv-hist { list-style: none; margin: 8px 0 0; padding: 0; max-height: 50vh; overflow: auto; }
 .kv-hist li { padding: 3px 0; border-top: 1px solid var(--line); cursor: pointer; }
 .kv-hist li:hover { color: var(--accent); }
+/* Ctrl+K palette (18-palette), selection bar and box (19-select) */
+#pal { position: fixed; z-index: 7; top: 70px; left: 50%; transform: translateX(-50%); width: min(640px, calc(100% - 32px));
+  background: var(--panel); border: 1px solid var(--accent); border-radius: 4px; box-shadow: 0 10px 40px #000a; }
+#pal input { width: 100%; box-sizing: border-box; padding: 10px 12px; background: none; border: 0; border-bottom: 1px solid var(--line);
+  color: var(--text); font: inherit; outline: none; }
+#pal ul { list-style: none; margin: 0; padding: 4px 0; max-height: 55vh; overflow: auto; }
+#pal li { padding: 4px 12px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#pal li.on { background: #ffffff14; color: var(--accent); }
+#pal li.off { cursor: default; color: var(--dim); }
+#pal li small { display: block; font-size: 11px; opacity: .8; white-space: normal; }
+#sel-bar { position: fixed; z-index: 4; top: 54px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; align-items: center;
+  background: var(--panel); border: 1px solid var(--accent); border-radius: 4px; padding: 6px 10px; max-width: calc(100% - 32px); flex-wrap: wrap; }
+#sel-bar b { color: var(--accent); }
+#sel-bar .btn[disabled] { opacity: .45; cursor: default; }
+#sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;
   background: #05070de6; border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; letter-spacing: .06em; }
@@ -189,7 +204,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   <div id="legend"></div>
   <nav id="lenses" aria-label="Nézetek"></nav>
   <div id="board" aria-hidden="true"><div id="board-1"></div><div id="board-2"></div></div>
-  <div id="help">bal egér: forgatás · jobb egér / Shift: mozgatás · görgő: közelítés · kattintás: részletek · jobb klikk: műveletek · Szóköz: lejátszás · ← →: lépés · 1–6: nézet · U: utak · B: összevetés</div>
+  <div id="help">bal: forgatás · jobb: mozgatás / műveletek · Shift+húzás, Ctrl+katt.: kijelölés · Ctrl+K: paletta · Szóköz: lejátszás · ← →: lépés · 1–6: nézet · U: utak · B: összevetés</div>
   <div id="timeline" hidden>
     <button id="tl-back" class="btn" title="Előző commit (←)">⏮</button>
     <button id="tl-play" class="btn" title="Lejátszás (Szóköz)">▶</button>
@@ -357,7 +372,7 @@ new ResizeObserver(() => {
   requestRender();
 }).observe(canvas.parentElement);
 
-// ---- orbit camera: left drag rotates, right drag or Shift pans, wheel zooms
+// ---- orbit camera: left drag rotates, right drag pans, wheel zooms; Shift+left drag boxes a selection (19-select)
 const orbit = { target: new THREE.Vector3(), theta: 0.8, phi: 0.95, r: 300 };
 let onCameraMoved = () => {};                 // 04-ui hooks the share link in here
 function placeCamera() {
@@ -370,18 +385,21 @@ function placeCamera() {
 let drag = null;
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('pointerdown', e => {
-  drag = { x: e.clientX, y: e.clientY, pan: e.button === 2 || e.shiftKey, moved: 0 };
+  drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, pan: e.button === 2,
+    box: e.button === 0 && e.shiftKey && !!world, add: e.ctrlKey || e.metaKey, moved: 0 };
   canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener('pointerup', e => {
   // a right click that did not drag is the RCO menu (17-actions); a right drag pans
-  if (drag && drag.moved < 4) { if (e.button === 2) onContext(e); else onPick(e); }
+  if (drag && drag.box && drag.moved >= 4) selBoxEnd(drag.x0, drag.y0, e.clientX, e.clientY, drag.add);
+  else if (drag && drag.moved < 4) { if (sel.rect) sel.rect.hidden = true; if (e.button === 2) onContext(e); else onPick(e); }
   drag = null;
 });
 canvas.addEventListener('pointermove', e => {
   if (!drag) { onHover(e); return; }
   const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
   drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
+  if (drag.box) { selBoxDraw(drag.x0, drag.y0, e.clientX, e.clientY); return; }
   if (drag.pan) {
     const k = orbit.r * 0.0015, s = Math.sin(orbit.theta), c = Math.cos(orbit.theta);
     orbit.target.x -= (dx * c + dy * s) * k;
@@ -558,6 +576,7 @@ function onHover(e) {
 
 function onPick(e) {
   const hit = pickAt(e);
+  if ((e.ctrlKey || e.metaKey) && hit && hit.file) { selToggle(hit.i); return; }   // multi-select (19-select)
   if (!hit) closePanel();
   else if (hit.file) showFile(hit.file);
   else showDir(hit.dir);
@@ -775,6 +794,7 @@ function writeInstances(vals) {
   b.boundingSphere = null; b.boundingBox = null;   // raycast recomputes them from the new matrices
   replay.cur.set(vals);
   placeBeacon();
+  if (sel.shell || sel.set.size) selShellRefresh();   // the selection shell follows the buildings
 }
 
 // show commit T; animate = tween length in ms (0 = jump)
@@ -2046,6 +2066,236 @@ addEventListener('pointerdown', e => { if (kv.menu && !kv.menu.contains(e.target
 addEventListener('keydown', e => { if (e.key === 'Escape') kvMenuClose(); });
 addEventListener('wheel', () => kvMenuClose(), { passive: true });
 
+// ==== src/18-palette.js
+// 18-palette.js — Ctrl+K: one palette over files, actions, START.cmd tools, prompts, agents and branches
+// (live workspace P2, KV-06). Plain text finds files (accent-insensitive, the Kapu kpNorm way), START.cmd
+// tools and shortcut prompts; prefixes switch the list: > commands (the RCO actions on the open file,
+// the selection's group actions, the looks), @ agents, # branches. Tools, prompts, agents and branches
+// come from the segéd (GET /api/catalog); from file:// the palette has files and commands only.
+
+const pal = { el: null, rows: [], k: 0, cat: null, catFor: null };
+const PAL_EMPTY = { tools: [], prompts: [], agents: [], branches: [] };
+const palNorm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+async function palCatalog() {
+  await kvReady();
+  if (pal.catFor === current.city) return pal.cat;
+  pal.catFor = current.city; pal.cat = PAL_EMPTY;
+  if (kv.match) try { const r = await fetch('/api/catalog'); if (r.ok) pal.cat = await r.json(); } catch (e) { /* stays empty */ }
+  return pal.cat;
+}
+
+// file score: name prefix > name contains > every term in the path > the letters in order in the path
+function palScore(f, q, terms) {
+  const n = palNorm(f.name), p = palNorm(f.p);
+  if (n.startsWith(q)) return 100 - n.length / 100;
+  if (n.includes(q)) return 80 - n.length / 100;
+  if (terms.every(t => p.includes(t))) return 50 - p.length / 1000;
+  let j = 0;
+  for (const ch of p) if (ch === q[j]) j++;
+  return j === q.length ? 10 - p.length / 1000 : 0;
+}
+const palHit = (s, terms) => { const n = palNorm(s); return terms.every(t => n.includes(t)); };
+// a Claude prompt for a prompt card or an agent: its text, then the paths it is about
+const palAsk = head => selAskClaude(selPrompt(head));
+
+function palRows(raw) {
+  const c = current.city, cat = pal.cat || PAL_EMPTY, pre = /^[>@#]/.test(raw) ? raw[0] : '';
+  const q = palNorm(raw.slice(pre ? 1 : 0).trim()), terms = q.split(/\s+/).filter(Boolean);
+  const keep = (label, extra = '') => !terms.length || palHit(label + ' ' + extra, terms);
+  const rows = [];
+  if (pre === '>') {
+    const target = sel.set.size ? null : shownFile ? kvCtx({ file: shownFile }) : null;
+    if (sel.set.size) {
+      rows.push({ kind: 'parancs', label: `Kérdezd Claude-ot ezekről (${hu(sel.set.size)} kijelölve)`, run: SEL_ACT.ask },
+        { kind: 'parancs', label: 'Kijelölt útvonalak másolása', run: SEL_ACT.copy },
+        { kind: 'parancs', label: 'Kijelölés törlése', run: SEL_ACT.clear });
+    } else if (target) {
+      for (const a of KV_ACT) { const s = kvActState(a, target);
+        rows.push({ kind: shownFile.name, label: a.label, off: !s.on, why: s.why, run: () => a.run(target) }); }
+    } else rows.push({ kind: 'tipp', label: 'Válassz ki egy épületet (kattintás) vagy többet (Ctrl+kattintás, Shift+húzás)', off: true, why: '' });
+    for (const l of LENSES) rows.push({ kind: 'nézet', label: `Nézet: ${l.name} (${l.key})`, run: () => setLens(l.id) });
+    rows.push({ kind: 'nézet', label: 'Utak be / ki (U)', run: toggleRoads }, { kind: 'idő', label: 'A mai állapot (End)', run: tlLatest });
+    return rows.filter(r => keep(r.label, r.kind));
+  }
+  if (pre === '@') {
+    if (!kv.match) return [{ kind: 'ügynök', label: 'Az ügynökök listája a segéddel jön', off: true, why: KV_WHY.companion }];
+    return cat.agents.filter(a => keep(a.name, a.description)).map(a => ({ kind: 'ügynök', label: '@' + a.name, hint: a.description,
+      run: () => palAsk(`Használd a(z) ${a.name} ügynököt (.claude/agents/${a.name}.md) ehhez:`) }));
+  }
+  if (pre === '#') {
+    if (!kv.match) return [{ kind: 'ág', label: 'Az ágak listája a segéddel jön', off: true, why: KV_WHY.companion }];
+    return cat.branches.filter(b => keep(b)).map(b => ({ kind: 'ág', label: '#' + b, hint: 'a metróvonalak a P7-ben jönnek — most: név másolása',
+      run: () => kvCopy(b) }));
+  }
+  if (terms.length) {
+    const scored = [];
+    c.files.forEach((f, i) => { if (f.gone) return; const s = palScore(f, q, terms); if (s > 0) scored.push([s, f]); });
+    scored.sort((a, b) => b[0] - a[0]);
+    for (const [, f] of scored.slice(0, 30)) rows.push({ kind: 'fájl', label: f.name, hint: f.p, run: () => { showFile(f); flyTo(f); } });
+  }
+  for (const t of cat.tools) if (keep(t.name, t.path)) rows.push({ kind: 'START.cmd ' + (t.n === 10 ? 0 : t.n === 11 ? 'K' : t.n), label: t.name, hint: t.path,
+    run: () => kvCall('open-tool', { path: t.path }).then(r => kvDone(r, 'Megnyitva, ahogy a START.cmd nyitja')) });
+  for (const p of cat.prompts) if (keep(p.name, p.text.slice(0, 200))) rows.push({ kind: 'prompt', label: p.name, hint: p.text.split('\n')[0].slice(0, 90),
+    run: () => palAsk(p.text.trim()) });
+  if (!terms.length && !rows.length) rows.push({ kind: 'tipp', label: 'Írj egy fájlnevet — vagy > parancsok · @ ügynökök · # ágak', off: true, why: '' });
+  return rows;
+}
+
+function palRender() {
+  const ul = pal.el.querySelector('ul');
+  pal.k = Math.max(0, Math.min(pal.k, pal.rows.length - 1));
+  ul.innerHTML = pal.rows.map((r, k) => `<li data-k="${k}" class="${k === pal.k ? 'on' : ''}${r.off ? ' off' : ''}" role="option">` +
+    `<span class="dim">${esc(r.kind)}</span> ${esc(r.label)}${r.hint ? ` <span class="dim">${esc(r.hint)}</span>` : ''}` +
+    (r.off && r.why ? `<small>${esc(r.why)}</small>` : '') + '</li>').join('') || '<li class="off">Nincs találat</li>';
+  const on = ul.querySelector('li.on');
+  if (on) on.scrollIntoView({ block: 'nearest' });
+}
+async function palUpdate() { await palCatalog(); pal.rows = palRows(pal.el.querySelector('input').value); palRender(); }
+function palRun(k) {
+  const r = pal.rows[k];
+  if (!r || r.off) return;
+  palClose(); r.run();
+}
+function palOpen(text = '') {
+  if (!current) return;
+  kvMenuClose();
+  if (!pal.el) {
+    pal.el = document.createElement('div'); pal.el.id = 'pal';
+    pal.el.innerHTML = '<input type="search" autocomplete="off" spellcheck="false" aria-label="Parancspaletta" placeholder="Fájl, eszköz, prompt — > parancsok · @ ügynökök · # ágak"><ul role="listbox"></ul>';
+    const inp = pal.el.querySelector('input');
+    inp.addEventListener('input', () => { pal.k = 0; palUpdate(); });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); pal.k += e.key === 'ArrowDown' ? 1 : -1; palRender(); }
+      else if (e.key === 'Enter') { e.preventDefault(); palRun(pal.k); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); palClose(); }
+    });
+    pal.el.querySelector('ul').addEventListener('click', e => { const li = e.target.closest('li[data-k]'); if (li) palRun(+li.dataset.k); });
+    document.body.append(pal.el);
+  }
+  pal.el.hidden = false; pal.k = 0;
+  const inp = pal.el.querySelector('input');
+  inp.value = text; inp.focus();
+  return palUpdate();
+}
+function palClose() { if (pal.el) pal.el.hidden = true; }
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); pal.el && !pal.el.hidden ? palClose() : palOpen(); }
+});
+addEventListener('pointerdown', e => { if (pal.el && !pal.el.hidden && !pal.el.contains(e.target)) palClose(); }, true);
+
+// ==== src/19-select.js
+// 19-select.js — multi-select (live workspace P2, KV-06): Ctrl+click toggles a building, Shift+drag draws a
+// box (Ctrl+Shift adds to the selection; a right drag still pans). The selection shows as an accent shell
+// over each building and a bar with group actions; "Kérdezd Claude-ot ezekről" pre-fills a Claude Code
+// prompt with the paths (claude-cli://open?cwd=…&q=…) — pre-filled, never sent.
+// The box tests each live building's centre on screen: for one InstancedMesh that is the answer three.js
+// SelectionBox gives, without inlining an addon into the build.
+
+const sel = { set: new Set(), shell: null, rect: null, city: null };
+const SEL_Q_MAX = 5000;   // the claude-cli:// q limit
+
+const selFiles = () => [...sel.set].sort((a, b) => a - b).map(i => current.city.files[i]);
+// the paths a Claude prompt should name: the selection, else the open file
+const selTargets = () => (sel.set.size ? selFiles() : shownFile ? [shownFile] : []).map(f => f.p);
+function selPrompt(head, paths = selTargets()) {
+  let q = head + (paths.length ? '\n\n' + paths.map(p => '- ' + p).join('\n') : '');
+  if (q.length > SEL_Q_MAX) q = q.slice(0, SEL_Q_MAX - 40).replace(/\n[^\n]*$/, '') + '\n- … (a lista rövidítve)';
+  return q;
+}
+const selAskHead = () => 'Nézd meg ezeket a fájlokat a repóban, és mondd el röviden, mit csinálnak és hogyan függenek össze:';
+const selCliUrl = q => KV_CLAUDE_CLI + encodeURIComponent(kvAbs('.')) + '&q=' + encodeURIComponent(q);
+const selAppUrl = q => 'claude://code/new?q=' + encodeURIComponent(q) + '&folder=' + encodeURIComponent(kvAbs('.'));
+
+// a pre-filled Claude Code prompt in this repo; without the repo's folder the prompt goes to the clipboard
+async function selAskClaude(q) {
+  await kvReady();
+  if (kv.root) { kvLink(selCliUrl(q)); kvToast('Claude Code nyílik, a prompt előtöltve (nem küldi el magától)'); }
+  else kvCopy(q, 'A prompt a vágólapon — ' + KV_WHY.root);
+}
+
+// a selection belongs to one loaded city: another city.json dropped in starts empty
+function selSync() { if (sel.city !== current.city) { sel.set.clear(); sel.city = current.city; } }
+function selShellRefresh() {
+  if (!world || !current) return;
+  selSync();
+  if (!sel.shell || sel.shell.parent !== world.group) {
+    sel.shell = new THREE.InstancedMesh(unitBox, new THREE.MeshBasicMaterial({ color: 0xffcf5a, transparent: true, opacity: 0.32,
+      blending: THREE.AdditiveBlending, depthWrite: false }), world.fileOf.length);
+    sel.shell.raycast = () => {};
+    world.group.add(sel.shell);
+  }
+  const m = new THREE.Matrix4(), grow = new THREE.Matrix4().makeScale(1.12, 1.04, 1.12);
+  let n = 0;
+  for (const i of sel.set) {
+    if (replay.cur[i * 3] <= 0) continue;          // not built at the shown commit
+    world.buildings.getMatrixAt(i, m);
+    sel.shell.setMatrixAt(n++, m.multiply(grow));
+  }
+  sel.shell.count = n;
+  sel.shell.instanceMatrix.needsUpdate = true;
+  requestRender();
+}
+
+function selChanged() {
+  selShellRefresh();
+  let bar = $('sel-bar');
+  if (!bar) {
+    bar = document.createElement('div'); bar.id = 'sel-bar'; bar.setAttribute('role', 'toolbar');
+    bar.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && !b.disabled) SEL_ACT[b.dataset.act](); });
+    document.body.append(bar);
+  }
+  bar.hidden = !sel.set.size;
+  if (!sel.set.size) return;
+  const q = selPrompt(selAskHead());
+  bar.dataset.ask = kv.root ? selCliUrl(q) : '';   // test hook: tools/shot.js --dump-dom reads the link
+  bar.innerHTML = `<b>${hu(sel.set.size)} kijelölve</b>` +
+    '<button class="btn" data-act="ask" title="Claude Code nyílik ebben a repóban, a prompt előtöltve — nem küldi el magától">Kérdezd Claude-ot ezekről</button>' +
+    `<button class="btn" data-act="app"${kv.root ? '' : ' disabled title="' + esc(KV_WHY.root) + '"'}>Claude app</button>` +
+    '<button class="btn" data-act="copy">Útvonalak másolása</button>' +
+    '<button class="btn" data-act="clear" title="Kijelölés törlése (Esc)">×</button>';
+}
+const SEL_ACT = {
+  ask: () => selAskClaude(selPrompt(selAskHead())),
+  app: () => { kvLink(selAppUrl(selPrompt(selAskHead()))); kvToast('A Claude app nyílik, a prompt előtöltve'); },
+  copy: () => kvCopy(selFiles().map(f => f.p).join('\n'), hu(sel.set.size) + ' útvonal a vágólapon'),
+  clear: () => selClear()
+};
+function selToggle(i) { selSync(); sel.set.has(i) ? sel.set.delete(i) : sel.set.add(i); kvReady().then(selChanged); }
+function selClear() { if (!sel.set.size) return; sel.set.clear(); selChanged(); }
+function selSetPaths(paths) {
+  const by = new Map(current.city.files.map((f, i) => [f.p, i]));
+  selSync(); sel.set.clear();
+  for (const p of paths) if (by.has(p)) sel.set.add(by.get(p));
+  return kvReady().then(selChanged);
+}
+
+// ---- the box: a dashed rectangle while dragging, then every live building whose centre falls inside
+function selBoxDraw(x0, y0, x1, y1) {
+  let r = sel.rect;
+  if (!r) { r = sel.rect = document.createElement('div'); r.id = 'sel-rect'; document.body.append(r); }
+  Object.assign(r.style, { left: Math.min(x0, x1) + 'px', top: Math.min(y0, y1) + 'px', width: Math.abs(x1 - x0) + 'px', height: Math.abs(y1 - y0) + 'px' });
+  r.hidden = false;
+}
+function selBoxEnd(x0, y0, x1, y1, add) {
+  if (sel.rect) sel.rect.hidden = true;
+  const cr = canvas.getBoundingClientRect(), m = new THREE.Matrix4(), v = new THREE.Vector3();
+  const lx = Math.min(x0, x1), hx = Math.max(x0, x1), ly = Math.min(y0, y1), hy = Math.max(y0, y1);
+  selSync();
+  if (!add) sel.set.clear();
+  camera.updateMatrixWorld();
+  for (let i = 0; i < world.fileOf.length; i++) {
+    if (replay.cur[i * 3] <= 0) continue;
+    world.buildings.getMatrixAt(i, m);
+    v.set(0, 0.5, 0).applyMatrix4(m).project(camera);       // unitBox: centred in x/z, base at y=0
+    if (v.z > 1) continue;                                   // behind the camera
+    const sx = cr.left + (v.x + 1) / 2 * cr.width, sy = cr.top + (1 - v.y) / 2 * cr.height;
+    if (sx >= lx && sx <= hx && sy >= ly && sy <= hy) sel.set.add(i);
+  }
+  kvReady().then(selChanged);
+}
+addEventListener('keydown', e => { if (e.key === 'Escape' && sel.set.size && !e.target.closest('input, textarea')) selClear(); });
+
 // ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
@@ -2076,6 +2326,16 @@ if (window.CITY) {
       const r = canvas.getBoundingClientRect();
       const e = { clientX: r.left + r.width * rc[0], clientY: r.top + r.height * rc[1] };
       onHover(e); onContext(e);
+    }
+    // test hook: #palq=07a opens Ctrl+K with that text and takes the first row (tools/shot.js)
+    if (q.get('palq')) palOpen(q.get('palq')).then(() => palRun(0));
+    // test hook: #selp=a|b|c selects those paths; the selection bar carries the Claude link in data-ask
+    if (q.get('selp')) selSetPaths(q.get('selp').split('|'));
+    // test hook: #selbox=x0,y0,x1,y1 (fractions of the canvas) draws a Shift+drag box there
+    const sb = (q.get('selbox') || '').split(',').map(Number);
+    if (sb.length === 4 && sb.every(Number.isFinite)) {
+      const r = canvas.getBoundingClientRect(), X = f => r.left + r.width * f, Y = f => r.top + r.height * f;
+      selBoxEnd(X(sb[0]), Y(sb[1]), X(sb[2]), Y(sb[3]), false);
     }
   }, 300);
 } else $('drop').hidden = false;

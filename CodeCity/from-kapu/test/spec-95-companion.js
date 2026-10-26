@@ -120,6 +120,14 @@ module.exports = [
     assert.strictEqual((await post('git', { cmd: 'status' })).status, 200);
     assert.strictEqual((await post('open-folder', null, { raw: JSON.stringify({ dir: 'x'.repeat(17000) }) })).status, 413);
   } },
+  { name: 'catalog: the START.cmd tools (K = Kódváros), the prompts and agents; a foreign Origin -> 403', async fn() {
+    await start();
+    const c = await req('GET', '/api/catalog');
+    assert.strictEqual(c.status, 200);
+    assert.ok(c.json.tools.some(t => t.n === 11 && t.path === 'CodeCity/dist/vrg-codecity.html'), JSON.stringify(c.json.tools.slice(-1)));
+    assert.ok(Array.isArray(c.json.prompts) && Array.isArray(c.json.agents) && Array.isArray(c.json.branches));
+    assert.strictEqual((await req('GET', '/api/catalog', { origin: 'https://evil.test' })).status, 403);
+  } },
   { name: 'status answers; check-paths says which repo paths exist', async fn() {
     await start();
     const s = await req('GET', '/api/status');

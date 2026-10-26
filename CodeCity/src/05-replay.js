@@ -60,6 +60,7 @@ function writeInstances(vals) {
   b.boundingSphere = null; b.boundingBox = null;   // raycast recomputes them from the new matrices
   replay.cur.set(vals);
   placeBeacon();
+  if (sel.shell || sel.set.size) selShellRefresh();   // the selection shell follows the buildings
 }
 
 // show commit T; animate = tween length in ms (0 = jump)

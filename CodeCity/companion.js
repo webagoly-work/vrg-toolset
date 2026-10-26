@@ -127,6 +127,25 @@ async function status() {
   return { ok: true, version: VERSION, repo: REPO, branch: m[1] || null, dirty: lines.length - 1, ahead: num('ahead'), behind: num('behind') };
 }
 
+// ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
+async function catalog() {
+  const read = p => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
+  const list = (dir, ext) => { try { return fs.readdirSync(dir).filter(f => f.endsWith(ext)).sort(); } catch (e) { return []; } };
+  const start = read(path.join(REPO, 'Planner', 'START.cmd')), tools = [];
+  for (const m of start.matchAll(/^set "T(\d+)_NAME=(.*)"\r?$/gm)) {
+    const pm = new RegExp('^set "T' + m[1] + '_PATH=(.*)"\\r?$', 'm').exec(start);
+    if (pm) tools.push({ n: +m[1], name: m[2], path: path.relative(REPO, path.resolve(REPO, 'Planner', pm[1].replace(/\\/g, '/'))).replace(/\\/g, '/') });
+  }
+  const pdir = path.join(REPO, 'tools', 'prompts'), adir = path.join(REPO, '.claude', 'agents');
+  const prompts = list(pdir, '.txt').map(f => ({ name: f.replace(/\.txt$/, ''), text: read(path.join(pdir, f)).slice(0, 5000) }));
+  const agents = list(adir, '.md').map(f => {
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(read(path.join(adir, f))), get = k => (fm && new RegExp('^' + k + ':\\s*(.*)$', 'm').exec(fm[1]) || [])[1] || '';
+    return { name: get('name') || f.replace(/\.md$/, ''), description: get('description').slice(0, 300) };
+  });
+  const b = await git(['branch', '--format=%(refname:short)']);
+  return { tools, prompts, agents, branches: b.ok ? b.out.split('\n').map(s => s.trim()).filter(Boolean) : [] };
+}
+
 // ---- the whitelist: exact keys, exact types
 const shape = (body, keys) => body && typeof body === 'object' && !Array.isArray(body) &&
   Object.keys(body).length === keys.length && keys.every(k => k in body);
@@ -191,6 +210,7 @@ const server = http.createServer((req, res) => {
   const origin = req.headers.origin;
   if (origin && !ORIGINS.has(origin)) return send(res, 403, { error: 'origin' });
   if (req.method === 'GET' && url.pathname === '/api/status') return status().then(s => send(res, 200, s));
+  if (req.method === 'GET' && url.pathname === '/api/catalog') return catalog().then(c => send(res, 200, c));
   if (req.method !== 'POST') return send(res, 405, { error: 'csak POST' });
   const given = req.headers['x-kodvaros-token'];
   if (typeof given !== 'string' || given.length !== TOKEN.length || !crypto.timingSafeEqual(Buffer.from(given), Buffer.from(TOKEN))) return send(res, 401, { error: 'token' });

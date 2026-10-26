@@ -22,6 +22,7 @@ function onHover(e) {
 
 function onPick(e) {
   const hit = pickAt(e);
+  if ((e.ctrlKey || e.metaKey) && hit && hit.file) { selToggle(hit.i); return; }   // multi-select (19-select)
   if (!hit) closePanel();
   else if (hit.file) showFile(hit.file);
   else showDir(hit.dir);

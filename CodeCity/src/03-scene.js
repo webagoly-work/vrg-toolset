@@ -29,7 +29,7 @@ new ResizeObserver(() => {
   requestRender();
 }).observe(canvas.parentElement);
 
-// ---- orbit camera: left drag rotates, right drag or Shift pans, wheel zooms
+// ---- orbit camera: left drag rotates, right drag pans, wheel zooms; Shift+left drag boxes a selection (19-select)
 const orbit = { target: new THREE.Vector3(), theta: 0.8, phi: 0.95, r: 300 };
 let onCameraMoved = () => {};                 // 04-ui hooks the share link in here
 function placeCamera() {
@@ -42,18 +42,21 @@ function placeCamera() {
 let drag = null;
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('pointerdown', e => {
-  drag = { x: e.clientX, y: e.clientY, pan: e.button === 2 || e.shiftKey, moved: 0 };
+  drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, pan: e.button === 2,
+    box: e.button === 0 && e.shiftKey && !!world, add: e.ctrlKey || e.metaKey, moved: 0 };
   canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener('pointerup', e => {
   // a right click that did not drag is the RCO menu (17-actions); a right drag pans
-  if (drag && drag.moved < 4) { if (e.button === 2) onContext(e); else onPick(e); }
+  if (drag && drag.box && drag.moved >= 4) selBoxEnd(drag.x0, drag.y0, e.clientX, e.clientY, drag.add);
+  else if (drag && drag.moved < 4) { if (sel.rect) sel.rect.hidden = true; if (e.button === 2) onContext(e); else onPick(e); }
   drag = null;
 });
 canvas.addEventListener('pointermove', e => {
   if (!drag) { onHover(e); return; }
   const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
   drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
+  if (drag.box) { selBoxDraw(drag.x0, drag.y0, e.clientX, e.clientY); return; }
   if (drag.pan) {
     const k = orbit.r * 0.0015, s = Math.sin(orbit.theta), c = Math.cos(orbit.theta);
     orbit.target.x -= (dx * c + dy * s) * k;

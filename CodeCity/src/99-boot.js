@@ -28,5 +28,15 @@ if (window.CITY) {
       const e = { clientX: r.left + r.width * rc[0], clientY: r.top + r.height * rc[1] };
       onHover(e); onContext(e);
     }
+    // test hook: #palq=07a opens Ctrl+K with that text and takes the first row (tools/shot.js)
+    if (q.get('palq')) palOpen(q.get('palq')).then(() => palRun(0));
+    // test hook: #selp=a|b|c selects those paths; the selection bar carries the Claude link in data-ask
+    if (q.get('selp')) selSetPaths(q.get('selp').split('|'));
+    // test hook: #selbox=x0,y0,x1,y1 (fractions of the canvas) draws a Shift+drag box there
+    const sb = (q.get('selbox') || '').split(',').map(Number);
+    if (sb.length === 4 && sb.every(Number.isFinite)) {
+      const r = canvas.getBoundingClientRect(), X = f => r.left + r.width * f, Y = f => r.top + r.height * f;
+      selBoxEnd(X(sb[0]), Y(sb[1]), X(sb[2]), Y(sb[3]), false);
+    }
   }, 300);
 } else $('drop').hidden = false;
