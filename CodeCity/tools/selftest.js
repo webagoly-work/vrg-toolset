@@ -106,6 +106,10 @@ try {
   const fcs = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-fences.js')], { encoding: 'utf8', timeout: 90000 });
   for (const l of String(fcs.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
   check(fcs.status === 0, `fences spec exit ${fcs.status}`);
+  // supervised jobs (P6, KV-14): a fixture START.cmd server started, logged, port seen, stopped as a tree
+  const jbs = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-jobs.js')], { encoding: 'utf8', timeout: 90000 });
+  for (const l of String(jbs.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
+  check(jbs.status === 0, `jobs spec exit ${jbs.status}`);
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
   else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }

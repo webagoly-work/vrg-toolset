@@ -12,6 +12,11 @@ if (window.CITY) {
   if (lt) live.ready.then(() => { live.es.close(); liveFsEvent({ paths: [{ p: lt, kind: 'módosult' }] }); liveNews(); });
   // test hook: #filetest=<path>[&fileedit=md|diff] opens the file panel (served only; registered here for the same reason);
   // fileedit adds a line and shows the preview or the diff — nothing is saved
+  // test hook: #jobstest=<job id> waits for the first port list, closes the stream (headless clock), opens Üzemek
+  // with that job's log (start the job through the segéd first)
+  const jt = new URLSearchParams(location.hash.slice(1)).get('jobstest');
+  if (jt) live.ready.then(() => new Promise(res => { if (jb.ports.length) res(); else live.es.addEventListener('ports', res, { once: true }); }))
+    .then(async () => { live.es.close(); await palCatalog(); jb.open = jt; jbToggle(true); });
   const ftq = new URLSearchParams(location.hash.slice(1)), ft = ftq.get('filetest');
   if (ft) live.ready.then(async () => {
     live.es.close();

@@ -81,7 +81,7 @@ async function liveSwap() {
     if (open) { const f = city.files.find(x => x.p === open); if (f) showFile(f); }
     if (picked) selSetPaths(picked);
     agentsEvent({ list: ag.list });   // the figures stood in the old city
-    fenDraw();
+    fenDraw(); jbDraw();
     const n = city.commits.length - was;
     // the new commits flash like a replay step, and their files pulse
     const idx = [];
@@ -109,6 +109,11 @@ function liveConnect() {
   live.es.addEventListener('agents', e => { if (liveMine()) agentsEvent(JSON.parse(e.data)); });
   live.es.addEventListener('beam', e => { if (liveMine()) beamEvent(JSON.parse(e.data)); });
   live.es.addEventListener('fences', e => { if (liveMine()) fencesEvent(JSON.parse(e.data)); });   // 24-fences
+  // 26-jobs: workshops, gates, the port street
+  live.es.addEventListener('jobs', e => { if (liveMine()) jobsEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('job', e => { if (liveMine()) jobEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('joblog', e => { if (liveMine()) joblogEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('ports', e => { if (liveMine()) portsEvent(JSON.parse(e.data)); });
   live.es.onerror = () => { $('live-dot').hidden = true; };
 }
 function liveFsEvent(d) {
@@ -127,5 +132,6 @@ async function liveInit() {
   await kvReady();
   liveConnect();
   termResumeOffer();   // 21-term: Claude tabs from before a restart
+  if (kv.match) palCatalog().then(jbLoad);   // 26-jobs: the gates need the START.cmd tools
 }
 $('news-btn').onclick = liveNews;

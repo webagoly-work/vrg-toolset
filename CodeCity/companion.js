@@ -42,6 +42,12 @@
 // CodeMirror 6 comes from Vendor as ES modules (/vendor/esm/<slug>/…, a fixed list), mapped by an import map
 // that is put into the served page.
 //
+// Jobs (P6, KV-14): the Node servers of START.cmd's HELYI SZERVEREK list (read from START.cmd, never a second
+// list) plus a fixed set of builds and tests; started from argument arrays with this Node, output kept in a
+// 500-line ring per job and streamed ('job', 'joblog'); stop = taskkill /PID <pid> /T /F (the whole tree).
+// The port street: the TCP LISTEN table (netstat -ano) + process names (tasklist), polled every 5 s while a
+// page listens ('ports'). Only listening ports, never connections.
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -485,6 +491,107 @@ function fileRead(rel) {
   return { code: 200, body: { path: f.rel, text: buf.toString('utf8'), hash: sha1(buf), eol: buf.includes('\r\n') ? 'crlf' : 'lf' } };
 }
 
+// ---- jobs: START.cmd's local servers + builds + tests; one supervised process each
+const JOB_LINES = 500;
+const jobs = { list: null, run: new Map(), ports: [], portsSig: '', portTimer: null, polling: false };
+function jobDefs() {
+  if (jobs.list) return jobs.list;
+  const start = (() => { try { return fs.readFileSync(path.join(REPO, 'Planner', 'START.cmd'), 'utf8'); } catch (e) { return ''; } })();
+  const v = (k) => (new RegExp('^set "' + k + '=(.*)"\\r?$', 'm').exec(start) || [])[1];
+  const out = [];
+  for (let n = 1; n <= 20; n++) {
+    const name = v('LH' + n + '_NAME'), js = v('LH' + n + '_JS');
+    if (!name) continue;
+    const port = +v('LH' + n + '_PORT'), lpath = v('LH' + n + '_PATH') || '/';
+    const def = { id: 'lh' + n, name, kind: 'server', port, path: lpath, key: n === 10 ? '0' : String(n) };
+    if (js) { def.cmd = [path.join(REPO, js.replace(/\\/g, '/')), ...(v('LH' + n + '_ARGS') || '').split(/\s+/).filter(Boolean)]; def.script = js.replace(/\\/g, '/'); }
+    else def.why = 'saját indítója van (.bat) — a START.cmd O) menüjéből indul';
+    out.push(def);
+  }
+  const npm = path.join(REPO, 'Planner', 'apps', 'node', 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const fixed = [
+    ['codecity-build', 'Kódváros oldal (build)', 'build', ['CodeCity/build.js']],
+    ['hub-build', 'VRG Kapu (build)', 'build', ['tools/build-hub.js']],
+    ['planner-build', 'Varler Planner (npm run build)', 'build', [npm, 'run', 'build'], 'Planner/projects/varler-planner'],
+    ['codecity-selftest', 'Kódváros selftest', 'test', ['CodeCity/tools/selftest.js']],
+    ['check-start', 'START.cmd ellenőrzés', 'test', ['tools/check-start.js']],
+    ['hub-test', 'VRG Kapu tesztek', 'test', ['Hub/test/run.js']]
+  ];
+  for (const [id, name, kind, argv, cwd] of fixed) {
+    const script = path.isAbsolute(argv[0]) ? argv[0] : path.join(REPO, argv[0]);
+    if (!exists(script)) continue;
+    out.push({ id, name, kind, cmd: [script, ...argv.slice(1)], cwd: cwd ? path.join(REPO, cwd) : REPO, script: argv[0] });
+  }
+  return jobs.list = out;
+}
+const jobState = def => {
+  const r = jobs.run.get(def.id), ext = def.port && jobs.ports.find(x => x.port === def.port && (!r || x.pid !== r.pid));
+  return { id: def.id, name: def.name, kind: def.kind, port: def.port || null, path: def.path || null, key: def.key || null, why: def.why || null,
+    state: r && r.code === null ? 'fut' : ext ? 'fut (máshonnan)' : r ? (r.stopped ? 'leállítva' : r.code === 0 ? 'kész' : 'hiba') : 'áll',
+    code: r ? r.code : null, pid: r && r.code === null ? r.pid : null, startedAt: r ? r.at : null, ownPid: ext ? ext.pid : null, script: def.script || null };
+};
+const jobsPub = () => jobDefs().map(jobState);
+function jobLog(r, text) {
+  const lines = (r.rest + text).split(/\r?\n/);
+  r.rest = lines.pop();
+  if (!lines.length) return;
+  r.lines.push(...lines); if (r.lines.length > JOB_LINES) r.lines.splice(0, r.lines.length - JOB_LINES);
+  liveEmit('joblog', { id: r.id, lines });
+}
+function jobStart(id) {
+  const def = jobDefs().find(d => d.id === id);
+  if (!def) return [404, { error: 'nincs ilyen feladat' }];
+  if (!def.cmd) return [409, { error: def.why }];
+  const st = jobState(def);
+  if (st.state === 'fut' || st.state === 'fut (máshonnan)') return [409, { error: 'már fut' + (st.ownPid ? ' (PID ' + st.ownPid + ')' : '') }];
+  if (DRY) return [200, { dryRun: true, exe: process.execPath, args: def.cmd, cwd: def.cwd || REPO }];
+  const child = spawn(process.execPath, def.cmd, { cwd: def.cwd || REPO, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  const r = { id, pid: child.pid, at: Date.now(), code: null, lines: [], rest: '' };
+  jobs.run.set(id, r);
+  child.stdout.on('data', d => jobLog(r, String(d)));
+  child.stderr.on('data', d => jobLog(r, String(d)));
+  child.on('error', e => { jobLog(r, 'HIBA: ' + e.message + '\n'); });
+  child.on('exit', code => { if (r.rest) jobLog(r, '\n'); r.code = code === null ? -1 : code; liveEmit('job', jobState(def)); portsSoon(); });
+  liveEmit('job', jobState(def)); portsSoon();
+  return [200, jobState(def)];
+}
+function jobStop(id) {
+  const r = jobs.run.get(id);
+  if (!r || r.code !== null) return [409, { error: 'nem a Kódváros indította, vagy már áll' }];
+  if (DRY) return [200, { dryRun: true, exe: 'taskkill', args: ['/PID', String(r.pid), '/T', '/F'] }];
+  r.stopped = true;   // asked for: 'leállítva', not 'hiba'
+  return new Promise(res => execFile('taskkill', ['/PID', String(r.pid), '/T', '/F'], { windowsHide: true, timeout: 15000 },
+    err => res(err ? [500, { error: 'a leállítás nem sikerült' }] : [200, { ok: true }])));
+}
+process.on('exit', () => { for (const r of jobs.run.values()) if (r.code === null) try { require('child_process').execFileSync('taskkill', ['/PID', String(r.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' }); } catch (e) { /* gone */ } });
+// the port street: LISTEN sockets and the program behind each
+function portsPoll() {
+  if (jobs.polling || !live.clients.size) return;
+  jobs.polling = true;
+  execFile('netstat', ['-ano', '-p', 'TCP'], { windowsHide: true, timeout: 10000, maxBuffer: 4 << 20 }, (err, out) => {
+    if (err) { jobs.polling = false; return; }
+    const seen = new Map();
+    for (const line of String(out).split(/\r?\n/)) {
+      const m = /^\s*TCP\s+(\S+):(\d+)\s+\S+\s+LISTENING\s+(\d+)/.exec(line);
+      if (m && /^(127\.0\.0\.1|0\.0\.0\.0|\[::\]|\[::1\])$/.test(m[1]) && !seen.has(+m[2])) seen.set(+m[2], { port: +m[2], pid: +m[3], local: m[1] === '127.0.0.1' || m[1] === '[::1]' });
+    }
+    execFile('tasklist', ['/FO', 'CSV', '/NH'], { windowsHide: true, timeout: 10000, maxBuffer: 8 << 20 }, (e2, tl) => {
+      jobs.polling = false;
+      const names = new Map();
+      if (!e2) for (const line of String(tl).split(/\r?\n/)) { const m = /^"([^"]+)","(\d+)"/.exec(line); if (m) names.set(+m[2], m[1]); }
+      const defs = jobDefs();
+      jobs.ports = [...seen.values()].sort((a, b) => a.port - b.port).map(x => {
+        const d = defs.find(j => j.port === x.port), own = [...jobs.run.values()].find(r => r.code === null && r.pid === x.pid);
+        return { port: x.port, pid: x.pid, proc: names.get(x.pid) || '', local: x.local, job: d ? d.id : null, name: d ? d.name : (x.port === LIVE_PORT ? 'Kódváros segéd' : null), ours: !!own || x.port === LIVE_PORT };
+      });
+      const sig = JSON.stringify(jobs.ports);
+      if (sig !== jobs.portsSig) { jobs.portsSig = sig; liveEmit('ports', { list: jobs.ports }); liveEmit('jobs', { list: jobsPub() }); }
+    });
+  });
+}
+function portsSoon() { setTimeout(portsPoll, 600); }
+function portsStart() { if (!jobs.portTimer) { jobs.portTimer = setInterval(portsPoll, 5000); jobs.portTimer.unref(); } portsPoll(); }
+
 // ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
 async function catalog() {
   const read = p => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
@@ -591,6 +698,8 @@ const ACTIONS = {
     fs.writeFileSync(f.p, text);
     return [200, { ok: true, path: f.rel, hash: sha1(Buffer.from(text)), safety: path.relative(REPO, safety).replace(/\\/g, '/') }];
   } },
+  'job-start': { keys: ['id'], async run(b) { return typeof b.id === 'string' ? jobStart(b.id) : [400, { error: 'id' }]; } },
+  'job-stop': { keys: ['id'], async run(b) { return typeof b.id === 'string' ? jobStop(b.id) : [400, { error: 'id' }]; } },
   'check-paths': { keys: ['paths'], async run(b) {
     if (!Array.isArray(b.paths) || b.paths.length > 500 || !b.paths.every(p => typeof p === 'string')) return [400, { error: 'paths: legfeljebb 500 szöveg' }];
     return [200, Object.fromEntries(b.paths.map(p => [p, !!safePath(p)]))];
@@ -637,9 +746,10 @@ const server = http.createServer((req, res) => {
   if (origin && !ORIGINS.has(origin)) return send(res, 403, { error: 'origin' });
   if (req.method === 'GET' && url.pathname === '/api/status') return status().then(s => send(res, 200, s));
   if (req.method === 'GET' && url.pathname === '/api/catalog') return catalog().then(c => send(res, 200, c));
-  if (req.method === 'GET' && (url.pathname === '/api/stream' || url.pathname === '/api/city' || url.pathname === '/api/file')) {
+  if (req.method === 'GET' && (url.pathname === '/api/stream' || url.pathname === '/api/city' || url.pathname === '/api/file' || url.pathname === '/api/jobs')) {
     const ck = /(?:^|;\s*)kv_t=([0-9a-f]+)/.exec(String(req.headers.cookie || ''));
     if (!ck || ck[1].length !== TOKEN.length || !crypto.timingSafeEqual(Buffer.from(ck[1]), Buffer.from(TOKEN))) return send(res, 401, { error: 'token' });
+    if (url.pathname === '/api/jobs') return send(res, 200, { list: jobsPub(), logs: Object.fromEntries([...jobs.run].map(([id, r]) => [id, r.lines.slice(-200)])), ports: jobs.ports });
     if (url.pathname === '/api/file') { const r = fileRead(url.searchParams.get('path') || ''); return send(res, r.code, r.body || { error: r.error }); }
     if (url.pathname === '/api/city') return liveCity().then(c => (c ? send(res, 200, c) : send(res, 503, { error: 'a felmérés nem sikerült' })));
     res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
@@ -648,6 +758,7 @@ const server = http.createServer((req, res) => {
     if (agents.sig) res.write('event: agents\ndata: ' + agents.sig.replace(/^/, '{"list":') + '}\n\n');
     if (fences.sig) res.write('event: fences\ndata: {"list":' + fences.sig + '}\n\n');
     worktreesSoon();
+    portsStart();
     live.clients.add(res);
     agentsStart();
     req.on('close', () => live.clients.delete(res));
