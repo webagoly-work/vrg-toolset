@@ -245,3 +245,36 @@ each idea below is a district, mode or phenomenon inside it. Only what §7.1 doe
 
 Left out: orchestra and ant colony (follow and §7.1 #5 cover them); metaphor skins (the same city
 rendered as factory or space station) — the city is the base, but keep the engine skin-neutral.
+
+## 8. Élő munkatér
+
+The live-workspace plan (2026-10-26): Kódváros grows from a viewer into the main tool for our code
+work — open, find, launch and watch Claude, live. Source: the report
+`docs/research/reports/Kódváros live workspace and GitWorld.md` §6; prompts
+`docs/city/PROMPTS-WORKSPACE.md` (KV-01 … KV-27), run in order. Decisions in §5 (CITY-D9…).
+One stub per phase in `docs/city/wp/`.
+
+| Phase | Content | Decisions | Done-check | Status |
+|---|---|---|---|---|
+| P0 | [Decisions and plan](wp/p00-decisions.md) | — | README §5 lists the answers; §8 has the phase table; every phase has a stub here. | DONE |
+| P1 | [Companion server](wp/p01-companion.md) | D9, D10 | `node tools/check-start.js` passes; the page opens from START.cmd served and still from `file://`; selftest green. | open |
+| P2 | [Actions, Ctrl+K, multi-select, terminal](wp/p02-actions.md) | D9, D15 | Right-click a building → VS Code opens on it; Ctrl+K "07a" flies there; three selected → "Ask Claude about these" opens a pre-filled prompt; items greyed with a Hungarian reason in `file://` mode; the embedded terminal runs `claude`, or the link opens when it cannot. | open |
+| P3 | [Live repo stream](wp/p03-live-repo.md) | D9 | Edit a file in VS Code → its building pulses within ~1 s; a commit updates the timeline without reload. | open |
+| P3b | [VS Code extension (CITY-D9 D)](wp/p03b-vscode.md) | D9, D10 | In the portable VS Code, the command "Kódváros: megnyitás" shows the city; switching editor tabs flies to that building. | open |
+| P4 | [Live Claude](wp/p04-live-claude.md) | D11, D12, D13, D16, D27 | A second session shows a second figure; its reads beam to roofs live; a session waiting for permission shows amber on the board; closing the city does not slow Claude. | open |
+| P5 | [Panels: editor and terminal](wp/p05-panels.md) | D10, D14, D15 | Open README.md in a panel and preview it; an edit shows a diff before saving; `claude` runs in the panel and resumes after a companion restart. | open |
+| P6 | [Process supervisor](wp/p06-processes.md) | D9 | Start MindMap's server from the city → its gate lights and its log streams; a failing selftest raises a storm; stop kills the whole tree. | open |
+| P7 | [Git made visible](wp/p07-git.md) | D10 | A test branch with one commit → a new line with one station; the preview shows touched stations; the reflog lane scrubs back. | open |
+| P8 | [The Land](wp/p08-land.md) | D23, D24, D28 | Zoom from the Land to a file floor without jitter; a 100 MB download sails in as a ship; copying to a stick runs a train. | open |
+| P9 | [GitWorld planet](wp/p09-planet.md) | D21, D22 | The vendored repos sit as foreign cities on their continents with licence colours; offline, the planet renders from the snapshot. | open |
+| P10 | [Probe sidecar (Tier A)](wp/p10-probe.md) | D18, D25, D27 | Spotify playing → the stadium lights; dragging a sound tower changes its volume; Paint raises a construct that dissolves when closed. | open |
+| P11 | [Elevated ETW (Tier B, optional)](wp/p11-etw.md) | D17, D23 | A `git clone` shows the exact cargo per process; a file read inside a Bash command beams to its roof. | open |
+| P12 | [Overlay OS](wp/p12-overlay.md) | D19, D20 | After 22H2: the hotkey summons the city in < 150 ms; idle ~0 %; clicking a building hands off to the real window, Esc returns. | open |
+| P13 | [Live-first polish](wp/p13-polish.md) | D26 | Every rule has a check in selftest/shot.js; the Design batch pack exists. | open |
+
+Changes against the report, from the user's KV-01 answers: P2 brings the embedded terminal forward
+(CITY-D15 C, link as fallback); P3b is new (VS Code extension, CITY-D9 D).
+
+**Prompts done** (`KV-nn ✔ date commit`):
+
+- KV-01 ✔ 2026-10-26 2af8607
