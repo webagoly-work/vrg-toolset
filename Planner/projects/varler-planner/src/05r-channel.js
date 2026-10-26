@@ -83,7 +83,7 @@ function chnLenToBase(rbxId,baseId){const t=chnTree(baseId)[rbxId];return t?t.le
 function chnChain(rbxId){const t=chnTree()[rbxId];if(!t)return null;const p=byId('devices',t.parent);return p&&p.type==='base'?'direct':'chained';}
 
 // ---- the tool: the Path tool with a flag ----------------------------------------------------------------------------
-function chnToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkLayer(S.id,'channel'):null;
+function chnToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?vstPathLayer(S,'channel'):null;   // V6: route in a Villany Stack
   if(L){state.activeLayer=L.id;renderLayers();}
   if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();
   state.pathType=CHN_T.rule==='csat'?'csat':'gege';setMode('path');CHN_T.on=true;

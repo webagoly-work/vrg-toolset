@@ -3018,13 +3018,16 @@ window.paintStats=paintStats;window.invalidateLayers=invalidateLayers;window.dra
 function updateTotals(){try{renderCircuitList();}catch(e){}const len={lighting:0,sockets:0,power3:0,data:0};data.cables.forEach(cb=>len[cb.type]+=cableLen(cb));
   let rows='',tot=0;for(const k in CIRC){tot+=len[k];rows+=`<tr><td><span class="swatch" style="background:${CIRC[k].c}"></span> ${CIRC[k].name}</td><td class="n">${len[k].toFixed(1)}</td></tr>`;}
   rows+=`<tr><td><b>Összesen</b></td><td class="n"><b>${tot.toFixed(1)}</b></td></tr>`;document.getElementById('tblCable').innerHTML=rows;
-  const cnt={};for(const k in DEV)cnt[k]=0;data.devices.forEach(d=>cnt[d.type]++);
+  // round 2026-10-22: an existing item (Meglévő) and an alarm / fire point (cable only) are no device material — own rows below
+  const own=d=>!(typeof vstExistOf==='function'&&(vstExistOf(d)||vstCableOnly(d)));
+  const cnt={};for(const k in DEV)cnt[k]=0;data.devices.forEach(d=>{if(own(d))cnt[d.type]++;});
   let dr='';for(const k in DEV)dr+=`<tr><td>${DEV[k]}</td><td class="n">${cnt[k]}</td></tr>`;document.getElementById('tblDev').innerHTML=dr;
   renderBOM();}
 const DROP={socket:0.3,switch:1.1,light:0.5,board:0,junction:0};
 const CABNAME={lighting:'Kábel – Világítás',sockets:'Kábel – Dugalj',power3:'Kábel – 3 fázis',data:'Kábel – Adat'};
 function computeBOM(){const len={lighting:0,sockets:0,power3:0,data:0};data.cables.forEach(cb=>len[cb.type]+=cableLen(cb));
-  const cnt={};for(const k in DEV)cnt[k]=0;data.devices.forEach(d=>cnt[d.type]++);
+  const own=d=>!(typeof vstExistOf==='function'&&(vstExistOf(d)||vstCableOnly(d)));   // as in updateTotals
+  const cnt={};for(const k in DEV)cnt[k]=0;data.devices.forEach(d=>{if(own(d))cnt[d.type]++;});
   const drop={lighting:0,sockets:0,power3:0,data:0};
   drop.sockets+=cnt.socket*DROP.socket; drop.lighting+=cnt.switch*DROP.switch+cnt.light*DROP.light;
   const w=1+(+state.waste||0)/100,rows=[];
@@ -3043,6 +3046,7 @@ function computeBOM(){const len={lighting:0,sockets:0,power3:0,data:0};data.cabl
   Object.keys(wire).forEach(k=>{const nm=k[0]==='d'?('Vezeték – '+k.slice(2)):('Vezeték '+k.slice(2)+' mm²');rows.push({id:'w_'+k,name:nm,qty:+(wire[k]*w).toFixed(1),unit:'m'});});
   // wall chasing (06 chaseProject): real metres and pockets, no waste factor — labour, not material
   chaseBOMRows().forEach(r=>rows.push(r));
+  if(typeof vstBomRows==='function'){vstCableOnlyRows().forEach(r=>rows.push(r));vstBomRows().forEach(r=>rows.push(r));}
   return rows;}
 function renderBOM(){const rows=computeBOM();let html=`<tr><td><b>Tétel</b></td><td class="n"><b>Menny.</b></td><td><b>E.</b></td><td class="n"><b>Ft/e.</b></td><td class="n"><b>Összeg</b></td></tr>`,tot=0;
   for(const r of rows){const price=state.price[r.id]||0,sum=price*r.qty;tot+=sum;
@@ -6143,20 +6147,32 @@ window.lyrMerge=lyrMerge;window.lyrDelete=lyrDelete;window.lyrMergeDown=lyrMerge
 
 // A stack is METADATA over ordinary layers [Q10=A]: each stack layer is a normal layer carrying
 // L.stack (the stack id) and L.role (a STK_ROLES key), so every existing tool keeps working on it.
-// The record lives in the session global `stacks`: {id, name, kind:'bridge', scale:'S-C', layers:[…], phase}.
+// The record lives in the session global `stacks`: {id, name, kind:'elec'|'bridge', scale:'S-C', layers:[…], phase}.
 // Prefix: stk. Everything here is a function or a table read inside functions.
+// Two kinds (round 2026-10-22, V1): 'elec' = the Villany Stack for ordinary electrical work, 'bridge' = the smart-home
+// stack. A role lists the kinds it belongs to (`kinds`, absent = bridge only) and may carry its elec name (`ne`). The
+// shared role keys keep their key and colour in both kinds — that is what makes promoting elec → bridge one click (V8).
 
+const STK_KINDS={elec:{n:'Villany',short:'V',title:'Villany Stack'},bridge:{n:'BRIDGE (okosotthon)',short:'B',title:'BRIDGE Stack'}};
+const STK_BOTH=['elec','bridge'];
 const STK_ROLES=[      // order = panel order = stage order. fam = default conduit family (01_CATALOGUES §7)
- {k:'construct',  n:'Szerkezet',   ph:1, cats:['wall','floor','door','window','stairs','object'], hint:'Padló, falak, ajtók, ablakok, helyiségek.'},
- {k:'mark',       n:'Jelölés',     ph:1, cats:['mark','trace'], hint:'Szabályok, tiltások, preferenciák, mozgásnyomok.'},
- {k:'hw',         n:'Hardver',     ph:1, cats:['device'], hint:'Elosztószekrény, mérőóra, adatbelépés, RBX dobozok.'},
+ {k:'construct',  n:'Szerkezet',   ph:1, kinds:STK_BOTH, cats:['wall','floor','door','window','stairs','object'], hint:'Padló, falak, ajtók, ablakok, helyiségek.'},
+ {k:'mark',       n:'Jelölés',     ph:1, kinds:STK_BOTH, cats:['mark','trace'], hint:'Szabályok, tiltások, preferenciák, mozgásnyomok.'},
+ // V3 (D1): what is already in the wall — every item keep · remove · replace (d.ex); its solo view is the demolition sheet
+ {k:'exist',      n:'Meglévő / bontás', ph:1, kinds:STK_BOTH, opt:['bridge'], cats:['device','path','cable'], hint:'Meglévő pontok és kábelek: megmarad · bontandó · cserélendő (jobb klikk). Egyedül mutatva: bontási terv.'},
+ {k:'hw',         n:'Hardver',     ne:'Betáplálás és elosztás', ph:1, kinds:STK_BOTH, cats:['device'], hint:'Elosztószekrény, mérőóra, adatbelépés, RBX dobozok.',
+  he:'Elosztószekrény, mérőóra, adatbelépés, gyengeáramú elosztó, riasztó- és tűzjelző központ, fő EPH sín.'},
  {k:'base',       n:'BASE',        ph:1, cats:['device'], hint:'NET · COMP · MEDIA.'},
  {k:'channel',    n:'Csatorna',    ph:1, cats:['path'],   hint:'Fizikai összeköttetés két hardverpont között.'},
  // Erősáram is three layers since round 2026-10-10 (WP-M1): dedicated · sockets · lighting (lamps + switches + shutters).
  // All three keep fam:'MAINS', so the fill, the conduit packing and the cabinet see one family as before.
- {k:'sys:DED',    n:'Dedikált körök',         ph:2, fam:'MAINS'},
- {k:'sys:SOC',    n:'Dugaljak',               ph:2, fam:'MAINS'},
- {k:'sys:LIGHT',  n:'Világítás',              ph:2, fam:'MAINS'},
+ {k:'sys:DED',    n:'Dedikált körök',         ph:2, kinds:STK_BOTH, fam:'MAINS'},
+ {k:'sys:SOC',    n:'Dugaljak',               ph:2, kinds:STK_BOTH, fam:'MAINS'},
+ {k:'sys:LIGHT',  n:'Világítás',              ph:2, kinds:STK_BOTH, fam:'MAINS'},
+ // V4 (D2, D3): one layer for weak current; the endpoint's own role is its purpose and its BRIDGE target (Q-V07 A)
+ {k:'sys:WEAK',   n:'Gyengeáram',             ph:2, kinds:['elec'], fam:null, hint:'TV / SAT, adat, csengő, kaputelefon — a végpont kódja dönti el a célt. BRIDGE-re bővítéskor a pontok a cél rétegükre kerülnek.'},
+ // V5: protective and supplementary bonding — kept in BRIDGE too (Q-V03 A)
+ {k:'sys:BOND',   n:'Érintésvédelem / EPH',   ph:2, kinds:STK_BOTH, fam:'BOND', off:true, hint:'Fő EPH sín, helyi EPH sín, a fürdő és a fémszerkezetek bekötése.'},
  {k:'sys:LV',     n:'Törpefeszültség — A busz', ph:2, fam:'LV'},
  {k:'sys:BUSB',   n:'Biztosított 24 V — B busz',ph:2, fam:'BUSB'},
  {k:'sys:CONTROL',n:'Vezérlés (BRIDGE_LINK)', ph:2, fam:'CONTROL'},
@@ -6167,12 +6183,20 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:HMI',    n:'Kezelőfelületek',        ph:2, fam:'CONTROL'},
  {k:'sys:MEDIA',  n:'Média és hang',          ph:2, fam:'MEDIA'},
  {k:'sys:USB',    n:'USB',                    ph:2, fam:'USB'},
+ // Q-V08 A: the elec face of Biztonságtechnika — cable runs only (panel → detector points); promotion moves it to sys:SECURITY
+ {k:'sys:ALARM',  n:'Riasztó',                ph:2, kinds:['elec'], fam:'SECURITY', off:true, hint:'Csak kábelezés: riasztóközpont → érzékelőpontok. Eszközanyag nincs, csak doboz, kábel, munkadíj.'},
  {k:'sys:SECURITY',n:'Biztonságtechnika',     ph:2, fam:'SECURITY', last:true}, // always last [user]
+ // Q-V09 / Q-V10 A: fire detection cabling — dedicated red pairs in a conduit family of its own, in both kinds
+ {k:'sys:FIRE',   n:'Tűzvédelem',             ph:2, kinds:STK_BOTH, fam:'FIRE', off:true, hint:'Csak kábel: tűzjelző központ → érzékelők, kézi jelzésadók, hangjelzők. Piros J-Y(St)Y 2×2×0,8, saját védőcső.'},
+ // V6: the elec stack's conduit, chase and box layer — what channel + arm are in BRIDGE
+ {k:'route',      n:'Nyomvonal és dobozok', ph:2, kinds:['elec'], cats:['path'], hint:'Vésés, védőcső, kötődobozok — BRIDGE-ben ez a Csatorna és az ARM pályák.'},
  {k:'cluster',    n:'Klaszterpontok', ph:2, cats:['device'], hint:'Klaszterdobozok (K1 · K2 · K3): több réteg végpontjai egy süllyesztett házban — IDEA-001/002/003.'},
  {k:'arm',        n:'ARM pályák',  ph:2, cats:['path'], hint:'Egyvonalas pályák az RBX-től minden végpontig.'},
+ // V5: provisions for a later smart home — neutral in switch boxes, deep boxes, spare conduit; stays on promotion
+ {k:'sys:SMARTREADY',n:'Okos előkészítés',    ph:2, kinds:STK_BOTH, fam:'SPARE', off:true, hint:'Nullás kapcsolódoboz, mély doboz, tartalék védőcső — egy későbbi okosotthonhoz.'},
  // the top of the stack: the gathered extras and SmartFrame ideas as provisioned endpoints (CLA-ADD-001, IDEA-003)
  {k:'sys:EXTRA',  n:'Extrák és ötletek',      ph:2, fam:'LV', hint:'Előkészített végpontok: CLA extrák (#1–#11) és a SmartFrame slotjai. Az ideális helyek ✦-gal.'}];
-const STK_ICONS={construct:'🧱',mark:'🚩',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:DED':'🔌','sys:SOC':'⚡','sys:LIGHT':'💡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
+const STK_ICONS={construct:'🧱',mark:'🚩',exist:'⌫',route:'〽','sys:WEAK':'📺','sys:BOND':'⏚','sys:ALARM':'🚨','sys:FIRE':'🔥','sys:SMARTREADY':'◌',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:DED':'🔌','sys:SOC':'⚡','sys:LIGHT':'💡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
   'sys:DATA':'🌐','sys:KNX':'⌘','sys:SENSOR':'📡','sys:RF':'📶','sys:HMI':'🖲','sys:MEDIA':'🔊','sys:USB':'🔌','sys:SECURITY':'🛡',cluster:'▦',arm:'🌿','sys:EXTRA':'✧'};
 // One colour per role, fixed [user]: Erősáram is the same red in every project, on the panel, on the
 // symbols and in the BRIDGE sheets — a colour has to mean a system, not "the third layer down".
@@ -6180,7 +6204,9 @@ const STK_ICONS={construct:'🧱',mark:'🚩',hw:'🗄',base:'🖧',channel:'⛓
 const STK_COL={construct:'#7c7468',mark:'#c0530f',hw:'#4a5a68',base:'#1f6f8b',channel:'#8a7bbf',
   'sys:MAINS':'#d1493f','sys:DED':'#6d4c41','sys:SOC':'#c62828','sys:LIGHT':'#ef7b72','sys:LV':'#e6a800','sys:BUSB':'#b07a2a','sys:CONTROL':'#7a5cc0','sys:DATA':'#16a085',
   'sys:KNX':'#2e7d32','sys:SENSOR':'#2f79c9','sys:RF':'#3fa7a7','sys:HMI':'#5470b0','sys:MEDIA':'#c2638a',
-  'sys:USB':'#607d8b','sys:SECURITY':'#444444',cluster:'#9c6b30',arm:'#2e9e5b','sys:EXTRA':'#b0489a'};
+  'sys:USB':'#607d8b','sys:SECURITY':'#444444',cluster:'#9c6b30',arm:'#2e9e5b','sys:EXTRA':'#b0489a',
+  // round 2026-10-22 (Q-V11 A): bright-blue weak current, deep-crimson fire (dash-dot on screen too), the PE green-yellow
+  exist:'#8d7b68',route:'#9c8fd0','sys:WEAK':'#1e9bff','sys:BOND':'#8db600','sys:ALARM':'#5a5a5a','sys:FIRE':'#8e0f2b','sys:SMARTREADY':'#8a76a8'};
 // the switch inside the lighting layer is orange (the user's words: barna, vörös, világospiros lámpa, narancs kapcsoló)
 const EP_CODE_COL={'sys:LIGHT':{SWI:'#f08c2e'}};
 // grey-safe print palette (answer M04, MATERIAL §4b): c = colour for colour print, L = CIE L* it greys to, p = line
@@ -6196,7 +6222,10 @@ const STK_PRINT={
  arm:{c:'#35a460',L:60,p:'x'},        'sys:RF':{c:'#64c8c8',L:75,p:'x'},
  // phase 1 — boxes and walls, told apart by kind, so levels may repeat
  hw:{c:'#394956',L:30,p:'s'}, base:{c:'#25738f',L:45,p:'s'}, channel:{c:'#9687cc',L:60,p:'s'},
- mark:{c:'#e3702e',L:60,p:'x'}, construct:{c:'#7e766a',L:50,p:'s'}};
+ mark:{c:'#e3702e',L:60,p:'x'}, construct:{c:'#7e766a',L:50,p:'s'},
+ // round 2026-10-22 — levels between the used ones, so no two systems print alike
+ 'sys:WEAK':{c:'#2b8fe0',L:55,p:'o'}, 'sys:BOND':{c:'#7a9e10',L:62,p:'s'}, 'sys:ALARM':{c:'#5a5a5a',L:38,p:'x'},
+ 'sys:FIRE':{c:'#8e0f2b',L:25,p:'x'}, 'sys:SMARTREADY':{c:'#8a76a8',L:52,p:'d'}, exist:{c:'#8d7b68',L:50,p:'d'}, route:{c:'#a698d6',L:68,p:'s'}};
 const STK_PRINT_DASH={s:'',d:'6 3',o:'1.2 2.4',x:'7 2 1.5 2'};
 let prnOn=false;                                   // true only around exportPNG(true) and between beforeprint / afterprint
 function prnActive(){return prnOn&&state.printPal!==false;}
@@ -6236,7 +6265,8 @@ function stkSysCols(){const o={};Object.keys(STK_COL).forEach(k=>{if(k.indexOf('
 // the action groups the inspector offers per role. A work package that adds actions to one system role
 // pushes into STK_GROUPS['+sys:MAINS'] etc.; groups that do not exist yet simply show nothing.
 const STK_GROUPS={construct:['Fal','Nyílászáró','Szint','Rajz','Helyiség'],mark:['Jelölés'],hw:['Hardver','Rádió'],
-  base:['Hardver'],channel:['Csatorna'],cluster:['Klaszter'],arm:['ARM','Feltöltés'],'sys:*':['Végpont','Szükséglet']};
+  base:['Hardver'],channel:['Csatorna'],cluster:['Klaszter'],arm:['ARM','Feltöltés'],'sys:*':['Végpont','Szükséglet'],
+  exist:['Végpont','Meglévő'],route:['Csatorna','Feltöltés']};
 function stkGroupsOf(roleKey){return STK_GROUPS[roleKey]||(roleKey.indexOf('sys:')===0?STK_GROUPS['sys:*'].concat(STK_GROUPS['+'+roleKey]||[]):[]);}
 
 // ---- shared hooks: the only render / pointer edits any later stack work package needs ----
@@ -6267,6 +6297,14 @@ function stkDevSym(d,x,y,k,back){return stkFirst(STK_DEVSYM,[d,x,y,k,back]);}
 function stkWvBox(dv,x,y,sc,col,back){return stkFirst(STK_WVBOX,[dv,x,y,sc,col,back]);}
 function stkBoxes(){const out=[];for(const f of STK_BOXES){try{(f()||[]).forEach(o=>out.push(o));}catch(_){}}return out;}
 
+// ---- kinds (V1) ----
+function stkKindOf(S){return S&&S.kind==='elec'?'elec':'bridge';}
+function stkRoleKinds(r){return (r&&r.kinds)||['bridge'];}
+function stkRolesOf(kind){kind=kind==='elec'?'elec':'bridge';return STK_ROLES.filter(r=>stkRoleKinds(r).indexOf(kind)>=0);}
+// opt: true = added on demand in every kind; [kinds] = on demand only in those (Meglévő is always there in a Villany Stack)
+function stkRoleOpt(r,kind){return r.opt===true||(Array.isArray(r.opt)&&r.opt.indexOf(kind)>=0);}
+function stkRoleName(k,kind){const r=stkRole(k);if(!r)return k;return (kind==='elec'&&r.ne)||r.n;}
+function stkRoleNameIn(k,S){return stkRoleName(k,stkKindOf(S));}
 // ---- model ----
 function stkById(id){return id?stacks.find(s=>s.id===id)||null:null;}
 function stkOfLayer(layerId){const L=lyrLayer(layerId);return L&&L.stack?stkById(L.stack):null;}
@@ -6304,7 +6342,7 @@ function stkMigrateRoles(){let n=0;
   (data.floors||[]).forEach(split);if(typeof ROOMSB!=='undefined')for(const l of ORD)(ROOMSB[l]||[]).forEach(split);
   return n;}
 function stkMigrateId(){let k=Date.now(),id;do{id='L'+(k++).toString(36)+'m';}while(layers.some(l=>l.id===id));return id;}
-function stkShort(S){return 'B'+(stacks.indexOf(S)+1);}
+function stkShort(S){return STK_KINDS[stkKindOf(S)].short+(stacks.indexOf(S)+1);}
 function stkSync(S){S.layers=stkLayersOf(S.id).map(l=>l.id);}
 function stkNewId(){let n=Date.now(),id;do{id='S'+n.toString(36);n++;}while(stacks.some(s=>s.id===id));return id;}
 // room identity for the later checklists: F ids for data.floors, Y ids for building rooms (ensureIds)
@@ -6312,13 +6350,15 @@ function stkRoomId(entry){return entry&&entry.rm?entry.rm.id:null;}
 function stkRooms(level){return allRooms(level).map(e=>({id:stkRoomId(e),name:e.rm.name||'',num:e.rm.num||'',kind:e.rm.kind||null,poly:e.rm.poly,rm:e.rm}));}
 
 function stkMakeLayer(S,role){
-  return {id:lyrNewId(),name:stkShort(S)+' · '+role.n,visible:true,cats:layerCatsAll(),stack:S.id,role:role.k};}
-// opts: {name, construct:{mode:'new'|'adopt', layers:[ids], merge:bool}, roles:[phase-2 keys] (default: every ph:2 role that is not off), phase}
+  return {id:lyrNewId(),name:stkShort(S)+' · '+stkRoleNameIn(role.k,S),visible:true,cats:layerCatsAll(),stack:S.id,role:role.k};}
+// opts: {name, kind:'elec'|'bridge' (default bridge), construct:{mode:'new'|'adopt', layers:[ids], merge:bool},
+//        roles:[phase-2 keys] (default: every ph:2 role of the kind that is not off), phase}
 function stkCreate(opts){opts=opts||{};
   ensureIds(data);lyrPushUndo();
-  const S={id:stkNewId(),name:(opts.name||'').trim()||('BRIDGE Stack '+(stacks.length+1)),kind:'bridge',scale:'S-C',layers:[],phase:opts.phase===2?2:1};
+  const kind=opts.kind==='elec'?'elec':'bridge',own=stkRolesOf(kind);
+  const S={id:stkNewId(),name:(opts.name||'').trim()||(STK_KINDS[kind].title+' '+(stacks.length+1)),kind,scale:'S-C',layers:[],phase:opts.phase===2?2:1};
   stacks.push(S);
-  const want=opts.roles||STK_ROLES.filter(r=>r.ph===2&&!r.off).map(r=>r.k);
+  const want=(opts.roles||own.filter(r=>r.ph===2&&!r.off).map(r=>r.k)).filter(k=>own.some(r=>r.k===k));
   const c=opts.construct||{mode:'new'};
   // Szerkezet: an existing layer takes the role [Q12=A: by reference, nothing is copied]
   let cl=null;
@@ -6330,15 +6370,15 @@ function stkCreate(opts){opts=opts||{};
     cl=ids.length?lyrLayer(ids[0]):null;
     if(cl){cl.stack=S.id;cl.role='construct';}}
   // new layers: one contiguous block after the last existing layer, in STK_ROLES order
-  STK_ROLES.forEach(r=>{
+  own.forEach(r=>{
     if(r.k==='construct'){if(!cl){cl=stkMakeLayer(S,r);layers.push(cl);}return;}
-    if((r.ph===1&&!r.opt)||want.indexOf(r.k)>=0)layers.push(stkMakeLayer(S,r));});   // opt: added on demand (08q Igények)
+    if((r.ph===1&&!stkRoleOpt(r,kind))||want.indexOf(r.k)>=0)layers.push(stkMakeLayer(S,r));});   // opt: added on demand (08q Igények)
   stkSync(S);
   state.stack=S.id;state.stkOff=false;state.activeLayer=cl.id;state.stage='stk:construct';
   lyrRefresh();
   const odd=stkNonConstruct(cl.id);
   lyrHud(odd.n?'A Szerkezet rétegen '+odd.n+' nem szerkezeti elem is van — áthelyezheted (jobb klikk a rétegen).'
-                :'Új BRIDGE Stack: '+S.name+' ('+S.layers.length+' réteg)');
+                :'Új '+STK_KINDS[kind].title+': '+S.name+' ('+S.layers.length+' réteg)');
   return S;}
 // existing layers take a role: the layer itself is referenced, nothing is copied [Q12=A].
 // several ids + merge → merged into the first (L0 wins as target), then referenced.
@@ -6381,9 +6421,9 @@ function stkMoveNonConstruct(layerId){const odd=stkNonConstruct(layerId),L=lyrLa
   lyrSnapWalls(moved);lyrRefresh();lyrHud('Áthelyezve új rétegre: '+odd.n+' elem');return true;}
 
 // ---- the stage rail ----
-function stkStages(S){return STK_ROLES.filter(r=>stkLayer(S.id,r.k)).map(r=>({
-  k:'stk:'+r.k,n:r.n,icon:STK_ICONS[r.k]||'•',groups:stkGroupsOf(r.k),
-  hint:r.hint||('Rendszer-réteg: '+r.n),check:()=>stkCheck(S,r.k)}));}
+function stkStages(S){const kind=stkKindOf(S);return STK_ROLES.filter(r=>stkLayer(S.id,r.k)).map(r=>({
+  k:'stk:'+r.k,n:stkRoleName(r.k,kind),icon:STK_ICONS[r.k]||'•',groups:stkGroupsOf(r.k),
+  hint:(kind==='elec'&&r.he)||r.hint||('Rendszer-réteg: '+stkRoleName(r.k,kind)),check:()=>stkCheck(S,r.k)}));}
 // the stage that is current: the role of the active layer, else the last chosen stage, else the first
 function stkCurrentKey(S){const L=lyrLayer(state.activeLayer),SL=stkStages(S);
   if(L&&L.stack===S.id&&L.role&&SL.some(s=>s.k==='stk:'+L.role))return 'stk:'+L.role;
@@ -6419,11 +6459,17 @@ function stkCheck(S,roleKey){const out=[];
   return out;}
 
 // ---- the wizard ----
+// V2: the kind first — Villany (ordinary electrical work) is the default; the role lists re-render on change
+function stkWizardRoles(kind){return stkRolesOf(kind).filter(r=>r.ph===2).map(r=>`<div><label><input type="checkbox" class="skR" value="${r.k}" ${r.off?'':'checked'}> ${esc(stkRoleName(r.k,kind))}${r.off?' <span style="color:#888">(alapból kikapcsolva)</span>':''}</label></div>`).join('');}
+function stkWizardNote(kind){const p1=stkRolesOf(kind).filter(r=>r.ph===1&&!stkRoleOpt(r,kind)).map(r=>stkRoleName(r.k,kind)).join(', ');
+  return 'Az 1. fázis rétegei ('+p1+') mindig létrejönnek. A stack csak jelölés a rétegeken: minden meglévő eszköz ugyanúgy működik rajtuk.'
+    +(kind==='elec'?' Egy Villany Stack később egy kattintással BRIDGE Stackké bővíthető.':'');}
 function stkWizard(){
   const free=layers.filter(l=>!l.stack);
-  const ph2=STK_ROLES.filter(r=>r.ph===2);
-  openModal('Új BRIDGE Stack',
-    `<div class="mrow">Név <input id="skName" value="BRIDGE Stack ${stacks.length+1}" style="width:200px"></div>`
+  openModal('Új stack',
+    `<div class="mrow">Típus <label style="margin-left:6px"><input type="radio" name="skKind" value="elec" checked> Villany</label>`
+   +`<label style="margin-left:10px"><input type="radio" name="skKind" value="bridge"> BRIDGE (okosotthon)</label></div>`
+   +`<div class="mrow">Név <input id="skName" value="Villany Stack ${stacks.length+1}" style="width:200px"></div>`
    +`<div class="mrow"><b>Szerkezet</b></div>`
    +`<div class="mrow"><label><input type="radio" name="skMode" value="new" checked> Új, üres réteg</label></div>`
    +`<div class="mrow"><label><input type="radio" name="skMode" value="adopt" ${free.length?'':'disabled'}> Meglévő réteg(ek)</label></div>`
@@ -6431,17 +6477,21 @@ function stkWizard(){
    +free.map(l=>`<div><label><input type="checkbox" class="skL" value="${l.id}"> ${esc(l.name)}</label></div>`).join('')
    +`<div id="skMergeRow" style="display:none"><label><input type="checkbox" id="skMerge" checked> egyesítés egy rétegbe</label></div></div>`
    +`<div class="mrow"><b>2. fázis rétegek</b></div>`
-   +`<div style="margin:0 0 4px 18px">`+ph2.map(r=>`<div><label><input type="checkbox" class="skR" value="${r.k}" ${r.off?'':'checked'}> ${esc(r.n)}${r.off?' <span style="color:#888">(alapból kikapcsolva)</span>':''}</label></div>`).join('')+`</div>`
-   +`<div class="mrow" style="font-size:11px;color:#888">Az 1. fázis rétegei (Szerkezet, Jelölés, Hardver, BASE, Csatorna) mindig létrejönnek. A stack csak jelölés a rétegeken: minden meglévő eszköz ugyanúgy működik rajtuk.</div>`,
+   +`<div id="skRoles" style="margin:0 0 4px 18px">`+stkWizardRoles('elec')+`</div>`
+   +`<div id="skNote" class="mrow" style="font-size:11px;color:#888">${esc(stkWizardNote('elec'))}</div>`,
     ()=>{const mode=(document.querySelector('input[name=skMode]:checked')||{}).value||'new';
       const ids=[...document.querySelectorAll('.skL')].filter(x=>x.checked).map(x=>x.value);
       if(mode==='adopt'&&!ids.length){lyrHud('Jelölj ki legalább egy meglévő réteget, vagy válaszd az új réteget.');return false;}
-      stkCreate({name:$('skName').value,construct:{mode,layers:ids,merge:$('skMerge')?$('skMerge').checked:true},
+      const kind=(document.querySelector('input[name=skKind]:checked')||{}).value==='bridge'?'bridge':'elec';
+      stkCreate({name:$('skName').value,kind,construct:{mode,layers:ids,merge:$('skMerge')?$('skMerge').checked:true},
         roles:[...document.querySelectorAll('.skR')].filter(x=>x.checked).map(x=>x.value)});});
   const sync=()=>{const adopt=(document.querySelector('input[name=skMode]:checked')||{}).value==='adopt';
     $('skAdopt').style.display=adopt?'block':'none';
     $('skMergeRow').style.display=(adopt&&document.querySelectorAll('.skL:checked').length>=2)?'block':'none';};
   document.querySelectorAll('input[name=skMode]').forEach(r=>r.onchange=sync);
+  document.querySelectorAll('input[name=skKind]').forEach(r=>r.onchange=()=>{const k=r.value==='bridge'?'bridge':'elec',nm=$('skName');
+    if(nm&&/^(Villany|BRIDGE) Stack \d+$/.test(nm.value))nm.value=STK_KINDS[k].title+' '+(stacks.length+1);
+    $('skRoles').innerHTML=stkWizardRoles(k);$('skNote').textContent=stkWizardNote(k);});
   document.querySelectorAll('.skL').forEach(c=>c.onchange=sync);}
 // "Meglévő réteg felvétele szerepbe…"
 function stkAdoptDialog(stackId){const S=stkById(stackId);if(!S)return;
@@ -6460,16 +6510,17 @@ function stkMenu(e,id){const S=stkById(id);if(!S)return;
     {label:'Átnevezés…',act:()=>stkRenameDialog(id)},
     {label:'Fázis: '+(S.phase===2?'2 → 1':'1 → 2'),act:()=>stkSetPhase(id,S.phase===2?1:2)},
     {label:'Meglévő réteg felvétele szerepbe…',act:()=>stkAdoptDialog(id)},
+    ...(stkKindOf(S)==='elec'&&typeof vstPromote==='function'?[{label:'⇪ Bővítés BRIDGE Stackké',act:()=>vstPromote(id)}]:[]),
     {label:'Stack feloldása (rétegek maradnak)',act:()=>stkDissolve(id)}]);}
 
 registerActions([
- {id:'stack.create',alias:'uj bridge stack reteg csoport new stack wizard',label:'Új BRIDGE Stack…',icon:'▤',group:'Stack',
-  hint:'Előre beállított rétegcsoport: Szerkezet, Jelölés, Hardver, BASE, Csatorna + a 2. fázis rendszerrétegei. Meglévő réteg is szerepet kaphat.',
+ {id:'stack.create',alias:'uj villany bridge stack reteg csoport new stack wizard',label:'Új stack…',icon:'▤',group:'Stack',
+  hint:'Előre beállított rétegcsoport. Villany: Szerkezet, Jelölés, Meglévő, Betáplálás + Erősáram, Gyengeáram, Nyomvonal… · BRIDGE (okosotthon): + BASE, Csatorna és a rendszerrétegek. Meglévő réteg is szerepet kaphat.',
   run:()=>stkWizard()},
  {id:'stack.dissolve',alias:'stack feloldasa dissolve',label:'Stack feloldása (rétegek maradnak)',icon:'▤',group:'Stack',
-  need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>stkDissolve(stkActive().id)},
+  need:'Aktív stack kell hozzá.',when:c=>!!stkActive(),run:()=>stkDissolve(stkActive().id)},
  {id:'stack.leave',alias:'altalanos szakaszok vissza general stages leave stack',label:'Vissza az általános szakaszokhoz',icon:'◂',group:'Stack',
-  need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>stkLeave()}
+  need:'Aktív stack kell hozzá.',when:c=>!!stkActive(),run:()=>stkLeave()}
 ]);
 
 // ---- the stack layer right-click menu + Info (round 2026-10-10, WP-S1) ----
@@ -6572,7 +6623,7 @@ window.MNS_ROLES=MNS_ROLES;window.mnsIs=mnsIs;window.mnsRoleOf=mnsRoleOf;window.
 window.prnLegendSvg=prnLegendSvg;window.prnActive=prnActive;window.prnSet=prnSet;window.stkPrintCol=stkPrintCol;window.stkPrintOf=stkPrintOf;window.STK_PRINT_DASH=STK_PRINT_DASH;
 window.STK_LAYERMENU=STK_LAYERMENU;window.rliDialog=rliDialog;window.rliClear=rliClear;window.rliCount=rliCount;window.rliInfoHtml=rliInfoHtml;
 window.rliSolo=rliSolo;window.rliSoloOff=rliSoloOff;window.rliSelect=rliSelect;window.rliRoomCounts=rliRoomCounts;
-window.STK_ROLES=STK_ROLES;window.STK_COL=STK_COL;window.STK_GROUPS=STK_GROUPS;window.STK_SCENE=STK_SCENE;window.STK_OVERLAY=STK_OVERLAY;window.STK_TOOLS=STK_TOOLS;
+window.STK_ROLES=STK_ROLES;window.STK_KINDS=STK_KINDS;window.stkKindOf=stkKindOf;window.stkRolesOf=stkRolesOf;window.stkRoleName=stkRoleName;window.stkRoleNameIn=stkRoleNameIn;window.stkRoleOpt=stkRoleOpt;window.STK_COL=STK_COL;window.STK_GROUPS=STK_GROUPS;window.STK_SCENE=STK_SCENE;window.STK_OVERLAY=STK_OVERLAY;window.STK_TOOLS=STK_TOOLS;
 window.STK_CTX=STK_CTX;window.STK_WV=STK_WV;window.STK_PV=STK_PV;window.STK_CHECKS=STK_CHECKS;window.VALIDATORS=VALIDATORS;
 window.stkById=stkById;window.stkOfLayer=stkOfLayer;window.stkActive=stkActive;window.stkLayer=stkLayer;window.stkLayersOf=stkLayersOf;window.stkRole=stkRole;
 window.stkCreate=stkCreate;window.stkAdopt=stkAdopt;window.stkDissolve=stkDissolve;window.stkRename=stkRename;window.stkRoomId=stkRoomId;window.stkRooms=stkRooms;
@@ -7558,7 +7609,9 @@ window.prtGraph=prtGraph;window.prtResample=prtResample;window.prtOverlaySvg=prt
 // can never go stale when the device moves. Prefix: hw.
 
 const HW_TYPES={rbx:'RoomBox (RBX)',base:'BASE',meter:'Mérőóra',entry:'Adatbelépési pont',ssc:'Biztonsági központ (SSC)',
-  portal:'Portál (SmartFrame)',cluster:'Klaszterdoboz'};   // portal + cluster: 06a / 06b (IDEA-003, IDEA-001/002)
+  portal:'Portál (SmartFrame)',cluster:'Klaszterdoboz',   // portal + cluster: 06a / 06b (IDEA-003, IDEA-001/002)
+  // round 2026-10-22 — the "Elosztó" of each ordinary system in a Villany Stack (Betáplálás és elosztás)
+  mdb:'Gyengeáramú elosztó (médiadoboz)',fire:'Tűzjelző központ',eph:'Fő EPH sín'};
 // RoomBox classes, w × h × d mm (Outline §3). RB-E is its own class family; sized as RB-M until STD-001 fixes it.
 const HW_RB={'RB-M':[400,500,110],'RB-L':[500,600,110],'RB-H':[600,600,120],'RB-E':[400,500,110],'RB-O':[400,500,150],'RB-S':[300,400,110]};
 const HW_RB_DEF='RB-M';
@@ -7575,7 +7628,10 @@ const HW_DEF={
  ssc:  {h:1800,lbl:'SSC', col:'#e3cfcf',role:'hw',  strip:'ssc',size:[400,500,120]},   /*r*/
  base: {h:900, lbl:'BASE',col:'#dfe6ef',role:'base',strip:'base'},
  portal:{h:2450,lbl:'PT', col:'#d6e8e1',role:'hw',  size:[200,200,80]},   // IDEA-003 §5.1: the nest is a K3 200 × 200 at the rail line
- cluster:{h:1300,lbl:'K', col:'#f0e3c8',role:'cluster'}};                  // size per class: CLS_K (06b)
+ cluster:{h:1300,lbl:'K', col:'#f0e3c8',role:'cluster'},                   // size per class: CLS_K (06b)
+ mdb:  {h:1700,lbl:'MDB', col:'#d4e8f8',role:'hw',  size:[300,400,100]},   /*r*/ // TV / SAT splitter, router, patch — the weak-current star point
+ fire: {h:1500,lbl:'TJK', col:'#f2c9cf',role:'hw',  size:[350,300,100]},   /*r*/
+ eph:  {h:300, lbl:'EPH', col:'#e2efc4',role:'hw',  size:[300,100,60]}};   /*r*/ // near the board; the bonding star point
 // guidance shown while placing BASE (C4). sev = what a violation raises. mm values reasoned, not measured.
 const HW_BASE_RULES=[
  {k:'dry',    sev:'error',n:'BASE nem kerülhet nedves / vizes helyiségbe.'},
@@ -7623,7 +7679,7 @@ function hwRef(d){
     let base='RBX'+(no||String(hwList('rbx').indexOf(d)+1).padStart(2,'0')),ref=base,k=0;
     while(hwList('rbx').some(x=>x!==d&&x.ref===ref))ref=base+String.fromCharCode(98+(k++));   // RBX03, RBX03b …
     return ref;}
-  const pre={base:'BASE',meter:'MÉRŐ',entry:'ISP',ssc:'SSC',portal:'PT',cluster:'KL'}[d.type]||d.type.toUpperCase();
+  const pre={base:'BASE',meter:'MÉRŐ',entry:'ISP',ssc:'SSC',portal:'PT',cluster:'KL',mdb:'MDB',fire:'TJK',eph:'EPH'}[d.type]||d.type.toUpperCase();
   const n=hwList(d.type).filter(x=>x!==d).length;return n?pre+(n+1):pre;}
 
 // ---- symbols: plan, Wall View, 3D ------------------------------------------------------------------------------------
@@ -7893,7 +7949,10 @@ registerActions([
  {id:'hw.board',alias:'elosztoszekreny elhelyezes board place',label:'Elosztószekrény elhelyezése',icon:'▤',group:'Hardver',run:()=>hwToolStart('board')},
  {id:'hw.meter',alias:'meroora villanyora meter place',label:'Mérőóra elhelyezése',icon:'◔',group:'Hardver',run:()=>hwToolStart('meter')},
  {id:'hw.entry',alias:'adatbelepes isp entry place',label:'Adatbelépési pont elhelyezése',icon:'⇲',group:'Hardver',run:()=>hwToolStart('entry')},
- {id:'hw.ssc',alias:'biztonsagi kozpont ssc security place',label:'Biztonsági központ (SSC) elhelyezése',icon:'⛨',group:'Hardver',run:()=>hwToolStart('ssc')},
+ {id:'hw.ssc',alias:'biztonsagi kozpont ssc security place riaszto kozpont',label:'Biztonsági / riasztóközpont (SSC) elhelyezése',icon:'⛨',group:'Hardver',run:()=>hwToolStart('ssc')},
+ {id:'hw.mdb',alias:'gyengearamu eloszto mediadoboz tv sat weak media box place',label:'Gyengeáramú elosztó (médiadoboz) elhelyezése',icon:'📺',group:'Hardver',run:()=>hwToolStart('mdb')},
+ {id:'hw.fire',alias:'tuzjelzo kozpont fire panel place',label:'Tűzjelző központ elhelyezése',icon:'🔥',group:'Hardver',run:()=>hwToolStart('fire')},
+ {id:'hw.eph',alias:'fo eph sin foldeles bonding bar place',label:'Fő EPH sín elhelyezése',icon:'⏚',group:'Hardver',run:()=>hwToolStart('eph')},
  {id:'hw.base',alias:'base net comp media elhelyezes place',label:'BASE elhelyezése',icon:'🖧',group:'Hardver',
   hint:'NET · COMP · MEDIA egyenként vagy együtt; a szellem az irányelveket mutatja (Elosztó közelsége, száraz helyiség, oszlop, középpont).',run:()=>hwToolStart('base')},
  {id:'hw.serve',alias:'rbx helyiseg hozzarendeles serve rooms assign',label:'RBX: helyiségek hozzárendelése',icon:'◫',group:'Hardver',
@@ -8122,7 +8181,7 @@ function chnLenToBase(rbxId,baseId){const t=chnTree(baseId)[rbxId];return t?t.le
 function chnChain(rbxId){const t=chnTree()[rbxId];if(!t)return null;const p=byId('devices',t.parent);return p&&p.type==='base'?'direct':'chained';}
 
 // ---- the tool: the Path tool with a flag ----------------------------------------------------------------------------
-function chnToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkLayer(S.id,'channel'):null;
+function chnToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?vstPathLayer(S,'channel'):null;   // V6: route in a Villany Stack
   if(L){state.activeLayer=L.id;renderLayers();}
   if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();
   state.pathType=CHN_T.rule==='csat'?'csat':'gege';setMode('path');CHN_T.on=true;
@@ -8192,6 +8251,8 @@ window.chnLen=chnLen;window.chnContentText=chnContentText;
 //   device: {type, code, var, level, x, y, h, side?, layer}
 // An endpoint ALWAYS lands on its code's role layer, whatever layer is active — that is what makes the stack
 // "layer by layer" and lets E1 draw on all of it at once. Six codes are proposed additions to STD-004 (new:true).
+// alt:[roles] (round 2026-10-22): further layers that accept the code. A Villany Stack's Gyengeáram and Riasztó hold codes
+// whose own role is their purpose and their BRIDGE target (Q-V07 / Q-V08 A): ETH on Gyengeáram is still DATA by purpose.
 // Prefix: ep.
 
 const EP_CAT=[
@@ -8233,7 +8294,7 @@ const EP_CAT=[
  // ---- DATA ----
  {code:'ACP',role:'sys:DATA',n:'WiFi hozzáférési pont',cat:'device',mount:'ceiling',topo:'star',from:'rbx',vars:[
    {k:'poe',n:'1 × Cat6A PoE',cab:[{c:'CAT6A_U',w:'M20'}]}]},
- {code:'ETH',new:true,role:'sys:DATA',n:'Adataljzat',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
+ {code:'ETH',new:true,role:'sys:DATA',alt:['sys:WEAK'],n:'Adataljzat',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
    {k:'1',n:'Egyes',cab:[{c:'CAT6A_U',w:'M20'}]},
    {k:'2',n:'Kettős (asztal, médiafal)',cab:[{c:'CAT6A_U',w:'M25',n:2}]}]},
  {code:'CAM',role:'sys:DATA',n:'Kamera',cat:'device',mount:'wall',h:2400,topo:'star',from:'rbx',vars:[
@@ -8264,12 +8325,16 @@ const EP_CAT=[
    {k:'27',    n:'≤ 27 m — 2×2,5',cab:[{c:'SPK2x25',w:'M20'}]},
    {k:'pair',  n:'Sztereó pár egy kábelen — 4×2,5',cab:[{c:'SPK4x25',w:'M25'}]},
    {k:'sub',   n:'Mélynyomó, vonalszint',cab:[{c:'LINE',w:'M20'}]}]},
- {code:'SCR',new:true,role:'sys:MEDIA',n:'Képernyő',cat:'device',mount:'wall',h:1200,topo:'star',from:'rbx',vars:[
+ {code:'SCR',new:true,role:'sys:MEDIA',alt:['sys:WEAK'],n:'Képernyő',cat:'device',mount:'wall',h:1200,topo:'star',from:'rbx',vars:[
    {k:'aoc', n:'HDMI AOC fix fejjel + Cat6A',cab:[{c:'AOC_FIX',w:'M40'},{c:'CAT6A_U',w:'M20',fam:'DATA'}]},
    {k:'aocd',n:'HDMI AOC levehető fejjel + Cat6A',cab:[{c:'AOC_DET',w:'M25'},{c:'CAT6A_U',w:'M20',fam:'DATA'}]}]},
- {code:'AVP',new:true,role:'sys:MEDIA',n:'AV pozíció',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
+ {code:'AVP',new:true,role:'sys:MEDIA',alt:['sys:WEAK'],n:'AV pozíció',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
    {k:'std',n:'Saját kör + média + 2 × adat',cab:[{c:'NYM3x25',w:'M25',fam:'MAINS',from:'board'},
      {c:'AOC_FIX',w:'M40'},{c:'CAT6A_U',w:'M25',fam:'DATA',n:2}]}]},
+ // V4: the ordinary TV / SAT socket — coax to the weak-current box (MDB) in a Villany Stack, to the MEDIA unit in BRIDGE
+ {code:'TVA',new:true,role:'sys:MEDIA',alt:['sys:WEAK'],n:'TV / SAT aljzat',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
+   {k:'coax',n:'Koax RG-6 (földi + SAT)',cab:[{c:'COAX',w:'M20'}]},
+   {k:'coaxd',n:'Koax + Cat6A (TV + adat)',cab:[{c:'COAX',w:'M25'},{c:'CAT6A_U',w:'M25',fam:'DATA'}]}]},
  // ---- USB ----
  {code:'USB',new:true,role:'sys:USB',n:'USB adatpont',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
    {k:'u2',n:'USB 2.0 Cat6A extenderrel (nem az IT hálózaton)',cab:[{c:'CAT6A_U',w:'M20'}]},
@@ -8283,27 +8348,27 @@ const EP_CAT=[
  // ---- SECURITY — Home Assistant / ESPHome (round 2026-10-10, WP-S5). /*r*/ heights are reasoned; ⚑ before client use.
  // from = the PREMIUM (star) origin; epFromOf() gives 'rbx' for MOT and PNC in the default Alap tier (answer S01).
  // An empty cab list is legal: a battery Zigbee / Thread variant carries no cable, makes no run, and still counts as placed.
- {code:'MOT',new:true,role:'sys:SECURITY',n:'Mozgásérzékelő (behatolás)',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: corner, 2.0–2.4 m
+ {code:'MOT',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Mozgásérzékelő (behatolás)',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: corner, 2.0–2.4 m
    {k:'pir', n:'PIR, vezetékes (ESPHome gpio)',          cab:[{c:'ALARM6',w:'M16'}]},
    {k:'dual',n:'PIR + mikrohullám (kettős technológia)', cab:[{c:'ALARM6',w:'M16'}]},
    {k:'pet', n:'Kisállatbarát PIR',                       cab:[{c:'ALARM6',w:'M16'}]},
    {k:'mmw', n:'mmWave jelenlét + behatolás (LD2410 / LD2450)',cab:[{c:'LIYCY4x05',w:'M16'}]}]},
- {code:'DWC',new:true,role:'sys:SECURITY',n:'Nyitásérzékelő (ajtó / ablak)',cat:'device',mount:'wall',h:2050,topo:'star',from:'ssc',vars:[   // r: frame top, latch side
+ {code:'DWC',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Nyitásérzékelő (ajtó / ablak)',cat:'device',mount:'wall',h:2050,topo:'star',from:'ssc',vars:[   // r: frame top, latch side
    {k:'reed',n:'Reed + szabotázs, vezetékes',      cab:[{c:'ALARM6',w:'M16'}]},
    {k:'roll',n:'Redőny / görgős nyitásérzékelő',  cab:[{c:'ALARM6',w:'M16'}]},
    {k:'zb',  n:'Elemes, Zigbee / Thread (nincs kábel)',cab:[]}]},
- {code:'GLB',new:true,role:'sys:SECURITY',n:'Üvegtörés-érzékelő',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: facing the glazing ≤ 6 m ⚑
+ {code:'GLB',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Üvegtörés-érzékelő',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: facing the glazing ≤ 6 m ⚑
    {k:'wired',n:'Vezetékes (akusztikus)',cab:[{c:'ALARM6',w:'M16'}]},
    {k:'zb',   n:'Elemes, Zigbee / Thread',cab:[]}]},
- {code:'SRN',new:true,role:'sys:SECURITY',n:'Sziréna',cat:'device',mount:'wall',h:2300,topo:'star',from:'ssc',vars:[
+ {code:'SRN',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Sziréna',cat:'device',mount:'wall',h:2300,topo:'star',from:'ssc',vars:[
    {k:'bel',n:'Beltéri sziréna (12 V)',                 cab:[{c:'SIREN4',w:'M16'}]},
    {k:'kul',n:'Kültéri sziréna villogóval, akkus, szabotázs',h:2800,cab:[{c:'SIREN4',w:'M16'}]}]},   // r: outdoor: out of reach
- {code:'KPD',new:true,role:'sys:SECURITY',n:'Kezelő / belépési pont',cat:'device',mount:'wall',h:1450,topo:'star',from:'ssc',vars:[   // the ≈1300 smart band [W]; S07 = B: the HMI panel's entry variant stays too
+ {code:'KPD',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Kezelő / belépési pont',cat:'device',mount:'wall',h:1450,topo:'star',from:'ssc',vars:[   // the ≈1300 smart band [W]; S07 = B: the HMI panel's entry variant stays too
    {k:'kod',n:'Kódbillentyűzet (matrix_keypad / Wiegand)',cab:[{c:'JY4x2x08',w:'M16'}]},
    {k:'nfc',n:'NFC / RFID olvasó (PN532 / RC522)',        cab:[{c:'JY4x2x08',w:'M16'}]},
    {k:'ujj',n:'Ujjlenyomat-olvasó',                       cab:[{c:'JY4x2x08',w:'M16'}]},
    {k:'pan',n:'Érintőpanel riasztó-felülettel (PoE)',      cab:[{c:'CAT6A_S',w:'M20',fam:'DATA'}]}]},
- {code:'PNC',new:true,role:'sys:SECURITY',n:'Pánikgomb',cat:'device',mount:'wall',h:900,topo:'star',from:'ssc',vars:[   // r: bedside / entry
+ {code:'PNC',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Pánikgomb',cat:'device',mount:'wall',h:900,topo:'star',from:'ssc',vars:[   // r: bedside / entry
    {k:'wired',n:'Vezetékes',cab:[{c:'ALARM6',w:'M16'}]},
    {k:'zb',   n:'Elemes, Zigbee / Thread',cab:[]}]},
  {code:'LCK',new:true,role:'sys:SECURITY',n:'Zár / zárnyelv-állapot',cat:'device',mount:'wall',h:1050,topo:'star',from:'ssc',vars:[   // r: door frame, latch side
@@ -8316,8 +8381,35 @@ const EP_CAT=[
  {code:'COA',new:true,role:'sys:SECURITY',n:'CO-érzékelő (EN 50291)',cat:'device',mount:'wall',h:2000,topo:'star',from:'rbx',vars:[   // r: ⚑ EN 50292: high on the wall, ≥150 mm below the ceiling, 1–3 m from the appliance
    {k:'zb', n:'Elemes, Zigbee / Thread',cab:[]},
    {k:'ilk',n:'Hálózati + relékimenet az RBX bemenetre',cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
- {code:'DBL',new:true,role:'sys:SECURITY',n:'Videós kaputelefon / csengő',cat:'device',mount:'wall',h:1500,topo:'star',from:'rbx',vars:[   // local: ONVIF / Reolink [CoreRef]
-   {k:'poe',n:'PoE, helyi (ONVIF)',cab:[{c:'CAT6A_U',w:'M20',fam:'DATA'}]}]}];
+ {code:'DBL',new:true,role:'sys:SECURITY',alt:['sys:WEAK'],n:'Videós kaputelefon / csengő',cat:'device',mount:'wall',h:1500,topo:'star',from:'rbx',vars:[   // local: ONVIF / Reolink [CoreRef]
+   {k:'poe',n:'PoE, helyi (ONVIF)',cab:[{c:'CAT6A_U',w:'M20',fam:'DATA'}]}]},
+ // ---- round 2026-10-22: the ordinary weak-current pair (V4) — doorbell push and intercom handset, purpose SECURITY ----
+ {code:'BEL',new:true,role:'sys:SECURITY',alt:['sys:WEAK'],n:'Csengőnyomó',cat:'device',mount:'wall',h:1300,topo:'star',from:'rbx',vars:[
+   {k:'2',n:'Csengővezeték J-Y(St)Y 2×2×0,8',cab:[{c:'JY2x2x08',w:'M16'}]}]},
+ {code:'ICM',new:true,role:'sys:SECURITY',alt:['sys:WEAK'],n:'Kaputelefon beltéri egység',cat:'device',mount:'wall',h:1500,topo:'star',from:'rbx',vars:[
+   {k:'2w',n:'2 vezetékes busz',cab:[{c:'JY2x2x08',w:'M16'}]},
+   {k:'ip', n:'IP / PoE',       cab:[{c:'CAT6A_U',w:'M20',fam:'DATA'}]}]},
+ // ---- Tűzvédelem (Q-V09 / Q-V10 A): cable only — the detectors are the fire installer's; red pairs in an own conduit ----
+ {code:'SMK',new:true,role:'sys:FIRE',n:'Füstérzékelő (tűzjelző hurok)',cat:'device',mount:'ceiling',topo:'chain',from:'fire',vars:[
+   {k:'loop',n:'Hurok, J-Y(St)Y 2×2×0,8 piros',cab:[{c:'JYFIRE',w:'M16'}]}]},
+ {code:'HDT',new:true,role:'sys:FIRE',n:'Hőérzékelő',cat:'device',mount:'ceiling',topo:'chain',from:'fire',vars:[
+   {k:'loop',n:'Hurok, J-Y(St)Y 2×2×0,8 piros',cab:[{c:'JYFIRE',w:'M16'}]}]},
+ {code:'MCP',new:true,role:'sys:FIRE',n:'Kézi jelzésadó',cat:'device',mount:'wall',h:1400,topo:'chain',from:'fire',vars:[   // EN 54-11: 1,2–1,6 m
+   {k:'loop',n:'Hurok, J-Y(St)Y 2×2×0,8 piros',cab:[{c:'JYFIRE',w:'M16'}]}]},
+ {code:'SND',new:true,role:'sys:FIRE',n:'Hang-fényjelző',cat:'device',mount:'wall',h:2300,topo:'chain',from:'fire',vars:[
+   {k:'loop',n:'Hangjelző kör, J-Y(St)Y 2×2×0,8 piros',cab:[{c:'JYFIRE',w:'M16'}]}]},
+ // ---- Érintésvédelem / EPH (V5) — the bonding points and the local bar, fed from the main bar (hw 'eph') ----
+ {code:'EPB',new:true,role:'sys:BOND',n:'EPH-bekötés (cső, kád, fémszerkezet)',cat:'device',mount:'wall',h:300,topo:'star',from:'eph',vars:[
+   {k:'h4',n:'H07V-K 4 mm² zöld-sárga',cab:[{c:'H07VK4',w:'M16'}]}]},
+ {code:'PEB',new:true,role:'sys:BOND',n:'Helyi EPH sín',cat:'device',mount:'wall',h:300,topo:'star',from:'eph',vars:[
+   {k:'h6',n:'H07V-K 6 mm² zöld-sárga a fő EPH sínig',cab:[{c:'H07VK6',w:'M20'}]}]},
+ // ---- Okos előkészítés (V5) — provisions only; in BRIDGE they read like sys:EXTRA ----
+ {code:'NUT',new:true,role:'sys:SMARTREADY',n:'Nullás kapcsolódoboz',cat:'device',mount:'wall',h:1100,topo:'star',from:'board',vars:[
+   {k:'n',n:'N a kapcsolódobozban (okos kapcsolóhoz)',cab:[]}]},
+ {code:'DPB',new:true,role:'sys:SMARTREADY',n:'Mély doboz (okos modulnak)',cat:'device',mount:'wall',h:1100,topo:'star',from:'board',vars:[
+   {k:'60',n:'60 mm mély szerelvénydoboz',cab:[]}]},
+ {code:'RSV',new:true,role:'sys:SMARTREADY',n:'Tartalék védőcső-végpont',cat:'device',mount:'wall',h:300,topo:'star',from:'board',vars:[
+   {k:'m20',n:'Üres M20 + behúzószál',cab:[{c:'SPARE',w:'M20'}]}]}];
 // the security tier (answer S01): Alap (default, mixed) — the interior detectors (MOT, PNC) go to the room's
 // RBX; Prémium (star) — every intrusion point to the SSC. Every reader of entry.from goes through here.
 const EP_SEC_INTERIOR=['MOT','PNC'];
@@ -8346,14 +8438,15 @@ const EP_FROM_TYPE={light:'LMP',switch:'SWI',socket:'SOC'};
 
 // ---- the catalogue ------------------------------------------------------------------------------------------------
 // role 'sys:MAINS' is a read-only alias for the three Erősáram roles (WP-M1): an old caller still finds LMP, SWI, SOC, DED, SHU
-function epRoleIs(e,role){return e.role===role||(role==='sys:MAINS'&&typeof mnsIs==='function'&&mnsIs(e.role));}
+function epRoleIs(e,role){return e.role===role||(!!e.alt&&e.alt.indexOf(role)>=0)||(role==='sys:MAINS'&&typeof mnsIs==='function'&&mnsIs(e.role));}
 function epEntry(code,role){return EP_CAT.find(e=>e.code===code&&(!role||epRoleIs(e,role)))||null;}
 function epOfRole(role){return EP_CAT.filter(e=>epRoleIs(e,role));}
 function epTypeFor(code){return EP_CLASSIC[code]||'ep';}
 // the code of a device: its own, or the classic type's (a socket drawn with the old Device tool is a SOC)
 function epCodeOf(d){return d?(d.code||EP_FROM_TYPE[d.type]||null):null;}
 // the role a device is FOR: its layer's role when that layer is a system layer, else the first role of its code
-function epRoleOf(d){const L=d&&lyrLayer(d.layer);if(L&&L.role&&L.role.indexOf('sys:')===0)return L.role;
+// V3: an item on Meglévő / bontás is 'exist' — its own colour, never a design layer's system
+function epRoleOf(d){const L=d&&lyrLayer(d.layer);if(L&&L.role&&L.role.indexOf('sys:')===0)return L.role;if(L&&L.role==='exist')return 'exist';
   const e=epEntry(epCodeOf(d));return e?e.role:null;}
 function epEntryOf(d){const c=epCodeOf(d);return c?(epEntry(c,epRoleOf(d))||epEntry(c)):null;}
 function epVar(d){const e=epEntryOf(d);if(!e)return null;return e.vars.find(v=>v.k===d.var)||e.vars[0];}
@@ -8399,7 +8492,8 @@ function epPlace(g,code,role,vk){if(!g)return null;code=code||EP_T.code;role=rol
 function epToolStart(code,role,vk){const en=epEntry(code,role);if(!en)return;
   toolsOff();
   if(state.mode!=='select')setMode('select');
-  Object.assign(EP_T,{on:true,code,role:en.role,var:vk||en.vars[0].k,g:null});epHint();draw();}
+  // an alt layer (Gyengeáram, Riasztó) keeps its own role, so the point lands on the layer that was asked for
+  Object.assign(EP_T,{on:true,code,role:(role&&epRoleIs(en,role))?role:en.role,var:vk||en.vars[0].k,g:null});epHint();draw();}
 function epHint(){const mh=$('modeHint');if(!mh)return;const en=EP_T.on?epEntry(EP_T.code,EP_T.role):null;
   mh.textContent=en?(EP_T.code+' — '+en.n+' · '+((en.vars.find(v=>v.k===EP_T.var)||{}).n||'')+' · ←/→: változat · Alt: szabad elhelyezés · Esc kilép'):(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}
 function epToolOff(){EP_T.on=false;EP_T.g=null;epHint();}
@@ -8903,7 +8997,7 @@ function armFade(item){const S=(typeof stkActive==='function')?stkActive():null;
   const L=lyrLayer((item&&item.layer)||'L0');return L&&L.stack===S.id?1:0.3;}
 
 // ---- the tool --------------------------------------------------------------------------------------------------------
-function armToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkLayer(S.id,'arm'):null;
+function armToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?vstPathLayer(S,'arm'):null;   // V6: route in a Villany Stack
   if(!L){lyrHud('Aktív BRIDGE Stack ARM réteggel kell hozzá.');return;}
   if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();if(typeof epToolOff==='function')epToolOff();
   state.activeLayer=L.id;state.stkView=true;renderLayers();
@@ -8992,7 +9086,7 @@ VALIDATORS.push({code:'arm.join',run:()=>{const n=armPruneJoins();return n?[{sev
 registerActions([
  {id:'arm.route',alias:'arm palya rajzolas route draw branch',label:'ARM pálya rajzolása',icon:'⑂',group:'ARM',
   hint:'Egyvonalas pálya az RBX-től a végpontokig, rétegtől függetlenül (stack nézet). Meglévő pályán kezdve ágaztat.',
-  need:'Aktív BRIDGE Stack ARM réteggel kell hozzá.',when:c=>{const S=stkActive();return !!(S&&stkLayer(S.id,'arm'));},run:()=>armToolStart()},
+  need:'Aktív stack ARM vagy Nyomvonal réteggel kell hozzá.',when:c=>{const S=stkActive();return !!(S&&vstPathLayer(S,'arm'));},run:()=>armToolStart()},
  {id:'stack.view',alias:'stack nezet egy retegkent view as one layer',label:'Stack nézet (egy rétegként)',icon:'▤',group:'Stack',
   hint:'A stack minden rétege együtt, a többi réteg 30 %-ra halványítva.',
   need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>{state.stkView=!state.stkView;draw();lyrHud('Stack nézet '+(state.stkView?'be':'ki'));}}
@@ -9140,6 +9234,8 @@ const AFILL_CABLES={
  LINE:{n:'Árnyékolt vonalkábel',od:6/*r*/},
  ALARM6:{n:'Riasztó 4×0,22+2×0,5 árny.',od:5.5}, SIREN4:{n:'Sziréna 2×0,75+2×0,22 árny.',od:6/*r*/},
  BUS4:{n:'Szolgáltatói 4 eres busz',od:5/*r*/},
+ COAX:{n:'Koax RG-6',od:6.9}, JYFIRE:{n:'J-Y(St)Y 2×2×0,8 piros (tűzjelző)',od:5.5},   // round 2026-10-22
+ H07VK4:{n:'H07V-K 4 mm² zöld-sárga',od:4.8/*r*/}, H07VK6:{n:'H07V-K 6 mm² zöld-sárga',od:5.5/*r*/},
  SPARE:{n:'Üres cső + behúzószál',od:0,empty:true}};
 // flexible light conduit, inner diameter mm (A2 §2.1 — typical, check the datasheet)
 const AFILL_CONDUITS=[{k:'M16',id:10.7},{k:'M20',id:14.1},{k:'M25',id:18.3},{k:'M32',id:24.3},{k:'M40',id:31.2},{k:'M50',id:39.6},{k:'M63',id:52.6}];
@@ -9147,9 +9243,12 @@ const AFILL_RULE={single:1.4, fill:0.40, fillLong:0.33, longMm:10000, slackPerEn
 // cls = the sharing class of A2 §5; c = drawing colour (the role colours of 05s)
 const AFILL_FAMS={MAINS:{n:'Erősáram',cls:'mains',c:'#d1493f'},LV:{n:'A busz (SELV)',cls:'selvp',c:'#e6a800'},BUSB:{n:'B busz (biztosított)',cls:'selvp',c:'#b07a2a'},
   CONTROL:{n:'Vezérlés',cls:'sig',c:'#7a5cc0'},DATA:{n:'Adat',cls:'sig',c:'#16a085'},KNX:{n:'KNX',cls:'sig',c:'#2e7d32'},SENSOR:{n:'Érzékelő',cls:'sig',c:'#2f79c9'},
-  MEDIA:{n:'Média',cls:'sig',c:'#c2638a'},USB:{n:'USB',cls:'sig',c:'#607d8b'},SECURITY:{n:'Biztonság',cls:'sec',c:'#444444'},SPARE:{n:'Tartalék',cls:'spare',c:'#999999'}};
+  MEDIA:{n:'Média',cls:'sig',c:'#c2638a'},USB:{n:'USB',cls:'sig',c:'#607d8b'},SECURITY:{n:'Biztonság',cls:'sec',c:'#444444'},SPARE:{n:'Tartalék',cls:'spare',c:'#999999'},
+  // round 2026-10-22: bonding travels with mains; fire never shares a conduit with anything (Q-V10 A)
+  BOND:{n:'EPH / védővezető',cls:'mains',c:'#8db600'},FIRE:{n:'Tűzjelző',cls:'fire',c:'#8e0f2b'}};
 const AFILL_SHARE={'mains|selvp':'warn','mains|sig':'warn','mains|sec':'warn',
-  'selvp|sig':'ok','selvp|sec':'ok','sig|sec':'ok','mains|mains':'ok','selvp|selvp':'ok','sig|sig':'ok','sec|sec':'ok'};
+  'selvp|sig':'ok','selvp|sec':'ok','sig|sec':'ok','mains|mains':'ok','selvp|selvp':'ok','sig|sig':'ok','sec|sec':'ok',
+  'fire|mains':'warn','fire|selvp':'warn','fire|sig':'warn','fire|sec':'warn','fire|fire':'ok'};
 const AFILL_SHARE_MSG='Erősáram és törpefeszültség egy nyomvonalon: ≥ 50 mm távolság vagy rögzített fémválaszfal, keresztezés 90°-ban (A2 §5).';
 
 function afillRuns(){if(!Array.isArray(data.runs))data.runs=[];return data.runs;}
@@ -9702,18 +9801,28 @@ const ICO_MARK={
  board:   {d:'M-3.4 -2.4 H3.4 V2.4 H-3.4 Z M-1.7 -1.2 V1.2 M0 -1.2 V1.2 M1.7 -1.2 V1.2'},
  meter:   {d:'M-2.6 0 A2.6 2.6 0 1 0 2.6 0 A2.6 2.6 0 1 0 -2.6 0 M0 0 L1.8 -1.3'},
  entry:   {d:'M-3.6 0 H1.4 M-0.4 -1.7 L1.7 0 L-0.4 1.7 M2.8 -2.6 V2.6'},
- generic: {d:'M-1.3 0 A1.3 1.3 0 1 0 1.3 0 A1.3 1.3 0 1 0 -1.3 0',f:1}};
+ generic: {d:'M-1.3 0 A1.3 1.3 0 1 0 1.3 0 A1.3 1.3 0 1 0 -1.3 0',f:1},
+ // round 2026-10-22 — Gyengeáram, Tűzvédelem, EPH, Okos előkészítés
+ tvsat:   {d:'M-2.6 0 A2.6 2.6 0 1 0 2.6 0 A2.6 2.6 0 1 0 -2.6 0 M-0.6 0 A0.6 0.6 0 1 0 0.6 0 A0.6 0.6 0 1 0 -0.6 0 M-3.6 0 H-2.6 M2.6 0 H3.6'},
+ intercom:{d:'M-2.2 -3 H2.2 V3 H-2.2 Z M-1.2 -1.8 H1.2 V0.2 H-1.2 Z M-0.9 1.6 h0.01 M0.9 1.6 h0.01'},
+ heat:    {d:'M-3 0 A3 3 0 1 0 3 0 A3 3 0 1 0 -3 0 M-1.8 0.8 L-0.9 -0.8 L0 0.8 L0.9 -0.8 L1.8 0.8'},
+ callpt:  {d:'M-2.8 -2.8 H2.8 V2.8 H-2.8 Z M-1.6 -1.6 L1.6 1.6'},
+ bond:    {d:'M0 -3 V0.6 M-2.6 0.6 H2.6 M-1.7 1.8 H1.7 M-0.8 3 H0.8'},
+ neutral: {d:'M-2.4 -2.4 H2.4 V2.4 H-2.4 Z M-1.1 1.2 V-1.2 L1.1 1.2 V-1.2'},
+ deepbox: {d:'M-2.4 -2.4 H2.4 V2.4 H-2.4 Z M-1.4 -1.4 H1.4 V1.4 H-1.4 Z'},
+ spare:   {d:'M-3.2 -1.2 H3.2 M-3.2 1.2 H3.2 M-1.6 -1.2 V1.2 M1.6 -1.2 V1.2'}};
 
 // code → mark, for the endpoint catalogue (05s). A code can appear under two roles (LMP is both a
 // MAINS lamp and a BUSB escape light); the colour separates them, the mark stays the same thing.
 const ICO_BY_CODE={LMP:'light',SWI:'switch',SOC:'socket',DED:'dedicat',SHU:'shutter',LNR:'ledline',
  UEP:'uep',NTL:'notify',POR:'portal',ACP:'wifi',ETH:'eth',CAM:'cam',ACT:'knx',SEN:'sensor',
  PAN:'panel',THR:'thermo',SPK:'speaker',SCR:'screen',AVP:'avp',USB:'usb',SEC:'shield',
- MOT:'motion',DWC:'contact',GLB:'glass',SRN:'siren',KPD:'keypad',PNC:'panic',LCK:'lock',SMK:'smoke',COA:'coalarm',DBL:'bell'};   // S5
+ MOT:'motion',DWC:'contact',GLB:'glass',SRN:'siren',KPD:'keypad',PNC:'panic',LCK:'lock',SMK:'smoke',COA:'coalarm',DBL:'bell',   // S5
+ TVA:'tvsat',BEL:'bell',ICM:'intercom',HDT:'heat',MCP:'callpt',SND:'siren',EPB:'bond',PEB:'bond',NUT:'neutral',DPB:'deepbox',RSV:'spare'};   // 2026-10-22
 const ICO_BY_TYPE={socket:'socket',switch:'switch',light:'light',junction:'junction',box:'generic',
- board:'board',rbx:'rbx',base:'base',meter:'meter',entry:'entry',ssc:'shield'};
+ board:'board',rbx:'rbx',base:'base',meter:'meter',entry:'entry',ssc:'shield',mdb:'tvsat',fire:'callpt',eph:'bond'};
 // which codes live on the plane above rather than on a wall — they get the round ceiling body
-const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK','SMK'];
+const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK','SMK','HDT'];
 
 // ---- what a device is --------------------------------------------------------------------------
 function icoHw(d){return !!(d&&typeof HW_TYPES!=='undefined'&&HW_TYPES[d.type]);}
@@ -11205,7 +11314,7 @@ CHN_PATH_HOOKS.push(p=>{if(!RAIL_T.on||!p)return;p.route='rail';chnApplyRule(p,R
   const e=chnEnds(p);lyrHud('Ezüst sín: '+railName(p)+(e[0]&&e[1]?'':' · figyelem: nyitott vég (nincs RBX-en / portálon)'));});
 function railRoutes(){return data.paths.filter(p=>p&&p.route==='rail');}
 function railName(p){const e=chnEnds(p);return e.map(d=>d?(d.ref||d.id):'?').join(' ≈ ');}
-function railToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkLayer(S.id,'channel'):null;
+function railToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?vstPathLayer(S,'channel'):null;   // V6
   if(L){state.activeLayer=L.id;renderLayers();}
   if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();ptToolOff();
   state.pathType=RAIL_T.rule==='csat'?'csat':'gege';setMode('path');RAIL_T.on=true;
@@ -11288,6 +11397,7 @@ function clsMembers(node){return node?data.devices.filter(d=>d&&d.host===node.id
 
 // ---- the stack layer a box lives on (created on demand in a stack that predates the role) ----
 function stkEnsureRole(S,roleKey){if(!S)return null;let L=stkLayer(S.id,roleKey);if(L)return L;const role=stkRole(roleKey);if(!role)return null;
+  if(typeof stkRoleKinds==='function'&&stkRoleKinds(role).indexOf(stkKindOf(S))<0)return null;   // 2026-10-22: never a BRIDGE-only layer in a Villany Stack
   L=stkMakeLayer(S,role);const mine=stkLayersOf(S.id),ix=stkRoleIx(roleKey),before=mine.filter(l=>stkRoleIx(l.role)<ix).pop();
   layers.splice(before?layers.indexOf(before)+1:layers.length,0,L);stkSync(S);if(typeof renderLayers==='function')renderLayers();return L;}
 function clsLayerId(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkEnsureRole(S,'cluster'):null;return L?L.id:state.activeLayer;}
@@ -11310,6 +11420,7 @@ function clsNearNode(d){let best=null,bd=1e9;
   return best;}
 EP_PLACED.push((d,g)=>{if(g&&g.host){if(byId('devices',g.host))d.host=g.host;return;}
   const role=epRoleOf(d);if(state.clsAuto===false||!clsHigher(role))return;
+  const S=stkOfLayer(d.layer);if(S&&stkKindOf(S)==='elec')return;   // clusters are BRIDGE's (IDEA-001/002); a Villany Stack has none
   const near=clsNearNode(d);if(near){d.host=near.id;return;}
   if((g&&g.snapped)||d.side==null)return;          // an ideal spot is not a custom place; ceiling / floor points get no box
   const c=clsCreateFor(d);if(c){d.host=c.id;lyrHud(d.code+' egyéni helyen — másodlagos klaszterdoboz nyitva: '+c.ref);}});
@@ -17624,7 +17735,7 @@ registerActions([{id:'wf.standards',label:'Szabványmagasságok',icon:'📏',gro
 // The overlay the user asked for ("parts of an overlaying control system"): a thin bar over the canvas that walks the
 // four phases — 1 Alapozás › 2 Nyílászárók › 3 Szabályok › 4 Villamosság — and puts that phase's tools one click away.
 // It drives the existing tools and layers only; it stores nothing but state.wfPhase (and state.wfBar on/off).
-// Entering Villamosság makes sure a BRIDGE stack exists (adopting the layer the rooms are on as Szerkezet, nothing
+// Entering Villamosság makes sure a stack exists — a Villany Stack since round 2026-10-22 (V2) — (adopting the layer the rooms are on as Szerkezet, nothing
 // copied) and activates the Erősáram socket layer; 4.1 has two buttons, Dugaljak / Lámpák + kapcsolók (E01 = A).
 // The later steps 4.2–4.5 are listed greyed until their work packages land. Each phase shows a live check, read from
 // the data, never stored.
@@ -17635,7 +17746,7 @@ const WF_PHASES=PH_LIST;
 // the stack the electrical phase works in: the active one, else the first, else a new one adopting the rooms' layer
 function wfStack(){let S=typeof stkActive==='function'?stkActive():null;if(!S&&typeof stacks!=='undefined'&&stacks.length)S=stacks[0];
   if(S)return S;const fl=data.floors.find(f=>f&&f.level===state.active),L=(fl&&fl.layer)||'L0';
-  return stkCreate({name:'Munkafolyamat',construct:{mode:'adopt',layers:[L]}});}
+  return stkCreate({name:'Villany',kind:'elec',construct:{mode:'adopt',layers:[L]}});}
 function wfLayer(role){const S=wfStack();if(!S)return null;state.stack=S.id;state.stkOff=false;
   const L=stkLayer(S.id,role);if(!L){$('hud').textContent='A stackben nincs '+role+' réteg.';return null;}
   state.activeLayer=L.id;if(typeof lyrRefresh==='function')lyrRefresh();else if(typeof renderLayers==='function')renderLayers();
@@ -17664,7 +17775,7 @@ function wfBarDraw(){if(typeof layoutSync==='function')layoutSync(true);}
 function wfBarToggle(){return typeof phLayoutToggle==='function'?phLayoutToggle():null;}
 
 registerActions([{id:'wf.electric',label:'Villamosság: Erősáram',icon:'⚡',group:'Készülék',alias:'electrical erosaram villamossag',
-   hint:'BRIDGE stack (ha még nincs) és az Erősáram dugalj rétege aktív.',when:()=>true,run:()=>phSet('vill')}]);
+   hint:'Villany Stack (ha még nincs stack) és az Erősáram dugalj rétege aktív.',when:()=>true,run:()=>phSet('vill')}]);
 
 // Switches do not start out with a type. The user links LAMPS to switch positions — a door's L1 portal slot (O2), an
 // existing switch, or any wall spot (Alt) — and the switch is created there on the first link. Lamps can be joined
@@ -18524,7 +18635,7 @@ function blShapeLines(R,cfg){const W=R.W;
 // ---- button 1: the conduits -------------------------------------------------------------------------------------------
 function blTargetLayers(level){const board=data.devices.find(d=>d&&d.level===level&&d.type==='board');
   const S=(board&&lyrLayer(board.layer)&&stkById(lyrLayer(board.layer).stack))||(typeof stkActive==='function'?stkActive():null);
-  const fb=(board&&board.layer)||state.activeLayer||'L0',lay=k=>(S&&stkLayer(S.id,k)||{}).id||fb;
+  const fb=(board&&board.layer)||state.activeLayer||'L0',lay=k=>(S&&(k==='channel'||k==='arm'?vstPathLayer(S,k):stkLayer(S.id,k))||{}).id||fb;   // V6: route in a Villany Stack
   return {ch:lay('channel'),arm:lay('arm'),box:lay('sys:SOC')};}
 function blClear(level){const n0=data.devices.length+data.paths.length;
   data.devices=data.devices.filter(d=>!(d&&d.gen==='bl'&&d.level===level));
@@ -19316,7 +19427,7 @@ window.slbT=slbT;window.SLABS=SLABS;window.slbSet=slbSet;window.slbOutline=slbOu
 // the layer. Prefix: req.
 
 STK_ROLES.splice(STK_ROLES.findIndex(r=>r.k==='mark')+1,0,
-  {k:'need', n:'Igények', ph:1, opt:true, cats:['mark'], hint:'Helyiségenkénti igénylista: mi kell és hány darab (dugalj, lámpa, kapcsolási kör, kapcsoló). A Ház = a helyiségek összege.'});
+  {k:'need', n:'Igények', ph:1, opt:true, kinds:STK_BOTH, cats:['mark'], hint:'Helyiségenkénti igénylista: mi kell és hány darab (dugalj, lámpa, kapcsolási kör, kapcsoló). A Ház = a helyiségek összege.'});
 STK_ICONS.need='☑';STK_COL.need='#5d6d7e';
 // its Info text (RLI_TEXT.need) is in 13-role-info.js — that const is still in its TDZ here
 
@@ -19573,7 +19684,7 @@ window.reqLswPlan=reqLswPlan;window.reqLightVk=reqLightVk;
 // (C5 A on demand). Layer data: L.cinema (mm, plan coordinates). The numbers come from cinCalc (08ra). Prefix: cin.
 
 STK_ROLES.splice(STK_ROLES.findIndex(r=>r.k==='sys:MEDIA')+1,0,
-  {k:'sys:CINEMA',n:'Házimozi',ph:2,fam:'MEDIA',off:true,hint:'Hangszórók, projektor, vászon, rack — saját pálya, saját kör (C1–C7).'});
+  {k:'sys:CINEMA',n:'Házimozi',ph:2,kinds:STK_BOTH,fam:'MEDIA',off:true,hint:'Hangszórók, projektor, vászon, rack — saját pálya, saját kör (C1–C7).'});
 STK_ICONS['sys:CINEMA']='🎬';STK_COL['sys:CINEMA']='#5b3f8c';
 // the cinema nodes (C5 catalogue); the signal cables are family CINEMA (C7, 08rb), the 230 V feeds MAINS
 [{code:'CLR',n:'Front hangfal (L / C / R)',mount:'wall',h:1150,vars:[{k:'25',n:'Hangszórókábel 2×2,5',cab:[{c:'SPK2x25',w:'M20',fam:'CINEMA'}]}]},
@@ -20120,6 +20231,116 @@ registerActions([{id:'cinema.wiring',label:'Házimozi kábellista',icon:'🎬',g
   need:'Előbb egy Házimozi réteg kell.',when:()=>cinLayers().some(L=>L.cinema),run:()=>{const L=lyrLayer(state.activeLayer);cinWireDialog(L&&L.role==='sys:CINEMA'&&L.cinema?L:cinLayers().find(x=>x.cinema));}}]);
 
 window.cinWiring=cinWiring;window.cinWApply=cinWApply;window.cinWSize=cinWSize;window.cinWSpk=cinWSpk;window.cinSepChecks=cinSepChecks;window.cinSepPair=cinSepPair;window.cinWPathLen=cinWPathLen;
+
+// The kinds and the role table are in 05m (V1, V2); the catalogue entries in 05s; the hardware "Elosztó" of each
+// ordinary system (MDB · TJK · EPH, SSC as the alarm panel) in 05p. This module holds what only the Villany Stack does:
+//   V3  Meglévő / bontás — d.ex = keep (default) · remove · replace on every item of an `exist` layer, its marks, menu,
+//       check and the Bontás / Ellenőrzés BOM rows (D8, Q-V12 A). Keep / remove are never material.
+//   V5  the checks of Érintésvédelem, Riasztó, Tűzvédelem, Gyengeáram: each system wants its own "Elosztó".
+//   V6  vstPathLayer — channel / arm resolve to `route` in a Villany Stack, so every path tool and the engine work there.
+//   V8  vstPromote — one undo step from Villany to BRIDGE: Gyengeáram and Riasztó dissolve into their purpose layers
+//       (Q-V07 A, Q-V08 A), an empty `route` goes (Q-V06 A), the missing BRIDGE roles are added; nothing is duplicated.
+// Prefix: vst.
+
+// ---- V3 Meglévő / bontás ----------------------------------------------------------------------------------------------------
+const VST_EX={keep:{n:'Megmarad',c:'#8f8f8f'},remove:{n:'Bontandó',c:'#d32f2f'},replace:{n:'Cserélendő',c:'#ef6c00'}};
+function vstIsExistLayer(id){const L=lyrLayer(id);return !!(L&&L.role==='exist');}
+// the state of an existing item, or null when the item is not on a Meglévő layer
+function vstExistOf(d){return d&&vstIsExistLayer(d.layer)?(VST_EX[d.ex]?d.ex:'keep'):null;}
+function vstSetEx(d,ex){if(!d||!VST_EX[ex])return false;pushUndo(['devices']);if(ex==='keep')delete d.ex;else d.ex=ex;draw();
+  lyrHud((d.ref||d.id)+': '+VST_EX[ex].n);return true;}
+function vstExistName(d){const c=epCodeOf(d),e=c?(epEntryOf(d)||epEntry(c)):null;return e?e.n:(DEV[d.type]||d.type);}
+// the state mark drawn over the symbol: keep a grey ring, remove a red cross, replace an orange square — scene, so it prints
+function vstExistMark(d){const ex=vstExistOf(d);if(!ex)return '';
+  const b=planToBase(d.x,d.y,dz(d.level,d.h||0)),k=devK(),R=v=>+(v*k).toFixed(2),c=VST_EX[ex].c,x=b[0],y=b[1];
+  if(ex==='remove')return `<g class="vstEx vstEx-remove" stroke="${c}" stroke-width="${R(2.2)}" stroke-linecap="round" pointer-events="none">`
+    +`<line x1="${x-R(10)}" y1="${y-R(10)}" x2="${x+R(10)}" y2="${y+R(10)}"/><line x1="${x-R(10)}" y1="${y+R(10)}" x2="${x+R(10)}" y2="${y-R(10)}"/></g>`;
+  if(ex==='replace')return `<rect class="vstEx vstEx-replace" x="${x-R(11)}" y="${y-R(11)}" width="${R(22)}" height="${R(22)}" rx="${R(3)}" fill="none" stroke="${c}" stroke-width="${R(1.8)}" pointer-events="none"/>`;
+  return `<circle class="vstEx vstEx-keep" cx="${x}" cy="${y}" r="${R(11)}" fill="${c}" fill-opacity="0.18" stroke="${c}" stroke-width="${R(1.2)}" pointer-events="none"/>`;}
+STK_SCENE.push(()=>{let s='';data.devices.forEach(d=>{if(!d||!state.levels[d.level]||!vstIsExistLayer(d.layer))return;
+  if(typeof layerShows==='function'&&!layerShows(d,'device'))return;s+=vstExistMark(d);});return s;});
+STK_DEVMENU.push((di,items)=>{const d=data.devices[di],ex=vstExistOf(d);if(!ex)return;
+  Object.keys(VST_EX).forEach(k=>{if(k!==ex)items.push({label:'⌫ '+VST_EX[k].n,act:()=>vstSetEx(d,k)});});});
+STK_LAYERMENU.push((L,items)=>{if(L.role!=='exist')return;
+  items.push({label:'⌫ Bontási terv (csak ez a réteg)',act:()=>rliSolo(L.id)});});
+(STK_CHECKS.exist=STK_CHECKS.exist||[]).push(S=>{const L=stkLayer(S.id,'exist'),out=[];if(!L)return out;
+  const mine=data.devices.filter(d=>d&&d.layer===L.id);if(!mine.length){out.push({sev:'info',msg:'Nincs meglévő pont felvéve.'});return out;}
+  const n=k=>mine.filter(d=>vstExistOf(d)===k).length;
+  out.push({sev:'info',msg:'Meglévő pontok: '+n('keep')+' megmarad · '+n('remove')+' bontandó · '+n('replace')+' cserélendő.'});
+  // a replace with no new item of the same code within 300 mm on a design layer of the stack
+  mine.filter(d=>vstExistOf(d)==='replace').forEach(d=>{const c=epCodeOf(d);
+    const hit=data.devices.some(x=>x&&x!==d&&x.level===d.level&&epCodeOf(x)===c&&!vstIsExistLayer(x.layer)&&Math.hypot(x.x-d.x,x.y-d.y)<=300);
+    if(!hit)out.push({sev:'info',msg:(d.ref||d.id)+' cserélendő, de nincs új '+(c||d.type)+' 300 mm-en belül a tervezett rétegeken.'});});
+  return out;});
+// D8 / Q-V12 A: remove and replace give a Bontás row, keep an Ellenőrzés row; the new item of a replace is the design
+// layer's own material, so nothing is counted twice
+function vstBomRows(){const g={};data.devices.forEach(d=>{const ex=vstExistOf(d);if(!ex)return;
+  const key=(ex==='keep'?'ell':'bont')+'_'+(epCodeOf(d)||d.type),nm=(ex==='keep'?'Ellenőrzés – meglévő ':'Bontás – ')+vstExistName(d);
+  (g[key]=g[key]||{id:key,name:nm,qty:0,unit:'db'}).qty++;});
+  return Object.keys(g).sort().map(k=>g[k]);}
+// Q-V08 / Q-V09 A: alarm and fire points are cable work only — no device material, one box row each
+function vstCableOnly(d){const L=d&&lyrLayer(d.layer);return !!(d&&(d.cableOnly||(L&&(L.role==='sys:ALARM'||L.role==='sys:FIRE'))));}
+function vstCableOnlyRows(){const g={};data.devices.forEach(d=>{if(!vstCableOnly(d))return;const L=lyrLayer(d.layer),fire=L&&L.role==='sys:FIRE';
+  const key=(fire?'tuz':'riaszto')+'_'+(epCodeOf(d)||d.type);
+  (g[key]=g[key]||{id:key,name:(fire?'Tűzjelző':'Riasztó')+' pont (doboz + kábel, eszköz nélkül) – '+vstExistName(d),qty:0,unit:'db'}).qty++;});
+  return Object.keys(g).sort().map(k=>g[k]);}
+
+// ---- V5 checks: every ordinary system wants its own Elosztó --------------------------------------------------------------
+function vstHubCheck(role,type,msg,sev){(STK_CHECKS[role]=STK_CHECKS[role]||[]).push(S=>{const L=stkLayer(S.id,role);if(!L)return [];
+  const used=data.devices.some(d=>d&&d.layer===L.id);if(!used||hwList(type).length)return [];return [{sev:sev||'warn',msg}];});}
+vstHubCheck('sys:WEAK','mdb','Van gyengeáramú végpont, de nincs gyengeáramú elosztó (médiadoboz) — Betáplálás és elosztás.','info');
+vstHubCheck('sys:ALARM','ssc','Van riasztópont, de nincs riasztóközpont (SSC) — Betáplálás és elosztás.');
+vstHubCheck('sys:FIRE','fire','Van tűzjelző pont, de nincs tűzjelző központ — Betáplálás és elosztás.');
+vstHubCheck('sys:BOND','eph','Van EPH-bekötés, de nincs fő EPH sín — Betáplálás és elosztás.');
+// MSZ HD 60364-7-701: a bathroom gets its supplementary bonding
+(STK_CHECKS['sys:BOND']=STK_CHECKS['sys:BOND']||[]).push(S=>{const L=stkLayer(S.id,'sys:BOND'),out=[];if(!L)return out;
+  ORD.forEach(l=>stkRooms(l).forEach(r=>{const k=(r.rm.kinds&&r.rm.kinds.length?r.rm.kinds:[r.rm.kind]).filter(Boolean);
+    if(k.indexOf('furdo')<0)return;
+    const has=data.devices.some(d=>d&&d.layer===L.id&&epCodeOf(d)==='EPB'&&epRoomOf(d)===r.id);
+    if(!has)out.push({sev:'warn',msg:(r.name||r.id)+': fürdő EPH-bekötés (EPB) nélkül.'});}));
+  return out;});
+
+// ---- V6 the path layer ----------------------------------------------------------------------------------------------------
+// channel / arm: the role's own layer, else — in a Villany Stack — Nyomvonal és dobozok
+function vstPathLayer(S,k){if(!S)return null;return stkLayer(S.id,k)||(stkKindOf(S)==='elec'&&(k==='channel'||k==='arm')?stkLayer(S.id,'route'):null);}
+
+// ---- V8 promotion to BRIDGE -------------------------------------------------------------------------------------------------
+// the BRIDGE layer an item of a dissolving elec layer moves to: its code's purpose (Q-V07 A, Q-V08 A)
+function vstTargetRole(d){const c=epCodeOf(d),L=lyrLayer(d.layer);
+  const e=EP_CAT.find(x=>x.code===c&&x.alt&&L&&x.alt.indexOf(L.role)>=0)||(c?epEntry(c):null);return e?e.role:null;}
+function vstAutoName(S,L,kind){return STK_KINDS[kind].short+(stacks.indexOf(S)+1)+' · '+stkRoleName(L.role,kind);}
+function vstPromote(id,opt){opt=opt||{};const S=stkById(id);if(!S||stkKindOf(S)!=='elec')return null;
+  pushUndo(['devices','paths','circuits','__walls','__layers']);   // one undo step: items, layers, the stack record
+  const named=stkLayersOf(S.id).filter(L=>L.name===vstAutoName(S,L,'elec'));   // user-renamed layers keep their names
+  S.kind='bridge';
+  const ensure=role=>{let L=stkLayer(S.id,role);if(L)return L;const r=stkRole(role);if(!r)return null;L=stkMakeLayer(S,r);layers.push(L);return L;};
+  const rep={moved:0,added:[],removed:[]};
+  // Gyengeáram and Riasztó: every item to its purpose layer; Riasztó items stay cable-only in Biztonságtechnika
+  ['sys:WEAK','sys:ALARM'].forEach(role=>{const L=stkLayer(S.id,role);if(!L)return;
+    data.devices.forEach(d=>{if(!d||d.layer!==L.id)return;const T=ensure(vstTargetRole(d)||'sys:SECURITY');if(!T)return;
+      if(role==='sys:ALARM')d.cableOnly=true;d.layer=T.id;rep.moved++;});
+    if(!rliCount(L.id)){layers.splice(layers.indexOf(L),1);rep.removed.push(role);}});
+  // Nyomvonal és dobozok (Q-V06 A): a conduit between two fixed points → Csatorna, every other run → ARM; empty → removed
+  const R=stkLayer(S.id,'route');
+  if(R){const fixed=n=>{const d=n&&n.dev?byId('devices',n.dev):null;return !!(d&&(hwIs(d)||d.type==='board'));};
+    data.paths.forEach(p=>{if(!p||p.layer!==R.id)return;const N=p.nodes||[];
+      p.layer=ensure(N.length&&fixed(N[0])&&fixed(N[N.length-1])?'channel':'arm').id;rep.moved++;});
+    if(!rliCount(R.id)){layers.splice(layers.indexOf(R),1);rep.removed.push('route');}}
+  // the BRIDGE roles the stack lacks: phase 1 always, phase 2 the defaults (or opt.roles)
+  const want=opt.roles||stkRolesOf('bridge').filter(r=>r.ph===2&&!r.off).map(r=>r.k);
+  stkRolesOf('bridge').forEach(r=>{if(stkLayer(S.id,r.k)||stkRoleOpt(r,'bridge'))return;if(r.ph===1||want.indexOf(r.k)>=0){ensure(r.k);rep.added.push(r.k);}});
+  named.forEach(L=>{if(layers.indexOf(L)>=0)L.name=vstAutoName(S,L,'bridge');});
+  if(/^Villany( Stack)?( \d+)?$/.test(S.name||''))S.name=S.name.replace(/^Villany( Stack)?/,'BRIDGE Stack');
+  stkSync(S);lyrRefresh();if(typeof invalidateShell==='function')invalidateShell();draw();
+  lyrHud('BRIDGE Stackké bővítve: '+rep.added.length+' új réteg, '+rep.moved+' elem áthelyezve'+(rep.removed.length?', '+rep.removed.length+' réteg feloldva':'')+'.');
+  return rep;}
+registerActions([
+ {id:'stack.promote',alias:'bovites bridge stack promote villany okosotthon',label:'Bővítés BRIDGE Stackké',icon:'⇪',group:'Stack',
+  hint:'Az aktív Villany Stack egy lépésben BRIDGE Stack lesz: a Gyengeáram és a Riasztó pontjai a cél rétegükre kerülnek, a hiányzó BRIDGE rétegek létrejönnek. Visszavonható.',
+  need:'Aktív Villany Stack kell hozzá.',when:()=>{const S=stkActive();return !!(S&&stkKindOf(S)==='elec');},run:()=>vstPromote(stkActive().id)}]);
+
+window.VST_EX=VST_EX;window.vstExistOf=vstExistOf;window.vstSetEx=vstSetEx;window.vstBomRows=vstBomRows;window.vstCableOnly=vstCableOnly;
+window.vstCableOnlyRows=vstCableOnlyRows;window.vstPathLayer=vstPathLayer;window.vstPromote=vstPromote;window.vstTargetRole=vstTargetRole;
 //////////////////// hit-test + context menu ////////////////////
 // ---- what can be touched (round 2026-10-10, WP-U1) ----
 // The hit side of what 04-render draws: a level that is off, a layer or sub-layer that is hidden, a solo room that
@@ -22609,6 +22830,28 @@ const RLI_TEXT={
  'sys:MEDIA':{cel:'Média és hang: hangszóró, képernyő, AV pozíció.',
    hol:'Nappali médiafal (képernyő 1200, AV 300), háló; hangszóró a mennyezeten. Médiafal útvonal M50–M63 vagy kétrekeszes parapet. [A2 Step 11]',
    klaszter:'Adat, USB.'},
+ // ---- round 2026-10-22: the Villany Stack's own layers (and the three that BRIDGE keeps) ----
+ exist:{cel:'Ami már a falban van: meglévő pontok és kábelek. Minden elem megmarad, bontandó vagy cserélendő (jobb klikk). Egyedül mutatva ez a bontási terv.',
+   hol:'Felméréskor, a régi pont helyén. A bontandó és a cserélendő tétel Bontás sort ad, a megmaradó Ellenőrzés sort; anyagként egyik sem számít. [D1, D8]',
+   klaszter:'—'},
+ 'sys:WEAK':{cel:'Gyengeáram egy rétegen: TV / SAT aljzat, adataljzat, csengőnyomó, kaputelefon. A végpont kódja dönti el a célt; BRIDGE-re bővítéskor minden pont a cél rétegére kerül (Adat, Média, Biztonság).',
+   hol:'TV / SAT és adat a médiafalon és a hálókban 300-on, csengőnyomó kívül 1300-on, kaputelefon az előszobában 1500-on. Csillag a gyengeáramú elosztóig (médiadoboz). [D2]',
+   klaszter:'Média, Adat — soha nem az Erősáram dobozában.'},
+ 'sys:BOND':{cel:'Érintésvédelem / EPH: a fő EPH sín, a helyi EPH sín és a fémszerkezetek (cső, kád, zuhanytálca) bekötése.',
+   hol:'Fürdőnként egy helyi EPH sín, onnan minden fém bekötve; a helyi sín a fő EPH sínig. MSZ HD 60364-7-701, MSZ HD 60364-5-54. [V5]',
+   klaszter:'Az Erősáram nyomvonalán haladhat.'},
+ 'sys:ALARM':{cel:'Riasztó — csak a kábelezés: riasztóközpont → mozgás-, nyitás-, üvegtörés-érzékelő, sziréna, kezelő, pánikgomb pontjai. Eszközanyag nincs.',
+   hol:'Mozgásérzékelő sarokban 2200-on, nyitásérzékelő a tok tetején, kezelő a bejáratnál 1450-en. BRIDGE-re bővítéskor a Biztonságtechnika rétegére kerül. [Q-V08]',
+   klaszter:'Biztonság — saját doboz.'},
+ 'sys:FIRE':{cel:'Tűzvédelem — csak kábel: tűzjelző központ → füst- és hőérzékelők, kézi jelzésadók, hangjelzők. Piros J-Y(St)Y 2×2×0,8, saját védőcső, soha nem közös mással.',
+   hol:'Érzékelő a mennyezeten, kézi jelzésadó 1400-on a menekülési útvonalon, hangjelző 2300-on. Funkciómegtartás kell? Akkor tűzálló kábel (külön döntés). [Q-V09, Q-V10]',
+   klaszter:'Semmivel.'},
+ route:{cel:'Nyomvonal és dobozok: vésés, védőcső, kötődobozok a Villany Stackben. BRIDGE-ben ugyanez a Csatorna és az ARM pályák.',
+   hol:'A Pályák kiszámítása és a pálya-eszközök ide rajzolnak, amíg a stack Villany. [V6]',
+   klaszter:'—'},
+ 'sys:SMARTREADY':{cel:'Okos előkészítés: nullás kapcsolódoboz, mély doboz, tartalék védőcső — hogy később okosotthon lehessen bontás nélkül.',
+   hol:'Kapcsolóhelyeken nullás doboz, a redőny és a világítás mellett mély doboz, a médiafalhoz és a padlásig tartalék cső. [V5]',
+   klaszter:'BRIDGE-ben ugyanúgy marad (előkészített végpontok).'},
  'sys:USB':{cel:'USB adatpontok (nem az IT hálózaton): asztal, médiafal.',
    hol:'300 mm vagy asztalmagasság; dolgozó, nappali. [N]',
    klaszter:'Média, Adat.'},

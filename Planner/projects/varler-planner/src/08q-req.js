@@ -17,7 +17,7 @@
 // the layer. Prefix: req.
 
 STK_ROLES.splice(STK_ROLES.findIndex(r=>r.k==='mark')+1,0,
-  {k:'need', n:'Igények', ph:1, opt:true, cats:['mark'], hint:'Helyiségenkénti igénylista: mi kell és hány darab (dugalj, lámpa, kapcsolási kör, kapcsoló). A Ház = a helyiségek összege.'});
+  {k:'need', n:'Igények', ph:1, opt:true, kinds:STK_BOTH, cats:['mark'], hint:'Helyiségenkénti igénylista: mi kell és hány darab (dugalj, lámpa, kapcsolási kör, kapcsoló). A Ház = a helyiségek összege.'});
 STK_ICONS.need='☑';STK_COL.need='#5d6d7e';
 // its Info text (RLI_TEXT.need) is in 13-role-info.js — that const is still in its TDZ here
 

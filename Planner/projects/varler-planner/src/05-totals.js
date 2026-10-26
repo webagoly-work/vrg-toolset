@@ -10,13 +10,16 @@
 function updateTotals(){try{renderCircuitList();}catch(e){}const len={lighting:0,sockets:0,power3:0,data:0};data.cables.forEach(cb=>len[cb.type]+=cableLen(cb));
   let rows='',tot=0;for(const k in CIRC){tot+=len[k];rows+=`<tr><td><span class="swatch" style="background:${CIRC[k].c}"></span> ${CIRC[k].name}</td><td class="n">${len[k].toFixed(1)}</td></tr>`;}
   rows+=`<tr><td><b>Összesen</b></td><td class="n"><b>${tot.toFixed(1)}</b></td></tr>`;document.getElementById('tblCable').innerHTML=rows;
-  const cnt={};for(const k in DEV)cnt[k]=0;data.devices.forEach(d=>cnt[d.type]++);
+  // round 2026-10-22: an existing item (Meglévő) and an alarm / fire point (cable only) are no device material — own rows below
+  const own=d=>!(typeof vstExistOf==='function'&&(vstExistOf(d)||vstCableOnly(d)));
+  const cnt={};for(const k in DEV)cnt[k]=0;data.devices.forEach(d=>{if(own(d))cnt[d.type]++;});
   let dr='';for(const k in DEV)dr+=`<tr><td>${DEV[k]}</td><td class="n">${cnt[k]}</td></tr>`;document.getElementById('tblDev').innerHTML=dr;
   renderBOM();}
 const DROP={socket:0.3,switch:1.1,light:0.5,board:0,junction:0};
 const CABNAME={lighting:'Kábel – Világítás',sockets:'Kábel – Dugalj',power3:'Kábel – 3 fázis',data:'Kábel – Adat'};
 function computeBOM(){const len={lighting:0,sockets:0,power3:0,data:0};data.cables.forEach(cb=>len[cb.type]+=cableLen(cb));
-  const cnt={};for(const k in DEV)cnt[k]=0;data.devices.forEach(d=>cnt[d.type]++);
+  const own=d=>!(typeof vstExistOf==='function'&&(vstExistOf(d)||vstCableOnly(d)));   // as in updateTotals
+  const cnt={};for(const k in DEV)cnt[k]=0;data.devices.forEach(d=>{if(own(d))cnt[d.type]++;});
   const drop={lighting:0,sockets:0,power3:0,data:0};
   drop.sockets+=cnt.socket*DROP.socket; drop.lighting+=cnt.switch*DROP.switch+cnt.light*DROP.light;
   const w=1+(+state.waste||0)/100,rows=[];
@@ -35,6 +38,7 @@ function computeBOM(){const len={lighting:0,sockets:0,power3:0,data:0};data.cabl
   Object.keys(wire).forEach(k=>{const nm=k[0]==='d'?('Vezeték – '+k.slice(2)):('Vezeték '+k.slice(2)+' mm²');rows.push({id:'w_'+k,name:nm,qty:+(wire[k]*w).toFixed(1),unit:'m'});});
   // wall chasing (06 chaseProject): real metres and pockets, no waste factor — labour, not material
   chaseBOMRows().forEach(r=>rows.push(r));
+  if(typeof vstBomRows==='function'){vstCableOnlyRows().forEach(r=>rows.push(r));vstBomRows().forEach(r=>rows.push(r));}
   return rows;}
 function renderBOM(){const rows=computeBOM();let html=`<tr><td><b>Tétel</b></td><td class="n"><b>Menny.</b></td><td><b>E.</b></td><td class="n"><b>Ft/e.</b></td><td class="n"><b>Összeg</b></td></tr>`,tot=0;
   for(const r of rows){const price=state.price[r.id]||0,sum=price*r.qty;tot+=sum;

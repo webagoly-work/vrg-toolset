@@ -8,7 +8,7 @@
 // The overlay the user asked for ("parts of an overlaying control system"): a thin bar over the canvas that walks the
 // four phases — 1 Alapozás › 2 Nyílászárók › 3 Szabályok › 4 Villamosság — and puts that phase's tools one click away.
 // It drives the existing tools and layers only; it stores nothing but state.wfPhase (and state.wfBar on/off).
-// Entering Villamosság makes sure a BRIDGE stack exists (adopting the layer the rooms are on as Szerkezet, nothing
+// Entering Villamosság makes sure a stack exists — a Villany Stack since round 2026-10-22 (V2) — (adopting the layer the rooms are on as Szerkezet, nothing
 // copied) and activates the Erősáram socket layer; 4.1 has two buttons, Dugaljak / Lámpák + kapcsolók (E01 = A).
 // The later steps 4.2–4.5 are listed greyed until their work packages land. Each phase shows a live check, read from
 // the data, never stored.
@@ -19,7 +19,7 @@ const WF_PHASES=PH_LIST;
 // the stack the electrical phase works in: the active one, else the first, else a new one adopting the rooms' layer
 function wfStack(){let S=typeof stkActive==='function'?stkActive():null;if(!S&&typeof stacks!=='undefined'&&stacks.length)S=stacks[0];
   if(S)return S;const fl=data.floors.find(f=>f&&f.level===state.active),L=(fl&&fl.layer)||'L0';
-  return stkCreate({name:'Munkafolyamat',construct:{mode:'adopt',layers:[L]}});}
+  return stkCreate({name:'Villany',kind:'elec',construct:{mode:'adopt',layers:[L]}});}
 function wfLayer(role){const S=wfStack();if(!S)return null;state.stack=S.id;state.stkOff=false;
   const L=stkLayer(S.id,role);if(!L){$('hud').textContent='A stackben nincs '+role+' réteg.';return null;}
   state.activeLayer=L.id;if(typeof lyrRefresh==='function')lyrRefresh();else if(typeof renderLayers==='function')renderLayers();
@@ -48,4 +48,4 @@ function wfBarDraw(){if(typeof layoutSync==='function')layoutSync(true);}
 function wfBarToggle(){return typeof phLayoutToggle==='function'?phLayoutToggle():null;}
 
 registerActions([{id:'wf.electric',label:'Villamosság: Erősáram',icon:'⚡',group:'Készülék',alias:'electrical erosaram villamossag',
-   hint:'BRIDGE stack (ha még nincs) és az Erősáram dugalj rétege aktív.',when:()=>true,run:()=>phSet('vill')}]);
+   hint:'Villany Stack (ha még nincs stack) és az Erősáram dugalj rétege aktív.',when:()=>true,run:()=>phSet('vill')}]);

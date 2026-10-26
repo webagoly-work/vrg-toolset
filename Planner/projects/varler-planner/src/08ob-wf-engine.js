@@ -165,7 +165,7 @@ function blShapeLines(R,cfg){const W=R.W;
 // ---- button 1: the conduits -------------------------------------------------------------------------------------------
 function blTargetLayers(level){const board=data.devices.find(d=>d&&d.level===level&&d.type==='board');
   const S=(board&&lyrLayer(board.layer)&&stkById(lyrLayer(board.layer).stack))||(typeof stkActive==='function'?stkActive():null);
-  const fb=(board&&board.layer)||state.activeLayer||'L0',lay=k=>(S&&stkLayer(S.id,k)||{}).id||fb;
+  const fb=(board&&board.layer)||state.activeLayer||'L0',lay=k=>(S&&(k==='channel'||k==='arm'?vstPathLayer(S,k):stkLayer(S.id,k))||{}).id||fb;   // V6: route in a Villany Stack
   return {ch:lay('channel'),arm:lay('arm'),box:lay('sys:SOC')};}
 function blClear(level){const n0=data.devices.length+data.paths.length;
   data.devices=data.devices.filter(d=>!(d&&d.gen==='bl'&&d.level===level));

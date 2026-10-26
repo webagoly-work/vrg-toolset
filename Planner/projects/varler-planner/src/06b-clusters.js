@@ -31,6 +31,7 @@ function clsMembers(node){return node?data.devices.filter(d=>d&&d.host===node.id
 
 // ---- the stack layer a box lives on (created on demand in a stack that predates the role) ----
 function stkEnsureRole(S,roleKey){if(!S)return null;let L=stkLayer(S.id,roleKey);if(L)return L;const role=stkRole(roleKey);if(!role)return null;
+  if(typeof stkRoleKinds==='function'&&stkRoleKinds(role).indexOf(stkKindOf(S))<0)return null;   // 2026-10-22: never a BRIDGE-only layer in a Villany Stack
   L=stkMakeLayer(S,role);const mine=stkLayersOf(S.id),ix=stkRoleIx(roleKey),before=mine.filter(l=>stkRoleIx(l.role)<ix).pop();
   layers.splice(before?layers.indexOf(before)+1:layers.length,0,L);stkSync(S);if(typeof renderLayers==='function')renderLayers();return L;}
 function clsLayerId(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkEnsureRole(S,'cluster'):null;return L?L.id:state.activeLayer;}
@@ -53,6 +54,7 @@ function clsNearNode(d){let best=null,bd=1e9;
   return best;}
 EP_PLACED.push((d,g)=>{if(g&&g.host){if(byId('devices',g.host))d.host=g.host;return;}
   const role=epRoleOf(d);if(state.clsAuto===false||!clsHigher(role))return;
+  const S=stkOfLayer(d.layer);if(S&&stkKindOf(S)==='elec')return;   // clusters are BRIDGE's (IDEA-001/002); a Villany Stack has none
   const near=clsNearNode(d);if(near){d.host=near.id;return;}
   if((g&&g.snapped)||d.side==null)return;          // an ideal spot is not a custom place; ceiling / floor points get no box
   const c=clsCreateFor(d);if(c){d.host=c.id;lyrHud(d.code+' egyéni helyen — másodlagos klaszterdoboz nyitva: '+c.ref);}});

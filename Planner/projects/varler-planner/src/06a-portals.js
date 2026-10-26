@@ -122,7 +122,7 @@ CHN_PATH_HOOKS.push(p=>{if(!RAIL_T.on||!p)return;p.route='rail';chnApplyRule(p,R
   const e=chnEnds(p);lyrHud('Ezüst sín: '+railName(p)+(e[0]&&e[1]?'':' · figyelem: nyitott vég (nincs RBX-en / portálon)'));});
 function railRoutes(){return data.paths.filter(p=>p&&p.route==='rail');}
 function railName(p){const e=chnEnds(p);return e.map(d=>d?(d.ref||d.id):'?').join(' ≈ ');}
-function railToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkLayer(S.id,'channel'):null;
+function railToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?vstPathLayer(S,'channel'):null;   // V6
   if(L){state.activeLayer=L.id;renderLayers();}
   if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();ptToolOff();
   state.pathType=RAIL_T.rule==='csat'?'csat':'gege';setMode('path');RAIL_T.on=true;

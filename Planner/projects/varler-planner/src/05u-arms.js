@@ -21,7 +21,7 @@ function armFade(item){const S=(typeof stkActive==='function')?stkActive():null;
   const L=lyrLayer((item&&item.layer)||'L0');return L&&L.stack===S.id?1:0.3;}
 
 // ---- the tool --------------------------------------------------------------------------------------------------------
-function armToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?stkLayer(S.id,'arm'):null;
+function armToolStart(){const S=(typeof stkActive==='function')?stkActive():null,L=S?vstPathLayer(S,'arm'):null;   // V6: route in a Villany Stack
   if(!L){lyrHud('Aktív BRIDGE Stack ARM réteggel kell hozzá.');return;}
   if(typeof mrkToolsOff==='function')mrkToolsOff();if(typeof hwToolOff==='function')hwToolOff();if(typeof epToolOff==='function')epToolOff();
   state.activeLayer=L.id;state.stkView=true;renderLayers();
@@ -110,7 +110,7 @@ VALIDATORS.push({code:'arm.join',run:()=>{const n=armPruneJoins();return n?[{sev
 registerActions([
  {id:'arm.route',alias:'arm palya rajzolas route draw branch',label:'ARM pálya rajzolása',icon:'⑂',group:'ARM',
   hint:'Egyvonalas pálya az RBX-től a végpontokig, rétegtől függetlenül (stack nézet). Meglévő pályán kezdve ágaztat.',
-  need:'Aktív BRIDGE Stack ARM réteggel kell hozzá.',when:c=>{const S=stkActive();return !!(S&&stkLayer(S.id,'arm'));},run:()=>armToolStart()},
+  need:'Aktív stack ARM vagy Nyomvonal réteggel kell hozzá.',when:c=>{const S=stkActive();return !!(S&&vstPathLayer(S,'arm'));},run:()=>armToolStart()},
  {id:'stack.view',alias:'stack nezet egy retegkent view as one layer',label:'Stack nézet (egy rétegként)',icon:'▤',group:'Stack',
   hint:'A stack minden rétege együtt, a többi réteg 30 %-ra halványítva.',
   need:'Aktív BRIDGE Stack kell hozzá.',when:c=>!!stkActive(),run:()=>{state.stkView=!state.stkView;draw();lyrHud('Stack nézet '+(state.stkView?'be':'ki'));}}

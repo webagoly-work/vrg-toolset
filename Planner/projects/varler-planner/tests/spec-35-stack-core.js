@@ -23,7 +23,7 @@ setTimeout(()=>{
   const addL=(id,name)=>{LY().push({id,name,visible:true,cats:w.layerCatsAll()});};
   const addWall=(layer,x)=>{w.__getWalls()[lvl].push({x0:x,y0:0,x1:x+1000,y1:100,layer});w.ensureIds(D());};
   const addDev=(o)=>{D().devices.push(Object.assign({type:'socket',level:lvl,x:100,y:100,h:300,layer:'L0',side:0},o));w.ensureIds(D());return D().devices[D().devices.length-1];};
-  const roleKeys=w.STK_ROLES.map(r=>r.k);
+  const roleKeys=w.stkRolesOf('bridge').map(r=>r.k);   // round 2026-10-22: the BRIDGE kind's roles (the Villany ones: spec-109)
   // T2 (2026-10-15): the rail is gone; the stack's roles are still the inspector's stages, so these checks read the stage list
   const railBtns=()=>w.shellStages().map(s=>({dataset:{k:s.k},textContent:s.n,classList:{contains:c=>c==='on'&&s.k===w.shellKey()}}));
 
@@ -31,9 +31,9 @@ setTimeout(()=>{
   fresh();const n0=LY().length,u0=undoLen();
   const S=w.stkCreate({name:'T'});
   const SL=LY().filter(l=>l.stack===S.id);
-  ok('STK_ROLES: 5 phase-1 (+ the optional Igények, 08q) and 18 phase-2 roles (+ the off-by-default Házimozi, 08r) (Erősáram = 3 since M1) (+ Klaszterpontok, Extrák — IDEA-003), KNX off',w.STK_ROLES.filter(r=>r.ph===1&&!r.opt).length===5&&w.STK_ROLES.filter(r=>r.opt).map(r=>r.k).join()==='need'&&w.STK_ROLES.filter(r=>r.ph===2).length===18&&w.STK_ROLES.find(r=>r.k==='sys:KNX').off===true&&w.STK_ROLES.find(r=>r.k==='sys:CINEMA').off===true);
+  ok('BRIDGE roles: 5 phase-1 (+ the optional Igények, 08q, and Meglévő, 2026-10-22) and 21 phase-2 roles (+ the off-by-default Házimozi, 08r; + EPH, Tűzvédelem, Okos előkészítés off, 2026-10-22) (Erősáram = 3 since M1) (+ Klaszterpontok, Extrák — IDEA-003), KNX off',(()=>{const B=w.stkRolesOf('bridge');return B.filter(r=>r.ph===1&&!w.stkRoleOpt(r,'bridge')).length===5&&B.filter(r=>w.stkRoleOpt(r,'bridge')).map(r=>r.k).join()==='need,exist'&&B.filter(r=>r.ph===2).length===21&&['sys:BOND','sys:FIRE','sys:SMARTREADY'].every(k=>B.find(r=>r.k===k).off===true);})()&&w.STK_ROLES.find(r=>r.k==='sys:KNX').off===true&&w.STK_ROLES.find(r=>r.k==='sys:CINEMA').off===true);
   ok('stkCreate makes 5 phase-1 + 16 phase-2 layers (KNX off)',SL.length===21&&!SL.some(l=>l.role==='sys:KNX'));
-  ok('the layers come in STK_ROLES order, each with stack and role',J(SL.map(l=>l.role))===J(roleKeys.filter(k=>k!=='sys:KNX'&&k!=='need'&&k!=='sys:CINEMA'))&&SL.every(l=>l.stack===S.id&&l.role));
+  ok('the layers come in STK_ROLES order, each with stack and role',J(SL.map(l=>l.role))===J(roleKeys.filter(k=>['sys:KNX','need','sys:CINEMA','exist','sys:BOND','sys:FIRE','sys:SMARTREADY'].indexOf(k)<0))&&SL.every(l=>l.stack===S.id&&l.role));
   ok('the new layers are one contiguous block after the existing ones',LY().length===n0+21&&LY().slice(n0).every(l=>l.stack===S.id)&&!LY().slice(0,n0).some(l=>l.stack));
   ok('layers are named "<short> · <role>"',SL[0].name==='B1 · Szerkezet'&&SL[1].name==='B1 · Jelölés');
   ok('the record: kind bridge, scale S-C, phase 1, layers listed in role order',S.kind==='bridge'&&S.scale==='S-C'&&S.phase===1&&J(S.layers)===J(SL.map(l=>l.id))&&ST().length===1&&S.name==='T');
@@ -137,8 +137,10 @@ setTimeout(()=>{
 
   // 8 — the wizard
   fresh();addL('LW1','Alap fal');addL('LW2','Másik');
-  w.actionById('stack.create').run({});
-  ok('the wizard lists the phase-2 roles, KNX and Házimozi unticked',w.document.querySelectorAll('.skR').length===18&&!w.document.querySelector('.skR[value="sys:CINEMA"]').checked&&[...w.document.querySelectorAll('.skR')].filter(x=>x.checked).length===16&&!w.document.querySelector('.skR[value="sys:KNX"]').checked);
+  // round 2026-10-22 (V2): the wizard opens on Villany; these checks are about its BRIDGE side
+  const toBridge=()=>{const r=w.document.querySelector('input[name=skKind][value=bridge]');r.checked=true;r.dispatchEvent(new w.Event('change',{bubbles:true}));};
+  w.actionById('stack.create').run({});toBridge();
+  ok('the wizard lists the BRIDGE phase-2 roles, KNX, Házimozi, EPH, Tűzvédelem, Okos előkészítés unticked',w.document.querySelectorAll('.skR').length===21&&!w.document.querySelector('.skR[value="sys:CINEMA"]').checked&&[...w.document.querySelectorAll('.skR')].filter(x=>x.checked).length===16&&!w.document.querySelector('.skR[value="sys:KNX"]').checked);
   ok('the name defaults to "BRIDGE Stack <n>"',$('skName').value==='BRIDGE Stack 1');
   ok('the adopt list shows only non-stack layers; merge appears at 2+ ticked',(function(){
     const ad=w.document.querySelector('input[name=skMode][value=adopt]');ad.checked=true;ad.dispatchEvent(new w.Event('change',{bubbles:true}));
@@ -149,7 +151,7 @@ setTimeout(()=>{
     const s=ST()[0];return s&&s.name==='Lakás'&&LY().filter(l=>l.stack===s.id).length===21&&LY().find(l=>l.role==='construct').id==='LW1'&&!LY().some(l=>l.id==='LW2');})());
   ok('adopt without any ticked layer is refused and keeps the dialog',(function(){fresh();addL('LV','V');w.actionById('stack.create').run({});const ad=w.document.querySelector('input[name=skMode][value=adopt]');ad.checked=true;
     $('mOk').click();const kept=w.document.querySelector('#modalBg').style.display==='flex'&&ST().length===0;w.closeModal();return kept;})());
-  ok('the wizard can leave optional phase-2 layers out',(function(){fresh();w.actionById('stack.create').run({});w.document.querySelectorAll('.skR').forEach(x=>{x.checked=(x.value==='sys:LV');});$('mOk').click();
+  ok('the wizard can leave optional phase-2 layers out',(function(){fresh();w.actionById('stack.create').run({});toBridge();w.document.querySelectorAll('.skR').forEach(x=>{x.checked=(x.value==='sys:LV');});$('mOk').click();
     return LY().filter(l=>l.stack).length===6;})());
 
   // 9 — the panel group

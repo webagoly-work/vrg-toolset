@@ -83,18 +83,28 @@ const ICO_MARK={
  board:   {d:'M-3.4 -2.4 H3.4 V2.4 H-3.4 Z M-1.7 -1.2 V1.2 M0 -1.2 V1.2 M1.7 -1.2 V1.2'},
  meter:   {d:'M-2.6 0 A2.6 2.6 0 1 0 2.6 0 A2.6 2.6 0 1 0 -2.6 0 M0 0 L1.8 -1.3'},
  entry:   {d:'M-3.6 0 H1.4 M-0.4 -1.7 L1.7 0 L-0.4 1.7 M2.8 -2.6 V2.6'},
- generic: {d:'M-1.3 0 A1.3 1.3 0 1 0 1.3 0 A1.3 1.3 0 1 0 -1.3 0',f:1}};
+ generic: {d:'M-1.3 0 A1.3 1.3 0 1 0 1.3 0 A1.3 1.3 0 1 0 -1.3 0',f:1},
+ // round 2026-10-22 — Gyengeáram, Tűzvédelem, EPH, Okos előkészítés
+ tvsat:   {d:'M-2.6 0 A2.6 2.6 0 1 0 2.6 0 A2.6 2.6 0 1 0 -2.6 0 M-0.6 0 A0.6 0.6 0 1 0 0.6 0 A0.6 0.6 0 1 0 -0.6 0 M-3.6 0 H-2.6 M2.6 0 H3.6'},
+ intercom:{d:'M-2.2 -3 H2.2 V3 H-2.2 Z M-1.2 -1.8 H1.2 V0.2 H-1.2 Z M-0.9 1.6 h0.01 M0.9 1.6 h0.01'},
+ heat:    {d:'M-3 0 A3 3 0 1 0 3 0 A3 3 0 1 0 -3 0 M-1.8 0.8 L-0.9 -0.8 L0 0.8 L0.9 -0.8 L1.8 0.8'},
+ callpt:  {d:'M-2.8 -2.8 H2.8 V2.8 H-2.8 Z M-1.6 -1.6 L1.6 1.6'},
+ bond:    {d:'M0 -3 V0.6 M-2.6 0.6 H2.6 M-1.7 1.8 H1.7 M-0.8 3 H0.8'},
+ neutral: {d:'M-2.4 -2.4 H2.4 V2.4 H-2.4 Z M-1.1 1.2 V-1.2 L1.1 1.2 V-1.2'},
+ deepbox: {d:'M-2.4 -2.4 H2.4 V2.4 H-2.4 Z M-1.4 -1.4 H1.4 V1.4 H-1.4 Z'},
+ spare:   {d:'M-3.2 -1.2 H3.2 M-3.2 1.2 H3.2 M-1.6 -1.2 V1.2 M1.6 -1.2 V1.2'}};
 
 // code → mark, for the endpoint catalogue (05s). A code can appear under two roles (LMP is both a
 // MAINS lamp and a BUSB escape light); the colour separates them, the mark stays the same thing.
 const ICO_BY_CODE={LMP:'light',SWI:'switch',SOC:'socket',DED:'dedicat',SHU:'shutter',LNR:'ledline',
  UEP:'uep',NTL:'notify',POR:'portal',ACP:'wifi',ETH:'eth',CAM:'cam',ACT:'knx',SEN:'sensor',
  PAN:'panel',THR:'thermo',SPK:'speaker',SCR:'screen',AVP:'avp',USB:'usb',SEC:'shield',
- MOT:'motion',DWC:'contact',GLB:'glass',SRN:'siren',KPD:'keypad',PNC:'panic',LCK:'lock',SMK:'smoke',COA:'coalarm',DBL:'bell'};   // S5
+ MOT:'motion',DWC:'contact',GLB:'glass',SRN:'siren',KPD:'keypad',PNC:'panic',LCK:'lock',SMK:'smoke',COA:'coalarm',DBL:'bell',   // S5
+ TVA:'tvsat',BEL:'bell',ICM:'intercom',HDT:'heat',MCP:'callpt',SND:'siren',EPB:'bond',PEB:'bond',NUT:'neutral',DPB:'deepbox',RSV:'spare'};   // 2026-10-22
 const ICO_BY_TYPE={socket:'socket',switch:'switch',light:'light',junction:'junction',box:'generic',
- board:'board',rbx:'rbx',base:'base',meter:'meter',entry:'entry',ssc:'shield'};
+ board:'board',rbx:'rbx',base:'base',meter:'meter',entry:'entry',ssc:'shield',mdb:'tvsat',fire:'callpt',eph:'bond'};
 // which codes live on the plane above rather than on a wall — they get the round ceiling body
-const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK','SMK'];
+const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK','SMK','HDT'];
 
 // ---- what a device is --------------------------------------------------------------------------
 function icoHw(d){return !!(d&&typeof HW_TYPES!=='undefined'&&HW_TYPES[d.type]);}

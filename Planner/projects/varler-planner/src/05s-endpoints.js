@@ -13,6 +13,8 @@
 //   device: {type, code, var, level, x, y, h, side?, layer}
 // An endpoint ALWAYS lands on its code's role layer, whatever layer is active — that is what makes the stack
 // "layer by layer" and lets E1 draw on all of it at once. Six codes are proposed additions to STD-004 (new:true).
+// alt:[roles] (round 2026-10-22): further layers that accept the code. A Villany Stack's Gyengeáram and Riasztó hold codes
+// whose own role is their purpose and their BRIDGE target (Q-V07 / Q-V08 A): ETH on Gyengeáram is still DATA by purpose.
 // Prefix: ep.
 
 const EP_CAT=[
@@ -54,7 +56,7 @@ const EP_CAT=[
  // ---- DATA ----
  {code:'ACP',role:'sys:DATA',n:'WiFi hozzáférési pont',cat:'device',mount:'ceiling',topo:'star',from:'rbx',vars:[
    {k:'poe',n:'1 × Cat6A PoE',cab:[{c:'CAT6A_U',w:'M20'}]}]},
- {code:'ETH',new:true,role:'sys:DATA',n:'Adataljzat',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
+ {code:'ETH',new:true,role:'sys:DATA',alt:['sys:WEAK'],n:'Adataljzat',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
    {k:'1',n:'Egyes',cab:[{c:'CAT6A_U',w:'M20'}]},
    {k:'2',n:'Kettős (asztal, médiafal)',cab:[{c:'CAT6A_U',w:'M25',n:2}]}]},
  {code:'CAM',role:'sys:DATA',n:'Kamera',cat:'device',mount:'wall',h:2400,topo:'star',from:'rbx',vars:[
@@ -85,12 +87,16 @@ const EP_CAT=[
    {k:'27',    n:'≤ 27 m — 2×2,5',cab:[{c:'SPK2x25',w:'M20'}]},
    {k:'pair',  n:'Sztereó pár egy kábelen — 4×2,5',cab:[{c:'SPK4x25',w:'M25'}]},
    {k:'sub',   n:'Mélynyomó, vonalszint',cab:[{c:'LINE',w:'M20'}]}]},
- {code:'SCR',new:true,role:'sys:MEDIA',n:'Képernyő',cat:'device',mount:'wall',h:1200,topo:'star',from:'rbx',vars:[
+ {code:'SCR',new:true,role:'sys:MEDIA',alt:['sys:WEAK'],n:'Képernyő',cat:'device',mount:'wall',h:1200,topo:'star',from:'rbx',vars:[
    {k:'aoc', n:'HDMI AOC fix fejjel + Cat6A',cab:[{c:'AOC_FIX',w:'M40'},{c:'CAT6A_U',w:'M20',fam:'DATA'}]},
    {k:'aocd',n:'HDMI AOC levehető fejjel + Cat6A',cab:[{c:'AOC_DET',w:'M25'},{c:'CAT6A_U',w:'M20',fam:'DATA'}]}]},
- {code:'AVP',new:true,role:'sys:MEDIA',n:'AV pozíció',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
+ {code:'AVP',new:true,role:'sys:MEDIA',alt:['sys:WEAK'],n:'AV pozíció',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
    {k:'std',n:'Saját kör + média + 2 × adat',cab:[{c:'NYM3x25',w:'M25',fam:'MAINS',from:'board'},
      {c:'AOC_FIX',w:'M40'},{c:'CAT6A_U',w:'M25',fam:'DATA',n:2}]}]},
+ // V4: the ordinary TV / SAT socket — coax to the weak-current box (MDB) in a Villany Stack, to the MEDIA unit in BRIDGE
+ {code:'TVA',new:true,role:'sys:MEDIA',alt:['sys:WEAK'],n:'TV / SAT aljzat',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
+   {k:'coax',n:'Koax RG-6 (földi + SAT)',cab:[{c:'COAX',w:'M20'}]},
+   {k:'coaxd',n:'Koax + Cat6A (TV + adat)',cab:[{c:'COAX',w:'M25'},{c:'CAT6A_U',w:'M25',fam:'DATA'}]}]},
  // ---- USB ----
  {code:'USB',new:true,role:'sys:USB',n:'USB adatpont',cat:'device',mount:'wall',h:300,topo:'star',from:'rbx',vars:[
    {k:'u2',n:'USB 2.0 Cat6A extenderrel (nem az IT hálózaton)',cab:[{c:'CAT6A_U',w:'M20'}]},
@@ -104,27 +110,27 @@ const EP_CAT=[
  // ---- SECURITY — Home Assistant / ESPHome (round 2026-10-10, WP-S5). /*r*/ heights are reasoned; ⚑ before client use.
  // from = the PREMIUM (star) origin; epFromOf() gives 'rbx' for MOT and PNC in the default Alap tier (answer S01).
  // An empty cab list is legal: a battery Zigbee / Thread variant carries no cable, makes no run, and still counts as placed.
- {code:'MOT',new:true,role:'sys:SECURITY',n:'Mozgásérzékelő (behatolás)',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: corner, 2.0–2.4 m
+ {code:'MOT',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Mozgásérzékelő (behatolás)',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: corner, 2.0–2.4 m
    {k:'pir', n:'PIR, vezetékes (ESPHome gpio)',          cab:[{c:'ALARM6',w:'M16'}]},
    {k:'dual',n:'PIR + mikrohullám (kettős technológia)', cab:[{c:'ALARM6',w:'M16'}]},
    {k:'pet', n:'Kisállatbarát PIR',                       cab:[{c:'ALARM6',w:'M16'}]},
    {k:'mmw', n:'mmWave jelenlét + behatolás (LD2410 / LD2450)',cab:[{c:'LIYCY4x05',w:'M16'}]}]},
- {code:'DWC',new:true,role:'sys:SECURITY',n:'Nyitásérzékelő (ajtó / ablak)',cat:'device',mount:'wall',h:2050,topo:'star',from:'ssc',vars:[   // r: frame top, latch side
+ {code:'DWC',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Nyitásérzékelő (ajtó / ablak)',cat:'device',mount:'wall',h:2050,topo:'star',from:'ssc',vars:[   // r: frame top, latch side
    {k:'reed',n:'Reed + szabotázs, vezetékes',      cab:[{c:'ALARM6',w:'M16'}]},
    {k:'roll',n:'Redőny / görgős nyitásérzékelő',  cab:[{c:'ALARM6',w:'M16'}]},
    {k:'zb',  n:'Elemes, Zigbee / Thread (nincs kábel)',cab:[]}]},
- {code:'GLB',new:true,role:'sys:SECURITY',n:'Üvegtörés-érzékelő',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: facing the glazing ≤ 6 m ⚑
+ {code:'GLB',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Üvegtörés-érzékelő',cat:'device',mount:'wall',h:2200,topo:'star',from:'ssc',vars:[   // r: facing the glazing ≤ 6 m ⚑
    {k:'wired',n:'Vezetékes (akusztikus)',cab:[{c:'ALARM6',w:'M16'}]},
    {k:'zb',   n:'Elemes, Zigbee / Thread',cab:[]}]},
- {code:'SRN',new:true,role:'sys:SECURITY',n:'Sziréna',cat:'device',mount:'wall',h:2300,topo:'star',from:'ssc',vars:[
+ {code:'SRN',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Sziréna',cat:'device',mount:'wall',h:2300,topo:'star',from:'ssc',vars:[
    {k:'bel',n:'Beltéri sziréna (12 V)',                 cab:[{c:'SIREN4',w:'M16'}]},
    {k:'kul',n:'Kültéri sziréna villogóval, akkus, szabotázs',h:2800,cab:[{c:'SIREN4',w:'M16'}]}]},   // r: outdoor: out of reach
- {code:'KPD',new:true,role:'sys:SECURITY',n:'Kezelő / belépési pont',cat:'device',mount:'wall',h:1450,topo:'star',from:'ssc',vars:[   // the ≈1300 smart band [W]; S07 = B: the HMI panel's entry variant stays too
+ {code:'KPD',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Kezelő / belépési pont',cat:'device',mount:'wall',h:1450,topo:'star',from:'ssc',vars:[   // the ≈1300 smart band [W]; S07 = B: the HMI panel's entry variant stays too
    {k:'kod',n:'Kódbillentyűzet (matrix_keypad / Wiegand)',cab:[{c:'JY4x2x08',w:'M16'}]},
    {k:'nfc',n:'NFC / RFID olvasó (PN532 / RC522)',        cab:[{c:'JY4x2x08',w:'M16'}]},
    {k:'ujj',n:'Ujjlenyomat-olvasó',                       cab:[{c:'JY4x2x08',w:'M16'}]},
    {k:'pan',n:'Érintőpanel riasztó-felülettel (PoE)',      cab:[{c:'CAT6A_S',w:'M20',fam:'DATA'}]}]},
- {code:'PNC',new:true,role:'sys:SECURITY',n:'Pánikgomb',cat:'device',mount:'wall',h:900,topo:'star',from:'ssc',vars:[   // r: bedside / entry
+ {code:'PNC',new:true,role:'sys:SECURITY',alt:['sys:ALARM'],n:'Pánikgomb',cat:'device',mount:'wall',h:900,topo:'star',from:'ssc',vars:[   // r: bedside / entry
    {k:'wired',n:'Vezetékes',cab:[{c:'ALARM6',w:'M16'}]},
    {k:'zb',   n:'Elemes, Zigbee / Thread',cab:[]}]},
  {code:'LCK',new:true,role:'sys:SECURITY',n:'Zár / zárnyelv-állapot',cat:'device',mount:'wall',h:1050,topo:'star',from:'ssc',vars:[   // r: door frame, latch side
@@ -137,8 +143,35 @@ const EP_CAT=[
  {code:'COA',new:true,role:'sys:SECURITY',n:'CO-érzékelő (EN 50291)',cat:'device',mount:'wall',h:2000,topo:'star',from:'rbx',vars:[   // r: ⚑ EN 50292: high on the wall, ≥150 mm below the ceiling, 1–3 m from the appliance
    {k:'zb', n:'Elemes, Zigbee / Thread',cab:[]},
    {k:'ilk',n:'Hálózati + relékimenet az RBX bemenetre',cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
- {code:'DBL',new:true,role:'sys:SECURITY',n:'Videós kaputelefon / csengő',cat:'device',mount:'wall',h:1500,topo:'star',from:'rbx',vars:[   // local: ONVIF / Reolink [CoreRef]
-   {k:'poe',n:'PoE, helyi (ONVIF)',cab:[{c:'CAT6A_U',w:'M20',fam:'DATA'}]}]}];
+ {code:'DBL',new:true,role:'sys:SECURITY',alt:['sys:WEAK'],n:'Videós kaputelefon / csengő',cat:'device',mount:'wall',h:1500,topo:'star',from:'rbx',vars:[   // local: ONVIF / Reolink [CoreRef]
+   {k:'poe',n:'PoE, helyi (ONVIF)',cab:[{c:'CAT6A_U',w:'M20',fam:'DATA'}]}]},
+ // ---- round 2026-10-22: the ordinary weak-current pair (V4) — doorbell push and intercom handset, purpose SECURITY ----
+ {code:'BEL',new:true,role:'sys:SECURITY',alt:['sys:WEAK'],n:'Csengőnyomó',cat:'device',mount:'wall',h:1300,topo:'star',from:'rbx',vars:[
+   {k:'2',n:'Csengővezeték J-Y(St)Y 2×2×0,8',cab:[{c:'JY2x2x08',w:'M16'}]}]},
+ {code:'ICM',new:true,role:'sys:SECURITY',alt:['sys:WEAK'],n:'Kaputelefon beltéri egység',cat:'device',mount:'wall',h:1500,topo:'star',from:'rbx',vars:[
+   {k:'2w',n:'2 vezetékes busz',cab:[{c:'JY2x2x08',w:'M16'}]},
+   {k:'ip', n:'IP / PoE',       cab:[{c:'CAT6A_U',w:'M20',fam:'DATA'}]}]},
+ // ---- Tűzvédelem (Q-V09 / Q-V10 A): cable only — the detectors are the fire installer's; red pairs in an own conduit ----
+ {code:'SMK',new:true,role:'sys:FIRE',n:'Füstérzékelő (tűzjelző hurok)',cat:'device',mount:'ceiling',topo:'chain',from:'fire',vars:[
+   {k:'loop',n:'Hurok, J-Y(St)Y 2×2×0,8 piros',cab:[{c:'JYFIRE',w:'M16'}]}]},
+ {code:'HDT',new:true,role:'sys:FIRE',n:'Hőérzékelő',cat:'device',mount:'ceiling',topo:'chain',from:'fire',vars:[
+   {k:'loop',n:'Hurok, J-Y(St)Y 2×2×0,8 piros',cab:[{c:'JYFIRE',w:'M16'}]}]},
+ {code:'MCP',new:true,role:'sys:FIRE',n:'Kézi jelzésadó',cat:'device',mount:'wall',h:1400,topo:'chain',from:'fire',vars:[   // EN 54-11: 1,2–1,6 m
+   {k:'loop',n:'Hurok, J-Y(St)Y 2×2×0,8 piros',cab:[{c:'JYFIRE',w:'M16'}]}]},
+ {code:'SND',new:true,role:'sys:FIRE',n:'Hang-fényjelző',cat:'device',mount:'wall',h:2300,topo:'chain',from:'fire',vars:[
+   {k:'loop',n:'Hangjelző kör, J-Y(St)Y 2×2×0,8 piros',cab:[{c:'JYFIRE',w:'M16'}]}]},
+ // ---- Érintésvédelem / EPH (V5) — the bonding points and the local bar, fed from the main bar (hw 'eph') ----
+ {code:'EPB',new:true,role:'sys:BOND',n:'EPH-bekötés (cső, kád, fémszerkezet)',cat:'device',mount:'wall',h:300,topo:'star',from:'eph',vars:[
+   {k:'h4',n:'H07V-K 4 mm² zöld-sárga',cab:[{c:'H07VK4',w:'M16'}]}]},
+ {code:'PEB',new:true,role:'sys:BOND',n:'Helyi EPH sín',cat:'device',mount:'wall',h:300,topo:'star',from:'eph',vars:[
+   {k:'h6',n:'H07V-K 6 mm² zöld-sárga a fő EPH sínig',cab:[{c:'H07VK6',w:'M20'}]}]},
+ // ---- Okos előkészítés (V5) — provisions only; in BRIDGE they read like sys:EXTRA ----
+ {code:'NUT',new:true,role:'sys:SMARTREADY',n:'Nullás kapcsolódoboz',cat:'device',mount:'wall',h:1100,topo:'star',from:'board',vars:[
+   {k:'n',n:'N a kapcsolódobozban (okos kapcsolóhoz)',cab:[]}]},
+ {code:'DPB',new:true,role:'sys:SMARTREADY',n:'Mély doboz (okos modulnak)',cat:'device',mount:'wall',h:1100,topo:'star',from:'board',vars:[
+   {k:'60',n:'60 mm mély szerelvénydoboz',cab:[]}]},
+ {code:'RSV',new:true,role:'sys:SMARTREADY',n:'Tartalék védőcső-végpont',cat:'device',mount:'wall',h:300,topo:'star',from:'board',vars:[
+   {k:'m20',n:'Üres M20 + behúzószál',cab:[{c:'SPARE',w:'M20'}]}]}];
 // the security tier (answer S01): Alap (default, mixed) — the interior detectors (MOT, PNC) go to the room's
 // RBX; Prémium (star) — every intrusion point to the SSC. Every reader of entry.from goes through here.
 const EP_SEC_INTERIOR=['MOT','PNC'];
@@ -167,14 +200,15 @@ const EP_FROM_TYPE={light:'LMP',switch:'SWI',socket:'SOC'};
 
 // ---- the catalogue ------------------------------------------------------------------------------------------------
 // role 'sys:MAINS' is a read-only alias for the three Erősáram roles (WP-M1): an old caller still finds LMP, SWI, SOC, DED, SHU
-function epRoleIs(e,role){return e.role===role||(role==='sys:MAINS'&&typeof mnsIs==='function'&&mnsIs(e.role));}
+function epRoleIs(e,role){return e.role===role||(!!e.alt&&e.alt.indexOf(role)>=0)||(role==='sys:MAINS'&&typeof mnsIs==='function'&&mnsIs(e.role));}
 function epEntry(code,role){return EP_CAT.find(e=>e.code===code&&(!role||epRoleIs(e,role)))||null;}
 function epOfRole(role){return EP_CAT.filter(e=>epRoleIs(e,role));}
 function epTypeFor(code){return EP_CLASSIC[code]||'ep';}
 // the code of a device: its own, or the classic type's (a socket drawn with the old Device tool is a SOC)
 function epCodeOf(d){return d?(d.code||EP_FROM_TYPE[d.type]||null):null;}
 // the role a device is FOR: its layer's role when that layer is a system layer, else the first role of its code
-function epRoleOf(d){const L=d&&lyrLayer(d.layer);if(L&&L.role&&L.role.indexOf('sys:')===0)return L.role;
+// V3: an item on Meglévő / bontás is 'exist' — its own colour, never a design layer's system
+function epRoleOf(d){const L=d&&lyrLayer(d.layer);if(L&&L.role&&L.role.indexOf('sys:')===0)return L.role;if(L&&L.role==='exist')return 'exist';
   const e=epEntry(epCodeOf(d));return e?e.role:null;}
 function epEntryOf(d){const c=epCodeOf(d);return c?(epEntry(c,epRoleOf(d))||epEntry(c)):null;}
 function epVar(d){const e=epEntryOf(d);if(!e)return null;return e.vars.find(v=>v.k===d.var)||e.vars[0];}
@@ -220,7 +254,8 @@ function epPlace(g,code,role,vk){if(!g)return null;code=code||EP_T.code;role=rol
 function epToolStart(code,role,vk){const en=epEntry(code,role);if(!en)return;
   toolsOff();
   if(state.mode!=='select')setMode('select');
-  Object.assign(EP_T,{on:true,code,role:en.role,var:vk||en.vars[0].k,g:null});epHint();draw();}
+  // an alt layer (Gyengeáram, Riasztó) keeps its own role, so the point lands on the layer that was asked for
+  Object.assign(EP_T,{on:true,code,role:(role&&epRoleIs(en,role))?role:en.role,var:vk||en.vars[0].k,g:null});epHint();draw();}
 function epHint(){const mh=$('modeHint');if(!mh)return;const en=EP_T.on?epEntry(EP_T.code,EP_T.role):null;
   mh.textContent=en?(EP_T.code+' — '+en.n+' · '+((en.vars.find(v=>v.k===EP_T.var)||{}).n||'')+' · ←/→: változat · Alt: szabad elhelyezés · Esc kilép'):(typeof HINTS!=='undefined'?HINTS[state.mode]||'':'');}
 function epToolOff(){EP_T.on=false;EP_T.g=null;epHint();}

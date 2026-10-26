@@ -32,6 +32,8 @@ const AFILL_CABLES={
  LINE:{n:'Árnyékolt vonalkábel',od:6/*r*/},
  ALARM6:{n:'Riasztó 4×0,22+2×0,5 árny.',od:5.5}, SIREN4:{n:'Sziréna 2×0,75+2×0,22 árny.',od:6/*r*/},
  BUS4:{n:'Szolgáltatói 4 eres busz',od:5/*r*/},
+ COAX:{n:'Koax RG-6',od:6.9}, JYFIRE:{n:'J-Y(St)Y 2×2×0,8 piros (tűzjelző)',od:5.5},   // round 2026-10-22
+ H07VK4:{n:'H07V-K 4 mm² zöld-sárga',od:4.8/*r*/}, H07VK6:{n:'H07V-K 6 mm² zöld-sárga',od:5.5/*r*/},
  SPARE:{n:'Üres cső + behúzószál',od:0,empty:true}};
 // flexible light conduit, inner diameter mm (A2 §2.1 — typical, check the datasheet)
 const AFILL_CONDUITS=[{k:'M16',id:10.7},{k:'M20',id:14.1},{k:'M25',id:18.3},{k:'M32',id:24.3},{k:'M40',id:31.2},{k:'M50',id:39.6},{k:'M63',id:52.6}];
@@ -39,9 +41,12 @@ const AFILL_RULE={single:1.4, fill:0.40, fillLong:0.33, longMm:10000, slackPerEn
 // cls = the sharing class of A2 §5; c = drawing colour (the role colours of 05s)
 const AFILL_FAMS={MAINS:{n:'Erősáram',cls:'mains',c:'#d1493f'},LV:{n:'A busz (SELV)',cls:'selvp',c:'#e6a800'},BUSB:{n:'B busz (biztosított)',cls:'selvp',c:'#b07a2a'},
   CONTROL:{n:'Vezérlés',cls:'sig',c:'#7a5cc0'},DATA:{n:'Adat',cls:'sig',c:'#16a085'},KNX:{n:'KNX',cls:'sig',c:'#2e7d32'},SENSOR:{n:'Érzékelő',cls:'sig',c:'#2f79c9'},
-  MEDIA:{n:'Média',cls:'sig',c:'#c2638a'},USB:{n:'USB',cls:'sig',c:'#607d8b'},SECURITY:{n:'Biztonság',cls:'sec',c:'#444444'},SPARE:{n:'Tartalék',cls:'spare',c:'#999999'}};
+  MEDIA:{n:'Média',cls:'sig',c:'#c2638a'},USB:{n:'USB',cls:'sig',c:'#607d8b'},SECURITY:{n:'Biztonság',cls:'sec',c:'#444444'},SPARE:{n:'Tartalék',cls:'spare',c:'#999999'},
+  // round 2026-10-22: bonding travels with mains; fire never shares a conduit with anything (Q-V10 A)
+  BOND:{n:'EPH / védővezető',cls:'mains',c:'#8db600'},FIRE:{n:'Tűzjelző',cls:'fire',c:'#8e0f2b'}};
 const AFILL_SHARE={'mains|selvp':'warn','mains|sig':'warn','mains|sec':'warn',
-  'selvp|sig':'ok','selvp|sec':'ok','sig|sec':'ok','mains|mains':'ok','selvp|selvp':'ok','sig|sig':'ok','sec|sec':'ok'};
+  'selvp|sig':'ok','selvp|sec':'ok','sig|sec':'ok','mains|mains':'ok','selvp|selvp':'ok','sig|sig':'ok','sec|sec':'ok',
+  'fire|mains':'warn','fire|selvp':'warn','fire|sig':'warn','fire|sec':'warn','fire|fire':'ok'};
 const AFILL_SHARE_MSG='Erősáram és törpefeszültség egy nyomvonalon: ≥ 50 mm távolság vagy rögzített fémválaszfal, keresztezés 90°-ban (A2 §5).';
 
 function afillRuns(){if(!Array.isArray(data.runs))data.runs=[];return data.runs;}

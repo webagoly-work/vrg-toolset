@@ -15,7 +15,7 @@
 // (C5 A on demand). Layer data: L.cinema (mm, plan coordinates). The numbers come from cinCalc (08ra). Prefix: cin.
 
 STK_ROLES.splice(STK_ROLES.findIndex(r=>r.k==='sys:MEDIA')+1,0,
-  {k:'sys:CINEMA',n:'Házimozi',ph:2,fam:'MEDIA',off:true,hint:'Hangszórók, projektor, vászon, rack — saját pálya, saját kör (C1–C7).'});
+  {k:'sys:CINEMA',n:'Házimozi',ph:2,kinds:STK_BOTH,fam:'MEDIA',off:true,hint:'Hangszórók, projektor, vászon, rack — saját pálya, saját kör (C1–C7).'});
 STK_ICONS['sys:CINEMA']='🎬';STK_COL['sys:CINEMA']='#5b3f8c';
 // the cinema nodes (C5 catalogue); the signal cables are family CINEMA (C7, 08rb), the 230 V feeds MAINS
 [{code:'CLR',n:'Front hangfal (L / C / R)',mount:'wall',h:1150,vars:[{k:'25',n:'Hangszórókábel 2×2,5',cab:[{c:'SPK2x25',w:'M20',fam:'CINEMA'}]}]},

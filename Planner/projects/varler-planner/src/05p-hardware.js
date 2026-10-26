@@ -16,7 +16,9 @@
 // can never go stale when the device moves. Prefix: hw.
 
 const HW_TYPES={rbx:'RoomBox (RBX)',base:'BASE',meter:'Mérőóra',entry:'Adatbelépési pont',ssc:'Biztonsági központ (SSC)',
-  portal:'Portál (SmartFrame)',cluster:'Klaszterdoboz'};   // portal + cluster: 06a / 06b (IDEA-003, IDEA-001/002)
+  portal:'Portál (SmartFrame)',cluster:'Klaszterdoboz',   // portal + cluster: 06a / 06b (IDEA-003, IDEA-001/002)
+  // round 2026-10-22 — the "Elosztó" of each ordinary system in a Villany Stack (Betáplálás és elosztás)
+  mdb:'Gyengeáramú elosztó (médiadoboz)',fire:'Tűzjelző központ',eph:'Fő EPH sín'};
 // RoomBox classes, w × h × d mm (Outline §3). RB-E is its own class family; sized as RB-M until STD-001 fixes it.
 const HW_RB={'RB-M':[400,500,110],'RB-L':[500,600,110],'RB-H':[600,600,120],'RB-E':[400,500,110],'RB-O':[400,500,150],'RB-S':[300,400,110]};
 const HW_RB_DEF='RB-M';
@@ -33,7 +35,10 @@ const HW_DEF={
  ssc:  {h:1800,lbl:'SSC', col:'#e3cfcf',role:'hw',  strip:'ssc',size:[400,500,120]},   /*r*/
  base: {h:900, lbl:'BASE',col:'#dfe6ef',role:'base',strip:'base'},
  portal:{h:2450,lbl:'PT', col:'#d6e8e1',role:'hw',  size:[200,200,80]},   // IDEA-003 §5.1: the nest is a K3 200 × 200 at the rail line
- cluster:{h:1300,lbl:'K', col:'#f0e3c8',role:'cluster'}};                  // size per class: CLS_K (06b)
+ cluster:{h:1300,lbl:'K', col:'#f0e3c8',role:'cluster'},                   // size per class: CLS_K (06b)
+ mdb:  {h:1700,lbl:'MDB', col:'#d4e8f8',role:'hw',  size:[300,400,100]},   /*r*/ // TV / SAT splitter, router, patch — the weak-current star point
+ fire: {h:1500,lbl:'TJK', col:'#f2c9cf',role:'hw',  size:[350,300,100]},   /*r*/
+ eph:  {h:300, lbl:'EPH', col:'#e2efc4',role:'hw',  size:[300,100,60]}};   /*r*/ // near the board; the bonding star point
 // guidance shown while placing BASE (C4). sev = what a violation raises. mm values reasoned, not measured.
 const HW_BASE_RULES=[
  {k:'dry',    sev:'error',n:'BASE nem kerülhet nedves / vizes helyiségbe.'},
@@ -81,7 +86,7 @@ function hwRef(d){
     let base='RBX'+(no||String(hwList('rbx').indexOf(d)+1).padStart(2,'0')),ref=base,k=0;
     while(hwList('rbx').some(x=>x!==d&&x.ref===ref))ref=base+String.fromCharCode(98+(k++));   // RBX03, RBX03b …
     return ref;}
-  const pre={base:'BASE',meter:'MÉRŐ',entry:'ISP',ssc:'SSC',portal:'PT',cluster:'KL'}[d.type]||d.type.toUpperCase();
+  const pre={base:'BASE',meter:'MÉRŐ',entry:'ISP',ssc:'SSC',portal:'PT',cluster:'KL',mdb:'MDB',fire:'TJK',eph:'EPH'}[d.type]||d.type.toUpperCase();
   const n=hwList(d.type).filter(x=>x!==d).length;return n?pre+(n+1):pre;}
 
 // ---- symbols: plan, Wall View, 3D ------------------------------------------------------------------------------------
@@ -351,7 +356,10 @@ registerActions([
  {id:'hw.board',alias:'elosztoszekreny elhelyezes board place',label:'Elosztószekrény elhelyezése',icon:'▤',group:'Hardver',run:()=>hwToolStart('board')},
  {id:'hw.meter',alias:'meroora villanyora meter place',label:'Mérőóra elhelyezése',icon:'◔',group:'Hardver',run:()=>hwToolStart('meter')},
  {id:'hw.entry',alias:'adatbelepes isp entry place',label:'Adatbelépési pont elhelyezése',icon:'⇲',group:'Hardver',run:()=>hwToolStart('entry')},
- {id:'hw.ssc',alias:'biztonsagi kozpont ssc security place',label:'Biztonsági központ (SSC) elhelyezése',icon:'⛨',group:'Hardver',run:()=>hwToolStart('ssc')},
+ {id:'hw.ssc',alias:'biztonsagi kozpont ssc security place riaszto kozpont',label:'Biztonsági / riasztóközpont (SSC) elhelyezése',icon:'⛨',group:'Hardver',run:()=>hwToolStart('ssc')},
+ {id:'hw.mdb',alias:'gyengearamu eloszto mediadoboz tv sat weak media box place',label:'Gyengeáramú elosztó (médiadoboz) elhelyezése',icon:'📺',group:'Hardver',run:()=>hwToolStart('mdb')},
+ {id:'hw.fire',alias:'tuzjelzo kozpont fire panel place',label:'Tűzjelző központ elhelyezése',icon:'🔥',group:'Hardver',run:()=>hwToolStart('fire')},
+ {id:'hw.eph',alias:'fo eph sin foldeles bonding bar place',label:'Fő EPH sín elhelyezése',icon:'⏚',group:'Hardver',run:()=>hwToolStart('eph')},
  {id:'hw.base',alias:'base net comp media elhelyezes place',label:'BASE elhelyezése',icon:'🖧',group:'Hardver',
   hint:'NET · COMP · MEDIA egyenként vagy együtt; a szellem az irányelveket mutatja (Elosztó közelsége, száraz helyiség, oszlop, középpont).',run:()=>hwToolStart('base')},
  {id:'hw.serve',alias:'rbx helyiseg hozzarendeles serve rooms assign',label:'RBX: helyiségek hozzárendelése',icon:'◫',group:'Hardver',
