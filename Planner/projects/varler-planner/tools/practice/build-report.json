@@ -1,0 +1,427 @@
+{
+ "wfw": {
+  "walls": 16,
+  "moves": [],
+  "steps": [],
+  "skipped": []
+ },
+ "walls": [
+  {
+   "id": "W10",
+   "x0": -300,
+   "y0": -300,
+   "x1": 9900,
+   "y1": 0,
+   "gen": "wfw"
+  },
+  {
+   "id": "W11",
+   "x0": 9600,
+   "y0": 1500,
+   "x1": 11700,
+   "y1": 1800,
+   "gen": "wfw"
+  },
+  {
+   "id": "W12",
+   "x0": 0,
+   "y0": 2500,
+   "x1": 1500,
+   "y1": 2700,
+   "gen": "wfw"
+  },
+  {
+   "id": "W13",
+   "x0": 0,
+   "y0": 4000,
+   "x1": 7000,
+   "y1": 4200,
+   "gen": "wfw"
+  },
+  {
+   "id": "W14",
+   "x0": 2800,
+   "y0": 5400,
+   "x1": 9600,
+   "y1": 5600,
+   "gen": "wfw"
+  },
+  {
+   "id": "W15",
+   "x0": -300,
+   "y0": 7600,
+   "x1": 11700,
+   "y1": 7900,
+   "gen": "wfw"
+  },
+  {
+   "id": "W16",
+   "x0": -300,
+   "y0": 0,
+   "x1": 0,
+   "y1": 7600,
+   "gen": "wfw"
+  },
+  {
+   "id": "W17",
+   "x0": 1300,
+   "y0": 2700,
+   "x1": 1500,
+   "y1": 4000,
+   "gen": "wfw"
+  },
+  {
+   "id": "W18",
+   "x0": 2600,
+   "y0": 4200,
+   "x1": 2800,
+   "y1": 7600,
+   "gen": "wfw"
+  },
+  {
+   "id": "W19",
+   "x0": 3800,
+   "y0": 0,
+   "x1": 4000,
+   "y1": 4000,
+   "gen": "wfw"
+  },
+  {
+   "id": "W20",
+   "x0": 3800,
+   "y0": 5600,
+   "x1": 4000,
+   "y1": 7600,
+   "gen": "wfw"
+  },
+  {
+   "id": "W21",
+   "x0": 7000,
+   "y0": 0,
+   "x1": 7200,
+   "y1": 5400,
+   "gen": "wfw"
+  },
+  {
+   "id": "W22",
+   "x0": 7000,
+   "y0": 5600,
+   "x1": 7200,
+   "y1": 7600,
+   "gen": "wfw"
+  },
+  {
+   "id": "W23",
+   "x0": 9400,
+   "y0": 5600,
+   "x1": 9600,
+   "y1": 7600,
+   "gen": "wfw"
+  },
+  {
+   "id": "W24",
+   "x0": 9600,
+   "y0": 0,
+   "x1": 9900,
+   "y1": 1500,
+   "gen": "wfw"
+  },
+  {
+   "id": "W25",
+   "x0": 11400,
+   "y0": 1800,
+   "x1": 11700,
+   "y1": 7600,
+   "gen": "wfw"
+  },
+  {
+   "id": "W26",
+   "x0": 1400,
+   "y0": 6400,
+   "x1": 1500,
+   "y1": 7600,
+   "gen": "kézi"
+  }
+ ],
+ "switches": [
+  {
+   "k": "haloDoor",
+   "ref": "K1",
+   "type": "106",
+   "gang": 1,
+   "h": 1100,
+   "slot": "L1·B29"
+  },
+  {
+   "k": "haloBed",
+   "ref": "K2",
+   "type": "108",
+   "gang": 2,
+   "h": 750,
+   "slot": ""
+  },
+  {
+   "k": "gardrob",
+   "ref": "K3",
+   "type": "101",
+   "gang": 1,
+   "h": 1100,
+   "slot": "L1·B35"
+  },
+  {
+   "k": "gyerek",
+   "ref": "K4",
+   "type": "101",
+   "gang": 1,
+   "h": 1100,
+   "slot": "L1·B30"
+  },
+  {
+   "k": "redony",
+   "ref": "K5",
+   "type": "redony",
+   "gang": 1,
+   "h": 1100,
+   "slot": ""
+  },
+  {
+   "k": "napDoor",
+   "ref": "K6",
+   "type": "108",
+   "gang": 2,
+   "h": 1100,
+   "slot": "L1·B33"
+  },
+  {
+   "k": "napErk",
+   "ref": "K7",
+   "type": "108",
+   "gang": 2,
+   "h": 1100,
+   "slot": ""
+  },
+  {
+   "k": "kon",
+   "ref": "K8",
+   "type": "105",
+   "gang": 2,
+   "h": 1100,
+   "slot": "L1·B34"
+  },
+  {
+   "k": "fur",
+   "ref": "K9",
+   "type": "105",
+   "gang": 2,
+   "h": 1100,
+   "slot": "L1·B32"
+  },
+  {
+   "k": "wc",
+   "ref": "K10",
+   "type": "101",
+   "gang": 1,
+   "h": 1100,
+   "slot": "L1·B31"
+  },
+  {
+   "k": "kozHal",
+   "ref": "K11",
+   "type": "106",
+   "gang": 1,
+   "h": 1100,
+   "slot": "L1·B29"
+  },
+  {
+   "k": "kozGye",
+   "ref": "K12",
+   "type": "107",
+   "gang": 1,
+   "h": 1100,
+   "slot": "L1·B30"
+  },
+  {
+   "k": "kozKoz",
+   "ref": "K13",
+   "type": "106",
+   "gang": 1,
+   "h": 1100,
+   "slot": "L1·B36"
+  },
+  {
+   "k": "eloBej",
+   "ref": "K14",
+   "type": "106",
+   "gang": 1,
+   "h": 1100,
+   "slot": "L1·B28"
+  },
+  {
+   "k": "eloKoz",
+   "ref": "K15",
+   "type": "106",
+   "gang": 1,
+   "h": 1100,
+   "slot": "L1·B36"
+  }
+ ],
+ "circuits": [
+  {
+   "ref": "A1",
+   "name": "HÁLÓ · GARDRÓB dugalj",
+   "preset": "dugsz",
+   "mcb": "1C 13A",
+   "n": 5
+  },
+  {
+   "ref": "A2",
+   "name": "GYEREKSZOBA dugalj",
+   "preset": "dugsz",
+   "mcb": "1C 13A",
+   "n": 3
+  },
+  {
+   "ref": "A3",
+   "name": "NAPPALI · ÉTKEZŐ dugalj I",
+   "preset": "dug25",
+   "mcb": "1C 16A",
+   "n": 3
+  },
+  {
+   "ref": "A4",
+   "name": "NAPPALI · ÉTKEZŐ dugalj II",
+   "preset": "dug25",
+   "mcb": "1C 16A",
+   "n": 3
+  },
+  {
+   "ref": "A5",
+   "name": "KONYHA munkalap",
+   "preset": "konyhaA",
+   "mcb": "1C 16A",
+   "n": 3
+  },
+  {
+   "ref": "A6",
+   "name": "FÜRDŐSZOBA dugalj",
+   "preset": "furdo",
+   "mcb": "1C 16A",
+   "n": 2
+  },
+  {
+   "ref": "A7",
+   "name": "ERKÉLY dugalj",
+   "preset": "kulter",
+   "mcb": "1C 16A",
+   "n": 1
+  },
+  {
+   "ref": "A8",
+   "name": "KONYHA · ELŐSZOBA · WC · KÖZLEKEDŐ dugalj",
+   "preset": "dugsz",
+   "mcb": "1C 13A",
+   "n": 5
+  },
+  {
+   "ref": "A9",
+   "name": "Főzőlap — KONYHA",
+   "preset": "fozo",
+   "mcb": "1C 32A",
+   "n": 1
+  },
+  {
+   "ref": "A10",
+   "name": "Sütő — KONYHA",
+   "preset": "suto",
+   "mcb": "1C 16A",
+   "n": 1
+  },
+  {
+   "ref": "A11",
+   "name": "Mosogatógép — KONYHA",
+   "preset": "mosogat",
+   "mcb": "1C 16A",
+   "n": 1
+  },
+  {
+   "ref": "A12",
+   "name": "Mosógép — FÜRDŐSZOBA",
+   "preset": "mosog",
+   "mcb": "1C 16A",
+   "n": 1
+  },
+  {
+   "ref": "A13",
+   "name": "Bojler — FÜRDŐSZOBA",
+   "preset": "bojler",
+   "mcb": "1C 16A",
+   "n": 1
+  },
+  {
+   "ref": "A14",
+   "name": "Klíma — NAPPALI · ÉTKEZŐ",
+   "preset": "klima",
+   "mcb": "1C 16A",
+   "n": 1
+  },
+  {
+   "ref": "V1",
+   "name": "Világítás — nappali zóna",
+   "preset": "vil",
+   "mcb": "1C 10A",
+   "n": 21
+  },
+  {
+   "ref": "V2",
+   "name": "Világítás — éjszakai zóna",
+   "preset": "vil",
+   "mcb": "1C 10A",
+   "n": 10
+  }
+ ],
+ "stkChecks": [],
+ "counts": {
+  "floors": 10,
+  "walls": 17,
+  "openings": 19,
+  "devices": 63,
+  "byCode": {
+   "LMP": 15,
+   "SHU": 1,
+   "SOC": 25,
+   "DED": 6,
+   "SWI": 15,
+   "board": 1
+  },
+  "paths": 0,
+  "circuits": 16
+ },
+ "log": [
+  "Falak létrehozása: 16 fal · eltolás 0 · lépcső 0 · ferde 0",
+  "Padló létrehozása: 10 helyiség",
+  "Nyílászárók: 10 ajtó / nyílás · 9 ablak",
+  "Bejárat jelölve: B28 ( J47 )",
+  "Szabványmagasság alkalmazva: 0 eszköz",
+  "Kapcsolók: haloDoor=106 haloBed=108 gardrob=101 gyerek=101 redony=redony napDoor=108 napErk=108 kon=105 fur=105 wc=101 kozHal=106 kozGye=107 kozKoz=106 eloBej=106 eloKoz=106",
+  "Kapcsolatlan lámpa maradt: nincs",
+  "Elosztó: EL1 @ 3900 6400 h 1500",
+  "saját módosítás: a gardrób dugalja a háló körére",
+  "Áramkörök: 16 javaslat; alkalmazva 16 · kör nélkül 0",
+  "   A1 HÁLÓ · GARDRÓB dugalj · 1C 13A · 5 pont",
+  "   A2 GYEREKSZOBA dugalj · 1C 13A · 3 pont",
+  "   A3 NAPPALI · ÉTKEZŐ dugalj I · 1C 16A · 3 pont",
+  "   A4 NAPPALI · ÉTKEZŐ dugalj II · 1C 16A · 3 pont",
+  "   A5 KONYHA munkalap · 1C 16A · 3 pont",
+  "   A6 FÜRDŐSZOBA dugalj · 1C 16A · 2 pont",
+  "   A7 ERKÉLY dugalj · 1C 16A · 1 pont",
+  "   A8 KONYHA · ELŐSZOBA · WC · KÖZLEKEDŐ dugalj · 1C 13A · 5 pont",
+  "   A9 Főzőlap — KONYHA · 1C 32A · 1 pont",
+  "   A10 Sütő — KONYHA · 1C 16A · 1 pont",
+  "   A11 Mosogatógép — KONYHA · 1C 16A · 1 pont",
+  "   A12 Mosógép — FÜRDŐSZOBA · 1C 16A · 1 pont",
+  "   A13 Bojler — FÜRDŐSZOBA · 1C 16A · 1 pont",
+  "   A14 Klíma — NAPPALI · ÉTKEZŐ · 1C 16A · 1 pont",
+  "   V1 Világítás — nappali zóna · 1C 10A · 21 pont",
+  "   V2 Világítás — éjszakai zóna · 1C 10A · 10 pont"
+ ]
+}
