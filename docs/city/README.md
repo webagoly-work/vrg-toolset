@@ -278,3 +278,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 **Prompts done** (`KV-nn ✔ date commit`):
 
 - KV-01 ✔ 2026-10-26 2af8607
+- KV-02 ✔ 2026-10-26 9e1f402
