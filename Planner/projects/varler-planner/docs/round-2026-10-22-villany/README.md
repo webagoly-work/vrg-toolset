@@ -2,11 +2,17 @@
 
 Build pack. Answers in `DECISIONS.md`; work packages in `10_VILLANY_STACK.md`.
 
-**Status 2026-10-26: V1–V6 and V8 built** (`05m` kinds and roles, `05s` codes, `05p` hubs, `05w` cables and families,
-`08s-villany.js`, spec-109). Not built: **V7** (the Áramkörök és védelem stage); in V3 the path states and the printed
-Bontási terv legend (the layer menu offers the solo view); in V5 the IP44 default for *kültér*; in V4 the room-need
-suggestions (TVA, BEL, ICM in NEED_DEFAULTS); Q-V10's per-project fire-resistant cable switch. The ⏸ looks (the wizard on
-CLA, the V4 list review, promotion on a real plan) are the user's. Worked example: `tools/practice/` (Gyakorló lakás).
+**Status 2026-10-26: V1–V8 built**: `05m` kinds and roles, `05s` codes, `05p` hubs, `05w` cables and families,
+`08s-villany.js`, spec-109. The follow-up the same day added:
+- **V7**, the Áramkörök és védelem stage, with its checks and *Kültéri körök 1P+N*.
+- Demolition states on **Meglévő paths**, and the **printed legend**.
+- The **IP44** default outdoors.
+- The **room-need suggestions** for Gyengeáram.
+- The per-stack **fire-resistant cable** switch.
+- Two user requests: the **Veszélyérzékelők** layer and the **switch-sensors** (DECISIONS.md, U1–U2).
+
+Still open: the ⏸ looks (the wizard on CLA, the V4 list review, promotion on a real plan) are the user's. The worked
+example is `tools/practice/` (Gyakorló lakás).
 
 ## Why
 

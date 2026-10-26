@@ -71,3 +71,16 @@ Two choices made while building, for the user to confirm:
 |---|---|---|
 | B1 | Meglévő / bontás is **on demand** in a BRIDGE stack (`opt:['bridge']`), always there in a Villany Stack. | Q-V03 A keeps the layer in BRIDGE; making it a default would add a layer to every existing BRIDGE stack and plan. |
 | B2 | Each ordinary system's "Elosztó" is a hardware node on Betáplálás és elosztás: **MDB** gyengeáramú elosztó, **TJK** tűzjelző központ, **EPH** fő EPH sín; the riasztóközpont is the existing **SSC**. | Q-V02 A names the hw layer as their home. The earth electrode is not built. |
+
+## Added on the user's request (2026-10-26)
+
+| # | Request | Built as |
+|---|---|---|
+| U1 | A layer on both stacks for the everyday alarms and detectors of the rooms that need them (konyha, fürdő, kazánház, pince). | `sys:HAZARD` **Veszélyérzékelők**. On by default in a Villany Stack, unticked in the BRIDGE wizard, and kept on promotion. Codes: **GAS** (földgáz high / PB low), **WLK** water leak, **HTA** stand-alone heat alarm, **VLV** motorised shut-off valve, plus **COA** (alt from Biztonság). Room needs: konyha GAS · WLK · HTA, fürdő WLK, gépészet (kazánház, pince) GAS · COA · WLK · VLV. |
+| U2 | Switch-sensors: a lamp with one needs no other switch. A normal switch beside it is *Kizárás* or *Szabotázs* (OFF / AUTO, AUTO / ON). | Two SWI variants, **pir** (wall motion switch, 1100) and **pres** (presence sensor with relay, 2200), type `erzekelo`. A normal switch on the same leg is never its váltó partner; it gets a mode (switch RCO): **Kizárás = KI / AUTO**, wired in series before the sensor; **Szabotázs = AUTO / BE**, wired in parallel with the sensor's output. Shown beside the switch; the Világítás check asks for a mode. |
+
+**Open (A recommended): Q-U2 — the name "Szabotázs".** In alarm work *szabotázs* means tamper, so a reader of the
+plan may misread it.
+- **A** keep **Kizárás** for KI / AUTO, rename AUTO / BE to **Kényszer BE** (forced on).
+- B keep *Szabotázs* as asked.
+- C another name of your choice.

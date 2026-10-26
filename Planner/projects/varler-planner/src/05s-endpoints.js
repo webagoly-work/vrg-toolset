@@ -23,7 +23,10 @@ const EP_CAT=[
    {k:'230',n:'230 V lámpahely',cab:[{c:'NYM3x15',w:'M20'}]}]},
  {code:'SWI',role:'sys:LIGHT',n:'Kapcsoló (bemenet)',cat:'switch',mount:'wall',h:1100,topo:'star',from:'rbx',vars:[
    {k:'230', n:'230 V nyomó (RC-szűrt, BRIDGE-DN)',cab:[{c:'NYM3x15',w:'M20'}]},            // default [Q29]
-   {k:'selv',n:'SELV nyomó → bistabil bemenet',    cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
+   {k:'selv',n:'SELV nyomó → bistabil bemenet',    cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]},
+   // 2026-10-26 (the user): a switch-sensor switches its lamps on its own; a normal switch beside it is Kizárás or Szabotázs (08s)
+   {k:'pir', n:'Kapcsoló-érzékelő: mozgásérzékelős kapcsoló (falon, N kell)',sensor:true,cab:[{c:'NYM3x15',w:'M20'}]},
+   {k:'pres',n:'Kapcsoló-érzékelő: jelenlét-érzékelő relékimenettel (falon / sarokban)',sensor:true,h:2200,cab:[{c:'NYM3x15',w:'M20'}]}]},
  {code:'SOC',role:'sys:SOC',n:'Dugalj',cat:'socket',mount:'wall',h:300,topo:'chain',from:'rbx',vars:[
    {k:'s04',n:'1,5 mm² kör (S04)',cab:[{c:'NYM3x15',w:'M20'}]},
    {k:'25', n:'2,5 mm² kör',      cab:[{c:'NYM3x25',w:'M25'}]}]},
@@ -140,7 +143,7 @@ const EP_CAT=[
    {k:'zb',  n:'Elemes füstjelző, rádiós összekötéssel + HA (Zigbee / Thread)',cab:[]},
    {k:'ilk', n:'230 V összekötött füstjelző + relékimenet az RBX bemenetre',cab:[{c:'NYM3x15',w:'M20',fam:'MAINS',from:'board'},{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]},
    {k:'heat',n:'Hőérzékelő (konyha, garázs)',cab:[]}]},
- {code:'COA',new:true,role:'sys:SECURITY',n:'CO-érzékelő (EN 50291)',cat:'device',mount:'wall',h:2000,topo:'star',from:'rbx',vars:[   // r: ⚑ EN 50292: high on the wall, ≥150 mm below the ceiling, 1–3 m from the appliance
+ {code:'COA',new:true,role:'sys:SECURITY',alt:['sys:HAZARD'],n:'CO-érzékelő (EN 50291)',cat:'device',mount:'wall',h:2000,topo:'star',from:'rbx',vars:[   // r: ⚑ EN 50292: high on the wall, ≥150 mm below the ceiling, 1–3 m from the appliance
    {k:'zb', n:'Elemes, Zigbee / Thread',cab:[]},
    {k:'ilk',n:'Hálózati + relékimenet az RBX bemenetre',cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
  {code:'DBL',new:true,role:'sys:SECURITY',alt:['sys:WEAK'],n:'Videós kaputelefon / csengő',cat:'device',mount:'wall',h:1500,topo:'star',from:'rbx',vars:[   // local: ONVIF / Reolink [CoreRef]
@@ -165,6 +168,18 @@ const EP_CAT=[
    {k:'h4',n:'H07V-K 4 mm² zöld-sárga',cab:[{c:'H07VK4',w:'M16'}]}]},
  {code:'PEB',new:true,role:'sys:BOND',n:'Helyi EPH sín',cat:'device',mount:'wall',h:300,topo:'star',from:'eph',vars:[
    {k:'h6',n:'H07V-K 6 mm² zöld-sárga a fő EPH sínig',cab:[{c:'H07VK6',w:'M20'}]}]},
+ // ---- Veszélyérzékelők (2026-10-26) — the everyday hazard detectors; COA comes from Biztonság (alt) ----
+ {code:'GAS',new:true,role:'sys:HAZARD',n:'Gázérzékelő',cat:'device',mount:'wall',h:2400,topo:'star',from:'board',vars:[
+   {k:'fold',n:'Földgáz — magasan, a mennyezet alatt 300 mm-rel',cab:[{c:'NYM3x15',w:'M20',fam:'MAINS'}]},
+   {k:'pb',  n:'PB-gáz — alacsonyan, a padló fölött 300 mm-rel',h:300,cab:[{c:'NYM3x15',w:'M20',fam:'MAINS'}]}]},
+ {code:'WLK',new:true,role:'sys:HAZARD',n:'Vízszivárgás-érzékelő',cat:'device',mount:'wall',h:100,topo:'star',from:'board',vars:[
+   {k:'w', n:'Vezetékes padlószonda',cab:[{c:'LIYY2x05',w:'M16'}]},
+   {k:'zb',n:'Elemes, rádiós',cab:[]}]},
+ {code:'HTA',new:true,role:'sys:HAZARD',n:'Hőjelző (önálló, konyha)',cat:'device',mount:'ceiling',topo:'star',from:'board',vars:[
+   {k:'zb', n:'Elemes, összekötött (EN 14604)',cab:[]},
+   {k:'230',n:'230 V, összekötött',cab:[{c:'NYM3x15',w:'M20',fam:'MAINS'}]}]},
+ {code:'VLV',new:true,role:'sys:HAZARD',n:'Elzárószelep-motor (gáz / víz)',cat:'device',mount:'wall',h:300,topo:'star',from:'board',vars:[
+   {k:'230',n:'230 V motoros szelep + jelzés',cab:[{c:'NYM3x15',w:'M20',fam:'MAINS'},{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
  // ---- Okos előkészítés (V5) — provisions only; in BRIDGE they read like sys:EXTRA ----
  {code:'NUT',new:true,role:'sys:SMARTREADY',n:'Nullás kapcsolódoboz',cat:'device',mount:'wall',h:1100,topo:'star',from:'board',vars:[
    {k:'n',n:'N a kapcsolódobozban (okos kapcsolóhoz)',cab:[]}]},
@@ -214,7 +229,8 @@ function epEntryOf(d){const c=epCodeOf(d);return c?(epEntry(c,epRoleOf(d))||epEn
 function epVar(d){const e=epEntryOf(d);if(!e)return null;return e.vars.find(v=>v.k===d.var)||e.vars[0];}
 // [{c, w, fam, n, from}] with the defaults filled: fam = the role's family, n = 1, from = the entry's origin
 function epCables(d){const e=epEntryOf(d),v=epVar(d);if(!e||!v)return [];const R=stkRole(e.role)||{};
-  return (v.cab||[]).map(c=>({c:c.c,w:c.w,fam:c.fam||R.fam||null,n:c.n||1,from:c.from||epFromOf(e,d)}));}
+  const fr=c=>(c==='JYFIRE'&&typeof vstFireRes==='function'&&vstFireRes(d))?'JEHFIRE':c;   // Q-V10 A (08s)
+  return (v.cab||[]).map(c=>({c:fr(c.c),w:c.w,fam:c.fam||R.fam||null,n:c.n||1,from:c.from||epFromOf(e,d)}));}
 // the display code: '<code><n>', n = running number of that code in its room (derived — STD-004 R03.LMP2)
 function epRef(d){const c=epCodeOf(d);if(!c)return d.ref||'';const r=roomOfDevice(d),rid=r&&stkRoomId(r);
   const same=data.devices.filter(x=>epCodeOf(x)===c&&x.level===d.level&&(()=>{const rr=roomOfDevice(x);return (rr&&stkRoomId(rr))===rid;})());

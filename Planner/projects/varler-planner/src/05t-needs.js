@@ -31,19 +31,20 @@ const NEED_KINDS=[
  {k:'egyeb',    n:'Egyéb',     re:/.*/}];
 // kind → role → codes. The kind's entry REPLACES '*' for that role ([] = nothing ticked).
 const NEED_DEFAULTS={
- '*':        {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread'],'sys:MEDIA':['SPK']},
- eloszoba:   {'sys:BUSB':['LMP'],'sys:HMI':['PAN'],'sys:DATA':['CAM'],'sys:SECURITY':['DWC','KPD','SRN','MOT'],'sys:MEDIA':[]},   // S5: replaces ['SEC']
- konyha:     {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:LV':['LNR'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['SMK']},   // SMK 'heat' suggested here
+ // 2026-10-26: Gyengeáram (V4) and Veszélyérzékelők — nothing by default; the kinds below name their rooms
+ '*':        {'sys:WEAK':[],'sys:HAZARD':[],'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread'],'sys:MEDIA':['SPK']},
+ eloszoba:   {'sys:WEAK':['BEL','ICM'],'sys:BUSB':['LMP'],'sys:HMI':['PAN'],'sys:DATA':['CAM'],'sys:SECURITY':['DWC','KPD','SRN','MOT'],'sys:MEDIA':[]},   // S5: replaces ['SEC']
+ konyha:     {'sys:HAZARD':['GAS','WLK','HTA'],'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:LV':['LNR'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['SMK']},   // SMK 'heat' suggested here
  etkezo:     {'sys:RF':['wifi','thread','uwb']},
- nappali:    {'sys:LV':['LNR','UEP'],'sys:DATA':['ETH','ACP'],'sys:HMI':['PAN','THR'],'sys:MEDIA':['SPK','SCR','AVP'],'sys:USB':['USB'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['MOT']},
- halo:       {'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:HMI':['THR'],'sys:SECURITY':['SMK']},
- dolgozo:    {'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:USB':['USB']},
- furdo:      {'sys:LV':['LNR'],'sys:HMI':['THR']},
+ nappali:    {'sys:WEAK':['TVA','ETH'],'sys:LV':['LNR','UEP'],'sys:DATA':['ETH','ACP'],'sys:HMI':['PAN','THR'],'sys:MEDIA':['SPK','SCR','AVP'],'sys:USB':['USB'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['MOT']},
+ halo:       {'sys:WEAK':['TVA'],'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:HMI':['THR'],'sys:SECURITY':['SMK']},
+ dolgozo:    {'sys:WEAK':['ETH'],'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:USB':['USB']},
+ furdo:      {'sys:HAZARD':['WLK'],'sys:LV':['LNR'],'sys:HMI':['THR']},
  wc:         {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:MEDIA':[]},
  kamra:      {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[]},
  kozlekedo:  {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:BUSB':['LMP','NTL'],'sys:MEDIA':[],'sys:SECURITY':['SMK','MOT']},
  kulter:     {'sys:LIGHT':['LMP'],'sys:SOC':['SOC'],'sys:DATA':['CAM'],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[],'sys:SECURITY':['SRN','MOT']},
- gepeszet:   {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:SENSOR':['SEN'],'sys:MEDIA':[],'sys:SECURITY':['SMK','COA']},
+ gepeszet:   {'sys:HAZARD':['GAS','COA','WLK','VLV'],'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:SENSOR':['SEN'],'sys:MEDIA':[],'sys:SECURITY':['SMK','COA']},
  egyeb:      {}};
 const NEED_STATUS={off:{n:'ki',c:'#9aa0a6'},empty:{n:'nincs igény',c:'#9aa0a6'},open:{n:'hiányos',c:'#d08a1e'},done:{n:'kész',c:'#2e9e5b'}};
 

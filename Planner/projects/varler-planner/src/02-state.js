@@ -75,7 +75,9 @@ const SWITCH_TYPES=[
   {k:'106',l:'106 – Váltókapcsoló',               terms:[{id:'L',kind:'in',l:'közös (érkező)'},{id:'a',kind:'out',l:'járat a'},{id:'b',kind:'out',l:'járat b'}]},
   {k:'107',l:'107 – Keresztkapcsoló',             terms:[{id:'1',kind:'in',l:'érkező 1'},{id:'2',kind:'in',l:'érkező 2'},{id:'3',kind:'out',l:'menő 1'},{id:'4',kind:'out',l:'menő 2'}]},
   {k:'108',l:'108 – Dupla váltókapcsoló (106+6)', terms:[{id:'L1',kind:'in',l:'közös 1'},{id:'a1',kind:'out',l:'1/a'},{id:'b1',kind:'out',l:'1/b'},{id:'L2',kind:'in',l:'közös 2'},{id:'a2',kind:'out',l:'2/a'},{id:'b2',kind:'out',l:'2/b'}]},
-  {k:'redony',l:'Redőnykapcsoló (fel/le)',        terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'up',kind:'out',l:'fel'},{id:'dn',kind:'out',l:'le'}]}
+  {k:'redony',l:'Redőnykapcsoló (fel/le)',        terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'up',kind:'out',l:'fel'},{id:'dn',kind:'out',l:'le'}]},
+  // 2026-10-26: a switch-sensor (mozgás / jelenlét) — it needs N; a normal switch on its leg is Kizárás or Szabotázs (08s)
+  {k:'erzekelo',l:'Kapcsoló-érzékelő (mozgás / jelenlét)',terms:[{id:'L',kind:'in',l:'fázis'},{id:'N',kind:'in',l:'nulla'},{id:'1',kind:'out',l:'kapcsolt kimenet'}]}
 ];
 function switchType(k){return SWITCH_TYPES.find(t=>t.k===k)||SWITCH_TYPES.find(t=>t.k==='101');}
 // a switch saved under the OLD (wrong) keys gets the right one, once — swNum:2 marks a device already on the new code

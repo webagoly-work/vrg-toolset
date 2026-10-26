@@ -53,13 +53,16 @@ function lswUnlink(ids,sw){if(!sw||!Array.isArray(sw.ctl))return false;const leg
 
 // ---- the type -----------------------------------------------------------------------------------------------------------
 function lswLegsOf(sw){const out=[];(sw.ctl||[]).forEach(id=>{const l=byId('devices',id);if(!l)return;const k=lswLegOf(l);if(out.indexOf(k)<0)out.push(k);});return out;}
-function lswSharing(leg){return data.devices.filter(s=>lswSw(s)&&lswLegsOf(s).indexOf(leg)>=0);}
+// a switch-sensor (2026-10-26) is not part of a váltó chain: the normal switches beside it are Kizárás / Szabotázs (08s)
+function lswSensor(d){return lswSw(d)&&(d.var==='pir'||d.var==='pres');}
+function lswSharing(leg){return data.devices.filter(s=>lswSw(s)&&!lswSensor(s)&&lswLegsOf(s).indexOf(leg)>=0);}
 // the order of a chain of switches on one leg: start at the one farthest from the rest, then nearest-next
 function lswChain(sws){if(sws.length<3)return sws.slice();const c=[sws.reduce((a,s)=>a+s.x,0)/sws.length,sws.reduce((a,s)=>a+s.y,0)/sws.length];
   let cur=sws.slice().sort((a,b)=>Math.hypot(b.x-c[0],b.y-c[1])-Math.hypot(a.x-c[0],a.y-c[1]))[0];const out=[cur],left=sws.filter(s=>s!==cur);
   while(left.length){left.sort((a,b)=>Math.hypot(a.x-cur.x,a.y-cur.y)-Math.hypot(b.x-cur.x,b.y-cur.y));cur=left.shift();out.push(cur);}return out;}
 // {k (SWITCH_TYPES key), why, gang}
-function lswType(sw){const legs=lswLegsOf(sw);if(!legs.length)return {k:'101',why:'nincs bekötve',gang:0};
+function lswType(sw){if(lswSensor(sw))return {k:'erzekelo',why:'kapcsoló-érzékelő — magában kapcsolja a lámpáit',gang:1};
+  const legs=lswLegsOf(sw);if(!legs.length)return {k:'101',why:'nincs bekötve',gang:0};
   const lamps=(sw.ctl||[]).map(id=>byId('devices',id)).filter(Boolean);
   if(lamps.length&&lamps.every(l=>epCodeOf(l)==='SHU'))return {k:'redony',why:'redőny',gang:1};
   const shared=legs.filter(g=>lswSharing(g).length>1);

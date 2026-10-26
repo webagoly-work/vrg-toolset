@@ -45,6 +45,8 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:HMI',    n:'Kezelőfelületek',        ph:2, fam:'CONTROL'},
  {k:'sys:MEDIA',  n:'Média és hang',          ph:2, fam:'MEDIA'},
  {k:'sys:USB',    n:'USB',                    ph:2, fam:'USB'},
+ // 2026-10-26 (the user): the everyday hazard detectors of the rooms that need them — konyha, fürdő, kazánház, pince
+ {k:'sys:HAZARD', n:'Veszélyérzékelők',       ph:2, kinds:STK_BOTH, off:['bridge'], fam:'SENSOR', hint:'Gáz-, CO-, vízszivárgás- és hőjelzők, elzárószelep — a helyiség típusa mondja meg, hova kell (konyha, fürdő, kazánház, pince).'},
  // Q-V08 A: the elec face of Biztonságtechnika — cable runs only (panel → detector points); promotion moves it to sys:SECURITY
  {k:'sys:ALARM',  n:'Riasztó',                ph:2, kinds:['elec'], fam:'SECURITY', off:true, hint:'Csak kábelezés: riasztóközpont → érzékelőpontok. Eszközanyag nincs, csak doboz, kábel, munkadíj.'},
  {k:'sys:SECURITY',n:'Biztonságtechnika',     ph:2, fam:'SECURITY', last:true}, // always last [user]
@@ -58,7 +60,7 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:SMARTREADY',n:'Okos előkészítés',    ph:2, kinds:STK_BOTH, fam:'SPARE', off:true, hint:'Nullás kapcsolódoboz, mély doboz, tartalék védőcső — egy későbbi okosotthonhoz.'},
  // the top of the stack: the gathered extras and SmartFrame ideas as provisioned endpoints (CLA-ADD-001, IDEA-003)
  {k:'sys:EXTRA',  n:'Extrák és ötletek',      ph:2, fam:'LV', hint:'Előkészített végpontok: CLA extrák (#1–#11) és a SmartFrame slotjai. Az ideális helyek ✦-gal.'}];
-const STK_ICONS={construct:'🧱',mark:'🚩',exist:'⌫',route:'〽','sys:WEAK':'📺','sys:BOND':'⏚','sys:ALARM':'🚨','sys:FIRE':'🔥','sys:SMARTREADY':'◌',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:DED':'🔌','sys:SOC':'⚡','sys:LIGHT':'💡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
+const STK_ICONS={construct:'🧱',mark:'🚩',exist:'⌫',route:'〽','sys:WEAK':'📺','sys:BOND':'⏚','sys:ALARM':'🚨','sys:FIRE':'🔥','sys:SMARTREADY':'◌','sys:HAZARD':'⚠',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:DED':'🔌','sys:SOC':'⚡','sys:LIGHT':'💡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
   'sys:DATA':'🌐','sys:KNX':'⌘','sys:SENSOR':'📡','sys:RF':'📶','sys:HMI':'🖲','sys:MEDIA':'🔊','sys:USB':'🔌','sys:SECURITY':'🛡',cluster:'▦',arm:'🌿','sys:EXTRA':'✧'};
 // One colour per role, fixed [user]: Erősáram is the same red in every project, on the panel, on the
 // symbols and in the BRIDGE sheets — a colour has to mean a system, not "the third layer down".
@@ -68,7 +70,7 @@ const STK_COL={construct:'#7c7468',mark:'#c0530f',hw:'#4a5a68',base:'#1f6f8b',ch
   'sys:KNX':'#2e7d32','sys:SENSOR':'#2f79c9','sys:RF':'#3fa7a7','sys:HMI':'#5470b0','sys:MEDIA':'#c2638a',
   'sys:USB':'#607d8b','sys:SECURITY':'#444444',cluster:'#9c6b30',arm:'#2e9e5b','sys:EXTRA':'#b0489a',
   // round 2026-10-22 (Q-V11 A): bright-blue weak current, deep-crimson fire (dash-dot on screen too), the PE green-yellow
-  exist:'#8d7b68',route:'#9c8fd0','sys:WEAK':'#1e9bff','sys:BOND':'#8db600','sys:ALARM':'#5a5a5a','sys:FIRE':'#8e0f2b','sys:SMARTREADY':'#8a76a8'};
+  exist:'#8d7b68',route:'#9c8fd0','sys:WEAK':'#1e9bff','sys:BOND':'#8db600','sys:ALARM':'#5a5a5a','sys:FIRE':'#8e0f2b','sys:SMARTREADY':'#8a76a8','sys:HAZARD':'#d35400'};
 // the switch inside the lighting layer is orange (the user's words: barna, vörös, világospiros lámpa, narancs kapcsoló)
 const EP_CODE_COL={'sys:LIGHT':{SWI:'#f08c2e'}};
 // grey-safe print palette (answer M04, MATERIAL §4b): c = colour for colour print, L = CIE L* it greys to, p = line
@@ -87,7 +89,7 @@ const STK_PRINT={
  mark:{c:'#e3702e',L:60,p:'x'}, construct:{c:'#7e766a',L:50,p:'s'},
  // round 2026-10-22 — levels between the used ones, so no two systems print alike
  'sys:WEAK':{c:'#2b8fe0',L:55,p:'o'}, 'sys:BOND':{c:'#7a9e10',L:62,p:'s'}, 'sys:ALARM':{c:'#5a5a5a',L:38,p:'x'},
- 'sys:FIRE':{c:'#8e0f2b',L:25,p:'x'}, 'sys:SMARTREADY':{c:'#8a76a8',L:52,p:'d'}, exist:{c:'#8d7b68',L:50,p:'d'}, route:{c:'#a698d6',L:68,p:'s'}};
+ 'sys:FIRE':{c:'#8e0f2b',L:25,p:'x'}, 'sys:HAZARD':{c:'#c94f00',L:48,p:'o'}, 'sys:SMARTREADY':{c:'#8a76a8',L:52,p:'d'}, exist:{c:'#8d7b68',L:50,p:'d'}, route:{c:'#a698d6',L:68,p:'s'}};
 const STK_PRINT_DASH={s:'',d:'6 3',o:'1.2 2.4',x:'7 2 1.5 2'};
 let prnOn=false;                                   // true only around exportPNG(true) and between beforeprint / afterprint
 function prnActive(){return prnOn&&state.printPal!==false;}
@@ -98,14 +100,18 @@ function prnLegendSvg(x,y){const used=[],seen={};
     const r=typeof epRoleOf==='function'?epRoleOf(d):null;if(!r||!STK_PRINT[r])return;
     const c=typeof epCodeOf==='function'?epCodeOf(d):null,k=(r==='sys:LIGHT'&&c==='SWI')?'SWI':r;
     if(!seen[k]){seen[k]=1;used.push(k);}});
-  if(!used.length)return '';
+  const extra=typeof vstLegendRows==='function'?vstLegendRows():[];   // [{c, dash, n}] — the Meglévő states (08s)
+  if(!used.length&&!extra.length)return '';
   used.sort((a,b)=>(stkRoleIx(a==='SWI'?'sys:LIGHT':a)-stkRoleIx(b==='SWI'?'sys:LIGHT':b))||(a==='SWI'?1:-1));
   const nm=k=>k==='SWI'?'Kapcsoló':((stkRole(k)||{n:k}).n);
-  let s=`<g id="prnLegend" font-family="Arial,sans-serif" font-size="11"><rect x="${x}" y="${y}" width="190" height="${18+used.length*16}" fill="#fff" stroke="#888" stroke-width="0.6"/>`
+  let s=`<g id="prnLegend" font-family="Arial,sans-serif" font-size="11"><rect x="${x}" y="${y}" width="190" height="${18+(used.length+extra.length)*16}" fill="#fff" stroke="#888" stroke-width="0.6"/>`
     +`<text x="${x+8}" y="${y+13}" font-weight="700">Rendszerek (nyomtatási paletta)</text>`;
   used.forEach((k,i)=>{const p=STK_PRINT[k],yy=y+28+i*16,dash=STK_PRINT_DASH[p.p]?` stroke-dasharray="${STK_PRINT_DASH[p.p]}"`:'';
     s+=`<line x1="${x+8}" y1="${yy-4}" x2="${x+34}" y2="${yy-4}" stroke="${p.c}" stroke-width="3"${dash}/>`
       +`<text x="${x+42}" y="${yy}">${esc(nm(k))}</text>`;});
+  extra.forEach((r,i)=>{const yy=y+28+(used.length+i)*16;
+    s+=`<line class="prnEx" x1="${x+8}" y1="${yy-4}" x2="${x+34}" y2="${yy-4}" stroke="${r.c}" stroke-width="3"${r.dash?' stroke-dasharray="'+r.dash+'"':''}/>`
+      +`<text x="${x+42}" y="${yy}">${esc(r.n)}</text>`;});
   return s+'</g>';}
 function stkPrintOf(k,code){return (code&&k==='sys:LIGHT'&&STK_PRINT[code])||STK_PRINT[k]||null;}
 function stkPrintCol(k,code){const p=stkPrintOf(k,code);return p?p.c:null;}
@@ -164,6 +170,8 @@ function stkKindOf(S){return S&&S.kind==='elec'?'elec':'bridge';}
 function stkRoleKinds(r){return (r&&r.kinds)||['bridge'];}
 function stkRolesOf(kind){kind=kind==='elec'?'elec':'bridge';return STK_ROLES.filter(r=>stkRoleKinds(r).indexOf(kind)>=0);}
 // opt: true = added on demand in every kind; [kinds] = on demand only in those (Meglévő is always there in a Villany Stack)
+// off: true = unticked by default in every kind; [kinds] = only there (Veszélyérzékelők is on in a Villany Stack)
+function stkRoleOff(r,kind){return r.off===true||(Array.isArray(r.off)&&r.off.indexOf(kind)>=0);}
 function stkRoleOpt(r,kind){return r.opt===true||(Array.isArray(r.opt)&&r.opt.indexOf(kind)>=0);}
 function stkRoleName(k,kind){const r=stkRole(k);if(!r)return k;return (kind==='elec'&&r.ne)||r.n;}
 function stkRoleNameIn(k,S){return stkRoleName(k,stkKindOf(S));}
@@ -220,7 +228,7 @@ function stkCreate(opts){opts=opts||{};
   const kind=opts.kind==='elec'?'elec':'bridge',own=stkRolesOf(kind);
   const S={id:stkNewId(),name:(opts.name||'').trim()||(STK_KINDS[kind].title+' '+(stacks.length+1)),kind,scale:'S-C',layers:[],phase:opts.phase===2?2:1};
   stacks.push(S);
-  const want=(opts.roles||own.filter(r=>r.ph===2&&!r.off).map(r=>r.k)).filter(k=>own.some(r=>r.k===k));
+  const want=(opts.roles||own.filter(r=>r.ph===2&&!stkRoleOff(r,kind)).map(r=>r.k)).filter(k=>own.some(r=>r.k===k));
   const c=opts.construct||{mode:'new'};
   // Szerkezet: an existing layer takes the role [Q12=A: by reference, nothing is copied]
   let cl=null;
@@ -283,11 +291,15 @@ function stkMoveNonConstruct(layerId){const odd=stkNonConstruct(layerId),L=lyrLa
   lyrSnapWalls(moved);lyrRefresh();lyrHud('Áthelyezve új rétegre: '+odd.n+' elem');return true;}
 
 // ---- the stage rail ----
-function stkStages(S){const kind=stkKindOf(S);return STK_ROLES.filter(r=>stkLayer(S.id,r.k)).map(r=>({
+function stkStages(S){const kind=stkKindOf(S);const out=STK_ROLES.filter(r=>stkLayer(S.id,r.k)).map(r=>({
   k:'stk:'+r.k,n:stkRoleName(r.k,kind),icon:STK_ICONS[r.k]||'•',groups:stkGroupsOf(r.k),
-  hint:(kind==='elec'&&r.he)||r.hint||('Rendszer-réteg: '+stkRoleName(r.k,kind)),check:()=>stkCheck(S,r.k)}));}
+  hint:(kind==='elec'&&r.he)||r.hint||('Rendszer-réteg: '+stkRoleName(r.k,kind)),check:()=>stkCheck(S,r.k)}));
+  // V7: Áramkörök és védelem — a stage of the Villany Stack, not a layer (it reads data.circuits, 05j / 05x)
+  if(kind==='elec'&&out.length&&typeof vstCircuitStage==='function')out.push(vstCircuitStage(S));
+  return out;}
 // the stage that is current: the role of the active layer, else the last chosen stage, else the first
 function stkCurrentKey(S){const L=lyrLayer(state.activeLayer),SL=stkStages(S);
+  if(state.stage==='stk:circuits'&&SL.some(s=>s.k===state.stage))return state.stage;   // V7: a stage with no layer of its own wins while chosen
   if(L&&L.stack===S.id&&L.role&&SL.some(s=>s.k==='stk:'+L.role))return 'stk:'+L.role;
   if(SL.some(s=>s.k===state.stage))return state.stage;
   return SL.length?SL[0].k:'build';}
@@ -322,7 +334,7 @@ function stkCheck(S,roleKey){const out=[];
 
 // ---- the wizard ----
 // V2: the kind first — Villany (ordinary electrical work) is the default; the role lists re-render on change
-function stkWizardRoles(kind){return stkRolesOf(kind).filter(r=>r.ph===2).map(r=>`<div><label><input type="checkbox" class="skR" value="${r.k}" ${r.off?'':'checked'}> ${esc(stkRoleName(r.k,kind))}${r.off?' <span style="color:#888">(alapból kikapcsolva)</span>':''}</label></div>`).join('');}
+function stkWizardRoles(kind){return stkRolesOf(kind).filter(r=>r.ph===2).map(r=>`<div><label><input type="checkbox" class="skR" value="${r.k}" ${stkRoleOff(r,kind)?'':'checked'}> ${esc(stkRoleName(r.k,kind))}${stkRoleOff(r,kind)?' <span style="color:#888">(alapból kikapcsolva)</span>':''}</label></div>`).join('');}
 function stkWizardNote(kind){const p1=stkRolesOf(kind).filter(r=>r.ph===1&&!stkRoleOpt(r,kind)).map(r=>stkRoleName(r.k,kind)).join(', ');
   return 'Az 1. fázis rétegei ('+p1+') mindig létrejönnek. A stack csak jelölés a rétegeken: minden meglévő eszköz ugyanúgy működik rajtuk.'
     +(kind==='elec'?' Egy Villany Stack később egy kattintással BRIDGE Stackké bővíthető.':'');}
@@ -485,7 +497,7 @@ window.MNS_ROLES=MNS_ROLES;window.mnsIs=mnsIs;window.mnsRoleOf=mnsRoleOf;window.
 window.prnLegendSvg=prnLegendSvg;window.prnActive=prnActive;window.prnSet=prnSet;window.stkPrintCol=stkPrintCol;window.stkPrintOf=stkPrintOf;window.STK_PRINT_DASH=STK_PRINT_DASH;
 window.STK_LAYERMENU=STK_LAYERMENU;window.rliDialog=rliDialog;window.rliClear=rliClear;window.rliCount=rliCount;window.rliInfoHtml=rliInfoHtml;
 window.rliSolo=rliSolo;window.rliSoloOff=rliSoloOff;window.rliSelect=rliSelect;window.rliRoomCounts=rliRoomCounts;
-window.STK_ROLES=STK_ROLES;window.STK_KINDS=STK_KINDS;window.stkKindOf=stkKindOf;window.stkRolesOf=stkRolesOf;window.stkRoleName=stkRoleName;window.stkRoleNameIn=stkRoleNameIn;window.stkRoleOpt=stkRoleOpt;window.STK_COL=STK_COL;window.STK_GROUPS=STK_GROUPS;window.STK_SCENE=STK_SCENE;window.STK_OVERLAY=STK_OVERLAY;window.STK_TOOLS=STK_TOOLS;
+window.STK_ROLES=STK_ROLES;window.STK_KINDS=STK_KINDS;window.stkKindOf=stkKindOf;window.stkRolesOf=stkRolesOf;window.stkRoleName=stkRoleName;window.stkRoleNameIn=stkRoleNameIn;window.stkRoleOpt=stkRoleOpt;window.stkRoleOff=stkRoleOff;window.STK_COL=STK_COL;window.STK_GROUPS=STK_GROUPS;window.STK_SCENE=STK_SCENE;window.STK_OVERLAY=STK_OVERLAY;window.STK_TOOLS=STK_TOOLS;
 window.STK_CTX=STK_CTX;window.STK_WV=STK_WV;window.STK_PV=STK_PV;window.STK_CHECKS=STK_CHECKS;window.VALIDATORS=VALIDATORS;
 window.stkById=stkById;window.stkOfLayer=stkOfLayer;window.stkActive=stkActive;window.stkLayer=stkLayer;window.stkLayersOf=stkLayersOf;window.stkRole=stkRole;
 window.stkCreate=stkCreate;window.stkAdopt=stkAdopt;window.stkDissolve=stkDissolve;window.stkRename=stkRename;window.stkRoomId=stkRoomId;window.stkRooms=stkRooms;

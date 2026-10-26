@@ -33,6 +33,7 @@ const AFILL_CABLES={
  ALARM6:{n:'Riasztó 4×0,22+2×0,5 árny.',od:5.5}, SIREN4:{n:'Sziréna 2×0,75+2×0,22 árny.',od:6/*r*/},
  BUS4:{n:'Szolgáltatói 4 eres busz',od:5/*r*/},
  COAX:{n:'Koax RG-6',od:6.9}, JYFIRE:{n:'J-Y(St)Y 2×2×0,8 piros (tűzjelző)',od:5.5},   // round 2026-10-22
+ JEHFIRE:{n:'JE-H(St)H 2×2×0,8 E30 / FE180 (tűzálló)',od:6.8/*r*/},
  H07VK4:{n:'H07V-K 4 mm² zöld-sárga',od:4.8/*r*/}, H07VK6:{n:'H07V-K 6 mm² zöld-sárga',od:5.5/*r*/},
  SPARE:{n:'Üres cső + behúzószál',od:0,empty:true}};
 // flexible light conduit, inner diameter mm (A2 §2.1 — typical, check the datasheet)

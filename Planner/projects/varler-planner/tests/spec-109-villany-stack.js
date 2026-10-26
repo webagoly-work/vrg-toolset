@@ -1,5 +1,6 @@
 // spec-109 — round 2026-10-22, Villany Stack: stack kinds (V1), wizard + workflow bar (V2), Meglévő / bontás (V3),
-// Gyengeáram (V4), EPH · Riasztó · Tűzvédelem · Okos előkészítés (V5, Q-V08–Q-V10), the route layer (V6), promotion (V8)
+// Gyengeáram (V4), EPH · Riasztó · Tűzvédelem · Okos előkészítés (V5, Q-V08–Q-V10), the route layer (V6), promotion (V8);
+// 2026-10-26: V7 stage, Meglévő paths + legend, IP44 outdoors, the fire-resistant switch, Veszélyérzékelők, switch-sensors
 const {JSDOM}=require('jsdom');const path=require('path');const fs=require('fs');
 function findPlanner(){
   if(process.env.PLANNER)return process.env.PLANNER;
@@ -24,11 +25,11 @@ setTimeout(()=>{
 
   // 1 — kinds and role sets (V1)
   const E=w.stkRolesOf('elec').map(r=>r.k),B=w.stkRolesOf('bridge').map(r=>r.k);
-  ok('elec roles: construct, mark, need, exist, hw, the three mains, Gyengeáram, EPH, Riasztó, Tűzvédelem, Nyomvonal, Okos előkészítés, Házimozi',
-    J(E)===J(['construct','mark','need','exist','hw','sys:DED','sys:SOC','sys:LIGHT','sys:WEAK','sys:BOND','sys:ALARM','sys:FIRE','route','sys:SMARTREADY','sys:CINEMA'].sort((a,b)=>E.indexOf(a)-E.indexOf(b)))&&E.length===15,J(E));
+  ok('elec roles: construct, mark, need, exist, hw, the three mains, Gyengeáram, EPH, Veszélyérzékelők, Riasztó, Tűzvédelem, Nyomvonal, Okos előkészítés, Házimozi',
+    J(E)===J(['construct','mark','need','exist','hw','sys:DED','sys:SOC','sys:LIGHT','sys:WEAK','sys:BOND','sys:HAZARD','sys:ALARM','sys:FIRE','route','sys:SMARTREADY','sys:CINEMA'].sort((a,b)=>E.indexOf(a)-E.indexOf(b)))&&E.length===16,J(E));
   ok('elec has no BRIDGE-only role (BASE, Csatorna, buses, RBX world, ARM)',!['base','channel','sys:LV','sys:DATA','sys:SECURITY','cluster','arm','sys:EXTRA'].some(k=>E.indexOf(k)>=0));
-  ok('BRIDGE keeps Meglévő, EPH, Tűzvédelem, Okos előkészítés (Q-V03 A) and never gets Gyengeáram, Riasztó, Nyomvonal',
-    ['exist','sys:BOND','sys:FIRE','sys:SMARTREADY'].every(k=>B.indexOf(k)>=0)&&!['sys:WEAK','sys:ALARM','route'].some(k=>B.indexOf(k)>=0));
+  ok('BRIDGE keeps Meglévő, EPH, Veszélyérzékelők, Tűzvédelem, Okos előkészítés (Q-V03 A) and never gets Gyengeáram, Riasztó, Nyomvonal',
+    ['exist','sys:BOND','sys:HAZARD','sys:FIRE','sys:SMARTREADY'].every(k=>B.indexOf(k)>=0)&&!['sys:WEAK','sys:ALARM','route'].some(k=>B.indexOf(k)>=0));
   ok('hw reads "Betáplálás és elosztás" in a Villany Stack, "Hardver" in BRIDGE (Q-V02 A)',w.stkRoleName('hw','elec')==='Betáplálás és elosztás'&&w.stkRoleName('hw','bridge')==='Hardver');
 
   // 2 — stkCreate per kind
@@ -36,14 +37,14 @@ setTimeout(()=>{
   ok('stkCreate without kind is still BRIDGE (B1, no Meglévő by default)',S0.kind==='bridge'&&w.stkShort(S0)==='B1'&&roles(S0).indexOf('exist')<0);
   fresh();const V=w.stkCreate({kind:'elec'});
   ok('an elec stack: kind elec, short V1, default name "Villany Stack 1"',V.kind==='elec'&&w.stkShort(V)==='V1'&&V.name==='Villany Stack 1');
-  ok('default elec layers: Szerkezet, Jelölés, Meglévő, Betáplálás, the three mains, Gyengeáram, Nyomvonal (D3)',
-    J(roles(V))===J(['construct','mark','exist','hw','sys:DED','sys:SOC','sys:LIGHT','sys:WEAK','route']),J(roles(V)));
+  ok('default elec layers: Szerkezet, Jelölés, Meglévő, Betáplálás, the three mains, Gyengeáram, Veszélyérzékelők, Nyomvonal (D3)',
+    J(roles(V))===J(['construct','mark','exist','hw','sys:DED','sys:SOC','sys:LIGHT','sys:WEAK','sys:HAZARD','route']),J(roles(V)));
   ok('layer names carry the V prefix and the elec name',w.stkLayer(V.id,'hw').name==='V1 · Betáplálás és elosztás');
   ok('a BRIDGE-only role asked for in an elec stack is not made',(()=>{fresh();const s=w.stkCreate({kind:'elec',roles:['sys:SOC','sys:LV','sys:BOND']});return J(roles(s).filter(r=>r.indexOf('sys:')===0))===J(['sys:SOC','sys:BOND']);})());
 
   // 3 — the wizard and the workflow bar (V2)
   fresh();w.actionById('stack.create').run({});
-  ok('the wizard opens on Villany with its own phase-2 list',w.document.querySelector('input[name=skKind][value=elec]').checked&&w.document.querySelectorAll('.skR').length===10
+  ok('the wizard opens on Villany with its own phase-2 list',w.document.querySelector('input[name=skKind][value=elec]').checked&&w.document.querySelectorAll('.skR').length===11
     &&!!w.document.querySelector('.skR[value="sys:WEAK"]')&&!w.document.querySelector('.skR[value="sys:LV"]'));
   {const r=w.document.querySelector('input[name=skKind][value=bridge]');r.checked=true;r.dispatchEvent(new w.Event('change',{bubbles:true}));}
   ok('switching to BRIDGE re-renders the list and the default name',!!w.document.querySelector('.skR[value="sys:LV"]')&&!w.document.querySelector('.skR[value="sys:WEAK"]')&&$('skName').value==='BRIDGE Stack 1');
@@ -109,6 +110,50 @@ setTimeout(()=>{
   w.eval('doUndo()');
   const S2=ST()[0];
   ok('one Ctrl+Z restores the Villany Stack exactly',J({layers:LY(),stacks:ST(),devices:D().devices})===before&&S2.kind==='elec');
+
+  // 9 — 2026-10-26 follow-up
+  fresh();const ko=room('KONYHA',['konyha'],[[0,0],[3000,0],[3000,2500],[0,2500]]),er=room('ERKÉLY',['kulter'],[[3200,0],[5000,0],[5000,1500],[3200,1500]]),
+    fu2=room('FÜRDŐ',['furdo'],[[0,2700],[2000,2700],[2000,4500],[0,4500]]);
+  const V2=w.stkCreate({kind:'elec',roles:['sys:DED','sys:SOC','sys:LIGHT','sys:HAZARD','sys:FIRE','route']});
+  ok('Veszélyérzékelők: GAS, WLK, HTA, VLV + COA (alt) on the layer, in both kinds',J(w.epOfRole('sys:HAZARD').map(e=>e.code).sort())===J(['COA','GAS','HTA','VLV','WLK']));
+  ok('room kinds name their detectors: konyha GAS · WLK · HTA, fürdő WLK, gépészet (kazánház, pince) GAS · COA · WLK · VLV',
+    J(w.needDefaults?1:1)&&J(Object.keys(w.needOf(ko,'sys:HAZARD')).filter(k=>w.needOf(ko,'sys:HAZARD')[k]).sort())===J(['GAS','HTA','WLK'])
+    &&J(Object.keys(w.needOf(fu2,'sys:HAZARD')).filter(k=>w.needOf(fu2,'sys:HAZARD')[k]))===J(['WLK'])
+    &&J(w.eval("NEED_DEFAULTS.gepeszet['sys:HAZARD']"))===J(['GAS','COA','WLK','VLV']));
+  ok('Gyengeáram room needs (V4): nappali TVA · ETH, háló TVA, előszoba BEL · ICM',J(w.eval("[NEED_DEFAULTS.nappali['sys:WEAK'],NEED_DEFAULTS.halo['sys:WEAK'],NEED_DEFAULTS.eloszoba['sys:WEAK']]"))===J([['TVA','ETH'],['TVA'],['BEL','ICM']]));
+  const gas=w.epPlace(at(1500,1000),'GAS','sys:HAZARD','fold');ok('a gas detector lands on Veszélyérzékelők',onLayer(gas,V2,'sys:HAZARD'));
+  // V7
+  const st=w.stkStages(V2),cs=st[st.length-1];
+  ok('V7: the Villany Stack ends with the Áramkörök és védelem stage; BRIDGE has none',cs.k==='stk:circuits'&&cs.n==='Áramkörök és védelem'&&!w.stkStages(w.stkCreate({name:'B'})).some(x=>x.k==='stk:circuits'));
+  w.__state.stack=V2.id;w.__state.activeLayer=w.stkLayer(V2.id,'sys:SOC').id;
+  const so=w.epPlace(at(4000,700),'SOC','sys:SOC','25');
+  ok('IP44 by default for a socket placed in a kültér room (D5)',so.ip==='IP44'&&!w.epPlace(at(1000,1000),'SOC','sys:SOC','25').ip);
+  ok('V7 check: endpoints in no circuit are listed',/nincs áramkörben/.test(cs.check().map(x=>x.msg).join()));
+  const ck=w.cktCreate({name:'Erkély',mcb:{curve:'C',amps:16,poles:1,n:false},members:[]});w.cktAssign(ck,so);
+  ok('V7 check: an outdoor circuit gets the 1P+N suggestion, and the action applies it',/1P\+N kismegszakító javasolt/.test(cs.check().map(x=>x.msg).join())&&w.vstOutdoor2P()===1&&w.mcbText(ck.mcb).indexOf('N')>=0&&!/1P\+N kismegszakító javasolt/.test(cs.check().map(x=>x.msg).join()));
+  ck.rcd=false;ok('V7 check: a wet / outdoor circuit without 30 mA is an error',cs.check().some(x=>x.sev==='error'&&/30 mA/.test(x.msg)));delete ck.rcd;
+  ok('the BOM counts the IP44 points separately',w.computeBOM().some(r=>/^ebből IP44 kivitel/.test(r.name)));
+  // Meglévő paths + the legend
+  const EX2=w.stkLayer(V2.id,'exist').id;D().paths.push({nodes:[{x:100,y:100,level:lvl,h:2400},{x:2100,y:100,level:lvl,h:2400}],sections:[{build:'sull_gege'}],layer:EX2,ex:'remove'});w.ensureIds(D());w.draw();
+  ok('a Meglévő path is drawn in its state (red dashed for remove)',(()=>{const e=w.document.querySelector('#lyScene .vstExPath');return !!e&&/vstEx-remove/.test(e.getAttribute('class'))&&e.getAttribute('stroke-dasharray')==='9 4';})());
+  ok('… and gives a Bontás row in metres',(()=>{const r=w.computeBOM().find(x=>x.id==='bont_path');return r&&r.unit==='m'&&Math.abs(r.qty-2)<0.01;})());
+  ok('the printed legend lists the Meglévő states on the sheet',/Meglévő — bontandó/.test(w.prnLegendSvg(0,0)));
+  // the fire-resistant switch
+  const sk=w.epPlace(at(1500,1500),'SMK','sys:FIRE','loop');
+  ok('fire cable: red J-Y(St)Y by default, E30 / FE180 once the stack switch is on (Q-V10 A)',w.epCables(sk)[0].c==='JYFIRE'&&w.vstFireResSet(V2.id,true)&&w.epCables(sk)[0].c==='JEHFIRE'&&w.eval('AFILL_CABLES').JEHFIRE);
+  // switch-sensors
+  const lamp=w.epPlace(at(1000,1800),'LMP','sys:LIGHT','230');
+  const pir=w.lswLink([lamp.id],{wall:{level:lvl,x:3000,y:1000,side:0}},true);pir.var='pir';
+  w.lswRetypeAll();
+  ok('a switch-sensor is its own type and the lamp needs no other switch',pir.swType==='erzekelo'&&w.lswType(pir).k==='erzekelo'&&!w.lswSuggest(lvl).some(r=>r.lamps.some(l=>l===lamp)));
+  const sw=w.lswLink([lamp.id],{wall:{level:lvl,x:0,y:1800,side:1}},true);w.lswRetypeAll();
+  ok('a normal switch beside it is not a váltó partner (101, not 106)',sw.swType==='101');
+  ok('… and the check asks for Kizárás or Szabotázs',/Kizárásra \(KI \/ AUTO\) vagy Szabotázsra \(AUTO \/ BE\)/.test(w.stkCheck(V2,'sys:LIGHT').map(x=>x.msg).join()));
+  w.vstSwModeSet(sw,'kizaras');w.draw();
+  ok('Kizárás = KI / AUTO, shown beside the switch; Szabotázs = AUTO / BE',w.vstSwMode(sw)==='kizaras'&&/KI\/AUTO/.test(w.document.querySelector('#lyScene').innerHTML)&&w.VST_SWMODE.szabotazs.st==='AUTO / BE'
+    &&!/vagy Szabotázsra/.test(w.stkCheck(V2,'sys:LIGHT').map(x=>x.msg).join()));
+  ok('the switch-sensor draws with the motion mark',w.icoMarkOf(pir)==='motion');
+  ok('promotion keeps Veszélyérzékelők',(()=>{w.vstPromote(V2.id);return !!w.stkLayer(V2.id,'sys:HAZARD')&&onLayer(gas,V2,'sys:HAZARD');})());
   ok('reg: draw()',(function(){try{w.draw();return true;}catch(e){return 'ERR '+e.message;}})()===true);
  }catch(e){R.push(['EXCEPTION',false,e.stack.split('\n').slice(0,4).join(' | ')]);}
  let bad=0;R.forEach(([n,c,x])=>{if(!c)bad++;console.log((c?'PASS':'FAIL')+'  '+n+(x?'   ['+x+']':''));});

@@ -1172,7 +1172,9 @@ const SWITCH_TYPES=[
   {k:'106',l:'106 – Váltókapcsoló',               terms:[{id:'L',kind:'in',l:'közös (érkező)'},{id:'a',kind:'out',l:'járat a'},{id:'b',kind:'out',l:'járat b'}]},
   {k:'107',l:'107 – Keresztkapcsoló',             terms:[{id:'1',kind:'in',l:'érkező 1'},{id:'2',kind:'in',l:'érkező 2'},{id:'3',kind:'out',l:'menő 1'},{id:'4',kind:'out',l:'menő 2'}]},
   {k:'108',l:'108 – Dupla váltókapcsoló (106+6)', terms:[{id:'L1',kind:'in',l:'közös 1'},{id:'a1',kind:'out',l:'1/a'},{id:'b1',kind:'out',l:'1/b'},{id:'L2',kind:'in',l:'közös 2'},{id:'a2',kind:'out',l:'2/a'},{id:'b2',kind:'out',l:'2/b'}]},
-  {k:'redony',l:'Redőnykapcsoló (fel/le)',        terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'up',kind:'out',l:'fel'},{id:'dn',kind:'out',l:'le'}]}
+  {k:'redony',l:'Redőnykapcsoló (fel/le)',        terms:[{id:'P',kind:'in',l:'fázis (bemenet)'},{id:'up',kind:'out',l:'fel'},{id:'dn',kind:'out',l:'le'}]},
+  // 2026-10-26: a switch-sensor (mozgás / jelenlét) — it needs N; a normal switch on its leg is Kizárás or Szabotázs (08s)
+  {k:'erzekelo',l:'Kapcsoló-érzékelő (mozgás / jelenlét)',terms:[{id:'L',kind:'in',l:'fázis'},{id:'N',kind:'in',l:'nulla'},{id:'1',kind:'out',l:'kapcsolt kimenet'}]}
 ];
 function switchType(k){return SWITCH_TYPES.find(t=>t.k===k)||SWITCH_TYPES.find(t=>t.k==='101');}
 // a switch saved under the OLD (wrong) keys gets the right one, once — swNum:2 marks a device already on the new code
@@ -3046,7 +3048,7 @@ function computeBOM(){const len={lighting:0,sockets:0,power3:0,data:0};data.cabl
   Object.keys(wire).forEach(k=>{const nm=k[0]==='d'?('Vezeték – '+k.slice(2)):('Vezeték '+k.slice(2)+' mm²');rows.push({id:'w_'+k,name:nm,qty:+(wire[k]*w).toFixed(1),unit:'m'});});
   // wall chasing (06 chaseProject): real metres and pockets, no waste factor — labour, not material
   chaseBOMRows().forEach(r=>rows.push(r));
-  if(typeof vstBomRows==='function'){vstCableOnlyRows().forEach(r=>rows.push(r));vstBomRows().forEach(r=>rows.push(r));}
+  if(typeof vstBomRows==='function'){vstCableOnlyRows().forEach(r=>rows.push(r));vstIpRows().forEach(r=>rows.push(r));vstBomRows().forEach(r=>rows.push(r));vstPathBomRows().forEach(r=>rows.push(r));}
   return rows;}
 function renderBOM(){const rows=computeBOM();let html=`<tr><td><b>Tétel</b></td><td class="n"><b>Menny.</b></td><td><b>E.</b></td><td class="n"><b>Ft/e.</b></td><td class="n"><b>Összeg</b></td></tr>`,tot=0;
   for(const r of rows){const price=state.price[r.id]||0,sum=price*r.qty;tot+=sum;
@@ -6183,6 +6185,8 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:HMI',    n:'Kezelőfelületek',        ph:2, fam:'CONTROL'},
  {k:'sys:MEDIA',  n:'Média és hang',          ph:2, fam:'MEDIA'},
  {k:'sys:USB',    n:'USB',                    ph:2, fam:'USB'},
+ // 2026-10-26 (the user): the everyday hazard detectors of the rooms that need them — konyha, fürdő, kazánház, pince
+ {k:'sys:HAZARD', n:'Veszélyérzékelők',       ph:2, kinds:STK_BOTH, off:['bridge'], fam:'SENSOR', hint:'Gáz-, CO-, vízszivárgás- és hőjelzők, elzárószelep — a helyiség típusa mondja meg, hova kell (konyha, fürdő, kazánház, pince).'},
  // Q-V08 A: the elec face of Biztonságtechnika — cable runs only (panel → detector points); promotion moves it to sys:SECURITY
  {k:'sys:ALARM',  n:'Riasztó',                ph:2, kinds:['elec'], fam:'SECURITY', off:true, hint:'Csak kábelezés: riasztóközpont → érzékelőpontok. Eszközanyag nincs, csak doboz, kábel, munkadíj.'},
  {k:'sys:SECURITY',n:'Biztonságtechnika',     ph:2, fam:'SECURITY', last:true}, // always last [user]
@@ -6196,7 +6200,7 @@ const STK_ROLES=[      // order = panel order = stage order. fam = default condu
  {k:'sys:SMARTREADY',n:'Okos előkészítés',    ph:2, kinds:STK_BOTH, fam:'SPARE', off:true, hint:'Nullás kapcsolódoboz, mély doboz, tartalék védőcső — egy későbbi okosotthonhoz.'},
  // the top of the stack: the gathered extras and SmartFrame ideas as provisioned endpoints (CLA-ADD-001, IDEA-003)
  {k:'sys:EXTRA',  n:'Extrák és ötletek',      ph:2, fam:'LV', hint:'Előkészített végpontok: CLA extrák (#1–#11) és a SmartFrame slotjai. Az ideális helyek ✦-gal.'}];
-const STK_ICONS={construct:'🧱',mark:'🚩',exist:'⌫',route:'〽','sys:WEAK':'📺','sys:BOND':'⏚','sys:ALARM':'🚨','sys:FIRE':'🔥','sys:SMARTREADY':'◌',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:DED':'🔌','sys:SOC':'⚡','sys:LIGHT':'💡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
+const STK_ICONS={construct:'🧱',mark:'🚩',exist:'⌫',route:'〽','sys:WEAK':'📺','sys:BOND':'⏚','sys:ALARM':'🚨','sys:FIRE':'🔥','sys:SMARTREADY':'◌','sys:HAZARD':'⚠',hw:'🗄',base:'🖧',channel:'⛓','sys:MAINS':'⚡','sys:DED':'🔌','sys:SOC':'⚡','sys:LIGHT':'💡','sys:LV':'〰','sys:BUSB':'🔋','sys:CONTROL':'🎛',
   'sys:DATA':'🌐','sys:KNX':'⌘','sys:SENSOR':'📡','sys:RF':'📶','sys:HMI':'🖲','sys:MEDIA':'🔊','sys:USB':'🔌','sys:SECURITY':'🛡',cluster:'▦',arm:'🌿','sys:EXTRA':'✧'};
 // One colour per role, fixed [user]: Erősáram is the same red in every project, on the panel, on the
 // symbols and in the BRIDGE sheets — a colour has to mean a system, not "the third layer down".
@@ -6206,7 +6210,7 @@ const STK_COL={construct:'#7c7468',mark:'#c0530f',hw:'#4a5a68',base:'#1f6f8b',ch
   'sys:KNX':'#2e7d32','sys:SENSOR':'#2f79c9','sys:RF':'#3fa7a7','sys:HMI':'#5470b0','sys:MEDIA':'#c2638a',
   'sys:USB':'#607d8b','sys:SECURITY':'#444444',cluster:'#9c6b30',arm:'#2e9e5b','sys:EXTRA':'#b0489a',
   // round 2026-10-22 (Q-V11 A): bright-blue weak current, deep-crimson fire (dash-dot on screen too), the PE green-yellow
-  exist:'#8d7b68',route:'#9c8fd0','sys:WEAK':'#1e9bff','sys:BOND':'#8db600','sys:ALARM':'#5a5a5a','sys:FIRE':'#8e0f2b','sys:SMARTREADY':'#8a76a8'};
+  exist:'#8d7b68',route:'#9c8fd0','sys:WEAK':'#1e9bff','sys:BOND':'#8db600','sys:ALARM':'#5a5a5a','sys:FIRE':'#8e0f2b','sys:SMARTREADY':'#8a76a8','sys:HAZARD':'#d35400'};
 // the switch inside the lighting layer is orange (the user's words: barna, vörös, világospiros lámpa, narancs kapcsoló)
 const EP_CODE_COL={'sys:LIGHT':{SWI:'#f08c2e'}};
 // grey-safe print palette (answer M04, MATERIAL §4b): c = colour for colour print, L = CIE L* it greys to, p = line
@@ -6225,7 +6229,7 @@ const STK_PRINT={
  mark:{c:'#e3702e',L:60,p:'x'}, construct:{c:'#7e766a',L:50,p:'s'},
  // round 2026-10-22 — levels between the used ones, so no two systems print alike
  'sys:WEAK':{c:'#2b8fe0',L:55,p:'o'}, 'sys:BOND':{c:'#7a9e10',L:62,p:'s'}, 'sys:ALARM':{c:'#5a5a5a',L:38,p:'x'},
- 'sys:FIRE':{c:'#8e0f2b',L:25,p:'x'}, 'sys:SMARTREADY':{c:'#8a76a8',L:52,p:'d'}, exist:{c:'#8d7b68',L:50,p:'d'}, route:{c:'#a698d6',L:68,p:'s'}};
+ 'sys:FIRE':{c:'#8e0f2b',L:25,p:'x'}, 'sys:HAZARD':{c:'#c94f00',L:48,p:'o'}, 'sys:SMARTREADY':{c:'#8a76a8',L:52,p:'d'}, exist:{c:'#8d7b68',L:50,p:'d'}, route:{c:'#a698d6',L:68,p:'s'}};
 const STK_PRINT_DASH={s:'',d:'6 3',o:'1.2 2.4',x:'7 2 1.5 2'};
 let prnOn=false;                                   // true only around exportPNG(true) and between beforeprint / afterprint
 function prnActive(){return prnOn&&state.printPal!==false;}
@@ -6236,14 +6240,18 @@ function prnLegendSvg(x,y){const used=[],seen={};
     const r=typeof epRoleOf==='function'?epRoleOf(d):null;if(!r||!STK_PRINT[r])return;
     const c=typeof epCodeOf==='function'?epCodeOf(d):null,k=(r==='sys:LIGHT'&&c==='SWI')?'SWI':r;
     if(!seen[k]){seen[k]=1;used.push(k);}});
-  if(!used.length)return '';
+  const extra=typeof vstLegendRows==='function'?vstLegendRows():[];   // [{c, dash, n}] — the Meglévő states (08s)
+  if(!used.length&&!extra.length)return '';
   used.sort((a,b)=>(stkRoleIx(a==='SWI'?'sys:LIGHT':a)-stkRoleIx(b==='SWI'?'sys:LIGHT':b))||(a==='SWI'?1:-1));
   const nm=k=>k==='SWI'?'Kapcsoló':((stkRole(k)||{n:k}).n);
-  let s=`<g id="prnLegend" font-family="Arial,sans-serif" font-size="11"><rect x="${x}" y="${y}" width="190" height="${18+used.length*16}" fill="#fff" stroke="#888" stroke-width="0.6"/>`
+  let s=`<g id="prnLegend" font-family="Arial,sans-serif" font-size="11"><rect x="${x}" y="${y}" width="190" height="${18+(used.length+extra.length)*16}" fill="#fff" stroke="#888" stroke-width="0.6"/>`
     +`<text x="${x+8}" y="${y+13}" font-weight="700">Rendszerek (nyomtatási paletta)</text>`;
   used.forEach((k,i)=>{const p=STK_PRINT[k],yy=y+28+i*16,dash=STK_PRINT_DASH[p.p]?` stroke-dasharray="${STK_PRINT_DASH[p.p]}"`:'';
     s+=`<line x1="${x+8}" y1="${yy-4}" x2="${x+34}" y2="${yy-4}" stroke="${p.c}" stroke-width="3"${dash}/>`
       +`<text x="${x+42}" y="${yy}">${esc(nm(k))}</text>`;});
+  extra.forEach((r,i)=>{const yy=y+28+(used.length+i)*16;
+    s+=`<line class="prnEx" x1="${x+8}" y1="${yy-4}" x2="${x+34}" y2="${yy-4}" stroke="${r.c}" stroke-width="3"${r.dash?' stroke-dasharray="'+r.dash+'"':''}/>`
+      +`<text x="${x+42}" y="${yy}">${esc(r.n)}</text>`;});
   return s+'</g>';}
 function stkPrintOf(k,code){return (code&&k==='sys:LIGHT'&&STK_PRINT[code])||STK_PRINT[k]||null;}
 function stkPrintCol(k,code){const p=stkPrintOf(k,code);return p?p.c:null;}
@@ -6302,6 +6310,8 @@ function stkKindOf(S){return S&&S.kind==='elec'?'elec':'bridge';}
 function stkRoleKinds(r){return (r&&r.kinds)||['bridge'];}
 function stkRolesOf(kind){kind=kind==='elec'?'elec':'bridge';return STK_ROLES.filter(r=>stkRoleKinds(r).indexOf(kind)>=0);}
 // opt: true = added on demand in every kind; [kinds] = on demand only in those (Meglévő is always there in a Villany Stack)
+// off: true = unticked by default in every kind; [kinds] = only there (Veszélyérzékelők is on in a Villany Stack)
+function stkRoleOff(r,kind){return r.off===true||(Array.isArray(r.off)&&r.off.indexOf(kind)>=0);}
 function stkRoleOpt(r,kind){return r.opt===true||(Array.isArray(r.opt)&&r.opt.indexOf(kind)>=0);}
 function stkRoleName(k,kind){const r=stkRole(k);if(!r)return k;return (kind==='elec'&&r.ne)||r.n;}
 function stkRoleNameIn(k,S){return stkRoleName(k,stkKindOf(S));}
@@ -6358,7 +6368,7 @@ function stkCreate(opts){opts=opts||{};
   const kind=opts.kind==='elec'?'elec':'bridge',own=stkRolesOf(kind);
   const S={id:stkNewId(),name:(opts.name||'').trim()||(STK_KINDS[kind].title+' '+(stacks.length+1)),kind,scale:'S-C',layers:[],phase:opts.phase===2?2:1};
   stacks.push(S);
-  const want=(opts.roles||own.filter(r=>r.ph===2&&!r.off).map(r=>r.k)).filter(k=>own.some(r=>r.k===k));
+  const want=(opts.roles||own.filter(r=>r.ph===2&&!stkRoleOff(r,kind)).map(r=>r.k)).filter(k=>own.some(r=>r.k===k));
   const c=opts.construct||{mode:'new'};
   // Szerkezet: an existing layer takes the role [Q12=A: by reference, nothing is copied]
   let cl=null;
@@ -6421,11 +6431,15 @@ function stkMoveNonConstruct(layerId){const odd=stkNonConstruct(layerId),L=lyrLa
   lyrSnapWalls(moved);lyrRefresh();lyrHud('Áthelyezve új rétegre: '+odd.n+' elem');return true;}
 
 // ---- the stage rail ----
-function stkStages(S){const kind=stkKindOf(S);return STK_ROLES.filter(r=>stkLayer(S.id,r.k)).map(r=>({
+function stkStages(S){const kind=stkKindOf(S);const out=STK_ROLES.filter(r=>stkLayer(S.id,r.k)).map(r=>({
   k:'stk:'+r.k,n:stkRoleName(r.k,kind),icon:STK_ICONS[r.k]||'•',groups:stkGroupsOf(r.k),
-  hint:(kind==='elec'&&r.he)||r.hint||('Rendszer-réteg: '+stkRoleName(r.k,kind)),check:()=>stkCheck(S,r.k)}));}
+  hint:(kind==='elec'&&r.he)||r.hint||('Rendszer-réteg: '+stkRoleName(r.k,kind)),check:()=>stkCheck(S,r.k)}));
+  // V7: Áramkörök és védelem — a stage of the Villany Stack, not a layer (it reads data.circuits, 05j / 05x)
+  if(kind==='elec'&&out.length&&typeof vstCircuitStage==='function')out.push(vstCircuitStage(S));
+  return out;}
 // the stage that is current: the role of the active layer, else the last chosen stage, else the first
 function stkCurrentKey(S){const L=lyrLayer(state.activeLayer),SL=stkStages(S);
+  if(state.stage==='stk:circuits'&&SL.some(s=>s.k===state.stage))return state.stage;   // V7: a stage with no layer of its own wins while chosen
   if(L&&L.stack===S.id&&L.role&&SL.some(s=>s.k==='stk:'+L.role))return 'stk:'+L.role;
   if(SL.some(s=>s.k===state.stage))return state.stage;
   return SL.length?SL[0].k:'build';}
@@ -6460,7 +6474,7 @@ function stkCheck(S,roleKey){const out=[];
 
 // ---- the wizard ----
 // V2: the kind first — Villany (ordinary electrical work) is the default; the role lists re-render on change
-function stkWizardRoles(kind){return stkRolesOf(kind).filter(r=>r.ph===2).map(r=>`<div><label><input type="checkbox" class="skR" value="${r.k}" ${r.off?'':'checked'}> ${esc(stkRoleName(r.k,kind))}${r.off?' <span style="color:#888">(alapból kikapcsolva)</span>':''}</label></div>`).join('');}
+function stkWizardRoles(kind){return stkRolesOf(kind).filter(r=>r.ph===2).map(r=>`<div><label><input type="checkbox" class="skR" value="${r.k}" ${stkRoleOff(r,kind)?'':'checked'}> ${esc(stkRoleName(r.k,kind))}${stkRoleOff(r,kind)?' <span style="color:#888">(alapból kikapcsolva)</span>':''}</label></div>`).join('');}
 function stkWizardNote(kind){const p1=stkRolesOf(kind).filter(r=>r.ph===1&&!stkRoleOpt(r,kind)).map(r=>stkRoleName(r.k,kind)).join(', ');
   return 'Az 1. fázis rétegei ('+p1+') mindig létrejönnek. A stack csak jelölés a rétegeken: minden meglévő eszköz ugyanúgy működik rajtuk.'
     +(kind==='elec'?' Egy Villany Stack később egy kattintással BRIDGE Stackké bővíthető.':'');}
@@ -6623,7 +6637,7 @@ window.MNS_ROLES=MNS_ROLES;window.mnsIs=mnsIs;window.mnsRoleOf=mnsRoleOf;window.
 window.prnLegendSvg=prnLegendSvg;window.prnActive=prnActive;window.prnSet=prnSet;window.stkPrintCol=stkPrintCol;window.stkPrintOf=stkPrintOf;window.STK_PRINT_DASH=STK_PRINT_DASH;
 window.STK_LAYERMENU=STK_LAYERMENU;window.rliDialog=rliDialog;window.rliClear=rliClear;window.rliCount=rliCount;window.rliInfoHtml=rliInfoHtml;
 window.rliSolo=rliSolo;window.rliSoloOff=rliSoloOff;window.rliSelect=rliSelect;window.rliRoomCounts=rliRoomCounts;
-window.STK_ROLES=STK_ROLES;window.STK_KINDS=STK_KINDS;window.stkKindOf=stkKindOf;window.stkRolesOf=stkRolesOf;window.stkRoleName=stkRoleName;window.stkRoleNameIn=stkRoleNameIn;window.stkRoleOpt=stkRoleOpt;window.STK_COL=STK_COL;window.STK_GROUPS=STK_GROUPS;window.STK_SCENE=STK_SCENE;window.STK_OVERLAY=STK_OVERLAY;window.STK_TOOLS=STK_TOOLS;
+window.STK_ROLES=STK_ROLES;window.STK_KINDS=STK_KINDS;window.stkKindOf=stkKindOf;window.stkRolesOf=stkRolesOf;window.stkRoleName=stkRoleName;window.stkRoleNameIn=stkRoleNameIn;window.stkRoleOpt=stkRoleOpt;window.stkRoleOff=stkRoleOff;window.STK_COL=STK_COL;window.STK_GROUPS=STK_GROUPS;window.STK_SCENE=STK_SCENE;window.STK_OVERLAY=STK_OVERLAY;window.STK_TOOLS=STK_TOOLS;
 window.STK_CTX=STK_CTX;window.STK_WV=STK_WV;window.STK_PV=STK_PV;window.STK_CHECKS=STK_CHECKS;window.VALIDATORS=VALIDATORS;
 window.stkById=stkById;window.stkOfLayer=stkOfLayer;window.stkActive=stkActive;window.stkLayer=stkLayer;window.stkLayersOf=stkLayersOf;window.stkRole=stkRole;
 window.stkCreate=stkCreate;window.stkAdopt=stkAdopt;window.stkDissolve=stkDissolve;window.stkRename=stkRename;window.stkRoomId=stkRoomId;window.stkRooms=stkRooms;
@@ -8261,7 +8275,10 @@ const EP_CAT=[
    {k:'230',n:'230 V lámpahely',cab:[{c:'NYM3x15',w:'M20'}]}]},
  {code:'SWI',role:'sys:LIGHT',n:'Kapcsoló (bemenet)',cat:'switch',mount:'wall',h:1100,topo:'star',from:'rbx',vars:[
    {k:'230', n:'230 V nyomó (RC-szűrt, BRIDGE-DN)',cab:[{c:'NYM3x15',w:'M20'}]},            // default [Q29]
-   {k:'selv',n:'SELV nyomó → bistabil bemenet',    cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
+   {k:'selv',n:'SELV nyomó → bistabil bemenet',    cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]},
+   // 2026-10-26 (the user): a switch-sensor switches its lamps on its own; a normal switch beside it is Kizárás or Szabotázs (08s)
+   {k:'pir', n:'Kapcsoló-érzékelő: mozgásérzékelős kapcsoló (falon, N kell)',sensor:true,cab:[{c:'NYM3x15',w:'M20'}]},
+   {k:'pres',n:'Kapcsoló-érzékelő: jelenlét-érzékelő relékimenettel (falon / sarokban)',sensor:true,h:2200,cab:[{c:'NYM3x15',w:'M20'}]}]},
  {code:'SOC',role:'sys:SOC',n:'Dugalj',cat:'socket',mount:'wall',h:300,topo:'chain',from:'rbx',vars:[
    {k:'s04',n:'1,5 mm² kör (S04)',cab:[{c:'NYM3x15',w:'M20'}]},
    {k:'25', n:'2,5 mm² kör',      cab:[{c:'NYM3x25',w:'M25'}]}]},
@@ -8378,7 +8395,7 @@ const EP_CAT=[
    {k:'zb',  n:'Elemes füstjelző, rádiós összekötéssel + HA (Zigbee / Thread)',cab:[]},
    {k:'ilk', n:'230 V összekötött füstjelző + relékimenet az RBX bemenetre',cab:[{c:'NYM3x15',w:'M20',fam:'MAINS',from:'board'},{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]},
    {k:'heat',n:'Hőérzékelő (konyha, garázs)',cab:[]}]},
- {code:'COA',new:true,role:'sys:SECURITY',n:'CO-érzékelő (EN 50291)',cat:'device',mount:'wall',h:2000,topo:'star',from:'rbx',vars:[   // r: ⚑ EN 50292: high on the wall, ≥150 mm below the ceiling, 1–3 m from the appliance
+ {code:'COA',new:true,role:'sys:SECURITY',alt:['sys:HAZARD'],n:'CO-érzékelő (EN 50291)',cat:'device',mount:'wall',h:2000,topo:'star',from:'rbx',vars:[   // r: ⚑ EN 50292: high on the wall, ≥150 mm below the ceiling, 1–3 m from the appliance
    {k:'zb', n:'Elemes, Zigbee / Thread',cab:[]},
    {k:'ilk',n:'Hálózati + relékimenet az RBX bemenetre',cab:[{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
  {code:'DBL',new:true,role:'sys:SECURITY',alt:['sys:WEAK'],n:'Videós kaputelefon / csengő',cat:'device',mount:'wall',h:1500,topo:'star',from:'rbx',vars:[   // local: ONVIF / Reolink [CoreRef]
@@ -8403,6 +8420,18 @@ const EP_CAT=[
    {k:'h4',n:'H07V-K 4 mm² zöld-sárga',cab:[{c:'H07VK4',w:'M16'}]}]},
  {code:'PEB',new:true,role:'sys:BOND',n:'Helyi EPH sín',cat:'device',mount:'wall',h:300,topo:'star',from:'eph',vars:[
    {k:'h6',n:'H07V-K 6 mm² zöld-sárga a fő EPH sínig',cab:[{c:'H07VK6',w:'M20'}]}]},
+ // ---- Veszélyérzékelők (2026-10-26) — the everyday hazard detectors; COA comes from Biztonság (alt) ----
+ {code:'GAS',new:true,role:'sys:HAZARD',n:'Gázérzékelő',cat:'device',mount:'wall',h:2400,topo:'star',from:'board',vars:[
+   {k:'fold',n:'Földgáz — magasan, a mennyezet alatt 300 mm-rel',cab:[{c:'NYM3x15',w:'M20',fam:'MAINS'}]},
+   {k:'pb',  n:'PB-gáz — alacsonyan, a padló fölött 300 mm-rel',h:300,cab:[{c:'NYM3x15',w:'M20',fam:'MAINS'}]}]},
+ {code:'WLK',new:true,role:'sys:HAZARD',n:'Vízszivárgás-érzékelő',cat:'device',mount:'wall',h:100,topo:'star',from:'board',vars:[
+   {k:'w', n:'Vezetékes padlószonda',cab:[{c:'LIYY2x05',w:'M16'}]},
+   {k:'zb',n:'Elemes, rádiós',cab:[]}]},
+ {code:'HTA',new:true,role:'sys:HAZARD',n:'Hőjelző (önálló, konyha)',cat:'device',mount:'ceiling',topo:'star',from:'board',vars:[
+   {k:'zb', n:'Elemes, összekötött (EN 14604)',cab:[]},
+   {k:'230',n:'230 V, összekötött',cab:[{c:'NYM3x15',w:'M20',fam:'MAINS'}]}]},
+ {code:'VLV',new:true,role:'sys:HAZARD',n:'Elzárószelep-motor (gáz / víz)',cat:'device',mount:'wall',h:300,topo:'star',from:'board',vars:[
+   {k:'230',n:'230 V motoros szelep + jelzés',cab:[{c:'NYM3x15',w:'M20',fam:'MAINS'},{c:'JY2x2x08',w:'M16',fam:'CONTROL'}]}]},
  // ---- Okos előkészítés (V5) — provisions only; in BRIDGE they read like sys:EXTRA ----
  {code:'NUT',new:true,role:'sys:SMARTREADY',n:'Nullás kapcsolódoboz',cat:'device',mount:'wall',h:1100,topo:'star',from:'board',vars:[
    {k:'n',n:'N a kapcsolódobozban (okos kapcsolóhoz)',cab:[]}]},
@@ -8452,7 +8481,8 @@ function epEntryOf(d){const c=epCodeOf(d);return c?(epEntry(c,epRoleOf(d))||epEn
 function epVar(d){const e=epEntryOf(d);if(!e)return null;return e.vars.find(v=>v.k===d.var)||e.vars[0];}
 // [{c, w, fam, n, from}] with the defaults filled: fam = the role's family, n = 1, from = the entry's origin
 function epCables(d){const e=epEntryOf(d),v=epVar(d);if(!e||!v)return [];const R=stkRole(e.role)||{};
-  return (v.cab||[]).map(c=>({c:c.c,w:c.w,fam:c.fam||R.fam||null,n:c.n||1,from:c.from||epFromOf(e,d)}));}
+  const fr=c=>(c==='JYFIRE'&&typeof vstFireRes==='function'&&vstFireRes(d))?'JEHFIRE':c;   // Q-V10 A (08s)
+  return (v.cab||[]).map(c=>({c:fr(c.c),w:c.w,fam:c.fam||R.fam||null,n:c.n||1,from:c.from||epFromOf(e,d)}));}
 // the display code: '<code><n>', n = running number of that code in its room (derived — STD-004 R03.LMP2)
 function epRef(d){const c=epCodeOf(d);if(!c)return d.ref||'';const r=roomOfDevice(d),rid=r&&stkRoomId(r);
   const same=data.devices.filter(x=>epCodeOf(x)===c&&x.level===d.level&&(()=>{const rr=roomOfDevice(x);return (rr&&stkRoomId(rr))===rid;})());
@@ -8671,19 +8701,20 @@ const NEED_KINDS=[
  {k:'egyeb',    n:'Egyéb',     re:/.*/}];
 // kind → role → codes. The kind's entry REPLACES '*' for that role ([] = nothing ticked).
 const NEED_DEFAULTS={
- '*':        {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread'],'sys:MEDIA':['SPK']},
- eloszoba:   {'sys:BUSB':['LMP'],'sys:HMI':['PAN'],'sys:DATA':['CAM'],'sys:SECURITY':['DWC','KPD','SRN','MOT'],'sys:MEDIA':[]},   // S5: replaces ['SEC']
- konyha:     {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:LV':['LNR'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['SMK']},   // SMK 'heat' suggested here
+ // 2026-10-26: Gyengeáram (V4) and Veszélyérzékelők — nothing by default; the kinds below name their rooms
+ '*':        {'sys:WEAK':[],'sys:HAZARD':[],'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread'],'sys:MEDIA':['SPK']},
+ eloszoba:   {'sys:WEAK':['BEL','ICM'],'sys:BUSB':['LMP'],'sys:HMI':['PAN'],'sys:DATA':['CAM'],'sys:SECURITY':['DWC','KPD','SRN','MOT'],'sys:MEDIA':[]},   // S5: replaces ['SEC']
+ konyha:     {'sys:HAZARD':['GAS','WLK','HTA'],'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:LV':['LNR'],'sys:SENSOR':['SEN'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['SMK']},   // SMK 'heat' suggested here
  etkezo:     {'sys:RF':['wifi','thread','uwb']},
- nappali:    {'sys:LV':['LNR','UEP'],'sys:DATA':['ETH','ACP'],'sys:HMI':['PAN','THR'],'sys:MEDIA':['SPK','SCR','AVP'],'sys:USB':['USB'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['MOT']},
- halo:       {'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:HMI':['THR'],'sys:SECURITY':['SMK']},
- dolgozo:    {'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:USB':['USB']},
- furdo:      {'sys:LV':['LNR'],'sys:HMI':['THR']},
+ nappali:    {'sys:WEAK':['TVA','ETH'],'sys:LV':['LNR','UEP'],'sys:DATA':['ETH','ACP'],'sys:HMI':['PAN','THR'],'sys:MEDIA':['SPK','SCR','AVP'],'sys:USB':['USB'],'sys:RF':['wifi','thread','uwb'],'sys:SECURITY':['MOT']},
+ halo:       {'sys:WEAK':['TVA'],'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:HMI':['THR'],'sys:SECURITY':['SMK']},
+ dolgozo:    {'sys:WEAK':['ETH'],'sys:LV':['UEP'],'sys:DATA':['ETH'],'sys:USB':['USB']},
+ furdo:      {'sys:HAZARD':['WLK'],'sys:LV':['LNR'],'sys:HMI':['THR']},
  wc:         {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:MEDIA':[]},
  kamra:      {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[]},
  kozlekedo:  {'sys:LIGHT':['LMP','SWI'],'sys:SOC':[],'sys:BUSB':['LMP','NTL'],'sys:MEDIA':[],'sys:SECURITY':['SMK','MOT']},
  kulter:     {'sys:LIGHT':['LMP'],'sys:SOC':['SOC'],'sys:DATA':['CAM'],'sys:SENSOR':[],'sys:MEDIA':[],'sys:RF':[],'sys:SECURITY':['SRN','MOT']},
- gepeszet:   {'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:SENSOR':['SEN'],'sys:MEDIA':[],'sys:SECURITY':['SMK','COA']},
+ gepeszet:   {'sys:HAZARD':['GAS','COA','WLK','VLV'],'sys:LIGHT':['LMP','SWI'],'sys:SOC':['SOC'],'sys:DED':['DED'],'sys:SENSOR':['SEN'],'sys:MEDIA':[],'sys:SECURITY':['SMK','COA']},
  egyeb:      {}};
 const NEED_STATUS={off:{n:'ki',c:'#9aa0a6'},empty:{n:'nincs igény',c:'#9aa0a6'},open:{n:'hiányos',c:'#d08a1e'},done:{n:'kész',c:'#2e9e5b'}};
 
@@ -9235,6 +9266,7 @@ const AFILL_CABLES={
  ALARM6:{n:'Riasztó 4×0,22+2×0,5 árny.',od:5.5}, SIREN4:{n:'Sziréna 2×0,75+2×0,22 árny.',od:6/*r*/},
  BUS4:{n:'Szolgáltatói 4 eres busz',od:5/*r*/},
  COAX:{n:'Koax RG-6',od:6.9}, JYFIRE:{n:'J-Y(St)Y 2×2×0,8 piros (tűzjelző)',od:5.5},   // round 2026-10-22
+ JEHFIRE:{n:'JE-H(St)H 2×2×0,8 E30 / FE180 (tűzálló)',od:6.8/*r*/},
  H07VK4:{n:'H07V-K 4 mm² zöld-sárga',od:4.8/*r*/}, H07VK6:{n:'H07V-K 6 mm² zöld-sárga',od:5.5/*r*/},
  SPARE:{n:'Üres cső + behúzószál',od:0,empty:true}};
 // flexible light conduit, inner diameter mm (A2 §2.1 — typical, check the datasheet)
@@ -9810,7 +9842,11 @@ const ICO_MARK={
  bond:    {d:'M0 -3 V0.6 M-2.6 0.6 H2.6 M-1.7 1.8 H1.7 M-0.8 3 H0.8'},
  neutral: {d:'M-2.4 -2.4 H2.4 V2.4 H-2.4 Z M-1.1 1.2 V-1.2 L1.1 1.2 V-1.2'},
  deepbox: {d:'M-2.4 -2.4 H2.4 V2.4 H-2.4 Z M-1.4 -1.4 H1.4 V1.4 H-1.4 Z'},
- spare:   {d:'M-3.2 -1.2 H3.2 M-3.2 1.2 H3.2 M-1.6 -1.2 V1.2 M1.6 -1.2 V1.2'}};
+ spare:   {d:'M-3.2 -1.2 H3.2 M-3.2 1.2 H3.2 M-1.6 -1.2 V1.2 M1.6 -1.2 V1.2'},
+ // 2026-10-26 — Veszélyérzékelők
+ gas:     {d:'M-3 0 A3 3 0 1 0 3 0 A3 3 0 1 0 -3 0 M0.9 -1 A1.3 1.3 0 1 0 0.9 1 H0 V0.2'},
+ leak:    {d:'M0 -3 C-1.8 -0.4 -2.3 0.6 -2.3 1.3 A2.3 2.3 0 0 0 2.3 1.3 C2.3 0.6 1.8 -0.4 0 -3 Z'},
+ valve:   {d:'M-3 -2 L3 2 V-2 L-3 2 Z M0 0 V-3.2 M-1.2 -3.2 H1.2'}};
 
 // code → mark, for the endpoint catalogue (05s). A code can appear under two roles (LMP is both a
 // MAINS lamp and a BUSB escape light); the colour separates them, the mark stays the same thing.
@@ -9818,11 +9854,12 @@ const ICO_BY_CODE={LMP:'light',SWI:'switch',SOC:'socket',DED:'dedicat',SHU:'shut
  UEP:'uep',NTL:'notify',POR:'portal',ACP:'wifi',ETH:'eth',CAM:'cam',ACT:'knx',SEN:'sensor',
  PAN:'panel',THR:'thermo',SPK:'speaker',SCR:'screen',AVP:'avp',USB:'usb',SEC:'shield',
  MOT:'motion',DWC:'contact',GLB:'glass',SRN:'siren',KPD:'keypad',PNC:'panic',LCK:'lock',SMK:'smoke',COA:'coalarm',DBL:'bell',   // S5
- TVA:'tvsat',BEL:'bell',ICM:'intercom',HDT:'heat',MCP:'callpt',SND:'siren',EPB:'bond',PEB:'bond',NUT:'neutral',DPB:'deepbox',RSV:'spare'};   // 2026-10-22
+ TVA:'tvsat',BEL:'bell',ICM:'intercom',HDT:'heat',MCP:'callpt',SND:'siren',EPB:'bond',PEB:'bond',NUT:'neutral',DPB:'deepbox',RSV:'spare',   // 2026-10-22
+ GAS:'gas',WLK:'leak',HTA:'heat',VLV:'valve'};   // 2026-10-26
 const ICO_BY_TYPE={socket:'socket',switch:'switch',light:'light',junction:'junction',box:'generic',
  board:'board',rbx:'rbx',base:'base',meter:'meter',entry:'entry',ssc:'shield',mdb:'tvsat',fire:'callpt',eph:'bond'};
 // which codes live on the plane above rather than on a wall — they get the round ceiling body
-const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK','SMK','HDT'];
+const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK','SMK','HDT','HTA'];
 
 // ---- what a device is --------------------------------------------------------------------------
 function icoHw(d){return !!(d&&typeof HW_TYPES!=='undefined'&&HW_TYPES[d.type]);}
@@ -9839,6 +9876,7 @@ function icoFamOf(d){
   return 'szerelveny';}
 function icoMarkOf(d){
   const code=(typeof epCodeOf==='function')?epCodeOf(d):null;
+  if(code==='SWI'&&d&&(d.var==='pir'||d.var==='pres'))return 'motion';   // a switch-sensor (2026-10-26) reads as a detector
   if(code&&ICO_BY_CODE[code])return ICO_BY_CODE[code];
   return ICO_BY_TYPE[d&&d.type]||'generic';}
 // real plan size in mm, and whether the body is round
@@ -17825,13 +17863,16 @@ function lswUnlink(ids,sw){if(!sw||!Array.isArray(sw.ctl))return false;const leg
 
 // ---- the type -----------------------------------------------------------------------------------------------------------
 function lswLegsOf(sw){const out=[];(sw.ctl||[]).forEach(id=>{const l=byId('devices',id);if(!l)return;const k=lswLegOf(l);if(out.indexOf(k)<0)out.push(k);});return out;}
-function lswSharing(leg){return data.devices.filter(s=>lswSw(s)&&lswLegsOf(s).indexOf(leg)>=0);}
+// a switch-sensor (2026-10-26) is not part of a váltó chain: the normal switches beside it are Kizárás / Szabotázs (08s)
+function lswSensor(d){return lswSw(d)&&(d.var==='pir'||d.var==='pres');}
+function lswSharing(leg){return data.devices.filter(s=>lswSw(s)&&!lswSensor(s)&&lswLegsOf(s).indexOf(leg)>=0);}
 // the order of a chain of switches on one leg: start at the one farthest from the rest, then nearest-next
 function lswChain(sws){if(sws.length<3)return sws.slice();const c=[sws.reduce((a,s)=>a+s.x,0)/sws.length,sws.reduce((a,s)=>a+s.y,0)/sws.length];
   let cur=sws.slice().sort((a,b)=>Math.hypot(b.x-c[0],b.y-c[1])-Math.hypot(a.x-c[0],a.y-c[1]))[0];const out=[cur],left=sws.filter(s=>s!==cur);
   while(left.length){left.sort((a,b)=>Math.hypot(a.x-cur.x,a.y-cur.y)-Math.hypot(b.x-cur.x,b.y-cur.y));cur=left.shift();out.push(cur);}return out;}
 // {k (SWITCH_TYPES key), why, gang}
-function lswType(sw){const legs=lswLegsOf(sw);if(!legs.length)return {k:'101',why:'nincs bekötve',gang:0};
+function lswType(sw){if(lswSensor(sw))return {k:'erzekelo',why:'kapcsoló-érzékelő — magában kapcsolja a lámpáit',gang:1};
+  const legs=lswLegsOf(sw);if(!legs.length)return {k:'101',why:'nincs bekötve',gang:0};
   const lamps=(sw.ctl||[]).map(id=>byId('devices',id)).filter(Boolean);
   if(lamps.length&&lamps.every(l=>epCodeOf(l)==='SHU'))return {k:'redony',why:'redőny',gang:1};
   const shared=legs.filter(g=>lswSharing(g).length>1);
@@ -20240,6 +20281,8 @@ window.cinWiring=cinWiring;window.cinWApply=cinWApply;window.cinWSize=cinWSize;w
 //   V6  vstPathLayer — channel / arm resolve to `route` in a Villany Stack, so every path tool and the engine work there.
 //   V8  vstPromote — one undo step from Villany to BRIDGE: Gyengeáram and Riasztó dissolve into their purpose layers
 //       (Q-V07 A, Q-V08 A), an empty `route` goes (Q-V06 A), the missing BRIDGE roles are added; nothing is duplicated.
+// 2026-10-26 follow-up: V7 (the Áramkörök és védelem stage), Meglévő paths and the printed legend, the IP44 default
+// outdoors (D5), the fire-resistant switch (Q-V10 A), and the switch-sensors with Kizárás / Szabotázs.
 // Prefix: vst.
 
 // ---- V3 Meglévő / bontás ----------------------------------------------------------------------------------------------------
@@ -20327,7 +20370,7 @@ function vstPromote(id,opt){opt=opt||{};const S=stkById(id);if(!S||stkKindOf(S)!
       p.layer=ensure(N.length&&fixed(N[0])&&fixed(N[N.length-1])?'channel':'arm').id;rep.moved++;});
     if(!rliCount(R.id)){layers.splice(layers.indexOf(R),1);rep.removed.push('route');}}
   // the BRIDGE roles the stack lacks: phase 1 always, phase 2 the defaults (or opt.roles)
-  const want=opt.roles||stkRolesOf('bridge').filter(r=>r.ph===2&&!r.off).map(r=>r.k);
+  const want=opt.roles||stkRolesOf('bridge').filter(r=>r.ph===2&&!stkRoleOff(r,'bridge')).map(r=>r.k);
   stkRolesOf('bridge').forEach(r=>{if(stkLayer(S.id,r.k)||stkRoleOpt(r,'bridge'))return;if(r.ph===1||want.indexOf(r.k)>=0){ensure(r.k);rep.added.push(r.k);}});
   named.forEach(L=>{if(layers.indexOf(L)>=0)L.name=vstAutoName(S,L,'bridge');});
   if(/^Villany( Stack)?( \d+)?$/.test(S.name||''))S.name=S.name.replace(/^Villany( Stack)?/,'BRIDGE Stack');
@@ -20339,7 +20382,104 @@ registerActions([
   hint:'Az aktív Villany Stack egy lépésben BRIDGE Stack lesz: a Gyengeáram és a Riasztó pontjai a cél rétegükre kerülnek, a hiányzó BRIDGE rétegek létrejönnek. Visszavonható.',
   need:'Aktív Villany Stack kell hozzá.',when:()=>{const S=stkActive();return !!(S&&stkKindOf(S)==='elec');},run:()=>vstPromote(stkActive().id)}]);
 
-window.VST_EX=VST_EX;window.vstExistOf=vstExistOf;window.vstSetEx=vstSetEx;window.vstBomRows=vstBomRows;window.vstCableOnly=vstCableOnly;
+// ---- V3 (2026-10-26): Meglévő paths — the same three states, drawn over the path; the printed legend ---------------------
+const VST_EX_DASH={keep:'6 4',remove:'9 4',replace:''};
+function vstPathEx(p){return p&&vstIsExistLayer(p.layer)?(VST_EX[p.ex]?p.ex:'keep'):null;}
+function vstPathSvg(p){const ex=vstPathEx(p);if(!ex||!p.nodes||p.nodes.length<2)return '';
+  const pts=p.nodes.map(n=>planToBase(n.x,n.y,dz(n.level,n.h||0)).map(v=>v.toFixed(1)).join(',')).join(' '),k=devK(),c=VST_EX[ex].c;
+  return `<polyline class="vstExPath vstEx-${ex}" points="${pts}" fill="none" stroke="${c}" stroke-width="${(2.6*k).toFixed(2)}" stroke-opacity="0.85"`
+    +(VST_EX_DASH[ex]?` stroke-dasharray="${VST_EX_DASH[ex]}"`:'')+` pointer-events="none"/>`;}
+STK_SCENE.push(()=>{let s='';data.paths.forEach(p=>{if(!p||!vstIsExistLayer(p.layer)||!p.nodes||!p.nodes.length||!state.levels[p.nodes[0].level])return;
+  if(typeof layerShows==='function'&&!layerShows(p,'path'))return;s+=vstPathSvg(p);});return s;});
+STK_PATHMENU.push((ps,items)=>{const p=data.paths[ps.pi],ex=vstPathEx(p);if(!ex)return;
+  Object.keys(VST_EX).forEach(k=>{if(k!==ex)items.push({label:'⌫ Nyomvonal: '+VST_EX[k].n,act:()=>{pushUndo(['paths']);if(k==='keep')delete p.ex;else p.ex=k;draw();}});});});
+function vstPathLen(p){let L=0;for(let i=0;i<p.nodes.length-1;i++)L+=sectionLen(p,i);return L;}
+function vstPathBomRows(){const g={};data.paths.forEach(p=>{const ex=vstPathEx(p);if(!ex)return;const k=ex==='keep'?'ell_path':'bont_path';
+  (g[k]=g[k]||{id:k,name:ex==='keep'?'Ellenőrzés – meglévő nyomvonal':'Bontás – meglévő nyomvonal',qty:0,unit:'m'}).qty+=vstPathLen(p);});
+  return Object.keys(g).sort().map(k=>Object.assign(g[k],{qty:+g[k].qty.toFixed(1)}));}
+// the legend rows a printed sheet adds when Meglévő items are on it (05m prnLegendSvg)
+function vstLegendRows(){const seen={};
+  data.devices.forEach(d=>{const ex=vstExistOf(d);if(ex&&state.levels[d.level]&&(typeof layerShows!=='function'||layerShows(d)))seen[ex]=1;});
+  data.paths.forEach(p=>{const ex=vstPathEx(p);if(ex&&(typeof layerShows!=='function'||layerShows(p,'path')))seen[ex]=1;});
+  return Object.keys(VST_EX).filter(k=>seen[k]).map(k=>({c:VST_EX[k].c,dash:VST_EX_DASH[k],n:'Meglévő — '+VST_EX[k].n.toLowerCase()}));}
+
+// ---- V7 Áramkörök és védelem: a stage of the Villany Stack ----------------------------------------------------------------
+const VST_WET=['furdo','wc','kulter'];
+function vstRoomKinds(rm){return rm?((rm.kinds&&rm.kinds.length?rm.kinds:[rm.kind]).filter(Boolean)):[];}
+function vstMcb(c){const m=c&&c.mcb;return (m&&typeof m==='object')?m:(typeof mcbParse==='function'?mcbParse(m):null);}
+function vstCktRooms(c){return cktMembers(c).map(d=>{const e=roomOfDevice(d);return e&&e.rm;}).filter(Boolean);}
+function vstCktOutdoor(c){return vstCktRooms(c).some(rm=>vstRoomKinds(rm).indexOf('kulter')>=0);}
+function vstCircuitChecks(S){const out=[],L=new Set(stkLayersOf(S.id).filter(l=>MNS_ROLES.indexOf(l.role)>=0).map(l=>l.id));
+  const loose=data.devices.filter(d=>d&&L.has(d.layer)&&['SOC','LMP','SWI','DED','SHU'].indexOf(epCodeOf(d))>=0&&!cktOfDevice(d));
+  if(loose.length)out.push({sev:'warn',msg:loose.length+' erősáramú végpont nincs áramkörben: '+loose.slice(0,8).map(d=>d.ref||d.id).join(', ')+(loose.length>8?' …':'')+' — Elosztó → Áramkörök javaslata.'});
+  cktList().forEach(c=>{const wet=vstCktRooms(c).some(rm=>vstRoomKinds(rm).some(k=>VST_WET.indexOf(k)>=0));
+    if(wet&&c.rcd===false)out.push({sev:'error',msg:(c.ref||c.id)+' '+(c.name||'')+': vizes / kültéri kör 30 mA ÁVK nélkül (MSZ HD 60364-7-701).'});
+    const m=vstMcb(c);if(vstCktOutdoor(c)&&m&&m.curve&&m.poles<2&&!m.n)
+      out.push({sev:'info',msg:(c.ref||c.id)+' '+(c.name||'')+': kültéri kör — 1P+N kismegszakító javasolt (D5). Jobb klikk a stage-en: Kültéri körök 1P+N.'});});
+  if(!cktList().length)out.push({sev:'info',msg:'Még nincs áramkör — Elosztó → Áramkörök javaslata.'});
+  return out;}
+function vstCircuitStage(S){return {k:'stk:circuits',n:'Áramkörök és védelem',icon:'⚡',groups:['Áramkör'],
+  hint:'Az áramkörök, a kismegszakítók és az ÁVK-k — nem réteg: az Elosztó köreit olvassa.',check:()=>vstCircuitChecks(S)};}
+// D5: the suggested 2-pole breaker for outdoor circuits, applied on request (never forced)
+function vstOutdoor2P(){const list=cktList().filter(c=>{const m=vstMcb(c);return vstCktOutdoor(c)&&m&&m.curve&&m.poles<2&&!m.n;});if(!list.length)return 0;
+  pushUndo(['circuits']);list.forEach(c=>{const m=Object.assign({},vstMcb(c),{n:true});c.mcb=m;});draw();lyrHud('Kültéri körök 1P+N: '+list.length);return list.length;}
+
+// ---- D5: IP44 by default outdoors ------------------------------------------------------------------------------------------
+const VST_IP_CODES=['SOC','LMP','SWI'];
+function vstOutdoor(d){const e=d&&roomOfDevice(d);return !!(e&&e.rm&&vstRoomKinds(e.rm).indexOf('kulter')>=0);}
+EP_PLACED.push(d=>{if(VST_IP_CODES.indexOf(epCodeOf(d))>=0&&vstOutdoor(d)&&!d.ip)d.ip='IP44';});
+function vstIp44Apply(){const list=data.devices.filter(d=>d&&VST_IP_CODES.indexOf(epCodeOf(d))>=0&&!d.ip&&vstOutdoor(d));if(!list.length)return 0;
+  pushUndo(['devices']);list.forEach(d=>{d.ip='IP44';});draw();lyrHud('IP44: '+list.length+' kültéri pont');return list.length;}
+STK_SCENE.push(()=>{let s='';const k=devK();data.devices.forEach(d=>{if(!d||!d.ip||!state.levels[d.level]||(typeof layerShows==='function'&&!layerShows(d)))return;
+  const b=planToBase(d.x,d.y,dz(d.level,d.h||0));
+  s+=`<text class="vstIp" x="${(b[0]+9*k).toFixed(1)}" y="${(b[1]-8*k).toFixed(1)}" font-size="${(6.5*k).toFixed(2)}" font-weight="700" fill="#1565c0" pointer-events="none">${esc(d.ip)}</text>`;});return s;});
+STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d||VST_IP_CODES.indexOf(epCodeOf(d))<0)return;
+  items.push({label:d.ip?'IP44 levétele':'IP44 kivitel',act:()=>{pushUndo(['devices']);if(d.ip)delete d.ip;else d.ip='IP44';draw();}});});
+function vstIpRows(){const g={};data.devices.forEach(d=>{if(!d||!d.ip||vstExistOf(d))return;const k='ip_'+epCodeOf(d);
+  (g[k]=g[k]||{id:k,name:'ebből '+d.ip+' kivitel – '+vstExistName(d),qty:0,unit:'db'}).qty++;});return Object.keys(g).sort().map(k=>g[k]);}
+
+// ---- Q-V10 A: the fire-resistant cable, per stack ---------------------------------------------------------------------------
+function vstFireRes(d){const S=(d&&stkOfLayer(d.layer))||stkActive();return !!(S&&S.fireRes);}
+function vstFireResSet(stackId,on){const S=stkById(stackId);if(!S)return false;on=!!on;if(!!S.fireRes===on)return false;
+  lyrPushUndo();if(on)S.fireRes=true;else delete S.fireRes;draw();
+  lyrHud(on?'Tűzvédelem: tűzálló kábel — JE-H(St)H 2×2×0,8 E30 / FE180 (funkciómegtartás).':'Tűzvédelem: J-Y(St)Y 2×2×0,8 piros.');return true;}
+STK_LAYERMENU.push((L,items)=>{if(L.role!=='sys:FIRE')return;const S=stkById(L.stack);if(!S)return;
+  items.push({label:S.fireRes?'🔥 Kábel: tűzálló E30 / FE180 → piros J-Y(St)Y':'🔥 Kábel: piros J-Y(St)Y → tűzálló E30 / FE180',act:()=>vstFireResSet(S.id,!S.fireRes)});});
+
+// ---- switch-sensors (2026-10-26, the user) ----------------------------------------------------------------------------------
+// A switch-sensor (SWI · pir / pres) switches its lamps by itself: the lamp needs no other switch. A normal switch on the same
+// leg is not a váltó partner; it gets a mode:
+//   Kizárás   (KI / AUTO) — in SERIES before the sensor: OFF blocks it, AUTO leaves the lamp to the sensor
+//   Szabotázs (AUTO / BE) — in PARALLEL with the sensor's output: ON overrides it, AUTO leaves the lamp to the sensor
+const VST_SWMODE={kizaras:{n:'Kizárás',st:'KI / AUTO',why:'sorosan az érzékelő előtt'},szabotazs:{n:'Szabotázs',st:'AUTO / BE',why:'párhuzamosan az érzékelő kimenetével'}};
+function vstSensorLegs(sw){return lswLegsOf(sw).filter(g=>data.devices.some(x=>lswSensor(x)&&x!==sw&&lswLegsOf(x).indexOf(g)>=0));}
+function vstSwMode(sw){return sw&&!lswSensor(sw)&&vstSensorLegs(sw).length&&VST_SWMODE[sw.swMode]?sw.swMode:null;}
+function vstSwModeSet(sw,mode){if(!sw||lswSensor(sw))return false;pushUndo(['devices']);if(VST_SWMODE[mode])sw.swMode=mode;else delete sw.swMode;draw();
+  lyrHud((sw.ref||sw.id)+': '+(VST_SWMODE[mode]?VST_SWMODE[mode].n+' ('+VST_SWMODE[mode].st+')':'normál BE / KI'));return true;}
+STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!lswSw(d)||lswSensor(d)||!vstSensorLegs(d).length)return;
+  Object.keys(VST_SWMODE).forEach(k=>{if(d.swMode!==k)items.push({label:'◐ Üzemmód: '+VST_SWMODE[k].n+' ('+VST_SWMODE[k].st+')',act:()=>vstSwModeSet(d,k)});});
+  if(d.swMode)items.push({label:'◐ Üzemmód: normál (BE / KI)',act:()=>vstSwModeSet(d,null)});});
+STK_SCENE.push(()=>{let s='';const k=devK();data.devices.forEach(d=>{if(!d||!state.levels[d.level]||(typeof layerShows==='function'&&!layerShows(d)))return;
+  const m=lswSw(d)?(lswSensor(d)?'AUTO':(vstSwMode(d)?VST_SWMODE[d.swMode].st.replace(/ /g,''):'')):'';if(!m)return;
+  const b=planToBase(d.x,d.y,dz(d.level,d.h||0));
+  s+=`<text class="vstSwMode" x="${(b[0]-9*k).toFixed(1)}" y="${(b[1]+13*k).toFixed(1)}" font-size="${(6*k).toFixed(2)}" font-weight="700" fill="#f08c2e" text-anchor="end" pointer-events="none">${m}</text>`;});return s;});
+(STK_CHECKS['sys:LIGHT']=STK_CHECKS['sys:LIGHT']||[]).push(S=>{const out=[],L=stkLayer(S.id,'sys:LIGHT');if(!L)return out;
+  data.devices.forEach(d=>{if(!d||d.layer!==L.id||!lswSw(d))return;
+    if(lswSensor(d)&&!lswLegsOf(d).length)out.push({sev:'warn',msg:(d.ref||d.id)+': kapcsoló-érzékelő lámpa nélkül.'});
+    if(!lswSensor(d)&&vstSensorLegs(d).length&&!VST_SWMODE[d.swMode])out.push({sev:'info',msg:(d.ref||d.id)+': kapcsoló-érzékelő mellett — állítsd Kizárásra (KI / AUTO) vagy Szabotázsra (AUTO / BE).'});});
+  return out;});
+
+registerActions([
+ {id:'circuits.outdoor2p',alias:'kulteri kor 1p+n ketpolusu kismegszakito outdoor two pole',label:'Kültéri körök 1P+N',icon:'⚡',group:'Áramkör',
+  hint:'A kültéri helyiségek köreinek kismegszakítója 1P+N lesz (D5 javaslat). Visszavonható.',run:()=>vstOutdoor2P()},
+ {id:'ip44.apply',alias:'ip44 kulter kulteri vedettseg outdoor',label:'Kültéri pontok IP44 kivitelben',icon:'💧',group:'Végpont',
+  hint:'Minden kültéri helyiségben lévő dugalj, lámpa és kapcsoló IP44 jelölést kap (az új pontok maguktól kapják).',run:()=>vstIp44Apply()},
+ {id:'fire.res',alias:'tuzallo kabel e30 fe180 funkciomegtartas fire resistant',label:'Tűzvédelem: tűzálló kábel be / ki',icon:'🔥',group:'Végpont',
+  need:'Aktív stack Tűzvédelem réteggel kell hozzá.',when:()=>{const S=stkActive();return !!(S&&stkLayer(S.id,'sys:FIRE'));},run:()=>{const S=stkActive();vstFireResSet(S.id,!S.fireRes);}}]);
+
+window.VST_EX=VST_EX;window.vstPathEx=vstPathEx;window.vstPathBomRows=vstPathBomRows;window.vstLegendRows=vstLegendRows;window.vstCircuitChecks=vstCircuitChecks;
+window.vstCircuitStage=vstCircuitStage;window.vstOutdoor2P=vstOutdoor2P;window.vstIp44Apply=vstIp44Apply;window.vstIpRows=vstIpRows;window.vstFireRes=vstFireRes;
+window.vstFireResSet=vstFireResSet;window.VST_SWMODE=VST_SWMODE;window.vstSensorLegs=vstSensorLegs;window.vstSwMode=vstSwMode;window.vstSwModeSet=vstSwModeSet;window.vstExistOf=vstExistOf;window.vstSetEx=vstSetEx;window.vstBomRows=vstBomRows;window.vstCableOnly=vstCableOnly;
 window.vstCableOnlyRows=vstCableOnlyRows;window.vstPathLayer=vstPathLayer;window.vstPromote=vstPromote;window.vstTargetRole=vstTargetRole;
 //////////////////// hit-test + context menu ////////////////////
 // ---- what can be touched (round 2026-10-10, WP-U1) ----
@@ -22846,6 +22986,9 @@ const RLI_TEXT={
  'sys:FIRE':{cel:'Tűzvédelem — csak kábel: tűzjelző központ → füst- és hőérzékelők, kézi jelzésadók, hangjelzők. Piros J-Y(St)Y 2×2×0,8, saját védőcső, soha nem közös mással.',
    hol:'Érzékelő a mennyezeten, kézi jelzésadó 1400-on a menekülési útvonalon, hangjelző 2300-on. Funkciómegtartás kell? Akkor tűzálló kábel (külön döntés). [Q-V09, Q-V10]',
    klaszter:'Semmivel.'},
+ 'sys:HAZARD':{cel:'Veszélyérzékelők: gáz-, CO-, vízszivárgás- és hőjelzők, motoros elzárószelep — a mindennapi riasztások, a helyiség típusa szerint.',
+   hol:'Konyha: gázérzékelő (földgáz magasan, PB alacsonyan), hőjelző a mennyezeten, vízszivárgás a mosogató alatt. Fürdő: vízszivárgás a padlón. Kazánház / pince (gépészet): gáz, CO (EN 50292: magasan, a mennyezet alatt ≥ 150 mm), vízszivárgás, elzárószelep. [2026-10-26]',
+   klaszter:'Érzékelők; a szelep és a 230 V betáp az Erősáram nyomvonalán.'},
  route:{cel:'Nyomvonal és dobozok: vésés, védőcső, kötődobozok a Villany Stackben. BRIDGE-ben ugyanez a Csatorna és az ARM pályák.',
    hol:'A Pályák kiszámítása és a pálya-eszközök ide rajzolnak, amíg a stack Villany. [V6]',
    klaszter:'—'},

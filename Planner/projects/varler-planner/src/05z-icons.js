@@ -92,7 +92,11 @@ const ICO_MARK={
  bond:    {d:'M0 -3 V0.6 M-2.6 0.6 H2.6 M-1.7 1.8 H1.7 M-0.8 3 H0.8'},
  neutral: {d:'M-2.4 -2.4 H2.4 V2.4 H-2.4 Z M-1.1 1.2 V-1.2 L1.1 1.2 V-1.2'},
  deepbox: {d:'M-2.4 -2.4 H2.4 V2.4 H-2.4 Z M-1.4 -1.4 H1.4 V1.4 H-1.4 Z'},
- spare:   {d:'M-3.2 -1.2 H3.2 M-3.2 1.2 H3.2 M-1.6 -1.2 V1.2 M1.6 -1.2 V1.2'}};
+ spare:   {d:'M-3.2 -1.2 H3.2 M-3.2 1.2 H3.2 M-1.6 -1.2 V1.2 M1.6 -1.2 V1.2'},
+ // 2026-10-26 — Veszélyérzékelők
+ gas:     {d:'M-3 0 A3 3 0 1 0 3 0 A3 3 0 1 0 -3 0 M0.9 -1 A1.3 1.3 0 1 0 0.9 1 H0 V0.2'},
+ leak:    {d:'M0 -3 C-1.8 -0.4 -2.3 0.6 -2.3 1.3 A2.3 2.3 0 0 0 2.3 1.3 C2.3 0.6 1.8 -0.4 0 -3 Z'},
+ valve:   {d:'M-3 -2 L3 2 V-2 L-3 2 Z M0 0 V-3.2 M-1.2 -3.2 H1.2'}};
 
 // code → mark, for the endpoint catalogue (05s). A code can appear under two roles (LMP is both a
 // MAINS lamp and a BUSB escape light); the colour separates them, the mark stays the same thing.
@@ -100,11 +104,12 @@ const ICO_BY_CODE={LMP:'light',SWI:'switch',SOC:'socket',DED:'dedicat',SHU:'shut
  UEP:'uep',NTL:'notify',POR:'portal',ACP:'wifi',ETH:'eth',CAM:'cam',ACT:'knx',SEN:'sensor',
  PAN:'panel',THR:'thermo',SPK:'speaker',SCR:'screen',AVP:'avp',USB:'usb',SEC:'shield',
  MOT:'motion',DWC:'contact',GLB:'glass',SRN:'siren',KPD:'keypad',PNC:'panic',LCK:'lock',SMK:'smoke',COA:'coalarm',DBL:'bell',   // S5
- TVA:'tvsat',BEL:'bell',ICM:'intercom',HDT:'heat',MCP:'callpt',SND:'siren',EPB:'bond',PEB:'bond',NUT:'neutral',DPB:'deepbox',RSV:'spare'};   // 2026-10-22
+ TVA:'tvsat',BEL:'bell',ICM:'intercom',HDT:'heat',MCP:'callpt',SND:'siren',EPB:'bond',PEB:'bond',NUT:'neutral',DPB:'deepbox',RSV:'spare',   // 2026-10-22
+ GAS:'gas',WLK:'leak',HTA:'heat',VLV:'valve'};   // 2026-10-26
 const ICO_BY_TYPE={socket:'socket',switch:'switch',light:'light',junction:'junction',box:'generic',
  board:'board',rbx:'rbx',base:'base',meter:'meter',entry:'entry',ssc:'shield',mdb:'tvsat',fire:'callpt',eph:'bond'};
 // which codes live on the plane above rather than on a wall — they get the round ceiling body
-const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK','SMK','HDT'];
+const ICO_CEILING=['LMP','LNR','ACP','SEN','SPK','SMK','HDT','HTA'];
 
 // ---- what a device is --------------------------------------------------------------------------
 function icoHw(d){return !!(d&&typeof HW_TYPES!=='undefined'&&HW_TYPES[d.type]);}
@@ -121,6 +126,7 @@ function icoFamOf(d){
   return 'szerelveny';}
 function icoMarkOf(d){
   const code=(typeof epCodeOf==='function')?epCodeOf(d):null;
+  if(code==='SWI'&&d&&(d.var==='pir'||d.var==='pres'))return 'motion';   // a switch-sensor (2026-10-26) reads as a detector
   if(code&&ICO_BY_CODE[code])return ICO_BY_CODE[code];
   return ICO_BY_TYPE[d&&d.type]||'generic';}
 // real plan size in mm, and whether the body is round
