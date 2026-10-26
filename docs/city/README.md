@@ -330,4 +330,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-20 ✔ 2026-10-26 1bec540
 - KV-21 ✔ 2026-10-26 0ef5900 — framework-dependent until the runtime pack is fetched (§5)
 - KV-22 ✔ 2026-10-26 f113c30 — P10 done; checked live on Opera (GSMTC + its tower), Spotify was not running
-- KV-23 ✔ 2026-10-26 (this commit) — built and tested unelevated (--demo, specs); the real check waits for the user's task
+- KV-23 ✔ 2026-10-26 84b255d — built and tested unelevated (--demo, specs); the real check waits for the user's task
