@@ -1,6 +1,8 @@
 'use strict';
 
 // The companion runs for real on a random port, in dry-run mode: nothing is ever launched.
+// Re-pointed (KV-04) from Hub/companion/server.js to CodeCity/companion.js, the Kódváros segéd;
+// run by CodeCity/tools/selftest.js through CodeCity/tools/run-spec.js.
 
 const assert = require('assert');
 const fs = require('fs');
@@ -9,14 +11,14 @@ const path = require('path');
 const http = require('http');
 const { spawn } = require('child_process');
 
-const HUB = path.resolve(__dirname, '..');
-const REPO = path.resolve(HUB, '..');
-const SERVER = path.join(HUB, 'companion', 'server.js');
+const CITY = path.resolve(__dirname, '..', '..');
+const REPO = path.resolve(CITY, '..');
+const SERVER = path.join(CITY, 'companion.js');
 
 let srv = null;
 async function start() {
   if (srv) return srv;
-  const cfg = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'kp-comp-')), 'none.json');   // no config: defaults
+  const cfg = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'kv-comp-')), 'none.json');   // no config: defaults
   const child = spawn(process.execPath, [SERVER, '--port', '0', '--no-open', '--config', cfg], { env: Object.assign({}, process.env, { KP_DRY_RUN: '1' }) });
   const port = await new Promise((resolve, reject) => {
     let out = '';
@@ -24,7 +26,7 @@ async function start() {
     child.on('exit', c => reject(new Error('server exited ' + c)));
     setTimeout(() => reject(new Error('server did not start')), 5000);
   });
-  const token = fs.readFileSync(path.join(HUB, 'companion', '.token'), 'utf8').trim();
+  const token = fs.readFileSync(path.join(CITY, '.companion-token'), 'utf8').trim();
   srv = { child, port, token };
   process.on('exit', () => child.kill());
   return srv;
@@ -35,7 +37,7 @@ function req(method, p, { body, raw, token, host, origin } = {}) {
     const data = raw !== undefined ? raw : body !== undefined ? JSON.stringify(body) : null;
     const headers = { Host: host || '127.0.0.1:' + srv.port };
     if (data) headers['Content-Type'] = 'application/json';
-    if (token) headers['X-Kapu-Token'] = token;
+    if (token) headers['X-Kodvaros-Token'] = token;
     if (origin) headers.Origin = origin;
     const r = http.request({ host: '127.0.0.1', port: srv.port, method, path: p, headers }, res => {
       let s = '';
@@ -48,29 +50,42 @@ function req(method, p, { body, raw, token, host, origin } = {}) {
   });
 }
 const post = (action, body, extra) => req('POST', '/api/' + action, Object.assign({ body, token: srv.token }, extra));
+const hasPage = fs.existsSync(path.join(CITY, 'dist', 'vrg-codecity.html'));
 
 module.exports = [
   { name: 'GET / with a foreign Host -> 403; with ours -> the page with the token injected', async fn() {
     await start();
     assert.strictEqual((await req('GET', '/', { host: 'evil.test' })).status, 403);
     const ok = await req('GET', '/');
+    if (!hasPage) { assert.strictEqual(ok.status, 404); return; }
     assert.strictEqual(ok.status, 200);
-    assert.ok(ok.text.includes('window.KP_COMPANION={token:"' + srv.token + '"'));
+    assert.ok(ok.text.includes('window.KV_COMPANION={token:"' + srv.token + '"'));
   } },
-  { name: 'POST without token -> 401; foreign Origin -> 403', async fn() {
+  { name: 'static files: only flat names inside CodeCity/dist; ../ and dotfiles -> 404', async fn() {
     await start();
-    assert.strictEqual((await req('POST', '/api/open-folder', { body: { dir: 'Hub' } })).status, 401);
-    assert.strictEqual((await post('open-folder', { dir: 'Hub' }, { origin: 'https://evil.test' })).status, 403);
+    if (hasPage) assert.strictEqual((await req('GET', '/vrg-codecity.html')).status, 200);
+    assert.strictEqual((await req('GET', '/../companion.js')).status, 404);
+    assert.strictEqual((await req('GET', '/..%2Fcompanion.js')).status, 404);
+    assert.strictEqual((await req('GET', '/..%5C.companion-token')).status, 404);
+    assert.strictEqual((await req('GET', '/.companion-token')).status, 404);
+    assert.strictEqual((await req('POST', '/vrg-codecity.html')).status, 405);
   } },
-  { name: 'open-folder: C:\\Windows and <repo>/../../.. -> 403; <repo>/Hub -> 200 dry run', async fn() {
+  { name: 'POST without token -> 401; wrong token -> 401; foreign Origin -> 403', async fn() {
+    await start();
+    assert.strictEqual((await req('POST', '/api/open-folder', { body: { dir: 'CodeCity' } })).status, 401);
+    assert.strictEqual((await post('open-folder', { dir: 'CodeCity' }, { token: 'x'.repeat(srv.token.length) })).status, 401);
+    assert.strictEqual((await post('open-folder', { dir: 'CodeCity' }, { origin: 'https://evil.test' })).status, 403);
+  } },
+  { name: 'open-folder: C:\\Windows and <repo>/../../.. -> 403; <repo>/CodeCity -> 200 dry run', async fn() {
     await start();
     assert.strictEqual((await post('open-folder', { dir: 'C:\\Windows' })).status, 403);
     assert.strictEqual((await post('open-folder', { dir: path.join(REPO, '..', '..', '..') })).status, 403);
-    const r = await post('open-folder', { dir: path.join(REPO, 'Hub') });
+    assert.strictEqual((await post('open-folder', { dir: os.tmpdir() })).status, 403);
+    const r = await post('open-folder', { dir: path.join(REPO, 'CodeCity') });
     assert.strictEqual(r.status, 200);
     assert.strictEqual(r.json.dryRun, true);
     assert.strictEqual(r.json.exe, 'explorer.exe');
-    assert.strictEqual(r.json.args[0].toLowerCase(), fs.realpathSync(path.join(REPO, 'Hub')).toLowerCase());
+    assert.strictEqual(r.json.args[0].toLowerCase(), fs.realpathSync(path.join(REPO, 'CodeCity')).toLowerCase());
   } },
   { name: 'open-tool: MindMap page -> file URL last; CLAUDE.md -> 400', async fn() {
     await start();
@@ -88,11 +103,12 @@ module.exports = [
     const c = await post('open-claude', { dir: 'Inventory' });
     assert.ok(c.json.args.includes('/k') || c.json.args.includes('cmd'));
   } },
-  { name: 'unknown action, extra field, bad git cmd -> 400; body > 16 KB -> 413', async fn() {
+  { name: 'unknown action, extra field, bad git cmd, git pull -> 400; body > 16 KB -> 413', async fn() {
     await start();
-    assert.strictEqual((await post('rm-rf', { dir: 'Hub' })).status, 400);
-    assert.strictEqual((await post('open-folder', { dir: 'Hub', exe: 'calc.exe' })).status, 400);
+    assert.strictEqual((await post('rm-rf', { dir: 'CodeCity' })).status, 400);
+    assert.strictEqual((await post('open-folder', { dir: 'CodeCity', exe: 'calc.exe' })).status, 400);
     assert.strictEqual((await post('git', { cmd: 'rm' })).status, 400);
+    assert.strictEqual((await post('git', { cmd: 'pull' })).status, 400);   // CITY-D10 A: no git writes
     assert.strictEqual((await post('git', { cmd: 'status' })).status, 200);
     assert.strictEqual((await post('open-folder', null, { raw: JSON.stringify({ dir: 'x'.repeat(17000) }) })).status, 413);
   } },
@@ -100,8 +116,8 @@ module.exports = [
     await start();
     const s = await req('GET', '/api/status');
     assert.strictEqual(s.json.ok, true);
-    const c = await post('check-paths', { paths: ['Hub/README.md', 'Hub/nincs-ilyen.md', '../../../Windows'] });
-    assert.deepStrictEqual(c.json, { 'Hub/README.md': true, 'Hub/nincs-ilyen.md': false, '../../../Windows': false });
+    const c = await post('check-paths', { paths: ['CodeCity/scan.js', 'CodeCity/nincs-ilyen.js', '../../../Windows'] });
+    assert.deepStrictEqual(c.json, { 'CodeCity/scan.js': true, 'CodeCity/nincs-ilyen.js': false, '../../../Windows': false });
     srv.child.kill();
   } }
 ];

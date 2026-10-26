@@ -83,6 +83,13 @@ try {
   check(R(7).result && R(7).result.isError === true, 'mcp: an unknown file is a tool error, not a crash');
   check(R(8).error && R(8).error.code === -32601, 'mcp: an unknown method is -32601');
   check(fs.readdirSync(dist).sort().join() === `${path.basename(dir)}.city.json,${path.basename(dir)}.html`, `mcp: wrote only the city and its page into --dist (got ${fs.readdirSync(dist).join()})`);
+
+  // companion.js (KV-04): the Kapu companion spec, re-pointed; a dry-run server on a random port, nothing launched
+  const spec = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'),
+    path.join(__dirname, '..', 'from-kapu', 'test', 'spec-95-companion.js')], { encoding: 'utf8', timeout: 60000 });
+  const lines = String(spec.stdout || '').trim().split('\n').filter(Boolean);
+  for (const l of lines) check(l.startsWith('ok'), 'companion: ' + l.replace(/^(ok|FAIL)\s+/, ''));
+  check(lines.length === 8 && spec.status === 0, `companion: all 8 cases ran (got ${lines.length}, exit ${spec.status})`);
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
   else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }
