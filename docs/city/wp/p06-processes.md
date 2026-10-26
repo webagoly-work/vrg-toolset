@@ -7,4 +7,4 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/companion.js, CodeCity/src/*
 - **Decisions:** D9
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** open
+- **Status:** in progress — KV-14 ✔ ada1352 (jobs, gates, port street); KV-15 (health, Now ribbon) next
