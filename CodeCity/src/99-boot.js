@@ -21,5 +21,12 @@ if (window.CITY) {
       const e = { clientX: r.left + r.width * pk[0], clientY: r.top + r.height * pk[1] };
       onHover(e); onPick(e);
     }
+    // test hook: #rco=0.5,0.6 opens the right-click menu there (tools/shot.js; greyed items show their reason)
+    const rc = (q.get('rco') || '').split(',').map(Number);
+    if (rc.length === 2 && rc.every(Number.isFinite)) {
+      const r = canvas.getBoundingClientRect();
+      const e = { clientX: r.left + r.width * rc[0], clientY: r.top + r.height * rc[1] };
+      onHover(e); onContext(e);
+    }
   }, 300);
 } else $('drop').hidden = false;

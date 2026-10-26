@@ -89,7 +89,7 @@ try {
     path.join(__dirname, '..', 'from-kapu', 'test', 'spec-95-companion.js')], { encoding: 'utf8', timeout: 60000 });
   const lines = String(spec.stdout || '').trim().split('\n').filter(Boolean);
   for (const l of lines) check(l.startsWith('ok'), 'companion: ' + l.replace(/^(ok|FAIL)\s+/, ''));
-  check(lines.length === 8 && spec.status === 0, `companion: all 8 cases ran (got ${lines.length}, exit ${spec.status})`);
+  check(lines.length === 9 && spec.status === 0, `companion: all 9 cases ran (got ${lines.length}, exit ${spec.status})`);
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
   else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }

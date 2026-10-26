@@ -5,7 +5,7 @@
 // Serves CodeCity/dist/vrg-codecity.html on http://localhost:8797 (a real origin) together with
 // the files it loads from CodeCity/dist (vrg-codecity.data.js, *.city.json), and runs a fixed set
 // of local actions the page asks for: open a tool the START.cmd way, open a folder, a terminal,
-// Claude Code, VS Code, a few read-only git commands, and a path check. Ported from the Kapu
+// Claude Code, VS Code (a folder, or a file of this repo: open-file, KV-05), a few read-only git commands, and a path check. Ported from the Kapu
 // companion (CodeCity/from-kapu/companion-server.js, 87f2fca); the file:// page keeps working
 // as a read-only view, it just has no actions.
 //
@@ -144,6 +144,12 @@ const ACTIONS = {
     const d = safeDir(b.dir);
     if (!d) return [403, { error: 'nem engedélyezett mappa' }];
     return [200, CFG.vscode ? launch(CFG.vscode, [d]) : launch('cmd.exe', ['/c', 'code', '.'], d)];
+  } },
+  // a file of this repo in the portable VS Code, inside the repo's window (the folder first, then the file)
+  'open-file': { keys: ['path'], async run(b) {
+    const p = safePath(b.path);
+    if (!p || !under(p, real(REPO)) || !fs.statSync(p).isFile()) return [403, { error: 'nem fájl ebben a repóban' }];
+    return CFG.vscode ? [200, launch(CFG.vscode, [real(REPO), p])] : [404, { error: 'a hordozható VS Code nem található' }];
   } },
   git: { keys: ['cmd'], async run(b) {
     if (!Object.prototype.hasOwnProperty.call(GIT, b.cmd)) return [400, { error: 'ismeretlen git parancs' }];

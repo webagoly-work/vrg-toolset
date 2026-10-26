@@ -46,7 +46,8 @@ canvas.addEventListener('pointerdown', e => {
   canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener('pointerup', e => {
-  if (drag && drag.moved < 4) onPick(e);
+  // a right click that did not drag is the RCO menu (17-actions); a right drag pans
+  if (drag && drag.moved < 4) { if (e.button === 2) onContext(e); else onPick(e); }
   drag = null;
 });
 canvas.addEventListener('pointermove', e => {

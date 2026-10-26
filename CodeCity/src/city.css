@@ -46,6 +46,21 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 @media (max-width: 600px) { #help { display: none; } #legend { bottom: 12px; } }
 .dim { color: var(--dim); }
 #panel, #legend, #tip, #help, #drop { z-index: 2; }
+/* right-click menu and toast (17-actions); a greyed item says why, in its own small line */
+#kv-menu { position: fixed; z-index: 5; min-width: 230px; max-width: 340px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 4px; padding: 4px 0; box-shadow: 0 6px 24px #0008; }
+#kv-menu .kv-mh { padding: 4px 12px 6px; color: var(--accent); word-break: break-all; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+#kv-menu .kv-mi { padding: 4px 12px; cursor: pointer; }
+#kv-menu .kv-mi:hover { background: #ffffff12; color: var(--accent); }
+#kv-menu .kv-mi.off { color: var(--dim); cursor: default; }
+#kv-menu .kv-mi.off:hover { background: none; color: var(--dim); }
+#kv-menu small { display: block; font-size: 11px; opacity: .8; }
+#kv-menu hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+#kv-toast { position: fixed; z-index: 6; left: 50%; bottom: 56px; transform: translateX(-50%); max-width: min(640px, calc(100% - 32px));
+  background: var(--panel); border: 1px solid var(--accent); border-radius: 4px; padding: 6px 12px; word-break: break-all; }
+.kv-hist { list-style: none; margin: 8px 0 0; padding: 0; max-height: 50vh; overflow: auto; }
+.kv-hist li { padding: 3px 0; border-top: 1px solid var(--line); cursor: pointer; }
+.kv-hist li:hover { color: var(--accent); }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;
   background: #05070de6; border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; letter-spacing: .06em; }

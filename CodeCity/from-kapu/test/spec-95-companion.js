@@ -103,6 +103,14 @@ module.exports = [
     const c = await post('open-claude', { dir: 'Inventory' });
     assert.ok(c.json.args.includes('/k') || c.json.args.includes('cmd'));
   } },
+  { name: 'open-file: a repo file -> VS Code on the repo + file, or 404 without VS Code; a folder or outside -> 403', async fn() {
+    await start();
+    const r = await post('open-file', { path: 'CodeCity/scan.js' });
+    assert.ok(r.status === 200 || r.status === 404, String(r.status));
+    if (r.status === 200) assert.ok(r.json.args[1].toLowerCase().endsWith(path.join('codecity', 'scan.js')));
+    assert.strictEqual((await post('open-file', { path: 'CodeCity' })).status, 403);
+    assert.strictEqual((await post('open-file', { path: 'C:\\Windows\\win.ini' })).status, 403);
+  } },
   { name: 'unknown action, extra field, bad git cmd, git pull -> 400; body > 16 KB -> 413', async fn() {
     await start();
     assert.strictEqual((await post('rm-rf', { dir: 'CodeCity' })).status, 400);
