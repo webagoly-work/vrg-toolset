@@ -1,4 +1,5 @@
 {
+ "circuitStage": [],
  "villanyChecks": [
   {
    "layer": "V1 · Jelölés",
@@ -14,8 +15,14 @@
    "layer": "V1 · Világítás",
    "checks": [
     "GARDRÓB: hiányzik SWI",
-    "FÜRDŐSZOBA: hiányzik SWI",
-    "WC: hiányzik SWI"
+    "FÜRDŐSZOBA: hiányzik SWI"
+   ]
+  },
+  {
+   "layer": "V1 · Gyengeáram",
+   "checks": [
+    "GYEREKSZOBA: hiányzik TVA",
+    "ELŐSZOBA: hiányzik BEL"
    ]
   }
  ],
@@ -23,13 +30,14 @@
   "Alap": 0,
   "V1 · Jelölés": 0,
   "V1 · Igények": 0,
-  "V1 · Meglévő / bontás": 4,
+  "V1 · Meglévő / bontás": 5,
   "V1 · Betáplálás és elosztás": 6,
   "V1 · Dedikált körök": 7,
   "V1 · Dugaljak": 25,
-  "V1 · Világítás": 31,
+  "V1 · Világítás": 32,
   "V1 · Gyengeáram": 6,
   "V1 · Érintésvédelem / EPH": 3,
+  "V1 · Veszélyérzékelők": 4,
   "V1 · Riasztó": 4,
   "V1 · Tűzvédelem": 5,
   "V1 · Nyomvonal és dobozok": 0,
@@ -99,8 +107,7 @@
    "layer": "B1 · Világítás",
    "checks": [
     "GARDRÓB: hiányzik SWI",
-    "FÜRDŐSZOBA: hiányzik SWI",
-    "WC: hiányzik SWI"
+    "FÜRDŐSZOBA: hiányzik SWI"
    ]
   },
   {
@@ -274,9 +281,14 @@
     "HDT1: nincs ARM / csatorna pályához kötve",
     "MCP1: nincs ARM / csatorna pályához kötve",
     "SND1: nincs ARM / csatorna pályához kötve",
+    "GAS1: nincs ARM / csatorna pályához kötve",
+    "HTA1: nincs ARM / csatorna pályához kötve",
+    "WLK1: nincs ARM / csatorna pályához kötve",
+    "WLK1: nincs ARM / csatorna pályához kötve",
     "NUT1: nincs ARM / csatorna pályához kötve",
     "DPB1: nincs ARM / csatorna pályához kötve",
     "RSV1: nincs ARM / csatorna pályához kötve",
+    "K16: nincs ARM / csatorna pályához kötve",
     "LNR1: nincs ARM / csatorna pályához kötve",
     "L16: nincs ARM / csatorna pályához kötve",
     "POR1: nincs ARM / csatorna pályához kötve",
@@ -309,13 +321,13 @@
   "Alap": 0,
   "B1 · Jelölés": 0,
   "B1 · Igények": 0,
-  "B1 · Meglévő / bontás": 4,
+  "B1 · Meglévő / bontás": 5,
   "B1 · Hardver": 15,
   "B1 · BASE": 1,
   "B1 · Csatorna": 0,
   "B1 · Dedikált körök": 7,
   "B1 · Dugaljak": 25,
-  "B1 · Világítás": 31,
+  "B1 · Világítás": 32,
   "B1 · Érintésvédelem / EPH": 3,
   "B1 · Törpefeszültség — A busz": 1,
   "B1 · Biztosított 24 V — B busz": 1,
@@ -326,6 +338,7 @@
   "B1 · Kezelőfelületek": 2,
   "B1 · Média és hang": 3,
   "B1 · USB": 1,
+  "B1 · Veszélyérzékelők": 4,
   "B1 · Biztonságtechnika": 6,
   "B1 · Tűzvédelem": 5,
   "B1 · Klaszterpontok": 5,
@@ -333,7 +346,7 @@
   "B1 · Okos előkészítés": 3,
   "B1 · Extrák és ötletek": 1
  },
- "paths": 0,
+ "paths": 1,
  "log": [
   "Igények: a nappali és a háló igénylistája (a javaslat szerint)",
   "Betáplálás és elosztás: MÉRŐ · ISP · MDB · SSC · TJK · EPH",
@@ -341,8 +354,11 @@
   "Érintésvédelem / EPH: PEB (FÜRDŐSZOBA), EPB (FÜRDŐSZOBA), EPB (KONYHA)",
   "Riasztó: KPD (ELŐSZOBA), DWC (ELŐSZOBA), MOT (NAPPALI · ÉTKEZŐ), SRN (KÖZLEKEDŐ)",
   "Tűzvédelem: SMK (KÖZLEKEDŐ), SMK (NAPPALI · ÉTKEZŐ), HDT (KONYHA), MCP (ELŐSZOBA), SND (KÖZLEKEDŐ)",
+  "Veszélyérzékelők: GAS (KONYHA), HTA (KONYHA), WLK (KONYHA), WLK (FÜRDŐSZOBA)",
   "Okos előkészítés: NUT (NAPPALI · ÉTKEZŐ), DPB (GYEREKSZOBA), RSV (NAPPALI · ÉTKEZŐ)",
-  "Meglévő / bontás: Régi dugalj — háló Ny (megmarad) · Régi mennyezeti lámpa — nappali (cserélendő) · Régi kapcsoló — közlekedő (bontandó) · Régi dugalj — közlekedő vége (bontandó)",
+  "Meglévő / bontás: Régi dugalj — háló Ny (megmarad) · Régi mennyezeti lámpa — nappali (cserélendő) · Régi kapcsoló — közlekedő (bontandó) · Régi dugalj — közlekedő vége (bontandó) · + egy régi, falon kívüli nyomvonal (bontandó)",
+  "Kapcsoló-érzékelő: WC K16 (erzekelo) · a folyosói K10 kapcsoló: 101 Kizárás (KI / AUTO)",
+  "IP44: 0 kültéri pont · Kültéri körök 1P+N: 2",
   "Bővítés BRIDGE Stackké: 10 elem áthelyezve · 12 új réteg · sys:WEAK, sys:ALARM, route feloldva",
   "Portálok: 5 (bejárati ajtó + nappali + háló ajtó, minden helyiség felőli oldalon)",
   "RBX: RBX01 → GYEREKSZOBA + NAPPALI · ÉTKEZŐ · RBX02 → HÁLÓ + FÜRDŐSZOBA · RBX03 → KONYHA + ELŐSZOBA · RBX04 → WC + KÖZLEKEDŐ · nincs RBX-e: GARDRÓB, ERKÉLY",

@@ -2,7 +2,7 @@
  "format": "varler-planner",
  "version": 1,
  "name": "Gyakorló lakás — BRIDGE Stack (a Villany Stack bővítve), minden réteg (pályák nélkül)",
- "saved": "2026-10-26T21:55:30.851Z",
+ "saved": "2026-10-26T22:35:07.186Z",
  "project": {
   "v": 1,
   "state": {
@@ -53,7 +53,7 @@
     "th": 300
    },
    "isoGrid": false,
-   "activeLayer": "Lmvpsp466",
+   "activeLayer": "Lmvpu3o6o",
    "showRefs": false,
    "pitch": 30,
    "soloRoom": null,
@@ -108,7 +108,7 @@
     }
    },
    "warp": null,
-   "stack": "Smvpsp464",
+   "stack": "Smvpu3o6l",
    "stkOff": false,
    "stage": "stk:construct"
   },
@@ -218,9 +218,47 @@
   ],
   "data": {
    "v": 2,
-   "seq": 184,
+   "seq": 193,
    "cables": [],
-   "paths": [],
+   "paths": [
+    {
+     "nodes": [
+      {
+       "x": 3700,
+       "y": 4200,
+       "level": "ground",
+       "h": 1100,
+       "id": "n159"
+      },
+      {
+       "x": 3700,
+       "y": 4200,
+       "level": "ground",
+       "h": 2400,
+       "id": "n160"
+      },
+      {
+       "x": 6900,
+       "y": 4200,
+       "level": "ground",
+       "h": 2400,
+       "id": "n161"
+      }
+     ],
+     "sections": [
+      {
+       "build": "falon"
+      },
+      {
+       "build": "falon"
+      }
+     ],
+     "layer": "Lmvpu3o6n",
+     "ex": "remove",
+     "note": "Régi falon kívüli vezeték — közlekedő (bontandó)",
+     "id": "P158"
+    }
+   ],
    "devices": [
     {
      "type": "light",
@@ -230,7 +268,7 @@
      "x": 2300,
      "y": 1700,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D48",
      "ref": "L1",
      "faceBack": true,
@@ -244,7 +282,7 @@
      "x": 3900,
      "y": 1500,
      "h": 1400,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "side": 0,
      "id": "D49",
      "ref": "L2",
@@ -259,7 +297,7 @@
      "x": 650,
      "y": 3350,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D50",
      "ref": "L3",
      "faceBack": true,
@@ -273,7 +311,7 @@
      "x": 5500,
      "y": 2000,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D51",
      "ref": "L4",
      "faceBack": true,
@@ -287,7 +325,7 @@
      "x": 10500,
      "y": 4400,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D52",
      "ref": "L5",
      "faceBack": true,
@@ -301,7 +339,7 @@
      "x": 8400,
      "y": 2500,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D53",
      "ref": "L6",
      "faceBack": true,
@@ -315,10 +353,11 @@
      "x": 9750,
      "y": 1100,
      "h": 1800,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "side": 1,
      "id": "D54",
      "ref": "L7",
+     "ip": "IP44",
      "faceBack": true,
      "hVar": "fali"
     },
@@ -330,7 +369,7 @@
      "x": 8300,
      "y": 6600,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D55",
      "ref": "L8",
      "faceBack": true,
@@ -344,7 +383,7 @@
      "x": 9500,
      "y": 6500,
      "h": 1450,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "side": 0,
      "id": "D56",
      "ref": "L9",
@@ -359,7 +398,7 @@
      "x": 1300,
      "y": 5800,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D57",
      "ref": "L10",
      "faceBack": true,
@@ -373,7 +412,7 @@
      "x": 1300,
      "y": 4100,
      "h": 1900,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "side": 1,
      "id": "D58",
      "ref": "L11",
@@ -388,7 +427,7 @@
      "x": 3300,
      "y": 6600,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D59",
      "ref": "L12",
      "faceBack": true,
@@ -402,7 +441,7 @@
      "x": 3700,
      "y": 4800,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D60",
      "ref": "L13",
      "faceBack": true,
@@ -417,7 +456,7 @@
      "x": 5900,
      "y": 4800,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D61",
      "ref": "L14",
      "faceBack": true,
@@ -432,7 +471,7 @@
      "x": 5500,
      "y": 6500,
      "h": 2700,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D62",
      "ref": "L15",
      "faceBack": true,
@@ -446,7 +485,7 @@
      "x": 6550,
      "y": -150,
      "h": 2500,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "side": 1,
      "id": "D63",
      "ref": "SHU1",
@@ -462,7 +501,7 @@
      "x": 3900,
      "y": 400,
      "h": 750,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D64",
      "ref": "D1",
@@ -478,7 +517,7 @@
      "x": 3900,
      "y": 2600,
      "h": 750,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D65",
      "ref": "D2",
@@ -494,7 +533,7 @@
      "x": -150,
      "y": 2000,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 1,
      "id": "D66",
      "ref": "D3",
@@ -510,7 +549,7 @@
      "x": 2400,
      "y": 4100,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D67",
      "ref": "D4",
@@ -526,7 +565,7 @@
      "x": 1400,
      "y": 3000,
      "h": 1100,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D68",
      "ref": "D5",
@@ -542,7 +581,7 @@
      "x": 3900,
      "y": 2000,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 1,
      "id": "D69",
      "ref": "D6",
@@ -558,7 +597,7 @@
      "x": 7100,
      "y": 1500,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D70",
      "ref": "D7",
@@ -574,7 +613,7 @@
      "x": 4600,
      "y": 4100,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D71",
      "ref": "D8",
@@ -590,7 +629,7 @@
      "x": 11550,
      "y": 2600,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D72",
      "ref": "D9",
@@ -606,7 +645,7 @@
      "x": 11550,
      "y": 5000,
      "h": 1200,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D73",
      "ref": "D10",
@@ -622,7 +661,7 @@
      "x": 11550,
      "y": 5300,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D74",
      "ref": "D11",
@@ -638,7 +677,7 @@
      "x": 9500,
      "y": 6800,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 1,
      "id": "D75",
      "ref": "D12",
@@ -654,7 +693,7 @@
      "x": 7100,
      "y": 1200,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 1,
      "id": "D76",
      "ref": "D13",
@@ -670,7 +709,7 @@
      "x": 7100,
      "y": 3800,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 1,
      "id": "D77",
      "ref": "D14",
@@ -686,7 +725,7 @@
      "x": 9500,
      "y": 6000,
      "h": 1100,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D78",
      "ref": "D15",
@@ -702,7 +741,7 @@
      "x": 9500,
      "y": 7000,
      "h": 1100,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D79",
      "ref": "D16",
@@ -718,7 +757,7 @@
      "x": 7500,
      "y": 7750,
      "h": 1100,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D80",
      "ref": "D17",
@@ -734,7 +773,7 @@
      "x": 7100,
      "y": 7300,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 1,
      "id": "D81",
      "ref": "D18",
@@ -750,7 +789,7 @@
      "x": 9100,
      "y": 7750,
      "h": 2000,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D82",
      "ref": "D19",
@@ -766,7 +805,7 @@
      "x": 2000,
      "y": 4100,
      "h": 1400,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 1,
      "id": "D83",
      "ref": "D20",
@@ -782,7 +821,7 @@
      "x": 2700,
      "y": 6600,
      "h": 1100,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D84",
      "ref": "D21",
@@ -798,7 +837,7 @@
      "x": 3900,
      "y": 6000,
      "h": 1900,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D85",
      "ref": "D22",
@@ -814,7 +853,7 @@
      "x": 3900,
      "y": 7000,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 1,
      "id": "D86",
      "ref": "D23",
@@ -830,7 +869,7 @@
      "x": 6000,
      "y": 4100,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 1,
      "id": "D87",
      "ref": "D24",
@@ -846,10 +885,11 @@
      "x": 10600,
      "y": 1650,
      "h": 300,
-     "layer": "Lmvpsp468",
+     "layer": "Lmvpu3o6q",
      "side": 0,
      "id": "D88",
      "ref": "D25",
+     "ip": "IP44",
      "faceBack": true,
      "hVar": "alap",
      "note": "Erkély kültéri (IP44)"
@@ -862,7 +902,7 @@
      "x": 8600,
      "y": 7750,
      "h": 600,
-     "layer": "Lmvpsp467",
+     "layer": "Lmvpu3o6p",
      "side": 0,
      "id": "D89",
      "ref": "DED1",
@@ -878,7 +918,7 @@
      "x": 7100,
      "y": 6800,
      "h": 300,
-     "layer": "Lmvpsp467",
+     "layer": "Lmvpu3o6p",
      "side": 1,
      "id": "D90",
      "ref": "DED2",
@@ -894,7 +934,7 @@
      "x": 7900,
      "y": 7750,
      "h": 300,
-     "layer": "Lmvpsp467",
+     "layer": "Lmvpu3o6p",
      "side": 0,
      "id": "D91",
      "ref": "DED3",
@@ -910,7 +950,7 @@
      "x": -150,
      "y": 5000,
      "h": 1100,
-     "layer": "Lmvpsp467",
+     "layer": "Lmvpu3o6p",
      "side": 1,
      "id": "D92",
      "ref": "DED4",
@@ -926,7 +966,7 @@
      "x": 1000,
      "y": 7750,
      "h": 1800,
-     "layer": "Lmvpsp467",
+     "layer": "Lmvpu3o6p",
      "side": 0,
      "id": "D93",
      "ref": "DED5",
@@ -942,7 +982,7 @@
      "x": 7100,
      "y": 2600,
      "h": 2300,
-     "layer": "Lmvpsp467",
+     "layer": "Lmvpu3o6p",
      "side": 1,
      "id": "D94",
      "ref": "DED6",
@@ -959,7 +999,7 @@
      "y": 4100,
      "h": 1100,
      "side": 0,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B29",
       "face": -1,
@@ -984,7 +1024,7 @@
      "y": 2900,
      "h": 750,
      "side": 0,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D96",
      "ref": "K2",
      "swNum": 2,
@@ -1006,7 +1046,7 @@
      "y": 2850,
      "h": 1100,
      "side": 1,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B35",
       "face": 1,
@@ -1031,7 +1071,7 @@
      "y": 4100,
      "h": 1100,
      "side": 0,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B30",
       "face": -1,
@@ -1056,7 +1096,7 @@
      "y": 4100,
      "h": 1100,
      "side": 0,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D99",
      "ref": "K5",
      "swNum": 2,
@@ -1076,7 +1116,7 @@
      "y": 5350,
      "h": 1100,
      "side": 1,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B33",
       "face": 1,
@@ -1102,7 +1142,7 @@
      "y": 1350,
      "h": 1100,
      "side": 0,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "id": "D101",
      "ref": "K7",
      "swNum": 2,
@@ -1123,7 +1163,7 @@
      "y": 5850,
      "h": 1100,
      "side": 1,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B34",
       "face": 1,
@@ -1149,7 +1189,7 @@
      "y": 5350,
      "h": 1100,
      "side": 1,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B32",
       "face": 1,
@@ -1175,7 +1215,7 @@
      "y": 5500,
      "h": 1100,
      "side": 0,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B31",
       "face": -1,
@@ -1189,7 +1229,8 @@
      ],
      "swType": "101",
      "gang": 1,
-     "faceBack": true
+     "faceBack": true,
+     "swMode": "kizaras"
     },
     {
      "type": "switch",
@@ -1200,7 +1241,7 @@
      "y": 4100,
      "h": 1100,
      "side": 1,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B29",
       "face": 1,
@@ -1226,7 +1267,7 @@
      "y": 4100,
      "h": 1100,
      "side": 1,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B30",
       "face": 1,
@@ -1252,7 +1293,7 @@
      "y": 5500,
      "h": 1100,
      "side": 0,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B36",
       "face": -1,
@@ -1278,7 +1319,7 @@
      "y": 7750,
      "h": 1100,
      "side": 0,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B28",
       "face": -1,
@@ -1303,7 +1344,7 @@
      "y": 5500,
      "h": 1100,
      "side": 1,
-     "layer": "Lmvpsp469",
+     "layer": "Lmvpu3o6r",
      "slot": {
       "door": "B36",
       "face": 1,
@@ -1325,7 +1366,7 @@
      "x": 3900,
      "y": 6400,
      "h": 1500,
-     "layer": "Lmvpsp467",
+     "layer": "Lmvpu3o6p",
      "side": 1,
      "id": "D110",
      "ref": "EL1",
@@ -1337,7 +1378,7 @@
      "x": 4500,
      "y": 7750,
      "h": 1500,
-     "layer": "Lmvpsp466",
+     "layer": "Lmvpu3o6o",
      "side": 1,
      "id": "D127",
      "ref": "MÉRŐ",
@@ -1350,7 +1391,7 @@
      "x": 3900,
      "y": 7300,
      "h": 300,
-     "layer": "Lmvpsp466",
+     "layer": "Lmvpu3o6o",
      "side": 1,
      "id": "D128",
      "ref": "ISP",
@@ -1363,7 +1404,7 @@
      "x": 3900,
      "y": 5900,
      "h": 1700,
-     "layer": "Lmvpsp466",
+     "layer": "Lmvpu3o6o",
      "side": 1,
      "id": "D129",
      "ref": "MDB",
@@ -1376,7 +1417,7 @@
      "x": 1400,
      "y": 3700,
      "h": 1800,
-     "layer": "Lmvpsp466",
+     "layer": "Lmvpu3o6o",
      "side": 0,
      "id": "D130",
      "ref": "SSC",
@@ -1389,7 +1430,7 @@
      "x": 7100,
      "y": 6800,
      "h": 1500,
-     "layer": "Lmvpsp466",
+     "layer": "Lmvpu3o6o",
      "side": 0,
      "id": "D131",
      "ref": "TJK",
@@ -1402,7 +1443,7 @@
      "x": 3900,
      "y": 6900,
      "h": 300,
-     "layer": "Lmvpsp466",
+     "layer": "Lmvpu3o6o",
      "side": 1,
      "id": "D132",
      "ref": "EPH",
@@ -1417,7 +1458,7 @@
      "x": 11550,
      "y": 5600,
      "h": 300,
-     "layer": "Lmvpspcqu",
+     "layer": "Lmvpu4aci",
      "side": 0,
      "id": "D133",
      "ref": "TVA1",
@@ -1432,7 +1473,7 @@
      "x": 11550,
      "y": 5800,
      "h": 300,
-     "layer": "Lmvpspcqv",
+     "layer": "Lmvpu4acj",
      "side": 0,
      "id": "D134",
      "ref": "ETH1",
@@ -1447,7 +1488,7 @@
      "x": -150,
      "y": 1500,
      "h": 300,
-     "layer": "Lmvpspcqu",
+     "layer": "Lmvpu4aci",
      "side": 1,
      "id": "D135",
      "ref": "TVA1",
@@ -1462,7 +1503,7 @@
      "x": 3900,
      "y": 2300,
      "h": 300,
-     "layer": "Lmvpspcqv",
+     "layer": "Lmvpu4acj",
      "side": 1,
      "id": "D136",
      "ref": "ETH1",
@@ -1477,7 +1518,7 @@
      "x": 6300,
      "y": 7750,
      "h": 1300,
-     "layer": "Lmvpspcqw",
+     "layer": "Lmvpu4ack",
      "side": 1,
      "id": "D137",
      "ref": "BEL1",
@@ -1492,7 +1533,7 @@
      "x": 6600,
      "y": 7750,
      "h": 1500,
-     "layer": "Lmvpspcqw",
+     "layer": "Lmvpu4ack",
      "side": 0,
      "id": "D138",
      "ref": "ICM1",
@@ -1507,7 +1548,7 @@
      "x": 600,
      "y": 4100,
      "h": 300,
-     "layer": "Lmvpspbbk",
+     "layer": "Lmvpu48s8",
      "side": 1,
      "id": "D139",
      "ref": "PEB1",
@@ -1522,7 +1563,7 @@
      "x": 1100,
      "y": 7750,
      "h": 300,
-     "layer": "Lmvpspbbk",
+     "layer": "Lmvpu48s8",
      "side": 0,
      "id": "D140",
      "ref": "EPB1",
@@ -1537,7 +1578,7 @@
      "x": 8300,
      "y": 7750,
      "h": 300,
-     "layer": "Lmvpspbbk",
+     "layer": "Lmvpu48s8",
      "side": 0,
      "id": "D141",
      "ref": "EPB1",
@@ -1552,7 +1593,7 @@
      "x": 7100,
      "y": 7200,
      "h": 1450,
-     "layer": "Lmvpspcqw",
+     "layer": "Lmvpu4ack",
      "side": 0,
      "id": "D142",
      "ref": "KPD1",
@@ -1568,7 +1609,7 @@
      "x": 6150,
      "y": 7750,
      "h": 2050,
-     "layer": "Lmvpspcqw",
+     "layer": "Lmvpu4ack",
      "side": 0,
      "id": "D143",
      "ref": "DWC1",
@@ -1584,7 +1625,7 @@
      "x": 11550,
      "y": 7450,
      "h": 2200,
-     "layer": "Lmvpspcqw",
+     "layer": "Lmvpu4ack",
      "side": 0,
      "id": "D144",
      "ref": "MOT1",
@@ -1600,7 +1641,7 @@
      "x": 5000,
      "y": 4100,
      "h": 2300,
-     "layer": "Lmvpspcqw",
+     "layer": "Lmvpu4ack",
      "side": 1,
      "id": "D145",
      "ref": "SRN1",
@@ -1616,7 +1657,7 @@
      "x": 4800,
      "y": 4800,
      "h": 2700,
-     "layer": "Lmvpspbbm",
+     "layer": "Lmvpu48sa",
      "id": "D146",
      "ref": "SMK1",
      "faceBack": true,
@@ -1630,7 +1671,7 @@
      "x": 9000,
      "y": 2600,
      "h": 2700,
-     "layer": "Lmvpspbbm",
+     "layer": "Lmvpu48sa",
      "id": "D147",
      "ref": "SMK1",
      "faceBack": true,
@@ -1644,7 +1685,7 @@
      "x": 8000,
      "y": 6200,
      "h": 2700,
-     "layer": "Lmvpspbbm",
+     "layer": "Lmvpu48sa",
      "id": "D148",
      "ref": "HDT1",
      "faceBack": true,
@@ -1658,7 +1699,7 @@
      "x": 7100,
      "y": 6200,
      "h": 1400,
-     "layer": "Lmvpspbbm",
+     "layer": "Lmvpu48sa",
      "side": 0,
      "id": "D149",
      "ref": "MCP1",
@@ -1673,12 +1714,71 @@
      "x": 6600,
      "y": 5500,
      "h": 2300,
-     "layer": "Lmvpspbbm",
+     "layer": "Lmvpu48sa",
      "side": 0,
      "id": "D150",
      "ref": "SND1",
      "faceBack": true,
      "note": "Hang-fényjelző — közlekedő"
+    },
+    {
+     "type": "ep",
+     "code": "GAS",
+     "var": "fold",
+     "level": "ground",
+     "x": 9500,
+     "y": 5900,
+     "h": 2400,
+     "layer": "Lmvpu3o6t",
+     "side": 0,
+     "id": "D151",
+     "ref": "GAS1",
+     "faceBack": true,
+     "note": "Gázérzékelő — konyha, magasan (földgáz)"
+    },
+    {
+     "type": "ep",
+     "code": "HTA",
+     "var": "zb",
+     "level": "ground",
+     "x": 8800,
+     "y": 6900,
+     "h": 2700,
+     "layer": "Lmvpu3o6t",
+     "id": "D152",
+     "ref": "HTA1",
+     "faceBack": true,
+     "note": "Hőjelző — konyha"
+    },
+    {
+     "type": "ep",
+     "code": "WLK",
+     "var": "w",
+     "level": "ground",
+     "x": 8150,
+     "y": 7750,
+     "h": 100,
+     "layer": "Lmvpu3o6t",
+     "side": 0,
+     "id": "D153",
+     "ref": "WLK1",
+     "faceBack": true,
+     "note": "Vízszivárgás — mosogató alatt"
+    },
+    {
+     "type": "ep",
+     "code": "WLK",
+     "var": "w",
+     "level": "ground",
+     "x": 2700,
+     "y": 5000,
+     "h": 100,
+     "layer": "Lmvpu3o6t",
+     "side": 0,
+     "id": "D154",
+     "ref": "WLK1",
+     "faceBack": true,
+     "note": "Vízszivárgás — fürdő padló"
     },
     {
      "type": "ep",
@@ -1688,9 +1788,9 @@
      "x": 7100,
      "y": 5250,
      "h": 1100,
-     "layer": "Lmvpspbbn",
+     "layer": "Lmvpu48sb",
      "side": 1,
-     "id": "D151",
+     "id": "D155",
      "ref": "NUT1",
      "faceBack": true,
      "note": "Nullás doboz — a nappali ajtókapcsoló mögé"
@@ -1703,9 +1803,9 @@
      "x": 3900,
      "y": 3300,
      "h": 1100,
-     "layer": "Lmvpspbbn",
+     "layer": "Lmvpu48sb",
      "side": 1,
-     "id": "D152",
+     "id": "D156",
      "ref": "DPB1",
      "faceBack": true,
      "note": "Mély doboz — gyerekszoba (redőny modul)"
@@ -1718,9 +1818,9 @@
      "x": 11550,
      "y": 6100,
      "h": 300,
-     "layer": "Lmvpspbbn",
+     "layer": "Lmvpu48sb",
      "side": 0,
-     "id": "D153",
+     "id": "D157",
      "ref": "RSV1",
      "faceBack": true,
      "note": "Tartalék cső — nappali médiafal"
@@ -1731,10 +1831,10 @@
      "x": -150,
      "y": 1200,
      "h": 300,
-     "layer": "Lmvpsp465",
+     "layer": "Lmvpu3o6n",
      "note": "Régi dugalj — háló Ny (megmarad)",
      "side": 1,
-     "id": "D154",
+     "id": "D162",
      "faceBack": true
     },
     {
@@ -1743,10 +1843,10 @@
      "x": 10450,
      "y": 4350,
      "h": 2700,
-     "layer": "Lmvpsp465",
+     "layer": "Lmvpu3o6n",
      "note": "Régi mennyezeti lámpa — nappali (cserélendő)",
      "ex": "replace",
-     "id": "D155",
+     "id": "D163",
      "faceBack": true
     },
     {
@@ -1755,11 +1855,11 @@
      "x": 3700,
      "y": 4100,
      "h": 1100,
-     "layer": "Lmvpsp465",
+     "layer": "Lmvpu3o6n",
      "note": "Régi kapcsoló — közlekedő (bontandó)",
      "side": 1,
      "ex": "remove",
-     "id": "D156",
+     "id": "D164",
      "faceBack": true
     },
     {
@@ -1768,11 +1868,32 @@
      "x": 7100,
      "y": 4600,
      "h": 300,
-     "layer": "Lmvpsp465",
+     "layer": "Lmvpu3o6n",
      "note": "Régi dugalj — közlekedő vége (bontandó)",
      "side": 0,
      "ex": "remove",
-     "id": "D157",
+     "id": "D165",
+     "faceBack": true
+    },
+    {
+     "type": "switch",
+     "code": "SWI",
+     "var": "pres",
+     "level": "ground",
+     "x": 3900,
+     "y": 7200,
+     "h": 2200,
+     "side": 0,
+     "layer": "Lmvpu3o6r",
+     "id": "D166",
+     "ref": "K16",
+     "swNum": 2,
+     "ctl": [
+      "D59"
+     ],
+     "swType": "erzekelo",
+     "gang": 1,
+     "note": "Kapcsoló-érzékelő — WC (jelenlét)",
      "faceBack": true
     },
     {
@@ -1788,8 +1909,8 @@
      "at": "hinge",
      "cls": "PT-E",
      "tier": "SF-3",
-     "layer": "Lmvpsp466",
-     "id": "D160",
+     "layer": "Lmvpu3o6o",
+     "id": "D169",
      "ref": "PT",
      "faceBack": true
     },
@@ -1806,8 +1927,8 @@
      "at": "latch",
      "cls": "PT-D",
      "tier": "SF-1",
-     "layer": "Lmvpsp466",
-     "id": "D161",
+     "layer": "Lmvpu3o6o",
+     "id": "D170",
      "ref": "PT2",
      "faceBack": true
     },
@@ -1824,8 +1945,8 @@
      "at": "hinge",
      "cls": "PT-D",
      "tier": "SF-1",
-     "layer": "Lmvpsp466",
-     "id": "D162",
+     "layer": "Lmvpu3o6o",
+     "id": "D171",
      "ref": "PT3",
      "faceBack": true
     },
@@ -1842,8 +1963,8 @@
      "at": "latch",
      "cls": "PT-D",
      "tier": "SF-1",
-     "layer": "Lmvpsp466",
-     "id": "D163",
+     "layer": "Lmvpu3o6o",
+     "id": "D172",
      "ref": "PT4",
      "faceBack": true
     },
@@ -1860,8 +1981,8 @@
      "at": "hinge",
      "cls": "PT-D",
      "tier": "SF-1",
-     "layer": "Lmvpsp466",
-     "id": "D164",
+     "layer": "Lmvpu3o6o",
+     "id": "D173",
      "ref": "PT5",
      "faceBack": true
     },
@@ -1871,7 +1992,7 @@
      "x": 7100,
      "y": 2800,
      "h": 2150,
-     "layer": "Lmvpsp466",
+     "layer": "Lmvpu3o6o",
      "side": 1,
      "rb": "RB-M",
      "serves": null,
@@ -1880,7 +2001,7 @@
       "ble",
       "espnow"
      ],
-     "id": "D165",
+     "id": "D174",
      "ref": "RBX01",
      "faceBack": true,
      "note": "RBX — nappali + gyerekszoba"
@@ -1891,7 +2012,7 @@
      "x": 2000,
      "y": 4100,
      "h": 2150,
-     "layer": "Lmvpsp466",
+     "layer": "Lmvpu3o6o",
      "side": 0,
      "rb": "RB-M",
      "serves": null,
@@ -1900,7 +2021,7 @@
       "ble",
       "espnow"
      ],
-     "id": "D166",
+     "id": "D175",
      "ref": "RBX02",
      "faceBack": true,
      "note": "RBX — háló + fürdő"
@@ -1911,7 +2032,7 @@
      "x": 7100,
      "y": 7000,
      "h": 2150,
-     "layer": "Lmvpsp466",
+     "layer": "Lmvpu3o6o",
      "side": 0,
      "rb": "RB-M",
      "serves": null,
@@ -1920,7 +2041,7 @@
       "ble",
       "espnow"
      ],
-     "id": "D167",
+     "id": "D176",
      "ref": "RBX03",
      "faceBack": true,
      "note": "RBX — előszoba + konyha"
@@ -1931,7 +2052,7 @@
      "x": 3300,
      "y": 5500,
      "h": 2150,
-     "layer": "Lmvpsp466",
+     "layer": "Lmvpu3o6o",
      "side": 0,
      "rb": "RB-M",
      "serves": null,
@@ -1940,7 +2061,7 @@
       "ble",
       "espnow"
      ],
-     "id": "D168",
+     "id": "D177",
      "ref": "RBX04",
      "faceBack": true,
      "note": "RBX — közlekedő + WC"
@@ -1951,14 +2072,14 @@
      "x": -150,
      "y": 3500,
      "h": 900,
-     "layer": "Lmvpspcqx",
+     "layer": "Lmvpu4acl",
      "side": 1,
      "units": [
       "NET",
       "COMP",
       "MEDIA"
      ],
-     "id": "D169",
+     "id": "D178",
      "ref": "BASE",
      "faceBack": true,
      "note": "BASE — gardrób, száraz, az Elosztó 5 m-en belül"
@@ -1971,8 +2092,8 @@
      "x": 10500,
      "y": 2400,
      "h": 2700,
-     "layer": "Lmvpspcqz",
-     "id": "D170",
+     "layer": "Lmvpu4acn",
+     "id": "D179",
      "ref": "LNR1",
      "faceBack": true,
      "note": "LED-vonal — nappali rejtett fény"
@@ -1985,11 +2106,11 @@
      "x": 4400,
      "y": 4100,
      "h": 300,
-     "layer": "Lmvpspcr0",
+     "layer": "Lmvpu4aco",
      "side": 1,
-     "id": "D171",
+     "id": "D180",
      "ref": "L16",
-     "host": "D172",
+     "host": "D181",
      "faceBack": true,
      "note": "Tájékozódó fény — közlekedő"
     },
@@ -2003,8 +2124,8 @@
      "y": 4100,
      "h": 300,
      "side": 1,
-     "layer": "Lmvpspcr6",
-     "id": "D172",
+     "layer": "Lmvpu4acu",
+     "id": "D181",
      "ref": "KL",
      "faceBack": true
     },
@@ -2016,11 +2137,11 @@
      "x": 4850,
      "y": 7750,
      "h": 2150,
-     "layer": "Lmvpspcr1",
+     "layer": "Lmvpu4acp",
      "side": 0,
-     "id": "D173",
+     "id": "D182",
      "ref": "POR1",
-     "host": "D160",
+     "host": "D169",
      "faceBack": true,
      "note": "Portál vezérlőpont — bejárati ajtó"
     },
@@ -2032,8 +2153,8 @@
      "x": 5000,
      "y": 4800,
      "h": 2700,
-     "layer": "Lmvpspcqv",
-     "id": "D174",
+     "layer": "Lmvpu4acj",
+     "id": "D183",
      "ref": "ACP1",
      "faceBack": true,
      "note": "WiFi AP — közlekedő"
@@ -2046,8 +2167,8 @@
      "x": 9500,
      "y": 3600,
      "h": 2700,
-     "layer": "Lmvpspcr2",
-     "id": "D175",
+     "layer": "Lmvpu4acq",
+     "id": "D184",
      "ref": "SEN1",
      "faceBack": true,
      "note": "Jelenlét (mmWave) — nappali"
@@ -2060,11 +2181,11 @@
      "x": 7100,
      "y": 3900,
      "h": 1450,
-     "layer": "Lmvpspcr4",
+     "layer": "Lmvpu4acs",
      "side": 1,
-     "id": "D176",
+     "id": "D185",
      "ref": "PAN1",
-     "host": "D177",
+     "host": "D186",
      "faceBack": true,
      "note": "Érintőpanel — nappali"
     },
@@ -2078,8 +2199,8 @@
      "y": 3900,
      "h": 1450,
      "side": 1,
-     "layer": "Lmvpspcr6",
-     "id": "D177",
+     "layer": "Lmvpu4acu",
+     "id": "D186",
      "ref": "KL2",
      "faceBack": true
     },
@@ -2091,11 +2212,11 @@
      "x": 3900,
      "y": 3400,
      "h": 1500,
-     "layer": "Lmvpspcr4",
+     "layer": "Lmvpu4acs",
      "side": 0,
-     "id": "D178",
+     "id": "D187",
      "ref": "THR1",
-     "host": "D179",
+     "host": "D188",
      "faceBack": true,
      "note": "Termosztát — háló"
     },
@@ -2109,8 +2230,8 @@
      "y": 3400,
      "h": 1500,
      "side": 0,
-     "layer": "Lmvpspcr6",
-     "id": "D179",
+     "layer": "Lmvpu4acu",
+     "id": "D188",
      "ref": "KL3",
      "faceBack": true
     },
@@ -2122,8 +2243,8 @@
      "x": 10500,
      "y": 3200,
      "h": 2700,
-     "layer": "Lmvpspcqu",
-     "id": "D180",
+     "layer": "Lmvpu4aci",
+     "id": "D189",
      "ref": "SPK1",
      "faceBack": true,
      "note": "Hangszóró — nappali"
@@ -2136,11 +2257,11 @@
      "x": 3900,
      "y": 2700,
      "h": 300,
-     "layer": "Lmvpspcr5",
+     "layer": "Lmvpu4act",
      "side": 1,
-     "id": "D181",
+     "id": "D190",
      "ref": "USB1",
-     "host": "D182",
+     "host": "D191",
      "faceBack": true,
      "note": "USB — gyerekszoba íróasztal"
     },
@@ -2154,8 +2275,8 @@
      "y": 2700,
      "h": 300,
      "side": 1,
-     "layer": "Lmvpspcr6",
-     "id": "D182",
+     "layer": "Lmvpu4acu",
+     "id": "D191",
      "ref": "KL4",
      "faceBack": true
     },
@@ -2167,11 +2288,11 @@
      "x": 3900,
      "y": 2200,
      "h": 1200,
-     "layer": "Lmvpspcr8",
+     "layer": "Lmvpu4acw",
      "side": 0,
-     "id": "D183",
+     "id": "D192",
      "ref": "XPH1",
-     "host": "D184",
+     "host": "D193",
      "faceBack": true,
      "note": "Telefontartó töltő — háló, az ágy mellett"
     },
@@ -2185,8 +2306,8 @@
      "y": 2200,
      "h": 1200,
      "side": 0,
-     "layer": "Lmvpspcr6",
-     "id": "D184",
+     "layer": "Lmvpu4acu",
+     "id": "D193",
      "ref": "KL5",
      "faceBack": true
     }
@@ -3002,7 +3123,7 @@
       "curve": "C",
       "amps": 16,
       "poles": 1,
-      "n": false
+      "n": true
      },
      "members": [
       "D88"
@@ -3169,7 +3290,7 @@
       "curve": "C",
       "amps": 10,
       "poles": 1,
-      "n": false
+      "n": true
      },
      "members": [
       "D52",
@@ -3192,7 +3313,8 @@
       "D106",
       "D107",
       "D108",
-      "D109"
+      "D109",
+      "D166"
      ],
      "id": "A125",
      "preset": "vil",
@@ -3247,7 +3369,7 @@
      "tags": [
       "bejarat"
      ],
-     "layer": "Lmvpsp464",
+     "layer": "Lmvpu3o6m",
      "id": "J47"
     },
     {
@@ -3258,8 +3380,8 @@
      "tags": [
       "portal"
      ],
-     "layer": "Lmvpsp464",
-     "id": "J158"
+     "layer": "Lmvpu3o6m",
+     "id": "J167"
     },
     {
      "kind": "opening",
@@ -3269,8 +3391,8 @@
      "tags": [
       "portal"
      ],
-     "layer": "Lmvpsp464",
-     "id": "J159"
+     "layer": "Lmvpu3o6m",
+     "id": "J168"
     }
    ],
    "traces": [],
@@ -3464,11 +3586,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "construct"
    },
    {
-    "id": "Lmvpsp464",
+    "id": "Lmvpu3o6m",
     "name": "B1 · Jelölés",
     "visible": true,
     "cats": {
@@ -3489,11 +3611,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "mark"
    },
    {
-    "id": "Lmvpspb97",
+    "id": "Lmvpu48q7",
     "name": "B1 · Igények",
     "visible": true,
     "cats": {
@@ -3514,11 +3636,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "need"
    },
    {
-    "id": "Lmvpsp465",
+    "id": "Lmvpu3o6n",
     "name": "B1 · Meglévő / bontás",
     "visible": true,
     "cats": {
@@ -3539,11 +3661,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "exist"
    },
    {
-    "id": "Lmvpsp466",
+    "id": "Lmvpu3o6o",
     "name": "B1 · Hardver",
     "visible": true,
     "cats": {
@@ -3564,11 +3686,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "hw"
    },
    {
-    "id": "Lmvpsp467",
+    "id": "Lmvpu3o6p",
     "name": "B1 · Dedikált körök",
     "visible": true,
     "cats": {
@@ -3589,11 +3711,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:DED"
    },
    {
-    "id": "Lmvpsp468",
+    "id": "Lmvpu3o6q",
     "name": "B1 · Dugaljak",
     "visible": true,
     "cats": {
@@ -3614,11 +3736,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:SOC"
    },
    {
-    "id": "Lmvpsp469",
+    "id": "Lmvpu3o6r",
     "name": "B1 · Világítás",
     "visible": true,
     "cats": {
@@ -3639,11 +3761,36 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:LIGHT"
    },
    {
-    "id": "Lmvpspbbk",
+    "id": "Lmvpu3o6t",
+    "name": "B1 · Veszélyérzékelők",
+    "visible": true,
+    "cats": {
+     "path": true,
+     "socket": true,
+     "switch": true,
+     "light": true,
+     "device": true,
+     "wall": true,
+     "door": true,
+     "window": true,
+     "stairs": true,
+     "object": true,
+     "floor": true,
+     "roof": true,
+     "note": true,
+     "cable": true,
+     "mark": true,
+     "trace": true
+    },
+    "stack": "Smvpu3o6l",
+    "role": "sys:HAZARD"
+   },
+   {
+    "id": "Lmvpu48s8",
     "name": "B1 · Érintésvédelem / EPH",
     "visible": true,
     "cats": {
@@ -3664,11 +3811,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:BOND"
    },
    {
-    "id": "Lmvpspbbm",
+    "id": "Lmvpu48sa",
     "name": "B1 · Tűzvédelem",
     "visible": true,
     "cats": {
@@ -3689,11 +3836,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:FIRE"
    },
    {
-    "id": "Lmvpspbbn",
+    "id": "Lmvpu48sb",
     "name": "B1 · Okos előkészítés",
     "visible": true,
     "cats": {
@@ -3714,11 +3861,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:SMARTREADY"
    },
    {
-    "id": "Lmvpspcqu",
+    "id": "Lmvpu4aci",
     "name": "B1 · Média és hang",
     "visible": true,
     "cats": {
@@ -3739,11 +3886,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:MEDIA"
    },
    {
-    "id": "Lmvpspcqv",
+    "id": "Lmvpu4acj",
     "name": "B1 · Adat / PoE",
     "visible": true,
     "cats": {
@@ -3764,11 +3911,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:DATA"
    },
    {
-    "id": "Lmvpspcqw",
+    "id": "Lmvpu4ack",
     "name": "B1 · Biztonságtechnika",
     "visible": true,
     "cats": {
@@ -3789,11 +3936,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:SECURITY"
    },
    {
-    "id": "Lmvpspcqx",
+    "id": "Lmvpu4acl",
     "name": "B1 · BASE",
     "visible": true,
     "cats": {
@@ -3814,11 +3961,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "base"
    },
    {
-    "id": "Lmvpspcqy",
+    "id": "Lmvpu4acm",
     "name": "B1 · Csatorna",
     "visible": true,
     "cats": {
@@ -3839,11 +3986,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "channel"
    },
    {
-    "id": "Lmvpspcqz",
+    "id": "Lmvpu4acn",
     "name": "B1 · Törpefeszültség — A busz",
     "visible": true,
     "cats": {
@@ -3864,11 +4011,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:LV"
    },
    {
-    "id": "Lmvpspcr0",
+    "id": "Lmvpu4aco",
     "name": "B1 · Biztosított 24 V — B busz",
     "visible": true,
     "cats": {
@@ -3889,11 +4036,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:BUSB"
    },
    {
-    "id": "Lmvpspcr1",
+    "id": "Lmvpu4acp",
     "name": "B1 · Vezérlés (BRIDGE_LINK)",
     "visible": true,
     "cats": {
@@ -3914,11 +4061,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:CONTROL"
    },
    {
-    "id": "Lmvpspcr2",
+    "id": "Lmvpu4acq",
     "name": "B1 · Érzékelők",
     "visible": true,
     "cats": {
@@ -3939,11 +4086,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:SENSOR"
    },
    {
-    "id": "Lmvpspcr3",
+    "id": "Lmvpu4acr",
     "name": "B1 · Rádió — lefedettség",
     "visible": true,
     "cats": {
@@ -3964,11 +4111,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:RF"
    },
    {
-    "id": "Lmvpspcr4",
+    "id": "Lmvpu4acs",
     "name": "B1 · Kezelőfelületek",
     "visible": true,
     "cats": {
@@ -3989,11 +4136,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:HMI"
    },
    {
-    "id": "Lmvpspcr5",
+    "id": "Lmvpu4act",
     "name": "B1 · USB",
     "visible": true,
     "cats": {
@@ -4014,11 +4161,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:USB"
    },
    {
-    "id": "Lmvpspcr6",
+    "id": "Lmvpu4acu",
     "name": "B1 · Klaszterpontok",
     "visible": true,
     "cats": {
@@ -4039,11 +4186,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "cluster"
    },
    {
-    "id": "Lmvpspcr7",
+    "id": "Lmvpu4acv",
     "name": "B1 · ARM pályák",
     "visible": true,
     "cats": {
@@ -4064,11 +4211,11 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "arm"
    },
    {
-    "id": "Lmvpspcr8",
+    "id": "Lmvpu4acw",
     "name": "B1 · Extrák és ötletek",
     "visible": true,
     "cats": {
@@ -4089,43 +4236,44 @@
      "mark": true,
      "trace": true
     },
-    "stack": "Smvpsp464",
+    "stack": "Smvpu3o6l",
     "role": "sys:EXTRA"
    }
   ],
   "stacks": [
    {
-    "id": "Smvpsp464",
+    "id": "Smvpu3o6l",
     "name": "BRIDGE Stack",
     "kind": "bridge",
     "scale": "S-C",
     "layers": [
      "L0",
-     "Lmvpsp464",
-     "Lmvpspb97",
-     "Lmvpsp465",
-     "Lmvpsp466",
-     "Lmvpspcqx",
-     "Lmvpspcqy",
-     "Lmvpsp467",
-     "Lmvpsp468",
-     "Lmvpsp469",
-     "Lmvpspbbk",
-     "Lmvpspcqz",
-     "Lmvpspcr0",
-     "Lmvpspcr1",
-     "Lmvpspcqv",
-     "Lmvpspcr2",
-     "Lmvpspcr3",
-     "Lmvpspcr4",
-     "Lmvpspcqu",
-     "Lmvpspcr5",
-     "Lmvpspcqw",
-     "Lmvpspbbm",
-     "Lmvpspcr6",
-     "Lmvpspcr7",
-     "Lmvpspbbn",
-     "Lmvpspcr8"
+     "Lmvpu3o6m",
+     "Lmvpu48q7",
+     "Lmvpu3o6n",
+     "Lmvpu3o6o",
+     "Lmvpu4acl",
+     "Lmvpu4acm",
+     "Lmvpu3o6p",
+     "Lmvpu3o6q",
+     "Lmvpu3o6r",
+     "Lmvpu48s8",
+     "Lmvpu4acn",
+     "Lmvpu4aco",
+     "Lmvpu4acp",
+     "Lmvpu4acj",
+     "Lmvpu4acq",
+     "Lmvpu4acr",
+     "Lmvpu4acs",
+     "Lmvpu4aci",
+     "Lmvpu4act",
+     "Lmvpu3o6t",
+     "Lmvpu4ack",
+     "Lmvpu48sa",
+     "Lmvpu4acu",
+     "Lmvpu4acv",
+     "Lmvpu48sb",
+     "Lmvpu4acw"
     ],
     "phase": 1
    }

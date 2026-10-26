@@ -114,13 +114,14 @@ what lives on it.
 |---|---|
 | Jelölés | the bejárat mark |
 | Igények | the nappali and háló room lists (the suggestion, taken as is) |
-| Meglévő / bontás | old socket in the háló (megmarad), old ceiling lamp in the nappali (cserélendő, next to the new L5), old switch and old socket in the corridor (bontandó) |
+| Meglévő / bontás | old socket in the háló (megmarad), old ceiling lamp in the nappali (cserélendő, next to the new L5), old switch and old socket in the corridor (bontandó), and an old surface cable run along the corridor (bontandó, red dashed) |
 | Betáplálás és elosztás | EL1 · mérőóra (outside, by the front door) · ISP · **MDB** médiadoboz · **SSC** riasztóközpont (gardrób) · **TJK** tűzjelző központ · **EPH** fő EPH sín |
 | Dedikált · Dugaljak · Világítás | the Erősáram job above, unchanged |
 | Gyengeáram | TV / SAT + data on the nappali media wall, TV / SAT in the háló, data at the gyerekszoba desk, doorbell push outside, intercom in the előszoba |
 | Érintésvédelem / EPH | the fürdő's local bar, the bath, the kitchen pipes |
 | Riasztó | keypad, front-door contact, nappali corner motion detector, indoor siren (cable only) |
 | Tűzvédelem | smoke in the corridor and the nappali, heat in the konyha, call point and sounder (red pairs, own conduit) |
+| Veszélyérzékelők | gas (high, natural gas) and heat alarm in the konyha, water leak under the sink and on the fürdő floor |
 | Nyomvonal és dobozok | empty: the paths are the hand work |
 | Okos előkészítés | a neutral box behind the nappali door switch, a deep box in the gyerekszoba, spare conduit on the media wall |
 
@@ -151,6 +152,12 @@ On top of that:
 | Biztonságtechnika | the moved Riasztó, doorbell and intercom points |
 | Klaszterpontok | 5, opened automatically beside the new endpoints |
 | Extrák és ötletek | phone-holder charger by the bed |
+
+Also in both versions:
+- a **switch-sensor** (jelenlét, 2200) in the WC: the lamp works on its own, and the corridor switch K10 is set to *Kizárás* (KI / AUTO);
+- **IP44** on the balcony socket and lamp, given automatically;
+- **1P+N** on the two circuits that reach the balcony (the V7 suggestion, applied);
+- the **Áramkörök és védelem** stage, now clean.
 
 KNX and Házimozi are off by default and left out. The layer checks list what is still missing in each room ("hiányzik …").
 That is expected in an example this small.

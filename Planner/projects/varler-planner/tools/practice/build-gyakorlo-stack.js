@@ -27,6 +27,9 @@ const VILLANY={
  'sys:FIRE':[   // red pairs, own conduit; panel = TJK in the előszoba
   ['SMK',4800,4800,'loop','Füstérzékelő — közlekedő','C'],['SMK',9000,2600,'loop','Füstérzékelő — nappali','C'],
   ['HDT',8000,6200,'loop','Hőérzékelő — konyha','C'],['MCP',7000,6200,'loop','Kézi jelzésadó — előszoba'],['SND',6600,5400,'loop','Hang-fényjelző — közlekedő']],
+ 'sys:HAZARD':[ // 2026-10-26: the everyday detectors of the rooms that need them (no kazánház / pince in this flat)
+  ['GAS',9400,5900,'fold','Gázérzékelő — konyha, magasan (földgáz)',2400],['HTA',8800,6900,'zb','Hőjelző — konyha','C'],
+  ['WLK',8150,7600,'w','Vízszivárgás — mosogató alatt',100],['WLK',2600,5000,'w','Vízszivárgás — fürdő padló',100]],
  'sys:SMARTREADY':[
   ['NUT',7200,5250,'n','Nullás doboz — a nappali ajtókapcsoló mögé'],['DPB',4000,3300,'60','Mély doboz — gyerekszoba (redőny modul)'],
   ['RSV',11400,6100,'m20','Tartalék cső — nappali médiafal']]};
@@ -87,8 +90,18 @@ setTimeout(()=>{const rep={};try{
   const EXL=w.stkLayer(S.id,'exist');
   EXIST.forEach(([type,x,y,h,ex,note])=>{const g=h==='C'?ceilG(x,y):faceG(x,y,h);const d={type,level:LV,x:g.x,y:g.y,h:g.h,layer:EXL.id,note};
     if(g.side!=null)d.side=g.side;if(ex!=='keep')d.ex=ex;D().devices.push(d);});
+  // an old surface run along the corridor's north wall, to come out (a Meglévő path)
+  D().paths.push({nodes:[{x:3700,y:4200,level:LV,h:1100},{x:3700,y:4200,level:LV,h:2400},{x:6900,y:4200,level:LV,h:2400}],sections:[{build:'falon'},{build:'falon'}],layer:EXL.id,ex:'remove',note:'Régi falon kívüli vezeték — közlekedő (bontandó)'});
   w.ensureIds(D());
-  log('Meglévő / bontás:',EXIST.map(e=>e[5]).join(' · '));
+  log('Meglévő / bontás:',EXIST.map(e=>e[5]).join(' · '),'· + egy régi, falon kívüli nyomvonal (bontandó)');
+  // a switch-sensor in the WC: the lamp works on its own; the corridor switch K10 becomes Kizárás (KI / AUTO)
+  {const lamp=D().devices.find(d=>w.epCodeOf(d)==='LMP'&&roomOf(d)==='WC'),old=D().devices.find(d=>w.lswSw(d)&&(d.ctl||[]).indexOf(lamp.id)>=0);
+    const g=faceG(3800,7200,2200);const sen=w.lswLink([lamp.id],{wall:{level:LV,x:g.x,y:g.y,side:g.side}},true);sen.var='pres';sen.h=2200;sen.note='Kapcsoló-érzékelő — WC (jelenlét)';
+    w.cktAssign(w.cktOfDevice(lamp),sen);   // on the WC lamp's own lighting circuit
+    w.lswRetypeAll();w.vstSwModeSet(old,'kizaras');log('Kapcsoló-érzékelő: WC',sen.ref,'('+sen.swType+') · a folyosói',old.ref,'kapcsoló:',old.swType,'Kizárás (KI / AUTO)');}
+  // D5: outdoor points IP44, the outdoor circuit 1P+N (V7 suggestion, applied here as the example)
+  log('IP44:',w.vstIp44Apply(),'kültéri pont · Kültéri körök 1P+N:',w.vstOutdoor2P());
+  rep.circuitStage=w.vstCircuitChecks(S).map(c=>c.sev+': '+c.msg);
   rep.villanyChecks=w.stkLayersOf(S.id).map(L=>({layer:L.name,checks:w.stkCheck(S,L.role).filter(c=>c.sev!=='info').map(c=>c.msg)})).filter(x=>x.checks.length);
   rep.villany=count();
   const save=(file,name)=>{w.ensureIds(D());St.active=LV;w.draw();w.eval('B').name=name;const snap=w.projSnapshot(name);
