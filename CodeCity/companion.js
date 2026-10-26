@@ -35,6 +35,13 @@
 // .claude/worktrees/<name>/ is mapped back to the city's path. 'fences' lists each fenced file with its
 // owners; two or more owners = a conflict, flagged before any merge is tried.
 //
+// File panel (P5, KV-12; CITY-D10 A, D14 A): GET /api/file (cookie) reads a text file of the repo — not .git,
+// not a restricted zone, at most 2 MB. POST file-save (token) is the only write the segéd does: the page shows a
+// diff and asks first; here the file must still be what the page opened (else 409), the current copy goes to
+// .cache/vrg-safety/<time>/<path> (gitignored) before anything is written, and the file's line ends are kept.
+// CodeMirror 6 comes from Vendor as ES modules (/vendor/esm/<slug>/…, a fixed list), mapped by an import map
+// that is put into the served page.
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -126,8 +133,27 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 const VENDOR_FILES = {
   'xterm.js': [path.join(VENDOR, 'xterm', 'lib', 'xterm.js'), TYPES['.js']],
   'xterm.css': [path.join(VENDOR, 'xterm', 'css', 'xterm.css'), 'text/css; charset=utf-8'],
-  'addon-fit.js': [path.join(VENDOR, 'xterm-fit', 'lib', 'addon-fit.js'), TYPES['.js']]
+  'addon-fit.js': [path.join(VENDOR, 'xterm-fit', 'lib', 'addon-fit.js'), TYPES['.js']],
+  'markdown-it.js': [path.join(VENDOR, 'markdown-it', 'dist', 'browser', 'markdown-it.umd.min.js'), TYPES['.js']],
+  'purify.js': [path.join(VENDOR, 'dompurify', 'dist', 'purify.min.js'), TYPES['.js']]
 };
+// CodeMirror 6 and its parts, as ES modules: bare name -> Vendor folder + entry (the page's import map)
+const ESM = {
+  '@codemirror/state': ['cm-state', 'dist/index.js'], '@codemirror/view': ['cm-view', 'dist/index.js'], '@codemirror/commands': ['cm-commands', 'dist/index.js'],
+  '@codemirror/language': ['cm-language', 'dist/index.js'], '@codemirror/merge': ['cm-merge', 'dist/index.js'], '@codemirror/streamparser': ['cm-streamparser', 'dist/index.js'],
+  '@lezer/common': ['lezer-common', 'dist/index.js'], '@lezer/highlight': ['lezer-highlight', 'dist/index.js'], '@lezer/lr': ['lezer-lr', 'dist/index.js'],
+  '@marijn/find-cluster-break': ['find-cluster-break', 'src/index.js'], crelt: ['crelt', 'index.js'], 'style-mod': ['style-mod', 'src/style-mod.js'], 'w3c-keyname': ['w3c-keyname', 'index.js']
+};
+const ESM_SLUGS = new Set(Object.values(ESM).map(x => x[0]));
+const IMPORT_MAP = JSON.stringify({ imports: Object.fromEntries(Object.entries(ESM).map(([n, [slug, f]]) => [n, '/vendor/esm/' + slug + '/' + f])) });
+const esmReady = () => [...ESM_SLUGS].every(sl => exists(path.join(VENDOR, sl, 'package.json')));
+function esmFile(rest) {
+  const m = /^([a-z0-9-]+)\/((?:[A-Za-z0-9_.-]+\/)*[A-Za-z0-9_.-]+\.js)$/.exec(rest);
+  if (!m || !ESM_SLUGS.has(m[1]) || m[2].split('/').some(x => x === '..' || x.startsWith('.'))) return null;
+  const base = path.join(VENDOR, m[1]);
+  let rp; try { rp = fs.realpathSync(path.join(base, m[2])); } catch (e) { return null; }
+  return under(rp, real(base)) ? rp : null;
+}
 function distFile(name) {
   if (!/^[A-Za-z0-9._-]{1,128}$/.test(name) || name.startsWith('.')) return null;
   const type = TYPES[path.extname(name).toLowerCase()];
@@ -162,12 +188,12 @@ function git(argv) {
 }
 async function status() {
   const r = await git(GIT.status);
-  if (!r.ok) return { ok: true, version: VERSION, repo: REPO, git: false, terminal: terminalOn() };
+  if (!r.ok) return { ok: true, version: VERSION, repo: REPO, git: false, terminal: terminalOn(), editor: esmReady() };
   const lines = r.out.split('\n').filter(Boolean);
   const head = lines[0] || '';
   const m = head.match(/^## ([^.\s]+)(?:\.\.\.\S+)?(?: \[(.*)\])?/) || [];
   const num = k => { const x = (m[2] || '').match(new RegExp(k + ' (\\d+)')); return x ? +x[1] : 0; };
-  return { ok: true, version: VERSION, repo: REPO, branch: m[1] || null, dirty: lines.length - 1, ahead: num('ahead'), behind: num('behind'), terminal: terminalOn() };
+  return { ok: true, version: VERSION, repo: REPO, branch: m[1] || null, dirty: lines.length - 1, ahead: num('ahead'), behind: num('behind'), terminal: terminalOn(), editor: esmReady() };
 }
 
 // ---- terminals: id -> { pty, buf (last output, for a reconnecting page), clients (SSE responses) }
@@ -418,6 +444,28 @@ function agentsStart() {
   agents.tailTimer.unref();
 }
 
+// ---- files for the panel: repo text files only; the write keeps a safety copy and refuses a stale base
+const FILE_MAX = 2 * 1024 * 1024;
+function repoFile(rel) {
+  const p = safePath(rel);
+  if (!p) return { code: 403, error: 'nem engedélyezett hely' };
+  const r = repoRel(p);
+  if (r === null || r === '' || r === '.git' || r.startsWith('.git/')) return { code: 403, error: 'csak a repó fájljai (a .git nem)' };
+  if (restrictedOf(r)) return { code: 403, error: 'korlátozott zóna: ' + restrictedOf(r) };
+  let st; try { st = fs.statSync(p); } catch (e) { return { code: 404, error: 'nincs ilyen fájl' }; }
+  if (!st.isFile()) return { code: 400, error: 'nem fájl' };
+  if (st.size > FILE_MAX) return { code: 413, error: 'túl nagy (2 MB fölött)' };
+  return { p, rel: r };
+}
+const sha1 = b => crypto.createHash('sha1').update(b).digest('hex');
+function fileRead(rel) {
+  const f = repoFile(rel);
+  if (f.error) return f;
+  const buf = fs.readFileSync(f.p);
+  if (buf.subarray(0, 8000).includes(0)) return { code: 415, error: 'bináris fájl' };
+  return { code: 200, body: { path: f.rel, text: buf.toString('utf8'), hash: sha1(buf), eol: buf.includes('\r\n') ? 'crlf' : 'lf' } };
+}
+
 // ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
 async function catalog() {
   const read = p => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
@@ -499,6 +547,22 @@ const ACTIONS = {
     for (const x of b.paths) liveEmit('beam', beamFor(b.sid, b.kind, x, b.event));
     return [200, { ok: true }];
   } },
+  // the panel's save, after the user saw the diff and confirmed: a safety copy first, then the write
+  'file-save': { keys: ['path', 'text', 'base'], async run(b) {
+    if (typeof b.path !== 'string' || typeof b.text !== 'string' || typeof b.base !== 'string') return [400, { error: 'path, text, base' }];
+    const f = repoFile(b.path);
+    if (f.error) return [f.code, { error: f.error }];
+    const cur = fs.readFileSync(f.p);
+    if (sha1(cur) !== b.base) return [409, { error: 'a fájl közben megváltozott — nyisd meg újra, és nézd át' }];
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
+    const safety = path.join(REPO, '.cache', 'vrg-safety', stamp, f.rel);
+    if (DRY) return [200, { dryRun: true, path: f.rel, safety: path.relative(REPO, safety).replace(/\\/g, '/') }];
+    fs.mkdirSync(path.dirname(safety), { recursive: true });
+    fs.writeFileSync(safety, cur);
+    const text = cur.includes('\r\n') ? b.text.replace(/\r?\n/g, '\r\n') : b.text;
+    fs.writeFileSync(f.p, text);
+    return [200, { ok: true, path: f.rel, hash: sha1(Buffer.from(text)), safety: path.relative(REPO, safety).replace(/\\/g, '/') }];
+  } },
   'check-paths': { keys: ['paths'], async run(b) {
     if (!Array.isArray(b.paths) || b.paths.length > 500 || !b.paths.every(p => typeof p === 'string')) return [400, { error: 'paths: legfeljebb 500 szöveg' }];
     return [200, Object.fromEntries(b.paths.map(p => [p, !!safePath(p)]))];
@@ -523,12 +587,17 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (req.method === 'GET' && url.pathname === '/') {
     if (!exists(PAGE)) return send(res, 404, 'CodeCity/dist/' + path.basename(PAGE) + ' hiányzik — node CodeCity/build.js', 'text/plain; charset=utf-8');
-    const html = fs.readFileSync(PAGE, 'utf8').replace(/<head>/i, m => m + '<script>window.KV_COMPANION={token:' + JSON.stringify(TOKEN) + ',port:' + LIVE_PORT + '};</script>');
+    const html = fs.readFileSync(PAGE, 'utf8').replace(/<head>/i, m => m + '<script>window.KV_COMPANION={token:' + JSON.stringify(TOKEN) + ',port:' + LIVE_PORT + '};</script>' +
+      (esmReady() ? '<script type="importmap">' + IMPORT_MAP + '</script>' : ''));
     res.setHeader('Set-Cookie', 'kv_t=' + TOKEN + '; HttpOnly; SameSite=Strict; Path=/api/');   // for the SSE stream only
     return send(res, 200, html, 'text/html; charset=utf-8');
   }
   if (!url.pathname.startsWith('/api/')) {
     if (req.method !== 'GET') return send(res, 405, { error: 'csak GET' });
+    if (url.pathname.startsWith('/vendor/esm/')) {
+      const f = esmFile(url.pathname.slice(12));
+      return f ? send(res, 200, fs.readFileSync(f), TYPES['.js']) : send(res, 404, { error: 'nincs ilyen' });
+    }
     if (url.pathname.startsWith('/vendor/')) {
       const v = Object.prototype.hasOwnProperty.call(VENDOR_FILES, url.pathname.slice(8)) && VENDOR_FILES[url.pathname.slice(8)];
       return v && exists(v[0]) ? send(res, 200, fs.readFileSync(v[0]), v[1]) : send(res, 404, { error: 'nincs ilyen' });
@@ -540,9 +609,10 @@ const server = http.createServer((req, res) => {
   if (origin && !ORIGINS.has(origin)) return send(res, 403, { error: 'origin' });
   if (req.method === 'GET' && url.pathname === '/api/status') return status().then(s => send(res, 200, s));
   if (req.method === 'GET' && url.pathname === '/api/catalog') return catalog().then(c => send(res, 200, c));
-  if (req.method === 'GET' && (url.pathname === '/api/stream' || url.pathname === '/api/city')) {
+  if (req.method === 'GET' && (url.pathname === '/api/stream' || url.pathname === '/api/city' || url.pathname === '/api/file')) {
     const ck = /(?:^|;\s*)kv_t=([0-9a-f]+)/.exec(String(req.headers.cookie || ''));
     if (!ck || ck[1].length !== TOKEN.length || !crypto.timingSafeEqual(Buffer.from(ck[1]), Buffer.from(TOKEN))) return send(res, 401, { error: 'token' });
+    if (url.pathname === '/api/file') { const r = fileRead(url.searchParams.get('path') || ''); return send(res, r.code, r.body || { error: r.error }); }
     if (url.pathname === '/api/city') return liveCity().then(c => (c ? send(res, 200, c) : send(res, 503, { error: 'a felmérés nem sikerült' })));
     res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
     res.write('retry: 3000\n\n');

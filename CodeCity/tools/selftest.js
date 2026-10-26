@@ -89,7 +89,7 @@ try {
     path.join(__dirname, '..', 'from-kapu', 'test', 'spec-95-companion.js')], { encoding: 'utf8', timeout: 60000 });
   const lines = String(spec.stdout || '').trim().split('\n').filter(Boolean);
   for (const l of lines) check(l.startsWith('ok'), 'companion: ' + l.replace(/^(ok|FAIL)\s+/, ''));
-  check(lines.length === 10 && spec.status === 0, `companion: all 10 cases ran (got ${lines.length}, exit ${spec.status})`);
+  check(lines.length === 11 && spec.status === 0, `companion: all 11 cases ran (got ${lines.length}, exit ${spec.status})`);
   // the embedded terminal end to end (CITY-D15 C): a real ConPTY cmd.exe, only when Vendor/node-pty is there
   const ts = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-terminal.js')], { encoding: 'utf8', timeout: 90000 });
   for (const l of String(ts.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));

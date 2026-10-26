@@ -85,6 +85,8 @@ function kvHistory(c) {
 const KV_ACT = [
   { id: 'details', label: 'Részletek', g: 'info', run: c => (c.file ? showFile(c.file) : showDir(c.dir)) },
   { id: 'history', label: 'Előzmények (commitok)', g: 'info', run: kvHistory },
+  { id: 'file', label: 'Megnyitás panelen (nézet, előnézet, szerkesztés)', g: 'info', need: 'companion', when: c => !!c.file,
+    whyNot: 'Csak fájlt lehet panelen megnyitni', run: c => kvFileOpen(c.rel) },
   { id: 'folder', label: 'Mappa megnyitása (Explorer)', g: 'open', need: 'companion',
     run: c => kvCall('open-folder', { dir: c.dirRel }).then(r => kvDone(r, 'Mappa megnyitva')) },
   { id: 'vscode', label: 'Megnyitás VS Code-ban', g: 'open', need: 'companion',

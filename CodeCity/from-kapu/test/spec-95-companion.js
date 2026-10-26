@@ -42,7 +42,7 @@ function req(method, p, { body, raw, token, host, origin } = {}) {
     const r = http.request({ host: '127.0.0.1', port: srv.port, method, path: p, headers }, res => {
       let s = '';
       res.on('data', d => { s += d; });
-      res.on('end', () => { let j = null; try { j = JSON.parse(s); } catch (e) { /* html */ } resolve({ status: res.statusCode, json: j, text: s }); });
+      res.on('end', () => { let j = null; try { j = JSON.parse(s); } catch (e) { /* html */ } resolve({ status: res.statusCode, json: j, text: s, headers: res.headers }); });
     });
     r.on('error', e => (e.code === 'ECONNRESET' || e.code === 'EPIPE' ? resolve({ status: 413 }) : reject(e)));
     if (data) r.write(data);
@@ -127,6 +127,23 @@ module.exports = [
     assert.ok(c.json.tools.some(t => t.n === 11 && t.path === 'CodeCity/dist/vrg-codecity.html'), JSON.stringify(c.json.tools.slice(-1)));
     assert.ok(Array.isArray(c.json.prompts) && Array.isArray(c.json.agents) && Array.isArray(c.json.branches));
     assert.strictEqual((await req('GET', '/api/catalog', { origin: 'https://evil.test' })).status, 403);
+  } },
+  { name: 'file: read needs the cookie; .git, restricted zones and outside -> 403; save needs the token and the current base', async fn() {
+    await start();
+    const page = await req('GET', '/');
+    const cookie = String((page.headers && page.headers['set-cookie'] || [''])[0]).split(';')[0];
+    const get = p => new Promise((res, rej) => { const r = http.request({ host: '127.0.0.1', port: srv.port, path: '/api/file?path=' + encodeURIComponent(p),
+      headers: { Host: '127.0.0.1:' + srv.port, Cookie: cookie } }, x => { let s = ''; x.on('data', d => { s += d; }); x.on('end', () => res({ status: x.statusCode, json: JSON.parse(s) })); }); r.on('error', rej); r.end(); });
+    const f = await get('CodeCity/scan.js');
+    assert.strictEqual(f.status, 200);
+    assert.ok(f.json.text.includes('scan.js') && /^[0-9a-f]{40}$/.test(f.json.hash));
+    assert.strictEqual((await get('.git/config')).status, 403);
+    assert.strictEqual((await get('Planner/data/x.json')).status, 403);
+    assert.strictEqual((await get('C:\\Windows\\win.ini')).status, 403);
+    assert.strictEqual((await req('GET', '/api/file?path=CodeCity%2Fscan.js')).status, 401);
+    assert.strictEqual((await post('file-save', { path: 'CodeCity/scan.js', text: 'x', base: '0'.repeat(40) })).status, 409);
+    const ok = await post('file-save', { path: 'CodeCity/scan.js', text: f.json.text, base: f.json.hash });
+    assert.ok(ok.status === 200 && ok.json.dryRun && /^\.cache\/vrg-safety\/\d{8}-\d{6}\/CodeCity\/scan\.js$/.test(ok.json.safety), JSON.stringify(ok.json));
   } },
   { name: 'status answers; check-paths says which repo paths exist', async fn() {
     await start();

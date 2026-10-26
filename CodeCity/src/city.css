@@ -125,6 +125,25 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #hall .alerts h4 { margin: 0 0 2px; color: #ff6b6b; font-size: 12px; font-weight: normal; }
 #hall .alert b { color: #ff6b6b; font-weight: normal; }
 #hall .alert[data-path] { cursor: pointer; }
+/* file panel (25-file) */
+#filep { position: fixed; z-index: 6; top: 54px; left: 12px; bottom: 56px; width: min(880px, calc(100% - 24px)); display: flex; flex-direction: column;
+  background: #070a14; border: 1px solid var(--accent); border-radius: 4px; overflow: hidden; }
+#filep header { display: flex; gap: 8px; align-items: center; padding: 6px 10px; background: var(--panel); border-bottom: 1px solid var(--line); }
+#filep .fp-path { color: var(--accent); font-weight: normal; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#filep .fp-tabs { display: flex; gap: 4px; }
+#filep .btn.on { border-color: var(--accent); color: var(--accent); }
+#filep .btn[disabled] { opacity: .45; cursor: default; }
+#filep .x { cursor: pointer; color: var(--dim); padding: 0 4px; }
+#filep .fp-body { flex: 1; min-height: 0; overflow: auto; position: relative; }
+#filep .fp-body .cm-editor { height: 100%; }
+#filep .fp-body.diff .cm-mergeView { height: 100%; overflow: auto; }
+#filep .fp-md { padding: 12px 22px; font: 14px/1.55 system-ui, sans-serif; color: var(--text); max-width: 860px; }
+#filep .fp-md a { color: #6fd3ff; } #filep .fp-md code { background: #ffffff10; padding: 0 3px; }
+#filep .fp-md table { border-collapse: collapse; } #filep .fp-md td, #filep .fp-md th { border: 1px solid var(--line); padding: 2px 6px; }
+#filep .fp-md pre { background: #ffffff0c; padding: 8px; overflow: auto; }
+#fp-confirm { position: absolute; z-index: 2; top: 50px; right: 16px; width: min(420px, calc(100% - 32px)); background: var(--panel);
+  border: 1px solid var(--accent); border-radius: 4px; padding: 10px 14px; box-shadow: 0 10px 40px #000a; }
+#fp-confirm .row { display: flex; gap: 8px; justify-content: flex-end; }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;

@@ -63,3 +63,6 @@ CodeCity/companion.config.json
 
 # --- Claude Code: per-machine settings (the Kodvaros hooks, KV-10) ---
 .claude/settings.local.json
+
+# --- Kodvaros file panel: safety copies before a save (KV-12) ---
+.cache/

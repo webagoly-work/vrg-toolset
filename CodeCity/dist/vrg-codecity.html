@@ -131,6 +131,25 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #hall .alerts h4 { margin: 0 0 2px; color: #ff6b6b; font-size: 12px; font-weight: normal; }
 #hall .alert b { color: #ff6b6b; font-weight: normal; }
 #hall .alert[data-path] { cursor: pointer; }
+/* file panel (25-file) */
+#filep { position: fixed; z-index: 6; top: 54px; left: 12px; bottom: 56px; width: min(880px, calc(100% - 24px)); display: flex; flex-direction: column;
+  background: #070a14; border: 1px solid var(--accent); border-radius: 4px; overflow: hidden; }
+#filep header { display: flex; gap: 8px; align-items: center; padding: 6px 10px; background: var(--panel); border-bottom: 1px solid var(--line); }
+#filep .fp-path { color: var(--accent); font-weight: normal; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#filep .fp-tabs { display: flex; gap: 4px; }
+#filep .btn.on { border-color: var(--accent); color: var(--accent); }
+#filep .btn[disabled] { opacity: .45; cursor: default; }
+#filep .x { cursor: pointer; color: var(--dim); padding: 0 4px; }
+#filep .fp-body { flex: 1; min-height: 0; overflow: auto; position: relative; }
+#filep .fp-body .cm-editor { height: 100%; }
+#filep .fp-body.diff .cm-mergeView { height: 100%; overflow: auto; }
+#filep .fp-md { padding: 12px 22px; font: 14px/1.55 system-ui, sans-serif; color: var(--text); max-width: 860px; }
+#filep .fp-md a { color: #6fd3ff; } #filep .fp-md code { background: #ffffff10; padding: 0 3px; }
+#filep .fp-md table { border-collapse: collapse; } #filep .fp-md td, #filep .fp-md th { border: 1px solid var(--line); padding: 2px 6px; }
+#filep .fp-md pre { background: #ffffff0c; padding: 8px; overflow: auto; }
+#fp-confirm { position: absolute; z-index: 2; top: 50px; right: 16px; width: min(420px, calc(100% - 32px)); background: var(--panel);
+  border: 1px solid var(--accent); border-radius: 4px; padding: 10px 14px; box-shadow: 0 10px 40px #000a; }
+#fp-confirm .row { display: flex; gap: 8px; justify-content: flex-end; }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;
@@ -2066,6 +2085,8 @@ function kvHistory(c) {
 const KV_ACT = [
   { id: 'details', label: 'Részletek', g: 'info', run: c => (c.file ? showFile(c.file) : showDir(c.dir)) },
   { id: 'history', label: 'Előzmények (commitok)', g: 'info', run: kvHistory },
+  { id: 'file', label: 'Megnyitás panelen (nézet, előnézet, szerkesztés)', g: 'info', need: 'companion', when: c => !!c.file,
+    whyNot: 'Csak fájlt lehet panelen megnyitni', run: c => kvFileOpen(c.rel) },
   { id: 'folder', label: 'Mappa megnyitása (Explorer)', g: 'open', need: 'companion',
     run: c => kvCall('open-folder', { dir: c.dirRel }).then(r => kvDone(r, 'Mappa megnyitva')) },
   { id: 'vscode', label: 'Megnyitás VS Code-ban', g: 'open', need: 'companion',
@@ -2946,6 +2967,131 @@ function fenAlertsHtml() {
     `<div class="alert" data-path="${esc(fc.p)}"><b>${esc(fc.p)}</b> <span class="dim">${fc.owners.map(o => esc(fenName(o))).join(' · ')}</span></div>`).join('') + '</div>';
 }
 
+// ==== src/25-file.js
+// 25-file.js — the file panel (P5, KV-12; CITY-D14 A, D10 A): a file of the repo in a flat panel beside the
+// city (report R6: read and type in panels, not in 3D). Nézet: CodeMirror 6, read-only. Előnézet: markdown
+// through markdown-it and DOMPurify. Szerkesztés: the same editor, editable. Eltérés: CodeMirror's merge view,
+// original against the edit. Mentés… asks first, showing the path, the +/− lines and where the safety copy goes;
+// the segéd refuses if the file changed since it was opened. CodeMirror comes from Vendor through the import
+// map the segéd puts in the page; from file:// the panel is not offered (the RCO item says why).
+
+const fp = { el: null, file: null, text: '', edit: null, tab: 'view', views: [], mods: null, md: null };
+const fpOn = () => kv.match && !!(kv.status && kv.status.editor);
+
+async function fpMods() {
+  if (fp.mods) return fp.mods;
+  const [view, state, commands, merge] = await Promise.all(['@codemirror/view', '@codemirror/state', '@codemirror/commands', '@codemirror/merge'].map(m => import(m)));
+  return fp.mods = { view, state, commands, merge };
+}
+function fpScript(src) {
+  return new Promise((res, rej) => { const e = document.createElement('script'); e.src = src; e.onload = res; e.onerror = rej; document.head.append(e); });
+}
+async function fpMarkdown(text) {
+  if (!fp.md) { await Promise.all([fpScript('/vendor/markdown-it.js'), fpScript('/vendor/purify.js')]); fp.md = window.markdownit({ html: false, linkify: true }); }
+  return window.DOMPurify.sanitize(fp.md.render(text));
+}
+const fpIsMd = () => /\.(md|markdown)$/i.test(fp.file || '');
+// +/− lines between two texts (a plain line diff: enough for the confirm's summary)
+function fpCount(a, b) {
+  const A = a.split('\n'), B = b.split('\n'), m = new Map();
+  for (const l of A) m.set(l, (m.get(l) || 0) + 1);
+  let same = 0;
+  for (const l of B) { const n = m.get(l); if (n) { same++; m.set(l, n - 1); } }
+  return { plus: B.length - same, minus: A.length - same };
+}
+
+function fpEditor(doc, editable) {
+  const { view, state, commands } = fp.mods;
+  return new view.EditorView({ parent: fp.el.querySelector('.fp-body'), state: state.EditorState.create({ doc, extensions: [
+    view.lineNumbers(), view.highlightActiveLine(), view.drawSelection(), commands.history(),
+    view.keymap.of([...commands.defaultKeymap, ...commands.historyKeymap]),
+    state.EditorState.readOnly.of(!editable), view.EditorView.editable.of(editable), view.EditorView.lineWrapping,
+    view.EditorView.updateListener.of(u => { if (editable && u.docChanged) { fp.edit = u.state.doc.toString(); fpHead(); } }),
+    view.EditorView.theme({ '&': { height: '100%', color: '#dde4f5', backgroundColor: '#070a14' }, '.cm-gutters': { backgroundColor: '#0b1020', color: '#5d6a8c', border: 'none' },
+      '.cm-activeLine': { backgroundColor: '#ffffff08' }, '.cm-scroller': { fontFamily: 'Cascadia Mono, Consolas, monospace' }, '&.cm-focused .cm-cursor': { borderLeftColor: '#ffcf5a' } }, { dark: true })] }) });
+}
+async function fpShow(tab) {
+  fp.tab = tab;
+  for (const v of fp.views) v.destroy();
+  fp.views = [];
+  const body = fp.el.querySelector('.fp-body');
+  body.replaceChildren(); body.className = 'fp-body ' + tab;
+  const cur = fp.edit === null ? fp.text : fp.edit;
+  if (tab === 'view') fp.views.push(fpEditor(cur, false));
+  else if (tab === 'edit') { fp.views.push(fpEditor(cur, true)); fp.views[0].focus(); }
+  else if (tab === 'diff') {
+    const { merge } = fp.mods;
+    fp.views.push(new merge.MergeView({ parent: body, a: { doc: fp.text, extensions: [fp.mods.state.EditorState.readOnly.of(true)] },
+      b: { doc: cur, extensions: [fp.mods.state.EditorState.readOnly.of(true)] } }));
+  } else if (tab === 'md') {
+    const d = document.createElement('div'); d.className = 'fp-md'; d.innerHTML = await fpMarkdown(cur); body.append(d);
+  }
+  fpHead();
+}
+function fpHead() {
+  const changed = fp.edit !== null && fp.edit !== fp.text, c = changed ? fpCount(fp.text, fp.edit) : null;
+  fp.el.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === fp.tab));
+  fp.el.querySelector('[data-tab=md]').hidden = !fpIsMd();
+  const sv = fp.el.querySelector('[data-act=save]');
+  sv.disabled = !changed;
+  sv.textContent = changed ? `Mentés… (+${c.plus} / −${c.minus})` : 'Mentés…';
+}
+
+async function kvFileOpen(rel) {
+  await kvReady();
+  if (!fpOn()) return kvToast(kv.match ? 'A fájlpanelhez: node tools/fetch-vendor.js cm-state cm-view … (lásd README §6)' : KV_WHY.companion);
+  let r;
+  try { r = await fetch('/api/file?path=' + encodeURIComponent(rel)); } catch (e) { return kvToast('A Kódváros segéd nem válaszol'); }
+  const j = await r.json();
+  if (!r.ok) return kvToast(j.error || 'Nem nyitható meg (' + r.status + ')');
+  try { await fpMods(); } catch (e) { return kvToast('A CodeMirror nem töltődött be — node tools/fetch-vendor.js (cm-*)'); }
+  if (!fp.el) {
+    fp.el = document.createElement('section'); fp.el.id = 'filep';
+    fp.el.innerHTML = '<header><b class="fp-path"></b><span class="fp-tabs"><button class="btn" data-tab="view">Nézet</button>' +
+      '<button class="btn" data-tab="md">Előnézet</button><button class="btn" data-tab="edit">Szerkesztés</button><button class="btn" data-tab="diff">Eltérés</button></span>' +
+      '<button class="btn fp-save" data-act="save" title="Előbb megmutatja, mi változik; a régi változat biztonsági másolatba kerül">Mentés…</button>' +
+      '<span class="x" data-act="close" title="Bezárás">×</span></header><div class="fp-body"></div>';
+    fp.el.addEventListener('click', e => {
+      const t = e.target.closest('[data-tab]'), a = e.target.closest('[data-act]');
+      if (t) fpShow(t.dataset.tab);
+      else if (a && a.dataset.act === 'close') fpClose();
+      else if (a && a.dataset.act === 'save' && !a.disabled) fpConfirm();
+    });
+    document.body.append(fp.el);
+  }
+  if (fp.edit !== null && fp.edit !== fp.text && !confirm('A mostani szerkesztés elvész. Másik fájlt nyitsz?')) return;
+  // CodeMirror keeps line ends as \n; the segéd puts a CRLF file's \r\n back when it saves
+  Object.assign(fp, { file: j.path, text: j.text.replace(/\r\n/g, '\n'), base: j.hash, edit: null });
+  fp.el.querySelector('.fp-path').textContent = j.path;
+  fp.el.hidden = false;
+  await fpShow(fpIsMd() ? 'md' : 'view');
+}
+function fpClose() {
+  if (fp.edit !== null && fp.edit !== fp.text && !confirm('A szerkesztés nincs mentve. Bezárod?')) return;
+  for (const v of fp.views) v.destroy();
+  fp.views = []; fp.el.hidden = true; fp.edit = null;
+}
+// the confirm: the diff is on screen, the dialog names the path, the line counts and the safety copy
+async function fpConfirm() {
+  if (fp.tab !== 'diff') await fpShow('diff');
+  const c = fpCount(fp.text, fp.edit);
+  const box = document.createElement('div'); box.id = 'fp-confirm';
+  box.innerHTML = `<p>Mentés ide: <b>${esc(fp.file)}</b></p><p>+${c.plus} sor / −${c.minus} sor — a különbséget a panel mutatja.</p>` +
+    '<p class="dim">A mostani változat előbb biztonsági másolatba kerül: .cache/vrg-safety/&lt;időpont&gt;/… (nem kerül a gitbe).</p>' +
+    '<div class="row"><button class="btn" data-ok>Mentés</button><button class="btn" data-no>Mégse</button></div>';
+  fp.el.append(box);
+  box.querySelector('[data-no]').onclick = () => box.remove();
+  box.querySelector('[data-ok]').onclick = async () => {
+    box.remove();
+    const r = await kvCall('file-save', { path: fp.file, text: fp.edit, base: fp.base });
+    if (r.status !== 200) return kvToast((r.json && r.json.error) || 'A mentés nem sikerült (' + r.status + ')');
+    if (r.json.dryRun) return kvToast('Próba: mentés ide ' + r.json.path + ', másolat: ' + r.json.safety);
+    Object.assign(fp, { text: fp.edit, base: r.json.hash, edit: null });
+    kvToast('Mentve. A régi változat: ' + r.json.safety);
+    fpShow('view');
+  };
+}
+
 // ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
@@ -2959,6 +3105,15 @@ if (window.CITY) {
   // Registered here, not in the timer below: an open stream stops headless Chrome's clock before it fires.
   const lt = new URLSearchParams(location.hash.slice(1)).get('livetest');
   if (lt) live.ready.then(() => { live.es.close(); liveFsEvent({ paths: [{ p: lt, kind: 'módosult' }] }); liveNews(); });
+  // test hook: #filetest=<path>[&fileedit=md|diff] opens the file panel (served only; registered here for the same reason);
+  // fileedit adds a line and shows the preview or the diff — nothing is saved
+  const ftq = new URLSearchParams(location.hash.slice(1)), ft = ftq.get('filetest');
+  if (ft) live.ready.then(async () => {
+    live.es.close();
+    await kvFileOpen(ft);
+    const fe = ftq.get('fileedit');
+    if (fe) { fp.edit = fp.text.replace(/\n## /, '\n## Próba: ez a sor új\n\nKódváros KV-12 próba.\n\n## '); await fpShow(fe === 'diff' ? 'diff' : 'md'); }
+  });
   // after the first resize, so the camera has its real aspect
   setTimeout(() => {
     const q = readHash();

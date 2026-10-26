@@ -10,6 +10,15 @@ if (window.CITY) {
   // Registered here, not in the timer below: an open stream stops headless Chrome's clock before it fires.
   const lt = new URLSearchParams(location.hash.slice(1)).get('livetest');
   if (lt) live.ready.then(() => { live.es.close(); liveFsEvent({ paths: [{ p: lt, kind: 'módosult' }] }); liveNews(); });
+  // test hook: #filetest=<path>[&fileedit=md|diff] opens the file panel (served only; registered here for the same reason);
+  // fileedit adds a line and shows the preview or the diff — nothing is saved
+  const ftq = new URLSearchParams(location.hash.slice(1)), ft = ftq.get('filetest');
+  if (ft) live.ready.then(async () => {
+    live.es.close();
+    await kvFileOpen(ft);
+    const fe = ftq.get('fileedit');
+    if (fe) { fp.edit = fp.text.replace(/\n## /, '\n## Próba: ez a sor új\n\nKódváros KV-12 próba.\n\n## '); await fpShow(fe === 'diff' ? 'diff' : 'md'); }
+  });
   // after the first resize, so the camera has its real aspect
   setTimeout(() => {
     const q = readHash();
