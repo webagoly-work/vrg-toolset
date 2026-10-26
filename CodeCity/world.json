@@ -1,0 +1,615 @@
+{
+ "kind": "vrg-world",
+ "version": 1,
+ "_comment": "GitWorld snapshot: public GitHub metadata of the repos in vendor-manifest.json. Written by CodeCity/world.js.",
+ "fetched": "2026-10-26",
+ "repos": [
+  {
+   "repo": "DietrichGebert/ponytail",
+   "slugs": [
+    "ponytail"
+   ],
+   "aspects": [
+    "Fejlesztés"
+   ],
+   "stars": 177003,
+   "license": "MIT",
+   "language": "JavaScript",
+   "pushed": "2026-10-18",
+   "archived": false
+  },
+  {
+   "repo": "excalidraw/excalidraw",
+   "slugs": [
+    "excalidraw"
+   ],
+   "aspects": [
+    "Új terület"
+   ],
+   "stars": 134604,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "mrdoob/three.js",
+   "slugs": [
+    "three"
+   ],
+   "aspects": [
+    "Planner"
+   ],
+   "stars": 116992,
+   "license": "MIT",
+   "language": "JavaScript",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "microsoft/playwright",
+   "slugs": [
+    "playwright"
+   ],
+   "aspects": [
+    "Fejlesztés"
+   ],
+   "stars": 98574,
+   "license": "Apache-2.0",
+   "language": "TypeScript",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "cathrynlavery/diagram-design",
+   "slugs": [
+    "diagram-design"
+   ],
+   "aspects": [
+    "MindMap"
+   ],
+   "stars": 61344,
+   "license": "MIT",
+   "language": "HTML",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "bilawalsidhu/gods-eye-view",
+   "slugs": [
+    "gods-eye-view"
+   ],
+   "aspects": [
+    "Kódváros / Dashboard"
+   ],
+   "stars": 60376,
+   "license": "MIT",
+   "language": "JavaScript",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "mozilla/pdf.js",
+   "slugs": [
+    "pdfjs"
+   ],
+   "aspects": [
+    "Inventory"
+   ],
+   "stars": 54049,
+   "license": "Apache-2.0",
+   "language": "JavaScript",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "paperless-ngx/paperless-ngx",
+   "slugs": [
+    "paperless-ngx"
+   ],
+   "aspects": [
+    "Inventory"
+   ],
+   "stars": 47116,
+   "license": "GPL-3.0",
+   "language": "Python",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "naptha/tesseract.js",
+   "slugs": [
+    "tesseract-js"
+   ],
+   "aspects": [
+    "Planner"
+   ],
+   "stars": 38799,
+   "license": "Apache-2.0",
+   "language": "JavaScript",
+   "pushed": "2026-05-17",
+   "archived": false
+  },
+  {
+   "repo": "restic/restic",
+   "slugs": [
+    "restic"
+   ],
+   "aspects": [
+    "Üzemeltetés"
+   ],
+   "stars": 36817,
+   "license": "BSD-2-Clause",
+   "language": "Go",
+   "pushed": "2026-10-18",
+   "archived": false
+  },
+  {
+   "repo": "OthmanAdi/planning-with-files",
+   "slugs": [
+    "planning-with-files"
+   ],
+   "aspects": [
+    "Fejlesztés"
+   ],
+   "stars": 27672,
+   "license": "MIT",
+   "language": "Python",
+   "pushed": "2026-10-24",
+   "archived": false
+  },
+  {
+   "repo": "biomejs/biome",
+   "slugs": [
+    "biome"
+   ],
+   "aspects": [
+    "Fejlesztés"
+   ],
+   "stars": 26001,
+   "license": "Apache-2.0",
+   "language": "Rust",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "pascalorg/editor",
+   "slugs": [
+    "pascalorg-editor"
+   ],
+   "aspects": [
+    "Planner"
+   ],
+   "stars": 25131,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "NVIDIA/SkillSpector",
+   "slugs": [
+    "skillspector"
+   ],
+   "aspects": [
+    "Fejlesztés"
+   ],
+   "stars": 22037,
+   "license": "Apache-2.0",
+   "language": "Python",
+   "pushed": "2026-10-23",
+   "archived": false
+  },
+  {
+   "repo": "markdown-it/markdown-it",
+   "slugs": [
+    "markdown-it"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 22014,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-10-23",
+   "archived": false
+  },
+  {
+   "repo": "xtermjs/xterm.js",
+   "slugs": [
+    "xterm",
+    "xterm-fit"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 21298,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-10-13",
+   "archived": false
+  },
+  {
+   "repo": "cure53/DOMPurify",
+   "slugs": [
+    "dompurify"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 17485,
+   "license": "Apache-2.0",
+   "language": "JavaScript",
+   "pushed": "2026-10-24",
+   "archived": false
+  },
+  {
+   "repo": "exceljs/exceljs",
+   "slugs": [
+    "exceljs"
+   ],
+   "aspects": [
+    "Inventory"
+   ],
+   "stars": 15502,
+   "license": "MIT",
+   "language": "JavaScript",
+   "pushed": "2025-01-21",
+   "archived": false
+  },
+  {
+   "repo": "nasa/openmct",
+   "slugs": [
+    "openmct"
+   ],
+   "aspects": [
+    "BRIDGE"
+   ],
+   "stars": 13196,
+   "license": "Apache-2.0",
+   "language": "JavaScript",
+   "pushed": "2026-10-15",
+   "archived": false
+  },
+  {
+   "repo": "tangency-labs/solidcraft",
+   "slugs": [
+    "solidcraft"
+   ],
+   "aspects": [
+    "Planner"
+   ],
+   "stars": 10777,
+   "license": "Apache-2.0",
+   "language": "Rust",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "codemirror/dev",
+   "slugs": [
+    "cm-state",
+    "cm-view",
+    "cm-commands",
+    "cm-language",
+    "cm-streamparser"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 7807,
+   "license": "MIT",
+   "language": "JavaScript",
+   "pushed": "2026-04-15",
+   "archived": true
+  },
+  {
+   "repo": "garethgeorge/backrest",
+   "slugs": [
+    "backrest"
+   ],
+   "aspects": [
+    "Üzemeltetés"
+   ],
+   "stars": 7744,
+   "license": "GPL-3.0",
+   "language": "TypeScript",
+   "pushed": "2026-09-21",
+   "archived": false
+  },
+  {
+   "repo": "storytold/cadcraft",
+   "slugs": [
+    "cadcraft"
+   ],
+   "aspects": [
+    "Planner"
+   ],
+   "stars": 6892,
+   "license": "Apache-2.0",
+   "language": "Rust",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "kimai/kimai",
+   "slugs": [
+    "kimai"
+   ],
+   "aspects": [
+    "Üzemeltetés"
+   ],
+   "stars": 5100,
+   "license": "AGPL-3.0",
+   "language": "PHP",
+   "pushed": "2026-10-26",
+   "archived": false
+  },
+  {
+   "repo": "frappe/books",
+   "slugs": [
+    "frappe-books"
+   ],
+   "aspects": [
+    "Üzemeltetés"
+   ],
+   "stars": 5005,
+   "license": "AGPL-3.0",
+   "language": "TypeScript",
+   "pushed": "2026-10-02",
+   "archived": true
+  },
+  {
+   "repo": "hizzgdev/jsmind",
+   "slugs": [
+    "jsmind"
+   ],
+   "aspects": [
+    "MindMap"
+   ],
+   "stars": 3793,
+   "license": "BSD-3-Clause",
+   "language": "JavaScript",
+   "pushed": "2026-05-18",
+   "archived": false
+  },
+  {
+   "repo": "jakearchibald/idb-keyval",
+   "slugs": [
+    "idb-keyval"
+   ],
+   "aspects": [
+    "Planner"
+   ],
+   "stars": 3254,
+   "license": "NOASSERTION",
+   "language": "TypeScript",
+   "pushed": "2026-07-08",
+   "archived": false
+  },
+  {
+   "repo": "SSShooter/mind-elixir-core",
+   "slugs": [
+    "mind-elixir"
+   ],
+   "aspects": [
+    "MindMap"
+   ],
+   "stars": 3190,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-10-19",
+   "archived": false
+  },
+  {
+   "repo": "101arrowz/fflate",
+   "slugs": [
+    "fflate"
+   ],
+   "aspects": [
+    "Planner"
+   ],
+   "stars": 3068,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-05-16",
+   "archived": false
+  },
+  {
+   "repo": "eikek/docspell",
+   "slugs": [
+    "docspell"
+   ],
+   "aspects": [
+    "Inventory"
+   ],
+   "stars": 2341,
+   "license": "AGPL-3.0",
+   "language": "Elm",
+   "pushed": "2026-10-22",
+   "archived": false
+  },
+  {
+   "repo": "microsoft/node-pty",
+   "slugs": [
+    "node-pty"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 2054,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-10-23",
+   "archived": false
+  },
+  {
+   "repo": "NVIDIA-Omniverse/usd-brep",
+   "slugs": [
+    "usd-brep"
+   ],
+   "aspects": [
+    "Planner"
+   ],
+   "stars": 1858,
+   "license": "Apache-2.0",
+   "language": "C++",
+   "pushed": "2026-10-22",
+   "archived": false
+  },
+  {
+   "repo": "raiyanyahya/recall",
+   "slugs": [
+    "recall"
+   ],
+   "aspects": [
+    "Fejlesztés"
+   ],
+   "stars": 764,
+   "license": "MIT",
+   "language": "Python",
+   "pushed": "2026-09-07",
+   "archived": false
+  },
+  {
+   "repo": "lezer-parser/lr",
+   "slugs": [
+    "lezer-lr"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 685,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-04-15",
+   "archived": true
+  },
+  {
+   "repo": "upb-lea/Inkscape_electric_Symbols",
+   "slugs": [
+    "inkscape-electric-symbols"
+   ],
+   "aspects": [
+    "Planner"
+   ],
+   "stars": 587,
+   "license": "CC0-1.0",
+   "language": null,
+   "pushed": "2026-02-08",
+   "archived": false
+  },
+  {
+   "repo": "ekymo/homeRoughEditor",
+   "slugs": [
+    "homerougheditor"
+   ],
+   "aspects": [
+    "Planner"
+   ],
+   "stars": 397,
+   "license": "MIT",
+   "language": "JavaScript",
+   "pushed": "2024-07-21",
+   "archived": false
+  },
+  {
+   "repo": "codemirror/merge",
+   "slugs": [
+    "cm-merge"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 105,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-04-15",
+   "archived": true
+  },
+  {
+   "repo": "lezer-parser/common",
+   "slugs": [
+    "lezer-common"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 69,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-04-15",
+   "archived": true
+  },
+  {
+   "repo": "marijnh/style-mod",
+   "slugs": [
+    "style-mod"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 53,
+   "license": "MIT",
+   "language": "JavaScript",
+   "pushed": "2026-03-18",
+   "archived": true
+  },
+  {
+   "repo": "lezer-parser/highlight",
+   "slugs": [
+    "lezer-highlight"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 41,
+   "license": "MIT",
+   "language": "TypeScript",
+   "pushed": "2026-04-15",
+   "archived": true
+  },
+  {
+   "repo": "marijnh/w3c-keyname",
+   "slugs": [
+    "w3c-keyname"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 34,
+   "license": "MIT",
+   "language": "JavaScript",
+   "pushed": "2026-03-18",
+   "archived": true
+  },
+  {
+   "repo": "marijnh/crelt",
+   "slugs": [
+    "crelt"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 29,
+   "license": "MIT",
+   "language": "JavaScript",
+   "pushed": "2026-03-18",
+   "archived": true
+  },
+  {
+   "repo": "marijnh/find-cluster-break",
+   "slugs": [
+    "find-cluster-break"
+   ],
+   "aspects": [
+    "Kódváros"
+   ],
+   "stars": 7,
+   "license": "MIT",
+   "language": "JavaScript",
+   "pushed": "2026-03-17",
+   "archived": true
+  }
+ ]
+}

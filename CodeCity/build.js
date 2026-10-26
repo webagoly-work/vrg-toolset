@@ -35,7 +35,9 @@ function buildPage(city) {
   const ours = mods.map(f => `// ==== src/${f}\n` + fs.readFileSync(path.join(srcDir, f), 'utf8')).join('\n');
   // the Land's places on their fixed hex slots (CodeCity/land.json), for 29-land.js — in the page, so file:// has them too
   const land = fs.existsSync(path.join(ROOT, 'land.json')) ? fs.readFileSync(path.join(ROOT, 'land.json'), 'utf8') : 'null';
-  const script = header + threeAsObject(need(path.join(VENDOR, 'build', 'three.module.min.js'))) + `const LAND = ${land.trim()};\n` + ours;
+  // the GitWorld snapshot (CodeCity/world.json, CodeCity/world.js writes it), for 32-world.js — offline too
+  const worldJson = fs.existsSync(path.join(ROOT, 'world.json')) ? fs.readFileSync(path.join(ROOT, 'world.json'), 'utf8') : 'null';
+  const script = header + threeAsObject(need(path.join(VENDOR, 'build', 'three.module.min.js'))) + `const LAND = ${land.trim()};\nconst WORLD = ${worldJson.trim()};\n` + ours;
   if (/<\/script/i.test(script)) throw new Error('a literal </script inside the module would end it early');
   // a module that fails to parse fails silently in the page — parse it here instead
   try { new (require('vm').Script)(script, { filename: 'codecity-module.js' }); }

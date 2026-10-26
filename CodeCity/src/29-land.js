@@ -65,7 +65,7 @@ function landTarhaz(c, R, k) {
 }
 
 // ---- where am I: the level, the breadcrumb, the inset map
-const landLevel = () => (orbit.r > current.side * 1.9 ? 'land' : 'city');
+const landLevel = () => (wd.R && orbit.r > wdExt() * 4 ? 'world' : orbit.r > current.side * 1.9 ? 'land' : 'city');
 function landPlaceAt(x, z) {
   let best = null, d0 = Infinity;
   for (const pl of LAND.places) { const c = landPos(pl.slot), d = Math.hypot(c.x - x, c.z - z); if (d < d0) { d0 = d; best = pl; } }
@@ -74,8 +74,10 @@ function landPlaceAt(x, z) {
 function landUpdate() {
   if (!current || !LAND) return;
   land.at = landLevel();
+  if (wd.ring) wd.ring.visible = land.at === 'world';   // 32-world
   const t = orbit.target, parts = [['GitWorld', 'world'], ['Föld', 'land']];
-  if (land.at === 'land') { const pl = landPlaceAt(t.x, t.z); if (pl) parts.push([pl.name, 'place:' + pl.id]); }
+  if (land.at === 'world') parts.splice(1);
+  else if (land.at === 'land') { const pl = landPlaceAt(t.x, t.z); if (pl) parts.push([pl.name, 'place:' + pl.id]); }
   else {
     parts.push(['Kódváros', 'city']);
     const d = districtAt(t.x, t.z);
@@ -92,7 +94,7 @@ function landUpdate() {
   landPanel();
 }
 function landGo(go) {
-  if (go === 'world') return kvToast('A GitWorld bolygó a P9-ben jön (KV-19)');
+  if (go === 'world') return worldGo();   // 32-world
   if (go === 'land') return landHome();
   if (go === 'city') return flyCamera([0, 0, orbit.theta, 0.95, current.side * 1.25], 500);
   if (go.startsWith('place:')) { const pl = LAND.places.find(p => p.id === go.slice(6)); if (pl) { const c = landPos(pl.slot); flyCamera([c.x, c.z, orbit.theta, 0.9, landR() * 2.4], 500); } return; }
@@ -112,7 +114,7 @@ function landInset() {
   }
   const g = land.inset.getContext('2d'), W = 160;
   g.clearRect(0, 0, W, W); g.fillStyle = '#05070de6'; g.fillRect(0, 0, W, W);
-  if (land.at === 'land') {   // the level above the Land: the planet (P9)
+  if (land.at !== 'city') {   // the level above the Land: the planet (P9)
     g.strokeStyle = '#3a4a78'; g.beginPath(); g.arc(W / 2, W / 2, 56, 0, 7); g.stroke();
     g.fillStyle = '#6fd3ff'; g.beginPath(); g.arc(W / 2 + 18, W / 2 - 10, 5, 0, 7); g.fill();
     g.fillStyle = '#8b97b5'; g.font = '11px Consolas'; g.fillText('GitWorld (P9)', 36, 150);
@@ -134,8 +136,9 @@ function landPanel() {
     land.el.addEventListener('click', e => { if (e.target.closest('[data-reveal]')) { land.reveal = !land.reveal; landPanel(); } });
     document.body.append(land.el);
   }
-  land.el.hidden = land.at !== 'land';
+  land.el.hidden = land.at === 'city';
   if (land.el.hidden) return;
+  if (land.at === 'world') { land.el.innerHTML = worldPanelHtml(); return; }
   const dirs = (land.disk && land.disk.dirs) || [], gb = b => (b / 1e9).toFixed(b > 1e10 ? 0 : 1) + ' GB';
   land.el.innerHTML = '<h3>Föld — minden, ami a miénk</h3>' + LAND.places.map(p => `<div><b>${esc(p.name)}</b> <span class="dim">${esc(p.what)}</span></div>`).join('') +
     `<h4>Tárház ${land.disk ? (land.disk.walking ? '(felmérés folyik…)' : `· ${dirs.length} mappa`) : '(a segéddel jön)'}` +

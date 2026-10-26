@@ -81,7 +81,7 @@ async function liveSwap() {
     if (open) { const f = city.files.find(x => x.p === open); if (f) showFile(f); }
     if (picked) selSetPaths(picked);
     agentsEvent({ list: ag.list });   // the figures stood in the old city
-    fenDraw(); jbDraw(); hlDraw(); mtDraw(); landDraw(); pwDraw();
+    fenDraw(); jbDraw(); hlDraw(); mtDraw(); landDraw(); pwDraw(); worldDraw();
     const n = city.commits.length - was;
     // the new commits flash like a replay step, and their files pulse
     const idx = [];

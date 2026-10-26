@@ -8,6 +8,7 @@ if (window.CITY) {
   setInterval(hlRibbon, 1500);   // 27-health: the Now ribbon follows sessions, jobs, fences and changes
   landDraw();   // 29-land: the places around the city
   pwDraw();   // 30-power
+  worldDraw();   // 32-world: the planet under the Land
   // test hook: #landtest=disk waits for Tárház's walk (served), closes the stream (headless clock), shows the Land
   if (new URLSearchParams(location.hash.slice(1)).get('landtest') === 'disk') live.ready.then(() => new Promise(res => {
     if (land.disk && land.disk.dirs && land.disk.dirs.length && !land.disk.walking) res(); else live.es.addEventListener('disk', res, { once: true }); }))
@@ -126,6 +127,8 @@ if (window.CITY) {
       cargoEvent({ id: 'c2', kind: 'download', ext: '.exe', size: 3 * 1048576, done: false });
       cargoEvent({ id: 'c2', kind: 'download', ext: '.exe', size: 3 * 1048576, done: true, customs: { motw: 3, internet: true, exec: true } });
     }
+    // test hook: #worldtest=1 jumps out to the GitWorld planet
+    if (q.get('worldtest')) { window.KV_INSTANT = true; worldGo(0); }
     // test hook: #landtest=1 jumps to the Land's table view (Home)
     if (q.get('landtest') === '1') landHome(0);
     // test hook: #keytest=<key> presses that key once, after the opening flight (e.g. Home from a building); flights are

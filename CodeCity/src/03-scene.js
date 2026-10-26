@@ -37,6 +37,7 @@ function placeCamera() {
   camera.position.set(t.x + r * Math.sin(phi) * Math.sin(theta), t.y + r * Math.cos(phi), t.z + r * Math.sin(phi) * Math.cos(theta));
   camera.lookAt(t);
   landFog();   // 29-land: the fog follows the zoom
+  worldCam();   // 32-world: near/far follow the zoom, from a floor to the planet
   requestRender();
   onCameraMoved();
 }
@@ -70,7 +71,7 @@ canvas.addEventListener('pointermove', e => {
 });
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
-  orbit.r = Math.min(4000, Math.max(8, orbit.r * Math.exp(e.deltaY * 0.001)));
+  orbit.r = Math.min(120000, Math.max(8, orbit.r * Math.exp(e.deltaY * 0.001)));   // out to the GitWorld planet (32-world)
   placeCamera();
 }, { passive: false });
 
