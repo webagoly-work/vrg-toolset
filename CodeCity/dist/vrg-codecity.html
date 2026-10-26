@@ -3423,6 +3423,9 @@ function liveConnect() {
   live.es.addEventListener('peaks', e => { if (liveMine()) peaksEvent(JSON.parse(e.data)); });
   live.es.addEventListener('bt', e => { if (liveMine()) btEvent(JSON.parse(e.data)); });
   live.es.addEventListener('usb', e => { if (liveMine()) usbEvent(JSON.parse(e.data)); });
+  // 35-etw: the exact cargo per process (vrg-etw, the user's elevated task)
+  live.es.addEventListener('etw', e => { if (liveMine()) etwEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('etwcargo', e => { if (liveMine()) etwCargoEvent(JSON.parse(e.data)); });
   live.es.onerror = () => { $('live-dot').hidden = true; };
 }
 function liveFsEvent(d) {
@@ -4363,7 +4366,7 @@ function landPanel() {
   land.el.innerHTML = '<h3>Föld — minden, ami a miénk</h3>' + LAND.places.map(p => `<div><b>${esc(p.name)}</b> <span class="dim">${esc(p.what)}</span></div>`).join('') +
     `<h4>Tárház ${land.disk ? (land.disk.walking ? '(felmérés folyik…)' : `· ${dirs.length} mappa`) : '(a segéddel jön)'}` +
     (dirs.length ? ` <button class="btn" data-reveal>${land.reveal ? 'Elrejtés' : 'Nevek mutatása'}</button>` : '') + '</h4>' +
-    pwPanelHtml() + flPanelHtml() + apPanelHtml() + stPanelHtml() +   // 30-power: Erőmű, station, border, shore · 31-flows: cargo, trains · 33-apps · 34-stadium
+    pwPanelHtml() + flPanelHtml() + etPanelHtml() + apPanelHtml() + stPanelHtml() +   // 30-power: Erőmű, station, border, shore · 31-flows: cargo, trains · 35-etw · 33-apps · 34-stadium
     dirs.slice(0, 12).map(d => `<div class="dir"><span class="${land.reveal ? '' : 'blur'}">${esc(d.name)}</span> <span class="dim">${d.restricted ? 'fallal körülvéve: ' + esc(d.restricted) : gb(d.size || 0)}${d.repo ? ' · itt lakik a Kódváros' : ''}${d.partial || (d.children || []).some(c => c.partial) ? ' · részleges (kifutott az időből)' : ''}</span></div>`).join('');
 }
 async function landLoad() {
@@ -4469,6 +4472,7 @@ function pwDraw() {
   flUsbDraw();   // 31-flows: USB-falu
   if (ap.list.length) appsEvent({ state: ap.state, list: ap.list });   // 33-apps: rebuilt if the world was
   stRedraw();   // 34-stadium: rebuilt if the world was (pwDraw has its own local st)
+  if (et.cargo && (!et.group || et.group.parent !== world.group)) etDraw();   // 35-etw
   pw.group.traverse(o => { o.raycast = () => {}; });
   world.group.add(pw.group);
   requestRender();
@@ -4974,6 +4978,63 @@ addEventListener('click', e => {
   if (b) kvCall('probe-mute', { key: b.dataset.mute, on: b.dataset.on === '1' }).then(r => kvDone(r, b.dataset.on === '1' ? 'Némítva' : 'Hang vissza'));
 });
 
+// ==== src/35-etw.js
+// 35-etw.js — the exact cargo per process (P11, KV-23; report §1.4 Tier B, CITY-D17 A). When the user's scheduled task
+// runs vrg-etw.exe, the segéd reads its pipe and sends 'etwcargo' once a second: each busy process with its exact bytes
+// in and out, by dock and country (no address ever reaches the page). A manifest board stands at Határ: a bar per
+// process as tall as its traffic (log scale), cyan in, amber out, gold-rimmed when a Claude session started it. Files
+// that such a process reads or writes in the repo arrive as ordinary beams (23-agents) — that is the "Bash read".
+
+const et = { state: 'off', demo: false, cargo: null, group: null, peak: new Map() };
+const etRate = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB/s' : b >= 1024 ? Math.round(b / 1024) + ' kB/s' : b + ' B/s';
+
+function etGroup() {
+  if (!et.group || et.group.parent !== world.group) { et.group = new THREE.Group(); world.group.add(et.group); }
+  return et.group;
+}
+function etDraw() {
+  if (!world || !LAND) return;
+  const g = etGroup();
+  g.children.slice().forEach(o => { g.remove(o); o.traverse(x => { if (x.geometry) x.geometry.dispose(); }); });
+  const bd = pwPlace('hatar'), list = (et.cargo && et.cargo.list || []).slice(0, 6);
+  if (!bd || et.state !== 'on' || !list.length) { requestRender(); return; }
+  const k = agScale(), R = landR(), base = bd.clone().add(new THREE.Vector3(-R * 0.3, 0, -R * 0.42));
+  list.forEach((p, i) => {
+    const x = i * 9 * k, h = b => Math.max(0.5 * k, Math.log10(1 + b) * 5 * k);
+    const at = base.clone().add(new THREE.Vector3(x, 0, 0));
+    const rx = new THREE.Mesh(new THREE.BoxGeometry(3 * k, 1, 3 * k).translate(0, 0.5, 0), new THREE.MeshBasicMaterial({ color: 0x6fd3ff, fog: false }));
+    rx.position.copy(at); rx.scale.y = h(p.rx);
+    const tx = new THREE.Mesh(new THREE.BoxGeometry(3 * k, 1, 3 * k).translate(0, 0.5, 0), new THREE.MeshBasicMaterial({ color: 0xffb300, fog: false }));
+    tx.position.copy(at).add(new THREE.Vector3(3.4 * k, 0, 0)); tx.scale.y = h(p.tx);
+    g.add(rx, tx);
+    if (p.claude) {
+      const rim = new THREE.Mesh(new THREE.BoxGeometry(8 * k, 0.6 * k, 5 * k), new THREE.MeshBasicMaterial({ color: 0xffcf5a, fog: false }));
+      rim.position.copy(at).add(new THREE.Vector3(1.7 * k, 0.3 * k, 0)); g.add(rim);
+    }
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: landLabel(p.exe.replace(/\.exe$/i, '').slice(0, 16), p.claude ? '#ffe9a0' : '#c9d3ee'), fog: false, depthWrite: false }));
+    sp.position.copy(at).add(new THREE.Vector3(1.7 * k, Math.max(h(p.rx), h(p.tx)) + 4 * k, 0)); sp.scale.set(16 * k, 3 * k, 1);
+    g.add(sp);
+  });
+  g.traverse(o => { o.raycast = () => {}; });
+  requestRender();
+}
+function etwEvent(d) { et.state = d.state; et.demo = !!d.demo; etDraw(); if (land.at === 'land') landPanel(); }
+function etwCargoEvent(d) {
+  et.cargo = d;
+  for (const p of d.list) et.peak.set(p.exe, Math.max(et.peak.get(p.exe) || 0, p.rx + p.tx));
+  etDraw();
+  if (land.at === 'land') landPanel();
+}
+// the Land panel's lines (29-land asks for it)
+function etPanelHtml() {
+  if (et.state !== 'on') return '<h4>Pontos rakomány (ETW)</h4><div class="dim">Nem fut — a rendszergazdai ütemezett feladat indítja (docs/city/wp/p11-etw.md). Nélküle a becslések maradnak.</div>';
+  const list = (et.cargo && Date.now() - et.cargo.at < 5000 && et.cargo.list) || [];
+  return `<h4>Pontos rakomány (ETW${et.demo ? ', próba' : ''})</h4>` + (list.length ? list.slice(0, 8).map(p =>
+    `<div><b>${esc(p.exe)}</b>${p.claude ? ' <span class="warn">Claude indította</span>' : ''} <span class="dim">↓${etRate(p.rx)} ↑${etRate(p.tx)}` +
+    `${Object.keys(p.docks).length ? ' · ' + Object.entries(p.docks).map(([d, b]) => esc(d) + ' ' + etRate(b)).join(', ') : ''}` +
+    `${Object.keys(p.cc).length ? ' · ' + Object.keys(p.cc).map(esc).join(' ') : ''}</span></div>`).join('') : '<div class="dim">Most nincs forgalom.</div>');
+}
+
 // ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
@@ -5119,6 +5180,15 @@ if (window.CITY) {
         dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y - 60, bubbles: true }));
         dispatchEvent(new PointerEvent('pointerup', { clientX: x, clientY: y - 60, bubbles: true }));
       }, 300);
+    }
+    // test hook: #etwtest=1 — vrg-etw on: a git clone (git-remote-https, started by a Claude session) bringing 2.4 MB/s,
+    // the browser beside it; the manifest board at Határ and the Land panel's lines (no segéd needed)
+    if (q.get('etwtest')) {
+      window.KV_INSTANT = true; landHome(0);
+      powerEvent({ at: Date.now(), cpu: 20, ramMB: 16250, ramFreeMB: 8000, disk: 10, rx: 2.5e6, tx: 2e4, gpu: 3 });
+      etwEvent({ state: 'on', demo: false });
+      etwCargoEvent({ at: Date.now(), list: [{ exe: 'git-remote-https.exe', pid: 4300, rx: 2500000, tx: 12000, docks: { web: 2512000 }, cc: { US: 2512000 }, claude: true },
+        { exe: 'opera.exe', pid: 8536, rx: 180000, tx: 9000, docks: { web: 189000 }, cc: { DE: 120000, US: 69000 }, claude: false }] });
     }
     // test hook: #nettest=up|down feeds one power sample and a station/border/shore state (no segéd needed)
     if (q.get('nettest')) {

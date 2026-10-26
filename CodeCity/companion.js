@@ -85,6 +85,12 @@
 // connected), 'usb' (the port tree); hashes instead of device ids. POST probe-volume {key, v} / probe-mute {key, on}
 // reach the probe only for a program that has a tower. All of it memory only (CITY-D27 A).
 //
+// Elevated ETW (P11, KV-23; Tier B, CITY-D17 A): when the user's scheduled task runs vrg-etw.exe, its pipe
+// \\.\pipe\vrg-etw is read (read-only; a config may name another pipe for the specs). 'etwcargo': the exact bytes per
+// process each second, by dock and country — no address leaves the segéd; 'etw': on/off. A repo file read or written
+// by a process whose ancestor is a Claude session (Bash, git, node …) becomes that session's 'beam' (via: the exe).
+// The process tree and DNS names stay in memory only (CITY-D27 A).
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -152,6 +158,7 @@ function loadConfig() {
     transcripts: user.transcripts || null,
     // vrg-probe (KV-21): a config can name another command (the specs use a fake probe)
     probeCmd: user.probeCmd || null,
+    etwPipe: user.etwPipe || null,
     downloads: user.downloads || path.join(process.env.USERPROFILE || os.homedir(), 'Downloads'),
     // Claude Code needs Git Bash on Windows; the user-level value may point to a folder that is gone
     gitBash: user.gitBash || (exists(process.env.CLAUDE_CODE_GIT_BASH_PATH || '') ? process.env.CLAUDE_CODE_GIT_BASH_PATH
@@ -456,8 +463,8 @@ function agentsHandle(list) {
   if (!Array.isArray(list)) return;
   agents.list = list.filter(a => a && a.sessionId).map(a => ({ id: String(a.id || a.sessionId).slice(0, 8), sid: String(a.sessionId),
     name: String(a.name || '').slice(0, 80), state: String(a.state || a.status || ''), kind: String(a.kind || ''),
-    inRepo: typeof a.cwd === 'string' && repoRel(a.cwd) !== null, startedAt: +a.startedAt || 0 }));
-  const pub = agents.list.map(({ sid, ...rest }) => rest);
+    inRepo: typeof a.cwd === 'string' && repoRel(a.cwd) !== null, startedAt: +a.startedAt || 0, pid: +a.pid || 0 }));
+  const pub = agents.list.map(({ sid, pid, ...rest }) => rest);
   const sig = JSON.stringify(pub);
   if (sig !== agents.sig) { agents.sig = sig; liveEmit('agents', { list: pub }); }
   // tail the sessions that may still act; drop the rest
@@ -803,6 +810,71 @@ function probeSoon() {
     if (sig !== probe.sig) { probe.sig = sig; liveEmit('apps', apps); }
   }, 120);
 }
+// ---- Tier B: vrg-etw.exe's pipe (P11, KV-23; elevated, started by the user's own scheduled task — never by us)
+const ETW_PIPE = CFG.etwPipe || '\\\\.\\pipe\\vrg-etw';
+const etw = { sock: null, state: 'off', demo: false, procs: new Map(), beams: new Map(), dns: [], files: 0, last: null };
+function etwStart() {
+  if (etw.sock || DRY) return;
+  const s = require('net').connect(ETW_PIPE);
+  let buf = '';
+  s.on('data', d => { buf += d; let k; while ((k = buf.indexOf('\n')) >= 0) { const l = buf.slice(0, k); buf = buf.slice(k + 1);
+    try { etwHandle(JSON.parse(l)); } catch (e) { /* skip */ } } });
+  s.on('error', () => {});
+  s.on('close', () => { if (etw.sock !== s) return; etw.sock = null; etw.procs.clear(); etwState('off'); });
+  etw.sock = s;
+}
+function etwStop() { if (etw.sock) { const s = etw.sock; etw.sock = null; s.destroy(); } etw.procs.clear(); etw.state = 'off'; }
+process.on('exit', etwStop);
+function etwState(state) { if (etw.state === state) return; etw.state = state; liveEmit('etw', { state, demo: etw.demo }); }
+function etwHandle(m) {
+  if (m.t === 'hello') { etw.demo = !!m.demo; etw.state = ''; etwState('on'); }
+  else if (m.t === 'procs') { etw.procs.clear(); for (const p of m.list || []) etw.procs.set(p.pid, { ppid: p.ppid, exe: String(p.exe || '') }); }
+  else if (m.t === 'proc') { if (m.op === 'stop') setTimeout(() => etw.procs.delete(m.pid), 5000); else etw.procs.set(m.pid, { ppid: m.ppid, exe: String(m.exe || '') }); }
+  else if (m.t === 'net') etwCargo(m.list || []);
+  else if (m.t === 'file') etwFiles(m.list || []);
+  else if (m.t === 'dns') { etw.dns.unshift({ at: Date.now(), exe: m.exe, name: String(m.name || '').slice(0, 120) }); etw.dns.length = Math.min(etw.dns.length, 50); }   // memory only, never sent
+}
+// the exact cargo per process, once a second: bytes by dock and country — the addresses stay here (CITY-D27 A)
+function etwCargo(list) {
+  const out = list.map(p => {
+    const docks = {}, cc = {};
+    for (const t of p.to || []) {
+      if (isLocal(t.ip)) { docks.lan = (docks.lan || 0) + t.rx + t.tx; continue; }
+      const d = (PORTS.find(x => x.ports.includes(+t.port)) || PORTS.find(x => x.id === 'other') || { id: 'other' }).id;
+      docks[d] = (docks[d] || 0) + t.rx + t.tx;
+      const c = t.ip.includes(':') ? null : countryOf(t.ip); if (c) cc[c] = (cc[c] || 0) + t.rx + t.tx;
+    }
+    return { exe: String(p.exe || '?').slice(0, 60), pid: p.pid, rx: +p.rx || 0, tx: +p.tx || 0, docks, cc, claude: !!etwSession(p.pid) };
+  });
+  etw.last = { at: Date.now(), list: out };
+  liveEmit('etwcargo', etw.last);
+}
+// the Claude session a process works for: walk up the tree to a claude.exe whose pid the agents list knows
+function etwSession(pid) {
+  for (let i = 0, p = pid; i < 16 && p > 4; i++) {
+    const a = agents.list.find(x => x.pid && x.pid === p);
+    if (a) return { a, self: i === 0 };
+    const node = etw.procs.get(p); if (!node) return null;
+    p = node.ppid;
+  }
+  return null;
+}
+// a repo file read or written by a process that a Claude session started (a Bash command, git, a test …) beams to its
+// roof as that session's read / edit; claude.exe's own reads already come through the hook, so they are left out
+function etwFiles(list) {
+  const now = Date.now();
+  for (const f of list) {
+    etw.files++;
+    if (f.pid === process.pid) continue;
+    const s = etwSession(f.pid);
+    if (!s || s.self) continue;
+    const key = s.a.id + '|' + f.op + '|' + f.path;
+    if (now - (etw.beams.get(key) || 0) < 2000) continue;
+    etw.beams.set(key, now);
+    if (etw.beams.size > 2000) etw.beams.clear();
+    liveEmit('beam', Object.assign(beamFor(s.a.id, f.op === 'w' ? 2 : 0, path.join(REPO, f.path)), { via: String(f.exe || '').slice(0, 40) }));
+  }
+}
 // ---- Pályaudvar, Határ, shoreline
 const net = { hops: null, tracing: false, state: null, timer: null, devices: 0, docks: [], countries: [], dbip: undefined, sig: '' };
 const PORTS = (() => { try { return JSON.parse(fs.readFileSync(path.join(CITY, 'ports.json'), 'utf8')).docks; } catch (e) { return [{ id: 'other', name: 'Egyéb', ports: [] }]; } })();
@@ -865,8 +937,8 @@ function netConnections(netstat) {
   net.countries = [...cc].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([c, n]) => ({ cc: c, n }));
 }
 function netStart() {
-  powerStart(); probeStart();
-  if (!net.timer) { net.timer = setInterval(() => { if (!live.clients.size) { if (!net.idle) net.idle = Date.now(); else if (Date.now() - net.idle > 30000) { powerStop(); probeStop(); } return; } net.idle = 0; powerStart(); probeStart(); netProbe(); }, 10000); net.timer.unref(); }
+  powerStart(); probeStart(); etwStart();
+  if (!net.timer) { net.timer = setInterval(() => { if (!live.clients.size) { if (!net.idle) net.idle = Date.now(); else if (Date.now() - net.idle > 30000) { powerStop(); probeStop(); etwStop(); } return; } net.idle = 0; powerStart(); probeStart(); etwStart(); netProbe(); }, 10000); net.timer.unref(); }
   netProbe();
 }
 
@@ -1109,6 +1181,7 @@ const server = http.createServer((req, res) => {
     if (net.state) res.write('event: net\ndata: ' + JSON.stringify(net.state) + '\n\n');
     if (probe.sig) res.write('event: apps\ndata: ' + probe.sig + '\n\n');
     for (const t of PROBE_FEEDS) if (probe.last[t]) res.write('event: ' + t + '\ndata: ' + JSON.stringify(probe.last[t]) + '\n\n');
+    res.write('event: etw\ndata: ' + JSON.stringify({ state: etw.state, demo: etw.demo }) + '\n\n');
     res.write('event: pipes\ndata: ' + JSON.stringify({ list: pipesList() }) + '\n\n');
     live.clients.add(res);
     agentsStart();

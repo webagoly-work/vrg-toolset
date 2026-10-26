@@ -126,6 +126,9 @@ function liveConnect() {
   live.es.addEventListener('peaks', e => { if (liveMine()) peaksEvent(JSON.parse(e.data)); });
   live.es.addEventListener('bt', e => { if (liveMine()) btEvent(JSON.parse(e.data)); });
   live.es.addEventListener('usb', e => { if (liveMine()) usbEvent(JSON.parse(e.data)); });
+  // 35-etw: the exact cargo per process (vrg-etw, the user's elevated task)
+  live.es.addEventListener('etw', e => { if (liveMine()) etwEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('etwcargo', e => { if (liveMine()) etwCargoEvent(JSON.parse(e.data)); });
   live.es.onerror = () => { $('live-dot').hidden = true; };
 }
 function liveFsEvent(d) {

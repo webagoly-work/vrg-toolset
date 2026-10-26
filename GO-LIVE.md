@@ -50,13 +50,15 @@ checkout**, with its own login.
 
 ## 3b. State at the handoff (2026-10-26, primary account → secondary account)
 
-- **Done: P0–P9 + P2's embedded terminal** (KV-01 … KV-20) + **KV-21, KV-22** (2026-10-26, primary account; P10 done), all on `main`, not pushed. README §8 has the table and
-  the done list; `docs/city/wp/` has a stub per phase with its status and notes. Selftest: 67 checks, all green
+- **Done: P0–P9 + P2's embedded terminal** (KV-01 … KV-20) + **KV-21, KV-22, KV-23** (2026-10-26, primary account; P10 done, P11 built), all on `main`, not pushed. README §8 has the table and
+  the done list; `docs/city/wp/` has a stub per phase with its status and notes. Selftest: 71 checks, all green
   (`node CodeCity/tools/selftest.js`).
-- **Next: KV-23** (P11 elevated ETW). The SDK is in `Planner/apps/dotnet`; rebuild the probe with
-  `node CodeCity/tools/build-probe.js` (offline). Self-contained needs the runtime pack from nuget.org — ask first (README §5);
-  TraceEvent for KV-23 is a nuget.org package too — name it to the user first. KV-23 (D17 = A: write the
-  scheduled-task steps, never create the task), KV-24 … (P12 needs the user's 22H2 first — D19 A: write the steps).
+- **Waiting on the user (KV-23):** install vrg-etw + create the scheduled task (docs/city/wp/p11-etw.md "Your steps"),
+  then the check. **Next prompt: KV-24** (P12 wallpaper layer).
+- **Toolchain:** The SDK is in `Planner/apps/dotnet`; rebuild the probe with
+  `node CodeCity/tools/build-probe.js` (offline) and vrg-etw with `node CodeCity/tools/build-etw.js` (TraceEvent 3.2.8 from
+  nuget.org, locked by CodeCity/etw/packages.lock.json). Self-contained needs the runtime pack from nuget.org — still not
+  asked (README §5). KV-25 (the Electron overlay) needs the user's 22H2 first — D19 A: write the steps.
   Only CITY-D26 is still open (before P13). P3b (VS Code extension, CITY-D9 D) is planned but has no KV prompt yet.
 - **Live mode:** START.cmd → K → S) Élő mód starts `CodeCity/companion.js` on http://localhost:8797. It also runs the
   helpers `agents-poll.js`, `probe-tier0.ps1`, `disk-walk.js` only while a page listens.

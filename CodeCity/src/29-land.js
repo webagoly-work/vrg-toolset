@@ -143,7 +143,7 @@ function landPanel() {
   land.el.innerHTML = '<h3>Föld — minden, ami a miénk</h3>' + LAND.places.map(p => `<div><b>${esc(p.name)}</b> <span class="dim">${esc(p.what)}</span></div>`).join('') +
     `<h4>Tárház ${land.disk ? (land.disk.walking ? '(felmérés folyik…)' : `· ${dirs.length} mappa`) : '(a segéddel jön)'}` +
     (dirs.length ? ` <button class="btn" data-reveal>${land.reveal ? 'Elrejtés' : 'Nevek mutatása'}</button>` : '') + '</h4>' +
-    pwPanelHtml() + flPanelHtml() + apPanelHtml() + stPanelHtml() +   // 30-power: Erőmű, station, border, shore · 31-flows: cargo, trains · 33-apps · 34-stadium
+    pwPanelHtml() + flPanelHtml() + etPanelHtml() + apPanelHtml() + stPanelHtml() +   // 30-power: Erőmű, station, border, shore · 31-flows: cargo, trains · 35-etw · 33-apps · 34-stadium
     dirs.slice(0, 12).map(d => `<div class="dir"><span class="${land.reveal ? '' : 'blur'}">${esc(d.name)}</span> <span class="dim">${d.restricted ? 'fallal körülvéve: ' + esc(d.restricted) : gb(d.size || 0)}${d.repo ? ' · itt lakik a Kódváros' : ''}${d.partial || (d.children || []).some(c => c.partial) ? ' · részleges (kifutott az időből)' : ''}</span></div>`).join('');
 }
 async function landLoad() {

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- vrg-etw (P11, KV-23): built by node CodeCity/tools/build-etw.js; installed and started by the user (docs/city/wp/p11-etw.md). -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <AssemblyName>vrg-etw</AssemblyName>
+    <RootNamespace>VrgEtw</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- the runtime comes only from .\dotnet next to the exe (the install copies it there): never from DOTNET_ROOT or a
+         user-writable folder, because this runs elevated -->
+    <AppHostDotNetSearch>AppRelative</AppHostDotNetSearch>
+    <AppHostRelativeDotNet>dotnet</AppHostRelativeDotNet>
+    <!-- TraceEvent and its dependencies are pinned by packages.lock.json (content hashes) -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.2.8" />
+  </ItemGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="VrgRepoRoot" Value="$(VrgRepoRoot)" />
+  </ItemGroup>
+</Project>

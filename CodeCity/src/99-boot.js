@@ -143,6 +143,15 @@ if (window.CITY) {
         dispatchEvent(new PointerEvent('pointerup', { clientX: x, clientY: y - 60, bubbles: true }));
       }, 300);
     }
+    // test hook: #etwtest=1 — vrg-etw on: a git clone (git-remote-https, started by a Claude session) bringing 2.4 MB/s,
+    // the browser beside it; the manifest board at Határ and the Land panel's lines (no segéd needed)
+    if (q.get('etwtest')) {
+      window.KV_INSTANT = true; landHome(0);
+      powerEvent({ at: Date.now(), cpu: 20, ramMB: 16250, ramFreeMB: 8000, disk: 10, rx: 2.5e6, tx: 2e4, gpu: 3 });
+      etwEvent({ state: 'on', demo: false });
+      etwCargoEvent({ at: Date.now(), list: [{ exe: 'git-remote-https.exe', pid: 4300, rx: 2500000, tx: 12000, docks: { web: 2512000 }, cc: { US: 2512000 }, claude: true },
+        { exe: 'opera.exe', pid: 8536, rx: 180000, tx: 9000, docks: { web: 189000 }, cc: { DE: 120000, US: 69000 }, claude: false }] });
+    }
     // test hook: #nettest=up|down feeds one power sample and a station/border/shore state (no segéd needed)
     if (q.get('nettest')) {
       const up = q.get('nettest') === 'up';

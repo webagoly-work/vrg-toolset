@@ -7,4 +7,53 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/etw/ (new)
 - **Decisions:** D17, D23
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** open
+- **Status:** built (KV-23, 2026-10-26) — waits for the user: install + scheduled task (steps below), then the check
+
+## KV-23: what was built
+
+- `CodeCity/etw/` (Program.cs, vrg-etw.csproj, NuGet.config = nuget.org only, packages.lock.json = every package pinned by
+  content hash; `node CodeCity/tools/build-etw.js` restores in locked mode). Library: **Microsoft.Diagnostics.Tracing.TraceEvent
+  3.2.8** (MIT, nuget.org, published 2026-09-28; 4.0.0 was 12 days old, so not taken). It is not in vendor-manifest.json
+  (that file lists Vendor/ and npm parts; the lock file is the pin here) — add an entry if the manifest should list NuGet too.
+- One named ETW session "VRG-Kodvaros-ETW" (never "NT Kernel Logger", so no other tool's trace is stopped): Kernel-Network
+  (TCP/UDP, v4 + v6), Kernel-Process (+ the rundown), Kernel-File reads/writes **inside this repo only** (the root is baked
+  in at build time; .git, node_modules, Planner/apps, .cache, Vendor skipped), DNS-Client 3008. The session runs only while
+  a reader is on the pipe and stops 30 s after the last one left (city closed = ~0 %).
+- Out: `\\.\pipe\vrg-etw`, JSON lines: hello + the process tree for each new reader, then `net` (per process per second: bytes,
+  top 6 destinations), `file`, `proc`, `dns`. The pipe: your account may read, nobody may write, the network is denied.
+  It takes no command and no argument but `--demo` (made-up lines on `vrg-etw-demo`, unelevated).
+- It runs from `C:\Program Files\VRG\Kodvaros-ETW` with its own runtime copy in `.\dotnet` (AppHostDotNetSearch=AppRelative):
+  an elevated task must never start an exe or load a runtime from a user-writable folder (H:\ is one), or anything running
+  as you could swap the file and get admin rights.
+- The segéd reads the pipe while a page listens: `etwcargo` (per process: exact bytes by dock and country — the addresses stay
+  in the segéd), `etw` on/off; a repo file read or written by a process whose ancestor is a Claude session (by the pid in
+  `claude agents --json`) becomes that session's beam (`via`: the exe). claude.exe's own reads are left to its hook.
+- Page: `src/35-etw.js` — a manifest board at Határ (a bar pair per process, gold rim = started by Claude) and the Land
+  panel's "Pontos rakomány (ETW)".
+- Tested here, unelevated: the real mode refuses (exit 2), an unknown argument too (64); the installed layout (into a temp
+  folder) starts from its own .\dotnet with no DOTNET_ROOT; `--demo` serves the pipe and a non-admin reader reads it;
+  spec-etw.js (3 cases) in the selftest. **Not tested: the kernel session itself — that needs your elevated task.**
+
+## Your steps (CITY-D17 A: you create the task; Claude never does)
+
+1. **Build** (already done once; again after pulling changes): `node CodeCity/tools/build-etw.js`
+2. **Install** — Start menu → type *PowerShell* → right-click **Windows PowerShell** → **Run as administrator** → paste:
+   `powershell -NoProfile -ExecutionPolicy Bypass -File H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\CodeCity\etw\install-etw.ps1`
+   It copies vrg-etw and the .NET runtime into `C:\Program Files\VRG\Kodvaros-ETW` and prints two SHA-256 hashes.
+   It creates no task. Run it again after every rebuild.
+3. **Create the task** — Start → type *Task Scheduler* → open it → right side **Create Task…** (not "Basic Task"):
+   - **General:** Name `VRG Kodvaros ETW` · *Run only when user is logged on* · tick **Run with highest privileges** ·
+     Configure for: Windows 10.
+   - **Triggers** → New… → Begin the task: **At log on** · Specific user: you → OK.
+   - **Actions** → New… → Start a program → Program/script: `"C:\Program Files\VRG\Kodvaros-ETW\vrg-etw.exe"` · no
+     arguments → OK.
+   - **Conditions:** untick *Start the task only if the computer is on AC power*.
+   - **Settings:** untick *Stop the task if it runs longer than 3 days* · If the task is already running: *Do not start a
+     new instance* → OK.
+   - Right-click the new task → **Run** (so you need not log off). It shows no window.
+4. **Check** (then tell Claude "KV-23 check"): START.cmd → K → S (live mode) → Home (the Land). The Land panel shows
+   *Pontos rakomány (ETW)*. Then (a) in any folder outside the repo: `git clone https://github.com/git/git-scm.com` — a
+   *git-remote-https.exe* line with its exact MB/s and a bar pair at Határ; (b) ask a Claude session in this repo to run
+   `cat README.md` in Bash — README.md's roof gets a beam from that session.
+5. **Remove** (any time): Task Scheduler → right-click *VRG Kodvaros ETW* → End, then Delete; in an elevated PowerShell:
+   `Remove-Item -Recurse "C:\Program Files\VRG\Kodvaros-ETW"`.
