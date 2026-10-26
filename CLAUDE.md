@@ -194,6 +194,9 @@ All of them run in the **main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_
   workspace / GitWorld / overlay OS from the prompt series `docs/city/PROMPTS-WORKSPACE.md` (KV-01 …
   KV-27, research in `docs/research/reports/Kódváros live workspace and GitWorld.md`). Meant for the
   secondary account (start steps in GO-LIVE §0); one prompt per step, commit, never push.
+- **`GO OPENWRT`** — read `GO-OPENWRT.md` at the repo root and do what it says: prepare, guide and verify
+  OpenWrt on the TP-Link TL-WR1043ND (the user flashes; Claude never touches the router). Asked for 2026-10-26
+  with CITY-D24; phases P0–P5, the first is the sticker's hardware version.
 - **`GO STRICT`** — **done**: the five programs VRG Kapu links to are on `main` (`check-hub --strict` → Rendben). Retired.
 - **`GO ALL`** — **retired** 2026-10-24: `dev-all` is replaced by `main`. See GO MAIN.
 - **`GO MAIN`** — **done** 2026-10-24 (`GO-MAIN.md`): every line consolidated into `main`, the other
