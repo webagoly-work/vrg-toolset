@@ -2,7 +2,7 @@
 
 *Research report, 2026-10-26. Synthesised from six research notes in `docs/research/research_notes/Kódváros live workspace and GitWorld/` (01 our assets, 02 workspace architecture, 03 Windows live telemetry, 04 overlay OS layer, 05 GitWorld map and repos, 06 media REA candidates) and `docs/city/README.md` §7. No code was changed. Sections 1–7 answer the seven parts of the brief; section numbers are stable because the prompt series in §7 points into them.*
 
-Kódváros can become a live workspace without a rewrite and without new toolchains. **The one piece that unlocks almost everything already exists in the repo**: the parked Kapu companion server (`CodeCity/from-kapu/companion-server.js`), a hardened 127.0.0.1 Node process that serves a page, injects a per-install token and launches whitelisted programs from argument arrays. Extend it into `CodeCity/companion.js`, and the city gets a real origin (fixing `file://` storage and editor workers), a right-click (RCO) menu that opens folders, VS Code, terminals, Claude Code and the Claude app, and a live event stream. The best live source for "watching Claude work" is a **Claude Code HTTP hook** that POSTs every tool call to the companion and fails silently when the city is closed ([Claude Code hooks](https://code.claude.com/docs/en/hooks)); parallel sessions come from `claude agents --json`, the documented "supported interface" for session state ([agent view](https://code.claude.com/docs/en/agent-view)). The GitWorld geography (planet → Land → Kódváros, Tárház, Erőmű, Pályaudvar, USB-falu → district → building → floor) needs **nested scale frames with a camera hand-off**, because float32 cannot hold a planet and a function floor in one coordinate system. Windows system data splits cleanly into three tiers: a no-admin tier that covers CPU, RAM, GPU, connections, windows, audio, media, USB and Bluetooth; an elevated, read-only ETW tier for per-process bytes and "who touched which file on H:"; and things to avoid outright (packet capture, TLS interception, driver swaps). The overlay OS is a late phase: Electron is the only host whose documented JavaScript APIs cover transparency, click-through with mouse forwarding, hotkeys and window capture, but this PC runs **Windows 10 21H2 (build 19044)**, out of servicing, and should move to 22H2 first. The design rule that matters most for a user who does not code is borrowed from process plants: **a calm, grey city means all is well; colour appears only when something needs you** ([Control.com: Going Gray](https://control.com/technical-articles/going-gray/)). Twenty decisions are listed in §6.3, and §7 gives 27 short prompts, one per roadmap step.
+Kódváros can become a live workspace without a rewrite and without new toolchains. **The one piece that unlocks almost everything already exists in the repo**: the parked Kapu companion server (`CodeCity/from-kapu/companion-server.js`), a hardened 127.0.0.1 Node process that serves a page, injects a per-install token and launches whitelisted programs from argument arrays. Extend it into `CodeCity/companion.js`, and the city gets a real origin (fixing `file://` storage and editor workers), a right-click (RCO) menu that opens folders, VS Code, terminals, Claude Code and the Claude app, and a live event stream. The best live source for "watching Claude work" is a **Claude Code HTTP hook** that POSTs every tool call to the companion and fails silently when the city is closed ([Claude Code hooks](https://code.claude.com/docs/en/hooks)); parallel sessions come from `claude agents --json`, the documented "supported interface" for session state ([agent view](https://code.claude.com/docs/en/agent-view)). The GitWorld geography (planet → Land → Kódváros, Tárház, Erőmű, Pályaudvar, USB-falu → district → building → floor) needs **nested scale frames with a camera hand-off**, because float32 cannot hold a planet and a function floor in one coordinate system. Windows system data splits cleanly into three tiers: a no-admin tier that covers CPU, RAM, GPU, connections, windows, audio, media, USB and Bluetooth; an elevated, read-only ETW tier for per-process bytes and "who touched which file on H:"; and things to avoid outright (packet capture, TLS interception, driver swaps). The overlay OS is a late phase: Electron is the only host whose documented JavaScript APIs cover transparency, click-through with mouse forwarding, hotkeys and window capture, but this PC runs **Windows 10 21H2 (build 19044)**, out of servicing, and should move to 22H2 first. The design rule that matters most for a user who does not code is borrowed from process plants: **a calm, grey city means all is well; colour appears only when something needs you** ([Control.com: Going Gray](https://control.com/technical-articles/going-gray/)). Twenty-five decisions are listed in §6.3, and §7 gives 27 short prompts, one per roadmap step. §8 (added later) puts free Cloudflare services in an outer ring around the local companion, with its own seven prompts.
 
 ---
 
@@ -484,7 +484,7 @@ P1–P4 deliver most of the felt value with no admin rights, no new toolchain an
 10. **CITY-D18 Sidecar toolchain** (before P10; choose before 2026-11-10). A) C# self-contained, .NET 10 SDK unpacked into `Planner/apps/dotnet`. B) .NET 8 SDK. C) PowerShell Tier 0 only, no sidecar. D) Rust.
 11. **CITY-D19 Windows 22H2** (before P12; the user's own action). A) Apply the 21H2 → 22H2 enablement before P12. B) Stay on 21H2; Electron only, no WebView2 hosts.
 12. **CITY-D20 Overlay host** (before P12). A) Electron with three layers (wallpaper via Lively first). B) Lively wallpaper only. C) Tauri.
-13. **CITY-D21 GitHub data** (before P9). A) Unauthenticated snapshot from `vendor-manifest.json` + ecosyste.ms, refreshed rarely; token optional later. B) A personal token from an environment variable (5,000/h, free 304s). C) No remote fetch; planet from local data only.
+13. **CITY-D21 GitHub data** (before P9). A) Unauthenticated snapshot from `vendor-manifest.json` + ecosyste.ms, refreshed rarely; token optional later. B) A personal token from an environment variable (5,000/h, free 304s). C) No remote fetch; planet from local data only. D) Our own Cloudflare Worker caches the metadata with ETags (§8.2); no token on the PC.
 14. **CITY-D22 Planet placement** (before P9). A) Mix: ecosystem continents, dependency distance near us, Map of GitHub as faint background. B) Map of GitHub coordinates only. C) Dependency distance only.
 15. **CITY-D23 Network precision** (before P8). A) No packet capture: NIC counters + TCP table + DB-IP Lite; exact bytes only via Tier B if decision 9 allows. B) Npcap opt-in.
 16. **CITY-D24 Router** (before P8). A) No router change: NIC counters, tracert, ARP. B) Turn on UPnP on the TP-Link for WAN counters (it also opens port mapping to LAN programs). C) Flash OpenWrt.
@@ -492,6 +492,11 @@ P1–P4 deliver most of the felt value with no admin rights, no new toolchain an
 18. **CITY-D26 Look name and rules** (before P13; affects P2+). A) Adopt R1–R12, the palette tokens and an own skin name (e.g. "Fényvonal"), with no Tron terms anywhere user-visible. B) Rules only, no skin name.
 19. **CITY-D27 Privacy of live data** (before P4). A) Window titles, outside paths, IPs, DNS names and device names stay in memory only, with a blur mode; nothing persisted. B) An opt-in log under a gitignored folder (e.g. `Planner/data/`).
 20. **CITY-D28 three.js version** (before P8). A) Stay on r169 until P8, then decide. B) Upgrade to r186 first.
+21. **CITY-D29 Cloud platform and domain** (before C0, §8). A) Cloudflare free tier on one own domain bought at Cloudflare Registrar; all hostnames under it. B) Cloudflare with only `*.pages.dev`/`*.workers.dev` (no tunnel hostnames). C) No cloud services.
+22. **CITY-D30 Remote view** (before C3). A) Tunnel → separate GET-only edge server with exported snapshots, behind Access (owner only); companion never tunnelled. B) A, plus the phone relay (47291) over the tunnel. C) Tailscale only; no public hostname.
+23. **CITY-D31 Off-site backup** (before C2). A) restic → R2, client-side encrypted, password in the password manager + on paper, weekly check and a restore test. B) rclone crypt sync to R2. C) No off-site copy.
+24. **CITY-D32 GitHub events** (before C4; affects P3/P7). A) Worker + D1 webhook mailbox, HMAC-verified, polled by the companion. B) Keep polling GitHub directly.
+25. **CITY-D33 Cloud configuration** (before C0). A) Everything as code under `cloud/` (`wrangler.toml`, pinned Wrangler, `wrangler secret`, START.cmd entries, allowlisted exports with `check-export.js`); dashboard only for account, domain and Access, documented in `cloud/README.md`. B) Dashboard-managed.
 
 Questions without options, to ask in the same session: **Q1** the user's dev notes for Kódváros base fine-tuning (README §7: "ask for those notes first; do not guess"); **Q2** which repos "Gitropolis" and "AgentCity" in README §2 were; **Q3** the TP-Link hardware version (sticker), if decision 16 is ever B or C.
 
@@ -697,4 +702,109 @@ Check: hand-off and return with Zen work three times in a row. Commit, do not pu
 Read the report §5.5 (R1–R12), §4 (trademark limits) and docs/city/README.md §7.
 Audit the city against R1–R12 and the trademark list, add a low-glow mode and adaptive quality tiers, and make the Claude Design batch pack (CodeCity/tools/shot.js of every look + the user's dev notes) under docs/city/.
 Check: each rule has a selftest or shot check; no Tron terms in user-visible text. Commit, do not push.
+```
+
+---
+
+## 8. Cloudflare as the outer ring: what may leave the machine, and how
+
+*Added 2026-10-26. The companion and everything it can reach stay on 127.0.0.1 (§1, CITY-D27). This section adds an outer ring of free Cloudflare services for the few things that should be reachable from elsewhere: shared static tools, a phone view, GitHub events, metadata caching and an off-site backup. Decisions CITY-D29…D33 are in §6.3; the prompts CF-01…CF-07 are in §8.5.*
+
+### 8.1 The rule: three rings, and data only ever moves outward on purpose
+
+| Ring | Where | What lives there | May it reach the internet? |
+|---|---|---|---|
+| **Inner** | This PC, 127.0.0.1 | Companion (8797), embedded terminal, live Claude feed, system telemetry, client data | **Never.** No tunnel, no port-forward, no "temporary" exposure. Its token and Host/Origin checks assume a local-only threat model. |
+| **Edge** | This PC, a separate process | A static read-only file server for exported city/Planner snapshots; `cloudflared` | Only outbound, through Cloudflare Tunnel, and only behind Cloudflare Access |
+| **Outer** | Cloudflare | Pages (static tools), Workers (webhook mailbox, GitHub cache), D1, R2 (encrypted backup), Access (login) | Yes; it holds nothing that is not anonymised or encrypted |
+
+Three consequences make the result stable:
+
+- **The edge server is not the companion with a filter.** It is a separate, tiny static server that can only read one export folder. A misconfigured tunnel then exposes a folder of snapshots, never a terminal.
+- **Every export is allowlisted, not blocklisted.** A build script copies named files into `cloud/out/<target>/` and a check (`node cloud/check-export.js`) fails on client identifiers, tokens, absolute H: paths and CITY-D27 data. The anonymise rules apply before anything is uploaded.
+- **Configuration is code.** Each Worker/Pages project has a `wrangler.toml` under `cloud/`, the Wrangler version is pinned, secrets live only in `wrangler secret` and in gitignored local files, and every command gets a START.cmd entry (`node tools/check-start.js`). The dashboard is used for account, domain and Access policy setup only, and those settings are written down in `cloud/README.md`.
+
+### 8.2 Building blocks and why each one
+
+| Need | Choice | Why this over the alternatives |
+|---|---|---|
+| Account | One Cloudflare account, hardware key or TOTP 2FA, recovery codes on paper | Every ring depends on it; losing it loses the domain |
+| Domain | One own domain at **Cloudflare Registrar** (sold at cost, no markup) | Named tunnel hostnames and Access policies need a zone on Cloudflare; `*.pages.dev` alone cannot carry the tunnel. Registrar and DNS in one place removes a whole class of outages |
+| Login | **Cloudflare Zero Trust** free plan, one Access app per hostname, GitHub login + one-time PIN as fallback, allow-list = your own identities only | Free for small teams; no login code in our pages |
+| Static tools | **Pages, Direct Upload** (`wrangler pages deploy cloud/out/pages`) | No Git integration, so Cloudflare never gets the repo; only the allowlisted export is uploaded |
+| Phone view | **Tunnel** (remotely managed, `cloudflared` as a Windows service) → edge static server, behind Access | Outbound only, so double NAT and no inbound do not matter (§1.8); the service survives reboots. Installing it needs admin once |
+| GitHub events | **Worker + D1**: verifies `X-Hub-Signature-256`, stores the event; the companion polls `GET /events?since=` with a bearer token and acks | Replaces "poll GitHub" with one cheap poll of our own mailbox; nothing inbound to the PC; D1 is durable and queryable |
+| Repo metadata (P9) | **Worker cache** keyed by repo, with ETag revalidation upstream | Keeps the planet fetch under unauthenticated rate limits without a personal token on the PC; new option D under CITY-D21 |
+| Off-site backup | **restic → R2** (S3 API), repo password in the password manager + on paper, weekly `restic check` | Client-side encryption, deduplication, snapshots and verification; better than a plain synced copy. R2 needs a payment method on file even within the free 10 GB |
+| Private admin access | **Tailscale** (already proposed in `docs/research/2026-10-26_router-usb-phone-wake.md`) for RDP and Wake-on-LAN | Cloudflare is for web views; full remote control stays on a private mesh, never on a public hostname |
+
+Free-tier limits change. Check the current numbers on Cloudflare's pricing pages at each setup step and write them, with the date, into `cloud/README.md`.
+
+### 8.3 Hostname plan
+
+| Hostname | Points to | Access |
+|---|---|---|
+| `tools.<domain>` | Pages: calculators, Valena selector, `vrg-vendor.html` (anonymised) | Public, or Access if a tool shows anything internal |
+| `preview.<domain>` | Pages: client preview builds | Access, per-client allow-list |
+| `city.<domain>` | Tunnel → edge static server → `cloud/out/city/` | Access, owner only |
+| `hooks.<domain>` | Worker: GitHub webhook mailbox | GitHub HMAC on `POST`; bearer token on `GET` |
+| `meta.<domain>` | Worker: GitHub/ecosyste.ms cache | Public read, rate-limited |
+
+### 8.4 Order (stability first, each step reversible)
+
+| Step | Content | Done-check |
+|---|---|---|
+| **C0** | Account + 2FA, domain at Registrar, Zero Trust team, `cloud/README.md`, Wrangler pinned | `npx wrangler whoami` shows the account; the README lists every dashboard setting with its date |
+| **C1** | Export pipeline + `check-export.js`; first Pages deploy of one harmless tool | `tools.<domain>` serves it; a planted fake token makes the check fail |
+| **C2** | restic → R2 backup of the repo mirror and `_parked`; scheduled task; restore test | A file restored from R2 into a temp folder matches its hash |
+| **C3** | Edge static server + Tunnel + Access for `city.<domain>` | Phone off Wi-Fi: login → read-only city; `/api/*` and port 8797 unreachable through the tunnel |
+| **C4** | Webhook mailbox Worker + D1; companion poller (P3/P7) | A push to a test repo appears in the city within one poll interval; a forged signature is rejected |
+| **C5** | Metadata cache Worker (if CITY-D21 = D) | P9 planet fetch works with no local token; the second fetch is a cache hit |
+| **C6** | Phone relay over the tunnel (only if CITY-D30 = B) | Gyro relay works off home Wi-Fi, behind Access |
+
+### 8.5 Prompt series (Cloudflare)
+
+Same rules as §7: one prompt per fresh session, in order, from `main`.
+
+**CF-01 · Decisions**
+```
+Read the report §8 and §6.3 items 21–25.
+Ask me CITY-D29–D33 and the new option D of CITY-D21 one at a time, A first. Record them in docs/city/README.md §5. Commit, do not push.
+```
+
+**CF-02 · Foundation (C0)**
+```
+Read the report §8.1–§8.3. I have created the account, domain and Zero Trust team (tell me what to check if not).
+Create cloud/README.md (rings, hostname plan, every dashboard setting with date, free-tier limits with date), pin Wrangler in vendor-manifest.json (npm + sha512), add a START.cmd entry "Cloudflare" with whoami/login. Gitignore cloud/.secrets/ and cloud/out/.
+Check: node tools/check-start.js passes; npx wrangler whoami works. Commit, do not push.
+```
+
+**CF-03 · Export pipeline + first Pages deploy (C1)**
+```
+Read the report §8.1 (allowlist rule). Write cloud/export.js (named targets → cloud/out/<target>/) and cloud/check-export.js (fails on client identifiers per the anonymise rules, tokens, absolute H: paths, CITY-D27 data). First target: one offline tool I name. Deploy with wrangler pages deploy (Direct Upload) to tools.<domain>.
+Check: a planted fake token fails the check; the tool loads on my phone. Commit, do not push.
+```
+
+**CF-04 · Encrypted backup to R2 (C2)**
+```
+Read the report §8.2 (backup row). Vendor restic (pinned release + sha256). Script cloud/backup.js: restic backup of the repo mirror and _parked to R2, keys and password from cloud/.secrets/; a weekly scheduled task that I create; restic check.
+Check: restore one file to a temp folder and compare hashes. Commit, do not push.
+```
+
+**CF-05 · Read-only city through a tunnel (C3)**
+```
+Read the report §8.1 (edge ring) and §8.3. Write cloud/edge-server.js: static, GET-only, serves cloud/out/city/ on 127.0.0.1:<new port>, nothing else. Export a city snapshot through check-export. Give me the exact steps to create the remotely managed tunnel and the Access app (owner only); I run the admin cloudflared service install myself.
+Check: from the phone off Wi-Fi, login then the city loads; /api/* and 8797 are not reachable. Commit, do not push.
+```
+
+**CF-06 · Webhook mailbox (C4)**
+```
+Read the report §8.2 (GitHub events row). Worker under cloud/workers/hooks/ with D1: verify X-Hub-Signature-256, store, GET /events?since= with bearer, POST /ack. Companion poller behind a setting, off by default.
+Check: a test-repo push shows up; a forged signature returns 401. Commit, do not push.
+```
+
+**CF-07 · Metadata cache (C5)**
+```
+Only if CITY-D21 = D. Read the report §8.2 and P9. Worker under cloud/workers/meta/ caching GitHub/ecosyste.ms metadata for the vendor-manifest repos with ETag revalidation; world.js uses it first, the snapshot as fallback.
+Check: the second fetch is a cache hit; offline still renders from the snapshot. Commit, do not push.
 ```

@@ -109,7 +109,7 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
   then opt-in.
 - CITY-D27 **A** — window titles, outside paths, IPs, DNS and device names stay in memory only, with a
   blur mode; nothing persisted.
-- Still open (asked in later prompts): CITY-D17–D26, D28.
+- Still open (asked in later prompts): CITY-D17–D26, D28; Cloudflare outer ring CITY-D29–D33 and CITY-D21 option D (report §8, prompt CF-01).
 
 ## 6. Use
 
