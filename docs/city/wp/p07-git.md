@@ -7,4 +7,4 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/scan.js, CodeCity/src/*
 - **Decisions:** D10
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** open
+- **Status:** DONE 2026-10-26 — KV-16 5f1a07b (metro lines, twin islands, read-only merge preview, reflog lane; merging = a pre-filled Claude prompt)
