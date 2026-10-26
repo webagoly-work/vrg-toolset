@@ -290,3 +290,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-08 ✔ 2026-10-26 a62235f
 - KV-09 ✔ 2026-10-26 3b9704d
 - KV-10 ✔ 2026-10-26 263c298 (hooks applied after the user's yes; exec form, onFailure continue)
+- KV-11 ✔ 2026-10-26 c9d7474
