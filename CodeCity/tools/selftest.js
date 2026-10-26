@@ -96,8 +96,7 @@ try {
   check(ts.status === 0, `terminal spec exit ${ts.status}`);
   // the live repo end to end (P3, KV-08) on a throwaway fixture repo: edit -> fs event, commit -> git event + /api/city
   const lv = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-live.js')], { encoding: 'utf8', timeout: 90000 });
-  for (const l of String(lv.stdout || '').trim().split('
-').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)s+/, ''));
+  for (const l of String(lv.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
   check(lv.status === 0, `live spec exit ${lv.status}`);
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
