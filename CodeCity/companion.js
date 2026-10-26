@@ -18,10 +18,16 @@
 // (scan.js into the temp folder, never CodeCity/dist) only when HEAD moved since the last scan.
 //
 // Live Claude (P4, KV-09, no settings change): while a page listens, `claude agents --json` is polled
-// (every 6 s, never overlapping) and each running session's transcript is tailed from its current end
+// (every 6 s, by the agents-poll.js helper: starting claude.exe freezes the starting process ~3 s) and each running session's transcript is tailed from its current end
 // through sessions.js's filter — kind + path, nothing else. The stream gets 'agents' (id, name, state,
 // kind, whether its cwd is in the repo) and 'beam' (session id, kind, repo path; a path outside the repo
 // is only counted). Nothing is written anywhere (CITY-D27 A: memory only).
+//
+// Hooks (P4, KV-10, CITY-D11 A): CodeCity/hook.js POSTs /api/hook {sid, event pre|post, kind, paths} with the
+// token. Once a session reports through its hook, its transcript tail stops beaming (no doubles). A path
+// outside the repo becomes an outskirts zone (drive + two folders, e.g. H:\cwebuser\backups) — the full
+// path is never sent. Restricted zones (.ssh, Planner/data, Planner/home, *.credentials.json, H_BACKUP_*,
+// *.pdf) are flagged red and are shown only, never blocked (CITY-D16 A, until P13).
 //
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
@@ -249,7 +255,7 @@ function liveCity() {
 // ---- live Claude: sessions + transcript tails -> 'agents' and 'beam' events
 const SESS = require('./sessions.js');
 const AGENTS_EVERY = 6000, TAIL_EVERY = 1000;
-const agents = { list: [], sig: '', polling: false, tails: new Map(), timer: null, tailTimer: null };
+const agents = { list: [], sig: '', poller: null, idleSince: 0, tails: new Map(), tailTimer: null, hooked: new Set() };
 const repoReal = () => real(REPO);
 const keyOf = x => (process.platform === 'win32' ? x.toLowerCase() : x).replace(/\\/g, '/').replace(/\/+$/, '');
 // a path as the repo spells it ('' = the repo itself), or null when it is outside the repo
@@ -259,6 +265,22 @@ function repoRel(abs) {
   if (!a.startsWith(r + '/')) return null;
   return path.relative(repoReal(), abs).replace(/\\/g, '/');
 }
+// restricted zones: shown red, never blocked (D16 A); the name says what matched, not the path
+const RESTRICTED = [[/(^|\/)\.ssh(\/|$)/i, '.ssh'], [/(^|\/)planner\/(data|home)(\/|$)/i, 'Planner/data, Planner/home'],
+  [/\.credentials\.json$/i, '*.credentials.json'], [/(^|\/)h_backup_[^/]*(\/|$)/i, 'H_BACKUP_*'], [/\.pdf$/i, 'ügyfél-PDF (*.pdf)']];
+const restrictedOf = rel => { const x = RESTRICTED.find(([re]) => re.test(rel)); return x ? x[1] : null; };
+// a beam for one path: inside the repo -> its repo path; outside -> only its zone (drive + two folders)
+function beamFor(id, kind, abs, phase) {
+  const rel = repoRel(abs), out = { id, kind, at: Date.now() };
+  if (phase) out.phase = phase;
+  const k = keyOf(abs), r = restrictedOf(rel === null ? k : rel);
+  if (r) out.restricted = r;
+  if (rel !== null) { out.p = rel; return out; }
+  const parts = path.resolve(abs).split(/[\\/]+/).filter(Boolean);
+  out.outside = true;
+  out.zone = parts.slice(0, parts.length > 3 ? 3 : Math.max(1, parts.length - 1)).join('\\');
+  return out;
+}
 function transcriptOf(sid) {
   for (const base of CFG.transcripts || [SESS.projectsBase()]) {
     let dirs; try { dirs = fs.readdirSync(base); } catch (e) { continue; }
@@ -266,37 +288,46 @@ function transcriptOf(sid) {
   }
   return null;
 }
-function agentsPoll() {
-  if (agents.polling || !live.clients.size) return;
-  agents.polling = true;
-  const [exe, ...argv] = CFG.agentsCmd;
-  execFile(exe, argv, { timeout: 20000, windowsHide: true, maxBuffer: 1 << 20 }, (err, out) => {
-    agents.polling = false;
-    let list;
-    try { list = JSON.parse(String(out)); } catch (e) { return; }
-    if (!Array.isArray(list)) return;
-    agents.list = list.filter(a => a && a.sessionId).map(a => ({ id: String(a.id || a.sessionId).slice(0, 8), sid: String(a.sessionId),
-      name: String(a.name || '').slice(0, 80), state: String(a.state || a.status || ''), kind: String(a.kind || ''),
-      inRepo: typeof a.cwd === 'string' && repoRel(a.cwd) !== null, startedAt: +a.startedAt || 0 }));
-    const pub = agents.list.map(({ sid, ...rest }) => rest);
-    const sig = JSON.stringify(pub);
-    if (sig !== agents.sig) { agents.sig = sig; liveEmit('agents', { list: pub }); }
-    // tail the sessions that may still act; drop the rest
-    const keep = new Set();
-    for (const a of agents.list) {
-      if (a.state === 'done' || a.state === 'failed') continue;
-      keep.add(a.sid);
-      if (!agents.tails.has(a.sid)) {
-        const f = transcriptOf(a.sid);
-        let off = 0; try { off = fs.statSync(f).size; } catch (e) { /* not yet */ }
-        agents.tails.set(a.sid, { id: a.id, file: f, off, rest: '', seen: new Set() });
-      }
+// the helper process: started with the first listening page, stopped 30 s after the last one left
+function agentsPoller(on) {
+  if (on && !agents.poller) {
+    const child = spawn(process.execPath, [path.join(CITY, 'agents-poll.js'), String(AGENTS_EVERY), ...CFG.agentsCmd], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
+    let buf = '';
+    child.stdout.on('data', d => { buf += d; let k; while ((k = buf.indexOf('\n')) >= 0) { const line = buf.slice(0, k); buf = buf.slice(k + 1); try { agentsHandle(JSON.parse(line)); } catch (e) { /* skip */ } } });
+    child.on('exit', () => { if (agents.poller === child) agents.poller = null; });
+    child.on('error', () => {});
+    agents.poller = child;
+  } else if (!on && agents.poller) { try { agents.poller.stdin.end(); agents.poller.kill(); } catch (e) { /* gone */ } agents.poller = null; }
+}
+process.on('exit', () => agentsPoller(false));
+function agentsHandle(list) {
+  if (!Array.isArray(list)) return;
+  agents.list = list.filter(a => a && a.sessionId).map(a => ({ id: String(a.id || a.sessionId).slice(0, 8), sid: String(a.sessionId),
+    name: String(a.name || '').slice(0, 80), state: String(a.state || a.status || ''), kind: String(a.kind || ''),
+    inRepo: typeof a.cwd === 'string' && repoRel(a.cwd) !== null, startedAt: +a.startedAt || 0 }));
+  const pub = agents.list.map(({ sid, ...rest }) => rest);
+  const sig = JSON.stringify(pub);
+  if (sig !== agents.sig) { agents.sig = sig; liveEmit('agents', { list: pub }); }
+  // tail the sessions that may still act; drop the rest
+  const keep = new Set();
+  for (const a of agents.list) {
+    if (a.state === 'done' || a.state === 'failed') continue;
+    keep.add(a.sid);
+    if (!agents.tails.has(a.sid)) {
+      const f = transcriptOf(a.sid);
+      let off = 0; try { off = fs.statSync(f).size; } catch (e) { /* not yet */ }
+      agents.tails.set(a.sid, { id: a.id, file: f, off, rest: '', seen: new Set() });
     }
-    for (const sid of agents.tails.keys()) if (!keep.has(sid)) agents.tails.delete(sid);
-  });
+  }
+  for (const sid of agents.tails.keys()) if (!keep.has(sid)) agents.tails.delete(sid);
 }
 function tailOnce() {
-  if (!live.clients.size) return;
+  if (!live.clients.size) {   // nobody listening: stop the poller after 30 s
+    if (!agents.idleSince) agents.idleSince = Date.now();
+    else if (agents.poller && Date.now() - agents.idleSince > 30000) agentsPoller(false);
+    return;
+  }
+  agents.idleSince = 0;
   for (const [sid, t] of agents.tails) {
     if (!t.file) { t.file = transcriptOf(sid); if (!t.file) continue; try { t.off = fs.statSync(t.file).size; } catch (e) { /* later */ } continue; }
     let size; try { size = fs.statSync(t.file).size; } catch (e) { continue; }
@@ -315,19 +346,17 @@ function tailOnce() {
       for (const b of c) {
         if (b.type !== 'tool_use' || t.seen.has(b.id)) continue;
         t.seen.add(b.id);
-        for (const { kind, p: tp } of SESS.callPaths(b) || []) {
-          const rel = repoRel(path.resolve(o.cwd || REPO, tp));
-          liveEmit('beam', rel === null ? { id: t.id, kind, outside: true, at: Date.now() } : { id: t.id, kind, p: rel, at: Date.now() });
-        }
+        if (agents.hooked.has(t.id)) continue;   // its hook reports this call already
+        for (const { kind, p: tp } of SESS.callPaths(b) || []) liveEmit('beam', beamFor(t.id, kind, path.resolve(o.cwd || REPO, tp)));
       }
     }
   }
 }
 function agentsStart() {
-  if (agents.timer) return;
-  agents.timer = setInterval(agentsPoll, AGENTS_EVERY);
+  agentsPoller(true);
+  if (agents.tailTimer) return;
   agents.tailTimer = setInterval(tailOnce, TAIL_EVERY);
-  agents.timer.unref(); agents.tailTimer.unref();
+  agents.tailTimer.unref();
 }
 
 // ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
@@ -402,6 +431,15 @@ const ACTIONS = {
     try { t.pty.kill(); } catch (e) { /* already gone */ }
     return [200, { ok: true }];
   } },
+  // from CodeCity/hook.js: what one tool call of a Claude session is about to touch (pre) or touched (post)
+  hook: { keys: ['sid', 'event', 'kind', 'paths'], async run(b) {
+    const ok = typeof b.sid === 'string' && /^[0-9a-f-]{1,8}$/i.test(b.sid) && (b.event === 'pre' || b.event === 'post') &&
+      [0, 1, 2].includes(b.kind) && Array.isArray(b.paths) && b.paths.length <= 20 && b.paths.every(x => typeof x === 'string' && x.length < 1024 && path.isAbsolute(x));
+    if (!ok) return [400, { error: 'sid, event (pre|post), kind (0|1|2), paths (absolute, max 20)' }];
+    agents.hooked.add(b.sid);
+    for (const x of b.paths) liveEmit('beam', beamFor(b.sid, b.kind, x, b.event));
+    return [200, { ok: true }];
+  } },
   'check-paths': { keys: ['paths'], async run(b) {
     if (!Array.isArray(b.paths) || b.paths.length > 500 || !b.paths.every(p => typeof p === 'string')) return [400, { error: 'paths: legfeljebb 500 szöveg' }];
     return [200, Object.fromEntries(b.paths.map(p => [p, !!safePath(p)]))];
@@ -452,7 +490,7 @@ const server = http.createServer((req, res) => {
     res.write('event: hello\ndata: ' + JSON.stringify({ head: live.head, watching: !!live.watcher }) + '\n\n');
     if (agents.sig) res.write('event: agents\ndata: ' + agents.sig.replace(/^/, '{"list":') + '}\n\n');
     live.clients.add(res);
-    agentsStart(); agentsPoll();
+    agentsStart();
     req.on('close', () => live.clients.delete(res));
     return;
   }

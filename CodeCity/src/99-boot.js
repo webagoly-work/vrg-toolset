@@ -60,6 +60,9 @@ if (window.CITY) {
         { id: 'bbbb2222', name: 'Planner javítás', state: 'blocked', kind: 'interactive', inRepo: true, startedAt: now - 120000 },
         { id: 'cccc3333', name: 'tegnapi munka', state: 'done', kind: 'background', inRepo: false, startedAt: now - 86400000 }] });
       beamEvent({ id: 'aaaa1111', kind: 0, p: p1 }); beamEvent({ id: 'bbbb2222', kind: 2, p: p2 }); beamEvent({ id: 'aaaa1111', kind: 0, outside: true });
+      // with hooks (KV-10): an outskirts zone, and a restricted one
+      beamEvent({ id: 'aaaa1111', kind: 0, outside: true, zone: 'H:\\cwebuser\\backups', phase: 'pre' });
+      beamEvent({ id: 'bbbb2222', kind: 0, outside: true, zone: 'C:\\Users\\webag', restricted: '.ssh', phase: 'pre' });
       agToggle(true);
     }
     const dt = (q.get('droptest') || '').split(',');

@@ -28,7 +28,7 @@ async function start() {
   if (srv) return srv;
   g('init', '-q', '-b', 'main');
   put(path.join(fx, 'a.js'), 'one\n');
-  for (const f of ['companion.js', 'scan.js', 'sessions.js']) put(path.join(fx, 'CodeCity', f), fs.readFileSync(path.join(CITY, f), 'utf8'));
+  for (const f of ['companion.js', 'scan.js', 'sessions.js', 'agents-poll.js']) put(path.join(fx, 'CodeCity', f), fs.readFileSync(path.join(CITY, f), 'utf8'));
   put(path.join(fx, 'CodeCity', 'dist', 'vrg-codecity.html'), '<!doctype html><html><head></head><body>fixture</body></html>');
   put(path.join(fx, '.gitignore'), 'CodeCity/.companion-token\n');
   g('add', '.'); g('commit', '-q', '-m', 'first');
