@@ -304,3 +304,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-14 ✔ 2026-10-26 ada1352
 - KV-15 ✔ 2026-10-26 9779674
 - KV-16 ✔ 2026-10-26 5f1a07b
+- KV-17 ✔ 2026-10-26 a3b7b5a
