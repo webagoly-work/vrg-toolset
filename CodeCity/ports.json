@@ -1,0 +1,15 @@
+{
+  "kind": "vrg-ports",
+  "version": 1,
+  "_comment": "The shoreline's docks (P8, KV-18): what a connection leaving this PC is, by its remote port. The same registry names the harbour docks later (README §7.2 #3). Only counts per dock reach the page — never addresses (CITY-D27 A).",
+  "docks": [
+    { "id": "web", "name": "Web (HTTPS)", "ports": [443, 8443] },
+    { "id": "http", "name": "Web (HTTP)", "ports": [80, 8080] },
+    { "id": "ssh", "name": "SSH / git", "ports": [22, 9418] },
+    { "id": "dns", "name": "Névfeloldás (DNS)", "ports": [53, 853] },
+    { "id": "mail", "name": "Levelezés", "ports": [25, 110, 143, 465, 587, 993, 995] },
+    { "id": "rdp", "name": "Távoli asztal", "ports": [3389] },
+    { "id": "game", "name": "Játék / Minecraft", "ports": [25565, 19132] },
+    { "id": "other", "name": "Egyéb", "ports": [] }
+  ]
+}

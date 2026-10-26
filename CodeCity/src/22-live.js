@@ -81,7 +81,7 @@ async function liveSwap() {
     if (open) { const f = city.files.find(x => x.p === open); if (f) showFile(f); }
     if (picked) selSetPaths(picked);
     agentsEvent({ list: ag.list });   // the figures stood in the old city
-    fenDraw(); jbDraw(); hlDraw(); mtDraw(); landDraw();
+    fenDraw(); jbDraw(); hlDraw(); mtDraw(); landDraw(); pwDraw();
     const n = city.commits.length - was;
     // the new commits flash like a replay step, and their files pulse
     const idx = [];
@@ -116,6 +116,8 @@ function liveConnect() {
   live.es.addEventListener('ports', e => { if (liveMine()) portsEvent(JSON.parse(e.data)); });
   live.es.addEventListener('pipes', e => { if (liveMine()) pipesEvent(JSON.parse(e.data)); });   // 27-health
   live.es.addEventListener('disk', e => { if (liveMine()) diskEvent(JSON.parse(e.data)); });   // 29-land: Tárház
+  live.es.addEventListener('power', e => { if (liveMine()) powerEvent(JSON.parse(e.data)); });   // 30-power: Erőmű
+  live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
   live.es.onerror = () => { $('live-dot').hidden = true; };
 }
 function liveFsEvent(d) {

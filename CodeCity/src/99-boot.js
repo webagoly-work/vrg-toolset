@@ -7,6 +7,7 @@ if (window.CITY) {
   liveInit();   // 22-live: "Mi változott?" and, when served, the live stream
   setInterval(hlRibbon, 1500);   // 27-health: the Now ribbon follows sessions, jobs, fences and changes
   landDraw();   // 29-land: the places around the city
+  pwDraw();   // 30-power
   // test hook: #landtest=disk waits for Tárház's walk (served), closes the stream (headless clock), shows the Land
   if (new URLSearchParams(location.hash.slice(1)).get('landtest') === 'disk') live.ready.then(() => new Promise(res => {
     if (land.disk && land.disk.dirs && land.disk.dirs.length && !land.disk.walking) res(); else live.es.addEventListener('disk', res, { once: true }); }))
@@ -108,6 +109,14 @@ if (window.CITY) {
       pipesEvent({ list: [{ id: 'hub', name: 'VRG Kapu', out: 'Hub/dist/vrg-kapu.html', job: 'hub-build', src: 'Hub/src', newest: 'Hub/src/js/40-actions.js', stale: true }] });
       jobEvent({ id: 'codecity-selftest', name: 'Kódváros selftest', kind: 'test', state: fail ? 'hiba' : 'kész', code: fail ? 1 : 0, district: 'CodeCity' });
       hlRibbon();
+    }
+    // test hook: #nettest=up|down feeds one power sample and a station/border/shore state (no segéd needed)
+    if (q.get('nettest')) {
+      const up = q.get('nettest') === 'up';
+      powerEvent({ at: Date.now(), cpu: 92, ramMB: 16250, ramFreeMB: 2250, disk: 35, rx: 2.5e6, tx: 4e5, gpu: 20 });
+      netEvent({ at: Date.now(), station: { up: true, ms: 1 }, border: { up: true, ms: 1 }, internet: { up, ms: up ? 3 : 800 }, devices: 3,
+        docks: up ? [{ id: 'web', name: 'Web (HTTPS)', n: 29 }, { id: 'ssh', name: 'SSH / git', n: 2 }] : [],
+        countries: up ? [{ cc: 'US', n: 20 }, { cc: 'DE', n: 4 }, { cc: 'HU', n: 3 }] : [], dbip: true });
     }
     // test hook: #landtest=1 jumps to the Land's table view (Home)
     if (q.get('landtest') === '1') landHome(0);

@@ -62,6 +62,13 @@
 // restricted folders walled); the answer is kept in memory only (CITY-D27 A, the user's choice 2026-10-26) and
 // re-walked after 10 minutes; a finished walk goes out on the stream as 'disk'.
 //
+// Erőmű, Pályaudvar, Határ, shoreline (P8, KV-18; Tier 0, unelevated, read-only; CITY-D23 A, D24 A): while a page
+// listens, probe-tier0.ps1 samples CPU / RAM / disk / NIC / GPU every ~3 s ('power'); tracert finds the chain once
+// (this PC → the TP-Link station → the Huawei border → the ISP), then a ping to each every 10 s says which is up,
+// and arp -a counts the devices on the station's yard. Established connections leaving the LAN are counted per dock
+// of CodeCity/ports.json (by remote port) and per country (DB-IP Lite in .cache/dbip, if fetched). Only counts go
+// out ('net'): no address, no host name (CITY-D27 A).
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -586,6 +593,7 @@ function portsPoll() {
   jobs.polling = true;
   execFile('netstat', ['-ano', '-p', 'TCP'], { windowsHide: true, timeout: 10000, maxBuffer: 4 << 20 }, (err, out) => {
     if (err) { jobs.polling = false; return; }
+    netConnections(String(out));   // the shoreline: connections leaving the LAN, as counts
     const seen = new Map();
     for (const line of String(out).split(/\r?\n/)) {
       const m = /^\s*TCP\s+(\S+):(\d+)\s+\S+\s+LISTENING\s+(\d+)/.exec(line);
@@ -690,6 +698,88 @@ function diskWalk() {
 }
 process.on('exit', () => { if (disk.child) try { disk.child.kill(); } catch (e) { /* gone */ } });
 const landJson = () => { try { return JSON.parse(fs.readFileSync(path.join(CITY, 'land.json'), 'utf8')); } catch (e) { return null; } };
+
+// ---- Erőmű: the Tier 0 sampler (a PowerShell helper, while a page listens)
+const power = { child: null, last: null };
+function powerStart() {
+  if (power.child || DRY) return;
+  const child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(CITY, 'probe-tier0.ps1'), String(process.pid), '2000'],
+    { stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+  let buf = '';
+  child.stdout.on('data', d => { buf += d; let k; while ((k = buf.indexOf('\n')) >= 0) { const l = buf.slice(0, k).trim(); buf = buf.slice(k + 1);
+    try { power.last = JSON.parse(l); liveEmit('power', power.last); } catch (e) { /* skip */ } } });
+  child.on('exit', () => { if (power.child === child) power.child = null; });
+  child.on('error', () => {});
+  power.child = child;
+}
+function powerStop() { if (power.child) { try { power.child.kill(); } catch (e) { /* gone */ } power.child = null; } }
+process.on('exit', powerStop);
+// ---- Pályaudvar, Határ, shoreline
+const net = { hops: null, tracing: false, state: null, timer: null, devices: 0, docks: [], countries: [], dbip: undefined, sig: '' };
+const PORTS = (() => { try { return JSON.parse(fs.readFileSync(path.join(CITY, 'ports.json'), 'utf8')).docks; } catch (e) { return [{ id: 'other', name: 'Egyéb', ports: [] }]; } })();
+const ipInt = ip => ip.split('.').reduce((a, b) => a * 256 + (+b), 0);
+const isLocal = ip => /^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.)/.test(ip);
+function dbip() {
+  if (net.dbip !== undefined) return net.dbip;
+  net.dbip = null;
+  try {
+    const text = require('zlib').gunzipSync(fs.readFileSync(path.join(REPO, '.cache', 'dbip', 'dbip-country-lite.csv.gz'))).toString('utf8');
+    const rows = [];
+    for (const line of text.split('\n')) { const [a, b, cc] = line.split(','); if (a && !a.includes(':') && cc) rows.push([ipInt(a), ipInt(b), cc.trim()]); }
+    net.dbip = rows;
+  } catch (e) { /* not fetched: node CodeCity/tools/fetch-dbip.js */ }
+  return net.dbip;
+}
+function countryOf(ip) {
+  const rows = dbip(); if (!rows) return null;
+  const n = ipInt(ip); let lo = 0, hi = rows.length - 1;
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (n < rows[m][0]) hi = m - 1; else if (n > rows[m][1]) lo = m + 1; else return rows[m][2]; }
+  return null;
+}
+const run = (exe, argv, ms = 15000) => new Promise(res => execFile(exe, argv, { windowsHide: true, timeout: ms, maxBuffer: 4 << 20 }, (err, out) => res(err && !out ? '' : String(out))));
+async function ping(ip) {
+  if (!ip) return { up: false };
+  const t0 = Date.now(), out = await run('ping', ['-n', '1', '-w', '800', ip], 5000);
+  return { up: /TTL=/i.test(out), ms: Date.now() - t0 };   // TTL= is in every language's ping output
+}
+async function netProbe() {
+  if (!live.clients.size || DRY) return;
+  if (!net.hops && !net.tracing) {   // once: the chain this PC goes out through
+    net.tracing = true;
+    const out = await run('tracert', ['-d', '-h', '3', '-w', '400', '1.1.1.1'], 30000);
+    const ips = [...out.matchAll(/^\s*\d+\s.*?(\d+\.\d+\.\d+\.\d+)\s*$/gm)].map(m => m[1]);
+    net.hops = { station: ips[0] || null, border: ips[1] || null, isp: ips[2] || null };
+    net.tracing = false;
+  }
+  if (!net.hops) return;
+  const [st, bd, inet] = await Promise.all([ping(net.hops.station), ping(net.hops.border), ping('1.1.1.1')]);
+  const arp = await run('arp', ['-a'], 8000);
+  const yard = net.hops.station ? net.hops.station.split('.').slice(0, 3).join('.') + '.' : '';
+  net.devices = yard ? (arp.match(new RegExp('^\\s*' + yard.replace(/\./g, '\\.') + '\\d+\\s+([0-9a-f]{2}-){5}[0-9a-f]{2}\\s+\\S+', 'gmi')) || [])
+    .filter(l => !/ff-ff-ff-ff-ff-ff/i.test(l) && !/\.255\s/.test(l)).length : 0;
+  net.state = { at: Date.now(), station: { up: st.up, ms: st.ms, known: !!net.hops.station }, border: { up: bd.up, ms: bd.ms, known: !!net.hops.border },
+    internet: { up: inet.up, ms: inet.ms }, devices: net.devices, docks: net.docks, countries: net.countries, dbip: !!dbip() };
+  const sig = JSON.stringify([st.up, bd.up, inet.up, net.devices, net.docks, net.countries]);
+  if (sig !== net.sig) { net.sig = sig; liveEmit('net', net.state); }
+}
+// called with each netstat output (the port street's poll): the connections that leave the LAN, as counts
+function netConnections(netstat) {
+  const docks = new Map(), cc = new Map();
+  for (const line of netstat.split(/\r?\n/)) {
+    const m = /^\s*TCP\s+\S+\s+(\d+\.\d+\.\d+\.\d+):(\d+)\s+ESTABLISHED/.exec(line);
+    if (!m || isLocal(m[1])) continue;
+    const d = PORTS.find(x => x.ports.includes(+m[2])) || PORTS.find(x => x.id === 'other');
+    docks.set(d.id, (docks.get(d.id) || 0) + 1);
+    const c = countryOf(m[1]); if (c) cc.set(c, (cc.get(c) || 0) + 1);
+  }
+  net.docks = PORTS.map(d => ({ id: d.id, name: d.name, n: docks.get(d.id) || 0 })).filter(d => d.n);
+  net.countries = [...cc].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([c, n]) => ({ cc: c, n }));
+}
+function netStart() {
+  powerStart();
+  if (!net.timer) { net.timer = setInterval(() => { if (!live.clients.size) { if (!net.idle) net.idle = Date.now(); else if (Date.now() - net.idle > 30000) powerStop(); return; } net.idle = 0; powerStart(); netProbe(); }, 10000); net.timer.unref(); }
+  netProbe();
+}
 
 // ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
 async function catalog() {
@@ -862,6 +952,9 @@ const server = http.createServer((req, res) => {
     if (fences.sig) res.write('event: fences\ndata: {"list":' + fences.sig + '}\n\n');
     worktreesSoon();
     portsStart();
+    netStart();
+    if (power.last) res.write('event: power\ndata: ' + JSON.stringify(power.last) + '\n\n');
+    if (net.state) res.write('event: net\ndata: ' + JSON.stringify(net.state) + '\n\n');
     res.write('event: pipes\ndata: ' + JSON.stringify({ list: pipesList() }) + '\n\n');
     live.clients.add(res);
     agentsStart();

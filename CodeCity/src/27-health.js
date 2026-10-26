@@ -105,6 +105,7 @@ function hlAdvisors() {
   const clash = fen.list.filter(f => f.conflict);
   if (clash.length) out.push({ c: 'red', text: `Ütközés: ${clash.slice(0, 2).map(f => f.p).join(', ')}${clash.length > 2 ? ' és még ' + (clash.length - 2) : ''}`, act: 'hall' });
   if (ag.alerts.length) out.push({ c: 'red', text: `Korlátozott zóna: ${ag.alerts[0].zone}`, act: 'hall' });
+  if (pw.net && !pw.net.internet.up) out.push({ c: 'amber', text: 'A Határ zárva: nincs internet — minden helyi tovább működik', act: 'news' });
   for (const p of hl.pipes.filter(p => p.stale)) out.push({ c: 'amber', text: `Elavult build: ${p.name} (${p.newest} újabb) — Üzemek → ${p.job ? 'build' : 'kézzel'}`, act: 'jobs' });
   return out.slice(0, 4);
 }
