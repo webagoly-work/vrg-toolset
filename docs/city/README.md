@@ -261,7 +261,7 @@ One stub per phase in `docs/city/wp/`.
 | P0 | [Decisions and plan](wp/p00-decisions.md) | — | README §5 lists the answers; §8 has the phase table; every phase has a stub here. | DONE |
 | P1 | [Companion server](wp/p01-companion.md) | D9, D10 | `node tools/check-start.js` passes; the page opens from START.cmd served and still from `file://`; selftest green. | DONE |
 | P2 | [Actions, Ctrl+K, multi-select, terminal](wp/p02-actions.md) | D9, D15 | Right-click a building → VS Code opens on it; Ctrl+K "07a" flies there; three selected → "Ask Claude about these" opens a pre-filled prompt; items greyed with a Hungarian reason in `file://` mode; the embedded terminal runs `claude`, or the link opens when it cannot. | DONE |
-| P3 | [Live repo stream](wp/p03-live-repo.md) | D9 | Edit a file in VS Code → its building pulses within ~1 s; a commit updates the timeline without reload. | open |
+| P3 | [Live repo stream](wp/p03-live-repo.md) | D9 | Edit a file in VS Code → its building pulses within ~1 s; a commit updates the timeline without reload. | DONE |
 | P3b | [VS Code extension (CITY-D9 D)](wp/p03b-vscode.md) | D9, D10 | In the portable VS Code, the command "Kódváros: megnyitás" shows the city; switching editor tabs flies to that building. | open |
 | P4 | [Live Claude](wp/p04-live-claude.md) | D11, D12, D13, D16, D27 | A second session shows a second figure; its reads beam to roofs live; a session waiting for permission shows amber on the board; closing the city does not slow Claude. | open |
 | P5 | [Panels: editor and terminal](wp/p05-panels.md) | D10, D14, D15 | Open README.md in a panel and preview it; an edit shows a diff before saving; `claude` runs in the panel and resumes after a companion restart. | open |
@@ -287,3 +287,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-06 ✔ 2026-10-26 f50bbc3
 - KV-07 ✔ 2026-10-26 1bd1c8f
 - P2 embedded terminal (CITY-D15 C) ✔ 2026-10-26 764913b — not a KV prompt; added from the user's KV-01 answer
+- KV-08 ✔ 2026-10-26 a62235f

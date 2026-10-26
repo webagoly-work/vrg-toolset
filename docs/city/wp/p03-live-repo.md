@@ -7,4 +7,4 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/companion.js, CodeCity/scan.js, CodeCity/src/*
 - **Decisions:** D9
 - **Prompts:** KV-08
-- **Status:** open
+- **Status:** DONE 2026-10-26 — KV-08 a62235f (watch + SSE + /api/city, pulses, in-place swap, Mi változott?)
