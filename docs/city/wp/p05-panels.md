@@ -7,4 +7,4 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/src/*, vendor-manifest.json
 - **Decisions:** D10, D14, D15
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** in progress — KV-12 ✔ b5ab297 (file panel, preview, merge view, guarded save); KV-13 (terminal resume) next
+- **Status:** DONE 2026-10-26 — KV-12 b5ab297 (file panel: view, markdown preview, edit, merge view, guarded save), KV-13 98b7820 (named Claude tabs, resume after a restart, clean env)

@@ -264,7 +264,7 @@ One stub per phase in `docs/city/wp/`.
 | P3 | [Live repo stream](wp/p03-live-repo.md) | D9 | Edit a file in VS Code → its building pulses within ~1 s; a commit updates the timeline without reload. | DONE |
 | P3b | [VS Code extension (CITY-D9 D)](wp/p03b-vscode.md) | D9, D10 | In the portable VS Code, the command "Kódváros: megnyitás" shows the city; switching editor tabs flies to that building. | open |
 | P4 | [Live Claude](wp/p04-live-claude.md) | D11, D12, D13, D16, D27 | A second session shows a second figure; its reads beam to roofs live; a session waiting for permission shows amber on the board; closing the city does not slow Claude. | DONE |
-| P5 | [Panels: editor and terminal](wp/p05-panels.md) | D10, D14, D15 | Open README.md in a panel and preview it; an edit shows a diff before saving; `claude` runs in the panel and resumes after a companion restart. | open |
+| P5 | [Panels: editor and terminal](wp/p05-panels.md) | D10, D14, D15 | Open README.md in a panel and preview it; an edit shows a diff before saving; `claude` runs in the panel and resumes after a companion restart. | DONE |
 | P6 | [Process supervisor](wp/p06-processes.md) | D9 | Start MindMap's server from the city → its gate lights and its log streams; a failing selftest raises a storm; stop kills the whole tree. | open |
 | P7 | [Git made visible](wp/p07-git.md) | D10 | A test branch with one commit → a new line with one station; the preview shows touched stations; the reflog lane scrubs back. | open |
 | P8 | [The Land](wp/p08-land.md) | D23, D24, D28 | Zoom from the Land to a file floor without jitter; a 100 MB download sails in as a ship; copying to a stick runs a train. | open |
@@ -292,3 +292,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-10 ✔ 2026-10-26 263c298 (hooks applied after the user's yes; exec form, onFailure continue)
 - KV-11 ✔ 2026-10-26 c9d7474
 - KV-12 ✔ 2026-10-26 b5ab297
+- KV-13 ✔ 2026-10-26 98b7820
