@@ -7,4 +7,10 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/companion.js, CodeCity/src/*
 - **Decisions:** D9
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** in progress — KV-14 ✔ ada1352 (jobs, gates, port street); KV-15 (health, Now ribbon) next
+- **Status:** DONE 2026-10-26 — KV-14 ada1352 (jobs, gates, port street), KV-15 9779674 (weather, repair tunnel, pipes, inspector lamps, Now ribbon)
+
+## Notes (KV-15)
+
+- Left out on purpose: fog over districts without tests (README §7.1 #8) — it would grey most of the city and
+  break R1 (a calm city means all is well). Smoke (TODO counts) and cracks (long functions) are not measured yet,
+  so the inspector's lamp sums weather and stale builds only.
