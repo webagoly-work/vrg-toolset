@@ -1,0 +1,360 @@
+{
+ "villanyChecks": [
+  {
+   "layer": "V1 · Jelölés",
+   "checks": [
+    "HÁLÓ: nincs mozgásnyom két ajtó között.",
+    "NAPPALI · ÉTKEZŐ: nincs mozgásnyom két ajtó között.",
+    "KONYHA: nincs mozgásnyom két ajtó között.",
+    "KÖZLEKEDŐ: nincs mozgásnyom két ajtó között.",
+    "ELŐSZOBA: nincs mozgásnyom két ajtó között."
+   ]
+  },
+  {
+   "layer": "V1 · Világítás",
+   "checks": [
+    "GARDRÓB: hiányzik SWI",
+    "FÜRDŐSZOBA: hiányzik SWI",
+    "WC: hiányzik SWI"
+   ]
+  }
+ ],
+ "villany": {
+  "Alap": 0,
+  "V1 · Jelölés": 0,
+  "V1 · Igények": 0,
+  "V1 · Meglévő / bontás": 4,
+  "V1 · Betáplálás és elosztás": 6,
+  "V1 · Dedikált körök": 7,
+  "V1 · Dugaljak": 25,
+  "V1 · Világítás": 31,
+  "V1 · Gyengeáram": 6,
+  "V1 · Érintésvédelem / EPH": 3,
+  "V1 · Riasztó": 4,
+  "V1 · Tűzvédelem": 5,
+  "V1 · Nyomvonal és dobozok": 0,
+  "V1 · Okos előkészítés": 3
+ },
+ "promote": {
+  "moved": 10,
+  "added": [
+   "base",
+   "channel",
+   "sys:LV",
+   "sys:BUSB",
+   "sys:CONTROL",
+   "sys:SENSOR",
+   "sys:RF",
+   "sys:HMI",
+   "sys:USB",
+   "cluster",
+   "arm",
+   "sys:EXTRA"
+  ],
+  "removed": [
+   "sys:WEAK",
+   "sys:ALARM",
+   "route"
+  ]
+ },
+ "clusters": [
+  "KL K1 @KÖZLEKEDŐ",
+  "KL2 K1 @NAPPALI · ÉTKEZŐ",
+  "KL3 K1 @HÁLÓ",
+  "KL4 K1 @GYEREKSZOBA",
+  "KL5 K1 @HÁLÓ"
+ ],
+ "bridgeChecks": [
+  {
+   "layer": "B1 · Jelölés",
+   "checks": [
+    "HÁLÓ: nincs mozgásnyom két ajtó között.",
+    "NAPPALI · ÉTKEZŐ: nincs mozgásnyom két ajtó között.",
+    "KONYHA: nincs mozgásnyom két ajtó között.",
+    "KÖZLEKEDŐ: nincs mozgásnyom két ajtó között.",
+    "ELŐSZOBA: nincs mozgásnyom két ajtó között."
+   ]
+  },
+  {
+   "layer": "B1 · Hardver",
+   "checks": [
+    "GARDRÓB: nincs RBX hozzárendelve",
+    "ERKÉLY: nincs RBX hozzárendelve"
+   ]
+  },
+  {
+   "layer": "B1 · Csatorna",
+   "checks": [
+    "RBX01: nincs CHANNEL kapcsolata BASE-hez.",
+    "RBX01: nincs erősáramú útvonal az Elosztószekrénytől.",
+    "RBX02: nincs CHANNEL kapcsolata BASE-hez.",
+    "RBX02: nincs erősáramú útvonal az Elosztószekrénytől.",
+    "RBX03: nincs CHANNEL kapcsolata BASE-hez.",
+    "RBX03: nincs erősáramú útvonal az Elosztószekrénytől.",
+    "RBX04: nincs CHANNEL kapcsolata BASE-hez.",
+    "RBX04: nincs erősáramú útvonal az Elosztószekrénytől."
+   ]
+  },
+  {
+   "layer": "B1 · Világítás",
+   "checks": [
+    "GARDRÓB: hiányzik SWI",
+    "FÜRDŐSZOBA: hiányzik SWI",
+    "WC: hiányzik SWI"
+   ]
+  },
+  {
+   "layer": "B1 · Törpefeszültség — A busz",
+   "checks": [
+    "HÁLÓ: hiányzik UEP",
+    "GYEREKSZOBA: hiányzik UEP",
+    "NAPPALI · ÉTKEZŐ: hiányzik UEP",
+    "KONYHA: hiányzik LNR",
+    "FÜRDŐSZOBA: hiányzik LNR"
+   ]
+  },
+  {
+   "layer": "B1 · Biztosított 24 V — B busz",
+   "checks": [
+    "HÁLÓ: hiányzik NTL",
+    "NAPPALI · ÉTKEZŐ: hiányzik NTL",
+    "KÖZLEKEDŐ: hiányzik NTL",
+    "ELŐSZOBA: hiányzik LMP, NTL"
+   ]
+  },
+  {
+   "layer": "B1 · Adat / PoE",
+   "checks": [
+    "HÁLÓ: hiányzik ETH",
+    "NAPPALI · ÉTKEZŐ: hiányzik ACP",
+    "ELŐSZOBA: hiányzik CAM",
+    "ERKÉLY: hiányzik CAM"
+   ]
+  },
+  {
+   "layer": "B1 · Érzékelők",
+   "checks": [
+    "HÁLÓ: hiányzik SEN",
+    "GYEREKSZOBA: hiányzik SEN",
+    "KONYHA: hiányzik SEN",
+    "FÜRDŐSZOBA: hiányzik SEN",
+    "WC: hiányzik SEN",
+    "KÖZLEKEDŐ: hiányzik SEN",
+    "ELŐSZOBA: hiányzik SEN"
+   ]
+  },
+  {
+   "layer": "B1 · Rádió — lefedettség",
+   "checks": [
+    "HÁLÓ: WiFi 2,4 GHz lefedettség 36 %",
+    "NAPPALI · ÉTKEZŐ: WiFi 2,4 GHz lefedettség 45 %",
+    "NAPPALI · ÉTKEZŐ: UWB lefedettség 0 %",
+    "KONYHA: WiFi 2,4 GHz lefedettség 55 %",
+    "KONYHA: UWB lefedettség 0 %",
+    "FÜRDŐSZOBA: WiFi 2,4 GHz lefedettség 63 %"
+   ]
+  },
+  {
+   "layer": "B1 · Kezelőfelületek",
+   "checks": [
+    "GYEREKSZOBA: hiányzik THR",
+    "NAPPALI · ÉTKEZŐ: hiányzik THR",
+    "FÜRDŐSZOBA: hiányzik THR",
+    "ELŐSZOBA: hiányzik PAN"
+   ]
+  },
+  {
+   "layer": "B1 · Média és hang",
+   "checks": [
+    "HÁLÓ: hiányzik SPK",
+    "GYEREKSZOBA: hiányzik SPK",
+    "NAPPALI · ÉTKEZŐ: hiányzik SCR, AVP",
+    "KONYHA: hiányzik SPK",
+    "FÜRDŐSZOBA: hiányzik SPK"
+   ]
+  },
+  {
+   "layer": "B1 · USB",
+   "checks": [
+    "NAPPALI · ÉTKEZŐ: hiányzik USB"
+   ]
+  },
+  {
+   "layer": "B1 · Biztonságtechnika",
+   "checks": [
+    "HÁLÓ: hiányzik SMK",
+    "GYEREKSZOBA: hiányzik SMK",
+    "KONYHA: hiányzik SMK",
+    "KÖZLEKEDŐ: hiányzik SMK, MOT",
+    "ELŐSZOBA: hiányzik SRN, MOT, DBL",
+    "ERKÉLY: hiányzik SRN, MOT"
+   ]
+  },
+  {
+   "layer": "B1 · ARM pályák",
+   "checks": [
+    "L1: nincs ARM / csatorna pályához kötve",
+    "L2: nincs ARM / csatorna pályához kötve",
+    "L3: nincs ARM / csatorna pályához kötve",
+    "L4: nincs ARM / csatorna pályához kötve",
+    "L5: nincs ARM / csatorna pályához kötve",
+    "L6: nincs ARM / csatorna pályához kötve",
+    "L7: nincs ARM / csatorna pályához kötve",
+    "L8: nincs ARM / csatorna pályához kötve",
+    "L9: nincs ARM / csatorna pályához kötve",
+    "L10: nincs ARM / csatorna pályához kötve",
+    "L11: nincs ARM / csatorna pályához kötve",
+    "L12: nincs ARM / csatorna pályához kötve",
+    "L13: nincs ARM / csatorna pályához kötve",
+    "L14: nincs ARM / csatorna pályához kötve",
+    "L15: nincs ARM / csatorna pályához kötve",
+    "SHU1: nincs ARM / csatorna pályához kötve",
+    "D1: nincs ARM / csatorna pályához kötve",
+    "D2: nincs ARM / csatorna pályához kötve",
+    "D3: nincs ARM / csatorna pályához kötve",
+    "D4: nincs ARM / csatorna pályához kötve",
+    "D5: nincs ARM / csatorna pályához kötve",
+    "D6: nincs ARM / csatorna pályához kötve",
+    "D7: nincs ARM / csatorna pályához kötve",
+    "D8: nincs ARM / csatorna pályához kötve",
+    "D9: nincs ARM / csatorna pályához kötve",
+    "D10: nincs ARM / csatorna pályához kötve",
+    "D11: nincs ARM / csatorna pályához kötve",
+    "D12: nincs ARM / csatorna pályához kötve",
+    "D13: nincs ARM / csatorna pályához kötve",
+    "D14: nincs ARM / csatorna pályához kötve",
+    "D15: nincs ARM / csatorna pályához kötve",
+    "D16: nincs ARM / csatorna pályához kötve",
+    "D17: nincs ARM / csatorna pályához kötve",
+    "D18: nincs ARM / csatorna pályához kötve",
+    "D19: nincs ARM / csatorna pályához kötve",
+    "D20: nincs ARM / csatorna pályához kötve",
+    "D21: nincs ARM / csatorna pályához kötve",
+    "D22: nincs ARM / csatorna pályához kötve",
+    "D23: nincs ARM / csatorna pályához kötve",
+    "D24: nincs ARM / csatorna pályához kötve",
+    "D25: nincs ARM / csatorna pályához kötve",
+    "DED1: nincs ARM / csatorna pályához kötve",
+    "DED2: nincs ARM / csatorna pályához kötve",
+    "DED3: nincs ARM / csatorna pályához kötve",
+    "DED4: nincs ARM / csatorna pályához kötve",
+    "DED5: nincs ARM / csatorna pályához kötve",
+    "DED6: nincs ARM / csatorna pályához kötve",
+    "K1: nincs ARM / csatorna pályához kötve",
+    "K2: nincs ARM / csatorna pályához kötve",
+    "K3: nincs ARM / csatorna pályához kötve",
+    "K4: nincs ARM / csatorna pályához kötve",
+    "K5: nincs ARM / csatorna pályához kötve",
+    "K6: nincs ARM / csatorna pályához kötve",
+    "K7: nincs ARM / csatorna pályához kötve",
+    "K8: nincs ARM / csatorna pályához kötve",
+    "K9: nincs ARM / csatorna pályához kötve",
+    "K10: nincs ARM / csatorna pályához kötve",
+    "K11: nincs ARM / csatorna pályához kötve",
+    "K12: nincs ARM / csatorna pályához kötve",
+    "K13: nincs ARM / csatorna pályához kötve",
+    "K14: nincs ARM / csatorna pályához kötve",
+    "K15: nincs ARM / csatorna pályához kötve",
+    "EL1: nincs ARM / csatorna pályához kötve",
+    "TVA1: nincs ARM / csatorna pályához kötve",
+    "ETH1: nincs ARM / csatorna pályához kötve",
+    "TVA1: nincs ARM / csatorna pályához kötve",
+    "ETH1: nincs ARM / csatorna pályához kötve",
+    "BEL1: nincs ARM / csatorna pályához kötve",
+    "ICM1: nincs ARM / csatorna pályához kötve",
+    "PEB1: nincs ARM / csatorna pályához kötve",
+    "EPB1: nincs ARM / csatorna pályához kötve",
+    "EPB1: nincs ARM / csatorna pályához kötve",
+    "KPD1: nincs ARM / csatorna pályához kötve",
+    "DWC1: nincs ARM / csatorna pályához kötve",
+    "MOT1: nincs ARM / csatorna pályához kötve",
+    "SRN1: nincs ARM / csatorna pályához kötve",
+    "SMK1: nincs ARM / csatorna pályához kötve",
+    "SMK1: nincs ARM / csatorna pályához kötve",
+    "HDT1: nincs ARM / csatorna pályához kötve",
+    "MCP1: nincs ARM / csatorna pályához kötve",
+    "SND1: nincs ARM / csatorna pályához kötve",
+    "NUT1: nincs ARM / csatorna pályához kötve",
+    "DPB1: nincs ARM / csatorna pályához kötve",
+    "RSV1: nincs ARM / csatorna pályához kötve",
+    "LNR1: nincs ARM / csatorna pályához kötve",
+    "L16: nincs ARM / csatorna pályához kötve",
+    "POR1: nincs ARM / csatorna pályához kötve",
+    "ACP1: nincs ARM / csatorna pályához kötve",
+    "SEN1: nincs ARM / csatorna pályához kötve",
+    "PAN1: nincs ARM / csatorna pályához kötve",
+    "THR1: nincs ARM / csatorna pályához kötve",
+    "SPK1: nincs ARM / csatorna pályához kötve",
+    "USB1: nincs ARM / csatorna pályához kötve",
+    "XPH1: nincs ARM / csatorna pályához kötve"
+   ]
+  },
+  {
+   "layer": "B1 · Extrák és ötletek",
+   "checks": [
+    "HÁLÓ: hiányzik XSP, XTM, XLB, XSE, XDP, XLT",
+    "GARDRÓB: hiányzik XSP, XTM, XLB, XSE, XDP, XLT",
+    "GYEREKSZOBA: hiányzik XSP, XTM, XLB, XSE, XDP, XLT",
+    "NAPPALI · ÉTKEZŐ: hiányzik XSP, XTM, XLB, XSE, XDP, XLT, XCC",
+    "KONYHA: hiányzik XSP, XTM, XLB, XSE, XDP, XLT, XFN, XPH, XFH, XAQ",
+    "FÜRDŐSZOBA: hiányzik XSP, XTM, XLB, XSE, XDP, XLT, XTT, XID, XFN, XAQ, XFH",
+    "WC: hiányzik XSP, XTM, XLB, XSE, XDP, XLT, XAQ",
+    "KÖZLEKEDŐ: hiányzik XSP, XTM, XLB, XSE, XDP, XLT",
+    "ELŐSZOBA: hiányzik XSP, XTM, XLB, XSE, XDP, XLT",
+    "ERKÉLY: hiányzik XSP, XTM, XLB, XSE, XDP, XLT"
+   ]
+  }
+ ],
+ "bridge": {
+  "Alap": 0,
+  "B1 · Jelölés": 0,
+  "B1 · Igények": 0,
+  "B1 · Meglévő / bontás": 4,
+  "B1 · Hardver": 15,
+  "B1 · BASE": 1,
+  "B1 · Csatorna": 0,
+  "B1 · Dedikált körök": 7,
+  "B1 · Dugaljak": 25,
+  "B1 · Világítás": 31,
+  "B1 · Érintésvédelem / EPH": 3,
+  "B1 · Törpefeszültség — A busz": 1,
+  "B1 · Biztosított 24 V — B busz": 1,
+  "B1 · Vezérlés (BRIDGE_LINK)": 1,
+  "B1 · Adat / PoE": 3,
+  "B1 · Érzékelők": 1,
+  "B1 · Rádió — lefedettség": 0,
+  "B1 · Kezelőfelületek": 2,
+  "B1 · Média és hang": 3,
+  "B1 · USB": 1,
+  "B1 · Biztonságtechnika": 6,
+  "B1 · Tűzvédelem": 5,
+  "B1 · Klaszterpontok": 5,
+  "B1 · ARM pályák": 0,
+  "B1 · Okos előkészítés": 3,
+  "B1 · Extrák és ötletek": 1
+ },
+ "paths": 0,
+ "log": [
+  "Igények: a nappali és a háló igénylistája (a javaslat szerint)",
+  "Betáplálás és elosztás: MÉRŐ · ISP · MDB · SSC · TJK · EPH",
+  "Gyengeáram: TVA (NAPPALI · ÉTKEZŐ), ETH (NAPPALI · ÉTKEZŐ), TVA (HÁLÓ), ETH (GYEREKSZOBA), BEL ((kívül)), ICM (ELŐSZOBA)",
+  "Érintésvédelem / EPH: PEB (FÜRDŐSZOBA), EPB (FÜRDŐSZOBA), EPB (KONYHA)",
+  "Riasztó: KPD (ELŐSZOBA), DWC (ELŐSZOBA), MOT (NAPPALI · ÉTKEZŐ), SRN (KÖZLEKEDŐ)",
+  "Tűzvédelem: SMK (KÖZLEKEDŐ), SMK (NAPPALI · ÉTKEZŐ), HDT (KONYHA), MCP (ELŐSZOBA), SND (KÖZLEKEDŐ)",
+  "Okos előkészítés: NUT (NAPPALI · ÉTKEZŐ), DPB (GYEREKSZOBA), RSV (NAPPALI · ÉTKEZŐ)",
+  "Meglévő / bontás: Régi dugalj — háló Ny (megmarad) · Régi mennyezeti lámpa — nappali (cserélendő) · Régi kapcsoló — közlekedő (bontandó) · Régi dugalj — közlekedő vége (bontandó)",
+  "Bővítés BRIDGE Stackké: 10 elem áthelyezve · 12 új réteg · sys:WEAK, sys:ALARM, route feloldva",
+  "Portálok: 5 (bejárati ajtó + nappali + háló ajtó, minden helyiség felőli oldalon)",
+  "RBX: RBX01 → GYEREKSZOBA + NAPPALI · ÉTKEZŐ · RBX02 → HÁLÓ + FÜRDŐSZOBA · RBX03 → KONYHA + ELŐSZOBA · RBX04 → WC + KÖZLEKEDŐ · nincs RBX-e: GARDRÓB, ERKÉLY",
+  "Törpefeszültség — A busz: LNR (NAPPALI · ÉTKEZŐ)",
+  "Biztosított 24 V — B busz: LMP (KÖZLEKEDŐ)",
+  "Vezérlés (BRIDGE_LINK): POR (ELŐSZOBA)",
+  "Adat / PoE: ACP (KÖZLEKEDŐ)",
+  "Érzékelők: SEN (NAPPALI · ÉTKEZŐ)",
+  "Kezelőfelületek: PAN (NAPPALI · ÉTKEZŐ), THR (HÁLÓ)",
+  "Média és hang: SPK (NAPPALI · ÉTKEZŐ)",
+  "USB: USB (GYEREKSZOBA)",
+  "Extrák és ötletek: XPH (HÁLÓ)",
+  "Klaszterpontok (automatikusan, a végpontok mellett): KL K1 @KÖZLEKEDŐ, KL2 K1 @NAPPALI · ÉTKEZŐ, KL3 K1 @HÁLÓ, KL4 K1 @GYEREKSZOBA, KL5 K1 @HÁLÓ"
+ ]
+}

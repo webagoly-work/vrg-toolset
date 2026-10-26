@@ -8,7 +8,8 @@ so it lives in git.
 **Rebuild it:** `node tools/practice/build-gyakorlo.js` (from `Planner/projects/varler-planner`, after `node build.js`).
 It writes the plan and `build-report.json` (walls, switches, circuits, the log).
 
-The build uses the Planner's own workflow functions in phase order, the same calls the buttons make. **It stops before
+The build uses the Planner's own workflow functions in phase order, the same calls the buttons make (since 2026-10-26 the
+workflow bar creates a **Villany Stack**). **It stops before
 Pályák.** Nothing is set on the rules either: no Vezethető fal (R2), no marks (R3). Those are the hand work.
 
 ## Layout (x → east, y → south, clear sizes in mm)
@@ -100,3 +101,56 @@ Vezetékek.
 - **Falak létrehozása re-run** walls in the ERKÉLY on all four sides. It was added after the walls on purpose. If you
   re-run it, delete the balcony's new walls (or the balcony room first, then redraw it).
 - The zuhanyfal is hand-drawn (no `gen:'wfw'`), so a re-run keeps it.
+
+## The fully stacked versions (2026-10-26)
+
+`node tools/practice/build-gyakorlo-stack.js` (after `build-gyakorlo.js`) writes two more plans. Both carry endpoints and
+"Elosztó" units only. **No path is drawn on any layer.** Less is more: each layer gets one to five points, enough to show
+what lives on it.
+
+**`Gyakorlo_lakas_villany.vplan.json`: the Villany Stack (V1), every layer**
+
+| Layer | What is on it |
+|---|---|
+| Jelölés | the bejárat mark |
+| Igények | the nappali and háló room lists (the suggestion, taken as is) |
+| Meglévő / bontás | old socket in the háló (megmarad), old ceiling lamp in the nappali (cserélendő, next to the new L5), old switch and old socket in the corridor (bontandó) |
+| Betáplálás és elosztás | EL1 · mérőóra (outside, by the front door) · ISP · **MDB** médiadoboz · **SSC** riasztóközpont (gardrób) · **TJK** tűzjelző központ · **EPH** fő EPH sín |
+| Dedikált · Dugaljak · Világítás | the Erősáram job above, unchanged |
+| Gyengeáram | TV / SAT + data on the nappali media wall, TV / SAT in the háló, data at the gyerekszoba desk, doorbell push outside, intercom in the előszoba |
+| Érintésvédelem / EPH | the fürdő's local bar, the bath, the kitchen pipes |
+| Riasztó | keypad, front-door contact, nappali corner motion detector, indoor siren (cable only) |
+| Tűzvédelem | smoke in the corridor and the nappali, heat in the konyha, call point and sounder (red pairs, own conduit) |
+| Nyomvonal és dobozok | empty: the paths are the hand work |
+| Okos előkészítés | a neutral box behind the nappali door switch, a deep box in the gyerekszoba, spare conduit on the media wall |
+
+**`Gyakorlo_lakas_bridge.vplan.json`: the same stack promoted to BRIDGE (V8), plus one example per BRIDGE-only layer**
+
+The promotion is one step (Stack menu → *Bővítés BRIDGE Stackké*), and it duplicates nothing:
+- Gyengeáram dissolves by purpose: TVA → Média, ETH → Adat, BEL / ICM → Biztonság.
+- Riasztó → Biztonságtechnika. The points stay *cable only*.
+- The empty Nyomvonal goes away. Csatorna and ARM take its place.
+- Meglévő, EPH, Tűzvédelem and Okos előkészítés stay as they are.
+
+On top of that:
+
+| Layer | Example |
+|---|---|
+| Hardver | 4 RBX (nappali + gyerek · háló + fürdő · előszoba + konyha · közlekedő + WC; gardrób and erkély left without one on purpose) · 5 portals (front door, nappali and háló doors, every room face) |
+| BASE | NET · COMP · MEDIA in the gardrób |
+| Csatorna · ARM | empty (paths) |
+| Törpefeszültség A | LED line, nappali cove |
+| Biztosított 24 V B | orientation light in the corridor |
+| Vezérlés | portal control point at the front door |
+| Adat / PoE | WiFi AP in the corridor (+ the two moved ETH) |
+| Érzékelők | mmWave presence in the nappali |
+| Rádió | coverage only, no points |
+| Kezelőfelületek | touch panel in the nappali, thermostat in the háló |
+| Média és hang | ceiling speaker in the nappali (+ the two moved TVA) |
+| USB | gyerekszoba desk |
+| Biztonságtechnika | the moved Riasztó, doorbell and intercom points |
+| Klaszterpontok | 5, opened automatically beside the new endpoints |
+| Extrák és ötletek | phone-holder charger by the bed |
+
+KNX and Házimozi are off by default and left out. The layer checks list what is still missing in each room ("hiányzik …").
+That is expected in an example this small.
