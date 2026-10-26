@@ -4,6 +4,12 @@ onTimeChanged = () => { tlRender(); lensApply(); roadsRefresh(); followRefresh()
 
 if (window.CITY) {
   load(window.CITY);
+  liveInit();   // 22-live: "Mi változott?" and, when served, the live stream
+  // test hook: #livetest=<path> waits for the live stream's hello (and its catch-up swap), closes the stream so
+  // headless time runs again, then feeds one fs event for that path and opens "Mi változott?" (served only).
+  // Registered here, not in the timer below: an open stream stops headless Chrome's clock before it fires.
+  const lt = new URLSearchParams(location.hash.slice(1)).get('livetest');
+  if (lt) live.ready.then(() => { live.es.close(); liveFsEvent({ paths: [{ p: lt, kind: 'módosult' }] }); liveNews(); });
   // after the first resize, so the camera has its real aspect
   setTimeout(() => {
     const q = readHash();

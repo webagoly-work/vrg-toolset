@@ -101,6 +101,9 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #term .tab b:hover { color: #ff6b6b; }
 #term .body { flex: 1; position: relative; min-height: 0; padding: 4px; }
 #term .xt { position: absolute; inset: 4px; }
+/* live repo (22-live) */
+#live-dot { color: #6fe39a; border-color: #2f6b47; }
+#panel h4 { margin: 10px 0 2px; font-size: 12px; color: var(--accent); font-weight: normal; }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;

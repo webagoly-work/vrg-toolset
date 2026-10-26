@@ -9,7 +9,13 @@
 // companion (CodeCity/from-kapu/companion-server.js, 87f2fca); the file:// page keeps working
 // as a read-only view, it just has no actions.
 //
-//   node CodeCity/companion.js [--port 8797] [--no-open] [--no-terminal] [--config <file>] [--page <dist/x.html>]
+//   node CodeCity/companion.js [--port 8797] [--no-open] [--no-terminal] [--no-watch] [--config <file>] [--page <dist/x.html>]
+//
+// Live repo (P3, KV-08): one recursive fs.watch on the repo, minus the ignore list (.git/objects, node_modules,
+// Planner/apps|home|data, Vendor, Inventory/.cache, dist); .git/HEAD, refs, logs/HEAD and worktrees are picked
+// out of it as git events. After ~400 ms of quiet one event goes out on GET /api/stream (SSE, the page's
+// cookie): 'fs' with only the changed repo paths, or 'git' when HEAD or a ref moved. GET /api/city rescans
+// (scan.js into the temp folder, never CodeCity/dist) only when HEAD moved since the last scan.
 //
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
@@ -32,6 +38,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const os = require('os');
 const { spawn, execFile } = require('child_process');
 const { pathToFileURL } = require('url');
 
@@ -50,6 +57,7 @@ const PORT = Number(opt('--port', 8797));
 const CONFIG = path.resolve(opt('--config', path.join(CITY, 'companion.config.json')));
 const PAGE = path.resolve(DIST, path.basename(opt('--page', 'vrg-codecity.html')));
 const TERMINAL = !args.includes('--no-terminal');
+const WATCH = !args.includes('--no-watch');
 
 // ---- config: everything that names a program comes from here, never from a request
 const exists = p => { try { return fs.existsSync(p); } catch (e) { return false; } };
@@ -171,6 +179,63 @@ const termOf = id => (typeof id === 'string' ? TERMS.get(id) : null);
 process.on('exit', () => { for (const t of TERMS.values()) try { t.pty.kill(); } catch (e) { /* gone */ } });
 for (const sig of ['SIGINT', 'SIGTERM', 'SIGBREAK', 'SIGHUP']) process.on(sig, () => process.exit(0));
 
+// ---- live repo: watch -> debounce -> SSE; the city rescanned on demand when HEAD moved
+const LIVE_IGNORE = ['.git/objects/', 'node_modules/', 'Planner/apps/', 'Planner/home/', 'Planner/data/', 'Vendor/', 'Inventory/.cache/', 'CodeCity/dist/'];
+const LIVE_GIT = /^\.git\/(HEAD|refs\/|logs\/HEAD|worktrees\/)/;
+const LIVE_DEBOUNCE = 400;
+const live = { clients: new Set(), fs: new Map(), git: false, timer: null, head: '', city: null, cityHead: null, scanning: null, watcher: null };
+function liveEmit(event, data) {
+  const msg = 'event: ' + event + '\ndata: ' + JSON.stringify(data) + '\n\n';
+  for (const res of live.clients) res.write(msg);
+}
+async function liveHead() { const r = await git(['rev-parse', '--short', 'HEAD']); return r.ok ? r.out.trim() : ''; }
+function liveFlush() {
+  live.timer = null;
+  if (live.fs.size) {
+    const paths = [...live.fs].map(([p, kind]) => ({ p, kind }));
+    live.fs.clear();
+    liveEmit('fs', { paths, at: Date.now() });
+  }
+  if (live.git) {
+    live.git = false;
+    liveHead().then(head => { if (head && head !== live.head) { live.head = head; liveEmit('git', { head, at: Date.now() }); } });
+  }
+}
+function liveOn(type, name) {
+  if (!name) return;
+  const rel = String(name).replace(/\\/g, '/');
+  if (rel === '.git') return;
+  if (rel.startsWith('.git/')) { if (LIVE_GIT.test(rel)) live.git = true; else return; }
+  else if (LIVE_IGNORE.some(ig => rel.startsWith(ig)) || /(^|\/)(node_modules|\.cache)\//.test(rel)) return;
+  else {
+    let st = null;
+    try { st = fs.statSync(path.join(REPO, rel)); } catch (e) { /* gone */ }
+    if (st && st.isDirectory()) return;   // a folder's own event: its files report themselves
+    live.fs.set(rel, st ? (type === 'rename' ? 'új / átnevezve' : 'módosult') : 'törölve');
+  }
+  clearTimeout(live.timer);
+  live.timer = setTimeout(liveFlush, LIVE_DEBOUNCE);
+}
+function liveStart() {
+  if (!WATCH || live.watcher) return;
+  try {
+    live.watcher = fs.watch(REPO, { recursive: true }, liveOn);
+    // a burst (git checkout) can overflow the OS buffer: then say 'everything may have changed' via git
+    live.watcher.on('error', () => { live.git = true; liveFlush(); });
+  } catch (e) { live.watcher = null; }
+  liveHead().then(h => { live.head = h; });
+}
+// the city as of HEAD now: the last scan when HEAD has not moved, else a fresh scan.js into the temp folder
+function liveCity() {
+  if (live.scanning) return live.scanning;
+  return live.scanning = liveHead().then(head => {
+    if (live.city && head === live.cityHead) return live.city;
+    const out = path.join(os.tmpdir(), 'kodvaros-live-' + process.pid + '.city.json');
+    return new Promise(resolve => execFile(process.execPath, [path.join(CITY, 'scan.js'), REPO, '--out', out], { timeout: 120000, windowsHide: true },
+      err => { if (!err) try { live.city = fs.readFileSync(out, 'utf8'); live.cityHead = head; } catch (e) { /* keep the last */ } resolve(live.city); }));
+  }).finally(() => { live.scanning = null; });
+}
+
 // ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
 async function catalog() {
   const read = p => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
@@ -284,6 +349,17 @@ const server = http.createServer((req, res) => {
   if (origin && !ORIGINS.has(origin)) return send(res, 403, { error: 'origin' });
   if (req.method === 'GET' && url.pathname === '/api/status') return status().then(s => send(res, 200, s));
   if (req.method === 'GET' && url.pathname === '/api/catalog') return catalog().then(c => send(res, 200, c));
+  if (req.method === 'GET' && (url.pathname === '/api/stream' || url.pathname === '/api/city')) {
+    const ck = /(?:^|;\s*)kv_t=([0-9a-f]+)/.exec(String(req.headers.cookie || ''));
+    if (!ck || ck[1].length !== TOKEN.length || !crypto.timingSafeEqual(Buffer.from(ck[1]), Buffer.from(TOKEN))) return send(res, 401, { error: 'token' });
+    if (url.pathname === '/api/city') return liveCity().then(c => (c ? send(res, 200, c) : send(res, 503, { error: 'a felmérés nem sikerült' })));
+    res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+    res.write('retry: 3000\n\n');
+    res.write('event: hello\ndata: ' + JSON.stringify({ head: live.head, watching: !!live.watcher }) + '\n\n');
+    live.clients.add(res);
+    req.on('close', () => live.clients.delete(res));
+    return;
+  }
   if (req.method === 'GET' && url.pathname === '/api/term-stream') {
     const ck = /(?:^|;\s*)kv_t=([0-9a-f]+)/.exec(String(req.headers.cookie || ''));
     if (!ck || ck[1].length !== TOKEN.length || !crypto.timingSafeEqual(Buffer.from(ck[1]), Buffer.from(TOKEN))) return send(res, 401, { error: 'token' });
@@ -322,6 +398,7 @@ server.listen(PORT, '127.0.0.1', () => {
   const port = LIVE_PORT = server.address().port;
   HOSTS = new Set(['localhost:' + port, '127.0.0.1:' + port]);
   ORIGINS = new Set(['http://localhost:' + port, 'http://127.0.0.1:' + port]);
+  liveStart();
   console.log('Kodvaros seged: http://localhost:' + port + '/  (port ' + port + ')' + (DRY ? ' [dry run]' : ''));
   if (!args.includes('--no-open')) openUrlOrFile('http://localhost:' + port + '/');
 });
