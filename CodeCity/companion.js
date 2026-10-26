@@ -17,6 +17,12 @@
 // cookie): 'fs' with only the changed repo paths, or 'git' when HEAD or a ref moved. GET /api/city rescans
 // (scan.js into the temp folder, never CodeCity/dist) only when HEAD moved since the last scan.
 //
+// Live Claude (P4, KV-09, no settings change): while a page listens, `claude agents --json` is polled
+// (every 6 s, never overlapping) and each running session's transcript is tailed from its current end
+// through sessions.js's filter — kind + path, nothing else. The stream gets 'agents' (id, name, state,
+// kind, whether its cwd is in the repo) and 'beam' (session id, kind, repo path; a path outside the repo
+// is only counted). Nothing is written anywhere (CITY-D27 A: memory only).
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -74,7 +80,11 @@ function loadConfig() {
     claudeCmd: user.claudeCmd || firstExisting([path.join(apps, 'node', 'claude.cmd')]) || 'claude',
     terminal: user.terminal || (wt && exists(wt) ? 'wt' : 'cmd'),
     vscode: user.vscode || firstExisting([path.join(apps, 'vscode', 'Code.exe')]),
-    git: user.git || firstExisting([path.join(apps, 'git', 'cmd', 'git.exe'), path.join(apps, 'git', 'bin', 'git.exe')]) || 'git'
+    git: user.git || firstExisting([path.join(apps, 'git', 'cmd', 'git.exe'), path.join(apps, 'git', 'bin', 'git.exe')]) || 'git',
+    // the claude binary itself (not the .cmd shim), for `claude agents --json`; a config can name another command
+    agentsCmd: user.agentsCmd || [firstExisting([path.join(apps, 'node', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe'),
+      process.env.APPDATA && path.join(process.env.APPDATA, 'npm', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe')].filter(Boolean)) || 'claude', 'agents', '--json'],
+    transcripts: user.transcripts || null
   };
 }
 const CFG = loadConfig();
@@ -236,6 +246,90 @@ function liveCity() {
   }).finally(() => { live.scanning = null; });
 }
 
+// ---- live Claude: sessions + transcript tails -> 'agents' and 'beam' events
+const SESS = require('./sessions.js');
+const AGENTS_EVERY = 6000, TAIL_EVERY = 1000;
+const agents = { list: [], sig: '', polling: false, tails: new Map(), timer: null, tailTimer: null };
+const repoReal = () => real(REPO);
+const keyOf = x => (process.platform === 'win32' ? x.toLowerCase() : x).replace(/\\/g, '/').replace(/\/+$/, '');
+// a path as the repo spells it ('' = the repo itself), or null when it is outside the repo
+function repoRel(abs) {
+  const a = keyOf(abs), r = keyOf(repoReal());
+  if (a === r) return '';
+  if (!a.startsWith(r + '/')) return null;
+  return path.relative(repoReal(), abs).replace(/\\/g, '/');
+}
+function transcriptOf(sid) {
+  for (const base of CFG.transcripts || [SESS.projectsBase()]) {
+    let dirs; try { dirs = fs.readdirSync(base); } catch (e) { continue; }
+    for (const d of dirs) { const f = path.join(base, d, sid + '.jsonl'); if (exists(f)) return f; }
+  }
+  return null;
+}
+function agentsPoll() {
+  if (agents.polling || !live.clients.size) return;
+  agents.polling = true;
+  const [exe, ...argv] = CFG.agentsCmd;
+  execFile(exe, argv, { timeout: 20000, windowsHide: true, maxBuffer: 1 << 20 }, (err, out) => {
+    agents.polling = false;
+    let list;
+    try { list = JSON.parse(String(out)); } catch (e) { return; }
+    if (!Array.isArray(list)) return;
+    agents.list = list.filter(a => a && a.sessionId).map(a => ({ id: String(a.id || a.sessionId).slice(0, 8), sid: String(a.sessionId),
+      name: String(a.name || '').slice(0, 80), state: String(a.state || a.status || ''), kind: String(a.kind || ''),
+      inRepo: typeof a.cwd === 'string' && repoRel(a.cwd) !== null, startedAt: +a.startedAt || 0 }));
+    const pub = agents.list.map(({ sid, ...rest }) => rest);
+    const sig = JSON.stringify(pub);
+    if (sig !== agents.sig) { agents.sig = sig; liveEmit('agents', { list: pub }); }
+    // tail the sessions that may still act; drop the rest
+    const keep = new Set();
+    for (const a of agents.list) {
+      if (a.state === 'done' || a.state === 'failed') continue;
+      keep.add(a.sid);
+      if (!agents.tails.has(a.sid)) {
+        const f = transcriptOf(a.sid);
+        let off = 0; try { off = fs.statSync(f).size; } catch (e) { /* not yet */ }
+        agents.tails.set(a.sid, { id: a.id, file: f, off, rest: '', seen: new Set() });
+      }
+    }
+    for (const sid of agents.tails.keys()) if (!keep.has(sid)) agents.tails.delete(sid);
+  });
+}
+function tailOnce() {
+  if (!live.clients.size) return;
+  for (const [sid, t] of agents.tails) {
+    if (!t.file) { t.file = transcriptOf(sid); if (!t.file) continue; try { t.off = fs.statSync(t.file).size; } catch (e) { /* later */ } continue; }
+    let size; try { size = fs.statSync(t.file).size; } catch (e) { continue; }
+    if (size < t.off) t.off = 0;   // rewritten
+    if (size === t.off) continue;
+    const fd = fs.openSync(t.file, 'r'), buf = Buffer.alloc(Math.min(size - t.off, 4 << 20));
+    fs.readSync(fd, buf, 0, buf.length, t.off); fs.closeSync(fd);
+    t.off += buf.length;
+    const lines = (t.rest + buf.toString('utf8')).split('\n');
+    t.rest = lines.pop();
+    for (const line of lines) {
+      if (!line.includes('"tool_use"')) continue;
+      let o; try { o = JSON.parse(line); } catch (e) { continue; }
+      const c = o.message && o.message.content;
+      if (o.type !== 'assistant' || !Array.isArray(c)) continue;
+      for (const b of c) {
+        if (b.type !== 'tool_use' || t.seen.has(b.id)) continue;
+        t.seen.add(b.id);
+        for (const { kind, p: tp } of SESS.callPaths(b) || []) {
+          const rel = repoRel(path.resolve(o.cwd || REPO, tp));
+          liveEmit('beam', rel === null ? { id: t.id, kind, outside: true, at: Date.now() } : { id: t.id, kind, p: rel, at: Date.now() });
+        }
+      }
+    }
+  }
+}
+function agentsStart() {
+  if (agents.timer) return;
+  agents.timer = setInterval(agentsPoll, AGENTS_EVERY);
+  agents.tailTimer = setInterval(tailOnce, TAIL_EVERY);
+  agents.timer.unref(); agents.tailTimer.unref();
+}
+
 // ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
 async function catalog() {
   const read = p => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
@@ -356,7 +450,9 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
     res.write('retry: 3000\n\n');
     res.write('event: hello\ndata: ' + JSON.stringify({ head: live.head, watching: !!live.watcher }) + '\n\n');
+    if (agents.sig) res.write('event: agents\ndata: ' + agents.sig.replace(/^/, '{"list":') + '}\n\n');
     live.clients.add(res);
+    agentsStart(); agentsPoll();
     req.on('close', () => live.clients.delete(res));
     return;
   }

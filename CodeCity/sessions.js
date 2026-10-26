@@ -25,6 +25,20 @@ function toolKind(name) {
   return m ? DC[m[1]] || null : null;
 }
 
+// one tool_use block -> [{ kind, p }] with the paths as written (relative ones resolve against the entry's
+// cwd), or null when it is not a path tool. The only thing taken from a call: kind + path. Also used live by
+// CodeCity/companion.js (P4, KV-09), which tails running sessions' transcripts through this same filter.
+function callPaths(b) {
+  const tk = toolKind(b.name);
+  if (!tk) return null;
+  const [kind, keys] = tk, input = b.input || {};
+  let ps = keys.flatMap(k => Array.isArray(input[k]) ? input[k] : input[k] ? [input[k]] : []);
+  if (!ps.length && kind === SEARCH) ps = ['.'];
+  return ps.filter(x => typeof x === 'string').map(x => ({ kind, p: x }));
+}
+// where Claude Code keeps transcripts for this user (CLAUDE_CONFIG_DIR moves it, e.g. a second account)
+const projectsBase = () => path.join(process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude'), 'projects');
+
 const mangle = p => p.replace(/[^A-Za-z0-9]/g, '-');
 const norm = p => p.replace(/\\/g, '/').replace(/\/+$/, '');
 
@@ -81,14 +95,10 @@ function readSessions(opts) {
       for (const b of c) {
         if (b.type !== 'tool_use' || s.seen.has(b.id)) continue;
         s.seen.add(b.id);
-        const tk = toolKind(b.name);
-        if (!tk) continue;
+        const calls = callPaths(b);
+        if (!calls) continue;
         stats.calls++;
-        const [kind, keys] = tk, input = b.input || {};
-        let ps = keys.flatMap(k => Array.isArray(input[k]) ? input[k] : input[k] ? [input[k]] : []);
-        if (!ps.length && kind === SEARCH) ps = ['.'];
-        for (const p of ps) {
-          if (typeof p !== 'string') continue;
+        for (const { kind, p } of calls) {
           const rel = resolveRel(p, o.cwd);
           if (rel === null) { stats.outside++; continue; }
           if (fileIdx.has(rel)) s.ev.push([lastT, kind, fileIdx.get(rel)]);
@@ -115,4 +125,4 @@ function readSessions(opts) {
   return { sessions, stats };
 }
 
-module.exports = { readSessions, transcriptDirs, mangle, READ, SEARCH, EDIT };
+module.exports = { readSessions, transcriptDirs, callPaths, projectsBase, jsonlFiles, mangle, READ, SEARCH, EDIT };

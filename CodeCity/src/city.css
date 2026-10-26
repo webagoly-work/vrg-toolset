@@ -104,6 +104,21 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 /* live repo (22-live) */
 #live-dot { color: #6fe39a; border-color: #2f6b47; }
 #panel h4 { margin: 10px 0 2px; font-size: 12px; color: var(--accent); font-weight: normal; }
+/* City Hall dispatch board (23-agents) */
+#hall-btn.wait { border-color: #ffb300; color: #ffb300; }
+#hall { position: fixed; z-index: 4; left: 12px; right: 12px; bottom: 56px; max-height: 34vh; overflow: auto; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 4px; padding: 8px 12px; }
+#hall h3 { margin: 0 0 6px; font-size: 13px; color: var(--accent); }
+#hall .x { position: absolute; top: 6px; right: 10px; cursor: pointer; color: var(--dim); }
+#hall .bays { display: grid; grid-template-columns: repeat(5, minmax(120px, 1fr)); gap: 8px; }
+@media (max-width: 700px) { #hall .bays { grid-template-columns: 1fr 1fr; } }
+#hall .bay { border-top: 2px solid var(--line); padding-top: 4px; }
+#hall .bay.dolgozik { border-color: #6fd3ff; } #hall .bay.var { border-color: #ffb300; } #hall .bay.hiba { border-color: #ff5a5a; }
+#hall .bay h4 { margin: 0 0 4px; font-size: 12px; font-weight: normal; }
+#hall .strip { border: 1px solid var(--line); border-radius: 3px; padding: 3px 6px; margin-bottom: 4px; cursor: pointer; overflow: hidden; }
+#hall .strip i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+#hall .strip small { display: block; color: var(--dim); font-size: 11px; }
+#hall .bay.var .strip { border-color: #ffb300; }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;

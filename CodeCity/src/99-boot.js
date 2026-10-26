@@ -52,6 +52,16 @@ if (window.CITY) {
         else if (/KV-TERM-OK[\s\S]*KV-TERM-OK/.test(seen)) t.es.close();
       });
     });
+    // test hook: #agenttest=<path>|<path> — two sessions (one waiting for you), then a read and an edit beam onto
+    // those paths, and the City Hall board open (no segéd needed; tools/shot.js)
+    if (q.get('agenttest')) {
+      const [p1, p2] = q.get('agenttest').split('|'), now = Date.now();
+      agentsEvent({ list: [{ id: 'aaaa1111', name: 'Kódváros P4', state: 'working', kind: 'background', inRepo: true, startedAt: now - 600000 },
+        { id: 'bbbb2222', name: 'Planner javítás', state: 'blocked', kind: 'interactive', inRepo: true, startedAt: now - 120000 },
+        { id: 'cccc3333', name: 'tegnapi munka', state: 'done', kind: 'background', inRepo: false, startedAt: now - 86400000 }] });
+      beamEvent({ id: 'aaaa1111', kind: 0, p: p1 }); beamEvent({ id: 'bbbb2222', kind: 2, p: p2 }); beamEvent({ id: 'aaaa1111', kind: 0, outside: true });
+      agToggle(true);
+    }
     const dt = (q.get('droptest') || '').split(',');
     if (dt.length === 3) dockToggle(true).then(() => {
       dock.dry = true;

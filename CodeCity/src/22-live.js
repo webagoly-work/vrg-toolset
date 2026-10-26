@@ -80,6 +80,7 @@ async function liveSwap() {
     Object.assign(orbit, { theta: cam.theta, phi: cam.phi, r: cam.r }); orbit.target.copy(cam.t); placeCamera();
     if (open) { const f = city.files.find(x => x.p === open); if (f) showFile(f); }
     if (picked) selSetPaths(picked);
+    agentsEvent({ list: ag.list });   // the figures stood in the old city
     const n = city.commits.length - was;
     // the new commits flash like a replay step, and their files pulse
     const idx = [];
@@ -103,6 +104,9 @@ function liveConnect() {
   });
   live.es.addEventListener('fs', e => liveFsEvent(JSON.parse(e.data)));
   live.es.addEventListener('git', () => liveSwap());
+  // live Claude (23-agents): the sessions and what they touch
+  live.es.addEventListener('agents', e => { if (liveMine()) agentsEvent(JSON.parse(e.data)); });
+  live.es.addEventListener('beam', e => { if (liveMine()) beamEvent(JSON.parse(e.data)); });
   live.es.onerror = () => { $('live-dot').hidden = true; };
 }
 function liveFsEvent(d) {
