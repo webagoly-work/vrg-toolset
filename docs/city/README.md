@@ -288,3 +288,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-07 ✔ 2026-10-26 1bd1c8f
 - P2 embedded terminal (CITY-D15 C) ✔ 2026-10-26 764913b — not a KV prompt; added from the user's KV-01 answer
 - KV-08 ✔ 2026-10-26 a62235f
+- KV-09 ✔ 2026-10-26 3b9704d
