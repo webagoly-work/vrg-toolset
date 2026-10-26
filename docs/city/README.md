@@ -90,6 +90,27 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
   B) skip it; agent share from commit trailers is enough · C) full transcripts incl. text (not recommended:
   the page would carry your conversations).
 
+**Live workspace decisions** (user, 2026-10-26, KV-01; options in the report
+`docs/research/reports/Kódváros live workspace and GitWorld.md` §6.3):
+
+- CITY-D9 **A + D** — host: companion server + browser page now, Electron later as packaging and
+  overlay host; **plus** a VS Code extension (D) as a second front end on the same companion.
+- CITY-D10 **A** — the city reads, opens and launches; every write is a pre-filled Claude prompt or a
+  confirm with a ghost preview and a safety copy/ref. No git writes by the city itself.
+- CITY-D11 **A** — live Claude feed via a small stripper hook (path + kind POSTed to the companion) in
+  the gitignored `.claude/settings.local.json`; transcript tail as fallback.
+- CITY-D12 **A** — hook in this repo first; move to the user-level `~/.claude/settings.json` after P4's
+  check passes.
+- CITY-D13 **A** — update the portable Claude Code (2.1.261) before P4.
+- CITY-D14 **A** — in-city editor: CodeMirror 6 + merge, vendored as npm + sha512.
+- CITY-D15 **C, with A's link as fallback** — embedded terminal (xterm + node-pty) from the start;
+  the `claude-cli://` deep link stays as the fallback when the embedded one is unavailable.
+- CITY-D16 **A** — show only: no `PermissionRequest` approvals, no restricted-zone blocking until P13,
+  then opt-in.
+- CITY-D27 **A** — window titles, outside paths, IPs, DNS and device names stay in memory only, with a
+  blur mode; nothing persisted.
+- Still open (asked in later prompts): CITY-D17–D26, D28.
+
 ## 6. Use
 
 ```
@@ -118,6 +139,10 @@ until that list is done.
 
 - **Fine-tuning its base**: the user has dev notes for it, not yet written down here. When this is
   picked up, ask for those notes first; do not guess at them.
+  **2026-10-26 (KV-01):** the user will bring the dev notes to the Claude Design batch (below),
+  together with the screenshots; none are recorded yet.
+- **Gitropolis and AgentCity** (§2 credits): the user does not have the links at hand — look the
+  likely repos up on GitHub in a later prompt and add the links to §2 (KV-01 Q2).
 - **Candidate for a later Claude Design batch** (user, 2026-10-23): the look and feel (night look,
   lenses, panels, readouts, tour captions, share card) is a good fit for one Claude Design pass
   rather than more piecemeal WPs. Bring the notes and screenshots of each look (`tools/shot.js`) to it.
