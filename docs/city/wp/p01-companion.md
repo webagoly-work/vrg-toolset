@@ -7,4 +7,4 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/companion.js, CodeCity/from-kapu/companion-server.js, CodeCity/from-kapu/test/spec-95-companion.js, CodeCity/tools/selftest.js, START.cmd, VRG-DE.cmd
 - **Decisions:** D9, D10
 - **Prompts:** KV-03, KV-04
-- **Status:** in progress — KV-03 ✔ 7b39857 (companion, START.cmd K → S), KV-04 next
+- **Status:** DONE 2026-10-26 — KV-03 (companion on 8797, START.cmd K → S), KV-04 bd221e1 (spec-95 re-pointed, in selftest)

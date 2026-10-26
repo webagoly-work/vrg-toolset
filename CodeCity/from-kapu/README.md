@@ -26,7 +26,7 @@ together. Git history follows the moved files (`git log --follow`).
 | `src/js/97-extras.js` | tour, glossary, installers, link check, PNG export/print (H11) |
 | `src/js/00-core.js`, `50-github.js`, `60-access.js`, `99-boot.js`, `src/css/*`, `src/index.html` | the shell as it was (the first three also live on in `Hub/src/js`) |
 | `data/topology.json`, `data/glossary.json` | 13 branches / 55 slots of the business map; 25 glossary entries |
-| `test/` | the specs for all of the above, unchanged; several still reach into `Hub/` and `tools/` by path, so they need re-pointing before they run here |
+| `test/` | the specs for all of the above; several still reach into `Hub/` and `tools/` by path, so they need re-pointing before they run here. **`spec-95-companion.js` is re-pointed** to `CodeCity/companion.js` (KV-04) and runs in `CodeCity/tools/selftest.js` |
 | `companion-server.js` | copy of `Hub/companion/server.js` at the cut (the live one stays in `Hub/`) |
 
 Still in place elsewhere, also Kódváros material: the plan pack `docs/hub/` (architecture, UI
