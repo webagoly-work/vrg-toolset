@@ -19,7 +19,10 @@ const HAS_PTY = fs.existsSync(path.join(REPO, 'Vendor', 'node-pty', 'lib', 'inde
 let srv = null;
 async function start() {
   if (srv) return srv;
-  const cfg = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'kv-term-')), 'none.json');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'kv-term-')), cfg = path.join(tmp, 'config.json');
+  const fake = path.join(tmp, 'claude.cmd');   // a stand-in for claude: prints what it was started with
+  fs.writeFileSync(fake, '@echo fake-claude %*\r\n');
+  fs.writeFileSync(cfg, JSON.stringify({ claudeCmd: fake, agentsCmd: [process.execPath, '-e', 'console.log("[]")'] }));
   const env = Object.assign({}, process.env); delete env.KP_DRY_RUN;
   const child = spawn(process.execPath, [path.join(CITY, 'companion.js'), '--port', '0', '--no-open', '--config', cfg], { env });
   const port = await new Promise((resolve, reject) => {
@@ -91,6 +94,22 @@ module.exports = !HAS_PTY ? [{ name: 'terminal: skipped — Vendor/node-pty miss
     assert.strictEqual((await post('term-open', { dir: 'C:\\Windows', kind: 'shell' })).status, 403);
     assert.strictEqual((await post('term-open', { dir: 'CodeCity', kind: 'powershell' })).status, 400);
     assert.strictEqual((await post('term-open', { dir: 'CodeCity', kind: 'shell', exe: 'calc.exe' })).status, 400);
+  } },
+  { name: 'terminal (KV-13): a Claude tab starts with --session-id <uuid> -n kodvaros-…; term-resume takes only a UUID and resumes it', async fn() {
+    await start();
+    const page = await req('GET', '/');
+    const cookie = String((page.headers['set-cookie'] || [''])[0]).split(';')[0];
+    const o = await post('term-open', { dir: 'CodeCity', kind: 'claude' });
+    assert.strictEqual(o.status, 200, JSON.stringify(o.json));
+    assert.ok(/^[0-9a-f-]{36}$/.test(o.json.session), 'a session UUID');
+    const r1 = await readStream(o.json.id, cookie, o.json.session, () => {});
+    assert.ok(/--session-id \S+ -n kodvaros-codecity/.test(r1.out.replace(/\s+/g, ' ')), 'command line: ' + JSON.stringify(r1.out.slice(-200)));
+    assert.strictEqual((await post('term-resume', { dir: 'CodeCity', session: 'x & calc' })).status, 400);
+    const rs = await post('term-resume', { dir: 'CodeCity', session: o.json.session });
+    assert.strictEqual(rs.status, 200);
+    const r2 = await readStream(rs.json.id, cookie, '--resume', () => {});
+    assert.ok(r2.out.includes('--resume ' + o.json.session), 'resume line: ' + JSON.stringify(r2.out.slice(-200)));
+    await post('term-close', { id: o.json.id }); await post('term-close', { id: rs.json.id });
   } },
   { name: 'terminal: the stream needs the page cookie; typed input comes back over SSE; close ends it', async fn() {
     await start();

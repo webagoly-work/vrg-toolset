@@ -47,6 +47,9 @@
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
 // so it is authorised by an HttpOnly SameSite=Strict cookie set with the page; input, resize and close
 // are ordinary token-checked actions. A terminal is code execution by design: --no-terminal turns it off.
+// A Claude tab starts as `claude --session-id <uuid> -n kodvaros-<folder>` (KV-13), so after a restart of the
+// segéd term-resume can bring exactly that conversation back (`claude --resume <uuid>`; only a UUID is accepted).
+// The terminals get a CLAUDE_CODE_GIT_BASH_PATH that exists (the portable Git) when the inherited one does not.
 //
 // Security (report §1.1, CITY-D10 A): binds 127.0.0.1 only; checks Host and Origin against fixed
 // sets (never derived from the request); every POST needs the per-install token from
@@ -103,7 +106,10 @@ function loadConfig() {
     // the claude binary itself (not the .cmd shim), for `claude agents --json`; a config can name another command
     agentsCmd: user.agentsCmd || [firstExisting([path.join(apps, 'node', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe'),
       process.env.APPDATA && path.join(process.env.APPDATA, 'npm', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe')].filter(Boolean)) || 'claude', 'agents', '--json'],
-    transcripts: user.transcripts || null
+    transcripts: user.transcripts || null,
+    // Claude Code needs Git Bash on Windows; the user-level value may point to a folder that is gone
+    gitBash: user.gitBash || (exists(process.env.CLAUDE_CODE_GIT_BASH_PATH || '') ? process.env.CLAUDE_CODE_GIT_BASH_PATH
+      : firstExisting([path.join(apps, 'git', 'bin', 'bash.exe'), 'H:\\_desktop\\Git\\bin\\bash.exe']))
   };
 }
 const CFG = loadConfig();
@@ -209,19 +215,32 @@ function termEmit(t, event, data) {
   const msg = (event ? 'event: ' + event + '\n' : '') + 'data: ' + JSON.stringify(data) + '\n\n';
   for (const res of t.clients) res.write(msg);
 }
-function termOpen(dir, kind) {
-  // the program is fixed here; the folder is the cwd, never part of a command line
-  const argv = kind === 'claude' ? ['/k', CFG.claudeCmd] : [];
-  if (DRY) return { dryRun: true, exe: 'cmd.exe', args: argv, cwd: dir, pty: true };
+// a segéd started from inside a Claude session inherits that session's markers; a Claude in the panel would then
+// count as its child (no transcript, so no resume) and get its messaging channel — drop them, keep the user's
+// own settings (CLAUDE_CONFIG_DIR, the Git Bash path, …)
+const CLAUDE_SESSION_ENV = /^(CLAUDECODE|CLAUDE_PID|CLAUDE_JOB_DIR|CLAUDE_EFFORT|CLAUDE_CODE_(AGENT|CHILD_SESSION|ENTRYPOINT|EXECPATH|MESSAGING_\w+|SESSION_\w+|ALT_SCREEN_FULL_REPAINT))$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+function termOpen(dir, kind, resume) {
+  // the program is fixed here; the folder is the cwd, never part of a command line; the only values that
+  // reach the line are a UUID (made here, or checked against UUID) and a name made of [a-z0-9-]
+  let argv = [], session = null;
+  if (kind === 'claude') {
+    session = resume || crypto.randomUUID();
+    const label = 'kodvaros-' + (path.basename(dir).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'repo');
+    argv = resume ? ['/k', CFG.claudeCmd, '--resume', session] : ['/k', CFG.claudeCmd, '--session-id', session, '-n', label];
+  }
+  if (DRY) return { dryRun: true, exe: 'cmd.exe', args: argv, cwd: dir, pty: true, session };
   if (TERMS.size >= TERM_MAX) return { error: 'legfeljebb ' + TERM_MAX + ' terminál lehet nyitva' };
   const env = Object.assign({}, process.env);
+  for (const k of Object.keys(env)) if (CLAUDE_SESSION_ENV.test(k)) delete env[k];
   env.SystemRoot = env.SystemRoot || 'C:\\Windows';   // without it PowerShell inside fails (8009001d)
+  if (CFG.gitBash) env.CLAUDE_CODE_GIT_BASH_PATH = CFG.gitBash;
   const pty = loadPty().spawn('cmd.exe', argv, { name: 'xterm-256color', cols: 100, rows: 30, cwd: dir, env, useConpty: true });
-  const id = 't' + (++termSeq), t = { id, pty, kind, dir, buf: '', clients: new Set(), exited: null };
+  const id = 't' + (++termSeq), t = { id, pty, kind, dir, session, buf: '', clients: new Set(), exited: null };
   pty.onData(d => { t.buf = (t.buf + d).slice(-TERM_BUF); termEmit(t, '', d); });
   pty.onExit(e => { t.exited = e.exitCode; termEmit(t, 'exit', e.exitCode); for (const r of t.clients) r.end(); TERMS.delete(id); });
   TERMS.set(id, t);
-  return { id, kind, dir };
+  return { id, kind, dir, session };
 }
 const termOf = id => (typeof id === 'string' ? TERMS.get(id) : null);
 process.on('exit', () => { for (const t of TERMS.values()) try { t.pty.kill(); } catch (e) { /* gone */ } });
@@ -520,6 +539,15 @@ const ACTIONS = {
     const d = safeDir(b.dir);
     if (!d) return [403, { error: 'nem engedélyezett mappa' }];
     const r = termOpen(d, b.kind);
+    return r.error ? [429, r] : [200, r];
+  } },
+  // a Claude conversation of an earlier tab, after a restart of the segéd: only a UUID is accepted
+  'term-resume': { keys: ['dir', 'session'], async run(b) {
+    if (!terminalOn()) return [503, { error: 'a terminál nem fut' }];
+    if (typeof b.session !== 'string' || !UUID.test(b.session)) return [400, { error: 'session: egy munkamenet-azonosító (UUID)' }];
+    const d = safeDir(b.dir);
+    if (!d) return [403, { error: 'nem engedélyezett mappa' }];
+    const r = termOpen(d, 'claude', b.session);
     return r.error ? [429, r] : [200, r];
   } },
   'term-input': { keys: ['id', 'data'], async run(b) {

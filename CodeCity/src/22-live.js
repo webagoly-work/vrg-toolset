@@ -126,5 +126,6 @@ async function liveInit() {
   liveSeenInit();
   await kvReady();
   liveConnect();
+  termResumeOffer();   // 21-term: Claude tabs from before a restart
 }
 $('news-btn').onclick = liveNews;

@@ -150,6 +150,11 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #fp-confirm { position: absolute; z-index: 2; top: 50px; right: 16px; width: min(420px, calc(100% - 32px)); background: var(--panel);
   border: 1px solid var(--accent); border-radius: 4px; padding: 10px 14px; box-shadow: 0 10px 40px #000a; }
 #fp-confirm .row { display: flex; gap: 8px; justify-content: flex-end; }
+#term-resume { position: fixed; z-index: 6; right: 12px; bottom: 56px; max-width: min(520px, calc(100% - 24px)); background: var(--panel);
+  border: 1px solid var(--accent); border-radius: 4px; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px; }
+#term-resume b { color: var(--accent); font-weight: normal; }
+#term-resume .row { display: flex; gap: 8px; align-items: center; }
+#term-resume .x { cursor: pointer; color: var(--dim); }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;
@@ -2482,9 +2487,35 @@ $('dock-btn').onclick = () => dockToggle();
 // segéd offers it (status.terminal); otherwise they fall back to an outside window or the claude-cli:// link.
 // xterm comes from the segéd (/vendor/xterm.js), loaded on first use, so the file:// page stays small.
 // Output: GET /api/term-stream (SSE, the page's cookie); input, resize, close: token-checked actions.
+// Claude tabs are remembered per repo (localStorage: folder + session UUID only); when the segéd restarted and
+// the tabs are gone, a 'Folytatás' banner offers `claude --resume <uuid>` for each (KV-13).
 
 const term = { el: null, tabs: [], cur: null, lib: null };
 const termOn = () => kv.match && !!(kv.status && kv.status.terminal);
+const TERM_KEY = () => 'kodvaros-terms:' + current.city.repo.name;
+function termSaved() { try { return JSON.parse(localStorage.getItem(TERM_KEY()) || '[]'); } catch (e) { return []; } }
+function termSave(list) { try { localStorage.setItem(TERM_KEY(), JSON.stringify(list.slice(-8))); } catch (e) { /* memory only */ } }
+// after a restart: the Claude tabs of last time, each with a 'Folytatás'
+async function termResumeOffer() {
+  await kvReady();
+  const old = termSaved().filter(x => !term.tabs.some(t => t.session === x.session));
+  let bar = $('term-resume');
+  if (!termOn() || !old.length) { if (bar) bar.hidden = true; return; }
+  if (!bar) {
+    bar = document.createElement('div'); bar.id = 'term-resume';
+    bar.addEventListener('click', async e => {
+      const b = e.target.closest('[data-resume]'), x = e.target.closest('[data-forget]');
+      if (x) { termSave(termSaved().filter(s => s.session !== x.dataset.forget)); return termResumeOffer(); }
+      if (!b) return;
+      const s = termSaved().find(v => v.session === b.dataset.resume);
+      if (s) { await kvTermOpen(s.dir, 'claude', s.session); termResumeOffer(); }
+    });
+    document.body.append(bar);
+  }
+  bar.innerHTML = '<b>Korábbi Claude-munkamenet a panelben</b>' + old.map(s => `<span class="row">${esc(s.label)} <span class="dim">${new Date(s.at).toLocaleString('hu-HU')}</span>` +
+    `<button class="btn" data-resume="${esc(s.session)}">Folytatás</button><span class="x" data-forget="${esc(s.session)}" title="Elfelejt">×</span></span>`).join('');
+  bar.hidden = false;
+}
 
 function termLoadLib() {
   if (term.lib) return term.lib;
@@ -2535,10 +2566,10 @@ function termFitSoon() {
 }
 
 // open a terminal in a repo folder; false = not available here (the caller falls back)
-async function kvTermOpen(dirRel, kind) {
+async function kvTermOpen(dirRel, kind, resume) {
   await kvReady();
   if (!termOn()) return false;
-  const r = await kvCall('term-open', { dir: dirRel, kind });
+  const r = await (resume ? kvCall('term-resume', { dir: dirRel, session: resume }) : kvCall('term-open', { dir: dirRel, kind }));
   if (r.status !== 200 || !r.json.id) { kvDone(r, ''); return true; }
   try { await termLoadLib(); } catch (e) { kvToast('Az xterm nem töltődött be — node tools/fetch-vendor.js xterm xterm-fit'); kvCall('term-close', { id: r.json.id }); return true; }
   const panel = termPanel(), box = document.createElement('div');
@@ -2547,7 +2578,7 @@ async function kvTermOpen(dirRel, kind) {
     theme: { background: '#05070d', foreground: '#dde4f5', cursor: '#ffcf5a', selectionBackground: '#ffcf5a55' } });
   const fit = new FitAddon.FitAddon();
   xt.loadAddon(fit); xt.open(box);
-  const t = { id: r.json.id, kind, dir: r.json.dir, label: dirRel === '.' ? current.city.repo.name : dirRel.split('/').pop(), xt, fit, box, exited: null, q: '', cols: 0, rows: 0 };
+  const t = { id: r.json.id, kind, dir: r.json.dir, session: r.json.session || null, dirRel, label: dirRel === '.' ? current.city.repo.name : dirRel.split('/').pop(), xt, fit, box, exited: null, q: '', cols: 0, rows: 0 };
   // keystrokes go out in small batches: one POST per ~15 ms, not one per key
   xt.onData(d => {
     if (t.exited !== null) return;
@@ -2561,6 +2592,7 @@ async function kvTermOpen(dirRel, kind) {
     xt.write(`\r\n\x1b[2m[a folyamat kilépett: ${t.exited}]\x1b[0m\r\n`); termTabs();
   });
   term.tabs.push(t);
+  if (t.session && !termSaved().some(s => s.session === t.session)) termSave([...termSaved(), { session: t.session, dir: dirRel, label: t.label, at: Date.now() }]);
   panel.classList.remove('min');
   termShow(t.id);
   if (term.el) term.el.dataset.last = t.id;   // test hook
@@ -2571,6 +2603,7 @@ function termClose(id) {
   if (k < 0) return;
   const t = term.tabs[k];
   if (t.exited === null) kvCall('term-close', { id });
+  if (t.session) termSave(termSaved().filter(s => s.session !== t.session));   // closed on purpose: nothing to resume
   if (t.es) t.es.close();
   t.xt.dispose(); t.box.remove();
   term.tabs.splice(k, 1);
@@ -2707,6 +2740,7 @@ async function liveInit() {
   liveSeenInit();
   await kvReady();
   liveConnect();
+  termResumeOffer();   // 21-term: Claude tabs from before a restart
 }
 $('news-btn').onclick = liveNews;
 
