@@ -279,3 +279,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 
 - KV-01 ✔ 2026-10-26 2af8607
 - KV-02 ✔ 2026-10-26 9e1f402
+- KV-03 ✔ 2026-10-26 7b39857
