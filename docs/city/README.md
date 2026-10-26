@@ -121,6 +121,7 @@ node CodeCity/scan.js . --js CodeCity/dist/vrg-codecity.data.js  # this repo as 
 node CodeCity/tools/shot.js "CodeCity/dist/<name>.html#pick=0.45,0.6"   # headless check incl. picking
 node CodeCity/tools/selftest.js                        # scanner, sessions privacy, MCP server, companion (32 checks)
 node CodeCity/companion.js                             # live mode: the city on http://localhost:8797 with local actions (START.cmd K → S)
+node tools/fetch-vendor.js node-pty xterm xterm-fit    # once: the embedded terminal (else Terminál itt opens an outside window)
 node CodeCity/scan.js <repo> --tour tours.json --html … # bake exported Városnézés tours into the page
 node CodeCity/scan.js <repo> --sessions --html …       # opt-in: agent sessions (paths + kind + time only)
 #                                    [--sessions-dir <~/.claude/projects/<folder>>] to name the transcripts
@@ -259,7 +260,7 @@ One stub per phase in `docs/city/wp/`.
 |---|---|---|---|---|
 | P0 | [Decisions and plan](wp/p00-decisions.md) | — | README §5 lists the answers; §8 has the phase table; every phase has a stub here. | DONE |
 | P1 | [Companion server](wp/p01-companion.md) | D9, D10 | `node tools/check-start.js` passes; the page opens from START.cmd served and still from `file://`; selftest green. | DONE |
-| P2 | [Actions, Ctrl+K, multi-select, terminal](wp/p02-actions.md) | D9, D15 | Right-click a building → VS Code opens on it; Ctrl+K "07a" flies there; three selected → "Ask Claude about these" opens a pre-filled prompt; items greyed with a Hungarian reason in `file://` mode; the embedded terminal runs `claude`, or the link opens when it cannot. | open |
+| P2 | [Actions, Ctrl+K, multi-select, terminal](wp/p02-actions.md) | D9, D15 | Right-click a building → VS Code opens on it; Ctrl+K "07a" flies there; three selected → "Ask Claude about these" opens a pre-filled prompt; items greyed with a Hungarian reason in `file://` mode; the embedded terminal runs `claude`, or the link opens when it cannot. | DONE |
 | P3 | [Live repo stream](wp/p03-live-repo.md) | D9 | Edit a file in VS Code → its building pulses within ~1 s; a commit updates the timeline without reload. | open |
 | P3b | [VS Code extension (CITY-D9 D)](wp/p03b-vscode.md) | D9, D10 | In the portable VS Code, the command "Kódváros: megnyitás" shows the city; switching editor tabs flies to that building. | open |
 | P4 | [Live Claude](wp/p04-live-claude.md) | D11, D12, D13, D16, D27 | A second session shows a second figure; its reads beam to roofs live; a session waiting for permission shows amber on the board; closing the city does not slow Claude. | open |
@@ -285,3 +286,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-05 ✔ 2026-10-26 0d38244
 - KV-06 ✔ 2026-10-26 f50bbc3
 - KV-07 ✔ 2026-10-26 1bd1c8f
+- P2 embedded terminal (CITY-D15 C) ✔ 2026-10-26 764913b — not a KV prompt; added from the user's KV-01 answer
