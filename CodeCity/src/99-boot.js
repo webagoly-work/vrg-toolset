@@ -34,6 +34,18 @@ if (window.CITY) {
     if (q.get('selp')) selSetPaths(q.get('selp').split('|'));
     // test hook: #droptest=<card>,x,y drops that prompt card on the building at that fraction; the dock
     // carries the prompt in data-last (tools/shot.js --dump-dom)
+    // test hook: #termtest=shell opens the embedded terminal on the repo, types an echo on its first output and
+    // closes the stream once the echo is back — an open stream holds headless Chrome's virtual time (tools/shot.js)
+    if (q.get('termtest')) kvTermOpen('.', 'shell').then(ok => {
+      const t = ok && term.tabs[0];
+      if (!t) return;
+      let seen = '', sent = false;
+      t.es.addEventListener('message', e => {
+        seen += JSON.parse(e.data);
+        if (!sent) { sent = true; kvCall('term-input', { id: t.id, data: 'echo KV-TERM-OK\r' }); }
+        else if (/KV-TERM-OK[\s\S]*KV-TERM-OK/.test(seen)) t.es.close();
+      });
+    });
     const dt = (q.get('droptest') || '').split(',');
     if (dt.length === 3) dockToggle(true).then(() => {
       dock.dry = true;

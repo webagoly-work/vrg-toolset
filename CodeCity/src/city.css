@@ -87,6 +87,20 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #dock .kv-fig { color: #6fd3ff; margin-right: 6px; }
 #dock-btn.on { border-color: var(--accent); color: var(--accent); }
 #sel-bar b[draggable] { cursor: grab; }
+/* embedded terminal (21-term) */
+#term { position: fixed; z-index: 6; right: 12px; bottom: 56px; width: min(820px, calc(100% - 24px)); height: 46vh; min-height: 160px;
+  display: flex; flex-direction: column; background: #05070d; border: 1px solid var(--accent); border-radius: 4px; resize: both; overflow: hidden; }
+#term.min { height: auto; min-height: 0; resize: none; }
+#term.min .body { display: none; }
+#term header { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-bottom: 1px solid var(--line); background: var(--panel); }
+#term .tabs { flex: 1; display: flex; gap: 4px; overflow: auto; }
+#term .tab { border: 1px solid var(--line); border-radius: 3px; padding: 1px 6px; cursor: pointer; white-space: nowrap; color: var(--dim); }
+#term .tab.on { color: var(--accent); border-color: var(--accent); }
+#term .tab.done { text-decoration: line-through; }
+#term .tab b { margin-left: 6px; font-weight: normal; }
+#term .tab b:hover { color: #ff6b6b; }
+#term .body { flex: 1; position: relative; min-height: 0; padding: 4px; }
+#term .xt { position: absolute; inset: 4px; }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;

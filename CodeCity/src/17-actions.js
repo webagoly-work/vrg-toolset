@@ -7,7 +7,8 @@
 // The segéd (CodeCity/companion.js) injects window.KV_COMPANION = {token, port}. Without it the launch
 // items stay greyed with a Hungarian reason; the Claude deep links still work whenever the repo's
 // folder on this machine is known — from the segéd, or from this page's own file:// address.
-// CITY-D10 A: nothing here writes; every item opens, launches or copies.
+// CITY-D10 A: nothing here writes; every item opens, launches or copies. Terminál itt / Claude Code itt open
+// the embedded terminal (21-term, CITY-D15 C) when the segéd offers one.
 
 const kv = { on: false, match: false, status: null, root: '', menu: null };
 const KV_WHY = {
@@ -88,10 +89,14 @@ const KV_ACT = [
     run: c => kvCall('open-folder', { dir: c.dirRel }).then(r => kvDone(r, 'Mappa megnyitva')) },
   { id: 'vscode', label: 'Megnyitás VS Code-ban', g: 'open', need: 'companion',
     run: c => (c.file ? kvCall('open-file', { path: c.rel }) : kvCall('open-vscode', { dir: c.dirRel })).then(r => kvDone(r, 'VS Code nyílik')) },
+  // the embedded terminal (21-term) when the segéd offers it, else an outside window
   { id: 'term', label: 'Terminál itt', g: 'open', need: 'companion',
+    run: async c => (await kvTermOpen(c.dirRel, 'shell')) || kvCall('open-terminal', { dir: c.dirRel }).then(r => kvDone(r, 'Terminál megnyitva')) },
+  { id: 'term-out', label: 'Terminál külön ablakban', g: 'open', need: 'companion', when: () => termOn(),
+    whyNot: 'Nincs beágyazott terminál — a „Terminál itt” is külön ablakot nyit',
     run: c => kvCall('open-terminal', { dir: c.dirRel }).then(r => kvDone(r, 'Terminál megnyitva')) },
   { id: 'claude', label: 'Claude Code itt', g: 'claude', need: 'root',
-    run: c => (kv.match ? kvCall('open-claude', { dir: c.dirRel }).then(r => kvDone(r, 'Claude Code indul'))
+    run: async c => (await kvTermOpen(c.dirRel, 'claude')) || (kv.match ? kvCall('open-claude', { dir: c.dirRel }).then(r => kvDone(r, 'Claude Code indul'))
       : (kvLink(KV_CLAUDE_CLI + encodeURIComponent(kvAbs(c.dirRel))), kvToast('Claude Code indul (claude-cli:// link)'))) },
   { id: 'claude-app', label: 'Claude app: új munkamenet itt', g: 'claude', need: 'root',
     run: c => { kvLink(KV_CLAUDE_APP + encodeURIComponent(kvAbs(c.dirRel))); kvToast('A Claude app nyílik (claude:// link)'); } },

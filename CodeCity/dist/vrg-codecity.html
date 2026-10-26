@@ -93,6 +93,20 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #dock .kv-fig { color: #6fd3ff; margin-right: 6px; }
 #dock-btn.on { border-color: var(--accent); color: var(--accent); }
 #sel-bar b[draggable] { cursor: grab; }
+/* embedded terminal (21-term) */
+#term { position: fixed; z-index: 6; right: 12px; bottom: 56px; width: min(820px, calc(100% - 24px)); height: 46vh; min-height: 160px;
+  display: flex; flex-direction: column; background: #05070d; border: 1px solid var(--accent); border-radius: 4px; resize: both; overflow: hidden; }
+#term.min { height: auto; min-height: 0; resize: none; }
+#term.min .body { display: none; }
+#term header { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-bottom: 1px solid var(--line); background: var(--panel); }
+#term .tabs { flex: 1; display: flex; gap: 4px; overflow: auto; }
+#term .tab { border: 1px solid var(--line); border-radius: 3px; padding: 1px 6px; cursor: pointer; white-space: nowrap; color: var(--dim); }
+#term .tab.on { color: var(--accent); border-color: var(--accent); }
+#term .tab.done { text-decoration: line-through; }
+#term .tab b { margin-left: 6px; font-weight: normal; }
+#term .tab b:hover { color: #ff6b6b; }
+#term .body { flex: 1; position: relative; min-height: 0; padding: 4px; }
+#term .xt { position: absolute; inset: 4px; }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;
@@ -1947,7 +1961,8 @@ function sessRefresh() { if (sess.s && sess.obj && $('sess-play').textContent ==
 // The segéd (CodeCity/companion.js) injects window.KV_COMPANION = {token, port}. Without it the launch
 // items stay greyed with a Hungarian reason; the Claude deep links still work whenever the repo's
 // folder on this machine is known — from the segéd, or from this page's own file:// address.
-// CITY-D10 A: nothing here writes; every item opens, launches or copies.
+// CITY-D10 A: nothing here writes; every item opens, launches or copies. Terminál itt / Claude Code itt open
+// the embedded terminal (21-term, CITY-D15 C) when the segéd offers one.
 
 const kv = { on: false, match: false, status: null, root: '', menu: null };
 const KV_WHY = {
@@ -2028,10 +2043,14 @@ const KV_ACT = [
     run: c => kvCall('open-folder', { dir: c.dirRel }).then(r => kvDone(r, 'Mappa megnyitva')) },
   { id: 'vscode', label: 'Megnyitás VS Code-ban', g: 'open', need: 'companion',
     run: c => (c.file ? kvCall('open-file', { path: c.rel }) : kvCall('open-vscode', { dir: c.dirRel })).then(r => kvDone(r, 'VS Code nyílik')) },
+  // the embedded terminal (21-term) when the segéd offers it, else an outside window
   { id: 'term', label: 'Terminál itt', g: 'open', need: 'companion',
+    run: async c => (await kvTermOpen(c.dirRel, 'shell')) || kvCall('open-terminal', { dir: c.dirRel }).then(r => kvDone(r, 'Terminál megnyitva')) },
+  { id: 'term-out', label: 'Terminál külön ablakban', g: 'open', need: 'companion', when: () => termOn(),
+    whyNot: 'Nincs beágyazott terminál — a „Terminál itt” is külön ablakot nyit',
     run: c => kvCall('open-terminal', { dir: c.dirRel }).then(r => kvDone(r, 'Terminál megnyitva')) },
   { id: 'claude', label: 'Claude Code itt', g: 'claude', need: 'root',
-    run: c => (kv.match ? kvCall('open-claude', { dir: c.dirRel }).then(r => kvDone(r, 'Claude Code indul'))
+    run: async c => (await kvTermOpen(c.dirRel, 'claude')) || (kv.match ? kvCall('open-claude', { dir: c.dirRel }).then(r => kvDone(r, 'Claude Code indul'))
       : (kvLink(KV_CLAUDE_CLI + encodeURIComponent(kvAbs(c.dirRel))), kvToast('Claude Code indul (claude-cli:// link)'))) },
   { id: 'claude-app', label: 'Claude app: új munkamenet itt', g: 'claude', need: 'root',
     run: c => { kvLink(KV_CLAUDE_APP + encodeURIComponent(kvAbs(c.dirRel))); kvToast('A Claude app nyílik (claude:// link)'); } },
@@ -2409,6 +2428,108 @@ canvas.addEventListener('drop', e => {
 });
 $('dock-btn').onclick = () => dockToggle();
 
+// ==== src/21-term.js
+// 21-term.js — the embedded terminal (CITY-D15 C): a panel with one tab per terminal, xterm.js on the page,
+// a real console (ConPTY) in the Kódváros segéd. "Terminál itt" and "Claude Code itt" open here when the
+// segéd offers it (status.terminal); otherwise they fall back to an outside window or the claude-cli:// link.
+// xterm comes from the segéd (/vendor/xterm.js), loaded on first use, so the file:// page stays small.
+// Output: GET /api/term-stream (SSE, the page's cookie); input, resize, close: token-checked actions.
+
+const term = { el: null, tabs: [], cur: null, lib: null };
+const termOn = () => kv.match && !!(kv.status && kv.status.terminal);
+
+function termLoadLib() {
+  if (term.lib) return term.lib;
+  const add = (tag, attrs) => new Promise((res, rej) => { const e = document.createElement(tag); Object.assign(e, attrs); e.onload = res; e.onerror = rej; document.head.append(e); });
+  return term.lib = Promise.all([add('link', { rel: 'stylesheet', href: '/vendor/xterm.css' }), add('script', { src: '/vendor/xterm.js' })])
+    .then(() => add('script', { src: '/vendor/addon-fit.js' }));
+}
+
+function termPanel() {
+  if (term.el) return term.el;
+  const el = term.el = document.createElement('section');
+  el.id = 'term'; el.setAttribute('aria-label', 'Terminál');
+  el.innerHTML = '<header><span class="tabs"></span><button class="btn" data-x="min" title="Kis méret / vissza">_</button></header><div class="body"></div>';
+  el.querySelector('header').addEventListener('click', e => {
+    const b = e.target.closest('[data-tab]'), x = e.target.closest('[data-close]');
+    if (x) { e.stopPropagation(); return termClose(x.dataset.close); }
+    if (b) return termShow(b.dataset.tab);
+    if (e.target.closest('[data-x=min]')) { el.classList.toggle('min'); termFitSoon(); }
+  });
+  new ResizeObserver(() => termFitSoon()).observe(el);
+  document.body.append(el);
+  return el;
+}
+function termTabs() {
+  const tabs = term.el.querySelector('.tabs');
+  tabs.innerHTML = term.tabs.map(t => `<span class="tab${t.id === term.cur ? ' on' : ''}${t.exited !== null ? ' done' : ''}" data-tab="${t.id}" title="${esc(t.dir)}">` +
+    `${t.kind === 'claude' ? 'Claude' : 'cmd'} · ${esc(t.label)}<b data-close="${t.id}" title="Bezárás (a folyamat leáll)">×</b></span>`).join('');
+  term.el.hidden = !term.tabs.length;
+}
+function termShow(id) {
+  term.cur = id;
+  for (const t of term.tabs) t.box.hidden = t.id !== id;
+  termTabs(); termFitSoon();
+  const t = term.tabs.find(x => x.id === id);
+  if (t) t.xt.focus();
+}
+function termFitSoon() {
+  clearTimeout(termFitSoon.h);
+  termFitSoon.h = setTimeout(() => {
+    const t = term.tabs.find(x => x.id === term.cur);
+    if (!t || term.el.classList.contains('min')) return;
+    try { t.fit.fit(); } catch (e) { return; }
+    if (t.cols !== t.xt.cols || t.rows !== t.xt.rows) {
+      t.cols = t.xt.cols; t.rows = t.xt.rows;
+      if (t.exited === null) kvCall('term-resize', { id: t.id, cols: t.cols, rows: t.rows });
+    }
+  }, 60);
+}
+
+// open a terminal in a repo folder; false = not available here (the caller falls back)
+async function kvTermOpen(dirRel, kind) {
+  await kvReady();
+  if (!termOn()) return false;
+  const r = await kvCall('term-open', { dir: dirRel, kind });
+  if (r.status !== 200 || !r.json.id) { kvDone(r, ''); return true; }
+  try { await termLoadLib(); } catch (e) { kvToast('Az xterm nem töltődött be — node tools/fetch-vendor.js xterm xterm-fit'); kvCall('term-close', { id: r.json.id }); return true; }
+  const panel = termPanel(), box = document.createElement('div');
+  box.className = 'xt'; panel.querySelector('.body').append(box);
+  const xt = new Terminal({ cursorBlink: true, fontFamily: 'Cascadia Mono, Consolas, monospace', fontSize: 13, scrollback: 5000,
+    theme: { background: '#05070d', foreground: '#dde4f5', cursor: '#ffcf5a', selectionBackground: '#ffcf5a55' } });
+  const fit = new FitAddon.FitAddon();
+  xt.loadAddon(fit); xt.open(box);
+  const t = { id: r.json.id, kind, dir: r.json.dir, label: dirRel === '.' ? current.city.repo.name : dirRel.split('/').pop(), xt, fit, box, exited: null, q: '', cols: 0, rows: 0 };
+  // keystrokes go out in small batches: one POST per ~15 ms, not one per key
+  xt.onData(d => {
+    if (t.exited !== null) return;
+    t.q += d;
+    if (!t.qh) t.qh = setTimeout(() => { const data = t.q; t.q = ''; t.qh = 0; kvCall('term-input', { id: t.id, data }); }, 15);
+  });
+  t.es = new EventSource('/api/term-stream?id=' + encodeURIComponent(t.id));
+  t.es.onmessage = e => xt.write(JSON.parse(e.data));
+  t.es.addEventListener('exit', e => {
+    t.exited = +JSON.parse(e.data); t.es.close();
+    xt.write(`\r\n\x1b[2m[a folyamat kilépett: ${t.exited}]\x1b[0m\r\n`); termTabs();
+  });
+  term.tabs.push(t);
+  panel.classList.remove('min');
+  termShow(t.id);
+  if (term.el) term.el.dataset.last = t.id;   // test hook
+  return true;
+}
+function termClose(id) {
+  const k = term.tabs.findIndex(t => t.id === id);
+  if (k < 0) return;
+  const t = term.tabs[k];
+  if (t.exited === null) kvCall('term-close', { id });
+  if (t.es) t.es.close();
+  t.xt.dispose(); t.box.remove();
+  term.tabs.splice(k, 1);
+  if (term.cur === id) term.cur = term.tabs.length ? term.tabs[term.tabs.length - 1].id : null;
+  if (term.cur) termShow(term.cur); else termTabs();
+}
+
 // ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
@@ -2446,6 +2567,18 @@ if (window.CITY) {
     if (q.get('selp')) selSetPaths(q.get('selp').split('|'));
     // test hook: #droptest=<card>,x,y drops that prompt card on the building at that fraction; the dock
     // carries the prompt in data-last (tools/shot.js --dump-dom)
+    // test hook: #termtest=shell opens the embedded terminal on the repo, types an echo on its first output and
+    // closes the stream once the echo is back — an open stream holds headless Chrome's virtual time (tools/shot.js)
+    if (q.get('termtest')) kvTermOpen('.', 'shell').then(ok => {
+      const t = ok && term.tabs[0];
+      if (!t) return;
+      let seen = '', sent = false;
+      t.es.addEventListener('message', e => {
+        seen += JSON.parse(e.data);
+        if (!sent) { sent = true; kvCall('term-input', { id: t.id, data: 'echo KV-TERM-OK\r' }); }
+        else if (/KV-TERM-OK[\s\S]*KV-TERM-OK/.test(seen)) t.es.close();
+      });
+    });
     const dt = (q.get('droptest') || '').split(',');
     if (dt.length === 3) dockToggle(true).then(() => {
       dock.dry = true;

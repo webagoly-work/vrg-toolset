@@ -9,7 +9,13 @@
 // companion (CodeCity/from-kapu/companion-server.js, 87f2fca); the file:// page keeps working
 // as a read-only view, it just has no actions.
 //
-//   node CodeCity/companion.js [--port 8797] [--no-open] [--config <file>] [--page <dist/x.html>]
+//   node CodeCity/companion.js [--port 8797] [--no-open] [--no-terminal] [--config <file>] [--page <dist/x.html>]
+//
+// Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
+// inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
+// Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
+// so it is authorised by an HttpOnly SameSite=Strict cookie set with the page; input, resize and close
+// are ordinary token-checked actions. A terminal is code execution by design: --no-terminal turns it off.
 //
 // Security (report §1.1, CITY-D10 A): binds 127.0.0.1 only; checks Host and Origin against fixed
 // sets (never derived from the request); every POST needs the per-install token from
@@ -36,12 +42,14 @@ const TOKEN_FILE = path.join(CITY, '.companion-token');
 const VERSION = '1';
 const MAX_BODY = 16 * 1024;
 const DRY = process.env.KP_DRY_RUN === '1';
+const VENDOR = path.join(REPO, 'Vendor');
 
 const args = process.argv.slice(2);
 const opt = (n, d) => { const i = args.indexOf(n); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
 const PORT = Number(opt('--port', 8797));
 const CONFIG = path.resolve(opt('--config', path.join(CITY, 'companion.config.json')));
 const PAGE = path.resolve(DIST, path.basename(opt('--page', 'vrg-codecity.html')));
+const TERMINAL = !args.includes('--no-terminal');
 
 // ---- config: everything that names a program comes from here, never from a request
 const exists = p => { try { return fs.existsSync(p); } catch (e) { return false; } };
@@ -85,6 +93,11 @@ function safePath(p) {
 
 // ---- static files: one flat name from CodeCity/dist, a fixed set of types
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png' };
+const VENDOR_FILES = {
+  'xterm.js': [path.join(VENDOR, 'xterm', 'lib', 'xterm.js'), TYPES['.js']],
+  'xterm.css': [path.join(VENDOR, 'xterm', 'css', 'xterm.css'), 'text/css; charset=utf-8'],
+  'addon-fit.js': [path.join(VENDOR, 'xterm-fit', 'lib', 'addon-fit.js'), TYPES['.js']]
+};
 function distFile(name) {
   if (!/^[A-Za-z0-9._-]{1,128}$/.test(name) || name.startsWith('.')) return null;
   const type = TYPES[path.extname(name).toLowerCase()];
@@ -119,13 +132,44 @@ function git(argv) {
 }
 async function status() {
   const r = await git(GIT.status);
-  if (!r.ok) return { ok: true, version: VERSION, repo: REPO, git: false };
+  if (!r.ok) return { ok: true, version: VERSION, repo: REPO, git: false, terminal: terminalOn() };
   const lines = r.out.split('\n').filter(Boolean);
   const head = lines[0] || '';
   const m = head.match(/^## ([^.\s]+)(?:\.\.\.\S+)?(?: \[(.*)\])?/) || [];
   const num = k => { const x = (m[2] || '').match(new RegExp(k + ' (\\d+)')); return x ? +x[1] : 0; };
-  return { ok: true, version: VERSION, repo: REPO, branch: m[1] || null, dirty: lines.length - 1, ahead: num('ahead'), behind: num('behind') };
+  return { ok: true, version: VERSION, repo: REPO, branch: m[1] || null, dirty: lines.length - 1, ahead: num('ahead'), behind: num('behind'), terminal: terminalOn() };
 }
+
+// ---- terminals: id -> { pty, buf (last output, for a reconnecting page), clients (SSE responses) }
+let ptyLib;
+function loadPty() {
+  if (ptyLib === undefined) { try { ptyLib = require(path.join(VENDOR, 'node-pty')); } catch (e) { ptyLib = null; } }
+  return ptyLib;
+}
+const terminalOn = () => TERMINAL && (DRY || !!loadPty());
+const TERMS = new Map(), TERM_MAX = 8, TERM_BUF = 256 * 1024;
+let termSeq = 0;
+function termEmit(t, event, data) {
+  const msg = (event ? 'event: ' + event + '\n' : '') + 'data: ' + JSON.stringify(data) + '\n\n';
+  for (const res of t.clients) res.write(msg);
+}
+function termOpen(dir, kind) {
+  // the program is fixed here; the folder is the cwd, never part of a command line
+  const argv = kind === 'claude' ? ['/k', CFG.claudeCmd] : [];
+  if (DRY) return { dryRun: true, exe: 'cmd.exe', args: argv, cwd: dir, pty: true };
+  if (TERMS.size >= TERM_MAX) return { error: 'legfeljebb ' + TERM_MAX + ' terminál lehet nyitva' };
+  const env = Object.assign({}, process.env);
+  env.SystemRoot = env.SystemRoot || 'C:\\Windows';   // without it PowerShell inside fails (8009001d)
+  const pty = loadPty().spawn('cmd.exe', argv, { name: 'xterm-256color', cols: 100, rows: 30, cwd: dir, env, useConpty: true });
+  const id = 't' + (++termSeq), t = { id, pty, kind, dir, buf: '', clients: new Set(), exited: null };
+  pty.onData(d => { t.buf = (t.buf + d).slice(-TERM_BUF); termEmit(t, '', d); });
+  pty.onExit(e => { t.exited = e.exitCode; termEmit(t, 'exit', e.exitCode); for (const r of t.clients) r.end(); TERMS.delete(id); });
+  TERMS.set(id, t);
+  return { id, kind, dir };
+}
+const termOf = id => (typeof id === 'string' ? TERMS.get(id) : null);
+process.on('exit', () => { for (const t of TERMS.values()) try { t.pty.kill(); } catch (e) { /* gone */ } });
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGBREAK', 'SIGHUP']) process.on(sig, () => process.exit(0));
 
 // ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
 async function catalog() {
@@ -175,6 +219,30 @@ const ACTIONS = {
     if (DRY) return [200, { dryRun: true, exe: CFG.git, args: GIT[b.cmd] }];
     return [200, await git(GIT[b.cmd])];
   } },
+  'term-open': { keys: ['dir', 'kind'], async run(b) {
+    if (!terminalOn()) return [503, { error: TERMINAL ? 'A beágyazott terminálhoz: node tools/fetch-vendor.js node-pty xterm xterm-fit' : 'A terminál ki van kapcsolva (--no-terminal)' }];
+    if (b.kind !== 'shell' && b.kind !== 'claude') return [400, { error: 'kind: shell vagy claude' }];
+    const d = safeDir(b.dir);
+    if (!d) return [403, { error: 'nem engedélyezett mappa' }];
+    const r = termOpen(d, b.kind);
+    return r.error ? [429, r] : [200, r];
+  } },
+  'term-input': { keys: ['id', 'data'], async run(b) {
+    const t = termOf(b.id);
+    if (!t || typeof b.data !== 'string') return [404, { error: 'nincs ilyen terminál' }];
+    t.pty.write(b.data); return [200, { ok: true }];
+  } },
+  'term-resize': { keys: ['id', 'cols', 'rows'], async run(b) {
+    const t = termOf(b.id), ok = n => Number.isInteger(n) && n > 1 && n < 1000;
+    if (!t || !ok(b.cols) || !ok(b.rows)) return [400, { error: 'id, cols, rows' }];
+    t.pty.resize(b.cols, b.rows); return [200, { ok: true }];
+  } },
+  'term-close': { keys: ['id'], async run(b) {
+    const t = termOf(b.id);
+    if (!t) return [404, { error: 'nincs ilyen terminál' }];
+    try { t.pty.kill(); } catch (e) { /* already gone */ }
+    return [200, { ok: true }];
+  } },
   'check-paths': { keys: ['paths'], async run(b) {
     if (!Array.isArray(b.paths) || b.paths.length > 500 || !b.paths.every(p => typeof p === 'string')) return [400, { error: 'paths: legfeljebb 500 szöveg' }];
     return [200, Object.fromEntries(b.paths.map(p => [p, !!safePath(p)]))];
@@ -200,10 +268,15 @@ const server = http.createServer((req, res) => {
   if (req.method === 'GET' && url.pathname === '/') {
     if (!exists(PAGE)) return send(res, 404, 'CodeCity/dist/' + path.basename(PAGE) + ' hiányzik — node CodeCity/build.js', 'text/plain; charset=utf-8');
     const html = fs.readFileSync(PAGE, 'utf8').replace(/<head>/i, m => m + '<script>window.KV_COMPANION={token:' + JSON.stringify(TOKEN) + ',port:' + LIVE_PORT + '};</script>');
+    res.setHeader('Set-Cookie', 'kv_t=' + TOKEN + '; HttpOnly; SameSite=Strict; Path=/api/');   // for the SSE stream only
     return send(res, 200, html, 'text/html; charset=utf-8');
   }
   if (!url.pathname.startsWith('/api/')) {
     if (req.method !== 'GET') return send(res, 405, { error: 'csak GET' });
+    if (url.pathname.startsWith('/vendor/')) {
+      const v = Object.prototype.hasOwnProperty.call(VENDOR_FILES, url.pathname.slice(8)) && VENDOR_FILES[url.pathname.slice(8)];
+      return v && exists(v[0]) ? send(res, 200, fs.readFileSync(v[0]), v[1]) : send(res, 404, { error: 'nincs ilyen' });
+    }
     const f = distFile(decodeURIComponent(url.pathname.slice(1)));
     return f ? send(res, 200, fs.readFileSync(f.file), f.type) : send(res, 404, { error: 'nincs ilyen' });
   }
@@ -211,6 +284,18 @@ const server = http.createServer((req, res) => {
   if (origin && !ORIGINS.has(origin)) return send(res, 403, { error: 'origin' });
   if (req.method === 'GET' && url.pathname === '/api/status') return status().then(s => send(res, 200, s));
   if (req.method === 'GET' && url.pathname === '/api/catalog') return catalog().then(c => send(res, 200, c));
+  if (req.method === 'GET' && url.pathname === '/api/term-stream') {
+    const ck = /(?:^|;\s*)kv_t=([0-9a-f]+)/.exec(String(req.headers.cookie || ''));
+    if (!ck || ck[1].length !== TOKEN.length || !crypto.timingSafeEqual(Buffer.from(ck[1]), Buffer.from(TOKEN))) return send(res, 401, { error: 'token' });
+    const t = termOf(url.searchParams.get('id'));
+    if (!t) return send(res, 404, { error: 'nincs ilyen terminál' });
+    res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+    res.write('retry: 2000\n\n');
+    if (t.buf) res.write('data: ' + JSON.stringify(t.buf) + '\n\n');   // what happened before this page joined
+    t.clients.add(res);
+    req.on('close', () => t.clients.delete(res));
+    return;
+  }
   if (req.method !== 'POST') return send(res, 405, { error: 'csak POST' });
   const given = req.headers['x-kodvaros-token'];
   if (typeof given !== 'string' || given.length !== TOKEN.length || !crypto.timingSafeEqual(Buffer.from(given), Buffer.from(TOKEN))) return send(res, 401, { error: 'token' });

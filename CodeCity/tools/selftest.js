@@ -90,6 +90,10 @@ try {
   const lines = String(spec.stdout || '').trim().split('\n').filter(Boolean);
   for (const l of lines) check(l.startsWith('ok'), 'companion: ' + l.replace(/^(ok|FAIL)\s+/, ''));
   check(lines.length === 10 && spec.status === 0, `companion: all 10 cases ran (got ${lines.length}, exit ${spec.status})`);
+  // the embedded terminal end to end (CITY-D15 C): a real ConPTY cmd.exe, only when Vendor/node-pty is there
+  const ts = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-terminal.js')], { encoding: 'utf8', timeout: 90000 });
+  for (const l of String(ts.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
+  check(ts.status === 0, `terminal spec exit ${ts.status}`);
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
   else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }
