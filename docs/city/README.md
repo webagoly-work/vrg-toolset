@@ -125,7 +125,14 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
   (gitignored, no admin); vrg-probe.exe published self-contained. Name the download to the user first.
 - CITY-D25 **A** (user, 2026-10-26) — Spotify stadium from Windows' own now-playing (GSMTC) + the OS peak meter; no
   Spotify API, no login.
-- Still open (asked in later prompts): CITY-D17, D19, D20, D26.
+- **KV-21 download approved** (user, 2026-10-26): .NET SDK **10.0.403** win-x64 zip (released 2026-10-25, runtime
+  10.0.14, security release, ~300 MB) from builds.dotnet.microsoft.com; check its SHA-512 against
+  `release-metadata/10.0/releases.json`, unzip into `Planner/apps/dotnet` (gitignored). Not downloaded yet.
+- CITY-D17 **A** (user, 2026-10-26, before P11) — nothing elevated until P11; then one read-only vrg-etw.exe started by a
+  scheduled task the user creates from written steps (Claude never creates it).
+- CITY-D19 **A** (user, 2026-10-26, before P12) — the user applies the 21H2 → 22H2 enablement package; write the steps first.
+- CITY-D20 **A** (user, 2026-10-26) — Electron overlay host, three layers (Lively wallpaper first).
+- Still open: CITY-D26 (look name and rules, before P13).
 
 ## 6. Use
 

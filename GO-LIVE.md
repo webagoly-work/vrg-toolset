@@ -48,6 +48,30 @@ checkout**, with its own login.
 3. Stop at its check. Mark it done in README §8 (`KV-nn ✔ date commit`), commit, report in a few lines.
 4. Continue with the next prompt only if the user says so ("tovább" / "next" / "all").
 
+## 3b. State at the handoff (2026-10-26, primary account → secondary account)
+
+- **Done: P0–P9 + P2's embedded terminal** (KV-01 … KV-20), all on `main`, not pushed. README §8 has the table and
+  the done list; `docs/city/wp/` has a stub per phase with its status and notes. Selftest: 61 checks, all green
+  (`node CodeCity/tools/selftest.js`).
+- **Next: KV-21** (P10 sidecar). The download is already approved: .NET SDK 10.0.403 (details in README §5) — do not
+  ask again, just verify the SHA-512 and unzip into `Planner/apps/dotnet`. Then KV-22, KV-23 (D17 = A: write the
+  scheduled-task steps, never create the task), KV-24 … (P12 needs the user's 22H2 first — D19 A: write the steps).
+  Only CITY-D26 is still open (before P13). P3b (VS Code extension, CITY-D9 D) is planned but has no KV prompt yet.
+- **Live mode:** START.cmd → K → S) Élő mód starts `CodeCity/companion.js` on http://localhost:8797. It also runs the
+  helpers `agents-poll.js`, `probe-tier0.ps1`, `disk-walk.js` only while a page listens.
+- **Hooks are on** in this checkout (`.claude/settings.local.json`, gitignored; KV-10, exec form + `onFailure: continue`,
+  because this machine's `CLAUDE_CODE_GIT_BASH_PATH` points to a missing folder). Delete the file to turn them off.
+- **Waiting on the user:** the real USB-stick train check (wp/p08-land.md); the `GO OPENWRT` thread (its own codephrase).
+- **Gotchas learned:**
+  - Write patch scripts with the Write tool; shell heredocs here lose backslashes (`\n`, `\s`).
+  - `String.replace(a, b)` with a `$'` in `b` corrupts the file — always `replace(a, () => b)`.
+  - An open SSE stream stops headless Chrome's virtual clock: test hooks that need the stream register before it
+    opens and close it themselves (see `#livetest`, `#termtest`, `#filetest` in `99-boot.js`); rAF barely ticks headless
+    (`KV_INSTANT` makes flights instant for `#keytest`).
+  - Launching `claude.exe` freezes the launching process ~3 s on this machine — keep such spawns in a helper process.
+  - A companion started from inside a Claude session must not pass its CLAUDE_* session markers on (handled in termOpen).
+  - Never test git writes, worktrees or real saves in this shared checkout: the specs use throwaway fixture repos.
+
 ## 4. Ask
 
 Decisions as numbered items with the CITY-Dn id and lettered options, A recommended (report §6.3).
