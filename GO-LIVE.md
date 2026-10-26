@@ -50,11 +50,11 @@ checkout**, with its own login.
 
 ## 3b. State at the handoff (2026-10-26, primary account → secondary account)
 
-- **Done: P0–P9 + P2's embedded terminal** (KV-01 … KV-20) + **KV-21, KV-22, KV-23** (2026-10-26, primary account; P10 done, P11 built), all on `main`, not pushed. README §8 has the table and
+- **Done: P0–P9 + P2's embedded terminal** (KV-01 … KV-20) + **KV-21, KV-22, KV-23** (2026-10-26, primary account; P10 and P11 done), all on `main`, not pushed. README §8 has the table and
   the done list; `docs/city/wp/` has a stub per phase with its status and notes. Selftest: 71 checks, all green
   (`node CodeCity/tools/selftest.js`).
-- **Waiting on the user (KV-23):** install vrg-etw + create the scheduled task (docs/city/wp/p11-etw.md "Your steps"),
-  then the check. **Next prompt: KV-24** (P12 wallpaper layer).
+- **vrg-etw is installed** (C:\Program Files\VRG\Kodvaros-ETW, task "VRG Kodvaros ETW", checked 2026-10-27). After a rebuild
+  the user re-runs install-etw.ps1 elevated. **Next prompt: KV-24** (P12 wallpaper layer).
 - **Toolchain:** The SDK is in `Planner/apps/dotnet`; rebuild the probe with
   `node CodeCity/tools/build-probe.js` (offline) and vrg-etw with `node CodeCity/tools/build-etw.js` (TraceEvent 3.2.8 from
   nuget.org, locked by CodeCity/etw/packages.lock.json). Self-contained needs the runtime pack from nuget.org — still not

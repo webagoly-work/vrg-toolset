@@ -861,11 +861,12 @@ function etwSession(pid) {
 }
 // a repo file read or written by a process that a Claude session started (a Bash command, git, a test …) beams to its
 // roof as that session's read / edit; claude.exe's own reads already come through the hook, so they are left out
+const ETW_NOISE = /(^|\/)(node_modules|\.git)\//;   // at any depth (a project's own node_modules, a nested repo)
 function etwFiles(list) {
   const now = Date.now();
   for (const f of list) {
     etw.files++;
-    if (f.pid === process.pid) continue;
+    if (f.pid === process.pid || ETW_NOISE.test(f.path)) continue;
     const s = etwSession(f.pid);
     if (!s || s.self) continue;
     const key = s.a.id + '|' + f.op + '|' + f.path;
