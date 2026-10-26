@@ -124,6 +124,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #hall .alerts { border: 1px solid #ff3b3b; border-radius: 3px; padding: 4px 8px; margin-bottom: 8px; }
 #hall .alerts h4 { margin: 0 0 2px; color: #ff6b6b; font-size: 12px; font-weight: normal; }
 #hall .alert b { color: #ff6b6b; font-weight: normal; }
+#hall .alert[data-path] { cursor: pointer; }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;

@@ -153,9 +153,10 @@ function agFrame() {
 function agBoard() {
   const btn = $('hall-btn'), act = ag.list.filter(a => ['dolgozik', 'var'].includes(agBay(a.state))).length;
   const wait = ag.list.filter(a => agBay(a.state) === 'var').length;
-  btn.hidden = !ag.list.length;
-  btn.textContent = `Városháza ${act}` + (wait ? ` · ${wait} rád vár` : '');
-  btn.classList.toggle('wait', !!wait);
+  const clash = fen.list.filter(fc => fc.conflict).length;
+  btn.hidden = !ag.list.length && !fen.list.length;
+  btn.textContent = `Városháza ${act}` + (wait ? ` · ${wait} rád vár` : '') + (clash ? ` · ${clash} ütközés` : '');
+  btn.classList.toggle('wait', !!(wait || clash));
   if (!ag.open) return;
   if (!ag.el) {
     ag.el = document.createElement('aside'); ag.el.id = 'hall';
@@ -163,6 +164,8 @@ function agBoard() {
       const s = e.target.closest('[data-ag]'), fg = s && ag.figs.get(s.dataset.ag);
       if (e.target.closest('.x')) return agToggle(false);
       if (e.target.closest('[data-reveal]')) { ag.reveal = !ag.reveal; return agBoard(); }
+      const fp = e.target.closest('[data-path]'), ff = fp && current.city.files.find(x => x.p === fp.dataset.path);
+      if (ff) { showFile(ff); flyTo(ff); return; }
       if (fg) { orbit.target.copy(fg.group.position).setY(0); placeCamera(); }
     });
     document.body.append(ag.el);
@@ -181,7 +184,7 @@ function agBoard() {
   const anyZone = [...ag.seenZones.values()].some(z => z.size);
   ag.el.innerHTML = '<span class="x" title="Bezárás">×</span><h3>Városháza — diszpécser' +
     (anyZone ? ` <button class="btn" data-reveal title="A repón kívüli helyek nevei elmosva — kattintásra látszanak (csak a memóriában vannak)">${ag.reveal ? 'Elrejtés' : 'Külső helyek mutatása'}</button>` : '') +
-    '</h3>' + alerts + '<div class="bays">' +
+    '</h3>' + fenAlertsHtml() + alerts + '<div class="bays">' +
     AG_BAYS.map(([id, label]) => { const xs = ag.list.filter(a => agBay(a.state) === id);
       return `<section class="bay ${id}"><h4>${label} <span class="dim">${xs.length || ''}</span></h4>${xs.map(strip).join('')}</section>`; }).join('') + '</div>';
   ag.el.hidden = false;

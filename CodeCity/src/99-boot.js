@@ -1,6 +1,6 @@
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
-onTimeChanged = () => { tlRender(); lensApply(); roadsRefresh(); followRefresh(); sessRefresh(); if (query.text) showQuery(query.text); writeHashSoon(); if (shownFile) showFile(shownFile); };
+onTimeChanged = () => { if (fen.list.length) fenDraw(); tlRender(); lensApply(); roadsRefresh(); followRefresh(); sessRefresh(); if (query.text) showQuery(query.text); writeHashSoon(); if (shownFile) showFile(shownFile); };
 
 if (window.CITY) {
   load(window.CITY);
@@ -63,6 +63,13 @@ if (window.CITY) {
       // with hooks (KV-10): an outskirts zone, and a restricted one
       beamEvent({ id: 'aaaa1111', kind: 0, outside: true, zone: 'H:\\cwebuser\\backups', phase: 'pre' });
       beamEvent({ id: 'bbbb2222', kind: 0, outside: true, zone: 'C:\\Users\\webag', restricted: '.ssh', phase: 'pre' });
+      agToggle(true);
+    }
+    // test hook: #fencetest=<path>|<path> — the first fenced by a session and a worktree (a conflict), the second by one session
+    if (q.get('fencetest')) {
+      const [f1, f2] = q.get('fencetest').split('|');
+      fencesEvent({ list: [{ p: f1, owners: [{ kind: 'session', id: 'aaaa1111' }, { kind: 'worktree', id: 'cloudflare-ecosystem' }], conflict: true },
+        { p: f2, owners: [{ kind: 'session', id: 'bbbb2222' }], conflict: false }] });
       agToggle(true);
     }
     const dt = (q.get('droptest') || '').split(',');

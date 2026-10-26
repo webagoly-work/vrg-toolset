@@ -29,6 +29,12 @@
 // path is never sent. Restricted zones (.ssh, Planner/data, Planner/home, *.credentials.json, H_BACKUP_*,
 // *.pdf) are flagged red and are shown only, never blocked (CITY-D16 A, until P13).
 //
+// Fences and the conflict radar (P4, KV-11): every edit beam fences its file for that session (memory only,
+// 3 days like Kapu's claims); every worktree fences what it changed against the main branch
+// (git diff --name-only <main>...<branch>) plus its uncommitted files. A session working inside
+// .claude/worktrees/<name>/ is mapped back to the city's path. 'fences' lists each fenced file with its
+// owners; two or more owners = a conflict, flagged before any merge is tried.
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -221,6 +227,8 @@ function liveOn(type, name) {
   if (!name) return;
   const rel = String(name).replace(/\\/g, '/');
   if (rel === '.git') return;
+  if (rel.startsWith('.claude/worktrees/')) { worktreesSoon(); return; }
+  if (rel.startsWith('.git/worktrees/') || /^\.git\/(HEAD|refs\/)/.test(rel)) worktreesSoon();
   if (rel.startsWith('.git/')) { if (LIVE_GIT.test(rel)) live.git = true; else return; }
   else if (LIVE_IGNORE.some(ig => rel.startsWith(ig)) || /(^|\/)(node_modules|\.cache)\//.test(rel)) return;
   else {
@@ -275,12 +283,63 @@ function beamFor(id, kind, abs, phase) {
   if (phase) out.phase = phase;
   const k = keyOf(abs), r = restrictedOf(rel === null ? k : rel);
   if (r) out.restricted = r;
-  if (rel !== null) { out.p = rel; return out; }
+  if (rel !== null) {
+    const wt = /^\.claude\/worktrees\/([^/]+)\/(.*)$/.exec(rel);
+    out.p = wt ? wt[2] : rel;
+    if (wt) out.wt = wt[1];
+    if (kind === 2 && phase !== 'post') fenceAdd(id, out.p);
+    return out;
+  }
   const parts = path.resolve(abs).split(/[\\/]+/).filter(Boolean);
   out.outside = true;
   out.zone = parts.slice(0, parts.length > 3 ? 3 : Math.max(1, parts.length - 1)).join('\\');
   return out;
 }
+// ---- fences: path -> Map(owner -> time); owners are 's:<session>' (edits) and 'w:<worktree>' (git)
+const FENCE_DAYS = 3;
+const fences = { bySession: new Map(), byWorktree: new Map(), sig: '', timer: null, wtTimer: null, wtBusy: false };
+function fenceAdd(id, rel) {
+  let m = fences.bySession.get(rel);
+  if (!m) fences.bySession.set(rel, m = new Map());
+  m.set(id, Date.now());
+  fencesSoon();
+}
+function fencesList() {
+  const cut = Date.now() - FENCE_DAYS * 86400000, all = new Map();
+  const own = (rel, o) => { if (!all.has(rel)) all.set(rel, []); all.get(rel).push(o); };
+  for (const [rel, m] of fences.bySession) for (const [id, t] of m) { if (t < cut) m.delete(id); else own(rel, { kind: 'session', id }); }
+  for (const [name, files] of fences.byWorktree) for (const rel of files) own(rel, { kind: 'worktree', id: name });
+  return [...all].filter(([, o]) => o.length).map(([rel, owners]) => ({ p: rel, owners, conflict: owners.length > 1 })).sort((a, b) => a.p < b.p ? -1 : 1);
+}
+function fencesSoon() {
+  clearTimeout(fences.timer);
+  fences.timer = setTimeout(() => {
+    const list = fencesList(), sig = JSON.stringify(list);
+    if (sig !== fences.sig) { fences.sig = sig; liveEmit('fences', { list }); }
+  }, 300);
+}
+// every worktree except the main checkout: what its branch changed against main, plus what is not committed yet
+async function worktreesScan() {
+  if (fences.wtBusy) return; fences.wtBusy = true;
+  try {
+    const wl = await git(['worktree', 'list', '--porcelain']);
+    const main = (await git(['rev-parse', '--abbrev-ref', 'HEAD'])).out.trim() || 'main';
+    const next = new Map();
+    for (const block of wl.ok ? wl.out.split(/\r?\n\r?\n/) : []) {
+      const dir = (/^worktree (.*)$/m.exec(block) || [])[1], br = (/^branch refs\/heads\/(.*)$/m.exec(block) || [])[1];
+      if (!dir || keyOf(dir) === keyOf(repoReal())) continue;
+      const name = path.basename(dir), files = new Set();
+      if (br) { const d = await git(['diff', '--name-only', main + '...' + br]); if (d.ok) d.out.split(/\r?\n/).filter(Boolean).forEach(f => files.add(f)); }
+      const st = await new Promise(res => execFile(CFG.git, ['-C', dir, 'status', '--porcelain=v1', '-uall'], { timeout: 30000, windowsHide: true, maxBuffer: 4 << 20 },
+        (err, out) => res(err ? '' : String(out))));
+      for (const line of st.split(/\r?\n/)) { const f = line.slice(3).replace(/^.* -> /, '').replace(/^"|"$/g, ''); if (f) files.add(f); }
+      if (files.size) next.set(name, [...files].slice(0, 2000));
+    }
+    fences.byWorktree = next;
+    fencesSoon();
+  } finally { fences.wtBusy = false; }
+}
+function worktreesSoon() { clearTimeout(fences.wtTimer); fences.wtTimer = setTimeout(worktreesScan, 1500); }
 function transcriptOf(sid) {
   for (const base of CFG.transcripts || [SESS.projectsBase()]) {
     let dirs; try { dirs = fs.readdirSync(base); } catch (e) { continue; }
@@ -489,6 +548,8 @@ const server = http.createServer((req, res) => {
     res.write('retry: 3000\n\n');
     res.write('event: hello\ndata: ' + JSON.stringify({ head: live.head, watching: !!live.watcher }) + '\n\n');
     if (agents.sig) res.write('event: agents\ndata: ' + agents.sig.replace(/^/, '{"list":') + '}\n\n');
+    if (fences.sig) res.write('event: fences\ndata: {"list":' + fences.sig + '}\n\n');
+    worktreesSoon();
     live.clients.add(res);
     agentsStart();
     req.on('close', () => live.clients.delete(res));

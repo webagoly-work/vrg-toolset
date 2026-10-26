@@ -102,6 +102,10 @@ try {
   const ags = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-agents.js')], { encoding: 'utf8', timeout: 90000 });
   for (const l of String(ags.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
   check(ags.status === 0, `agents spec exit ${ags.status}`);
+  // fences and the conflict radar (P4, KV-11): two worktrees editing one file -> a conflict, on a fixture repo
+  const fcs = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-fences.js')], { encoding: 'utf8', timeout: 90000 });
+  for (const l of String(fcs.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
+  check(fcs.status === 0, `fences spec exit ${fcs.status}`);
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
   else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }
