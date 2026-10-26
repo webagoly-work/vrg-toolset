@@ -60,3 +60,6 @@ Hub/companion/config.json
 # --- CodeCity/companion.js (Kodvaros seged): per-install secret and local settings ---
 CodeCity/.companion-token
 CodeCity/companion.config.json
+
+# --- Claude Code: per-machine settings (the Kodvaros hooks, KV-10) ---
+.claude/settings.local.json
