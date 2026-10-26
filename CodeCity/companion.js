@@ -51,6 +51,12 @@
 // the page = a stale build ('pipes', rechecked on file changes). Each test and build job names the district
 // it speaks for, so the page can put weather over it.
 //
+// Git as metro lines (P7, KV-16), read-only: GET /api/gitmap — every local branch against the main branch
+// (ahead/behind, the files it changed = its stations, its last commits), the worktrees and the HEAD reflog;
+// GET /api/merge-preview?branch= — git merge-tree --write-tree (git 2.38+; the portable git is 2.55), which
+// merges in memory and touches neither the working tree nor a ref: clean, or the conflicting files. The city
+// never merges (CITY-D10 A); merging is a pre-filled Claude prompt, so no safety ref is ever needed here.
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -198,7 +204,8 @@ function terminalIn(dir, command) {
 // read-only git only (CITY-D10 A: no git writes from the city)
 const GIT = { status: ['status', '--porcelain=v1', '-b'], worktrees: ['worktree', 'list', '--porcelain'], log1: ['log', '-1', '--format=%h %ci %s'] };
 function git(argv) {
-  return new Promise(resolve => execFile(CFG.git, argv, { cwd: REPO, timeout: 30000, windowsHide: true, maxBuffer: 1 << 20 },
+  // core.quotepath=false: Hungarian file names come back as written, not as \303\263 escapes
+  return new Promise(resolve => execFile(CFG.git, ['-c', 'core.quotepath=false', ...argv], { cwd: REPO, timeout: 30000, windowsHide: true, maxBuffer: 1 << 20 },
     (err, stdout, stderr) => resolve({ ok: !err, code: err ? err.code : 0, out: String(stdout), err: String(stderr) })));
 }
 async function status() {
@@ -385,7 +392,7 @@ async function worktreesScan() {
       if (!dir || keyOf(dir) === keyOf(repoReal())) continue;
       const name = path.basename(dir), files = new Set();
       if (br) { const d = await git(['diff', '--name-only', main + '...' + br]); if (d.ok) d.out.split(/\r?\n/).filter(Boolean).forEach(f => files.add(f)); }
-      const st = await new Promise(res => execFile(CFG.git, ['-C', dir, 'status', '--porcelain=v1', '-uall'], { timeout: 30000, windowsHide: true, maxBuffer: 4 << 20 },
+      const st = await new Promise(res => execFile(CFG.git, ['-c', 'core.quotepath=false', '-C', dir, 'status', '--porcelain=v1', '-uall'], { timeout: 30000, windowsHide: true, maxBuffer: 4 << 20 },
         (err, out) => res(err ? '' : String(out))));
       for (const line of st.split(/\r?\n/)) { const f = line.slice(3).replace(/^.* -> /, '').replace(/^"|"$/g, ''); if (f) files.add(f); }
       if (files.size) next.set(name, [...files].slice(0, 2000));
@@ -627,6 +634,42 @@ function pipesSoon(ms = 1500) {
 function portsSoon() { setTimeout(portsPoll, 600); }
 function portsStart() { if (!jobs.portTimer) { jobs.portTimer = setInterval(portsPoll, 5000); jobs.portTimer.unref(); } portsPoll(); }
 
+// ---- git map: branches as metro lines, worktrees, reflog (all reads)
+const lines = s2 => s2.split(/\r?\n/).filter(Boolean);
+async function gitBranches() { const r = await git(['for-each-ref', '--format=%(refname:short)', 'refs/heads']); return r.ok ? lines(r.out) : []; }
+async function gitMap() {
+  const main = (await git(['rev-parse', '--abbrev-ref', 'HEAD'])).out.trim() || 'main';
+  const out = { main, branches: [], worktrees: [], reflog: [] };
+  for (const b of await gitBranches()) {
+    if (b === main) continue;
+    const lr = await git(['rev-list', '--left-right', '--count', main + '...' + b]);
+    const [behind, ahead] = lr.ok ? lr.out.trim().split(/\s+/).map(Number) : [0, 0];
+    const files = await git(['diff', '--name-only', main + '...' + b]);
+    const log = await git(['log', '--format=%h%x09%ct%x09%s', '-n', '30', main + '..' + b]);
+    out.branches.push({ name: b, ahead, behind, files: files.ok ? lines(files.out).slice(0, 500) : [],
+      commits: log.ok ? lines(log.out).map(l => { const [h, t, ...m] = l.split('\t'); return { h, t: +t, s: m.join('\t').slice(0, 120) }; }) : [] });
+  }
+  const wl = await git(['worktree', 'list', '--porcelain']);
+  for (const block of wl.ok ? wl.out.split(/\r?\n\r?\n/) : []) {
+    const dir = (/^worktree (.*)$/m.exec(block) || [])[1], br = (/^branch refs\/heads\/(.*)$/m.exec(block) || [])[1];
+    if (dir) out.worktrees.push({ name: path.basename(dir), branch: br || null, main: keyOf(dir) === keyOf(repoReal()) });
+  }
+  const rl = await git(['reflog', '-n', '60', '--format=%h%x09%gd%x09%ct%x09%gs']);
+  out.reflog = rl.ok ? lines(rl.out).map(l => { const [h, gd, t, ...m] = l.split('\t'); return { h, gd, t: +t, s: m.join('\t').slice(0, 120) }; }) : [];
+  return out;
+}
+async function mergePreview(branch) {
+  const main = (await git(['rev-parse', '--abbrev-ref', 'HEAD'])).out.trim() || 'main';
+  if (typeof branch !== 'string' || branch === main || !(await gitBranches()).includes(branch)) return { code: 404, error: 'nincs ilyen ág' };
+  const base = (await git(['merge-base', main, branch])).out.trim();
+  const ours = base ? lines((await git(['diff', '--name-only', base, main])).out) : [];
+  const theirs = base ? lines((await git(['diff', '--name-only', base, branch])).out) : [];
+  const mt = await git(['merge-tree', '--write-tree', '--name-only', '--no-messages', main, branch]);
+  const conflicts = mt.code === 1 ? lines(mt.out).slice(1) : [];
+  if (!mt.ok && mt.code !== 1) return { code: 500, error: 'git merge-tree: ' + mt.err.split('\n')[0] };
+  return { code: 200, body: { main, branch, clean: mt.ok, conflicts, both: ours.filter(f => theirs.includes(f)), theirs: theirs.slice(0, 500), ours: ours.length } };
+}
+
 // ---- catalog for the Ctrl+K palette (read-only GET): START.cmd tools, shortcut prompts, project agents, branches
 async function catalog() {
   const read = p => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
@@ -781,9 +824,11 @@ const server = http.createServer((req, res) => {
   if (origin && !ORIGINS.has(origin)) return send(res, 403, { error: 'origin' });
   if (req.method === 'GET' && url.pathname === '/api/status') return status().then(s => send(res, 200, s));
   if (req.method === 'GET' && url.pathname === '/api/catalog') return catalog().then(c => send(res, 200, c));
-  if (req.method === 'GET' && (url.pathname === '/api/stream' || url.pathname === '/api/city' || url.pathname === '/api/file' || url.pathname === '/api/jobs')) {
+  if (req.method === 'GET' && (url.pathname === '/api/stream' || url.pathname === '/api/city' || url.pathname === '/api/file' || url.pathname === '/api/jobs' || url.pathname === '/api/gitmap' || url.pathname === '/api/merge-preview')) {
     const ck = /(?:^|;\s*)kv_t=([0-9a-f]+)/.exec(String(req.headers.cookie || ''));
     if (!ck || ck[1].length !== TOKEN.length || !crypto.timingSafeEqual(Buffer.from(ck[1]), Buffer.from(TOKEN))) return send(res, 401, { error: 'token' });
+    if (url.pathname === '/api/gitmap') return gitMap().then(m => send(res, 200, m));
+    if (url.pathname === '/api/merge-preview') return mergePreview(url.searchParams.get('branch')).then(r => send(res, r.code, r.body || { error: r.error }));
     if (url.pathname === '/api/jobs') return send(res, 200, { list: jobsPub(), logs: Object.fromEntries([...jobs.run].map(([id, r]) => [id, r.lines.slice(-200)])), ports: jobs.ports });
     if (url.pathname === '/api/file') { const r = fileRead(url.searchParams.get('path') || ''); return send(res, r.code, r.body || { error: r.error }); }
     if (url.pathname === '/api/city') return liveCity().then(c => (c ? send(res, 200, c) : send(res, 503, { error: 'a felmérés nem sikerült' })));

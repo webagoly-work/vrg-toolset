@@ -81,7 +81,7 @@ async function liveSwap() {
     if (open) { const f = city.files.find(x => x.p === open); if (f) showFile(f); }
     if (picked) selSetPaths(picked);
     agentsEvent({ list: ag.list });   // the figures stood in the old city
-    fenDraw(); jbDraw(); hlDraw();
+    fenDraw(); jbDraw(); hlDraw(); mtDraw();
     const n = city.commits.length - was;
     // the new commits flash like a replay step, and their files pulse
     const idx = [];
@@ -104,7 +104,7 @@ function liveConnect() {
     (h && current.city.repo.head && h !== current.city.repo.head ? liveSwap() : Promise.resolve()).then(live.readyResolve);
   });
   live.es.addEventListener('fs', e => liveFsEvent(JSON.parse(e.data)));
-  live.es.addEventListener('git', () => liveSwap());
+  live.es.addEventListener('git', () => { liveSwap(); if (mt.map) mtLoad(); });   // 28-metro: lines move with HEAD
   // live Claude (23-agents): the sessions and what they touch
   live.es.addEventListener('agents', e => { if (liveMine()) agentsEvent(JSON.parse(e.data)); });
   live.es.addEventListener('beam', e => { if (liveMine()) beamEvent(JSON.parse(e.data)); });
@@ -134,5 +134,6 @@ async function liveInit() {
   liveConnect();
   termResumeOffer();   // 21-term: Claude tabs from before a restart
   if (kv.match) palCatalog().then(jbLoad);   // 26-jobs: the gates need the START.cmd tools
+  if (kv.match) mtLoad();   // 28-metro
 }
 $('news-btn').onclick = liveNews;

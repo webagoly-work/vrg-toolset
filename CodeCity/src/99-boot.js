@@ -15,6 +15,12 @@ if (window.CITY) {
   // fileedit adds a line and shows the preview or the diff — nothing is saved
   // test hook: #jobstest=<job id> waits for the first port list, closes the stream (headless clock), opens Üzemek
   // with that job's log (start the job through the segéd first)
+  // test hook: #metrotest=<branch> opens Metró and runs that branch's merge preview (served; registered before the stream)
+  const mtq = new URLSearchParams(location.hash.slice(1)).get('metrotest');
+  if (mtq) live.ready.then(async () => {
+    live.es.close(); mtToggle(true); await mtLoad();
+    const r = await fetch('/api/merge-preview?branch=' + encodeURIComponent(mtq)); mt.preview = await r.json(); mtDraw(); mtPanel();
+  });
   const jt = new URLSearchParams(location.hash.slice(1)).get('jobstest');
   if (jt) live.ready.then(() => new Promise(res => { if (jb.ports.length) res(); else live.es.addEventListener('ports', res, { once: true }); }))
     .then(async () => { live.es.close(); await palCatalog(); jb.open = jt; jbToggle(true); });
