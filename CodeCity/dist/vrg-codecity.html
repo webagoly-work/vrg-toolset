@@ -81,6 +81,18 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   background: var(--panel); border: 1px solid var(--accent); border-radius: 4px; padding: 6px 10px; max-width: calc(100% - 32px); flex-wrap: wrap; }
 #sel-bar b { color: var(--accent); }
 #sel-bar .btn[disabled] { opacity: .45; cursor: default; }
+/* prompt dock and agent hall (20-dock) */
+#dock { position: absolute; z-index: 3; top: 118px; left: 12px; bottom: 130px; width: min(300px, calc(100% - 24px)); overflow: auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; }
+#dock h4 { margin: 6px 0; font-size: 12px; color: var(--accent); font-weight: normal; }
+#dock .kv-card, #dock .kv-agent { border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; margin: 0 0 6px; }
+#dock .kv-card { cursor: grab; }
+#dock .kv-card:hover { border-color: var(--accent); }
+#dock small { display: block; color: var(--dim); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#dock .kv-agent.over { border-color: var(--accent); background: #ffcf5a18; }
+#dock .kv-fig { color: #6fd3ff; margin-right: 6px; }
+#dock-btn.on { border-color: var(--accent); color: var(--accent); }
+#sel-bar b[draggable] { cursor: grab; }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;
@@ -183,6 +195,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   <b>Kódváros</b><span id="title">—</span>
   <div id="qwrap"><input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Keresés ( / ) — pl. legnagyobb Planner · forró · régi 30 nap · >500 sor" aria-label="Keresés a városban"><div id="qres" hidden></div></div>
   <span id="fresh" hidden></span>
+  <button id="dock-btn" class="btn" title="Promptkártyák és ügynökök: húzd őket egy épületre">Dokk</button>
   <button id="tour-btn" class="btn" title="Városnézés: túrák a városban">Városnézés</button>
   <button id="card-btn" class="btn" title="A mostani nézet képként (PNG, 1200×630)">Kép</button>
   <button id="link" class="btn" hidden title="A nézet linkjének másolása (kamera + kijelölés)">Link</button>
@@ -2249,7 +2262,7 @@ function selChanged() {
   if (!sel.set.size) return;
   const q = selPrompt(selAskHead());
   bar.dataset.ask = kv.root ? selCliUrl(q) : '';   // test hook: tools/shot.js --dump-dom reads the link
-  bar.innerHTML = `<b>${hu(sel.set.size)} kijelölve</b>` +
+  bar.innerHTML = `<b draggable="true" title="Húzd egy épületre vagy egy ügynökre (Dokk)">${hu(sel.set.size)} kijelölve</b>` +
     '<button class="btn" data-act="ask" title="Claude Code nyílik ebben a repóban, a prompt előtöltve — nem küldi el magától">Kérdezd Claude-ot ezekről</button>' +
     `<button class="btn" data-act="app"${kv.root ? '' : ' disabled title="' + esc(KV_WHY.root) + '"'}>Claude app</button>` +
     '<button class="btn" data-act="copy">Útvonalak másolása</button>' +
@@ -2296,6 +2309,106 @@ function selBoxEnd(x0, y0, x1, y1, add) {
 }
 addEventListener('keydown', e => { if (e.key === 'Escape' && sel.set.size && !e.target.closest('input, textarea')) selClear(); });
 
+// ==== src/20-dock.js
+// 20-dock.js — prompt dock and agent hall (live workspace P2, KV-07; report §5.6). The tools/prompts/*.txt
+// cards sit in a dock, the .claude/agents/*.md subagents stand in a hall below them. Drag a card, or the
+// selection (the "N kijelölve" chip), onto a building, a district or an agent: a Claude Code prompt opens
+// pre-filled with the paths (claude-cli://…&q=…) — the user reads it and sends it; nothing is auto-sent.
+// A card's <FAJL> / <UTVONAL> take the paths; its other placeholders (<FUNKCIO>, <CEL>, <NEV>) stay for
+// the user to fill in. Cards and agents come from the segéd's catalog; from file:// the dock says why not.
+
+const dock = { el: null, open: false, last: '', dry: false };   // dry: test hooks record the prompt, launch nothing
+const DOCK_MIME = 'text/x-kodvaros';
+const DOCK_PATH_SLOTS = /<FAJL>|<UTVONAL>/g;
+
+// a card's text with the paths in it: into its path placeholders, else listed after it
+function dockFill(text, paths) {
+  const list = paths.join(', ');
+  if (/<FAJL>|<UTVONAL>/.test(text)) return text.replace(DOCK_PATH_SLOTS, () => list).trim();
+  return selPrompt(text.trim(), paths);
+}
+const dockAgentHead = name => `Használd a(z) ${name} ügynököt (.claude/agents/${name}.md).`;
+
+// what a drop asks: payload {kind:'card'|'sel', name}, onto {paths} (a building / district) or {agent}
+function dockPrompt(payload, onto) {
+  const cat = pal.cat || PAL_EMPTY;
+  const card = payload.kind === 'card' ? cat.prompts.find(p => p.name === payload.name) : null;
+  if (payload.kind === 'card' && !card) return '';
+  if (onto.agent) {
+    const head = dockAgentHead(onto.agent);
+    return card ? head + '\n\n' + dockFill(card.text, selTargets()) : selPrompt(head + ' Ezekről a fájlokról van szó:');
+  }
+  if (card) return dockFill(card.text, onto.paths);
+  // the selection dropped on a building: the selection, read in the light of that building
+  return selPrompt(`Nézd meg ezeket a fájlokat, és mondd el, hogyan kapcsolódnak ehhez: ${onto.paths[0]}`, selTargets());
+}
+function dockSend(q) {
+  if (!q) return;
+  dock.last = q;
+  if (dock.el) dock.el.dataset.last = q;   // test hook: tools/shot.js --dump-dom reads the last prompt
+  if (!dock.dry) selAskClaude(q);
+}
+
+function dockRender() {
+  const cat = pal.cat || PAL_EMPTY, el = dock.el;
+  const why = kv.match ? '' : `<p class="dim">${esc(kv.on ? KV_WHY.other : KV_WHY.companion)}</p>`;
+  el.innerHTML = '<h4>Promptkártyák <span class="dim">— húzd egy épületre vagy ügynökre</span></h4>' + why +
+    cat.prompts.map(p => `<div class="kv-card" draggable="true" data-card="${esc(p.name)}" title="${esc(p.text.slice(0, 400))}">` +
+      `${esc(p.name.replace(/^\d+-/, '').replace(/-/g, ' '))}<small>${esc(p.text.trim().split('\n').find(l => l && !/^=+/.test(l)) || '')}</small></div>`).join('') +
+    '<h4>Ügynökcsarnok <span class="dim">— ide húzd a kártyát vagy a kijelölést</span></h4>' +
+    (cat.agents.length ? cat.agents.map(a => `<div class="kv-agent" data-agent="${esc(a.name)}" title="${esc(a.description)}">` +
+      `<span class="kv-fig" aria-hidden="true">◆</span>@${esc(a.name)}<small>${esc(a.description.slice(0, 120))}</small></div>`).join('')
+      : `<p class="dim">${kv.match ? 'Nincs ügynök a .claude/agents mappában.' : 'Az ügynökök a segéddel jönnek.'}</p>`);
+}
+async function dockToggle(force) {
+  dock.open = force === undefined ? !dock.open : force;
+  if (!dock.el) {
+    dock.el = document.createElement('aside'); dock.el.id = 'dock';
+    dock.el.addEventListener('dragstart', e => {
+      const c = e.target.closest('[data-card]');
+      if (!c) return;
+      e.dataTransfer.setData(DOCK_MIME, JSON.stringify({ kind: 'card', name: c.dataset.card }));
+      e.dataTransfer.effectAllowed = 'copy';
+    });
+    dock.el.addEventListener('dragover', e => { const a = e.target.closest('[data-agent]'); if (a && e.dataTransfer.types.includes(DOCK_MIME)) { e.preventDefault(); a.classList.add('over'); } });
+    dock.el.addEventListener('dragleave', e => { const a = e.target.closest('[data-agent]'); if (a) a.classList.remove('over'); });
+    dock.el.addEventListener('drop', e => {
+      const a = e.target.closest('[data-agent]'), raw = e.dataTransfer.getData(DOCK_MIME);
+      if (!a || !raw) return;
+      e.preventDefault(); e.stopPropagation(); a.classList.remove('over');
+      dockSend(dockPrompt(JSON.parse(raw), { agent: a.dataset.agent }));
+    });
+    document.body.append(dock.el);
+  }
+  dock.el.hidden = !dock.open;
+  $('dock-btn').classList.toggle('on', dock.open);
+  if (dock.open) { await palCatalog(); dockRender(); }
+}
+
+// the selection chip in the selection bar is draggable too (19-select draws the bar)
+addEventListener('dragstart', e => {
+  if (!e.target.closest || !e.target.closest('#sel-bar b')) return;
+  e.dataTransfer.setData(DOCK_MIME, JSON.stringify({ kind: 'sel' }));
+  e.dataTransfer.effectAllowed = 'copy';
+});
+// onto the city: the building or district under the pointer lights up while dragging
+canvas.addEventListener('dragover', e => {
+  if (!e.dataTransfer.types.includes(DOCK_MIME)) return;
+  e.preventDefault(); e.stopPropagation();
+  const hit = pickAt(e);
+  setHover(hit && hit.file ? hit.i : -1);
+});
+canvas.addEventListener('drop', e => {
+  const raw = e.dataTransfer.getData(DOCK_MIME);
+  if (!raw) return;
+  e.preventDefault(); e.stopPropagation();
+  const hit = pickAt(e);
+  if (!hit) return kvToast('Egy épületre vagy körzetre ejtsd');
+  const c = kvCtx(hit);
+  dockSend(dockPrompt(JSON.parse(raw), { paths: [c.rel || '.'] }));
+});
+$('dock-btn').onclick = () => dockToggle();
+
 // ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
@@ -2331,6 +2444,14 @@ if (window.CITY) {
     if (q.get('palq')) palOpen(q.get('palq')).then(() => palRun(0));
     // test hook: #selp=a|b|c selects those paths; the selection bar carries the Claude link in data-ask
     if (q.get('selp')) selSetPaths(q.get('selp').split('|'));
+    // test hook: #droptest=<card>,x,y drops that prompt card on the building at that fraction; the dock
+    // carries the prompt in data-last (tools/shot.js --dump-dom)
+    const dt = (q.get('droptest') || '').split(',');
+    if (dt.length === 3) dockToggle(true).then(() => {
+      dock.dry = true;
+      const r = canvas.getBoundingClientRect(), hit = pickAt({ clientX: r.left + r.width * +dt[1], clientY: r.top + r.height * +dt[2] });
+      if (hit) dockSend(dockPrompt({ kind: 'card', name: dt[0] }, { paths: [kvCtx(hit).rel || '.'] }));
+    });
     // test hook: #selbox=x0,y0,x1,y1 (fractions of the canvas) draws a Shift+drag box there
     const sb = (q.get('selbox') || '').split(',').map(Number);
     if (sb.length === 4 && sb.every(Number.isFinite)) {

@@ -62,7 +62,7 @@ function selChanged() {
   if (!sel.set.size) return;
   const q = selPrompt(selAskHead());
   bar.dataset.ask = kv.root ? selCliUrl(q) : '';   // test hook: tools/shot.js --dump-dom reads the link
-  bar.innerHTML = `<b>${hu(sel.set.size)} kijelölve</b>` +
+  bar.innerHTML = `<b draggable="true" title="Húzd egy épületre vagy egy ügynökre (Dokk)">${hu(sel.set.size)} kijelölve</b>` +
     '<button class="btn" data-act="ask" title="Claude Code nyílik ebben a repóban, a prompt előtöltve — nem küldi el magától">Kérdezd Claude-ot ezekről</button>' +
     `<button class="btn" data-act="app"${kv.root ? '' : ' disabled title="' + esc(KV_WHY.root) + '"'}>Claude app</button>` +
     '<button class="btn" data-act="copy">Útvonalak másolása</button>' +

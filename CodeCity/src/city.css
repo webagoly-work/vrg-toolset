@@ -75,6 +75,18 @@ body { display: flex; flex-direction: column; overflow: hidden; }
   background: var(--panel); border: 1px solid var(--accent); border-radius: 4px; padding: 6px 10px; max-width: calc(100% - 32px); flex-wrap: wrap; }
 #sel-bar b { color: var(--accent); }
 #sel-bar .btn[disabled] { opacity: .45; cursor: default; }
+/* prompt dock and agent hall (20-dock) */
+#dock { position: absolute; z-index: 3; top: 118px; left: 12px; bottom: 130px; width: min(300px, calc(100% - 24px)); overflow: auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; }
+#dock h4 { margin: 6px 0; font-size: 12px; color: var(--accent); font-weight: normal; }
+#dock .kv-card, #dock .kv-agent { border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; margin: 0 0 6px; }
+#dock .kv-card { cursor: grab; }
+#dock .kv-card:hover { border-color: var(--accent); }
+#dock small { display: block; color: var(--dim); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#dock .kv-agent.over { border-color: var(--accent); background: #ffcf5a18; }
+#dock .kv-fig { color: #6fd3ff; margin-right: 6px; }
+#dock-btn.on { border-color: var(--accent); color: var(--accent); }
+#sel-bar b[draggable] { cursor: grab; }
 #sel-rect { position: fixed; z-index: 4; pointer-events: none; border: 1px dashed var(--accent); background: #ffcf5a14; }
 /* replay: split-flap board (top left) and the timeline bar (bottom) */
 #board { position: absolute; top: 12px; left: 12px; z-index: 2; max-width: calc(100% - 360px); min-width: 280px;

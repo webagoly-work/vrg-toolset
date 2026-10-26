@@ -32,6 +32,14 @@ if (window.CITY) {
     if (q.get('palq')) palOpen(q.get('palq')).then(() => palRun(0));
     // test hook: #selp=a|b|c selects those paths; the selection bar carries the Claude link in data-ask
     if (q.get('selp')) selSetPaths(q.get('selp').split('|'));
+    // test hook: #droptest=<card>,x,y drops that prompt card on the building at that fraction; the dock
+    // carries the prompt in data-last (tools/shot.js --dump-dom)
+    const dt = (q.get('droptest') || '').split(',');
+    if (dt.length === 3) dockToggle(true).then(() => {
+      dock.dry = true;
+      const r = canvas.getBoundingClientRect(), hit = pickAt({ clientX: r.left + r.width * +dt[1], clientY: r.top + r.height * +dt[2] });
+      if (hit) dockSend(dockPrompt({ kind: 'card', name: dt[0] }, { paths: [kvCtx(hit).rel || '.'] }));
+    });
     // test hook: #selbox=x0,y0,x1,y1 (fractions of the canvas) draws a Shift+drag box there
     const sb = (q.get('selbox') || '').split(',').map(Number);
     if (sb.length === 4 && sb.every(Number.isFinite)) {
