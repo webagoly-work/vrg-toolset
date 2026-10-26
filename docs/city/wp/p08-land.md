@@ -7,4 +7,4 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/land.json (new), CodeCity/companion.js, CodeCity/src/*
 - **Decisions:** D23, D24, D28
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** in progress — KV-17 ✔ a3b7b5a (Land scaffold, breadcrumb, inset, Home, Tárház in memory); KV-18 (Erőmű, station, border) next
+- **Status:** in progress — KV-17 ✔ a3b7b5a (Land scaffold, breadcrumb, inset, Home, Tárház in memory), KV-18 ✔ 57e8a07 (Erőmű, station, border, shoreline)
