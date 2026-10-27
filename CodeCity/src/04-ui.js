@@ -41,10 +41,11 @@ function closePanel() {
 }
 function showFile(f) {
   const c = current.city;
-  openPanel(f.p, [['Nyelv', f.lang], ['Sorok', hu(f.loc)], ['Commitok', hu(f.n)],
-    ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
-    ['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
+  // R12 (report §5.5): fixed field order — name (the title) · owner · state · time
+  openPanel(f.p, [['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
+    ['Nyelv', f.lang], ['Sorok', hu(f.loc)], ['Commitok', hu(f.n)],
     ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—'],
+    ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
     ...(fileAtT(f) ? [['Ezen a ponton', `${hu(fileAtT(f)[0])} commit · ~${hu(fileAtT(f)[1])} sor`]] : [])], roadsPanelHtml(f));
   shownFile = f; roadsRefresh(); share.sel = f.p; setBeacon(f); writeHashSoon();
 }

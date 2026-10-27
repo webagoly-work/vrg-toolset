@@ -1166,7 +1166,7 @@ let afterRender = () => {};                   // screen-space overlays (10-query
 function requestRender() {
   if (renderQueued) return;
   renderQueued = true;
-  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); afterRender(); });
+  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); afterRender(); lookFrame(); });   // 37-look: quality tiers
 }
 new ResizeObserver(() => {
   const r = canvas.parentElement.getBoundingClientRect();
@@ -1401,10 +1401,11 @@ function closePanel() {
 }
 function showFile(f) {
   const c = current.city;
-  openPanel(f.p, [['Nyelv', f.lang], ['Sorok', hu(f.loc)], ['Commitok', hu(f.n)],
-    ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
-    ['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
+  // R12 (report §5.5): fixed field order — name (the title) · owner · state · time
+  openPanel(f.p, [['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
+    ['Nyelv', f.lang], ['Sorok', hu(f.loc)], ['Commitok', hu(f.n)],
     ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—'],
+    ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
     ...(fileAtT(f) ? [['Ezen a ponton', `${hu(fileAtT(f)[0])} commit · ~${hu(fileAtT(f)[1])} sor`]] : [])], roadsPanelHtml(f));
   shownFile = f; roadsRefresh(); share.sel = f.p; setBeacon(f); writeHashSoon();
 }
@@ -1843,7 +1844,7 @@ function lensApply() {
   if (hovered >= 0) b.setColorAt(hovered, _c1.copy(world.baseColor[hovered]).lerp(_c2.setHex(0xffffff), 0.55));
   b.instanceColor.needsUpdate = true;
   const u = b.material.userData.uniforms;
-  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = delta ? 0.3 : lens.gain; u.uBodyGlow.value = delta ? 0.4 : lens.glow;
+  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = lookGlow(delta ? 0.3 : lens.gain); u.uBodyGlow.value = lookGlow(delta ? 0.4 : lens.glow);   // 37-look: low glow
   const [ph, ps, pl] = lens.plate;
   world.dirOf.forEach((d, i) => world.plates.setColorAt(i, _c1.setHSL(ph, ps, pl + Math.min(d.depth, 6) * 0.025)));
   world.plates.instanceColor.needsUpdate = true;
@@ -1901,8 +1902,9 @@ function lensBar() {
   const groups = [...new Set(LENSES.map(l => l.group))];
   $('lenses').innerHTML = groups.map(g => `<span class="grp">${g ? `<small>${g}</small>` : ''}${LENSES.filter(l => l.group === g)
     .map(l => `<button class="btn" data-lens="${l.id}" title="${l.name} (${l.key})"><kbd>${l.key}</kbd>${l.name}</button>`).join('')}</span>`).join('')
-    + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>';
-  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt) setLens(bt.dataset.lens); };
+    + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>'
+    + '<span class="grp"><small>Fény</small><button id="glow-btn" class="btn" title="Halk fény: az ablakok és a felvillanások visszafogva (L)"><kbd>L</kbd>Halk</button></span>';
+  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt && bt.id === 'glow-btn') return setLowGlow(!look.low); if (bt) setLens(bt.dataset.lens); };
 }
 lensBar();
 addEventListener('keydown', e => {
@@ -3358,7 +3360,7 @@ const liveMine = () => kv.for === current.city && kv.match;
 // ---- pulses: the aFlash attribute, as the max of the replay's flash and the live pulse
 function livePulse(idx) {
   if (live.pulse.length !== replay.flash.length) live.pulse = new Float32Array(replay.flash.length);
-  for (const i of idx) live.pulse[i] = 1;
+  for (const i of idx) live.pulse[i] = lookPulse();   // 37-look: half in low glow
   if (!live.raf) { live.fadeAt = performance.now(); live.raf = requestAnimationFrame(liveFade); }
 }
 // the glow fades by time (×0.97 per 60th of a second, ~2 s), not per frame: the wallpaper draws only 1–5 frames a second
@@ -5210,6 +5212,62 @@ if (KV_OVERLAY && window.kvShell) {
   window.kvShell.onReturn(ptReturn);
   // the shell's --selftest drives the hand-off through this (overlay mode only)
   window.kvPortalTest = { go: ptPortal, screens: () => [...pt.screens.keys()], live: () => [...pt.screens.values()].filter(x => x.live).map(x => x.key), prefer: key => { pt.prefer = key; ptSync(); } };
+}
+
+// ==== src/37-look.js
+// 37-look.js — low-glow mode and adaptive quality tiers (P13, KV-27; report §5.5 R11, §1.5 "staying light").
+// Low glow (L, the "Halk" button in the lens bar, #glow=low): the lit windows and the body glow at about a third, a live
+// file pulse at half — the same city, calmer, for a long day or a wallpaper.
+// Quality tiers (#quality=high|mid|low, default auto): the pixel ratio — high = the screen's (max 2), mid = 1,
+// low = 0.75. Auto watches the gaps between frames while something moves (a flight, a tour): when the median of 30 is
+// over 45 ms (under ~22 fps) it steps one tier down, once per 30 frames, never up by itself. body[data-quality] says
+// which tier is on. A quiet city renders nothing, so it is measured only while it moves.
+
+const look = { low: false, tier: 'high', auto: true, gaps: [], last: 0 };
+const LOOK_TIERS = { high: () => Math.min(devicePixelRatio, 2), mid: () => 1, low: () => 0.75 };
+
+function lookGlow(x) { return look.low ? x * 0.35 : x; }   // 07-lens: window gain and body glow
+function lookPulse() { return look.low ? 0.5 : 1; }         // 22-live: a changed file's flash
+
+function setLowGlow(on) {
+  look.low = !!on;
+  document.documentElement.classList.toggle('low-glow', look.low);
+  const b = document.getElementById('glow-btn'); if (b) b.classList.toggle('on', look.low);
+  if (world) setLens(lens.id);
+  requestRender();
+}
+
+function setTier(t) {
+  if (!LOOK_TIERS[t]) return;
+  look.tier = t;
+  renderer.setPixelRatio(LOOK_TIERS[t]());
+  const r = canvas.parentElement.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  document.body.dataset.quality = t + (look.auto ? ' (auto)' : '');
+  requestRender();
+}
+
+// 03-scene calls this after every render
+function lookFrame() {
+  const now = performance.now(), gap = now - look.last;
+  look.last = now;
+  if (!look.auto || gap > 100) return;   // a lone render after a pause is not a frame rate
+  look.gaps.push(gap);
+  if (look.gaps.length < 30) return;
+  const med = look.gaps.slice().sort((a, b) => a - b)[15];
+  look.gaps = [];
+  if (med > 45 && look.tier !== 'low') setTier(look.tier === 'high' ? 'mid' : 'low');
+}
+
+addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input:not([type=range]), textarea')) return;
+  if (e.key === 'l' || e.key === 'L') setLowGlow(!look.low);
+});
+{
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.get('glow') === 'low') { look.low = true; document.documentElement.classList.add('low-glow'); }
+  if (LOOK_TIERS[q.get('quality')]) look.auto = false;
+  setTier(LOOK_TIERS[q.get('quality')] ? q.get('quality') : 'high');
 }
 
 // ==== src/99-boot.js

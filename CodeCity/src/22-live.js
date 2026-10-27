@@ -13,7 +13,7 @@ const liveMine = () => kv.for === current.city && kv.match;
 // ---- pulses: the aFlash attribute, as the max of the replay's flash and the live pulse
 function livePulse(idx) {
   if (live.pulse.length !== replay.flash.length) live.pulse = new Float32Array(replay.flash.length);
-  for (const i of idx) live.pulse[i] = 1;
+  for (const i of idx) live.pulse[i] = lookPulse();   // 37-look: half in low glow
   if (!live.raf) { live.fadeAt = performance.now(); live.raf = requestAnimationFrame(liveFade); }
 }
 // the glow fades by time (×0.97 per 60th of a second, ~2 s), not per frame: the wallpaper draws only 1–5 frames a second

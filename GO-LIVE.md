@@ -51,7 +51,7 @@ checkout**, with its own login.
 ## 3b. State at the handoff (2026-10-26, primary account → secondary account)
 
 - **Done: P0–P9 + P2's embedded terminal** (KV-01 … KV-20) + **KV-21 … KV-25** (2026-10-26/27, primary account; P10 and P11 done, P12's wallpaper and overlay spike built), all on `main`, not pushed. README §8 has the table and
-  the done list; `docs/city/wp/` has a stub per phase with its status and notes. Selftest: 78 checks, all green
+  the done list; `docs/city/wp/` has a stub per phase with its status and notes. Selftest: 91 checks, all green
   (`node CodeCity/tools/selftest.js`).
 - **vrg-etw is installed** (C:\Program Files\VRG\Kodvaros-ETW, task "VRG Kodvaros ETW", checked 2026-10-27). After a rebuild
   the user re-runs install-etw.ps1 elevated. KV-24 (wallpaper) is built; Lively is the user's step (wp/p12-overlay.md).
@@ -60,7 +60,8 @@ checkout**, with its own login.
   **22H2 done 2026-10-27: build 19045.6456** (a hidden StopUpdates10 service had blocked updates since 2022; removed with
   the user's yes — details in p12-22h2.md). KV-25 done (Electron 44.7.1 overlay, START.cmd K → F).
   KV-26 built (screens + portal hand-off); its Zen check is deferred to the end of the series (user's request).
-  **Next prompt: KV-27** (rules audit and Design pack), then all deferred checks.
+  KV-27 built (rules audit, low glow, quality tiers, Design pack in docs/city/design-pack). The series KV-01…KV-27 is
+  done; left: the deferred checks (Zen hand-off ×3, the user's Lively and overlay looks), CITY-D26 (skin name), the dev notes.
 - **Toolchain:** The SDK is in `Planner/apps/dotnet`; rebuild the probe with
   `node CodeCity/tools/build-probe.js` (offline) and vrg-etw with `node CodeCity/tools/build-etw.js` (TraceEvent 3.2.8 from
   nuget.org, locked by CodeCity/etw/packages.lock.json). Self-contained needs the runtime pack from nuget.org — still not
