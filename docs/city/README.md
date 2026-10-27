@@ -336,4 +336,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-24 ✔ 2026-10-27 ad3b93a — idle wallpaper measured at ≈0.3 % of the PC; Lively itself is the user's step
 - KV-25 ✔ 2026-10-27 1419e33 — Electron 44.7.1 overlay: no black-transparency bug on the GTX 1050 Ti; summon 23–88 ms, hidden 0.06 % of one core
 - KV-26 ✔ 2026-10-27 28c71cb — built; Notepad dry run 3/3; the Zen run deferred to the end (user, 2026-10-27); WGC capture refused on this PC, screens are 1 fps pictures
-- KV-27 ✔ 2026-10-27 (this commit) — R1–R12 + trademark each have a selftest/shot check (R12 fixed, R8 chip row a gap); low glow (L), quality tiers, Design pack in docs/city/design-pack
+- KV-27 ✔ 2026-10-27 4d44803 — R1–R12 + trademark each have a selftest/shot check (R12 fixed, R8 chip row a gap); low glow (L), quality tiers, Design pack in docs/city/design-pack
