@@ -7,6 +7,9 @@
 // shows. Only the handle, the process id, the exe name and the product name travel; never a window title.
 // KV-22 adds 'audio' + 'peaks' (Audio.cs), 'media' (Media.cs, GSMTC), 'usb' + 'bt' (Devices.cs), each on its own thread.
 // Stdin: one JSON command per line — {"t":"vol","key":"spotify.exe","v":0.4} or {"t":"mute","key":…,"on":true};
+// KV-26 (the overlay's portal hand-off): {"t":"place","h":…,"x":…,"y":…,"w":…,"hh":…} moves one counted window onto a
+// facade's screen rectangle and brings it to the front (its old placement kept in memory), {"t":"unplace","h":…} puts it
+// back; each answers 'placed' / 'unplaced' with the rectangle the window really has.
 // stdin closing (the companion gone) ends it. Nothing is written anywhere.
 //
 //   node CodeCity/tools/build-probe.js     -> CodeCity/probe/bin/publish/vrg-probe.exe
@@ -39,6 +42,16 @@ static class Probe
     [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern bool QueryFullProcessImageNameW(IntPtr h, uint flags, StringBuilder sb, ref int size);
     [DllImport("dwmapi.dll")] static extern int DwmGetWindowAttribute(IntPtr h, int attr, out int value, int size);
+    [DllImport("user32.dll")] static extern bool GetWindowPlacement(IntPtr h, ref WINDOWPLACEMENT p);
+    [DllImport("user32.dll")] static extern bool SetWindowPlacement(IntPtr h, ref WINDOWPLACEMENT p);
+    [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int w, int hh, uint flags);
+    [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int cmd);
+    [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr h);
+    [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out RECT r);
+    [DllImport("user32.dll")] static extern void keybd_event(byte vk, byte scan, uint flags, IntPtr extra);
+    [StructLayout(LayoutKind.Sequential)] struct RECT { public int l, t, r, b; }
+    [StructLayout(LayoutKind.Sequential)] struct WINDOWPLACEMENT { public int length, flags, showCmd; public int minX, minY, maxX, maxY; public RECT normal; }
+    static readonly Dictionary<IntPtr, WINDOWPLACEMENT> placed = new();
 
     [StructLayout(LayoutKind.Sequential)] struct MSG { public IntPtr hwnd; public uint message; public IntPtr wParam, lParam; public uint time; public int x, y; }
 
@@ -77,11 +90,33 @@ static class Probe
         {
             using var d = JsonDocument.Parse(line);
             var r = d.RootElement;
-            string t = r.GetProperty("t").GetString() ?? "", key = r.GetProperty("key").GetString() ?? "";
+            string t = r.GetProperty("t").GetString() ?? "";
+            if (t == "place" || t == "unplace") { Place(t, r); return; }
+            string key = r.GetProperty("key").GetString() ?? "";
             if (t == "vol") Audio.Command(key, (float)Math.Clamp(r.GetProperty("v").GetDouble(), 0, 1), null);
             else if (t == "mute") Audio.Command(key, null, r.GetProperty("on").GetBoolean());
         }
         catch { }
+    }
+
+    // the portal hand-off (KV-26): only a window the probe counts; the old placement is restored by 'unplace'
+    static void Place(string t, JsonElement r)
+    {
+        IntPtr h = (IntPtr)r.GetProperty("h").GetInt64();
+        if (!wins.ContainsKey(h)) { Emit(new { t = t + "d", h = (long)h, ok = false }); return; }
+        if (t == "place")
+        {
+            var p = new WINDOWPLACEMENT { length = Marshal.SizeOf<WINDOWPLACEMENT>() };
+            if (!placed.ContainsKey(h) && GetWindowPlacement(h, ref p)) placed[h] = p;
+            ShowWindow(h, 9 /* SW_RESTORE: out of minimised or maximised */);
+            SetWindowPos(h, 0 /* HWND_TOP */, r.GetProperty("x").GetInt32(), r.GetProperty("y").GetInt32(), r.GetProperty("w").GetInt32(), r.GetProperty("hh").GetInt32(), 0x0040 /* SWP_SHOWWINDOW */);
+            // Windows only lets the foreground process hand the foreground on: a tap of Alt counts as user input
+            keybd_event(0x12, 0, 0, 0); keybd_event(0x12, 0, 2, 0);
+            SetForegroundWindow(h);
+        }
+        else if (placed.Remove(h, out var p)) SetWindowPlacement(h, ref p);
+        GetWindowRect(h, out var rc);
+        Emit(new { t = t + "d", h = (long)h, ok = true, x = rc.l, y = rc.t, w = rc.r - rc.l, hh = rc.b - rc.t });
     }
 
     static void OnEvent(IntPtr hook, uint ev, IntPtr h, int idObject, int idChild, uint thread, uint time)

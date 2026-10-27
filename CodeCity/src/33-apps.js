@@ -51,6 +51,7 @@ function appsEvent(d) {
   }
   for (const it of ap.items.values()) if (!seen.has(it.key) && !it.gone) it.gone = now;
   apAnimate();
+  ptSync();   // 36-portal: the window screens follow the constructs
   if (land.at === 'land') landPanel();
 }
 function apAnimate() { if (!ap.raf) ap.raf = requestAnimationFrame(apFrame); }

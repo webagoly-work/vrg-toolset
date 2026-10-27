@@ -145,7 +145,7 @@ node CodeCity/scan.js <repo> --html CodeCity/dist/<name>.html
 node CodeCity/build.js                                 # the empty template that opens a *.city.json
 node CodeCity/scan.js . --js CodeCity/dist/vrg-codecity.data.js  # this repo as the template's default view (START.cmd K runs it on open)
 node CodeCity/tools/shot.js "CodeCity/dist/<name>.html#pick=0.45,0.6"   # headless check incl. picking
-node CodeCity/tools/selftest.js                        # scanner, sessions privacy, MCP server, companion, specs (77 checks)
+node CodeCity/tools/selftest.js                        # scanner, sessions privacy, MCP server, companion, specs (78 checks)
 # wallpaper (KV-24): Lively → Add wallpaper → URL  http://localhost:8797/#mode=wallpaper&fps=2   (steps: wp/p12-overlay.md)
 # overlay (KV-25): START.cmd K → F, or  Planner\apps\electron\electron.exe CodeCity\shell   (Ctrl+Alt+K; live check: … CodeCity\shell --selftest)
 node CodeCity/tools/build-etw.js                       # vrg-etw.exe (P11): TraceEvent from nuget.org, pinned by CodeCity/etw/packages.lock.json
@@ -335,3 +335,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-23 ✔ 2026-10-26 84b255d — checked 2026-10-27 with the user's elevated task: a clone's exact cargo per process, a cmd read of GO-LIVE.md beamed to its session
 - KV-24 ✔ 2026-10-27 ad3b93a — idle wallpaper measured at ≈0.3 % of the PC; Lively itself is the user's step
 - KV-25 ✔ 2026-10-27 1419e33 — Electron 44.7.1 overlay: no black-transparency bug on the GTX 1050 Ti; summon 23–88 ms, hidden 0.06 % of one core
+- KV-26 ✔ 2026-10-27 (this commit) — built; Notepad dry run 3/3; the Zen run deferred to the end (user, 2026-10-27); WGC capture refused on this PC, screens are 1 fps pictures

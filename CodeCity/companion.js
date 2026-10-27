@@ -83,6 +83,8 @@
 // KV-22: 'audio' (a sound tower per program: volume, mute, active), 'peaks' (~12/s while something sounds), 'media'
 // (Windows' now-playing, GSMTC: app, status, title, artist — no Spotify API), 'bt' (paired devices, battery while
 // connected), 'usb' (the port tree); hashes instead of device ids. POST probe-volume {key, v} / probe-mute {key, on}
+// KV-26: each 'apps' entry also lists its window handles (numbers, never titles); POST probe-place {h, x, y, w, hh} /
+// probe-unplace {h} move one counted window onto the overlay's facade and back; the probe's answer streams as 'portal'.
 // reach the probe only for a program that has a tower. All of it memory only (CITY-D27 A).
 //
 // Elevated ETW (P11, KV-23; Tier B, CITY-D17 A): when the user's scheduled task runs vrg-etw.exe, its pipe
@@ -791,6 +793,13 @@ function probeSend(cmd) {
   probe.child.stdin.write(JSON.stringify(cmd) + '\n');
   return [200, { ok: true }];
 }
+function probePlace(cmd) {
+  if (!probe.wins.has(cmd.h)) return [404, { error: 'nincs ilyen ablak' }];
+  if (DRY) return [200, Object.assign({ dryRun: true }, cmd)];
+  if (!probe.child) return [503, { error: 'a szonda nem fut' }];
+  probe.child.stdin.write(JSON.stringify(cmd) + '\n');
+  return [200, { ok: true }];
+}
 function probeHandle(m) {
   if (m.t === 'hello') { probe.state = 'on'; probe.wins.clear(); }
   else if (m.t === 'windows') { probe.wins.clear(); for (const w of m.list || []) probe.wins.set(w.h, w); }
@@ -799,6 +808,7 @@ function probeHandle(m) {
   else if (m.t === 'fg') probe.fg = m.h;
   else if (PROBE_FEEDS.includes(m.t)) { const { t, ...d } = m; probe.last[t] = d; return liveEmit(t, d); }
   else if (m.t === 'peaks') return liveEmit('peaks', { m: +m.m || 0, s: m.s || {} });
+  else if (m.t === 'placed' || m.t === 'unplaced') return liveEmit('portal', { t: m.t, h: m.h, ok: !!m.ok, x: m.x, y: m.y, w: m.w, hh: m.hh });
   else return;
   probeSoon();
 }
@@ -807,8 +817,9 @@ function probeApps() {
   const by = new Map();
   for (const w of probe.wins.values()) {
     const key = String(w.exe || '?').toLowerCase();
-    const a = by.get(key) || { key, name: String(w.name || w.exe || '?').slice(0, 60), n: 0, fg: false };
+    const a = by.get(key) || { key, name: String(w.name || w.exe || '?').slice(0, 60), n: 0, fg: false, h: [] };
     a.n++; if (w.h === probe.fg) a.fg = true;
+    a.h.push(w.h);   // KV-26: the window handles (numbers) — the overlay shell matches its captures to them
     by.set(key, a);
   }
   return { state: probe.state, list: [...by.values()].sort((a, b) => a.key < b.key ? -1 : 1) };
@@ -1123,6 +1134,13 @@ const ACTIONS = {
     return typeof b.v === 'number' && b.v >= 0 && b.v <= 1 ? probeSend({ t: 'vol', key: b.key, v: Math.round(b.v * 100) / 100 }) : [400, { error: 'v: 0..1' }];
   } },
   'probe-mute': { keys: ['key', 'on'], async run(b) { return typeof b.on === 'boolean' ? probeSend({ t: 'mute', key: b.key, on: b.on }) : [400, { error: 'on: true/false' }]; } },
+  // the overlay's portal hand-off (KV-26): one window the probe counts, onto a facade's screen rectangle — and back
+  'probe-place': { keys: ['h', 'x', 'y', 'w', 'hh'], async run(b) {
+    const int = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
+    if (!int(b.x, -32768, 32767) || !int(b.y, -32768, 32767) || !int(b.w, 200, 16384) || !int(b.hh, 150, 16384)) return [400, { error: 'x, y, w (200..), hh (150..): egész pixelek' }];
+    return probePlace({ t: 'place', h: b.h, x: b.x, y: b.y, w: b.w, hh: b.hh });
+  } },
+  'probe-unplace': { keys: ['h'], async run(b) { return probePlace({ t: 'unplace', h: b.h }); } },
   'job-stop': { keys: ['id'], async run(b) { return typeof b.id === 'string' ? jobStop(b.id) : [400, { error: 'id' }]; } },
   'check-paths': { keys: ['paths'], async run(b) {
     if (!Array.isArray(b.paths) || b.paths.length > 500 || !b.paths.every(p => typeof p === 'string')) return [400, { error: 'paths: legfeljebb 500 szöveg' }];

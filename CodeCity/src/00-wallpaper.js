@@ -31,7 +31,7 @@ const KV_OVERLAY = (() => {
   if (shell) {
     let solid = null;
     addEventListener('pointermove', e => {
-      const s = e.buttons !== 0 || e.target.id !== 'gl' || !!pickAt(e);
+      const s = e.buttons !== 0 || e.target.id !== 'gl' || !!pickAt(e) || !!ptHit(e);   // 36-portal: a window screen
       if (s !== solid) { solid = s; shell.solid(s); }
     }, { passive: true });
   }

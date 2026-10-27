@@ -122,6 +122,7 @@ function liveConnect() {
   live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
   live.es.addEventListener('cargo', e => { if (liveMine()) cargoEvent(JSON.parse(e.data)); });   // 31-flows: ships and planes
   live.es.addEventListener('apps', e => { if (liveMine()) appsEvent(JSON.parse(e.data)); });   // 33-apps: open programs (vrg-probe)
+  live.es.addEventListener('portal', e => ptEvent(JSON.parse(e.data)));   // 36-portal: the probe placed / put back a window
   // 34-stadium: now playing, sound towers and their peaks, Bluetooth buoys, the USB port board (vrg-probe)
   live.es.addEventListener('media', e => { if (liveMine()) mediaEvent(JSON.parse(e.data)); });
   live.es.addEventListener('audio', e => { if (liveMine()) audioEvent(JSON.parse(e.data)); });
@@ -149,7 +150,7 @@ async function liveInit() {
   await kvReady();
   liveConnect();
   // 00-wallpaper: hidden = no stream (the wallpaper behind a fullscreen app, the overlay dismissed)
-  if (KV_WALL || KV_OVERLAY) document.addEventListener('visibilitychange', () => { if (document.hidden) { if (live.es) { live.es.close(); live.es = null; } } else if (!live.es) liveConnect(); });
+  if (KV_WALL || KV_OVERLAY) document.addEventListener('visibilitychange', () => { if (document.hidden) { if (live.es && !pt.keep) { live.es.close(); live.es = null; } } else if (!live.es) liveConnect(); });
   if (KV_WALL) return;   // the wallpaper is the scene only — no terminal offer, gates, metro or H: walk
   termResumeOffer();   // 21-term: Claude tabs from before a restart
   if (kv.match) palCatalog().then(jbLoad);   // 26-jobs: the gates need the START.cmd tools

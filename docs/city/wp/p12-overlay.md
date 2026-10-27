@@ -7,7 +7,7 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/shell/ (new)
 - **Decisions:** D19, D20
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** open — L0 wallpaper built (KV-24), L2 overlay spike built (KV-25, 2026-10-27, on 22H2); KV-26 next — 22H2 steps:
+- **Status:** open — L0 wallpaper built (KV-24), L2 overlay spike (KV-25) and window screens + portal hand-off (KV-26) built 2026-10-27; the Zen check is deferred to the end — 22H2 steps:
   [p12-22h2.md](p12-22h2.md) (Windows Update is switched off on this PC since 2022; the steps switch it on, pinned to 22H2)
 
 ## KV-24: the wallpaper (L0)
@@ -75,6 +75,24 @@ a throwaway segéd):
 **Known limits, for KV-26 and later:** Esc is global while the overlay is up (it also closes the overlay when a panel
 had focus); every monitor runs the full page (three stream listeners while summoned); secondary monitors show the same
 view as the first; the HUD strip (L1) is not built.
+
+## KV-26: windows on buildings and the portal hand-off
+
+- **Screens:** the shell scans the open windows once a second while the overlay is up (`desktopCapturer`, ~0.3 s async)
+  and sends handle + JPEG picture, never a title; 36-portal.js puts a screen on each program construct around Erőmű.
+  Three (the program in front, Zen, then ring order) get a 960×600 picture every second, the rest a 480 px one every 3 s.
+- **No live video on this PC:** getUserMedia 'desktop' fails with NotReadableError for every window; Chromium logs
+  `wgc_capture_source CreateForWindow failed E_ACCESSDENIED` in Electron's **main** process, so Windows.Graphics.Capture
+  is refused outright (`CodeCity/shell/capture-test.js`). The GDI pictures are real (87–100 % lit, Chromium windows too,
+  `thumb-test.js`). Side effect: no yellow capture border (that is WGC's).
+- **Hand-off:** click a screen → the camera flies in → `probe-place {h,x,y,w,hh}` (the segéd checks the handle is a
+  counted window; the probe saves the old placement, restores, SetWindowPos, Alt tap + SetForegroundWindow) → the overlay
+  hides with Esc still held. **Esc** (or the hotkey) → overlay back → `probe-unplace {h}` → the window returns to its old
+  placement (maximised stays maximised). The probe answers 'placed'/'unplaced' with the real rectangle ('portal' event).
+- **Check:** `electron CodeCity/shell --portal-test [--app <exe>]` — three rounds with a real Esc key press each.
+  Dry run with Notepad 2026-10-27: 3/3, home rectangle identical every time. **Zen run: deferred to the end of the series
+  at the user's request (2026-10-27).**
+- **Limits:** Esc is held globally during a hand-off; screens are 1 fps pictures; DPI scaling other than 100 % untested.
 
 ## Your steps: the overlay
 

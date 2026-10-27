@@ -8,20 +8,23 @@
 //   a building, a plate — 00-wallpaper.js), so the desktop under the empty sky stays usable;
 // - hidden = hide(): the page sees visibilitychange and closes its stream; nothing draws, the segéd drops the samplers;
 // - tray: show/hide, click-through on/off, reload, quit. One instance: starting it again summons the running one.
+// - KV-26: while summoned, the open windows' capture sources (id, handle, a 480×300 thumbnail — no title) go to the page
+//   (36-portal puts them on the program constructs: three refreshed every second, the rest every 3 s); the page's hand-off hides the overlay with Esc still held:
+//   Esc (or the hotkey) then brings the overlay back and tells the page to put the window back.
 // Nothing here talks to anything but 127.0.0.1:<port>; navigation off that origin and new windows are refused.
 'use strict';
-const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, nativeImage, screen, dialog } = require('electron');
+const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, nativeImage, screen, dialog, desktopCapturer } = require('electron');
 const path = require('path'), http = require('http');
 
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 && process.argv[i + 1] ? process.argv[i + 1] : d; };
 const PORT = +arg('--port', 8797), ORIGIN = `http://127.0.0.1:${PORT}`;
 const HOTKEYS = [arg('--hotkey', 'Control+Alt+K'), 'Control+Alt+Shift+K'];
-const SELFTEST = process.argv.includes('--selftest');
+const SELFTEST = process.argv.includes('--selftest') || process.argv.includes('--portal-test');
 
 if (!app.requestSingleInstanceLock()) { app.quit(); return; }
 app.setAppUserModelId('VRG.Kodvaros.Overlay');
 
-const state = { wins: [], shown: false, clickThrough: true, hotkey: null, tray: null, summonMs: [] };
+const state = { wins: [], shown: false, clickThrough: true, hotkey: null, tray: null, summonMs: [], portal: false, srcTimer: 0, liveHs: new Set(), scan: 0, scanning: false };
 const log = (...a) => console.log('[kv-shell]', ...a);
 
 // a 16×16 tray icon drawn in code (a cyan hexagon ring), so the shell has no binary asset
@@ -49,6 +52,7 @@ function makeWindow(display, i) {
   w.setIgnoreMouseEvents(state.clickThrough, { forward: true });
   w.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   w.webContents.on('will-navigate', (e, url) => { if (!url.startsWith(ORIGIN + '/')) e.preventDefault(); });
+  if (process.env.KV_SHELL_DEBUG) w.webContents.on('console-message', (e) => log(`page ${i}: ${e.message}`));
   w.loadURL(pageUrl(i));
   w.kvDisplay = display.id;
   return w;
@@ -67,21 +71,54 @@ async function show() {
   for (const w of state.wins) if (w.kvDisplay !== at) w.showInactive();
   const main = state.wins.find(w => w.kvDisplay === at) || state.wins[0];
   main.show(); main.focus();
-  state.shown = true;
-  globalShortcut.register('Escape', hide);
+  state.shown = true; state.portal = false;
+  if (!globalShortcut.isRegistered('Escape')) globalShortcut.register('Escape', escape);
+
   // painted = two animation frames after showing (the compositor has the page on screen)
   await main.webContents.executeJavaScript('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => r(1))))');
   const ms = Number(process.hrtime.bigint() - t0) / 1e6;
   state.summonMs.push(ms);
   log(`summoned in ${ms.toFixed(0)} ms`);
+  // only now the window screens (36-portal): a capture scan right at the summon would slow the first frame
+  if (state.shown) { state.scan = 0; sendSources(); clearInterval(state.srcTimer); state.srcTimer = setInterval(sendSources, 1000); }
   return ms;
 }
-function hide() {
+function hide(keepEsc) {
   for (const w of state.wins) w.hide();
   state.shown = false;
-  globalShortcut.unregister('Escape');
+  clearInterval(state.srcTimer); state.srcTimer = 0;
+  if (keepEsc !== true) globalShortcut.unregister('Escape');
 }
-const toggle = () => (state.shown ? hide() : show());
+// the page handed a window off (36-portal): hidden, but Esc still brings the city back
+function handoff() { state.portal = true; hide(true); }
+async function back() {
+  state.portal = false;
+  await show();
+  const main = state.wins.find(w => w.isFocused()) || state.wins[0];
+  main.webContents.send('kv-return');
+}
+const escape = () => (state.portal ? back() : hide());
+const toggle = () => (state.portal ? back() : state.shown ? hide() : show());
+
+// the open windows for the page's screens: id + handle + a JPEG picture, never the title; the overlay's own windows left
+// out. One scan a second (~0.3 s, async): the page's three live windows get a 960×600 picture every scan, the rest a
+// 480 px one every third scan (then no picture, the page keeps the last).
+async function sendSources() {
+  if (!state.shown || state.scanning) return;
+  state.scanning = true;
+  const full = state.scan++ % 3 === 0;
+  try {
+    const own = new Set(state.wins.map(w => w.getNativeWindowHandle().readBigUInt64LE(0).toString()));
+    const srcs = await desktopCapturer.getSources({ types: ['window'], thumbnailSize: { width: 960, height: 600 }, fetchWindowIcons: false }).catch(() => []);
+    if (!state.shown) return;
+    const list = srcs.map(s => ({ s, h: +s.id.split(':')[1] })).filter(x => x.h && !own.has(String(x.h))).map(({ s, h }) => {
+      const sz = s.thumbnail.getSize(), live = state.liveHs.has(h), img = s.thumbnail.isEmpty() || !(live || full) ? null
+        : 'data:image/jpeg;base64,' + (live ? s.thumbnail : s.thumbnail.resize({ width: 480 })).toJPEG(72).toString('base64');
+      return { id: s.id, h, w: sz.width, hh: sz.height, img };
+    });
+    for (const w of state.wins) if (!w.isDestroyed()) w.webContents.send('kv-sources', list);
+  } finally { state.scanning = false; }
+}
 
 function setClickThrough(on) {
   state.clickThrough = on;
@@ -119,7 +156,9 @@ ipcMain.on('kv-solid', (e, solid) => {
   const w = BrowserWindow.fromWebContents(e.sender);
   if (w && state.clickThrough) w.setIgnoreMouseEvents(!solid, { forward: true });
 });
-ipcMain.on('kv-hide', hide);
+ipcMain.on('kv-hide', () => hide());
+ipcMain.on('kv-handoff', handoff);
+ipcMain.on('kv-live', (e, hs) => { if (Array.isArray(hs)) state.liveHs = new Set(hs.slice(0, 3).filter(Number.isInteger)); });
 
 app.on('second-instance', () => { if (!state.shown) show(); });
 app.on('window-all-closed', e => e.preventDefault());
@@ -139,5 +178,6 @@ app.whenReady().then(async () => {
   registerHotkey();
   refreshTray();
   log(`ready: ${state.wins.length} monitor(s), hotkey ${state.hotkey || 'none'}, ${ORIGIN}`);
-  if (SELFTEST) require('./selftest.js')({ state, show, hide, log });
+  if (process.argv.includes('--selftest')) require('./selftest.js')({ state, show, hide, log, escape });
+  if (process.argv.includes('--portal-test')) require('./portaltest.js')({ state, show, log });   // KV-26 check, Zen open
 });
