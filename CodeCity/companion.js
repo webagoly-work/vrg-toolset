@@ -91,6 +91,10 @@
 // by a process whose ancestor is a Claude session (Bash, git, node …) becomes that session's 'beam' (via: the exe).
 // The process tree and DNS names stay in memory only (CITY-D27 A).
 //
+// Wallpaper (P12 L0, KV-24): GET /api/stream?wallpaper=1 is a light listener — it gets the stream, but the port street,
+// the samplers, the probe, ETW and cargo run only while a full page listens, and `claude agents` is polled every 30 s
+// instead of 6 s when only wallpapers are left.
+//
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
 // Output goes out over GET /api/term-stream (Server-Sent Events), which the browser cannot give a header,
@@ -304,7 +308,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGBREAK', 'SIGHUP']) process.on(sig, (
 const LIVE_IGNORE = ['.git/objects/', 'node_modules/', 'Planner/apps/', 'Planner/home/', 'Planner/data/', 'Vendor/', 'Inventory/.cache/', 'CodeCity/dist/'];
 const LIVE_GIT = /^\.git\/(HEAD|refs\/|logs\/HEAD|worktrees\/)/;
 const LIVE_DEBOUNCE = 400;
-const live = { clients: new Set(), fs: new Map(), git: false, timer: null, head: '', city: null, cityHead: null, scanning: null, watcher: null };
+const live = { clients: new Set(), full: new Set(), fs: new Map(), git: false, timer: null, head: '', city: null, cityHead: null, scanning: null, watcher: null };
 function liveEmit(event, data) {
   const msg = 'event: ' + event + '\ndata: ' + JSON.stringify(data) + '\n\n';
   for (const res of live.clients) res.write(msg);
@@ -362,7 +366,7 @@ function liveCity() {
 
 // ---- live Claude: sessions + transcript tails -> 'agents' and 'beam' events
 const SESS = require('./sessions.js');
-const AGENTS_EVERY = 6000, TAIL_EVERY = 1000;
+const AGENTS_EVERY = 6000, AGENTS_SLOW = 30000, TAIL_EVERY = 1000;   // slow: only wallpapers listen (KV-24)
 const agents = { list: [], sig: '', poller: null, idleSince: 0, tails: new Map(), tailTimer: null, hooked: new Set() };
 const repoReal = () => real(REPO);
 const keyOf = x => (process.platform === 'win32' ? x.toLowerCase() : x).replace(/\\/g, '/').replace(/\/+$/, '');
@@ -450,7 +454,8 @@ function transcriptOf(sid) {
 // the helper process: started with the first listening page, stopped 30 s after the last one left
 function agentsPoller(on) {
   if (on && !agents.poller) {
-    const child = spawn(process.execPath, [path.join(CITY, 'agents-poll.js'), String(AGENTS_EVERY), ...CFG.agentsCmd], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
+    agents.every = live.full.size ? AGENTS_EVERY : AGENTS_SLOW;
+    const child = spawn(process.execPath, [path.join(CITY, 'agents-poll.js'), String(agents.every), ...CFG.agentsCmd], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
     let buf = '';
     child.stdout.on('data', d => { buf += d; let k; while ((k = buf.indexOf('\n')) >= 0) { const line = buf.slice(0, k); buf = buf.slice(k + 1); try { agentsHandle(JSON.parse(line)); } catch (e) { /* skip */ } } });
     child.on('exit', () => { if (agents.poller === child) agents.poller = null; });
@@ -487,6 +492,11 @@ function tailOnce() {
     return;
   }
   agents.idleSince = 0;
+  // only wallpapers left for 30 s: the poller goes slow (claude.exe costs ~3 s of CPU per start)
+  if (agents.poller && !live.full.size && agents.every !== AGENTS_SLOW) {
+    if (!agents.slowSince) agents.slowSince = Date.now();
+    else if (Date.now() - agents.slowSince > 30000) { agentsPoller(false); agentsPoller(true); agents.slowSince = 0; }
+  } else agents.slowSince = 0;
   for (const [sid, t] of agents.tails) {
     if (!t.file) { t.file = transcriptOf(sid); if (!t.file) continue; try { t.off = fs.statSync(t.file).size; } catch (e) { /* later */ } continue; }
     let size; try { size = fs.statSync(t.file).size; } catch (e) { continue; }
@@ -512,6 +522,7 @@ function tailOnce() {
   }
 }
 function agentsStart() {
+  if (agents.poller && live.full.size && agents.every !== AGENTS_EVERY) agentsPoller(false);   // a full page joined a slow poller
   agentsPoller(true);
   if (agents.tailTimer) return;
   agents.tailTimer = setInterval(tailOnce, TAIL_EVERY);
@@ -615,7 +626,7 @@ function jobStop(id) {
 process.on('exit', () => { for (const r of jobs.run.values()) if (r.code === null) try { require('child_process').execFileSync('taskkill', ['/PID', String(r.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' }); } catch (e) { /* gone */ } });
 // the port street: LISTEN sockets and the program behind each
 function portsPoll() {
-  if (jobs.polling || !live.clients.size) return;
+  if (jobs.polling || !live.full.size) return;
   jobs.polling = true;
   execFile('netstat', ['-ano', '-p', 'TCP'], { windowsHide: true, timeout: 10000, maxBuffer: 4 << 20 }, (err, out) => {
     if (err) { jobs.polling = false; return; }
@@ -905,7 +916,7 @@ async function ping(ip) {
   return { up: /TTL=/i.test(out), ms: Date.now() - t0 };   // TTL= is in every language's ping output
 }
 async function netProbe() {
-  if (!live.clients.size || DRY) return;
+  if (!live.full.size || DRY) return;
   if (!net.hops && !net.tracing) {   // once: the chain this PC goes out through
     net.tracing = true;
     const out = await run('tracert', ['-d', '-h', '3', '-w', '400', '1.1.1.1'], 30000);
@@ -939,7 +950,7 @@ function netConnections(netstat) {
 }
 function netStart() {
   powerStart(); probeStart(); etwStart();
-  if (!net.timer) { net.timer = setInterval(() => { if (!live.clients.size) { if (!net.idle) net.idle = Date.now(); else if (Date.now() - net.idle > 30000) { powerStop(); probeStop(); etwStop(); } return; } net.idle = 0; powerStart(); probeStart(); etwStart(); netProbe(); }, 10000); net.timer.unref(); }
+  if (!net.timer) { net.timer = setInterval(() => { if (!live.full.size) { if (!net.idle) net.idle = Date.now(); else if (Date.now() - net.idle > 30000) { powerStop(); probeStop(); etwStop(); } return; } net.idle = 0; powerStart(); probeStart(); etwStart(); netProbe(); }, 10000); net.timer.unref(); }
   netProbe();
 }
 
@@ -1175,9 +1186,9 @@ const server = http.createServer((req, res) => {
     if (agents.sig) res.write('event: agents\ndata: ' + agents.sig.replace(/^/, '{"list":') + '}\n\n');
     if (fences.sig) res.write('event: fences\ndata: {"list":' + fences.sig + '}\n\n');
     worktreesSoon();
-    portsStart();
-    netStart();
-    cargoStart();
+    // a wallpaper (KV-24, ?wallpaper=1) is a light listener: file pulses, git and the figures, no samplers / probe / ETW
+    const wall = url.searchParams.get('wallpaper') === '1';
+    if (!wall) { portsStart(); netStart(); cargoStart(); }
     if (power.last) res.write('event: power\ndata: ' + JSON.stringify(power.last) + '\n\n');
     if (net.state) res.write('event: net\ndata: ' + JSON.stringify(net.state) + '\n\n');
     if (probe.sig) res.write('event: apps\ndata: ' + probe.sig + '\n\n');
@@ -1185,8 +1196,9 @@ const server = http.createServer((req, res) => {
     res.write('event: etw\ndata: ' + JSON.stringify({ state: etw.state, demo: etw.demo }) + '\n\n');
     res.write('event: pipes\ndata: ' + JSON.stringify({ list: pipesList() }) + '\n\n');
     live.clients.add(res);
+    if (!wall) live.full.add(res);
     agentsStart();
-    req.on('close', () => live.clients.delete(res));
+    req.on('close', () => { live.clients.delete(res); live.full.delete(res); });
     return;
   }
   if (req.method === 'GET' && url.pathname === '/api/term-stream') {

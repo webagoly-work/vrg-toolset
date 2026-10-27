@@ -14,14 +14,16 @@ const liveMine = () => kv.for === current.city && kv.match;
 function livePulse(idx) {
   if (live.pulse.length !== replay.flash.length) live.pulse = new Float32Array(replay.flash.length);
   for (const i of idx) live.pulse[i] = 1;
-  if (!live.raf) live.raf = requestAnimationFrame(liveFade);
+  if (!live.raf) { live.fadeAt = performance.now(); live.raf = requestAnimationFrame(liveFade); }
 }
+// the glow fades by time (×0.97 per 60th of a second, ~2 s), not per frame: the wallpaper draws only 1–5 frames a second
 function liveFade() {
-  const fl = world.buildings.geometry.attributes.aFlash;
+  const fl = world.buildings.geometry.attributes.aFlash, now = performance.now(), k = Math.pow(0.97, Math.min(600, (now - (live.fadeAt || now)) / (1000 / 60)));
+  live.fadeAt = now;
   let any = false;
   for (let i = 0; i < live.pulse.length; i++) {
     if (live.pulse[i] <= 0) continue;
-    live.pulse[i] = live.pulse[i] < 0.02 ? 0 : live.pulse[i] * 0.97;
+    live.pulse[i] = live.pulse[i] < 0.02 ? 0 : live.pulse[i] * k;
     fl.array[i] = Math.max(replay.flash[i], live.pulse[i]);
     any = any || live.pulse[i] > 0;
   }
@@ -96,7 +98,7 @@ async function liveSwap() {
 
 function liveConnect() {
   if (live.es || !kv.match) return;
-  live.es = new EventSource('/api/stream');
+  live.es = new EventSource('/api/stream' + (KV_WALL ? '?wallpaper=1' : ''));   // 00-wallpaper: a light listener
   live.es.addEventListener('hello', e => {
     const h = JSON.parse(e.data).head;
     $('live-dot').hidden = false;
@@ -146,6 +148,10 @@ async function liveInit() {
   liveSeenInit();
   await kvReady();
   liveConnect();
+  if (KV_WALL) {   // 00-wallpaper: the scene only — no terminal offer, gates, metro or H: walk; hidden = no stream
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { if (live.es) { live.es.close(); live.es = null; } } else liveConnect(); });
+    return;
+  }
   termResumeOffer();   // 21-term: Claude tabs from before a restart
   if (kv.match) palCatalog().then(jbLoad);   // 26-jobs: the gates need the START.cmd tools
   if (kv.match) mtLoad();   // 28-metro

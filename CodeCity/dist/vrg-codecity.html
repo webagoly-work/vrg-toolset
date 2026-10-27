@@ -297,6 +297,9 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #sess-now .now { margin: 4px 0; word-break: break-all; }
 #sess-now i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; vertical-align: -1px; }
 #sess-now .x { position: absolute; top: 4px; right: 10px; cursor: pointer; color: var(--dim); }
+
+/* 00-wallpaper (#mode=wallpaper): the scene only, behind the desktop icons */
+html.wallpaper body > *:not(#stage), html.wallpaper #stage > *:not(#gl) { display: none !important; }
 </style>
 </head>
 <body>
@@ -988,6 +991,28 @@ const WORLD = {
   }
  ]
 };
+// ==== src/00-wallpaper.js
+// 00-wallpaper.js — the city as a wallpaper behind the desktop icons (P12 L0, KV-24; report §1.5). Lively (the user's own
+// program, GPL-3.0, no code taken) shows http://localhost:8797/#mode=wallpaper[&fps=1..5][&view=land|city] as the desktop:
+// - every animation loop of the page runs at most fps times a second (default 2): requestAnimationFrame is wrapped here,
+//   before any other module runs, so the camera flights, ships, constructs and peaks all obey it; rendering stays on
+//   demand (03-scene), so a quiet city draws nothing at all;
+// - no panels, bars or HUD — just the scene; flights are instant;
+// - hidden (a fullscreen app, Lively paused, the screen locked) = the live stream is closed until it shows again;
+// - the segéd treats it as a light listener: file pulses, git and Claude's figures (polled every 30 s), but none of the
+//   samplers, the probe or ETW (those run only while a full page listens).
+
+const KV_WALL = (() => {
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.get('mode') !== 'wallpaper') return null;
+  const fps = Math.min(5, Math.max(1, Math.round(+q.get('fps') || 2)));
+  const raf = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = cb => setTimeout(() => raf(cb), 1000 / fps);
+  window.KV_INSTANT = true;
+  document.documentElement.classList.add('wallpaper');
+  return { fps, view: q.get('view') === 'city' ? 'city' : 'land' };
+})();
+
 // ==== src/01-data.js
 // 01-data.js — the city data as scan.js wrote it, plus the folder tree the layout walks.
 // city.files[i]: { p, lang, loc, maxLoc, born, last, n, own, ag, gone?, goneAt? }
@@ -3311,14 +3336,16 @@ const liveMine = () => kv.for === current.city && kv.match;
 function livePulse(idx) {
   if (live.pulse.length !== replay.flash.length) live.pulse = new Float32Array(replay.flash.length);
   for (const i of idx) live.pulse[i] = 1;
-  if (!live.raf) live.raf = requestAnimationFrame(liveFade);
+  if (!live.raf) { live.fadeAt = performance.now(); live.raf = requestAnimationFrame(liveFade); }
 }
+// the glow fades by time (×0.97 per 60th of a second, ~2 s), not per frame: the wallpaper draws only 1–5 frames a second
 function liveFade() {
-  const fl = world.buildings.geometry.attributes.aFlash;
+  const fl = world.buildings.geometry.attributes.aFlash, now = performance.now(), k = Math.pow(0.97, Math.min(600, (now - (live.fadeAt || now)) / (1000 / 60)));
+  live.fadeAt = now;
   let any = false;
   for (let i = 0; i < live.pulse.length; i++) {
     if (live.pulse[i] <= 0) continue;
-    live.pulse[i] = live.pulse[i] < 0.02 ? 0 : live.pulse[i] * 0.97;
+    live.pulse[i] = live.pulse[i] < 0.02 ? 0 : live.pulse[i] * k;
     fl.array[i] = Math.max(replay.flash[i], live.pulse[i]);
     any = any || live.pulse[i] > 0;
   }
@@ -3393,7 +3420,7 @@ async function liveSwap() {
 
 function liveConnect() {
   if (live.es || !kv.match) return;
-  live.es = new EventSource('/api/stream');
+  live.es = new EventSource('/api/stream' + (KV_WALL ? '?wallpaper=1' : ''));   // 00-wallpaper: a light listener
   live.es.addEventListener('hello', e => {
     const h = JSON.parse(e.data).head;
     $('live-dot').hidden = false;
@@ -3443,6 +3470,10 @@ async function liveInit() {
   liveSeenInit();
   await kvReady();
   liveConnect();
+  if (KV_WALL) {   // 00-wallpaper: the scene only — no terminal offer, gates, metro or H: walk; hidden = no stream
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { if (live.es) { live.es.close(); live.es = null; } } else liveConnect(); });
+    return;
+  }
   termResumeOffer();   // 21-term: Claude tabs from before a restart
   if (kv.match) palCatalog().then(jbLoad);   // 26-jobs: the gates need the START.cmd tools
   if (kv.match) mtLoad();   // 28-metro
@@ -5043,10 +5074,11 @@ onTimeChanged = () => { if (fen.list.length) fenDraw(); tlRender(); lensApply();
 if (window.CITY) {
   load(window.CITY);
   liveInit();   // 22-live: "Mi változott?" and, when served, the live stream
-  setInterval(hlRibbon, 1500);   // 27-health: the Now ribbon follows sessions, jobs, fences and changes
+  if (!KV_WALL) setInterval(hlRibbon, 1500);   // 27-health: the Now ribbon follows sessions, jobs, fences and changes
   landDraw();   // 29-land: the places around the city
   pwDraw();   // 30-power
   worldDraw();   // 32-world: the planet under the Land
+  if (KV_WALL && KV_WALL.view === 'land') landHome(0);   // 00-wallpaper: the whole Land behind the icons
   // test hook: #landtest=disk waits for Tárház's walk (served), closes the stream (headless clock), shows the Land
   if (new URLSearchParams(location.hash.slice(1)).get('landtest') === 'disk') live.ready.then(() => new Promise(res => {
     if (land.disk && land.disk.dirs && land.disk.dirs.length && !land.disk.walking) res(); else live.es.addEventListener('disk', res, { once: true }); }))

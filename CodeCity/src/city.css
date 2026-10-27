@@ -291,3 +291,6 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #sess-now .now { margin: 4px 0; word-break: break-all; }
 #sess-now i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; vertical-align: -1px; }
 #sess-now .x { position: absolute; top: 4px; right: 10px; cursor: pointer; color: var(--dim); }
+
+/* 00-wallpaper (#mode=wallpaper): the scene only, behind the desktop icons */
+html.wallpaper body > *:not(#stage), html.wallpaper #stage > *:not(#gl) { display: none !important; }

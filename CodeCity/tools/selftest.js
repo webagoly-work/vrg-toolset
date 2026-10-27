@@ -126,6 +126,10 @@ try {
   const ets = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-etw.js')], { encoding: 'utf8', timeout: 90000 });
   for (const l of String(ets.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
   check(ets.status === 0, `etw spec exit ${ets.status}`);
+  // wallpaper (P12 L0, KV-24): a ?wallpaper=1 listener starts no probe and polls claude agents slowly; a full page undoes it
+  const wps = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-wallpaper.js')], { encoding: 'utf8', timeout: 90000 });
+  for (const l of String(wps.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
+  check(wps.status === 0, `wallpaper spec exit ${wps.status}`);
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
   else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }

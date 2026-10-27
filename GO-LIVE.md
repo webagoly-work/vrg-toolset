@@ -50,11 +50,12 @@ checkout**, with its own login.
 
 ## 3b. State at the handoff (2026-10-26, primary account → secondary account)
 
-- **Done: P0–P9 + P2's embedded terminal** (KV-01 … KV-20) + **KV-21, KV-22, KV-23** (2026-10-26, primary account; P10 and P11 done), all on `main`, not pushed. README §8 has the table and
-  the done list; `docs/city/wp/` has a stub per phase with its status and notes. Selftest: 71 checks, all green
+- **Done: P0–P9 + P2's embedded terminal** (KV-01 … KV-20) + **KV-21 … KV-24** (2026-10-26/27, primary account; P10 and P11 done, P12's wallpaper built), all on `main`, not pushed. README §8 has the table and
+  the done list; `docs/city/wp/` has a stub per phase with its status and notes. Selftest: 74 checks, all green
   (`node CodeCity/tools/selftest.js`).
 - **vrg-etw is installed** (C:\Program Files\VRG\Kodvaros-ETW, task "VRG Kodvaros ETW", checked 2026-10-27). After a rebuild
-  the user re-runs install-etw.ps1 elevated. **Next prompt: KV-24** (P12 wallpaper layer).
+  the user re-runs install-etw.ps1 elevated. KV-24 (wallpaper) is built; Lively is the user's step (wp/p12-overlay.md).
+  **Next prompt: KV-25** (Electron overlay) — only after the user's 22H2 (CITY-D19 A: write the enablement steps first).
 - **Toolchain:** The SDK is in `Planner/apps/dotnet`; rebuild the probe with
   `node CodeCity/tools/build-probe.js` (offline) and vrg-etw with `node CodeCity/tools/build-etw.js` (TraceEvent 3.2.8 from
   nuget.org, locked by CodeCity/etw/packages.lock.json). Self-contained needs the runtime pack from nuget.org — still not
