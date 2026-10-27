@@ -7,7 +7,7 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/shell/ (new)
 - **Decisions:** D19, D20
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** open — L0 wallpaper built (KV-24, 2026-10-27); KV-25/26 need 22H2 first (CITY-D19 A) — the user's steps:
+- **Status:** open — L0 wallpaper built (KV-24), L2 overlay spike built (KV-25, 2026-10-27, on 22H2); KV-26 next — 22H2 steps:
   [p12-22h2.md](p12-22h2.md) (Windows Update is switched off on this PC since 2022; the steps switch it on, pinned to 22H2)
 
 ## KV-24: the wallpaper (L0)
@@ -37,3 +37,50 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 5. Options in the URL: `fps=1` … `fps=5` (2 is the default), `&view=city` for the city instead of the Land.
 6. Check: the desktop shows the Land behind the icons; edit a file in the repo → its building glows for ~2 s;
    Task Manager shows Lively's web process and the node of the segéd near 0 % while nothing changes.
+
+## KV-25: the Electron overlay spike (L2)
+
+- **Runtime:** Electron **44.7.1** (Chrome 152; released 2026-10-13), pinned in `vendor-manifest.json` with the npm
+  tarball's sha512. `CodeCity/tools/fetch-electron.js` checks that, takes the sha256 of
+  `electron-v44.7.1-win32-x64.zip` from the tarball's `checksums.json`, downloads the zip from the GitHub release, checks it
+  and unpacks it to `Planner/apps/electron` (git-ignored, 151 MB). No `npm install`, no postinstall scripts.
+- **Black-transparency bug (electron#40515) on this GPU — tested first:** `CodeCity/shell/transparency-test.js` puts a
+  magenta window under a transparent one and reads the screen. GTX 1050 Ti, driver 32.0.15.6636, hardware acceleration
+  **on**: the empty half reads exactly 255,0,255, the 50 % veil 255,128,255 — **no black**. Same with `--disable-gpu`.
+  With the real WebGL page (the selftest, below) 0.1 % of the screen is black (dark building faces), not the bug.
+- **The shell** (`CodeCity/shell/main.js`, ~150 lines): one transparent, frameless, always-on-top (`screen-saver` level)
+  window per monitor, each on `http://127.0.0.1:8797/#mode=overlay`; **Ctrl+Alt+K** summons/hides (taken → a tray
+  balloon and the fallback Ctrl+Alt+Shift+K; `globalShortcut.register` only returns false); **Esc** hides (registered
+  only while summoned); click-through with forward: the page (00-wallpaper.js) reports where it is solid — a panel, the
+  bar, a building, a plate, or a drag that started there — and only there the window takes the mouse; tray: show/hide,
+  click-through on/off, reload, quit; one instance (starting it again summons it); monitors added/removed rebuild the
+  windows. Sandboxed, context-isolated, no Node in the page; the preload sends two messages and receives none;
+  navigation off the segéd's origin and new windows are refused.
+- **The page in `#mode=overlay`:** the full page (bar, panels, palette) with no CSS sky, no vignette and no planet sea
+  sphere — the desktop is the sea; the stream closes while hidden, as for the wallpaper.
+- **START.cmd:** K → **F) Fedoreteg** starts the segéd without a browser if needed, fetches Electron on first use, then
+  the shell.
+
+**Check, measured 2026-10-27** — `electron CodeCity/shell --selftest` on the real desktop (3 monitors, GTX 1050 Ti,
+a throwaway segéd):
+
+| | |
+|---|---|
+| Summon (call → second painted frame), warm, ×6 incl. one real Ctrl+Alt+K key press | 23–88 ms (**< 150 ms** ✔); the very first, cold one ~130 ms |
+| Screen with the overlay up (magenta behind it) | 35 % clear sky, 24 % behind a plate or fog veil, 0.1 % black |
+| Click-through | empty sky falls through ✔, a building and the bar catch ✔ |
+| Hidden | every page `hidden`, stream closed; **all shell processes 0.06 % of one core** over 30 s (**~0 %** ✔) |
+| Memory | ~640 MB for three monitors (three renderers) |
+
+**Known limits, for KV-26 and later:** Esc is global while the overlay is up (it also closes the overlay when a panel
+had focus); every monitor runs the full page (three stream listeners while summoned); secondary monitors show the same
+view as the first; the HUD strip (L1) is not built.
+
+## Your steps: the overlay
+
+1. START.cmd → **K** → **F**. The first time it downloads Electron (~150 MB, checked). A cyan hexagon appears in the tray.
+2. **Ctrl+Alt+K** shows the city over every monitor; click a building or use the bar as in the browser; empty sky
+   clicks through to the desktop; **Ctrl+Alt+K** again or **Esc** hides it.
+3. Tray icon → right-click: show/hide, *Átkattintás az üres égen* (turn off to make the whole overlay catch the
+   mouse), reload, quit. A balloon at start means Ctrl+Alt+K was taken; then it uses Ctrl+Alt+Shift+K.
+

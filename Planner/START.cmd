@@ -106,6 +106,11 @@ setlocal EnableDelayedExpansion
 ::  tool 11): CodeCity\companion.js serves the city on http://localhost:8797
 ::  with the local actions (live workspace P1, docs\city\wp). 1-4 still open
 ::  the file:// page. No tool number moved.
+::
+::  2026-10-27 - K) Kodvaros got F) Fedoreteg (only for tool 11): the Electron
+::  overlay shell CodeCity\shell over the desktop (P12, KV-25), summoned with
+::  Ctrl+Alt+K. Starts the seged first if it is not running; fetches Electron
+::  into Planner\apps\electron on first use. No tool number moved.
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -418,16 +423,19 @@ echo   4^) Rendszer alapertelmezett bongeszo
 echo.
 echo   M^) Mappa megnyitasa  ^(Explorer, ahol a fajl van^)
 if "%PICKNUM%"=="11" echo   S^) Elo mod - Kodvaros seged  ^(helyi szerver, http://localhost:8797^)
+if "%PICKNUM%"=="11" echo   F^) Fedoreteg - a varos az asztal folott  ^(Electron, Ctrl+Alt+K^)
 echo   0^) Vissza
 echo.
 :: Egy billentyu, mint a fomenuben - lasd az ottani magyarazatot.
 :: Az errorlevel a /C listaban elfoglalt helyet adja vissza, ezert a
 :: vizsgalat csokkeno sorrendben all: az "if errorlevel N" azt jelenti,
 :: hogy "N vagy nagyobb".
-:: S) exists only for tool 11, as the 7th key, so errorlevel 7 can only be S.
+:: S) and F) exist only for tool 11, as the 7th and 8th keys, so errorlevel 7
+:: can only be S and 8 only F.
 set "BKEYS=1234M0"
-if "%PICKNUM%"=="11" set "BKEYS=1234M0S"
+if "%PICKNUM%"=="11" set "BKEYS=1234M0SF"
 choice /C !BKEYS! /N /M "Bongeszo / mappa: "
+if errorlevel 8 goto OPEN_CITY_OVERLAY
 if errorlevel 7 goto OPEN_CITY_LIVE
 if errorlevel 6 goto MENU
 if errorlevel 5 goto OPEN_FOLDER
@@ -682,6 +690,33 @@ if not exist "%REPO%\CodeCity\companion.js" (
     goto MENU
 )
 start "VRG 8797" /min "%NODE_EXE%" "%REPO%\CodeCity\companion.js"
+goto MENU
+
+:: Tool 11 overlay (P12, KV-25): the Electron shell CodeCity\shell shows the
+:: seged page over the desktop on Ctrl+Alt+K. The seged is started first
+:: (without opening a browser) if it is not running; Electron is fetched into
+:: Planner\apps\electron on first use (CodeCity\tools\fetch-electron.js checks
+:: it against vendor-manifest.json).
+:OPEN_CITY_OVERLAY
+if not exist "%NODE_EXE%" (
+    echo   HIBA: nem talalhato a hordozhato Node: %NODE_EXE%
+    pause
+    goto MENU
+)
+if not exist "%ROOT%\apps\electron\electron.exe" (
+    echo   Az Electron meg nincs letoltve - most letoltom ^(kb. 150 MB^)...
+    "%NODE_EXE%" "%REPO%\CodeCity\tools\fetch-electron.js"
+    if errorlevel 1 (
+        echo   HIBA: az Electron letoltese nem sikerult.
+        pause
+        goto MENU
+    )
+)
+curl.exe -s -o nul -m 1 "http://127.0.0.1:8797/" >nul 2>&1
+if errorlevel 1 start "VRG 8797" /min "%NODE_EXE%" "%REPO%\CodeCity\companion.js" --no-open
+start "" "%ROOT%\apps\electron\electron.exe" "%REPO%\CodeCity\shell"
+echo   Fedoreteg elinditva: Ctrl+Alt+K elohivja / elrejti, Esc elrejti, talcaikon: menu.
+timeout /t 3 >nul
 goto MENU
 
 :DO_VSCODE_REPO

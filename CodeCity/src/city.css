@@ -294,3 +294,7 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 
 /* 00-wallpaper (#mode=wallpaper): the scene only, behind the desktop icons */
 html.wallpaper body > *:not(#stage), html.wallpaper #stage > *:not(#gl) { display: none !important; }
+/* 00-wallpaper (#mode=overlay): the summoned controller in the Electron shell — no sky, no vignette: the desktop shows through */
+html.overlay, html.overlay body, html.overlay #stage { background: transparent; }
+html.overlay #stage::after, html.overlay #drop { display: none !important; }
+html.overlay #bar { background: var(--panel); }

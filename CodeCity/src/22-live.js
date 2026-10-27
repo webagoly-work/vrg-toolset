@@ -148,10 +148,9 @@ async function liveInit() {
   liveSeenInit();
   await kvReady();
   liveConnect();
-  if (KV_WALL) {   // 00-wallpaper: the scene only — no terminal offer, gates, metro or H: walk; hidden = no stream
-    document.addEventListener('visibilitychange', () => { if (document.hidden) { if (live.es) { live.es.close(); live.es = null; } } else liveConnect(); });
-    return;
-  }
+  // 00-wallpaper: hidden = no stream (the wallpaper behind a fullscreen app, the overlay dismissed)
+  if (KV_WALL || KV_OVERLAY) document.addEventListener('visibilitychange', () => { if (document.hidden) { if (live.es) { live.es.close(); live.es = null; } } else if (!live.es) liveConnect(); });
+  if (KV_WALL) return;   // the wallpaper is the scene only — no terminal offer, gates, metro or H: walk
   termResumeOffer();   // 21-term: Claude tabs from before a restart
   if (kv.match) palCatalog().then(jbLoad);   // 26-jobs: the gates need the START.cmd tools
   if (kv.match) mtLoad();   // 28-metro

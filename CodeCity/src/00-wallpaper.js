@@ -18,3 +18,22 @@ const KV_WALL = (() => {
   document.documentElement.classList.add('wallpaper');
   return { fps, view: q.get('view') === 'city' ? 'city' : 'land' };
 })();
+
+// #mode=overlay (P12 L2, KV-25): the summoned controller inside the Electron shell (CodeCity/shell/main.js) — the whole page,
+// but the sky is transparent, so the desktop shows through. The shell keeps the window click-through with forward (mouse
+// moves still arrive); the page says where it is solid: over a panel, a bar, a building or a district plate — or while a
+// drag that started there goes on. Hidden (the hotkey again, Esc) = the stream is closed, as for the wallpaper.
+const KV_OVERLAY = (() => {
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.get('mode') !== 'overlay') return null;
+  document.documentElement.classList.add('overlay');
+  const shell = window.kvShell;
+  if (shell) {
+    let solid = null;
+    addEventListener('pointermove', e => {
+      const s = e.buttons !== 0 || e.target.id !== 'gl' || !!pickAt(e);
+      if (s !== solid) { solid = s; shell.solid(s); }
+    }, { passive: true });
+  }
+  return { display: +q.get('display') || 0 };
+})();

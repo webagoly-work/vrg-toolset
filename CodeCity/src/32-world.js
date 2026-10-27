@@ -28,6 +28,7 @@ function worldDraw() {
   sea.position.set(0, -R - 0.6 * agScale(), 0);
   const halo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.04, 64, 48), new THREE.MeshBasicMaterial({ color: 0x2a6aff, transparent: true, opacity: 0.08, side: THREE.BackSide, fog: false }));
   halo.position.copy(sea.position);
+  if (KV_OVERLAY) sea.visible = halo.visible = false;   // 00-wallpaper: in the overlay the desktop is the sea
   wd.group.add(sea, halo);
   // continents: a ring of ecosystems around the pole, each a cap; its repos inside it
   const fams = WD_FAMILY.map(f => ({ f, repos: WORLD.repos.filter(r => (WD_FAMILY.find(x => x[2].test(r.language || '')) || WD_FAMILY[4])[0] === f[0]) })).filter(x => x.repos.length);

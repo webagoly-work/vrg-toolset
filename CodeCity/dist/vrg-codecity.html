@@ -300,6 +300,10 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 
 /* 00-wallpaper (#mode=wallpaper): the scene only, behind the desktop icons */
 html.wallpaper body > *:not(#stage), html.wallpaper #stage > *:not(#gl) { display: none !important; }
+/* 00-wallpaper (#mode=overlay): the summoned controller in the Electron shell — no sky, no vignette: the desktop shows through */
+html.overlay, html.overlay body, html.overlay #stage { background: transparent; }
+html.overlay #stage::after, html.overlay #drop { display: none !important; }
+html.overlay #bar { background: var(--panel); }
 </style>
 </head>
 <body>
@@ -1011,6 +1015,25 @@ const KV_WALL = (() => {
   window.KV_INSTANT = true;
   document.documentElement.classList.add('wallpaper');
   return { fps, view: q.get('view') === 'city' ? 'city' : 'land' };
+})();
+
+// #mode=overlay (P12 L2, KV-25): the summoned controller inside the Electron shell (CodeCity/shell/main.js) — the whole page,
+// but the sky is transparent, so the desktop shows through. The shell keeps the window click-through with forward (mouse
+// moves still arrive); the page says where it is solid: over a panel, a bar, a building or a district plate — or while a
+// drag that started there goes on. Hidden (the hotkey again, Esc) = the stream is closed, as for the wallpaper.
+const KV_OVERLAY = (() => {
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.get('mode') !== 'overlay') return null;
+  document.documentElement.classList.add('overlay');
+  const shell = window.kvShell;
+  if (shell) {
+    let solid = null;
+    addEventListener('pointermove', e => {
+      const s = e.buttons !== 0 || e.target.id !== 'gl' || !!pickAt(e);
+      if (s !== solid) { solid = s; shell.solid(s); }
+    }, { passive: true });
+  }
+  return { display: +q.get('display') || 0 };
 })();
 
 // ==== src/01-data.js
@@ -3470,10 +3493,9 @@ async function liveInit() {
   liveSeenInit();
   await kvReady();
   liveConnect();
-  if (KV_WALL) {   // 00-wallpaper: the scene only — no terminal offer, gates, metro or H: walk; hidden = no stream
-    document.addEventListener('visibilitychange', () => { if (document.hidden) { if (live.es) { live.es.close(); live.es = null; } } else liveConnect(); });
-    return;
-  }
+  // 00-wallpaper: hidden = no stream (the wallpaper behind a fullscreen app, the overlay dismissed)
+  if (KV_WALL || KV_OVERLAY) document.addEventListener('visibilitychange', () => { if (document.hidden) { if (live.es) { live.es.close(); live.es = null; } } else if (!live.es) liveConnect(); });
+  if (KV_WALL) return;   // the wallpaper is the scene only — no terminal offer, gates, metro or H: walk
   termResumeOffer();   // 21-term: Claude tabs from before a restart
   if (kv.match) palCatalog().then(jbLoad);   // 26-jobs: the gates need the START.cmd tools
   if (kv.match) mtLoad();   // 28-metro
@@ -4673,6 +4695,7 @@ function worldDraw() {
   sea.position.set(0, -R - 0.6 * agScale(), 0);
   const halo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.04, 64, 48), new THREE.MeshBasicMaterial({ color: 0x2a6aff, transparent: true, opacity: 0.08, side: THREE.BackSide, fog: false }));
   halo.position.copy(sea.position);
+  if (KV_OVERLAY) sea.visible = halo.visible = false;   // 00-wallpaper: in the overlay the desktop is the sea
   wd.group.add(sea, halo);
   // continents: a ring of ecosystems around the pole, each a cap; its repos inside it
   const fams = WD_FAMILY.map(f => ({ f, repos: WORLD.repos.filter(r => (WD_FAMILY.find(x => x[2].test(r.language || '')) || WD_FAMILY[4])[0] === f[0]) })).filter(x => x.repos.length);

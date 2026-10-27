@@ -130,6 +130,18 @@ try {
   const wps = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-wallpaper.js')], { encoding: 'utf8', timeout: 90000 });
   for (const l of String(wps.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
   check(wps.status === 0, `wallpaper spec exit ${wps.status}`);
+  // overlay shell (P12 L2, KV-25): the Electron files parse with this Node, the shell loads only the segéd origin and
+  // stays sandboxed; the page has #mode=overlay. The live check needs the desktop: electron CodeCity/shell --selftest
+  const shellDir = path.join(__dirname, '..', 'shell');
+  const parse = ['main.js', 'preload.js', 'selftest.js', 'transparency-test.js'].map(n => path.join(shellDir, n)).concat(path.join(__dirname, 'fetch-electron.js'))
+    .every(p => require('child_process').spawnSync(process.execPath, ['--check', p]).status === 0);
+  check(parse, 'overlay shell: main, preload, selftest, transparency test and fetch-electron parse');
+  const shellMain = fs.readFileSync(path.join(shellDir, 'main.js'), 'utf8');
+  check(/sandbox: true/.test(shellMain) && /contextIsolation: true/.test(shellMain) && /nodeIntegration: false/.test(shellMain)
+    && /will-navigate/.test(shellMain) && /action: 'deny'/.test(shellMain), 'overlay shell: sandboxed, context-isolated, no navigation off the segéd, no new windows');
+  check(/mode'\) !== 'overlay'/.test(fs.readFileSync(path.join(__dirname, '..', 'src', '00-wallpaper.js'), 'utf8'))
+    && JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'vendor-manifest.json'), 'utf8')).components.some(c => c.slug === 'electron' && /^\d+\.\d+\.\d+$/.test(c.npmVersion) && /^sha512-/.test(c.npmIntegrity)),
+    'overlay shell: #mode=overlay in the page; Electron pinned with sha512 in vendor-manifest.json');
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
   else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }

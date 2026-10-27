@@ -838,7 +838,7 @@
       "priority": 1,
       "vendor": "fetch",
       "target": "markdown-it",
-      "note": "A Kódváros fájlpaneljének markdown-előnézete (P5). Az UMD-build (dist/markdown-it.min.js) a függőségeit is tartalmazza, ezért egy fájl elég; a segéd szolgálja ki. A kimenet DOMPurify-n megy át. MIT."
+      "note": "A Kódváros fájlpaneljének markdown-előnézete (P5). Az UMD-build (dist/browser/markdown-it.umd.min.js) a függőségeit is tartalmazza, ezért egy fájl elég; a segéd szolgálja ki. A kimenet DOMPurify-n megy át. MIT."
     },
     {
       "slug": "dompurify",
@@ -854,6 +854,21 @@
       "vendor": "fetch",
       "target": "dompurify",
       "note": "A markdown-előnézet HTML-jét tisztítja, mielőtt az oldalra kerül (P5): a repóban lévő .md-fájl nem futtathat szkriptet a Kódvárosban. Kettős licenc (MPL-2.0 vagy Apache-2.0); a fejléc a fájlban marad."
+    },
+    {
+      "slug": "electron",
+      "name": "Electron",
+      "repo": "electron/electron",
+      "npm": null,
+      "license": "MIT",
+      "stars": null,
+      "pushed": null,
+      "aspect": "Kódváros",
+      "build": "helyi-eszkoz",
+      "priority": 1,
+      "vendor": "reference",
+      "target": null,
+      "note": "Az overlay-héj futtatókörnyezete (P12, KV-25: CodeCity/shell/). Nem npm install és nem Vendor/: a CodeCity/tools/fetch-electron.js az npm-csomagot az itt rögzített sha512-vel ellenőrzi, a benne lévő checksums.json sha256-jával a GitHub-kiadás electron-v44.7.1-win32-x64.zip-jét, és a Planner/apps/electron mappába bontja (gitignore). 44.7.1 = 2026-10-13, a kiválasztáskor legalább két hetes. MIT; a Chromium és a többi komponens licence a csomag LICENSES.chromium.html fájljában."
     }
   ];
   /*__COMPONENTS_END__*/
