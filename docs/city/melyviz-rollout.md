@@ -1,0 +1,53 @@
+# Mélyvíz rollout — the dev-side apps (2026-10-27)
+
+Mélyvíz (`docs/city/melyviz.md`) leaves Kódváros and becomes the style of every dev-side app. Client material
+(offers, Tervezet, brochure, client preview) stays **VRG Title Card**.
+
+## Decisions (2026-10-27)
+
+| # | Question | Answer |
+|---|---|---|
+| R-1 | Which apps besides Planner, MindMap, Calculator, Workflow Kit | + Data tools (Inventory, BuildTree, Vendor), Front doors (Kapu, toolbox.html, Valena), BRIDGE pages. **Not** the firmware pages (Board Console, CYD settings). |
+| R-2 | Workflow Kit | Internal / review pages only. Offers, Tervezet and their golden HTML sources stay as they are; the golden checker must still pass. |
+| R-3 | Token source | One file, `shared/melyviz.css`, copied into each app by `tools/melyviz-sync.js` (`--check` gates drift). |
+| R-4 | Planner depth | Chrome only: panels, toolbars, dialogs, type. The drawing canvas, symbol and circuit colours keep their meaning and stay. |
+
+## How it is shared
+
+- `shared/melyviz.css` holds `--mv-*` tokens, an **opt-in base layer** (`html.mv`, wrapped in `:where()`, so it has
+  zero specificity and any app rule wins) and component classes: `.mv-glass` `.mv-solid` `.mv-cut` `.mv-title`
+  `.mv-label` `.mv-btn` `.mv-on` `.mv-live` `.mv-badge`. Print falls back to paper.
+- Each app carries a copy between `/* melyviz:begin */` and `/* melyviz:end */` in its own first `<style>`.
+  Built apps (Planner, Inventory, Kapu) have the markers in their src; the build carries them into dist.
+- `node tools/melyviz-sync.js` writes every copy; `--check` exits 1 on drift, a missing file or missing markers.
+  Register each adopted file in `TARGETS` inside the script.
+
+## Recipe per app
+
+1. `<html … class="mv">`, and an empty `<style>/* melyviz:begin */ /* melyviz:end */</style>` before the app's own style.
+2. Map the app's own `:root` variables onto `--mv-*` instead of renaming them, so every existing rule picks the skin up.
+   Decide each accent by **M1**: something you set or select → `--mv-accent` (ice); something running, live or recent →
+   `--mv-warm`; computed OK / warn / error → `--mv-ok` / `--mv-warn` / `--mv-crit`.
+3. Drop web fonts (the pages stay offline): mono → `var(--mv-mono)`; display/condensed → `var(--mv-voice)` +
+   `font-stretch:75%`.
+4. `border-radius` → 0 (dots excepted), `box-shadow` → none, decorative stripes → hairline grid on `html`.
+5. Add a short "Mélyvíz skin" block at the end of the app style for what the mapping can't reach (cut corners on the
+   main panels, focus glow, condensed titles).
+6. Add the file to `TARGETS`, run the sync, then check **computed** styles in the browser (CLAUDE.md), not just a shot.
+   Run the app's own tests if it has them.
+
+## Phases
+
+| Phase | Apps | State |
+|---|---|---|
+| P0 | `shared/melyviz.css`, `tools/melyviz-sync.js`, pilot `Calculator/led_arkalkulator.html` | **done 2026-10-27** |
+| P1 | Calculator: `panel_anyagar_kalkulator.html`, `Altalanos_Villanyszerelui_Kalkulator.html` | **done 2026-10-27** — selected segments are an ice outline (no solid fills); the old amber "bad" check is `--mv-warn`; munkadíj keeps its own data hue `#a9b6ef` (not ice); the HTML export stays paper (its amber table header untouched) |
+| P2 | MindMap `vrg_mindmap.html`: chrome only, node palette stays (palette ownership) | **done 2026-10-27** — a fifth theme `melyviz` in `THEMES` (the default for maps with no saved theme; `mv:true` puts `html.mv` on, so the chrome skin at the end of the style applies only in that theme). Bubbles, wires, kind colours and note bodies keep their shapes. The status bar stays sans (mono wrapped it to two lines); only its `kbd` caps are mono. Maps saved with another theme keep it until switched in ◐ Színvilág |
+| P3 | Inventory (src → dist), `Modder/vrg-buildtree.html`, `vrg-vendor.html` | open — BuildTree owns the toolset palette (amber/light/slate/green), so it must gain the same `melyviz` palette the MindMap now has |
+| P4 | Kapu (`Hub/src` → dist), `toolbox.html`, `Toolbox/valena-life-szerelvenytervezo.html` | open |
+| P5 | BRIDGE: `_tuner/bridge-tuner.html`, `09_catalogue/smarthome-db.html`, `09_catalogue/tools/viewer.html`, `04_related-hardware/espblok-builder*.html` (not `_source-variants`) | open |
+| P6 | Planner `projects/varler-planner/src` chrome (largest; build + `npm test`) | open |
+| P7 | Workflow Kit `01_nv4_build/pipeline/nv4/web/internal.html` and other non-client review pages (outside the repo) | open |
+
+Not touched: `Varler_Workflow_Kit/00_precursors/calculator/*` (archived precursors), the BRIDGE blueprints and
+client pages, the firmware pages, Kódváros (it keeps its own `city.css`, which is the origin of these tokens).
