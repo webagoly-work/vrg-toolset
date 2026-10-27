@@ -332,4 +332,4 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-21 ✔ 2026-10-26 0ef5900 — framework-dependent until the runtime pack is fetched (§5)
 - KV-22 ✔ 2026-10-26 f113c30 — P10 done; checked live on Opera (GSMTC + its tower), Spotify was not running
 - KV-23 ✔ 2026-10-26 84b255d — checked 2026-10-27 with the user's elevated task: a clone's exact cargo per process, a cmd read of GO-LIVE.md beamed to its session
-- KV-24 ✔ 2026-10-27 (this commit) — idle wallpaper measured at ≈0.3 % of the PC; Lively itself is the user's step
+- KV-24 ✔ 2026-10-27 ad3b93a — idle wallpaper measured at ≈0.3 % of the PC; Lively itself is the user's step
