@@ -32,6 +32,20 @@
 //     stale planner tab, cannot feed each other. Clients that never send a
 //     hello have no known role and receive everything, which keeps legacy
 //     one-way senders working unchanged.
+//
+// CHANGED 27 Oct — VRG Légegér (AirDeck/): one phone, several apps.
+//   * `to` — an envelope may name the role it is for ({to:'codecity'}). It
+//     then reaches only clients of that role. Without `to`, routing is as
+//     before, except that two APP roles (anything but 'phone') no longer
+//     feed each other: a Kódváros hello must not become the Planner's peer.
+//   * focus — an app sends {type:'focus'} when its window gains focus. The
+//     relay remembers the last one and tells every phone, so the phone can
+//     switch to that app's layout.
+//   * roster — on every hello and close, phones get {from:'relay',
+//     type:'roster', payload:{peers, focus}}: which apps are on the line.
+//   * hello replay — each app's last hello is kept and replayed to a phone
+//     that says hello later. Before this, a phone that connected AFTER the
+//     Planner never learnt its tool table.
 // ==========================================================================
 
 const http = require('http');
@@ -178,8 +192,10 @@ const server = http.createServer((req, res) => {
       url: best.address ? `http://${best.address}:${port}` : null,
       ws: best.address ? `ws://${best.address}:${port}` : null,
       clients: clients.size,
+      roster: roster(),
+      focus: lastFocus,
       app: 'varler-phone-relay',
-      v: 2
+      v: 3
     });
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8',
@@ -197,7 +213,41 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server });
 const clients = new Set();
 
+const PHONE = 'phone';
+let relaySeq = 0;
+let lastFocus = null;                      // { role, app, title, t } of the app last focused
+
 function roleOf(ws) { return ws.__role || null; }
+function isApp(role) { return !!role && role !== PHONE; }
+
+function fromRelay(type, payload) {
+  return JSON.stringify({ v: 1, from: 'relay', seq: ++relaySeq, t: Date.now(), type: type, payload: payload });
+}
+
+function roster() {
+  const out = [];
+  for (const c of clients) {
+    if (c.readyState === c.OPEN && roleOf(c)) out.push({ role: roleOf(c), app: c.__app || null });
+  }
+  return out;
+}
+
+function toPhones(raw) {
+  for (const c of clients) if (c.readyState === c.OPEN && roleOf(c) === PHONE) c.send(raw);
+}
+
+function sendRoster() { toPhones(fromRelay('roster', { peers: roster(), focus: lastFocus })); }
+
+// Who gets a message from `ws`. Kept as one function so the rule is readable
+// in one place: explicit target first, then no echo, then no app-to-app.
+function deliverTo(ws, other, from, to) {
+  if (other === ws || other.readyState !== other.OPEN) return false;
+  const r = roleOf(other);
+  if (to) return r === to;
+  if (from && r && r === from) return false;          // same role: don't echo sideways
+  if (isApp(from) && isApp(r)) return false;          // Planner and Kódváros don't talk to each other
+  return true;
+}
 
 wss.on('connection', (ws, req) => {
   clients.add(ws);
@@ -208,27 +258,48 @@ wss.on('connection', (ws, req) => {
     const payload = raw.toString();
 
     // learn this client's role from its hello, and log it once
-    let from = null;
+    let from = null, to = null, m = null;
     try {
-      const m = JSON.parse(payload);
+      m = JSON.parse(payload);
       from = (m && m.from) || null;
-      if (m && m.type === 'hello' && !ws.__role) {
-        ws.__role = (m.payload && m.payload.role) || from || null;
-        console.log(`    ${ip} = ${ws.__role} ${(m.payload && m.payload.app) || ''}`);
+      to = (m && typeof m.to === 'string' && m.to) || null;
+    } catch (e) { m = null; /* not JSON: pass it through untouched */ }
+
+    if (m && m.type === 'hello') {
+      const first = !ws.__role;
+      ws.__role = ws.__role || (m.payload && m.payload.role) || from || null;
+      ws.__app = (m.payload && m.payload.app) || ws.__app || null;
+      if (isApp(ws.__role)) ws.__hello = payload;     // replayed to phones that arrive later
+      if (first) console.log(`    ${ip} = ${ws.__role} ${ws.__app || ''}`);
+      if (ws.__role === PHONE) {
+        for (const c of clients) {
+          if (c !== ws && c.readyState === c.OPEN && c.__hello && isApp(roleOf(c))) ws.send(c.__hello);
+        }
       }
-    } catch (e) { /* not JSON: pass it through untouched */ }
+    }
+
+    if (m && m.type === 'focus' && isApp(from)) {
+      lastFocus = {
+        role: from,
+        app: (m.payload && m.payload.app) || ws.__app || null,
+        title: (m.payload && m.payload.title) || null,
+        t: Date.now()
+      };
+    }
 
     for (const other of clients) {
-      if (other === ws || other.readyState !== other.OPEN) continue;
-      const r = roleOf(other);
-      if (from && r && r === from) continue;      // same role: don't echo sideways
-      other.send(payload);
+      if (deliverTo(ws, other, from, to)) other.send(payload);
     }
+
+    if (m && m.type === 'hello') sendRoster();
   });
 
   ws.on('close', () => {
     clients.delete(ws);
     console.log(`  - lecsatlakozott: ${ip}   (${clients.size} kliens)`);
+    if (lastFocus && ws.__role === lastFocus.role &&
+        ![...clients].some(c => roleOf(c) === lastFocus.role)) lastFocus = null;
+    if (ws.__role) sendRoster();
   });
 
   ws.on('error', err => console.log(`  ! socket hiba: ${err.message}`));
