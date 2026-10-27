@@ -40,6 +40,10 @@ const TARGETS = [
   'toolbox.html',
   'Hub/src/css/00-themes.css',             // built: node tools/build-hub.js
   'Inventory/src/ui/theme.css',            // built: npm run build carries it into dist
+  'BRIDGE/_tuner/bridge-tuner.html',
+  'BRIDGE/09_catalogue/tools/viewer.html', // built: node BRIDGE/09_catalogue/tools/build.js writes smarthome-db.html
+  'BRIDGE/04_related-hardware/espblok-builder.html',
+  'BRIDGE/04_related-hardware/espblok-builder_2.html',
 ];
 
 function main() {
