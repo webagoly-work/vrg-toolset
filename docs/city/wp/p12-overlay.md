@@ -7,7 +7,8 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/shell/ (new)
 - **Decisions:** D19, D20
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** open — L0 wallpaper built (KV-24, 2026-10-27); KV-25/26 need 22H2 first (CITY-D19 A)
+- **Status:** open — L0 wallpaper built (KV-24, 2026-10-27); KV-25/26 need 22H2 first (CITY-D19 A) — the user's steps:
+  [p12-22h2.md](p12-22h2.md) (Windows Update is switched off on this PC since 2022; the steps switch it on, pinned to 22H2)
 
 ## KV-24: the wallpaper (L0)
 

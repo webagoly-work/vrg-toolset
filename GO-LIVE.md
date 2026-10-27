@@ -55,7 +55,9 @@ checkout**, with its own login.
   (`node CodeCity/tools/selftest.js`).
 - **vrg-etw is installed** (C:\Program Files\VRG\Kodvaros-ETW, task "VRG Kodvaros ETW", checked 2026-10-27). After a rebuild
   the user re-runs install-etw.ps1 elevated. KV-24 (wallpaper) is built; Lively is the user's step (wp/p12-overlay.md).
-  **Next prompt: KV-25** (Electron overlay) — only after the user's 22H2 (CITY-D19 A: write the enablement steps first).
+  **Next prompt: KV-25** (Electron overlay) — only after the user's 22H2. The steps are written (docs/city/wp/p12-22h2.md,
+  2026-10-27): Windows Update is disabled on this PC since 2022 (service + policy), so they switch it on pinned to 22H2.
+  Wait for the user's "22H2 kész", then check `winver` = 22H2 / 19045 before KV-25.
 - **Toolchain:** The SDK is in `Planner/apps/dotnet`; rebuild the probe with
   `node CodeCity/tools/build-probe.js` (offline) and vrg-etw with `node CodeCity/tools/build-etw.js` (TraceEvent 3.2.8 from
   nuget.org, locked by CodeCity/etw/packages.lock.json). Self-contained needs the runtime pack from nuget.org — still not
