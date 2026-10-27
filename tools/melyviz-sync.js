@@ -35,6 +35,11 @@ const TARGETS = [
   'Calculator/panel_anyagar_kalkulator.html',
   'Calculator/Altalanos_Villanyszerelui_Kalkulator.html',
   'MindMap/vrg_mindmap.html',
+  'Modder/vrg-buildtree.html',
+  'vrg-vendor.html',
+  'toolbox.html',
+  'Hub/src/css/00-themes.css',             // built: node tools/build-hub.js
+  'Inventory/src/ui/theme.css',            // built: npm run build carries it into dist
 ];
 
 function main() {
