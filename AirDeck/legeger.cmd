@@ -102,7 +102,7 @@ echo.
 echo   APK epitese... ^(az elso futas letolti a Gradle-t es a fuggosegeket^)
 echo.
 pushd "%ANDROID_DIR%"
-call gradlew.bat assembleDebug
+call .\gradlew.bat assembleDebug
 set "RC=%ERRORLEVEL%"
 popd
 echo.
@@ -126,7 +126,7 @@ echo.
 pushd "%ANDROID_DIR%"
 :: core is a plain Kotlin module; --configure-on-demand keeps the Android
 :: module out of it, so this runs without the Android SDK
-call gradlew.bat --configure-on-demand :core:test
+call .\gradlew.bat --configure-on-demand :core:test
 set "RC=%ERRORLEVEL%"
 popd
 echo.
@@ -200,11 +200,16 @@ goto DONE_PAUSE
 :: path with a bracket in it would close a block early.
 
 :FIND_JAVA
+:: An HTTPS-scanning antivirus (Avast here) re-signs downloads with its own root, which Java's
+:: cacerts does not know, so the Gradle download fails PKIX. The Windows store does know it.
+if not defined JAVA_TOOL_OPTIONS set "JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStoreType=Windows-ROOT"
 if defined JAVA_HOME if exist "%JAVA_HOME%\bin\java.exe" exit /b 0
 set "JAVA_HOME="
 if exist "%ProgramFiles%\Android\Android Studio\jbr\bin\java.exe" set "JAVA_HOME=%ProgramFiles%\Android\Android Studio\jbr"
 if not defined JAVA_HOME if exist "%LOCALAPPDATA%\Programs\Android Studio\jbr\bin\java.exe" set "JAVA_HOME=%LOCALAPPDATA%\Programs\Android Studio\jbr"
 if not defined JAVA_HOME if exist "%REPO%\Planner\apps\jdk\bin\java.exe" set "JAVA_HOME=%REPO%\Planner\apps\jdk"
+:: a portable Temurin unzipped next to the SDK, e.g. %LOCALAPPDATA%\Android\jdk-17.0.20.1+1
+if not defined JAVA_HOME for /d %%D in ("%LOCALAPPDATA%\Android\jdk-17*") do if exist "%%D\bin\java.exe" set "JAVA_HOME=%%D"
 if defined JAVA_HOME exit /b 0
 where java >nul 2>&1 && exit /b 0
 echo.
