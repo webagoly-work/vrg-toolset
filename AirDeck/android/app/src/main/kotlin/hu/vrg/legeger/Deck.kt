@@ -356,12 +356,14 @@ object Deck {
     }
 
     private suspend fun onShot(s: Incoming.Shot) {
-        if (!s.ok || s.url == null) {
+        // a local copy: Shot lives in :core, so the compiler won't smart-cast s.url
+        val url = s.url
+        if (!s.ok || url == null) {
             shotPending.value = false
             notes.emit(s.reason ?: "A képernyőkép nem sikerült.")
             return
         }
-        val f = ShotStore.download(app, RelayUrl.http(relay.url, s.url), s.name ?: "kepernyo.png")
+        val f = ShotStore.download(app, RelayUrl.http(relay.url, url), s.name ?: "kepernyo.png")
         shotPending.value = false
         if (f == null) { notes.emit("A kép letöltése nem sikerült."); return }
         shots.value = ShotStore.list(app)
