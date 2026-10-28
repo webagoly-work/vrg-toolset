@@ -29,7 +29,12 @@ function client(name) {
 }
 
 (async () => {
-  const relay = spawn(process.execPath, [path.join(REPO, 'Planner/projects/varler-planner/tools/phone-relay-server.js')], { stdio: ['ignore', 'pipe', 'pipe'] });
+  // a 1x1 PNG stands in for the screen: RELAY_SHOT_FILE makes the relay answer with it
+  const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+  const pngFile = path.join(os.tmpdir(), 'legeger-e2e-shot.png');
+  require('fs').writeFileSync(pngFile, PNG);
+  const relay = spawn(process.execPath, [path.join(REPO, 'Planner/projects/varler-planner/tools/phone-relay-server.js'), '--shots'],
+    { stdio: ['ignore', 'pipe', 'pipe'], env: Object.assign({}, process.env, { RELAY_SHOT_FILE: pngFile }) });
   let log = ''; relay.stdout.on('data', d => log += d); relay.stderr.on('data', d => log += d);
   await sleep(700);
 
@@ -85,11 +90,23 @@ function client(name) {
   const hashAfter = await page.evaluate(() => location.hash);
   ok(hashAfter !== hashBefore, 'gestures moved the camera (share link changed)');
 
+  planner.send('screenshot.request', { mode: 'screen' }, 'relay'); await sleep(300);
+  ok(!planner.got.some(m => m.type === 'screenshot'), 'only a phone may ask for a screenshot');
+  phone.send('screenshot.request', { mode: 'window' }, 'relay'); await sleep(700);
+  const shot = phone.got.filter(m => m.type === 'screenshot').pop();
+  ok(shot && shot.payload.ok && /^\/shot\/[0-9a-f]{32}\.png$/.test(shot.payload.url) && /^kepernyo-.*\.png$/.test(shot.payload.name),
+    'screenshot answered with an unguessable /shot/ url and a dated name');
+  const png = shot ? Buffer.from(await (await fetch('http://127.0.0.1:47291' + shot.payload.url)).arrayBuffer()) : Buffer.alloc(0);
+  ok(png.equals(PNG), 'the PNG downloads byte for byte (' + png.length + ' B)');
+  const guess = await fetch('http://127.0.0.1:47291/shot/' + '0'.repeat(32) + '.png');
+  ok(guess.status === 404, 'a guessed shot name is a 404');
+  ok(!planner.got.some(m => m.type === 'screenshot'), 'the answer went to the asking phone only');
+
   planner.send('focus', { app: 'planner' }); await sleep(300);
   const f = phone.got.filter(m => m.type === 'focus').pop();
   ok(f && f.from === 'planner', 'Planner focus reaches the phone');
   const who = await (await fetch('http://127.0.0.1:47291/whoami')).json();
-  ok(who.v === 3 && who.focus && who.focus.role === 'planner', '/whoami v3 reports focus = planner');
+  ok(who.v === 3 && who.focus && who.focus.role === 'planner' && who.shots === true, '/whoami v3 reports focus = planner and shots on');
 
   planner.ws.close(); await sleep(300);
   const r2 = phone.got.filter(m => m.type === 'roster').pop();

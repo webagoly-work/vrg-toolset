@@ -16,6 +16,8 @@ class MotionSource(ctx: Context) : SensorEventListener {
     private val sm = ctx.getSystemService(SensorManager::class.java)
     private val gyro: Sensor? = sm?.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
     private val rotation: Sensor? = sm?.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
+    // gravity is the low-passed accelerometer; the raw one works too for "is it face down"
+    private val gravity: Sensor? = sm?.getDefaultSensor(Sensor.TYPE_GRAVITY) ?: sm?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
     val hasGyro: Boolean get() = gyro != null
     val hasPose: Boolean get() = rotation != null
@@ -24,9 +26,12 @@ class MotionSource(ctx: Context) : SensorEventListener {
     var onGyro: (gx: Float, gy: Float, gz: Float, dt: Float, nowMs: Long) -> Unit = { _, _, _, _, _ -> }
     /** pitch and azimuth in radians, as SensorManager.getOrientation gives them. Sensor thread. */
     var onPose: (pitch: Float, azimuth: Float, nowMs: Long) -> Unit = { _, _, _ -> }
+    /** The z component of gravity (m/s², + = screen up). Sensor thread. */
+    var onGravity: (gz: Float, nowMs: Long) -> Unit = { _, _ -> }
 
     private var gyroOn = false
     private var poseOn = false
+    private var gravityOn = false
     private var lastNs = 0L
     private val rot = FloatArray(9)
     private val ori = FloatArray(3)
@@ -46,7 +51,14 @@ class MotionSource(ctx: Context) : SensorEventListener {
         else sm?.unregisterListener(this, rotation)
     }
 
-    fun stopAll() { gyro(false); pose(false) }
+    fun gravity(on: Boolean) {
+        if (on == gravityOn || gravity == null) return
+        gravityOn = on
+        if (on) sm?.registerListener(this, gravity, SensorManager.SENSOR_DELAY_NORMAL)
+        else sm?.unregisterListener(this, gravity)
+    }
+
+    fun stopAll() { gyro(false); pose(false); gravity(false) }
 
     override fun onSensorChanged(e: SensorEvent) {
         val now = e.timestamp / 1_000_000L
@@ -56,6 +68,7 @@ class MotionSource(ctx: Context) : SensorEventListener {
                 lastNs = e.timestamp
                 onGyro(e.values[0], e.values[1], e.values[2], dt, now)
             }
+            Sensor.TYPE_GRAVITY, Sensor.TYPE_ACCELEROMETER -> onGravity(e.values[2], now)
             Sensor.TYPE_GAME_ROTATION_VECTOR -> {
                 SensorManager.getRotationMatrixFromVector(rot, e.values)
                 SensorManager.getOrientation(rot, ori)

@@ -2,6 +2,7 @@ package hu.vrg.legeger.hid
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothClass
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothHidDevice
 import android.bluetooth.BluetoothHidDeviceAppSdpSettings
@@ -39,6 +40,9 @@ class HidPeripheral(private val ctx: Context, private val scope: CoroutineScope)
     val phase: StateFlow<Phase> = _phase
     private val _host = MutableStateFlow<BluetoothDevice?>(null)
     val host: StateFlow<BluetoothDevice?> = _host
+    /** The connected host says it is a phone (Bluetooth class of device): phone mode can switch on by itself. */
+    private val _hostIsPhone = MutableStateFlow(false)
+    val hostIsPhone: StateFlow<Boolean> = _hostIsPhone
 
     /** Called with the MAC of every host that connects, so it can be remembered. */
     var onHostConnected: (String) -> Unit = {}
@@ -124,6 +128,9 @@ class HidPeripheral(private val ctx: Context, private val scope: CoroutineScope)
 
     fun tap(c: Chord) { chordDown(c); keysUp() }
 
+    /** One frame of the touchscreen (phone mode). An empty list lifts everything. */
+    fun touch(contacts: List<Hid.Contact>) { send(Hid.ID_TOUCH, Hid.touch(contacts)) }
+
     fun media(usage: Int) {
         send(Hid.ID_CONSUMER, Hid.consumer(usage))
         send(Hid.ID_CONSUMER, Hid.consumer(0))
@@ -186,6 +193,7 @@ class HidPeripheral(private val ctx: Context, private val scope: CoroutineScope)
             when (state) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     _host.value = device
+                    _hostIsPhone.value = device.bluetoothClass?.majorDeviceClass == BluetoothClass.Device.Major.PHONE
                     _phase.value = Phase.CONNECTED
                     onHostConnected(device.address)
                 }
@@ -193,6 +201,7 @@ class HidPeripheral(private val ctx: Context, private val scope: CoroutineScope)
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     if (_host.value == device || _host.value == null) {
                         _host.value = null
+                        _hostIsPhone.value = false
                         buttons = 0
                         if (hid != null) _phase.value = Phase.READY
                     }
@@ -202,7 +211,7 @@ class HidPeripheral(private val ctx: Context, private val scope: CoroutineScope)
 
         override fun onGetReport(device: BluetoothDevice, type: Byte, id: Byte, bufferSize: Int) {
             val h = hid ?: return
-            val data = Hid.idle(id.toInt())
+            val data = if (type == BluetoothHidDevice.REPORT_TYPE_FEATURE) Hid.feature(id.toInt()) else Hid.idle(id.toInt())
             if (data.isEmpty()) h.reportError(device, BluetoothHidDevice.ERROR_RSP_INVALID_RPT_ID)
             else h.replyReport(device, type, id, data)
         }

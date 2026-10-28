@@ -46,18 +46,33 @@
 //   * hello replay — each app's last hello is kept and replayed to a phone
 //     that says hello later. Before this, a phone that connected AFTER the
 //     Planner never learnt its tool table.
+//
+// CHANGED 28 Oct — screenshots for the phone (Légegér 📸).
+//   A phone sends {type:'screenshot.request', to:'relay', payload:{mode:'screen'|'window'}}. The relay
+//   captures this PC (Windows: PowerShell + System.Drawing; macOS: screencapture; Linux: grim / import),
+//   keeps the PNG under an unguessable name for 10 minutes and answers the asking phone only with
+//   {from:'relay', type:'screenshot', payload:{ok, url:'/shot/<hex>.png', name, bytes}}; the phone
+//   fetches it over HTTP and offers it for saving / sharing.
+//   OFF unless started with --shots (or RELAY_SHOTS=1): anyone on the WiFi who can reach this port
+//   could otherwise look at the screen. AirDeck\legeger.cmd starts the relay with it; START.cmd G
+//   does not. Every capture is logged on the console with the asking address.
+//   RELAY_SHOT_FILE=<png> answers with that file instead of capturing — tests and headless boxes.
 // ==========================================================================
 
 const http = require('http');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const crypto = require('crypto');
+const { execFile } = require('child_process');
 const { WebSocketServer } = require('ws');
 
 const DEFAULT_PORT = 47291;
 const MAX_TRIES = 8;                       // 47291..47298
 
-const wanted = Number(process.argv[2]) || Number(process.env.GYRO_PORT) || DEFAULT_PORT;
+const ARGS = process.argv.slice(2);
+const wanted = Number(ARGS.find(a => /^\d+$/.test(a))) || Number(process.env.GYRO_PORT) || DEFAULT_PORT;
+const SHOTS = ARGS.includes('--shots') || process.env.RELAY_SHOTS === '1';
 const SENDER_PAGE = path.join(__dirname, '..', 'mobile', 'phone-sender.html');
 const SENDER_FALLBACK = path.join(__dirname, 'phone-sender.html');
 
@@ -194,6 +209,7 @@ const server = http.createServer((req, res) => {
       clients: clients.size,
       roster: roster(),
       focus: lastFocus,
+      shots: SHOTS,
       app: 'varler-phone-relay',
       v: 3
     });
@@ -203,6 +219,18 @@ const server = http.createServer((req, res) => {
       'Cache-Control': 'no-store'
     });
     res.end(body);
+    return;
+  }
+
+  // ---- /shot/<hex>.png — a capture made for a phone (see the 28 Oct note) --
+  const sm = /^\/shot\/([0-9a-f]{32})\.png$/.exec(url);
+  if (sm && SHOTS) {
+    const file = path.join(SHOT_DIR, sm[1] + '.png');
+    fs.readFile(file, (err, data) => {
+      if (err) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('expired'); return; }
+      res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': data.length, 'Cache-Control': 'no-store' });
+      res.end(data);
+    });
     return;
   }
 
@@ -278,6 +306,12 @@ wss.on('connection', (ws, req) => {
       }
     }
 
+    if (m && m.type === 'screenshot.request' && to === 'relay') {
+      if (roleOf(ws) !== PHONE) return;
+      takeShot(ws, ip, (m.payload && m.payload.mode) === 'window' ? 'window' : 'screen');
+      return;
+    }
+
     if (m && m.type === 'focus' && isApp(from)) {
       lastFocus = {
         role: from,
@@ -304,6 +338,111 @@ wss.on('connection', (ws, req) => {
 
   ws.on('error', err => console.log(`  ! socket hiba: ${err.message}`));
 });
+
+/* ---- screenshots -------------------------------------------------------- */
+
+const SHOT_DIR = path.join(os.tmpdir(), 'vrg-relay-shots');
+const SHOT_TTL = 10 * 60 * 1000;
+let shotBusy = false;
+
+// Windows: one PowerShell run. DPI-aware first, so a 150 % display is captured at its real pixels;
+// 'window' is the foreground window's rectangle, 'screen' the whole virtual desktop (all monitors).
+const PS_SHOT = `
+$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+Add-Type @"
+using System; using System.Runtime.InteropServices;
+public static class VrgShot {
+  [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
+  [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left, Top, Right, Bottom; }
+}
+"@
+[VrgShot]::SetProcessDPIAware() | Out-Null
+if ($env:VRG_SHOT_MODE -eq 'window') {
+  $r = New-Object VrgShot+RECT
+  [VrgShot]::GetWindowRect([VrgShot]::GetForegroundWindow(), [ref]$r) | Out-Null
+  $x = $r.Left; $y = $r.Top; $w = $r.Right - $r.Left; $h = $r.Bottom - $r.Top
+} else {
+  $v = [System.Windows.Forms.SystemInformation]::VirtualScreen
+  $x = $v.X; $y = $v.Y; $w = $v.Width; $h = $v.Height
+}
+$bmp = New-Object System.Drawing.Bitmap $w, $h
+$g = [System.Drawing.Graphics]::FromImage($bmp)
+$g.CopyFromScreen($x, $y, 0, 0, $bmp.Size)
+$bmp.Save($env:VRG_SHOT_OUT, [System.Drawing.Imaging.ImageFormat]::Png)
+$g.Dispose(); $bmp.Dispose()
+`;
+
+function captureTo(file, mode, done) {
+  const env = Object.assign({}, process.env, { VRG_SHOT_OUT: file, VRG_SHOT_MODE: mode });
+  const opts = { env, timeout: 20000, windowsHide: true };
+  if (process.env.RELAY_SHOT_FILE) {
+    fs.copyFile(process.env.RELAY_SHOT_FILE, file, done);
+    return;
+  }
+  if (process.platform === 'win32') {
+    const enc = Buffer.from(PS_SHOT, 'utf16le').toString('base64');
+    execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', enc], opts, err => done(err));
+    return;
+  }
+  if (process.platform === 'darwin') {
+    execFile('screencapture', ['-x', file], opts, err => done(err));   // -W would wait for a click on the Mac
+    return;
+  }
+  // Linux: Wayland's grim first, then ImageMagick's import on X11
+  execFile('grim', [file], opts, err => {
+    if (!err) return done(null);
+    execFile('import', ['-window', 'root', file], opts, err2 => done(err2));
+  });
+}
+
+function sweepShots() {
+  fs.readdir(SHOT_DIR, (err, names) => {
+    if (err) return;
+    const now = Date.now();
+    for (const n of names) {
+      const f = path.join(SHOT_DIR, n);
+      fs.stat(f, (e, st) => { if (!e && now - st.mtimeMs > SHOT_TTL) fs.unlink(f, () => {}); });
+    }
+  });
+}
+
+function stamp(d) {
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`;
+}
+
+function takeShot(ws, ip, mode) {
+  const answer = payload => { if (ws.readyState === ws.OPEN) ws.send(fromRelay('screenshot', payload)); };
+  if (!SHOTS) {
+    answer({ ok: false, reason: 'A képernyőkép ki van kapcsolva: a relét --shots kapcsolóval kell indítani (legeger.cmd → 1).' });
+    return;
+  }
+  if (shotBusy) { answer({ ok: false, reason: 'Már készül egy kép.' }); return; }
+  shotBusy = true;
+  fs.mkdirSync(SHOT_DIR, { recursive: true });
+  sweepShots();
+  const id = crypto.randomBytes(16).toString('hex');
+  const file = path.join(SHOT_DIR, id + '.png');
+  captureTo(file, mode, err => {
+    shotBusy = false;
+    if (err) {
+      console.log(`  ! kepernyokep hiba (${ip}): ${err.message.split('\n')[0]}`);
+      answer({ ok: false, reason: 'A kép nem készült el: ' + err.message.split('\n')[0] });
+      return;
+    }
+    fs.stat(file, (e, st) => {
+      if (e) { answer({ ok: false, reason: 'A kép nem készült el.' }); return; }
+      console.log(`  [kep] kepernyokep (${mode}) -> ${ip}   ${Math.round(st.size / 1024)} KB`);
+      answer({ ok: true, url: `/shot/${id}.png`, name: `kepernyo-${stamp(new Date())}.png`, bytes: st.size, mode });
+    });
+  });
+}
+
+process.on('exit', () => { try { fs.rmSync(SHOT_DIR, { recursive: true, force: true }); } catch (e) { } });
+process.on('SIGINT', () => process.exit(0));
 
 /* ---- binding, with a walk to the next free port ------------------------- */
 
@@ -348,6 +487,7 @@ server.on('listening', () => {
   }
   console.log('');
   console.log('   Telefon és PC UGYANAZON a WiFi-n legyen.');
+  console.log(SHOTS ? '   Képernyőkép a telefonra: BEKAPCSOLVA (--shots)' : '   Képernyőkép a telefonra: ki (indítás --shots kapcsolóval)');
   console.log('   Mobiladat nem jó.');
   console.log('  ===========================================');
   console.log('');

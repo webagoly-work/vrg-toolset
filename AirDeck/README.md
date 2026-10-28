@@ -1,10 +1,13 @@
 # VRG Légegér (AirDeck): the phone as a gyro air mouse and app controller
 
-One Android app with two jobs:
+One Android app with three jobs:
 
 1. **On any computer it is a gyro air mouse, keyboard and media remote.** It uses Bluetooth HID, so
    nothing is installed on the PC. Windows, a TV box or a Pi see an ordinary mouse.
-2. **For the Planner and Kódváros it is a controller.** It connects over WiFi to the existing phone
+2. **On another smartphone it is a touchscreen** (phone mode). The same Bluetooth link also carries a
+   two-finger touch digitizer, so a finger on the pad lands on the other phone's screen as a real
+   touch, with Back, Home, Recents and Notifications on buttons.
+3. **For the Planner and Kódváros it is a controller.** It connects over WiFi to the existing phone
    relay (`Planner/projects/varler-planner/tools/phone-relay-server.js`, START.cmd → **G**). The phone
    follows whichever of the two apps is focused on the PC and switches its layout to match.
 
@@ -42,6 +45,89 @@ The header shows two links: **BT** (green = connected to a PC) and **RELÉ** (bl
 line). The target chip says what the phone is aimed at. ◎ means it follows the PC's focus. Tap the
 chip to pin a target with ⚲.
 
+## Phone mode: controlling another smartphone
+
+Pair the target phone with this one, the same way as a PC (Bluetooth → new device). When the host
+reports itself as a phone, the deck switches to **TELEFON** by itself (⚙ → "Telefon mód magától").
+You can also pin it from the target chip.
+
+- **Pad = its screen.** In ÉRINTÉS mode the pad shows a phone-shaped frame (aspect set in ⚙ →
+  Érintőpad). Every finger, up to two, is sent as a contact of a HID multi-touch digitizer at the
+  same place in that frame. Taps, long presses, scrolling, dragging, pinch-zoom and the phone's own
+  edge gestures (gesture navigation) all behave natively, because the target sees a touchscreen, not
+  a mouse. Each finger shows a glowing dot on the pad.
+- **EGÉR** mode on the same pad gives Android's mouse pointer instead, and the gyro clutch still
+  points.
+- Bottom row: ◁ Back (HID consumer AC Back) · ○ Home (AC Home) · ▢ Recents (Meta+Tab) · 🔔
+  notifications (Meta+N). Extras: screenshot (SysRq; the picture stays on that phone), volume,
+  play, search, screen on/off.
+- 3-finger swipes: ← back · → recents · ↑ home · ↓ notifications; 3-finger tap is a screenshot.
+- iPhones ignore HID digitizers. Against an iPhone, use EGÉR mode with AssistiveTouch.
+- The touchscreen is a new part of the Bluetooth descriptor, and hosts cache the descriptor when they
+  pair. A PC or phone paired with the first version must **forget the phone and pair again** before
+  it sees the touchscreen.
+
+## Screen gestures on the pad (every mode)
+
+| Gesture | General / Planner* / Kódváros* / Prezentáció* | Telefon |
+|---|---|---|
+| 3 fingers ↑ ↓ ← → | task view · desktop · previous / next window (Windows defaults) | home · notifications · back · recents |
+| 3-finger tap | search (Win+S) | screenshot |
+| 4 fingers ← → ↑ ↓ | virtual desktop ← → · full screen · minimise | volume ↑ ↓ |
+| 4-finger tap | notifications | play / pause |
+| Swipe in from the left / right edge strip | task view · quick settings | back |
+| Pinch (EGÉR mode) | Ctrl+wheel: zoom in any PC app | (native pinch in ÉRINTÉS) |
+
+\* Each app overrides the 3-finger set with its own actions (Planner: undo / redo / view / Esc /
+palette; Kódváros: commit −1 / +1, Land, Esc, palette; Prezentáció: slides, black screen, laser).
+The pad shows a cheat sheet for the current target. Gestures and edge strips can be turned off.
+
+## Customising the deck
+
+- **Palette**: six variants of Mélyvíz in ⚙ → Megjelenés. The default is Mélyvíz. Mélytengeri árok is
+  pure black for OLED screens (the screen is kept on, so this saves battery). The others are
+  Korallzátony, Éjféli lagúna, Moszaterdő, and Sekély víz, the light one for daylight. Changing it
+  recolours everything live, the system bars included. There is also a UI size slider (0.8–1.3×).
+- **Screen elements**: every part of the deck can be switched on or off in ⚙ → Képernyő elemei:
+  status pills, readout, tool pad, extras, macro row, touchpad, mouse button row, bottom row and
+  messages. A **left-handed** switch mirrors the BAL · MUTAT · JOBB row.
+- **Macros** (⚙ → Makrók, or ✎ on the macro row): a small script, one step per line or separated
+  by `;`.
+
+  ```
+  Ctrl+S; wait 250; cmd view.reset        key chord, pause, Planner command
+  type Szia!                              typed text
+  app Ctrl+K · media play · click right · wheel -3 · shot
+  ```
+  The editor checks the script as you type and names the line it cannot read. You can pin macros
+  (⚲) onto the deck's macro row. Tap a running macro to stop it.
+
+## Screenshots onto the phone
+
+📸 in the header (and on each app's extras row) asks the relay for a capture of the PC. On Windows
+it uses PowerShell with System.Drawing, and is DPI-aware, so a 150% display comes out at its real
+pixels. You can capture either the whole screen or the active window (⚙ → Képernyőkép). The picture
+downloads straight away and opens in a sheet. From there you can **save it to the Gallery**
+(Pictures/VRG Legeger), **share it** to any app, take a new one, or pick an earlier one from the
+strip.
+
+Because anyone on the WiFi could otherwise ask to see the screen, the relay only captures when
+started with **`--shots`**. `legeger.cmd → 1` starts it that way; START.cmd → G does not. Captures are
+served under random 128-bit names for 10 minutes and logged on the relay console. Only a client that
+introduced itself as a phone may ask, and only that phone receives the answer.
+
+## More that the deck does
+
+- **Prezentáció** target: PageUp / PageDown on wrist flicks and 3-finger swipes, black and white
+  screen, F5 / Shift+F5, and Ctrl+L for PowerPoint's laser pointer, driven by the gyro clutch.
+- **Fine aim**: rest a finger on the pad while holding MUTAT and the pointer drops to 30% speed
+  with no acceleration.
+- **🎤 Diktálás** (⌨ sheet): the phone's speech recogniser (Hungarian when the layout is HU), and the
+  text is typed into the PC.
+- **📋 Vágólap begépelése**: whatever was copied on the phone, typed into the PC.
+- **Face down = pause**: laying the phone screen-down on the table sends play/pause once. Off by
+  default; turn it on in ⚙ → Egyéb.
+
 ## Everything from the old phone relay is kept
 
 `Planner/projects/varler-planner/mobile/phone-sender.html` still works unchanged. The app carries
@@ -75,7 +161,11 @@ over all of its features:
   payload:{peers, focus}}`.
 - **hello replay**: each app's last hello is replayed to a phone that connects later. Before this, a
   phone that joined after the Planner never got its tool table.
-- `/whoami` is `v: 3` and also reports `roster` and `focus`.
+- `/whoami` is `v: 3` and also reports `roster`, `focus` and whether `shots` are on.
+- **`screenshot.request`** (`to:'relay'`, phones only, needs `--shots`): the relay captures the PC
+  and answers `{type:'screenshot', payload:{ok, url:'/shot/<hex>.png', name, bytes}}` to the asking
+  phone. `GET /shot/<hex>.png` serves it for 10 minutes. `RELAY_SHOT_FILE=<png>` stands in for the
+  capture, for tests.
 
 App side: the Planner (`src/07a-link.js`) now sends `focus`. Kódváros gets
 `CodeCity/src/36-link.js`, which finds the relay on 127.0.0.1:47291..47298 by itself and maps the
@@ -125,10 +215,13 @@ in Android Studio is the simplest route: it installs the SDK and builds with ▶
 ```
 AirDeck/
   android/
-    core/        pure Kotlin, unit-tested: Protocol.kt · Hid.kt (descriptor + reports) · Keys.kt
-                 (chords, HU/US layouts) · Motion.kt (AirPointer, FlickDetector, Scrubber, Pose) · Profiles.kt
-    app/         Android: Deck.kt (the engine) · hid/HidPeripheral.kt · motion/MotionSource.kt ·
-                 relay/RelayClient.kt, Discovery.kt · DeckService.kt · ui/ (Compose) · ui/theme/Melyviz.kt
+    core/        pure Kotlin, unit-tested: Protocol.kt · Hid.kt (descriptor, reports, touchscreen) · Keys.kt
+                 (chords, HU/US layouts) · Motion.kt (AirPointer, FlickDetector, Scrubber, Pose, FaceDown) ·
+                 Gestures.kt (pad gestures, pinch zoom) · Macros.kt (script, storage) · Profiles.kt (5 targets)
+    app/         Android: Deck.kt (the engine) · ShotStore.kt · Settings.kt · hid/HidPeripheral.kt ·
+                 motion/MotionSource.kt · relay/RelayClient.kt, Discovery.kt · DeckService.kt ·
+                 ui/ DeckScreen · Controls (touchpad) · Sheets (keyboard) · SettingsSheet · MacroSheet ·
+                 ShotSheet · theme/Melyviz.kt (palettes)
   tests/relay-e2e.js   relay + real Kódváros page (headless Chromium) + fake Planner + fake phone
 ```
 
@@ -137,22 +230,30 @@ AirDeck/
 The Mélyvíz reference artifact could not be opened from the session that built this (its link did
 not resolve for this account). The theme is therefore a **"deep water" reading of the name**: abyss
 background, blue-green depths for surfaces, thin current lines, and one bioluminescent cyan accent
-for anything live. **All of it lives in one object, `app/.../ui/theme/Melyviz.kt`.** To match the
-reference exactly, change the colour, radius and type values there. No other file has a colour.
+for anything live. **All of it lives in `app/.../ui/theme/Melyviz.kt`.** It holds the six palettes
+as plain data, and `Melyviz` reads the current one from Compose state. To match the reference
+exactly, edit the `MELYVIZ` palette there. No other file has a colour.
 
 ## Verified, and what still needs a real phone
 
 Checked in a Linux container, without the Android Gradle Plugin (its download was blocked there):
 
-- `:core:test`: 18 tests (envelope, parsing, HID descriptor balance and sizes, HU/US typing, motion
-  maths, URL normalising).
-- Every app source except `MainActivity.kt` type-checks against the Android 15 framework jar and
-  Compose 1.7. `MainActivity` uses AndroidX Activity, which could not be fetched there.
-- `tests/relay-e2e.js`: 15 checks, all green.
+- `:core:test`: 29 tests. They cover the envelope and parsing, the HID descriptor (4 report ids,
+  balanced) and sizes, touch reports and frame mapping, HU/US typing, motion maths, pad gestures
+  and pinch, the macro script and its storage, face-down, the screenshot protocol and URL
+  normalising.
+- Every app source type-checks against the Android 15 framework jar and Compose 1.7. AndroidX
+  Activity/Core could not be fetched there, so their few calls (`registerForActivityResult`,
+  `setContent`, `FileProvider`, `WindowCompat`) were checked against stand-in signatures.
+- `tests/relay-e2e.js`: 20 checks, all green. They include the screenshot path: only phones may ask,
+  the PNG downloads byte for byte, a guessed name gets a 404, and the answer goes to the asker only.
 - The Planner's `npm test`: 3736 assertions, golden renders byte-identical.
 
 Not yet verified, and needs the real device: the first full `assembleDebug`, pairing with Windows,
-the gyro feel and its default tuning, and the volume-key clicks.
+the gyro feel and its default tuning, and the volume-key clicks. Phone mode needs a real Android
+target: the digitizer descriptor follows the HID multi-touch spec, but every vendor's input stack
+should be tried once. The same goes for the Meta+Tab / Meta+N shortcuts, which some launchers
+ignore, and for the PowerShell capture on the actual PC.
 
 Known limits: iPhone cannot be a Bluetooth HID device (iOS has no API for it), so the relay half
 would be the only option there. Some Android builds disable the HID Device profile; the BT pill then

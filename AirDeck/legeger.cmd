@@ -18,6 +18,8 @@ setlocal EnableDelayedExpansion
 ::  writes it from ANDROID_HOME / ANDROID_SDK_ROOT / %LOCALAPPDATA%\Android\Sdk.
 ::
 ::  2026-10-27 - first version.
+::  2026-10-28 - 1) / relay starts the relay with --shots, so the phone can
+::  ask for a screenshot of this PC. START.cmd G still starts it without.
 :: ==========================================================================
 
 set "AD=%~dp0"
@@ -55,7 +57,7 @@ echo   VRG Legeger - telefonos legeger + Planner/Kodvaros vezerlo
 echo   %AD%
 echo ============================================================
 echo.
-echo   1^) Gyro relay inditasa  ^(kulon ablakban, port 47291 - a telefon ehhez csatlakozik^)
+echo   1^) Gyro relay inditasa  ^(kulon ablakban, port 47291, kepernyokeppel a telefonra^)
 echo   2^) APK epitese          ^(gradlew assembleDebug - JDK 17 + Android SDK kell^)
 echo   3^) Telepites a telefonra ^(adb install - USB hibakereses bekapcsolva^)
 echo   4^) Core tesztek         ^(gradlew :core:test - SDK nem kell^)
@@ -85,7 +87,9 @@ goto MENU
 :DO_RELAY
 if not exist "%NODE_EXE%" goto NO_NODE
 if not exist "%RELAY_JS%" goto NO_RELAY
-start "VRG 47291 - Gyro relay" /D "%PLANNER_DIR%" "%NODE_EXE%" "tools\phone-relay-server.js"
+:: --shots: the phone may ask for a screenshot of this PC (Legeger camera button).
+:: START.cmd G starts the same relay without it.
+start "VRG 47291 - Gyro relay" /D "%PLANNER_DIR%" "%NODE_EXE%" "tools\phone-relay-server.js" --shots
 echo.
 echo   A relay kulon ablakban fut ^(VRG 47291^). A telefonon: Beallitasok -^> Kereses a halozaton.
 ping -n 3 127.0.0.1 >nul 2>&1

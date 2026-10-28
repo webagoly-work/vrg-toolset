@@ -58,6 +58,17 @@
             </intent-filter>
         </activity>
 
+        <!-- Screenshots from the PC are shared from the app's cache through this provider. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <service
             android:name=".DeckService"
             android:exported="false"

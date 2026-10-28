@@ -88,7 +88,7 @@ class HidTest {
         }
         assertEquals(d.size, i)
         assertEquals(0, depth)
-        assertEquals(3, ids)
+        assertEquals(4, ids)
     }
 }
 
@@ -171,5 +171,105 @@ class RelayUrlTest {
         assertEquals("ws://pc:47291", RelayUrl.normalize("ws://pc:47291/"))
         assertEquals("wss://x:443", RelayUrl.normalize("https://x:443"))
         assertEquals("", RelayUrl.normalize("  "))
+    }
+}
+
+class TouchTest {
+    @Test fun twoContactsAndCount() {
+        val r = Hid.touch(listOf(Hid.Contact(0, 32767, 0, true), Hid.Contact(1, 256, 1, false)))
+        assertEquals(13, r.size)
+        assertEquals(0x03, r[0].toInt())
+        assertEquals(0xFF, r[2].toInt() and 0xFF); assertEquals(0x7F, r[3].toInt())
+        assertEquals(0x00, r[6].toInt())               // lifted finger: tip off
+        assertEquals(1, r[7].toInt())
+        assertEquals(0x00, r[8].toInt()); assertEquals(0x01, r[9].toInt())   // x = 256, little endian
+        assertEquals(2, r[12].toInt())
+        assertEquals(0, Hid.touch(emptyList())[12].toInt())
+        assertEquals(listOf(2.toByte()), Hid.feature(Hid.ID_TOUCH).toList())
+    }
+
+    @Test fun framesMapToUnitsAndClamp() {
+        assertEquals(0 to 0, Hid.touchUnits(10f, 10f, 20f, 20f, 100f, 200f))
+        assertEquals(Hid.TOUCH_MAX to Hid.TOUCH_MAX, Hid.touchUnits(500f, 500f, 20f, 20f, 100f, 200f))
+        val (x, y) = Hid.touchUnits(70f, 120f, 20f, 20f, 100f, 200f)
+        assertEquals(Hid.TOUCH_MAX / 2, x, "x"); assertEquals(Hid.TOUCH_MAX / 2, y, "y")
+    }
+}
+
+class GestureTest {
+    @Test fun swipesAndTaps() {
+        assertEquals(PadGesture.SWIPE3_LEFT, GestureClassifier.multi(3, -200f, 10f, 210f, 300, 600f, 900f))
+        assertEquals(PadGesture.SWIPE4_UP, GestureClassifier.multi(4, 5f, -300f, 300f, 300, 600f, 900f))
+        assertEquals(PadGesture.TAP3, GestureClassifier.multi(3, 2f, 2f, 8f, 120, 600f, 900f))
+        assertNull(GestureClassifier.multi(3, 60f, 50f, 120f, 600, 600f, 900f))      // short and diagonal
+        assertNull(GestureClassifier.multi(2, -400f, 0f, 400f, 300, 600f, 900f))     // two fingers are the pad's
+    }
+
+    @Test fun edges() {
+        assertTrue(GestureClassifier.inEdge(10f, 600f)); assertFalse(GestureClassifier.inEdge(300f, 600f))
+        assertEquals(PadGesture.EDGE_LEFT, GestureClassifier.edge(10f, 200f, 20f, 600f))
+        assertEquals(PadGesture.EDGE_RIGHT, GestureClassifier.edge(590f, -200f, 0f, 600f))
+        assertNull(GestureClassifier.edge(10f, 40f, 0f, 600f))
+    }
+
+    @Test fun pinchNotches() {
+        val p = PinchZoom(0.1f)
+        assertEquals(0, p.step(1.05f)); assertEquals(1, p.step(1.06f)); assertEquals(-2, p.step(0.8f))
+    }
+
+    @Test fun everyProfileHasItsPadModeOnOffer() {
+        Target.entries.forEach { t -> val p = Profiles.of(t); assertTrue(p.padMode in p.padModes, t.name) }
+        Profiles.PHONE.gestures.values.forEach { assertTrue(it.send !is Send.Cmd, "phone target needs no relay") }
+    }
+}
+
+class MacroTest {
+    @Test fun parsesEveryKind() {
+        val p = MacroScript.parse("Ctrl+S; wait 250; 100ms\ncmd time.step d=-1 x=ok\napp Ctrl+K\nmedia vol+\nclick right; wheel -3\nshot\n# note\ntype Szia; világ!")
+        assertEquals(emptyList(), p.errors)
+        val s = p.steps
+        assertEquals(Step.Do(Send.Key("Ctrl+S")), s[0])
+        assertEquals(Step.Wait(250), s[1]); assertEquals(Step.Wait(100), s[2])
+        assertEquals(Step.Do(Send.Cmd("time.step", mapOf("d" to -1, "x" to "ok"))), s[3])
+        assertEquals(Step.Do(Send.AppKey("K", ctrl = true)), s[4])
+        assertEquals(Step.Do(Send.Media(Hid.Consumer.VOL_UP)), s[5])
+        assertEquals(Step.Do(Send.Click(Hid.Btn.RIGHT)), s[6]); assertEquals(Step.Do(Send.Wheel(-3)), s[7])
+        assertEquals(Step.Do(Send.Screenshot), s[8])
+        assertEquals(Step.Do(Send.Text("Szia; világ!")), s[9])
+    }
+
+    @Test fun reportsWhatItCannotRead() {
+        val p = MacroScript.parse("Ctrl+S\nfly to moon; wait forever")
+        assertEquals(1, p.steps.size)
+        assertEquals(2, p.errors.size)
+        assertTrue(p.errors[0].startsWith("2. sor"))
+        assertEquals(Step.Wait(MacroScript.MAX_WAIT), MacroScript.parse("wait 999999").steps[0])
+    }
+
+    @Test fun storageRoundTripAndDefaultsParse() {
+        val back = MacroScript.fromJson(MacroScript.toJson(MacroScript.DEFAULTS))
+        assertEquals(MacroScript.DEFAULTS, back)
+        MacroScript.DEFAULTS.forEach { assertEquals(emptyList(), MacroScript.parse(it.script).errors, it.name) }
+        assertNull(MacroScript.fromJson("not json"))
+    }
+}
+
+class FaceDownTest {
+    @Test fun firesOnceThenRearmsFaceUp() {
+        val f = FaceDown(500)
+        assertFalse(f.step(-9.7f, 0)); assertFalse(f.step(-9.7f, 400))
+        assertTrue(f.step(-9.7f, 600)); assertFalse(f.step(-9.7f, 2000))
+        assertFalse(f.step(9.7f, 2100))
+        assertFalse(f.step(-9.7f, 2200)); assertTrue(f.step(-9.7f, 2800))
+    }
+}
+
+class ShotProtocolTest {
+    @Test fun requestGoesToTheRelayAndAnswerParses() {
+        val o = JSONObject(Envelopes("t").screenshotRequest("window"))
+        assertEquals("relay", o.getString("to")); assertEquals("window", o.getJSONObject("payload").getString("mode"))
+        val s = assertIs<Incoming.Shot>(Inbound.parse("""{"from":"relay","type":"screenshot","payload":{"ok":true,"url":"/shot/ab.png","name":"k.png","bytes":42}}"""))
+        assertTrue(s.ok); assertEquals("/shot/ab.png", s.url); assertEquals(42L, s.bytes)
+        assertEquals("http://10.0.0.2:47291/shot/ab.png", RelayUrl.http("ws://10.0.0.2:47291", "/shot/ab.png"))
     }
 }

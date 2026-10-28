@@ -45,6 +45,9 @@ class RelayClient(private val scope: CoroutineScope) {
     val focus: StateFlow<Focus?> = _focus
     private val _peers = MutableStateFlow<List<Peer>>(emptyList())
     val peers: StateFlow<List<Peer>> = _peers
+    private val _shots = MutableSharedFlow<Incoming.Shot>(extraBufferCapacity = 4)
+    /** The relay's answers to screenshot requests. */
+    val shots: SharedFlow<Incoming.Shot> = _shots
     private val _notes = MutableSharedFlow<String>(extraBufferCapacity = 8)
     val notes: SharedFlow<String> = _notes
 
@@ -128,6 +131,7 @@ class RelayClient(private val scope: CoroutineScope) {
                 is Incoming.State -> _states.value = _states.value + (m.role to m.fields)
                 is Incoming.Ack -> if (!m.ok) _notes.tryEmit("elutasítva: ${m.id}" + (m.reason?.let { " — $it" } ?: ""))
                 is Incoming.FocusChanged -> _focus.value = m.focus
+                is Incoming.Shot -> _shots.tryEmit(m)
                 is Incoming.Roster -> {
                     _peers.value = m.peers
                     val live = m.peers.map { it.role }.toSet()

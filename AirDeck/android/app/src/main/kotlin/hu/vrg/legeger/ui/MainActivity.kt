@@ -1,20 +1,31 @@
 package hu.vrg.legeger.ui
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import hu.vrg.legeger.Deck
 import hu.vrg.legeger.DeckService
 import hu.vrg.legeger.core.Hid
 import hu.vrg.legeger.hid.HidPeripheral
+import hu.vrg.legeger.ui.theme.Melyviz
 import hu.vrg.legeger.ui.theme.MelyvizTheme
+import hu.vrg.legeger.ui.theme.Palettes
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -32,9 +43,33 @@ class MainActivity : ComponentActivity() {
         startBluetooth()
     }
 
+    // 🎤 in the keyboard sheet: the phone's own speech recogniser, its text typed into the PC
+    private val dictate = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+        val text = r.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
+        if (!text.isNullOrBlank()) Deck.typeText(text)
+    }
+
+    private fun startDictation() {
+        val i = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            .putExtra(RecognizerIntent.EXTRA_LANGUAGE, if (Deck.settings.value.layout == "HU") "hu-HU" else "en-US")
+            .putExtra(RecognizerIntent.EXTRA_PROMPT, "Mondd, és begépelem")
+        try { dictate.launch(i) } catch (e: ActivityNotFoundException) { Deck.notes.tryEmit("Nincs beszédfelismerő ezen a telefonon.") }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MelyvizTheme { DeckScreen(onAskPermissions = { askPermissions.launch(permissions) }) } }
+        Melyviz.palette = Palettes.byId(Deck.settings.value.palette)
+        setContent {
+            val s by Deck.settings.flow.collectAsStateWithLifecycle()
+            // UI size: the whole deck scales together, text included
+            val d = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(d.density * s.uiScale, d.fontScale)) {
+                MelyvizTheme {
+                    DeckScreen(onAskPermissions = { askPermissions.launch(permissions) }, onDictate = ::startDictation)
+                }
+            }
+        }
 
         val missing = permissions.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
         if (missing.isEmpty()) startBluetooth() else askPermissions.launch(missing.toTypedArray())
@@ -45,6 +80,17 @@ class MainActivity : ComponentActivity() {
             Deck.settings.flow.collect { s ->
                 if (s.keepScreenOn) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                // the bars follow the palette: dark icons on the light one
+                val p = Palettes.byId(s.palette)
+                Melyviz.palette = p          // Compose state: the whole deck recolours
+                @Suppress("DEPRECATION")
+                window.statusBarColor = p.abyss.toArgb()
+                @Suppress("DEPRECATION")
+                window.navigationBarColor = p.abyss.toArgb()
+                WindowCompat.getInsetsController(window, window.decorView).apply {
+                    isAppearanceLightStatusBars = p.light
+                    isAppearanceLightNavigationBars = p.light
+                }
             }
         }
         // The service keeps the link up in the background; it is only needed once a PC is connected.

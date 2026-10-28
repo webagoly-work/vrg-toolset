@@ -10,7 +10,7 @@ import org.json.JSONObject
 object Proto {
     const val V = 1
     const val ROLE = "phone"
-    const val APP = "legeger-1"
+    const val APP = "legeger-2"
     val CAPS = listOf("state", "cmd", "keys", "orientation", "gesture", "focus", "roster")
 }
 
@@ -31,6 +31,8 @@ sealed interface Incoming {
     data class Ack(val role: String, val id: String, val ok: Boolean, val reason: String?) : Incoming
     data class FocusChanged(val focus: Focus) : Incoming
     data class Roster(val peers: List<Peer>, val focus: Focus?) : Incoming
+    /** The relay's answer to screenshot.request: a PNG to fetch over HTTP from the same host. */
+    data class Shot(val ok: Boolean, val url: String?, val name: String?, val bytes: Long, val reason: String?) : Incoming
     data class Other(val role: String?, val type: String) : Incoming
     data object Echo : Incoming
     data object Junk : Incoming
@@ -85,6 +87,9 @@ class Envelopes(private val app: String = Proto.APP, private val clock: () -> Lo
         build("gesture", JSONObject().put("kind", "orbit").put("dx", dx).put("dy", dy), to)
 
     fun reset(to: String?): String = build("gesture", JSONObject().put("kind", "reset"), to)
+
+    /** Asks the relay itself (not an app) for a capture of the PC: mode "screen" or "window". */
+    fun screenshotRequest(mode: String): String = build("screenshot.request", JSONObject().put("mode", mode), "relay")
 }
 
 object Inbound {
@@ -112,6 +117,13 @@ object Inbound {
                 focus = p.optJSONObject("focus")?.let {
                     Focus(it.optStringOrNull("role"), it.optStringOrNull("app"), it.optStringOrNull("title"))
                 },
+            )
+            "screenshot" -> Incoming.Shot(
+                ok = p.optBoolean("ok", false),
+                url = p.optStringOrNull("url"),
+                name = p.optStringOrNull("name"),
+                bytes = p.optLong("bytes", 0L),
+                reason = p.optStringOrNull("reason"),
             )
             "" -> Incoming.Junk
             else -> Incoming.Other(from, type)
@@ -157,5 +169,11 @@ object RelayUrl {
         val host = rest.substringBefore('/')
         val withPort = if (host.contains(':')) host else "$host:$DEFAULT_PORT"
         return "$scheme://$withPort"
+    }
+
+    /** The relay's HTTP address for a path it serves (a screenshot), from its ws:// address. */
+    fun http(ws: String, path: String): String {
+        val base = normalize(ws).replaceFirst(Regex("^ws(s?)://"), "http$1://")
+        return base + (if (path.startsWith("/")) path else "/$path")
     }
 }

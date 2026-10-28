@@ -123,3 +123,23 @@ object Pose {
         return pitch to max(0.0, yaw)
     }
 }
+
+/**
+ * Face down on the table = pause. Fed the gravity z component (m/s², +9.8 screen up, −9.8 screen
+ * down); fires once after the phone has lain face down for `holdMs`, and re-arms only after it has
+ * been turned face up again, so it never repeats while it lies there.
+ */
+class FaceDown(var holdMs: Long = 700) {
+    private var since = -1L
+    private var armed = true
+
+    fun step(gz: Float, nowMs: Long): Boolean {
+        if (gz > 0f) { armed = true; since = -1L; return false }
+        if (gz > -8.5f) { since = -1L; return false }
+        if (!armed) return false
+        if (since < 0) since = nowMs
+        if (nowMs - since < holdMs) return false
+        armed = false
+        return true
+    }
+}
