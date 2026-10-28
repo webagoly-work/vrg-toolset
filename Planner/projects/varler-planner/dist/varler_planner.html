@@ -1,7 +1,88 @@
 <!doctype html>
-<html lang="en"><head>
+<html lang="en" class="mv"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Varler Planner — villanyszerelési tervező</title>
+<style>/* melyviz:begin */
+/* Mélyvíz — the VRG dev-side style (CITY-D26, 2026-10-27), shared by every dev-side app. Spec: docs/city/melyviz.md.
+   This file is the source. Apps carry a copy between the markers  melyviz:begin / melyviz:end  that
+   tools/melyviz-sync.js writes; `node tools/melyviz-sync.js --check` fails when a copy has drifted.
+   Do not edit a copy inside an app — edit this file and sync.
+
+   Tokens are --mv-* so they never collide with an app's own names; an app maps its variables onto them.
+   The base layer applies only under html.mv, so adding the block changes nothing until the app opts in.
+   M1 ice = the instrument and you (selection, focus, "you are here"); warm = activity (running, heat, recent work).
+   M5 smoked glass, 1 px hairlines, square controls, two cut corners, no rounded corners, no drop shadows.
+   M6 numbers and readouts mono; titles in the condensed voice; small labels uppercase and tracked. */
+:root {
+  --mv-bg: #0a141c; --mv-horizon: #11202b;
+  --mv-panel: rgba(20, 30, 38, .74); --mv-panel-solid: #121c24; --mv-raised: #17232c;
+  --mv-line: rgba(232, 240, 246, .15); --mv-line-strong: rgba(232, 240, 246, .34);
+  --mv-text: #e8f0f6; --mv-dim: #a6afb7; --mv-faint: #646d74;
+  --mv-accent: #93d3e6; --mv-accent-soft: rgba(147, 211, 230, .14); --mv-accent-glow: rgba(147, 211, 230, .5);
+  --mv-warm: #e8a873; --mv-warm-soft: rgba(232, 168, 115, .14);
+  --mv-ok: #8bcca1; --mv-warn: #e3be7b; --mv-crit: #e4877d;
+  --mv-cut: 6px; --mv-blur: 12px; --mv-glow: 3px;
+  --mv-mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+  --mv-voice: Bahnschrift, "DIN Alternate", "Arial Narrow", sans-serif;
+  --mv-sans: "Segoe UI", system-ui, sans-serif;
+}
+html.mv.low-glow { --mv-glow: 0px; }
+
+/* ---- base layer (opt-in: html.mv; zero specificity, so any app rule wins) ---- */
+:where(html.mv) { color-scheme: dark; }
+:where(html.mv) :where(body) { background: var(--mv-bg); color: var(--mv-text); font-family: var(--mv-sans); }
+:where(html.mv) :where(:is(h1, h2, h3)) { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 600; letter-spacing: .03em; }
+:where(html.mv) :where(:is(code, kbd, pre, samp, .mv-num)) { font-family: var(--mv-mono); }
+:where(html.mv) :where(:focus-visible) { outline: 2px solid var(--mv-accent); outline-offset: 2px; }
+:where(html.mv) ::selection { background: var(--mv-accent-soft); color: var(--mv-text); }
+:where(html.mv) :where(:is(button, input, select, textarea)) { font: inherit; color: var(--mv-text); border-radius: 0; }
+:where(html.mv) :where(:is(button, select, input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]), textarea)) {
+  background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); box-shadow: none; }
+:where(html.mv) :where(button) { cursor: pointer; }
+:where(html.mv) :where(button:hover:not(:disabled)) { border-color: var(--mv-accent); }
+:where(html.mv) :where(:is(input, select, textarea):focus) { border-color: var(--mv-accent); outline: none; box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+:where(html.mv) :where(:is(input[type=checkbox], input[type=radio], input[type=range])) { accent-color: var(--mv-accent); }
+:where(html.mv) :where(input, textarea)::placeholder { color: var(--mv-faint); }
+:where(html.mv) :where(:disabled) { opacity: .45; cursor: default; }
+:where(html.mv) :where(table) { border-collapse: collapse; }
+:where(html.mv) :where(:is(th, td)) { border-color: var(--mv-line); }
+:where(html.mv) :where(th) { color: var(--mv-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .1em; font-size: 10.5px; }
+:where(html.mv) :where(a) { color: var(--mv-accent); }
+:where(html.mv) :where(hr) { border: 0; border-top: 1px solid var(--mv-line); }
+:where(html.mv) { scrollbar-color: var(--mv-line-strong) transparent; scrollbar-width: thin; }
+
+/* ---- components (usable anywhere) ---- */
+.mv-glass {
+  border: 1px solid var(--mv-line-strong); border-radius: 0; box-shadow: none;
+  -webkit-backdrop-filter: blur(var(--mv-blur)) saturate(1.2); backdrop-filter: blur(var(--mv-blur)) saturate(1.2);
+  background: var(--mv-panel); }
+.mv-solid { border: 1px solid var(--mv-line-strong); border-radius: 0; box-shadow: none; background: var(--mv-panel-solid); }
+/* two cut corners (top left, bottom right) drawn as diagonals; layer on .mv-glass or .mv-solid */
+.mv-cut {
+  clip-path: polygon(var(--mv-cut) 0, 100% 0, 100% calc(100% - var(--mv-cut)), calc(100% - var(--mv-cut)) 100%, 0 100%, 0 var(--mv-cut));
+  background-image:
+    linear-gradient(to bottom right, transparent 50%, var(--mv-line-strong) 50%, var(--mv-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px)),
+    linear-gradient(to top left, transparent 50%, var(--mv-line-strong) 50%, var(--mv-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px));
+  background-position: left top, right bottom; background-size: var(--mv-cut) var(--mv-cut); background-repeat: no-repeat;
+  background-origin: border-box; }
+.mv-title { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.mv-label { font-family: var(--mv-mono); text-transform: uppercase; letter-spacing: .12em; font-size: 10px; color: var(--mv-dim); }
+.mv-btn { background: none; border: 1px solid var(--mv-line-strong); border-radius: 0; color: inherit; font: inherit; padding: 3px 10px; cursor: pointer; }
+.mv-btn:hover { border-color: var(--mv-accent); }
+.mv-on, .mv-btn.on { border-color: var(--mv-accent); color: var(--mv-accent); background: var(--mv-accent-soft); box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+.mv-live { color: var(--mv-warm); }
+.mv-badge { font: 11px var(--mv-mono); padding: 1px 7px; border: 1px solid var(--mv-line-strong); color: var(--mv-dim); white-space: nowrap; }
+.mv-badge.ok { color: var(--mv-ok); border-color: var(--mv-ok); }
+.mv-badge.warn { color: var(--mv-warn); border-color: var(--mv-warn); }
+.mv-badge.crit { color: var(--mv-crit); border-color: var(--mv-crit); }
+
+/* print stays paper: Mélyvíz is a screen style */
+@media print {
+  :where(html.mv) { color-scheme: light; }
+  :where(html.mv) body { background: #fff; color: #000; }
+  .mv-glass, .mv-solid { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+/* melyviz:end */</style>
 <style>
  *{box-sizing:border-box}
  body{margin:0;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#222;background:#eceae4;height:100vh;display:flex;flex-direction:column;overflow:hidden}
@@ -288,6 +369,99 @@
  #phaseTools .phRow .tool[data-mode=select]{flex:1;white-space:nowrap}
  #phaseTools .phGrid .tool{min-width:0}
  small{color:#8a8478;font-size:11px;line-height:1.35;display:block;margin-top:4px}
+ /* ===== Mélyvíz chrome (shared/melyviz.css; docs/city/melyviz-rollout.md P6a) =====
+    html.mv only (⚙ Megjelenés ◐ turns it off, 05dd-chrome chrMv). Chrome only, R-4: the stage, the drawing, symbol,
+    circuit and layer colours stay — the stage keeps its paper ground. Ice = selection / focus / the on state; warm =
+    something running (lock, controller); ok / warn / crit = computed checks. Light islands until P6b: #modal and the
+    notes / tray panels keep their light look with dark text (their JS writes inline light colours). */
+ html.mv body{background:var(--mv-bg);color:var(--mv-text);font-family:var(--mv-sans)}
+ html.mv header{background:var(--mv-panel-solid);border-bottom:1px solid var(--mv-line-strong)}
+ html.mv header h1{font-family:var(--mv-voice);font-stretch:75%;letter-spacing:.08em;text-transform:uppercase}
+ html.mv :is(header,.side,#stageRail,#inspector,#qv,#mgj,.hmD,#ctx,.tbrow) button{background:transparent;border-color:var(--mv-line-strong);color:var(--mv-text);border-radius:0}
+ html.mv :is(header,.side,#stageRail,#inspector,#qv,#mgj,.hmD,#ctx,.tbrow) button:hover:not(:disabled){background:var(--mv-accent-soft);border-color:var(--mv-accent)}
+ html.mv :is(header,.side,#stageRail,#inspector,#qv,#mgj,.hmD,.tbrow) button.on,html.mv .phB.on,html.mv .pbtn.on,html.mv .lcat.on{background:var(--mv-accent-soft);color:var(--mv-accent);border-color:var(--mv-accent)}
+ html.mv .phB.on .no{color:var(--mv-accent)}
+ html.mv #lockBtn.on{background:var(--mv-warm-soft);color:var(--mv-warm);border-color:var(--mv-warm)}
+ html.mv #gpBtn.on{background:var(--mv-warm-soft);color:var(--mv-warm);border-color:var(--mv-warm)}
+ html.mv :is(header,.side,#inspector,#qv,#mgj,.hmD,.tbrow) :is(select,input[type=text],input[type=number],input[type=search],textarea){background:var(--mv-raised);border:1px solid var(--mv-line-strong);color:var(--mv-text);border-radius:0}
+ html.mv .side{background:var(--mv-panel-solid);border-color:var(--mv-line)}
+ html.mv :is(.picker,#phaseNav,#rTabs,.tbrow){background:var(--mv-horizon);border-color:var(--mv-line)}
+ html.mv #phaseTools,html.mv #rInsp{border-color:var(--mv-line)}
+ html.mv .grp{background:var(--mv-raised);border-color:var(--mv-line);border-radius:0}
+ html.mv :is(.grp h3,.phHead,#ctxHead){color:var(--mv-dim);font-family:var(--mv-voice);font-stretch:75%;font-weight:600;letter-spacing:.12em}
+ html.mv :is(small,details.legacy,.phCk,.phB .no){color:var(--mv-dim)}
+ html.mv .panels:empty::after{color:var(--mv-faint)}
+ html.mv .phB .bd{background:rgba(227,190,123,.16);color:var(--mv-warn);border-radius:0}
+ html.mv .phB .bd.err{background:rgba(228,135,125,.16);color:var(--mv-crit)}
+ html.mv #phLayout{border-radius:0;color:var(--mv-dim)}
+ html.mv .ctxHint{background:var(--mv-raised);border-color:var(--mv-line);color:var(--mv-dim);border-radius:0}
+ html.mv td{border-bottom-color:var(--mv-line)}
+ html.mv td.n{font-family:var(--mv-mono)}
+ /* the rail and the inspector float over the paper stage */
+ html.mv #stageRail{background:var(--mv-panel);-webkit-backdrop-filter:blur(var(--mv-blur));backdrop-filter:blur(var(--mv-blur));border-right-color:var(--mv-line)}
+ html.mv .stg{color:var(--mv-dim);border-radius:0}
+ html.mv .stg:hover{background:var(--mv-accent-soft)}
+ html.mv .stg.on{background:var(--mv-accent-soft);border-color:var(--mv-accent);color:var(--mv-accent);box-shadow:none}
+ html.mv .lstack{background:var(--mv-horizon);border-radius:0}
+ html.mv :is(.lstack .lph,.lrole){color:var(--mv-dim)}
+ html.mv .stgB{border-radius:0}
+ html.mv .stgB.err{background:var(--mv-crit);color:var(--mv-bg)} html.mv .stgB.wrn{background:var(--mv-warn);color:var(--mv-bg)}
+ html.mv #inspector,html.mv #rInsp,html.mv #rInsp #inspector{background:var(--mv-panel-solid);border-color:var(--mv-line)}
+ html.mv :is(.insHead,.insChk,.insSel,.insFields,.insRoom,.insCkt){border-bottom-color:var(--mv-line)}
+ html.mv .insChk{background:var(--mv-horizon)} html.mv .insSel{background:var(--mv-raised)}
+ html.mv :is(.insSub,.insF span,.ck){color:var(--mv-dim)} html.mv .insRoomRefs{color:var(--mv-faint)}
+ html.mv :is(.insRoomH,.insRoomL,.ckLine){color:var(--mv-text)}
+ html.mv .ck.error,html.mv .ckSt.bad,html.mv .ckSt.empty{color:var(--mv-crit)} html.mv .ck.warn,html.mv .ckSt.multi{color:var(--mv-warn)} html.mv .ck.ok,html.mv .ckSt.ready{color:var(--mv-ok)}
+ html.mv .ckCard{background:var(--mv-raised);border-color:var(--mv-line);border-radius:0}
+ html.mv .ckCard:hover{border-color:var(--mv-line-strong)} html.mv .ckCard.on{border-color:var(--mv-accent);box-shadow:0 0 0 1px var(--mv-accent) inset}
+ html.mv .rTab{color:var(--mv-dim)}
+ html.mv .rTab.on{background:var(--mv-panel-solid);color:var(--mv-accent);border-bottom-color:var(--mv-accent)}
+ html.mv #statusBar{background:var(--mv-horizon);color:var(--mv-dim);border-top-color:var(--mv-line);font-family:var(--mv-mono);font-size:10.5px}
+ html.mv .sbChip{border-right-color:var(--mv-line)}
+ html.mv #hud{background:var(--mv-panel);color:var(--mv-text);border-color:var(--mv-line);border-radius:0;-webkit-backdrop-filter:blur(var(--mv-blur));backdrop-filter:blur(var(--mv-blur))}
+ html.mv #modeHint{background:var(--mv-panel-solid);color:var(--mv-text);border:1px solid var(--mv-line-strong);border-radius:0}
+ html.mv .edge{background:var(--mv-panel-solid);color:var(--mv-text);border:1px solid var(--mv-line-strong);border-radius:0;box-shadow:none}
+ html.mv .resizer{background:var(--mv-line)} html.mv .resizer:hover,html.mv .pnlGrip:hover,html.mv .pnlGrip:active{background:var(--mv-accent-soft)}
+ html.mv .hmD{background:var(--mv-panel-solid);color:var(--mv-text);border-color:var(--mv-line-strong);border-radius:0;box-shadow:none}
+ html.mv #qv{background:var(--mv-panel);border-color:var(--mv-line);border-radius:0;box-shadow:none;-webkit-backdrop-filter:blur(var(--mv-blur));backdrop-filter:blur(var(--mv-blur))}
+ html.mv #qvRot{color:var(--mv-dim);font-family:var(--mv-mono)}
+ html.mv #mgj{background:var(--mv-panel-solid);border-color:var(--mv-line-strong);border-radius:0;box-shadow:none}
+ html.mv #mgj .mgjHead{background:var(--mv-horizon);border-bottom-color:var(--mv-line);font-family:var(--mv-voice);font-stretch:75%;letter-spacing:.1em;text-transform:uppercase}
+ html.mv #ctx{background:var(--mv-panel-solid);border-color:var(--mv-line-strong);border-radius:0;box-shadow:none}
+ html.mv #palette{background:rgba(5,10,14,.6)}
+ html.mv #palBox{background:var(--mv-panel-solid);border:1px solid var(--mv-line-strong);border-radius:0;box-shadow:none;clip-path:polygon(var(--mv-cut) 0,100% 0,100% calc(100% - var(--mv-cut)),calc(100% - var(--mv-cut)) 100%,0 100%,0 var(--mv-cut))}
+ html.mv #palQ{background:transparent;color:var(--mv-text);border-bottom-color:var(--mv-line)}
+ html.mv .palRow{border-bottom-color:var(--mv-line)} html.mv .palRow:hover{background:var(--mv-raised)} html.mv .palRow.on{background:var(--mv-accent-soft)}
+ html.mv .palLab,html.mv .palRow.off .palLab{color:var(--mv-text)} html.mv :is(.palGrp,.palHint,.palKey){color:var(--mv-dim)}
+ html.mv .palKey{font-family:var(--mv-mono)}
+ html.mv #palFoot{background:var(--mv-horizon);color:var(--mv-faint);border-top-color:var(--mv-line)}
+ /* layers panel */
+ html.mv .lblock{border-radius:0} html.mv .lblock.lactive,html.mv .lblock.ldrop{background:var(--mv-horizon);border-color:var(--mv-line-strong)}
+ html.mv .lblock.lspot{background:var(--mv-horizon)}
+ html.mv .lsub{border-radius:0} html.mv .lsub.ldrag{background:var(--mv-horizon);outline-color:var(--mv-accent)}
+ html.mv :is(.lsc,.lsp){font-family:var(--mv-mono)}
+ html.mv .lname{border-color:var(--mv-line-strong)}
+ /* the rules and standards panels (08i, 08j) live in the context panel */
+ html.mv :is(#rbPanel,#stdPanel){background:var(--mv-raised);border-color:var(--mv-line);border-radius:0;box-shadow:none;color:var(--mv-text)}
+ html.mv #rbPanel h5,html.mv #stdPanel .g{color:var(--mv-dim)}
+ html.mv #rbPanel .rb,html.mv #rbPanel .rb.on{color:var(--mv-text);border-radius:0}
+ html.mv #rbPanel .rb:hover{background:var(--mv-accent-soft)} html.mv #rbPanel .rb.on{background:var(--mv-accent-soft);border-color:var(--mv-accent)}
+ html.mv #rbPanel .rb[disabled],html.mv #rbPanel .n,html.mv #stdPanel .r .src{color:var(--mv-faint)}
+ html.mv #rbPanel .x,html.mv #stdPanel .x{border:none;background:none}
+ html.mv #stdPanel .r input.own{border-color:var(--mv-warm);background:var(--mv-warm-soft)}
+ html.mv #stdPanel .fl{color:var(--mv-crit)} html.mv #stdPanel .sg{background:var(--mv-horizon);border-radius:0}
+ /* inline light colours that the JS writes into the dark regions (P6b turns them into variables) */
+ html.mv :is(.side,#inspector,.hmD,#mgj) :is([style*="background:#fff"],[style*="background: #fff"],[style*="background:#fafafa"],[style*="background:#f3f0e9"],[style*="background:#f2efe8"],[style*="background:#f7f5f0"],[style*="background:#faf8f3"]){background:var(--mv-horizon)!important}
+ html.mv :is(.side,#inspector,.hmD,#mgj) :is([style*="background:#eef6ff"],[style*="background:#fdf0e7"]){background:var(--mv-accent-soft)!important}
+ html.mv :is(.side,#inspector,.hmD,#mgj) [style*="background:#fdecea"]{background:rgba(228,135,125,.14)!important}
+ html.mv :is(.side,#inspector,.hmD,#mgj) :is([style*="#eee"],[style*="#ddd"],[style*="#f0f0f0"],[style*="#e4dfd4"],[style*="#f0ece3"],[style*="#f2efe8"],[style*="#f4f1ea"]){border-color:var(--mv-line)!important}
+ html.mv :is(.side,#inspector,.hmD,#mgj) :is([style*="color:#222"],[style*="color:#444"]){color:var(--mv-text)!important}
+ html.mv :is(.side,#inspector,.hmD,#mgj) :is([style*="color:#555"],[style*="color:#666"],[style*="color:#6a6357"],[style*="color:#6b6250"]){color:var(--mv-dim)!important}
+ /* light islands until P6b */
+ html.mv :is(#modal,.ntP,#blTray){color:#222;color-scheme:light}
+ html.mv :is(#modal,.ntP,#blTray) :is(button,input,select,textarea){color:#222}
+ html.mv :is(#modal,.ntP,#blTray) :is(textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color])){background:#fff;border:1px solid #cfc9bd}
+ @media print{html.mv body{background:#fff;color:#000}}
  @media print{header,.side,#modeHint,#hud,#ctx,#gpLegend,#gpCursor,#gpWheel{display:none!important}.wrap,.stage-wrap,body{height:auto}
    svg#stage{filter:grayscale(1)}@page{size:A4 landscape;margin:8mm}}
 </style></head>
@@ -538,7 +712,7 @@
    <button id="bPanels" title="Teljes nézet: az oldalsávok elrejtése">⤢</button>
    <button id="qvMgj" title="Megjelenés: stílus, falak, rács, léptékek, feliratok">🎛</button>
   </div>
-  <div id="mgj"><div class="mgjHead">Megjelenés <button id="mgjX" title="Bezár" style="padding:1px 7px">✕</button></div><div id="mgjBody"></div></div>
+  <div id="mgj"><div class="mgjHead">Megjelenés <span><button id="mgjMv" title="Mélyvíz keret be / ki (a rajz nem változik)" style="padding:1px 7px">◐</button> <button id="mgjX" title="Bezár" style="padding:1px 7px">✕</button></span></div><div id="mgjBody"></div></div>
   <button id="hideL" class="edge" style="left:0">◀</button>
   <button id="hideR" class="edge r" style="right:0">▶</button>
   <div id="modeHint"></div><div id="hud"></div><div id="ctx"></div>
@@ -4314,9 +4488,21 @@ function chrMgj(on){const p=document.getElementById('mgj');if(!p)return false;co
   const g=document.getElementById('qvMgj');if(g)g.onclick=()=>chrMgj();
   const x=document.getElementById('mgjX');if(x)x.onclick=()=>chrMgj(false);})();
 
+// Mélyvíz (docs/city/melyviz-rollout.md P6): the dark chrome is html.mv, on by default; ◐ in the Megjelenés head turns it
+// off and back. Chrome only — draw() never reads it, so the scene and the golden renders are the same either way.
+const CHR_MV_KEY='villanyterv_mv';
+function chrMv(on){const h=document.documentElement,v=on==null?!h.classList.contains('mv'):!!on;h.classList.toggle('mv',v);
+  const b=document.getElementById('mgjMv');if(b)b.classList.toggle('on',v);
+  if(on==null)try{localStorage.setItem(CHR_MV_KEY,v?'1':'0');}catch(_){}
+  return v;}
+(function chrMvBoot(){let s=null;try{s=localStorage.getItem(CHR_MV_KEY);}catch(_){}chrMv(s!=='0');
+  const b=document.getElementById('mgjMv');if(b)b.onclick=()=>chrMv();})();
+
 registerActions([{id:'view.appearance',label:'Megjelenés',icon:'🎛',group:'Nézet',alias:'appearance view style render walls grid megjelenes nezet stilus',
-  hint:'Stílus, falak, rács, léptékek, padlófeliratok — a nézet minden beállítása egy lebegő panelen.',run:()=>chrMgj()}]);
-window.chrMgj=chrMgj;window.chrMenuClose=chrMenuClose;
+  hint:'Stílus, falak, rács, léptékek, padlófeliratok — a nézet minden beállítása egy lebegő panelen.',run:()=>chrMgj()},
+  {id:'view.melyviz',label:'Mélyvíz keret',icon:'◐',group:'Nézet',alias:'melyviz dark theme sotet keret chrome',
+  hint:'A sötét Mélyvíz keret be / ki. A rajz (vászon, jelek, áramkörök) nem változik.',run:()=>chrMv()}]);
+window.chrMgj=chrMgj;window.chrMenuClose=chrMenuClose;window.chrMv=chrMv;
 
 // Every number the drawing and the bill of materials are built from, in one place.
 // These are DOMAIN decisions — they differ by country, by client and by habit — so

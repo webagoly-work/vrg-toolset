@@ -44,6 +44,7 @@ const TARGETS = [
   'BRIDGE/09_catalogue/tools/viewer.html', // built: node BRIDGE/09_catalogue/tools/build.js writes smarthome-db.html
   'BRIDGE/04_related-hardware/espblok-builder.html',
   'BRIDGE/04_related-hardware/espblok-builder_2.html',
+  'Planner/projects/varler-planner/src/shell.html', // built: npm run build carries it into dist
 ];
 
 function main() {

@@ -26,6 +26,18 @@ function chrMgj(on){const p=document.getElementById('mgj');if(!p)return false;co
   const g=document.getElementById('qvMgj');if(g)g.onclick=()=>chrMgj();
   const x=document.getElementById('mgjX');if(x)x.onclick=()=>chrMgj(false);})();
 
+// Mélyvíz (docs/city/melyviz-rollout.md P6): the dark chrome is html.mv, on by default; ◐ in the Megjelenés head turns it
+// off and back. Chrome only — draw() never reads it, so the scene and the golden renders are the same either way.
+const CHR_MV_KEY='villanyterv_mv';
+function chrMv(on){const h=document.documentElement,v=on==null?!h.classList.contains('mv'):!!on;h.classList.toggle('mv',v);
+  const b=document.getElementById('mgjMv');if(b)b.classList.toggle('on',v);
+  if(on==null)try{localStorage.setItem(CHR_MV_KEY,v?'1':'0');}catch(_){}
+  return v;}
+(function chrMvBoot(){let s=null;try{s=localStorage.getItem(CHR_MV_KEY);}catch(_){}chrMv(s!=='0');
+  const b=document.getElementById('mgjMv');if(b)b.onclick=()=>chrMv();})();
+
 registerActions([{id:'view.appearance',label:'Megjelenés',icon:'🎛',group:'Nézet',alias:'appearance view style render walls grid megjelenes nezet stilus',
-  hint:'Stílus, falak, rács, léptékek, padlófeliratok — a nézet minden beállítása egy lebegő panelen.',run:()=>chrMgj()}]);
-window.chrMgj=chrMgj;window.chrMenuClose=chrMenuClose;
+  hint:'Stílus, falak, rács, léptékek, padlófeliratok — a nézet minden beállítása egy lebegő panelen.',run:()=>chrMgj()},
+  {id:'view.melyviz',label:'Mélyvíz keret',icon:'◐',group:'Nézet',alias:'melyviz dark theme sotet keret chrome',
+  hint:'A sötét Mélyvíz keret be / ki. A rajz (vászon, jelek, áramkörök) nem változik.',run:()=>chrMv()}]);
+window.chrMgj=chrMgj;window.chrMenuClose=chrMenuClose;window.chrMv=chrMv;
