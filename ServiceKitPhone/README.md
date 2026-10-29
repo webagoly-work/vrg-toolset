@@ -137,7 +137,9 @@ change under `www/`.
 
 ## Next ideas (not built)
 
-- A one-line PC bootstrap (`irm … | iex`) as a deploy alternative to the zip push.
+- ~~A one-line PC bootstrap (`irm … | iex`) as a deploy alternative~~ — **done**:
+  see [`ServiceKit/bootstrap.ps1`](../ServiceKit/bootstrap.ps1); the controller-mode
+  Deploy screen shows the one-liner as an alternative to the upload.
 - Test the rooted gadget path on a real rooted phone and pin down the per-device
   configfs quirks (UDC name, `f_hid` availability).
 - Gyro / trackpad control for Planner and Kódváros (folds in the old phone-relay

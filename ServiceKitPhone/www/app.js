@@ -39,6 +39,7 @@
       depTitle: 'Telepítés a gépre', depLede: 'A telefon hordozza a teljes ServiceKitet. Kapcsolódás után feltölti a gépre és kicsomagolja (alapból C:\\ServiceKit), majd indítható.',
       bundled: 'Csomagolt kit', pushDeploy: 'Feltöltés és telepítés', pushOnly: 'Csak feltöltés', verify: 'Ellenőrzés', uploading: 'Feltöltés', deploying: 'Telepítés',
       mtpNote: 'Nincs kapcsolat? A telefon USB-n médiaeszközként (MTP) is látszik: másold át a ServiceKit mappát a gépre kézzel.',
+      bootTitle: 'Vagy: egysoros letöltés a gépen', bootHint: 'Telefon nélkül is: a gépen PowerShellben ez letölti és beállítja a kitet a nyilvános tárból (nincs pendrive, nincs feltöltés).',
       copied: 'Vágólapra másolva', confirm: 'Biztosan?', yes: 'Igen', cancel: 'Mégse', tokenAsk: 'Add meg a hídon megjelenő tokent:',
       dangerRun: 'Ez módosítja a gépet. Futtatod?', started: 'Elindítva', deployed: 'Telepítve', verifyRes: 'Ellenőrzés kész',
       modeTitle: 'Mód', modeCtrl: 'Híd (root nélkül)', modeRoot: 'Rootos (pendrive + HID)',
@@ -68,6 +69,7 @@
       depTitle: 'Deploy to the PC', depLede: 'The phone carries the whole ServiceKit. Once connected it uploads and extracts it on the PC (default C:\\ServiceKit), ready to run.',
       bundled: 'Bundled kit', pushDeploy: 'Upload and deploy', pushOnly: 'Upload only', verify: 'Verify', uploading: 'Uploading', deploying: 'Deploying',
       mtpNote: 'No connection? The phone also shows over USB as a media device (MTP): copy the ServiceKit folder to the PC by hand.',
+      bootTitle: 'Or: one-line download on the PC', bootHint: 'No phone needed either: in PowerShell on the PC this pulls and sets up the kit from the public repo (no stick, no upload).',
       copied: 'Copied', confirm: 'Sure?', yes: 'Yes', cancel: 'Cancel', tokenAsk: 'Enter the token the bridge shows:',
       dangerRun: 'This changes the PC. Run it?', started: 'Started', deployed: 'Deployed', verifyRes: 'Verify done',
       modeTitle: 'Mode', modeCtrl: 'Bridge (no root)', modeRoot: 'Rooted (stick + HID)',
@@ -284,6 +286,8 @@
         (S.pc.kitPresent ? '<button type="button" class="btn" data-act="verify">' + icon('check') + esc(t('verify')) + '</button>' : '') +
         '</div>';
     } else h += '<div class="empty">' + esc(t('needPc')) + ' <a href="#" data-act="go" data-tab="connect">' + esc(t('tConnect')) + '</a></div>';
+    h += '<details class="card how"><summary>' + esc(t('bootTitle')) + '</summary><p>' + esc(t('bootHint')) + '</p>' +
+      cmdRow('irm https://raw.githubusercontent.com/webagoly-work/vrg-toolset/servicekit/ServiceKit/bootstrap.ps1 | iex') + '</details>';
     h += '<div class="note">' + esc(t('mtpNote')) + '</div>';
     byId('view-deploy').innerHTML = h;
   }
