@@ -21,6 +21,9 @@ design system with the rest of the toolset. The base framework (M0) was built th
 - **Branch.** Start from `claude/gracious-pasteur-vakjwf` (PR #2) until it is merged, then from `main`.
   Work on your own session branch, commit after each finished step, and **push your branch** so Actions builds
   the APK. Never push `main`, never force-push, never rewrite someone else's commits.
+- **Install the APK build first (once).** If `.github/workflows/mobile-android.yml` does not exist yet, copy
+  `Mobile/ci/mobile-android.yml` there, commit, and push before anything else (`docs/mobile/CLOUD.md` point 3
+  says what to do if the push is refused).
 - **Check first:** `cd Mobile/android && VRG_JVM_ONLY=1 ./gradlew :kit-core:test :airdeck-core:test` must
   be green before you change anything.
 - **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M1**.

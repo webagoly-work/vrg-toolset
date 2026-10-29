@@ -49,7 +49,7 @@ VRG_JVM_ONLY=1 ./gradlew :kit-core:test :airdeck-core:test   # never touches Goo
 
 On Windows, `Mobile\mobile.cmd` does all of this. It finds a JDK, writes `local.properties` and works
 behind an HTTPS-scanning antivirus. GitHub Actions builds the APK on every push that touches `Mobile/`
-(`.github/workflows/mobile-android.yml`), and the APK can be downloaded from the run's artifacts.
+(`.github/workflows/mobile-android.yml`, installed from `Mobile/ci/mobile-android.yml`), and the APK can be downloaded from the run's artifacts.
 
 **The app id is `hu.vrg.mobile`** (decision D-1 = A). It installs beside the old `hu.vrg.legeger` APK,
 whose settings do not carry over. Uninstall the old one once VRG Mobile works.

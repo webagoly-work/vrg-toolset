@@ -18,8 +18,12 @@ established the limits on 2026-10-27, and `Mobile/docs/legeger.md` §Verified re
 2. **The PC side is Node.** Relay additions (pairing, ports, launch, drop) go in
    `Planner/projects/varler-planner/tools/phone-relay-server.js` (or a sibling module it requires) with
    tests in `Mobile/tests/`. They run in the cloud.
-3. **The APK comes from GitHub Actions.** Pushing the session branch triggers
-   `.github/workflows/mobile-android.yml`, which runs the tests, builds the debug APK and attaches it as an
+3. **The APK comes from GitHub Actions.** The workflow is kept at `Mobile/ci/mobile-android.yml`, because
+   the desktop's token cannot push files under `.github/workflows/`. **The first cloud session installs it:**
+   `mkdir -p .github/workflows && cp Mobile/ci/mobile-android.yml .github/workflows/`, commit, push. If that
+   push is refused too, remove the copy from the commit, push the rest, tell the user, and carry on: the
+   desktop builds APKs with `Mobilemobile.cmd` until the workflow is in. Once installed, pushing the
+   session branch triggers `.github/workflows/mobile-android.yml`, which runs the tests, builds the debug APK and attaches it as an
    artifact. A compile error in the Android modules first shows up **there**. Ask the user to look at the run,
    or check it with `gh run list` / the GitHub API if the session has access, and fix it in the next commit.
 4. **On-device checks are a list, not a claim.** Each WP ends with a "Telefonon ellenőrizni" list. The user
