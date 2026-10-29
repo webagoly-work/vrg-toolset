@@ -21,12 +21,21 @@ phone is the same idea with a screen everyone already carries: **its own display
 and touch**, plus a real network stack, so it can both *control* the PC and
 *carry and deploy* the kit.
 
-### The honest constraint
+### Two modes — your choice (Kapcsolat → Mód)
 
-A non-rooted Android phone **cannot** present itself to a PC as a USB drive or a
-USB keyboard — modern Android only exposes **MTP** (media transfer), and true
-drive/HID emulation needs root (that's what DriveDroid does). So ServiceKit Phone
-takes the **controller + deploy** path instead of pretending to be a stick:
+| | **Bridge (no root)** — default | **Rooted (stick + HID)** |
+|---|---|---|
+| USB role | MTP only — phone is a *controller* | real **USB mass-storage** + **HID keyboard** |
+| Deploy | phone uploads the kit to a PC bridge, which extracts it | phone **is** the drive; the PC mounts `…:\ServiceKit` directly, no bridge |
+| Macros/commands | run on the PC via the bridge (`--allow-run`) | **typed** into the PC as keystrokes |
+| Needs | nothing special | a rooted phone + a kernel with configfs `f_mass_storage`/`f_hid` |
+| Status | **tested** | gadget/typing **untested on HW**; keymap + protocol tested |
+
+The non-root constraint is real: a non-rooted Android phone **cannot** present
+itself as a USB drive or keyboard — modern Android only exposes **MTP**, and true
+drive/HID emulation needs root (that's what DriveDroid does). The rooted path lifts
+that; everything for it lives in [`rooted/`](rooted/README.md). The rest of this
+README describes the default **controller + deploy** path:
 
 ```
    PHONE (this app)                         PC (the bridge)
@@ -65,6 +74,7 @@ device (MTP)** — copy the `ServiceKit` folder across by hand.
 | `bridge/skphone-connect.cmd` | USB (adb-reverse) launcher | — |
 | `bridge/skphone-wifi.cmd` | Wi-Fi / tethering launcher (prints token) | — |
 | `capacitor.config.json`, `package.json`, `android-res/` | the APK scaffold | — |
+| `rooted/` | rooted mode: USB gadget (`skstick.sh`), HID sender (`skhid.py`), HID macros, local HID bridge, Magisk module | keymap+protocol tested; gadget untested on HW |
 
 ## The five screens
 
@@ -128,6 +138,8 @@ change under `www/`.
 ## Next ideas (not built)
 
 - A one-line PC bootstrap (`irm … | iex`) as a deploy alternative to the zip push.
+- Test the rooted gadget path on a real rooted phone and pin down the per-device
+  configfs quirks (UDC name, `f_hid` availability).
 - Gyro / trackpad control for Planner and Kódváros (folds in the old phone-relay
   idea — see the air-mouse sketch), riding the same ws line protocol.
 - Fold into `vrg-toolset` proper as `Phone/` sharing the CYD line-protocol
