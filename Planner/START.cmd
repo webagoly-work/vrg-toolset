@@ -106,6 +106,18 @@ setlocal EnableDelayedExpansion
 ::  tool 11): CodeCity\companion.js serves the city on http://localhost:8797
 ::  with the local actions (live workspace P1, docs\city\wp). 1-4 still open
 ::  the file:// page. No tool number moved.
+::
+::  2026-10-27 - K) Kodvaros got F) Fedoreteg (only for tool 11): the Electron
+::  overlay shell CodeCity\shell over the desktop (P12, KV-25), summoned with
+::  Ctrl+Alt+K. Starts the seged first if it is not running; fetches Electron
+::  into Planner\apps\electron on first use. No tool number moved.
+::
+::  2026-10-27 - A) added: VRG Legeger (AirDeck), the Android app that makes the
+::  phone a gyro air mouse for any PC and a Planner / Kodvaros controller over
+::  the gyro relay (G). Not a tool page but an app, so it is a letter with a
+::  submenu, like Y): relay, APK build, install, tests, Android Studio. The
+::  submenu lives in AirDeck\legeger.cmd, which VRG-DE.cmd calls as well. No
+::  tool number moved.
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -180,7 +192,7 @@ set "TOOLKEYS="
 for /L %%i in (1,1,%TOOLCOUNT%) do (
     if %%i LSS 10 ( set "TOOLKEYS=!TOOLKEYS!%%i" ) else if %%i EQU 10 ( set "TOOLKEYS=!TOOLKEYS!0" ) else if %%i EQU 11 ( set "TOOLKEYS=!TOOLKEYS!K" )
 )
-set "ACTIONKEYS=BWETGVMCINSPLDRYUHOQ"
+set "ACTIONKEYS=BWETGVMCINSPLDRYUHOAQ"
 set "MENUKEYS=!TOOLKEYS!%ACTIONKEYS%"
 
 if %TOOLCOUNT% GTR 11 (
@@ -331,6 +343,9 @@ echo  -- Hardver / Hardware --
 echo   Y^) Planner CYD asztali kijelzo  ^(USB, Firmware\planner-cyd^)
 echo   U^) Board Console - univerzalis fejlesztolap  ^(http://localhost:8790^)
 echo.
+echo  -- Telefon / Phone --
+echo   A^) VRG Legeger - telefon mint legeger + Planner/Kodvaros vezerlo  ^(AirDeck^)
+echo.
 echo   Q^) Kilepes / Quit
 echo.
 :: WHY choice AND NOT set /p:
@@ -369,6 +384,7 @@ if /I "%K%"=="Y" goto DO_CYD
 if /I "%K%"=="U" goto DO_BOARD
 if /I "%K%"=="H" goto DO_HUB
 if /I "%K%"=="O" goto LOCALHOST_MENU
+if /I "%K%"=="A" goto DO_LEGEGER
 
 :: Only keys in MENUKEYS can get this far, so a digit here is always a real
 :: tool: 1-9 as printed, and 0 meaning the tenth entry.
@@ -418,16 +434,19 @@ echo   4^) Rendszer alapertelmezett bongeszo
 echo.
 echo   M^) Mappa megnyitasa  ^(Explorer, ahol a fajl van^)
 if "%PICKNUM%"=="11" echo   S^) Elo mod - Kodvaros seged  ^(helyi szerver, http://localhost:8797^)
+if "%PICKNUM%"=="11" echo   F^) Fedoreteg - a varos az asztal folott  ^(Electron, Ctrl+Alt+K^)
 echo   0^) Vissza
 echo.
 :: Egy billentyu, mint a fomenuben - lasd az ottani magyarazatot.
 :: Az errorlevel a /C listaban elfoglalt helyet adja vissza, ezert a
 :: vizsgalat csokkeno sorrendben all: az "if errorlevel N" azt jelenti,
 :: hogy "N vagy nagyobb".
-:: S) exists only for tool 11, as the 7th key, so errorlevel 7 can only be S.
+:: S) and F) exist only for tool 11, as the 7th and 8th keys, so errorlevel 7
+:: can only be S and 8 only F.
 set "BKEYS=1234M0"
-if "%PICKNUM%"=="11" set "BKEYS=1234M0S"
+if "%PICKNUM%"=="11" set "BKEYS=1234M0SF"
 choice /C !BKEYS! /N /M "Bongeszo / mappa: "
+if errorlevel 8 goto OPEN_CITY_OVERLAY
 if errorlevel 7 goto OPEN_CITY_LIVE
 if errorlevel 6 goto MENU
 if errorlevel 5 goto OPEN_FOLDER
@@ -684,6 +703,33 @@ if not exist "%REPO%\CodeCity\companion.js" (
 start "VRG 8797" /min "%NODE_EXE%" "%REPO%\CodeCity\companion.js"
 goto MENU
 
+:: Tool 11 overlay (P12, KV-25): the Electron shell CodeCity\shell shows the
+:: seged page over the desktop on Ctrl+Alt+K. The seged is started first
+:: (without opening a browser) if it is not running; Electron is fetched into
+:: Planner\apps\electron on first use (CodeCity\tools\fetch-electron.js checks
+:: it against vendor-manifest.json).
+:OPEN_CITY_OVERLAY
+if not exist "%NODE_EXE%" (
+    echo   HIBA: nem talalhato a hordozhato Node: %NODE_EXE%
+    pause
+    goto MENU
+)
+if not exist "%ROOT%\apps\electron\electron.exe" (
+    echo   Az Electron meg nincs letoltve - most letoltom ^(kb. 150 MB^)...
+    "%NODE_EXE%" "%REPO%\CodeCity\tools\fetch-electron.js"
+    if errorlevel 1 (
+        echo   HIBA: az Electron letoltese nem sikerult.
+        pause
+        goto MENU
+    )
+)
+curl.exe -s -o nul -m 1 "http://127.0.0.1:8797/" >nul 2>&1
+if errorlevel 1 start "VRG 8797" /min "%NODE_EXE%" "%REPO%\CodeCity\companion.js" --no-open
+start "" "%ROOT%\apps\electron\electron.exe" "%REPO%\CodeCity\shell"
+echo   Fedoreteg elinditva: Ctrl+Alt+K elohivja / elrejti, Esc elrejti, talcaikon: menu.
+timeout /t 3 >nul
+goto MENU
+
 :DO_VSCODE_REPO
 if not exist "%VSCODE_EXE%" (
     echo   HIBA: nem talalhato a VS Code: %VSCODE_EXE%
@@ -793,6 +839,17 @@ if not exist "%BOARD_DIR%\Board Console.bat" (
     goto MENU
 )
 start "Board Console" /min "%BOARD_DIR%\Board Console.bat"
+goto MENU
+
+:: VRG Legeger: its submenu is AirDeck\legeger.cmd (shared with VRG-DE.cmd).
+:DO_LEGEGER
+set "LEGEGER_CMD=%REPO%\AirDeck\legeger.cmd"
+if not exist "%LEGEGER_CMD%" (
+    echo   HIBA: nem talalhato: %LEGEGER_CMD%
+    pause
+    goto MENU
+)
+call "%LEGEGER_CMD%"
 goto MENU
 
 :DO_CYD

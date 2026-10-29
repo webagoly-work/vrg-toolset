@@ -145,7 +145,9 @@ node CodeCity/scan.js <repo> --html CodeCity/dist/<name>.html
 node CodeCity/build.js                                 # the empty template that opens a *.city.json
 node CodeCity/scan.js . --js CodeCity/dist/vrg-codecity.data.js  # this repo as the template's default view (START.cmd K runs it on open)
 node CodeCity/tools/shot.js "CodeCity/dist/<name>.html#pick=0.45,0.6"   # headless check incl. picking
-node CodeCity/tools/selftest.js                        # scanner, sessions privacy, MCP server, companion, specs (71 checks)
+node CodeCity/tools/selftest.js                        # scanner, sessions privacy, MCP server, companion, specs (91 checks)
+# wallpaper (KV-24): Lively → Add wallpaper → URL  http://localhost:8797/#mode=wallpaper&fps=2   (steps: wp/p12-overlay.md)
+# overlay (KV-25): START.cmd K → F, or  Planner\apps\electron\electron.exe CodeCity\shell   (Ctrl+Alt+K; live check: … CodeCity\shell --selftest)
 node CodeCity/tools/build-etw.js                       # vrg-etw.exe (P11): TraceEvent from nuget.org, pinned by CodeCity/etw/packages.lock.json
 node CodeCity/tools/build-probe.js                     # vrg-probe.exe (P10) with the portable SDK in Planner/apps/dotnet, offline
 node CodeCity/companion.js                             # live mode: the city on http://localhost:8797 with local actions (START.cmd K → S)
@@ -298,9 +300,9 @@ One stub per phase in `docs/city/wp/`.
 | P8 | [The Land](wp/p08-land.md) | D23, D24, D28 | Zoom from the Land to a file floor without jitter; a 100 MB download sails in as a ship; copying to a stick runs a train. | DONE |
 | P9 | [GitWorld planet](wp/p09-planet.md) | D21, D22 | The vendored repos sit as foreign cities on their continents with licence colours; offline, the planet renders from the snapshot. | DONE |
 | P10 | [Probe sidecar (Tier A)](wp/p10-probe.md) | D18, D25, D27 | Spotify playing → the stadium lights; dragging a sound tower changes its volume; Paint raises a construct that dissolves when closed. | DONE (with Spotify itself: the user's check) |
-| P11 | [Elevated ETW (Tier B, optional)](wp/p11-etw.md) | D17, D23 | A `git clone` shows the exact cargo per process; a file read inside a Bash command beams to its roof. | built — waits for the user's install + task (wp/p11-etw.md) |
-| P12 | [Overlay OS](wp/p12-overlay.md) | D19, D20 | After 22H2: the hotkey summons the city in < 150 ms; idle ~0 %; clicking a building hands off to the real window, Esc returns. | open |
-| P13 | [Live-first polish](wp/p13-polish.md) | D26 | Every rule has a check in selftest/shot.js; the Design batch pack exists. | open |
+| P11 | [Elevated ETW (Tier B, optional)](wp/p11-etw.md) | D17, D23 | A `git clone` shows the exact cargo per process; a file read inside a Bash command beams to its roof. | DONE (checked 2026-10-27 on the user's elevated task) |
+| P12 | [Overlay OS](wp/p12-overlay.md) (L0 wallpaper KV-24, L2 overlay spike KV-25) | D19, D20 | After 22H2: the hotkey summons the city in < 150 ms; idle ~0 %; clicking a building hands off to the real window, Esc returns. | open |
+| P13 | [Live-first polish](wp/p13-polish.md) (KV-27 built; D26 open) | D26 | Every rule has a check in selftest/shot.js; the Design batch pack exists. | open |
 
 Changes against the report, from the user's KV-01 answers: P2 brings the embedded terminal forward
 (CITY-D15 C, link as fallback); P3b is new (VS Code extension, CITY-D9 D).
@@ -330,4 +332,8 @@ Changes against the report, from the user's KV-01 answers: P2 brings the embedde
 - KV-20 ✔ 2026-10-26 1bec540
 - KV-21 ✔ 2026-10-26 0ef5900 — framework-dependent until the runtime pack is fetched (§5)
 - KV-22 ✔ 2026-10-26 f113c30 — P10 done; checked live on Opera (GSMTC + its tower), Spotify was not running
-- KV-23 ✔ 2026-10-26 84b255d — built and tested unelevated (--demo, specs); the real check waits for the user's task
+- KV-23 ✔ 2026-10-26 84b255d — checked 2026-10-27 with the user's elevated task: a clone's exact cargo per process, a cmd read of GO-LIVE.md beamed to its session
+- KV-24 ✔ 2026-10-27 ad3b93a — idle wallpaper measured at ≈0.3 % of the PC; Lively itself is the user's step
+- KV-25 ✔ 2026-10-27 1419e33 — Electron 44.7.1 overlay: no black-transparency bug on the GTX 1050 Ti; summon 23–88 ms, hidden 0.06 % of one core
+- KV-26 ✔ 2026-10-27 28c71cb — built; Notepad dry run 3/3; the Zen run deferred to the end (user, 2026-10-27); WGC capture refused on this PC, screens are 1 fps pictures
+- KV-27 ✔ 2026-10-27 4d44803 — R1–R12 + trademark each have a selftest/shot check (R12 fixed, R8 chip row a gap); low glow (L), quality tiers, Design pack in docs/city/design-pack

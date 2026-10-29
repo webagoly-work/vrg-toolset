@@ -13,15 +13,17 @@ const liveMine = () => kv.for === current.city && kv.match;
 // ---- pulses: the aFlash attribute, as the max of the replay's flash and the live pulse
 function livePulse(idx) {
   if (live.pulse.length !== replay.flash.length) live.pulse = new Float32Array(replay.flash.length);
-  for (const i of idx) live.pulse[i] = 1;
-  if (!live.raf) live.raf = requestAnimationFrame(liveFade);
+  for (const i of idx) live.pulse[i] = lookPulse();   // 37-look: half in low glow
+  if (!live.raf) { live.fadeAt = performance.now(); live.raf = requestAnimationFrame(liveFade); }
 }
+// the glow fades by time (×0.97 per 60th of a second, ~2 s), not per frame: the wallpaper draws only 1–5 frames a second
 function liveFade() {
-  const fl = world.buildings.geometry.attributes.aFlash;
+  const fl = world.buildings.geometry.attributes.aFlash, now = performance.now(), k = Math.pow(0.97, Math.min(600, (now - (live.fadeAt || now)) / (1000 / 60)));
+  live.fadeAt = now;
   let any = false;
   for (let i = 0; i < live.pulse.length; i++) {
     if (live.pulse[i] <= 0) continue;
-    live.pulse[i] = live.pulse[i] < 0.02 ? 0 : live.pulse[i] * 0.97;
+    live.pulse[i] = live.pulse[i] < 0.02 ? 0 : live.pulse[i] * k;
     fl.array[i] = Math.max(replay.flash[i], live.pulse[i]);
     any = any || live.pulse[i] > 0;
   }
@@ -96,7 +98,7 @@ async function liveSwap() {
 
 function liveConnect() {
   if (live.es || !kv.match) return;
-  live.es = new EventSource('/api/stream');
+  live.es = new EventSource('/api/stream' + (KV_WALL ? '?wallpaper=1' : ''));   // 00-wallpaper: a light listener
   live.es.addEventListener('hello', e => {
     const h = JSON.parse(e.data).head;
     $('live-dot').hidden = false;
@@ -120,6 +122,7 @@ function liveConnect() {
   live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
   live.es.addEventListener('cargo', e => { if (liveMine()) cargoEvent(JSON.parse(e.data)); });   // 31-flows: ships and planes
   live.es.addEventListener('apps', e => { if (liveMine()) appsEvent(JSON.parse(e.data)); });   // 33-apps: open programs (vrg-probe)
+  live.es.addEventListener('portal', e => ptEvent(JSON.parse(e.data)));   // 36-portal: the probe placed / put back a window
   // 34-stadium: now playing, sound towers and their peaks, Bluetooth buoys, the USB port board (vrg-probe)
   live.es.addEventListener('media', e => { if (liveMine()) mediaEvent(JSON.parse(e.data)); });
   live.es.addEventListener('audio', e => { if (liveMine()) audioEvent(JSON.parse(e.data)); });
@@ -146,6 +149,9 @@ async function liveInit() {
   liveSeenInit();
   await kvReady();
   liveConnect();
+  // 00-wallpaper: hidden = no stream (the wallpaper behind a fullscreen app, the overlay dismissed)
+  if (KV_WALL || KV_OVERLAY) document.addEventListener('visibilitychange', () => { if (document.hidden) { if (live.es && !pt.keep) { live.es.close(); live.es = null; } } else if (!live.es) liveConnect(); });
+  if (KV_WALL) return;   // the wallpaper is the scene only — no terminal offer, gates, metro or H: walk
   termResumeOffer();   // 21-term: Claude tabs from before a restart
   if (kv.match) palCatalog().then(jbLoad);   // 26-jobs: the gates need the START.cmd tools
   if (kv.match) mtLoad();   // 28-metro

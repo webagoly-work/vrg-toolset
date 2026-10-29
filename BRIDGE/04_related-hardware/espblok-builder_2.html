@@ -1,22 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="mv">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ESPBLOK · CAD Builder v2</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap');
+<style>/* melyviz:begin */
+/* Mélyvíz — the VRG dev-side style (CITY-D26, 2026-10-27), shared by every dev-side app. Spec: docs/city/melyviz.md.
+   This file is the source. Apps carry a copy between the markers  melyviz:begin / melyviz:end  that
+   tools/melyviz-sync.js writes; `node tools/melyviz-sync.js --check` fails when a copy has drifted.
+   Do not edit a copy inside an app — edit this file and sync.
+
+   Tokens are --mv-* so they never collide with an app's own names; an app maps its variables onto them.
+   The base layer applies only under html.mv, so adding the block changes nothing until the app opts in.
+   M1 ice = the instrument and you (selection, focus, "you are here"); warm = activity (running, heat, recent work).
+   M5 smoked glass, 1 px hairlines, square controls, two cut corners, no rounded corners, no drop shadows.
+   M6 numbers and readouts mono; titles in the condensed voice; small labels uppercase and tracked. */
 :root {
-  --bg:#15181c;--bg2:#1a1e23;--bg3:#242a31;--panel:#1d2126;
-  --border:#2a313a;--border2:#3a434d;
-  --accent:#ffb300;--accent2:#cc8f00;
-  --warn:#54e0a6;--danger:#ff7676;--info:#6bbcff;
-  --text:#f2f5f8;--text2:#aab4be;--text3:#5a6670;
-  --mono:'JetBrains Mono',monospace;--head:'Saira Condensed',sans-serif;
+  --mv-bg: #0a141c; --mv-horizon: #11202b;
+  --mv-panel: rgba(20, 30, 38, .74); --mv-panel-solid: #121c24; --mv-raised: #17232c;
+  --mv-line: rgba(232, 240, 246, .15); --mv-line-strong: rgba(232, 240, 246, .34);
+  --mv-text: #e8f0f6; --mv-dim: #a6afb7; --mv-faint: #646d74;
+  --mv-accent: #93d3e6; --mv-accent-soft: rgba(147, 211, 230, .14); --mv-accent-glow: rgba(147, 211, 230, .5);
+  --mv-warm: #e8a873; --mv-warm-soft: rgba(232, 168, 115, .14);
+  --mv-ok: #8bcca1; --mv-warn: #e3be7b; --mv-crit: #e4877d;
+  --mv-cut: 6px; --mv-blur: 12px; --mv-glow: 3px;
+  --mv-mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+  --mv-voice: Bahnschrift, "DIN Alternate", "Arial Narrow", sans-serif;
+  --mv-sans: "Segoe UI", system-ui, sans-serif;
+}
+html.mv.low-glow { --mv-glow: 0px; }
+
+/* ---- base layer (opt-in: html.mv; zero specificity, so any app rule wins) ---- */
+:where(html.mv) { color-scheme: dark; }
+:where(html.mv) :where(body) { background: var(--mv-bg); color: var(--mv-text); font-family: var(--mv-sans); }
+:where(html.mv) :where(:is(h1, h2, h3)) { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 600; letter-spacing: .03em; }
+:where(html.mv) :where(:is(code, kbd, pre, samp, .mv-num)) { font-family: var(--mv-mono); }
+:where(html.mv) :where(:focus-visible) { outline: 2px solid var(--mv-accent); outline-offset: 2px; }
+:where(html.mv) ::selection { background: var(--mv-accent-soft); color: var(--mv-text); }
+:where(html.mv) :where(:is(button, input, select, textarea)) { font: inherit; color: var(--mv-text); border-radius: 0; }
+:where(html.mv) :where(:is(button, select, input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]), textarea)) {
+  background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); box-shadow: none; }
+:where(html.mv) :where(button) { cursor: pointer; }
+:where(html.mv) :where(button:hover:not(:disabled)) { border-color: var(--mv-accent); }
+:where(html.mv) :where(:is(input, select, textarea):focus) { border-color: var(--mv-accent); outline: none; box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+:where(html.mv) :where(:is(input[type=checkbox], input[type=radio], input[type=range])) { accent-color: var(--mv-accent); }
+:where(html.mv) :where(input, textarea)::placeholder { color: var(--mv-faint); }
+:where(html.mv) :where(:disabled) { opacity: .45; cursor: default; }
+:where(html.mv) :where(table) { border-collapse: collapse; }
+:where(html.mv) :where(:is(th, td)) { border-color: var(--mv-line); }
+:where(html.mv) :where(th) { color: var(--mv-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .1em; font-size: 10.5px; }
+:where(html.mv) :where(a) { color: var(--mv-accent); }
+:where(html.mv) :where(hr) { border: 0; border-top: 1px solid var(--mv-line); }
+:where(html.mv) { scrollbar-color: var(--mv-line-strong) transparent; scrollbar-width: thin; }
+
+/* ---- components (usable anywhere) ---- */
+.mv-glass {
+  border: 1px solid var(--mv-line-strong); border-radius: 0; box-shadow: none;
+  -webkit-backdrop-filter: blur(var(--mv-blur)) saturate(1.2); backdrop-filter: blur(var(--mv-blur)) saturate(1.2);
+  background: var(--mv-panel); }
+.mv-solid { border: 1px solid var(--mv-line-strong); border-radius: 0; box-shadow: none; background: var(--mv-panel-solid); }
+/* two cut corners (top left, bottom right) drawn as diagonals; layer on .mv-glass or .mv-solid */
+.mv-cut {
+  clip-path: polygon(var(--mv-cut) 0, 100% 0, 100% calc(100% - var(--mv-cut)), calc(100% - var(--mv-cut)) 100%, 0 100%, 0 var(--mv-cut));
+  background-image:
+    linear-gradient(to bottom right, transparent 50%, var(--mv-line-strong) 50%, var(--mv-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px)),
+    linear-gradient(to top left, transparent 50%, var(--mv-line-strong) 50%, var(--mv-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px));
+  background-position: left top, right bottom; background-size: var(--mv-cut) var(--mv-cut); background-repeat: no-repeat;
+  background-origin: border-box; }
+.mv-title { font-family: var(--mv-voice); font-stretch: 75%; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.mv-label { font-family: var(--mv-mono); text-transform: uppercase; letter-spacing: .12em; font-size: 10px; color: var(--mv-dim); }
+.mv-btn { background: none; border: 1px solid var(--mv-line-strong); border-radius: 0; color: inherit; font: inherit; padding: 3px 10px; cursor: pointer; }
+.mv-btn:hover { border-color: var(--mv-accent); }
+.mv-on, .mv-btn.on { border-color: var(--mv-accent); color: var(--mv-accent); background: var(--mv-accent-soft); box-shadow: 0 0 var(--mv-glow) var(--mv-accent-glow); }
+.mv-live { color: var(--mv-warm); }
+.mv-badge { font: 11px var(--mv-mono); padding: 1px 7px; border: 1px solid var(--mv-line-strong); color: var(--mv-dim); white-space: nowrap; }
+.mv-badge.ok { color: var(--mv-ok); border-color: var(--mv-ok); }
+.mv-badge.warn { color: var(--mv-warn); border-color: var(--mv-warn); }
+.mv-badge.crit { color: var(--mv-crit); border-color: var(--mv-crit); }
+
+/* print stays paper: Mélyvíz is a screen style */
+@media print {
+  :where(html.mv) { color-scheme: light; }
+  :where(html.mv) body { background: #fff; color: #000; }
+  .mv-glass, .mv-solid { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+/* melyviz:end */</style>
+<style>
+/* Mélyvíz (shared/melyviz.css), chrome only: module, pin and protocol hues keep their meaning. --accent is selection
+   and focus (you), so ice. The old --warn was the green "OK / test" colour, so it maps to --mv-ok; the real warnings
+   (.lwarn, .badge-warn) get --mv-warn in the skin. --info marks wire mode, an operation in progress, so warm.
+   No web fonts: the page works offline. */
+:root {
+  --bg:var(--mv-bg);--bg2:var(--mv-horizon);--bg3:var(--mv-raised);--panel:var(--mv-panel-solid);
+  --border:var(--mv-line);--border2:var(--mv-line-strong);
+  --accent:var(--mv-accent);--accent2:#3d6f80;
+  --warn:var(--mv-ok);--danger:var(--mv-crit);--info:var(--mv-warm);
+  --text:var(--mv-text);--text2:var(--mv-dim);--text3:var(--mv-faint);
+  --mono:var(--mv-mono);--head:var(--mv-voice);
   --cell:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:12px;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none;background-image:repeating-linear-gradient(45deg,rgba(255,179,0,.018) 0 14px,transparent 14px 28px);}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:12px;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none;background-image:linear-gradient(var(--mv-line) 1px,transparent 1px);background-size:100% 32px;}
 
 /* TOP BAR */
 #topbar{background:var(--panel);border-bottom:1px solid var(--border2);padding:0 12px;height:44px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;}
@@ -133,6 +217,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:12
 /* Power draw bar */
 #power-bar{font-size:10px;color:var(--text3);padding:2px 10px;background:var(--bg3);border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:12px;align-items:center;}
 .pw-val{color:var(--warn);font-family:var(--mono);}
+
+/* Mélyvíz skin (chrome): condensed titles, square controls, outline primary, real warnings in --mv-warn,
+   glass top bar, cut corners on the modals */
+#logo,.board-label,#insp-header,.isec,#modal h2,.msec h3,#json-modal h2,#palette-header,.pi-name{font-stretch:75%;}
+#logo{text-transform:uppercase;letter-spacing:.08em;}
+.tab,.btn,#psearch,.tag,.badge,#modal,#json-modal,#json-ta{border-radius:0;}
+.tab.active,.btn-save{background:var(--mv-accent-soft);border-color:var(--mv-accent);color:var(--mv-accent);box-shadow:0 0 var(--mv-glow) var(--mv-accent-glow);}
+.btn-wire.active{background:var(--mv-warm-soft);color:var(--mv-warm);}
+#topbar{background:var(--mv-panel);-webkit-backdrop-filter:blur(var(--mv-blur));backdrop-filter:blur(var(--mv-blur));}
+.badge-ok{background:rgba(139,204,161,.08);border-color:rgba(139,204,161,.35);}
+.badge-warn{background:rgba(227,190,123,.08);color:var(--mv-warn);border-color:rgba(227,190,123,.35);}
+.badge-err{background:rgba(228,135,125,.08);border-color:rgba(228,135,125,.35);}
+.lok,.mok{color:var(--mv-ok);}.lwarn{color:var(--mv-warn);}
+#modal,#json-modal{clip-path:polygon(var(--mv-cut) 0,100% 0,100% calc(100% - var(--mv-cut)),calc(100% - var(--mv-cut)) 100%,0 100%,0 var(--mv-cut));box-shadow:none;}
 </style>
 </head>
 <body>
@@ -636,10 +734,10 @@ function renderModuleDivs(){
     const el=document.createElement('div');
     el.style.cssText=`position:absolute;left:${pm.x}px;top:${pm.y}px;width:${d.w}px;height:${d.h}px;
       background:${m.color};border-radius:2px;
-      border:${isSelected?'2px solid #ffb300':isWirePending?'2px solid #6bbcff':'1px solid rgba(255,255,255,.18)'};
+      border:${isSelected?'2px solid var(--accent)':isWirePending?'2px solid var(--info)':'1px solid rgba(255,255,255,.18)'};
       cursor:${wireMode?'pointer':'move'};overflow:hidden;z-index:${isSelected?30:10};
       transition:box-shadow .15s;
-      box-shadow:${isSelected?'0 0 0 1px #ffb300,0 0 12px rgba(255,179,0,.25)':isWirePending?'0 0 0 2px #6bbcff':'none'};`;
+      box-shadow:${isSelected?'0 0 0 1px var(--accent),0 0 6px var(--mv-accent-glow)':isWirePending?'0 0 0 2px var(--info)':'none'};`;
     el.dataset.uid=pm.uid;
 
     // Inner content — name, dims, proto tags
@@ -1013,7 +1111,7 @@ function testConnections(){
   // Render modal
   let html='';
   if(res.ok.length){html+=`<div class="msec"><h3>✓ PASSING</h3>`;res.ok.forEach(r=>html+=`<div class="mitem"><span class="mok">✓</span> ${r}</div>`);html+='</div>';}
-  if(res.warn.length){html+=`<div class="msec"><h3>⚠ WARNINGS</h3>`;res.warn.forEach(r=>html+=`<div class="mitem"><b style="color:var(--warn)">⚠</b> ${r}</div>`);html+='</div>';}
+  if(res.warn.length){html+=`<div class="msec"><h3>⚠ WARNINGS</h3>`;res.warn.forEach(r=>html+=`<div class="mitem"><b style="color:var(--mv-warn)">⚠</b> ${r}</div>`);html+='</div>';}
   if(res.err.length){html+=`<div class="msec"><h3>✕ CONFLICTS</h3>`;res.err.forEach(r=>html+=`<div class="mitem"><span class="merr">✕</span> ${r}</div>`);html+='</div>';}
   html+=`<div class="msec"><h3>BUS MAP</h3>`;
   Object.entries(buses).forEach(([p,ns])=>html+=`<div class="mitem"><b style="color:${pc(p)}">${p}</b>: ${ns.join(' → ')}</div>`);

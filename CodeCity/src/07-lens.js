@@ -60,7 +60,7 @@ function lensApply() {
   if (hovered >= 0) b.setColorAt(hovered, _c1.copy(world.baseColor[hovered]).lerp(_c2.setHex(0xffffff), 0.55));
   b.instanceColor.needsUpdate = true;
   const u = b.material.userData.uniforms;
-  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = delta ? 0.3 : lens.gain; u.uBodyGlow.value = delta ? 0.4 : lens.glow;
+  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = lookGlow(delta ? 0.3 : lens.gain); u.uBodyGlow.value = lookGlow(delta ? 0.4 : lens.glow);   // 37-look: low glow
   const [ph, ps, pl] = lens.plate;
   world.dirOf.forEach((d, i) => world.plates.setColorAt(i, _c1.setHSL(ph, ps, pl + Math.min(d.depth, 6) * 0.025)));
   world.plates.instanceColor.needsUpdate = true;
@@ -118,8 +118,9 @@ function lensBar() {
   const groups = [...new Set(LENSES.map(l => l.group))];
   $('lenses').innerHTML = groups.map(g => `<span class="grp">${g ? `<small>${g}</small>` : ''}${LENSES.filter(l => l.group === g)
     .map(l => `<button class="btn" data-lens="${l.id}" title="${l.name} (${l.key})"><kbd>${l.key}</kbd>${l.name}</button>`).join('')}</span>`).join('')
-    + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>';
-  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt) setLens(bt.dataset.lens); };
+    + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>'
+    + '<span class="grp"><small>Fény</small><button id="glow-btn" class="btn" title="Halk fény: az ablakok és a felvillanások visszafogva (L)"><kbd>L</kbd>Halk</button></span>';
+  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt && bt.id === 'glow-btn') return setLowGlow(!look.low); if (bt) setLens(bt.dataset.lens); };
 }
 lensBar();
 addEventListener('keydown', e => {

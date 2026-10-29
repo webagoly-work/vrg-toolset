@@ -147,7 +147,7 @@ const defs = [...modules.entries()].map(([id, m]) =>
 ).join('\n\n');
 
 const html = `<!doctype html>
-<html lang="hu">
+<html lang="hu" class="mv">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

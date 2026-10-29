@@ -126,6 +126,80 @@ try {
   const ets = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-etw.js')], { encoding: 'utf8', timeout: 90000 });
   for (const l of String(ets.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
   check(ets.status === 0, `etw spec exit ${ets.status}`);
+  // wallpaper (P12 L0, KV-24): a ?wallpaper=1 listener starts no probe and polls claude agents slowly; a full page undoes it
+  const wps = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-wallpaper.js')], { encoding: 'utf8', timeout: 90000 });
+  for (const l of String(wps.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
+  check(wps.status === 0, `wallpaper spec exit ${wps.status}`);
+  // overlay shell (P12 L2, KV-25): the Electron files parse with this Node, the shell loads only the segéd origin and
+  // stays sandboxed; the page has #mode=overlay. The live check needs the desktop: electron CodeCity/shell --selftest
+  const shellDir = path.join(__dirname, '..', 'shell');
+  const parse = ['main.js', 'preload.js', 'selftest.js', 'transparency-test.js', 'portaltest.js', 'capture-test.js', 'thumb-test.js'].map(n => path.join(shellDir, n)).concat(path.join(__dirname, 'fetch-electron.js'))
+    .every(p => require('child_process').spawnSync(process.execPath, ['--check', p]).status === 0);
+  check(parse, 'overlay shell: main, preload, the tests, the capture probes and fetch-electron parse');
+  const shellMain = fs.readFileSync(path.join(shellDir, 'main.js'), 'utf8');
+  check(/sandbox: true/.test(shellMain) && /contextIsolation: true/.test(shellMain) && /nodeIntegration: false/.test(shellMain)
+    && /will-navigate/.test(shellMain) && /action: 'deny'/.test(shellMain), 'overlay shell: sandboxed, context-isolated, no navigation off the segéd, no new windows');
+  check(/mode'\) !== 'overlay'/.test(fs.readFileSync(path.join(__dirname, '..', 'src', '00-wallpaper.js'), 'utf8'))
+    && JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'vendor-manifest.json'), 'utf8')).components.some(c => c.slug === 'electron' && /^\d+\.\d+\.\d+$/.test(c.npmVersion) && /^sha512-/.test(c.npmIntegrity)),
+    'overlay shell: #mode=overlay in the page; Electron pinned with sha512 in vendor-manifest.json');
+  // the portal hand-off (KV-26): the shell sends handles and pictures, never a window title; the segéd moves only a window
+  // the probe counts, with whole-pixel sizes; the page hands off only from the overlay
+  const portalSrc = fs.readFileSync(path.join(__dirname, '..', 'src', '36-portal.js'), 'utf8'), comp = fs.readFileSync(path.join(__dirname, '..', 'companion.js'), 'utf8');
+  check(!/\.name\b/.test(shellMain.slice(shellMain.indexOf('async function sendSources'), shellMain.indexOf('ipcMain.on(')))
+    && /'probe-place': \{ keys: \['h', 'x', 'y', 'w', 'hh'\]/.test(comp) && /if \(!probe\.wins\.has\(cmd\.h\)\) return \[404/.test(comp)
+    && /if \(!sc \|\| pt\.cur \|\| !window\.kvShell\) return;/.test(portalSrc) && /if \(!KV_OVERLAY/.test(portalSrc),
+    'portal hand-off: no window titles to the page, probe-place only for a counted window, only inside the overlay');
+
+  // ---- R1–R12 and the trademark limits (P13, KV-27; report §5.5, §4; audit: docs/city/wp/p13-rules.md)
+  const src = n => fs.readFileSync(path.join(__dirname, '..', 'src', n), 'utf8');
+  const allSrc = fs.readdirSync(path.join(__dirname, '..', 'src')).filter(n => /^\d\d-.*\.js$/.test(n)).map(src).join('\n');
+  const lensSrc = src('07-lens.js'), liveSrc = src('22-live.js'), uiSrc = src('04-ui.js'), appsSrc = src('33-apps.js');
+  check(/let lens = LENSES\.find\(l => l\.id === 'alap'\)/.test(lensSrc) && /Math\.pow\(0\.97,/.test(liveSrc),
+    'R1 grey-normal: the plain night lens is the default; a change pulse fades by time (~2 s), nothing blinks for ever');
+  const lensCount = (lensSrc.match(/\bid: '[a-z]+'/g) || []).length, legendCount = (lensSrc.match(/\blegend: \(\) =>/g) || []).length;
+  check(lensCount >= 6 && legendCount >= lensCount && /landLabel\(a\.name/.test(appsSrc), 'R2 colour never alone: every lens has a worded legend, every construct a name label');
+  check(/ablakok: friss munka világít/.test(lensSrc), 'R3 one animation, one meaning: the legend names what the window light means');
+  check(/it = apMake\(a, slot\)/.test(appsSrc) && /for \(const it of ap\.items\.values\(\)\) if \(!seen\.has\(it\.key\)/.test(appsSrc), 'R4 signage only for the active: a construct and its sign live only while its program has a window');
+  check(/let slot = ap\.slots\.indexOf\(null\)/.test(appsSrc) && /ap\.slots\[it\.slot\] = null/.test(appsSrc), 'R5 places never move: a construct keeps its ring slot while it lives; freed slots are reused');
+  check(/function ptPortal/.test(src('36-portal.js')) && /function openPanel/.test(uiSrc), 'R6 3D for overview, flat panels for reading, the portal hand-off to the real window');
+  check(/e\.key === 'k' \|\| e\.key === 'K'/.test(src('18-palette.js')) && /\^\[1-6\]\$/.test(lensSrc) && /e\.key === 'l' \|\| e\.key === 'L'/.test(src('37-look.js')),
+    'R7 keyboard paths: Ctrl+K palette, 1–6 lenses, U roads, L low glow');
+  check(/classList\.toggle\('on', x\.dataset\.lens === lens\.id\)/.test(lensSrc) && /id="q" type="search"/.test(src('shell.html')),
+    'R8 the active lens is lit in the always-visible lens bar; the filter stays in the search box (no separate chips yet — audit)');
+  check(/id="live-dot"/.test(src('shell.html')) && /id="legend"/.test(src('shell.html')), 'R9 status on the object plus one fixed place: the ● élő badge and the legend corner');
+  const flights = [...allSrc.matchAll(/flyCamera\(([^;]*?),\s*(\d+)\)/g)].map(m => +m[2]);
+  check(flights.length > 3 && flights.every(ms => ms === 0 || ms >= 400) && /\/ 450\)/.test(src('08-roads.js')), `R10 camera tweens ≥ 400 ms (or an explicit instant snap): ${flights.join(', ')} ms`);
+  // R11: a shot check — the low-glow shot has clearly fewer bright pixels than the default (docs/city/design-pack)
+  const pngLum = file => {   // a minimal PNG reader: 8-bit RGB/RGBA, no interlace — what headless Chrome writes
+    const b = fs.readFileSync(file), zl = require('zlib'); let o = 8, w = 0, h = 0, ct = 0; const idat = [];
+    while (o < b.length) { const n = b.readUInt32BE(o), t = b.toString('ascii', o + 4, o + 8), d = b.subarray(o + 8, o + 8 + n);
+      if (t === 'IHDR') { w = d.readUInt32BE(0); h = d.readUInt32BE(4); ct = d[9]; } else if (t === 'IDAT') idat.push(d); o += 12 + n; }
+    const bpp = ct === 6 ? 4 : 3, raw = zl.inflateSync(Buffer.concat(idat)), stride = w * bpp, cur = Buffer.alloc(stride), prev = Buffer.alloc(stride);
+    let bright = 0, tot = 0;
+    for (let y = 0; y < h; y++) {
+      const ft = raw[y * (stride + 1)], row = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
+      for (let i = 0; i < stride; i++) { const A = i >= bpp ? cur[i - bpp] : 0, B = prev[i], C = i >= bpp ? prev[i - bpp] : 0;
+        const p = A + B - C, pa = Math.abs(p - A), pb = Math.abs(p - B), pc = Math.abs(p - C);
+        cur[i] = (row[i] + [0, A, B, (A + B) >> 1, pa <= pb && pa <= pc ? A : pb <= pc ? B : C][ft]) & 255; }
+      if (y >= 60 && y % 2 === 0) for (let x = 0; x < w; x += 2) { const q = x * bpp; tot++; if (0.3 * cur[q] + 0.59 * cur[q + 1] + 0.11 * cur[q + 2] > 150) bright++; }
+      cur.copy(prev);
+    }
+    return bright / tot;
+  };
+  const pack = path.join(__dirname, '..', '..', 'docs', 'city', 'design-pack');
+  const lumA = pngLum(path.join(pack, 'alap.png')), lumH = pngLum(path.join(pack, 'halk.png'));
+  check(/lookGlow\(delta \? 0\.3 : lens\.gain\)/.test(lensSrc) && /renderer\.render\(scene, camera\); afterRender\(\); lookFrame\(\);/.test(src('03-scene.js')) && lumH < lumA * 0.85,
+    `R11 low glow + render on demand: halk.png has ${(100 * lumH).toFixed(2)} % bright pixels vs alap.png ${(100 * lumA).toFixed(2)} %`);
+  check(/R12 \(report §5\.5\): fixed field order/.test(uiSrc) && uiSrc.indexOf("['Fő szerző'") < uiSrc.indexOf("['Nyelv', f.lang]") && uiSrc.indexOf("['Nyelv', f.lang]") < uiSrc.indexOf("['Első commit'"),
+    'R12 the file card: name · owner · state · time');
+  // trademark limits (report §4): no Tron terms in user-visible text — the page, the shell, START.cmd's menu lines
+  const strip = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1');
+  const uiFiles = fs.readdirSync(path.join(__dirname, '..', 'src')).filter(n => /\.(js|css|html)$/.test(n)).map(n => path.join(__dirname, '..', 'src', n))
+    .concat(['main.js', 'preload.js'].map(n => path.join(shellDir, n)));
+  const tm = /\btron\b|derezz|\brecognizer\b|\bencom\b|braindance|\bctos\b|i\/o tower|light[- ]?cycle|identity disc/i;
+  const tmHits = uiFiles.flatMap(p => strip(fs.readFileSync(p, 'utf8')).split('\n').filter(l => tm.test(l) || /\bGrid\b/.test(l)).map(l => path.basename(p) + ': ' + l.trim().slice(0, 60)))
+    .concat(fs.readFileSync(path.join(__dirname, '..', '..', 'Planner', 'START.cmd'), 'utf8').split('\n').filter(l => /^\s*(if .* )?echo/i.test(l) && (tm.test(l) || /\bGrid\b/.test(l))));
+  check(tmHits.length === 0, 'trademark limits: no Tron terms in user-visible text' + (tmHits.length ? ' — ' + tmHits.slice(0, 3).join(' | ') : ''));
 } finally {
   if (process.env.KEEP_FIXTURE === '1') console.log('fixture kept: ' + dir);
   else { fs.rmSync(dir, { recursive: true, force: true }); fs.rmSync(dir + '-tx', { recursive: true, force: true }); }

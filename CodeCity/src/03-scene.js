@@ -19,7 +19,7 @@ let afterRender = () => {};                   // screen-space overlays (10-query
 function requestRender() {
   if (renderQueued) return;
   renderQueued = true;
-  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); afterRender(); });
+  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); afterRender(); lookFrame(); });   // 37-look: quality tiers
 }
 new ResizeObserver(() => {
   const r = canvas.parentElement.getBoundingClientRect();

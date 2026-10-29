@@ -297,6 +297,13 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #sess-now .now { margin: 4px 0; word-break: break-all; }
 #sess-now i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; vertical-align: -1px; }
 #sess-now .x { position: absolute; top: 4px; right: 10px; cursor: pointer; color: var(--dim); }
+
+/* 00-wallpaper (#mode=wallpaper): the scene only, behind the desktop icons */
+html.wallpaper body > *:not(#stage), html.wallpaper #stage > *:not(#gl) { display: none !important; }
+/* 00-wallpaper (#mode=overlay): the summoned controller in the Electron shell — no sky, no vignette: the desktop shows through */
+html.overlay, html.overlay body, html.overlay #stage { background: transparent; }
+html.overlay #stage::after, html.overlay #drop { display: none !important; }
+html.overlay #bar { background: var(--panel); }
 </style>
 </head>
 <body>
@@ -988,6 +995,47 @@ const WORLD = {
   }
  ]
 };
+// ==== src/00-wallpaper.js
+// 00-wallpaper.js — the city as a wallpaper behind the desktop icons (P12 L0, KV-24; report §1.5). Lively (the user's own
+// program, GPL-3.0, no code taken) shows http://localhost:8797/#mode=wallpaper[&fps=1..5][&view=land|city] as the desktop:
+// - every animation loop of the page runs at most fps times a second (default 2): requestAnimationFrame is wrapped here,
+//   before any other module runs, so the camera flights, ships, constructs and peaks all obey it; rendering stays on
+//   demand (03-scene), so a quiet city draws nothing at all;
+// - no panels, bars or HUD — just the scene; flights are instant;
+// - hidden (a fullscreen app, Lively paused, the screen locked) = the live stream is closed until it shows again;
+// - the segéd treats it as a light listener: file pulses, git and Claude's figures (polled every 30 s), but none of the
+//   samplers, the probe or ETW (those run only while a full page listens).
+
+const KV_WALL = (() => {
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.get('mode') !== 'wallpaper') return null;
+  const fps = Math.min(5, Math.max(1, Math.round(+q.get('fps') || 2)));
+  const raf = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = cb => setTimeout(() => raf(cb), 1000 / fps);
+  window.KV_INSTANT = true;
+  document.documentElement.classList.add('wallpaper');
+  return { fps, view: q.get('view') === 'city' ? 'city' : 'land' };
+})();
+
+// #mode=overlay (P12 L2, KV-25): the summoned controller inside the Electron shell (CodeCity/shell/main.js) — the whole page,
+// but the sky is transparent, so the desktop shows through. The shell keeps the window click-through with forward (mouse
+// moves still arrive); the page says where it is solid: over a panel, a bar, a building or a district plate — or while a
+// drag that started there goes on. Hidden (the hotkey again, Esc) = the stream is closed, as for the wallpaper.
+const KV_OVERLAY = (() => {
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.get('mode') !== 'overlay') return null;
+  document.documentElement.classList.add('overlay');
+  const shell = window.kvShell;
+  if (shell) {
+    let solid = null;
+    addEventListener('pointermove', e => {
+      const s = e.buttons !== 0 || e.target.id !== 'gl' || !!pickAt(e) || !!ptHit(e);   // 36-portal: a window screen
+      if (s !== solid) { solid = s; shell.solid(s); }
+    }, { passive: true });
+  }
+  return { display: +q.get('display') || 0 };
+})();
+
 // ==== src/01-data.js
 // 01-data.js — the city data as scan.js wrote it, plus the folder tree the layout walks.
 // city.files[i]: { p, lang, loc, maxLoc, born, last, n, own, ag, gone?, goneAt? }
@@ -1118,7 +1166,7 @@ let afterRender = () => {};                   // screen-space overlays (10-query
 function requestRender() {
   if (renderQueued) return;
   renderQueued = true;
-  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); afterRender(); });
+  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); afterRender(); lookFrame(); });   // 37-look: quality tiers
 }
 new ResizeObserver(() => {
   const r = canvas.parentElement.getBoundingClientRect();
@@ -1353,10 +1401,11 @@ function closePanel() {
 }
 function showFile(f) {
   const c = current.city;
-  openPanel(f.p, [['Nyelv', f.lang], ['Sorok', hu(f.loc)], ['Commitok', hu(f.n)],
-    ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
-    ['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
+  // R12 (report §5.5): fixed field order — name (the title) · owner · state · time
+  openPanel(f.p, [['Fő szerző', f.own >= 0 ? esc(c.authors[f.own]) : '—'],
+    ['Nyelv', f.lang], ['Sorok', hu(f.loc)], ['Commitok', hu(f.n)],
     ['Ügynök-arány', f.n ? Math.round(100 * f.ag / f.n) + ' %' : '—'],
+    ['Első commit', dayOf(f.born)], ['Utolsó módosítás', dayOf(f.last)],
     ...(fileAtT(f) ? [['Ezen a ponton', `${hu(fileAtT(f)[0])} commit · ~${hu(fileAtT(f)[1])} sor`]] : [])], roadsPanelHtml(f));
   shownFile = f; roadsRefresh(); share.sel = f.p; setBeacon(f); writeHashSoon();
 }
@@ -1795,7 +1844,7 @@ function lensApply() {
   if (hovered >= 0) b.setColorAt(hovered, _c1.copy(world.baseColor[hovered]).lerp(_c2.setHex(0xffffff), 0.55));
   b.instanceColor.needsUpdate = true;
   const u = b.material.userData.uniforms;
-  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = delta ? 0.3 : lens.gain; u.uBodyGlow.value = delta ? 0.4 : lens.glow;
+  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = lookGlow(delta ? 0.3 : lens.gain); u.uBodyGlow.value = lookGlow(delta ? 0.4 : lens.glow);   // 37-look: low glow
   const [ph, ps, pl] = lens.plate;
   world.dirOf.forEach((d, i) => world.plates.setColorAt(i, _c1.setHSL(ph, ps, pl + Math.min(d.depth, 6) * 0.025)));
   world.plates.instanceColor.needsUpdate = true;
@@ -1853,8 +1902,9 @@ function lensBar() {
   const groups = [...new Set(LENSES.map(l => l.group))];
   $('lenses').innerHTML = groups.map(g => `<span class="grp">${g ? `<small>${g}</small>` : ''}${LENSES.filter(l => l.group === g)
     .map(l => `<button class="btn" data-lens="${l.id}" title="${l.name} (${l.key})"><kbd>${l.key}</kbd>${l.name}</button>`).join('')}</span>`).join('')
-    + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>';
-  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt) setLens(bt.dataset.lens); };
+    + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>'
+    + '<span class="grp"><small>Fény</small><button id="glow-btn" class="btn" title="Halk fény: az ablakok és a felvillanások visszafogva (L)"><kbd>L</kbd>Halk</button></span>';
+  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt && bt.id === 'glow-btn') return setLowGlow(!look.low); if (bt) setLens(bt.dataset.lens); };
 }
 lensBar();
 addEventListener('keydown', e => {
@@ -3310,15 +3360,17 @@ const liveMine = () => kv.for === current.city && kv.match;
 // ---- pulses: the aFlash attribute, as the max of the replay's flash and the live pulse
 function livePulse(idx) {
   if (live.pulse.length !== replay.flash.length) live.pulse = new Float32Array(replay.flash.length);
-  for (const i of idx) live.pulse[i] = 1;
-  if (!live.raf) live.raf = requestAnimationFrame(liveFade);
+  for (const i of idx) live.pulse[i] = lookPulse();   // 37-look: half in low glow
+  if (!live.raf) { live.fadeAt = performance.now(); live.raf = requestAnimationFrame(liveFade); }
 }
+// the glow fades by time (×0.97 per 60th of a second, ~2 s), not per frame: the wallpaper draws only 1–5 frames a second
 function liveFade() {
-  const fl = world.buildings.geometry.attributes.aFlash;
+  const fl = world.buildings.geometry.attributes.aFlash, now = performance.now(), k = Math.pow(0.97, Math.min(600, (now - (live.fadeAt || now)) / (1000 / 60)));
+  live.fadeAt = now;
   let any = false;
   for (let i = 0; i < live.pulse.length; i++) {
     if (live.pulse[i] <= 0) continue;
-    live.pulse[i] = live.pulse[i] < 0.02 ? 0 : live.pulse[i] * 0.97;
+    live.pulse[i] = live.pulse[i] < 0.02 ? 0 : live.pulse[i] * k;
     fl.array[i] = Math.max(replay.flash[i], live.pulse[i]);
     any = any || live.pulse[i] > 0;
   }
@@ -3393,7 +3445,7 @@ async function liveSwap() {
 
 function liveConnect() {
   if (live.es || !kv.match) return;
-  live.es = new EventSource('/api/stream');
+  live.es = new EventSource('/api/stream' + (KV_WALL ? '?wallpaper=1' : ''));   // 00-wallpaper: a light listener
   live.es.addEventListener('hello', e => {
     const h = JSON.parse(e.data).head;
     $('live-dot').hidden = false;
@@ -3417,6 +3469,7 @@ function liveConnect() {
   live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
   live.es.addEventListener('cargo', e => { if (liveMine()) cargoEvent(JSON.parse(e.data)); });   // 31-flows: ships and planes
   live.es.addEventListener('apps', e => { if (liveMine()) appsEvent(JSON.parse(e.data)); });   // 33-apps: open programs (vrg-probe)
+  live.es.addEventListener('portal', e => ptEvent(JSON.parse(e.data)));   // 36-portal: the probe placed / put back a window
   // 34-stadium: now playing, sound towers and their peaks, Bluetooth buoys, the USB port board (vrg-probe)
   live.es.addEventListener('media', e => { if (liveMine()) mediaEvent(JSON.parse(e.data)); });
   live.es.addEventListener('audio', e => { if (liveMine()) audioEvent(JSON.parse(e.data)); });
@@ -3443,6 +3496,9 @@ async function liveInit() {
   liveSeenInit();
   await kvReady();
   liveConnect();
+  // 00-wallpaper: hidden = no stream (the wallpaper behind a fullscreen app, the overlay dismissed)
+  if (KV_WALL || KV_OVERLAY) document.addEventListener('visibilitychange', () => { if (document.hidden) { if (live.es && !pt.keep) { live.es.close(); live.es = null; } } else if (!live.es) liveConnect(); });
+  if (KV_WALL) return;   // the wallpaper is the scene only — no terminal offer, gates, metro or H: walk
   termResumeOffer();   // 21-term: Claude tabs from before a restart
   if (kv.match) palCatalog().then(jbLoad);   // 26-jobs: the gates need the START.cmd tools
   if (kv.match) mtLoad();   // 28-metro
@@ -4642,6 +4698,7 @@ function worldDraw() {
   sea.position.set(0, -R - 0.6 * agScale(), 0);
   const halo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.04, 64, 48), new THREE.MeshBasicMaterial({ color: 0x2a6aff, transparent: true, opacity: 0.08, side: THREE.BackSide, fog: false }));
   halo.position.copy(sea.position);
+  if (KV_OVERLAY) sea.visible = halo.visible = false;   // 00-wallpaper: in the overlay the desktop is the sea
   wd.group.add(sea, halo);
   // continents: a ring of ecosystems around the pole, each a cap; its repos inside it
   const fams = WD_FAMILY.map(f => ({ f, repos: WORLD.repos.filter(r => (WD_FAMILY.find(x => x[2].test(r.language || '')) || WD_FAMILY[4])[0] === f[0]) })).filter(x => x.repos.length);
@@ -4749,6 +4806,7 @@ function appsEvent(d) {
   }
   for (const it of ap.items.values()) if (!seen.has(it.key) && !it.gone) it.gone = now;
   apAnimate();
+  ptSync();   // 36-portal: the window screens follow the constructs
   if (land.at === 'land') landPanel();
 }
 function apAnimate() { if (!ap.raf) ap.raf = requestAnimationFrame(apFrame); }
@@ -5035,6 +5093,330 @@ function etPanelHtml() {
     `${Object.keys(p.cc).length ? ' · ' + Object.keys(p.cc).map(esc).join(' ') : ''}</span></div>`).join('') : '<div class="dim">Most nincs forgalom.</div>');
 }
 
+// ==== src/36-link.js
+// 36-link.js — VRG Légegér (AirDeck/) on the city: the phone relay as a second input.
+//
+// The Planner's phone relay (Planner/projects/varler-planner/tools/phone-relay-server.js, port 47291..47298)
+// carries one phone to several apps. This module joins it as role 'codecity' and speaks the same envelope as
+// the Planner's 07a-link.js: {v, from, seq, t, type, payload}. The phone builds its pad from this page's hello
+// (the lenses, in the Planner's tool-table shape), so the phone needs no city-specific list.
+//
+// What arrives and what it does:
+//   cmd tool.select {index}  -> setLens (07-lens)       cmd time.step {d} -> tlStep (06-timeline)
+//   cmd time.play            -> play / pause            cmd time.latest   -> tlLatest
+//   cmd land.home            -> landHome (29-land)      cmd roads.toggle  -> toggleRoads (08-roads)
+//   cmd compare.base         -> setBase (14-compare)    cmd palette.open  -> palOpen (18-palette)
+//   cmd view.reset           -> landHome
+//   gesture zoompan {dx,dy,scale} -> pan / zoom the orbit; gesture orbit {dx,dy} -> rotate; gesture reset
+//   orientation {pitch,yaw}  -> rotate, relative to the pose when the phone's camera switch was turned on
+//   keys {key,ctrl,shift,alt} -> a synthetic keydown, so every keyboard binding of the page works from the phone
+//
+// Read-only like the file:// page itself: nothing here writes anything. Without a relay it probes the ports
+// once at boot and then every 20 s, quietly.
+
+const vlink = { ws: null, seq: 0, port: 0, timer: null, base: null, lastState: '' };
+const VLINK_PORTS = [47291, 47292, 47293, 47294, 47295, 47296, 47297, 47298];
+
+function vlinkSend(type, payload) {
+  if (!vlink.ws || vlink.ws.readyState !== 1) return false;
+  vlink.ws.send(JSON.stringify({ v: 1, from: 'codecity', seq: ++vlink.seq, t: Date.now(), type, payload: payload || {} }));
+  return true;
+}
+
+function vlinkTools() {
+  return LENSES.map(l => ({ mode: l.id, key: l.key || null, hint: l.name }));
+}
+
+function vlinkSnapshot() {
+  if (!current) return { mode: null };
+  const c = current.city.commits && current.city.commits[replay.T];
+  return {
+    mode: lens.id,
+    commit: c ? String(c[4] || '').slice(0, 60) : null,
+    T: replay.T, last: replay.last,
+    playing: !!tl.playing,
+    roads: !!roads.all
+  };
+}
+
+function vlinkState(force) {
+  const s = vlinkSnapshot(), j = JSON.stringify(s);
+  if (!force && j === vlink.lastState) return;
+  vlink.lastState = j;
+  vlinkSend('state', s);
+}
+
+const VLINK_CMDS = {
+  'tool.select': p => { const l = LENSES[p.index] || LENSES.find(x => x.key === p.key); if (!l) return false; setLens(l.id); },
+  'time.step': p => tlStep(p.d || 1),
+  'time.play': () => (tl.playing ? tlPause() : tlPlay()),
+  'time.latest': () => tlLatest(),
+  'land.home': () => landHome(),
+  'view.reset': () => landHome(),
+  'roads.toggle': () => toggleRoads(),
+  'compare.base': () => setBase(compare.base === null ? replay.T : null),
+  'palette.open': () => palOpen(),
+};
+
+function vlinkKey(p) {
+  if (!p || !p.key) return;
+  const o = { key: p.key, ctrlKey: !!p.ctrl, shiftKey: !!p.shift, altKey: !!p.alt, bubbles: true, cancelable: true };
+  (document.activeElement || document.body).dispatchEvent(new KeyboardEvent('keydown', o));
+  (document.activeElement || document.body).dispatchEvent(new KeyboardEvent('keyup', o));
+}
+
+function vlinkGesture(g) {
+  if (!g) return;
+  if (g.kind === 'reset') { landHome(); return; }
+  if (g.kind === 'orbit') {
+    orbit.theta -= (g.dx || 0) * 0.005;
+    orbit.phi = Math.min(1.45, Math.max(0.12, orbit.phi - (g.dy || 0) * 0.005));
+  } else if (g.kind === 'zoompan') {
+    const k = orbit.r * 0.0015, s = Math.sin(orbit.theta), c = Math.cos(orbit.theta), dx = g.dx || 0, dy = g.dy || 0;
+    orbit.target.x -= (dx * c + dy * s) * k;
+    orbit.target.z -= (-dx * s + dy * c) * k;
+    if (g.scale && g.scale !== 1) orbit.r = Math.min(120000, Math.max(8, orbit.r / g.scale));
+  } else return;
+  placeCamera();
+}
+
+// The phone sends absolute angles (yaw 0..360, pitch 5..90). The city keeps its own pose and only follows
+// the change since the first reading, so turning the switch on never makes the camera jump.
+function vlinkOrient(o) {
+  if (!o || !o.yawEnabled) { vlink.base = null; return; }
+  if (!vlink.base) { vlink.base = { yaw: o.yaw, pitch: o.pitch, theta: orbit.theta, phi: orbit.phi }; return; }
+  let dy = o.yaw - vlink.base.yaw;
+  if (dy > 180) dy -= 360; else if (dy < -180) dy += 360;
+  orbit.theta = vlink.base.theta + dy * Math.PI / 180;
+  orbit.phi = Math.min(1.45, Math.max(0.12, vlink.base.phi + (vlink.base.pitch - o.pitch) * Math.PI / 180));
+  placeCamera();
+}
+
+function vlinkOnMessage(raw) {
+  let m;
+  try { m = JSON.parse(raw); } catch (e) { return; }
+  if (!m || m.from === 'codecity') return;
+  const p = m.payload || {};
+  if (m.type === 'hello' && (p.role === 'phone' || m.from === 'phone')) { vlinkState(true); return; }
+  if (m.type === 'state.request') { vlinkState(true); return; }
+  if (m.type === 'cmd') {
+    const fn = VLINK_CMDS[p.id];
+    let ok = !!fn && !!current, reason = fn ? (current ? null : 'no city loaded') : 'unknown command';
+    if (ok) { try { ok = fn(p) !== false; } catch (e) { ok = false; reason = e.message; } }
+    vlinkSend('ack', { id: p.id, ok, reason });
+    vlinkState(false);
+    return;
+  }
+  if (!current) return;
+  if (m.type === 'keys') { vlinkKey(p); setTimeout(() => vlinkState(false), 60); }
+  else if (m.type === 'gesture') vlinkGesture(p);
+  else if (m.type === 'orientation') vlinkOrient(p);
+}
+
+function vlinkFocus() { vlinkSend('focus', { app: 'codecity', title: document.title }); }
+
+function vlinkOpen(i = 0) {
+  if (vlink.ws) return;
+  if (i >= VLINK_PORTS.length) { vlink.timer = setTimeout(() => vlinkOpen(0), 20000); return; }
+  const host = new URLSearchParams(location.search).get('relay') || '127.0.0.1';
+  let ws;
+  try { ws = new WebSocket(`ws://${host}:${VLINK_PORTS[i]}`); } catch (e) { vlinkOpen(i + 1); return; }
+  let opened = false;
+  ws.onopen = () => {
+    opened = true; vlink.ws = ws; vlink.port = VLINK_PORTS[i];
+    vlinkSend('hello', { role: 'codecity', app: 'codecity', caps: ['state', 'cmd', 'keys', 'orientation', 'gesture'], tools: vlinkTools() });
+    if (document.hasFocus()) vlinkFocus();
+  };
+  ws.onmessage = e => vlinkOnMessage(e.data);
+  ws.onerror = () => {};
+  ws.onclose = () => {
+    if (vlink.ws === ws) vlink.ws = null;
+    clearTimeout(vlink.timer);
+    vlink.timer = opened ? setTimeout(() => vlinkOpen(0), 2000) : setTimeout(() => vlinkOpen(i + 1), 50);
+  };
+}
+
+addEventListener('focus', vlinkFocus);
+setInterval(() => vlinkState(false), 500);   // the readout on the phone; sent only when something changed
+vlinkOpen();
+
+// ==== src/36-portal.js
+// 36-portal.js — windows on the program constructs and the portal hand-off (P12, KV-26; report §1.5). Only in the overlay
+// (#mode=overlay inside CodeCity/shell): the shell sends the capture sources of the open windows (id, handle and a small
+// picture — never a title); each construct around Erőmű (33-apps) gets a screen with its program's first window: at most
+// 3 (the program in front, Zen, then ring order; the selftest may prefer another) are refreshed every second at 960×600,
+// the rest every 3 s, only while the overlay is up. Live WebRTC capture (getUserMedia 'desktop') is refused on this PC:
+// Windows.Graphics.Capture CreateForWindow answers E_ACCESSDENIED even in Electron's main process (capture-test.js), so
+// the screens are desktopCapturer pictures (GDI) — 1 frame a second, not video. Clicking a screen flies in, asks the segéd (probe-place) to move the real window onto the screen's
+// rectangle and hides the overlay; Esc (the shell) brings the overlay back and the window to where it was (probe-unplace).
+// Windows 10 draws a yellow border round a captured window (IsBorderRequired needs build 20348+): accepted.
+
+const pt = { prefer: 'zen.exe', srcs: [], screens: new Map(), liveHs: '', keep: false, cur: null, cam: null, ray: new THREE.Raycaster(), ndc: new THREE.Vector2() };
+const PT_LIVE_MAX = 3;
+
+function ptSources(list) { pt.srcs = Array.isArray(list) ? list : []; ptSync(); }
+
+// which program shows which window, and which three are live
+function ptSync() {
+  if (!KV_OVERLAY || !world || !ap.group) return;
+  const withSrc = ap.list.map(a => ({ a, it: ap.items.get(a.key), src: pt.srcs.find(s => (a.h || []).includes(s.h)) })).filter(x => x.it && !x.it.gone && x.src);
+  const rank = x => (x.a.fg ? 0 : x.a.key === pt.prefer ? 1 : 2) * 100 + x.it.slot;
+  const liveKeys = new Set(withSrc.slice().sort((p, q) => rank(p) - rank(q)).slice(0, PT_LIVE_MAX).map(x => x.a.key));
+  const keep = new Set();
+  for (const x of withSrc) { keep.add(x.a.key); ptScreen(x.it, x.src, liveKeys.has(x.a.key)); }
+  for (const [key, sc] of pt.screens) if (!keep.has(key)) { sc.sprite.parent && sc.sprite.parent.remove(sc.sprite); sc.sprite.material.dispose(); pt.screens.delete(key); }
+  // tell the shell which windows to refresh every second
+  const hs = withSrc.filter(x => liveKeys.has(x.a.key)).map(x => x.src.h), sig = hs.join(',');
+  if (sig !== pt.liveHs && window.kvShell && window.kvShell.live) { pt.liveHs = sig; window.kvShell.live(hs); }
+  requestRender();
+}
+
+function ptScreen(it, src, live) {
+  let sc = pt.screens.get(it.key);
+  if (!sc) {
+    const k = agScale(), sprite = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xffffff, fog: false, depthWrite: false }));
+    sprite.renderOrder = 5;
+    sprite.position.set(0, 8 * k, 0);
+    it.g.add(sprite);
+    sc = { sprite, key: it.key, h: 0, img: '' };
+    pt.screens.set(it.key, sc);
+  }
+  sc.h = src.h; sc.live = live;
+  const k = agScale(), aspect = src.w && src.hh ? src.w / src.hh : 1.6;
+  sc.sprite.scale.set(24 * k, 24 * k / aspect, 1);
+  sc.sprite.userData = { key: it.key, h: src.h };
+  if (src.img && sc.img !== src.img) {   // a new picture of the window (the shell sends one only when it took one)
+    sc.img = src.img;
+    const img = new Image();
+    img.onload = () => { const t = new THREE.Texture(img); t.colorSpace = THREE.SRGBColorSpace; t.needsUpdate = true;
+      const old = sc.sprite.material.map; sc.sprite.material.map = t; sc.sprite.material.needsUpdate = true; if (old) old.dispose(); requestRender(); };
+    img.src = src.img;
+  }
+}
+// the screen under the pointer, if any (00-wallpaper asks for the click-through, the click below for the hand-off)
+function ptHit(e) {
+  if (!pt.screens.size) return null;
+  const r = canvas.getBoundingClientRect();
+  pt.ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  pt.ray.setFromCamera(pt.ndc, camera);
+  const hit = pt.ray.intersectObjects([...pt.screens.values()].map(s => s.sprite), false)[0];
+  return hit ? hit.object.userData : null;
+}
+if (KV_OVERLAY) canvas.addEventListener('click', e => { const h = ptHit(e); if (h) ptPortal(h.key); });
+
+// the screen's rectangle on the monitor, in physical pixels (the probe's SetWindowPos)
+function ptRect(sprite) {
+  const p = sprite.getWorldPosition(new THREE.Vector3()), s = sprite.getWorldScale(new THREE.Vector3());
+  const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0), up = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+  const r = canvas.getBoundingClientRect(), xs = [], ys = [];
+  for (const [a, b] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+    const v = p.clone().addScaledVector(right, a * s.x / 2).addScaledVector(up, b * s.y / 2).project(camera);
+    xs.push(r.left + (v.x + 1) / 2 * r.width); ys.push(r.top + (1 - v.y) / 2 * r.height);
+  }
+  let l = Math.min(...xs), t = Math.min(...ys), w = Math.max(...xs) - l, h = Math.max(...ys) - t;
+  // never smaller than 960×600 CSS px (grown round its centre), never off the monitor
+  const g = Math.max(1, 960 / w, 600 / h), cx = l + w / 2, cy = t + h / 2;
+  w = Math.min(innerWidth, w * g); h = Math.min(innerHeight, h * g);
+  l = Math.max(0, Math.min(innerWidth - w, cx - w / 2)); t = Math.max(0, Math.min(innerHeight - h, cy - h / 2));
+  const d = devicePixelRatio;
+  return { x: Math.round((screenX + l) * d), y: Math.round((screenY + t) * d), w: Math.round(w * d), hh: Math.round(h * d) };
+}
+
+// the hand-off: fly to the screen, put the real window on it, hide the overlay
+async function ptPortal(key) {
+  const sc = pt.screens.get(key);
+  if (!sc || pt.cur || !window.kvShell) return;
+  pt.cam = [orbit.target.x, orbit.target.z, orbit.theta, orbit.phi, orbit.r];
+  const p = sc.sprite.getWorldPosition(new THREE.Vector3()), hgt = sc.sprite.getWorldScale(new THREE.Vector3()).y;
+  document.body.dataset.portal = 'flying';
+  // nearly level, close enough that the screen fills ~40 % of the height; the orbit target is on the ground, the screen
+  // a little above it, so the window lands just above the middle of the monitor
+  if (window.KV_INSTANT) flyCamera([p.x, p.z, orbit.theta, 1.45, hgt / 0.33], 0);
+  else { flyCamera([p.x, p.z, orbit.theta, 1.45, hgt / 0.33], 600); await new Promise(r => setTimeout(r, 650)); }
+  renderer.render(scene, camera);
+  const rect = ptRect(sc.sprite), res = await kvCall('probe-place', Object.assign({ h: sc.h }, rect));
+  if (res.status !== 200) { document.body.dataset.portal = 'refused ' + res.status; kvDone(res, ''); flyCamera(pt.cam, 400); return; }
+  pt.cur = { key, h: sc.h, rect };
+  pt.keep = true;   // 22-live: the stream stays open while the overlay is hidden for the hand-off
+  document.body.dataset.portal = 'handoff';
+  window.kvShell.handoff();
+}
+// Esc in the shell: the overlay is back; the window goes back to where it was
+async function ptReturn() {
+  if (!pt.cur) return;
+  const { h } = pt.cur;
+  pt.cur = null; pt.keep = false;
+  document.body.dataset.portal = 'returning';
+  await kvCall('probe-unplace', { h });
+  if (pt.cam) flyCamera(pt.cam, window.KV_INSTANT ? 0 : 500);
+  document.body.dataset.portal = 'returned';
+}
+// the probe's answer (22-live 'portal'): where the window really is
+function ptEvent(d) { document.body.dataset.portalLast = `${d.t} ${d.ok ? 'ok' : 'no'} ${d.x},${d.y},${d.w},${d.hh}`; }
+
+if (KV_OVERLAY && window.kvShell) {
+  window.kvShell.onSources(ptSources);
+  window.kvShell.onReturn(ptReturn);
+  // the shell's --selftest drives the hand-off through this (overlay mode only)
+  window.kvPortalTest = { go: ptPortal, screens: () => [...pt.screens.keys()], live: () => [...pt.screens.values()].filter(x => x.live).map(x => x.key), prefer: key => { pt.prefer = key; ptSync(); } };
+}
+
+// ==== src/37-look.js
+// 37-look.js — low-glow mode and adaptive quality tiers (P13, KV-27; report §5.5 R11, §1.5 "staying light").
+// Low glow (L, the "Halk" button in the lens bar, #glow=low): the lit windows and the body glow at about a third, a live
+// file pulse at half — the same city, calmer, for a long day or a wallpaper.
+// Quality tiers (#quality=high|mid|low, default auto): the pixel ratio — high = the screen's (max 2), mid = 1,
+// low = 0.75. Auto watches the gaps between frames while something moves (a flight, a tour): when the median of 30 is
+// over 45 ms (under ~22 fps) it steps one tier down, once per 30 frames, never up by itself. body[data-quality] says
+// which tier is on. A quiet city renders nothing, so it is measured only while it moves.
+
+const look = { low: false, tier: 'high', auto: true, gaps: [], last: 0 };
+const LOOK_TIERS = { high: () => Math.min(devicePixelRatio, 2), mid: () => 1, low: () => 0.75 };
+
+function lookGlow(x) { return look.low ? x * 0.35 : x; }   // 07-lens: window gain and body glow
+function lookPulse() { return look.low ? 0.5 : 1; }         // 22-live: a changed file's flash
+
+function setLowGlow(on) {
+  look.low = !!on;
+  document.documentElement.classList.toggle('low-glow', look.low);
+  const b = document.getElementById('glow-btn'); if (b) b.classList.toggle('on', look.low);
+  if (world) setLens(lens.id);
+  requestRender();
+}
+
+function setTier(t) {
+  if (!LOOK_TIERS[t]) return;
+  look.tier = t;
+  renderer.setPixelRatio(LOOK_TIERS[t]());
+  const r = canvas.parentElement.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  document.body.dataset.quality = t + (look.auto ? ' (auto)' : '');
+  requestRender();
+}
+
+// 03-scene calls this after every render
+function lookFrame() {
+  const now = performance.now(), gap = now - look.last;
+  look.last = now;
+  if (!look.auto || gap > 100) return;   // a lone render after a pause is not a frame rate
+  look.gaps.push(gap);
+  if (look.gaps.length < 30) return;
+  const med = look.gaps.slice().sort((a, b) => a - b)[15];
+  look.gaps = [];
+  if (med > 45 && look.tier !== 'low') setTier(look.tier === 'high' ? 'mid' : 'low');
+}
+
+addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input:not([type=range]), textarea')) return;
+  if (e.key === 'l' || e.key === 'L') setLowGlow(!look.low);
+});
+{
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.get('glow') === 'low') { look.low = true; document.documentElement.classList.add('low-glow'); }
+  if (LOOK_TIERS[q.get('quality')]) look.auto = false;
+  setTier(LOOK_TIERS[q.get('quality')] ? q.get('quality') : 'high');
+}
+
 // ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.
 
@@ -5043,10 +5425,11 @@ onTimeChanged = () => { if (fen.list.length) fenDraw(); tlRender(); lensApply();
 if (window.CITY) {
   load(window.CITY);
   liveInit();   // 22-live: "Mi változott?" and, when served, the live stream
-  setInterval(hlRibbon, 1500);   // 27-health: the Now ribbon follows sessions, jobs, fences and changes
+  if (!KV_WALL) setInterval(hlRibbon, 1500);   // 27-health: the Now ribbon follows sessions, jobs, fences and changes
   landDraw();   // 29-land: the places around the city
   pwDraw();   // 30-power
   worldDraw();   // 32-world: the planet under the Land
+  if (KV_WALL && KV_WALL.view === 'land') landHome(0);   // 00-wallpaper: the whole Land behind the icons
   // test hook: #landtest=disk waits for Tárház's walk (served), closes the stream (headless clock), shows the Land
   if (new URLSearchParams(location.hash.slice(1)).get('landtest') === 'disk') live.ready.then(() => new Promise(res => {
     if (land.disk && land.disk.dirs && land.disk.dirs.length && !land.disk.walking) res(); else live.es.addEventListener('disk', res, { once: true }); }))
