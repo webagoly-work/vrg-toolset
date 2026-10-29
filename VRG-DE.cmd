@@ -26,6 +26,11 @@ setlocal EnableDelayedExpansion
 ::  atiranyithato erre.
 ::
 ::  2026-09-21 - elso valtozat.
+::
+::  2026-10-27 - D6) VRG Legeger (AirDeck): a telefon mint giroszkopos legeger
+::  barmely gephez, es Planner / Kodvaros vezerlo a gyro relay-en (D3) at. A
+::  muveletei az AirDeck\legeger.cmd-ben vannak, ezt hivja a Planner\START.cmd
+::  A) menupontja is - igy a ketto nem tud elterni egymastol.
 :: ==========================================================================
 
 :: ------------------------------- GYOKEREK ---------------------------------
@@ -116,7 +121,11 @@ set "D5_NAME=VRG Vendor (kulso komponensek)"
 set "D5_PATH=vrg-vendor.html"
 set "D5_MENU=VENDOR"
 
-set "DEVCOUNT=5"
+set "D6_NAME=VRG Legeger (telefon: legeger + Planner/Kodvaros vezerlo)"
+set "D6_PATH="
+set "D6_MENU=LEGEGER"
+
+set "DEVCOUNT=6"
 
 :: -- a Kalkulator reszei, amig kulon fajlok --
 set "C1_NAME=Panel anyagar kalkulator (varlerAron)"
@@ -260,8 +269,22 @@ if "%SEL_MENU%"=="VALENA" (
 if "%SEL_MENU%"=="GYRO" (
     echo    S^) Relay szerver inditasa
     echo.
-    echo    JEGYZET: a telefon giroszkopjat koti a Plannerhez. Amig nincs
-    echo    stabil, UNDER-DEV.
+    echo    JEGYZET: a telefon giroszkopjat koti a Plannerhez es a Kodvaroshoz.
+    echo    A telefonos alkalmazas: D6 VRG Legeger. Amig nincs stabil, UNDER-DEV.
+)
+if "%SEL_MENU%"=="LEGEGER" (
+    echo    S^) Gyro relay inditasa  ^(kulon ablakban, port 47291^)
+    echo    B^) APK epitese          ^(gradlew assembleDebug - JDK 17 + Android SDK kell^)
+    echo    I^) Telepites a telefonra ^(adb install^)
+    echo    T^) Core tesztek         ^(gradlew :core:test^)
+    echo    W^) Relay e2e teszt      ^(Node + Playwright^)
+    echo    A^) Android Studio - a projekt megnyitasa
+    echo    R^) Leiras ^(README.md^)
+    echo    F^) Mappa megnyitasa
+    echo.
+    echo    JEGYZET: Android app ^(AirDeck\android^). Bluetooth egerkent barmely
+    echo    gepen mukodik, WiFi-n a relay-en at a Plannert es a Kodvarost vezerli.
+    echo    Meg nem futott valodi telefonon, ezert UNDER-DEV.
 )
 echo.
 echo    0^) Vissza a fomenube
@@ -298,6 +321,16 @@ if "%SEL_MENU%"=="VENDOR" (
 )
 if "%SEL_MENU%"=="GYRO" (
     if /I "%PCH%"=="S" ( call :DO_GYRO & goto PROJECT )
+)
+if "%SEL_MENU%"=="LEGEGER" (
+    if /I "%PCH%"=="S" ( call :LEGEGER relay & goto PROJECT )
+    if /I "%PCH%"=="B" ( call :LEGEGER build & goto PROJECT )
+    if /I "%PCH%"=="I" ( call :LEGEGER install & goto PROJECT )
+    if /I "%PCH%"=="T" ( call :LEGEGER test & goto PROJECT )
+    if /I "%PCH%"=="W" ( call :LEGEGER e2e & goto PROJECT )
+    if /I "%PCH%"=="A" ( call :LEGEGER studio & goto PROJECT )
+    if /I "%PCH%"=="R" ( call :LEGEGER readme & goto PROJECT )
+    if /I "%PCH%"=="F" ( call :LEGEGER folder & goto PROJECT )
 )
 if "%SEL_MENU%"=="CALC" (
     set "CSEL="
@@ -838,6 +871,12 @@ pushd "%DE%"
 popd
 echo.
 pause
+exit /b 0
+
+:: VRG Legeger: every action is in AirDeck\legeger.cmd (shared with START.cmd A).
+:LEGEGER
+if not exist "%DE%\AirDeck\legeger.cmd" ( echo   HIBA: nincs meg: AirDeck\legeger.cmd & pause & exit /b 0 )
+call "%DE%\AirDeck\legeger.cmd" %1
 exit /b 0
 
 :DO_GYRO

@@ -111,6 +111,13 @@ setlocal EnableDelayedExpansion
 ::  overlay shell CodeCity\shell over the desktop (P12, KV-25), summoned with
 ::  Ctrl+Alt+K. Starts the seged first if it is not running; fetches Electron
 ::  into Planner\apps\electron on first use. No tool number moved.
+::
+::  2026-10-27 - A) added: VRG Legeger (AirDeck), the Android app that makes the
+::  phone a gyro air mouse for any PC and a Planner / Kodvaros controller over
+::  the gyro relay (G). Not a tool page but an app, so it is a letter with a
+::  submenu, like Y): relay, APK build, install, tests, Android Studio. The
+::  submenu lives in AirDeck\legeger.cmd, which VRG-DE.cmd calls as well. No
+::  tool number moved.
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -185,7 +192,7 @@ set "TOOLKEYS="
 for /L %%i in (1,1,%TOOLCOUNT%) do (
     if %%i LSS 10 ( set "TOOLKEYS=!TOOLKEYS!%%i" ) else if %%i EQU 10 ( set "TOOLKEYS=!TOOLKEYS!0" ) else if %%i EQU 11 ( set "TOOLKEYS=!TOOLKEYS!K" )
 )
-set "ACTIONKEYS=BWETGVMCINSPLDRYUHOQ"
+set "ACTIONKEYS=BWETGVMCINSPLDRYUHOAQ"
 set "MENUKEYS=!TOOLKEYS!%ACTIONKEYS%"
 
 if %TOOLCOUNT% GTR 11 (
@@ -336,6 +343,9 @@ echo  -- Hardver / Hardware --
 echo   Y^) Planner CYD asztali kijelzo  ^(USB, Firmware\planner-cyd^)
 echo   U^) Board Console - univerzalis fejlesztolap  ^(http://localhost:8790^)
 echo.
+echo  -- Telefon / Phone --
+echo   A^) VRG Legeger - telefon mint legeger + Planner/Kodvaros vezerlo  ^(AirDeck^)
+echo.
 echo   Q^) Kilepes / Quit
 echo.
 :: WHY choice AND NOT set /p:
@@ -374,6 +384,7 @@ if /I "%K%"=="Y" goto DO_CYD
 if /I "%K%"=="U" goto DO_BOARD
 if /I "%K%"=="H" goto DO_HUB
 if /I "%K%"=="O" goto LOCALHOST_MENU
+if /I "%K%"=="A" goto DO_LEGEGER
 
 :: Only keys in MENUKEYS can get this far, so a digit here is always a real
 :: tool: 1-9 as printed, and 0 meaning the tenth entry.
@@ -828,6 +839,17 @@ if not exist "%BOARD_DIR%\Board Console.bat" (
     goto MENU
 )
 start "Board Console" /min "%BOARD_DIR%\Board Console.bat"
+goto MENU
+
+:: VRG Legeger: its submenu is AirDeck\legeger.cmd (shared with VRG-DE.cmd).
+:DO_LEGEGER
+set "LEGEGER_CMD=%REPO%\AirDeck\legeger.cmd"
+if not exist "%LEGEGER_CMD%" (
+    echo   HIBA: nem talalhato: %LEGEGER_CMD%
+    pause
+    goto MENU
+)
+call "%LEGEGER_CMD%"
 goto MENU
 
 :DO_CYD

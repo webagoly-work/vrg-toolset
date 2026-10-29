@@ -13255,6 +13255,7 @@ const PLANNER_LINK = (function () {
         caps: CAPS,
         tools: toolTable()
       });
+      if (typeof document !== 'undefined' && document.hasFocus && document.hasFocus()) sendFocus();
     };
     ws.onmessage = function (e) { onMessage(e.data); };
     ws.onclose = function () {
@@ -13272,6 +13273,20 @@ const PLANNER_LINK = (function () {
     if (ws) { try { ws.onclose = null; ws.close(); } catch (e) { } }
     ws = null; connected = false; peer = null;
     if (!keepUrl) notify();
+  }
+
+  /* ---- focus ------------------------------------------------------------ */
+  // VRG Légegér (AirDeck/) runs one phone against several apps. The relay
+  // remembers which app was focused last and the phone switches its layout
+  // to match, so this tab says so whenever its window gains focus.
+
+  function sendFocus() {
+    send('focus', { app: 'planner', title: (typeof document !== 'undefined' && document.title) || '' });
+  }
+
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('focus', sendFocus);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden && document.hasFocus()) sendFocus(); });
   }
 
   /* ---- built-in commands ----------------------------------------------- */
