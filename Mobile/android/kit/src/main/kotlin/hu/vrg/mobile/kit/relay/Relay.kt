@@ -215,9 +215,11 @@ object Relay {
                 val offer = pending ?: return
                 pending = null
                 pairTimeout?.cancel()
-                if (n.ok && n.id != null && n.pcId != null) {
+                val id = n.id
+                val pcId = n.pcId
+                if (n.ok && id != null && pcId != null) {
                     val name = n.pcName ?: offer.pcName
-                    ShellSettings.update { it.withPc(PairedPc(n.id, n.pcId, name, url, System.currentTimeMillis())) }
+                    ShellSettings.update { it.withPc(PairedPc(id, pcId, name, url, System.currentTimeMillis())) }
                     _trust.value = Trust.TRUSTED
                     VrgLog.i(TAG, "Párosítva és megbízható: $name")
                     _pairResults.tryEmit(PairResult(true, name, null))
