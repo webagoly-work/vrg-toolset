@@ -1,0 +1,37 @@
+# VRG Mobile: decisions
+
+Answered ones stay here with the date. Open ones are asked in the session's reply as numbered A/B/C
+options as well (the user answers like "A, A, B"), and the answer is recorded here.
+
+## Answered
+
+- **D-1 · App identity** (2026-10-29: **A**). New app id `hu.vrg.mobile`, installed beside the old
+  `hu.vrg.legeger`. Légegér's settings do not carry over (it is a different app sandbox).
+- **D-2 · GitHub sign-in** (2026-10-29: **A**). The GitHub **device flow**: the phone shows a code, and the
+  user enters it at github.com/login/device. No client secret in the app. Needs a GitHub OAuth App with
+  device flow enabled (a user step in M3). QR-from-the-PC is not the sign-in path. M2's QR pairs the
+  phone with the relay, not with GitHub.
+- **D-3 · Where the updater gets new versions** (2026-10-29: **A**). **GitHub Releases**, created by Actions,
+  with a stable signing key held in a repo secret (user step in M9). Actions artifacts stay as
+  the per-push test builds.
+- **D-4 · Folder and launcher** (2026-10-29). `AirDeck/` became `Mobile/`, and `legeger.cmd` became
+  `mobile.cmd`. START.cmd **A** and VRG-DE.cmd **D6** keep their letters and now open VRG Mobile.
+- **D-5 · Start screen** (2026-10-29). The app reopens the feature that was on screen last, and Back goes
+  home. So a Légegér user lands on the deck, as before.
+
+## Open (to ask when the WP that needs them starts)
+
+- **D-6 · Chat-log branch (M6).** A) one branch `mobile-log`, one file per day `log/YYYY-MM-DD.md`;
+  B) one branch per active work branch (`log/<branch>`); C) one file per note (no merge conflicts, many files).
+- **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city
+  to a `city-pages` branch, and the phone loads it into a WebView; B) the phone builds the city itself
+  from the GitHub tree API (a Kotlin port of the layout); C) both: A now, B later for offline.
+- **D-8 · Which branches are "active" (M4).** A) every branch with a commit in the last 14 days;
+  B) the ones with an open PR plus `main`; C) a list the user pins in the app.
+- **D-9 · Phone as the relay (M7).** A) the phone runs a small relay itself (the PC apps connect to it
+  over the phone's WiFi or hotspot), for sites without a PC relay; B) the phone only bridges, forwarding
+  to the PC relay; C) not needed.
+- **D-10 · Localhost on the phone (M8).** A) through the relay as a proxy (`/p/<port>/`, paired phone only);
+  B) only "open on the PC"; C) both, with the proxy off by default.
+- **D-11 · Notifications (M10).** A) poll GitHub every 15 min (WorkManager), plus relay events while on the
+  same WiFi; B) a small push service (needs a server, e.g. a GitHub Action calling ntfy.sh); C) A now, B later.

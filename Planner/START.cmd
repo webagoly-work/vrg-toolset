@@ -113,6 +113,10 @@ setlocal EnableDelayedExpansion
 ::  submenu, like Y): relay, APK build, install, tests, Android Studio. The
 ::  submenu lives in AirDeck\legeger.cmd, which VRG-DE.cmd calls as well. No
 ::  tool number moved.
+::
+::  2026-10-29 - A) is now VRG Mobile: AirDeck\ became Mobile\ and legeger.cmd
+::  became mobile.cmd. Legeger is the first feature of the companion app; the
+::  letter and its submenu actions are unchanged. No tool number moved.
 :: ==========================================================================
 
 set "ROOT=%~dp0"
@@ -339,7 +343,7 @@ echo   Y^) Planner CYD asztali kijelzo  ^(USB, Firmware\planner-cyd^)
 echo   U^) Board Console - univerzalis fejlesztolap  ^(http://localhost:8790^)
 echo.
 echo  -- Telefon / Phone --
-echo   A^) VRG Legeger - telefon mint legeger + Planner/Kodvaros vezerlo  ^(AirDeck^)
+echo   A^) VRG Mobile - telefonos tarsalkalmazas, benne a Legeger  ^(Mobile^)
 echo.
 echo   Q^) Kilepes / Quit
 echo.
@@ -806,9 +810,9 @@ if not exist "%BOARD_DIR%\Board Console.bat" (
 start "Board Console" /min "%BOARD_DIR%\Board Console.bat"
 goto MENU
 
-:: VRG Legeger: its submenu is AirDeck\legeger.cmd (shared with VRG-DE.cmd).
+:: VRG Mobile (Legeger inside): its submenu is Mobile\mobile.cmd (shared with VRG-DE.cmd).
 :DO_LEGEGER
-set "LEGEGER_CMD=%REPO%\AirDeck\legeger.cmd"
+set "LEGEGER_CMD=%REPO%\Mobile\mobile.cmd"
 if not exist "%LEGEGER_CMD%" (
     echo   HIBA: nem talalhato: %LEGEGER_CMD%
     pause

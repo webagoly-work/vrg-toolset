@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">VRG Légegér</string>
-    <string name="hid_name">VRG Légegér</string>
-    <string name="hid_description">Giroszkópos légegér és billentyűzet</string>
-    <string name="notif_channel">Bluetooth kapcsolat</string>
-    <string name="notif_title">Légegér aktív</string>
-    <string name="notif_stop">Leállítás</string>
-</resources>

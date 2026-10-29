@@ -27,6 +27,9 @@ setlocal EnableDelayedExpansion
 ::
 ::  2026-09-21 - elso valtozat.
 ::
+::  2026-10-29 - D6) most VRG Mobile: az AirDeck\ mappa Mobile\ lett, a
+::  legeger.cmd mobile.cmd. A Legeger a tarsalkalmazas elso funkcioja.
+::
 ::  2026-10-27 - D6) VRG Legeger (AirDeck): a telefon mint giroszkopos legeger
 ::  barmely gephez, es Planner / Kodvaros vezerlo a gyro relay-en (D3) at. A
 ::  muveletei az AirDeck\legeger.cmd-ben vannak, ezt hivja a Planner\START.cmd
@@ -121,7 +124,7 @@ set "D5_NAME=VRG Vendor (kulso komponensek)"
 set "D5_PATH=vrg-vendor.html"
 set "D5_MENU=VENDOR"
 
-set "D6_NAME=VRG Legeger (telefon: legeger + Planner/Kodvaros vezerlo)"
+set "D6_NAME=VRG Mobile (telefonos tarsalkalmazas, benne a Legeger)"
 set "D6_PATH="
 set "D6_MENU=LEGEGER"
 
@@ -270,19 +273,19 @@ if "%SEL_MENU%"=="GYRO" (
     echo    S^) Relay szerver inditasa
     echo.
     echo    JEGYZET: a telefon giroszkopjat koti a Plannerhez es a Kodvaroshoz.
-    echo    A telefonos alkalmazas: D6 VRG Legeger. Amig nincs stabil, UNDER-DEV.
+    echo    A telefonos alkalmazas: D6 VRG Mobile. Amig nincs stabil, UNDER-DEV.
 )
 if "%SEL_MENU%"=="LEGEGER" (
     echo    S^) Gyro relay inditasa  ^(kulon ablakban, port 47291^)
     echo    B^) APK epitese          ^(gradlew assembleDebug - JDK 17 + Android SDK kell^)
     echo    I^) Telepites a telefonra ^(adb install^)
-    echo    T^) Core tesztek         ^(gradlew :core:test^)
+    echo    T^) Core tesztek         ^(kit-core + airdeck-core^)
     echo    W^) Relay e2e teszt      ^(Node + Playwright^)
     echo    A^) Android Studio - a projekt megnyitasa
     echo    R^) Leiras ^(README.md^)
     echo    F^) Mappa megnyitasa
     echo.
-    echo    JEGYZET: Android app ^(AirDeck\android^). Bluetooth egerkent barmely
+    echo    JEGYZET: Android app ^(Mobile\android^). A Legeger Bluetooth egerkent barmely
     echo    gepen mukodik, WiFi-n a relay-en at a Plannert es a Kodvarost vezerli.
     echo    Meg nem futott valodi telefonon, ezert UNDER-DEV.
 )
@@ -873,10 +876,10 @@ echo.
 pause
 exit /b 0
 
-:: VRG Legeger: every action is in AirDeck\legeger.cmd (shared with START.cmd A).
+:: VRG Mobile: every action is in Mobile\mobile.cmd (shared with START.cmd A).
 :LEGEGER
-if not exist "%DE%\AirDeck\legeger.cmd" ( echo   HIBA: nincs meg: AirDeck\legeger.cmd & pause & exit /b 0 )
-call "%DE%\AirDeck\legeger.cmd" %1
+if not exist "%DE%\Mobile\mobile.cmd" ( echo   HIBA: nincs meg: Mobile\mobile.cmd & pause & exit /b 0 )
+call "%DE%\Mobile\mobile.cmd" %1
 exit /b 0
 
 :DO_GYRO

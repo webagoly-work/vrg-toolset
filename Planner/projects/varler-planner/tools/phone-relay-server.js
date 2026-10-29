@@ -33,7 +33,7 @@
 //     hello have no known role and receive everything, which keeps legacy
 //     one-way senders working unchanged.
 //
-// CHANGED 27 Oct — VRG Légegér (AirDeck/): one phone, several apps.
+// CHANGED 27 Oct — VRG Légegér (Mobile/): one phone, several apps.
 //   * `to` — an envelope may name the role it is for ({to:'codecity'}). It
 //     then reaches only clients of that role. Without `to`, routing is as
 //     before, except that two APP roles (anything but 'phone') no longer
