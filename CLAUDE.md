@@ -200,6 +200,8 @@ All of them run in the **main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_
 - **`GO ROUTE`** — read `GO-ROUTE.md` at the repo root and do what it says: new wiring features with the
   Budakalász job as the basis and a PCB-style autorouter (rip-up-and-reroute, negotiated congestion) as the model.
   Follows `docs/workflow/MONEY-PATH-AUDIT_2026-10.md`; starts by asking the user (job, features, router scope, licences).
+  Includes the **Topology View** (merged 2026-10-29): the netlist / ratsnest view over the GO WIRE up-tree,
+  pack `Planner/projects/varler-planner/docs/topology/` (TV0–TV12; engine gaps G1–G8 = candidate features).
 - **`GO STRICT`** — **done**: the five programs VRG Kapu links to are on `main` (`check-hub --strict` → Rendben). Retired.
 - **`GO ALL`** — **retired** 2026-10-24: `dev-all` is replaced by `main`. See GO MAIN.
 - **`GO MAIN`** — **done** 2026-10-24 (`GO-MAIN.md`): every line consolidated into `main`, the other

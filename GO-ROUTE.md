@@ -28,6 +28,17 @@ Works from a cloud session or from Claude Code on the user's PC. What each can r
 
    "Reverse engineering" here should mean **studying the published algorithms and open-source code, then writing our
    own**. It should not mean decompiling commercial programs. Agree this wording with the user in §2.
+4. **The Topology View (TV)**, merged into this thread on 2026-10-29. The user asked for it on 2026-10-22, and on
+   2026-10-29 asked to "add this in detail and merge it into the same workflow I am setting up with GO ROUTE".
+   - **What it is:** a Planner viewer mode that shows every device and the connections between them
+     **topologically** (Elosztó → boxes → leader → … → tail, in room lanes) instead of geometrically. In it the user
+     sets feeds, masters, socket chains, switching logic (chain / star) and preferred / mandatory kötődobozok.
+   - **Where it lands:** the autowiring then fits those settings into the walls and plays back circuit by circuit.
+   - **In PCB terms:** it is the **netlist / ratsnest view** in front of the router, and its playback is the router's
+     pass-by-pass display.
+   - **The pack:** `Planner/projects/varler-planner/docs/topology/` (r2), filed here in §5.
+   - **Its engine-side needs are G1–G8** (`docs/topology/02_ENGINE_GAPS.md`). They are the first concrete candidates for
+     the "more wiring features" of point 1. Offer them in §2; do not assume them.
 
 ## 1. Read first, in this order
 
@@ -50,6 +61,13 @@ Works from a cloud session or from Claude Code on the user's PC. What each can r
    - Parts 5–11: T0–T6 as built.
 3. `GO-WIRE.md` (decisions Q1–Q5) and `Planner/projects/varler-planner/tools/baseline/README.md` (the engine's rules).
 4. `Planner/projects/varler-planner/docs/PRIMER.md` before any edit to the Planner.
+5. **The Topology View pack**, `Planner/projects/varler-planner/docs/topology/`:
+   - `README.md`: what is built already and what TV adds, the WP map;
+   - `02_ENGINE_GAPS.md`: G1–G8, what the user can draw but the engine cannot follow yet;
+   - `01_RULES.md`: the hard rules, each tagged built / TV / G<n>;
+   - `fig/09-uptree-to-view.svg`: the up-tree → view mapping and the PCB ↔ Planner word list.
+
+   Read the WP files only when building one.
 
 Today's engine has these parts:
 
@@ -87,6 +105,26 @@ Ask these before any design or code, in one message:
    - C: accept GPL for a separate tool.
 6. **The audit's open questions Q1–Q4** (§8 of the audit), if still unanswered. Q1 decides whether the Planner BOM
    findings matter for pricing.
+7. **The Topology View's place** (TOPO-Q-001 TV19):
+   - A: Wave A first. TV0–TV2 + TV9–TV10 are a read-only viewer over the up-tree and the engine's run, built before the
+     router work as its inspection tool. Wave B (editing) runs in parallel with the router; TV11 (playback) after G7.
+     (recommended)
+   - B: the router first, the view afterwards.
+   - C: the whole view (TV0–TV11) before any engine change.
+8. **Which engine gaps become this thread's features** (`02_ENGINE_GAPS.md`), multi-select:
+   - G1: a plain kötődoboz as a tree node;
+   - G2: the V1 house string through KDs, in its own conduit;
+   - G3: true star switching, and the csillár 4-core riser (MP-12);
+   - G4: departures only in a box, with preferred / mandatory KDs;
+   - G5: distribution runs share pipes;
+   - G6: the socket chain hop as an arc (no leállás box);
+   - G7: the run log for the playback (tiny);
+   - G8: negotiated congestion / rip-up, the router core of point 3.
+
+   Recommended start: G7 → G1 → G4. Ask what the Budakalász job needs among them.
+9. **The Topology View decisions** (`docs/topology/TOPO-Q-001.json`, 19 questions: 3 settled by built code, 7 waiting on a G-item, 9 open):
+   - ask only the open ones the chosen work touches;
+   - always ask TV03 (a KD / szobadoboz as a socket master, against GO WIRE Q5) and TV18 (what a plain KD may do).
 
 ## 3. Rules for this thread
 
@@ -100,14 +138,44 @@ Ask these before any design or code, in one message:
 - Client data stays out of git. The Budakalász files, the Domoszló fixtures and `Calculator/CLA-baseline/` are local
   only. Quote only counts, metres and code locations.
 - Hungarian UI, English code. Every open question goes in as numbered A/B/C options.
+- **The Topology View** follows `docs/topology/00_CONTRACT.md`:
+  - it reads and writes the GO WIRE up-tree only through `upSet` / `upFill` / `ldSetLeader` / `trayApply` …;
+  - it never routes on its own (it shows `BL_LAST`);
+  - modules `src/08t*`, prefix `tpo`;
+  - engine work happens only as G-items.
 
 ## 4. What a cloud session can and cannot reach
 
-- **Can:** the repo; the audit's two repro scripts (save them outside the repo; jsdom via `NODE_PATH`); the practice
+- **Can:** the repo; the Topology View's Wave A and its acceptance on the practice apartment; the audit's two repro scripts (save them outside the repo; jsdom via `NODE_PATH`); the practice
   apartment `Planner/projects/varler-planner/tools/practice/` as a non-client test plan.
 - **Cannot:** anything on `H:\`. That includes the Budakalász job, the Domoszló fixtures, `_redteam`, `build-dom.js`
   and `Calculator/CLA-baseline/`.
 - For work on the real job, either run in Claude Code on the user's PC, or attach the PC's repo folder to the cloud
   session through Remote Control (`list_computer_folders` / `request_computer_folder`).
+
+## 5. How the Topology View and the router fit together
+
+| PCB (EDA) | Planner | State |
+|---|---|---|
+| netlist | circuits (05j) + the betáp-fa `d.up` (GO WIRE T1) | built |
+| ratsnest / airwires | the Topology View's lines (TV0–TV2) | TV |
+| layers + vias | wall faces, ceiling, floor + service-point crossings (network.js) | built |
+| design rules / DRC | marks (ban / minus / előnyben) + Pálya-ellenőrzés (T0) | built; MP-4 / MP-5 open |
+| autorouter | plan.js fits each `up` link (T2) with one congestion term | built; **G8** = negotiation / rip-up |
+| routing passes on screen | ▶ Bekötés (TV11) on the run log (G7) | TV + G7 |
+
+The combined order (TV19 A):
+
+```
+§2 answers
+  ├─ TV Wave A   TV0 → TV1 → TV2 ⏸ → TV9 → TV10 ⏸        read-only; practice flat; no engine change
+  ├─ Engine      G7 → the G-items picked in §2 (8) → G8 per §2 (3)
+  │              each with the practice-flat quantity golden (audit §7.8) and spec-98 parity
+  ├─ TV Wave B   TV3 ⏸ → TV4 → TV5 → TV6 → TV7 → TV8     editing; CK-14 names any G-item not built yet
+  └─ TV Wave C   TV11                                     playback; shows G8's passes when they exist
+Acceptance: the practice flat in git; Budakalász locally (counts only in git).
+```
+
+Prompts for one TV WP or one G-item: `docs/topology/PROMPTS.md`.
 
 **Start with:** read §1, then ask §2 in one message, and wait for the answers.

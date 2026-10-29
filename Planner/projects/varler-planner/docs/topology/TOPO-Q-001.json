@@ -1,8 +1,8 @@
 {
  "pack": "PLANNER-TOPO-Q-001",
- "title": "Topology View (TPO) — build decisions",
- "rev": "r0",
- "date": "2026-10-22",
+ "title": "Topology View (TV) — build decisions (r2: rebased on the GO WIRE up-tree, filed under GO ROUTE)",
+ "rev": "r2",
+ "date": "2026-10-29",
  "sections": [
   {
    "id": "V",
@@ -10,116 +10,305 @@
    "note": "The recommended option is built if you do not answer.",
    "questions": [
     {
-     "id": "T12",
+     "id": "TV12",
      "q": "How should the Topology View lay the devices out?",
      "why": "You asked for left→right and top→down = upstream, mid, downstream. There are two readings of 'mid'.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Columns by role + room lanes", "d": "Column 0 Elosztó, then the boxes (deeper boxes of a string further right), then leader → … → tail. One horizontal lane per room, in the order the trunk reaches them. fig/02."},
-      {"k": "B", "t": "Pure distance", "d": "Column = number of hops from the Elosztó on the path graph, no room lanes. Shows depth honestly, but a room's devices scatter."},
-      {"k": "C", "t": "Tree only", "d": "A classic tree diagram per circuit, Elosztó on the left. Clear per circuit, but the shared pathway (what you asked to see) disappears."}
-     ]
+      {
+       "k": "A",
+       "t": "Columns by role + room lanes",
+       "d": "Column 0 Elosztó, then the boxes (deeper boxes of a string further right), then leader → … → tail. One horizontal lane per room, in the order the trunk reaches them. fig/02."
+      },
+      {
+       "k": "B",
+       "t": "Pure distance",
+       "d": "Column = number of hops from the Elosztó on the path graph, no room lanes. Shows depth honestly, but a room's devices scatter."
+      },
+      {
+       "k": "C",
+       "t": "Tree only",
+       "d": "A classic tree diagram per circuit, Elosztó on the left. Clear per circuit, but the shared pathway (what you asked to see) disappears."
+      }
+     ],
+     "status": "open"
     },
     {
-     "id": "T14",
+     "id": "TV14",
      "q": "Where does the Topology View open?",
      "why": "It is a viewer mode, but you will switch back to the blueprint often.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Full-window overlay", "d": "Over the canvas, Esc steps back to the blueprint; a mini-plan in the inspector and 'Mutasd az alaprajzon' flash the real path."},
-      {"k": "B", "t": "Split screen", "d": "Blueprint and topology side by side, both live. Needs the layout system (05db) to host a second surface — larger."},
-      {"k": "C", "t": "Separate page", "d": "Opens in a new tab with a copy of the project. No selection sync; edits must be carried back."}
-     ]
+      {
+       "k": "A",
+       "t": "Full-window overlay",
+       "d": "Over the canvas, Esc steps back to the blueprint; a mini-plan in the inspector and 'Mutasd az alaprajzon' flash the real path."
+      },
+      {
+       "k": "B",
+       "t": "Split screen",
+       "d": "Blueprint and topology side by side, both live. Needs the layout system (05db) to host a second surface — larger."
+      },
+      {
+       "k": "C",
+       "t": "Separate page",
+       "d": "Opens in a new tab with a copy of the project. No selection sync; edits must be carried back."
+      }
+     ],
+     "status": "open"
     },
     {
-     "id": "T13",
+     "id": "TV13",
      "q": "Where does the autowiring playback run?",
      "why": "The animation is clearest on the simple topology, but the real geometry is what gets built.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "In the view, mirror optional", "d": "Plays in the Topology View; a toggle 'Alaprajzon is' runs the same sequence along the real paths on the blueprint."},
-      {"k": "B", "t": "Topology only", "d": "Simplest; the blueprint shows only the end result."},
-      {"k": "C", "t": "Blueprint only", "d": "Plays on the drawing; the topology view just shows the composite."}
+      {
+       "k": "A",
+       "t": "In the view, mirror optional",
+       "d": "Plays in the Topology View; a toggle 'Alaprajzon is' runs the same sequence along the real paths on the blueprint."
+      },
+      {
+       "k": "B",
+       "t": "Topology only",
+       "d": "Simplest; the blueprint shows only the end result."
+      },
+      {
+       "k": "C",
+       "t": "Blueprint only",
+       "d": "Plays on the drawing; the topology view just shows the composite."
+      }
+     ],
+     "status": "open",
+     "r2": "G7 gives the true order; without it the playback is per circuit"
+    },
+    {
+     "id": "TV19",
+     "q": "In GO ROUTE, when is the Topology View built?",
+     "why": "Wave A only reads the tree and the engine's run, so it is safe now — and it is the inspection tool for any router change.",
+     "rec": "A",
+     "status": "open",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Wave A first",
+       "d": "TV0–TV2 + TV9–TV10 (viewer, no data written) before the router work; Wave B in parallel with it; TV11 after G7."
+      },
+      {
+       "k": "B",
+       "t": "After the router",
+       "d": "Router first (GO ROUTE §2 Q3), the view afterwards."
+      },
+      {
+       "k": "C",
+       "t": "All of it first",
+       "d": "TV0–TV11 before any engine change."
+      }
      ]
     }
    ]
   },
   {
    "id": "R",
-   "title": "Rules (Wave B) — checkpoint T3",
+   "title": "Rules (Wave B) — checkpoint TV3",
    "note": "These are trade rules. ⚑ = values to confirm.",
    "questions": [
     {
-     "id": "T03",
+     "id": "TV03",
      "q": "May a Kötődoboz / szobadoboz be the master (mini-Elosztó) of a SOCKET circuit?",
      "why": "Your description says yes (a KD serving a room's szobadugalj circuits). The earlier E06 answer made socket circuits classic chains Elosztó → first socket → … and kept the szobadoboz out of socket distribution.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Yes when you link it", "d": "Default stays the classic chain (E06); an explicit Master link from a box in the Topology View is honoured and the box becomes the room's mini-Elosztó."},
-      {"k": "B", "t": "Never", "d": "Socket circuits always chain from the Elosztó; boxes only pass them through."},
-      {"k": "C", "t": "Yes, by default", "d": "When a room has a KD / szobadoboz, its socket circuits start there automatically."}
-     ]
+      {
+       "k": "A",
+       "t": "Yes when you link it",
+       "d": "Default stays the classic chain (E06); an explicit Master link from a box in the Topology View is honoured and the box becomes the room's mini-Elosztó."
+      },
+      {
+       "k": "B",
+       "t": "Never",
+       "d": "Socket circuits always chain from the Elosztó; boxes only pass them through."
+      },
+      {
+       "k": "C",
+       "t": "Yes, by default",
+       "d": "When a room has a KD / szobadoboz, its socket circuits start there automatically."
+      }
+     ],
+     "status": "open",
+     "r2": "The built rule (08oe ldChains :37-42, GO WIRE Q5) never hangs a leader on a szobadoboz. A = keep that default, honour an explicit user link — needs G1 and an ldChains exception for a fixed link."
     },
     {
-     "id": "T04",
+     "id": "TV04",
      "q": "A dedicated circuit passing a kötődoboz / portal box:",
      "why": "Home runs often share the first stretch with others and pass the same boxes.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Through, never split", "d": "It may pass through the box (or by it), the cable stays continuous from the Elosztó to the device."},
-      {"k": "B", "t": "Avoid boxes", "d": "Its path must not touch any box — can force longer routes."},
-      {"k": "C", "t": "Split allowed", "d": "May be jointed in a box like any other circuit."}
-     ]
+      {
+       "k": "A",
+       "t": "Through, never split",
+       "d": "It may pass through the box (or by it), the cable stays continuous from the Elosztó to the device."
+      },
+      {
+       "k": "B",
+       "t": "Avoid boxes",
+       "d": "Its path must not touch any box — can force longer routes."
+      },
+      {
+       "k": "C",
+       "t": "Split allowed",
+       "d": "May be jointed in a box like any other circuit."
+      }
+     ],
+     "status": "built",
+     "r2": "The engine has no splice: a DED home run is one cable. TV3 CK-8 only checks that its up is the board."
     },
     {
-     "id": "T05",
+     "id": "TV05",
      "q": "Switching in CHAIN mode: how does N reach the lamps? ⚑",
      "why": "In a chain (master → switch → switch → lamp) the lamp needs N; either it travels through the switch boxes or it comes separately from the master.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "N + PE through the switch boxes", "d": "master→S1 L·N·PE (3×1,5), S↔S T1·T2·N·PE (4×1,5), tail→lamp Lk·N·PE (3×1,5). Needs deep boxes and a connector for N. fig/05 left."},
-      {"k": "B", "t": "N from the master", "d": "The switches carry only L / travellers; a separate Lk·N·PE cable goes master → lamp. More cable, simpler switch boxes."}
-     ]
+      {
+       "k": "A",
+       "t": "N + PE through the switch boxes",
+       "d": "master→S1 L·N·PE (3×1,5), S↔S T1·T2·N·PE (4×1,5), tail→lamp Lk·N·PE (3×1,5). Needs deep boxes and a connector for N. fig/05 left."
+      },
+      {
+       "k": "B",
+       "t": "N from the master",
+       "d": "The switches carry only L / travellers; a separate Lk·N·PE cable goes master → lamp. More cable, simpler switch boxes."
+      }
+     ],
+     "status": "engine",
+     "r2": "G3. The chain rows match today's engine (switch boxes fed, travellers 4×1,5); confirm the cores ⚑."
     },
     {
-     "id": "T06",
+     "id": "TV06",
      "q": "When is the STAR (common point) suggested for a switching group?",
      "why": "You said the star is preferred when the common point coincides with the room's wall crossing (portal) point.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "≥ 2 switches at one door's portal", "d": "Star via that portal box when at least two switches of the group sit at the same door; chain otherwise. You can always toggle."},
-      {"k": "B", "t": "Always star when a portal box exists", "d": "Even a single switch goes via the portal box."},
-      {"k": "C", "t": "Never suggested", "d": "Chain by default; star only by hand."}
-     ]
+      {
+       "k": "A",
+       "t": "≥ 2 switches at one door's portal",
+       "d": "Star via that portal box when at least two switches of the group sit at the same door; chain otherwise. You can always toggle."
+      },
+      {
+       "k": "B",
+       "t": "Always star when a portal box exists",
+       "d": "Even a single switch goes via the portal box."
+      },
+      {
+       "k": "C",
+       "t": "Never suggested",
+       "d": "Chain by default; star only by hand."
+      }
+     ],
+     "status": "open",
+     "r2": "A suggestion only (TV7/TV8); the star itself routes from G3."
     },
     {
-     "id": "T11",
+     "id": "TV11",
      "q": "May a socket chain branch at a socket?",
      "why": "A T-branch from a socket box is common in practice but makes the 'leader → tail' sequence a tree.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Only in a box", "d": "A socket has at most one chain link out; a branch needs a kötődoboz (two masters from it). fig/03 P4."},
-      {"k": "B", "t": "Also at a socket", "d": "At most 2 chain links out of one socket box (≤ 3 conductors per terminal ⚑)."}
-     ]
+      {
+       "k": "A",
+       "t": "Allowed anywhere, noted",
+       "d": "As built (a branch = two nodes with the same up). A branch at a socket shows an info line (CK-9)."
+      },
+      {
+       "k": "B",
+       "t": "Only in a box",
+       "d": "A branch at a socket is an error; branch from a kötődoboz (two masters)."
+      }
+     ],
+     "status": "open",
+     "r2": "Built behaviour (bflClick, GO WIRE Q3): a branch = two nodes with the same up, allowed anywhere. r2 recommends keeping it, with an info line."
     },
     {
-     "id": "T16",
+     "id": "TV16",
      "q": "Socket chain order: 'least horizontal movement' measured how?",
      "why": "Two sockets on either side of a wall corner are close in a straight line but the cable goes round along the walls.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Along the routable walls", "d": "Path length on the path graph (arc length along the Vezethető fal faces). fig/04."},
-      {"k": "B", "t": "Straight line", "d": "Simpler, but can order sockets across a corner or a doorway the cable cannot take."}
-     ]
+      {
+       "k": "A",
+       "t": "Along the routable walls",
+       "d": "Path length on the path graph (arc length along the Vezethető fal faces). fig/04."
+      },
+      {
+       "k": "B",
+       "t": "Straight line",
+       "d": "Simpler, but can order sockets across a corner or a doorway the cable cannot take."
+      }
+     ],
+     "status": "built",
+     "r2": "ldChains (GO WIRE T3) orders along the routable walls — option A."
     },
     {
-     "id": "T02",
+     "id": "TV02",
      "q": "A socket chain hop: arc from socket to socket, or through a leállás box?",
      "why": "You described arcs: vertical up, along beside the gerinc, vertical down into the next socket. The E5 engine today puts a 2-gang leállás box at 2450 above every wall endpoint.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Arc, no leállás box", "d": "Socket box → socket box in one pipe (up, along, down). A leállás box only where several devices drop together (≤ 250 mm) or where the circuit branches. Changes E5 counts — only for circuits with a topology (T12)."},
-      {"k": "B", "t": "Keep the leállás box", "d": "Every drop gets its 2-gang box at the distribution height, as E5 does now."}
+      {
+       "k": "A",
+       "t": "Arc, no leállás box",
+       "d": "Socket box → socket box in one pipe (up, along, down). A leállás box only where several devices drop together (≤ 250 mm) or where the circuit branches. Changes the engine's box and pipe counts (G6)."
+      },
+      {
+       "k": "B",
+       "t": "Keep the leállás box",
+       "d": "Every drop gets its 2-gang box at the distribution height, as E5 does now."
+      }
+     ],
+     "status": "engine",
+     "r2": "G6."
+    },
+    {
+     "id": "TV17",
+     "q": "Where does the switching logic (chain / star) live?",
+     "why": "r1 stored it in a new group record. The up-tree can already express both shapes.",
+     "rec": "A",
+     "status": "open",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Read from up",
+       "d": "Star = every switch and the first lamp hang on one hub; chain = the switches hang on each other and the lamps on the last. No new field; the engine reads up already."
+      },
+      {
+       "k": "B",
+       "t": "An explicit field",
+       "d": "A logic:'chain'|'star' on the lamp group. Clearer to read, but it can contradict the up links."
+      }
+     ]
+    },
+    {
+     "id": "TV18",
+     "q": "A plain kötődoboz in the tree (G1): what may it do?",
+     "why": "Your model uses kötődobozok as mini-Elosztó and string points. Today only a szobadoboz, RBX or BASE can feed anything, and only service points may cross a wall.",
+     "rec": "A",
+     "status": "engine",
+     "opts": [
+      {
+       "k": "A",
+       "t": "Feed point, never a wall crossing",
+       "d": "A KD may be a master, a string node or a departure box; walls are still crossed only at doors, szobadoboz, RBX, BASE."
+      },
+      {
+       "k": "B",
+       "t": "Promote to szobadoboz",
+       "d": "Linking a KD as a master turns it into a szobadoboz (150/200, crossing allowed)."
+      },
+      {
+       "k": "C",
+       "t": "Pass-through only",
+       "d": "A KD never feeds; use a szobadoboz for that."
+      }
      ]
     }
    ]
@@ -127,70 +316,135 @@
   {
    "id": "S",
    "title": "Sharing and the engine (Wave C)",
-   "note": "Checkpoint T10 shows these on CLA before T12.",
+   "note": "Engine items (G2, G4, G5, G1, G8). Checkpoint TV10 shows the evidence on the practice flat; GO ROUTE §2 picks the G-items.",
    "questions": [
     {
-     "id": "T07",
+     "id": "TV07",
      "q": "The V1 house string (Elosztó → KD → KD …): own conduit?",
      "why": "You wrote 'in their own (often dedicated) conduit'.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Own conduit by default", "d": "ownPipe = true on the string; it may share the chase but never a pipe. Untick per circuit."},
-      {"k": "B", "t": "Shares like any circuit", "d": "Packed by the capacity rule with the others."}
-     ]
+      {
+       "k": "A",
+       "t": "Own conduit by default",
+       "d": "ownPipe = true on the string; it may share the chase but never a pipe. Untick per circuit."
+      },
+      {
+       "k": "B",
+       "t": "Shares like any circuit",
+       "d": "Packed by the capacity rule with the others."
+      }
+     ],
+     "status": "engine",
+     "r2": "G2."
     },
     {
-     "id": "T08",
+     "id": "TV08",
      "q": "Preferred kötődoboz: how far does it pull a departure? ⚑",
      "why": "A departure (a circuit leaving a shared run) needs a box; a preferred KD nearby should take it.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "600 mm along the run", "d": "A departure within 600 mm of a preferred KD on the shared stretch moves into it."},
-      {"k": "B", "t": "300 mm", "d": "Tighter; more suggested boxes."},
-      {"k": "C", "t": "Same room face", "d": "Anywhere on the same wall face of the same room."}
-     ]
+      {
+       "k": "A",
+       "t": "600 mm along the run",
+       "d": "A departure within 600 mm of a preferred KD on the shared stretch moves into it."
+      },
+      {
+       "k": "B",
+       "t": "300 mm",
+       "d": "Tighter; more suggested boxes."
+      },
+      {
+       "k": "C",
+       "t": "Same room face",
+       "d": "Anywhere on the same wall face of the same room."
+      }
+     ],
+     "status": "engine",
+     "r2": "G4."
     },
     {
-     "id": "T09",
+     "id": "TV09",
      "q": "Mandatory kötődoboz: what exactly is mandatory?",
      "why": "It must change the routing, otherwise it is only a preference.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Everything passing enters", "d": "Every path that passes its wall-face stretch enters it (pipes cut there), and departures on that room face move into it."},
-      {"k": "B", "t": "At least one circuit uses it", "d": "Only checked (CK-13), routes unchanged."}
-     ]
+      {
+       "k": "A",
+       "t": "Everything passing enters",
+       "d": "Every path that passes its wall-face stretch enters it (pipes cut there), and departures on that room face move into it."
+      },
+      {
+       "k": "B",
+       "t": "At least one circuit uses it",
+       "d": "Only checked (CK-13), routes unchanged."
+      }
+     ],
+     "status": "engine",
+     "r2": "G4."
     },
     {
-     "id": "T10",
+     "id": "TV10",
      "q": "A departure with no box nearby:",
      "why": "Cables may leave a shared pipe only in a box.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Suggest a KD in a table", "d": "A 100×100 KD is suggested at the spot (gen:'tpo'); you tick and apply, or place your own preferred KD and re-run."},
-      {"k": "B", "t": "Error only", "d": "Listed as an error; you place every box by hand."}
-     ]
+      {
+       "k": "A",
+       "t": "Suggest a KD in a table",
+       "d": "A 100×100 KD is suggested at the spot (gen:'tpo'); you tick and apply, or place your own preferred KD and re-run."
+      },
+      {
+       "k": "B",
+       "t": "Error only",
+       "d": "Listed as an error; you place every box by hand."
+      }
+     ],
+     "status": "open",
+     "r2": "TV10 can place the suggested KDs now (as user boxes); the engine honours their role from G4."
     },
     {
-     "id": "T15",
+     "id": "TV15",
      "q": "Distribution runs: share pipes like the trunk?",
      "why": "E5 today packs several circuits per pipe only on the trunk; distribution is one pipe per circuit. You asked that parallel circuits share a conduit.",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Pack every shared run", "d": "The capacity-based packing (In ≤ Iz·k, 1,5 mm² ≤ 2 circuits, ≤ 3 cables) on every run, trunk and distribution."},
-      {"k": "B", "t": "Keep E5", "d": "Distribution stays one pipe per circuit."}
-     ]
+      {
+       "k": "A",
+       "t": "Pack every shared run",
+       "d": "The capacity-based packing (In ≤ Iz·k, 1,5 mm² ≤ 2 circuits, ≤ 3 cables) on every run, trunk and distribution."
+      },
+      {
+       "k": "B",
+       "t": "Keep E5",
+       "d": "Distribution stays one pipe per circuit."
+      }
+     ],
+     "status": "engine",
+     "r2": "G5."
     },
     {
-     "id": "T01",
+     "id": "TV01",
      "q": "How does the topology reach the autowiring?",
      "why": "The 'one engine' rule (E5-Q5: bundle, don't port).",
      "rec": "A",
      "opts": [
-      {"k": "A", "t": "Into the E5 engine", "d": "plan.js takes cfg.topo: explicit links replace its inference for those circuits; everything after (legs, packing, sizing, checks) is reused. One engine for the CLI and the page."},
-      {"k": "B", "t": "A second router in the view", "d": "The view routes and sizes on its own; the engine stays as is. Faster to build, two answers to the same question."}
-     ]
+      {
+       "k": "A",
+       "t": "Into the E5 engine",
+       "d": "plan.js takes cfg.topo: explicit links replace its inference for those circuits; everything after (legs, packing, sizing, checks) is reused. One engine for the CLI and the page."
+      },
+      {
+       "k": "B",
+       "t": "A second router in the view",
+       "d": "The view routes and sizes on its own; the engine stays as is. Faster to build, two answers to the same question."
+      }
+     ],
+     "status": "built",
+     "r2": "Answered by GO WIRE T2: the engine fits the user's tree (one engine). Option A is what exists; G1–G8 extend it."
     }
    ]
   }
- ]
+ ],
+ "note": "Ids renamed T→TV (GO WIRE owns T0–T7 and Q-TV0-n). \"status\": open | built (the code on main already does the recommended option) | engine (needs the named G-item, 02_ENGINE_GAPS.md)."
 }
