@@ -1,0 +1,5 @@
+ServiceKit CYD - SD kartya
+Ez a kartya a keszulek offline tara.
+  reference/   : Sugo es parancs kivonatok (a keszulek kepernyojere)
+  manifest/    : mi legyen a telepito pendrive-on (a verify ehhez meri)
+Nincs itt ugyfeladat / szemelyes adat - ez szemelyes projekt.

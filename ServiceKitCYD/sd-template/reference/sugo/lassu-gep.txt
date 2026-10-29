@@ -1,0 +1,6 @@
+LASSU GEP
+1. Lemez allapot (CrystalDiskInfo) - sarga/piros = csere
+2. Ha majdnem tele a C: - WizTree
+3. Autoruns: felesleges inditasi elemek ki
+4. Homerseklet (HWiNFO) - 90C felett lassit
+5. HDD -> SSD a legnagyobb gyorsulas

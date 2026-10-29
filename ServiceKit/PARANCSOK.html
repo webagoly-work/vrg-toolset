@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parancsok – ServiceKit</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f2a93b'/%3E%3Cpath d='M8 11l5 5-5 5M15 21h9' fill='none' stroke='%23161a1f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+/* ServiceKit launcher. Written without CSS variables or grid so it also works in
+   Internet Explorer 11 on Windows 7. Dark theme is the base; .light overrides it. */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px; line-height: 1.45;
+  background: #13161a; color: #dfe3e8;
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; color: inherit; }
+code, .mono { font-family: "Cascadia Mono", "Cascadia Code", Consolas, "Courier New", monospace; font-size: 12.5px; }
+a { color: #f2a93b; }
+::selection { background: #f2a93b; color: #161a1f; }
+
+#app { display: flex; flex-direction: column; height: 100%; min-height: 100%; }
+
+/* ---------------------------------------------------------------- top bar */
+.topbar {
+  display: flex; align-items: center; flex: 0 0 auto;
+  height: 56px; padding: 0 16px;
+  background: #0e1013; border-bottom: 1px solid #262b31;
+}
+.brand { display: flex; align-items: center; flex: 0 0 auto; margin-right: 20px; }
+.mark { width: 30px; height: 30px; border-radius: 7px; background: #f2a93b; display: inline-block; margin-right: 10px; }
+.mark svg { width: 30px; height: 30px; display: block; }
+.mark path { fill: none; stroke: #161a1f; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.brand-name { font-weight: 600; font-size: 16px; letter-spacing: .2px; margin-right: 14px; }
+.link-state { font-size: 12px; color: #8b949e; display: inline-flex; align-items: center; white-space: nowrap; }
+.link-state .dot { width: 8px; height: 8px; border-radius: 50%; background: #6e7681; margin-right: 6px; display: inline-block; }
+.link-state.live .dot { background: #3fc28b; box-shadow: 0 0 0 3px rgba(63, 194, 139, .18); }
+.link-state.live { color: #8fd9b6; }
+.link-state.offline .dot { background: #f2a93b; }
+
+.search { position: relative; flex: 1 1 auto; max-width: 460px; margin-right: 16px; }
+.search input {
+  width: 100%; height: 34px; padding: 0 12px 0 34px; border-radius: 8px;
+  background: #1b1f24 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='4.5' fill='none' stroke='%238b949e' stroke-width='1.6'/%3E%3Cpath d='M10.5 10.5L14 14' stroke='%238b949e' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat 11px center;
+  background-size: 15px 15px;
+  border: 1px solid #2c3238; outline: none;
+}
+.search input:focus { border-color: #f2a93b; }
+.search-results {
+  display: none; position: absolute; left: 0; right: 0; top: 40px; z-index: 50;
+  background: #1b1f24; border: 1px solid #2c3238; border-radius: 10px; max-height: 420px; overflow: auto;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+}
+.search-results.open { display: block; }
+.sr-group { padding: 8px 12px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: #8b949e; }
+.sr-item { display: block; width: 100%; text-align: left; padding: 8px 12px; border: 0; background: transparent; cursor: pointer; }
+.sr-item:hover, .sr-item.active { background: #262b31; }
+.sr-item small { display: block; color: #8b949e; font-size: 12px; }
+
+.meters { display: flex; align-items: center; flex: 0 0 auto; margin-left: auto; margin-right: 12px; }
+.meter { width: 132px; margin-left: 16px; }
+.meter-top span { white-space: nowrap; margin-right: 6px; }
+.meter-top b { white-space: nowrap; }
+.meter-top { display: flex; justify-content: space-between; font-size: 11px; color: #8b949e; }
+.meter-top b { color: #dfe3e8; font-weight: 600; }
+.meter-bar { height: 4px; border-radius: 2px; background: #262b31; margin-top: 4px; overflow: hidden; }
+.meter-bar i { display: block; height: 4px; background: #3fc28b; width: 0; transition: width .6s ease; }
+.meter-bar i.warn { background: #f2a93b; }
+.meter-bar i.hot { background: #ef5a5a; }
+
+.top-actions { display: flex; align-items: center; flex: 0 0 auto; }
+.seg, .icon-btn {
+  height: 32px; min-width: 32px; padding: 0 10px; border-radius: 8px; cursor: pointer;
+  background: #1b1f24; border: 1px solid #2c3238; margin-left: 8px; font-size: 12px; font-weight: 600;
+}
+.seg:hover, .icon-btn:hover { border-color: #4a525b; }
+.icon-btn svg { width: 16px; height: 16px; vertical-align: middle; }
+.icon-btn path, .icon-btn circle { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+
+/* ---------------------------------------------------------------- layout */
+.shell { display: flex; flex: 1 1 auto; min-height: 0; }
+.sidenav { flex: 0 0 216px; padding: 14px 10px; border-right: 1px solid #262b31; background: #101317; overflow: auto; }
+.nav-btn {
+  display: flex; align-items: center; width: 100%; padding: 9px 12px; margin-bottom: 2px;
+  border: 0; border-radius: 8px; background: transparent; cursor: pointer; text-align: left; color: #b6bec7;
+}
+.nav-btn svg { width: 18px; height: 18px; margin-right: 11px; flex: 0 0 auto; }
+.nav-btn path, .nav-btn circle, .nav-btn rect { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.nav-btn:hover { background: #1b1f24; color: #dfe3e8; }
+.nav-btn.active { background: #22272d; color: #fff; box-shadow: inset 3px 0 0 #f2a93b; }
+.nav-btn .count { margin-left: auto; font-size: 11px; background: #2c3238; border-radius: 9px; padding: 0 7px; color: #dfe3e8; }
+.nav-btn .count.live { background: #1f4d39; color: #8fd9b6; }
+.nav-sep { height: 1px; background: #262b31; margin: 12px 6px; }
+.nav-foot { font-size: 11px; color: #6e7681; padding: 6px 12px; word-break: break-all; }
+
+main { flex: 1 1 auto; overflow: auto; padding: 22px 26px 40px; min-width: 0; }
+.view { display: none; max-width: 1240px; }
+.view.active { display: block; }
+
+h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; letter-spacing: -.2px; }
+h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
+.lede { color: #8b949e; margin: 0 0 20px; max-width: 760px; }
+.section { margin-bottom: 28px; }
+.section-head { display: flex; align-items: baseline; margin-bottom: 12px; }
+.section-head h2 { margin: 0; }
+.section-head .aside { margin-left: auto; font-size: 12px; color: #8b949e; }
+
+/* ---------------------------------------------------------------- cards & rows */
+.panel { background: #1a1e23; border: 1px solid #262b31; border-radius: 12px; padding: 16px; }
+.cards { display: flex; flex-wrap: wrap; margin: 0 -6px; }
+.cards > * { margin: 0 6px 12px; }
+
+.run-card { width: 286px; background: #1a1e23; border: 1px solid #262b31; border-radius: 12px; padding: 14px 14px 12px; position: relative; overflow: hidden; }
+.run-card:before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #3fc28b; }
+.run-top { display: flex; align-items: center; }
+.run-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: #3fc28b; margin-right: 8px; flex: 0 0 auto; animation: pulse 1.6s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(63, 194, 139, .55); } 70% { box-shadow: 0 0 0 7px rgba(63, 194, 139, 0); } 100% { box-shadow: 0 0 0 0 rgba(63, 194, 139, 0); } }
+.run-meta { font-size: 12px; color: #8b949e; margin: 4px 0 10px; }
+.stat { display: flex; align-items: center; font-size: 12px; margin-bottom: 6px; }
+.stat label { width: 40px; color: #8b949e; }
+.stat .bar { flex: 1 1 auto; height: 6px; border-radius: 3px; background: #262b31; overflow: hidden; margin-right: 8px; }
+.stat .bar i { display: block; height: 6px; background: #3fc28b; transition: width .8s ease; }
+.stat .bar i.mem { background: #5aa9ef; }
+.stat .val { width: 62px; text-align: right; font-variant-numeric: tabular-nums; }
+.run-actions { margin-top: 10px; display: flex; }
+.run-actions .btn { margin-right: 6px; }
+
+.empty { padding: 26px; text-align: center; color: #8b949e; border: 1px dashed #2f353c; border-radius: 12px; }
+.empty b { color: #dfe3e8; display: block; margin-bottom: 4px; font-weight: 600; }
+
+.btn {
+  display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 7px; cursor: pointer;
+  background: #232830; border: 1px solid #333a42; font-size: 12.5px; white-space: nowrap; text-decoration: none; color: #dfe3e8;
+  vertical-align: middle; line-height: 1;
+}
+.btn:hover { border-color: #56606a; background: #282e36; }
+.btn.primary { background: #f2a93b; border-color: #f2a93b; color: #1a1406; font-weight: 600; }
+.btn.primary:hover { background: #f6b958; }
+.btn.danger:hover { border-color: #ef5a5a; color: #ffb3b3; }
+.btn.ghost { background: transparent; }
+.btn[disabled], .btn.disabled { opacity: .45; cursor: not-allowed; }
+.btn svg { width: 14px; height: 14px; margin-right: 6px; }
+.btn path, .btn circle, .btn rect { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* task tiles */
+.tile {
+  width: 186px; min-height: 92px; padding: 14px; border-radius: 12px; cursor: pointer; text-align: left;
+  background: #1a1e23; border: 1px solid #262b31; display: block;
+}
+.tile:hover { border-color: #f2a93b; background: #1e2329; }
+.tile svg { width: 22px; height: 22px; display: block; margin-bottom: 10px; }
+.tile path, .tile circle, .tile rect { fill: none; stroke: #f2a93b; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.tile b { display: block; font-weight: 600; }
+.tile small { color: #8b949e; font-size: 12px; }
+
+/* progress */
+.progress-panel { margin-bottom: 26px; }
+.prog-head { display: flex; align-items: center; margin-bottom: 10px; }
+.prog-head h2 { margin: 0; }
+.prog-head .aside { margin-left: auto; color: #8b949e; font-size: 12px; }
+.pbar { height: 10px; border-radius: 5px; background: #262b31; overflow: hidden; margin-bottom: 12px; }
+.pbar i { display: block; height: 10px; background: #f2a93b; transition: width .5s ease;
+  background-image: linear-gradient(45deg, rgba(255,255,255,.18) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.18) 50%, rgba(255,255,255,.18) 75%, transparent 75%, transparent);
+  background-size: 18px 18px; animation: stripes 1s linear infinite; }
+.pbar.small { height: 6px; }
+.pbar.small i { height: 6px; background-color: #5aa9ef; }
+.pbar.done i { animation: none; background-image: none; background-color: #3fc28b; }
+@keyframes stripes { from { background-position: 0 0; } to { background-position: 18px 0; } }
+.chips { display: flex; flex-wrap: wrap; margin: 0 -3px 8px; }
+.chip { font-size: 11.5px; padding: 2px 9px; border-radius: 10px; background: #262b31; margin: 0 3px 6px; color: #b6bec7; white-space: nowrap; }
+.chip.ok { background: #1c3a2d; color: #8fd9b6; }
+.chip.error { background: #4a2020; color: #ffb3b3; }
+.chip.manual { background: #4a3a18; color: #f7cf86; }
+.chip.working { background: #3d3216; color: #f7cf86; }
+.chip.skipped { opacity: .6; }
+.logbox { background: #0e1013; border-radius: 8px; padding: 10px 12px; max-height: 150px; overflow: auto; color: #9aa4ae; white-space: pre-wrap; }
+
+/* ---------------------------------------------------------------- tools view */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.filter { height: 30px; padding: 0 12px; margin: 0 6px 6px 0; border-radius: 15px; border: 1px solid #2f353c; background: transparent; cursor: pointer; font-size: 12.5px; color: #b6bec7; }
+.filter:hover { border-color: #56606a; color: #dfe3e8; }
+.filter.on { background: #f2a93b; border-color: #f2a93b; color: #1a1406; font-weight: 600; }
+.toolbar .spacer { flex: 1 1 auto; }
+
+.cat-block { margin-bottom: 26px; }
+.cat-title { display: flex; align-items: center; font-size: 12px; text-transform: uppercase; letter-spacing: .9px; color: #8b949e; margin: 0 0 10px; }
+.cat-title svg { width: 16px; height: 16px; margin-right: 8px; }
+.cat-title path, .cat-title circle, .cat-title rect { fill: none; stroke: #f2a93b; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+.pkg { background: #1a1e23; border: 1px solid #262b31; border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+.pkg-head { display: flex; align-items: flex-start; padding: 14px 16px 12px; }
+.pkg-info { flex: 1 1 auto; min-width: 0; }
+.pkg-name { font-weight: 600; font-size: 15px; }
+.pkg-desc { color: #a3acb6; margin-top: 2px; }
+.pkg-note { color: #f7cf86; font-size: 12.5px; margin-top: 4px; }
+.pkg-side { flex: 0 0 auto; text-align: right; margin-left: 14px; }
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 9px; margin-left: 4px; background: #262b31; color: #b6bec7; white-space: nowrap; }
+.badge.ok { background: #1c3a2d; color: #8fd9b6; }
+.badge.miss { background: #2a2f35; color: #9aa4ae; }
+.badge.manual { background: #4a3a18; color: #f7cf86; }
+.badge.warn { background: #4a2020; color: #ffb3b3; }
+.badge.run { background: #1f4d39; color: #8fd9b6; }
+.pkg-links { margin-top: 8px; }
+.pkg-links .btn { margin-left: 6px; }
+.app-row { display: flex; align-items: center; padding: 10px 16px; border-top: 1px solid #23282e; }
+.app-row:hover { background: #1d2227; }
+.app-text { flex: 1 1 auto; min-width: 0; }
+.app-name { font-weight: 600; }
+.app-tip { color: #8b949e; font-size: 12.5px; }
+.app-actions { flex: 0 0 auto; display: flex; flex-wrap: wrap; justify-content: flex-end; margin-left: 12px; }
+.app-actions .btn { margin-left: 6px; }
+
+/* ---------------------------------------------------------------- help view */
+.help { display: flex; align-items: flex-start; }
+.help-list { flex: 0 0 330px; margin-right: 18px; max-height: calc(100vh - 210px); overflow: auto; padding-right: 4px; }
+.help-item { display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 9px; border: 1px solid transparent; background: transparent; cursor: pointer; margin-bottom: 2px; }
+.help-item:hover { background: #1b1f24; }
+.help-item.active { background: #22272d; border-color: #333a42; }
+.help-item small { display: block; color: #8b949e; font-size: 11.5px; }
+.help-body { flex: 1 1 auto; min-width: 0; }
+.help-card { background: #1a1e23; border: 1px solid #262b31; border-radius: 12px; padding: 22px 24px; }
+.help-card h1 { margin-bottom: 14px; }
+.help-card h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .9px; color: #8b949e; margin: 18px 0 8px; font-weight: 600; }
+.sym { margin: 0; padding-left: 18px; color: #c4cbd3; }
+.sym li { margin-bottom: 3px; }
+.steps { counter-reset: s; list-style: none; margin: 0; padding: 0; }
+.steps li { counter-increment: s; position: relative; padding: 0 0 12px 38px; }
+.steps li:before {
+  content: counter(s); position: absolute; left: 0; top: -1px; width: 25px; height: 25px; border-radius: 50%;
+  background: #262b31; color: #f2a93b; font-weight: 700; font-size: 12px; text-align: center; line-height: 25px;
+}
+.steps code, .help-card code { background: #0e1013; border: 1px solid #262b31; padding: 1px 6px; border-radius: 5px; color: #f7cf86; word-wrap: break-word; overflow-wrap: anywhere; }
+.warnbox { margin-top: 16px; padding: 12px 14px; border-radius: 10px; background: #2b1f12; border: 1px solid #5a4219; color: #f7cf86; }
+.toolchips { display: flex; flex-wrap: wrap; margin: 0 -4px; }
+.toolchip { margin: 0 4px 8px; }
+.copy-btn { margin-left: 6px; font-size: 11px; padding: 1px 7px; border-radius: 5px; border: 1px solid #333a42; background: transparent; cursor: pointer; color: #9aa4ae; }
+.copy-btn:hover { color: #f2a93b; border-color: #f2a93b; }
+
+/* ---------------------------------------------------------------- safe space */
+.level { display: flex; align-items: flex-start; background: #1a1e23; border: 1px solid #262b31; border-radius: 12px; padding: 18px; margin-bottom: 12px; }
+.level-num { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 10px; background: #262b31; color: #f2a93b; font-weight: 700; text-align: center; line-height: 36px; margin-right: 16px; font-size: 15px; }
+.level-body { flex: 1 1 auto; }
+.level-body h2 { margin-bottom: 4px; }
+.level-body p { margin: 0 0 10px; color: #a3acb6; max-width: 760px; }
+.level-actions .btn { margin: 0 6px 6px 0; }
+.shield-meter { display: inline-block; margin-left: 8px; vertical-align: middle; }
+.shield-meter i { display: inline-block; width: 14px; height: 5px; border-radius: 2px; background: #2c3238; margin-right: 2px; }
+.shield-meter i.on { background: #3fc28b; }
+.inline-form { display: flex; align-items: center; margin-top: 8px; }
+.inline-form input { height: 30px; border-radius: 7px; border: 1px solid #333a42; background: #13161a; padding: 0 10px; width: 180px; margin-right: 6px; outline: none; }
+.inline-form input:focus { border-color: #f2a93b; }
+.envs { margin-top: 10px; }
+.env { display: inline-flex; align-items: center; background: #13161a; border: 1px solid #2c3238; border-radius: 8px; padding: 4px 4px 4px 10px; margin: 0 6px 6px 0; }
+.env .btn { height: 24px; padding: 0 8px; margin-left: 6px; }
+.toggle { display: inline-flex; align-items: center; font-size: 12.5px; color: #b6bec7; margin-right: 12px; cursor: pointer; }
+.toggle input { margin-right: 6px; }
+
+/* ---------------------------------------------------------------- setup view */
+.summary-row { display: flex; flex-wrap: wrap; margin: 0 -6px 16px; }
+.summary { flex: 1 1 160px; margin: 0 6px 12px; background: #1a1e23; border: 1px solid #262b31; border-radius: 12px; padding: 14px 16px; }
+.summary b { display: block; font-size: 26px; font-weight: 600; line-height: 1.1; }
+.summary span { color: #8b949e; font-size: 12px; }
+.manual-row { display: flex; align-items: center; padding: 10px 0; border-top: 1px solid #23282e; }
+.manual-row:first-child { border-top: 0; }
+.manual-row .app-text { flex: 1 1 auto; }
+
+/* toast */
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: #2a3037; color: #fff; padding: 10px 16px; border-radius: 9px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .4); font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 80%; z-index: 100; }
+.toast.show { opacity: 1; }
+.toast.err { background: #6b2525; }
+
+.offline-note { background: #2b1f12; border: 1px solid #5a4219; color: #f7cf86; padding: 10px 14px; border-radius: 10px; margin-bottom: 18px; }
+
+/* ---------------------------------------------------------------- narrow screens */
+@media (max-width: 980px) {
+  .meters { display: none; }
+  .sidenav { flex-basis: 64px; padding: 10px 6px; }
+  .nav-btn span.lbl, .nav-btn .count, .nav-foot { display: none; }
+  .nav-btn { justify-content: center; padding: 10px 0; }
+  .nav-btn svg { margin-right: 0; }
+  .help { display: block; }
+  .help-list { max-height: none; margin: 0 0 16px; }
+}
+@media (max-width: 640px) {
+  .topbar { padding: 0 10px; }
+  .brand-name, .link-state { display: none; }
+  main { padding: 16px; }
+  .pkg-head, .app-row { display: block; }
+  .pkg-side { text-align: left; margin: 8px 0 0; }
+  .app-actions { justify-content: flex-start; margin: 8px 0 0 -6px; }
+  .run-card, .tile { width: 100%; }
+}
+
+/* ---------------------------------------------------------------- light theme */
+body.light { background: #f4f2ee; color: #1f2328; }
+.light a { color: #b26b00; }
+.light .topbar { background: #fbfaf8; border-color: #e3dfd8; }
+.light .sidenav { background: #f9f7f3; border-color: #e3dfd8; }
+.light .nav-btn { color: #4b535c; }
+.light .nav-btn:hover { background: #efebe4; color: #1f2328; }
+.light .nav-btn.active { background: #ebe6dd; color: #1f2328; }
+.light .nav-btn .count { background: #e3dfd8; color: #1f2328; }
+.light .nav-btn .count.live { background: #cdebdc; color: #136c45; }
+.light .nav-sep { background: #e3dfd8; }
+.light .search input, .light .seg, .light .icon-btn { background-color: #ffffff; border-color: #dcd7cf; }
+.light .search-results { background: #fff; border-color: #dcd7cf; box-shadow: 0 12px 32px rgba(0, 0, 0, .12); }
+.light .sr-item:hover, .light .sr-item.active { background: #f1ede6; }
+.light .meter-top b { color: #1f2328; }
+.light .meter-bar, .light .stat .bar, .light .pbar { background: #e7e2da; }
+.light .panel, .light .run-card, .light .tile, .light .pkg, .light .help-card, .light .level, .light .summary { background: #ffffff; border-color: #e3dfd8; }
+.light .tile:hover { background: #fffaf2; }
+.light .app-row { border-color: #eeeae3; }
+.light .app-row:hover { background: #fbf9f6; }
+.light .pkg-desc, .light .level-body p, .light .sym { color: #4b535c; }
+.light .btn { background: #f6f4f0; border-color: #d8d2c8; color: #1f2328; }
+.light .btn:hover { background: #efebe4; border-color: #b9b1a5; }
+.light .btn.primary { background: #f2a93b; border-color: #e09a2c; color: #1a1406; }
+.light .filter { border-color: #d8d2c8; color: #4b535c; }
+.light .chip, .light .badge { background: #ece8e1; color: #4b535c; }
+.light .chip.ok, .light .badge.ok, .light .badge.run { background: #d5efe2; color: #136c45; }
+.light .chip.error, .light .badge.warn { background: #f8dcdc; color: #9b2222; }
+.light .chip.manual, .light .badge.manual, .light .chip.working { background: #f8e8c8; color: #7a5200; }
+.light .logbox, .light .steps code, .light .help-card code { background: #f6f3ee; border-color: #e3dfd8; color: #7a4d00; }
+.light .steps li:before, .light .level-num { background: #f1ece3; color: #b26b00; }
+.light .help-item:hover { background: #efebe4; }
+.light .help-item.active { background: #ebe6dd; border-color: #ddd6cb; }
+.light .warnbox, .light .offline-note { background: #fff5e3; border-color: #f0d6a6; color: #7a5200; }
+.light .empty { border-color: #d8d2c8; }
+.light .empty b { color: #1f2328; }
+.light .env, .light .inline-form input { background: #fff; border-color: #dcd7cf; }
+.light .pkg-note { color: #9a6200; }
+.light .toast { background: #1f2328; }
+
+.light .link-state.live { color: #136c45; }
+.light .link-state.offline { color: #7a5200; }
+.light .manual-row { border-color: #eeeae3; }
+.light .copy-btn { border-color: #d8d2c8; color: #6b737c; }
+.light .pulse { background: #1f9d68; }
+.light .run-card:before { background: #1f9d68; }
+
+/* ---------------------------------------------------------------- jobs */
+.muted { color: #8b949e; }
+.small { font-size: 12px; }
+.job-banner { display: flex; align-items: center; background: #1f2a24; border: 1px solid #2e5a45; border-radius: 12px; padding: 10px 14px; margin-bottom: 18px; }
+.job-banner > svg { width: 20px; height: 20px; margin-right: 12px; flex: 0 0 auto; }
+.job-banner > svg path, .job-banner > svg rect { fill: none; stroke: #3fc28b; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.jb-text { flex: 1 1 auto; min-width: 0; }
+.spin { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(242, 169, 59, .3); border-top-color: #f2a93b; animation: spin .8s linear infinite; vertical-align: -1px; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.job-active { border-color: #2e5a45; }
+.ja-head { display: flex; align-items: flex-start; margin-bottom: 10px; }
+.ja-head > div:first-child { flex: 1 1 auto; min-width: 0; }
+.ja-label { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: #3fc28b; }
+.ja-title { font-size: 18px; font-weight: 600; margin-top: 2px; }
+.ja-task { color: #a3acb6; margin-top: 4px; white-space: pre-wrap; }
+.ja-timer { text-align: right; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; margin-left: 16px; }
+.ja-timer small { display: block; font-size: 11px; color: #8b949e; font-weight: 400; }
+.task-run { font-size: 13px; color: #f7cf86; margin: 4px 0 10px; }
+.task-run .pbar { margin: 8px 0 0; }
+.pbar i.indet { width: 35%; background-color: #f2a93b; animation: indet 1.4s ease-in-out infinite, stripes 1s linear infinite; }
+@keyframes indet { 0% { margin-left: -35%; } 100% { margin-left: 100%; } }
+.note-form { display: flex; align-items: flex-start; margin-top: 8px; }
+.note-form textarea, .fld input, .fld select, .fld textarea, select.sel {
+  flex: 1 1 auto; border-radius: 8px; border: 1px solid #333a42; background: #13161a; padding: 8px 10px; outline: none; resize: vertical; font: inherit; color: inherit; }
+.note-form textarea:focus, .fld input:focus, .fld select:focus, .fld textarea:focus { border-color: #f2a93b; }
+.note-form .btn { margin-left: 8px; height: 36px; }
+select.sel { padding: 4px 8px; height: 30px; }
+.form-grid { display: flex; flex-wrap: wrap; margin: 0 -6px; }
+.fld { display: block; flex: 1 1 230px; margin: 0 6px 12px; }
+.fld.wide { margin: 0 0 12px; }
+.fld span { display: block; font-size: 12px; color: #8b949e; margin-bottom: 4px; }
+.fld input, .fld select, .fld textarea { width: 100%; height: 36px; }
+.fld textarea { height: auto; }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: relative; padding: 6px 0 6px 64px; border-bottom: 1px dashed #262b31; }
+.timeline li.is-note { color: #dfe3e8; }
+.tl-t { position: absolute; left: 0; top: 7px; color: #8b949e; font-size: 12px; }
+.jobs-table { width: 100%; border-collapse: collapse; }
+.jobs-table td { padding: 10px 8px; border-bottom: 1px solid #23282e; vertical-align: top; }
+.jobs-table tr:last-child td { border-bottom: 0; }
+.row-actions { text-align: right; white-space: nowrap; }
+.row-actions .btn { margin-left: 4px; }
+details.tech { margin-top: 18px; }
+details.tech summary { cursor: pointer; font-weight: 600; }
+.docs { display: flex; flex-wrap: wrap; padding: 8px; }
+.doc { display: flex; align-items: center; width: 290px; margin: 4px; padding: 8px 10px; border-radius: 8px; border: 1px solid #262b31; background: transparent; cursor: pointer; text-align: left; }
+.doc:hover { border-color: #f2a93b; }
+.doc svg { width: 18px; height: 18px; margin-right: 8px; flex: 0 0 auto; }
+.doc path { fill: none; stroke: #f2a93b; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.doc span { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc small { color: #8b949e; margin-left: 8px; white-space: nowrap; }
+.light .job-banner { background: #e9f6ef; border-color: #b8e0cb; }
+.light .job-active { border-color: #b8e0cb; }
+.light .ja-label { color: #136c45; }
+.light .ja-task, .light .muted { color: #6b737c; }
+.light .note-form textarea, .light .fld input, .light .fld select, .light .fld textarea, .light select.sel { background: #fff; border-color: #dcd7cf; }
+.light .timeline li { border-color: #eeeae3; }
+.light .timeline li.is-note { color: #1f2328; }
+.light .jobs-table td { border-color: #eeeae3; }
+.light .doc { border-color: #e3dfd8; }
+.light .task-run { color: #7a5200; }
+@media (max-width: 640px) {
+  .note-form { display: block; } .note-form .btn { margin: 8px 0 0; }
+  .jobs-table td { display: block; padding: 4px 0; border: 0; } .jobs-table tr { display: block; border-bottom: 1px solid #23282e; padding: 8px 0; }
+  .row-actions { text-align: left; } .ja-head { display: block; } .ja-timer { text-align: left; margin: 8px 0 0; }
+}
+
+/* ---------------------------------------------------------------- playbooks */
+.pb-cards .pb-card { width: 280px; text-align: left; padding: 16px; border-radius: 12px; background: #1a1e23; border: 1px solid #262b31; cursor: pointer; display: flex; flex-direction: column; }
+.pb-card:hover { border-color: #f2a93b; background: #1e2329; }
+.pb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.pb-top svg { width: 24px; height: 24px; }
+.pb-top path, .pb-top circle, .pb-top rect { fill: none; stroke: #f2a93b; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.pb-card b { font-size: 15px; margin-bottom: 4px; }
+.pb-card small { color: #8b949e; font-size: 12.5px; flex: 1 1 auto; }
+.pb-meta { margin-top: 10px; font-size: 11.5px; color: #8b949e; }
+.pb-steps { list-style: none; margin: 8px 0 14px; padding: 0; counter-reset: pbs; }
+.pb-steps > li { counter-increment: pbs; position: relative; padding: 10px 0 10px 40px; border-bottom: 1px solid #23282e; }
+.pb-steps > li:before { content: counter(pbs); position: absolute; left: 0; top: 10px; width: 26px; height: 26px; border-radius: 50%; background: #262b31; color: #f2a93b; font-weight: 700; font-size: 12px; text-align: center; line-height: 26px; }
+.pb-steps.run > li:before { display: none; }
+.pb-steps.run > li { padding-left: 0; }
+.pb-inc { display: flex; align-items: flex-start; cursor: pointer; }
+.pb-inc input { margin: 4px 10px 0 0; }
+.pb-inc small { display: block; color: #8b949e; font-size: 12.5px; margin-top: 2px; }
+.pb-inc small.pb-warn { color: #f7cf86; }
+.pb-input { margin: 8px 0 0 24px; max-width: 520px; }
+.badge.kind-check { background: #1d2f3f; color: #9ccbf3; }
+.badge.kind-action { background: #3d3216; color: #f7cf86; }
+.badge.kind-manual { background: #2e2640; color: #c8b6f2; }
+.badge.st-ok, .badge.st-done { background: #1c3a2d; color: #8fd9b6; }
+.badge.st-warn { background: #4a3a18; color: #f7cf86; }
+.badge.st-fail { background: #4a2020; color: #ffb3b3; }
+.badge.st-info { background: #1d2f3f; color: #9ccbf3; }
+.badge.st-skipped { opacity: .7; }
+.pb-row { display: flex; align-items: flex-start; }
+.pb-ic { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; background: #262b31; display: flex; align-items: center; justify-content: center; margin-right: 12px; }
+.pb-ic svg { width: 15px; height: 15px; }
+.pb-ic path, .pb-ic circle, .pb-ic rect { fill: none; stroke: #8b949e; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pb-ic .spin { margin: 0; }
+li.st-ok .pb-ic, li.st-done .pb-ic { background: #1c3a2d; } li.st-ok .pb-ic path, li.st-done .pb-ic path { stroke: #3fc28b; }
+li.st-warn .pb-ic { background: #4a3a18; } li.st-warn .pb-ic path { stroke: #f2a93b; }
+li.st-fail .pb-ic { background: #4a2020; } li.st-fail .pb-ic path { stroke: #ef5a5a; }
+li.st-info .pb-ic path { stroke: #5aa9ef; }
+li.st-skipped { opacity: .6; }
+li.st-running { background: rgba(242, 169, 59, .05); }
+li.focus { box-shadow: inset 3px 0 0 #f2a93b; }
+.pb-body { flex: 1 1 auto; min-width: 0; }
+.pb-summary { margin-top: 4px; }
+.pb-act { flex: 0 0 auto; display: flex; flex-wrap: wrap; justify-content: flex-end; margin-left: 12px; }
+.pb-act .btn { margin: 0 0 4px 6px; }
+.pb-files { margin-top: 6px; }
+.pb-files .btn { margin: 0 6px 4px 0; height: 26px; font-size: 12px; }
+.pb-sum { margin-left: 8px; }
+.pb-sum .chip { margin: 0 4px 0 0; }
+.linkbtn { background: none; border: 0; padding: 0; color: #f2a93b; cursor: pointer; font-size: 12.5px; margin-top: 4px; }
+.linkbtn:hover { text-decoration: underline; }
+pre.logbox { margin: 6px 0 0; font-size: 12px; }
+
+/* ---------------------------------------------------------------- commands */
+.cmd-head { display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.cmd-search { flex: 1 1 320px; max-width: 520px; margin: 0 12px 6px 0; }
+.cmd-search input { height: 38px; font-size: 14px; }
+.cmd-shells { display: flex; margin: 0 6px 6px 0; }
+.cmd-shells .filter, .cmd-favbtn { margin-bottom: 0; }
+.cmd-vars { padding: 10px 14px; margin-bottom: 12px; }
+.cmd-vars-head { display: flex; align-items: center; }
+.cmd-vars-head .linkbtn { margin: 0 10px 0 0; font-weight: 600; }
+.cmd-vars-grid { display: flex; flex-wrap: wrap; margin: 10px -6px 0; }
+.cmd-vars-grid .fld { flex: 1 1 150px; margin: 0 6px 8px; }
+.cmd-vars-grid .fld input { height: 32px; }
+.filter .cnt { opacity: .6; font-size: 11px; margin-left: 2px; }
+.cmd-count { margin: 0 0 10px; }
+.cmd-cat { margin-top: 18px; }
+.cmd-item { background: #1a1e23; border: 1px solid #262b31; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.cmd-item.danger { border-left: 3px solid #ef5a5a; }
+.cmd-top { display: flex; align-items: flex-start; margin-bottom: 6px; }
+.cmd-desc { flex: 1 1 auto; min-width: 0; }
+.cmd-badges { flex: 0 0 auto; margin-left: 8px; white-space: nowrap; }
+.badge.sh-ps { background: #1d2f3f; color: #9ccbf3; }
+.badge.sh-cmd { background: #2a2f35; color: #dfe3e8; }
+.badge.sh-both { background: #22313a; color: #b9d9ee; }
+.cmd-star { background: none; border: 0; color: #6e7681; font-size: 17px; cursor: pointer; margin-left: 6px; line-height: 1; padding: 0 2px; }
+.cmd-star.on { color: #f2a93b; }
+.cmd-code { display: flex; align-items: flex-start; background: #0e1013; border: 1px solid #23282e; border-radius: 8px; padding: 8px 10px; cursor: pointer; transition: border-color .2s, background .2s; }
+.cmd-code:hover { border-color: #f2a93b; }
+.cmd-code.flash { border-color: #3fc28b; background: #12241b; }
+.cmd-code code { flex: 1 1 auto; min-width: 0; color: #f7cf86; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: anywhere; font-size: 13px; }
+.cmd-code .copy-btn { flex: 0 0 auto; margin-left: 10px; }
+.cv { color: #8fd9b6; border-bottom: 1px dashed #3fc28b; }
+.cmd-note { color: #8b949e; margin-top: 6px; }
+.light .pb-cards .pb-card, .light .cmd-item { background: #fff; border-color: #e3dfd8; }
+.light .pb-card:hover { background: #fffaf2; }
+.light .pb-steps > li { border-color: #eeeae3; }
+.light .pb-steps > li:before, .light .pb-ic { background: #f1ece3; }
+.light li.st-ok .pb-ic, .light li.st-done .pb-ic { background: #d5efe2; }
+.light li.st-warn .pb-ic { background: #f8e8c8; }
+.light li.st-fail .pb-ic { background: #f8dcdc; }
+.light .badge.kind-check, .light .badge.st-info, .light .badge.sh-ps, .light .badge.sh-both { background: #e2eef9; color: #1d5f9c; }
+.light .badge.kind-action { background: #f8e8c8; color: #7a5200; }
+.light .badge.kind-manual { background: #ece6f8; color: #5b3fa0; }
+.light .badge.st-ok, .light .badge.st-done { background: #d5efe2; color: #136c45; }
+.light .badge.st-warn { background: #f8e8c8; color: #7a5200; }
+.light .badge.st-fail { background: #f8dcdc; color: #9b2222; }
+.light .badge.sh-cmd { background: #ece8e1; color: #1f2328; }
+.light .cmd-code { background: #f8f6f2; border-color: #e3dfd8; }
+.light .cmd-code code { color: #7a4d00; }
+.light .cmd-code.flash { background: #e6f6ee; border-color: #1f9d68; }
+.light .cv { color: #136c45; border-color: #1f9d68; }
+.light .linkbtn { color: #b26b00; }
+@media (max-width: 640px) {
+  .pb-row { display: block; } .pb-ic { display: none; } .pb-act { justify-content: flex-start; margin: 8px 0 0 -6px; }
+  .cmd-top { display: block; } .cmd-badges { display: block; margin: 4px 0 0; white-space: normal; }
+  .pb-cards .pb-card { width: 100%; }
+}
+
+.sa-top { position: sticky; top: 0; z-index: 20; }
+.sa-main { max-width: 1100px; margin: 0 auto; padding: 22px 20px 60px; }
+</style>
+</head>
+<body class="dark">
+<header class="topbar sa-top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M9 11l5 5-5 5M16 21h8"/></svg></span>
+    <span class="brand-name">Parancsok</span>
+    <span class="link-state offline"><span class="dot"></span><span id="saSub">ServiceKit · offline</span></span>
+  </div>
+  <div class="top-actions" style="margin-left:auto">
+    <button class="seg" id="langBtn" type="button"></button>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Theme"></button>
+  </div>
+</header>
+<main class="sa-main">
+  <h1 id="saTitle"></h1>
+  <p class="lede" id="saLede"></p>
+  <div id="cmdRoot"></div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+window.KIT_COMMANDS = {"categories": [{"id": "info", "hu": "Rendszerinformáció", "en": "System info"}, {"id": "proc", "hu": "Folyamatok és szolgáltatások", "en": "Processes & services"}, {"id": "disk", "hu": "Lemez és fájlok", "en": "Disk & files"}, {"id": "net", "hu": "Hálózat", "en": "Network"}, {"id": "wifi", "hu": "Wi-Fi", "en": "Wi-Fi"}, {"id": "repair", "hu": "Javítás", "en": "Repair"}, {"id": "update", "hu": "Frissítés és programok", "en": "Updates & software"}, {"id": "users", "hu": "Felhasználók", "en": "Users"}, {"id": "power", "hu": "Energia és akku", "en": "Power & battery"}, {"id": "dev", "hu": "Eszközök és illesztők", "en": "Devices & drivers"}, {"id": "print", "hu": "Nyomtatás", "en": "Printing"}, {"id": "sec", "hu": "Biztonság", "en": "Security"}, {"id": "lic", "hu": "Licenc és aktiválás", "en": "Licensing"}, {"id": "event", "hu": "Eseménynapló", "en": "Event logs"}, {"id": "task", "hu": "Ütemezett feladatok", "en": "Scheduled tasks"}, {"id": "reg", "hu": "Registry", "en": "Registry"}, {"id": "boot", "hu": "Indítás és helyreállítás", "en": "Boot & recovery"}, {"id": "remote", "hu": "Távoli elérés", "en": "Remote access"}, {"id": "open", "hu": "Gyors megnyitás (Win+R)", "en": "Quick open (Win+R)"}, {"id": "smart", "hu": "Okosotthon", "en": "Smart home"}, {"id": "devtools", "hu": "Fejlesztés", "en": "Development"}], "vars": [{"k": "IP", "d": "192.168.1.1", "hu": "IP-cím", "en": "IP address"}, {"k": "HOST", "d": "server01", "hu": "Gépnév / cím", "en": "Host name"}, {"k": "PORT", "d": "1883", "hu": "Port", "en": "Port"}, {"k": "USER", "d": "user", "hu": "Felhasználó", "en": "User"}, {"k": "DRIVE", "d": "C:", "hu": "Meghajtó", "en": "Drive"}, {"k": "NAME", "d": "name", "hu": "Név (program, szolgáltatás, nyomtató, Wi-Fi)", "en": "Name (process, service, printer, Wi-Fi)"}, {"k": "FILE", "d": "file.exe", "hu": "Fájl", "en": "File"}], "commands": [{"c": "info", "s": "both", "x": "systeminfo", "hu": "Teljes rendszerinformáció: Windows, telepítés dátuma, memória, frissítések.", "en": "Full system info: Windows, install date, memory, hotfixes."}, {"c": "info", "s": "both", "x": "winver", "hu": "Windows verzió és build ablakban.", "en": "Windows version and build in a window."}, {"c": "info", "s": "both", "x": "msinfo32", "hu": "Rendszerinformáció ablak (BIOS mód, Secure Boot, alaplap).", "en": "System Information window (BIOS mode, Secure Boot, board)."}, {"c": "info", "s": "cmd", "x": "msinfo32 /report %USERPROFILE%\\Desktop\\msinfo.txt", "hu": "Rendszerinformáció mentése szövegfájlba az Asztalra.", "en": "Save System Information to a text file on the Desktop."}, {"c": "info", "s": "ps", "x": "Get-ComputerInfo | Select-Object OsName, OsVersion, OsBuildNumber, CsManufacturer, CsModel, BiosSerialNumber", "hu": "Gép és Windows összefoglaló.", "en": "Machine and Windows summary.", "f": ["w10"]}, {"c": "info", "s": "ps", "x": "(Get-CimInstance Win32_BIOS).SerialNumber", "hu": "Sorozatszám (a gyártói garanciához).", "en": "Serial number (for the vendor warranty)."}, {"c": "info", "s": "cmd", "x": "wmic bios get serialnumber", "hu": "Sorozatszám régi módszerrel.", "en": "Serial number, legacy method.", "f": ["old"], "n": {"hu": "A wmic az új Windows 11-ből hiányozhat.", "en": "wmic may be missing on new Windows 11."}}, {"c": "info", "s": "ps", "x": "Get-CimInstance Win32_ComputerSystem | Select-Object Manufacturer, Model, @{n='RAM_GB';e={[math]::Round($_.TotalPhysicalMemory/1GB,1)}}", "hu": "Gyártó, modell, memória.", "en": "Manufacturer, model, memory."}, {"c": "info", "s": "ps", "x": "Get-CimInstance Win32_PhysicalMemory | Select-Object DeviceLocator, @{n='GB';e={$_.Capacity/1GB}}, Speed, Manufacturer, PartNumber", "hu": "Memóriamodulok foglalatonként (bővítés előtt).", "en": "Memory modules per slot (before an upgrade)."}, {"c": "info", "s": "ps", "x": "Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors", "hu": "Processzor típusa, magok.", "en": "CPU model and cores."}, {"c": "info", "s": "ps", "x": "Get-CimInstance Win32_VideoController | Select-Object Name, DriverVersion, DriverDate", "hu": "Videokártya és illesztő verzió.", "en": "Graphics card and driver version."}, {"c": "info", "s": "ps", "x": "(Get-CimInstance Win32_OperatingSystem).LastBootUpTime", "hu": "Utolsó rendszerindítás ideje.", "en": "Last boot time."}, {"c": "info", "s": "ps", "x": "Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 10", "hu": "A 10 legutóbbi Windows frissítés.", "en": "The 10 most recent Windows updates."}, {"c": "info", "s": "ps", "x": "Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion' | Select-Object ProductName, DisplayVersion, CurrentBuild, UBR", "hu": "Pontos Windows kiadás (pl. 23H2) és build.", "en": "Exact Windows release (e.g. 23H2) and build."}, {"c": "info", "s": "both", "x": "whoami /all", "hu": "Bejelentkezett felhasználó, csoportok, jogosultságok.", "en": "Signed-in user, groups, privileges."}, {"c": "info", "s": "both", "x": "hostname", "hu": "Számítógép neve.", "en": "Computer name."}, {"c": "info", "s": "ps", "x": "$PSVersionTable.PSVersion", "hu": "PowerShell verzió.", "en": "PowerShell version."}, {"c": "info", "s": "cmd", "x": "dxdiag /t %USERPROFILE%\\Desktop\\dxdiag.txt", "hu": "DirectX diagnosztika fájlba (játék, videó, hang hibákhoz).", "en": "DirectX diagnostics to a file (games, video, sound issues)."}, {"c": "proc", "s": "both", "x": "tasklist", "hu": "Futó folyamatok listája.", "en": "List running processes."}, {"c": "proc", "s": "both", "x": "tasklist /svc", "hu": "Folyamatok és a bennük futó szolgáltatások.", "en": "Processes and the services inside them."}, {"c": "proc", "s": "both", "x": "taskkill /im {FILE} /f", "hu": "Program kényszerített bezárása név szerint.", "en": "Force-close a program by name.", "f": ["d"]}, {"c": "proc", "s": "both", "x": "taskkill /pid 1234 /t /f", "hu": "Folyamat és gyermekei bezárása PID alapján.", "en": "Kill a process and its children by PID.", "f": ["d"]}, {"c": "proc", "s": "ps", "x": "Get-Process | Sort-Object CPU -Descending | Select-Object -First 15 Name, Id, CPU, @{n='MB';e={[int]($_.WS/1MB)}}", "hu": "Mi eszi a processzort.", "en": "What is using the CPU."}, {"c": "proc", "s": "ps", "x": "Get-Process | Sort-Object WS -Descending | Select-Object -First 15 Name, Id, @{n='MB';e={[int]($_.WS/1MB)}}", "hu": "Mi eszi a memóriát.", "en": "What is using memory."}, {"c": "proc", "s": "ps", "x": "Get-CimInstance Win32_Process -Filter \"Name='{FILE}'\" | Select-Object ProcessId, CommandLine", "hu": "Egy program teljes parancssora (honnan és mivel indult).", "en": "A program's full command line (where from, with what)."}, {"c": "proc", "s": "ps", "x": "Get-Service | Where-Object Status -eq 'Running' | Sort-Object DisplayName", "hu": "Futó szolgáltatások.", "en": "Running services."}, {"c": "proc", "s": "both", "x": "sc qc {NAME}", "hu": "Szolgáltatás beállításai (indítás típusa, elérési út).", "en": "Service configuration (start type, path)."}, {"c": "proc", "s": "both", "x": "net stop {NAME}", "hu": "Szolgáltatás leállítása.", "en": "Stop a service.", "f": ["a"]}, {"c": "proc", "s": "both", "x": "net start {NAME}", "hu": "Szolgáltatás indítása.", "en": "Start a service.", "f": ["a"]}, {"c": "proc", "s": "ps", "x": "Restart-Service {NAME} -Force", "hu": "Szolgáltatás újraindítása.", "en": "Restart a service.", "f": ["a"]}, {"c": "proc", "s": "both", "x": "sc config {NAME} start= disabled", "hu": "Szolgáltatás letiltása (a szóköz a = után kötelező).", "en": "Disable a service (the space after = is required).", "f": ["a", "d"]}, {"c": "proc", "s": "both", "x": "perfmon /rel", "hu": "Megbízhatósági figyelő: összeomlások és hibák idővonalon. Ügyfélnek is jól mutatható.", "en": "Reliability Monitor: crashes and errors on a timeline. Easy to show clients."}, {"c": "proc", "s": "both", "x": "resmon", "hu": "Erőforrás-figyelő: lemez, hálózat, memória folyamatonként.", "en": "Resource Monitor: disk, network, memory per process."}, {"c": "proc", "s": "both", "x": "taskmgr", "hu": "Feladatkezelő.", "en": "Task Manager."}, {"c": "proc", "s": "cmd", "x": "netstat -ano | findstr :{PORT}", "hu": "Melyik PID használja a portot.", "en": "Which PID uses the port."}, {"c": "proc", "s": "ps", "x": "Get-Process -Id (Get-NetTCPConnection -LocalPort {PORT}).OwningProcess", "hu": "Melyik program figyel az adott porton.", "en": "Which program listens on the port.", "f": ["w8"]}, {"c": "proc", "s": "ps", "x": "Get-NetTCPConnection -State Listen | Sort-Object LocalPort | Select-Object LocalAddress, LocalPort, OwningProcess", "hu": "Minden figyelő port és folyamat.", "en": "All listening ports and processes.", "f": ["w8"]}, {"c": "disk", "s": "both", "x": "chkdsk {DRIVE}", "hu": "Lemezellenőrzés csak olvasva (nem javít).", "en": "Read-only disk check (no fixes)."}, {"c": "disk", "s": "both", "x": "chkdsk {DRIVE} /scan", "hu": "Online ellenőrzés futó Windows alatt.", "en": "Online check while Windows runs.", "f": ["a", "w8"]}, {"c": "disk", "s": "both", "x": "chkdsk {DRIVE} /f", "hu": "Fájlrendszer javítása (C:-nél a következő indításkor).", "en": "Repair the file system (for C: at next restart).", "f": ["a", "d"]}, {"c": "disk", "s": "both", "x": "chkdsk {DRIVE} /r", "hu": "Hibás szektorok keresése is. Órákig tarthat; haldokló lemezen ne futtasd!", "en": "Also scans bad sectors. Can take hours; don't run on a dying disk!", "f": ["a", "d"]}, {"c": "disk", "s": "both", "x": "fsutil dirty query {DRIVE}", "hu": "Meg van-e jelölve a kötet ellenőrzésre.", "en": "Whether the volume is flagged for a check.", "f": ["a"]}, {"c": "disk", "s": "both", "x": "diskmgmt.msc", "hu": "Lemezkezelés.", "en": "Disk Management."}, {"c": "disk", "s": "both", "x": "diskpart", "hu": "Lemezkezelő parancssor: list disk, list volume, select disk N…", "en": "Disk partitioning shell: list disk, list volume, select disk N…", "f": ["a", "d"], "n": {"hu": "Egy rossz select + clean az egész lemezt törli.", "en": "One wrong select + clean wipes the whole disk."}}, {"c": "disk", "s": "ps", "x": "Get-PhysicalDisk | Select-Object FriendlyName, MediaType, BusType, HealthStatus, @{n='GB';e={[int]($_.Size/1GB)}}", "hu": "Lemezek típusa (HDD/SSD) és állapota.", "en": "Disk type (HDD/SSD) and health.", "f": ["w8"]}, {"c": "disk", "s": "ps", "x": "Get-Volume | Sort-Object DriveLetter", "hu": "Kötetek, szabad hely.", "en": "Volumes and free space.", "f": ["w8"]}, {"c": "disk", "s": "both", "x": "cleanmgr", "hu": "Lemezkarbantartó.", "en": "Disk Cleanup."}, {"c": "disk", "s": "both", "x": "cleanmgr /sageset:1", "hu": "Lemezkarbantartó beállítás mentése (utána /sagerun:1 futtatja).", "en": "Save Disk Cleanup selections (then /sagerun:1 runs them).", "f": ["a"]}, {"c": "disk", "s": "both", "x": "cleanmgr /sagerun:1", "hu": "A mentett takarítás futtatása.", "en": "Run the saved cleanup.", "f": ["a"]}, {"c": "disk", "s": "both", "x": "defrag {DRIVE} /O", "hu": "Optimalizálás: HDD-n töredezettségmentesít, SSD-n TRIM.", "en": "Optimize: defrag on HDD, TRIM on SSD.", "f": ["a"]}, {"c": "disk", "s": "ps", "x": "Optimize-Volume -DriveLetter C -ReTrim -Verbose", "hu": "SSD TRIM kézzel.", "en": "Manual SSD TRIM.", "f": ["a", "w8"]}, {"c": "disk", "s": "both", "x": "compact /compactos:always", "hu": "Windows fájlok tömörítése (2-4 GB hely kis SSD-n).", "en": "Compress Windows files (2-4 GB on small SSDs).", "f": ["a", "w10"]}, {"c": "disk", "s": "ps", "x": "Get-ChildItem {DRIVE}\\ -Recurse -File -ErrorAction SilentlyContinue | Sort-Object Length -Descending | Select-Object -First 20 FullName, @{n='MB';e={[int]($_.Length/1MB)}}", "hu": "A 20 legnagyobb fájl a meghajtón (lassú, de mindenhol fut).", "en": "The 20 largest files on the drive (slow but works everywhere)."}, {"c": "disk", "s": "ps", "x": "\"{0:N1} GB\" -f ((Get-ChildItem \"$env:USERPROFILE\\Downloads\" -Recurse -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum / 1GB)", "hu": "Egy mappa mérete (itt: Letöltések).", "en": "Size of a folder (here: Downloads)."}, {"c": "disk", "s": "both", "x": "robocopy \"C:\\Users\\{USER}\" \"E:\\Mentes\\{USER}\" /E /XJ /R:1 /W:1 /MT:8 /XD AppData /LOG:\"E:\\Mentes\\robocopy.log\"", "hu": "Felhasználói profil mentése külső lemezre, napló fájllal.", "en": "Back up a user profile to an external disk, with a log file."}, {"c": "disk", "s": "both", "x": "robocopy \"D:\\Forras\" \"E:\\Cel\" /MIR /R:1 /W:1", "hu": "Tükrözés: a célban törli, ami a forrásban nincs!", "en": "Mirror: deletes from the target whatever isn't in the source!", "f": ["d"]}, {"c": "disk", "s": "cmd", "x": "attrib -h -s -r {DRIVE}\\*.* /s /d", "hu": "Rejtett fájlok visszaállítása vírusos pendrive-on (\"parancsikon vírus\").", "en": "Unhide files on an infected USB stick (\"shortcut virus\").", "f": ["d"]}, {"c": "disk", "s": "both", "x": "takeown /f \"{FILE}\"", "hu": "Fájl tulajdonjogának átvétele.", "en": "Take ownership of a file.", "f": ["a"]}, {"c": "disk", "s": "cmd", "x": "icacls \"{FILE}\" /grant %USERNAME%:F", "hu": "Teljes jog adása magadnak.", "en": "Grant yourself full control.", "f": ["a"]}, {"c": "disk", "s": "both", "x": "icacls \"C:\\Mappa\" /reset /t /c /q", "hu": "Jogosultságok visszaállítása öröklöttre a mappában.", "en": "Reset permissions to inherited in a folder.", "f": ["a", "d"]}, {"c": "disk", "s": "cmd", "x": "dir /s /b {DRIVE}\\*{NAME}*", "hu": "Fájl keresése név alapján.", "en": "Find a file by name."}, {"c": "disk", "s": "ps", "x": "Get-FileHash \"{FILE}\" -Algorithm SHA256", "hu": "Fájl ujjlenyomata (letöltés ellenőrzése, VirusTotal).", "en": "File fingerprint (verify downloads, VirusTotal)."}, {"c": "disk", "s": "both", "x": "certutil -hashfile \"{FILE}\" SHA256", "hu": "Ujjlenyomat régi Windowson is.", "en": "Fingerprint, works on old Windows too."}, {"c": "disk", "s": "both", "x": "format {DRIVE} /fs:ntfs /q /v:Adat", "hu": "Gyorsformázás NTFS-re. Minden adat elvész!", "en": "Quick format to NTFS. All data is lost!", "f": ["a", "d"]}, {"c": "disk", "s": "both", "x": "vssadmin list shadowstorage", "hu": "Visszaállítási pontok helyfoglalása.", "en": "Space used by restore points.", "f": ["a"]}, {"c": "disk", "s": "both", "x": "tar -xf archive.zip", "hu": "Zip kicsomagolása beépített eszközzel (Win10+).", "en": "Extract a zip with the built-in tool (Win10+)."}, {"c": "net", "s": "both", "x": "ipconfig /all", "hu": "IP-cím, átjáró, DNS, MAC minden adapterre.", "en": "IP, gateway, DNS, MAC for every adapter."}, {"c": "net", "s": "cmd", "x": "ipconfig /release && ipconfig /renew", "hu": "Új IP-cím kérése a routertől.", "en": "Ask the router for a new IP."}, {"c": "net", "s": "both", "x": "ipconfig /flushdns", "hu": "DNS gyorsítótár ürítése.", "en": "Flush the DNS cache."}, {"c": "net", "s": "both", "x": "ping {IP} -t", "hu": "Folyamatos ping (Ctrl+C a leállításhoz). Szakadozás kereséséhez.", "en": "Continuous ping (Ctrl+C to stop). For finding dropouts."}, {"c": "net", "s": "both", "x": "tracert {HOST}", "hu": "Útvonal a célig: hol akad el.", "en": "Route to the target: where it stops."}, {"c": "net", "s": "both", "x": "pathping {HOST}", "hu": "Csomagvesztés ugrásonként (kb. 5 perc).", "en": "Packet loss per hop (about 5 minutes)."}, {"c": "net", "s": "both", "x": "nslookup {HOST}", "hu": "Névfeloldás a beállított DNS-sel.", "en": "Name lookup with the configured DNS."}, {"c": "net", "s": "both", "x": "nslookup {HOST} 1.1.1.1", "hu": "Névfeloldás egy másik DNS-sel (összehasonlításhoz).", "en": "Name lookup with another DNS (to compare)."}, {"c": "net", "s": "both", "x": "arp -a", "hu": "IP-MAC párok a helyi hálózaton.", "en": "IP-MAC pairs on the local network."}, {"c": "net", "s": "cmd", "x": "for /L %i in (1,1,254) do @ping -n 1 -w 200 192.168.1.%i | find \"TTL=\"", "hu": "Gyors pingelés az egész /24 hálózaton (élő eszközök).", "en": "Quick ping sweep of the whole /24 (live devices)."}, {"c": "net", "s": "both", "x": "route print", "hu": "Útválasztási tábla (VPN, több adapter gondjainál).", "en": "Routing table (for VPN or multi-adapter issues)."}, {"c": "net", "s": "both", "x": "getmac /v", "hu": "MAC-címek adapterenként.", "en": "MAC addresses per adapter."}, {"c": "net", "s": "both", "x": "netsh winsock reset", "hu": "Winsock alaphelyzet (újraindítás kell).", "en": "Reset Winsock (restart needed).", "f": ["a"]}, {"c": "net", "s": "both", "x": "netsh int ip reset", "hu": "TCP/IP alaphelyzet (újraindítás kell).", "en": "Reset TCP/IP (restart needed).", "f": ["a"]}, {"c": "net", "s": "both", "x": "netsh interface show interface", "hu": "Adapterek nevei és állapota (a további netsh parancsokhoz).", "en": "Adapter names and state (for other netsh commands)."}, {"c": "net", "s": "both", "x": "netsh interface ip set dns \"Wi-Fi\" static 1.1.1.1", "hu": "Kézi DNS beállítása az adapteren.", "en": "Set a manual DNS on the adapter.", "f": ["a"]}, {"c": "net", "s": "both", "x": "netsh interface ip set dns \"Wi-Fi\" dhcp", "hu": "DNS vissza automatikusra.", "en": "DNS back to automatic.", "f": ["a"]}, {"c": "net", "s": "both", "x": "netsh winhttp show proxy", "hu": "Rendszerszintű proxy.", "en": "System-wide proxy."}, {"c": "net", "s": "both", "x": "netsh winhttp reset proxy", "hu": "Rendszerszintű proxy törlése.", "en": "Clear the system-wide proxy.", "f": ["a"]}, {"c": "net", "s": "both", "x": "netsh advfirewall show allprofiles state", "hu": "Tűzfal állapota profilonként.", "en": "Firewall state per profile."}, {"c": "net", "s": "both", "x": "netsh advfirewall firewall add rule name=\"MQTT {PORT}\" dir=in action=allow protocol=TCP localport={PORT}", "hu": "Bejövő port engedélyezése a tűzfalon.", "en": "Allow an inbound port in the firewall.", "f": ["a"]}, {"c": "net", "s": "both", "x": "netsh advfirewall reset", "hu": "Tűzfal vissza gyári beállításra.", "en": "Firewall back to defaults.", "f": ["a", "d"]}, {"c": "net", "s": "ps", "x": "Test-NetConnection {HOST} -Port {PORT}", "hu": "Elérhető-e a port (MQTT, HA, RDP, kamera).", "en": "Is the port reachable (MQTT, HA, RDP, camera).", "f": ["w8"]}, {"c": "net", "s": "ps", "x": "Test-NetConnection {HOST} -TraceRoute", "hu": "Ping és útvonal egyben.", "en": "Ping and route together.", "f": ["w8"]}, {"c": "net", "s": "ps", "x": "Resolve-DnsName {HOST}", "hu": "Részletes DNS lekérdezés.", "en": "Detailed DNS lookup.", "f": ["w8"]}, {"c": "net", "s": "ps", "x": "Get-NetIPConfiguration", "hu": "Átlátható IP-összefoglaló.", "en": "Readable IP summary.", "f": ["w8"]}, {"c": "net", "s": "ps", "x": "Get-NetAdapter | Select-Object Name, Status, LinkSpeed, MacAddress", "hu": "Adapterek és kapcsolati sebesség (100 Mb = rossz kábel?).", "en": "Adapters and link speed (100 Mb = bad cable?).", "f": ["w8"]}, {"c": "net", "s": "ps", "x": "Restart-NetAdapter -Name \"Ethernet\"", "hu": "Hálózati adapter újraindítása.", "en": "Restart a network adapter.", "f": ["a", "w8"]}, {"c": "net", "s": "both", "x": "curl ifconfig.me", "hu": "Nyilvános IP-cím.", "en": "Public IP address.", "f": ["w10"]}, {"c": "net", "s": "both", "x": "curl -I https://{HOST}", "hu": "Webszerver válaszfejléce (működik-e, átirányít-e).", "en": "Web server response headers (up? redirecting?).", "f": ["w10"]}, {"c": "net", "s": "both", "x": "nbtstat -A {IP}", "hu": "Windows gép neve IP-cím alapján.", "en": "Windows PC name from its IP."}, {"c": "net", "s": "both", "x": "net view \\\\{HOST}", "hu": "Megosztott mappák egy gépen.", "en": "Shared folders on a PC."}, {"c": "net", "s": "both", "x": "net use Z: \\\\{HOST}\\share /persistent:yes", "hu": "Hálózati meghajtó csatlakoztatása.", "en": "Map a network drive."}, {"c": "net", "s": "both", "x": "net use", "hu": "Csatlakoztatott hálózati meghajtók.", "en": "Mapped network drives."}, {"c": "net", "s": "both", "x": "ncpa.cpl", "hu": "Hálózati kapcsolatok ablak.", "en": "Network Connections window."}, {"c": "net", "s": "both", "x": "w32tm /resync", "hu": "Óra szinkronizálása (rossz idő = HTTPS és aktiválási hibák).", "en": "Sync the clock (wrong time = HTTPS and activation errors).", "f": ["a"]}, {"c": "net", "s": "both", "x": "w32tm /query /status", "hu": "Időszinkron állapota.", "en": "Time sync status."}, {"c": "wifi", "s": "both", "x": "netsh wlan show interfaces", "hu": "Kapcsolódott Wi-Fi: jelerősség, csatorna, sebesség.", "en": "Connected Wi-Fi: signal, channel, speed."}, {"c": "wifi", "s": "both", "x": "netsh wlan show profiles", "hu": "Mentett Wi-Fi hálózatok.", "en": "Saved Wi-Fi networks."}, {"c": "wifi", "s": "both", "x": "netsh wlan show profile name=\"{NAME}\" key=clear", "hu": "Mentett Wi-Fi jelszó megjelenítése (Kulcs tartalma sor).", "en": "Show a saved Wi-Fi password (Key Content line)."}, {"c": "wifi", "s": "both", "x": "netsh wlan show networks mode=bssid", "hu": "Környező hálózatok csatornával és jelerősséggel.", "en": "Nearby networks with channel and signal."}, {"c": "wifi", "s": "cmd", "x": "netsh wlan export profile key=clear folder=\"%USERPROFILE%\\Desktop\"", "hu": "Minden Wi-Fi profil mentése jelszóval (újratelepítés előtt).", "en": "Export all Wi-Fi profiles with passwords (before a reinstall).", "f": ["a"]}, {"c": "wifi", "s": "both", "x": "netsh wlan add profile filename=\"Wi-Fi-{NAME}.xml\"", "hu": "Mentett profil visszatöltése.", "en": "Import a saved profile."}, {"c": "wifi", "s": "both", "x": "netsh wlan connect name=\"{NAME}\"", "hu": "Csatlakozás mentett hálózathoz.", "en": "Connect to a saved network."}, {"c": "wifi", "s": "both", "x": "netsh wlan delete profile name=\"{NAME}\"", "hu": "Mentett hálózat törlése (új jelszónál).", "en": "Delete a saved network (after a password change).", "f": ["d"]}, {"c": "wifi", "s": "both", "x": "netsh wlan show wlanreport", "hu": "Wi-Fi diagnosztikai jelentés (C:\\ProgramData\\Microsoft\\Windows\\WlanReport).", "en": "Wi-Fi diagnostic report (C:\\ProgramData\\Microsoft\\Windows\\WlanReport).", "f": ["a", "w10"]}, {"c": "wifi", "s": "both", "x": "netsh wlan show drivers", "hu": "Wi-Fi kártya képességei (2,4/5 GHz, szabványok).", "en": "Wi-Fi card capabilities (2.4/5 GHz, standards)."}, {"c": "repair", "s": "both", "x": "sfc /scannow", "hu": "Rendszerfájlok ellenőrzése és javítása.", "en": "Check and repair system files.", "f": ["a"]}, {"c": "repair", "s": "both", "x": "DISM /Online /Cleanup-Image /RestoreHealth", "hu": "Rendszerkép javítása (SFC előtt; internet kell).", "en": "Repair the system image (before SFC; needs internet).", "f": ["a", "w8"]}, {"c": "repair", "s": "both", "x": "DISM /Online /Cleanup-Image /ScanHealth", "hu": "Rendszerkép ellenőrzése javítás nélkül.", "en": "Scan the system image without repairing.", "f": ["a", "w8"]}, {"c": "repair", "s": "both", "x": "DISM /Online /Cleanup-Image /StartComponentCleanup", "hu": "Régi frissítési összetevők törlése (helyet szabadít).", "en": "Remove old update components (frees space).", "f": ["a", "w8"]}, {"c": "repair", "s": "both", "x": "DISM /Online /Cleanup-Image /AnalyzeComponentStore", "hu": "Mennyi hely szabadítható fel az összetevőtárból.", "en": "How much the component store can be cleaned.", "f": ["a", "w8"]}, {"c": "repair", "s": "both", "x": "DISM /Online /Cleanup-Image /RestoreHealth /Source:wim:D:\\sources\\install.wim:1 /LimitAccess", "hu": "Javítás telepítő USB-ről, internet nélkül (D: = pendrive; esd esetén esd:).", "en": "Repair from install media without internet (D: = stick; use esd: for .esd).", "f": ["a", "w8"]}, {"c": "repair", "s": "both", "x": "sfc /scannow /offbootdir=C:\\ /offwindir=C:\\Windows", "hu": "SFC helyreállítási parancssorból (a betűjel eltérhet!).", "en": "SFC from the recovery prompt (drive letter may differ!).", "f": ["re"]}, {"c": "repair", "s": "cmd", "x": "findstr /c:\"[SR]\" %windir%\\Logs\\CBS\\CBS.log > \"%USERPROFILE%\\Desktop\\sfc.txt\"", "hu": "Az SFC eredményei olvasható fájlba.", "en": "SFC results into a readable file."}, {"c": "repair", "s": "both", "x": "rstrui", "hu": "Rendszer-visszaállítás varázsló.", "en": "System Restore wizard."}, {"c": "repair", "s": "ps", "x": "Checkpoint-Computer -Description \"Szerviz\" -RestorePointType MODIFY_SETTINGS", "hu": "Visszaállítási pont létrehozása.", "en": "Create a restore point.", "f": ["a"]}, {"c": "repair", "s": "both", "x": "SystemPropertiesProtection", "hu": "Rendszervédelem fül (visszaállítás be/ki, hely).", "en": "System Protection tab (restore on/off, space)."}, {"c": "repair", "s": "cmd", "x": "taskkill /f /im explorer.exe & start explorer.exe", "hu": "Intéző és tálca újraindítása.", "en": "Restart Explorer and the taskbar."}, {"c": "repair", "s": "both", "x": "ie4uinit.exe -show", "hu": "Ikon gyorsítótár frissítése (rossz ikonok).", "en": "Refresh the icon cache (wrong icons).", "f": ["w10"]}, {"c": "repair", "s": "both", "x": "wsreset", "hu": "Microsoft Store gyorsítótár törlése.", "en": "Reset the Microsoft Store cache.", "f": ["w10"]}, {"c": "repair", "s": "ps", "x": "Get-AppxPackage -AllUsers Microsoft.WindowsStore | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register \"$($_.InstallLocation)\\AppXManifest.xml\" }", "hu": "Microsoft Store újraregisztrálása.", "en": "Re-register the Microsoft Store.", "f": ["a", "w10"]}, {"c": "repair", "s": "both", "x": "mdsched", "hu": "Windows memóriadiagnosztika (újraindítással).", "en": "Windows Memory Diagnostic (restarts)."}, {"c": "repair", "s": "both", "x": "mrt", "hu": "Microsoft kártevő-eltávolító eszköz.", "en": "Microsoft Malicious Software Removal Tool."}, {"c": "update", "s": "both", "x": "winget upgrade", "hu": "Frissíthető programok listája.", "en": "Programs with available updates.", "f": ["w10"]}, {"c": "update", "s": "both", "x": "winget upgrade --all --silent --accept-source-agreements --accept-package-agreements", "hu": "Minden program frissítése csendben.", "en": "Update all programs silently.", "f": ["w10"]}, {"c": "update", "s": "both", "x": "winget search {NAME}", "hu": "Program keresése.", "en": "Search for a program.", "f": ["w10"]}, {"c": "update", "s": "both", "x": "winget install --id {NAME} -e", "hu": "Program telepítése pontos azonosítóval.", "en": "Install a program by exact ID.", "f": ["w10"]}, {"c": "update", "s": "both", "x": "winget list", "hu": "Telepített programok (Store-osak is).", "en": "Installed programs (Store ones too).", "f": ["w10"]}, {"c": "update", "s": "cmd", "x": "winget export -o \"%USERPROFILE%\\Desktop\\apps.json\"", "hu": "Programlista mentése (új gépre áttöltéshez).", "en": "Save the program list (to restore on a new PC).", "f": ["w10"]}, {"c": "update", "s": "both", "x": "winget import -i apps.json --accept-package-agreements", "hu": "Programok telepítése a mentett listából.", "en": "Install programs from the saved list.", "f": ["w10"]}, {"c": "update", "s": "both", "x": "UsoClient StartScan", "hu": "Frissítések keresésének indítása.", "en": "Start an update scan.", "f": ["w10"]}, {"c": "update", "s": "both", "x": "wuauclt /detectnow", "hu": "Frissítések keresése Windows 7-en.", "en": "Check for updates on Windows 7.", "f": ["old"]}, {"c": "update", "s": "cmd", "x": "net stop wuauserv && net stop bits && ren %windir%\\SoftwareDistribution SoftwareDistribution.old && net start bits && net start wuauserv", "hu": "Windows Update gyorsítótár alaphelyzetbe.", "en": "Reset the Windows Update cache.", "f": ["a", "d"]}, {"c": "update", "s": "ps", "x": "Get-WindowsUpdateLog", "hu": "WindowsUpdate.log készítése az Asztalra.", "en": "Create WindowsUpdate.log on the Desktop.", "f": ["w10"]}, {"c": "update", "s": "ps", "x": "Get-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*, HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* | Where-Object DisplayName | Sort-Object DisplayName | Select-Object DisplayName, DisplayVersion, Publisher", "hu": "Telepített programok (gyors, nem indít javítást mint a Win32_Product).", "en": "Installed programs (fast, doesn't trigger repairs like Win32_Product)."}, {"c": "update", "s": "both", "x": "appwiz.cpl", "hu": "Programok és szolgáltatások.", "en": "Programs and Features."}, {"c": "update", "s": "both", "x": "dism /online /enable-feature /featurename:NetFx3 /all", "hu": ".NET 3.5 bekapcsolása (régi programokhoz).", "en": "Enable .NET 3.5 (for old programs).", "f": ["a"]}, {"c": "update", "s": "both", "x": "optionalfeatures", "hu": "Windows szolgáltatások be/ki.", "en": "Turn Windows features on or off."}, {"c": "update", "s": "ps", "x": "Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM -All", "hu": "Windows Sandbox bekapcsolása (Pro).", "en": "Enable Windows Sandbox (Pro).", "f": ["a", "w10"]}, {"c": "update", "s": "both", "x": "wsl --install", "hu": "Linux alrendszer telepítése.", "en": "Install the Linux subsystem.", "f": ["a", "w10"]}, {"c": "users", "s": "both", "x": "net user", "hu": "Helyi felhasználók.", "en": "Local users."}, {"c": "users", "s": "both", "x": "net user {USER}", "hu": "Felhasználó adatai (utolsó bejelentkezés, csoportok).", "en": "User details (last logon, groups)."}, {"c": "users", "s": "both", "x": "net user {USER} *", "hu": "Jelszó beállítása (rákérdez).", "en": "Set a password (prompts).", "f": ["a"]}, {"c": "users", "s": "both", "x": "net user {USER} /active:yes", "hu": "Fiók engedélyezése.", "en": "Enable an account.", "f": ["a"]}, {"c": "users", "s": "both", "x": "net user {USER} Jelszo123! /add", "hu": "Új helyi felhasználó.", "en": "New local user.", "f": ["a", "d"]}, {"c": "users", "s": "both", "x": "net localgroup administrators {USER} /add", "hu": "Rendszergazdává tétel.", "en": "Make a user administrator.", "f": ["a", "d"], "n": {"hu": "Magyar Windowson a csoport neve Rendszergazdák lehet.", "en": "On Hungarian Windows the group may be called Rendszergazdák."}}, {"c": "users", "s": "both", "x": "net localgroup administrators", "hu": "Ki rendszergazda.", "en": "Who is an administrator."}, {"c": "users", "s": "both", "x": "netplwiz", "hu": "Felhasználói fiókok (automatikus bejelentkezés).", "en": "User Accounts (automatic sign-in)."}, {"c": "users", "s": "both", "x": "lusrmgr.msc", "hu": "Helyi felhasználók és csoportok (Home-ban nincs).", "en": "Local Users and Groups (not in Home)."}, {"c": "users", "s": "ps", "x": "Get-LocalUser | Select-Object Name, Enabled, LastLogon", "hu": "Felhasználók és utolsó belépés.", "en": "Users and last logon.", "f": ["w10"]}, {"c": "users", "s": "both", "x": "query user", "hu": "Bejelentkezett munkamenetek.", "en": "Signed-in sessions."}, {"c": "users", "s": "both", "x": "runas /user:{USER} cmd", "hu": "Parancssor másik felhasználóként.", "en": "Command prompt as another user."}, {"c": "users", "s": "both", "x": "rundll32 keymgr.dll,KRShowKeyMgr", "hu": "Tárolt hálózati jelszavak (Hitelesítő adatok).", "en": "Stored network credentials."}, {"c": "power", "s": "cmd", "x": "powercfg /batteryreport /output \"%USERPROFILE%\\Desktop\\battery.html\"", "hu": "Akkumulátor jelentés: kopás, ciklusok, előzmények.", "en": "Battery report: wear, cycles, history.", "f": ["w8"]}, {"c": "power", "s": "cmd", "x": "powercfg /energy /output \"%USERPROFILE%\\Desktop\\energy.html\"", "hu": "Energiahatékonysági jelentés (60 mp).", "en": "Power efficiency report (60 s).", "f": ["a"]}, {"c": "power", "s": "both", "x": "powercfg /requests", "hu": "Mi akadályozza az alvást.", "en": "What prevents sleep.", "f": ["a"]}, {"c": "power", "s": "both", "x": "powercfg /lastwake", "hu": "Mi ébresztette fel a gépet.", "en": "What woke the PC."}, {"c": "power", "s": "both", "x": "powercfg /devicequery wake_armed", "hu": "Mely eszközök ébreszthetik a gépet.", "en": "Which devices can wake the PC."}, {"c": "power", "s": "both", "x": "powercfg /a", "hu": "Elérhető alvó állapotok.", "en": "Available sleep states."}, {"c": "power", "s": "both", "x": "powercfg /list", "hu": "Energiasémák.", "en": "Power plans."}, {"c": "power", "s": "both", "x": "powercfg /setactive SCHEME_BALANCED", "hu": "Kiegyensúlyozott séma (SCHEME_MIN = nagy teljesítmény).", "en": "Balanced plan (SCHEME_MIN = high performance)."}, {"c": "power", "s": "both", "x": "powercfg /h off", "hu": "Hibernálás ki, hiberfil.sys törlődik.", "en": "Hibernation off, removes hiberfil.sys.", "f": ["a"]}, {"c": "power", "s": "both", "x": "powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61", "hu": "Ultimate Performance séma megjelenítése.", "en": "Unhide the Ultimate Performance plan.", "f": ["a"]}, {"c": "power", "s": "both", "x": "shutdown /r /t 0", "hu": "Újraindítás azonnal.", "en": "Restart now."}, {"c": "power", "s": "both", "x": "shutdown /s /t 0", "hu": "Leállítás azonnal (teljes, nem gyorsindítás).", "en": "Shut down now (full, not fast startup).", "n": {"hu": "A /s nem kapcsolja ki a gyorsindítást; a teljes leállításhoz: shutdown /s /full /t 0", "en": "For a full shutdown bypassing fast startup: shutdown /s /full /t 0"}}, {"c": "power", "s": "both", "x": "shutdown /a", "hu": "Ütemezett leállítás megszakítása.", "en": "Abort a scheduled shutdown."}, {"c": "dev", "s": "both", "x": "devmgmt.msc", "hu": "Eszközkezelő.", "en": "Device Manager."}, {"c": "dev", "s": "both", "x": "pnputil /enum-devices /problem", "hu": "Hibás eszközök listája.", "en": "Devices with problems.", "f": ["w10"]}, {"c": "dev", "s": "ps", "x": "Get-PnpDevice -PresentOnly | Where-Object Status -ne 'OK'", "hu": "Nem megfelelően működő eszközök.", "en": "Devices not working properly.", "f": ["w8"]}, {"c": "dev", "s": "both", "x": "pnputil /enum-drivers", "hu": "Telepített harmadik féltől származó illesztők.", "en": "Installed third-party drivers.", "f": ["w10"]}, {"c": "dev", "s": "both", "x": "pnputil /add-driver \"D:\\drivers\\*.inf\" /subdirs /install", "hu": "Illesztők telepítése mappából (mentés visszatöltése).", "en": "Install drivers from a folder (restore a backup).", "f": ["a", "w10"]}, {"c": "dev", "s": "both", "x": "dism /online /export-driver /destination:\"D:\\DriverBackup\"", "hu": "Illesztők mentése újratelepítés előtt.", "en": "Back up drivers before a reinstall.", "f": ["a", "w8"]}, {"c": "dev", "s": "cmd", "x": "driverquery /v /fo csv > \"%USERPROFILE%\\Desktop\\drivers.csv\"", "hu": "Illesztőlista Excelbe.", "en": "Driver list for Excel."}, {"c": "dev", "s": "both", "x": "mode", "hu": "COM portok és beállításaik.", "en": "COM ports and their settings."}, {"c": "dev", "s": "ps", "x": "Get-CimInstance Win32_PnPEntity | Where-Object Name -match 'COM\\d' | Select-Object Name", "hu": "Soros portok chip névvel (CH340, CP210x, FTDI).", "en": "Serial ports with chip names (CH340, CP210x, FTDI)."}, {"c": "dev", "s": "ps", "x": "[System.IO.Ports.SerialPort]::GetPortNames()", "hu": "COM portok gyors listája.", "en": "Quick list of COM ports."}, {"c": "print", "s": "cmd", "x": "net stop spooler && del /q /f /s %systemroot%\\System32\\spool\\PRINTERS\\* && net start spooler", "hu": "Elakadt nyomtatási sor ürítése.", "en": "Clear a stuck print queue.", "f": ["a", "d"]}, {"c": "print", "s": "both", "x": "control printers", "hu": "Eszközök és nyomtatók.", "en": "Devices and Printers."}, {"c": "print", "s": "both", "x": "rundll32 printui.dll,PrintUIEntry /k /n \"{NAME}\"", "hu": "Tesztoldal nyomtatása.", "en": "Print a test page."}, {"c": "print", "s": "both", "x": "printui /s", "hu": "Nyomtatókiszolgáló tulajdonságai (illesztők törlése).", "en": "Print server properties (remove drivers)."}, {"c": "print", "s": "ps", "x": "Get-Printer | Select-Object Name, DriverName, PortName, PrinterStatus", "hu": "Nyomtatók, portok, állapot.", "en": "Printers, ports, status.", "f": ["w8"]}, {"c": "print", "s": "ps", "x": "Get-Printer | ForEach-Object { Get-PrintJob -PrinterName $_.Name } | Remove-PrintJob", "hu": "Minden nyomtatási feladat törlése.", "en": "Delete all print jobs.", "f": ["a", "w8"]}, {"c": "print", "s": "ps", "x": "Add-PrinterPort -Name \"IP_{IP}\" -PrinterHostAddress \"{IP}\"", "hu": "Hálózati nyomtató port létrehozása.", "en": "Create a network printer port.", "f": ["a", "w8"]}, {"c": "print", "s": "ps", "x": "Add-Printer -ConnectionName \"\\\\{HOST}\\{NAME}\"", "hu": "Megosztott nyomtató hozzáadása.", "en": "Add a shared printer.", "f": ["w8"]}, {"c": "sec", "s": "cmd", "x": "\"%ProgramFiles%\\Windows Defender\\MpCmdRun.exe\" -SignatureUpdate", "hu": "Defender adatbázis frissítése.", "en": "Update Defender signatures.", "f": ["a"]}, {"c": "sec", "s": "cmd", "x": "\"%ProgramFiles%\\Windows Defender\\MpCmdRun.exe\" -Scan -ScanType 1", "hu": "Defender gyorsvizsgálat.", "en": "Defender quick scan.", "f": ["a"]}, {"c": "sec", "s": "cmd", "x": "\"%ProgramFiles%\\Windows Defender\\MpCmdRun.exe\" -Scan -ScanType 2", "hu": "Defender teljes vizsgálat (órák).", "en": "Defender full scan (hours).", "f": ["a"]}, {"c": "sec", "s": "cmd", "x": "\"%ProgramFiles%\\Windows Defender\\MpCmdRun.exe\" -Scan -ScanType 3 -File \"{FILE}\"", "hu": "Egy fájl vagy mappa vizsgálata.", "en": "Scan one file or folder."}, {"c": "sec", "s": "ps", "x": "Get-MpComputerStatus | Select-Object AMServiceEnabled, RealTimeProtectionEnabled, AntivirusSignatureLastUpdated", "hu": "Defender állapota.", "en": "Defender status.", "f": ["w8"]}, {"c": "sec", "s": "ps", "x": "Get-MpThreatDetection | Select-Object InitialDetectionTime, ThreatID, Resources", "hu": "Defender találatok előzménye.", "en": "Defender detection history.", "f": ["w8"]}, {"c": "sec", "s": "ps", "x": "Start-MpWDOScan", "hu": "Offline Defender vizsgálat: újraindul és Windows előtt vizsgál.", "en": "Offline Defender scan: restarts and scans before Windows.", "f": ["a", "d", "w10"]}, {"c": "sec", "s": "ps", "x": "Add-MpPreference -ExclusionPath \"D:\\ServiceKit\"", "hu": "Kivétel a Defenderben (csak saját gépen, a kitre).", "en": "Defender exclusion (own PC only, for the kit).", "f": ["a", "d", "w8"]}, {"c": "sec", "s": "both", "x": "manage-bde -status", "hu": "BitLocker állapota.", "en": "BitLocker status.", "f": ["a"]}, {"c": "sec", "s": "both", "x": "manage-bde -protectors -get C:", "hu": "BitLocker helyreállítási kulcs (mentsd el javítás előtt!).", "en": "BitLocker recovery key (save it before repairs!).", "f": ["a"]}, {"c": "sec", "s": "cmd", "x": "gpresult /h \"%USERPROFILE%\\Desktop\\gpresult.html\"", "hu": "Érvényes házirendek jelentése.", "en": "Applied policies report."}, {"c": "sec", "s": "both", "x": "gpupdate /force", "hu": "Házirendek frissítése.", "en": "Refresh policies."}, {"c": "sec", "s": "both", "x": "reg query \"HKLM\\SOFTWARE\\Policies\\Google\\Chrome\"", "hu": "Kényszerített Chrome beállítások (eltérítés gyanú).", "en": "Forced Chrome settings (hijack suspicion)."}, {"c": "sec", "s": "both", "x": "reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\" /v Shell", "hu": "Shell értéke: explorer.exe kell legyen.", "en": "Shell value: should be explorer.exe."}, {"c": "sec", "s": "cmd", "x": "type %windir%\\System32\\drivers\\etc\\hosts", "hu": "Hosts fájl tartalma.", "en": "Hosts file contents."}, {"c": "sec", "s": "both", "x": "notepad %windir%\\System32\\drivers\\etc\\hosts", "hu": "Hosts fájl szerkesztése.", "en": "Edit the hosts file.", "f": ["a"]}, {"c": "sec", "s": "ps", "x": "Get-AuthenticodeSignature \"{FILE}\"", "hu": "Digitális aláírás ellenőrzése.", "en": "Check the digital signature."}, {"c": "sec", "s": "ps", "x": "Unblock-File \"{FILE}\"", "hu": "Letöltött fájl feloldása (\"internetről származik\" jelzés).", "en": "Unblock a downloaded file (\"came from the internet\" mark)."}, {"c": "sec", "s": "both", "x": "wf.msc", "hu": "Tűzfal speciális beállítások.", "en": "Firewall advanced settings."}, {"c": "sec", "s": "both", "x": "cipher /w:C:", "hu": "Szabad hely biztonságos felülírása (törölt adatok nyoma). Lassú.", "en": "Securely overwrite free space (traces of deleted data). Slow.", "f": ["a", "d"]}, {"c": "lic", "s": "both", "x": "slmgr /xpr", "hu": "Aktiválva van-e a Windows.", "en": "Is Windows activated."}, {"c": "lic", "s": "both", "x": "slmgr /dli", "hu": "Licenc adatai röviden.", "en": "License details, short."}, {"c": "lic", "s": "both", "x": "slmgr /ipk XXXXX-XXXXX-XXXXX-XXXXX-XXXXX", "hu": "Termékkulcs beírása.", "en": "Enter a product key.", "f": ["a"]}, {"c": "lic", "s": "both", "x": "slmgr /ato", "hu": "Aktiválás most.", "en": "Activate now.", "f": ["a"]}, {"c": "lic", "s": "ps", "x": "(Get-CimInstance SoftwareLicensingService).OA3xOriginalProductKey", "hu": "BIOS-ba égetett gyári (OEM) kulcs.", "en": "Factory (OEM) key stored in the BIOS."}, {"c": "lic", "s": "both", "x": "DISM /Online /Get-CurrentEdition", "hu": "Windows kiadás (Home, Pro…).", "en": "Windows edition (Home, Pro…).", "f": ["a", "w8"]}, {"c": "lic", "s": "cmd", "x": "cscript \"%ProgramFiles%\\Microsoft Office\\Office16\\OSPP.VBS\" /dstatus", "hu": "Office licenc állapota.", "en": "Office license status.", "n": {"hu": "32 bites Office-nál: %ProgramFiles(x86)%", "en": "For 32-bit Office: %ProgramFiles(x86)%"}}, {"c": "event", "s": "both", "x": "eventvwr.msc", "hu": "Eseménynapló.", "en": "Event Viewer."}, {"c": "event", "s": "ps", "x": "Get-WinEvent -FilterHashtable @{LogName='System'; Level=1,2; StartTime=(Get-Date).AddDays(-7)} | Select-Object -First 50 TimeCreated, Id, ProviderName, Message", "hu": "Rendszerhibák az elmúlt 7 napban.", "en": "System errors in the last 7 days."}, {"c": "event", "s": "ps", "x": "Get-WinEvent -FilterHashtable @{LogName='System'; Id=41} -MaxEvents 10", "hu": "Váratlan leállások (Kernel-Power 41).", "en": "Unexpected shutdowns (Kernel-Power 41)."}, {"c": "event", "s": "ps", "x": "Get-WinEvent -FilterHashtable @{LogName='System'; ProviderName='Microsoft-Windows-WER-SystemErrorReporting'} -MaxEvents 10", "hu": "Kék halálok (BugCheck).", "en": "Blue screens (BugCheck)."}, {"c": "event", "s": "ps", "x": "Get-WinEvent -FilterHashtable @{LogName='System'; Id=6005,6006,6008} -MaxEvents 20 | Select-Object TimeCreated, Id", "hu": "Indítások (6005), leállítások (6006), váratlan leállás (6008).", "en": "Starts (6005), shutdowns (6006), unexpected (6008)."}, {"c": "event", "s": "ps", "x": "Get-WinEvent -FilterHashtable @{LogName='Application'; Level=2} -MaxEvents 30 | Select-Object TimeCreated, ProviderName, Message", "hu": "Programhibák.", "en": "Application errors."}, {"c": "event", "s": "ps", "x": "Get-WinEvent -LogName 'Microsoft-Windows-Diagnostics-Performance/Operational' -FilterXPath '*[System[EventID=100]]' -MaxEvents 5 | Format-List TimeCreated, Message", "hu": "Rendszerindítás időtartama.", "en": "Boot duration."}, {"c": "event", "s": "ps", "x": "Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625} -MaxEvents 20", "hu": "Sikertelen bejelentkezések.", "en": "Failed sign-ins.", "f": ["a"]}, {"c": "event", "s": "cmd", "x": "wevtutil epl System \"%USERPROFILE%\\Desktop\\System.evtx\"", "hu": "Rendszernapló exportálása (elemzéshez).", "en": "Export the System log (for analysis)."}, {"c": "task", "s": "both", "x": "taskschd.msc", "hu": "Feladatütemező.", "en": "Task Scheduler."}, {"c": "task", "s": "ps", "x": "Get-ScheduledTask | Where-Object { $_.TaskPath -notlike '\\Microsoft\\*' } | Select-Object TaskName, TaskPath, State", "hu": "Nem Microsoft feladatok (kártevő-ellenőrzés).", "en": "Non-Microsoft tasks (malware check).", "f": ["w8"]}, {"c": "task", "s": "both", "x": "schtasks /query /fo LIST /v", "hu": "Minden feladat részletesen.", "en": "All tasks in detail."}, {"c": "task", "s": "both", "x": "schtasks /change /tn \"{NAME}\" /disable", "hu": "Feladat letiltása.", "en": "Disable a task.", "f": ["a"]}, {"c": "task", "s": "both", "x": "schtasks /delete /tn \"{NAME}\" /f", "hu": "Feladat törlése.", "en": "Delete a task.", "f": ["a", "d"]}, {"c": "task", "s": "both", "x": "schtasks /create /tn \"Ujrainditas\" /tr \"shutdown /r /t 0\" /sc once /st 03:00", "hu": "Egyszeri újraindítás hajnali 3-kor.", "en": "One-off restart at 3 a.m.", "f": ["a"]}, {"c": "reg", "s": "both", "x": "regedit", "hu": "Registry szerkesztő.", "en": "Registry Editor."}, {"c": "reg", "s": "both", "x": "reg query HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "hu": "Felhasználói indítási elemek.", "en": "User startup entries."}, {"c": "reg", "s": "both", "x": "reg query HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "hu": "Gépszintű indítási elemek.", "en": "Machine-wide startup entries."}, {"c": "reg", "s": "cmd", "x": "reg export \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\" \"%USERPROFILE%\\Desktop\\run.reg\"", "hu": "Kulcs mentése módosítás előtt.", "en": "Back up a key before changing it."}, {"c": "reg", "s": "both", "x": "reg add \"HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32\" /f /ve", "hu": "Windows 11: régi (teljes) jobb klikk menü vissza. Utána indítsd újra az Intézőt.", "en": "Windows 11: bring back the classic full context menu. Restart Explorer afterwards.", "f": ["w11"]}, {"c": "reg", "s": "both", "x": "reg delete \"HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\" /f", "hu": "Windows 11 új jobb klikk menü vissza.", "en": "Windows 11: back to the new context menu.", "f": ["w11"]}, {"c": "reg", "s": "both", "x": "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\" /v LongPathsEnabled /t REG_DWORD /d 1 /f", "hu": "260 karakternél hosszabb elérési utak engedélyezése.", "en": "Allow paths longer than 260 characters.", "f": ["a", "w10"]}, {"c": "reg", "s": "both", "x": "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU\" /v NoAutoRebootWithLoggedOnUsers /t REG_DWORD /d 1 /f", "hu": "Ne induljon újra magától frissítés után, ha valaki be van jelentkezve.", "en": "No automatic restart after updates while someone is signed in.", "f": ["a"]}, {"c": "boot", "s": "both", "x": "shutdown /r /o /t 0", "hu": "Újraindítás a speciális indítási menübe (csökkentett mód, helyreállítás).", "en": "Restart into Advanced Startup (safe mode, recovery).", "f": ["w8"]}, {"c": "boot", "s": "both", "x": "shutdown /r /fw /t 0", "hu": "Újraindítás egyenesen a BIOS/UEFI beállításokba.", "en": "Restart straight into BIOS/UEFI setup.", "f": ["a", "w8"]}, {"c": "boot", "s": "both", "x": "bcdedit /set {default} safeboot minimal", "hu": "Következő indítás csökkentett módban (vissza: deletevalue).", "en": "Next boot in safe mode (undo: deletevalue).", "f": ["a"]}, {"c": "boot", "s": "both", "x": "bcdedit /deletevalue {default} safeboot", "hu": "Csökkentett mód kikapcsolása.", "en": "Turn safe mode off again.", "f": ["a"]}, {"c": "boot", "s": "both", "x": "bcdedit /set {current} bootmenupolicy legacy", "hu": "F8 indítómenü visszakapcsolása.", "en": "Re-enable the F8 boot menu.", "f": ["a"]}, {"c": "boot", "s": "both", "x": "bcdedit /enum", "hu": "Rendszerbetöltő bejegyzések.", "en": "Boot loader entries.", "f": ["a"]}, {"c": "boot", "s": "both", "x": "msconfig", "hu": "Rendszerkonfiguráció (indítás, csökkentett mód).", "en": "System Configuration (boot, safe mode)."}, {"c": "boot", "s": "both", "x": "bcdboot C:\\Windows", "hu": "Rendszerbetöltő újraépítése (helyreállításból; a betűjel eltérhet).", "en": "Rebuild the boot loader (from recovery; letter may differ).", "f": ["re", "d"]}, {"c": "boot", "s": "both", "x": "bootrec /rebuildbcd", "hu": "BCD újraépítése régi (MBR) gépen.", "en": "Rebuild BCD on an older (MBR) PC.", "f": ["re", "d"]}, {"c": "boot", "s": "both", "x": "notepad", "hu": "Helyreállításban: Fájl > Megnyitás ablakkal tallózhatsz és másolhatsz fájlokat.", "en": "In recovery: File > Open lets you browse and copy files.", "f": ["re"]}, {"c": "boot", "s": "both", "x": "reagentc /info", "hu": "Helyreállítási környezet (WinRE) állapota.", "en": "Recovery environment (WinRE) status.", "f": ["a"]}, {"c": "boot", "s": "ps", "x": "Confirm-SecureBootUEFI", "hu": "Secure Boot be van-e kapcsolva (Windows 11-hez).", "en": "Is Secure Boot on (for Windows 11).", "f": ["a", "w8"]}, {"c": "boot", "s": "ps", "x": "Get-Tpm", "hu": "TPM állapota (Windows 11-hez).", "en": "TPM status (for Windows 11).", "f": ["a", "w8"]}, {"c": "boot", "s": "both", "x": "mbr2gpt /validate /disk:0 /allowFullOS", "hu": "MBR-GPT átalakítás ellenőrzése (Windows 11 előtt).", "en": "Check MBR-to-GPT conversion (before Windows 11).", "f": ["a", "w10"]}, {"c": "boot", "s": "both", "x": "mbr2gpt /convert /disk:0 /allowFullOS", "hu": "Átalakítás GPT-re; utána a BIOS-ban UEFI módra kell váltani.", "en": "Convert to GPT; then switch the BIOS to UEFI mode.", "f": ["a", "d", "w10"]}, {"c": "remote", "s": "both", "x": "mstsc /v:{HOST}", "hu": "Távoli asztal kapcsolat.", "en": "Remote Desktop connection."}, {"c": "remote", "s": "both", "x": "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\" /v fDenyTSConnections /t REG_DWORD /d 0 /f", "hu": "Távoli asztal engedélyezése (Pro).", "en": "Enable Remote Desktop (Pro).", "f": ["a"]}, {"c": "remote", "s": "ps", "x": "Enable-NetFirewallRule -Name RemoteDesktop-UserMode-In-TCP", "hu": "Távoli asztal tűzfalszabály (nyelvfüggetlen név).", "en": "Remote Desktop firewall rule (language-independent name).", "f": ["a", "w8"]}, {"c": "remote", "s": "both", "x": "quickassist", "hu": "Gyorssegéd: beépített távsegítség.", "en": "Quick Assist: built-in remote help.", "f": ["w10"]}, {"c": "remote", "s": "both", "x": "ssh {USER}@{IP}", "hu": "SSH kapcsolat (Raspberry Pi, router, NAS).", "en": "SSH connection (Raspberry Pi, router, NAS)."}, {"c": "remote", "s": "both", "x": "scp \"{FILE}\" {USER}@{IP}:/tmp/", "hu": "Fájl másolása SSH-n.", "en": "Copy a file over SSH."}, {"c": "remote", "s": "both", "x": "ssh-keygen -t ed25519", "hu": "SSH kulcspár készítése.", "en": "Create an SSH key pair."}, {"c": "remote", "s": "cmd", "x": "type %USERPROFILE%\\.ssh\\id_ed25519.pub | ssh {USER}@{IP} \"cat >> ~/.ssh/authorized_keys\"", "hu": "Nyilvános kulcs feltöltése (utána jelszó nélkül lép be).", "en": "Upload your public key (passwordless login after)."}, {"c": "remote", "s": "both", "x": "shutdown /r /m \\\\{HOST} /t 60 /c \"Szerviz\"", "hu": "Távoli gép újraindítása 60 mp múlva.", "en": "Restart a remote PC in 60 s.", "f": ["a"]}, {"c": "remote", "s": "both", "x": "net use \\\\{HOST}\\C$ /user:{HOST}\\{USER}", "hu": "Adminisztratív megosztás elérése.", "en": "Open the admin share."}, {"c": "remote", "s": "ps", "x": "Enter-PSSession -ComputerName {HOST}", "hu": "Távoli PowerShell (WinRM).", "en": "Remote PowerShell (WinRM)."}, {"c": "remote", "s": "both", "x": "winrm quickconfig", "hu": "WinRM bekapcsolása a távoli PowerShellhez.", "en": "Enable WinRM for remote PowerShell.", "f": ["a"]}, {"c": "open", "s": "both", "x": "start ms-settings:windowsupdate", "hu": "Windows Update beállítások.", "en": "Windows Update settings.", "f": ["w10"]}, {"c": "open", "s": "both", "x": "start ms-settings:appsfeatures", "hu": "Alkalmazások.", "en": "Apps.", "f": ["w10"]}, {"c": "open", "s": "both", "x": "start ms-settings:startupapps", "hu": "Indítási alkalmazások.", "en": "Startup apps.", "f": ["w10"]}, {"c": "open", "s": "both", "x": "start ms-settings:storagesense", "hu": "Tárterület.", "en": "Storage.", "f": ["w10"]}, {"c": "open", "s": "both", "x": "start ms-settings:network-status", "hu": "Hálózat állapota.", "en": "Network status.", "f": ["w10"]}, {"c": "open", "s": "both", "x": "start ms-settings:defaultapps", "hu": "Alapértelmezett alkalmazások.", "en": "Default apps.", "f": ["w10"]}, {"c": "open", "s": "both", "x": "start ms-settings:recovery", "hu": "Helyreállítás (alaphelyzet, speciális indítás).", "en": "Recovery (reset, advanced startup).", "f": ["w10"]}, {"c": "open", "s": "both", "x": "start ms-settings:windowsdefender", "hu": "Windows Biztonság.", "en": "Windows Security.", "f": ["w10"]}, {"c": "open", "s": "both", "x": "start ms-settings:about", "hu": "Névjegy (gépnév, kiadás).", "en": "About (PC name, edition).", "f": ["w10"]}, {"c": "open", "s": "both", "x": "explorer shell:startup", "hu": "Felhasználó Indítópult mappája.", "en": "User Startup folder."}, {"c": "open", "s": "both", "x": "explorer \"shell:common startup\"", "hu": "Közös Indítópult mappa.", "en": "Common Startup folder."}, {"c": "open", "s": "both", "x": "explorer shell:sendto", "hu": "Küldés menü mappája.", "en": "Send To folder."}, {"c": "open", "s": "cmd", "x": "explorer %temp%", "hu": "Ideiglenes fájlok mappája.", "en": "Temp folder."}, {"c": "open", "s": "cmd", "x": "explorer %appdata%", "hu": "AppData\\Roaming.", "en": "AppData\\Roaming."}, {"c": "open", "s": "cmd", "x": "explorer %localappdata%", "hu": "AppData\\Local.", "en": "AppData\\Local."}, {"c": "open", "s": "both", "x": "control", "hu": "Vezérlőpult.", "en": "Control Panel."}, {"c": "open", "s": "both", "x": "sysdm.cpl", "hu": "Rendszer tulajdonságai (gépnév, tartomány).", "en": "System Properties (PC name, domain)."}, {"c": "open", "s": "both", "x": "SystemPropertiesAdvanced", "hu": "Speciális rendszerbeállítások (környezeti változók).", "en": "Advanced system settings (environment variables)."}, {"c": "open", "s": "both", "x": "SystemPropertiesPerformance", "hu": "Vizuális effektusok (lassú gépen kikapcsolni).", "en": "Visual effects (turn off on slow PCs)."}, {"c": "open", "s": "both", "x": "inetcpl.cpl", "hu": "Internetbeállítások (proxy, tanúsítványok).", "en": "Internet Options (proxy, certificates)."}, {"c": "open", "s": "both", "x": "firewall.cpl", "hu": "Windows tűzfal.", "en": "Windows Firewall."}, {"c": "open", "s": "both", "x": "mmsys.cpl", "hu": "Hangeszközök.", "en": "Sound devices."}, {"c": "open", "s": "both", "x": "main.cpl", "hu": "Egér beállítások.", "en": "Mouse settings."}, {"c": "open", "s": "both", "x": "powercfg.cpl", "hu": "Energiagazdálkodás.", "en": "Power Options."}, {"c": "open", "s": "both", "x": "timedate.cpl", "hu": "Dátum és idő.", "en": "Date and time."}, {"c": "open", "s": "both", "x": "compmgmt.msc", "hu": "Számítógép-kezelés (lemezek, szolgáltatások, felhasználók).", "en": "Computer Management."}, {"c": "open", "s": "both", "x": "services.msc", "hu": "Szolgáltatások.", "en": "Services."}, {"c": "open", "s": "both", "x": "gpedit.msc", "hu": "Csoportházirend (Home-ban nincs).", "en": "Group Policy (not in Home)."}, {"c": "open", "s": "both", "x": "certmgr.msc", "hu": "Tanúsítványok.", "en": "Certificates."}, {"c": "open", "s": "both", "x": "control /name Microsoft.CredentialManager", "hu": "Hitelesítőadat-kezelő.", "en": "Credential Manager."}, {"c": "open", "s": "both", "x": "psr", "hu": "Lépésrögzítő: az ügyfél rögzítheti, mit csinál a hiba előtt.", "en": "Steps Recorder: the client can record what they do before the fault.", "n": {"hu": "Windows 11 újabb kiadásaiból eltávolítva.", "en": "Removed from newer Windows 11 releases."}}, {"c": "open", "s": "both", "x": "osk", "hu": "Képernyő-billentyűzet.", "en": "On-screen keyboard."}, {"c": "open", "s": "both", "x": "dfrgui", "hu": "Meghajtók optimalizálása.", "en": "Optimize Drives."}, {"c": "smart", "s": "both", "x": "esptool --port COM3 chip-id", "hu": "ESP chip azonosítása (működik-e a kapcsolat).", "en": "Identify the ESP chip (is the link working).", "n": {"hu": "esptool 4.x-ben aláhúzás: chip_id, read_flash, write_flash.", "en": "esptool 4.x uses underscores: chip_id, read_flash, write_flash."}}, {"c": "smart", "s": "both", "x": "esptool --port COM3 read-flash 0 ALL backup.bin", "hu": "Gyári firmware mentése flashelés előtt.", "en": "Back up the stock firmware before flashing."}, {"c": "smart", "s": "both", "x": "esptool --port COM3 erase-flash", "hu": "Flash törlése.", "en": "Erase the flash.", "f": ["d"]}, {"c": "smart", "s": "both", "x": "esptool --port COM3 write-flash 0x0 firmware.bin", "hu": "Firmware írása.", "en": "Write firmware.", "f": ["d"]}, {"c": "smart", "s": "both", "x": "curl \"http://{IP}/cm?cmnd=Status%200\"", "hu": "Tasmota eszköz teljes állapota.", "en": "Full status of a Tasmota device.", "f": ["w10"]}, {"c": "smart", "s": "both", "x": "curl \"http://{IP}/cm?cmnd=Power%20TOGGLE\"", "hu": "Tasmota relé kapcsolása.", "en": "Toggle a Tasmota relay.", "f": ["w10"]}, {"c": "smart", "s": "both", "x": "curl http://{IP}/rpc/Shelly.GetStatus", "hu": "Shelly Gen2/Gen3 állapot.", "en": "Shelly Gen2/Gen3 status.", "f": ["w10"]}, {"c": "smart", "s": "both", "x": "curl http://{IP}/status", "hu": "Shelly Gen1 állapot.", "en": "Shelly Gen1 status.", "f": ["w10"]}, {"c": "smart", "s": "ps", "x": "Invoke-RestMethod -Uri \"http://{IP}:8123/api/states\" -Headers @{ Authorization = \"Bearer TOKEN\" }", "hu": "Home Assistant entitások állapota REST API-n (TOKEN = hosszú élettartamú token).", "en": "Home Assistant entity states via REST (TOKEN = long-lived token)."}, {"c": "smart", "s": "both", "x": "ping homeassistant.local", "hu": "Home Assistant elérhető-e mDNS néven.", "en": "Is Home Assistant reachable by its mDNS name."}, {"c": "smart", "s": "ps", "x": "Test-NetConnection {IP} -Port 1883", "hu": "MQTT bróker elérhető-e.", "en": "Is the MQTT broker reachable.", "f": ["w8"]}, {"c": "smart", "s": "both", "x": "mosquitto_sub -h {IP} -t \"#\" -v -u user -P jelszo", "hu": "Minden MQTT üzenet figyelése (mosquitto kliens kell).", "en": "Watch all MQTT messages (needs the mosquitto client)."}, {"c": "smart", "s": "both", "x": "mosquitto_pub -h {IP} -t \"cmnd/eszkoz/POWER\" -m \"TOGGLE\" -u user -P jelszo", "hu": "MQTT parancs küldése (pl. Tasmota).", "en": "Publish an MQTT command (e.g. Tasmota)."}, {"c": "devtools", "s": "both", "x": "python -m http.server 8000", "hu": "Gyors fájlmegosztás a mappából a helyi hálózaton (http://IP:8000).", "en": "Quick file share from the folder on the LAN (http://IP:8000)."}, {"c": "devtools", "s": "both", "x": "python -m venv .venv", "hu": "Python virtuális környezet.", "en": "Python virtual environment."}, {"c": "devtools", "s": "cmd", "x": ".venv\\Scripts\\activate", "hu": "Virtuális környezet bekapcsolása (cmd).", "en": "Activate the virtual environment (cmd)."}, {"c": "devtools", "s": "ps", "x": ".venv\\Scripts\\Activate.ps1", "hu": "Virtuális környezet bekapcsolása (PowerShell).", "en": "Activate the virtual environment (PowerShell)."}, {"c": "devtools", "s": "both", "x": "pip install -r requirements.txt", "hu": "Függőségek telepítése.", "en": "Install dependencies."}, {"c": "devtools", "s": "ps", "x": "Set-ExecutionPolicy -Scope CurrentUser RemoteSigned", "hu": "Saját PowerShell szkriptek futtatásának engedélyezése.", "en": "Allow running your own PowerShell scripts."}, {"c": "devtools", "s": "ps", "x": "Get-Content \"{FILE}\" -Wait -Tail 50", "hu": "Naplófájl élő követése (mint tail -f).", "en": "Follow a log file live (like tail -f)."}, {"c": "devtools", "s": "both", "x": "where {FILE}", "hu": "Honnan fut egy parancs (PATH).", "en": "Where a command runs from (PATH)."}, {"c": "devtools", "s": "both", "x": "git status", "hu": "Git munkamappa állapota.", "en": "Git working tree status."}, {"c": "devtools", "s": "both", "x": "git log --oneline -15", "hu": "Utolsó 15 commit.", "en": "Last 15 commits."}, {"c": "devtools", "s": "cmd", "x": "git config --global user.name \"Név\" && git config --global user.email \"email@example.com\"", "hu": "Git név és e-mail beállítása.", "en": "Set git name and email."}, {"c": "devtools", "s": "cmd", "x": "node -v && npm -v", "hu": "Node és npm verzió.", "en": "Node and npm versions."}, {"c": "devtools", "s": "both", "x": "code .", "hu": "Mappa megnyitása VS Code-ban.", "en": "Open the folder in VS Code."}, {"c": "devtools", "s": "both", "x": "wsl -l -v", "hu": "WSL disztribúciók.", "en": "WSL distributions.", "f": ["w10"]}, {"c": "devtools", "s": "both", "x": "curl -L -o file.zip https://example.com/file.zip", "hu": "Fájl letöltése parancssorból.", "en": "Download a file from the command line.", "f": ["w10"]}]};
+
+</script>
+<script>
+/* ServiceKit command database view. ES5, works in IE11, the Dashboard and the standalone PARANCSOK.html.
+   CmdView.mount(element, { lang: function () { return 'hu' | 'en'; }, toast: function (msg, isError) {} }) */
+(function () {
+  'use strict';
+  var DATA = window.KIT_COMMANDS || { categories: [], vars: [], commands: [] };
+  var TXT = {
+    hu: { search: 'Keresés: parancs, feladat, kulcsszó…', all: 'Mind', fav: 'Kedvencek', vars: 'Változók', varsTip: 'A parancsokban a {IP}, {HOST}… helyére ezek kerülnek.',
+          copy: 'Másolás', copied: 'Vágólapra másolva', admin: 'admin', caution: 'óvatosan', old: 'régi', re: 'helyreállításban', none: 'Nincs találat.',
+          count: '{0} parancs', both: 'CMD + PS', reset: 'Alaphelyzet', clickCopy: 'Kattints a parancsra a másoláshoz.', shellAll: 'Minden shell' },
+    en: { search: 'Search: command, task, keyword…', all: 'All', fav: 'Favourites', vars: 'Variables', varsTip: 'These replace {IP}, {HOST}… in the commands.',
+          copy: 'Copy', copied: 'Copied to clipboard', admin: 'admin', caution: 'caution', old: 'legacy', re: 'recovery only', none: 'No results.',
+          count: '{0} commands', both: 'CMD + PS', reset: 'Reset', clickCopy: 'Click a command to copy it.', shellAll: 'Any shell' }
+  };
+
+  function lsGet(k, d) { try { var v = window.localStorage.getItem('skc.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }
+  function lsSet(k, v) { try { window.localStorage.setItem('skc.' + k, JSON.stringify(v)); } catch (e) { } }
+  function esc(s) { return String(s === undefined || s === null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function norm(s) {
+    s = String(s || '').toLowerCase();
+    var from = 'áéíóöőúüű', to = 'aeiooouuu', out = '';
+    for (var i = 0; i < s.length; i++) { var k = from.indexOf(s.charAt(i)); out += k >= 0 ? to.charAt(k) : s.charAt(i); }
+    return out;
+  }
+  function hasClass(el, c) { return (' ' + el.className + ' ').indexOf(' ' + c + ' ') >= 0; }
+
+  function copyText(s, done) {
+    function legacy() {
+      try {
+        if (window.clipboardData) { window.clipboardData.setData('Text', s); done(true); return; }
+        var ta = document.createElement('textarea'); ta.value = s; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.top = '-1000px';
+        document.body.appendChild(ta); ta.select(); var ok = document.execCommand('copy'); document.body.removeChild(ta); done(ok);
+      } catch (e) { done(false); }
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(s).then(function () { done(true); }, legacy); return; }
+    } catch (e) { }
+    legacy();
+  }
+
+  function mount(root, opts) {
+    opts = opts || {};
+    var S = { q: '', cat: lsGet('cat', 'all'), shell: lsGet('shell', 'all'), favOnly: false, fav: lsGet('fav', {}), vars: lsGet('vars', {}), varsOpen: lsGet('varsOpen', (window.innerWidth || 1000) > 700) };
+    var built = false, lastLang = '';
+    function lang() { var l = opts.lang ? opts.lang() : 'hu'; return l === 'en' ? 'en' : 'hu'; }
+    function t(k) { return TXT[lang()][k]; }
+    function L(o) { return o ? (o[lang()] || o.hu) : ''; }
+    function toast(m, e) { if (opts.toast) opts.toast(m, e); }
+    function varVal(k) { var v = S.vars[k]; if (v === undefined || v === '') { for (var i = 0; i < DATA.vars.length; i++) if (DATA.vars[i].k === k) return DATA.vars[i].d; } return v; }
+    function idOf(c) { return c.c + '|' + c.x; }
+
+    function fill(cmd, html) {
+      return cmd.replace(/\{(IP|HOST|PORT|USER|DRIVE|NAME|FILE)\}/g, function (m, k) {
+        var v = varVal(k);
+        return html ? '\u0001' + v + '\u0002' : v;
+      });
+    }
+    function codeHtml(cmd) {
+      return esc(fill(cmd, true)).replace(/\u0001/g, '<span class="cv">').replace(/\u0002/g, '</span>');
+    }
+
+    function build() {
+      var h = '<div class="cmd-head"><div class="search cmd-search"><input type="text" class="cmd-q" autocomplete="off" spellcheck="false" placeholder="' + esc(t('search')) + '"></div>' +
+        '<div class="cmd-shells"></div><button type="button" class="filter cmd-favbtn"></button></div>' +
+        '<div class="cmd-vars panel"></div><div class="toolbar cmd-cats"></div><div class="cmd-count small muted"></div><div class="cmd-list"></div>';
+      root.innerHTML = h;
+      var q = root.getElementsByTagName('input')[0];
+      q.value = S.q;
+      var onq = function () { S.q = q.value; renderList(); };
+      q.oninput = onq; q.onkeyup = function (e) { e = e || window.event; if (e.keyCode === 27) { q.value = ''; onq(); } else if (!('oninput' in q)) onq(); };
+      root.onclick = onClick;
+      root.oninput = onVar; root.onkeyup = root.onkeyup || null;
+      built = true; lastLang = lang();
+    }
+
+    function q(cls) { var els = root.getElementsByTagName('*'); for (var i = 0; i < els.length; i++) if (hasClass(els[i], cls)) return els[i]; return null; }
+
+    function renderChrome() {
+      var counts = {}, i, c, total = 0;
+      for (i = 0; i < DATA.commands.length; i++) { c = DATA.commands[i]; if (!shellOk(c)) continue; counts[c.c] = (counts[c.c] || 0) + 1; total++; }
+      var h = '<button type="button" class="filter' + (S.cat === 'all' ? ' on' : '') + '" data-cmd="cat" data-v="all">' + esc(t('all')) + ' <span class="cnt">' + total + '</span></button>';
+      for (i = 0; i < DATA.categories.length; i++) {
+        var cat = DATA.categories[i]; if (!counts[cat.id]) continue;
+        h += '<button type="button" class="filter' + (S.cat === cat.id ? ' on' : '') + '" data-cmd="cat" data-v="' + cat.id + '">' + esc(L(cat)) + ' <span class="cnt">' + counts[cat.id] + '</span></button>';
+      }
+      q('cmd-cats').innerHTML = h;
+      var sh = [['all', t('shellAll')], ['cmd', 'CMD'], ['ps', 'PowerShell']], sh2 = '';
+      for (i = 0; i < sh.length; i++) sh2 += '<button type="button" class="filter' + (S.shell === sh[i][0] ? ' on' : '') + '" data-cmd="shell" data-v="' + sh[i][0] + '">' + esc(sh[i][1]) + '</button>';
+      q('cmd-shells').innerHTML = sh2;
+      var fb = q('cmd-favbtn'); fb.className = 'filter cmd-favbtn' + (S.favOnly ? ' on' : ''); fb.setAttribute('data-cmd', 'favonly'); fb.innerHTML = '&#9733; ' + esc(t('fav'));
+      var v = '<div class="cmd-vars-head"><button type="button" class="linkbtn" data-cmd="varsToggle">' + (S.varsOpen ? '&#9662; ' : '&#9656; ') + esc(t('vars')) + '</button><span class="small muted">' + esc(t('varsTip')) + '</span>' +
+        '<button type="button" class="linkbtn" style="margin-left:auto" data-cmd="varsReset">' + esc(t('reset')) + '</button></div>';
+      if (S.varsOpen) {
+        v += '<div class="cmd-vars-grid">';
+        for (i = 0; i < DATA.vars.length; i++) {
+          var dv = DATA.vars[i];
+          v += '<label class="fld"><span>{' + dv.k + '} ' + esc(L(dv)) + '</span><input type="text" data-var="' + dv.k + '" value="' + esc(S.vars[dv.k] || '') + '" placeholder="' + esc(dv.d) + '"></label>';
+        }
+        v += '</div>';
+      }
+      q('cmd-vars').innerHTML = v;
+    }
+
+    function shellOk(c) { return S.shell === 'all' || c.s === 'both' || c.s === S.shell; }
+    function matches(c, words) {
+      if (S.cat !== 'all' && c.c !== S.cat) return false;
+      if (!shellOk(c)) return false;
+      if (S.favOnly && !S.fav[idOf(c)]) return false;
+      if (!words.length) return true;
+      var hay = c._n || (c._n = norm(c.x + ' ' + c.hu + ' ' + c.en + ' ' + (c.n ? c.n.hu + ' ' + c.n.en : '')));
+      for (var i = 0; i < words.length; i++) if (hay.indexOf(words[i]) < 0) return false;
+      return true;
+    }
+
+    function renderList() {
+      var words = [], raw = norm(S.q).split(/\s+/), i;
+      for (i = 0; i < raw.length; i++) if (raw[i]) words.push(raw[i]);
+      var h = '', n = 0, curCat = '', catName = {};
+      for (i = 0; i < DATA.categories.length; i++) catName[DATA.categories[i].id] = L(DATA.categories[i]);
+      for (i = 0; i < DATA.commands.length; i++) {
+        var c = DATA.commands[i];
+        if (!matches(c, words)) continue;
+        n++;
+        if (S.cat === 'all' && c.c !== curCat) { curCat = c.c; h += '<div class="cat-title cmd-cat">' + esc(catName[c.c]) + '</div>'; }
+        var f = c.f || [], badges = '<span class="badge sh-' + c.s + '">' + (c.s === 'both' ? t('both') : (c.s === 'ps' ? 'PowerShell' : 'CMD')) + '</span>';
+        for (var k = 0; k < f.length; k++) {
+          var fl = f[k];
+          if (fl === 'a') badges += '<span class="badge">' + esc(t('admin')) + '</span>';
+          else if (fl === 'd') badges += '<span class="badge warn">' + esc(t('caution')) + '</span>';
+          else if (fl === 'old') badges += '<span class="badge">' + esc(t('old')) + '</span>';
+          else if (fl === 're') badges += '<span class="badge manual">' + esc(t('re')) + '</span>';
+          else badges += '<span class="badge">' + esc(fl === 'w8' ? 'Win 8+' : (fl === 'w10' ? 'Win 10+' : 'Win 11')) + '</span>';
+        }
+        var fav = !!S.fav[idOf(c)];
+        h += '<div class="cmd-item' + (f.indexOf('d') >= 0 ? ' danger' : '') + '"><div class="cmd-top"><span class="cmd-desc">' + esc(L(c)) + '</span><span class="cmd-badges">' + badges + '</span>' +
+          '<button type="button" class="cmd-star' + (fav ? ' on' : '') + '" data-cmd="fav" data-i="' + i + '" title="' + esc(t('fav')) + '">' + (fav ? '&#9733;' : '&#9734;') + '</button></div>' +
+          '<div class="cmd-code" data-cmd="copy" data-i="' + i + '" title="' + esc(t('clickCopy')) + '"><code>' + codeHtml(c.x) + '</code><button type="button" class="copy-btn" data-cmd="copy" data-i="' + i + '">' + esc(t('copy')) + '</button></div>' +
+          (c.n ? '<div class="cmd-note small">' + esc(L(c.n)) + '</div>' : '') + '</div>';
+      }
+      q('cmd-list').innerHTML = h || '<div class="empty">' + esc(t('none')) + '</div>';
+      q('cmd-count').innerHTML = esc(t('count').replace('{0}', n)) + ' · ' + esc(t('clickCopy'));
+    }
+
+    function onClick(ev) {
+      ev = ev || window.event;
+      var el = ev.target || ev.srcElement;
+      while (el && el !== root && !(el.getAttribute && el.getAttribute('data-cmd'))) el = el.parentNode;
+      if (!el || el === root) return;
+      var a = el.getAttribute('data-cmd'), v = el.getAttribute('data-v'), i = el.getAttribute('data-i');
+      if (ev.stopPropagation) ev.stopPropagation(); ev.cancelBubble = true;
+      if (a === 'copy') {
+        var c = DATA.commands[+i], text = fill(c.x, false);
+        copyText(text, function (ok) { toast(ok ? t('copied') : text, !ok); });
+        var box = el; while (box && !hasClass(box, 'cmd-code')) box = box.parentNode;
+        if (box) { box.className = 'cmd-code flash'; setTimeout(function () { box.className = 'cmd-code'; }, 600); }
+        return;
+      }
+      if (a === 'cat') { S.cat = v; lsSet('cat', v); }
+      else if (a === 'shell') { S.shell = v; lsSet('shell', v); }
+      else if (a === 'favonly') S.favOnly = !S.favOnly;
+      else if (a === 'fav') { var id = idOf(DATA.commands[+i]); if (S.fav[id]) delete S.fav[id]; else S.fav[id] = 1; lsSet('fav', S.fav); }
+      else if (a === 'varsToggle') { S.varsOpen = !S.varsOpen; lsSet('varsOpen', S.varsOpen); }
+      else if (a === 'varsReset') { S.vars = {}; lsSet('vars', S.vars); }
+      renderChrome(); renderList();
+    }
+
+    function onVar(ev) {
+      ev = ev || window.event;
+      var el = ev.target || ev.srcElement, k = el && el.getAttribute && el.getAttribute('data-var');
+      if (!k) return;
+      S.vars[k] = el.value; lsSet('vars', S.vars);
+      renderList();
+    }
+
+    function render() {
+      if (!built || lastLang !== lang()) build();
+      renderChrome(); renderList();
+    }
+    function focus() { var i = root.getElementsByTagName('input')[0]; if (i) i.focus(); }
+    return { render: render, focus: focus };
+  }
+
+  window.CmdView = { mount: mount, data: DATA };
+})();
+
+</script>
+<script>
+(function () {
+  function g(k, d) { try { var v = localStorage.getItem('sk.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }
+  function s(k, v) { try { localStorage.setItem('sk.' + k, JSON.stringify(v)); } catch (e) { } }
+  var lang = g('lang', (navigator.language || 'hu').indexOf('hu') === 0 ? 'hu' : 'en');
+  var theme = g('theme', 'dark');
+  var T = {
+    hu: { title: 'Parancsok', lede: 'CMD és PowerShell parancsok szervizeléshez, offline. Kattints egy parancsra a másoláshoz; a változókat (IP, gépnév…) egyszer állítsd be. A csillaggal kedvencet jelölsz.' },
+    en: { title: 'Commands', lede: 'CMD and PowerShell commands for service work, offline. Click a command to copy it; set the variables (IP, host…) once. Star the ones you use often.' }
+  };
+  var view = CmdView.mount(document.getElementById('cmdRoot'), { lang: function () { return lang; }, toast: toast });
+  var tt;
+  function toast(m, err) { var el = document.getElementById('toast'); el.textContent = m; el.className = 'toast show' + (err ? ' err' : ''); clearTimeout(tt); tt = setTimeout(function () { el.className = 'toast'; }, 1800); }
+  var sun = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  var moon = '<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>';
+  function paint() {
+    document.documentElement.setAttribute('lang', lang);
+    document.body.className = theme === 'light' ? 'light' : 'dark';
+    document.getElementById('langBtn').innerHTML = lang === 'hu' ? 'HU · <span style="opacity:.5">EN</span>' : '<span style="opacity:.5">HU</span> · EN';
+    document.getElementById('themeBtn').innerHTML = theme === 'light' ? moon : sun;
+    document.getElementById('saTitle').innerHTML = T[lang].title;
+    document.getElementById('saLede').innerHTML = T[lang].lede;
+    view.render();
+  }
+  document.getElementById('langBtn').onclick = function () { lang = lang === 'hu' ? 'en' : 'hu'; s('lang', lang); paint(); };
+  document.getElementById('themeBtn').onclick = function () { theme = theme === 'light' ? 'dark' : 'light'; s('theme', theme); paint(); };
+  document.onkeydown = function (e) { e = e || window.event; var tg = (e.target || e.srcElement).tagName; if ((e.keyCode === 191 || (e.ctrlKey && e.keyCode === 75)) && tg !== 'INPUT') { view.focus(); if (e.preventDefault) e.preventDefault(); return false; } };
+  paint();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+JAVITAS
+sfc /scannow
+DISM /Online /Cleanup-Image /RestoreHealth
+rstrui   (rendszer-visszaallitas)
+mdsched  (memoria teszt)
+chkdsk C: /scan

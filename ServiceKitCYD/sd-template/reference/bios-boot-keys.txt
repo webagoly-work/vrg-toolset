@@ -1,0 +1,15 @@
+BIOS / boot menu billentyuk
+
+ASUS      F2 / DEL   boot: F8
+Acer      F2         boot: F12
+Dell      F2         boot: F12
+HP        ESC / F10  boot: F9
+Lenovo    F1 / F2    boot: F12 / Novo
+MSI       DEL        boot: F11
+Gigabyte  DEL        boot: F12
+Samsung   F2         boot: ESC
+Sony      F2 / ASSIST
+Surface   hold Vol-  (power + Vol-)
+
+UEFI-bol: Shift + Ujrainditas -> Harditverhasznalat
+Windows:  shutdown /r /o /t 0
