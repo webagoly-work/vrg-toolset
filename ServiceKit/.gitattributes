@@ -1,0 +1,3 @@
+# ServiceKit is a self-contained drop. Keep .cmd files CRLF byte-for-byte so a
+# GitHub "Download ZIP" yields working batch files (see repo CLAUDE.md).
+*.cmd -text
