@@ -197,6 +197,9 @@ All of them run in the **main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_
 - **`GO OPENWRT`** — read `GO-OPENWRT.md` at the repo root and do what it says: prepare, guide and verify
   OpenWrt on the TP-Link TL-WR1043ND (the user flashes; Claude never touches the router). Asked for 2026-10-26
   with CITY-D24; phases P0–P5, the first is the sticker's hardware version.
+- **`GO ROUTE`** — read `GO-ROUTE.md` at the repo root and do what it says: new wiring features with the
+  Budakalász job as the basis and a PCB-style autorouter (rip-up-and-reroute, negotiated congestion) as the model.
+  Follows `docs/workflow/MONEY-PATH-AUDIT_2026-10.md`; starts by asking the user (job, features, router scope, licences).
 - **`GO STRICT`** — **done**: the five programs VRG Kapu links to are on `main` (`check-hub --strict` → Rendben). Retired.
 - **`GO ALL`** — **retired** 2026-10-24: `dev-all` is replaced by `main`. See GO MAIN.
 - **`GO MAIN`** — **done** 2026-10-24 (`GO-MAIN.md`): every line consolidated into `main`, the other
