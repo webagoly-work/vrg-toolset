@@ -93,7 +93,7 @@ object Catalogue {
     )
     val SETTINGS = FeatureInfo(
         "settings", "Beállítások", "Megjelenés (Mélyvíz paletták, méret), fiókok, párosított PC-k, napló.",
-        "⚙", Group.APP, Stage.PLANNED, "M1",
+        "⚙", Group.APP, Stage.BETA, "M1",
     )
 
     val ALL: List<FeatureInfo> = listOf(

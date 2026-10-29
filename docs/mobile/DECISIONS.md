@@ -19,6 +19,11 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
 - **D-5 · Start screen** (2026-10-29). The app reopens the feature that was on screen last, and Back goes
   home. So a Légegér user lands on the deck, as before.
 
+- **M1 · Where the look is set** (2026-10-29, no question needed). Palette and size are the shell's
+  (`ShellSettings` in kit), applied by `ShellActivity` around every screen. Légegér's ⚙ keeps a Megjelenés
+  line that shows the current look and opens Beállítások; it has no palette of its own. Its stored look is
+  handed over once on the first M1 start (`ShellPrefs.adoptLook`), then removed from Légegér's store.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-6 · Chat-log branch (M6).** A) one branch `mobile-log`, one file per day `log/YYYY-MM-DD.md`;

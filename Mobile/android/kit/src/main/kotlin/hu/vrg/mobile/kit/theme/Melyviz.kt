@@ -100,6 +100,7 @@ object Palettes {
         onGlow = Color(0xFFFFFFFF), shallows = Color(0xFFD4ECF1),
     )
 
+    /** Same ids, same order as `Look.PALETTES` in kit-core, which the stored setting is checked against. */
     val ALL = listOf(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY)
 
     fun byId(id: String?): Palette = ALL.firstOrNull { it.id == id } ?: MELYVIZ

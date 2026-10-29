@@ -29,4 +29,5 @@ dependencies {
     api("androidx.activity:activity-compose:1.9.3")
     api("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     api("androidx.core:core-ktx:1.15.0")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")   // ShellSettings, VrgLog
 }

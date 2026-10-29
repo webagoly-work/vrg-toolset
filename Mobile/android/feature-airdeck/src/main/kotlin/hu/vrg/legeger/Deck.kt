@@ -30,6 +30,7 @@ import hu.vrg.legeger.core.Throttle
 import hu.vrg.legeger.hid.HidPeripheral
 import hu.vrg.legeger.motion.MotionSource
 import hu.vrg.legeger.relay.RelayClient
+import hu.vrg.mobile.kit.VrgLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -135,6 +136,7 @@ object Deck {
         scope.launch { target.collect { padMode.value = Profiles.of(it).padMode } }
         scope.launch { relay.notes.collect { notes.emit(it) } }
         scope.launch { relay.shots.collect { onShot(it) } }
+        logLinks()
 
         motion.onGyro = ::onGyro
         motion.onPose = ::onPose
@@ -153,6 +155,31 @@ object Deck {
     }
 
     fun setForeground(on: Boolean) { foreground.value = on }
+
+    /** Connects and disconnects, for Beállítások → Napló. Only the edges: a relay retrying stays quiet. */
+    private fun logLinks() {
+        val tag = AirDeckFeature.info.id
+        scope.launch {
+            var was: HidPeripheral.Phase? = null
+            hid.phase.collect { p ->
+                when {
+                    p == HidPeripheral.Phase.CONNECTED -> VrgLog.i(tag, "Bluetooth: csatlakozva — ${hid.hostLabel() ?: "?"}")
+                    was == HidPeripheral.Phase.CONNECTED -> VrgLog.i(tag, "Bluetooth: bontva")
+                    p == HidPeripheral.Phase.NO_PERMISSION -> VrgLog.w(tag, "Bluetooth: nincs engedély")
+                    p == HidPeripheral.Phase.UNSUPPORTED -> VrgLog.w(tag, "Bluetooth: a telefon nem engedi a HID módot")
+                }
+                was = p
+            }
+        }
+        scope.launch {
+            var was = RelayClient.Link.OFF
+            relay.link.collect { l ->
+                if (l == RelayClient.Link.OPEN) VrgLog.i(tag, "Relé: kapcsolódva — ${settings.value.relayUrl}")
+                else if (was == RelayClient.Link.OPEN) VrgLog.i(tag, if (l == RelayClient.Link.OFF) "Relé: bontva" else "Relé: megszakadt, újrapróbálom")
+                was = l
+            }
+        }
+    }
 
     fun connectRelay(url: String) {
         val u = RelayClient.normalize(url)

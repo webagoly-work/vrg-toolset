@@ -58,7 +58,7 @@ import java.io.File
 enum class Sheet { NONE, KEYS, SETTINGS, SHOTS, MACROS }
 
 @Composable
-fun DeckScreen(onAskPermissions: () -> Unit, onDictate: () -> Unit) {
+fun DeckScreen(onAskPermissions: () -> Unit, onDictate: () -> Unit, onShellSettings: () -> Unit) {
     val s by Deck.settings.flow.collectAsStateWithLifecycle()
     val target by Deck.target.collectAsStateWithLifecycle()
     val pinned by Deck.pinned.collectAsStateWithLifecycle()
@@ -276,7 +276,10 @@ fun DeckScreen(onAskPermissions: () -> Unit, onDictate: () -> Unit) {
 
         when (sheet) {
             Sheet.KEYS -> KeysSheet(target, onDictate) { sheet = Sheet.NONE }
-            Sheet.SETTINGS -> SettingsSheet(onAskPermissions, onMacros = { sheet = Sheet.MACROS }) { sheet = Sheet.NONE }
+            Sheet.SETTINGS -> SettingsSheet(
+                onAskPermissions, onMacros = { sheet = Sheet.MACROS },
+                onShellSettings = { sheet = Sheet.NONE; onShellSettings() },
+            ) { sheet = Sheet.NONE }
             Sheet.MACROS -> MacroSheet { sheet = Sheet.NONE }
             Sheet.SHOTS -> ShotSheet(shotOpen ?: shots.firstOrNull(), onPick = { shotOpen = it }) { sheet = Sheet.NONE }
             Sheet.NONE -> {}

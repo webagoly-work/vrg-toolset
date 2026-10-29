@@ -33,9 +33,7 @@ data class DeckSettings(
     val haptics: Boolean = true,
     val keepScreenOn: Boolean = true,
     val padSpeed: Float = 1.6f,
-    // look
-    val palette: String = "melyviz",
-    val uiScale: Float = 1f,
+    // look (the palette and the UI size are the shell's since WP M1: ShellSettings in kit)
     val hidden: Set<Section> = emptySet(),
     val lefty: Boolean = false,            // mirror the button row for the left hand
     // pad
@@ -62,6 +60,17 @@ class SettingsStore(ctx: Context) {
         save(n)
     }
 
+    /**
+     * The look Légegér stored before WP M1 (palette, UI size), removed from its store as it is read.
+     * AirDeckFeature hands it to the shell once; nulls when there was none.
+     */
+    fun takeLegacyLook(): Pair<String?, Float?> {
+        val palette = sp.getString("palette", null)
+        val scale = if (sp.contains("uiScale")) sp.getFloat("uiScale", 1f) else null
+        if (palette != null || scale != null) sp.edit().remove("palette").remove("uiScale").apply()
+        return palette to scale
+    }
+
     private fun load(): DeckSettings {
         val d = DeckSettings()
         return DeckSettings(
@@ -82,8 +91,6 @@ class SettingsStore(ctx: Context) {
             haptics = sp.getBoolean("haptics", d.haptics),
             keepScreenOn = sp.getBoolean("keepScreenOn", d.keepScreenOn),
             padSpeed = sp.getFloat("padSpeed", d.padSpeed),
-            palette = sp.getString("palette", d.palette) ?: d.palette,
-            uiScale = sp.getFloat("uiScale", d.uiScale),
             hidden = (sp.getString("hidden", "") ?: "").split(',')
                 .mapNotNull { n -> Section.entries.firstOrNull { it.name == n } }.toSet(),
             lefty = sp.getBoolean("lefty", d.lefty),
@@ -115,8 +122,6 @@ class SettingsStore(ctx: Context) {
             .putBoolean("haptics", s.haptics)
             .putBoolean("keepScreenOn", s.keepScreenOn)
             .putFloat("padSpeed", s.padSpeed)
-            .putString("palette", s.palette)
-            .putFloat("uiScale", s.uiScale)
             .putString("hidden", s.hidden.joinToString(",") { it.name })
             .putBoolean("lefty", s.lefty)
             .putBoolean("padGestures", s.padGestures)

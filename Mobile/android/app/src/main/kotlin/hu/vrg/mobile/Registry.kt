@@ -4,6 +4,7 @@ import hu.vrg.legeger.AirDeckFeature
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.FeatureInfo
 import hu.vrg.mobile.kit.VrgFeature
+import hu.vrg.mobile.settings.SettingsFeature
 
 // The features built into this APK. Adding one: a feature-<id> module with an object implementing
 // VrgFeature, its FeatureInfo in Catalogue (stage LIVE or BETA), a line here, and the module in
@@ -13,6 +14,7 @@ import hu.vrg.mobile.kit.VrgFeature
 object Registry {
     val built: List<VrgFeature> = listOf(
         AirDeckFeature,
+        SettingsFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

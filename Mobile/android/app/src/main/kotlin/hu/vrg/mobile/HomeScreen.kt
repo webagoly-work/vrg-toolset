@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.FeatureInfo
 import hu.vrg.mobile.core.Stage
 import hu.vrg.mobile.kit.theme.Melyviz
@@ -36,8 +37,16 @@ fun HomeScreen(onOpen: (String) -> Unit) {
         Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        Text("VRG MOBILE", style = Melyviz.title.copy(fontSize = 18.sp))
-        Text("A VRG munka társalkalmazása", style = Melyviz.small)
+        Row {
+            Column(Modifier.weight(1f)) {
+                Text("VRG MOBILE", style = Melyviz.title.copy(fontSize = 18.sp))
+                Text("A VRG munka társalkalmazása", style = Melyviz.small)
+            }
+            Text(
+                Catalogue.SETTINGS.glyph, style = Melyviz.glyph.copy(color = Melyviz.muted),
+                modifier = Modifier.clickable { onOpen(Catalogue.SETTINGS.id) }.padding(8.dp),
+            )
+        }
         Spacer(Modifier.height(8.dp))
         Registry.catalogue.forEach { (group, items) ->
             Text(group.label.uppercase(), style = Melyviz.small.copy(letterSpacing = 1.6.sp), modifier = Modifier.padding(top = 14.dp, bottom = 6.dp))

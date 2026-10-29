@@ -10,21 +10,15 @@ import android.view.KeyEvent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Density
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.legeger.core.Hid
 import hu.vrg.legeger.hid.HidPeripheral
 import hu.vrg.legeger.ui.DeckScreen
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.Route
 import hu.vrg.mobile.kit.FeatureHost
+import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.VrgFeature
-import hu.vrg.mobile.kit.theme.Melyviz
-import hu.vrg.mobile.kit.theme.Palettes
 
 // Légegér as a VRG Mobile feature. This is what used to be its MainActivity and Application: the
 // shell now owns the Activity, so the permission and dictation launchers are Compose launchers, the
@@ -35,8 +29,9 @@ object AirDeckFeature : VrgFeature {
 
     override fun init(app: Application) {
         Deck.init(app)
-        // Until the shell has its own Megjelenés (WP M1), Légegér's palette is the app's palette.
-        Melyviz.palette = Palettes.byId(Deck.settings.value.palette)
+        // Before WP M1 the look was Légegér's setting; the shell takes it over once and owns it from then on.
+        val (palette, scale) = Deck.settings.takeLegacyLook()
+        ShellSettings.adoptLook(palette, scale)
     }
 
     private val permissions: Array<String>
@@ -74,22 +69,19 @@ object AirDeckFeature : VrgFeature {
             if (missing.isEmpty()) Deck.hid.start() else askPermissions.launch(missing.toTypedArray())
         }
         LaunchedEffect(Unit) {
-            Deck.settings.flow.collect { s ->
-                host.keepScreenOn(s.keepScreenOn)
-                Melyviz.palette = Palettes.byId(s.palette)   // Compose state: the shell recolours too
-            }
+            Deck.settings.flow.collect { s -> host.keepScreenOn(s.keepScreenOn) }
         }
         // The service keeps the link up in the background; it is only needed once a PC is connected.
         LaunchedEffect(Unit) {
             Deck.hid.phase.collect { if (it == HidPeripheral.Phase.CONNECTED) DeckService.start(act) }
         }
 
-        val s by Deck.settings.flow.collectAsStateWithLifecycle()
-        // UI size: the whole deck scales together, text included
-        val d = LocalDensity.current
-        CompositionLocalProvider(LocalDensity provides Density(d.density * s.uiScale, d.fontScale)) {
-            DeckScreen(onAskPermissions = { askPermissions.launch(permissions) }, onDictate = startDictation)
-        }
+        // The palette and the UI size come from the shell (Beállítások), around every screen.
+        DeckScreen(
+            onAskPermissions = { askPermissions.launch(permissions) },
+            onDictate = startDictation,
+            onShellSettings = { host.open(Catalogue.SETTINGS.id) },
+        )
     }
 
     /** vrgdeck://connect?ws=ws://host:port, or the Planner's own QR, both routed here by the shell. */

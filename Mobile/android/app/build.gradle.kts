@@ -16,6 +16,9 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
+        // GitHub Actions sets GITHUB_SHA; a desktop build says so instead. Beállítások -> Névjegy shows it.
+        // The "git:" prefix keeps an all-digit SHA from being read back as a number from the manifest.
+        manifestPlaceholders["gitSha"] = "git:" + (System.getenv("GITHUB_SHA")?.take(7) ?: "helyi")
     }
 
     buildTypes {
@@ -38,4 +41,5 @@ android {
 dependencies {
     implementation(project(":kit"))
     implementation(project(":feature-airdeck"))
+    implementation(project(":feature-settings"))
 }

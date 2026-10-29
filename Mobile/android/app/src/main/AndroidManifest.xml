@@ -13,6 +13,9 @@
         android:theme="@style/Theme.VrgMobile"
         tools:targetApi="35">
 
+        <!-- The commit this APK was built from, shown in Beállítások -> Névjegy (set in build.gradle.kts). -->
+        <meta-data android:name="vrg.gitSha" android:value="${gitSha}" />
+
         <!-- The one Activity. Every link is routed to a feature by hu.vrg.mobile.core.Links. -->
         <activity
             android:name=".ShellActivity"

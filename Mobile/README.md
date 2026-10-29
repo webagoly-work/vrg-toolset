@@ -16,10 +16,13 @@ Mobile/
   docs/legeger.md       Légegér's manual
   tests/relay-e2e.js    relay + real Kódváros page + fake Planner + fake phone
   android/
-    kit-core/           pure Kotlin: Feature catalogue (Feature.kt), link routing (Links.kt) + tests
-    kit/                Android: Mélyvíz theme (theme/Melyviz.kt), the feature contract (VrgFeature.kt)
+    kit-core/           pure Kotlin: Feature catalogue (Feature.kt), link routing (Links.kt),
+                        shell settings rules (ShellPrefs.kt), the log buffer (LogBook.kt) + tests
+    kit/                Android: Mélyvíz theme (theme/Melyviz.kt), the feature contract (VrgFeature.kt),
+                        ShellSettings (look, start screen, paired PCs), VrgLog, shared parts (ui/Parts.kt)
     app/                the shell and the APK (hu.vrg.mobile): ShellActivity · HomeScreen · Registry
     feature-airdeck/    Légegér (package hu.vrg.legeger): Deck engine, HID, relay client, deck UI
+    feature-settings/   Beállítások (WP M1): Megjelenés · Indulás · Párosított PC-k · Névjegy · Napló
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
 ```
 

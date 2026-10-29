@@ -2,11 +2,8 @@ package hu.vrg.legeger.ui
 
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -14,10 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
@@ -30,29 +24,28 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.legeger.Deck
 import hu.vrg.legeger.Section
 import hu.vrg.legeger.hid.HidPeripheral
 import hu.vrg.legeger.relay.Discovery
 import hu.vrg.legeger.relay.RelayClient
+import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.theme.Melyviz
-import hu.vrg.mobile.kit.theme.Palette
 import hu.vrg.mobile.kit.theme.Palettes
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onClose: () -> Unit) {
+fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onShellSettings: () -> Unit, onClose: () -> Unit) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val s by Deck.settings.flow.collectAsStateWithLifecycle()
+    val look by ShellSettings.flow.collectAsStateWithLifecycle()
     val phase by Deck.hid.phase.collectAsStateWithLifecycle()
     val host by Deck.hid.host.collectAsStateWithLifecycle()
     val hostIsPhone by Deck.hid.hostIsPhone.collectAsStateWithLifecycle()
@@ -68,11 +61,10 @@ fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onClose: (
         Text("Beállítások", style = Melyviz.title)
 
         // ---- look ------------------------------------------------------------------------------
-        SectionTitle("Megjelenés — paletta")
-        Palettes.ALL.forEach { p ->
-            PaletteRow(p, selected = s.palette == p.id) { Deck.settings.update { it.copy(palette = p.id) } }
-        }
-        Tune("Kezelőfelület mérete", s.uiScale, 0.8f..1.3f, "%.2f×") { v -> Deck.settings.update { it.copy(uiScale = v) } }
+        // The palette and the size belong to the whole app since WP M1: shown here, set in Beállítások.
+        SectionTitle("Megjelenés")
+        Text("${Palettes.byId(look.palette).name}  ·  méret ${"%.2f".format(look.uiScale)}×", style = Melyviz.small)
+        Row(Modifier.padding(top = 6.dp)) { Chip("Az alkalmazás beállításai ›", false) { onShellSettings() } }
 
         // ---- what is on the deck ---------------------------------------------------------------
         SectionTitle("Képernyő elemei")
@@ -194,24 +186,5 @@ fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onClose: (
         Toggle("Hangerő gombok = bal / jobb kattintás", s.volumeClicks) { v -> Deck.settings.update { it.copy(volumeClicks = v) } }
         Toggle("Rezgés visszajelzés", s.haptics) { v -> Deck.settings.update { it.copy(haptics = v) } }
         Toggle("Képernyő ébren tartása", s.keepScreenOn) { v -> Deck.settings.update { it.copy(keepScreenOn = v) } }
-    }
-}
-
-/** One palette: its name and a strip of its colours, so it can be chosen without trying each. */
-@Composable
-private fun PaletteRow(p: Palette, selected: Boolean, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(Melyviz.radiusSmall)
-    Row(
-        Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(shape)
-            .background(p.surface)
-            .border(if (selected) 2.dp else 1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
-            .clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 9.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(p.name, style = Melyviz.label.copy(color = p.ink, fontSize = 12.sp), modifier = Modifier.weight(1f))
-        listOf(p.abyss, p.raised, p.line, p.glow, p.current, p.sand, p.coral).forEach { c ->
-            Box(Modifier.padding(start = 4.dp).size(14.dp).clip(CircleShape).background(c).border(1.dp, p.line, CircleShape))
-        }
-        if (selected) Text("  ✓", style = Melyviz.label.copy(color = p.glow))
     }
 }

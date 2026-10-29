@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,18 +26,24 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.Links
 import hu.vrg.mobile.kit.FeatureHost
+import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.theme.MelyvizTheme
+import hu.vrg.mobile.kit.theme.Palettes
 import kotlinx.coroutines.delay
 
 // The one Activity. It shows either the home screen or one feature, routes links and keys to the
 // feature on screen, and owns everything window-wide (system bars, keep-screen-on) so a feature
-// leaving never leaves its flags behind.
+// leaving never leaves its flags behind. The look (palette, size) is the shell's too (ShellSettings,
+// WP M1): it is applied here, around every screen, so no feature keeps a look of its own.
 
 class ShellActivity : ComponentActivity(), FeatureHost {
 
@@ -50,12 +57,17 @@ class ShellActivity : ComponentActivity(), FeatureHost {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Back where the user left off: a Légegér user lands on the deck, not on a menu.
+        // Back where the user left off (D-5): a Légegér user lands on the deck, not on a menu.
         current = savedInstanceState?.getString(KEY_CURRENT)
-            ?: prefs.getString(KEY_LAST, null)?.takeIf { Registry.feature(it) != null }
+            ?: prefs.getString(KEY_LAST, null)?.takeIf { ShellSettings.value.startInLast && Registry.feature(it) != null }
+        Melyviz.palette = Palettes.byId(ShellSettings.value.palette)
 
         setContent {
-            MelyvizTheme {
+            val look by ShellSettings.flow.collectAsStateWithLifecycle()
+            LaunchedEffect(look.palette) { Melyviz.palette = Palettes.byId(look.palette) }
+            // UI size: every screen scales together, text included
+            val d = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(d.density * look.uiScale, d.fontScale)) { MelyvizTheme {
                 LaunchedEffect(Unit) { snapshotFlow { Melyviz.palette }.collect { applyBars() } }
                 Box(Modifier.fillMaxSize().background(Melyviz.water)) {
                     val id = current
@@ -75,7 +87,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                     }
                     Note(message, Modifier.align(Alignment.BottomCenter))
                 }
-            }
+            } }
         }
         handleLink(intent)
     }
