@@ -138,6 +138,8 @@ goto DONE_PAUSE
 if not exist "%NODE_EXE%" goto NO_NODE
 if not exist "%PLANNER_DIR%\node_modules\ws" goto NO_WS
 pushd "%REPO%"
+rem QR pairing (WP M2): Node only, own port 47391, no Playwright needed
+"%NODE_EXE%" "Mobile\tests\relay-pair.js"
 "%NODE_EXE%" -e "require.resolve('playwright')" >nul 2>&1
 if errorlevel 1 goto NO_PLAYWRIGHT
 "%NODE_EXE%" "Mobile\tests\relay-e2e.js"

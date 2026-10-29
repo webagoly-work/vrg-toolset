@@ -114,7 +114,9 @@ strip.
 Because anyone on the WiFi could otherwise ask to see the screen, the relay only captures when
 started with **`--shots`**. `mobile.cmd → 1` starts it that way; START.cmd → G does not. Captures are
 served under random 128-bit names for 10 minutes and logged on the relay console. Only a client that
-introduced itself as a phone may ask, and only that phone receives the answer.
+introduced itself as a phone may ask, and only that phone receives the answer. **Since VRG Mobile M2 the
+phone must also be paired** (QR párosítás: open `http://localhost:47291/pair` on the PC and scan it);
+an unpaired phone still controls everything, but gets a "párosítás kell" note instead of a picture.
 
 ## More that the deck does
 
@@ -165,7 +167,10 @@ over all of its features:
 - **`screenshot.request`** (`to:'relay'`, phones only, needs `--shots`): the relay captures the PC
   and answers `{type:'screenshot', payload:{ok, url:'/shot/<hex>.png', name, bytes}}` to the asking
   phone. `GET /shot/<hex>.png` serves it for 10 minutes. `RELAY_SHOT_FILE=<png>` stands in for the
-  capture, for tests.
+  capture, for tests. Since M2 it also needs a **trusted** phone (see below).
+- **Pairing (VRG Mobile M2, 29 Oct)**: `welcome` (the relay's answer to a phone hello: challenge + PC),
+  `pair` → `paired`, `auth` → `trust`, `unpair`; `/pair` and its JSON only for the PC's own screen.
+  The handshake is described in `tools/relay-pair.js`, tested by `Mobile/tests/relay-pair.js`.
 
 App side: the Planner (`src/07a-link.js`) now sends `focus`. Kódváros gets
 `CodeCity/src/36-link.js`, which finds the relay on 127.0.0.1:47291..47298 by itself and maps the
@@ -219,7 +224,7 @@ AirDeck/
                  (chords, HU/US layouts) · Motion.kt (AirPointer, FlickDetector, Scrubber, Pose, FaceDown) ·
                  Gestures.kt (pad gestures, pinch zoom) · Macros.kt (script, storage) · Profiles.kt (5 targets)
     app/         Android: Deck.kt (the engine) · ShotStore.kt · Settings.kt · hid/HidPeripheral.kt ·
-                 motion/MotionSource.kt · relay/RelayClient.kt, Discovery.kt · DeckService.kt ·
+                 motion/MotionSource.kt · relay/RelayClient.kt (on kit's shared Relay since M2) · DeckService.kt ·
                  ui/ DeckScreen · Controls (touchpad) · Sheets (keyboard) · SettingsSheet · MacroSheet ·
                  ShotSheet · theme/Melyviz.kt (palettes)
   tests/relay-e2e.js   relay + real Kódváros page (headless Chromium) + fake Planner + fake phone

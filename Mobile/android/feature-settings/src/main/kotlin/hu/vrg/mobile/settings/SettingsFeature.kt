@@ -32,6 +32,8 @@ import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.kit.VrgLog
+import hu.vrg.mobile.kit.relay.Relay
+import hu.vrg.mobile.kit.relay.Trust
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.theme.Palettes
 import hu.vrg.mobile.kit.ui.PaletteRow
@@ -57,6 +59,8 @@ object SettingsFeature : VrgFeature {
     override fun Screen(host: FeatureHost) {
         val s by ShellSettings.flow.collectAsStateWithLifecycle()
         val log by VrgLog.lines.collectAsStateWithLifecycle()
+        val livePc by Relay.pc.collectAsStateWithLifecycle()
+        val trust by Relay.trust.collectAsStateWithLifecycle()
         val ctx = LocalContext.current
         val clipboard = LocalClipboardManager.current
         val about = remember { About.read(ctx) }
@@ -94,13 +98,11 @@ object SettingsFeature : VrgFeature {
             } else s.pairedPcs.forEach { pc ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text(pc.name.ifBlank { pc.id }, style = Melyviz.label)
+                        Text(pc.name.ifBlank { pc.pcId } + if (livePc?.id == pc.pcId && trust == Trust.TRUSTED) "  ✓ vonalban" else "", style = Melyviz.label)
                         Text("${pc.relay}  ·  ${DAY.format(Date(pc.pairedAt))}", style = Melyviz.readout)
                     }
-                    VrgChip("Törlés") {
-                        ShellSettings.update { p -> p.copy(pairedPcs = p.pairedPcs.filterNot { it.id == pc.id }) }
-                        VrgLog.i(info.id, "Párosítás törölve: ${pc.name}")
-                    }
+                    // also removed on the PC when it is the one connected (Relay sends unpair)
+                    VrgChip("Törlés") { Relay.forget(pc) }
                 }
             }
             Row(Modifier.padding(top = 8.dp)) { VrgChip("QR párosítás ›") { host.open(Catalogue.PAIR.id) } }
@@ -139,11 +141,12 @@ object SettingsFeature : VrgFeature {
 
     private val DAY = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ROOT)
 
-    /** What this APK is made of. Every entry is Apache 2.0, which asks for the notice, not the text. */
+    /** What this APK is made of. Apache 2.0 asks for the notice, not the text; ML Kit comes under Google's own terms. */
     private val NOTICES = listOf(
         "Kotlin, kotlinx.coroutines (JetBrains)" to "Apache 2.0",
-        "AndroidX, Jetpack Compose, Material 3 (Google)" to "Apache 2.0",
+        "AndroidX, Jetpack Compose, Material 3, CameraX (Google)" to "Apache 2.0",
         "OkHttp, Okio (Square)" to "Apache 2.0",
+        "ML Kit vonalkód-olvasó (Google)" to "ML Kit Terms",
     )
 }
 

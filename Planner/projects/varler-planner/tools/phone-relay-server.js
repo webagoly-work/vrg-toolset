@@ -57,6 +57,15 @@
 //   could otherwise look at the screen. AirDeck\legeger.cmd starts the relay with it; START.cmd G
 //   does not. Every capture is logged on the console with the asking address.
 //   RELAY_SHOT_FILE=<png> answers with that file instead of capturing — tests and headless boxes.
+//
+// CHANGED 29 Oct — QR pairing (VRG Mobile, WP M2; the handshake is described in relay-pair.js).
+//   * GET /pair (only from this PC itself) shows a QR with a one-time code; a phone that scans it and
+//     sends {type:'pair'} with the code becomes TRUSTED, and proves it on every later connect by
+//     signing the challenge of the relay's {type:'welcome'} with its Keystore key.
+//   * Everything that acts on this PC needs a trusted phone: screenshots now (--shots still has to be
+//     on as well), the later ports / launch / drop too. Plain control (keys, cmd, gestures, state)
+//     is unchanged, so an unpaired phone-sender.html still drives the Planner.
+//   * /pair/code.json, /pair/list.json and POST /pair/remove?id= serve the page; same local-only rule.
 // ==========================================================================
 
 const http = require('http');
@@ -66,6 +75,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { execFile } = require('child_process');
 const { WebSocketServer } = require('ws');
+const pairing = require('./relay-pair');
 
 const DEFAULT_PORT = 47291;
 const MAX_TRIES = 8;                       // 47291..47298
@@ -73,6 +83,7 @@ const MAX_TRIES = 8;                       // 47291..47298
 const ARGS = process.argv.slice(2);
 const wanted = Number(ARGS.find(a => /^\d+$/.test(a))) || Number(process.env.GYRO_PORT) || DEFAULT_PORT;
 const SHOTS = ARGS.includes('--shots') || process.env.RELAY_SHOTS === '1';
+const PAIRS = pairing.createPairing();
 const SENDER_PAGE = path.join(__dirname, '..', 'mobile', 'phone-sender.html');
 const SENDER_FALLBACK = path.join(__dirname, 'phone-sender.html');
 
@@ -222,6 +233,9 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // ---- /pair — the pairing QR, for this PC's own screen only (see the 29 Oct note) ----------
+  if (url === '/pair' || url.startsWith('/pair/')) { servePair(req, res, url); return; }
+
   // ---- /shot/<hex>.png — a capture made for a phone (see the 28 Oct note) --
   const sm = /^\/shot\/([0-9a-f]{32})\.png$/.exec(url);
   if (sm && SHOTS) {
@@ -237,6 +251,47 @@ const server = http.createServer((req, res) => {
   res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
   res.end('Not found');
 });
+
+function servePair(req, res, url) {
+  const own = lanAddresses().map(a => a.address);
+  const json = (code, o) => {
+    res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    res.end(JSON.stringify(o));
+  };
+  if (!pairing.isLocal(clientIp(req), own) || !pairing.isLocalHost(req.headers.host, own)) {
+    console.log(`  ! parositas elutasitva: ${clientIp(req)} (csak a PC sajat kepernyojen)`);
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('A párosító oldal csak ezen a PC-n nyitható meg: http://localhost:' + server.address().port + '/pair');
+    return;
+  }
+  if (url === '/pair') {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+    res.end(pairing.pairPage());
+    return;
+  }
+  if (url === '/pair/code.json') {
+    const port = server.address().port;
+    const addrs = lanAddresses();
+    const want = new URL(req.url, 'http://x').searchParams.get('ip');
+    const pick = addrs.find(a => a.address === want) || addrs[0];
+    if (!pick) { json(200, { ok: false, reason: 'Nincs WiFi / LAN cím: csatlakozz hálózatra.' }); return; }
+    const c = PAIRS.newCode();
+    const link = pairing.pairLink(`ws://${pick.address}:${port}`, c.code, PAIRS.pc().name);
+    console.log(`  [par] parosito kod: ${c.code}  (2 percig, egyszer)  ${pick.address}`);
+    json(200, { ok: true, link, svg: pairing.qrSvg(link), ttl: c.ttl, address: pick.address,
+      addresses: addrs.map(a => ({ address: a.address, name: a.name })) });
+    return;
+  }
+  if (url === '/pair/list.json') { json(200, { ok: true, pc: PAIRS.pc(), phones: PAIRS.list() }); return; }
+  if (url === '/pair/remove' && req.method === 'POST') {
+    const id = new URL(req.url, 'http://x').searchParams.get('id');
+    const ok = PAIRS.remove(id);
+    if (ok) { untrust(id); console.log(`  [par] parositas torolve a PC-n: ${id}`); }
+    json(200, { ok });
+    return;
+  }
+  json(404, { ok: false });
+}
 
 const wss = new WebSocketServer({ server });
 const clients = new Set();
@@ -260,6 +315,19 @@ function roster() {
   return out;
 }
 
+/** A phone that paired, or proved its key this connection. The gate for everything that acts on the PC. */
+function isTrusted(ws) { return !!ws.__trusted; }
+
+/** A pairing removed (on the PC or by the phone): its live connections stop being trusted at once. */
+function untrust(id) {
+  for (const c of clients) {
+    if (c.__pairId === id) {
+      c.__trusted = false; c.__pairId = null;
+      if (c.readyState === c.OPEN) c.send(fromRelay('trust', { ok: false, id, pc: PAIRS.pc(), reason: 'A párosítást törölték.' }));
+    }
+  }
+}
+
 function toPhones(raw) {
   for (const c of clients) if (c.readyState === c.OPEN && roleOf(c) === PHONE) c.send(raw);
 }
@@ -279,6 +347,8 @@ function deliverTo(ws, other, from, to) {
 
 wss.on('connection', (ws, req) => {
   clients.add(ws);
+  ws.__challenge = PAIRS.challenge();
+  ws.__trusted = false;
   const ip = (req.socket.remoteAddress || '').replace(/^::ffff:/, '');
   console.log(`  + csatlakozott: ${ip}   (${clients.size} kliens)`);
 
@@ -300,14 +370,26 @@ wss.on('connection', (ws, req) => {
       if (isApp(ws.__role)) ws.__hello = payload;     // replayed to phones that arrive later
       if (first) console.log(`    ${ip} = ${ws.__role} ${ws.__app || ''}`);
       if (ws.__role === PHONE) {
+        // the hello answer: the challenge a paired phone signs, and which PC this is
+        ws.send(fromRelay('welcome', { challenge: ws.__challenge, pc: PAIRS.pc(), pairing: true }));
         for (const c of clients) {
           if (c !== ws && c.readyState === c.OPEN && c.__hello && isApp(roleOf(c))) ws.send(c.__hello);
         }
       }
     }
 
+    if (m && to === 'relay' && (m.type === 'pair' || m.type === 'auth' || m.type === 'unpair')) {
+      if (roleOf(ws) === PHONE) onPairMessage(ws, ip, m.type, m.payload || {});
+      return;
+    }
+
     if (m && m.type === 'screenshot.request' && to === 'relay') {
       if (roleOf(ws) !== PHONE) return;
+      if (!isTrusted(ws)) {
+        ws.send(fromRelay('screenshot', { ok: false, trusted: false,
+          reason: 'Párosítás kell: a PC-n nyisd meg a http://localhost:' + server.address().port + '/pair oldalt, és olvasd be a QR-t.' }));
+        return;
+      }
       takeShot(ws, ip, (m.payload && m.payload.mode) === 'window' ? 'window' : 'screen');
       return;
     }
@@ -338,6 +420,40 @@ wss.on('connection', (ws, req) => {
 
   ws.on('error', err => console.log(`  ! socket hiba: ${err.message}`));
 });
+
+/* ---- pairing messages (relay-pair.js has the handshake) ------------------ */
+
+function onPairMessage(ws, ip, type, p) {
+  const pc = PAIRS.pc();
+  if (type === 'pair') {
+    const r = PAIRS.pair(p.code, p.device, p.pub);
+    if (r.ok) {
+      ws.__trusted = true; ws.__pairId = r.id;
+      console.log(`  [par] parositva: ${ip} = ${String(p.device || 'telefon').slice(0, 40)}  (${r.id})`);
+    } else {
+      console.log(`  ! parositas sikertelen (${ip}): ${r.reason}`);
+    }
+    ws.send(fromRelay('paired', Object.assign({ pc }, r)));
+    return;
+  }
+  if (type === 'auth') {
+    const ok = PAIRS.verify(p.id, ws.__challenge, p.sig);
+    ws.__challenge = PAIRS.challenge();      // one try per challenge
+    ws.__trusted = ok; ws.__pairId = ok ? p.id : null;
+    if (ok) console.log(`  [par] megbizhato telefon: ${ip} (${p.id})`);
+    ws.send(fromRelay('trust', { ok, id: p.id || null, pc, challenge: ws.__challenge,
+      reason: ok ? null : 'Ez a telefon nincs párosítva ezzel a PC-vel.' }));
+    return;
+  }
+  if (type === 'unpair') {
+    // only the phone itself, proven this connection, can remove its own pairing
+    if (isTrusted(ws) && ws.__pairId && ws.__pairId === p.id) {
+      PAIRS.remove(p.id);
+      console.log(`  [par] parositas torolve a telefonon: ${ip} (${p.id})`);
+      untrust(p.id);
+    }
+  }
+}
 
 /* ---- screenshots -------------------------------------------------------- */
 
@@ -487,7 +603,8 @@ server.on('listening', () => {
   }
   console.log('');
   console.log('   Telefon és PC UGYANAZON a WiFi-n legyen.');
-  console.log(SHOTS ? '   Képernyőkép a telefonra: BEKAPCSOLVA (--shots)' : '   Képernyőkép a telefonra: ki (indítás --shots kapcsolóval)');
+  console.log(SHOTS ? '   Képernyőkép a telefonra: BEKAPCSOLVA (--shots, párosított telefonnak)' : '   Képernyőkép a telefonra: ki (indítás --shots kapcsolóval)');
+  console.log(`   VRG Mobile párosítás (ezen a PC-n): http://localhost:${port}/pair`);
   console.log('   Mobiladat nem jó.');
   console.log('  ===========================================');
   console.log('');

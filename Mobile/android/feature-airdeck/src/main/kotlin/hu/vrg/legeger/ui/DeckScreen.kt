@@ -50,7 +50,7 @@ import hu.vrg.legeger.core.Profiles
 import hu.vrg.legeger.core.Send
 import hu.vrg.legeger.core.Target
 import hu.vrg.legeger.hid.HidPeripheral
-import hu.vrg.legeger.relay.RelayClient
+import hu.vrg.mobile.kit.relay.LinkState
 import hu.vrg.mobile.kit.theme.Melyviz
 import kotlinx.coroutines.delay
 import java.io.File
@@ -58,7 +58,7 @@ import java.io.File
 enum class Sheet { NONE, KEYS, SETTINGS, SHOTS, MACROS }
 
 @Composable
-fun DeckScreen(onAskPermissions: () -> Unit, onDictate: () -> Unit, onShellSettings: () -> Unit) {
+fun DeckScreen(onAskPermissions: () -> Unit, onDictate: () -> Unit, onOpenFeature: (String) -> Unit) {
     val s by Deck.settings.flow.collectAsStateWithLifecycle()
     val target by Deck.target.collectAsStateWithLifecycle()
     val pinned by Deck.pinned.collectAsStateWithLifecycle()
@@ -130,13 +130,13 @@ fun DeckScreen(onAskPermissions: () -> Unit, onDictate: () -> Unit, onShellSetti
                 ) { if (phase == HidPeripheral.Phase.NO_PERMISSION) onAskPermissions() else sheet = Sheet.SETTINGS }
                 StatusPill(
                     when (link) {
-                        RelayClient.Link.OPEN -> if (hellos.isEmpty()) "RELÉ · nincs app" else "RELÉ · " + hellos.keys.joinToString(" · ")
-                        RelayClient.Link.CONNECTING -> "RELÉ · kapcsolódás…"
-                        RelayClient.Link.OFF -> "RELÉ · nincs beállítva"
+                        LinkState.OPEN -> if (hellos.isEmpty()) "RELÉ · nincs app" else "RELÉ · " + hellos.keys.joinToString(" · ")
+                        LinkState.CONNECTING -> "RELÉ · kapcsolódás…"
+                        LinkState.OFF -> "RELÉ · nincs beállítva"
                     },
                     when {
-                        link == RelayClient.Link.OPEN && hellos.isNotEmpty() -> Melyviz.current
-                        link == RelayClient.Link.OFF -> Melyviz.faint
+                        link == LinkState.OPEN && hellos.isNotEmpty() -> Melyviz.current
+                        link == LinkState.OFF -> Melyviz.faint
                         else -> Melyviz.sand
                     },
                 ) { sheet = Sheet.SETTINGS }
@@ -278,7 +278,7 @@ fun DeckScreen(onAskPermissions: () -> Unit, onDictate: () -> Unit, onShellSetti
             Sheet.KEYS -> KeysSheet(target, onDictate) { sheet = Sheet.NONE }
             Sheet.SETTINGS -> SettingsSheet(
                 onAskPermissions, onMacros = { sheet = Sheet.MACROS },
-                onShellSettings = { sheet = Sheet.NONE; onShellSettings() },
+                onOpenFeature = { id -> sheet = Sheet.NONE; onOpenFeature(id) },
             ) { sheet = Sheet.NONE }
             Sheet.MACROS -> MacroSheet { sheet = Sheet.NONE }
             Sheet.SHOTS -> ShotSheet(shotOpen ?: shots.firstOrNull(), onPick = { shotOpen = it }) { sheet = Sheet.NONE }

@@ -1,5 +1,6 @@
 package hu.vrg.legeger.core
 
+import hu.vrg.mobile.core.RelayAddress
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -156,20 +157,10 @@ object Inbound {
 }
 
 object RelayUrl {
-    const val DEFAULT_PORT = 47291
+    const val DEFAULT_PORT = RelayAddress.DEFAULT_PORT
 
-    /** Accepts what a person types or a QR carries: "192.168.1.24", "pc:47292", http://…/phone-sender.html, ws://… */
-    fun normalize(raw: String): String {
-        var s = raw.trim()
-        if (s.isEmpty()) return ""
-        s = s.replace(Regex("^http(s?)://"), "ws$1://")
-        if (!s.startsWith("ws://") && !s.startsWith("wss://")) s = "ws://$s"
-        val scheme = s.substringBefore("://")
-        val rest = s.substringAfter("://")
-        val host = rest.substringBefore('/')
-        val withPort = if (host.contains(':')) host else "$host:$DEFAULT_PORT"
-        return "$scheme://$withPort"
-    }
+    /** Accepts what a person types or a QR carries; the rule is kit-core's, shared by the whole app since M2. */
+    fun normalize(raw: String): String = RelayAddress.normalize(raw)
 
     /** The relay's HTTP address for a path it serves (a screenshot), from its ws:// address. */
     fun http(ws: String, path: String): String {

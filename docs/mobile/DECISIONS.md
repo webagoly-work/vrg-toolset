@@ -24,6 +24,12 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   line that shows the current look and opens Beállítások; it has no palette of its own. Its stored look is
   handed over once on the first M1 start (`ShellPrefs.adoptLook`), then removed from Légegér's store.
 
+- **M2 · How pairing is built** (2026-10-29, no question needed). The relay link became the app's (`kit: Relay`),
+  so the relay address moved from Légegér to `ShellSettings.relayUrl` (handed over once, like the look). The scanner
+  is ML Kit's **bundled** model (no Play-services download). The relay's `/pair` QR is drawn with the Planner's own
+  encoder (`src/05f-qr.js`, Nayuki, MIT), read from that file rather than copied. `--shots` now needs a paired
+  phone, so the old `hu.vrg.legeger` APK (which cannot pair) no longer gets screenshots.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-6 · Chat-log branch (M6).** A) one branch `mobile-log`, one file per day `log/YYYY-MM-DD.md`;

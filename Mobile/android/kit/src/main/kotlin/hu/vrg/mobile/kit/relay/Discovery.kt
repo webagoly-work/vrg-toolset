@@ -1,4 +1,4 @@
-package hu.vrg.legeger.relay
+package hu.vrg.mobile.kit.relay
 
 import android.content.Context
 import android.net.ConnectivityManager

@@ -34,7 +34,7 @@ function client(name) {
   const pngFile = path.join(os.tmpdir(), 'legeger-e2e-shot.png');
   require('fs').writeFileSync(pngFile, PNG);
   const relay = spawn(process.execPath, [path.join(REPO, 'Planner/projects/varler-planner/tools/phone-relay-server.js'), '--shots'],
-    { stdio: ['ignore', 'pipe', 'pipe'], env: Object.assign({}, process.env, { RELAY_SHOT_FILE: pngFile }) });
+    { stdio: ['ignore', 'pipe', 'pipe'], env: Object.assign({}, process.env, { RELAY_SHOT_FILE: pngFile, RELAY_PAIRED_FILE: path.join(os.tmpdir(), 'legeger-e2e-paired.json') }) });
   let log = ''; relay.stdout.on('data', d => log += d); relay.stderr.on('data', d => log += d);
   await sleep(700);
 
@@ -92,6 +92,14 @@ function client(name) {
 
   planner.send('screenshot.request', { mode: 'screen' }, 'relay'); await sleep(300);
   ok(!planner.got.some(m => m.type === 'screenshot'), 'only a phone may ask for a screenshot');
+  // since WP M2 a screenshot needs a paired phone: pair with a code from /pair (relay-pair.js tests the rest)
+  phone.send('screenshot.request', { mode: 'window' }, 'relay'); await sleep(300);
+  ok(phone.got.some(m => m.type === 'screenshot' && m.payload.ok === false), 'an unpaired phone gets no screenshot');
+  const pairCode = /&c=([0-9a-f]{32})/.exec((await (await fetch('http://127.0.0.1:47291/pair/code.json')).json()).link)[1];
+  const phoneKey = require('crypto').generateKeyPairSync('ec', { namedCurve: 'prime256v1' }).publicKey.export({ format: 'der', type: 'spki' }).toString('base64');
+  phone.send('pair', { code: pairCode, device: 'e2e', pub: phoneKey }, 'relay'); await sleep(300);
+  ok(phone.got.some(m => m.type === 'paired' && m.payload.ok), 'the phone pairs with the code from /pair');
+  phone.got.length = 0;
   phone.send('screenshot.request', { mode: 'window' }, 'relay'); await sleep(700);
   const shot = phone.got.filter(m => m.type === 'screenshot').pop();
   ok(shot && shot.payload.ok && /^\/shot\/[0-9a-f]{32}\.png$/.test(shot.payload.url) && /^kepernyo-.*\.png$/.test(shot.payload.name),

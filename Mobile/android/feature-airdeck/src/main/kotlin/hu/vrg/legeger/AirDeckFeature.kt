@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import hu.vrg.legeger.core.Hid
+import hu.vrg.legeger.core.Proto
 import hu.vrg.legeger.hid.HidPeripheral
 import hu.vrg.legeger.ui.DeckScreen
 import hu.vrg.mobile.core.Catalogue
@@ -19,6 +20,7 @@ import hu.vrg.mobile.core.Route
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.VrgFeature
+import hu.vrg.mobile.kit.relay.Relay
 
 // Légegér as a VRG Mobile feature. This is what used to be its MainActivity and Application: the
 // shell now owns the Activity, so the permission and dictation launchers are Compose launchers, the
@@ -32,6 +34,10 @@ object AirDeckFeature : VrgFeature {
         // Before WP M1 the look was Légegér's setting; the shell takes it over once and owns it from then on.
         val (palette, scale) = Deck.settings.takeLegacyLook()
         ShellSettings.adoptLook(palette, scale)
+        // Same for the relay address (M2): the link is the app's now, Légegér announces its abilities on it.
+        val relayUrl = Deck.settings.takeLegacyRelay()
+        ShellSettings.update { it.adoptRelay(relayUrl) }
+        Relay.addCaps(Proto.CAPS)
     }
 
     private val permissions: Array<String>
@@ -80,7 +86,7 @@ object AirDeckFeature : VrgFeature {
         DeckScreen(
             onAskPermissions = { askPermissions.launch(permissions) },
             onDictate = startDictation,
-            onShellSettings = { host.open(Catalogue.SETTINGS.id) },
+            onOpenFeature = { id -> host.open(id) },
         )
     }
 

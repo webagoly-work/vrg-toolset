@@ -22,7 +22,6 @@ enum class Section(val label: String) {
 
 /** Everything the user can set, in one immutable value. Changed only through [SettingsStore.update]. */
 data class DeckSettings(
-    val relayUrl: String = "",
     val hostAddress: String = "",          // the device paired last; reconnected on start
     val tuning: AirTuning = AirTuning(),
     val layout: String = "HU",
@@ -71,10 +70,16 @@ class SettingsStore(ctx: Context) {
         return palette to scale
     }
 
+    /** The relay address Légegér stored before WP M2, removed as it is read; the shell's link owns it now. */
+    fun takeLegacyRelay(): String? {
+        val u = sp.getString("relayUrl", null)
+        if (u != null) sp.edit().remove("relayUrl").apply()
+        return u
+    }
+
     private fun load(): DeckSettings {
         val d = DeckSettings()
         return DeckSettings(
-            relayUrl = sp.getString("relayUrl", d.relayUrl) ?: "",
             hostAddress = sp.getString("hostAddress", d.hostAddress) ?: "",
             tuning = AirTuning(
                 speed = sp.getFloat("speed", d.tuning.speed),
@@ -107,7 +112,6 @@ class SettingsStore(ctx: Context) {
 
     private fun save(s: DeckSettings) {
         sp.edit()
-            .putString("relayUrl", s.relayUrl)
             .putString("hostAddress", s.hostAddress)
             .putFloat("speed", s.tuning.speed)
             .putFloat("accel", s.tuning.accel)

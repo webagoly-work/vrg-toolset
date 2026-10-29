@@ -15,14 +15,18 @@ Mobile/
   mobile.cmd            build · install · test · relay · e2e · studio (START.cmd A, VRG-DE.cmd D6)
   docs/legeger.md       Légegér's manual
   tests/relay-e2e.js    relay + real Kódváros page + fake Planner + fake phone
+  tests/relay-pair.js   QR pairing against a real relay: codes, P-256 signatures, the trust gate
   android/
     kit-core/           pure Kotlin: Feature catalogue (Feature.kt), link routing (Links.kt),
-                        shell settings rules (ShellPrefs.kt), the log buffer (LogBook.kt) + tests
+                        shell settings rules (ShellPrefs.kt), the log buffer (LogBook.kt),
+                        relay pairing: address, QR offer, signature, messages (Pairing.kt) + tests
     kit/                Android: Mélyvíz theme (theme/Melyviz.kt), the feature contract (VrgFeature.kt),
-                        ShellSettings (look, start screen, paired PCs), VrgLog, shared parts (ui/Parts.kt)
+                        ShellSettings (look, start screen, paired PCs, relay), VrgLog, shared parts (ui/Parts.kt),
+                        relay/ Relay (the app's one relay link + trust), PhoneKey (Keystore P-256), Discovery
     app/                the shell and the APK (hu.vrg.mobile): ShellActivity · HomeScreen · Registry
     feature-airdeck/    Légegér (package hu.vrg.legeger): Deck engine, HID, relay client, deck UI
     feature-settings/   Beállítások (WP M1): Megjelenés · Indulás · Párosított PC-k · Névjegy · Napló
+    feature-pair/       QR párosítás (WP M2): CameraX + ML Kit scanner, vrg://pair links, the result
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
 ```
 

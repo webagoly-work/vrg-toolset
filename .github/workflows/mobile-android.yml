@@ -5,9 +5,9 @@ name: VRG Mobile (Android)
 
 on:
   push:
-    paths: ['Mobile/**', '.github/workflows/mobile-android.yml']
+    paths: ['Mobile/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js']
   pull_request:
-    paths: ['Mobile/**', '.github/workflows/mobile-android.yml']
+    paths: ['Mobile/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js']
   workflow_dispatch:
 
 permissions:
@@ -31,6 +31,14 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Relay pairing tests (Node)
+        working-directory: .
+        run: |
+          (cd Planner/projects/varler-planner && npm ci --no-audit --no-fund)
+          node Mobile/tests/relay-pair.js
       - name: Tests (pure Kotlin)
         run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test
       - name: Debug APK

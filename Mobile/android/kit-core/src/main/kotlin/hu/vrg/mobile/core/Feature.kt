@@ -48,8 +48,8 @@ object Catalogue {
         "🖱", Group.CONTROL, Stage.LIVE, "M0", setOf(Need.BLUETOOTH, Need.RELAY),
     )
     val PAIR = FeatureInfo(
-        "pair", "QR párosítás", "A PC képernyőjén lévő QR-kód beolvasása: relé, belépés, eszköz párosítás egy mozdulattal.",
-        "▣", Group.LINK, Stage.PLANNED, "M2", setOf(Need.CAMERA),
+        "pair", "QR párosítás", "A PC képernyőjén lévő QR-kód beolvasása: csatlakozás a reléhez és megbízható telefon egy mozdulattal.",
+        "▣", Group.LINK, Stage.BETA, "M2", setOf(Need.CAMERA, Need.RELAY),
     )
     val ACCOUNT = FeatureInfo(
         "account", "GitHub fiók", "Belépés a GitHubra (eszközkód vagy a PC-ről QR-rel), a többi online funkció ezt használja.",

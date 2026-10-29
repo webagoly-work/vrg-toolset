@@ -22,7 +22,7 @@ class DeckService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
             Deck.hid.stop()
-            Deck.relay.disconnect()
+            Deck.relay.disconnect(forget = false)   // the line drops now; the next start reconnects
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
             return START_NOT_STICKY

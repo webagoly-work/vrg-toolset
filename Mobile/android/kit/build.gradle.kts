@@ -30,4 +30,5 @@ dependencies {
     api("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     api("androidx.core:core-ktx:1.15.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")   // ShellSettings, VrgLog
+    api("com.squareup.okhttp3:okhttp:4.12.0")                      // Relay, Discovery (WP M2)
 }

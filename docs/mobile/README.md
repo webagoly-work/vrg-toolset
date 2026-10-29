@@ -19,7 +19,7 @@ The base framework is built (M0). This pack is what the cloud sessions build fro
 |---|---|---|---|---|
 | **M0** | Légegér (`airdeck`) + the shell | **done**: shell, catalogue, links, Mélyvíz kit, Légegér as a feature | — | — |
 | **M1** | Beállítások (`settings`) | **built, BETA** (2026-10-29, phone check open): shell-wide look (palette, size) moved out of Légegér, About + log, paired PCs list | — | high |
-| **M2** | QR párosítás (`pair`) | scan the PC's QR: relay address + one-time code → a **trusted** phone; QR for Légegér | camera, relay | high (relay + parser) |
+| **M2** | QR párosítás (`pair`) | **built, BETA** (2026-10-29, phone check open): scan the PC's QR: relay address + one-time code → a **trusted** phone; QR for Légegér | camera, relay | high (relay + parser) |
 | **M3** | GitHub fiók (`account`) | GitHub sign-in with the device code; token in the Android Keystore; the shared GitHub client | internet | high |
 | **M6** | Gyorsjegyzet (`notes`) | quick notes pushed to a dedicated branch acting as the chat log | GitHub | high |
 | **M9** | Frissítés (`update`) | self-update from GitHub Releases built by Actions | GitHub | medium (+ user step: keystore secret) |

@@ -42,4 +42,5 @@ dependencies {
     implementation(project(":kit"))
     implementation(project(":feature-airdeck"))
     implementation(project(":feature-settings"))
+    implementation(project(":feature-pair"))
 }

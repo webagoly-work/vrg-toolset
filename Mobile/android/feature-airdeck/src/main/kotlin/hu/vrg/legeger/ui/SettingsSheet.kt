@@ -32,16 +32,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.legeger.Deck
 import hu.vrg.legeger.Section
 import hu.vrg.legeger.hid.HidPeripheral
-import hu.vrg.legeger.relay.Discovery
-import hu.vrg.legeger.relay.RelayClient
+import hu.vrg.mobile.kit.relay.Discovery
+import hu.vrg.mobile.kit.relay.LinkState
+import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.kit.ShellSettings
+import hu.vrg.mobile.kit.relay.Relay
+import hu.vrg.mobile.kit.relay.Trust
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.theme.Palettes
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onShellSettings: () -> Unit, onClose: () -> Unit) {
+fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onOpenFeature: (String) -> Unit, onClose: () -> Unit) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val s by Deck.settings.flow.collectAsStateWithLifecycle()
@@ -53,7 +56,9 @@ fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onShellSet
     val peers by Deck.relay.peers.collectAsStateWithLifecycle()
     val focus by Deck.relay.focus.collectAsStateWithLifecycle()
     val traffic by Deck.relay.traffic.collectAsStateWithLifecycle()
-    var url by remember { mutableStateOf(s.relayUrl) }
+    val trust by Relay.trust.collectAsStateWithLifecycle()
+    val pc by Relay.pc.collectAsStateWithLifecycle()
+    var url by remember { mutableStateOf(Deck.relay.url) }
     var searching by remember { mutableStateOf<Int?>(null) }
     var searchNote by remember { mutableStateOf("") }
 
@@ -64,7 +69,7 @@ fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onShellSet
         // The palette and the size belong to the whole app since WP M1: shown here, set in Beállítások.
         SectionTitle("Megjelenés")
         Text("${Palettes.byId(look.palette).name}  ·  méret ${"%.2f".format(look.uiScale)}×", style = Melyviz.small)
-        Row(Modifier.padding(top = 6.dp)) { Chip("Az alkalmazás beállításai ›", false) { onShellSettings() } }
+        Row(Modifier.padding(top = 6.dp)) { Chip("Az alkalmazás beállításai ›", false) { onOpenFeature(Catalogue.SETTINGS.id) } }
 
         // ---- what is on the deck ---------------------------------------------------------------
         SectionTitle("Képernyő elemei")
@@ -138,15 +143,22 @@ fun SettingsSheet(onAskPermissions: () -> Unit, onMacros: () -> Unit, onShellSet
                 }
             }
             Spacer(Modifier.width(6.dp))
-            if (link != RelayClient.Link.OFF) Chip("Bontás", false) { Deck.relay.disconnect(); Deck.settings.update { it.copy(relayUrl = "") } }
+            if (link != LinkState.OFF) Chip("Bontás", false) { Deck.relay.disconnect() }
         }
+        Row(Modifier.padding(top = 6.dp)) { Chip("QR beolvasása (párosítás) ▣", false) { onOpenFeature(Catalogue.PAIR.id) } }
         if (searchNote.isNotEmpty()) Text(searchNote, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp))
         Text(
             when (link) {
-                RelayClient.Link.OPEN -> "Vonalban: " + (peers.filter { it.role != "phone" }.joinToString { it.role }.ifEmpty { "csak telefon" }) +
-                    (focus?.role?.let { "  ·  fókusz: $it" } ?: "") + "  ·  be ${traffic.first} / ki ${traffic.second}"
-                RelayClient.Link.CONNECTING -> "Kapcsolódás… (2 mp-enként újrapróbálja)"
-                RelayClient.Link.OFF -> "Nincs relé. A PC-n: legeger.cmd → 1, vagy START.cmd → G."
+                LinkState.OPEN -> "Vonalban: " + (peers.filter { it.role != "phone" }.joinToString { it.role }.ifEmpty { "csak telefon" }) +
+                    (focus?.role?.let { "  ·  fókusz: $it" } ?: "") + "  ·  be ${traffic.first} / ki ${traffic.second}" +
+                    "\n" + when (trust) {
+                        Trust.TRUSTED -> "Megbízható telefon ✓ ${pc?.name.orEmpty()}"
+                        Trust.CHECKING -> "Aláírás ellenőrzése…"
+                        Trust.REFUSED -> "A PC törölte a párosítást: QR-rel újra párosítható"
+                        Trust.NONE -> "Nincs párosítva: vezérelni lehet, képernyőképhez QR párosítás kell"
+                    }
+                LinkState.CONNECTING -> "Kapcsolódás… (2 mp-enként újrapróbálja)"
+                LinkState.OFF -> "Nincs relé. A PC-n: legeger.cmd → 1, vagy START.cmd → G."
             },
             style = Melyviz.readout, modifier = Modifier.padding(top = 6.dp),
         )

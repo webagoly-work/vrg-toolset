@@ -31,6 +31,7 @@ import hu.vrg.legeger.hid.HidPeripheral
 import hu.vrg.legeger.motion.MotionSource
 import hu.vrg.legeger.relay.RelayClient
 import hu.vrg.mobile.kit.VrgLog
+import hu.vrg.mobile.kit.relay.LinkState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -151,7 +152,7 @@ object Deck {
                 .collect { motion.gravity(it) }
         }
 
-        if (settings.value.relayUrl.isNotEmpty()) relay.connect(settings.value.relayUrl)
+        // The relay link is the app's since WP M2 (kit: Relay); it reconnects on start by itself.
     }
 
     fun setForeground(on: Boolean) { foreground.value = on }
@@ -172,20 +173,16 @@ object Deck {
             }
         }
         scope.launch {
-            var was = RelayClient.Link.OFF
+            var was = LinkState.OFF
             relay.link.collect { l ->
-                if (l == RelayClient.Link.OPEN) VrgLog.i(tag, "Relé: kapcsolódva — ${settings.value.relayUrl}")
-                else if (was == RelayClient.Link.OPEN) VrgLog.i(tag, if (l == RelayClient.Link.OFF) "Relé: bontva" else "Relé: megszakadt, újrapróbálom")
+                if (l == LinkState.OPEN) VrgLog.i(tag, "Relé: kapcsolódva — ${relay.url}")
+                else if (was == LinkState.OPEN) VrgLog.i(tag, if (l == LinkState.OFF) "Relé: bontva" else "Relé: megszakadt, újrapróbálom")
                 was = l
             }
         }
     }
 
-    fun connectRelay(url: String) {
-        val u = RelayClient.normalize(url)
-        settings.update { it.copy(relayUrl = u) }
-        relay.connect(u)
-    }
+    fun connectRelay(url: String) = relay.connect(url)
 
     // ---- sensors ---------------------------------------------------------------------------------
 
