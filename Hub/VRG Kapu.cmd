@@ -28,8 +28,8 @@ pause
 exit /b 1
 
 :HAVE_PAGE
-:: node: the portable one next to the Planner first, then the one on PATH
-set "NODE_EXE=%REPO%\Planner\apps\node\node.exe"
+:: node: the portable one next to the repo (H:\VRG\Full\tools) first, then the one on PATH
+set "NODE_EXE=%REPO%\..\tools\node\node.exe"
 if exist "%NODE_EXE%" goto HAVE_NODE
 set "NODE_EXE="
 for %%N in (node.exe) do set "NODE_EXE=%%~$PATH:N"

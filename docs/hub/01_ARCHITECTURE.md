@@ -90,7 +90,7 @@ layers). Both users can push to the repo (private repos on GitHub Free have no b
 so "only I can edit it" is enforced by a **signature**, not by permissions:
 
 1. Once, the owner runs `node tools/hub-sign.js --init`. It makes an ECDSA P-256 key pair; the
-   **private key goes to `H:\cwebuser\_admin\keys\hub-access.pem`** (outside the repo and outside
+   **private key goes to `H:\VRG\Full\_admin\keys\hub-access.pem`** (outside the repo and outside
    OneDrive), the public key is written into `Hub/src/access-pubkey.json` (committed).
 2. After every edit the owner runs `node tools/hub-sign.js` → it writes `sig` into `access.json`
    (signature over the canonical JSON of `body`, `dsaEncoding: 'ieee-p1363'` so WebCrypto can verify).

@@ -12,7 +12,11 @@ or VRG-DE.cmd `L5`.
 - **Test:** `node Hub/test/run.js` · `node tools/check-hub.js`
 - **Full mode:** `Hub\VRG Kapu.cmd` starts the Kapu segéd (`Hub/companion/server.js`, localhost:8795):
   START.cmd, tools and folders open from the page. From `file://` it is links-only.
-- **Allowed list:** `node tools/hub-sign.js` (owner key outside the repo).
+- **Allowed list:** `node tools/hub-sign.js` (owner key outside the repo). Day to day use the admin page
+  `node tools/hub-admin/server.js` (START → O → M, http://127.0.0.1:8798): add / remove a person or change
+  their layers, then it signs, verifies, rebuilds (+ the OneDrive copy once its folder is set) and runs
+  check-hub in one go, puts the old list back if a step fails, and writes the Hungarian welcome message.
+  The GitHub repo invite stays a click on GitHub (the page opens Collaborators); no token is stored.
 - **2026-10-26 rework:** the business map, editor, Munkanapló, refresh, personal links, tour and
   glossary were removed from here and parked for Kódváros in `CodeCity/from-kapu/` (README there).
   The plan pack `docs/hub/` describes the old, full Kapu.

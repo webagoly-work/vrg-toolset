@@ -24,7 +24,7 @@ H4. **HUB-Q04** (A = signed list). The two users' GitHub logins + emails come fr
 2. `kpCanon(obj)`: canonical JSON (keys sorted recursively, no spaces) — **one implementation**
    shared by `tools/hub-sign.js` (require it from `Hub/src/js/10-model.js`) and the page.
 3. `tools/hub-sign.js`: `--init` makes the key pair; private PEM to `--key` (default
-   `H:\cwebuser\_admin\keys\hub-access.pem`; refuses a path inside the repo or containing
+   `H:\VRG\Full\_admin\keys\hub-access.pem`; refuses a path inside the repo or containing
    `OneDrive`); writes the public JWK to `Hub/src/access-pubkey.json`. Without flags: signs
    `kpCanon(body)` → `sig`; `--verify` checks it. Never prints the private key.
 4. Page: `kpAccessCheck()` → `{valid, me, role}`; invalid → banner "A hozzáférési lista aláírása

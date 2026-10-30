@@ -7,7 +7,7 @@ The private git repository holding every VRG tool's code and text documents
 Inventory build from modular sources into one file.
 
 ## 2. Where
-- The real working copy: `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`, branch `main`. Worktrees beside it
+- The real working copy: `H:\VRG\Full\Planner_VRG_U100`, branch `main`. Worktrees beside it
   (`wt-planner-stack`, the SecAcc worktree) carry their own branches.
 - The front door is `Planner/START.cmd`; the umbrella launcher is `VRG-DE.cmd`.
 
@@ -23,7 +23,7 @@ node tools/check-start.js
 ```
 
 ## 5. Rules and traps
-- `H:\Planner_VRG_U100` is a backup copy, never a workspace (root CLAUDE.md).
+- `H:\VRG\Backup\code\Planner_VRG_U100-mirror` is a backup copy, never a workspace (root CLAUDE.md).
 - The repo folder cannot be renamed while Claude Code has it open; attempt the operation and treat
   its failure as the authority (root CLAUDE.md).
 - `H:\_desktop` is a junction holding the harness's Git (root CLAUDE.md).

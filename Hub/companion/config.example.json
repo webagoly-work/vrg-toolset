@@ -1,5 +1,5 @@
 {
-  "_note": "Copy to config.json (gitignored) only to change a default. Defaults: roots = the repo and its VRG-DE parent; browser = the first of START.cmd's portable browsers (Planner/apps chrome, opera-gx, zen-browser), else the system default; terminal = wt when installed, else cmd; claudeCmd = Planner/apps/node/claude.cmd, else claude; vscode = Planner/apps/vscode/Code.exe, else code; git = Planner/apps/git, else git.",
+  "_note": "Copy to config.json (gitignored) only to change a default. Defaults: roots = the repo and its VRG-DE parent; browser = the first portable browser next to the repo (tools/chrome, programs/opera-gx, programs/zen-browser), else the system default; terminal = wt when installed, else cmd; claudeCmd = tools/node/claude.cmd, else claude; vscode = tools/vscode/Code.exe, else code; git = tools/git, else git.",
   "roots": ["D:\\VRG-exportok"],
   "browser": { "exe": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", "args": ["--new-window"] },
   "terminal": "cmd",

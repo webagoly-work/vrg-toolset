@@ -9,7 +9,7 @@ for both users. A single offline HTML file built from modular sources.
 - Sources `Hub/src/`, data `Hub/data/`, tests `Hub/test/`, companion `Hub/companion/` →
   `Hub/dist/vrg-kapu.html`. The plan: `docs/hub/`.
 - Opened with `Hub\VRG Kapu.cmd`, `Planner/START.cmd` **H** or VRG-DE.cmd **L5**.
-- Built on branch `secacc` in `H:\cwebuser\projects\VRG-DE\SecAcc` (GO-HUB.md §1).
+- Built on branch `secacc` in `H:\VRG\Backup\archive\parked\2026-10-24\SecAcc` (GO-HUB.md §1).
 
 ## 3. Read first
 1. `GO-HUB.md`

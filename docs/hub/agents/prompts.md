@@ -18,8 +18,8 @@ No build — plain text files.
 
 ## 5. Rules and traps
 - Plain ASCII text, no accents (the files themselves).
-- Point prompts at the working copy `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`, never at
-  `H:\Planner_VRG_U100`, which is the backup (root CLAUDE.md).
+- Point prompts at the working copy `H:\VRG\Full\Planner_VRG_U100`, never at
+  `H:\VRG\Backup\code\Planner_VRG_U100-mirror`, which is the backup (root CLAUDE.md).
 
 ## 6. Current state
 - 2026-09-21 VRG-DE: one umbrella launcher over the whole environment

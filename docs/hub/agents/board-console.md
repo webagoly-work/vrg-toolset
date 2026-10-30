@@ -14,7 +14,7 @@ offline flasher and backups, and a live link to a board agent running on the chi
 
 ## 3. Read first
 1. `Firmware/board-console/README.md`
-2. `H:\VRG_Visual_Base\01_Hardware\Topology_Starter\CONCEPT_Board_Console.md` (outside the repo)
+2. `H:\VRG\Full\VRG_Visual_Base\01_Hardware\Topology_Starter\CONCEPT_Board_Console.md` (outside the repo)
 
 ## 4. Build / test / check
 - `Board Console.bat` installs `serialport` 12.0.0 on the first run, then starts the server.
@@ -23,7 +23,7 @@ offline flasher and backups, and a live link to a board agent running on the chi
 
 ## 5. Rules and traps
 - The board model is not copied into the repo; the server reads the generated files in
-  `H:\VRG_Visual_Base\01_Hardware\Topology_Starter` (README "Files").
+  `H:\VRG\Full\VRG_Visual_Base\01_Hardware\Topology_Starter` (README "Files").
 - The server is localhost only: Host/Origin checks, JSON-only posts (README "Files").
 - Flashing is offline with the esptool under `_libs/arduino-cli`; a flash makes a full backup first
   unless the chip content is already known (README phase 2).
