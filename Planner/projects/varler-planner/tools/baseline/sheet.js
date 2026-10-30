@@ -1,9 +1,9 @@
 // sheet.js — tiny SVG sheet builder + PNG render through the repo's portable headless Chrome
 'use strict';
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
-// the worktree carries no apps/ (never committed) — fall back to the main checkout's portable Chrome
-const CHROME = [path.resolve(__dirname, '../../../../apps/chrome-headless-shell/chrome-headless-shell.exe'),
-  'H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/apps/chrome-headless-shell/chrome-headless-shell.exe', process.env.CHROME || '']
+// a worktree has no tools folder next to it — fall back to the main checkout's portable Chrome
+const CHROME = [path.resolve(__dirname, '../../../../../../tools/chrome-headless-shell/chrome-headless-shell.exe'),
+  'H:/VRG/Full/tools/chrome-headless-shell/chrome-headless-shell.exe', process.env.CHROME || '']
   .find(p => p && fs.existsSync(p)) || '';
 
 // rooms, walls and openings. With opt.lp (a labels.js placer) the room names and opening ids go through it, so no

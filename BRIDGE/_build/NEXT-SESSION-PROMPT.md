@@ -11,14 +11,14 @@ would waste a great deal of context.
 
 Read this first, and nothing else until you have:
 
-  H:\Dev-VRG\VRG-DE\Planner_VRG_U100\BRIDGE\BRIDGE-PRIMER-001_Session-Handover.md
+  H:\VRG\Full\Planner_VRG_U100\BRIDGE\BRIDGE-PRIMER-001_Session-Handover.md
 
 It names the three files worth reading, says explicitly what NOT to read, and
 carries the state, the open items, the findings and how I work. Follow it rather
 than exploring.
 
 Three things to hold onto:
-- Work in H:\Dev-VRG\VRG-DE\Planner_VRG_U100. H:\Planner_VRG_U100 is a backup,
+- Work in H:\VRG\Full\Planner_VRG_U100. H:\VRG\Backup\code\Planner_VRG_U100-mirror is a backup,
   not a second workspace — we mixed those up once and it cost a session.
 - 188 design questions are answered and recorded by ID. Don't re-ask them. If you
   want to know why something is as it is, _build/BRIDGE-E-002_open-items-briefing.md

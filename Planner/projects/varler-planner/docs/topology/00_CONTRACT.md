@@ -6,13 +6,13 @@ only adds what is different.*
 
 ## 0. Where you work
 
-`H:/Dev-VRG/VRG-DE/wt-planner-stack/Planner/projects/varler-planner` on the branch the user names. For a cloud session,
+`H:/VRG/Backup/archive/parked/2026-10-24/wt-planner-stack/Planner/projects/varler-planner` on the branch the user names. For a cloud session,
 that is the designated `claude/…` branch.
 - Run `git status` before you start and before you report. Other sessions may share the worktree.
 - Commit with explicit paths only, and only when the user says so.
 
 ```bash
-export NODE_PATH=H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
+export NODE_PATH=H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
 node build.js && node tools/check-globals.js && node tests/run.js
 ```
 

@@ -7,7 +7,9 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/tools/*, docs/city/README.md §7
 - **Decisions:** D26
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** KV-27 built 2026-10-27 (audit, low glow, quality tiers, Design pack); open: CITY-D26 (skin name), the user's dev notes, the R8 chip row
+- **Status:** KV-27 built 2026-10-27 (audit, low glow, quality tiers, Design pack); CITY-D26 answered and applied
+  2026-10-27: the **Mélyvíz** skin (`docs/city/melyviz.md`, selftest M1–M5, design-pack `hullam.png`); open: the user's
+  dev notes, the R8 chip row
 
 ## KV-27: rules audit, low glow, quality tiers, Design pack (2026-10-27)
 

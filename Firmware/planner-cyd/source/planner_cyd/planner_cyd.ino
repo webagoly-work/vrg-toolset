@@ -1,6 +1,6 @@
 // planner_cyd.ino - desk dashboard + remote for the Varler Planner, on the Cheap Yellow Display.
 //
-// Built on the RL CYD v2 principle (H:/others/RL-CYD-v2): the CYD is dumb, the PC bridge
+// Built on the RL CYD v2 principle (H:/Personal/RL-CYD/RL-CYD-v2): the CYD is dumb, the PC bridge
 // is smart. The bridge (app/bridge) joins the Planner's local relay, gets the tab's state
 // and sends it here as short lines (protocol.ino). Button presses go back as '!' lines.
 //

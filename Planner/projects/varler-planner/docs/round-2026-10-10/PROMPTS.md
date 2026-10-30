@@ -1,7 +1,7 @@
 # Prompts — round 2026-10-10
 
 Paste into a **fresh** Claude Code session whose working directory is the worktree project folder:
-`H:\Dev-VRG\VRG-DE\wt-planner-stack\Planner\projects\varler-planner`.
+`H:\VRG\Backup\archive\parked\2026-10-24\wt-planner-stack\Planner\projects\varler-planner`.
 The TASK sandwich (task first, task again at the end) is built in.
 
 ## 1. Build the whole round in one strong session (recommended — the user's 10-07 preference)
@@ -64,7 +64,7 @@ the recommended option; list each change with its file. Write the answers into R
 Build nothing.
 END — RESOLVE only.
 ```
-The tuner copy is `H:\Dev-VRG\VRG-DE\_inbox\BRIDGE Tuner - Planner R1010.html` (24 questions,
+The tuner copy is `H:\VRG\Full\inbox\BRIDGE Tuner - Planner R1010.html` (24 questions,
 recommended options marked; "Export answers" gives the lines to paste).
 
 ## 5. Where are we

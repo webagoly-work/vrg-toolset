@@ -15,7 +15,7 @@ const KV_WHY = {
   companion: 'Ehhez fusson a Kódváros segéd — START.cmd: K, majd S) Élő mód',
   other: 'Ez a város nem a segéd repójának a térképe — a segéd csak a saját repójában nyit',
   root: 'Nem tudom, hol van ez a repó ezen a gépen — nyisd meg a START.cmd K → S) Élő móddal',
-  vscode: 'A hordozható VS Code nem található (Planner/apps/vscode)'
+  vscode: 'A hordozható VS Code nem található (VRG\\Full\\tools\\vscode)'
 };
 const KV_CLAUDE_CLI = 'claude-cli://open?cwd=';      // Claude Code in a terminal, in that folder
 const KV_CLAUDE_APP = 'claude://code/new?folder=';  // the Claude app, a new Code session on that folder

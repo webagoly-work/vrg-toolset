@@ -192,6 +192,18 @@ try {
     `R11 low glow + render on demand: halk.png has ${(100 * lumH).toFixed(2)} % bright pixels vs alap.png ${(100 * lumA).toFixed(2)} %`);
   check(/R12 \(report §5\.5\): fixed field order/.test(uiSrc) && uiSrc.indexOf("['Fő szerző'") < uiSrc.indexOf("['Nyelv', f.lang]") && uiSrc.indexOf("['Nyelv', f.lang]") < uiSrc.indexOf("['Első commit'"),
     'R12 the file card: name · owner · state · time');
+  // Mélyvíz skin (CITY-D26, docs/city/melyviz.md): M1 ice = the instrument, M2/M3 click-only water on demand, M4 lens, M5 square glass
+  const seaSrc = src('38-sea.js'), css = src('city.css');
+  check(/--accent: #93d3e6/.test(css) && /color: 0x93d3e6, transparent: true, opacity: 0\.35/.test(src('03-scene.js')) && /'#93d3e6'/.test(src('10-query.js')),
+    'M1 Mélyvíz: ice is the instrument (accent, beacon, query brackets); warm light stays the code\'s activity');
+  check(/id="sea"/.test(src('shell.html')) && /pickAt\(e\)\) return;\s*seaDrop/.test(seaSrc) && !/setInterval|Math\.random/.test(seaSrc),
+    'M2 Mélyvíz: the water moves only on a plain click on empty water (no rain, no timers)');
+  check(/if \(!sea\.live\) \{ sea\.running = false; seaDraw\(\); return; \}/.test(seaSrc) && /KV_WALL\) return/.test(seaSrc) && /KV_OVERLAY\)/.test(seaSrc),
+    'M3 Mélyvíz: the water simulates only while a wave lives, then stops; none on the wallpaper or the overlay');
+  check(/seaLens\(lens\)/.test(lensSrc) && /wd\.group\.visible = o > 0\.01/.test(src('32-world.js')),
+    'M4/M7 Mélyvíz: the water follows the lens; the planet ocean fades out near the Land');
+  check(!/border-radius:\s*[1-9]\d*px/.test(css) && /backdrop-filter: blur\(var\(--blur\)\)/.test(css) && /body\[data-quality\^="low"\]/.test(css),
+    'M5 Mélyvíz: square glass panels with cut corners, solid on the low quality tier');
   // trademark limits (report §4): no Tron terms in user-visible text — the page, the shell, START.cmd's menu lines
   const strip = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1');
   const uiFiles = fs.readdirSync(path.join(__dirname, '..', 'src')).filter(n => /\.(js|css|html)$/.test(n)).map(n => path.join(__dirname, '..', 'src', n))

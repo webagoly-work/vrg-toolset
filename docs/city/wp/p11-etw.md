@@ -45,7 +45,7 @@ and in vrg-etw from the next install (run install-etw.ps1 again after `node Code
 
 1. **Build** (already done once; again after pulling changes): `node CodeCity/tools/build-etw.js`
 2. **Install** — Start menu → type *PowerShell* → right-click **Windows PowerShell** → **Run as administrator** → paste:
-   `powershell -NoProfile -ExecutionPolicy Bypass -File H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\CodeCity\etw\install-etw.ps1`
+   `powershell -NoProfile -ExecutionPolicy Bypass -File H:\VRG\Full\Planner_VRG_U100\CodeCity\etw\install-etw.ps1`
    It copies vrg-etw and the .NET runtime into `C:\Program Files\VRG\Kodvaros-ETW` and prints two SHA-256 hashes.
    It creates no task. Run it again after every rebuild.
 3. **Create the task** — Start → type *Task Scheduler* → open it → right side **Create Task…** (not "Basic Task"):

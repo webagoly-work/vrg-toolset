@@ -37,7 +37,7 @@ function sheets(name, file) {
   cols.forEach((c, i) => { let y = G; c.forEach((s, r) => { body += `<g transform="translate(${x},${y})">${s.svg.replace(/^<svg /, '<svg x="0" y="0" ')}</g>`; y += rh[r] + G; }); x += cw[i] + G; });
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect width="100%" height="100%" fill="#e9e7e1"/>${body}</svg>`;
   fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, svg);
-  const CHROME = path.resolve(REPO, '../Planner_VRG_U100/Planner/apps/chrome-headless-shell/chrome-headless-shell.exe'), png = OUT.replace(/\.svg$/, '.png');
+  const CHROME = path.resolve(REPO, '../tools/chrome-headless-shell/chrome-headless-shell.exe'), png = OUT.replace(/\.svg$/, '.png');
   execFileSync(CHROME, ['--headless', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files', `--window-size=${W},${H}`, '--force-device-scale-factor=1',
     `--screenshot=${png}`, 'file:///' + OUT.split(path.sep).join('/')], { stdio: 'ignore' });
   console.log(`wrote ${path.relative(REPO, OUT)} + .png  ${W}x${H}`);

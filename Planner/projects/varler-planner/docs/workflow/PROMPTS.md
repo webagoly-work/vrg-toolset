@@ -1,7 +1,7 @@
 # Prompts — workflow round (WF)
 
 Paste into a **fresh** Claude Code session whose working directory is
-`H:\Dev-VRG\VRG-DE\wt-planner-stack\Planner\projects\varler-planner`. The TASK sandwich is built in.
+`H:\VRG\Backup\archive\parked\2026-10-24\wt-planner-stack\Planner\projects\varler-planner`. The TASK sandwich is built in.
 Run the WPs **one at a time** in README §2 order — F1/F2/F3 share the room code, E1/E3/E5 share the link data.
 
 ## 0. Answer the decisions first (cheap)

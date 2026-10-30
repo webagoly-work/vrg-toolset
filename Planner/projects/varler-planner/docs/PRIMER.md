@@ -19,9 +19,9 @@ There are **three** copies of this repo on the machine and they are not intercha
 
 | path | what it is |
 |---|---|
-| `H:\Dev-VRG\VRG-DE\Planner_VRG_U100` | the real repo, branch `main` |
-| `H:\Dev-VRG\VRG-DE\wt-planner-stack` | a **git worktree**, branch `planner-stack` — where the live work has been |
-| `H:\Planner_VRG_U100` | a dead backup. Never work here. |
+| `H:\VRG\Full\Planner_VRG_U100` | the real repo, branch `main` |
+| `H:\VRG\Backup\archive\parked\2026-10-24\wt-planner-stack` | a **git worktree**, branch `planner-stack` — where the live work has been |
+| `H:\VRG\Backup\code\Planner_VRG_U100-mirror` | a dead backup. Never work here. |
 
 The branch matters more than it looks. As of 2026-10-09 the `main` build contains **zero**
 occurrences of `stkCreate` — the whole BRIDGE Stack (22 work packages) lives only on

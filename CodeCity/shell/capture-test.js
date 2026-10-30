@@ -1,6 +1,6 @@
 // capture-test.js — which way of capturing one window works in this Electron on this PC? (KV-26: getUserMedia with
 // chromeMediaSource 'desktop' failed with NotReadableError, WGC CreateForWindow E_ACCESSDENIED.)
-//   Planner\apps\electron\electron.exe CodeCity\shell\capture-test.js <exe-name> [--no-wgc]
+//   ..\tools\electron\electron.exe CodeCity\shell\capture-test.js <exe-name> [--no-wgc]
 // Tries, for the first window of that program: A) getUserMedia 'desktop' in a sandboxed page, B) the same unsandboxed,
 // C) getDisplayMedia answered by setDisplayMediaRequestHandler with that source. Each: does a frame arrive, is it not black.
 const { app, BrowserWindow, desktopCapturer, session } = require('electron');

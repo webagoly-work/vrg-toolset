@@ -89,7 +89,7 @@ setTimeout(() => {
   fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, svg);
   console.log(`wrote ${path.relative(REPO, OUT)}  ${W}x${HH}  labels ${L.count()}`);
   if (args.includes('--png')) {
-    const CHROME = path.resolve(REPO, '../Planner_VRG_U100/Planner/apps/chrome-headless-shell/chrome-headless-shell.exe');
+    const CHROME = path.resolve(REPO, '../tools/chrome-headless-shell/chrome-headless-shell.exe');
     const png = OUT.replace(/\.svg$/, '.png');
     execFileSync(CHROME, ['--headless', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files',
       `--window-size=${W},${HH}`, '--force-device-scale-factor=2', `--screenshot=${png}`, 'file:///' + OUT.split(path.sep).join('/')], { stdio: 'ignore' });

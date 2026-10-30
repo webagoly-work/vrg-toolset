@@ -6,10 +6,10 @@
 ## 0. Where you work
 
 ```bash
-cd H:/Dev-VRG/VRG-DE/wt-planner-stack/Planner/projects/varler-planner
+cd H:/VRG/Backup/archive/parked/2026-10-24/wt-planner-stack/Planner/projects/varler-planner
 git rev-parse --show-toplevel && git branch --show-current     # must say wt-planner-stack · planner-stack
 grep -c "stkCreate" dist/varler_planner.html                  # > 0, else you are on a main build
-export NODE_PATH=H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
+export NODE_PATH=H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
 ```
 
 Every WP of this round lives on `planner-stack` — the U and G waves would also fit `main`, but the

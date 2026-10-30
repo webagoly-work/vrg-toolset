@@ -1,6 +1,6 @@
 === MUNKAMENET INDITAS (uj session eleje) ===
 
-Olvasd el a H:\Dev-VRG\VRG-DE\Planner_VRG_U100\CLAUDE.md-t, aztan mondd el roviden:
+Olvasd el a H:\VRG\Full\Planner_VRG_U100\CLAUDE.md-t, aztan mondd el roviden:
 - mi valtozott a legutobbi nehany commitban (git log),
 - all-e valami felben (git status, es van-e agon olyan commit, ami nincs a
   main-en),

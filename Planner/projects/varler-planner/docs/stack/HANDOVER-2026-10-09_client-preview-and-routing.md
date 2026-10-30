@@ -8,7 +8,7 @@ that built them (archived). About five minutes to read. For the Planner codebase
 
 ## 0. Before anything
 
-- **Worktree:** `H:\Dev-VRG\VRG-DE\wt-planner-stack`, branch `planner-stack`, **not pushed** (the
+- **Worktree:** `H:\VRG\Backup\archive\parked\2026-10-24\wt-planner-stack`, branch `planner-stack`, **not pushed** (the
   user pushes). This thread's commits: `1d5569a` (client preview) and `7764b36` (test plans +
   workshop docs).
 - **Other sessions share this worktree.** On 2026-10-09 it held another session's *uncommitted*
@@ -18,7 +18,7 @@ that built them (archived). About five minutes to read. For the Planner codebase
 - **Memory notes** (auto-loaded): `project-client-preview-and-brochure`,
   `project-stack-routing-workshop`, `project-planner-bridge-stack`.
 - **Tests need jsdom from the main checkout:**
-  `NODE_PATH=H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules`.
+  `NODE_PATH=H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules`.
   `npm test` does not build; run `node build.js` first.
 
 ## 1. The threads, and where each one stands
@@ -30,7 +30,7 @@ that built them (archived). About five minutes to read. For the Planner codebase
 | **CLA test plans** | v1 + v2 committed | `Calculator/CLA-teszt_v1.vplan.json`, `_v2` · generators `tools/testplans/cla-teszt.js`, `cla-teszt-v2.js` · review sheet `render-plan.js` |
 | **Routing workshop** | answered 17 / 17 — next build round can start | `docs/stack/WORKSHOP-001_routing.md` (§7 answers, §6 round plan) |
 | **Cluster housings / flush covers** | IDEA-001 later round · IDEA-002 answered, 3 items open | `docs/stack/IDEA-001…`, `IDEA-002…` (§10 answers), `FLUSH-COVERS-001.json` |
-| **Tuner copy** | sent to the user | `H:\Dev-VRG\VRG-DE\_inbox\BRIDGE Tuner - WORKSHOP-001.html` — 4 packs: routing, design (140/141 preloaded), rooms (45/47 preloaded), flush covers |
+| **Tuner copy** | sent to the user | `H:\VRG\Full\inbox\BRIDGE Tuner - WORKSHOP-001.html` — 4 packs: routing, design (140/141 preloaded), rooms (45/47 preloaded), flush covers |
 
 ## 2. What was decided (the short list)
 
@@ -91,8 +91,8 @@ that built them (archived). About five minutes to read. For the Planner codebase
 ## 4. Commands
 
 ```bash
-cd H:/Dev-VRG/VRG-DE/wt-planner-stack/Planner/projects/varler-planner
-export NODE_PATH=H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
+cd H:/VRG/Backup/archive/parked/2026-10-24/wt-planner-stack/Planner/projects/varler-planner
+export NODE_PATH=H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
 node build.js && node tests/run.js                                  # suite + golden
 # test plans (v2 reads v1)
 node tools/testplans/cla-teszt.js v1 ../../../Calculator/CLA_vplan_updated.json ../../../Calculator/CLA-teszt_v1.vplan.json

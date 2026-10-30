@@ -20,6 +20,7 @@ const LOOKS = [
   ['halk', 'lens=alap&glow=low', 'Halk fény — low glow (L, KV-27)'],
   ['minoseg-low', 'lens=alap&quality=low', 'Quality tier low — pixel ratio 0.75 (KV-27)'],
   ['tapeta', 'mode=wallpaper&fps=2', 'Tapéta — the wallpaper: the whole Land, no panels (KV-24)'],
+  ['hullam', 'lens=alap&seatest=1', 'Hullám — Mélyvíz: one click on empty water sends a wave (CITY-D26; stepped at once for the shot)'],
 ];
 
 const only = process.argv.slice(2);
@@ -56,6 +57,14 @@ R5 places never move · R6 3D for overview, flat panels for reading · R7 every 
 R8 active lenses/filters visible · R9 status on the object + one corner · R10 tweens ≥ 400 ms · R11 low glow, render on
 demand · R12 card field order. Trademark limits (report §4): no "Tron", Grid/Recognizer/Encom/derezz terms, light-cycle
 or identity-disc shapes.
+
+## Skin: Mélyvíz (CITY-D26, 2026-10-27 — docs/city/melyviz.md)
+
+The VRG dev-side style at its Kódváros setting: deep slate-void water ground with a refracted drafting grid, smoked-glass
+panels with two cut corners, hairlines, condensed titles, mono readouts. M1 ice = the instrument and you, warm light = the
+code's activity · M2 the water moves only on a click on empty water · M3 it simulates only while a wave lives (R11) ·
+M4 it follows the lens · M5 square glass, no rounded corners, no drop shadows · M6 mono readouts, condensed titles ·
+M7 the planet's ocean only from orbit. The style lab with every axis: https://claude.ai/artifact/9p2XW6rSijksZdDz8KgsSt
 
 ## Dev notes (the user's)
 

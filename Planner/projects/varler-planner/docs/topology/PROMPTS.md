@@ -1,7 +1,7 @@
 # Prompts: Topology View (TPO)
 
 Paste one of these into a **fresh** Claude Code session whose working directory is
-`H:\Dev-VRG\VRG-DE\wt-planner-stack\Planner\projects\varler-planner`. Each prompt names exactly what to read, so a WP
+`H:\VRG\Backup\archive\parked\2026-10-24\wt-planner-stack\Planner\projects\varler-planner`. Each prompt names exactly what to read, so a WP
 session loads the pack files it needs (~3–6 k tokens) plus the named code, never the whole tree.
 
 ## 0. Answer the decisions first (cheap)

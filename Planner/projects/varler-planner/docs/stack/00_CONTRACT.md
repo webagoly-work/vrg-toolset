@@ -11,7 +11,7 @@ Rev r1 · 2026-10-06 · written by the analysis model for the builder and verifi
 
 | | |
 |---|---|
-| Repo root | `H:\Dev-VRG\VRG-DE\Planner_VRG_U100` (`H:\Planner_VRG_U100` is a **backup — never work there**) |
+| Repo root | `H:\VRG\Full\Planner_VRG_U100` (`H:\VRG\Backup\code\Planner_VRG_U100-mirror` is a **backup — never work there**) |
 | Planner | `<repo>/Planner/projects/varler-planner` — all paths below are relative to this |
 | Branch | **`planner-stack`**, created from **`planner-circuit-endpoints`** (NOT `main` — main lacks `05j`/`05k` and the id repair) |
 | Checkout | **a git worktree**, never a branch switch in the main checkout — the main checkout carries other sessions' uncommitted BRIDGE edits and a switch would fail or drag them along |
@@ -19,12 +19,12 @@ Rev r1 · 2026-10-06 · written by the analysis model for the builder and verifi
 First-time setup (WP-A1 does this; later WPs reuse the worktree):
 
 ```bash
-cd H:/Dev-VRG/VRG-DE/Planner_VRG_U100
+cd H:/VRG/Full/Planner_VRG_U100
 git worktree add ../wt-planner-stack -b planner-stack planner-circuit-endpoints
 cp -r Planner/projects/varler-planner/docs/stack ../wt-planner-stack/Planner/projects/varler-planner/docs/
 cp Planner/projects/varler-planner/tools/check-globals.js ../wt-planner-stack/Planner/projects/varler-planner/tools/
 # tests need jsdom; node_modules is not in git — reuse the main checkout's
-export NODE_PATH="H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules"
+export NODE_PATH="H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules"
 ```
 
 Commit the pack as the first commit on `planner-stack` **only if the user said to commit**. Never push.

@@ -10,7 +10,7 @@ if not exist "%CLI%" (echo   arduino-cli not found: %CLI% & pause & exit /b 1)
 echo.
 echo   This REPLACES the firmware on the CYD (e.g. the Rocket League dashboard).
 echo   Close any bridge or serial monitor that uses the port first.
-echo   The RL firmware goes back with H:\others\RL-CYD-v2\Flash CYD firmware.bat
+echo   The RL firmware goes back with H:\Personal\RL-CYD\RL-CYD-v2\Flash CYD firmware.bat
 echo.
 set "PORT=COM19"
 set /p "PORT=  COM port [COM19]: "

@@ -38,7 +38,7 @@ setTimeout(() => {
     fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, SH.svg);
     const PW = Math.round(SH.W / 25.4 * 96), PH = Math.round(SH.H / 25.4 * 96);
     console.log('wrote ' + path.relative(REPO, OUT) + '  ' + SH.W + ' × ' + SH.H + ' mm  ' + SH.fit.msg + '  labels ' + JSON.stringify(SH.stats.labels));
-    if (args.includes('--png')) { const CHROME = path.resolve(REPO, '../Planner_VRG_U100/Planner/apps/chrome-headless-shell/chrome-headless-shell.exe'), png = OUT.replace(/.svg$/, '.png');
+    if (args.includes('--png')) { const CHROME = path.resolve(REPO, '../tools/chrome-headless-shell/chrome-headless-shell.exe'), png = OUT.replace(/.svg$/, '.png');
       execFileSync(CHROME, ['--headless', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files', `--window-size=${PW},${PH}`, '--force-device-scale-factor=2',
         `--screenshot=${png}`, 'file:///' + OUT.split(path.sep).join('/')], { stdio: 'ignore' }); console.log('wrote ' + path.relative(REPO, png)); }
     w.close(); return;
@@ -58,7 +58,7 @@ setTimeout(() => {
   fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, svg);
   console.log(`wrote ${path.relative(REPO, OUT)}  ${W}x${H}  ${JSON.stringify({ walls: S.walls, open: S.open, obj: S.obj, dev: S.dev, labels: S.labels })}`);
   if (args.includes('--png')) {
-    const CHROME = path.resolve(REPO, '../Planner_VRG_U100/Planner/apps/chrome-headless-shell/chrome-headless-shell.exe');
+    const CHROME = path.resolve(REPO, '../tools/chrome-headless-shell/chrome-headless-shell.exe');
     const png = OUT.replace(/\.svg$/, '.png');
     execFileSync(CHROME, ['--headless', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files',
       `--window-size=${W},${H}`, '--force-device-scale-factor=2', `--screenshot=${png}`, 'file:///' + OUT.split(path.sep).join('/')], { stdio: 'ignore' });

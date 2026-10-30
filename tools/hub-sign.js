@@ -10,7 +10,7 @@
 //   node tools/hub-sign.js             sign Hub/data/access.json after an edit
 //   node tools/hub-sign.js --verify    check the signature
 //
-//   --key <pem>     private key (default H:\cwebuser\_admin\keys\hub-access.pem).
+//   --key <pem>     private key (default H:\VRG\Full\_admin\keys\hub-access.pem).
 //                   Must be outside the repo and outside OneDrive.
 //   --pub <json>    public key file   (default Hub/src/access-pubkey.json)
 //   --access <json> the list          (default Hub/data/access.json)
@@ -33,7 +33,7 @@ const args = process.argv.slice(2);
 const opt = (name, def) => { const i = args.indexOf(name); return i >= 0 && args[i + 1] ? args[i + 1] : def; };
 const has = name => args.includes(name);
 
-const KEY = path.resolve(opt('--key', 'H:\\cwebuser\\_admin\\keys\\hub-access.pem'));
+const KEY = path.resolve(opt('--key', 'H:\\VRG\\Full\\_admin\\keys\\hub-access.pem'));
 const PUB = path.resolve(REPO, opt('--pub', 'Hub/src/access-pubkey.json'));
 const ACCESS = path.resolve(REPO, opt('--access', 'Hub/data/access.json'));
 

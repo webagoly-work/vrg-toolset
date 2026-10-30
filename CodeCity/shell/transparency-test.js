@@ -1,6 +1,6 @@
 // transparency-test.js — does a transparent Electron window really show what is behind it on this GPU? (KV-25, report §1.5:
 // electron#40515 — transparent windows render black on some GPUs with hardware acceleration).
-//   Planner\apps\electron\electron.exe CodeCity\shell\transparency-test.js [--disable-gpu]
+//   ..\tools\electron\electron.exe CodeCity\shell\transparency-test.js [--disable-gpu]
 // An opaque magenta window is put on screen, a transparent frameless window over it (left half a 50 % white veil, right
 // half nothing); the screen is captured and three points are read. Pass = right half magenta, left half pink. Prints JSON.
 const { app, BrowserWindow, desktopCapturer, screen } = require('electron');

@@ -1,7 +1,7 @@
 # BRIDGE — System Information Base
 
 **Working substrate, not a deliverable.** Compiled 2026-10-02 from the 100-file corpus in
-`H:/Dev-VRG/VRG-DE/BRIDGE/` (September sweep + `BRIDGEcomp.zip` merge). Language: English.
+`H:/VRG/Full/BRIDGE/` (September sweep + `BRIDGEcomp.zip` merge). Language: English.
 Purpose: a single analytic surface from which the *BRIDGE System Reference* — layered guide
 plus subsystem catalogue — is written. Every uncertainty carries an ID so it can be resolved
 by reference.

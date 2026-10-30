@@ -6,7 +6,7 @@
 
 A fájlok **másolatok** — az eredetiek érintetlenül a helyükön maradtak
 (`C:\Users\webag\Downloads`, OneDrive `VARLER Documents-`, `Vault MD`,
-`VARLERONLINE\Projects`, `H:\Dev-VRG\VRG-DE\_inbox`).
+`VARLERONLINE\Projects`, `H:\VRG\Full\inbox`).
 
 ## Mappaszerkezet
 

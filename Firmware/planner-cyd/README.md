@@ -1,6 +1,6 @@
 # Planner CYD: desk dashboard and remote for the Varler Planner
 
-v0.7, 2026-10-17. Built on the RL CYD principle (`H:\others\RL-CYD-v2\PRIMER-cyd-dashboard.md`): the CYD is dumb, the PC bridge is smart, and the two talk in short `X|a|b` lines. It lives in the repo at `Firmware/planner-cyd`, and you start it from `Planner/START.cmd` → **K**: 1 = with the Planner, 2 = demo, 3 = flash, **4 = the macropad** (for everyday Windows use; it also picks up the Planner when its relay runs), **5 = macropad settings** (http://localhost:8788).
+v0.7, 2026-10-17. Built on the RL CYD principle (`H:\Personal\RL-CYD\RL-CYD-v2\PRIMER-cyd-dashboard.md`): the CYD is dumb, the PC bridge is smart, and the two talk in short `X|a|b` lines. It lives in the repo at `Firmware/planner-cyd`, and you start it from `Planner/START.cmd` → **K**: 1 = with the Planner, 2 = demo, 3 = flash, **4 = the macropad** (for everyday Windows use; it also picks up the Planner when its relay runs), **5 = macropad settings** (http://localhost:8788).
 
 ```
  Planner tab (browser)          phone relay (Node)          bridge (Node)             CYD

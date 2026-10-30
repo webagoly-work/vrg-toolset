@@ -1,6 +1,6 @@
 // main.js — the Kódváros overlay shell (P12 L2, KV-25; report §1.5, CITY-D20 A). Electron, pinned in vendor-manifest.json,
-// unpacked by CodeCity/tools/fetch-electron.js into Planner/apps/electron. Started by START.cmd K → F, or by hand:
-//   Planner\apps\electron\electron.exe CodeCity\shell [--port 8797] [--hotkey Control+Alt+K] [--selftest]
+// unpacked by CodeCity/tools/fetch-electron.js into H:\VRG\Full\tools\electron. Started by START.cmd K → F, or by hand:
+//   ..\tools\electron\electron.exe CodeCity\shell [--port 8797] [--hotkey Control+Alt+K] [--selftest]
 // - one transparent, frameless, always-on-top window per monitor, each loading the segéd page with #mode=overlay;
 // - the hotkey summons and hides all of them (Esc hides too); if the combination is taken, the tray says so and the
 //   fallback Control+Alt+Shift+K is tried — globalShortcut.register only returns false, it never throws;

@@ -5,12 +5,12 @@
 
 ## 0. Where you work
 
-`H:/Dev-VRG/VRG-DE/wt-planner-stack/Planner/projects/varler-planner`, branch `planner-stack`. Other sessions share
+`H:/VRG/Backup/archive/parked/2026-10-24/wt-planner-stack/Planner/projects/varler-planner`, branch `planner-stack`. Other sessions share
 this worktree (Views V9+, R1010 M2): `git status` before you start and before you report; never commit unless the user
 says so; commit with explicit paths only.
 
 ```bash
-export NODE_PATH=H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
+export NODE_PATH=H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
 node build.js && node tools/check-globals.js && node tests/run.js
 ```
 

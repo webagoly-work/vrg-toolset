@@ -129,7 +129,7 @@ cwd: start it from `H:\` and from the repo root. `NODE_PATH` fallback message on
 
 Add it to a Claude Code session by hand (no `.mcp.json` yet — that is MCP-3):
 ```bash
-claude mcp add planner-test -- node H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/tools/planner-mcp.js --in H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Calculator/CLA-teszt_v2.vplan.json
+claude mcp add planner-test -- node H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/tools/planner-mcp.js --in H:/VRG/Full/Planner_VRG_U100/Calculator/CLA-teszt_v2.vplan.json
 ```
 and ask that session for the CLA device count per room and the validation errors. Remove it afterwards
 (`claude mcp remove planner-test`).

@@ -3,12 +3,12 @@
 # You run it yourself, in an elevated PowerShell. It only copies files and prints their hashes: it does not create,
 # start or change any scheduled task — that is your step (docs/city/wp/p11-etw.md).
 #
-#   powershell -NoProfile -ExecutionPolicy Bypass -File H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\CodeCity\etw\install-etw.ps1
+#   powershell -NoProfile -ExecutionPolicy Bypass -File H:\VRG\Full\Planner_VRG_U100\CodeCity\etw\install-etw.ps1
 #Requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $src = Join-Path $PSScriptRoot 'bin\publish'
-$dotnet = Join-Path $repo 'Planner\apps\dotnet'
+$dotnet = Join-Path (Split-Path $repo) 'tools\dotnet'
 $dst = Join-Path $env:ProgramFiles 'VRG\Kodvaros-ETW'
 if (-not (Test-Path (Join-Path $src 'vrg-etw.exe'))) { throw 'Build it first: node CodeCity/tools/build-etw.js' }
 if (-not (Test-Path (Join-Path $dotnet 'host\fxr'))) { throw "No .NET in $dotnet (CITY-D18)" }

@@ -5,7 +5,7 @@ They are short on purpose: each one points into the report `docs/research/report
 Same content as that report's §7; if the two ever differ, update both. Run them in order in a fresh Claude Code session on `main`.
 
 
-Copy one prompt into a fresh Claude Code session in the repo (`H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`). "Report" = `docs/research/reports/Kódváros live workspace and GitWorld.md`. Each prompt points at report sections instead of restating context. Run them in order; skip a phase's prompts if its decisions said no.
+Copy one prompt into a fresh Claude Code session in the repo (`H:\VRG\Full\Planner_VRG_U100`, branch `main`). "Report" = `docs/research/reports/Kódváros live workspace and GitWorld.md`. Each prompt points at report sections instead of restating context. Run them in order; skip a phase's prompts if its decisions said no.
 
 **KV-01 · Decisions**
 ```

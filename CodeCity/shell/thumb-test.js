@@ -1,6 +1,6 @@
 // thumb-test.js — are desktopCapturer thumbnails real pictures of the windows, and what does one scan cost? (KV-26: the
 // live WebRTC capture is refused on this PC, so the screens may have to be refreshed thumbnails.)
-//   Planner\apps\electron\electron.exe CodeCity\shell\thumb-test.js
+//   ..\tools\electron\electron.exe CodeCity\shell\thumb-test.js
 // Prints, per window: the handle, the thumbnail size and how much of it is not black; then the scan times at two sizes.
 const { app, desktopCapturer } = require('electron');
 app.whenReady().then(async () => {
