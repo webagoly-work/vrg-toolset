@@ -201,17 +201,17 @@
             { "key": "V", "name": "VS Code", "exe": "{code}", "args": ["{repo}\\Firmware\\board-console"] },
             { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Firmware\\board-console" }
           ] } },
-      { "key": "L", "name": "VRG Légegér", "hint": "telefon: légegér + vezérlő", "was": "A", "menu": {
-          "title": "VRG LÉGEGÉR", "subtitle": "{repo}\\AirDeck", "note": "Android app. Még nem futott valódi telefonon. Az APK építéséhez JDK 17 + Android SDK kell (Android Studio).",
+      { "key": "L", "name": "VRG Mobile", "hint": "telefonos társapp, benne a Légegér", "was": "A", "menu": {
+          "title": "VRG MOBILE", "subtitle": "{repo}\\Mobile", "note": "Android app. Még nem futott valódi telefonon. Az APK építéséhez JDK 17 + Android SDK kell (Android Studio).",
           "items": [
-            { "key": "S", "name": "Gyro relay indítása", "hint": ":47291, képernyőkép engedve", "exe": "{repo}\\AirDeck\\legeger.cmd", "args": ["relay"] },
-            { "key": "B", "name": "APK építése", "hint": "gradlew assembleDebug", "exe": "{repo}\\AirDeck\\legeger.cmd", "args": ["build"] },
-            { "key": "I", "name": "Telepítés a telefonra", "hint": "adb install", "exe": "{repo}\\AirDeck\\legeger.cmd", "args": ["install"] },
-            { "key": "T", "name": "Core tesztek", "hint": "gradlew :core:test", "exe": "{repo}\\AirDeck\\legeger.cmd", "args": ["test"] },
-            { "key": "W", "name": "Relay e2e teszt", "hint": "Node + Playwright", "exe": "{repo}\\AirDeck\\legeger.cmd", "args": ["e2e"] },
-            { "key": "A", "name": "Android Studio", "hint": "a projekt megnyitása", "exe": "{repo}\\AirDeck\\legeger.cmd", "args": ["studio"] },
-            { "key": "R", "name": "Leírás", "hint": "README.md", "exe": "{repo}\\AirDeck\\legeger.cmd", "args": ["readme"] },
-            { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\AirDeck" }
+            { "key": "S", "name": "Gyro relay indítása", "hint": ":47291, képernyőkép engedve", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["relay"] },
+            { "key": "B", "name": "APK építése", "hint": "gradlew assembleDebug", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["build"] },
+            { "key": "I", "name": "Telepítés a telefonra", "hint": "adb install", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["install"] },
+            { "key": "T", "name": "Core tesztek", "hint": "gradlew :core:test", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["test"] },
+            { "key": "W", "name": "Relay e2e teszt", "hint": "Node + Playwright", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["e2e"] },
+            { "key": "A", "name": "Android Studio", "hint": "a projekt megnyitása", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["studio"] },
+            { "key": "R", "name": "Leírás", "hint": "README.md", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["readme"] },
+            { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Mobile" }
           ] } },
       { "key": "V", "name": "Vendor", "hint": "lista · letöltés", "was": "L D", "menu": {
           "title": "VENDOR KOMPONENSEK", "subtitle": "vendor-manifest.json · Vendor\\",

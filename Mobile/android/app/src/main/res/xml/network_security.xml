@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The relay is plain ws:// / http:// on the home LAN (no certificates on a LAN box), so cleartext is
+     allowed. Everything on the internet (GitHub) is https:// by the features' own rule, never http. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

@@ -1,0 +1,10 @@
+{
+  "note": "Cross-language check of the relay auth signature (WP M2). A throwaway test key, not used anywhere else: Node signed sigNode, the JVM (SHA256withECDSA, as Android) signed sigJvm. Both relay-pair.js and kit-core verify both.",
+  "pkcs8": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgnuOJkI6dSUJ9SAUPy9bMYDk2mgSWfcOX/u6POs6AedmhRANCAAS2uErVrcw9yPyx6sBOWz6lOkdhOn7TdgbIYCmDyBbqEHw2+pReKyjfHX2IkgLIwrm3yo1od8P7o7n+9dKo2PkD",
+  "spki": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEtrhK1a3MPcj8serATls+pTpHYTp+03YGyGApg8gW6hB8NvqUXiso3x19iJICyMK5t8qNaHfD+6O5/vXSqNj5Aw==",
+  "challenge": "00112233445566778899aabbccddeeff",
+  "id": "a1b2c3d4e5f60718",
+  "text": "vrg-relay-auth:1:00112233445566778899aabbccddeeff:a1b2c3d4e5f60718",
+  "sigNode": "MEUCIQDHRH9Xo3DvE+drrT+CIqglbDayUR4ALWKYiST2sq9dUgIgdvWq/90w8h03mPpilotpQGoB7hRZoH66Y/6cFs8MGMk=",
+  "sigJvm": "MEYCIQCXyDgjDnh+nncl9RQ3vjbrK1oB2rQhoZN6j+GLrXlV/gIhAIJ6QPZ3bR7WZpyB0smM6WEdUpqw5cLcjVcIsD0xPVwN"
+}

@@ -1,0 +1,56 @@
+# VRG Mobile: tests + debug APK on every push that touches the app. The cloud sandbox cannot build
+# Android (Google's Maven is blocked there), so this is where a cloud session's work becomes an APK.
+# Download it from the run page -> Artifacts. Releases for the in-app updater come with WP M9.
+name: VRG Mobile (Android)
+
+on:
+  push:
+    paths: ['Mobile/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js']
+  pull_request:
+    paths: ['Mobile/**', '.github/workflows/mobile-android.yml', 'Planner/projects/varler-planner/tools/*relay*.js']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: Mobile/android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Relay pairing tests (Node)
+        working-directory: .
+        run: |
+          (cd Planner/projects/varler-planner && npm ci --no-audit --no-fund)
+          node Mobile/tests/relay-pair.js
+      - name: Tests (pure Kotlin)
+        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test
+      - name: Debug APK
+        run: ./gradlew --no-daemon assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vrg-mobile-debug-${{ github.sha }}
+          path: Mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-reports-${{ github.sha }}
+          path: Mobile/android/*/build/reports/tests/
+          retention-days: 7

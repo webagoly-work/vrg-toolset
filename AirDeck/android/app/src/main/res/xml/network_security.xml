@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- The relay is plain ws:// on the home LAN (no certificates on a LAN box). Cleartext is allowed
-     for that reason only; the app talks to nothing on the internet. -->
-<network-security-config>
-    <base-config cleartextTrafficPermitted="true" />
-</network-security-config>
