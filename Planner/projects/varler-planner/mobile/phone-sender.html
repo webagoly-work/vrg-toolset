@@ -172,6 +172,9 @@ var PHONE = (function () {
     try { m = JSON.parse(raw); } catch (e) { return { kind: 'junk' }; }
     if (!m || typeof m !== 'object') return { kind: 'junk' };
     if (m.from === ROLE) return { kind: 'echo' };          // our own message came back
+    // Since the relay also carries Kódváros (AirDeck/), this page listens to the Planner only:
+    // another app's hello would otherwise replace the Planner's tool pad.
+    if (m.from && m.from !== 'planner') return { kind: 'other', type: m.type, payload: m.payload };
     if (m.type === 'hello') return { kind: 'hello', peer: m.payload || {} };
     if (m.type === 'state') return { kind: 'state', state: m.payload || {} };
     if (m.type === 'ack') return { kind: 'ack', ack: m.payload || {} };
