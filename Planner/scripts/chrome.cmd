@@ -12,7 +12,7 @@ pushd "%~dp0.." || (echo Nem talalom a ROOT mappat. & pause & exit /b 1)
 set "ROOT=%CD%"
 popd
 
-set "CHROME=%ROOT%\apps\chrome\chrome.exe"
+set "CHROME=%ROOT%\..\..\tools\chrome\chrome.exe"
 set "DIST=%ROOT%\projects\varler-planner\dist\varler_planner.html"
 set "PROFILE=%ROOT%\data\browser-profile"
 
@@ -25,7 +25,7 @@ if not exist "%CHROME%" (
   echo   Toltsd le a Chrome for Testing / win64 ZIP-et innen:
   echo     googlechromelabs.github.io/chrome-for-testing
   echo   es a chrome-win64 mappa TARTALMAT masold ide:
-  echo     %ROOT%\apps\chrome\
+  echo     %ROOT%\..\..\tools\chrome\
   echo.
   echo   Utana a chrome.exe kozvetlenul ebben a mappaban legyen.
   echo.

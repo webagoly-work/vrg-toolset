@@ -6,7 +6,7 @@ rem  Put this in C:\VARLER and double-click it. It writes SNAPSHOT.txt in the
 rem  same folder and opens it in Notepad. Select all, copy, paste into the chat.
 rem
 rem  Needs nothing installed - no Node, no git. Works even on a half-built stick.
-rem  Skips apps\ internals, node_modules and .git, which are thousands of files
+rem  Skips the tools\ internals, node_modules and .git, which are thousands of files
 rem  and tell you nothing.
 rem ===========================================================================
 setlocal enabledelayedexpansion
@@ -25,9 +25,9 @@ echo.
 >>"%OUT%" echo.
 
 rem --- portable apps: presence only, not contents ----------------------------
->>"%OUT%" echo == apps ^(installed portables^) ==
+>>"%OUT%" echo == ..\..\tools ^(portable toolchain, next to the repo^) ==
 set "ANY="
-for /d %%D in ("%ROOT%\apps\*") do (
+for /d %%D in ("%ROOT%\..\..\tools\*") do (
   set "ANY=1"
   set "MARK=empty"
   dir /b "%%D" >nul 2>&1 && for /f %%N in ('dir /b "%%D" 2^>nul ^| find /c /v ""') do set "MARK=%%N items"
@@ -38,10 +38,10 @@ if not defined ANY >>"%OUT%" echo    ^(none^)
 rem --- key files: are they where they should be? -----------------------------
 >>"%OUT%" echo.
 >>"%OUT%" echo == key files ==
-call :chk "apps\node\node.exe"
-call :chk "apps\opera-gx\launcher.exe"
-call :chk "apps\vscode\Code.exe"
-call :chk "apps\git\cmd\git.exe"
+call :chk "..\..\tools\node\node.exe"
+call :chk "..\..\programs\opera-gx\opera.exe"
+call :chk "..\..\tools\vscode\Code.exe"
+call :chk "..\..\tools\git\cmd\git.exe"
 call :chk "START.cmd"
 call :chk "scripts\_env.cmd"
 call :chk "projects\varler-planner\build.js"

@@ -1,0 +1,337 @@
+{
+  "version": 2,
+  "about": "The one menu registry for START / BACKUP / OTG (and run.exe later). Paths: {repo} = this repository, {full} = H:\\VRG\\Full (the repo's parent), {vrg} = H:\\VRG, plus the shortcuts in 'paths' ({node}, {planner}, ...). Item kinds: path (browser chooser), run (steps in this console, or window:true for its own window), start (detached program), url, folder, menu (submenu), server (start if not running, then open), servers, prompts, tabs, quit. 'optional': a program that may be missing (shown, not an error). Items with a 'phase' are shown but not built yet. Checked by tools/check-start.js.",
+
+  "paths": {
+    "node": "{full}\\tools\\node\\node.exe",
+    "npm": "{full}\\tools\\node\\npm.cmd",
+    "claude": "{full}\\tools\\node\\claude.cmd",
+    "code": "{full}\\tools\\vscode\\Code.exe",
+    "git": "{full}\\tools\\git\\cmd\\git.exe",
+    "gitbash": "{full}\\tools\\git\\git-bash.exe",
+    "zen": "{full}\\programs\\zen-browser\\zen.exe",
+    "planner": "{repo}\\Planner\\projects\\varler-planner",
+    "inventory": "{repo}\\Inventory"
+  },
+
+  "ui": {
+    "changes": "VÁLTOZÁSOK", "clean": "tiszta", "files": "fájl", "unpushed": "commit feltöltetlen", "nogit": "nincs git",
+    "tools": "ESZKÖZÖK", "toolsEn": "tools", "projects": "PROJEKTEK", "projectsEn": "almenük", "dev": "FEJLESZTÉS", "devEn": "dev",
+    "soon": "Ez a {phase}. fázisban készül el.", "opened": "Megnyitva: {name}", "missing": "Nem található: {path}",
+    "browser": "MEGNYITÁS", "folder": "Mappa megnyitása", "back": "Vissza", "beforeFailed": "{note} nem sikerült, a legutóbbi adat marad.",
+    "noBrowser": "Ez a böngésző nincs telepítve: {path}",
+    "notInstalled": "nincs telepítve", "running": "Fut: {name}", "done": "Kész.", "doneName": "Kész: {name}", "failed": "Hiba (kód {code}), a további lépések elmaradtak.",
+    "anyKey": "Egy billentyű: vissza a menübe.", "window": "Külön ablakban fut: {name}", "started": "Elindítva: {name}",
+    "up": "FUT", "down": "nem fut", "starting": "Indítás: {name} (port {port})…", "noAnswer": "A szerver 10 másodperc alatt sem válaszolt. Nézd meg a „VRG {port}” ablakot a tálcán.",
+    "openAll": "Minden futó megnyitása", "serversNote": "Ami nem fut, azt a billentyűje elindítja, aztán megnyitja.",
+    "copied": "a vágólapra másolva", "promptsNote": "A választott prompt megjelenik, és a vágólapra is kerül.", "noPrompts": "Nincs prompt itt: {path}",
+    "ensure": "{note}", "servers": "HELYI SZERVEREK", "prompts": "PROMPTKÖNYVTÁR",
+    "count": { "M": "mód.", "A": "új", "D": "törölt", "R": "átnev." },
+    "commitTitle": "COMMIT + FELTÖLTÉS",
+    "commitTarget": "cél: origin/{collect}, ha az elágazott: {collect}-{date}",
+    "commitNote": "Az aktuális ágra commitol (git add -A), aztán feltölti. A GitHubon a main ágat soha nem módosítja, és soha nem erőltet (--force). Titoknak látszó vagy 5 MB-nál nagyobb fájl megállítja az adott repót.",
+    "commitAll": "Mind, ami kész", "ready": "kész", "blockedTag": "megáll: {n}", "andMore": "… és még {n}",
+    "whyName": "titoknak látszó név", "whyContent": "titok van benne", "whyLarge": "{mb} MB, túl nagy",
+    "messageLabel": "Commit üzenet ({list}):",
+    "lineKeys": "Enter: mehet  ·  Backspace: töröl  ·  Esc: mégse",
+    "commitMsg": "launcher: {date}, {n} fájl",
+    "committing": "{name}: commit és feltöltés…",
+    "committed": "{name}: commit kész ({sha}).",
+    "pushed": "{name}: feltöltve ide: origin/{branch}",
+    "pushedFallback": "{name}: a {collect} nem volt gyorsítható előre, ezért ide ment: origin/{branch}",
+    "nothing": "{name}: nincs mit feltölteni.",
+    "stillBlocked": "{name}: megállt, {n} fájl nem mehet fel.",
+    "err": { "nogit": "{name}: nem git repó.", "noorigin": "{name}: nincs origin remote, nem tölthető fel.",
+             "add": "{name}: a git add nem sikerült.", "commit": "{name}: a commit nem sikerült.",
+             "push": "{name}: a feltöltés nem sikerült; a commit helyben megvan." },
+    "commitDone": "Commit + feltöltés kész: {list}",
+    "commitSome": "{ok} repó rendben, {bad} hibával: nézd meg az S menüt.",
+    "noneReady": "Nincs mit commitolni.",
+    "fixBlocked": "Előbb vedd ki a megállító fájlokat (törlés vagy .gitignore).",
+    "guardTitle": "KILÉPÉS ELŐTT",
+    "guardNote": "Ezekben a repókban feltöltetlen munka van:",
+    "guardCommit": "Commit + feltöltés, aztán kilépés", "guardLeave": "Kilépés így", "guardBack": "Vissza a menübe",
+    "closeLocked": "Feltöltetlen munka: az ablak X gombja ki van kapcsolva, a Q rákérdez.",
+    "yes": "Igen", "no": "Nem",
+    "bkSyncTitle": "SZINKRON", "bkReportTitle": "UTOLSÓ SZINKRON", "bkIntTitle": "ÉPSÉG-ELLENŐRZÉS",
+    "bkRestoreTitle": "VISSZAÁLLÍTÁS", "bkInstTitle": "TELEPÍTŐ-ELLENŐRZÉS",
+    "bkWhen": "{when}  ·  {seconds} mp",
+    "bkRepoOk": "{name}: minden ág és címke a backup repóban.",
+    "bkRepoNew": "{name}: backup repó létrehozva, minden ág és címke benne.",
+    "bkRejected": "{name}: a backupban eltér, nem írtam felül (--force soha): {list}",
+    "bkErr": { "nogit": "{name}: nem git repó.", "init": "{name}: a backup repó nem hozható létre.",
+               "remote": "{name}: a „backup” remote máshová mutat; nem nyúltam hozzá.", "push": "{name}: a feltöltés a backup repóba nem sikerült." },
+    "bkSkip": { "nosource": "nincs ilyen mappa, kihagyva", "empty": "üres lett: a backup marad, kihagyva" },
+    "bkCopyFail": "másolási hiba (robocopy {code})",
+    "bkSame": "változatlan",
+    "bkCounts": "+{new} új  ~{changed} módosult  −{removed} törölve  ({size})",
+    "bkManifest": "SHA-256 jegyzék: {files} fájl ({hashed} újonnan számolva).",
+    "bkArchived": "{n} régi példány megőrizve: {path}",
+    "bkSyncOk": "Szinkron kész.", "bkSyncWarn": "Szinkron kész, de nem minden sikerült: 3 = jelentés.",
+    "bkNoReport": "Még nem volt szinkron.",
+    "bkFsckOk": "{name}: git fsck rendben.", "bkFsckBad": "{name}: {why}", "bkNoBare": "nincs még backup repó (1 = szinkron).",
+    "bkNoManifest": "Nincs SHA-256 jegyzék: előbb szinkron (1).",
+    "bkHashOk": "{n} fájl, mind egyezik a jegyzékkel.", "bkHashBad": "{n} fájlból {bad} eltér a jegyzéktől:",
+    "bkMissing": "{n} fájl hiányzik a backupból:", "bkUnlisted": "{n} fájl a backupban, de nincs a jegyzékben.",
+    "bkPending": "Szinkronra vár: {list}", "bkInSync": "Minden munkamappa szinkronban.",
+    "bkIntOk": "Épség rendben.", "bkIntBad": "Az épség-ellenőrzés hibát talált: 2 = részletek.",
+    "bkRestoreAsk": "Fájl vagy mappa ({list}), pl. jobs\\P33\\ajanlat.xlsx:",
+    "bkRestoreNote": "Felülírja, de nem töröl semmit; a mostani példány előbb a Backup\\archive\\restore-ba kerül.",
+    "bkNotSynced": "Nem szinkronizált mappában van: {path}", "bkNoVersion": "Nincs mentett példány: {path}",
+    "bkVerBackup": "a backup most", "bkVerSync": "szinkron előtti példány, {when}", "bkVerRestore": "visszaállítás előtti példány, {when}",
+    "bkConfirm": "Visszaállítás innen: {name}?",
+    "bkRestored": "Visszaállítva: {path} (a régi itt: {saved})", "bkRestoredNew": "Visszaállítva: {path}",
+    "bkRestoreFail": "A visszaállítás nem sikerült (robocopy {code}).",
+    "bkInstOk": "megvan", "bkInstMissing": "hiányzik", "bkInstNoRule": "nincs szabály",
+    "bkInstSum": "{ok} megvan, {missing} hiányzik, {norule} szabály nélkül.", "bkInstAll": "Minden telepítő megvan."
+  },
+
+  "browsers": [
+    { "key": "1", "name": "Chrome", "exe": "{full}\\tools\\chrome\\chrome.exe", "args": ["--new-window"] },
+    { "key": "2", "name": "Opera GX", "exe": "{full}\\programs\\opera-gx\\opera.exe" },
+    { "key": "3", "name": "Zen", "exe": "{zen}" },
+    { "key": "4", "name": "Rendszer alapértelmezett", "exe": "" }
+  ],
+
+  "repos": [
+    { "name": "Planner", "path": "{repo}" },
+    { "name": "heatmapper", "path": "{full}\\wifi-heatmapper" }
+  ],
+
+  "servers": [
+    { "key": "1", "id": "planner", "name": "Varler Planner · dev szerver", "port": 8131, "open": "/Planner/projects/varler-planner/dist/varler_planner.html", "js": "{planner}\\tools\\serve.js" },
+    { "key": "2", "id": "inventory", "name": "Készlet / Inventory", "port": 8123, "js": "{inventory}\\build\\serve.js" },
+    { "key": "3", "id": "mindmap", "name": "VRG MindMap", "port": 8124, "js": "{repo}\\MindMap\\serve.js" },
+    { "key": "4", "id": "kapu", "name": "VRG Kapu · Kapu segéd", "port": 8795, "js": "{repo}\\Hub\\companion\\server.js", "args": ["--no-open"] },
+    { "key": "5", "id": "cyd-settings", "name": "Planner CYD · makropad beállítása", "port": 8788, "bat": "{repo}\\Firmware\\planner-cyd\\5 - Makropad beallitasa.bat", "self": true },
+    { "key": "6", "id": "board", "name": "Board Console · fejlesztőlap", "port": 8790, "bat": "{repo}\\Firmware\\board-console\\Board Console.bat", "self": true },
+    { "key": "7", "id": "gyro", "name": "Gyro relay · telefon", "port": 47291, "js": "{planner}\\tools\\phone-relay-server.js", "cwd": "{planner}" },
+    { "key": "8", "id": "knobpad", "name": "Knob pad · próba szerver", "port": 8177, "js": "{repo}\\Firmware\\knobpad\\mock-server.js" },
+    { "key": "9", "id": "openmct", "name": "Open MCT · kísérlet", "port": 8150, "js": "{repo}\\docs\\research\\openmct-spike\\serve.js" },
+    { "key": "0", "id": "kapu-dev", "name": "VRG Kapu · statikus dev", "port": 8796, "js": "{repo}\\Hub\\test\\serve.js" },
+    { "key": "K", "id": "city", "name": "Kódváros · élő mód", "port": 8797, "js": "{repo}\\CodeCity\\companion.js", "self": true },
+    { "key": "M", "id": "hub-admin", "name": "VRG Kapu · admin (engedélyezett lista)", "port": 8798, "js": "{repo}\\tools\\hub-admin\\server.js", "self": true }
+  ],
+
+  "programs": [
+    { "key": "1", "name": "Chrome", "exe": "{full}\\tools\\chrome\\chrome.exe" },
+    { "key": "2", "name": "Opera GX", "exe": "{full}\\programs\\opera-gx\\opera.exe", "optional": true },
+    { "key": "3", "name": "Zen", "exe": "{zen}", "optional": true },
+    { "key": "4", "name": "VS Code", "exe": "{code}" },
+    { "key": "5", "name": "Git Bash", "exe": "{gitbash}" },
+    { "key": "6", "name": "KeyTweak", "exe": "{full}\\programs\\keytweak\\KeyTweak.exe", "optional": true },
+    { "key": "7", "name": "7-Zip", "exe": "{full}\\programs\\7zip\\7zFM.exe", "optional": true },
+    { "key": "8", "name": "VLC", "exe": "{full}\\programs\\VLC\\vlc.exe", "optional": true },
+    { "key": "9", "name": "HWiNFO", "exe": "{full}\\programs\\HWiNFO\\HWiNFO64.exe", "optional": true },
+    { "key": "0", "name": "WizTree", "exe": "{full}\\programs\\WizTree\\WizTree64.exe", "optional": true },
+    { "key": "C", "name": "CrystalDiskInfo", "exe": "{full}\\programs\\CrystalDiskInfo\\DiskInfo64.exe", "optional": true },
+    { "key": "N", "name": "Node konzol", "exe": "cmd.exe", "args": ["/k", "\"{node}\" --version"], "needs": "{node}" },
+    { "key": "D", "name": "ChromeDriver", "exe": "{full}\\tools\\chromedriver\\chromedriver.exe", "optional": true },
+    { "key": "I", "name": "Telepítők mappa", "folder": "{vrg}\\Backup\\installers" },
+    { "key": "W", "name": "wifi-heatmapper mappa", "folder": "{full}\\wifi-heatmapper" }
+  ],
+
+  "start": {
+    "title": "V R G   ·   F U L L",
+    "subtitle": "teljes munkaverzió",
+
+    "tools": [
+      { "key": "1", "name": "Varler Planner", "hint": "munkaverzió", "path": "{planner}\\dist\\varler_planner.html", "otg": true },
+      { "key": "2", "name": "Panel anyagár kalkulátor", "hint": "varlerÁron", "path": "{repo}\\Calculator\\panel_anyagar_kalkulator.html", "otg": true },
+      { "key": "3", "name": "Általános kalkulátor", "hint": "villanyszerelői", "path": "{repo}\\Calculator\\Altalanos_Villanyszerelui_Kalkulator.html", "otg": true },
+      { "key": "4", "name": "VRG MindMap", "path": "{repo}\\MindMap\\vrg_mindmap.html", "otg": true },
+      { "key": "5", "name": "Valena választó", "hint": "termékcsalád", "path": "{repo}\\Toolbox\\valena-life-szerelvenytervezo.html", "otg": true },
+      { "key": "6", "name": "Készlet / Inventory", "hint": "anyag-adatbázis", "path": "{inventory}\\dist\\vrg-inventory.html", "otg": true },
+      { "key": "7", "name": "Toolbox", "hint": "fejlesztés alatt", "path": "{repo}\\toolbox.html", "otg": false },
+      { "key": "8", "name": "LED árkalkulátor", "hint": "varlerÁron", "path": "{repo}\\Calculator\\led_arkalkulator.html", "otg": true },
+      { "key": "9", "name": "VRG BuildTree", "hint": "modder", "path": "{repo}\\Modder\\vrg-buildtree.html", "otg": true },
+      { "key": "0", "name": "VRG Vendor", "hint": "külső komponensek", "path": "{repo}\\vrg-vendor.html", "otg": false },
+      { "key": "K", "name": "VRG Kódváros", "hint": "a kód 3D városként", "path": "{repo}\\CodeCity\\dist\\vrg-codecity.html", "otg": false,
+        "before": { "note": "Kódváros: a repo beolvasása…", "exe": "{node}",
+                    "args": ["{repo}\\CodeCity\\scan.js", "{repo}", "--js", "{repo}\\CodeCity\\dist\\vrg-codecity.data.js"] },
+        "extras": [
+          { "key": "S", "name": "Élő mód", "hint": "Kódváros segéd, :8797", "server": "city" },
+          { "key": "F", "name": "Fedőréteg", "hint": "a város az asztal fölött, Ctrl+Alt+K", "exe": "{full}\\tools\\electron\\electron.exe", "args": ["{repo}\\CodeCity\\shell"],
+            "ensure": { "path": "{full}\\tools\\electron\\electron.exe", "note": "Az Electron még nincs letöltve, most letöltöm (kb. 150 MB)…", "exe": "{node}", "args": ["{repo}\\CodeCity\\tools\\fetch-electron.js"] },
+            "server": "city", "serverArgs": ["--no-open"] }
+        ] }
+    ],
+
+    "projects": [
+      { "key": "P", "name": "Planner", "hint": "build · teszt · gyro", "was": "B W E T G V M", "menu": {
+          "title": "PLANNER", "subtitle": "{planner}",
+          "items": [
+            { "key": "B", "name": "Build", "hint": "npm run build", "cwd": "{planner}", "steps": [{ "exe": "{npm}", "args": ["run", "build"] }] },
+            { "key": "W", "name": "Build + megnyitás", "hint": "utána a böngészőválasztó", "cwd": "{planner}", "steps": [{ "exe": "{npm}", "args": ["run", "build"] }],
+              "then": "{planner}\\dist\\varler_planner.html" },
+            { "key": "E", "name": "CLA előtöltve", "hint": "v1 + v2, csak az Elosztó", "cwd": "{planner}",
+              "steps": [{ "exe": "{npm}", "args": ["run", "build"] }, { "exe": "{node}", "args": ["tools\\make-preload.js"] }],
+              "then": "{planner}\\dist\\varler_planner_CLA.html" },
+            { "key": "T", "name": "Teszt", "hint": "npm test", "cwd": "{planner}", "steps": [{ "exe": "{npm}", "args": ["test"] }] },
+            { "key": "G", "name": "Gyro relay szerver", "hint": ":47291", "server": "gyro" },
+            { "key": "V", "name": "VS Code", "hint": "a Planner projekt", "exe": "{code}", "args": ["{planner}"] },
+            { "key": "M", "name": "Manifest írása", "hint": "docs\\MANIFEST.md", "cwd": "{planner}", "steps": [{ "exe": "{repo}\\Planner\\scripts\\manifest.cmd" }] },
+            { "key": "O", "name": "Mappa megnyitása", "folder": "{planner}" }
+          ] } },
+      { "key": "I", "name": "Készlet", "hint": "build · szerver · ár", "was": "I N S P", "menu": {
+          "title": "KÉSZLET / INVENTORY", "subtitle": "{inventory}",
+          "items": [
+            { "key": "B", "name": "Build", "hint": "dist\\vrg-inventory.html", "cwd": "{inventory}", "steps": [{ "exe": "{npm}", "args": ["run", "build"] }] },
+            { "key": "T", "name": "Teszt", "hint": "npm test", "cwd": "{inventory}", "steps": [{ "exe": "{npm}", "args": ["test"] }] },
+            { "key": "S", "name": "Helyi szerver", "hint": ":8123", "server": "inventory" },
+            { "key": "P", "name": "Árellenőrzés", "hint": "hálózat kell, külön ablak", "cwd": "{inventory}", "window": true,
+              "steps": [{ "exe": "{npm}", "args": ["run", "pricecheck"] }] },
+            { "key": "V", "name": "VS Code", "hint": "az Inventory projekt", "exe": "{code}", "args": ["{inventory}"] },
+            { "key": "O", "name": "Mappa megnyitása", "folder": "{inventory}" }
+          ] } },
+      { "key": "Y", "name": "Planner CYD", "hint": "USB kijelző", "was": "Y", "menu": {
+          "title": "PLANNER CYD", "subtitle": "{repo}\\Firmware\\planner-cyd", "note": "Mindegyik a saját ablakában fut, a menü itt marad.",
+          "items": [
+            { "key": "1", "name": "Indítás a Plannerrel", "hint": "relay + bridge", "exe": "{repo}\\Firmware\\planner-cyd\\1 - USB - Planner.bat" },
+            { "key": "2", "name": "Demó", "hint": "kitalált Planner", "exe": "{repo}\\Firmware\\planner-cyd\\2 - USB - Demo.bat" },
+            { "key": "3", "name": "CYD firmware feltöltése", "hint": "lecseréli az RL kijelzőt", "exe": "{repo}\\Firmware\\planner-cyd\\3 - Flash CYD firmware.bat" },
+            { "key": "4", "name": "Makropad", "hint": "MAKROK oldal", "exe": "{repo}\\Firmware\\planner-cyd\\4 - USB - Makropad.bat" },
+            { "key": "5", "name": "Makropad beállítása", "hint": ":8788", "server": "cyd-settings" },
+            { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Firmware\\planner-cyd" }
+          ] } },
+      { "key": "U", "name": "Board Console", "hint": ":8790", "was": "U", "menu": {
+          "title": "BOARD CONSOLE", "subtitle": "{repo}\\Firmware\\board-console",
+          "items": [
+            { "key": "S", "name": "Indítás", "hint": ":8790", "server": "board" },
+            { "key": "V", "name": "VS Code", "exe": "{code}", "args": ["{repo}\\Firmware\\board-console"] },
+            { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Firmware\\board-console" }
+          ] } },
+      { "key": "V", "name": "Vendor", "hint": "lista · letöltés", "was": "L D", "menu": {
+          "title": "VENDOR KOMPONENSEK", "subtitle": "vendor-manifest.json · Vendor\\",
+          "items": [
+            { "key": "L", "name": "Komponensek listája", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["tools\\fetch-vendor.js", "--list"] }] },
+            { "key": "D", "name": "Komponensek letöltése", "hint": "hálózat kell, külön ablak", "cwd": "{repo}", "window": true,
+              "steps": [{ "exe": "{node}", "args": ["tools\\fetch-vendor.js", "--all"] }, { "exe": "{node}", "args": ["tools\\fetch-vendor.js", "--sync-page"] }] },
+            { "key": "Y", "name": "Oldal szinkronizálása", "hint": "vrg-vendor.html", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["tools\\fetch-vendor.js", "--sync-page"] }] },
+            { "key": "O", "name": "VRG Vendor oldal", "path": "{repo}\\vrg-vendor.html" }
+          ] } }
+    ],
+
+    "dev": [
+      { "key": "C", "name": "Claude Code", "menu": {
+          "title": "CLAUDE CODE", "subtitle": "új ablakban indul", "note": "Melyik mappában induljon?",
+          "items": [
+            { "key": "1", "name": "A repo gyökere", "hint": "ajánlott, látja az egészet", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{repo}", "needs": "{claude}" },
+            { "key": "2", "name": "Planner projekt", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{planner}", "needs": "{claude}" },
+            { "key": "3", "name": "Inventory projekt", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{inventory}", "needs": "{claude}" }
+          ] } },
+      { "key": "E", "name": "VS Code", "was": "R V", "menu": {
+          "title": "VS CODE", "subtitle": "{code}",
+          "items": [
+            { "key": "1", "name": "A teljes repo", "exe": "{code}", "args": ["{repo}"] },
+            { "key": "2", "name": "Planner projekt", "exe": "{code}", "args": ["{planner}"] },
+            { "key": "3", "name": "Inventory projekt", "exe": "{code}", "args": ["{inventory}"] }
+          ] } },
+      { "key": "G", "name": "GitHub", "menu": {
+          "title": "GITHUB", "subtitle": "webagoly-work/vrg-toolset",
+          "note": "A repót a második GitHub fiókkal tartod karban. A push jelszava a fine-grained PAT, amit a Git Credential Manager tárol, nem a GitHub jelszavad.",
+          "items": [
+            { "key": "1", "name": "Repo a böngészőben", "url": "https://github.com/webagoly-work/vrg-toolset" },
+            { "key": "2", "name": "Pull requestek", "url": "https://github.com/webagoly-work/vrg-toolset/pulls" },
+            { "key": "3", "name": "Pull request ehhez az ághoz", "hint": "{branch}", "url": "https://github.com/webagoly-work/vrg-toolset/compare/main...{branch}?expand=1" },
+            { "key": "4", "name": "Git Bash a repóban", "exe": "{gitbash}", "args": ["--cd={repo}"] }
+          ] } },
+      { "key": "O", "name": "Helyi szerverek", "servers": true },
+      { "key": "H", "name": "VRG Kapu", "exe": "{repo}\\Hub\\VRG Kapu.cmd" },
+      { "key": "N", "name": "Napló", "cwd": "{repo}", "steps": [
+          { "exe": "{git}", "args": ["log", "-n", "15", "--date=short", "--pretty=format:  %ad  %s"] },
+          { "exe": "{git}", "args": ["status", "--short"] } ] },
+      { "key": "J", "name": "Promptok", "prompts": "{repo}\\tools\\prompts" },
+      { "key": "X", "name": "Ellenőrzés", "cwd": "{repo}", "steps": [
+          { "exe": "{node}", "args": ["tools\\check-start.js"] },
+          { "exe": "powershell.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "{repo}\\launcher\\test\\selftest.ps1"] },
+          { "exe": "powershell.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "{repo}\\launcher\\test\\git-selftest.ps1"] },
+          { "exe": "powershell.exe", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "{repo}\\launcher\\test\\backup-selftest.ps1"] } ] },
+      { "key": "Z", "name": "Zen munkamenet", "menu": {
+          "title": "ZEN MUNKAMENET", "subtitle": "{zen}",
+          "note": "A Zen mappáit parancssorból nem lehet létrehozni. Itt csoportonként külön ablakot kapsz, a lapok már nyitva; a Zenben egy mozdulattal mappába húzhatod őket.",
+          "items": [
+            { "key": "1", "name": "Online munkahely", "hint": "Gmail · GitHub · Claude", "exe": "{zen}", "groups": [
+                ["https://mail.google.com", "https://github.com/webagoly-work/vrg-toolset", "https://claude.ai/code"] ] },
+            { "key": "2", "name": "Fő eszközök", "hint": "Planner · MindMap · Készlet · BuildTree · Kapu", "exe": "{zen}", "groups": [
+                ["{planner}\\dist\\varler_planner.html", "{repo}\\MindMap\\vrg_mindmap.html", "{inventory}\\dist\\vrg-inventory.html", "{repo}\\Modder\\vrg-buildtree.html", "{repo}\\Hub\\dist\\vrg-kapu.html"] ] },
+            { "key": "3", "name": "Fejlesztés alatt", "hint": "kalkulátorok · Valena · Toolbox · Vendor", "exe": "{zen}", "groups": [
+                ["{repo}\\Calculator\\panel_anyagar_kalkulator.html", "{repo}\\Calculator\\Altalanos_Villanyszerelui_Kalkulator.html", "{repo}\\Calculator\\led_arkalkulator.html",
+                 "{repo}\\Toolbox\\valena-life-szerelvenytervezo.html", "{repo}\\toolbox.html", "{repo}\\vrg-vendor.html"] ] },
+            { "key": "4", "name": "Mind a három", "exe": "{zen}", "groups": [
+                ["https://mail.google.com", "https://github.com/webagoly-work/vrg-toolset", "https://claude.ai/code"],
+                ["{planner}\\dist\\varler_planner.html", "{repo}\\MindMap\\vrg_mindmap.html", "{inventory}\\dist\\vrg-inventory.html", "{repo}\\Modder\\vrg-buildtree.html", "{repo}\\Hub\\dist\\vrg-kapu.html"],
+                ["{repo}\\Calculator\\panel_anyagar_kalkulator.html", "{repo}\\Calculator\\Altalanos_Villanyszerelui_Kalkulator.html", "{repo}\\Calculator\\led_arkalkulator.html",
+                 "{repo}\\Toolbox\\valena-life-szerelvenytervezo.html", "{repo}\\toolbox.html", "{repo}\\vrg-vendor.html"] ] }
+          ] } },
+      { "key": "A", "name": "Programok", "programs": true }
+    ],
+
+    "bottom": [
+      { "key": "S", "name": "Commit + feltöltés", "action": "commit", "accent": true },
+      { "key": "Q", "name": "Kilépés", "action": "quit" }
+    ]
+  },
+
+  "backup": {
+    "title": "V R G   ·   B A C K U P",
+    "subtitle": "kód + telepítők, könnyű másolat",
+    "note": "A git repók a Backup\\code csupasz (bare) repóiba mennek, a munkamappák a Backup\\code\\work-be. Ami felülíródna vagy eltűnne, előbb a Backup\\archive\\sync-be kerül: semmi nem vész el.",
+    "items": [
+      { "key": "1", "name": "Szinkron most", "hint": "git + munkamappák", "action": "backup-sync", "accent": true },
+      { "key": "2", "name": "Épség-ellenőrzés", "hint": "git fsck + SHA-256", "action": "backup-integrity" },
+      { "key": "3", "name": "Utolsó szinkron jelentése", "action": "backup-report" },
+      { "key": "4", "name": "Visszaállítás", "hint": "egy fájl vagy mappa", "action": "backup-restore" },
+      { "key": "5", "name": "Telepítő-ellenőrzés", "hint": "{vrg}\\Backup\\installers", "action": "backup-installers" },
+      { "key": "O", "name": "Backup mappa", "folder": "{vrg}\\Backup" }
+    ],
+    "bottom": [ { "key": "Q", "name": "Kilépés", "action": "quit" } ],
+    "from": "{full}",
+    "dest": "{vrg}\\Backup\\code\\work",
+    "archive": "{vrg}\\Backup\\archive",
+    "logs": "{vrg}\\Backup\\logs",
+    "installers": "{vrg}\\Backup\\installers",
+    "folders": ["BRIDGE", "BRIDGEcomp", "ESP_lab", "jobs", "notes", "Varler_Workflow_Kit", "VRG_Visual_Base", "_handoff"],
+    "repos": [
+      { "name": "Planner", "path": "{repo}", "bare": "{vrg}\\Backup\\code\\Planner_VRG_U100.git" },
+      { "name": "heatmapper", "path": "{full}\\wifi-heatmapper", "bare": "{vrg}\\Backup\\code\\wifi-heatmapper.git" }
+    ],
+    "excludeDirs": ["node_modules", "__pycache__", ".pio", ".cache", ".venv", ".git"],
+    "excludeFiles": ["~$*", "*.tmp", "Thumbs.db", "desktop.ini"],
+    "installerRules": [
+      { "dir": "tools\\arduino-cli", "match": ["arduino-cli_*.zip"] },
+      { "dir": "tools\\chrome", "match": ["chrome-win64.zip"] },
+      { "dir": "tools\\chrome-headless-shell", "match": ["chrome-headless-shell-win64.zip"] },
+      { "dir": "tools\\chromedriver", "match": ["chromedriver-win64.zip"] },
+      { "dir": "tools\\dotnet", "match": ["dotnet-sdk-*.zip", "dotnet-sdk-*.exe"] },
+      { "dir": "tools\\electron", "match": ["electron-v*-win32-x64.zip"], "note": "CodeCity\\tools\\fetch-electron.js le tudja tölteni" },
+      { "dir": "tools\\git", "match": ["PortableGit-*.7z*", "Git-*-64-bit.exe"] },
+      { "dir": "tools\\js-libs", "match": ["DOMPurify-*.zip"], "note": "és a többi *-master.zip a zipped mappában" },
+      { "dir": "tools\\node", "match": ["node-v*-win-x64.zip"] },
+      { "dir": "tools\\terminal", "match": ["Microsoft.WindowsTerminal_*_x64.zip"] },
+      { "dir": "tools\\vscode", "match": ["VSCode-win32-x64-*.zip"] },
+      { "dir": "programs\\7zip", "match": ["7z*-x64.exe", "7z*.exe"] },
+      { "dir": "programs\\CrystalDiskInfo", "match": ["CrystalDiskInfo*"] },
+      { "dir": "programs\\HWiNFO", "match": ["hwi_*.zip", "hwi_*.exe"] },
+      { "dir": "programs\\keytweak", "match": ["keytweak-*.exe"] },
+      { "dir": "programs\\opera-gx", "match": ["Opera_GX_*.exe", "OperaGXSetup*.exe"] },
+      { "dir": "programs\\VLC", "match": ["vlc-*-win64.exe"] },
+      { "dir": "programs\\WizTree", "match": ["wiztree_*.zip", "wiztree_*.exe"] },
+      { "dir": "programs\\zen-browser", "match": ["zen*installer*.exe", "zen*.zip"] }
+    ]
+  },
+
+  "otg": {
+    "title": "V R G   ·   O T G",
+    "subtitle": "hordozható USB dist, szellemi tulajdon nélkül",
+    "note": "Az OTG műveletei a 3.6. fázisban készülnek el; addig csak a mappa nyílik meg.",
+    "items": [
+      { "key": "1", "name": "Dist építése", "hint": "{vrg}\\OTG\\dist", "phase": "3.6" },
+      { "key": "2", "name": "Meghajtó választása", "phase": "3.6" },
+      { "key": "3", "name": "Másolás + ellenőrzés", "phase": "3.6" },
+      { "key": "4", "name": "Biztonságos leválasztás", "phase": "3.6" },
+      { "key": "O", "name": "OTG mappa", "folder": "{vrg}\\OTG" }
+    ],
+    "bottom": [ { "key": "Q", "name": "Kilépés", "action": "quit" } ]
+  }
+}

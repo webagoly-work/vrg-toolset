@@ -6,7 +6,10 @@ rem ---------------------------------------------------------------------------
 
 for %%I in ("%~dp0..") do set "ROOT=%%~fI"
 
-set "APPS=%ROOT%\apps"
+rem the portable toolchain and programs sit next to the repo since the 2026-10-27 re-root
+for %%I in ("%ROOT%\..\..") do set "FULL=%%~fI"
+set "APPS=%FULL%\tools"
+set "PROGS=%FULL%\programs"
 set "PROJ=%ROOT%\projects\varler-planner"
 set "DATA=%ROOT%\data"
 set "UHOME=%ROOT%\home"
@@ -20,15 +23,15 @@ rem portable node + git first on PATH, so npm and any tool that shells out finds
 set "PATH=%NODEDIR%;%GITDIR%;%PATH%"
 
 rem keep npm's cache and config on the stick instead of the host's user profile
-set "NPM_CONFIG_CACHE=%ROOT%\apps\.npm-cache"
-set "NPM_CONFIG_USERCONFIG=%ROOT%\apps\.npmrc"
+set "NPM_CONFIG_CACHE=%APPS%\.npm-cache"
+set "NPM_CONFIG_USERCONFIG=%APPS%\.npmrc"
 set "NPM_CONFIG_PREFIX=%NODEDIR%"
 
 rem ---------------------------------------------------------------------------
 rem  portable HOME
 rem  Git reads .gitconfig, .ssh\ and bash history from HOME. Pointing it here
 rem  keeps config and keys on the stick instead of C:\Users\<whoever>.
-rem  Nothing inside apps\git is modified, so upgrading git changes nothing.
+rem  Nothing inside tools\git is modified, so upgrading git changes nothing.
 rem ---------------------------------------------------------------------------
 if not exist "%UHOME%" md "%UHOME%"
 set "HOME=%UHOME%"
@@ -42,8 +45,8 @@ set "CLAUDE_CONFIG_DIR=%UHOME%\claude"
 if not exist "%CLAUDE_CONFIG_DIR%" md "%CLAUDE_CONFIG_DIR%"
 
 rem the browser: standalone Opera GX drops launcher.exe next to opera.exe
-set "BROWSER=%APPS%\opera-gx\launcher.exe"
-if not exist "%BROWSER%" set "BROWSER=%APPS%\opera-gx\opera.exe"
+set "BROWSER=%PROGS%\opera-gx\launcher.exe"
+if not exist "%BROWSER%" set "BROWSER=%PROGS%\opera-gx\opera.exe"
 
 set "PLANNER=%PROJ%\dist\varler_planner.html"
 

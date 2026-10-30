@@ -15,7 +15,7 @@ if not exist "%PLANNER%" (
 if not exist "%BROWSER%" (
   echo.
   echo   Nincs meg a hordozhato bongeszo:
-  echo     %APPS%\opera-gx\launcher.exe
+  echo     %PROGS%\opera-gx\launcher.exe
   echo   Megnyitom az alapertelmezett bongesziben helyette.
   echo   FIGYELEM: a projektek a bongeszoprofilban vannak - masik bongeszo, masik lista.
   echo.
