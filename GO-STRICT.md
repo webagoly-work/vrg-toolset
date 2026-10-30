@@ -5,11 +5,11 @@
 *You were started with the codephrase **GO STRICT**. This file is the whole briefing; it does not
 depend on any memory note, so it works from any Claude account on this PC. It was written on branch
 `secacc` (decision HUB-Q24 A, 2026-10-22). Until that branch is merged, read it at
-`H:\cwebuser\projects\VRG-DE\SecAcc\GO-STRICT.md`.*
+`H:\VRG\Backup\archive\parked\2026-10-24\SecAcc\GO-STRICT.md`.*
 
 ## 1. Where
 
-- The main checkout `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`, branch **`main`**. `H:\Planner_VRG_U100`
+- The main checkout `H:\VRG\Full\Planner_VRG_U100`, branch **`main`**. `H:\VRG\Backup\code\Planner_VRG_U100-mirror`
   is a dead backup: never work there. Confirm with `git rev-parse --show-toplevel` and
   `git branch --show-current`.
 - **One session at a time here.** If another Claude session is building in this checkout, stop and

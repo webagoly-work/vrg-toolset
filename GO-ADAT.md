@@ -1,8 +1,8 @@
 # GO ADAT — indító prompt (CLA: erősáram alapréteg → Adat/PoE + LED-betápok + régi terv)
 
-> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
+> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\VRG\Full\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
 
-Másold be ezt egy új Claude Code munkamenetbe (munkakönyvtár: `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`).
+Másold be ezt egy új Claude Code munkamenetbe (munkakönyvtár: `H:\VRG\Full\Planner_VRG_U100`).
 
 ---
 
@@ -13,7 +13,7 @@ Folytatjuk a CLA tervezését ott, ahol az előző munkamenet abbahagyta (2026-1
 3. `Calculator/CLA-baseline/ALAPRETEG.md` — az erősáramú alapréteg (2 jóváhagyási kör, Q-001 és Q-002 beépítve).
 4. `Planner/projects/varler-planner/tools/baseline/cla.config.js` — minden eddigi döntésem itt van (edits, switchGroups, floorGroups, data, led, oldPlan…).
 
-**Hol tartunk.** A worktree `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100` (ág: planner-stack). Semmi nincs commitolva: a commitot és a pusht én csinálom, te soha.
+**Hol tartunk.** A worktree `H:\VRG\Full\Planner_VRG_U100` (ág: planner-stack). Semmi nincs commitolva: a commitot és a pusht én csinálom, te soha.
 
 Futtatás:
 
@@ -29,7 +29,7 @@ A kimenetek a `Calculator/CLA-baseline/` mappába kerülnek:
 - lapok: `alap-halozat`, `alap-aramkorok`, `portal-sablon`, `adat-halozat`, `led-betap`, `osszevetes` (.png + .svg)
 - a Tuner kérdéscsomagja: `ADATRETEG-Q-001.json`
 
-A Tuner itt van: `H:\Dev-VRG\VRG-DE\Planner_VRG_U100\BRIDGE\_tuner\bridge-tuner.html`. Válaszformátum: `ID=kulcs ~ megjegyzés`.
+A Tuner itt van: `H:\VRG\Full\Planner_VRG_U100\BRIDGE\_tuner\bridge-tuner.html`. Válaszformátum: `ID=kulcs ~ megjegyzés`.
 
 **A következő lépés.** Beküldöm az `ADATRETEG-Q-001` válaszait (D01–D09 adatréteg, L01–L08 LED, R01–R12 a régi terv nyitott pontjai). Építsd be őket a configba vagy a motorba, futtasd újra, és nézd meg a lapokat. Ha marad nyitott pont, csak arról legyen második kérdéscsomag (mint az ALAPRETEG-Q-002 volt). Utána jön a Planner-munkafolyamat: Elosztó kijelölése → használható falak → alapmagasság → hardvercsomópontok → végpontok → automatikus magasság, útvonal, áramkörjavaslat és bekötés.
 

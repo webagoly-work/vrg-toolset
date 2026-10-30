@@ -17,7 +17,7 @@ thread that starts up the process of flashing OpenWrt — I wanted to do it anyw
 
 ## 1. Where and how
 
-- Main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Write into `docs/openwrt/`
+- Main checkout `H:\VRG\Full\Planner_VRG_U100`, branch `main`. Write into `docs/openwrt/`
   (new). Commit your own files by path after each phase; never push, never switch branch, never stash.
 - Follow `CLAUDE.md`. No secrets in the repo: no passwords, no Wi-Fi keys, no MAC addresses in full.
 

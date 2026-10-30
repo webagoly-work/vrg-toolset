@@ -4,7 +4,7 @@
 > - Phase 0.3 found uncommitted work that was not in `main`, in `wt-planner-stack` (Views plan-sheet / rbx specs) and `wt-planner-sui` (Simple-UI mode).
 >   It was **parked**, not merged: WIP commits on those branches, tags `archive/2026-10-24/planner-stack-wip` / `planner-sui-wip`.
 >   Client data from `wt-planner-stack` (the `Calculator/` baseline folder, `client-preview/dev`) and the companion tokens were copied
->   outside the repo to `H:/cwebuser/projects/VRG-DE/_parked/2026-10-24/`.
+>   outside the repo to `H:/VRG/Backup/archive/parked/2026-10-24/`.
 > - Phase 2: `d390c8f` was already in `main` (empty cherry-pick, skipped).
 > - Phase 3 merged `archive/2026-10-23/planner-stack`, so the parked WIP commit stayed out. Planner: 3673 assertions, all green.
 > - Phase 7 therefore needs `-D` for `planner-stack` and `planner-sui` too (their WIP tips are tagged), and the parked copies
@@ -20,8 +20,8 @@ work later starts from that `main`.
 
 **Ground rules**
 
-- Run everything in the **main checkout**: `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100` (branch `main`).
-  `H:\Dev-VRG\VRG-DE` is a **junction** to `H:\cwebuser\projects\VRG-DE`, so `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`
+- Run everything in the **main checkout**: `H:\VRG\Full\Planner_VRG_U100` (branch `main`).
+  `H:\VRG\Full` is a **junction** to `H:\VRG\Full`, so `H:\VRG\Full\Planner_VRG_U100`
   is the *same* folder and the *same* repository, not a copy. There is exactly one repository.
 - Never `--force` anything (no `push --force`, no `worktree remove --force`, no `branch -D` unless a step
   below says so and says why). A refusal from git is the safety net: stop and read it.
@@ -39,15 +39,15 @@ work later starts from that `main`.
 | Branch | Where it lives | Not yet in the future `main` | Plan |
 |---|---|---|---|
 | `worktree-codecity` | worktree `.claude\worktrees\codecity` | — (it **is** the future main: `main` + Kódváros C1–C10 + `GO-MAIN.md`) | Phase 1: fast-forward `main` to it |
-| `secacc` | worktree `H:\cwebuser\projects\VRG-DE\SecAcc` | nothing (merged as `2f08529`) | trim |
+| `secacc` | worktree `H:\VRG\Backup\archive\parked\2026-10-24\SecAcc` | nothing (merged as `2f08529`) | trim |
 | `planner-sui` | worktree `H:\Dev-VRG\VRG-DE\wt-planner-sui` | nothing (R1018 is in main) | trim |
-| `planner-stack` | worktree `H:\Dev-VRG\VRG-DE\wt-planner-stack` | **14 commits**: GO WIRE — wireway audit, T0–T6, two engine fixes | Phase 3: merge (7 conflicts, all small, listed) |
-| `dev-all` | worktree `H:\cwebuser\projects\VRG-DE\wt-dev-all` | nothing of its own: planner-stack + Topology pack + a Konyha cherry-pick + one GO-ALL table edit | trim (sources are merged directly instead) |
+| `planner-stack` | worktree `H:\VRG\Backup\archive\parked\2026-10-24\wt-planner-stack` | **14 commits**: GO WIRE — wireway audit, T0–T6, two engine fixes | Phase 3: merge (7 conflicts, all small, listed) |
+| `dev-all` | worktree `H:\VRG\Backup\archive\parked\2026-10-24\wt-dev-all` | nothing of its own: planner-stack + Topology pack + a Konyha cherry-pick + one GO-ALL table edit | trim (sources are merged directly instead) |
 | `origin/claude/planner-topological-viewer-f0yhxq` | GitHub only | **1 commit** `0424485` Topology View (TPO) design pack | Phase 2: merge (clean) |
 | `origin/claude/new-session-mkexjy` | GitHub only | **1 commit** `53b8cc5` Views V8b Konyha line-art batch | Phase 2: merge (clean) |
 | `origin/claude/github-repos-recommendation-10d64e` | GitHub only | **1 commit** `d390c8f` vendor-manifest: pdfjs from `legacy/build/pdf.mjs` | Phase 2: cherry-pick (clean) |
 | `origin/bridge-docs`, `origin/planner-circuit-endpoints`, `origin/claude/busy-einstein-7zlx5u` | GitHub only | nothing | trim |
-| remote `backup` (`H:\cwebuser\backups\Planner_VRG_U100-mirror`) | local mirror | — | **leave alone** (it is the backup) |
+| remote `backup` (`H:\VRG\Backup\code\Planner_VRG_U100-mirror`) | local mirror | — | **leave alone** (it is the backup) |
 
 Unknown from the survey: **uncommitted files** in the six worktrees. Phase 0 finds them.
 
@@ -64,30 +64,30 @@ while you merge, and a worktree that is open cannot be removed in Phase 7.
 git rev-parse --show-toplevel
 git branch --show-current
 ```
-Expect `H:/cwebuser/projects/VRG-DE/Planner_VRG_U100` (or the `H:/Dev-VRG/...` spelling of it) and `main`.
+Expect `H:/VRG/Full/Planner_VRG_U100` (or the `H:/Dev-VRG/...` spelling of it) and `main`.
 
 **0.3 Uncommitted work in every worktree.** Run each line and write down what it prints:
 ```
-git -C "H:/cwebuser/projects/VRG-DE/Planner_VRG_U100" status --short
-git -C "H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/.claude/worktrees/codecity" status --short
-git -C "H:/cwebuser/projects/VRG-DE/SecAcc" status --short
-git -C "H:/cwebuser/projects/VRG-DE/wt-dev-all" status --short
-git -C "H:/cwebuser/projects/VRG-DE/wt-planner-stack" status --short
+git -C "H:/VRG/Full/Planner_VRG_U100" status --short
+git -C "H:/VRG/Full/Planner_VRG_U100/.claude/worktrees/codecity" status --short
+git -C "H:/VRG/Backup/archive/parked/2026-10-24/SecAcc" status --short
+git -C "H:/VRG/Backup/archive/parked/2026-10-24/wt-dev-all" status --short
+git -C "H:/VRG/Backup/archive/parked/2026-10-24/wt-planner-stack" status --short
 git -C "H:/cwebuser/projects/VRG-DE/wt-planner-sui" status --short
 ```
 - Empty output = clean.
 - **Known and expected:** an untracked `Calculator/CLA_vplan_upper-ghost.json` in wt-planner-stack.
   That file is tracked on `main` now, so this copy is not needed. Compare it first:
-  `git diff --no-index "H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/Calculator/CLA_vplan_upper-ghost.json" "H:/cwebuser/projects/VRG-DE/wt-planner-stack/Calculator/CLA_vplan_upper-ghost.json"`
+  `git diff --no-index "H:/VRG/Full/Planner_VRG_U100/Calculator/CLA_vplan_upper-ghost.json" "H:/VRG/Backup/archive/parked/2026-10-24/wt-planner-stack/Calculator/CLA_vplan_upper-ghost.json"`
   (no output = identical).
 - **Gitignored files are the trap.** `git worktree remove` (Phase 7) does **not** refuse because of ignored
   files: it deletes them with the folder. Client data lives in ignored places (`Calculator/*-baseline/`,
   `*.pdf`, `anonymise.map.json`, `Planner/data/`). List them per worktree, ignoring the rebuildable noise:
   ```
-  git -C "H:/cwebuser/projects/VRG-DE/wt-planner-stack" status --short --ignored
+  git -C "H:/VRG/Backup/archive/parked/2026-10-24/wt-planner-stack" status --short --ignored
   git -C "H:/cwebuser/projects/VRG-DE/wt-planner-sui" status --short --ignored
-  git -C "H:/cwebuser/projects/VRG-DE/SecAcc" status --short --ignored
-  git -C "H:/cwebuser/projects/VRG-DE/wt-dev-all" status --short --ignored
+  git -C "H:/VRG/Backup/archive/parked/2026-10-24/SecAcc" status --short --ignored
+  git -C "H:/VRG/Backup/archive/parked/2026-10-24/wt-dev-all" status --short --ignored
   ```
   Lines starting `!!` are ignored files. `node_modules/`, `dist/` pages that a build makes and `.cache/` can go.
   Anything else, especially under `Calculator/`, and any `.pdf` or `.json` client file, gets copied to the
@@ -251,8 +251,8 @@ Edit and commit in one go (`GO MAIN: docs point at main; worktree lines retired`
    - GO CITY: parked (README §7). It stays.
    - GO ALL: **retired**. `dev-all` is replaced by `main`. Remove the entry, or mark it retired with a pointer to GO MAIN.
    - Add **GO MAIN** itself, marked done with the date.
-2. **`CLAUDE.md` → Drive layout.** Say plainly: the real folder is `H:\cwebuser\projects\VRG-DE`;
-   `H:\Dev-VRG\VRG-DE` is a junction to it. One repository, one checkout.
+2. **`CLAUDE.md` → Drive layout.** Say plainly: the real folder is `H:\VRG\Full`;
+   `H:\VRG\Full` is a junction to it. One repository, one checkout.
 3. **The GO files with worktree paths** (`GO-R1010.md`, `GO-FRAME.md`, `GO-V2.md`, `GO-ADAT.md`,
    `GO-WIRE.md`, `GO-HUB.md`, `GO-CITY.md`, `GO-ALL.md`): replace the worktree path with the main checkout.
    Add a one-line "retired 2026-10-23, see GO-MAIN" at the top of `GO-ALL.md` and `GO-STRICT.md`.
@@ -295,11 +295,11 @@ so it is deliberately not kept. Any other `+`: stop and look at it.
 **7.2 Remove the worktrees.** No `--force`: git refuses if a worktree has changes or untracked files,
 which is what you want:
 ```
-git worktree remove "H:/cwebuser/projects/VRG-DE/SecAcc"
-git worktree remove "H:/cwebuser/projects/VRG-DE/wt-dev-all"
-git worktree remove "H:/cwebuser/projects/VRG-DE/wt-planner-stack"
+git worktree remove "H:/VRG/Backup/archive/parked/2026-10-24/SecAcc"
+git worktree remove "H:/VRG/Backup/archive/parked/2026-10-24/wt-dev-all"
+git worktree remove "H:/VRG/Backup/archive/parked/2026-10-24/wt-planner-stack"
 git worktree remove "H:/cwebuser/projects/VRG-DE/wt-planner-sui"
-git worktree remove "H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/.claude/worktrees/codecity"
+git worktree remove "H:/VRG/Full/Planner_VRG_U100/.claude/worktrees/codecity"
 git worktree prune
 git worktree list
 ```
@@ -329,7 +329,7 @@ The last command should show `main`, `remotes/origin/main` (+ `origin/HEAD`) and
 `planner-sui` was never pushed, so it has nothing to delete remotely.
 
 **7.5 Folders left on disk.** `git worktree remove` deletes the worktree folders. Anything you chose to
-keep in 0.3 (b) is wherever you copied it. `H:\Planner_VRG_U100`, if it still exists, is the old dead
+keep in 0.3 (b) is wherever you copied it. `H:\VRG\Backup\code\Planner_VRG_U100-mirror`, if it still exists, is the old dead
 original: see CLAUDE.md, `H:\Dev-VRG\_remove-old-copy.ps1`.
 
 ---

@@ -5,7 +5,7 @@
 *You were started with the codephrase **GO ALL**. This file is the whole briefing; it does not depend
 on any memory note. It was written 2026-10-22 by the secondary account on branch `worktree-codecity`,
 which is pushed to GitHub. Until that branch is merged, read this file at
-`H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\.claude\worktrees\codecity\GO-ALL.md`
+`H:\VRG\Full\Planner_VRG_U100\.claude\worktrees\codecity\GO-ALL.md`
 or with `git show origin/worktree-codecity:GO-ALL.md`.*
 
 ## 1. Where and who

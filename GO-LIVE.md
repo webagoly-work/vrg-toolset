@@ -9,13 +9,13 @@ The SecAcc worktree is retired (GO MAIN, 2026-10-24): the secondary account now 
 checkout**, with its own login.
 
 1. Open **Command Prompt** (not PowerShell).
-2. `set CLAUDE_CONFIG_DIR=H:\cwebuser\home\claude-account-b`
-3. `cd /d H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`
+2. `set CLAUDE_CONFIG_DIR=H:\VRG\Full\home\claude-account-b`
+3. `cd /d H:\VRG\Full\Planner_VRG_U100`
 4. `claude`, then type `GO LIVE`.
 
 ## 1. Where and how
 
-- Main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch **`main`**. Confirm with
+- Main checkout `H:\VRG\Full\Planner_VRG_U100`, branch **`main`**. Confirm with
   `git rev-parse --show-toplevel` and `git branch --show-current`.
 - The primary account may work in the same folder at the same time. So: touch only Kódváros files
   (`CodeCity/`, `docs/city/`, and START.cmd / VRG-DE.cmd entries the prompt names), `git add` only your

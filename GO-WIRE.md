@@ -1,8 +1,8 @@
 # GO WIRE — pick-up prompt: the wireway routing rebuild (dual model, K1)
 
-> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
+> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\VRG\Full\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
 
-Paste this into a new Claude Code session (working directory `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`).
+Paste this into a new Claude Code session (working directory `H:\VRG\Full\Planner_VRG_U100`).
 
 ---
 
@@ -21,8 +21,8 @@ in this order, before any work:
 
 ## Where we are
 
-- **Worktree:** `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `planner-stack`, head `85b81f1` or later (the commit that added this file), pushed.
-- **`main`** (`H:\Dev-VRG\VRG-DE\Planner_VRG_U100`) is at `c421d4e`. That is the 2026-10-16 working version; START.cmd
+- **Worktree:** `H:\VRG\Full\Planner_VRG_U100`, branch `planner-stack`, head `85b81f1` or later (the commit that added this file), pushed.
+- **`main`** (`H:\VRG\Full\Planner_VRG_U100`) is at `c421d4e`. That is the 2026-10-16 working version; START.cmd
   tool 1 opens it. Merge into `main` only when I ask for a new working version.
 - **Nothing of T0–T7 is built yet.** Only docs were committed after `c421d4e`.
 
@@ -68,7 +68,7 @@ next to it, with a ⚑ to confirm against MSZ HD 60364-5-52 (audit F7).
 
 ## Test fixtures and tools (client data — never in git, never off this machine)
 
-All under `H:\Dev-VRG\VRG-DE\Planner_projektek_2026-10-16\`:
+All under `H:\VRG\Full\jobs\Planner_projektek_2026-10-16\`:
 
 - `Domoszlo_alap.vplan.json` — the base: walls, floors, openings.
 - `Domoszlo_erosaram_2026-10-18\`:
@@ -91,7 +91,7 @@ All under `H:\Dev-VRG\VRG-DE\Planner_projektek_2026-10-16\`:
 ## Working rules (the standing ones)
 
 - **Run node from the project folder.** Tests need
-  `NODE_PATH=H:\Dev-VRG\VRG-DE\Planner_VRG_U100\Planner\projects\varler-planner\node_modules` (the worktree has no
+  `NODE_PATH=H:\VRG\Full\Planner_VRG_U100\Planner\projects\varler-planner\node_modules` (the worktree has no
   node_modules).
   - Build: `node build.js`.
   - All suites: `node tests/run.js`. Baseline before T0: 94 suites, 3290 checks, golden 70/70.

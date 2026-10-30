@@ -1,8 +1,8 @@
 # GO V2 — CLA második verzió: v1 teljes kiépítés + minden további réteg előkészítése (gyorsított felmérés)
 
-> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
+> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\VRG\Full\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
 
-Másold be ezt egy új Claude Code munkamenetbe. Munkakönyvtár: `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`.
+Másold be ezt egy új Claude Code munkamenetbe. Munkakönyvtár: `H:\VRG\Full\Planner_VRG_U100`.
 
 Ez a fájl **önmagában teljes**: a korábbi munkamenetek memóriájára ne számíts. Más felhasználói fiókon is működnie kell, ezért minden útvonal `H:\` alatti.
 
@@ -62,7 +62,7 @@ A v2 a **v1 teljes kiépítése** (változatlanul), és mellé **minden további
    - `…/kimenet/MENNYISEGEK.md`;
    - `H:\Dev-VRG\VRG-DE\CLA_koltsegvetesi_tervezet\job\WORKLOG_CLA.md` (vége) és `job\offer.json` (a v1 egységárai, normái, csoportjai).
 2. **A rétegek és a kábeltípusok forrása:**
-   - `H:\Dev-VRG\VRG-DE\Planner_VRG_U100\BRIDGE\05_standards\BRIDGE-STD-001-A2_Layer-Wiring-Reference.md` (rétegenkénti kábelezés);
+   - `H:\VRG\Full\Planner_VRG_U100\BRIDGE\05_standards\BRIDGE-STD-001-A2_Layer-Wiring-Reference.md` (rétegenkénti kábelezés);
    - `BRIDGE-STD-001_Physical-Standardisation.md` (RB-S 300×400×90, RB-M 400×500×110, RB-L 500×600×110, RB-H 600×600×120);
    - `01_architecture\BRIDGE-ARCH-002_Alapozo-Architektura-Terv_HU.md`;
    - `08_builds\CLA-BUILD-001_Topology-and-Composition.md`;
@@ -112,7 +112,7 @@ node Planner/projects/varler-planner/tools/baseline/run.js "Calculator/CLA-basel
 ```
 
 - 0 figyelmeztetéssel kell lefutnia.
-- A PNG-k a fő checkout hordozható Chrome-jával készülnek (`H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/apps/chrome-headless-shell/`).
+- A PNG-k a fő checkout hordozható Chrome-jával készülnek (`H:/VRG/Full/tools/chrome-headless-shell/`).
 - Planner-előnézet: `planner-serve`, port 8131. A Planner itt nyílik: `http://localhost:8131/Planner/projects/varler-planner/dist/varler_planner.html`. Betöltés: `hardResetWorkspace(); applyProjectData(o.project)`.
 
 ## A felhasználó tartós szabályai
@@ -128,7 +128,7 @@ node Planner/projects/varler-planner/tools/baseline/run.js "Calculator/CLA-basel
   - Ne törölj semmit kérdezés nélkül.
   - A nagy kéréseket bontsd fázisokra, és közben kérdezz.
   - **Commit és push: soha.** Azt a felhasználó csinálja.
-  - Tuner-válaszformátum: `ID=kulcs ~ megjegyzés`. A Tuner: `H:\Dev-VRG\VRG-DE\Planner_VRG_U100\BRIDGE\_tuner\bridge-tuner.html`.
+  - Tuner-válaszformátum: `ID=kulcs ~ megjegyzés`. A Tuner: `H:\VRG\Full\Planner_VRG_U100\BRIDGE\_tuner\bridge-tuner.html`.
 - **Ügyféladat:** a CLA ügyféladat. A `BRIDGE/07_CLA`, a `CLA_koltsegvetesi_tervezet` és a `CLA_ajanlat` nem kerül gitbe, és nem hagyhatja el a gépet. Az `É03 Földszinti alaprajz.pdf` másik projekt (Érd), ne használd.
 
 **Kezdd** azzal, hogy elolvasod a fentieket, és 6–8 sorban visszaigazolod:
