@@ -109,11 +109,11 @@ function cinWireDialog(L){const W=cinWiring(L);if(!W)return;const m=x=>x==null?'
     +`<div style="max-height:360px;overflow:auto"><table style="font-size:11.5px;width:100%"><tr><th align="left">Végpont</th><th align="left">Jel (CINEMA)</th><th>Cső</th><th align="left">230 V (külön cső)</th><th>Hossz</th></tr>`
     +W.rows.map(r=>`<tr><td>${esc(r.ref)}</td><td>${cab(r.sig.cables)}</td><td align="center" title="${esc(r.sig.why)}">${r.sig.size}</td>`
       +`<td>${r.mains?cab(r.mains.cables)+' · '+r.mains.ckt+' · '+r.mains.size:''}</td><td align="center">${m(r.len)}</td></tr>`
-      +(r.notes.length?`<tr><td></td><td colspan="4" style="color:#888">${r.notes.map(esc).join(' ')}</td></tr>`:'')).join('')
-    +(W.feed?`<tr><td><b>${esc(W.feed.ref)}</b> → Elosztó</td><td>2 × Cat6A U/FTP <span style="color:#888">(${esc(W.feed.data.note)})</span></td><td></td><td>${cab(W.feed.mains.cables)} · ${esc(W.feed.mains.ckt)} · ${W.feed.mains.size}</td><td align="center">${m(W.feed.len)}</td></tr>`:'')
+      +(r.notes.length?`<tr><td></td><td colspan="4" style="color:var(--pc-mute,#888)">${r.notes.map(esc).join(' ')}</td></tr>`:'')).join('')
+    +(W.feed?`<tr><td><b>${esc(W.feed.ref)}</b> → Elosztó</td><td>2 × Cat6A U/FTP <span style="color:var(--pc-mute,#888)">(${esc(W.feed.data.note)})</span></td><td></td><td>${cab(W.feed.mains.cables)} · ${esc(W.feed.mains.ckt)} · ${W.feed.mains.size}</td><td align="center">${m(W.feed.len)}</td></tr>`:'')
     +`</table></div>`
-    +W.warns.concat(sep).map(x=>`<div style="color:${x.sev==='info'?'#666':'#b05a00'};font-size:11.5px">${x.sev==='info'?'ℹ':'⚠'} ${esc(x.msg)}</div>`).join('')
-    +`<div class="mrow" style="font-size:11px;color:#888">Cső: §5.2 (1 kábel 53 %, 2 kábel 31 %, 3+ 40 %), HDMI fej → Ø40 (§5.1). Minden csőben behúzószál. Hossz: pálya + 2 × ${AFILL_RULE.slackPerEnd} mm, tájékoztató.</div>`,
+    +W.warns.concat(sep).map(x=>`<div style="color:${x.sev==='info'?'var(--pc-dim,#666)':'var(--pc-warn,#b05a00)'};font-size:11.5px">${x.sev==='info'?'ℹ':'⚠'} ${esc(x.msg)}</div>`).join('')
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Cső: §5.2 (1 kábel 53 %, 2 kábel 31 %, 3+ 40 %), HDMI fej → Ø40 (§5.1). Minden csőben behúzószál. Hossz: pálya + 2 × ${AFILL_RULE.slackPerEnd} mm, tájékoztató.</div>`,
     ()=>{pushUndo(['paths','runs']);const n=cinWApply(L,cinWiring(L));draw();$('hud').textContent='Házimozi: '+n+' kábel a mozi csöveiben.';},'Csövekbe írás');
   $('cinZ').onchange=()=>{L.cinema.zMin=+$('cinZ').value;closeModal();cinWireDialog(L);};}
 if(typeof STK_LAYERMENU!=='undefined')STK_LAYERMENU.push((L,items)=>{if(L.role==='sys:CINEMA'&&L.cinema)items.push({label:'🎬 Kábellista…',act:()=>cinWireDialog(L)});});

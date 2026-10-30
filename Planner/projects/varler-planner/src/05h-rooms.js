@@ -125,7 +125,7 @@ function roomRenumberPreviewHtml(plan){
   if(!plan.rows.length)return `<div class="insSub" style="padding:8px">Nincs átszámozható készülék ebben a helyiségben.</div>`;
   const td='padding:2px 7px;border-top:1px solid #eee;white-space:nowrap';
   return `<table style="font-size:12px;border-collapse:collapse;width:100%">`
-    +`<tr>${['Típus','Régi','','Új'].map(h=>`<th style="text-align:left;padding:3px 7px;position:sticky;top:0;background:#f3f0e9">${h}</th>`).join('')}</tr>`
+    +`<tr>${['Típus','Régi','','Új'].map(h=>`<th style="text-align:left;padding:3px 7px;position:sticky;top:0;background:var(--pc-bg2,#f3f0e9)">${h}</th>`).join('')}</tr>`
     +plan.rows.map(r=>`<tr style="${r.changed?'':'color:#aaa'}"><td style="${td}">${esc(r.label)}</td>`
       +`<td style="${td}">${esc(r.old||'—')}</td><td style="${td}">→</td><td style="${td}"><b>${esc(r.ref)}</b></td></tr>`).join('')
     +`</table>`;}
@@ -133,7 +133,7 @@ function roomRenumberDialog(entry){if(!entry)return;
   openModal('Helyiség átszámozása — '+esc(roomLabel(entry.rm)),
      `<div class="mrow"><label style="width:70px">Sablon</label><input id="rrTpl" value="${esc(roomRefTpl())}" style="flex:1">`
     +`<button id="rrDef" title="Alapértelmezett sablon: ${esc(ROOM_REF_TPL)}" style="margin-left:6px">↺</button></div>`
-    +`<div class="mrow" style="font-size:10.5px;color:#888;line-height:1.5">`
+    +`<div class="mrow" style="font-size:10.5px;color:var(--pc-mute,#888);line-height:1.5">`
     +ROOM_REF_TOKENS.map(([k,d])=>`<code>{${k}}</code> ${esc(d)}`).join(' · ')+`</div>`
     +`<div class="mrow"><label><input type="checkbox" id="rrBoard" checked> Elosztószekrény kihagyása</label></div>`
     +`<div id="rrMsg" class="mrow" style="font-size:11.5px"></div>`
@@ -146,9 +146,9 @@ function roomRenumberDialog(entry){if(!entry)return;
   const cur=()=>planRoomRenumber(entry,{tpl:$('rrTpl').value.trim()||ROOM_REF_TPL,skipBoard:$('rrBoard').checked});
   const show=()=>{const plan=cur(),changed=plan.rows.filter(r=>r.changed).length;
     $('rrPrev').innerHTML=roomRenumberPreviewHtml(plan);
-    $('rrMsg').innerHTML=(plan.block?`<div style="color:#c0392b">⛔ ${esc(plan.block)}</div>`:'')
-      +plan.warn.map(w=>`<div style="color:#c0530f">⚠ ${esc(w)}</div>`).join('')
-      +(plan.rows.length?`<div style="color:#6a6357">${plan.rows.length} készülék · ${changed} jelölés változik</div>`:'');
+    $('rrMsg').innerHTML=(plan.block?`<div style="color:var(--pc-crit,#c0392b)">⛔ ${esc(plan.block)}</div>`:'')
+      +plan.warn.map(w=>`<div style="color:var(--pc-warn,#c0530f)">⚠ ${esc(w)}</div>`).join('')
+      +(plan.rows.length?`<div style="color:var(--pc-dim,#6a6357)">${plan.rows.length} készülék · ${changed} jelölés változik</div>`:'');
     $('mOk').disabled=!!plan.block||!plan.rows.length;};
   $('rrTpl').oninput=show;$('rrBoard').onchange=show;
   $('rrDef').onclick=()=>{$('rrTpl').value=ROOM_REF_TPL;show();};

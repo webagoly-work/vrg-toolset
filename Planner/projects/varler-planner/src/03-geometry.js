@@ -102,15 +102,15 @@ function wallPropsDialog(r,level){const g=wallGeom(r),fullH=wallH(level);
      `<div class="mrow"><label style="width:120px">Megnevezés</label><input id="wpName" value="${esc(r.name||'')}" placeholder="pl. Pengefal a kamra mellett" style="flex:1"></div>`
     +`<div class="mrow"><label style="width:120px">Sablon</label><select id="wpPre" style="flex:1"><option value="">— egyedi —</option>${opt}</select></div>`
     +`<div class="mrow"><label style="width:120px">Vastagság</label><input id="wpTh" type="number" step="10" min="20" value="${Math.round(g.th)}" style="width:90px"> mm`
-    +`<span style="color:#999;font-size:11px;margin-left:8px">a fal középvonala nem mozdul</span></div>`
+    +`<span style="color:var(--pc-mute,#999);font-size:11px;margin-left:8px">a fal középvonala nem mozdul</span></div>`
     +`<div class="mrow"><label style="width:120px">Hossz</label><input id="wpLen" type="number" step="10" min="50" value="${Math.round(g.len)}" style="width:90px"> mm`
-    +`<span style="color:#999;font-size:11px;margin-left:8px">a fal közepéhez képest nő/csökken</span></div>`
+    +`<span style="color:var(--pc-mute,#999);font-size:11px;margin-left:8px">a fal közepéhez képest nő/csökken</span></div>`
     +`<div class="mrow"><label style="width:120px">Magasság</label><input id="wpH" type="number" step="10" min="0" value="${Math.round(r.h||0)}" style="width:90px"> mm`
-    +`<span style="color:#999;font-size:11px;margin-left:8px">0 = teljes belmagasság (${fullH} mm)</span></div>`
+    +`<span style="color:var(--pc-mute,#999);font-size:11px;margin-left:8px">0 = teljes belmagasság (${fullH} mm)</span></div>`
     +`<div class="mrow"><label style="width:120px">Indul a padlótól</label><input id="wpZ" type="number" step="10" min="0" value="${Math.round(r.z0||0)}" style="width:90px"> mm`
-    +`<span style="color:#999;font-size:11px;margin-left:8px">&gt;0 → lebegő fal / mellvéd / áthidaló sáv</span></div>`
+    +`<span style="color:var(--pc-mute,#999);font-size:11px;margin-left:8px">&gt;0 → lebegő fal / mellvéd / áthidaló sáv</span></div>`
     +`<div class="mrow"><label style="width:120px">Anyag</label><input id="wpMat" value="${esc(r.mat||'')}" placeholder="tégla / gipszkarton / beton" style="flex:1"></div>`
-    +`<div class="mrow" id="wpInfo" style="font-size:11px;color:#777"></div>`,
+    +`<div class="mrow" id="wpInfo" style="font-size:11px;color:var(--pc-mute,#777)"></div>`,
     ()=>{pushUndo();
       setWallGeom(r,level,{th:+$('wpTh').value,len:+$('wpLen').value,h:+$('wpH').value,z0:+$('wpZ').value,
         name:$('wpName').value.trim(),mat:$('wpMat').value.trim()});
@@ -118,7 +118,7 @@ function wallPropsDialog(r,level){const g=wallGeom(r),fullH=wallH(level);
   const info=()=>{const th=+$('wpTh').value||0,len=+$('wpLen').value||0,h=(+$('wpH').value||fullH),z=+$('wpZ').value||0;
     const A=len*h/1e6,V=A*th/1000;
     $('wpInfo').innerHTML=`Felület <b>${A.toFixed(2)} m²</b> · térfogat <b>${V.toFixed(3)} m³</b> · teteje a padlótól <b>${Math.round(z+h)} mm</b>`
-      +(z>0?' · <b style="color:#c0530f">lebegő fal</b>':'')+(th<=120?' · <b style="color:#2f6fb0">pengefal-vastagság</b>':'');};
+      +(z>0?' · <b style="color:var(--pc-warn,#c0530f)">lebegő fal</b>':'')+(th<=120?' · <b style="color:var(--pc-acc,#2f6fb0)">pengefal-vastagság</b>':'');};
   ['wpTh','wpLen','wpH','wpZ'].forEach(id=>{$(id).oninput=info;});
   $('wpPre').onchange=e=>{const w=WALL_PRESETS[+e.target.value];if(!w)return;
     $('wpTh').value=w.th;if(w.mat)$('wpMat').value=w.mat;info();};
@@ -371,7 +371,7 @@ let roomMats=['hidegburkolat','parketta','laminált','beton','szőnyeg','csempe'
 let crRects=[];
 function crRowHtml(r,i){return `<div class="mrow crRect" data-i="${i}" style="gap:4px">`
   +`<b style="width:16px">${i+1}.</b> Sz <input class="crW" type="number" value="${r.w}" style="width:70px"> M <input class="crD" type="number" value="${r.d}" style="width:70px">`
-  +(i>0?` eltol X <input class="crOX" type="number" value="${r.ox||0}" style="width:60px"> Y <input class="crOY" type="number" value="${r.oy||0}" style="width:60px">`:`<span style="color:#aaa;font-size:11px">(alap)</span>`)
+  +(i>0?` eltol X <input class="crOX" type="number" value="${r.ox||0}" style="width:60px"> Y <input class="crOY" type="number" value="${r.oy||0}" style="width:60px">`:`<span style="color:var(--pc-faint,#aaa);font-size:11px">(alap)</span>`)
   +(i>0?` <button class="crDel" title="rész törlése">✕</button>`:``)+`</div>`;}
 function crRefresh(){const box=$('crRects');if(!box)return;box.innerHTML=crRects.map(crRowHtml).join('');
   box.querySelectorAll('.crRect').forEach(row=>{const i=+row.dataset.i;
@@ -388,12 +388,12 @@ function openCreateRoom(){
   const rows=`<div class="mrow">Név <input id="crN" placeholder="pl. HÁLÓSZOBA" style="width:180px"></div>`
    +`<div id="crRects"></div>`
    +`<div class="mrow"><button id="crAdd" style="font-size:12px">＋ Újabb téglalap (L/T/U alak)</button></div>`
-   +`<div class="mrow" id="crArea" style="font-size:11.5px;color:#777">terület: 10,80 m²</div>`
+   +`<div class="mrow" id="crArea" style="font-size:11.5px;color:var(--pc-mute,#777)">terület: 10,80 m²</div>`
    +`<div class="mrow">Burkolat <select id="crM" style="width:150px">${roomMats.map(m=>`<option>${m}</option>`).join('')}</select></div>`
    +`<div class="mrow"><label><input type="checkbox" id="crWalls" checked> Falakkal körbevéve</label>`
    +`<span style="margin-left:8px">vastagság <input id="crT" type="number" value="${state.wallThick||100}" style="width:60px"> mm</span></div>`
    +`<div class="mrow"><label><input type="checkbox" id="crSnap"> Meglévő falhoz illesztés</label></div>`
-   +`<div class="mrow" style="font-size:11px;color:#888">A nézet közepére kerül. Több téglalappal L/T/U alak; a 2.+ résznél add meg az eltolást az 1. rész közepéhez képest. Utána a ✥ Move eszközzel igazítható.</div>`;
+   +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">A nézet közepére kerül. Több téglalappal L/T/U alak; a 2.+ résznél add meg az eltolást az 1. rész közepéhez képest. Utána a ✥ Move eszközzel igazítható.</div>`;
   openModal('Helyiség létrehozása',rows,()=>{
     createRoom({rects:crRects.map(r=>({w:r.w,d:r.d,ox:r.ox,oy:r.oy})),name:$('crN').value.trim(),mat:$('crM').value,
       walls:$('crWalls').checked,thick:+$('crT').value||state.wallThick,snap:$('crSnap').checked});

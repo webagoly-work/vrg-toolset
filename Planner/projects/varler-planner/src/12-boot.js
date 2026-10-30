@@ -28,11 +28,11 @@ $('loadLayout').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new 
 // ---- object library UI ----
 function renderObjList(){const el=$('objList');if(!el)return;const q=(($('objSearch')||{}).value||'').toLowerCase();
   let h='';OBJLIB.forEach(g=>{const its=g.items.filter(it=>!q||it.n.toLowerCase().includes(q)||g.cat.toLowerCase().includes(q));
-    if(!its.length)return;h+=`<div style="padding:3px 7px;background:#f3f0e9;font-size:10.5px;font-weight:700;color:#8a8478;position:sticky;top:0">${g.cat}</div>`;
+    if(!its.length)return;h+=`<div style="padding:3px 7px;background:var(--pc-bg2,#f3f0e9);font-size:10.5px;font-weight:700;color:var(--pc-mute,#8a8478);position:sticky;top:0">${g.cat}</div>`;
     its.forEach(it=>{const on=objPick&&objPick.n===it.n;
-      h+=`<div class="objitem" data-on="${esc(it.n)}" style="padding:4px 8px;font-size:12px;cursor:pointer;border-bottom:1px solid #f4f1ea;${on?'background:#2c2c2c;color:#fff':''}">${esc(it.n)}`
+      h+=`<div class="objitem" data-on="${esc(it.n)}" style="padding:4px 8px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--pc-line,#f4f1ea);${on?'background:#2c2c2c;color:#fff':''}">${esc(it.n)}`
        +(it.custom?'':`<span style="float:right;opacity:.6;font-size:10.5px">${it.w}×${it.d}</span>`)+`</div>`;});});
-  el.innerHTML=h||'<div style="padding:8px;color:#999;font-size:12px">nincs találat</div>';
+  el.innerHTML=h||'<div style="padding:8px;color:var(--pc-mute,#999);font-size:12px">nincs találat</div>';
   el.querySelectorAll('.objitem').forEach(d=>d.onclick=()=>{
     for(const g of OBJLIB)for(const it of g.items)if(it.n===d.dataset.on)objPick=it;
     renderObjList();setMode('object');});}
@@ -283,12 +283,12 @@ function renderProjects(){const el=$('projList');if(!el)return;const ix=loadProj
   const ids=Object.keys(ix).sort((a,b)=>(ix[b].ts||0)-(ix[a].ts||0));
   el.innerHTML=ids.length?ids.map(id=>{const p=ix[id],cur=id===currentProjId,d=new Date(p.ts||0);
     const dd=d.toLocaleDateString('hu-HU')+' '+d.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'});
-    return `<div class="prow" style="display:flex;align-items:center;gap:4px;padding:5px 6px;border-bottom:1px solid #f0ece3;${cur?'background:#eef4ff':''}">`
+    return `<div class="prow" style="display:flex;align-items:center;gap:4px;padding:5px 6px;border-bottom:1px solid var(--pc-line,#f0ece3);${cur?'background:#eef4ff':''}">`
       +`<div style="flex:1;min-width:0"><div style="font-weight:${cur?700:600};font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cur?'● ':''}${esc(p.name)}</div>`
-      +`<div style="font-size:10px;color:#999">${dd}</div></div>`
+      +`<div style="font-size:10px;color:var(--pc-mute,#999)">${dd}</div></div>`
       +`<button data-pl="${id}" title="Betöltés">📂</button><button data-pr="${id}" title="Átnevezés">✎</button>`
       +`<button data-pd="${id}" title="Letöltés fájlba">⬇</button><button data-px="${id}" title="Törlés">✕</button></div>`;}).join('')
-    :'<div style="padding:10px;color:#999;font-size:12px">Nincs mentett terv. „💾 Mentés mint…” a kezdéshez.</div>';
+    :'<div style="padding:10px;color:var(--pc-mute,#999);font-size:12px">Nincs mentett terv. „💾 Mentés mint…” a kezdéshez.</div>';
   el.querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>loadProject(b.dataset.pl));
   el.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>renameProject(b.dataset.pr));
   el.querySelectorAll('[data-pd]').forEach(b=>b.onclick=()=>downloadProject(b.dataset.pd));

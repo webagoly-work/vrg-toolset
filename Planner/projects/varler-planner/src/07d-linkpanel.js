@@ -330,9 +330,9 @@ const PLANNER_PANEL = (function () {
     const box = document.getElementById('lpQrSvg');
     if (typeof qrSvg === 'function') {
       const svg = qrSvg(url, { ecc: 'M', quiet: 2 });
-      box.innerHTML = svg || '<div style="color:#a33">A kód nem generálható.</div>';
+      box.innerHTML = svg || '<div style="color:var(--pc-crit,#a33)">A kód nem generálható.</div>';
     } else {
-      box.innerHTML = '<div style="color:#7a6a4a;font:12px system-ui">A QR modul (05f-qr.js) nincs a buildben — '
+      box.innerHTML = '<div style="color:var(--pc-mute,#7a6a4a);font:12px system-ui">A QR modul (05f-qr.js) nincs a buildben — '
         + 'gépeld be a címet a telefonon.</div>';
     }
     document.getElementById('lpQrUrl').textContent = url;

@@ -118,12 +118,12 @@ function needDialog(rm){if(!rm)return;const S=stkActive();if(!S){lyrHud('Aktív 
       +(needSaved(rm,r.k)?` <a href="#" class="ndReset" data-r="${r.k}" style="font-size:11px">alapértelmezett</a>`:'')+`<div style="margin-left:10px">`
       +needCodesOf(r.k).map(c=>{const h=needHave(rid,r.k,c,S.id),on=!!need[c];
         return `<label style="display:inline-block;margin-right:10px;font-size:12px"><input type="checkbox" class="ndC" data-r="${r.k}" value="${c}" ${on?'checked':''}> ${esc(needCodeName(r.k,c))}`
-          +(h==null?'':` <span style="color:${on&&!h?'#d08a1e':'#888'}">(${r.k==='sys:RF'?(h?'✓':'✗'):h}${on&&!h?'!':''})</span>`)+(der.indexOf(c)>=0?' ⚙':'')+`</label>`;}).join('')+`</div></div>`;};
+          +(h==null?'':` <span style="color:${on&&!h?'var(--pc-warn,#d08a1e)':'var(--pc-mute,#888)'}">(${r.k==='sys:RF'?(h?'✓':'✗'):h}${on&&!h?'!':''})</span>`)+(der.indexOf(c)>=0?' ⚙':'')+`</label>`;}).join('')+`</div></div>`;};
   openModal('Helyiség igényei — '+((rm.num?rm.num+' ':'')+(rm.name||rid||'')),
     `<div class="mrow">Fajta <select id="ndKind" style="width:180px">`+NEED_KINDS.map(k=>`<option value="${k.k}" ${needKind(rm)===k.k?'selected':''}>${esc(k.n)}</option>`).join('')+`</select>`
-    +(rm.kind?'':' <span style="color:#888;font-size:11px">(a rendeltetésből / névből)</span>')+`</div>`
+    +(rm.kind?'':' <span style="color:var(--pc-mute,#888);font-size:11px">(a rendeltetésből / névből)</span>')+`</div>`
     +`<div style="max-height:420px;overflow:auto">`+needSysRoles(S).map(row).join('')+`</div>`
-    +`<div class="mrow" style="font-size:11px;color:#888">⚙ = a Jelölés rétegből levezetve (pl. redőnyös ablak → redőnymotor). (n) = ennyi van a helyiségben; ! = kell, de még nincs.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">⚙ = a Jelölés rétegből levezetve (pl. redőnyös ablak → redőnymotor). (n) = ennyi van a helyiségben; ! = kell, de még nincs.</div>`,
     ()=>{},'Bezár');
   document.querySelectorAll('.ndC').forEach(c=>c.onchange=()=>{needSet(rm,c.dataset.r,c.value,c.checked);draw();});
   document.querySelectorAll('.ndReset').forEach(a=>a.onclick=ev=>{ev.preventDefault();if(data.floors.indexOf(rm)>=0)pushUndo(['floors']);

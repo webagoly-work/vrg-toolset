@@ -128,7 +128,7 @@ function cinSetupDialog(L,init){if(!L)return;const C=Object.assign({fmt:'5.1',di
     +` <span id="cinSetC">· ülés (MLP) a vászonfaltól <input id="cinMlp" type="number" step="50" value="${C.xMLP||3600}" style="width:65px"> mm</span>`
     +` <span id="cinSetD">· vetítési arány <input id="cinTr0" type="number" step="0.01" value="${C.trMin||1.3}" style="width:50px"> – <input id="cinTr1" type="number" step="0.01" value="${C.trMax||2.0}" style="width:50px">`
     +` · helye a vászonfaltól <input id="cinPjX" type="number" step="50" value="${C.xPJ||''}" placeholder="szabad" style="width:72px"> mm · eltolás max <input id="cinShift" type="number" step="5" value="${C.shiftMax||''}" placeholder="—" style="width:45px"> %</span></div>`
-    +`<div class="mrow" style="font-size:11px;color:#888">A 7.1 mindig választható; ha a helyiség rövid hozzá, figyelmeztetés marad a rétegen.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">A 7.1 mindig választható; ha a helyiség rövid hozzá, figyelmeztetés marad a rétegen.</div>`,
     ()=>{lyrPushUndo();const zone={L:Math.max(1000,+$('cinL').value||z.L),W:Math.max(1000,+$('cinW').value||z.W),off:+$('cinO').value||0};
       const num=id=>{const v=$(id).value;return v===''?null:+v;};
       // keeps what the later steps stored (step, useGeneral, zMin); the spots are recomputed on demand
@@ -195,7 +195,7 @@ function cinChecksDialog(L){const r=cinCompute(L);if(!r)return;
   openModal('🎬 Házimozi — ellenőrzés (§3.10)',
     `<div class="mrow" style="font-size:12px">Kiindulás ${r.set} · MLP ${Math.round(r.xMLP*1000)} mm a vászonfaltól · látótáv ${Math.round(r.D*1000)} · kép ${Math.round(r.Ws*1000)} × ${Math.round(r.Hs*1000)} mm (${{angle:'a látószög köti',height:'a belmagasság köti',fixed:'adott vászon',projector:'a projektor köti'}[r.bind]||r.bind}) · kép alja ${Math.round(r.zBot*1000)}</div>`
     +`<div class="mrow" style="font-size:12px">Front φ ${r.phi.toFixed(1)}° · oldalsó α ${r.alpha}°${r.rear?' · hátsó β '+r.rear.beta+'°':''} · surround magasság ${Math.round(r.spk.Ls.z*1000)} mm · módusok ${r.modes.fL.toFixed(1)} / ${r.modes.fW.toFixed(1)} / ${r.modes.fH.toFixed(1)} Hz</div>`
-    +`<table style="font-size:12px">`+r.checks.map(c=>`<tr style="color:${c.ok?'#2e9e5b':'#d08a1e'}"><td>${c.ok?'✓':'⚠'}</td><td>${esc(String(c.n))}</td><td>${c.ok&&!c.note?'rendben':esc(c.msg)}</td></tr>`).join('')+`</table>`,()=>{},'Bezár');}
+    +`<table style="font-size:12px">`+r.checks.map(c=>`<tr style="color:${c.ok?'var(--pc-ok,#2e9e5b)':'var(--pc-warn,#d08a1e)'}"><td>${c.ok?'✓':'⚠'}</td><td>${esc(String(c.n))}</td><td>${c.ok&&!c.note?'rendben':esc(c.msg)}</td></tr>`).join('')+`</table>`,()=>{},'Bezár');}
 if(typeof STK_LAYERMENU!=='undefined')STK_LAYERMENU.push((L,items)=>{if(L.role==='sys:CINEMA'&&L.cinema){items.push({label:'🎬 Mozi beállítások…',act:()=>cinSetupDialog(L)},{label:'🎬 Mozi ellenőrzés…',act:()=>cinChecksDialog(L)},{label:'🎬 Javasolt helyek létrehozása',act:()=>cinMakeSpots(L)});}});
 registerActions([{id:'cinema.layer',label:'Házimozi réteg',icon:'🎬',group:'Réteg',alias:'hazimozi mozi home cinema layer',
   hint:'Házimozi: válassz helyiséget, húzd meg a vászon vonalát, és a méretekből javaslatot kapsz a hangfalak, mélysugárzók, projektor helyére.',
@@ -224,14 +224,14 @@ function cinPlaceStart(L,code){state.activeLayer=L.id;lyrRefresh();epToolStart(c
 function cinPanelSync(){let el=$('cinPanel');const L=lyrLayer(state.activeLayer),C=L&&L.role==='sys:CINEMA'&&L.cinema;
   if(!C||C.step==='done'){if(el)el.style.display='none';return;}
   if(!el){const host=(typeof stage!=='undefined'&&stage&&stage.parentElement)||document.body;el=document.createElement('div');el.id='cinPanel';
-    el.style.cssText='position:absolute;right:10px;bottom:34px;z-index:20;background:rgba(255,255,255,.96);border:1px solid #c9bfe0;border-radius:6px;padding:5px 7px;font-size:11.5px;line-height:1.35;box-shadow:0 2px 8px rgba(0,0,0,.12);width:250px';   // bottom right: the plan is usually centred left of it
+    el.style.cssText='position:absolute;right:10px;bottom:34px;z-index:20;background:var(--pc-bg2,rgba(255,255,255,.96));border:1px solid var(--pc-line2,#c9bfe0);border-radius:var(--pc-r,6px);padding:5px 7px;font-size:11.5px;line-height:1.35;box-shadow:0 2px 8px rgba(0,0,0,.12);width:250px';   // bottom right: the plan is usually centred left of it
     host.appendChild(el);}
   el.style.display='block';let h;
   if(C.step!=='walls'){const N=cinNodes(L);
-    h=`<b style="color:#5b3f8c">🎬 Mozi elemek</b><div style="color:#888;font-size:11px">Kattints egy sorra: az eszköz a javasolt helyre ugrik (Alt: szabadon).</div>`
-      +N.map(x=>`<div class="cinRow" data-c="${x.code}" style="cursor:pointer;padding:2px 0;color:${x.have>=x.need?'#2e9e5b':x.opt?'#888':'#333'}">${x.have>=x.need?'☑':'☐'} ${esc(x.n)} <span style="float:right">${x.have} / ${x.need}</span></div>`).join('')
+    h=`<b style="color:var(--pc-violet,#5b3f8c)">🎬 Mozi elemek</b><div style="color:var(--pc-mute,#888);font-size:11px">Kattints egy sorra: az eszköz a javasolt helyre ugrik (Alt: szabadon).</div>`
+      +N.map(x=>`<div class="cinRow" data-c="${x.code}" style="cursor:pointer;padding:2px 0;color:${x.have>=x.need?'var(--pc-ok,#2e9e5b)':x.opt?'var(--pc-mute,#888)':'var(--pc-ink,#333)'}">${x.have>=x.need?'☑':'☐'} ${esc(x.n)} <span style="float:right">${x.have} / ${x.need}</span></div>`).join('')
       +`<div style="margin-top:5px;text-align:right"><button id="cinDone">Kész → falak</button></div>`;}
-  else h=`<b style="color:#5b3f8c">🎬 Mozi falak</b><div style="font-size:11px;color:#555;margin:2px 0 5px">Jelöld a falfelületeket, amelyeken a mozi kábelei futhatnak — a helyiség belső és KÜLSŐ oldala is, egészen az Elosztóig. Mennyezet / padló: a Mennyezeti út / Padló út szabályai.</div>`
+  else h=`<b style="color:var(--pc-violet,#5b3f8c)">🎬 Mozi falak</b><div style="font-size:11px;color:var(--pc-dim,#555);margin:2px 0 5px">Jelöld a falfelületeket, amelyeken a mozi kábelei futhatnak — a helyiség belső és KÜLSŐ oldala is, egészen az Elosztóig. Mennyezet / padló: a Mennyezeti út / Padló út szabályai.</div>`
       +`<button id="cinPen">🖊 Mozi fal toll</button> <button id="cinRoute">Útvonal + kör</button> <button id="cinBack">◂ elemek</button>`;
   if(el.__h!==h){el.innerHTML=h;el.__h=h;
     el.querySelectorAll('.cinRow').forEach(r=>r.onclick=()=>cinPlaceStart(L,r.dataset.c));
@@ -308,8 +308,8 @@ function cinCircuitDefault(L){const C=L.cinema,r=cinCompute(L);return (C.fmt==='
 const CIN_AV=[{k:'AV-1',n:'AV-1 rack (B16)',curve:'B',at:'CRK'},{k:'AV-2',n:'AV-2 erősítő + mélysugárzók (C16)',curve:'C',at:'CRK'},{k:'AV-3',n:'AV-3 projektor + vászon (B16)',curve:'B',at:'CPJ'}];
 function cinRouteDialog(L){const C=L.cinema,def=cinCircuitDefault(L);
   openModal('🎬 Útvonal és dedikált kör',
-    `<div class="mrow">Dedikált körök száma <select id="cinNC">${[1,2,3].map(n=>`<option ${n===def?'selected':''}>${n}</option>`).join('')}</select> <span style="font-size:11px;color:#888">(javaslat: ${def} — §7.2)</span></div>`
-    +`<div class="mrow" style="font-size:11px;color:#666">Mind ugyanarról a fázisról és gyűjtősínről, saját A típusú 30 mA ÁVK-val (a szekrény AV csoportja). A mozi világítás nem kerül AV körre.</div>`,
+    `<div class="mrow">Dedikált körök száma <select id="cinNC">${[1,2,3].map(n=>`<option ${n===def?'selected':''}>${n}</option>`).join('')}</select> <span style="font-size:11px;color:var(--pc-mute,#888)">(javaslat: ${def} — §7.2)</span></div>`
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-dim,#666)">Mind ugyanarról a fázisról és gyűjtősínről, saját A típusú 30 mA ÁVK-val (a szekrény AV csoportja). A mozi világítás nem kerül AV körre.</div>`,
     ()=>{const res=cinRouteAll(L,{circuits:+$('cinNC').value});
       $('hud').textContent=res.err?res.err:('Házimozi: '+res.paths+' pálya ('+Math.round(res.len/100)/10+' m), '+res.ded+' dedikált kör'+(res.miss.length?' · útvonal nélkül: '+res.miss.join(', '):''));},'Létrehozás');}
 // everything at once, one undo step: the AV circuits at the rack / projector, the rack → Elosztó feed, every node → rack

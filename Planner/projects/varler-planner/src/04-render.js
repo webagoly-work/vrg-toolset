@@ -1177,8 +1177,8 @@ function draw(){
     const nh=cursor?cursor.h:drawHmm(state.active),lastH=(dr&&dr.nodes.length)?dr.nodes[dr.nodes.length-1].h:null;
     hb.style.display='block';
     hb.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:26px;border-radius:3px;background:${gc};display:inline-block"></span>`
-      +`<div><div style="font-size:16px;font-weight:700">${(nh/1000).toFixed(2)} m</div><div style="font-size:11px;color:#666">${esc(gd?guideLabel(gd):'')}</div></div></div>`
-      +(lastH!=null?`<div style="font-size:11px;color:#888;margin-top:4px">előző pont: ${(lastH/1000).toFixed(2)} m${Math.abs(lastH-nh)>1?' → '+(nh>lastH?'emelkedik ↑':'süllyed ↓'):''}</div>`:'');
+      +`<div><div style="font-size:16px;font-weight:700">${(nh/1000).toFixed(2)} m</div><div style="font-size:11px;color:var(--pc-dim,#666)">${esc(gd?guideLabel(gd):'')}</div></div></div>`
+      +(lastH!=null?`<div style="font-size:11px;color:var(--pc-mute,#888);margin-top:4px">előző pont: ${(lastH/1000).toFixed(2)} m${Math.abs(lastH-nh)>1?' → '+(nh>lastH?'emelkedik ↑':'süllyed ↓'):''}</div>`:'');
   }else hb.style.display='none';}
   scheduleSave();}
 function setTransform(){vp.setAttribute('transform',`translate(${state.panX},${state.panY}) scale(${state.zoom})`);}

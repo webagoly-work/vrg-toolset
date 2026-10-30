@@ -219,18 +219,18 @@ function pvListRows(d){const rows=[];
   d.notes.forEach(n=>rows.push({kind:'note',key:'t'+n.i,i:n.i,type:'Jegyzet',ref:n.text||'',x:n.u,y:n.h,z:null,extra:'',link:''}));
   return rows.sort((a,b)=>a.x-b.x||a.y-b.y);}
 function pvListHTML(d){const rows=pvListRows(d);
-  if(!rows.length)return `<div style="font-size:11px;color:#999;padding:4px">Ebben a síkban még nincs elem — jobb klikk: lámpa / kötődoboz / aljzat / pálya / jegyzet.</div>`;
+  if(!rows.length)return `<div style="font-size:11px;color:var(--pc-mute,#999);padding:4px">Ebben a síkban még nincs elem — jobb klikk: lámpa / kötődoboz / aljzat / pálya / jegyzet.</div>`;
   const cell=(r,f,v)=>`<input class="pvcell" data-k="${r.key}" data-f="${f}" type="number" step="1" value="${Math.round(v)}" style="width:64px;font-size:10.5px;padding:1px 2px">`;
   return `<table style="width:100%;border-collapse:collapse;font-size:10.5px">`
-    +`<tr style="color:#666;text-align:left"><th style="padding:2px 4px">Elem</th><th>Azonosító</th>`
+    +`<tr style="color:var(--pc-dim,#666);text-align:left"><th style="padding:2px 4px">Elem</th><th>Azonosító</th>`
     +`<th title="a helyiség bal szélétől">X balról</th><th title="a helyiség felső szélétől">Y fentről</th><th title="magasság a padlótól">magasság</th><th></th><th></th></tr>`
-    +rows.map(r=>`<tr data-k="${r.key}" style="border-top:1px solid #f0f0f0;${r.ghost?'opacity:.55':''}">`
+    +rows.map(r=>`<tr data-k="${r.key}" style="border-top:1px solid var(--pc-line,#f0f0f0);${r.ghost?'opacity:.55':''}">`
       +`<td style="padding:2px 4px;white-space:nowrap">${esc(r.type)}</td>`
-      +`<td style="color:#0a2b6b;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis">${esc(String(r.ref))}</td>`
+      +`<td style="color:var(--pc-acc,#0a2b6b);white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis">${esc(String(r.ref))}</td>`
       +`<td>${cell(r,'x',r.x-d.pb.x0)}</td><td>${cell(r,'y',r.y-d.pb.y0)}</td>`
-      +`<td>${r.z==null?'<span style="color:#bbb">—</span>':cell(r,'z',r.z)}</td>`
-      +`<td style="color:#999;white-space:nowrap">${esc(r.extra||'')}${r.link?` <span style="color:#c0530f" title="pályához kötve">🔗${esc(r.link)}</span>`:''}</td>`
-      +`<td><button class="pvdel" data-k="${r.key}" title="törlés" style="font-size:10px;padding:0 4px;color:#b33">✕</button></td></tr>`).join('')
+      +`<td>${r.z==null?'<span style="color:var(--pc-faint,#bbb)">—</span>':cell(r,'z',r.z)}</td>`
+      +`<td style="color:var(--pc-mute,#999);white-space:nowrap">${esc(r.extra||'')}${r.link?` <span style="color:var(--pc-warn,#c0530f)" title="pályához kötve">🔗${esc(r.link)}</span>`:''}</td>`
+      +`<td><button class="pvdel" data-k="${r.key}" title="törlés" style="font-size:10px;padding:0 4px;color:var(--pc-crit,#b33)">✕</button></td></tr>`).join('')
     +`</table>`;}
 function pvListApply(d,rows,key,field,val){const r=rows.find(z=>z.key===key);if(!r)return;wvPush();
   if(field==='z'){if(r.kind==='dev')pvSetDeviceZ(r.i,val);
@@ -260,21 +260,21 @@ function renderPlaneView(){const d=planeViewData(PV.room,PV.level,PV.kind,PV.tol
   modalEl.classList.toggle('full',!!PV.full);modalEl.style.maxWidth=PV.full?'100vw':'96vw';modalEl.style.width=PV.full?'99vw':'';
   const ceil=(PV.kind==='ceiling');
   modalEl.innerHTML=`<h4 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">Sík-szerkesztő — ${esc(PV.room.name||'Helyiség')} · ${PV.level} · ${Math.round(d.W)}×${Math.round(d.D)} mm`
-    +`${PV.dirty?'<span style="font-size:11px;color:#c0530f;font-weight:600">● módosítva</span>':''}`
+    +`${PV.dirty?'<span style="font-size:11px;color:var(--pc-warn,#c0530f);font-weight:600">● módosítva</span>':''}`
     +`<span style="flex:1"></span>`
     +`<button id="pvUndoB" title="Visszavonás (Ctrl+Z)" style="font-size:12px" ${PV.undo.length?'':'disabled'}>↶</button>`
     +`<button id="pvRedoB" title="Újra (Ctrl+Shift+Z)" style="font-size:12px" ${PV.redo.length?'':'disabled'}>↷</button>`
     +`<button id="pvFull" title="Teljes képernyő (Esc kilép)" style="font-size:12px">${PV.full?'🗗':'⛶'}</button></h4>`
     +`<div class="mrow" style="gap:8px;flex-wrap:wrap">`
-    +`<span style="display:inline-flex;border:1px solid #bbb;border-radius:6px;overflow:hidden">`
+    +`<span style="display:inline-flex;border:1px solid var(--pc-line2,#bbb);border-radius:6px;overflow:hidden">`
     +`<button id="pvFloor" style="font-size:11.5px;border:0;padding:3px 10px;${PV.kind==='floor'?'background:#0a2b6b;color:#fff':'background:#fff'}">⬓ Padló</button>`
-    +`<button id="pvDrop" style="font-size:11.5px;border:0;padding:3px 10px;border-left:1px solid #ddd;${PV.kind==='drop'?'background:#0a2b6b;color:#fff':'background:#fff'}" title="${hasDropCeil(PV.level,PV.room)?'':'Ezen a helyiségen nincs beállítva álmennyezet — a szint alapértelmezése szerint rajzolok.'}">⬓⬒ Álmennyezet${hasDropCeil(PV.level,PV.room)?'':' *'}</button>`
-    +`<button id="pvCeil" style="font-size:11.5px;border:0;padding:3px 10px;border-left:1px solid #ddd;${PV.kind==='ceiling'?'background:#0a2b6b;color:#fff':'background:#fff'}">⬒ Mennyezet</button></span>`
+    +`<button id="pvDrop" style="font-size:11.5px;border:0;padding:3px 10px;border-left:1px solid var(--pc-line,#ddd);${PV.kind==='drop'?'background:#0a2b6b;color:#fff':'background:#fff'}" title="${hasDropCeil(PV.level,PV.room)?'':'Ezen a helyiségen nincs beállítva álmennyezet — a szint alapértelmezése szerint rajzolok.'}">⬓⬒ Álmennyezet${hasDropCeil(PV.level,PV.room)?'':' *'}</button>`
+    +`<button id="pvCeil" style="font-size:11.5px;border:0;padding:3px 10px;border-left:1px solid var(--pc-line,#ddd);${PV.kind==='ceiling'?'background:#0a2b6b;color:#fff':'background:#fff'}">⬒ Mennyezet</button></span>`
     +`<label>sáv ±<input id="pvTol" type="number" step="50" min="10" value="${PV.tol}" style="width:56px">mm</label>`
     +`<label><input type="checkbox" id="pvDims" ${PV.dims?'checked':''}> Méret</label>`
     +`<button id="pvMirror" style="font-size:11px">🪞 Tükrözés${PV.mirror?' ✓':''}</button>`
     +`</div>`
-    +`<div class="mrow" style="gap:10px;flex-wrap:wrap;font-size:11px;border-top:1px solid #eee;padding-top:5px"><b style="color:#555">Rétegek:</b>`
+    +`<div class="mrow" style="gap:10px;flex-wrap:wrap;font-size:11px;border-top:1px solid var(--pc-line,#eee);padding-top:5px"><b style="color:var(--pc-dim,#555)">Rétegek:</b>`
     +`<label><input type="checkbox" id="pvLInst" ${PV.layers.installed?'checked':''}> Beépített</label>`
     +`<label><input type="checkbox" id="pvLCuts" ${PV.layers.cuts?'checked':''}> Horony/véset</label>`
     +`<label><input type="checkbox" id="pvLLbl" ${PV.layers.cutLabels?'checked':''}> Feliratok</label>`
@@ -282,16 +282,16 @@ function renderPlaneView(){const d=planeViewData(PV.room,PV.level,PV.kind,PV.tol
     +`<label><input type="checkbox" id="pvLWall" ${PV.layers.walls?'checked':''}> Falak</label>`
     +`<label><input type="checkbox" id="pvLNotes" ${PV.layers.notes?'checked':''}> Jegyzetek</label>`
     +`<label title="Csak ezen a síkon rejti el a jegyzeteket"><input type="checkbox" id="pvNoteSurf" ${noteSurfaceHidden(d.key)?'':'checked'}> ezen a síkon</label></div>`
-    +(PV.drawPi!=null?`<div class="mrow" style="gap:8px;font-size:11px;background:#eef6ff;border:1px solid #2f6fb0;border-radius:5px;padding:3px 6px"><b style="color:#1c4f86">✏ Pálya rajzolása</b><span style="color:#40628a">kattints a következő pontra — a csomópontok ${Math.round(d.band.ref)} mm magasságba kerülnek</span><button id="pvDrawEnd" style="font-size:11px">✔ Kész (Enter)</button></div>`:'')
-    +(PV.warp?`<div class="mrow" style="gap:8px;font-size:11px;background:#fff4ec;border:1px solid #e8641c;border-radius:5px;padding:3px 6px"><b style="color:#c0530f">✥ Warp mód</b><span style="color:#a05a3a">a pálya csomópontjai együtt nyúlnak</span><button id="pvWarpOff" style="font-size:11px">Kilépés</button></div>`:'')
-    +`<div class="mrow" style="font-size:11px;color:#888">Húzd a készüléket / csomópontot / jegyzetet; a pálya vonala = egész szakasz; Alt+klikk = warp. Jobb klikk: készüléken = doboz+magasság, pályán = ⌀/mélység/másolás, üres helyen = létrehozás. A ⊙ jelek ott vannak, ahol a pálya kilép ebből a síkból.</div>`
+    +(PV.drawPi!=null?`<div class="mrow" style="gap:8px;font-size:11px;background:var(--pc-accsoft,#eef6ff);border:1px solid var(--pc-acc,#2f6fb0);border-radius:5px;padding:3px 6px"><b style="color:var(--pc-acc,#1c4f86)">✏ Pálya rajzolása</b><span style="color:var(--pc-acc,#40628a)">kattints a következő pontra — a csomópontok ${Math.round(d.band.ref)} mm magasságba kerülnek</span><button id="pvDrawEnd" style="font-size:11px">✔ Kész (Enter)</button></div>`:'')
+    +(PV.warp?`<div class="mrow" style="gap:8px;font-size:11px;background:var(--pc-warmsoft,#fff4ec);border:1px solid var(--pc-warm,#e8641c);border-radius:5px;padding:3px 6px"><b style="color:var(--pc-warn,#c0530f)">✥ Warp mód</b><span style="color:var(--pc-warm,#a05a3a)">a pálya csomópontjai együtt nyúlnak</span><button id="pvWarpOff" style="font-size:11px">Kilépés</button></div>`:'')
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Húzd a készüléket / csomópontot / jegyzetet; a pálya vonala = egész szakasz; Alt+klikk = warp. Jobb klikk: készüléken = doboz+magasság, pályán = ⌀/mélység/másolás, üres helyen = létrehozás. A ⊙ jelek ott vannak, ahol a pálya kilép ebből a síkból.</div>`
     +`<div style="display:flex;gap:8px;align-items:flex-start">`
     +`<div id="pvBox" style="flex:1;overflow:auto;max-height:${PV.full?'78vh':'56vh'};border:1px solid #eee;background:#fafafa">${out.svg}</div>`
     +edRailHTML(PV)+`</div>`
-    +`<div class="mrow" style="gap:6px;font-size:11px;border-top:1px solid #eee;padding-top:4px">`
-    +`<b style="color:#555">Koordináták (mm)</b><button id="pvListT" style="font-size:11px">${PV.list?'elrejt':'mutat'}</button>`
-    +`<span style="color:#999">X/Y a helyiség bal-felső sarkától; a magasság a padlótól mért érték</span></div>`
-    +(PV.list?`<div id="pvList" style="overflow:auto;max-height:${PV.full?'20vh':'24vh'};border:1px solid #eee">${pvListHTML(d)}</div>`:'')
+    +`<div class="mrow" style="gap:6px;font-size:11px;border-top:1px solid var(--pc-line,#eee);padding-top:4px">`
+    +`<b style="color:var(--pc-dim,#555)">Koordináták (mm)</b><button id="pvListT" style="font-size:11px">${PV.list?'elrejt':'mutat'}</button>`
+    +`<span style="color:var(--pc-mute,#999)">X/Y a helyiség bal-felső sarkától; a magasság a padlótól mért érték</span></div>`
+    +(PV.list?`<div id="pvList" style="overflow:auto;max-height:${PV.full?'20vh':'24vh'};border:1px solid var(--pc-line,#eee)">${pvListHTML(d)}</div>`:'')
     +`<div class="mbtns"><button id="pvPng">🖼 PNG</button><button id="pvPrint">🖨 Print/PDF</button>`
     +`<span style="flex:1"></span><button id="pvClose">✕ Elvetés</button><button id="pvSave" class="on">💾 Mentés</button></div>`;
   modalBg.style.display='flex';
@@ -356,7 +356,7 @@ function openRoomUnfold(room,level){const ws=roomWalls(room.poly,level);
   function show(){const out=build();modalEl.style.maxWidth='96vw';
     modalEl.innerHTML=`<h4>Helyiség kiterítve — ${esc(room.name||'Helyiség')} (${ws.length} fal)</h4>`
       +`<div class="mrow"><label><input type="checkbox" id="ufFar" ${far?'checked':''}> Túloldal is</label><label><input type="checkbox" id="ufDim" ${dims?'checked':''}> Méretlánc</label></div>`
-      +`<div style="overflow:auto;max-height:60vh;border:1px solid #eee;background:#fafafa">${out.svg}</div>`
+      +`<div style="overflow:auto;max-height:60vh;border:1px solid var(--pc-line,#eee);background:var(--pc-bg2,#fafafa)">${out.svg}</div>`
       +`<div class="mbtns"><button id="ufPng">🖼 PNG</button><button id="ufPrint">🖨 Print/PDF</button><button id="ufClose">Bezár</button></div>`;
     modalBg.style.display='flex';
     $('ufClose').onclick=closeModal;$('ufFar').onchange=e=>{far=e.target.checked;show();};$('ufDim').onchange=e=>{dims=e.target.checked;show();};

@@ -286,7 +286,7 @@ STK_TOOLS.push({k:'epPlace',active:()=>{if(!EP_T.on)return false;if(state.mode!=
 function epPicker(role){const S=(typeof stkActive==='function')?stkActive():null,L=lyrLayer(state.activeLayer);
   role=role||(L&&L.role&&L.role.indexOf('sys:')===0?L.role:'sys:SOC');const list=epOfRole(role);
   openModal('Végpont — '+((stkRole(role)||{n:role}).n),
-    list.map((en,i)=>`<div class="mrow" style="align-items:flex-start"><label style="width:200px"><input type="radio" name="epC" value="${en.code}" ${i===0?'checked':''}> <b style="color:${stkRoleCol(role,en.code)||EP_ROLE_COL[role]}">${en.code}</b> ${esc(en.n)}${en.new?' <span style="color:#999">(új kód)</span>':''}</label>`
+    list.map((en,i)=>`<div class="mrow" style="align-items:flex-start"><label style="width:200px"><input type="radio" name="epC" value="${en.code}" ${i===0?'checked':''}> <b style="color:${stkRoleCol(role,en.code)||EP_ROLE_COL[role]}">${en.code}</b> ${esc(en.n)}${en.new?' <span style="color:var(--pc-mute,#999)">(új kód)</span>':''}</label>`
       +`<span>`+en.vars.map((v,j)=>`<label style="display:block;font-size:11.5px"><input type="radio" name="epV_${en.code}" value="${v.k}" ${j===0?'checked':''}> ${esc(v.n)}</label>`).join('')+`</span></div>`).join('')
     +(list.length?'':`<div class="mrow">Ennek a szerepnek nincs végpontja (a lefedettség a Rádió nézetben).</div>`),
     ()=>{const c=(document.querySelector('input[name=epC]:checked')||{}).value;if(!c)return;

@@ -450,6 +450,16 @@ html.mv.low-glow { --mv-glow: 0px; }
  html.mv #rbPanel .x,html.mv #stdPanel .x{border:none;background:none}
  html.mv #stdPanel .r input.own{border-color:var(--mv-warm);background:var(--mv-warm-soft)}
  html.mv #stdPanel .fl{color:var(--mv-crit)} html.mv #stdPanel .sg{background:var(--mv-horizon);border-radius:0}
+ /* P6b: the JS writes its inline colours as var(--pc-K,#old); the tokens exist only here, so with html.mv off every
+    fallback is the old literal. K: ink dim mute faint (text), warn crit ok (computed), acc (selection / info), warm
+    (in progress), violet pink teal (data hues, lifted for a dark ground), line line2 (borders), bg2 warmsoft accsoft
+    critsoft (washes). */
+ html.mv{--pc-ink:var(--mv-text);--pc-dim:var(--mv-dim);--pc-mute:var(--mv-dim);--pc-faint:var(--mv-faint);
+   --pc-warn:var(--mv-warn);--pc-crit:var(--mv-crit);--pc-ok:var(--mv-ok);--pc-acc:var(--mv-accent);--pc-warm:var(--mv-warm);
+   --pc-violet:#b4a7e6;--pc-pink:#e48bc0;--pc-teal:#7fc8c8;
+   --pc-line:var(--mv-line);--pc-line2:var(--mv-line-strong);
+   --pc-bg2:var(--mv-raised);--pc-warmsoft:var(--mv-warm-soft);--pc-accsoft:var(--mv-accent-soft);--pc-critsoft:rgba(228,135,125,.14);
+   --pc-r:0}
  /* inline light colours that the JS writes into the dark regions (P6b turns them into variables) */
  html.mv :is(.side,#inspector,.hmD,#mgj) :is([style*="background:#fff"],[style*="background: #fff"],[style*="background:#fafafa"],[style*="background:#f3f0e9"],[style*="background:#f2efe8"],[style*="background:#f7f5f0"],[style*="background:#faf8f3"]){background:var(--mv-horizon)!important}
  html.mv :is(.side,#inspector,.hmD,#mgj) :is([style*="background:#eef6ff"],[style*="background:#fdf0e7"]){background:var(--mv-accent-soft)!important}
@@ -457,10 +467,27 @@ html.mv.low-glow { --mv-glow: 0px; }
  html.mv :is(.side,#inspector,.hmD,#mgj) :is([style*="#eee"],[style*="#ddd"],[style*="#f0f0f0"],[style*="#e4dfd4"],[style*="#f0ece3"],[style*="#f2efe8"],[style*="#f4f1ea"]){border-color:var(--mv-line)!important}
  html.mv :is(.side,#inspector,.hmD,#mgj) :is([style*="color:#222"],[style*="color:#444"]){color:var(--mv-text)!important}
  html.mv :is(.side,#inspector,.hmD,#mgj) :is([style*="color:#555"],[style*="color:#666"],[style*="color:#6a6357"],[style*="color:#6b6250"]){color:var(--mv-dim)!important}
- /* light islands until P6b */
- html.mv :is(#modal,.ntP,#blTray){color:#222;color-scheme:light}
- html.mv :is(#modal,.ntP,#blTray) :is(button,input,select,textarea){color:#222}
- html.mv :is(#modal,.ntP,#blTray) :is(textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color])){background:#fff;border:1px solid #cfc9bd}
+ /* P6b: the modal (wall / plane editors and every dialog), the notes panel (10b) and the tray (08of). The drawing boxes
+    #wvBox / #pvBox keep their paper ground (the converter leaves them), so the elevation and plane drawings stay ink on paper. */
+ html.mv #modalBg{background:rgba(5,10,14,.6)}
+ html.mv #modal{background:var(--mv-panel-solid);color:var(--mv-text);border:1px solid var(--mv-line-strong);border-radius:0;box-shadow:none}
+ html.mv #modal h4{font-family:var(--mv-voice);font-stretch:75%;letter-spacing:.06em;text-transform:uppercase}
+ html.mv :is(#modal,.ntP,#blTray) button{background:transparent;border:1px solid var(--mv-line-strong);color:var(--mv-text);border-radius:0}
+ html.mv :is(#modal,.ntP,#blTray) button:hover:not(:disabled){background:var(--mv-accent-soft);border-color:var(--mv-accent)}
+ html.mv :is(#modal,.ntP,#blTray) button.on{background:var(--mv-accent-soft);color:var(--mv-accent);border-color:var(--mv-accent)}
+ html.mv :is(#modal,.ntP,#blTray) :is(select,input[type=text],input[type=number],input[type=search],textarea){background:var(--mv-raised);border:1px solid var(--mv-line-strong);color:var(--mv-text);border-radius:0}
+ html.mv :is(#wvBox,#pvBox){color-scheme:light;color:#222}
+ /* the export fit line (06d) keeps its literal red / green, which spec-81 pins; remapped here by its serialized value */
+ html.mv #expFit[style*="179, 38, 30"]{color:var(--mv-crit)!important} html.mv #expFit[style*="44, 110, 63"]{color:var(--mv-ok)!important}
+ html.mv .ntP,html.mv #blTray{background:var(--mv-panel-solid);border-color:var(--mv-line-strong);border-radius:0;box-shadow:none;color:var(--mv-text)}
+ html.mv .ntP h5 button{border:none;background:none}
+ html.mv .ntR>label{color:var(--mv-dim)} html.mv :is(.ntR .v,.ntLi .n){color:var(--mv-dim);font-family:var(--mv-mono)}
+ html.mv :is(.ntLi .mt,.ntEmpty){color:var(--mv-faint)}
+ html.mv .ntSeg button.on{background:var(--mv-accent-soft);border-color:var(--mv-accent);color:var(--mv-accent)}
+ html.mv .ntLi{border-radius:0} html.mv .ntLi:hover{border-color:var(--mv-line-strong)}
+ html.mv .ntLi.sel{border-color:var(--mv-accent);background:var(--mv-accent-soft)} html.mv .ntLi.drop{border-top-color:var(--mv-accent)}
+ html.mv :is(.ntFoot,.ntLay){border-color:var(--mv-line)}
+ html.mv #blTray .hd{color:var(--mv-warn)} html.mv #blTray .why{color:var(--mv-dim)}
  @media print{html.mv body{background:#fff;color:#000}}
  @media print{header,.side,#modeHint,#hud,#ctx,#gpLegend,#gpCursor,#gpWheel{display:none!important}.wrap,.stage-wrap,body{height:auto}
    svg#stage{filter:grayscale(1)}@page{size:A4 landscape;margin:8mm}}

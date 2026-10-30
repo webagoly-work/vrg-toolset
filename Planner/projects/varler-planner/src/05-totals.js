@@ -129,8 +129,8 @@ function cableRows(){const rows=[];data.devices.forEach((D,i)=>{if(!D.req)return
 function wireRows(){const rows=[];data.devices.forEach((D,i)=>{if(!D.req)return;const {L}=deviceRunLen(i);if(L<=0)return;const cnt=D.req.count||0;
   for(let c=0;c<cnt;c++)rows.push([(D.req.name||'')+(D.req.num?' '+D.req.num:''),refOf(D),(D.req.colors&&D.req.colors[c])||WIRE_COLORS[c%WIRE_COLORS.length],D.req.data?D.req.data:(D.req.mm2+' mm²'),(L).toFixed(1)+' m']);});return rows;}
 function showList(title,cols,rows,csvName){
-  const head=cols.map(c=>`<th style="text-align:left;padding:3px 7px;position:sticky;top:0;background:#f3f0e9">${c}</th>`).join('');
-  const body=rows.length?rows.map(r=>'<tr>'+r.map(v=>`<td style="padding:2px 7px;border-top:1px solid #eee">${esc(String(v))}</td>`).join('')+'</tr>').join(''):`<tr><td colspan="${cols.length}" style="padding:8px;color:#888">Nincs bekötött (routolt) áramkör. Húzz pályát, állíts be Szükséges ereket, majd Behúzás.</td></tr>`;
+  const head=cols.map(c=>`<th style="text-align:left;padding:3px 7px;position:sticky;top:0;background:var(--pc-bg2,#f3f0e9)">${c}</th>`).join('');
+  const body=rows.length?rows.map(r=>'<tr>'+r.map(v=>`<td style="padding:2px 7px;border-top:1px solid var(--pc-line,#eee)">${esc(String(v))}</td>`).join('')+'</tr>').join(''):`<tr><td colspan="${cols.length}" style="padding:8px;color:var(--pc-mute,#888)">Nincs bekötött (routolt) áramkör. Húzz pályát, állíts be Szükséges ereket, majd Behúzás.</td></tr>`;
   openModal(title,`<div style="max-height:52vh;overflow:auto"><table style="font-size:12px;border-collapse:collapse;width:100%"><tr>${head}</tr>${body}</table></div>`
     +`<div class="mrow" style="margin-top:8px"><button id="lCopy">📋 Copy</button><button id="lCsv">⬇ CSV</button></div>`,()=>true);
   $('lCopy').onclick=()=>{const t=[cols.join('\t')].concat(rows.map(r=>r.join('\t'))).join('\n');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{},()=>{});};
@@ -175,17 +175,17 @@ function showSchedule(){const rows=schedRows();
     return `<tr style="${bad?'background:#fff3f3':''}">`+[
       esc(r.name),esc(r.num),esc(r.devs),r.n,Math.round(r.P),r.I?r.I.toFixed(1):'—',
       r.dataKind?esc(r.dataKind):(r.mm2+' mm²'),r.L.toFixed(1)+' m',
-      r.mcb?('B'+r.mcb):(r.dataKind?'—':'<b style="color:#c0392b">nincs</b>'),
+      r.mcb?('B'+r.mcb):(r.dataKind?'—':'<b style="color:var(--pc-crit,#c0392b)">nincs</b>'),
       r.du?r.du.toFixed(1):'—',
-      (r.switches?esc(r.switches):'—')+(r.passing?' <span style="color:#888" title="áthaladó áramkör van a körön">⟿</span>':''),
-      bad?`<span style="color:#c0392b">${esc(r.warn)}</span>`:'✓'
-    ].map(v=>`<td style="padding:3px 7px;border-top:1px solid #eee;white-space:nowrap">${v}</td>`).join('')+'</tr>';}).join('')
-    :`<tr><td colspan="12" style="padding:10px;color:#888">Nincs behúzott áramkör. Állíts be Szükséges ereket a készülékeken, majd Behúzás.</td></tr>`;
+      (r.switches?esc(r.switches):'—')+(r.passing?' <span style="color:var(--pc-mute,#888)" title="áthaladó áramkör van a körön">⟿</span>':''),
+      bad?`<span style="color:var(--pc-crit,#c0392b)">${esc(r.warn)}</span>`:'✓'
+    ].map(v=>`<td style="padding:3px 7px;border-top:1px solid var(--pc-line,#eee);white-space:nowrap">${v}</td>`).join('')+'</tr>';}).join('')
+    :`<tr><td colspan="12" style="padding:10px;color:var(--pc-mute,#888)">Nincs behúzott áramkör. Állíts be Szükséges ereket a készülékeken, majd Behúzás.</td></tr>`;
   openModal('Elosztó tábla — áramkör-számítás',
     `<div style="max-height:52vh;overflow:auto"><table style="font-size:11.5px;border-collapse:collapse;width:100%">`
-    +`<tr>${head.map(h=>`<th style="text-align:left;padding:4px 7px;position:sticky;top:0;background:#f3f0e9;white-space:nowrap">${h}</th>`).join('')}</tr>${body}</table></div>`
+    +`<tr>${head.map(h=>`<th style="text-align:left;padding:4px 7px;position:sticky;top:0;background:var(--pc-bg2,#f3f0e9);white-space:nowrap">${h}</th>`).join('')}</tr>${body}</table></div>`
     +`<div class="mrow" style="margin-top:8px;font-size:12px">Összes terhelés <b>${Math.round(totP)} W</b> (${totI.toFixed(1)} A) · javasolt főkapcsoló <b>B${mains}</b> · dugalj/vizes körökre <b>30 mA Fi-relé</b></div>`
-    +`<div class="mrow" style="font-size:10.5px;color:#888">Számítás: I=P/230 V, diverzifikált terhelés (dugalj 500 W, lámpa 60 W); ΔU=2·ρ·L·I/A, ρ=0,0225 Ω·mm²/m; határ 3% világítás / 5% egyéb. Tájékoztató méretezés — kivitelezés előtt ellenőrizd.</div>`
+    +`<div class="mrow" style="font-size:10.5px;color:var(--pc-mute,#888)">Számítás: I=P/230 V, diverzifikált terhelés (dugalj 500 W, lámpa 60 W); ΔU=2·ρ·L·I/A, ρ=0,0225 Ω·mm²/m; határ 3% világítás / 5% egyéb. Tájékoztató méretezés — kivitelezés előtt ellenőrizd.</div>`
     +`<div class="mrow"><button id="scCsv">⬇ CSV</button><button id="scPrint">🖨 Print</button></div>`,()=>true);
   $('scCsv').onclick=()=>{const t=[head.join(';')].concat(rows.map(r=>[r.name,r.num,r.devs,r.n,Math.round(r.P),r.I.toFixed(1),r.dataKind||r.mm2,r.L.toFixed(1),r.mcb?'B'+r.mcb:'nincs',r.du.toFixed(1),(r.switches||'')+(r.passing?' (áthaladó)':''),r.warn||'OK'].join(';'))).join('\n');download('elosztotabla.csv',t);};
   $('scPrint').onclick=()=>{const w2=window.open('','_blank');if(!w2)return;
@@ -207,17 +207,17 @@ function switchReportData(){const out=[];
   return out;}
 function showSwitchReport(){const sw=switchReportData();
   const body=sw.length?sw.map(s=>{
-    const wireHtml=s.wires.length?s.wires.map(w=>`<span style="display:inline-block;margin:1px 4px 1px 0;padding:1px 6px;border-radius:3px;background:#f2efe8;font-size:11px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${WIRE_HEX[w.color]||'#222'};vertical-align:middle;margin-right:3px"></span>${esc(w.name||'')} (${esc(w.color||'')})</span>`).join(''):'<span style="color:#aaa;font-size:11px">nincs kézi ér megadva</span>';
-    const termHtml=s.terms.map(tm=>{const io=tm.kind==='in'?'<b style="color:#b06">be</b>':'<b style="color:#068">ki</b>';
-      return `<tr><td style="padding:2px 8px;border-top:1px solid #eee"><b>${esc(tm.id)}</b></td><td style="padding:2px 8px;border-top:1px solid #eee">${io}</td><td style="padding:2px 8px;border-top:1px solid #eee">${esc(tm.label)}</td><td style="padding:2px 8px;border-top:1px solid #eee">${tm.kind==='out'?(tm.target?'→ '+esc(tm.target):'<span style="color:#c0392b">— nincs cél —</span>'):'—'}</td></tr>`;}).join('');
-    return `<div style="border:1px solid #e4dfd4;border-radius:7px;padding:8px 10px;margin-bottom:8px">`
-      +`<div style="font-size:13px;font-weight:700;margin-bottom:2px">🎚 ${esc(s.ref)} <span style="font-weight:400;color:#777;font-size:11.5px">— ${esc(s.typeLabel)} · ${esc(s.level)}</span></div>`
-      +`<div style="font-size:11.5px;margin:3px 0"><b>Kapcsolt készülékek:</b> ${s.drives.length?s.drives.map(esc).join(', '):'<span style="color:#c0392b">nincs hozzárendelve</span>'}</div>`
-      +`<table style="border-collapse:collapse;width:100%;margin:4px 0"><tr style="font-size:10.5px;color:#777"><th style="text-align:left;padding:2px 8px">Kapocs</th><th style="text-align:left;padding:2px 8px">Ir.</th><th style="text-align:left;padding:2px 8px">Leírás</th><th style="text-align:left;padding:2px 8px">Cél</th></tr>${termHtml}</table>`
+    const wireHtml=s.wires.length?s.wires.map(w=>`<span style="display:inline-block;margin:1px 4px 1px 0;padding:1px 6px;border-radius:3px;background:var(--pc-bg2,#f2efe8);font-size:11px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${WIRE_HEX[w.color]||'#222'};vertical-align:middle;margin-right:3px"></span>${esc(w.name||'')} (${esc(w.color||'')})</span>`).join(''):'<span style="color:var(--pc-faint,#aaa);font-size:11px">nincs kézi ér megadva</span>';
+    const termHtml=s.terms.map(tm=>{const io=tm.kind==='in'?'<b style="color:var(--pc-pink,#b06)">be</b>':'<b style="color:var(--pc-teal,#068)">ki</b>';
+      return `<tr><td style="padding:2px 8px;border-top:1px solid var(--pc-line,#eee)"><b>${esc(tm.id)}</b></td><td style="padding:2px 8px;border-top:1px solid var(--pc-line,#eee)">${io}</td><td style="padding:2px 8px;border-top:1px solid var(--pc-line,#eee)">${esc(tm.label)}</td><td style="padding:2px 8px;border-top:1px solid var(--pc-line,#eee)">${tm.kind==='out'?(tm.target?'→ '+esc(tm.target):'<span style="color:var(--pc-crit,#c0392b)">— nincs cél —</span>'):'—'}</td></tr>`;}).join('');
+    return `<div style="border:1px solid var(--pc-line,#e4dfd4);border-radius:7px;padding:8px 10px;margin-bottom:8px">`
+      +`<div style="font-size:13px;font-weight:700;margin-bottom:2px">🎚 ${esc(s.ref)} <span style="font-weight:400;color:var(--pc-mute,#777);font-size:11.5px">— ${esc(s.typeLabel)} · ${esc(s.level)}</span></div>`
+      +`<div style="font-size:11.5px;margin:3px 0"><b>Kapcsolt készülékek:</b> ${s.drives.length?s.drives.map(esc).join(', '):'<span style="color:var(--pc-crit,#c0392b)">nincs hozzárendelve</span>'}</div>`
+      +`<table style="border-collapse:collapse;width:100%;margin:4px 0"><tr style="font-size:10.5px;color:var(--pc-mute,#777)"><th style="text-align:left;padding:2px 8px">Kapocs</th><th style="text-align:left;padding:2px 8px">Ir.</th><th style="text-align:left;padding:2px 8px">Leírás</th><th style="text-align:left;padding:2px 8px">Cél</th></tr>${termHtml}</table>`
       +`<div style="font-size:11.5px;margin-top:4px"><b>Erek:</b> ${wireHtml}</div>`
-      +`</div>`;}).join(''):'<div style="padding:10px;color:#888">Nincs kapcsoló a tervben. Helyezz el kapcsolót, majd jobb klikk → 🎚 Kapcsoló típus a bekötéshez.</div>';
+      +`</div>`;}).join(''):'<div style="padding:10px;color:var(--pc-mute,#888)">Nincs kapcsoló a tervben. Helyezz el kapcsolót, majd jobb klikk → 🎚 Kapcsoló típus a bekötéshez.</div>';
   openModal('Kapcsoló riport — kapcsok és erek',`<div style="max-height:56vh;overflow:auto">${body}</div>`
-    +`<div class="mrow" style="font-size:10.5px;color:#888">Minden kapcsoló típusa (101/102/105…), a kapcsainak be/ki iránya, hogy melyik kimenet melyik készüléket hajtja, és a kézzel megadott erek. A célokat jobb klikk → 🎚 Kapcsoló típus alatt állíthatod.</div>`
+    +`<div class="mrow" style="font-size:10.5px;color:var(--pc-mute,#888)">Minden kapcsoló típusa (101/102/105…), a kapcsainak be/ki iránya, hogy melyik kimenet melyik készüléket hajtja, és a kézzel megadott erek. A célokat jobb klikk → 🎚 Kapcsoló típus alatt állíthatod.</div>`
     +`<div class="mrow"><button id="swrCsv">⬇ CSV</button><button id="swrPrint">🖨 Print</button></div>`,()=>true);
   $('swrCsv').onclick=()=>{const lines=['Kapcsoló;Típus;Kapocs;Irány;Leírás;Cél;Erek'];
     sw.forEach(s=>{const wires=s.wires.map(w=>w.name+'('+w.color+')').join(' / ');

@@ -218,11 +218,11 @@ function clsTargetG(t,en){const level=t.level||(t.node&&t.node.level)||(t.sp&&t.
   return {level,x:Math.round(px),y:Math.round(py),h:mount==='floor'?0:epCeilH(level,px,py),mount,host:hostId};}
 function clsDeviceList(role,t){const list=epOfRole(role);if(!list.length){lyrHud('Ennek a rétegnek nincs végpontja.');return;}
   const where=t.kind==='node'?('→ '+(t.node.ref||t.node.id)+' ('+(HW_TYPES[t.node.type]||t.node.type)+')'):t.kind==='spot'?'→ ideális hely':'→ egyéni hely'+(clsHigher(role)&&state.clsAuto!==false?' (másodlagos klaszterdoboz nyílik)':'');
-  openModal('Eszköz ide — '+((stkRole(role)||{}).n||role)+' <span style="font-weight:400;color:#888;font-size:12px">'+esc(where)+'</span>',
-    `<div style="max-height:440px;overflow:auto">`+list.map(en=>`<div class="mrow" style="align-items:flex-start;flex-wrap:wrap"><b style="color:${EP_ROLE_COL[role]||'#444'};width:44px">${en.code}</b>`
-      +`<span style="width:200px">${esc(en.n)}${en.prov?' <span style="color:#999">(előkészített)</span>':''}${en.req?' <b title="ügyfél kérte">*</b>':''}</span><span>`
+  openModal('Eszköz ide — '+((stkRole(role)||{}).n||role)+' <span style="font-weight:400;color:var(--pc-mute,#888);font-size:12px">'+esc(where)+'</span>',
+    `<div style="max-height:440px;overflow:auto">`+list.map(en=>`<div class="mrow" style="align-items:flex-start;flex-wrap:wrap"><b style="color:${EP_ROLE_COL[role]||'var(--pc-ink,#444)'};width:44px">${en.code}</b>`
+      +`<span style="width:200px">${esc(en.n)}${en.prov?' <span style="color:var(--pc-mute,#999)">(előkészített)</span>':''}${en.req?' <b title="ügyfél kérte">*</b>':''}</span><span>`
       +en.vars.map(v=>`<button class="cdl" data-c="${en.code}" data-v="${v.k}" style="display:block;margin:1px 0;text-align:left;font-size:11.5px">${esc(v.n)}</button>`).join('')+`</span></div>`).join('')+`</div>`
-    +`<div class="mrow" style="font-size:11px;color:#888">Egy kattintás elhelyez. Egy csomópontba (portál, RBX, klaszterdoboz, BASE) helyezett végpont annak a tagja lesz.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Egy kattintás elhelyez. Egy csomópontba (portál, RBX, klaszterdoboz, BASE) helyezett végpont annak a tagja lesz.</div>`,
     ()=>{},'Bezár');
   document.querySelectorAll('.cdl').forEach(b=>b.onclick=()=>{const en=epEntry(b.dataset.c,role),g=clsTargetG(t,en);closeModal();
     if(!g){lyrHud('Nincs fal a közelben ehhez a fali végponthoz.');return;}epPlace(g,en.code,role,b.dataset.v);});}
@@ -319,8 +319,8 @@ function preLoad(i){const p=preList()[i];if(!p)return false;
   $('hud').textContent='Betöltve: '+p.name+' — mentsd el a Tervek panelen („Mentés mint…”), hogy megmaradjon.';return true;}
 function preOffer(){const L=preList();if(!L.length)return;
   openModal('Előtöltött tervek',
-    L.map((p,i)=>`<div class="mrow"><label><input type="radio" name="preP" value="${i}" ${i===0?'checked':''}> <b>${esc(p.name)}</b><br><span style="font-size:11px;color:#888">${esc(p.note||'')}</span></label></div>`).join('')
-    +`<div class="mrow" style="font-size:11px;color:#888">Mégse = a legutóbbi munkamenet marad. Később: ⌘K → „Előtöltött terv…”.</div>`,
+    L.map((p,i)=>`<div class="mrow"><label><input type="radio" name="preP" value="${i}" ${i===0?'checked':''}> <b>${esc(p.name)}</b><br><span style="font-size:11px;color:var(--pc-mute,#888)">${esc(p.note||'')}</span></label></div>`).join('')
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Mégse = a legutóbbi munkamenet marad. Később: ⌘K → „Előtöltött terv…”.</div>`,
     ()=>{const v=(document.querySelector('input[name=preP]:checked')||{}).value;if(v!=null)preLoad(+v);},'Betöltés');}
 function preloadBoot(){if(preList().length)setTimeout(preOffer,60);}
 

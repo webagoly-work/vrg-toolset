@@ -115,16 +115,16 @@ function collectCircuits(){const map=new Map();
       map.get(k).segs.push({pi,si,c});});});});
   return [...map.values()].sort((a,b)=>(''+a.num).localeCompare(''+b.num,'hu',{numeric:true}));}
 function renderCircuitList(){const box=$('circList');if(!box)return;const cs=collectCircuits();
-  if(!cs.length){box.innerHTML='<div style="font-size:11px;color:#999;padding:6px">Még nincs áramkör. Rajzolj pályát és állíts be áramkört (jobb klikk a szakaszon → Áramkör).</div>';return;}
+  if(!cs.length){box.innerHTML='<div style="font-size:11px;color:var(--pc-mute,#999);padding:6px">Még nincs áramkör. Rajzolj pályát és állíts be áramkört (jobb klikk a szakaszon → Áramkör).</div>';return;}
   state.circHidden=state.circHidden||{};
   box.innerHTML=cs.map(c=>{const hidden=state.circHidden[c.key],col=circuitColor(c);
-    return `<div class="circItem" data-k="${esc(c.key)}" style="border:1px solid ${state.circHi===c.key?'#e8641c':'#e4dfd4'};border-radius:6px;padding:5px 6px;margin-bottom:4px;background:${state.circHi===c.key?'#fff7ef':'#fff'}">`
+    return `<div class="circItem" data-k="${esc(c.key)}" style="border:1px solid ${state.circHi===c.key?'var(--pc-warm,#e8641c)':'var(--pc-line,#e4dfd4)'};border-radius:6px;padding:5px 6px;margin-bottom:4px;background:${state.circHi===c.key?'var(--pc-warmsoft,#fff7ef)':'var(--pc-bg2,#fff)'}">`
      +`<div style="display:flex;align-items:center;gap:6px">`
-     +`<span style="width:14px;height:14px;border-radius:3px;background:${col};border:1px solid #999;flex:none;opacity:${hidden?0.3:1}"></span>`
+     +`<span style="width:14px;height:14px;border-radius:3px;background:${col};border:1px solid var(--pc-line2,#999);flex:none;opacity:${hidden?0.3:1}"></span>`
      +`<b style="font-size:12px">${esc(c.num||'—')}</b> <span style="font-size:11.5px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.name||'')}</span>`
      +`<button class="cToggle" data-k="${esc(c.key)}" title="láthatóság" style="font-size:12px">${hidden?'🚫':'👁'}</button>`
      +`</div>`
-     +`<div style="font-size:10.5px;color:#777;margin-top:2px">${c.segs.length} szakasz · ${c.count||'?'}×${c.mm2||'?'}mm² · <a href="#" class="cHi" data-k="${esc(c.key)}">kiemel</a> · <a href="#" class="cEdit" data-k="${esc(c.key)}">szerkeszt</a> · <a href="#" class="cDel" data-k="${esc(c.key)}" style="color:#b33">töröl</a></div>`
+     +`<div style="font-size:10.5px;color:var(--pc-mute,#777);margin-top:2px">${c.segs.length} szakasz · ${c.count||'?'}×${c.mm2||'?'}mm² · <a href="#" class="cHi" data-k="${esc(c.key)}">kiemel</a> · <a href="#" class="cEdit" data-k="${esc(c.key)}">szerkeszt</a> · <a href="#" class="cDel" data-k="${esc(c.key)}" style="color:var(--pc-crit,#b33)">töröl</a></div>`
      +`</div>`;}).join('');
   box.querySelectorAll('.cToggle').forEach(b=>b.onclick=()=>{const k=b.dataset.k;state.circHidden[k]=!state.circHidden[k];draw();});
   box.querySelectorAll('.cHi').forEach(a=>a.onclick=ev=>{ev.preventDefault();const k=a.dataset.k;state.circHi=(state.circHi===k?null:k);draw();});

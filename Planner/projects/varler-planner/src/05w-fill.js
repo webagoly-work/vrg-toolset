@@ -255,9 +255,9 @@ function afillPreview(plans,onApply,title){const sm=afillSummary(plans),m=x=>(x/
     +Object.keys(sm.byRole).sort((a,b)=>stkRoleIx(a)-stkRoleIx(b)).map(k=>{const R=sm.byRole[k];
       return `<div class="mrow"><b>${esc((stkRole(k)||{n:k}).n)}</b> — ${R.runs} futás · `+Object.keys(R.cables).map(c=>esc(c)+' '+m(R.cables[c])+' m').join(' · ')
         +' · '+Object.keys(R.pipes).sort().map(sz=>sz+' '+m(R.pipes[sz])+' m').join(' · ')+`</div>`;}).join('')
-    +(Object.keys(sm.warn).length?`<div class="mrow" style="color:#b05a00"><b>Figyelmeztetések</b></div>`
-      +Object.keys(sm.warn).map(c=>`<div style="color:#b05a00">${esc(c)} × ${sm.warn[c].length}: ${esc(sm.warn[c][0])}${sm.warn[c].length>1?' …':''}</div>`).join(''):'')
-    +`</div><div class="mrow" style="font-size:11px;color:#888">A hosszak tájékoztató jellegűek (pálya + ${AFILL_RULE.slackPerEnd} mm végenként).</div>`,
+    +(Object.keys(sm.warn).length?`<div class="mrow" style="color:var(--pc-warn,#b05a00)"><b>Figyelmeztetések</b></div>`
+      +Object.keys(sm.warn).map(c=>`<div style="color:var(--pc-warn,#b05a00)">${esc(c)} × ${sm.warn[c].length}: ${esc(sm.warn[c][0])}${sm.warn[c].length>1?' …':''}</div>`).join(''):'')
+    +`</div><div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">A hosszak tájékoztató jellegűek (pálya + ${AFILL_RULE.slackPerEnd} mm végenként).</div>`,
     ()=>{const n=onApply();lyrHud('Feltöltve: '+n+' futás.');},'Alkalmaz');}
 function afillRoomIds(){const out=[];ORD.forEach(l=>stkRooms(l).forEach(r=>{if(r.id)out.push(r.id);}));return out;}
 function afillRoomUI(roomId){const S=stkActive();if(!S){lyrHud('Aktív BRIDGE Stack kell hozzá.');return;}
@@ -268,16 +268,16 @@ function afillChannelUI(rbxId){const S=stkActive();if(!S){lyrHud('Aktív BRIDGE 
   openModal('Csatorna feltöltése — előnézet',`<div style="max-height:400px;overflow:auto;font-size:12px">`
     +P.routes.map(R=>{const p=pathById(R.p);return `<div class="mrow"><b>${esc(p?chnName(p):R.p)}</b> · ${esc(chnCarrierName(R.carrier))}</div>`
       +R.pipes.map(x=>`<div style="margin-left:12px">${esc(x.key)} ${x.size} · ${esc(x.cables.map(c=>c.n+'×'+afillCabName(c.c)).join(' + '))}${x.fill?' · '+Math.round(x.fill*100)+' %':''}</div>`).join('')
-      +(R.note?`<div style="margin-left:12px;color:#888">${esc(R.note)}</div>`:'');}).join('')
-    +P.warns.map(x=>`<div style="color:#b05a00">${esc(x.msg)}</div>`).join('')+`</div>`,
+      +(R.note?`<div style="margin-left:12px;color:var(--pc-mute,#888)">${esc(R.note)}</div>`:'');}).join('')
+    +P.warns.map(x=>`<div style="color:var(--pc-warn,#b05a00)">${esc(x.msg)}</div>`).join('')+`</div>`,
     ()=>{const n=afillChannelApply(P,S);lyrHud('Csatorna feltöltve: '+n+' futás.');},'Alkalmaz');}
 function afillReportUI(){const r=afillReport();if(!r){lyrHud('Aktív BRIDGE Stack kell hozzá.');return;}
   openModal('Kábel- és csőlista (tájékoztató)',`<div style="max-height:420px;overflow:auto;font-size:12px">`
     +r.rbx.map(x=>`<div class="mrow"><b>${esc(x.ref)}</b> — ${x.rooms.length} helyiség${x.chain?' · '+x.chain:''}</div>`
       +`<div style="margin-left:12px">`+Object.keys(x.totals.cables).sort().map(k=>esc(k)+': '+x.totals.cables[k]+' m').join('<br>')+`</div>`
-      +`<div style="margin-left:12px;color:#555">`+Object.keys(x.totals.pipes).sort().map(k=>k+': '+x.totals.pipes[k]+' m').join(' · ')+`</div>`).join('')
+      +`<div style="margin-left:12px;color:var(--pc-dim,#555)">`+Object.keys(x.totals.pipes).sort().map(k=>k+': '+x.totals.pipes[k]+' m').join(' · ')+`</div>`).join('')
     +`<div class="mrow"><b>Csatornák</b></div>`+r.channels.map(c=>`<div style="margin-left:12px">${esc(c.name)} · ${esc(chnCarrierName(c.carrier))} · ${c.len} m · ${esc(c.pipes.map(p=>p.k+' '+p.size).join(', '))}</div>`).join('')
-    +`</div><div class="mrow" style="font-size:11px;color:#888">Kábelhossz × (1 + ${state.waste||0} % hulladék). Tájékoztató.</div>`,()=>{},'Bezár');}
+    +`</div><div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Kábelhossz × (1 + ${state.waste||0} % hulladék). Tájékoztató.</div>`,()=>{},'Bezár');}
 
 STK_ROOMMENU.push((rh,items)=>{if(!stkActive())return;items.push({label:'⚙ Helyiség feltöltése…',act:()=>afillRoomUI(stkRoomId(rh))});});
 STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d||d.type!=='rbx'||!stkActive())return;

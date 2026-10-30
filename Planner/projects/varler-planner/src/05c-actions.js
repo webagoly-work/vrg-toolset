@@ -245,7 +245,7 @@ registerActions([
      openModal('Rajzi méretarány',
        `<div class="mrow"><label style="width:110px">Méretarány</label><select id="bsSel" style="width:110px">${opts}</select></div>`
       +`<div class="mrow"><label style="width:110px">Vonalvastagság</label><input id="bsFine" type="range" min="0.6" max="1.8" step="0.05" value="${bpFine()}" style="width:140px"> <span id="bsFineV">${bpFine().toFixed(2).replace('.',',')}×</span></div>`
-      +`<div class="mrow" style="font-size:10.5px;color:#888">ISO tollvastagságok: fal 0,5 · általános 0,35 · vékony 0,25 · sraffozás 0,13 mm papíron. Feliratok 1,8–4,5 mm.</div>`,
+      +`<div class="mrow" style="font-size:10.5px;color:var(--pc-mute,#888)">ISO tollvastagságok: fal 0,5 · általános 0,35 · vékony 0,25 · sraffozás 0,13 mm papíron. Feliratok 1,8–4,5 mm.</div>`,
        ()=>{state.bpScale=+$('bsSel').value||50;state.bpFine=+$('bsFine').value||1;bpUI&&bpUI();draw();
          $('hud').textContent='Méretarány M 1:'+bpScaleN()+'.';});
      $('bsFine').oninput=()=>{$('bsFineV').textContent=(+$('bsFine').value).toFixed(2).replace('.',',')+'×';};}},
@@ -255,7 +255,7 @@ registerActions([
      openModal('Nézeti lépték',
        `<div class="mrow"><label style="width:110px">Lépték</label><select id="vsSel" style="width:150px">`
       +VIEW_SCALES.map(v=>`<option value="${v}" ${v===cur?'selected':''}>${v}× ${v===1?'— teljes terv':v===10?'— részlet':''}</option>`).join('')+`</select></div>`
-      +`<div class="mrow" style="font-size:10.5px;color:#888">1× a legtávolabbi nézet: a teljes terv belefér. Minden lépés ugyanannyiszor közelebb engedi a nagyítást, a vonalvastagság és a készülékjelek képernyőmérete változatlanul.</div>`,
+      +`<div class="mrow" style="font-size:10.5px;color:var(--pc-mute,#888)">1× a legtávolabbi nézet: a teljes terv belefér. Minden lépés ugyanannyiszor közelebb engedi a nagyítást, a vonalvastagság és a készülékjelek képernyőmérete változatlanul.</div>`,
        ()=>{vsSet(+$('vsSel').value);if($('viewScale'))$('viewScale').value=String(vsK());
          $('hud').textContent='Nézeti lépték '+vsK()+'×.';});}},
   {id:'view.scale.up',alias:'leptek fel kozelebb scale up',label:'Nézeti lépték feljebb',icon:'🔎',group:'Nézet',
@@ -341,9 +341,9 @@ registerActions([
      if(!v.issues.length){alert('Nincs kifogásolható elem a tervben.');return;}
      openModal('Ellenőrzés',
        `<div style="max-height:50vh;overflow:auto;font-size:12px">`
-       +v.issues.map(i=>`<div style="padding:3px 0;border-bottom:1px solid #f0f0f0">`
-         +`<b style="color:${i.sev==='error'?'#c0392b':'#c0530f'}">${i.sev==='error'?'⛔':'⚠'}</b> ${esc(i.msg)}`
-         +`<span style="color:#999"> · ${esc(i.code)}</span></div>`).join('')
+       +v.issues.map(i=>`<div style="padding:3px 0;border-bottom:1px solid var(--pc-line,#f0f0f0)">`
+         +`<b style="color:${i.sev==='error'?'var(--pc-crit,#c0392b)':'var(--pc-warn,#c0530f)'}">${i.sev==='error'?'⛔':'⚠'}</b> ${esc(i.msg)}`
+         +`<span style="color:var(--pc-mute,#999)"> · ${esc(i.code)}</span></div>`).join('')
        +`</div>`,()=>{},'Bezár');}},
 
   // ---- help ----
@@ -399,7 +399,7 @@ registerActions([
      `<div class="mrow">Szélesség = ⌀ × <input id="csF" type="number" step="0.1" min="1" value="${state.chaseFactor||1.6}" style="width:70px"></div>`
     +`<div class="mrow">Doboz-ráhagyás <input id="csP" type="number" step="1" min="0" value="${state.chasePad!=null?state.chasePad:4}" style="width:70px"> mm</div>`
     +`<div class="mrow">Doboz-mélység <input id="csD" type="number" step="5" min="10" value="${state.boxDepth||45}" style="width:70px"> mm</div>`
-    +`<div class="mrow" style="font-size:11px;color:#777">⌀20 → ${chaseWidthOf(20)} mm · ⌀25 → ${chaseWidthOf(25)} mm · ⌀32 → ${chaseWidthOf(32)} mm széles véset.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">⌀20 → ${chaseWidthOf(20)} mm · ⌀25 → ${chaseWidthOf(25)} mm · ⌀32 → ${chaseWidthOf(32)} mm széles véset.</div>`,
      ()=>{state.chaseFactor=Math.max(1,+$('csF').value||1.6);state.chasePad=Math.max(0,+$('csP').value||0);
        state.boxDepth=Math.max(10,+$('csD').value||45);draw();})},
   {id:'chase.report',alias:'chase groove totals volume debris',label:'Véset összesítő (fm, fészek, térfogat)',icon:'▤',group:'Véset',

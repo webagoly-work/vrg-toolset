@@ -144,10 +144,10 @@ function wfwDialog(level){level=level||state.active;const plan=wfwPlan(level);
   const body=`<div style="font-size:12px;margin-bottom:6px">Külső fal <b>${plan.thick.ext}</b> mm · belső fal <b>${plan.thick.int}</b> mm, szimmetrikusan a vonalra; `
     +`a rajzolt méretek <b>belméretek</b> maradnak (a közös falak mentén a szomszéd helyiségek eltolódnak).</div>`
     +`<div style="font-size:12px"><b>${plan.walls.length}</b> fal · <b>${plan.polys.length}</b> helyiség · eltolva <b>${plan.moves.length}</b>`
-    +(plan.skipped.length?` · <span style="color:#c0392b">${plan.skipped.length} ferde él kimarad (fal később)</span>`:'')+`</div>`
-    +(rows?`<table style="font-size:12px;margin-top:6px;border-collapse:collapse;width:100%"><tr style="color:#777"><td>Helyiség</td><td style="text-align:right">eltolás X / Y</td><td style="text-align:right">méretváltozás</td></tr>${rows}</table>`:'')
-    +(plan.steps.length?`<div style="font-size:11.5px;color:#c0392b;margin-top:6px"><b>Lépcső a külső falon</b> — a mért méretek nem adnak ki egy egyenes falat:<br>${plan.steps.map(st=>wfwRoomName(st.a)+' ↔ '+wfwRoomName(st.b)+': '+wfpMm(st.d)+' mm').join('<br>')}<br><span style="color:#777">Ellenőrizd a méréseket, vagy húzd egyenesbe a Helyiség-tollal.</span></div>`:'')
-    +((WALLS[level]||[]).some(r=>r.gen==='wfw')?`<div style="font-size:11px;color:#777;margin-top:4px">Az előző „Falak létrehozása” falai lecserélődnek; a kézzel rajzolt falak maradnak.</div>`:'');
+    +(plan.skipped.length?` · <span style="color:var(--pc-crit,#c0392b)">${plan.skipped.length} ferde él kimarad (fal később)</span>`:'')+`</div>`
+    +(rows?`<table style="font-size:12px;margin-top:6px;border-collapse:collapse;width:100%"><tr style="color:var(--pc-mute,#777)"><td>Helyiség</td><td style="text-align:right">eltolás X / Y</td><td style="text-align:right">méretváltozás</td></tr>${rows}</table>`:'')
+    +(plan.steps.length?`<div style="font-size:11.5px;color:var(--pc-crit,#c0392b);margin-top:6px"><b>Lépcső a külső falon</b> — a mért méretek nem adnak ki egy egyenes falat:<br>${plan.steps.map(st=>wfwRoomName(st.a)+' ↔ '+wfwRoomName(st.b)+': '+wfpMm(st.d)+' mm').join('<br>')}<br><span style="color:var(--pc-mute,#777)">Ellenőrizd a méréseket, vagy húzd egyenesbe a Helyiség-tollal.</span></div>`:'')
+    +((WALLS[level]||[]).some(r=>r.gen==='wfw')?`<div style="font-size:11px;color:var(--pc-mute,#777);margin-top:4px">Az előző „Falak létrehozása” falai lecserélődnek; a kézzel rajzolt falak maradnak.</div>`:'');
   openModal('Falak létrehozása',body,()=>wfwApply(plan,level),'Alkalmaz');}
 
 // ---- F4: Padló létrehozása + the room-type tint -------------------------------------------------------------------------

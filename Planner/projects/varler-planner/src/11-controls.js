@@ -207,11 +207,11 @@ function renderGuides(){const box=$('guideBox');if(!box)return;const level=state
       +`<button class="gvis" data-g="${gd.k}" title="vonal láthatóság" style="font-size:12px;padding:1px 3px">${gd.vis?'👁':'🚫'}</button>`
       +`<button class="gjump" data-g="${gd.k}" title="↑/↓ ide ugorjon" style="font-size:11px;padding:1px 3px;opacity:${gd.jump!==false?1:0.35}">⭱</button>`
       +`<span class="swatch" style="background:${gd.c};width:11px;height:11px;border-radius:2px;flex:none"></span>`
-      +`<span class="gname" data-g="${gd.k}" title="dupla-katt átnevez" style="flex:1;font-size:11.5px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(guideLabel(gd,level))}${guideStd(gd)?' <span title="A Szabványok táblából" style="color:#9a8f7a">📏</span>':''}</span>`
-      +`<span style="font-size:10px;color:#999;min-width:42px;text-align:right">${mm} mm</span>`
+      +`<span class="gname" data-g="${gd.k}" title="dupla-katt átnevez" style="flex:1;font-size:11.5px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(guideLabel(gd,level))}${guideStd(gd)?' <span title="A Szabványok táblából" style="color:var(--pc-mute,#9a8f7a)">📏</span>':''}</span>`
+      +`<span style="font-size:10px;color:var(--pc-mute,#999);min-width:42px;text-align:right">${mm} mm</span>`
       +`<button class="gpick" data-g="${gd.k}" title="rajz erre a magasságra" style="font-size:10.5px;padding:1px 4px">${active?'●':'○'}</button>`
       +`<button class="greset" data-g="${gd.k}" title="eredeti magasság" style="font-size:10px;padding:1px 3px">↺</button>`
-      +(gd.sys?'':`<button class="gdel" data-g="${gd.k}" title="törlés" style="font-size:10px;padding:1px 3px;color:#b33">✕</button>`)
+      +(gd.sys?'':`<button class="gdel" data-g="${gd.k}" title="törlés" style="font-size:10px;padding:1px 3px;color:var(--pc-crit,#b33)">✕</button>`)
       +`</div>`;}).join('');
   box.querySelectorAll('.gvis').forEach(b=>b.onclick=()=>{const g=guideByKey(b.dataset.g);g.vis=!g.vis;renderGuides();draw();});
   box.querySelectorAll('.gjump').forEach(b=>b.onclick=()=>{const g=guideByKey(b.dataset.g);g.jump=(g.jump===false);renderGuides();});
@@ -222,7 +222,7 @@ function renderGuides(){const box=$('guideBox');if(!box)return;const level=state
   box.querySelectorAll('.gdel').forEach(b=>b.onclick=()=>{GUIDES=GUIDES.filter(x=>x.k!==b.dataset.g);if(state.drawHKey===b.dataset.g)state.drawHKey='s1100';rebuildDrawH();renderGuides();draw();});
   box.querySelectorAll('.gname').forEach(sp=>sp.ondblclick=()=>{const g=guideByKey(sp.dataset.g);
     openModal('Átnevezés + magasság',`<div class="mrow">Név <input id="grn" value="${esc(g.l)}" style="width:100%"></div>`
-      +(g.sys?'':guideStd(g)?`<div class="mrow" style="font-size:12px;color:#666">Magasság: <b>${resolveMm(g,state.active)} mm</b> — a Szabványok táblából (${esc((stdRow(guideStd(g)[0],guideStd(g)[1])||{}).n||'')}); ott írd át: 📐 Szabványok.</div>`
+      +(g.sys?'':guideStd(g)?`<div class="mrow" style="font-size:12px;color:var(--pc-dim,#666)">Magasság: <b>${resolveMm(g,state.active)} mm</b> — a Szabványok táblából (${esc((stdRow(guideStd(g)[0],guideStd(g)[1])||{}).n||'')}); ott írd át: 📐 Szabványok.</div>`
         :`<div class="mrow">Magasság <input id="grmm" type="number" value="${typeof g.mm==='number'?g.mm:0}" style="width:90px"> mm</div>`)
       +`<div class="mrow">Szín <input id="grc" type="color" value="${g.c}" style="width:44px;height:24px"></div>`,
       ()=>{g.l=$('grn').value||g.l;if(!g.sys&&!guideStd(g)&&$('grmm'))g.mm=+$('grmm').value||0;g.c=$('grc').value;rebuildDrawH();renderGuides();draw();});});}

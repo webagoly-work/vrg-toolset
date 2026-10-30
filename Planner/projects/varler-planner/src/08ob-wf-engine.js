@@ -224,15 +224,15 @@ function blApplyWires(run,scope,target){
 
 // ---- the dialogs ------------------------------------------------------------------------------------------------------
 function blChecksHtml(R){const ck=R.checks||[];if(!ck.length)return '';const n=v=>String(v).replace('.',',');
-  return `<div style="margin-top:8px;font-size:12px"><b>Ellenőrzés</b> <span style="color:#888">— áramterhelhetőség csövenként (In ≤ Iz·k), feszültségesés ≤ ${BL.rules.VDROP.limitPct} % (E5-Q1, Q2, Q10, Q11) ⚑</span></div>`
-    +`<table class="blChk" style="font-size:11px;width:100%;border-collapse:collapse;margin-top:3px"><tr style="color:#777"><td>Kör</td><td>In</td><td>mm²</td><td>kör/cső</td><td>Iz·k</td><td></td><td>m</td><td>ΔU %</td><td></td></tr>`
-    +ck.map(r=>`<tr${r.okI&&r.okU?'':' style="background:#fdecea"'}><td><b>${esc(r.circ)}</b></td><td>${r.In}${r.Ib<r.In?' <span style="color:#888">('+n(r.Ib.toFixed(1))+')</span>':''}</td><td>${n(r.mm2)}</td><td>${r.n}</td><td>${r.Izk==null?'—':n(r.Izk)}</td><td>${r.okI?'✓':'✗'}</td>`
+  return `<div style="margin-top:8px;font-size:12px"><b>Ellenőrzés</b> <span style="color:var(--pc-mute,#888)">— áramterhelhetőség csövenként (In ≤ Iz·k), feszültségesés ≤ ${BL.rules.VDROP.limitPct} % (E5-Q1, Q2, Q10, Q11) ⚑</span></div>`
+    +`<table class="blChk" style="font-size:11px;width:100%;border-collapse:collapse;margin-top:3px"><tr style="color:var(--pc-mute,#777)"><td>Kör</td><td>In</td><td>mm²</td><td>kör/cső</td><td>Iz·k</td><td></td><td>m</td><td>ΔU %</td><td></td></tr>`
+    +ck.map(r=>`<tr${r.okI&&r.okU?'':' style="background:var(--pc-critsoft,#fdecea)"'}><td><b>${esc(r.circ)}</b></td><td>${r.In}${r.Ib<r.In?' <span style="color:var(--pc-mute,#888)">('+n(r.Ib.toFixed(1))+')</span>':''}</td><td>${n(r.mm2)}</td><td>${r.n}</td><td>${r.Izk==null?'—':n(r.Izk)}</td><td>${r.okI?'✓':'✗'}</td>`
       +`<td>${n(r.Lm)}</td><td>${n(r.dU)}</td><td>${r.okU?'✓':'✗ '+esc(r.fixU||'')}</td></tr>`).join('')+`</table>`;}
 // T0 / L13: a warning that knows its place ({at:[x,y]}) gets a "mutasd" link — the view centres there and rings it
-function blShowLink(w,level){return w&&w.at&&isFinite(w.at[0])?` <a href="#" data-blshow="${Math.round(w.at[0])},${Math.round(w.at[1])},${esc(level||state.active)}" style="color:#2c6fbb">mutasd</a>`:'';}
+function blShowLink(w,level){return w&&w.at&&isFinite(w.at[0])?` <a href="#" data-blshow="${Math.round(w.at[0])},${Math.round(w.at[1])},${esc(level||state.active)}" style="color:var(--pc-acc,#2c6fbb)">mutasd</a>`:'';}
 function blWarnHtml(run){const W=run.notes.map(m=>({sev:'info',msg:m})).concat(run.R.warn);if(!W.length)return '';
   return `<div style="margin-top:8px;font-size:12px"><b>${W.length} figyelmeztetés</b></div><div style="max-height:22vh;overflow:auto;font-size:11px">`
-    +W.map(w=>`<div style="color:${w.sev==='err'?'#b00020':w.sev==='warn'?'#8a5a00':'#666'}">${w.sev==='err'?'⛔':w.sev==='warn'?'⚠':'ℹ'} ${esc(w.msg)}${blShowLink(w,run.level)}</div>`).join('')+`</div>`;}
+    +W.map(w=>`<div style="color:${w.sev==='err'?'var(--pc-crit,#b00020)':w.sev==='warn'?'var(--pc-warn,#8a5a00)':'var(--pc-dim,#666)'}">${w.sev==='err'?'⛔':w.sev==='warn'?'⚠':'ℹ'} ${esc(w.msg)}${blShowLink(w,run.level)}</div>`).join('')+`</div>`;}
 const BL_FLASH={x:0,y:0,level:null,until:0};
 function blShow(x,y,level){level=level||state.active;if(level!==state.active){state.active=level;const r=document.querySelector('input[name=al][value="'+level+'"]');if(r)r.checked=true;}
   CXv=x;CYv=y;const now=planToBase(x,y,dz(level,0));state.panX=W/2-now[0]*state.zoom;state.panY=Hh/2-now[1]*state.zoom;setTransform();
@@ -246,17 +246,17 @@ function blSummary(R){const cnt=(a,k)=>a.filter(x=>x.kind===k).length,bx=R.boxes
   return `${R.C.list.length} kör · ${R.legs.reduce((a,l)=>a+(l.pipes||[]).length,0)} csőszakasz (${R.legs.length} szakasz, ${Math.round(R.legs.reduce((a,l)=>a+l.len,0)/1000)} m) · ${bx.length} doboz (${parts.join(', ')})`;}
 // ---- T0 / §3.4: Pálya-ellenőrzés — one table for what the Domoszló build checked by script. Every row: room + mutasd ----
 function blReportHtml(run){const R=run.R,P=R.report;if(!P)return '';const n=v=>String(v).replace('.',','),lv=run.level;
-  const sec=(t,rows,empty)=>`<div style="margin-top:8px;font-size:12px"><b>${t}</b></div>`+(rows.length?`<div style="font-size:11px">${rows.join('')}</div>`:`<div style="font-size:11px;color:#888">${empty||'—'}</div>`);
+  const sec=(t,rows,empty)=>`<div style="margin-top:8px;font-size:12px"><b>${t}</b></div>`+(rows.length?`<div style="font-size:11px">${rows.join('')}</div>`:`<div style="font-size:11px;color:var(--pc-mute,#888)">${empty||'—'}</div>`);
   const li=(txt,w,col)=>`<div${col?' style="color:'+col+'"':''}>${txt}${blShowLink(w,lv)}</div>`;
   const st=blStale(lv,run.sig),M=P.metres,out=[];
   if(st.drawn)out.push(`<div style="font-size:12px;margin-top:6px;${st.stale?'color:#b00020':'color:#2e7d32'}">${st.stale?'⛔ A felrajzolt pályák elavultak: a terv változott a felrajzolás óta ('+st.stale+' / '+st.drawn+' cső).':'✓ A felrajzolt pályák ehhez a tervhez készültek.'}</div>`);
   out.push(sec('Bekötetlen végpontok',P.unreached.map(u=>li(`⛔ ${esc(u.ref||u.id)} ${esc(u.code)} (${esc(u.circ)}) — ${esc(u.n)}: ${esc(u.why)}`,u,'#b00020')),'✓ minden végpont kap vezetéket'));
-  out.push(sec('Pálya-méterek (geometriai)',[`<div>vezethető falon ${n(M.face)} m · előnyben ${n(M.pref)} m · kerülendőn ${n(M.minus)} m · <b style="color:${M.soft?'#8a5a00':'inherit'}">jelöletlen falon ${n(M.soft)} m</b> · átvezetés ${n(M.cross)} m</div>`,
-    `<div style="color:#888">összesen ${n(M.geo)} m — a keresés súlyozva ${n(M.weighted)} m-nek számolta (jelöletlen ×4, kerülendő ×2, előnyben ×0,5)</div>`,
+  out.push(sec('Pálya-méterek (geometriai)',[`<div>vezethető falon ${n(M.face)} m · előnyben ${n(M.pref)} m · kerülendőn ${n(M.minus)} m · <b style="color:${M.soft?'var(--pc-warn,#8a5a00)':'inherit'}">jelöletlen falon ${n(M.soft)} m</b> · átvezetés ${n(M.cross)} m</div>`,
+    `<div style="color:var(--pc-mute,#888)">összesen ${n(M.geo)} m — a keresés súlyozva ${n(M.weighted)} m-nek számolta (jelöletlen ×4, kerülendő ×2, előnyben ×0,5)</div>`,
     P.pref.marks?`<div>Előnyben jelölés: ${P.pref.marks} db — ${P.pref.usedM?'használva, '+n(P.pref.usedM)+' m':'egyik pálya sem használta'}</div>`:'']
     .concat(P.softLegs.map(l=>li(`⚠ ${esc(l.leg)} (${l.kind==='trunk'?'gerinc':'leágazó'}) — ${esc(l.n)}: ${n(l.m)} m jelöletlen falon`,l,'#8a5a00')))
     .concat(P.minusLegs.map(l=>li(`− ${esc(l.leg)} — ${esc(l.n)}: ${n(l.m)} m kerülendő felületen`,l)))));
-  out.push(sec('Legterheltebb csatornák (horony)',P.chases.map(c=>li(`${c.pipes} cső (gerinc ${c.trunk}, leágazó ${c.dist}) · ${c.circuits} kör egy csatornában — ${esc(c.n)}`,c)).concat(P.chases.length?[`<div style="color:#888">A terhelhetőség csövenként számol (E5-Q10 = A); a csatornánkénti körszám ⚑ vetendő össze az MSZ HD 60364-5-52 csoportosítási táblájával.</div>`]:[])));
+  out.push(sec('Legterheltebb csatornák (horony)',P.chases.map(c=>li(`${c.pipes} cső (gerinc ${c.trunk}, leágazó ${c.dist}) · ${c.circuits} kör egy csatornában — ${esc(c.n)}`,c)).concat(P.chases.length?[`<div style="color:var(--pc-mute,#888)">A terhelhetőség csövenként számol (E5-Q10 = A); a csatornánkénti körszám ⚑ vetendő össze az MSZ HD 60364-5-52 csoportosítási táblájával.</div>`]:[])));
   out.push(sec('Legterheltebb falátvezetések',P.crossings.map(c=>li(`${c.pipes} cső · ${c.circuits} kör — ${esc(c.n)}`,c))));
   out.push(sec('Doboztöltés (az elhaladó csövekkel együtt)',P.fill.map(b=>li(`${esc(b.box)} ${esc(b.name)} — ${esc(b.n)}: ${b.end} cső be / ki + ${b.pass} elhalad = ${b.total}`,b,b.total>6?'#8a5a00':''))));
   out.push(sec('Egy helyre került végpontok (ajtó-hely beugrás, összevonás)',P.stacks.map(x=>li(`ℹ ${x.refs.map(esc).join(' · ')} egy helyen — ${esc(x.n)}`,x)),'nincs'));
@@ -271,11 +271,11 @@ function blReportDialog(){const run=blRun(state.active);if(run.err){$('hud').tex
   openModal('Pálya-ellenőrzés',`<div style="font-size:12px">${blSummary(run.R)}</div><div style="max-height:62vh;overflow:auto">${blReportHtml(run)}</div>`,()=>{},'Rendben');return run;}
 function blRoutesDialog(){const run=blRun(state.active);if(run.err){$('hud').textContent=run.err;openModal('Pályák kiszámítása',`<div style="font-size:12px">${esc(run.err)}</div>`,()=>{},'Rendben');return null;}
   const have=data.paths.some(p=>p&&p.gen==='bl'&&(p.nodes||[]).some(n=>n.level===run.level)),errs=blErrors(run);
-  openModal('Pályák kiszámítása',`<div style="font-size:12px">${blSummary(run.R)} <span style="color:#888">· ${run.ms} ms</span></div>`
-    +`<div style="font-size:11px;color:#666;margin-top:4px">Gerinc ${run.R.W.trunk} · leágazó ${run.R.W.dist} mm (mennyezet ${run.cfg.ceiling} − 250 / − 400) · csak a vezethető falakon (🟩) · `
+  openModal('Pályák kiszámítása',`<div style="font-size:12px">${blSummary(run.R)} <span style="color:var(--pc-mute,#888)">· ${run.ms} ms</span></div>`
+    +`<div style="font-size:11px;color:var(--pc-dim,#666);margin-top:4px">Gerinc ${run.R.W.trunk} · leágazó ${run.R.W.dist} mm (mennyezet ${run.cfg.ceiling} − 250 / − 400) · csak a vezethető falakon (🟩) · `
     +`a gerinc a Csatorna, a többi az ARM rétegre kerül.${have?' Az előző számítás pályái és dobozai lecserélődnek; a kézzel rajzolt pályák maradnak.':''}</div>`
     +`<label style="display:block;font-size:12px;margin-top:6px"><input type="checkbox" id="blCornerAll"${BL_OPT.cornerAll?' checked':''}> Doboz minden saroknál (BRIDGE rétegek, E5-Q4 A)</label>`
-    +(errs.length?`<label style="display:block;font-size:12px;margin-top:6px;color:#b00020"><input type="checkbox" id="blConfirmErr"> ⛔ ${errs.length} hiba — a hibák ellenére felrajzolom</label>`:'')
+    +(errs.length?`<label style="display:block;font-size:12px;margin-top:6px;color:var(--pc-crit,#b00020)"><input type="checkbox" id="blConfirmErr"> ⛔ ${errs.length} hiba — a hibák ellenére felrajzolom</label>`:'')
     +blChecksHtml(run.R)+blWarnHtml(run)
     +`<details style="margin-top:8px"><summary style="font-size:12px;cursor:pointer"><b>Pálya-ellenőrzés</b></summary>${blReportHtml(run)}</details>`,()=>{
       const cb=document.getElementById('blCornerAll'),want=!!(cb&&cb.checked),ce=document.getElementById('blConfirmErr');let r=run;
@@ -289,7 +289,7 @@ function blWiresDialog(){const sel=selected&&selected.t==='devices'?data.devices
   const opt=(v,n,on,dis)=>`<label style="margin-right:12px;${dis?'color:#aaa':''}"><input type="radio" name="blScope" value="${v}"${on?' checked':''}${dis?' disabled':''}> ${n}</label>`;
   openModal('Vezetékek',`<div style="font-size:12px">A kábelek behúzása a kiszámított pályákba (körönként; kábeltípus a kör szerint, kapcsolóknál az erek száma szerint).</div>`
     +`<div style="font-size:12px;margin-top:8px">${opt('dev','Eszköz'+(dev?' — '+esc(dev.ref||dev.id):''),!!dev,!dev)}${opt('room','Helyiség'+(rm?' — '+esc(rm):''),!dev&&!!rm,!rm)}${opt('haz','Ház',!dev&&!rm,false)}</div>`
-    +`<div style="font-size:11px;color:#888;margin-top:4px">Eszköz / Helyiség: jelöld ki előbb a végpontot vagy a helyiséget.</div>`,()=>{
+    +`<div style="font-size:11px;color:var(--pc-mute,#888);margin-top:4px">Eszköz / Helyiség: jelöld ki előbb a végpontot vagy a helyiséget.</div>`,()=>{
       const s=(document.querySelector('input[name=blScope]:checked')||{}).value||'haz';
       const run=blRun(state.active);if(run.err){$('hud').textContent=run.err;return;}
       const res=blApplyWires(run,s,s==='dev'?dev&&dev.id:rm);if(res.err){$('hud').textContent=res.err;return;}

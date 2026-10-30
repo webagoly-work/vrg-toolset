@@ -142,7 +142,7 @@ function slbRoomMenu(rh,items){const l=rh.level,t=slbT(l);
 function slbDialog(){const row=l=>`<div class="mrow"><label style="width:110px;display:inline-block"><input type="checkbox" class="slbOn" data-l="${l}" ${SLABS[l].on?'checked':''}> ${slbLevelName(l)}</label>`
     +`<input type="number" class="slbTv" data-l="${l}" value="${SLABS[l].t}" step="10" min="0" style="width:70px"> mm</div>`;
   openModal('Födém — a szintek alatt',
-    `<div class="mrow" style="font-size:11.5px;color:#666">A belmagasság nem változik: a födém a két szint <b>közé</b> kerül, a felső szint padlója a vastagsággal feljebb kerül. A legalsó szint födéme 0 alá lóg.</div>`
+    `<div class="mrow" style="font-size:11.5px;color:var(--pc-dim,#666)">A belmagasság nem változik: a födém a két szint <b>közé</b> kerül, a felső szint padlója a vastagsággal feljebb kerül. A legalsó szint födéme 0 alá lóg.</div>`
     +[...ORD].reverse().map(row).join('')
     +`<div class="mrow"><button id="slbAll">Födém minden szintre (${SLAB_T_DEFAULT} mm)</button> <button id="slbNone">Mind ki</button></div>`,
     ()=>{pushUndo(['__slabs']);document.querySelectorAll('.slbOn').forEach(c=>{SLABS[c.dataset.l].on=c.checked;});

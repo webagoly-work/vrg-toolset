@@ -137,12 +137,12 @@ function cprRowHtml(r){const c=cprCircuitOf(r),on=!!c&&!c.off,m=mcbParse(r.mcb)|
   const rooms=c&&c.rooms?(c.rooms[0]==='*'?'Ház':c.rooms.length+' helyiség'):(r.scope==='house'?'Ház':r.scope==='unit'?'készülékenként':'helyiségek');
   // three columns so it fits the modal: tick · name with a grey detail line · breaker
   const det=[(r.mm2||'')+' mm²',rooms,on?(c.members||[]).length+' végpont':'',c&&c.off?'kikapcsolva':'',st?st.t:''].filter(Boolean).join(' · ');
-  return `<tr class="cprR" data-r="${esc(id)}" style="border-top:1px solid #eee"><td style="vertical-align:top;padding-top:3px"><input type="checkbox" class="cprOn" ${on?'checked':''}></td>`
-   +`<td style="padding:2px 4px">${esc(r.n)}${r.note?` <span style="color:#999" title="${esc(r.note)}">ⓘ</span>`:''}<div style="font-size:10.5px;color:${st&&st.k==='empty'?'#d08a1e':'#888'}">${esc(det)}</div></td>`
+  return `<tr class="cprR" data-r="${esc(id)}" style="border-top:1px solid var(--pc-line,#eee)"><td style="vertical-align:top;padding-top:3px"><input type="checkbox" class="cprOn" ${on?'checked':''}></td>`
+   +`<td style="padding:2px 4px">${esc(r.n)}${r.note?` <span style="color:var(--pc-mute,#999)" title="${esc(r.note)}">ⓘ</span>`:''}<div style="font-size:10.5px;color:${st&&st.k==='empty'?'var(--pc-warn,#d08a1e)':'var(--pc-mute,#888)'}">${esc(det)}</div></td>`
    +`<td style="white-space:nowrap;vertical-align:top"><button class="cprCv" title="B / C görbe">${m.curve||'C'}</button><select class="cprA">${CPR_AMPS.map(a=>`<option${a===m.amps?' selected':''}>${a}</option>`).join('')}</select>`
    +`<select class="cprP">${['1','1P-N','3'].map(p=>`<option${(p==='1P-N'?m.n:(+p===m.poles&&!m.n))?' selected':''}>${p}</option>`).join('')}</select></td></tr>`;}
-function cprDialogBody(){const rem=cprReminders();let s=`<div style="font-size:11.5px;color:#777;margin-bottom:4px">Az aktív sorokból 05j áramkör lesz; a „nincs végpont” állapot = végpontra vár. B/C, amper, pólus soronként.</div>`;
-  if(rem.length)s+=`<div style="font-size:12px;color:#c0392b;margin-bottom:4px">${rem.map(x=>`${esc(x.msg)} <button class="cprX" data-x="${esc(x.row.id||x.row.key)}" title="Nem kell">×</button>`).join('<br>')}</div>`;
+function cprDialogBody(){const rem=cprReminders();let s=`<div style="font-size:11.5px;color:var(--pc-mute,#777);margin-bottom:4px">Az aktív sorokból 05j áramkör lesz; a „nincs végpont” állapot = végpontra vár. B/C, amper, pólus soronként.</div>`;
+  if(rem.length)s+=`<div style="font-size:12px;color:var(--pc-crit,#c0392b);margin-bottom:4px">${rem.map(x=>`${esc(x.msg)} <button class="cprX" data-x="${esc(x.row.id||x.row.key)}" title="Nem kell">×</button>`).join('<br>')}</div>`;
   [1,2,3].forEach(t=>{const R=cprRows().filter(r=>r.tier===t);if(!R.length)return;
     s+=`<div class="cprT" data-t="${t}" style="font-weight:700;margin:6px 0 2px;cursor:pointer">${CPR_UI.open[t]?'▾':'▸'} ${CPR_TIER[t]} (${R.length})</div>`;
     if(CPR_UI.open[t])s+=`<table style="font-size:12px;width:100%;border-collapse:collapse">${R.map(cprRowHtml).join('')}</table>`;});
@@ -176,8 +176,8 @@ function cprChoose(d,pick){let c;if(pick.c)c=pick.c;else c=cprActivate(pick.row.
 function cprBoxDialog(d){const ch=cprChoices(d);const opts=[];
   ch.active.forEach(c=>opts.push({t:'⚡ '+cktLabel(c)+' · '+cktStatus(c).t,c}));ch.presets.forEach(r=>opts.push({t:'＋ '+r.n+' ('+r.mcb+')',row:r}));
   if(!opts.length){$('hud').textContent='Nincs ide illő áramkör a listában.';return;}
-  openModal('Áramkör ehhez — '+esc(d.ref||d.id),`<div style="font-size:11.5px;color:#777">${ch.room?esc(ch.room.name||ch.room.id)+' · ':''}aktív körök, majd — Új a listából —</div>`
-    +opts.map((o,i)=>`${i===ch.active.length&&ch.active.length?'<div style="color:#999;font-size:11px;margin-top:4px">— Új a listából —</div>':''}<div class="mrow"><label><input type="radio" name="cprCh" value="${i}" ${i===0?'checked':''}> ${esc(o.t)}</label></div>`).join(''),
+  openModal('Áramkör ehhez — '+esc(d.ref||d.id),`<div style="font-size:11.5px;color:var(--pc-mute,#777)">${ch.room?esc(ch.room.name||ch.room.id)+' · ':''}aktív körök, majd — Új a listából —</div>`
+    +opts.map((o,i)=>`${i===ch.active.length&&ch.active.length?'<div style="color:var(--pc-mute,#999);font-size:11px;margin-top:4px">— Új a listából —</div>':''}<div class="mrow"><label><input type="radio" name="cprCh" value="${i}" ${i===0?'checked':''}> ${esc(o.t)}</label></div>`).join(''),
     ()=>{const i=+((document.querySelector('input[name=cprCh]:checked')||{}).value||0);cprChoose(d,opts[i]);},'Hozzárendel');}
 // Esc right after choosing (no further endpoint clicked) → the box goes again, the circuit stays waiting
 STK_TOOLS.push({k:'cprEsc',active:()=>!!CPR_ESC,
@@ -197,7 +197,7 @@ function cprRoomWarnings(){const out=[];cktList().forEach(c=>{if(c.off||!c.prese
 STK_DEVMENU.push((di,items)=>{const d=data.devices[di];if(!d)return;
   if(d.type==='board')items.push({label:'⚡ Áramkör-lista…',act:()=>cprDialog(d.id)});
   else if(cktCanJoin(d)&&(d.type==='box'||((typeof epCodeOf==='function'&&epCodeOf(d))&&!cktOfDevice(d))))items.push({label:'⚡ Áramkör ehhez…',act:()=>cprBoxDialog(d)});});
-(function(){const L=$('circList');if(!L||$('cprLine'))return;const div=document.createElement('div');div.id='cprLine';div.style.cssText='font-size:11px;color:#777;margin:2px 0 4px';
+(function(){const L=$('circList');if(!L||$('cprLine'))return;const div=document.createElement('div');div.id='cprLine';div.style.cssText='font-size:11px;color:var(--pc-mute,#777);margin:2px 0 4px';
   div.innerHTML='Elosztó-szintű áramkörök: jobb klikk az Elosztón → Áramkör-lista. <button id="cprOpen" style="font-size:11px">Áramkör-lista…</button>';
   L.parentNode.insertBefore(div,L);const b=$('cprOpen');if(b)b.onclick=()=>{const bd=data.devices.find(x=>x&&x.type==='board');cprDialog(bd&&bd.id);};})();
 registerActions([
