@@ -70,6 +70,7 @@ The root is stable. It never changes with the selection; the selection keeps its
 | | Kép (PNG) | `doc.png` | action |
 | | Axonometria lap | `view.export.menu` | action |
 | RENDSZER › 04 BEÁLLÍTÁSOK | Normál felület | **NEW** `ui.normal`: `smSet(false)` | action |
+| | Tárcsa: bal / jobb sarok | **NEW** `ui.dialSide`: `smSide()` flips left ↔ right (S01 = A+C) | stay |
 | | Beállítások | `app.settings` | action |
 | | Ellenőrzés | `check.list` | action |
 | | Egyéb parancsok › | generator `other` (§3) | submenu |

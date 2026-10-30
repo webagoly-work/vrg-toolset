@@ -273,7 +273,7 @@ Reported, not silent:
 
 ## 4. Part C — the red team and the end-to-end rebuild
 
-**Not run in this session.** These live only on your machine under `H:\Dev-VRG\VRG-DE\Planner_projektek_2026-10-16\`:
+**Not run in this session.** These live only on your machine under `H:\VRG\Full\jobs\Planner_projektek_2026-10-16\`:
 
 - `_redteam\h.js`, `t1.js` … `t13.js`;
 - `_script\build-dom.js`, `win.js`, `chk.js`;
@@ -284,9 +284,9 @@ Nothing was written to `_audit_2026-10\`, and no Part C verdict is claimed here.
 for your machine, all outputs into the new folder:
 
 ```bat
-cd /d H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\Planner\projects\varler-planner
-set NODE_PATH=H:\Dev-VRG\VRG-DE\Planner_VRG_U100\Planner\projects\varler-planner\node_modules
-set P=H:\Dev-VRG\VRG-DE\Planner_projektek_2026-10-16
+cd /d H:\VRG\Full\Planner_VRG_U100\Planner\projects\varler-planner
+set NODE_PATH=H:\VRG\Full\Planner_VRG_U100\Planner\projects\varler-planner\node_modules
+set P=H:\VRG\Full\jobs\Planner_projektek_2026-10-16
 mkdir %P%\_audit_2026-10\redteam %P%\_audit_2026-10\dom
 rem 8. each red-team script, with the arguments its header names; stdout to a file per script
 for /L %i in (1,1,13) do node %P%\_redteam\t%i.js > %P%\_audit_2026-10\redteam\t%i.txt 2>&1

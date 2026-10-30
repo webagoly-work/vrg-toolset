@@ -1,7 +1,7 @@
 {
  "pack": "PLANNER-SUI-Q-001",
  "title": "Simplified UI (Egyszerű felület) — build decisions",
- "rev": "r1",
+ "rev": "r2",
  "date": "2026-10-15",
  "sections": [
   {
@@ -218,6 +218,15 @@
   }
  ],
  "answers": {
-  "S06": "B"
+  "S01": "A+C",
+  "S02": "A",
+  "S03": "A",
+  "S04": "A",
+  "S05": "A",
+  "S06": "B",
+  "S07": "A",
+  "S08": "A",
+  "S09": "A",
+  "S10": "A"
  }
 }

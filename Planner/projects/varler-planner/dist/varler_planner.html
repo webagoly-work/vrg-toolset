@@ -22735,6 +22735,355 @@ if(!Array.isArray(data.stdHeights))data.stdHeights=[];   // the initial document
 if(UKEYS.indexOf('eloPresets')<0)UKEYS.push('eloPresets');
 if(!IDPRE.eloPresets)IDPRE.eloPresets='E';
 if(!Array.isArray(data.eloPresets))data.eloPresets=[];
+
+// S0 — the module object. Later WPs add fields here, never new top-level lets.
+const SM={on:false,open:false,stack:[],q:null,focus:0};
+function smOn(){return SM.on;}
+function smSet(on,opt){on=!!on;opt=opt||{};if(on===SM.on)return;SM.on=on;
+  document.body.classList.toggle('ui-simple',on);
+  if(opt.save!==false){try{localStorage.setItem('villanyterv_ui',on?'simple':'normal');}catch(_){}}
+  if(on){if(typeof paletteIsOpen==='function'&&paletteIsOpen())paletteClose();const c=document.getElementById('ctx');if(c)c.style.display='none';}
+  else if(typeof smClose==='function')smClose();
+  if(typeof smDialDraw==='function')smDialDraw();
+  if(opt.quiet)return;                                   // boot: 12-boot draws once the workspace is restored
+  if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>{setTransform();draw();});
+  draw();
+  const h=document.getElementById('hud');if(h)h.textContent=on?'Egyszerű felület — F2: vissza':'Normál felület';}
+
+// S0 — chrome-hide CSS (contract §2.1). #ctx stays: the right-click menus must keep working in simple mode, and it is a
+// child of .stage-wrap, so the child rule spares it by id. #modalBg, #gpCursor, #gpWheel and #rwWheel live outside.
+(function smCssInject(){if(document.getElementById('smCss'))return;const s=document.createElement('style');s.id='smCss';
+  s.textContent='body.ui-simple header,body.ui-simple .side,body.ui-simple .resizer,body.ui-simple #toolbarRow,'
+   +'body.ui-simple .stage-wrap>:not(#stage):not(#smRoot):not(#ctx),'
+   +'body.ui-simple #rbPanel,body.ui-simple #stdPanel,body.ui-simple #lpDock,body.ui-simple #lpQr,'
+   +'body.ui-simple #expMenu,body.ui-simple #palette,body.ui-simple .ntP,body.ui-simple #vbkOpen,'
+   +'body.ui-simple [data-chrome]{display:none!important}'
+   +'#smRoot{display:none}body.ui-simple #smRoot{display:block}'
+   +'#smDial{position:absolute;left:0;bottom:0;pointer-events:none;overflow:visible;z-index:30}body.sm-right #smDial{left:auto;right:0}'
+   +'#smDial .smQ{pointer-events:visiblePainted;cursor:pointer;fill:#e3e9ee}#smDial text{pointer-events:none}';   // the look: 11t #smMenuCss (S6)
+  document.head.appendChild(s);})();
+(function smRootInject(){if(document.getElementById('smRoot'))return;const w=document.querySelector('.stage-wrap');if(!w)return;
+  const r=document.createElement('div');r.id='smRoot';w.appendChild(r);})();
+(function smBtnInject(){if(document.getElementById('smBtn'))return;const b=document.createElement('button');b.id='smBtn';
+  b.title='Egyszerű felület: csak a rajz és a sarokmenü (F2)';b.textContent='◔ Egyszerű';b.onclick=()=>smSet(true);
+  const after=document.getElementById('bPanels');
+  if(after&&after.parentNode)after.parentNode.insertBefore(b,after.nextSibling);
+  else{const h=document.querySelector('header');if(h)h.appendChild(b);}})();
+
+registerActions([
+  {id:'ui.simple',label:'Egyszerű felület',icon:'◔',group:'Nézet',keys:['f2'] /* SUI-Q S06 = B */,
+   alias:'simple minimal zen egyszeru csak rajz',hint:'Csak a rajz és a sarokmenü. Ugyanez a billentyű visszavált.',
+   when:c=>!c.inEditor,run:()=>smSet(!smOn())},
+  {id:'ui.normal',label:'Normál felület',icon:'▣',group:'Nézet',when:()=>smOn(),run:()=>smSet(false)}
+]);
+
+// S0 — boot: ?ui=simple|normal wins for this page load (not saved), else the stored preference.
+(function smBoot(){let v=null;try{const m=/[?&]ui=(simple|normal)\b/.exec(location.search||'');if(m)v=m[1];}catch(_){}
+  if(!v){try{v=localStorage.getItem('villanyterv_ui');}catch(_){}}
+  if(v==='simple')smSet(true,{save:false,quiet:true});})();
+
+
+// S1 — the dial (tárcsa): a quarter circle whose centre is the window corner. SUI-Q S01 = A+C: bottom-left by default,
+// bottom-right as a viewer setting (localStorage villanyterv_ui_side, body.sm-right); the geometry is mirrored, not flipped
+// by CSS, so the glyph and the warning numeral stay readable.
+SM.right=false;SM.dialLast=null;
+function smDialSvg(st){st=st||{};const R=!!st.right,X=x=>R?(96-x):x,F=v=>(+v.toFixed(2)).toString();
+  const P=(r,deg)=>{const a=deg*Math.PI/180;return [F(X(r*Math.sin(a))),F(96-r*Math.cos(a))];};
+  const sw=R?0:1,arc=(r,a0,a1)=>{const p0=P(r,a0),p1=P(r,a1);return 'M'+p0[0]+','+p0[1]+' A'+r+','+r+' 0 0 '+sw+' '+p1[0]+','+p1[1];};
+  let s='<path class="smQ" d="M'+X(0)+',96 L'+X(0)+',8 A88,88 0 0 '+sw+' '+X(88)+',96 Z"/>'
+   +'<path class="smR1" d="'+arc(88,0,90)+'"/><path class="smR2" d="'+arc(64,0,90)+'"/>';
+  for(let i=0;i<10;i++){const a=4.5+i*9,p=P(88,a),q=P(82,a);s+='<line class="smTk" x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'"/>';}
+  for(let i=0;i<4;i++){const a0=1.25+i*22.5;s+='<path class="smDp'+(i<(st.depth||0)?' on':'')+'" d="'+arc(76,a0,a0+20)+'"/>';}
+  s+='<path class="smCore" d="M'+X(0)+',96 L'+X(0)+',56 A40,40 0 0 '+sw+' '+X(40)+',96 Z"/>';
+  const g=st.tool&&st.tool.icon?st.tool.icon:(st.search?'⌕':(st.open?'×':'≡'));
+  s+='<text class="smGl" x="'+X(9)+'" y="88"'+(R?' text-anchor="end"':'')+'>'+esc(g)+'</text>';
+  if(st.warn>0){const p=P(100,45);s+='<text class="smWarn" x="'+p[0]+'" y="'+p[1]+'" text-anchor="middle">'+(st.warn|0)+'</text>';}
+  return s;}
+function smDialState(){return {open:SM.open,depth:SM.stack.length,tool:null,warn:0,right:SM.right,search:SM.open&&SM.q!=null};}
+function smDialDraw(){const el=document.getElementById('smDial');if(!el)return;const str=smDialSvg(smDialState());
+  if(str!==SM.dialLast){el.innerHTML=str;SM.dialLast=str;}
+  el.setAttribute('aria-expanded',SM.open?'true':'false');el.classList.toggle('tool',!!smDialState().tool);}
+function smToggle(){if(typeof smOpen==='function'){if(SM.open)smClose();else smOpen('browse');return;}SM.open=!SM.open;smDialDraw();} // S2: 11t owns open/close
+function smSide(right){SM.right=right==null?!SM.right:!!right;document.body.classList.toggle('sm-right',SM.right);
+  try{localStorage.setItem('villanyterv_ui_side',SM.right?'right':'left');}catch(_){}
+  SM.dialLast=null;smDialDraw();return SM.right;}
+(function smDialBuild(){const r=document.getElementById('smRoot');if(!r||document.getElementById('smDial'))return;
+  try{SM.right=localStorage.getItem('villanyterv_ui_side')==='right';}catch(_){}
+  document.body.classList.toggle('sm-right',SM.right);
+  r.insertAdjacentHTML('beforeend','<svg id="smDial" width="96" height="96" viewBox="0 0 96 96" tabindex="0" role="button" aria-haspopup="menu" aria-expanded="false" aria-label="Menü"></svg><div id="smMenu"></div><div id="smHint"></div>');
+  const d=document.getElementById('smDial');
+  d.addEventListener('pointerdown',e=>{e.stopPropagation();});
+  d.addEventListener('pointerup',e=>{if(e.target&&e.target.classList&&e.target.closest('#smDial')){e.stopPropagation();e.preventDefault();smToggle();}});
+  d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();smToggle();}});
+  smDialDraw();})();
+
+// test hooks
+window.smOn=smOn;window.smSet=smSet;window.__SM=SM;window.smDialSvg=smDialSvg;window.smDialDraw=smDialDraw;window.smToggle=smToggle;window.smSide=smSide;
+
+// node:  {k, n, i?, items:[node|leaf]}  or  {k, n, i?, gen:'rules'|'endpoints'|'layers'|'projects'|'other'}
+// leaf:  {a:'action.id', n?, i?, kind:'action'|'tool'|'stay'}  or  {fn:()=>{}, n, i?, kind, line2?}  (generator-only)
+let SM_TREE={k:'root',n:'Menü',items:[]};        // S3 fills it; tests use smUseTree(t)
+const SM_GEN={};                                  // S3 registers generators: SM_GEN.rules=()=>[...]
+SM.menuLast=null;SM.slots=[];SM.anim=0;
+
+function smUseTree(t){SM_TREE=t;SM.stack=[];SM.menuLast=null;if(SM.open)SM.stack=[{node:SM_TREE,page:0,focus:0}];}
+function smChildren(node){if(!node)return [];if(node.items)return node.items;
+  if(node.gen){try{const f=SM_GEN[node.gen];if(!f)throw new Error('nincs generátor: '+node.gen);return f()||[];}
+    catch(err){return [{n:'Hiba: '+((err&&err.message)||err),kind:'action',disabled:true}];}}
+  return [];}
+// paging: ≤4 → one page; else 3 + TOVÁBB while more than 4 remain, the last page holds the rest (≤4)
+function smPage(list,page){const pages=[];let i=0;const n=list.length;
+  if(n<=4)pages.push(list.slice());else{while(n-i>4){pages.push(list.slice(i,i+3));i+=3;}pages.push(list.slice(i));}
+  const p=Math.max(0,Math.min(page|0,pages.length-1));return {items:pages[p],pages:pages.length,page:p,more:p<pages.length-1};}
+function smTop(){return SM.stack[SM.stack.length-1]||null;}
+function smLeafSlot(leaf){
+  if(leaf.items||leaf.gen)return {kind:'sub',n:leaf.n,i:leaf.i||'▸',sub:leaf,disabled:false,line2:''};
+  if(leaf.a){const a=actionById(leaf.a);
+    if(!a)return {kind:'leaf',leaf,n:leaf.n||leaf.a,i:leaf.i||'•',a:leaf.a,disabled:true,line2:'hiányzó parancs: '+leaf.a};
+    const dis=!actionEnabled(a,actionCtx());
+    return {kind:'leaf',leaf,n:leaf.n||a.label,i:leaf.i||a.icon||'•',a:leaf.a,stay:leaf.kind==='stay',tool:leaf.kind==='tool',
+      disabled:dis,line2:dis?(a.need||'nem elérhető most'):''};}
+  return {kind:'leaf',leaf,n:leaf.n,i:leaf.i||'•',stay:leaf.kind==='stay',tool:leaf.kind==='tool',disabled:!!leaf.disabled,line2:leaf.line2||''};}
+function smView(){const top=smTop();if(!top)return {crumb:'',slots:[]};
+  const pg=smPage(smChildren(top.node),top.page);top.page=pg.page;
+  const slots=pg.items.map(smLeafSlot);
+  if(pg.more)slots.push({kind:'more',n:'Tovább',i:'›',disabled:false,line2:''});
+  const root=SM.stack.length===1&&pg.page===0;
+  slots.push({kind:'back',n:root?'Bezár':'Vissza',i:root?'✕':'◂',disabled:false,line2:''});
+  const names=SM.stack.map(s=>s.node.n),pgT=pg.pages>1?'('+(pg.page+1)+'/'+pg.pages+')':'';
+  const crumb=names.join(' / ')+(pgT?' '+pgT:'');
+  // the line is 248 px: deep levels keep the last two names (mock: … / Szabálykészlet / Fal), the page count sits on the right
+  const shown=names.length>3?['…'].concat(names.slice(-2)):names;
+  const crumbHtml='<span>'+shown.slice(0,-1).map(n=>smEsc(n)+' / ').join('')+'<b>'+smEsc(shown[shown.length-1])+'</b></span>'+(pgT?'<span> '+pgT+'</span>':'');
+  return {crumb,crumbHtml,slots,pages:pg.pages,page:pg.page};}
+function smEsc(t){return String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function smSlotHtml(s,ix,foc,cls){const ch=s.kind==='sub'||s.kind==='more'?'›':(s.stay?'↺':'');
+  return '<button class="'+cls+(s.kind==='back'?' back':'')+(s.disabled?' dis':'')+(ix===foc?' foc':'')+'" data-s="'+ix+'" role="menuitem"'
+   +(s.disabled?' aria-disabled="true"':'')+' aria-label="'+String(ix+1).padStart(2,'0')+' '+smEsc(s.n)+'" style="--d:'+ix+'">'
+   +'<span class="smIx">'+String(ix+1).padStart(2,'0')+'</span><span class="smIc">'+smEsc(s.i)+'</span>'
+   +'<span class="smLb"><span class="smT">'+smEsc(s.n)+'</span>'+(s.line2?'<small>'+smEsc(s.line2)+'</small>':'')+'</span><span class="smCh">'+ch+'</span></button>';}
+function smRender(){const el=document.getElementById('smMenu');if(!el)return;
+  if(!SM.open){if(SM.menuLast!==''){el.innerHTML='';SM.menuLast='';}el.removeAttribute('role');SM.slots=[];return;}
+  const v=(SM.q!=null&&typeof smSearchView==='function')?smSearchView():smView();SM.slots=v.slots;
+  const top=smTop();const foc=top?Math.min(top.focus|0,v.slots.length-1):0;if(top)top.focus=foc;
+  const html='<div class="smCrumb">'+(v.crumbHtml||smEsc(v.crumb))+'</div><div class="smCol">'+v.slots.map((s,i)=>smSlotHtml(s,i,foc,'smI')).join('')+'</div>';
+  if(html!==SM.menuLast){el.innerHTML=html;SM.menuLast=html;}
+  el.setAttribute('role','menu');}
+// motion hooks (classes only; S6 styles them). jsdom and reduced motion → instant.
+function smMotion(){try{return typeof matchMedia==='function'&&!matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(_){return false;}}
+function smReplace(fn,dir){const el=document.getElementById('smMenu');const anim=el&&smMotion();
+  let ghost=null;if(anim){const old=el.querySelector('.smCol');if(old){ghost=old.cloneNode(true);ghost.className='smCol smGhost sm-out'+(dir<0?' back':'');
+    ghost.querySelectorAll('.smI').forEach(b=>{b.className=b.className.replace(/\bsmI\b/,'smIg');});}}
+  fn();smRender();
+  if(anim){clearTimeout(SM.anim);el.querySelectorAll('.smGhost').forEach(g=>g.remove());
+    if(ghost)el.appendChild(ghost);el.querySelectorAll('.smCol:not(.smGhost)').forEach(c=>c.classList.add('sm-in'));if(dir<0)el.classList.add('sm-back');else el.classList.remove('sm-back');
+    SM.anim=setTimeout(()=>{el.querySelectorAll('.smGhost').forEach(g=>g.remove());el.querySelectorAll('.sm-in').forEach(c=>c.classList.remove('sm-in'));},200);}}
+function smOpen(mode){SM.open=true;SM.q=null;SM.stack=[{node:SM_TREE,page:0,focus:0}];
+  if(mode==='search'){SM.wasBrowse=false;smSearchStart('');}
+  smReplace(()=>{},1);smDialDraw();}
+function smClose(){if(!SM.open&&!SM.stack.length)return;SM.open=false;SM.q=null;SM.stack=[];smRender();smDialDraw();}
+function smBack(){const top=smTop();if(!top)return smClose();
+  if(top.page>0){smReplace(()=>{top.page--;top.focus=3;},-1);return true;}
+  if(SM.stack.length>1){smReplace(()=>{SM.stack.pop();},-1);return true;}
+  smClose();return true;}
+function smRun(s){if(s.a)return runAction(s.a);if(s.leaf&&typeof s.leaf.fn==='function'){s.leaf.fn();return true;}return false;}
+function smActivate(slot){if(typeof slot==='number')slot=SM.slots[slot];if(!slot||slot.disabled)return false;
+  if(slot.kind==='sub'){if(SM.q!=null)SM.q=null;smReplace(()=>{SM.stack.push({node:slot.sub,page:0,focus:0});},1);return true;}
+  if(slot.kind==='more'){const top=smTop();smReplace(()=>{top.page++;top.focus=0;},1);return true;}
+  if(slot.kind==='back'){if(slot.search){smSearchEnd();return true;}return smBack();}
+  if(slot.stay){smRun(slot);SM.menuLast=null;smRender();smDialDraw();return true;}
+  smClose();smRun(slot);if(typeof smDialDraw==='function')smDialDraw();return true;}
+function smFocus(i){const top=smTop();if(!top||!SM.slots.length)return;const n=SM.slots.length;top.focus=((i%n)+n)%n;smRender();}
+
+// keys: capture on WINDOW (it runs before 05c's document-capture shortcut handler, which would otherwise fire an action
+// bound to the same key first), only while the menu is open; mod+ combos other than mod+k pass through
+window.addEventListener('keydown',e=>{
+  if(!(smOn()&&SM.open))return;
+  const k=e.key||'';const mod=e.ctrlKey||e.metaKey;
+  if(mod)return;                                          // Ctrl+K has its own listener below; the rest reach the app
+  if(typeof smSearchKey==='function'&&smSearchKey(e)){e.preventDefault();e.stopImmediatePropagation();return;}
+  const top=smTop();let done=true;
+  if(k==='ArrowDown')smFocus((top?top.focus:0)+1);
+  else if(k==='ArrowUp')smFocus((top?top.focus:0)-1);
+  else if(k==='Enter'||k==='ArrowRight')smActivate(top?top.focus:0);
+  else if(k==='ArrowLeft'||k==='Backspace'||k==='Escape')smBack();
+  else if(/^[1-5]$/.test(k)&&!e.altKey)smActivate(+k-1);
+  else done=false;
+  if(done){e.preventDefault();e.stopImmediatePropagation();}
+},true);
+
+// ---- S4: search (the ⌘K half) — the same scoring as the palette (05c paletteScore), never a second one ----
+function smSearchIndex(){const out=[],have=new Set();
+  const walk=(node,path)=>{const kids=node.gen?((node.gen==='rules'||node.gen==='endpoints')?smChildren(node):[]):(node.items||[]);
+    kids.forEach(c=>{if(c.items||c.gen)walk(c,path.concat([c.n]));else if(c.a&&!have.has(c.a)){have.add(c.a);out.push(Object.assign({},c,{path:path.join(' / ')}));}});};
+  walk(SM_TREE,[]);
+  ACTIONS.forEach(a=>{if(!have.has(a.id)){have.add(a.id);out.push({a:a.id,kind:'action',path:a.group||''});}});
+  return out;}
+function smSearch(q,idx){idx=idx||smSearchIndex();                   // a bare call (tests, other callers) builds a fresh indexconst ctx=actionCtx();
+  return idx.map(e=>{const a=e.a?actionById(e.a):null;const n=e.n||(a&&a.label)||'';let sc=paletteScore(q,n);
+      if(!(sc>0)){const s2=paletteScore(q,n+' '+((a&&a.label)||'')+' '+((a&&a.alias)||'')+' '+e.path);sc=s2>0?s2-500:0;}
+      return {e,n,sc,en:a?actionEnabled(a,ctx):!e.disabled};})
+    .filter(r=>r.sc>0)
+    .sort((x,y)=>(y.en-x.en)||(y.sc-x.sc)||x.n.localeCompare(y.n,'hu-HU'))
+    .map(r=>r.e);}
+function smSearchStart(q){SM.q=q||'';SM.idx=smSearchIndex();SM.res=smSearch(SM.q,SM.idx);SM.win=0;const top=smTop();if(top)top.focus=0;SM.menuLast=null;smRender();smDialDraw();}
+function smSearchSet(q){SM.q=q;SM.res=smSearch(q,SM.idx);SM.win=0;const top=smTop();if(top)top.focus=0;smRender();}
+function smSearchEnd(){SM.q=null;SM.res=null;SM.menuLast=null;smRender();smDialDraw();}
+function smSearchView(){const res=SM.res||[];const win=Math.max(0,Math.min(SM.win|0,Math.max(0,res.length-4)));SM.win=win;
+  const slots=res.slice(win,win+4).map(e=>{const s=smLeafSlot(e);s.line2=s.disabled&&/^hiányzó/.test(s.line2)?s.line2:e.path;return s;});
+  if(!res.length)slots.push({kind:'leaf',n:'Nincs találat',i:'∅',disabled:true,line2:''});
+  slots.push({kind:'back',search:true,n:'Vissza',i:'◂',disabled:false,line2:''});
+  const n=Math.min(4,res.length);
+  return {slots,crumbHtml:'<span class="smSq">⌕ '+smEsc(SM.q)+'<span class="smCaret">▏</span></span><span class="smCount">'+(res.length?(win+1)+'–'+(win+n)+' / '+res.length:'0 / 0')+'</span>'};}
+// true = handled. Browsing: a printable key starts a search. Searching: type, Backspace, Esc/←, ↑/↓ with a scrolling window.
+function smSearchKey(e){const k=e.key||'';const pr=k.length===1&&k!==' '&&!e.altKey;
+  if(SM.q==null){if(pr&&!/^[1-5]$/.test(k)){SM.wasBrowse=true;smSearchStart(k);return true;}return false;}
+  const top=smTop();const n=Math.min(4,(SM.res||[]).length);
+  if(pr){smSearchSet(SM.q+k);return true;}
+  if(k==='Backspace'){if(SM.q==='')smSearchEnd();else{const q=SM.q.slice(0,-1);if(q===''&&SM.wasBrowse)smSearchEnd();else smSearchSet(q);}return true;}
+  if(k==='Escape'||k==='ArrowLeft'){smSearchEnd();return true;}
+  if(k==='ArrowDown'){if(top.focus<n-1)top.focus++;else if(top.focus===n-1&&SM.win+4<(SM.res||[]).length)SM.win++;else top.focus=(top.focus+1)%(n+1);smRender();return true;}
+  if(k==='ArrowUp'){if(top.focus>0)top.focus--;else if(SM.win>0)SM.win--;smRender();return true;}
+  return false;}
+// Ctrl+K / ⌘K in simple mode opens the menu in search; the palette (05c) stays a normal-mode thing
+window.addEventListener('keydown',e=>{if(!smOn())return;if(!((e.ctrlKey||e.metaKey)&&(e.key||'').toLowerCase()==='k'))return;
+  e.preventDefault();e.stopImmediatePropagation();if(!SM.open)smOpen('search');else{SM.wasBrowse=false;smSearchStart('');}},true);
+
+// mouse: delegation on #smMenu; a press on the canvas while open closes the menu and is consumed
+(function smMenuBind(){const el=document.getElementById('smMenu');if(!el)return;
+  el.addEventListener('pointerdown',e=>e.stopPropagation());
+  el.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('.smI');if(!b)return;e.stopPropagation();smActivate(+b.dataset.s);});
+  el.addEventListener('mouseover',e=>{const b=e.target&&e.target.closest&&e.target.closest('.smI');if(!b)return;const top=smTop();
+    if(top&&top.focus!==+b.dataset.s)smFocus(+b.dataset.s);});})();
+document.addEventListener('pointerdown',e=>{if(!(smOn()&&SM.open))return;const t=e.target;if(!(t&&t.closest&&t.closest('#stage')))return;
+  e.stopPropagation();e.stopImmediatePropagation();e.preventDefault();SM.eatClick=true;smClose();},true);
+document.addEventListener('click',e=>{if(!SM.eatClick)return;SM.eatClick=false;const t=e.target;if(!(t&&t.closest&&t.closest('#stage')))return;e.stopPropagation();e.stopImmediatePropagation();e.preventDefault();},true);
+
+// S6 — the look (Zion-inspired: pale, cool, glassy operator panels; drawn from the design §7 tokens, matches mock/sm-mock.html)
+(function smMenuCss(){if(document.getElementById('smMenuCss'))return;const s=document.createElement('style');s.id='smMenuCss';s.textContent=[
+ // tokens — design §7 verbatim
+ 'body.ui-simple{--sm-glass:rgba(214,224,232,.80);--sm-glass-hi:rgba(234,241,247,.94);--sm-glass-back:rgba(196,208,219,.86);',
+ '--sm-edge-hi:rgba(255,255,255,.90);--sm-edge-lo:rgba(110,130,150,.45);--sm-ink:#1c2833;--sm-ink-dim:#5b6d7e;--sm-accent:#3a8ac4;',
+ '--sm-glow:0 0 0 1px rgba(255,255,255,.55),0 0 16px rgba(130,185,228,.45);--sm-warn:#c0530f;',
+ '--sm-scan:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px);',
+ '--sm-font:"Bahnschrift SemiCondensed","Bahnschrift","Segoe UI",sans-serif;--sm-num:"Cascadia Mono","Consolas",monospace}',
+ // column
+ '#smMenu{position:absolute;left:20px;bottom:100px;width:248px;z-index:31;font-family:var(--sm-font)}body.sm-right #smMenu{left:auto;right:20px}',
+ '#smMenu .smCol{display:flex;flex-direction:column;gap:6px;position:relative}#smMenu .smGhost{position:absolute;left:0;right:0;bottom:0;pointer-events:none}',
+ '#smMenu .smCrumb{height:18px;margin-bottom:6px;padding:0 2px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--sm-ink-dim);',
+ 'display:flex;align-items:flex-end;justify-content:space-between;gap:8px;white-space:nowrap;overflow:hidden}',
+ '#smMenu .smCrumb b{color:var(--sm-ink);font-weight:600}',
+ '#stage.prev~#smRoot .smCrumb{color:#9fb0c0}#stage.prev~#smRoot .smCrumb b,#stage.prev~#smRoot .smSq{color:#dfe8ef}',   // the dark Ügyfél-előnézet canvas (mock: .dark .crumb)
+ '#smMenu .smSq{font-size:13px;letter-spacing:.06em;text-transform:none;color:var(--sm-ink)}#smMenu .smCount{color:var(--sm-ink-dim)}',
+ '#smMenu .smCaret{animation:smBlink 1s step-end infinite}@keyframes smBlink{50%{opacity:0}}',
+ // item
+ '#smMenu .smI{position:relative;box-sizing:border-box;width:100%;height:48px;display:flex;align-items:center;gap:10px;padding:0 12px 0 14px;margin:0;',
+ 'text-align:left;cursor:pointer;font-family:var(--sm-font);color:var(--sm-ink);border-radius:2px;',
+ 'background:var(--sm-scan),var(--sm-glass);backdrop-filter:blur(6px) saturate(1.1);-webkit-backdrop-filter:blur(6px) saturate(1.1);',
+ 'border:1px solid;border-color:var(--sm-edge-hi) var(--sm-edge-lo) var(--sm-edge-lo) var(--sm-edge-hi);transition:border-color 80ms}',
+ '#smMenu .smIx{font:11px var(--sm-num);color:var(--sm-ink-dim);width:18px;flex:none}',
+ '#smMenu .smIc{font-size:16px;width:20px;text-align:center;flex:none;filter:grayscale(1) brightness(.4) contrast(1.3)}',
+ '#smMenu .smLb{flex:1;min-width:0;font-size:14px;letter-spacing:.08em;text-transform:uppercase;line-height:1.25;display:flex;flex-direction:column}  /* no overflow:hidden: it clipped É Ü above the caps */',
+ '#smMenu .smT{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:2px}',
+ '#smMenu .smLb small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px;letter-spacing:.02em;text-transform:none;color:var(--sm-ink-dim)}',
+ '#smMenu .smCh{color:var(--sm-ink-dim);font-size:15px;flex:none}',
+ '#smMenu .smI.foc{background:var(--sm-scan),var(--sm-glass-hi);box-shadow:var(--sm-glow)}',
+ '#smMenu .smI.foc::before{content:"";position:absolute;left:-1px;top:-1px;bottom:-1px;width:3px;background:var(--sm-accent)}',
+ 'body.sm-right #smMenu .smI.foc::before{left:auto;right:-1px}',
+ '#smMenu .smI.back{background:var(--sm-scan),var(--sm-glass-back)}',
+ '#smMenu .smI.dis{cursor:default}#smMenu .smI.dis>*{opacity:.45}',
+ '#smMenu .smI:active:not(.dis){border-color:var(--sm-edge-lo) var(--sm-edge-hi) var(--sm-edge-hi) var(--sm-edge-lo)}',
+ // motion — design §6
+ '#smMenu .smCol.sm-out .smIg{transition:transform 90ms,opacity 90ms;transition-delay:calc(var(--d)*20ms);transform:translateX(-8px);opacity:0}',
+ '#smMenu .smCol.sm-out.back .smIg{transform:translateX(8px)}',
+ '#smMenu .smCol.sm-in .smI{animation:smIn 140ms both;animation-delay:calc((4 - var(--d))*25ms)}',
+ '#smMenu.sm-back .smCol.sm-in .smI{animation-name:smInBack}',
+ '@keyframes smIn{from{transform:translateY(10px);opacity:0}}@keyframes smInBack{from{transform:translateX(-10px);opacity:0}}',
+ // dial — design §7 Dial
+ '#smDial .smQ{fill:var(--sm-glass);stroke:var(--sm-edge-lo);stroke-width:2}#smDial .smR1{fill:none;stroke:var(--sm-edge-lo);stroke-width:2}',
+ '#smDial .smR2{fill:none;stroke:var(--sm-edge-lo);stroke-width:1}#smDial .smCore{fill:var(--sm-glass-hi);stroke:var(--sm-edge-hi);stroke-width:1}',
+ '#smDial .smTk{stroke:var(--sm-ink-dim);stroke-opacity:.5;stroke-width:1.2}',
+ '#smDial .smDp{fill:none;stroke:var(--sm-edge-lo);stroke-width:5;stroke-opacity:.6}#smDial .smDp.on{stroke:var(--sm-accent);stroke-opacity:1}',
+ '#smDial .smGl{font:20px var(--sm-font);fill:var(--sm-ink)}#smDial .smWarn{font:bold 11px var(--sm-font);fill:var(--sm-warn)}',
+ '#smDial.tool .smQ,#smDial.tool .smR1{stroke:var(--sm-accent)}#smDial.tool .smQ{filter:drop-shadow(0 0 6px rgba(130,185,228,.8))}',
+ '#smDial:focus{outline:none}#smDial:focus-visible .smQ{stroke:var(--sm-accent)}',
+ // hint pill (S5 fills it)
+ '#smHint{position:absolute;left:100px;bottom:14px;max-width:min(560px,60vw);height:30px;line-height:30px;padding:0 12px;box-sizing:border-box;z-index:30;',
+ 'font:12.5px var(--sm-font);color:var(--sm-ink);background:var(--sm-glass);border:1px solid;border-radius:2px;',
+ 'border-color:var(--sm-edge-hi) var(--sm-edge-lo) var(--sm-edge-lo) var(--sm-edge-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;',
+ 'opacity:0;transition:opacity 200ms;pointer-events:none}#smHint.on{opacity:1}#smHint:empty{display:none}body.sm-right #smHint{left:auto;right:100px}',
+ '@media (prefers-reduced-motion:reduce){#smMenu *,#smHint{transition:none!important;animation:none!important}}'].join('');
+ document.head.appendChild(s);})();
+
+// S1's smToggle delegates here once this module has loaded (11s keeps the name, contract: the dial calls smToggle)
+window.smUseTree=smUseTree;window.smChildren=smChildren;window.smPage=smPage;window.smView=smView;window.smOpen=smOpen;
+window.smClose=smClose;window.smActivate=smActivate;window.smBack=smBack;window.SM_GEN=SM_GEN;window.smSearch=smSearch;window.smSearchIndex=smSearchIndex;
+
+// NEW actions. wf.roomType / wf.stairs / wf.layer.* already exist (05db, T3), so only these are registered here.
+registerActions(RB_PRESETS.filter(p=>p.kind!=='off').map(p=>({id:'wf.rule.'+p.k,label:p.n,icon:'📐',group:'Véset',
+  alias:'szabaly rule jeloles '+p.k+' '+fold(p.sec),hint:'Szabály: '+p.n+' ('+p.sec+')',when:c=>!c.inEditor,run:()=>rbPick(p.k)})).concat([
+  // the Jegyzet tool existed (08-interaction, state.mode 'note') but had no action, so nobody could find it
+  {id:'mode.note',label:'Jegyzet',icon:'🗒',group:'Eszköz',alias:'note jegyzet megjegyzes',hint:'Kattints a rajzra, és írd be a jegyzetet.',
+   when:c=>!c.inEditor,run:()=>{setMode('note');draw();}},
+  {id:'ui.dialSide',label:'Tárcsa: bal / jobb sarok',icon:'◑',group:'Nézet',alias:'dial side corner tarcsa sarok bal jobb',
+   hint:'Az egyszerű felület tárcsája a bal vagy a jobb alsó sarokban.',run:()=>smSide()}]));
+
+const SM_L=(a,kind,n,i)=>{const o={a,kind:kind||'action'};if(n)o.n=n;if(i)o.i=i;return o;};
+const SM_N=(k,n,i,items)=>({k,n,i,items});
+SM_TREE={k:'root',n:'Menü',items:[
+ SM_N('epulet','Épület','🧱',[
+  SM_N('helyisegek','Helyiségek','⬚',[SM_L('mode.room','tool'),SM_L('wf.walls'),SM_L('wf.floors'),SM_L('wf.roomType','tool')]),
+  SM_N('nyilaszarok','Nyílászárók','🚪',[SM_L('wf.door','tool','Ajtó'),SM_L('wf.window','tool','Ablak'),SM_L('wf.stairs','tool','Lépcső'),SM_L('pt.place','tool','Portál')]),
+  SM_N('szabalyok','Szabályok','📐',[{k:'szabalykeszlet',n:'Szabálykészlet',i:'📐',gen:'rules'},SM_L('wf.routeWalls','tool'),SM_L('wf.standards'),
+   SM_N('jeloles','Jelölés','✎',[SM_L('mark.wall','tool'),SM_L('mark.plane','tool'),SM_L('mark.list'),SM_L('room.renumber')]),
+   SM_N('igenylista','Igénylista','☑',[SM_L('req.layer','stay'),SM_L('need.room'),SM_L('need.overview'),SM_L('req.house')])]),
+  SM_N('szintek','Szintek','☰',[SM_L('level.up','stay','Feljebb'),SM_L('level.down','stay','Lejjebb'),SM_L('drop.settings','action','Álmennyezet'),
+   SM_N('falmeres','Fal mozgatása / mérés','📏',[SM_L('mode.wall','tool','Fal rajzolása'),SM_L('mode.grab','tool'),SM_L('mode.measure','tool')]),
+   SM_L('slab.level','action','Födém')])]),
+ SM_N('villamossag','Villamosság','⚡',[
+  SM_N('vegpontok','Végpontok','◉',[SM_L('wf.layer.SOC','stay','Dugaljak'),SM_L('wf.layer.LIGHT','stay','Lámpák + kapcsolók'),SM_L('wf.layer.DED','stay','Dedikált'),
+   {k:'mindenvegpont',n:'Minden végpont',i:'⊕',gen:'endpoints'},
+   SM_N('mozi','Házimozi','🎬',[SM_L('cinema.layer','stay'),SM_L('cinema.wiring')])]),
+  SM_N('kapcsolas','Kapcsolás','🔗',[SM_L('wf.switches','tool','Kapcsolások'),SM_L('wf.switchSuggest','action','Javaslat'),SM_L('wf.ceilLine','tool','Mennyezeti út'),SM_L('wf.floorLine','tool','Padló út')]),
+  SM_N('dobozok','Dobozok és körök','▣',[SM_L('wf.boxSzoba','tool','Szobadoboz'),SM_L('wf.boxKot','tool','Kötődoboz'),SM_L('wf.board','tool','Elosztó'),
+   SM_N('aramkorok','Áramkörök','⎓',[SM_L('circuit.pick','tool'),SM_L('circuit.presets','action','Áramkör-lista'),SM_L('circuit.new'),SM_L('circuit.export')])]),
+  SM_N('palyak','Pályák','〰',[SM_L('mode.path','tool','Pálya'),SM_L('chn.route','tool','Csatorna'),
+   SM_N('feltoltes','Feltöltés','⇶',[SM_L('fill.room'),SM_L('fill.all'),SM_L('fill.channel'),SM_L('fill.report'),SM_L('elo.schedule')]),
+   SM_N('sinarm','Sín és ARM','⫶',[SM_L('rail.route','tool'),SM_L('arm.route','tool'),SM_L('hw.rbx','tool'),SM_L('hw.serve','tool')])])]),
+ SM_N('eszkozok','Eszközök','🛠',[SM_L('edit.undo','stay'),SM_L('edit.redo','stay'),SM_L('edit.delete','action','Kijelölt törlése'),
+  SM_N('rajzeszkozok','Rajzeszközök','✏',[SM_L('mode.select','action','Kijelölés'),SM_L('mode.note','tool','Jegyzet'),SM_L('mode.object','tool','Objektum'),SM_L('mode.format','tool','Formátum')])]),
+ SM_N('rendszer','Rendszer','⚙',[
+  SM_N('nezet','Nézet','👁',[SM_L('view.toggle3d','stay','2D ↔ 3D'),
+   SM_N('stilus','Stílus','◐',['plan','blueprint','whiteout','preview','tiszta'].map(s=>SM_L('view.style.'+s,'stay'))),
+   SM_N('kamera','Kamera','⌖',['iso','dim','axo','mil','elev','lock'].map(c=>SM_L('view.cam.'+c,'stay')).concat([SM_L('view.reset','stay')])),
+   {k:'retegek',n:'Rétegek',i:'≣',gen:'layers'}]),
+  SM_N('projekt','Projekt','📁',[SM_L('proj.save','action','Mentés'),{k:'projektek',n:'Projektek',i:'🗂',gen:'projects'},SM_L('proj.new','action','Új projekt'),SM_L('proj.export','action','Exportálás JSON-ba')]),
+  SM_N('kimenet','Kimenet','📄',[SM_L('doc.totals','action','Anyagkimutatás'),SM_L('doc.print','action','Nyomtatás / PDF'),SM_L('doc.png','action','Kép (PNG)'),SM_L('view.export.menu','action','Axonometria lap')]),
+  SM_N('beallitasok','Beállítások','⚙',[SM_L('ui.normal'),SM_L('ui.dialSide','stay'),SM_L('app.settings','action','Beállítások'),SM_L('check.list','action','Ellenőrzés'),
+   {k:'egyeb',n:'Egyéb parancsok',i:'⋯',gen:'other'}])])]};
+
+// ---- generators (built when the node opens, never cached) ----
+SM_GEN.rules=()=>{const secs=[];RB_PRESETS.forEach(p=>{if(p.kind==='off')return;let s=secs.find(x=>x.n===p.sec);if(!s)secs.push(s={k:'rb.'+p.sec,n:p.sec,i:'📐',items:[]});
+  s.items.push(SM_L('wf.rule.'+p.k,'tool',p.n));});return secs;};
+SM_GEN.endpoints=()=>{const by=new Map();ACTIONS.forEach(a=>{const m=/^ep\.place\.(.+)$/.exec(a.id);if(!m)return;const e=epEntry(m[1]);const role=(e&&e.role)||'?';
+  if(!by.has(role))by.set(role,[]);by.get(role).push(SM_L(a.id,'tool',m[1]+' — '+String(a.label).replace(/^Végpont:\s*\S+\s*—\s*/,'')));});
+  const ord=k=>{const i=STK_ROLES.findIndex(r=>r.k===k);return i<0?999:i;};
+  return [...by.keys()].sort((a,b)=>ord(a)-ord(b)).map(k=>{const r=STK_ROLES.find(x=>x.k===k);return {k:'ep.'+k,n:r?r.n:k,i:'◉',items:by.get(k)};});};
+SM_GEN.layers=()=>layers.filter(L=>!L.parent).map(L=>({n:L.name||L.id,i:L.id===state.activeLayer?'●':'○',kind:'stay',
+  line2:L.id===state.activeLayer?'● aktív':(L.visible===false?'rejtett':''),
+  fn:()=>{state.activeLayer=L.id;if(typeof lyrRefresh==='function')lyrRefresh();else renderLayers();draw();}}));
+SM_GEN.projects=()=>{const ix=loadProjIndex();return Object.keys(ix).map(id=>Object.assign({id},ix[id])).sort((a,b)=>(b.ts||0)-(a.ts||0))
+  .map(p=>({n:p.name||p.id,i:'📄',kind:'action',line2:p.ts?new Date(p.ts).toLocaleDateString('hu-HU'):'',
+    fn:()=>{if(confirm('Megnyitod: '+(p.name||p.id)+'? A jelenlegi terv mentve marad.'))loadProject(p.id);}}));};
+function smWalk(node,fn,depth,seen){depth=depth||0;seen=seen||new Set();if(depth>8||!node)return;
+  const kids=node.gen?(node.gen==='other'?[]:smChildren(node)):(node.items||[]);
+  kids.forEach(c=>{if(c.items||c.gen){if(!seen.has(c)){seen.add(c);smWalk(c,fn,depth+1,seen);}}else fn(c);});}
+function smReachCurated(){const s=new Set();smWalk(SM_TREE,l=>{if(l.a)s.add(l.a);});return s;}
+SM_GEN.other=()=>{const cur=smReachCurated();const g=new Map();ACTIONS.forEach(a=>{if(cur.has(a.id))return;const k=a.group||'Egyéb';if(!g.has(k))g.set(k,[]);g.get(k).push(SM_L(a.id));});
+  return [...g.keys()].sort((a,b)=>a.localeCompare(b,'hu-HU')).map(k=>({k:'o.'+k,n:k,i:'⋯',items:g.get(k)}));};
+function smReach(){const s=smReachCurated();SM_GEN.other().forEach(n=>n.items.forEach(l=>s.add(l.a)));return s;}
+
+window.SM_TREE_GET=()=>SM_TREE;window.smReach=smReach;window.smReachCurated=smReachCurated;
 //////////////////// go ////////////////////
 function resetView(){const h=vsHomeView();state.zoom=h.zoom;state.panX=h.panX;state.panY=h.panY;setTransform();}
 // ---------------- camera memory: 2D and 3D each remember their own view ----------------
