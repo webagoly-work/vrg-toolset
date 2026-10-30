@@ -1,3 +1,5 @@
+> **Done 2026-10-30.** Result: `docs/housekeeping/AUDIT-2026-10-30.md` §5.
+
 # GO HK — the housekeeping round (2026-10-30)
 
 *You were started with the codephrase **GO HK**. This file is the whole briefing; it does not depend

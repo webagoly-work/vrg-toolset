@@ -208,7 +208,7 @@ function BkIntegrity([scriptblock]$progress) {
 }
 
 # ------------------------------------------------------------------ restore
-# "jobs\P33\a.xlsx" or "H:\VRG\Full\jobs\P33\a.xlsx" -> folder + rel, or $null when it is not in a synced folder
+# "jobs\CLA\a.xlsx" or "H:\VRG\Full\jobs\CLA\a.xlsx" -> folder + rel, or $null when it is not in a synced folder
 function BkWhere($c, [string]$path) {
   $p = $path.Trim().Trim('"').Replace('/', '\').TrimEnd('\')
   $full = $c.full.TrimEnd('\') + '\'

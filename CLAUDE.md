@@ -1,9 +1,9 @@
 # VRG toolset — working rules
 
 The repo root is `H:\VRG\Full\Planner_VRG_U100` (see Drive layout)
-(GitHub: `webagoly-work/vrg-toolset`, private). **`H:\VRG\Backup\code\Planner_VRG_U100-mirror`
-is the git `backup` remote, not a second workspace** — push to it from time to
-time, never work in it. A copy like it was mixed up with the working copy once
+(GitHub: `webagoly-work/vrg-toolset`, private). **`H:\VRG\Backup\code\Planner_VRG_U100.git`
+is the git `backup` remote, a bare repo, not a workspace** — BACKUP pushes to it,
+never work from it. A copy of the repo was mixed up with the working copy once
 and a full session's work landed in the backup; reconciling them cost real
 effort. Confirm with `git rev-parse --show-toplevel` if ever unsure.
 Each tool is a self-contained HTML app; the Planner and Inventory additionally
@@ -13,8 +13,8 @@ have modular sources that build into one file.
 
 **One work root, one personal root** (re-rooted 2026-10-27; the plan and the
 move scripts are in `H:\VRG\Full\_admin\reorg`). One repository, one checkout:
-every line of work is on `main` here; the only other worktree is the docs
-branch in `.claude\worktrees\cloudflare-ecosystem`.
+every line of work is on `main` here. The worktree `.claude\worktrees\cloudflare-ecosystem`
+is a stale leftover (its branch is merged, 2026-10-30).
 
 ```
 H:\
@@ -23,12 +23,14 @@ H:\
     Full\                       <- the working version
       Planner_VRG_U100\         <- the git repo  (THE working copy)
       BRIDGE\ BRIDGEcomp\ ESP_lab\ Varler_Workflow_Kit\ VRG_Visual_Base\ wifi-heatmapper\ _handoff\
-      jobs\                     <- P33, NV4, BK2, DM1, Planner_projektek_*, temp_batch
+      jobs\                     <- client job folders, Planner_projektek_*, temp_batch
       tools\                    <- dev toolchain: git node dotnet electron vscode chrome* arduino-cli js-libs
       programs\                 <- user programs: VLC zen opera-gx 7zip keytweak HWiNFO WizTree CrystalDiskInfo
       inbox\  notes\  research\  home\claude-account-b\  _admin\
     Backup\                     <- lightweight: code\ (the git backup remote), installers\, archive\
     OTG\                        <- portable / showcase build; kit\ = the USB kit
+    Shared\                     <- junction to C:\Users\webag\OneDrive\VRG-Megosztott: big files and client
+                                   jobs shared by OneDrive (never a repo; hub-seed.json has the folders)
   Personal\                     <- MC-Server, RL-CYD, FlyBrainLab (+ its miniforge3), GodsEyeView
 ```
 
@@ -207,55 +209,21 @@ symbols grey while every class was correct and every test passed.
 
 ## Codephrases
 
-All of them run in the **main checkout `H:\VRG\Full\Planner_VRG_U100`, branch `main`** (one checkout since GO MAIN, 2026-10-24).
+All of them run in the **main checkout `H:\VRG\Full\Planner_VRG_U100`, branch `main`**. A session reads the named
+file at the repo root and does what it says.
 
-- **`GO HK`** — read `GO-HK.md` at the repo root and do what it says: the housekeeping round from
-  `docs/housekeeping/AUDIT-2026-10-30.md` (HK-Q1…Q7 all A): commit the local work, merge the
-  GitHub-only branches + SUI into `main` (no push), park clutter, the shared OneDrive tree
-  `H:\VRG\Shared`, merge the two VARLER folders, consolidate the GO files, then write the new GO MAIN.
-- **`GO R1010`** — read `GO-R1010.md` at the repo root (main checkout, branch `main`)
-  and do what it says: continue the Planner round 2026-10-10, then the CLA-ADD-001 extras.
-- **`GO FRAME`** — read `GO-FRAME.md` at the repo root (main checkout, branch `main`)
-  and do what it says: the BRIDGE SmartFrame (BSF) concept: research, IDEA-003, tune with the user,
-  then the BRIDGE doc and (after round 2026-10-10 is built) the Planner pack. No code.
-- **`GO V2`** — read `GO-V2.md` at the repo root (main checkout, branch `main`)
-  and do what it says: the CLA second version — v1 (VG-2026-CLA-01) fully built + every other BRIDGE layer
-  prepared (conduit, cable pulled, boxes, niches; no hardware), quick survey-precision quantities and prices vs v1,
-  a per-room ESPHome marketing list; then hand the fair-price calculation to the Workflow Kit session (V2_FELADAT.md).
-- **`GO R1018`** — read `GO-R1018.md` at the repo root (main checkout, branch `main`) and do what it says:
-  continue the Planner round 2026-10-18 (Födém · Igénylista · Házimozi, all built + committed 2026-10-19):
-  only the C6 Mozi fal pen feel is open.
-- **`GO WIRE`** — read `GO-WIRE.md` at the repo root (main checkout, branch `main`)
-  and do what it says: the wireway routing rebuild — the dual model, configuration K1 (decisions 2026-10-18, all A),
-  build order T0–T7 from `docs/workflow/WIREWAY_AUDIT_2026-10-18.md` (T0–T6 merged into `main` 2026-10-24).
-- **`GO ADAT`** — read `GO-ADAT.md` at the repo root (main checkout, branch `main`) and do what it says.
-- **`GO HUB`** — read `GO-HUB.md` at the repo root (main checkout, branch `main`) and do what it says:
-  VRG Kapu. **Reworked 2026-10-26**: Kapu is now only the access page (GitHub sign-in + the signed
-  allowed list → START.cmd and its tools) until the dashboard exists. The board, editor, Munkanapló and
-  the rest are parked for Kódváros in `CodeCity/from-kapu/`; the `docs/hub/` pack describes the old,
-  full Kapu. Still open from it: setup steps 3–6 (push, invite, 2FA, the OneDrive `00_START` share),
-  the clean-profile check.
-- **`GO CITY`** — read `GO-CITY.md` at the repo root and do what it says: VRG Kódváros, the codebase-as-a-city
-  viewer (C1–C10 on `main`; **parked**: base fine-tuning from the user's dev notes, a later Claude Design
-  batch candidate — README §7). New WPs start from `main`.
-- **`GO LIVE`** — read `GO-LIVE.md` at the repo root and do what it says: build Kódváros into the live
-  workspace / GitWorld / overlay OS from the prompt series `docs/city/PROMPTS-WORKSPACE.md` (KV-01 …
-  KV-27, research in `docs/research/reports/Kódváros live workspace and GitWorld.md`). Meant for the
-  secondary account (start steps in GO-LIVE §0); one prompt per step, commit, never push.
-- **`GO OPENWRT`** — read `GO-OPENWRT.md` at the repo root and do what it says: prepare, guide and verify
-  OpenWrt on the TP-Link TL-WR1043ND (the user flashes; Claude never touches the router). Asked for 2026-10-26
-  with CITY-D24; phases P0–P5, the first is the sticker's hardware version.
-- **`GO MOBILE`** — read `GO-MOBILE.md` at the repo root and do what it says: VRG Mobile, the companion app
-  (`Mobile/`, Légegér is its first feature), one WP at a time from `docs/mobile/` (M0 done, M1 + M2 built 2026-10-29). Made for
-  **cloud sessions**: the APK is built by GitHub Actions, not in the sandbox (`docs/mobile/CLOUD.md`). Exception to
-  "one checkout, branch main": start from `claude/gracious-pasteur-vakjwf` until PR #2 is merged, and push your own branch.
-- **`GO ROUTE`** — read `GO-ROUTE.md` at the repo root and do what it says: new wiring features with the
-  Budakalász job as the basis and a PCB-style autorouter (rip-up-and-reroute, negotiated congestion) as the model.
-  Follows `docs/workflow/MONEY-PATH-AUDIT_2026-10.md`; starts by asking the user (job, features, router scope, licences).
-  Includes the **Topology View** (merged 2026-10-29): the netlist / ratsnest view over the GO WIRE up-tree,
-  pack `Planner/projects/varler-planner/docs/topology/` (TV0–TV12; engine gaps G1–G8 = candidate features).
-- **`GO STRICT`** — **done**: the five programs VRG Kapu links to are on `main` (`check-hub --strict` → Rendben). Retired.
-- **`GO ALL`** — **retired** 2026-10-24: `dev-all` is replaced by `main`. See GO MAIN.
-- **`GO MAIN`** — **done** 2026-10-24 (`GO-MAIN.md`): every line consolidated into `main`, the other
-  branches and worktrees trimmed. Parked WIP, not in `main`: tags `archive/2026-10-24/planner-stack-wip`
-  (Views plan-sheet / rbx specs) and `archive/2026-10-24/planner-sui-wip` (Simple-UI mode).
+- **`GO MAIN`** — `GO-MAIN.md`: the overall entry point. State of every line of work, what can run now, the
+  standing rules, the end-of-session routine that keeps work from scattering again.
+- **`GO PLANNER`** — `GO-PLANNER.md`: the open Planner work except wiring (Simple-UI S6 look, C6 pen feel, G2, the
+  CLA-ADD-001 extras, Views, E6).
+- **`GO ROUTE`** — `GO-ROUTE.md`: wiring features, the PCB-style router, the Topology View. Starts by asking the user.
+- **`GO CLA`** — `GO-CLA.md`: the CLA job thread. v1 and v2 delivered; open design questions only.
+- **`GO HUB`** — `GO-HUB.md`: VRG Kapu, the access page; setup steps, guest mode and shared folders (planned).
+- **`GO CITY`** — `GO-CITY.md`: Kódváros; parked tuning, deferred checks, the Cloudflare ring.
+- **`GO MOBILE`** — `GO-MOBILE.md`: VRG Mobile, one WP at a time from `docs/mobile/`. Made for **cloud sessions**: the
+  APK is built by GitHub Actions (`docs/mobile/CLOUD.md`).
+- **`GO OPENWRT`** — `GO-OPENWRT.md`: OpenWrt on the TP-Link TL-WR1043ND (the user flashes; Claude never touches
+  the router). Phases P0–P5, the first is the sticker's hardware version.
+
+**Old phrases** (typed by habit): R1010, R1018, FRAME, SUI → GO PLANNER · WIRE → GO ROUTE · V2, ADAT → GO CLA · LIVE →
+GO CITY · ALL, STRICT, HK → done. `docs/go-archive/README.md` lists every old file.

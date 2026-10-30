@@ -338,7 +338,7 @@ Kódváros is a working offline three.js r169 city (C1–C10 done) that renders 
 | God's Eye View portable (CesiumJS 1.138, flights, ships, satellites) | `H:\Personal\GodsEyeView\GodsEyeView` | Planet "abroad" layer ideas (MIT; CITY-D5: code with notice, never its data) |
 | wifi-heatmapper | `H:\VRG\Full\wifi-heatmapper` | Wi-Fi strength at the station |
 | `~/.claude/sessions/<pid>.json`, `projects/<cwd>/*.jsonl`, `daemon/roster.json`, `settings.json` (no hooks yet) | `C:\Users\webag\.claude` | Live session list and transcript fallback |
-| H: top level (`Dev-VRG`, `VRG_Visual_Base`, `MC-Server`, job folders BK2/DM1/P33/NV4, `_installers`, `_zipped`, `H_BACKUP_2026-09-16`) | `H:\`, `H:\VRG\Full` | Tárház districts; installers as port depots; backups as fenced depots |
+| H: top level (`Dev-VRG`, `VRG_Visual_Base`, `MC-Server`, job folders BK2/DM1/CLA/CLANV4, `_installers`, `_zipped`, `H_BACKUP_2026-09-16`) | `H:\`, `H:\VRG\Full` | Tárház districts; installers as port depots; backups as fenced depots |
 | BRIDGE vocabulary (BASE/CHANNEL/ROOMBOX/ARM, 10 conduit families, tier T7 "operator or agentic interface") | [BRIDGE-OUTLINE-001](file:///H:/VRG/Full/Planner_VRG_U100/BRIDGE/BRIDGE-OUTLINE-001_General-Outline.md) | One infrastructure language for home and code: Land roads as conduit runs |
 
 Two gaps stand out. No process-listing or file-watch stream exists anywhere in the repo yet. And `docs/city/wp/`, listed in README §1, does not exist.

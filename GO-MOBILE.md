@@ -18,7 +18,8 @@ design system with the rest of the toolset. The base framework (M0) was built th
 
 ## 1. Where and how
 
-- **Branch.** Start from `claude/gracious-pasteur-vakjwf` (PR #2) until it is merged, then from `main`.
+- **Branch.** M0–M2 were merged into `main` on the PC on 2026-10-30. Start from `main` once that is pushed; until
+  then, from `claude/gracious-pasteur-vakjwf`.
   Work on your own session branch, commit after each finished step, and **push your branch** so Actions builds
   the APK. Never push `main`, never force-push, never rewrite someone else's commits.
 - **Install the APK build first (once).** If `.github/workflows/mobile-android.yml` does not exist yet, copy

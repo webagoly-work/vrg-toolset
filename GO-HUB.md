@@ -36,8 +36,9 @@ Waiting for the user (Claude prepares and checks, the user does the clicks):
 
 1. Setup checklist step 3: commit and push what is to be shared.
 2. Steps 4–5: invite the colleague as a collaborator (role Write); two-factor sign-in on both accounts.
-3. Step 6: the OneDrive `VRG-Megosztott` share ("Adott személyek" only) and its real `00_START` path,
-   then `node tools/build-hub.js --onedrive <…\VRG-Megosztott\00_START>`.
+3. Step 6: share `C:\Users\webag\OneDrive\VRG-Megosztott` ("Adott személyek" only). The tree exists since
+   2026-10-30 (`H:\VRG\Shared` is a junction to it) and `00_START` holds the Kapu; after a change,
+   `node tools/build-hub.js --onedrive H:\VRG\Shared\00_START`.
 4. The clean-profile check, with the user typing their own token.
 
 Done: the pre-share audit (WP-HA), anonymising (step 3a), the signed list (step 8, two people),
@@ -65,3 +66,18 @@ add a simple SVG picture with no overlapping labels.
 User working style: phase big work, stop at checkpoints, never commit unasked, Hungarian UI text,
 English code. Never ask for, type or store a password or token — each user enters their own token in
 their own browser.
+
+## 7. Planned, not built (2026-10-30, HK-Q7)
+
+Both are design work: agree the look with the user first, as numbered A/B/C questions.
+
+- **WP-G1 Vendég (guest) mode.** A "Belépés vendégként" button on the sign-in card: no token, a read-only view (the
+  tool list without Megnyitás / Mappa / START, the dashboard read-only once it exists) with a clear "Vendég — csak
+  olvasás" badge. To decide: does a guest need any identity, what exactly is visible, does it work in links-only mode.
+- **WP-S1 Shared folders through the Kapu sign-in.** After sign-in, the person's shared OneDrive folders (the
+  `VRG-Megosztott` tree, by role and layer from the allowed list) as cards with Megnyitás: the owner sees all, a member
+  their layers, a guest none. Folder paths or links live in the signed list, never tokens.
+- **Housekeeping, later: TNT.** `C:\Users\webag\OneDrive\TNT` (9 174 files, 5.2 GB, the shared place today) mixes job
+  folders (`-Jelenleg futó munkák-`, `Befejezett`, `Meghíusult`, `Varler`) with personal ones (`suli`, `számlák`). In a
+  future round: job folders into `VRG-Megosztott\10_Projektek` by job code, personal ones out of the shared tree, then
+  retire TNT as a share. Needs the user's OK folder by folder; on H: it then appears under `H:\VRG\Shared`.

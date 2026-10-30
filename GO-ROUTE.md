@@ -59,7 +59,7 @@ Works from a cloud session or from Claude Code on the user's PC. What each can r
    - Part 3.7: open-source routing code, with licences;
    - Part 4: the dual model, K1, the `up` tree;
    - Parts 5–11: T0–T6 as built.
-3. `GO-WIRE.md` (decisions Q1–Q5) and `Planner/projects/varler-planner/tools/baseline/README.md` (the engine's rules).
+3. `docs/go-archive/GO-WIRE.md` (decisions Q1–Q5, fixtures, T0–T7 table) and `Planner/projects/varler-planner/tools/baseline/README.md` (the engine's rules).
 4. `Planner/projects/varler-planner/docs/PRIMER.md` before any edit to the Planner.
 5. **The Topology View pack**, `Planner/projects/varler-planner/docs/topology/`:
    - `README.md`: what is built already and what TV adds, the WP map;

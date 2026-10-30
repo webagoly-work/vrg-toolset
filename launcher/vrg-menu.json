@@ -75,7 +75,7 @@
     "bkMissing": "{n} fájl hiányzik a backupból:", "bkUnlisted": "{n} fájl a backupban, de nincs a jegyzékben.",
     "bkPending": "Szinkronra vár: {list}", "bkInSync": "Minden munkamappa szinkronban.",
     "bkIntOk": "Épség rendben.", "bkIntBad": "Az épség-ellenőrzés hibát talált: 2 = részletek.",
-    "bkRestoreAsk": "Fájl vagy mappa ({list}), pl. jobs\\P33\\ajanlat.xlsx:",
+    "bkRestoreAsk": "Fájl vagy mappa ({list}), pl. jobs\\CLA\\ajanlat.xlsx:",
     "bkRestoreNote": "Felülírja, de nem töröl semmit; a mostani példány előbb a Backup\\archive\\restore-ba kerül.",
     "bkNotSynced": "Nem szinkronizált mappában van: {path}", "bkNoVersion": "Nincs mentett példány: {path}",
     "bkVerBackup": "a backup most", "bkVerSync": "szinkron előtti példány, {when}", "bkVerRestore": "visszaállítás előtti példány, {when}",
