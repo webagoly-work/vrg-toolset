@@ -1,0 +1,2 @@
+Ide tedd a kézzel letöltött telepítőket és zip fájlokat, majd futtasd újra a SETUP.cmd-t.
+Put manually downloaded installers and zip files here, then run SETUP.cmd again.

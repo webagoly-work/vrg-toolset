@@ -1,0 +1,6 @@
+NINCS NET
+1. Mas eszkozon megy-e? Router ujrainditas 30mp
+2. ipconfig /all - van IP (nem 169.254)?
+3. ping atjaro -> 8.8.8.8 -> google.com
+4. netsh winsock reset + int ip reset (ujrainditas)
+5. DNS: 1.1.1.1

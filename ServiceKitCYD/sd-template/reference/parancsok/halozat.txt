@@ -1,0 +1,8 @@
+HALOZAT
+ipconfig /all
+ipconfig /flushdns
+ping -t 8.8.8.8
+tracert google.com
+netsh winsock reset
+netsh int ip reset
+netsh wlan show profile name="X" key=clear

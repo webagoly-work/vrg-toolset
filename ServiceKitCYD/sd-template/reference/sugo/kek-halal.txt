@@ -1,0 +1,6 @@
+KEK HALAL (BSOD)
+1. BlueScreenView - a pirossal jelolt .sys a gyanusitott
+2. Illesztoprogram frissites (SDIO)
+3. MEMORY_MANAGEMENT -> MemTest86
+4. WHEA -> hardver (tap, ho)
+5. sfc /scannow + DISM RestoreHealth

@@ -1,0 +1,22 @@
+{
+  "name": "ServiceKit deployment manifest",
+  "note": "What the deployment stick should contain. The deployer 'verify' action checks these against the mounted stick. Personal project — no client data here, ever.",
+  "kitVersion": "1.2.0",
+  "files": [
+    { "path": "START.cmd" },
+    { "path": "SETUP.cmd" },
+    { "path": "KITSHELL.cmd" },
+    { "path": "PARANCSOK.html" },
+    { "path": "README.md" },
+    { "path": "core/catalog.json" },
+    { "path": "core/server.ps1" },
+    { "path": "core/setup.ps1" },
+    { "path": "launcher/index.html" },
+    { "path": "launcher/app.js" }
+  ],
+  "optional": [
+    { "path": "tools/rufus", "note": "boot-stick tool" },
+    { "path": "tools/ventoy", "note": "multi-ISO boot" },
+    { "path": "iso", "note": "boot ISOs (Hiren's, MemTest, Windows)" }
+  ]
+}
