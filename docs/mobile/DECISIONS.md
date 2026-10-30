@@ -38,6 +38,11 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
 - **D-6 · Chat-log branch (M6)** (2026-10-30: **A**). One branch `mobile-log`, one file per day
   `log/YYYY-MM-DD.md`. The branch name is a constant and the client writes no other branch.
 
+- **M12 · File board** (2026-10-30, the user's request). Transfers go through a shared two-way board in
+  `H:\VRG\Full\inbox\board\`, shown at `localhost:47291/board` on the PC and in the app, instead of the one-way
+  `POST /drop` first planned. The Planner and Inventory routes stay as targets of a board file. In M12 only the PC's
+  browser and the paired app use it; a phone browser would need its own one-time QR and is left for later.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city

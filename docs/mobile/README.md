@@ -26,7 +26,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M4** | Haladás (`pulse`) | active branches, which tool each branch touches, commits, PRs, CI | GitHub | high |
 | **M8** | Localhost (`ports`) | the PC's local servers: open on the phone (relay proxy) or in a separate desktop window | relay | high (relay) |
 | **M11** | Indítópult (`launch`) | START.cmd's tools from the phone; running ones; their log | relay | high (relay) |
-| **M12** | Átadás (`drop`) | photo / file / clipboard / site picture phone → PC (Planner, Inventory, _inbox) and back | relay | medium |
+| **M12** | Átadás (`drop`) | a two-way file board (`localhost:47291/board` + the app), clipboard, photos routed to the Planner / Inventory | relay | medium |
 | **M5** | Kódváros online (`city`) | the repo's city from GitHub's fresh state (online parts only), built by Actions | GitHub | medium |
 | **M7** | Hálózat (`net`) | BT HID status, phone-as-relay over WiFi, hotspot with usage notification, USB / BT tethering | — | low (Android-bound) |
 | **M10** | Értesítések (`inbox`) | PR, CI, relay events in one list, with phone notifications | GitHub | medium |
