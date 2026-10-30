@@ -141,17 +141,17 @@ function cktEditDialog(c){if(!c)return;
    +`<div class="mrow"><label style="width:92px">Név</label><input id="ckName" value="${a(c.name)}" style="flex:1"></div>`
    +`<div class="mrow"><label><input type="checkbox" id="ckDed" ${c.dedicated?'checked':''}> dedikált — egyetlen végpont, közvetlenül az Elosztóra</label></div>`
    +`<div class="mrow"><label style="width:92px">Kismegszakító</label><input id="ckMcb" value="${a(mcbText(c.mcb))}" placeholder="1C 13A" style="width:110px">`
-   +` <span id="ckMcbOut" style="font-size:11px;color:#777"></span></div>`
-   +`<div class="mrow" style="font-size:11px;color:#777">Írható így is: C13A1P · 1P-N C16A · 3C 20A. A pólusszámból jön, hány DIN modult foglal.</div>`
-   +`<div class="mrow" style="font-size:11px;color:#555">Végpontok (${refs.length}): ${esc(refs.join(' · ')||'—')}</div>`,
-    ()=>{const m=mcbParse($('ckMcb').value);if(m.err){$('ckMcbOut').textContent='⚠ '+m.err;$('ckMcbOut').style.color='#c0392b';return false;}
+   +` <span id="ckMcbOut" style="font-size:11px;color:var(--pc-mute,#777)"></span></div>`
+   +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">Írható így is: C13A1P · 1P-N C16A · 3C 20A. A pólusszámból jön, hány DIN modult foglal.</div>`
+   +`<div class="mrow" style="font-size:11px;color:var(--pc-dim,#555)">Végpontok (${refs.length}): ${esc(refs.join(' · ')||'—')}</div>`,
+    ()=>{const m=mcbParse($('ckMcb').value);if(m.err){$('ckMcbOut').textContent='⚠ '+m.err;$('ckMcbOut').style.color='var(--pc-crit,#c0392b)';return false;}
       pushUndo(['circuits']);
       c.ref=$('ckRef').value.trim()||c.ref;c.name=$('ckName').value.trim();c.col=$('ckCol').value;
       c.mcb=m.empty?null:{curve:m.curve,amps:m.amps,poles:m.poles,n:m.n};
       cktSetDedicated(c,$('ckDed').checked);cktRedraw();},'Mentés');
-  const out=()=>{const m=mcbParse($('ckMcb').value),o=$('ckMcbOut');o.style.color='#777';
+  const out=()=>{const m=mcbParse($('ckMcb').value),o=$('ckMcbOut');o.style.color='var(--pc-mute,#777)';
     o.textContent=m.empty?'nincs megadva':m.err?'⚠ '+m.err:'→ '+mcbText(m)+' · '+mcbModules(m)+' modul';
-    if(m.err)o.style.color='#c0392b';};
+    if(m.err)o.style.color='var(--pc-crit,#c0392b)';};
   $('ckMcb').oninput=out;out();}
 
 // ---- export: the circuit list as data, for the Inventory and the Elosztó tool ----

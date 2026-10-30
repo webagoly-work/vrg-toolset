@@ -5,10 +5,11 @@ onTimeChanged = () => { if (fen.list.length) fenDraw(); tlRender(); lensApply();
 if (window.CITY) {
   load(window.CITY);
   liveInit();   // 22-live: "Mi változott?" and, when served, the live stream
-  setInterval(hlRibbon, 1500);   // 27-health: the Now ribbon follows sessions, jobs, fences and changes
+  if (!KV_WALL) setInterval(hlRibbon, 1500);   // 27-health: the Now ribbon follows sessions, jobs, fences and changes
   landDraw();   // 29-land: the places around the city
   pwDraw();   // 30-power
   worldDraw();   // 32-world: the planet under the Land
+  if (KV_WALL && KV_WALL.view === 'land') landHome(0);   // 00-wallpaper: the whole Land behind the icons
   // test hook: #landtest=disk waits for Tárház's walk (served), closes the stream (headless clock), shows the Land
   if (new URLSearchParams(location.hash.slice(1)).get('landtest') === 'disk') live.ready.then(() => new Promise(res => {
     if (land.disk && land.disk.dirs && land.disk.dirs.length && !land.disk.walking) res(); else live.es.addEventListener('disk', res, { once: true }); }))

@@ -228,7 +228,7 @@ function kpQuestionsOpen() {
 }
 
 function kpRepoRootOpen() {
-  const inp = kpEl('input', { class: 'kp-in', value: kpRepoRoot(), placeholder: 'pl. H:\\Dev-VRG\\VRG-DE\\Planner_VRG_U100' });
+  const inp = kpEl('input', { class: 'kp-in', value: kpRepoRoot(), placeholder: 'pl. H:\\VRG\\Full\\Planner_VRG_U100' });
   inp.addEventListener('keydown', e => e.stopPropagation());
   kpModalOpen('Helyi repó mappa',
     kpEl('p', { class: 'kp-muted' }, 'Hol van a vrg-toolset ezen a gépen? Ebből készül a programok helyi (file:///) útvonala, ha nem fut a Kapu segéd.'),

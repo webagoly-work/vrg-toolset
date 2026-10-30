@@ -52,7 +52,7 @@
     <use href="#soc" x="280" y="194"/><path d="M288,194 H348" stroke="#1d9e75" stroke-width="2.6" marker-end="url(#g)"/>
     <use href="#soc" x="360" y="194"/>
     <g font-size="10"><text x="96" y="218" fill="#b0600f">master</text><text x="186" y="218" fill="#1d9e75">leader</text><text x="350" y="218" fill="#1d9e75">tail</text></g>
-    <text x="400" y="198" font-size="10" fill="#6d6a63">(Q-T03)</text>
+    <text x="400" y="198" font-size="10" fill="#6d6a63">(Q-TV03)</text>
   </g>
 
   <!-- P3 -->
@@ -97,7 +97,7 @@
     <g transform="translate(330,150)">
       <circle cx="0" cy="40" r="7" fill="#fff" stroke="#c0392b" stroke-width="2.2"/>
       <path d="M-40,40 H-8 M5,35 L30,15 M5,45 L30,65" stroke="#c0392b" stroke-width="2" stroke-dasharray="4 3" fill="none"/>
-      <text x="-170" y="80" font-size="10" fill="#c0392b">✗ elágazás dugaljban: alapból tiltva (Q-T11)</text>
+      <text x="-170" y="80" font-size="10" fill="#c0392b">✗ elágazás dugaljban: alapból tiltva (Q-TV11)</text>
     </g>
   </g>
 </svg>

@@ -19,14 +19,13 @@ function gate(gh, l1) {
 }
 
 module.exports = [
-  { name: 'kpTools: every START.cmd entry up to TOOLCOUNT, with its menu key, and every path exists', fn() {
-    const cmd = fs.readFileSync(path.join(REPO, 'Planner', 'START.cmd'), 'utf8');
-    const count = +cmd.match(/^set "TOOLCOUNT=(\d+)"/m)[1];
+  { name: 'kpTools: every START tool of launcher/vrg-menu.json, with its menu key, and every path exists', fn() {
+    const reg = JSON.parse(fs.readFileSync(path.join(REPO, 'launcher', 'vrg-menu.json'), 'utf8')).start.tools;
     const tools = embedded();
-    assert.strictEqual(tools.length, count);
-    assert.deepStrictEqual(tools.map(t => t.key).slice(0, 11), ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'K'].slice(0, count));
+    assert.strictEqual(tools.length, reg.length);
+    assert.deepStrictEqual(tools.map(t => t.key), reg.map(t => t.key));
     for (const t of tools) {
-      assert.ok(cmd.includes('set "T' + t.n + '_NAME=' + t.name + '"'), t.name);
+      assert.strictEqual(t.name, reg[t.n - 1].name, t.name);
       assert.ok(fs.existsSync(path.join(REPO, t.path)), t.path);
       assert.strictEqual(t.dir, path.posix.dirname(t.path));
     }

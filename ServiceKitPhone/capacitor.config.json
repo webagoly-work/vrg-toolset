@@ -1,0 +1,12 @@
+{
+  "appId": "work.webagoly.servicekit",
+  "appName": "ServiceKit Phone",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  },
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}

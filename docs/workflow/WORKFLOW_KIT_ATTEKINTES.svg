@@ -98,7 +98,7 @@
 <rect x="619" y="130" width="262" height="455" rx="12" class="panel"/>
 <rect x="619" y="130" width="262" height="6" rx="3" class="c3"/>
 <text x="633" y="158" class="h c3">3 · Árazás</text>
-<text x="633" y="175" class="s en">Pricing · 01_nv4_build/pipeline</text>
+<text x="633" y="175" class="s en">Pricing · 01_clanv4_build/pipeline</text>
 
 <rect x="629" y="188" width="242" height="66" rx="8" class="card"/><rect x="629" y="188" width="4" height="66" class="c3"/>
 <text x="643" y="208" class="hb"><tspan class="m">takeoff.js</tspan> <tspan class="s" font-weight="400">· L2-nél a tervből</tspan></text>
@@ -160,10 +160,10 @@
 <rect x="1195" y="130" width="262" height="455" rx="12" class="panel"/>
 <rect x="1195" y="130" width="262" height="6" rx="3" class="c5"/>
 <text x="1209" y="158" class="h c5">5 · Ellenőrzés</text>
-<text x="1209" y="175" class="s en">Golden check · 02_golden_nv4</text>
+<text x="1209" y="175" class="s en">Golden check · 02_golden_clanv4</text>
 
 <rect x="1205" y="188" width="242" height="70" rx="8" class="card"/><rect x="1205" y="188" width="4" height="70" class="c5"/>
-<text x="1219" y="208" class="hb">Arany minta: NV4</text>
+<text x="1219" y="208" class="hb">Arany minta: CLANV4</text>
 <text x="1219" y="226" class="b">12 PDF + pontos HTML-forrás</text>
 <text x="1219" y="243" class="s">+ referencia-képek oldalanként</text>
 
@@ -237,14 +237,14 @@
 <rect x="57" y="836" width="337" height="82" rx="8" class="f6"/>
 <text x="71" y="856" class="hb">00_precursors</text>
 <text x="71" y="874" class="b">árlisták, komplexitás-faktorkönyvtár,</text>
-<text x="71" y="891" class="b">piackutatás 2026-09-30, P33 visszamérés</text>
+<text x="71" y="891" class="b">piackutatás 2026-09-30, CLA visszamérés</text>
 <text x="71" y="908" class="s">ügyfél-PDF-ek: kiadás előtt anonimizálni</text>
 
 <rect x="404" y="836" width="337" height="82" rx="8" class="f2"/>
 <text x="418" y="856" class="hb">Döntések → szabályok</text>
 <text x="418" y="874" class="b">DECISIONS L-1…L-18 → <tspan class="m">funnel.json</tspan></text>
 <text x="418" y="891" class="b">v1.0 → v1.1 (műhely) → v1.2 (2. munka)</text>
-<text x="418" y="908" class="s">visszajátszás: NV4 28/28 · v12 A 12/12 · B 6/6</text>
+<text x="418" y="908" class="s">visszajátszás: CLANV4 28/28 · v12 A 12/12 · B 6/6</text>
 
 <rect x="751" y="836" width="337" height="82" rx="8" class="f3"/>
 <text x="765" y="856" class="hb">Kalibráció munkánként</text>
@@ -268,6 +268,6 @@
   <rect x="755"  y="968" width="168" height="44" rx="8" class="f3"/><text x="765"  y="986" class="ink" font-weight="700">5 ● Biztosítékok</text><text x="765"  y="1003" class="mut">Esetlap, forrás-létra</text>
   <rect x="933"  y="968" width="168" height="44" rx="8" class="card"/><text x="943"  y="986" class="ink" font-weight="700">6 ○ Hordozható kit</text><text x="943"  y="1003" class="mut">START + zip, hidegindítás</text>
   <rect x="1111" y="968" width="168" height="44" rx="8" class="card"/><text x="1121" y="986" class="ink" font-weight="700">7 ○ Alaprajz-modul</text><text x="1121" y="1003" class="mut">később</text>
-  <rect x="1289" y="968" width="168" height="44" rx="8" class="f4"/><text x="1299" y="986" class="ink" font-weight="700">+ ✓ Piaci mérés</text><text x="1299" y="1003" class="mut">P33 és DM1 tesztelve</text>
+  <rect x="1289" y="968" width="168" height="44" rx="8" class="f4"/><text x="1299" y="986" class="ink" font-weight="700">+ ✓ Piaci mérés</text><text x="1299" y="1003" class="mut">CLA és DM1 tesztelve</text>
 </g>
 </svg>

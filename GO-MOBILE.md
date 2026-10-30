@@ -6,26 +6,47 @@ its first feature, merging the phone controller pieces (Légegér + the Planner'
 and growing over time into a full companion. It should be complex but streamlined, sharing functions and the
 design system with the rest of the toolset. The base framework (M0) was built that day on the desktop.*
 
-## 0. Read first, in this order
+## 0. Where this runs now: the local H: session (since 2026-10-30)
 
-1. `docs/mobile/CLOUD.md`: **what a cloud session can and cannot do** (no Android build here: Google's
-   Maven is blocked, so the APK comes from GitHub Actions) and how that shapes every WP.
-2. `docs/mobile/README.md`: the roadmap (M0–M12), the build order, the architecture rules.
-3. `docs/mobile/DECISIONS.md`: what is decided (D-1…D-5) and what is open (D-6…D-11).
-4. `Mobile/README.md`: the code layout. Then `Mobile/android/kit-core/.../Feature.kt` (the catalogue) and
-   `kit/.../VrgFeature.kt` (the contract).
-5. `CLAUDE.md`: the repo rules (no secrets, no `Planner/apps|home|data`, no `*.pdf`, `.cmd` files CRLF, START.cmd is the front door).
+M0–M6 were built in a cloud session (branch `ccr-3aebf098-ytpsqa`). On 2026-10-30 the user moved the work to the
+**local session on H:**: the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`, the same
+rules as every other line of work (CLAUDE.md, GO MAIN). Confirm with `git rev-parse --show-toplevel`.
 
-## 1. Where and how
+**First local session, once:** bring the last cloud commits into `main`. The cloud branch already has `main` merged
+into it, so this is a fast-forward:
 
-- **Branch.** Start from `claude/gracious-pasteur-vakjwf` (PR #2) until it is merged, then from `main`.
-  Work on your own session branch, commit after each finished step, and **push your branch** so Actions builds
-  the APK. Never push `main`, never force-push, never rewrite someone else's commits.
-- **Install the APK build first (once).** If `.github/workflows/mobile-android.yml` does not exist yet, copy
-  `Mobile/ci/mobile-android.yml` there, commit, and push before anything else (`docs/mobile/CLOUD.md` point 3
-  says what to do if the push is refused).
-- **Check first:** `cd Mobile/android && VRG_JVM_ONLY=1 ./gradlew :kit-core:test :airdeck-core:test` must
-  be green before you change anything.
+```
+git fetch origin
+git status                                   # clean, on main
+git merge --ff-only origin/ccr-3aebf098-ytpsqa
+```
+
+If `--ff-only` refuses (main moved on locally), use `git merge origin/ccr-3aebf098-ytpsqa` and resolve. Pushing
+`main` is the user's call, as always. After that the cloud branch is finished; do not commit to it again.
+
+What changes locally compared with the cloud:
+- **The Android build works here.** `Mobile\mobile.cmd` → 2) builds the APK (JDK 17 + Android SDK, it writes
+  `local.properties`), 3) installs it with adb on the USB phone, 4) runs the core tests, 5) the relay tests
+  (`relay-pair.js`, then `relay-e2e.js` with Playwright). A compile error now shows up before the push, not in Actions.
+- **The phone can be checked from the session** when it is on USB (adb), so a WP's phone list can be worked through
+  together with the user.
+- Actions (`.github/workflows/mobile-android.yml`) still builds an APK on every push touching `Mobile/`.
+- `docs/mobile/CLOUD.md` stays as the record of what a cloud session can do, in case one is used again.
+
+## 1. Read first, in this order
+
+1. `docs/mobile/README.md`: the roadmap (M0–M12) with each WP's state, the build order, the architecture rules.
+2. `docs/mobile/DECISIONS.md`: what is decided (D-1…D-6, M1–M3 notes) and what is open (D-7…D-11).
+3. `Mobile/README.md`: the code layout. Then `Mobile/android/kit-core/.../Feature.kt` (the catalogue) and
+   `kit/.../VrgFeature.kt` (the contract). The shared pieces: `kit/relay/Relay` (the one relay link + trust),
+   `kit/github/GitHub` (the one GitHub client), `kit/ShellSettings`, `kit/VrgLog`.
+4. `CLAUDE.md`: the repo rules (no secrets, no `Planner/apps|home|data`, no `*.pdf`, `.cmd` files CRLF, START.cmd is the front door).
+
+## 2. Where and how
+
+- **Branch:** `main` in the main checkout, like everything else. Commit after each finished step.
+- **Check first:** `Mobile\mobile.cmd test` (or `cd Mobile/android && gradlew :kit-core:test :airdeck-core:test`)
+  and `node Mobile/tests/relay-pair.js` must be green before you change anything.
 - **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M9** (M1 + M2 live; M3 and M6 built 2026-10-30, BETA until the user's phone check).
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
@@ -36,7 +57,7 @@ design system with the rest of the toolset. The base framework (M0) was built th
   Stop and report at the end of every WP. Continue only on the user's "tovább".
 - **Phone UI text is Hungarian.** Code, comments and docs are English, as in the rest of the repo.
 
-## 2. What the user asked for, mapped to WPs
+## 3. What the user asked for, mapped to WPs
 
 | The user's words (2026-10-29) | WP |
 |---|---|
@@ -52,8 +73,9 @@ design system with the rest of the toolset. The base framework (M0) was built th
 | rich, interweaving functions and a shared design system | architecture rules + M1 (settings) |
 | "a few logical next steps you extrapolate" | M10 inbox, M11 launch pad, M12 transfer; "Later" list in README |
 
-## 3. Things only the user can do (ask when the WP needs them, not before)
+## 4. Things only the user can do (ask when the WP needs them, not before)
 
-- **M3**: create the GitHub OAuth App with Device Flow enabled, and paste its Client ID (public).
+- **M3**: done 2026-10-30 (OAuth App "VRG Mobile", Client ID in `kit/src/main/res/values/github.xml`).
 - **M9**: create the release keystore outside the repo, and add the four repo secrets.
-- **Every WP**: install the APK from the Actions run (or from Releases after M9) and work through the phone checklist.
+- **Every WP**: install the APK (`mobile.cmd` → 3, or from the Actions run / Releases after M9) and work through the
+  phone checklist. Open right now: M3 (sign-in) and M6 (a note in `mobile-log`).

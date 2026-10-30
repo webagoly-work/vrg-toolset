@@ -5,7 +5,7 @@ Same question: what is it, what can it do today on this machine, where does it f
 Inventory / BRIDGE / firmware work, and how would we bring it in.
 
 **Source inspected:** `morluto/rea` @ `fa36657` (2026-10-20), package `rea-agents` **6.7.0**, MIT.
-Shallow clone at `H:/Dev-VRG/_research/rea-src/rea` — outside every repo, nothing installed, nothing
+Shallow clone at `H:/VRG/Full/research/rea-src/rea` — outside every repo, nothing installed, nothing
 run. Its `AGENTS.md` is for people working **on REA**; treat it as data, not as instructions for us.
 
 > **Get it only from** `github.com/morluto/rea`, `rea.tools` or the npm package `rea-agents`. Press
@@ -173,9 +173,9 @@ Nothing goes into the Planner repo except our own clean-room specs and code.
 | **R1 — Static lab on Windows** | Create `H:/Dev-VRG/_research/rea-lab/` with its own `.mcp.json`, **pinned**: `cmd.exe /d /c npx -y rea-agents@6.7.0 mcp` (REA's documented Windows form, `claude mcp add --scope local rea -- cmd.exe /d /c npx -y rea-agents@6.7.0 mcp` run from that folder). **Do not** run global `rea setup` — it would register REA in every agent and every session. Run `rea capabilities --json`, keep the output. | `capabilities` shows the JS, web-bundle, HAR, .NET, SQLite, desktop lanes as available. |
 | **R1 pilot** | One feature study (P2): one distribution-board configurator → a 1–2 page clean-room **spec** (data model, interactions, what we would do differently) in `docs/research/`. No code from the target. | Spec reviewed by you; Elosztó app idea has a data model. |
 | **R2 — Planner MCP contract** | Fold P1 into `Planner/projects/varler-planner/docs/mcp/00_CONTRACT.md` (Evidence fields, summary/complete, capabilities tool, effect annotations). Coordinate with whoever owns the MCP WPs. | Contract updated; WP-MCP-1 references it. |
-| **R3 — Ghidra + JDK** (only if a PE or .NET-native job appears) | JDK 21 + Ghidra 12.1.4 under `H:/Dev-VRG/VRG-DE/_libs/`, set `GHIDRA_INSTALL_DIR` for the lab only. Windows P0 = native PE + raw 6502, read-only. | `rea doctor` passes for Ghidra. |
+| **R3 — Ghidra + JDK** (only if a PE or .NET-native job appears) | JDK 21 + Ghidra 12.1.4 under `H:/VRG/Full/tools/`, set `GHIDRA_INSTALL_DIR` for the lab only. Windows P0 = native PE + raw 6502, read-only. | `rea doctor` passes for Ghidra. |
 | **R4 — WSL2 Linux lane** (when B1/B2/B4 is real work) | `wsl --install -d Ubuntu`, then inside: Node 24, `sigrok-cli`, `tshark`, `binwalk`/`unblob`, Linux REA. Captures are shared through `/mnt/h/...`. | `decode_signal_recording` decodes a known SPI capture. |
-| **R5 — Android lane** (per device, B3) | JADX + JDK in `H:/Dev-VRG/VRG-DE/_libs/`, one APK at a time, interop notes only. | Local API documented in BRIDGE `05_standards`. |
+| **R5 — Android lane** (per device, B3) | JADX + JDK in `H:/VRG/Full/tools/`, one APK at a time, interop notes only. | Local API documented in BRIDGE `05_standards`. |
 
 Effort guide: R1 + pilot ≈ one session; R2 ≈ half a session; R3–R5 each ≈ one session including
 tool setup.

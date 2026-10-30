@@ -359,7 +359,7 @@ functions in tier SF-1; it needs the hub for history, identity and cross-room sc
 
 Licences: MIT/Apache/BSD only for anything that ships on client devices. **No AGPL**
 (ElegantOTA, ESP-DASH, WebSerial), per the S3 shortlist rule. The shortlist is at
-`H:/Dev-VRG/VRG-DE/_inbox/s3_gits/_SHORTLIST.md`.
+`H:/VRG/Full/inbox/s3_gits/_SHORTLIST.md`.
 
 ---
 
@@ -466,7 +466,7 @@ user prefers the tuner), then write.
 4. ⏸ **Stop: fine-tune with the user.**
 
 **Phase 2 (after fine-tuning):** the BRIDGE document version the user picked in Q-SF-02 (main
-checkout `H:\Dev-VRG\VRG-DE\Planner_VRG_U100\BRIDGE\…`, branch `main`), plus amendments to STD-003
+checkout `H:\VRG\Full\Planner_VRG_U100\BRIDGE\…`, branch `main`), plus amendments to STD-003
 §2.4 and the STD-001 room table, and WORKSHOP-001 §1 (silver).
 
 **Phase 3 (only after round 2026-10-10 is built):** a Planner pack **`docs/round-cla-add-001/`**

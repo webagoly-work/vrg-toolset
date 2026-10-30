@@ -1,7 +1,7 @@
 # Prompts — Simplified UI (SUI)
 
 Paste into a **fresh** Claude Code session whose working directory is
-`H:\Dev-VRG\VRG-DE\wt-planner-stack\Planner\projects\varler-planner`. The TASK sandwich is built in.
+`H:\VRG\Backup\archive\parked\2026-10-24\wt-planner-stack\Planner\projects\varler-planner`. The TASK sandwich is built in.
 **Another session is working in the same worktree on the UI tidy (T1–T4).** The contract §0–§2 explains how the two
 stay apart.
 

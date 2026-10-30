@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Kapu — admin</title>
+<style>
+/*@melyviz*/
+</style>
+<style>
+  /* hub-admin page (tools/hub-admin/server.js serves it and inlines shared/melyviz.css above) */
+  body{margin:0;font:14px/1.45 var(--mv-sans)}
+  .top{display:flex;align-items:center;gap:14px;padding:10px 18px;background:var(--mv-panel-solid);border-bottom:1px solid var(--mv-line-strong)}
+  .top .mv-title{font-size:18px;color:var(--mv-accent)}
+  .top .sp{flex:1}
+  main{max-width:920px;margin:0 auto;padding:20px 16px 60px;display:grid;gap:16px}
+  section{padding:16px 18px}
+  section h2{margin:0 0 10px;font-size:17px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+  .grid .full{grid-column:1/-1}
+  label{display:flex;flex-direction:column;gap:4px}
+  input{padding:7px 9px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .layers{display:flex;gap:12px}
+  .layers label{flex-direction:row;align-items:center;gap:5px;font-family:var(--mv-mono);font-size:12px}
+  .hint{color:var(--mv-dim);font-size:12px}
+  .gh{font-family:var(--mv-mono);font-size:12px}
+  .gh.ok{color:var(--mv-ok)} .gh.bad{color:var(--mv-crit)}
+  table{width:100%}
+  td,th{padding:7px 8px;border-bottom:1px solid var(--mv-line);text-align:left;vertical-align:top}
+  td.mono{font-family:var(--mv-mono);font-size:12.5px}
+  td .acts{display:flex;gap:6px;flex-wrap:wrap}
+  .mv-btn.primary{border-color:var(--mv-accent);color:var(--mv-accent);background:var(--mv-accent-soft)}
+  .mv-btn.danger:hover{border-color:var(--mv-crit);color:var(--mv-crit)}
+  .mv-btn:disabled{opacity:.45;cursor:default}
+  .log{list-style:none;margin:0;padding:0;font-family:var(--mv-mono);font-size:12px}
+  .log li{padding:5px 0;border-bottom:1px solid var(--mv-line)}
+  .log b.ok{color:var(--mv-ok)} .log b.bad{color:var(--mv-crit)}
+  .log pre{margin:4px 0 0;white-space:pre-wrap;color:var(--mv-dim)}
+  textarea{width:100%;min-height:210px;font:12.5px/1.5 var(--mv-mono);padding:10px;resize:vertical}
+  .busy{color:var(--mv-warm)}
+  @media (max-width:640px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top">
+  <span class="mv-title">VRG Kapu · admin</span>
+  <span class="sp"></span>
+  <span id="sig" class="mv-badge">…</span>
+  <span id="rev" class="mv-badge">rev –</span>
+</header>
+<main>
+  <section class="mv-glass mv-cut">
+    <h2>Új ember</h2>
+    <div class="grid">
+      <label><span class="mv-label">Név</span><input id="fName" autocomplete="off"></label>
+      <label><span class="mv-label">GitHub felhasználónév</span><input id="fGh" autocomplete="off" spellcheck="false"></label>
+      <label class="full"><span class="mv-label">E-mail(ek), vesszővel</span><input id="fMail" autocomplete="off" spellcheck="false"></label>
+      <div class="full"><span class="mv-label">Rétegek</span><div class="layers" id="fLayers"></div></div>
+    </div>
+    <div class="row">
+      <button class="mv-btn primary" id="bAdd">Felvétel → aláírás → Kapu építése</button>
+      <span id="ghState" class="gh"></span>
+    </div>
+    <p class="hint">Szerep: tag (member). A lépések: lista frissítése, rev +1, aláírás a kulcsoddal, ellenőrzés, Kapu újraépítése
+      (+ OneDrive másolat, ha be van állítva), check-hub. Ha bármelyik elbukik, az előző aláírt lista visszakerül.</p>
+  </section>
+
+  <section class="mv-glass mv-cut">
+    <h2>A lista</h2>
+    <table><thead><tr><th>Név</th><th>GitHub</th><th>E-mail</th><th>Rétegek</th><th></th></tr></thead><tbody id="people"></tbody></table>
+  </section>
+
+  <section class="mv-glass mv-cut" id="msgBox" hidden>
+    <h2>Üzenet neki — <span id="msgWho"></span></h2>
+    <textarea id="msg" spellcheck="false"></textarea>
+    <div class="row">
+      <button class="mv-btn" id="bCopy">Másolás</button>
+      <button class="mv-btn primary" id="bInvite">GitHub meghívás…</button>
+      <span class="hint">A meghívás a tároló Collaborators oldalát nyitja meg; ott te kattintasz az Invite-ra.</span>
+    </div>
+  </section>
+
+  <section class="mv-glass mv-cut">
+    <h2>Beállítás</h2>
+    <label><span class="mv-label">OneDrive VRG-Megosztott\00_START mappa (üresen: nincs másolat)</span>
+      <input id="fOd" spellcheck="false" placeholder="pl. C:\Users\…\OneDrive\VRG-Megosztott\00_START"></label>
+    <div class="row">
+      <button class="mv-btn" id="bOd">Mentés</button>
+      <button class="mv-btn" id="bRebuild">Ellenőrzés + Kapu építése + check</button>
+      <span class="hint" id="cfgPath"></span>
+    </div>
+  </section>
+
+  <section class="mv-solid mv-cut">
+    <h2>Napló</h2>
+    <ul class="log" id="log"><li class="hint">Még semmi.</li></ul>
+  </section>
+</main>
+<script>
+'use strict';
+const TOKEN = '@TOKEN@';
+const $ = id => document.getElementById(id);
+let S = null, busy = false;
+
+async function api(url, data) {
+  const r = await fetch(url, data === undefined ? {} : {
+    method: 'POST', headers: { 'content-type': 'application/json', 'x-hub-admin': TOKEN }, body: JSON.stringify(data)
+  });
+  return r.json();
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+function showLog(title, res) {
+  const steps = (res.steps || []).map(s => `<li><b class="${s.ok ? 'ok' : 'bad'}">${s.ok ? '✓' : '✗'} ${esc(s.label)}</b>` +
+    (s.out && !s.ok ? `<pre>${esc(s.out)}</pre>` : '') + '</li>').join('');
+  $('log').innerHTML = `<li><b class="${res.ok ? 'ok' : 'bad'}">${esc(title)} — ${res.ok ? 'kész' : 'nem sikerült'}</b>` +
+    `${res.error ? `<pre>${esc(res.error)}</pre>` : ''}</li>` + steps;
+}
+
+function setBusy(b, what) {
+  busy = b;
+  document.querySelectorAll('button').forEach(x => x.disabled = b);
+  if (b) $('log').innerHTML = `<li class="busy">${esc(what)}… (aláírás, építés, ellenőrzés)</li>`;
+}
+
+async function load() {
+  S = await api('/api/state');
+  $('sig').textContent = S.sigOk ? 'aláírás rendben' : 'aláírás HIBÁS';
+  $('sig').className = 'mv-badge ' + (S.sigOk ? 'ok' : 'crit');
+  $('rev').textContent = 'rev ' + S.body.rev + ' · ' + S.body.updated;
+  $('fOd').value = S.config.onedrive || '';
+  $('cfgPath').textContent = 'mentve: ' + S.configPath;
+  if (!$('fLayers').children.length)
+    $('fLayers').innerHTML = S.layers.map(l => `<label><input type="checkbox" value="${l}" checked>${l}</label>`).join('');
+  $('people').innerHTML = S.body.people.map(p => `<tr>
+    <td>${esc(p.name)}${p.role === 'owner' ? ' <span class="mv-badge">tulajdonos</span>' : ''}</td>
+    <td class="mono">${esc(p.github)}</td>
+    <td class="mono">${p.emails.map(esc).join('<br>')}</td>
+    <td class="mono">${S.layers.map(l => `<label style="display:inline-flex;gap:3px;margin-right:6px"><input type="checkbox" data-gh="${esc(p.github)}" value="${l}" ${p.layers.includes(l) ? 'checked' : ''} ${p.role === 'owner' ? 'disabled' : ''}>${l}</label>`).join('')}</td>
+    <td><div class="acts">${p.role === 'owner' ? '' :
+      `<button class="mv-btn" data-msg="${esc(p.github)}">Üzenet</button><button class="mv-btn danger" data-rm="${esc(p.github)}">Levétel</button>`}</div></td>
+  </tr>`).join('');
+}
+
+function showMessage(who, text) {
+  $('msgWho').textContent = who; $('msg').value = text; $('msgBox').hidden = false;
+  $('msgBox').dataset.gh = who; $('msgBox').scrollIntoView({ behavior: 'smooth' });
+}
+
+let lookT = 0;
+$('fGh').addEventListener('input', () => {
+  clearTimeout(lookT); $('ghState').textContent = ''; $('ghState').className = 'gh';
+  const v = $('fGh').value.trim(); if (!v) return;
+  lookT = setTimeout(async () => {
+    const r = await api('/api/lookup', { github: v });
+    if (r.exists) { $('ghState').textContent = '✓ ' + r.login + (r.name ? ' — ' + r.name : ''); $('ghState').className = 'gh ok';
+      if (!$('fName').value && r.name) $('fName').value = r.name; }
+    else if (r.exists === false) { $('ghState').textContent = '✗ nincs ilyen GitHub fiók'; $('ghState').className = 'gh bad'; }
+    else { $('ghState').textContent = '? ' + (r.note || 'nem ellenőrizhető'); }
+  }, 450);
+});
+
+$('bAdd').onclick = async () => {
+  const data = { name: $('fName').value, github: $('fGh').value,
+    emails: $('fMail').value.split(/[,;\s]+/).filter(Boolean),
+    layers: [...$('fLayers').querySelectorAll('input:checked')].map(i => i.value) };
+  setBusy(true, 'Felvétel: ' + data.github);
+  const r = await api('/api/add', data);
+  setBusy(false); showLog('Felvétel: ' + data.github, r); await load();
+  if (r.ok) { showMessage(data.github, r.message); $('fName').value = $('fGh').value = $('fMail').value = ''; $('ghState').textContent = ''; }
+};
+
+$('people').addEventListener('click', async e => {
+  const rm = e.target.dataset.rm, msg = e.target.dataset.msg;
+  if (msg) { const r = await api('/api/message', { github: msg }); if (r.message) showMessage(msg, r.message); }
+  if (rm && confirm(rm + ' levétele a listáról? A Kapu újraépül, és nála nem nyit többé.\n(A GitHub tároló-hozzáférést külön kell elvenni.)')) {
+    setBusy(true, 'Levétel: ' + rm);
+    const r = await api('/api/remove', { github: rm }); setBusy(false); showLog('Levétel: ' + rm, r); await load();
+  }
+});
+$('people').addEventListener('change', async e => {
+  const gh = e.target.dataset.gh; if (!gh) return;
+  const layers = [...$('people').querySelectorAll(`input[data-gh="${CSS.escape(gh)}"]:checked`)].map(i => i.value);
+  setBusy(true, 'Rétegek: ' + gh);
+  const r = await api('/api/layers', { github: gh, layers }); setBusy(false); showLog('Rétegek: ' + gh, r); await load();
+});
+
+$('bCopy').onclick = async () => { await navigator.clipboard.writeText($('msg').value); $('bCopy').textContent = 'Másolva ✓';
+  setTimeout(() => $('bCopy').textContent = 'Másolás', 1500); };
+$('bInvite').onclick = async () => {
+  const gh = $('msgBox').dataset.gh;
+  if (!confirm('Megnyitom a ' + S.repo + ' Collaborators oldalát. Ott: „Add people” → ' + gh + ' → Invite.\nA felhasználónév a vágólapra kerül.')) return;
+  try { await navigator.clipboard.writeText(gh); } catch {}
+  window.open('https://github.com/' + S.repo + '/settings/access', '_blank', 'noopener');
+};
+$('bOd').onclick = async () => {
+  const r = await api('/api/config', { onedrive: $('fOd').value });
+  showLog('Beállítás mentése', r.ok ? { ok: true } : { ok: false, error: r.error }); await load();
+};
+$('bRebuild').onclick = async () => {
+  setBusy(true, 'Kapu építése'); const r = await api('/api/rebuild', {}); setBusy(false); showLog('Kapu építése + check', r); await load();
+};
+load();
+</script>
+</body>
+</html>

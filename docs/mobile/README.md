@@ -6,7 +6,7 @@ its design with the rest of the toolset. **The phone handles three things:**
 - it **links** to the PC, the network and GitHub;
 - it **follows the work online**, from GitHub, wherever the phone is (progress, Kódváros, notes, notifications).
 
-The base framework is built (M0). This pack is what the cloud sessions build from.
+The base framework is built (M0). This pack is what the sessions build from (cloud until M6, the local H: session since 2026-10-30).
 
 - [CLOUD.md](CLOUD.md): what a cloud session can and cannot do, and how the WPs are shaped around it.
 - [DECISIONS.md](DECISIONS.md): decisions taken and open (answer the open ones in the session, with A/B/C).

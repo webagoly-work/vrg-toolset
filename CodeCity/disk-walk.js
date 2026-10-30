@@ -2,7 +2,7 @@
 // disk-walk.js — a helper process of CodeCity/companion.js (P8, KV-17): sums file sizes per folder of a drive,
 // two levels deep, for the Tárház town on the Land. Prints one JSON line and exits. Sizes and folder names only —
 // no file names, no contents — and the companion keeps the result in memory only (CITY-D27 A; the user chose
-// "memory only, rescan" on 2026-10-26). Links and junctions are not followed (H:\Dev-VRG\VRG-DE is a junction to
+// "memory only, rescan" on 2026-10-26). Links and junctions are not followed (H:\VRG\Full is a junction to
 // the repo's parent and would be counted twice). It stops after <seconds> and says so ("partial"); every top-level
 // folder gets an equal share of the time that is left, so one huge folder cannot starve the rest.
 //

@@ -2,11 +2,10 @@
 setlocal EnableDelayedExpansion
 
 :: ==========================================================================
-::  Mobile\mobile.cmd - VRG Mobile, whose first feature is VRG Legeger (the phone as a gyro air mouse and a
-::  Planner / Kodvaros controller). One place for its actions, so the two
-::  launchers stay thin and cannot drift apart:
-::    Planner\START.cmd  A)  -> this file without arguments (its own menu)
-::    VRG-DE.cmd         D6) -> this file with one action word
+::  Mobile\mobile.cmd - VRG Mobile, whose first feature is VRG Legeger (the phone as a gyro air mouse
+::  and a Planner / Kodvaros controller). One place for its actions, so the launcher stays thin:
+::    launcher\vrg-menu.json L) -> this file with one action word
+::    no argument              -> its own menu
 ::
 ::  Actions:  relay  build  install  test  e2e  studio  readme  folder
 ::  Without an argument it shows the menu below.
@@ -26,8 +25,8 @@ set "AD=%~dp0"
 if "%AD:~-1%"=="\" set "AD=%AD:~0,-1%"
 for %%I in ("%AD%\..") do set "REPO=%%~fI"
 set "ANDROID_DIR=%AD%\android"
-set "NODE_EXE=%REPO%\Planner\apps\node\node.exe"
-set "VSCODE_EXE=%REPO%\Planner\apps\vscode\Code.exe"
+set "NODE_EXE=%REPO%\..\tools\node\node.exe"
+set "VSCODE_EXE=%REPO%\..\tools\vscode\Code.exe"
 set "PLANNER_DIR=%REPO%\Planner\projects\varler-planner"
 set "RELAY_JS=%PLANNER_DIR%\tools\phone-relay-server.js"
 set "APK=%ANDROID_DIR%\app\build\outputs\apk\debug\app-debug.apk"
@@ -209,7 +208,7 @@ if defined JAVA_HOME if exist "%JAVA_HOME%\bin\java.exe" exit /b 0
 set "JAVA_HOME="
 if exist "%ProgramFiles%\Android\Android Studio\jbr\bin\java.exe" set "JAVA_HOME=%ProgramFiles%\Android\Android Studio\jbr"
 if not defined JAVA_HOME if exist "%LOCALAPPDATA%\Programs\Android Studio\jbr\bin\java.exe" set "JAVA_HOME=%LOCALAPPDATA%\Programs\Android Studio\jbr"
-if not defined JAVA_HOME if exist "%REPO%\Planner\apps\jdk\bin\java.exe" set "JAVA_HOME=%REPO%\Planner\apps\jdk"
+if not defined JAVA_HOME if exist "%REPO%\..\tools\jdk\bin\java.exe" set "JAVA_HOME=%REPO%\..\tools\jdk"
 :: a portable Temurin unzipped next to the SDK, e.g. %LOCALAPPDATA%\Android\jdk-17.0.20.1+1
 if not defined JAVA_HOME for /d %%D in ("%LOCALAPPDATA%\Android\jdk-17*") do if exist "%%D\bin\java.exe" set "JAVA_HOME=%%D"
 if defined JAVA_HOME exit /b 0

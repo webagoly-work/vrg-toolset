@@ -1,0 +1,13 @@
+/* Mélyvíz chrome (rollout P4, docs/city/melyviz-rollout.md) — only while the melyviz theme is on (html.mv):
+   square, hairlines, cut corners on the cards, condensed titles, the primary button an ice outline (M1, M5, M6). */
+html.mv :is(.kp-card,.kp-btn,.kp-in,.kp-tool,.kp-key,.kp-toast){border-radius:0}
+html.mv .kp-brand{font-family:var(--mv-voice);font-stretch:75%;font-weight:700;font-size:18px;letter-spacing:.08em;text-transform:uppercase}
+html.mv .kp-card h2{font-family:var(--mv-voice);font-stretch:75%;font-weight:600;letter-spacing:.03em}
+html.mv :is(.kp-top,.kp-foot,.kp-banner){border-color:var(--mv-line-strong)}
+html.mv .kp-foot{font-family:var(--mv-mono)}
+html.mv .kp-key{font-family:var(--mv-mono)}
+html.mv .kp-btn:hover{border-color:var(--accent)}
+html.mv .kp-btn.kp-primary{background:var(--mv-accent-soft);color:var(--accent);border-color:var(--accent)}
+html.mv .kp-btn.kp-primary:hover{box-shadow:0 0 var(--mv-glow) var(--mv-accent-glow)}
+html.mv .kp-in:focus{border-color:var(--accent);outline:none;box-shadow:0 0 var(--mv-glow) var(--mv-accent-glow)}
+html.mv .kp-card{clip-path:polygon(var(--mv-cut) 0,100% 0,100% calc(100% - var(--mv-cut)),calc(100% - var(--mv-cut)) 100%,0 100%,0 var(--mv-cut))}

@@ -19,9 +19,9 @@ const hex = c => '#' + c.getHexString();
 
 // ---- the lenses. color(f, i, ctx) -> THREE.Color; legend() -> html
 const LENSES = [
-  { key: '1', id: 'alap', name: 'Alap', group: '', sky: '', horizon: 0x1b2442, plate: [0.64, 0.25, 0.07],
+  { key: '1', id: 'alap', name: 'Alap', group: '', sky: '', horizon: 0x11202b, plate: [0.57, 0.3, 0.06],
     win: 0xffc76b, gain: 1.1, glow: 0, time: false,
-    color: () => new THREE.Color(0x5d6274),
+    color: () => new THREE.Color(0x56606b),
     legend: () => `<b>Alap</b><div class="dim">ablakok: friss munka világít</div>` },
   { key: '2', id: 'ho', name: 'Hő', group: 'Idő', sky: 'lens-heat', horizon: 0x14061f, plate: [0.75, 0.5, 0.05],
     win: 0xfff1c8, gain: 0.25, glow: 0.55, time: true,
@@ -35,11 +35,11 @@ const LENSES = [
     win: 0xb6ffc8, gain: 0.7, glow: 0.35, time: true,
     color: (f, i) => { const s = agentShareOf(i); return s ? _c1.setHex(0x173b22).lerp(_c2.setHex(0x7dff9a), 0.25 + 0.75 * s).clone() : new THREE.Color(0x1a221c); },
     legend: () => `<b>Ügynök-arány</b><div class="ramp" style="background:linear-gradient(90deg,#1a221c,#2a6a3c,#7dff9a)"></div><div class="ends"><span>nincs adat</span><span>100 %</span></div><div class="dim">Co-Authored-By alapján</div>` },
-  { key: '5', id: 'tulaj', name: 'Tulaj', group: 'Emberek', sky: '', horizon: 0x1b2442, plate: [0.64, 0.25, 0.07],
+  { key: '5', id: 'tulaj', name: 'Tulaj', group: 'Emberek', sky: '', horizon: 0x11202b, plate: [0.57, 0.3, 0.06],
     win: 0xffc76b, gain: 0.9, glow: 0.05, time: false,
     color: f => new THREE.Color(f.own >= 0 && f.own < OWNER_COLORS.length ? OWNER_COLORS[f.own] : 0x707a90).multiplyScalar(0.62),
     legend: () => '<b>Fő szerző</b>' + current.city.authors.slice(0, OWNER_COLORS.length).map((a, i) => `<div><i style="background:${hex(new THREE.Color(OWNER_COLORS[i]))}"></i>${esc(a)}</div>`).join('') },
-  { key: '6', id: 'nyelv', name: 'Nyelv', group: 'Szerkezet', sky: '', horizon: 0x1b2442, plate: [0.64, 0.25, 0.07],
+  { key: '6', id: 'nyelv', name: 'Nyelv', group: 'Szerkezet', sky: '', horizon: 0x11202b, plate: [0.57, 0.3, 0.06],
     win: 0xffc76b, gain: 1.1, glow: 0, time: false,
     color: f => new THREE.Color(langColor(f.lang)).multiplyScalar(0.62),
     legend: () => {
@@ -60,7 +60,7 @@ function lensApply() {
   if (hovered >= 0) b.setColorAt(hovered, _c1.copy(world.baseColor[hovered]).lerp(_c2.setHex(0xffffff), 0.55));
   b.instanceColor.needsUpdate = true;
   const u = b.material.userData.uniforms;
-  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = delta ? 0.3 : lens.gain; u.uBodyGlow.value = delta ? 0.4 : lens.glow;
+  u.uWinColor.value.setHex(lens.win); u.uWinGain.value = lookGlow(delta ? 0.3 : lens.gain); u.uBodyGlow.value = lookGlow(delta ? 0.4 : lens.glow);   // 37-look: low glow
   const [ph, ps, pl] = lens.plate;
   world.dirOf.forEach((d, i) => world.plates.setColorAt(i, _c1.setHSL(ph, ps, pl + Math.min(d.depth, 6) * 0.025)));
   world.plates.instanceColor.needsUpdate = true;
@@ -69,6 +69,7 @@ function lensApply() {
   st.classList.remove('lens-heat', 'lens-nvg', 'lens-noir');
   if (lens.sky) st.classList.add(lens.sky);
   st.style.setProperty('--horizon', hex(new THREE.Color(lens.horizon)));
+  seaLens(lens);   // 38-sea: the Mélyvíz water takes the lens's horizon and highlight
   $('legend').innerHTML = delta ? compareLegend(delta) : lens.legend();
   document.querySelectorAll('#lenses button').forEach(x => x.classList.toggle('on', x.dataset.lens === lens.id));
   placeCranes(ctx);
@@ -118,8 +119,9 @@ function lensBar() {
   const groups = [...new Set(LENSES.map(l => l.group))];
   $('lenses').innerHTML = groups.map(g => `<span class="grp">${g ? `<small>${g}</small>` : ''}${LENSES.filter(l => l.group === g)
     .map(l => `<button class="btn" data-lens="${l.id}" title="${l.name} (${l.key})"><kbd>${l.key}</kbd>${l.name}</button>`).join('')}</span>`).join('')
-    + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>';
-  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt) setLens(bt.dataset.lens); };
+    + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>'
+    + '<span class="grp"><small>Fény</small><button id="glow-btn" class="btn" title="Halk fény: az ablakok és a felvillanások visszafogva (L)"><kbd>L</kbd>Halk</button></span>';
+  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt && bt.id === 'glow-btn') return setLowGlow(!look.low); if (bt) setLens(bt.dataset.lens); };
 }
 lensBar();
 addEventListener('keydown', e => {

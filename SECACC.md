@@ -2,7 +2,7 @@
 
 > **Retired 2026-10-24, see `GO-MAIN.md`.** Kept for history; do not run it.
 
-*`H:\cwebuser\projects\VRG-DE\SecAcc` is a **git worktree** of the vrg-toolset repo on its own branch
+*`H:\VRG\Backup\archive\parked\2026-10-24\SecAcc` is a **git worktree** of the vrg-toolset repo on its own branch
 **`secacc`**. It is a full copy of the code that shares one history with the primary checkout
 (`…\Planner_VRG_U100`, branch `main`). The secondary account works here; the primary account keeps
 working in the main checkout. Nothing either side does reaches the other until the merge (§C).*
@@ -15,11 +15,11 @@ Created 2026-10-21 from `main` at `987b92a`, plus the then-uncommitted Kapu pack
 1. Open **Command Prompt** (not PowerShell).
 2. Keep this account's login separate from the primary one:
    ```
-   set CLAUDE_CONFIG_DIR=H:\cwebuser\home\claude-account-b
+   set CLAUDE_CONFIG_DIR=H:\VRG\Full\home\claude-account-b
    ```
 3. Go to the SecAcc folder:
    ```
-   cd /d H:\cwebuser\projects\VRG-DE\SecAcc
+   cd /d H:\VRG\Backup\archive\parked\2026-10-24\SecAcc
    ```
 4. Start Claude Code: `claude`. The first time, sign in with the **secondary** account.
 5. Type `GO HUB`.
@@ -43,11 +43,11 @@ Created 2026-10-21 from `main` at `987b92a`, plus the then-uncommitted Kapu pack
 
 0. First run **`GO STRICT`** in the main checkout (HUB-Q24 A): it commits the five programs the Kapu
    links to (research, client-look, media-wall, planner-cyd, board-console). Until this merge its
-   brief is only here: `H:\cwebuser\projects\VRG-DE\SecAcc\GO-STRICT.md`.
+   brief is only here: `H:\VRG\Backup\archive\parked\2026-10-24\SecAcc\GO-STRICT.md`.
 1. In SecAcc, make sure everything is committed: `git status` must be clean.
 2. In the **main checkout**:
    ```
-   cd /d H:\cwebuser\projects\VRG-DE\Planner_VRG_U100
+   cd /d H:\VRG\Full\Planner_VRG_U100
    git status
    ```
    Commit or set aside your own open work first. **One-time step for the first merge only:** the

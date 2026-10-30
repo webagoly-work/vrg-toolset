@@ -265,7 +265,7 @@ function icoLegend(){const rows=icoLegendRows();
     rows.length?`<div style="display:grid;grid-template-columns:28px 1fr 130px;gap:4px 8px;align-items:center;max-height:60vh;overflow:auto">`
       +rows.map(r=>icoLegendChip(r,24)+`<span style="font-size:12px">${esc(r.name)}</span>`
         +`<span style="font-size:11px;color:${r.col}">${esc(r.sys)}</span>`).join('')+`</div>`
-      +`<div class="mrow" style="font-size:10.5px;color:#888;margin-top:8px">A test mérete a készülék valódi méretét jelzi (szerelvény &lt; kötődoboz &lt; mennyezeti pont &lt; hardver), a jel azt, hogy melyik készülék, a szín pedig azt, hogy melyik rendszeré. 2× nézeti léptéktől a testek valódi milliméterben rajzolódnak.</div>`
+      +`<div class="mrow" style="font-size:10.5px;color:var(--pc-mute,#888);margin-top:8px">A test mérete a készülék valódi méretét jelzi (szerelvény &lt; kötődoboz &lt; mennyezeti pont &lt; hardver), a jel azt, hogy melyik készülék, a szín pedig azt, hogy melyik rendszeré. 2× nézeti léptéktől a testek valódi milliméterben rajzolódnak.</div>`
     :`<div class="mrow">Még nincs készülék a terven.</div>`,null);}
 
 // first in the chain: 05p's hwSymbol and 05s's endpoint square stay behind it as the fallback

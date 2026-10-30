@@ -105,10 +105,10 @@ function lswSuggestDialog(){const rows=lswSuggest();if(!rows.length){$('hud').te
   const name=rm=>esc(rm.name||rm.id);
   const body=`<div style="font-size:12px">A helyiség kapcsolatlan lámpái egy kapcsolt ágba kerülnek, a kapcsoló az ajtó portálhelyére (L1, 1100).</div>`
    +`<table style="font-size:12px;width:100%;margin-top:6px;border-collapse:collapse">`
-   +`<tr style="color:#777"><td></td><td>Helyiség</td><td>Lámpa</td><td>Hely</td><td>Típus</td></tr>`
+   +`<tr style="color:var(--pc-mute,#777)"><td></td><td>Helyiség</td><td>Lámpa</td><td>Hely</td><td>Típus</td></tr>`
    +rows.map((r,i)=>`<tr><td><input type="checkbox" class="lswRow" data-i="${i}" ${r.slots.length?'checked':'disabled'}></td><td>${name(r.room)}</td><td>${r.lamps.length}</td>`
      +`<td>${r.slots.length?r.slots.map(s=>esc((byId('openings',s.door)||{}).id||s.door)).join(', '):'—'}</td><td>${esc(r.type)}</td></tr>`
-     +`<tr><td></td><td colspan="4" style="color:#888;font-size:11px">Miért? ${esc(r.why)}</td></tr>`).join('')+`</table>`;
+     +`<tr><td></td><td colspan="4" style="color:var(--pc-mute,#888);font-size:11px">Miért? ${esc(r.why)}</td></tr>`).join('')+`</table>`;
   openModal('Kapcsolások javaslata',body,()=>{const on=[...document.querySelectorAll('.lswRow')].filter(c=>c.checked).map(c=>rows[+c.dataset.i]);lswSuggestApply(on);},'Alkalmaz');}
 
 // ---- the tool: click lamps into a set, then click an L1 slot / a switch / Alt + a wall ------------------------------------

@@ -4,7 +4,9 @@
 
 ## 0. Where you work — and who else is there
 
-Worktree `H:/Dev-VRG/VRG-DE/wt-planner-stack/Planner/projects/varler-planner`, branch `planner-stack`.
+The main checkout `H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner`, branch `main` (merged from
+`planner-sui` on 2026-10-30; built by the user's secondary account). *(Originally written for `wt-planner-stack`;
+the parallel T-session below has finished — T1–T8 are on main.)*
 
 **A second session works in the same worktree at the same time** on the UI tidy, T1–T4
 (`docs/ui-tidy/UI-AUDIT.md` §5). It rewrites the tool switching, the stage rail, the sidebars and the Tools panel.
@@ -13,7 +15,7 @@ Worktree `H:/Dev-VRG/VRG-DE/wt-planner-stack/Planner/projects/varler-planner`, b
 - Never commit, never stash, never `git add -A`. The user commits.
 
 ```bash
-export NODE_PATH=H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
+export NODE_PATH=H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
 node build.js && node tools/check-globals.js && node tests/run.js
 ```
 

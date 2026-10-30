@@ -252,7 +252,7 @@ function noteDialog(i,onDone){const n=(data.wallNotes||[])[i];if(!n)return;
      `<div class="mrow"><textarea id="ntTxt" rows="4" style="width:100%;font:inherit" placeholder="Több sor is lehet — a rajzon tördelve jelenik meg.">${esc(n.text||'')}</textarea></div>`
     +`<div class="mrow"><label style="width:80px">Típus</label><select id="ntKind" style="width:190px">${opts}</select>`
     +`<label style="margin-left:10px">Címke <input id="ntTag" value="${esc(n.tag||'')}" placeholder="pl. VF-03" style="width:80px"></label></div>`
-    +`<div class="mrow" style="font-size:11px;color:#777">A típus adja a színt és az ikont; a „Kész” áthúzva, halványan jelenik meg. Húzással bárhová mozgatható, a koordináta-listában mm-re pontosan állítható.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">A típus adja a színt és az ikont; a „Kész” áthúzva, halványan jelenik meg. Húzással bárhová mozgatható, a koordináta-listában mm-re pontosan állítható.</div>`,
     ()=>{wvPush();n.text=$('ntTxt').value;n.kind=$('ntKind').value;
       const tg=$('ntTag').value.trim();if(tg)n.tag=tg;else delete n.tag;
       draw();if(onDone)onDone();},'Mentés');}
@@ -414,10 +414,10 @@ function edRailItems(E){
   c.forEach(it=>out.push(it));
   return out;}
 function edRailHTML(E){
-  return `<div id="edRail" style="width:212px;flex:0 0 212px;border-left:1px solid #eee;padding-left:8px;overflow:auto;max-height:${E.full?'80vh':'60vh'}">`
+  return `<div id="edRail" style="width:212px;flex:0 0 212px;border-left:1px solid var(--pc-line,#eee);padding-left:8px;overflow:auto;max-height:${E.full?'80vh':'60vh'}">`
     +edRailItems(E).map((it,i)=>it.h
-      ? `<div style="font-size:10.5px;font-weight:700;color:#666;margin:8px 0 3px;border-bottom:1px solid #eee;padding-bottom:2px">${esc(it.h)}</div>`
-        +(it.note?`<div style="font-size:10.5px;color:#aaa;margin-bottom:4px">${esc(it.note)}</div>`:'')
+      ? `<div style="font-size:10.5px;font-weight:700;color:var(--pc-dim,#666);margin:8px 0 3px;border-bottom:1px solid var(--pc-line,#eee);padding-bottom:2px">${esc(it.h)}</div>`
+        +(it.note?`<div style="font-size:10.5px;color:var(--pc-faint,#aaa);margin-bottom:4px">${esc(it.note)}</div>`:'')
       : `<button class="edRailB" data-i="${i}" style="display:block;width:100%;text-align:left;font-size:11px;padding:4px 6px;margin:2px 0;white-space:normal;line-height:1.25">${it.label}</button>`).join('')
     +`</div>`;}
 function edRailBind(E){const box=$('edRail');if(!box)return;const items=edRailItems(E);
@@ -438,7 +438,7 @@ function wvDeviceItems(di){const D=data.devices[di];const items=[];
   if(WV&&D.clip)items.push({label:'⛓✕ Csatolás bontása',act:()=>{wvPush();wvUnclip(di);edRender();draw();}});
   if(PV)items.push({label:`⇕ Magasság a padlótól… (${Math.round(D.h||0)} mm)`,
     act:()=>wvOpenModal('Magasság a padlótól',`<div class="mrow"><input id="pvz" type="number" step="10" value="${Math.round(D.h||0)}" style="width:90px"> mm</div>`
-      +`<div class="mrow" style="font-size:11px;color:#777">Felülnézetben a magasság nem látszik — itt állítható. A síkhoz kötött sávon kívülre állítva a készülék halványan, kontextusként jelenik meg.</div>`,
+      +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">Felülnézetben a magasság nem látszik — itt állítható. A síkhoz kötött sávon kívülre állítva a készülék halványan, kontextusként jelenik meg.</div>`,
       ()=>{wvPush();pvSetDeviceZ(di,+$('pvz').value||0);draw();})});
   const glued=devLinks(D).some(l=>l.glue);
   items.push({label:(glued?'🔗 Kötés áthelyezése…':'🔗 Csatlakoztatás pályához…'),act:()=>wvLinkDevice(di)});
@@ -456,12 +456,12 @@ function wvSectionItems(t){const pa=data.paths[t.pi];if(!pa)return null;
   const items=[
     {label:`⌀ Cső átmérő… (most ${dia} mm)`,act:()=>wvOpenModal('Cső átmérő',
       `<div class="mrow"><select id="pdia" style="width:130px">`+PATH_DIA.map(v=>`<option value="${v}" ${v===dia?'selected':''}>${v} mm</option>`).join('')+`</select></div>`
-      +`<div class="mrow" style="font-size:11px;color:#777">A véset szélessége ebből számolódik: ⌀ × ${(state.chaseFactor||1.6)} = <b>${chaseWidthOf(dia)} mm</b> (⌀20-nál ${chaseWidthOf(20)}, ⌀25-nél ${chaseWidthOf(25)}, ⌀32-nél ${chaseWidthOf(32)}).</div>`,
+      +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">A véset szélessége ebből számolódik: ⌀ × ${(state.chaseFactor||1.6)} = <b>${chaseWidthOf(dia)} mm</b> (⌀20-nál ${chaseWidthOf(20)}, ⌀25-nél ${chaseWidthOf(25)}, ⌀32-nél ${chaseWidthOf(32)}).</div>`,
       ()=>{wvPush();sec.dia=+$('pdia').value;edRender();draw();})},
     {label:`⇳ Véset mélység… (most ${dep} mm)`,act:()=>wvOpenModal('Véset mélység',
       `<div class="mrow"><select id="pcd" style="width:130px"><option value="">auto (${dia<=25?30:35} mm)</option>`
       +`<option value="30" ${sec.cd==30?'selected':''}>30 mm</option><option value="35" ${sec.cd==35?'selected':''}>35 mm</option></select></div>`
-      +`<div class="mrow" style="font-size:11px;color:#777">Alapértelmezés: ⌀16–25 → 30 mm, ⌀32 → 35 mm.</div>`,
+      +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">Alapértelmezés: ⌀16–25 → 30 mm, ⌀32 → 35 mm.</div>`,
       ()=>{wvPush();const v=$('pcd').value;if(v)sec.cd=+v;else delete sec.cd;edRender();draw();})},
     {label:'⚙ Szakasz kivitele…',act:()=>setSectionBuild(t.pi,t.na)},
     {label:'⧉ Másolat mellé…',act:()=>wvDuplicateDialog(t)},
@@ -477,13 +477,13 @@ function wvDuplicateDialog(t){const pa=data.paths[t.pi];if(!pa)return;
     `<div class="mrow">Mit: <select id="dupScope" style="width:150px"><option value="sec">csak ez a szakasz</option><option value="all">az egész pálya</option></select></div>`
    +`<div class="mrow">Irány: <select id="dupDir" style="width:110px"><option value="fel">fel</option><option value="le">le</option><option value="jobbra">jobbra</option><option value="balra">balra</option></select>`
    +` távolság <input id="dupD" type="number" step="5" min="1" value="${def}" style="width:64px"> mm</div>`
-   +`<div class="mrow" style="font-size:11px;color:#777">A cső kivitele/⌀/vésetmélység másolódik, az áramkörök NEM (üres párhuzamos cső jön létre). Alap távolság = véset szélessége + 10 mm.${PV?' Felülnézetben az irány a képernyő szerint értendő, a magasság nem változik.':''}</div>`,
+   +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">A cső kivitele/⌀/vésetmélység másolódik, az áramkörök NEM (üres párhuzamos cső jön létre). Alap távolság = véset szélessége + 10 mm.${PV?' Felülnézetben az irány a képernyő szerint értendő, a magasság nem változik.':''}</div>`,
     ()=>{wvPush();const pi2=wvDuplicateBeside(t.pi,t.na,$('dupDir').value,Math.max(1,+$('dupD').value||def),$('dupScope').value==='all');
       if(pi2==null)return false;edRender();draw();},'Másol');}
 function wvDefineDevice(di){const D=data.devices[di];
   const opts=DEVICE_CATALOG.map(c=>`<option value="${c.id}" ${D.devDef===c.id?'selected':''}>${esc(c.brand)} — ${esc(c.name)} (${esc(c.cikk)}, ${c.w}×${c.h})</option>`).join('');
   wvOpenModal('Készülék meghatározása (Szerelvénydoboz)',
-    `<div class="mrow" style="font-size:11px;color:#777">A hollow Szerelvénydoboz helyére kerülő fali szerelvény. A rajz a gyártói villáskengyel-méretet mutatja.</div>`
+    `<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">A hollow Szerelvénydoboz helyére kerülő fali szerelvény. A rajz a gyártói villáskengyel-méretet mutatja.</div>`
     +`<div class="mrow"><select id="ddSel" style="width:100%">${opts}</select></div>`,
     ()=>{wvPush();D.devDef=$('ddSel').value;const def=deviceCat(D.devDef);if(def&&!D.ref)D.ref=(D.type==='switch'?'K':D.type==='light'?'L':'D');edRender();draw();},'Meghatároz');}
 // clip a device box onto a neighbour's up/down/left/right connect point (72mm spacing), forming a group (max 5)
@@ -494,7 +494,7 @@ function wvClipDevice(di){const D=data.devices[di];
   const list=near.map(({o,i})=>`<option value="${i}">${esc(o.ref||('#'+i))} (${Math.round(Math.hypot(o.x-D.x,o.y-D.y))} mm)</option>`).join('');
   wvOpenModal('Doboz csatolása','<div class="mrow">Szomszéd: <select id="clipN">'+list+'</select></div>'
     +'<div class="mrow">Irány: <select id="clipDir"><option value="right">jobbra</option><option value="left">balra</option><option value="up">fel</option><option value="down">le</option></select></div>'
-    +'<div class="mrow" style="font-size:11px;color:#777">72 mm-es osztással illeszti; a csatolt csoport együtt mozog, de dobozonként külön színezhető/meghatározható (max 5).</div>',
+    +'<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">72 mm-es osztással illeszti; a csatolt csoport együtt mozog, de dobozonként külön színezhető/meghatározható (max 5).</div>',
     ()=>{const ni=+$('clipN').value,dir=$('clipDir').value;wvPush();wvDoClip(di,ni,dir);edRender();draw();},'Csatol');}
 function clipGroupOf(i){ // collect all devices sharing the same clip group id
   const D=data.devices[i];if(!D.clip)return [i];
@@ -630,7 +630,7 @@ function wvLinkDevice(di){const D=data.devices[di];if(!D)return;
     `<div class="mrow">Csomópont: <select id="lnkN" style="width:100%">`
     +cand.map(c=>`<option value="${c.pi}:${c.ni}">P${c.pi}/${c.ni} — ${Math.round(c.dist)} mm (${Math.round(c.u)} / ${Math.round(c.h)})</option>`).join('')+`</select></div>`
     +`<div class="mrow"><label><input type="checkbox" id="lnkSnap" checked> a csomópont ugorjon a készülék pontjára</label></div>`
-    +`<div class="mrow" style="font-size:11px;color:#777">Kötés után a készülék és a csomópont együtt mozog (bármelyiket húzod).</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">Kötés után a készülék és a csomópont együtt mozog (bármelyiket húzod).</div>`,
     ()=>{const v=$('lnkN').value.split(':');wvPush();
       const pa=data.paths[+v[0]],nd=pa&&pa.nodes[+v[1]];if(!pa||!nd)return false;
       setLink(D,pa.id,nd.id);
@@ -706,18 +706,18 @@ function wvListRows(d){const rows=[];
   (d.notes||[]).forEach(nt=>rows.push({kind:'note',key:'t'+nt.i,i:nt.i,type:'Jegyzet',ref:nt.text||'',u:nt.u,h:nt.h,extra:'',link:''}));
   return rows.sort((a,b)=>a.u-b.u);}
 function wvListHTML(d,len){const rows=wvListRows(d);
-  if(!rows.length)return `<div style="font-size:11px;color:#999;padding:4px">Ezen a falon még nincs elem — jobb klikk a falra: készülék / nyílászáró / pálya / jegyzet.</div>`;
+  if(!rows.length)return `<div style="font-size:11px;color:var(--pc-mute,#999);padding:4px">Ezen a falon még nincs elem — jobb klikk a falra: készülék / nyílászáró / pálya / jegyzet.</div>`;
   const cell=(r,f,v)=>`<input class="wvcell" data-k="${r.key}" data-f="${f}" type="number" step="1" value="${Math.round(v)}" style="width:64px;font-size:10.5px;padding:1px 2px">`;
   return `<table style="width:100%;border-collapse:collapse;font-size:10.5px">`
-    +`<tr style="color:#666;text-align:left"><th style="padding:2px 4px">Elem</th><th>Azonosító</th>`
+    +`<tr style="color:var(--pc-dim,#666);text-align:left"><th style="padding:2px 4px">Elem</th><th>Azonosító</th>`
     +`<th title="távolság a bal faléltől">balról</th><th title="távolság a jobb faléltől">jobbról</th><th title="magasság a padlótól">földtől</th><th></th><th></th></tr>`
-    +rows.map(r=>`<tr data-k="${r.key}" style="border-top:1px solid #f0f0f0">`
+    +rows.map(r=>`<tr data-k="${r.key}" style="border-top:1px solid var(--pc-line,#f0f0f0)">`
       +`<td style="padding:2px 4px;white-space:nowrap">${esc(r.type)}</td>`
-      +`<td style="color:#0a2b6b;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis">${esc(String(r.ref))}</td>`
+      +`<td style="color:var(--pc-acc,#0a2b6b);white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis">${esc(String(r.ref))}</td>`
       +`<td>${cell(r,'l',r.u)}</td><td>${cell(r,'r',len-r.u)}</td>`
-      +`<td>${r.noH?`<span style="color:#bbb">${Math.round(r.h)}</span>`:cell(r,'h',r.h)}</td>`
-      +`<td style="color:#999;white-space:nowrap">${esc(r.extra||'')}${r.link?` <span style="color:#c0530f" title="pályához kötve">🔗${esc(r.link)}</span>`:''}</td>`
-      +`<td><button class="wvdel" data-k="${r.key}" title="törlés" style="font-size:10px;padding:0 4px;color:#b33">✕</button></td></tr>`).join('')
+      +`<td>${r.noH?`<span style="color:var(--pc-faint,#bbb)">${Math.round(r.h)}</span>`:cell(r,'h',r.h)}</td>`
+      +`<td style="color:var(--pc-mute,#999);white-space:nowrap">${esc(r.extra||'')}${r.link?` <span style="color:var(--pc-warn,#c0530f)" title="pályához kötve">🔗${esc(r.link)}</span>`:''}</td>`
+      +`<td><button class="wvdel" data-k="${r.key}" title="törlés" style="font-size:10px;padding:0 4px;color:var(--pc-crit,#b33)">✕</button></td></tr>`).join('')
     +`</table>`;}
 function wvListApply(rows,key,field,val){const r=rows.find(x=>x.key===key);if(!r)return;
   const u=(field==='l')?val:(field==='r')?null:null;
@@ -745,7 +745,7 @@ function renderWallView(){const d=wallElevationData(WV.r,WV.level),out=wallEleva
   modalEl.style.maxWidth=WV.full?'100vw':'96vw';
   modalEl.style.width=WV.full?'99vw':'';
   modalEl.innerHTML=`<h4 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">Fal-nézet szerkesztő — ${WV.level} · ${Math.round(d.len)}×${Math.round(d.H)} mm`
-    +`${WV.dirty?'<span style="font-size:11px;color:#c0530f;font-weight:600">● módosítva</span>':''}`
+    +`${WV.dirty?'<span style="font-size:11px;color:var(--pc-warn,#c0530f);font-weight:600">● módosítva</span>':''}`
     +`<span style="flex:1"></span>`
     +`<button id="wvUndoB" title="Visszavonás (Ctrl+Z)" style="font-size:12px" ${WV.undo.length?'':'disabled'}>↶</button>`
     +`<button id="wvRedoB" title="Újra (Ctrl+Shift+Z)" style="font-size:12px" ${WV.redo.length?'':'disabled'}>↷</button>`
@@ -756,30 +756,30 @@ function renderWallView(){const d=wallElevationData(WV.r,WV.level),out=wallEleva
     +`<button id="wvMirror" title="Korrekció: csak a rajz vízszintes tükrözése" style="font-size:11px">🪞 Tükrözés${WV.mirror?' ✓':''}</button>`
     +`<button id="wvOther" title="A fal MÁSIK oldala normál nézetben (oldalváltás + tükrözés egyben)" style="font-size:11px">🔄 Túloldal nézet</button>`
     +`</div>`
-    +`<div class="mrow" style="gap:10px;flex-wrap:wrap;font-size:11px;border-top:1px solid #eee;padding-top:5px">`
-    +`<b style="color:#555">Rétegek:</b>`
+    +`<div class="mrow" style="gap:10px;flex-wrap:wrap;font-size:11px;border-top:1px solid var(--pc-line,#eee);padding-top:5px">`
+    +`<b style="color:var(--pc-dim,#555)">Rétegek:</b>`
     +`<label><input type="checkbox" id="wvLInst" ${WV.layers.installed?'checked':''}> Beépített</label>`
     +`<label><input type="checkbox" id="wvLCuts" ${WV.layers.cuts?'checked':''}> Vésetek (süllyesztett)</label>`
     +`<label><input type="checkbox" id="wvLNotes" ${WV.layers.notes?'checked':''}> Jegyzetek</label>`
     +`</div>`
-    +`<div class="mrow" style="gap:8px;flex-wrap:wrap;font-size:11px"><b style="color:#555">Véset:</b>`
+    +`<div class="mrow" style="gap:8px;flex-wrap:wrap;font-size:11px"><b style="color:var(--pc-dim,#555)">Véset:</b>`
     +`szélesség = ⌀ ×<input id="wvChase" type="number" step="0.1" min="1" value="${state.chaseFactor||1.6}" style="width:46px">`
-    +`<span style="color:#ccc">|</span> doboz-ráhagyás <input id="wvPad" type="number" step="1" min="0" value="${state.chasePad!=null?state.chasePad:4}" style="width:42px">mm`
-    +`<span style="color:#ccc">|</span> doboz-mélység <input id="wvBoxD" type="number" step="5" min="10" value="${state.boxDepth||45}" style="width:46px">mm`
+    +`<span style="color:var(--pc-faint,#ccc)">|</span> doboz-ráhagyás <input id="wvPad" type="number" step="1" min="0" value="${state.chasePad!=null?state.chasePad:4}" style="width:42px">mm`
+    +`<span style="color:var(--pc-faint,#ccc)">|</span> doboz-mélység <input id="wvBoxD" type="number" step="5" min="10" value="${state.boxDepth||45}" style="width:46px">mm`
     +`<label><input type="checkbox" id="wvCutLbl" ${WV.layers.cutLabels!==false?'checked':''}> Feliratok</label>`
     +`<label title="Csak ezen a falon rejti el a jegyzeteket"><input type="checkbox" id="wvNoteSurf" ${noteSurfaceHidden(wallKey(WV.r,WV.level))?'':'checked'}> Jegyzetek ezen a falon</label>`
     +`</div>`
-    +`<div class="mrow" style="gap:6px;flex-wrap:wrap;font-size:10.5px;border-top:1px solid #eee;padding-top:5px" id="wvHLines"><b style="color:#555">Vonalak:</b></div>`
-    +(WV.drawPi!=null?`<div class="mrow" style="gap:8px;font-size:11px;background:#eef6ff;border:1px solid #2f6fb0;border-radius:5px;padding:3px 6px"><b style="color:#1c4f86">✏ Pálya rajzolása</b><span style="color:#40628a">kattints a következő pontra (a magasság a látható vonalakra ugrik ±50 mm-en belül)</span><button id="wvDrawEnd" style="font-size:11px">✔ Kész (Enter)</button></div>`:'')
-    +(WV.warp?`<div class="mrow" style="gap:8px;font-size:11px;background:#fff4ec;border:1px solid #e8641c;border-radius:5px;padding:3px 6px"><b style="color:#c0530f">✥ Warp mód</b><span style="color:#a05a3a">a kijelölt pálya csomópontjai együtt nyúlnak a fogantyúkkal</span><button id="wvWarpOff" style="font-size:11px">Kilépés</button></div>`:'')
-    +`<div class="mrow" style="font-size:11px;color:#888">Húzd a készüléket / nyílászárót / csomópontot. Húzd a pálya vonalát = egész szakasz mozgatása; Alt+klikk a vonalon = warp. Jobb klikk: készüléken = doboz menü, pályán = ⌀/mélység/másolás/warp, üres falon = létrehozás (készülék / nyílászáró / pálya / jegyzet). A vésetek a süllyesztett szakaszokból készülnek és egybeolvadnak.</div>`
+    +`<div class="mrow" style="gap:6px;flex-wrap:wrap;font-size:10.5px;border-top:1px solid var(--pc-line,#eee);padding-top:5px" id="wvHLines"><b style="color:var(--pc-dim,#555)">Vonalak:</b></div>`
+    +(WV.drawPi!=null?`<div class="mrow" style="gap:8px;font-size:11px;background:var(--pc-accsoft,#eef6ff);border:1px solid var(--pc-acc,#2f6fb0);border-radius:5px;padding:3px 6px"><b style="color:var(--pc-acc,#1c4f86)">✏ Pálya rajzolása</b><span style="color:var(--pc-acc,#40628a)">kattints a következő pontra (a magasság a látható vonalakra ugrik ±50 mm-en belül)</span><button id="wvDrawEnd" style="font-size:11px">✔ Kész (Enter)</button></div>`:'')
+    +(WV.warp?`<div class="mrow" style="gap:8px;font-size:11px;background:var(--pc-warmsoft,#fff4ec);border:1px solid var(--pc-warm,#e8641c);border-radius:5px;padding:3px 6px"><b style="color:var(--pc-warn,#c0530f)">✥ Warp mód</b><span style="color:var(--pc-warm,#a05a3a)">a kijelölt pálya csomópontjai együtt nyúlnak a fogantyúkkal</span><button id="wvWarpOff" style="font-size:11px">Kilépés</button></div>`:'')
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Húzd a készüléket / nyílászárót / csomópontot. Húzd a pálya vonalát = egész szakasz mozgatása; Alt+klikk a vonalon = warp. Jobb klikk: készüléken = doboz menü, pályán = ⌀/mélység/másolás/warp, üres falon = létrehozás (készülék / nyílászáró / pálya / jegyzet). A vésetek a süllyesztett szakaszokból készülnek és egybeolvadnak.</div>`
     +`<div style="display:flex;gap:8px;align-items:flex-start">`
     +`<div id="wvBox" style="flex:1;overflow:auto;max-height:${WV.full?'80vh':'60vh'};border:1px solid #eee;background:#fafafa">${out.svg}</div>`
     +edRailHTML(WV)+`</div>`
-    +`<div class="mrow" style="gap:6px;font-size:11px;border-top:1px solid #eee;padding-top:4px">`
-    +`<b style="color:#555">Koordináták (mm)</b><button id="wvListT" style="font-size:11px">${WV.list?'elrejt':'mutat'}</button>`
-    +`<span style="color:#999">a mezőkbe beírt érték pontos (nincs 10 mm-es kerekítés); a pályacsomópont mozgatja a hozzá kötött készüléket is</span></div>`
-    +(WV.list?`<div id="wvList" style="overflow:auto;max-height:${WV.full?'22vh':'26vh'};border:1px solid #eee">${wvListHTML(d,d.len)}</div>`:'')
+    +`<div class="mrow" style="gap:6px;font-size:11px;border-top:1px solid var(--pc-line,#eee);padding-top:4px">`
+    +`<b style="color:var(--pc-dim,#555)">Koordináták (mm)</b><button id="wvListT" style="font-size:11px">${WV.list?'elrejt':'mutat'}</button>`
+    +`<span style="color:var(--pc-mute,#999)">a mezőkbe beírt érték pontos (nincs 10 mm-es kerekítés); a pályacsomópont mozgatja a hozzá kötött készüléket is</span></div>`
+    +(WV.list?`<div id="wvList" style="overflow:auto;max-height:${WV.full?'22vh':'26vh'};border:1px solid var(--pc-line,#eee)">${wvListHTML(d,d.len)}</div>`:'')
     +`<div class="mbtns"><button id="wvPng">🖼 PNG</button><button id="wvJson">⬇ JSON</button><button id="wvPrint">🖨 Print/PDF</button>`
     +`<span style="flex:1"></span><button id="wvClose">✕ Elvetés</button><button id="wvSave" class="on">💾 Mentés</button></div>`;
   modalBg.style.display='flex';
@@ -813,7 +813,7 @@ function renderWallView(){const d=wallElevationData(WV.r,WV.level),out=wallEleva
   // per-preset-height-line toggles inside the viewer
   if(!WV.hLines){WV.hLines={};GUIDES.forEach(g=>WV.hLines[g.k]=guideOn[g.k]);}
   const hl=$('wvHLines');if(hl){GUIDES.forEach(g=>{const b=document.createElement('button');b.textContent=guideLabel(g);
-    b.style.cssText='font-size:10px;padding:1px 5px;border-radius:4px;border:1px solid '+g.c+';'+(WV.hLines[g.k]?('background:'+g.c+';color:#fff'):('background:#fff;color:'+g.c));
+    b.style.cssText='font-size:10px;padding:1px 5px;border-radius:4px;border:1px solid '+g.c+';'+(WV.hLines[g.k]?('background:'+g.c+';color:#fff'):('background:var(--pc-bg2,#fff);color:'+g.c));
     b.onclick=()=>{WV.hLines[g.k]=!WV.hLines[g.k];renderWallView();};hl.appendChild(b);});}
   $('wvDims').onchange=e=>{WV.dims=e.target.checked;renderWallView();};
   $('wvPng').onclick=()=>svgToPng(out.svg,out.w,out.h,'fal_nezet.png');
@@ -878,16 +878,16 @@ function roomPropsDialog(rm,level,src){
     +`<label style="margin-left:8px">Szám <input id="riNum" value="${esc(rm.num||'')}" placeholder="1.02" style="width:60px"></label></div>`
     +`<div class="mrow"><label style="width:96px">Rendeltetés</label>${sel('riUse',ROOM_USE,rm.use,170)}`
     +`<label style="margin-left:8px">Belmagasság <input id="riCh" type="number" step="10" value="${Math.round(rm.ch||0)}" style="width:76px"> mm</label>`
-    +`<span style="color:#999;font-size:11px;margin-left:6px">0 = szint szerinti (${wallH(level)})</span></div>`
+    +`<span style="color:var(--pc-mute,#999);font-size:11px;margin-left:6px">0 = szint szerinti (${wallH(level)})</span></div>`
     +`<div class="mrow"><label style="width:96px">Környezet</label><select id="riEnv" style="width:230px">${envOpt}</select>`
-    +`<span id="riEnvNote" style="color:#999;font-size:11px;margin-left:8px"></span></div>`
+    +`<span id="riEnvNote" style="color:var(--pc-mute,#999);font-size:11px;margin-left:8px"></span></div>`
     +`<div class="mrow"><label style="width:96px">Padlóburkolat</label>${sel('riMat',ROOM_FLOOR,rm.mat,150)}`
     +`<label style="margin-left:8px">Fűtés ${sel('riHeat',ROOM_HEAT,rm.heat,160)}</label></div>`
     +`<div class="mrow"><label style="width:96px">Falfelület</label><input id="riWall" value="${esc(rm.wallFin||'')}" placeholder="glettelt festett / csempe 2,1 m-ig" style="flex:1"></div>`
     +`<div class="mrow"><label style="width:96px">Mennyezet</label><input id="riCeil" value="${esc(rm.ceilFin||'')}" placeholder="glettelt festett / álmennyezet 2,60 m" style="flex:1"></div>`
     +`<div class="mrow"><label style="width:96px">Álmennyezet</label><input id="riDrop" type="number" step="10" min="0" value="${Math.round(rm.dropC||0)}" style="width:86px"> mm`
-    +`<span style="color:#999;font-size:11px;margin-left:8px">0 = a szint beállítása szerint (${DROPC[level]?DROPC[level]+' mm':'nincs'})</span></div>`
-    +`<div class="mrow" style="border-top:1px solid #eee;padding-top:5px"><b style="font-size:11px;color:#555">Villamos alapadatok</b></div>`
+    +`<span style="color:var(--pc-mute,#999);font-size:11px;margin-left:8px">0 = a szint beállítása szerint (${DROPC[level]?DROPC[level]+' mm':'nincs'})</span></div>`
+    +`<div class="mrow" style="border-top:1px solid var(--pc-line,#eee);padding-top:5px"><b style="font-size:11px;color:var(--pc-dim,#555)">Villamos alapadatok</b></div>`
     +`<div class="mrow"><label style="width:96px">Aljzat magasság</label><input id="riHS" type="number" step="10" value="${Math.round(rm.hSocket||0)}" style="width:76px"> mm`
     +`<label style="margin-left:10px">Kapcsoló <input id="riHK" type="number" step="10" value="${Math.round(rm.hSwitch||0)}" style="width:76px"> mm</label>`
     +`<button id="riApply" style="margin-left:8px;font-size:11px">⤓ Alkalmaz a helyiség készülékeire</button></div>`
@@ -895,7 +895,7 @@ function roomPropsDialog(rm,level,src){
     +`<label style="margin-left:10px"><input type="checkbox" id="riNoText" ${rm.noText?'checked':''}> Felirat elrejtése</label>`
     +`<label style="margin-left:10px">Szín <input type="color" id="riFill" value="${(rm.fill||'#e2ddd0')}" style="width:44px;padding:0"></label></div>`
     +`<div class="mrow"><label style="width:96px">Megjegyzés</label><textarea id="riNote" rows="2" style="flex:1;font:inherit">${esc(rm.note||'')}</textarea></div>`
-    +`<div class="mrow" id="riInfo" style="font-size:11px;color:#777;border-top:1px solid #eee;padding-top:5px"></div>`,
+    +`<div class="mrow" id="riInfo" style="font-size:11px;color:var(--pc-mute,#777);border-top:1px solid var(--pc-line,#eee);padding-top:5px"></div>`,
     ()=>{pushUndo();
       rm.name=$('riName').value.trim();
       const st=(k,v)=>{if(v)rm[k]=v;else delete rm[k];};

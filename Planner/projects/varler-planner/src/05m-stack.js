@@ -334,7 +334,7 @@ function stkCheck(S,roleKey){const out=[];
 
 // ---- the wizard ----
 // V2: the kind first — Villany (ordinary electrical work) is the default; the role lists re-render on change
-function stkWizardRoles(kind){return stkRolesOf(kind).filter(r=>r.ph===2).map(r=>`<div><label><input type="checkbox" class="skR" value="${r.k}" ${stkRoleOff(r,kind)?'':'checked'}> ${esc(stkRoleName(r.k,kind))}${stkRoleOff(r,kind)?' <span style="color:#888">(alapból kikapcsolva)</span>':''}</label></div>`).join('');}
+function stkWizardRoles(kind){return stkRolesOf(kind).filter(r=>r.ph===2).map(r=>`<div><label><input type="checkbox" class="skR" value="${r.k}" ${stkRoleOff(r,kind)?'':'checked'}> ${esc(stkRoleName(r.k,kind))}${stkRoleOff(r,kind)?' <span style="color:var(--pc-mute,#888)">(alapból kikapcsolva)</span>':''}</label></div>`).join('');}
 function stkWizardNote(kind){const p1=stkRolesOf(kind).filter(r=>r.ph===1&&!stkRoleOpt(r,kind)).map(r=>stkRoleName(r.k,kind)).join(', ');
   return 'Az 1. fázis rétegei ('+p1+') mindig létrejönnek. A stack csak jelölés a rétegeken: minden meglévő eszköz ugyanúgy működik rajtuk.'
     +(kind==='elec'?' Egy Villany Stack később egy kattintással BRIDGE Stackké bővíthető.':'');}
@@ -352,7 +352,7 @@ function stkWizard(){
    +`<div id="skMergeRow" style="display:none"><label><input type="checkbox" id="skMerge" checked> egyesítés egy rétegbe</label></div></div>`
    +`<div class="mrow"><b>2. fázis rétegek</b></div>`
    +`<div id="skRoles" style="margin:0 0 4px 18px">`+stkWizardRoles('elec')+`</div>`
-   +`<div id="skNote" class="mrow" style="font-size:11px;color:#888">${esc(stkWizardNote('elec'))}</div>`,
+   +`<div id="skNote" class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">${esc(stkWizardNote('elec'))}</div>`,
     ()=>{const mode=(document.querySelector('input[name=skMode]:checked')||{}).value||'new';
       const ids=[...document.querySelectorAll('.skL')].filter(x=>x.checked).map(x=>x.value);
       if(mode==='adopt'&&!ids.length){lyrHud('Jelölj ki legalább egy meglévő réteget, vagy válaszd az új réteget.');return false;}
@@ -373,7 +373,7 @@ function stkAdoptDialog(stackId){const S=stkById(stackId);if(!S)return;
   openModal('Meglévő réteg felvétele szerepbe',
     `<div class="mrow">Szerep <select id="saRole" style="width:220px">${STK_ROLES.map(r=>`<option value="${r.k}">${esc(r.n)}</option>`).join('')}</select></div>`
    +`<div class="mrow">Réteg <select id="saLayer" style="width:220px">${free.map(l=>`<option value="${l.id}">${esc(l.name)}</option>`).join('')}</select></div>`
-   +`<div class="mrow" style="font-size:11px;color:#888">A réteg maga kerül a szerepbe (nem másolat). Aki eddig a szerepet viselte, sima réteg lesz.</div>`,
+   +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">A réteg maga kerül a szerepbe (nem másolat). Aki eddig a szerepet viselte, sima réteg lesz.</div>`,
     ()=>{stkAdopt(stackId,$('saRole').value,[$('saLayer').value]);});}
 function stkRenameDialog(id){const S=stkById(id);if(!S)return;
   openModal('Stack átnevezése',`<div class="mrow">Név <input id="srName" value="${esc(S.name).replace(/"/g,'&quot;')}" style="width:220px"></div>`,
@@ -437,13 +437,13 @@ function rliSelect(id){const hs=rliSelectable(id),L=lyrLayer(id);
   lyrHud(hs.length+' elem kijelölve ('+L.name+') — Mozgatás eszköz.');return hs.length;}
 function rliCheckDialog(roleKey,stackId){const S=stkById(stackId)||stkActive();if(!S)return;
   const list=stkCheck(S,roleKey),r=stkRole(roleKey),C={error:'#c62828',warn:'#b26a00',info:'#2f6fb0'};
-  openModal('Ellenőrzés — '+esc(r?r.n:roleKey),list.length?list.map(x=>`<div style="padding:3px 0;border-bottom:1px solid #f0f0f0"><b style="color:${C[x.sev]||'#555'}">${x.sev==='error'?'hiba':x.sev==='warn'?'figyelem':'info'}</b> · ${esc(x.msg)}</div>`).join('')
+  openModal('Ellenőrzés — '+esc(r?r.n:roleKey),list.length?list.map(x=>`<div style="padding:3px 0;border-bottom:1px solid var(--pc-line,#f0f0f0)"><b style="color:${C[x.sev]||'var(--pc-dim,#555)'}">${x.sev==='error'?'hiba':x.sev==='warn'?'figyelem':'info'}</b> · ${esc(x.msg)}</div>`).join('')
     :'<div class="mrow">Nincs kifogás ezen a rétegen.</div>',()=>{},'Bezár');}
 function rliNeedsDialog(roleKey,stackId){const S=stkById(stackId)||stkActive();if(!S)return;const r=stkRole(roleKey);
   const rows=rliRoomCounts(roleKey,S.id);
   openModal('Helyiség-igények — '+esc(r?r.n:roleKey),rows.length?`<table style="border-collapse:collapse;font-size:12px">`
     +rows.map(x=>`<tr><td style="padding:2px 8px 2px 0"><b>${esc(x.num)}</b> ${esc(x.name)}</td><td style="padding:2px 8px;text-align:right">${x.have} / ${x.need}</td>`
-      +`<td style="color:#888">${x.missing.length?'hiányzik: '+x.missing.map(esc).join(', '):''}</td></tr>`).join('')+`</table>`
+      +`<td style="color:var(--pc-mute,#888)">${x.missing.length?'hiányzik: '+x.missing.map(esc).join(', '):''}</td></tr>`).join('')+`</table>`
     :'<div class="mrow">Nincs helyiség, vagy ennek a rétegnek nincs igénye.</div>',()=>{},'Bezár');}
 // per room: endpoints of this role it has vs the codes its needs ask (needOf / needHave, 05t)
 function rliRoomCounts(roleKey,stackId){if(typeof needOf!=='function')return [];const out=[];
@@ -461,14 +461,14 @@ function rliInfoHtml(roleKey,stackId){const r=stkRole(roleKey),T=(typeof RLI_TEX
   const sec=(h,b)=>`<div style="margin:8px 0 2px;font-weight:700">${h}</div><div style="font-size:12px;line-height:1.45">${b}</div>`;
   let types='';const eps=(typeof epOfRole==='function')?epOfRole(roleKey):[];
   if(eps.length)types=eps.map(e=>`<div><b>${esc(e.code)}</b> — ${esc(e.n)}${e.mount==='ceiling'?' · mennyezet':e.h?' · '+e.h+' mm':''}`
-    +((e.vars||[]).length?`<div style="color:#777;margin-left:12px">${e.vars.map(v=>esc(v.n)+(v.h?' ('+v.h+' mm)':'')).join(' · ')}</div>`:'')+`</div>`).join('');
+    +((e.vars||[]).length?`<div style="color:var(--pc-mute,#777);margin-left:12px">${e.vars.map(v=>esc(v.n)+(v.h?' ('+v.h+' mm)':'')).join(' · ')}</div>`:'')+`</div>`).join('');
   else if(roleKey==='construct'&&r&&r.cats)types=r.cats.map(k=>esc(typeof lyrCatName==='function'?lyrCatName(k):k)).join(', ');
   else if(roleKey==='hw')types=Object.keys(HW_TYPES).filter(k=>HW_DEF[k]&&HW_DEF[k].role==='hw').map(k=>esc(HW_TYPES[k])).join(', ');
   else if(roleKey==='base')types=HW_UNIT_ORDER.map(u=>'<b>'+u+'</b> — '+esc((HW_BASE_UNITS[u].n.split(' — ')[1])||'')).join(' · ');
   else if(roleKey==='cluster')types='Klaszterdobozok K1 · K2 · K3 (06b).';
-  else types='<span style="color:#888">—</span>';
+  else types='<span style="color:var(--pc-mute,#888)">—</span>';
   const counts=stackId&&roleKey.indexOf('sys:')===0?rliRoomCounts(roleKey,stackId):[];
-  const here=counts.length?`<div style="margin-top:4px;color:#555">Ebben a tervben: `+counts.map(x=>`<span style="white-space:nowrap">${esc(x.num)} ${esc(x.name)} · ${x.have} / ${x.need}</span>`).join(' · ')+`</div>`:'';
+  const here=counts.length?`<div style="margin-top:4px;color:var(--pc-dim,#555)">Ebben a tervben: `+counts.map(x=>`<span style="white-space:nowrap">${esc(x.num)} ${esc(x.name)} · ${x.have} / ${x.need}</span>`).join(' · ')+`</div>`:'';
   const tier=roleKey==='sys:SECURITY'&&stackId?sec('Biztonsági kivitel',`<select id="rliSecTier"><option value="alap">Alap — vegyes (a belső mozgás és a pánikgomb az RBX-hez)</option>`
     +`<option value="premium">Prémium — csillag (minden behatolás-érzékelő az SSC-ig)</option></select>`):'';
   return sec('Mire való',esc(T.cel||'—'))+sec('Eszköztípusok',types)+sec('Hol és mennyi',esc(T.hol||'—')+here)+sec('Mivel klaszterezhető',esc(T.klaszter||'—'))+tier;}

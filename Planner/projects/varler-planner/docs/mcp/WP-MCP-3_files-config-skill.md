@@ -64,12 +64,12 @@ CLA job is "use the planner tools", not a page of jsdom setup.
        "planner": {
          "command": "node",
          "args": ["Planner/projects/varler-planner/tools/planner-mcp.js"],
-         "env": { "NODE_PATH": "H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules" }
+         "env": { "NODE_PATH": "H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules" }
        },
        "planner-live": {
          "command": "node",
          "args": ["Planner/projects/varler-planner/tools/planner-mcp.js", "--connect", "ws://127.0.0.1:47291"],
-         "env": { "NODE_PATH": "H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules" }
+         "env": { "NODE_PATH": "H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules" }
        }
      }
    }
@@ -108,7 +108,7 @@ CLA job is "use the planner tools", not a page of jsdom setup.
 
 `tests/spec-125-mcp-paths.js` — pure unit tests of `allowPath` (no server):
 1. Allowed: a file in `Calculator/`, in the `--in` folder, in scratch, in an `--allow-path` folder.
-2. Refused, each with its `why`: `H:\`, `H:\.ssh\id_rsa`, `H:\_desktop\Git\bin\bash.exe` (junction → real
+2. Refused, each with its `why`: `H:\`, `H:\.ssh\id_rsa`, `H:\VRG\Full\tools\git\bin\bash.exe` (junction → real
    path outside), `<repo>\Planner\home\…`, `…\.credentials.json`, `<repo>\.git\config`, `Calculator\x.pdf`,
    `\\server\share\a.json`, `//server/share/a.json`, `\\?\UNC\s\a.json`, `\\.\NUL`, `C:a.json`,
    `Calculator\a.json:evil`, `Calculator\CON.json`, `Calculator\PROGRA~1\a.json`,

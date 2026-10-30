@@ -7,12 +7,12 @@ Planner / Kódváros controller, formerly AirDeck; its manual is [docs/legeger.m
 The rest of the roadmap is already on the home screen as planned tiles, each naming the work package that
 builds it.
 
-The plan, the decisions and the work packages are in [`docs/mobile/`](../docs/mobile/README.md); a cloud
-session starts from [`GO-MOBILE.md`](../GO-MOBILE.md).
+The plan, the decisions and the work packages are in [`docs/mobile/`](../docs/mobile/README.md); a session
+starts from [`GO-MOBILE.md`](../GO-MOBILE.md) (local H: session since 2026-10-30).
 
 ```
 Mobile/
-  mobile.cmd            build · install · test · relay · e2e · studio (START.cmd A, VRG-DE.cmd D6)
+  mobile.cmd            build · install · test · relay · e2e · studio (START → L)
   docs/legeger.md       Légegér's manual
   tests/relay-e2e.js    relay + real Kódváros page + fake Planner + fake phone
   tests/relay-pair.js   QR pairing against a real relay: codes, P-256 signatures, the trust gate

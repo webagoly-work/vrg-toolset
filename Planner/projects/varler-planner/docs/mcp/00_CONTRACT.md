@@ -7,10 +7,10 @@ are cited as Q-nn; a WP builds the **A** option unless the README's "Answers" li
 ## 0. Where you work
 
 ```bash
-cd H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner
+cd H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner
 git rev-parse --show-toplevel && git branch --show-current     # must say Planner_VRG_U100 · main   (Q-01)
 grep -c "stkCreate" dist/varler_planner.html                  # > 0 — main carries the stack since e37f856
-export NODE_PATH=H:/Dev-VRG/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
+export NODE_PATH=H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
 ```
 
 Why `main` and not `planner-stack` (Q-01): the research note behind this pack, the 2026-10-18 round and

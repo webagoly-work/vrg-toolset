@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLIP Spike</title>
+<style>
+:root{
+  --bg:#f4f5f2; --panel:#ffffff; --ink:#1d2321; --muted:#66706c; --line:#d5d9d6;
+  --grid:#c9cecb; --cell:#8fd3b6; --dot:#1f2a26; --wall:#9aa39f; --obst:#e0794a; --accent:#2f8f6b;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141816; --panel:#1c2120; --ink:#e4e9e6; --muted:#93a09a; --line:#2c3331;
+    --grid:#2e3533; --cell:#2f7a5c; --dot:#d8efe4; --wall:#56605c; --obst:#e88a5d; --accent:#5cc49a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141816; --panel:#1c2120; --ink:#e4e9e6; --muted:#93a09a; --line:#2c3331;
+  --grid:#2e3533; --cell:#2f7a5c; --dot:#d8efe4; --wall:#56605c; --obst:#e88a5d; --accent:#5cc49a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,Segoe UI,sans-serif}
+main{display:flex;gap:16px;padding:16px;flex-wrap:wrap}
+#stage{flex:1 1 560px;min-width:0}
+canvas{width:100%;display:block;background:var(--panel);border:1px solid var(--line);border-radius:6px;touch-action:none}
+aside{flex:0 0 280px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}
+h1{font-size:18px;margin:0 0 2px}
+.en{font-style:italic;color:var(--muted);font-size:12px}
+fieldset{border:0;border-top:1px solid var(--line);margin:10px 0 0;padding:8px 0 0}
+legend{font-weight:600;padding:0}
+label{display:flex;align-items:center;gap:6px;margin:4px 0}
+input[type=range]{flex:1}
+button{background:var(--accent);color:#fff;border:0;border-radius:4px;padding:6px 10px;cursor:pointer;margin:2px 4px 2px 0}
+button.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+#stats{font:12px/1.5 ui-monospace,Consolas,monospace;color:var(--muted);margin-top:8px;white-space:pre}
+@media (max-width:640px){aside{flex:1 1 100%}}
+</style>
+</head>
+<body>
+<main>
+  <div id="stage">
+    <canvas id="c"></canvas>
+    <div class="en">Húzd a narancs kört a vízben. <span>Drag the orange disc through the water.</span></div>
+  </div>
+  <aside>
+    <h1>FLIP folyadék</h1>
+    <div class="en">Fluid Implicit Particle — VRG clean-room spike</div>
+    <div style="margin-top:8px">
+      <button id="reset">Gátszakadás</button>
+      <button id="pause" class="sec">Szünet</button>
+      <button id="step" class="sec">Lépés</button>
+    </div>
+    <fieldset><legend>Rács <span class="en">grid</span></legend>
+      <label>Felbontás <select id="res"><option>24</option><option selected>40</option><option>64</option><option>100</option></select></label>
+      <label><input type="checkbox" id="showGrid" checked> Rácsvonalak <span class="en">lines</span></label>
+      <label><input type="checkbox" id="showCells" checked> Folyadék cellák <span class="en">fluid cells</span></label>
+      <label><input type="checkbox" id="showParts" checked> Részecskék <span class="en">particles</span></label>
+      <label><input type="checkbox" id="speedCol"> Sebesség szín <span class="en">colour by speed</span></label>
+    </fieldset>
+    <fieldset><legend>Megoldó <span class="en">solver</span></legend>
+      <label>PIC <input type="range" id="flip" min="0" max="1" step="0.05" value="0.9"> FLIP <b id="flipV">0.90</b></label>
+      <label>Iteráció <input type="range" id="iters" min="5" max="100" step="5" value="50"> <b id="itersV">50</b></label>
+      <label><input type="checkbox" id="separate" checked> Szétlökés <span class="en">push apart</span></label>
+      <label><input type="checkbox" id="drift" checked> Sűrűség korrekció <span class="en">drift comp.</span></label>
+      <label><input type="checkbox" id="obstacle" checked> Akadály <span class="en">obstacle</span></label>
+      <label>Gravitáció ∠ <input type="range" id="gang" min="-90" max="90" step="5" value="0"> <b id="gangV">0°</b></label>
+    </fieldset>
+    <div id="stats"></div>
+  </aside>
+</main>
+<script>
+"use strict";
+// ---- FLIP solver on a staggered (MAC) grid --------------------------------
+// u[i,j] lives on the left face of cell (i,j), v[i,j] on its bottom face.
+const FLUID = 0, AIR = 1, SOLID = 2;
+
+class Flip {
+  constructor(W, H, res) {
+    const h = this.h = H / res;
+    this.nx = Math.floor(W / h) + 1;
+    this.ny = res + 1;
+    const n = this.n = this.nx * this.ny;
+    this.u = new Float32Array(n);  this.v = new Float32Array(n);
+    this.du = new Float32Array(n); this.dv = new Float32Array(n);
+    this.pu = new Float32Array(n); this.pv = new Float32Array(n);
+    this.s = new Float32Array(n);          // 1 = open, 0 = solid
+    this.type = new Int32Array(n);
+    this.rho = new Float32Array(n);
+    this.rho0 = 0;
+    this.obst = { x: -1, y: -1, r: 0.1 * H, vx: 0, vy: 0, on: true };
+
+    this.r = 0.3 * h;                       // particle radius
+    this.pInv = 1 / (2.2 * this.r);         // spatial hash for push-apart
+    this.pnx = Math.floor(this.nx * h * this.pInv) + 1;
+    this.pny = Math.floor(this.ny * h * this.pInv) + 1;
+  }
+
+  fill(fracW, fracH) {
+    const { h, r } = this, dx = 2 * r, dy = Math.sqrt(3) / 2 * dx;
+    const innerW = (this.nx - 2) * h, innerH = (this.ny - 2) * h;
+    const cx = Math.floor((fracW * innerW - 2 * r) / dx);
+    const cy = Math.floor((fracH * innerH - 2 * r) / dy);
+    const np = this.np = cx * cy;
+    this.x = new Float32Array(np); this.y = new Float32Array(np);
+    this.vx = new Float32Array(np); this.vy = new Float32Array(np);
+    let p = 0;
+    for (let i = 0; i < cx; i++) for (let j = 0; j < cy; j++, p++) {
+      this.x[p] = h + r + dx * i + (j % 2 ? r : 0);
+      this.y[p] = h + r + dy * j;
+    }
+    this.count = new Int32Array(this.pnx * this.pny);
+    this.first = new Int32Array(this.pnx * this.pny + 1);
+    this.ids = new Int32Array(np);
+    this.rho0 = 0;
+  }
+
+  // 1. gravity + advection
+  integrate(dt, gx, gy) {
+    for (let p = 0; p < this.np; p++) {
+      this.vx[p] += dt * gx; this.vy[p] += dt * gy;
+      this.x[p] += dt * this.vx[p]; this.y[p] += dt * this.vy[p];
+    }
+  }
+
+  // 2. keep particles evenly spread (counting-sort spatial hash)
+  pushApart(iters) {
+    const { np, pInv, pnx, pny, count, first, ids, x, y } = this;
+    count.fill(0);
+    const cellOf = p => Math.min(Math.max(Math.floor(x[p] * pInv), 0), pnx - 1) * pny
+                      + Math.min(Math.max(Math.floor(y[p] * pInv), 0), pny - 1);
+    for (let p = 0; p < np; p++) count[cellOf(p)]++;
+    let acc = 0;
+    for (let c = 0; c < pnx * pny; c++) { acc += count[c]; first[c] = acc; }
+    first[pnx * pny] = acc;
+    for (let p = 0; p < np; p++) { const c = cellOf(p); ids[--first[c]] = p; }
+
+    const md = 2 * this.r, md2 = md * md;
+    for (let it = 0; it < iters; it++) {
+      for (let p = 0; p < np; p++) {
+        const xi = Math.floor(x[p] * pInv), yi = Math.floor(y[p] * pInv);
+        const x0 = Math.max(xi - 1, 0), x1 = Math.min(xi + 1, pnx - 1);
+        const y0 = Math.max(yi - 1, 0), y1 = Math.min(yi + 1, pny - 1);
+        for (let a = x0; a <= x1; a++) for (let b = y0; b <= y1; b++) {
+          const c = a * pny + b;
+          for (let k = first[c]; k < first[c + 1]; k++) {
+            const q = ids[k];
+            if (q === p) continue;
+            let dx = x[q] - x[p], dy = y[q] - y[p];
+            const d2 = dx * dx + dy * dy;
+            if (d2 > md2 || d2 === 0) continue;
+            const d = Math.sqrt(d2), s = 0.5 * (md - d) / d;
+            dx *= s; dy *= s;
+            x[p] -= dx; y[p] -= dy; x[q] += dx; y[q] += dy;
+          }
+        }
+      }
+    }
+  }
+
+  // 3. walls + moving obstacle
+  collide() {
+    const { h, r, obst } = this;
+    const minX = h + r, maxX = (this.nx - 1) * h - r;
+    const minY = h + r, maxY = (this.ny - 1) * h - r;
+    const or = obst.r + r, or2 = or * or;
+    for (let p = 0; p < this.np; p++) {
+      let x = this.x[p], y = this.y[p];
+      if (obst.on) {
+        const dx = x - obst.x, dy = y - obst.y, d2 = dx * dx + dy * dy;
+        if (d2 < or2) {
+          const d = Math.sqrt(d2) || 1e-6;
+          x = obst.x + dx / d * or; y = obst.y + dy / d * or;
+          this.vx[p] = obst.vx; this.vy[p] = obst.vy;
+        }
+      }
+      if (x < minX) { x = minX; this.vx[p] = 0; }
+      if (x > maxX) { x = maxX; this.vx[p] = 0; }
+      if (y < minY) { y = minY; this.vy[p] = 0; }
+      if (y > maxY) { y = maxY; this.vy[p] = 0; }
+      this.x[p] = x; this.y[p] = y;
+    }
+  }
+
+  markSolids() {
+    const { nx, ny, h, s, obst } = this;
+    for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) {
+      let open = (i === 0 || j === 0 || i === nx - 1 || j === ny - 1) ? 0 : 1;
+      if (open && obst.on) {
+        const dx = (i + 0.5) * h - obst.x, dy = (j + 0.5) * h - obst.y;
+        if (dx * dx + dy * dy < obst.r * obst.r) open = 0;
+      }
+      s[i * ny + j] = open;
+    }
+  }
+
+  // bilinear weights for a staggered component; returns via this._w / this._nr
+  weights(px, py, ox, oy) {
+    const { h, nx, ny } = this;
+    px = Math.min(Math.max(px, h), (nx - 1) * h) - ox;
+    py = Math.min(Math.max(py, h), (ny - 1) * h) - oy;
+    const x0 = Math.min(Math.floor(px / h), nx - 2), y0 = Math.min(Math.floor(py / h), ny - 2);
+    const tx = (px - x0 * h) / h, ty = (py - y0 * h) / h;
+    const x1 = Math.min(x0 + 1, nx - 2), y1 = Math.min(y0 + 1, ny - 2);
+    const w = this._w, nr = this._nr;
+    w[0] = (1 - tx) * (1 - ty); w[1] = tx * (1 - ty); w[2] = tx * ty; w[3] = (1 - tx) * ty;
+    nr[0] = x0 * ny + y0; nr[1] = x1 * ny + y0; nr[2] = x1 * ny + y1; nr[3] = x0 * ny + y1;
+  }
+
+  // 4. particles -> grid (P2G)
+  toGrid() {
+    const { ny, h, s, type, u, v, du, dv, obst } = this, hh = 0.5 * h;
+    this._w = this._w || new Float32Array(4); this._nr = this._nr || new Int32Array(4);
+    const w = this._w, nr = this._nr;
+    for (let c = 0; c < this.n; c++) type[c] = s[c] === 0 ? SOLID : AIR;
+    for (let p = 0; p < this.np; p++) {
+      const c = Math.floor(this.x[p] / h) * ny + Math.floor(this.y[p] / h);
+      if (type[c] === AIR) type[c] = FLUID;
+    }
+    for (const [f, d, pvel, ox, oy] of [[u, du, this.vx, 0, hh], [v, dv, this.vy, hh, 0]]) {
+      f.fill(0); d.fill(0);
+      for (let p = 0; p < this.np; p++) {
+        this.weights(this.x[p], this.y[p], ox, oy);
+        for (let k = 0; k < 4; k++) { f[nr[k]] += pvel[p] * w[k]; d[nr[k]] += w[k]; }
+      }
+      for (let c = 0; c < this.n; c++) if (d[c] > 0) f[c] /= d[c];
+    }
+    // faces touching a solid cell take the solid's velocity (0 for walls)
+    for (let i = 0; i < this.nx; i++) for (let j = 0; j < ny; j++) {
+      const c = i * ny + j;
+      if (s[c] !== 0) continue;
+      const isWall = i === 0 || j === 0 || i === this.nx - 1 || j === ny - 1;
+      const svx = isWall ? 0 : obst.vx, svy = isWall ? 0 : obst.vy;
+      u[c] = svx; v[c] = svy;
+      if (i + 1 < this.nx) u[c + ny] = svx;
+      if (j + 1 < ny) v[c + 1] = svy;
+    }
+    this.pu.set(u); this.pv.set(v);
+  }
+
+  // particle density per cell, used to push back where particles bunch up
+  density() {
+    const { rho, h } = this, hh = 0.5 * h, w = this._w, nr = this._nr;
+    rho.fill(0);
+    for (let p = 0; p < this.np; p++) {
+      this.weights(this.x[p], this.y[p], hh, hh);
+      for (let k = 0; k < 4; k++) rho[nr[k]] += w[k];
+    }
+    if (this.rho0 === 0) {
+      let sum = 0, cnt = 0;
+      for (let c = 0; c < this.n; c++) if (this.type[c] === FLUID) { sum += rho[c]; cnt++; }
+      if (cnt) this.rho0 = sum / cnt;
+    }
+  }
+
+  // 5. incompressibility: Gauss-Seidel with over-relaxation
+  project(iters, over, drift) {
+    const { nx, ny, s, u, v, type, rho, rho0 } = this, k = 1.0;
+    for (let it = 0; it < iters; it++) {
+      for (let i = 1; i < nx - 1; i++) for (let j = 1; j < ny - 1; j++) {
+        const c = i * ny + j;
+        if (type[c] !== FLUID) continue;
+        const sx0 = s[c - ny], sx1 = s[c + ny], sy0 = s[c - 1], sy1 = s[c + 1];
+        const sum = sx0 + sx1 + sy0 + sy1;
+        if (sum === 0) continue;
+        let div = u[c + ny] - u[c] + v[c + 1] - v[c];
+        if (drift && rho0 > 0) { const comp = rho[c] - rho0; if (comp > 0) div -= k * comp; }
+        const p = -div / sum * over;
+        u[c] -= sx0 * p; u[c + ny] += sx1 * p;
+        v[c] -= sy0 * p; v[c + 1] += sy1 * p;
+      }
+    }
+  }
+
+  // 6. grid -> particles (G2P), PIC/FLIP blend
+  toParticles(flipRatio) {
+    const { ny, h, type, u, v, pu, pv, du, dv } = this, hh = 0.5 * h, w = this._w, nr = this._nr;
+    for (const [f, pf, d, pvel, ox, oy, off] of
+         [[u, pu, du, this.vx, 0, hh, ny], [v, pv, dv, this.vy, hh, 0, 1]]) {
+      for (let p = 0; p < this.np; p++) {
+        this.weights(this.x[p], this.y[p], ox, oy);
+        let ws = 0, pic = 0, corr = 0;
+        for (let k = 0; k < 4; k++) {
+          const c = nr[k];
+          // a face is valid if one of its two cells is not air
+          const valid = (type[c] !== AIR || type[c - off] !== AIR) ? 1 : 0;
+          const wk = valid * w[k];
+          ws += wk; pic += wk * f[c]; corr += wk * (f[c] - pf[c]);
+        }
+        if (ws > 0) {
+          pic /= ws; corr /= ws;
+          pvel[p] = (1 - flipRatio) * pic + flipRatio * (pvel[p] + corr);
+        }
+      }
+    }
+  }
+
+  step(dt, o) {
+    const gx = 9.81 * Math.sin(o.gang), gy = -9.81 * Math.cos(o.gang);
+    this.integrate(dt, gx, gy);
+    if (o.separate) this.pushApart(2);
+    this.collide();
+    this.markSolids();
+    this.toGrid();
+    this.density();
+    this.project(o.iters, 1.9, o.drift);
+    this.toParticles(o.flip);
+  }
+}
+
+// ---- UI --------------------------------------------------------------------
+const $ = id => document.getElementById(id);
+const cv = $("c"), ctx = cv.getContext("2d");
+const ASPECT = 1.4, H = 1.0, W = H * ASPECT;
+let sim, paused = false, lastMs = 0;
+const opt = () => ({
+  flip: +$("flip").value, iters: +$("iters").value, separate: $("separate").checked,
+  drift: $("drift").checked, gang: +$("gang").value * Math.PI / 180,
+});
+
+function reset() {
+  sim = new Flip(W, H, +$("res").value);
+  sim.fill(0.55, 0.8);
+  sim.obst.on = $("obstacle").checked;
+  sim.obst.x = (sim.nx - 3) * sim.h - sim.obst.r; sim.obst.y = 0.75 * H;
+}
+
+function fit() {
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(w / ASPECT * dpr);
+}
+
+function colour(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function draw() {
+  const { nx, ny, h, type } = sim;
+  const sc = Math.min(cv.width / (nx * h), cv.height / (ny * h));
+  const X = x => x * sc, Y = y => cv.height - y * sc;
+  ctx.fillStyle = colour("--panel"); ctx.fillRect(0, 0, cv.width, cv.height);
+  const cs = h * sc;
+
+  ctx.fillStyle = colour("--wall"); ctx.beginPath();
+  if ($("showCells").checked) {
+    for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++)
+      if (type[i * ny + j] === SOLID && (i === 0 || j === 0 || i === nx - 1 || j === ny - 1))
+        ctx.rect(X(i * h), Y((j + 1) * h), cs + 0.5, cs + 0.5);
+  }
+  ctx.fill();
+  if ($("showCells").checked) {
+    ctx.fillStyle = colour("--cell"); ctx.beginPath();
+    for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++)
+      if (type[i * ny + j] === FLUID) ctx.rect(X(i * h), Y((j + 1) * h), cs + 0.5, cs + 0.5);
+    ctx.fill();
+  }
+  if ($("showGrid").checked && nx <= 160) {
+    ctx.strokeStyle = colour("--grid"); ctx.lineWidth = 1; ctx.beginPath();
+    for (let i = 0; i <= nx; i++) { ctx.moveTo(X(i * h) + 0.5, 0); ctx.lineTo(X(i * h) + 0.5, cv.height); }
+    for (let j = 0; j <= ny; j++) { ctx.moveTo(0, Y(j * h) + 0.5); ctx.lineTo(cv.width, Y(j * h) + 0.5); }
+    ctx.stroke();
+  }
+  if ($("showParts").checked) {
+    const rp = Math.max(1, sim.r * sc * 0.6);
+    if ($("speedCol").checked) {
+      const B = 8, buckets = Array.from({ length: B }, () => []);
+      for (let p = 0; p < sim.np; p++) {
+        const sp = Math.hypot(sim.vx[p], sim.vy[p]);
+        buckets[Math.min(B - 1, Math.floor(sp / 3 * B))].push(p);
+      }
+      buckets.forEach((list, b) => {
+        ctx.fillStyle = `hsl(${210 - b * 26},80%,${45 + b * 3}%)`; ctx.beginPath();
+        for (const p of list) ctx.rect(X(sim.x[p]) - rp, Y(sim.y[p]) - rp, 2 * rp, 2 * rp);
+        ctx.fill();
+      });
+    } else {
+      ctx.fillStyle = colour("--dot"); ctx.beginPath();
+      for (let p = 0; p < sim.np; p++) ctx.rect(X(sim.x[p]) - rp, Y(sim.y[p]) - rp, 2 * rp, 2 * rp);
+      ctx.fill();
+    }
+  }
+  if (sim.obst.on) {
+    ctx.fillStyle = colour("--obst"); ctx.beginPath();
+    ctx.arc(X(sim.obst.x), Y(sim.obst.y), sim.obst.r * sc, 0, 2 * Math.PI); ctx.fill();
+  }
+  let fl = 0; for (let c = 0; c < sim.n; c++) if (type[c] === FLUID) fl++;
+  $("stats").textContent =
+    `rács ${nx}×${ny}  részecske ${sim.np}\nfolyadék cella ${fl}  ρ0 ${sim.rho0.toFixed(2)}\nlépés ${lastMs.toFixed(1)} ms`;
+}
+
+// obstacle drag
+let drag = null;
+function toSim(e) {
+  const r = cv.getBoundingClientRect(), sc = Math.min(r.width / (sim.nx * sim.h), r.height / (sim.ny * sim.h));
+  return [(e.clientX - r.left) / sc, (r.bottom - e.clientY) / sc];
+}
+cv.addEventListener("pointerdown", e => { if (!sim.obst.on) return; drag = toSim(e); cv.setPointerCapture(e.pointerId); moveObst(drag, true); });
+cv.addEventListener("pointermove", e => { if (drag) moveObst(toSim(e), false); });
+cv.addEventListener("pointerup", () => { drag = null; sim.obst.vx = sim.obst.vy = 0; });
+let pending = null;
+function moveObst(p, jump) { pending = { p, jump }; }
+
+const DT = 1 / 60;
+function frame() {
+  if (pending) {
+    const o = sim.obst, [x, y] = pending.p;
+    o.vx = pending.jump ? 0 : (x - o.x) / DT; o.vy = pending.jump ? 0 : (y - o.y) / DT;
+    o.x = x; o.y = y; pending = null;
+  } else if (!drag) { sim.obst.vx = sim.obst.vy = 0; }
+  if (!paused) { const t = performance.now(); sim.step(DT, opt()); lastMs = performance.now() - t; }
+  draw();
+  requestAnimationFrame(frame);
+}
+
+$("reset").onclick = reset;
+$("res").onchange = reset;
+$("pause").onclick = () => { paused = !paused; $("pause").textContent = paused ? "Folytat" : "Szünet"; };
+$("step").onclick = () => { paused = true; $("pause").textContent = "Folytat"; sim.step(DT, opt()); };
+$("obstacle").onchange = () => { sim.obst.on = $("obstacle").checked; };
+for (const id of ["flip", "iters", "gang"]) $(id).oninput = () => {
+  $(id + "V").textContent = id === "flip" ? (+$(id).value).toFixed(2) : $(id).value + (id === "gang" ? "°" : "");
+};
+window.addEventListener("resize", fit);
+fit(); reset(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -135,14 +135,14 @@ function eloDialog(boardId){const bs=hwList('board');if(!bs.length){lyrHud('Ninc
     +` Betáp <select id="eloP"><option value="1f" ${opt.phase==='1f'?'selected':''}>1 fázis</option><option value="3f" ${opt.phase==='3f'?'selected':''}>3 fázis</option></select>`
     +` Védelem <select id="eloW"><option value="rcbo" ${opt.perWay==='rcbo'?'selected':''}>RCBO soronként</option><option value="rcd" ${opt.perWay==='rcd'?'selected':''}>RCD csoportok</option></select></div>`
     +`<div style="max-height:380px;overflow:auto"><table style="font-size:11.5px;width:100%"><tr><th align="left">Áramkör</th><th>Kismegsz.</th><th align="left">Eszköz</th><th>Mod.</th><th>Fázis</th><th>kW</th></tr>`
-    +S.feed.map(f=>`<tr style="color:#555"><td>${esc(f.n)}</td><td></td><td></td><td align="center">${f.mod}</td><td></td><td></td></tr>`).join('')
+    +S.feed.map(f=>`<tr style="color:var(--pc-dim,#555)"><td>${esc(f.n)}</td><td></td><td></td><td align="center">${f.mod}</td><td></td><td></td></tr>`).join('')
     +Object.keys(kinds).map(k=>{const ws=S.ways.filter(w=>w.kind===k);if(!ws.length)return '';
       return `<tr><td colspan="6"><b>${kinds[k]}</b> (${ws.length})</td></tr>`+ws.map(w=>`<tr><td>${esc(w.label)}</td><td align="center">${esc(w.mcb)}</td><td>${esc(w.device)}</td><td align="center">${w.mod}</td><td align="center">${w.phase||''}</td><td align="center">${w.kw}</td></tr>`).join('');}).join('')
-    +S.rcd.map(r=>`<tr style="color:#555"><td>${esc(r.n)}</td><td></td><td>${r.ways.length} kör</td><td align="center">${r.mod}</td><td></td><td></td></tr>`).join('')
+    +S.rcd.map(r=>`<tr style="color:var(--pc-dim,#555)"><td>${esc(r.n)}</td><td></td><td>${r.ways.length} kör</td><td align="center">${r.mod}</td><td></td><td></td></tr>`).join('')
     +`</table></div><div class="mrow"><b>${S.totalMod} / ${S.rows*ELO_RULES.rowModules} modul · ${S.rows} sor · ${S.free} szabad</b>`
     +(S.phases?' · '+Object.keys(S.phases).map(k=>k+' '+S.phases[k]+' kW').join(' · '):'')+`</div>`
-    +S.warnings.map(x=>`<div style="color:#b05a00">${esc(x.msg)}</div>`).join('')
-    +`<div class="mrow" style="font-size:11px;color:#888">Névleges értékek és terhelések tipikusak — egy áramkör saját kismegszakítója mindig felülírja.</div>`,()=>{},'Bezár');
+    +S.warnings.map(x=>`<div style="color:var(--pc-warn,#b05a00)">${esc(x.msg)}</div>`).join('')
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Névleges értékek és terhelések tipikusak — egy áramkör saját kismegszakítója mindig felülírja.</div>`,()=>{},'Bezár');
   const re=()=>{state.elo={phase:$('eloP').value,perWay:$('eloW').value};closeModal();eloDialog($('eloB').value);};
   $('eloB').onchange=re;$('eloP').onchange=re;$('eloW').onchange=re;}
 function eloExportObj(boardId){const bs=hwList('board');boardId=boardId||(bs[0]&&bs[0].id);

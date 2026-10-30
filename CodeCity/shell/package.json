@@ -1,0 +1,7 @@
+{
+  "name": "vrg-kodvaros-overlay",
+  "private": true,
+  "description": "Kódváros overlay shell (P12, KV-25). Run with ../tools/electron/electron.exe CodeCity/shell — no npm install.",
+  "main": "main.js",
+  "license": "UNLICENSED"
+}

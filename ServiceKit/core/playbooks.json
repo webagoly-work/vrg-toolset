@@ -1,0 +1,1583 @@
+{
+ "version": 1,
+ "playbooks": [
+  {
+   "id": "health",
+   "icon": "pulse",
+   "risk": "safe",
+   "minutes": 3,
+   "title": {
+    "hu": "Gyors állapotfelmérés",
+    "en": "Quick health check"
+   },
+   "desc": {
+    "hu": "Csak olvas, semmit nem változtat. Minden munka elején érdemes lefuttatni: a jelentésbe kerül.",
+    "en": "Read-only, changes nothing. Worth running at the start of every job: it goes into the report."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "sys-overview",
+     "title": {
+      "hu": "Rendszer, üzemidő, függő újraindítás",
+      "en": "System, uptime, pending restart"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "disk-health",
+     "title": {
+      "hu": "Lemezek állapota és szabad hely",
+      "en": "Disk health and free space"
+     },
+     "admin": false,
+     "long": false,
+     "default": true,
+     "params": {
+      "smart": "true"
+     }
+    },
+    {
+     "kind": "check",
+     "routine": "av-status",
+     "title": {
+      "hu": "Vírusvédelem",
+      "en": "Antivirus"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "update-status",
+     "title": {
+      "hu": "Windows frissítések",
+      "en": "Windows updates"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "crash-events",
+     "title": {
+      "hu": "Összeomlások és hardverhibák (30 nap)",
+      "en": "Crashes and hardware errors (30 days)"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "perf-snapshot",
+     "title": {
+      "hu": "Terhelés, memória, energiaséma",
+      "en": "Load, memory, power plan"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "startup-review",
+     "title": {
+      "hu": "Indítási elemek",
+      "en": "Startup items"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "temp-size",
+     "title": {
+      "hu": "Ideiglenes fájlok mérete",
+      "en": "Temporary file size"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "battery-check",
+     "title": {
+      "hu": "Akkumulátor",
+      "en": "Battery"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "restore-status",
+     "title": {
+      "hu": "Visszaállítási pontok",
+      "en": "Restore points"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "activation-check",
+     "title": {
+      "hu": "Windows aktiválás",
+      "en": "Windows activation"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    }
+   ]
+  },
+  {
+   "id": "tuneup",
+   "icon": "broom",
+   "risk": "changes",
+   "minutes": 20,
+   "title": {
+    "hu": "Karbantartás és gyorsítás",
+    "en": "Tune-up"
+   },
+   "desc": {
+    "hu": "Visszaállítási pont, takarítás, indítási elemek és programok rendbetétele, frissítések.",
+    "en": "Restore point, cleanup, startup and program review, updates."
+   },
+   "steps": [
+    {
+     "kind": "action",
+     "routine": "restore-point",
+     "title": {
+      "hu": "Visszaállítási pont",
+      "en": "Restore point"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": true
+    },
+    {
+     "kind": "check",
+     "routine": "temp-size",
+     "title": {
+      "hu": "Takarítható hely felmérése",
+      "en": "Measure cleanable space"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "action",
+     "routine": "temp-cleanup",
+     "title": {
+      "hu": "Ideiglenes fájlok törlése (24 óránál régebbiek)",
+      "en": "Delete temporary files (older than 24 h)"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": true
+    },
+    {
+     "kind": "action",
+     "routine": "do-cache-clean",
+     "title": {
+      "hu": "Frissítési gyorsítótár törlése",
+      "en": "Clear the update cache"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": true
+    },
+    {
+     "kind": "action",
+     "routine": "recycle-empty",
+     "title": {
+      "hu": "Lomtár ürítése",
+      "en": "Empty the Recycle Bin"
+     },
+     "admin": false,
+     "long": false,
+     "default": false,
+     "confirm": true,
+     "warn": {
+      "hu": "Előtte kérdezd meg az ügyfelet, nincs-e a Lomtárban szükséges fájl.",
+      "en": "Ask the client first whether the Recycle Bin holds anything needed."
+     }
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Indítási elemek átnézése (Autoruns)",
+      "en": "Review startup items (Autoruns)"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Logon és Scheduled Tasks fül: vedd ki a pipát a felesleges, nem Microsoft elemekből. Ne törölj.",
+      "en": "Logon and Scheduled Tasks tabs: untick unneeded non-Microsoft items. Don't delete."
+     },
+     "app": "autoruns",
+     "mode": "admin"
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Felesleges programok eltávolítása (BCU)",
+      "en": "Remove unneeded programs (BCU)"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Egyeztesd az ügyféllel, mit lehet eltávolítani.",
+      "en": "Agree with the client what can be removed."
+     },
+     "app": "bcu",
+     "mode": "admin"
+    },
+    {
+     "kind": "action",
+     "routine": "dism-component-cleanup",
+     "title": {
+      "hu": "Windows összetevő-tisztítás (DISM)",
+      "en": "Windows component cleanup (DISM)"
+     },
+     "admin": true,
+     "long": true,
+     "default": false,
+     "confirm": true
+    },
+    {
+     "kind": "action",
+     "routine": "hibernate-off",
+     "title": {
+      "hu": "Hibernálás kikapcsolása (helyet szabadít)",
+      "en": "Turn off hibernation (frees space)"
+     },
+     "admin": true,
+     "long": false,
+     "default": false,
+     "confirm": true,
+     "warn": {
+      "hu": "Laptopon a hibernálás hasznos lehet; csak asztali gépen javasolt.",
+      "en": "Hibernation can be useful on laptops; suggested for desktops only."
+     }
+    },
+    {
+     "kind": "action",
+     "routine": "power-balanced",
+     "title": {
+      "hu": "Kiegyensúlyozott energiaséma",
+      "en": "Balanced power plan"
+     },
+     "admin": false,
+     "long": false,
+     "default": false,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "winget-upgrade",
+     "title": {
+      "hu": "Programok frissítése (winget)",
+      "en": "Update programs (winget)"
+     },
+     "admin": false,
+     "long": true,
+     "default": false,
+     "confirm": true
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Programok frissítése (Patch My PC)",
+      "en": "Update programs (Patch My PC)"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Csak azt pipáld, amit tényleg frissítenél.",
+      "en": "Tick only what you really want updated."
+     },
+     "app": "patchmypc",
+     "mode": "admin"
+    },
+    {
+     "kind": "check",
+     "routine": "perf-snapshot",
+     "title": {
+      "hu": "Ellenőrzés a végén",
+      "en": "Final check"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    }
+   ]
+  },
+  {
+   "id": "repair",
+   "icon": "wrench",
+   "risk": "repair",
+   "minutes": 45,
+   "title": {
+    "hu": "Rendszerjavítás",
+    "en": "System repair"
+   },
+   "desc": {
+    "hu": "DISM és SFC a sérült rendszerfájlokra, fájlrendszer-ellenőrzés. Internet kell hozzá, és sokáig tart.",
+    "en": "DISM and SFC for corrupt system files, file system check. Needs internet and takes a while."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "sys-overview",
+     "title": {
+      "hu": "Függő újraindítás ellenőrzése",
+      "en": "Check for pending restart"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "action",
+     "routine": "restore-point",
+     "title": {
+      "hu": "Visszaállítási pont",
+      "en": "Restore point"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": true
+    },
+    {
+     "kind": "action",
+     "routine": "dism-restore",
+     "title": {
+      "hu": "Rendszerkép javítása (DISM RestoreHealth)",
+      "en": "Repair the system image (DISM RestoreHealth)"
+     },
+     "admin": true,
+     "long": true,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "sfc",
+     "title": {
+      "hu": "Rendszerfájlok ellenőrzése (SFC)",
+      "en": "Check system files (SFC)"
+     },
+     "admin": true,
+     "long": true,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "chkdsk-scan",
+     "title": {
+      "hu": "Fájlrendszer ellenőrzése (online)",
+      "en": "Check the file system (online)"
+     },
+     "admin": true,
+     "long": true,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "chkdsk-schedule",
+     "title": {
+      "hu": "Lemezjavítás ütemezése újraindításra",
+      "en": "Schedule a disk repair at restart"
+     },
+     "admin": true,
+     "long": false,
+     "default": false,
+     "confirm": true
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Indítsd újra a gépet",
+      "en": "Restart the PC"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Az SFC és DISM javításai újraindítás után lépnek életbe.",
+      "en": "SFC and DISM repairs take effect after a restart."
+     }
+    }
+   ]
+  },
+  {
+   "id": "malware",
+   "icon": "shield",
+   "risk": "changes",
+   "minutes": 40,
+   "title": {
+    "hu": "Kártevő-irtás",
+    "en": "Malware sweep"
+   },
+   "desc": {
+    "hu": "Gyanús indítási elemek, ütemezett feladatok, böngésző-eltérítés, proxy és hosts, majd két vírusirtó.",
+    "en": "Suspicious startup items, scheduled tasks, browser hijacks, proxy and hosts, then two scanners."
+   },
+   "warn": {
+    "hu": "Zsarolóvírus gyanújánál előbb húzd ki a hálózatot, és ne indítsd újra a gépet.",
+    "en": "If you suspect ransomware, unplug the network first and don't restart the PC."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "av-status",
+     "title": {
+      "hu": "Vírusvédelem állapota",
+      "en": "Antivirus status"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "startup-review",
+     "title": {
+      "hu": "Gyanús indítási elemek",
+      "en": "Suspicious startup items"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "sched-tasks-check",
+     "title": {
+      "hu": "Gyanús ütemezett feladatok",
+      "en": "Suspicious scheduled tasks"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "browser-policy-check",
+     "title": {
+      "hu": "Böngésző-eltérítés (házirendek)",
+      "en": "Browser hijack (policies)"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "proxy-check",
+     "title": {
+      "hu": "Proxy beállítások",
+      "en": "Proxy settings"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "hosts-check",
+     "title": {
+      "hu": "Hosts fájl",
+      "en": "Hosts file"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "action",
+     "routine": "defender-update",
+     "title": {
+      "hu": "Defender adatbázis frissítése",
+      "en": "Update Defender signatures"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "defender-scan",
+     "title": {
+      "hu": "Defender gyorsvizsgálat",
+      "en": "Defender quick scan"
+     },
+     "admin": true,
+     "long": true,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Második vélemény: Kaspersky VRT",
+      "en": "Second opinion: Kaspersky VRT"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Teljes vizsgálat, a találatokat töröltesd.",
+      "en": "Full scan, let it remove what it finds."
+     },
+     "app": "kvrt",
+     "mode": "admin"
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Emsisoft Emergency Kit",
+      "en": "Emsisoft Emergency Kit"
+     },
+     "default": false,
+     "desc": {
+      "hu": "Ha a KVRT talált valamit, fuss még egy kört ezzel.",
+      "en": "If KVRT found something, do another pass with this."
+     },
+     "app": "eek"
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Autoruns átnézése (aláíratlan elemek)",
+      "en": "Review Autoruns (unsigned items)"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Options > Scan Options > Check VirusTotal.com; a piros sorokat vizsgáld meg.",
+      "en": "Options > Scan Options > Check VirusTotal.com; examine the red rows."
+     },
+     "app": "autoruns",
+     "mode": "admin"
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Böngésző bővítmények átnézése",
+      "en": "Review browser extensions"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Távolíts el mindent, amit az ügyfél nem ismer fel; ellenőrizd a kezdőlapot és a keresőt.",
+      "en": "Remove anything the client doesn't recognise; check the home page and search engine."
+     }
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Jelszavak cseréje",
+      "en": "Change passwords"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Kérd meg az ügyfelet, hogy egy MÁSIK, tiszta eszközről cserélje az e-mail és banki jelszavait.",
+      "en": "Ask the client to change email and banking passwords from a DIFFERENT, clean device."
+     }
+    }
+   ]
+  },
+  {
+   "id": "network",
+   "icon": "network",
+   "risk": "changes",
+   "minutes": 10,
+   "title": {
+    "hu": "Hálózati hibaelhárítás",
+    "en": "Network troubleshooting"
+   },
+   "desc": {
+    "hu": "Lépésenként megmondja, hol akad el a kapcsolat (router, internet, DNS, proxy), majd javít.",
+    "en": "Finds where the connection breaks (router, internet, DNS, proxy), then fixes it."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "net-diag",
+     "title": {
+      "hu": "Kapcsolat diagnózis",
+      "en": "Connection diagnosis"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "proxy-check",
+     "title": {
+      "hu": "Proxy",
+      "en": "Proxy"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "hosts-check",
+     "title": {
+      "hu": "Hosts fájl",
+      "en": "Hosts file"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "action",
+     "routine": "dns-flush",
+     "title": {
+      "hu": "DNS gyorsítótár ürítése",
+      "en": "Flush DNS cache"
+     },
+     "admin": false,
+     "long": false,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "time-sync",
+     "title": {
+      "hu": "Óra szinkronizálása (rossz idő = HTTPS hibák)",
+      "en": "Sync the clock (wrong time = HTTPS errors)"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "net-reset",
+     "title": {
+      "hu": "Hálózati beállítások alaphelyzetbe (újraindítás kell)",
+      "en": "Reset the network stack (restart needed)"
+     },
+     "admin": true,
+     "long": false,
+     "default": false,
+     "confirm": true,
+     "warn": {
+      "hu": "Statikus IP vagy VPN beállítás elveszhet. Előtte jegyezd fel az ipconfig /all kimenetét.",
+      "en": "Static IP or VPN settings may be lost. Note down ipconfig /all first."
+     }
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Csomagvesztés mérése (WinMTR)",
+      "en": "Measure packet loss (WinMTR)"
+     },
+     "default": false,
+     "desc": {
+      "hu": "Cél: 8.8.8.8, 1-2 percig.",
+      "en": "Target 8.8.8.8 for 1-2 minutes."
+     },
+     "app": "winmtr"
+    },
+    {
+     "kind": "check",
+     "routine": "net-diag",
+     "title": {
+      "hu": "Újraellenőrzés",
+      "en": "Re-check"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    }
+   ]
+  },
+  {
+   "id": "wufix",
+   "icon": "refresh",
+   "risk": "repair",
+   "minutes": 40,
+   "title": {
+    "hu": "Windows Update javítás",
+    "en": "Windows Update fix"
+   },
+   "desc": {
+    "hu": "Elakadt vagy hibakóddal leálló frissítésekhez: alaphelyzetbe állítás és rendszerkép-javítás.",
+    "en": "For stuck or failing updates: component reset and system image repair."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "update-status",
+     "title": {
+      "hu": "Frissítési előzmények és hibák",
+      "en": "Update history and failures"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "disk-health",
+     "title": {
+      "hu": "Szabad hely (min. 20 GB kell)",
+      "en": "Free space (20 GB needed)"
+     },
+     "admin": false,
+     "long": false,
+     "default": true,
+     "params": {
+      "smart": "false"
+     }
+    },
+    {
+     "kind": "action",
+     "routine": "restore-point",
+     "title": {
+      "hu": "Visszaállítási pont",
+      "en": "Restore point"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": true
+    },
+    {
+     "kind": "action",
+     "routine": "wu-reset",
+     "title": {
+      "hu": "Windows Update összetevők alaphelyzetbe",
+      "en": "Reset Windows Update components"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": true
+    },
+    {
+     "kind": "action",
+     "routine": "dism-restore",
+     "title": {
+      "hu": "Rendszerkép javítása (DISM)",
+      "en": "Repair the system image (DISM)"
+     },
+     "admin": true,
+     "long": true,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "time-sync",
+     "title": {
+      "hu": "Óra szinkronizálása",
+      "en": "Sync the clock"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Frissítések keresése",
+      "en": "Check for updates"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Nyomd meg a Frissítések keresése gombot, és várd meg a telepítést.",
+      "en": "Press Check for updates and wait for the install."
+     },
+     "open": {
+      "file": "ms-settings:windowsupdate"
+     },
+     "openLegacy": {
+      "file": "control.exe",
+      "args": "/name Microsoft.WindowsUpdate"
+     }
+    }
+   ]
+  },
+  {
+   "id": "backup",
+   "icon": "drive",
+   "risk": "safe",
+   "minutes": 20,
+   "title": {
+    "hu": "Újratelepítés előtti mentés",
+    "en": "Pre-reinstall backup"
+   },
+   "desc": {
+    "hu": "Kulcsok, Wi-Fi jelszavak, illesztőprogramok, programlista és könyvjelzők mentése a kit data\\backups mappájába.",
+    "en": "Saves keys, Wi-Fi passwords, drivers, program list and bookmarks into the kit's data\\backups folder."
+   },
+   "warn": {
+    "hu": "A mentés bizalmas adatot tartalmaz (jelszavak, kulcsok). A munka után töröld, vagy tartsd titkosított pendrive-on.",
+    "en": "The backup holds confidential data (passwords, keys). Delete it after the job or keep it on an encrypted stick."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "user-folders-size",
+     "title": {
+      "hu": "Felhasználói mappák mérete",
+      "en": "User folder sizes"
+     },
+     "admin": false,
+     "long": true,
+     "default": true
+    },
+    {
+     "kind": "action",
+     "routine": "keys-export",
+     "title": {
+      "hu": "Termékkulcsok (Windows, Office)",
+      "en": "Product keys (Windows, Office)"
+     },
+     "admin": false,
+     "long": false,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "wifi-export",
+     "title": {
+      "hu": "Wi-Fi profilok jelszóval",
+      "en": "Wi-Fi profiles with passwords"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": true
+    },
+    {
+     "kind": "action",
+     "routine": "driver-export",
+     "title": {
+      "hu": "Illesztőprogramok mentése",
+      "en": "Export drivers"
+     },
+     "admin": true,
+     "long": true,
+     "default": true,
+     "confirm": true,
+     "warn": {
+      "hu": "1-3 GB is lehet. Ellenőrizd, van-e elég hely a pendrive-on.",
+      "en": "Can be 1-3 GB. Check there's room on the stick."
+     }
+    },
+    {
+     "kind": "action",
+     "routine": "programs-export",
+     "title": {
+      "hu": "Telepített programok listája",
+      "en": "Installed program list"
+     },
+     "admin": false,
+     "long": false,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "bookmarks-backup",
+     "title": {
+      "hu": "Böngésző könyvjelzők",
+      "en": "Browser bookmarks"
+     },
+     "admin": false,
+     "long": false,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Felhasználói adatok másolása",
+      "en": "Copy user data"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Asztal, Dokumentumok, Képek, Letöltések, e-mail fiókok: külső lemezre. A mentés mappája megnyílik.",
+      "en": "Desktop, Documents, Pictures, Downloads, email accounts: to an external disk. The backup folder opens."
+     },
+     "folder": "backups"
+    }
+   ]
+  },
+  {
+   "id": "slowpc",
+   "icon": "slow",
+   "risk": "safe",
+   "minutes": 10,
+   "title": {
+    "hu": "Lassú gép diagnózis",
+    "en": "Slow PC diagnosis"
+   },
+   "desc": {
+    "hu": "Megkeresi a lassulás okát: terhelés, memória, lemez, hő, indítási elemek. Nem változtat semmin.",
+    "en": "Finds the cause of slowness: load, memory, disk, heat, startup items. Changes nothing."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "perf-snapshot",
+     "title": {
+      "hu": "Mi terheli a gépet",
+      "en": "What loads the PC"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "disk-health",
+     "title": {
+      "hu": "Lemez állapota és típusa",
+      "en": "Disk health and type"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "startup-review",
+     "title": {
+      "hu": "Indítási elemek",
+      "en": "Startup items"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "temp-size",
+     "title": {
+      "hu": "Ideiglenes fájlok",
+      "en": "Temporary files"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "crash-events",
+     "title": {
+      "hu": "Hibák az eseménynaplóban",
+      "en": "Errors in the event log"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Hőmérsékletek (HWiNFO)",
+      "en": "Temperatures (HWiNFO)"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Sensors-only mód; 90 °C feletti CPU lassítja magát.",
+      "en": "Sensors-only mode; a CPU above 90 °C throttles itself."
+     },
+     "app": "hwinfo"
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Folyamatok részletesen (Process Explorer)",
+      "en": "Processes in detail (Process Explorer)"
+     },
+     "default": false,
+     "app": "procexp"
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Lemezsebesség mérése (CrystalDiskMark)",
+      "en": "Measure disk speed (CrystalDiskMark)"
+     },
+     "default": false,
+     "desc": {
+      "hu": "SSD-csere előtt és után is mérd, a jelentésbe írd be.",
+      "en": "Measure before and after an SSD swap; note it for the report."
+     },
+     "app": "crystaldiskmark"
+    }
+   ]
+  },
+  {
+   "id": "printer",
+   "icon": "doc",
+   "risk": "changes",
+   "minutes": 5,
+   "title": {
+    "hu": "Nyomtató javítás",
+    "en": "Printer fix"
+   },
+   "desc": {
+    "hu": "Elakadt nyomtatási sor, offline nyomtató, nem induló nyomtatásvezérlő.",
+    "en": "Stuck print queue, offline printer, spooler that won't start."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "printer-status",
+     "title": {
+      "hu": "Nyomtatók és nyomtatási sor",
+      "en": "Printers and print queue"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "action",
+     "routine": "spooler-reset",
+     "title": {
+      "hu": "Nyomtatási sor ürítése, szolgáltatás újraindítása",
+      "en": "Clear the queue and restart the spooler"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": true
+    },
+    {
+     "kind": "check",
+     "routine": "printer-status",
+     "title": {
+      "hu": "Újraellenőrzés",
+      "en": "Re-check"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Tesztoldal nyomtatása",
+      "en": "Print a test page"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Nyomtató tulajdonságai > Tesztoldal nyomtatása. Hálózati nyomtatónál pingeld az IP-címét.",
+      "en": "Printer properties > Print test page. For a network printer ping its IP."
+     },
+     "open": {
+      "file": "control.exe",
+      "args": "printers"
+     }
+    }
+   ]
+  },
+  {
+   "id": "newpc",
+   "icon": "power",
+   "risk": "changes",
+   "minutes": 30,
+   "title": {
+    "hu": "Új gép beüzemelése",
+    "en": "New PC setup"
+   },
+   "desc": {
+    "hu": "Aktiválás, frissítések, védelem, visszaállítás bekapcsolása, gyári kéretlen programok, alapprogramok.",
+    "en": "Activation, updates, protection, restore points, OEM bloat, basic programs."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "sys-overview",
+     "title": {
+      "hu": "Rendszer áttekintése",
+      "en": "System overview"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "activation-check",
+     "title": {
+      "hu": "Aktiválás",
+      "en": "Activation"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "av-status",
+     "title": {
+      "hu": "Vírusvédelem",
+      "en": "Antivirus"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "action",
+     "routine": "enable-restore",
+     "title": {
+      "hu": "Rendszervédelem bekapcsolása",
+      "en": "Turn on System Protection"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": true
+    },
+    {
+     "kind": "action",
+     "routine": "restore-point",
+     "title": {
+      "hu": "Első visszaállítási pont",
+      "en": "First restore point"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Gyári kéretlen programok (BCU)",
+      "en": "OEM bloatware (BCU)"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Próbaverziós vírusirtók, gyártói segédprogramok.",
+      "en": "Trial antivirus, vendor utilities."
+     },
+     "app": "bcu",
+     "mode": "admin"
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Adatvédelmi beállítások (ShutUp10++)",
+      "en": "Privacy settings (ShutUp10++)"
+     },
+     "default": false,
+     "desc": {
+      "hu": "Csak az ajánlott (zöld) beállítások.",
+      "en": "Recommended (green) settings only."
+     },
+     "app": "shutup10",
+     "mode": "admin"
+    },
+    {
+     "kind": "action",
+     "routine": "winget-install",
+     "title": {
+      "hu": "Alapprogramok telepítése (winget)",
+      "en": "Install basic programs (winget)"
+     },
+     "admin": false,
+     "long": true,
+     "default": false,
+     "confirm": true,
+     "params": {
+      "packages": "7zip.7zip VideoLAN.VLC SumatraPDF.SumatraPDF"
+     },
+     "inputs": [
+      {
+       "key": "packages",
+       "label": {
+        "hu": "winget azonosítók szóközzel",
+        "en": "winget IDs, space separated"
+       }
+      }
+     ]
+    },
+    {
+     "kind": "action",
+     "routine": "keys-export",
+     "title": {
+      "hu": "OEM kulcs mentése a nyilvántartásba",
+      "en": "Save the OEM key for your records"
+     },
+     "admin": false,
+     "long": false,
+     "default": false,
+     "confirm": false
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Windows frissítések",
+      "en": "Windows updates"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Telepíts minden elérhető frissítést, majd indítsd újra.",
+      "en": "Install all available updates, then restart."
+     },
+     "open": {
+      "file": "ms-settings:windowsupdate"
+     },
+     "openLegacy": {
+      "file": "control.exe",
+      "args": "/name Microsoft.WindowsUpdate"
+     }
+    }
+   ]
+  },
+  {
+   "id": "monthly",
+   "icon": "home",
+   "risk": "changes",
+   "minutes": 25,
+   "title": {
+    "hu": "Havi ellenőrzés",
+    "en": "Monthly check-up"
+   },
+   "desc": {
+    "hu": "Rendszeres karbantartás rokon vagy visszatérő ügyfél gépén, akár távsegítséggel is.",
+    "en": "Routine maintenance for a relative's or regular client's PC, also over remote help."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "sys-overview",
+     "title": {
+      "hu": "Rendszer",
+      "en": "System"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "disk-health",
+     "title": {
+      "hu": "Lemezek",
+      "en": "Disks"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "av-status",
+     "title": {
+      "hu": "Vírusvédelem",
+      "en": "Antivirus"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "update-status",
+     "title": {
+      "hu": "Frissítések",
+      "en": "Updates"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "crash-events",
+     "title": {
+      "hu": "Hibák",
+      "en": "Errors"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "battery-check",
+     "title": {
+      "hu": "Akkumulátor",
+      "en": "Battery"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "action",
+     "routine": "defender-update",
+     "title": {
+      "hu": "Defender frissítés",
+      "en": "Defender update"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "defender-scan",
+     "title": {
+      "hu": "Defender gyorsvizsgálat",
+      "en": "Defender quick scan"
+     },
+     "admin": true,
+     "long": true,
+     "default": true,
+     "confirm": false
+    },
+    {
+     "kind": "action",
+     "routine": "temp-cleanup",
+     "title": {
+      "hu": "Ideiglenes fájlok törlése",
+      "en": "Delete temporary files"
+     },
+     "admin": true,
+     "long": false,
+     "default": true,
+     "confirm": true
+    },
+    {
+     "kind": "action",
+     "routine": "restore-point",
+     "title": {
+      "hu": "Visszaállítási pont",
+      "en": "Restore point"
+     },
+     "admin": true,
+     "long": false,
+     "default": false,
+     "confirm": true
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Programok frissítése (Patch My PC)",
+      "en": "Update programs (Patch My PC)"
+     },
+     "default": false,
+     "app": "patchmypc",
+     "mode": "admin"
+    }
+   ]
+  },
+  {
+   "id": "survey",
+   "icon": "wifi",
+   "risk": "safe",
+   "minutes": 10,
+   "title": {
+    "hu": "Okosotthon helyszíni felmérés",
+    "en": "Smart-home site survey"
+   },
+   "desc": {
+    "hu": "A saját laptopodon fut: hálózat, eszközlista gyártótippel, Wi-Fi csatornák, nyitott portok. Az eredmény CSV-ben a jelentés mellé kerül.",
+    "en": "Runs on your own laptop: network, device list with vendor hints, Wi-Fi channels, open ports. Results are saved as CSV next to the report."
+   },
+   "warn": {
+    "hu": "Csak a saját vagy az ügyfél által engedélyezett hálózatot mérd fel.",
+    "en": "Only survey networks you own or the client has authorised."
+   },
+   "steps": [
+    {
+     "kind": "check",
+     "routine": "net-diag",
+     "title": {
+      "hu": "Hálózat és internet",
+      "en": "Network and internet"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "lan-scan",
+     "title": {
+      "hu": "Eszközök a hálózaton",
+      "en": "Devices on the network"
+     },
+     "admin": false,
+     "long": true,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "wifi-survey",
+     "title": {
+      "hu": "Wi-Fi hálózatok és csatornák",
+      "en": "Wi-Fi networks and channels"
+     },
+     "admin": false,
+     "long": false,
+     "default": true
+    },
+    {
+     "kind": "check",
+     "routine": "port-check",
+     "title": {
+      "hu": "Nyitott portok (router, HA, MQTT, Modbus, kamerák)",
+      "en": "Open ports (router, HA, MQTT, Modbus, cameras)"
+     },
+     "admin": false,
+     "long": false,
+     "default": true,
+     "params": {
+      "hosts": "",
+      "ports": "22,80,443,502,554,1883,8080,8123"
+     },
+     "inputs": [
+      {
+       "key": "hosts",
+       "label": {
+        "hu": "Címek (üresen: router)",
+        "en": "Addresses (empty: router)"
+       }
+      },
+      {
+       "key": "ports",
+       "label": {
+        "hu": "Portok",
+        "en": "Ports"
+       }
+      }
+     ]
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Bejárás jelerősséggel (WifiInfoView)",
+      "en": "Walk-through with signal (WifiInfoView)"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Járd végig a leendő eszközhelyeket; -67 dBm vagy jobb kell.",
+      "en": "Walk the planned device spots; aim for -67 dBm or better."
+     },
+     "app": "wifiinfoview"
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Részletes szkennelés (Advanced IP Scanner)",
+      "en": "Detailed scan (Advanced IP Scanner)"
+     },
+     "default": false,
+     "app": "advancedip"
+    },
+    {
+     "kind": "manual",
+     "title": {
+      "hu": "Eredmények rögzítése",
+      "en": "Record the findings"
+     },
+     "default": true,
+     "desc": {
+      "hu": "Írd a munka jegyzetei közé: router helye, gyenge pontok, javasolt AP-k és csatorna.",
+      "en": "Add to the job notes: router location, weak spots, suggested APs and channel."
+     }
+    }
+   ]
+  }
+ ],
+ "sugoLinks": {
+  "slow-pc": [
+   "slowpc",
+   "tuneup"
+  ],
+  "slow-boot": [
+   "tuneup"
+  ],
+  "bsod": [
+   "health",
+   "repair"
+  ],
+  "random-freeze": [
+   "health"
+  ],
+  "malware-suspect": [
+   "malware"
+  ],
+  "browser-hijack": [
+   "malware"
+  ],
+  "no-internet": [
+   "network"
+  ],
+  "dns": [
+   "network"
+  ],
+  "slow-wifi": [
+   "survey"
+  ],
+  "system-files": [
+   "repair"
+  ],
+  "update-stuck": [
+   "wufix"
+  ],
+  "no-boot": [],
+  "printer": [
+   "printer"
+  ],
+  "before-reinstall": [
+   "backup"
+  ],
+  "update-apps": [
+   "tuneup"
+  ],
+  "disk-full": [
+   "tuneup"
+  ],
+  "battery-health": [
+   "health"
+  ],
+  "wifi-survey": [
+   "survey"
+  ],
+  "lan-devices": [
+   "survey"
+  ],
+  "network-scan": [
+   "survey"
+  ],
+  "disk-failing": [
+   "health"
+  ]
+ }
+}

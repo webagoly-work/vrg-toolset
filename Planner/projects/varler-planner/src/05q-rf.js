@@ -108,7 +108,7 @@ function rfSettingsDialog(){
     `<table style="font-size:12px;width:100%"><tr><th align="left">Technológia</th><th>Mutat</th><th>R0 (m)</th></tr>`
     +RF_TECH.map(T=>`<tr><td><span style="color:${T.c}">■</span> ${esc(T.n)}</td><td align="center"><input type="checkbox" class="rfOn" data-k="${T.k}" ${rfOn(T.k)?'checked':''}></td>`
       +`<td align="center"><input type="number" class="rfR0" data-k="${T.k}" value="${rfR0(T.k)}" style="width:60px" min="1"></td></tr>`).join('')+`</table>`
-    +`<div class="mrow" style="font-size:11px;color:#888">Tipikus beltéri értékek — nem mért. A falcsillapítás a Jelölés réteg falcímkéiből jön (tartófal 15 dB, gipszkarton 3 dB…), címke nélkül a falvastagságból.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Tipikus beltéri értékek — nem mért. A falcsillapítás a Jelölés réteg falcímkéiből jön (tartófal 15 dB, gipszkarton 3 dB…), címke nélkül a falvastagságból.</div>`,
     ()=>{const on={},R0={};document.querySelectorAll('.rfOn').forEach(c=>{on[c.dataset.k]=c.checked;});
       document.querySelectorAll('.rfR0').forEach(i=>{const v=+i.value;if(v>0&&v!==rfTech(i.dataset.k).R0)R0[i.dataset.k]=v;});
       state.rf={on,R0};draw();});}

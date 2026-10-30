@@ -1,0 +1,15 @@
+{
+  "name": "skcyd-bridge",
+  "version": "0.1.0",
+  "description": "ServiceKit CYD bridge — the PC-side smart half (serial or simulator).",
+  "bin": { "skcyd-bridge": "bridge.js" },
+  "scripts": {
+    "sim": "node bridge.js --sim --mock-pc",
+    "serial": "node bridge.js --port COM5"
+  },
+  "optionalDependencies": {
+    "serialport": "^12.0.0"
+  },
+  "license": "MIT",
+  "private": true
+}

@@ -45,8 +45,8 @@ const firstExisting = list => list.find(exists) || null;
 function loadConfig() {
   let user = {};
   if (exists(CONFIG)) user = JSON.parse(fs.readFileSync(CONFIG, 'utf8'));
-  const apps = path.join(REPO, 'Planner', 'apps');
-  const browserExe = firstExisting([path.join(apps, 'chrome', 'chrome.exe'), path.join(apps, 'opera-gx', 'opera.exe'), path.join(apps, 'zen-browser', 'zen.exe')]);
+  const apps = path.join(path.dirname(REPO), 'tools'), progs = path.join(path.dirname(REPO), 'programs');   // re-root 2026-10-27
+  const browserExe = firstExisting([path.join(apps, 'chrome', 'chrome.exe'), path.join(progs, 'opera-gx', 'opera.exe'), path.join(progs, 'zen-browser', 'zen.exe')]);
   const wt = process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Microsoft', 'WindowsApps', 'wt.exe');
   return {
     roots: [REPO, path.dirname(REPO)].concat(user.roots || []),

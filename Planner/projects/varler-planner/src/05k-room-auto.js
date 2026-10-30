@@ -101,7 +101,7 @@ function autoClipDialog(entries,title){entries=(entries||[]).filter(Boolean);if(
     `<div class="mrow" style="font-size:12px">Szomszéd, ha a középpontok távolsága ≤ <input id="acGap" type="number" step="10" min="72" value="${state.autoClipGap||AUTOCLIP_GAP}" style="width:66px"> mm</div>`
    +`<div class="mrow" style="font-size:12px"><label><input type="checkbox" id="acSame" checked> csak azonos típus (aljzat az aljzattal)</label></div>`
    +`<div class="mrow" style="font-size:12px"><label><input type="checkbox" id="acNodes" checked> a dobozon ülő pálya-csomópontok is mozognak (magasságuk marad)</label></div>`
-   +`<div id="acPrev" style="max-height:320px;overflow:auto;font-size:12px;border-top:1px solid #eee;padding-top:4px"></div>`,
+   +`<div id="acPrev" style="max-height:320px;overflow:auto;font-size:12px;border-top:1px solid var(--pc-line,#eee);padding-top:4px"></div>`,
     ()=>{const pick=[...document.querySelectorAll('#acPrev input[data-row]')].filter(c=>c.checked).map(c=>plan.rows[+c.dataset.row]);
       if(!pick.length)return false;
       state.autoClipGap=+$('acGap').value||AUTOCLIP_GAP;
@@ -110,15 +110,15 @@ function autoClipDialog(entries,title){entries=(entries||[]).filter(Boolean);if(
   const run=()=>{plan=planAutoClip(entries,{gap:+$('acGap').value,sameType:$('acSame').checked,nodes:$('acNodes').checked});
     const many=entries.length>1;
     $('acPrev').innerHTML=(plan.rows.length?plan.rows.map((r,k)=>
-        `<label style="display:flex;gap:6px;align-items:flex-start;padding:3px 0;border-bottom:1px solid #f2efe8">`
+        `<label style="display:flex;gap:6px;align-items:flex-start;padding:3px 0;border-bottom:1px solid var(--pc-line,#f2efe8)">`
         +`<input type="checkbox" data-row="${k}" checked style="margin-top:2px"><span style="flex:1">`
         +(many?`<b>${esc(r.room)}</b> · `:'')+`${esc(DEV[r.type]||r.type)} × ${r.idx.length}: `
         +esc(r.idx.map(i=>data.devices[i].ref||data.devices[i].id).join(' · '))
-        +`<br><span style="color:#8a8478">${esc(AUTOCLIP_KIND[r.kind])} · max. elmozdulás ${Math.round(r.maxMove)} mm`
+        +`<br><span style="color:var(--pc-mute,#8a8478)">${esc(AUTOCLIP_KIND[r.kind])} · max. elmozdulás ${Math.round(r.maxMove)} mm`
         +(r.nodes.length?` · ${r.nodes.length} csomópont követi`:'')+`</span></span></label>`).join('')
-       :`<div style="color:#8a8478;padding:4px 0">Nincs egymás melletti doboz ${esc(String(+$('acGap').value))} mm-en belül.</div>`)
-      +(plan.ok?`<div style="color:#3a7d44;padding:4px 0">✔ ${plan.ok} sor már szabályosan csatolva.</div>`:'')
-      +plan.warn.map(m=>`<div style="color:#c0530f;padding:2px 0">⚠ ${esc(m)}</div>`).join('');};
+       :`<div style="color:var(--pc-mute,#8a8478);padding:4px 0">Nincs egymás melletti doboz ${esc(String(+$('acGap').value))} mm-en belül.</div>`)
+      +(plan.ok?`<div style="color:var(--pc-ok,#3a7d44);padding:4px 0">✔ ${plan.ok} sor már szabályosan csatolva.</div>`:'')
+      +plan.warn.map(m=>`<div style="color:var(--pc-warn,#c0530f);padding:2px 0">⚠ ${esc(m)}</div>`).join('');};
   ['acGap','acSame','acNodes'].forEach(id=>{$(id).oninput=run;$(id).onchange=run;});
   run();}
 function allRoomEntries(){const out=[];ORD.forEach(l=>allRooms(l).forEach(e=>out.push(e)));return out;}
@@ -199,11 +199,11 @@ function autoLinkDialog(entries,title){entries=(entries||[]).filter(Boolean);if(
   openModal(esc(title||('Pálya-kötés — '+roomLabel(entries[0].rm))),
     `<div class="mrow" style="font-size:12px">Csomópont a készüléken, ha alaprajzban ≤ <input id="alTol" type="number" step="5" min="1" value="${state.autoLinkTol||AUTOLINK_TOL}" style="width:56px"> mm-re van tőle (a magasság csak egymás feletti dobozoknál számít)</div>`
    +`<div class="mrow" style="font-size:12px;flex-wrap:wrap;gap:4px 12px">Pályák rétege: `
-   +RL.map(L=>`<label><input type="checkbox" class="alLay" value="${esc(L.id)}" ${L.visible?'checked':''}> ${esc(L.name)} <span style="color:#8a8478">(${L.paths})</span></label>`).join('')+`</div>`
+   +RL.map(L=>`<label><input type="checkbox" class="alLay" value="${esc(L.id)}" ${L.visible?'checked':''}> ${esc(L.name)} <span style="color:var(--pc-mute,#8a8478)">(${L.paths})</span></label>`).join('')+`</div>`
    +`<div class="mrow" style="font-size:12px;flex-wrap:wrap;gap:4px 12px">Készülékek rétege: `
-   +DL.map(L=>`<label><input type="checkbox" class="alDev" value="${esc(L.id)}" ${L.on?'checked':''}> ${esc(L.name)} <span style="color:#8a8478">(${L.devices})</span></label>`).join('')+`</div>`
+   +DL.map(L=>`<label><input type="checkbox" class="alDev" value="${esc(L.id)}" ${L.on?'checked':''}> ${esc(L.name)} <span style="color:var(--pc-mute,#8a8478)">(${L.devices})</span></label>`).join('')+`</div>`
    +`<div class="mrow" style="font-size:12px"><label><input type="checkbox" id="alRep" checked> a rétegek korábbi automatikus kötéseit újraszámolja (a kézi kötések maradnak)</label></div>`
-   +`<div id="alPrev" style="max-height:340px;overflow:auto;font-size:12px;border-top:1px solid #eee;padding-top:4px"></div>`,
+   +`<div id="alPrev" style="max-height:340px;overflow:auto;font-size:12px;border-top:1px solid var(--pc-line,#eee);padding-top:4px"></div>`,
     ()=>{const choice={};document.querySelectorAll('#alPrev select[data-amb]').forEach(s=>{choice[+s.dataset.amb]=s.value;});
       if(!plan.pairs.length&&!plan.amb.length&&!plan.dropped)return false;
       state.autoLinkTol=+$('alTol').value||AUTOLINK_TOL;
@@ -220,15 +220,15 @@ function autoLinkDialog(entries,title){entries=(entries||[]).filter(Boolean);if(
       +(plan.amb.length?` · ${plan.amb.length} csomópont választással`:'')
       +(plan.already?` · ${plan.already} már kötve`:'')+(plan.dropped?` · ${plan.dropped} régi újraszámolva`:'')+`</div>`
       +Object.keys(rooms).map(r=>`<div style="padding:2px 0"><b>${esc(r)}</b>: `
-        +rooms[r].map(i=>`${ref(i)}<span style="color:#8a8478">×${per[i].length}</span>`).join(' · ')+`</div>`).join('')
-      +(plan.amb.length?`<div style="padding:6px 0 2px"><b>Egy csomópont, több készülék</b> <span style="color:#8a8478">— ⚠ azonos magasságban (ugyanaz a doboz két rétegen?) · ↕ magasság szerint előválasztva</span></div>`:'')
+        +rooms[r].map(i=>`${ref(i)}<span style="color:var(--pc-mute,#8a8478)">×${per[i].length}</span>`).join(' · ')+`</div>`).join('')
+      +(plan.amb.length?`<div style="padding:6px 0 2px"><b>Egy csomópont, több készülék</b> <span style="color:var(--pc-mute,#8a8478)">— ⚠ azonos magasságban (ugyanaz a doboz két rétegen?) · ↕ magasság szerint előválasztva</span></div>`:'')
       +plan.amb.map((a,k)=>{const sel=v=>String(v)===String(a.def)?' selected':'';
-        return `<div style="padding:3px 0;color:${a.kind==='tie'?'#c0530f':'#4a453c'}">${a.kind==='tie'?'⚠':'↕'} ${esc(lname(a.layer))} ${esc(a.p)}/${esc(a.n)} (${a.h} mm): `
+        return `<div style="padding:3px 0;color:${a.kind==='tie'?'var(--pc-warn,#c0530f)':'var(--pc-dim,#4a453c)'}">${a.kind==='tie'?'⚠':'↕'} ${esc(lname(a.layer))} ${esc(a.p)}/${esc(a.n)} (${a.h} mm): `
         +`<select data-amb="${k}"><option value="all"${sel('all')}>mindegyik</option>`
         +a.cands.map(o=>`<option value="${o.i}"${sel(o.i)}>csak ${ref(o.i)} (${o.d.h||0} mm, ${esc(lname(o.d.layer||'L0'))})</option>`).join('')
         +`<option value="none">egyik sem</option></select></div>`;}).join('')
-      +(plan.unreached.length?`<div style="padding:4px 0;color:#8a8478">Nincs a közelében csomópont a választott rétegeken: ${plan.unreached.map(ref).join(' · ')}</div>`:'')
-      +(!plan.layers.length?`<div style="color:#c0392b">Válassz legalább egy réteget.</div>`:'');};
+      +(plan.unreached.length?`<div style="padding:4px 0;color:var(--pc-mute,#8a8478)">Nincs a közelében csomópont a választott rétegeken: ${plan.unreached.map(ref).join(' · ')}</div>`:'')
+      +(!plan.layers.length?`<div style="color:var(--pc-crit,#c0392b)">Válassz legalább egy réteget.</div>`:'');};
   $('alTol').oninput=run;$('alRep').onchange=run;document.querySelectorAll('.alLay,.alDev').forEach(c=>c.onchange=run);
   run();}
 // the inspector line under a selected device: how many route nodes it is linked to, and on which layers

@@ -27,7 +27,7 @@ const OUT = path.join(__dirname, '../../source/planner_cyd/fonts_hu.h');
 const OFL_OUT = path.join(__dirname, '../../source/planner_cyd/fonts_hu_OFL.txt');
 const argv = process.argv.slice(2);
 const CHROME = argv.includes('--chrome') ? argv[argv.indexOf('--chrome') + 1]
-  : ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', path.join(REPO, 'Planner/apps/chrome/chrome.exe')].find(p => fs.existsSync(p));
+  : ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', path.join(REPO, '../tools/chrome/chrome.exe')].find(p => fs.existsSync(p));
 
 // name in the header, ttf, pixel size (CSS px = em), what it replaces in the UI
 const FONTS = [

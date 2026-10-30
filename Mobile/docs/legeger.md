@@ -178,12 +178,11 @@ phone's commands, gestures, orientation and keys onto the city.
 
 ## Launchers
 
-- **Planner\START.cmd → A)** opens the Légegér submenu: start the relay (in its own window), build the
+- **START → L) VRG Légegér** opens the Légegér submenu: start the relay (in its own window), build the
   APK, install it with adb, run the core tests, run the e2e test, open Android Studio, the README and the
   folder.
-- **VRG-DE.cmd → D6** (UNDER-DEV) has the same actions inside the project's submenu.
 
-Both call **`AirDeck\legeger.cmd`**, which holds the actions in one place (`legeger.cmd build`, `install`,
+It calls **`AirDeck\legeger.cmd`**, which holds the actions in one place (`legeger.cmd build`, `install`,
 `test`, `relay`, `e2e`, `studio`, `readme`, `folder`; with no argument it shows its own menu). It finds
 Android Studio's bundled JDK, and if `local.properties` is missing it writes it from
 `ANDROID_HOME`, `ANDROID_SDK_ROOT` or `%LOCALAPPDATA%\Android\Sdk`.

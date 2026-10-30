@@ -191,7 +191,7 @@ function kpToolPopover(node, t) {
     ? kpEl('div', { class: 'kp-pop-row' }, kpEl('code', { class: 'kp-path' }, 'file:///' + t.path.replace(/\\/g, '/')),
         kpEl('button', { class: 'kp-btn', onclick: () => kpCopy('file:///' + t.path.replace(/\\/g, '/')) }, 'Másolás'))
     : kpEl('div', { class: 'kp-pop-row kp-muted' }, 'Add meg egyszer, hol van a repó ezen a gépen:');
-  const rootIn = kpEl('input', { class: 'kp-in', value: kpRepoRoot(), placeholder: 'pl. H:\\Dev-VRG\\VRG-DE\\Planner_VRG_U100' });
+  const rootIn = kpEl('input', { class: 'kp-in', value: kpRepoRoot(), placeholder: 'pl. H:\\VRG\\Full\\Planner_VRG_U100' });
   kpPopover(node,
     kpEl('div', { class: 'kp-pop-h' }, node.title.join(' ')),
     kpEl('div', { class: 'kp-pop-row kp-muted' }, 'A helyi példány nyílik, ahogy a START.cmd nyitja.' + (t.path ? ' A Kapu segéd nélkül másold be a böngészőbe:' : '')),

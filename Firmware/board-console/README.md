@@ -2,7 +2,7 @@
 
 The control page for the universal dev board: ESP32-S3-N16R8 DevKit on the GPIO Extension Board V2775, with the passive 2.54 mm connector panel. Start it from `Planner/START.cmd` → **U**, or `Board Console.bat`. It opens http://localhost:8790.
 
-Concept, decisions and the GitHub research: `H:\VRG_Visual_Base\01_Hardware\Topology_Starter\CONCEPT_Board_Console.md`.
+Concept, decisions and the GitHub research: `H:\VRG\Full\VRG_Visual_Base\01_Hardware\Topology_Starter\CONCEPT_Board_Console.md`.
 
 ## Phase 1 (2026-10-18): layout, connectors, setups
 
@@ -107,7 +107,7 @@ The header switch **Kiosztás · Layout / Firmware** opens the firmware screen.
 | `Board Console.bat` | Starts the server and opens the browser (CRLF). If it's already running, it only opens the browser. |
 | `data/setups/*.json` | Saved setups (`vrg-board-setup/1`: name, notes, active connectors, module per connector). Kept out of git (`Firmware/.gitignore`). |
 
-**The board model is not copied here.** The server reads the generated files in `H:\VRG_Visual_Base\01_Hardware\Topology_Starter` (`DEVBOARD_ESP32-S3_IO-Board.html`, `TOPOLOGY_Connectors.html`, `LAYOUT_Panel.html`, `MODULES_BuildTree.md`) on every page load. Re-run their generators (`make_starter.js`, `make_connectors.js`, `make_panel.js`) and reload the page.
+**The board model is not copied here.** The server reads the generated files in `H:\VRG\Full\VRG_Visual_Base\01_Hardware\Topology_Starter` (`DEVBOARD_ESP32-S3_IO-Board.html`, `TOPOLOGY_Connectors.html`, `LAYOUT_Panel.html`, `MODULES_BuildTree.md`) on every page load. Re-run their generators (`make_starter.js`, `make_connectors.js`, `make_panel.js`) and reload the page.
 
 ## Next phases (from the concept)
 

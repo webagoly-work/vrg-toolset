@@ -91,7 +91,7 @@ async function kvTermOpen(dirRel, kind, resume) {
   const panel = termPanel(), box = document.createElement('div');
   box.className = 'xt'; panel.querySelector('.body').append(box);
   const xt = new Terminal({ cursorBlink: true, fontFamily: 'Cascadia Mono, Consolas, monospace', fontSize: 13, scrollback: 5000,
-    theme: { background: '#05070d', foreground: '#dde4f5', cursor: '#ffcf5a', selectionBackground: '#ffcf5a55' } });
+    theme: { background: '#050b10', foreground: '#e8f0f6', cursor: '#93d3e6', selectionBackground: '#93d3e644' } });
   const fit = new FitAddon.FitAddon();
   xt.loadAddon(fit); xt.open(box);
   const t = { id: r.json.id, kind, dir: r.json.dir, session: r.json.session || null, dirRel, label: dirRel === '.' ? current.city.repo.name : dirRel.split('/').pop(), xt, fit, box, exited: null, q: '', cols: 0, rows: 0 };

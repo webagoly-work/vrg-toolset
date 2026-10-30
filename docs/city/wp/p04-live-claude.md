@@ -42,4 +42,4 @@ never committed). The block, written by Node so the paths are exact:
 - To turn it off: delete `.claude/settings.local.json`. CITY-D12 A: move to `~/.claude/settings.json` (all of H:)
   only after P4's check — ask the user first.
 - Worth fixing outside the city: the stale `CLAUDE_CODE_GIT_BASH_PATH` (portable Git exists at
-  `H:\_desktop\Git\bin\bash.exe` and `Planner\apps\git\bin\bash.exe`). Not changed — the user's call.
+  `H:\VRG\Full\tools\git\bin\bash.exe` and `Planner\apps\git\bin\bash.exe`). Not changed — the user's call.

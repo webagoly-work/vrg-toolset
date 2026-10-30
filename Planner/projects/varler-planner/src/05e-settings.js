@@ -15,12 +15,12 @@ function settingsPanel(){
   const g=GUIDES.filter(x=>x.mm!=null||x.mm==='ceil').slice(0,14);
   const row=(label,html,note)=>`<div class="mrow" style="align-items:center">`
     +`<label style="width:190px;font-size:11.5px">${esc(label)}</label>${html}`
-    +(note?`<span style="color:#999;font-size:11px;margin-left:8px">${esc(note)}</span>`:'')+`</div>`;
+    +(note?`<span style="color:var(--pc-mute,#999);font-size:11px;margin-left:8px">${esc(note)}</span>`:'')+`</div>`;
   const num=(id,val,step,suffix)=>`<input id="${id}" type="number" step="${step||1}" value="${val}" style="width:86px">`
-    +(suffix?` <span style="font-size:11px;color:#777">${suffix}</span>`:'');
+    +(suffix?` <span style="font-size:11px;color:var(--pc-mute,#777)">${suffix}</span>`:'');
   openModal(t('set.title','Beállítások és szabványok'),
      `<div style="max-height:62vh;overflow:auto;padding-right:4px">`
-    +`<div style="font-size:11px;color:#777;margin-bottom:6px">${esc(t('set.note','Ezekből a számokból épül a rajz és az anyagkimutatás.'))}</div>`
+    +`<div style="font-size:11px;color:var(--pc-mute,#777);margin-bottom:6px">${esc(t('set.note','Ezekből a számokból épül a rajz és az anyagkimutatás.'))}</div>`
 
     +`<h4 style="margin:10px 0 4px">${esc(t('set.chase','Véset'))}</h4>`
     +row('Szélesség = ⌀ ×',num('stF',state.chaseFactor||1.6,0.1),
@@ -38,11 +38,11 @@ function settingsPanel(){
 
     +`<h4 style="margin:12px 0 4px">${esc(t('set.heights','Szabvány magasságok'))}</h4>`
     +`<div style="font-size:11.5px;columns:2;column-gap:18px">`
-    +g.map(x=>`<div>${esc(String(x.l).replace(/^\s*\d+\s*/,''))} — <b>${x.mm==='ceil'?'belmagasság':x.mm==='alcell'?'álmennyezet':resolveMm(x,state.active)+' mm'}</b>${guideStd(x)||x.mm==='gerinc'?' <span style="color:#9a8f7a" title="A Szabványok táblából / az E5 pálya-magasságból">📏</span>':''}</div>`).join('')
+    +g.map(x=>`<div>${esc(String(x.l).replace(/^\s*\d+\s*/,''))} — <b>${x.mm==='ceil'?'belmagasság':x.mm==='alcell'?'álmennyezet':resolveMm(x,state.active)+' mm'}</b>${guideStd(x)||x.mm==='gerinc'?' <span style="color:var(--pc-mute,#9a8f7a)" title="A Szabványok táblából / az E5 pálya-magasságból">📏</span>':''}</div>`).join('')
     +`</div>`
 
     +`<h4 style="margin:12px 0 4px">${esc(t('set.env','Környezet és IP'))}</h4>`
-    +`<div style="font-size:11.5px">`+ROOM_ENV.map(e=>`<div>${esc(e.n)} — <b>${esc(e.ip)}</b> <span style="color:#999">${esc(e.note||'')}</span></div>`).join('')+`</div>`
+    +`<div style="font-size:11.5px">`+ROOM_ENV.map(e=>`<div>${esc(e.n)} — <b>${esc(e.ip)}</b> <span style="color:var(--pc-mute,#999)">${esc(e.note||'')}</span></div>`).join('')+`</div>`
 
     +`<h4 style="margin:12px 0 4px">${esc(t('set.walls','Fal sablonok'))}</h4>`
     +`<div style="font-size:11.5px;columns:2;column-gap:18px">`
@@ -86,11 +86,11 @@ function gpSettingsBlock(){
   const c=G.cfg(),D=G.defaults();
   const row=(label,html,note)=>`<div class="mrow" style="align-items:center">`
     +`<label style="width:190px;font-size:11.5px">${esc(label)}</label>${html}`
-    +(note?`<span style="color:#999;font-size:11px;margin-left:8px">${esc(note)}</span>`:'')+`</div>`;
+    +(note?`<span style="color:var(--pc-mute,#999);font-size:11px;margin-left:8px">${esc(note)}</span>`:'')+`</div>`;
   const num=(id,val,step,min,max,suffix)=>`<input id="${id}" type="number" step="${step}" min="${min}" max="${max}" value="${val}" style="width:86px">`
-    +(suffix?` <span style="font-size:11px;color:#777">${esc(suffix)}</span>`:'');
+    +(suffix?` <span style="font-size:11px;color:var(--pc-mute,#777)">${esc(suffix)}</span>`:'');
   return `<h4 style="margin:12px 0 4px">${esc(t('set.gamepad','Kontroller'))}</h4>`
-    +`<div style="font-size:11px;color:#777;margin-bottom:4px">`
+    +`<div style="font-size:11px;color:var(--pc-mute,#777);margin-bottom:4px">`
     +esc(t('set.gamepadNote','Bal kar: kurzor · jobb kar: kamera · ravaszok: nagyítás · Y: művelet-kerék. Rajzolás közben a kurzor a képernyő közepére rögzül, és a világ mozog alatta.'))
     +`</div>`
     +row('Kontroller mód',`<input id="gpOn" type="checkbox" ${c.on?'checked':''}>`,

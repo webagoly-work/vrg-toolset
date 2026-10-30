@@ -261,8 +261,8 @@ function hwBasePlaced(except){const m={};hwList('base').forEach(d=>{if(d===excep
 function hwBaseUnitPicker(ok,dev){const placed=hwBasePlaced(dev),cur=dev?hwUnits(dev):HW_UNIT_ORDER.filter(u=>!placed[u]);
   openModal(dev?'BASE egységek':'BASE elhelyezése — egységek',
     HW_UNIT_ORDER.map(u=>`<div class="mrow"><label><input type="checkbox" class="hbU" value="${u}" ${cur.indexOf(u)>=0&&!placed[u]?'checked':''} ${placed[u]?'disabled':''}> <b style="color:${HW_BASE_UNITS[u].c}">${u}</b> — ${esc(HW_BASE_UNITS[u].n.split(' — ')[1]||'')}`
-      +(placed[u]?` <span style="color:#888">(már elhelyezve: ${esc(placed[u].ref||placed[u].id)})</span>`:'')+`</label></div>`).join('')
-    +`<div class="mrow" style="font-size:11px;color:#888">Mindhárom = a teljes BASE egy oszlopként. Külön elhelyezve = osztott BASE (LAYER TIE).</div>`,
+      +(placed[u]?` <span style="color:var(--pc-mute,#888)">(már elhelyezve: ${esc(placed[u].ref||placed[u].id)})</span>`:'')+`</label></div>`).join('')
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Mindhárom = a teljes BASE egy oszlopként. Külön elhelyezve = osztott BASE (LAYER TIE).</div>`,
     ()=>{const us=[...document.querySelectorAll('.hbU')].filter(c=>c.checked&&!c.disabled).map(c=>c.value);
       if(!us.length){lyrHud('Legalább egy egységet válassz.');return false;}ok(us);});}
 function hwSetUnits(d,units){units=HW_UNIT_ORDER.filter(u=>units.indexOf(u)>=0);if(!units.length)return false;

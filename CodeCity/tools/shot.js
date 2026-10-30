@@ -4,15 +4,15 @@
 //   node CodeCity/tools/shot.js <page.html> [out.png] [1400x900]
 //   node CodeCity/tools/shot.js http://localhost:8797/ out.png       # served by CodeCity/companion.js
 //
-// Chrome is looked up in $CHROME, then Planner/apps of this checkout, then of the main checkout
-// (Planner/apps is gitignored, so a worktree does not have its own copy).
+// Chrome is looked up in $CHROME, then the tools folder next to this checkout, then next to the main checkout
+// (H:\VRG\Full\tools; a worktree in .claude\worktrees has none next to it).
 'use strict';
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 const [, , page, outArg, size = '1400x900'] = process.argv;
 if (!page) { console.error('usage: node CodeCity/tools/shot.js <page.html> [out.png] [WxH]'); process.exit(2); }
 
 const REPO = path.resolve(__dirname, '..', '..');
-const rel = path.join('Planner', 'apps', 'chrome-headless-shell', 'chrome-headless-shell.exe');
+const rel = path.join('..', 'tools', 'chrome-headless-shell', 'chrome-headless-shell.exe');
 let common = REPO;
 try { common = path.dirname(path.resolve(REPO, execFileSync('git', ['rev-parse', '--git-common-dir'], { cwd: REPO, encoding: 'utf8' }).trim())); } catch { /* not a repo */ }
 const chrome = [process.env.CHROME, path.join(REPO, rel), path.join(common, rel)].find(p => p && fs.existsSync(p));

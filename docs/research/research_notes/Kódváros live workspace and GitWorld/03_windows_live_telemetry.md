@@ -161,7 +161,7 @@ Protocol: one JSON object per line, `{"t":"audio.peak","pid":1234,"v":0.42,"ts":
    - A connection failure is non-blocking by default (`onFailure: "continue"`), so Claude keeps working if Kódváros is closed.
    - Pre = "a car leaves for the building", Post = "it arrives". WebFetch/WebSearch = "a plane departs abroad".
 2. **Transcript tail** as the zero-config fallback. It is already implemented in `CodeCity/sessions.js`; switch it from batch scan to `fs.watch` + read-from-offset.
-3. **ETW Kernel-File, filtered to the Claude process tree** (Tier B) to catch what Bash and subprocesses touch: the "everything" layer. Build the tree from Kernel-Process events (claude.exe → `H:\_desktop\Git\bin\bash.exe` → node.exe …).
+3. **ETW Kernel-File, filtered to the Claude process tree** (Tier B) to catch what Bash and subprocesses touch: the "everything" layer. Build the tree from Kernel-Process events (claude.exe → `H:\VRG\Full\tools\git\bin\bash.exe` → node.exe …).
 4. `fs.watch` for change pulses in the city (no PID, but instant and free).
 
 "Data going upstream, live": Kernel-Network `DataSent` events for the Claude PIDs, with destinations named via DNS-Client. Unelevated approximation: the TCP table shows claude.exe's remote endpoints, and OTel `api_request.input_tokens` gives the cargo size per call. Payloads are TLS-encrypted; **never** try to intercept them (no MITM proxy, no certificate tricks).

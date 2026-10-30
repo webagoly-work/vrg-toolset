@@ -33,7 +33,7 @@ function selShellRefresh() {
   if (!world || !current) return;
   selSync();
   if (!sel.shell || sel.shell.parent !== world.group) {
-    sel.shell = new THREE.InstancedMesh(unitBox, new THREE.MeshBasicMaterial({ color: 0xffcf5a, transparent: true, opacity: 0.32,
+    sel.shell = new THREE.InstancedMesh(unitBox, new THREE.MeshBasicMaterial({ color: 0x93d3e6, transparent: true, opacity: 0.32,
       blending: THREE.AdditiveBlending, depthWrite: false }), world.fileOf.length);
     sel.shell.raycast = () => {};
     world.group.add(sel.shell);

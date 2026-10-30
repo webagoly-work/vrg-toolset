@@ -1,12 +1,19 @@
 # Az első órád a VRG Kapuval
 
-Ez a leírás végigvezet attól, hogy megkapod a GitHub-meghívót, addig, hogy megírod az első
-munkanaplódat. Kb. egy óra. Jelszót, tokent, helyreállító vagy 2FA-kódot **soha** ne küldj el senkinek:
-se e-mailben, se üzenetben, se Claude-nak, és ne írd fájlba.
+Ez a leírás végigvezet attól, hogy megkapod a GitHub-meghívót, addig, hogy a Kapun át elindítod a
+START.cmd-t és az első eszközt. Kb. fél óra. Jelszót, tokent, helyreállító vagy 2FA-kódot **soha** ne
+küldj el senkinek: se e-mailben, se üzenetben, se Claude-nak, és ne írd fájlba.
 
-*Your first hour with VRG Kapu: from the GitHub invite to your first work log, about an hour. Never
-send a password, token, recovery code or 2FA code to anyone — not by e-mail, not in a message, not to
-Claude — and never put one in a file.*
+*Your first hour with VRG Kapu: from the GitHub invite to starting START.cmd and your first tool
+through the Kapu, about half an hour. Never send a password, token, recovery code or 2FA code to
+anyone — not by e-mail, not in a message, not to Claude — and never put one in a file.*
+
+A VRG Kapu ma a **belépőlap**: a GitHub-fiókoddal azonosít, megnézi az aláírt engedélyezett listát,
+és ha rajta vagy, innen indul a START.cmd és minden eszköze. A közös irányítópult később ide jön.
+
+*Today VRG Kapu is the **access page**: it identifies you by your GitHub account, checks the signed
+allowed list and, if you are on it, hands you over to START.cmd and every tool in it. The shared
+dashboard comes here later.*
 
 ## 1. A GitHub-meghívó
 
@@ -32,75 +39,90 @@ egy helyi mappát; ebben a mappában lesz minden program és leírás.
 *Install GitHub Desktop, sign in, then File → Clone repository → `vrg-toolset`. Pick a local folder;
 every program and document will be in it.*
 
-## 4. Node (vagy a cwebuser kit)
+## 4. Node
 
-A Kapu segédhez Node kell. Telepíts egy szokásos Node-ot (nodejs.org, LTS), vagy használd a cwebuser
-kitet a megosztott OneDrive `20_Telepitok` mappájából.
+A Kapu segédhez és a build-eszközökhöz Node kell. Telepítsd a nodejs.org-ról (LTS változat), a
+telepítő alapbeállításaival.
 
-*The Kapu helper needs Node. Install a normal Node (nodejs.org, LTS), or use the cwebuser kit from the
-shared OneDrive folder `20_Telepitok`.*
+*The Kapu helper and the build tools need Node. Install it from nodejs.org (the LTS version) with the
+installer's default settings.*
 
 ## 5. A Kapu indítása
 
 A klónban kattints duplán a `Hub\VRG Kapu.cmd`-re. Elindítja a Kapu segédet (csak ezen a gépen,
-localhost:8795), és megnyitja a Kaput a böngészőben. Ha csak magát a `vrg-kapu.html` fájlt nyitod meg
-(például a OneDrive `00_START` mappából), sárga sáv jelzi a **csak linkek módot**: a térkép és a
-linkek működnek, a beállítások nem maradnak meg.
+localhost:8795), és megnyitja a Kaput a böngészőben: ez a **teljes mód**, a lap alján ezt is írja.
+Ha csak magát a `vrg-kapu.html` fájlt nyitod meg, sárga sáv jelzi a **csak linkek módot**: a belépés
+működik, de nem marad meg, és a Kapu nem tud programot vagy mappát megnyitni.
 
 *In the clone, double-click `Hub\VRG Kapu.cmd`. It starts the Kapu helper (this computer only,
-localhost:8795) and opens the Kapu in the browser. Opening the `vrg-kapu.html` file by itself (e.g.
-from the OneDrive `00_START` folder) shows a yellow bar for links-only mode: the map and the links
-work, settings are not kept.*
+localhost:8795) and opens the Kapu in the browser: this is **full mode**, as the bottom line says.
+Opening the `vrg-kapu.html` file by itself shows a yellow bar for **links-only mode**: signing in
+works but is not kept, and the Kapu cannot open programs or folders.*
 
-![Csak linkek mód](img/kollega-1-csak-linkek.png)
+![Belépés](img/kollega-1-belepes.png)
 
-## 6. Első lépések
+## 6. Belépés a GitHub tokennel
 
-Az első megnyitáskor magától elindul egy hatlépéses túra: mi a térkép, hogyan keresel, hol vannak a
-belépések és a munkanapló. Később a ☰ → Első lépések indítja újra.
+A Kapu egy **saját** GitHub tokent kér. A **Hogyan kapok tokent? (5 lépés)** lenyitva megmutatja a
+lépéseket, a **Token oldal megnyitása** gomb új ablakban nyitja a GitHub tokenoldalát. Fine-grained
+token kell: csak a `vrg-toolset` repóhoz, Contents: Read-only, Metadata: Read-only, 90 napra.
+Másold ki, illeszd be, **Belépés**. A token csak ebben a böngészőben marad; ha lejár, csinálj újat
+ugyanígy.
 
-*On the first visit a six-step tour starts by itself: what the map is, how to search, where the
-sign-ins and the work log are. Later, ☰ → Első lépések starts it again.*
+*The Kapu asks for your **own** GitHub token. **Hogyan kapok tokent? (5 lépés)** unfolds the steps,
+**Token oldal megnyitása** opens GitHub's token page in a new window. Make a fine-grained token: only
+the `vrg-toolset` repo, Contents: Read-only, Metadata: Read-only, 90 days. Copy it, paste it,
+**Belépés**. The token stays in this browser only; when it expires, make a new one the same way.*
 
-![Első lépések](img/kollega-2-elso-lepesek.png)
+![Token lépések](img/kollega-2-token-lepesek.png)
 
-## 7. Belépések és a GitHub token
+Ha a **Nincs hozzáférés** lap jön, a neved még nincs az engedélyezett listán, vagy a tokenhez nem
+adtad meg a `vrg-toolset` repót. Szólj a tulajdonosnak; a token kódját ne küldd el.
 
-Felül **Belépések** → GitHub → **Token…**. A varázsló öt lépésben megmutatja, hogyan készíts a saját
-fiókodban egy fine-grained tokent: csak a `vrg-toolset` repóhoz, Contents: Read and write, Metadata:
-Read-only, 90 napra. Másold ki, illeszd be, **Ellenőrzés és mentés**. A token csak ebben a
-böngészőben marad. Ha a neved a jogosultsági listán van, a térkép kinyílik, és a neved mellett
-„tag" áll.
+*If the **Nincs hozzáférés** (no access) card appears, your name is not on the allowed list yet, or
+the token does not include the `vrg-toolset` repo. Tell the owner; do not send the token itself.*
 
-*Top bar **Belépések** → GitHub → **Token…**. The five-step wizard shows how to make a fine-grained
-token in your own account: only the `vrg-toolset` repo, Contents: Read and write, Metadata: Read-only,
-90 days. Copy it, paste it, **Ellenőrzés és mentés**. The token stays in this browser only. If your
-name is on the allowed list, the map unlocks and shows you as "tag" (member).*
+## 7. A nyitott Kapu
 
-![Belépések](img/kollega-3-belepesek.png)
+Belépés után felül a neved mellett „tag” áll. Három kártyát látsz:
 
-![Token varázsló](img/kollega-4-token-varazslo.png)
+- **Irányítópult — készül**: ide jön a közös irányítópult.
+- **START.cmd — az indítópult**: a **▶ START.cmd indítása** új ablakban nyitja a menüt; minden
+  program, build, teszt és mappa onnan érhető el.
+- **Eszközök**: a START.cmd eszközlistája ugyanazokkal a billentyűkkel, mindegyiknél
+  **Megnyitás** és **Mappa**.
 
-## 8. Az első munkanapló
+*After signing in, the top bar shows your name with "tag" (member). You see three cards:
+**Irányítópult — készül** (the shared dashboard, coming later); **START.cmd — az indítópult**, where
+**▶ START.cmd indítása** opens the menu in a new window — every program, build, test and folder is
+there; and **Eszközök**, START.cmd's tool list with the same keys, each with **Megnyitás** (open) and
+**Mappa** (folder).*
 
-A nap végén **📝 Munkanapló**: melyik programon mit csináltál, mi félkész, mi a következő lépés,
-kérdések és linkek. Mentsd a
-GitHubra (a `Hub/logs` mappába); a másik ember a **Ki min dolgozik?** sávban látja. Egy nagyobb
-módosítás előtt a program jobb klikkes menüjében **Foglalás…**, így tudjuk, ki min dolgozik.
+![A nyitott Kapu](img/kollega-3-kapu-nyitva.png)
 
-*At the end of the day, **📝 Munkanapló**: on which program you did what, what is half-done, the next
-step, questions and links.
-Save it to GitHub (the `Hub/logs` folder); the other person sees it in **Ki min dolgozik?**. Before a
-bigger change, right-click the program → **Foglalás…**, so we both know who is on what.*
+## 8. Közös munka
 
-![Munkanapló](img/kollega-5-munkanaplo.png)
+Amíg az irányítópult nem kész, így dolgozunk együtt:
+
+- Munka előtt GitHub Desktopban **Fetch origin**, majd **Pull**, hogy a legfrissebb változaton dolgozz.
+- Egy nagyobb módosítás előtt üzenj, melyik programon dolgozol, hogy ne ugyanazt írjuk egyszerre.
+- Kis, érthető commitok, magyarázó üzenettel; utána **Push**.
+- Nagy fájlok és ügyfélmunkák nem a Gitbe mennek, hanem a megosztott OneDrive `VRG-Megosztott`
+  mappába (az ügyfélmunkák a `10_Projektek`-be, munkaszám szerint), ha a tulajdonos megosztotta veled.
+
+*Until the dashboard is ready, this is how we work together: before starting, **Fetch origin** then
+**Pull** in GitHub Desktop so you work on the latest version; before a bigger change, send a message
+saying which program you are on, so we don't edit the same thing at once; small, clear commits with
+a meaningful message, then **Push**; big files and client jobs do not go into Git but into the shared
+OneDrive folder `VRG-Megosztott` (client jobs into `10_Projektek`, by job code), once the owner has
+shared it with you.*
 
 ## Claude Code
 
-A saját Claude-fiókoddal nyisd meg a Claude Code-ot a klónban, és mondd: „olvasd el a
-`docs/hub/agents/<program>.md`-t, és …". A Kapuban a program jobb klikkes menüje: Claude Code itt →
-indító prompt másolása. Részletek: `docs/hub/agents/README.md`.
+A saját Claude-fiókoddal nyisd meg a Claude Code-ot a klónban. A repó `CLAUDE.md`-je adja a
+szabályokat; egy programhoz mondd: „olvasd el a `docs/hub/agents/<program>.md`-t, és …”. Részletek:
+`docs/hub/agents/README.md`.
 
-*Open Claude Code in the clone with your own Claude account and say „olvasd el a
-`docs/hub/agents/<program>.md`-t, és …". In the Kapu: right-click a program → Claude Code itt →
-indító prompt másolása. Details: `docs/hub/agents/README.md`.*
+*Open Claude Code in the clone with your own Claude account. The repo's `CLAUDE.md` gives the rules;
+for one program say „olvasd el a `docs/hub/agents/<program>.md`-t, és …” (read that file, then …).
+Details: `docs/hub/agents/README.md`.*

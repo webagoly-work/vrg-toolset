@@ -9,11 +9,11 @@ Nothing needs downloading or rebuilding.
 **Where it is.** BRIDGE lives **inside the `vrg-toolset` repository**, at `<repo>/BRIDGE/`, on
 `main`.
 
-**Work in `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`.** That is the live working copy.
-`H:\Planner_VRG_U100` is a **backup** that is refreshed from time to time — not a second workspace.
+**Work in `H:\VRG\Full\Planner_VRG_U100`.** That is the live working copy.
+`H:\VRG\Backup\code\Planner_VRG_U100-mirror` is a **backup** that is refreshed from time to time — not a second workspace.
 They were accidentally mixed up once and reconciling them took real effort; do not repeat it.
 Confirm with `git rev-parse --show-toplevel` if in any doubt. A superseded copy of BRIDGE may also
-sit at `H:\Dev-VRG\VRG-DE\BRIDGE` carrying a `_MOVED-TO-REPO.md` marker — not authoritative, safe
+sit at `H:\VRG\Full\BRIDGE` carrying a `_MOVED-TO-REPO.md` marker — not authoritative, safe
 to ignore or delete.
 
 Branches: `main` carries BRIDGE · `bridge-docs` was the original import · `planner-circuit-endpoints`

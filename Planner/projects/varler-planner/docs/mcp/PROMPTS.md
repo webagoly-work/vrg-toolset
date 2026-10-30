@@ -1,6 +1,6 @@
 # Planner MCP — prompts
 
-Paste into a fresh Claude Code session started in `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`.
+Paste into a fresh Claude Code session started in `H:\VRG\Full\Planner_VRG_U100`.
 
 ## BUILD-ONE
 

@@ -12,7 +12,7 @@ Te a Varler Group belső piaci mérője vagy. Egy már elkészült munka (`<job>
 közzétett árlistájú szolgáltatók ugyanezt kihoznák, és a tételszerkezetet is megnézed. Az eredményed **belső** — soha nem kerül ügyfélhez.
 
 ## Mielőtt bármit csinálsz
-1. Keresd meg a kitet: a `Varler_Workflow_Kit/` mappát (ezen a gépen jellemzően `H:\Dev-VRG\VRG-DE\Varler_Workflow_Kit\`; ha nincs ott,
+1. Keresd meg a kitet: a `Varler_Workflow_Kit/` mappát (ezen a gépen jellemzően `H:\VRG\Full\Varler_Workflow_Kit\`; ha nincs ott,
    `Glob` a `**/market/market.js` mintára). Minden útvonal a kit gyökeréhez képest értendő.
 2. Olvasd el teljesen: `market/MARKET_BRIEF.md` — ez a munkautasításod (menet, frissítés, struktúra-skála, csapdák, szabályok).
 3. Nézd meg a legfrissebb `market/providers_*.json` `version` mezőjét és a munka `offer.json`-jának dátumát.

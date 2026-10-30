@@ -1,0 +1,17 @@
+{
+  "note": "HID keystroke macros for ROOTED mode — the phone types these into the PC over the USB keyboard gadget. steps: {key:'GUI+r'} presses a combo, {text:'...'} types a string, {delay:ms} waits. danger:1 confirms on the phone first. Drive letter of the stick is auto-found by the launch macros. Edit freely.",
+  "macros": [
+    { "id": "open-run",     "hu": "Futtatás ablak (Win+R)",   "cat": "open",   "steps": [ {"key":"GUI+r"} ] },
+    { "id": "launch-kit",   "hu": "ServiceKit indítása",      "cat": "kit",    "steps": [ {"key":"GUI+r"}, {"delay":400}, {"text":"cmd /c for %d in (D E F G H I J) do @if exist %d:\\ServiceKit\\START.cmd start \"\" %d:\\ServiceKit\\START.cmd"}, {"key":"ENTER"} ] },
+    { "id": "open-kit-dir", "hu": "ServiceKit mappa",         "cat": "kit",    "steps": [ {"key":"GUI+r"}, {"delay":400}, {"text":"cmd /c for %d in (D E F G H I J) do @if exist %d:\\ServiceKit start \"\" explorer %d:\\ServiceKit"}, {"key":"ENTER"} ] },
+    { "id": "ipconfig",     "hu": "IP-cím és hálózat",        "cat": "net",    "steps": [ {"key":"GUI+r"}, {"delay":400}, {"text":"cmd /k ipconfig /all"}, {"key":"ENTER"} ] },
+    { "id": "flushdns",     "hu": "DNS gyorsítótár ürítése",  "cat": "net",    "steps": [ {"key":"GUI+r"}, {"delay":400}, {"text":"cmd /k ipconfig /flushdns"}, {"key":"ENTER"} ] },
+    { "id": "diskfree",     "hu": "Szabad lemezhely",         "cat": "disk",   "steps": [ {"key":"GUI+r"}, {"delay":400}, {"text":"cmd /k wmic logicaldisk get caption,freespace,size"}, {"key":"ENTER"} ] },
+    { "id": "devmgmt",      "hu": "Eszközkezelő",             "cat": "open",   "steps": [ {"key":"GUI+r"}, {"delay":400}, {"text":"devmgmt.msc"}, {"key":"ENTER"} ] },
+    { "id": "taskmgr",      "hu": "Feladatkezelő",            "cat": "open",   "steps": [ {"key":"CTRL+SHIFT+ESC"} ] },
+    { "id": "update",       "hu": "Windows Update",           "cat": "open",   "steps": [ {"key":"GUI+r"}, {"delay":400}, {"text":"ms-settings:windowsupdate"}, {"key":"ENTER"} ] },
+    { "id": "explorer",     "hu": "Meghajtók (Gépház)",       "cat": "open",   "steps": [ {"key":"GUI+e"} ] },
+    { "id": "cmd-admin",    "hu": "Rendszergazdai parancssor","cat": "repair", "danger": 1, "steps": [ {"key":"GUI+r"}, {"delay":400}, {"text":"cmd"}, {"delay":150}, {"key":"CTRL+SHIFT+ENTER"} ] },
+    { "id": "lock",         "hu": "Képernyő zárolása",        "cat": "open",   "danger": 1, "steps": [ {"key":"GUI+l"} ] }
+  ]
+}

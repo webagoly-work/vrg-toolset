@@ -1,7 +1,7 @@
 # Prompts — VRG Kapu build pack
 
 Paste into a **fresh** Claude Code session (your other account) whose working directory is the repo
-root `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`. Each prompt is a TASK sandwich: task first, what to
+root `H:\VRG\Full\Planner_VRG_U100`. Each prompt is a TASK sandwich: task first, what to
 read, the task again at the end. One WP per session keeps the context small; the order is README §3.
 Shortest form of all: type **`GO HUB`** — the session reads `GO-HUB.md` and picks the next open WP.
 
@@ -57,7 +57,7 @@ TASK: build the VRG Kapu pack WP by WP in README §3 order, from the first one n
 stopping at every ⏸ (H2 look, H11 look) and whenever a decision is missing.
 READ FIRST: docs/hub/00_CONTRACT.md · docs/hub/README.md · then per WP only its file and the
 sections it names. After each WP: the contract §5 report + README §4 line, then continue.
-WHERE: the SecAcc worktree (H:\cwebuser\projects\VRG-DE\SecAcc), branch secacc; never the main
+WHERE: the SecAcc worktree (H:\VRG\Backup\archive\parked\2026-10-24\SecAcc), branch secacc; never the main
 checkout. Commit to secacc after each finished WP ("Kapu WP-Hn: …"); never push, never merge, never
 switch branch. Never ask for, type or store a password or token. Questions to me: numbered, with the
 DECISIONS.md id and lettered A/B/C options (A recommended), plus a simple SVG picture when the

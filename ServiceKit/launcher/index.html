@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="kit-token" content="__KIT_TOKEN__">
+<meta name="kit-mode" content="__KIT_MODE__">
+<title>ServiceKit</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f2a93b'/%3E%3Cpath d='M9 21l6-10 3 5 2-3 3 8' fill='none' stroke='%23161a1f' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dark">
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M8 22l6-11 3.5 6 2.5-3.5L24 22"/></svg></span>
+      <span class="brand-name">ServiceKit</span>
+      <span class="link-state" id="linkState"><span class="dot"></span><span id="linkText"></span></span>
+    </div>
+    <div class="search">
+      <input id="search" type="text" autocomplete="off" spellcheck="false">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+    <div class="meters" id="meters"></div>
+    <div class="top-actions">
+      <button class="seg" id="langBtn" type="button"></button>
+      <button class="icon-btn" id="themeBtn" type="button"></button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <nav class="sidenav" id="nav"></nav>
+    <main id="main">
+      <section class="view" id="view-dash"></section>
+      <section class="view" id="view-jobs"></section>
+      <section class="view" id="view-pb"></section>
+      <section class="view" id="view-tools"></section>
+      <section class="view" id="view-help"></section>
+      <section class="view" id="view-cmd"></section>
+      <section class="view" id="view-safe"></section>
+      <section class="view" id="view-setup"></section>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+<script src="data/catalog.js"></script>
+<script src="data/sugo.js"></script>
+<script src="data/playbooks.js"></script>
+<script src="data/commands.js"></script>
+<script src="cmdview.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

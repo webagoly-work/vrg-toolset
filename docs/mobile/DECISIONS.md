@@ -15,7 +15,7 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   with a stable signing key held in a repo secret (user step in M9). Actions artifacts stay as
   the per-push test builds.
 - **D-4 · Folder and launcher** (2026-10-29). `AirDeck/` became `Mobile/`, and `legeger.cmd` became
-  `mobile.cmd`. START.cmd **A** and VRG-DE.cmd **D6** keep their letters and now open VRG Mobile.
+  `mobile.cmd`. START opens VRG Mobile on key **L** (launcher/vrg-menu.json; A is Programok since 2026-10-27).
 - **D-5 · Start screen** (2026-10-29). The app reopens the feature that was on screen last, and Back goes
   home. So a Légegér user lands on the deck, as before.
 

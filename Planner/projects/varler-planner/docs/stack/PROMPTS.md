@@ -36,7 +36,7 @@ It works because the words say it; no memory or setup is needed, so it also work
 ```
 BUILD WP-<id> of the Planner BRIDGE Stack.
 Read docs/stack/00_CONTRACT.md and docs/stack/WP-<id>_*.md in
-H:\Dev-VRG\VRG-DE\Planner_VRG_U100\Planner\projects\varler-planner — nothing else unless the WP lists it.
+H:\VRG\Full\Planner_VRG_U100\Planner\projects\varler-planner — nothing else unless the WP lists it.
 Work in the planner-stack worktree (CONTRACT §0). Follow the WP exactly; a deviation goes in the report,
 not in the code. Run check-globals after every edit batch. Finish with the CONTRACT §8 report and
 set the WP's status line in docs/stack/README.md. Do not commit unless I say so.

@@ -50,7 +50,7 @@ node build.js --check             # diff against a saved reference build
 
 ## 7. Do not touch
 - `dist/` by hand: change `src/` and rebuild (CLAUDE.md).
-- `H:\Planner_VRG_U100` (dead backup) and `Planner/apps|home|data` (root CLAUDE.md).
+- `H:\VRG\Backup\code\Planner_VRG_U100-mirror` (dead backup) and `Planner/apps|home|data` (root CLAUDE.md).
 - Another session's uncommitted files (GO-R1018.md §1 lists them).
 
 Forrás: Planner/projects/varler-planner/CLAUDE.md, README.md, docs/PRIMER.md, GO-R1018.md, Planner/START.cmd, git log main, 2026-10-22

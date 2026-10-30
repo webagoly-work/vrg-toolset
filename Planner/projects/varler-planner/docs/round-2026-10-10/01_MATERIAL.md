@@ -158,7 +158,7 @@ const RLI_TEXT={
 
 ## 3. Security catalogue — Home Assistant / ESPHome (S5)
 
-**Grounding (CoreRef, ESPHome 2026.9.1 / HA core 2026.10.0, `H:\Dev-VRG\VRG-DE\Planner_VRG_U100\CoreRef\db\coreref.sqlite`):**
+**Grounding (CoreRef, ESPHome 2026.9.1 / HA core 2026.10.0, `H:\VRG\Full\Planner_VRG_U100\CoreRef\db\coreref.sqlite`):**
 ESPHome has `alarm_control_panel` + `template.alarm_control_panel`, `gpio.binary_sensor` (wired
 contacts and PIR), `ld2410` / `ld2420` / `ld2450` (mmWave), `matrix_keypad`, `wiegand`, `pn532`,
 `rc522`, `rdm6300`, `fingerprint_grow`, `rtttl` / `dfplayer` (sounders), `sim800l` (GSM fallback),

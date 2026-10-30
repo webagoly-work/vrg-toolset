@@ -114,12 +114,12 @@ function elpDialog(boardId){const rows=elpSuggest(boardId);
   rows.forEach(r=>{if(!r.ref)r.ref=nextRef();});
   const already=data.devices.filter(d=>d&&cktCanJoin(d)&&ELP_CODES.indexOf(epCodeOf(d))>=0&&cktOfDevice(d)).length;
   const body=`<div style="font-size:12px">A lerakott végpontokból, a szokásos rend szerint (MATERIAL §6). Pipáld ki, amit kérsz; a név átírható.`
-    +(already?` <span style="color:#888">${already} végpont már áramkörben van — ahhoz nem nyúl.</span>`:'')+`</div>`
-    +`<table style="font-size:12px;width:100%;margin-top:6px;border-collapse:collapse"><tr style="color:#777"><td></td><td>Jel</td><td>Név</td><td>Tag</td><td>mm²</td><td>Kismegszakító</td></tr>`
+    +(already?` <span style="color:var(--pc-mute,#888)">${already} végpont már áramkörben van — ahhoz nem nyúl.</span>`:'')+`</div>`
+    +`<table style="font-size:12px;width:100%;margin-top:6px;border-collapse:collapse"><tr style="color:var(--pc-mute,#777)"><td></td><td>Jel</td><td>Név</td><td>Tag</td><td>mm²</td><td>Kismegszakító</td></tr>`
     +rows.map((r,i)=>`<tr><td><input type="checkbox" class="elpOn" data-i="${i}" checked></td><td><b>${esc(r.ref)}</b></td>`
       +`<td><input class="elpName" data-i="${i}" value="${esc(r.name)}" style="width:210px;font-size:12px"></td><td>${r.members.length}</td>`
-      +`<td>${String(r.mm2).replace('.',',')}</td><td>${esc(r.mcb)}</td></tr><tr><td></td><td></td><td colspan="4" style="color:#888;font-size:11px">Miért? ${esc(r.why)}</td></tr>`).join('')
-    +`</table><div style="margin-top:8px"><button id="elpOwn">＋ Saját áramkör…</button> <span style="font-size:11px;color:#888">az Áramkör-listából (Elosztó)</span></div>`;
+      +`<td>${String(r.mm2).replace('.',',')}</td><td>${esc(r.mcb)}</td></tr><tr><td></td><td></td><td colspan="4" style="color:var(--pc-mute,#888);font-size:11px">Miért? ${esc(r.why)}</td></tr>`).join('')
+    +`</table><div style="margin-top:8px"><button id="elpOwn">＋ Saját áramkör…</button> <span style="font-size:11px;color:var(--pc-mute,#888)">az Áramkör-listából (Elosztó)</span></div>`;
   openModal('Áramkörök javaslata',body,()=>{
     document.querySelectorAll('.elpOn').forEach(c=>{rows[+c.dataset.i].on=c.checked;});
     document.querySelectorAll('.elpName').forEach(c=>{const v=c.value.trim();if(v)rows[+c.dataset.i].name=v;});

@@ -11,7 +11,7 @@
 //   node tools/fetch-vendor.js fflate tesseract-js
 //   node tools/fetch-vendor.js --sync-page
 //
-// Vendor/ is gitignored — same rule as Planner/apps/. Nothing downloaded here
+// Vendor/ is gitignored — same rule as the portable tools next to the repo. Nothing downloaded here
 // is committed; this file plus the manifest are the reproducible part.
 // Vendor/.lock.json records the commit each component was resolved to, so a
 // later run can tell you whether upstream moved.

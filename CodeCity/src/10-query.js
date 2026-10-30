@@ -36,7 +36,7 @@ function drawBrackets() {
   if (brk.width !== Math.round(r.width * dpr) || brk.height !== Math.round(r.height * dpr)) { brk.width = Math.round(r.width * dpr); brk.height = Math.round(r.height * dpr); }
   bctx.clearRect(0, 0, brk.width, brk.height);
   if (!query.items.length || !current) return;
-  bctx.lineWidth = 1.5 * dpr; bctx.strokeStyle = '#ffcf5a'; bctx.fillStyle = '#ffcf5a'; bctx.font = `${11 * dpr}px ui-monospace, Consolas, monospace`;
+  bctx.lineWidth = 1.5 * dpr; bctx.strokeStyle = '#93d3e6'; bctx.fillStyle = '#93d3e6'; bctx.font = `${11 * dpr}px ui-monospace, Consolas, monospace`;
   query.items.slice(0, 40).forEach((i, n) => {
     const f = current.city.files[i], [h, s] = stateAt(f, i, replay.T);
     if (h <= 0) return;

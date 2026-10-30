@@ -2,7 +2,7 @@
 
 *Research report, 2026-10-26. Synthesised from six research notes in `docs/research/research_notes/Kódváros live workspace and GitWorld/` (01 our assets, 02 workspace architecture, 03 Windows live telemetry, 04 overlay OS layer, 05 GitWorld map and repos, 06 media REA candidates) and `docs/city/README.md` §7. No code was changed. Sections 1–7 answer the seven parts of the brief; section numbers are stable because the prompt series in §7 points into them.*
 
-Kódváros can become a live workspace without a rewrite and without new toolchains. **The one piece that unlocks almost everything already exists in the repo**: the parked Kapu companion server (`CodeCity/from-kapu/companion-server.js`), a hardened 127.0.0.1 Node process that serves a page, injects a per-install token and launches whitelisted programs from argument arrays. Extend it into `CodeCity/companion.js`, and the city gets a real origin (fixing `file://` storage and editor workers), a right-click (RCO) menu that opens folders, VS Code, terminals, Claude Code and the Claude app, and a live event stream. The best live source for "watching Claude work" is a **Claude Code HTTP hook** that POSTs every tool call to the companion and fails silently when the city is closed ([Claude Code hooks](https://code.claude.com/docs/en/hooks)); parallel sessions come from `claude agents --json`, the documented "supported interface" for session state ([agent view](https://code.claude.com/docs/en/agent-view)). The GitWorld geography (planet → Land → Kódváros, Tárház, Erőmű, Pályaudvar, USB-falu → district → building → floor) needs **nested scale frames with a camera hand-off**, because float32 cannot hold a planet and a function floor in one coordinate system. Windows system data splits cleanly into three tiers: a no-admin tier that covers CPU, RAM, GPU, connections, windows, audio, media, USB and Bluetooth; an elevated, read-only ETW tier for per-process bytes and "who touched which file on H:"; and things to avoid outright (packet capture, TLS interception, driver swaps). The overlay OS is a late phase: Electron is the only host whose documented JavaScript APIs cover transparency, click-through with mouse forwarding, hotkeys and window capture, but this PC runs **Windows 10 21H2 (build 19044)**, out of servicing, and should move to 22H2 first. The design rule that matters most for a user who does not code is borrowed from process plants: **a calm, grey city means all is well; colour appears only when something needs you** ([Control.com: Going Gray](https://control.com/technical-articles/going-gray/)). Twenty decisions are listed in §6.3, and §7 gives 27 short prompts, one per roadmap step.
+Kódváros can become a live workspace without a rewrite and without new toolchains. **The one piece that unlocks almost everything already exists in the repo**: the parked Kapu companion server (`CodeCity/from-kapu/companion-server.js`), a hardened 127.0.0.1 Node process that serves a page, injects a per-install token and launches whitelisted programs from argument arrays. Extend it into `CodeCity/companion.js`, and the city gets a real origin (fixing `file://` storage and editor workers), a right-click (RCO) menu that opens folders, VS Code, terminals, Claude Code and the Claude app, and a live event stream. The best live source for "watching Claude work" is a **Claude Code HTTP hook** that POSTs every tool call to the companion and fails silently when the city is closed ([Claude Code hooks](https://code.claude.com/docs/en/hooks)); parallel sessions come from `claude agents --json`, the documented "supported interface" for session state ([agent view](https://code.claude.com/docs/en/agent-view)). The GitWorld geography (planet → Land → Kódváros, Tárház, Erőmű, Pályaudvar, USB-falu → district → building → floor) needs **nested scale frames with a camera hand-off**, because float32 cannot hold a planet and a function floor in one coordinate system. Windows system data splits cleanly into three tiers: a no-admin tier that covers CPU, RAM, GPU, connections, windows, audio, media, USB and Bluetooth; an elevated, read-only ETW tier for per-process bytes and "who touched which file on H:"; and things to avoid outright (packet capture, TLS interception, driver swaps). The overlay OS is a late phase: Electron is the only host whose documented JavaScript APIs cover transparency, click-through with mouse forwarding, hotkeys and window capture, but this PC runs **Windows 10 21H2 (build 19044)**, out of servicing, and should move to 22H2 first. The design rule that matters most for a user who does not code is borrowed from process plants: **a calm, grey city means all is well; colour appears only when something needs you** ([Control.com: Going Gray](https://control.com/technical-articles/going-gray/)). Twenty-five decisions are listed in §6.3, and §7 gives 27 short prompts, one per roadmap step. §8 (added later) puts free Cloudflare services in an outer ring around the local companion, with its own seven prompts.
 
 ---
 
@@ -20,9 +20,9 @@ The brief asks for many things at once: open and edit files, watch processes, la
 | D. VS Code as the editor half | D1: RCO → "Open in VS Code" (portable `Planner/apps/vscode`) or `vscode://anthropic.claude-code/open` ([deep links](https://code.claude.com/docs/en/deep-links)); D2: Kódváros as a VS Code extension webview | D2 gives editor, terminal, git and Claude for free | D2 buries the city inside IDE chrome the user finds confusing; code-server cannot use the Microsoft Marketplace ([code-server FAQ](https://coder.com/docs/code-server/FAQ)) | MIT; no admin |
 | E. PWA | Installable app window over localhost | App feel, offline cache | Cannot spawn processes, so still needs A | — |
 
-**Recommendation: A now, written so the companion's action/stream API is the only boundary; B later becomes a packaging step, not a rewrite** (and B is also the overlay host in §1.5). D1 is folded into A as RCO actions from day one. The companion already binds 127.0.0.1 only, checks Host and Origin against fixed sets, compares the token with `timingSafeEqual`, accepts only whitelisted actions with exact argument shapes, realpaths every path inside allowed roots, and spawns from argument arrays, never shell strings ([companion-server.js](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/CodeCity/from-kapu/companion-server.js)).
+**Recommendation: A now, written so the companion's action/stream API is the only boundary; B later becomes a packaging step, not a rewrite** (and B is also the overlay host in §1.5). D1 is folded into A as RCO actions from day one. The companion already binds 127.0.0.1 only, checks Host and Origin against fixed sets, compares the token with `timingSafeEqual`, accepts only whitelisted actions with exact argument shapes, realpaths every path inside allowed roots, and spawns from argument arrays, never shell strings ([companion-server.js](file:///H:/VRG/Full/Planner_VRG_U100/CodeCity/from-kapu/companion-server.js)).
 
-The live transport has two parts. A **one-way event stream** (repo changes, Claude events, system samples) fits Server-Sent Events: zero dependencies and a plain `EventSource`. A **two-way channel** is needed only for an embedded terminal, and that needs WebSocket via `ws`, which is already installed at 8.21.3 for the phone relay ([varler-planner/node_modules/ws](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/node_modules/ws)). Browsers cannot set custom headers on `EventSource` or `new WebSocket()`, and a token in the URL leaks into logs. So for the stream, the design proposal here is a `SameSite=Strict`, `HttpOnly` cookie set when the companion serves the page, plus the fixed-list Origin check. For WebSocket, the token goes in the first message, and the socket is dropped if it does not arrive within ~2 s. Origin must be compared to a configured list, never derived from `Host`. That exact mistake is Jenkins CVE-2026-33002 ([Rapid7](https://www.rapid7.com/db/vulnerabilities/jenkins-2026-03-18_cve-2026-33002/)), and DNS rebinding is the attack it enables ([NCC Group Singularity](https://github.com/nccgroup/singularity/wiki/%5BAnnouncement-Blog-Post%5D--Singularity-of-Origin:-A-DNS-Rebinding-Attack-Framework)).
+The live transport has two parts. A **one-way event stream** (repo changes, Claude events, system samples) fits Server-Sent Events: zero dependencies and a plain `EventSource`. A **two-way channel** is needed only for an embedded terminal, and that needs WebSocket via `ws`, which is already installed at 8.21.3 for the phone relay ([varler-planner/node_modules/ws](file:///H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules/ws)). Browsers cannot set custom headers on `EventSource` or `new WebSocket()`, and a token in the URL leaks into logs. So for the stream, the design proposal here is a `SameSite=Strict`, `HttpOnly` cookie set when the companion serves the page, plus the fixed-list Origin check. For WebSocket, the token goes in the first message, and the socket is dropped if it does not arrive within ~2 s. Origin must be compared to a configured list, never derived from `Host`. That exact mistake is Jenkins CVE-2026-33002 ([Rapid7](https://www.rapid7.com/db/vulnerabilities/jenkins-2026-03-18_cve-2026-33002/)), and DNS rebinding is the attack it enables ([NCC Group Singularity](https://github.com/nccgroup/singularity/wiki/%5BAnnouncement-Blog-Post%5D--Singularity-of-Origin:-A-DNS-Rebinding-Attack-Framework)).
 
 The companion's actions fall into four **approval tiers**. **Read** is always allowed. **Open/launch** needs the token. **Write/run** needs the token plus an in-page confirmation that shows the exact path or command. **Destructive git** is handed to Claude Code as a prompt, or goes through a two-step confirm that first makes a safety ref. A terminal endpoint is remote code execution by design, so it must spawn only the configured shell or `claude` binary and stay off until switched on (note 02, Q10).
 
@@ -31,7 +31,7 @@ The companion's actions fall into four **approval tiers**. **Read** is always al
 | Need | Method | Status / caveat |
 |---|---|---|
 | See each file Claude reads, searches, edits, live | **`http` hook** on `PreToolUse` + `PostToolUse` (+ `PostToolUseFailure`, `SessionStart/End`, `SubagentStart/Stop`, `Stop`, `WorktreeCreate`). Every event carries `session_id`, `cwd`, `transcript_path`, `agent_id`; tool events add `tool_name`, `tool_input`, `tool_use_id`. Connection failures are **non-blocking by default** ([hooks](https://code.claude.com/docs/en/hooks)) | A settings change, so the user decides. The Write input carries the **file content**: strip it at the door. A small `command` hook that strips the content and POSTs the rest keeps it off the wire entirely. The companion's 16 KB body limit must rise only if raw http hooks are used |
-| Zero-config fallback | Tail `~/.claude/projects/<cwd>/*.jsonl` with the existing privacy filter in [CodeCity/sessions.js](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/CodeCity/sessions.js) | The docs warn the format "is internal to Claude Code and changes between versions" ([sessions](https://code.claude.com/docs/en/sessions)) |
+| Zero-config fallback | Tail `~/.claude/projects/<cwd>/*.jsonl` with the existing privacy filter in [CodeCity/sessions.js](file:///H:/VRG/Full/Planner_VRG_U100/CodeCity/sessions.js) | The docs warn the format "is internal to Claude Code and changes between versions" ([sessions](https://code.claude.com/docs/en/sessions)) |
 | Parallel sessions and their state | Poll `claude agents --json --all`: `state` (`working/blocked/done/failed/stopped`), `status`, `waitingFor` (e.g. `permission prompt`), `cwd`, `name` ([agent view](https://code.claude.com/docs/en/agent-view)) | Research preview. `~/.claude/sessions/<pid>.json` holds similar keys locally (note 01) but is not a stable interface |
 | Files touched inside Bash | `bashEditDiff.changedFiles` on PostToolUse (v2.1.269+, best-effort) or ETW Kernel-File (Tier B, §1.4) | — |
 | Model calls as departing planes | OpenTelemetry `claude_code.api_request` with tokens, cost and duration, batched every 5 s; keep `OTEL_LOG_USER_PROMPTS` off ([monitoring](https://code.claude.com/docs/en/monitoring-usage)) | Optional |
@@ -47,7 +47,7 @@ The companion's actions fall into four **approval tiers**. **Read** is always al
 | Part | Recommended | Alternatives and why not first | Key facts |
 |---|---|---|---|
 | File viewer/editor + diff | **CodeMirror 6 + `@codemirror/merge` + `markdown-it` + DOMPurify** | Monaco: "VS Code in a box", 99 MB unpacked, needs http(s) for workers, AMD build deprecated ([monaco-editor](https://github.com/microsoft/monaco-editor)) | CodeMirror's GitHub mirrors were **archived 2026-04-15**; development moved to code.haverbeke.berlin and npm still publishes ([codemirror/dev](https://github.com/codemirror/dev), [codemirror.net](https://codemirror.net/)). Vendor it as `source: "npm"` with a sha512 digest, not from the archived mirror. `@codemirror/merge` 6.12.3 is 179 KB unpacked ([npm](https://www.npmjs.com/package/@codemirror/merge)) |
-| Embedded terminal | **`@xterm/xterm` 6 + node-pty 1.1.0**, phase 2 after the deep link | Spawning without a PTY (child_process pipes) breaks Claude's full-screen TUI | node-pty 1.1.0 ships `prebuilds/win32-x64` including `conpty.dll` and `OpenConsole.exe` ([unpkg listing](https://unpkg.com/node-pty@1.1.0/?meta)); it uses Node-API, so it should load under Node v24 without Visual Studio (test once). Pass `SystemRoot` in the env or PowerShell fails with 8009001d ([node-pty](https://github.com/microsoft/node-pty)). Set `CLAUDE_CODE_GIT_BASH_PATH` to `H:\_desktop\Git\bin\bash.exe` ([setup](https://code.claude.com/docs/en/setup)). Name sessions `claude -n <name>` so a restart can `--resume` |
+| Embedded terminal | **`@xterm/xterm` 6 + node-pty 1.1.0**, phase 2 after the deep link | Spawning without a PTY (child_process pipes) breaks Claude's full-screen TUI | node-pty 1.1.0 ships `prebuilds/win32-x64` including `conpty.dll` and `OpenConsole.exe` ([unpkg listing](https://unpkg.com/node-pty@1.1.0/?meta)); it uses Node-API, so it should load under Node v24 without Visual Studio (test once). Pass `SystemRoot` in the env or PowerShell fails with 8009001d ([node-pty](https://github.com/microsoft/node-pty)). Set `CLAUDE_CODE_GIT_BASH_PATH` to `H:\VRG\Full\tools\git\bin\bash.exe` ([setup](https://code.claude.com/docs/en/setup)). Name sessions `claude -n <name>` so a restart can `--resume` |
 | Git | **simple-git** over the portable `git.exe` ([steveukx/git-js](https://github.com/steveukx/git-js)) | isomorphic-git has no worktree, reflog or rebase ([command index](https://isomorphic-git.org/docs/en/alphabetic)); nodegit is a heavy native build; gitgraph.js is **archived** ([repo](https://github.com/nicoespeon/gitgraph.js)) | Data comes from `worktree list --porcelain`, `for-each-ref`, `rev-list --left-right --count main...<b>`, `status --porcelain=v2 -z`, `reflog`. Draw the graph in three.js ourselves |
 | File watching | `fs.watch(recursive)` or **chokidar 6** (rewrite on native recursive watch, needs Node 22.22+) ([chokidar](https://github.com/paulmillr/chokidar)) | @parcel/watcher coalesces `git checkout` bursts and can report "changes since last snapshot" ([parcel watcher](https://github.com/parcel-bundler/watcher)), but Windows prebuilds were not confirmed | Debounce ~300–500 ms, rescan only changed files, patch instances with `setMatrixAt`/`setColorAt`; watch `.git/HEAD`, `refs`, `worktrees`, `logs/HEAD` separately |
 | Processes | In-house supervisor: config-listed programs, argv only, ring buffer per job, `taskkill /PID <pid> /T /F` | **PM2 is AGPL-3.0**: idea only ([Unitech/pm2](https://github.com/Unitech/pm2)) | Fire-and-forget launches stay detached; supervised jobs (dev servers, builds, tests) pipe their output |
@@ -111,7 +111,7 @@ A **globe-to-map morph** in the vertex shader (lerp each vertex between the sphe
 | L2 | Kódváros · Tárház · Erőmű · Pályaudvar · USB-falu · Határ | repo city · H: drive warehouse town · PC compute node · TP-Link station · USB village (appears on plug-in) · Huawei ONT border crossing | `city.json`, `disk.json`, live samples |
 | L3–L5 | District · building · floor | folder · file · top-level function/section | `city.json` (+ new `outline`) |
 
-The real topology is already known: PC `192.168.0.100` → TP-Link TL-WR1043ND `192.168.0.1` → Huawei HG8245H ONT `192.168.1.254` (**double NAT**) → ISP `91.120.199.243` ([router note](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/docs/research/2026-10-26_router-usb-phone-wake.md)). So the Land has a local station and a separate border crossing. When the network is down, the border closes and ships wait in the harbour, while every local source keeps working.
+The real topology is already known: PC `192.168.0.100` → TP-Link TL-WR1043ND `192.168.0.1` → Huawei HG8245H ONT `192.168.1.254` (**double NAT**) → ISP `91.120.199.243` ([router note](file:///H:/VRG/Full/Planner_VRG_U100/docs/research/2026-10-26_router-usb-phone-wake.md)). So the Land has a local station and a separate border crossing. When the network is down, the border closes and ships wait in the harbour, while every local source keeps working.
 
 ### 1.7 Flows: ships, planes, trains as one instanced system
 
@@ -312,34 +312,34 @@ Kódváros is a working offline three.js r169 city (C1–C10 done) that renders 
 
 | Asset | Path | Reuse for |
 |---|---|---|
-| Companion server (copy; live copy in `Hub/companion/server.js` with `config.example.json`) | [CodeCity/from-kapu/companion-server.js](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/CodeCity/from-kapu/companion-server.js) | The workspace backbone: token, Host/Origin, whitelist, `open-tool/folder/terminal/claude/vscode`, read-only git, `check-paths`, `KP_DRY_RUN` |
-| Action registry with greyed reasons (`need`, `whyNot`) | [from-kapu/src/js/40-actions.js](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/CodeCity/from-kapu/src/js/40-actions.js) | RCO menu, palette and toolbar from one registry; every unavailable item says why, in Hungarian |
+| Companion server (copy; live copy in `Hub/companion/server.js` with `config.example.json`) | [CodeCity/from-kapu/companion-server.js](file:///H:/VRG/Full/Planner_VRG_U100/CodeCity/from-kapu/companion-server.js) | The workspace backbone: token, Host/Origin, whitelist, `open-tool/folder/terminal/claude/vscode`, read-only git, `check-paths`, `KP_DRY_RUN` |
+| Action registry with greyed reasons (`need`, `whyNot`) | [from-kapu/src/js/40-actions.js](file:///H:/VRG/Full/Planner_VRG_U100/CodeCity/from-kapu/src/js/40-actions.js) | RCO menu, palette and toolbar from one registry; every unavailable item says why, in Hungarian |
 | Accent-insensitive search; keyboard nav with long-press | `from-kapu/src/js/41-search.js`, `47-nav.js` | Ctrl+K; touch and keyboard |
 | Editor with claims (3 days), conflict dialog | `from-kapu/src/js/70-edit.js` | Fences (§7.1 #5) |
 | Refresh / "Mi változott?", Munkanapló, personal links, companion client, tour/glossary | `57-refresh.js`, `90-log.js`, `80-personal.js`, `92-companion.js`, `97-extras.js` | Morning newspaper, work log, working sets |
 | Kapu tests (16 specs, need re-pointing) | `CodeCity/from-kapu/test/` | Regression net for the lifted modules |
-| Session replay and privacy filter | [CodeCity/sessions.js](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/CodeCity/sessions.js), `src/16-session.js` | Live mode feeds the same `[dt, kind, target]` events |
+| Session replay and privacy filter | [CodeCity/sessions.js](file:///H:/VRG/Full/Planner_VRG_U100/CodeCity/sessions.js), `src/16-session.js` | Live mode feeds the same `[dt, kind, target]` events |
 | MCP server sharing the page's code | `CodeCity/mcp.js`, `core.js` | Reverse "city tells Claude" tool |
 | Selftest, headless screenshots | `CodeCity/tools/selftest.js`, `tools/shot.js` | Done-checks for every phase |
-| WebSocket relay (role-based) + `ws` 8.21.3 | [phone-relay-server.js](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/Planner/projects/varler-planner/tools/phone-relay-server.js) | The city joins as role `city`; Planner dash and CYD traffic as live data |
-| Board Console `/api/live`, `/api/ports` (COM ports) | [Firmware/board-console/app/server.js](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/Firmware/board-console/app/server.js) | Hardware devices as the first USB-falu residents |
+| WebSocket relay (role-based) + `ws` 8.21.3 | [phone-relay-server.js](file:///H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/tools/phone-relay-server.js) | The city joins as role `city`; Planner dash and CYD traffic as live data |
+| Board Console `/api/live`, `/api/ports` (COM ports) | [Firmware/board-console/app/server.js](file:///H:/VRG/Full/Planner_VRG_U100/Firmware/board-console/app/server.js) | Hardware devices as the first USB-falu residents |
 | Macropad: `planner` and `keys` buttons, `winkeys.ps1` | `Firmware/planner-cyd/app/bridge/macros.js` | Physical buttons for city actions (AV may flag key injection) |
 | Static servers (8124, 8123, 8131, 8796, 8150) and `.claude/launch.json` | `MindMap/serve.js` etc. | Supervised jobs; "shops open" on a port street |
-| START.cmd registry (11 tools, T11 = Kódváros) + `tools/check-start.js` | [Planner/START.cmd](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/Planner/START.cmd) | City gates and the launch list; one registry, never a second |
-| VRG-DE.cmd PROGRAMS, DEV_CLAUDE, PROMPTS sections | [VRG-DE.cmd](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/VRG-DE.cmd) | Third-party program list (Chrome, Opera GX, Zen, VS Code, Git Bash, 7-Zip, VLC…) |
+| START.cmd registry (11 tools, T11 = Kódváros) + `tools/check-start.js` | [Planner/START.cmd](file:///H:/VRG/Full/Planner_VRG_U100/Planner/START.cmd) | City gates and the launch list; one registry, never a second |
+| VRG-DE.cmd PROGRAMS, DEV_CLAUDE, PROMPTS sections | [VRG-DE.cmd](file:///H:/VRG/Full/Planner_VRG_U100/VRG-DE.cmd) | Third-party program list (Chrome, Opera GX, Zen, VS Code, Git Bash, 7-Zip, VLC…) |
 | 8 shortcut prompts | `tools/prompts/*.txt` | Prompt dock |
 | 1 project subagent | `.claude/agents/vrg-piacmero.md` | First "hireable" agent |
-| Open MCT 4.3.1 (vendored) + spike + `vrg-telemetry` design (dict/history/WS live) | [2026-10-20_openmct-planner-bridge.md](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/docs/research/2026-10-20_openmct-planner-bridge.md), `docs/research/openmct-spike/` | A 2D control-room view beside the city; the telemetry service shape |
-| Router, USB, Wake-on-LAN note | [2026-10-26_router-usb-phone-wake.md](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/docs/research/2026-10-26_router-usb-phone-wake.md) | Pályaudvar and Határ content |
+| Open MCT 4.3.1 (vendored) + spike + `vrg-telemetry` design (dict/history/WS live) | [2026-10-20_openmct-planner-bridge.md](file:///H:/VRG/Full/Planner_VRG_U100/docs/research/2026-10-20_openmct-planner-bridge.md), `docs/research/openmct-spike/` | A 2D control-room view beside the city; the telemetry service shape |
+| Router, USB, Wake-on-LAN note | [2026-10-26_router-usb-phone-wake.md](file:///H:/VRG/Full/Planner_VRG_U100/docs/research/2026-10-26_router-usb-phone-wake.md) | Pályaudvar and Határ content |
 | FLIP spike (O(n) spatial hash) | `docs/research/flip-spike/index.html` | Label de-collision, ambient water at the coast |
 | three.js r169 with `CSS3DRenderer`, `SelectionBox`, `UnrealBloomPass`, `Line2`, `RenderTransitionPass`, `RollerCoaster` | `Vendor/three` | Everything visual in §1.6–1.7 |
-| `_libs`: EasyMDE (CodeMirror 5), markdown-it, nomnoml, DOMPurify | `H:\cwebuser\projects\VRG-DE\_libs` | Markdown preview now |
-| Portable apps: Chrome 152, Zen 1.23.3b, Opera GX, VS Code 1.134.0 (with node-pty inside, Electron ABI), Git, Node v24.19.0 + Claude Code 2.1.261, VLC, 7-Zip, headless Chrome | [Planner/apps](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/Planner/apps) | Launch targets; the terminal's `claude.cmd` |
-| God's Eye View portable (CesiumJS 1.138, flights, ships, satellites) | `H:\cwebuser\projects\VRG-DE\_gev-portable\GodsEyeView` | Planet "abroad" layer ideas (MIT; CITY-D5: code with notice, never its data) |
-| wifi-heatmapper | `H:\cwebuser\projects\VRG-DE\wifi-heatmapper` | Wi-Fi strength at the station |
+| `_libs`: EasyMDE (CodeMirror 5), markdown-it, nomnoml, DOMPurify | `H:\VRG\Full\tools` | Markdown preview now |
+| Portable apps: Chrome 152, Zen 1.23.3b, Opera GX, VS Code 1.134.0 (with node-pty inside, Electron ABI), Git, Node v24.19.0 + Claude Code 2.1.261, VLC, 7-Zip, headless Chrome | [Planner/apps](file:///H:/VRG/Full/Planner_VRG_U100/Planner/apps) | Launch targets; the terminal's `claude.cmd` |
+| God's Eye View portable (CesiumJS 1.138, flights, ships, satellites) | `H:\Personal\GodsEyeView\GodsEyeView` | Planet "abroad" layer ideas (MIT; CITY-D5: code with notice, never its data) |
+| wifi-heatmapper | `H:\VRG\Full\wifi-heatmapper` | Wi-Fi strength at the station |
 | `~/.claude/sessions/<pid>.json`, `projects/<cwd>/*.jsonl`, `daemon/roster.json`, `settings.json` (no hooks yet) | `C:\Users\webag\.claude` | Live session list and transcript fallback |
-| H: top level (`Dev-VRG`, `VRG_Visual_Base`, `MC-Server`, job folders BK2/DM1/P33/NV4, `_installers`, `_zipped`, `H_BACKUP_2026-09-16`) | `H:\`, `H:\cwebuser\projects\VRG-DE` | Tárház districts; installers as port depots; backups as fenced depots |
-| BRIDGE vocabulary (BASE/CHANNEL/ROOMBOX/ARM, 10 conduit families, tier T7 "operator or agentic interface") | [BRIDGE-OUTLINE-001](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/BRIDGE/BRIDGE-OUTLINE-001_General-Outline.md) | One infrastructure language for home and code: Land roads as conduit runs |
+| H: top level (`Dev-VRG`, `VRG_Visual_Base`, `MC-Server`, job folders BK2/DM1/CLA/CLANV4, `_installers`, `_zipped`, `H_BACKUP_2026-09-16`) | `H:\`, `H:\VRG\Full` | Tárház districts; installers as port depots; backups as fenced depots |
+| BRIDGE vocabulary (BASE/CHANNEL/ROOMBOX/ARM, 10 conduit families, tier T7 "operator or agentic interface") | [BRIDGE-OUTLINE-001](file:///H:/VRG/Full/Planner_VRG_U100/BRIDGE/BRIDGE-OUTLINE-001_General-Outline.md) | One infrastructure language for home and code: Land roads as conduit runs |
 
 Two gaps stand out. No process-listing or file-watch stream exists anywhere in the repo yet. And `docs/city/wp/`, listed in README §1, does not exist.
 
@@ -406,7 +406,7 @@ Every live thing becomes an **event** with five fields: an *actor* (a Claude ses
 
 **A USB copy.** Plugging in a stick makes the **USB-falu** village rise at the end of a rail spur (volume arrival event). A copy to it is a train: wagons are files (exact with Tier B, otherwise one wagon per second of write activity), and speed is the volume's write counter. The extrapolated rule is **"eject when the platform is empty"**: the village's RCO *safely remove* item stays greyed with a Hungarian reason ("Még úton van 3 kocsi") until no train is in transit. That one picture replaces a progress dialog, a "can I unplug it?" doubt and a corrupted stick.
 
-**Claude reaching addresses on H: and sending data upstream.** Paths outside the repo land in an **outskirts** district on the Land, so a session reading `H:\VRG_Visual_Base` draws a beam out of the city to Tárház. The extrapolated safety feature is **restricted zones**: `.ssh`, `Planner/data`, `Planner/home`, `*.credentials.json`, client `*.pdf` folders and `H_BACKUP_*` are drawn as walled no-go areas. A beam into one turns red and adds a "needs you" line. If the user later chooses (decision 8), the same hook could refuse such reads before they happen, since `PreToolUse` can block. Upstream data shows as small planes leaving the harbour for the api.anthropic.com dock, sized by `input_tokens` when OpenTelemetry is on. Payloads are encrypted and are never intercepted.
+**Claude reaching addresses on H: and sending data upstream.** Paths outside the repo land in an **outskirts** district on the Land, so a session reading `H:\VRG\Full\VRG_Visual_Base` draws a beam out of the city to Tárház. The extrapolated safety feature is **restricted zones**: `.ssh`, `Planner/data`, `Planner/home`, `*.credentials.json`, client `*.pdf` folders and `H_BACKUP_*` are drawn as walled no-go areas. A beam into one turns red and adds a "needs you" line. If the user later chooses (decision 8), the same hook could refuse such reads before they happen, since `PreToolUse` can block. Upstream data shows as small planes leaving the harbour for the api.anthropic.com dock, sized by `input_tokens` when OpenTelemetry is on. Payloads are encrypted and are never intercepted.
 
 ### 5.3 "Where am I, what is happening, what can I do": three answers on every screen
 
@@ -468,7 +468,7 @@ Each phase is small enough for one or two sessions. Each ends with a check the u
 
 ### 6.2 Order and the reasoning behind it
 
-P1–P4 deliver most of the felt value with no admin rights, no new toolchain and only one settings change: a city that opens things, finds things, and shows Claude working, live. P5–P7 add the workspace depth (edit, terminal, processes, git) that removes the need to leave the city for routine work. P8–P9 build the geography on top of a working workspace rather than before it, so the Land is filled with real live data from day one instead of decoration. P10–P12 depend on toolchain and OS choices (the .NET SDK, an elevation path, Windows 22H2) that the user should make with the earlier phases in hand. The Kapu README already proposes the same direction: board → district map, claims and Munkanapló on buildings, agent init docs as building cards, helper actions from the city ([from-kapu/README.md](file:///H:/cwebuser/projects/VRG-DE/Planner_VRG_U100/CodeCity/from-kapu/README.md)). One uncertainty is real. Whether the installed Claude Code 2.1.261 offers `http` hooks and `claude agents` decides whether P4 starts with hooks or with the transcript tail.
+P1–P4 deliver most of the felt value with no admin rights, no new toolchain and only one settings change: a city that opens things, finds things, and shows Claude working, live. P5–P7 add the workspace depth (edit, terminal, processes, git) that removes the need to leave the city for routine work. P8–P9 build the geography on top of a working workspace rather than before it, so the Land is filled with real live data from day one instead of decoration. P10–P12 depend on toolchain and OS choices (the .NET SDK, an elevation path, Windows 22H2) that the user should make with the earlier phases in hand. The Kapu README already proposes the same direction: board → district map, claims and Munkanapló on buildings, agent init docs as building cards, helper actions from the city ([from-kapu/README.md](file:///H:/VRG/Full/Planner_VRG_U100/CodeCity/from-kapu/README.md)). One uncertainty is real. Whether the installed Claude Code 2.1.261 offers `http` hooks and `claude agents` decides whether P4 starts with hooks or with the transcript tail.
 
 ### 6.3 Open decisions (A is recommended in each)
 
@@ -484,7 +484,7 @@ P1–P4 deliver most of the felt value with no admin rights, no new toolchain an
 10. **CITY-D18 Sidecar toolchain** (before P10; choose before 2026-11-10). A) C# self-contained, .NET 10 SDK unpacked into `Planner/apps/dotnet`. B) .NET 8 SDK. C) PowerShell Tier 0 only, no sidecar. D) Rust.
 11. **CITY-D19 Windows 22H2** (before P12; the user's own action). A) Apply the 21H2 → 22H2 enablement before P12. B) Stay on 21H2; Electron only, no WebView2 hosts.
 12. **CITY-D20 Overlay host** (before P12). A) Electron with three layers (wallpaper via Lively first). B) Lively wallpaper only. C) Tauri.
-13. **CITY-D21 GitHub data** (before P9). A) Unauthenticated snapshot from `vendor-manifest.json` + ecosyste.ms, refreshed rarely; token optional later. B) A personal token from an environment variable (5,000/h, free 304s). C) No remote fetch; planet from local data only.
+13. **CITY-D21 GitHub data** (before P9). A) Unauthenticated snapshot from `vendor-manifest.json` + ecosyste.ms, refreshed rarely; token optional later. B) A personal token from an environment variable (5,000/h, free 304s). C) No remote fetch; planet from local data only. D) Our own Cloudflare Worker caches the metadata with ETags (§8.2); no token on the PC.
 14. **CITY-D22 Planet placement** (before P9). A) Mix: ecosystem continents, dependency distance near us, Map of GitHub as faint background. B) Map of GitHub coordinates only. C) Dependency distance only.
 15. **CITY-D23 Network precision** (before P8). A) No packet capture: NIC counters + TCP table + DB-IP Lite; exact bytes only via Tier B if decision 9 allows. B) Npcap opt-in.
 16. **CITY-D24 Router** (before P8). A) No router change: NIC counters, tracert, ARP. B) Turn on UPnP on the TP-Link for WAN counters (it also opens port mapping to LAN programs). C) Flash OpenWrt.
@@ -492,6 +492,11 @@ P1–P4 deliver most of the felt value with no admin rights, no new toolchain an
 18. **CITY-D26 Look name and rules** (before P13; affects P2+). A) Adopt R1–R12, the palette tokens and an own skin name (e.g. "Fényvonal"), with no Tron terms anywhere user-visible. B) Rules only, no skin name.
 19. **CITY-D27 Privacy of live data** (before P4). A) Window titles, outside paths, IPs, DNS names and device names stay in memory only, with a blur mode; nothing persisted. B) An opt-in log under a gitignored folder (e.g. `Planner/data/`).
 20. **CITY-D28 three.js version** (before P8). A) Stay on r169 until P8, then decide. B) Upgrade to r186 first.
+21. **CITY-D29 Cloud platform and domain** (before C0, §8). A) Cloudflare free tier on one own domain bought at Cloudflare Registrar; all hostnames under it. B) Cloudflare with only `*.pages.dev`/`*.workers.dev` (no tunnel hostnames). C) No cloud services.
+22. **CITY-D30 Remote view** (before C3). A) Tunnel → separate GET-only edge server with exported snapshots, behind Access (owner only); companion never tunnelled. B) A, plus the phone relay (47291) over the tunnel. C) Tailscale only; no public hostname.
+23. **CITY-D31 Off-site backup** (before C2). A) restic → R2, client-side encrypted, password in the password manager + on paper, weekly check and a restore test. B) rclone crypt sync to R2. C) No off-site copy.
+24. **CITY-D32 GitHub events** (before C4; affects P3/P7). A) Worker + D1 webhook mailbox, HMAC-verified, polled by the companion. B) Keep polling GitHub directly.
+25. **CITY-D33 Cloud configuration** (before C0). A) Everything as code under `cloud/` (`wrangler.toml`, pinned Wrangler, `wrangler secret`, START.cmd entries, allowlisted exports with `check-export.js`); dashboard only for account, domain and Access, documented in `cloud/README.md`. B) Dashboard-managed.
 
 Questions without options, to ask in the same session: **Q1** the user's dev notes for Kódváros base fine-tuning (README §7: "ask for those notes first; do not guess"); **Q2** which repos "Gitropolis" and "AgentCity" in README §2 were; **Q3** the TP-Link hardware version (sticker), if decision 16 is ever B or C.
 
@@ -507,7 +512,7 @@ The second shift concerns who the system is for. Fictional interfaces work for a
 
 ## 7. Prompt series
 
-Copy one prompt into a fresh Claude Code session in the repo (`H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`). "Report" = `docs/research/reports/Kódváros live workspace and GitWorld.md`. Each prompt points at report sections instead of restating context. Run them in order; skip a phase's prompts if its decisions said no.
+Copy one prompt into a fresh Claude Code session in the repo (`H:\VRG\Full\Planner_VRG_U100`, branch `main`). "Report" = `docs/research/reports/Kódváros live workspace and GitWorld.md`. Each prompt points at report sections instead of restating context. Run them in order; skip a phase's prompts if its decisions said no.
 
 **KV-01 · Decisions**
 ```
@@ -697,4 +702,109 @@ Check: hand-off and return with Zen work three times in a row. Commit, do not pu
 Read the report §5.5 (R1–R12), §4 (trademark limits) and docs/city/README.md §7.
 Audit the city against R1–R12 and the trademark list, add a low-glow mode and adaptive quality tiers, and make the Claude Design batch pack (CodeCity/tools/shot.js of every look + the user's dev notes) under docs/city/.
 Check: each rule has a selftest or shot check; no Tron terms in user-visible text. Commit, do not push.
+```
+
+---
+
+## 8. Cloudflare as the outer ring: what may leave the machine, and how
+
+*Added 2026-10-26. The companion and everything it can reach stay on 127.0.0.1 (§1, CITY-D27). This section adds an outer ring of free Cloudflare services for the few things that should be reachable from elsewhere: shared static tools, a phone view, GitHub events, metadata caching and an off-site backup. Decisions CITY-D29…D33 are in §6.3; the prompts CF-01…CF-07 are in §8.5.*
+
+### 8.1 The rule: three rings, and data only ever moves outward on purpose
+
+| Ring | Where | What lives there | May it reach the internet? |
+|---|---|---|---|
+| **Inner** | This PC, 127.0.0.1 | Companion (8797), embedded terminal, live Claude feed, system telemetry, client data | **Never.** No tunnel, no port-forward, no "temporary" exposure. Its token and Host/Origin checks assume a local-only threat model. |
+| **Edge** | This PC, a separate process | A static read-only file server for exported city/Planner snapshots; `cloudflared` | Only outbound, through Cloudflare Tunnel, and only behind Cloudflare Access |
+| **Outer** | Cloudflare | Pages (static tools), Workers (webhook mailbox, GitHub cache), D1, R2 (encrypted backup), Access (login) | Yes; it holds nothing that is not anonymised or encrypted |
+
+Three consequences make the result stable:
+
+- **The edge server is not the companion with a filter.** It is a separate, tiny static server that can only read one export folder. A misconfigured tunnel then exposes a folder of snapshots, never a terminal.
+- **Every export is allowlisted, not blocklisted.** A build script copies named files into `cloud/out/<target>/` and a check (`node cloud/check-export.js`) fails on client identifiers, tokens, absolute H: paths and CITY-D27 data. The anonymise rules apply before anything is uploaded.
+- **Configuration is code.** Each Worker/Pages project has a `wrangler.toml` under `cloud/`, the Wrangler version is pinned, secrets live only in `wrangler secret` and in gitignored local files, and every command gets a START.cmd entry (`node tools/check-start.js`). The dashboard is used for account, domain and Access policy setup only, and those settings are written down in `cloud/README.md`.
+
+### 8.2 Building blocks and why each one
+
+| Need | Choice | Why this over the alternatives |
+|---|---|---|
+| Account | One Cloudflare account, hardware key or TOTP 2FA, recovery codes on paper | Every ring depends on it; losing it loses the domain |
+| Domain | One own domain at **Cloudflare Registrar** (sold at cost, no markup) | Named tunnel hostnames and Access policies need a zone on Cloudflare; `*.pages.dev` alone cannot carry the tunnel. Registrar and DNS in one place removes a whole class of outages |
+| Login | **Cloudflare Zero Trust** free plan, one Access app per hostname, GitHub login + one-time PIN as fallback, allow-list = your own identities only | Free for small teams; no login code in our pages |
+| Static tools | **Pages, Direct Upload** (`wrangler pages deploy cloud/out/pages`) | No Git integration, so Cloudflare never gets the repo; only the allowlisted export is uploaded |
+| Phone view | **Tunnel** (remotely managed, `cloudflared` as a Windows service) → edge static server, behind Access | Outbound only, so double NAT and no inbound do not matter (§1.8); the service survives reboots. Installing it needs admin once |
+| GitHub events | **Worker + D1**: verifies `X-Hub-Signature-256`, stores the event; the companion polls `GET /events?since=` with a bearer token and acks | Replaces "poll GitHub" with one cheap poll of our own mailbox; nothing inbound to the PC; D1 is durable and queryable |
+| Repo metadata (P9) | **Worker cache** keyed by repo, with ETag revalidation upstream | Keeps the planet fetch under unauthenticated rate limits without a personal token on the PC; new option D under CITY-D21 |
+| Off-site backup | **restic → R2** (S3 API), repo password in the password manager + on paper, weekly `restic check` | Client-side encryption, deduplication, snapshots and verification; better than a plain synced copy. R2 needs a payment method on file even within the free 10 GB |
+| Private admin access | **Tailscale** (already proposed in `docs/research/2026-10-26_router-usb-phone-wake.md`) for RDP and Wake-on-LAN | Cloudflare is for web views; full remote control stays on a private mesh, never on a public hostname |
+
+Free-tier limits change. Check the current numbers on Cloudflare's pricing pages at each setup step and write them, with the date, into `cloud/README.md`.
+
+### 8.3 Hostname plan
+
+| Hostname | Points to | Access |
+|---|---|---|
+| `tools.<domain>` | Pages: calculators, Valena selector, `vrg-vendor.html` (anonymised) | Public, or Access if a tool shows anything internal |
+| `preview.<domain>` | Pages: client preview builds | Access, per-client allow-list |
+| `city.<domain>` | Tunnel → edge static server → `cloud/out/city/` | Access, owner only |
+| `hooks.<domain>` | Worker: GitHub webhook mailbox | GitHub HMAC on `POST`; bearer token on `GET` |
+| `meta.<domain>` | Worker: GitHub/ecosyste.ms cache | Public read, rate-limited |
+
+### 8.4 Order (stability first, each step reversible)
+
+| Step | Content | Done-check |
+|---|---|---|
+| **C0** | Account + 2FA, domain at Registrar, Zero Trust team, `cloud/README.md`, Wrangler pinned | `npx wrangler whoami` shows the account; the README lists every dashboard setting with its date |
+| **C1** | Export pipeline + `check-export.js`; first Pages deploy of one harmless tool | `tools.<domain>` serves it; a planted fake token makes the check fail |
+| **C2** | restic → R2 backup of the repo mirror and `_parked`; scheduled task; restore test | A file restored from R2 into a temp folder matches its hash |
+| **C3** | Edge static server + Tunnel + Access for `city.<domain>` | Phone off Wi-Fi: login → read-only city; `/api/*` and port 8797 unreachable through the tunnel |
+| **C4** | Webhook mailbox Worker + D1; companion poller (P3/P7) | A push to a test repo appears in the city within one poll interval; a forged signature is rejected |
+| **C5** | Metadata cache Worker (if CITY-D21 = D) | P9 planet fetch works with no local token; the second fetch is a cache hit |
+| **C6** | Phone relay over the tunnel (only if CITY-D30 = B) | Gyro relay works off home Wi-Fi, behind Access |
+
+### 8.5 Prompt series (Cloudflare)
+
+Same rules as §7: one prompt per fresh session, in order, from `main`.
+
+**CF-01 · Decisions**
+```
+Read the report §8 and §6.3 items 21–25.
+Ask me CITY-D29–D33 and the new option D of CITY-D21 one at a time, A first. Record them in docs/city/README.md §5. Commit, do not push.
+```
+
+**CF-02 · Foundation (C0)**
+```
+Read the report §8.1–§8.3. I have created the account, domain and Zero Trust team (tell me what to check if not).
+Create cloud/README.md (rings, hostname plan, every dashboard setting with date, free-tier limits with date), pin Wrangler in vendor-manifest.json (npm + sha512), add a START.cmd entry "Cloudflare" with whoami/login. Gitignore cloud/.secrets/ and cloud/out/.
+Check: node tools/check-start.js passes; npx wrangler whoami works. Commit, do not push.
+```
+
+**CF-03 · Export pipeline + first Pages deploy (C1)**
+```
+Read the report §8.1 (allowlist rule). Write cloud/export.js (named targets → cloud/out/<target>/) and cloud/check-export.js (fails on client identifiers per the anonymise rules, tokens, absolute H: paths, CITY-D27 data). First target: one offline tool I name. Deploy with wrangler pages deploy (Direct Upload) to tools.<domain>.
+Check: a planted fake token fails the check; the tool loads on my phone. Commit, do not push.
+```
+
+**CF-04 · Encrypted backup to R2 (C2)**
+```
+Read the report §8.2 (backup row). Vendor restic (pinned release + sha256). Script cloud/backup.js: restic backup of the repo mirror and _parked to R2, keys and password from cloud/.secrets/; a weekly scheduled task that I create; restic check.
+Check: restore one file to a temp folder and compare hashes. Commit, do not push.
+```
+
+**CF-05 · Read-only city through a tunnel (C3)**
+```
+Read the report §8.1 (edge ring) and §8.3. Write cloud/edge-server.js: static, GET-only, serves cloud/out/city/ on 127.0.0.1:<new port>, nothing else. Export a city snapshot through check-export. Give me the exact steps to create the remotely managed tunnel and the Access app (owner only); I run the admin cloudflared service install myself.
+Check: from the phone off Wi-Fi, login then the city loads; /api/* and 8797 are not reachable. Commit, do not push.
+```
+
+**CF-06 · Webhook mailbox (C4)**
+```
+Read the report §8.2 (GitHub events row). Worker under cloud/workers/hooks/ with D1: verify X-Hub-Signature-256, store, GET /events?since= with bearer, POST /ack. Companion poller behind a setting, off by default.
+Check: a test-repo push shows up; a forged signature returns 401. Commit, do not push.
+```
+
+**CF-07 · Metadata cache (C5)**
+```
+Only if CITY-D21 = D. Read the report §8.2 and P9. Worker under cloud/workers/meta/ caching GitHub/ecosyste.ms metadata for the vendor-manifest repos with ETag revalidation; world.js uses it first, the snapshot as fallback.
+Check: the second fetch is a cache hit; offline still renders from the snapshot. Commit, do not push.
 ```

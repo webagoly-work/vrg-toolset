@@ -20,7 +20,7 @@ otherwise.
 | `PROMPTS.md` | build-all / build-one / verify / resolve / status prompts |
 | `NEXT-CLA-ADD-001_cla-extras.md` | **queued after this round:** the user's CLA extras (note of 2026-10-10), transcribed and mapped onto the stack |
 | `GO-R1010.md` (repo root) | the session briefing behind the codephrase **GO R1010** |
-| `H:\Dev-VRG\VRG-DE\_inbox\BRIDGE Tuner - Planner R1010.html` | the tuner with this pack loaded — answer there, "Export answers", paste into the RESOLVE prompt |
+| `H:\VRG\Full\inbox\BRIDGE Tuner - Planner R1010.html` | the tuner with this pack loaded — answer there, "Export answers", paste into the RESOLVE prompt |
 
 ---
 

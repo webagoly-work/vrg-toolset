@@ -1,62 +1,83 @@
-# GO HUB — build VRG Kapu (the shared Homepage)
-
-> **2026-10-26 — reworked, read this first.** VRG Kapu is now a simple access page: GitHub sign-in,
-> the signed allowed list, then START.cmd (started from the page through the Kapu segéd) and the
-> START.cmd tool list with Megnyitás / Mappa for each. It leads to the dashboard that is still being
-> planned. The board, editor, refresh, Munkanapló, personal links, tour and glossary (WP-H1–H3,
-> H6–H9, H11) were taken out and parked for Kódváros in `CodeCity/from-kapu/` (its README lists
-> them, with ideas). Everything below describes the old, full Kapu: read it as history. A new Kapu
-> session works from `Hub/README.md`; do not rebuild the removed WPs here.
-
-> **2026-10-24 — GO MAIN:** the worktrees are retired. Work in the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`. Any worktree path or branch named below means the main checkout and `main`.
+# GO HUB — VRG Kapu (the access page)
 
 *You were started with the codephrase **GO HUB**. This file is the whole briefing; it does not depend
 on any memory note, so it works from any Claude account on this PC.*
 
 ## 1. Where
 
-- **Secondary account: work ONLY in `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`**, branch **`secacc`** (a git
-  worktree of the vrg-toolset repo). Never edit the main checkout `…\Planner_VRG_U100` — the primary
-  account works there. Confirm with `git rev-parse --show-toplevel` (must end in `SecAcc`) and
-  `git branch --show-current` (must say `secacc`).
-- Read `SECACC.md` in this folder first: how commits and the hand-back work.
-- Commit to `secacc` after each finished WP (message `Kapu WP-Hn: …`). Never push, never merge,
-  never switch branch.
+- The main checkout `H:\VRG\Full\Planner_VRG_U100`, branch **`main`** (one checkout since GO MAIN,
+  2026-10-24). Confirm with `git rev-parse --show-toplevel` and `git branch --show-current`.
+- Kapu lives in `Hub/` (sources `Hub/src/`, the signed allowed list `Hub/data/access.json`, the page
+  `Hub/dist/vrg-kapu.html`, the Kapu segéd `Hub/companion/server.js`). Tools: `tools/build-hub.js`,
+  `tools/check-hub.js`, `tools/hub-sign.js`, `tools/hub-admin/`.
+- Never commit unasked, never push, never switch branch.
 
-## 2. Read first
+## 2. What Kapu is now
 
-1. `docs/hub/00_CONTRACT.md` — rules, file ownership, the build/test loop, the report format.
-2. `docs/hub/README.md` — §3 the WP order, §4 the status table, §5 the user's answers.
-3. The next WP file in `docs/hub/wp/` whose status is not DONE, and only the
-   `01_ARCHITECTURE.md` / `03_UI.md` sections it names.
+Since the 2026-10-26 rework Kapu is only the access page: GitHub sign-in, the signed allowed list,
+then `Planner/START.cmd` (started from the page through the Kapu segéd) and START's tool list with
+**Megnyitás** / **Mappa** for each. It leads to the shared dashboard, which is still being planned.
 
-## 3. Do
+The board, editor, refresh, Munkanapló, personal links, tour and glossary (old WP-H1–H3, H6–H9, H11)
+were taken out and parked for Kódváros in `CodeCity/from-kapu/` (its README lists them). **Do not
+rebuild them in `Hub/`.** The plan pack `docs/hub/` (contract, WP files, status table) describes that
+old, full Kapu: read it for history and for the decisions in `docs/hub/DECISIONS.md`, not as a to-do.
 
-Build that one WP (or, if the user said "all", continue in README §3 order). Stop at every ⏸ and when
-a decision is missing. After each WP: the contract §5 report and the README §4 status line.
+## 3. Read first
 
-## 4. Ask
+1. `Hub/README.md` — what the page does, build, test, full mode, the allowed list and its admin page.
+2. `docs/hub/04_SETUP-CHECKLIST.md` — the steps for opening the work to the colleague (§4 below).
+3. The `launcher/vrg-menu.json` entries Kapu depends on: START `H` (VRG Kapu), servers `O` → `4`
+   (Kapu segéd, port 8795), `0` (static dev, 8796), `M` (admin, 8798).
 
-Questions to the user as numbered items with the DECISIONS.md id and lettered options (A recommended
-first), so they can answer in one line. If the question is visual, add a simple SVG picture with no
-overlapping labels.
+## 4. Open
+
+Waiting for the user (Claude prepares and checks, the user does the clicks):
+
+1. Setup checklist step 3: commit and push what is to be shared.
+2. Steps 4–5: invite the colleague as a collaborator (role Write); two-factor sign-in on both accounts.
+3. Step 6: share `C:\Users\webag\OneDrive\VRG-Megosztott` ("Adott személyek" only). The tree exists since
+   2026-10-30 (`H:\VRG\Shared` is a junction to it) and `00_START` holds the Kapu; after a change,
+   `node tools/build-hub.js --onedrive H:\VRG\Shared\00_START`.
+4. The clean-profile check, with the user typing their own token.
+
+Done: the pre-share audit (WP-HA), anonymising (step 3a), the signed list (step 8, two people),
+`GO STRICT` (`check-hub --strict` → Rendben). The 12 empty OneDrive folder links of the old plan
+belonged to the parked board (`CodeCity/from-kapu/data/topology.json`); the current page has none.
+
+## 5. Check
+
+```bash
+node tools/build-hub.js
+node Hub/test/run.js
+node tools/check-hub.js --strict
+node tools/check-start.js
+```
+
+Rebuild Kapu after any change to START's registry (it bakes the tool list in). All four must be green
+before a commit.
+
+## 6. Ask
+
+Questions to the user as numbered items with lettered options (A recommended first), so they can
+answer in one line; give the `docs/hub/DECISIONS.md` id when there is one. If the question is visual,
+add a simple SVG picture with no overlapping labels.
 
 User working style: phase big work, stop at checkpoints, never commit unasked, Hungarian UI text,
 English code. Never ask for, type or store a password or token — each user enters their own token in
 their own browser.
 
-## 5. Status
+## 7. Planned, not built (2026-10-30, HK-Q7)
 
-2026-10-22: WP-H0 to H12 done on `secacc` (H12 = the agent init docs in `docs/hub/agents/`).
-WP-H13 partial: `build-hub.js --onedrive` + `OLVASS_EL.md`, `docs/hub/KOLLEGA-INDULAS.md` with
-screenshots, README §6 done. Also fixed: prompt 05 path, `VRG-DE.cmd` `>nul`, no auto tour from file://.
+Both are design work: agree the look with the user first, as numbered A/B/C questions.
 
-Waiting for the user:
-1. Setup checklist steps 3–8 (push, invite, 2FA, OneDrive shares).
-2. The OneDrive share links (12 empty) and the real `VRG-Megosztott\00_START` path.
-3. The clean-profile verify, with the user typing their own token.
-4. **`GO STRICT`** (HUB-Q24 A) in the main checkout: commit the five uncommitted programs, then merge
-   `secacc`. After that, `node tools/check-hub.js --strict` must say "Rendben" (today: 16 errors,
-   all those five programs).
-
-The live table is `docs/hub/README.md` §4.
+- **WP-G1 Vendég (guest) mode.** A "Belépés vendégként" button on the sign-in card: no token, a read-only view (the
+  tool list without Megnyitás / Mappa / START, the dashboard read-only once it exists) with a clear "Vendég — csak
+  olvasás" badge. To decide: does a guest need any identity, what exactly is visible, does it work in links-only mode.
+- **WP-S1 Shared folders through the Kapu sign-in.** After sign-in, the person's shared OneDrive folders (the
+  `VRG-Megosztott` tree, by role and layer from the allowed list) as cards with Megnyitás: the owner sees all, a member
+  their layers, a guest none. Folder paths or links live in the signed list, never tokens.
+- **Housekeeping, later: TNT.** `C:\Users\webag\OneDrive\TNT` (9 174 files, 5.2 GB, the shared place today) mixes job
+  folders (`-Jelenleg futó munkák-`, `Befejezett`, `Meghíusult`, `Varler`) with personal ones (`suli`, `számlák`). In a
+  future round: job folders into `VRG-Megosztott\10_Projektek` by job code, personal ones out of the shared tree, then
+  retire TNT as a share. Needs the user's OK folder by folder; on H: it then appears under `H:\VRG\Shared`.

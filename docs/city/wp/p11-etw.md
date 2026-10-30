@@ -7,7 +7,14 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 - **Files:** CodeCity/etw/ (new)
 - **Decisions:** D17, D23
 - **Prompts:** see PROMPTS-WORKSPACE.md
-- **Status:** built (KV-23, 2026-10-26) — waits for the user: install + scheduled task (steps below), then the check
+- **Status:** DONE — built 2026-10-26 (KV-23); the user installed it and created the task; checked 2026-10-27
+
+**The check (2026-10-27, the user's task running vrg-etw elevated):** the real companion read `\\.\pipe\vrg-etw`; a
+`git clone --depth 1 octocat/Hello-World` came through as `git-remote-https` with its exact bytes (↓7975 ↑58684 B), marked
+"started by Claude", dock web, country GB — no address on the stream; `cmd /c type GO-LIVE.md` started from a Claude
+session beamed GO-LIVE.md to that session (via cmd, kind read). Found on the way: a project's own `node_modules` deep in the
+tree beamed a stream of reads from another session's tests — now skipped at any depth (and `.git`), in the segéd at once
+and in vrg-etw from the next install (run install-etw.ps1 again after `node CodeCity/tools/build-etw.js`; optional).
 
 ## KV-23: what was built
 
@@ -38,7 +45,7 @@ Stub (KV-02, 2026-10-26). Plan: `docs/city/README.md` §8; source: the report `d
 
 1. **Build** (already done once; again after pulling changes): `node CodeCity/tools/build-etw.js`
 2. **Install** — Start menu → type *PowerShell* → right-click **Windows PowerShell** → **Run as administrator** → paste:
-   `powershell -NoProfile -ExecutionPolicy Bypass -File H:\cwebuser\projects\VRG-DE\Planner_VRG_U100\CodeCity\etw\install-etw.ps1`
+   `powershell -NoProfile -ExecutionPolicy Bypass -File H:\VRG\Full\Planner_VRG_U100\CodeCity\etw\install-etw.ps1`
    It copies vrg-etw and the .NET runtime into `C:\Program Files\VRG\Kodvaros-ETW` and prints two SHA-256 hashes.
    It creates no task. Run it again after every rebuild.
 3. **Create the task** — Start → type *Task Scheduler* → open it → right side **Create Task…** (not "Basic Task"):

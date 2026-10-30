@@ -5,8 +5,8 @@
 //   Hub/src/index.html   with three markers:
 //     <!--@css-->   every Hub/src/css/*.css, in name order, as one <style>
 //     <!--@data-->  access list / public key as JSON blocks (a file that does not
-//                   exist yet is embedded as null), plus kpTools: the TOOL REGISTRY
-//                   of Planner/START.cmd, so the page lists exactly what the menu has
+//                   exist yet is embedded as null), plus kpTools: the START tools
+//                   of launcher/vrg-menu.json, so the page lists exactly what the menu has
 //     <!--@js-->    every Hub/src/js/*.js, in name order, one shared scope
 //   -> Hub/dist/vrg-kapu.html
 //
@@ -27,7 +27,6 @@ const HUB = path.join(REPO, 'Hub');
 const SRC = path.join(HUB, 'src');
 const OUT = path.join(HUB, 'dist', 'vrg-kapu.html');
 
-const START = path.join(REPO, 'Planner', 'START.cmd');
 const DATA = [
   ['kpAccess', path.join(HUB, 'data', 'access.json')],
   ['kpPubkey', path.join(SRC, 'access-pubkey.json')]
@@ -35,22 +34,12 @@ const DATA = [
 
 function fail(msg) { console.error('build-hub: ' + msg); process.exit(1); }
 
-// START.cmd's T<n>_NAME / T<n>_PATH pairs up to TOOLCOUNT -> [{ n, key, name, path, dir }].
-// There the paths are relative to the Planner folder; here relative to the repo, forward slashes.
+// The START tools from launcher/vrg-menu.json -> [{ n, key, name, path, dir }], paths relative to
+// the repo with forward slashes (until 2026-10-27 read from Planner/START.cmd's T<n>_ lines).
 function startTools() {
-  if (!fs.existsSync(START)) fail('Planner/START.cmd missing');
-  const cmd = fs.readFileSync(START, 'utf8');
-  const val = name => { const m = cmd.match(new RegExp('^set "' + name + '=(.*)"\\s*$', 'm')); return m ? m[1] : null; };
-  const count = Number(val('TOOLCOUNT'));
-  if (!count) fail('START.cmd: no TOOLCOUNT');
-  const key = n => (n < 10 ? String(n) : n === 10 ? '0' : n === 11 ? 'K' : '?');
-  const tools = [];
-  for (let n = 1; n <= count; n++) {
-    const name = val('T' + n + '_NAME'), rel = val('T' + n + '_PATH');
-    if (!name || !rel) fail('START.cmd: T' + n + '_NAME / T' + n + '_PATH missing');
-    const p = path.relative(REPO, path.resolve(REPO, 'Planner', rel.replace(/\\/g, '/'))).split(path.sep).join('/');
-    tools.push({ n, key: key(n), name, path: p, dir: p.split('/').slice(0, -1).join('/') || '.' });
-  }
+  let tools;
+  try { tools = require('../launcher/menu.js').tools(); } catch (e) { fail('launcher/vrg-menu.json: ' + e.message); }
+  if (!tools.length) fail('launcher/vrg-menu.json: no start.tools');
   return tools;
 }
 
@@ -137,12 +126,12 @@ function readme(hash) {
     '## A teljes mód elindítása',
     '',
     '1. Fogadd el a GitHub-meghívót, és klónozd a `vrg-toolset` repót (GitHub Desktop).',
-    '2. Telepítsd a Node-ot (vagy használd a cwebuser kitet a `20_Telepitok` mappából).',
+    '2. Telepítsd a Node-ot (nodejs.org, LTS változat).',
     '3. Indítsd a klónban a `Hub\\VRG Kapu.cmd`-t.',
     '4. Belépés → a saját GitHub tokened. A token csak a te böngésződben marad; soha ne küldd el senkinek.',
     '',
-    '*1. Accept the GitHub invite and clone the `vrg-toolset` repo (GitHub Desktop). 2. Install Node (or',
-    'use the cwebuser kit from `20_Telepitok`). 3. Run `Hub\\VRG Kapu.cmd` in the clone. 4. Belépés →',
+    '*1. Accept the GitHub invite and clone the `vrg-toolset` repo (GitHub Desktop). 2. Install Node',
+    '(nodejs.org, the LTS version). 3. Run `Hub\\VRG Kapu.cmd` in the clone. 4. Belépés →',
     'your own GitHub token. The token stays in your browser only; never send it to anyone.*',
     '',
     'Részletesen / in detail: `docs/hub/KOLLEGA-INDULAS.md` a repóban.',

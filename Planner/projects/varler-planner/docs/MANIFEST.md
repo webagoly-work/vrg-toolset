@@ -1,7 +1,7 @@
 # Varler pendrive — állapot
 
 Készült: 2026-09-12 01:51
-Gyökér: `H:\Planner_VRG_U100\Planner`  ·  711 fájl  ·  22.13 MB
+Gyökér: `H:\VRG\Backup\code\Planner_VRG_U100-mirror\Planner`  ·  711 fájl  ·  22.13 MB
 Node: v24.19.0
 
 ## Fa

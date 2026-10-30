@@ -1,4 +1,4 @@
-# Simplified UI (SUI) — build pack
+| S6 | BUILT, ⏸ look 2026-10-19 | spec-s6 11/11 | fig/s6-*.jpg. Fixed in the browser: accents clipped by overflow (label now in .smT), breadcrumb trimmed from the left, dark-canvas breadcrumb ink, no native focus ring on the dial. Shot 6 (tool + hint pill) waits for S5 || S4 | DONE 2026-10-19 | spec-s4 19/19 | WP test 7 says ↓×5 → win 1; by its own rule 4 presses do it (spec uses 4) || S3 | DONE 2026-10-19 | spec-s3 22/22 | other = 145 of 279 actions. NEW mode.note (the Jegyzet tool had no action), ui.dialSide. Main-only rows: Födém (Szintek p2), Igénylista › (Szabályok p2), Házimozi › (Végpontok p2) ⚑. Tilos is a marker-pen ink since R5 → spec checks the pen; Ágy zóna checks RB.on. wf.standards opens a panel simple mode hides (S7) || S2 | DONE 2026-10-19 | spec-s2 26/26 | keys listen in WINDOW capture (05c's document-capture shortcut handler would fire first); a canvas press eats only a click on #stage || S1 | DONE 2026-10-19 | spec-s1 21/21 | + S01 C mirror: smSide(), localStorage villanyterv_ui_side, body.sm-right (geometry mirrored, not CSS-flipped) || S0 | DONE 2026-10-19 | spec-s0 19/19 | ◔ button sits next to ⤢ in #qv (bPanels moved there in T5); hide rule spares #ctx; also hides .ntP, #vbkOpen |# Simplified UI (SUI) — build pack
 
 *Planned 2026-10-15 in the main session. Built by a **parallel session** while the main session does the UI tidy
 (T1–T4, `docs/ui-tidy/UI-AUDIT.md`). Read order for a builder: this README → `00_CONTRACT.md` → the WP file → only the
@@ -59,18 +59,20 @@ S5 runs after S6 on purpose: by then T1 (`toolCurrent()`) has usually landed. If
 
 | WP | Status | Spec | Note |
 |---|---|---|---|
-| S0 | — | | |
-| S1 | — | | |
-| S2 | — | | |
-| S3 | — | | |
-| S4 | — | | |
+| S0 | DONE 2026-10-19 | spec-s0 19/19 | ◔ button sits next to ⤢ in `#qv` (bPanels moved there in T5); the hide rule spares `#ctx`; it also hides `.ntP` and `#vbkOpen` |
+| S1 | DONE 2026-10-19 | spec-s1 21/21 | + S01 C mirror: `smSide()`, `localStorage villanyterv_ui_side`, `body.sm-right` (geometry mirrored, not CSS-flipped) |
+| S2 | DONE 2026-10-19 | spec-s2 26/26 | keys listen in **window** capture (05c's document-capture shortcut handler would fire first); a canvas press eats only a click on `#stage` |
+| S3 | DONE 2026-10-19 | spec-s3 22/22 | `other` = 145 of 279 actions. NEW `mode.note` (the Jegyzet tool had no action) and `ui.dialSide`. Main-only rows ⚑: Födém (Szintek p2), Igénylista › (Szabályok p2), Házimozi › (Végpontok p2). Tilos is a marker-pen ink since R5, so the spec checks the pen; Ágy zóna checks `RB.on`. `wf.standards` opens a panel that simple mode hides (S7) |
+| S4 | DONE 2026-10-19 | spec-s4 19/19 | WP test 7 says ↓×5 → win 1; by its own "past slot 4" rule 4 presses do it (the spec uses 4) |
 | S5 | — | | |
-| S6 | — | | |
+| S6 | BUILT, ⏸ look 2026-10-19 | spec-s6 11/11 | `fig/s6-*.jpg`. Fixed in the browser: accents clipped by overflow (the label is now in `.smT`), breadcrumb trimmed from the left, dark-canvas breadcrumb ink, no native focus ring on the dial. Shot 6 (tool + hint pill) waits for S5 |
 | S7 | — | | |
 
 ## 5. Answers
 
-- S06 → **B**: the toggle key is **F2** (user, 2026-10-15). Everything else: the ★ recommended option until answered.
+- S06 → **B**: the toggle key is **F2** (user, 2026-10-15).
+- 2026-10-19 (user, secondary account): **S01 → A + C** (bottom-left default, bottom-right as a mirror setting
+  `ui.dialSide`, see 01_DESIGN §1) · **S03 → A** · S02, S04, S05, S07, S08, S09, S10 → **A** (all ★).
 - T1 has **landed** (2026-10-15, src/05cb-toolctl.js, spec-95): `toolCurrent / toolStop / toolStart / toolOnChange` exist, so S5 needs no
   fallback table. Keep the `typeof toolCurrent==='function'` guard anyway.
 
@@ -82,6 +84,11 @@ S5 runs after S6 on purpose: by then T1 (`toolCurrent()`) has usually landed. If
     (label „Világítás réteg”) and wf.layer.DED. The action wf.bar is gone.
 
 ## 6. Session log
+
+- 2026-10-19 (secondary account, worktree `wt-planner-sui`, branch `planner-sui` off main 2447365): S0 S1 S2 S3 S4 S6
+  built, stopped at the S6 ⏸. Suite 104 suites / 3563 checks, golden 70/70, check-globals OK. Uncommitted.
+
+- 2026-10-19 (secondary account, worktree wt-planner-sui, branch planner-sui off main 2447365): S0 S1 S2 S3 S4 S6 built, stopped at the S6 ⏸. Suite 104 suites / 3563 checks, golden 70/70, check-globals OK. Uncommitted.
 
 - 2026-10-15: pack written (main session). UI tidy answers in the same message: T1–T4, legacy drawer, fixed layout,
   tidy before E4.

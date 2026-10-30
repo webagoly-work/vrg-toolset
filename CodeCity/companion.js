@@ -83,6 +83,8 @@
 // KV-22: 'audio' (a sound tower per program: volume, mute, active), 'peaks' (~12/s while something sounds), 'media'
 // (Windows' now-playing, GSMTC: app, status, title, artist — no Spotify API), 'bt' (paired devices, battery while
 // connected), 'usb' (the port tree); hashes instead of device ids. POST probe-volume {key, v} / probe-mute {key, on}
+// KV-26: each 'apps' entry also lists its window handles (numbers, never titles); POST probe-place {h, x, y, w, hh} /
+// probe-unplace {h} move one counted window onto the overlay's facade and back; the probe's answer streams as 'portal'.
 // reach the probe only for a program that has a tower. All of it memory only (CITY-D27 A).
 //
 // Elevated ETW (P11, KV-23; Tier B, CITY-D17 A): when the user's scheduled task runs vrg-etw.exe, its pipe
@@ -90,6 +92,10 @@
 // process each second, by dock and country — no address leaves the segéd; 'etw': on/off. A repo file read or written
 // by a process whose ancestor is a Claude session (Bash, git, node …) becomes that session's 'beam' (via: the exe).
 // The process tree and DNS names stay in memory only (CITY-D27 A).
+//
+// Wallpaper (P12 L0, KV-24): GET /api/stream?wallpaper=1 is a light listener — it gets the stream, but the port street,
+// the samplers, the probe, ETW and cargo run only while a full page listens, and `claude agents` is polled every 30 s
+// instead of 6 s when only wallpapers are left.
 //
 // Embedded terminal (CITY-D15 C): term-open spawns ONLY cmd.exe or the configured claude, in a folder
 // inside the roots, under a real console (ConPTY, Vendor/node-pty — node tools/fetch-vendor.js node-pty).
@@ -142,18 +148,19 @@ const firstExisting = list => list.find(exists) || null;
 function loadConfig() {
   let user = {};
   if (exists(CONFIG)) user = JSON.parse(fs.readFileSync(CONFIG, 'utf8'));
-  const apps = path.join(REPO, 'Planner', 'apps');
-  const browserExe = firstExisting([path.join(apps, 'chrome', 'chrome.exe'), path.join(apps, 'opera-gx', 'opera.exe'), path.join(apps, 'zen-browser', 'zen.exe')]);
+  // the portable toolchain and programs sit next to the repo (H:\VRG\Full\tools, \programs) since the 2026-10-27 re-root
+  const tools = path.join(path.dirname(REPO), 'tools'), progs = path.join(path.dirname(REPO), 'programs');
+  const browserExe = firstExisting([path.join(tools, 'chrome', 'chrome.exe'), path.join(progs, 'opera-gx', 'opera.exe'), path.join(progs, 'zen-browser', 'zen.exe')]);
   const wt = process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Microsoft', 'WindowsApps', 'wt.exe');
   return {
     roots: [REPO, path.dirname(REPO)].concat(user.roots || []),
     browser: user.browser || (browserExe ? { exe: browserExe, args: browserExe.endsWith('chrome.exe') ? ['--new-window'] : [] } : null),
-    claudeCmd: user.claudeCmd || firstExisting([path.join(apps, 'node', 'claude.cmd')]) || 'claude',
+    claudeCmd: user.claudeCmd || firstExisting([path.join(tools, 'node', 'claude.cmd')]) || 'claude',
     terminal: user.terminal || (wt && exists(wt) ? 'wt' : 'cmd'),
-    vscode: user.vscode || firstExisting([path.join(apps, 'vscode', 'Code.exe')]),
-    git: user.git || firstExisting([path.join(apps, 'git', 'cmd', 'git.exe'), path.join(apps, 'git', 'bin', 'git.exe')]) || 'git',
+    vscode: user.vscode || firstExisting([path.join(tools, 'vscode', 'Code.exe')]),
+    git: user.git || firstExisting([path.join(tools, 'git', 'cmd', 'git.exe'), path.join(tools, 'git', 'bin', 'git.exe')]) || 'git',
     // the claude binary itself (not the .cmd shim), for `claude agents --json`; a config can name another command
-    agentsCmd: user.agentsCmd || [firstExisting([path.join(apps, 'node', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe'),
+    agentsCmd: user.agentsCmd || [firstExisting([path.join(tools, 'node', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe'),
       process.env.APPDATA && path.join(process.env.APPDATA, 'npm', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe')].filter(Boolean)) || 'claude', 'agents', '--json'],
     transcripts: user.transcripts || null,
     // vrg-probe (KV-21): a config can name another command (the specs use a fake probe)
@@ -162,7 +169,7 @@ function loadConfig() {
     downloads: user.downloads || path.join(process.env.USERPROFILE || os.homedir(), 'Downloads'),
     // Claude Code needs Git Bash on Windows; the user-level value may point to a folder that is gone
     gitBash: user.gitBash || (exists(process.env.CLAUDE_CODE_GIT_BASH_PATH || '') ? process.env.CLAUDE_CODE_GIT_BASH_PATH
-      : firstExisting([path.join(apps, 'git', 'bin', 'bash.exe'), 'H:\\_desktop\\Git\\bin\\bash.exe']))
+      : firstExisting([path.join(apps, 'git', 'bin', 'bash.exe'), 'H:\\VRG\\Full\\tools\\git\\bin\\bash.exe']))
   };
 }
 const CFG = loadConfig();
@@ -304,7 +311,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGBREAK', 'SIGHUP']) process.on(sig, (
 const LIVE_IGNORE = ['.git/objects/', 'node_modules/', 'Planner/apps/', 'Planner/home/', 'Planner/data/', 'Vendor/', 'Inventory/.cache/', 'CodeCity/dist/'];
 const LIVE_GIT = /^\.git\/(HEAD|refs\/|logs\/HEAD|worktrees\/)/;
 const LIVE_DEBOUNCE = 400;
-const live = { clients: new Set(), fs: new Map(), git: false, timer: null, head: '', city: null, cityHead: null, scanning: null, watcher: null };
+const live = { clients: new Set(), full: new Set(), fs: new Map(), git: false, timer: null, head: '', city: null, cityHead: null, scanning: null, watcher: null };
 function liveEmit(event, data) {
   const msg = 'event: ' + event + '\ndata: ' + JSON.stringify(data) + '\n\n';
   for (const res of live.clients) res.write(msg);
@@ -362,7 +369,7 @@ function liveCity() {
 
 // ---- live Claude: sessions + transcript tails -> 'agents' and 'beam' events
 const SESS = require('./sessions.js');
-const AGENTS_EVERY = 6000, TAIL_EVERY = 1000;
+const AGENTS_EVERY = 6000, AGENTS_SLOW = 30000, TAIL_EVERY = 1000;   // slow: only wallpapers listen (KV-24)
 const agents = { list: [], sig: '', poller: null, idleSince: 0, tails: new Map(), tailTimer: null, hooked: new Set() };
 const repoReal = () => real(REPO);
 const keyOf = x => (process.platform === 'win32' ? x.toLowerCase() : x).replace(/\\/g, '/').replace(/\/+$/, '');
@@ -450,7 +457,8 @@ function transcriptOf(sid) {
 // the helper process: started with the first listening page, stopped 30 s after the last one left
 function agentsPoller(on) {
   if (on && !agents.poller) {
-    const child = spawn(process.execPath, [path.join(CITY, 'agents-poll.js'), String(AGENTS_EVERY), ...CFG.agentsCmd], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
+    agents.every = live.full.size ? AGENTS_EVERY : AGENTS_SLOW;
+    const child = spawn(process.execPath, [path.join(CITY, 'agents-poll.js'), String(agents.every), ...CFG.agentsCmd], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
     let buf = '';
     child.stdout.on('data', d => { buf += d; let k; while ((k = buf.indexOf('\n')) >= 0) { const line = buf.slice(0, k); buf = buf.slice(k + 1); try { agentsHandle(JSON.parse(line)); } catch (e) { /* skip */ } } });
     child.on('exit', () => { if (agents.poller === child) agents.poller = null; });
@@ -487,6 +495,11 @@ function tailOnce() {
     return;
   }
   agents.idleSince = 0;
+  // only wallpapers left for 30 s: the poller goes slow (claude.exe costs ~3 s of CPU per start)
+  if (agents.poller && !live.full.size && agents.every !== AGENTS_SLOW) {
+    if (!agents.slowSince) agents.slowSince = Date.now();
+    else if (Date.now() - agents.slowSince > 30000) { agentsPoller(false); agentsPoller(true); agents.slowSince = 0; }
+  } else agents.slowSince = 0;
   for (const [sid, t] of agents.tails) {
     if (!t.file) { t.file = transcriptOf(sid); if (!t.file) continue; try { t.off = fs.statSync(t.file).size; } catch (e) { /* later */ } continue; }
     let size; try { size = fs.statSync(t.file).size; } catch (e) { continue; }
@@ -512,6 +525,7 @@ function tailOnce() {
   }
 }
 function agentsStart() {
+  if (agents.poller && live.full.size && agents.every !== AGENTS_EVERY) agentsPoller(false);   // a full page joined a slow poller
   agentsPoller(true);
   if (agents.tailTimer) return;
   agents.tailTimer = setInterval(tailOnce, TAIL_EVERY);
@@ -545,19 +559,18 @@ const JOB_LINES = 500;
 const jobs = { list: null, run: new Map(), ports: [], portsSig: '', portTimer: null, polling: false };
 function jobDefs() {
   if (jobs.list) return jobs.list;
-  const start = (() => { try { return fs.readFileSync(path.join(REPO, 'Planner', 'START.cmd'), 'utf8'); } catch (e) { return ''; } })();
-  const v = (k) => (new RegExp('^set "' + k + '=(.*)"\\r?$', 'm').exec(start) || [])[1];
+  // the local servers of launcher/vrg-menu.json (START → O); until 2026-10-27 START.cmd's LH<n>_ lines
   const out = [];
-  for (let n = 1; n <= 20; n++) {
-    const name = v('LH' + n + '_NAME'), js = v('LH' + n + '_JS');
-    if (!name) continue;
-    const port = +v('LH' + n + '_PORT'), lpath = v('LH' + n + '_PATH') || '/';
-    const def = { id: 'lh' + n, name, kind: 'server', port, path: lpath, key: n === 10 ? '0' : String(n) };
-    if (js) { def.cmd = [path.join(REPO, js.replace(/\\/g, '/')), ...(v('LH' + n + '_ARGS') || '').split(/\s+/).filter(Boolean)]; def.script = js.replace(/\\/g, '/'); }
-    else def.why = 'saját indítója van (.bat) — a START.cmd O) menüjéből indul';
+  let servers = [];
+  try { servers = require('../launcher/menu.js').servers(); } catch (e) { /* no registry: no server jobs */ }
+  for (const s of servers) {
+    if (s.id === 'city') continue;                 // this segéd itself
+    const def = { id: 'lh' + s.n, name: s.name, kind: 'server', port: s.port, path: s.path, key: s.key };
+    if (s.js) { def.cmd = [path.join(REPO, s.js), ...s.args]; def.script = s.js; }
+    else def.why = 'saját indítója van (.bat) — a START → O) Helyi szerverek menüből indul';
     out.push(def);
   }
-  const npm = path.join(REPO, 'Planner', 'apps', 'node', 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const npm = path.join(path.dirname(REPO), 'tools', 'node', 'node_modules', 'npm', 'bin', 'npm-cli.js');
   const fixed = [
     ['codecity-build', 'Kódváros oldal (build)', 'build', ['CodeCity/build.js'], null, 'CodeCity'],
     ['hub-build', 'VRG Kapu (build)', 'build', ['tools/build-hub.js'], null, 'Hub'],
@@ -615,7 +628,7 @@ function jobStop(id) {
 process.on('exit', () => { for (const r of jobs.run.values()) if (r.code === null) try { require('child_process').execFileSync('taskkill', ['/PID', String(r.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' }); } catch (e) { /* gone */ } });
 // the port street: LISTEN sockets and the program behind each
 function portsPoll() {
-  if (jobs.polling || !live.clients.size) return;
+  if (jobs.polling || !live.full.size) return;
   jobs.polling = true;
   execFile('netstat', ['-ano', '-p', 'TCP'], { windowsHide: true, timeout: 10000, maxBuffer: 4 << 20 }, (err, out) => {
     if (err) { jobs.polling = false; return; }
@@ -741,7 +754,7 @@ function powerStart() {
 function powerStop() { if (power.child) { try { power.child.kill(); } catch (e) { /* gone */ } power.child = null; } }
 process.on('exit', powerStop);
 // ---- Tier A: vrg-probe.exe, the open programs (a C# sidecar, while a page listens; restarted when it dies)
-const PROBE_EXE = path.join(CITY, 'probe', 'bin', 'publish', 'vrg-probe.exe'), DOTNET_ROOT = path.join(REPO, 'Planner', 'apps', 'dotnet');
+const PROBE_EXE = path.join(CITY, 'probe', 'bin', 'publish', 'vrg-probe.exe'), DOTNET_ROOT = path.join(path.dirname(REPO), 'tools', 'dotnet');
 const probe = { child: null, want: false, timer: null, fails: [], wins: new Map(), fg: 0, state: 'off', sig: '', emitTimer: null, last: {} };
 const PROBE_FEEDS = ['audio', 'media', 'bt', 'usb'];   // KV-22: kept for a page that joins later; 'peaks' only streams
 function probeStart() {
@@ -780,6 +793,13 @@ function probeSend(cmd) {
   probe.child.stdin.write(JSON.stringify(cmd) + '\n');
   return [200, { ok: true }];
 }
+function probePlace(cmd) {
+  if (!probe.wins.has(cmd.h)) return [404, { error: 'nincs ilyen ablak' }];
+  if (DRY) return [200, Object.assign({ dryRun: true }, cmd)];
+  if (!probe.child) return [503, { error: 'a szonda nem fut' }];
+  probe.child.stdin.write(JSON.stringify(cmd) + '\n');
+  return [200, { ok: true }];
+}
 function probeHandle(m) {
   if (m.t === 'hello') { probe.state = 'on'; probe.wins.clear(); }
   else if (m.t === 'windows') { probe.wins.clear(); for (const w of m.list || []) probe.wins.set(w.h, w); }
@@ -788,6 +808,7 @@ function probeHandle(m) {
   else if (m.t === 'fg') probe.fg = m.h;
   else if (PROBE_FEEDS.includes(m.t)) { const { t, ...d } = m; probe.last[t] = d; return liveEmit(t, d); }
   else if (m.t === 'peaks') return liveEmit('peaks', { m: +m.m || 0, s: m.s || {} });
+  else if (m.t === 'placed' || m.t === 'unplaced') return liveEmit('portal', { t: m.t, h: m.h, ok: !!m.ok, x: m.x, y: m.y, w: m.w, hh: m.hh });
   else return;
   probeSoon();
 }
@@ -796,8 +817,9 @@ function probeApps() {
   const by = new Map();
   for (const w of probe.wins.values()) {
     const key = String(w.exe || '?').toLowerCase();
-    const a = by.get(key) || { key, name: String(w.name || w.exe || '?').slice(0, 60), n: 0, fg: false };
+    const a = by.get(key) || { key, name: String(w.name || w.exe || '?').slice(0, 60), n: 0, fg: false, h: [] };
     a.n++; if (w.h === probe.fg) a.fg = true;
+    a.h.push(w.h);   // KV-26: the window handles (numbers) — the overlay shell matches its captures to them
     by.set(key, a);
   }
   return { state: probe.state, list: [...by.values()].sort((a, b) => a.key < b.key ? -1 : 1) };
@@ -861,11 +883,12 @@ function etwSession(pid) {
 }
 // a repo file read or written by a process that a Claude session started (a Bash command, git, a test …) beams to its
 // roof as that session's read / edit; claude.exe's own reads already come through the hook, so they are left out
+const ETW_NOISE = /(^|\/)(node_modules|\.git)\//;   // at any depth (a project's own node_modules, a nested repo)
 function etwFiles(list) {
   const now = Date.now();
   for (const f of list) {
     etw.files++;
-    if (f.pid === process.pid) continue;
+    if (f.pid === process.pid || ETW_NOISE.test(f.path)) continue;
     const s = etwSession(f.pid);
     if (!s || s.self) continue;
     const key = s.a.id + '|' + f.op + '|' + f.path;
@@ -904,7 +927,7 @@ async function ping(ip) {
   return { up: /TTL=/i.test(out), ms: Date.now() - t0 };   // TTL= is in every language's ping output
 }
 async function netProbe() {
-  if (!live.clients.size || DRY) return;
+  if (!live.full.size || DRY) return;
   if (!net.hops && !net.tracing) {   // once: the chain this PC goes out through
     net.tracing = true;
     const out = await run('tracert', ['-d', '-h', '3', '-w', '400', '1.1.1.1'], 30000);
@@ -938,7 +961,7 @@ function netConnections(netstat) {
 }
 function netStart() {
   powerStart(); probeStart(); etwStart();
-  if (!net.timer) { net.timer = setInterval(() => { if (!live.clients.size) { if (!net.idle) net.idle = Date.now(); else if (Date.now() - net.idle > 30000) { powerStop(); probeStop(); etwStop(); } return; } net.idle = 0; powerStart(); probeStart(); etwStart(); netProbe(); }, 10000); net.timer.unref(); }
+  if (!net.timer) { net.timer = setInterval(() => { if (!live.full.size) { if (!net.idle) net.idle = Date.now(); else if (Date.now() - net.idle > 30000) { powerStop(); probeStop(); etwStop(); } return; } net.idle = 0; powerStart(); probeStart(); etwStart(); netProbe(); }, 10000); net.timer.unref(); }
   netProbe();
 }
 
@@ -1003,11 +1026,8 @@ function cargoStart() {
 async function catalog() {
   const read = p => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
   const list = (dir, ext) => { try { return fs.readdirSync(dir).filter(f => f.endsWith(ext)).sort(); } catch (e) { return []; } };
-  const start = read(path.join(REPO, 'Planner', 'START.cmd')), tools = [];
-  for (const m of start.matchAll(/^set "T(\d+)_NAME=(.*)"\r?$/gm)) {
-    const pm = new RegExp('^set "T' + m[1] + '_PATH=(.*)"\\r?$', 'm').exec(start);
-    if (pm) tools.push({ n: +m[1], name: m[2], path: path.relative(REPO, path.resolve(REPO, 'Planner', pm[1].replace(/\\/g, '/'))).replace(/\\/g, '/') });
-  }
+  let tools = [];
+  try { tools = require('../launcher/menu.js').tools().map(t => ({ n: t.n, name: t.name, path: t.path })); } catch (e) { /* no registry */ }
   const pdir = path.join(REPO, 'tools', 'prompts'), adir = path.join(REPO, '.claude', 'agents');
   const prompts = list(pdir, '.txt').map(f => ({ name: f.replace(/\.txt$/, ''), text: read(path.join(pdir, f)).slice(0, 5000) }));
   const agents = list(adir, '.md').map(f => {
@@ -1111,6 +1131,13 @@ const ACTIONS = {
     return typeof b.v === 'number' && b.v >= 0 && b.v <= 1 ? probeSend({ t: 'vol', key: b.key, v: Math.round(b.v * 100) / 100 }) : [400, { error: 'v: 0..1' }];
   } },
   'probe-mute': { keys: ['key', 'on'], async run(b) { return typeof b.on === 'boolean' ? probeSend({ t: 'mute', key: b.key, on: b.on }) : [400, { error: 'on: true/false' }]; } },
+  // the overlay's portal hand-off (KV-26): one window the probe counts, onto a facade's screen rectangle — and back
+  'probe-place': { keys: ['h', 'x', 'y', 'w', 'hh'], async run(b) {
+    const int = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
+    if (!int(b.x, -32768, 32767) || !int(b.y, -32768, 32767) || !int(b.w, 200, 16384) || !int(b.hh, 150, 16384)) return [400, { error: 'x, y, w (200..), hh (150..): egész pixelek' }];
+    return probePlace({ t: 'place', h: b.h, x: b.x, y: b.y, w: b.w, hh: b.hh });
+  } },
+  'probe-unplace': { keys: ['h'], async run(b) { return probePlace({ t: 'unplace', h: b.h }); } },
   'job-stop': { keys: ['id'], async run(b) { return typeof b.id === 'string' ? jobStop(b.id) : [400, { error: 'id' }]; } },
   'check-paths': { keys: ['paths'], async run(b) {
     if (!Array.isArray(b.paths) || b.paths.length > 500 || !b.paths.every(p => typeof p === 'string')) return [400, { error: 'paths: legfeljebb 500 szöveg' }];
@@ -1174,9 +1201,9 @@ const server = http.createServer((req, res) => {
     if (agents.sig) res.write('event: agents\ndata: ' + agents.sig.replace(/^/, '{"list":') + '}\n\n');
     if (fences.sig) res.write('event: fences\ndata: {"list":' + fences.sig + '}\n\n');
     worktreesSoon();
-    portsStart();
-    netStart();
-    cargoStart();
+    // a wallpaper (KV-24, ?wallpaper=1) is a light listener: file pulses, git and the figures, no samplers / probe / ETW
+    const wall = url.searchParams.get('wallpaper') === '1';
+    if (!wall) { portsStart(); netStart(); cargoStart(); }
     if (power.last) res.write('event: power\ndata: ' + JSON.stringify(power.last) + '\n\n');
     if (net.state) res.write('event: net\ndata: ' + JSON.stringify(net.state) + '\n\n');
     if (probe.sig) res.write('event: apps\ndata: ' + probe.sig + '\n\n');
@@ -1184,8 +1211,9 @@ const server = http.createServer((req, res) => {
     res.write('event: etw\ndata: ' + JSON.stringify({ state: etw.state, demo: etw.demo }) + '\n\n');
     res.write('event: pipes\ndata: ' + JSON.stringify({ list: pipesList() }) + '\n\n');
     live.clients.add(res);
+    if (!wall) live.full.add(res);
     agentsStart();
-    req.on('close', () => live.clients.delete(res));
+    req.on('close', () => { live.clients.delete(res); live.full.delete(res); });
     return;
   }
   if (req.method === 'GET' && url.pathname === '/api/term-stream') {

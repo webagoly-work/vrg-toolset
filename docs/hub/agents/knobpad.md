@@ -7,7 +7,7 @@ the home Wi-Fi at http://vrg-knobs.local. ESP32-S3-Zero firmware (Arduino).
 
 ## 2. Where
 - `Firmware/knobpad/`: `knobpad.ino`, `config.h`, `webpage.h`, `mock-server.js`.
-- Toolchain: `H:\Dev-VRG\VRG-DE\_libs\arduino-cli` (portable, configured by its `arduino-cli.yaml`).
+- Toolchain: `H:\VRG\Full\tools\arduino-cli` (portable, configured by its `arduino-cli.yaml`).
 - No launcher entry — — (nincs leírva).
 
 ## 3. Read first

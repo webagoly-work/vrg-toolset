@@ -9,7 +9,7 @@
 //   /plan/<name> -> <repo>/Calculator/<name>.vplan.json   (only that folder, only .vplan.json)
 //
 // Run:  node docs/research/openmct-spike/serve.js            (port 8150)
-//       node docs/research/openmct-spike/serve.js 8151 --repo H:/Dev-VRG/VRG-DE/Planner_VRG_U100
+//       node docs/research/openmct-spike/serve.js 8151 --repo H:/VRG/Full/Planner_VRG_U100
 // Open: http://localhost:8150/?plan=CLA-teszt_v2
 //
 // Loopback only. Nothing here ships.

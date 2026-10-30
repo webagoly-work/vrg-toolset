@@ -828,6 +828,24 @@
       "npmVersion": "3.4.17",
       "entry": "dist/purify.min.js",
       "note": "A markdown-előnézet HTML-jét tisztítja, mielőtt az oldalra kerül (P5): a repóban lévő .md-fájl nem futtathat szkriptet a Kódvárosban. Kettős licenc (MPL-2.0 vagy Apache-2.0); a fejléc a fájlban marad."
+    },
+    {
+      "slug": "electron",
+      "name": "Electron",
+      "repo": "electron/electron",
+      "license": "MIT",
+      "stars": null,
+      "pushed": null,
+      "aspect": "Kódváros",
+      "build": "helyi-eszkoz",
+      "priority": 1,
+      "vendor": "reference",
+      "target": null,
+      "source": "npm",
+      "npmPackage": "electron",
+      "npmVersion": "44.7.1",
+      "npmIntegrity": "sha512-41b08f4Lq55NiH2UzLaE4WMdW3ufFfln3sAVeXpnRrFbzOwBZckK3XpxlMvPcgHbNNApYiOr3r3hMD+Oyrq2dw==",
+      "note": "Az overlay-héj futtatókörnyezete (P12, KV-25: CodeCity/shell/). Nem npm install és nem Vendor/: a CodeCity/tools/fetch-electron.js az npm-csomagot az itt rögzített sha512-vel ellenőrzi, a benne lévő checksums.json sha256-jával a GitHub-kiadás electron-v44.7.1-win32-x64.zip-jét, és a repó melletti H:\\VRG\\Full\\tools\\electron mappába bontja. 44.7.1 = 2026-10-13, a kiválasztáskor legalább két hetes. MIT; a Chromium és a többi komponens licence a csomag LICENSES.chromium.html fájljában."
     }
   ]
 }

@@ -198,7 +198,7 @@ function stdPanelDraw(){const h=stdPanelHost();if(!STD_UI.on){h.style.display='n
       +`<input data-row="${r.code}|${r.hv}" value="${v.h==='C'?'':v.h}" placeholder="${v.h==='C'?'menny.':''}" class="${v.own?'own':''}"${v.h==='C'?' disabled':''}> mm`
       +(canPlace?` <button class="pl" data-place="${r.code}|${r.hv}" title="Lerakás">＋</button>`:'')+`</div>`;});
   const sg=stdSuggestions(state.active);
-  if(sg.length)s+=`<div class="sg"><b>Javaslatok (${sg.length})</b>${sg.slice(0,12).map(x=>`<div><span style="flex:1">${esc(x.d.ref||x.d.id)} → ${esc(x.p.n)} (${x.p.h}) <span style="color:#999">${esc(x.p.why)}</span></span><button data-swap="${x.d.id}" data-hv="${x.p.hv}">Csere</button></div>`).join('')}</div>`;
+  if(sg.length)s+=`<div class="sg"><b>Javaslatok (${sg.length})</b>${sg.slice(0,12).map(x=>`<div><span style="flex:1">${esc(x.d.ref||x.d.id)} → ${esc(x.p.n)} (${x.p.h}) <span style="color:var(--pc-mute,#999)">${esc(x.p.why)}</span></span><button data-swap="${x.d.id}" data-hv="${x.p.hv}">Csere</button></div>`).join('')}</div>`;
   h.innerHTML=s;h.style.display='block';}
 function stdPanel(on){STD_UI.on=on==null?!STD_UI.on:!!on;stdPanelDraw();return STD_UI.on;}
 

@@ -181,27 +181,27 @@ function reqRowHtml(rm,I,sug){const it=reqItems(rm),v=it[I.k],on=!!v,sv=reqSugOf
   let body='';
   if(on&&I.kind==='n')body=Object.keys(I.f).map(f=>`${reqInput(I.k,f,v[f]||0)} ${esc(I.f[f])}`).join(' &nbsp; ');
   if(on&&I.kind==='lamp'){body=`${reqInput(I.k,'n',v.n)} lámpa · ${reqInput(I.k,'k',v.k)} <b>kapcsolási kör</b> · ${reqInput(I.k,'v',v.v)} világítási kör`;
-    if(v.k>1&&v.v>1){const pr=v.pair||[];body+=`<details style="margin-top:3px"><summary style="font-size:11px;color:#666">Párosítás (nem kötelező)</summary>`
+    if(v.k>1&&v.v>1){const pr=v.pair||[];body+=`<details style="margin-top:3px"><summary style="font-size:11px;color:var(--pc-dim,#666)">Párosítás (nem kötelező)</summary>`
       +Array.from({length:v.k},(_,i)=>{const p=pr.find(x=>x.kk===i+1);return `<span style="font-size:11px;margin-right:8px">${i+1}. kapcsolási kör → <select class="rqP" data-kk="${i+1}"><option value="">—</option>`
         +Array.from({length:v.v},(_,j)=>`<option value="${j+1}" ${p&&p.vk===j+1?'selected':''}>${j+1}. vil. kör</option>`).join('')+`</select></span>`;}).join('')+`</details>`;}}
-  if(on&&I.kind==='rows')body=(v.rows||[]).map((r,i)=>`<div>`+Object.keys(I.f).map(f=>reqInput(I.k,f,r[f],i,f==='n'?110:48)+(f==='type'?'':' <span style="font-size:11px;color:#888">'+esc(I.f[f])+'</span>')).join(' ')
+  if(on&&I.kind==='rows')body=(v.rows||[]).map((r,i)=>`<div>`+Object.keys(I.f).map(f=>reqInput(I.k,f,r[f],i,f==='n'?110:48)+(f==='type'?'':' <span style="font-size:11px;color:var(--pc-mute,#888)">'+esc(I.f[f])+'</span>')).join(' ')
       +` <a href="#" class="rqDel" data-k="${I.k}" data-i="${i}" title="sor törlése">✕</a></div>`).join('')+`<a href="#" class="rqAdd" data-k="${I.k}" style="font-size:11px">+ sor</a>`;
-  return `<div style="margin:5px 0;padding:4px 0;border-top:1px solid #eee"><label><input type="checkbox" class="rqOn" data-k="${I.k}" ${on?'checked':''}> <b>${esc(I.n)}</b></label>`
-    +(sv?` <span style="font-size:11px;color:#888">javaslat: ${esc(reqSugText(I.k,sv))}</span>`:'')
+  return `<div style="margin:5px 0;padding:4px 0;border-top:1px solid var(--pc-line,#eee)"><label><input type="checkbox" class="rqOn" data-k="${I.k}" ${on?'checked':''}> <b>${esc(I.n)}</b></label>`
+    +(sv?` <span style="font-size:11px;color:var(--pc-mute,#888)">javaslat: ${esc(reqSugText(I.k,sv))}</span>`:'')
     +(body?`<div style="margin:3px 0 0 20px">${body}</div>`:'')+`</div>`;}
 // the item a ticked checkbox starts from: the suggestion, else a one-unit default
 function reqStart(sug,k){const I=reqItem(k),sv=reqSugOf(sug,k);if(sv)return sv;
   return I.kind==='rows'?{rows:[k==='swi'?{type:'101'}:{n:''}]}:I.kind==='lamp'?{n:1,k:1,v:1}:{n:1};}
 function reqDialog(rm){if(!rm)return;const sug=reqSuggest(rm),S=reqStatus(rm),kn=(typeof NEED_KINDS!=='undefined'&&(NEED_KINDS.find(k=>k.k===sug.kind)||{}).n)||sug.kind;
   const tbl=S.rows.length?`<table style="font-size:11.5px;border-collapse:collapse;margin-top:4px"><tr><th align="left">tétel</th><th>kell</th><th>van</th></tr>`
-    +S.rows.map(r=>`<tr style="color:${r.ok?'#2e9e5b':r.soft?'#888':'#d08a1e'}"><td>${esc(r.n)}</td><td align="center">${r.need}</td><td align="center">${r.have}${r.ok?' ✓':''}</td></tr>`).join('')+`</table>`:'';
+    +S.rows.map(r=>`<tr style="color:${r.ok?'var(--pc-ok,#2e9e5b)':r.soft?'var(--pc-mute,#888)':'var(--pc-warn,#d08a1e)'}"><td>${esc(r.n)}</td><td align="center">${r.need}</td><td align="center">${r.have}${r.ok?' ✓':''}</td></tr>`).join('')+`</table>`:'';
   const stk=typeof stkActive==='function'&&stkActive();
   openModal('☑ Igénylista — '+esc(reqRoomName(rm)),
     `<div class="mrow" style="font-size:12px">Fajta: <b>${esc(kn)}</b> · <span style="color:${REQ_ST[S.st].c}">● ${REQ_ST[S.st].n}</span></div>`
     +`<div class="mrow"><button id="rqTake">Javaslat átvétele</button> <button id="rqKeep" title="A már beállított tételek maradnak">Javaslat a hiányzókra</button> <button id="rqClr">Lista törlése</button>`
     +(stk?` <a href="#" id="rqOld" style="font-size:11px">rétegenkénti pipák…</a>`:'')+`</div>`
     +`<div id="rqBody" style="max-height:380px;overflow:auto">`+REQ_ITEMS.map(I=>reqRowHtml(rm,I,sug)).join('')+tbl+`</div>`
-    +`<div class="mrow" style="font-size:11px;color:#888">A lista nem hoz létre készüléket — a rétegeken elhelyezett készülékek teljesítik. A kapcsolási kör és a típusok tájékoztató sorok.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">A lista nem hoz létre készüléket — a rétegeken elhelyezett készülékek teljesítik. A kapcsolási kör és a típusok tájékoztató sorok.</div>`,
     ()=>{},'Bezár');
   const again=()=>{const b=$('rqBody'),y=b?b.scrollTop:0;closeModal();reqDialog(rm);const b2=$('rqBody');if(b2)b2.scrollTop=y;if(typeof draw==='function')draw();};
   const cur=k=>JSON.parse(JSON.stringify(reqItems(rm)[k]||{}));
@@ -230,7 +230,7 @@ function reqHouseDialog(){const T=reqHouseTotals(),rooms=[];ORD.forEach(l=>allRo
     +line('Kapcsoló',T.SWI)+Object.keys(T.sw).sort().map(t=>line(' · '+reqSwLabel(t),T.sw[t])).join('')+line('Redőny',T.SHU)+line('Dedikált fogyasztó',T.DED)+`</table>`
     +`<div style="max-height:260px;overflow:auto;margin-top:8px"><table style="font-size:11.5px">`
     +rooms.map((e,i)=>{const st=reqStatus(e.rm).st;return `<tr class="rqRoom" data-i="${i}" style="cursor:pointer"><td>${esc(reqRoomName(e.rm))}</td><td style="color:${REQ_ST[st].c}">● ${REQ_ST[st].n}</td></tr>`;}).join('')
-    +`</table></div><div class="mrow" style="font-size:11px;color:#888">Kattints egy helyiségre a listájáért.${reqRooms().length?'':' Még egy helyiségnek sincs listája.'}</div>`,()=>{},'Bezár');
+    +`</table></div><div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Kattints egy helyiségre a listájáért.${reqRooms().length?'':' Még egy helyiségnek sincs listája.'}</div>`,()=>{},'Bezár');
   document.querySelectorAll('.rqRoom').forEach(tr=>tr.onclick=()=>{const e=rooms[+tr.dataset.i];closeModal();reqDialog(e.rm);});}
 function reqRoomMenu(rh,items){items.push({label:'☑ Igénylista… (darabszámok)',act:()=>reqDialog(rh.rm)});}
 registerActions([{id:'req.house',label:'Ház összesítő (igénylista)',icon:'☑',group:'Helyiség',alias:'haz osszesito igenylista house summary requests',

@@ -13,11 +13,11 @@ If the sketch outgrows the partition, choose *Minimal SPIFFS (1.9MB APP with OTA
 Tools > Partition Scheme (`PartitionScheme=min_spiffs`).
 
 ## Command-line build (portable toolchain on H:)
-arduino-cli and the whole ESP32 toolchain (~8.5 GB) live in `H:\Dev-VRG\VRG-DE\_libs\arduino-cli`,
+arduino-cli and the whole ESP32 toolchain (~8.5 GB) live in `H:\VRG\Full\tools\arduino-cli`,
 configured by `arduino-cli.yaml` there so nothing lands on C:.
 
 ```bash
-H:/Dev-VRG/VRG-DE/_libs/arduino-cli/bin/arduino-cli.exe --config-file H:/Dev-VRG/VRG-DE/_libs/arduino-cli/arduino-cli.yaml compile -b "esp32:esp32:esp32s3:USBMode=default,CDCOnBoot=cdc,FlashSize=4M,PSRAM=enabled" --output-dir H:/Dev-VRG/VRG-DE/_libs/arduino-cli/build/knobpad Firmware/knobpad
+H:/VRG/Full/tools/arduino-cli/bin/arduino-cli.exe --config-file H:/VRG/Full/tools/arduino-cli/arduino-cli.yaml compile -b "esp32:esp32:esp32s3:USBMode=default,CDCOnBoot=cdc,FlashSize=4M,PSRAM=enabled" --output-dir H:/VRG/Full/tools/arduino-cli/build/knobpad Firmware/knobpad
 ```
 
 Add `-u -p COM<n>` to upload over USB (`arduino-cli board list` shows the port).

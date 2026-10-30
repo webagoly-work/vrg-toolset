@@ -1,81 +1,126 @@
 # VRG toolset — working rules
 
-The repo root is `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`
-(the same folder as `H:\Dev-VRG\VRG-DE\Planner_VRG_U100`: see Drive layout)
-(GitHub: `webagoly-work/vrg-toolset`, private). **`H:\Planner_VRG_U100` is a
-backup copy, not a second workspace** — refresh it from time to time, never
-work in it. The two were mixed up once and a full session's work landed in the
-backup; reconciling them cost real effort. Confirm with
-`git rev-parse --show-toplevel` if ever unsure.
+The repo root is `H:\VRG\Full\Planner_VRG_U100` (see Drive layout)
+(GitHub: `webagoly-work/vrg-toolset`, private). **`H:\VRG\Backup\code\Planner_VRG_U100.git`
+is the git `backup` remote, a bare repo, not a workspace** — BACKUP pushes to it,
+never work from it. A copy of the repo was mixed up with the working copy once
+and a full session's work landed in the backup; reconciling them cost real
+effort. Confirm with `git rev-parse --show-toplevel` if ever unsure.
 Each tool is a self-contained HTML app; the Planner and Inventory additionally
 have modular sources that build into one file.
 
 ## Drive layout
 
-**One repository, one checkout.** The real folder is `H:\cwebuser\projects\VRG-DE`;
-`H:\Dev-VRG\VRG-DE` is a **junction** to it, so both spellings name the same files. Since GO MAIN
-(2026-10-24) every line of work is on `main` in the main checkout; there are no other worktrees.
+**One work root, one personal root** (re-rooted 2026-10-27; the plan and the
+move scripts are in `H:\VRG\Full\_admin\reorg`). One repository, one checkout:
+every line of work is on `main` here. The worktree `.claude\worktrees\cloudflare-ecosystem`
+is a stale leftover (its branch is merged, 2026-10-30).
 
 ```
 H:\
-  Dev-VRG\                  <- the whole environment; this is what gets zipped
-    VRG-DE\                 <- everything, same internal layout as before
-      Planner_VRG_U100\     <- the git repo  (THE working copy)
-      _installers\ _inbox\ _zipped\ _libs\ _desktop\ ...
-    Start.cmd               <- shim -> VRG-DE\...\Planner\START.cmd
-    VRG-DE-Launcher.cmd     <- shim -> VRG-DE\...\VRG-DE.cmd
-  H_BACKUP_2026-09-16\      <- deliberately left outside; 8.1 GB, would double the archive
-  _desktop                  <- JUNCTION -> Dev-VRG\VRG-DE\_desktop  (see below)
+  VRG\                          <- WORK: everything program- and job-related
+    run.exe  START.cmd  BACKUP.cmd  OTG.cmd      (launchers, step 3-4 of the re-root)
+    Full\                       <- the working version
+      Planner_VRG_U100\         <- the git repo  (THE working copy)
+      BRIDGE\ BRIDGEcomp\ ESP_lab\ Varler_Workflow_Kit\ VRG_Visual_Base\ wifi-heatmapper\ _handoff\
+      jobs\                     <- client job folders, Planner_projektek_*, temp_batch
+      tools\                    <- dev toolchain: git node dotnet electron vscode chrome* arduino-cli js-libs
+      programs\                 <- user programs: VLC zen opera-gx 7zip keytweak HWiNFO WizTree CrystalDiskInfo
+      inbox\  notes\  research\  home\claude-account-b\  _admin\
+    Backup\                     <- lightweight: code\ (the git backup remote), installers\, archive\
+    OTG\                        <- portable / showcase build; kit\ = the USB kit
+    Shared\                     <- junction to C:\Users\webag\OneDrive\VRG-Megosztott: big files and client
+                                   jobs shared by OneDrive (never a repo; hub-seed.json has the folders)
+  Personal\                     <- MC-Server, RL-CYD, FlyBrainLab (+ its miniforge3), GodsEyeView
 ```
 
-**The repo got here by being copied, not moved.** `H:\Planner_VRG_U100` could
-not be renamed: something holds a handle on it continuously while Claude Code
-is open, and it survived a reboot. A rename needs exclusive access; a copy
-only needs to read, so robocopy went through cleanly (32,173 files, 0 failed).
-If a stale `H:\Planner_VRG_U100` is still present, it is the dead original —
-`H:\Dev-VRG\_remove-old-copy.ps1` verifies the new copy and deletes it.
+There is no `Planner\apps` any more (removed 2026-10-27, re-root phase 3.2b):
+code reaches the portable toolchain next to the repo — from the repo root
+`path.join(path.dirname(REPO), 'tools', ...)` in Node, `%REPO%\..\tools\...` in
+batch files, `{full}\tools\...` / `{node}` in `launcher/vrg-menu.json`. Browsers
+and user programs (Opera GX, Zen, VLC, ...) are in `Full\programs`. One git:
+`Full\tools\git` (the duplicate `git-planner` is parked in
+`Backup\archive\parked\2026-10-27`). Older paths (`H:\Dev-VRG\VRG-DE\...`,
+`H:\cwebuser\...`, `H:\_desktop\Git`, `Planner\apps\...`) no longer resolve; do
+not write them into new files.
+`Personal\FlyBrainLab\_libs\miniforge3` keeps a junction at its old place for
+good: a conda install cannot be relocated.
 
-Both launchers at the `Dev-VRG` root are thin shims: the real menus stay in
-the repo so they remain version-controlled and there is no second copy to keep
-in sync. Each falls back to the pre-move location and says so, so they work
-either way.
+**Moving or renaming folders on H: — traps learnt the hard way:**
 
-Nothing in the launcher needed re-pathing for the move, because `VRG-DE.cmd`
-derives `DE` from `%~dp0` and `HROOT` from one level above it — so
-`%HROOT%\_installers` resolves correctly in both layouts.
+- **Process checks do not tell you whether a folder is free.** The Claude
+  desktop app and the CLI all run as `claude.exe`; Claude Code holds a handle
+  on its project folder even when its binary lives on C:, and a shell whose
+  current directory is inside the folder holds one too (so never `cd` the
+  Bash tool into a folder that is about to move). Attempt the operation and
+  treat its failure as the authority.
+- **Avast blocks freshly started script processes.** A new
+  `powershell -File ...` got "Access is denied" renaming large folders for
+  minutes on end, while the same rename from an already-running shell
+  worked at once. Run move scripts in-process (`& script.ps1`).
+- **Paths over 260 characters** (they exist in `inbox`) make `Move-Item` and
+  cmd `move` fail. Use `MoveFileEx` with the `\\?\` prefix; the reorg scripts
+  show how.
+- **The Claude Code harness runs its shell from `H:\VRG\Full\tools\git\bin\bash.exe`**
+  (`CLAUDE_CODE_GIT_BASH_PATH`, set 2026-10-27; the Machine PATH points at the
+  same git). Moving or renaming `Full\tools\git` breaks the harness's shell:
+  change that variable first.
 
-**The repo folder cannot be renamed while Claude Code has it open**, and
-process checks will not tell you why. Two traps, learnt the hard way:
+## The START launcher (`launcher/`)
 
-- Matching by process *name* is useless: the Claude desktop app and the CLI
-  both run as `claude.exe` (20 processes here, most of them the app). A
-  name-based check refuses forever no matter what the user closes.
-- Matching by executable *path* is necessary but **not sufficient**. Claude
-  Code watches its project directory, so it holds a handle even when its
-  binary lives elsewhere — after an update it runs from
-  `C:\Users\<user>\AppData\Roaming\Claude\claude-code\`, and a path check over
-  `H:\` then reports "nothing is running from there" while the move still
-  fails with Access Denied.
+Since 2026-10-27 (re-root phase 3.2) there is one menu: `launcher/vrg-ui.ps1`
+draws it in the Mélyvíz 8-bit style and `launcher/vrg-menu.json` is its only
+registry — tools (keys 1-9, 0, K), project submenus (P Planner, I Készlet,
+Y CYD, U Board Console, V Vendor) with their build/test/serve actions, dev
+items, the local servers (O), the programs (A) and the prompt library
+(`tools/prompts/*.txt`). `Planner/START.cmd` and `VRG-DE.cmd` only forward to
+`launcher/vrg-start.cmd`, so every shortcut keeps working. The Node side
+(Kapu build, Kódváros segéd) reads the same JSON through `launcher/menu.js`.
+`vrg-ui.ps1` must stay ASCII (Windows PowerShell 5.1 misreads accents in a
+BOM-less script); Hungarian text lives in the JSON's `ui` block.
+`powershell -File launcher\test\selftest.ps1` renders every screen offline and
+checks its geometry and keys.
 
-So: never conclude a folder is free from a process listing. Attempt the
-operation, and treat its failure as the authority; list processes only as
-hints. A rename of the repo root has to happen with Claude Code fully closed.
+Windows and shims (phase 3.4): `H:\VRG\START.cmd`, `BACKUP.cmd`, `OTG.cmd` call
+`launcher/vrg-launch.cmd <start|backup|otg>`, which opens the menu in the
+portable Windows Terminal (`H:\VRG\Full\tools\terminal`, `.portable` marker,
+its own `settings\settings.json` with profile VRG + scheme Melyviz; zip kept in
+`Backup\installers`) and falls back to the plain console when WT is missing,
+when already inside WT (`WT_SESSION`), or with `--console` / `VRG_CONSOLE=1`.
+Other arguments go through to `vrg-ui.ps1`. In cmd, `shift` also shifts `%0`:
+take `%~dp0` before any shift. BACKUP and OTG are `items` list menus (no git,
+no exit guard) until phases 3.5 / 3.6 fill them. WT has no greyable X, so
+there only Q / Esc / Ctrl+C go through the exit guard.
 
-**`H:\_desktop` is a junction, not a folder.** It contains only the portable
-Git that the Claude Code harness runs its shell from
-(`H:\_desktop\Git\bin\bash.exe`), pinned by absolute path. Moving it into
-`Dev-VRG` broke the Bash tool outright, so a junction keeps the old path
-resolving while the real 357 MB lives inside `Dev-VRG` and travels with the
-archive. Delete the junction only after pointing the harness at another Git —
-the repo carries one at `Planner\apps\git`.
+BACKUP (phase 3.5, `launcher/backup.ps1`, settings in the registry's `backup`
+block): 1 sync = `git push --all/--tags` to each repo's bare backup
+(`Backup\code\<name>.git`, created on first use, a diverged branch is reported,
+never forced; a `backup` remote pointing elsewhere is left alone) + the work
+folders (BRIDGE, BRIDGEcomp, ESP_lab, jobs, notes, Varler_Workflow_Kit,
+VRG_Visual_Base, _handoff) mirrored into `Backup\code\work`. **Nothing is lost:**
+a file the backup would overwrite or drop is moved to
+`Backup\archive\sync\<stamp>\` first, and an emptied or missing source folder
+is skipped, never wiped. 2 integrity = `git fsck` + every backed-up file
+re-hashed against `Backup\logs\manifest.tsv`. 3 = the newest
+`Backup\logs\sync-*.json`. 4 restore = a file or folder from the backup or any
+archived copy; overwrites, never deletes, the current copy saved to
+`Backup\archive\restore\<stamp>\` first. 5 = installer per `tools\` /
+`programs\` folder (`installerRules`). Tests: `test\backup-selftest.ps1`,
+`test\backup-e2e.ps1` (throwaway folders only). PowerShell 5.1 traps met here:
+piping strings into git adds a BOM (pass lists through files), and a BOM-less
+test script misreads accented literals (match an ASCII part).
 
-## VRG Digital Environment
-
-`VRG-DE.cmd` at the repo root is the umbrella launcher. Projects sit in
-categories (LEAD / UNDER-DEV), each project's build-test-serve actions live in
-that project's own submenu rather than in one flat list, and there are
-sections for dev tooling, standalone programs and a prompt library
-(`tools/prompts/*.txt`). `Planner/START.cmd` still works and is not replaced.
+Commit + push (phase 3.3, `launcher/vrg-git.ps1`): the status row counts each
+work repo's changes (`git status -uall`) and commits not on origin; **S** commits
+the current branch (`git add -A`) and pushes `HEAD:launcher-collect` — never
+`--force`, never any other branch on origin; when launcher-collect has diverged
+it falls back to `launcher-collect-YYYY-MM-DD` (then `-2` … `-9`). Secret-looking
+names (`.env`, `*.pem`, `credentials*.json`, …), token/private-key contents and
+files over 5 MB stop that repo. Q / Esc / Ctrl+C with unpushed work open the
+exit guard (C commit + push / L leave / B back), and the window's X is greyed
+meanwhile. `test\git-selftest.ps1` (functions) and `test\git-e2e.ps1` (the real
+key loop via the test-only `-Keys`) run against throwaway repos in `%TEMP%\VRG`
+— never test the flow on a real repo.
 
 **Batch files must be written with CRLF line endings.** With LF, cmd.exe
 silently mis-parses multi-line parenthesised blocks — single-line `if ... goto`
@@ -94,34 +139,34 @@ converting. Two further cmd traps this launcher already hit:
 Console output from the launcher and its helpers stays ASCII-only — accented
 Hungarian garbles under the console codepage.
 
-## START.cmd is the front door — keep it current
+## START is the front door — keep its registry current
 
-`Planner/START.cmd` is the master launcher and the only entry point the user
-actually goes through. **A tool that is not in it does not exist**, and an
-entry pointing at a moved or renamed file is worse than a missing one: the
-menu still looks complete and only fails when that number is picked.
+The START menu is the master launcher and the only entry point the user
+actually goes through. **A tool that is not in `launcher/vrg-menu.json` does
+not exist**, and an entry pointing at a moved or renamed file is worse than a
+missing one: the menu still looks complete and only fails when that key is
+picked.
 
 So, whenever a change touches what tools exist or where they live — adding a
-tool, renaming or moving a file, changing a build output path, retiring
-something — check START.cmd in the same change and update it:
+tool, renaming or moving a file, changing a build output path, a server's
+script or port, retiring something — update `launcher/vrg-menu.json` in the
+same change and run:
 
 ```bash
 node tools/check-start.js
 ```
 
-It verifies that every registered `T<n>_PATH` resolves, that `TOOLCOUNT`
-matches the number of entries actually defined (an entry above TOOLCOUNT is
-never shown in the menu), and it lists tool pages in the repo that the
-registry has never heard of. Exit code 1 when something is wrong, so it can
-gate a commit.
+It verifies that every file the registry names exists (tool pages, step
+commands, server scripts, programs — an `optional` program that is missing is
+only listed), that no screen uses a key twice and no two servers share a port,
+that the old `START.cmd` / `VRG-DE.cmd` still forward to the launcher, and it
+lists tool pages in the repo that the registry has never heard of. Exit code 1
+when something is wrong, so it can gate a commit. After a tool change also
+rebuild the Kapu (`node tools/build-hub.js`), which bakes the tool list in.
 
-To add a tool: copy a `T<n>_NAME` / `T<n>_PATH` pair in the TOOL REGISTRY
-section, bump the number, raise `TOOLCOUNT`, then run the check. Paths are
-relative to the `Planner` folder, which is why the other tools start with
-`..\`. Keep existing numbers stable — the user knows them by heart.
-
-Also update the dated NOTE block at the top of START.cmd when the registry
-changes, so the file says when it was last reconciled and what moved.
+To add a tool: add an entry to `start.tools` with a free key. Paths use the
+tokens `{repo}`, `{full}`, `{vrg}` and the `paths` shortcuts (`{planner}`,
+`{node}`, ...). Keep existing keys stable — the user knows them by heart.
 
 ## Things that must not be committed
 
@@ -164,45 +209,22 @@ symbols grey while every class was correct and every test passed.
 
 ## Codephrases
 
-All of them run in the **main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`** (one checkout since GO MAIN, 2026-10-24).
+All of them run in the **main checkout `H:\VRG\Full\Planner_VRG_U100`, branch `main`**. A session reads the named
+file at the repo root and does what it says.
 
-- **`GO R1010`** — read `GO-R1010.md` at the repo root (main checkout, branch `main`)
-  and do what it says: continue the Planner round 2026-10-10, then the CLA-ADD-001 extras.
-- **`GO FRAME`** — read `GO-FRAME.md` at the repo root (main checkout, branch `main`)
-  and do what it says: the BRIDGE SmartFrame (BSF) concept: research, IDEA-003, tune with the user,
-  then the BRIDGE doc and (after round 2026-10-10 is built) the Planner pack. No code.
-- **`GO V2`** — read `GO-V2.md` at the repo root (main checkout, branch `main`)
-  and do what it says: the CLA second version — v1 (VG-2026-CLA-01) fully built + every other BRIDGE layer
-  prepared (conduit, cable pulled, boxes, niches; no hardware), quick survey-precision quantities and prices vs v1,
-  a per-room ESPHome marketing list; then hand the fair-price calculation to the Workflow Kit session (V2_FELADAT.md).
-- **`GO R1018`** — read `GO-R1018.md` at the repo root (main checkout, branch `main`) and do what it says:
-  continue the Planner round 2026-10-18 (Födém · Igénylista · Házimozi, all built + committed 2026-10-19):
-  only the C6 Mozi fal pen feel is open.
-- **`GO WIRE`** — read `GO-WIRE.md` at the repo root (main checkout, branch `main`)
-  and do what it says: the wireway routing rebuild — the dual model, configuration K1 (decisions 2026-10-18, all A),
-  build order T0–T7 from `docs/workflow/WIREWAY_AUDIT_2026-10-18.md` (T0–T6 merged into `main` 2026-10-24).
-- **`GO ADAT`** — read `GO-ADAT.md` at the repo root (main checkout, branch `main`) and do what it says.
-- **`GO HUB`** — read `GO-HUB.md` at the repo root (main checkout, branch `main`) and do what it says:
-  VRG Kapu. **Reworked 2026-10-26**: Kapu is now only the access page (GitHub sign-in + the signed
-  allowed list → START.cmd and its tools) until the dashboard exists. The board, editor, Munkanapló and
-  the rest are parked for Kódváros in `CodeCity/from-kapu/`; the `docs/hub/` pack describes the old,
-  full Kapu. Still open from it: setup steps 3–8, the OneDrive links, the clean-profile check.
-- **`GO CITY`** — read `GO-CITY.md` at the repo root and do what it says: VRG Kódváros, the codebase-as-a-city
-  viewer (C1–C10 on `main`; **parked**: base fine-tuning from the user's dev notes, a later Claude Design
-  batch candidate — README §7). New WPs start from `main`.
-- **`GO LIVE`** — read `GO-LIVE.md` at the repo root and do what it says: build Kódváros into the live
-  workspace / GitWorld / overlay OS from the prompt series `docs/city/PROMPTS-WORKSPACE.md` (KV-01 …
-  KV-27, research in `docs/research/reports/Kódváros live workspace and GitWorld.md`). Meant for the
-  secondary account (start steps in GO-LIVE §0); one prompt per step, commit, never push.
-- **`GO OPENWRT`** — read `GO-OPENWRT.md` at the repo root and do what it says: prepare, guide and verify
-  OpenWrt on the TP-Link TL-WR1043ND (the user flashes; Claude never touches the router). Asked for 2026-10-26
-  with CITY-D24; phases P0–P5, the first is the sticker's hardware version.
-- **`GO MOBILE`** — read `GO-MOBILE.md` at the repo root and do what it says: VRG Mobile, the companion app
-  (`Mobile/`, Légegér is its first feature), one WP at a time from `docs/mobile/` (M0 done, M1 + M2 live, M3 + M6 built, 2026-10-30). Made for
-  **cloud sessions**: the APK is built by GitHub Actions, not in the sandbox (`docs/mobile/CLOUD.md`). Exception to
-  "one checkout, branch main": start from `claude/gracious-pasteur-vakjwf` until PR #2 is merged, and push your own branch.
-- **`GO STRICT`** — **done**: the five programs VRG Kapu links to are on `main` (`check-hub --strict` → Rendben). Retired.
-- **`GO ALL`** — **retired** 2026-10-24: `dev-all` is replaced by `main`. See GO MAIN.
-- **`GO MAIN`** — **done** 2026-10-24 (`GO-MAIN.md`): every line consolidated into `main`, the other
-  branches and worktrees trimmed. Parked WIP, not in `main`: tags `archive/2026-10-24/planner-stack-wip`
-  (Views plan-sheet / rbx specs) and `archive/2026-10-24/planner-sui-wip` (Simple-UI mode).
+- **`GO MAIN`** — `GO-MAIN.md`: the overall entry point. State of every line of work, what can run now, the
+  standing rules, the end-of-session routine that keeps work from scattering again.
+- **`GO PLANNER`** — `GO-PLANNER.md`: the open Planner work except wiring (Simple-UI S6 look, C6 pen feel, G2, the
+  CLA-ADD-001 extras, Views, E6).
+- **`GO ROUTE`** — `GO-ROUTE.md`: wiring features, the PCB-style router, the Topology View. Starts by asking the user.
+- **`GO CLA`** — `GO-CLA.md`: the CLA job thread. v1 and v2 delivered; open design questions only.
+- **`GO HUB`** — `GO-HUB.md`: VRG Kapu, the access page; setup steps, guest mode and shared folders (planned).
+- **`GO CITY`** — `GO-CITY.md`: Kódváros; parked tuning, deferred checks, the Cloudflare ring.
+- **`GO MOBILE`** — `GO-MOBILE.md`: VRG Mobile, one WP at a time from `docs/mobile/` (M1 + M2 live, M3 + M6 built,
+  next M9). **Worked on in the local H: session since 2026-10-30** (main checkout, `main`; `Mobile\mobile.cmd`
+  builds and installs the APK); Actions still builds an APK on every push.
+- **`GO OPENWRT`** — `GO-OPENWRT.md`: OpenWrt on the TP-Link TL-WR1043ND (the user flashes; Claude never touches
+  the router). Phases P0–P5, the first is the sticker's hardware version.
+
+**Old phrases** (typed by habit): R1010, R1018, FRAME, SUI → GO PLANNER · WIRE → GO ROUTE · V2, ADAT → GO CLA · LIVE →
+GO CITY · ALL, STRICT, HK → done. `docs/go-archive/README.md` lists every old file.

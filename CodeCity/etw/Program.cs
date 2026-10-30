@@ -27,6 +27,7 @@ static class Etw
     const string SessionName = "VRG-Kodvaros-ETW";
     static readonly string Repo = ((typeof(Etw).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "VrgRepoRoot")?.Value) ?? "").TrimEnd('\\', '/') + "\\";
     static readonly string[] Skip = { ".git\\", "node_modules\\", "Planner\\apps\\", ".cache\\", "Vendor\\" };
+    static readonly string[] Deep = { "\\node_modules\\", "\\.git\\" };   // at any depth
     static readonly int Self = Environment.ProcessId;
     static readonly BlockingCollection<string> outbox = new(5000);
     static readonly List<StreamWriter> clients = new();
@@ -122,7 +123,7 @@ static class Etw
     {
         if (pid == Self || string.IsNullOrEmpty(path) || Repo.Length < 4 || !path.StartsWith(Repo, StringComparison.OrdinalIgnoreCase)) return;
         string rel = path[Repo.Length..];
-        if (Skip.Any(s => rel.StartsWith(s, StringComparison.OrdinalIgnoreCase))) return;
+        if (Skip.Any(s => rel.StartsWith(s, StringComparison.OrdinalIgnoreCase)) || Deep.Any(s => rel.Contains(s, StringComparison.OrdinalIgnoreCase))) return;
         lock (agg) if (files.Count < 300) files.Add(pid + "|" + exe + "|" + op + "|" + rel.Replace('\\', '/'));
     }
 

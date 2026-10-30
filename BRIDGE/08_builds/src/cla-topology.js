@@ -394,7 +394,7 @@ function t10(box) {
 }
 
 // ===========================================================================
-const CHROME = path.resolve(__dirname, '../../../Planner/apps/chrome-headless-shell/chrome-headless-shell.exe');
+const CHROME = path.resolve(__dirname, '../../../../tools/chrome-headless-shell/chrome-headless-shell.exe');
 function emit(name, svg, w, h) {
   const out = path.join(FIG, name);
   fs.writeFileSync(out + '.svg', svg);

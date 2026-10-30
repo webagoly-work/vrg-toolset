@@ -28,7 +28,7 @@ for (let i = 2; i < process.argv.length; i++) {
   if (n && !n.startsWith('--')) { args[a.slice(2)] = n; i++; } else args[a.slice(2)] = true;
 }
 const PORT = Number(args.port || 8790);
-const BOARD_DIR = path.resolve(String(args['board-dir'] || 'H:/VRG_Visual_Base/01_Hardware/Topology_Starter'));
+const BOARD_DIR = path.resolve(String(args['board-dir'] || 'H:/VRG/Full/VRG_Visual_Base/01_Hardware/Topology_Starter'));
 const DATA_DIR = path.resolve(String(args['data-dir'] || path.join(__dirname, '../data')));
 const SETUP_DIR = path.join(DATA_DIR, 'setups');
 const REPO = path.resolve(__dirname, '../../..');

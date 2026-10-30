@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SK-CYD szimulátor</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0b0e12; color: #c9d2dc; font-family: "Segoe UI", system-ui, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 20px; }
+  h1 { font-size: 15px; font-weight: 600; margin: 0; color: #9aa4ae; letter-spacing: .3px; }
+  .device { background: #1a1d22; border-radius: 16px; padding: 16px 16px 20px; box-shadow: 0 16px 48px rgba(0,0,0,.5); border: 1px solid #2a2f36; }
+  .bezel { background: #000; border-radius: 6px; padding: 8px; }
+  canvas { display: block; image-rendering: pixelated; border-radius: 2px; cursor: pointer; }
+  .leds { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+  .led { width: 9px; height: 9px; border-radius: 50%; background: #222; transition: background .15s, box-shadow .15s; }
+  .led.r.on { background: #ef5350; box-shadow: 0 0 8px #ef5350; }
+  .led.g.on { background: #3fc28b; box-shadow: 0 0 8px #3fc28b; }
+  .led.b.on { background: #5aa9ef; box-shadow: 0 0 8px #5aa9ef; }
+  .bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; max-width: 520px; }
+  .bar button, .bar select, .bar label { font: inherit; font-size: 12px; }
+  .bar button { background: #232830; color: #c9d2dc; border: 1px solid #333a42; border-radius: 7px; padding: 6px 11px; cursor: pointer; }
+  .bar button:hover { border-color: #f2a93b; }
+  .bar .conn { padding: 3px 9px; border-radius: 10px; font-size: 11px; background: #2a2f36; color: #8b949e; }
+  .bar .conn.on { background: #1f4d39; color: #8fd9b6; }
+  .hint { font-size: 11px; color: #6e7681; max-width: 480px; text-align: center; line-height: 1.5; }
+  code { background: #11151a; padding: 1px 5px; border-radius: 4px; color: #f2a93b; }
+</style>
+</head>
+<body>
+  <h1>ServiceKit CYD — szimulátor (320 × 240)</h1>
+  <div class="device">
+    <div class="bezel"><canvas id="screen" width="320" height="240"></canvas></div>
+    <div class="leds"><span class="led r" id="ledR"></span><span class="led g" id="ledG"></span><span class="led b" id="ledB"></span></div>
+  </div>
+  <div class="bar">
+    <span class="conn" id="conn">híd: nincs</span>
+    <button id="btnConnect">Csatlakozás a hídhoz</button>
+    <label><input type="checkbox" id="pcAlive" checked> PC él (demo)</label>
+    <button id="btnDemo">Demo esemény</button>
+  </div>
+  <div class="hint">Önálló módban a <b>SD-kártya</b> és a <b>Mentő</b> lap a beégetett tartalomból dolgozik — PC nélkül is.
+    A <b>Telepítő</b> és a <b>Gép</b> lap a hídhoz köt: indítsd a <code>bridge/</code> mappában: <code>node bridge.js --sim --mock-pc</code>, majd nyomd meg a Csatlakozás gombot. Kattints a képernyőre úgy, ahogy a CYD-t érintenéd.</div>
+
+<script src="skcyd-ui.js"></script>
+<script>
+(function () {
+  'use strict';
+  var cv = document.getElementById('screen'), g = cv.getContext('2d');
+  var ui = window.SKCYD.create(g, {
+    send: sendToBridge,
+    led: setLed,
+    standalone: standaloneFS()
+  });
+
+  // ---- touch: map canvas clicks (CSS size may scale) to 320x240
+  function pt(ev) { var r = cv.getBoundingClientRect(); return { x: Math.round((ev.clientX - r.left) * cv.width / r.width), y: Math.round((ev.clientY - r.top) * cv.height / r.height) }; }
+  cv.addEventListener('mousedown', function (e) { var p = pt(e); ui.touch(p.x, p.y); });
+
+  // ---- LEDs
+  function setLed(which, on) { var el = document.getElementById('led' + which.toUpperCase()); if (el) el.className = 'led ' + which + (on ? ' on' : ''); }
+
+  // ---- a baked "SD card" tree for standalone mode (what the device SD would hold). No client data.
+  function standaloneFS() {
+    return {
+      gb: 32, freeGB: 29,
+      tree: {
+        '/': { d: ['reference', 'manifest'], f: [['OLVASS.txt', 2]] },
+        '/reference': { d: ['sugo', 'parancsok'], f: [['bios-boot-keys.txt', 3], ['README.md', 4]] },
+        '/reference/sugo': { d: [], f: [['lassu-gep.txt', 5], ['kek-halal.txt', 6], ['nincs-net.txt', 4], ['virus.txt', 5]] },
+        '/reference/parancsok': { d: [], f: [['halozat.txt', 3], ['lemez.txt', 3], ['javitas.txt', 4]] },
+        '/manifest': { d: [], f: [['manifest.json', 1]] }
+      },
+      files: {
+        '/OLVASS.txt': 'ServiceKit CYD\nAz SD-kartya a keszulek offline tara.\nreference/ : Sugo es parancsok szovegben\nmanifest/  : mi legyen a telepito pendrive-on',
+        '/reference/bios-boot-keys.txt': 'BIOS / boot menu billentyuk\n\nASUS      F2 / DEL   boot: F8\nAcer      F2         boot: F12\nDell      F2         boot: F12\nHP        ESC / F10  boot: F9\nLenovo    F1 / F2    boot: F12 / Novo\nMSI       DEL        boot: F11\nGigabyte  DEL        boot: F12\nSamsung   F2         boot: ESC\nSony      F2 / ASSIST\nSurface   hold Vol-  (power + Vol-)',
+        '/reference/sugo/lassu-gep.txt': 'LASSU GEP\n1. Lemez allapot (CrystalDiskInfo) - sarga/piros = csere\n2. Ha majdnem tele a C: - WizTree\n3. Autoruns: felesleges inditasi elemek ki\n4. Homerseklet (HWiNFO) - 90C felett lassit\n5. HDD -> SSD a legnagyobb gyorsulas',
+        '/reference/sugo/kek-halal.txt': 'KEK HALAL (BSOD)\n1. BlueScreenView - a pirossal jelolt .sys a gyanusitott\n2. Illesztoprogram frissites (SDIO)\n3. MEMORY_MANAGEMENT -> MemTest86\n4. WHEA -> hardver (tap, ho)\n5. sfc /scannow + DISM RestoreHealth',
+        '/reference/sugo/nincs-net.txt': 'NINCS NET\n1. Mas eszkozon megy-e? Router ujrainditas 30mp\n2. ipconfig /all - van IP (nem 169.254)?\n3. ping atjaro -> 8.8.8.8 -> google.com\n4. netsh winsock reset + int ip reset (ujrainditas)\n5. DNS: 1.1.1.1',
+        '/reference/sugo/virus.txt': 'VIRUS GYANU\n1. Zsarolo gyanu: halozat ki, NE indits ujra\n2. KVRT vagy MS Safety Scanner - teljes vizsgalat\n3. Autoruns: gyanus inditasi elemek\n4. TCPView: mi kommunikal kifele\n5. Jelszavak csere TISZTA eszkozrol',
+        '/reference/parancsok/halozat.txt': 'HALOZAT\nipconfig /all\nipconfig /flushdns\nping -t 8.8.8.8\ntracert google.com\nnetsh winsock reset\nnetsh int ip reset\nnetsh wlan show profile name="X" key=clear',
+        '/reference/parancsok/lemez.txt': 'LEMEZ\nchkdsk C: /scan\nsfc /scannow\nDISM /Online /Cleanup-Image /RestoreHealth\ncleanmgr\nwmic diskdrive get status  (regi)',
+        '/reference/parancsok/javitas.txt': 'JAVITAS\nsfc /scannow\nDISM /Online /Cleanup-Image /RestoreHealth\nrstrui   (rendszer-visszaallitas)\nmdsched  (memoria teszt)\nmsconfig',
+        '/reference/README.md': '# Reference\nOffline Sugo es parancs kivonatok a keszulek kepernyojere.',
+        '/manifest/manifest.json': '{ "kitVersion": "1.2.0", "files": 10, "note": "mi legyen a pendrive-on" }'
+      }
+    };
+  }
+
+  // ---- bridge WebSocket
+  var ws = null;
+  function sendToBridge(str) { if (ws && ws.readyState === 1) ws.send(str + '\n'); }
+  document.getElementById('btnConnect').onclick = function () {
+    if (ws) { ws.close(); return; }
+    try { ws = new WebSocket('ws://127.0.0.1:47814/'); } catch (e) { alert(e.message); return; }
+    ws.onopen = function () { setConn(true); ui.onBridge('HI|' + 'sim-0.1|32|29'); sendToBridge('HI|sim-0.1|32|29'); };
+    ws.onclose = function () { setConn(false); ws = null; ui.bridgeDown(); };
+    ws.onerror = function () { };
+    var rx = '';
+    ws.onmessage = function (ev) { rx += ev.data; var nl; while ((nl = rx.indexOf('\n')) >= 0) { var ln = rx.slice(0, nl).replace(/\r$/, ''); rx = rx.slice(nl + 1); if (ln) ui.onBridge(ln); } };
+  };
+  function setConn(on) { var el = document.getElementById('conn'); el.className = 'conn' + (on ? ' on' : ''); el.textContent = on ? 'híd: kapcsolódva' : 'híd: nincs'; document.getElementById('btnConnect').textContent = on ? 'Bontás' : 'Csatlakozás a hídhoz'; }
+
+  // ---- demo events (no bridge needed): fake a playbook finishing + LED
+  document.getElementById('btnDemo').onclick = function () {
+    ui.onBridge('JOB|Minta Ügyfél|TESZT-PC|folyamatban|12');
+    ui.onBridge('PB|Gyors állapotfelmérés|7|11|1');
+    ui.onBridge('STEP|warn|A C: meghajtón kevés a szabad hely (8.1 GB).');
+    setLed('r', true); setTimeout(function () { setLed('r', false); }, 1500);
+  };
+
+  ui.start();
+})();
+</script>
+</body>
+</html>

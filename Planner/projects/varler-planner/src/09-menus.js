@@ -110,8 +110,8 @@ function circuitForm(c){c=c||{name:'',num:'',count:3,mm2:1.5,data:''};
    <div class="mrow">Erek <input id="cCount" type="number" value="${c.count||3}" style="width:56px"> db · <select id="cMm2">${opts}</select> mm²</div>
    <div class="mrow">Adat típus <select id="cData">${dopts}</select></div>
    <div class="mrow">Áramkör szín <select id="cCol" style="width:120px">${CIRCUIT_COLORS.map(x=>`<option value="${x.k}" ${x.k===(c.col||'zold')?'selected':''}>${x.l}</option>`).join('')}</select>
-     <span id="cColSw" style="display:inline-block;width:16px;height:16px;border-radius:3px;vertical-align:middle;margin-left:6px;border:1px solid #999;background:${circuitColor(c)}"></span></div>
-   <div class="mrow" style="font-size:11px;color:#888">Ér-színek: fekete · kék · zöld · barna · szürke (szabvány). Az áramkör szín csak a vizualizációhoz.</div>`;}
+     <span id="cColSw" style="display:inline-block;width:16px;height:16px;border-radius:3px;vertical-align:middle;margin-left:6px;border:1px solid var(--pc-line2,#999);background:${circuitColor(c)}"></span></div>
+   <div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Ér-színek: fekete · kék · zöld · barna · szürke (szabvány). Az áramkör szín csak a vizualizációhoz.</div>`;}
 function readCircuit(){const count=+$('cCount').value||0,colors=[];for(let i=0;i<count;i++)colors.push(WIRE_COLORS[i%WIRE_COLORS.length]);
   return {name:$('cName').value,num:$('cNum').value,count,mm2:+$('cMm2').value,data:$('cData').value,colors,col:($('cCol')?$('cCol').value:'zold')};}
 // ---- hit helpers ----
@@ -147,7 +147,7 @@ function advancedBoardAt(e,wallR){const h=BOARD_DEFAULT_Z,w=snapWall(e,state.act
     +`<div class="mrow">Csatlakozó téglalap: szélesség <input id="bprw" type="number" value="${BOARD_RW}" style="width:70px"> × mélység <input id="bprd" type="number" value="${BOARD_RD}" style="width:70px"> mm</div>`
     +`<div class="mrow">Forgatás <input id="bpang" type="number" value="${Math.round(((w&&w.ang)||0)*180/Math.PI)}" style="width:60px"> °</div>`
     +`<div class="mrow"><label><input type="checkbox" id="bpobj" checked> Elosztószekrény objektum automatikus elhelyezése a közepére</label></div>`
-    +`<div class="mrow" style="font-size:11px;color:#777">A téglalap egyetlen nagy csatlakozási pont: a hozzá érő pálya bármelyik pontján (bármelyik faloldalról) bekötődik.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">A téglalap egyetlen nagy csatlakozási pont: a hozzá érő pálya bármelyik pontján (bármelyik faloldalról) bekötődik.</div>`,
     ()=>{pushUndo();const b={type:'board',level:state.active,x:+$('bpx').value||x,y:+$('bpy').value||y,
       h:+$('bpz').value||BOARD_DEFAULT_Z,z:+$('bpz').value||BOARD_DEFAULT_Z,
       rw:+$('bprw').value||BOARD_RW,rd:+$('bprd').value||BOARD_RD,ang:((+$('bpang').value||0)*Math.PI/180),
@@ -179,7 +179,7 @@ function doorTypeDialog(oi){const o=data.openings[oi];if(!o)return;const cur=doo
   openModal('Ajtó típusa',
      `<div class="mrow"><select id="dtSel" style="width:100%">${opts}</select></div>`
     +`<div class="mrow"><label><input type="checkbox" id="dtSize" checked> a típus alapméretét is állítsd be</label></div>`
-    +`<div class="mrow" style="font-size:11px;color:#777">A 2D hivatalos (blueprint) nézetben mindegyik a saját jelkulcsával rajzolódik: nyíló = szárny + negyedkör, kétszárnyú = két negyedkör, toló = fal előtti szárny + nyíl, falba futó = szaggatott szárny, harmonika = cikcakk, garázskapu = szaggatott szekció + GK, tűzgátló = EI felirat, falnyílás = csak káva.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">A 2D hivatalos (blueprint) nézetben mindegyik a saját jelkulcsával rajzolódik: nyíló = szárny + negyedkör, kétszárnyú = két negyedkör, toló = fal előtti szárny + nyíl, falba futó = szaggatott szárny, harmonika = cikcakk, garázskapu = szaggatott szekció + GK, tűzgátló = EI felirat, falnyílás = csak káva.</div>`,
     ()=>{pushUndo();const k=$('dtSel').value;o.dtype=k;
       if($('dtSize').checked){o.w=DOORTYPE[k].w;o.h=DOORTYPE[k].h;}
       draw();$('hud').textContent='Ajtó → '+DOORTYPE[k].n;},'Alkalmaz');}

@@ -4,9 +4,9 @@
 
 ## 1. Where, and what you own
 
-- Work in the **SecAcc worktree** `H:\cwebuser\projects\VRG-DE\SecAcc`, branch **`secacc`** (see `SECACC.md`).
+- Work in the **SecAcc worktree** `H:\VRG\Backup\archive\parked\2026-10-24\SecAcc`, branch **`secacc`** (see `SECACC.md`).
   The main checkout `…\Planner_VRG_U100` belongs to the primary account — never edit it.
-  `H:\Planner_VRG_U100` is a dead backup.
+  `H:\VRG\Backup\code\Planner_VRG_U100-mirror` is a dead backup.
 - **You own only:** `Hub/**`, `tools/build-hub.js`, `tools/hub-sign.js`, `tools/check-hub.js`,
   `docs/hub/**` (status lines + agent docs), and — in WP-H0 / H10 only — the hub entries in
   `Planner/START.cmd` and `VRG-DE.cmd`, and a `vrg-kapu` config in `.claude/launch.json`.
@@ -31,7 +31,7 @@
 - **Storage**: every `localStorage` / IndexedDB access through `kpStore.get/set` with try/catch, keys
   prefixed `vrgKapu.`; the page must render fully with storage unavailable (file:// "csak linkek" mode).
 - **Secrets**: no token, key or password in any file. The GitHub token lives only in the browser's
-  storage. The private signing key only in `H:\cwebuser\_admin\keys\`.
+  storage. The private signing key only in `H:\VRG\Full\_admin\keys\`.
 - **Security of the companion**: binds 127.0.0.1 only; checks `Host` and `Origin`; per-install token;
   whitelisted actions with fixed argument shapes; paths must resolve inside allowed roots; spawns
   with argument arrays, never a shell string built from request data.

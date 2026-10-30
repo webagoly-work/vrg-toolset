@@ -67,17 +67,17 @@ function lampDialog(di){const dv=data.devices[di];if(!dv)return;const L=lampDef(
     +`<div class="mrow"><label style="width:104px">Beépítés</label><select id="lpMount" style="width:210px">${mo}</select>`
     +`<label style="margin-left:8px">függesztés <input id="lpDrop" type="number" step="10" min="0" value="${Math.round(L.drop)}" style="width:64px"> mm</label></div>`
     +`<div class="mrow"><label style="width:104px">Rögzítés</label><select id="lpFix" style="width:210px">${fx}</select>`
-    +`<span id="lpMountNote" style="color:#999;font-size:11px;margin-left:8px"></span></div>`
+    +`<span id="lpMountNote" style="color:var(--pc-mute,#999);font-size:11px;margin-left:8px"></span></div>`
     +`<div class="mrow"><label style="width:104px">Bolti link</label><input id="lpUrl" value="${esc(L.url)}" placeholder="https://…" style="flex:1">`
     +`<button id="lpOpen" style="margin-left:6px;font-size:11px">↗ Megnyit</button></div>`
     +`<div class="mrow"><label style="width:104px">Kép</label><input id="lpFile" type="file" accept="image/*" style="flex:1">`
     +`<button id="lpClr" style="margin-left:6px;font-size:11px">✕ Kép törlése</button></div>`
     +`<div class="mrow"><label style="width:104px"></label><label><input type="checkbox" id="lpHover" ${L.hover?'checked':''}> Kép felugrik, ha fölé viszem a kurzort</label>`
-    +`<span id="lpThumbWrap" style="margin-left:10px">${L.thumb?`<img id="lpThumb" src="${L.thumb}" style="height:44px;border:1px solid #ddd;border-radius:4px;vertical-align:middle">`:'<span style="color:#bbb;font-size:11px">nincs kép</span>'}</span></div>`
-    +`<div class="mrow" style="border-top:1px solid #eee;padding-top:5px"><label style="width:104px">3D objektum</label>`
+    +`<span id="lpThumbWrap" style="margin-left:10px">${L.thumb?`<img id="lpThumb" src="${L.thumb}" style="height:44px;border:1px solid var(--pc-line,#ddd);border-radius:4px;vertical-align:middle">`:'<span style="color:var(--pc-faint,#bbb);font-size:11px">nincs kép</span>'}</span></div>`
+    +`<div class="mrow" style="border-top:1px solid var(--pc-line,#eee);padding-top:5px"><label style="width:104px">3D objektum</label>`
     +`<label><input type="checkbox" id="lpGen" ${hasObj?'checked':''}> Objektum generálása a fenti méretekből</label>`
     +`<label style="margin-left:12px"><input type="checkbox" id="lpShow" ${genObjectsVisible()?'checked':''}> Generált objektumok látszanak</label></div>`
-    +`<div class="mrow" id="lpInfo" style="font-size:11px;color:#777"></div>`,
+    +`<div class="mrow" id="lpInfo" style="font-size:11px;color:var(--pc-mute,#777)"></div>`,
     ()=>{pushUndo();
       const st=(k,v)=>{if(v||v===0)dv[k]=v;else delete dv[k];};
       dv.lampName=$('lpName').value.trim()||undefined;
@@ -93,17 +93,17 @@ function lampDialog(di){const dv=data.devices[di];if(!dv)return;const L=lampDef(
     $('lpMountNote').textContent=M.note;
     const top=(dv.h||0),bot=Math.max(0,top-drop-ht);
     $('lpInfo').innerHTML=`Szerelési pont <b>${Math.round(top)} mm</b> · a lámpatest alja <b>${Math.round(bot)} mm</b> a padlótól`
-      +(bot<1900&&bot>0?' · <b style="color:#c0530f">fejmagasság alatt</b>':'')
+      +(bot<1900&&bot>0?' · <b style="color:var(--pc-warn,#c0530f)">fejmagasság alatt</b>':'')
       +` · furat/hely igény <b>${Math.round(+$('lpW').value||0)}×${Math.round(+$('lpD').value||0)} mm</b>`;};
   ['lpMount','lpDrop','lpHt','lpW','lpD'].forEach(id=>{$(id).oninput=info;$(id).onchange=info;});
   $('lpMount').onchange=()=>{const M=LAMP_MOUNT[$('lpMount').value];if(M&&M.drop)$('lpDrop').value=M.drop;info();};
   $('lpOpen').onclick=()=>{const u=$('lpUrl').value.trim();if(!u){alert('Nincs megadva link.');return;}
     try{window.open(/^https?:/.test(u)?u:('https://'+u),'_blank');}catch(_){}};
-  $('lpClr').onclick=()=>{delete dv.thumb;$('lpThumbWrap').innerHTML='<span style="color:#bbb;font-size:11px">nincs kép</span>';};
+  $('lpClr').onclick=()=>{delete dv.thumb;$('lpThumbWrap').innerHTML='<span style="color:var(--pc-faint,#bbb);font-size:11px">nincs kép</span>';};
   $('lpFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
     const rd=new FileReader();
     rd.onload=()=>{lampShrinkImage(rd.result,320,out=>{dv.thumb=out;
-      $('lpThumbWrap').innerHTML=`<img src="${out}" style="height:44px;border:1px solid #ddd;border-radius:4px;vertical-align:middle">`;});};
+      $('lpThumbWrap').innerHTML=`<img src="${out}" style="height:44px;border:1px solid var(--pc-line,#ddd);border-radius:4px;vertical-align:middle">`;});};
     rd.readAsDataURL(f);};
   info();}
 // keep stored images small — the whole project lives in localStorage
@@ -121,10 +121,10 @@ function lampShrinkImage(dataUrl,maxPx,cb){try{
 function lampHoverShow(dv,cx,cy){const L=lampDef(dv);if(!L.thumb||!L.hover)return lampHoverHide();
   let el=$('thumbPop');
   if(!el){el=document.createElement('div');el.id='thumbPop';
-    el.style.cssText='position:fixed;z-index:9999;pointer-events:none;background:#fff;border:1px solid #cfc9bd;border-radius:6px;padding:4px;box-shadow:0 6px 18px rgba(0,0,0,.18);max-width:240px';
+    el.style.cssText='position:fixed;z-index:9999;pointer-events:none;background:var(--pc-bg2,#fff);border:1px solid var(--pc-line2,#cfc9bd);border-radius:var(--pc-r,6px);padding:4px;box-shadow:0 6px 18px rgba(0,0,0,.18);max-width:240px';
     document.body.appendChild(el);}
   el.innerHTML=`<img src="${L.thumb}" style="display:block;max-width:230px;max-height:180px;border-radius:3px">`
-    +`<div style="font-size:11px;color:#555;padding:3px 2px 1px">${esc(L.name||dv.ref||'Lámpa')}${L.url?' · ↗ bolti link':''}</div>`;
+    +`<div style="font-size:11px;color:var(--pc-dim,#555);padding:3px 2px 1px">${esc(L.name||dv.ref||'Lámpa')}${L.url?' · ↗ bolti link':''}</div>`;
   el.style.left=Math.round(cx+16)+'px';el.style.top=Math.round(cy+16)+'px';el.style.display='block';}
 function lampHoverHide(){hovCancel();const el=$('thumbPop');if(el)el.style.display='none';}
 
@@ -170,13 +170,13 @@ function hovHide(){hovCancel();HOV.i=null;const el=$('thumbPop');if(el)el.style.
 function hovShow(d,cx,cy){if(!d)return hovHide();
   let el=$('thumbPop');
   if(!el){el=document.createElement('div');el.id='thumbPop';
-    el.style.cssText='position:fixed;z-index:9999;pointer-events:none;background:#fff;border:1px solid #cfc9bd;border-radius:6px;padding:4px;box-shadow:0 6px 18px rgba(0,0,0,.18);max-width:240px';
+    el.style.cssText='position:fixed;z-index:9999;pointer-events:none;background:var(--pc-bg2,#fff);border:1px solid var(--pc-line2,#cfc9bd);border-radius:var(--pc-r,6px);padding:4px;box-shadow:0 6px 18px rgba(0,0,0,.18);max-width:240px';
     document.body.appendChild(el);}
   const F=hovFacts(d),L=d.type==='light'?lampDef(d):null,col=lyrColorOf(d.layer||'L0');
   el.innerHTML=(L&&L.thumb&&L.hover?`<img src="${L.thumb}" style="display:block;max-width:230px;max-height:150px;border-radius:3px;margin-bottom:3px">`:'')
-    +`<div style="font-size:11.5px;font-weight:700;color:#222;padding:2px 2px 3px"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:${col}"></span>${esc(F.length?F[0].v:'')}</div>`
-    +`<table style="font-size:10.5px;color:#444;border-collapse:collapse">`
-    +F.slice(1).map(r=>`<tr><td style="color:#8a8478;padding:1px 6px 1px 2px;vertical-align:top;white-space:nowrap">${esc(r.k)}</td><td style="padding:1px 2px">${esc(r.v)}</td></tr>`).join('')+`</table>`;
+    +`<div style="font-size:11.5px;font-weight:700;color:var(--pc-ink,#222);padding:2px 2px 3px"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:${col}"></span>${esc(F.length?F[0].v:'')}</div>`
+    +`<table style="font-size:10.5px;color:var(--pc-ink,#444);border-collapse:collapse">`
+    +F.slice(1).map(r=>`<tr><td style="color:var(--pc-mute,#8a8478);padding:1px 6px 1px 2px;vertical-align:top;white-space:nowrap">${esc(r.k)}</td><td style="padding:1px 2px">${esc(r.v)}</td></tr>`).join('')+`</table>`;
   el.style.display='block';
   // 16 px off the pointer, flipped left / up near the window edges
   const w=el.offsetWidth||240,h=el.offsetHeight||120,W=window.innerWidth||1e4,H=window.innerHeight||1e4;
@@ -223,12 +223,12 @@ function pathAllows(sec,num){ // does this path section allow a circuit sorszám
   return sec.allow.map(String).includes(String(num));}
 function editBoxAccept(i){const D=data.devices[i];
   const body=`<div class="mrow">Elfogadott áramkör sorszámok<br><input id="bAcc" value="${(D.accept||[]).join(', ')}" placeholder="pl. 3, 5, 7 — üres = mind" style="width:100%"></div>`
-    +`<div style="font-size:11px;color:#777">Ha üres, a doboz minden rajta áthaladó áramkört összeköt (normál kötődoboz). Ha meg van adva, csak a felsorolt sorszámú áramköröket köti be — a többi áramkör a pályán MEGSZAKÍTÁS NÉLKÜL halad tovább. A lista módosítása a dobozon áthaladó összes pályát újraköti.</div>`;
+    +`<div style="font-size:11px;color:var(--pc-mute,#777)">Ha üres, a doboz minden rajta áthaladó áramkört összeköt (normál kötődoboz). Ha meg van adva, csak a felsorolt sorszámú áramköröket köti be — a többi áramkör a pályán MEGSZAKÍTÁS NÉLKÜL halad tovább. A lista módosítása a dobozon áthaladó összes pályát újraköti.</div>`;
   openModal('Kötődoboz – elfogadott áramkörök',body,()=>{pushUndo();D.accept=parseNums($('bAcc').value);regateAll();draw();
     $('hud').textContent=D.accept.length?('Doboz elfogadja: '+D.accept.join(', ')):'Doboz: minden áramkör (normál).';},'Mentés');}
 function editPathAllow(pi,si){const pa=data.paths[pi],sec=pa.sections[si]=pa.sections[si]||{build:'sull_gege'};
   const body=`<div class="mrow">Átengedett áramkör sorszámok<br><input id="pAcc" value="${(sec.allow||[]).join(', ')}" placeholder="pl. 3, 5 — üres = mind" style="width:100%"></div>`
-    +`<div style="font-size:11px;color:#777">Két kötődoboz közti szakaszon csak a felsorolt sorszámú áramkörök engedélyezettek. Üres = minden áramkör átmehet.</div>`;
+    +`<div style="font-size:11px;color:var(--pc-mute,#777)">Két kötődoboz közti szakaszon csak a felsorolt sorszámú áramkörök engedélyezettek. Üres = minden áramkör átmehet.</div>`;
   openModal('Pálya szakasz – átengedett áramkörök',body,()=>{pushUndo();sec.allow=parseNums($('pAcc').value);regateAll();draw();},'Mentés');}
 // re-evaluate every routed circuit against box-accept + path-allow gates (called after a gate changes)
 function regateAll(){data.paths.forEach(pa=>{(pa.sections||[]).forEach((sec,si)=>{if(!sec)return;
@@ -248,15 +248,15 @@ function editSwitchType(i){const D=data.devices[i];D.swType=D.swType||'101';D.sw
   const rowsHtml=()=>{const t=switchType(D.swType);
     return t.terms.map(tm=>{
       const tgd=devByRef(D.swMap[tm.id]);const tdev=tgd?deviceLabel(tgd):null;
-      const kindTag=tm.kind==='in'?'<span style="color:#b06">be</span>':'<span style="color:#068">ki</span>';
-      return `<div class="mrow" style="gap:6px;align-items:center;border-top:1px solid #eee;padding-top:4px">`
+      const kindTag=tm.kind==='in'?'<span style="color:var(--pc-pink,#b06)">be</span>':'<span style="color:var(--pc-teal,#068)">ki</span>';
+      return `<div class="mrow" style="gap:6px;align-items:center;border-top:1px solid var(--pc-line,#eee);padding-top:4px">`
         +`<b style="width:34px">${tm.id}</b> <span style="flex:1;font-size:11.5px">${kindTag} ${tm.l}</span>`
-        +(tm.kind==='out'?`<span style="font-size:11px;color:${tdev?'#0a5c33':'#999'};min-width:110px">${tdev?'→ '+esc(tdev):'— nincs cél —'}</span>`
+        +(tm.kind==='out'?`<span style="font-size:11px;color:${tdev?'var(--pc-ok,#0a5c33)':'var(--pc-mute,#999)'};min-width:110px">${tdev?'→ '+esc(tdev):'— nincs cél —'}</span>`
             +`<button class="swPick" data-term="${tm.id}" style="font-size:11px">${tdev?'módosít':'Készülék…'}</button>`
             +(tdev?` <button class="swClr" data-term="${tm.id}" style="font-size:11px" title="törlés">✕</button>`:''):'')
         +`</div>`;}).join('');};
   const body=`<div class="mrow">Típus <select id="swType" style="width:100%">${SWITCH_TYPES.map(x=>`<option value="${x.k}" ${x.k===D.swType?'selected':''}>${x.l}</option>`).join('')}</select></div>`
-    +`<div style="font-size:11px;color:#777;margin:4px 0">A kimeneti (ki) pontokhoz rendelj készüléket (lámpát), hogy látszódjon mit kapcsol. A bemenetek (be) a betáplálást jelölik.</div>`
+    +`<div style="font-size:11px;color:var(--pc-mute,#777);margin:4px 0">A kimeneti (ki) pontokhoz rendelj készüléket (lámpát), hogy látszódjon mit kapcsol. A bemenetek (be) a betáplálást jelölik.</div>`
     +`<div id="swRows">${rowsHtml()}</div>`;
   openModal('Kapcsoló típus – '+(D.ref||''),body,()=>{pushUndo();draw();},'Kész');
   const wire=()=>{const ts=$('swType');if(ts)ts.onchange=e=>{D.swType=e.target.value;D.swMap={};$('swRows').innerHTML=rowsHtml();wire();};
@@ -268,12 +268,12 @@ function editSwitchType(i){const D=data.devices[i];D.swType=D.swType||'101';D.sw
 const WIRE_HEX={fekete:'#222',kék:'#2f6fb0',zöld:'#1f9d55',barna:'#8a5a2b',szürke:'#9a9a9a','kék-fehér':'#7fb0d8',piros:'#d84a3b',sárgazöld:'#c9d100',fehér:'#eee'};
 const WIRE_COLOR_LIST=['fekete','kék','barna','szürke','zöld','sárgazöld','piros','fehér','kék-fehér'];
 function wireRowHtml(wr,i){return `<div class="mrow wireRow" data-i="${i}" style="gap:5px;align-items:center">`
-  +`<span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid #888;background:${WIRE_HEX[wr.color]||'#222'}"></span>`
+  +`<span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid var(--pc-line2,#888);background:${WIRE_HEX[wr.color]||'#222'}"></span>`
   +`<input class="wName" value="${esc(wr.name||'')}" placeholder="pl. fázis / N / kapcsolt" style="width:150px">`
   +`<select class="wColor" style="width:110px">${WIRE_COLOR_LIST.map(c=>`<option ${c===wr.color?'selected':''}>${c}</option>`).join('')}</select>`
   +`<button class="wDel" title="ér törlése">✕</button></div>`;}
 function editDeviceWires(i){const D=data.devices[i];D.wires=D.wires||[];
-  const body=`<div style="font-size:11.5px;color:#666;margin-bottom:6px">Kézi vezetékek a(z) <b>${esc(D.ref||DEV[D.type]||'')}</b> készülékhez — add meg minden ér nevét és színét (pl. kapcsolók és lámpák bekötéséhez).</div>`
+  const body=`<div style="font-size:11.5px;color:var(--pc-dim,#666);margin-bottom:6px">Kézi vezetékek a(z) <b>${esc(D.ref||DEV[D.type]||'')}</b> készülékhez — add meg minden ér nevét és színét (pl. kapcsolók és lámpák bekötéséhez).</div>`
     +`<div id="wireList"></div>`
     +`<div class="mrow"><button id="wAdd" style="font-size:12px">＋ Ér hozzáadása</button></div>`;
   openModal('Vezetékek – '+(D.ref||DEV[D.type]||''),body,()=>{pushUndo();
@@ -381,15 +381,15 @@ function loadBgImage(){const inp=document.createElement('input');inp.type='file'
 function bgSettings(){const bg=state.bg;if(!bg)return;
   const start=JSON.parse(JSON.stringify(bg));
   openModal('Háttérkép beállítás',
-     `<div class="mrow">Átlátszóság <input id="bgO" type="range" min="0.05" max="1" step="0.05" value="${bg.opacity}"><span id="bgOv" style="font-size:11px;color:#777"></span></div>`
+     `<div class="mrow">Átlátszóság <input id="bgO" type="range" min="0.05" max="1" step="0.05" value="${bg.opacity}"><span id="bgOv" style="font-size:11px;color:var(--pc-mute,#777)"></span></div>`
     +`<div class="mrow">Szélesség <input id="bgW" type="number" step="100" value="${Math.round(bg.w)}" style="width:100px"> mm`
-    +`<span style="font-size:11px;color:#888;margin-left:8px">a magasság arányosan követi</span></div>`
+    +`<span style="font-size:11px;color:var(--pc-mute,#888);margin-left:8px">a magasság arányosan követi</span></div>`
     +`<div class="mrow">Eltolás X <input id="bgX" type="number" step="50" value="${Math.round(bg.x)}" style="width:90px">`
     +` Y <input id="bgY" type="number" step="50" value="${Math.round(bg.y)}" style="width:90px"> mm</div>`
     +`<div class="mrow">Forgatás <input id="bgR" type="number" step="1" value="${Math.round(bg.rot||0)}" style="width:80px">°`
     +`<button id="bgR90" style="margin-left:6px;font-size:11px">+90°</button>`
     +`<button id="bgFit" style="margin-left:6px;font-size:11px">Illeszd a rajzhoz</button></div>`
-    +`<div class="mrow" style="font-size:11px;color:#888">A kép a földszint padlósíkján fekszik és együtt forog a modellel. Minden mező azonnal érvényesül; a Mégse visszaállít.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">A kép a földszint padlósíkján fekszik és együtt forog a modellel. Minden mező azonnal érvényesül; a Mégse visszaállít.</div>`,
    ()=>{draw();},'Kész');
   const apply=()=>{const ow=bg.w||1;
     bg.opacity=+$('bgO').value;bg.w=Math.max(100,+$('bgW').value||ow);
@@ -477,7 +477,7 @@ stage.addEventListener('contextmenu',e=>{e.preventDefault();if(ctxSuppress){ctxS
     {label:'🔀 Átengedett áramkörök…',act:()=>editPathAllow(ps.pi,ps.si)},
     {label:'⊙ + Kötődoboz ide',act:()=>{pushUndo();const pa=data.paths[ps.pi],a=pa.nodes[ps.si],b=pa.nodes[ps.si+1];data.devices.push({type:'junction',level:a.level,x:(a.x+b.x)/2,y:(a.y+b.y)/2,h:((a.h||0)+(b.h||0))/2,layer:curLayer()});draw();}},
     {label:'⇉ + Párhuzamos pálya',act:()=>addParallelPath(ps.pi)},
-    {label:'🎨 Pálya szín…',act:()=>{const pa=data.paths[ps.pi];openModal('Pálya szín',`<div class="mrow">Szín <input id="pcPick" type="color" value="${pa.color||state.pathColor||'#6f757d'}" style="width:48px;height:26px;vertical-align:middle"></div><div class="mrow" style="font-size:11px;color:#777">Ez a pálya saját színe (felülírja a globális beállítást).</div>`,()=>{pushUndo();pa.color=$('pcPick').value;draw();},'Alkalmaz');}},
+    {label:'🎨 Pálya szín…',act:()=>{const pa=data.paths[ps.pi];openModal('Pálya szín',`<div class="mrow">Szín <input id="pcPick" type="color" value="${pa.color||state.pathColor||'#6f757d'}" style="width:48px;height:26px;vertical-align:middle"></div><div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">Ez a pálya saját színe (felülírja a globális beállítást).</div>`,()=>{pushUndo();pa.color=$('pcPick').value;draw();},'Alkalmaz');}},
     {label:'↺ Pálya szín törlése',act:()=>{pushUndo();delete data.paths[ps.pi].color;draw();}},
     {label:'🗑 Pálya törlése',act:()=>{pushUndo();data.paths.splice(ps.pi,1);draw();}}];
     if(typeof stkPathMenu==='function')stkPathMenu(ps,items);   // BRIDGE Stack route items (05m hooks)

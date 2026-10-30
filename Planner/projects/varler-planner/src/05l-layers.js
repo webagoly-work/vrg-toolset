@@ -426,10 +426,10 @@ function lyrMergeLinked(id){const g=lyrGroupOf(id);
 function lyrDuplicateDialog(id){const L=lyrLayer(id);if(!L)return;
   openModal('Réteg másolása',`<div class="mrow">„${esc(L.name)}” minden eleméről új réteg készül (új azonosítókkal).</div>`
     +`<div class="mrow"><label><input type="checkbox" id="ldWalls"> falakkal együtt</label></div>`
-    +`<div class="mrow" style="font-size:11px;color:#888">Falak nélkül a másolat nem kettőz meg falat az eredeti tetején.</div>`,
+    +`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">Falak nélkül a másolat nem kettőz meg falat az eredeti tetején.</div>`,
     ()=>{lyrDuplicate(id,{walls:$('ldWalls').checked});});}
 function lyrLinkDialog(id){
-  openModal('Rétegek csatolása',`<div class="mrow" style="font-size:11px;color:#888">A csatolt rétegek láthatósága, átlátszósága és zárolása együtt változik.</div>`
+  openModal('Rétegek csatolása',`<div class="mrow" style="font-size:11px;color:var(--pc-mute,#888)">A csatolt rétegek láthatósága, átlátszósága és zárolása együtt változik.</div>`
     +layers.map(l=>`<div class="mrow"><label><input type="checkbox" class="llSel" value="${l.id}" ${(l.id===id||(lyrLayer(id)&&lyrLayer(id).link&&l.link===lyrLayer(id).link))?'checked':''}> ${esc(l.name)}</label></div>`).join(''),
     ()=>{lyrLink([...document.querySelectorAll('.llSel')].filter(x=>x.checked).map(x=>x.value));});}
 function lyrLayerMenu(e,id){const L=lyrLayer(id);if(!L)return;const i=layers.indexOf(L),items=[];

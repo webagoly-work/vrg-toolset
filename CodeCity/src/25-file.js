@@ -37,7 +37,7 @@ function fpEditor(doc, editable) {
     view.keymap.of([...commands.defaultKeymap, ...commands.historyKeymap]),
     state.EditorState.readOnly.of(!editable), view.EditorView.editable.of(editable), view.EditorView.lineWrapping,
     view.EditorView.updateListener.of(u => { if (editable && u.docChanged) { fp.edit = u.state.doc.toString(); fpHead(); } }),
-    view.EditorView.theme({ '&': { height: '100%', color: '#dde4f5', backgroundColor: '#070a14' }, '.cm-gutters': { backgroundColor: '#0b1020', color: '#5d6a8c', border: 'none' },
+    view.EditorView.theme({ '&': { height: '100%', color: '#e8f0f6', backgroundColor: '#0a141c' }, '.cm-gutters': { backgroundColor: '#0d1820', color: '#5d6a8c', border: 'none' },
       '.cm-activeLine': { backgroundColor: '#ffffff08' }, '.cm-scroller': { fontFamily: 'Cascadia Mono, Consolas, monospace' }, '&.cm-focused .cm-cursor': { borderLeftColor: '#ffcf5a' } }, { dark: true })] }) });
 }
 async function fpShow(tab) {

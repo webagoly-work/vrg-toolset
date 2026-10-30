@@ -8,8 +8,11 @@ shows them in use.*
 
 - Everything except the canvas is hidden (contract §2.1). The canvas fills the window: `.wrap` with no sidebars, and no
   header.
-- One control: the **dial** (tárcsa), a quarter circle in the **bottom-left corner** (SUI-Q S01 ★A). Its centre is the
-  corner of the window, so only the quadrant inside the window shows.
+- One control: the **dial** (tárcsa), a quarter circle in the **bottom-left corner** by default (SUI-Q S01 = A+C).
+  Its centre is the corner of the window, so only the quadrant inside the window shows. **S01 C, answered 2026-10-19:**
+  a viewer setting mirrors everything to the **bottom-right** (dial, column, hint pill on the dial's inner side):
+  `localStorage['villanyterv_ui_side']` = `'left' | 'right'`, class `body.sm-right`, toggled by the action
+  `ui.dialSide` (§2 of 02_MENU-TREE). Every geometry number in §2 applies mirrored; specs test both sides.
 - The **menu** column rises above the dial when it's open. Nothing else is on screen, except:
   - the **hint pill** while a tool runs (§5);
   - a **sheet** when a feature needs a table (S7);

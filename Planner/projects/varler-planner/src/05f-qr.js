@@ -210,7 +210,7 @@ function qrShow(src,c){
     (src.form?`<div class="mrow" id="qrForm">${src.form(c)}</div>`:'')
     +`<div class="mrow" id="qrNet" style="display:none;font-size:11px"></div>`
     +`<div class="mrow" style="text-align:center"><div id="qrArt" style="display:inline-block;line-height:0"></div></div>`
-    +`<div class="mrow" id="qrCap" style="text-align:center;font-size:11px;color:#888"></div>`
+    +`<div class="mrow" id="qrCap" style="text-align:center;font-size:11px;color:var(--pc-mute,#888)"></div>`
     +`<div class="mrow"><textarea id="qrPay" readonly rows="3" style="width:100%;font-size:11px;font-family:monospace"></textarea></div>`
     +`<div class="mrow" style="font-size:11px">${esc(t('qr.ecc','Hibajavítás'))}
         <select id="qrEccSel">${['L','M','Q','H'].map(k=>`<option value="${k}"${k===S.ecc?' selected':''}>${k}</option>`).join('')}</select>
@@ -245,9 +245,9 @@ function qrPaint(S){
     const b=qrBase();
     net.style.display='';
     net.innerHTML=b
-      ? `<span style="color:#2a7">●</span> ${esc(t('qr.relay','Relé'))}: <code>${esc(b)}</code>
+      ? `<span style="color:var(--pc-ok,#2a7)">●</span> ${esc(t('qr.relay','Relé'))}: <code>${esc(b)}</code>
          <button id="qrReprobe" style="font-size:10px">${esc(t('qr.recheck','Újrakeresés'))}</button>`
-      : `<span style="color:#c33">●</span> ${esc(t('qr.norelay','Nem fut a relé (START.cmd → 4). Vagy add meg kézzel:'))}
+      : `<span style="color:var(--pc-crit,#c33)">●</span> ${esc(t('qr.norelay','Nem fut a relé (START.cmd → 4). Vagy add meg kézzel:'))}
          <input id="qrBaseIn" placeholder="http://192.168.1.24:8080" value="${esc(qrCfg().base)}" style="width:190px">
          <button id="qrBaseSet">OK</button>`;
     const rp=$('qrReprobe');if(rp)rp.onclick=()=>{qrSet('BASE','');QRNET.base=null;QRNET.state='idle';
@@ -259,7 +259,7 @@ function qrPaint(S){
   if(!S.payload){art.innerHTML='';if(cap)cap.textContent=t('qr.nothing','Nincs mit kódolni — állítsd be a mezőket fent.');return;}
   const r=qrEncode(S.payload,{ecc:S.ecc});
   if(!r.ok){art.innerHTML='';
-    if(cap)cap.innerHTML=`<span style="color:#c33">${esc(r.err)}</span><br>`
+    if(cap)cap.innerHTML=`<span style="color:var(--pc-crit,#c33)">${esc(r.err)}</span><br>`
       +esc(t('qr.fixhint','Csökkentsd a hibajavítást, vagy küldd linkként a relén keresztül.'));
     return;}
   art.innerHTML=r.svg.replace('<svg ','<svg width="'+S.px+'" height="'+S.px+'" ');

@@ -7,10 +7,10 @@ const canvas = document.getElementById('gl');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 const scene = new THREE.Scene();
-const HORIZON = 0x1b2442;                     // = --horizon in city.css, so fog melts into the sky
+const HORIZON = 0x11202b;                     // = --horizon in city.css and the Mélyvíz water (38-sea), so fog melts into it
 const camera = new THREE.PerspectiveCamera(45, 1, 0.5, 5000);
-scene.add(new THREE.HemisphereLight(0x8aa0ff, 0x10101a, 0.75));
-const moon = new THREE.DirectionalLight(0xc8d4ff, 1.1);
+scene.add(new THREE.HemisphereLight(0x9ec4d6, 0x0a1218, 0.75));   // Melyviz: ice sky light, deep-water ground
+const moon = new THREE.DirectionalLight(0xd2e4ee, 1.1);
 moon.position.set(-0.6, 2, 0.9);
 scene.add(moon);
 
@@ -19,7 +19,7 @@ let afterRender = () => {};                   // screen-space overlays (10-query
 function requestRender() {
   if (renderQueued) return;
   renderQueued = true;
-  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); afterRender(); });
+  requestAnimationFrame(() => { renderQueued = false; renderer.render(scene, camera); afterRender(); lookFrame(); });   // 37-look: quality tiers
 }
 new ResizeObserver(() => {
   const r = canvas.parentElement.getBoundingClientRect();
@@ -136,7 +136,7 @@ function showCity(model) {
     const { x, z, w, h } = d.rect;
     m.makeScale(w, PLATE, h).setPosition(x + w / 2, d.depth * PLATE, z + h / 2);
     plates.setMatrixAt(i, m);
-    plates.setColorAt(i, col.setHSL(0.64, 0.25, 0.07 + Math.min(d.depth, 6) * 0.025));
+    plates.setColorAt(i, col.setHSL(0.57, 0.3, 0.06 + Math.min(d.depth, 6) * 0.025));
   });
 
   // every file that ever existed gets an instance (index = file index); 05-replay sizes them,
@@ -155,7 +155,7 @@ function showCity(model) {
   geo.setAttribute('aFlash', new THREE.InstancedBufferAttribute(new Float32Array(all.length), 1).setUsage(THREE.DynamicDrawUsage));
 
   const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 12, 1, true).translate(0, 0.5, 0),
-    new THREE.MeshBasicMaterial({ color: 0xffcf5a, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    new THREE.MeshBasicMaterial({ color: 0x93d3e6, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
   beacon.visible = false;
   group.add(plates, buildings, beacon);
   scene.add(group);

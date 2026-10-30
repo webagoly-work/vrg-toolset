@@ -1,76 +1,105 @@
-# Topology View (TPO): a topological viewer and connection editor for the Planner's Erősáram layer
+# Topology View (TV): the netlist / ratsnest view of the Erősáram layer, inside GO ROUTE
 
 *Build pack for the user's request of 2026-10-22: a Planner plugin that acts as a **Viewer mode** showing every device and
-the connections between them as a **topological** layout, instead of the geometric one the blueprint shows. In it the
-user sets how circuits run from the Elosztó downstream. Autowiring is then built on those settings, and plays back
-circuit by circuit. **Analysis only, nothing here is built yet.** The pack was written against branch `planner-stack` as
-merged into the default branch (`c421d4e`). Every anchor below was read in that tree.*
+the connections between them **topologically** rather than geometrically. In it the user sets how circuits run from
+the Elosztó downstream; that is the basis of the autowiring, which plays back circuit by circuit.*
+
+*Revision **r2**, 2026-10-29. The user asked to "add this in detail and merge it into the same workflow I am setting up
+with GO ROUTE". So r2 does three things:*
+- *it is **rebased on the GO WIRE up-tree** (WIREWAY_AUDIT Parts 4–11, built 2026-10-18/19), which already stores most
+  of what r1 planned to store;*
+- *it is **filed under GO ROUTE** (`GO-ROUTE.md` §5);*
+- *it hands the engine-side features to GO ROUTE as **G1–G8** (`02_ENGINE_GAPS.md`).*
+
+*Analysis only: nothing here is built.*
+
+## What changed from r1 (2026-10-22)
+
+| r1 | r2 | Why |
+|---|---|---|
+| a new store `c.topo.links` per circuit | **`d.up`** on every node (08od), plus `d.lead`, `lamp.meet`, `sw.ctl` / `grp` / `swHead` | GO WIRE built the same tree a week earlier; two stores would contradict each other |
+| link kinds `feed / master / chain / sw / lamp` stored | link kinds **derived** from the two ends (`tvKind`, §2) | one fact, one place |
+| its own router (r1 T9) and its own sharing calculation (r1 T10) | **the engine's run** (`BL_LAST`: `R.legs`, `R.spans`, `R.report`), mapped onto the view | one engine (E5-Q5, GO WIRE T2) |
+| r1 T12, "make the engine follow the topology" | done by GO WIRE T2 for what `up` can say; the rest is **G1–G8** | — |
+| WPs `T0…T12`, decisions `Q-T01…` | **`TV0…TV12`**, **`Q-TV01…`** | `T0…T7` and `Q-T0-n` are GO WIRE's names |
+| modules `08p…08pd` | **`08t…08td`** | `08p-slab.js` exists now |
+| acceptance on CLA (local only) | the **practice apartment** `tools/practice/Gyakorlo_lakas_villany.vplan.json` (in git, not client data), plus Budakalász when GO ROUTE has it | cloud sessions can run it |
+
+## Files
 
 Read in this order:
-1. `00_CONTRACT.md`
-2. this README (§2 the model, §4 the map, §5 the order)
-3. the WP you build
-4. only the `01_RULES.md` sections that WP names
-
-`TOPO-Q-001.json` holds the open decisions, each with a recommended default. A WP builds the default unless §9
-"Answers" says otherwise.
+1. `GO-ROUTE.md` §5 (where this fits)
+2. `00_CONTRACT.md`
+3. this README, §2–§5
+4. the WP you build
+5. only the `01_RULES.md` / `02_ENGINE_GAPS.md` sections that WP names
 
 | File | What |
 |---|---|
-| `README.md` | this file: the idea, the three-graph model, the view, the map, the order, the checkpoints, the status |
-| `00_CONTRACT.md` | where and how to work, the module files, the data additions, the golden policy, the report format |
-| `01_RULES.md` | **the hard rules**, numbered (PR / TR / SR / CK), so specs and checks can cite them |
-| `WP-T0` … `WP-T12` | one small file per work package (13 in all), each sized for one short session |
-| `TOPO-Q-001.json` | the decision pack (tuner format), 16 questions |
-| `PROMPTS.md` | build-one / verify / resolve / status prompts |
-| `fig/*.svg` | the eight drawings referenced below |
+| `README.md` | this file: the model, the mapping to what exists, the view, the map, the order, the status |
+| `00_CONTRACT.md` | where and how to work, modules `08t*`, the data (one new field), the golden policy, the report |
+| `01_RULES.md` | the hard rules **PR / TR / SR / CK**, each tagged **built**, **TV** (this pack) or **G<n>** (engine gap) |
+| `02_ENGINE_GAPS.md` | **G1–G8**: what the user can draw but the engine cannot follow yet; GO ROUTE's candidate features |
+| `WP-TV0` … `WP-TV12` | one short session each |
+| `TOPO-Q-001.json` | the decision pack, r2: 19 questions; the ones the built tree already answers are marked |
+| `PROMPTS.md` | resolve / build-one / build-wave / verify / status |
+| `fig/01…09` | the drawings; `fig/09` maps the up-tree onto the view and the PCB words onto ours |
 
 ---
 
-## 1. What the user asked for, item by item
+## 1. The user's request, item by item
 
-| # | The user's words (short) | Where it lands |
-|---|---|---|
-| 1 | A plugin, a **Viewer mode**: every device and the connections between them, **topological instead of geometric** | T0 seam, T2 view |
-| 2 | Elosztó and every endpoint are placed first: that is the upstream–downstream basis | input; nothing new (E3/E4 already place them) |
-| 3 | Walls create the path between every endpoint, which is the **geometrical proof that two points can be connected**. Then a simplified view opens with all elements on **one common, empty pathway**, left→right and top→down = upstream, mid, downstream. **A line = the wall section between two points** | T1 path graph, T2 layout (`fig/02`) |
-| 4 | Set **Elosztó → dedicated endpoint** pairs | T5 |
-| 5 | Set **Elosztó → midpoint / Kötődoboz** pairs | T5 |
-| 6 | **Elosztó → kötőpont → kötőpont string** circuits (V1-style house strings; every KD touched becomes a betáp point) | T5 + rules TR-H (`fig/03` P3) |
-| 7 | **Create or choose from a preset** the list of circuits used (a common set like CLANV4: only 2 Klíma, plus a custom one) | T4, reusing R1010 M2 presets |
-| 8 | **Master → leader** connections | T5 |
-| 9 | **Leader → tail string sequences** of dugalj devices (least horizontal travel, arcs beside the gerinc) | T6 + TR-S (`fig/04`) |
-| 10 | **Light and switch logic**: leader switch → next switch … → lamp(s), or the **star** via a common point (portal box) | T7 + TR-W (`fig/05`) |
-| 11 | Circuits cover every device point; this is **the basis of the autowiring** | T3 checks, T8 seed, T12 engine |
-| 12 | Autowiring **plays back in quick flashes**, circuit by circuit, ending in a **composite**, and calculates the **inner diameter and count of every conduit**, with circuits sharing a pathway | T9 route, T10 share, T11 playback (`fig/06`, `fig/07`) |
-| 13 | Kötődoboz placed by the user acts as a **preferred or mandatory** point where circuits depart | T5 flag, SR-3 (`fig/06`) |
-| 14 | A basic version first: **only the traditional erősáram circuits**, with simple SVG visuals of the internal logic. Other layers follow its lead | scope §6; `fig/` |
-| 15 | An outline, in **shorter segments** for lower token usage | the WP files + `PROMPTS.md` |
+| # | The user's words (short) | Built already (GO WIRE / workflow) | This pack |
+|---|---|---|---|
+| 1 | A plugin, a Viewer mode, topological instead of geometric | — | **TV0, TV2** |
+| 2 | Elosztó + endpoints placed first = the upstream–downstream basis | E3 / E4 placement, the board as the root of `d.up` | read only |
+| 3 | Walls make the path between every endpoint = the geometric proof; a simplified view on one common empty pathway, left→right and top→down; a line = the wall section between two points | the wall graph `BL.network.build`; `R.unreached` | **TV1** (the path graph), **TV2** |
+| 4 | Elosztó → dedicated endpoint pairs | `up = board` on a DED (T1 auto-fill) | **TV5**: drawn in the view |
+| 5 | Elosztó → midpoint / Kötődoboz pairs | szobadoboz → board = master (T1 / T3) | **TV5**; a plain KD = **G1** |
+| 6 | Elosztó → KD → KD string circuits (V1); each KD becomes a betáp point | `up` allows hub → hub | **TV5**; the engine = **G2** |
+| 7 | Create or choose the circuit set (CLANV4: only 2 klíma, + a custom one) | M2 presets `cpr*`, CLANV4 sample, the Elosztó tray (T4) | **TV4**: the set panel in the view |
+| 8 | Master → leader connections | `upRole` master / leader (T1); the ⛓ chain tool (T5) | **TV5** |
+| 9 | Leader → tail socket strings: least horizontal travel, arcs beside the gerinc | 📍 `d.lead`, `ldChains` along the routable walls (T3) | **TV6**; the arc = **G6** |
+| 10 | Light and switch logic: switch → switch → lamp, or a star through a common point | `sw.ctl`, `grp`, `swHead`, `lamp.meet`; the engine's travellers (plan.js :274) | **TV7**; the true star = **G3** |
+| 11 | Circuits cover every device; this is the basis of the autowiring | the tray (T4), `upCheck`, the engine fits the tree (T2) | **TV3** checks, **TV8** |
+| 12 | Autowiring flashes circuit by circuit into a composite; conduit size and count with shared paths | the per-pipe packing (trunk), `sizeConduit`, the report | **TV9–TV11**; the log = **G7**, sharing = **G5** |
+| 13 | User-placed KDs as preferred or mandatory departure points | — | **TV5** stores `tpoRole`; the engine = **G4** |
+| 14 | A basic version first: the traditional circuits, with simple SVG visuals | — | §6 scope; `fig/` |
+| 15 | An outline in short segments | — | the WP files + `PROMPTS.md` |
 
 ---
 
-## 2. The model: three graphs, one direction
+## 2. The model: three graphs on one tree
 
 ![pipeline](fig/01-pipeline.svg)
 
-The user's "correct creation logic" has three steps, so the model has three graphs. Each is computed from the one before
-it, and each can be looked at on its own (the three tabs of the view, `fig/08`).
+| # | Graph | Source | Stored? |
+|---|---|---|---|
+| 1 | **Pálya-gráf** `GP`: anchors and the wall sections between them | `BL.network.build` contracted onto the anchors (TV1) | derived, cached on `blInput(level).sig` |
+| 2 | **Betáp-fa** `T`: who feeds whom | **`d.up = {id, room?, via?, fix?}`** on every node (08od), plus `d.lead` (08oe), `lamp.meet` (08n), `sw.ctl` / `grp` / `swHead` (08l) | **stored**, as GO WIRE built it |
+| 3 | **Csőközösség** `S`: which circuits share which stretch, in how many pipes | the engine's last run `BL_LAST.R` (`legs`, `spans`, `pipes`, `report`), mapped onto GP edges (TV9) | derived; ⚒ Pályák writes it as `gen:'bl'` |
 
-| # | Graph | Built from | Nodes | Edges | Stored? |
-|---|---|---|---|---|---|
-| 1 | **Pálya-gráf** (path graph) `GP` | the engine's wall-face network (`BL.network.build`) over Vezethető fal + E2 lines | **anchors**: the Elosztó, every box (KD, szobadoboz, portal L4, RBX), every endpoint's drop point | **one line per wall section between two anchors** with no other anchor between them: length, room, wall, crossing (at which service point), soft (unmarked wall ×4) | **derived, never stored** (like `connectivity()`) |
-| 2 | **Topológia** (connections) `T` | the user, in the view, with a ✨ suggestion to start from | the same anchors | per circuit **a tree rooted at its board**: link kinds `feed` · `master` · `chain` · `sw` · `lamp` | **stored** on the circuit: `c.topo.links` |
-| 3 | **Csőközösség** (sharing) `S` | every link of `T` routed as a shortest path on `GP`, then overlaid | `GP` nodes | `GP` edges with the **set of circuits** on each, cut into **runs**, then pipes (count, size, fill, k) | derived; the Pályák button writes the result as `gen:'bl'` items (E5) |
+![up tree to view](fig/09-uptree-to-view.svg)
 
-**Why this split works:**
-- The path graph answers *"can these two points be connected physically?"* once, for everything. The user's "geometric
-  autorouting only has to verify that device points are connectable".
-- The topology answers *"which circuit goes where, in what order"*. That is trade knowledge, so it belongs to the user,
-  with a suggestion.
-- The sharing step is pure calculation: the E5 engine's existing rules (fill, capacity, bends) applied per run.
+**Link kinds are derived, never stored.** `tvKind(child)` reads the types of the child and of `child.up.id`:
 
-**The geometry stays the authority.** A link the path graph cannot realise is drawn red ("nincs fizikai út") and never
-silently rerouted (CK-3).
+| child → up | Kind | Rule |
+|---|---|---|
+| DED → board | `feed` (home run) | TR-D1 |
+| hub / KD → board, or hub / KD → hub / KD | `feed` (string when hub → hub) | TR-H1, G1, G2 |
+| endpoint → hub, KD, board or door L4 | `master` (the child is a leader; `upRole` says so) | TR-S1, TR-L1 |
+| SOC → SOC | `chain` | TR-S3 |
+| SWI → SWI | `sw` (chain switching) | TR-L1, G3 |
+| SWI → hub, while the group's lamps → the same hub | `sw` (star) | TR-L1, G3 |
+| LMP → SWI, LMP → LMP, LMP → meet box | `lamp` | TR-L1, TR-L5 |
+
+**States are GO WIRE's:**
+- none;
+- **javasolt** (suggested): dashed;
+- **rögzített** (fixed by the user): solid;
+- **bekötetlen** (not wired): red, from `R.unreached`.
+
+The view draws them the way the 🌳 overlay does (`upState`, `UP_COL`), so the two never disagree.
 
 ---
 
@@ -78,24 +107,30 @@ silently rerouted (CK-3).
 
 ![geometric vs topological](fig/02-geometric-vs-topological.svg)
 
-- **Opens** as a full-window overlay over the canvas (Q-T14 A), from three places:
-  - `⌗ Topológia` in the phase bar (`PH_LIST`, 05db-layout.js:25), under Villamosság and under Pályák;
-  - the action `view.topology` (⌘K);
-  - the Elosztó's menu. Esc steps out, per the house rule.
-- **Three tabs, one canvas:**
-  - **Pályák**: `GP` only, every anchor on the common empty pathway;
-  - **Kapcsolatok**: `T` drawn over a faded `GP`;
-  - **Csövek**: `S` as line weights and labels.
-- **Layout (Q-T12 A):**
-  - columns left → right: **Elosztó | közép (dobozok, by string depth) | leader → … → tail**;
-  - rows top → down: **room swimlanes**, in the order the trunk reaches them from the Elosztó;
-  - within a lane, by circuit, then by chain position.
-  - Before any connection exists (the Pályák tab), the columns come from the hop depth on `GP`.
-  - Deterministic: ties break by id, so the same plan always gives the same picture.
-- **Selection is shared with the blueprint.** Selecting a node selects the device. Hovering a link highlights its wall
-  sections in a mini-plan and, on request, on the blueprint itself.
-- **A viewer first.** It edits only connection data (`c.topo`, the circuit membership, the KD flag). It never moves a
-  device or a wall. Every edit is one undo step (`pushUndo(['circuits'])`).
+- **Opens** as a full-window overlay (Q-TV14 A), from four places:
+  - `⌗ Topológia` in the phase bar (`PH_LIST`, 05db-layout.js:25), under Villamosság and Pályák;
+  - the action `view.topology`;
+  - the Elosztó's menu;
+  - the 🌳 betáp-fa toggle's menu.
+  - Esc steps out.
+- **Three tabs on one canvas:**
+  - **Pályák**: GP, the "one common, empty pathway";
+  - **Betáp-fa**: the `up` tree over a faded GP;
+  - **Csövek**: the engine's legs and pipes on GP edges.
+- **Layout** (Q-TV12 A):
+  - columns: Elosztó | masters and KDs (deeper string nodes further right) | leader → … → tail;
+  - rows: room lanes, in the order the trunk reaches them;
+  - deterministic.
+- **The view edits only through the existing functions:**
+  - `upSet` / `upFix` / `upClear` / `upAcceptRoom`;
+  - `ldSetLeader`;
+  - `trayApply`;
+  - `cprActivate`;
+  - `lswLink` / `lswGroup`.
+  - The one new field is `tpoRole` on a junction (00_CONTRACT §3).
+  - Never a device move.
+- **Selection is shared with the blueprint.** A link's wall sections show in the inspector's mini-plan and, on request,
+  flash on the canvas.
 
 ![view mock](fig/08-view-mock.svg)
 
@@ -103,96 +138,82 @@ silently rerouted (CK-3).
 
 ## 4. The map: work packages
 
-| WP | Title | Size | Module | Depends | What it delivers |
+| WP | Title | Size | Module | Depends | Delivers |
 |---|---|---|---|---|---|
-| **T0** | Seam: the view shell | S (~90) | `08pb-tpo-view.js` | — | overlay, tabs, pan/zoom, open/close, action, bar button, Esc |
-| **T1** | Pálya-gráf | M (~160) | `08p-tpo-graph.js` | T0 | `tpoGraph(level)` (anchors, edges, connectivity report), cached by input hash |
-| **T2** | Layout + render | M (~200) | `08pb` | T1 | columns / lanes / barycentre pass, node symbols, selection sync, mini-plan ⏸ |
-| **T3** | Model + rules | M (~180) | `08pa-tpo-model.js` | T1 | `c.topo` read/write, `tpoPattern`, `tpoCheck` = every CK rule, `STK_CHECKS` lines ⏸ |
-| **T4** | Körkészlet | S (~110) | `08pc-tpo-edit.js` | T3 | the circuit-set panel over M2 presets (sets, counts, ＋ Saját), the active circuit, the unassigned list |
-| **T5** | Feed + master | M (~150) | `08pc` | T4 | ⤳ Betáp and ⇢ Master tools: Elosztó→DED, Elosztó→KD, KD→KD strings, master→leader; ▣ KD preferált / kötelező |
-| **T6** | Dugalj chain | S (~120) | `08pc` | T5 | ⋯ Lánc tool: leader → tail picking, auto-order by arc length, reorder, branch only at a box |
-| **T7** | Switching | M (~170) | `08pc` | T5 | ⎇ Kapcsolás: groups, chain / star, hub, switch types, cores per link |
-| **T8** | Javaslat (seed) | S (~120) | `08pa` | T3–T7 | fills `c.topo` from E4 circuits, E1 links and E3 boxes → `wfTable`; `fix` links are kept |
-| **T9** | Router | M (~150) | `08p` | T1, T3 | every link → a path on `GP` (via KD, pass-by vs enter); per-edge circuit sets |
-| **T10** | Csőközösség | M (~180) | `08pd-tpo-share.js` | T9 | runs, departures (SR-2), pref / must KD (SR-3), packing + sizing via `BL.rules`, the share table ⏸ |
-| **T11** | Lejátszás | S (~130) | `08pb` | T10 | ▶ Bekötés: circuit-by-circuit animation → composite; reduced-motion → composite at once |
-| **T12** | Engine hand-off | L (~250 + engine) | `tools/baseline/plan.js` + `08ob` | T10 | Pályák / Vezetékek honour `c.topo` (`cfg.topo`); CLA parity ⏸ |
+| **TV0** | View shell | S ~90 | `08tb-tpo-view.js` | — | overlay, tabs, pan / zoom, open / close, action, phase-bar entry, Esc |
+| **TV1** | Pálya-gráf | M ~150 | `08t-tpo-graph.js` | TV0 | `tpoGraph(level)`: anchors, wall-section edges, unreachable; the cache |
+| **TV2** | Layout and render | M ~200 | `08tb` | TV1 | columns / lanes / barycentre, symbols, the `up` states, selection sync, mini-plan ⏸ |
+| **TV3** | Roles and checks | S ~120 | `08ta-tpo-model.js` | TV1 | `tvKind`, `tvPattern`, `tvGroups`, `tvCheck` = `upCheck` + CK-8 … CK-13 ⏸ rules |
+| **TV4** | Körkészlet | S ~110 | `08tc-tpo-edit.js` | TV3 | the set panel (M2 presets, CLANV4, counts, ＋ Saját) + the tray inside the view |
+| **TV5** | Feed and master | M ~140 | `08tc` | TV4 | ⤳ Betáp / ⇢ Master on the canvas (`upSet`); ▣ KD role `tpoRole`; the string |
+| **TV6** | Socket chain | S ~100 | `08tc` | TV5 | ⋯ Lánc on the canvas (the `bfl` rules), 📍 leader, reorder, the `ldChains` order |
+| **TV7** | Switching | M ~150 | `08tc` | TV5 | groups, chain / star written as `up`, hub, types (`lswType`), cores per link |
+| **TV8** | Suggest and accept | S ~90 | `08ta` | TV3–TV7 | ✨ = `upFill` + `ldChains` + ▣ masters, shown as one approval table; "Elfogadom mind" per lane |
+| **TV9** | Engine overlay | M ~140 | `08t` | TV1 | `BL_LAST.R` legs / spans / pipes mapped onto GP edges and anchors; stale-aware |
+| **TV10** | Csövek tab | M ~150 | `08td-tpo-share.js` | TV9 | runs, pipes per stretch, box fill, departures (computed from R), the share table ⏸ |
+| **TV11** | Playback | S ~130 | `08tb` | TV9 (+ G7) | ▶ circuit by circuit → composite; with G7 / G8, the router's passes |
+| **TV12** | Engine gaps | — | `tools/baseline` | GO ROUTE | the G-items the user picks in GO ROUTE §2, each its own WP (`02_ENGINE_GAPS.md`) |
 
-Line counts are estimates of new code only. Each WP file lists the anchors to read, so a session reads ~3–6 k tokens of
-pack plus the named code, not the whole tree.
+Line counts are new code. A WP reads its own file plus the named anchors: about 3–6 k tokens of pack.
 
 ---
 
-## 5. Build order and checkpoints
+## 5. Order and checkpoints, within GO ROUTE
 
 ```
-Wave A (see)     T0 SEAM → T1 PATH GRAPH → T2 VIEW ⏸
-Wave B (set)     T3 MODEL+RULES ⏸ → T4 SET → T5 FEED/MASTER → T6 CHAIN → T7 SWITCHING → T8 SEED
-Wave C (wire)    T9 ROUTER → T10 SHARING ⏸ → T11 PLAYBACK → T12 ENGINE ⏸ CLA
+GO ROUTE §2 answers
+  │
+  ├─ Wave A  (see; no engine change, no data written)   TV0 → TV1 → TV2 ⏸ → TV9 → TV10 ⏸
+  │            the router's inspection tool: every later engine change is looked at here first
+  ├─ Router  (GO ROUTE §2 Q3 A/B/C)                     G7 first (the log), then the user's G-items / G8
+  ├─ Wave B  (set; writes d.up / d.lead / tpoRole)      TV3 ⏸ → TV4 → TV5 → TV6 → TV7 → TV8
+  └─ Wave C  (play)                                     TV11 (on G7; shows G8's passes when they exist)
 ```
 
-- **Wave A alone is already useful.** It is the pure viewer: does every point connect, and how is the plan wired
-  topologically?
-- T3 before any editing tool: the tools only write what the checks can read.
-- T8 last in Wave B: it seeds exactly the shapes T5–T7 can edit.
-- T12 is the only WP that touches the engine.
+- **Wave A first:**
+  - It only reads (`d.up`, `BL_LAST`), so it is safe on the practice flat today.
+  - It is exactly what a router project needs: a ratsnest to see the netlist and a view of what the router did.
+- **Wave B can run in parallel with the router.** It edits the tree the router consumes, through `upSet`.
+- A Wave B feature that needs an engine gap (KD as master G1, the string G2, the star G3, KD roles G4) is drawable and
+  stored right away. Its CK line says `'a motor még nem követi (G<n>)'` until the G-item is built.
 
 | ⏸ | Show | Why |
 |---|---|---|
-| **T2** after build | the CLA v1 planner file (`CLA_v1_planner-adat.vplan.json`, local) and the 4-room fixture in the view: Pályák tab, screenshot | the layout is the whole point of a viewer; the user judges readability |
-| **T3** before build | `01_RULES.md` §5–§6, every ⚑ row (core counts, N through switch boxes, branching) | these are trade rules, not mine; T3 encodes them as checks |
-| **T10** after build | the share table for CLA, next to the E5 Pályák result for the same circuits | sharing must agree with the engine before the engine is changed |
-| **T12** after build | CLA: seeded topology → Pályák / Vezetékek **identical** to today's run (167 legs / 97 boxes); then one hand edit and its diff | parity first, then the new freedom |
+| **TV2** after build | the practice flat and the 4-room fixture: the Pályák and Betáp-fa tabs (screenshots) | the layout is judged by eye |
+| **TV10** after build | the practice flat's Csövek tab next to its 🔎 Pálya-ellenőrzés report | the view must say what the engine says, number for number |
+| **TV3** before build | `01_RULES.md` §5–§6, every ⚑ (cores, N through switch boxes, branching, 600 mm) | trade rules, not mine |
 
 ---
 
 ## 6. Scope of the basic version
 
 **In:**
-- the traditional erősáram circuits: dedikált (DED), dugaljkör (SOC chain), világítás with switching (LMP + SWI), the
-  ház-füzér (V1 string through KDs);
-- one level at a time. An Alosztó level is its own root, and the E6 feeder shows as a single feed link from the level
-  below.
+- dedikált, dugaljkör chains, világítás with switching, the V1 string;
+- one level at a time (an Alosztó is its own root; E6's feeder is one feed link).
 
-**Out (later layers follow its lead):**
-- redőny (SHU stays skipped, as in E5);
-- BRIDGE layers (data / PoE already carry `topo:'star'` in `EP_CAT`, 05s-endpoints.js:95; that is the hook for them);
-- three-phase balancing;
-- RCD grouping;
-- cross-level circuits other than the E6 feeder;
-- the BRIDGE corner-box rule;
-- a free-form graph editor (links only between real anchors).
+**Out:**
+- redőny (MP-18 / audit Q3 decides);
+- BRIDGE layers (`topo:'star'` in `EP_CAT` is their hook);
+- three-phase balance;
+- RCD groups;
+- a free-form graph editor.
 
 ---
 
-## 7. Findings worth not re-deriving
+## 7. Reuse map: never rewrite these
 
-These are the existing pieces the pack reuses. A WP that rewrites one of them has a defect.
-
-- **Circuits** are 05j `data.circuits` (`cktCreate`, `cktAssign`, `cktOfDevice`), extended by M2 with `preset` and
-  `rooms`. A device is the endpoint of at most one circuit. The Elosztó and junctions are never endpoints (`cktCanJoin`).
-  `c.topo` rides on this record, so **no new top-level collection** is needed.
-- **Presets and sets** live in `08o-cpr.js`: `CPR_CAT` (tiers 1–3), `cprRows()`, export / import as `vrg-elo-presets`,
-  and the bundled CLANV4 sample `CPR_SAMPLE_CLANV4` (duplicate keys = several circuits of one type, e.g. 3 × klíma). The
-  user's "common set" is exactly this file format. T4 adds counts and a set picker, not a new format.
-- **E4 suggestion** `elpSuggest(boardId)` (08oa) already groups endpoints into circuits by policy. **E1** wrote
-  `sw.ctl`, lamp `grp`, `swHead` and the derived `swType`. **E3** gives `jbServicePoints(level)` and `jbMeet(d)`. T8
-  seeds from these three.
-- **The engine** is `BL` (`08ob`, bundled from `tools/baseline`). `BL.geom.load` → `BL.network.build(G, allowed,
-  anchors)` gives the wall-face graph with "a wall is crossed only at a service point" built in (no edge through a
-  wall). The trunk / dist / pack / `sizeConduit` / `IZ` / `groupK` / `SWITCH_LEG` all exist (rules.js 81–131,
-  plan.js §9). **T1 contracts this graph onto anchors; it does not build a second one.**
-- **`05v-graph.js`** (`rgBuild`, Dijkstra / chain / KMB) works on *drawn* routes, not on walls. It is the right model
-  for the Steiner-like union in T9 if one is needed, but its input is different. Reuse its tie-break discipline (key
-  order).
-- **The approval table:**
-  - The workflow contract §4 planned a shared `wfTable(title, rows, cols, onApply)`, but **it was never built as a
-    helper**. Each WP renders its own `openModal` (09-menus.js:103) with ☑ rows; see `elpDialog` in 08oa:114.
-  - T8 builds `tpoTable` on that same pattern, as the one table T8 and T10 both use. Lifting it into a shared
-    `wfTable` is an option for later; it is not required here.
-- **Engine speed** (E5_ENGINE_REVIEW §2): O(V²) Dijkstra, fine at house size. T1 runs one search per anchor, about 150
-  on CLA, ≈ 50 ms. Recompute on input-hash change only, never per frame.
+| Need | Existing piece |
+|---|---|
+| the tree, its invariants, states, roles | `08od-wf-uptree.js`: `upSet` (one upstream, no loop, same level), `upChain`, `upRole`, `upState`, `upCheck`, `upFill`, `upAcceptRoom`, `UP_COL` |
+| leader sockets, socket chain order, master suggestions | `08oe-wf-leaders.js`: `ldSetLeader`, `ldChains`, `ldMasters`, `ldPlaceMasters` |
+| circuits for endpoints that reached the board | `08of-wf-tray.js`: `trayWaiting`, `trayRows`, `trayApply` |
+| the click-by-click chain | `08og-wf-chaintool.js`: `bflClick` (source rules, branch = the same up, loop refused) |
+| a drawn route for one link | `08oh-wf-via.js`: `viaSet`, `viaClear` |
+| circuit presets and sets | `08o-cpr.js`: `CPR_CAT`, `cprActivate`, `cprExpect`, `cprLoadSample`, `cprImport` / `cprExport`, `cprAddCustom` |
+| switching groups and types | `08l-wf-switches.js`: `lswGroup`, `lswLink`, `lswLegsOf`, `lswChain`, `lswType`, `lswRetypeAll` |
+| boxes and meeting points | `08n-wf-boxes.js`: `jbServicePoints`, `jbMeet`, `jbToolStart('kot')` |
+| the engine and its run | `08ob-wf-engine.js`: `blInput`, `blRun` / `BL_LAST`, `blStale`, `blShow`, `blReportHtml` |
+| fill, capacity, cables | `tools/baseline/rules.js`: `sizeConduit`, `IZ`, `groupK`, `SWITCH_LEG`, `CABLES`, `CONDUITS` |
 
 ---
 
@@ -200,8 +221,8 @@ These are the existing pieces the pack reuses. A WP that rewrites one of them ha
 
 | WP | Status | Spec | Note |
 |---|---|---|---|
-| T0 – T12 | **planned 2026-10-22** | — | pack written; nothing built |
+| TV0 – TV12 | **planned** (r1 2026-10-22, r2 2026-10-29) | — | nothing built; G1–G8 wait for GO ROUTE §2 |
 
 ## 9. Answers
 
-*(empty: fill in with `PROMPTS.md` §0)*
+*(empty: fill in with `PROMPTS.md` §0, or in the GO ROUTE answer round)*

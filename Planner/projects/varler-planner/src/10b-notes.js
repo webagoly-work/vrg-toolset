@@ -163,7 +163,7 @@ function ntEditText(i) {
   const n = data.notes[i]; if (!n) return;
   openModal('Jegyzet szövege',
     `<div class="mrow"><textarea id="ntTx" rows="4" style="width:100%;font:inherit">${esc(n.text || '')}</textarea></div>`
-    + `<div class="mrow" style="font-size:11px;color:#777">A rajzon egy sorban jelenik meg; a lista panel a teljes szöveget mutatja.</div>`,
+    + `<div class="mrow" style="font-size:11px;color:var(--pc-mute,#777)">A rajzon egy sorban jelenik meg; a lista panel a teljes szöveget mutatja.</div>`,
     () => { pushUndo(); n.text = $('ntTx').value; draw(); ntRefresh(); });
 }
 
@@ -277,7 +277,7 @@ function ntPaintPanel() {
   const IC = [['pin', '📍'], ['kind', '🏷'], ['num', '🔢'], ['none', '∅']];
 
   body.innerHTML =
-    `<div style="margin-bottom:7px;color:#6b6250">${n
+    `<div style="margin-bottom:7px;color:var(--pc-dim,#6b6250)">${n
       ? `Kijelölt jegyzet <b>#${ntNumber(n)}</b>`
       : `Nincs kijelölés — az <b>új jegyzetek</b> alapértéke`}</div>`
     + `<div class="ntR"><label>Ikon</label><div class="ntSeg">`
@@ -407,11 +407,11 @@ function ntWireDrag(body) {
 }
 
 function ntLayerBlock() {
-  return `<div class="ntLay"><div style="color:#6b6250;margin-bottom:4px">Jegyzet-alréteg rétegenként</div>`
+  return `<div class="ntLay"><div style="color:var(--pc-dim,#6b6250);margin-bottom:4px">Jegyzet-alréteg rétegenként</div>`
     + layers.map(L =>
       `<div class="lr"><button data-nl="${L.id}" style="border:none;background:none;cursor:pointer">${ntLayerShows(L) ? '👁' : '🚫'}</button>
        <span title="${esc(L.name)}">${esc(L.name)}</span>
-       <span style="color:#9a8f78;font:10px ui-monospace,monospace">${data.notes.filter(n => (n.layer || 'L0') === L.id).length}</span></div>`).join('')
+       <span style="color:var(--pc-mute,#9a8f78);font:10px ui-monospace,monospace">${data.notes.filter(n => (n.layer || 'L0') === L.id).length}</span></div>`).join('')
     + `</div>`;
 }
 function ntWireLayers(body) {

@@ -44,7 +44,7 @@
     <rect width="940" height="78" rx="6" fill="#fff" stroke="#d8d4ca"/>
     <text x="14" y="22" font-size="12" font-weight="700" fill="#262624">Sorrend-szabály (TR-S3)</text>
     <text x="14" y="42" font-size="11" fill="#262624">leader = a masterhez (vagy az Elosztóhoz) a pálya-gráfon legközelebbi dugalj · következő = a még be nem kötött dugaljak közül a legkisebb</text>
-    <text x="14" y="58" font-size="11" fill="#262624">vízszintes út a vezethető falak mentén (ívhossz s, nem légvonal) · tail = az utolsó. Kézi átrendezés felülírja (fix:true) — Q-T16.</text>
-    <text x="14" y="73" font-size="10" fill="#6d6a63">Ugrásonként 2 függőleges cső (be + ki) a dugalj dobozába; leállás-doboz nélkül (Q-T02 A).</text>
+    <text x="14" y="58" font-size="11" fill="#262624">vízszintes út a vezethető falak mentén (ívhossz s, nem légvonal) · tail = az utolsó. Kézi átrendezés felülírja (fix:true) — Q-TV16.</text>
+    <text x="14" y="73" font-size="10" fill="#6d6a63">Ugrásonként 2 függőleges cső (be + ki) a dugalj dobozába; leállás-doboz nélkül (G6, Q-TV02 A).</text>
   </g>
 </svg>
