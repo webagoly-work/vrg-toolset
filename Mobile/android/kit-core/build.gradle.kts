@@ -15,6 +15,7 @@ dependencies {
     compileOnly("org.json:json:20240303")
     testImplementation("org.json:json:20240303")
     testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")   // runBlocking for the suspend writers
 }
 
 tasks.test { useJUnitPlatform() }

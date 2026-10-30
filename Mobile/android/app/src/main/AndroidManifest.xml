@@ -34,6 +34,12 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="vrg" />
             </intent-filter>
+            <!-- Share text from any app -> Gyorsjegyzet (M6) -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
             <!-- Légegér's original link: vrgdeck://connect?ws=ws://192.168.1.24:47291 -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

@@ -35,10 +35,11 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   fine-grained permissions (contents + notifications on this one repo) would be narrower; it can replace the OAuth App
   later without touching the features, since they all go through `kit: GitHub`.
 
+- **D-6 · Chat-log branch (M6)** (2026-10-30: **A**). One branch `mobile-log`, one file per day
+  `log/YYYY-MM-DD.md`. The branch name is a constant and the client writes no other branch.
+
 ## Open (to ask when the WP that needs them starts)
 
-- **D-6 · Chat-log branch (M6).** A) one branch `mobile-log`, one file per day `log/YYYY-MM-DD.md`;
-  B) one branch per active work branch (`log/<branch>`); C) one file per note (no merge conflicts, many files).
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city
   to a `city-pages` branch, and the phone loads it into a WebView; B) the phone builds the city itself
   from the GitHub tree API (a Kotlin port of the layout); C) both: A now, B later for offline.

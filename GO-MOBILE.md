@@ -26,7 +26,7 @@ design system with the rest of the toolset. The base framework (M0) was built th
   says what to do if the push is refused).
 - **Check first:** `cd Mobile/android && VRG_JVM_ONLY=1 ./gradlew :kit-core:test :airdeck-core:test` must
   be green before you change anything.
-- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M6** (M1 built, M2 live, M3 built 2026-10-30 and waiting for the user's OAuth App Client ID).
+- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M9** (M1 + M2 live; M3 and M6 built 2026-10-30, BETA until the user's phone check).
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
 - Each WP ends with:

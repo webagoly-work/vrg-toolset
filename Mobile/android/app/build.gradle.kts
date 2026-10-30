@@ -44,4 +44,5 @@ dependencies {
     implementation(project(":feature-settings"))
     implementation(project(":feature-pair"))
     implementation(project(":feature-account"))
+    implementation(project(":feature-notes"))
 }

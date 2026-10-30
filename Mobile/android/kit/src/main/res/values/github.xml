@@ -4,7 +4,7 @@
       The GitHub OAuth App's Client ID for the device-flow sign-in (WP M3, D-2 = A). Public, not a secret:
       the device flow uses no client secret. Create the app at github.com -> Settings -> Developer settings ->
       OAuth Apps -> New ("VRG Mobile", Enable Device Flow ticked) and paste its Client ID here.
-      Empty = GitHub fiók explains what is missing instead of signing in.
+      Empty = GitHub fiók explains what is missing instead of signing in. Set 2026-10-30 ("VRG Mobile" OAuth App).
     -->
-    <string name="github_client_id" translatable="false"></string>
+    <string name="github_client_id" translatable="false">Ov23licyf2ELsMAr5DH8</string>
 </resources>

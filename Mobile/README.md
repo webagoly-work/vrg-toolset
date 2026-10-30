@@ -20,16 +20,19 @@ Mobile/
     kit-core/           pure Kotlin: Feature catalogue (Feature.kt), link routing (Links.kt),
                         shell settings rules (ShellPrefs.kt), the log buffer (LogBook.kt),
                         relay pairing: address, QR offer, signature, messages (Pairing.kt),
-                        GitHub: repo constant, device flow, rate limit, models (GitHubApi.kt) + tests
+                        GitHub: repo constant, device flow, rate limit, models (GitHubApi.kt),
+                        notes: the line, the day file, append with retry, outbox (Notes.kt) + tests
     kit/                Android: Mélyvíz theme (theme/Melyviz.kt), the feature contract (VrgFeature.kt),
                         ShellSettings (look, start screen, paired PCs, relay), VrgLog, shared parts (ui/Parts.kt),
                         relay/ Relay (the app's one relay link + trust), PhoneKey (Keystore P-256), Discovery,
-                        github/ GitHub (the shared client: device flow, ETag cache), SecretStore (Keystore AES)
+                        github/ GitHub (the shared client: device flow, ETag cache), SecretStore (Keystore AES),
+                        GitHubNotes (contents + refs, mobile-log only)
     app/                the shell and the APK (hu.vrg.mobile): ShellActivity · HomeScreen · Registry
     feature-airdeck/    Légegér (package hu.vrg.legeger): Deck engine, HID, relay client, deck UI
     feature-settings/   Beállítások (WP M1): Megjelenés · Indulás · Párosított PC-k · Névjegy · Napló
     feature-pair/       QR párosítás (WP M2): CameraX + ML Kit scanner, vrg://pair links, the result
     feature-account/    GitHub fiók (WP M3): device-flow sign-in, account, repo access, sign out
+    feature-notes/      Gyorsjegyzet (WP M6): note + dictation + tags, outbox (WorkManager), today's log, share target
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
 ```
 

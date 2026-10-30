@@ -69,7 +69,7 @@ object Catalogue {
     )
     val NOTES = FeatureInfo(
         "notes", "Gyorsjegyzet", "Jegyzet a telefonról egy külön branchbe, ami a projekt naplójaként (chat log) működik.",
-        "✎", Group.WORK, Stage.PLANNED, "M6", setOf(Need.INTERNET, Need.GITHUB),
+        "✎", Group.WORK, Stage.BETA, "M6", setOf(Need.INTERNET, Need.GITHUB),
     )
     val PORTS = FeatureInfo(
         "ports", "Localhost", "A PC-n futó helyi szerverek listája: megnyitás a telefonon, vagy külön ablakban a PC-n.",
@@ -93,7 +93,7 @@ object Catalogue {
     )
     val SETTINGS = FeatureInfo(
         "settings", "Beállítások", "Megjelenés (Mélyvíz paletták, méret), fiókok, párosított PC-k, napló.",
-        "⚙", Group.APP, Stage.BETA, "M1",
+        "⚙", Group.APP, Stage.LIVE, "M1",
     )
 
     val ALL: List<FeatureInfo> = listOf(

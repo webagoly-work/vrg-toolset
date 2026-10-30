@@ -33,6 +33,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.Links
+import hu.vrg.mobile.core.Route
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.theme.Melyviz
@@ -150,6 +151,14 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     }
 
     private fun handleLink(i: Intent?) {
+        // "Megosztás → VRG Mobile" with text from any app: a quick note (Gyorsjegyzet, M6)
+        if (i?.action == Intent.ACTION_SEND && i.type?.startsWith("text/") == true) {
+            val text = i.getStringExtra(Intent.EXTRA_TEXT) ?: return
+            val r = Route(Catalogue.NOTES.id, "new", mapOf("text" to text))
+            open(r.feature)
+            Registry.feature(r.feature)?.open(r)
+            return
+        }
         val link = i?.dataString ?: return
         val r = Links.route(link)
         if (r == null) { note("Ismeretlen link: $link"); return }
