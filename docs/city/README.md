@@ -138,6 +138,7 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 - CITY-D26 **Mélyvíz** (user, 2026-10-27) — the skin is the VRG dev-side style "Mélyvíz" (deep water), applied at its
   Kódváros setting: water ground that waves only where you click, smoked-glass panels with cut corners, ice for the
   instrument and warm light for the code's activity. Rules M1–M7 and the axis values: `docs/city/melyviz.md`.
+- Still open: the Cloudflare outer ring CITY-D29–D33 and CITY-D21 option D (report §8, prompt CF-01).
 
 ## 6. Use
 
