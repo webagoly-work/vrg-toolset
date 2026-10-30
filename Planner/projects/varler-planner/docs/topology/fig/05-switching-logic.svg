@@ -25,7 +25,7 @@
       <text x="362" y="190">Lk·N·PE</text><text x="362" y="178" font-weight="700">3×1,5</text>
       <text x="368" y="258">Lk·N·PE</text>
     </g>
-    <text x="14" y="276" font-size="10.5" fill="#262624">N és PE végigfut a kapcsolódobozokon (mély doboz, összekötő) ⚑ Q-T05.</text>
+    <text x="14" y="276" font-size="10.5" fill="#262624">N és PE végigfut a kapcsolódobozokon (mély doboz, összekötő) ⚑ Q-TV05.</text>
     <text x="14" y="292" font-size="10.5" fill="#262624">Kevés kapcsoló, egy vonalban: rövidebb, kevesebb doboz.</text>
   </g>
 
@@ -49,7 +49,7 @@
       <text x="300" y="200">Lk·N·PE 3×1,5</text>
     </g>
     <text x="14" y="276" font-size="10.5" fill="#262624">Lk a hubban kap N + PE-t → 3 eres a lámpákhoz.</text>
-    <text x="14" y="292" font-size="10.5" fill="#262624">Javasolt, ha ≥ 2 kapcsoló egy ajtó portáldobozán osztozik (Q-T06).</text>
+    <text x="14" y="292" font-size="10.5" fill="#262624">Javasolt, ha ≥ 2 kapcsoló egy ajtó portáldobozán osztozik (Q-TV06).</text>
   </g>
 
   <!-- type table -->

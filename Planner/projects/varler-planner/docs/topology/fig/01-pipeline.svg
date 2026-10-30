@@ -40,8 +40,8 @@
   <!-- panel 2 -->
   <g transform="translate(264,16)">
     <rect width="222" height="300" rx="8" fill="#fff" stroke="#d8d4ca"/>
-    <text x="12" y="24" font-size="14" font-weight="700" fill="#262624">2 · Kapcsolatok</text>
-    <text x="12" y="41" font-size="11" fill="#6d6a63">topológia — körönként egy fa</text>
+    <text x="12" y="24" font-size="14" font-weight="700" fill="#262624">2 · Betáp-fa</text>
+    <text x="12" y="41" font-size="11" fill="#6d6a63">d.up — minden pontnak egy betáp</text>
     <g transform="translate(14,52) scale(0.88)">
       <g opacity="0.35"><use href="#pathgraph"/></g>
       <g fill="none" stroke-width="2.4" stroke-linecap="round">
@@ -61,7 +61,7 @@
       <text x="200" y="38" font-size="9.5" fill="#1d9e75">tail</text>
     </g>
     <text x="12" y="276" font-size="10.5" fill="#262624">Elosztó → (kötődoboz) → leader → … → tail.</text>
-    <text x="12" y="290" font-size="10.5" fill="#262624">A felhasználó állítja; a motor csak ellenőriz.</text>
+    <text x="12" y="290" font-size="10.5" fill="#262624">javasolt (szaggatott) / rögzített; a motor illeszti.</text>
   </g>
 
   <!-- panel 3 -->

@@ -1,85 +1,105 @@
-# Topology View (TPO): CONTRACT
+# Topology View (TV): CONTRACT (r2, 2026-10-29)
 
-*Short on purpose. `docs/PRIMER.md` (read first), `docs/workflow/00_CONTRACT.md` and `docs/round-2026-10-10/00_CONTRACT.md`
-§0–§1 and §7 still apply: the worktree check, NODE_PATH, the build → check → test loop and the report format. This file
-only adds what is different.*
+*Short on purpose. These still apply:*
+- *`docs/PRIMER.md` (read first);*
+- *`GO-ROUTE.md` §3 (the thread's rules);*
+- *`GO-WIRE.md` "Working rules";*
+- *`docs/workflow/00_CONTRACT.md` (the approval-table and round conventions).*
+
+*This file adds only what is particular to the Topology View.*
 
 ## 0. Where you work
 
-`H:/VRG/Backup/archive/parked/2026-10-24/wt-planner-stack/Planner/projects/varler-planner` on the branch the user names. For a cloud session,
-that is the designated `claude/…` branch.
-- Run `git status` before you start and before you report. Other sessions may share the worktree.
-- Commit with explicit paths only, and only when the user says so.
+- **The main checkout** `H:\VRG\Full\Planner_VRG_U100`, branch `main` (GO MAIN), project folder
+  `Planner/projects/varler-planner`. On a cloud session, use the branch the session gives you.
+- `git status` before you start and before you report. Commit with explicit paths only, and only when the user
+  says so.
 
 ```bash
-export NODE_PATH=H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules
+export NODE_PATH=H:/VRG/Full/Planner_VRG_U100/Planner/projects/varler-planner/node_modules   # cloud: a scratch npm install
 node build.js && node tools/check-globals.js && node tests/run.js
 ```
 
-New spec files take the **next free number at build time** (`ls tests/spec-*`; 99 was the last at writing). Write the
-number into README §8.
+- **Baseline:** 110 suites, 3 736 checks, golden 70 / 70 (money-path audit, `fe0d23e`).
+- **Specs:** a new spec takes the next free number at build time (`ls tests | sort -V`; 109 was the last at r2). Write
+  the number into README §8.
+- **Client data stays out of git** (GO ROUTE §3). Job codes are anonymised (`CLA`, `CLANV4`, HUB-Q10 B). The
+  practice apartment `tools/practice/Gyakorlo_lakas_villany.vplan.json` is the in-git acceptance plan.
 
 ## 1. Rules of this pack
 
-1. **A plugin, not a fork.**
-   - Everything lives in the new modules below and reaches the app through the existing seams: `registerActions`
-     (05c-actions.js:25), `STK_CHECKS`, `STK_DEVMENU`, the phase bar `PH_LIST` (05db-layout.js:25) and `openModal`
+1. **The tree is GO WIRE's.**
+   - The view reads and writes `d.up`, `d.lead`, `lamp.meet`, `sw.ctl` / `grp` / `swHead` and the circuits **only
+     through the existing functions** (README §7).
+   - It never writes `d.up` directly. It never adds a second topology store.
+   - A need the existing functions do not cover gets a new function in the module that owns the data, and that is
+     named in the report.
+2. **One engine.**
+   - The Csövek tab and the playback show **`BL_LAST`**: the engine's run on the current level.
+   - The view never routes, packs or sizes on its own.
+   - When `blStale(level) > 0`, the tab says `'elavult — futtasd újra: ⚒ Pályák'` and dims the overlay. It does not
+     recompute silently.
+3. **A plugin, not a fork.**
+   - Everything new lives in `08t…08td` and reaches the app through the existing seams: `registerActions`
+     (05c-actions.js:25), `PH_LIST` (05db-layout.js:25), `STK_DEVMENU`, `STK_CHECKS`, `STK_OVERLAY`, `openModal`
      (09-menus.js:103).
-   - Shared files get **one-line hooks** at most, each listed in the report.
-   - Deleting the `08p*` files must leave a working Planner. Every hook is `typeof tpoX === 'function'`-guarded, with
-     `window.X` for consts (STATE.md: the TDZ trap).
-2. **Reuse before you write.** Every WP names the helper it extends: `BL.network`, `BL.rules`, 05j `ckt*`, 08o `cpr*`,
-   08oa `elpSuggest`, 08n `jb*`, 08l switch links, `wfTable`. A parallel copy is a defect (README §7).
-3. **The view edits connection data only.** It never moves a device, a wall or a mark. One user action = one undo step,
-   `pushUndo(['circuits'])` (plus `['devices']` when a KD is created or flagged).
-4. **Every automatic step ends in a table** (the round rule): the T8 seed, the T10 missing-box suggestions, and the T12
-   engine diff. They share one helper, `tpoTable` (T8), on the `elpDialog` pattern (08oa:114).
-5. **Derived stays derived.** GP, S, `tpoPattern`, the switch types and the core counts are computed on demand and cached
-   on the `blInput(level).sig` hash. They are never written into the document.
-6. **Hungarian UI, English code.** The strings in `01_RULES.md` §7 and in the WPs are final unless marked ⚑.
-7. **Prefix `tpo`** for every new global (`tpoGraph`, `tpoCheck`, `TPO_…`). It is free at writing (`grep -n "tpo" src/`
-   finds only the unrelated `topo:` field in 05s). `node tools/check-globals.js` must stay OK.
+   - A hook in a shared file is one guarded line (`typeof tpoX === 'function'`; `window.X` for consts).
+   - Deleting the `08t*` files leaves a working Planner.
+4. **Engine changes are G-items, not TV work.**
+   - Anything in `tools/baseline` belongs to `02_ENGINE_GAPS.md` and is built under GO ROUTE: pure Node, no `fs`, no
+     DOM, CLI ↔ bundle parity (spec-98).
+   - A TV WP that would need one stops and names the G-item.
+5. **Every automatic step ends in a table** (`tpoTable` on the `elpDialog` pattern, 08oa:114). Every user action is one
+   undo step.
+6. **Hungarian UI, English code.**
+   - The strings in `01_RULES.md` §7 are final unless marked ⚑.
+   - HU switch codes are never renumbered (105 / 106 / 107 / 108).
+   - Every open question goes to the user as numbered A/B/C options.
+7. **Names:**
+   - prefix `tpo` for globals (free at r2; `tv` is too short to grep safely);
+   - the derived helpers `tvKind`, `tvPattern`, `tvGroups`, `tvCheck` are the exception and live in `08ta`.
+   - `node tools/check-globals.js` stays OK.
 
-## 2. Module files (filename order = load order; all after `08oc`, before `09`)
+## 2. Module files (filename order = load order: after `08s-villany.js`, before `09-menus.js`)
 
 | File | Owns | WPs |
 |---|---|---|
-| `src/08p-tpo-graph.js` | GP: the contraction of `BL.network` onto anchors, connectivity, the link router | T1, T9 |
-| `src/08pa-tpo-model.js` | `c.topo` read/write, `tpoPattern`, `tpoCheck` (the CK rules), the seed | T3, T8 |
-| `src/08pb-tpo-view.js` | the overlay shell, the layout, the SVG render, the mini-plan, the playback | T0, T2, T11 |
-| `src/08pc-tpo-edit.js` | the Körkészlet panel and the tools: Betáp, Master, Lánc, Kapcsolás, KD | T4–T7 |
-| `src/08pd-tpo-share.js` | runs, departures, KD roles, packing and sizing through `BL.rules`, the share table | T10 |
+| `src/08t-tpo-graph.js` | GP (the contraction of `BL.network` onto anchors), unreachable, the overlay of `BL_LAST` onto GP | TV1, TV9 |
+| `src/08ta-tpo-model.js` | `tvKind`, `tvPattern`, `tvGroups`, `tvCheck` (CK-8 … CK-13, `upCheck` reused), `tpoTable`, the suggest-and-accept | TV3, TV8 |
+| `src/08tb-tpo-view.js` | the overlay shell, the layout, the SVG render, the mini-plan, the playback | TV0, TV2, TV11 |
+| `src/08tc-tpo-edit.js` | the Körkészlet panel and the canvas tools: Betáp, Master, Lánc, Kapcsolás, KD role | TV4–TV7 |
+| `src/08td-tpo-share.js` | runs, pipes per stretch, box fill, departures, the share table, all from `BL_LAST.R` | TV10 |
 
-The pure parts (`08p`, `08pa`, `08pd` without DOM) must run under the jsdom spec harness with no `draw()`.
+`08t`, `08ta` and `08td` (without their DOM parts) must run under the jsdom spec harness with no `draw()`.
 
-## 3. Data additions (read with defaults; no `SCHEMA_VERSION` bump; **no new top-level collection**)
+## 3. Data (no `SCHEMA_VERSION` bump, no new collection)
 
-| Where | Field | WP | Default when absent |
-|---|---|---|---|
-| `data.circuits[]` | `topo: {v:1, links:[{a, b, k, fix?, via?}], groups:[{grp, logic, hub?, order?}]}`. `a` / `b` are device ids (the board, a mid or an endpoint); `k ∈ feed · master · chain · sw · lamp` | T3 | absent = no topology yet: the view shows GP only and T8 can seed it |
-| `data.circuits[]` | `ownPipe: true`, the circuit keeps its own conduit (TR-H3) | T5 | `false`; T8 sets it on the `vil` string (Q-T07) |
-| device (junction / box) | `tpoRole: 'pref' \| 'must'` | T5 | none = pass-through (SR-3) |
-| device (junction) | `gen: 'tpo'`, a KD suggested at a departure and approved in the T10 table | T10 | — |
-| `state` | `tpo: {open, tab:'path' \| 'conn' \| 'share', level, cur, tool, z, px, py, speed}` (`cur` = the active circuit id) | T0 | closed; `tab:'path'` |
+| Where | Field | WP | Default | Note |
+|---|---|---|---|---|
+| device (junction: `jb` kot / szoba / ceiling) | **`tpoRole: 'pref' \| 'must'`** | TV5 | none = pass-through | the only new field in Wave B. The engine reads it from G4 on; before that, CK-13 notes it as `'a motor még nem követi (G4)'` |
+| circuit (`data.circuits[]`) | `ownPipe: true` | TV5 | `false` | the V1 string's own conduit; read by the engine from G2 on |
+| — | `d.up`, `d.lead`, `lamp.meet`, `sw.ctl`, `grp`, `swHead` | TV5–TV8 | — | **existing**, written only through their functions |
+| `state` | `tpo: {open, tab:'path' \| 'tree' \| 'pipes', level, cur, tool, z, px, py, speed, mirror}` | TV0 | closed, `'path'` | session UI state; not in the document |
 
-- `c.topo` rides on `data.circuits`, which is already in `UKEYS`, so undo, save and clear work unchanged.
-- **Old files** have no `topo`. They load, render and run the engine exactly as before, and **the E5 engine ignores
-  `c.topo` until T12**.
-- **Dangling ids** (a deleted device) are dropped on read by `tpoLinks(c)`, the same way 05j drops dead members. They
-  are never "repaired".
+- **Old files** load, render and route exactly as before. No golden fixture has `tpoRole` or `ownPipe`.
+- `blInput`'s stale signature already includes the tree (GO WIRE T2). G2 / G4 add `ownPipe` / `tpoRole` to it when they
+  start reading them.
 
-## 4. Golden policy
+## 4. Golden and quantity policy
 
-- **Identical, every WP.** The view is an overlay outside `draw()`, and no fixture has `c.topo`. If a golden moves,
-  stop.
-- T12 may change engine output **only** for circuits that carry `c.topo`. The CLA parity run (README §5) proves that a
-  seeded topology reproduces today's legs and boxes exactly.
-- PRIMER §2 still holds: goldens never call `draw()`. The view, its tools and the playback need the browser pane
-  (`planner-stack-dist`, port 8138), with a screenshot in the report.
+- **TV0–TV11: identical.** The view is an overlay outside `draw()`. GO WIRE's `STK_OVERLAY` 🌳 drawing is not touched.
+- **G-items:**
+  - may change engine output only where their rule says so;
+  - each lists the changed metres on the practice flat;
+  - the practice-flat **quantity golden** (money-path audit §7.8) is the net. If it does not exist when the first
+    G-item starts, that G-item adds it first.
+- PRIMER §2 holds: goldens never call `draw()`. The view, tools and playback need the browser, with a screenshot in the
+  report.
 
 ## 5. Report
 
-Use the PRIMER / R1010 §7 format, plus three lines:
-- **"Hooks in shared files:"**: file:line for each, or "none".
-- **"Rules covered:"**: the `01_RULES.md` ids this WP implements or checks.
-- **"Overlay or model:"**: which existing data the WP writes to.
+Use the PRIMER / R1010 §7 format, plus four lines:
+- **"Hooks in shared files:"**: file:line each, or "none".
+- **"Rules covered:"**: `01_RULES.md` ids.
+- **"Writes through:"**: the existing functions this WP calls to change data (`upSet`, `ldSetLeader`, …).
+- **"Engine gaps touched:"**: the G-items the WP's features wait for, or "none".
