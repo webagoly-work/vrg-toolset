@@ -148,18 +148,19 @@ const firstExisting = list => list.find(exists) || null;
 function loadConfig() {
   let user = {};
   if (exists(CONFIG)) user = JSON.parse(fs.readFileSync(CONFIG, 'utf8'));
-  const apps = path.join(REPO, 'Planner', 'apps');
-  const browserExe = firstExisting([path.join(apps, 'chrome', 'chrome.exe'), path.join(apps, 'opera-gx', 'opera.exe'), path.join(apps, 'zen-browser', 'zen.exe')]);
+  // the portable toolchain and programs sit next to the repo (H:\VRG\Full\tools, \programs) since the 2026-10-27 re-root
+  const tools = path.join(path.dirname(REPO), 'tools'), progs = path.join(path.dirname(REPO), 'programs');
+  const browserExe = firstExisting([path.join(tools, 'chrome', 'chrome.exe'), path.join(progs, 'opera-gx', 'opera.exe'), path.join(progs, 'zen-browser', 'zen.exe')]);
   const wt = process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Microsoft', 'WindowsApps', 'wt.exe');
   return {
     roots: [REPO, path.dirname(REPO)].concat(user.roots || []),
     browser: user.browser || (browserExe ? { exe: browserExe, args: browserExe.endsWith('chrome.exe') ? ['--new-window'] : [] } : null),
-    claudeCmd: user.claudeCmd || firstExisting([path.join(apps, 'node', 'claude.cmd')]) || 'claude',
+    claudeCmd: user.claudeCmd || firstExisting([path.join(tools, 'node', 'claude.cmd')]) || 'claude',
     terminal: user.terminal || (wt && exists(wt) ? 'wt' : 'cmd'),
-    vscode: user.vscode || firstExisting([path.join(apps, 'vscode', 'Code.exe')]),
-    git: user.git || firstExisting([path.join(apps, 'git', 'cmd', 'git.exe'), path.join(apps, 'git', 'bin', 'git.exe')]) || 'git',
+    vscode: user.vscode || firstExisting([path.join(tools, 'vscode', 'Code.exe')]),
+    git: user.git || firstExisting([path.join(tools, 'git', 'cmd', 'git.exe'), path.join(tools, 'git', 'bin', 'git.exe')]) || 'git',
     // the claude binary itself (not the .cmd shim), for `claude agents --json`; a config can name another command
-    agentsCmd: user.agentsCmd || [firstExisting([path.join(apps, 'node', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe'),
+    agentsCmd: user.agentsCmd || [firstExisting([path.join(tools, 'node', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe'),
       process.env.APPDATA && path.join(process.env.APPDATA, 'npm', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe')].filter(Boolean)) || 'claude', 'agents', '--json'],
     transcripts: user.transcripts || null,
     // vrg-probe (KV-21): a config can name another command (the specs use a fake probe)
@@ -168,7 +169,7 @@ function loadConfig() {
     downloads: user.downloads || path.join(process.env.USERPROFILE || os.homedir(), 'Downloads'),
     // Claude Code needs Git Bash on Windows; the user-level value may point to a folder that is gone
     gitBash: user.gitBash || (exists(process.env.CLAUDE_CODE_GIT_BASH_PATH || '') ? process.env.CLAUDE_CODE_GIT_BASH_PATH
-      : firstExisting([path.join(apps, 'git', 'bin', 'bash.exe'), 'H:\\_desktop\\Git\\bin\\bash.exe']))
+      : firstExisting([path.join(apps, 'git', 'bin', 'bash.exe'), 'H:\\VRG\\Full\\tools\\git\\bin\\bash.exe']))
   };
 }
 const CFG = loadConfig();
@@ -558,19 +559,18 @@ const JOB_LINES = 500;
 const jobs = { list: null, run: new Map(), ports: [], portsSig: '', portTimer: null, polling: false };
 function jobDefs() {
   if (jobs.list) return jobs.list;
-  const start = (() => { try { return fs.readFileSync(path.join(REPO, 'Planner', 'START.cmd'), 'utf8'); } catch (e) { return ''; } })();
-  const v = (k) => (new RegExp('^set "' + k + '=(.*)"\\r?$', 'm').exec(start) || [])[1];
+  // the local servers of launcher/vrg-menu.json (START → O); until 2026-10-27 START.cmd's LH<n>_ lines
   const out = [];
-  for (let n = 1; n <= 20; n++) {
-    const name = v('LH' + n + '_NAME'), js = v('LH' + n + '_JS');
-    if (!name) continue;
-    const port = +v('LH' + n + '_PORT'), lpath = v('LH' + n + '_PATH') || '/';
-    const def = { id: 'lh' + n, name, kind: 'server', port, path: lpath, key: n === 10 ? '0' : String(n) };
-    if (js) { def.cmd = [path.join(REPO, js.replace(/\\/g, '/')), ...(v('LH' + n + '_ARGS') || '').split(/\s+/).filter(Boolean)]; def.script = js.replace(/\\/g, '/'); }
-    else def.why = 'saját indítója van (.bat) — a START.cmd O) menüjéből indul';
+  let servers = [];
+  try { servers = require('../launcher/menu.js').servers(); } catch (e) { /* no registry: no server jobs */ }
+  for (const s of servers) {
+    if (s.id === 'city') continue;                 // this segéd itself
+    const def = { id: 'lh' + s.n, name: s.name, kind: 'server', port: s.port, path: s.path, key: s.key };
+    if (s.js) { def.cmd = [path.join(REPO, s.js), ...s.args]; def.script = s.js; }
+    else def.why = 'saját indítója van (.bat) — a START → O) Helyi szerverek menüből indul';
     out.push(def);
   }
-  const npm = path.join(REPO, 'Planner', 'apps', 'node', 'node_modules', 'npm', 'bin', 'npm-cli.js');
+  const npm = path.join(path.dirname(REPO), 'tools', 'node', 'node_modules', 'npm', 'bin', 'npm-cli.js');
   const fixed = [
     ['codecity-build', 'Kódváros oldal (build)', 'build', ['CodeCity/build.js'], null, 'CodeCity'],
     ['hub-build', 'VRG Kapu (build)', 'build', ['tools/build-hub.js'], null, 'Hub'],
@@ -754,7 +754,7 @@ function powerStart() {
 function powerStop() { if (power.child) { try { power.child.kill(); } catch (e) { /* gone */ } power.child = null; } }
 process.on('exit', powerStop);
 // ---- Tier A: vrg-probe.exe, the open programs (a C# sidecar, while a page listens; restarted when it dies)
-const PROBE_EXE = path.join(CITY, 'probe', 'bin', 'publish', 'vrg-probe.exe'), DOTNET_ROOT = path.join(REPO, 'Planner', 'apps', 'dotnet');
+const PROBE_EXE = path.join(CITY, 'probe', 'bin', 'publish', 'vrg-probe.exe'), DOTNET_ROOT = path.join(path.dirname(REPO), 'tools', 'dotnet');
 const probe = { child: null, want: false, timer: null, fails: [], wins: new Map(), fg: 0, state: 'off', sig: '', emitTimer: null, last: {} };
 const PROBE_FEEDS = ['audio', 'media', 'bt', 'usb'];   // KV-22: kept for a page that joins later; 'peaks' only streams
 function probeStart() {
@@ -1026,11 +1026,8 @@ function cargoStart() {
 async function catalog() {
   const read = p => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
   const list = (dir, ext) => { try { return fs.readdirSync(dir).filter(f => f.endsWith(ext)).sort(); } catch (e) { return []; } };
-  const start = read(path.join(REPO, 'Planner', 'START.cmd')), tools = [];
-  for (const m of start.matchAll(/^set "T(\d+)_NAME=(.*)"\r?$/gm)) {
-    const pm = new RegExp('^set "T' + m[1] + '_PATH=(.*)"\\r?$', 'm').exec(start);
-    if (pm) tools.push({ n: +m[1], name: m[2], path: path.relative(REPO, path.resolve(REPO, 'Planner', pm[1].replace(/\\/g, '/'))).replace(/\\/g, '/') });
-  }
+  let tools = [];
+  try { tools = require('../launcher/menu.js').tools().map(t => ({ n: t.n, name: t.name, path: t.path })); } catch (e) { /* no registry */ }
   const pdir = path.join(REPO, 'tools', 'prompts'), adir = path.join(REPO, '.claude', 'agents');
   const prompts = list(pdir, '.txt').map(f => ({ name: f.replace(/\.txt$/, ''), text: read(path.join(pdir, f)).slice(0, 5000) }));
   const agents = list(adir, '.md').map(f => {

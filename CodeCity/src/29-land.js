@@ -126,7 +126,7 @@ function landInset() {
     landHexPts(c, landR(), 0).forEach((v, n) => { const X = W / 2 + v.x * s, Y = W / 2 + v.z * s; if (n) g.lineTo(X, Y); else g.moveTo(X, Y); });
     g.stroke();
   }
-  g.fillStyle = '#ffcf5a'; g.beginPath(); g.arc(W / 2 + orbit.target.x * s, W / 2 + orbit.target.z * s, 3.5, 0, 7); g.fill();   // you are here
+  g.fillStyle = '#93d3e6'; g.beginPath(); g.arc(W / 2 + orbit.target.x * s, W / 2 + orbit.target.z * s, 3.5, 0, 7); g.fill();   // you are here
   g.fillStyle = '#8b97b5'; g.font = '11px Consolas'; g.fillText('Föld · itt vagy', 40, 150);
 }
 // at the Land level: the places and what they are; Tárház's folder names blurred until clicked (CITY-D27 A)

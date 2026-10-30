@@ -19,9 +19,9 @@ const hex = c => '#' + c.getHexString();
 
 // ---- the lenses. color(f, i, ctx) -> THREE.Color; legend() -> html
 const LENSES = [
-  { key: '1', id: 'alap', name: 'Alap', group: '', sky: '', horizon: 0x1b2442, plate: [0.64, 0.25, 0.07],
+  { key: '1', id: 'alap', name: 'Alap', group: '', sky: '', horizon: 0x11202b, plate: [0.57, 0.3, 0.06],
     win: 0xffc76b, gain: 1.1, glow: 0, time: false,
-    color: () => new THREE.Color(0x5d6274),
+    color: () => new THREE.Color(0x56606b),
     legend: () => `<b>Alap</b><div class="dim">ablakok: friss munka világít</div>` },
   { key: '2', id: 'ho', name: 'Hő', group: 'Idő', sky: 'lens-heat', horizon: 0x14061f, plate: [0.75, 0.5, 0.05],
     win: 0xfff1c8, gain: 0.25, glow: 0.55, time: true,
@@ -35,11 +35,11 @@ const LENSES = [
     win: 0xb6ffc8, gain: 0.7, glow: 0.35, time: true,
     color: (f, i) => { const s = agentShareOf(i); return s ? _c1.setHex(0x173b22).lerp(_c2.setHex(0x7dff9a), 0.25 + 0.75 * s).clone() : new THREE.Color(0x1a221c); },
     legend: () => `<b>Ügynök-arány</b><div class="ramp" style="background:linear-gradient(90deg,#1a221c,#2a6a3c,#7dff9a)"></div><div class="ends"><span>nincs adat</span><span>100 %</span></div><div class="dim">Co-Authored-By alapján</div>` },
-  { key: '5', id: 'tulaj', name: 'Tulaj', group: 'Emberek', sky: '', horizon: 0x1b2442, plate: [0.64, 0.25, 0.07],
+  { key: '5', id: 'tulaj', name: 'Tulaj', group: 'Emberek', sky: '', horizon: 0x11202b, plate: [0.57, 0.3, 0.06],
     win: 0xffc76b, gain: 0.9, glow: 0.05, time: false,
     color: f => new THREE.Color(f.own >= 0 && f.own < OWNER_COLORS.length ? OWNER_COLORS[f.own] : 0x707a90).multiplyScalar(0.62),
     legend: () => '<b>Fő szerző</b>' + current.city.authors.slice(0, OWNER_COLORS.length).map((a, i) => `<div><i style="background:${hex(new THREE.Color(OWNER_COLORS[i]))}"></i>${esc(a)}</div>`).join('') },
-  { key: '6', id: 'nyelv', name: 'Nyelv', group: 'Szerkezet', sky: '', horizon: 0x1b2442, plate: [0.64, 0.25, 0.07],
+  { key: '6', id: 'nyelv', name: 'Nyelv', group: 'Szerkezet', sky: '', horizon: 0x11202b, plate: [0.57, 0.3, 0.06],
     win: 0xffc76b, gain: 1.1, glow: 0, time: false,
     color: f => new THREE.Color(langColor(f.lang)).multiplyScalar(0.62),
     legend: () => {
@@ -69,6 +69,7 @@ function lensApply() {
   st.classList.remove('lens-heat', 'lens-nvg', 'lens-noir');
   if (lens.sky) st.classList.add(lens.sky);
   st.style.setProperty('--horizon', hex(new THREE.Color(lens.horizon)));
+  seaLens(lens);   // 38-sea: the Mélyvíz water takes the lens's horizon and highlight
   $('legend').innerHTML = delta ? compareLegend(delta) : lens.legend();
   document.querySelectorAll('#lenses button').forEach(x => x.classList.toggle('on', x.dataset.lens === lens.id));
   placeCranes(ctx);

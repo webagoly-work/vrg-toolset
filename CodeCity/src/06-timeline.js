@@ -92,7 +92,7 @@ function drawStrip() {
   });
   g.globalAlpha = 1;
   if (compare.base !== null) { g.fillStyle = '#ff5a5a'; g.fillRect((compare.base + 0.5) * bw - dpr, 0, 2 * dpr, H); }
-  if (replay.T < replay.last) { g.fillStyle = '#ffcf5a'; g.fillRect((replay.T + 0.5) * bw - dpr, 0, 2 * dpr, H); }
+  if (replay.T < replay.last) { g.fillStyle = '#93d3e6'; g.fillRect((replay.T + 0.5) * bw - dpr, 0, 2 * dpr, H); }
 }
 
 function tlSetup() {

@@ -135,7 +135,9 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
   scheduled task the user creates from written steps (Claude never creates it).
 - CITY-D19 **A** (user, 2026-10-26, before P12) — the user applies the 21H2 → 22H2 enablement package; write the steps first.
 - CITY-D20 **A** (user, 2026-10-26) — Electron overlay host, three layers (Lively wallpaper first).
-- Still open: CITY-D26 (look name and rules, before P13).
+- CITY-D26 **Mélyvíz** (user, 2026-10-27) — the skin is the VRG dev-side style "Mélyvíz" (deep water), applied at its
+  Kódváros setting: water ground that waves only where you click, smoked-glass panels with cut corners, ice for the
+  instrument and warm light for the code's activity. Rules M1–M7 and the axis values: `docs/city/melyviz.md`.
 
 ## 6. Use
 
@@ -302,7 +304,7 @@ One stub per phase in `docs/city/wp/`.
 | P10 | [Probe sidecar (Tier A)](wp/p10-probe.md) | D18, D25, D27 | Spotify playing → the stadium lights; dragging a sound tower changes its volume; Paint raises a construct that dissolves when closed. | DONE (with Spotify itself: the user's check) |
 | P11 | [Elevated ETW (Tier B, optional)](wp/p11-etw.md) | D17, D23 | A `git clone` shows the exact cargo per process; a file read inside a Bash command beams to its roof. | DONE (checked 2026-10-27 on the user's elevated task) |
 | P12 | [Overlay OS](wp/p12-overlay.md) (L0 wallpaper KV-24, L2 overlay spike KV-25) | D19, D20 | After 22H2: the hotkey summons the city in < 150 ms; idle ~0 %; clicking a building hands off to the real window, Esc returns. | open |
-| P13 | [Live-first polish](wp/p13-polish.md) (KV-27 built; D26 open) | D26 | Every rule has a check in selftest/shot.js; the Design batch pack exists. | open |
+| P13 | [Live-first polish](wp/p13-polish.md) (KV-27 built; D26 Mélyvíz applied 2026-10-27) | D26 | Every rule has a check in selftest/shot.js; the Design batch pack exists. | open |
 
 Changes against the report, from the user's KV-01 answers: P2 brings the embedded terminal forward
 (CITY-D15 C, link as fallback); P3b is new (VS Code extension, CITY-D9 D).

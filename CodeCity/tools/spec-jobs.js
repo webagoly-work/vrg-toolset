@@ -1,7 +1,7 @@
 'use strict';
 
-// Supervised jobs and the port street (P6, KV-14) on a throwaway repo: its own Planner/START.cmd lists one local
-// server (LH1, a node script on a free port). Starting it through the segéd must stream its log and show its
+// Supervised jobs and the port street (P6, KV-14) on a throwaway repo: its own launcher/vrg-menu.json lists one local
+// server (a node script on a free port). Starting it through the segéd must stream its log and show its
 // port as ours; stopping must kill the whole tree (the port is free again) and read 'leállítva'.
 
 const assert = require('assert');
@@ -32,7 +32,10 @@ async function start() {
   // a stand-in selftest: fails until CodeCity/tools/ok exists (the weather check of KV-15)
   put(path.join(fx, 'CodeCity', 'tools', 'selftest.js'), "const ok = require('fs').existsSync(__dirname + '/ok');\n" +
     "console.log(ok ? 'all passed' : 'FAIL  scanner\\n    at CodeCity/scan.js:12:5'); process.exit(ok ? 0 : 1);\n");
-  put(path.join(fx, 'Planner', 'START.cmd'), ['@echo off', 'set "LH1_NAME=Proba szerver"', `set "LH1_PORT=${P}"`, 'set "LH1_PATH=/"', 'set "LH1_JS=tools\\srv.js"', 'set "LHCOUNT=1"', ''].join('\r\n'));
+  // the launcher registry with one local server (the segéd reads it through launcher/menu.js)
+  put(path.join(fx, 'launcher', 'menu.js'), fs.readFileSync(path.join(CITY, '..', 'launcher', 'menu.js'), 'utf8'));
+  put(path.join(fx, 'launcher', 'vrg-menu.json'), JSON.stringify({ start: { tools: [] },
+    servers: [{ key: '1', id: 'proba', name: 'Proba szerver', port: P, js: '{repo}\\tools\\srv.js' }] }));
   const cfg = path.join(fx, 'none.json');
   put(cfg, JSON.stringify({ agentsCmd: [process.execPath, '-e', 'console.log("[]")'] }));
   const env = Object.assign({}, process.env); delete env.KP_DRY_RUN;

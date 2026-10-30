@@ -24,8 +24,11 @@ function worldDraw() {
   wd.group = new THREE.Group();
   wd.R = wdExt() * 12;
   const R = wd.R;
-  const sea = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 96), new THREE.MeshLambertMaterial({ color: 0x0b1530 }));
+  // Mélyvíz (CITY-D26): the ocean fades out as the camera comes down to the Land, so the water ground (38-sea) shows
+  // under the city there; from orbit the planet is solid again (worldCam sets the opacity)
+  const sea = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 96), new THREE.MeshLambertMaterial({ color: 0x0a1820, transparent: true, opacity: 1 }));
   sea.position.set(0, -R - 0.6 * agScale(), 0);
+  wd.sea = sea;
   const halo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.04, 64, 48), new THREE.MeshBasicMaterial({ color: 0x2a6aff, transparent: true, opacity: 0.08, side: THREE.BackSide, fog: false }));
   halo.position.copy(sea.position);
   if (KV_OVERLAY) sea.visible = halo.visible = false;   // 00-wallpaper: in the overlay the desktop is the sea
@@ -67,12 +70,18 @@ function worldDraw() {
   wd.group.add(ring);
   wd.group.traverse(o => { o.raycast = () => {}; });
   world.group.add(wd.group);
+  worldCam();   // the ocean's opacity for the current zoom
   requestRender();
 }
 // near/far follow the zoom (M3), so the planet and a single building both draw sharp
 function worldCam() {
   const far = Math.max(5000, orbit.r * 6 + (wd.R || 0) * 2.5), near = Math.max(0.5, orbit.r * 0.002);
   if (camera.far !== far || camera.near !== near) { camera.far = far; camera.near = near; camera.updateProjectionMatrix(); }
+  if (wd.sea && !KV_OVERLAY) {   // Mélyvíz: see-through ocean near the Land, solid planet from orbit (0 below R/2, 1 above 1.5 R)
+    const t = Math.min(1, Math.max(0, (orbit.r - wd.R * 0.5) / wd.R)), o = t * t * (3 - 2 * t);
+    wd.sea.material.opacity = o; wd.sea.material.depthWrite = o > 0.99;
+    wd.group.visible = o > 0.01;   // near the Land the planet's far side (continents, foreign cities) would show through
+  }
 }
 function worldGo(ms = 800) { if (wd.R) flyCamera([0, 0, orbit.theta, 0.35, wd.R * 3.1], window.KV_INSTANT ? 0 : ms); }
 function worldPanelHtml() {

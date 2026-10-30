@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// fetch-electron.js — the Electron runtime for the overlay shell (P12, KV-25) into Planner/apps/electron (git-ignored).
+// fetch-electron.js — the Electron runtime for the overlay shell (P12, KV-25) into H:\VRG\Full\tools\electron (next to the repo, never committed).
 //   node CodeCity/tools/fetch-electron.js          download + verify + unpack the version pinned in vendor-manifest.json
 //   node CodeCity/tools/fetch-electron.js --check  only say whether the right version is unpacked (exit 1 if not)
 // Trust chain, no npm install and no postinstall scripts: the npm tarball of `electron` is checked against the sha512
@@ -9,7 +9,7 @@
 const fs = require('fs'), path = require('path'), crypto = require('crypto'), zlib = require('zlib'), { spawnSync } = require('child_process');
 
 const REPO = path.resolve(__dirname, '..', '..');
-const DEST = path.join(REPO, 'Planner', 'apps', 'electron');
+const DEST = path.join(path.dirname(REPO), 'tools', 'electron');
 const comp = JSON.parse(fs.readFileSync(path.join(REPO, 'vendor-manifest.json'), 'utf8')).components.find(c => c.slug === 'electron');
 if (!comp) { console.error('vendor-manifest.json has no "electron" component'); process.exit(1); }
 const VER = comp.npmVersion, ZIP = `electron-v${VER}-win32-x64.zip`;

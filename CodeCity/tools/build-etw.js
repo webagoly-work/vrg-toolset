@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// build-etw.js — builds CodeCity/etw (vrg-etw.exe, P11 KV-23) with the portable .NET SDK in Planner/apps/dotnet.
+// build-etw.js — builds CodeCity/etw (vrg-etw.exe, P11 KV-23) with the portable .NET SDK in H:\VRG\Full\tools\dotnet.
 //
 //   node CodeCity/tools/build-etw.js     -> CodeCity/etw/bin/publish/ (then the user installs it: docs/city/wp/p11-etw.md)
 //
@@ -8,7 +8,7 @@
 'use strict';
 const fs = require('fs'), path = require('path'), { spawnSync } = require('child_process');
 
-const REPO = path.resolve(__dirname, '..', '..'), DOTNET = path.join(REPO, 'Planner', 'apps', 'dotnet', 'dotnet.exe');
+const REPO = path.resolve(__dirname, '..', '..'), DOTNET = path.join(path.dirname(REPO), 'tools', 'dotnet', 'dotnet.exe');
 const DIR = path.join(REPO, 'CodeCity', 'etw'), PROJ = path.join(DIR, 'vrg-etw.csproj'), OUT = path.join(DIR, 'bin', 'publish');
 if (!fs.existsSync(DOTNET)) { console.error('Nincs .NET SDK: ' + DOTNET + ' (docs/city/README.md §5, CITY-D18)'); process.exit(1); }
 const env = Object.assign({}, process.env, {
