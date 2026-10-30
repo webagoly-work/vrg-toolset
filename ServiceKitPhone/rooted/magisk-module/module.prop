@@ -1,0 +1,6 @@
+id=servicekit-phone
+name=ServiceKit Phone (gadget + HID)
+version=v1.0
+versionCode=1
+author=webagoly-work
+description=Rooted USB gadget for ServiceKit Phone: real USB mass-storage stick + HID keyboard. Needs a kernel with configfs USB gadget, f_mass_storage and f_hid. Auto-setup on boot is OFF by default — edit service.sh to enable.

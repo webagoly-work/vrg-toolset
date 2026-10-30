@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy to android/app/src/main/res/xml/network_security_config.xml after `npx cap add android`,
+     and reference it from AndroidManifest.xml <application android:networkSecurityConfig="@xml/network_security_config">.
+     The app content is local; this only permits the ws:// and http connection to the PC bridge
+     over USB (127.0.0.1 via adb reverse) or the LAN. -->
+<network-security-config>
+  <base-config cleartextTrafficPermitted="true">
+    <trust-anchors><certificates src="system" /></trust-anchors>
+  </base-config>
+</network-security-config>

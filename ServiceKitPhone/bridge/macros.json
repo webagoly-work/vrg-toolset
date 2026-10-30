@@ -1,0 +1,24 @@
+{
+  "note": "Curated quick actions the phone can trigger on the PC. Only run when the bridge is started with --allow-run. danger:1 asks for a confirm on the phone first. Edit freely.",
+  "macros": [
+    { "id": "ipconfig",   "hu": "IP-cím és hálózat",        "cat": "net",    "kind": "cmd", "cmd": "ipconfig /all" },
+    { "id": "flushdns",   "hu": "DNS gyorsítótár ürítése",  "cat": "net",    "kind": "cmd", "cmd": "ipconfig /flushdns" },
+    { "id": "netreset",   "hu": "Hálózat alaphelyzetbe",    "cat": "net",    "kind": "cmd", "cmd": "netsh winsock reset & netsh int ip reset", "danger": 1 },
+    { "id": "wifikeys",   "hu": "Mentett Wi-Fi jelszavak",  "cat": "net",    "kind": "ps",  "cmd": "(netsh wlan show profiles) | Select-String ':(.+)$' | ForEach-Object { $n=$_.Matches.Groups[1].Value.Trim(); netsh wlan show profile name=\"$n\" key=clear | Select-String 'Key Content' }" },
+    { "id": "temp",       "hu": "Ideiglenes fájlok mérete", "cat": "clean",  "kind": "ps",  "cmd": "'{0:N0} MB' -f ((Get-ChildItem $env:TEMP -Recurse -EA SilentlyContinue | Measure-Object Length -Sum).Sum/1MB)" },
+    { "id": "diskfree",   "hu": "Szabad lemezhely",         "cat": "disk",   "kind": "ps",  "cmd": "Get-PSDrive -PSProvider FileSystem | Select-Object Name,@{n='FreeGB';e={[int]($_.Free/1GB)}},@{n='UsedGB';e={[int]($_.Used/1GB)}} | Format-Table -Auto | Out-String" },
+    { "id": "diskhealth", "hu": "Lemez állapota (SMART)",   "cat": "disk",   "kind": "ps",  "cmd": "Get-PhysicalDisk | Select-Object FriendlyName,MediaType,HealthStatus | Format-Table -Auto | Out-String" },
+    { "id": "top",        "hu": "Mi eszi a gépet",          "cat": "diag",   "kind": "ps",  "cmd": "Get-Process | Sort-Object CPU -Desc | Select-Object -First 8 Name,Id,@{n='MB';e={[int]($_.WS/1MB)}} | Format-Table -Auto | Out-String" },
+    { "id": "lastboot",   "hu": "Utolsó rendszerindítás",   "cat": "diag",   "kind": "ps",  "cmd": "(Get-CimInstance Win32_OperatingSystem).LastBootUpTime" },
+    { "id": "explorer",   "hu": "Intéző újraindítása",      "cat": "repair", "kind": "cmd", "cmd": "taskkill /f /im explorer.exe & start explorer.exe", "danger": 1 },
+    { "id": "spooler",    "hu": "Nyomtatási sor ürítése",   "cat": "repair", "kind": "cmd", "cmd": "net stop spooler & del /q /f /s %systemroot%\\System32\\spool\\PRINTERS\\* & net start spooler", "danger": 1 },
+    { "id": "defupd",     "hu": "Defender adatbázis frissítés", "cat": "sec", "kind": "cmd", "cmd": "\"%ProgramFiles%\\Windows Defender\\MpCmdRun.exe\" -SignatureUpdate" },
+    { "id": "defscan",    "hu": "Defender gyorsvizsgálat",  "cat": "sec",    "kind": "cmd", "cmd": "\"%ProgramFiles%\\Windows Defender\\MpCmdRun.exe\" -Scan -ScanType 1", "danger": 1 },
+    { "id": "restorepnt", "hu": "Visszaállítási pont",      "cat": "repair", "kind": "ps",  "cmd": "Checkpoint-Computer -Description 'ServiceKit phone' -RestorePointType MODIFY_SETTINGS; 'kész'", "danger": 1 },
+    { "id": "keys",       "hu": "Windows OEM kulcs",        "cat": "repair", "kind": "ps",  "cmd": "(Get-CimInstance SoftwareLicensingService).OA3xOriginalProductKey" },
+    { "id": "battery",    "hu": "Akku jelentés az Asztalra","cat": "diag",   "kind": "cmd", "cmd": "powercfg /batteryreport /output \"%USERPROFILE%\\Desktop\\battery.html\"" },
+    { "id": "devmgmt",    "hu": "Eszközkezelő megnyitása",  "cat": "open",   "kind": "cmd", "cmd": "start devmgmt.msc" },
+    { "id": "update",     "hu": "Windows Update megnyitása","cat": "open",   "kind": "cmd", "cmd": "start ms-settings:windowsupdate" },
+    { "id": "taskmgr",    "hu": "Feladatkezelő",            "cat": "open",   "kind": "cmd", "cmd": "start taskmgr" }
+  ]
+}

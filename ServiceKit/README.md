@@ -14,6 +14,30 @@ English section below.*
    Régi gépekhez a *Cél Windows* mezőben válaszd a Windows 7 / 8.1-et.
 3. Futtasd a **START.cmd**-t: megnyílik az Irányítópult. A mellette induló kis PowerShell ablakot hagyd nyitva.
 
+### Egysoros letöltés (bootstrap) — pendrive nélkül
+
+Ha nincs kéznél a pendrive, a kliens gépen PowerShellben egyetlen sor letölti és
+beállítja a kitet a nyilvános tárból (nincs feltöltés, nincs híd):
+
+```powershell
+irm https://raw.githubusercontent.com/webagoly-work/vrg-toolset/servicekit/ServiceKit/bootstrap.ps1 | iex
+```
+
+Alapból a `%USERPROFILE%\ServiceKit` mappába telepít, majd elindítja az Irányítópultot.
+Beállításokkal (cél mappa, indítás nélkül):
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/webagoly-work/vrg-toolset/servicekit/ServiceKit/bootstrap.ps1))) -Target 'C:\ServiceKit' -NoLaunch
+```
+
+A szkript átlátszó: kiírja a forrás URL-t, és **SHA-256**-tal ellenőrzi a letöltést a
+közzétett hash ellenében. Nyílt, kézben futtatott szerviz-eszköz — semmit nem csinál
+rejtve, és nincs benne ügyféladat. A `bootstrap.cmd` dupla kattintásra ugyanezt teszi.
+
+*(No stick? On the client PC one PowerShell line pulls and sets up the kit from the
+public repo, SHA-256-verified, into `%USERPROFILE%\ServiceKit` and launches the
+dashboard. `bootstrap.cmd` does the same on double-click.)*
+
 | Fájl | Mire való |
 |---|---|
 | `START.cmd` | Irányítópult élő állapottal: futó programok CPU/RAM, telepítési folyamat, indítás |
