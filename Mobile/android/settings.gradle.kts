@@ -23,4 +23,4 @@ rootProject.name = "VRG-Mobile"
 
 // The pure Kotlin modules: build and test on any JDK, no Android SDK.
 include(":kit-core", ":airdeck-core")
-if (!jvmOnly) include(":kit", ":feature-airdeck", ":feature-settings", ":feature-pair", ":app")
+if (!jvmOnly) include(":kit", ":feature-airdeck", ":feature-settings", ":feature-pair", ":feature-account", ":app")

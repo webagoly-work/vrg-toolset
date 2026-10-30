@@ -198,7 +198,7 @@ All of them run in the **main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_
   OpenWrt on the TP-Link TL-WR1043ND (the user flashes; Claude never touches the router). Asked for 2026-10-26
   with CITY-D24; phases P0–P5, the first is the sticker's hardware version.
 - **`GO MOBILE`** — read `GO-MOBILE.md` at the repo root and do what it says: VRG Mobile, the companion app
-  (`Mobile/`, Légegér is its first feature), one WP at a time from `docs/mobile/` (M0 done, M1 + M2 built 2026-10-29). Made for
+  (`Mobile/`, Légegér is its first feature), one WP at a time from `docs/mobile/` (M0 done, M2 live, M1 + M3 built, 2026-10-30). Made for
   **cloud sessions**: the APK is built by GitHub Actions, not in the sandbox (`docs/mobile/CLOUD.md`). Exception to
   "one checkout, branch main": start from `claude/gracious-pasteur-vakjwf` until PR #2 is merged, and push your own branch.
 - **`GO STRICT`** — **done**: the five programs VRG Kapu links to are on `main` (`check-hub --strict` → Rendben). Retired.

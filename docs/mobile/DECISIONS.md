@@ -30,6 +30,11 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   encoder (`src/05f-qr.js`, Nayuki, MIT), read from that file rather than copied. `--shots` now needs a paired
   phone, so the old `hu.vrg.legeger` APK (which cannot pair) no longer gets screenshots.
 
+- **M3 · Which GitHub app** (2026-10-30, the WP default). A classic **OAuth App** with Device Flow, scopes
+  `repo notifications`; the Client ID goes in `Mobile/android/kit/src/main/res/values/github.xml`. A GitHub App with
+  fine-grained permissions (contents + notifications on this one repo) would be narrower; it can replace the OAuth App
+  later without touching the features, since they all go through `kit: GitHub`.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-6 · Chat-log branch (M6).** A) one branch `mobile-log`, one file per day `log/YYYY-MM-DD.md`;

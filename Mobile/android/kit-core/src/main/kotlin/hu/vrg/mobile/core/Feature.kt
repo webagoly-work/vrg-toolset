@@ -49,11 +49,11 @@ object Catalogue {
     )
     val PAIR = FeatureInfo(
         "pair", "QR párosítás", "A PC képernyőjén lévő QR-kód beolvasása: csatlakozás a reléhez és megbízható telefon egy mozdulattal.",
-        "▣", Group.LINK, Stage.BETA, "M2", setOf(Need.CAMERA, Need.RELAY),
+        "▣", Group.LINK, Stage.LIVE, "M2", setOf(Need.CAMERA, Need.RELAY),
     )
     val ACCOUNT = FeatureInfo(
-        "account", "GitHub fiók", "Belépés a GitHubra (eszközkód vagy a PC-ről QR-rel), a többi online funkció ezt használja.",
-        "⎔", Group.LINK, Stage.PLANNED, "M3", setOf(Need.INTERNET),
+        "account", "GitHub fiók", "Belépés a GitHubra eszközkóddal; a többi online funkció ezt a fiókot használja.",
+        "⎔", Group.LINK, Stage.BETA, "M3", setOf(Need.INTERNET),
     )
     val NET = FeatureInfo(
         "net", "Hálózat", "Bluetooth HID, WiFi relé, hotspot adatforgalom-figyeléssel, USB és Bluetooth internetmegosztás.",
