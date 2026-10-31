@@ -1,5 +1,6 @@
 # VRG BuildTree — agent init
 *For a Claude Code session that will work on VRG BuildTree. Read this, then the files in §3.*
+**Felelős:** Charlotte, Finance and Contracts
 
 ## 1. What it is
 An inventory and device-builder tool for the Varler hardware branch: owned items with invoice data,
@@ -8,7 +9,7 @@ tree, saved to a gallery and downloadable as Markdown.
 
 ## 2. Where
 - `Modder/vrg-buildtree.html` — the whole tool, one file, no external deps, no localStorage.
-- Opened from `Planner/START.cmd` key **9**, or VRG-DE.cmd **L4**.
+- Opened from START key **9**.
 - Exports next to it: `Modder/vrg-buildtree-keszlet-2026-10-09.txt`, `vrg-buildtree-adatbazis-2026-10-13.txt`.
 
 ## 3. Read first
@@ -25,13 +26,13 @@ No build — single file. Open it in a browser.
   "Continuing in a fresh chat").
 
 ## 6. Current state
-- 2026-10-13 BuildTree: idea variants, full stock export; EXPLORE-001/002
-- 2026-10-13 Adatbázis export
-- 2026-10-12 BuildTree: Modulshop hauls SZ12833, SZ13442, SZ13865/13866, SZ14217
+- git 2026-10-27 f058e6f Mélyvíz rollout P3–P4: BuildTree palette, Inventory, Vendor, Kapu, toolbox
+- git 2026-10-22 6b7eb03 Anonymise client job codes before the colleague invite (HUB-Q10 B, step 3a)
+- git 2026-10-22 3251b88 BuildTree: Modulshop order 2026-10-18 for Board Console panel B
 - Open TODOs in HANDOFF: diagram-viewer box, MindMap export, invoice backfill, swarm variant.
   Decision files: none.
 
 ## 7. Do not touch
 — (nincs leírva)
 
-Forrás: Modder/VRG-BuildTree-HANDOFF.md, Planner/START.cmd, VRG-DE.cmd, git log main, 2026-10-22
+Forrás: Modder/VRG-BuildTree-HANDOFF.md, launcher/vrg-menu.json, git log main, 2026-10-31

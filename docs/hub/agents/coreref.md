@@ -1,5 +1,6 @@
 # CoreRef — agent init
 *For a Claude Code session that will work on CoreRef. Read this, then the files in §3.*
+**Felelős:** Elsie, Behaviour Lab
 
 ## 1. What it is
 The offline, link-out reference database for ESPHome and Home Assistant, pinned at a known release
@@ -29,11 +30,10 @@ node CoreRef/tools/harvest.js --limit 20 # a quick slice; also --esphome / --ha,
 - The database is rebuilt from scratch each run (README "Run it").
 
 ## 6. Current state
-- 2026-10-14 CoreRef: offline ESPHome / Home Assistant core reference — harvester, manifest, plan, Phase 0 report
-- 2026-10-09 0. fázis: gyűjtés kész
+- git 2026-10-14 c815fb0 CoreRef: offline ESPHome / Home Assistant core reference — harvester, manifest, plan,
 - Not yet built: reader UI, refresh diff report, catalogue layers (README). Decision files: none.
 
 ## 7. Do not touch
 - `../_refmirror` (personal reading mirror, outside the repo) — never copy it in (README).
 
-Forrás: CoreRef/README.md, git log main, 2026-10-22
+Forrás: CoreRef/README.md, git log main, 2026-10-31

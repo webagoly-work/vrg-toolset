@@ -1,5 +1,6 @@
 # Licenc nyilvántartás — agent init
 *For a Claude Code session that will work on Licenc nyilvántartás. Read this, then the files in §3.*
+**Felelős:** Charlotte, Finance and Contracts
 
 ## 1. What it is
 Every outside source recorded with its licence, so the licence travels with the code
@@ -23,12 +24,12 @@ Every outside source recorded with its licence, so the licence travels with the 
 - CC-BY-NC-SA documentation never goes into the repo (CoreRef/README.md).
 
 ## 6. Current state
-- 2026-10-07 Client preview: preview model in the Planner, WebGL viewer shell (look checkpoint)
-- 2026-09-21 vendor: add mind-elixir and jsmind as pinned source, plus tag support
-- 2026-09-21 manifest: pdfjs must be loaded from the legacy build
+- git 2026-10-30 3932351 Re-root: rewrite old paths to H:\VRG\Full
+- git 2026-10-27 1419e33 Kódváros KV-25 (P12 L2): Electron overlay spike - the city over the desktop on Ctrl+A
+- git 2026-10-26 b5ab297 Kódváros KV-12 (P5): file panel - view, markdown preview, edit, diff before saving
 - Decision files: none.
 
 ## 7. Do not touch
 - `Vendor/` — never committed (root CLAUDE.md).
 
-Forrás: CLAUDE.md, vendor-manifest.json, CoreRef/README.md, git log main, 2026-10-22
+Forrás: CLAUDE.md, vendor-manifest.json, CoreRef/README.md, git log main, 2026-10-31

@@ -9,16 +9,24 @@ session with its codephrase, e.g. `GO HUB`; the root `CLAUDE.md` maps each codep
 For a single program without a running job, the program's file in this folder is enough
 (see `README.md`).
 
-## Existing GO files
+## Live GO files
 
-| Codephrase | File | Working copy | What it starts |
+All run in the main checkout `H:\VRG\Full\Planner_VRG_U100`, branch `main`.
+
+| Codephrase | File | Department | What it starts |
 |---|---|---|---|
-| `GO R1010` | `GO-R1010.md` | `wt-planner-stack` | A work session on the Planner round 2026-10-10, then the CLA-ADD-001 extras. |
-| `GO FRAME` | `GO-FRAME.md` | `wt-planner-stack` | The BRIDGE SmartFrame (BSF) concept: research, tuning with the user, then the docs. No code. |
-| `GO V2` | `GO-V2.md` | `wt-planner-stack` | CLA second version: v1 fully built plus every further layer prepared, quick-survey quantities and prices. |
-| `GO R1018` | `GO-R1018.md` | main checkout, `main` | Continue the Planner round 2026-10-18 (Födém · Igénylista · Házimozi); only the C6 Mozi fal pen feel is open. |
-| `GO ADAT` | `GO-ADAT.md` | `wt-planner-stack` | CLA: from the power base layer to Data/PoE, LED feeds and the old plan. Not in root `CLAUDE.md`; paste the file into a new session. |
-| `GO HUB` | `GO-HUB.md` | SecAcc worktree, `secacc` | Build VRG Kapu from `docs/hub/`, next open WP, stopping at every ⏸. |
-| `GO STRICT` | `GO-STRICT.md` | main checkout, `main` | Commit the five uncommitted programs the Kapu links to (HUB-Q24). Until `secacc` is merged, the file and its `CLAUDE.md` line are only in the SecAcc worktree. |
+| `GO MAIN` | `GO-MAIN.md` | Bernard | The overall entry point: the state of every line, the standing rules. |
+| `GO PLANNER` | `GO-PLANNER.md` | Arnold | The open Planner work except wiring. |
+| `GO ROUTE` | `GO-ROUTE.md` | Arnold | Wiring features, the PCB-style router, the Topology View. Starts by asking the user. |
+| `GO CLA` | `GO-CLA.md` | Arnold | The CLA job thread: v1 and v2 delivered, open design questions only. |
+| `GO HUB` | `GO-HUB.md` | Elsie | VRG Kapu: setup steps, guest mode, shared folders. |
+| `GO CITY` | `GO-CITY.md` | Elsie | Kódváros: parked tuning, deferred checks, the Cloudflare ring. |
+| `GO MOBILE` | `GO-MOBILE.md` | Elsie | VRG Mobile, one WP at a time from `docs/mobile/`. |
+| `GO OPENWRT` | `GO-OPENWRT.md` | Elsie | OpenWrt on the TL-WR1043ND. The user flashes; Claude never touches the router. |
 
-Source: the header of each GO file and the root `CLAUDE.md` "Codephrases", 2026-10-22.
+**Waiting:** `GO TNT` lives on branch `docs/go-tnt` and may merge only when the list in `GO-MAIN.md` §4 is finished and
+the user says so. It is Charlotte's line.
+
+Old phrases and every archived file: `docs/go-archive/README.md`.
+
+Source: the root `CLAUDE.md` "Codephrases" and `docs/council/ROSTER.md`, 2026-10-31.

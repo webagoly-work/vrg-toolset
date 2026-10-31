@@ -1,5 +1,6 @@
 # Planner CYD — agent init
 *For a Claude Code session that will work on Planner CYD. Read this, then the files in §3.*
+**Felelős:** Elsie, Behaviour Lab
 
 ## 1. What it is
 A desk dashboard and remote for the Varler Planner on a CYD (ESP32 touch display): status, the
@@ -9,9 +10,8 @@ dumb, a Node bridge on the PC is smart; they talk in short `X|a|b` lines over US
 ## 2. Where
 - `Firmware/planner-cyd/`: `source/planner_cyd/` (firmware), `app/bridge/` (bridge, settings page
   on port 8788, macros), `app/tools/` (fake CYD, e2e, fonts). Planner side: `src/07e-dash-link.js`.
-- **Only in the main checkout as uncommitted work (2026-10-22)** — not on GitHub yet.
-- Launchers in the folder: `1 - USB - Planner.bat` … `5 - Makropad beallitasa.bat`; README §4 names
-  START.cmd → K.
+- Started from START submenu **Y**, or the launchers in the folder: `1 - USB - Planner.bat` …
+  `5 - Makropad beallitasa.bat`.
 
 ## 3. Read first
 1. `Firmware/planner-cyd/README.md`
@@ -31,11 +31,13 @@ dumb, a Node bridge on the PC is smart; they talk in short `X|a|b` lines over US
 - `node_modules` (serialport) is not in git; `1 - USB - Planner.bat` installs it (README §3).
 
 ## 6. Current state
-- 2026-10-17 v0.7: KEZDŐLAP, makró készletek, magyar betűk
+- git 2026-10-30 3932351 Re-root: rewrite old paths to H:\VRG\Full
+- git 2026-10-22 6b7eb03 Anonymise client job codes before the colleague invite (HUB-Q10 B, step 3a)
+- git 2026-10-22 dbb1eb9 Firmware: add planner-cyd (CYD touch panel for the Planner: sketch, USB bridge, makro
 - README §5: the screen itself is not yet seen by Claude; the user checks layout, colours, touch.
   Decision files: none (decisions in README §6).
 
 ## 7. Do not touch
 - `firmware/` (compiled image, not in git) and `app/bridge/macros.json` (the user's own sets).
 
-Forrás: Firmware/planner-cyd/README.md (main checkout), Hub/data/topology.json roadmap, 2026-10-22
+Forrás: Firmware/planner-cyd/README.md (main checkout), Hub/data/topology.json roadmap, 2026-10-31

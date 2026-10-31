@@ -1,12 +1,13 @@
 # Általános villanyszerelői kalkulátor — agent init
 *For a Claude Code session that will work on Általános villanyszerelői kalkulátor. Read this, then the files in §3.*
+**Felelős:** Charlotte, Finance and Contracts
 
 ## 1. What it is
 Itemised calculation of labour and material for general electrical work (topology description).
 
 ## 2. Where
 - `Calculator/Altalanos_Villanyszerelui_Kalkulator.html` — one file.
-- Opened from `Planner/START.cmd` key **3**.
+- Opened from START key **3**.
 
 ## 3. Read first
 1. `Calculator/Villanyszerelesi_Arlista_VarlerAron.md`
@@ -26,11 +27,14 @@ No build — single file.
 - The market band is computed without the access multiplier: the lists are Budapest prices (HTML comment).
 
 ## 6. Current state
-- 2026-09-17 Initial import of the VRG toolset. Decision files: none.
-- 2026-10-25 „Piac 2026-10” preset (market median labour) and the market labour band in the summary,
-  from 5 published price lists (Kit `market/providers_2026-10-25.json`).
+- git 2026-10-27 250b235 Mélyvíz rollout P0–P2: shared style, calculators, MindMap
+- git 2026-10-26 8060061 Calculator: market preset and labour band; vrg-piacmero agent
+- git 2026-09-17 35305ff Initial import of the VRG toolset
+- Since 2026-10-25: „Piac 2026-10” preset (market median labour) and the market labour band in the summary,
+  from 5 published price lists (Workflow Kit, `H:\VRG\Full\Varler_Workflow_Kit\market`).
+- Decision files: none.
 
 ## 7. Do not touch
 - The `MKT-BEGIN … MKT-END` block — regenerate it from the Kit (HTML comment).
 
-Forrás: Calculator/Villanyszerelesi_Arlista_VarlerAron.md, Calculator/komplexitas_faktorkonyvtar_v1.md, Calculator/Altalanos_Villanyszerelui_Kalkulator.html, Hub/data/topology.json, Planner/START.cmd, 2026-10-25
+Forrás: Calculator/Villanyszerelesi_Arlista_VarlerAron.md, Calculator/komplexitas_faktorkonyvtar_v1.md, Calculator/Altalanos_Villanyszerelui_Kalkulator.html, Hub/data/topology.json, launcher/vrg-menu.json, 2026-10-31

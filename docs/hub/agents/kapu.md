@@ -1,5 +1,6 @@
 # VRG Kapu — agent init
 *For a Claude Code session that will work on VRG Kapu. Read this, then the files in §3.*
+**Felelős:** Elsie, Behaviour Lab · **Indító:** GO HUB
 
 ## 1. What it is
 The shared homepage of the VRG toolset: one map of every department, program, folder and agent doc,
@@ -8,8 +9,7 @@ for both users. A single offline HTML file built from modular sources.
 ## 2. Where
 - Sources `Hub/src/`, data `Hub/data/`, tests `Hub/test/`, companion `Hub/companion/` →
   `Hub/dist/vrg-kapu.html`. The plan: `docs/hub/`.
-- Opened with `Hub\VRG Kapu.cmd`, `Planner/START.cmd` **H** or VRG-DE.cmd **L5**.
-- Built on branch `secacc` in `H:\VRG\Backup\archive\parked\2026-10-24\SecAcc` (GO-HUB.md §1).
+- Opened with `Hub\VRG Kapu.cmd` or START key **H**. On `main` in the main checkout.
 
 ## 3. Read first
 1. `GO-HUB.md`
@@ -33,12 +33,15 @@ node tools/check-hub.js          # --strict before handing the hub out (WP-H13)
 - Hungarian UI text, English code (GO-HUB.md §4).
 
 ## 6. Current state
+- git 2026-10-30 60498ca Kapu: admin page, helper follow-ups, setup checklist and colleague guide for the acce
+- git 2026-10-27 f058e6f Mélyvíz rollout P3–P4: BuildTree palette, Inventory, Vendor, Kapu, toolbox
+- git 2026-10-26 87f2fca Kapu: access page only; START.cmd folder option and localhost menu
+- `docs/hub/hub-seed.json` has no Mobile, Kódváros, ServiceKit or OpenWrt yet.
 - H0–H12 done; H13 (distribution) open, waiting for the OneDrive share links (docs/hub/README.md §4).
-- 2026-10-21 Terv + Business Topology + build pack
 - Decision files: `docs/hub/DECISIONS.md`, `docs/hub/HUB-Q-001.json`.
 
 ## 7. Do not touch
-- The main checkout (GO-HUB.md §1); the private signing key outside the repo (docs/hub/README.md §4 H5).
+- The private signing key outside the repo (docs/hub/README.md §4 H5).
 - `Hub/dist/` by hand; rebuild instead (Hub/README.md).
 
-Forrás: GO-HUB.md, Hub/README.md, docs/hub/README.md, 2026-10-22
+Forrás: GO-HUB.md, Hub/README.md, docs/hub/README.md, 2026-10-31

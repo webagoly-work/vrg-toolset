@@ -1,5 +1,6 @@
 # VRG Vendor — agent init
 *For a Claude Code session that will work on VRG Vendor. Read this, then the files in §3.*
+**Felelős:** Elsie, Behaviour Lab
 
 ## 1. What it is
 The catalogue of brought-in third-party components: `vendor-manifest.json` plus
@@ -7,7 +8,7 @@ The catalogue of brought-in third-party components: `vendor-manifest.json` plus
 
 ## 2. Where
 - `vrg-vendor.html` (repo root), `vendor-manifest.json`, `tools/fetch-vendor.js`, `Vendor/` (not in git).
-- Opened from `Planner/START.cmd` key **0** (tool 10); **L** lists, **D** downloads components.
+- Opened from START key **0**. Submenu **V**: **L** lists, **D** downloads components, **Y** syncs the page.
 
 ## 3. Read first
 1. `CLAUDE.md` (root) — "Vendored third-party code"
@@ -27,12 +28,12 @@ node tools/fetch-vendor.js three     # one component
 - `Vendor/pdfjs` must load from `legacy/build/pdf.mjs` (root CLAUDE.md).
 
 ## 6. Current state
-- 2026-10-07 Client preview: preview model in the Planner, WebGL viewer shell (look checkpoint)
-- 2026-09-21 vendor: add mind-elixir and jsmind as pinned source, plus tag support
-- 2026-09-21 fetch-vendor: add an npm tarball source, and vendor pdf.js from it
+- git 2026-10-30 3932351 Re-root: rewrite old paths to H:\VRG\Full
+- git 2026-10-27 f058e6f Mélyvíz rollout P3–P4: BuildTree palette, Inventory, Vendor, Kapu, toolbox
+- git 2026-10-27 1419e33 Kódváros KV-25 (P12 L2): Electron overlay spike - the city over the desktop on Ctrl+A
 - Decision files: none.
 
 ## 7. Do not touch
 - `Vendor/` — never committed (root CLAUDE.md).
 
-Forrás: CLAUDE.md, vendor-manifest.json, Planner/START.cmd, git log main, 2026-10-22
+Forrás: CLAUDE.md, vendor-manifest.json, launcher/vrg-menu.json, git log main, 2026-10-31

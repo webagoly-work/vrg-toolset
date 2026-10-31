@@ -1,5 +1,6 @@
 # Client Preview — agent init
 *For a Claude Code session that will work on Client Preview. Read this, then the files in §3.*
+**Felelős:** Arnold, Design Division
 
 ## 1. What it is
 An offline, single-file 3D page a client opens to explore their plan: spin and zoom the building,
@@ -30,10 +31,11 @@ The model comes from `tools/model-from-vplan.js` (README "Dev loop").
 - `dev/` holds client plans and is gitignored (README).
 
 ## 6. Current state
-- 2026-10-07 Client preview: preview model in the Planner, WebGL viewer shell (look checkpoint)
+- git 2026-10-22 6b7eb03 Anonymise client job codes before the colleague invite (HUB-Q10 B, step 3a)
+- git 2026-10-07 1d5569a Client preview: preview model in the Planner, WebGL viewer shell (look checkpoint)
 - Phases 1–2 done; 3 interaction, 4 tour, 5 export open (README "Phases"). Decision files: none.
 
 ## 7. Do not touch
 - `src/ds/` by hand; `dev/` client plans (README).
 
-Forrás: Planner/projects/client-preview/README.md, git log main, 2026-10-22
+Forrás: Planner/projects/client-preview/README.md, git log main, 2026-10-31

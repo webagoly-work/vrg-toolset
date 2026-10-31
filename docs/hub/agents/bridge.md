@@ -1,5 +1,6 @@
 # BRIDGE okosotthon — agent init
 *For a Claude Code session that will work on BRIDGE okosotthon. Read this, then the files in §3.*
+**Felelős:** Elsie, Behaviour Lab
 
 ## 1. What it is
 A complete design for BRIDGE, a smart-home architecture documented to buildable depth. The doctrine
@@ -31,9 +32,9 @@ is manual-first, implemented in hardware. CLA is the first real instance (a two-
 - Indicator language: unify against STD-008 §2 before building any of the three devices (PRIMER §9).
 
 ## 6. Current state
-- 2026-10-21 Media Wall MW-001 r0
-- 2026-10-14 CLA-BUILD-001: K33 media wall — R06 upper wall + bedroom unit on the R07 face (§16)
-- 2026-10-14 BRIDGE standards: STD-001-A2 Layer Wiring Reference, STD-009 Shading and Passive Climate
+- git 2026-10-30 3932351 Re-root: rewrite old paths to H:\VRG\Full
+- git 2026-10-27 4da1fe6 Mélyvíz rollout P5: BRIDGE tuner, catalogue viewer, ESPBLOK builders (chrome only)
+- git 2026-10-26 0bd613b BRIDGE STD-010 r0.2: ambiance lights and the Effect Box (outline)
 - Decision file: `BRIDGE/_tuner/BRIDGE-Q-001.json`. Open items: PRIMER §7.
 
 ## 7. Do not touch
@@ -41,4 +42,4 @@ is manual-first, implemented in hardware. CLA is the first real instance (a two-
   (PRIMER §2).
 - `*.pdf` — never committed (root CLAUDE.md).
 
-Forrás: BRIDGE/README.md, BRIDGE/BRIDGE-PRIMER-001_Session-Handover.md, git log main, 2026-10-22
+Forrás: BRIDGE/README.md, BRIDGE/BRIDGE-PRIMER-001_Session-Handover.md, git log main, 2026-10-31

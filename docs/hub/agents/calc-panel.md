@@ -1,5 +1,6 @@
 # Panel anyagár kalkulátor — agent init
 *For a Claude Code session that will work on Panel anyagár kalkulátor. Read this, then the files in §3.*
+**Felelős:** Charlotte, Finance and Contracts
 
 ## 1. What it is
 The material-cost calculator for a partial panel-flat renovation, the pair of the labour calculator.
@@ -7,7 +8,7 @@ It can take the labour fee from the other tool and shows the material share of t
 
 ## 2. Where
 - `Calculator/panel_anyagar_kalkulator.html` — one file, offline.
-- Opened from `Planner/START.cmd` key **2**.
+- Opened from START key **2**.
 
 ## 3. Read first
 1. `Calculator/varleraron_kalkulatorok_osszefoglalo.md` — §0, §3, §4
@@ -23,9 +24,11 @@ No build — single file.
 - Every unit price stays editable in place, never burnt in; one file, no dependency (§4).
 
 ## 6. Current state
-- 2026-09-17 Initial import of the VRG toolset. Decision files: none.
+- git 2026-10-27 250b235 Mélyvíz rollout P0–P2: shared style, calculators, MindMap
+- git 2026-09-17 35305ff Initial import of the VRG toolset
+- Decision files: none.
 
 ## 7. Do not touch
 — (nincs leírva)
 
-Forrás: Calculator/varleraron_kalkulatorok_osszefoglalo.md, Planner/START.cmd, git log main, 2026-10-22
+Forrás: Calculator/varleraron_kalkulatorok_osszefoglalo.md, launcher/vrg-menu.json, git log main, 2026-10-31

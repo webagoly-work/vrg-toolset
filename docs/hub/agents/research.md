@@ -1,5 +1,6 @@
 # Kutatási jegyzetek — agent init
 *For a Claude Code session that will work on Kutatási jegyzetek. Read this, then the files in §3.*
+**Felelős:** Elsie, Behaviour Lab
 
 ## 1. What it is
 Longer research notes: CAD sources and a Planner MCP, NASA Open MCT with the Planner and BRIDGE,
@@ -7,7 +8,6 @@ and REA (Reverse Engineer Anything), each with what it is, what it can do here a
 
 ## 2. Where
 - `docs/research/*.md` and the Open MCT spike in `docs/research/openmct-spike/`.
-- **Only in the main checkout as uncommitted work (2026-10-22)** — not on GitHub yet.
 
 ## 3. Read first
 1. `docs/research/2026-10-20_openmct-planner-bridge.md`
@@ -25,11 +25,12 @@ and REA (Reverse Engineer Anything), each with what it is, what it can do here a
 - Fetched sources live in `Vendor/` via `vendor-manifest.json`, pinned to tags (CAD note).
 
 ## 6. Current state
-- 2026-10-20 Open MCT + REA vizsgálat
-- 2026-10-19 CAD források és Planner MCP
+- git 2026-10-30 e654103 GO files consolidated, new GO MAIN, CLAUDE.md codephrases; anonymiser re-run
+- git 2026-10-30 12ff79d Research notes: FLIP fluid spike and router USB phone wake
+- git 2026-10-30 3932351 Re-root: rewrite old paths to H:\VRG\Full
 - Decision files: none.
 
 ## 7. Do not touch
 - `Vendor/` — never committed (root CLAUDE.md).
 
-Forrás: docs/research/*.md (main checkout), Hub/data/topology.json roadmap, 2026-10-22
+Forrás: docs/research/*.md (main checkout), Hub/data/topology.json roadmap, 2026-10-31

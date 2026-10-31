@@ -1,5 +1,6 @@
 # VRG Knob Pad — agent init
 *For a Claude Code session that will work on VRG Knob Pad. Read this, then the files in §3.*
+**Felelős:** Elsie, Behaviour Lab
 
 ## 1. What it is
 Three rotary knobs that act as a USB keyboard / mouse / media keys on the PC, plus a config page on
@@ -28,11 +29,12 @@ the home Wi-Fi at http://vrg-knobs.local. ESP32-S3-Zero firmware (Arduino).
 - Set `WEB_PASS` / `OTA_PASSWORD` in `config.h` before relying on the page or OTA (README "Options").
 
 ## 6. Current state
-- 2026-10-13 Firmware: VRG Knob Pad v1 (ESP32-S3-Zero, 3 encoders, USB-HID + web config)
+- git 2026-10-30 3932351 Re-root: rewrite old paths to H:\VRG\Full
+- git 2026-10-13 4383d88 Firmware: VRG Knob Pad v1 (ESP32-S3-Zero, 3 encoders, USB-HID + web config)
 - README: compiles cleanly, not yet flashed or run on hardware. Next: Claude Code status LED, TM1638
   panel. Decision files: none.
 
 ## 7. Do not touch
 — (nincs leírva)
 
-Forrás: Firmware/knobpad/README.md, git log main, 2026-10-22
+Forrás: Firmware/knobpad/README.md, git log main, 2026-10-31

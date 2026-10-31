@@ -1,5 +1,6 @@
 # Varler Planner — agent init
 *For a Claude Code session that will work on Varler Planner. Read this, then the files in §3.*
+**Felelős:** Arnold, Design Division · **Indító:** GO PLANNER
 
 ## 1. What it is
 An electrical planning tool (villanyszerelési tervező) for residential and commercial work. It builds
@@ -8,9 +9,9 @@ identifiers English.
 
 ## 2. Where
 - Source: `Planner/projects/varler-planner/src/*.js` + `src/shell.html` → `dist/varler_planner.html`
-- Opened from `Planner/START.cmd` key **1**, or VRG-DE.cmd **L1**. START.cmd **W** builds and opens
-  the worktree build, **E** the CLA-preloaded one, **B** build, **T** test, **G** gyro relay.
-- Three checkouts exist; check `git rev-parse --show-toplevel && git branch --show-current` first.
+- Opened from START key **1**. Submenu **P**: **B** build, **W** build and open, **E** CLA-preloaded,
+  **T** test, **G** gyro relay.
+- One checkout, `main`; confirm with `git rev-parse --show-toplevel && git branch --show-current`.
 
 ## 3. Read first
 1. `Planner/projects/varler-planner/CLAUDE.md`
@@ -40,10 +41,10 @@ node build.js --check             # diff against a saved reference build
 - `docs/2_0_architecture.md` is unbuilt design (CLAUDE.md).
 
 ## 6. Current state
-- 2026-10-19 Planner round 2026-10-18 follow-up: Igénylista hand-off, slab join, R6, cinema Sets B–E
-- 2026-10-19 Vezetékcsatorna T0–T6; kör utómunka
-- 2026-10-18 Planner round 2026-10-18: Födém, Igénylista, Házimozi C1–C7
-- Open: C6 Mozi fal pen feel (GO-R1018.md §4). Decision files: `docs/DECISIONS.md`,
+- git 2026-10-30 34d41f1 Planner: Mélyvíz P6b, inline colours through the shared tokens
+- git 2026-10-30 3932351 Re-root: rewrite old paths to H:\VRG\Full
+- git 2026-10-29 f1d8000 VRG Mobile M2: QR pairing, a trusted phone
+- Open: Simple-UI S6 look, C6 pen feel, G2, CLA-ADD-001 extras, Views, E6 (`GO-PLANNER.md`). Decision files: `docs/DECISIONS.md`,
   `docs/round-2026-10-10/R1010-Q-001.json`, `docs/round-2026-10-18/DECISIONS.md`,
   `docs/simple-ui/SUI-Q-001.json`, `docs/stack/PLANNER-STACK-Q-001.json`, `docs/views/DECISIONS.md`,
   `docs/workflow/WF-Q-001.json`.
@@ -51,6 +52,6 @@ node build.js --check             # diff against a saved reference build
 ## 7. Do not touch
 - `dist/` by hand: change `src/` and rebuild (CLAUDE.md).
 - `H:\VRG\Backup\code\Planner_VRG_U100-mirror` (dead backup) and `Planner/apps|home|data` (root CLAUDE.md).
-- Another session's uncommitted files (GO-R1018.md §1 lists them).
+- Another session's uncommitted files.
 
-Forrás: Planner/projects/varler-planner/CLAUDE.md, README.md, docs/PRIMER.md, GO-R1018.md, Planner/START.cmd, git log main, 2026-10-22
+Forrás: Planner/projects/varler-planner/CLAUDE.md, README.md, docs/PRIMER.md, GO-PLANNER.md, launcher/vrg-menu.json, git log main, 2026-10-31
