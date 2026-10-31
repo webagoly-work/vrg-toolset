@@ -230,7 +230,8 @@
           "items": [
             { "key": "1", "name": "A repo gyökere", "hint": "ajánlott, látja az egészet", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{repo}", "needs": "{claude}" },
             { "key": "2", "name": "Planner projekt", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{planner}", "needs": "{claude}" },
-            { "key": "3", "name": "Inventory projekt", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{inventory}", "needs": "{claude}" }
+            { "key": "3", "name": "Inventory projekt", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{inventory}", "needs": "{claude}" },
+            { "key": "B", "name": "Bernard", "hint": "a Tanács főművezetője", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\" --agent bernard"], "cwd": "{repo}", "needs": "{claude}" }
           ] } },
       { "key": "E", "name": "VS Code", "was": "R V", "menu": {
           "title": "VS CODE", "subtitle": "{code}",
