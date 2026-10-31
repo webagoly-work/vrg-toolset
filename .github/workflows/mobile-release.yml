@@ -51,7 +51,8 @@ jobs:
           VRG_VERSION_CODE: ${{ steps.version.outputs.code }}
           MOBILE_KEYSTORE_PASS: ${{ secrets.MOBILE_KEYSTORE_PASS }}
           MOBILE_KEY_ALIAS: ${{ secrets.MOBILE_KEY_ALIAS }}
-          MOBILE_KEY_PASS: ${{ secrets.MOBILE_KEY_PASS }}
+          # keytool makes a PKCS12 store: one password for the store and the key, so one secret
+          MOBILE_KEY_PASS: ${{ secrets.MOBILE_KEYSTORE_PASS }}
         run: MOBILE_KEYSTORE_FILE="$RUNNER_TEMP/vrg-mobile.jks" ./gradlew --no-daemon assembleRelease
       - name: Publish the release
         env:
