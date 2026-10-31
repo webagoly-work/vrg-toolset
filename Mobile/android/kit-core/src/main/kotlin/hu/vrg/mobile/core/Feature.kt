@@ -60,8 +60,8 @@ object Catalogue {
         "📶", Group.LINK, Stage.PLANNED, "M7",
     )
     val PULSE = FeatureInfo(
-        "pulse", "Haladás", "Az aktív branchek friss állapota: melyik eszköz mit kapott, commitok, PR-ek, CI.",
-        "📈", Group.WORK, Stage.PLANNED, "M4", setOf(Need.INTERNET, Need.GITHUB),
+        "pulse", "Haladás", "A main és a nyitott munkák friss állapota: melyik eszköz mit kapott, commitok, PR-ek, CI.",
+        "📈", Group.WORK, Stage.BETA, "M4", setOf(Need.INTERNET, Need.GITHUB),
     )
     val CITY = FeatureInfo(
         "city", "Kódváros online", "A repó városa a GitHub friss állapotából, csak az online részek (nem a PC és nem a H:).",

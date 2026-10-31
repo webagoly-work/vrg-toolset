@@ -1,0 +1,158 @@
+{
+  "version": 1,
+  "tools": [
+    {
+      "id": "varler-planner",
+      "name": "Varler Planner",
+      "paths": [
+        "Planner/"
+      ]
+    },
+    {
+      "id": "panel-anyagar-kalkulator",
+      "name": "Panel anyagár kalkulátor",
+      "paths": [
+        "Calculator/panel_anyagar_kalkulator.html"
+      ]
+    },
+    {
+      "id": "altalanos-kalkulator",
+      "name": "Általános kalkulátor",
+      "paths": [
+        "Calculator/Altalanos_Villanyszerelui_Kalkulator.html"
+      ]
+    },
+    {
+      "id": "vrg-mindmap",
+      "name": "VRG MindMap",
+      "paths": [
+        "MindMap/"
+      ]
+    },
+    {
+      "id": "valena-valaszto",
+      "name": "Valena választó",
+      "paths": [
+        "Toolbox/valena-life-szerelvenytervezo.html"
+      ]
+    },
+    {
+      "id": "keszlet-inventory",
+      "name": "Készlet / Inventory",
+      "paths": [
+        "Inventory/"
+      ]
+    },
+    {
+      "id": "toolbox",
+      "name": "Toolbox",
+      "paths": [
+        "toolbox.html",
+        "Toolbox/"
+      ]
+    },
+    {
+      "id": "led-arkalkulator",
+      "name": "LED árkalkulátor",
+      "paths": [
+        "Calculator/led_arkalkulator.html"
+      ]
+    },
+    {
+      "id": "vrg-buildtree",
+      "name": "VRG BuildTree",
+      "paths": [
+        "Modder/"
+      ]
+    },
+    {
+      "id": "vrg-vendor",
+      "name": "VRG Vendor",
+      "paths": [
+        "vrg-vendor.html",
+        "vendor-manifest.json",
+        "tools/fetch-vendor.js"
+      ]
+    },
+    {
+      "id": "vrg-kodvaros",
+      "name": "VRG Kódváros",
+      "paths": [
+        "CodeCity/"
+      ]
+    },
+    {
+      "id": "vrg-mobile",
+      "name": "VRG Mobile",
+      "paths": [
+        "Mobile/",
+        "docs/mobile/",
+        "GO-MOBILE.md",
+        ".github/workflows/mobile-android.yml",
+        ".github/workflows/mobile-release.yml"
+      ]
+    },
+    {
+      "id": "vrg-kapu",
+      "name": "VRG Kapu",
+      "paths": [
+        "Hub/",
+        "docs/hub/",
+        "GO-HUB.md"
+      ]
+    },
+    {
+      "id": "bridge",
+      "name": "BRIDGE",
+      "paths": [
+        "BRIDGE/"
+      ]
+    },
+    {
+      "id": "firmware",
+      "name": "Firmware",
+      "paths": [
+        "Firmware/"
+      ]
+    },
+    {
+      "id": "servicekit",
+      "name": "ServiceKit",
+      "paths": [
+        "ServiceKit/",
+        "ServiceKitCYD/",
+        "ServiceKitPhone/"
+      ]
+    },
+    {
+      "id": "coreref",
+      "name": "CoreRef",
+      "paths": [
+        "CoreRef/"
+      ]
+    },
+    {
+      "id": "start",
+      "name": "START",
+      "paths": [
+        "launcher/"
+      ]
+    },
+    {
+      "id": "eszkozok",
+      "name": "Eszközök",
+      "paths": [
+        "tools/"
+      ]
+    },
+    {
+      "id": "dokumentacio",
+      "name": "Dokumentáció",
+      "paths": [
+        "docs/",
+        "CLAUDE.md",
+        "GO-MAIN.md"
+      ]
+    }
+  ]
+}

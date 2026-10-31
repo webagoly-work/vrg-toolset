@@ -48,13 +48,15 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   viewing plus Légegér's existing pointer, with no new way of controlling the PC. A video stream can replace the loop
   later if the measured frame rate is not enough.
 
+- **D-8 · Which branches are "active" (M4)** (2026-10-31: **A, reworded**). `main` first (its commits, CI, the tools changed
+  in 7 days), then only a branch ahead of `main` with a commit in the last 14 days. `mobile-log` is left out. Asked with the
+  facts of that day: every line of work lands on `main`, and 7 of the 8 other branches had nothing unmerged.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city
   to a `city-pages` branch, and the phone loads it into a WebView; B) the phone builds the city itself
   from the GitHub tree API (a Kotlin port of the layout); C) both: A now, B later for offline.
-- **D-8 · Which branches are "active" (M4).** A) every branch with a commit in the last 14 days;
-  B) the ones with an open PR plus `main`; C) a list the user pins in the app.
 - **D-9 · Phone as the relay (M7).** A) the phone runs a small relay itself (the PC apps connect to it
   over the phone's WiFi or hotspot), for sites without a PC relay; B) the phone only bridges, forwarding
   to the PC relay; C) not needed.

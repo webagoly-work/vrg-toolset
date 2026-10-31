@@ -40,6 +40,12 @@ sealed interface Gh<out T> {
     data object SignedOut : Gh<Nothing>
     data class RateLimited(val waitSeconds: Long) : Gh<Nothing>
     data class Failed(val code: Int, val message: String) : Gh<Nothing>
+
+    companion object {
+        /** The same failure for a caller that returns another type. */
+        @Suppress("UNCHECKED_CAST")
+        fun <T> failureOf(r: Gh<*>): Gh<T> = r as Gh<T>
+    }
 }
 
 /** A failure carried over to another result type (a failure holds no value). */
