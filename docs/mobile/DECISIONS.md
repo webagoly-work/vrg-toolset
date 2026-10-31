@@ -43,6 +43,11 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   `POST /drop` first planned. The Planner and Inventory routes stay as targets of a board file. In M12 only the PC's
   browser and the paired app use it; a phone browser would need its own one-time QR and is left for later.
 
+- **M13 · Live screen** (2026-10-31, the user's request). A refresh loop of JPEG frames from one long-running capture
+  process, not a video stream: no new tool (`ffmpeg` is not in the toolchain) and no video player in the app. It is
+  viewing plus Légegér's existing pointer, with no new way of controlling the PC. A video stream can replace the loop
+  later if the measured frame rate is not enough.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city

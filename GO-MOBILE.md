@@ -35,7 +35,7 @@ What changes locally compared with the cloud:
 
 ## 1. Read first, in this order
 
-1. `docs/mobile/README.md`: the roadmap (M0–M12) with each WP's state, the build order, the architecture rules.
+1. `docs/mobile/README.md`: the roadmap (M0–M13) with each WP's state, the build order, the architecture rules.
 2. `docs/mobile/DECISIONS.md`: what is decided (D-1…D-6, M1–M3 notes) and what is open (D-7…D-11).
 3. `Mobile/README.md`: the code layout. Then `Mobile/android/kit-core/.../Feature.kt` (the catalogue) and
    `kit/.../VrgFeature.kt` (the contract). The shared pieces: `kit/relay/Relay` (the one relay link + trust),
@@ -72,6 +72,8 @@ What changes locally compared with the cloud:
 | quick notes pushed from the app to a dedicated branch that acts as a chat log | M6 (notes) |
 | rich, interweaving functions and a shared design system | architecture rules + M1 (settings) |
 | "a few logical next steps you extrapolate" | M10 inbox, M11 launch pad, M12 transfer; "Later" list in README |
+| a file share board on the relay, to dump or grab copies between the phone and the PC (2026-10-30) | M12 (drop) |
+| show what is currently on the computer's screen on the phone (2026-10-30) | M13 (screen) |
 
 ## 4. Things only the user can do (ask when the WP needs them, not before)
 

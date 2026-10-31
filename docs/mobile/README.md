@@ -27,13 +27,14 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M8** | Localhost (`ports`) | the PC's local servers: open on the phone (relay proxy) or in a separate desktop window | relay | high (relay) |
 | **M11** | Indítópult (`launch`) | START.cmd's tools from the phone; running ones; their log | relay | high (relay) |
 | **M12** | Átadás (`drop`) | a two-way file board (`localhost:47291/board` + the app), clipboard, photos routed to the Planner / Inventory | relay | medium |
+| **M13** | Képernyő (`screen`) | the PC's screen live on the phone, with Légegér's pointer; off unless `--shots`, paired phones only, and the PC shows it is being watched | relay | high (relay; the capture speed is measured on the PC first) |
 | **M5** | Kódváros online (`city`) | the repo's city from GitHub's fresh state (online parts only), built by Actions | GitHub | medium |
 | **M7** | Hálózat (`net`) | BT HID status, phone-as-relay over WiFi, hotspot with usage notification, USB / BT tethering | — | low (Android-bound) |
 | **M10** | Értesítések (`inbox`) | PR, CI, relay events in one list, with phone notifications | GitHub | medium |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.
-- M2 makes the relay link trusted, which M8, M11 and M12 need before they are allowed to do anything on the PC.
+- M2 makes the relay link trusted, which M8, M11, M12 and M13 need before they are allowed to do anything on the PC.
 - M3 is the GitHub client that M4, M5, M6, M9 and M10 share.
 - M6 is the smallest real GitHub write, so it proves M3 end to end.
 - After M9, every later build reaches the phone by itself, with no cable or adb.

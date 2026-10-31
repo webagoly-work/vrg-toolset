@@ -87,6 +87,10 @@ object Catalogue {
         "drop", "Átadás", "Fotó, fájl, vágólap és helyszíni kép a telefonról a PC-re (Planner, Inventory) és vissza.",
         "⇅", Group.CONTROL, Stage.PLANNED, "M12", setOf(Need.RELAY),
     )
+    val SCREEN = FeatureInfo(
+        "screen", "Képernyő", "A PC képernyője élőben a telefonon, Légegér vezérléssel. A PC-n jelzi, hogy nézik.",
+        "▣", Group.CONTROL, Stage.PLANNED, "M13", setOf(Need.RELAY),
+    )
     val UPDATE = FeatureInfo(
         "update", "Frissítés", "Új verzió a GitHubról: az app magát frissíti, ha a branchen újabb build van.",
         "⟳", Group.APP, Stage.PLANNED, "M9", setOf(Need.INTERNET, Need.GITHUB),
@@ -97,7 +101,7 @@ object Catalogue {
     )
 
     val ALL: List<FeatureInfo> = listOf(
-        AIRDECK, LAUNCH, DROP,
+        AIRDECK, LAUNCH, DROP, SCREEN,
         PAIR, ACCOUNT, NET,
         PULSE, CITY, NOTES, PORTS, INBOX,
         UPDATE, SETTINGS,
