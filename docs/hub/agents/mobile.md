@@ -37,9 +37,9 @@ GitHub Actions builds an APK on every push touching `Mobile/` (GO-MOBILE.md §0)
 - A cloud session has different limits: `docs/mobile/CLOUD.md`.
 
 ## 6. Current state
-- git 2026-10-31 2389f3d VRG Mobile: M3 and M6 live after the phone check
-- git 2026-10-31 c253286 VRG Mobile M6: send the outbox when the app comes on screen
-- git 2026-10-31 1d98a31 VRG Mobile M13 plan: the PC's screen live on the phone
+- git 2026-10-31 564195b VRG Mobile: M9 live, the app updated itself on the phone
+- git 2026-10-31 de47d19 VRG Mobile M9: record the first release on the phone
+- git 2026-10-31 eddf95d VRG Mobile M9: sign the key with the keystore's own password
 - M1, M2, M3 and M6 live; next is M9 (root CLAUDE.md).
 - M9 needs the user's release keystore outside the repo and four repo secrets (GO-MOBILE.md §4).
 - `GO-MOBILE.md` §0 still names the old checkout path; the real one is in root `CLAUDE.md`.

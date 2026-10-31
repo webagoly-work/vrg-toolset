@@ -36,9 +36,9 @@ node CodeCity/tools/selftest.js
 - Never test git writes, worktrees or real saves in this checkout; use fixture repos (GO-CITY.md §4).
 
 ## 6. Current state
+- git 2026-10-31 82b9939 Homeland concept pack: topology, layers, truth table, data feed, options, CITY-D34-D4
 - git 2026-10-30 e654103 GO files consolidated, new GO MAIN, CLAUDE.md codephrases; anonymiser re-run
 - git 2026-10-30 2ac1adc Kódváros: pending src, tools, shell, design pack and rebuilt dist
-- git 2026-10-30 3932351 Re-root: rewrite old paths to H:\VRG\Full
 - Done: C1–C10, KV-01…KV-27, the Mélyvíz skin (GO-CITY.md §3).
 - Open: fine-tuning from the user's notes (ask first, never guess); Zen, Lively and overlay checks; the
   USB-stick train; Cloudflare ring CF-01…CF-07, not started (GO-CITY.md §4).

@@ -39,9 +39,9 @@ node tools/vrg-ctx.js q "<words>"
 - Never make `H:\` itself a repository; it contains `.ssh` (root CLAUDE.md).
 
 ## 6. Current state
+- git 2026-10-31 564195b VRG Mobile: M9 live, the app updated itself on the phone
+- git 2026-10-31 a2ede36 VRG Mobile M9: Frissítés, self-update from GitHub Releases
 - git 2026-10-31 2389f3d VRG Mobile: M3 and M6 live after the phone check
-- git 2026-10-30 3446d80 VRG Mobile M6: Gyorsjegyzet into the mobile-log branch; M3 Client ID, M1 live
-- git 2026-10-30 355b471 VRG Mobile M3: GitHub fiók, device-flow sign-in and the shared client
 - Decision files: see each program's file. What waits on the user: `GO-MAIN.md` §4.
 
 ## 7. Do not touch

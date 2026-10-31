@@ -3,21 +3,21 @@
 **Felelős:** Charlotte, Finance and Contracts
 
 ## 1. What it is
-The portable quote workflow built from the NV4 job: question funnel, takeoff, pricing, document build
+The portable quote workflow built from its first job: question funnel, takeoff, pricing, document build
 and a post-hoc market measurement. It produces a Költségvetési Tervezet and an Árajánlat. Its final
 target is other Claude sessions and other users' Claude Code, so the finished kit carries no H:\ paths.
 
 ## 2. Where
 - `H:\VRG\Full\Varler_Workflow_Kit`: outside the repo and **not a git folder**. BACKUP mirrors it.
-- `01_nv4_build/pipeline/nv4/`: `takeoff.js` → `price.js` → `offer.js` → `build.js` → `offerdoc.js`.
-- `01_nv4_build/02_golden_nv4/`: the 12 golden PDFs, spec, protected text, variation rules.
+- `01_*_build/pipeline/*/`: `takeoff.js` → `price.js` → `offer.js` → `build.js` → `offerdoc.js`.
+- `01_*_build/02_golden_*/`: the 12 golden PDFs, spec, protected text, variation rules.
 - `02_question_funnel/`: `funnel.json` (rules), `02_question_funnel/tools/funnel.js`, `FUNNEL_BRIEF.md`.
 - `market/`: `market.js`, `MARKET_BRIEF.md`, dated `providers_*.json`.
 - `agents/vrg-piacmero.md` is the agent's source. No START entry.
 
 ## 3. Read first
 1. `README.md`
-2. `01_nv4_build/RULES_CODEWORK.md` — §8 is the pricing rules
+2. `01_*_build/RULES_CODEWORK.md` — §8 is the pricing rules
 3. `02_question_funnel/FUNNEL_BRIEF.md` for a job, `market/MARKET_BRIEF.md` for market work
 4. `DEV_LIST.md`, `DECISIONS_L1-L18.md`
 5. `ADDENDUM_ar-es-ado_2026-10-31.md` — early pricing against the current rules, open wording gaps
@@ -45,8 +45,8 @@ read `price.json` or `offer.json` (`RULES_CODEWORK.md` §7).
 - The pipeline still uses absolute H:\ paths (README). Decision files: `DECISIONS_L1-L18.md`.
 
 ## 7. Do not touch
-- `01_nv4_build/02_golden_nv4/`: the reference for every check.
+- `01_*_build/02_golden_*/`: the reference for every check.
 - `00_precursors/calculator` holds other clients' named quotes: exclude or anonymise before the kit
   leaves this machine (README).
 
-Forrás: Varler_Workflow_Kit/README.md, 01_nv4_build/RULES_CODEWORK.md, 02_question_funnel/FUNNEL_BRIEF.md, market/MARKET_BRIEF.md, 2026-10-31
+Forrás: Varler_Workflow_Kit/README.md, 01_*_build/RULES_CODEWORK.md, 02_question_funnel/FUNNEL_BRIEF.md, market/MARKET_BRIEF.md, 2026-10-31
