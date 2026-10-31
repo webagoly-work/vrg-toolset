@@ -287,7 +287,7 @@ rendered as factory or space station) — the city is the base, but keep the eng
 A new node beside Város: this PC as a living city-state. Concept pack, feed design and the answered CITY-D34…D49:
 [`homeland/README.md`](homeland/README.md); the request: [`HOMELAND-BRIEF.md`](HOMELAND-BRIEF.md). Found on the way: the
 ETW task is off (`homeland/03-truth.md` §3.5). Homeland comes first; lifting Kódváros from it comes later. **S1 live 2026-10-31:** the
-fourth view, START → K → G.
+fourth view, START → K → G, with the Növekedés plan on key N.
 
 ## 8. Élő munkatér
 

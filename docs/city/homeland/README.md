@@ -4,7 +4,7 @@ A new node of Kódváros beside the Város view: this desktop PC as a living cit
 state, programs the economy, data the cargo. The request and the rules are in
 [`../HOMELAND-BRIEF.md`](../HOMELAND-BRIEF.md). Kódváros follows later and is out of scope.
 
-**Status 2026-10-31: decisions answered (name: Gépország). S1 works live on this PC: START → K → G. Next: S2, see [07-growth-and-land.md](07-growth-and-land.md).**
+**Status 2026-10-31: decisions answered (name: Gépország). S1 and the Növekedés plan work live on this PC: START → K → G, then N. Next: Birtok, see [07-growth-and-land.md](07-growth-and-land.md).**
 
 | File | What |
 |---|---|

@@ -168,6 +168,7 @@ outFiles.forEach((f, i) => {
   let text;
   try { text = fs.readFileSync(path.join(REPO, f.p), 'utf8'); } catch { return; }
   if (text.length > 1024 * 1024) text = text.slice(0, 1024 * 1024);   // a megabyte is plenty to find references
+  if ((f.lang === 'HTML' || f.lang === 'CSS') && /Mélyvíz/.test(text)) f.mv = 1;   // wears the design system: a garden in Gépország's Növekedés plan
   const imp = new Set();
   for (const re of res) for (const m of text.matchAll(re)) { const j = resolveRef(f.p, m[1].trim(), f.lang); if (j >= 0 && j !== i) imp.add(j); }
   if (imp.size) { f.imp = [...imp].sort((a, b) => a - b); edges += imp.size; }

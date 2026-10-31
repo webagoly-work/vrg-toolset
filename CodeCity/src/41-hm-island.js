@@ -75,6 +75,7 @@ function hmIslandParts() {
 function hmMesh(kind, geo, mat) {
   const list = hmKit[kind];
   const im = new THREE.InstancedMesh(geo, mat, list.length), c = new THREE.Color();
+  im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); im.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 700);
   list.forEach((p, i) => { im.setMatrixAt(i, p.m); im.setColorAt(i, c.setHex(p.col)); p.i = i; if (p.ent) p.ent.parts.push(p); });
   im.userData.parts = list;
   hm.group.add(im);
@@ -122,8 +123,8 @@ function hmBuild() {
   // labels: one per complex
   hm.labels = [];
   for (const e of hmEnts.values()) if (e.labelAt) {
-    const [u, v, y] = e.labelAt, sp = hmLabel(e.name, hmW(u), y, hmW(v), 34 + e.name.length * 1.3);
-    sp.userData.ent = e; hm.labels.push(sp); hm.surface.add(sp);
+    const [u, v, y] = e.labelAt, w = 34 + e.name.length * 1.3, sp = hmLabel(e.name, hmW(u), y, hmW(v), w);
+    sp.userData.ent = e; sp.userData.at = [hmW(u), y, hmW(v)]; sp.userData.w = w; hm.labels.push(sp); hm.surface.add(sp);
   }
   // underground: a slab per layer, each with its sign
   const slab = (y, col, op) => { const m = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: 1.5, bevelEnabled: false }).rotateX(Math.PI / 2).translate(0, y, 0), new THREE.MeshLambertMaterial({ color: col, transparent: true, opacity: op })); return m; };
@@ -137,6 +138,7 @@ function hmBuild() {
   hm.stone.position.set(0, -72, 0); hm.stone.userData.ent = hmEnt('bedrock', 'Alapkő', 'M'); hm.bed.add(hm.stone);
   hm.group.add(hm.surface, hm.under, hm.deep, hm.bed);
   hmWaterBuild();
+  hmZonesInit();   // 44-hm-grow: the second plan moves these same parts
   scene.add(hm.group);
   hmTagsApply();
 }
@@ -154,6 +156,7 @@ function hmLayerApply() {
   hm.dynMat.transparent = ghost; hm.dynMat.opacity = ghost ? 0.12 : 1; hm.dynMat.depthWrite = !ghost; hm.dynMat.needsUpdate = true;
   hm.lotMat.opacity = ghost ? 0.1 : 1; hm.lotMat.transparent = ghost; hm.lotMat.depthWrite = !ghost;
   for (const s of hm.labels) s.visible = !ghost;
+  if (hm.grow) hm.grow.visible = !ghost && hm.planK > 0;
   hm.under.visible = l === 1; hm.deep.visible = l === 1 || l === 2; hm.bed.visible = l >= 2; hm.rooms.visible = l >= 1;
   hm.dLabel.visible = l === 2;
   hm.slabU.material.opacity = l > 1 ? 0.15 : 0.9;
@@ -166,7 +169,7 @@ function hmLayerApply() {
 // the truth display (CITY-D45): Jelölés paints metaphor grey and marks the approximate; Mérés leaves only the measured
 function hmTagsApply() {
   const c = new THREE.Color();
-  for (const im of hm.meshes) {
+  for (const im of [...hm.meshes, ...(hm.gMeshes || [])]) {
     im.userData.parts.forEach(p => {
       const off = hm.truth && p.tag === 'J', dim = hm.tags && p.tag === 'J', approx = hm.tags && p.tag === 'K';
       c.setHex(p.col); if (dim) c.setHex(HM_COL.grey); if (approx) c.lerp(new THREE.Color(0x8a939b), 0.35);

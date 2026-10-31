@@ -20,6 +20,8 @@
 | CITY-D47 Acting | **B** Closing a program from the city is allowed in the first slice |
 | CITY-D48 History | **B** 15 minutes in memory, plus an opt-in saved recording, aggregated, no names |
 | CITY-D49 First slice | **A** Nine complexes, ground and undercity, live feed, fixture mode |
+| CITY-D50 S2 order | The answer was **B** (Birtok) with "Növekedés first" beside it: read as Növekedés first, Birtok next |
+| CITY-D51 CPU and fan sensors | **A** LibreHardwareMonitor in the elevated sidecar; confirm the PawnIO need and ask before anything installs |
 
 ## As offered
 

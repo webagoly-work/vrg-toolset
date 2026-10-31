@@ -362,6 +362,11 @@ body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb
 #hm-hud .dim { color: var(--faint); margin-left: auto; }
 #hm-hud .dim + .dim { margin-left: 0; }
 #hm-sw { position: absolute; top: 62px; left: 12px; display: flex; gap: 4px; }
+#hm-plan { position: absolute; top: 62px; left: 216px; display: flex; gap: 4px; align-items: center; }
+#hm-plan .btn { background: var(--panel); font-size: 12px; padding: 3px 10px; }
+#hm-plan .btn.on { color: var(--accent); border-color: var(--accent); }
+#hm-plan .btn[hidden], #hm-when[hidden] { display: none; }
+#hm-when { margin-left: 8px; font-size: 12px; white-space: nowrap; }
 #hm-sw .btn, #hm-rail .btn { background: var(--panel); font-size: 12px; padding: 3px 10px; }
 #hm-sw .btn.on, #hm-rail .btn.on { color: var(--accent); border-color: var(--accent); }
 #hm-rail { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 4px; }
@@ -377,4 +382,4 @@ body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb
 .hm-bars { list-style: none; margin: 8px 0 0; padding: 0; columns: 2; font: 11px "Cascadia Mono", Consolas, monospace; color: var(--dim); }
 .hm-bars li { display: flex; align-items: center; gap: 6px; break-inside: avoid; margin-bottom: 3px; }
 .hm-bars i { display: block; height: 7px; background: var(--accent-2); }
-@media (max-width: 700px) { #hm-sw { top: 96px; } #hm-rail { top: auto; bottom: 48px; transform: none; flex-direction: row; } }
+@media (max-width: 700px) { #hm-sw { top: 96px; } #hm-plan { top: 126px; left: 12px; } #hm-rail { top: auto; bottom: 48px; transform: none; flex-direction: row; } }

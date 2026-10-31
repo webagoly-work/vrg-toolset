@@ -14,14 +14,14 @@ function hmCityBuild() {
   hm.lots = new THREE.InstancedMesh(unitBox, hm.lotMat, lotN);
   hm.lotOwner = new Array(lotN).fill(null);
   for (let i = 0; i < lotN; i++) { hm.lots.setMatrixAt(i, hmLotM(i, 0.4)); hm.lots.setColorAt(i, c.setHex(HM_LOTCOL.free)); }
-  hm.surface.add(hm.lots);
+  hm.zLot = new THREE.Group(); hm.zLot.add(hm.lots); hm.surface.add(hm.zLot);
   // the empty DIMM slot, fenced, its lots bare (shown when the inventory says a slot is free)
   hm.emptyLot = new THREE.Group();
   const f = new THREE.Mesh(new THREE.PlaneGeometry(19.4 * HM_K, 8.4 * HM_K).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: HM_COL.lot }));
   f.position.set(hmW(73.7), 0.15, hmW(15)); f.userData.ent = hmEnts.get('empty');
   const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(19.4 * HM_K, 2.4, 8.4 * HM_K)), new THREE.LineBasicMaterial({ color: HM_COL.ice }));
   edge.position.set(hmW(73.7), 1.2, hmW(15)); edge.raycast = () => {};
-  hm.emptyLot.add(f, edge); hm.surface.add(hm.emptyLot);
+  hm.emptyLot.add(f, edge); hm.zLot.add(hm.emptyLot);
   // program plots: boxes with the city's own lit-window shader
   const geo = unitBox.clone();
   hm.dynMat = buildingMaterial();
@@ -46,7 +46,7 @@ function hmCityBuild() {
   hm.cars.setColorAt(0, c.setHex(HM_COL.warm));
   hm.surface.add(hm.cars);
   hm.carList = []; hm.flows = {};
-  hm.len = {}; for (const [k, pts] of Object.entries(HM_PATHS)) { let L = 0; for (let i = 1; i < pts.length; i++) L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); hm.len[k] = L; }
+  hm.paths = HM_PATHS; hm.boardLen = hm.len = hmPathLens(HM_PATHS); hm.ringPaths = hmRingPaths(); hm.ringLen = hmPathLens(hm.ringPaths);
   // a highlight box around the selected thing
   hm.selBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0)), new THREE.LineBasicMaterial({ color: HM_COL.ice }));
   hm.selBox.visible = false; hm.selBox.raycast = () => {}; hm.group.add(hm.selBox);
@@ -190,7 +190,7 @@ function hmCarsStep(dt) {
     }
   }
   for (const c of list) {
-    const pts = HM_PATHS[c.k]; let at = c.t * hm.len[c.k], j = 1;
+    const pts = hm.paths[c.k]; let at = c.t * hm.len[c.k], j = 1;
     for (; j < pts.length; j++) { const L = Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]); if (at <= L || j === pts.length - 1) { const f = L ? at / L : 0, a = pts[j - 1], b = pts[j], ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
       const side = c.dir * 1.1, nx = -Math.sin(ang), nz = Math.cos(ang);
       m.copy(rm.makeRotationY(-ang)).setPosition(hmW(a[0] + (b[0] - a[0]) * f) + nx * side, 0.2, hmW(a[1] + (b[1] - a[1]) * f) + nz * side); break; } at -= L; }
@@ -208,8 +208,8 @@ function hmFrame(ts) {
   const now = performance.now(), dt = Math.min(0.1, (now - (hm.lastFrame || now)) / 1000);
   if (now - hm.lastFrame < 30) { hmAnimate(); return; }   // about 30 frames a second is plenty for traffic
   hm.lastFrame = now;
-  let busy = false;
   const k = 1 - Math.pow(0.002, dt), still = matchMedia('(prefers-reduced-motion: reduce)').matches || window.KV_INSTANT;
+  let busy = hmPlanStep(now, still);   // 44-hm-grow: the move between the plans
   for (const it of hm.items.values()) {
     if (it.target == null) continue;
     const d = it.target - it.h;
@@ -218,7 +218,7 @@ function hmFrame(ts) {
     if (fa.array[it.i] > 0) { fa.array[it.i] = Math.max(0, fa.array[it.i] - dt * 0.6); fa.needsUpdate = true; busy = true; }
     if (it.dirty || it.foot !== it.footWas) {
       it.dirty = false; it.footWas = it.foot;
-      hm.dyn.setMatrixAt(it.i, new THREE.Matrix4().makeScale(it.foot * HM_K, Math.max(0.01, it.h), it.foot * HM_K).setPosition(hmW(it.plot.u), 0, hmW(it.plot.v)));
+      hm.dyn.setMatrixAt(it.i, hmItemM(it, new THREE.Matrix4()));
       hm.dyn.instanceMatrix.needsUpdate = true;
     }
   }
@@ -242,7 +242,7 @@ function hmPick(e) {
     if (hit.object === hm.stone) return hm.stone.userData.ent;
     const rw = hm.roomOf[hit.instanceId]; return rw ? { prog: rw.key, pid: hm.all ? rw.pid : 0, name: rw.exe } : null;
   }
-  const hits = ray.intersectObjects([hm.dyn, hm.lots, ...hm.emptyLot.children, ...hm.meshes], false);
+  const hits = ray.intersectObjects([hm.dyn, hm.lots, ...hm.emptyLot.children, ...hm.meshes, ...(hm.plan ? hm.gMeshes : [])], false);
   for (const h of hits) {
     if (h.object === hm.dyn) {
       for (const it of hm.items.values()) if (it.i === h.instanceId && it.w) return { prog: it.w.key, pid: hm.all ? it.w.pid : 0, name: it.w.exe, it };
@@ -274,7 +274,10 @@ function hmSelApply() {
   if (!b) return;
   const it = t && t.it;
   b.visible = !!(it && hm.layer === 0);
-  if (b.visible) { b.scale.set(it.foot * HM_K * 1.15, Math.max(2, it.target) * 1.06, it.foot * HM_K * 1.15); b.position.set(hmW(it.plot.u), 0, hmW(it.plot.v)); }
+  if (b.visible) {
+    const z = hm.z[HM_PLACE_ZONE[it.plot.place]], s = z ? z.s : 1, [x, y] = hmZoneXZ(z, hmW(it.plot.u), hmW(it.plot.v));
+    b.scale.set(it.foot * HM_K * 1.15 * s, Math.max(2, it.target) * 1.06 * s, it.foot * HM_K * 1.15 * s); b.position.set(x, 0, y);
+  }
   requestRender();
 }
 function hmHwApply(d) {

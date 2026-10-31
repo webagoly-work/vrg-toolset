@@ -41,8 +41,9 @@ for area; the farm imagery is the rendering.
 | Phase | Content | Waits on |
 |---|---|---|
 | **S1 ✔ 2026-10-31** | View, island on a real water plane, nine complexes, ground and undercity, live feed, panels, close program, toggles for bodies and tags, fixture mode, START key, Erőmű door | Nothing |
-| **S2** | Növekedés plan with the rearranging move; Birtok land view | S1 |
-| **S3** | ETW upgrades, sensors through LibreHardwareMonitor, physical page view, opt-in recording | The user's elevated steps; a PawnIO driver question |
+| **S2a ✔ 2026-10-31** | Növekedés plan with the rearranging move and the replay | S1 |
+| **S2b** | Birtok land view (CITY-D50: after Növekedés) | S2a |
+| **S3** | ETW upgrades, sensors through LibreHardwareMonitor (CITY-D51 A: confirm the PawnIO need, ask before installing), physical page view, opt-in recording | The user's elevated steps |
 
 **S1 as built:** `CodeCity/probe/Homeland.cs`, `CodeCity/homeland.js`, `homeland-classes.json`, `probe-hw.ps1`,
 `src/40-hm-core.js`, `41-hm-island.js`, `42-hm-city.js`, `tools/spec-homeland.js`. Open with START → K → G or
@@ -50,3 +51,19 @@ for area; the farm imagery is the rendering.
 only, Home frames the island. The Street level (−1) stands on the surface as small booths. Not in S1: CITY-D45's Mérés lens
 only dims metaphor parts, because S1 builds none tagged J; the 15-minute memory history (CITY-D48) comes with S3; hints cover
 the Temp and Downloads origin only, not signatures.
+
+**S2a as built:** `CodeCity/src/43-hm-plan.js` (pure, tested) and `44-hm-grow.js`. Key N or the Bekötés / Növekedés buttons
+switch plans, R or Újra replays the history. Decided in the build:
+
+- **Distance from the hub is commit time**, order around the hub is first appearance, so age rings form. The street's curve
+  is decoration (J); sizes are lines of code, because the scan keeps no bytes.
+- **The hub is the area with the most files in the first commit.** The history starts at the import, so earlier work is
+  not visible, and the hub's panel says so.
+- **Complexes move, nothing is rebuilt.** Eleven zones shrink to 55 % onto a ring with their live lights, panels and plots;
+  the F: barge stays moored. The board's wires fold into a ring road that carries the same measured traffic.
+- **Lots** are per area, period (one seventh of the history) and kind: warehouse from 5 000 lines, boxes from 500, then a
+  pack. A deleted file leaves a ruin, a deleted idea a dark street.
+- **Shops** are START's tools (a page without the segéd has none). **Gardens** need a Mélyvíz HTML or CSS file in the
+  tool's folder; `scan.js` marks these as `mv`.
+- **Junctions:** the six strongest pairs by shared commits (Jaccard), at least three commits; commits across more than six
+  areas count as sweeps. Very distant pairs are left out, because their link would cross the village.

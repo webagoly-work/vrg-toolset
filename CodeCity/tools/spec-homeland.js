@@ -9,6 +9,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const http = require('http');
+const vm = require('vm');
 const { spawn, execFileSync } = require('child_process');
 const hm = require('../homeland.js');
 
@@ -108,6 +109,38 @@ module.exports = [
     assert.ok(!/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/.test(fx0), 'no address');
     assert.ok(!/[A-Za-z]:\\\\/.test(fx0), 'no path');
     assert.ok(/fixture: true/.test(fx0) && /PRÓBAADAT/.test(src), 'marked');
+  } },
+  { name: 'homeland: the Növekedés plan reads the history: order, time as distance, a sweep is no merge', async fn() {
+    const box = {};
+    vm.runInNewContext(fs.readFileSync(path.join(CITY, 'src', '43-hm-plan.js'), 'utf8') + '\nthis.plan = hmGrowthPlan;', box);
+    const file = (p, born, lang, loc, extra) => Object.assign({ p, lang, loc, born, last: born + 1 }, extra);
+    const files = [file('Falu/a.js', 0, 'JavaScript', 6000), file('Falu/b.md', 0, 'Markdown', 50), file('Falu/c.js', 0, 'JavaScript', 9), file('Kis/a.js', 0, 'JavaScript', 600), file('Uj/app.html', 8, 'HTML', 700, { mv: 1 }), file('Uj/d.json', 18, 'JSON', 20),
+      file('Mult/x.js', 9, 'JavaScript', 0, { gone: 1 }), file('.titok/x.md', 0, 'Markdown', 5), file('fo.html', 2, 'HTML', 30), file('Y/a.js', 19, 'JavaScript', 3), file('Z/a.js', 19, 'JavaScript', 3)];
+    const touch = (...ids) => ids.flatMap(i => [i, 1, 0]);
+    const commits = Array.from({ length: 21 }, (_, i) => [1000 + i, 0, 0, 'titkos tárgy ' + i, 'h' + i, i >= 10 && i < 14 ? touch(0, 3) : i >= 15 && i < 19 ? touch(0, 3, 4, 6, 8, 9, 10) : touch(0)]);
+    const city = { repo: { name: 'Proba', head: 'h20' }, commits, files };
+    const a = JSON.parse(JSON.stringify(box.plan(city, [{ name: 'Uj bolt', path: 'C:\\x\\Proba\\Uj\\app.html' }, { name: 'Nincs ilyen', path: 'Sehol/a.html' }])));
+    assert.strictEqual(a.hub, 'Falu', 'the hub is where the first commit landed');
+    assert.deepStrictEqual(a.areas.map(x => x.name), ['Falu', 'Kis', '', 'Uj', 'Mult', 'Y', 'Z'], 'order of first appearance; dot folders stay out');
+    const r = l => Math.hypot(l.u - 50, l.v - 50), lot = (ar, kind) => a.lots.find(l => l.area === ar && l.kind === kind);
+    assert.ok(r(lot('Uj', 'data')) > r(lot('Uj', 'code')) && r(lot('Uj', 'code')) > r(lot('Falu', 'code')), 'distance is time');
+    assert.strictEqual(lot('Falu', 'code').size, 'warehouse');
+    assert.strictEqual(lot('Kis', 'code').size, 'boxes');
+    assert.strictEqual(lot('Uj', 'data').size, 'pack');
+    assert.ok(lot('Mult', 'gone'), 'a deleted idea stays as a ruin');
+    assert.deepStrictEqual(a.shops.map(s => [s.name, s.area, s.garden]), [['Uj bolt', 'Uj', true]], 'a shop on its road, a garden for the design system, nothing for an unknown tool');
+    assert.deepStrictEqual(a.links.map(l => [l.a, l.b, l.n]), [['Falu', 'Kis', 4]], 'four shared commits merge two ideas; four seven-area sweeps count for nothing');
+    assert.ok(!/titkos/.test(JSON.stringify(a)), 'no commit subject in the plan');
+    assert.strictEqual(JSON.stringify(box.plan(city, []).lots), JSON.stringify(box.plan(city, []).lots), 'same history, same plan');
+  } },
+  { name: 'homeland: the scan marks the files that wear the design system', async fn() {
+    const r = fs.mkdtempSync(path.join(os.tmpdir(), 'kv-mv-')), out = path.join(r, 'c.json');
+    const g = (...a) => execFileSync('git', ['-c', 'user.name=p', '-c', 'user.email=p@p', ...a], { cwd: r });
+    put(path.join(r, 'a.html'), '<style>/* Mélyvíz */</style>'); put(path.join(r, 'b.html'), '<p>x</p>'); put(path.join(r, 'c.js'), '// Mélyvíz\n');
+    g('init', '-q', '-b', 'main'); g('add', '.'); g('commit', '-qm', 'x');
+    execFileSync(process.execPath, [path.join(CITY, 'scan.js'), r, '--out', out], { stdio: 'ignore' });
+    const c = JSON.parse(fs.readFileSync(out, 'utf8')), mv = n => !!c.files.find(f => f.p === n).mv;
+    assert.deepStrictEqual([mv('a.html'), mv('b.html'), mv('c.js')], [true, false, false]);
   } },
   { name: 'homeland: no feed until the page asks; then hm events on the stream', async fn() {
     await start();

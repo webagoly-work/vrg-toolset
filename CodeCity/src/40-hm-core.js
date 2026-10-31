@@ -6,7 +6,7 @@
 
 const HM_LAYERS = [['Felszín', 0, 'Programok ablakkal'], ['Alváros', -36, 'Szolgáltatások: a 0. munkamenet'], ['Mélyút', -54, 'Kernel, megszakítások'], ['Alapkő', -70, 'UEFI, a lap vezetékei']];
 const HM_TAG = { M: ['Mért', 'most mért érték'], K: ['Közelítő', 'mért adatból következtetett'], J: ['Jelkép', 'a metafora része, nincs mögötte mérés'] };
-const hm = { group: null, ev: null, hw: null, layer: 0, all: false, tags: true, truth: false, sel: null, fixture: false, fxTimer: 0, feed: 'off', ui: null, raf: 0, lastFrame: 0, confirm: null };
+const hm = { group: null, ev: null, hw: null, layer: 0, all: false, tags: true, truth: false, sel: null, plan: 0, planK: 0, gT: 0, gPlay: 0, fixture: false, fxTimer: 0, feed: 'off', ui: null, raf: 0, lastFrame: 0, confirm: null };
 
 const hmGB = b => (b / 2 ** 30).toFixed(b >= 1e10 ? 0 : 1) + ' GB';
 const hmMB = b => (b >= 2 ** 30 ? (b / 2 ** 30).toFixed(1) + ' GB' : Math.round(b / 2 ** 20) + ' MB');
@@ -19,6 +19,7 @@ function hmEnter() {
   if (!hm.group) { hmBuild(); hmUiBuild(); }
   hm.group.visible = true;
   hm.ui.hidden = false;
+  hmPlanPaint();
   hm.fixture = new URLSearchParams(location.hash.slice(1)).get('hmtest') === '1';
   $('hm-fix').hidden = !hm.fixture;
   $('panel').hidden = true;
@@ -34,7 +35,7 @@ function hmLeave() {
   hmFeed(false);
   orbit.target.y = 0;
 }
-function hmHome(ms = 600) { orbit.target.y = 0; flyCamera([0, 24, 0.72, 0.9, 490], window.KV_INSTANT ? 0 : ms); }
+function hmHome(ms = 600) { orbit.target.y = 0; flyCamera(hm.plan ? [0, 0, 0.72, 0.5, 400] : [0, 24, 0.72, 0.9, 490], window.KV_INSTANT ? 0 : ms); }
 
 function hmFeed(on) {
   if (hm.fixture) {
@@ -72,14 +73,22 @@ function hmUiBuild() {
       <button class="btn" data-sw="tags" title="Mért, közelítő és jelkép jelölése a városban (T)">Jelölés</button>
       <button class="btn" data-sw="truth" title="Csak a mért elemek látszanak (M)">Mérés</button>
     </div>
+    <div id="hm-plan" role="group" aria-label="Várostérkép">
+      <button class="btn" data-plan="0" title="Az alaplap valódi bekötése (N)">Bekötés</button>
+      <button class="btn" data-plan="1" title="A város, ahogy a git-történetben nőtt (N)">Növekedés</button>
+      <button class="btn" id="hm-replay" hidden title="A növekedés elölről (R)">Újra</button>
+      <span id="hm-when" class="dim" hidden></span>
+    </div>
     <nav id="hm-rail" aria-label="Rétegek">${HM_LAYERS.map((l, i) => `<button class="btn" data-layer="${i}" title="${esc(l[2])} (PgUp / PgDn)">${esc(l[0])}</button>`).join('')}</nav>
     <div id="hm-key"><span><i class="m"></i>Mért</span><span><i class="k"></i>Közelítő</span><span><i class="j"></i>Jelkép</span></div>`;
   $('stage').append(hm.ui);
   hm.ui.addEventListener('click', e => {
     const l = e.target.closest('[data-layer]'); if (l) return hmSetLayer(+l.dataset.layer);
-    const s = e.target.closest('[data-sw]'); if (s) hmSwitch(s.dataset.sw);
+    const s = e.target.closest('[data-sw]'); if (s) return hmSwitch(s.dataset.sw);
+    const p = e.target.closest('[data-plan]'); if (p) return hmSetPlan(+p.dataset.plan);
+    if (e.target.id === 'hm-replay') hmReplay();
   });
-  hmSwitchPaint();
+  hmSwitchPaint(); hmPlanPaint();
 }
 function hmSwitch(k) {
   hm[k] = !hm[k];
@@ -133,6 +142,8 @@ addEventListener('keydown', e => {
   else if (k === 'a' || k === 'A') hmSwitch('all');
   else if (k === 't' || k === 'T') hmSwitch('tags');
   else if (k === 'm' || k === 'M') hmSwitch('truth');
+  else if (k === 'n' || k === 'N') hmSetPlan(hm.plan ? 0 : 1);
+  else if (k === 'r' || k === 'R') hmReplay();
 }, true);
 
 // ---- the panel: fixed order, every number says where it comes from
@@ -143,7 +154,9 @@ function hmShow(t) {
 }
 function hmFooter(tag, src) { return `<p class="dim hm-src"><i class="hm-t ${tag.toLowerCase()}"></i>${HM_TAG[tag][0]}: ${HM_TAG[tag][1]}${src ? '<br>Forrás: ' + esc(src) : ''}</p>`; }
 function hmPanel() {
-  const t = hm.sel; if (!t || !hm.ev && t.kind !== 'static') { if (t) hmPanelStatic(t); return; }
+  const t = hm.sel;
+  if (t && t.grow) return hmGrowPanel(t);
+  if (!t || !hm.ev && t.kind !== 'static') { if (t) hmPanelStatic(t); return; }
   if (t.prog) return hmProgPanel(t.prog);
   const e = hm.ev, hw = hm.hw || {}, m = e.mem, s = e.sys;
   const P = (title, rows, tag, src, extra = '') => { openPanel(title, rows, extra + hmFooter(tag, src)); };
