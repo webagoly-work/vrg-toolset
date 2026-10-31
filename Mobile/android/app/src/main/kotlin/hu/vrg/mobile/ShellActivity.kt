@@ -173,6 +173,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     override fun onResume() {
         super.onResume()
         Registry.feature(current)?.onForeground(true)
+        Registry.built.forEach { it.onAppVisible() }
     }
 
     override fun onPause() {

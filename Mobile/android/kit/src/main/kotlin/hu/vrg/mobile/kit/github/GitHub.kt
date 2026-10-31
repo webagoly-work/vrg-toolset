@@ -203,6 +203,7 @@ object GitHub {
                 }
             }
         } catch (e: IOException) {
+            VrgLog.w(TAG, "$method nem ment ki: ${e.javaClass.simpleName}: ${e.message}")
             Gh.Offline
         }
     }

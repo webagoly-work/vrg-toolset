@@ -61,6 +61,9 @@ import hu.vrg.mobile.kit.github.GitHubNotes
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -71,14 +74,17 @@ import java.util.concurrent.TimeUnit
 
 // Gyorsjegyzet (WP M6, D-6 = A): type, dictate or share a note and it lands in log/<today>.md on the
 // `mobile-log` branch, the project's chat log. A note goes into the outbox first (kept on the phone),
-// and WorkManager sends the outbox, oldest first, whenever the phone is online: offline notes go out
-// later by themselves. The rules (the line, the append with retry, the order) are kit-core's Notes.kt.
+// and is sent, oldest first, right away and again each time the app comes on screen. WorkManager is the
+// fallback for offline notes. It cannot be the only sender: on Android 15 a process kept alive behind
+// the lock screen has its network blocked (APP_BACKGROUND), yet WorkManager still runs the worker in
+// it, so every try fails at once. The rules (the line, the append with retry, the order) are kit-core's Notes.kt.
 
 object NotesFeature : VrgFeature {
     override val info = Catalogue.NOTES
     private const val WORK = "vrg-notes-send"
 
     private lateinit var app: Context
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val zone: ZoneId get() = ZoneId.systemDefault()
 
     val outbox = MutableStateFlow(Outbox())
@@ -93,6 +99,8 @@ object NotesFeature : VrgFeature {
         outbox.value = Outbox.fromJson(prefs().getString("outbox", null))
         if (outbox.value.notes.isNotEmpty()) schedule()
     }
+
+    override fun onAppVisible() = sendNow()
 
     private fun prefs() = app.getSharedPreferences("notes", Context.MODE_PRIVATE)
 
@@ -109,15 +117,23 @@ object NotesFeature : VrgFeature {
     fun submit(text: String, tag: String?) {
         if (text.isBlank()) return
         save(outbox.value.add(Note(UUID.randomUUID().toString().take(8), System.currentTimeMillis(), text.trim(), tag)))
-        schedule()
+        sendNow()
     }
 
     private fun schedule() {
+        // LINEAR: an exponential backoff left a note waiting over an hour after the network came back
         val req = OneTimeWorkRequestBuilder<SendWorker>()
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+            .setBackoffCriteria(BackoffPolicy.LINEAR, 30, TimeUnit.SECONDS)
             .build()
         WorkManager.getInstance(app).enqueueUniqueWork(WORK, ExistingWorkPolicy.KEEP, req)
+    }
+
+    /** One try now, not behind a waiting retry (KEEP leaves that one as it is); the worker stays as the fallback. */
+    private fun sendNow() {
+        if (outbox.value.notes.isEmpty()) return
+        schedule()
+        scope.launch { flush() }
     }
 
     /** Sends the outbox, oldest first. true = done (or nothing to do), false = try again later. */
@@ -216,7 +232,7 @@ object NotesFeature : VrgFeature {
                 VrgSectionTitle("Kimenő · ${box.notes.size}")
                 box.notes.forEach { n -> Text("· " + (n.tag?.let { "[$it] " } ?: "") + n.text.take(80), style = Melyviz.small) }
                 why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 4.dp)) }
-                if (box.notes.isNotEmpty()) Row(Modifier.padding(top = 6.dp)) { VrgChip("Küldés most") { schedule() } }
+                if (box.notes.isNotEmpty()) Row(Modifier.padding(top = 6.dp)) { VrgChip("Küldés most") { sendNow() } }
             }
 
             VrgSectionTitle("Ma · ${NoteLog.day(System.currentTimeMillis(), zone)}")

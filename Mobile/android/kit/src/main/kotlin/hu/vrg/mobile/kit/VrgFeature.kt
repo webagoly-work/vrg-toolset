@@ -33,6 +33,9 @@ interface VrgFeature {
 
     /** The app went to or came back from the background while this feature was on screen. */
     fun onForeground(on: Boolean) {}
+
+    /** The app came on screen, whichever feature is showing: the moment Android allows network for sure. Keep it cheap. */
+    fun onAppVisible() {}
 }
 
 /** What the shell offers a feature. */
