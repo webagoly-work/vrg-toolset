@@ -281,6 +281,12 @@ each idea below is a district, mode or phenomenon inside it. Only what §7.1 doe
 Left out: orchestra and ant colony (follow and §7.1 #5 cover them); metaphor skins (the same city
 rendered as factory or space station) — the city is the base, but keep the engine skin-neutral.
 
+## 7.3 Computer Homeland (2026-10-31)
+
+A new node beside Város: this PC as a living city-state. Concept pack, feed design and the open CITY-D34…D49:
+[`homeland/README.md`](homeland/README.md); the request: [`HOMELAND-BRIEF.md`](HOMELAND-BRIEF.md). Found on the way: the
+ETW task is off (`homeland/03-truth.md` §3.5). Homeland comes first; lifting Kódváros from it comes later.
+
 ## 8. Élő munkatér
 
 The live-workspace plan (2026-10-26): Kódváros grows from a viewer into the main tool for our code
