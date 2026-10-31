@@ -20,8 +20,8 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M0** | Légegér (`airdeck`) + the shell | **done**: shell, catalogue, links, Mélyvíz kit, Légegér as a feature | — | — |
 | **M1** | Beállítások (`settings`) | **LIVE** (built 2026-10-29, checked on the phone 2026-10-30): shell-wide look (palette, size) moved out of Légegér, About + log, paired PCs list | — | high |
 | **M2** | QR párosítás (`pair`) | **LIVE** (built 2026-10-29, checked on the phone 2026-10-30): scan the PC's QR: relay address + one-time code → a **trusted** phone; QR for Légegér | camera, relay | high (relay + parser) |
-| **M3** | GitHub fiók (`account`) | **built, BETA** (2026-10-30, Client ID set; phone check open): GitHub sign-in with the device code; token in the Android Keystore; the shared GitHub client | internet | high |
-| **M6** | Gyorsjegyzet (`notes`) | **built, BETA** (2026-10-30, D-6 = A; phone check open): quick notes pushed to a dedicated branch acting as the chat log | GitHub | high |
+| **M3** | GitHub fiók (`account`) | **LIVE** (built 2026-10-30, checked on the phone 2026-10-31): GitHub sign-in with the device code; token in the Android Keystore; the shared GitHub client | internet | high |
+| **M6** | Gyorsjegyzet (`notes`) | **LIVE** (built 2026-10-30, D-6 = A, checked on the phone 2026-10-31): quick notes pushed to a dedicated branch acting as the chat log | GitHub | high |
 | **M9** | Frissítés (`update`) | self-update from GitHub Releases built by Actions | GitHub | medium (+ user step: keystore secret) |
 | **M4** | Haladás (`pulse`) | active branches, which tool each branch touches, commits, PRs, CI | GitHub | high |
 | **M8** | Localhost (`ports`) | the PC's local servers: open on the phone (relay proxy) or in a separate desktop window | relay | high (relay) |

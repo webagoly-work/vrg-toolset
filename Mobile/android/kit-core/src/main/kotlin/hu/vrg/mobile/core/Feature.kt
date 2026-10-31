@@ -53,7 +53,7 @@ object Catalogue {
     )
     val ACCOUNT = FeatureInfo(
         "account", "GitHub fiók", "Belépés a GitHubra eszközkóddal; a többi online funkció ezt a fiókot használja.",
-        "⎔", Group.LINK, Stage.BETA, "M3", setOf(Need.INTERNET),
+        "⎔", Group.LINK, Stage.LIVE, "M3", setOf(Need.INTERNET),
     )
     val NET = FeatureInfo(
         "net", "Hálózat", "Bluetooth HID, WiFi relé, hotspot adatforgalom-figyeléssel, USB és Bluetooth internetmegosztás.",
@@ -69,7 +69,7 @@ object Catalogue {
     )
     val NOTES = FeatureInfo(
         "notes", "Gyorsjegyzet", "Jegyzet a telefonról egy külön branchbe, ami a projekt naplójaként (chat log) működik.",
-        "✎", Group.WORK, Stage.BETA, "M6", setOf(Need.INTERNET, Need.GITHUB),
+        "✎", Group.WORK, Stage.LIVE, "M6", setOf(Need.INTERNET, Need.GITHUB),
     )
     val PORTS = FeatureInfo(
         "ports", "Localhost", "A PC-n futó helyi szerverek listája: megnyitás a telefonon, vagy külön ablakban a PC-n.",

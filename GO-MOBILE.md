@@ -9,7 +9,7 @@ design system with the rest of the toolset. The base framework (M0) was built th
 ## 0. Where this runs now: the local H: session (since 2026-10-30)
 
 M0–M6 were built in a cloud session (branch `ccr-3aebf098-ytpsqa`). On 2026-10-30 the user moved the work to the
-**local session on H:**: the main checkout `H:\cwebuser\projects\VRG-DE\Planner_VRG_U100`, branch `main`, the same
+**local session on H:**: the main checkout `H:\VRG\Full\Planner_VRG_U100`, branch `main`, the same
 rules as every other line of work (CLAUDE.md, GO MAIN). Confirm with `git rev-parse --show-toplevel`.
 
 **First local session, once:** bring the last cloud commits into `main`. The cloud branch already has `main` merged
@@ -47,7 +47,7 @@ What changes locally compared with the cloud:
 - **Branch:** `main` in the main checkout, like everything else. Commit after each finished step.
 - **Check first:** `Mobile\mobile.cmd test` (or `cd Mobile/android && gradlew :kit-core:test :airdeck-core:test`)
   and `node Mobile/tests/relay-pair.js` must be green before you change anything.
-- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M9** (M1 + M2 live; M3 and M6 built 2026-10-30, BETA until the user's phone check).
+- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M9** (M1, M2, M3 and M6 live).
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
 - Each WP ends with:
@@ -80,4 +80,4 @@ What changes locally compared with the cloud:
 - **M3**: done 2026-10-30 (OAuth App "VRG Mobile", Client ID in `kit/src/main/res/values/github.xml`).
 - **M9**: create the release keystore outside the repo, and add the four repo secrets.
 - **Every WP**: install the APK (`mobile.cmd` → 3, or from the Actions run / Releases after M9) and work through the
-  phone checklist. Open right now: M3 (sign-in) and M6 (a note in `mobile-log`).
+  phone checklist. None is open right now (M3 and M6 passed 2026-10-31).
