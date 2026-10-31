@@ -138,6 +138,7 @@ city from "a picture of the repo" towards **an instrument you query, tour and de
 - CITY-D26 **Mélyvíz** (user, 2026-10-27) — the skin is the VRG dev-side style "Mélyvíz" (deep water), applied at its
   Kódváros setting: water ground that waves only where you click, smoked-glass panels with cut corners, ice for the
   instrument and warm light for the code's activity. Rules M1–M7 and the axis values: `docs/city/melyviz.md`.
+- CITY-D34…D49 (user, 2026-10-31): Gépország, the Computer Homeland node. Table: `homeland/06-decisions.md`.
 - Still open: the Cloudflare outer ring CITY-D29–D33 and CITY-D21 option D (report §8, prompt CF-01).
 
 ## 6. Use
@@ -283,9 +284,10 @@ rendered as factory or space station) — the city is the base, but keep the eng
 
 ## 7.3 Computer Homeland (2026-10-31)
 
-A new node beside Város: this PC as a living city-state. Concept pack, feed design and the open CITY-D34…D49:
+A new node beside Város: this PC as a living city-state. Concept pack, feed design and the answered CITY-D34…D49:
 [`homeland/README.md`](homeland/README.md); the request: [`HOMELAND-BRIEF.md`](HOMELAND-BRIEF.md). Found on the way: the
-ETW task is off (`homeland/03-truth.md` §3.5). Homeland comes first; lifting Kódváros from it comes later.
+ETW task is off (`homeland/03-truth.md` §3.5). Homeland comes first; lifting Kódváros from it comes later. **S1 live 2026-10-31:** the
+fourth view, START → K → G.
 
 ## 8. Élő munkatér
 

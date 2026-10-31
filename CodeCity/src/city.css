@@ -348,3 +348,33 @@ body[data-quality^="low"] :is(#panel, #legend, #lenses, #board, #tours, #now, #l
 #board-1 { text-shadow: 0 0 var(--glow) var(--accent-glow); }
 .badge { border-color: var(--line-strong); }
 #legend b:first-child { font-family: var(--font-voice); font-stretch: 75%; font-weight: 600; font-size: 14px; letter-spacing: .03em; }
+
+/* ---- Gépország (40-hm-core): the city's own bars step aside, the instrument stays Mélyvíz */
+body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb, #inset, #landinfo, #now, #help, #sess-now, #fresh) { display: none !important; }
+#hm-ui { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+#hm-ui[hidden] { display: none; }
+#hm-ui .btn { pointer-events: auto; }
+#hm-hud { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; padding: 6px 12px; pointer-events: auto;
+  background: var(--panel); border: 1px solid var(--line); font: 12px "Cascadia Mono", Consolas, monospace; color: var(--dim); backdrop-filter: blur(var(--blur)); }
+#hm-hud > b { font: 600 15px Bahnschrift, sans-serif; color: var(--accent); }
+#hm-hud span b { color: var(--text); font-weight: normal; }
+#hm-hud .warn { color: var(--warn); }
+#hm-hud .dim { color: var(--faint); margin-left: auto; }
+#hm-hud .dim + .dim { margin-left: 0; }
+#hm-sw { position: absolute; top: 62px; left: 12px; display: flex; gap: 4px; }
+#hm-sw .btn, #hm-rail .btn { background: var(--panel); font-size: 12px; padding: 3px 10px; }
+#hm-sw .btn.on, #hm-rail .btn.on { color: var(--accent); border-color: var(--accent); }
+#hm-rail { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 4px; }
+#hm-key { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 14px; padding: 4px 10px; font-size: 11px; color: var(--dim); background: var(--panel); border: 1px solid var(--line); }
+#hm-key span { display: inline-flex; align-items: center; gap: 6px; }
+#hm-key i, .hm-t { display: inline-block; width: 16px; height: 9px; margin-right: 6px; }
+#hm-key i { margin-right: 0; }
+#hm-key .m, .hm-t.m { background: var(--accent-2); }
+#hm-key .k, .hm-t.k { border: 1px dashed var(--accent-2); }
+#hm-key .j, .hm-t.j { background: var(--faint); }
+#hm-fix { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); padding: 4px 18px; background: var(--crit); color: #1a0c0a; font: 600 14px Bahnschrift, sans-serif; letter-spacing: .08em; }
+.hm-src { margin-top: 10px; font-size: 11px; line-height: 1.5; }
+.hm-bars { list-style: none; margin: 8px 0 0; padding: 0; columns: 2; font: 11px "Cascadia Mono", Consolas, monospace; color: var(--dim); }
+.hm-bars li { display: flex; align-items: center; gap: 6px; break-inside: avoid; margin-bottom: 3px; }
+.hm-bars i { display: block; height: 7px; background: var(--accent-2); }
+@media (max-width: 700px) { #hm-sw { top: 96px; } #hm-rail { top: auto; bottom: 48px; transform: none; flex-direction: row; } }

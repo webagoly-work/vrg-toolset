@@ -1,0 +1,21 @@
+{
+  "kind": "vrg-homeland-classes",
+  "version": 1,
+  "_comment": "Gépország (docs/city/homeland/01-topology.md §1.6): image name -> class -> place on the island, first match wins. An unknown program goes to the suburbs (kulvaros); nothing is ever dropped. Program names only: no client names, no paths, no live data.",
+  "rules": [
+    { "cls": "browser", "place": "belvaros", "exe": ["chrome.exe", "opera.exe", "zen.exe", "firefox.exe", "msedge.exe", "brave.exe", "vivaldi.exe"] },
+    { "cls": "agent", "place": "muhely", "exe": ["claude.exe"] },
+    { "cls": "editor", "place": "belvaros", "exe": ["code.exe", "notepad.exe", "notepad++.exe", "devenv.exe", "cursor.exe"] },
+    { "cls": "build", "place": "muhely", "exe": ["node.exe", "python.exe", "pythonw.exe", "dotnet.exe", "msbuild.exe", "npm.exe", "esbuild.exe", "gradle.exe", "java.exe", "arduino-cli.exe"] },
+    { "cls": "git", "place": "muhely", "exe": ["git.exe", "git-remote-https.exe", "gh.exe", "ssh.exe"] },
+    { "cls": "shell", "place": "palota", "exe": ["cmd.exe", "powershell.exe", "pwsh.exe", "windowsterminal.exe", "conhost.exe", "openconsole.exe", "bash.exe", "mintty.exe"] },
+    { "cls": "military", "place": "laktanya", "exe": ["msmpeng.exe", "nissrv.exe", "securityhealthservice.exe", "securityhealthsystray.exe", "avastsvc.exe", "avastui.exe", "afwserv.exe", "aswengsrv.exe", "aswidsagent.exe", "wsc_proxy.exe", "aswtoolssvc.exe"] },
+    { "cls": "police", "place": "kulvaros", "exe": ["procexp.exe", "procexp64.exe", "procmon.exe", "procmon64.exe", "hwinfo64.exe", "taskmgr.exe", "windbg.exe", "x64dbg.exe", "systeminformer.exe", "tmog.exe", "vrg-probe.exe", "vrg-etw.exe"] },
+    { "cls": "state", "place": "palota", "exe": ["explorer.exe", "dwm.exe", "winlogon.exe", "services.exe", "lsass.exe", "svchost.exe", "sihost.exe", "ctfmon.exe", "fontdrvhost.exe", "taskhostw.exe", "runtimebroker.exe", "searchindexer.exe", "searchui.exe", "searchapp.exe", "shellexperiencehost.exe", "startmenuexperiencehost.exe", "applicationframehost.exe", "dllhost.exe", "wmiprvse.exe", "spoolsv.exe", "audiodg.exe"] },
+    { "cls": "media", "place": "belvaros", "exe": ["vlc.exe", "spotify.exe", "mpv.exe", "wmplayer.exe"] },
+    { "cls": "game", "place": "belvaros", "exe": ["steam.exe", "steamwebhelper.exe", "epicgameslauncher.exe"] },
+    { "cls": "office", "place": "belvaros", "exe": ["winword.exe", "excel.exe", "powerpnt.exe", "outlook.exe", "acrord32.exe", "sumatrapdf.exe"] },
+    { "cls": "packer", "place": "kulvaros", "exe": ["7zfm.exe", "7z.exe", "7zg.exe", "wiztree64.exe", "diskinfo64.exe"] },
+    { "cls": "ghost", "place": "kulvaros", "exe": ["dtshellhlp.exe", "dtagent.exe", "dthelper.exe"] }
+  ]
+}

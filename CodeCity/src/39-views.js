@@ -4,27 +4,35 @@
 //     It is a scaffold: the City View spec (look, feel, function) lands here, in vwCity below.
 //   Egyszerű (simple): a flat, colour-coded top-down diagram (SVG) of the same treemap — districts outlined,
 //     files filled by language, only the files that exist at the shown commit; click opens the file or district panel.
-// The view rides in the hash (#view=global|city|simple) and is remembered per viewer; V cycles, the bar switches.
+//   Gépország (homeland): this PC as a city-state, its own island on the same scene (40–42-hm).
+// The view rides in the hash (#view=global|city|simple|homeland) and is remembered per viewer; V cycles, the bar switches.
 // Every Land/World layer adds itself to world.group, often re-created, so the city view hides them each frame
 // (scene.onBeforeRender) instead of chasing every redraw.
 
 const VIEWS = [['city', 'Város', 'Csak a kódváros — az új alapnézet'], ['global', 'Globális', 'A város a Földdel és a GitWorld bolygóval, ahogy eddig'],
-  ['simple', 'Egyszerű', 'Lapos, felülnézeti térkép: körzetek és fájlok nyelv szerinti színnel']];
+  ['simple', 'Egyszerű', 'Lapos, felülnézeti térkép: körzetek és fájlok nyelv szerinti színnel'],
+  ['homeland', 'Gépország', 'Ez a gép városállamként, élőben: hardver, állam, programok']];
 const vw = { id: 'city', bar: null, svg: null, box: null, drag: null };
 
 // layers that belong to the Land and above (29–36); the city view keeps them invisible
 const vwOuter = () => [land.group, pw.group, fl.group, wd.group, ap.group, st.group, et.group].filter(Boolean);
-scene.onBeforeRender = () => { if (vw.id !== 'global') for (const g of vwOuter()) g.visible = false; };
+scene.onBeforeRender = () => {
+  if (vw.id !== 'global') for (const g of vwOuter()) g.visible = false;
+  const home = vw.id === 'homeland';   // Gépország has the scene alone: the city and everything drawn on it stay out
+  for (const g of [world && world.group, roads.group, compare.ghosts, follow.obj, sess.obj, cranes && cranes.mast, cranes && cranes.jib]) if (g) g.visible = !home;
+};
 
 function setView(id, save = true) {
   if (!VIEWS.some(v => v[0] === id)) id = 'city';
   const was = vw.id;
   vw.id = id;
   document.body.dataset.view = id;
+  if (was === 'homeland' && id !== 'homeland') { hmLeave(); if (current) flyCamera([0, 0, 0.8, 0.95, current.side * 1.25], 0); }
   if (vw.bar) for (const b of vw.bar.children) b.classList.toggle('on', b.dataset.view === id);
   if (id === 'global' && was !== 'global') for (const g of vwOuter()) g.visible = true;
   if (save) try { localStorage.setItem('kv-view', id); } catch { /* private window: the hash still carries it */ }
   if (id === 'simple') vwSimple(); else if (vw.svg) vw.svg.hidden = true;
+  if (id === 'homeland' && was !== 'homeland') hmEnter();
   if (id === 'city' && current) vwCity();
   writeHashSoon();
   requestRender();
@@ -42,7 +50,7 @@ canvas.addEventListener('wheel', () => {
 addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input:not([type=range]), textarea, select')) return;
   if (e.key === 'v' || e.key === 'V') { const i = VIEWS.findIndex(v => v[0] === vw.id); setView(VIEWS[(i + 1) % VIEWS.length][0]); return; }
-  if (e.key === 'Home' && !e.shiftKey && vw.id !== 'global' && current) {
+  if (e.key === 'Home' && !e.shiftKey && vw.id !== 'global' && vw.id !== 'homeland' && current) {
     e.preventDefault(); e.stopImmediatePropagation();
     flyCamera([0, 0, 0.8, 0.95, current.side * 1.25], window.KV_INSTANT ? 0 : 600);
   }
@@ -137,5 +145,8 @@ function vwRefresh() { if (vw.id === 'simple') vwSimple(); }
   $('bar').insertBefore(vw.bar, $('dock-btn'));
   let saved = null;
   try { saved = localStorage.getItem('kv-view'); } catch { /* no storage: the default */ }
-  setView(new URLSearchParams(location.hash.slice(1)).get('view') || saved || 'city', false);
+  // Gépország's modules come after this file and its camera after the city loads: 99-boot enters it
+  const want = new URLSearchParams(location.hash.slice(1)).get('view') || saved || 'city';
+  vw.pending = want === 'homeland';
+  setView(vw.pending ? 'city' : want, false);
 }

@@ -114,3 +114,7 @@ greys out.
 
 Conclusion: the 1 Hz feed goes into the C# `vrg-probe` with native calls and PDH. Extending the PowerShell/WMI sampler
 would itself become a load the city then displays.
+
+**Measured on the built feed (2026-10-31):** one full sample (455 processes, every PDH counter) takes 30–50 ms, 100 ms when
+the machine is saturated, so PDH is the larger share, not the 7 ms snapshot. The probe and the segéd together show as about
+1 % of the whole machine in the HUD's *megfigyelő* figure, and more just after a rescan.

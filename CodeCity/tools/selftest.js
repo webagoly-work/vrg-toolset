@@ -122,6 +122,10 @@ try {
   const prs = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-probe.js')], { encoding: 'utf8', timeout: 90000 });
   for (const l of String(prs.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
   check(prs.status === 0, `probe spec exit ${prs.status}`);
+  // Gépország (CITY-D34…D49): rates, layers, the privacy strip; a fake vrg-probe's feed starts only when the page asks; hm-close is guarded
+  const hms = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-homeland.js')], { encoding: 'utf8', timeout: 60000 });
+  for (const l of String(hms.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
+  check(hms.status === 0, `homeland spec exit ${hms.status}`);
   // elevated ETW (P11, KV-23): a fake vrg-etw pipe — exact cargo without addresses, a Bash read beams to its Claude session
   const ets = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-etw.js')], { encoding: 'utf8', timeout: 90000 });
   for (const l of String(ets.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));

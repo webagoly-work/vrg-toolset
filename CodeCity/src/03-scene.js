@@ -45,7 +45,7 @@ let drag = null;
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('pointerdown', e => {
   drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, pan: e.button === 2,
-    box: e.button === 0 && e.shiftKey && !!world, add: e.ctrlKey || e.metaKey, moved: 0 };
+    box: e.button === 0 && e.shiftKey && !!world && vw.id !== 'homeland', add: e.ctrlKey || e.metaKey, moved: 0 };
   canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener('pointerup', e => {

@@ -1,7 +1,27 @@
-# 6. Decisions for the user
+# 6. Decisions
 
-Numbering continues from CITY-D33. **A is recommended** in each. Nothing visual gets built past the concept sheet until
-these are answered. After the answers, this file and `docs/city/README.md` §5 record them.
+**Answered by the user, 2026-10-31.** The options as offered follow below the table, kept for the record.
+
+| Decision | Answer |
+|---|---|
+| CITY-D34 TMOG | **B** It is Task Manager OG. Inspiration, and the free version installed beside it to compare numbers |
+| CITY-D35 Sensors | **B** LibreHardwareMonitor inside the elevated sidecar |
+| CITY-D36 ETW repair | **A** The user does the steps |
+| CITY-D37 Reached by | **A** Fourth view plus a door on Erőmű |
+| CITY-D38 Name | **A** Gépország |
+| CITY-D39 Launcher | **A** START → K → G |
+| CITY-D40 Scene | **A** Night island, **with water ripples only on the horizontal water plane around the island** |
+| CITY-D41 Render | **A** three.js r169, procedural, instanced |
+| CITY-D42 Street plan | **A and C, rearrangeable.** C is organic growth from the git history, see [07-growth-and-land.md](07-growth-and-land.md) |
+| CITY-D43 Bodies | **A and B, by toggle** |
+| CITY-D44 Memory | **B** A plus a physical page view through the elevated sidecar |
+| CITY-D45 Truth display | **A and B, by toggle.** The note given here adds the drive land-use view, see [07-growth-and-land.md](07-growth-and-land.md) |
+| CITY-D46 Malware | **A** Hints only, no verdict, no action |
+| CITY-D47 Acting | **B** Closing a program from the city is allowed in the first slice |
+| CITY-D48 History | **B** 15 minutes in memory, plus an opt-in saved recording, aggregated, no names |
+| CITY-D49 First slice | **A** Nine complexes, ground and undercity, live feed, fixture mode |
+
+## As offered
 
 ## Identity
 

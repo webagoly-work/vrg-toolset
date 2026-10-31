@@ -165,7 +165,8 @@ if (sea) {
   canvas.addEventListener('pointerdown', e => { seaDown = e.button === 0 && !e.shiftKey && !e.ctrlKey && !e.metaKey ? { x: e.clientX, y: e.clientY } : null; });
   canvas.addEventListener('pointerup', e => {
     const d = seaDown; seaDown = null;
-    if (!d || Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) >= 4 || pickAt(e)) return;
+    // Gépország has its own water plane (41-hm-island)
+    if (!d || vw.id === 'homeland' || Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) >= 4 || pickAt(e)) return;
     seaDrop(e.clientX, e.clientY);
   });
   // #seatest=1 (headless check, like #cardtest): one wave in the open water on the left, as if clicked there, stepped 18 times

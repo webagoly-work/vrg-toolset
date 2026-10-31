@@ -354,6 +354,36 @@ body[data-quality^="low"] :is(#panel, #legend, #lenses, #board, #tours, #now, #l
 #board-1 { text-shadow: 0 0 var(--glow) var(--accent-glow); }
 .badge { border-color: var(--line-strong); }
 #legend b:first-child { font-family: var(--font-voice); font-stretch: 75%; font-weight: 600; font-size: 14px; letter-spacing: .03em; }
+
+/* ---- Gépország (40-hm-core): the city's own bars step aside, the instrument stays Mélyvíz */
+body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb, #inset, #landinfo, #now, #help, #sess-now, #fresh) { display: none !important; }
+#hm-ui { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+#hm-ui[hidden] { display: none; }
+#hm-ui .btn { pointer-events: auto; }
+#hm-hud { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; padding: 6px 12px; pointer-events: auto;
+  background: var(--panel); border: 1px solid var(--line); font: 12px "Cascadia Mono", Consolas, monospace; color: var(--dim); backdrop-filter: blur(var(--blur)); }
+#hm-hud > b { font: 600 15px Bahnschrift, sans-serif; color: var(--accent); }
+#hm-hud span b { color: var(--text); font-weight: normal; }
+#hm-hud .warn { color: var(--warn); }
+#hm-hud .dim { color: var(--faint); margin-left: auto; }
+#hm-hud .dim + .dim { margin-left: 0; }
+#hm-sw { position: absolute; top: 62px; left: 12px; display: flex; gap: 4px; }
+#hm-sw .btn, #hm-rail .btn { background: var(--panel); font-size: 12px; padding: 3px 10px; }
+#hm-sw .btn.on, #hm-rail .btn.on { color: var(--accent); border-color: var(--accent); }
+#hm-rail { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 4px; }
+#hm-key { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 14px; padding: 4px 10px; font-size: 11px; color: var(--dim); background: var(--panel); border: 1px solid var(--line); }
+#hm-key span { display: inline-flex; align-items: center; gap: 6px; }
+#hm-key i, .hm-t { display: inline-block; width: 16px; height: 9px; margin-right: 6px; }
+#hm-key i { margin-right: 0; }
+#hm-key .m, .hm-t.m { background: var(--accent-2); }
+#hm-key .k, .hm-t.k { border: 1px dashed var(--accent-2); }
+#hm-key .j, .hm-t.j { background: var(--faint); }
+#hm-fix { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); padding: 4px 18px; background: var(--crit); color: #1a0c0a; font: 600 14px Bahnschrift, sans-serif; letter-spacing: .08em; }
+.hm-src { margin-top: 10px; font-size: 11px; line-height: 1.5; }
+.hm-bars { list-style: none; margin: 8px 0 0; padding: 0; columns: 2; font: 11px "Cascadia Mono", Consolas, monospace; color: var(--dim); }
+.hm-bars li { display: flex; align-items: center; gap: 6px; break-inside: avoid; margin-bottom: 3px; }
+.hm-bars i { display: block; height: 7px; background: var(--accent-2); }
+@media (max-width: 700px) { #hm-sw { top: 96px; } #hm-rail { top: auto; bottom: 48px; transform: none; flex-direction: row; } }
 </style>
 </head>
 <body>
@@ -1243,7 +1273,7 @@ let drag = null;
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('pointerdown', e => {
   drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, pan: e.button === 2,
-    box: e.button === 0 && e.shiftKey && !!world, add: e.ctrlKey || e.metaKey, moved: 0 };
+    box: e.button === 0 && e.shiftKey && !!world && vw.id !== 'homeland', add: e.ctrlKey || e.metaKey, moved: 0 };
   canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener('pointerup', e => {
@@ -1421,6 +1451,7 @@ const dayOf = ci => {
 };
 
 function onHover(e) {
+  if (vw.id === 'homeland') return hmHover(e);
   const tip = $('tip'), hit = pickAt(e);
   setHover(hit && hit.file ? hit.i : -1);
   if (!hit) { tip.hidden = true; return; }
@@ -1432,6 +1463,7 @@ function onHover(e) {
 }
 
 function onPick(e) {
+  if (vw.id === 'homeland') return hmClick(e);
   const hit = pickAt(e);
   if ((e.ctrlKey || e.metaKey) && hit && hit.file) { selToggle(hit.i); return; }   // multi-select (19-select)
   if (!hit) closePanel();
@@ -1478,6 +1510,7 @@ function viewState() {
   q.set('cam', [t.x, t.z, orbit.theta, orbit.phi, orbit.r].map(v => +v.toFixed(2)).join(','));
   if (share.sel) q.set('sel', share.sel);
   if (lens.id !== 'alap') q.set('lens', lens.id);
+  if (vw.id !== 'city') q.set('view', vw.id);
   if (roads.all) q.set('roads', '1');
   if (query.text) q.set('q', query.text);
   if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
@@ -1491,7 +1524,7 @@ function writeHashSoon() {
   clearTimeout(hashTimer);
   hashTimer = setTimeout(() => {
     const q = viewState(), keep = new URLSearchParams(location.hash.slice(1));
-    for (const k of ['tour', 'loop']) if (keep.get(k)) q.set(k, keep.get(k));   // a wallboard link stays one
+    for (const k of ['tour', 'loop', 'hmtest']) if (keep.get(k)) q.set(k, keep.get(k));   // a wallboard link stays one
     history.replaceState(null, '', '#' + q.toString());
   }, 250);
 }
@@ -2913,6 +2946,7 @@ function kvCtx(hit) {
 function kvMenuClose() { if (kv.menu) { kv.menu.remove(); kv.menu = null; } }
 async function onContext(e) {
   kvMenuClose();
+  if (vw.id === 'homeland') return;
   const hit = pickAt(e);
   if (!hit) return;
   await kvReady();
@@ -3518,6 +3552,8 @@ function liveConnect() {
   live.es.addEventListener('ports', e => { if (liveMine()) portsEvent(JSON.parse(e.data)); });
   live.es.addEventListener('pipes', e => { if (liveMine()) pipesEvent(JSON.parse(e.data)); });   // 27-health
   live.es.addEventListener('disk', e => { if (liveMine()) diskEvent(JSON.parse(e.data)); });   // 29-land: Tárház
+  live.es.addEventListener('hm', e => hmEvent(JSON.parse(e.data)));   // 40-hm-core: Gépország
+  live.es.addEventListener('hmhw', e => hmHwEvent(JSON.parse(e.data)));
   live.es.addEventListener('power', e => { if (liveMine()) powerEvent(JSON.parse(e.data)); });   // 30-power: Erőmű
   live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
   live.es.addEventListener('cargo', e => { if (liveMine()) cargoEvent(JSON.parse(e.data)); });   // 31-flows: ships and planes
@@ -4465,7 +4501,7 @@ function landInset() {
 function landPanel() {
   if (!land.el) {
     land.el = document.createElement('aside'); land.el.id = 'landinfo';
-    land.el.addEventListener('click', e => { if (e.target.closest('[data-reveal]')) { land.reveal = !land.reveal; landPanel(); } });
+    land.el.addEventListener('click', e => { if (e.target.closest('[data-reveal]')) { land.reveal = !land.reveal; landPanel(); } if (e.target.closest('[data-hm]')) setView('homeland'); });
     document.body.append(land.el);
   }
   land.el.hidden = land.at === 'city';
@@ -4592,7 +4628,7 @@ function pwPanelHtml() {
   if (!p && !n) return '';
   const ram = p && p.ramMB ? Math.round(100 * (1 - p.ramFreeMB / p.ramMB)) : null, kb = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB/s' : Math.round(b / 1024) + ' kB/s';
   return '<h4>Most a Földön</h4>' +
-    (p ? `<div><b>Erőmű</b> <span class="dim">CPU ${p.cpu}% · RAM ${ram}% · GPU ${p.gpu}% · lemez ${p.disk}% · hálózat ↓${kb(p.rx)} ↑${kb(p.tx)}</span></div>` : '') +
+    (p ? `<div><b>Erőmű</b> <button class="btn" data-hm title="Belépés a gépbe: Gépország">Gépország</button> <span class="dim">CPU ${p.cpu}% · RAM ${ram}% · GPU ${p.gpu}% · lemez ${p.disk}% · hálózat ↓${kb(p.rx)} ↑${kb(p.tx)}</span></div>` : '') +
     (n ? `<div><b>Pályaudvar</b> <span class="dim">${n.station.up ? 'él' : 'NEM VÁLASZOL'} · ${n.devices} eszköz az udvaron</span></div>` +
       `<div><b>Határ</b> <span class="dim">${n.internet.up ? 'nyitva — van internet' : 'ZÁRVA — nincs internet; minden helyi tovább működik'}</span></div>` +
       (n.docks.length ? `<div><b>Part</b> <span class="dim">${n.docks.map(d => esc(d.name) + ' ' + d.n).join(' · ')}</span></div>` : '') +
@@ -5647,7 +5683,8 @@ if (sea) {
   canvas.addEventListener('pointerdown', e => { seaDown = e.button === 0 && !e.shiftKey && !e.ctrlKey && !e.metaKey ? { x: e.clientX, y: e.clientY } : null; });
   canvas.addEventListener('pointerup', e => {
     const d = seaDown; seaDown = null;
-    if (!d || Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) >= 4 || pickAt(e)) return;
+    // Gépország has its own water plane (41-hm-island)
+    if (!d || vw.id === 'homeland' || Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) >= 4 || pickAt(e)) return;
     seaDrop(e.clientX, e.clientY);
   });
   // #seatest=1 (headless check, like #cardtest): one wave in the open water on the left, as if clicked there, stepped 18 times
@@ -5667,27 +5704,35 @@ if (sea) {
 //     It is a scaffold: the City View spec (look, feel, function) lands here, in vwCity below.
 //   Egyszerű (simple): a flat, colour-coded top-down diagram (SVG) of the same treemap — districts outlined,
 //     files filled by language, only the files that exist at the shown commit; click opens the file or district panel.
-// The view rides in the hash (#view=global|city|simple) and is remembered per viewer; V cycles, the bar switches.
+//   Gépország (homeland): this PC as a city-state, its own island on the same scene (40–42-hm).
+// The view rides in the hash (#view=global|city|simple|homeland) and is remembered per viewer; V cycles, the bar switches.
 // Every Land/World layer adds itself to world.group, often re-created, so the city view hides them each frame
 // (scene.onBeforeRender) instead of chasing every redraw.
 
 const VIEWS = [['city', 'Város', 'Csak a kódváros — az új alapnézet'], ['global', 'Globális', 'A város a Földdel és a GitWorld bolygóval, ahogy eddig'],
-  ['simple', 'Egyszerű', 'Lapos, felülnézeti térkép: körzetek és fájlok nyelv szerinti színnel']];
+  ['simple', 'Egyszerű', 'Lapos, felülnézeti térkép: körzetek és fájlok nyelv szerinti színnel'],
+  ['homeland', 'Gépország', 'Ez a gép városállamként, élőben: hardver, állam, programok']];
 const vw = { id: 'city', bar: null, svg: null, box: null, drag: null };
 
 // layers that belong to the Land and above (29–36); the city view keeps them invisible
 const vwOuter = () => [land.group, pw.group, fl.group, wd.group, ap.group, st.group, et.group].filter(Boolean);
-scene.onBeforeRender = () => { if (vw.id !== 'global') for (const g of vwOuter()) g.visible = false; };
+scene.onBeforeRender = () => {
+  if (vw.id !== 'global') for (const g of vwOuter()) g.visible = false;
+  const home = vw.id === 'homeland';   // Gépország has the scene alone: the city and everything drawn on it stay out
+  for (const g of [world && world.group, roads.group, compare.ghosts, follow.obj, sess.obj, cranes && cranes.mast, cranes && cranes.jib]) if (g) g.visible = !home;
+};
 
 function setView(id, save = true) {
   if (!VIEWS.some(v => v[0] === id)) id = 'city';
   const was = vw.id;
   vw.id = id;
   document.body.dataset.view = id;
+  if (was === 'homeland' && id !== 'homeland') { hmLeave(); if (current) flyCamera([0, 0, 0.8, 0.95, current.side * 1.25], 0); }
   if (vw.bar) for (const b of vw.bar.children) b.classList.toggle('on', b.dataset.view === id);
   if (id === 'global' && was !== 'global') for (const g of vwOuter()) g.visible = true;
   if (save) try { localStorage.setItem('kv-view', id); } catch { /* private window: the hash still carries it */ }
   if (id === 'simple') vwSimple(); else if (vw.svg) vw.svg.hidden = true;
+  if (id === 'homeland' && was !== 'homeland') hmEnter();
   if (id === 'city' && current) vwCity();
   writeHashSoon();
   requestRender();
@@ -5705,7 +5750,7 @@ canvas.addEventListener('wheel', () => {
 addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input:not([type=range]), textarea, select')) return;
   if (e.key === 'v' || e.key === 'V') { const i = VIEWS.findIndex(v => v[0] === vw.id); setView(VIEWS[(i + 1) % VIEWS.length][0]); return; }
-  if (e.key === 'Home' && !e.shiftKey && vw.id !== 'global' && current) {
+  if (e.key === 'Home' && !e.shiftKey && vw.id !== 'global' && vw.id !== 'homeland' && current) {
     e.preventDefault(); e.stopImmediatePropagation();
     flyCamera([0, 0, 0.8, 0.95, current.side * 1.25], window.KV_INSTANT ? 0 : 600);
   }
@@ -5800,7 +5845,761 @@ function vwRefresh() { if (vw.id === 'simple') vwSimple(); }
   $('bar').insertBefore(vw.bar, $('dock-btn'));
   let saved = null;
   try { saved = localStorage.getItem('kv-view'); } catch { /* no storage: the default */ }
-  setView(new URLSearchParams(location.hash.slice(1)).get('view') || saved || 'city', false);
+  // Gépország's modules come after this file and its camera after the city loads: 99-boot enters it
+  const want = new URLSearchParams(location.hash.slice(1)).get('view') || saved || 'city';
+  vw.pending = want === 'homeland';
+  setView(vw.pending ? 'city' : want, false);
+}
+
+// ==== src/40-hm-core.js
+// 40-hm-core.js — Gépország (Computer Homeland, CITY-D34…D49, docs/city/homeland/): this PC as a city-state, a fourth view
+// beside Város. Hardware is the land, Windows the state, programs the economy, data the cargo. 41-hm-island builds the
+// fixed island, 42-hm-city puts the live numbers on it; this file holds the state, the feed, the HUD, the layers and the
+// panels. The feed runs only while the view is open (POST hm-feed), and the page never invents motion: a feed that is off
+// greys its part and says why. #hmtest=1 runs on made-up data under a permanent PRÓBAADAT banner.
+
+const HM_LAYERS = [['Felszín', 0, 'Programok ablakkal'], ['Alváros', -36, 'Szolgáltatások: a 0. munkamenet'], ['Mélyút', -54, 'Kernel, megszakítások'], ['Alapkő', -70, 'UEFI, a lap vezetékei']];
+const HM_TAG = { M: ['Mért', 'most mért érték'], K: ['Közelítő', 'mért adatból következtetett'], J: ['Jelkép', 'a metafora része, nincs mögötte mérés'] };
+const hm = { group: null, ev: null, hw: null, layer: 0, all: false, tags: true, truth: false, sel: null, fixture: false, fxTimer: 0, feed: 'off', ui: null, raf: 0, lastFrame: 0, confirm: null };
+
+const hmGB = b => (b / 2 ** 30).toFixed(b >= 1e10 ? 0 : 1) + ' GB';
+const hmMB = b => (b >= 2 ** 30 ? (b / 2 ** 30).toFixed(1) + ' GB' : Math.round(b / 2 ** 20) + ' MB');
+const hmRate = b => (b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB/s' : Math.round(b / 1024) + ' kB/s');
+const hmPct = v => Math.round(v || 0) + ' %';
+const hmNum = v => hu(Math.round(v || 0));
+
+// ---- entering and leaving (39-views calls these)
+function hmEnter() {
+  if (!hm.group) { hmBuild(); hmUiBuild(); }
+  hm.group.visible = true;
+  hm.ui.hidden = false;
+  hm.fixture = new URLSearchParams(location.hash.slice(1)).get('hmtest') === '1';
+  $('hm-fix').hidden = !hm.fixture;
+  $('panel').hidden = true;
+  hmSetLayer(0);
+  hmHome(0);
+  hmFeed(true);
+  hmAnimate();
+}
+function hmLeave() {
+  if (hm.group) hm.group.visible = false;
+  if (hm.ui) hm.ui.hidden = true;
+  hm.sel = null; $('panel').hidden = true;
+  hmFeed(false);
+  orbit.target.y = 0;
+}
+function hmHome(ms = 600) { orbit.target.y = 0; flyCamera([0, 24, 0.72, 0.9, 490], window.KV_INSTANT ? 0 : ms); }
+
+function hmFeed(on) {
+  if (hm.fixture) {
+    clearInterval(hm.fxTimer); hm.feed = on ? 'fixture' : 'off';
+    if (on) { hmHwEvent(hmFixtureHw()); hmEvent(hmFixtureEvent()); hm.fxTimer = setInterval(() => hmEvent(hmFixtureEvent()), 1000); }
+    return;
+  }
+  if (!window.KV_COMPANION) { hm.feed = 'nocomp'; hmHud(); return; }
+  if (!on) { hm.feed = 'off'; kvCall('hm-feed', { on: false }); return; }
+  hm.feed = 'wait'; hmHud();
+  live.ready.then(() => { if (vw.id === 'homeland') return kvCall('hm-feed', { on: true }); }).then(r => {
+    if (!r) return;
+    if (r.status !== 200) hm.feed = 'err';
+    if (r.json && r.json.hw) hmHwEvent(r.json.hw);
+    if (r.json && r.json.state === 'missing') hm.feed = 'noprobe';
+    hmHud();
+  });
+}
+function hmEvent(d) {
+  if (vw.id !== 'homeland') return;
+  hm.ev = d; hm.feed = d.fixture ? 'fixture' : 'on';
+  hmApply(d);   // 42-hm-city
+  hmHud();
+  hmPanel();
+}
+function hmHwEvent(d) { hm.hw = d; hmHwApply(d); hmHud(); hmPanel(); }
+
+// ---- the HUD: the state's budget in one line, the switches, the layer rail
+function hmUiBuild() {
+  hm.ui = document.createElement('div'); hm.ui.id = 'hm-ui'; hm.ui.hidden = true;
+  hm.ui.innerHTML = `<div id="hm-fix" hidden>PRÓBAADAT — kitalált számok, nem ez a gép</div>
+    <div id="hm-hud" aria-live="off"></div>
+    <div id="hm-sw" role="group" aria-label="Kapcsolók">
+      <button class="btn" data-sw="all" title="Minden folyamat külön épület (A)">Mind</button>
+      <button class="btn" data-sw="tags" title="Mért, közelítő és jelkép jelölése a városban (T)">Jelölés</button>
+      <button class="btn" data-sw="truth" title="Csak a mért elemek látszanak (M)">Mérés</button>
+    </div>
+    <nav id="hm-rail" aria-label="Rétegek">${HM_LAYERS.map((l, i) => `<button class="btn" data-layer="${i}" title="${esc(l[2])} (PgUp / PgDn)">${esc(l[0])}</button>`).join('')}</nav>
+    <div id="hm-key"><span><i class="m"></i>Mért</span><span><i class="k"></i>Közelítő</span><span><i class="j"></i>Jelkép</span></div>`;
+  $('stage').append(hm.ui);
+  hm.ui.addEventListener('click', e => {
+    const l = e.target.closest('[data-layer]'); if (l) return hmSetLayer(+l.dataset.layer);
+    const s = e.target.closest('[data-sw]'); if (s) hmSwitch(s.dataset.sw);
+  });
+  hmSwitchPaint();
+}
+function hmSwitch(k) {
+  hm[k] = !hm[k];
+  hmSwitchPaint();
+  hmTagsApply();
+  if (k === 'all' && hm.ev) hmApply(hm.ev);
+  requestRender();
+}
+function hmSwitchPaint() { for (const b of hm.ui.querySelectorAll('[data-sw]')) b.classList.toggle('on', !!hm[b.dataset.sw]); }
+function hmHud() {
+  if (!hm.ui) return;
+  const el = $('hm-hud'), e = hm.ev, msg = { off: 'A feed áll.', wait: 'Csatlakozás a szondához…', err: 'A segéd hibát jelzett.', nocomp: 'Élő adat a segéddel jön: START → K → G.',
+    noprobe: 'A szonda nincs lefordítva: node CodeCity/tools/build-probe.js' }[hm.feed];
+  if (!e || msg) { el.innerHTML = `<b>Gépország</b> <span class="dim">${esc(msg || '')}</span>`; return; }
+  const m = e.mem, cpu = e.cores.reduce((a, c) => a + c.u + c.k, 0) / Math.max(1, e.cores.length), ram = m.total ? 100 * (1 - m.avail / m.total) : 0;
+  const eng = (e.gpu && e.gpu.eng) || {}, gpu = Math.min(100, Object.values(eng).reduce((a, v) => Math.max(a, v), 0));
+  const disk = Math.max(0, ...e.disks.map(d => d.busy)), rx = e.nics.reduce((a, n) => a + n.rx, 0), tx = e.nics.reduce((a, n) => a + n.tx, 0);
+  const obs = e.procs.filter(p => p.obs).reduce((a, p) => a + p.cpu, 0), hints = new Set(e.procs.filter(p => p.hint).map(p => p.key)).size;
+  el.innerHTML = `<b>Gépország</b> <span>CPU <b>${hmPct(cpu)}</b></span><span>RAM <b>${hmPct(ram)}</b></span><span>GPU <b>${hmPct(gpu)}</b>${e.gpu && e.gpu.temp != null ? ` · ${Math.round(e.gpu.temp)} °C` : ''}</span>` +
+    `<span>lemez <b>${hmPct(disk)}</b></span><span>háló ↓${hmRate(rx)} ↑${hmRate(tx)}</span><span>${hu(e.procs.length)} folyamat</span>` +
+    (hints ? `<span class="warn">${hints} gyanús jel</span>` : '') +
+    `<span class="dim" title="A szonda ideje mintánként és a megfigyelő saját CPU-ja: a mérés is a gépen fut">megfigyelő ${e.ms} ms · ${obs.toFixed(1)} %</span><span class="dim">ETW: ki</span>`;
+}
+
+// ---- layers: PgDn peels the surface off, nothing vanishes: it fades to a ghost above the layer you look at
+function hmSetLayer(i) {
+  hm.layer = Math.max(0, Math.min(HM_LAYERS.length - 1, i));
+  for (const b of hm.ui.querySelectorAll('[data-layer]')) b.classList.toggle('on', +b.dataset.layer === hm.layer);
+  hmLayerApply();   // 41-hm-island
+  hmFlyY(HM_LAYERS[hm.layer][1]);
+}
+function hmFlyY(y) {
+  const y0 = orbit.target.y, t0 = performance.now(), ms = window.KV_INSTANT ? 0 : 450;
+  const step = () => {
+    const k = ms ? Math.min(1, (performance.now() - t0) / ms) : 1, e = k * k * (3 - 2 * k);
+    orbit.target.y = y0 + (y - y0) * e; placeCamera();
+    if (k < 1) requestAnimationFrame(step);
+  };
+  step();
+}
+
+// ---- the keys of this view; the city's own keys (lenses, timeline, roads…) would act on a hidden city
+addEventListener('keydown', e => {
+  if (vw.id !== 'homeland' || e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input:not([type=range]), textarea, select')) return;
+  const k = e.key;
+  if (k === 'v' || k === 'V' || k === 'l' || k === 'L' || k === 'Escape' || k === 'Tab') return;
+  e.stopImmediatePropagation();
+  if (k === 'PageDown') { e.preventDefault(); hmSetLayer(hm.layer + 1); }
+  else if (k === 'PageUp') { e.preventDefault(); hmSetLayer(hm.layer - 1); }
+  else if (k === 'Home') { e.preventDefault(); hmHome(); }
+  else if (k === 'a' || k === 'A') hmSwitch('all');
+  else if (k === 't' || k === 'T') hmSwitch('tags');
+  else if (k === 'm' || k === 'M') hmSwitch('truth');
+}, true);
+
+// ---- the panel: fixed order, every number says where it comes from
+function hmShow(t) {
+  hm.sel = t; hm.confirm = null;
+  if (!t) { $('panel').hidden = true; hmSelApply(); return; }
+  hmPanel(); hmSelApply();
+}
+function hmFooter(tag, src) { return `<p class="dim hm-src"><i class="hm-t ${tag.toLowerCase()}"></i>${HM_TAG[tag][0]}: ${HM_TAG[tag][1]}${src ? '<br>Forrás: ' + esc(src) : ''}</p>`; }
+function hmPanel() {
+  const t = hm.sel; if (!t || !hm.ev && t.kind !== 'static') { if (t) hmPanelStatic(t); return; }
+  if (t.prog) return hmProgPanel(t.prog);
+  const e = hm.ev, hw = hm.hw || {}, m = e.mem, s = e.sys;
+  const P = (title, rows, tag, src, extra = '') => { openPanel(title, rows, extra + hmFooter(tag, src)); };
+  switch (t.id) {
+    case 'fab': {
+      const cpu = e.cores.reduce((a, c) => a + c.u + c.k, 0) / Math.max(1, e.cores.length);
+      return P('Gyárnegyed · CPU', [['Egység', esc((hw.cpu && hw.cpu.name) || '—')], ['Terhelés', hmPct(cpu)], ['Órajel', hmNum(s.mhz * (s.perf || 100) / 100) + ' MHz'], ['Váltás', hmNum(s.ctx) + ' /s'], ['Rendszerhívás', hmNum(s.sys) + ' /s']], 'M', 'NtQuerySystemInformation, PDH · 1 s',
+        `<ul class="hm-bars">${e.cores.map((c, i) => `<li><span>${Math.floor(i / 2) + 1}${'AB'[i % 2]}</span><i style="width:${Math.min(100, c.u + c.k)}%"></i></li>`).join('')}</ul>`);
+    }
+    case 'market': {
+      const kern = m.paged + m.nonpaged;
+      return P('Piac · RAM', [['Összes', hmGB(m.total)], ['Programok', hmGB(Math.max(0, m.total - m.avail - kern - m.modified))], ['Állam (pool)', hmGB(kern)], ['Kirakodásra vár', hmMB(m.modified)], ['Készenlét', hmGB(m.standby)], ['Üres', hmMB(m.free)],
+        ['Lekötve', `${hmGB(m.commit)} / ${hmGB(m.limit)}`], ['Lapbetöltés', hmNum(m.hard) + ' /s']], 'M', 'GetPerformanceInfo, PDH · 1 s', '<p class="dim">A telkek helye jelkép, az arányok mértek. A programok közti elosztás közelítő: a megosztott lapok több programnál is számítanak.</p>');
+    }
+    case 'empty': return P('Üres telek', [['Foglalatok', hw.ram ? `${hw.ram.dimms.length} / ${hw.ram.slots} foglalt` : '—']], 'M', 'Win32_PhysicalMemory', '<p class="dim">Egy modul, egy csatorna: a Piac utca egysávos.</p>');
+    case 'studio': {
+      const g = e.gpu || {}, eng = g.eng || {};
+      return P('Filmgyár · GPU', [['Egység', esc((hw.gpu && hw.gpu.name) || '—')], ['3D', hmPct(eng['3D'])], ['Másolás', hmPct(eng.Copy)], ['Videó', `${hmPct(eng.VideoDecode)} be · ${hmPct(eng.VideoEncode)} ki`], ['Kellékraktár', `${hmMB(g.ded || 0)}${g.total ? ' / ' + hmMB(g.total) : ''}`],
+        ['Hőmérséklet', g.temp != null ? Math.round(g.temp) + ' °C' : '—'], ['Órajel', g.mhz ? hmNum(g.mhz) + ' MHz' : '—']], 'M', 'PDH GPU Engine · 1 s; nvidia-smi · 5 s');
+    }
+    case 'junction': return P('Rendező · chipset', [['Lemezek', hmRate(e.disks.reduce((a, d) => a + d.r + d.w, 0))], ['Hálózat', hmRate(e.nics.reduce((a, n) => a + n.rx + n.tx, 0))]], 'K', 'a mögötte lévő eszközök összege', '<p class="dim">A chipsetnek nincs saját forgalommérője: ez a rajta áthaladó eszközök összege.</p>');
+    case 'palace': {
+      const kern = e.cores.reduce((a, c) => a + c.k, 0) / Math.max(1, e.cores.length);
+      return P('Palota · kernel', [['Kernel CPU', hmPct(kern)], ['Rendszerhívás', hmNum(s.sys) + ' /s'], ['Megszakítás', hmNum(s.irq) + ' /s'], ['DPC', hmPct(s.dpc)]], 'M', 'PDH · 1 s');
+    }
+    case 'harbour': return P('Tengeri kikötő · hálózat', [...e.nics.map(n => [esc(n.name.slice(0, 26)), `↓${hmRate(n.rx)} ↑${hmRate(n.tx)}`])], 'M', 'PDH Network Interface · 1 s', '<p class="dim">Folyamatonkénti forgalom az ETW-vel jön.</p>');
+    case 'barracks': {
+      const on = hmFold(e.procs.filter(p => p.cls === 'military'));
+      return P('Laktanya · vírusirtók', on.map(g => [esc(g.exe), `${g.cpu.toFixed(1)} % · ${hmMB(g.ws)}`]), 'M', 'folyamatlista · 1 s', '<p class="dim">Az őrjárat jelkép; a jelenlét és a terhelés mért.</p>');
+    }
+    case 'bedrock': return hmPanelStatic(t);
+  }
+  if (t.disk) {
+    const d = e.disks.find(x => x.letters.includes(t.disk)), inv = (hw.disks || []).find(x => (x.vols || []).some(v => v.letter === t.disk)), vol = inv && inv.vols.find(v => v.letter === t.disk);
+    return P(`${t.name} · ${t.disk}`, [['Lemez', esc((inv && inv.model) || '—')], ['Olvasás', d ? hmRate(d.r) : '—'], ['Írás', d ? hmRate(d.w) : '—'], ['Foglaltság', d ? hmPct(d.busy) : '—'], ['Sor', d ? hmNum(d.q) : '—'], ['Szabad', vol ? `${hmGB(vol.free)} / ${hmGB(vol.size)}` : '—']], 'M', 'PDH PhysicalDisk · 1 s',
+      '<p class="dim">Melyik program használja: az ETW-vel jön.</p>');
+  }
+  hmPanelStatic(t);
+}
+function hmPanelStatic(t) {
+  const hw = hm.hw || {}, b = hw.bios || {};
+  if (t.id === 'bedrock') return openPanel('Alapkő · firmware', [['Alaplap', esc(hw.board || '—')], ['UEFI', esc(`${b.maker || ''} ${b.version || ''}`)], ['Dátum', esc(b.date || '—')]], hmFooter('M', 'Win32_BIOS'));
+  openPanel(t.name || '—', [], hmFooter(t.tag || 'J', ''));
+}
+// a program: one row per fact; closing needs a second click (CITY-D47 B) and goes through its windows' own close
+function hmProgPanel(key) {
+  const e = hm.ev, list = e.procs.filter(p => (hm.sel.pid ? p.pid === hm.sel.pid : p.key === key));
+  if (!list.length) { openPanel(key, [['Állapot', 'Már nem fut']], ''); return; }
+  const g = hmFold(list)[0], parent = new Map(e.procs.map(p => [p.pid, p])).get(list[0].ppid), layer = { 0: 'Felszín', '-1': 'Utcaszint', '-2': 'Alváros', '-3': 'Mélyút' }[g.layer];
+  const hint = g.hint ? `<p class="warn">Gyanús jel, nem ítélet: ${g.hint === 'temp' ? 'Temp mappából fut' : 'a Letöltések mappából fut'}. Automatikus művelet nincs.</p>` : '';
+  const can = g.win > 0 && !list.some(p => p.ours);
+  const btn = !can ? '' : hm.confirm === key
+    ? `<p class="warn">Bezárod a(z) ${esc(g.exe)} ${g.win} ablakát? A program még rákérdezhet a mentésre.</p><button class="btn" data-hmclose="yes">Igen, bezárom</button> <button class="btn" data-hmclose="no">Mégse</button>`
+    : '<button class="btn" data-hmclose="ask">Program bezárása…</button>';
+  openPanel(g.exe, [['Réteg', layer + (g.s === 0 ? ' · 0. munkamenet' : '')], ['Osztály', esc(g.cls)], ['Folyamat', hu(list.length)], ['Szál', hu(g.th)], ['CPU', g.cpu.toFixed(1) + ' %'], ['Munkakészlet', hmMB(g.ws)], ['Saját', hmMB(g.priv)],
+    ['I/O', `be ${hmRate(g.r)} · ki ${hmRate(g.w)}`], ['Lapbetöltés', hmNum(g.hard) + ' /s'], ['Ablak', hu(g.win)], ['Indította', parent ? esc(parent.exe) : '—']], hint + btn + hmFooter('M', 'NtQuerySystemInformation · 1 s; az I/O a hálózatot is tartalmazza'));
+  const box = $('panel');
+  box.querySelectorAll('[data-hmclose]').forEach(b => { b.onclick = () => hmCloseStep(b.dataset.hmclose, key); });
+}
+async function hmCloseStep(step, key) {
+  if (step === 'ask') { hm.confirm = key; return hmPanel(); }
+  hm.confirm = null;
+  if (step === 'no') return hmPanel();
+  if (hm.fixture) { kvToast('Próbaadat: nincs mit bezárni'); return hmPanel(); }
+  const r = await kvCall('hm-close', { key });
+  kvToast(r.status === 200 ? `Bezárás kérve: ${r.json.n} ablak` : (r.json && r.json.error) || 'Nem sikerült');
+  hmPanel();
+}
+
+// ---- #hmtest=1: repeatable made-up data of the feed's own shape; every name is invented
+const HMFX_PROCS = [['alfa-bongeszo.exe', 'browser', 'belvaros', 0, 1, 900], ['alfa-bongeszo.exe', 'browser', 'belvaros', 1, 0, 420], ['alfa-bongeszo.exe', 'browser', 'belvaros', 1, 0, 300], ['tervezo-szerkeszto.exe', 'editor', 'belvaros', 0, 2, 640],
+  ['mester.exe', 'agent', 'muhely', 0, 1, 380], ['node.exe', 'build', 'muhely', 1, 0, 120], ['git.exe', 'git', 'muhely', 1, 0, 24], ['tarsasjatek.exe', 'game', 'belvaros', 0, 1, 1200], ['fenykep-nezo.exe', 'media', 'belvaros', 0, 1, 180],
+  ['ismeretlen-segito.exe', 'other', 'kulvaros', 1, 0, 60], ['frissito.exe', 'other', 'kulvaros', 1, 0, 40], ['tuzfal-ugynok.exe', 'military', 'laktanya', 2, 0, 210], ['orseg.exe', 'military', 'laktanya', 2, 0, 160],
+  ['svchost.exe', 'state', 'palota', 2, 0, 90], ['svchost.exe', 'state', 'palota', 2, 0, 60], ['svchost.exe', 'state', 'palota', 2, 0, 44], ['spoolsv.exe', 'state', 'palota', 2, 0, 18], ['explorer.exe', 'state', 'palota', 0, 3, 240], ['System', 'state', 'palota', 3, 0, 2]];
+let hmFxT = 0;
+function hmFixtureHw() {
+  return { board: 'Próba alaplap', bios: { maker: 'Próba', version: 'F0', date: '2000-01-01' }, cpu: { name: 'Próba CPU', cores: 6, threads: 12, l3: 12288 }, ram: { slots: 2, dimms: [{ slot: 'B', size: 2 ** 34, speed: 2666 }] },
+    gpu: { name: 'Próba GPU', w: 1920, h: 1080, hz: 60 }, disks: [['C:', 'Próba SSD A'], ['H:', 'Próba SSD B'], ['G:', 'Próba HDD'], ['F:', 'Próba USB-lemez']].map(([l, model], index) => ({ index, model, size: 1e12, vols: [{ letter: l, size: 1e12, free: 4e11 }] })), nics: [], audio: [] };
+}
+function hmFixtureEvent() {
+  const t = ++hmFxT, w = (a, b) => a + (b - a) * (0.5 + 0.5 * Math.sin(t / 3 + a)), total = 2 ** 34;
+  const procs = HMFX_PROCS.map((p, i) => ({ pid: 100 + i, ppid: 100, exe: p[0], key: p[0].toLowerCase(), s: p[3] === 2 || p[3] === 3 ? 0 : 1, th: 8 + i, ws: p[5] * 2 ** 20, priv: p[5] * 7e5, cls: p[1], place: p[2], layer: -p[3],
+    cpu: w(1, 3) * (i % 4 === 0 ? 3 : 0.4), r: i % 3 ? 0 : 2e5, w: i % 5 ? 0 : 5e4, hard: i % 3 ? 0 : 20, win: p[4], fg: i === 3, hint: p[0] === 'frissito.exe' ? 'temp' : '', obs: false, ours: p[0] === 'explorer.exe' }));
+  return { at: Date.now(), ms: 30, fixture: true, procs, cores: Array.from({ length: 12 }, (_, i) => ({ u: w(5, 60) * (1 - i / 16), k: w(2, 10) })), disks: [[0, 'C:', 2e7, 0.9], [1, 'G:', 2e5, 0.1], [2, 'H:', 4e6, 0.3], [3, 'F:', 0, 0]].map(([id, l, r, b]) => ({ id, letters: [l], r: r * (t % 2 ? 1 : 0.5), w: r / 6, q: 1, busy: b * 60 })),
+    nics: [{ name: 'Próba hálózat', rx: 3e5, tx: 2e4 }], gpu: { eng: { '3D': w(4, 40), Copy: 3, VideoDecode: 1, VideoEncode: 0 }, ded: 1.4e9, total: 4e9, temp: 50, mhz: 900 },
+    sys: { ctx: 30000, sys: 200000, irq: 20000, dpc: 0.4, irqp: 0.6, mhz: 2900, perf: 95 }, mem: { total, avail: 2 ** 31 + 2 ** 30, commit: 2 ** 35, limit: 2 ** 36, paged: 1.4e9, nonpaged: 9e8, modified: 3e8, standby: 2 ** 31, free: 2 ** 30, faults: 4000, hard: 40, page: 12 } };
+}
+
+// ==== src/41-hm-island.js
+// 41-hm-island.js — the fixed island of Gépország: terrain, the board's real roads, the complexes and their archetypes, the
+// underground slabs, and the water. Coordinates are "concept units" (u, v 0..100, as on docs/city/homeland/concept-sheet);
+// hmW turns them into world units. Everything is instanced boxes and a few primitives built in code: our own drawing.
+// The water is a real horizontal plane around the island (CITY-D40): a click on it starts a ring in world space, the
+// island stands in it and takes no ripple, and it moves only then (Mélyvíz M2, M3), unlike 38-sea's screen-space field.
+
+const HM_K = 3.2, hmW = u => (u - 50) * HM_K;
+const HM_COL = { body: 0x56606b, top: 0x74808a, side: 0x3b444c, warm: 0xe8a873, ice: 0x93d3e6, plate: 0x33505f, rim: 0x5d7c8c, road: 0x34505f, lot: 0x26343e, grey: 0x3a4249 };
+const HM_SHORE = [[6, 8], [40, 2], [78, 6], [98, 22], [100, 62], [94, 90], [60, 98], [20, 98], [4, 84], [2, 40]];
+// roads: the street plan is this board's wiring; RAM and the GPU hang off the CPU, all else behind the junction
+const HM_J = [50, 72];
+const HM_PATHS = {
+  mem: [[58, 31], [64, 31]], gpu: [[37, 31], [30, 31]], main: [[47, 41], [47, 50], [52, 50], [52, 69]],
+  C: [HM_J, [66, 73], [66, 60], [69, 60]], H: [HM_J, [66, 73], [66, 69.5], [69, 69.5]], G: [HM_J, [66, 73], [66, 78.5], [69, 78.5]], F: [HM_J, [66, 73], [66, 88], [90, 84], [95, 79]],
+  net: [HM_J, [28, 73], [28, 76]],
+};
+// where programs stand: a plot grid per place, [u0, v0, u1, v1, the plot's size]
+const HM_PLACES = { belvaros: [10, 46, 35, 68, 4.4], muhely: [37, 7, 62, 18, 3.4], kulvaros: [85, 24, 97, 58, 2.8], palota: [55, 52, 63, 64, 2.6], laktanya: [34, 83, 47, 94, 3] };
+
+const hmKit = { box: [], plain: [], cyl: [], dome: [], saw: [], roof: [] };
+const hmEnts = new Map();
+function hmEnt(id, name, tag, src = {}) { const e = Object.assign({ id, name, tag, parts: [] }, src); hmEnts.set(id, e); return e; }
+function hmPut(kind, ent, u, v, w, d, h, col, y = 0) {
+  const part = { kind, ent, m: new THREE.Matrix4().makeScale(w * HM_K, h, d * HM_K).setPosition(hmW(u + w / 2), y, hmW(v + d / 2)), col, tag: ent ? ent.tag : 'M' };
+  hmKit[kind].push(part);
+  return part;
+}
+
+// ---- the archetypes
+function hmHall(i, u, v) {   // a factory hall: a CPU core, two assembly lines on its roof, a sawtooth roof, a chimney
+  const e = hmEnt('hall' + i, `Gyárcsarnok ${i + 1}`, 'M', { core: i, parent: 'fab' });
+  hmPut('box', e, u, v, 6, 8, 11, HM_COL.body);
+  for (let k = 0; k < 3; k++) hmPut('saw', e, u + k * 2, v + 0.3, 2, 7.4, 3.2, HM_COL.top, 11);
+  hmPut('cyl', e, u + 4.4, v + 1, 1.1, 1.1, 24, HM_COL.top);
+  hmPut('cyl', e, u + 4.4, v + 1, 1.1, 1.1, 1.4, HM_COL.warm, 24);
+}
+function hmWarehouse(id, name, letter, u, v, w, d, h, roof, fn) {
+  const e = hmEnt(id, name, 'M', { disk: letter });
+  hmPut('box', e, u, v, w, d, h, HM_COL.body);
+  hmPut('plain', e, u - 0.2, v - 0.2, w + 0.4, d + 0.4, 1.2, roof, h);
+  if (fn) fn(e);
+}
+function hmIslandParts() {
+  for (let j = 0; j < 2; j++) for (let i = 0; i < 3; i++) hmHall(j * 3 + i, 37 + i * 7.2, 22 + j * 10.6);
+  hmEnt('fab', 'Gyárnegyed', 'M', { labelAt: [47, 31, 44] });
+  const st = hmEnt('studio', 'Filmgyár', 'M', { labelAt: [20, 29, 36] });
+  hmPut('box', st, 12, 24, 12, 10, 17, HM_COL.body); hmPut('roof', st, 12, 24, 12, 10, 5, HM_COL.top, 17);
+  hmPut('box', st, 25, 26, 5, 8, 12, HM_COL.body); hmPut('box', st, 13, 36, 9, 5, 9, HM_COL.body);
+  hmPut('plain', st, 8, 36, 0.8, 9, 16, HM_COL.grey, 3); hmPut('plain', st, 8.1, 36, 0.3, 9, 0.5, HM_COL.ice, 19);
+  const pa = hmEnt('palace', 'Palota', 'M', { labelAt: [46, 58, 62] });
+  hmPut('box', pa, 39, 53, 13, 10, 10, HM_COL.body); hmPut('box', pa, 42, 55.5, 7, 5, 16, HM_COL.top);
+  hmPut('dome', pa, 42.5, 55.5, 6, 5, 11, HM_COL.ice, 16); hmPut('cyl', pa, 45.2, 57.6, 0.6, 0.6, 9, HM_COL.warm, 26);
+  hmPut('box', pa, 37, 53, 1.8, 1.8, 18, HM_COL.body); hmPut('box', pa, 52.2, 53, 1.8, 1.8, 18, HM_COL.body);
+  hmPut('box', pa, 37, 61.2, 1.8, 1.8, 18, HM_COL.body); hmPut('box', pa, 52.2, 61.2, 1.8, 1.8, 18, HM_COL.body);
+  const ju = hmEnt('junction', 'Rendező', 'K', { labelAt: [50, 72, 18] });
+  for (let i = 0; i < 4; i++) hmPut('plain', ju, 41, 69 + i * 2, 17, 0.4, 0.5, HM_COL.warm);
+  hmPut('box', ju, 47, 77.5, 7, 3, 6, HM_COL.body); hmPut('roof', ju, 47, 77.5, 7, 3, 2, HM_COL.top, 6);
+  hmWarehouse('whC', 'Nagy Logisztikai Központ', 'C:', 69, 56, 16, 8, 20, HM_COL.top);
+  hmWarehouse('whH', 'Levéltár', 'H:', 69, 66, 11, 7, 15, HM_COL.warm, e => { hmPut('plain', e, 74, 73, 1, 0.2, 7, HM_COL.ice); });
+  hmWarehouse('whG', 'Téglaraktár', 'G:', 69, 75, 13, 7, 10, HM_COL.side, e => { hmPut('box', e, 83, 76, 1, 1, 20, HM_COL.top); hmPut('plain', e, 78, 76, 7, 1, 2, HM_COL.top, 20); });
+  const ba = hmEnt('whF', 'Uszályraktár', 'M', { disk: 'F:' });
+  hmPut('box', ba, 96, 72, 4, 13, 4, HM_COL.side, -1); hmPut('plain', ba, 96.4, 74, 3.2, 9, 3, HM_COL.top, 3);
+  const ha = hmEnt('harbour', 'Tengeri kikötő', 'M', { labelAt: [20, 80, 18] });
+  hmPut('plain', ha, 12, 76, 16, 3, 1.4, HM_COL.road); hmPut('plain', ha, 12, 82, 16, 3, 1.4, HM_COL.road);
+  hmPut('box', ha, 14, 87, 9, 4, 6, HM_COL.top); hmPut('box', ha, 9, 79, 3, 3, 10, HM_COL.body);
+  const mi = hmEnt('barracks', 'Laktanya', 'M', { labelAt: [39, 94, 22] });
+  hmPut('box', mi, 34, 95, 9, 2.4, 6, HM_COL.body); hmPut('cyl', mi, 46, 92, 1.4, 1.4, 20, HM_COL.top); hmPut('dome', mi, 45.6, 91.6, 2.2, 2.2, 3, HM_COL.ice, 20);
+  hmEnt('empty', 'Üres telek', 'M', { labelAt: [73, 15, 8] });
+  hmEnt('market', 'Piac', 'M', { labelAt: [73, 30, 14] });
+  hmEnt('downtown', 'Belváros', 'M', { labelAt: [22, 44, 62], area: 'belvaros' });
+  hmEnt('workshops', 'Műhelysor', 'M', { labelAt: [49, 12, 26], area: 'muhely' });
+  hmEnt('suburbs', 'Külváros', 'M', { labelAt: [91, 22, 20], area: 'kulvaros' });
+}
+
+function hmMesh(kind, geo, mat) {
+  const list = hmKit[kind];
+  const im = new THREE.InstancedMesh(geo, mat, list.length), c = new THREE.Color();
+  list.forEach((p, i) => { im.setMatrixAt(i, p.m); im.setColorAt(i, c.setHex(p.col)); p.i = i; if (p.ent) p.ent.parts.push(p); });
+  im.userData.parts = list;
+  hm.group.add(im);
+  return im;
+}
+function hmSawGeo() {
+  const s = new THREE.Shape(); s.moveTo(0, 0); s.lineTo(1, 0); s.lineTo(0, 1); s.closePath();
+  return new THREE.ExtrudeGeometry(s, { depth: 1, bevelEnabled: false }).translate(-0.5, 0, -0.5);
+}
+function hmLabel(text, x, y, z, w = 44, col = '#c9d3ee') {
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: landLabel(text, col), fog: false, depthWrite: false, depthTest: false, transparent: true }));
+  sp.position.set(x, y, z); sp.scale.set(w, w * 96 / 512, 1); sp.renderOrder = 6;
+  sp.raycast = () => {};
+  return sp;
+}
+
+function hmBuild() {
+  hm.group = new THREE.Group();
+  hm.surface = new THREE.Group(); hm.under = new THREE.Group();
+  // terrain: a plug of rock, its top at y = 0, so the layers below have somewhere to be
+  const shape = new THREE.Shape(HM_SHORE.map(([u, v]) => new THREE.Vector2(hmW(u), hmW(v))));
+  const landGeo = new THREE.ExtrudeGeometry(shape, { depth: 78, bevelEnabled: false }).rotateX(Math.PI / 2);
+  hm.landMat = new THREE.MeshLambertMaterial({ color: HM_COL.plate, transparent: true });
+  hm.land = new THREE.Mesh(landGeo, hm.landMat);
+  hm.group.add(hm.land);
+  hm.shore = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(HM_SHORE.map(([u, v]) => new THREE.Vector3(hmW(u), 0.2, hmW(v)))), new THREE.LineBasicMaterial({ color: HM_COL.rim, transparent: true }));
+  hm.group.add(hm.shore);
+  // the kit
+  hmIslandParts();
+  for (const [id, pts] of Object.entries(HM_PATHS)) for (let i = 1; i < pts.length; i++) hmRoad(id, pts[i - 1], pts[i]);
+  hm.mBody = buildingMaterial();
+  hm.mPlain = new THREE.MeshLambertMaterial({ transparent: true });
+  const box = unitBox;
+  hm.meshBox = hmMesh('box', box.clone(), hm.mBody);
+  const n = hmKit.box.length;
+  hm.meshBox.geometry.setAttribute('aLit', new THREE.InstancedBufferAttribute(new Float32Array(n), 1).setUsage(THREE.DynamicDrawUsage));
+  hm.meshBox.geometry.setAttribute('aFlash', new THREE.InstancedBufferAttribute(new Float32Array(n), 1).setUsage(THREE.DynamicDrawUsage));
+  hm.meshes = [hm.meshBox, hmMesh('plain', box, hm.mPlain),
+    hmMesh('cyl', new THREE.CylinderGeometry(0.5, 0.56, 1, 12).translate(0, 0.5, 0), hm.mPlain),
+    hmMesh('dome', new THREE.SphereGeometry(0.5, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 2, 1), hm.mPlain),
+    hmMesh('saw', hmSawGeo(), hm.mPlain),
+    hmMesh('roof', new THREE.ConeGeometry(0.72, 1, 4).rotateY(Math.PI / 4).translate(0, 0.5, 0), hm.mPlain)];
+  hm.meshes.forEach(m => hm.surface.add(m));
+  hmCityBuild();   // 42-hm-city: lots, plots, rooms, vehicles
+  // labels: one per complex
+  hm.labels = [];
+  for (const e of hmEnts.values()) if (e.labelAt) {
+    const [u, v, y] = e.labelAt, sp = hmLabel(e.name, hmW(u), y, hmW(v), 34 + e.name.length * 1.3);
+    sp.userData.ent = e; hm.labels.push(sp); hm.surface.add(sp);
+  }
+  // underground: a slab per layer, each with its sign
+  const slab = (y, col, op) => { const m = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: 1.5, bevelEnabled: false }).rotateX(Math.PI / 2).translate(0, y, 0), new THREE.MeshLambertMaterial({ color: col, transparent: true, opacity: op })); return m; };
+  hm.deep = new THREE.Group(); hm.bed = new THREE.Group();
+  hm.slabU = slab(-38, 0x152935, 0.9); hm.slabD = slab(-56, 0x102029, 0.92); hm.slabB = slab(-72, 0x3a2d22, 1);
+  hm.under.add(hm.slabU); hm.deep.add(hm.slabD); hm.bed.add(hm.slabB);
+  hm.uLabel = hmLabel('Alváros', hmW(50), -14, hmW(6), 60); hm.under.add(hm.uLabel);
+  hm.dLabel = hmLabel('Mélyút', hmW(50), -32, hmW(6), 60); hm.deep.add(hm.dLabel);
+  hm.bedLabel = hmLabel('Alapkő', 0, -46, hmW(30), 96); hm.bed.add(hm.bedLabel);
+  hm.stone = new THREE.Mesh(new THREE.BoxGeometry(60, 14, 22).translate(0, 7, 0), new THREE.MeshLambertMaterial({ color: 0x8a7350 }));
+  hm.stone.position.set(0, -72, 0); hm.stone.userData.ent = hmEnt('bedrock', 'Alapkő', 'M'); hm.bed.add(hm.stone);
+  hm.group.add(hm.surface, hm.under, hm.deep, hm.bed);
+  hmWaterBuild();
+  scene.add(hm.group);
+  hmTagsApply();
+}
+function hmRoad(id, a, b) {
+  const L = Math.hypot(b[0] - a[0], b[1] - a[1]), ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+  const m = new THREE.Matrix4().makeRotationY(-ang).scale(new THREE.Vector3(L * HM_K + 3, 0.3, id === 'mem' ? 3.6 : id === 'main' ? 7 : 4.5)).setPosition(hmW((a[0] + b[0]) / 2), 0.05, hmW((a[1] + b[1]) / 2));
+  hmKit.plain.push({ kind: 'plain', ent: null, m, col: id === 'mem' ? HM_COL.warm : HM_COL.road, road: id });
+}
+
+// the layer you look at is solid; everything above it is a ghost with its links still visible
+function hmLayerApply() {
+  const l = hm.layer, ghost = l > 0;
+  hm.landMat.opacity = ghost ? 0.08 : 1; hm.landMat.depthWrite = !ghost;
+  for (const m of [hm.mBody, hm.mPlain]) { m.transparent = ghost; m.opacity = ghost ? 0.1 : 1; m.depthWrite = !ghost; m.needsUpdate = true; }
+  hm.dynMat.transparent = ghost; hm.dynMat.opacity = ghost ? 0.12 : 1; hm.dynMat.depthWrite = !ghost; hm.dynMat.needsUpdate = true;
+  hm.lotMat.opacity = ghost ? 0.1 : 1; hm.lotMat.transparent = ghost; hm.lotMat.depthWrite = !ghost;
+  for (const s of hm.labels) s.visible = !ghost;
+  hm.under.visible = l === 1; hm.deep.visible = l === 1 || l === 2; hm.bed.visible = l >= 2; hm.rooms.visible = l >= 1;
+  hm.dLabel.visible = l === 2;
+  hm.slabU.material.opacity = l > 1 ? 0.15 : 0.9;
+  hm.slabD.material.opacity = l > 2 ? 0.15 : 0.92;
+  hm.water.material.uniforms.uAlpha.value = ghost ? 0.2 : 1;
+  hm.water.material.depthWrite = !ghost;
+  hm.shore.visible = true;
+  requestRender();
+}
+// the truth display (CITY-D45): Jelölés paints metaphor grey and marks the approximate; Mérés leaves only the measured
+function hmTagsApply() {
+  const c = new THREE.Color();
+  for (const im of hm.meshes) {
+    im.userData.parts.forEach(p => {
+      const off = hm.truth && p.tag === 'J', dim = hm.tags && p.tag === 'J', approx = hm.tags && p.tag === 'K';
+      c.setHex(p.col); if (dim) c.setHex(HM_COL.grey); if (approx) c.lerp(new THREE.Color(0x8a939b), 0.35);
+      if (off) c.multiplyScalar(0.25);
+      im.setColorAt(p.i, c);
+    });
+    im.instanceColor.needsUpdate = true;
+  }
+  for (const s of hm.labels) { const e = s.userData.ent; s.material.map = landLabel((hm.tags && e.tag === 'K' ? '≈ ' : '') + e.name, hm.tags && e.tag === 'K' ? '#e3be7b' : '#c9d3ee'); s.material.needsUpdate = true; }
+}
+
+// ---- the water: a horizontal plane; rings live in world space and stop by themselves
+const HM_WAVES = 6;
+function hmWaterBuild() {
+  const hor = new THREE.Color(HORIZON), srgb = c => { const o = {}; c.getRGB(o, THREE.SRGBColorSpace); return new THREE.Vector3(o.r, o.g, o.b); };
+  const mat = new THREE.ShaderMaterial({ transparent: true, depthWrite: true,
+    uniforms: { uT: { value: 0 }, uD: { value: Array.from({ length: HM_WAVES }, () => new THREE.Vector3(0, 0, -99)) }, uAlpha: { value: 1 }, uHor: { value: srgb(hor) }, uDeep: { value: srgb(hor.clone().multiplyScalar(0.42)) }, uHi: { value: new THREE.Vector3(0.37, 0.56, 0.62) }, uCam: { value: new THREE.Vector3() } },
+    vertexShader: `varying vec3 vP;void main(){vec4 w=modelMatrix*vec4(position,1.);vP=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
+    fragmentShader: `precision highp float;varying vec3 vP;uniform float uT,uAlpha;uniform vec3 uD[${HM_WAVES}],uHor,uDeep,uHi,uCam;
+void main(){vec2 p=vP.xz,g=vec2(0.);
+for(int i=0;i<${HM_WAVES};i++){float age=uT-uD[i].z;if(age<0.||age>6.)continue;vec2 r=p-uD[i].xy;float d=max(length(r),.001),f=age*70.;
+float env=exp(-age*.75)*exp(-abs(d-f)/46.)*smoothstep(0.,14.,d);g+=r/d*cos((d-f)*.34)*env;}
+float dist=length(vP-uCam);
+vec2 q=(p+g*22.)/44.;vec2 c=abs(fract(q+.5)-.5)*44.;float w=fwidth(p.x)*1.2+.25;float ln=1.-smoothstep(0.,w,min(c.x,c.y));
+vec3 col=mix(uDeep,uHor,smoothstep(120.,1400.,dist));
+col=mix(col,vec3(.91,.94,.96),ln*.07*(1.-smoothstep(300.,1100.,dist)));
+float l=dot(normalize(vec3(g.x,1.,g.y)),normalize(vec3(-.35,.7,.55)));col+=uHi*max(0.,(l-.78))*3.2*length(g);col+=uHi*length(g)*.35;
+gl_FragColor=vec4(col,uAlpha);
+#include <colorspace_fragment>
+gl_FragColor.rgb=col;}`, extensions: {} });
+  hm.water = new THREE.Mesh(new THREE.PlaneGeometry(9000, 9000).rotateX(-Math.PI / 2), mat);
+  hm.water.position.y = -1.2; hm.water.renderOrder = -1;
+  hm.water.raycast = () => {};
+  hm.group.add(hm.water);
+  hm.waveI = 0; hm.waveUntil = 0;
+}
+function hmWave(x, z) {
+  const u = hm.water.material.uniforms, now = performance.now() / 1000;
+  u.uT.value = now; u.uD.value[hm.waveI++ % HM_WAVES].set(x, z, now);
+  hm.waveUntil = now + (matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.1 : 6);
+  hmAnimate();
+}
+// a point of the water plane under the pointer, or null when the pointer is on the island or above the horizon
+function hmWaterAt(e) {
+  const r = canvas.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const p = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 1.2), new THREE.Vector3());
+  return p && !hmOnIsland(p.x, p.z) ? p : null;
+}
+function hmOnIsland(x, z) {
+  let inside = false;
+  for (let i = 0, j = HM_SHORE.length - 1; i < HM_SHORE.length; j = i++) {
+    const xi = hmW(HM_SHORE[i][0]), zi = hmW(HM_SHORE[i][1]), xj = hmW(HM_SHORE[j][0]), zj = hmW(HM_SHORE[j][1]);
+    if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+// ==== src/42-hm-city.js
+// 42-hm-city.js — the live side of Gépország: the market's lots, the programs' plots, the undercity's rooms and the traffic.
+// Every moving thing is a sample of a measured rate, never one-to-one; the panel shows the true number. The market's mix is
+// exact, its lot positions are symbolic (docs/city/homeland/03-truth.md §3.3). Picking and the pointer live here too.
+
+const HM_LOTS = [17, 15], HM_DYN = 700, HM_ROOMS = 500, HM_CARS = 260, HM_LOT_U = [64, 22.4], HM_LOT_P = 1.14;
+const HM_LOTCOL = { kernel: 0x6b7480, modified: 0xc98a55, standby: 0x3d4a54, free: 0x1f2c35, other: 0x8a6f58 };
+const HM_WARM = [0xe8a873, 0xd8965f, 0xefbd8e, 0xc98a55, 0xf2cfa8, 0xb97c4a];
+const HM_FLOWCOL = { mem: 0xefbd8e, gpu: 0xe8a873, main: 0xd8965f, C: 0xe8a873, H: 0xe8a873, G: 0xe8a873, F: 0xe8a873, net: 0xf2cfa8 };
+
+function hmCityBuild() {
+  // market lots
+  const lotN = HM_LOTS[0] * HM_LOTS[1], m = new THREE.Matrix4(), c = new THREE.Color();
+  hm.lotMat = new THREE.MeshLambertMaterial();
+  hm.lots = new THREE.InstancedMesh(unitBox, hm.lotMat, lotN);
+  hm.lotOwner = new Array(lotN).fill(null);
+  for (let i = 0; i < lotN; i++) { hm.lots.setMatrixAt(i, hmLotM(i, 0.4)); hm.lots.setColorAt(i, c.setHex(HM_LOTCOL.free)); }
+  hm.surface.add(hm.lots);
+  // the empty DIMM slot, fenced, its lots bare (shown when the inventory says a slot is free)
+  hm.emptyLot = new THREE.Group();
+  const f = new THREE.Mesh(new THREE.PlaneGeometry(19.4 * HM_K, 8.4 * HM_K).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: HM_COL.lot }));
+  f.position.set(hmW(73.7), 0.15, hmW(15)); f.userData.ent = hmEnts.get('empty');
+  const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(19.4 * HM_K, 2.4, 8.4 * HM_K)), new THREE.LineBasicMaterial({ color: HM_COL.ice }));
+  edge.position.set(hmW(73.7), 1.2, hmW(15)); edge.raycast = () => {};
+  hm.emptyLot.add(f, edge); hm.surface.add(hm.emptyLot);
+  // program plots: boxes with the city's own lit-window shader
+  const geo = unitBox.clone();
+  hm.dynMat = buildingMaterial();
+  hm.dyn = new THREE.InstancedMesh(geo, hm.dynMat, HM_DYN);
+  hm.dyn.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('aLit', new THREE.InstancedBufferAttribute(new Float32Array(HM_DYN), 1).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('aFlash', new THREE.InstancedBufferAttribute(new Float32Array(HM_DYN), 1).setUsage(THREE.DynamicDrawUsage));
+  m.makeScale(0, 0, 0);
+  for (let i = 0; i < HM_DYN; i++) { hm.dyn.setMatrixAt(i, m); hm.dyn.setColorAt(i, c.setHex(HM_COL.body)); }
+  hm.dyn.frustumCulled = false;
+  hm.surface.add(hm.dyn);
+  hm.items = new Map(); hm.free = Array.from({ length: HM_DYN }, (_, i) => HM_DYN - 1 - i); hm.slots = {}; for (const p in HM_PLACES) hm.slots[p] = [];
+  // undercity rooms
+  hm.rooms = new THREE.InstancedMesh(unitBox, new THREE.MeshLambertMaterial(), HM_ROOMS);
+  hm.rooms.frustumCulled = false; hm.rooms.count = 0; hm.rooms.visible = false;
+  hm.rooms.setColorAt(0, c.setHex(HM_COL.body));
+  hm.roomOf = [];
+  hm.group.add(hm.rooms);
+  // vehicles
+  hm.cars = new THREE.InstancedMesh(new THREE.BoxGeometry(2.4, 1.3, 1.5).translate(0, 0.9, 0), new THREE.MeshLambertMaterial({ color: 0xffffff }), HM_CARS);
+  hm.cars.frustumCulled = false; hm.cars.count = 0; hm.cars.raycast = () => {};
+  hm.cars.setColorAt(0, c.setHex(HM_COL.warm));
+  hm.surface.add(hm.cars);
+  hm.carList = []; hm.flows = {};
+  hm.len = {}; for (const [k, pts] of Object.entries(HM_PATHS)) { let L = 0; for (let i = 1; i < pts.length; i++) L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); hm.len[k] = L; }
+  // a highlight box around the selected thing
+  hm.selBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0)), new THREE.LineBasicMaterial({ color: HM_COL.ice }));
+  hm.selBox.visible = false; hm.selBox.raycast = () => {}; hm.group.add(hm.selBox);
+}
+function hmLotM(i, h) {
+  const nx = HM_LOTS[0], s = HM_LOT_P * HM_K;
+  return new THREE.Matrix4().makeScale(s * 0.86, h, s * 0.86).setPosition(hmW(HM_LOT_U[0] + (i % nx + 0.5) * HM_LOT_P), 0.05, hmW(HM_LOT_U[1] + (Math.floor(i / nx) + 0.5) * HM_LOT_P));
+}
+
+// one program family: sums over its processes
+function hmFold(list) {
+  const by = new Map();
+  for (const p of list) {
+    let g = by.get(p.key);
+    if (!g) { g = { key: p.key, exe: p.exe, cls: p.cls, place: p.place, layer: p.layer, s: p.s, cpu: 0, ws: 0, priv: 0, r: 0, w: 0, hard: 0, th: 0, win: 0, fg: false, hint: '', n: 0, obs: false }; by.set(p.key, g); }
+    g.cpu += p.cpu; g.ws += p.ws; g.priv += p.priv; g.r += p.r; g.w += p.w; g.hard += p.hard; g.th += p.th; g.win += p.win; g.n++;
+    g.fg = g.fg || p.fg; g.hint = g.hint || p.hint; g.obs = g.obs || p.obs; g.layer = Math.max(g.layer, p.layer);   // the family's highest layer
+  }
+  return [...by.values()].sort((a, b) => b.ws - a.ws);
+}
+
+// ---- one sample of the machine
+function hmApply(e) {
+  hmCores(e); hmDisks(e); hmMarket(e); hmPrograms(e); hmRooms(e); hmFlows(e);
+  hmSelApply();
+  requestRender(); hmAnimate();
+}
+function hmLit(ent, v, flash = 0) {
+  const a = hm.meshBox.geometry.attributes.aLit, f = hm.meshBox.geometry.attributes.aFlash;
+  for (const p of ent.parts) if (p.kind === 'box') { a.array[p.i] = v; f.array[p.i] = flash; }
+  a.needsUpdate = true; f.needsUpdate = true;
+}
+function hmCores(e) {
+  const n = e.cores.length / 6;   // logical CPUs per hall
+  for (let i = 0; i < 6; i++) {
+    const a = e.cores[Math.floor(i * n)], b = e.cores[Math.floor(i * n) + 1] || a;
+    if (a) hmLit(hmEnts.get('hall' + i), Math.min(1, (a.u + a.k + b.u + b.k) / 240));
+  }
+  const g = e.gpu && e.gpu.eng ? Math.min(1, Object.values(e.gpu.eng).reduce((x, v) => Math.max(x, v), 0) / 100) : 0;
+  hmLit(hmEnts.get('studio'), Math.max(0.03, g));
+  const kern = e.cores.reduce((x, c) => x + c.k, 0) / Math.max(1, e.cores.length);
+  hmLit(hmEnts.get('palace'), Math.min(1, 0.05 + kern / 40));
+}
+function hmDisks(e) {
+  for (const id of ['whC', 'whH', 'whG', 'whF']) {
+    const t = hmEnts.get(id), d = e.disks.find(x => x.letters.includes(t.disk));
+    if (t.parts.some(p => p.kind === 'box')) hmLit(t, d ? Math.min(1, d.busy / 100) : 0);
+  }
+}
+function hmMarket(e) {
+  const m = e.mem, total = m.total || 1, nLots = hm.lots.count, unit = total / nLots, c = new THREE.Color();
+  const kern = m.paged + m.nonpaged, used = Math.max(0, total - m.avail - kern - m.modified), groups = hmFold(e.procs.filter(p => p.layer !== -3));
+  const wsAll = groups.reduce((a, g) => a + g.ws, 0) || 1;
+  const owners = groups.slice(0, 6).map((g, i) => ({ n: Math.round(g.ws / wsAll * used / unit), col: HM_WARM[i], key: g.key }));
+  const seq = [{ n: Math.round(kern / unit), col: HM_LOTCOL.kernel, key: null, h: 2.2 }, ...owners.map(o => Object.assign(o, { h: 3.4 })), { n: Math.round(used / unit) - owners.reduce((a, o) => a + o.n, 0), col: HM_LOTCOL.other, key: null, h: 2.6 },
+    { n: Math.round(m.modified / unit), col: HM_LOTCOL.modified, key: null, h: 1.6 }, { n: Math.round(m.standby / unit), col: HM_LOTCOL.standby, key: null, h: 0.9 }];
+  let i = 0;
+  for (const s of seq) for (let k = 0; k < s.n && i < nLots; k++, i++) { hm.lots.setMatrixAt(i, hmLotM(i, s.h)); hm.lots.setColorAt(i, c.setHex(s.col)); hm.lotOwner[i] = s.key; }
+  for (; i < nLots; i++) { hm.lots.setMatrixAt(i, hmLotM(i, 0.25)); hm.lots.setColorAt(i, c.setHex(HM_LOTCOL.free)); hm.lotOwner[i] = null; }
+  hm.lots.instanceMatrix.needsUpdate = true; hm.lots.instanceColor.needsUpdate = true;
+}
+
+// a stable plot in its place: spiral-free, simply the first free cell; a program keeps it while it lives
+function hmPlot(place) {
+  const r = HM_PLACES[place] || HM_PLACES.kulvaros, s = hm.slots[place] || hm.slots.kulvaros, p = hm.all ? r[4] * 0.62 : r[4];
+  const nx = Math.max(1, Math.floor((r[2] - r[0]) / p)), ny = Math.max(1, Math.floor((r[3] - r[1]) / p));
+  for (let i = 0; i < nx * ny; i++) if (!s[i]) { s[i] = true; return { place, cell: i, u: r[0] + (i % nx + 0.5) * p, v: r[1] + (Math.floor(i / nx) % ny + 0.5) * p, f: p * 0.74 }; }
+  return null;
+}
+function hmPlotFree(pl) { if (pl) hm.slots[pl.place][pl.cell] = false; }
+function hmPlacesReset() { for (const it of hm.items.values()) hmItemDrop(it); hm.items.clear(); for (const p in hm.slots) hm.slots[p] = []; }
+function hmItemDrop(it) { hm.dyn.setMatrixAt(it.i, new THREE.Matrix4().makeScale(0, 0, 0)); hm.free.push(it.i); }
+
+function hmPrograms(e) {
+  if (hm.mode !== hm.all) { hmPlacesReset(); hm.mode = hm.all; }
+  const wanted = [];
+  if (hm.all) for (const p of e.procs) { if (p.layer >= -1) wanted.push(Object.assign({}, p, { id: 'p' + p.pid, n: 1 })); }
+  else {
+    const gs = hmFold(e.procs), booths = gs.filter(g => g.layer === -1).sort((a, b) => b.cpu - a.cpu || b.ws - a.ws).slice(0, 24);
+    for (const g of gs) if (g.layer === 0) wanted.push(Object.assign(g, { id: 'k' + g.key }));
+    for (const g of booths) wanted.push(Object.assign(g, { id: 'k' + g.key }));
+    const busy = gs.filter(g => g.layer === -2 && g.cpu > 3).slice(0, 4);   // a busy background task can never hide
+    for (const g of busy) wanted.push(Object.assign(g, { id: 'k' + g.key }));
+  }
+  const seen = new Set(), now = performance.now(), lit = hm.dyn.geometry.attributes.aLit, col = new THREE.Color();
+  for (const w of wanted) {
+    seen.add(w.id);
+    let it = hm.items.get(w.id);
+    if (!it) {
+      const plot = hmPlot(w.place), i = hm.free.pop();
+      if (!plot || i === undefined) { if (i !== undefined) hm.free.push(i); continue; }
+      it = { id: w.id, i, plot, h: 0, born: now };
+      hm.items.set(w.id, it);
+      hm.dyn.geometry.attributes.aFlash.array[i] = 0.7;
+    }
+    it.w = w;
+    const mb = w.ws / 1048576, booth = w.layer < 0, area = w.place === 'belvaros' ? 1.4 : 1;
+    it.target = booth ? Math.max(1.5, 1.2 * Math.log10(1 + mb)) : Math.max(4, area * 11 * Math.log10(1 + mb / 4));
+    it.foot = it.plot.f * (booth ? 0.5 : Math.min(1, 0.55 + 0.13 * Math.log10(1 + mb)));
+    lit.array[it.i] = Math.min(1, 0.03 + w.cpu / 25);
+    hm.dyn.setColorAt(it.i, col.setHex(w.fg ? 0x7a8a96 : hm.tags && w.hint ? 0x6a4a3a : HM_COL.body).multiplyScalar(w.obs ? 0.6 : 1));
+  }
+  for (const [id, it] of hm.items) if (!seen.has(id)) { it.gone = it.gone || now; if (now - it.gone > 1500) { hmPlotFree(it.plot); hmItemDrop(it); hm.items.delete(id); } else it.target = 0; } else it.gone = 0;
+  lit.needsUpdate = true; hm.dyn.instanceColor.needsUpdate = true; hm.dyn.geometry.attributes.aFlash.needsUpdate = true;
+}
+function hmRooms(e) {
+  const rows = hm.all ? e.procs.filter(p => p.layer <= -2).map(p => Object.assign({}, p, { n: 1 })) : hmFold(e.procs).filter(g => g.layer <= -2).slice(0, 90);
+  const c = new THREE.Color(), n = Math.min(HM_ROOMS, rows.length), side = Math.ceil(Math.sqrt(n * 1.1)) || 1, span = 190, cell = span / side;
+  hm.roomOf = [];
+  for (let i = 0; i < n; i++) {
+    const r = rows[i], kernel = r.layer === -3, h = 2 + 2.4 * Math.log10(1 + r.ws / 1048576) * (hm.all ? 0.6 : 1), f = cell * 0.78;
+    hm.rooms.setMatrixAt(i, new THREE.Matrix4().makeScale(f, h, f).setPosition(-span / 2 + (i % side + 0.5) * cell, kernel ? -56 : -38, -span / 2 + (Math.floor(i / side) + 0.5) * cell));
+    hm.rooms.setColorAt(i, c.setHex(r.cpu > 1 ? HM_COL.warm : kernel ? 0x4a5560 : HM_COL.body).multiplyScalar(r.cpu > 1 ? 1 : 0.55 + Math.min(0.45, r.cpu)));
+    hm.roomOf[i] = r;
+  }
+  hm.rooms.count = n;
+  hm.rooms.instanceMatrix.needsUpdate = true; if (hm.rooms.instanceColor) hm.rooms.instanceColor.needsUpdate = true;
+}
+
+// how many vehicles each road carries: a log of the measured rate
+function hmFlows(e) {
+  const bytes = id => { const d = e.disks.find(x => x.letters.includes(id)); return d ? d.r + d.w : 0; };
+  const count = (v, unit) => Math.min(26, Math.round(3.2 * Math.log10(1 + v / unit)));
+  const net = e.nics.reduce((a, n) => a + n.rx + n.tx, 0), eng = (e.gpu && e.gpu.eng) || {}, disks = e.disks.reduce((a, d) => a + d.r + d.w, 0);
+  hm.flows = { mem: count(e.mem.hard, 1), gpu: count((eng.Copy || 0) + (eng['3D'] || 0), 0.5), main: count(disks + net, 20480), C: count(bytes('C:'), 20480), H: count(bytes('H:'), 20480), G: count(bytes('G:'), 20480), F: count(bytes('F:'), 20480), net: count(net, 2048) };
+}
+function hmCarsStep(dt) {
+  const list = hm.carList;
+  for (const k in hm.flows) {
+    const have = list.filter(c => c.k === k).length;
+    for (let i = have; i < hm.flows[k] && list.length < HM_CARS; i++) list.push({ k, t: Math.random(), dir: i % 2 ? 1 : -1, sp: 9 + Math.random() * 7 });
+  }
+  const m = new THREE.Matrix4(), rm = new THREE.Matrix4(), col = new THREE.Color();
+  let n = 0;
+  for (let i = list.length - 1; i >= 0; i--) {
+    const c = list[i];
+    c.t += c.dir * dt * c.sp / hm.len[c.k];
+    if (c.t < 0 || c.t > 1) {   // at the end of its road: a car beyond the measured rate leaves
+      if (list.filter(x => x.k === c.k).length > (hm.flows[c.k] || 0)) { list.splice(i, 1); continue; }
+      c.dir = -c.dir; c.t = Math.max(0, Math.min(1, c.t));
+    }
+  }
+  for (const c of list) {
+    const pts = HM_PATHS[c.k]; let at = c.t * hm.len[c.k], j = 1;
+    for (; j < pts.length; j++) { const L = Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]); if (at <= L || j === pts.length - 1) { const f = L ? at / L : 0, a = pts[j - 1], b = pts[j], ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+      const side = c.dir * 1.1, nx = -Math.sin(ang), nz = Math.cos(ang);
+      m.copy(rm.makeRotationY(-ang)).setPosition(hmW(a[0] + (b[0] - a[0]) * f) + nx * side, 0.2, hmW(a[1] + (b[1] - a[1]) * f) + nz * side); break; } at -= L; }
+    hm.cars.setMatrixAt(n, m); hm.cars.setColorAt(n, col.setHex(HM_FLOWCOL[c.k])); n++;
+  }
+  hm.cars.count = n;
+  hm.cars.instanceMatrix.needsUpdate = true; if (hm.cars.instanceColor) hm.cars.instanceColor.needsUpdate = true;
+}
+
+// ---- the frame loop: only while this view is open, the tab shows, and something moves (R11, 04-data-feed §4.6)
+function hmAnimate() { if (!hm.raf && vw.id === 'homeland') hm.raf = requestAnimationFrame(hmFrame); }
+function hmFrame(ts) {
+  hm.raf = 0;
+  if (vw.id !== 'homeland' || document.hidden) return;
+  const now = performance.now(), dt = Math.min(0.1, (now - (hm.lastFrame || now)) / 1000);
+  if (now - hm.lastFrame < 30) { hmAnimate(); return; }   // about 30 frames a second is plenty for traffic
+  hm.lastFrame = now;
+  let busy = false;
+  const k = 1 - Math.pow(0.002, dt), still = matchMedia('(prefers-reduced-motion: reduce)').matches || window.KV_INSTANT;
+  for (const it of hm.items.values()) {
+    if (it.target == null) continue;
+    const d = it.target - it.h;
+    if (Math.abs(d) > 0.05) { it.h = still ? it.target : it.h + d * k; busy = true; it.dirty = true; }
+    const fa = hm.dyn.geometry.attributes.aFlash;
+    if (fa.array[it.i] > 0) { fa.array[it.i] = Math.max(0, fa.array[it.i] - dt * 0.6); fa.needsUpdate = true; busy = true; }
+    if (it.dirty || it.foot !== it.footWas) {
+      it.dirty = false; it.footWas = it.foot;
+      hm.dyn.setMatrixAt(it.i, new THREE.Matrix4().makeScale(it.foot * HM_K, Math.max(0.01, it.h), it.foot * HM_K).setPosition(hmW(it.plot.u), 0, hmW(it.plot.v)));
+      hm.dyn.instanceMatrix.needsUpdate = true;
+    }
+  }
+  if (!still && Object.values(hm.flows || {}).some(v => v) || hm.carList.length) { hmCarsStep(still ? 0 : dt); busy = true; }
+  const nowS = now / 1000;
+  if (nowS < hm.waveUntil) { hm.water.material.uniforms.uT.value = nowS; busy = true; }
+  hm.water.material.uniforms.uCam.value.copy(camera.position);
+  requestRender();
+  if (busy) hmAnimate();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) hmAnimate(); });
+
+// ---- the pointer
+function hmPick(e) {
+  const r = canvas.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  if (hm.layer > 0) {
+    const hit = ray.intersectObjects(hm.layer >= 2 ? [hm.rooms, hm.stone] : [hm.rooms], false)[0];
+    if (!hit) return null;
+    if (hit.object === hm.stone) return hm.stone.userData.ent;
+    const rw = hm.roomOf[hit.instanceId]; return rw ? { prog: rw.key, pid: hm.all ? rw.pid : 0, name: rw.exe } : null;
+  }
+  const hits = ray.intersectObjects([hm.dyn, hm.lots, ...hm.emptyLot.children, ...hm.meshes], false);
+  for (const h of hits) {
+    if (h.object === hm.dyn) {
+      for (const it of hm.items.values()) if (it.i === h.instanceId && it.w) return { prog: it.w.key, pid: hm.all ? it.w.pid : 0, name: it.w.exe, it };
+      continue;
+    }
+    if (h.object === hm.lots) { const k = hm.lotOwner[h.instanceId]; return k ? { prog: k, pid: 0, name: k, lot: true } : hmEnts.get('market'); }
+    if (h.object.userData.ent) return h.object.userData.ent;
+    const p = h.object.userData.parts && h.object.userData.parts[h.instanceId];
+    if (p && p.ent) return p.ent.parent === 'fab' ? hmEnts.get('fab') : p.ent;
+  }
+  return null;
+}
+function hmHover(e) {
+  const tip = $('tip'), t = hmPick(e);
+  if (!t) { tip.hidden = true; return; }
+  const r = canvas.getBoundingClientRect();
+  tip.textContent = t.prog ? t.name : t.name;
+  tip.style.left = (e.clientX - r.left) + 'px'; tip.style.top = (e.clientY - r.top) + 'px'; tip.hidden = false;
+}
+function hmClick(e) {
+  const t = hmPick(e);
+  if (t) return hmShow(t);
+  hmShow(null);
+  const p = hmWaterAt(e);
+  if (p) hmWave(p.x, p.z);
+}
+function hmSelApply() {
+  const t = hm.sel, b = hm.selBox;
+  if (!b) return;
+  const it = t && t.it;
+  b.visible = !!(it && hm.layer === 0);
+  if (b.visible) { b.scale.set(it.foot * HM_K * 1.15, Math.max(2, it.target) * 1.06, it.foot * HM_K * 1.15); b.position.set(hmW(it.plot.u), 0, hmW(it.plot.v)); }
+  requestRender();
+}
+function hmHwApply(d) {
+  hm.emptyLot.visible = !d.ram || d.ram.dimms.length < d.ram.slots;
+  const s = (d.bios && `Alapkő · UEFI ${d.bios.version} · ${d.board}`) || 'Alapkő';
+  hm.bedLabel.material.map = landLabel(s.slice(0, 34), '#e0c9a8'); hm.bedLabel.material.needsUpdate = true;
+  requestRender();
 }
 
 // ==== src/99-boot.js
@@ -5848,6 +6647,7 @@ if (window.CITY) {
   // after the first resize, so the camera has its real aspect
   setTimeout(() => {
     const q = readHash();
+    if (vw.pending) { vw.pending = false; setView('homeland', false); }   // 39-views left this for now: the city is loaded, the camera free
     // #tour=auto (or the tour's number in the list) plays on open; &loop=1 repeats it — a wallboard
     const tt = q.get('tour'), t = tt && (tours.list.find(x => x.id === tt) || tours.list[+tt]);
     if (t) playTour(t, q.get('loop') === '1');

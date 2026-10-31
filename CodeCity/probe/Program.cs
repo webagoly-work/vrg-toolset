@@ -9,7 +9,8 @@
 // Stdin: one JSON command per line — {"t":"vol","key":"spotify.exe","v":0.4} or {"t":"mute","key":…,"on":true};
 // KV-26 (the overlay's portal hand-off): {"t":"place","h":…,"x":…,"y":…,"w":…,"hh":…} moves one counted window onto a
 // facade's screen rectangle and brings it to the front (its old placement kept in memory), {"t":"unplace","h":…} puts it
-// back; each answers 'placed' / 'unplaced' with the rectangle the window really has.
+// back; each answers 'placed' / 'unplaced' with the rectangle the window really has. Gépország (Homeland.cs): {"t":"hm","on":…}
+// turns its feed on or off; {"t":"hmclose","h":…} asks one counted window to close, as its own X button does (CITY-D47 B).
 // stdin closing (the companion gone) ends it. Nothing is written anywhere.
 //
 //   node CodeCity/tools/build-probe.js     -> CodeCity/probe/bin/publish/vrg-probe.exe
@@ -47,6 +48,7 @@ static class Probe
     [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int w, int hh, uint flags);
     [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int cmd);
     [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr h);
+    [DllImport("user32.dll")] static extern bool PostMessageW(IntPtr h, uint msg, IntPtr w, IntPtr l);
     [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out RECT r);
     [DllImport("user32.dll")] static extern void keybd_event(byte vk, byte scan, uint flags, IntPtr extra);
     [StructLayout(LayoutKind.Sequential)] struct RECT { public int l, t, r, b; }
@@ -83,7 +85,7 @@ static class Probe
         while (GetMessageW(out var m, 0, 0, 0) > 0) if (m.message == WM_TIMER) Resync(false);
     }
 
-    // the only things the probe changes: one program's volume (0..1) or mute
+    // the only things the probe changes: one program's volume (0..1) or mute, a window's place, a polite close
     static void Command(string line)
     {
         try
@@ -92,6 +94,13 @@ static class Probe
             var r = d.RootElement;
             string t = r.GetProperty("t").GetString() ?? "";
             if (t == "place" || t == "unplace") { Place(t, r); return; }
+            if (t == "hm") { Homeland.Set(r.GetProperty("on").GetBoolean()); return; }
+            if (t == "hmclose")   // WM_CLOSE: the program may still ask to save; only a window the probe counts
+            {
+                IntPtr h = (IntPtr)r.GetProperty("h").GetInt64();
+                Emit(new { t = "hmclosed", h = (long)h, ok = wins.ContainsKey(h) && PostMessageW(h, 0x0010, 0, 0) });
+                return;
+            }
             string key = r.GetProperty("key").GetString() ?? "";
             if (t == "vol") Audio.Command(key, (float)Math.Clamp(r.GetProperty("v").GetDouble(), 0, 1), null);
             else if (t == "mute") Audio.Command(key, null, r.GetProperty("on").GetBoolean());

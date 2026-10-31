@@ -122,6 +122,7 @@ function kvCtx(hit) {
 function kvMenuClose() { if (kv.menu) { kv.menu.remove(); kv.menu = null; } }
 async function onContext(e) {
   kvMenuClose();
+  if (vw.id === 'homeland') return;
   const hit = pickAt(e);
   if (!hit) return;
   await kvReady();

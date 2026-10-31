@@ -4,7 +4,7 @@ A new node of Kódváros beside the Város view: this desktop PC as a living cit
 state, programs the economy, data the cargo. The request and the rules are in
 [`../HOMELAND-BRIEF.md`](../HOMELAND-BRIEF.md). Kódváros follows later and is out of scope.
 
-**Status 2026-10-31: concept pack delivered, waiting for the user's decisions.** No product code is built yet.
+**Status 2026-10-31: decisions answered (name: Gépország). S1 works live on this PC: START → K → G. Next: S2, see [07-growth-and-land.md](07-growth-and-land.md).**
 
 | File | What |
 |---|---|
@@ -14,7 +14,8 @@ state, programs the economy, data the cargo. The request and the rules are in
 | [03-truth.md](03-truth.md) | Measured, approximate or metaphor, checked on this PC; memory; the ETW finding |
 | [04-data-feed.md](04-data-feed.md) | What TMOG is, sources compared, the adapter design, how a node is built |
 | [05-options.md](05-options.md) | The long list of further options, with effort |
-| [06-decisions.md](06-decisions.md) | CITY-D34…D49, for the user |
+| [06-decisions.md](06-decisions.md) | CITY-D34…D49, answered |
+| [07-growth-and-land.md](07-growth-and-land.md) | The user's two additions, and the build phases |
 
 ## The main results
 

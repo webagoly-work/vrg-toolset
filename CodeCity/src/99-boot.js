@@ -42,6 +42,7 @@ if (window.CITY) {
   // after the first resize, so the camera has its real aspect
   setTimeout(() => {
     const q = readHash();
+    if (vw.pending) { vw.pending = false; setView('homeland', false); }   // 39-views left this for now: the city is loaded, the camera free
     // #tour=auto (or the tour's number in the list) plays on open; &loop=1 repeats it — a wallboard
     const tt = q.get('tour'), t = tt && (tours.list.find(x => x.id === tt) || tours.list[+tt]);
     if (t) playTour(t, q.get('loop') === '1');

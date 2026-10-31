@@ -133,7 +133,7 @@ function landInset() {
 function landPanel() {
   if (!land.el) {
     land.el = document.createElement('aside'); land.el.id = 'landinfo';
-    land.el.addEventListener('click', e => { if (e.target.closest('[data-reveal]')) { land.reveal = !land.reveal; landPanel(); } });
+    land.el.addEventListener('click', e => { if (e.target.closest('[data-reveal]')) { land.reveal = !land.reveal; landPanel(); } if (e.target.closest('[data-hm]')) setView('homeland'); });
     document.body.append(land.el);
   }
   land.el.hidden = land.at === 'city';

@@ -10,6 +10,7 @@ const dayOf = ci => {
 };
 
 function onHover(e) {
+  if (vw.id === 'homeland') return hmHover(e);
   const tip = $('tip'), hit = pickAt(e);
   setHover(hit && hit.file ? hit.i : -1);
   if (!hit) { tip.hidden = true; return; }
@@ -21,6 +22,7 @@ function onHover(e) {
 }
 
 function onPick(e) {
+  if (vw.id === 'homeland') return hmClick(e);
   const hit = pickAt(e);
   if ((e.ctrlKey || e.metaKey) && hit && hit.file) { selToggle(hit.i); return; }   // multi-select (19-select)
   if (!hit) closePanel();
@@ -67,6 +69,7 @@ function viewState() {
   q.set('cam', [t.x, t.z, orbit.theta, orbit.phi, orbit.r].map(v => +v.toFixed(2)).join(','));
   if (share.sel) q.set('sel', share.sel);
   if (lens.id !== 'alap') q.set('lens', lens.id);
+  if (vw.id !== 'city') q.set('view', vw.id);
   if (roads.all) q.set('roads', '1');
   if (query.text) q.set('q', query.text);
   if (replay.T < replay.last) q.set('t', current.city.commits[replay.T][4]);
@@ -80,7 +83,7 @@ function writeHashSoon() {
   clearTimeout(hashTimer);
   hashTimer = setTimeout(() => {
     const q = viewState(), keep = new URLSearchParams(location.hash.slice(1));
-    for (const k of ['tour', 'loop']) if (keep.get(k)) q.set(k, keep.get(k));   // a wallboard link stays one
+    for (const k of ['tour', 'loop', 'hmtest']) if (keep.get(k)) q.set(k, keep.get(k));   // a wallboard link stays one
     history.replaceState(null, '', '#' + q.toString());
   }, 250);
 }

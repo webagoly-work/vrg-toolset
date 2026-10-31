@@ -93,6 +93,10 @@
 // by a process whose ancestor is a Claude session (Bash, git, node …) becomes that session's 'beam' (via: the exe).
 // The process tree and DNS names stay in memory only (CITY-D27 A).
 //
+// Gépország (CITY-D34…D49; homeland.js): POST hm-feed {on} turns vrg-probe's feed on while the view is open; each raw line
+// becomes one 'hm' event with rates, classes and layers. POST hm-close {key} asks that program's counted windows to close
+// (WM_CLOSE, the program may still ask to save); the shell and Claude are refused. Memory only (CITY-D27 A).
+//
 // Wallpaper (P12 L0, KV-24): GET /api/stream?wallpaper=1 is a light listener — it gets the stream, but the port street,
 // the samplers, the probe, ETW and cargo run only while a full page listens, and `claude agents` is polled every 30 s
 // instead of 6 s when only wallpapers are left.
@@ -779,6 +783,7 @@ function probeStart() {
   probe.child = child;
 }
 function probeStop() {
+  hmFeed.gone();
   probe.want = false; clearTimeout(probe.timer); probe.timer = null;
   if (probe.child) { const c = probe.child; probe.child = null; try { c.stdin.end(); c.kill(); } catch (e) { /* gone */ } }
   probe.wins.clear(); probe.fg = 0; probe.state = 'off'; probe.last = {};
@@ -800,8 +805,12 @@ function probePlace(cmd) {
   probe.child.stdin.write(JSON.stringify(cmd) + '\n');
   return [200, { ok: true }];
 }
+const hmFeed = require('./homeland.js').create({ emit: (e, d) => liveEmit(e, d), send: o => { if (probe.child) probe.child.stdin.write(JSON.stringify(o) + '\n'); },
+  run: (exe, argv, ms) => run(exe, argv, ms), root: CITY, selfPid: process.pid, dry: DRY });
 function probeHandle(m) {
-  if (m.t === 'hello') { probe.state = 'on'; probe.wins.clear(); }
+  if (m.t === 'hm') return hmFeed.line(m, { wins: probe.wins, fg: probe.fg, probePid: probe.pid });
+  if (m.t === 'hmclosed') return;
+  if (m.t === 'hello') { probe.state = 'on'; probe.wins.clear(); probe.pid = m.pid; if (hmFeed.want) hmFeed.on(); }
   else if (m.t === 'windows') { probe.wins.clear(); for (const w of m.list || []) probe.wins.set(w.h, w); }
   else if (m.t === 'open') probe.wins.set(m.h, m);
   else if (m.t === 'close') probe.wins.delete(m.h);
@@ -1127,6 +1136,19 @@ const ACTIONS = {
   } },
   'job-start': { keys: ['id'], async run(b) { return typeof b.id === 'string' ? jobStart(b.id) : [400, { error: 'id' }]; } },
   // a sound tower dragged (KV-22): that program's volume 0..1, or its mute — nothing else reaches the probe
+  'hm-feed': { keys: ['on'], async run(b) {
+    if (b.on) { probeStart(); hmFeed.on(); } else hmFeed.off();
+    return [200, { ok: true, state: probe.state, hw: hmFeed.hw }];
+  } },
+  'hm-close': { keys: ['key'], async run(b) {
+    if (typeof b.key !== 'string' || !hmFeed.closable(b.key)) return [403, { error: 'ezt a programot a város nem zárja be' }];
+    const hs = [...probe.wins.values()].filter(w => String(w.exe || '').toLowerCase() === b.key.toLowerCase()).map(w => w.h);
+    if (!hs.length) return [404, { error: 'nincs ablaka' }];
+    if (DRY) return [200, { dryRun: true, n: hs.length }];
+    if (!probe.child) return [503, { error: 'a szonda nem fut' }];
+    for (const h of hs) probe.child.stdin.write(JSON.stringify({ t: 'hmclose', h }) + '\n');
+    return [200, { ok: true, n: hs.length }];
+  } },
   'probe-volume': { keys: ['key', 'v'], async run(b) {
     return typeof b.v === 'number' && b.v >= 0 && b.v <= 1 ? probeSend({ t: 'vol', key: b.key, v: Math.round(b.v * 100) / 100 }) : [400, { error: 'v: 0..1' }];
   } },
@@ -1168,6 +1190,7 @@ const server = http.createServer((req, res) => {
     res.setHeader('Set-Cookie', 'kv_t=' + TOKEN + '; HttpOnly; SameSite=Strict; Path=/api/');   // for the SSE stream only
     return send(res, 200, html, 'text/html; charset=utf-8');
   }
+  if (req.method === 'GET' && url.pathname === '/homeland') { res.writeHead(302, { Location: '/#view=homeland' }); return res.end(); }   // START K G: a link with no fragment to lose
   if (!url.pathname.startsWith('/api/')) {
     if (req.method !== 'GET') return send(res, 405, { error: 'csak GET' });
     if (url.pathname.startsWith('/vendor/esm/')) {

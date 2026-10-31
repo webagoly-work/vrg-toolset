@@ -151,6 +151,8 @@
                     "args": ["{repo}\\CodeCity\\scan.js", "{repo}", "--js", "{repo}\\CodeCity\\dist\\vrg-codecity.data.js"] },
         "extras": [
           { "key": "S", "name": "Élő mód", "hint": "Kódváros segéd, :8797", "server": "city" },
+          { "key": "G", "name": "Gépország", "hint": "ez a gép szigetként, élőben", "exe": "C:\\Windows\\System32\\rundll32.exe", "args": ["url.dll,FileProtocolHandler", "http://localhost:8797/homeland"],
+            "server": "city", "serverArgs": ["--no-open"] },
           { "key": "F", "name": "Fedőréteg", "hint": "a város az asztal fölött, Ctrl+Alt+K", "exe": "{full}\\tools\\electron\\electron.exe", "args": ["{repo}\\CodeCity\\shell"],
             "ensure": { "path": "{full}\\tools\\electron\\electron.exe", "note": "Az Electron még nincs letöltve, most letöltöm (kb. 150 MB)…", "exe": "{node}", "args": ["{repo}\\CodeCity\\tools\\fetch-electron.js"] },
             "server": "city", "serverArgs": ["--no-open"] }

@@ -40,7 +40,7 @@ const events = [];
 async function start() {
   if (srv) return srv;
   execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: fx });
-  for (const f of ['companion.js', 'scan.js', 'sessions.js', 'agents-poll.js']) put(path.join(fx, 'CodeCity', f), fs.readFileSync(path.join(CITY, f), 'utf8'));
+  for (const f of ['companion.js', 'homeland.js', 'homeland-classes.json', 'scan.js', 'sessions.js', 'agents-poll.js']) put(path.join(fx, 'CodeCity', f), fs.readFileSync(path.join(CITY, f), 'utf8'));
   put(path.join(fx, 'CodeCity', 'dist', 'vrg-codecity.html'), '<!doctype html><html><head></head><body>fixture</body></html>');
   put(path.join(fx, 'fake-probe.js'), FAKE);
   const cfg = path.join(fx, 'none.json');

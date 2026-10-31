@@ -80,14 +80,8 @@ All events go over the existing SSE stream and are sent only while a page has Ho
 | Event | Rate | Content |
 |---|---|---|
 | `hmhw` | Once, then on change | Inventory: board, CPU topology, DIMM slots, disks with volumes, NICs, GPU, audio |
-| `hmcores` | 1 Hz | Per logical: user, kernel, idle; frequency; context switches, syscalls, interrupts, DPC |
-| `hmmem` | 1 Hz | Physical, commit, pools, Modified, Standby, Free+Zero, faults, hard faults, pagefile |
-| `hmprocs` | 1 Hz, diff | `{id, exe, cls, layer, session, parent, cpu, ws, priv, io, n}`, folded by program family |
-| `hmproc` | On change | Start or stop, with parent and class |
-| `hmio` | 1 Hz | Per disk: read, write, queue, busy. Per NIC: rx, tx. Per GPU engine: load; VRAM |
-| `hmsens` | 5 s | Temperatures, fans, whatever the sensor adapters give, each with a source |
-| `hmflow` | 1 Hz | ETW only: process → disk, process → dock |
-| `hmfeed` | On change | State of each source: on, off, why; `fixture: true` in test mode |
+| `hm` | 1 Hz | One event as built in S1: `procs` (each with exe, class, place, layer, session, parent, cpu, working set, private, I/O, hard faults, windows, hint), `cores`, `mem`, `disks`, `nics`, `gpu`, `sys`, `ms`, `fixture`. Folding by program family happens in the page, so the *Mind* toggle needs no second feed |
+| `hmflow` | 1 Hz | S3, ETW only: process → disk, process → dock |
 
 `GET /api/hm/map?id=` returns one process's address-space regions on demand: region kinds and sizes, never contents.
 
@@ -105,7 +99,7 @@ All events go over the existing SSE stream and are sent only while a page has Ho
 
 | Item | Budget | Basis |
 |---|---|---|
-| Feed, in the probe | < 0.5 % of one core at 1 Hz | 7 ms snapshot plus PDH |
+| Feed, in the probe and the segéd | about 1 % of the machine at 1 Hz (measured) | 30–50 ms sample; the HUD shows the live figure |
 | Companion normalising | < 0.5 % | One JSON pass per second |
 | Page, traffic moving | 60 fps on the 1050 Ti; < 15 % of the GPU | 30 k instances in low-poly, shared materials |
 | Homeland closed | 0 | Feed stopped; no sampling while the view is not open |

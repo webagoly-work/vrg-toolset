@@ -21,7 +21,7 @@ let srv = null, cookie = '';
 async function start() {
   if (srv) return srv;
   g('init', '-q', '-b', 'main');
-  for (const f of ['companion.js', 'scan.js', 'sessions.js', 'agents-poll.js']) put('CodeCity/' + f, fs.readFileSync(path.join(CITY, f), 'utf8'));
+  for (const f of ['companion.js', 'homeland.js', 'homeland-classes.json', 'scan.js', 'sessions.js', 'agents-poll.js']) put('CodeCity/' + f, fs.readFileSync(path.join(CITY, f), 'utf8'));
   put('CodeCity/dist/vrg-codecity.html', '<!doctype html><html><head></head><body>fixture</body></html>');
   put('.gitignore', 'CodeCity/.companion-token\n');
   put('a.js', 'one\ntwo\n'); g('add', '.'); g('commit', '-q', '-m', 'first');

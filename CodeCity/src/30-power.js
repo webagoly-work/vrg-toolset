@@ -94,7 +94,7 @@ function pwPanelHtml() {
   if (!p && !n) return '';
   const ram = p && p.ramMB ? Math.round(100 * (1 - p.ramFreeMB / p.ramMB)) : null, kb = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB/s' : Math.round(b / 1024) + ' kB/s';
   return '<h4>Most a Földön</h4>' +
-    (p ? `<div><b>Erőmű</b> <span class="dim">CPU ${p.cpu}% · RAM ${ram}% · GPU ${p.gpu}% · lemez ${p.disk}% · hálózat ↓${kb(p.rx)} ↑${kb(p.tx)}</span></div>` : '') +
+    (p ? `<div><b>Erőmű</b> <button class="btn" data-hm title="Belépés a gépbe: Gépország">Gépország</button> <span class="dim">CPU ${p.cpu}% · RAM ${ram}% · GPU ${p.gpu}% · lemez ${p.disk}% · hálózat ↓${kb(p.rx)} ↑${kb(p.tx)}</span></div>` : '') +
     (n ? `<div><b>Pályaudvar</b> <span class="dim">${n.station.up ? 'él' : 'NEM VÁLASZOL'} · ${n.devices} eszköz az udvaron</span></div>` +
       `<div><b>Határ</b> <span class="dim">${n.internet.up ? 'nyitva — van internet' : 'ZÁRVA — nincs internet; minden helyi tovább működik'}</span></div>` +
       (n.docks.length ? `<div><b>Part</b> <span class="dim">${n.docks.map(d => esc(d.name) + ' ' + d.n).join(' · ')}</span></div>` : '') +
