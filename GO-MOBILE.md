@@ -47,7 +47,7 @@ What changes locally compared with the cloud:
 - **Branch:** `main` in the main checkout, like everything else. Commit after each finished step.
 - **Check first:** `Mobile\mobile.cmd test` (or `cd Mobile/android && gradlew :kit-core:test :airdeck-core:test`)
   and `node Mobile/tests/relay-pair.js` must be green before you change anything.
-- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M4** (M1, M2, M3 and M6 live; M9 built 2026-10-31, BETA until its first release and the user's phone check).
+- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M4** (M1, M2, M3, M6 and M9 live).
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
 - Each WP ends with:
@@ -78,6 +78,7 @@ What changes locally compared with the cloud:
 ## 4. Things only the user can do (ask when the WP needs them, not before)
 
 - **M3**: done 2026-10-30 (OAuth App "VRG Mobile", Client ID in `kit/src/main/res/values/github.xml`).
-- **M9**: keystore and the four repo secrets done 2026-10-31; pushing `main` starts the first release.
+- **M9**: done 2026-10-31. A push to `main` touching `Mobile/android` makes a release and the phone updates itself.
+  The keystore is `H:\VRG\Full\_admin\keys\vrg-mobile.jks`. `mobile.cmd` → 3 cannot replace a release: its key differs.
 - **Every WP**: install the APK (`mobile.cmd` → 3, or from the Actions run / Releases after M9) and work through the
-  phone checklist. Open right now: M9 (an update installing over itself).
+  phone checklist. None is open right now.

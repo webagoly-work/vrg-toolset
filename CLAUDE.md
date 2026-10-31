@@ -220,8 +220,8 @@ file at the repo root and does what it says.
 - **`GO CLA`** — `GO-CLA.md`: the CLA job thread. v1 and v2 delivered; open design questions only.
 - **`GO HUB`** — `GO-HUB.md`: VRG Kapu, the access page; setup steps, guest mode and shared folders (planned).
 - **`GO CITY`** — `GO-CITY.md`: Kódváros; parked tuning, deferred checks, the Cloudflare ring.
-- **`GO MOBILE`** — `GO-MOBILE.md`: VRG Mobile, one WP at a time from `docs/mobile/` (M1, M2, M3, M6 live,
-  next M9). **Worked on in the local H: session since 2026-10-30** (main checkout, `main`; `Mobile\mobile.cmd`
+- **`GO MOBILE`** — `GO-MOBILE.md`: VRG Mobile, one WP at a time from `docs/mobile/` (M1, M2, M3, M6, M9 live,
+  next M4). **Worked on in the local H: session since 2026-10-30** (main checkout, `main`; `Mobile\mobile.cmd`
   builds and installs the APK); Actions still builds an APK on every push.
 - **`GO OPENWRT`** — `GO-OPENWRT.md`: OpenWrt on the TP-Link TL-WR1043ND (the user flashes; Claude never touches
   the router). Phases P0–P5, the first is the sticker's hardware version.
