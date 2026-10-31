@@ -1,0 +1,81 @@
+# VRG Mobile: the signed release the app updates itself from (WP M9, D-3 = A). Each push to main that
+# touches the Android code makes a GitHub Release mobile-v<code> with vrg-mobile.apk and update.json.
+# mobile-android.yml stays the per-push test build. Secrets: docs/mobile/WP/M9.md.
+name: VRG Mobile release
+
+on:
+  push:
+    branches: [main]
+    paths: ['Mobile/android/**', '.github/workflows/mobile-release.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Never cancelled: two releases in a row must both end up as releases, in order
+concurrency:
+  group: mobile-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: Mobile/android
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # the version code is the commit count; the notes need the last tag
+          fetch-tags: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Version
+        id: version
+        run: echo "code=$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Keystore
+        env:
+          MOBILE_KEYSTORE_B64: ${{ secrets.MOBILE_KEYSTORE_B64 }}
+        run: |
+          # No key, no release: a debug-signed APK could never update the installed app
+          test -n "$MOBILE_KEYSTORE_B64" || { echo "MOBILE_KEYSTORE_B64 is not set"; exit 1; }
+          echo "$MOBILE_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/vrg-mobile.jks"
+      - name: Tests (pure Kotlin)
+        run: ./gradlew --no-daemon :kit-core:test :airdeck-core:test
+      - name: Signed APK
+        env:
+          VRG_VERSION_CODE: ${{ steps.version.outputs.code }}
+          MOBILE_KEYSTORE_PASS: ${{ secrets.MOBILE_KEYSTORE_PASS }}
+          MOBILE_KEY_ALIAS: ${{ secrets.MOBILE_KEY_ALIAS }}
+          MOBILE_KEY_PASS: ${{ secrets.MOBILE_KEY_PASS }}
+        run: MOBILE_KEYSTORE_FILE="$RUNNER_TEMP/vrg-mobile.jks" ./gradlew --no-daemon assembleRelease
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CODE: ${{ steps.version.outputs.code }}
+        run: |
+          out="$RUNNER_TEMP/release"
+          mkdir -p "$out"
+          cp app/build/outputs/apk/release/app-release.apk "$out/vrg-mobile.apk"
+          last=$(git tag --list 'mobile-v*' --sort=-v:refname | head -1)
+          range=${last:+$last..HEAD}
+          git log --format='- %s' -n 30 ${range:-HEAD} -- . > "$out/notes.txt"
+          [ -s "$out/notes.txt" ] || echo "- (no Android change listed)" > "$out/notes.txt"
+          jq -n \
+            --argjson code "$CODE" \
+            --arg name "0.9.$CODE" \
+            --arg sha "${GITHUB_SHA:0:7}" \
+            --rawfile notes "$out/notes.txt" \
+            --arg apk_sha256 "$(sha256sum "$out/vrg-mobile.apk" | cut -d' ' -f1)" \
+            --argjson size "$(stat -c%s "$out/vrg-mobile.apk")" \
+            '{code: $code, name: $name, sha: $sha, notes: $notes, apk_sha256: $apk_sha256, size: $size}' \
+            > "$out/update.json"
+          gh release create "mobile-v$CODE" "$out/vrg-mobile.apk" "$out/update.json" \
+            --title "VRG Mobile 0.9.$CODE" --notes-file "$out/notes.txt" --target "$GITHUB_SHA"
+      - name: Remove the keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/vrg-mobile.jks"

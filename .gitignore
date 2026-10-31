@@ -4,6 +4,7 @@ Planner/data/
 .credentials.json
 *.key
 *.pem
+*.jks
 .env*
 
 # --- Portable programs (5 GB, not our code) ---

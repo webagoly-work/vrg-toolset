@@ -6,16 +6,28 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// CI: `git rev-list --count HEAD` (mobile-release.yml). A desktop build stays 1, so it never looks newer.
+val buildCode = System.getenv("VRG_VERSION_CODE")?.toIntOrNull() ?: 1
+// All four come from mobile-release.yml. Without them a local release build keeps the debug key.
+val keystore = System.getenv("MOBILE_KEYSTORE_FILE")
+
 android {
     namespace = "hu.vrg.mobile"
     compileSdk = 35
+
+    if (keystore != null) signingConfigs.create("release") {
+        storeFile = file(keystore)
+        storePassword = System.getenv("MOBILE_KEYSTORE_PASS")
+        keyAlias = System.getenv("MOBILE_KEY_ALIAS")
+        keyPassword = System.getenv("MOBILE_KEY_PASS")
+    }
 
     defaultConfig {
         applicationId = "hu.vrg.mobile"   // D-1 = A: a new app beside the old Légegér APK
         minSdk = 28                       // BluetoothHidDevice (Légegér) arrived in Android 9
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = buildCode
+        versionName = "0.9.$buildCode"
         // GitHub Actions sets GITHUB_SHA; a desktop build says so instead. Beállítások -> Névjegy shows it.
         // The "git:" prefix keeps an all-digit SHA from being read back as a number from the manifest.
         manifestPlaceholders["gitSha"] = "git:" + (System.getenv("GITHUB_SHA")?.take(7) ?: "helyi")
@@ -25,8 +37,7 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
-            // Signed with the debug key until WP M9 (self-update) brings a real release key.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (keystore != null) "release" else "debug")
         }
     }
 
@@ -45,4 +56,5 @@ dependencies {
     implementation(project(":feature-pair"))
     implementation(project(":feature-account"))
     implementation(project(":feature-notes"))
+    implementation(project(":feature-update"))
 }

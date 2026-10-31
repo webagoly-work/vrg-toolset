@@ -22,7 +22,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M2** | QR párosítás (`pair`) | **LIVE** (built 2026-10-29, checked on the phone 2026-10-30): scan the PC's QR: relay address + one-time code → a **trusted** phone; QR for Légegér | camera, relay | high (relay + parser) |
 | **M3** | GitHub fiók (`account`) | **LIVE** (built 2026-10-30, checked on the phone 2026-10-31): GitHub sign-in with the device code; token in the Android Keystore; the shared GitHub client | internet | high |
 | **M6** | Gyorsjegyzet (`notes`) | **LIVE** (built 2026-10-30, D-6 = A, checked on the phone 2026-10-31): quick notes pushed to a dedicated branch acting as the chat log | GitHub | high |
-| **M9** | Frissítés (`update`) | self-update from GitHub Releases built by Actions | GitHub | medium (+ user step: keystore secret) |
+| **M9** | Frissítés (`update`) | **built, BETA** (2026-10-31; first release and phone check open): self-update from GitHub Releases built by Actions | GitHub | medium (+ user step: keystore secret) |
 | **M4** | Haladás (`pulse`) | active branches, which tool each branch touches, commits, PRs, CI | GitHub | high |
 | **M8** | Localhost (`ports`) | the PC's local servers: open on the phone (relay proxy) or in a separate desktop window | relay | high (relay) |
 | **M11** | Indítópult (`launch`) | START.cmd's tools from the phone; running ones; their log | relay | high (relay) |

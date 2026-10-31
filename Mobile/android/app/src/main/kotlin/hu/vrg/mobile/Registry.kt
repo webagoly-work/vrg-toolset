@@ -8,6 +8,7 @@ import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.notes.NotesFeature
 import hu.vrg.mobile.pair.PairFeature
 import hu.vrg.mobile.settings.SettingsFeature
+import hu.vrg.mobile.update.UpdateFeature
 
 // The features built into this APK. Adding one: a feature-<id> module with an object implementing
 // VrgFeature, its FeatureInfo in Catalogue (stage LIVE or BETA), a line here, and the module in
@@ -21,6 +22,7 @@ object Registry {
         PairFeature,
         AccountFeature,
         NotesFeature,
+        UpdateFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

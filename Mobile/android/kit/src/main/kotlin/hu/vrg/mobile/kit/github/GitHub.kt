@@ -23,6 +23,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -173,6 +174,42 @@ object GitHub {
     suspend fun bytes(url: String): ByteArray? = withContext(Dispatchers.IO) {
         try { http.newCall(Request.Builder().url(url).build()).execute().use { if (it.isSuccessful) it.body?.bytes() else null } }
         catch (e: IOException) { null }
+    }
+
+    /**
+     * A release asset into [into], streamed. The asset url needs the token (a private repo) and
+     * octet-stream; GitHub redirects to its storage, and OkHttp drops the token on that other host.
+     */
+    suspend fun download(url: String, into: File, onProgress: (Long) -> Unit = {}): Gh<Unit> = withContext(Dispatchers.IO) {
+        val t = token ?: return@withContext Gh.SignedOut
+        val req = Request.Builder().url(url)
+            .header("Authorization", "Bearer $t")
+            .header("Accept", "application/octet-stream")
+            .header("X-GitHub-Api-Version", "2022-11-28")
+            .build()
+        try {
+            http.newCall(req).execute().use { r ->
+                if (r.code == 401) { VrgLog.w(TAG, "A token már nem érvényes"); signOut(); return@use Gh.SignedOut }
+                val body = r.body
+                if (!r.isSuccessful || body == null) return@use Gh.Failed(r.code, message(body?.string().orEmpty()))
+                into.outputStream().use { out ->
+                    val input = body.byteStream()
+                    val buf = ByteArray(64 * 1024)
+                    var done = 0L
+                    while (true) {
+                        val n = input.read(buf)
+                        if (n < 0) break
+                        out.write(buf, 0, n)
+                        done += n
+                        onProgress(done)
+                    }
+                }
+                Gh.Ok(Unit)
+            }
+        } catch (e: IOException) {
+            VrgLog.w(TAG, "A letöltés megszakadt: ${e.javaClass.simpleName}: ${e.message}")
+            Gh.Offline
+        }
     }
 
     private suspend fun call(method: String, pathOrUrl: String, json: String?): Gh<String> = withContext(Dispatchers.IO) {

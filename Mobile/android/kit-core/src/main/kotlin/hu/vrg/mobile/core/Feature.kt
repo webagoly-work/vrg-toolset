@@ -93,7 +93,7 @@ object Catalogue {
     )
     val UPDATE = FeatureInfo(
         "update", "Frissítés", "Új verzió a GitHubról: az app magát frissíti, ha a branchen újabb build van.",
-        "⟳", Group.APP, Stage.PLANNED, "M9", setOf(Need.INTERNET, Need.GITHUB),
+        "⟳", Group.APP, Stage.BETA, "M9", setOf(Need.INTERNET, Need.GITHUB),
     )
     val SETTINGS = FeatureInfo(
         "settings", "Beállítások", "Megjelenés (Mélyvíz paletták, méret), fiókok, párosított PC-k, napló.",

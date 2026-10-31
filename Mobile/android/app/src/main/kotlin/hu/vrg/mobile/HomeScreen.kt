@@ -19,17 +19,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.FeatureInfo
 import hu.vrg.mobile.core.Stage
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.update.UpdateFeature
 
 // The home screen: every feature of the catalogue as a tile, grouped. Built ones open; planned ones
 // open their PlannedScreen, which says what they will do and which WP builds them.
+
+/** "⟳ új" in the header while an update waits; opens Frissítés. */
+@Composable
+private fun UpdateMark(onOpen: () -> Unit) {
+    val state by UpdateFeature.state.collectAsStateWithLifecycle()
+    if (state.waiting) {
+        Text("${Catalogue.UPDATE.glyph} új", style = Melyviz.label.copy(color = Melyviz.sand),
+            modifier = Modifier.clickable(onClick = onOpen).padding(8.dp))
+    }
+}
 
 @Composable
 fun HomeScreen(onOpen: (String) -> Unit) {
@@ -42,6 +55,7 @@ fun HomeScreen(onOpen: (String) -> Unit) {
                 Text("VRG MOBILE", style = Melyviz.title.copy(fontSize = 18.sp))
                 Text("A VRG munka társalkalmazása", style = Melyviz.small)
             }
+            UpdateMark { onOpen(Catalogue.UPDATE.id) }
             Text(
                 Catalogue.SETTINGS.glyph, style = Melyviz.glyph.copy(color = Melyviz.muted),
                 modifier = Modifier.clickable { onOpen(Catalogue.SETTINGS.id) }.padding(8.dp),
