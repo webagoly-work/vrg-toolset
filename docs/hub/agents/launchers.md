@@ -38,6 +38,7 @@ After a tool change also run `node tools/build-hub.js`, which bakes the tool lis
 - Never test the git flow on a real repo (root CLAUDE.md).
 
 ## 6. Current state
+- git 2026-10-31 4114be9 VRG Council: Delos HQ and the Park, installed agents, START entry
 - git 2026-10-30 e654103 GO files consolidated, new GO MAIN, CLAUDE.md codephrases; anonymiser re-run
 - git 2026-10-30 aeca63a START launcher: one menu, shims and the portable-path scripts
 - Decision files: none. ServiceKit is merged but has no menu entry yet (2026-10-30 audit).
