@@ -4,6 +4,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { precacheSource } from './tools/build-precache.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const WWW = path.join(HERE, 'www');
@@ -18,6 +19,10 @@ const TYPES = {
 http.createServer((req, res) => {
   let url = decodeURIComponent(req.url.split('?')[0]);
   if (url === '/') url = '/index.html';
+  if (url === '/precache.js') {   // always current, so an edit reaches an installed copy without a rebuild
+    res.writeHead(200, { 'content-type': TYPES['.js'], 'cache-control': 'no-store' });
+    return res.end(precacheSource());
+  }
   const root = url.startsWith('/tests/') ? TESTS : WWW;
   const rel = url.startsWith('/tests/') ? url.slice('/tests'.length) : url;
   const file = path.normalize(path.join(root, rel));

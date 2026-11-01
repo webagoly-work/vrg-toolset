@@ -139,6 +139,10 @@ export const hu = {
   'confirm.preset.ok': 'Törlés',
   'confirm.hold': 'Tartsd nyomva: {label}',
 
+  'pwa.ready': 'Telepítve, net nélkül is fut',
+  'pwa.update': 'Új verzió érhető el',
+  'pwa.reload': 'Frissítés',
+
   'toast.saved': 'Mentve',
   'toast.exported': 'Exportálva: {file}',
   'toast.erased': 'Minden adat törölve',

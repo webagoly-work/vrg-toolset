@@ -3,12 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Varler Console: villanyszerelői terepi konzol és zseb-műszerfal. PWA, később Capacitor APK.",
+  "description": "Varler Console: villanyszerelői terepi konzol és zseb-műszerfal. PWA és Capacitor APK.",
   "scripts": {
     "serve": "node serve.js",
     "tokens": "node tools/build-tokens.js",
     "test": "node --test \"tests/*.test.js\"",
     "build:trace": "node tools/build-trace.js",
-    "relay": "node tools/trace-relay.js"
+    "relay": "node tools/trace-relay.js",
+    "build:pwa": "node tools/build-precache.js",
+    "build:icons": "node tools/build-icons.js",
+    "cap:add": "cap add android && node tools/android-setup.js",
+    "cap:sync": "node tools/build-precache.js && cap sync android && node tools/android-setup.js",
+    "cap:open": "cap open android"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "6.2.0"
+  },
+  "dependencies": {
+    "@capacitor/core": "6.2.0",
+    "@capacitor/android": "6.2.0"
   }
 }

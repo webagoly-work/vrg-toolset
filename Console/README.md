@@ -3,8 +3,9 @@
 Villanyszerelői terepi konzol és zseb-műszerfal. Offline-first, helyi tárolás, magyar alapnyelv.
 *An electrician's field console and pocket dashboard. Offline-first, local storage, Hungarian by default.*
 
-Status: **Phase 3, live agent trace.** 32 of 49 pages are built; the other 17 show a working empty state
-that says what they wait for. The PWA and the APK arrive in Phase 4; the full README with them.
+Status: **Phase 4, packaged.** 32 of 49 pages are built; the other 17 show a working empty state that says
+what they wait for. The PWA is tested in Chromium. The APK project is generated and set up, but no APK has been
+built or run on a phone: this PC has no JDK. See [Test status](#test-status).
 
 ## Run
 
@@ -17,6 +18,59 @@ npm test
 
 Serve it: `localStorage` and ES modules do not work from `file://`.
 Ring primitives gallery: `http://127.0.0.1:8133/tests/ring-gallery.html`.
+
+## Install on a phone as a PWA
+
+A service worker needs HTTPS or `localhost`, so bring the dev server down the USB cable. With USB debugging on:
+
+```bash
+adb reverse tcp:8133 tcp:8133
+```
+
+Open `http://localhost:8133` in Chrome on the phone and choose Add to Home screen. From then on it runs with no
+cable and no network. When a newer version is served, a toast offers **Frissítés**; nothing swaps by itself.
+
+`www/precache.js` lists what is kept offline, with a version made from the content. `serve.js` builds it on
+request; run `npm run build:pwa` before a commit or an APK. A test fails if it is out of date.
+
+## Build the APK
+
+Needs Android Studio, or a JDK 17 and the Android SDK with platform 34. Capacitor is the same wrapper as
+ServiceKitPhone, chosen for the same reason: the app runs fully offline and reaches a `ws://` bridge on the LAN.
+
+```bash
+npm install
+```
+
+```bash
+npx cap add android
+```
+
+```bash
+node tools/android-setup.js
+```
+
+```bash
+npm run cap:sync
+```
+
+```bash
+npm run cap:open
+```
+
+In Android Studio: Build > Build APK(s). `android/` is generated and gitignored, so run `cap:sync` after any
+change under `www/`. `android-setup.js` adds the network rule for the bridge and the launcher icons, turns Android
+cloud backup off so client records stay on the phone, and asks for the microphone, used by the sound meter only.
+There are no location, contact or camera permissions; photos come through the system picker. A release key is
+yours to make; keep it out of the repo (`*.jks` is gitignored).
+
+The app id is `work.webagoly.varlerconsole`. To reach the PC over USB:
+
+```bash
+adb reverse tcp:47814 tcp:47814
+```
+
+The trace relay works the same way on port 8134.
 
 ## Agent trace
 
@@ -51,7 +105,9 @@ Token counts are input plus output per message, read from the transcripts; cache
 | `www/js/core/` | i18n, locale formatting, the local-first store (`store.js` settings, `db.js` IndexedDB records), limit checks, calculators, redaction, the PC bridge client |
 | `www/js/pages/*.js` | one module per page: `{ manifest, strings, mount(root, ctx) }`; small widgets share `widgets-simple.js` and `widgets-device.js` |
 | `www/js/trace/` | events, model, privacy, sources, view, panel; `standalone.js` is the single-file entry |
-| `tools/` | `trace-hook.js`, `trace-relay.js`, `trace-retention.js`, `build-trace.js`, `hooks.example.json` |
+| `tools/` | `trace-hook.js`, `trace-relay.js`, `trace-retention.js`, `build-trace.js`, `hooks.example.json`, `build-precache.js`, `build-icons.js`, `android-setup.js` |
+| `www/sw.js`, `www/precache.js`, `www/manifest.webmanifest`, `www/icons/` | offline cache and install metadata |
+| `capacitor.config.json`, `android-res/` | the APK scaffold |
 | `www/data/` | `commands.js`, `sugo.js`, `playbooks.js`, copied unchanged from ServiceKitPhone |
 | `www/fonts/` | bundled woff2 subsets with their OFL licences (`NOTICE.md`) |
 | `www/js/i18n/` | `hu.js`, `en.js`: every UI string |
@@ -68,7 +124,24 @@ Token counts are input plus output per message, read from the transcripts; cache
 - No supplier or film names in any UI string (landmines L4, L10).
 - The shell loads nothing from the network.
 
-## Tested
+## Test status
+
+`npm test`: 87 of 87 pass. Nothing below has run on a real phone; every line marked tested means Chromium on the
+dev PC, unless it says otherwise.
+
+| Area | Tested in the browser | Untested on hardware |
+|---|---|---|
+| App frame, pages, languages | yes | touch, swipe edge guard, screen readers |
+| PWA | first install, offline reload, all 54 modules from cache, update toast, old cache removed | Add to Home screen, storage kept long term |
+| APK | none | project generated and set up on this PC; never compiled, installed or run |
+| ServiceKit bridge | against `--mock-pc`, which runs nothing | a real PC run, paired Wi-Fi, USB `adb reverse` |
+| Sensors and media | mounted only | level, compass, sound meter, media player, photo picker |
+| Agent trace | see Phase 3 below | on a phone |
+
+The browser refused the request to keep storage permanently in the test (`persisted: false`). Chrome decides this
+by itself and tends to grant it to installed apps, which is untested. Until it is known, use export for backups.
+
+### Details
 
 In Chromium at 375 and 320 px wide, against the real app: wrap-around by arrows, dots, keys and swipe;
 enable, disable, reorder by buttons and by drag; presets across a reload; language; glove mode with

@@ -139,6 +139,10 @@ export const en = {
   'confirm.preset.ok': 'Delete',
   'confirm.hold': 'Press and hold: {label}',
 
+  'pwa.ready': 'Installed, runs with no network',
+  'pwa.update': 'A new version is available',
+  'pwa.reload': 'Update',
+
   'toast.saved': 'Saved',
   'toast.exported': 'Exported: {file}',
   'toast.erased': 'All data erased',

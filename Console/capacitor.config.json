@@ -1,0 +1,13 @@
+{
+  "appId": "work.webagoly.varlerconsole",
+  "appName": "Varler Console",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#121B22"
+  },
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}

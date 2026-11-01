@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- tools/android-setup.js copies this into the Android project. The app content is local; this only permits
+     the ws:// and http connection to the PC bridge over USB (127.0.0.1 via adb reverse) or the LAN. -->
+<network-security-config>
+  <base-config cleartextTrafficPermitted="true">
+    <trust-anchors><certificates src="system" /></trust-anchors>
+  </base-config>
+</network-security-config>
