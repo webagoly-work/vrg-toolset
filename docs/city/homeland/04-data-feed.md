@@ -113,13 +113,17 @@ traffic present. Reduced motion freezes vehicles and shows rates as numbers. The
 
 ## 4.7 Repairing ETW (the user's steps)
 
-Not required for the first slice. It upgrades the grey parts to live.
+**Done by the user on 2026-10-31:** the task's action and the corrected binary. Gépország's panels read the traffic per program
+from it. Only the sensor steps below are still open; they replace that binary, so the task must stop first.
+
+The same sidecar now carries the hardware sensors (CITY-D51 A), so these steps give both.
 
 1. In this repo (normal shell): `node CodeCity/tools/build-etw.js`
-2. Elevated PowerShell: `powershell -NoProfile -ExecutionPolicy Bypass -File H:\VRG\Full\Planner_VRG_U100\CodeCity\etw\install-etw.ps1`
-3. Task Scheduler → *VRG Kodvaros ETW* → Actions → Edit: Program/script
-   `"C:\Program Files\VRG\Kodvaros-ETW\vrg-etw.exe"` with the quotes, and an empty Arguments box.
-4. Run the task once; `Get-ChildItem \\.\pipe\ | Where-Object Name -match vrg` should list `vrg-etw`.
+2. Install PawnIO yourself from its [site](https://pawnio.eu/): the signed **Official** edition, not Unrestricted. Claude never
+   installs it, and vrg-etw runs without it, showing *nincs PawnIO*.
+3. Elevated PowerShell: `Stop-ScheduledTask -TaskName 'VRG Kodvaros ETW'`
+4. Same window: `powershell -NoProfile -ExecutionPolicy Bypass -File H:\VRG\Full\Planner_VRG_U100\CodeCity\etw\install-etw.ps1`
+5. Same window: `Start-ScheduledTask -TaskName 'VRG Kodvaros ETW'`. The HUD then reads *ETW: be · szenzor: be*.
 
 ## 4.8 How a view becomes a node (read from the code)
 

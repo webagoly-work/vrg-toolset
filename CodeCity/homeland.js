@@ -69,6 +69,13 @@ function aggregate(list) {
   return { at: list.length ? list[0].at : 0, secs: list.length, cpu: [r1(avg(cpu)), r1(top(cpu))], ram: [r1(avg(ram)), r1(top(ram))], disk: [Math.round(avg(e => sum(e.disks, d => d.r))), Math.round(avg(e => sum(e.disks, d => d.w))), r1(top(e => Math.max(0, ...e.disks.map(d => d.busy))))],
     net: [Math.round(avg(e => sum(e.nics, x => x.rx))), Math.round(avg(e => sum(e.nics, x => x.tx)))], hard: r1(avg(e => e.mem.hard || 0)), procs: Math.round(avg(e => e.procs.length)), cls };
 }
+// the sidecar's sensor line, taken apart: only the known groups and kinds, numbers as numbers, names cut short
+const SENS_GROUPS = new Set(['cpu', 'board', 'disk']), SENS_KINDS = new Set(['temp', 'fan', 'volt', 'power']);
+function cleanSensors(m) {
+  const list = (Array.isArray(m.list) ? m.list : []).filter(r => r && SENS_GROUPS.has(r.g) && SENS_KINDS.has(r.k) && Number.isFinite(r.v)).slice(0, 200)
+    .map(r => ({ g: r.g, hw: String(r.hw || '').slice(0, 40), k: r.k, n: String(r.n || '').slice(0, 40), v: r.v }));
+  return { at: Date.now(), pawnio: !!m.pawnio, demo: !!m.demo, list };
+}
 const REC_SECS = 10, REC_MAX_LINES = 8640;   // a day at most: a forgotten switch must not fill a drive
 function listRecordings(dir) {
   let names = [];
@@ -81,7 +88,7 @@ function listRecordings(dir) {
 
 function create({ emit, send, run, root, selfPid, dry, recDir }) {
   const rules = loadClasses(path.join(root, 'homeland-classes.json'));
-  const hm = { want: false, st: {}, hw: null, hwBusy: false, gpu: null, smi: null, last: null, rec: null };
+  const hm = { want: false, st: {}, hw: null, hwBusy: false, gpu: null, smi: null, last: null, rec: null, sens: null };
   function recFlush() {
     const r = hm.rec;
     if (!r || !r.buf.length) return;
@@ -125,6 +132,9 @@ function create({ emit, send, run, root, selfPid, dry, recDir }) {
         if (hm.rec.buf.length >= REC_SECS) { recFlush(); if (hm.rec.lines >= REC_MAX_LINES) recStop(); }
       }
     },
+    sensors(m) { hm.sens = cleanSensors(m); emit('hmsens', hm.sens); },
+    sensorsGone() { if (hm.sens) { hm.sens = null; emit('hmsens', { at: Date.now(), pawnio: false, list: [], off: true }); } },
+    get sens() { return hm.sens; },
     // the switch: on only while the feed runs, and it says so
     record(on) {
       if (!on) { recStop(); return false; }
@@ -141,4 +151,4 @@ function create({ emit, send, run, root, selfPid, dry, recDir }) {
   };
 }
 
-module.exports = { create, aggregate, listRecordings, normalise, parseSmi, classify, loadClasses, layerOf, PROTECTED };
+module.exports = { create, cleanSensors, aggregate, listRecordings, normalise, parseSmi, classify, loadClasses, layerOf, PROTECTED };

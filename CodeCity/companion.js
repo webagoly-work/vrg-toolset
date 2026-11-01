@@ -879,7 +879,7 @@ function etwStart() {
   s.on('data', d => { buf += d; let k; while ((k = buf.indexOf('\n')) >= 0) { const l = buf.slice(0, k); buf = buf.slice(k + 1);
     try { etwHandle(JSON.parse(l)); } catch (e) { /* skip */ } } });
   s.on('error', () => {});
-  s.on('close', () => { if (etw.sock !== s) return; etw.sock = null; etw.procs.clear(); etwState('off'); });
+  s.on('close', () => { if (etw.sock !== s) return; etw.sock = null; etw.procs.clear(); hmFeed.sensorsGone(); etwState('off'); });
   etw.sock = s;
 }
 function etwStop() { if (etw.sock) { const s = etw.sock; etw.sock = null; s.destroy(); } etw.procs.clear(); etw.state = 'off'; }
@@ -889,6 +889,7 @@ function etwHandle(m) {
   if (m.t === 'hello') { etw.demo = !!m.demo; etw.state = ''; etwState('on'); }
   else if (m.t === 'procs') { etw.procs.clear(); for (const p of m.list || []) etw.procs.set(p.pid, { ppid: p.ppid, exe: String(p.exe || '') }); }
   else if (m.t === 'proc') { if (m.op === 'stop') setTimeout(() => etw.procs.delete(m.pid), 5000); else etw.procs.set(m.pid, { ppid: m.ppid, exe: String(m.exe || '') }); }
+  else if (m.t === 'sens') hmFeed.sensors(m);
   else if (m.t === 'net') etwCargo(m.list || []);
   else if (m.t === 'file') etwFiles(m.list || []);
   else if (m.t === 'dns') { etw.dns.unshift({ at: Date.now(), exe: m.exe, name: String(m.name || '').slice(0, 120) }); etw.dns.length = Math.min(etw.dns.length, 50); }   // memory only, never sent
@@ -1166,7 +1167,7 @@ const ACTIONS = {
   // a sound tower dragged (KV-22): that program's volume 0..1, or its mute — nothing else reaches the probe
   'hm-feed': { keys: ['on'], async run(b) {
     if (b.on) { probeStart(); hmFeed.on(); } else hmFeed.off();
-    return [200, { ok: true, state: probe.state, hw: hmFeed.hw, rec: hmFeed.recording }];
+    return [200, { ok: true, state: probe.state, hw: hmFeed.hw, rec: hmFeed.recording, sens: hmFeed.sens, etw: etw.state === 'on' }];
   } },
   'hm-rec': { keys: ['on'], async run(b) {
     if (typeof b.on !== 'boolean') return [400, { error: 'on: true/false' }];

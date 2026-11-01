@@ -1,7 +1,8 @@
 // vrg-etw — the Kódváros Tier B sidecar (P11, KV-23; report §1.4, CITY-D17 A, D23 A). Elevated, read-only.
 //
 // One real-time ETW session: Kernel-Network (TCP/UDP send/receive per process: the exact cargo), Kernel-File (reads and
-// writes inside this repo), Kernel-Process (the process tree), and DNS-Client (which name a process looked up). The
+// writes inside this repo), Kernel-Process (the process tree), and DNS-Client (which name a process looked up); and the
+// hardware sensors (Sensors.cs), which need elevation for the same reason. The
 // filters are fixed here: the repo root is baked in at build time (node CodeCity/tools/build-etw.js), it takes no
 // arguments but --demo, and it reads nothing from anyone. Out: JSON lines on the named pipe \\.\pipe\vrg-etw — the
 // current user may read it, nobody may write to it, the network is denied. Nothing is written to disk.
@@ -48,6 +49,7 @@ static class Etw
         StartPipe(demo ? "vrg-etw-demo" : "vrg-etw");
         new Thread(Writer) { IsBackground = true }.Start();
         new Thread(() => { while (true) { Thread.Sleep(1000); Flush(); } }) { IsBackground = true }.Start();
+        new Thread(() => { if (demo) Sensors.Demo(Readers, Send); else Sensors.Loop(Readers, Send); }) { IsBackground = true }.Start();
         return demo ? Demo() : Trace();
     }
 

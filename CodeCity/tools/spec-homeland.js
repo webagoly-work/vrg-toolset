@@ -186,6 +186,13 @@ module.exports = [
     assert.strictEqual((await post('hm-estate', { letter: 'Q:', rescan: false })).status, 404);
     assert.strictEqual((await post('hm-open', { letter: 'Q:', top: 0, kid: 0 })).status, 404);
   } },
+  { name: 'homeland: a sensor line keeps only known groups, kinds and real numbers', async fn() {
+    const c = hm.cleanSensors({ pawnio: 1, list: [{ g: 'cpu', hw: 'CPU', k: 'temp', n: 'Core Average', v: 47.5, serial: 'TITKOS' }, { g: 'gpu', hw: 'x', k: 'temp', n: 'y', v: 1 }, { g: 'cpu', k: 'clock', n: 'z', v: 1 }, { g: 'disk', hw: 'y'.repeat(99), k: 'temp', n: 'T', v: 'forró' }, 7, null] });
+    assert.deepStrictEqual(c.list, [{ g: 'cpu', hw: 'CPU', k: 'temp', n: 'Core Average', v: 47.5 }]);
+    assert.strictEqual(c.pawnio, true);
+    assert.deepStrictEqual(hm.cleanSensors({}).list, []);
+    assert.ok(!/SetSoftware|\.Control\b|Control\.Set/.test(fs.readFileSync(path.join(CITY, 'etw', 'Sensors.cs'), 'utf8')), 'the sidecar only reads: no fan or voltage is ever set');
+  } },
   { name: 'homeland: a recording line is totals and classes; no program name can get in', async fn() {
     const ev = n => ({ at: 1000 + n, cores: [{ u: 40, k: 10 }, { u: 20, k: 10 }], mem: { total: 100, avail: 25, hard: 4 }, disks: [{ r: 100, w: 50, busy: 30 + n }], nics: [{ name: 'titkos halozat', rx: 10, tx: 5 }],
       procs: [{ exe: 'titkos-ugyfel.exe', key: 'titkos-ugyfel.exe', cls: 'other', cpu: 2, ws: 100, hint: 'temp' }, { exe: 'b.exe', key: 'b.exe', cls: 'agent', cpu: 1, ws: 50 }, { exe: 'c.exe', key: 'c.exe', cls: 'agent', cpu: 3, ws: 50 }] });

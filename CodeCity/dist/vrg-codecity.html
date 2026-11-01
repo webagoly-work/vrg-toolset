@@ -3568,6 +3568,8 @@ function liveConnect() {
   live.es.addEventListener('disk', e => { if (liveMine()) diskEvent(JSON.parse(e.data)); });   // 29-land: Tárház
   live.es.addEventListener('hm', e => hmEvent(JSON.parse(e.data)));   // 40-hm-core: Gépország
   live.es.addEventListener('hmhw', e => hmHwEvent(JSON.parse(e.data)));
+  live.es.addEventListener('etwcargo', e => hmCargoEvent(JSON.parse(e.data)));
+  live.es.addEventListener('hmsens', e => hmSensEvent(JSON.parse(e.data)));
   live.es.addEventListener('hmestate', e => hmEstateEvent(JSON.parse(e.data)));
   live.es.addEventListener('power', e => { if (liveMine()) powerEvent(JSON.parse(e.data)); });   // 30-power: Erőmű
   live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
@@ -5911,7 +5913,7 @@ function hmHome(ms = 600) { orbit.target.y = 0; flyCamera(hm.estate ? [0, 0, 0, 
 function hmFeed(on) {
   if (hm.fixture) {
     clearInterval(hm.fxTimer); hm.feed = on ? 'fixture' : 'off';
-    if (on) { hmHwEvent(hmFixtureHw()); hmEvent(hmFixtureEvent()); hm.fxTimer = setInterval(() => hmEvent(hmFixtureEvent()), 1000); }
+    if (on) { hm.etwOn = true; hm.sens = { get at() { return Date.now(); }, pawnio: true, list: [{ g: 'cpu', hw: 'Próba CPU', k: 'temp', n: 'Core Average', v: 47 }, { g: 'cpu', hw: 'Próba CPU', k: 'power', n: 'CPU Package', v: 38 }, { g: 'board', hw: 'Próba alaplap', k: 'fan', n: 'Fan #1', v: 900 }] }; hmHwEvent(hmFixtureHw()); hmEvent(hmFixtureEvent()); hm.fxTimer = setInterval(() => hmEvent(hmFixtureEvent()), 1000); }
     return;
   }
   if (!window.KV_COMPANION) { hm.feed = 'nocomp'; hmHud(); return; }
@@ -5921,7 +5923,7 @@ function hmFeed(on) {
     if (!r) return;
     if (r.status !== 200) hm.feed = 'err';
     if (r.json && r.json.hw) hmHwEvent(r.json.hw);
-    if (r.json) { hm.rec = !!r.json.rec; hmRecPaint(); }
+    if (r.json) { hm.rec = !!r.json.rec; hmRecPaint(); hm.etwOn = !!r.json.etw; if (r.json.sens) hm.sens = r.json.sens; }
     if (r.json && r.json.state === 'missing') hm.feed = 'noprobe';
     hmHud();
   });
@@ -5936,6 +5938,28 @@ function hmEvent(d) {
   hmHud();
   hmPanel();
 }
+// the elevated sidecar's readings; a reading older than 20 s is no reading
+function hmSensEvent(d) { hm.sens = d.off ? null : d; hm.etwOn = !d.off; hmHud(); hmPanel(); }
+function hmSensor(g, k, hw) {
+  const s = hm.sens;
+  if (!s || Date.now() - s.at > 20000) return [];
+  return s.list.filter(r => r.g === g && r.k === k && (!hw || hw.startsWith(r.hw) || r.hw.startsWith(hw)));
+}
+function hmCpuTemp() { const l = hmSensor('cpu', 'temp'); return (l.find(r => /average/i.test(r.n)) || l.find(r => /package/i.test(r.n)) || l[0] || {}).v; }
+function hmSensWord() {
+  if (!hm.etwOn) return 'ETW: ki · szenzor: ki';
+  if (!hm.sens) return 'ETW: be · szenzor: ki';   // an older sidecar sends none
+  return `ETW: be · szenzor: ${hm.sens.pawnio ? 'be' : 'nincs PawnIO'}`;
+}
+// ETW's exact traffic per program, summed by name; it is already on the stream for the Land, so nothing is measured twice
+function hmCargoEvent(d) {
+  if (vw.id !== 'homeland') return;
+  const by = new Map();
+  for (const p of d.list || []) { const k = p.exe.toLowerCase(), g = by.get(k) || { exe: p.exe, rx: 0, tx: 0 }; g.rx += p.rx; g.tx += p.tx; by.set(k, g); }
+  hm.cargo = { at: d.at, by };
+  hm.etwOn = true;
+}
+const hmCargo = () => (hm.scrub == null && hm.cargo && Date.now() - hm.cargo.at < 5000 ? hm.cargo.by : null);
 function hmHwEvent(d) { hm.hw = d; hmHwApply(d); hmHud(); hmPanel(); if (hm.ePending) hmEstateOpen(); else if (hm.estate) { hmEstateDraw(); hmDrivesPaint(); } }
 
 // ---- the HUD: the state's budget in one line, the switches, the layer rail
@@ -5986,10 +6010,10 @@ function hmHud() {
   const eng = (e.gpu && e.gpu.eng) || {}, gpu = Math.min(100, Object.values(eng).reduce((a, v) => Math.max(a, v), 0));
   const disk = Math.max(0, ...e.disks.map(d => d.busy)), rx = e.nics.reduce((a, n) => a + n.rx, 0), tx = e.nics.reduce((a, n) => a + n.tx, 0);
   const obs = e.obsCpu != null ? e.obsCpu : e.procs.filter(p => p.obs).reduce((a, p) => a + p.cpu, 0), hints = new Set(e.procs.filter(p => p.hint).map(p => p.key)).size;
-  el.innerHTML = `<b>Gépország</b> <span>CPU <b>${hmPct(cpu)}</b></span><span>RAM <b>${hmPct(ram)}</b></span><span>GPU <b>${hmPct(gpu)}</b>${e.gpu && e.gpu.temp != null ? ` · ${Math.round(e.gpu.temp)} °C` : ''}</span>` +
+  el.innerHTML = `<b>Gépország</b> <span>CPU <b>${hmPct(cpu)}</b>${hmCpuTemp() != null ? ` · ${Math.round(hmCpuTemp())} °C` : ''}</span><span>RAM <b>${hmPct(ram)}</b></span><span>GPU <b>${hmPct(gpu)}</b>${e.gpu && e.gpu.temp != null ? ` · ${Math.round(e.gpu.temp)} °C` : ''}</span>` +
     `<span>lemez <b>${hmPct(disk)}</b></span><span>háló ↓${hmRate(rx)} ↑${hmRate(tx)}</span><span>${hu(e.procs.reduce((a, p) => a + (p.n || 1), 0))} folyamat</span>` +
     (hints ? `<span class="warn">${hints} gyanús jel</span>` : '') + (hm.rec ? '<span class="warn">● felvétel fut</span>' : '') +
-    `<span class="dim" title="A szonda ideje mintánként és a megfigyelő saját CPU-ja: a mérés is a gépen fut">megfigyelő ${e.ms} ms · ${obs.toFixed(1)} %</span><span class="dim">ETW: ki</span>`;
+    `<span class="dim" title="A szonda ideje mintánként és a megfigyelő saját CPU-ja: a mérés is a gépen fut">megfigyelő ${e.ms} ms · ${obs.toFixed(1)} %</span><span class="dim">${hmSensWord()}</span>`;
 }
 
 // ---- layers: PgDn peels the surface off, nothing vanishes: it fades to a ghost above the layer you look at
@@ -6045,7 +6069,7 @@ function hmPanel() {
   switch (t.id) {
     case 'fab': {
       const cpu = e.cores.reduce((a, c) => a + c.u + c.k, 0) / Math.max(1, e.cores.length);
-      return P('Gyárnegyed · CPU', [['Egység', esc((hw.cpu && hw.cpu.name) || '—')], ['Terhelés', hmPct(cpu)], ['Órajel', hmNum(s.mhz * (s.perf || 100) / 100) + ' MHz'], ['Váltás', hmNum(s.ctx) + ' /s'], ['Rendszerhívás', hmNum(s.sys) + ' /s']], 'M', 'NtQuerySystemInformation, PDH · 1 s',
+      return P('Gyárnegyed · CPU', [['Egység', esc((hw.cpu && hw.cpu.name) || '—')], ['Terhelés', hmPct(cpu)], ['Órajel', hmNum(s.mhz * (s.perf || 100) / 100) + ' MHz'], ...(hmCpuTemp() != null ? [['Hőmérséklet', Math.round(hmCpuTemp()) + ' °C']] : []), ...hmSensor('cpu', 'power').filter(r => /package/i.test(r.n)).map(r => ['Teljesítmény', r.v.toFixed(0) + ' W']), ['Váltás', hmNum(s.ctx) + ' /s'], ['Rendszerhívás', hmNum(s.sys) + ' /s']], 'M', 'NtQuerySystemInformation, PDH · 1 s',
         `<ul class="hm-bars">${e.cores.map((c, i) => `<li><span>${Math.floor(i / 2) + 1}${'AB'[i % 2]}</span><i style="width:${Math.min(100, c.u + c.k)}%"></i></li>`).join('')}</ul>`);
     }
     case 'market': {
@@ -6064,7 +6088,10 @@ function hmPanel() {
       const kern = e.cores.reduce((a, c) => a + c.k, 0) / Math.max(1, e.cores.length);
       return P('Palota · kernel', [['Kernel CPU', hmPct(kern)], ['Rendszerhívás', hmNum(s.sys) + ' /s'], ['Megszakítás', hmNum(s.irq) + ' /s'], ['DPC', hmPct(s.dpc)]], 'M', 'PDH · 1 s');
     }
-    case 'harbour': return P('Tengeri kikötő · hálózat', [...e.nics.map(n => [esc(n.name.slice(0, 26)), `↓${hmRate(n.rx)} ↑${hmRate(n.tx)}`])], 'M', 'PDH Network Interface · 1 s', '<p class="dim">Folyamatonkénti forgalom az ETW-vel jön.</p>');
+    case 'harbour': {
+      const by = hmCargo(), top = by ? [...by.values()].sort((a, b) => b.rx + b.tx - a.rx - a.tx).slice(0, 6) : [];
+      return P('Tengeri kikötő · hálózat', [...e.nics.map(n => [esc(n.name.slice(0, 26)), `↓${hmRate(n.rx)} ↑${hmRate(n.tx)}`]), ...top.map(g => [esc(g.exe.slice(0, 26)), `↓${hmRate(g.rx)} ↑${hmRate(g.tx)}`])], 'M', by ? 'PDH Network Interface · 1 s; ETW · 1 s' : 'PDH Network Interface · 1 s', by ? '' : '<p class="dim">Programonkénti forgalom az ETW-vel jön.</p>');
+    }
     case 'barracks': {
       const on = hmFold(e.procs.filter(p => p.cls === 'military'));
       return P('Laktanya · vírusirtók', on.map(g => [esc(g.exe), `${g.cpu.toFixed(1)} % · ${hmMB(g.ws)}`]), 'M', 'folyamatlista · 1 s', '<p class="dim">Az őrjárat jelkép; a jelenlét és a terhelés mért.</p>');
@@ -6073,14 +6100,14 @@ function hmPanel() {
   }
   if (t.disk) {
     const d = e.disks.find(x => x.letters.includes(t.disk)), inv = (hw.disks || []).find(x => (x.vols || []).some(v => v.letter === t.disk)), vol = inv && inv.vols.find(v => v.letter === t.disk);
-    return P(`${t.name} · ${t.disk}`, [['Lemez', esc((inv && inv.model) || '—')], ['Olvasás', d ? hmRate(d.r) : '—'], ['Írás', d ? hmRate(d.w) : '—'], ['Foglaltság', d ? hmPct(d.busy) : '—'], ['Sor', d ? hmNum(d.q) : '—'], ['Szabad', vol ? `${hmGB(vol.free)} / ${hmGB(vol.size)}` : '—']], 'M', 'PDH PhysicalDisk · 1 s',
+    return P(`${t.name} · ${t.disk}`, [['Lemez', esc((inv && inv.model) || '—')], ['Olvasás', d ? hmRate(d.r) : '—'], ['Írás', d ? hmRate(d.w) : '—'], ['Foglaltság', d ? hmPct(d.busy) : '—'], ['Sor', d ? hmNum(d.q) : '—'], ['Szabad', vol ? `${hmGB(vol.free)} / ${hmGB(vol.size)}` : '—'], ...hmSensor('disk', 'temp', inv && inv.model).slice(0, 1).map(r => ['Hőmérséklet', Math.round(r.v) + ' °C'])], 'M', 'PDH PhysicalDisk · 1 s',
       '<p class="dim">Melyik program használja: az ETW-vel jön.</p>');
   }
   hmPanelStatic(t);
 }
 function hmPanelStatic(t) {
   const hw = hm.hw || {}, b = hw.bios || {};
-  if (t.id === 'bedrock') return openPanel('Alapkő · firmware', [['Alaplap', esc(hw.board || '—')], ['UEFI', esc(`${b.maker || ''} ${b.version || ''}`)], ['Dátum', esc(b.date || '—')]], hmFooter('M', 'Win32_BIOS'));
+  if (t.id === 'bedrock') return openPanel('Alapkő · firmware', [['Alaplap', esc(hw.board || '—')], ['UEFI', esc(`${b.maker || ''} ${b.version || ''}`)], ['Dátum', esc(b.date || '—')], ...hmSensor('board', 'fan').map(r => [esc(r.n), hmNum(r.v) + ' /perc']), ...hmSensor('board', 'temp').slice(0, 4).map(r => [esc(r.n), Math.round(r.v) + ' °C'])], hmFooter('M', hm.sens ? 'Win32_BIOS; LibreHardwareMonitor · 5 s' : 'Win32_BIOS'));
   openPanel(t.name || '—', [], hmFooter(t.tag || 'J', ''));
 }
 // a program: one row per fact; closing needs a second click (CITY-D47 B) and goes through its windows' own close
@@ -6094,7 +6121,7 @@ function hmProgPanel(key) {
     ? `<p class="warn">Bezárod a(z) ${esc(g.exe)} ${g.win} ablakát? A program még rákérdezhet a mentésre.</p><button class="btn" data-hmclose="yes">Igen, bezárom</button> <button class="btn" data-hmclose="no">Mégse</button>`
     : '<button class="btn" data-hmclose="ask">Program bezárása…</button>';
   openPanel(g.exe, [['Réteg', layer + (g.s === 0 ? ' · 0. munkamenet' : '')], ['Osztály', esc(g.cls)], ['Folyamat', hu(g.n)], ['Szál', hu(g.th)], ['CPU', g.cpu.toFixed(1) + ' %'], ['Munkakészlet', hmMB(g.ws)], ['Saját', hmMB(g.priv)],
-    ['I/O', `be ${hmRate(g.r)} · ki ${hmRate(g.w)}`], ['Lapbetöltés', hmNum(g.hard) + ' /s'], ['Ablak', hu(g.win)], ['Indította', parent ? esc(parent.exe) : '—']], hint + btn + hmFooter('M', 'NtQuerySystemInformation · 1 s; az I/O a hálózatot is tartalmazza'));
+    ['I/O', `be ${hmRate(g.r)} · ki ${hmRate(g.w)}`], ...(hmCargo() && hmCargo().has(key) ? [['Hálózat', `↓${hmRate(hmCargo().get(key).rx)} ↑${hmRate(hmCargo().get(key).tx)}`]] : []), ['Lapbetöltés', hmNum(g.hard) + ' /s'], ['Ablak', hu(g.win)], ['Indította', parent ? esc(parent.exe) : '—']], hint + btn + hmFooter('M', `NtQuerySystemInformation · 1 s; az I/O a hálózatot is tartalmazza${hmCargo() ? '; hálózat: ETW · 1 s' : ''}`));
   const box = $('panel');
   box.querySelectorAll('[data-hmclose]').forEach(b => { b.onclick = () => hmCloseStep(b.dataset.hmclose, key); });
 }

@@ -91,10 +91,16 @@ module.exports = [
     assert.ok(c2 && c2.data.list[0].claude === true, 'the clone is not marked as started by Claude');
     assert.ok(!/"pid"/.test(events.filter(e => e.name === 'agents').map(e => JSON.stringify(e.data)).join('')), 'the session pid reached the page');
   } },
+  { name: 'etw: a sensor line reaches the page as hmsens, cleaned', async fn() {
+    send({ t: 'sens', pawnio: false, list: [{ g: 'cpu', hw: 'CPU', k: 'temp', n: 'Core Average', v: 47.5 }, { g: 'gpu', hw: 'x', k: 'temp', n: 'y', v: 1 }] });
+    const s = await waitFor(e => e.name === 'hmsens', 3000);
+    assert.ok(s && s.data.list.length === 1 && s.data.list[0].v === 47.5 && s.data.pawnio === false, JSON.stringify(s));
+  } },
   { name: 'etw: the pipe closing turns it off', async fn() {
     const from = events.length;
     pipeConn.destroy(); pipeServer.close();
     const off = await waitFor(e => e.name === 'etw' && e.data.state === 'off' && events.indexOf(e) >= from, 4000);
     assert.ok(off, 'not off');
+    assert.ok(await waitFor(e => e.name === 'hmsens' && e.data.off && events.indexOf(e) >= from, 2000), 'the sensors stay as last seen');
   } }
 ];

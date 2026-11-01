@@ -84,7 +84,9 @@ Three reasons the physical view is not what the user wants, even if it could be 
 | PSU power | No sensor; GPU power reads N/A on the 1050 Ti | Power station stays metaphor |
 | Keystrokes, window titles, command lines, file names in the page | **Refused on principle**, CITY-D27 A | Classes and counts only |
 
-## 3.5 Finding: ETW is off, for two separate reasons
+## 3.5 Finding: ETW was off, for two separate reasons
+
+**Fixed by the user on 2026-10-31** with the steps in [04-data-feed.md](04-data-feed.md) §4.7; kept as the record of why.
 
 Both reasons need the user. Claude changes neither (CITY-D17 A).
 

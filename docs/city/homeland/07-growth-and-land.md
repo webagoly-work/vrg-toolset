@@ -44,7 +44,7 @@ for area; the farm imagery is the rendering.
 | **S2a ✔ 2026-10-31** | Növekedés plan with the rearranging move and the replay | S1 |
 | **S2b ✔ 2026-11-01** | Birtok land view: every drive (CITY-D52 A) | S2a |
 | **S3a ✔ 2026-11-01** | The 15-minute memory history with look-back, the opt-in recording | S2 |
-| **S3b** | ETW upgrades, sensors through LibreHardwareMonitor, physical page view | The user's elevated steps; the CITY-D53 answer |
+| **S3b** | Sensors (built, waits on PawnIO), traffic per program (live), ETW disk and fault keywords, physical page view | The user's elevated steps |
 
 **S1 as built:** `CodeCity/probe/Homeland.cs`, `CodeCity/homeland.js`, `homeland-classes.json`, `probe-hw.ps1`,
 `src/40-hm-core.js`, `41-hm-island.js`, `42-hm-city.js`, `tools/spec-homeland.js`. Open with START → K → G or
@@ -65,9 +65,12 @@ or ← → looks back, and End or Élő returns. Decided in the build:
   totals and per-class CPU and memory. No program, folder or file name can reach it (`aggregate()`, tested).
   Files go to `.cache/homeland/`, which is gitignored; the *Felvételek* panel lists them with their peaks.
 
-**CITY-D53, open (sensors):** LibreHardwareMonitor moved from WinRing0 to PawnIO in 0.9.5 and 0.9.6 updates its PawnIO modules.
-Projects that bundle it say PawnIO must be installed for CPU metrics. PawnIO is a separate, third-party kernel driver, by
-namazso, installed with its own setup program and with admin rights. Nothing has been installed, and the install is the user's.
+**CITY-D53 A (sensors), built, waiting on the user's install:** `CodeCity/etw/Sensors.cs` reads CPU, board and disk sensors through
+LibreHardwareMonitorLib 0.9.6 (MPL-2.0, pinned by hash), inside the elevated `vrg-etw`, while someone reads the pipe. Read-only: no
+fan or voltage is set. Checked before adding it: neither the library nor its dependencies contain service-creation calls or a
+PawnIO installer, only an "is it installed" check and the Pawn modules. PawnIO itself is a third-party kernel driver by namazso;
+its install is the user's. A real unelevated run on this PC read the CPU's name and power rows with `pawnio:false`, no temperature,
+and left no driver behind. Temperatures and fans are therefore **not yet seen on real hardware**. Steps: [04-data-feed.md](04-data-feed.md) §4.7.
 
 **S2b as built:** `CodeCity/probe/Estate.cs` (`vrg-probe --estate`), `CodeCity/estate-walk.js` (the fallback),
 `src/45-hm-estate-plan.js` (pure, tested), `46-hm-estate.js`. The Birtok button or key B opens it, the drive buttons switch,
