@@ -76,6 +76,19 @@ function cleanSensors(m) {
     .map(r => ({ g: r.g, hw: String(r.hw || '').slice(0, 40), k: r.k, n: String(r.n || '').slice(0, 40), v: r.v }));
   return { at: Date.now(), pawnio: !!m.pawnio, demo: !!m.demo, list };
 }
+// the sidecar's disk line: bytes per program and disk, nothing else gets through
+function cleanDisk(m) {
+  const list = (Array.isArray(m.list) ? m.list : []).filter(r => r && Number.isInteger(r.disk) && Number.isFinite(r.r) && Number.isFinite(r.w)).slice(0, 24)
+    .map(r => ({ exe: String(r.exe || '').slice(0, 60), disk: r.disk, r: r.r, w: r.w }));
+  return { at: Date.now(), list };
+}
+// the page map from the sidecar: its shape checked, null when it is anything else
+function cleanPages(m) {
+  const nums = (a, n) => Array.isArray(a) && a.length === n && a.every(v => Number.isFinite(v) && v >= 0);
+  if (!m || m.ok !== true || !nums(m.lists, 8) || !nums(m.uses, 12) || !Number.isFinite(m.gran) || !Number.isFinite(m.seen)) return null;
+  if (!/^[0-7.]{4096}$/.test(String(m.l)) || !/^[0-9ab.]{4096}$/.test(String(m.u))) return null;
+  return { at: Date.now(), ms: +m.ms || 0, gran: m.gran, seen: m.seen, lists: m.lists, uses: m.uses, l: m.l, u: m.u, demo: !!m.demo };
+}
 const REC_SECS = 10, REC_MAX_LINES = 8640;   // a day at most: a forgotten switch must not fill a drive
 function listRecordings(dir) {
   let names = [];
@@ -135,6 +148,7 @@ function create({ emit, send, run, root, selfPid, dry, recDir }) {
     sensors(m) { hm.sens = cleanSensors(m); emit('hmsens', hm.sens); },
     sensorsGone() { if (hm.sens) { hm.sens = null; emit('hmsens', { at: Date.now(), pawnio: false, list: [], off: true }); } },
     get sens() { return hm.sens; },
+    disk(m) { emit('hmdisk', cleanDisk(m)); },
     // the switch: on only while the feed runs, and it says so
     record(on) {
       if (!on) { recStop(); return false; }
@@ -151,4 +165,4 @@ function create({ emit, send, run, root, selfPid, dry, recDir }) {
   };
 }
 
-module.exports = { create, cleanSensors, aggregate, listRecordings, normalise, parseSmi, classify, loadClasses, layerOf, PROTECTED };
+module.exports = { create, cleanSensors, cleanDisk, cleanPages, aggregate, listRecordings, normalise, parseSmi, classify, loadClasses, layerOf, PROTECTED };

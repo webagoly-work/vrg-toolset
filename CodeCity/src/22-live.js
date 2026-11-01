@@ -121,6 +121,7 @@ function liveConnect() {
   live.es.addEventListener('hm', e => hmEvent(JSON.parse(e.data)));   // 40-hm-core: Gépország
   live.es.addEventListener('hmhw', e => hmHwEvent(JSON.parse(e.data)));
   live.es.addEventListener('etwcargo', e => hmCargoEvent(JSON.parse(e.data)));
+  live.es.addEventListener('hmdisk', e => hmDiskEvent(JSON.parse(e.data)));
   live.es.addEventListener('hmsens', e => hmSensEvent(JSON.parse(e.data)));
   live.es.addEventListener('hmestate', e => hmEstateEvent(JSON.parse(e.data)));
   live.es.addEventListener('power', e => { if (liveMine()) powerEvent(JSON.parse(e.data)); });   // 30-power: Erőmű

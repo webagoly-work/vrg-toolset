@@ -46,7 +46,7 @@ This is the hard one, so the answer is split into what "reached" can mean.
 | Which of its pages are in RAM right now? | **Yes** for own processes | `QueryWorkingSetEx` by page | Costly on large processes; on demand only |
 | Is it paging in from disk? | **Yes**, with ETW | Hard-fault events (system total without ETW) | Tier B |
 | What is the machine's memory mix? | **Yes** | Page-list counters | Standby, Modified, Free and Zero, pools, all readable |
-| **Which physical address does it use?** | **Not unelevated** | PFN database through the undocumented `SystemSuperfetchInformation` query, which RAMMap uses; admin required | Not attempted |
+| **Which physical address does it use?** | **Not unelevated** | PFN database through the undocumented `SystemSuperfetchInformation` query, which RAMMap uses; admin required | Built (`etw/Pages.cs`); not yet run elevated. Unelevated: access denied |
 | **Which bytes did it actually touch just now?** | **No** | The CPU does not report this to user mode, and accessed bits are not exposed | Not available in any practical tier |
 
 Three reasons the physical view is not what the user wants, even if it could be had:
@@ -68,8 +68,8 @@ Three reasons the physical view is not what the user wants, even if it could be 
   memory", and it is more interesting than physical frames, because the regions have meaning: you can see the DLLs it
   mapped and how much is reserved but never used.
 - **Reach, as a rate:** dump trucks show hard faults, so "it just had to fetch memory from disk" is visible with ETW.
-- **Later, if wanted** (CITY-D44 B): a RAMMap-style physical view is possible later through the elevated sidecar.
-  It would be a curiosity, and it relies on an undocumented interface, so it is not recommended.
+- **The physical view, as the user chose** (CITY-D44 B): the market's *Fizikai lapok…* button, through the elevated sidecar. It says
+  on its face that the pattern means nothing, and each reading is checked against the page-list counters. It shows no program.
 
 ## 3.4 Other things that cannot be seen
 

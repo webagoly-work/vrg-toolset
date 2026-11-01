@@ -193,6 +193,15 @@ module.exports = [
     assert.deepStrictEqual(hm.cleanSensors({}).list, []);
     assert.ok(!/SetSoftware|\.Control\b|Control\.Set/.test(fs.readFileSync(path.join(CITY, 'etw', 'Sensors.cs'), 'utf8')), 'the sidecar only reads: no fan or voltage is ever set');
   } },
+  { name: 'homeland: a page map passes only with its exact shape; a disk line keeps only bytes', async fn() {
+    const good = { ok: true, gran: 256, seen: 9, ms: 1, lists: Array(8).fill(1), uses: Array(12).fill(0), l: '6'.repeat(4096), u: 'a'.repeat(4096), secret: 'TITKOS' };
+    const c = hm.cleanPages(good);
+    assert.ok(c && c.seen === 9 && !('secret' in c));
+    for (const bad of [null, { ok: false }, { ...good, lists: [1] }, { ...good, l: '6'.repeat(4095) }, { ...good, l: '9'.repeat(4096) }, { ...good, u: '<'.repeat(4096) }, { ...good, gran: 'x' }]) assert.strictEqual(hm.cleanPages(bad), null);
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(hm.cleanDisk({ list: [{ exe: 'a.exe', disk: 1, r: 5, w: 6, path: 'C:/titok' }, { exe: 'b', disk: 'x', r: 1, w: 1 }, 7] }).list)), [{ exe: 'a.exe', disk: 1, r: 5, w: 6 }]);
+    const pagesCs = fs.readFileSync(path.join(CITY, 'etw', 'Pages.cs'), 'utf8');
+    assert.ok(/PipeDirection\.Out/.test(pagesCs) && !/PipeDirection\.(In|InOut)/.test(pagesCs), 'the page pipe takes no input');
+  } },
   { name: 'homeland: a recording line is totals and classes; no program name can get in', async fn() {
     const ev = n => ({ at: 1000 + n, cores: [{ u: 40, k: 10 }, { u: 20, k: 10 }], mem: { total: 100, avail: 25, hard: 4 }, disks: [{ r: 100, w: 50, busy: 30 + n }], nics: [{ name: 'titkos halozat', rx: 10, tx: 5 }],
       procs: [{ exe: 'titkos-ugyfel.exe', key: 'titkos-ugyfel.exe', cls: 'other', cpu: 2, ws: 100, hint: 'temp' }, { exe: 'b.exe', key: 'b.exe', cls: 'agent', cpu: 1, ws: 50 }, { exe: 'c.exe', key: 'c.exe', cls: 'agent', cpu: 3, ws: 50 }] });

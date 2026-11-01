@@ -44,7 +44,7 @@ for area; the farm imagery is the rendering.
 | **S2a ✔ 2026-10-31** | Növekedés plan with the rearranging move and the replay | S1 |
 | **S2b ✔ 2026-11-01** | Birtok land view: every drive (CITY-D52 A) | S2a |
 | **S3a ✔ 2026-11-01** | The 15-minute memory history with look-back, the opt-in recording | S2 |
-| **S3b** | Sensors (built, waits on PawnIO), traffic per program (live), ETW disk and fault keywords, physical page view | The user's elevated steps |
+| **S3b** | Sensors, disk I/O per program, physical page map (all built, wait on the reinstall; sensors also on PawnIO), traffic per program (live) | The user's elevated steps |
 
 **S1 as built:** `CodeCity/probe/Homeland.cs`, `CodeCity/homeland.js`, `homeland-classes.json`, `probe-hw.ps1`,
 `src/40-hm-core.js`, `41-hm-island.js`, `42-hm-city.js`, `tools/spec-homeland.js`. Open with START → K → G or
@@ -71,6 +71,22 @@ fan or voltage is set. Checked before adding it: neither the library nor its dep
 PawnIO installer, only an "is it installed" check and the Pawn modules. PawnIO itself is a third-party kernel driver by namazso;
 its install is the user's. A real unelevated run on this PC read the CPU's name and power rows with `pawnio:false`, no temperature,
 and left no driver behind. Temperatures and fans are therefore **not yet seen on real hardware**. Steps: [04-data-feed.md](04-data-feed.md) §4.7.
+
+**S3b, the rest as built:** all of it comes with one reinstall of `vrg-etw`. Not yet run elevated, so none of it is seen on real data:
+
+- **Disk I/O per program** (`Keywords.DiskIO`, plus `Thread` because a disk event names a thread): bytes per program and disk, top 24,
+  once a second, on the disk panels and as a program's *Lemez* row. No file name leaves the sidecar. Work with no owner counts as System.
+  **No hard-fault keyword:** the process snapshot already counts hard faults per program, so ETW would add cost and no fact.
+- **The physical page map** (`etw/Pages.cs`, `src/48-hm-pages.js`, CITY-D44 B): the market's *Fizikai lapok…* button. Every frame, folded
+  into 64 × 64 cells by address, by list or by use, with totals. Program and file are never read.
+  - **On request only:** connecting to a second one-way pipe, `vrg-etw-pages`, is the request, so the sidecar still takes no input. No timer; a result stands for 10 s.
+  - **Undocumented, so checked:** each reading is compared with the live page-list counters. Over 10 % off and the panel warns and tags it K.
+    A refusal shows its reason. Unelevated, the query was refused with access denied (0xC0000022), so the layout itself is unproven.
+  - **Privileges:** debug and profile are switched on in this process only, for the scan, and back off after it. No system setting changes.
+
+**Found while testing:** ETW names a program without `.exe`, so the *Hálózat* row of the previous commit never matched; names are now
+normalised (`hmExeKey`). In Gépország the HUD bar covered the panel's title and ×; the panel now starts below it. An open `#hmtest=1` page
+took live ETW lines onto the made-up city; the three ETW events now stop at the fixture.
 
 **S2b as built:** `CodeCity/probe/Estate.cs` (`vrg-probe --estate`), `CodeCity/estate-walk.js` (the fallback),
 `src/45-hm-estate-plan.js` (pure, tested), `46-hm-estate.js`. The Birtok button or key B opens it, the drive buttons switch,

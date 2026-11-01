@@ -66,7 +66,8 @@ HWiNFO (opt) ───▶│ adapter ─────┘                         
 | `probe/Program.cs` + new `probe/Homeland.cs` | A `hm` command over stdin turns the 1 Hz feed on and off |
 | `companion.js` | Pass `hm` lines through; a `homeland` action from the page; start on demand |
 | `CodeCity/homeland.js` (new) | Node module: adapters, normaliser, classes, ring buffer. Testable alone with fixture lines |
-| `etw/Program.cs` | More keywords (disk I/O, hard faults, image load) and a by-volume filter, off unless asked. Needs rebuild and the user's reinstall |
+| `etw/Program.cs` | Disk I/O per program, built. Hard faults need no keyword: the process snapshot has them per program. Needs the user's reinstall |
+| `etw/Pages.cs` | The physical page map on its own one-way pipe, `vrg-etw-pages`, on request. Needs the user's reinstall |
 | `homeland-classes.json` (new) | Rule file: exe or folder pattern → archetype. No real client names |
 | `tools/selftest.js` | Spec for the normaliser, the privacy strip and the fixture mark |
 
@@ -114,7 +115,8 @@ traffic present. Reduced motion freezes vehicles and shows rates as numbers. The
 ## 4.7 Repairing ETW (the user's steps)
 
 **Done by the user on 2026-10-31:** the task's action and the corrected binary. Gépország's panels read the traffic per program
-from it. Only the sensor steps below are still open; they replace that binary, so the task must stop first.
+from it. The steps below are still open: they replace that binary with one that also has the sensors, disk I/O per program and
+the page map, so the task must stop first.
 
 The same sidecar now carries the hardware sensors (CITY-D51 A), so these steps give both.
 
@@ -123,7 +125,8 @@ The same sidecar now carries the hardware sensors (CITY-D51 A), so these steps g
    installs it, and vrg-etw runs without it, showing *nincs PawnIO*.
 3. Elevated PowerShell: `Stop-ScheduledTask -TaskName 'VRG Kodvaros ETW'`
 4. Same window: `powershell -NoProfile -ExecutionPolicy Bypass -File H:\VRG\Full\Planner_VRG_U100\CodeCity\etw\install-etw.ps1`
-5. Same window: `Start-ScheduledTask -TaskName 'VRG Kodvaros ETW'`. The HUD then reads *ETW: be · szenzor: be*.
+5. Same window: `Start-ScheduledTask -TaskName 'VRG Kodvaros ETW'`. The HUD then reads *ETW: be · szenzor: be*, a disk panel lists its programs, and the
+   market's *Fizikai lapok…* draws the map.
 
 ## 4.8 How a view becomes a node (read from the code)
 

@@ -17,7 +17,7 @@ const CITY = path.resolve(__dirname, '..');
 const fx = fs.mkdtempSync(path.join(os.tmpdir(), 'kv-etw-'));
 const PIPE = '\\\\.\\pipe\\vrg-etw-spec-' + process.pid;
 const put = (p, s) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, s); };
-let srv = null, raw = '', pipeConn = null, pipeServer = null;
+let srv = null, raw = '', pipeConn = null, pipeServer = null, token = '';
 const events = [];
 const send = o => pipeConn.write(JSON.stringify(o) + '\n');
 async function start() {
@@ -44,6 +44,7 @@ async function start() {
   process.on('exit', () => { child.kill(); try { fs.rmSync(fx, { recursive: true, force: true }); } catch (e) { /* busy */ } });
   const page = await new Promise((res, rej) => { const r = http.request({ host: '127.0.0.1', port, path: '/', headers: { Host: '127.0.0.1:' + port } }, x => { x.resume(); res(x); }); r.on('error', rej); r.end(); });
   const cookie = String((page.headers['set-cookie'] || [''])[0]).split(';')[0];
+  token = fs.readFileSync(path.join(fx, 'CodeCity', '.companion-token'), 'utf8').trim();
   http.request({ host: '127.0.0.1', port, path: '/api/stream', headers: { Host: '127.0.0.1:' + port, Cookie: cookie } }, res => {
     let buf = '';
     res.on('data', d => {
@@ -58,6 +59,13 @@ async function start() {
   }).end();
   await connected;   // the segéd dials the pipe once a page listens
   return srv;
+}
+function post(action, body) {
+  return new Promise((resolve, reject) => {
+    const s = JSON.stringify(body), r = http.request({ host: '127.0.0.1', port: srv.port, path: '/api/' + action, method: 'POST', headers: { Host: '127.0.0.1:' + srv.port, 'Content-Type': 'application/json', 'X-Kodvaros-Token': token, 'Content-Length': Buffer.byteLength(s) } },
+      x => { let b = ''; x.on('data', d => { b += d; }); x.on('end', () => resolve({ status: x.statusCode, json: JSON.parse(b || '{}') })); });
+    r.on('error', reject); r.end(s);
+  });
 }
 const waitFor = (pred, ms) => new Promise(resolve => { const t0 = Date.now(); const tick = () => { const e = events.find(pred); if (e || Date.now() - t0 > ms) resolve(e || null); else setTimeout(tick, 50); }; tick(); });
 
@@ -95,6 +103,24 @@ module.exports = [
     send({ t: 'sens', pawnio: false, list: [{ g: 'cpu', hw: 'CPU', k: 'temp', n: 'Core Average', v: 47.5 }, { g: 'gpu', hw: 'x', k: 'temp', n: 'y', v: 1 }] });
     const s = await waitFor(e => e.name === 'hmsens', 3000);
     assert.ok(s && s.data.list.length === 1 && s.data.list[0].v === 47.5 && s.data.pawnio === false, JSON.stringify(s));
+  } },
+  { name: 'etw: a disk line reaches the page as hmdisk, without anything but bytes', async fn() {
+    send({ t: 'disk', list: [{ exe: 'git', disk: 0, r: 10, w: 20, path: 'C:/titok' }] });
+    const d = await waitFor(e => e.name === 'hmdisk', 3000);
+    assert.ok(d && d.data.list[0].exe === 'git' && !('path' in d.data.list[0]), JSON.stringify(d));
+    assert.ok(!raw.includes('C:/titok'), 'a path on the wire');
+  } },
+  { name: 'etw: hm-pages: an old sidecar has no second pipe, a new one answers once, a refusal keeps its reason', async fn() {
+    const before = await post('hm-pages', {});
+    assert.strictEqual(before.json.why, 'old', JSON.stringify(before.json));
+    const answers = [{ t: 'pages', ok: true, ms: 1, gran: 256, seen: 9, lists: Array(8).fill(1), uses: Array(12).fill(0), l: '6'.repeat(4096), u: 'a'.repeat(4096) }, { t: 'pages', ok: false, why: 'xC0000022' }];
+    const pages = net.createServer(c => { c.end(JSON.stringify(answers.shift()) + '\n'); });
+    await new Promise(r => pages.listen(PIPE + '-pages', r));
+    const got = await post('hm-pages', {});
+    assert.ok(got.status === 200 && got.json.pages && got.json.pages.seen === 9, JSON.stringify(got.json).slice(0, 200));
+    const refused = await post('hm-pages', {});
+    assert.ok(!refused.json.pages && refused.json.why === 'xC0000022', JSON.stringify(refused.json));
+    pages.close();
   } },
   { name: 'etw: the pipe closing turns it off', async fn() {
     const from = events.length;

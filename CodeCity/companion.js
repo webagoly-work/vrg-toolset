@@ -93,6 +93,7 @@
 // by a process whose ancestor is a Claude session (Bash, git, node …) becomes that session's 'beam' (via: the exe).
 // The process tree and DNS names stay in memory only (CITY-D27 A).
 //
+// Gépország's page map: POST hm-pages connects to the sidecar's second pipe, which is the whole request (etw/Pages.cs).
 // Gépország's Birtok: POST hm-estate {letter, rescan} walks one drive at low priority (vrg-probe --estate, else estate-walk.js) and
 // keeps it in memory; 'hmestate' events carry progress and the result. POST hm-open opens a walked plot's folder, by index only.
 // Gépország (CITY-D34…D49; homeland.js): POST hm-feed {on} turns vrg-probe's feed on while the view is open; each raw line
@@ -884,12 +885,30 @@ function etwStart() {
 }
 function etwStop() { if (etw.sock) { const s = etw.sock; etw.sock = null; s.destroy(); } etw.procs.clear(); etw.state = 'off'; }
 process.on('exit', etwStop);
+// the page map: connecting to the second pipe is the request, one line comes back and it closes (etw/Pages.cs)
+function etwPages() {
+  return new Promise(resolve => {
+    const s = require('net').connect(ETW_PIPE + '-pages');
+    let buf = '', done = false;
+    const end = out => { if (done) return; done = true; clearTimeout(limit); s.destroy(); resolve(out); };
+    const limit = setTimeout(() => end({ why: 'timeout' }), 30000);
+    s.on('data', d => { buf += d; });
+    s.on('error', () => end({ why: etw.state === 'on' ? 'old' : 'off' }));
+    s.on('close', () => {
+      let m = null;
+      try { m = JSON.parse(buf); } catch (e) { /* the answer below */ }
+      const pages = require('./homeland.js').cleanPages(m);
+      end(pages ? { pages } : { why: (m && String(m.why || '').slice(0, 20)) || 'layout' });
+    });
+  });
+}
 function etwState(state) { if (etw.state === state) return; etw.state = state; liveEmit('etw', { state, demo: etw.demo }); }
 function etwHandle(m) {
   if (m.t === 'hello') { etw.demo = !!m.demo; etw.state = ''; etwState('on'); }
   else if (m.t === 'procs') { etw.procs.clear(); for (const p of m.list || []) etw.procs.set(p.pid, { ppid: p.ppid, exe: String(p.exe || '') }); }
   else if (m.t === 'proc') { if (m.op === 'stop') setTimeout(() => etw.procs.delete(m.pid), 5000); else etw.procs.set(m.pid, { ppid: m.ppid, exe: String(m.exe || '') }); }
   else if (m.t === 'sens') hmFeed.sensors(m);
+  else if (m.t === 'disk') hmFeed.disk(m);
   else if (m.t === 'net') etwCargo(m.list || []);
   else if (m.t === 'file') etwFiles(m.list || []);
   else if (m.t === 'dns') { etw.dns.unshift({ at: Date.now(), exe: m.exe, name: String(m.name || '').slice(0, 120) }); etw.dns.length = Math.min(etw.dns.length, 50); }   // memory only, never sent
@@ -1173,6 +1192,7 @@ const ACTIONS = {
     if (typeof b.on !== 'boolean') return [400, { error: 'on: true/false' }];
     return [200, { ok: true, rec: hmFeed.record(b.on) }];
   } },
+  'hm-pages': { keys: [], async run() { return [200, Object.assign({ ok: true }, await etwPages())]; } },
   'hm-recs': { keys: [], async run() { return [200, { ok: true, list: hmFeed.recordings() }]; } },
   'hm-estate': { keys: ['letter', 'rescan'], async run(b) {
     if (typeof b.letter !== 'string' || !/^[A-Z]:$/.test(b.letter)) return [400, { error: 'meghajtó: pl. H:' }];

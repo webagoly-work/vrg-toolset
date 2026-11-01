@@ -19,6 +19,7 @@ function hmEnter() {
   if (!hm.group) { hmBuild(); hmUiBuild(); }
   hm.group.visible = true;
   hm.ui.hidden = false;
+  $('panel').classList.add('hm-below');   // the HUD bar sits where the panel starts
   hmPlanPaint();
   hm.fixture = new URLSearchParams(location.hash.slice(1)).get('hmtest') === '1';
   $('hm-fix').hidden = !hm.fixture;
@@ -31,6 +32,7 @@ function hmEnter() {
 function hmLeave() {
   if (hm.group) hm.group.visible = false;
   if (hm.ui) hm.ui.hidden = true;
+  $('panel').classList.remove('hm-below');
   hm.sel = null; $('panel').hidden = true;
   if (hm.scrub != null) hmLiveAgain();
   hm.rec = false; hmRecPaint();   // the feed stops, and the recording with it
@@ -42,7 +44,7 @@ function hmHome(ms = 600) { orbit.target.y = 0; flyCamera(hm.estate ? [0, 0, 0, 
 function hmFeed(on) {
   if (hm.fixture) {
     clearInterval(hm.fxTimer); hm.feed = on ? 'fixture' : 'off';
-    if (on) { hm.etwOn = true; hm.sens = { get at() { return Date.now(); }, pawnio: true, list: [{ g: 'cpu', hw: 'Próba CPU', k: 'temp', n: 'Core Average', v: 47 }, { g: 'cpu', hw: 'Próba CPU', k: 'power', n: 'CPU Package', v: 38 }, { g: 'board', hw: 'Próba alaplap', k: 'fan', n: 'Fan #1', v: 900 }] }; hmHwEvent(hmFixtureHw()); hmEvent(hmFixtureEvent()); hm.fxTimer = setInterval(() => hmEvent(hmFixtureEvent()), 1000); }
+    if (on) { hm.etwOn = true; hm.sens = { get at() { return Date.now(); }, pawnio: true, list: [{ g: 'cpu', hw: 'Próba CPU', k: 'temp', n: 'Core Average', v: 47 }, { g: 'cpu', hw: 'Próba CPU', k: 'power', n: 'CPU Package', v: 38 }, { g: 'board', hw: 'Próba alaplap', k: 'fan', n: 'Fan #1', v: 900 }] }; hm.diskIo = { get at() { return Date.now(); }, list: [{ exe: 'alfa-bongeszo.exe', disk: 0, r: 4e6, w: 2e5 }, { exe: 'git', disk: 0, r: 1e6, w: 3e6 }, { exe: 'System', disk: 0, r: 2e5, w: 9e5 }] }; hmHwEvent(hmFixtureHw()); hmEvent(hmFixtureEvent()); hm.fxTimer = setInterval(() => hmEvent(hmFixtureEvent()), 1000); }
     return;
   }
   if (!window.KV_COMPANION) { hm.feed = 'nocomp'; hmHud(); return; }
@@ -68,7 +70,7 @@ function hmEvent(d) {
   hmPanel();
 }
 // the elevated sidecar's readings; a reading older than 20 s is no reading
-function hmSensEvent(d) { hm.sens = d.off ? null : d; hm.etwOn = !d.off; hmHud(); hmPanel(); }
+function hmSensEvent(d) { if (hm.fixture) return; hm.sens = d.off ? null : d; hm.etwOn = !d.off; hmHud(); hmPanel(); }
 function hmSensor(g, k, hw) {
   const s = hm.sens;
   if (!s || Date.now() - s.at > 20000) return [];
@@ -80,11 +82,13 @@ function hmSensWord() {
   if (!hm.sens) return 'ETW: be · szenzor: ki';   // an older sidecar sends none
   return `ETW: be · szenzor: ${hm.sens.pawnio ? 'be' : 'nincs PawnIO'}`;
 }
+// ETW names a program without the .exe the process list has
+const hmExeKey = s => { const k = String(s).toLowerCase(); return k === 'system' || k.endsWith('.exe') ? k : k + '.exe'; };
 // ETW's exact traffic per program, summed by name; it is already on the stream for the Land, so nothing is measured twice
 function hmCargoEvent(d) {
-  if (vw.id !== 'homeland') return;
+  if (vw.id !== 'homeland' || hm.fixture) return;   // a real number must not land on the made-up city
   const by = new Map();
-  for (const p of d.list || []) { const k = p.exe.toLowerCase(), g = by.get(k) || { exe: p.exe, rx: 0, tx: 0 }; g.rx += p.rx; g.tx += p.tx; by.set(k, g); }
+  for (const p of d.list || []) { const k = hmExeKey(p.exe), g = by.get(k) || { exe: p.exe, rx: 0, tx: 0 }; g.rx += p.rx; g.tx += p.tx; by.set(k, g); }
   hm.cargo = { at: d.at, by };
   hm.etwOn = true;
 }
@@ -191,6 +195,7 @@ function hmPanel() {
   const t = hm.sel;
   if (t && t.grow) return hmGrowPanel(t);
   if (t && t.est) return hmEstatePanel(t);
+  if (t && t.pages) return;   // 48-hm-pages paints its own, only when a reading comes
   if (!t || !hm.ev && t.kind !== 'static') { if (t) hmPanelStatic(t); return; }
   if (t.prog) return hmProgPanel(t.prog);
   const e = hm.ev, hw = hm.hw || {}, m = e.mem, s = e.sys;
@@ -203,8 +208,10 @@ function hmPanel() {
     }
     case 'market': {
       const kern = m.paged + m.nonpaged;
-      return P('Piac · RAM', [['Összes', hmGB(m.total)], ['Programok', hmGB(Math.max(0, m.total - m.avail - kern - m.modified))], ['Állam (pool)', hmGB(kern)], ['Kirakodásra vár', hmMB(m.modified)], ['Készenlét', hmGB(m.standby)], ['Üres', hmMB(m.free)],
-        ['Lekötve', `${hmGB(m.commit)} / ${hmGB(m.limit)}`], ['Lapbetöltés', hmNum(m.hard) + ' /s']], 'M', 'GetPerformanceInfo, PDH · 1 s', '<p class="dim">A telkek helye jelkép, az arányok mértek. A programok közti elosztás közelítő: a megosztott lapok több programnál is számítanak.</p>');
+      P('Piac · RAM', [['Összes', hmGB(m.total)], ['Programok', hmGB(Math.max(0, m.total - m.avail - kern - m.modified))], ['Állam (pool)', hmGB(kern)], ['Kirakodásra vár', hmMB(m.modified)], ['Készenlét', hmGB(m.standby)], ['Üres', hmMB(m.free)],
+        ['Lekötve', `${hmGB(m.commit)} / ${hmGB(m.limit)}`], ['Lapbetöltés', hmNum(m.hard) + ' /s']], 'M', 'GetPerformanceInfo, PDH · 1 s', '<p class="dim">A telkek helye jelkép, az arányok mértek. A programok közti elosztás közelítő: a megosztott lapok több programnál is számítanak.</p><p><button class="btn" data-hmpages>Fizikai lapok…</button></p>');
+      $('panel').querySelector('[data-hmpages]').onclick = hmPagesOpen;
+      return;
     }
     case 'empty': return P('Üres telek', [['Foglalatok', hw.ram ? `${hw.ram.dimms.length} / ${hw.ram.slots} foglalt` : '—']], 'M', 'Win32_PhysicalMemory', '<p class="dim">Egy modul, egy csatorna: a Piac utca egysávos.</p>');
     case 'studio': {
@@ -229,8 +236,8 @@ function hmPanel() {
   }
   if (t.disk) {
     const d = e.disks.find(x => x.letters.includes(t.disk)), inv = (hw.disks || []).find(x => (x.vols || []).some(v => v.letter === t.disk)), vol = inv && inv.vols.find(v => v.letter === t.disk);
-    return P(`${t.name} · ${t.disk}`, [['Lemez', esc((inv && inv.model) || '—')], ['Olvasás', d ? hmRate(d.r) : '—'], ['Írás', d ? hmRate(d.w) : '—'], ['Foglaltság', d ? hmPct(d.busy) : '—'], ['Sor', d ? hmNum(d.q) : '—'], ['Szabad', vol ? `${hmGB(vol.free)} / ${hmGB(vol.size)}` : '—'], ...hmSensor('disk', 'temp', inv && inv.model).slice(0, 1).map(r => ['Hőmérséklet', Math.round(r.v) + ' °C'])], 'M', 'PDH PhysicalDisk · 1 s',
-      '<p class="dim">Melyik program használja: az ETW-vel jön.</p>');
+    return P(`${t.name} · ${t.disk}`, [['Lemez', esc((inv && inv.model) || '—')], ['Olvasás', d ? hmRate(d.r) : '—'], ['Írás', d ? hmRate(d.w) : '—'], ['Foglaltság', d ? hmPct(d.busy) : '—'], ['Sor', d ? hmNum(d.q) : '—'], ['Szabad', vol ? `${hmGB(vol.free)} / ${hmGB(vol.size)}` : '—'], ...hmSensor('disk', 'temp', inv && inv.model).slice(0, 1).map(r => ['Hőmérséklet', Math.round(r.v) + ' °C']), ...(d ? hmDiskTop(d.id) : []).map(x => [esc(x.exe.slice(0, 26)), `be ${hmRate(x.r)} · ki ${hmRate(x.w)}`])], 'M', d && hmDiskTop(d.id).length ? 'PDH PhysicalDisk · 1 s; ETW · 1 s' : 'PDH PhysicalDisk · 1 s',
+      d && hmDiskTop(d.id).length ? '' : '<p class="dim">Melyik program használja: a frissített ETW-segéddel jön.</p>');
   }
   hmPanelStatic(t);
 }
@@ -250,7 +257,7 @@ function hmProgPanel(key) {
     ? `<p class="warn">Bezárod a(z) ${esc(g.exe)} ${g.win} ablakát? A program még rákérdezhet a mentésre.</p><button class="btn" data-hmclose="yes">Igen, bezárom</button> <button class="btn" data-hmclose="no">Mégse</button>`
     : '<button class="btn" data-hmclose="ask">Program bezárása…</button>';
   openPanel(g.exe, [['Réteg', layer + (g.s === 0 ? ' · 0. munkamenet' : '')], ['Osztály', esc(g.cls)], ['Folyamat', hu(g.n)], ['Szál', hu(g.th)], ['CPU', g.cpu.toFixed(1) + ' %'], ['Munkakészlet', hmMB(g.ws)], ['Saját', hmMB(g.priv)],
-    ['I/O', `be ${hmRate(g.r)} · ki ${hmRate(g.w)}`], ...(hmCargo() && hmCargo().has(key) ? [['Hálózat', `↓${hmRate(hmCargo().get(key).rx)} ↑${hmRate(hmCargo().get(key).tx)}`]] : []), ['Lapbetöltés', hmNum(g.hard) + ' /s'], ['Ablak', hu(g.win)], ['Indította', parent ? esc(parent.exe) : '—']], hint + btn + hmFooter('M', `NtQuerySystemInformation · 1 s; az I/O a hálózatot is tartalmazza${hmCargo() ? '; hálózat: ETW · 1 s' : ''}`));
+    ['I/O', `be ${hmRate(g.r)} · ki ${hmRate(g.w)}`], ...(hmCargo() && hmCargo().has(key) ? [['Hálózat', `↓${hmRate(hmCargo().get(key).rx)} ↑${hmRate(hmCargo().get(key).tx)}`]] : []), ...(hmDiskOf(key) ? [['Lemez', `be ${hmRate(hmDiskOf(key).r)} · ki ${hmRate(hmDiskOf(key).w)}`]] : []), ['Lapbetöltés', hmNum(g.hard) + ' /s'], ['Ablak', hu(g.win)], ['Indította', parent ? esc(parent.exe) : '—']], hint + btn + hmFooter('M', `NtQuerySystemInformation · 1 s; az I/O a hálózatot is tartalmazza${hmCargo() ? '; hálózat: ETW · 1 s' : ''}${hmDiskOf(key) ? '; lemez: ETW · 1 s' : ''}`));
   const box = $('panel');
   box.querySelectorAll('[data-hmclose]').forEach(b => { b.onclick = () => hmCloseStep(b.dataset.hmclose, key); });
 }

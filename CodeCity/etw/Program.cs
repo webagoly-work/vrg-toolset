@@ -1,8 +1,9 @@
 // vrg-etw — the Kódváros Tier B sidecar (P11, KV-23; report §1.4, CITY-D17 A, D23 A). Elevated, read-only.
 //
 // One real-time ETW session: Kernel-Network (TCP/UDP send/receive per process: the exact cargo), Kernel-File (reads and
-// writes inside this repo), Kernel-Process (the process tree), and DNS-Client (which name a process looked up); and the
-// hardware sensors (Sensors.cs), which need elevation for the same reason. The
+// writes inside this repo), Kernel-Disk (bytes per program and disk), Kernel-Process (the process tree), and DNS-Client (which
+// name a process looked up); and the hardware sensors (Sensors.cs) and the physical page map (Pages.cs), which need elevation
+// for the same reason. The
 // filters are fixed here: the repo root is baked in at build time (node CodeCity/tools/build-etw.js), it takes no
 // arguments but --demo, and it reads nothing from anyone. Out: JSON lines on the named pipe \\.\pipe\vrg-etw — the
 // current user may read it, nobody may write to it, the network is denied. Nothing is written to disk.
@@ -35,6 +36,7 @@ static class Etw
     static readonly object agg = new();
     static Dictionary<int, Net> net = new();
     static HashSet<string> files = new();
+    static Dictionary<(string exe, int disk), long[]> disk = new();
     static readonly Dictionary<string, long> dnsSeen = new();
     static readonly Dictionary<int, (int ppid, string exe)> procs = new();   // the tree, for a reader that joins later
     static string hello = "";
@@ -46,7 +48,9 @@ static class Etw
         bool demo = args.Length == 1 && args[0] == "--demo";
         if (args.Length > 0 && !demo) return 64;
         if (!demo && TraceEventSession.IsElevated() != true) return 2;   // the task must "run with highest privileges"
-        StartPipe(demo ? "vrg-etw-demo" : "vrg-etw");
+        var sec = PipeAcl();
+        StartPipe(demo ? "vrg-etw-demo" : "vrg-etw", sec);
+        new Thread(() => Pages.Serve(demo ? "vrg-etw-demo-pages" : "vrg-etw-pages", sec, demo)) { IsBackground = true }.Start();
         new Thread(Writer) { IsBackground = true }.Start();
         new Thread(() => { while (true) { Thread.Sleep(1000); Flush(); } }) { IsBackground = true }.Start();
         new Thread(() => { if (demo) Sensors.Demo(Readers, Send); else Sensors.Loop(Readers, Send); }) { IsBackground = true }.Start();
@@ -65,6 +69,7 @@ static class Etw
             {
                 session = new TraceEventSession(SessionName) { StopOnDispose = true };   // a named kernel session (Win8+): never takes over "NT Kernel Logger"
                 session.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP | KernelTraceEventParser.Keywords.Process |
+                    KernelTraceEventParser.Keywords.Thread | KernelTraceEventParser.Keywords.DiskIO |   // a disk event names a thread, the thread its process
                     KernelTraceEventParser.Keywords.FileIOInit | KernelTraceEventParser.Keywords.FileIO | KernelTraceEventParser.Keywords.DiskFileIO);
             }
             catch (Exception e) { Send(new { t = "error", where = "kernel", e = e.GetType().Name, m = e.Message }); Thread.Sleep(10000); continue; }
@@ -83,6 +88,8 @@ static class Etw
             k.ProcessStart += d => Proc("start", d.ProcessID, d.ParentID, d.ImageFileName);
             k.ProcessDCStart += d => Proc("run", d.ProcessID, d.ParentID, d.ImageFileName);
             k.ProcessStop += d => Proc("stop", d.ProcessID, 0, "");
+            k.DiskIORead += d => Disk(d.ProcessID, d.ProcessName, d.DiskNumber, d.TransferSize, 0);
+            k.DiskIOWrite += d => Disk(d.ProcessID, d.ProcessName, d.DiskNumber, 0, d.TransferSize);
             k.FileIORead += d => File(d.ProcessID, d.ProcessName, 'r', d.FileName);
             k.FileIOWrite += d => File(d.ProcessID, d.ProcessName, 'w', d.FileName);
             session.Source.Dynamic.All += e =>
@@ -121,6 +128,18 @@ static class Etw
         }
     }
 
+    // bytes only: the file behind the event never leaves the kernel's record, and work with no owner counts as System
+    static void Disk(int pid, string exe, int number, int read, int written)
+    {
+        if (pid == Self) return;
+        var key = (pid <= 0 || string.IsNullOrEmpty(exe) ? "System" : exe, number);
+        lock (agg)
+        {
+            if (!disk.TryGetValue(key, out var v)) { if (disk.Count > 500) return; disk[key] = v = new long[2]; }
+            v[0] += read; v[1] += written;
+        }
+    }
+
     static void File(int pid, string exe, char op, string path)
     {
         if (pid == Self || string.IsNullOrEmpty(path) || Repo.Length < 4 || !path.StartsWith(Repo, StringComparison.OrdinalIgnoreCase)) return;
@@ -141,15 +160,17 @@ static class Etw
         Send(new { t = "dns", pid, exe, name });
     }
 
-    // once a second: the cargo per process (top 12, each with its top 6 destinations) and the repo files touched
+    // once a second: the cargo per process (top 12, each with its top 6 destinations), the repo files touched, the disk bytes (top 24)
     static void Flush()
     {
-        Dictionary<int, Net> n; HashSet<string> f;
-        lock (agg) { n = net; net = new(); f = files; files = new(); }
+        Dictionary<int, Net> n; HashSet<string> f; Dictionary<(string exe, int disk), long[]> io;
+        lock (agg) { n = net; net = new(); f = files; files = new(); io = disk; disk = new(); }
         if (n.Count > 0)
             Send(new { t = "net", list = n.OrderByDescending(kv => kv.Value.Rx + kv.Value.Tx).Take(12).Select(kv => new {
                 pid = kv.Key, exe = kv.Value.Exe, rx = kv.Value.Rx, tx = kv.Value.Tx,
                 to = kv.Value.To.OrderByDescending(x => x.Value[0] + x.Value[1]).Take(6).Select(x => new { ip = x.Key.ip, port = x.Key.port, proto = x.Key.proto, rx = x.Value[0], tx = x.Value[1] }) }) });
+        if (io.Count > 0)
+            Send(new { t = "disk", list = io.OrderByDescending(kv => kv.Value[0] + kv.Value[1]).Take(24).Select(kv => new { exe = kv.Key.exe, disk = kv.Key.disk, r = kv.Value[0], w = kv.Value[1] }) });
         if (f.Count > 0)
             Send(new { t = "file", list = f.Select(s => s.Split('|', 4)).Select(p => new { pid = int.Parse(p[0]), exe = p[1], op = p[2], path = p[3] }) });
     }
@@ -162,6 +183,7 @@ static class Etw
         for (int i = 0; ; i++)
         {
             Cargo(4300, "git-remote-https.exe", IPAddress.Parse("140.82.121.4"), 443, "tcp", 2_500_000, 12_000);
+            Disk(4300, "git-remote-https.exe", 0, 0, 1_500_000);
             if (i % 3 == 0) { File(4200, "bash.exe", 'r', Repo + "README.md"); File(4200, "bash.exe", 'r', Repo + "CodeCity\\companion.js"); }
             if (i == 0) Dns(4300, "git-remote-https.exe", "github.com");
             Thread.Sleep(1000);
@@ -169,7 +191,7 @@ static class Etw
     }
 
     // ---- the pipe: current user read-only, no network, any number of readers (up to 4 at a time)
-    static void StartPipe(string name)
+    static PipeSecurity PipeAcl()
     {
         var sec = new PipeSecurity();
         var user = WindowsIdentity.GetCurrent().User!;
@@ -179,6 +201,11 @@ static class Etw
         sec.AddAccessRule(new PipeAccessRule(new SecurityIdentifier(WellKnownSidType.NetworkSid, null), PipeAccessRights.FullControl, AccessControlType.Deny));
         if (TraceEventSession.IsElevated() != true)   // --demo: the creating (non-admin) user must also create the next instance
             sec.AddAccessRule(new PipeAccessRule(user, PipeAccessRights.CreateNewInstance, AccessControlType.Allow));
+        return sec;
+    }
+
+    static void StartPipe(string name, PipeSecurity sec)
+    {
         new Thread(() =>
         {
             while (true)
