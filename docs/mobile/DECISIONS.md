@@ -52,6 +52,10 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   in 7 days), then only a branch ahead of `main` with a commit in the last 14 days. `mobile-log` is left out. Asked with the
   facts of that day: every line of work lands on `main`, and 7 of the 8 other branches had nothing unmerged.
 
+- **M14 · Gömb** (2026-11-01, the Founder's SOL-Q1 = A, SOL-Q2 = B). Built out of the table's order, on the Founder's word.
+  The phone reads and rules on `solomon-data`, a data-only branch the PC makes; `Contents.putBody` now accepts that branch
+  as well as `mobile-log`. Its own tabs change by tapping, so a sideways swipe on that page always means the home screen.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city

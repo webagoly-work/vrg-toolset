@@ -75,6 +75,15 @@
       ]
     },
     {
+      "id": "solomon-gomb",
+      "name": "Solomon Gömb",
+      "paths": [
+        "Solomon/",
+        "docs/solomon/",
+        "tools/solomon.js"
+      ]
+    },
+    {
       "id": "vrg-kodvaros",
       "name": "VRG Kódváros",
       "paths": [

@@ -33,6 +33,7 @@ Mobile/
     feature-pair/       QR párosítás (WP M2): CameraX + ML Kit scanner, vrg://pair links, the result
     feature-account/    GitHub fiók (WP M3): device-flow sign-in, account, repo access, sign out
     feature-notes/      Gyorsjegyzet (WP M6): note + dictation + tags, outbox (WorkManager), today's log, share target
+    feature-sphere/     Gömb (WP M14): the Solomon sphere, a page beside home; signals and rulings from solomon-data
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros
 ```
 

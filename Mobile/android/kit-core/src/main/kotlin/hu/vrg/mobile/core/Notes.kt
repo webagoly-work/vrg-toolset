@@ -145,7 +145,7 @@ object Contents {
     } catch (e: Exception) { null }
 
     fun putBody(text: String, sha: String?, branch: String, message: String): String {
-        require(NoteLog.writable(branch)) { "only ${NoteLog.BRANCH} is written" }
+        require(NoteLog.writable(branch) || Solomon.writable(branch)) { "only ${NoteLog.BRANCH} and ${Solomon.BRANCH} are written" }
         val o = JSONObject().put("message", message).put("branch", branch)
             .put("content", Base64.getEncoder().encodeToString(text.toByteArray(Charsets.UTF_8)))
         if (sha != null) o.put("sha", sha)

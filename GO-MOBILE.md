@@ -81,4 +81,4 @@ What changes locally compared with the cloud:
 - **M9**: done 2026-10-31. A push to `main` touching `Mobile/android` makes a release and the phone updates itself.
   The keystore is `H:\VRG\Full\_admin\keys\vrg-mobile.jks`. `mobile.cmd` → 3 cannot replace a release: its key differs.
 - **Every WP**: install the APK (`mobile.cmd` → 3, or from the Actions run / Releases after M9) and work through the
-  phone checklist. Open right now: M4 (Haladás).
+  phone checklist. Open right now: M4 (Haladás), M14 (Gömb).

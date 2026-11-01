@@ -31,6 +31,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M5** | Kódváros online (`city`) | the repo's city from GitHub's fresh state (online parts only), built by Actions | GitHub | medium |
 | **M7** | Hálózat (`net`) | BT HID status, phone-as-relay over WiFi, hotspot with usage notification, USB / BT tethering | — | low (Android-bound) |
 | **M10** | Értesítések (`inbox`) | PR, CI, relay events in one list, with phone notifications | GitHub | medium |
+| **M14** | Gömb (`sphere`) | **built, BETA** (2026-11-01, phone check open): the Solomon sphere as a swipe page beside home: three signals on every document, rulings from the phone | GitHub | medium |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.

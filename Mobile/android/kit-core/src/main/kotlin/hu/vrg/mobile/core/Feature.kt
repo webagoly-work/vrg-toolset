@@ -91,6 +91,10 @@ object Catalogue {
         "screen", "Képernyő", "A PC képernyője élőben a telefonon, Légegér vezérléssel. A PC-n jelzi, hogy nézik.",
         "▣", Group.CONTROL, Stage.PLANNED, "M13", setOf(Need.RELAY),
     )
+    val SPHERE = FeatureInfo(
+        "sphere", "Gömb", "A tudásbázis három jelzése: ellentmondás, sötét zóna, dermedt. A kezdőlapról balra húzva is elérhető.",
+        "◉", Group.WORK, Stage.BETA, "M14", setOf(Need.INTERNET, Need.GITHUB),
+    )
     val UPDATE = FeatureInfo(
         "update", "Frissítés", "Új verzió a GitHubról: az app magát frissíti, ha a branchen újabb build van.",
         "⟳", Group.APP, Stage.LIVE, "M9", setOf(Need.INTERNET, Need.GITHUB),
@@ -103,7 +107,7 @@ object Catalogue {
     val ALL: List<FeatureInfo> = listOf(
         AIRDECK, LAUNCH, DROP, SCREEN,
         PAIR, ACCOUNT, NET,
-        PULSE, CITY, NOTES, PORTS, INBOX,
+        PULSE, SPHERE, CITY, NOTES, PORTS, INBOX,
         UPDATE, SETTINGS,
     )
 

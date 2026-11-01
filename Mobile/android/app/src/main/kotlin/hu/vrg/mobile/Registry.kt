@@ -9,6 +9,7 @@ import hu.vrg.mobile.notes.NotesFeature
 import hu.vrg.mobile.pair.PairFeature
 import hu.vrg.mobile.pulse.PulseFeature
 import hu.vrg.mobile.settings.SettingsFeature
+import hu.vrg.mobile.sphere.SphereFeature
 import hu.vrg.mobile.update.UpdateFeature
 
 // The features built into this APK. Adding one: a feature-<id> module with an object implementing
@@ -25,6 +26,7 @@ object Registry {
         NotesFeature,
         UpdateFeature,
         PulseFeature,
+        SphereFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

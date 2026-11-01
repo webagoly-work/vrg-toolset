@@ -9,8 +9,9 @@ import hu.vrg.mobile.core.VrgRepo
 import java.net.URLEncoder
 
 // Gyorsjegyzet's GitHub calls (WP M6): the contents API and the branch refs, behind kit-core's NotesApi
-// so the append rule is tested without GitHub. Writes go to NoteLog.BRANCH only: Contents refuses to
-// build a body for any other branch, so no caller can point this at main or a work branch.
+// so the append rule is tested without GitHub. The Gömb's rulings (M14) go the same way. Writes reach
+// NoteLog.BRANCH and Solomon.BRANCH only: Contents refuses to build a body for any other branch, so no
+// caller can point this at main or a work branch.
 
 object GitHubNotes : NotesApi {
     private fun enc(path: String) = path.split('/').joinToString("/") { URLEncoder.encode(it, "UTF-8").replace("+", "%20") }

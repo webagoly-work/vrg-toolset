@@ -22,6 +22,7 @@ const SOURCES = {
   'VRG BuildTree': ['Modder/'],
   'Toolbox': ['toolbox.html', 'Toolbox/'],
   'VRG Vendor': ['vrg-vendor.html', 'vendor-manifest.json', 'tools/fetch-vendor.js'],
+  'Solomon Gömb': ['Solomon/', 'docs/solomon/', 'tools/solomon.js'],
 };
 const OTHERS = [
   { name: 'VRG Mobile', paths: ['Mobile/', 'docs/mobile/', 'GO-MOBILE.md', '.github/workflows/mobile-android.yml', '.github/workflows/mobile-release.yml'] },

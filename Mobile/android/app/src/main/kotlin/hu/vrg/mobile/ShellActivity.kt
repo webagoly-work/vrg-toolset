@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +23,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -39,7 +42,9 @@ import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.theme.MelyvizTheme
 import hu.vrg.mobile.kit.theme.Palettes
+import hu.vrg.mobile.sphere.SphereFeature
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // The one Activity. It shows either the home screen or one feature, routes links and keys to the
 // feature on screen, and owns everything window-wide (system bars, keep-screen-on) so a feature
@@ -83,7 +88,7 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                             BackHandler { home() }
                             PlannedScreen(planned, onBack = ::home)
                         } else {
-                            HomeScreen(onOpen = ::open)
+                            HomePages()
                         }
                     }
                     Note(message, Modifier.align(Alignment.BottomCenter))
@@ -91,6 +96,19 @@ class ShellActivity : ComponentActivity(), FeatureHost {
             } }
         }
         handleLink(intent)
+    }
+
+    /** Home, and the Gömb one swipe to its right (WP M14). The sphere's own drags stay inside its disc. */
+    @Composable
+    private fun HomePages() {
+        val pages = rememberPagerState { 2 }
+        val scope = rememberCoroutineScope()
+        val toHome: () -> Unit = { scope.launch { pages.animateScrollToPage(0) } }
+        BackHandler(pages.currentPage != 0, toHome)
+        HorizontalPager(pages, Modifier.fillMaxSize()) { page ->
+            if (page == 0) HomeScreen(onOpen = ::open)
+            else Box(Modifier.fillMaxSize().systemBarsPadding()) { SphereFeature.Page(back = toHome, signIn = { open(Catalogue.ACCOUNT.id) }) }
+        }
     }
 
     @Composable
