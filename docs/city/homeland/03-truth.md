@@ -46,7 +46,7 @@ This is the hard one, so the answer is split into what "reached" can mean.
 | Which of its pages are in RAM right now? | **Yes** for own processes | `QueryWorkingSetEx` by page | Costly on large processes; on demand only |
 | Is it paging in from disk? | **Yes**, with ETW | Hard-fault events (system total without ETW) | Tier B |
 | What is the machine's memory mix? | **Yes** | Page-list counters | Standby, Modified, Free and Zero, pools, all readable |
-| **Which physical address does it use?** | **Not unelevated** | PFN database through the undocumented `SystemSuperfetchInformation` query, which RAMMap uses; admin required | Built (`etw/Pages.cs`); not yet run elevated. Unelevated: access denied |
+| **Which physical address does it use?** | **Not unelevated** | PFN database through the undocumented `SystemSuperfetchInformation` query, which RAMMap uses; admin required | Built (`etw/Pages.cs`); read elevated on 2026-11-01, about 1 % from the page-list counters. Unelevated: access denied |
 | **Which bytes did it actually touch just now?** | **No** | The CPU does not report this to user mode, and accessed bits are not exposed | Not available in any practical tier |
 
 Three reasons the physical view is not what the user wants, even if it could be had:

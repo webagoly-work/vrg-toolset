@@ -44,7 +44,7 @@ for area; the farm imagery is the rendering.
 | **S2a ✔ 2026-10-31** | Növekedés plan with the rearranging move and the replay | S1 |
 | **S2b ✔ 2026-11-01** | Birtok land view: every drive (CITY-D52 A) | S2a |
 | **S3a ✔ 2026-11-01** | The 15-minute memory history with look-back, the opt-in recording | S2 |
-| **S3b** | Sensors, disk I/O per program, physical page map (all built, wait on the reinstall; sensors also on PawnIO), traffic per program (live) | The user's elevated steps |
+| **S3b** | Sensors, disk I/O per program, physical page map (installed by the user on 2026-11-01), traffic per program (live) | The user's elevated steps |
 
 **S1 as built:** `CodeCity/probe/Homeland.cs`, `CodeCity/homeland.js`, `homeland-classes.json`, `probe-hw.ps1`,
 `src/40-hm-core.js`, `41-hm-island.js`, `42-hm-city.js`, `tools/spec-homeland.js`. Open with START → K → G or
@@ -72,7 +72,8 @@ PawnIO installer, only an "is it installed" check and the Pawn modules. PawnIO i
 its install is the user's. A real unelevated run on this PC read the CPU's name and power rows with `pawnio:false`, no temperature,
 and left no driver behind. Temperatures and fans are therefore **not yet seen on real hardware**. Steps: [04-data-feed.md](04-data-feed.md) §4.7.
 
-**S3b, the rest as built:** all of it comes with one reinstall of `vrg-etw`. Not yet run elevated, so none of it is seen on real data:
+**S3b, the rest as built:** all of it comes with one reinstall of `vrg-etw`, done by the user on 2026-11-01. Real data read from the pipe that day: sensors,
+disk rows and the page map; the HUD reads *ETW: be · szenzor: be*. Still to see on real data: the disk panels, the *Hálózat* row and the page map's panel.
 
 - **Disk I/O per program** (`Keywords.DiskIO`, plus `Thread` because a disk event names a thread): bytes per program and disk, top 24,
   once a second, on the disk panels and as a program's *Lemez* row. No file name leaves the sidecar. Work with no owner counts as System.
@@ -81,7 +82,8 @@ and left no driver behind. Temperatures and fans are therefore **not yet seen on
   into 64 × 64 cells by address, by list or by use, with totals. Program and file are never read.
   - **On request only:** connecting to a second one-way pipe, `vrg-etw-pages`, is the request, so the sidecar still takes no input. No timer; a result stands for 10 s.
   - **Undocumented, so checked:** each reading is compared with the live page-list counters. Over 10 % off and the panel warns and tags it K.
-    A refusal shows its reason. Unelevated, the query was refused with access denied (0xC0000022), so the layout itself is unproven.
+    A refusal shows its reason. Unelevated, the query is refused with access denied (0xC0000022). Elevated, the layout held on 2026-11-01:
+    690 ms, every frame seen (15.87 GB), page lists about 1 % from the counters.
   - **Privileges:** debug and profile are switched on in this process only, for the scan, and back off after it. No system setting changes.
 
 **Found while testing:** ETW names a program without `.exe`, so the *Hálózat* row of the previous commit never matched; names are now

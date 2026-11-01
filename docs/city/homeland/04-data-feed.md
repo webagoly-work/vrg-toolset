@@ -115,8 +115,7 @@ traffic present. Reduced motion freezes vehicles and shows rates as numbers. The
 ## 4.7 Repairing ETW (the user's steps)
 
 **Done by the user on 2026-10-31:** the task's action and the corrected binary. Gépország's panels read the traffic per program
-from it. The steps below are still open: they replace that binary with one that also has the sensors, disk I/O per program and
-the page map, so the task must stop first.
+from it. The steps below were done on 2026-11-01 and stay here for the next rebuild: replacing the binary means the task must stop first.
 
 The same sidecar now carries the hardware sensors (CITY-D51 A), so these steps give both.
 
