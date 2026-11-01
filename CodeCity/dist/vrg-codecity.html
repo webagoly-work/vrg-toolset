@@ -371,7 +371,9 @@ body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb
 #hm-plan { position: absolute; top: 62px; left: 216px; display: flex; gap: 4px; align-items: center; }
 #hm-plan .btn { background: var(--panel); font-size: 12px; padding: 3px 10px; }
 #hm-plan .btn.on { color: var(--accent); border-color: var(--accent); }
-#hm-plan .btn[hidden], #hm-when[hidden] { display: none; }
+#hm-plan .btn[hidden], #hm-when[hidden], #hm-drives[hidden], #hm-rail[hidden] { display: none; }
+#hm-drives { display: flex; gap: 4px; margin-left: 8px; }
+#panel .blur { filter: blur(4px); user-select: none; }
 #hm-when { margin-left: 8px; font-size: 12px; white-space: nowrap; }
 #hm-sw .btn, #hm-rail .btn { background: var(--panel); font-size: 12px; padding: 3px 10px; }
 #hm-sw .btn.on, #hm-rail .btn.on { color: var(--accent); border-color: var(--accent); }
@@ -3559,6 +3561,7 @@ function liveConnect() {
   live.es.addEventListener('disk', e => { if (liveMine()) diskEvent(JSON.parse(e.data)); });   // 29-land: Tárház
   live.es.addEventListener('hm', e => hmEvent(JSON.parse(e.data)));   // 40-hm-core: Gépország
   live.es.addEventListener('hmhw', e => hmHwEvent(JSON.parse(e.data)));
+  live.es.addEventListener('hmestate', e => hmEstateEvent(JSON.parse(e.data)));
   live.es.addEventListener('power', e => { if (liveMine()) powerEvent(JSON.parse(e.data)); });   // 30-power: Erőmű
   live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
   live.es.addEventListener('cargo', e => { if (liveMine()) cargoEvent(JSON.parse(e.data)); });   // 31-flows: ships and planes
@@ -5865,7 +5868,7 @@ function vwRefresh() { if (vw.id === 'simple') vwSimple(); }
 
 const HM_LAYERS = [['Felszín', 0, 'Programok ablakkal'], ['Alváros', -36, 'Szolgáltatások: a 0. munkamenet'], ['Mélyút', -54, 'Kernel, megszakítások'], ['Alapkő', -70, 'UEFI, a lap vezetékei']];
 const HM_TAG = { M: ['Mért', 'most mért érték'], K: ['Közelítő', 'mért adatból következtetett'], J: ['Jelkép', 'a metafora része, nincs mögötte mérés'] };
-const hm = { group: null, ev: null, hw: null, layer: 0, all: false, tags: true, truth: false, sel: null, plan: 0, planK: 0, gT: 0, gPlay: 0, fixture: false, fxTimer: 0, feed: 'off', ui: null, raf: 0, lastFrame: 0, confirm: null };
+const hm = { group: null, ev: null, hw: null, layer: 0, all: false, tags: true, truth: false, sel: null, estate: null, reveal: false, plan: 0, planK: 0, gT: 0, gPlay: 0, fixture: false, fxTimer: 0, feed: 'off', ui: null, raf: 0, lastFrame: 0, confirm: null };
 
 const hmGB = b => (b / 2 ** 30).toFixed(b >= 1e10 ? 0 : 1) + ' GB';
 const hmMB = b => (b >= 2 ** 30 ? (b / 2 ** 30).toFixed(1) + ' GB' : Math.round(b / 2 ** 20) + ' MB');
@@ -5894,7 +5897,7 @@ function hmLeave() {
   hmFeed(false);
   orbit.target.y = 0;
 }
-function hmHome(ms = 600) { orbit.target.y = 0; flyCamera(hm.plan ? [0, 0, 0.72, 0.5, 400] : [0, 24, 0.72, 0.9, 490], window.KV_INSTANT ? 0 : ms); }
+function hmHome(ms = 600) { orbit.target.y = 0; flyCamera(hm.estate ? [0, 0, 0, 0.14, 80 + 1.7 * hm.ePlan.side] : hm.plan ? [0, 0, 0.72, 0.5, 400] : [0, 24, 0.72, 0.9, 490], window.KV_INSTANT ? 0 : ms); }
 
 function hmFeed(on) {
   if (hm.fixture) {
@@ -5920,7 +5923,7 @@ function hmEvent(d) {
   hmHud();
   hmPanel();
 }
-function hmHwEvent(d) { hm.hw = d; hmHwApply(d); hmHud(); hmPanel(); }
+function hmHwEvent(d) { hm.hw = d; hmHwApply(d); hmHud(); hmPanel(); if (hm.ePending) hmEstateOpen(); else if (hm.estate) { hmEstateDraw(); hmDrivesPaint(); } }
 
 // ---- the HUD: the state's budget in one line, the switches, the layer rail
 function hmUiBuild() {
@@ -5935,7 +5938,9 @@ function hmUiBuild() {
     <div id="hm-plan" role="group" aria-label="Várostérkép">
       <button class="btn" data-plan="0" title="Az alaplap valódi bekötése (N)">Bekötés</button>
       <button class="btn" data-plan="1" title="A város, ahogy a git-történetben nőtt (N)">Növekedés</button>
+      <button class="btn" data-plan="2" title="A meghajtók birtokként, felülről (B)">Birtok</button>
       <button class="btn" id="hm-replay" hidden title="A növekedés elölről (R)">Újra</button>
+      <span id="hm-drives" hidden></span>
       <span id="hm-when" class="dim" hidden></span>
     </div>
     <nav id="hm-rail" aria-label="Rétegek">${HM_LAYERS.map((l, i) => `<button class="btn" data-layer="${i}" title="${esc(l[2])} (PgUp / PgDn)">${esc(l[0])}</button>`).join('')}</nav>
@@ -5945,6 +5950,8 @@ function hmUiBuild() {
     const l = e.target.closest('[data-layer]'); if (l) return hmSetLayer(+l.dataset.layer);
     const s = e.target.closest('[data-sw]'); if (s) return hmSwitch(s.dataset.sw);
     const p = e.target.closest('[data-plan]'); if (p) return hmSetPlan(+p.dataset.plan);
+    const d = e.target.closest('[data-drive]'); if (d) return hmEstateOpen(d.dataset.drive);
+    if (e.target.closest('[data-rescan]')) return hmEstateAsk(true);
     if (e.target.id === 'hm-replay') hmReplay();
   });
   hmSwitchPaint(); hmPlanPaint();
@@ -5995,14 +6002,14 @@ addEventListener('keydown', e => {
   const k = e.key;
   if (k === 'v' || k === 'V' || k === 'l' || k === 'L' || k === 'Escape' || k === 'Tab') return;
   e.stopImmediatePropagation();
-  if (k === 'PageDown') { e.preventDefault(); hmSetLayer(hm.layer + 1); }
-  else if (k === 'PageUp') { e.preventDefault(); hmSetLayer(hm.layer - 1); }
+  if (k === 'PageDown' || k === 'PageUp') { e.preventDefault(); if (!hm.estate) hmSetLayer(hm.layer + (k === 'PageDown' ? 1 : -1)); }
   else if (k === 'Home') { e.preventDefault(); hmHome(); }
   else if (k === 'a' || k === 'A') hmSwitch('all');
   else if (k === 't' || k === 'T') hmSwitch('tags');
   else if (k === 'm' || k === 'M') hmSwitch('truth');
   else if (k === 'n' || k === 'N') hmSetPlan(hm.plan ? 0 : 1);
   else if (k === 'r' || k === 'R') hmReplay();
+  else if (k === 'b' || k === 'B') hmSetPlan(hm.estate ? hm.plan : 2);
 }, true);
 
 // ---- the panel: fixed order, every number says where it comes from
@@ -6015,6 +6022,7 @@ function hmFooter(tag, src) { return `<p class="dim hm-src"><i class="hm-t ${tag
 function hmPanel() {
   const t = hm.sel;
   if (t && t.grow) return hmGrowPanel(t);
+  if (t && t.est) return hmEstatePanel(t);
   if (!t || !hm.ev && t.kind !== 'static') { if (t) hmPanelStatic(t); return; }
   if (t.prog) return hmProgPanel(t.prog);
   const e = hm.ev, hw = hm.hw || {}, m = e.mem, s = e.sys;
@@ -6270,13 +6278,13 @@ function hmLayerApply() {
   hm.slabD.material.opacity = l > 2 ? 0.15 : 0.92;
   hm.water.material.uniforms.uAlpha.value = ghost ? 0.2 : 1;
   hm.water.material.depthWrite = !ghost;
-  hm.shore.visible = true;
+  hm.shore.visible = !hm.estate;
   requestRender();
 }
 // the truth display (CITY-D45): Jelölés paints metaphor grey and marks the approximate; Mérés leaves only the measured
 function hmTagsApply() {
   const c = new THREE.Color();
-  for (const im of [...hm.meshes, ...(hm.gMeshes || [])]) {
+  for (const im of [...hm.meshes, ...(hm.gMeshes || []), ...(hm.eMeshes || [])]) {
     im.userData.parts.forEach(p => {
       const off = hm.truth && p.tag === 'J', dim = hm.tags && p.tag === 'J', approx = hm.tags && p.tag === 'K';
       c.setHex(p.col); if (dim) c.setHex(HM_COL.grey); if (approx) c.lerp(new THREE.Color(0x8a939b), 0.35);
@@ -6328,6 +6336,7 @@ function hmWaterAt(e) {
   return p && !hmOnIsland(p.x, p.z) ? p : null;
 }
 function hmOnIsland(x, z) {
+  if (hm.estate) return Math.abs(x) <= hm.ePlan.side / 2 && Math.abs(z) <= hm.ePlan.side / 2;
   let inside = false;
   for (let i = 0, j = HM_SHORE.length - 1; i < HM_SHORE.length; j = i++) {
     const xi = hmW(HM_SHORE[i][0]), zi = hmW(HM_SHORE[i][1]), xj = hmW(HM_SHORE[j][0]), zj = hmW(HM_SHORE[j][1]);
@@ -6575,6 +6584,7 @@ function hmPick(e) {
   const r = canvas.getBoundingClientRect();
   ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
+  if (hm.estate) return hmEstatePick();
   if (hm.layer > 0) {
     const hit = ray.intersectObjects(hm.layer >= 2 ? [hm.rooms, hm.stone] : [hm.rooms], false)[0];
     if (!hit) return null;
@@ -6859,6 +6869,12 @@ function hmGrowReveal(T) {
 function hmWhen() {
   const el = $('hm-when'), city = current && current.city;
   if (!el) return;
+  if (hm.estate) {
+    const pl = hm.ePlan;
+    el.hidden = false;
+    el.textContent = hm.eStatus || (pl && pl.measured ? `${hmGB(pl.read)} olvasva${pl.partial ? ' · részleges: lejárt az időkeret' : ''}` : '');
+    return;
+  }
   el.hidden = !hm.plan || !city;
   if (el.hidden) return;
   const i = Math.min(city.commits.length - 1, Math.floor(hm.gT)), d = new Date(city.commits[i][0] * 1000).toLocaleDateString('hu-HU');
@@ -6867,7 +6883,10 @@ function hmWhen() {
 
 // ---- switching: one frame of the move, driven from hmFrame so it costs nothing at rest
 async function hmSetPlan(p) {
-  if (p === hm.plan) return;
+  if (p === 2) return hmEstateOpen();
+  const wasEstate = !!hm.estate;
+  if (wasEstate) hmEstateClose();
+  if (p === hm.plan) { hmPlanPaint(); if (wasEstate) hmHome(900); return; }
   if (p && !await hmGrowEnsure()) { kvToast('Nincs betöltött git-történet'); return; }
   hm.plan = p; hmShow(null);
   hm.carList = []; hm.flowsWas = hm.flows;
@@ -6915,17 +6934,18 @@ function hmPlanApply() {
     const [x0, y0, z0] = s.userData.at, z = hm.z[hmEntZone(s.userData.ent.id)], [x, zz] = hmZoneXZ(z, x0, z0), f = z ? 1 - 0.28 * e : 1;
     s.position.set(x, z ? y0 * z.s + 3 * e : y0, zz); s.scale.set(s.userData.w * f, s.userData.w * f * 96 / 512, 1);
   }
-  hm.grow.visible = hm.layer === 0 && (hm.plan === 1 || k > 0);
+  hm.grow.visible = !hm.estate && hm.layer === 0 && (hm.plan === 1 || k > 0);
   hm.cars.visible = k === 0 || k === 1;
   hmSelApply();
 }
 function hmPlanPaint() {
   if (!hm.ui) return;
-  for (const b of hm.ui.querySelectorAll('[data-plan]')) b.classList.toggle('on', +b.dataset.plan === hm.plan);
-  $('hm-replay').hidden = !hm.plan;
+  const on = hm.estate ? 2 : hm.plan;
+  for (const b of hm.ui.querySelectorAll('[data-plan]')) b.classList.toggle('on', +b.dataset.plan === on);
+  $('hm-replay').hidden = !hm.plan || !!hm.estate;
   hmWhen();
 }
-function hmReplay() { if (!hm.plan || !hm.plan2) return; hmGrowReveal(0); hm.gPlay = performance.now(); hmAnimate(); }
+function hmReplay() { if (!hm.plan || !hm.plan2 || hm.estate) return; hmGrowReveal(0); hm.gPlay = performance.now(); hmAnimate(); }
 
 // ---- the panel of the plan
 function hmGrowPanel(t) {
@@ -6938,6 +6958,246 @@ function hmGrowPanel(t) {
   if (t.grow === 'shop') { const s = t.s; return openPanel(t.name, [['Út', s.area || 'Gyökér'], ['Megjelent', d(s.born)], ['Mélyvíz-kert', s.garden ? 'van' : 'nincs']], note + hmFooter('M', src)); }
   const l = t.l;
   return openPanel(t.name, [['Forma', l.kind === 'gone' ? 'Rom' : { warehouse: 'Raktár', boxes: 'Dobozok', pack: 'Csomag' }[l.size]], ['Fájl', hu(l.files)], ['Sor', hu(l.loc)], ['Legkorábbi', d(l.born)]], note + hmFooter('M', src));
+}
+
+// ==== src/45-hm-estate-plan.js
+// 45-hm-estate-plan.js — the Birtok land plan of Gépország (CITY-D45 note, D52 A, docs/city/homeland/07-growth-and-land.md §7.2):
+// a drive as an estate seen from above. The whole square is the drive's capacity and every plot takes the area its bytes
+// really take, so one square metre means the same bytes on every drive. Pure data, no drawing: 46-hm-estate draws it,
+// spec-homeland tests it. It gets sizes, kinds and folder names, never a file name (estate-walk.js has none to give).
+
+const HM_EST_SIDE = 330, HM_EST_GAP = 0.5, HM_HALL_SHARE = 0.12, HM_MIN_DETAIL = 7;
+const HM_EST_NAME = { image: 'Képtár', audio: 'Koncertterem', video: 'Mozi', doc: 'Könyvtár', code: 'Műhely', archive: 'Raktár', program: 'Gyártelep', other: 'Lakónegyed' };
+// area scales with capacity across drives, which makes them comparable side by side
+const hmEstSide = (size, biggest) => HM_EST_SIDE * Math.sqrt(size / Math.max(size, biggest));
+
+// squarified treemap: items {v} into a rectangle, each gets x, y, w, h with its share of the area
+function hmSquarify(items, x, y, w, h) {
+  const list = items.filter(i => i.v > 0).sort((a, b) => b.v - a.v), total = list.reduce((a, i) => a + i.v, 0);
+  if (!total || w <= 0 || h <= 0) return [];
+  const k = w * h / total;
+  const worst = (row, side) => { let s = 0, lo = Infinity, hi = 0; for (const i of row) { const a = i.v * k; s += a; lo = Math.min(lo, a); hi = Math.max(hi, a); } return Math.max(side * side * hi / (s * s), s * s / (side * side * lo)); };
+  let row = [], at = 0;
+  const lay = () => {
+    const sum = row.reduce((a, i) => a + i.v * k, 0), wide = w >= h, side = wide ? h : w, thick = sum / side;
+    let p = 0;
+    for (const i of row) { const len = i.v * k / thick; if (wide) Object.assign(i, { x, y: y + p, w: thick, h: len }); else Object.assign(i, { x: x + p, y, w: len, h: thick }); p += len; }
+    if (wide) { x += thick; w -= thick; } else { y += thick; h -= thick; }
+    row = [];
+  };
+  while (at < list.length) {
+    const side = Math.min(w, h), it = list[at];
+    if (!row.length || worst(row.concat(it), side) <= worst(row, side)) { row.push(it); at++; } else lay();
+  }
+  if (row.length) lay();
+  return list;
+}
+
+// what stands on one plot: the largest files, a hall for each kind that matters here, and homes for all the rest
+function hmPlotLeaves(kid, rect) {
+  const left = Object.assign({}, kid.kinds), leaves = [];
+  if (rect.w * rect.h < HM_MIN_DETAIL) return [{ type: 'homes', v: kid.size, bytes: kid.size, files: kid.files, bands: kid.bands }];
+  for (const [size, kind] of kid.top || []) { leaves.push({ type: 'tower', v: size, bytes: size, kind }); left[kind] = Math.max(0, (left[kind] || 0) - size); }
+  let rest = kid.size - leaves.reduce((a, l) => a + l.v, 0);
+  for (const [kind, bytes] of Object.entries(left)) if (kind !== 'other' && bytes >= kid.size * HM_HALL_SHARE) { leaves.push({ type: 'hall', v: bytes, bytes, kind }); rest -= bytes; }
+  if (rest > 0) leaves.push({ type: 'homes', v: rest, bytes: rest, files: kid.files, bands: kid.bands });
+  return leaves;
+}
+
+// vol {letter, size, free}; walk is estate-walk.js's result, or null while it is still walking
+function hmEstatePlan(vol, walk, biggest) {
+  const side = hmEstSide(vol.size, biggest), org = -side / 2, used = Math.max(0, vol.size - vol.free);
+  const dirs = walk ? walk.dirs.filter(d => d.size > 0).map((d, i) => ({ type: 'dir', v: d.size, top: walk.dirs.indexOf(d), d, i })) : [];
+  const read = Math.min(used, dirs.reduce((a, d) => a + d.v, 0)), unread = used - read;
+  const cells = hmSquarify([{ type: 'free', v: vol.free }, { type: 'unread', v: unread }, ...dirs], org, org, side, side), plots = [];
+  for (const c of cells) if (c.type === 'dir') {
+    const kids = c.d.kids.filter(k => k.size > 0).map(k => ({ v: k.size, k, kid: c.d.kids.indexOf(k) }));
+    for (const q of hmSquarify(kids, c.x + HM_EST_GAP, c.y + HM_EST_GAP, c.w - HM_EST_GAP * 2, c.h - HM_EST_GAP * 2)) {
+      const r = { x: q.x + 0.25, y: q.y + 0.25, w: Math.max(0.2, q.w - 0.5), h: Math.max(0.2, q.h - 0.5) };
+      plots.push(Object.assign(r, { top: c.top, kid: q.kid, bytes: q.k.size, files: q.k.files, kinds: q.k.kinds, name: c.d.name, sub: q.k.own ? '' : q.k.rest ? `+ ${q.k.rest} további` : q.k.name, partial: !!q.k.partial,
+        leaves: hmSquarify(hmPlotLeaves(q.k, r), r.x, r.y, r.w, r.h) }));
+    }
+  }
+  return { letter: vol.letter, size: vol.size, free: vol.free, used, read, unread, side, cells, plots, partial: !!(walk && walk.partial), measured: !!walk };
+}
+
+// ==== src/46-hm-estate.js
+// 46-hm-estate.js — Birtok drawn: 45-hm-estate-plan's estate on the water, in place of the island. Free space is pasture and
+// farm fields, small files are shacks and farmhouses, large files are towers, and each kind that matters on a plot gets its
+// hall. The walk runs only when a drive is opened and stays in memory; folder names stay blurred until clicked (CITY-D27 A).
+
+const HM_EST_COL = { field: 0x33493c, field2: 0x2c4034, hedge: 0x41594b, unread: 0x262d33, plot: 0x2a3a45, plate: 0x314450, home: 0x74808a, roof: 0x5b6a75 };
+const HM_HALL_COL = { image: 0x7d8a96, audio: 0x8a7f72, video: 0x5d6873, doc: 0x6d7a6f, code: 0x56606b, archive: 0x6d6257, program: 0x4c565f };
+// the small system partitions (100 MB here) hold nothing of the user's and would be specks
+const hmDrives = () => (hm.hw ? hm.hw.disks.flatMap(d => d.vols || []) : []).filter(v => v.size >= 2 ** 30).sort((a, b) => (a.letter < b.letter ? -1 : 1));
+const hmSeeded = s => () => (s = (s * 16807) % 2147483647) / 2147483647;
+
+function hmEstateOpen(letter) {
+  const ds = hmDrives();
+  if (!ds.length) { hm.ePending = true; kvToast('A meghajtók leltára érkezik, utána megnyílik a Birtok'); return; }
+  hm.ePending = false;
+  hm.eData = hm.eData || {};
+  hm.estate = letter || hm.estLast || (ds.find(d => d.letter === 'H:') || ds[0]).letter;
+  hm.estLast = hm.estate;
+  hm.gPlay = 0;
+  hmShow(null);
+  if (hm.layer) hmSetLayer(0);
+  hmEstateDraw();
+  hmEstateVis();
+  hmDrivesPaint(); hmPlanPaint();
+  hmHome(900);
+  hmEstateAsk(false);
+}
+function hmEstateClose() {
+  hm.estate = null; hmShow(null);
+  if (hm.eGroup) hm.eGroup.visible = false;
+  hmEstateVis(); hmDrivesPaint();
+}
+function hmEstateVis() {
+  const on = !!hm.estate;
+  hm.surface.visible = !on; hm.land.visible = !on; hm.shore.visible = !on;
+  if (hm.grow) hm.grow.visible = !on && hm.layer === 0 && hm.planK > 0;
+  $('hm-rail').hidden = on;
+  requestRender();
+}
+async function hmEstateAsk(rescan, again) {
+  const letter = hm.estate;
+  clearTimeout(hm.eRetry);
+  if (hm.fixture) { hm.eData[letter] = hmFixtureWalk(letter); hmEstateDraw(); return; }
+  if (!window.KV_COMPANION) { hm.eStatus = 'A méréshez a segéd kell'; hmWhen(); return; }
+  if (!again) { hm.eStatus = 'Mérés indul…'; hmWhen(); }
+  const r = await kvCall('hm-estate', { letter, rescan: !!rescan });
+  if (r.status !== 200) { hm.eStatus = (r.json && r.json.error) || 'A mérés nem indult el'; hmWhen(); return; }
+  if (r.json.walk) return hmEstateEvent({ letter, walk: r.json.walk });
+  // the result also comes as an event, but a page must not depend on catching that one: it asks again until it has it
+  if (r.json.walking && hm.estate === letter) hm.eRetry = setTimeout(() => { if (hm.estate === letter && !hm.eData[letter]) hmEstateAsk(false, true); }, 15000);
+}
+function hmEstateEvent(d) {
+  if (d.walk) { hm.eData[d.letter] = d.walk; if (d.letter === hm.estate) { hm.eStatus = ''; hmEstateDraw(); } return; }
+  if (d.letter === hm.estate) { hm.eStatus = `Mérés ${Math.round(d.p * 100)} %`; hmWhen(); }
+}
+
+function hmEstateDraw() {
+  const ds = hmDrives(), vol = ds.find(v => v.letter === hm.estate);
+  if (!vol) return;
+  const plan = hmEstatePlan(vol, hm.eData[vol.letter] || null, Math.max(...ds.map(v => v.size)));
+  if (hm.eGroup) { hm.group.remove(hm.eGroup); for (const m of hm.eMeshes) m.dispose(); for (const s of hm.eLabels) s.material.dispose(); }
+  hm.ePlan = plan;
+  const list = { box: [], dome: [], roof: [] };
+  const put = (kind, ent, x, z, w, d, h, col, y = 0, tag = 'M') => { list[kind].push({ kind, ent, m: new THREE.Matrix4().makeScale(w, h, d).setPosition(x, y, z), col, tag }); };
+  const rnd = hmSeeded(vol.size % 2147483646 + 1), labels = [];
+  const sign = (text, x, z, y, weight) => labels.push({ text, x, z, y, weight });
+  const fmt = hmGB, room = c => Math.min(c.w, c.h) > plan.side * 0.18;   // a sign only where the land can hold it
+  for (const c of plan.cells) {
+    const cx = c.x + c.w / 2, cz = c.y + c.h / 2;
+    if (c.type === 'free') {
+      const e = { est: 'free', name: `Legelő · ${fmt(vol.free)} szabad`, tag: 'M' }, rows = Math.max(2, Math.min(9, Math.round(c.h / 16)));
+      for (let i = 0; i < rows; i++) put('box', e, cx, c.y + (i + 0.5) * c.h / rows, c.w, c.h / rows, 0.3, i % 2 ? HM_EST_COL.field2 : HM_EST_COL.field);
+      const n = Math.min(26, Math.round(c.w * c.h / 900));
+      for (let i = 0; i < n; i++) { const s = 2 + rnd() * 2.4; put('dome', e, c.x + 3 + rnd() * (c.w - 6), c.y + 3 + rnd() * (c.h - 6), s, s, 2.6, HM_EST_COL.hedge, 0.3); }
+      if (room(c)) sign('Legelő', cx, cz, 10, 1e15);
+    } else if (c.type === 'unread') {
+      const e = { est: 'unread', name: plan.measured ? `Nem olvasott · ${fmt(c.v)}` : 'Mérés alatt', tag: 'K' };
+      put('box', e, cx, cz, c.w, c.h, 0.4, HM_EST_COL.unread, 0, 'K');
+      if (room(c)) sign(plan.measured ? 'Nem olvasott' : 'Mérés alatt', cx, cz, 10, 1e14);
+    } else put('box', { est: 'plot', name: `Telek · ${fmt(c.v)}`, tag: 'M', c }, cx, cz, c.w - 0.2, c.h - 0.2, 0.2, HM_EST_COL.plot);
+  }
+  for (const p of plan.plots) {
+    const ep = { est: 'plot', name: `Telek · ${fmt(p.bytes)}`, tag: 'M', p };
+    put('box', ep, p.x + p.w / 2, p.y + p.h / 2, p.w, p.h, 0.4, HM_EST_COL.plate, 0.2);
+    for (const l of p.leaves) {
+      const x = l.x + l.w / 2, z = l.y + l.h / 2, w = Math.max(0.3, l.w * 0.86), d = Math.max(0.3, l.h * 0.86);
+      if (l.type === 'tower') {
+        const e = { est: 'tower', name: `${{ video: 'Videó', archive: 'Tömörített fájl', image: 'Kép', audio: 'Hang', doc: 'Dokumentum', code: 'Forrás', program: 'Program', other: 'Fájl' }[l.kind]} · ${fmt(l.bytes)}`, tag: 'M', l, p };
+        const h = 10 + 13 * Math.log10(1 + l.bytes / 2 ** 30 * 10);
+        put('box', e, x, z, w, d, h, HM_HALL_COL[l.kind] || HM_HALL_COL.program, 0.6);
+        put('box', e, x, z, w * 0.62, d * 0.62, h * 0.22, HM_COL.top, 0.6 + h);
+      } else if (l.type === 'hall') {
+        const e = { est: 'hall', name: `${HM_EST_NAME[l.kind]} · ${fmt(l.bytes)}`, tag: 'M', l, p }, h = 4 + 2.4 * Math.log10(1 + l.bytes / 2 ** 20), col = HM_HALL_COL[l.kind];
+        put('box', e, x, z, w, d, h, col, 0.6);
+        if (l.kind === 'audio') put('dome', e, x, z, w * 0.8, d * 0.8, h * 0.3, HM_COL.top, 0.6 + h);
+        else if (l.kind === 'image' || l.kind === 'doc') put('roof', e, x, z, w * 0.72, d * 0.72, h * 0.34, HM_COL.top, 0.6 + h);
+        else if (l.kind === 'video') put('box', e, x, z, w * 0.96, d * 0.2, h * 0.3, HM_COL.ice, 0.6 + h);
+        else put('box', e, x, z, w * 1.02, d * 1.02, 0.6, HM_COL.top, 0.6 + h);
+        sign(HM_EST_NAME[l.kind], x, z, 12 + h, l.bytes);
+      } else {
+        const e = { est: 'homes', name: `Tanyák · ${fmt(l.bytes)}, ${hu(l.files)} fájl`, tag: 'M', l, p };
+        const area = l.w * l.h, s = 1.5, n = Math.min(14, Math.floor(area / (s * s * 3.2)), Math.max(1, Math.round(2 * Math.log2(1 + l.files))));
+        if (n < 1) { put('box', e, x, z, w, d, 0.8, HM_EST_COL.home, 0.6); continue; }
+        const nx = Math.ceil(Math.sqrt(n * l.w / Math.max(0.1, l.h))), ny = Math.ceil(n / nx), share = l.bands ? (l.bands[1] + l.bands[2]) / Math.max(1, l.bands[0] + l.bands[1] + l.bands[2]) : 0;
+        for (let i = 0; i < n; i++) {
+          const hx = l.x + (i % nx + 0.5) * l.w / nx, hz = l.y + (Math.floor(i / nx) + 0.5) * l.h / ny, big = i / n < share + 0.15;   // farmhouses for the mid-sized share, shacks for the rest
+          put('box', e, hx, hz, big ? s : s * 0.72, big ? s * 0.8 : s * 0.72, big ? 1.5 : 0.9, HM_EST_COL.home, 0.6);
+          if (big) put('roof', e, hx, hz, s * 0.86, s * 0.7, 0.9, HM_EST_COL.roof, 2.1);
+        }
+      }
+    }
+  }
+  hm.eGroup = new THREE.Group();
+  const inst = (kind, geo) => {
+    const parts = list[kind], im = new THREE.InstancedMesh(geo, hm.mPlain, Math.max(1, parts.length)), c = new THREE.Color();
+    im.setColorAt(0, c.setHex(HM_COL.body));   // an estate with no roofs at all still needs the buffer
+    parts.forEach((p, i) => { im.setMatrixAt(i, p.m); im.setColorAt(i, c.setHex(p.col)); p.i = i; });
+    im.count = parts.length; im.userData.parts = parts; im.frustumCulled = false; im.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 700);
+    hm.eGroup.add(im);
+    return im;
+  };
+  hm.eMeshes = [inst('box', unitBox.clone()), inst('dome', hm.meshes[3].geometry), inst('roof', hm.meshes[5].geometry)];
+  // signs: the heaviest first, and none near one already placed, so no sign covers another
+  hm.eLabels = [];
+  const kept = [], gap = Math.max(40, plan.side / 6);
+  for (const l of labels.sort((a, b) => b.weight - a.weight)) {
+    if (kept.length >= 9 || kept.some(k => Math.hypot(k.x - l.x, k.z - l.z) < gap)) continue;
+    kept.push(l);
+    const sp = hmLabel(l.text, l.x, l.y, l.z, (22 + l.text.length * 2.1) * (0.45 + 1.15 * plan.side / HM_EST_SIDE)); hm.eLabels.push(sp); hm.eGroup.add(sp);
+  }
+  const title = hmLabel(`${vol.letter} · ${fmt(vol.size)}`, 0, 8, -plan.side * 0.56, 24 + 90 * plan.side / HM_EST_SIDE); hm.eLabels.push(title); hm.eGroup.add(title);
+  hm.group.add(hm.eGroup);
+  hmTagsApply();
+  hmWhen();
+  requestRender();
+}
+
+function hmDrivesPaint() {
+  const el = $('hm-drives');
+  if (!el) return;
+  const ds = hmDrives();
+  el.hidden = !hm.estate;
+  el.innerHTML = hm.estate ? ds.map(d => `<button class="btn${d.letter === hm.estate ? ' on' : ''}" data-drive="${esc(d.letter)}" title="${esc(hmGB(d.size))}, ${esc(hmGB(d.free))} szabad">${esc(d.letter)}</button>`).join('') + '<button class="btn" data-rescan title="A mérés elölről">Újramérés</button>' : '';
+}
+
+function hmEstatePick() {
+  const hits = ray.intersectObjects(hm.eMeshes, false);
+  for (const h of hits) { const p = h.object.userData.parts[h.instanceId]; if (p && p.ent) return p.ent; }
+  return null;
+}
+function hmEstatePanel(t) {
+  const plan = hm.ePlan, pct = b => (100 * b / plan.size).toFixed(b / plan.size < 0.01 ? 2 : 1) + ' %';
+  const wrap = h => `<span class="${hm.reveal ? '' : 'blur'}">${esc(h)}</span>`, area = '<p class="dim">A terület a bájtokkal arányos, a meghajtók között is. A fájlok neve nem kerül a városba.</p>';
+  const src = 'Win32_LogicalDisk; estate-walk, csak a memóriában';
+  if (t.est === 'free') return openPanel('Legelő · szabad hely', [['Meghajtó', esc(plan.letter)], ['Kapacitás', hmGB(plan.size)], ['Szabad', hmGB(plan.free)], ['Arány', pct(plan.free)]], area + hmFooter('M', src));
+  if (t.est === 'unread') return openPanel('Nem olvasott terület', [['Méret', hmGB(plan.unread)], ['Arány', pct(plan.unread)]], `<p class="dim">Foglalt, de a mérés nem jutott el hozzá: rendszerfájl, tiltott mappa, fallal körülvett zóna${plan.partial ? ', vagy lejárt az időkeret' : ''}.</p>` + hmFooter('K', 'kapacitás − szabad − olvasott'));
+  const p = t.p || t.c;
+  if (!p || !t.p) return openPanel(t.name, [['Mappa', wrap(t.c ? t.c.d.name : '')]], area + hmFooter('M', src));
+  const rows = [['Mappa', wrap(p.name + (p.sub ? ' \\ ' + p.sub : ''))], ['Méret', hmGB(p.bytes)], ['Arány', pct(p.bytes)], ['Fájl', hu(p.files)]];
+  if (t.l && t.est !== 'homes') rows.splice(1, 0, ['Ez az épület', hmGB(t.l.bytes)]);
+  const kinds = Object.entries(p.kinds).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v]) => [HM_EST_NAME[k], hmGB(v)]);
+  openPanel(t.est === 'plot' ? 'Telek' : t.name, [...rows, ...kinds], (p.partial ? '<p class="warn">Részleges: lejárt az időkeret.</p>' : '') + `<button class="btn" data-hmreveal>${hm.reveal ? 'Elrejtés' : 'Nevek mutatása'}</button> ${hm.fixture ? '' : '<button class="btn" data-hmopen>Mappa megnyitása</button>'}` + area + hmFooter('M', src));
+  const box = $('panel');
+  box.querySelectorAll('[data-hmreveal]').forEach(b => { b.onclick = () => { hm.reveal = !hm.reveal; hmEstatePanel(t); }; });
+  box.querySelectorAll('[data-hmopen]').forEach(b => { b.onclick = async () => { const r = await kvCall('hm-open', { letter: plan.letter, top: p.top, kid: p.kid }); if (r.status !== 200) kvToast((r.json && r.json.error) || 'Nem sikerült'); }; });
+}
+
+// #hmtest=1: an invented estate of the walk's own shape
+function hmFixtureWalk(letter) {
+  const GB = 2 ** 30, kid = (name, gb, kinds, top = []) => ({ name, size: gb * GB, files: Math.round(gb * 900), kinds: Object.fromEntries(Object.entries(kinds).map(([k, v]) => [k, v * gb * GB])), bands: [800, 90, 4], top: top.map(([s, k]) => [s * GB, k]) });
+  const dir = (name, kids) => ({ name, size: kids.reduce((a, k) => a + k.size, 0), files: kids.reduce((a, k) => a + k.files, 0), kinds: {}, bands: [0, 0, 0], top: [], kids });
+  return { root: letter + '\\', at: Date.now(), ms: 10, partial: false, walled: [], fixture: true, dirs: [
+    dir('Próba fotók', [kid('Nyaralás', 40, { image: 0.9, other: 0.1 }), kid('Család', 25, { image: 0.7, video: 0.3 }, [[3, 'video']])]),
+    dir('Próba zene', [kid('Lemezek', 30, { audio: 0.95, other: 0.05 })]),
+    dir('Próba filmek', [kid('Sorozat', 60, { video: 1 }, [[12, 'video'], [9, 'video'], [6, 'video']])]),
+    dir('Próba munka', [kid('Forrás', 8, { code: 0.8, doc: 0.2 }), kid('Iratok', 12, { doc: 0.8, archive: 0.2 }), kid('Telepítők', 20, { archive: 0.6, program: 0.4 }, [[4, 'archive']])]),
+  ] };
 }
 
 // ==== src/99-boot.js

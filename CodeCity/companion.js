@@ -93,6 +93,8 @@
 // by a process whose ancestor is a Claude session (Bash, git, node …) becomes that session's 'beam' (via: the exe).
 // The process tree and DNS names stay in memory only (CITY-D27 A).
 //
+// Gépország's Birtok: POST hm-estate {letter, rescan} walks one drive at low priority (vrg-probe --estate, else estate-walk.js) and
+// keeps it in memory; 'hmestate' events carry progress and the result. POST hm-open opens a walked plot's folder, by index only.
 // Gépország (CITY-D34…D49; homeland.js): POST hm-feed {on} turns vrg-probe's feed on while the view is open; each raw line
 // becomes one 'hm' event with rates, classes and layers. POST hm-close {key} asks that program's counted windows to close
 // (WM_CLOSE, the program may still ask to save); the shell and Claude are refused. Memory only (CITY-D27 A).
@@ -742,6 +744,32 @@ function diskWalk() {
 process.on('exit', () => { if (disk.child) try { disk.child.kill(); } catch (e) { /* gone */ } });
 const landJson = () => { try { return JSON.parse(fs.readFileSync(path.join(CITY, 'land.json'), 'utf8')); } catch (e) { return null; } };
 
+// ---- Birtok: one drive's estate at a time, walked on request at low priority, in memory only (CITY-D27 A, D52 A)
+const ESTATE_TTL = 30 * 60 * 1000, estate = { data: new Map(), child: null, letter: null, next: null };
+function estateWalk(letter, rescan) {
+  const have = estate.data.get(letter);
+  if (have && !rescan && Date.now() - have.at < ESTATE_TTL) return { ok: true, walk: have };
+  if (estate.child) { if (estate.letter !== letter) estate.next = letter; return { ok: true, walking: true }; }
+  // vrg-probe lists folders natively and is far faster; the Node walk is the fallback where it is not built
+  const cmd = exists(PROBE_EXE) ? [PROBE_EXE, '--estate', letter + '\\', '180'] : [process.execPath, path.join(CITY, 'estate-walk.js'), letter + '\\', '180'];
+  const child = spawn(cmd[0], cmd.slice(1), { stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true, env: Object.assign({}, process.env, { DOTNET_ROOT }) });
+  try { os.setPriority(child.pid, os.constants.priority.PRIORITY_LOW); } catch (e) { /* it runs at normal priority then */ }
+  let buf = '';
+  child.stdout.on('data', d => {
+    buf += d;
+    let k;
+    while ((k = buf.indexOf('\n')) >= 0) {
+      const l = buf.slice(0, k); buf = buf.slice(k + 1);
+      try { const m = JSON.parse(l); if (m.dirs) { estate.data.set(letter, m); liveEmit('hmestate', { letter, walk: m }); } else liveEmit('hmestate', { letter, p: m.p }); } catch (e) { /* a broken line */ }
+    }
+  });
+  const done = () => { estate.child = null; const n = estate.next; estate.next = null; if (n) estateWalk(n, false); };
+  child.on('exit', done); child.on('error', done);
+  estate.child = child; estate.letter = letter;
+  return { ok: true, walking: true };
+}
+process.on('exit', () => { if (estate.child) try { estate.child.kill(); } catch (e) { /* gone */ } });
+
 // ---- Erőmű: the Tier 0 sampler (a PowerShell helper, while a page listens)
 const power = { child: null, last: null };
 function powerStart() {
@@ -1139,6 +1167,18 @@ const ACTIONS = {
   'hm-feed': { keys: ['on'], async run(b) {
     if (b.on) { probeStart(); hmFeed.on(); } else hmFeed.off();
     return [200, { ok: true, state: probe.state, hw: hmFeed.hw }];
+  } },
+  'hm-estate': { keys: ['letter', 'rescan'], async run(b) {
+    if (typeof b.letter !== 'string' || !/^[A-Z]:$/.test(b.letter)) return [400, { error: 'meghajtó: pl. H:' }];
+    if (!hmFeed.drives().includes(b.letter)) return [404, { error: 'nincs ilyen meghajtó' }];
+    if (DRY) return [200, { dryRun: true }];
+    return [200, estateWalk(b.letter, !!b.rescan)];
+  } },
+  'hm-open': { keys: ['letter', 'top', 'kid'], async run(b) {
+    const w = estate.data.get(b.letter), d = w && w.dirs[b.top], k = d && d.kids && d.kids[b.kid];
+    if (!d || !k || d.own || k.restricted) return [404, { error: 'nincs ilyen telek' }];
+    const dir = path.join(w.root, d.name, k.own || k.rest ? '' : k.name);
+    return DRY ? [200, { dryRun: true }] : [200, launch('explorer.exe', [dir])];
   } },
   'hm-close': { keys: ['key'], async run(b) {
     if (typeof b.key !== 'string' || !hmFeed.closable(b.key)) return [403, { error: 'ezt a programot a város nem zárja be' }];

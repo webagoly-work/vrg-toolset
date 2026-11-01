@@ -163,13 +163,13 @@ function hmLayerApply() {
   hm.slabD.material.opacity = l > 2 ? 0.15 : 0.92;
   hm.water.material.uniforms.uAlpha.value = ghost ? 0.2 : 1;
   hm.water.material.depthWrite = !ghost;
-  hm.shore.visible = true;
+  hm.shore.visible = !hm.estate;
   requestRender();
 }
 // the truth display (CITY-D45): Jelölés paints metaphor grey and marks the approximate; Mérés leaves only the measured
 function hmTagsApply() {
   const c = new THREE.Color();
-  for (const im of [...hm.meshes, ...(hm.gMeshes || [])]) {
+  for (const im of [...hm.meshes, ...(hm.gMeshes || []), ...(hm.eMeshes || [])]) {
     im.userData.parts.forEach(p => {
       const off = hm.truth && p.tag === 'J', dim = hm.tags && p.tag === 'J', approx = hm.tags && p.tag === 'K';
       c.setHex(p.col); if (dim) c.setHex(HM_COL.grey); if (approx) c.lerp(new THREE.Color(0x8a939b), 0.35);
@@ -221,6 +221,7 @@ function hmWaterAt(e) {
   return p && !hmOnIsland(p.x, p.z) ? p : null;
 }
 function hmOnIsland(x, z) {
+  if (hm.estate) return Math.abs(x) <= hm.ePlan.side / 2 && Math.abs(z) <= hm.ePlan.side / 2;
   let inside = false;
   for (let i = 0, j = HM_SHORE.length - 1; i < HM_SHORE.length; j = i++) {
     const xi = hmW(HM_SHORE[i][0]), zi = hmW(HM_SHORE[i][1]), xj = hmW(HM_SHORE[j][0]), zj = hmW(HM_SHORE[j][1]);

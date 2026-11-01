@@ -141,6 +141,12 @@ function hmGrowReveal(T) {
 function hmWhen() {
   const el = $('hm-when'), city = current && current.city;
   if (!el) return;
+  if (hm.estate) {
+    const pl = hm.ePlan;
+    el.hidden = false;
+    el.textContent = hm.eStatus || (pl && pl.measured ? `${hmGB(pl.read)} olvasva${pl.partial ? ' · részleges: lejárt az időkeret' : ''}` : '');
+    return;
+  }
   el.hidden = !hm.plan || !city;
   if (el.hidden) return;
   const i = Math.min(city.commits.length - 1, Math.floor(hm.gT)), d = new Date(city.commits[i][0] * 1000).toLocaleDateString('hu-HU');
@@ -149,7 +155,10 @@ function hmWhen() {
 
 // ---- switching: one frame of the move, driven from hmFrame so it costs nothing at rest
 async function hmSetPlan(p) {
-  if (p === hm.plan) return;
+  if (p === 2) return hmEstateOpen();
+  const wasEstate = !!hm.estate;
+  if (wasEstate) hmEstateClose();
+  if (p === hm.plan) { hmPlanPaint(); if (wasEstate) hmHome(900); return; }
   if (p && !await hmGrowEnsure()) { kvToast('Nincs betöltött git-történet'); return; }
   hm.plan = p; hmShow(null);
   hm.carList = []; hm.flowsWas = hm.flows;
@@ -197,17 +206,18 @@ function hmPlanApply() {
     const [x0, y0, z0] = s.userData.at, z = hm.z[hmEntZone(s.userData.ent.id)], [x, zz] = hmZoneXZ(z, x0, z0), f = z ? 1 - 0.28 * e : 1;
     s.position.set(x, z ? y0 * z.s + 3 * e : y0, zz); s.scale.set(s.userData.w * f, s.userData.w * f * 96 / 512, 1);
   }
-  hm.grow.visible = hm.layer === 0 && (hm.plan === 1 || k > 0);
+  hm.grow.visible = !hm.estate && hm.layer === 0 && (hm.plan === 1 || k > 0);
   hm.cars.visible = k === 0 || k === 1;
   hmSelApply();
 }
 function hmPlanPaint() {
   if (!hm.ui) return;
-  for (const b of hm.ui.querySelectorAll('[data-plan]')) b.classList.toggle('on', +b.dataset.plan === hm.plan);
-  $('hm-replay').hidden = !hm.plan;
+  const on = hm.estate ? 2 : hm.plan;
+  for (const b of hm.ui.querySelectorAll('[data-plan]')) b.classList.toggle('on', +b.dataset.plan === on);
+  $('hm-replay').hidden = !hm.plan || !!hm.estate;
   hmWhen();
 }
-function hmReplay() { if (!hm.plan || !hm.plan2) return; hmGrowReveal(0); hm.gPlay = performance.now(); hmAnimate(); }
+function hmReplay() { if (!hm.plan || !hm.plan2 || hm.estate) return; hmGrowReveal(0); hm.gPlay = performance.now(); hmAnimate(); }
 
 // ---- the panel of the plan
 function hmGrowPanel(t) {

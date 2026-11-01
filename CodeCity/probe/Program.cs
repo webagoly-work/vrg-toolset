@@ -69,8 +69,9 @@ static class Probe
     static IntPtr fg;
     static WinEventProc? keep;   // the hook's delegate must outlive the hook
 
-    static void Main()
+    static void Main(string[] args)
     {
+        if (args.Length > 1 && args[0] == "--estate") { Estate.Run(args[1], args.Length > 2 ? int.Parse(args[2]) : 90); return; }   // Birtok: a one-shot walk, see Estate.cs
         Console.OutputEncoding = new UTF8Encoding(false);
         uint main = GetCurrentThreadId();
         new Thread(() => { try { string? l; while ((l = Console.In.ReadLine()) != null) Command(l); } catch { } PostThreadMessageW(main, WM_QUIT, 0, 0); }) { IsBackground = true }.Start();

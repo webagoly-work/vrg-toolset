@@ -42,7 +42,7 @@ for area; the farm imagery is the rendering.
 |---|---|---|
 | **S1 ✔ 2026-10-31** | View, island on a real water plane, nine complexes, ground and undercity, live feed, panels, close program, toggles for bodies and tags, fixture mode, START key, Erőmű door | Nothing |
 | **S2a ✔ 2026-10-31** | Növekedés plan with the rearranging move and the replay | S1 |
-| **S2b** | Birtok land view (CITY-D50: after Növekedés) | S2a |
+| **S2b ✔ 2026-11-01** | Birtok land view: every drive (CITY-D52 A) | S2a |
 | **S3** | ETW upgrades, sensors through LibreHardwareMonitor (CITY-D51 A: confirm the PawnIO need, ask before installing), physical page view, opt-in recording | The user's elevated steps |
 
 **S1 as built:** `CodeCity/probe/Homeland.cs`, `CodeCity/homeland.js`, `homeland-classes.json`, `probe-hw.ps1`,
@@ -51,6 +51,26 @@ for area; the farm imagery is the rendering.
 only, Home frames the island. The Street level (−1) stands on the surface as small booths. Not in S1: CITY-D45's Mérés lens
 only dims metaphor parts, because S1 builds none tagged J; the 15-minute memory history (CITY-D48) comes with S3; hints cover
 the Temp and Downloads origin only, not signatures.
+
+**S2b as built:** `CodeCity/probe/Estate.cs` (`vrg-probe --estate`), `CodeCity/estate-walk.js` (the fallback),
+`src/45-hm-estate-plan.js` (pure, tested), `46-hm-estate.js`. The Birtok button or key B opens it, the drive buttons switch,
+Újramérés walks again. Decided in the build:
+
+- **True area on one scale.** The square is the capacity and each byte takes the same area on every drive, so C: is about ten
+  times the size of H:. Below 1 GB a partition is left out: the two 100 MB system partitions would be specks.
+- **Three kinds of land:** free space is pasture (M); read folders are plots (M); what is used but not read is the dark
+  *Nem olvasott* zone (K): system files, refused folders, walled zones, or the time limit. It keeps its true area.
+- **On a plot** the five largest files of 100 MB or more are towers. A kind with 12 % or more of the plot gets its hall: Képtár,
+  Koncertterem, Mozi, Könyvtár, Műhely, Raktár, Gyártelep. The rest are farmhouses and shacks, up to 14 per plot.
+  The number of homes grows with the log of the file count; only the area is exact.
+- **No file names, ever** (CITY-D27 A): the page gets sizes, kinds and folder names, and a tower is "Videó · 3,2 GB". Folder names
+  are blurred until clicked, and no sign on the map shows one, because `jobs` holds client names. *Mappa megnyitása* opens the
+  plot's folder in Explorer, which is how a hall is "reachable" without carrying names into the city.
+- **The walk is native.** With the antivirus on every file open, Node managed about 3 000 files a second. A directory listing
+  carries the sizes, so `vrg-probe` reads about 9 000 a second on the same disk. Folders take turns in 0.7 s slices for up to
+  180 s, at low priority, one drive at a time, on request, and the result stays in the segéd's memory for 30 minutes.
+- **Measured 2026-10-31 on a busy machine:** H: 37 GB in 43 s, G: 207 GB in 7 s, both complete; F: 607 GB complete; C: 368 GB
+  in 180 s, partial, so C: shows an honest *Nem olvasott* zone for what is left.
 
 **S2a as built:** `CodeCity/src/43-hm-plan.js` (pure, tested) and `44-hm-grow.js`. Key N or the Bekötés / Növekedés buttons
 switch plans, R or Újra replays the history. Decided in the build:

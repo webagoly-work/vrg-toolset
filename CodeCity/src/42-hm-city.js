@@ -236,6 +236,7 @@ function hmPick(e) {
   const r = canvas.getBoundingClientRect();
   ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
+  if (hm.estate) return hmEstatePick();
   if (hm.layer > 0) {
     const hit = ray.intersectObjects(hm.layer >= 2 ? [hm.rooms, hm.stone] : [hm.rooms], false)[0];
     if (!hit) return null;

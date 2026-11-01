@@ -94,6 +94,7 @@ function create({ emit, send, run, root, selfPid, dry }) {
       emit('hm', hm.last);
     },
     closable: key => !PROTECTED.has(String(key).toLowerCase()),
+    drives: () => (hm.hw && hm.hw.disks ? hm.hw.disks.flatMap(d => (d.vols || []).map(v => v.letter)) : []),
   };
 }
 

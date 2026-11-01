@@ -37,7 +37,7 @@ let srv = null, stream = '', token = '';
 async function start() {
   if (srv) return srv;
   execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: fx });
-  for (const f of ['companion.js', 'scan.js', 'sessions.js', 'agents-poll.js', 'homeland.js', 'homeland-classes.json']) put(path.join(fx, 'CodeCity', f), fs.readFileSync(path.join(CITY, f), 'utf8'));
+  for (const f of ['companion.js', 'scan.js', 'sessions.js', 'agents-poll.js', 'homeland.js', 'homeland-classes.json', 'estate-walk.js']) put(path.join(fx, 'CodeCity', f), fs.readFileSync(path.join(CITY, f), 'utf8'));
   put(path.join(fx, 'CodeCity', 'dist', 'vrg-codecity.html'), '<!doctype html><html><head></head><body>fixture</body></html>');
   put(path.join(fx, 'fake-probe.js'), FAKE);
   const cfg = path.join(fx, 'none.json');
@@ -141,6 +141,50 @@ module.exports = [
     execFileSync(process.execPath, [path.join(CITY, 'scan.js'), r, '--out', out], { stdio: 'ignore' });
     const c = JSON.parse(fs.readFileSync(out, 'utf8')), mv = n => !!c.files.find(f => f.p === n).mv;
     assert.deepStrictEqual([mv('a.html'), mv('b.html'), mv('c.js')], [true, false, false]);
+  } },
+  { name: 'homeland: the estate walk gives sizes and kinds, skips links and walled zones, and carries no file name', async fn() {
+    const { walk } = require('../estate-walk.js');
+    const r = fs.mkdtempSync(path.join(os.tmpdir(), 'kv-est-'));
+    put(path.join(r, 'Mappa', 'Al', 'titkos-kep.jpg'), Buffer.alloc(3000)); put(path.join(r, 'Mappa', 'Al', 'titkos-dal.mp3'), Buffer.alloc(2000)); put(path.join(r, 'Mappa', 'sajat.txt'), Buffer.alloc(100));
+    put(path.join(r, '.ssh', 'id'), Buffer.alloc(9000)); put(path.join(r, 'gyoker.bin'), Buffer.alloc(50));
+    const w = walk(r, 5), d = w.dirs.find(x => x.name === 'Mappa'), al = d.kids.find(k => k.name === 'Al');
+    assert.strictEqual(d.size, 5100);
+    assert.deepStrictEqual([al.kinds.image, al.kinds.audio], [3000, 2000]);
+    assert.ok(d.kids.some(k => k.own && k.size === 100), 'a folder keeps its own files');
+    assert.deepStrictEqual(w.walled, ['.ssh'], 'a walled zone is named, not read');
+    assert.ok(!w.dirs.some(x => x.name === '.ssh') && w.dirs.reduce((a, x) => a + x.size, 0) === 5150);
+    assert.ok(!/titkos|sajat|gyoker/.test(JSON.stringify(w)), 'no file name in the result');
+  } },
+  { name: 'homeland: Birtok is true to area: bytes take their share of the square, across drives too', async fn() {
+    const box = {};
+    vm.runInNewContext(fs.readFileSync(path.join(CITY, 'src', '45-hm-estate-plan.js'), 'utf8') + '\nthis.plan = hmEstatePlan; this.side = hmEstSide;', box);
+    const G = 2 ** 30, kid = (name, gb, kinds, top = []) => ({ name, size: gb * G, files: 10, kinds, bands: [5, 4, 1], top });
+    const walk = { partial: false, dirs: [
+      { name: 'Nagy', size: 300 * G, kids: [kid('Film', 200, { video: 200 * G }, [[50 * G, 'video']]), kid('Kep', 100, { image: 90 * G, other: 10 * G })] },
+      { name: 'Kis', size: 100 * G, kids: [kid('Zene', 100, { audio: 100 * G })] } ] };
+    const vol = { letter: 'D:', size: 1000 * G, free: 500 * G }, a = box.plan(vol, walk, 4000 * G), A = r => r.w * r.h, S = a.side * a.side;
+    assert.ok(Math.abs(a.side - 165) < 0.01, 'a quarter of the capacity takes a quarter of the area');
+    assert.ok(Math.abs(box.side(4000 * G, 4000 * G) - 330) < 0.01);
+    const cell = t => a.cells.find(c => c.type === t);
+    assert.ok(Math.abs(A(cell('free')) / S - 0.5) < 1e-9, 'free space is half the square');
+    assert.ok(Math.abs(A(cell('unread')) / S - 0.1) < 1e-9, 'what the walk could not read keeps its true share');
+    assert.ok(Math.abs(a.cells.reduce((s, c) => s + A(c), 0) - S) < 1e-6, 'nothing lost, nothing added');
+    for (let i = 0; i < a.cells.length; i++) for (let j = i + 1; j < a.cells.length; j++) { const p = a.cells[i], q = a.cells[j]; assert.ok(p.x + p.w <= q.x + 1e-6 || q.x + q.w <= p.x + 1e-6 || p.y + p.h <= q.y + 1e-6 || q.y + q.h <= p.y + 1e-6, 'cells do not overlap'); }
+    const film = a.plots.find(p => p.sub === 'Film'), kinds = l => l.leaves.map(x => x.type + ':' + (x.kind || '')).sort().join();
+    assert.strictEqual(kinds(film), 'hall:video,tower:video', 'the largest file is a tower, its kind a hall');
+    assert.strictEqual(kinds(a.plots.find(p => p.sub === 'Kep')), 'hall:image,homes:');
+    const w = a.plots.find(p => p.sub === 'Zene');
+    assert.strictEqual(kinds(w), 'hall:audio', 'audio stands in a concert hall');
+    const t = film.leaves.find(x => x.type === 'tower');
+    assert.ok(Math.abs(A(t) / A(film) - 0.25) < 1e-9, 'a tower takes its file\'s share of the plot');
+    const none = box.plan(vol, null, 4000 * G);
+    assert.ok(!none.measured && Math.abs(A(none.cells.find(c => c.type === 'unread')) / S - 0.5) < 1e-9, 'before the walk only capacity and free space are known');
+  } },
+  { name: 'homeland: hm-estate takes only a drive the inventory knows; hm-open only a known plot', async fn() {
+    await start();
+    assert.strictEqual((await post('hm-estate', { letter: 'C:\\Windows' })).status, 400);
+    assert.strictEqual((await post('hm-estate', { letter: 'Q:', rescan: false })).status, 404);
+    assert.strictEqual((await post('hm-open', { letter: 'Q:', top: 0, kid: 0 })).status, 404);
   } },
   { name: 'homeland: no feed until the page asks; then hm events on the stream', async fn() {
     await start();

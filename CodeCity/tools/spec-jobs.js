@@ -24,7 +24,7 @@ async function start() {
   if (srv) return srv;
   P = await freePort();
   execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: fx });
-  for (const f of ['companion.js', 'homeland.js', 'homeland-classes.json', 'scan.js', 'sessions.js', 'agents-poll.js']) put(path.join(fx, 'CodeCity', f), fs.readFileSync(path.join(CITY, f), 'utf8'));
+  for (const f of ['companion.js', 'homeland.js', 'homeland-classes.json', 'estate-walk.js', 'scan.js', 'sessions.js', 'agents-poll.js']) put(path.join(fx, 'CodeCity', f), fs.readFileSync(path.join(CITY, f), 'utf8'));
   put(path.join(fx, 'CodeCity', 'dist', 'vrg-codecity.html'), '<!doctype html><html><head></head><body>fixture</body></html>');
   // the server starts a child of its own, so 'stop' must take a tree down, not one process
   put(path.join(fx, 'tools', 'srv.js'), `require('child_process').spawn(process.execPath, ['-e', 'setInterval(()=>{},1e9)'], { stdio: 'ignore' });\n` +

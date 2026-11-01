@@ -23,7 +23,7 @@ const send = o => pipeConn.write(JSON.stringify(o) + '\n');
 async function start() {
   if (srv) return srv;
   execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: fx });
-  for (const f of ['companion.js', 'homeland.js', 'homeland-classes.json', 'scan.js', 'sessions.js', 'agents-poll.js', 'ports.json']) put(path.join(fx, 'CodeCity', f), fs.readFileSync(path.join(CITY, f), 'utf8'));
+  for (const f of ['companion.js', 'homeland.js', 'homeland-classes.json', 'estate-walk.js', 'scan.js', 'sessions.js', 'agents-poll.js', 'ports.json']) put(path.join(fx, 'CodeCity', f), fs.readFileSync(path.join(CITY, f), 'utf8'));
   put(path.join(fx, 'CodeCity', 'dist', 'vrg-codecity.html'), '<!doctype html><html><head></head><body>fixture</body></html>');
   put(path.join(fx, 'a.txt'), 'a\n');
   const agent = [{ id: 'aaaa1111', pid: 4100, cwd: fx, kind: 'interactive', sessionId: 'aaaa1111-0000-4000-8000-000000000001', name: 'teszt', state: 'working', startedAt: 1 }];

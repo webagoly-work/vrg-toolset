@@ -365,7 +365,9 @@ body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb
 #hm-plan { position: absolute; top: 62px; left: 216px; display: flex; gap: 4px; align-items: center; }
 #hm-plan .btn { background: var(--panel); font-size: 12px; padding: 3px 10px; }
 #hm-plan .btn.on { color: var(--accent); border-color: var(--accent); }
-#hm-plan .btn[hidden], #hm-when[hidden] { display: none; }
+#hm-plan .btn[hidden], #hm-when[hidden], #hm-drives[hidden], #hm-rail[hidden] { display: none; }
+#hm-drives { display: flex; gap: 4px; margin-left: 8px; }
+#panel .blur { filter: blur(4px); user-select: none; }
 #hm-when { margin-left: 8px; font-size: 12px; white-space: nowrap; }
 #hm-sw .btn, #hm-rail .btn { background: var(--panel); font-size: 12px; padding: 3px 10px; }
 #hm-sw .btn.on, #hm-rail .btn.on { color: var(--accent); border-color: var(--accent); }
