@@ -37,6 +37,7 @@ node tools/check-start.js
 - A placement change in the page must go into `Sphere.kt` too; `SphereTest` holds values from the page.
 
 ## 6. Current state
+- git 2026-11-01 977c8f0 Solomon: three-signal check over the knowledge base, with the Gömb and Caleb
 - Scanner, Caleb, page, weekly routine and the `solomon-data` push built 2026-11-01. Mobile M14 built, BETA, phone check open.
 - SOL-Q1 to Q4 answered: A, B, B, C. No new scan target for now; the Kódváros overlay is not built.
 

@@ -38,9 +38,9 @@ After a tool change also run `node tools/build-hub.js`, which bakes the tool lis
 - Never test the git flow on a real repo (root CLAUDE.md).
 
 ## 6. Current state
+- git 2026-11-01 977c8f0 Solomon: three-signal check over the knowledge base, with the Gömb and Caleb
 - git 2026-11-01 95c3e5d Varler Console: app frame and Phase 2 template pages
 - git 2026-10-31 0878ec7 Kódváros Gépország S1: this PC as a live island, the fourth view
-- git 2026-10-31 4114be9 VRG Council: Delos HQ and the Park, installed agents, START entry
 - Decision files: none. ServiceKit is merged but has no menu entry yet (2026-10-30 audit).
 
 ## 7. Do not touch

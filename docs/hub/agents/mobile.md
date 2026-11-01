@@ -37,9 +37,9 @@ GitHub Actions builds an APK on every push touching `Mobile/` (GO-MOBILE.md §0)
 - A cloud session has different limits: `docs/mobile/CLOUD.md`.
 
 ## 6. Current state
+- git 2026-11-01 5bfa6c0 VRG Mobile M14: Gömb, the Solomon sphere one swipe right of home
 - git 2026-10-31 30b9822 VRG Mobile M4: Haladás, main first and only unmerged work below
 - git 2026-10-31 564195b VRG Mobile: M9 live, the app updated itself on the phone
-- git 2026-10-31 de47d19 VRG Mobile M9: record the first release on the phone
 - M14 Gömb built 2026-11-01 ahead of the table's order, BETA, phone check open (`docs/mobile/WP/M14.md`).
 - M1, M2, M3 and M6 live; next is M9 (root CLAUDE.md).
 - M9 needs the user's release keystore outside the repo and four repo secrets (GO-MOBILE.md §4).

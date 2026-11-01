@@ -33,9 +33,9 @@ node tools/check-hub.js          # --strict before handing the hub out (WP-H13)
 - Hungarian UI text, English code (GO-HUB.md §4).
 
 ## 6. Current state
+- git 2026-11-01 977c8f0 Solomon: three-signal check over the knowledge base, with the Gömb and Caleb
 - git 2026-10-30 60498ca Kapu: admin page, helper follow-ups, setup checklist and colleague guide for the acce
 - git 2026-10-27 f058e6f Mélyvíz rollout P3–P4: BuildTree palette, Inventory, Vendor, Kapu, toolbox
-- git 2026-10-26 87f2fca Kapu: access page only; START.cmd folder option and localhost menu
 - `docs/hub/hub-seed.json` has no Mobile, Kódváros, ServiceKit or OpenWrt yet.
 - H0–H12 done; H13 (distribution) open, waiting for the OneDrive share links (docs/hub/README.md §4).
 - Decision files: `docs/hub/DECISIONS.md`, `docs/hub/HUB-Q-001.json`.
