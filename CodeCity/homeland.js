@@ -2,7 +2,8 @@
 // 'hm' lines come in with cumulative numbers; one 'hm' event per second goes out on the stream with rates, a class and a
 // layer for each process. The layer is the kernel's own session number, not a judgement (02-layers-signals.md §2.1).
 // Sources are adapters behind one shape (hm.v1): today the probe, nvidia-smi and the one-shot inventory; ETW and sensors
-// later. Memory only, nothing written (CITY-D27 A): no command line, no window title and no path ever passes through here.
+// later. Memory only (CITY-D27 A): no command line, no window title and no path ever passes through here. The one exception
+// to "nothing written" is the recording the user switches on (CITY-D48 B): aggregate() below, by class, with no name in it.
 'use strict';
 const fs = require('fs'), path = require('path');
 
@@ -58,9 +59,36 @@ function parseSmi(text) {
   return Number.isFinite(temp) ? { temp, fan: Number.isFinite(fan) ? fan : null, mhz, used: used * 1048576, total: total * 1048576 } : null;
 }
 
-function create({ emit, send, run, root, selfPid, dry }) {
+// ten seconds of the machine as one line of a recording: totals and classes only; a program, folder or file name cannot get in
+function aggregate(list) {
+  const n = Math.max(1, list.length), avg = f => list.reduce((a, e) => a + f(e), 0) / n, top = f => list.reduce((a, e) => Math.max(a, f(e)), 0), r1 = v => Math.round(v * 10) / 10;
+  const cpu = e => e.cores.reduce((a, c) => a + c.u + c.k, 0) / Math.max(1, e.cores.length), ram = e => (e.mem.total ? 100 * (1 - e.mem.avail / e.mem.total) : 0);
+  const sum = (arr, f) => arr.reduce((a, x) => a + f(x), 0), cls = {};
+  for (const e of list) for (const p of e.procs) { const c = cls[p.cls] || (cls[p.cls] = { cpu: 0, ws: 0 }); c.cpu += p.cpu; c.ws += p.ws; }
+  for (const c of Object.values(cls)) { c.cpu = r1(c.cpu / n); c.ws = Math.round(c.ws / n); }
+  return { at: list.length ? list[0].at : 0, secs: list.length, cpu: [r1(avg(cpu)), r1(top(cpu))], ram: [r1(avg(ram)), r1(top(ram))], disk: [Math.round(avg(e => sum(e.disks, d => d.r))), Math.round(avg(e => sum(e.disks, d => d.w))), r1(top(e => Math.max(0, ...e.disks.map(d => d.busy))))],
+    net: [Math.round(avg(e => sum(e.nics, x => x.rx))), Math.round(avg(e => sum(e.nics, x => x.tx)))], hard: r1(avg(e => e.mem.hard || 0)), procs: Math.round(avg(e => e.procs.length)), cls };
+}
+const REC_SECS = 10, REC_MAX_LINES = 8640;   // a day at most: a forgotten switch must not fill a drive
+function listRecordings(dir) {
+  let names = [];
+  try { names = fs.readdirSync(dir).filter(f => /^rec-[\dT-]+\.jsonl$/.test(f)).sort().reverse(); } catch (e) { return []; }
+  return names.map(f => {
+    const rows = fs.readFileSync(path.join(dir, f), 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l));
+    return { at: rows.length ? rows[0].at : 0, secs: rows.reduce((a, r) => a + r.secs, 0), cpuMax: rows.reduce((a, r) => Math.max(a, r.cpu[1]), 0), ramMax: rows.reduce((a, r) => Math.max(a, r.ram[1]), 0) };
+  });
+}
+
+function create({ emit, send, run, root, selfPid, dry, recDir }) {
   const rules = loadClasses(path.join(root, 'homeland-classes.json'));
-  const hm = { want: false, st: {}, hw: null, hwBusy: false, gpu: null, smi: null, last: null };
+  const hm = { want: false, st: {}, hw: null, hwBusy: false, gpu: null, smi: null, last: null, rec: null };
+  function recFlush() {
+    const r = hm.rec;
+    if (!r || !r.buf.length) return;
+    fs.appendFileSync(r.file, JSON.stringify(aggregate(r.buf)) + '\n');
+    r.buf = []; r.lines++;
+  }
+  function recStop() { recFlush(); hm.rec = null; }
   async function smi() {
     const out = await run('nvidia-smi', ['--query-gpu=temperature.gpu,fan.speed,clocks.gr,memory.used,memory.total', '--format=csv,noheader,nounits'], 4000);
     hm.gpu = parseSmi(out);
@@ -86,16 +114,31 @@ function create({ emit, send, run, root, selfPid, dry }) {
       inventory(); smi();
       if (!hm.smi) { hm.smi = setInterval(smi, 5000); hm.smi.unref(); }
     },
-    off() { hm.want = false; send({ t: 'hm', on: false }); clearInterval(hm.smi); hm.smi = null; },
-    gone() { hm.want = false; clearInterval(hm.smi); hm.smi = null; },   // the probe stopped with the last page
+    off() { hm.want = false; send({ t: 'hm', on: false }); clearInterval(hm.smi); hm.smi = null; recStop(); },
+    gone() { hm.want = false; clearInterval(hm.smi); hm.smi = null; recStop(); },   // the probe stopped with the last page
     line(m, ctx) {
       if (!hm.want) return;
       hm.last = normalise(m, hm.st, Object.assign({ rules, selfPid, gpu: hm.gpu }, ctx));
       emit('hm', hm.last);
+      if (hm.rec) {
+        hm.rec.buf.push(hm.last);
+        if (hm.rec.buf.length >= REC_SECS) { recFlush(); if (hm.rec.lines >= REC_MAX_LINES) recStop(); }
+      }
     },
+    // the switch: on only while the feed runs, and it says so
+    record(on) {
+      if (!on) { recStop(); return false; }
+      if (hm.rec) return true;
+      if (!hm.want || dry) return false;
+      fs.mkdirSync(recDir, { recursive: true });
+      hm.rec = { file: path.join(recDir, 'rec-' + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19) + '.jsonl'), buf: [], lines: 0 };
+      return true;
+    },
+    get recording() { return !!hm.rec; },
+    recordings: () => listRecordings(recDir),
     closable: key => !PROTECTED.has(String(key).toLowerCase()),
     drives: () => (hm.hw && hm.hw.disks ? hm.hw.disks.flatMap(d => (d.vols || []).map(v => v.letter)) : []),
   };
 }
 
-module.exports = { create, normalise, parseSmi, classify, loadClasses, layerOf, PROTECTED };
+module.exports = { create, aggregate, listRecordings, normalise, parseSmi, classify, loadClasses, layerOf, PROTECTED };

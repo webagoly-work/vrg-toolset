@@ -43,7 +43,8 @@ for area; the farm imagery is the rendering.
 | **S1 ✔ 2026-10-31** | View, island on a real water plane, nine complexes, ground and undercity, live feed, panels, close program, toggles for bodies and tags, fixture mode, START key, Erőmű door | Nothing |
 | **S2a ✔ 2026-10-31** | Növekedés plan with the rearranging move and the replay | S1 |
 | **S2b ✔ 2026-11-01** | Birtok land view: every drive (CITY-D52 A) | S2a |
-| **S3** | ETW upgrades, sensors through LibreHardwareMonitor (CITY-D51 A: confirm the PawnIO need, ask before installing), physical page view, opt-in recording | The user's elevated steps |
+| **S3a ✔ 2026-11-01** | The 15-minute memory history with look-back, the opt-in recording | S2 |
+| **S3b** | ETW upgrades, sensors through LibreHardwareMonitor, physical page view | The user's elevated steps; the CITY-D53 answer |
 
 **S1 as built:** `CodeCity/probe/Homeland.cs`, `CodeCity/homeland.js`, `homeland-classes.json`, `probe-hw.ps1`,
 `src/40-hm-core.js`, `41-hm-island.js`, `42-hm-city.js`, `tools/spec-homeland.js`. Open with START → K → G or
@@ -51,6 +52,22 @@ for area; the farm imagery is the rendering.
 only, Home frames the island. The Street level (−1) stands on the surface as small booths. Not in S1: CITY-D45's Mérés lens
 only dims metaphor parts, because S1 builds none tagged J; the 15-minute memory history (CITY-D48) comes with S3; hints cover
 the Temp and Downloads origin only, not signatures.
+
+**S3a as built:** `src/47-hm-time.js` and `aggregate()` in `homeland.js`. The strip at the bottom shows the last 15 minutes; a drag
+or ← → looks back, and End or Élő returns. Decided in the build:
+
+- **The ring lives in the page**, not in the segéd as 04-data-feed first said: it needs no second API, the fixture gets it for
+  free, and it goes with the page, so nothing outlives the view. Each second is folded by program family, about 30 kB.
+- **It fills only while the view is open,** because the feed runs only then. A gap in the strip is time the view was closed.
+- **The past cannot read as live:** a permanent banner, the HUD frozen on that second, closing a program off, and the
+  *Mind* view shows families, because single processes were folded away.
+- **The recording** is the user's switch, stops with the feed, and ends by itself after a day. Each line covers ten seconds:
+  totals and per-class CPU and memory. No program, folder or file name can reach it (`aggregate()`, tested).
+  Files go to `.cache/homeland/`, which is gitignored; the *Felvételek* panel lists them with their peaks.
+
+**CITY-D53, open (sensors):** LibreHardwareMonitor moved from WinRing0 to PawnIO in 0.9.5 and 0.9.6 updates its PawnIO modules.
+Projects that bundle it say PawnIO must be installed for CPU metrics. PawnIO is a separate, third-party kernel driver, by
+namazso, installed with its own setup program and with admin rights. Nothing has been installed, and the install is the user's.
 
 **S2b as built:** `CodeCity/probe/Estate.cs` (`vrg-probe --estate`), `CodeCity/estate-walk.js` (the fallback),
 `src/45-hm-estate-plan.js` (pure, tested), `46-hm-estate.js`. The Birtok button or key B opens it, the drive buttons switch,

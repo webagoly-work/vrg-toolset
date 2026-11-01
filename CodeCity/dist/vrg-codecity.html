@@ -372,6 +372,13 @@ body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb
 #hm-plan .btn { background: var(--panel); font-size: 12px; padding: 3px 10px; }
 #hm-plan .btn.on { color: var(--accent); border-color: var(--accent); }
 #hm-plan .btn[hidden], #hm-when[hidden], #hm-drives[hidden], #hm-rail[hidden] { display: none; }
+#hm-time { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 6px; align-items: center; padding: 4px 6px; background: var(--panel); border: 1px solid var(--line, #2c3b46); }
+#hm-time[hidden], #hm-past[hidden], #hm-live[hidden] { display: none; }
+#hm-time .btn { font-size: 12px; padding: 3px 10px; }
+#hm-time .btn.on { color: var(--accent); border-color: var(--accent); }
+#hm-strip { width: 440px; height: 34px; cursor: ew-resize; pointer-events: auto; display: block; }
+#hm-past { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); padding: 4px 12px; font-size: 13px; letter-spacing: .04em; background: var(--accent); color: #06121a; white-space: nowrap; }
+@media (max-width: 700px) { #hm-strip { width: 150px; } }
 #hm-drives { display: flex; gap: 4px; margin-left: 8px; }
 #panel .blur { filter: blur(4px); user-select: none; }
 #hm-when { margin-left: 8px; font-size: 12px; white-space: nowrap; }
@@ -5868,7 +5875,7 @@ function vwRefresh() { if (vw.id === 'simple') vwSimple(); }
 
 const HM_LAYERS = [['Felszín', 0, 'Programok ablakkal'], ['Alváros', -36, 'Szolgáltatások: a 0. munkamenet'], ['Mélyút', -54, 'Kernel, megszakítások'], ['Alapkő', -70, 'UEFI, a lap vezetékei']];
 const HM_TAG = { M: ['Mért', 'most mért érték'], K: ['Közelítő', 'mért adatból következtetett'], J: ['Jelkép', 'a metafora része, nincs mögötte mérés'] };
-const hm = { group: null, ev: null, hw: null, layer: 0, all: false, tags: true, truth: false, sel: null, estate: null, reveal: false, plan: 0, planK: 0, gT: 0, gPlay: 0, fixture: false, fxTimer: 0, feed: 'off', ui: null, raf: 0, lastFrame: 0, confirm: null };
+const hm = { group: null, ev: null, hw: null, layer: 0, all: false, tags: true, truth: false, sel: null, ring: [], scrub: null, rec: false, estate: null, reveal: false, plan: 0, planK: 0, gT: 0, gPlay: 0, fixture: false, fxTimer: 0, feed: 'off', ui: null, raf: 0, lastFrame: 0, confirm: null };
 
 const hmGB = b => (b / 2 ** 30).toFixed(b >= 1e10 ? 0 : 1) + ' GB';
 const hmMB = b => (b >= 2 ** 30 ? (b / 2 ** 30).toFixed(1) + ' GB' : Math.round(b / 2 ** 20) + ' MB');
@@ -5894,6 +5901,8 @@ function hmLeave() {
   if (hm.group) hm.group.visible = false;
   if (hm.ui) hm.ui.hidden = true;
   hm.sel = null; $('panel').hidden = true;
+  if (hm.scrub != null) hmLiveAgain();
+  hm.rec = false; hmRecPaint();   // the feed stops, and the recording with it
   hmFeed(false);
   orbit.target.y = 0;
 }
@@ -5912,13 +5921,17 @@ function hmFeed(on) {
     if (!r) return;
     if (r.status !== 200) hm.feed = 'err';
     if (r.json && r.json.hw) hmHwEvent(r.json.hw);
+    if (r.json) { hm.rec = !!r.json.rec; hmRecPaint(); }
     if (r.json && r.json.state === 'missing') hm.feed = 'noprobe';
     hmHud();
   });
 }
 function hmEvent(d) {
   if (vw.id !== 'homeland') return;
-  hm.ev = d; hm.feed = d.fixture ? 'fixture' : 'on';
+  hmRingPush(d);   // 47-hm-time
+  hm.feed = d.fixture ? 'fixture' : 'on';
+  if (hm.scrub != null) return;   // looking back: the live city waits
+  hm.ev = d;
   hmApply(d);   // 42-hm-city
   hmHud();
   hmPanel();
@@ -5954,7 +5967,7 @@ function hmUiBuild() {
     if (e.target.closest('[data-rescan]')) return hmEstateAsk(true);
     if (e.target.id === 'hm-replay') hmReplay();
   });
-  hmSwitchPaint(); hmPlanPaint();
+  hmSwitchPaint(); hmPlanPaint(); hmTimeBuild();
 }
 function hmSwitch(k) {
   hm[k] = !hm[k];
@@ -5972,10 +5985,10 @@ function hmHud() {
   const m = e.mem, cpu = e.cores.reduce((a, c) => a + c.u + c.k, 0) / Math.max(1, e.cores.length), ram = m.total ? 100 * (1 - m.avail / m.total) : 0;
   const eng = (e.gpu && e.gpu.eng) || {}, gpu = Math.min(100, Object.values(eng).reduce((a, v) => Math.max(a, v), 0));
   const disk = Math.max(0, ...e.disks.map(d => d.busy)), rx = e.nics.reduce((a, n) => a + n.rx, 0), tx = e.nics.reduce((a, n) => a + n.tx, 0);
-  const obs = e.procs.filter(p => p.obs).reduce((a, p) => a + p.cpu, 0), hints = new Set(e.procs.filter(p => p.hint).map(p => p.key)).size;
+  const obs = e.obsCpu != null ? e.obsCpu : e.procs.filter(p => p.obs).reduce((a, p) => a + p.cpu, 0), hints = new Set(e.procs.filter(p => p.hint).map(p => p.key)).size;
   el.innerHTML = `<b>Gépország</b> <span>CPU <b>${hmPct(cpu)}</b></span><span>RAM <b>${hmPct(ram)}</b></span><span>GPU <b>${hmPct(gpu)}</b>${e.gpu && e.gpu.temp != null ? ` · ${Math.round(e.gpu.temp)} °C` : ''}</span>` +
-    `<span>lemez <b>${hmPct(disk)}</b></span><span>háló ↓${hmRate(rx)} ↑${hmRate(tx)}</span><span>${hu(e.procs.length)} folyamat</span>` +
-    (hints ? `<span class="warn">${hints} gyanús jel</span>` : '') +
+    `<span>lemez <b>${hmPct(disk)}</b></span><span>háló ↓${hmRate(rx)} ↑${hmRate(tx)}</span><span>${hu(e.procs.reduce((a, p) => a + (p.n || 1), 0))} folyamat</span>` +
+    (hints ? `<span class="warn">${hints} gyanús jel</span>` : '') + (hm.rec ? '<span class="warn">● felvétel fut</span>' : '') +
     `<span class="dim" title="A szonda ideje mintánként és a megfigyelő saját CPU-ja: a mérés is a gépen fut">megfigyelő ${e.ms} ms · ${obs.toFixed(1)} %</span><span class="dim">ETW: ki</span>`;
 }
 
@@ -6010,6 +6023,8 @@ addEventListener('keydown', e => {
   else if (k === 'n' || k === 'N') hmSetPlan(hm.plan ? 0 : 1);
   else if (k === 'r' || k === 'R') hmReplay();
   else if (k === 'b' || k === 'B') hmSetPlan(hm.estate ? hm.plan : 2);
+  else if (k === 'ArrowLeft' || k === 'ArrowRight') { if (!hm.estate) { e.preventDefault(); hmStep(k === 'ArrowLeft' ? -5 : 5); } }
+  else if (k === 'End') { e.preventDefault(); if (hm.scrub != null) hmLiveAgain(); }
 }, true);
 
 // ---- the panel: fixed order, every number says where it comes from
@@ -6074,11 +6089,11 @@ function hmProgPanel(key) {
   if (!list.length) { openPanel(key, [['Állapot', 'Már nem fut']], ''); return; }
   const g = hmFold(list)[0], parent = new Map(e.procs.map(p => [p.pid, p])).get(list[0].ppid), layer = { 0: 'Felszín', '-1': 'Utcaszint', '-2': 'Alváros', '-3': 'Mélyút' }[g.layer];
   const hint = g.hint ? `<p class="warn">Gyanús jel, nem ítélet: ${g.hint === 'temp' ? 'Temp mappából fut' : 'a Letöltések mappából fut'}. Automatikus művelet nincs.</p>` : '';
-  const can = g.win > 0 && !list.some(p => p.ours);
+  const can = hm.scrub == null && g.win > 0 && !list.some(p => p.ours);
   const btn = !can ? '' : hm.confirm === key
     ? `<p class="warn">Bezárod a(z) ${esc(g.exe)} ${g.win} ablakát? A program még rákérdezhet a mentésre.</p><button class="btn" data-hmclose="yes">Igen, bezárom</button> <button class="btn" data-hmclose="no">Mégse</button>`
     : '<button class="btn" data-hmclose="ask">Program bezárása…</button>';
-  openPanel(g.exe, [['Réteg', layer + (g.s === 0 ? ' · 0. munkamenet' : '')], ['Osztály', esc(g.cls)], ['Folyamat', hu(list.length)], ['Szál', hu(g.th)], ['CPU', g.cpu.toFixed(1) + ' %'], ['Munkakészlet', hmMB(g.ws)], ['Saját', hmMB(g.priv)],
+  openPanel(g.exe, [['Réteg', layer + (g.s === 0 ? ' · 0. munkamenet' : '')], ['Osztály', esc(g.cls)], ['Folyamat', hu(g.n)], ['Szál', hu(g.th)], ['CPU', g.cpu.toFixed(1) + ' %'], ['Munkakészlet', hmMB(g.ws)], ['Saját', hmMB(g.priv)],
     ['I/O', `be ${hmRate(g.r)} · ki ${hmRate(g.w)}`], ['Lapbetöltés', hmNum(g.hard) + ' /s'], ['Ablak', hu(g.win)], ['Indította', parent ? esc(parent.exe) : '—']], hint + btn + hmFooter('M', 'NtQuerySystemInformation · 1 s; az I/O a hálózatot is tartalmazza'));
   const box = $('panel');
   box.querySelectorAll('[data-hmclose]').forEach(b => { b.onclick = () => hmCloseStep(b.dataset.hmclose, key); });
@@ -6410,7 +6425,7 @@ function hmFold(list) {
   for (const p of list) {
     let g = by.get(p.key);
     if (!g) { g = { key: p.key, exe: p.exe, cls: p.cls, place: p.place, layer: p.layer, s: p.s, cpu: 0, ws: 0, priv: 0, r: 0, w: 0, hard: 0, th: 0, win: 0, fg: false, hint: '', n: 0, obs: false }; by.set(p.key, g); }
-    g.cpu += p.cpu; g.ws += p.ws; g.priv += p.priv; g.r += p.r; g.w += p.w; g.hard += p.hard; g.th += p.th; g.win += p.win; g.n++;
+    g.cpu += p.cpu; g.ws += p.ws; g.priv += p.priv; g.r += p.r; g.w += p.w; g.hard += p.hard; g.th += p.th; g.win += p.win; g.n += p.n || 1;
     g.fg = g.fg || p.fg; g.hint = g.hint || p.hint; g.obs = g.obs || p.obs; g.layer = Math.max(g.layer, p.layer);   // the family's highest layer
   }
   return [...by.values()].sort((a, b) => b.ws - a.ws);
@@ -7058,6 +7073,8 @@ function hmEstateVis() {
   hm.surface.visible = !on; hm.land.visible = !on; hm.shore.visible = !on;
   if (hm.grow) hm.grow.visible = !on && hm.layer === 0 && hm.planK > 0;
   $('hm-rail').hidden = on;
+  if (on && hm.scrub != null) hmLiveAgain();
+  hmTimePaint();
   requestRender();
 }
 async function hmEstateAsk(rescan, again) {
@@ -7198,6 +7215,112 @@ function hmFixtureWalk(letter) {
     dir('Próba filmek', [kid('Sorozat', 60, { video: 1 }, [[12, 'video'], [9, 'video'], [6, 'video']])]),
     dir('Próba munka', [kid('Forrás', 8, { code: 0.8, doc: 0.2 }), kid('Iratok', 12, { doc: 0.8, archive: 0.2 }), kid('Telepítők', 20, { archive: 0.6, program: 0.4 }, [[4, 'archive']])]),
   ] };
+}
+
+// ==== src/47-hm-time.js
+// 47-hm-time.js — Gépország's memory (CITY-D48 B, option H3): the last 15 minutes in this page's memory only, nothing written,
+// gone with the page. The strip shows the load and a drag replays the city as it was, with a permanent banner so a past moment
+// can never read as live; closing a program is off while looking back. The ring fills only while the view is open, because
+// the feed runs only then (R11), so a gap in the strip is time the view was closed. Each second is folded by program family,
+// about 150 rows instead of 450. The opt-in saved recording is the segéd's: aggregated by class, no names (homeland.js).
+
+const HM_RING_S = 900;
+function hmCompact(procs) {
+  hm.fam = hm.fam || new Map();
+  return hmFold(procs).map(g => { if (!hm.fam.has(g.key)) hm.fam.set(g.key, hm.fam.size + 1); g.pid = hm.fam.get(g.key); g.ppid = 0; return g; });
+}
+function hmLoadOf(e) {
+  const m = e.mem, cpu = e.cores.reduce((a, c) => a + c.u + c.k, 0) / Math.max(1, e.cores.length);
+  return [Math.min(100, cpu), m.total ? 100 * (1 - m.avail / m.total) : 0, Math.min(100, Math.max(0, ...e.disks.map(d => d.busy)))];
+}
+function hmRingPush(d) {
+  // the observer's own share is taken here: folded, one observing process would mark its whole family
+  const obsCpu = d.procs.filter(p => p.obs).reduce((a, p) => a + p.cpu, 0);
+  hm.ring.push({ at: d.at, load: hmLoadOf(d), ev: Object.assign({}, d, { procs: hmCompact(d.procs), obsCpu }) });
+  const from = d.at - HM_RING_S * 1000;
+  while (hm.ring.length && hm.ring[0].at < from) hm.ring.shift();
+  hmTimePaint();
+}
+
+function hmTimeBuild() {
+  const el = document.createElement('div');
+  el.id = 'hm-time'; el.hidden = true;
+  el.innerHTML = `<canvas id="hm-strip" width="440" height="34" title="Az elmúlt 15 perc: húzd a visszanézéshez (← →), End: élő"></canvas>
+    <button class="btn" id="hm-live" hidden>Élő</button>
+    <button class="btn" id="hm-rec" title="Mentett felvétel: 10 másodpercenként összesítve, osztályonként, programnevek nélkül">Felvétel</button>
+    <button class="btn" id="hm-recs" title="A mentett felvételek">Felvételek</button>`;
+  hm.ui.append(el);
+  const past = document.createElement('div');
+  past.id = 'hm-past'; past.hidden = true;
+  hm.ui.append(past);
+  const cv = $('hm-strip'), at = e => { const r = cv.getBoundingClientRect(); hmScrubTo((e.clientX - r.left) / r.width); };
+  cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); at(e); cv.onpointermove = at; });
+  cv.addEventListener('pointerup', () => { cv.onpointermove = null; });
+  $('hm-live').onclick = hmLiveAgain;
+  $('hm-rec').onclick = hmRecToggle;
+  $('hm-recs').onclick = hmRecList;
+}
+function hmTimePaint() {
+  const el = $('hm-time');
+  if (!el) return;
+  el.hidden = !!hm.estate || hm.ring.length < 2;
+  if (el.hidden) return;
+  const cv = $('hm-strip'), g = cv.getContext('2d'), W = cv.width, H = cv.height, css = getComputedStyle(document.documentElement);
+  const t1 = hm.ring[hm.ring.length - 1].at, X = at => W * (1 - (t1 - at) / (HM_RING_S * 1000));
+  g.clearRect(0, 0, W, H);
+  // the three loads as lines: warm for what the machine is doing, grey for memory and disk (Mélyvíz M1, R1)
+  [[1, css.getPropertyValue('--dim') || '#7d8a96'], [2, '#4c565f'], [0, '#e8a873']].forEach(([k, col]) => {
+    g.strokeStyle = col.trim(); g.lineWidth = k ? 1 : 1.5; g.beginPath();
+    hm.ring.forEach((s, i) => { const x = X(s.at), y = H - 2 - s.load[k] / 100 * (H - 4), gap = i && s.at - hm.ring[i - 1].at > 5000; if (!i || gap) g.moveTo(x, y); else g.lineTo(x, y); });
+    g.stroke();
+  });
+  if (hm.scrub != null) { g.fillStyle = '#93d3e6'; g.fillRect(X(hm.scrub) - 1, 0, 2, H); }
+}
+function hmScrubTo(f) {
+  if (!hm.ring.length) return;
+  const t1 = hm.ring[hm.ring.length - 1].at, at = t1 - (1 - Math.max(0, Math.min(1, f))) * HM_RING_S * 1000;
+  hmShowAt(hm.ring.reduce((b, s) => (Math.abs(s.at - at) < Math.abs(b.at - at) ? s : b)));
+}
+function hmStep(sec) {
+  if (!hm.ring.length) return;
+  const at = (hm.scrub == null ? hm.ring[hm.ring.length - 1].at : hm.scrub) + sec * 1000;
+  if (hm.scrub != null && at >= hm.ring[hm.ring.length - 1].at) return hmLiveAgain();
+  hmShowAt(hm.ring.reduce((b, s) => (Math.abs(s.at - at) < Math.abs(b.at - at) ? s : b)));
+}
+function hmShowAt(s) {
+  hm.scrub = s.at; hm.confirm = null;
+  const mins = Math.max(0, Math.round((hm.ring[hm.ring.length - 1].at - s.at) / 60000));
+  const el = $('hm-past');
+  el.hidden = false;
+  el.textContent = `VISSZANÉZÉS · ${new Date(s.at).toLocaleTimeString('hu-HU')}${mins ? ` · ${mins} perce` : ''} — nem élő kép`;
+  $('hm-live').hidden = false;
+  hm.ev = s.ev;
+  hmApply(s.ev); hmHud(); hmPanel(); hmTimePaint();
+}
+function hmLiveAgain() {
+  hm.scrub = null;
+  $('hm-past').hidden = true; $('hm-live').hidden = true;
+  const last = hm.ring[hm.ring.length - 1];
+  if (last) { hm.ev = last.ev; hmApply(last.ev); hmHud(); hmPanel(); }
+  hmTimePaint();
+}
+
+// ---- the saved recording: the segéd writes it, only while this switch is on
+function hmRecPaint() { const b = $('hm-rec'); if (b) { b.classList.toggle('on', !!hm.rec); b.textContent = hm.rec ? '● Felvétel fut' : 'Felvétel'; } }
+async function hmRecToggle() {
+  if (hm.fixture) { kvToast('Próbaadat: nincs mit menteni'); return; }
+  const r = await kvCall('hm-rec', { on: !hm.rec });
+  if (r.status !== 200) { kvToast((r.json && r.json.error) || 'Nem sikerült'); return; }
+  hm.rec = !!r.json.rec; hmRecPaint();
+  kvToast(hm.rec ? 'Felvétel indul: összesítve, nevek nélkül' : 'Felvétel leállt');
+}
+async function hmRecList() {
+  if (hm.fixture) { kvToast('Próbaadat: nincs mentett felvétel'); return; }
+  const r = await kvCall('hm-recs', {});
+  const list = (r.json && r.json.list) || [];
+  hm.sel = null;
+  openPanel('Felvételek', list.length ? list.slice(0, 12).map(x => [esc(new Date(x.at).toLocaleString('hu-HU')), `${Math.round(x.secs / 60)} perc · CPU max ${Math.round(x.cpuMax)} % · RAM max ${Math.round(x.ramMax)} %`]) : [['Nincs mentett felvétel', '']],
+    '<p class="dim">Tízmásodpercenkénti összesítés osztályonként, programnevek, mappák és fájlok nélkül. Csak ezen a gépen, a repó .cache mappájában.</p>' + hmFooter('M', 'segéd, homeland.js'));
 }
 
 // ==== src/99-boot.js

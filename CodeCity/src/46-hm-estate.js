@@ -34,6 +34,8 @@ function hmEstateVis() {
   hm.surface.visible = !on; hm.land.visible = !on; hm.shore.visible = !on;
   if (hm.grow) hm.grow.visible = !on && hm.layer === 0 && hm.planK > 0;
   $('hm-rail').hidden = on;
+  if (on && hm.scrub != null) hmLiveAgain();
+  hmTimePaint();
   requestRender();
 }
 async function hmEstateAsk(rescan, again) {

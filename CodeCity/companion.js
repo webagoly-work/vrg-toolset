@@ -833,7 +833,7 @@ function probePlace(cmd) {
   probe.child.stdin.write(JSON.stringify(cmd) + '\n');
   return [200, { ok: true }];
 }
-const hmFeed = require('./homeland.js').create({ emit: (e, d) => liveEmit(e, d), send: o => { if (probe.child) probe.child.stdin.write(JSON.stringify(o) + '\n'); },
+const hmFeed = require('./homeland.js').create({ recDir: path.join(REPO, '.cache', 'homeland'), emit: (e, d) => liveEmit(e, d), send: o => { if (probe.child) probe.child.stdin.write(JSON.stringify(o) + '\n'); },
   run: (exe, argv, ms) => run(exe, argv, ms), root: CITY, selfPid: process.pid, dry: DRY });
 function probeHandle(m) {
   if (m.t === 'hm') return hmFeed.line(m, { wins: probe.wins, fg: probe.fg, probePid: probe.pid });
@@ -1166,8 +1166,13 @@ const ACTIONS = {
   // a sound tower dragged (KV-22): that program's volume 0..1, or its mute — nothing else reaches the probe
   'hm-feed': { keys: ['on'], async run(b) {
     if (b.on) { probeStart(); hmFeed.on(); } else hmFeed.off();
-    return [200, { ok: true, state: probe.state, hw: hmFeed.hw }];
+    return [200, { ok: true, state: probe.state, hw: hmFeed.hw, rec: hmFeed.recording }];
   } },
+  'hm-rec': { keys: ['on'], async run(b) {
+    if (typeof b.on !== 'boolean') return [400, { error: 'on: true/false' }];
+    return [200, { ok: true, rec: hmFeed.record(b.on) }];
+  } },
+  'hm-recs': { keys: [], async run() { return [200, { ok: true, list: hmFeed.recordings() }]; } },
   'hm-estate': { keys: ['letter', 'rescan'], async run(b) {
     if (typeof b.letter !== 'string' || !/^[A-Z]:$/.test(b.letter)) return [400, { error: 'meghajtó: pl. H:' }];
     if (!hmFeed.drives().includes(b.letter)) return [404, { error: 'nincs ilyen meghajtó' }];

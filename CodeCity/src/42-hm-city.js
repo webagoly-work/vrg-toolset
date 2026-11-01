@@ -62,7 +62,7 @@ function hmFold(list) {
   for (const p of list) {
     let g = by.get(p.key);
     if (!g) { g = { key: p.key, exe: p.exe, cls: p.cls, place: p.place, layer: p.layer, s: p.s, cpu: 0, ws: 0, priv: 0, r: 0, w: 0, hard: 0, th: 0, win: 0, fg: false, hint: '', n: 0, obs: false }; by.set(p.key, g); }
-    g.cpu += p.cpu; g.ws += p.ws; g.priv += p.priv; g.r += p.r; g.w += p.w; g.hard += p.hard; g.th += p.th; g.win += p.win; g.n++;
+    g.cpu += p.cpu; g.ws += p.ws; g.priv += p.priv; g.r += p.r; g.w += p.w; g.hard += p.hard; g.th += p.th; g.win += p.win; g.n += p.n || 1;
     g.fg = g.fg || p.fg; g.hint = g.hint || p.hint; g.obs = g.obs || p.obs; g.layer = Math.max(g.layer, p.layer);   // the family's highest layer
   }
   return [...by.values()].sort((a, b) => b.ws - a.ws);

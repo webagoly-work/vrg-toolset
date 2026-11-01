@@ -87,7 +87,8 @@ All events go over the existing SSE stream and are sent only while a page has Ho
 
 ## 4.5 Privacy (CITY-D27 A)
 
-- Process names, parents and sizes stay **in memory**. The ring buffer lives in the companion's RAM and dies with it.
+- Process names, parents and sizes stay **in memory**. The ring buffer lives in the page's memory and dies with it. The
+  opt-in recording (CITY-D48 B) is the only thing written: totals and classes, no names.
 - **Never collected:** command lines, window titles, environment, memory contents, keystrokes.
 - ETW file events reach the page as **class and volume**, not as paths, except repo paths that already beam today.
 - Client job folders show as Telekkönyv counts, blurred until clicked, as Tárház does.

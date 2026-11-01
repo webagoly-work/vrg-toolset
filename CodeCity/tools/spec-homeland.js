@@ -186,10 +186,35 @@ module.exports = [
     assert.strictEqual((await post('hm-estate', { letter: 'Q:', rescan: false })).status, 404);
     assert.strictEqual((await post('hm-open', { letter: 'Q:', top: 0, kid: 0 })).status, 404);
   } },
+  { name: 'homeland: a recording line is totals and classes; no program name can get in', async fn() {
+    const ev = n => ({ at: 1000 + n, cores: [{ u: 40, k: 10 }, { u: 20, k: 10 }], mem: { total: 100, avail: 25, hard: 4 }, disks: [{ r: 100, w: 50, busy: 30 + n }], nics: [{ name: 'titkos halozat', rx: 10, tx: 5 }],
+      procs: [{ exe: 'titkos-ugyfel.exe', key: 'titkos-ugyfel.exe', cls: 'other', cpu: 2, ws: 100, hint: 'temp' }, { exe: 'b.exe', key: 'b.exe', cls: 'agent', cpu: 1, ws: 50 }, { exe: 'c.exe', key: 'c.exe', cls: 'agent', cpu: 3, ws: 50 }] });
+    const a = hm.aggregate([ev(0), ev(10)]);
+    assert.deepStrictEqual([a.secs, a.cpu, a.ram, a.disk[0], a.disk[2], a.net, a.procs], [2, [40, 40], [75, 75], 100, 40, [10, 5], 3]);
+    assert.deepStrictEqual(a.cls, { other: { cpu: 2, ws: 100 }, agent: { cpu: 4, ws: 100 } });
+    assert.ok(!/titkos|\.exe|temp/.test(JSON.stringify(a)), 'no name, no hint');
+  } },
+  { name: 'homeland: the recording starts only when asked, stops with the feed, and is listed', async fn() {
+    await start();
+    assert.strictEqual((await post('hm-rec', { on: true })).json.rec, false, 'no feed, no recording');
+    assert.strictEqual((await post('hm-rec', { on: 'igen' })).status, 400);
+    await post('hm-feed', { on: true });
+    assert.strictEqual((await post('hm-rec', { on: true })).json.rec, true);
+    await sleep(2600);
+    assert.strictEqual((await post('hm-rec', { on: false })).json.rec, false);
+    await post('hm-feed', { on: false });
+    const dir = path.join(fx, '.cache', 'homeland'), file = fs.readdirSync(dir)[0], text = fs.readFileSync(path.join(dir, file), 'utf8');
+    assert.ok(/^rec-/.test(file) && text.length > 10, 'written');
+    assert.ok(!/proba|\.exe/.test(text), 'no program name on disk');
+    const list = (await post('hm-recs', {})).json.list;
+    assert.ok(list.length === 1 && list[0].secs > 0, JSON.stringify(list));
+  } },
   { name: 'homeland: no feed until the page asks; then hm events on the stream', async fn() {
     await start();
+    await sleep(300);
+    const mark = stream.length;
     await sleep(700);
-    assert.ok(!/event: hm\n/.test(stream), 'the feed ran unasked');
+    assert.ok(!/event: hm\n/.test(stream.slice(mark)), 'the feed ran unasked');
     assert.strictEqual((await post('hm-feed', { on: true })).status, 200);
     await sleep(800);
     assert.ok(/event: hm\n/.test(stream), 'no hm event');
