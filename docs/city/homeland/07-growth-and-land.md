@@ -73,7 +73,7 @@ its install is the user's. A real unelevated run on this PC read the CPU's name 
 and left no driver behind. Temperatures and fans are therefore **not yet seen on real hardware**. Steps: [04-data-feed.md](04-data-feed.md) §4.7.
 
 **S3b, the rest as built:** all of it comes with one reinstall of `vrg-etw`, done by the user on 2026-11-01. Real data read from the pipe that day: sensors,
-disk rows and the page map; the HUD reads *ETW: be · szenzor: be*. Still to see on real data: the disk panels, the *Hálózat* row and the page map's panel.
+disk rows and the page map; the HUD reads *ETW: be · szenzor: be*. Seen in the live panels the same day: a disk panel's program row, the *Hálózat* row and the page map, both modes, no warning.
 
 - **Disk I/O per program** (`Keywords.DiskIO`, plus `Thread` because a disk event names a thread): bytes per program and disk, top 24,
   once a second, on the disk panels and as a program's *Lemez* row. No file name leaves the sidecar. Work with no owner counts as System.

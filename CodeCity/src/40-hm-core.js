@@ -237,7 +237,7 @@ function hmPanel() {
   if (t.disk) {
     const d = e.disks.find(x => x.letters.includes(t.disk)), inv = (hw.disks || []).find(x => (x.vols || []).some(v => v.letter === t.disk)), vol = inv && inv.vols.find(v => v.letter === t.disk);
     return P(`${t.name} · ${t.disk}`, [['Lemez', esc((inv && inv.model) || '—')], ['Olvasás', d ? hmRate(d.r) : '—'], ['Írás', d ? hmRate(d.w) : '—'], ['Foglaltság', d ? hmPct(d.busy) : '—'], ['Sor', d ? hmNum(d.q) : '—'], ['Szabad', vol ? `${hmGB(vol.free)} / ${hmGB(vol.size)}` : '—'], ...hmSensor('disk', 'temp', inv && inv.model).slice(0, 1).map(r => ['Hőmérséklet', Math.round(r.v) + ' °C']), ...(d ? hmDiskTop(d.id) : []).map(x => [esc(x.exe.slice(0, 26)), `be ${hmRate(x.r)} · ki ${hmRate(x.w)}`])], 'M', d && hmDiskTop(d.id).length ? 'PDH PhysicalDisk · 1 s; ETW · 1 s' : 'PDH PhysicalDisk · 1 s',
-      d && hmDiskTop(d.id).length ? '' : '<p class="dim">Melyik program használja: a frissített ETW-segéddel jön.</p>');
+      d && hmDiskTop(d.id).length || hm.scrub != null ? '' : hm.sens ? '<p class="dim">Most egyik program sem használja.</p>' : '<p class="dim">Melyik program használja: a frissített ETW-segéddel jön.</p>');
   }
   hmPanelStatic(t);
 }
