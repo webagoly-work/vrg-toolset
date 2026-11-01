@@ -85,8 +85,12 @@ and left no driver behind. Temperatures and fans are therefore **not yet seen on
   - **Privileges:** debug and profile are switched on in this process only, for the scan, and back off after it. No system setting changes.
 
 **Found while testing:** ETW names a program without `.exe`, so the *Hálózat* row of the previous commit never matched; names are now
-normalised (`hmExeKey`). In Gépország the HUD bar covered the panel's title and ×; the panel now starts below it. An open `#hmtest=1` page
-took live ETW lines onto the made-up city; the three ETW events now stop at the fixture.
+normalised (`hmExeKey`). In Gépország the HUD bar covered the panel's title and ×; the panel now starts below it. A `#hmtest=1` page
+took whatever was on the stream, ETW and even another page's full feed, under its PRÓBAADAT banner; every feed event now passes one gate
+(`hmLive`), tested.
+
+**Checked by hand 2026-11-01:** closing is off in the past and back at End; names blur, show and blur again; *Mappa megnyitása* opens one
+Explorer window; the page retries every 15 s and C: arrives (408 GB) without stalling at 98 %.
 
 **S2b as built:** `CodeCity/probe/Estate.cs` (`vrg-probe --estate`), `CodeCity/estate-walk.js` (the fallback),
 `src/45-hm-estate-plan.js` (pure, tested), `46-hm-estate.js`. The Birtok button or key B opens it, the drive buttons switch,

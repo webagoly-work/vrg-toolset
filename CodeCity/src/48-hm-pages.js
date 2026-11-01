@@ -46,7 +46,7 @@ function hmPagesPaint() {
   }
 }
 // the panel's wiring for the disks: who reads and writes this one, by ETW
-function hmDiskEvent(d) { if (vw.id === 'homeland' && !hm.fixture) { hm.diskIo = d; hm.etwOn = true; } }
+function hmDiskEvent(d) { if (vw.id === 'homeland') { hm.diskIo = d; hm.etwOn = true; } }
 function hmDiskTop(id) {
   const d = hm.diskIo;
   if (hm.scrub != null || !d || Date.now() - d.at > 5000) return [];

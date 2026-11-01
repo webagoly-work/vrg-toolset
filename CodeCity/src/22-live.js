@@ -118,12 +118,14 @@ function liveConnect() {
   live.es.addEventListener('ports', e => { if (liveMine()) portsEvent(JSON.parse(e.data)); });
   live.es.addEventListener('pipes', e => { if (liveMine()) pipesEvent(JSON.parse(e.data)); });   // 27-health
   live.es.addEventListener('disk', e => { if (liveMine()) diskEvent(JSON.parse(e.data)); });   // 29-land: Tárház
-  live.es.addEventListener('hm', e => hmEvent(JSON.parse(e.data)));   // 40-hm-core: Gépország
-  live.es.addEventListener('hmhw', e => hmHwEvent(JSON.parse(e.data)));
-  live.es.addEventListener('etwcargo', e => hmCargoEvent(JSON.parse(e.data)));
-  live.es.addEventListener('hmdisk', e => hmDiskEvent(JSON.parse(e.data)));
-  live.es.addEventListener('hmsens', e => hmSensEvent(JSON.parse(e.data)));
-  live.es.addEventListener('hmestate', e => hmEstateEvent(JSON.parse(e.data)));
+  // 40-hm-core: Gépország. The stream can still carry a real feed another page started: nothing real lands on the made-up city
+  const hmLive = f => e => { if (!hm.fixture) f(JSON.parse(e.data)); };
+  live.es.addEventListener('hm', hmLive(hmEvent));
+  live.es.addEventListener('hmhw', hmLive(hmHwEvent));
+  live.es.addEventListener('etwcargo', hmLive(hmCargoEvent));
+  live.es.addEventListener('hmdisk', hmLive(hmDiskEvent));
+  live.es.addEventListener('hmsens', hmLive(hmSensEvent));
+  live.es.addEventListener('hmestate', hmLive(hmEstateEvent));
   live.es.addEventListener('power', e => { if (liveMine()) powerEvent(JSON.parse(e.data)); });   // 30-power: Erőmű
   live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
   live.es.addEventListener('cargo', e => { if (liveMine()) cargoEvent(JSON.parse(e.data)); });   // 31-flows: ships and planes

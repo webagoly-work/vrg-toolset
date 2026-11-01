@@ -186,6 +186,17 @@ module.exports = [
     assert.strictEqual((await post('hm-estate', { letter: 'Q:', rescan: false })).status, 404);
     assert.strictEqual((await post('hm-open', { letter: 'Q:', top: 0, kid: 0 })).status, 404);
   } },
+  { name: "homeland: ETW's bare program names meet the process list's keys", async fn() {
+    const line = /const hmExeKey = .*/.exec(fs.readFileSync(path.join(CITY, 'src', '40-hm-core.js'), 'utf8'))[0];
+    const key = vm.runInNewContext(line + ' hmExeKey');
+    assert.strictEqual(key('Claude'), 'claude.exe');
+    assert.strictEqual(key('node.EXE'), 'node.exe');
+    assert.strictEqual(key('System'), 'system');
+  } },
+  { name: 'homeland: every feed event passes the fixture gate, so nothing real lands on PRÓBAADAT', async fn() {
+    const src = fs.readFileSync(path.join(CITY, 'src', '22-live.js'), 'utf8'), feeds = ['hm', 'hmhw', 'etwcargo', 'hmdisk', 'hmsens', 'hmestate'];
+    for (const n of feeds) assert.ok(src.includes(`addEventListener('${n}', hmLive(`), n + ' goes around the gate');
+  } },
   { name: 'homeland: a sensor line keeps only known groups, kinds and real numbers', async fn() {
     const c = hm.cleanSensors({ pawnio: 1, list: [{ g: 'cpu', hw: 'CPU', k: 'temp', n: 'Core Average', v: 47.5, serial: 'TITKOS' }, { g: 'gpu', hw: 'x', k: 'temp', n: 'y', v: 1 }, { g: 'cpu', k: 'clock', n: 'z', v: 1 }, { g: 'disk', hw: 'y'.repeat(99), k: 'temp', n: 'T', v: 'forró' }, 7, null] });
     assert.deepStrictEqual(c.list, [{ g: 'cpu', hw: 'CPU', k: 'temp', n: 'Core Average', v: 47.5 }]);

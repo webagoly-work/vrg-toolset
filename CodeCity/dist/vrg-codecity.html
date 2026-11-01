@@ -3569,12 +3569,14 @@ function liveConnect() {
   live.es.addEventListener('ports', e => { if (liveMine()) portsEvent(JSON.parse(e.data)); });
   live.es.addEventListener('pipes', e => { if (liveMine()) pipesEvent(JSON.parse(e.data)); });   // 27-health
   live.es.addEventListener('disk', e => { if (liveMine()) diskEvent(JSON.parse(e.data)); });   // 29-land: Tárház
-  live.es.addEventListener('hm', e => hmEvent(JSON.parse(e.data)));   // 40-hm-core: Gépország
-  live.es.addEventListener('hmhw', e => hmHwEvent(JSON.parse(e.data)));
-  live.es.addEventListener('etwcargo', e => hmCargoEvent(JSON.parse(e.data)));
-  live.es.addEventListener('hmdisk', e => hmDiskEvent(JSON.parse(e.data)));
-  live.es.addEventListener('hmsens', e => hmSensEvent(JSON.parse(e.data)));
-  live.es.addEventListener('hmestate', e => hmEstateEvent(JSON.parse(e.data)));
+  // 40-hm-core: Gépország. The stream can still carry a real feed another page started: nothing real lands on the made-up city
+  const hmLive = f => e => { if (!hm.fixture) f(JSON.parse(e.data)); };
+  live.es.addEventListener('hm', hmLive(hmEvent));
+  live.es.addEventListener('hmhw', hmLive(hmHwEvent));
+  live.es.addEventListener('etwcargo', hmLive(hmCargoEvent));
+  live.es.addEventListener('hmdisk', hmLive(hmDiskEvent));
+  live.es.addEventListener('hmsens', hmLive(hmSensEvent));
+  live.es.addEventListener('hmestate', hmLive(hmEstateEvent));
   live.es.addEventListener('power', e => { if (liveMine()) powerEvent(JSON.parse(e.data)); });   // 30-power: Erőmű
   live.es.addEventListener('net', e => { if (liveMine()) netEvent(JSON.parse(e.data)); });   // 30-power: station, border, shore
   live.es.addEventListener('cargo', e => { if (liveMine()) cargoEvent(JSON.parse(e.data)); });   // 31-flows: ships and planes
@@ -5945,7 +5947,7 @@ function hmEvent(d) {
   hmPanel();
 }
 // the elevated sidecar's readings; a reading older than 20 s is no reading
-function hmSensEvent(d) { if (hm.fixture) return; hm.sens = d.off ? null : d; hm.etwOn = !d.off; hmHud(); hmPanel(); }
+function hmSensEvent(d) { hm.sens = d.off ? null : d; hm.etwOn = !d.off; hmHud(); hmPanel(); }
 function hmSensor(g, k, hw) {
   const s = hm.sens;
   if (!s || Date.now() - s.at > 20000) return [];
@@ -5961,7 +5963,7 @@ function hmSensWord() {
 const hmExeKey = s => { const k = String(s).toLowerCase(); return k === 'system' || k.endsWith('.exe') ? k : k + '.exe'; };
 // ETW's exact traffic per program, summed by name; it is already on the stream for the Land, so nothing is measured twice
 function hmCargoEvent(d) {
-  if (vw.id !== 'homeland' || hm.fixture) return;   // a real number must not land on the made-up city
+  if (vw.id !== 'homeland') return;
   const by = new Map();
   for (const p of d.list || []) { const k = hmExeKey(p.exe), g = by.get(k) || { exe: p.exe, rx: 0, tx: 0 }; g.rx += p.rx; g.tx += p.tx; by.set(k, g); }
   hm.cargo = { at: d.at, by };
@@ -7410,7 +7412,7 @@ function hmPagesPaint() {
   }
 }
 // the panel's wiring for the disks: who reads and writes this one, by ETW
-function hmDiskEvent(d) { if (vw.id === 'homeland' && !hm.fixture) { hm.diskIo = d; hm.etwOn = true; } }
+function hmDiskEvent(d) { if (vw.id === 'homeland') { hm.diskIo = d; hm.etwOn = true; } }
 function hmDiskTop(id) {
   const d = hm.diskIo;
   if (hm.scrub != null || !d || Date.now() - d.at > 5000) return [];

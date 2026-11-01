@@ -70,7 +70,7 @@ function hmEvent(d) {
   hmPanel();
 }
 // the elevated sidecar's readings; a reading older than 20 s is no reading
-function hmSensEvent(d) { if (hm.fixture) return; hm.sens = d.off ? null : d; hm.etwOn = !d.off; hmHud(); hmPanel(); }
+function hmSensEvent(d) { hm.sens = d.off ? null : d; hm.etwOn = !d.off; hmHud(); hmPanel(); }
 function hmSensor(g, k, hw) {
   const s = hm.sens;
   if (!s || Date.now() - s.at > 20000) return [];
@@ -86,7 +86,7 @@ function hmSensWord() {
 const hmExeKey = s => { const k = String(s).toLowerCase(); return k === 'system' || k.endsWith('.exe') ? k : k + '.exe'; };
 // ETW's exact traffic per program, summed by name; it is already on the stream for the Land, so nothing is measured twice
 function hmCargoEvent(d) {
-  if (vw.id !== 'homeland' || hm.fixture) return;   // a real number must not land on the made-up city
+  if (vw.id !== 'homeland') return;
   const by = new Map();
   for (const p of d.list || []) { const k = hmExeKey(p.exe), g = by.get(k) || { exe: p.exe, rx: 0, tx: 0 }; g.rx += p.rx; g.tx += p.tx; by.set(k, g); }
   hm.cargo = { at: d.at, by };
