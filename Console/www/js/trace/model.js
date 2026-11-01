@@ -59,6 +59,14 @@ const remember = (n, ev) => {
   if (n.io.length > IO_KEEP) n.io.shift();
 };
 
+/* the tokens this event adds: each message id counts once */
+const spent = (trace, ev) => {
+  if (!ev.usage) return 0;
+  const tokens = trace.usage.has(ev.usage.id) ? 0 : ev.usage.tokens;
+  trace.usage.add(ev.usage.id);
+  return tokens;
+};
+
 export function apply(trace, ev) {
   const { t } = ev;
   trace.clock = Math.max(trace.clock, t);
@@ -74,13 +82,19 @@ export function apply(trace, ev) {
       warm(e, t, { calls: 1 });
       break;
     }
-    case 'agent-stop':
-      remember(agentNode(trace, ev), ev);
+    case 'agent-stop': {
+      const a = agentNode(trace, ev);
+      a.tokens += spent(trace, ev);
+      remember(a, ev);
       break;
-    case 'stop':
-      remember(node(trace, { id: 'root' }, t), ev);
+    }
+    case 'stop': {
+      const r = node(trace, { id: 'root' }, t);
+      r.tokens += spent(trace, ev);
+      remember(r, ev);
       trace.notice = null;
       break;
+    }
     case 'notice':
       trace.notice = ev;
       break;
@@ -116,8 +130,7 @@ export function apply(trace, ev) {
       const edges = trace.open.get(ev.callId) ?? [];
       trace.open.delete(ev.callId);
       trace.pending.delete(ev.callId);
-      const tokens = ev.usage && !trace.usage.has(ev.usage.id) ? ev.usage.tokens : 0;
-      if (ev.usage) trace.usage.add(ev.usage.id);
+      const tokens = spent(trace, ev);
       const add = { tokens, time: ev.ms ?? 0, errors: ev.error ? 1 : 0 };
       for (const e of edges) {
         e.tokens += tokens;

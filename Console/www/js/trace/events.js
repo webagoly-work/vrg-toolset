@@ -32,7 +32,7 @@ export function fromHook(hook, now = Date.now()) {
   const tool = hook.tool_name;
   const call = () => ({ tool, target: classify(tool, hook.tool_input), file: filePath(hook.tool_input), callId: hook.tool_use_id });
   switch (hook.hook_event_name) {
-    case 'UserPromptSubmit': return { ...base, kind: 'prompt', text: toText(hook.prompt) };
+    case 'UserPromptSubmit': return String(hook.prompt).startsWith('<task-notification>') ? null : { ...base, kind: 'prompt', text: toText(hook.prompt) };
     case 'PreToolUse': return { ...base, kind: 'call', ...call(), text: summary(tool, hook.tool_input) };
     case 'PostToolUse': return { ...base, kind: 'result', ...call(), ms: hook.duration_ms, output: toText(hook.tool_response) };
     case 'PostToolUseFailure': return { ...base, kind: 'result', ...call(), ms: hook.duration_ms, error: toText(hook.error) || 'error' };
@@ -42,6 +42,12 @@ export function fromHook(hook, now = Date.now()) {
     case 'Notification': return { ...base, kind: 'notice', text: toText(hook.message), notice: hook.notification_type };
     default: return null;
   }
+}
+
+/* A subagent writes its own transcript in a folder beside the session's. */
+export function transcriptOf(hook) {
+  if (!hook.agent_id) return hook.transcript_path;
+  return hook.agent_transcript_path ?? hook.transcript_path?.replace(/\.jsonl$/, `/subagents/agent-${hook.agent_id}.jsonl`);
 }
 
 /* The newest token count in a Claude Code transcript's tail. Each message id counts once. */

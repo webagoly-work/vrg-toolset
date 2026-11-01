@@ -944,7 +944,7 @@ function fromHook(hook, now = Date.now()) {
   const tool = hook.tool_name;
   const call = () => ({ tool, target: classify(tool, hook.tool_input), file: filePath(hook.tool_input), callId: hook.tool_use_id });
   switch (hook.hook_event_name) {
-    case 'UserPromptSubmit': return { ...base, kind: 'prompt', text: toText(hook.prompt) };
+    case 'UserPromptSubmit': return String(hook.prompt).startsWith('<task-notification>') ? null : { ...base, kind: 'prompt', text: toText(hook.prompt) };
     case 'PreToolUse': return { ...base, kind: 'call', ...call(), text: summary(tool, hook.tool_input) };
     case 'PostToolUse': return { ...base, kind: 'result', ...call(), ms: hook.duration_ms, output: toText(hook.tool_response) };
     case 'PostToolUseFailure': return { ...base, kind: 'result', ...call(), ms: hook.duration_ms, error: toText(hook.error) || 'error' };
@@ -954,6 +954,12 @@ function fromHook(hook, now = Date.now()) {
     case 'Notification': return { ...base, kind: 'notice', text: toText(hook.message), notice: hook.notification_type };
     default: return null;
   }
+}
+
+/* A subagent writes its own transcript in a folder beside the session's. */
+function transcriptOf(hook) {
+  if (!hook.agent_id) return hook.transcript_path;
+  return hook.agent_transcript_path ?? hook.transcript_path?.replace(/\.jsonl$/, `/subagents/agent-${hook.agent_id}.jsonl`);
 }
 
 /* The newest token count in a Claude Code transcript's tail. Each message id counts once. */
@@ -981,7 +987,7 @@ function parseJsonl(text) {
   return out;
 }
 
-return { TRACE_V, classify, filePath, fromHook, usageFromTail, parseJsonl };
+return { TRACE_V, classify, filePath, fromHook, transcriptOf, usageFromTail, parseJsonl };
 })();
 
 __m["H:\\VRG\\Full\\Planner_VRG_U100\\Console\\www\\js\\trace\\model.js"] = (() => {
@@ -1046,6 +1052,14 @@ const remember = (n, ev) => {
   if (n.io.length > IO_KEEP) n.io.shift();
 };
 
+/* the tokens this event adds: each message id counts once */
+const spent = (trace, ev) => {
+  if (!ev.usage) return 0;
+  const tokens = trace.usage.has(ev.usage.id) ? 0 : ev.usage.tokens;
+  trace.usage.add(ev.usage.id);
+  return tokens;
+};
+
 function apply(trace, ev) {
   const { t } = ev;
   trace.clock = Math.max(trace.clock, t);
@@ -1061,13 +1075,19 @@ function apply(trace, ev) {
       warm(e, t, { calls: 1 });
       break;
     }
-    case 'agent-stop':
-      remember(agentNode(trace, ev), ev);
+    case 'agent-stop': {
+      const a = agentNode(trace, ev);
+      a.tokens += spent(trace, ev);
+      remember(a, ev);
       break;
-    case 'stop':
-      remember(node(trace, { id: 'root' }, t), ev);
+    }
+    case 'stop': {
+      const r = node(trace, { id: 'root' }, t);
+      r.tokens += spent(trace, ev);
+      remember(r, ev);
       trace.notice = null;
       break;
+    }
     case 'notice':
       trace.notice = ev;
       break;
@@ -1103,8 +1123,7 @@ function apply(trace, ev) {
       const edges = trace.open.get(ev.callId) ?? [];
       trace.open.delete(ev.callId);
       trace.pending.delete(ev.callId);
-      const tokens = ev.usage && !trace.usage.has(ev.usage.id) ? ev.usage.tokens : 0;
-      if (ev.usage) trace.usage.add(ev.usage.id);
+      const tokens = spent(trace, ev);
       const add = { tokens, time: ev.ms ?? 0, errors: ev.error ? 1 : 0 };
       for (const e of edges) {
         e.tokens += tokens;

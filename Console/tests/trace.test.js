@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { classify, fromHook, parseJsonl, usageFromTail } from '../www/js/trace/events.js';
+import { classify, fromHook, parseJsonl, transcriptOf, usageFromTail } from '../www/js/trace/events.js';
 import { apply, createTrace, fold, heatOf, HALF_LIFE, visible } from '../www/js/trace/model.js';
 import { emptyCounts, scrubEvent } from '../www/js/trace/privacy.js';
 import { SAMPLE_EVENTS } from '../www/js/trace/sample.js';
@@ -24,6 +24,19 @@ test('hook input becomes trace events', () => {
   assert.equal(sub.agent, 'agent:ab');
   assert.equal(sub.error, 'Exit code 1');
   assert.equal(fromHook({ hook_event_name: 'SessionEnd' }), null);
+  assert.equal(fromHook({ hook_event_name: 'UserPromptSubmit', session_id: 'x', prompt: '<task-notification>\n<task-id>a</task-id>' }), null);
+});
+
+test('a subagent is charged from its own transcript, and a closing message counts once', () => {
+  assert.equal(transcriptOf({ transcript_path: 'p/s.jsonl' }), 'p/s.jsonl');
+  assert.equal(transcriptOf({ transcript_path: 'p/s.jsonl', agent_id: 'ab' }), 'p/s/subagents/agent-ab.jsonl');
+  const trace = createTrace();
+  const stop = { kind: 'stop', t: 1, usage: { id: 'm', tokens: 40 } };
+  apply(trace, stop);
+  apply(trace, stop);
+  apply(trace, { kind: 'agent-stop', t: 2, agent: 'agent:ab', usage: { id: 'n', tokens: 9 } });
+  assert.equal(trace.nodes.get('root').tokens, 40);
+  assert.equal(trace.nodes.get('agent:ab').tokens, 9);
 });
 
 test('targets: tools, MCP servers, skills', () => {
@@ -152,6 +165,20 @@ test('hook with no relay: exit 0, silent, trace on disk, already scrubbed', () =
   assert.equal(r.stdout, '');
   assert.ok(!fs.readFileSync(path.join(dir, 'sess0001.jsonl'), 'utf8').includes('a@b.hu'));
   assert.equal(spawnSync(process.execPath, [path.join(TOOLS, 'trace-hook.js')], { input: 'not json', encoding: 'utf8' }).status, 0);
+});
+
+test('hook keeps to the retention setting with no relay running', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vc-trace-'));
+  fs.writeFileSync(path.join(dir, 'config.json'), '{"keepDays":1}');
+  const old = path.join(dir, 'old.jsonl');
+  fs.writeFileSync(old, '');
+  fs.utimesSync(old, new Date(Date.now() - 3 * 864e5), new Date(Date.now() - 3 * 864e5));
+  spawnSync(process.execPath, [path.join(TOOLS, 'trace-hook.js')], {
+    input: JSON.stringify({ hook_event_name: 'UserPromptSubmit', session_id: 'sess0002', prompt: 'x' }),
+    env: { ...process.env, VC_TRACE_DIR: dir, VC_TRACE_PORT: '18139' }, encoding: 'utf8',
+  });
+  assert.ok(!fs.existsSync(old));
+  assert.ok(fs.existsSync(path.join(dir, 'sess0002.jsonl')));
 });
 
 test('relay: a request needs the code, the right host and an allowed origin', async () => {

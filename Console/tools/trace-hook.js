@@ -9,8 +9,9 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fromHook, usageFromTail } from '../www/js/trace/events.js';
+import { fromHook, transcriptOf, usageFromTail } from '../www/js/trace/events.js';
 import { scrubEvent } from '../www/js/trace/privacy.js';
+import { keepDays, prune } from './trace-retention.js';
 
 const TRACES = process.env.VC_TRACE_DIR || path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'traces');
 const PORT = Number(process.env.VC_TRACE_PORT || 8134);
@@ -57,10 +58,11 @@ async function main(raw) {
   const hook = JSON.parse(raw);
   const event = fromHook(hook);
   if (!event || !event.sid) return;
-  if (event.kind === 'result' && hook.transcript_path) event.usage = usageFromTail(tail(hook.transcript_path)) ?? undefined;
+  if (['result', 'stop', 'agent-stop'].includes(event.kind) && transcriptOf(hook)) event.usage = usageFromTail(tail(transcriptOf(hook))) ?? undefined;
   const clean = scrubEvent(event, lines('names.txt'));
   fs.mkdirSync(TRACES, { recursive: true });
   fs.appendFileSync(path.join(TRACES, clean.sid.replace(/[^\w-]/g, '') + '.jsonl'), JSON.stringify(clean) + '\n');
+  if (clean.kind === 'prompt') prune(TRACES, keepDays(TRACES));
   await relay('/event', clean, 400);
   if (clean.kind === 'call' && gate.includes(clean.tool)) {
     const a = await relay('/gate', clean, GATE_MS);

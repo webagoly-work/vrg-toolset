@@ -27,7 +27,9 @@ file (`npm run build:trace`), and the **Ügynöknyom** button in Kódváros. The
 Sources share one interface in `www/js/trace/sources.js`: Claude Code hooks, a Managed Agents slot that says
 it is not there yet (Session 2), and replay of a saved `.jsonl` with the timeline.
 
-To turn the hooks on, copy `tools/hooks.example.json` into `.claude/settings.local.json`. They only observe.
+To turn the hooks on, copy `tools/hooks.example.json` into `.claude/settings.local.json`, or merge it in if the
+file already has hooks. They only observe. A session reads its hooks when it starts. Each hook call costs one
+Node start, about a second on the dev PC, so a tool call waits about that long before and after it runs.
 To answer from the page, add `--gate=Bash,Write` to the `PreToolUse` hook and raise its `timeout` to 120: those
 tools then wait up to 100 s while a viewer is connected. With no answer or no viewer, Claude Code's own
 permission prompt decides, and deny rules in your settings always hold. A message from the prompt box is
@@ -36,7 +38,8 @@ delivered the next time the session stops.
 Privacy: events are scrubbed in the hook before they touch the disk and again in the page, which also knows
 the client names from your jobs. To cover them in the hook too, list them in `traces/names.txt`, one a line.
 The rules take names, emails, phones, streets, secrets and folders under `jobs/`. The page shows what went.
-`traces/` is gitignored; retention is set on the page (the relay and the browser store both obey it).
+`traces/` is gitignored; retention is set on the page (the hook, the relay and the browser store all obey it).
+Token counts are input plus output per message, read from the transcripts; cached tokens are not included.
 
 ## Layout
 
@@ -48,7 +51,7 @@ The rules take names, emails, phones, streets, secrets and folders under `jobs/`
 | `www/js/core/` | i18n, locale formatting, the local-first store (`store.js` settings, `db.js` IndexedDB records), limit checks, calculators, redaction, the PC bridge client |
 | `www/js/pages/*.js` | one module per page: `{ manifest, strings, mount(root, ctx) }`; small widgets share `widgets-simple.js` and `widgets-device.js` |
 | `www/js/trace/` | events, model, privacy, sources, view, panel; `standalone.js` is the single-file entry |
-| `tools/` | `trace-hook.js`, `trace-relay.js`, `build-trace.js`, `hooks.example.json` |
+| `tools/` | `trace-hook.js`, `trace-relay.js`, `trace-retention.js`, `build-trace.js`, `hooks.example.json` |
 | `www/data/` | `commands.js`, `sugo.js`, `playbooks.js`, copied unchanged from ServiceKitPhone |
 | `www/fonts/` | bundled woff2 subsets with their OFL licences (`NOTICE.md`) |
 | `www/js/i18n/` | `hu.js`, `en.js`: every UI string |
@@ -87,11 +90,16 @@ input: replay and timeline; live events; Approve reaching the hook as `allow`, D
 message returned at Stop; the hook silent and exiting 0 with no relay; wrong code, foreign origin and foreign
 host refused; no email or job folder on disk or in the browser store; the standalone page over the relay.
 
+Then in real headless `claude -p` sessions on the dev PC, observe only: prompt, Read, Glob, a failed Read and a
+subagent, live and from a saved session; test contact details removed on disk; token counts equal to the
+session and subagent transcripts, message by message. Approve, Deny and the prompt box were not used in a real
+session: they stay tested with hand-written hook input only.
+
 **Not tested:** real touch hardware, a real phone, any native shell, screen readers, the swipe edge
 guard (it applies to touch input only), a real PC run, a paired Wi-Fi bridge, level, compass, sound
 meter and media player with real sensors, microphone or files, the photo picker, supplier CSV import
-in the browser, the trace hooks in a real Claude Code session, token counts from a real transcript,
-the Kódváros specs, and Managed Agents (not built).
+in the browser, the trace gate and prompt box in a real session, the Kódváros specs, and Managed Agents
+(not built).
 
 **Not built yet:** OCR in the inbox; quote view, legal lookup; kit deploy, network tools, site survey;
 all five smart-home pages; worktrees, terminal, Kódváros map, CI status; file converter, QR and

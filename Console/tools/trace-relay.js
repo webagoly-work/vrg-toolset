@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { keepDays, prune } from './trace-retention.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const TRACES = process.env.VC_TRACE_DIR || path.join(HERE, '..', 'traces');
@@ -24,18 +25,7 @@ const viewers = new Set();
 const gates = new Map();
 const prompts = new Map();
 const configFile = path.join(TRACES, 'config.json');
-const config = () => {
-  try { return JSON.parse(fs.readFileSync(configFile, 'utf8')); } catch { return { keepDays: 14 }; }
-};
-
-function prune(days) {
-  const cutoff = Date.now() - days * 864e5;
-  for (const f of fs.readdirSync(TRACES)) {
-    if (!f.endsWith('.jsonl')) continue;
-    const file = path.join(TRACES, f);
-    if (fs.statSync(file).mtimeMs < cutoff) fs.unlinkSync(file);
-  }
-}
+const config = () => ({ keepDays: keepDays(TRACES) });
 
 const safeSid = (s) => String(s ?? '').replace(/[^\w-]/g, '');
 const record = (ev) => {
@@ -92,7 +82,7 @@ const routes = {
   'POST /retention': (url, { keepDays }) => {
     const days = Math.max(1, Math.min(365, Number(keepDays) || 14));
     fs.writeFileSync(configFile, JSON.stringify({ keepDays: days }));
-    prune(days);
+    prune(TRACES, days);
     return { ok: true, keepDays: days };
   },
 };
@@ -163,7 +153,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-prune(config().keepDays);
+prune(TRACES, keepDays(TRACES));
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`Trace relay on http://127.0.0.1:${PORT}`);
   console.log(`Pairing code: ${CODE}`);
