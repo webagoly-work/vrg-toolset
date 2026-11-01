@@ -1,0 +1,17 @@
+{
+  "name": "Sunlight",
+  "note": "Not in the Varler SUI design system: it defines the HUD theme only. Derived here for direct sun: lighter ground, darker accents, heavier strokes, glow off. Charcoal chrome keeps its HUD colours.",
+  "tokens": {
+    "ground": "#E6ECEF",
+    "panel": "#F3F6F7",
+    "line": "#4C6878",
+    "dim": "#7C909B",
+    "fg": "#10202A",
+    "muted": "#3A5261",
+    "cyan": "#0A5F6C",
+    "cyan-soft": "rgba(10,95,108,0.14)",
+    "amber": "#8A5200",
+    "alert": "#6E4A00",
+    "ok": "#1C6330"
+  }
+}

@@ -110,7 +110,8 @@
     { "key": "9", "id": "openmct", "name": "Open MCT · kísérlet", "port": 8150, "js": "{repo}\\docs\\research\\openmct-spike\\serve.js" },
     { "key": "0", "id": "kapu-dev", "name": "VRG Kapu · statikus dev", "port": 8796, "js": "{repo}\\Hub\\test\\serve.js" },
     { "key": "K", "id": "city", "name": "Kódváros · élő mód", "port": 8797, "js": "{repo}\\CodeCity\\companion.js", "self": true },
-    { "key": "M", "id": "hub-admin", "name": "VRG Kapu · admin (engedélyezett lista)", "port": 8798, "js": "{repo}\\tools\\hub-admin\\server.js", "self": true }
+    { "key": "M", "id": "hub-admin", "name": "VRG Kapu · admin (engedélyezett lista)", "port": 8798, "js": "{repo}\\tools\\hub-admin\\server.js", "self": true },
+    { "key": "C", "id": "console", "name": "Varler Console · terepi konzol", "port": 8133, "js": "{repo}\\Console\\serve.js" }
   ],
 
   "programs": [
@@ -214,6 +215,14 @@
             { "key": "A", "name": "Android Studio", "hint": "a projekt megnyitása", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["studio"] },
             { "key": "R", "name": "Leírás", "hint": "README.md", "exe": "{repo}\\Mobile\\mobile.cmd", "args": ["readme"] },
             { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Mobile" }
+          ] } },
+      { "key": "W", "name": "Varler Console", "hint": "terepi konzol, :8133", "menu": {
+          "title": "VARLER CONSOLE", "subtitle": "{repo}\\Console",
+          "items": [
+            { "key": "S", "name": "Indítás", "hint": ":8133", "server": "console" },
+            { "key": "T", "name": "Teszt", "hint": "npm test", "cwd": "{repo}\\Console", "steps": [{ "exe": "{npm}", "args": ["test"] }] },
+            { "key": "V", "name": "VS Code", "exe": "{code}", "args": ["{repo}\\Console"] },
+            { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Console" }
           ] } },
       { "key": "V", "name": "Vendor", "hint": "lista · letöltés", "was": "L D", "menu": {
           "title": "VENDOR KOMPONENSEK", "subtitle": "vendor-manifest.json · Vendor\\",

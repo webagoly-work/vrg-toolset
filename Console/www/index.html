@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#33363A">
+<title>Varler Console</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/ring.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="app" id="app">
+  <header class="bar chrome">
+    <div class="bar-row">
+      <div class="mark"><b data-i18n="app.brandA"></b><span class="mark-b"> · <span data-i18n="app.brandB"></span></span></div>
+      <h1 class="ptitle" id="ptitle" aria-live="polite"></h1>
+      <button class="ico" id="btnLibrary" type="button" data-i18n-aria="nav.library" data-i18n-title="nav.library"></button>
+      <button class="ico" id="btnSettings" type="button" data-i18n-aria="nav.settings" data-i18n-title="nav.settings"></button>
+    </div>
+    <div class="presets" id="presets" role="group" data-i18n-aria="preset.group"></div>
+  </header>
+  <main class="view" id="view"></main>
+  <nav class="foot chrome" data-i18n-aria="nav.pages">
+    <button class="ico" id="btnHome" type="button" data-i18n-aria="nav.home" data-i18n-title="nav.home"></button>
+    <button class="ico" id="btnPrev" type="button" data-i18n-aria="nav.prev" data-i18n-title="nav.prev"></button>
+    <div class="dots" id="dots"></div>
+    <button class="ico" id="btnNext" type="button" data-i18n-aria="nav.next" data-i18n-title="nav.next"></button>
+  </nav>
+</div>
+<dialog class="sheet" id="sheet"></dialog>
+<dialog class="confirm chrome" id="confirm"></dialog>
+<div class="toasts" id="toasts" role="status"></div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

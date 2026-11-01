@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ring.js gallery</title>
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/ring.css">
+<style>
+  /* Developer test page, not part of the app. All values are placeholders. */
+  body { margin: 0; padding: 20px 16px; background: var(--ground); color: var(--fg); font: 15px/22px var(--f-body); }
+  .g { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 14px; min-width: 0; overflow-x: auto; }
+  h2 { font: 500 17px/20px var(--f-display); letter-spacing: .12em; text-transform: uppercase; margin: 0 0 8px; }
+  svg { width: 100%; height: auto; display: block; }
+  .vitals { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+  .vitals svg { width: 70px; }
+  #tree { min-width: 900px; }
+</style>
+</head>
+<body>
+<div class="g">
+  <section><h2>ticks + sector</h2><svg id="a" viewBox="0 0 300 300"></svg></section>
+  <section><h2>callout + reticle</h2><svg id="b" viewBox="0 0 400 300"></svg></section>
+  <section><h2>radar</h2><svg id="c" viewBox="0 0 560 520"></svg></section>
+  <section><h2>vitals</h2><div class="vitals" id="d"></div></section>
+  <section style="grid-column:1/-1"><h2>branchTree</h2><svg id="tree"></svg><p id="pick"></p></section>
+</div>
+<script type="module">
+  import { el, ring, ticks, sector, callout, reticle, branchTree, radar, vitals } from '/js/ring.js';
+  const $ = (id) => document.getElementById(id);
+
+  const spin = el('g', { class: 'r-spin' }, $('a'));
+  ticks(spin, { cx: 150, cy: 150, r: 130, n: 120, every: 10 });
+  ring($('a'), { cx: 150, cy: 150, r: 124 });
+  for (let i = 0; i < 6; i++) {
+    const a0 = -Math.PI / 2 + i / 6 * 2 * Math.PI + 0.03, a1 = -Math.PI / 2 + (i + 1) / 6 * 2 * Math.PI - 0.03;
+    el('path', { d: sector(150, 150, 50, 110, a0, a1), fill: i === 1 ? 'var(--cyan-soft)' : 'transparent', stroke: i === 1 ? 'var(--cyan)' : 'var(--line)' }, $('a'));
+  }
+
+  reticle($('b'), { cx: 200, cy: 150, r: 60, reach: 300, label: 'CTR' });
+  callout($('b'), { x: 120, y: 190, dx: 70, dy: -80, title: 'LOCK 01', sub: 'SECTOR 17', actions: [{ label: 'OPEN', onPress: () => { $('pick').textContent = 'callout action'; } }] });
+
+  radar($('c'), { axes: ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot'], values: [16, 12, 15, 6, 9, 11], base: [12, 12, 12, 12, 12, 12], caption: '20-PT SCALE' });
+
+  const v = vitals($('d'), [{ key: 'cpu', label: 'CPU', unit: '%', lo: 0, hi: 100, value: 23 }, { key: 'temp', label: 'TEMP', unit: '°C', lo: 30, hi: 80, value: 52 }]);
+  setInterval(() => v.update({ cpu: Math.round(Math.random() * 100), temp: 40 + Math.round(Math.random() * 30) }), 1500);
+
+  branchTree($('tree'), ['init', 'one', 'two', 'three', 'four'], [
+    { name: 'feature/a', fork: 2, commits: ['a1', 'a2', 'a3'], ahead: 3, behind: 2, dirty: true },
+    { name: 'feature/b', fork: 1, commits: ['b1', 'b2'], ahead: 2, behind: 3 },
+  ], {
+    labels: { main: 'MAIN', dirty: '● dirty', aheadBehind: (b) => `+${b.ahead} −${b.behind}` },
+    initial: 'b0_2',
+    onPick: (i) => { $('pick').textContent = JSON.stringify(i); },
+  });
+</script>
+</body>
+</html>

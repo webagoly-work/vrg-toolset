@@ -1,0 +1,12 @@
+{
+  "name": "varler-console",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Varler Console: villanyszerelői terepi konzol és zseb-műszerfal. PWA, később Capacitor APK.",
+  "scripts": {
+    "serve": "node serve.js",
+    "tokens": "node tools/build-tokens.js",
+    "test": "node --test \"tests/*.test.js\""
+  }
+}

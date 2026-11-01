@@ -1,0 +1,39 @@
+/* Styles for js/ring.js. */
+.r-lbl { font: 500 15px var(--f-display); letter-spacing: .08em; text-transform: uppercase; fill: var(--fg); }
+.r-lbl-node { font-size: 14px; }
+.r-lbl-s { font: 12px var(--f-display); letter-spacing: .06em; text-transform: uppercase; fill: var(--muted); }
+.r-mono { font: 11px var(--f-mono); fill: var(--muted); }
+.r-chip { font: 11px var(--f-mono); fill: var(--muted); }
+.r-strong { fill: var(--fg); }
+.r-accent { fill: var(--cyan); }
+.r-attn { fill: var(--alert); }
+.r-axis-value { fill: var(--fg); font-family: var(--f-mono); font-size: 11px; }
+
+.r-draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: r-draw .45s ease-out forwards; }
+.r-fade { opacity: 0; animation: r-fade .3s .4s forwards; }
+.r-spin { transform-box: fill-box; transform-origin: center; animation: r-spin 90s linear infinite; }
+@keyframes r-draw { to { stroke-dashoffset: 0; } }
+@keyframes r-fade { to { opacity: 1; } }
+@keyframes r-spin { to { transform: rotate(360deg); } }
+
+.r-act, .r-node { cursor: pointer; }
+.r-act:hover rect { stroke: var(--cyan); }
+.r-act:focus, .r-node:focus { outline: none; }
+.r-act:focus-visible rect { stroke: var(--cyan); stroke-width: 2; }
+.r-node:hover .r-box { stroke: var(--cyan); }
+.r-node:focus-visible .r-box { stroke: var(--alert); stroke-width: 2; }
+.r-node.on .r-box { fill: var(--cyan); stroke: var(--cyan); }
+.r-node.on text { fill: var(--ground); }
+.r-edge-on { stroke: var(--cyan); stroke-width: 1.6; }
+
+.r-vit { display: flex; align-items: center; gap: var(--space-2); }
+.r-vit b { font: 500 12px var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.r-vit span { font: 500 22px/1 var(--f-display); color: var(--cyan); font-variant-numeric: tabular-nums; min-width: 3.2ch; }
+.r-vit svg { width: 70px; height: 20px; }
+
+[data-theme="sun"] .r-glow { filter: none; }
+[data-theme="sun"] .r-stroke { stroke-width: 1.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .r-spin, .r-draw, .r-fade { animation: none; stroke-dashoffset: 0; opacity: 1; }
+}
