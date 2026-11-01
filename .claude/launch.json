@@ -56,6 +56,14 @@
       ],
       "port": 8796,
       "url": "http://127.0.0.1:8796"
+    },
+    {
+      "name": "solomon",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "Solomon/serve.js"
+      ],
+      "port": 8799
     }
   ]
 }

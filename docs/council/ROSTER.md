@@ -39,6 +39,7 @@
 | **Armistice** | Műszerész | Run these checks |
 | **Clementine** | Naplóvezető | Close the round, list loose ends |
 | **Sylvester** | Anyagkiíró | Pull these rows out of these files |
+| **Caleb** | Gyakornok | Read the next Solomon section for discrepancies. Also runs by itself on a schedule |
 
 ## Which department owns what
 

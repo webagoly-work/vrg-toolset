@@ -31,7 +31,7 @@ const LOG = path.join(DIR, 'gate.log');
 const ROSTER = {
   arnold: 'council', charlotte: 'council', elsie: 'council', stubbs: 'council', lee: 'council',
   felix: 'contractor', theresa: 'contractor', akecheta: 'contractor', abernathy: 'contractor', 'vrg-piacmero': 'contractor',
-  teddy: 'worker', armistice: 'worker', clementine: 'worker', sylvester: 'worker',
+  teddy: 'worker', armistice: 'worker', clementine: 'worker', sylvester: 'worker', caleb: 'worker',
 };
 const TIER = t => ROSTER[t] || null;
 const COSTLY_MODEL = /opus|fable/i;

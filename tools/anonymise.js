@@ -12,6 +12,7 @@
 //
 //   node tools/anonymise.js             dry run: what would change
 //   node tools/anonymise.js --apply     rewrite contents + git mv the paths
+//   node tools/anonymise.js --check <file>...   exit 1 if one of these holds a code
 //
 // A match is skipped when it is preceded by a letter (gitInv4, base64),
 // followed by a digit (a longer number) or sits inside a base64-looking run.
@@ -94,6 +95,14 @@ function swap(s) {
 
 function git(args) {
   return execFileSync('git', args, { cwd: REPO, encoding: 'utf8', maxBuffer: 1 << 28 });
+}
+
+/* --check <file>...: exit 1 if one of them holds a code. For a push that carries only these files. */
+const checkAt = process.argv.indexOf('--check');
+if (checkAt > 0) {
+  const hits = process.argv.slice(checkAt + 1).filter(f => swap(fs.readFileSync(f, 'utf8'))[1]);
+  hits.forEach(f => console.log('  holds a client code: ' + f));
+  process.exit(hits.length ? 1 : 0);
 }
 
 const files = git(['ls-files', '-z']).split('\0').filter(Boolean)

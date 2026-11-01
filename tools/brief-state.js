@@ -49,6 +49,7 @@ const BRIEFS = {
   kapu: { who: ELSIE, go: 'GO HUB', paths: ['Hub', 'docs/hub/README.md'] },
   mobile: { who: ELSIE, go: 'GO MOBILE', paths: ['Mobile', 'docs/mobile'] },
   kodvaros: { who: ELSIE, go: 'GO CITY', paths: ['CodeCity', 'docs/city'] },
+  solomon: { who: ELSIE, paths: ['Solomon', 'docs/solomon', 'tools/solomon.js'] },
   launchers: { who: ELSIE, go: 'GO MAIN', paths: ['launcher'] },
   backups: { who: ELSIE, go: 'GO MAIN', paths: ['launcher/backup.ps1', 'launcher/test/backup-selftest.ps1'] },
   repo: { who: ELSIE, go: 'GO MAIN', paths: ['CLAUDE.md', 'GO-MAIN.md', '.gitignore'] },

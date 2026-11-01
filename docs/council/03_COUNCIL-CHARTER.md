@@ -68,6 +68,7 @@ A facility is shared ground, not a seat. It has a keeper and needs no extra agen
 | **Armistice** | Műszerész | Worker | Diagnostics | Runs named checks, reports pass or fail |
 | **Clementine** | Naplóvezető | Worker | Control Room | Writes the ledger line, lists loose ends |
 | **Sylvester** | Anyagkiíró | Worker | Any | Pulls rows from documents by a schema |
+| **Caleb** | Gyakornok | Worker | Diagnostics | Reads one Solomon section at a time for discrepancies; flags, never rules. `docs/solomon/README.md` §4 binds every agent |
 
 ## 3. What belongs to the Founder
 

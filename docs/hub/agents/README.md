@@ -46,5 +46,5 @@ A brief is the cheapest good context: about 600 tokens, and it says which files 
 
 **Charlotte:** workflow-kit · jobs · inventory · buildtree · calc-panel · calc-general · calc-led · licences
 
-**Elsie:** bridge · media-wall · sh-catalogue · planner-cyd · knobpad · board-console · kapu · mobile ·
+**Elsie:** bridge · media-wall · sh-catalogue · planner-cyd · knobpad · board-console · kapu · mobile · solomon ·
 kodvaros · launchers · backups · repo · prompts · research · coreref · vendor · toolbox

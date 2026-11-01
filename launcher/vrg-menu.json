@@ -111,7 +111,8 @@
     { "key": "0", "id": "kapu-dev", "name": "VRG Kapu · statikus dev", "port": 8796, "js": "{repo}\\Hub\\test\\serve.js" },
     { "key": "K", "id": "city", "name": "Kódváros · élő mód", "port": 8797, "js": "{repo}\\CodeCity\\companion.js", "self": true },
     { "key": "M", "id": "hub-admin", "name": "VRG Kapu · admin (engedélyezett lista)", "port": 8798, "js": "{repo}\\tools\\hub-admin\\server.js", "self": true },
-    { "key": "C", "id": "console", "name": "Varler Console · terepi konzol", "port": 8133, "js": "{repo}\\Console\\serve.js" }
+    { "key": "C", "id": "console", "name": "Varler Console · terepi konzol", "port": 8133, "js": "{repo}\\Console\\serve.js" },
+    { "key": "T", "id": "solomon", "name": "Solomon Gömb · döntésekkel", "port": 8799, "js": "{repo}\\Solomon\\serve.js" }
   ],
 
   "programs": [
@@ -147,6 +148,7 @@
       { "key": "8", "name": "LED árkalkulátor", "hint": "varlerÁron", "path": "{repo}\\Calculator\\led_arkalkulator.html", "otg": true },
       { "key": "9", "name": "VRG BuildTree", "hint": "modder", "path": "{repo}\\Modder\\vrg-buildtree.html", "otg": true },
       { "key": "0", "name": "VRG Vendor", "hint": "külső komponensek", "path": "{repo}\\vrg-vendor.html", "otg": false },
+      { "key": "T", "name": "Solomon Gömb", "hint": "a tudás három jelzése", "path": "{repo}\\Solomon\\dist\\vrg-solomon.html" },
       { "key": "K", "name": "VRG Kódváros", "hint": "a kód 3D városként", "path": "{repo}\\CodeCity\\dist\\vrg-codecity.html", "otg": false,
         "before": { "note": "Kódváros: a repo beolvasása…", "exe": "{node}",
                     "args": ["{repo}\\CodeCity\\scan.js", "{repo}", "--js", "{repo}\\CodeCity\\dist\\vrg-codecity.data.js"] },
