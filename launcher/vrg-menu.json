@@ -112,6 +112,7 @@
     { "key": "K", "id": "city", "name": "Kódváros · élő mód", "port": 8797, "js": "{repo}\\CodeCity\\companion.js", "self": true },
     { "key": "M", "id": "hub-admin", "name": "VRG Kapu · admin (engedélyezett lista)", "port": 8798, "js": "{repo}\\tools\\hub-admin\\server.js", "self": true },
     { "key": "C", "id": "console", "name": "Varler Console · terepi konzol", "port": 8133, "js": "{repo}\\Console\\serve.js" },
+    { "key": "R", "id": "trace-relay", "name": "Ügynöknyom · közvetítő", "port": 8134, "js": "{repo}\\Console\\tools\\trace-relay.js" },
     { "key": "T", "id": "solomon", "name": "Solomon Gömb · döntésekkel", "port": 8799, "js": "{repo}\\Solomon\\serve.js" }
   ],
 
@@ -222,6 +223,7 @@
           "title": "VARLER CONSOLE", "subtitle": "{repo}\\Console",
           "items": [
             { "key": "S", "name": "Indítás", "hint": ":8133", "server": "console" },
+            { "key": "R", "name": "Ügynöknyom közvetítő", "hint": ":8134", "server": "trace-relay" },
             { "key": "T", "name": "Teszt", "hint": "npm test", "cwd": "{repo}\\Console", "steps": [{ "exe": "{npm}", "args": ["test"] }] },
             { "key": "V", "name": "VS Code", "exe": "{code}", "args": ["{repo}\\Console"] },
             { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Console" }

@@ -401,6 +401,14 @@ body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb
 .hm-bars li { display: flex; align-items: center; gap: 6px; break-inside: avoid; margin-bottom: 3px; }
 .hm-bars i { display: block; height: 7px; background: var(--accent-2); }
 @media (max-width: 700px) { #hm-sw { top: 96px; } #hm-plan { top: 126px; left: 12px; } #hm-rail { top: auto; bottom: 48px; transform: none; flex-direction: row; } }
+
+/* 49-trace: the agent trace window */
+#trace-win { position: absolute; top: 12px; right: 12px; bottom: 12px; width: min(460px, calc(100% - 24px)); z-index: 40; display: flex; flex-direction: column; background: #121b22; border: 1px solid #2c4152; }
+#trace-win[hidden] { display: none; }
+#trace-win header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; }
+#trace-win .trace-body { flex: 1; min-height: 0; }
+#trace-win iframe { width: 100%; height: 100%; border: 0; display: block; }
+#trace-win p { padding: 12px; }
 </style>
 </head>
 <body>
@@ -6114,7 +6122,7 @@ function hmPanel() {
   if (t.disk) {
     const d = e.disks.find(x => x.letters.includes(t.disk)), inv = (hw.disks || []).find(x => (x.vols || []).some(v => v.letter === t.disk)), vol = inv && inv.vols.find(v => v.letter === t.disk);
     return P(`${t.name} · ${t.disk}`, [['Lemez', esc((inv && inv.model) || '—')], ['Olvasás', d ? hmRate(d.r) : '—'], ['Írás', d ? hmRate(d.w) : '—'], ['Foglaltság', d ? hmPct(d.busy) : '—'], ['Sor', d ? hmNum(d.q) : '—'], ['Szabad', vol ? `${hmGB(vol.free)} / ${hmGB(vol.size)}` : '—'], ...hmSensor('disk', 'temp', inv && inv.model).slice(0, 1).map(r => ['Hőmérséklet', Math.round(r.v) + ' °C']), ...(d ? hmDiskTop(d.id) : []).map(x => [esc(x.exe.slice(0, 26)), `be ${hmRate(x.r)} · ki ${hmRate(x.w)}`])], 'M', d && hmDiskTop(d.id).length ? 'PDH PhysicalDisk · 1 s; ETW · 1 s' : 'PDH PhysicalDisk · 1 s',
-      d && hmDiskTop(d.id).length ? '' : '<p class="dim">Melyik program használja: a frissített ETW-segéddel jön.</p>');
+      d && hmDiskTop(d.id).length || hm.scrub != null ? '' : hm.sens ? '<p class="dim">Most egyik program sem használja.</p>' : '<p class="dim">Melyik program használja: a frissített ETW-segéddel jön.</p>');
   }
   hmPanelStatic(t);
 }
@@ -7430,6 +7438,64 @@ function hmPagesFixture() {
   const n = c => [...l].filter(x => x === c).length * 1024, m = c => [...u].filter(x => x === c).length * 1024;
   return { at: Date.now(), ms: 30, gran: 1024, seen: 4056 * 1024, lists: [...'01234567'].map(n), uses: [...'0123456789ab'].map(m), l, u };
 }
+
+// ==== src/49-trace.js
+// 49-trace.js — the Varler Console agent trace inside the city. A window on the relay's page (Console/tools/trace-relay.js,
+// 127.0.0.1:8134): the graph, approvals and replay live there, redaction included, and nothing crosses into the city.
+// Touched files already light their buildings through the Kódváros hook and the beams (23-agents).
+
+const KV_TRACE_URL = 'http://127.0.0.1:8134/';
+const kvTrace = { el: null, open: false };
+
+function kvTraceBuild() {
+  const box = document.createElement('aside');
+  box.id = 'trace-win';
+  box.hidden = true;
+  const head = document.createElement('header');
+  const name = document.createElement('b');
+  name.textContent = 'Ügynöknyom';
+  const close = document.createElement('button');
+  close.className = 'btn';
+  close.textContent = 'Bezárás';
+  close.onclick = () => kvTraceToggle(false);
+  head.append(name, close);
+  const body = document.createElement('div');
+  body.className = 'trace-body';
+  box.append(head, body);
+  document.getElementById('stage').append(box);
+  kvTrace.el = box;
+  kvTrace.body = body;
+}
+
+async function kvTraceToggle(on) {
+  if (!kvTrace.el) kvTraceBuild();
+  kvTrace.open = on;
+  kvTrace.el.hidden = !on;
+  if (!on) { kvTrace.body.replaceChildren(); return; }
+  try {
+    await fetch(KV_TRACE_URL, { mode: 'no-cors', cache: 'no-store' });
+    const f = document.createElement('iframe');
+    f.src = KV_TRACE_URL;
+    f.title = 'Ügynöknyom';
+    kvTrace.body.replaceChildren(f);
+  } catch (e) {
+    const p = document.createElement('p');
+    p.textContent = 'A közvetítő nem fut. Indítsd: START → O → R (Ügynöknyom közvetítő).';
+    kvTrace.body.replaceChildren(p);
+  }
+}
+
+(function kvTraceButton() {
+  const before = document.getElementById('dock-btn');
+  if (!before) return;
+  const b = document.createElement('button');
+  b.id = 'trace-btn';
+  b.className = 'btn';
+  b.textContent = 'Ügynöknyom';
+  b.title = 'Az ügynökök hívásai gráfként: élőben vagy visszajátszva (Varler Console)';
+  b.onclick = () => kvTraceToggle(!kvTrace.open);
+  before.before(b);
+})();
 
 // ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.

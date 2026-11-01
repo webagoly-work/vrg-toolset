@@ -67,3 +67,6 @@ CodeCity/companion.config.json
 
 # --- Kodvaros file panel: safety copies before a save (KV-12) ---
 .cache/
+
+# Varler Console traces: redacted but local, and the relay code
+Console/traces/

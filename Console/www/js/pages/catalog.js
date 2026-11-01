@@ -21,12 +21,13 @@ import * as sugoPage from './sugo.js';
 import * as playbooksPage from './playbooks.js';
 import * as macrosPage from './macros.js';
 import * as pcstatusPage from './pcstatus.js';
+import * as tracePage from './tracemini.js';
 import { strings as bridgeStrings } from './servicekit-shared.js';
 import { clock as clockPage, timer as timerPage, notes as notesPage, todo as todoPage, scicalc as scicalcPage, units as unitsPage, dice as dicePage, radar as radarPage, statusring as statusringPage } from './widgets-simple.js';
 import { sun as sunPage, agenda as agendaPage, level as levelPage, compass as compassPage, sound as soundPage, media as mediaPage } from './widgets-device.js';
 
 /* Pages built so far. Each is self-contained: { manifest, strings, mount }. */
-export const MODULES = { job: jobPage, measure: measurePage, panel: panelPage, checklist: checklistPage, inbox: inboxPage, time: timePage, cheat: cheatPage, calc: calcPage, supplier: supplierPage, materials: materialsPage, agentkit: agentkitPage, commands: commandsPage, sugo: sugoPage, playbooks: playbooksPage, macros: macrosPage, pcstatus: pcstatusPage, clock: clockPage, timer: timerPage, notes: notesPage, todo: todoPage, scicalc: scicalcPage, units: unitsPage, dice: dicePage, radar: radarPage, statusring: statusringPage, sun: sunPage, agenda: agendaPage, level: levelPage, compass: compassPage, sound: soundPage, media: mediaPage };
+export const MODULES = { job: jobPage, measure: measurePage, panel: panelPage, checklist: checklistPage, inbox: inboxPage, time: timePage, cheat: cheatPage, calc: calcPage, supplier: supplierPage, materials: materialsPage, agentkit: agentkitPage, commands: commandsPage, sugo: sugoPage, playbooks: playbooksPage, macros: macrosPage, pcstatus: pcstatusPage, clock: clockPage, timer: timerPage, notes: notesPage, todo: todoPage, scicalc: scicalcPage, units: unitsPage, dice: dicePage, radar: radarPage, statusring: statusringPage, tracemini: tracePage, sun: sunPage, agenda: agendaPage, level: levelPage, compass: compassPage, sound: soundPage, media: mediaPage };
 
 export const CATEGORIES = ['field', 'servicekit', 'smarthome', 'dev', 'widgets', 'thematic'];
 export const PERMISSIONS = ['camera', 'microphone', 'sensors', 'location', 'files', 'clipboard', 'bridge', 'homeassistant', 'network'];
@@ -65,7 +66,7 @@ export const CATALOG = [
 
   page('worktrees', 'dev', ['bridge'], false, 'Worktree-ágfa', 'Worktree branch tree'),
   agentkitPage.manifest,
-  page('tracemini', 'dev', ['bridge'], false, 'Ügynöknyom, kis nézet', 'Agent trace mini view'),
+  tracePage.manifest,
   page('terminal', 'dev', ['bridge'], false, 'Terminálréteg', 'Terminal overlay'),
   page('citymap', 'dev', ['bridge'], false, 'Kódváros minitérkép', 'Kódváros mini-map'),
   page('ci', 'dev', ['network'], false, 'CI-állapot', 'CI status'),

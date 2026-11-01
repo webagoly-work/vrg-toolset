@@ -3,7 +3,7 @@
 Villanyszerelői terepi konzol és zseb-műszerfal. Offline-first, helyi tárolás, magyar alapnyelv.
 *An electrician's field console and pocket dashboard. Offline-first, local storage, Hungarian by default.*
 
-Status: **Phase 2, template pages.** 31 of 49 pages are built; the other 18 show a working empty state
+Status: **Phase 3, live agent trace.** 32 of 49 pages are built; the other 17 show a working empty state
 that says what they wait for. The PWA and the APK arrive in Phase 4; the full README with them.
 
 ## Run
@@ -18,6 +18,26 @@ npm test
 Serve it: `localStorage` and ES modules do not work from `file://`.
 Ring primitives gallery: `http://127.0.0.1:8133/tests/ring-gallery.html`.
 
+## Agent trace
+
+The same view runs in three places: the Console page **Ügynöknyom**, `dist/vrg-trace.html` as one offline
+file (`npm run build:trace`), and the **Ügynöknyom** button in Kódváros. The relay is START **W**, **R**
+(or `npm run relay`), `http://127.0.0.1:8134`. It prints a pairing code; its own page is paired already.
+
+Sources share one interface in `www/js/trace/sources.js`: Claude Code hooks, a Managed Agents slot that says
+it is not there yet (Session 2), and replay of a saved `.jsonl` with the timeline.
+
+To turn the hooks on, copy `tools/hooks.example.json` into `.claude/settings.local.json`. They only observe.
+To answer from the page, add `--gate=Bash,Write` to the `PreToolUse` hook and raise its `timeout` to 120: those
+tools then wait up to 100 s while a viewer is connected. With no answer or no viewer, Claude Code's own
+permission prompt decides, and deny rules in your settings always hold. A message from the prompt box is
+delivered the next time the session stops.
+
+Privacy: events are scrubbed in the hook before they touch the disk and again in the page, which also knows
+the client names from your jobs. To cover them in the hook too, list them in `traces/names.txt`, one a line.
+The rules take names, emails, phones, streets, secrets and folders under `jobs/`. The page shows what went.
+`traces/` is gitignored; retention is set on the page (the relay and the browser store both obey it).
+
 ## Layout
 
 | Path | What |
@@ -27,6 +47,8 @@ Ring primitives gallery: `http://127.0.0.1:8133/tests/ring-gallery.html`.
 | `tools/build-tokens.js` | generates `www/css/tokens.css` (`npm run tokens`) |
 | `www/js/core/` | i18n, locale formatting, the local-first store (`store.js` settings, `db.js` IndexedDB records), limit checks, calculators, redaction, the PC bridge client |
 | `www/js/pages/*.js` | one module per page: `{ manifest, strings, mount(root, ctx) }`; small widgets share `widgets-simple.js` and `widgets-device.js` |
+| `www/js/trace/` | events, model, privacy, sources, view, panel; `standalone.js` is the single-file entry |
+| `tools/` | `trace-hook.js`, `trace-relay.js`, `build-trace.js`, `hooks.example.json` |
 | `www/data/` | `commands.js`, `sugo.js`, `playbooks.js`, copied unchanged from ServiceKitPhone |
 | `www/fonts/` | bundled woff2 subsets with their OFL licences (`NOTICE.md`) |
 | `www/js/i18n/` | `hu.js`, `en.js`: every UI string |
@@ -60,11 +82,17 @@ ServiceKit pages against `skphone-bridge.js --allow-run --mock-pc` (the mock run
 329 commands, search, Run on PC behind a confirm showing the exact command, 19 macros, confirm on a
 dangerous macro, and the pairing code absent from stored settings.
 
+Phase 3, in Chromium at 375 px and through the real relay and hook processes, fed with hand-written hook
+input: replay and timeline; live events; Approve reaching the hook as `allow`, Deny as `deny`; a queued
+message returned at Stop; the hook silent and exiting 0 with no relay; wrong code, foreign origin and foreign
+host refused; no email or job folder on disk or in the browser store; the standalone page over the relay.
+
 **Not tested:** real touch hardware, a real phone, any native shell, screen readers, the swipe edge
 guard (it applies to touch input only), a real PC run, a paired Wi-Fi bridge, level, compass, sound
-meter and media player with real sensors, microphone or files, the photo picker, and supplier CSV
-import in the browser.
+meter and media player with real sensors, microphone or files, the photo picker, supplier CSV import
+in the browser, the trace hooks in a real Claude Code session, token counts from a real transcript,
+the Kódváros specs, and Managed Agents (not built).
 
 **Not built yet:** OCR in the inbox; quote view, legal lookup; kit deploy, network tools, site survey;
-all five smart-home pages; worktrees, trace mini view, terminal, Kódváros map, CI status; file
-converter, QR and barcode, document viewer.
+all five smart-home pages; worktrees, terminal, Kódváros map, CI status; file converter, QR and
+barcode, document viewer.
