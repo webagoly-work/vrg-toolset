@@ -1,0 +1,15 @@
+{
+  "_about": [
+    "Temporary access to VRG Mobile while only a few known phones use it (2026-11-02).",
+    "Baked into the APK at build time: a change here reaches the phones with the next release (a push to main touching Mobile/).",
+    "repoName: true = GitHub fiók also offers 'Belépés a repó nevével': typing webagoly-work/vrg-toolset reads GitHub without a token.",
+    "  Works only while the repo is public; making it private ends it at once, without a release. Reads only.",
+    "trustedDevices.on: true = only the phones listed below can open a release build (debug builds are never locked).",
+    "  A phone's code is shown in GitHub fiók and on the lock screen, like ABCD-EF01-2345."
+  ],
+  "repoName": true,
+  "trustedDevices": {
+    "on": false,
+    "devices": []
+  }
+}

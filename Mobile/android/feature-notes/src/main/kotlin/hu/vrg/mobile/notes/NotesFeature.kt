@@ -138,7 +138,7 @@ object NotesFeature : VrgFeature {
 
     /** Sends the outbox, oldest first. true = done (or nothing to do), false = try again later. */
     suspend fun flush(): Boolean = lock.withLock {
-        if (!GitHub.signedIn) { problem.value = "Nincs GitHub belépés: a jegyzetek a telefonon várnak."; return true }
+        if (!GitHub.canWrite) { problem.value = "Nincs GitHub belépés: a jegyzetek a telefonon várnak."; return true }
         while (true) {
             val n = outbox.value.next ?: break
             val r = try { NoteWriter.send(GitHubNotes, n, zone) } catch (e: NotesApi.Problem) {
@@ -197,8 +197,8 @@ object NotesFeature : VrgFeature {
             Text("A ${NoteLog.BRANCH} branch napi fájljába kerül (log/ÉÉÉÉ-HH-NN.md).", style = Melyviz.small)
             Spacer(Modifier.height(10.dp))
 
-            if (account !is Account.SignedIn) {
-                Text("Nincs GitHub belépés. Írni lehet, a jegyzet a telefonon vár, amíg be nem lépsz.",
+            if (account !is Account.SignedIn || (account as Account.SignedIn).guest) {
+                Text("Nincs GitHub belépés (a repó nevével csak olvasni lehet). Írni lehet, a jegyzet a telefonon vár, amíg be nem lépsz.",
                     style = Melyviz.small.copy(color = Melyviz.sand))
                 Row(Modifier.padding(vertical = 6.dp)) { VrgChip("GitHub fiók ›") { host.open(Catalogue.ACCOUNT.id) } }
             }

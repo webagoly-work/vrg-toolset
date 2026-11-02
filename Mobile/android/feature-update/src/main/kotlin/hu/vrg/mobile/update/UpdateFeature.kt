@@ -209,7 +209,7 @@ object UpdateFeature : VrgFeature {
             Spacer(Modifier.height(10.dp))
 
             if (account !is Account.SignedIn) {
-                Text("A kiadások a privát repóban vannak: GitHub belépés kell.", style = Melyviz.small.copy(color = Melyviz.sand))
+                Text("A kiadások a repóban vannak: GitHub belépés kell (vagy a repó neve, amíg nyilvános).", style = Melyviz.small.copy(color = Melyviz.sand))
                 Row(Modifier.padding(vertical = 6.dp)) { VrgChip("GitHub fiók ›") { host.open(Catalogue.ACCOUNT.id) } }
             }
 

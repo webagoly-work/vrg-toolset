@@ -1,14 +1,17 @@
 package hu.vrg.mobile.kit.github
 
 import android.content.Context
+import android.content.SharedPreferences
 import hu.vrg.mobile.core.DeviceCode
 import hu.vrg.mobile.core.DeviceFlow
 import hu.vrg.mobile.core.GitHubUrls
 import hu.vrg.mobile.core.GitHubUser
 import hu.vrg.mobile.core.RateLimit
 import hu.vrg.mobile.core.RepoAccess
+import hu.vrg.mobile.core.RepoName
 import hu.vrg.mobile.core.TokenPoll
 import hu.vrg.mobile.core.VrgRepo
+import hu.vrg.mobile.kit.Access
 import hu.vrg.mobile.kit.R
 import hu.vrg.mobile.kit.VrgLog
 import kotlinx.coroutines.CoroutineScope
@@ -66,12 +69,14 @@ fun Gh<*>.problem(): String? = when (this) {
 
 sealed interface Account {
     data object SignedOut : Account
-    data class SignedIn(val user: GitHubUser?, val repo: RepoAccess?, val note: String? = null) : Account
+    /** [guest]: in by the repo's name, no token (Mobile/access.json `repoName`): reads only, public repo only. */
+    data class SignedIn(val user: GitHubUser?, val repo: RepoAccess?, val note: String? = null, val guest: Boolean = false) : Account
 }
 
 object GitHub {
     private const val TAG = "github"
     private const val TOKEN = "github.token"
+    private const val GUEST = "guest"
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val http = OkHttpClient.Builder()
@@ -80,7 +85,10 @@ object GitHub {
         .build()
 
     private lateinit var store: SecretStore
+    private lateinit var prefs: SharedPreferences
     private var token: String? = null
+    /** In by the repo's name (temporary, see kit-core Access.kt): GETs go out without a token. */
+    private var guest = false
     /** From res/values/github.xml; empty until the user has created the OAuth App. */
     var clientId: String = ""
         private set
@@ -89,6 +97,9 @@ object GitHub {
     val account: StateFlow<Account> = _account
     private val _rate = MutableStateFlow<RateLimit?>(null)
     val rate: StateFlow<RateLimit?> = _rate
+    /** Why the repo-name access ended by itself (the repo went private), for GitHub fiók. */
+    private val _notice = MutableStateFlow<String?>(null)
+    val notice: StateFlow<String?> = _notice
 
     /** url -> (etag, body): a 304 answer is free under the rate limit. */
     private val cache = HashMap<String, Pair<String, String>>()
@@ -96,14 +107,43 @@ object GitHub {
     fun init(ctx: Context) {
         clientId = ctx.getString(R.string.github_client_id).trim()
         store = SecretStore(ctx)
+        prefs = ctx.getSharedPreferences("github", Context.MODE_PRIVATE)
         token = store.get(TOKEN)
-        if (token != null) {
-            _account.value = Account.SignedIn(null, null)
+        // The repo-name access lasts only while the build allows it (Mobile/access.json)
+        guest = token == null && Access.repoName && prefs.getBoolean(GUEST, false)
+        if (token != null || guest) {
+            _account.value = Account.SignedIn(null, null, guest = guest)
             scope.launch { refresh() }
         }
     }
 
-    val signedIn: Boolean get() = token != null
+    /** GitHub can be read: a token, or the repo-name access. */
+    val signedIn: Boolean get() = token != null || guest
+    /** GitHub can be written (Gyorsjegyzet): only with a token. */
+    val canWrite: Boolean get() = token != null
+
+    // ---- the repo-name access (temporary, kit-core Access.kt) -----------------------------------
+
+    /** Lets the phone in when [input] names the toolset repo and GitHub shows it without a token. */
+    suspend fun enterByRepoName(input: String): Gh<Unit> {
+        if (!Access.repoName) return Gh.Failed(0, "Ez a belépés ebben a buildben ki van kapcsolva.")
+        if (!RepoName.matches(input)) return Gh.Failed(0, "Nem ez a repó neve.")
+        guest = true
+        return when (val r = get(VrgRepo.PATH)) {
+            is Gh.Ok -> {
+                prefs.edit().putBoolean(GUEST, true).apply()
+                _notice.value = null
+                _account.value = Account.SignedIn(null, RepoAccess.parse(r.value), guest = true)
+                VrgLog.i(TAG, "Belépve a repó nevével (token nélkül, csak olvasás)")
+                Gh.Ok(Unit)
+            }
+            is Gh.Failed -> {
+                guest = false
+                if (r.code == 404) Gh.Failed(404, "A repó most nem nyilvános: GitHub belépés kell.") else r.failure()
+            }
+            else -> { guest = false; r.failure() }
+        }
+    }
 
     // ---- sign-in: the device flow ----------------------------------------------------------------
 
@@ -133,6 +173,7 @@ object GitHub {
                 is DeviceFlow.Step.Done -> {
                     store.put(TOKEN, step.token)
                     token = step.token
+                    leaveGuest()
                     VrgLog.i(TAG, "Belépve (${step.scopes.joinToString(",")})")
                     refresh()
                     return@withContext Gh.Ok(Unit)
@@ -146,13 +187,35 @@ object GitHub {
     fun signOut() {
         store.remove(TOKEN)
         token = null
+        leaveGuest()
         synchronized(cache) { cache.clear() }
         _account.value = Account.SignedOut
         VrgLog.i(TAG, "Kilépve")
     }
 
+    private fun leaveGuest() {
+        guest = false
+        prefs.edit().remove(GUEST).apply()
+    }
+
     /** Re-reads who is signed in and whether the toolset repo is reachable. */
     suspend fun refresh() {
+        if (token == null && guest) {
+            val repo = get(VrgRepo.PATH)
+            when {
+                repo is Gh.Ok -> _account.value = Account.SignedIn(null, RepoAccess.parse(repo.value), guest = true)
+                repo is Gh.Failed && repo.code == 404 -> {
+                    // Private again: the repo-name access ends by itself, as access.json promises
+                    signOut()
+                    _notice.value = "A repó már nem nyilvános, a repó nevével nem lehet tovább belépni. GitHub belépés kell."
+                }
+                else -> {
+                    val was = _account.value as? Account.SignedIn
+                    _account.value = Account.SignedIn(null, was?.repo, repo.problem(), guest = true)
+                }
+            }
+            return
+        }
         if (token == null) return
         val user = get("/user")
         if (user is Gh.Ok) {
@@ -185,11 +248,13 @@ object GitHub {
     /**
      * A release asset into [into], streamed. The asset url needs the token (a private repo) and
      * octet-stream; GitHub redirects to its storage, and OkHttp drops the token on that other host.
+     * In by the repo's name there is no token, which a public repo's asset does not need.
      */
     suspend fun download(url: String, into: File, onProgress: (Long) -> Unit = {}): Gh<Unit> = withContext(Dispatchers.IO) {
-        val t = token ?: return@withContext Gh.SignedOut
+        val t = token
+        if (t == null && !guest) return@withContext Gh.SignedOut
         val req = Request.Builder().url(url)
-            .header("Authorization", "Bearer $t")
+            .apply { if (t != null) header("Authorization", "Bearer $t") }
             .header("Accept", "application/octet-stream")
             .header("X-GitHub-Api-Version", "2022-11-28")
             .build()
@@ -219,10 +284,12 @@ object GitHub {
     }
 
     private suspend fun call(method: String, pathOrUrl: String, json: String?): Gh<String> = withContext(Dispatchers.IO) {
-        val t = token ?: return@withContext Gh.SignedOut
+        val t = token
+        // Without a token only the repo-name access reads, and it never writes
+        if (t == null && (!guest || method != "GET")) return@withContext Gh.SignedOut
         val url = if (pathOrUrl.startsWith("http")) pathOrUrl else GitHubUrls.API + pathOrUrl
         val b = Request.Builder().url(url)
-            .header("Authorization", "Bearer $t")
+            .apply { if (t != null) header("Authorization", "Bearer $t") }
             .header("Accept", "application/vnd.github+json")
             .header("X-GitHub-Api-Version", "2022-11-28")
         val cached = if (method == "GET") synchronized(cache) { cache[url] } else null

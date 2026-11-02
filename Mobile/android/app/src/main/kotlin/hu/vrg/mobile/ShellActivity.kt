@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.Links
 import hu.vrg.mobile.core.Route
+import hu.vrg.mobile.kit.Access
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.theme.Melyviz
@@ -78,7 +79,9 @@ class ShellActivity : ComponentActivity(), FeatureHost {
                 Box(Modifier.fillMaxSize().background(Melyviz.water)) {
                     val id = current
                     val feature = Registry.feature(id)
-                    if (feature != null) {
+                    if (Access.locked && id !in LOCK_OPEN) {
+                        LockScreen(onOpen = ::open)
+                    } else if (feature != null) {
                         BackHandler { home() }
                         DisposableEffect(id) { onDispose { keepScreenOn(false) } }
                         Box(Modifier.fillMaxSize().systemBarsPadding()) { feature.Screen(this@ShellActivity) }

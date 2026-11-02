@@ -9,7 +9,16 @@ plugins {
 android {
     namespace = "hu.vrg.mobile.kit"
     compileSdk = 35
-    defaultConfig { minSdk = 28 }
+    defaultConfig {
+        minSdk = 28
+        // The temporary access switches (Mobile/access.json, kit-core Access.kt), baked in at build time
+        val access = groovy.json.JsonSlurper().parse(rootProject.file("../access.json")) as Map<*, *>
+        val devices = access["trustedDevices"] as Map<*, *>
+        resValue("bool", "access_repo_name", (access["repoName"] == true).toString())
+        resValue("bool", "access_devices_on", (devices["on"] == true).toString())
+        resValue("string", "access_devices",
+            (devices["devices"] as List<*>).joinToString(",") { (it as Map<*, *>)["code"].toString() })
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

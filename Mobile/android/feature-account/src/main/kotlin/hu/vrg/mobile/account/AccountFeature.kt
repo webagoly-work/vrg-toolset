@@ -22,7 +22,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,12 +43,14 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.DeviceCode
 import hu.vrg.mobile.core.VrgRepo
+import hu.vrg.mobile.kit.Access
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.kit.github.Account
@@ -105,6 +110,7 @@ object AccountFeature : VrgFeature {
         val account by GitHub.account.collectAsStateWithLifecycle()
         val f by flow.collectAsStateWithLifecycle()
         val rate by GitHub.rate.collectAsStateWithLifecycle()
+        val notice by GitHub.notice.collectAsStateWithLifecycle()
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
@@ -114,14 +120,24 @@ object AccountFeature : VrgFeature {
             Spacer(Modifier.height(14.dp))
 
             when (val a = account) {
-                is Account.SignedIn -> SignedIn(a, host)
-                Account.SignedOut -> when {
-                    GitHub.clientId.isEmpty() -> Card {
-                        Text("Még nincs beállítva", style = Melyviz.title)
-                        Text("A belépéshez egy GitHub OAuth App kell (Device Flow bekapcsolva), és a Client ID-ja a " +
-                            "kit/src/main/res/values/github.xml fájlba. Ez nyilvános azonosító, nem titok.", style = Melyviz.small)
+                is Account.SignedIn -> {
+                    SignedIn(a, host)
+                    if (a.guest && GitHub.clientId.isNotEmpty()) {
+                        VrgSectionTitle("Írni is szeretnél?")
+                        SignInFlow(f)
                     }
-                    else -> SignInFlow(f)
+                }
+                Account.SignedOut -> {
+                    notice?.let { Text(it, style = Melyviz.label.copy(color = Melyviz.coral), modifier = Modifier.padding(bottom = 10.dp)) }
+                    when {
+                        GitHub.clientId.isEmpty() -> Card {
+                            Text("Még nincs beállítva", style = Melyviz.title)
+                            Text("A belépéshez egy GitHub OAuth App kell (Device Flow bekapcsolva), és a Client ID-ja a " +
+                                "kit/src/main/res/values/github.xml fájlba. Ez nyilvános azonosító, nem titok.", style = Melyviz.small)
+                        }
+                        else -> SignInFlow(f)
+                    }
+                    if (Access.repoName) RepoNameEntry()
                 }
             }
 
@@ -129,7 +145,51 @@ object AccountFeature : VrgFeature {
                 VrgSectionTitle("GitHub keret")
                 Text("${it.remaining} / ${it.limit} kérés maradt ebben az órában", style = Melyviz.readout)
             }
+
+            DeviceCode()
         }
+    }
+
+    /** The temporary repo-name access (Mobile/access.json `repoName`): reads GitHub without a token. */
+    @Composable
+    private fun RepoNameEntry() {
+        var name by remember { mutableStateOf("") }
+        var why by remember { mutableStateOf<String?>(null) }
+        var busy by remember { mutableStateOf(false) }
+        VrgSectionTitle("Vagy: a repó nevével")
+        Text("Amíg a toolset repó nyilvános, a nevét beírva GitHub fiók nélkül is olvasható minden " +
+            "(Haladás, Frissítés, Gömb). Jegyzetet küldeni így nem lehet.", style = Melyviz.small)
+        OutlinedTextField(
+            value = name, onValueChange = { name = it; why = null }, singleLine = true,
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            placeholder = { Text("tulajdonos/repó", style = Melyviz.small) },
+            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Uri),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Melyviz.glow, unfocusedBorderColor = Melyviz.line,
+                focusedTextColor = Melyviz.ink, unfocusedTextColor = Melyviz.ink, cursorColor = Melyviz.glow,
+            ),
+        )
+        Row(Modifier.padding(top = 8.dp)) {
+            VrgChip(if (busy) "Ellenőrzés…" else "Belépés a repó nevével", name.isNotBlank()) {
+                if (!busy && name.isNotBlank()) {
+                    busy = true
+                    scope.launch { why = GitHub.enterByRepoName(name).problem(); busy = false }
+                }
+            }
+        }
+        why?.let { Text(it, style = Melyviz.label.copy(color = Melyviz.coral), modifier = Modifier.padding(top = 6.dp)) }
+    }
+
+    /** This phone's code for the trusted device list (Mobile/access.json), to send to the owner. */
+    @Composable
+    private fun DeviceCode() {
+        val clipboard = LocalClipboardManager.current
+        VrgSectionTitle("Eszközkód")
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(Access.code, style = Melyviz.readout.copy(fontFamily = Melyviz.mono, letterSpacing = 2.sp))
+            VrgChip("Másolás") { clipboard.setText(AnnotatedString(Access.code)) }
+        }
+        Text("Ezzel kerül fel a telefon a megbízható eszközök listájára.", style = Melyviz.small)
     }
 
     @Composable
@@ -190,8 +250,9 @@ object AccountFeature : VrgFeature {
                     ?: Spacer(Modifier.size(48.dp).clip(CircleShape).background(Melyviz.surface))
                 Spacer(Modifier.width(12.dp))
                 Column {
-                    Text(a.user?.login ?: "Belépve", style = Melyviz.title)
+                    Text(a.user?.login ?: if (a.guest) "A repó nevével" else "Belépve", style = Melyviz.title)
                     a.user?.name?.let { Text(it, style = Melyviz.small) }
+                    if (a.guest) Text("Token nélkül, csak olvasás, amíg a repó nyilvános.", style = Melyviz.small)
                 }
             }
         }
@@ -216,7 +277,7 @@ object AccountFeature : VrgFeature {
             VrgChip("Kilépés") { GitHub.signOut() }
             VrgChip("Beállítások ›") { host.open(Catalogue.SETTINGS.id) }
         }
-        Text("Kilépéskor a token törlődik a telefonról. A GitHubon a hozzáférés a Settings → Applications alatt vonható vissza.",
+        if (!a.guest) Text("Kilépéskor a token törlődik a telefonról. A GitHubon a hozzáférés a Settings → Applications alatt vonható vissza.",
             style = Melyviz.small, modifier = Modifier.padding(top = 8.dp))
     }
 

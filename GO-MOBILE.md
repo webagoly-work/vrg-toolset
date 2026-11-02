@@ -80,5 +80,7 @@ What changes locally compared with the cloud:
 - **M3**: done 2026-10-30 (OAuth App "VRG Mobile", Client ID in `kit/src/main/res/values/github.xml`).
 - **M9**: done 2026-10-31. A push to `main` touching `Mobile/android` makes a release and the phone updates itself.
   The keystore is `H:\VRG\Full\_admin\keys\vrg-mobile.jks`. `mobile.cmd` → 3 cannot replace a release: its key differs.
+- **Temporary access** (2026-11-02): `Mobile/access.json` switches the repo-name entry and the trusted device list;
+  see the end of `docs/mobile/WP/M3.md`. Only the user decides when they change.
 - **Every WP**: install the APK (`mobile.cmd` → 3, or from the Actions run / Releases after M9) and work through the
   phone checklist. Open right now: M4 (Haladás), M14 (Gömb).
