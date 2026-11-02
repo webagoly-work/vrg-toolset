@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Varler logo v1</title>
+<style>
+body{margin:0;background:#16181A;color:#D6E4EA;font:14px 'Barlow Condensed','Arial Narrow',sans-serif;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px}
+.row{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
+figure{margin:0;text-align:center}
+canvas{display:block;width:min(420px,90vw);height:min(420px,90vw)}
+label{display:flex;gap:8px;align-items:center}
+</style>
+</head>
+<body>
+<!-- Local preview: serve the folder (file:// works too, the engine needs no fetch). ?theme=light for ink on paper. -->
+<div class="row">
+<figure><canvas id="logo" role="img" aria-label="Logo v1, animated"></canvas><figcaption>Logo v1 (form: logo, mark F)</figcaption></figure>
+<figure><canvas id="ring" role="img" aria-label="The original divergence ring"></canvas><figcaption>Divergence ring (form: ring)</figcaption></figure>
+</div>
+<label for="m">morph <input id="m" type="range" min="0" max="1" step="0.01" value="0"> <span id="mv">0</span></label>
+<script src="divergence.js"></script>
+<script>
+var theme = new URLSearchParams(location.search).get('theme') || 'dark';
+document.body.style.background = theme === 'light' ? '#E9EDEF' : '#16181A';
+VarlerDivergence.mount(document.getElementById('logo'), { form: 'logo', mark: 'F', lockup: 'mark', theme: theme });
+var ring = VarlerDivergence.mount(document.getElementById('ring'), { form: 'ring', mark: 'F', lockup: 'mark', theme: theme });
+document.getElementById('m').oninput = function () { document.getElementById('mv').textContent = this.value; ring.set({ morph: +this.value }); };
+</script>
+</body>
+</html>

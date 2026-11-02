@@ -39,6 +39,7 @@ note, so it works from any Claude account on this PC. Written 2026-10-30 at the 
 | Firmware | `Firmware/` | planner-cyd, board-console, knobpad | — |
 | BRIDGE | `BRIDGE/`, `H:\VRG\Full\BRIDGE` | standards + concepts; open questions in its docs | — |
 | Inventory | `Inventory/` | green | — |
+| Varler logo (animated v1, divergence ring) | `shared/varler-logo` | v1 + ring built 2026-11-02; toggle and Mobile home next | LOGO |
 | OpenWrt | `GO-OPENWRT.md` | P0 not started | OPENWRT |
 
 ## 4. What can run now
@@ -80,5 +81,5 @@ This is what went wrong before 2026-10-30:
 
 ## 7. Picking up
 
-Say **GO PLANNER**, **GO ROUTE**, **GO CLA**, **GO HUB**, **GO CITY**, **GO MOBILE** or **GO OPENWRT**. For the second
+Say **GO PLANNER**, **GO ROUTE**, **GO CLA**, **GO HUB**, **GO CITY**, **GO MOBILE**, **GO LOGO** or **GO OPENWRT**. For the second
 account: Command Prompt, `set CLAUDE_CONFIG_DIR=H:\VRG\Full\home\claude-account-b`, `cd /d H:\VRG\Full\Planner_VRG_U100`, `claude`.

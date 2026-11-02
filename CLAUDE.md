@@ -223,6 +223,8 @@ file at the repo root and does what it says.
 - **`GO MOBILE`** — `GO-MOBILE.md`: VRG Mobile, one WP at a time from `docs/mobile/` (M1, M2, M3, M6, M9 live, M4, M14 built,
   next M8). **Worked on in the local H: session since 2026-10-30** (main checkout, `main`; `Mobile\mobile.cmd`
   builds and installs the APK); Actions still builds an APK on every push.
+- **`GO LOGO`** — `GO-LOGO.md`: the two-state Varler logo (ring ⇄ bulb, click to toggle) from `shared/varler-logo`,
+  then the VRG Mobile logo home page (WP M15). Starts by asking Q1–Q4.
 - **`GO OPENWRT`** — `GO-OPENWRT.md`: OpenWrt on the TP-Link TL-WR1043ND (the user flashes; Claude never touches
   the router). Phases P0–P5, the first is the sticker's hardware version.
 
