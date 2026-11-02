@@ -379,6 +379,102 @@ body.side #stage{left:calc(var(--tL) + 250px)}
 #stage.helix .node.far,#stage.helix .node.adj{opacity:inherit!important}
 #stage.helix #wires path{fill:none;stroke-linecap:round}
 
+/* ---------- board mode: the Varler SUI Story Board ----------
+   Halfway between the full bubbles and the graph: every bubble keeps its stored
+   place but shows only its main information, and a click expands it. The look is
+   the Varler SUI design system's (claude.ai artifact RGdCRWQTXqtFEjiUSVzLWy), so
+   its colours are that system's tokens, copied here under --s-*: edit them there,
+   then re-copy. They do not follow the MindMap themes on purpose — the board has
+   its own HUD (dark) / Glass (light) switch, as in the design system. */
+#stage.board{--s-ground:#121B22;--s-panel:#18242D;--s-line:#2C4250;--s-dim:#4C6878;--s-fg:#D6E4EA;
+  --s-muted:#8AA3AF;--s-cyan:#7ED3DF;--s-on:#121B22;--s-alert:#F0C24B;--s-glass:rgba(24,36,45,.92);
+  --s-grid:rgba(126,211,223,.04);
+  --s-display:"Barlow Condensed","Bahnschrift SemiCondensed","Arial Narrow",sans-serif;
+  --s-body:"Barlow","Segoe UI",system-ui,sans-serif;
+  --s-mono:"JetBrains Mono","Cascadia Mono",Consolas,monospace;
+  background-color:var(--s-ground);background-size:24px 24px;
+  background-image:linear-gradient(var(--s-grid) 1px,transparent 1px),linear-gradient(90deg,var(--s-grid) 1px,transparent 1px)}
+#stage.board[data-sui="glass"]{--s-ground:#D5DCE1;--s-panel:#EEF2F5;--s-line:#6F8797;--s-dim:#9DB0BC;--s-fg:#14222C;
+  --s-muted:#4A5F6D;--s-cyan:#276A9E;--s-on:#FFFFFF;--s-alert:#7A5200;--s-glass:rgba(242,246,249,.90);
+  --s-grid:rgba(39,106,158,.06)}
+#stage.board .node{overflow:visible;background:transparent;border:0;border-radius:0;box-shadow:none;color:var(--s-fg)}
+#stage.board .node:not(.isbox){width:auto!important;height:auto!important;max-width:236px;min-width:0}
+#stage.board .node::before,#stage.board .node .cv,#stage.board .node .port,#stage.board .node .rs,
+#stage.board .node .ntags,#stage.board .node .cbadge{display:none!important}
+#stage.board .node .nb{display:none}
+/* the plate: the title bar of a scene, the body of a chip */
+#stage.board .nh{position:relative;z-index:1;padding:3px 8px;gap:6px;min-height:22px;cursor:pointer;
+  background:var(--s-panel);border:1px solid var(--s-line);border-radius:0}
+#stage.board .nt{font:500 12px/16px var(--s-display);letter-spacing:.1em;text-transform:uppercase;color:var(--s-fg)}
+#stage.board .bdt{flex:0 0 auto;font:400 10px/16px var(--s-mono);color:var(--s-muted)}
+#stage.board .node:hover>.nh{border-color:var(--s-cyan)}
+#stage.board .node.sel>.nh{box-shadow:0 0 0 2px var(--s-ground),0 0 0 3px var(--s-cyan)}
+#stage.board .node.dim{opacity:.25}
+/* scene: a slanted thumbnail tab above the plate, the brief below it */
+.bth,.bsum{display:none}
+#stage.board .b-scene>.bth{display:block;position:relative;width:132px;height:58px;margin:0 0 -8px 28px;cursor:pointer;
+  clip-path:polygon(14% 0,100% 0,86% 100%,0 100%);background:var(--s-panel)}
+#stage.board .bth svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#stage.board .bth .ed{fill:none;stroke:var(--s-line);stroke-width:2}
+#stage.board .bth .rg{fill:none;stroke:var(--s-dim);stroke-width:1}
+#stage.board .bth .fg{font:500 18px var(--s-display);fill:var(--s-fg);letter-spacing:.04em}
+#stage.board .bth .fs{font:400 9px var(--s-mono);fill:var(--s-muted);letter-spacing:.08em}
+#stage.board .b-scene>.bsum{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  margin-top:4px;max-width:236px;font:400 12px/16px var(--s-body);color:var(--s-muted);cursor:pointer}
+#stage.board .node.b-scene{width:236px!important}
+/* states — cyan means taken (built), and nothing else */
+#stage.board .b-taken>.nh{background:var(--s-cyan);border-color:var(--s-cyan)}
+#stage.board .b-taken>.nh .nt,#stage.board .b-taken>.nh .bdt{color:var(--s-on)}
+#stage.board .b-taken>.bth .ed,#stage.board .b-taken>.bth .rg.hi{stroke:var(--s-cyan)}
+#stage.board .b-chip>.nh{min-height:22px;max-width:172px;border-radius:2px}
+#stage.board .b-chip .nt{font-weight:400;font-size:11px;letter-spacing:.06em;color:var(--s-muted)}
+#stage.board .b-chip.b-taken .nt{color:var(--s-on)}
+#stage.board .b-ghost>.nh{background:transparent;border-style:dashed}
+#stage.board .b-ghost>.nh::before{content:"≈";font:400 11px var(--s-mono);color:var(--s-muted)}
+#stage.board .b-locked>.nh{background:repeating-linear-gradient(135deg,var(--s-panel) 0 4px,var(--s-ground) 4px 8px)}
+#stage.board .b-locked>.nh::before{content:"";flex:0 0 auto;width:6px;height:6px;border:1px solid var(--s-muted);transform:rotate(45deg)}
+#stage.board .b-question>.nh{border-color:var(--s-alert)}
+#stage.board .b-question>.nh::before{content:"?";font:500 11px var(--s-mono);color:var(--s-alert)}
+/* an axis mark (a collapsed bubble with no wires): plain mono text */
+#stage.board .b-mark>.nh{background:transparent;border:0;padding:0 2px}
+#stage.board .b-mark .nt{font:400 11px var(--s-mono);letter-spacing:.02em;color:var(--s-muted);text-transform:none}
+/* a frame becomes a chapter band: a hairline box and a header with how much of it is built */
+#stage.board .node.isbox{background:transparent;
+  border:1px solid color-mix(in srgb,var(--s-line) 55%,transparent);pointer-events:none}
+#stage.board .node.isbox>.nh{pointer-events:auto;align-self:flex-start;background:transparent;border:0;padding:8px 12px 4px}
+#stage.board .node.isbox .nt{font:500 22px/24px var(--s-display);letter-spacing:.06em;color:var(--s-fg)}
+#stage.board .bpct{font:400 11px/16px var(--s-mono);color:var(--s-muted);white-space:nowrap}
+#stage.board .bpct b{color:var(--s-fg);font-weight:500}
+/* expanded: the full body in a glass panel under the card, with the HUD corner brackets */
+#stage.board .node.bopen{z-index:900!important}
+#stage.board .node.bopen>.nb{display:block;position:absolute;left:0;top:calc(100% + 8px);width:320px;max-height:360px;
+  overflow:auto;padding:10px 12px;background:var(--s-glass);border:1px solid var(--s-line);border-radius:4px;
+  -webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);
+  font:400 13.5px/20px var(--s-body);color:var(--s-fg);box-shadow:none;
+  background-image:linear-gradient(var(--s-cyan),var(--s-cyan)),linear-gradient(var(--s-cyan),var(--s-cyan)),
+    linear-gradient(var(--s-cyan),var(--s-cyan)),linear-gradient(var(--s-cyan),var(--s-cyan));
+  background-size:10px 1.5px,1.5px 10px,10px 1.5px,1.5px 10px;background-repeat:no-repeat;
+  background-position:0 0,0 0,100% 100%,100% 100%}
+#stage.board .node.bopen>.nb :is(code,a,strong,em,td,th){color:inherit}
+#stage.board .node.bopen>.nb code{background:transparent;border:0;padding:0;font:400 11.5px var(--s-mono);color:var(--s-muted)}
+#stage.board .node.isbox.bopen>.nb{pointer-events:auto;top:44px;left:12px}
+/* routes: 1px elbows; the taken path is cyan, inferred links dashed, layer links keep their colour */
+#stage.board #wires path.bw{stroke:var(--s-line);stroke-width:1;stroke-linejoin:miter}
+#stage.board #wires path.bw.tk{stroke:var(--s-cyan);stroke-width:1.6}
+#stage.board #wires path.bw.ly{stroke-width:1.2;opacity:.8}
+#stage.board #wires path.ba{stroke:none;fill:var(--s-line)}
+#stage.board #wires path.ba.tk{fill:var(--s-cyan)}
+#bbar{position:fixed;left:50%;bottom:38px;transform:translateX(-50%);z-index:35;display:none;gap:8px;align-items:center;
+  padding:6px 10px;background:#18242D;border:1px solid #2C4250;border-radius:4px;
+  font:500 12px "Barlow Condensed","Bahnschrift SemiCondensed","Arial Narrow",sans-serif;letter-spacing:.1em;
+  text-transform:uppercase;color:#8AA3AF}
+#bbar.open{display:flex}
+#bbar button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:#7ED3DF;background:transparent;
+  border:1px solid #2C4250;border-radius:2px;padding:3px 9px;cursor:pointer}
+#bbar button:hover{border-color:#7ED3DF}
+#bbar.glass{background:#EEF2F5;border-color:#6F8797;color:#4A5F6D}
+#bbar.glass button{color:#276A9E;border-color:#6F8797}
+
 /* ---------- semantic zoom (level of detail) ---------- */
 #stage[data-lod="pill"] .nb,#stage[data-lod="pill"] .ntags{display:none}
 #stage[data-lod="pill"] .node{height:auto!important;border-radius:999px}
@@ -604,6 +700,7 @@ html.mv #cbar button{box-shadow:none}
   </div>
   <div class="grp">
     <button id="bGraph" data-ic="◉" title="Gráf nézet — G"><span class="lbl">◉ Gráf</span></button>
+    <button id="bBoard" data-ic="▤" title="Tábla nézet: a buborékok fő adatai, kattintásra kinyílnak — B"><span class="lbl">▤ Tábla</span></button>
     <button id="bZoom" data-ic="🔍" title="Fókusz zoom: görgetés = kinagyít a kurzor alatti lapra — Z"><span class="lbl">🔍 Fókusz</span></button>
     <button id="bThm" title="Téma">◐</button>
     <button id="bHelp" title="Súgó — Kezdés és Markdown puska (nyomd meg újra a bezáráshoz)">?</button>
@@ -1282,8 +1379,12 @@ function toWorld(cx,cy){ const r=$('stage').getBoundingClientRect();
 function fit(){
   const vis=shownNodes();
   if(!vis.length) return;
-  const b=vis.reduce((a,n)=>({x0:Math.min(a.x0,n.x),y0:Math.min(a.y0,n.y),
-    x1:Math.max(a.x1,n.x+n.w),y1:Math.max(a.y1,n.y+(n.collapsed?COLLAPSED_H:n.h))}),
+  // the board fits what it shows: its own compact y and card sizes
+  const R=n=>{ const bp=board.on&&board.pos[n.id];
+    if(!bp) return {x:n.x,y:n.y,w:n.w,h:n.collapsed?COLLAPSED_H:n.h};
+    return board.rect[n.id] ? {x:n.x,y:bp.y,w:n.w,h:board.rect[n.id].h} : Object.assign(POS(n),{x:n.x,y:bp.y}); };
+  const b=vis.map(R).reduce((a,p)=>({x0:Math.min(a.x0,p.x),y0:Math.min(a.y0,p.y),
+    x1:Math.max(a.x1,p.x+p.w),y1:Math.max(a.y1,p.y+p.h)}),
     {x0:1e9,y0:1e9,x1:-1e9,y1:-1e9});
   const r=$('stage').getBoundingClientRect(), pad=60;
   view.k=Math.min(1.6,Math.max(.2,Math.min((r.width-pad*2)/(b.x1-b.x0||1),(r.height-pad*2)/(b.y1-b.y0||1))));
@@ -1326,17 +1427,18 @@ function nodeEl(n){
   let el=document.getElementById('N'+n.id);
   if(!el){
     el=document.createElement('div'); el.className='node'; el.id='N'+n.id; el.dataset.id=n.id;
-    el.innerHTML=`<div class="nh"><button class="cv" title="Összecsukás">▾</button><div class="nt"></div>
-      <button class="cv x" title="Megnyitás a panelen">⋯</button></div>
+    el.innerHTML=`<div class="bth"></div><div class="nh"><button class="cv" title="Összecsukás">▾</button><div class="nt"></div>
+      <button class="cv x" title="Megnyitás a panelen">⋯</button></div><div class="bsum"></div>
       <div class="nb md"></div><div class="ntags"></div>
       <div class="port" title="Húzd egy másik buborékra"></div><div class="rs"></div>`;
     $('world').appendChild(el);
   }
   const gp=graph.on&&graph.pos[n.id];
   el.style.left=(gp?Math.round(gp.x):n.x)+'px';
-  el.style.top =(gp?Math.round(gp.y):n.y)+'px';
+  const bp=!gp&&board.on&&board.pos[n.id];     // the board's compact y, when it has one
+  el.style.top =(gp?Math.round(gp.y):bp?bp.y:n.y)+'px';
   el.style.width=gp?'auto':n.w+'px';
-  el.style.height=(gp||n.collapsed)?'auto':n.h+'px';
+  el.style.height=(gp||n.collapsed)?'auto':(bp&&board.rect[n.id]?board.rect[n.id].h:n.h)+'px';
   const nl=n.layer?layer(n.layer):null;
   el.style.setProperty('--kc', nl?nl.color:KIND_VAR(n.kind));   // layer membership is visible at a glance
   el.classList.toggle('onlayer',!!nl);
@@ -1373,6 +1475,7 @@ function nodeEl(n){
   }
   const tg=el.querySelector('.ntags');
   tg.innerHTML=(n.tags||[]).map(t=>`<span class="tag" data-tag="${MD.esc(t)}">#${MD.esc(t)}</span>`).join('');
+  boardDress(n,el,box);
   // search dimming
   const q=filter.trim().toLowerCase();
   el.classList.toggle('dim', !!q && !((n.title+' '+n.body+' '+(n.tags||[]).join(' ')).toLowerCase().includes(q)));
@@ -1387,6 +1490,9 @@ function POS(n){
     return helix.on ? {x:p.x-w/2, y:p.y-17, w, h:34}
                     : {x:p.x, y:p.y, w, h:34};
   }
+  // the board keeps the stored place but draws a smaller card: wires aim at what is shown
+  const bm=board.on&&board.m[n.id];
+  if(bm) return {x:n.x,y:(board.pos[n.id]||n).y,w:bm.w,h:bm.h};
   return {x:n.x,y:n.y,w:n.w,h:n.collapsed?COLLAPSED_H:n.h};
 }
 function anchor(n,side){
@@ -1422,6 +1528,7 @@ function drawWires(){
     const a=node(e.a), b=node(e.b); if(!a||!b) return;
     if(!nodeShown(a)||!nodeShown(b)) return;      // an edge to a hidden bubble is not a wire
     const pa=POS(a), pb=POS(b);
+    if(board.on){ s+=boardRoute(e,a,b,pa,pb); return; }
     const rev = pb.x + pb.w/2 < pa.x + pa.w/2;
     const straight = wireStraight() && !helix.on;
     let p1=anchor(a,rev?'l':'r'), p2=anchor(b,rev?'r':'l');
@@ -1605,6 +1712,7 @@ function redrawAll(){
   const live=new Set(vis.map(n=>'N'+n.id));
   [...$('world').querySelectorAll('.node')].forEach(el=>{ if(!live.has(el.id)) el.remove(); });
   vis.forEach(nodeEl);
+  if(board.on) boardMeasure();
   if(helix.on) paintHelix(); else drawWires();   // paintHelix redraws the wires itself
   const oc=doc.nodes.reduce((a,n)=>a+openThreads(n),0);
   $('sCount').textContent=`${doc.nodes.length} buborék · ${doc.edges.length} kapcsolat · ${derived().length} hivatkozás`+
@@ -2338,7 +2446,7 @@ stage.addEventListener('pointerdown',e=>{
     drag={mode:'gmove',id}; gNeighbours(); redrawAll();
     stage.setPointerCapture(e.pointerId); return;
   }
-  if(nEl && e.target.closest('.nh') && !e.target.classList.contains('cv')){
+  if(nEl && (e.target.closest('.nh') || (board.on && e.target.closest('.bth,.bsum'))) && !e.target.classList.contains('cv')){
     if(e.target.closest('[contenteditable]')) return;   // renaming: the browser owns the caret
     const id=nEl.dataset.id;
     if(!sel.has(id)){ if(!addMod(e)) sel.clear(); sel.add(id); }
@@ -2348,7 +2456,7 @@ stage.addEventListener('pointerdown',e=>{
     // dragging a frame carries everything inside it, however deep
     const moving=new Set(sel); sel.forEach(i=>descendants(i).forEach(d=>moving.add(d)));
     drag={mode:'move',x:e.clientX,y:e.clientY,id,moved:false,
-      title:!!e.target.closest('.nt')&&!addMod(e),
+      title:(board.on||!!e.target.closest('.nt'))&&!addMod(e),   // on the board a click expands, anywhere on the card
       start:[...moving].filter(i=>node(i)).map(i=>({id:i,x:node(i).x,y:node(i).y}))};
     redrawAll(); if($('insp').classList.contains('open')) fillInspector(id);
     stage.setPointerCapture(e.pointerId); return;
@@ -2389,6 +2497,7 @@ stage.addEventListener('pointermove',e=>{
   }
   if(drag.mode==='pan'){ view.x=drag.vx+(e.clientX-drag.x); view.y=drag.vy+(e.clientY-drag.y); applyView(); }
   else if(drag.mode==='move'){
+    if(board.on) return;          // the board proposes its own y: it is for reading; move bubbles in the normal view
     if(!drag.moved && Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)<4) return;   // still a click
     drag.moved=true;
     const dx=(e.clientX-drag.x)/view.k, dy=(e.clientY-drag.y)/view.k, g=e.altKey?1:10;
@@ -2418,7 +2527,7 @@ stage.addEventListener('pointerup',e=>{
   if(drag && drag.mode==='move' && !drag.moved){
     undoStack.pop();                                  // nothing moved: no undo step for a click
     const d=drag; drag=null;
-    if(d.title) focusEdit(d.id,true);
+    if(d.title){ if(board.on) bToggle(d.id); else focusEdit(d.id,true); }
     return;
   }
   if(drag && drag.mode==='marq'){
@@ -2639,6 +2748,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Delete' && sel.size){ e.preventDefault(); delNodes(new Set(sel)); }
   else if(e.key.toLowerCase()==='c' && one){ linkFrom=one; toast('Kattints a cél buborékra'); }
   else if(e.key.toLowerCase()==='g'){ graph.on?gStop():gStart(); }
+  else if(e.key.toLowerCase()==='b'&&!mod){ board.on?bStop():bStart(); }
   else if(e.key.toLowerCase()==='z'&&!mod){ $('bZoom').click(); }
   else if(e.key===' '){ e.preventDefault(); if(one){ const n=node(one); n.collapsed=!n.collapsed; redrawAll(); } }
 });
@@ -2909,6 +3019,7 @@ const ACT=[
   {k:'Szerző beállítása',h:'',g:'review',at:['pal'],f:()=>{ whoAmI(true); toast('Szerző: '+author); }},
 
   {k:'Gráf nézet',h:'G',g:'view',at:['pal','bg'],f:()=>graph.on?gStop():gStart()},
+  {k:'Tábla nézet (fő adatok, kattintásra kinyílnak)',h:'B',g:'view',at:['pal','bg'],f:()=>board.on?bStop():bStart()},
   {k:'Fókusz zoom be/ki',h:'Z',g:'view',at:['pal','bg'],f:()=>$('bZoom').click()},
   {k:'Oldalsáv',h:'Ctrl+B',g:'view',at:['pal','bg'],f:()=>sideToggle()},
   {k:'Markdown kapcsolatok mutatása / elrejtése',h:'',g:'view',at:['pal','bg'],f:toggleWiki},
@@ -3040,6 +3151,178 @@ $('palr').addEventListener('click',e=>{ const it=e.target.closest('.it'); if(!it
   if(c&&c.off){ toast('Ehhez jelölj ki egy buborékot'); return; }
   palClose(); if(c) c.run(); });
 
+/* =============================================================== board mode
+   The Varler SUI Story Board as a view: every bubble keeps its stored place,
+   shows only its main information, and opens on a click. What a bubble becomes
+   follows from what it already is — nothing extra is stored in the file:
+     frame → chapter band with how much of it is built
+     collapsed and unwired → axis mark (the timeline's week ticks)
+     dim / todo / warn → chip (inferred / not built / open question)
+     anything else → scene card (thumbnail tab, plate with the date, the brief)
+   Cyan means taken, which is kind "done". */
+const board={on:false, open:new Set(), m:{}, pos:{}, rect:{},
+  theme:(()=>{ try{ return localStorage.getItem('vrg.mindmap.board')||'hud'; }catch(e){ return 'hud'; } })()};
+
+function boardState(n){ return ({done:'taken',dim:'ghost',todo:'locked',warn:'question'})[n.kind]||'open'; }
+function boardRole(n,box){
+  if(box) return 'band';
+  if(n.collapsed && !allEdges().some(e=>e.a===n.id||e.b===n.id)) return 'mark';
+  return ({dim:1,todo:1,warn:1})[n.kind]?'chip':'scene';
+}
+// the main information: a date line first (`2026-10-21` · anchor · built), then the brief
+function boardInfo(n){
+  const paras=(n.body||'').split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
+  let date='', type='';
+  const dm=paras.length && paras[0].length<80 && paras[0].match(/(?:\d{4}-)?(\d{2}-\d{2})/);
+  if(dm){ date=dm[1]; type=paras[0].replace(/[`*_]/g,'').split('·').pop().trim(); paras.shift(); }
+  const plain=s=>s.replace(/\[\[([^\]|]+)(\|[^\]]+)?\]\]/g,'$1').replace(/[`*_>#|]/g,'').replace(/\s+/g,' ').trim();
+  let brief=plain(paras.find(p=>!/^[|-]/.test(p))||'');
+  const m=brief.match(/^.{20,}?[.!?](\s|$)/); if(m && m[0].length<brief.length) brief=m[0].trim();
+  if(brief.length>150) brief=brief.slice(0,147)+'…';
+  return {date, type:type.length<24?type:'', brief};
+}
+// the thumbnail tab: a ring-and-tick glyph with the date, from the design system's own geometry
+function boardThumb(info){
+  const w=132, h=58;
+  return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><polygon class="ed" points="${w*.14},0 ${w},0 ${w*.86},${h} 0,${h}"/>`+
+    `<circle class="rg hi" cx="${w*.3}" cy="${h/2}" r="${h*.3}"/>`+
+    `<circle class="rg" cx="${w*.3}" cy="${h/2}" r="${h*.42}" stroke-dasharray="1 3"/>`+
+    (info.date?`<text class="fg" x="${w*.52}" y="${h/2+2}">${MD.esc(info.date)}</text>`:'')+
+    (info.type?`<text class="fs" x="${w*.52}" y="${h/2+14}">${MD.esc(info.type.toUpperCase())}</text>`:'')+'</svg>';
+}
+const B_CLS=['b-scene','b-chip','b-band','b-mark','b-taken','b-open','b-ghost','b-locked','b-question','bopen'];
+function boardDress(n,el,box){
+  const nh=el.querySelector('.nh');
+  let dt=nh.querySelector('.bdt'), pc=nh.querySelector('.bpct');
+  if(!board.on){
+    if(el.classList.contains('b-scene')||el.classList.contains('b-chip')||el.classList.contains('b-band')||el.classList.contains('b-mark')){
+      el.classList.remove(...B_CLS); el.querySelector('.bth').innerHTML=''; el.querySelector('.bsum').textContent='';
+      nh.removeAttribute('title'); }
+    if(dt) dt.remove(); if(pc) pc.remove();
+    return;
+  }
+  const role=boardRole(n,box), st=boardState(n), info=boardInfo(n);
+  el.classList.remove(...B_CLS); el.classList.add('b-'+role);
+  if(role==='scene'||role==='chip') el.classList.add('b-'+st);
+  el.classList.toggle('bopen',board.open.has(n.id));
+  if(role==='scene' && info.date){ if(!dt){ dt=document.createElement('span'); dt.className='bdt'; nh.appendChild(dt); } dt.textContent=info.date; }
+  else if(dt) dt.remove();
+  if(role==='band'){
+    const m=doc.nodes.filter(k=>k.in===n.id && !isBox(k)), done=m.filter(k=>k.kind==='done').length;
+    if(!pc){ pc=document.createElement('span'); pc.className='bpct'; nh.appendChild(pc); }
+    pc.innerHTML=m.length?`<b>${Math.round(done/m.length*100)}%</b> kész · ${m.length} pont`:'';
+  } else if(pc) pc.remove();
+  el.querySelector('.bsum').textContent = role==='scene' ? info.brief : '';
+  el.querySelector('.bth').innerHTML = role==='scene' ? boardThumb(info) : '';
+  if(role==='chip') nh.title=n.title; else nh.removeAttribute('title');
+}
+// measured once per redraw: the wires dock on the plate, not on the stored bubble size
+function boardMeasure(){
+  board.m={};
+  shownNodes().forEach(n=>{ if(isBox(n)) return;
+    const el=document.getElementById('N'+n.id); if(!el) return;
+    const nh=el.querySelector('.nh');
+    board.m[n.id]={w:el.offsetWidth, h:el.offsetHeight, py:nh.offsetTop+nh.offsetHeight/2}; });
+  boardLayout();
+}
+/* The cards are much shorter than the bubbles the stored layout was spaced for,
+   so the board PROPOSES a compact y (the graph view's rule: it never owns
+   positions, and the stored x/y are untouched). Inside each container, bubbles
+   that shared a stored row keep sharing one; each row rises until it meets a
+   card above it that overlaps it in x. Frames are packed inside out and then
+   move as one block, so lanes stay lanes and time stays on the x axis. */
+function boardLayout(){
+  const shown=shownNodes(), kids={}, rel={}, hgt={}, GAP=18;
+  shown.forEach(n=>{ const p=n.in&&node(n.in)&&nodeShown(node(n.in))?n.in:''; (kids[p]=kids[p]||[]).push(n); });
+  const W=n=>isBox(n)?n.w:((board.m[n.id]||{}).w||n.w);
+  function pack(cid, topStored){
+    const items=(kids[cid]||[]).slice().sort((a,b)=>a.y-b.y||a.x-b.x);
+    if(!items.length) return 0;
+    items.forEach(n=>{ if(isBox(n)) hgt[n.id]=pack(n.id,n.y); else hgt[n.id]=(board.m[n.id]||{}).h||COLLAPSED_H; });
+    const off=items[0].y-topStored, placed=[];
+    let i=0, bottom=off;
+    while(i<items.length){
+      const row=[items[i]]; while(i+1<items.length && items[i+1].y-items[i].y<6) row.push(items[++i]); i++;
+      let y=off;
+      row.forEach(n=>placed.forEach(p=>{ if(n.x<p.x+W(p)+8 && p.x<n.x+W(n)+8) y=Math.max(y,rel[p.id]+hgt[p.id]+GAP); }));
+      row.forEach(n=>{ rel[n.id]=y; placed.push(n); bottom=Math.max(bottom,y+hgt[n.id]); });
+    }
+    return bottom+(cid?BOX_PAD:0);
+  }
+  const top=(kids['']||[]).reduce((a,n)=>Math.min(a,n.y),1e9);
+  pack('',top===1e9?0:top);
+  board.pos={}; board.rect={};
+  const place=(cid,base)=>(kids[cid]||[]).forEach(n=>{
+    const y=Math.round(base+rel[n.id]); board.pos[n.id]={x:n.x,y};
+    if(isBox(n)){ board.rect[n.id]={h:Math.round(hgt[n.id])}; place(n.id,y); } });
+  place('',top===1e9?0:top);
+  shown.forEach(n=>{ const p=board.pos[n.id], el=document.getElementById('N'+n.id); if(!p||!el) return;
+    el.style.top=p.y+'px'; if(board.rect[n.id]) el.style.height=board.rect[n.id].h+'px'; });
+}
+/* A route leaves the right edge of the source plate, runs level, turns once just
+   before the target and enters its left edge with a small arrow. A link to the
+   same or an earlier column rises into the target's top or bottom edge instead,
+   so it never crosses a plate. */
+function boardRoute(e,a,b,pa,pb){
+  const ma=board.m[a.id]||{py:pa.h/2}, mb=board.m[b.id]||{py:pb.h/2};
+  const ay=pa.y+ma.py, by=pb.y+mb.py, ar=pa.x+pa.w, bl=pb.x;
+  const L=e.layer?layer(e.layer):null;
+  const tk=!L && boardState(a)==='taken' && boardState(b)==='taken';
+  const dash=(e.style&&e.style.dash)||(e.wiki?'4 4':null);
+  let d, arr;
+  if(bl>=ar+24){
+    const xm=Math.max(ar+12,bl-14);
+    d=Math.abs(ay-by)<1 ? `M${ar},${ay}H${bl-5}` : `M${ar},${ay}H${xm}V${by}H${bl-5}`;
+    arr=`M${bl-6},${by-3.5}L${bl},${by}L${bl-6},${by+3.5}Z`;
+  } else {
+    const up=ay>pb.y+pb.h/2, ey=up?pb.y+pb.h:pb.y, cx=pb.x+pb.w*.7, gy=up?ey+16:ey-16;
+    d=`M${ar},${ay}H${ar+6}V${gy}H${cx}V${up?ey+5:ey-5}`;
+    arr=up?`M${cx-3.5},${ey+6}L${cx},${ey}L${cx+3.5},${ey+6}Z`:`M${cx-3.5},${ey-6}L${cx},${ey}L${cx+3.5},${ey-6}Z`;
+  }
+  const isSel=e.id && e.id===selEdge;
+  const sty=[L?`stroke:${L.color}`:'', isSel?'stroke-width:2.6px':''].filter(Boolean).join(';');
+  return `<path class="bw${tk?' tk':''}${L?' ly':''}" d="${d}"${sty?` style="${sty}"`:''}${dash?` stroke-dasharray="${dash}"`:''}/>`+
+    `<path class="ba${tk?' tk':''}" d="${arr}"${L?` style="fill:${L.color}"`:''}/>`+
+    (e.wiki?'':`<path class="hit" d="${d}" data-edge="${e.id}"/>`);
+}
+function bToggle(id){
+  if(board.open.has(id)) board.open.delete(id); else board.open.add(id);
+  const n=node(id); if(n) nodeEl(n);
+}
+const bbar=document.createElement('div'); bbar.id='bbar';
+bbar.innerHTML='<span>Tábla</span><button data-b="theme"></button><button data-b="close">Mind becsuk</button>'+
+  '<button data-b="off">Kilépés — B</button>';
+document.body.appendChild(bbar);
+function bbarSync(){
+  bbar.classList.toggle('glass',board.theme==='glass');
+  bbar.querySelector('[data-b="theme"]').textContent='Téma · '+(board.theme==='glass'?'Glass':'HUD');
+}
+bbar.addEventListener('pointerdown',e=>e.stopPropagation());   // not a canvas gesture
+bbar.addEventListener('click',e=>{
+  const b=e.target.closest('[data-b]'); if(!b) return;
+  if(b.dataset.b==='theme'){
+    board.theme=board.theme==='glass'?'hud':'glass';
+    try{ localStorage.setItem('vrg.mindmap.board',board.theme); }catch(err){}
+    $('stage').dataset.sui=board.theme; bbarSync(); drawWires(); }
+  if(b.dataset.b==='close'){ board.open.clear(); redrawAll(); }
+  if(b.dataset.b==='off') bStop();
+});
+function bStart(){
+  if(board.on) return;
+  if(graph.on) gStop();
+  board.on=true; board.open.clear();
+  const st=$('stage'); st.classList.add('board'); st.dataset.sui=board.theme;
+  $('bBoard').classList.add('on'); bbarSync(); bbar.classList.add('open');
+  redrawAll(); fit(); toast('Tábla nézet — kattints egy kártyára a részletekért');
+}
+function bStop(){
+  if(!board.on) return;
+  board.on=false; board.open.clear(); board.m={}; board.pos={}; board.rect={};
+  const st=$('stage'); st.classList.remove('board'); delete st.dataset.sui;
+  $('bBoard').classList.remove('on'); bbar.classList.remove('open');
+  redrawAll();
+}
+
 /* =============================================================== graph mode
    A force layout PROPOSES positions. It never owns them: the stored x/y on
    each bubble is untouched until you explicitly press "Pozíciók átvétele". */
@@ -3047,6 +3330,7 @@ const graph={on:false,pos:{},w:{},near:null,alpha:0,raf:0,spread:180,depth:0,pin
 
 function gStart(){
   if(graph.on) return;
+  if(board.on) bStop();                 // one alternative view at a time
   graph.on=true; graph.pos={}; graph.w={};
   const r=$('stage').getBoundingClientRect(), cx=r.width/2, cy=r.height/2;
   doc.nodes.forEach((n,i)=>{
@@ -3222,6 +3506,7 @@ $('stage').addEventListener('mouseover',e=>{
     x.classList.toggle('adj',on); x.classList.toggle('far',!on); });
 });
 $('bGraph').onclick=()=>graph.on?gStop():gStart();
+$('bBoard').onclick=()=>board.on?bStop():bStart();
 $('gOff').onclick=gStop;
 $('gApply').onclick=gApply;
 $('gDepth').onchange=e=>{ graph.depth=e.target.value; gNeighbours(); drawWires(); };
