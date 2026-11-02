@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "board": {
+    "title": "Divergencia",
+    "subtitle": "jelzőtábla",
+    "port": 8801,
+    "theme": "dark",
+    "maxOnRing": 9,
+    "repo": "H:\\VRG\\Full\\Planner_VRG_U100",
+    "branch": "main"
+  },
+
+  "kinds": {
+    "decision":   { "label": "DÖNTÉSRE VÁR",       "topic": "general", "prompt": "default" },
+    "drift":      { "label": "ELTÉRÉS",            "topic": "general", "prompt": "default" },
+    "reminder":   { "label": "EMLÉKEZTETŐ",        "topic": "general", "prompt": "default" },
+    "unverified": { "label": "NINCS ELLENŐRIZVE",  "topic": "general", "prompt": "default" },
+    "next":       { "label": "KÖVETKEZŐ LÉPÉS",    "topic": "general", "prompt": "default" }
+  },
+
+  "targets": {
+    "doc":    "dokumentum",
+    "folder": "mappa",
+    "go":     "kezdőpont (GO)",
+    "brief":  "Claude-utasítás"
+  },
+
+  "actions": {
+    "enter":  { "label": "Belépés",            "hint": "Átadó utasítás a vágólapra; egy másik munkamenetbe illeszthető." },
+    "note":   { "label": "Fejlesztői jegyzet", "hint": "A témája jegyzetei közé kerül, a következő pushsal a fejlesztői ágra." },
+    "ignore": { "label": "Mellőzés",           "hint": "Naplózva marad, és a következő pushsal mindenképp felmegy." }
+  },
+
+  "prompts": {
+    "default": [
+      "# Signal {id}: {title}",
+      "",
+      "You were sent here from the Divergence board ({kindLabel}, level {levelPct}).",
+      "Work in the main checkout {repo}, branch {branch}. Read CLAUDE.md there first.",
+      "",
+      "## Why it signals",
+      "{why}",
+      "",
+      "## Starting point",
+      "{target}",
+      "",
+      "## Read first",
+      "{readFirst}",
+      "",
+      "## Done when",
+      "{done}",
+      "",
+      "## Closing the signal",
+      "- Finished: `node tools/divergence.js close {id} \"<one sentence on what changed>\"`",
+      "- Stopped halfway: `node tools/divergence.js note {id} \"<what is left>\"` (goes to the dev notes of topic `{topic}`)",
+      "- Never rule or decide for the Founder; ask."
+    ]
+  },
+
+  "devnotes": {
+    "branch": "vrg-devnotes",
+    "dir": "devnotes"
+  }
+}

@@ -113,7 +113,8 @@
     { "key": "M", "id": "hub-admin", "name": "VRG Kapu · admin (engedélyezett lista)", "port": 8798, "js": "{repo}\\tools\\hub-admin\\server.js", "self": true },
     { "key": "C", "id": "console", "name": "Varler Console · terepi konzol", "port": 8133, "js": "{repo}\\Console\\serve.js" },
     { "key": "R", "id": "trace-relay", "name": "Ügynöknyom · közvetítő", "port": 8134, "js": "{repo}\\Console\\tools\\trace-relay.js" },
-    { "key": "T", "id": "solomon", "name": "Solomon Gömb · döntésekkel", "port": 8799, "js": "{repo}\\Solomon\\serve.js" }
+    { "key": "T", "id": "solomon", "name": "Solomon Gömb · döntésekkel", "port": 8799, "js": "{repo}\\Solomon\\serve.js" },
+    { "key": "J", "id": "divergence", "name": "Divergencia · jelzőtábla", "port": 8801, "js": "{repo}\\Divergence\\serve.js" }
   ],
 
   "programs": [

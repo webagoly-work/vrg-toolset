@@ -31,6 +31,7 @@ dependencies, generative: the strata are computed live, on a seamless 40 s loop.
 const api = VarlerDivergence.mount(canvas, opts); // sizes itself to the canvas's CSS box, redraws on resize
 api.set({ ... });   // change any option live
 api.replay();       // run the intro sweep again
+api.points();       // each divergence peak: { angle, level, x, y, baseX, baseY } in CSS px of the canvas
 api.destroy();      // stop the loop and the observers
 ```
 
@@ -45,6 +46,7 @@ api.destroy();      // stop the loop and the observers
 | `amp`, `speed`, `glow` | 1 | strata height, loop speed, bloom strength |
 | `intro` | `true` | the sweep that draws the ring on at mount |
 | `still` | `null` | 0..1: freeze on that point of the loop (thumbnails, icons) |
+| `events` | `null` | Caller-placed divergences instead of the built-in ones: `[{ rc, s, a, c?, d?, n?, p?, hold? }]` (angle on the ring, width, height 0..1, angle on the bulb, wander, rate, phase; `hold` = never fades out). The Divergence board uses it |
 
 Reduced motion (`prefers-reduced-motion`) shows one still frame.
 

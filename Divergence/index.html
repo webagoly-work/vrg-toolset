@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Divergencia · jelzőtábla</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600&family=Barlow:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Varler SUI tokens */
+:root {
+  --ground: #121B22; --panel: #18242D; --line: #2C4250; --dim: #4C6878; --fg: #D6E4EA; --muted: #8AA3AF;
+  --cyan: #7ED3DF; --cyan-soft: rgba(126,211,223,0.16); --alert: #F0C24B; --ok: #8FD49A;
+  --charcoal-950: #16181A; --charcoal-900: #1E2023; --charcoal-800: #26292C; --charcoal: #33363A; --charcoal-sheen: #8D9297;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif; --body: "Barlow", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --s1: 4px; --s2: 8px; --s3: 14px; --s4: 20px; --r1: 2px; --r2: 4px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--charcoal-950); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 22px; overflow: hidden; }
+.label { font-family: var(--display); font-weight: 500; font-size: 15px; line-height: 18px; letter-spacing: 0.08em; text-transform: uppercase; }
+.label-s { font-family: var(--display); font-size: 12px; line-height: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.data { font-family: var(--mono); font-size: 12px; line-height: 18px; }
+button { font: inherit; color: inherit; }
+button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 1px solid var(--cyan); outline-offset: 2px; }
+
+#stage { position: fixed; inset: 0 0 52px 0; }
+#ring { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: default; }
+#wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+#wires .lead { fill: none; stroke: var(--fg); stroke-width: 1; opacity: 0.75; }
+#wires .lock { fill: var(--charcoal-950); stroke: var(--fg); stroke-width: 1; }
+#wires .core { fill: var(--fg); }
+#wires g.sel .lead, #wires g.sel .lock { stroke: var(--cyan); opacity: 1; }
+#wires g.sel .core { fill: var(--cyan); }
+#wires g.entered .lead { stroke-dasharray: 3 3; }
+
+.callout { position: absolute; min-width: 44px; min-height: 44px; padding: var(--s1) 0; background: none; border: 0; text-align: left; cursor: pointer; max-width: 270px; }
+.callout.left { text-align: right; }
+.callout .head { display: block; border-bottom: 1px solid var(--fg); padding-bottom: 2px; margin-bottom: 3px; }
+.callout .title { display: block; font-family: var(--display); font-size: 15px; line-height: 18px; letter-spacing: 0.04em; color: var(--fg); }
+.callout .lvl { display: block; color: var(--muted); }
+.callout:hover .head, .callout.sel .head { color: var(--cyan); border-color: var(--cyan); }
+.callout.entered .head::before { content: "BELÉPVE · "; color: var(--alert); }
+
+#title { position: fixed; left: var(--s4); top: var(--s4); pointer-events: none; }
+#title h1 { margin: 0; font-family: var(--display); font-size: 28px; line-height: 28px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+#title p { margin: 6px 0 0; }
+
+#bar { position: fixed; left: 0; right: 0; bottom: 0; height: 52px; display: flex; align-items: center; gap: var(--s3); padding: 0 var(--s4);
+  background: var(--charcoal); border-top: 1px solid var(--charcoal-sheen); }
+#bar .grow { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.btn { min-height: 44px; padding: 0 var(--s3); border-radius: var(--r1); border: 1px solid var(--line); background: var(--charcoal-800); cursor: pointer;
+  font-family: var(--display); font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; }
+.btn:hover { border-color: var(--cyan); }
+.btn.primary { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-soft); }
+.btn.warn:hover { border-color: var(--alert); color: var(--alert); }
+.btn[disabled] { opacity: 0.45; cursor: default; }
+
+#drawer { position: fixed; top: 0; right: 0; bottom: 52px; width: min(440px, 100vw); background: var(--panel); border-left: 1px solid var(--line);
+  transform: translateX(100%); transition: transform 280ms ease-out; overflow-y: auto; }
+#drawer.open { transform: none; }
+#drawer header { position: sticky; top: 0; display: flex; align-items: center; gap: var(--s2); padding: var(--s3) var(--s3) var(--s3) var(--s4);
+  background: var(--charcoal); border-bottom: 1px solid var(--charcoal-sheen); z-index: 1; }
+#drawer header .label { flex: 1; }
+#drawer .x { width: 44px; height: 44px; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+#drawer section { padding: var(--s3) var(--s4); border-bottom: 1px solid var(--line); }
+#drawer h2 { margin: 0 0 var(--s2); font-family: var(--display); font-size: 22px; line-height: 26px; font-weight: 500; letter-spacing: 0.03em; }
+#drawer dl { display: grid; grid-template-columns: auto 1fr; gap: 2px var(--s3); margin: var(--s2) 0 0; }
+#drawer dt { color: var(--muted); }
+#drawer dd { margin: 0; overflow-wrap: anywhere; }
+#drawer ul { margin: var(--s1) 0 0; padding-left: 18px; }
+#drawer pre { margin: var(--s2) 0; max-height: 220px; overflow: auto; padding: var(--s2) var(--s3); background: var(--ground); border: 1px solid var(--line);
+  border-radius: var(--r1); white-space: pre-wrap; font-family: var(--mono); font-size: 12px; line-height: 18px; color: var(--fg); }
+#drawer textarea, #drawer input { width: 100%; margin: var(--s2) 0; padding: var(--s2); background: var(--ground); color: var(--fg); border: 1px solid var(--line);
+  border-radius: var(--r1); font: inherit; }
+#drawer textarea { min-height: 96px; resize: vertical; }
+.row { display: flex; gap: var(--s2); flex-wrap: wrap; }
+.hint { color: var(--muted); font-size: 13px; line-height: 18px; margin: 0; }
+
+#toast { position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); padding: var(--s2) var(--s3); background: var(--charcoal); border: 1px solid var(--charcoal-sheen);
+  border-radius: var(--r2); opacity: 0; transition: opacity 200ms; pointer-events: none; }
+#toast.on { opacity: 1; }
+#toast.bad { border-color: var(--alert); color: var(--alert); }
+
+#list { display: none; }
+@media (max-width: 760px) {
+  .callout { display: none; }
+  #list { display: block; position: fixed; left: 0; right: 0; bottom: 52px; max-height: 40vh; overflow-y: auto; background: var(--panel); border-top: 1px solid var(--line); }
+  #list button { display: block; width: 100%; min-height: 44px; padding: var(--s2) var(--s4); text-align: left; border: 0; border-bottom: 1px solid var(--line); background: none; cursor: pointer; }
+}
+@media (min-width: 1100px) { body.drawer #stage { right: 440px; } } /* the ring makes room, so no callout hides under the panel */
+@media (prefers-reduced-motion: reduce) { #drawer, #toast { transition: none; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="ring" role="img" aria-label="Divergencia gyűrű: minden csúcs egy nyitott jelzés"></canvas>
+  <svg id="wires" aria-hidden="true"></svg>
+  <div id="callouts"></div>
+</div>
+<div id="title"><h1 id="t-title">Divergencia</h1><p class="label-s" id="t-sub">jelzőtábla</p></div>
+<nav id="list" aria-label="Jelzések"></nav>
+
+<aside id="drawer" aria-label="Jelzés részletei" aria-hidden="true">
+  <header>
+    <span class="label" id="d-kind"></span>
+    <button class="x" id="d-close" aria-label="Bezárás"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  </header>
+  <section>
+    <h2 id="d-title"></h2>
+    <p id="d-why" style="margin: 0"></p>
+    <dl class="data" id="d-meta"></dl>
+  </section>
+  <section>
+    <p class="label-s">Kiindulópont</p>
+    <p class="data" id="d-target" style="margin: 4px 0 0"></p>
+    <p class="label-s" style="margin-top: 14px">Először olvasd</p>
+    <ul class="data" id="d-read"></ul>
+    <p class="label-s" style="margin-top: 14px">Kész, ha</p>
+    <p id="d-done" style="margin: 4px 0 0"></p>
+  </section>
+  <section>
+    <p class="label" id="a-enter-label">Belépés</p>
+    <p class="hint" id="a-enter-hint"></p>
+    <pre id="d-handoff">…</pre>
+    <div class="row">
+      <button class="btn primary" id="a-enter">Belépés</button>
+      <button class="btn" id="a-copy">Másolás</button>
+    </div>
+    <p class="hint data" id="d-file" style="margin-top: 8px"></p>
+  </section>
+  <section>
+    <label class="label" for="a-note-text" id="a-note-label">Fejlesztői jegyzet</label>
+    <p class="hint" id="a-note-hint"></p>
+    <textarea id="a-note-text" placeholder="Mi maradt, mit kell tudni róla…"></textarea>
+    <button class="btn" id="a-note">Jegyzet mentése</button>
+  </section>
+  <section>
+    <label class="label" for="a-ignore-text" id="a-ignore-label">Mellőzés</label>
+    <p class="hint" id="a-ignore-hint"></p>
+    <input id="a-ignore-text" placeholder="Miért (nem kötelező)">
+    <button class="btn warn" id="a-ignore">Mellőzés</button>
+  </section>
+</aside>
+
+<div id="bar">
+  <span class="grow data" id="b-status"></span>
+  <button class="btn" id="b-push">Push a fejlesztői ágra</button>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="/divergence.js"></script>
+<script>
+'use strict';
+var $ = function (id) { return document.getElementById(id); };
+var S = null, shown = [], sel = null, api = null, labels = {};
+
+function api_(url, body) {
+  return fetch(url, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {})
+    .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); });
+}
+function toast(msg, bad) { var t = $('toast'); t.textContent = msg; t.className = 'on' + (bad ? ' bad' : ''); clearTimeout(toast.k); toast.k = setTimeout(function () { t.className = ''; }, 2600); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+// Each signal on the ring becomes one divergence: where it sits, how high it builds, how wide it spreads.
+function events() {
+  var n = shown.length;
+  return shown.map(function (s, i) {
+    var lvl = Math.max(0, Math.min(1, s.level || 0)), a = s.status === 'entered' ? 0.25 + 0.3 * lvl : 0.35 + 0.65 * lvl;
+    if (sel === s.id) a = Math.min(1.15, a * 1.15);
+    var ang = s.angle != null ? s.angle : -180 + (i + 0.5) * 360 / n;
+    return { rc: ang, s: 9 + 13 * lvl, a: a, d: 1.5, n: 1, p: i * 0.19, hold: true };
+  });
+}
+
+function load() {
+  return api_('/api/state').then(function (st) {
+    S = st;
+    var b = st.config.board;
+    $('t-title').textContent = b.title; $('t-sub').textContent = b.subtitle; document.title = b.title + ' · ' + b.subtitle;
+    shown = st.signals.filter(function (s) { return s.status === 'open' || s.status === 'entered'; })
+      .sort(function (a, b) { return b.level - a.level; }).slice(0, b.maxOnRing || 9)
+      .sort(function (a, b) { return st.signals.indexOf(a) - st.signals.indexOf(b); });
+    var A = st.config.actions;
+    ['enter', 'note', 'ignore'].forEach(function (k) { $('a-' + k + '-label').textContent = A[k].label; $('a-' + k + '-hint').textContent = A[k].hint; });
+    $('a-enter').textContent = A.enter.label; $('a-ignore').textContent = A.ignore.label;
+    if (!api) api = VarlerDivergence.mount($('ring'), { form: 'ring', lockup: 'mark', theme: b.theme || 'dark', events: events(), intro: true });
+    else api.set({ events: events() });
+    buildCallouts(); status();
+    if (sel && !shown.some(function (s) { return s.id === sel; })) closeDrawer();
+  }).catch(function (e) { toast('Nem érem el a szervert: ' + e.message, true); });
+}
+
+function status() {
+  var gone = S.signals.length - shown.length;
+  $('b-status').textContent = shown.length + ' nyitott jelzés · ' + gone + ' lezárva / mellőzve / jegyzetelve · ' + S.pending + ' jegyzet vár · ' + S.unsentLog + ' naplósor még nincs fent';
+  $('b-push').disabled = !S.pending && !S.unsentLog;
+}
+
+function buildCallouts() {
+  var box = $('callouts'), list = $('list'); box.innerHTML = ''; list.innerHTML = ''; labels = {};
+  shown.forEach(function (s) {
+    var b = document.createElement('button');
+    b.className = 'callout' + (s.status === 'entered' ? ' entered' : '');
+    b.innerHTML = '<span class="head label-s" style="color: inherit">DIVERGENCIA: ' + esc(s.kindLabel) + '</span><span class="title">' + esc(s.title) +
+      '</span><span class="lvl data">' + esc(s.topic) + ' : ' + Math.round(s.level * 100) + ' %</span>';
+    b.onclick = function () { openDrawer(s.id); };
+    box.appendChild(b); labels[s.id] = b;
+    var l = document.createElement('button');
+    l.innerHTML = '<span class="label-s">' + esc(s.kindLabel) + ' · ' + Math.round(s.level * 100) + ' %</span><br>' + esc(s.title);
+    l.onclick = function () { openDrawer(s.id); }; list.appendChild(l);
+  });
+}
+
+// Callouts follow the peaks every frame: lock circle on the tip, a leader out past the strata, then a label.
+// Labels keep a side and are pushed apart on it, so none overlaps another.
+function layout() {
+  requestAnimationFrame(layout);
+  if (!api || !shown.length) { $('wires').innerHTML = ''; return; }
+  var c = $('ring'), W = c.clientWidth, H = c.clientHeight, cx = W / 2, cy = H / 2, pts = api.points(), rows = [];
+  pts.forEach(function (p, i) {
+    var s = shown[i]; if (!s) return;
+    var dx = p.baseX - cx, dy = p.baseY - cy, r = Math.hypot(dx, dy) || 1, ux = dx / r, uy = dy / r;
+    var reach = Math.max(r * 1.42, Math.hypot(p.x - cx, p.y - cy) + 24);
+    rows.push({ s: s, p: p, side: ux < 0 ? -1 : 1, ex: cx + ux * reach, ey: cy + uy * reach });
+  });
+  [-1, 1].forEach(function (side) {
+    var g = rows.filter(function (q) { return q.side === side; }).sort(function (a, b) { return a.ey - b.ey; });
+    for (var k = 1; k < g.length; k++) if (g[k].ey - g[k - 1].ey < 62) g[k].ey = g[k - 1].ey + 62;
+    var over = g.length ? g[g.length - 1].ey - (H - 40) : 0;
+    if (over > 0) g.forEach(function (q) { q.ey -= over; });
+  });
+  var svg = '';
+  rows.forEach(function (q) {
+    var lx = q.ex + q.side * 34, b = labels[q.s.id], w = b.offsetWidth, h = b.offsetHeight, on = sel === q.s.id;
+    svg += '<g class="' + (on ? 'sel ' : '') + (q.s.status === 'entered' ? 'entered' : '') + '">' +
+      '<polyline class="lead" points="' + q.p.x.toFixed(1) + ',' + q.p.y.toFixed(1) + ' ' + q.ex.toFixed(1) + ',' + q.ey.toFixed(1) + ' ' + lx.toFixed(1) + ',' + q.ey.toFixed(1) + '"/>' +
+      '<circle class="lock" cx="' + q.p.x.toFixed(1) + '" cy="' + q.p.y.toFixed(1) + '" r="7"/><circle class="core" cx="' + q.p.x.toFixed(1) + '" cy="' + q.p.y.toFixed(1) + '" r="2.2"/></g>';
+    b.classList.toggle('left', q.side < 0); b.classList.toggle('sel', on);
+    var x = q.side < 0 ? lx - w - 6 : lx + 6;
+    b.style.left = Math.max(8, Math.min(W - w - 8, x)) + 'px'; b.style.top = (q.ey - h / 2) + 'px';
+  });
+  $('wires').innerHTML = svg;
+}
+
+function openDrawer(id) {
+  var s = S.signals.find(function (x) { return x.id === id; }); if (!s) return;
+  sel = id; api.set({ events: events() });
+  var C = S.config, t = s.target || {};
+  $('d-kind').textContent = (s.status === 'entered' ? 'BELÉPVE · ' : '') + s.kindLabel;
+  $('d-title').textContent = s.title; $('d-why').textContent = s.why;
+  $('d-meta').innerHTML = [['Szint', Math.round(s.level * 100) + ' %'], ['Téma', s.topic], ['Forrás', s.source || '–'], ['Azonosító', s.id], ['Óta', (s.since || '').slice(0, 10)]]
+    .map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('');
+  $('d-target').textContent = (C.targets[t.type] || t.type || '–') + ': ' + (t.path ? t.path + (t.line ? ':' + t.line : '') : '–');
+  $('d-read').innerHTML = (s.readFirst || []).map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') || '<li>CLAUDE.md</li>';
+  $('d-done').textContent = s.done || '–';
+  $('d-handoff').textContent = '…'; $('d-file').textContent = ''; $('a-note-text').value = ''; $('a-ignore-text').value = '';
+  api_('/api/handoff/' + encodeURIComponent(id)).then(function (h) { $('d-handoff').textContent = h.text; $('d-file').textContent = h.file; });
+  document.body.classList.add('drawer'); var d = $('drawer'); d.classList.add('open'); d.setAttribute('aria-hidden', 'false'); $('d-close').focus();
+}
+function closeDrawer() {
+  document.body.classList.remove('drawer'); var d = $('drawer'); d.classList.remove('open'); d.setAttribute('aria-hidden', 'true');
+  var was = sel; sel = null; if (api) api.set({ events: events() });
+  if (was && labels[was]) labels[was].focus();
+}
+function copy(text) {
+  return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : Promise.reject(new Error('no clipboard'));
+}
+function act(action, text) {
+  return api_('/api/act', { id: sel, action: action, text: text });
+}
+
+$('d-close').onclick = closeDrawer;
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sel) closeDrawer(); });
+$('a-copy').onclick = function () { copy($('d-handoff').textContent).then(function () { toast('Másolva'); }, function () { toast('A vágólap nem érhető el; jelöld ki a szöveget.', true); }); };
+$('a-enter').onclick = function () {
+  act('enter').then(function (h) {
+    $('d-handoff').textContent = h.text;
+    return copy(h.text).then(function () { toast('Belépve, az utasítás a vágólapon'); }, function () { toast('Belépve; másold ki a szöveget kézzel.'); });
+  }).then(load).catch(function (e) { toast(e.message, true); });
+};
+$('a-note').onclick = function () {
+  var t = $('a-note-text').value.trim(); if (!t) { toast('Üres jegyzetet nem mentek.', true); return; }
+  act('note', t).then(function () { toast('Jegyzet mentve, a következő pushra vár'); closeDrawer(); load(); }).catch(function (e) { toast(e.message, true); });
+};
+$('a-ignore').onclick = function () {
+  act('ignore', $('a-ignore-text').value.trim()).then(function () { toast('Mellőzve, naplózva'); closeDrawer(); load(); }).catch(function (e) { toast(e.message, true); });
+};
+$('b-push').onclick = function () {
+  var b = $('b-push'); b.disabled = true; b.textContent = 'Push…';
+  api_('/api/push', {}).then(function (r) { toast(r.pushed ? 'Felküldve: ' + r.notes + ' jegyzet (' + r.sha + ')' : 'A fejlesztői ág naprakész'); })
+    .catch(function (e) { toast(e.message, true); })
+    .then(function () { b.textContent = 'Push a fejlesztői ágra'; load(); });
+};
+// a click on the ring near a peak opens it too
+$('ring').addEventListener('click', function (e) {
+  if (!api) return; var r = $('ring').getBoundingClientRect(), best = -1, bd = 60;
+  api.points().forEach(function (p, i) { var d = Math.hypot(p.x - (e.clientX - r.left), p.y - (e.clientY - r.top)); if (d < bd) { bd = d; best = i; } });
+  if (best >= 0 && shown[best]) openDrawer(shown[best].id);
+});
+load(); layout();
+</script>
+</body>
+</html>

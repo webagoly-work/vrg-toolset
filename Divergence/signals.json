@@ -1,0 +1,69 @@
+{
+  "signals": [
+    {
+      "id": "sol-rbl-42w",
+      "kind": "decision",
+      "title": "RB-L tipikus terhelés: 41 W vagy 42 W",
+      "why": "Solomon signal 963f0125, unruled. STD-001's own sum (l.232) gives 42 W typical for RB-L, but its l.97 and table l.214, STD-001-A1, STD-007 and the built infobase say 41 W. It looks like the r2 switch raise that never propagated.",
+      "level": 0.8,
+      "topic": "bridge",
+      "target": { "type": "doc", "path": "BRIDGE/05_standards/BRIDGE-STD-001_Physical-Standardisation.md", "line": 232 },
+      "readFirst": ["docs/solomon/README.md"],
+      "done": "The Founder rules first / second / coexist on signal 963f0125 in the Solomon Gömb, with a reason. Nothing is edited before the ruling.",
+      "source": "solomon",
+      "created": "2026-11-01"
+    },
+    {
+      "id": "council-gate",
+      "kind": "reminder",
+      "title": "Költségkapu: még mindig kikapcsolva",
+      "why": "COUNCIL-Q5 = C: no budget gate for now. The Founder asked to be reminded to change this; no date was given.",
+      "level": 0.55,
+      "topic": "council",
+      "target": { "type": "doc", "path": "docs/council/DECISIONS.md", "line": 25 },
+      "readFirst": ["docs/council/README.md", "tools/council-gate.js"],
+      "done": "The Founder decides: switch the gate on (and with which limits) or set a date to ask again.",
+      "source": "manual",
+      "created": "2026-10-31"
+    },
+    {
+      "id": "m14-phone",
+      "kind": "unverified",
+      "title": "M14 Gömb a telefonon: soha nem futott",
+      "why": "Mobile M14 (the sphere page) builds and its tests pass, but it has never run on a device: no phone on USB and no emulator when it was built.",
+      "level": 0.6,
+      "topic": "mobile",
+      "target": { "type": "doc", "path": "docs/mobile/WP/M14.md" },
+      "readFirst": ["GO-MOBILE.md"],
+      "done": "The check list in M14.md is walked on the phone and the result written back into M14.md.",
+      "source": "manual",
+      "created": "2026-11-01"
+    },
+    {
+      "id": "console-apk",
+      "kind": "unverified",
+      "title": "Varler Console APK: sosem fordult le",
+      "why": "Phase 4 (PWA + Capacitor APK scaffold) is committed, but the APK was never compiled: this PC has no JDK.",
+      "level": 0.42,
+      "topic": "console",
+      "target": { "type": "folder", "path": "Console" },
+      "readFirst": ["Console/README.md"],
+      "done": "Either an APK builds (locally or in Actions) and installs, or the Founder parks the APK.",
+      "source": "manual",
+      "created": "2026-11-02"
+    },
+    {
+      "id": "logo-wordmark",
+      "kind": "next",
+      "title": "A felirat vissza a logóra",
+      "why": "Logo v1 (mark F) is approved without the wordmark. The next design step is to put the wordmark back onto both the original and the animated logo. Not GO LOGO's job.",
+      "level": 0.3,
+      "topic": "logo",
+      "target": { "type": "folder", "path": "shared/varler-logo" },
+      "readFirst": ["shared/varler-logo/README.md"],
+      "done": "A wordmark lockup option is on the design canvas for the Founder to pick from.",
+      "source": "manual",
+      "created": "2026-11-02"
+    }
+  ]
+}

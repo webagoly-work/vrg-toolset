@@ -70,3 +70,8 @@ CodeCity/companion.config.json
 
 # Varler Console traces: redacted but local, and the relay code
 Console/traces/
+
+# --- Divergence board: unsent notes, the sent record and generated hand-offs stay local ---
+Divergence/data/outbox.jsonl
+Divergence/data/sent.jsonl
+Divergence/data/handoff/

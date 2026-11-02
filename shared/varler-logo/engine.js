@@ -1,5 +1,5 @@
 /* Varler divergence ring. Canvas 2D, no dependencies. Generative: every stratum is computed live
-   around the real bulb outline. VarlerDivergence.mount(canvas, opts) -> { set(opts), replay(), destroy() }
+   around the real bulb outline. VarlerDivergence.mount(canvas, opts) -> { set(opts), replay(), destroy(), points() }
    Two forms share every stratum, event and glow: form 'logo' (the bulb outline + mark) and form 'ring'
    (the original divergence ring, a full circle with a thin bright band). morph 0..1 overrides form:
    0 = ring, 1 = logo; every sample has the same index in both, so any value in between is a valid shape. */
@@ -44,9 +44,9 @@ function per(th, fn) { // angle-periodic noise: past 150 deg it fades into its o
 function mix(a, b, t) { return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * t) + ',' + Math.round(a[1] + (b[1] - a[1]) * t) + ',' + Math.round(a[2] + (b[2] - a[2]) * t) + ')'; }
 
 function mount(canvas, opts) {
-  var o = { theme: 'dark', lockup: 'full', amp: 1, speed: 1, glow: 1, intro: true, still: null, mark: 'orig', ring: true, form: 'logo', morph: null };
+  var o = { theme: 'dark', lockup: 'full', amp: 1, speed: 1, glow: 1, intro: true, still: null, mark: 'orig', ring: true, form: 'logo', morph: null, events: null };
   var ctx = canvas.getContext('2d'), raf = 0, visible = true, start = 0, clock = 0, last = 0, W = 0, H = 0, S = 1, dead = false;
-  var cache = {}, layer = document.createElement('canvas'), lc = layer.getContext('2d'), soft = document.createElement('canvas'), softer = document.createElement('canvas'), sc = soft.getContext('2d'), wc = softer.getContext('2d');
+  var tips = [], mat = null, dpr = 1, cache = {}, layer = document.createElement('canvas'), lc = layer.getContext('2d'), soft = document.createElement('canvas'), softer = document.createElement('canvas'), sc = soft.getContext('2d'), wc = softer.getContext('2d');
   var P = { bulb: new Path2D(DATA.bulb), leaf: new Path2D(DATA.leaf), base: new Path2D(DATA.base), word: new Path2D(DATA.word) };
   var TH = new Float32Array(N), R = new Float32Array(N), X = new Float32Array(N), Y = new Float32Array(N), hs = [], env = new Float32Array(N), i, j, M = -1;
   for (j = 0; j < LAYERS; j++) hs.push(new Float32Array(N));
@@ -67,7 +67,7 @@ function mount(canvas, opts) {
   function size() {
     var r = canvas.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
     var w = canvas.clientWidth || r.width, h = canvas.clientHeight || r.height;
-    W = Math.max(2, Math.round(w * d)); H = Math.max(2, Math.round(h * d));
+    dpr = d; W = Math.max(2, Math.round(w * d)); H = Math.max(2, Math.round(h * d));
     if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
     layer.width = W; layer.height = H;
     soft.width = Math.ceil(W / 5); soft.height = Math.ceil(H / 5);
@@ -83,11 +83,14 @@ function mount(canvas, opts) {
     var best = 0, bestA = 0, i, k, e, l;
     var F = new Float32Array(N);
     var q = [];
-    for (k = 0; k < EVENTS.length; k++) {
-      e = EVENTS[k];
-      var a = 0.5 + 0.5 * Math.sin(TAU * (t * e.n + e.p)); a = a * a * a * (3 - 2 * a) * e.a;
-      q.push({ c: e.rc + (e.c - e.rc) * M + e.d * Math.sin(TAU * (t + e.p * 2)), s: e.s, a: a });
+    var EV = o.events || EVENTS; // o.events: caller-placed divergences (a board's signals); hold = never fades out
+    for (k = 0; k < EV.length; k++) {
+      e = EV[k];
+      var n1 = e.n || 1, p1 = e.p || 0, a = 0.5 + 0.5 * Math.sin(TAU * (t * n1 + p1)); a = a * a * a * (3 - 2 * a);
+      a = e.hold ? e.a * (0.8 + 0.2 * a) : a * e.a;
+      q.push({ c: e.rc + ((e.c != null ? e.c : e.rc) - e.rc) * M + (e.d || 0) * Math.sin(TAU * (t + p1 * 2)), s: e.s, a: a });
     }
+    tips = q;
     for (i = 0; i < N; i++) {
       var th = TH[i], f = 0;
       for (k = 0; k < q.length; k++) { var d = Math.abs(wrap(th - q[k].c)) / q[k].s; f = Math.max(f, q[k].a * Math.exp(-Math.pow(d, 1.35) * 1.5)); }
@@ -132,11 +135,15 @@ function mount(canvas, opts) {
     var keep = o.amp; o.amp = keep * (0.04 + 0.96 * grow);
     var bestA = field(t, front); o.amp = keep;
     var i, l, H0 = hs[0], s;
+    tips = tips.map(function (e) { // where each divergence peaks, for callouts and hit tests
+      var b = 0, bd = 1e9; for (var k = 0; k < N; k++) { var dd = Math.abs(wrap(TH[k] - e.c)); if (dd < bd) { bd = dd; b = k; } }
+      var r = R[b] + H0[b]; return { angle: e.c, level: e.a, ux: DATA.cx + X[b] * r, uy: DATA.cy + Y[b] * r, bx: DATA.cx + X[b] * R[b], by: DATA.cy + Y[b] * R[b] };
+    });
 
     // eclipse: the bulb interior is the black disc, darker than the ground
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = T.bg; ctx.fillRect(0, 0, W, H);
-    s = view(ctx, W);
+    s = view(ctx, W); mat = ctx.getTransform();
     if (o.ring) {
     ctx.beginPath(); for (i = 0; i < 720; i++) { var a = (i / 2 - 180) * DEG, r = RC + (LUT[i] - RC) * m - 4; ctx.lineTo(cx + Math.sin(a) * r, cy - Math.cos(a) * r); } ctx.closePath();
     ctx.globalAlpha = sstep(0, 1.4, age); ctx.fillStyle = T.eclipse; ctx.fill(); ctx.globalAlpha = 1;
@@ -247,6 +254,13 @@ function mount(canvas, opts) {
   var api = {
     set: function (n) { var was = o.intro; for (var k in n) if (n[k] != null || k === 'still') o[k] = n[k]; size(); if (n.intro && !was) start = performance.now(); if (reduce || o.still != null) draw(performance.now()); else schedule(); },
     replay: function () { o.intro = true; start = performance.now(); schedule(); },
+    points: function () { // CSS px within the canvas: tip = the top of the peak, base = where it leaves the ring
+      if (!mat) return [];
+      return tips.map(function (p) {
+        var a = mat.transformPoint({ x: p.ux, y: p.uy }), b = mat.transformPoint({ x: p.bx, y: p.by });
+        return { angle: p.angle, level: p.level, x: a.x / dpr, y: a.y / dpr, baseX: b.x / dpr, baseY: b.y / dpr };
+      });
+    },
     destroy: function () { dead = true; if (raf) cancelAnimationFrame(raf); if (ro) ro.disconnect(); if (io) io.disconnect(); }
   };
   for (var k in opts || {}) if (opts[k] != null) o[k] = opts[k];
