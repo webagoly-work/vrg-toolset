@@ -1,0 +1,7 @@
+{
+  "name": "varler-logo-lockups",
+  "private": true,
+  "description": "Text lockups of the original Varler mark: node gen.js && node svgs.js",
+  "scripts": { "build": "node gen.js && node svgs.js" },
+  "dependencies": { "opentype.js": "1.3.4" }
+}
