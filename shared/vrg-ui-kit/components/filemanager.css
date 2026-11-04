@@ -18,7 +18,7 @@
 .vk-fm__crumbs { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; white-space: nowrap;
   font: var(--vk-fs-xs)/1 var(--vk-font-mono); }
 .vk-fm__crumbs::-webkit-scrollbar { display: none; }
-.vk-fm__crumb { min-height: var(--vk-target-min); padding: 0 var(--vk-space-1); margin: 0; border: 0; background: transparent; color: var(--vk-text-muted);
+.vk-fm__crumb { min-height: var(--vk-target-min); min-width: var(--vk-target-min); padding: 0 var(--vk-space-1); margin: 0; border: 0; background: transparent; color: var(--vk-text-muted);
   font: inherit; cursor: pointer; border-radius: var(--vk-radius-sm); }
 .vk-fm__crumb:hover { color: var(--vk-text); background: var(--vk-hover-bg); }
 .vk-fm__crumb[aria-current] { color: var(--vk-text); }

@@ -19,7 +19,7 @@
 .vk-diff__body { overflow: auto; max-height: var(--vk-diff-max-h); padding: var(--vk-space-1) 0; overscroll-behavior: contain;
   font: var(--vk-fs-sm)/1.45 var(--vk-font-mono); font-variant-ligatures: none; scrollbar-width: thin; scrollbar-color: var(--vk-line-strong) transparent; }
 .vk-diff__ln { --_c: transparent; --_t: inherit; display: grid; grid-template-columns: 4ch 4ch 2ch minmax(0, 1fr); align-items: start;
-  min-height: max(calc(var(--vk-row-h) - 6px), 18px); padding: 0 var(--vk-space-3) 0 0; color: var(--vk-text);
+  min-height: max(calc(var(--vk-row-h) - 6px), var(--vk-target-min)); padding: 0 var(--vk-space-3) 0 0; color: var(--vk-text);
   background: color-mix(in srgb, var(--_c) 13%, transparent); box-shadow: inset 2px 0 0 var(--_c); }
 .vk-diff__ln:focus { outline: none; }
 .vk-diff__ln:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: calc(-1 * var(--vk-focus-w)); }
