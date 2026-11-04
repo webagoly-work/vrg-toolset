@@ -65,9 +65,10 @@
 .vk-palette__note[data-kind="disabled"] .vk-palette__nt { font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label);
   text-transform: uppercase; color: var(--vk-warn); }
 .vk-palette__dl { list-style: none; margin: var(--vk-space-3) 0 0; padding: 0; display: grid; gap: var(--vk-space-2); }
-.vk-palette__dl li { display: flex; align-items: baseline; gap: var(--vk-space-2); min-width: 0; color: var(--vk-text-muted); }
+.vk-palette__dl li { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--vk-space-2); align-items: baseline; min-width: 0; color: var(--vk-text-muted); }
+.vk-palette__dl li > span { grid-column: 2; font-size: var(--vk-fs-xs); }
 .vk-palette__dl li .vk-icon { align-self: center; color: var(--vk-text-faint); }
-.vk-palette__dl b { font-weight: var(--vk-fw-regular); color: var(--vk-text); }
+.vk-palette__dl b { font-weight: var(--vk-fw-regular); color: var(--vk-text); white-space: nowrap; }
 
 /* legend */
 .vk-palette__foot { display: flex; flex-wrap: wrap; gap: var(--vk-space-1) var(--vk-space-4); padding: var(--vk-space-2) var(--vk-space-4);

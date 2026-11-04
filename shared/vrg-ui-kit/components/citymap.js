@@ -303,7 +303,8 @@
       var n = M.buildings.length;
       canvas.setAttribute('aria-label', o.label + ', ' + STYLE_HU[o.style] + ' nézet, mag ' + o.seed + ': ' + built + ' / ' + n +
         (o.data ? ' tétel' + (M.groups ? ', ' + M.groups.length + ' csoport' : '') : ' épület') + ', ' + commit + ' / ' + commits + ' commit' + (playing ? ', épül' : '') + '.');
-      readout.textContent = STYLE_HU[o.style].toUpperCase() + ' · MAG ' + o.seed + ' · ' + built + '/' + n + ' · COMMIT ' + commit + '/' + commits;
+      readout.textContent = 'MAG ' + o.seed + ' · ' + built + '/' + n + ' · C ' + commit + '/' + commits;
+      readout.title = STYLE_HU[o.style] + ' · ' + built + ' / ' + n + ' épület · ' + commit + ' / ' + commits + ' commit';
       refreshTools();
       VK.fire(el, 'citymap', inst.state());
       kick();
@@ -318,13 +319,25 @@
     }
     var ISO_C = Math.cos(Math.PI / 6), ISO_S = 0.5;
     function iso(x, y, z) { return [(x - y) * ISO_C, (x + y) * ISO_S - (z || 0)]; }
+    function bounds() {   // fit to the city (all lots that will be built), not the empty world
+      if (M.bb) return M.bb;
+      var a = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }, b = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+      function add(r, x, y) { if (x < r.x0) r.x0 = x; if (x > r.x1) r.x1 = x; if (y < r.y0) r.y0 = y; if (y > r.y1) r.y1 = y; }
+      M.buildings.forEach(function (bd) { bd.q.forEach(function (q) {
+        add(a, q[0], q[1]); var i0 = iso(q[0], q[1], 0), i1 = iso(q[0], q[1], bd.h * 0.55); add(b, i0[0], i0[1]); add(b, i1[0], i1[1]); }); });
+      add(a, M.core[0], M.core[1]);
+      var m = 40, hb = { x0: a.x0, y0: a.y0, x1: a.x1, y1: a.y1 };
+      M.hubs.forEach(function (h) { add(hb, h.x, h.y); });
+      function pad(r, k) { return { x0: Math.max(0, r.x0 - k), y0: Math.max(0, r.y0 - k), x1: Math.min(W, r.x1 + k), y1: Math.min(H, r.y1 + k) }; }
+      var hubs = pad(hb, 60); a = pad(a, m);
+      if (!isFinite(b.x0)) { var c = [iso(0, 0), iso(W, 0), iso(W, H), iso(0, H)]; b = { x0: c[3][0], x1: c[1][0], y0: c[0][1], y1: c[2][1] }; }
+      b = { x0: b.x0 - 40, y0: b.y0 - 30, x1: b.x1 + 40, y1: b.y1 + 30 };
+      M.bb = { flat: a, hubs: hubs, iso: b };
+      return M.bb;
+    }
     function frame(sz) {
-      var b;
-      if (o.style === 'iso') {
-        var c = [iso(0, 0), iso(W, 0), iso(W, H), iso(0, H)];
-        b = { x0: c[3][0], x1: c[1][0], y0: c[0][1] - 140, y1: c[2][1] };
-      } else b = { x0: 0, x1: W, y0: 0, y1: H };
-      var s = Math.min(sz.w / (b.x1 - b.x0), sz.h / (b.y1 - b.y0)) * (o.style === 'iso' ? 1.0 : 1.04) * view.z;
+      var b = o.style === 'iso' ? bounds().iso : o.style === 'transit' ? bounds().hubs : bounds().flat;
+      var s = Math.min(sz.w / (b.x1 - b.x0), sz.h / (b.y1 - b.y0)) * view.z;
       var cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
       return { s: s, tx: sz.w / 2 + view.px - cx * s, ty: sz.h / 2 + view.py - cy * s };
     }
@@ -415,8 +428,8 @@
       // river, quietly
       g.lineCap = 'round'; g.strokeStyle = css(mix(ground, p.ink, 0.08)); g.lineWidth = M.riverW; path(M.river); g.stroke();
       // long shadows, then modules
-      var shadow = mix(ground, p.ink, p.light ? 0.16 : 0.35), fill = p.light ? mix(ground, p.paper, 0.85) : mix(ground, p.paper, 0.2);
-      var edge = mix(ground, p.ink, p.light ? 0.4 : 0.1), dx = 0.62, dy = 0.48;
+      var shadow = mix(ground, p.ink, p.light ? 0.16 : 0.35), fill = p.light ? mix(ground, p.paper, 0.85) : mix(ground, p.paper, 0.34);
+      var edge = p.light ? mix(ground, p.ink, 0.4) : mix(ground, p.paper, 0.5), dx = 0.62, dy = 0.48;
       g.fillStyle = css(shadow);
       for (var i = 0; i < built; i++) {
         var b = M.buildings[i]; if (b.onRoad) continue;

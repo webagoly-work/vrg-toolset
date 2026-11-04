@@ -116,22 +116,17 @@
           return true;
         });
       }
-      S.events.slice().reverse().forEach(function (e) {
-        var sides = e.x + dx + e.w <= x1 - 2 ? ['r', 'l'] : ['l', 'r'], best = null;
-        for (var r = 0; r < 14 && !best; r++) {
-          for (var k = 0; k < 2 && !best; k++) {
-            var s = sides[k], a = s === 'r' ? e.x + dx : e.x - dx - e.w, b = a + e.w;
-            if (a < x0 + 2 || b > x1 - 2) continue;
-            if (ok(r, a, b, e.x)) best = { r: r, s: s, a: a, b: b };
-          }
-        }
-        if (!best) {
-          var top = placed.reduce(function (m, p) { return Math.max(m, p.r); }, -1) + 1;
-          var aa = VK.clamp(e.x + dx, x0 + 2, x1 - 2 - e.w);
-          best = { r: top, s: 'r', a: aa, b: aa + e.w };
-        }
-        e.row = best.r; e.side = best.s; e.a = best.a; e.b = best.b;
-        placed.push({ r: best.r, lo: Math.min(best.a, e.x), hi: Math.max(best.b, e.x), x: e.x });
+      // right-extending labels go right to left, then the few flipped at the right edge go left to right, so a label
+      // is always placed after every pip it covers and rises above their labels
+      S.events.forEach(function (e) { e.side = e.x + dx + e.w <= x1 - 2 ? 'r' : 'l'; });
+      var rightSide = S.events.filter(function (e) { return e.side === 'r'; }).reverse();
+      var leftSide = S.events.filter(function (e) { return e.side === 'l'; });
+      rightSide.concat(leftSide).forEach(function (e) {
+        var a = e.side === 'r' ? e.x + dx : Math.max(x0 + 2, e.x - dx - e.w), b = a + e.w, best = null;
+        for (var r = 0; r < 24 && !best; r++) if (ok(r, a, b, e.x)) best = r;
+        if (best === null) best = placed.reduce(function (m, p) { return Math.max(m, p.r); }, -1) + 1;
+        e.row = best; e.a = a; e.b = b;
+        placed.push({ r: best, lo: Math.min(a, e.x), hi: Math.max(b, e.x), x: e.x });
       });
       var rows = S.events.reduce(function (m, e) { return Math.max(m, e.row + 1); }, 0);
       var H = 6 + rows * rowH + lift + bandH + 1;
@@ -153,7 +148,7 @@
       var numY = railY + 9 + fs * 1.1, multi = S.to - S.from > 3 * 366 * DAY, lastNum = -1e9;
       function yearTxt(y) { return S.axis === 'age' && S.born !== null ? (y - S.born) + ' év' : String(y); }
       function num(x, txt, cls) {
-        if (x - lastNum < fs * 2.6) return; lastNum = x;
+        if (x - lastNum < fs * 2.6 || x > ax1 - fs * 2) return; lastNum = x;
         var t = svg('text', { class: 'vk-eventrail__num' + (cls ? ' ' + cls : ''), x: x + 3, y: numY }, art); t.textContent = txt;
       }
       var d0 = new Date(S.from), y = d0.getUTCFullYear(), m = d0.getUTCMonth();
@@ -178,8 +173,8 @@
       if (S.now >= S.from && S.now <= S.to) {
         var xn = X(S.now);
         svg('path', { class: 'vk-eventrail__now', d: 'M' + (xn - 4) + ' ' + (bandTop + 2) + 'h8l-4 5z' }, art);
-        svg('line', { class: 'vk-eventrail__now-line', x1: xn, x2: xn, y1: bandTop + 7, y2: bandBot - 3 }, art);
-        var nt = svg('text', { class: 'vk-eventrail__now-t', x: xn + 6, y: bandBot - 5 }, art); nt.textContent = 'MA';
+        svg('line', { class: 'vk-eventrail__now-line', x1: xn, x2: xn, y1: railY + 6, y2: bandBot - 3 }, art);
+        var nt = svg('text', { class: 'vk-eventrail__now-t', x: xn + 7, y: bandTop + fs * .95 }, art); nt.textContent = 'MA';
       }
 
       // leaders, pips, labels

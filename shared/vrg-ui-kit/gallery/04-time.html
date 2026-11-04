@@ -7,7 +7,7 @@
 
   <article class="g-demo" id="f04-timeline">
     <h3 class="g-demo__title">Sávos idővonal + csúszka <code>timeline · scrubber</code></h3>
-    <p class="g-demo__note">Az eszközkészlet saját git-aktivitása, ~10 hét. Sáv = munkavonal; sáv = munkamenet (meleg csíkozás: fut, zöld él: kész, szaggatott: parkolva), pont = commit, kis négyzet = kiadás. A csúszka hajtja a lejátszófejet. Billentyűk: <kbd>←</kbd><kbd>→</kbd> időben, <kbd>↑</kbd><kbd>↓</kbd> sávok között, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>Enter</kbd> megnyit, <kbd>Szóköz</kbd> kijelöl, <kbd>+</kbd>/<kbd>−</kbd> nagyítás; a lejátszófej csúszka: nyilak, <kbd>PgUp</kbd>/<kbd>PgDn</kbd>.</p>
+    <p class="g-demo__note">Az eszközkészlet saját git-aktivitása, ~10 hét. Sáv = munkavonal; csík = munkamenet (meleg csíkozás: fut, zöld él: kész, szaggatott: parkolva), pont = commit, kis négyzet = kiadás. A csúszka hajtja a lejátszófejet. Billentyűk: <kbd>←</kbd><kbd>→</kbd> időben, <kbd>↑</kbd><kbd>↓</kbd> sávok között, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>Enter</kbd> megnyit, <kbd>Szóköz</kbd> kijelöl, <kbd>+</kbd>/<kbd>−</kbd> nagyítás; a lejátszófej csúszka: nyilak, <kbd>PgUp</kbd>/<kbd>PgDn</kbd>.</p>
     <div id="f04-tl"></div>
     <div id="f04-tl-scrub" class="vk-sunken" style="margin-top:var(--vk-space-3);padding:var(--vk-space-2) var(--vk-space-3)"></div>
     <p class="g-cap" id="f04-tl-log" role="status" aria-live="polite">Esemény: —</p>
@@ -81,6 +81,7 @@
       t += (len + Math.floor(rnd() * 5)) * DAY; k++;
     }
     var last = sess[sess.length - 1];
+    if (!ln.run && last.start > tNow - 6 * HOUR) { items.splice(items.indexOf(last), 1); sess.pop(); last = sess[sess.length - 1]; }
     if (ln.run) { last.state = 'running'; last.end = null; if (last.start > tNow - 2 * DAY) last.start = tNow - 2 * DAY - 3 * HOUR; }
     else if (last.end > tNow) last.end = tNow - 3 * HOUR;
     var r = RELEASES[ln.id]; items.push({ id: ln.id + '-rel', lane: ln.id, kind: 'release', start: r[0], label: r[1] });

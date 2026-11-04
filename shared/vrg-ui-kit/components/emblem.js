@@ -244,7 +244,7 @@
       var extra = b.type === 'tower' || b.antenna ? (b.antenna || 12) + 3 : 0;
       top = Math.min(top, P(b.i, b.j, b.z0 + b.h + extra)[1] - 4);
     });
-    crop(svg, top);
+    crop(svg, o.size === 'mini' ? CY - 34 : top);
     var ground = S('g', { 'clip-path': 'url(#' + clipId + ')' }, svg);
 
     // day shadows: footprint swept away from a low sun on the left

@@ -34,8 +34,9 @@
 /* tick ruler under the track */
 .vk-progress[data-scale]::after { content: ""; grid-column: 1 / -1; height: 5px; margin-top: calc(var(--vk-space-2) * -1 + 1px);
   background:
-    linear-gradient(90deg, transparent calc(50% - .5px), var(--vk-line-strong) calc(50% - .5px) calc(50% + .5px), transparent 0) 0 0 / 100% 5px no-repeat,
-    repeating-linear-gradient(90deg, var(--vk-line-strong) 0 1px, transparent 1px 10%) 0 0 / calc(100% + 1px) 3px no-repeat; }
+    linear-gradient(90deg, var(--vk-text-muted) 1px, transparent 1px) 50% 0 / 1px 5px no-repeat,
+    linear-gradient(90deg, var(--vk-line-strong) 1px, transparent 1px) 100% 0 / 1px 3px no-repeat,
+    linear-gradient(90deg, var(--vk-line-strong) 1px, transparent 1px) 0 0 / 10% 3px repeat-x; }
 
 /* states: the bar's texture changes too, not only its colour */
 .vk-progress[data-state="done"] { --_c: var(--vk-ok); }
@@ -59,7 +60,7 @@
 .vk-progress[data-variant="segments"] .vk-progress__track { border-radius: 0;
   -webkit-mask: repeating-linear-gradient(90deg, currentColor 0 calc(100% / var(--vk-progress-n) - 2px), transparent 0 calc(100% / var(--vk-progress-n)));
           mask: repeating-linear-gradient(90deg, currentColor 0 calc(100% / var(--vk-progress-n) - 2px), transparent 0 calc(100% / var(--vk-progress-n)));
-  background: var(--vk-line-strong); }
+  background: color-mix(in srgb, var(--vk-line-strong) 70%, transparent); }
 .vk-progress[data-variant="segments"] .vk-progress__bar { border-radius: 0; }
 
 /* ---------- stepped ---------- */

@@ -18,7 +18,7 @@
     .g09-badges { display: flex; flex-wrap: wrap; gap: var(--vk-space-2); margin: 0 0 var(--vk-space-4); }
     .g09-reads { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--vk-space-2); margin-bottom: var(--vk-space-3); }
     .g09-reads > div { padding: var(--vk-space-3); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); background: var(--vk-surface-1); min-width: 0; }
-    .g09-reads b { display: block; font: var(--vk-fs-xl)/1.1 var(--vk-font-mono); font-weight: var(--vk-fw-regular); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .g09-reads b { display: block; font: var(--vk-fs-lg)/1.2 var(--vk-font-mono); font-weight: var(--vk-fw-regular); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .g09-pad { display: grid; place-items: center; height: 300px; margin-bottom: var(--vk-space-4); border: var(--vk-border-w) dashed var(--vk-line-strong); border-radius: var(--vk-radius-lg); background: var(--vk-bg-sunken); color: var(--vk-text-muted); text-align: center; }
     .g09-note { width: 100%; min-height: 96px; padding: var(--vk-space-3); border: var(--vk-border-w) solid var(--vk-border-control); border-radius: var(--vk-radius); background: var(--vk-bg-sunken); color: var(--vk-text); font: inherit; resize: vertical; }
   </style>
@@ -238,7 +238,7 @@
     var verdict = VK.el('div.vk-cyd__verdict', { role: 'status' });
     var cells = VK.el('div.vk-cyd__cells', { style: '--_cols:4', 'aria-label': 'Erek', role: 'list' });
     for (var i = 1; i <= 8; i++) cells.appendChild(VK.el('span.vk-cyd__cell', { role: 'listitem', text: 'ÉR ' + i }));
-    var meta = VK.el('span.vk-label', { text: 'EREK // T568B // 12,4 M' });
+    var meta = VK.el('span.vk-label', { text: 'T568B // 12,4 M' });
     var wrap = VK.el('div', { style: 'display:flex;gap:10px;align-items:center;height:100%;padding:0 4px' }, [r,
       VK.el('div', { style: 'display:grid;gap:6px;flex:1;min-width:0' }, [verdict, cells, meta])]);
     body.appendChild(wrap);

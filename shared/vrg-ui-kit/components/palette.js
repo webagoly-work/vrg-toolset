@@ -121,7 +121,7 @@
       var prov = m.prefix !== '>' ? providers[m.prefix] : null;
       mode.textContent = prov ? prov.label : 'PARANCS';
       box.dataset.mode = prov ? 'provider' : 'commands';
-      input.placeholder = prov ? (prov.placeholder || 'Ugrás…') : (o.placeholder || cfg.placeholder || 'Parancs keresése… (# ugrás)');
+      input.placeholder = prov ? (prov.placeholder || 'Ugrás…') : (o.placeholder || cfg.placeholder || 'Parancs keresése…');
       var items = prov ? providerItems(m) : commandItems(m.q);
       var keepTop = list.scrollTop;
       list.textContent = ''; rows = [];
@@ -150,7 +150,7 @@
           var ul = VK.el('ul.vk-palette__dl');
           dis.slice(0, 5).forEach(function (a) {
             var r = reasonOf(a, ctx);
-            ul.appendChild(VK.el('li', null, [VK.icon(a.icon || 'dot'), VK.el('b', null, a.label), r ? VK.el('span', null, ' — ' + r) : null]));
+            ul.appendChild(VK.el('li', null, [VK.icon(a.icon || 'dot'), VK.el('b', null, a.label), r ? VK.el('span', null, r) : null]));
           });
           note.appendChild(ul);
         } else {

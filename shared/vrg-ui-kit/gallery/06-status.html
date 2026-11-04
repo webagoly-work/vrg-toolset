@@ -10,6 +10,7 @@
     .f06-table th, .f06-table td { padding: var(--vk-space-2) var(--vk-space-3); text-align: left; border-bottom: var(--vk-border-w) solid var(--vk-line); vertical-align: middle; }
     .f06-table th { font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text-muted); font-weight: var(--vk-fw-regular); white-space: nowrap; }
     .f06-table tbody th { color: var(--vk-text); }
+    .f06-tok { font-size: var(--vk-fs-2xs); color: var(--vk-text-muted); text-transform: none; letter-spacing: 0; }
     .f06-scroll { overflow-x: auto; max-width: 100%; }
     .f06-cols { display: grid; gap: var(--vk-space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
     .f06-nodes { display: flex; flex-wrap: wrap; gap: var(--vk-space-4); }
@@ -41,7 +42,7 @@
     </p>
     <div class="f06-scroll"><table class="f06-table" id="f06-badge-table">
       <caption class="vk-sr-only">Minden állapot minden változatban</caption>
-      <thead><tr><th scope="col">Állapot</th><th scope="col">Körvonal</th><th scope="col">Telt</th><th scope="col">Pont + szöveg</th><th scope="col">Kicsi</th><th scope="col">Nagy</th><th scope="col">Token</th></tr></thead>
+      <thead><tr><th scope="col">Állapot</th><th scope="col">Körvonal</th><th scope="col">Telt</th><th scope="col">Pont + szöveg</th><th scope="col">Kicsi</th><th scope="col">Nagy</th></tr></thead>
       <tbody></tbody>
     </table></div>
   </article>
@@ -124,16 +125,15 @@
   // ---------- badges: every state × every variant ----------
   var tb = $('f06-badge-table').tBodies[0];
   VK.badge.LIFECYCLE.concat(VK.badge.RUN).forEach(function (s, i) {
-    if (i === VK.badge.LIFECYCLE.length) tb.appendChild(VK.el('tr', null, VK.el('th', { colspan: 7, scope: 'colgroup', text: 'Futási állapot' })));
-    if (i === 0) tb.appendChild(VK.el('tr', null, VK.el('th', { colspan: 7, scope: 'colgroup', text: 'Életciklus' })));
+    if (i === VK.badge.LIFECYCLE.length) tb.appendChild(VK.el('tr', null, VK.el('th', { colspan: 6, scope: 'colgroup', text: 'Futási állapot' })));
+    if (i === 0) tb.appendChild(VK.el('tr', null, VK.el('th', { colspan: 6, scope: 'colgroup', text: 'Életciklus' })));
     tb.appendChild(VK.el('tr', null, [
-      VK.el('th', { scope: 'row', text: T[s] }),
+      VK.el('th', { scope: 'row' }, [T[s], VK.el('br'), VK.el('code', { class: 'f06-tok', text: ['--vk', 'st', s].join('-') })]),
       VK.el('td', null, VK.badge.create(s)),
       VK.el('td', null, VK.badge.create(s, { variant: 'solid' })),
       VK.el('td', null, VK.badge.create(s, { variant: 'dot' })),
       VK.el('td', null, VK.badge.create(s, { size: 'sm' })),
-      VK.el('td', null, VK.badge.create(s, { size: 'lg', variant: i % 2 ? 'solid' : 'outline' })),
-      VK.el('td', null, VK.el('code', { class: 'vk-num', style: 'font-size:var(--vk-fs-2xs);color:var(--vk-text-muted)', text: ['--vk', 'st', s].join('-') }))]));
+      VK.el('td', null, VK.badge.create(s, { size: 'lg', variant: i % 2 ? 'solid' : 'outline' }))]));
   });
 
   // ---------- signals ----------

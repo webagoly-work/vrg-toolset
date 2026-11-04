@@ -55,6 +55,7 @@
     .f01-bars i { flex: 1; background: var(--vk-activity); opacity: .75; min-height: 2px; }
     .f01-states { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); }
     .f01-states > .vk-panel { height: 170px; }
+    .f01-states > .vk-panel[data-collapsed] { height: auto; align-self: start; }
     .f01-tabsdemo { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); margin-top: var(--vk-space-5); }
     .f01-tabsdemo > div { height: 170px; border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); overflow: hidden; }
   </style>
@@ -288,7 +289,7 @@
   pInsp.el.addEventListener('vk:panelclose', function () { setTimeout(function () { pInsp.open(); sb.announce('Tulajdonságok panel újra megnyitva (bemutató)'); }, 2500); });
 
   // ---- shell ----
-  var sh = VK.shell.mount(desk, { docks: { left: { size: 220 }, right: { size: 240 }, bottom: { collapsed: true, size: 150 } }, autoCollapse: 760 });
+  var sh = VK.shell.mount(desk, { docks: { left: { size: 220 }, right: { size: 256 }, bottom: { collapsed: true, size: 150 } }, autoCollapse: 760 });
 
   // ---- actions (Hungarian labels) for every surface the desktop renders ----
   A.registerAll([
@@ -300,7 +301,7 @@
       run: function () { if (S.syncState === 'running') return; S.syncState = 'running'; S.sync = 0; } },
     { id: 'f01.undo', label: 'Visszavonás', group: 'Szerkesztés', icon: 'undo', at: ['toolbar:command', 'palette'], run: function () { sb.announce('Visszavonva: Q3 áthelyezése'); } },
     { id: 'f01.settings', label: 'Beállítások', hint: 'Beállítások ablak megnyitása', group: 'Ablakok', icon: 'settings', at: ['toolbar:command', 'palette'], run: function () { openSettings(); } },
-    { id: 'f01.mode', label: 'Szerkesztő mód', hint: 'Váltás szerkesztés és nézet között', group: 'Szerkesztés', icon: 'edit', at: ['statusbar', 'palette'], statusPin: true,
+    { id: 'f01.mode', label: 'Szerkesztő mód', hint: 'Váltás szerkesztés és nézet között', group: 'Szerkesztés', icon: 'edit', at: ['statusbar', 'palette'],
       checked: function () { return S.mode === 'edit'; }, statusText: function () { return S.mode === 'edit' ? 'MÓD: SZERKESZTÉS' : 'MÓD: NÉZET'; },
       run: function () { S.mode = S.mode === 'edit' ? 'view' : 'edit'; } },
     { id: 'f01.export', label: 'Export PDF', hint: 'Kötőelem-lista exportja', group: 'Fájl', icon: 'download', at: ['statusbar', 'palette'], statusPin: true,
@@ -361,8 +362,8 @@
     ]);
   }
   var pages = VK.el('ol.f01-pages', null, ['01 Címlap', '02 Elosztó E1', '03 Kötőelem-lista', '04 Hűtőkör', '05 Űrlap · Ősszeg'].map(function (t) { return VK.el('li', null, t); }));
-  wm.open({ id: 'calc', title: 'Kábelméretezés', icon: 'cable', tag: 'CALC-02', content: calcBody(), x: 300, y: 40, w: 290, h: 230, focus: false });
-  wm.open({ id: 'export', title: 'Export — PDF', icon: 'download', tag: 'VRG-2611-03', content: VK.el('div', null, [VK.el('p.vk-label', { id: 'f01-exp-l' }, 'EXPORT // 18%'), pages]), x: 440, y: 190, w: 280, h: 200, focus: false });
+  wm.open({ id: 'calc', title: 'Kábelméretezés', icon: 'cable', tag: 'CALC-02', content: calcBody(), x: 290, y: 36, w: 320, h: 230, focus: false });
+  wm.open({ id: 'export', title: 'Export — PDF', icon: 'download', tag: 'VRG-2611-03', content: VK.el('div', null, [VK.el('p.vk-label', { id: 'f01-exp-l' }, 'EXPORT // 18%'), pages]), x: 420, y: 196, w: 320, h: 200, focus: false });
   wm.open({ id: 'note', title: 'Jegyzet — Hűtőkör', icon: 'edit', content: 'Hűtő-02: ellenőrizni a védőföldet a kamránál.', x: 120, y: 120, w: 260, h: 160, focus: false });
   wm.minimize('note');
   wm.focus('export', false);

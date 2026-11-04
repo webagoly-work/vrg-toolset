@@ -130,8 +130,9 @@
   VK.emblem.kinds.forEach(function (k) { miniFig({ kind: k, name: k, seed: k }, k); });
   miniFig({ kind: null, name: 'Üres talapzat', seed: 'ures' }, 'üres');
   ['a', 'b', 'c', 'd'].forEach(function (s) { miniFig({ kind: 'city', name: 'Kódváros ' + s, seed: 'city-' + s, activity: 0.7 }, 'mag ' + s); });
-  VK.emblem.render(document.getElementById('f10-day'), { kind: 'hub', name: 'Kapu', glyph: 'home', kicker: 'NAPPAL · PAPÍR', readout: 'v1.0 · 14 eszköz', seed: 'hub', size: 'tile' });
-  VK.emblem.render(document.getElementById('f10-night'), { kind: 'hub', name: 'Kapu', glyph: 'home', kicker: 'ÉJJEL · ÉJ', readout: 'v1.0 · 14 eszköz', seed: 'hub', size: 'tile', activity: 0.7 });
+  function inner(id) { return document.getElementById(id).appendChild(document.createElement('div')); }
+  VK.emblem.render(inner('f10-day'), { kind: 'hub', name: 'Kapu', glyph: 'home', kicker: 'NAPPAL · PAPÍR', readout: 'v1.0 · 14 eszköz', seed: 'hub', size: 'tile' });
+  VK.emblem.render(inner('f10-night'), { kind: 'hub', name: 'Kapu', glyph: 'home', kicker: 'ÉJJEL · ÉJ', readout: 'v1.0 · 14 eszköz', seed: 'hub', size: 'tile', activity: 0.7 });
 
   // ---------- city maps ----------
   var maps = document.getElementById('f10-maps'), cms = [];
