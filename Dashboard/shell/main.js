@@ -16,6 +16,8 @@ const { createRunner } = require('./lib/runbat.js');
 const { createPorts } = require('./lib/ports.js');
 const { createActs } = require('./lib/acts.js');
 const { createSelftest } = require('./lib/selftest.js');
+const { createIpc } = require('./lib/ipc.js');
+const { createAudit } = require('./lib/audit.js');
 
 const PAGE = path.join(__dirname, '..', 'vrg-dashboard.html');
 const SELFTEST = process.argv.includes('--selftest');
@@ -47,7 +49,18 @@ function createWindow() {
   win.loadFile(PAGE);
 }
 
-ipcMain.handle('vrg:act', (e, id) => acts.runAct(id));
+// IPC v2: schema-checked channels (lib/ipc.js, API.md). Only these two pages may call; a web view never can.
+const fileUrl = p => require('url').pathToFileURL(p).href;
+const audit = createAudit(SELFTEST ? { dir: path.join(TMP, 'desk-test-audit') } : {});
+const ipc = createIpc({
+  ipcMain, audit, log,
+  allowedUrls: () => [fileUrl(PAGE), fileUrl(path.join(__dirname, '..', 'page', 'vrg-desktop.html'))],
+});
+ipc.register('app', 'info', {}, async () => ({
+  version: app.getVersion(), user: 'founder', mode: 'ablak', features: ipc.namespaces(),
+}));
+
+ipcMain.handle('vrg:act',(e, id) => acts.runAct(id));
 ipcMain.handle('vrg:ports', () => ports.ports);
 ipcMain.handle('vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); win.webContents.reload(); return true; });
 ipcMain.on('vrg:win', (e, cmd) => {
