@@ -1,15 +1,13 @@
 // audit.js — append-only JSON lines in <logs>/audit-YYYY-MM-DD.jsonl (CONTRACT §4.1, API.md).
-// Never logs a value whose key looks secret, never logs text longer than 200 chars. WP-06 replaces logDir() with lib/paths.js.
+// Never logs a value whose key looks secret, never logs text longer than 200 chars. logDir() is lib/paths.js logs().
 'use strict';
-const fs = require('fs'), path = require('path'), os = require('os');
+const fs = require('fs'), path = require('path');
+const paths = require('./paths.js');
 
 const SECRET_KEY = /token|secret|password|code_verifier/i;
 const MAX_TEXT = 200, MAX_DEPTH = 4, MAX_KEYS = 30;
 
-function logDir() {
-  const base = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
-  return path.join(base, 'VRG', 'desktop', 'logs');
-}
+const logDir = () => paths.logs();
 
 // a copy of `v` that is safe to write: secrets redacted, long text cut, depth and width limited
 function clean(v, depth = 0) {

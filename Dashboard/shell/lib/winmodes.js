@@ -29,18 +29,30 @@ function apply(win, screen, mode, display, st = {}) {
   }
 }
 
-function createWinModes({ win, screen, file = '', log = () => {}, onChange = () => {} }) {
+// state goes to `settings` (lib/settings.js: win.mode, win.display, win.bounds) when given; `file` is the older stand-alone JSON file
+function createWinModes({ win, screen, settings = null, file = '', log = () => {}, onChange = () => {} }) {
   const st = { mode: 'ablak', displayId: null, normalBounds: null, visible: true };
 
   const displayFor = () => {
     try { return screen.getDisplayMatching(win.getBounds()); } catch (e) { return screen.getPrimaryDisplay(); }
   };
   const save = () => {
+    if (settings) {
+      try { settings.set('win.mode', st.mode); settings.set('win.display', st.displayId); settings.set('win.bounds', st.normalBounds); }
+      catch (e) { log('winstate not saved'); }
+      return;
+    }
     if (!file) return;
     try { fs.writeFileSync(file, JSON.stringify({ mode: st.mode, displayId: st.displayId, bounds: st.normalBounds })); }
     catch (e) { log('winstate not saved'); }
   };
   const load = () => {
+    if (settings) {
+      try {
+        const b = settings.get('win.bounds'), d = settings.get('win.display');
+        return { mode: settings.get('win.mode'), displayId: Number.isInteger(d) ? d : null, bounds: rectOk(b) ? pickRect(b) : null };
+      } catch (e) { return null; }
+    }
     if (!file) return null;
     try {
       const j = JSON.parse(fs.readFileSync(file, 'utf8'));

@@ -8,7 +8,7 @@
 // - a START item runs the way vrg-ui.ps1 runs it (lib/runbat.js); action / phase / menu items stay in START: refused;
 // - every 4 s the registry's server ports are probed on 127.0.0.1 and the result goes to the page (lib/ports.js).
 'use strict';
-const { app, BrowserWindow, ipcMain, shell, screen, globalShortcut, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, screen, globalShortcut, Tray, Menu, nativeImage, safeStorage } = require('electron');
 const path = require('path'), os = require('os');
 const build = require('../build.js');
 const { createRegistry } = require('./lib/registry.js');
@@ -20,10 +20,14 @@ const { createIpc, types } = require('./lib/ipc.js');
 const { createWinModes } = require('./lib/winmodes.js');
 const { createTray } = require('./lib/tray.js');
 const { createAudit } = require('./lib/audit.js');
+const settings = require('./lib/settings.js');
+const { createSecrets } = require('./lib/secrets.js');
 
 const PAGE = path.join(__dirname, '..', 'vrg-dashboard.html');
 const SELFTEST = process.argv.includes('--selftest');
 const TMP = path.join(os.tmpdir(), 'VRG');
+if (SELFTEST) process.env.VRG_DESK_HOME = path.join(TMP, 'desk-test-home');       // the selftest never touches the real home (CONTRACT §4.9)
+const secrets = createSecrets({ safeStorage });                                  // main-only: no IPC reaches it
 
 if (!SELFTEST && !app.requestSingleInstanceLock()) { app.quit(); return; }
 app.setAppUserModelId('VRG.Dashboard');
@@ -49,8 +53,7 @@ function createWindow() {
   win.on('unmaximize', () => win.webContents.send('vrg:max', false));
   win.once('ready-to-show', () => { if (!SELFTEST) win.show(); });
   winmodes = createWinModes({
-    win, screen, log,
-    file: SELFTEST ? path.join(TMP, 'desk-test-winstate.json') : path.join(app.getPath('userData'), 'winstate.json'),   // WP-06 moves it
+    win, screen, log, settings,
   });
   win.loadFile(PAGE);
 }
@@ -78,7 +81,7 @@ function setupShell() {
 
 // IPC v2: schema-checked channels (lib/ipc.js, API.md). Only these two pages may call; a web view never can.
 const fileUrl = p => require('url').pathToFileURL(p).href;
-const audit = createAudit(SELFTEST ? { dir: path.join(TMP, 'desk-test-audit') } : {});
+const audit = createAudit(SELFTEST ? { dir: path.join(TMP, 'desk-test-audit') } : {});   // default dir = paths.logs()
 const ipc = createIpc({
   ipcMain, audit, log,
   allowedUrls: () => [fileUrl(PAGE), fileUrl(path.join(__dirname, '..', 'page', 'vrg-desktop.html'))],
@@ -108,6 +111,12 @@ ipc.register('app', 'autostart', { on: types.bool, userGesture: types.bool }, as
   app.setLoginItemSettings({ openAtLogin: p.on });
   return { on: cur() };
 }, { optional: ['on', 'userGesture'] });
+
+ipc.register('app', 'setting', { k: types.text(80), v: types.json(4096) }, async ({ k, v }) => {
+  if (!settings.has(k)) return { ok: false, err: 'bad-request', hu: 'Ismeretlen beállítás.' };
+  if (v === undefined) return { v: settings.get(k) };
+  try { return { v: settings.set(k, v) }; } catch (e) { return { ok: false, err: 'bad-request', hu: 'Érvénytelen érték.' }; }
+}, { optional: ['v'] });
 
 ipcMain.handle('vrg:act',(e, id) => acts.runAct(id));
 ipcMain.handle('vrg:ports', () => ports.ports);

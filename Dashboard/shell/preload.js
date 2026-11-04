@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('vrg', {
     mode: p => call('app', 'mode', p),
     toggleOverlay: () => call('app', 'toggleOverlay', {}),
     autostart: p => call('app', 'autostart', p),
+    setting: (k, v) => call('app', 'setting', v === undefined ? { k } : { k, v }),
   },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
