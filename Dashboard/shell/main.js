@@ -26,6 +26,7 @@ const { createSecrets } = require('./lib/secrets.js');
 const layoutLib = require('./lib/layout.js');
 const { createViews } = require('./lib/views.js');
 const { createPalette, loadKeymap } = require('./lib/palette.js');
+const { createJobs } = require('./lib/jobs.js');
 
 const PAGE = path.join(__dirname, '..', 'vrg-dashboard.html');                 // the Kezdőlap, shown in a view
 const FRAME = path.join(__dirname, '..', 'page', 'vrg-desktop.html');          // the main window: the frame page
@@ -53,7 +54,7 @@ const acts = createActs({ R, run, ports, log });
 // else (modes, sizes) is the real window. win.desk hands the frame and the views to the WP-07 probe.
 const selftestWin = () => new Proxy(win, {
   get(t, k) {
-    if (k === 'desk') return { frame: t, home: homeWc(), views, palette };
+    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs };
     if (k === 'webContents') {
       const wc = homeWc() || t.webContents;
       return new Proxy(wc, { get(w, p) {
@@ -183,6 +184,12 @@ ipc.register('layout', 'palette', { open: types.bool }, async ({ open }) => {
   return { items: palette.index(), recent: palette.recent(), keymap: loadKeymap(path.join(__dirname, '..', 'config', 'keymap.json')) };
 }, { optional: ['open'] });
 ipc.register('layout', 'run', { cmdId: types.text(80) }, async ({ cmdId }) => palette.run(cmdId));
+
+// job queue (WP-09): long work runs here; the page sees updates, answers questions and cancels. fs.answer will call jobs.answer (WP-12).
+const jobs = createJobs({ emit: (type, data) => ipc.emit(win, 'jobs', type, data) });
+ipc.register('jobs', 'list', {}, async () => ({ jobs: jobs.list() }));
+ipc.register('jobs', 'cancel', { job: types.id }, async ({ job }) => jobs.cancel(job));
+ipc.register('jobs', 'answer', { job: types.id, choice: types.id, all: types.bool }, async ({ job, choice, all }) => jobs.answer(job, choice, all), { optional: ['all'] });
 
 ipcMain.handle('vrg:act',(e, id) => acts.runAct(id));
 ipcMain.handle('vrg:ports', () => ports.ports);

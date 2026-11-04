@@ -33,6 +33,11 @@ contextBridge.exposeInMainWorld('vrg', {
     palette: p => call('layout', 'palette', p === undefined ? {} : p),          // { open: bool } hides / shows the web views
     run: cmdId => call('layout', 'run', { cmdId }),
   },
+  jobs: {
+    list: () => call('jobs', 'list', {}),
+    cancel: job => call('jobs', 'cancel', { job }),
+    answer: (job, choice, all) => call('jobs', 'answer', all === undefined ? { job, choice } : { job, choice, all }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),
