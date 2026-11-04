@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="dark" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG UI Kit v1</title>
+<meta name="description" content="VRG UI Kit v1 — minden komponens, minden állapot; téma- és sűrűségváltó, magyar feliratok.">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="tokens/base.css">
+<link rel="stylesheet" href="tokens/theme-dark.css">
+<link rel="stylesheet" href="tokens/theme-light.css">
+<link rel="stylesheet" href="tokens/theme-contrast.css">
+<link rel="stylesheet" href="tokens/theme-melyviz.css">
+<link rel="stylesheet" href="tokens/density.css">
+<link rel="stylesheet" href="components/base.css">
+<link rel="stylesheet" href="components/button.css">
+<link rel="stylesheet" href="components/mini.css">
+<link rel="stylesheet" href="gallery/gallery.css">
+</head>
+<body>
+<a class="g-skip vk-btn" href="#g-main">Ugrás a tartalomra</a>
+<header class="g-top" data-vk-hop>
+  <div class="g-top__brand">
+    <svg class="g-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M7 3h22v26H3V7z"/><path d="M9 11l7 11 7-11"/><circle cx="16" cy="22" r="1.6"/></svg>
+    <span class="vk-title">VRG UI Kit</span><span class="vk-label">v1 · Mérőpult</span>
+  </div>
+  <div class="g-top__ctrl">
+    <span class="vk-label" id="g-theme-l">Téma</span>
+    <div class="vk-btn-group" role="radiogroup" aria-labelledby="g-theme-l" id="g-theme">
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="true" data-v="dark">Éj</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="light">Papír</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="contrast">Kontraszt</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="melyviz">Mélyvíz</button>
+    </div>
+    <span class="vk-label" id="g-dens-l">Sűrűség</span>
+    <div class="vk-btn-group" role="radiogroup" aria-labelledby="g-dens-l" id="g-density">
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="true" data-v="comfortable">Kényelmes</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="compact">Tömör</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="touch">Érintés</button>
+    </div>
+    <button class="vk-btn vk-btn--sm" type="button" id="g-palette-btn" title="Parancspaletta">
+      <svg class="vk-icon" aria-hidden="true"><use href="#vk-i-command"/></svg> Parancsok <kbd class="g-kbd">Ctrl K</kbd>
+    </button>
+  </div>
+</header>
+<div class="g-body">
+  <nav class="g-nav" aria-label="Családok" data-vk-hop>
+    <ol id="g-toc"></ol>
+    <p class="g-nav__hint vk-label">Shift + nyilak: ugrás a régiók között</p>
+  </nav>
+  <main id="g-main" class="g-main" tabindex="-1">
+    <section class="g-sec g-intro" id="f00" data-vk-hop aria-labelledby="f00-h">
+      <header class="g-sec__head">
+        <span class="g-sec__num">00</span>
+        <h1 id="f00-h" class="vk-title">Alapok</h1>
+        <p class="g-sec__lead">Tokenek, témák, ikonok, a MINI (ikon = gomb = folyamatjelző) és az akció-regiszter. Minden komponens ezekre épül.</p>
+      </header>
+      <article class="g-demo" id="f00-tokens">
+  <h3 class="g-demo__title">Színtokenek <code>tokens/*.css</code></h3>
+  <p class="g-demo__note">Szerepek, nem árnyalatok: a <b>jég</b> (<code>--vk-accent</code>) a műszer és te — kijelölés, fókusz, lejátszófej; a <b>meleg</b> (<code>--vk-activity</code>) a rendszer munkája — fut, hő, friss munka. A kettő sosem cserél helyet. Válts témát fent: minden minta élőben követi.</p>
+  <div class="g-swatches" id="g-swatches"></div>
+</article>
+
+<article class="g-demo" id="f00-type">
+  <h3 class="g-demo__title">Betűk <code>fonts/ · .vk-title · .vk-label · .vk-num</code></h3>
+  <p class="g-demo__note">Inter (szöveg), Barlow Condensed (hang, címek), JetBrains Mono (kijelzők) — mind OFL, a kitbe csomagolva, latin + latin-ext részhalmaz: ő ű Ő Ű.</p>
+  <div class="g-type">
+    <p class="vk-title" style="font-size:var(--vk-fs-3xl)">Erősáramú tervező — Ő Ű ő ű</p>
+    <p style="font-size:var(--vk-fs-lg)">Árvíztűrő tükörfúrógép · Kötőelem-összesítő · Hűtőköri leágazás · Űrlap az Ősszeghez</p>
+    <p class="vk-label">MODUL-D9 // CSATORNA 04 // AKTÍV · [01] ŐRSZEM</p>
+    <p class="vk-num" style="font-size:var(--vk-fs-xl)">VRG-2611-03 · 230,0 V · 16 A · 0,42 kWh · 2026-11-04 05:12</p>
+  </div>
+</article>
+
+<article class="g-demo" id="f00-mini">
+  <h3 class="g-demo__title">MINI — ikon = gomb = folyamatjelző <code>mini</code></h3>
+  <p class="g-demo__note">Minden funkciónak van egy mini változata: kicsi ikon, ami egyben a gombja és a folyamatjelzője. Állapot: alap, fut (gyűrű vagy határozatlan ív), kész (teli gyűrű + pipa), hiba (bevágás), várakozik (szaggatott), szünetel, kikapcsolva; bekapcsolt (jég). A forma is jelent, nem csak a szín. Kattints a „Szinkron” minire.</p>
+  <div class="vk-mini-row" id="g-minis"></div>
+  <div class="vk-mini-row" id="g-minis-meters" style="margin-top:var(--vk-space-5)"></div>
+</article>
+
+<article class="g-demo" id="f00-buttons">
+  <h3 class="g-demo__title">Gombok <code>button</code></h3>
+  <p class="g-demo__note">Állapot nélküli igékhez (OK, Mégse). Minden más funkció mini.</p>
+  <div class="g-row">
+    <button class="vk-btn" type="button">Alap</button>
+    <button class="vk-btn" type="button" data-variant="primary">Elsődleges</button>
+    <button class="vk-btn" type="button" data-variant="ghost">Szellem</button>
+    <button class="vk-btn" type="button" data-variant="quiet">Csendes</button>
+    <button class="vk-btn" type="button" data-variant="danger"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-trash"/></svg> Törlés</button>
+    <button class="vk-btn" type="button" aria-pressed="true">Bekapcsolva</button>
+    <button class="vk-btn" type="button" disabled>Letiltva</button>
+    <button class="vk-btn vk-btn--icon" type="button" aria-label="Keresés"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-search"/></svg></button>
+    <button class="vk-btn vk-btn--sm" type="button">Kicsi</button>
+  </div>
+  <div class="vk-btn-group" role="radiogroup" aria-label="Nézet">
+    <button class="vk-btn" role="radio" aria-checked="true" tabindex="0">Alaprajz</button>
+    <button class="vk-btn" role="radio" aria-checked="false" tabindex="-1">Topológia</button>
+    <button class="vk-btn" role="radio" aria-checked="false" tabindex="-1">Rétegek</button>
+  </div>
+</article>
+
+<article class="g-demo" id="f00-icons">
+  <h3 class="g-demo__title">Ikonok <code>icons/sprite.svg · icons.json</code></h3>
+  <p class="g-demo__note">Saját rajz, 24-es rács, 1,5-ös vonal. Jegyek: levágott sarkú dobozok, telt pont = csomópont, üres rombusz = elágazás, kis négyzet = végpont.</p>
+  <div class="g-icons" id="g-icons"></div>
+</article>
+
+<article class="g-demo" id="f00-actions">
+  <h3 class="g-demo__title">Akció-regiszter <code>actions.js</code></h3>
+  <p class="g-demo__note">Egy bejegyzés deklarál egy akciót és minden felületet, ahol megjelenik (paletta, menü, eszköztár, állapotsor). Lent a regiszter élő tartalma.</p>
+  <div id="g-actions-dump" class="vk-sunken vk-scroll" style="max-height:220px;padding:var(--vk-space-3);font:var(--vk-fs-xs)/1.5 var(--vk-font-mono)"></div>
+</article>
+
+
+
+    </section>
+
+  </main>
+</div>
+<script src="icons/sprite.js"></script>
+<script src="components/core.js"></script>
+<script src="components/focus.js"></script>
+<script src="actions.js"></script>
+<script src="components/mini.js"></script>
+<script src="gallery/gallery.js"></script>
+<script>
+/* 00-foundation.html */
+(function(){try{
+
+  // token swatches
+  var groups = [
+    ['Talaj és felületek', ['bg', 'bg-sunken', 'surface-1', 'surface-2', 'surface-3', 'overlay']],
+    ['Vonalak és szöveg', ['line', 'line-strong', 'border-control', 'text', 'text-muted', 'text-faint']],
+    ['Két hőmérséklet', ['accent', 'accent-soft', 'activity', 'activity-soft', 'focus', 'select-bg']],
+    ['Jelentés', ['ok', 'warn', 'crit', 'info', 'idea']],
+    ['Életciklus és futás', ['st-inuse', 'st-built', 'st-dev', 'st-planned', 'st-idea', 'st-active', 'st-waiting', 'st-parked']],
+    ['Jelzések', ['sig-contradiction', 'sig-gap', 'sig-frozen']],
+    ['Vezeték-rétegek', ['wire-power', 'wire-light', 'wire-data', 'wire-control', 'wire-earth', 'wire-bus', 'wire-signal', 'wire-other']],
+    ['Hőskála', ['heat-0', 'heat-1', 'heat-2', 'heat-3', 'heat-4']]
+  ];
+  var box = document.getElementById('g-swatches');
+  groups.forEach(function (g) {
+    box.appendChild(VK.el('p.g-cap', { style: 'grid-column:1/-1' }, g[0]));
+    g[1].forEach(function (n) {
+      box.appendChild(VK.el('div.g-sw', null, [VK.el('i', { style: '--sw: var(--vk-' + n + ')' }), VK.el('div', null, [VK.el('b', null, n), VK.el('code', { 'data-tok': '--vk-' + n })])]));
+    });
+  });
+  function vals() { box.querySelectorAll('[data-tok]').forEach(function (c) { c.textContent = VK.token(c.dataset.tok).replace(/\s+/g, ' ').slice(0, 28); }); }
+  vals(); document.addEventListener('vk:theme', vals);
+
+  // icons
+  var ib = document.getElementById('g-icons');
+  document.querySelectorAll('svg[data-vk-sprite] symbol').forEach(function (s) {
+    var n = s.id.replace('vk-i-', '');
+    ib.appendChild(VK.el('div.g-ico', { title: n }, [VK.icon(n), n]));
+  });
+
+  // minis
+  var row = document.getElementById('g-minis');
+  var demo = [
+    { icon: 'refresh', label: 'Szinkron', caption: 'SZINKRON' },
+    { icon: 'download', label: 'Export', caption: 'EXPORT', state: 'running', progress: .42 },
+    { icon: 'cpu', label: 'Építés', caption: 'ÉPÍTÉS', state: 'running', progress: null },
+    { icon: 'save', label: 'Mentés', caption: 'MENTÉS', state: 'done' },
+    { icon: 'cable', label: 'Kábelellenőrzés', caption: 'KÁBEL', state: 'error', progress: .7 },
+    { icon: 'clock', label: 'Ütemezés', caption: 'SOR', state: 'waiting' },
+    { icon: 'wifi', label: 'Telefonkapcsolat', caption: 'LINK', state: 'paused', progress: .3 },
+    { icon: 'bulb', label: 'Világítás réteg', caption: 'FÉNY', pressed: true },
+    { icon: 'eye-off', label: 'Rejtett rétegek', caption: 'REJTETT', state: 'off' }
+  ];
+  demo.forEach(function (d) { row.appendChild(VK.mini.create(d)); });
+  var sync = row.firstChild, t = null;
+  sync.addEventListener('click', function () {
+    if (t) return; var p = 0; VK.mini.set(sync, { state: 'running', progress: 0 });
+    t = setInterval(function () { p += .07; if (p >= 1) { clearInterval(t); t = null; VK.mini.set(sync, { state: 'done', progress: 1 }); setTimeout(function () { VK.mini.set(sync, { state: 'idle', progress: 0 }); }, 1600); } else VK.mini.set(sync, { progress: p }); }, 120);
+  });
+  var row2 = document.getElementById('g-minis-meters');
+  [['ring', 'GYŰRŰ'], ['ticks', 'OSZTÁS'], ['square', 'KERET']].forEach(function (m) {
+    ['sm', 'md', 'lg'].forEach(function (s) { row2.appendChild(VK.mini.create({ icon: 'bolt', label: 'Terhelés ' + m[1], caption: s === 'md' ? m[1] : '', meter: m[0], size: s, state: 'running', progress: .62 })); });
+  });
+  var vm = VK.mini.create({ icon: 'gauge', label: 'Kihasználtság', caption: 'KIHASZN.', state: 'running', progress: .73, value: '73', size: 'lg', meter: 'ticks' });
+  row2.appendChild(vm);
+
+  // actions dump
+  function dump() {
+    var d = document.getElementById('g-actions-dump'); d.textContent = '';
+    VK.actions.all().forEach(function (a) {
+      d.appendChild(VK.el('div', null, [VK.el('span', { style: 'color:var(--vk-accent)' }, a.id), '  ' + a.label + '  ', VK.el('span', { style: 'color:var(--vk-text-muted)' }, '[' + a.at.join(', ') + ']' + (a.keys.length ? '  ' + a.keys.map(VK.actions.keyLabel).join(' / ') : ''))]));
+    });
+  }
+  setTimeout(dump, 0); VK.actions.subscribe(function (k) { if (k === 'register' || k === 'unregister') { clearTimeout(dump.t); dump.t = setTimeout(dump, 50); } });
+
+}catch(e){console.error("[gallery 00-foundation.html]",e);}})();
+</script>
+
+</body>
+</html>
