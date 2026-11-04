@@ -80,8 +80,9 @@
 
 @container (max-width: 380px) {
   .vk-notify__item { grid-template-columns: 12px minmax(0, 1fr); }
+  .vk-notify__glyph { grid-column: 1; grid-row: 1; }
+  .vk-notify__main { grid-column: 2; grid-row: 1; }
   .vk-notify__time { grid-column: 2; grid-row: 2; }
-  .vk-notify__main { grid-row: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) { .vk-notify__peak[data-new] .vk-notify__cap, .vk-notify__item[data-new] { animation: none; } }

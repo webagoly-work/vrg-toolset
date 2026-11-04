@@ -8,7 +8,7 @@
 
    data-state: idle (default) · running · done · error · waiting · paused · off
    data-meter: ring (default) · ticks (12 segments) · square (frame traced clockwise) · none
-   data-size:  sm · md (default) · lg          aria-pressed="true" = the feature is switched on (ice)
+   data-size:  xs (badge inside dense/zoomable views; not a touch target — pair it with a real control) · sm · md (default) · lg          aria-pressed="true" = the feature is switched on (ice)
    --vk-p: progress 0…1. data-state="running" without --vk-p (or data-indeterminate) = a sweeping arc.
    Shape carries meaning too (not colour alone): done = full ring + check corner, error = notched ring,
    waiting = dashed ring, paused = two-bar corner, off = no ring.
@@ -19,6 +19,8 @@
   width: max(var(--_s), var(--vk-target-min)); height: max(var(--_s), var(--vk-target-min));
   padding: 0; margin: 0; border: 0; border-radius: 50%; background: transparent; color: var(--vk-text);
   cursor: pointer; font: inherit; -webkit-tap-highlight-color: transparent; isolation: isolate; }
+.vk-mini[data-size="xs"] { --_s: calc(var(--vk-control-h) - 8px); --_w: 1.5px; min-width: 0; min-height: 0; width: var(--_s); height: var(--_s); }
+.vk-mini[data-size="xs"] > .vk-icon { width: calc(var(--vk-icon-size) * .75); height: calc(var(--vk-icon-size) * .75); }
 .vk-mini[data-size="sm"] { --_s: var(--vk-control-h); --_w: 1.5px; }
 .vk-mini[data-size="lg"] { --_s: calc(var(--vk-control-h) * 1.75); --_w: 2.5px; }
 .vk-mini[data-size="lg"] > .vk-icon { width: calc(var(--vk-icon-size) * 1.4); height: calc(var(--vk-icon-size) * 1.4); }

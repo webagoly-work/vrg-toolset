@@ -137,6 +137,7 @@
     function fits() { return vertical() ? el.scrollHeight <= el.clientHeight + 1 : el.scrollWidth <= el.clientWidth + 1; }
     function layout() {
       if (destroyed) return;
+      var had = document.activeElement, hadIn = had && el.contains(had);
       var seps = el.querySelectorAll('.vk-toolbar__sep');
       nodes.forEach(function (n) { n.b.hidden = false; });
       Array.prototype.forEach.call(seps, function (s) { s.hidden = false; s.setAttribute('aria-orientation', vertical() ? 'horizontal' : 'vertical'); });
@@ -154,6 +155,7 @@
         else if (n !== more) { prevSep = false; lastSep = null; }
       });
       if (lastSep) lastSep.hidden = true;
+      if (hadIn && had.hidden && !more.hidden) more.focus();
       el.dataset.overflow = hiddenActs.length ? String(hiddenActs.length) : '';
       more.title = hiddenActs.length ? 'Továbbiak (' + hiddenActs.length + ')' : 'Továbbiak';
       rov.update();

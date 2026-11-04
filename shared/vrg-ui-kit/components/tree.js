@@ -48,8 +48,9 @@
       var list = [];
       (items || []).forEach(function (d, i) {
         var id = String(d.id != null ? d.id : (parent ? parent.id + '/' : '') + d.label);
+        if (o.checkboxes && d.checked == null) d.checked = !!(parent && parent.data.checked === true);
         var n = { id: id, data: d, parent: parent, level: level, kids: null, branch: !!(d.children || d.hasChildren),
-          expanded: !!d.expanded, loaded: !!d.children, loading: false, error: null, checked: d.checked != null ? d.checked : !!(parent && parent.checked === true) };
+          expanded: !!d.expanded, loaded: !!d.children, loading: false, error: null, checked: d.checked };
         nodes[id] = n;
         var li = VK.el('li.vk-tree__item', { role: 'treeitem', tabindex: -1, 'aria-level': level, 'aria-setsize': items.length, 'aria-posinset': i + 1, 'data-id': id });
         if (d.disabled) li.setAttribute('aria-disabled', 'true');
@@ -113,7 +114,7 @@
       p.then(function (kids) {
         n.loading = false; n.loaded = true; n.data.children = kids || [];
         renderKids(n); n.expanded = true; paint(n);
-        if (o.checkboxes) recalcUp(n);
+        if (o.checkboxes && n.kids[0]) recalcUp(n.kids[0]);
         if (o.onToggle) o.onToggle(n.data, true, api);
         if (focusFirst && n.kids.length && n.li.contains(document.activeElement)) focus(n.kids[0]);
       }, function (err) {
@@ -121,22 +122,28 @@
       });
     }
 
-    // ---------- checks (tri-state) ----------
-    function setDown(n, v) { n.checked = v; paint(n); (n.kids || []).forEach(function (k) { if (!k.data.disabled) setDown(k, v); }); }
+    // ---------- checks (tri-state; the truth lives on the item data, so unrendered branches count too) ----------
+    function agg(d) {
+      var kids = (d.children || []).filter(function (c) { return !c.disabled; });
+      if (!kids.length) return d.checked === 'mixed' ? 'mixed' : !!d.checked;
+      var t = 0, f = 0;
+      kids.forEach(function (c) { var v = agg(c); if (v === true) t++; else if (v === 'mixed') { t++; f++; } else f++; });
+      return f === 0 ? true : t === 0 ? false : 'mixed';
+    }
+    function fixData(list) { (list || []).forEach(function (d) { if (d.children) { fixData(d.children); if (d.children.some(function (c) { return !c.disabled; })) d.checked = agg(d); } }); }
+    function dataDown(d, v) { d.checked = v; (d.children || []).forEach(function (c) { if (!c.disabled) dataDown(c, v); }); }
+    function repaintDown(n) { n.checked = n.data.checked; paint(n); (n.kids || []).forEach(repaintDown); }
+    function setDown(n, v) { dataDown(n.data, v); repaintDown(n); }
     function recalcUp(n) {
-      var p = n.kids && n.kids.length ? n : n.parent;
-      while (p) {
-        var t = 0, f = 0;
-        p.kids.forEach(function (k) { if (k.checked === true) t++; else if (k.checked === 'mixed') { t++; f++; } else f++; });
-        p.checked = f === 0 ? true : t === 0 ? false : 'mixed'; paint(p); p = p.parent;
-      }
+      var p = n.parent;
+      while (p) { p.data.checked = agg(p.data); p.checked = p.data.checked; paint(p); p = p.parent; }
     }
     function toggleCheck(n) {
       if (!n || n.data.disabled) return;
       setDown(n, n.checked !== true); recalcUp(n);
       if (o.onCheck) o.onCheck(getChecked(), api);
     }
-    function getChecked() { return Object.keys(nodes).map(function (k) { return nodes[k]; }).filter(function (n) { return n.checked === true; }).map(function (n) { return n.data; }); }
+    function getChecked() { var out = []; (function walk(list) { (list || []).forEach(function (d) { if (d.checked === true) out.push(d); walk(d.children); }); })(itemsRef); return out; }
 
     // ---------- focus / navigation ----------
     function visibleNodes() {
@@ -204,10 +211,12 @@
     on(tree, 'dblclick', function (e) { var n = nodeOf(e.target); if (n && !e.target.closest('.vk-tree__twisty, .vk-tree__check')) activate(n); });
     on(tree, 'focusin', function (e) { var n = nodeOf(e.target); if (n && n.li === e.target) { tree.querySelectorAll('.vk-tree__item[tabindex="0"]').forEach(function (x) { if (x !== n.li) x.tabIndex = -1; }); n.li.tabIndex = 0; } });
 
+    var itemsRef = [];
     function setItems(items) {
+      itemsRef = items || [];
       nodes = {}; selected = null; tree.textContent = '';
+      if (o.checkboxes) fixData(items);
       roots = build(items || [], null, 1, tree);
-      if (o.checkboxes) Object.keys(nodes).forEach(function (k) { var n = nodes[k]; if (n.kids && n.kids.length) recalcUp(n.kids[0]); });
       if (roots[0]) roots[0].li.tabIndex = 0;
       else tree.appendChild(VK.el('li.vk-tree__empty', { role: 'none', text: o.empty || 'Üres' }));
     }

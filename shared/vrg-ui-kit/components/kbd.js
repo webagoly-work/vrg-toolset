@@ -131,12 +131,12 @@
     document.addEventListener('keydown', kd, true);
     document.addEventListener('keyup', ku, true);
     root.addEventListener('blur', cancel);
-    root.addEventListener('scroll', cancel, true);
+    root.addEventListener('wheel', cancel, { capture: true, passive: true });
     document.addEventListener('pointerdown', cancel, true);
     return function off() {
       cancel();
       document.removeEventListener('keydown', kd, true); document.removeEventListener('keyup', ku, true);
-      root.removeEventListener('blur', cancel); root.removeEventListener('scroll', cancel, true); document.removeEventListener('pointerdown', cancel, true);
+      root.removeEventListener('blur', cancel); root.removeEventListener('wheel', cancel, { capture: true, passive: true }); document.removeEventListener('pointerdown', cancel, true);
     };
   }
 

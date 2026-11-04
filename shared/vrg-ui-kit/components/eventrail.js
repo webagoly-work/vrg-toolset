@@ -1,8 +1,9 @@
 /* VRG UI Kit — components/eventrail.js — the film-HUD event rail (own drawing): a long framed band with chamfered
    corners, a year/age axis with tick marks and numbers, warm event pips on the rail, each with a metro-style leader
    (orthogonal, one rounded bend) up to a staggered label "MM.DD · [KATEGÓRIA]" + text; id chips, with a warning
-   glyph on flagged events. Labels never overlap and leaders never cross a label (row stacking, right-to-left).
-     var r = VK.eventrail.mount(el, {from, to, events:[{t, label, cat, id, flag}], now, axis:'year'|'age', born, title, label})
+   glyph on flagged events. Labels never overlap; leaders avoid crossing labels within maxRows (default 5) rows,
+   beyond that a leader may pass behind an opaque label.
+     var r = VK.eventrail.mount(el, {from, to, events:[{t, label, cat, id, flag}], now, axis:'year'|'age', born, maxRows, title, label})
        t/from/to: 'YYYY-MM-DD', ms or Date (wall-clock) · axis 'age' with born (a year) numbers the years as ages
      r.setEvents(events) · r.select(id) · r.layout() · r.on(type, fn) → off · r.destroy()
    Events (r.on and bubbling DOM 'vk:eventrail-<type>'): select {event} · focus {event}
@@ -105,28 +106,34 @@
         rowH = Math.max(rowH, e.h + 8);
       });
 
-      // stacking: right to left; a label may not overlap another, no vertical leader may cross a label
-      var placed = [];
-      function ok(r, a, b, x) {
-        var lo = Math.min(a, x), hi = Math.max(b, x);
-        return placed.every(function (p) {
-          if (p.r === r && lo < p.hi + gap && hi > p.lo - gap) return false;
-          if (p.r > r && p.x >= lo - 6 && p.x <= hi + 6) return false;
-          if (p.r < r && x >= p.lo - 6 && x <= p.hi + 6) return false;
-          return true;
-        });
+      // row stacking. Labels never overlap. Leaders avoid crossing labels while the rows allow (maxRows); past that
+      // a leader may pass behind an opaque label (the row with the fewest crossings wins).
+      var placed = [], maxRows = o.maxRows || 5;
+      function fits(r, lo, hi) { return placed.every(function (p) { return p.r !== r || lo >= p.hi + gap || hi <= p.lo - gap; }); }
+      function crossings(r, lo, hi, x) {
+        return placed.reduce(function (n, p) {
+          if (p.r > r && p.x >= lo - 6 && p.x <= hi + 6) n++;
+          if (p.r < r && x >= p.lo - 6 && x <= p.hi + 6) n++;
+          return n;
+        }, 0);
       }
-      // right-extending labels go right to left, then the few flipped at the right edge go left to right, so a label
-      // is always placed after every pip it covers and rises above their labels
+      // right-extending labels go right to left, then the few flipped at the right edge go left to right, so a
+      // label is placed after the pips it covers and rises above their labels
       S.events.forEach(function (e) { e.side = e.x + dx + e.w <= x1 - 2 ? 'r' : 'l'; });
       var rightSide = S.events.filter(function (e) { return e.side === 'r'; }).reverse();
       var leftSide = S.events.filter(function (e) { return e.side === 'l'; });
       rightSide.concat(leftSide).forEach(function (e) {
-        var a = e.side === 'r' ? e.x + dx : Math.max(x0 + 2, e.x - dx - e.w), b = a + e.w, best = null;
-        for (var r = 0; r < 24 && !best; r++) if (ok(r, a, b, e.x)) best = r;
-        if (best === null) best = placed.reduce(function (m, p) { return Math.max(m, p.r); }, -1) + 1;
+        var a = e.side === 'r' ? e.x + dx : Math.max(x0 + 2, e.x - dx - e.w), b = a + e.w;
+        var lo = Math.min(a, e.x), hi = Math.max(b, e.x), best = null, bestN = Infinity, r;
+        for (r = 0; r < maxRows; r++) {
+          if (!fits(r, lo, hi)) continue;
+          var n = crossings(r, lo, hi, e.x);
+          if (n < bestN) { bestN = n; best = r; }
+          if (!n) break;
+        }
+        if (best === null) { for (r = maxRows; !fits(r, lo, hi); r++); best = r; }
         e.row = best; e.a = a; e.b = b;
-        placed.push({ r: best, lo: Math.min(a, e.x), hi: Math.max(b, e.x), x: e.x });
+        placed.push({ r: best, lo: lo, hi: hi, x: e.x });
       });
       var rows = S.events.reduce(function (m, e) { return Math.max(m, e.row + 1); }, 0);
       var H = 6 + rows * rowH + lift + bandH + 1;

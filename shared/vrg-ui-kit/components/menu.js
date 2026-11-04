@@ -90,13 +90,15 @@
     if (stack.some(function (i) { return i.el.contains(t) || (i.o.invoker && i.o.invoker.contains(t)); })) return;
     closeAll(false);
   }
+  // a user scroll (wheel / touch drag) outside the menus closes them; programmatic scrolls (focus, scrollIntoView) do not
   function onScroll(e) { if (!stack.length) return; if (stack.some(function (i) { return i.el.contains(e.target); })) return; closeAll(false); }
   function onResize() { if (stack.length) closeAll(false); }
   function listen(on) {
     if (on === outsideOn) return; outsideOn = on;
     var f = on ? 'addEventListener' : 'removeEventListener';
     document[f]('pointerdown', onOutside, true);
-    root[f]('scroll', onScroll, true);
+    root[f]('wheel', onScroll, { capture: true, passive: true });
+    root[f]('touchmove', onScroll, { capture: true, passive: true });
     root[f]('resize', onResize);
     root[f]('blur', onResize);
   }

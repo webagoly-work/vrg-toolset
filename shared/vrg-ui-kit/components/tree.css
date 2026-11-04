@@ -37,11 +37,11 @@
 /* tri-state check: empty square · filled ice with tick · ice dash (mixed) */
 .vk-tree__check { position: relative; display: grid; place-items: center; flex: none; width: calc(var(--vk-icon-size) * .875); height: calc(var(--vk-icon-size) * .875);
   border: var(--vk-border-w) solid var(--vk-border-control); border-radius: var(--vk-radius-sm); background: var(--vk-bg-sunken); cursor: pointer; }
-.vk-tree__check .vk-icon { width: 100%; height: 100%; stroke-width: 2.25; color: var(--vk-text-on-accent); opacity: 0; }
+.vk-tree__check .vk-icon { position: absolute; inset: 0; width: 100%; height: 100%; stroke-width: 2.25; color: var(--vk-text-on-accent); opacity: 0; }
 .vk-tree__item[aria-checked="true"] > .vk-tree__row > .vk-tree__check { background: var(--vk-accent); border-color: var(--vk-accent); }
 .vk-tree__item[aria-checked="true"] > .vk-tree__row > .vk-tree__check .vk-icon { opacity: 1; }
 .vk-tree__item[aria-checked="mixed"] > .vk-tree__row > .vk-tree__check { border-color: var(--vk-accent); }
-.vk-tree__item[aria-checked="mixed"] > .vk-tree__row > .vk-tree__check::after { content: ""; width: 55%; height: 2px; background: var(--vk-accent); }
+.vk-tree__item[aria-checked="mixed"] > .vk-tree__row > .vk-tree__check::after { content: ""; position: absolute; left: 22%; right: 22%; top: calc(50% - 1px); height: 2px; background: var(--vk-accent); }
 .vk-tree__item[aria-disabled="true"] > .vk-tree__row > .vk-tree__check { border-color: var(--vk-line-strong); background: transparent; }
 
 @media (forced-colors: active) {

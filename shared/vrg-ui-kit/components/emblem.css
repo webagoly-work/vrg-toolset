@@ -40,7 +40,7 @@
   --_shadow: color-mix(in srgb, var(--vk-text) 9%, transparent);
   --_halo: color-mix(in srgb, var(--vk-text) 5%, transparent); }
 .vk-emblem[data-size="tile"] { --vk-emblem-w: 160px; }
-.vk-emblem[data-size="mini"] { --vk-emblem-w: 48px; }
+.vk-emblem[data-size="mini"] { --vk-emblem-w: 48px; width: var(--vk-emblem-w); flex: none; }
 
 /* ---------- the stack ---------- */
 .vk-emblem__stack { display: flex; flex-direction: column; align-items: center; gap: var(--vk-space-1);
