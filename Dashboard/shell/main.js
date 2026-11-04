@@ -25,6 +25,7 @@ const { createSecrets } = require('./lib/secrets.js');
 
 const layoutLib = require('./lib/layout.js');
 const { createViews } = require('./lib/views.js');
+const { createPalette, loadKeymap } = require('./lib/palette.js');
 
 const PAGE = path.join(__dirname, '..', 'vrg-dashboard.html');                 // the Kezdőlap, shown in a view
 const FRAME = path.join(__dirname, '..', 'page', 'vrg-desktop.html');          // the main window: the frame page
@@ -52,7 +53,7 @@ const acts = createActs({ R, run, ports, log });
 // else (modes, sizes) is the real window. win.desk hands the frame and the views to the WP-07 probe.
 const selftestWin = () => new Proxy(win, {
   get(t, k) {
-    if (k === 'desk') return { frame: t, home: homeWc(), views };
+    if (k === 'desk') return { frame: t, home: homeWc(), views, palette };
     if (k === 'webContents') {
       const wc = homeWc() || t.webContents;
       return new Proxy(wc, { get(w, p) {
@@ -173,6 +174,15 @@ ipc.register('layout', 'bounds', { viewId: types.id, rect: types.obj({ x: coord,
   }
   return { ok: views.setBounds(viewId, rect) };
 });
+
+// command palette (WP-08): the index, and run(id) re-resolved in main. palette({open}) hides / shows the web views under the overlay.
+const palette = createPalette({ R, acts, log, openPane: kind => ipc.emit(win, 'layout', 'open', { kind, state: {} }) });
+ipc.register('layout', 'palette', { open: types.bool }, async ({ open }) => {
+  if (open === true) views.hideAll(); else if (open === false) views.showAll();
+  if (open === false) return {};
+  return { items: palette.index(), recent: palette.recent(), keymap: loadKeymap(path.join(__dirname, '..', 'config', 'keymap.json')) };
+}, { optional: ['open'] });
+ipc.register('layout', 'run', { cmdId: types.text(80) }, async ({ cmdId }) => palette.run(cmdId));
 
 ipcMain.handle('vrg:act',(e, id) => acts.runAct(id));
 ipcMain.handle('vrg:ports', () => ports.ports);

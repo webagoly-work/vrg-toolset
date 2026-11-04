@@ -118,7 +118,34 @@
     new ResizeObserver(scheduleBounds).observe(root);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && saveTimer) { clearTimeout(saveTimer); save(); } });
     scheduleBounds();
+    if (vrg && vrg.on) vrg.on('layout', 'open', m => openKind(m.kind));
+    initPalette();
     document.body.dataset.ready = '1';
+  }
+
+  // ------------------------------------------------------------ palette (WP-08)
+  // The keymap comes with vrg.layout.palette() (no extra channel). A fresh page also lifts a hide left over from a closed palette.
+  async function initPalette() {
+    if (!vrg || !vrg.layout || !window.VRGPalette) return;
+    try { await vrg.layout.palette({ open: false }); } catch (e) {}
+    try { const r = await vrg.layout.palette(); if (r && r.ok && r.keymap) window.VRGPalette.setKeymap(r.keymap); } catch (e) {}
+  }
+
+  // layout.open from main (a palette "pane:<kind>" command): a new tab in the focused group; the Kezdőlap is only focused
+  function openKind(kind) {
+    if (!L || typeof kind !== 'string' || !lib.KINDS.includes(kind)) return;
+    const t = JSON.parse(JSON.stringify(L.tree()));
+    const all = lib.panes(t);
+    if (kind === 'home' && all.some(p => p.kind === 'home')) { L.commit(lib.focus(L.tree(), all.find(p => p.kind === 'home').id)); L.focusPane('home'); return; }
+    const at = lib.find(t, L.focused()) || lib.find(t, all[0].id);
+    const used = new Set(all.map(p => p.id));
+    let id = kind === 'home' ? 'home' : '';
+    for (let i = 1; !id; i++) if (!used.has(kind + '-' + i)) id = kind + '-' + i;
+    at.node.items.push({ id, kind, state: {} });
+    at.node.active = at.node.items.length - 1;
+    if (!lib.validate(t).ok) return;
+    L.commit(t);
+    L.focusPane(id);
   }
 
   const wbar = document.getElementById('wbar');

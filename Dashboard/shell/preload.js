@@ -30,6 +30,8 @@ contextBridge.exposeInMainWorld('vrg', {
     get: () => call('layout', 'get', {}),
     set: tree => call('layout', 'set', { tree }),
     bounds: (viewId, rect) => call('layout', 'bounds', { viewId, rect }),
+    palette: p => call('layout', 'palette', p === undefined ? {} : p),          // { open: bool } hides / shows the web views
+    run: cmdId => call('layout', 'run', { cmdId }),
   },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),

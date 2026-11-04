@@ -1,0 +1,10 @@
+{
+  "palette": "Ctrl+Shift+P",
+  "closeTab": "Ctrl+W",
+  "split": "Ctrl+\\",
+  "splitStacked": "Ctrl+Shift+\\",
+  "focusLeft": "Ctrl+Alt+Left",
+  "focusRight": "Ctrl+Alt+Right",
+  "focusUp": "Ctrl+Alt+Up",
+  "focusDown": "Ctrl+Alt+Down"
+}
