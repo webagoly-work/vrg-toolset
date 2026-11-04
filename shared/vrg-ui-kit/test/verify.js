@@ -16,7 +16,7 @@ const { chromium } = require('playwright');
 
 const KIT = path.join(__dirname, '..');
 const args = process.argv.slice(2);
-const only = (args[args.indexOf('--only') + 1] || '').split(',').filter(Boolean);
+const only = args.includes('--only') ? args[args.indexOf('--only') + 1].split(',').filter(Boolean) : [];
 const shots = args.includes('--shots') ? args[args.indexOf('--shots') + 1] : null;
 const want = (k) => !only.length || only.includes(k);
 const THEMES = ['dark', 'light', 'contrast', 'melyviz'];
@@ -117,10 +117,19 @@ async function keyboard(browser) {
     const info = await p.evaluate(() => {
       const a = document.activeElement; if (!a || a === document.body) return null;
       const cs = getComputedStyle(a);
-      const ring = (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0) || /rgb/.test(cs.boxShadow) && cs.boxShadow !== 'none';
+      // a ring counts on the element, on a wrapper up to two levels up (field boxes ring with :focus-within), or —
+      // for SVG parts, which must not get a rotated outline box — on a descendant stroked in the focus colour
+      const hasRing = (n) => { if (!n || n.nodeType !== 1) return false; const c = getComputedStyle(n);
+        return (c.outlineStyle !== 'none' && parseFloat(c.outlineWidth) > 0) || (/rgb|color\(/.test(c.boxShadow) && c.boxShadow !== 'none'); };
+      const probe = document.createElement('i'); probe.style.color = 'var(--vk-focus)'; document.body.appendChild(probe);
+      const focusCol = getComputedStyle(probe).color; probe.remove();
+      const svgRing = a instanceof SVGElement && [...a.querySelectorAll('*')].some(n => getComputedStyle(n).stroke === focusCol);
+      const ring = hasRing(a) || hasRing(a.parentElement) || (a.parentElement && hasRing(a.parentElement.parentElement)) || svgRing;
       const id = a.id || (a.className && String(a.className.baseVal !== undefined ? a.className.baseVal : a.className).split(' ')[0]) || a.tagName;
       const sec = a.closest('.g-sec'); const r = a.getBoundingClientRect();
-      return { key: (sec ? sec.id : 'top') + ' ' + a.tagName + '.' + id + ' ' + (a.getAttribute('aria-label') || a.textContent || '').trim().slice(0, 30), ring, w: r.width, h: r.height, path: sec ? sec.id : 'top' };
+      // identity, not description: unlabeled siblings (a list of checkboxes) must not read as "stuck"
+      if (!a.__vkWalk) a.__vkWalk = (window.__vkWalkN = (window.__vkWalkN || 0) + 1);
+      return { key: (sec ? sec.id : 'top') + ' ' + a.tagName + '.' + id + ' ' + (a.getAttribute('aria-label') || a.textContent || a.value || '').trim().slice(0, 30) + ' #' + a.__vkWalk, ring, w: r.width, h: r.height, path: sec ? sec.id : 'top' };
     });
     if (!info) break;
     n++;
@@ -131,7 +140,10 @@ async function keyboard(browser) {
     await p.keyboard.press('Tab');
   }
   if (invisible.length) fail(`keyboard: ${invisible.length} focus stop(s) without a visible ring: ${invisible.slice(0, 8).join(' · ')}`);
-  ok(`keyboard: ${n} Tab stops walked, ${seen.size} distinct, ${invisible.length} without a ring`);
+  const secs = [...new Set([...seen].map(k => k.split(' ')[0]))];
+  ok(`keyboard: ${n} Tab stops walked, ${seen.size} distinct, ${invisible.length} without a ring; regions reached: ${secs.join(' ')}`);
+  const missing = ['f00', 'f01', 'f02', 'f03', 'f04', 'f05', 'f06', 'f07', 'f08', 'f09', 'f10'].filter(x => !secs.includes(x));
+  if (missing.length) fail('keyboard: Tab never reached ' + missing.join(' '));
   // Shift+Arrow hop between regions
   await p.focus('#g-theme [aria-checked="true"]');
   const before = await p.evaluate(() => document.activeElement.closest('[data-vk-hop]') && document.activeElement.closest('[data-vk-hop]').className);
@@ -188,7 +200,7 @@ async function bundle(browser) {
     'window.__ok = [];\n' +
     'if (VK.mini) { var m = VK.mini.create({icon:"refresh", label:"Szinkron"}); document.body.appendChild(m); VK.mini.set(m,{state:"running",progress:.5}); __ok.push(m.getAttribute("aria-label")); }\n' +
     'if (VK.table && VK.table.mount) { try { VK.table.mount(document.getElementById("t"), {columns:[{key:"n",label:"Név"}], rows:[{n:"Kötőelem"},{n:"Hűtő"}]}); __ok.push("table:" + document.querySelectorAll("#t [role=row]").length); } catch(e) { __ok.push("table error " + e.message); } }\n' +
-    'if (VK.palette && VK.palette.attach) { try { VK.palette.attach({}); VK.actions.register({id:"x.hello", label:"Őrszem indítása", run:function(){ __ok.push("ran"); }}); __ok.push("palette"); } catch(e) { __ok.push("palette error " + e.message); } }\n' +
+    'if (VK.palette && VK.palette.attach) { try { VK.palette.attach({}); VK.actions.bindKeys(document); VK.actions.register({id:"x.hello", label:"Őrszem indítása", run:function(){ __ok.push("ran"); }}); __ok.push("palette"); } catch(e) { __ok.push("palette error " + e.message); } }\n' +
     '</script></body></html>';
   const f = path.join(dir, 'bundle-test.html'); fs.writeFileSync(f, html);
   const p = await page(browser, f);

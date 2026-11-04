@@ -29,7 +29,7 @@
    * Roving tabindex. opts:
    *  items: selector for the items (default '[role="option"],[role="menuitem"],[role="tab"],[role="treeitem"],[role="gridcell"],button')
    *  orientation: 'horizontal' | 'vertical' | 'both' | 'grid'   (grid needs opts.cols → number)
-   *  wrap: true · typeahead: true (jump by first letter, Hungarian-folded)
+   *  wrap: true · typeahead: true (jump by first letter, Hungarian-folded) · skipDisabled: true
    *  onMove(item, index) · activeIndex: initial index
    * Returns {focus(i), current(), update(), destroy()}.
    */
@@ -38,7 +38,9 @@
     var sel = opts.items || '[role="option"],[role="menuitem"],[role="menuitemcheckbox"],[role="tab"],[role="treeitem"],[role="gridcell"],button';
     var orient = opts.orientation || 'vertical', wrap = opts.wrap !== false;
     var buf = '', bufT = 0;
-    function items() { return Array.prototype.filter.call(container.querySelectorAll(sel), function (n) { return visible(n) && n.getAttribute('aria-disabled') !== 'true' && !n.disabled; }); }
+    // skipDisabled:false keeps aria-disabled items focusable (toolbars: a disabled command should still be found and explained)
+    var skip = opts.skipDisabled !== false;
+    function items() { return Array.prototype.filter.call(container.querySelectorAll(sel), function (n) { return visible(n) && (!skip || (n.getAttribute('aria-disabled') !== 'true' && !n.disabled)); }); }
     function current() { var list = items(); var i = list.indexOf(document.activeElement); return i >= 0 ? i : list.findIndex(function (n) { return n.tabIndex === 0; }); }
     function set(i, doFocus) {
       var list = items(); if (!list.length) return;
@@ -122,16 +124,24 @@
       if (!regions.length) return;
       var from = e.target.closest && e.target.closest('[data-vk-hop]');
       var fr = (from || e.target).getBoundingClientRect();
-      var cx = fr.left + fr.width / 2, cy = fr.top + fr.height / 2;
       var dir = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] }[e.key];
       var best = null, bestD = Infinity;
+      // edge-to-edge distance: the region whose near edge is closest in the arrow's direction wins, with sideways
+      // offset (the gap between the two spans, 0 when they overlap) weighted double. Centres would favour small
+      // regions far away over a big neighbour.
       regions.forEach(function (r) {
         if (r === from || (from && (r.contains(from) || from.contains(r)))) return;
-        var b = r.getBoundingClientRect(), x = b.left + b.width / 2, y = b.top + b.height / 2;
-        var dx = x - cx, dy = y - cy, along = dx * dir[0] + dy * dir[1];
-        if (along <= 1) return;
-        var across = Math.abs(dx * dir[1]) + Math.abs(dy * dir[0]);
-        var d = along + across * 2;
+        var b = r.getBoundingClientRect(), along, across;
+        if (dir[1]) {   // vertical
+          along = dir[1] > 0 ? b.top - fr.bottom : fr.top - b.bottom;
+          if ((dir[1] > 0 ? b.top <= fr.top : b.bottom >= fr.bottom)) return;
+          across = Math.max(0, b.left - fr.right, fr.left - b.right);
+        } else {
+          along = dir[0] > 0 ? b.left - fr.right : fr.left - b.right;
+          if ((dir[0] > 0 ? b.left <= fr.left : b.right >= fr.right)) return;
+          across = Math.max(0, b.top - fr.bottom, fr.top - b.bottom);
+        }
+        var d = Math.max(0, along) + across * 2;
         if (d < bestD) { bestD = d; best = r; }
       });
       if (!best) return;

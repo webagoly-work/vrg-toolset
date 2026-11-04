@@ -271,7 +271,8 @@
           case 'Backspace': goUp(p); break;
           case 'Insert': toggleMark(p, p.cursor); moveCursor(p, p.cursor + 1); break;
           case ' ': case 'Spacebar': toggleMark(p, p.cursor); break;
-          case 'Tab': if (e.shiftKey) { h = false; break; } switchPane(); break;
+          // Tab goes left pane → right pane → out of the component; Shift+Tab right → left → out. Never a trap (WCAG 2.1.2).
+          case 'Tab': if ((!e.shiftKey && p.i === 0) || (e.shiftKey && p.i === 1)) switchPane(); else h = false; break;
           case 'Escape': if (p.marks.size) { p.marks.clear(); render(p); paintCursor(p, true); } else h = false; break;
           default:
             h = false;

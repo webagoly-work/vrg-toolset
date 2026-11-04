@@ -209,7 +209,8 @@
         hi += 1; if (hi >= hist.length) { hi = -1; input.value = draft; } else input.value = hist[hi];
         moveEnd();
       } else if (e.key === 'Tab' && !e.shiftKey) {
-        if (complete()) e.preventDefault();
+        // complete only a word in progress: on an empty prompt Tab leaves the terminal (no keyboard trap)
+        if (input.value.trim() && complete()) e.preventDefault();
       } else if (e.key === 'Escape' && input.value) { e.preventDefault(); e.stopPropagation(); input.value = ''; hi = -1; }
     });
     function moveEnd() { var n = input.value.length; setTimeout(function () { try { input.setSelectionRange(n, n); } catch (x) { /* ignore */ } }, 0); }
