@@ -167,6 +167,7 @@
     });
 
     build();
+    listen(document, 'vk:density', function () { if (S.active !== null) reveal(S.active); });
 
     var api = {
       setData: function (d) { S.data = d || {}; build(); },

@@ -22,7 +22,7 @@
     .f01-layers li { display: flex; align-items: center; gap: var(--vk-space-3); }
     .f01-layers i { width: 18px; height: 2px; background: var(--c); flex: none; }
     .f01-plan { display: block; width: 100%; height: 100%; min-height: 160px; background: var(--vk-bg-sunken); }
-    .f01-plan text { font-family: var(--vk-font-mono); font-size: 8px; letter-spacing: .1em; fill: var(--vk-text-muted); }
+    .f01-plan text { font-family: var(--vk-font-mono); font-size: var(--vk-fs-2xs); letter-spacing: .1em; fill: var(--vk-text-muted); }
     .f01-pane-h { display: flex; align-items: center; gap: var(--vk-space-2); padding: var(--vk-space-2) var(--vk-space-3); border-bottom: var(--vk-border-w) solid var(--vk-line); }
     .f01-table { width: 100%; border-collapse: collapse; font-size: var(--vk-fs-xs); }
     .f01-table th, .f01-table td { text-align: left; padding: var(--vk-space-1) var(--vk-space-3); border-bottom: var(--vk-border-w) solid var(--vk-line); white-space: nowrap; }
@@ -46,7 +46,7 @@
         linear-gradient(var(--vk-line) 1px, transparent 1px), linear-gradient(90deg, var(--vk-line) 1px, transparent 1px);
       background-size: 100% 100%, 100% 100%, 120px 120px, 120px 120px, 24px 24px, 24px 24px; }
     .f01-blueprint svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-    .f01-blueprint text { font-family: var(--vk-font-mono); font-size: 10px; letter-spacing: .12em; fill: var(--vk-text-muted); }
+    .f01-blueprint text { font-family: var(--vk-font-mono); font-size: var(--vk-fs-xs); letter-spacing: .12em; fill: var(--vk-text-muted); }
     .f01-pin { position: absolute; }
     .f01-sensor { display: grid; gap: var(--vk-space-3); }
     .f01-big { font: var(--vk-fs-3xl)/1 var(--vk-font-mono); color: var(--vk-text); }
@@ -54,8 +54,8 @@
     .f01-bars { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
     .f01-bars i { flex: 1; background: var(--vk-activity); opacity: .75; min-height: 2px; }
     .f01-states { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); }
-    .f01-states > .vk-panel { height: 170px; }
-    .f01-states > .vk-panel[data-collapsed] { height: auto; align-self: start; }
+    .f01-states > .vk-panel { min-height: 170px; }
+    .f01-states > .vk-panel[data-collapsed] { min-height: 0; align-self: start; }
     .f01-tabsdemo { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); margin-top: var(--vk-space-5); }
     .f01-tabsdemo > div { height: 170px; border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); overflow: hidden; }
   </style>
