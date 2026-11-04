@@ -31,10 +31,13 @@
     });
   }
 
+  // theme and density apply NOW (this script loads before the fragments' init scripts), so components mount at the right size
+  var q0 = new URLSearchParams(location.search);
+  html.dataset.vkTheme = THEMES[q0.get('theme')] ? q0.get('theme') : (THEMES[store.get('vk-gallery-theme')] ? store.get('vk-gallery-theme') : 'dark');
+  html.dataset.vkDensity = DENS[q0.get('density')] ? q0.get('density') : (DENS[store.get('vk-gallery-density')] ? store.get('vk-gallery-density') : 'comfortable');
+
   function boot() {
-    var q = new URLSearchParams(location.search);
-    setTheme(q.get('theme') || store.get('vk-gallery-theme') || 'dark');
-    setDensity(q.get('density') || store.get('vk-gallery-density') || 'comfortable');
+    setGroup('g-theme', html.dataset.vkTheme); setGroup('g-density', html.dataset.vkDensity);
     radioGroup('g-theme', setTheme); radioGroup('g-density', setDensity);
     if (window.VK && VK.focus) VK.focus.enableHop();
 
