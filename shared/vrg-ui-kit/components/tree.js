@@ -167,7 +167,7 @@
     }
     function nodeOf(t) { var li = t && t.closest && t.closest('.vk-tree__item'); return li && tree.contains(li) ? nodes[li.dataset.id] : null; }
     function activate(n) {
-      if (n.error) { n.error = null; load(n, true); return; }
+      if (n.error) { n.error = null; load(n, false); return; }
       if (n.branch) { if (n.expanded) collapse(n); else expand(n); }
       if (!follow) select(n);
       if (o.onActivate) o.onActivate(n.data, api);

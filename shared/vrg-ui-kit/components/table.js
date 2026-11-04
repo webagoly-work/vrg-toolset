@@ -78,7 +78,7 @@
     var qfMini = hasQf ? VK.mini.create({ icon: 'filter', label: 'Oszlopszűrők', pressed: !!o.quickFilters, size: 'sm', onClick: function () { showQf(qfRow.hidden); } }) : null;
     if (qfMini) qfMini.setAttribute('aria-controls', gridId);
     var refreshMini = o.onRefresh ? VK.mini.create({ icon: 'refresh', label: 'Frissítés', size: 'sm', onClick: function () { o.onRefresh(api); } }) : null;
-    (o.tools || []).forEach(function (n) { tools.appendChild(n); });
+    (o.tools || []).forEach(function (n) { if (n.classList && n.classList.contains('vk-mini')) n.setAttribute('data-cap', 'hidden'); tools.appendChild(n); });
     if (qfMini) tools.appendChild(qfMini);
     if (refreshMini) tools.appendChild(refreshMini);
     var bar = VK.el('div.vk-table__bar', null, [VK.el('label.vk-table__search', null, [VK.icon('search'), search]), tools]);

@@ -28,7 +28,9 @@
 .vk-heatgrid__pad, .vk-heatgrid__cell, .vk-heatgrid__sw { flex: none; width: var(--vk-heatgrid-cell); height: var(--vk-heatgrid-cell); border-radius: var(--vk-radius-sm); }
 .vk-heatgrid__sw { width: 11px; height: 11px; }
 .vk-heatgrid__cell, .vk-heatgrid__sw { background: var(--vk-heat-0); }
-.vk-heatgrid__cell { cursor: pointer; }
+.vk-heatgrid__cell { position: relative; cursor: pointer; }
+/* the hit area reaches --vk-target-min even where the visible cell is smaller; neighbours only overlap at the edges */
+.vk-heatgrid__cell::after { content: ""; position: absolute; inset: min(0px, calc((var(--vk-heatgrid-cell) - var(--vk-target-min)) / 2)); }
 :is(.vk-heatgrid__cell, .vk-heatgrid__sw)[data-l="1"] { background: var(--vk-heat-1); }
 :is(.vk-heatgrid__cell, .vk-heatgrid__sw)[data-l="2"] { background: var(--vk-heat-2); }
 :is(.vk-heatgrid__cell, .vk-heatgrid__sw)[data-l="3"] { background: var(--vk-heat-3); }

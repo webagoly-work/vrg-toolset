@@ -75,6 +75,14 @@
     var inner = VK.el('div.vk-notify__inner', null, [ringWrap, board]);
     el.appendChild(inner);
 
+    // labels and hit targets are sized in CSS px: tell CSS how many viewBox units one px is
+    function syncScale() {
+      var w = ringSvg.getBoundingClientRect().width;
+      if (w) ringWrap.style.setProperty('--_ls', (300 / w).toFixed(3));
+    }
+    var ro = root.ResizeObserver ? new ResizeObserver(syncScale) : null;
+    if (ro) ro.observe(ringSvg);
+
     // ---------- geometry ----------
     function span() {
       if (opts.span) return opts.span;
@@ -192,6 +200,7 @@
       if (a && ringSvg.contains(a)) { focusSide = 'ring'; focusId = a.getAttribute('data-id'); }
       else if (a && list.contains(a)) { focusSide = 'board'; focusId = a.getAttribute('data-id'); }
       var now = nowFn(), sp = span();
+      syncScale();
       drawDial(now, sp); drawPeaks(now, sp); drawBoard(now);
       var u = unread();
       count.textContent = String(u);
@@ -333,7 +342,7 @@
         minis.push(m); syncMinis(); return m;
       },
       destroy: function () {
-        ringRov.destroy(); listRov.destroy(); if (toolRoving) toolRoving.destroy(); if (unsub) unsub();
+        if (ro) ro.disconnect(); ringRov.destroy(); listRov.destroy(); if (toolRoving) toolRoving.destroy(); if (unsub) unsub();
         el.removeEventListener('focusin', onFocusIn); el.removeEventListener('click', onClick); el.removeEventListener('keydown', onKey);
         el.textContent = ''; el.classList.remove('vk-notify');
       }

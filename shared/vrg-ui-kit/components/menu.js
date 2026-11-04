@@ -10,7 +10,8 @@
      VK.menu.bindContext(el, src, ctxFn)      right-click + Shift+F10 + ContextMenu key; ctxFn(target, event) → extra ctx
                                               (return false = no menu; return {menu:'menu:x'} to pick the surface) → off()
      VK.menu.button(btn, src, opts)           a dropdown trigger (aria-haspopup, ↓/↑/Enter/Space) → off()
-     VK.menu.menubar(el, [{label, surface|items}], opts) → {destroy()}   role=menubar for an app's top menu
+     VK.menu.menubar(el, [{label, surface|items}], opts) → {layout(), destroy()}  role=menubar; entries that do not
+                                              fit move into a trailing "…" (Továbbiak) menu as submenus
    Action fields used: label, icon, keys, group (→ separators), when (→ disabled), reason (string | fn(ctx): why it is
    disabled, shown greyed + in title), checked (→ menuitemcheckbox), danger, children (ids / items / fn / surface id) or
    many(ctx) (→ submenu). Keys: ↑↓ Home End, letters (typeahead), Enter/Space run, → opens a submenu, ← / Esc close it,
@@ -249,19 +250,40 @@
     el.classList.add('vk-menubar'); el.setAttribute('role', 'menubar');
     if (o.label) el.setAttribute('aria-label', o.label);
     var cur = -1;
-    var btns = entries.map(function (en, i) {
+    // the last entry is the overflow "…" (Továbbiak): entries that do not fit move into it as submenus
+    var all = entries.concat([{ label: 'Továbbiak', more: true }]);
+    var btns = all.map(function (en, i) {
       var b = VK.el('button.vk-menubar__item', { type: 'button', role: 'menuitem', 'aria-haspopup': 'menu', 'aria-expanded': 'false', tabindex: i ? '-1' : '0' },
-        [en.icon ? VK.icon(en.icon) : null, en.label]);
+        en.more ? [VK.icon('more-h')] : [en.icon ? VK.icon(en.icon) : null, en.label]);
+      if (en.more) { b.classList.add('vk-menubar__more'); b.setAttribute('aria-label', 'Továbbiak'); b.title = 'Továbbiak'; b.hidden = true; }
       el.appendChild(b); return b;
     });
+    var more = btns[btns.length - 1];
     var rov = VK.focus.roving(el, { items: '.vk-menubar__item', orientation: 'horizontal', typeahead: true });
+    function visible() { return btns.filter(function (b) { return !b.hidden; }); }
+    function hiddenSrc() {
+      return entries.filter(function (en, i) { return btns[i].hidden; }).map(function (en) { return { label: en.label, icon: en.icon, children: en.surface || en.items }; });
+    }
+    function layout() {
+      var had = document.activeElement, hadIn = el.contains(had);
+      btns.forEach(function (b) { b.hidden = false; }); more.hidden = true;
+      if (el.scrollWidth > el.clientWidth + 1) {
+        more.hidden = false;
+        for (var i = entries.length - 1; i > 0 && el.scrollWidth > el.clientWidth + 1; i--) btns[i].hidden = true;
+      }
+      if (hadIn && had.hidden && !more.hidden) more.focus({ preventScroll: true });
+      rov.update();
+    }
     function openAt(i, focus) {
-      var b = btns[i], en = entries[i];
+      var b = btns[i], en = all[i];
       closeAll(false);
       var c = o.ctx ? VK.actions.ctx(o.ctx()) : VK.actions.ctx();
       cur = i; b.setAttribute('aria-expanded', 'true');
-      open(en.surface || en.items, b, c, { restore: b, invoker: b, focus: focus, label: en.label,
-        onArrow: function (dir) { var n = (i + (dir === 'right' ? 1 : -1) + btns.length) % btns.length; rov.focus(n); openAt(n, 'first'); },
+      open(en.more ? hiddenSrc() : en.surface || en.items, b, c, { restore: b, invoker: b, focus: focus, label: en.label,
+        onArrow: function (dir) {
+          var v = visible(), k = v.indexOf(b), n = v[(k + (dir === 'right' ? 1 : -1) + v.length) % v.length];
+          n.focus(); rov.update(); openAt(btns.indexOf(n), 'first');
+        },
         onClose: function () { b.setAttribute('aria-expanded', 'false'); if (cur === i) cur = -1; } });
     }
     function onKey(e) {
@@ -272,11 +294,16 @@
     function onClick(e) { var i = btns.indexOf(e.target.closest('.vk-menubar__item')); if (i < 0) return; if (cur === i) closeAll(true); else openAt(i, 'first'); }
     function onOver(e) {
       var i = btns.indexOf(e.target.closest && e.target.closest('.vk-menubar__item'));
-      if (i < 0 || cur < 0 || cur === i) return;
-      rov.focus(i); openAt(i, false); btns[i].focus();
+      if (i < 0 || cur < 0 || cur === i || e.pointerType === 'touch') return;
+      btns[i].focus(); rov.update(); openAt(i, false); btns[i].focus();
     }
     el.addEventListener('keydown', onKey); el.addEventListener('click', onClick); el.addEventListener('pointerover', onOver);
-    return { el: el, open: openAt, destroy: function () { rov.destroy(); el.removeEventListener('keydown', onKey); el.removeEventListener('click', onClick); el.removeEventListener('pointerover', onOver); el.textContent = ''; } };
+    var raf = 0;
+    var ro = 'ResizeObserver' in root ? new ResizeObserver(function () { cancelAnimationFrame(raf); raf = requestAnimationFrame(layout); }) : null;
+    if (ro) ro.observe(el);
+    layout();
+    return { el: el, open: openAt, layout: layout,
+      destroy: function () { if (ro) ro.disconnect(); rov.destroy(); el.removeEventListener('keydown', onKey); el.removeEventListener('click', onClick); el.removeEventListener('pointerover', onOver); el.textContent = ''; } };
   }
 
   VK.menu = { open: open, close: function () { closeAll(true); }, isOpen: function () { return stack.length > 0; },

@@ -17,7 +17,7 @@
    Backspace = parent folder · Insert = mark and step down · Space = mark · Ctrl+A = mark all · Esc = clear marks ·
    Tab = other pane (Shift+Tab leaves the component) · F3…F8 = registry actions · letters = jump by name.
    Shift+Arrow is left to region hopping (each pane and the F-key bar is a [data-vk-hop] region).
-   Depends on: core.js, focus.js, actions.js, mini.js. */
+   Depends on: core.js, actions.js, mini.js. */
 (function (root) {
   'use strict';
   var VK = root.VK = root.VK || {};
@@ -212,7 +212,7 @@
         var ka = +((a.keys[0] || '').replace(/\D/g, '') || 99), kb = +((b.keys[0] || '').replace(/\D/g, '') || 99); return ka - kb; });
     }
     function keyAction(k) { return fkeyActions().find(function (a) { return a.keys.indexOf(k) >= 0; }) || null; }
-    var keyBtns = [], roving = null;
+    var keyBtns = [];
     function buildKeys() {
       keysBar.textContent = ''; keyBtns = [];
       fkeyActions().forEach(function (a) {
@@ -221,13 +221,11 @@
         var key = a.keys[0] ? VK.actions.keyLabel(a.keys[0]) : '';
         var b = VK.el('button.vk-fm__fkey', { type: 'button', tabindex: -1, 'data-action': a.id, title: (a.hint || a.label) + (key ? ' (' + key + ')' : '') },
           [meter, VK.el('kbd.vk-fm__kcap', { text: key }), VK.el('span.vk-fm__klabel', { text: a.label })]);
-        b.addEventListener('click', function () { VK.actions.run(a, ctx(), 'fkeys'); refreshKeys(); });
+        b.addEventListener('click', function () { if (b.getAttribute('aria-disabled') === 'true') return; VK.actions.run(a, ctx(), 'fkeys'); refreshKeys(); });
         b._a = a; b._m = meter; b._k = key;
         keysBar.appendChild(b); keyBtns.push(b);
       });
       if (keyBtns[0]) keyBtns[0].tabIndex = 0;
-      if (roving) roving.destroy();
-      roving = VK.focus.roving(keysBar, { items: '.vk-fm__fkey', orientation: 'horizontal', typeahead: false });
       refreshKeys();
     }
     function refreshKeys() {
@@ -303,6 +301,12 @@
     on(keysBar, 'keydown', function (e) {
       if (/^F\d+$/.test(e.key)) { var a = keyAction(e.key.toLowerCase()); if (a) { e.preventDefault(); VK.actions.run(a, ctx(), 'key'); refreshKeys(); } }
       else if (e.key === 'Escape') { e.preventDefault(); focusCursor(panes[activeSide]); }
+      else if (!e.shiftKey && /^(ArrowLeft|ArrowRight|Home|End)$/.test(e.key)) {
+        // roving over every key, disabled ones included (they stay discoverable, as toolbars should)
+        var i = keyBtns.indexOf(document.activeElement); if (i < 0) return;
+        var n = e.key === 'Home' ? 0 : e.key === 'End' ? keyBtns.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : -1) + keyBtns.length) % keyBtns.length;
+        e.preventDefault(); keyBtns.forEach(function (b, k) { b.tabIndex = k === n ? 0 : -1; }); keyBtns[n].focus();
+      }
     });
     if (VK.actions) off.push(VK.actions.subscribe(function (kind) { if (kind === 'register' || kind === 'unregister') { clearTimeout(buildKeys.t); buildKeys.t = setTimeout(buildKeys, 30); } else if (kind === 'run') refreshKeys(); }));
 
@@ -319,7 +323,7 @@
       clearMarks: function (s) { var p = side(s); p.marks.clear(); render(p); },
       setStatus: setStatus, refreshKeys: refreshKeys, switchPane: switchPane,
       focus: function () { focusCursor(panes[activeSide]); },
-      destroy: function () { off.forEach(function (f) { f(); }); off = []; if (roving) roving.destroy(); el.textContent = ''; el.classList.remove('vk-fm'); }
+      destroy: function () { off.forEach(function (f) { f(); }); off = []; el.textContent = ''; el.classList.remove('vk-fm'); }
     };
     panes[0].sec.setAttribute('data-active', '');
     buildKeys();

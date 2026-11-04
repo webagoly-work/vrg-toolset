@@ -24,7 +24,6 @@
 .vk-table__input:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: 0; border-color: var(--vk-accent); }
 .vk-table__tools { display: flex; align-items: center; gap: var(--vk-space-2); margin-left: auto; }
 .vk-table__tools .vk-mini { --_s: var(--vk-control-h); }
-.vk-table__tools .vk-mini__cap { display: none; }
 
 /* ---------- grid ---------- */
 .vk-table__scroll { position: relative; overflow: auto; max-height: var(--vk-table-max-h); overscroll-behavior: contain;

@@ -25,10 +25,11 @@
     return legacy(text);
     function legacy(t) {
       return new Promise(function (ok, fail) {
+        var back = document.activeElement;
         var ta = VK.el('textarea', { 'aria-hidden': 'true', style: { position: 'fixed', left: '-9999px', top: '0' } }); ta.value = t;
         document.body.appendChild(ta); ta.select();
         var r = false; try { r = document.execCommand('copy'); } catch (e) { r = false; }
-        ta.remove(); if (r) ok(); else fail(new Error('copy'));
+        ta.remove(); if (back && back.focus) back.focus({ preventScroll: true }); if (r) ok(); else fail(new Error('copy'));
       });
     }
   }

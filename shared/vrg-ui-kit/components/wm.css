@@ -49,6 +49,8 @@
 .vk-wm__body--flush { padding: 0; }
 .vk-wm__resize { position: absolute; right: 0; bottom: 0; width: 14px; height: 14px; cursor: nwse-resize; touch-action: none;
   background: linear-gradient(135deg, transparent 0 55%, var(--vk-line-strong) 55% 62%, transparent 62% 72%, var(--vk-line-strong) 72% 79%, transparent 79%); }
+.vk-wm__win[data-sheet] { border-radius: 0; border-left-width: 0; border-right-width: 0; }
+.vk-wm__win[data-sheet] > .vk-wm__resize,
 .vk-wm__win[data-state="max"] > .vk-wm__resize, .vk-wm__win[data-state="left"] > .vk-wm__resize, .vk-wm__win[data-state="right"] > .vk-wm__resize { display: none; }
 [data-vk-density="touch"] .vk-wm__resize { width: 22px; height: 22px; }
 

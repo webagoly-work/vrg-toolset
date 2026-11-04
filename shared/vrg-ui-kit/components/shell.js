@@ -2,7 +2,8 @@
      var sh = VK.shell.mount(el, {
        mode: 'normal' | 'hud',
        docks: {left: {collapsed:false, size:240}, right: {size:260}, bottom: {collapsed:true, size:180}},
-       autoCollapse: 720,          // side docks fold to rails while the frame is narrower than this (px), and come back
+       autoCollapse: 720,          // side docks fold to rails while the frame is narrower than this (px, default 480, false = off)
+       touchCollapse: 1100,        // …and in touch density while narrower than this (default 1100); they come back when wider
        labels: {left:'Bal dokk', …}, onChange(state) })
      sh.toggle(side, open?) · sh.collapsed(side) · sh.setSize(side, px) · sh.setMode('hud'|'normal') · sh.toggleMode()
      sh.mode() · sh.state() → {mode, left:{collapsed,size}, …} · sh.refreshRails() · sh.destroy()
@@ -114,21 +115,27 @@
     }
     function changed() { if (opts.onChange) opts.onChange(state()); }
 
-    // auto-collapse side docks below a width, restore them above it (unless the user toggled meanwhile)
-    if (opts.autoCollapse && root.ResizeObserver) {
-      ro = new ResizeObserver(function () {
-        var narrow = el.clientWidth < opts.autoCollapse;
-        if (narrow && !auto) {
-          auto = { prev: { left: collapsed('left'), right: collapsed('right') }, touched: {} };
-          ['left', 'right'].forEach(function (s) { if (docks[s] && !collapsed(s)) { buildRail(s); docks[s].setAttribute('data-collapsed', ''); } });
-          changed();
-        } else if (!narrow && auto) {
-          var a = auto; auto = null;
-          ['left', 'right'].forEach(function (s) { if (docks[s] && !a.touched[s] && !a.prev[s]) docks[s].removeAttribute('data-collapsed'); });
-          changed();
-        }
-      });
+    // auto-collapse side docks below a width (and below touchCollapse in touch density), restore them above it
+    // (unless the user toggled meanwhile)
+    var autoW = opts.autoCollapse === undefined ? 480 : opts.autoCollapse, touchW = opts.touchCollapse === undefined ? 1100 : opts.touchCollapse;
+    function isTouch() { var d = el.closest('[data-vk-density]'); return !!(d && d.getAttribute('data-vk-density') === 'touch'); }
+    function evalAuto() {
+      var w = el.clientWidth; if (!w) return;
+      var narrow = w < autoW || (isTouch() && w < touchW);
+      if (narrow && !auto) {
+        auto = { prev: { left: collapsed('left'), right: collapsed('right') }, touched: {} };
+        ['left', 'right'].forEach(function (s) { if (docks[s] && !collapsed(s)) { buildRail(s); docks[s].setAttribute('data-collapsed', ''); } });
+        changed();
+      } else if (!narrow && auto) {
+        var a = auto; auto = null;
+        ['left', 'right'].forEach(function (s) { if (docks[s] && !a.touched[s] && !a.prev[s]) docks[s].removeAttribute('data-collapsed'); });
+        changed();
+      }
+    }
+    if (autoW !== false && root.ResizeObserver) {
+      ro = new ResizeObserver(evalAuto);
       ro.observe(el);
+      document.addEventListener('vk:density', evalAuto);
     }
 
     function onPanelEvt(e) {
@@ -162,7 +169,7 @@
       refreshRails: function () { SIDES.forEach(buildRail); },
       hasDock: function (s) { return !!docks[s]; },
       destroy: function () {
-        if (ro) ro.disconnect();
+        if (ro) { ro.disconnect(); document.removeEventListener('vk:density', evalAuto); }
         Object.keys(rovs).forEach(function (s) { rovs[s].destroy(); rails[s].remove(); });
         el.removeEventListener('vk:panelclose', onPanelEvt); el.removeEventListener('vk:panelopen', onPanelEvt); el.removeEventListener('vk:panelstate', onPanelEvt);
         setMode('normal');

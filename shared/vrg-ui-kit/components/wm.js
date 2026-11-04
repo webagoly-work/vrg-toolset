@@ -1,7 +1,8 @@
 /* VRG UI Kit — components/wm.js — window manager for the VRG Desktop: floating, focus/z-order, taskbar of minis,
    minimise, maximise, snap to halves, tile all, keyboard move/resize mode.
      var wm = VK.wm.mount(areaEl, {taskbar: Element (optional: default is a strip inside the area), taskbarLabel:'Ablakok',
-                                   glass: true, onChange(list)})
+                                   glass: true, sheetBelow: 480, onChange(list)})
+     While the area is narrower than sheetBelow (px), floating windows lay out as full-width sheets (data-sheet).
      var id = wm.open({id, title:'Kábelméretezés', icon:'cable', tag:'CALC-02', content: Element | 'text',
                        x, y, w:360, h:240, minW:200, minH:120, flush:false, onClose(id) → false vetoes})
      wm.focus(id) · wm.close(id) · wm.minimize(id) · wm.restore(id) · wm.maximize(id, on?) · wm.snap(id, 'left'|'right')
@@ -40,6 +41,7 @@
     taskbar.appendChild(VK.el('span.vk-wm__taskbar-tag', { 'aria-hidden': 'true', text: opts.taskbarTag || 'ABLAKOK' }));
     var trov = VK.focus.roving(taskbar, { items: '.vk-mini', orientation: 'horizontal', typeahead: false });
 
+    var sheetW = opts.sheetBelow === undefined ? 480 : opts.sheetBelow || 0;
     var wins = [], z = 0, activeW = null, liveT = 0, n = 0;
     function say(msg) { clearTimeout(liveT); live.textContent = ''; liveT = setTimeout(function () { live.textContent = msg; }, 60); }
     function get(id) { return typeof id === 'object' && id ? id : wins.find(function (w) { return w.id === id; }) || null; }
@@ -55,6 +57,7 @@
       if (w.state === 'left') return { x: 0, y: 0, w: Math.round(A.w / 2), h: A.h };
       if (w.state === 'right') return { x: Math.round(A.w / 2), y: 0, w: A.w - Math.round(A.w / 2), h: A.h };
       var r = w.rect;
+      if (A.w < sheetW) return { x: 0, y: VK.clamp(r.y, 0, Math.max(0, A.h - Math.min(r.h, A.h))), w: A.w, h: Math.min(Math.max(r.h, w.minH), A.h) };
       r.w = VK.clamp(r.w, Math.min(w.minW, A.w), A.w); r.h = VK.clamp(r.h, Math.min(w.minH, A.h), A.h);
       r.x = VK.clamp(r.x, 0, Math.max(0, A.w - r.w)); r.y = VK.clamp(r.y, 0, Math.max(0, A.h - r.h));
       return r;
@@ -64,6 +67,7 @@
       if (anim && !VK.reducedMotion()) { w.el.setAttribute('data-anim', ''); clearTimeout(w.animT); w.animT = setTimeout(function () { w.el.removeAttribute('data-anim'); }, 400); }
       s.left = r.x + 'px'; s.top = r.y + 'px'; s.width = r.w + 'px'; s.height = r.h + 'px';
       w.el.dataset.state = w.state;
+      if (w.state === 'normal' && avail().w < sheetW) w.el.setAttribute('data-sheet', ''); else w.el.removeAttribute('data-sheet');
       if (w.maxMini) { var on = w.state === 'max'; VK.mini.set(w.maxMini, { pressed: on }); setIcon(w.maxMini, on ? 'minimize' : 'maximize'); relabel(w.maxMini, on ? 'Visszaállítás' : 'Teljes méret'); }
     }
     function relabel(m, s) { m.dataset.label = s; m.title = s; VK.mini.set(m, {}); }

@@ -43,7 +43,9 @@
 .vk-menu__sep { height: var(--vk-border-w); margin: var(--vk-space-1) var(--vk-space-2); background: var(--vk-line-strong); }
 
 /* ---------- menubar ---------- */
-.vk-menubar { display: flex; align-items: stretch; gap: var(--vk-space-1); min-width: 0; flex-wrap: wrap; }
+.vk-menubar { display: flex; align-items: stretch; gap: var(--vk-space-1); min-width: 0; flex-wrap: nowrap; overflow: hidden; padding: 2px; }
+.vk-menubar__item { flex: none; }
+.vk-menubar__item[hidden] { display: none; }
 .vk-menubar__item { display: inline-flex; align-items: center; gap: var(--vk-space-2); min-height: max(var(--vk-control-h), var(--vk-target-min));
   padding: 0 var(--vk-space-3); border: var(--vk-border-w) solid transparent; border-radius: var(--vk-radius-sm);
   background: transparent; color: var(--vk-text); font: inherit; font-size: var(--vk-fs-md); cursor: default; }

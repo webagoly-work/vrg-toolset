@@ -43,6 +43,14 @@
     .f02-pals > figure { margin: 0; min-width: 0; }
     .f02-pals .vk-palette__box--inline { max-height: 21rem; }
     [data-vk-density="touch"] .f02-host { height: 420px; }
+    #f02-menubar { flex: 1 1 12rem; min-width: 0; }
+    #f02-place { flex-wrap: wrap; max-width: 100%; }
+    .f02-card[aria-selected="true"] { background: linear-gradient(var(--vk-select-bg), var(--vk-select-bg)), var(--vk-surface-1); }
+    @media (max-width: 640px) {
+      .f02-pl-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      .f02-bar > .vk-label { display: none; }
+      .f02-canvas { padding: var(--vk-space-3); }
+    }
   </style>
   <header class="g-sec__head">
     <span class="g-sec__num">02</span>
@@ -408,7 +416,7 @@
     VK.actions.forSurface('menu:toolbar:plan').forEach(function (a) {
       var on = VK.actions.checked(a);
       var b = VK.el('button.vk-btn.vk-btn--sm', { type: 'button', role: 'radio', 'aria-checked': String(on), tabindex: on ? '0' : '-1', 'data-action': a.id, title: a.label },
-        [VK.icon(a.icon), a.label.split(': ')[1]]);
+        [VK.icon(a.icon), VK.el('span.f02-pl-t', null, a.label.split(': ')[1])]);
       b.addEventListener('click', function () { VK.actions.run(a.id); });
       g.appendChild(b);
       if (had === a.id) b.focus();

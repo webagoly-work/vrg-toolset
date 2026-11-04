@@ -54,6 +54,7 @@
     p.ink = p.paper === p.text ? p.sunken : p.text;       // the darker
     p.line = flat(p.line, p.sunken); p.lineS = flat(p.lineS, p.sunken);
     p.font = VK.token('--vk-font-mono', el) || 'monospace';
+    p.fs2 = parseFloat(VK.token('--vk-fs-2xs', el)) || 10;   // canvas labels never go below the smallest UI text size
     return p;
   }
   function heatColour(p, h) {
@@ -273,7 +274,7 @@
     function buildTools() {
       tools.textContent = ''; minis = [];
       VK.actions.forSurface('toolbar:citymap', { citymap: inst }, { all: true }).forEach(function (a) {
-        var b = VK.mini.fromAction(a, { citymap: inst }); b.dataset.size = 'sm'; minis.push({ b: b, a: a }); tools.appendChild(b);
+        var b = VK.mini.fromAction(a, { citymap: inst }); b.dataset.size = 'sm'; b.dataset.cap = 'hidden'; minis.push({ b: b, a: a }); tools.appendChild(b);
       });
       if (inst._rov) inst._rov.destroy();
       inst._rov = VK.focus.roving(tools, { orientation: 'horizontal', items: '.vk-mini', typeahead: false });
@@ -462,7 +463,7 @@
       });
       // ring hubs: dark disc, light core
       var dark = lum(p.text) < lum(p.sunken) ? p.text : p.sunken, lite = dark === p.text ? p.s2 : p.text;
-      g.font = '600 ' + Math.max(9, 10 * Math.min(1.4, F.s * 1.2)) / F.s + 'px ' + p.font;
+      g.font = '600 ' + Math.max(p.fs2, 10 * Math.min(1.4, F.s * 1.2)) / F.s + 'px ' + p.font;
       M.hubs.forEach(function (h, k) {
         g.beginPath(); g.arc(h.x, h.y, k === 0 ? 17 : 13, 0, 6.2832); g.fillStyle = css(dark); g.fill();
         g.lineWidth = 3; g.strokeStyle = css(road); g.stroke();

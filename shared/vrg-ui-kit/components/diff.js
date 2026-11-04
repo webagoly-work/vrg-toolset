@@ -167,7 +167,7 @@
       var hs = hunks(); if (!hs.length) return;
       var foc = document.activeElement && body.contains(document.activeElement) ? +document.activeElement.dataset.op : NaN;
       var here = isNaN(foc) ? (cur >= 0 ? hs[cur] : -1) : foc, n;
-      if (dir > 0) { n = hs.findIndex(function (h) { return h > here; }); if (n < 0) n = 0; }
+      if (dir > 0) { n = hs.findIndex(function (h) { return cur < 0 ? h >= here : h > here; }); if (n < 0) n = 0; }
       else {
         var before = hs.filter(function (h) { return h < here; }).length;   // hunks starting before the focus
         var inside = before > 0 && sameHunk(here, hs[before - 1]);
