@@ -1,0 +1,44 @@
+/* VRG UI Kit — theme "Mélyvíz", the VRG dev-side style mapped onto kit tokens.
+   Source of truth: shared/melyviz.css (--mv-*). Values copied here, not imported, so the kit stays
+   self-contained; if melyviz.css changes, update this mapping (README: "Mélyvíz mapping").
+   M1 ice = instrument / you, warm = activity · M5 smoked glass, 1 px hairlines, square controls, two cut
+   corners, no drop shadows · M6 mono readouts, condensed titles. */
+:root[data-vk-theme="melyviz"], [data-vk-theme="melyviz"] {
+  color-scheme: dark;
+  --vk-bg: #0a141c;               /* --mv-bg */
+  --vk-bg-sunken: #071017;
+  --vk-surface-1: #121c24;        /* --mv-panel-solid */
+  --vk-surface-2: #17232c;        /* --mv-raised */
+  --vk-surface-3: #1d2a34;
+  --vk-overlay: rgba(20, 30, 38, .74);   /* --mv-panel */
+  --vk-scrim: rgba(4, 9, 13, .6);
+  --vk-line: rgba(232, 240, 246, .15);       /* --mv-line */
+  --vk-line-strong: rgba(232, 240, 246, .34);/* --mv-line-strong */
+  --vk-border-control: #6c7880;
+  --vk-text: #e8f0f6;             /* --mv-text */
+  --vk-text-muted: #a6afb7;       /* --mv-dim */
+  --vk-text-faint: #646d74;       /* --mv-faint */
+  --vk-text-on-accent: #071318;
+  --vk-text-on-solid: #0a141c;
+  --vk-accent: #93d3e6;           /* --mv-accent (ice) */
+  --vk-accent-hover: #b9e3f0;
+  --vk-activity: #e8a873;         /* --mv-warm */
+  --vk-focus: #93d3e6;
+  --vk-ok: #8bcca1;               /* --mv-ok */
+  --vk-warn: #e3be7b;             /* --mv-warn */
+  --vk-crit: #e4877d;             /* --mv-crit */
+  --vk-info: #9db8e8;
+  --vk-idea: #b4a7e6;             /* MindMap THEMES.melyviz.violet */
+  --vk-heat-0: #17232c; --vk-heat-1: #3a2e25; --vk-heat-2: #6a4a30; --vk-heat-3: #a87048; --vk-heat-4: #e8a873;
+  --vk-term-bg: #071017;
+  --vk-term-text: #d8e4ec;
+  --vk-shadow-1: none;
+  --vk-shadow-overlay: none;      /* M5: no drop shadows — glass + hairline carry the layer */
+  --vk-glow: 0 0 3px rgba(147, 211, 230, .5);  /* --mv-glow 3px, --mv-accent-glow */
+  --vk-blur: 12px;                /* --mv-blur */
+  --vk-radius-sm: 0; --vk-radius: 0; --vk-radius-lg: 0;   /* M5: square controls (dots excepted) */
+  --vk-cut: 6px;                  /* --mv-cut */
+  --vk-font-voice: Bahnschrift, "VK Barlow Condensed", "DIN Alternate", "Arial Narrow", sans-serif;
+  --vk-font-mono: "Cascadia Mono", "Cascadia Code", "VK JetBrains Mono", Consolas, ui-monospace, monospace;
+  --vk-font-sans: "Segoe UI", "VK Inter", system-ui, sans-serif;
+}

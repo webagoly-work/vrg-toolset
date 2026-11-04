@@ -1,0 +1,74 @@
+/* VRG UI Kit — gallery chrome only (g-*). Tokens only, like every component. */
+html, body { margin: 0; min-height: 100%; }
+body { background: var(--vk-bg); color: var(--vk-text); }
+.g-skip { position: absolute; left: var(--vk-space-3); top: -60px; z-index: var(--vk-z-toast); background: var(--vk-surface-2); }
+.g-skip:focus { top: var(--vk-space-3); }
+
+.g-top { position: sticky; top: 0; z-index: var(--vk-z-sticky); display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-4);
+  justify-content: space-between; padding: var(--vk-space-3) var(--vk-gutter);
+  background: var(--vk-overlay); border-bottom: var(--vk-border-w) solid var(--vk-line-strong);
+  -webkit-backdrop-filter: blur(var(--vk-blur)); backdrop-filter: blur(var(--vk-blur)); }
+.g-top__brand { display: flex; align-items: center; gap: var(--vk-space-3); }
+.g-top__brand .vk-title { font-size: var(--vk-fs-xl); }
+.g-mark { width: 26px; height: 26px; fill: none; stroke: var(--vk-accent); stroke-width: 1.6; }
+.g-mark circle { fill: var(--vk-accent); stroke: none; }
+.g-top__ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-3); }
+.g-kbd { font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); border: var(--vk-border-w) solid var(--vk-line-strong);
+  border-radius: var(--vk-radius-sm); padding: 2px 4px; margin-left: var(--vk-space-2); }
+
+.g-body { display: grid; grid-template-columns: 220px minmax(0, 1fr); align-items: start; }
+.g-nav { position: sticky; top: 56px; max-height: calc(100vh - 56px); overflow: auto; padding: var(--vk-space-5) var(--vk-space-4);
+  border-right: var(--vk-border-w) solid var(--vk-line); }
+.g-nav ol { list-style: none; margin: 0 0 var(--vk-space-5); padding: 0; display: grid; gap: 2px; }
+.g-nav a { display: flex; gap: var(--vk-space-3); align-items: baseline; padding: var(--vk-space-2) var(--vk-space-3); min-height: var(--vk-target-min);
+  color: var(--vk-text-muted); text-decoration: none; border-left: 2px solid transparent; font-size: var(--vk-fs-sm); }
+.g-nav a:hover { color: var(--vk-text); background: var(--vk-hover-bg); }
+.g-nav a[aria-current="true"] { color: var(--vk-accent); border-left-color: var(--vk-accent); }
+.g-nav a .vk-num { color: var(--vk-text-muted); font-size: var(--vk-fs-2xs); }
+
+.g-main { padding: var(--vk-space-6) var(--vk-gutter) 30vh; min-width: 0; outline: none; }
+.g-sec { margin: 0 auto var(--vk-space-7); max-width: 1280px; scroll-margin-top: 72px; }
+.g-sec__head { display: grid; grid-template-columns: auto 1fr; column-gap: var(--vk-space-4); align-items: baseline;
+  padding-bottom: var(--vk-space-4); margin-bottom: var(--vk-space-5); border-bottom: var(--vk-border-w) solid var(--vk-line-strong); }
+.g-sec__num { font: var(--vk-fs-2xl)/1 var(--vk-font-mono); color: var(--vk-accent); grid-row: span 2; }
+.g-sec__head h1, .g-sec__head h2 { margin: 0; font-size: var(--vk-fs-2xl); }
+.g-sec__lead { grid-column: 2; margin: var(--vk-space-2) 0 0; color: var(--vk-text-muted); max-width: 75ch; }
+
+.g-demo { margin: 0 0 var(--vk-space-6); padding: var(--vk-space-5); background: var(--vk-surface-1);
+  border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius-lg); min-width: 0; }
+.g-demo__title { font-family: var(--vk-font-sans); font-size: var(--vk-fs-lg); letter-spacing: 0; text-transform: none; margin: 0 0 var(--vk-space-2); }
+.g-demo__title code { font-size: var(--vk-fs-xs); color: var(--vk-text-muted); margin-left: var(--vk-space-2); font-weight: var(--vk-fw-regular); }
+.g-demo__note { color: var(--vk-text-muted); font-size: var(--vk-fs-sm); margin: 0 0 var(--vk-space-4); max-width: 80ch; }
+.g-demo__note kbd { font: var(--vk-fs-2xs)/1 var(--vk-font-mono); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-sm); padding: 1px 4px; }
+.g-row { display: flex; flex-wrap: wrap; gap: var(--vk-space-4); align-items: center; margin-bottom: var(--vk-space-4); }
+.g-grid { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+.g-stage { position: relative; min-height: 220px; background: var(--vk-bg); border: var(--vk-border-w) solid var(--vk-line);
+  border-radius: var(--vk-radius); overflow: hidden; }
+.g-cap { font: var(--vk-fs-2xs)/1.3 var(--vk-font-mono); color: var(--vk-text-muted); text-transform: uppercase; letter-spacing: var(--vk-tracking-label); margin: var(--vk-space-2) 0; }
+
+/* foundation section */
+.g-swatches { display: grid; gap: var(--vk-space-2); grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.g-sw { display: grid; grid-template-columns: 28px 1fr; gap: var(--vk-space-3); align-items: center; padding: var(--vk-space-2);
+  border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); background: var(--vk-surface-1); min-width: 0; }
+.g-sw i { width: 28px; height: 28px; border-radius: var(--vk-radius-sm); border: var(--vk-border-w) solid var(--vk-line-strong); background: var(--sw); }
+.g-sw code { font-size: var(--vk-fs-2xs); color: var(--vk-text-muted); display: block; overflow: hidden; text-overflow: ellipsis; }
+.g-sw b { font-weight: var(--vk-fw-strong); font-size: var(--vk-fs-xs); display: block; }
+.g-icons { display: grid; gap: var(--vk-space-2); grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
+.g-ico { display: grid; justify-items: center; gap: var(--vk-space-2); padding: var(--vk-space-3) var(--vk-space-2); border: var(--vk-border-w) solid var(--vk-line);
+  border-radius: var(--vk-radius); background: var(--vk-surface-1); color: var(--vk-text); font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); text-align: center; overflow-wrap: anywhere; }
+.g-ico .vk-icon { width: 24px; height: 24px; }
+.g-type > * { margin: 0 0 var(--vk-space-3); }
+
+@media (max-width: 860px) {
+  .g-body { grid-template-columns: minmax(0, 1fr); }
+  .g-nav { position: static; max-height: none; border-right: 0; border-bottom: var(--vk-border-w) solid var(--vk-line); }
+  .g-nav ol { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .g-main { padding: var(--vk-space-5) var(--vk-space-5) 30vh; }
+  .g-demo { padding: var(--vk-space-4); }
+}
+@media (max-width: 480px) {
+  .g-top__ctrl .vk-label { display: none; }
+  .g-sec__head { grid-template-columns: 1fr; }
+  .g-sec__num { grid-row: auto; font-size: var(--vk-fs-lg); }
+  .g-sec__lead { grid-column: 1; }
+}

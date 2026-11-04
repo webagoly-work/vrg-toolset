@@ -1,0 +1,38 @@
+/* VRG UI Kit — theme "Éj" (dark, the default). Near-black, white hairlines, colour only where it means
+   something. Identical to the values in base.css; selecting it explicitly resets any other theme. */
+:root[data-vk-theme="dark"], [data-vk-theme="dark"] {
+  color-scheme: dark;
+  --vk-bg: #0b0d0f;
+  --vk-bg-sunken: #070809;
+  --vk-surface-1: #111417;
+  --vk-surface-2: #171b1f;
+  --vk-surface-3: #1f2429;
+  --vk-overlay: rgba(17, 20, 23, .9);
+  --vk-scrim: rgba(3, 4, 5, .62);
+  --vk-line: rgba(235, 240, 245, .11);
+  --vk-line-strong: rgba(235, 240, 245, .24);
+  --vk-border-control: #69737c;
+  --vk-text: #eef2f5;
+  --vk-text-muted: #a5aeb6;
+  --vk-text-faint: #6c757d;
+  --vk-text-on-accent: #061418;
+  --vk-text-on-solid: #0b0d0f;
+  --vk-accent: #9fd8ea;
+  --vk-accent-hover: #c2e7f3;
+  --vk-activity: #eaa46f;
+  --vk-focus: #9fd8ea;
+  --vk-ok: #84d0a0;
+  --vk-warn: #e7c27a;
+  --vk-crit: #f08479;
+  --vk-info: #98b8f4;
+  --vk-idea: #bba9f2;
+  --vk-layer-1: #f08f6c; --vk-layer-2: #e6cd62; --vk-layer-3: #7db3f2; --vk-layer-4: #b69bf2;
+  --vk-layer-5: #84d19a; --vk-layer-6: #5fd0c3; --vk-layer-7: #f08fbf; --vk-layer-8: #aab4bd;
+  --vk-heat-0: #171b1f; --vk-heat-1: #3d2c20; --vk-heat-2: #6f4628; --vk-heat-3: #ad6c3c; --vk-heat-4: #eaa46f;
+  --vk-term-bg: #070809;
+  --vk-term-text: #d9e3ea;
+  --vk-shadow-1: 0 1px 0 rgba(0, 0, 0, .35);
+  --vk-shadow-overlay: 0 12px 32px rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .5);
+  --vk-glow: 0 0 6px rgba(159, 216, 234, .35);
+}
+:root:not([data-vk-theme]) { color-scheme: dark; }

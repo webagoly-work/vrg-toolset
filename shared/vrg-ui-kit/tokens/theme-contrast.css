@@ -1,0 +1,42 @@
+/* VRG UI Kit — theme "Kontraszt" (high contrast). Pure black, white lines, a yellow focus ring that
+   no status colour shares. Soft fills become outlines' partners at a higher mix so they stay visible. */
+:root[data-vk-theme="contrast"], [data-vk-theme="contrast"] {
+  color-scheme: dark;
+  --vk-bg: #000000;
+  --vk-bg-sunken: #000000;
+  --vk-surface-1: #000000;
+  --vk-surface-2: #0d0d0d;
+  --vk-surface-3: #1a1a1a;
+  --vk-overlay: #000000;
+  --vk-scrim: rgba(0, 0, 0, .82);
+  --vk-line: #8c8c8c;
+  --vk-line-strong: #ffffff;
+  --vk-border-control: #ffffff;
+  --vk-text: #ffffff;
+  --vk-text-muted: #e2e2e2;
+  --vk-text-faint: #b8b8b8;
+  --vk-text-on-accent: #000000;
+  --vk-text-on-solid: #000000;
+  --vk-accent: #5ce1ff;
+  --vk-accent-hover: #a8f0ff;
+  --vk-activity: #ffb36b;
+  --vk-focus: #ffe14d;
+  --vk-ok: #6dff9e;
+  --vk-warn: #ffe14d;
+  --vk-crit: #ff7a6e;
+  --vk-info: #93b9ff;
+  --vk-idea: #d6bdff;
+  --vk-layer-1: #ff9a70; --vk-layer-2: #ffe14d; --vk-layer-3: #7fc0ff; --vk-layer-4: #cfa8ff;
+  --vk-layer-5: #6dff9e; --vk-layer-6: #4dffe9; --vk-layer-7: #ff9ad0; --vk-layer-8: #e2e2e2;
+  --vk-heat-0: #1a1a1a; --vk-heat-1: #5c3b10; --vk-heat-2: #9e5f1c; --vk-heat-3: #e08a2e; --vk-heat-4: #ffc27a;
+  --vk-term-bg: #000000;
+  --vk-term-text: #ffffff;
+  --vk-shadow-1: none;
+  --vk-shadow-overlay: 0 0 0 1px #ffffff;
+  --vk-glow: none;
+  --vk-blur: 0px;
+  --vk-accent-soft: color-mix(in srgb, var(--vk-accent) 26%, transparent);
+  --vk-select-bg: color-mix(in srgb, var(--vk-accent) 28%, transparent);
+  --vk-hover-bg: color-mix(in srgb, var(--vk-text) 14%, transparent);
+  --vk-focus-w: 3px;
+}

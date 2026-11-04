@@ -1,0 +1,83 @@
+/* VRG UI Kit — components/base.css
+   Opt-in base layer + shared utilities. The base layer applies only under .vk (put class="vk" on <html>
+   or on any container) and has zero specificity (:where), so an app's own rules always win.
+   Utilities (.vk-*) work anywhere. Depends on: tokens. */
+
+/* ---------- base layer ---------- */
+:where(.vk) { background: var(--vk-bg); color: var(--vk-text); font-family: var(--vk-font-sans);
+  font-size: var(--vk-fs-md); line-height: var(--vk-lh); -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility; scrollbar-color: var(--vk-line-strong) transparent; scrollbar-width: thin; }
+:where(.vk) :where(*, *::before, *::after) { box-sizing: border-box; }
+:where(.vk) :where(h1, h2, h3, h4) { font-family: var(--vk-font-voice); font-weight: var(--vk-fw-strong);
+  letter-spacing: var(--vk-tracking-title); line-height: var(--vk-lh-tight); margin: 0 0 var(--vk-space-3); }
+:where(.vk) :where(h1) { font-size: var(--vk-fs-3xl); }
+:where(.vk) :where(h2) { font-size: var(--vk-fs-2xl); }
+:where(.vk) :where(h3) { font-size: var(--vk-fs-xl); }
+:where(.vk) :where(h4) { font-size: var(--vk-fs-lg); }
+:where(.vk) :where(p) { margin: 0 0 var(--vk-space-3); }
+:where(.vk) :where(code, kbd, pre, samp) { font-family: var(--vk-font-mono); font-size: .92em; }
+:where(.vk) :where(a) { color: var(--vk-accent); text-underline-offset: 2px; }
+:where(.vk) :where(a:hover) { color: var(--vk-accent-hover); }
+:where(.vk) :where(hr) { border: 0; border-top: var(--vk-border-w) solid var(--vk-line); margin: var(--vk-space-4) 0; }
+:where(.vk) :where(button, input, select, textarea) { font: inherit; color: inherit; }
+:where(.vk) ::selection { background: var(--vk-accent-soft); color: var(--vk-text); }
+:where(.vk) :where(:focus-visible) { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
+:where(.vk) :where(:focus:not(:focus-visible)) { outline: none; }
+:where(.vk) :where([hidden]) { display: none !important; }
+:where(.vk) :where(table) { border-collapse: collapse; }
+
+/* every focusable kit element gets the same ring, even outside .vk */
+[class^="vk-"]:focus-visible, [class*=" vk-"]:focus-visible {
+  outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
+
+/* ---------- icons (sprite: icons/sprite.svg, injected by icons/sprite.js or inline.js) ---------- */
+.vk-icon { width: var(--vk-icon-size); height: var(--vk-icon-size); flex: none; display: inline-block;
+  vertical-align: -0.2em; fill: none; stroke: currentColor; stroke-width: var(--vk-icon-stroke);
+  stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+.vk-icon--sm { width: calc(var(--vk-icon-size) * .8125); height: calc(var(--vk-icon-size) * .8125); }
+.vk-icon--lg { width: calc(var(--vk-icon-size) * 1.5); height: calc(var(--vk-icon-size) * 1.5); }
+
+/* ---------- type utilities ---------- */
+.vk-title { font-family: var(--vk-font-voice); font-weight: var(--vk-fw-strong); text-transform: uppercase;
+  letter-spacing: var(--vk-tracking-title); line-height: var(--vk-lh-tight); }
+.vk-label { font-family: var(--vk-font-mono); font-size: var(--vk-fs-2xs); text-transform: uppercase;
+  letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); line-height: var(--vk-lh-tight); }
+.vk-num { font-family: var(--vk-font-mono); font-variant-numeric: tabular-nums slashed-zero; }
+.vk-muted { color: var(--vk-text-muted); }
+.vk-mono { font-family: var(--vk-font-mono); }
+.vk-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+/* ---------- surface utilities ---------- */
+.vk-surface { background: var(--vk-surface-1); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-lg); }
+.vk-surface--2 { background: var(--vk-surface-2); }
+.vk-surface--3 { background: var(--vk-surface-3); }
+.vk-sunken { background: var(--vk-bg-sunken); border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); }
+.vk-glass { background: var(--vk-overlay); border: var(--vk-border-w) solid var(--vk-line-strong);
+  -webkit-backdrop-filter: blur(var(--vk-blur)) saturate(1.2); backdrop-filter: blur(var(--vk-blur)) saturate(1.2); }
+/* chamfer on two opposite corners (top-left, bottom-right), with the cut drawn as a hairline */
+.vk-cut { border-radius: 0;
+  clip-path: polygon(var(--vk-cut) 0, 100% 0, 100% calc(100% - var(--vk-cut)), calc(100% - var(--vk-cut)) 100%, 0 100%, 0 var(--vk-cut));
+  background-image:
+    linear-gradient(to bottom right, transparent 50%, var(--vk-line-strong) 50%, var(--vk-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px)),
+    linear-gradient(to top left, transparent 50%, var(--vk-line-strong) 50%, var(--vk-line-strong) calc(50% + 1.2px), transparent calc(50% + 1.2px));
+  background-position: left top, right bottom; background-size: var(--vk-cut) var(--vk-cut); background-repeat: no-repeat;
+  background-origin: border-box; }
+.vk-hairline-b { border-bottom: var(--vk-border-w) solid var(--vk-line); }
+.vk-hairline-t { border-top: var(--vk-border-w) solid var(--vk-line); }
+
+/* ---------- layout utilities ---------- */
+.vk-row { display: flex; align-items: center; gap: var(--vk-space-3); min-width: 0; }
+.vk-stack { display: flex; flex-direction: column; gap: var(--vk-space-3); min-width: 0; }
+.vk-grow { flex: 1 1 auto; min-width: 0; }
+.vk-scroll { overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--vk-line-strong) transparent; }
+.vk-sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---------- status dot (used by many components; shape carries meaning too) ---------- */
+.vk-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+
+/* ---------- forced colours (Windows high contrast): let the system draw, keep focus visible ---------- */
+@media (forced-colors: active) {
+  .vk-glass, .vk-surface, .vk-sunken { forced-color-adjust: auto; border-color: CanvasText; }
+  [class^="vk-"]:focus-visible, [class*=" vk-"]:focus-visible { outline-color: Highlight; }
+}

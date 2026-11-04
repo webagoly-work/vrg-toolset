@@ -1,0 +1,33 @@
+{
+  "name": "vrg-ui-kit",
+  "version": "1.0.0",
+  "families": {
+    "1": "Shell / workspace",
+    "2": "Command layer",
+    "3": "Graph and topology",
+    "4": "Time views",
+    "5": "Data views",
+    "6": "Status and signals",
+    "7": "Decisions and input",
+    "8": "Agent / AI surfaces",
+    "9": "Small screens",
+    "10": "Program identity (emblem, city map, micrographics, textures)"
+  },
+  "tokens": ["tokens/base.css", "tokens/theme-dark.css", "tokens/theme-light.css", "tokens/theme-contrast.css", "tokens/theme-melyviz.css", "tokens/density.css"],
+  "fonts": "fonts/fonts.css",
+  "icons": { "sprite": "icons/sprite.svg", "index": "icons/icons.json", "injector": "icons/sprite.js" },
+  "components": [
+    { "name": "base", "files": ["components/base.css"], "deps": [], "families": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "icons": [], "tokens": [],
+      "summary": "Opt-in base layer under .vk, focus ring, .vk-icon, type/surface/layout utilities, .vk-cut chamfer, .vk-glass.", "api": "CSS only" },
+    { "name": "core", "files": ["components/core.js"], "deps": [], "families": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "icons": [], "tokens": [],
+      "summary": "VK namespace: el(), icon(), uid(), emitter(), fire(), place() popover positioning, token(), fold(), rng().", "api": "VK.el, VK.icon, VK.place, VK.token, VK.fold, VK.rng, VK.reducedMotion" },
+    { "name": "focus", "files": ["components/focus.js"], "deps": ["core"], "families": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "icons": [], "tokens": [],
+      "summary": "Keyboard plumbing: roving tabindex, focus trap, Shift+Arrow region hopping ([data-vk-hop]).", "api": "VK.focus.roving(el, opts), VK.focus.trap(el, opts), VK.focus.enableHop()" },
+    { "name": "actions", "files": ["actions.js"], "deps": [], "families": [2], "icons": [], "tokens": [],
+      "summary": "The one action registry: palette, menus, toolbars, status bar and shortcuts all read it.", "api": "VK.actions.register(a), forSurface(id, ctx), run(id), search(q), bindKeys(), keyLabel()" },
+    { "name": "button", "files": ["components/button.css"], "deps": ["base"], "families": [1, 2, 7], "icons": [], "tokens": [],
+      "summary": "Buttons: outline/primary/ghost/quiet/danger, icon, small, pressed; segmented .vk-btn-group.", "api": "CSS only" },
+    { "name": "mini", "files": ["components/mini.css", "components/mini.js"], "deps": ["base", "core"], "families": [1, 2, 6, 8, 9], "icons": ["dot"], "tokens": [],
+      "summary": "The MINI: every feature's icon that is also its button and its progress indicator (ring/ticks/square meter, states).", "api": "VK.mini.create(o), VK.mini.set(el, {progress, state, value, pressed}), VK.mini.fromAction(id)" }
+  ]
+}
