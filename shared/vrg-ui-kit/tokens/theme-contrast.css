@@ -31,6 +31,7 @@
   --vk-heat-0: #1a1a1a; --vk-heat-1: #5c3b10; --vk-heat-2: #9e5f1c; --vk-heat-3: #e08a2e; --vk-heat-4: #ffc27a;
   --vk-term-bg: #000000;
   --vk-term-text: #ffffff;
+  --vk-term-ok: #6dff9e; --vk-term-warn: #ffe14d; --vk-term-crit: #ff7a6e; --vk-term-info: #93b9ff; --vk-term-muted: #e2e2e2;
   --vk-shadow-1: none;
   --vk-shadow-overlay: 0 0 0 1px #ffffff;
   --vk-glow: none;

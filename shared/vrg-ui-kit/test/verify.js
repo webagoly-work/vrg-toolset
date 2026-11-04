@@ -50,6 +50,7 @@ function pairs() {
   for (let i = 1; i <= 8; i++) { P.push(['layer-' + i, 'bg', 3, 'wire']); P.push(['layer-' + i, 'surface-1', 3, 'wire']); }
   P.push(['heat-4', 'heat-0', 3, 'heat max']);
   P.push(['term-text', 'term-bg', 4.5, 'terminal']);
+  ['term-ok', 'term-warn', 'term-crit', 'term-info', 'term-muted'].forEach(t => P.push([t, 'term-bg', 4.5, 'terminal tone']));
   P.push(['text', 'select-bg@surface-1', 4.5, 'selected row']);
   P.push(['accent', 'accent-soft@surface-1', 4.5, 'pressed control']);
   P.push(['text', 'overlay@bg', 4.5, 'glass']);

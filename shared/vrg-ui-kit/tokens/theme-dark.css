@@ -31,6 +31,7 @@
   --vk-heat-0: #171b1f; --vk-heat-1: #3d2c20; --vk-heat-2: #6f4628; --vk-heat-3: #ad6c3c; --vk-heat-4: #eaa46f;
   --vk-term-bg: #070809;
   --vk-term-text: #d9e3ea;
+  --vk-term-ok: #84d0a0; --vk-term-warn: #e7c27a; --vk-term-crit: #f08479; --vk-term-info: #98b8f4; --vk-term-muted: #9ba7b1;
   --vk-shadow-1: 0 1px 0 rgba(0, 0, 0, .35);
   --vk-shadow-overlay: 0 12px 32px rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .5);
   --vk-glow: 0 0 6px rgba(159, 216, 234, .35);

@@ -17,7 +17,7 @@ No existing app or `shared/` file was changed. Adoption by the apps is left to l
 
 ## 1 · Adopt it in a single-file app
 
-### A. Inline only what you need (recommended for the single-file apps)
+### A. Inline only what you need (decision 2A: the way apps take the kit)
 
 ```bash
 node shared/vrg-ui-kit/inline.js table palette badge --themes dark,light --insert MyApp/app.html
@@ -25,7 +25,20 @@ node shared/vrg-ui-kit/inline.js table palette badge --themes dark,light --inser
 
 Put two markers in the app's `<head>` once, and the command fills the region between them. It adds the tokens,
 the chosen themes, density, every dependency in order, a sprite holding only the icons those components use,
-and one `<script>`. Re-run it to update.
+the vendored fonts (decision 6B: always inlined, about 130 kB; `--no-fonts` opts out), and one `<script>`.
+The begin marker records the component list, for example `<!-- vk:begin table palette badge --themes dark,light -->`,
+so later runs need no arguments:
+
+```bash
+node shared/vrg-ui-kit/inline.js --sync-app MyApp/app.html Other/app.html
+```
+
+```bash
+node shared/vrg-ui-kit/inline.js --check-app MyApp/app.html Other/app.html
+```
+
+`--sync-app` rebuilds each app's region from its own marker. `--check-app` exits 1 when a region differs from
+what the kit now builds (`DRIFT`), the same way `tools/melyviz-sync.js --check` guards the Mélyvíz copies.
 
 ```html
 <!-- vk:begin -->
@@ -34,7 +47,7 @@ and one `<script>`. Re-run it to update.
 
 | Option | Effect |
 |---|---|
-| `--fonts` | Embeds the three OFL fonts as `data:` URIs (about 130 kB). Without it the system fallbacks are used (Segoe UI, Bahnschrift, Cascadia Mono). |
+| `--no-fonts` | Leaves out the three OFL fonts, which are otherwise embedded as `data:` URIs (about 130 kB); the system fallbacks are then used (Segoe UI, Bahnschrift, Cascadia Mono). |
 | `--icons all` / `--icons a,b` | Sprite subset (default `used`). |
 | `--out file` | Writes the snippet to a file. |
 | `--list` | Shows the resolved order. |
@@ -57,7 +70,7 @@ and one `<script>`. Re-run it to update.
 
 Every JS file is an IIFE that attaches to `window.VK`. Each file can also be imported as an ES-module side
 effect (`import './components/table.js'`), and including a file twice is harmless. Firefox loads `file://` fonts
-only from the page's own folder or below; when that doesn't hold, use `--fonts`.
+only from the page's own folder or below, which is one more reason path A inlines them.
 
 ### Boot once per page
 
@@ -107,13 +120,14 @@ the second input.
 
 | Theme | `data-vk-theme` | Character |
 |---|---|---|
-| Éj (default) | `dark` | Near-black, white hairlines, ice + warm |
+| Éj (default, decision 4A) | `dark` | Near-black, white hairlines, ice + warm |
 | Papír | `light` | Drafting paper; status hues darkened for AA on white |
 | Kontraszt | `contrast` | Pure black, white lines, yellow focus ring no status shares, 3 px ring |
-| Mélyvíz | `melyviz` | `shared/melyviz.css` mapped onto kit tokens: slate-water ground, square corners, no shadows, Bahnschrift / Cascadia first |
+| Mélyvíz | `melyviz` | `shared/melyviz.css` mapped onto kit tokens: slate-water ground, square corners, no shadows, Bahnschrift / Cascadia first. Dev-side apps opt in per app, as they do today with `html.mv`. |
 
-**Mélyvíz mapping.** `shared/melyviz.css` exists. Its `--mv-*` values are copied (not imported) into
-`tokens/theme-melyviz.css`, with each source noted beside its token:
+**Mélyvíz mapping (decision 3A).** `shared/melyviz.css` stays the one source. `tokens/theme-melyviz.css` is
+**generated** from it by `tokens/melyviz-map.js`, and `node tools/melyviz-sync.js` now writes it along with the app
+copies; `--check` reports it as `DRIFT` when it is out of date. The mapping:
 
 - surfaces: `--mv-bg` → `--vk-bg`, `--mv-panel-solid` → `--vk-surface-1`, `--mv-raised` → `--vk-surface-2`,
   `--mv-panel` → `--vk-overlay`;
@@ -121,7 +135,8 @@ the second input.
 - the two temperatures: `--mv-accent` → `--vk-accent`, `--mv-warm` → `--vk-activity`;
 - states and glass: `--mv-ok/warn/crit` → `--vk-ok/warn/crit`, `--mv-cut`/`--mv-blur`/`--mv-glow` → `--vk-cut`/`--vk-blur`/`--vk-glow`.
 
-If `melyviz.css` changes, update that file by hand (open question 3).
+Values Mélyvíz does not define (surface-3, info, the heat scale, the terminal tones) are kit-owned constants in
+`melyviz-map.js`. Never edit `theme-melyviz.css` by hand.
 
 **Density** (`data-vk-density`):
 
@@ -181,6 +196,11 @@ Every token, its default value, and the value in each theme (`·` means the them
 | colour: heat scale (contribution grid, intensity) — warm = activity | `--vk-heat-4` | `#eaa46f` | `#8a4a17` | `#ffc27a` | `#e8a873` |  |
 | colour: terminal | `--vk-term-bg` | `#070809` | `#161c21` | `#000000` | `#071017` |  |
 | colour: terminal | `--vk-term-text` | `#d9e3ea` | `#dfe7ee` | `#ffffff` | `#d8e4ec` |  |
+| colour: terminal | `--vk-term-ok` | `var(--vk-ok)` | `#84d0a0` | `#6dff9e` | `#8bcca1` |  |
+| colour: terminal | `--vk-term-warn` | `var(--vk-warn)` | `#e7c27a` | `#ffe14d` | `#e3be7b` |  |
+| colour: terminal | `--vk-term-crit` | `var(--vk-crit)` | `#f08479` | `#ff7a6e` | `#e4877d` |  |
+| colour: terminal | `--vk-term-info` | `var(--vk-info)` | `#98b8f4` | `#93b9ff` | `#9db8e8` |  |
+| colour: terminal | `--vk-term-muted` | `#9ba7b1` | `#9ba7b1` | `#e2e2e2` | `#a6afb7` |  |
 | elevation (themes may set these to none: Mélyvíz has no drop shadows) | `--vk-shadow-1` | `0 1px 0 rgba(0, 0, 0, .35)` | `0 1px 0 rgba(18, 26, 32, .06)` | `none` | `none` |  |
 | elevation (themes may set these to none: Mélyvíz has no drop shadows) | `--vk-shadow-overlay` | `0 12px 32px rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .5)` | `0 12px 32px rgba(18, 26, 32, .18), 0 0 0 1px rgba(18, 26, 32, .08)` | `0 0 0 1px #ffffff` | `none` |  |
 | elevation (themes may set these to none: Mélyvíz has no drop shadows) | `--vk-glow` | `0 0 6px rgba(159, 216, 234, .35)` | `0 0 0 3px rgba(27, 102, 130, .16)` | `none` | `0 0 3px rgba(147, 211, 230, .5)` | emission around an "on" control |
@@ -218,8 +238,8 @@ Every token, its default value, and the value in each theme (`·` means the them
 | status vocabulary (aliases: change the meaning map here, not in components) | `--vk-wire-signal` | `var(--vk-layer-7)` | · | · | · |  |
 | status vocabulary (aliases: change the meaning map here, not in components) | `--vk-wire-other` | `var(--vk-layer-8)` | · | · | · |  |
 | type | `--vk-font-sans` | `"VK Inter", "Inter", "Segoe UI", system-ui, sans-serif` | · | · | `"Segoe UI", "VK Inter", system-ui, sans-serif` |  |
-| type | `--vk-font-voice` | `"VK Barlow Condensed", "Barlow Condensed", Bahnschrift, "DIN Alternate", "Arial Narrow", sans-serif` | · | · | `Bahnschrift, "VK Barlow Condensed", "DIN Alternate", "Arial Narrow", sans-serif` |  |
-| type | `--vk-font-mono` | `"VK JetBrains Mono", "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace` | · | · | `"Cascadia Mono", "Cascadia Code", "VK JetBrains Mono", Consolas, ui-monospace, monospace` |  |
+| type | `--vk-font-voice` | `"VK Barlow Condensed", "Barlow Condensed", Bahnschrift, "DIN Alternate", "Arial Narrow", sans-serif` | · | · | `Bahnschrift, "DIN Alternate", "Arial Narrow", "VK Barlow Condensed", sans-serif` |  |
+| type | `--vk-font-mono` | `"VK JetBrains Mono", "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace` | · | · | `"Cascadia Mono", "Cascadia Code", Consolas, "VK JetBrains Mono", ui-monospace, monospace` |  |
 | type | `--vk-fs-2xs` | `10px` | · | · | · |  |
 | type | `--vk-fs-xs` | `11px` | · | · | · |  |
 | type | `--vk-fs-sm` | `12px` | · | · | · |  |
@@ -392,42 +412,20 @@ The adversarial pass found and fixed:
   - The search clear button is mouse-only (Esc clears).
   - Ctrl+W is taken by the browser in a normal tab.
   - The floating toolbar is moved with a pointer only (keyboard users pick a docked position).
-- **The Papír terminal** stays dark on purpose. Its tones come from component-local mixes, not theme tokens
-  (open question 5).
+- **The Papír terminal** stays dark on purpose. Its tones are the `--vk-term-ok/warn/crit/info/muted` tokens
+  (decision 5A), set in every theme and checked for AA against the terminal background.
 
-## 8 · Open questions
+## 8 · Decisions (answered 2026-11-04)
 
-Each question has options A/B/C. **A is the recommended answer**, and a one-line answer is enough (e.g. `1A 2C 3A …`).
+The user's answers to the open questions: `1A 2A 3A 4A 5A 6B 7B 8A` (8B only as a fallback).
 
-1. **Which app adopts the kit first?**
-   - A — the Kapu (hub), which is the closest to the VRG Desktop shell.
-   - B — MindMap, whose THEMES and ACT map almost one-to-one.
-   - C — Planner. It is the biggest win, but its 2000+ assertions and golden renders make it the riskiest first.
-2. **How should apps take the kit?**
-   - A — `inline.js --insert` between `vk:begin`/`vk:end` markers, re-run on demand (like `melyviz-sync.js`), plus a `--check` drift test.
-   - B — link the files at runtime (needs the repo layout next to every app).
-   - C — copy the files by hand.
-3. **How should the Mélyvíz theme stay in sync with `shared/melyviz.css`?**
-   - A — have `tools/melyviz-sync.js` also regenerate `theme-melyviz.css` (a later change to a shared tool, so it needs your approval).
-   - B — keep both hand-maintained, with a check script that diffs the values.
-   - C — make `melyviz.css` import the kit tokens instead.
-4. **Should Éj stay the default theme, or should Mélyvíz be the dev-side default?**
-   - A — Éj by default, with Mélyvíz chosen per app (dev apps opt in, as today with `html.mv`).
-   - B — Mélyvíz by default everywhere.
-   - C — follow the OS: Papír in light mode, Éj in dark mode.
-5. **Terminal tones in Papír:**
-   - A — add `--vk-term-ok/warn/crit/info` tokens to every theme.
-   - B — keep the component-local mixes.
-   - C — let the terminal follow the page theme (a light terminal in Papír).
-6. **Fonts in single-file apps:**
-   - A — inline them only where the look matters (Kapu, the emblem pages, the CYD sim), and let the others use the system fallbacks (Segoe UI, Bahnschrift, Cascadia).
-   - B — always inline (+130 kB per app).
-   - C — never inline.
-7. **The START registry:** the gallery is a new page, and CLAUDE.md says a tool missing from `launcher/vrg-menu.json` "does not exist".
-   - A — add a dev item "UI Kit galéria" in the follow-up session that wires the kit into the apps.
-   - B — add it now in this PR (it touches an existing file, so it needs your approval).
-   - C — leave it out; the gallery is a reference, not a tool.
-8. **Graph editing (dragging, wiring, pinch):**
-   - A — add it in the Planner Topology View work (GO ROUTE), where the real editing rules live.
-   - B — add a generic version to the kit now.
-   - C — keep the kit's graph view-only.
+| # | Question | Decision | Where it stands |
+|---|---|---|---|
+| 1 | First app to adopt the kit | **A — Kapu**, the closest to the VRG Desktop shell | Next session |
+| 2 | How apps take the kit | **A — `inline.js --insert`** with the component list recorded in the marker, plus `--sync-app` / `--check-app` | Done (§1) |
+| 3 | Keeping Mélyvíz in sync | **A — `tools/melyviz-sync.js` also generates `theme-melyviz.css`** | Done (§3) |
+| 4 | Default theme | **A — Éj**; Mélyvíz chosen per app | Already so |
+| 5 | Terminal tones in Papír | **A — `--vk-term-*` tokens** in every theme | Done (§3) |
+| 6 | Fonts in single-file apps | **B — always inline** (`--no-fonts` to opt out) | Done (§1) |
+| 7 | START registry | **B — add it now**: key **D**, "VRG UI Kit galéria", in `launcher/vrg-menu.json`; Kapu rebuilt | Done |
+| 8 | Graph editing | **A — in the GO ROUTE Topology View work**, where the real editing rules live; a generic kit version (B) only if that work doesn't produce one | Later |

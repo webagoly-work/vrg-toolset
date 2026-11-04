@@ -63,6 +63,12 @@
   /* ---------- colour: terminal ---------- */
   --vk-term-bg: #070809;
   --vk-term-text: #d9e3ea;
+  /* terminal tones: the well can stay dark in a light theme, so it has its own status colours */
+  --vk-term-ok: var(--vk-ok);
+  --vk-term-warn: var(--vk-warn);
+  --vk-term-crit: var(--vk-crit);
+  --vk-term-info: var(--vk-info);
+  --vk-term-muted: #9ba7b1;
 
   /* ---------- elevation (themes may set these to none: Mélyvíz has no drop shadows) ---------- */
   --vk-shadow-1: 0 1px 0 rgba(0, 0, 0, .35);

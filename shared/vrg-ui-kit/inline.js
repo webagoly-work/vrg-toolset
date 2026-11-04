@@ -4,14 +4,18 @@
 
    node inline.js table palette                       → bundle to stdout (tokens + base + deps + sprite + scripts)
    node inline.js table palette --out bundle.html     → write the snippet to a file
-   node inline.js table palette --insert app.html     → replace the region between
-                                                         <!-- vk:begin --> and <!-- vk:end --> in app.html
+   node inline.js table palette --insert app.html     → replace the region between <!-- vk:begin … --> and
+                                                         <!-- vk:end --> in app.html; the begin marker records the
+                                                         names and options, so the app can be re-synced and checked:
+   node inline.js --sync-app app.html …                 → rebuild each app's region from its own marker
+   node inline.js --check-app app.html …                → exit 1 when a region differs from what the kit now builds
    node inline.js --all --page gallery.html --out g.html   → inline every local <link>/<script src>/font url of a
                                                          page into one self-contained file (the published gallery)
    options:
      --themes dark,light,contrast,melyviz   which theme files (default: all four; dark is always in base)
      --density / --no-density               include tokens/density.css (default on)
-     --fonts                                inline the vendored fonts as data: URIs (adds ~100 kB)
+     --no-fonts                             leave the vendored fonts out (default: inlined as data: URIs, ~130 kB;
+                                            decision 6B — every app carries the kit's type)
      --icons a,b,c | --icons all | --icons used   sprite subset (default 'used': icons named by the chosen
                                             components' manifest entries + any `#vk-i-NAME` found in the files)
      --no-sprite                            leave the sprite out
@@ -27,18 +31,32 @@ const KIT = __dirname;
 const rd = (p) => fs.readFileSync(path.join(KIT, p), 'utf8');
 const exists = (p) => fs.existsSync(path.join(KIT, p));
 
+const RECORD = ['--themes', '--icons', '--no-fonts', '--no-density', '--no-sprite'];
+function recordArgs(argv) {   // the names and output-shaping options, as written into an app's begin marker
+  const out = [];
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--themes' || a === '--icons') { out.push(a, argv[++i]); continue; }
+    if (RECORD.includes(a)) { out.push(a); continue; }
+    if (a === '--insert' || a === '--out' || a === '--page') { i++; continue; }
+    if (!a.startsWith('--')) out.push(a);
+  }
+  return out;
+}
 function parseArgs(argv) {
-  const o = { names: [], themes: null, density: true, fonts: false, icons: 'used', sprite: true };
+  const o = { names: [], themes: null, density: true, fonts: true, icons: 'used', sprite: true, apps: [], recorded: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const val = () => argv[++i];
     if (a === '--out') o.out = val();
     else if (a === '--insert') o.insert = val();
+    else if (a === '--sync-app' || a === '--check-app') { o.appMode = a.slice(2, -4); while (argv[i + 1] && !argv[i + 1].startsWith('--')) o.apps.push(argv[++i]); continue; }
     else if (a === '--page') o.page = val();
     else if (a === '--themes') o.themes = val().split(',').map(s => s.trim()).filter(Boolean);
     else if (a === '--density') o.density = true;
     else if (a === '--no-density') o.density = false;
     else if (a === '--fonts') o.fonts = true;
+    else if (a === '--no-fonts') o.fonts = false;
     else if (a === '--icons') o.icons = val();
     else if (a === '--no-sprite') o.sprite = false;
     else if (a === '--list') o.list = true;
@@ -178,8 +196,27 @@ function inlinePage(file, o) {
   return html;
 }
 
+const MARK = /(<!--\s*vk:begin\b[^>]*-->)[\s\S]*?(<!--\s*vk:end\s*-->)/;
+/** --sync-app / --check-app: rebuild each app's region from the arguments recorded in its begin marker */
+function apps(mode, files) {
+  let bad = 0;
+  files.forEach(f => {
+    const src = fs.readFileSync(f, 'utf8'), m = src.match(MARK);
+    if (!m) { console.error('NOMARK  ' + f); bad++; return; }
+    const rec = (m[1].match(/vk:begin\s+([\s\S]*?)\s*-->/) || [])[1];
+    if (!rec) { console.error('NOARGS  ' + f + ' (re-insert once with --insert so the marker records its components)'); bad++; return; }
+    const b = bundle(parseArgs(rec.split(/\s+/)));
+    const want = src.replace(MARK, (x, a, z) => a + '\n' + b.html + z);
+    if (want === src) { console.error('ok      ' + f); return; }
+    if (mode === 'check') { console.error('DRIFT   ' + f); bad++; return; }
+    fs.writeFileSync(f, want); console.error('synced  ' + f);
+  });
+  if (bad) process.exit(1);
+}
+
 function main() {
   const o = parseArgs(process.argv.slice(2));
+  if (o.appMode) { apps(o.appMode, o.apps); return; }
   if (o.help) { process.stdout.write(fs.readFileSync(__filename, 'utf8').split('*/')[0] + '*/\n'); return; }
   if (o.sync) { const n = sync(); console.error('icons: ' + n + ' symbols → icons/icons.json, icons/sprite.js'); if (!o.names.length && !o.page && !o.check) return; }
   if (o.check) {
@@ -198,9 +235,9 @@ function main() {
   if (o.list) { b.comps.forEach(c => console.log(c.name.padEnd(18) + (c.files || []).join(' '))); return; }
   if (o.insert) {
     const src = fs.readFileSync(o.insert, 'utf8');
-    const re = /(<!--\s*vk:begin\s*-->)[\s\S]*?(<!--\s*vk:end\s*-->)/;
-    if (!re.test(src)) { console.error('no <!-- vk:begin --> … <!-- vk:end --> markers in ' + o.insert); process.exit(1); }
-    fs.writeFileSync(o.insert, src.replace(re, (m, a, z) => a + '\n' + b.html + z)); // function form: no $-pattern expansion
+    if (!MARK.test(src)) { console.error('no <!-- vk:begin --> … <!-- vk:end --> markers in ' + o.insert); process.exit(1); }
+    const begin = '<!-- vk:begin ' + recordArgs(process.argv.slice(2)).join(' ') + ' -->';
+    fs.writeFileSync(o.insert, src.replace(MARK, (m, a, z) => begin + '\n' + b.html + z)); // function form: no $-pattern expansion
     console.error('inserted ' + b.comps.length + ' components into ' + o.insert);
     return;
   }

@@ -1,16 +1,16 @@
 /* VRG UI Kit — components/terminal.css — console pane: scrollback (role=log), prompt line, running-command mini.
    Tones are token-mapped and lifted toward --vk-term-text so they stay legible on the terminal well in every
-   theme (Papír keeps a dark well): component-local --vk-terminal-* default to existing tokens.
+   theme (Papír keeps a dark well): component-local --vk-terminal-* read the --vk-term-* theme tokens.
    [data-tone="ok|warn|crit|info|muted|accent|strong"] on spans · line .vk-term__cmd (echo) · .vk-term__progline.
    Depends on: tokens, base, mini. */
 .vk-term {
-  --vk-terminal-ok: color-mix(in srgb, var(--vk-ok) 62%, var(--vk-term-text));
-  --vk-terminal-warn: color-mix(in srgb, var(--vk-warn) 62%, var(--vk-term-text));
-  --vk-terminal-crit: color-mix(in srgb, var(--vk-crit) 62%, var(--vk-term-text));
-  --vk-terminal-info: color-mix(in srgb, var(--vk-info) 62%, var(--vk-term-text));
+  --vk-terminal-ok: var(--vk-term-ok);
+  --vk-terminal-warn: var(--vk-term-warn);
+  --vk-terminal-crit: var(--vk-term-crit);
+  --vk-terminal-info: var(--vk-term-info);
   --vk-terminal-accent: color-mix(in srgb, var(--vk-accent) 62%, var(--vk-term-text));
   --vk-terminal-activity: color-mix(in srgb, var(--vk-activity) 62%, var(--vk-term-text));
-  --vk-terminal-muted: color-mix(in srgb, var(--vk-term-text) 62%, var(--vk-term-bg));
+  --vk-terminal-muted: var(--vk-term-muted);
   --vk-terminal-line: color-mix(in srgb, var(--vk-term-text) 16%, transparent);
   display: flex; flex-direction: column; min-height: 0; min-width: 0; height: 100%;
   background: var(--vk-term-bg); color: var(--vk-term-text);

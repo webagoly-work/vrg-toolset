@@ -31,6 +31,8 @@
   --vk-heat-0: #e4e7e4; --vk-heat-1: #f2d6bd; --vk-heat-2: #e2a775; --vk-heat-3: #c0753a; --vk-heat-4: #8a4a17;
   --vk-term-bg: #161c21;
   --vk-term-text: #dfe7ee;
+  /* the terminal well stays dark on paper, so its tones are the bright (dark-ground) set */
+  --vk-term-ok: #84d0a0; --vk-term-warn: #e7c27a; --vk-term-crit: #f08479; --vk-term-info: #98b8f4; --vk-term-muted: #9ba7b1;
   --vk-shadow-1: 0 1px 0 rgba(18, 26, 32, .06);
   --vk-shadow-overlay: 0 12px 32px rgba(18, 26, 32, .18), 0 0 0 1px rgba(18, 26, 32, .08);
   --vk-glow: 0 0 0 3px rgba(27, 102, 130, .16);
