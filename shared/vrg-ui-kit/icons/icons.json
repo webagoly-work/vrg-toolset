@@ -95,6 +95,7 @@
  "panel-bottom": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-panel-bottom\"/></svg>",
  "panel-left": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-panel-left\"/></svg>",
  "panel-right": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-panel-right\"/></svg>",
+ "panel-top": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-panel-top\"/></svg>",
  "paste": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-paste\"/></svg>",
  "pause": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-pause\"/></svg>",
  "phone": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-phone\"/></svg>",

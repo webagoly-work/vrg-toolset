@@ -17,6 +17,8 @@
        progress: ctx => 0.4,            // optional: 0…1 or null (indeterminate) — its MINI shows it (components/mini.js)
        state: ctx => 'running',         // optional: idle|running|done|error|waiting|paused|off — drives the MINI
        caption: 'SYNC',                 // optional: micro caption under the MINI
+       reason: 'Jelölj ki egy elemet',   // optional: why it is unavailable (string or fn(ctx)) — menus/palette show it
+       keysInInputs: false,             // optional: let its shortcut fire while a text field has focus
        run: ctx => {}                   // the work
      })
 
@@ -114,10 +116,13 @@
       return KEYNAME[p] || (p.length === 1 ? p.toUpperCase() : p.charAt(0).toUpperCase() + p.slice(1));
     }).join(isMac ? '' : '+');
   }
-  function keyParts(k) { return keyLabel(k).split(isMac ? /(?=.)/ : '+'); }
+  function keyParts(k) { return keyLabel(k).split('+').length > 1 || !isMac ? keyLabel(k).split('+') :
+    String(k).split('+').map(function (p) { return keyLabel(p); }); }
 
+  var EDITING_KEYS = /^mod\+(shift\+)?(a|c|v|x|z|y|d|backspace|delete|arrowleft|arrowright|arrowup|arrowdown|home|end)$/;
   /** one keydown listener for every registered shortcut. Skips editable targets unless the key has a modifier
-   *  or the action sets keysInInputs:true. Returns an unbind function. */
+   *  or the action sets keysInInputs:true. Editing chords (Ctrl+Z/C/V/X/A/D/Y, Ctrl+arrows…) are never taken from a field
+   *  unless the action sets keysInInputs. Returns an unbind function. */
   function bindKeys(target) {
     target = target || document;
     function onKey(e) {
@@ -125,7 +130,7 @@
       var t = e.target, editable = t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
       var s = keyString(e), c = ctx(), a = forKey(s, c);
       if (!a) return;
-      if (editable && !/^(mod|alt)\+/.test(s) && !a.keysInInputs) return;
+      if (editable && !a.keysInInputs && (!/^(mod|alt)\+/.test(s) || EDITING_KEYS.test(s))) return;   // typing keys and Ctrl+Z/C/V… stay native
       e.preventDefault();
       run(a, c, 'key');
     }
@@ -161,10 +166,15 @@
     }
     return pool.map(function (a) {
       var m = score(q, a.label);
-      if (!m.score) { var alt = score(q, [a.hint, a.group, (a.keywords || []).join(' ')].join(' ')); if (alt.score) m = { score: alt.score / 4, hits: [] }; }
+      if (!m.score) { var alt = score(q, [a.hint, a.group, (a.keywords || []).join(' ')].join(' ')); if (alt.score >= 400) m = { score: alt.score / 4, hits: [] }; }
       return { action: a, score: m.score, hits: m.hits };
     }).filter(function (r) { return r.score > 0; }).sort(function (x, y) { return y.score - x.score; });
   }
+
+  /** tell every surface that an action's state (progress/state/checked/when) changed: menus, toolbars and minis re-read it */
+  function touch(id) { var a = typeof id === 'string' ? get(id) : id; changed('state', a || null); if (typeof document !== 'undefined' && document.dispatchEvent) document.dispatchEvent(new CustomEvent('vk:actions', { detail: { id: a ? a.id : null } })); }
+  /** why an action is unavailable right now: action.reason (string or fn(ctx)), shown by menus and the palette */
+  function reason(a, c) { if (typeof a === 'string') a = get(a); if (!a || !a.reason) return ''; try { return typeof a.reason === 'function' ? String(a.reason(c || ctx()) || '') : String(a.reason); } catch (e) { return ''; } }
 
   function subscribe(fn) { subs.push(fn); return function () { subs = subs.filter(function (f) { return f !== fn; }); }; }
 
@@ -173,6 +183,6 @@
     setContext: setContext, ctx: ctx, enabled: enabled, checked: checked,
     forSurface: forSurface, surfaces: surfaces, run: run, recent: recent,
     keyString: keyString, forKey: forKey, keyLabel: keyLabel, keyParts: keyParts, bindKeys: bindKeys, normKey: normKey,
-    score: score, search: search, fold: fold, subscribe: subscribe, isMac: isMac
+    score: score, search: search, fold: fold, subscribe: subscribe, touch: touch, reason: reason, isMac: isMac
   };
 })(typeof window !== 'undefined' ? window : globalThis);
