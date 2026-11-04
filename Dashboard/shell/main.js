@@ -209,6 +209,18 @@ ipc.register('fs', 'list', { dir: types.handle, sort: types.enum('name', 'size',
   async ({ dir, sort, filter }) => fsView.list(dir, { sort, filter }), { optional: ['sort', 'filter'] });
 ipc.register('fs', 'stat', { h: types.handle }, async ({ h }) => fsView.stat(h));
 
+// file operations as jobs (WP-12): copy / move / rename / mkdir / trash; conflict answers go to the job queue
+const { createFsOps } = require('./lib/fsops.js');
+const fsOps = createFsOps({ fs: require('fs'), shell, jobs, handles: fsHandles, roots: fsRoots, view: fsView, cloud: cloudattr });
+const policy = types.enum('ask', 'skip', 'overwrite', 'rename');
+ipc.register('fs', 'copy', { src: types.arr(types.handle, 500), dst: types.handle, policy }, async ({ src, dst, policy }) => fsOps.copy(src, dst, policy), { optional: ['policy'] });
+ipc.register('fs', 'move', { src: types.arr(types.handle, 500), dst: types.handle, policy }, async ({ src, dst, policy }) => fsOps.move(src, dst, policy), { optional: ['policy'] });
+ipc.register('fs', 'rename', { h: types.handle, name: types.name }, async ({ h, name }) => fsOps.rename(h, name));
+ipc.register('fs', 'mkdir', { dir: types.handle, name: types.name }, async ({ dir, name }) => fsOps.mkdir(dir, name));
+ipc.register('fs', 'trash', { h: types.arr(types.handle, 500) }, async ({ h }) => fsOps.trash(h));
+ipc.register('fs', 'answer', { job: types.id, choice: types.enum('skip', 'overwrite', 'rename', 'cancel', 'yes'), all: types.bool },
+  async ({ job, choice, all }) => jobs.answer(job, choice, all), { optional: ['all'] });
+
 ipcMain.handle('vrg:act',(e, id) => acts.runAct(id));
 ipcMain.handle('vrg:ports', () => ports.ports);
 ipcMain.handle('vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });

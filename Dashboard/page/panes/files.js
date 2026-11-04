@@ -275,7 +275,13 @@
       const picked = s.marks.size ? rows.filter(i => s.marks.has(i.name)) : (rows[s.cursor] ? [rows[s.cursor]] : []);
       const hs = picked.map(i => i.handle);
       let r = null;
-      if (name === 'copy' || name === 'move') { if (hs.length && other.handle) r = await this.fs[name](hs, other.handle, 'ask'); }
+      if (name === 'copy' || name === 'move') {
+        if (hs.length && other.handle) {
+          const line = hs.length + ' elem ' + (name === 'copy' ? 'másolása' : 'áthelyezése') + ' ide: ' + other.display;
+          if (await this.confirm(line)) r = await this.fs[name](hs, other.handle, 'ask');
+          else { this.draw(); return; }
+        }
+      }
       else if (name === 'trash') { if (hs.length) r = await this.fs.trash(hs); }
       else if (name === 'mkdir' || name === 'rename') {
         const v = await this.ask(label, name === 'rename' && picked[0] ? picked[0].name : '');
@@ -296,6 +302,20 @@
         box.addEventListener('submit', ev => { ev.preventDefault(); done(inp.value.trim()); });
         inp.addEventListener('keydown', ev => { ev.stopPropagation(); if (ev.key === 'Escape') done(''); });
         this.root.append(box); inp.focus(); inp.select();
+      });
+    },
+
+    // a confirm line: Enter = yes, Esc = no
+    confirm(text) {
+      return new Promise(res => {
+        const box = el('form', 'ask'), ok = el('button', null, 'Enter'), no = el('button', null, 'Mégse');
+        ok.type = 'submit'; no.type = 'button'; no.title = 'Esc';
+        const done = v => { box.remove(); this.focus(); res(v); };
+        box.append(el('span', 'confirm', text + ' '), ok, no);
+        box.addEventListener('submit', ev => { ev.preventDefault(); done(true); });
+        no.addEventListener('click', () => done(false));
+        box.addEventListener('keydown', ev => { ev.stopPropagation(); if (ev.key === 'Escape') done(false); });
+        this.root.append(box); ok.focus();
       });
     },
 
