@@ -8,7 +8,7 @@
 // - a START item runs the way vrg-ui.ps1 runs it (lib/runbat.js); action / phase / menu items stay in START: refused;
 // - every 4 s the registry's server ports are probed on 127.0.0.1 and the result goes to the page (lib/ports.js).
 'use strict';
-const { app, BrowserWindow, WebContentsView, ipcMain, shell, screen, globalShortcut, Tray, Menu, nativeImage, safeStorage } = require('electron');
+const { app, BrowserWindow, WebContentsView, ipcMain, shell, screen, globalShortcut, Tray, Menu, nativeImage, safeStorage, clipboard } = require('electron');
 const path = require('path'), os = require('os');
 const build = require('../build.js');
 const { createRegistry } = require('./lib/registry.js');
@@ -123,8 +123,18 @@ const ipc = createIpc({
   ipcMain, audit, log,
   allowedUrls: () => [fileUrl(PAGE), fileUrl(path.join(__dirname, '..', 'page', 'vrg-desktop.html'))],
 });
+// libs: file: script URLs of the vendored libraries (tools/js-libs); a library that is not there is null, the page copes
+const jsLib = (...rel) => {
+  const base = process.env.VRG_JSLIBS || path.join(process.env.VRG_FULL || 'H:\\VRG\\Full', 'tools', 'js-libs');
+  const f = path.join(base, ...rel);
+  return require('fs').existsSync(f) ? require('url').pathToFileURL(f).href : null;
+};
+const libUrls = () => ({
+  dompurify: jsLib('dompurify', 'DOMPurify-main', 'dist', 'purify.min.js'),
+  markdownIt: jsLib('markdown-it', 'markdown-it-master', 'dist', 'markdown-it.min.js'),
+});
 ipc.register('app', 'info', {}, async () => ({
-  version: app.getVersion(), user: 'founder', mode: winmodes ? winmodes.state().mode : 'ablak', features: ipc.namespaces(),
+  version: app.getVersion(), user: 'founder', mode: winmodes ? winmodes.state().mode : 'ablak', features: ipc.namespaces(), libs: libUrls(),
 }));
 
 // window modes (WP-04): ablak / munka / overlay, tray, global hotkey, login auto-start
@@ -220,6 +230,23 @@ ipc.register('fs', 'mkdir', { dir: types.handle, name: types.name }, async ({ di
 ipc.register('fs', 'trash', { h: types.arr(types.handle, 500) }, async ({ h }) => fsOps.trash(h));
 ipc.register('fs', 'answer', { job: types.id, choice: types.enum('skip', 'overwrite', 'rename', 'cancel', 'yes'), all: types.bool },
   async ({ job, choice, all }) => jobs.answer(job, choice, all), { optional: ['all'] });
+
+// viewer and open-with (WP-13): read / open / reveal / edit / copyPath, all by handle
+const { createFileView } = require('./lib/fsview.js');
+const codeExe = () => {                                              // paths.code from the single action registry, {full} filled in
+  try {
+    const menu = JSON.parse(require('fs').readFileSync(path.join(REPO_DIR, 'launcher', 'vrg-menu.json'), 'utf8'));
+    const c = menu && menu.paths && menu.paths.code;
+    return typeof c === 'string' ? c.replace(/\{full\}/g, path.resolve(FULL_DIR)) : '';
+  } catch (e) { return ''; }
+};
+const fileView = createFileView({ fs: require('fs'), shell, clipboard, handles: fsHandles, roots: fsRoots, cloud: cloudattr, execFile: require('child_process').execFile, codePath: codeExe });
+ipc.register('fs', 'read', { h: types.handle, max: types.int(1, 2 * 1024 * 1024), fetch: types.bool },
+  async ({ h, max, fetch }) => fileView.read(h, { max, fetch }), { optional: ['max', 'fetch'] });
+ipc.register('fs', 'open', { h: types.handle }, async ({ h }) => fileView.open(h));
+ipc.register('fs', 'reveal', { h: types.handle }, async ({ h }) => fileView.reveal(h));
+ipc.register('fs', 'edit', { h: types.handle }, async ({ h }) => fileView.edit(h));
+ipc.register('fs', 'copyPath', { h: types.handle }, async ({ h }) => fileView.copyPath(h));
 
 ipcMain.handle('vrg:act',(e, id) => acts.runAct(id));
 ipcMain.handle('vrg:ports', () => ports.ports);

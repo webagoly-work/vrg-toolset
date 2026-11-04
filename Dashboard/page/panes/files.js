@@ -273,6 +273,7 @@
       if (!this.fs || typeof this.fs[fn] !== 'function') { this.note = label + ': később'; this.draw(); return; }
       const rows = this.shown(k);
       const picked = s.marks.size ? rows.filter(i => s.marks.has(i.name)) : (rows[s.cursor] ? [rows[s.cursor]] : []);
+      if (name === 'view') { if (picked[0] && picked[0].kind !== 'dir') await this.view(picked[0]); return; }
       const hs = picked.map(i => i.handle);
       let r = null;
       if (name === 'copy' || name === 'move') {
@@ -292,6 +293,32 @@
       if (r && r.ok !== false && (name === 'mkdir' || name === 'rename')) { await this.reload(k); return; }
       this.draw();
     },
+    // F3: the viewer (panes/viewer.js, loaded on first use) opens over this pane; Esc / F3 / Bezár closes it
+    async view(item) {
+      if (!P.viewer) await new Promise(res => {
+        const sc = document.createElement('script');
+        sc.src = 'panes/viewer.js'; sc.onload = () => res(); sc.onerror = () => res();
+        document.head.append(sc);
+      });
+      if (this.gone || !this.root) return;
+      if (!P.viewer) { this.note = 'Nézőke: nem érhető el'; this.draw(); return; }
+      const box = el('div', 'viewer');
+      box.style.position = 'absolute'; box.style.inset = '0'; box.style.overflow = 'auto';
+      if (getComputedStyle(this.root).position === 'static') this.root.style.position = 'relative';
+      const v = Object.create(P.viewer);
+      const close = () => { v.unmount(); box.remove(); this.focus(); };
+      this.root.append(box);
+      v.mount(box, {}, { close });
+      v.load(item.handle, item.name);
+    },
+    // right-click escape hatches: Explorer and the clipboard
+    async fsCall(fn, item) {
+      if (!this.fs || typeof this.fs[fn] !== 'function') { this.note = 'Később'; this.draw(); return; }
+      const r = await this.fs[fn](item.handle);
+      this.note = r && r.ok === false ? (r.hu || 'Hiba') : (fn === 'copyPath' ? 'Útvonal másolva' : '');
+      this.draw();
+    },
+
     // a one-line inline input (window.prompt does not exist in Electron)
     ask(label, value) {
       return new Promise(res => {
@@ -324,12 +351,13 @@
     // ---------------------------------------------------------- drawing (drag-and-drop between the sides: later)
     draw() {
       if (!this.root) return;
-      const ask = this.root.querySelector('[data-role="ask"]');
+      const ask = this.root.querySelector('[data-role="ask"]'), viewer = this.root.querySelector('[data-role="viewer"]');
       this.root.innerHTML = '';
       const wrap = el('div', 'sides');
       for (const k of SIDES) wrap.append(this.drawSide(k));
       this.root.append(wrap, el('div', 'note', this.note));
       if (ask) this.root.append(ask);
+      if (viewer) this.root.append(viewer);
     },
     drawSide(k) {
       const s = this.sides[k], rows = this.shown(k);
@@ -394,6 +422,8 @@
       const add = (label, fn) => { const b = el('button', null, label); b.type = 'button'; b.addEventListener('click', () => { m.remove(); fn(); }); m.append(b); };
       add('Megnyitás',() => this.openItem(k, it));
       for (const n of ['view', 'edit', 'copy', 'move', 'rename', 'trash']) add(OPS[n][0], () => this.op(n));
+      add('Megmutatás Intézőben', () => this.fsCall('reveal', it));
+      add('Útvonal másolása', () => this.fsCall('copyPath', it));
       add('Frissítés', () => this.reload(k));
       this.root.append(m);
       const close = () => { m.remove(); document.removeEventListener('mousedown', close, true); };
