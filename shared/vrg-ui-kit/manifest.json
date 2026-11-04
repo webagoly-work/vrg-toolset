@@ -47,7 +47,47 @@
         10
       ],
       "icons": [],
-      "tokens": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-hover",
+        "--vk-accent-soft",
+        "--vk-bg",
+        "--vk-bg-sunken",
+        "--vk-blur",
+        "--vk-border-w",
+        "--vk-cut",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-sans",
+        "--vk-font-voice",
+        "--vk-fs-2xl",
+        "--vk-fs-2xs",
+        "--vk-fs-3xl",
+        "--vk-fs-lg",
+        "--vk-fs-md",
+        "--vk-fs-xl",
+        "--vk-fw-strong",
+        "--vk-icon-size",
+        "--vk-icon-stroke",
+        "--vk-lh",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-overlay",
+        "--vk-radius",
+        "--vk-radius-lg",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-surface-3",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-tracking-title"
+      ],
       "summary": "Opt-in base layer under .vk, focus ring, .vk-icon, type/surface/layout utilities, .vk-cut chamfer, .vk-glass.",
       "api": "CSS only"
     },
@@ -70,7 +110,9 @@
         10
       ],
       "icons": [],
-      "tokens": [],
+      "tokens": [
+        "--vk-accent"
+      ],
       "summary": "VK namespace: el(), icon(), uid(), emitter(), fire(), place() popover positioning, token(), fold(), rng().",
       "api": "VK.el, VK.icon, VK.place, VK.token, VK.fold, VK.rng, VK.reducedMotion"
     },
@@ -104,7 +146,9 @@
       "files": [
         "actions.js"
       ],
-      "deps": [],
+      "deps": [
+        "core"
+      ],
       "families": [
         2
       ],
@@ -127,7 +171,38 @@
         7
       ],
       "icons": [],
-      "tokens": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-hover",
+        "--vk-accent-soft",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-crit-soft",
+        "--vk-dur-1",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fw-regular",
+        "--vk-fw-strong",
+        "--vk-glow",
+        "--vk-hover-bg",
+        "--vk-line-strong",
+        "--vk-press-bg",
+        "--vk-radius",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-text-on-accent"
+      ],
       "summary": "Buttons: outline/primary/ghost/quiet/danger, icon, small, pressed; segmented .vk-btn-group.",
       "api": "CSS only"
     },
@@ -151,9 +226,40 @@
       "icons": [
         "dot"
       ],
-      "tokens": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-accent-soft",
+        "--vk-activity",
+        "--vk-bg",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius",
+        "--vk-space-4",
+        "--vk-space-7",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-warn"
+      ],
       "summary": "The MINI: every feature's icon that is also its button and its progress indicator (ring/ticks/square meter, states).",
-      "api": "VK.mini.create(o), VK.mini.set(el, {progress, state, value, pressed}), VK.mini.fromAction(id)"
+      "api": "VK.mini.create(o), VK.mini.set(el, {progress, state, value, pressed}), VK.mini.fromAction(id)",
+      "optional": [
+        "actions"
+      ]
     },
     {
       "name": "shell",
@@ -166,7 +272,8 @@
         "focus",
         "mini",
         "panel",
-        "actions"
+        "actions",
+        "core"
       ],
       "families": [
         1
@@ -218,7 +325,8 @@
         "base",
         "focus",
         "mini",
-        "actions"
+        "actions",
+        "core"
       ],
       "families": [
         1
@@ -280,7 +388,8 @@
         "base",
         "focus",
         "mini",
-        "actions"
+        "actions",
+        "core"
       ],
       "families": [
         1
@@ -318,7 +427,9 @@
       "deps": [
         "base",
         "focus",
-        "mini"
+        "mini",
+        "core",
+        "actions"
       ],
       "families": [
         1
@@ -381,7 +492,8 @@
         "components/splitter.js"
       ],
       "deps": [
-        "base"
+        "base",
+        "core"
       ],
       "families": [
         1
@@ -414,7 +526,8 @@
         "base",
         "focus",
         "mini",
-        "actions"
+        "actions",
+        "core"
       ],
       "families": [
         1
@@ -465,7 +578,8 @@
         "base",
         "focus",
         "mini",
-        "actions"
+        "actions",
+        "core"
       ],
       "families": [
         1
@@ -780,7 +894,8 @@
         "base",
         "core",
         "mini",
-        "focus"
+        "focus",
+        "actions"
       ],
       "families": [
         3
@@ -953,7 +1068,9 @@
         "base",
         "button",
         "mini",
-        "core"
+        "core",
+        "focus",
+        "actions"
       ],
       "families": [
         4
@@ -1762,7 +1879,10 @@
         "--vk-z-toast"
       ],
       "summary": "Toast stack: info/ok/warn/error/activity, title+text+action, auto-dismiss counted down on the close MINI ring (pauses on hover/focus), Esc dismisses the focused toast, max N visible + queue, six positions, page or contained stack, activity toasts with progress.",
-      "api": "VK.toast.show({kind, title, text, source, action, timeout, progress}) → {update, dismiss}; VK.toast.configure({position, max}), focusLatest(), clear(), count(); VK.toast.stack(container, opts) → same API. Suggested actions: toast.focus (Alt+T), toast.clear"
+      "api": "VK.toast.show({kind, title, text, source, action, timeout, progress}) → {update, dismiss}; VK.toast.configure({position, max}), focusLatest(), clear(), count(); VK.toast.stack(container, opts) → same API. Suggested actions: toast.focus (Alt+T), toast.clear",
+      "optional": [
+        "actions"
+      ]
     },
     {
       "name": "notify",
@@ -1879,7 +1999,10 @@
         "--vk-tracking-title"
       ],
       "summary": "Empty / loading / error blocks: reticle mark, mono code, title, text, primary + secondary action (registry ids); inline and panel sizes; error role=alert, loading role=status.",
-      "api": "<div class=\"vk-state\" data-kind=\"empty|loading|error\" data-size=\"panel\">; VK.state.create({kind, size, icon, code, title, text, action, secondary, loader})"
+      "api": "<div class=\"vk-state\" data-kind=\"empty|loading|error\" data-size=\"panel\">; VK.state.create({kind, size, icon, code, title, text, action, secondary, loader})",
+      "optional": [
+        "actions"
+      ]
     },
     {
       "name": "readout",
@@ -2061,7 +2184,8 @@
       ],
       "deps": [
         "base",
-        "core"
+        "core",
+        "focus"
       ],
       "families": [
         7
@@ -2320,7 +2444,8 @@
         "base",
         "button",
         "core",
-        "mini"
+        "mini",
+        "actions"
       ],
       "families": [
         8
@@ -2400,7 +2525,8 @@
         "button",
         "core",
         "focus",
-        "mini"
+        "mini",
+        "actions"
       ],
       "families": [
         8
@@ -2465,7 +2591,10 @@
         "--vk-text-muted"
       ],
       "summary": "\"Küldés Claude-nak\" tray: a selection becomes a context pack — chips (icon by kind, label, mono id) in a listbox with Alt+Arrow reorder and Delete, ~token estimate, Markdown/JSON preview, copy and send minis (progress), collapsed slim bar with count; follows document vk:selection.",
-      "api": "VK.contextTray.mount(el, {title, format, collapsed, items, onSend(pack, tray), onChange}) → {add, set, remove, clear, move, items, pack(format), tokens, setCollapsed, setPreview, setFormat, setSending(p|null|\"done\"|\"error\"|false), copy, send, registerActions(prefix), destroy}; VK.contextTray.bindSelection(tray, resolver, {mode, accept}) → unbind; VK.contextTray.estimate(n)"
+      "api": "VK.contextTray.mount(el, {title, format, collapsed, items, onSend(pack, tray), onChange}) → {add, set, remove, clear, move, items, pack(format), tokens, setCollapsed, setPreview, setFormat, setSending(p|null|\"done\"|\"error\"|false), copy, send, registerActions(prefix), destroy}; VK.contextTray.bindSelection(tray, resolver, {mode, accept}) → unbind; VK.contextTray.estimate(n)",
+      "optional": [
+        "chat"
+      ]
     },
     {
       "name": "trace",
@@ -2478,7 +2607,8 @@
         "button",
         "core",
         "focus",
-        "mini"
+        "mini",
+        "actions"
       ],
       "families": [
         8
@@ -2599,7 +2729,10 @@
         "--vk-warn"
       ],
       "summary": "Console pane: role=log scrollback with token-mapped tones (ok/warn/crit/info/muted/accent/strong) and ANSI SGR, prompt with history, Tab completion hook, Ctrl+L, Ctrl+C, copy selection mini, running-command mini (progress), progress lines; commands are registry actions on a surface.",
-      "api": "VK.terminal.mount(el, {title, tag, prompt, greeting, surface, onCommand(line, term), complete(value), onInterrupt, max}) → {print(text, tone), write(chunk, tone), progress(p, label) → {set, end}, setBusy(label, p), finish(state), interrupt, run(line), clear, copy, focus, history, isBusy, registerActions(prefix), destroy}"
+      "api": "VK.terminal.mount(el, {title, tag, prompt, greeting, surface, onCommand(line, term), complete(value), onInterrupt, max}) → {print(text, tone), write(chunk, tone), progress(p, label) → {set, end}, setBusy(label, p), finish(state), interrupt, run(line), clear, copy, focus, history, isBusy, registerActions(prefix), destroy}",
+      "optional": [
+        "chat"
+      ]
     },
     {
       "name": "phone",
@@ -2904,7 +3037,9 @@
       "files": [
         "components/textures.css"
       ],
-      "deps": [],
+      "deps": [
+        "base"
+      ],
       "families": [
         10
       ],

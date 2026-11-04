@@ -137,4 +137,5 @@ Each component has one entry in `manifest.json`:
   "api": "VK.table.mount(el, {columns, rows, onSelect}) → {setRows, select, destroy}" }
 ```
 
+`optional` lists components the code uses only when present (guarded with `if (VK.x)`); inline.js does not pull them in.
 `tokens` lists every token the component reads (`node test/lint.js --tokens components/x.css` prints them).

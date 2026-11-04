@@ -21,7 +21,7 @@
   .g08-nodes legend { padding: 0 var(--vk-space-2); }
   .g08-nodes__bar { display: flex; gap: var(--vk-space-2); flex-wrap: wrap; margin-bottom: var(--vk-space-2); }
   .g08-nodes__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--vk-space-1); }
-  .g08-node { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: var(--vk-space-3);
+  .g08-node { min-height: var(--vk-target-min); display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: var(--vk-space-3);
     min-height: max(var(--vk-row-h), var(--vk-target-min)); padding: 0 var(--vk-space-3); cursor: pointer;
     border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); font-size: var(--vk-fs-sm); }
   .g08-node:hover { background: var(--vk-hover-bg); }
