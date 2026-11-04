@@ -87,6 +87,7 @@
  "monitor": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-monitor\"/></svg>",
  "more-h": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-more-h\"/></svg>",
  "more-v": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-more-v\"/></svg>",
+ "move": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-move\"/></svg>",
  "node": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-node\"/></svg>",
  "ok": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-ok\"/></svg>",
  "option": "<svg class=\"vk-icon\" aria-hidden=\"true\"><use href=\"#vk-i-option\"/></svg>",
