@@ -1,0 +1,62 @@
+/* VRG UI Kit — components/toast.css — toast stack. toast.js builds the markup; this draws it.
+   .vk-toast-stack[data-pos="br|bl|tr|tl|tc|bc"] (fixed to the viewport, or [data-contained] inside a positioned parent)
+     .vk-toast[data-kind="info|ok|warn|error|activity"]  role=status (error: role=alert)
+       icon · body (meta, title, text, actions, progress) · close MINI whose ring counts the auto-dismiss down
+   Toasts never steal focus. Hover or focus pauses the countdown. Esc dismisses the focused toast.
+   Depends on: tokens, base, button, mini. */
+.vk-toast-stack { --_gap: var(--vk-space-3); position: fixed; z-index: var(--vk-z-toast); display: flex; flex-direction: column; gap: var(--_gap);
+  width: min(360px, calc(100% - 2 * var(--vk-gutter))); margin: 0; padding: 0; pointer-events: none; }
+.vk-toast-stack[data-contained] { position: absolute; z-index: auto; }
+.vk-toast-stack[data-pos^="b"] { bottom: var(--vk-gutter); }
+.vk-toast-stack[data-pos^="t"] { top: var(--vk-gutter); flex-direction: column-reverse; }
+.vk-toast-stack[data-pos$="r"] { right: var(--vk-gutter); }
+.vk-toast-stack[data-pos$="l"] { left: var(--vk-gutter); }
+.vk-toast-stack[data-pos$="c"] { left: 50%; transform: translateX(-50%); }
+
+.vk-toast { --_c: var(--vk-info); --_dy: 8px; pointer-events: auto; position: relative;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: var(--vk-space-3);
+  padding: var(--vk-space-3) var(--vk-space-2) var(--vk-space-3) var(--vk-space-4);
+  color: var(--vk-text); background: var(--vk-overlay); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius);
+  box-shadow: var(--vk-shadow-overlay); -webkit-backdrop-filter: blur(var(--vk-blur)); backdrop-filter: blur(var(--vk-blur));
+  animation: vk-toast-in var(--vk-dur-3) var(--vk-ease); transition: opacity var(--vk-dur-2) var(--vk-ease), transform var(--vk-dur-2) var(--vk-ease); }
+.vk-toast-stack[data-pos^="t"] .vk-toast { --_dy: -8px; }
+/* the kind edge: a coloured spine with a terminal square (shape cue per kind below) */
+.vk-toast::before { content: ""; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 3px; background: var(--_c); border-radius: var(--vk-radius) 0 0 var(--vk-radius); }
+.vk-toast[data-kind="ok"] { --_c: var(--vk-ok); }
+.vk-toast[data-kind="warn"] { --_c: var(--vk-warn); }
+.vk-toast[data-kind="error"] { --_c: var(--vk-crit); border-color: color-mix(in srgb, var(--vk-crit) 60%, transparent); }
+.vk-toast[data-kind="activity"] { --_c: var(--vk-activity); }
+.vk-toast[data-kind="warn"]::before { background: repeating-linear-gradient(180deg, var(--_c) 0 5px, transparent 5px 8px); }
+.vk-toast[data-kind="error"]::before { width: 5px; }
+.vk-toast:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
+.vk-toast[data-leaving] { opacity: 0; transform: translateY(var(--_dy)); }
+@keyframes vk-toast-in { from { opacity: 0; transform: translateY(var(--_dy)); } }
+
+.vk-toast__icon { color: var(--_c); margin-top: 2px; }
+.vk-toast__body { min-width: 0; padding-top: 1px; }
+.vk-toast__body > p { margin: 0; }
+.vk-toast__meta { font: var(--vk-fs-2xs)/1.3 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text-muted); }
+.vk-toast__title { font-weight: var(--vk-fw-strong); font-size: var(--vk-fs-md); line-height: var(--vk-lh-tight); margin-top: 2px !important; overflow-wrap: anywhere; }
+.vk-toast__text { font-size: var(--vk-fs-sm); color: var(--vk-text-muted); line-height: var(--vk-lh); margin-top: 2px !important; overflow-wrap: anywhere; }
+.vk-toast__actions { display: flex; flex-wrap: wrap; gap: var(--vk-space-2); margin-top: var(--vk-space-3); }
+.vk-toast { --_k: var(--_c); }
+.vk-toast__close.vk-mini { --_c: var(--_k); margin: -4px 0; align-self: start; }
+/* progress inside an activity toast */
+.vk-toast__bar { grid-column: 1 / -1; height: 3px; margin: 0 var(--vk-space-2) 0 0; background: var(--vk-line); border-radius: 1px; overflow: hidden; position: relative; }
+.vk-toast__bar > i { position: absolute; inset: 0 auto 0 0; width: calc(var(--vk-p, 0) * 100%); background: var(--_c); transition: width var(--vk-dur-3) var(--vk-ease); }
+.vk-toast__bar[data-indeterminate] > i { width: 30%; animation: vk-toast-sweep 1.4s var(--vk-ease-in-out) infinite; }
+@keyframes vk-toast-sweep { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+@media (prefers-reduced-motion: reduce) {
+  .vk-toast__bar[data-indeterminate] > i { animation: none; width: 100%; background: repeating-linear-gradient(-45deg, var(--_c) 0 2px, transparent 2px 6px); }
+}
+
+/* overflow chip: "+2 sorban" — the oldest end of the stack */
+.vk-toast-stack__more { pointer-events: auto; align-self: flex-end; font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label);
+  text-transform: uppercase; color: var(--vk-text-muted); padding: var(--vk-space-2) var(--vk-space-3); background: var(--vk-overlay);
+  border: var(--vk-border-w) dashed var(--vk-line-strong); border-radius: var(--vk-radius-pill); }
+
+[data-vk-density="touch"] .vk-toast-stack { width: calc(100% - 2 * var(--vk-space-3)); }
+[data-vk-density="touch"] .vk-toast-stack[data-pos$="r"] { right: var(--vk-space-3); }
+[data-vk-density="touch"] .vk-toast-stack[data-pos$="l"] { left: var(--vk-space-3); }
+
+@media (forced-colors: active) { .vk-toast { border: 1px solid CanvasText; } .vk-toast::before { background: CanvasText; forced-color-adjust: none; } }

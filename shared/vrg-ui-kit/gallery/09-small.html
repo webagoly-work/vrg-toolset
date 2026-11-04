@@ -1,0 +1,313 @@
+<section class="g-sec" id="f09" data-vk-hop aria-labelledby="f09-h">
+  <header class="g-sec__head">
+    <span class="g-sec__num">09</span>
+    <h2 id="f09-h" class="vk-title">Kis képernyők</h2>
+    <p class="g-sec__lead">Telefon (VRG Mobile, 360–430 px) és a 320×240-es ESP32 „Cheap Yellow Display” (ServiceKit CYD): nincs hover, vastag ujj, karnyújtásnyiról olvasható szöveg, fizikai gombok.</p>
+  </header>
+  <style>
+    .g09-split { display: flex; flex-wrap: wrap; gap: var(--vk-space-5); align-items: flex-start; }
+    .g09-stage { flex: 1 1 300px; min-width: 0; display: flex; justify-content: center; overflow: hidden; padding: var(--vk-space-2) 0; }
+    .g09-side { flex: 1 1 240px; min-width: 0; max-width: 420px; }
+    .g09-side dl { display: grid; grid-template-columns: auto 1fr; gap: var(--vk-space-2) var(--vk-space-3); margin: 0 0 var(--vk-space-4); font-size: var(--vk-fs-sm); }
+    .g09-side dt { font-family: var(--vk-font-mono); color: var(--vk-accent); white-space: nowrap; }
+    .g09-side dd { margin: 0; color: var(--vk-text-muted); }
+    .g09-cyd-stage { overflow: auto; padding: var(--vk-space-3); background: var(--vk-bg); border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); }
+    .g09-cyd-stage > .vk-cyd-board { margin: 0 auto; display: grid; width: max-content; }
+    .g09-rules { margin: 0; padding-left: var(--vk-space-6); display: grid; gap: var(--vk-space-2); max-width: 80ch; }
+    .g09-rules b { font-family: var(--vk-font-mono); font-weight: var(--vk-fw-regular); color: var(--vk-accent); }
+    .g09-badges { display: flex; flex-wrap: wrap; gap: var(--vk-space-2); margin: 0 0 var(--vk-space-4); }
+    .g09-reads { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--vk-space-2); margin-bottom: var(--vk-space-3); }
+    .g09-reads > div { padding: var(--vk-space-3); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); background: var(--vk-surface-1); min-width: 0; }
+    .g09-reads b { display: block; font: var(--vk-fs-xl)/1.1 var(--vk-font-mono); font-weight: var(--vk-fw-regular); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .g09-pad { display: grid; place-items: center; height: 300px; margin-bottom: var(--vk-space-4); border: var(--vk-border-w) dashed var(--vk-line-strong); border-radius: var(--vk-radius-lg); background: var(--vk-bg-sunken); color: var(--vk-text-muted); text-align: center; }
+    .g09-note { width: 100%; min-height: 96px; padding: var(--vk-space-3); border: var(--vk-border-w) solid var(--vk-border-control); border-radius: var(--vk-radius); background: var(--vk-bg-sunken); color: var(--vk-text); font: inherit; resize: vertical; }
+  </style>
+
+  <article class="g-demo" id="f09-phone">
+    <h3 class="g-demo__title">Telefon — VRG Mobile minta <code>phone</code></h3>
+    <p class="g-demo__note">390×844-es nézet (az oszlophoz méretezve). Projektek lista → projekt részletei (állapotcímkék) → alsó lap a regiszter akcióival. Az alsó sáv minden eleme MINI: a <i>Szinkron</i> fül a futó szinkron haladását mutatja. A felső 28 px és az alsó 18 px a biztonsági sáv (<code>--vk-phone-inset-*</code>).</p>
+    <div class="g09-split">
+      <div class="g09-stage" id="f09-phone-stage">
+        <div class="vk-phone-frame" id="f09-frame" data-vk-density="touch">
+          <div class="vk-phone-frame__status" aria-hidden="true"><span class="vk-num">05:12</span><span><svg class="vk-icon"><use href="#vk-i-wifi"/></svg> <svg class="vk-icon"><use href="#vk-i-bolt"/></svg> 84%</span></div>
+          <div id="f09-app"></div>
+        </div>
+      </div>
+      <div class="g09-side">
+        <p class="g-cap">Szélesség</p>
+        <div class="vk-btn-group" role="radiogroup" aria-label="Telefon szélessége" id="f09-width" style="margin-bottom:var(--vk-space-4)">
+          <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" tabindex="-1" data-w="360">360</button>
+          <button class="vk-btn vk-btn--sm" role="radio" aria-checked="true" tabindex="0" data-w="390">390</button>
+          <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" tabindex="-1" data-w="430">430</button>
+        </div>
+        <p class="g-cap">Billentyűk</p>
+        <dl>
+          <dt>Tab</dt><dd>felső sáv → képernyő → fő akció → alsó navigáció</dd>
+          <dt>← →</dt><dd>az alsó navigációban; Enter megnyit</dd>
+          <dt>↑ ↓</dt><dd>listában és az alsó lap menüjében</dd>
+          <dt>Esc · Alt+←</dt><dd>vissza (vagy az alsó lap bezárása)</dd>
+          <dt>Kibontás</dt><dd>fél / teljes magasság; rajta ↑ teljes, ↓ kisebb</dd>
+          <dt>Húzás</dt><dd>a fogantyún: fel = teljes, le = bezár</dd>
+        </dl>
+        <p class="g-cap">Állapotok a mintában</p>
+        <dl>
+          <dt>Fül</dt><dd>aktív (jég) · fut (meleg gyűrű) · kész · hiba</dd>
+          <dt>Lap</dt><dd>modális (sötétítés, fókuszcsapda) és nem modális (jegyzet, a háttér használható)</dd>
+          <dt>Üres</dt><dd>„Archív” fül: üres állapot szöveggel</dd>
+        </dl>
+        <div class="g-row">
+          <button class="vk-btn" type="button" id="f09-open-modal">Modális lap</button>
+          <button class="vk-btn" type="button" id="f09-open-free">Nem modális lap</button>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f09-cyd">
+    <h3 class="g-demo__title">CYD — 320×240 kijelző <code>cyd</code></h3>
+    <p class="g-demo__note">ESP32 „Cheap Yellow Display”: pontosan 320×240 CSS px, benne érintéses sűrűség. Fejléc (cím · lapozó pontok · óra · kapcsolat-MINI), 2×3 nagy MINI csempe, lent az A / B / C funkciógombok a fizikai gombokhoz. Billentyűk a kijelzőn: <kbd>←↑→↓</kbd> csempék, <kbd>Enter</kbd> választ, <kbd>A</kbd><kbd>B</kbd><kbd>C</kbd> vagy <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> funkciógombok, <kbd>PgUp</kbd>/<kbd>PgDn</kbd> lapoz, <kbd>Esc</kbd> főmenü.</p>
+    <div class="g-row">
+      <span class="vk-label" id="f09-zoom-l">Nagyítás</span>
+      <div class="vk-btn-group" role="radiogroup" aria-labelledby="f09-zoom-l" id="f09-zoom">
+        <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" tabindex="-1" data-z="1">1×</button>
+        <button class="vk-btn vk-btn--sm" role="radio" aria-checked="true" tabindex="0" data-z="2">2×</button>
+        <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" tabindex="-1" data-z="3">3×</button>
+      </div>
+      <span class="vk-label" id="f09-scr-l">Képernyő</span>
+      <div class="vk-btn-group" role="radiogroup" aria-labelledby="f09-scr-l" id="f09-scr">
+        <button class="vk-btn vk-btn--sm" role="radio" aria-checked="true" tabindex="0" data-s="home">Főmenü</button>
+        <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" tabindex="-1" data-s="cable">Kábelteszt</button>
+        <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" tabindex="-1" data-s="status">Állapot</button>
+        <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" tabindex="-1" data-s="settings">Beállítások</button>
+      </div>
+    </div>
+    <div class="g09-cyd-stage" id="f09-cyd-stage">
+      <div class="vk-cyd-board" id="f09-board">
+        <div class="vk-cyd-board__top"><span class="vk-label" title="ESP32-2432S028R, 2,8″, 320×240">SERVICEKIT CYD // 2,8″</span><span class="vk-cyd-board__led" title="Állapotjelző LED"></span></div>
+        <div class="vk-cyd-board__glass"><div class="vk-cyd" id="f09-cyd-frame" data-vk-density="touch"></div></div>
+        <div class="vk-cyd-board__btns">
+          <button class="vk-cyd-board__btn" type="button" data-key="a" aria-label="Fizikai A gomb">A</button>
+          <button class="vk-cyd-board__btn" type="button" data-key="b" aria-label="Fizikai B gomb">B</button>
+          <button class="vk-cyd-board__btn" type="button" data-key="c" aria-label="Fizikai C gomb">C</button>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f09-rules">
+    <h3 class="g-demo__title">Kis képernyő szabályok</h3>
+    <ol class="g09-rules">
+      <li>Minden érintési cél legalább <b>40 px</b> (<code>--vk-target-min</code> érintéses sűrűségben) — a fejléc csak kijelez, nem gomb.</li>
+      <li><b>Nincs hover</b>: ami egéren előbukkanna, az itt mindig látszik; a fókuszgyűrű befelé rajzol, mert kívül nincs hely.</li>
+      <li>Szöveg legalább <b>11 px</b>, kijelzőértékek monóban, nagyban (230 V · 16 A · 41 °C) — karnyújtásnyiról is olvasható.</li>
+      <li>Képernyőnként <b>egy elsődleges akció</b>: telefonon a lebegő MINI, a CYD-n a jéggel jelölt funkciógomb.</li>
+      <li>Fizikai gombok: <b>A</b> = vissza / menü, <b>B</b> = OK / indítás, <b>C</b> = tovább — böngészőben <kbd>a b c</kbd> vagy <kbd>1 2 3</kbd>.</li>
+      <li>Az állapot alakkal és szóval is látszik (PASS pipa, FAIL kereszt dupla kerettel), nem csak színnel — Kontraszt témában is.</li>
+      <li>Minden funkció MINI: a csempe ikonja egyben a gombja és a folyamatjelzője (Telepítő 35%, Hűtő fut).</li>
+    </ol>
+  </article>
+</section>
+
+<script data-g-init>
+  /* ---------- status badge built inline from tokens (meaning goes through --vk-st-* / --vk-sig-*) ---------- */
+  function badge(text, tok, solid) {
+    return VK.el('span', { text: text, style: 'display:inline-flex;align-items:center;gap:4px;min-height:22px;padding:2px 7px;border-radius:var(--vk-radius-sm);' +
+      'font:var(--vk-fs-2xs)/1 var(--vk-font-mono);letter-spacing:var(--vk-tracking-label);text-transform:uppercase;white-space:nowrap;' +
+      (solid ? 'background:var(' + tok + ');color:var(--vk-text-on-solid);border:1px solid var(' + tok + ')' : 'color:var(' + tok + ');border:1px solid var(' + tok + ');background:color-mix(in srgb, var(' + tok + ') 12%, transparent)') });
+  }
+
+  /* ---------- sample data (job codes only) ---------- */
+  var projects = [
+    { code: 'VRG-2611-03', name: 'Erősáramú felújítás, Kötőelem-összesítő', items: 12, when: 'MA 05:12', st: ['Fejlesztés alatt', '--vk-st-dev'], sig: [['2 hiány', '--vk-sig-gap']], cable: '148 m', sum: '1,28 M Ft' },
+    { code: 'VRG-2610-17', name: 'Hűtőköri leágazás, csarnok', items: 31, when: 'TEGNAP', st: ['Használatban', '--vk-st-inuse'], sig: [], cable: '412 m', sum: '3,91 M Ft' },
+    { code: 'VRG-2609-08', name: 'Világítás és vezérlés, iroda', items: 7, when: '2026-10-28', st: ['Tervezett', '--vk-st-planned'], sig: [['1 ellentmondás', '--vk-sig-contradiction']], cable: '96 m', sum: '0,64 M Ft' },
+    { code: 'VRG-2611-11', name: 'Űrlap-alapú felmérés, Ősszeg', items: 0, when: '2026-11-02', st: ['Ötlet', '--vk-st-idea'], sig: [], cable: '—', sum: '—' }
+  ];
+  var cur = projects[0];
+  var sync = { p: 0, t: null, state: 'idle' }, exp = { p: 0, t: null, state: 'idle' }, share = { state: 'idle' };
+  var app;
+
+  /* ---------- registry actions: every verb the phone shows comes from here ---------- */
+  function runTimer(o, ms, done) {
+    if (o.t) return; o.p = 0; o.state = 'running';
+    o.t = setInterval(function () { o.p += .08; if (o.p >= 1) { clearInterval(o.t); o.t = null; o.p = 1; o.state = 'done'; if (done) done(); } tick(); }, ms);
+    tick();
+  }
+  function tick() {
+    if (!app) return;
+    app.refresh();
+    app.setNav('f09-sync', sync.state === 'running' ? { state: 'running', progress: sync.p } : sync.state === 'done' ? { state: 'done', progress: 1 } : { state: 'idle', progress: 0 });
+  }
+  VK.actions.registerAll([
+    { id: 'f09.search', label: 'Keresés a projektekben', icon: 'search', at: ['toolbar:f09.projects'], run: function () { app.openSheet(VK.el('p', { class: 'vk-muted', text: 'Írd be a munkaszámot (pl. VRG-2611) — a keresőmező a 02-es család része.' }), { title: 'Keresés', sub: 'PROJEKTEK', size: 'auto' }); } },
+    { id: 'f09.sync', label: 'Szinkron a Plannerrel', caption: 'SZINKRON', icon: 'refresh', at: ['toolbar:f09.projects', 'palette'], group: 'VRG Mobile',
+      progress: function () { return sync.state === 'running' ? sync.p : sync.state === 'done' ? 1 : 0; }, state: function () { return sync.state; },
+      run: function () { runTimer(sync, 160, function () { setTimeout(function () { sync.state = 'idle'; tick(); }, 2400); }); } },
+    { id: 'f09.project.new', label: 'Új projekt', caption: 'ÚJ', icon: 'plus', at: ['fab'], run: function () {
+      app.openSheet(VK.el('div', null, [VK.el('p', { class: 'vk-muted', text: 'Új munkaszám: VRG-2611-12. Az űrlap a 07-es család (döntések és bevitel) része.' })]), { title: 'Új projekt', sub: 'VRG-2611-12', size: 'half' }); } },
+    { id: 'f09.project.menu', label: 'Műveletek', icon: 'more-v', at: ['toolbar:f09.project'], run: function () { openActions(); } },
+    { id: 'f09.project.export', label: 'Anyaglista export', hint: 'Kötőelem-összesítő, CSV', caption: 'EXPORT', icon: 'download', at: ['fab', 'menu:f09.project'],
+      progress: function () { return exp.state === 'running' ? exp.p : exp.state === 'done' ? 1 : 0; }, state: function () { return exp.state; },
+      run: function () { if (exp.state === 'done') { exp.state = 'idle'; tick(); return; } runTimer(exp, 200); } },
+    { id: 'f09.project.share', label: 'Küldés a CYD-re', hint: 'Kábelteszt-lista a ServiceKit kijelzőre', icon: 'send', at: ['menu:f09.project'],
+      state: function () { return share.state; }, run: function () { share.state = share.state === 'waiting' ? 'idle' : 'waiting'; } },
+    { id: 'f09.project.open', label: 'Megnyitás a Plannerben', hint: 'Asztali gépen, a relén át', icon: 'external', at: ['menu:f09.project'], run: function () {} },
+    { id: 'f09.project.pin', label: 'Kitűzés a kezdőlapra', icon: 'pin', at: ['menu:f09.project'], checked: function () { return !!cur.pinned; }, run: function () { cur.pinned = !cur.pinned; } },
+    { id: 'f09.project.archive', label: 'Archiválás', hint: 'Visszavonható 30 napig', icon: 'trash', danger: true, at: ['menu:f09.project'], when: function () { return cur.items > 0; }, run: function () {} }
+  ]);
+
+  function openActions() {
+    var s = app.openSheet(VK.phone.menu('menu:f09.project', { label: 'Projekt műveletei', onRun: function (a) { if (!a.checked && a.id !== 'f09.project.export' && a.id !== 'f09.project.share') s.close(); } }),
+      { title: 'Műveletek', sub: cur.code, size: 'auto' });
+    return s;
+  }
+  function openNote() {
+    var ta = VK.el('textarea.g09-note', { 'aria-label': 'Helyszíni jegyzet', placeholder: 'Pl.: a 3-as elosztó hűtőventilátora zajos…' });
+    var box = VK.el('div', null, [VK.el('p.vk-label', { text: cur.code + ' // HELYSZÍNI JEGYZET', style: 'margin-bottom:var(--vk-space-3)' }), ta]);
+    return app.openSheet(box, { title: 'Jegyzet', sub: 'NEM MODÁLIS', modal: false, size: 'auto' });
+  }
+
+  /* ---------- screens ---------- */
+  function sec(a, b) { return VK.el('div.vk-phone__sec', null, [VK.el('span', { text: a }), b ? VK.el('span', { text: b }) : null]); }
+  function projectRows(list) {
+    return list.map(function (p) { return { id: p.code, title: p.code, meta: p.name, trail: [badge(p.st[0].split(' ')[0], p.st[1])], icon: 'folder' }; });
+  }
+  var screens = [
+    { id: 'f09-projects', title: 'Projektek', toolbar: 'toolbar:f09.projects', fab: 'f09.project.new', render: function () {
+      return VK.el('div', null, [sec('AKTÍV // ' + projects.length + ' PROJEKT', 'VRG MOBILE'),
+        VK.phone.list(projectRows(projects), { label: 'Projektek', onOpen: function (r) { cur = projects.filter(function (p) { return p.code === r.id; })[0]; app.go('f09-project', { code: r.id }); } }),
+        sec('ARCHÍV'), VK.el('p.vk-muted', { text: 'Nincs archivált projekt. Az archivált munkák 30 napig itt maradnak.', style: 'font-size:var(--vk-fs-sm)' })]);
+    } },
+    { id: 'f09-project', parent: 'f09-projects', title: function (p) { return p.code || cur.code; }, toolbar: 'toolbar:f09.project', fab: 'f09.project.export', render: function () {
+      var p = cur;
+      var badges = VK.el('div.g09-badges', null, [badge(p.st[0], p.st[1], true)].concat(p.sig.map(function (s) { return badge(s[0], s[1]); })).concat([badge('Kábel', '--vk-wire-power')]));
+      var reads = VK.el('div.g09-reads', null, [['TÉTEL', String(p.items)], ['KÁBEL', p.cable], ['ŐSSZEG', p.sum]].map(function (r) {
+        return VK.el('div', null, [VK.el('span.vk-label', { text: r[0] }), VK.el('b', { text: r[1], title: r[1] })]); }));
+      var steps = [['Felmérés', 'done', 1, 'KÉSZ'], ['Tervezés', 'running', .62, '62%'], ['Anyaglista', 'waiting', 0, 'VÁR'], ['Kábelteszt (CYD)', 'error', .4, 'HIBA: ÉR 6']];
+      var stepList = VK.el('ul.vk-phone__list', { role: 'list', 'aria-label': 'Lépések' }, steps.map(function (s) {
+        var m = VK.el('span.vk-mini', { 'aria-hidden': 'true', 'data-size': 'sm', style: 'width:32px;height:32px' }, [VK.icon('step')]);
+        VK.mini.set(m, { state: s[1], progress: s[2] });
+        return VK.el('li', null, [VK.el('div.vk-phone__item', { style: 'cursor:default' }, [m, VK.el('span.vk-phone__item-main', null, [VK.el('span.vk-phone__item-title', { text: s[0] })]), VK.el('span.vk-phone__item-meta', { text: s[3] }), VK.el('span')])]);
+      }));
+      return VK.el('div', null, [
+        VK.el('p', { text: p.name, style: 'font-size:var(--vk-fs-lg);margin-bottom:var(--vk-space-3)' }), badges, reads,
+        sec('LÉPÉSEK', 'UTOLSÓ: ' + p.when), stepList,
+        VK.el('div.g-row', { style: 'margin-top:var(--vk-space-4)' }, [
+          VK.el('button.vk-btn', { type: 'button', onclick: function () { openActions(); } }, [VK.icon('more-v'), 'Műveletek']),
+          VK.el('button.vk-btn', { type: 'button', onclick: function () { openNote(); } }, [VK.icon('edit'), 'Jegyzet'])])
+      ]);
+    } },
+    { id: 'f09-air', title: 'Légegér', render: function () {
+      return VK.el('div', null, [sec('ÉRINTŐPAD // PC-03', 'KAPCSOLÓDVA'), VK.el('div.g09-pad', null, [VK.el('span', null, [VK.icon('touch', 'vk-icon--lg'), VK.el('br'), 'Húzd az ujjad: egérmozgás · koppintás: kattintás'])])]);
+    } },
+    { id: 'f09-sync', title: 'Szinkron', toolbar: 'toolbar:f09.projects', render: function () {
+      return VK.el('div', null, [sec('RELÉ // VRG-HUB', sync.state === 'running' ? 'FUT' : 'KÉSZEN'),
+        VK.el('p.vk-muted', { text: 'Indítsd a szinkront a felső sáv MINI-jével: az alsó navigáció „Szinkron” füle is mutatja a haladást.', style: 'font-size:var(--vk-fs-sm)' })]);
+    } },
+    { id: 'f09-settings', title: 'Beállítások', render: function () {
+      return VK.el('div', null, [sec('ESZKÖZ'), VK.phone.list([{ id: 'th', title: 'Téma', meta: 'Éj · Papír · Kontraszt · Mélyvíz', icon: 'eye' }, { id: 'rl', title: 'Relé', meta: 'VRG-HUB · párosítva', icon: 'link' }, { id: 'ab', title: 'Névjegy', meta: 'VRG Mobile 0.9 · kit v1', icon: 'info' }], { label: 'Beállítások' })]);
+    } }
+  ];
+
+  app = VK.phone.mount(document.getElementById('f09-app'), {
+    title: 'VRG Mobile', headingLevel: 4, screens: screens, start: 'f09-projects',
+    nav: [{ id: 'f09-projects', icon: 'folder', label: 'Projektek' }, { id: 'f09-air', icon: 'touch', label: 'Légegér', state: 'done' },
+      { id: 'f09-sync', icon: 'sync', label: 'Szinkron' }, { id: 'f09-settings', icon: 'settings', label: 'Beállítások' }]
+  });
+  window.VKGallery09 = { app: app };
+  document.getElementById('f09-open-modal').addEventListener('click', function () { if (app.current().id !== 'f09-project') app.go('f09-project', { code: cur.code }, { focus: false }); openActions(); });
+  document.getElementById('f09-open-free').addEventListener('click', function () { if (app.current().id !== 'f09-project') app.go('f09-project', { code: cur.code }, { focus: false }); openNote(); });
+
+  /* ---------- the phone frame scales to the column (CSS zoom keeps hit-testing exact) ---------- */
+  var frame = document.getElementById('f09-frame'), stage = document.getElementById('f09-phone-stage'), fw = 390;
+  function fit() { var w = stage.clientWidth; if (!w) return; frame.style.width = fw + 'px'; frame.style.setProperty('--vk-phone-zoom', String(Math.min(1, (w - 4) / (fw + 16)).toFixed(3))); }
+  fit(); if ('ResizeObserver' in window) new ResizeObserver(fit).observe(stage); else window.addEventListener('resize', fit);
+  function radios(id, attr, fn) {
+    var g = document.getElementById(id), list = Array.prototype.slice.call(g.querySelectorAll('[role="radio"]'));
+    function pick(b, focus) { list.forEach(function (x) { var on = x === b; x.setAttribute('aria-checked', on ? 'true' : 'false'); x.tabIndex = on ? 0 : -1; }); if (focus) b.focus(); fn(b.dataset[attr]); }
+    g.addEventListener('click', function (e) { var b = e.target.closest('[role="radio"]'); if (b) pick(b); });
+    g.addEventListener('keydown', function (e) { if (e.shiftKey || !/^Arrow/.test(e.key)) return; var i = list.indexOf(document.activeElement); if (i < 0) return; e.preventDefault(); pick(list[(i + (/Right|Down/.test(e.key) ? 1 : -1) + list.length) % list.length], true); });
+    return function (v) { var b = list.filter(function (x) { return x.dataset[attr] === String(v); })[0]; if (b) list.forEach(function (x) { x.setAttribute('aria-checked', x === b ? 'true' : 'false'); x.tabIndex = x === b ? 0 : -1; }); };
+  }
+  radios('f09-width', 'w', function (w) { fw = +w; fit(); });
+
+  /* ---------- CYD: four screens ---------- */
+  var cyd, test = { p: 0, t: null, run: 0, state: 'idle', wires: [] };
+  function cableScreen(body, c) {
+    var r = VK.cyd.ring({ progress: 0, text: '0', unit: '%', sub: 'ÉR 0/8', label: 'Kábelteszt haladása' });
+    var verdict = VK.el('div.vk-cyd__verdict', { role: 'status' });
+    var cells = VK.el('div.vk-cyd__cells', { style: '--_cols:4', 'aria-label': 'Erek', role: 'list' });
+    for (var i = 1; i <= 8; i++) cells.appendChild(VK.el('span.vk-cyd__cell', { role: 'listitem', text: 'ÉR ' + i }));
+    var meta = VK.el('span.vk-label', { text: 'EREK // T568B // 12,4 M' });
+    var wrap = VK.el('div', { style: 'display:flex;gap:10px;align-items:center;height:100%;padding:0 4px' }, [r,
+      VK.el('div', { style: 'display:grid;gap:6px;flex:1;min-width:0' }, [verdict, cells, meta])]);
+    body.appendChild(wrap);
+    function draw() {
+      VK.cyd.setRing(r, { progress: test.p, state: test.state === 'running' ? 'running' : test.state === 'pass' ? 'done' : test.state === 'fail' ? 'error' : '',
+        text: String(Math.round(test.p * 100)), unit: '%', sub: 'ÉR ' + test.wires.length + '/8' });
+      verdict.textContent = '';
+      var v = { idle: ['', 'KÉSZEN', 'dot'], running: ['run', 'MÉRÉS…', 'cable'], pass: ['pass', 'PASS', 'check'], fail: ['fail', 'FAIL', 'close'] }[test.state];
+      if (v[0]) verdict.dataset.verdict = v[0]; else delete verdict.dataset.verdict;
+      verdict.appendChild(VK.icon(v[2])); verdict.appendChild(document.createTextNode(v[1]));
+      Array.prototype.forEach.call(cells.children, function (cell, i) {
+        var w = test.wires[i]; cell.dataset.state = w === undefined ? (test.state === 'running' && i === test.wires.length ? 'running' : '') : w ? 'done' : 'error';
+        if (!cell.dataset.state) delete cell.dataset.state;
+        cell.textContent = (i + 1) + (w === false ? ' ✕' : w ? ' ✓' : '');
+        cell.setAttribute('aria-label', 'Ér ' + (i + 1) + (w === false ? ': szakadt' : w ? ': rendben' : ''));
+      });
+      c.led(test.state === 'running' ? 'run' : test.state === 'pass' ? 'ok' : test.state === 'fail' ? 'error' : null);
+      c.setKeys('cable', { b: { label: test.state === 'running' ? 'Állj' : 'Indítás', primary: true, run: function () { test.state === 'running' ? stop() : start(); } } });
+      cyd && cyd.setTile('home', 'cable', test.state === 'running' ? { state: 'running', progress: test.p } : test.state === 'pass' ? { state: 'done', sub: 'PASS' } : test.state === 'fail' ? { state: 'error', sub: 'FAIL' } : { state: 'idle', sub: '' });
+    }
+    function start() {
+      clearInterval(test.t); test.run += 1; test.p = 0; test.wires = []; test.state = 'running';
+      var failAt = test.run % 2 === 0 ? 5 : -1;
+      test.t = setInterval(function () {
+        test.p = Math.min(1, test.p + 1 / 32);
+        var n = Math.floor(test.p * 8 + 1e-6); while (test.wires.length < n) test.wires.push(test.wires.length !== failAt);
+        if (test.p >= 1) { clearInterval(test.t); test.t = null; test.state = test.wires.indexOf(false) >= 0 ? 'fail' : 'pass'; c.toast(test.state === 'pass' ? 'PASS — mind a 8 ér rendben' : 'FAIL — ÉR 6 szakadt'); }
+        draw();
+      }, 110);
+      draw();
+    }
+    function stop() { clearInterval(test.t); test.t = null; test.state = 'idle'; draw(); c.toast('Mérés leállítva'); }
+    test.draw = draw; test.start = start;
+    draw();
+    if (test.state === 'idle' || test.state === 'pass' || test.state === 'fail') { if (!test.manual) start(); }
+    return { destroy: function () { if (test.t) { clearInterval(test.t); test.t = null; test.state = 'idle'; test.p = 0; test.wires = []; c.setTile('home', 'cable', { state: 'idle', sub: '' }); } c.led(null); } };
+  }
+  var cydScreens = [
+    { id: 'home', title: 'Főmenü', cols: 3, rows: 2, tiles: [
+      { id: 'cable', icon: 'cable', label: 'Kábelteszt', go: 'cable' },
+      { id: 'status', icon: 'gauge', label: 'Állapot', go: 'status', sub: '230 V' },
+      { id: 'settings', icon: 'settings', label: 'Beállítások', go: 'settings' },
+      { id: 'deploy', icon: 'download', label: 'Telepítő', state: 'running', progress: .35, run: function (c) { c.toast('Telepítés: C:\\ServiceKit — 35%'); } },
+      { id: 'sd', icon: 'drive', label: 'SD-kártya', state: 'done', sub: '82% TELE', run: function (c) { c.toast('SD-kártya: 14 fájl, 82% foglalt'); } },
+      { id: 'rescue', icon: 'tool', label: 'Mentő', sub: 'BIOS-KULCSOK', run: function (c) { c.toast('Mentő: F2 · Del · F12 · Esc'); } }
+    ] },
+    { id: 'cable', title: 'Kábelteszt', render: cableScreen, keys: { c: { label: 'Újra', run: function () { test.start && test.start(); } } } },
+    { id: 'status', title: 'Állapot', cols: 3, rows: 2, tiles: [
+      { id: 'u', label: 'Feszültség', value: '230', unit: 'V', run: function (c) { c.toast('Feszültség 230 V — határon belül (207–253)'); } },
+      { id: 'i', label: 'Áram', value: '16', unit: 'A', tone: 'warn', sub: 'a kismegszakító határán', run: function (c) { c.toast('Áram 16 A — eléri a B16 határát'); } },
+      { id: 't', label: 'Hőmérséklet', value: '41', unit: '°C', run: function (c) { c.toast('Elosztó belső hőmérséklete 41 °C'); } },
+      { id: 'link', icon: 'link', label: 'Kapcsolat', state: 'done', sub: 'USB · COM5', run: function (c) { c.toast('Híd: bridge.js, USB-soros, COM5'); } },
+      { id: 'fan', icon: 'sensor', label: 'Hűtő', state: 'running', sub: '1200 F/P', run: function (c) { c.toast('Hűtőventilátor: 1200 fordulat/perc'); } },
+      { id: 'up', icon: 'clock', label: 'Üzemidő', sub: '3 Ó 12 P', run: function (c) { c.toast('Üzemidő: 3 óra 12 perc'); } }
+    ] },
+    { id: 'settings', title: 'Beállítások', cols: 3, rows: 1, tiles: [
+      { id: 'light', icon: 'bulb', label: 'Háttérfény', toggle: true, checked: true },
+      { id: 'beep', icon: 'bell', label: 'Hangjelzés', toggle: true, checked: false },
+      { id: 'hc', icon: 'eye', label: 'Erős kontraszt', toggle: true, checked: false, onToggle: function (on, c) { if (on) c.el.setAttribute('data-vk-theme', 'contrast'); else c.el.removeAttribute('data-vk-theme'); } }
+    ] }
+  ];
+  var setScr = radios('f09-scr', 's', function (s) { cyd.go(s); });
+  cyd = VK.cyd.mount(document.getElementById('f09-cyd-frame'), { label: 'ServiceKit CYD kijelző', screens: cydScreens, start: 'home',
+    link: { state: 'done', label: 'Kapcsolat a PC-hídhoz' }, onScreen: function (id) { setScr && setScr(id); } });
+  window.VKGallery09.cyd = cyd;
+  /* zoom: default 2×; if 2× does not fit the column, the largest zoom that does */
+  var cstage = document.getElementById('f09-cyd-stage');
+  var setZ = radios('f09-zoom', 'z', function (z) { cyd.zoom(+z); });
+  var boardW = document.getElementById('f09-board').offsetWidth || 350;
+  var z0 = cstage.clientWidth - 24 >= boardW * 2 ? 2 : 1;
+  cyd.zoom(z0); setZ(z0);
+</script>

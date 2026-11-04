@@ -1,0 +1,60 @@
+/* VRG UI Kit — components/panel.css — dockable panel: header (label, title, minis), scrolling body.
+   <section class="vk-panel" data-vk-hop data-icon="tree">
+     <header class="vk-panel__head">
+       <span class="vk-panel__label">[01]</span> <h3 class="vk-panel__title">Projektfa</h3>
+       <div class="vk-panel__tools" role="toolbar"> minis: állapot · registry · összecsukás · teljes méret · lebegtetés · bezárás </div>
+     </header>
+     <div class="vk-panel__body">…</div>
+   </section>
+   States: data-collapsed · data-maximized (fills the nearest positioned ancestor, e.g. .vk-shell) ·
+   data-floating (absolute, glass, drag by the header) · data-state="running|error|done|waiting" (from setState).
+   Depends on: tokens, base, mini. */
+.vk-panel { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  background: var(--vk-surface-1); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-lg); overflow: hidden; }
+.vk-panel__head { display: flex; align-items: center; gap: var(--vk-space-2); flex: none; min-width: 0;
+  min-height: calc(max(var(--vk-control-h), var(--vk-target-min)) + 4px); padding: 0 var(--vk-space-1) 0 var(--vk-space-3);
+  background: var(--vk-surface-2); border-bottom: var(--vk-border-w) solid var(--vk-line); }
+.vk-panel__label { flex: none; font-family: var(--vk-font-mono); font-size: var(--vk-fs-2xs); text-transform: uppercase;
+  letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); line-height: 1; }
+.vk-panel__label:empty { display: none; }
+.vk-panel__title { flex: 1 1 auto; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: var(--vk-font-voice); font-weight: var(--vk-fw-strong); font-size: var(--vk-fs-md); text-transform: uppercase;
+  letter-spacing: var(--vk-tracking-title); line-height: var(--vk-lh-tight); }
+.vk-panel__tools { display: flex; align-items: center; gap: 0; flex: none; }
+.vk-panel__tools > .vk-mini { --_s: var(--vk-control-h); }
+.vk-panel__body { flex: 1 1 auto; min-height: 0; min-width: 0; overflow: auto; padding: var(--vk-pad-panel);
+  overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--vk-line-strong) transparent; }
+.vk-panel__body--flush { padding: 0; }
+.vk-panel__body:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: calc(-1 * var(--vk-focus-w)); }
+
+/* collapsed: header only */
+.vk-panel[data-collapsed] { flex: none !important; }
+.vk-panel[data-collapsed] > .vk-panel__body { display: none; }
+.vk-panel[data-collapsed] > .vk-panel__head { border-bottom-color: transparent; }
+
+/* state edge: warm while working, red on error — the header gets a 2px rule on its left */
+.vk-panel[data-state] > .vk-panel__head { box-shadow: inset 2px 0 0 var(--_edge, transparent); }
+.vk-panel[data-state="running"] { --_edge: var(--vk-activity); }
+.vk-panel[data-state="waiting"] { --_edge: var(--vk-warn); }
+.vk-panel[data-state="error"] { --_edge: var(--vk-crit); border-color: var(--vk-crit); }
+.vk-panel[data-state="done"] { --_edge: var(--vk-ok); }
+
+/* maximised: fill the nearest positioned ancestor (the shell) */
+.vk-panel[data-maximized] { position: absolute; inset: 0; z-index: var(--vk-z-sticky); flex: none; border-radius: 0;
+  border-color: var(--vk-accent-line); }
+
+/* floating: lifted out of the dock flow */
+.vk-panel[data-floating] { position: absolute; z-index: var(--vk-z-panel); box-shadow: var(--vk-shadow-overlay); border-color: var(--vk-accent-line); }
+.vk-panel[data-floating].vk-glass { background: var(--vk-overlay); }
+.vk-panel[data-floating] > .vk-panel__head { cursor: grab; touch-action: none; background: transparent; }
+.vk-panel[data-floating][data-dragging] > .vk-panel__head { cursor: grabbing; }
+.vk-panel[data-floating][data-dragging] { user-select: none; }
+
+/* empty / loading placeholders inside a body */
+.vk-panel__empty { display: grid; place-content: center; gap: var(--vk-space-2); min-height: 100%; padding: var(--vk-space-4);
+  text-align: center; color: var(--vk-text-muted); font-size: var(--vk-fs-sm); }
+.vk-panel__empty > .vk-icon { margin: 0 auto; width: calc(var(--vk-icon-size) * 1.75); height: calc(var(--vk-icon-size) * 1.75); color: var(--vk-text-faint); }
+
+@media (forced-colors: active) {
+  .vk-panel { border-color: CanvasText; }
+}

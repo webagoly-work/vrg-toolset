@@ -1,0 +1,57 @@
+/* VRG UI Kit — components/inspector.css — key-value inspector (mounted by VK.inspector.mount).
+   .vk-insp > section.vk-insp__sec (h4 > button.vk-insp__toggle[aria-expanded] · .vk-insp__list > .vk-insp__row)
+   Row: key · mono value + unit · actions (edit / lock, copy MINI). States: data-changed (warm dot),
+   data-readonly (lock, muted), data-editable, data-editing, data-invalid. Actions show on hover/focus,
+   always in touch density. Depends on: tokens, base, mini. */
+.vk-insp { display: flex; flex-direction: column; min-width: 0; font-size: var(--vk-fs-sm); }
+.vk-insp__sec + .vk-insp__sec { border-top: var(--vk-border-w) solid var(--vk-line); }
+.vk-insp__h { margin: 0; font: inherit; }
+.vk-insp__toggle { display: flex; align-items: center; gap: var(--vk-space-2); width: 100%; min-height: max(var(--vk-row-h), var(--vk-target-min));
+  padding: 0 var(--vk-space-2); margin: 0; border: 0; background: transparent; color: var(--vk-text-muted); cursor: pointer; text-align: left;
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); text-transform: uppercase; letter-spacing: var(--vk-tracking-label); }
+.vk-insp__toggle:hover { color: var(--vk-text); background: var(--vk-hover-bg); }
+.vk-insp__toggle:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: calc(-1 * var(--vk-focus-w)); }
+.vk-insp__toggle .vk-icon { width: calc(var(--vk-icon-size) * .8125); height: calc(var(--vk-icon-size) * .8125); transition: transform var(--vk-dur-2) var(--vk-ease); }
+.vk-insp__toggle[aria-expanded="true"] .vk-icon { transform: rotate(90deg); }
+.vk-insp__title { flex: 1 1 auto; min-width: 0; }
+.vk-insp__count { color: var(--vk-text-faint); }
+
+.vk-insp__list { padding-bottom: var(--vk-space-2); }
+.vk-insp__row { position: relative; display: grid; grid-template-columns: minmax(0, 42%) minmax(0, 1fr) auto; align-items: center; gap: var(--vk-space-3);
+  min-height: max(var(--vk-row-h), var(--vk-target-min)); padding: 0 var(--vk-space-1) 0 calc(var(--vk-space-2) + var(--vk-icon-size));
+  border-radius: var(--vk-radius-sm); cursor: default; }
+.vk-insp__row:hover { background: var(--vk-hover-bg); }
+.vk-insp__row:focus { outline: none; }
+.vk-insp__row:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: calc(-1 * var(--vk-focus-w)); background: var(--vk-select-bg); }
+.vk-insp__k { color: var(--vk-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vk-insp__v { display: flex; align-items: baseline; gap: .35em; min-width: 0; }
+.vk-insp__val { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--vk-text); }
+.vk-insp__val.vk-num { font-size: var(--vk-fs-sm); }
+.vk-insp__val--empty { color: var(--vk-text-faint); }
+.vk-insp__unit { font: var(--vk-fs-xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); }
+
+/* changed: a warm dot in the gutter (the system has a pending change) */
+.vk-insp__row[data-changed]::before { content: ""; position: absolute; left: calc(var(--vk-space-2) + var(--vk-icon-size) / 2 - 3px); top: 50%;
+  width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: var(--vk-activity); }
+.vk-insp__row[data-changed] .vk-insp__val { color: var(--vk-activity); }
+.vk-insp__row[data-readonly] .vk-insp__val { color: var(--vk-text-muted); }
+.vk-insp__row[data-invalid] { box-shadow: inset 2px 0 0 var(--vk-crit); }
+
+.vk-insp__acts { display: flex; align-items: center; gap: var(--vk-space-1); opacity: 0; }
+.vk-insp__row:hover .vk-insp__acts, .vk-insp__row:focus-within .vk-insp__acts, .vk-insp__acts:has([data-state]) { opacity: 1; }
+[data-vk-density="touch"] .vk-insp__acts { opacity: 1; }
+.vk-insp__row[data-readonly] .vk-insp__acts { opacity: 1; }
+.vk-insp__acts .vk-mini { --_s: calc(var(--vk-control-h) - 4px); }
+.vk-insp__edit { display: grid; place-items: center; width: max(calc(var(--vk-control-h) - 4px), var(--vk-target-min)); height: max(calc(var(--vk-control-h) - 4px), var(--vk-target-min));
+  padding: 0; margin: 0; border: 0; border-radius: var(--vk-radius-sm); background: transparent; color: var(--vk-text-muted); cursor: pointer; }
+.vk-insp__edit:hover { color: var(--vk-accent); background: var(--vk-hover-bg); }
+.vk-insp__lock { display: grid; place-items: center; width: var(--vk-target-min); color: var(--vk-text-faint); }
+.vk-insp__lock .vk-icon { width: calc(var(--vk-icon-size) * .8125); height: calc(var(--vk-icon-size) * .8125); }
+
+.vk-insp__input { width: 100%; min-width: 0; min-height: max(calc(var(--vk-control-h) - 4px), var(--vk-target-min)); padding: 0 var(--vk-space-2); margin: 0;
+  font: var(--vk-fs-sm)/1 var(--vk-font-mono); color: var(--vk-text); background: var(--vk-bg-sunken);
+  border: var(--vk-border-w) solid var(--vk-accent); border-radius: var(--vk-radius-sm); }
+.vk-insp__input:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: 0; }
+.vk-insp__row[data-editing] { background: var(--vk-select-bg); }
+
+@media (max-width: 360px) { .vk-insp__row { grid-template-columns: minmax(0, 1fr) auto; } .vk-insp__v { grid-column: 1; grid-row: 2; padding-bottom: var(--vk-space-1); } .vk-insp__acts { grid-row: 1 / span 2; grid-column: 2; } }

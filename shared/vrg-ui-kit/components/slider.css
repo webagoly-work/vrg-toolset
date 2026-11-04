@@ -1,0 +1,71 @@
+/* VRG UI Kit — components/slider.css — single and range slider, ticks, mono readout; vertical variant.
+   slider.js builds: .vk-slider > .vk-slider__head (label · output) + .vk-slider__rail > .vk-slider__track
+   (.vk-slider__fill, .vk-slider__thumb[role=slider] ×1|2) + .vk-slider__ticks.
+   data-orient="vertical" · aria-disabled on .vk-slider. Thumb = small square terminal on a hairline rail;
+   the fill between is the instrument (ice). Depends on: tokens, base. */
+.vk-slider { --_thumb: max(14px, calc(var(--vk-icon-size) - 2px)); --_rail: 4px;
+  display: flex; flex-direction: column; gap: var(--vk-space-2); min-width: 0; user-select: none; -webkit-user-select: none; }
+.vk-slider__head { display: flex; align-items: baseline; gap: var(--vk-space-3); min-width: 0; }
+.vk-slider__label { font-size: var(--vk-fs-sm); color: var(--vk-text); min-width: 0; }
+.vk-slider__out { margin-left: auto; font: var(--vk-fs-md)/1 var(--vk-font-mono); font-variant-numeric: tabular-nums slashed-zero;
+  color: var(--vk-text); white-space: nowrap; padding: var(--vk-space-1) var(--vk-space-2);
+  background: var(--vk-bg-sunken); border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius-sm); }
+.vk-slider__out .vk-slider__unit { color: var(--vk-text-muted); margin-left: .25em; }
+
+/* the rail is the hit area (≥ target-min tall); the track is the drawn line */
+.vk-slider__rail { position: relative; height: max(var(--vk-target-min), calc(var(--_thumb) + 8px)); margin: 0 calc(var(--_thumb) / 2);
+  cursor: pointer; touch-action: none; }
+.vk-slider__track { position: absolute; left: 0; right: 0; top: 50%; height: var(--_rail); transform: translateY(-50%);
+  background: var(--vk-bg-sunken); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-pill); }
+.vk-slider__fill { position: absolute; top: -1px; bottom: -1px; left: 0; background: var(--vk-accent); border-radius: var(--vk-radius-pill); }
+.vk-slider__thumb { position: absolute; top: 50%; left: 0; width: var(--_thumb); height: var(--_thumb); margin: 0;
+  transform: translate(-50%, -50%); background: var(--vk-surface-2); border: 2px solid var(--vk-accent); border-radius: var(--vk-radius-sm);
+  cursor: grab; touch-action: none; z-index: 1; }
+.vk-slider__thumb::after { content: ""; position: absolute; left: 50%; top: 50%; width: 2px; height: 50%; transform: translate(-50%, -50%);
+  background: var(--vk-accent); }
+.vk-slider__thumb:hover { background: var(--vk-surface-3); }
+.vk-slider__thumb:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: 2px; box-shadow: var(--vk-glow); z-index: 2; }
+.vk-slider__thumb[data-drag] { cursor: grabbing; background: var(--vk-accent-soft); }
+.vk-slider__thumb::before { content: ""; position: absolute; inset: calc(-1 * max(4px, (var(--vk-target-min) - var(--_thumb)) / 2)); }
+
+/* ticks: hairline marks + mono labels under the rail */
+.vk-slider__ticks { position: relative; height: calc(var(--vk-fs-2xs) + 10px); margin: calc(-1 * var(--vk-space-2)) calc(var(--_thumb) / 2) 0; }
+.vk-slider__tick { position: absolute; top: 0; width: 1px; height: 5px; background: var(--vk-line-strong); }
+.vk-slider__tick[data-major] { height: 7px; background: var(--vk-text-muted); }
+.vk-slider__tlabel { position: absolute; top: 8px; transform: translateX(-50%); font: var(--vk-fs-2xs)/1 var(--vk-font-mono);
+  color: var(--vk-text-muted); white-space: nowrap; }
+.vk-slider__tlabel[data-first] { transform: none; }
+.vk-slider__tlabel[data-last] { transform: translateX(-100%); }
+
+/* range: the second thumb is a mirrored terminal */
+.vk-slider[data-range] .vk-slider__thumb[data-i="1"]::after { left: 50%; }
+
+/* disabled */
+.vk-slider[aria-disabled="true"] { opacity: 1; }
+.vk-slider[aria-disabled="true"] .vk-slider__rail { cursor: not-allowed; }
+.vk-slider[aria-disabled="true"] .vk-slider__fill { background: var(--vk-text-faint); }
+.vk-slider[aria-disabled="true"] .vk-slider__thumb { border-color: var(--vk-text-faint); cursor: not-allowed; background: var(--vk-surface-1); }
+.vk-slider[aria-disabled="true"] .vk-slider__thumb::after { background: var(--vk-text-faint); }
+.vk-slider[aria-disabled="true"] :is(.vk-slider__label, .vk-slider__out, .vk-slider__tlabel) { color: var(--vk-text-faint); }
+
+/* vertical */
+.vk-slider[data-orient="vertical"] { --vk-slider-h: 180px; display: inline-grid; grid-template-columns: auto auto; grid-template-rows: auto 1fr;
+  column-gap: var(--vk-space-2); align-items: stretch; height: auto; }
+.vk-slider[data-orient="vertical"] .vk-slider__head { grid-column: 1 / -1; flex-direction: column; align-items: flex-start; gap: var(--vk-space-2); }
+.vk-slider[data-orient="vertical"] .vk-slider__out { margin-left: 0; }
+.vk-slider[data-orient="vertical"] .vk-slider__rail { height: var(--vk-slider-h); width: max(var(--vk-target-min), calc(var(--_thumb) + 8px));
+  margin: calc(var(--_thumb) / 2) 0; }
+.vk-slider[data-orient="vertical"] .vk-slider__track { left: 50%; right: auto; top: 0; bottom: 0; width: var(--_rail); height: auto; transform: translateX(-50%); }
+.vk-slider[data-orient="vertical"] .vk-slider__fill { left: -1px; right: -1px; top: auto; bottom: 0; }
+.vk-slider[data-orient="vertical"] .vk-slider__thumb { left: 50%; top: auto; transform: translate(-50%, 50%); }
+.vk-slider[data-orient="vertical"] .vk-slider__thumb::after { width: 50%; height: 2px; }
+.vk-slider[data-orient="vertical"] .vk-slider__ticks { height: var(--vk-slider-h); width: 3.5em; margin: calc(var(--_thumb) / 2) 0; }
+.vk-slider[data-orient="vertical"] .vk-slider__tick { left: 0; top: auto; width: 5px; height: 1px; }
+.vk-slider[data-orient="vertical"] .vk-slider__tick[data-major] { width: 7px; height: 1px; }
+.vk-slider[data-orient="vertical"] .vk-slider__tlabel, .vk-slider[data-orient="vertical"] .vk-slider__tlabel[data-last],
+.vk-slider[data-orient="vertical"] .vk-slider__tlabel[data-first] { left: 10px; top: auto; transform: translateY(50%); }
+
+@media (forced-colors: active) {
+  .vk-slider__fill { background: Highlight; }
+  .vk-slider__thumb { border-color: CanvasText; }
+}

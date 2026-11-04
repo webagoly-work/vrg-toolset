@@ -1,0 +1,85 @@
+/* VRG UI Kit — components/shell.css — the full-screen app frame (VRG Desktop).
+   <div class="vk-shell" data-mode="normal|hud">
+     <div class="vk-shell__top">  command bar  </div>
+     <aside class="vk-shell__dock" data-dock="left" aria-label="Bal dokk" [data-collapsed]>  .vk-panel …  </aside>
+     <main  class="vk-shell__main">  tabs, split views, the window layer  </main>
+     <aside class="vk-shell__dock" data-dock="right">  …  </aside>
+     <aside class="vk-shell__dock" data-dock="bottom" data-collapsed>  …  </aside>
+     <div class="vk-shell__status">  status bar  </div>
+   </div>
+   A collapsed dock shows its rail (.vk-shell__rail, built by shell.js): one mini per panel.
+   HUD mode: the frame turns transparent over whatever lies beneath (.vk-shell--overlay positions it on top),
+   bars and panels become .vk-glass, the empty main area lets the pointer through.
+   Sizes: --vk-shell-left / --vk-shell-right / --vk-shell-bottom (component-local, px). Depends on: tokens, base, mini. */
+.vk-shell { --vk-shell-left: 240px; --vk-shell-right: 260px; --vk-shell-bottom: 180px;
+  --_rail: calc(max(var(--vk-control-h) + 4px, var(--vk-target-min)) + 2 * var(--vk-space-2) + var(--vk-border-w));
+  --_l: var(--vk-shell-left); --_r: var(--vk-shell-right); --_b: var(--vk-shell-bottom);
+  position: relative; display: grid; width: 100%; height: 100%; min-width: 0; min-height: 0; overflow: hidden;
+  grid-template-columns: var(--_l) minmax(0, 1fr) var(--_r);
+  grid-template-rows: auto minmax(0, 1fr) var(--_b) auto;
+  grid-template-areas: "top top top" "left main right" "left bottom right" "status status status";
+  background: var(--vk-bg); color: var(--vk-text); font-family: var(--vk-font-sans); font-size: var(--vk-fs-md); line-height: var(--vk-lh);
+  transition: background-color var(--vk-dur-3) var(--vk-ease); }
+.vk-shell--fullscreen { position: fixed; inset: 0; z-index: var(--vk-z-panel); }
+.vk-shell--overlay { position: absolute; inset: 0; z-index: var(--vk-z-hud); }
+
+.vk-shell:not(:has(> [data-dock="left"]:not([hidden]))) { --_l: 0px; }
+.vk-shell:not(:has(> [data-dock="right"]:not([hidden]))) { --_r: 0px; }
+.vk-shell:not(:has(> [data-dock="bottom"]:not([hidden]))) { --_b: 0px; }
+.vk-shell:has(> [data-dock="left"][data-collapsed]) { --_l: var(--_rail); }
+.vk-shell:has(> [data-dock="right"][data-collapsed]) { --_r: var(--_rail); }
+.vk-shell:has(> [data-dock="bottom"][data-collapsed]) { --_b: var(--_rail); }
+
+.vk-shell__top { grid-area: top; min-width: 0; z-index: 2; }
+.vk-shell__status { grid-area: status; min-width: 0; z-index: 2; }
+.vk-shell__main { grid-area: main; position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+
+.vk-shell__dock { display: flex; flex-direction: column; gap: var(--vk-space-2); min-width: 0; min-height: 0; overflow: hidden;
+  padding: var(--vk-space-2); background: var(--vk-bg); }
+.vk-shell__dock[data-dock="left"] { grid-area: left; border-right: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-shell__dock[data-dock="right"] { grid-area: right; border-left: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-shell__dock[data-dock="bottom"] { grid-area: bottom; flex-direction: row; border-top: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-shell__dock > .vk-panel { flex: 1 1 0; }
+.vk-shell__dock > .vk-panel[data-floating], .vk-shell__dock > .vk-panel[data-maximized] { flex: none; }
+.vk-shell__dock[data-collapsed] > :not(.vk-shell__rail):not([data-floating]):not([data-maximized]) { display: none; }
+
+/* the rail: a collapsed dock's minis */
+.vk-shell__rail { display: none; flex-direction: column; align-items: center; gap: var(--vk-space-2); min-height: 0; overflow: auto; scrollbar-width: none; }
+.vk-shell__dock[data-collapsed] > .vk-shell__rail { display: flex; }
+.vk-shell__dock[data-dock="bottom"] > .vk-shell__rail { flex-direction: row; }
+.vk-shell__rail-sep { flex: none; width: 60%; height: var(--vk-border-w); background: var(--vk-line-strong); }
+.vk-shell__dock[data-dock="bottom"] .vk-shell__rail-sep { width: var(--vk-border-w); height: 60%; }
+.vk-shell__rail-tag { writing-mode: vertical-rl; transform: rotate(180deg); margin-top: auto; padding: var(--vk-space-2) 0;
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text-faint); white-space: nowrap; }
+.vk-shell__dock[data-dock="bottom"] .vk-shell__rail-tag { writing-mode: horizontal-tb; transform: none; margin: 0 0 0 auto; padding: 0 var(--vk-space-2); }
+
+/* ---------- HUD mode ---------- */
+.vk-shell[data-mode="hud"] { background: transparent; gap: var(--vk-space-2); padding: var(--vk-space-2); pointer-events: none; }
+.vk-shell[data-mode="hud"] > * { pointer-events: auto; }
+.vk-shell[data-mode="hud"] > .vk-shell__main { pointer-events: none; overflow: visible; }
+.vk-shell[data-mode="hud"] > .vk-shell__main > * { pointer-events: auto; }
+.vk-shell[data-mode="hud"] > .vk-shell__dock { background: transparent; border: 0; padding: 0; }
+.vk-shell[data-mode="hud"] .vk-glass { background: var(--vk-overlay); border: var(--vk-border-w) solid var(--vk-line-strong);
+  border-radius: var(--vk-radius-lg); box-shadow: var(--vk-shadow-overlay);
+  -webkit-backdrop-filter: blur(var(--vk-blur)) saturate(1.2); backdrop-filter: blur(var(--vk-blur)) saturate(1.2); }
+.vk-shell[data-mode="hud"] .vk-glass .vk-panel__head { background: transparent; }
+.vk-shell[data-mode="hud"] > .vk-shell__dock > .vk-shell__rail.vk-glass { padding: var(--vk-space-2) 0; }
+.vk-shell[data-mode="hud"] > .vk-shell__dock[data-dock="bottom"] > .vk-shell__rail.vk-glass { padding: 0 var(--vk-space-2); }
+.vk-shell[data-mode="hud"] > .vk-shell__dock[data-collapsed] { align-items: stretch; }
+/* the HUD's "you are here" frame: ice corner ticks round the see-through main area */
+.vk-shell[data-mode="hud"] > .vk-shell__main::before { --_c: var(--vk-accent-line); --_k: 14px;
+  content: ""; position: absolute; inset: var(--vk-space-2); pointer-events: none;
+  background:
+    linear-gradient(var(--_c), var(--_c)) left top / var(--_k) 1px no-repeat,
+    linear-gradient(var(--_c), var(--_c)) left top / 1px var(--_k) no-repeat,
+    linear-gradient(var(--_c), var(--_c)) right top / var(--_k) 1px no-repeat,
+    linear-gradient(var(--_c), var(--_c)) right top / 1px var(--_k) no-repeat,
+    linear-gradient(var(--_c), var(--_c)) left bottom / var(--_k) 1px no-repeat,
+    linear-gradient(var(--_c), var(--_c)) left bottom / 1px var(--_k) no-repeat,
+    linear-gradient(var(--_c), var(--_c)) right bottom / var(--_k) 1px no-repeat,
+    linear-gradient(var(--_c), var(--_c)) right bottom / 1px var(--_k) no-repeat; }
+.vk-shell[data-mode="hud"] { --_rail: calc(max(var(--vk-control-h) + 4px, var(--vk-target-min)) + 2 * var(--vk-border-w)); }
+
+@media (forced-colors: active) {
+  .vk-shell__dock { border-color: CanvasText; }
+}

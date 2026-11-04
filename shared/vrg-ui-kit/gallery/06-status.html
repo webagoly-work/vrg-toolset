@@ -1,0 +1,364 @@
+<section class="g-sec" id="f06" data-vk-hop aria-labelledby="f06-h">
+  <header class="g-sec__head">
+    <span class="g-sec__num">06</span>
+    <h2 id="f06-h" class="vk-title">Állapot és jelzések</h2>
+    <p class="g-sec__lead">Állapotjelvények, jelzések, folyamatjelzők, töltők, felugró értesítések, értesítési gyűrű, üres / töltés / hiba blokkok és HUD-kijelzők. A forma mindig jelent valamit, a szín soha nem az egyetlen jel.</p>
+  </header>
+
+  <style>
+    .f06-table { border-collapse: collapse; width: 100%; font-size: var(--vk-fs-sm); }
+    .f06-table th, .f06-table td { padding: var(--vk-space-2) var(--vk-space-3); text-align: left; border-bottom: var(--vk-border-w) solid var(--vk-line); vertical-align: middle; }
+    .f06-table th { font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text-muted); font-weight: var(--vk-fw-regular); white-space: nowrap; }
+    .f06-table tbody th { color: var(--vk-text); }
+    .f06-scroll { overflow-x: auto; max-width: 100%; }
+    .f06-cols { display: grid; gap: var(--vk-space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
+    .f06-nodes { display: flex; flex-wrap: wrap; gap: var(--vk-space-4); }
+    .f06-node { min-width: 150px; flex: 1 1 150px; max-width: 220px; padding: var(--vk-space-3) var(--vk-space-4); background: var(--vk-surface-2);
+      border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); display: grid; gap: 2px; }
+    .f06-node b { font-weight: var(--vk-fw-strong); font-size: var(--vk-fs-md); }
+    .f06-node .vk-num { font-size: var(--vk-fs-xs); color: var(--vk-text-muted); }
+    .f06-node::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--vk-text-muted); margin-bottom: var(--vk-space-2); }
+    .f06-prose { max-width: 70ch; line-height: 2; margin: 0 0 var(--vk-space-4); }
+    .f06-narrow { max-width: 300px; padding: var(--vk-space-3); border: var(--vk-border-w) dashed var(--vk-line); border-radius: var(--vk-radius); }
+    .f06-meters td:last-child { width: 1%; white-space: nowrap; }
+    .f06-panels { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+    .f06-panel { display: grid; grid-template-rows: auto 1fr; min-height: 260px; border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); background: var(--vk-surface-1); min-width: 0; }
+    .f06-panel > header { padding: var(--vk-space-2) var(--vk-space-4); border-bottom: var(--vk-border-w) solid var(--vk-line); background: var(--vk-surface-2); }
+    .f06-stage { position: relative; min-height: 330px; background: var(--vk-bg); border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); overflow: hidden; }
+    .f06-stage::before { content: "BELSŐ VEREM // MAX 3"; position: absolute; left: var(--vk-space-3); top: var(--vk-space-3); font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); }
+    .f06-readouts { display: grid; gap: var(--vk-space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+  </style>
+
+  <article class="g-demo" id="f06-badge" data-vk-hop>
+    <h3 class="g-demo__title">Állapotjelvények <code>badge</code></h3>
+    <p class="g-demo__note">Életciklus (használatban, kész, fejlesztés alatt, tervezett, ötlet) és futási állapot (aktív, várakozik, parkolva, lezárva). Minden állapotnak saját formája van: telt négyzet, telt kör, félig telt kör, szaggatott gyűrű, pontozott gyűrű, lüktető pont (csökkentett mozgásnál álló glória), homokóra, két sáv, áthúzott gyűrű. A parkolva és a lezárva színe azonos, csak a forma különbözteti meg őket.</p>
+    <p class="g-row">
+      <span class="vk-badge" data-state="inuse">használatban</span>
+      <span class="vk-badge" data-state="dev">fejlesztés alatt</span>
+      <span class="vk-badge" data-state="active" data-variant="solid">aktív</span>
+      <span class="vk-badge" data-state="ended" data-variant="dot">lezárva</span>
+      <span class="vk-badge" data-state="idea" data-variant="dot" role="img" aria-label="ötlet"></span>
+    </p>
+    <div class="f06-scroll"><table class="f06-table" id="f06-badge-table">
+      <caption class="vk-sr-only">Minden állapot minden változatban</caption>
+      <thead><tr><th scope="col">Állapot</th><th scope="col">Körvonal</th><th scope="col">Telt</th><th scope="col">Pont + szöveg</th><th scope="col">Kicsi</th><th scope="col">Nagy</th><th scope="col">Token</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </article>
+
+  <article class="g-demo" id="f06-signal" data-vk-hop>
+    <h3 class="g-demo__title">Jelzések <code>signal</code></h3>
+    <p class="g-demo__note">Ellentmondás (sraffozott), hiány (szaggatott keret), fagyott (kettős keret) — saját ikon és saját keret, három formában: szövegközi jelölő, csomópont-sarokzászló és darabszám-chip. A „Jelzés-ellenőrzés” mini egyben a gomb és a folyamatjelző; futás után a számlálók frissülnek.</p>
+    <p class="f06-prose">A <span class="vk-num">VRG-2611-03</span> tervben
+      <span class="vk-signal" data-signal="contradiction"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-contradiction"/></svg>ellentmondás</span> van a kötőelem-listában,
+      <span class="vk-signal" data-signal="gap"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-gap"/></svg>hiány</span> a védőföldnél, és a világítási réteg
+      <span class="vk-signal" data-signal="frozen"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-frozen"/></svg>fagyott</span>.</p>
+    <div class="f06-nodes" id="f06-nodes"></div>
+    <div class="g-row" style="margin-top:var(--vk-space-5)">
+      <span class="vk-signal-counts" role="group" aria-label="Jelzések összesítve" id="f06-counts"></span>
+      <span class="vk-label">NULLA:</span><span id="f06-count-zero"></span>
+      <span class="vk-mini-row" id="f06-scan"></span>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f06-progress" data-vk-hop>
+    <h3 class="g-demo__title">Folyamat <code>progress</code></h3>
+    <p class="g-demo__note">Lineáris (határozott és határozatlan), szegmentált, lépésenkénti és vékony soron belüli mérő. Minden forma <code>role=progressbar</code> (a mérő <code>role=meter</code>) <code>aria-valuetext</code>-tel; az érték mono. Meleg = a rendszer dolgozik; kész = zöld, hiba = sraffozott piros, szünetel = sraffozott szürke. Az „Export” mini futtatja a felső sávot és a lépéseket.</p>
+    <div class="vk-mini-row" id="f06-export-mini" style="margin-bottom:var(--vk-space-4)"></div>
+    <div class="f06-cols">
+      <div class="vk-stack" id="f06-bars" style="gap:var(--vk-space-5)"></div>
+      <div class="vk-stack" style="gap:var(--vk-space-5)">
+        <div id="f06-steps"></div>
+        <div id="f06-steps-err"></div>
+        <div class="f06-narrow"><p class="g-cap">Keskeny (≤ 360 px) — függőleges</p><div id="f06-steps-narrow"></div></div>
+        <table class="f06-table f06-meters" id="f06-meters"><caption class="vk-sr-only">Soron belüli mérők</caption>
+          <thead><tr><th scope="col">Kör</th><th scope="col">Terhelés</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f06-loader" data-vk-hop>
+    <h3 class="g-demo__title">Töltők <code>loader</code></h3>
+    <p class="g-demo__note">Saját rajzú töltőkészlet: gyűrű, pontok, halványuló körök, pattogó labda, óra, jelszint. Mind <code>role=status</code> rejtett szöveggel. Csökkentett mozgásnál mindegyik egy álló, de beszédes képkockát mutat (ív, halványuló pontok, labda a levegőben, 10:10, emelkedő sávok).</p>
+    <div class="vk-loader-sheet" id="f06-sheet"></div>
+    <div class="g-row" style="margin-top:var(--vk-space-4)" id="f06-loader-sizes"></div>
+  </article>
+
+  <article class="g-demo" id="f06-toast" data-vk-hop>
+    <h3 class="g-demo__title">Felugró értesítések <code>toast</code></h3>
+    <p class="g-demo__note">A gombok a regiszterből jönnek (<code>toolbar:f06-toast</code>). A bezáró mini gyűrűje visszaszámol; egér vagy fókusz alatt megáll. <kbd>Alt+T</kbd> a legújabbra ugrik, <kbd>Esc</kbd> bezárja a fókuszban lévőt. Hiba = <code>role=alert</code>, a többi <code>role=status</code>. Legfeljebb 3 látszik, a többi sorban áll.</p>
+    <div class="g-row" role="toolbar" aria-label="Értesítés küldése" id="f06-toast-bar"></div>
+    <div class="g-row">
+      <span class="vk-label" id="f06-pos-l">POZÍCIÓ</span>
+      <div class="vk-btn-group" role="radiogroup" aria-labelledby="f06-pos-l" id="f06-pos"></div>
+    </div>
+    <div class="f06-stage" id="f06-stage"></div>
+  </article>
+
+  <article class="g-demo" id="f06-notify" data-vk-hop>
+    <h3 class="g-demo__title">Értesítési tábla és gyűrű <code>notify</code></h3>
+    <p class="g-demo__note">A gyűrű idővonal: minden esemény egy csúcs az idejénél (12 órától jobbra a legrégebbi, óramutató szerint a MOST-ig), magasság és sapkaforma = súlyosság (pont · üres rombusz · négyzet), meleg = tevékenység, piros = hiba; az olvasottak szaggatottak. Középen az olvasatlanok száma. Billentyűk: a gyűrűn <kbd>←</kbd>/<kbd>→</kbd> időben lép, a táblán <kbd>↑</kbd>/<kbd>↓</kbd>; a fókusz kijelöl és a párját is kijelöli; <kbd>Enter</kbd> olvasott/olvasatlan, <kbd>Del</kbd> törli a sort. A csengő mini az állapotsori változat.</p>
+    <div class="g-row"><span class="vk-label">ÁLLAPOTSOR-MINI</span><span class="vk-mini-row" id="f06-bell"></span></div>
+    <div id="f06-notify-box"></div>
+  </article>
+
+  <article class="g-demo" id="f06-state" data-vk-hop>
+    <h3 class="g-demo__title">Üres, töltés, hiba <code>state</code></h3>
+    <p class="g-demo__note">Panelméret (középre igazított oszlop) és soron belüli méret. Ikon célkeresztben, mono kód, cím, szöveg, elsődleges művelet a regiszterből. Hiba = <code>role=alert</code>, töltés = <code>role=status</code>. Az „Újra” a soron belüli hibán töltésre vált, majd vissza.</p>
+    <div class="f06-panels" id="f06-panels"></div>
+    <div class="vk-stack" id="f06-inline-states" style="margin-top:var(--vk-space-5)"></div>
+  </article>
+
+  <article class="g-demo" id="f06-readout" data-vk-hop>
+    <h3 class="g-demo__title">HUD-kijelző <code>readout</code></h3>
+    <p class="g-demo__note">Nagy mono szám kis nagybetűs címkével, osztásvonalzó háromszög-jelölővel és figyelem/kritikus zónával, kereszt-összesítő halmozott sávval, állapotlista formás jelekkel. A „Mérés” mini új értéket olvas be.</p>
+    <div class="vk-mini-row" id="f06-measure" style="margin-bottom:var(--vk-space-4)"></div>
+    <div class="f06-readouts" id="f06-readouts"></div>
+  </article>
+</section>
+
+<script data-g-init>
+  var $ = function (id) { return document.getElementById(id); };
+  var T = VK.badge.STATES;
+
+  // ---------- badges: every state × every variant ----------
+  var tb = $('f06-badge-table').tBodies[0];
+  VK.badge.LIFECYCLE.concat(VK.badge.RUN).forEach(function (s, i) {
+    if (i === VK.badge.LIFECYCLE.length) tb.appendChild(VK.el('tr', null, VK.el('th', { colspan: 7, scope: 'colgroup', text: 'Futási állapot' })));
+    if (i === 0) tb.appendChild(VK.el('tr', null, VK.el('th', { colspan: 7, scope: 'colgroup', text: 'Életciklus' })));
+    tb.appendChild(VK.el('tr', null, [
+      VK.el('th', { scope: 'row', text: T[s] }),
+      VK.el('td', null, VK.badge.create(s)),
+      VK.el('td', null, VK.badge.create(s, { variant: 'solid' })),
+      VK.el('td', null, VK.badge.create(s, { variant: 'dot' })),
+      VK.el('td', null, VK.badge.create(s, { size: 'sm' })),
+      VK.el('td', null, VK.badge.create(s, { size: 'lg', variant: i % 2 ? 'solid' : 'outline' })),
+      VK.el('td', null, VK.el('code', { class: 'vk-num', style: 'font-size:var(--vk-fs-2xs);color:var(--vk-text-muted)', text: ['--vk', 'st', s].join('-') }))]));
+  });
+
+  // ---------- signals ----------
+  var nodes = [
+    ['Főelosztó F1', 'N-014 · 3×63 A', ['contradiction']],
+    ['Hűtőkör H2', 'N-022 · 16 A', ['gap', 'frozen']],
+    ['Világítás Ő-3', 'N-031 · 10 A', ['frozen']],
+    ['Kötőelem-doboz', 'N-047 · —', ['contradiction', 'gap', 'frozen']],
+    ['Erősáram E-5', 'N-052 · 32 A', []]
+  ];
+  nodes.forEach(function (n) {
+    var c = VK.el('div.f06-node', { role: 'group', 'aria-label': n[0] + (n[2].length ? ' — ' + n[2].map(function (k) { return VK.signal.KINDS[k]; }).join(', ') : '') },
+      [VK.el('b', { text: n[0] }), VK.el('span.vk-num', { text: n[1] })]);
+    VK.signal.flags(c, n[2]);
+    $('f06-nodes').appendChild(c);
+  });
+  var counts = { contradiction: VK.signal.count('contradiction', 3), gap: VK.signal.count('gap', 5), frozen: VK.signal.count('frozen', 1) };
+  Object.keys(counts).forEach(function (k) { $('f06-counts').appendChild(counts[k]); });
+  $('f06-count-zero').appendChild(VK.signal.count('gap', 0));
+  var scan = { state: 'idle', p: 0, t: null, rnd: VK.rng('f06-scan') };
+  VK.actions.register({ id: 'f06.signal.scan', label: 'Jelzés-ellenőrzés', caption: 'ELLENŐRZÉS', icon: 'search', group: 'Jelzések',
+    at: ['palette', 'toolbar:f06-signal'], when: function () { return scan.state !== 'running'; },
+    state: function () { return scan.state; }, progress: function () { return scan.state === 'running' ? scan.p : (scan.state === 'done' ? 1 : 0); },
+    run: function () {
+      scan.state = 'running'; scan.p = 0; refreshScan();
+      scan.t = setInterval(function () {
+        scan.p += .1;
+        if (scan.p >= 1) {
+          clearInterval(scan.t); scan.state = 'done';
+          Object.keys(counts).forEach(function (k) { VK.signal.setCount(counts[k], Math.floor(scan.rnd() * 7)); });
+          setTimeout(function () { scan.state = 'idle'; refreshScan(); }, 1800);
+        }
+        refreshScan();
+      }, 110);
+    } });
+  var scanMini = VK.mini.fromAction('f06.signal.scan');
+  $('f06-scan').appendChild(scanMini);
+  function refreshScan() { VK.mini.refresh(scanMini, VK.actions.get('f06.signal.scan')); }
+
+  // ---------- progress ----------
+  var bars = $('f06-bars');
+  var exportBar = VK.progress.create({ label: 'Export — VRG-2611-03', value: 42, text: '17 / 40 áramkör', scale: true });
+  [exportBar,
+    VK.progress.create({ label: 'Mentés', value: 100, state: 'done' }),
+    VK.progress.create({ label: 'Kábelellenőrzés', value: 70, state: 'error', text: 'megszakadt a 28. körnél' }),
+    VK.progress.create({ label: 'Szinkron (szünetel)', value: 30, state: 'paused' }),
+    VK.progress.create({ label: 'Indexelés — határozatlan', value: null, text: 'Őrszem-modul indexel' }),
+    VK.progress.create({ label: 'Kötőelem-ellenőrzés', variant: 'segments', segments: 12, value: 7 }),
+    VK.progress.create({ label: 'Hűtőkör — vékony', value: 64, size: 'sm' }),
+    VK.progress.create({ label: 'Erősáram — vastag', value: 81, size: 'lg', unit: 'kW', max: 120 })
+  ].forEach(function (b) { bars.appendChild(b); });
+  var STEPS = ['Beolvasás', 'Ellenőrzés', 'Kiosztás', 'Kötőelemek', 'Export'];
+  var steps = VK.progress.steps({ label: 'Export lépései', steps: STEPS, current: 2 });
+  $('f06-steps').appendChild(steps);
+  $('f06-steps-err').appendChild(VK.progress.steps({ label: 'Ellenőrzés lépései (hibával)', steps: STEPS, current: 3, error: true }));
+  $('f06-steps-narrow').appendChild(VK.progress.steps({ label: 'Keskeny lépéssor', steps: STEPS.slice(0, 4), current: 1 }));
+  [['Világítás Ő-3', 38], ['Hűtő H2', 73], ['Erősáram E-5', 91], ['Űrlap-szerver', 12]].forEach(function (r) {
+    $('f06-meters').tBodies[0].appendChild(VK.el('tr', null, [VK.el('td', { text: r[0] }),
+      VK.el('td', null, VK.progress.meter({ label: r[0] + ' terhelés', value: r[1], warn: 70, crit: 90 }))]));
+  });
+  $('f06-meters').tBodies[0].appendChild(VK.el('tr', null, [VK.el('td', { text: 'Akku (folyamat)' }),
+    VK.el('td', null, VK.progress.meter({ label: 'Akku töltése', value: 54, tone: 'activity' }))]));
+  var exp = { state: 'idle', p: 0 };
+  VK.actions.register({ id: 'f06.export', label: 'Export', caption: 'EXPORT', icon: 'download', group: 'Folyamat', at: ['palette', 'toolbar:f06-progress'],
+    when: function () { return exp.state !== 'running'; }, state: function () { return exp.state; }, progress: function () { return exp.p; },
+    run: function () {
+      exp.state = 'running'; exp.p = 0; var t = setInterval(function () {
+        exp.p = Math.min(1, exp.p + .04);
+        VK.progress.set(exportBar, Math.round(exp.p * 100), { text: Math.round(exp.p * 40) + ' / 40 áramkör', state: exp.p >= 1 ? 'done' : null });
+        VK.progress.step(steps, Math.min(5, Math.floor(exp.p * 5)));
+        if (exp.p >= 1) { clearInterval(t); exp.state = 'done'; VK.progress.step(steps, 5);
+          VK.toast.show({ kind: 'ok', title: 'Export kész', text: 'VRG-2611-03 — 40 áramkör, 2 fájl.', source: 'EXPORT' });
+          setTimeout(function () { exp.state = 'idle'; exp.p = 0; VK.mini.refresh(expMini, VK.actions.get('f06.export')); }, 1800); }
+        VK.mini.refresh(expMini, VK.actions.get('f06.export'));
+      }, 90);
+      VK.mini.refresh(expMini, VK.actions.get('f06.export'));
+    } });
+  var expMini = VK.mini.fromAction('f06.export');
+  $('f06-export-mini').appendChild(expMini);
+
+  // ---------- loaders ----------
+  Object.keys(VK.loader.KINDS).forEach(function (k, i) {
+    $('f06-sheet').appendChild(VK.el('div.vk-loader-sheet__cell', null, [
+      VK.el('span.vk-loader-sheet__num', { 'aria-hidden': 'true', text: '[' + String(i + 1).padStart(2, '0') + ']' }),
+      VK.loader.create(k, { size: 'xl', label: 'Betöltés — ' + VK.loader.KINDS[k] }),
+      VK.el('span.vk-label', { text: VK.loader.KINDS[k] + ' // ' + k })]));
+  });
+  var ls = $('f06-loader-sizes');
+  ['sm', 'md', 'lg'].forEach(function (s) { ls.appendChild(VK.loader.create('ring', { size: s, label: 'Betöltés (' + s + ')' })); });
+  ls.appendChild(VK.el('span.vk-row', null, [VK.loader.create('dots', { size: 'sm', decorative: true }), VK.el('span', { role: 'status', text: 'Kötőelemek betöltése…' })]));
+  var accentLoader = VK.loader.create('fade', { size: 'md', label: 'Keresés a műszerben' }); accentLoader.style.color = 'var(--vk-accent)';
+  ls.appendChild(VK.el('span.vk-row', null, [accentLoader, VK.el('span.vk-muted', { text: 'jég színben (a te kereséseid)' })]));
+
+  // ---------- toasts ----------
+  var KINDS = [
+    ['info', 'Információ', { title: 'Új rétegkiosztás elérhető', text: 'A VRG-2611-03 világítási rétege frissült.', source: 'PLANNER' }],
+    ['ok', 'Kész', { title: 'Mentve', text: 'Kötőelem-összesítő elmentve — 128 tétel.', source: 'MENTÉS' }],
+    ['warn', 'Figyelem', { title: 'Hűtőkör terhelése 87%', text: 'A H2 kör közel a határhoz.', source: 'MÉRÉS', action: { label: 'Megnyitás', run: function () {} } }],
+    ['error', 'Hiba', { title: 'Szinkron sikertelen', text: 'Az Űrlap-szerver nem válaszol (E-504).', source: 'SZINKRON', action: 'f06.retry' }],
+    ['activity', 'Folyamat', null]
+  ];
+  KINDS.forEach(function (k) {
+    VK.actions.register({ id: 'f06.toast.' + k[0], label: k[1], icon: { info: 'info', ok: 'ok', warn: 'warning', error: 'error', activity: 'activity' }[k[0]],
+      group: 'Értesítés', at: ['toolbar:f06-toast', 'palette'], run: function () {
+        if (k[0] !== 'activity') { var o = Object.assign({ kind: k[0] }, k[2]); VK.toast.show(o); return; }
+        var t = VK.toast.show({ kind: 'activity', title: 'Export fut…', text: 'VRG-2611-03 — 0 / 40 áramkör', source: 'EXPORT', progress: 0 }), p = 0;
+        var iv = setInterval(function () { p += .1; if (p >= 1) { clearInterval(iv); t.update({ kind: 'ok', title: 'Export kész', text: 'VRG-2611-03 — 40 áramkör.' }); }
+          else t.update({ progress: p, text: 'VRG-2611-03 — ' + Math.round(p * 40) + ' / 40 áramkör' }); }, 300);
+      } });
+  });
+  VK.actions.register({ id: 'f06.retry', label: 'Újra', icon: 'refresh', group: 'Értesítés', at: ['palette'],
+    run: function () { VK.toast.show({ kind: 'info', title: 'Újrapróbálás…', text: 'Szinkron újraindítva.', source: 'SZINKRON' }); } });
+  VK.actions.register({ id: 'toast.focus', label: 'Ugrás a legújabb értesítésre', icon: 'bell', keys: ['alt+t'], group: 'Értesítés', at: ['toolbar:f06-toast', 'palette'],
+    run: function () { VK.toast.focusLatest(); } });
+  VK.actions.register({ id: 'toast.clear', label: 'Mind bezárása', icon: 'close', group: 'Értesítés', at: ['toolbar:f06-toast', 'palette'],
+    run: function () { VK.toast.clear(); } });
+  var tbar = $('f06-toast-bar');
+  VK.actions.forSurface('toolbar:f06-toast').forEach(function (a) {
+    var b = VK.el('button.vk-btn', { type: 'button', 'data-action': a.id, tabindex: '-1', onclick: function () { VK.actions.run(a.id); } }, [VK.icon(a.icon), a.label]);
+    if (a.keys.length) b.appendChild(VK.el('span.g-kbd', { text: VK.actions.keyLabel(a.keys[0]) }));
+    tbar.appendChild(b);
+  });
+  VK.focus.roving(tbar, { items: 'button', orientation: 'horizontal' });
+  var POS = [['tl', 'Bal fent'], ['tc', 'Közép fent'], ['tr', 'Jobb fent'], ['bl', 'Bal lent'], ['bc', 'Közép lent'], ['br', 'Jobb lent']];
+  var posG = $('f06-pos');
+  POS.forEach(function (p) {
+    posG.appendChild(VK.el('button.vk-btn.vk-btn--sm', { type: 'button', role: 'radio', 'aria-checked': p[0] === 'br' ? 'true' : 'false', tabindex: p[0] === 'br' ? '0' : '-1',
+      'data-pos': p[0], 'aria-label': p[1], title: p[1], text: p[0].toUpperCase() }));
+  });
+  function setPos(b) {
+    Array.prototype.forEach.call(posG.children, function (x) { x.setAttribute('aria-checked', x === b ? 'true' : 'false'); });
+    VK.toast.configure({ position: b.dataset.pos });
+  }
+  posG.addEventListener('click', function (e) { var b = e.target.closest('[role="radio"]'); if (b) setPos(b); });
+  VK.focus.roving(posG, { items: '[role="radio"]', orientation: 'horizontal', typeahead: false, onMove: function (b) { if (document.activeElement === b) setPos(b); } });
+  // a contained stack with sample toasts that stay (for screenshots and reading)
+  var inner = VK.toast.stack($('f06-stage'), { position: 'br', max: 3, label: 'Minta-értesítések' });
+  inner.show({ kind: 'info', title: 'Új rétegkiosztás elérhető', text: 'A VRG-2611-03 világítási rétege frissült.', source: 'PLANNER', timeout: 0, time: new Date(2026, 10, 4, 14, 2) });
+  inner.show({ kind: 'warn', title: 'Hűtőkör terhelése 87%', text: 'A H2 kör közel a határhoz.', source: 'MÉRÉS', timeout: 3600000, action: { label: 'Megnyitás', run: function () {} }, time: new Date(2026, 10, 4, 14, 11) });
+  inner.show({ kind: 'activity', title: 'Export fut…', text: 'VRG-2611-03 — 17 / 40 áramkör', source: 'EXPORT', progress: .42, time: new Date(2026, 10, 4, 14, 20) });
+  inner.show({ kind: 'error', title: 'Szinkron sikertelen', text: 'Az Űrlap-szerver nem válaszol (E-504).', source: 'SZINKRON', timeout: 0, action: 'f06.retry' });
+
+  // ---------- notify ----------
+  var NOW = new Date(2026, 10, 4, 14, 30).getTime(), t0 = Date.now();
+  var rnd = VK.rng('f06-notify');
+  var ACT = [['Export kész', 'EXPORT'], ['Szinkron lefutott', 'SZINKRON'], ['Kötőelem-lista frissült', 'KÉSZLET'], ['Rétegkiosztás mentve', 'PLANNER'],
+    ['Árajánlat-tervezet elkészült', 'AJÁNLAT'], ['Hűtőkör-számítás lefutott', 'SZÁMÍTÁS'], ['Kábelnyomvonal újraszámolva', 'PLANNER'], ['Fotók feltöltve', 'MOBIL'],
+    ['Erősáramú kör átnevezve', 'PLANNER'], ['Őrszem-modul újraindult', 'RENDSZER']];
+  var ERR = [['Kábelellenőrzés: 3 ellentmondás', 'ELLENŐRZÉS'], ['Szinkron sikertelen', 'SZINKRON'], ['Hiányzó védőföld — F2', 'ELLENŐRZÉS'],
+    ['Export megszakadt', 'EXPORT'], ['Túlterhelt kör: Ő-12', 'MÉRÉS']];
+  var JOBS = ['VRG-2611-03', 'VRG-2610-17', 'VRG-2611-08', 'VRG-2609-22'];
+  var seed = [];
+  for (var i = 0; i < 24; i++) {
+    var age = Math.pow(rnd(), 1.35) * 68 * 3600000, isErr = rnd() < .22, pick = isErr ? ERR[Math.floor(rnd() * ERR.length)] : ACT[Math.floor(rnd() * ACT.length)];
+    seed.push({ id: 'ev' + i, time: NOW - age, kind: isErr ? 'error' : 'activity', severity: isErr ? 3 : (rnd() < .3 ? 2 : 1), title: pick[0], source: pick[1],
+      text: JOBS[Math.floor(rnd() * JOBS.length)] + (isErr ? ' — beavatkozás szükséges' : ' — rendben'), read: age > 20 * 3600000 ? rnd() < .85 : rnd() < .3 });
+  }
+  var nf = VK.notify.mount($('f06-notify-box'), { items: seed, now: function () { return NOW + (Date.now() - t0); }, toolbar: 'toolbar:f06-notify', label: 'Értesítések' });
+  var simN = 0;
+  VK.actions.registerAll([
+    { id: 'notify.read', label: 'Kijelölt olvasott / olvasatlan', icon: 'check', group: 'Értesítések', at: ['toolbar:f06-notify', 'palette'],
+      when: function () { return !!nf.selected(); }, run: function () { var s = nf.selected(); nf.markRead(s.id, !s.read); } },
+    { id: 'notify.readAll', label: 'Mind olvasott', icon: 'ok', group: 'Értesítések', at: ['toolbar:f06-notify', 'palette'],
+      when: function () { return nf.unread() > 0; }, run: function () { nf.markAllRead(); } },
+    { id: 'notify.unreadOnly', label: 'Csak olvasatlanok', icon: 'filter', group: 'Értesítések', at: ['toolbar:f06-notify', 'palette'],
+      checked: function () { return nf.filter() === 'unread'; }, run: function () { nf.setFilter(nf.filter() === 'unread' ? 'all' : 'unread'); } },
+    { id: 'f06.notify.simulate', label: 'Esemény szimulálása', icon: 'plus', group: 'Értesítések', at: ['toolbar:f06-notify', 'palette'],
+      run: function () { var e = simN++ % 3 === 2; var p = e ? ERR[simN % ERR.length] : ACT[simN % ACT.length];
+        nf.add({ kind: e ? 'error' : 'activity', severity: e ? 3 : 1 + (simN % 2), title: p[0], source: p[1], text: JOBS[simN % JOBS.length] + ' — most' }); } },
+    { id: 'notify.clear', label: 'Mind törlése', icon: 'trash', danger: true, group: 'Értesítések', at: ['toolbar:f06-notify', 'palette'],
+      when: function () { return nf.items().length > 0; }, run: function () { nf.clear(); } }
+  ]);
+  $('f06-bell').appendChild(nf.mini({ caption: 'ÉRTESÍTÉS', onClick: function () {
+    var row = document.querySelector('#f06-notify-box .vk-notify__item[tabindex="0"]'); if (row) row.focus(); } }));
+
+  // ---------- states ----------
+  VK.actions.registerAll([
+    { id: 'f06.circuit.new', label: 'Új áramkör', icon: 'plus', group: 'Áramkör', at: ['palette'], run: function () { VK.toast.show({ kind: 'ok', title: 'Új áramkör', text: 'Ő-13 létrehozva.', source: 'PLANNER' }); } },
+    { id: 'f06.import', label: 'Importálás', icon: 'upload', group: 'Áramkör', at: ['palette'], run: function () { VK.toast.show({ kind: 'info', title: 'Importálás', text: 'Válassz tervfájlt.', source: 'PLANNER' }); } },
+    { id: 'f06.details', label: 'Részletek', icon: 'info', group: 'Áramkör', at: ['palette'], run: function () { VK.toast.show({ kind: 'info', title: 'E-504', text: 'Az Űrlap-szerver 30 s alatt nem válaszolt.', source: 'SZINKRON' }); } }
+  ]);
+  [['Áramkörök', { kind: 'empty', size: 'panel', icon: 'bolt', code: '[ÜRES] // 0 ÁRAMKÖR', title: 'Még nincs áramkör', text: 'Vegyél fel egyet, vagy importáld a tervből.', action: 'f06.circuit.new', secondary: 'f06.import' }],
+   ['Tervrajz', { kind: 'loading', size: 'panel', loader: 'fade', code: '[TÖLT] // VRG-2611-03', title: 'Tervrajz betöltése…', text: '3 / 7 réteg: erősáram, világítás, adat.' }],
+   ['Szinkron', { kind: 'error', size: 'panel', code: '[HIBA] // E-504 // SZINKRON', title: 'Nem sikerült betölteni', text: 'Az Űrlap-szerver nem válaszol. A helyi másolat érintetlen.', action: 'f06.retry', secondary: 'f06.details' }]
+  ].forEach(function (p) {
+    $('f06-panels').appendChild(VK.el('section.f06-panel', { 'aria-label': p[0] }, [VK.el('header', null, VK.el('span.vk-label', { text: p[0] })), VK.state.create(p[1])]));
+  });
+  var il = $('f06-inline-states');
+  il.appendChild(VK.state.create({ kind: 'empty', icon: 'search', code: '[ÜRES] // SZŰRŐ', title: 'Nincs találat a „Kötőelem” szűrőre', text: 'Próbáld ékezet nélkül, vagy töröld a szűrőt.' }));
+  il.appendChild(VK.state.create({ kind: 'loading', loader: 'dots', title: 'Készlet frissítése…', text: '128 tétel ellenőrzése.' }));
+  var errBox = VK.el('div');
+  function errState() {
+    errBox.textContent = '';
+    errBox.appendChild(VK.state.create({ kind: 'error', code: '[HIBA] // E-504', title: 'A készlet nem érhető el', text: 'Utolsó sikeres szinkron: 11-04 09:12.',
+      action: { id: 'f06.inline.retry', label: 'Újra', icon: 'refresh', run: function () {
+        errBox.textContent = ''; errBox.appendChild(VK.state.create({ kind: 'loading', loader: 'ring', title: 'Újrapróbálás…', text: 'Kapcsolódás az Űrlap-szerverhez.' }));
+        setTimeout(function () { var had = errBox.contains(document.activeElement) || document.activeElement === document.body; errState(); if (had) { var b = errBox.querySelector('button'); if (b) b.focus(); } }, 1500);
+      } } }));
+  }
+  errState(); il.appendChild(errBox);
+
+  // ---------- readouts ----------
+  var r1 = VK.readout.create({ label: 'Áramkör', code: '№ 49', tag: 'CH 04 // AKTÍV', tagTone: 'activity', value: 16, digits: 1, unit: 'A', delta: '+0,4 A / 5 P',
+    min: 0, max: 25, warn: 17.5, crit: 22.5, ticks: [0, 12.5, 25],
+    tally: [{ n: 75, label: 'OK', tone: 'ok' }, { n: 62, label: 'FIGY', tone: 'warn' }, { n: 15, label: 'HIBA', tone: 'crit' }],
+    list: [{ name: 'L1 fázis', value: '230,4 V', state: 'inuse' }, { name: 'L2 fázis', value: '229,8 V', state: 'active' },
+      { name: 'L3 fázis', value: '0,0 V', state: 'parked' }, { name: 'Hűtő-ventilátor', value: '2,1 A', state: 'waiting' }, { name: 'Régi leágazás', value: '—', state: 'ended' }] });
+  var r2 = VK.readout.create({ label: 'Elosztó', code: '№ 07', tag: 'MODUL-D9 // KÉSZLET', value: 152, unit: 'kör', min: 0, max: 200, warn: 160, crit: 185, ticks: [0, 50, 100, 150, 200],
+    tally: [{ n: 98, label: 'KÉSZ', tone: 'ok' }, { n: 41, label: 'FUT', tone: 'activity' }, { n: 13, label: 'TERV' }],
+    list: [{ name: 'Főelosztó F1', value: '3×63 A', state: 'built' }, { name: 'Kötőelem-készlet', value: '128 db', state: 'dev' },
+      { name: 'Őrszem-modul', value: 'v0.3', state: 'planned' }, { name: 'Hőkamera-integráció', value: '—', state: 'idea' }, { name: 'Erősáramú bővítés', value: '32 A', state: 'inuse' }] });
+  $('f06-readouts').appendChild(r1); $('f06-readouts').appendChild(r2);
+  var meas = { state: 'idle', rnd: VK.rng('f06-measure') };
+  VK.actions.register({ id: 'f06.measure', label: 'Mérés', caption: 'MÉRÉS', icon: 'gauge', group: 'Mérés', at: ['palette', 'toolbar:f06-readout'],
+    when: function () { return meas.state !== 'running'; }, state: function () { return meas.state; }, progress: function () { return meas.state === 'running' ? null : meas.state === 'done' ? 1 : 0; },
+    run: function () {
+      meas.state = 'running'; VK.mini.refresh(measMini, VK.actions.get('f06.measure'));
+      setTimeout(function () {
+        var v = 8 + meas.rnd() * 16, ok = 60 + Math.floor(meas.rnd() * 30), w = 40 + Math.floor(meas.rnd() * 30), c = Math.floor(meas.rnd() * 25);
+        VK.readout.update(r1, { value: v, delta: (v >= 16 ? '+' : '−') + VK.progress.fmt(Math.abs(v - 16), 1) + ' A / 5 P',
+          tally: [{ n: ok, label: 'OK', tone: 'ok' }, { n: w, label: 'FIGY', tone: 'warn' }, { n: c, label: 'HIBA', tone: 'crit' }] });
+        meas.state = 'done'; VK.mini.refresh(measMini, VK.actions.get('f06.measure'));
+        setTimeout(function () { meas.state = 'idle'; VK.mini.refresh(measMini, VK.actions.get('f06.measure')); }, 1500);
+      }, 900);
+    } });
+  var measMini = VK.mini.fromAction('f06.measure');
+  $('f06-measure').appendChild(measMini);
+</script>

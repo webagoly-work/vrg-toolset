@@ -1,0 +1,33 @@
+/* VRG UI Kit — components/statusbar.css — bottom status bar: minis + short mono readouts, left/right groups.
+   <div class="vk-statusbar" role="toolbar">
+     <div class="vk-statusbar__group">        <span class="vk-statusbar__item"> mini + <span class="vk-statusbar__text">42%</span>
+     <div class="vk-statusbar__group vk-statusbar__group--end"> readouts: <span class="vk-statusbar__key">KURZOR</span> <span class="vk-statusbar__text">12,40</span>
+     <span class="vk-sr-only" role="status">  ← announces state changes
+   Depends on: tokens, base, mini. */
+.vk-statusbar { display: flex; align-items: center; gap: var(--vk-space-4); min-width: 0; overflow: hidden;
+  min-height: calc(max(var(--vk-control-h), var(--vk-target-min)) + 2px); padding: 0 var(--vk-space-3);
+  background: var(--vk-surface-2); border-top: var(--vk-border-w) solid var(--vk-line-strong);
+  font-family: var(--vk-font-mono); font-size: var(--vk-fs-2xs); line-height: 1; color: var(--vk-text-muted);
+  container-type: inline-size; container-name: vk-statusbar; }
+.vk-statusbar__group { display: flex; align-items: center; gap: var(--vk-space-4); min-width: 0; }
+.vk-statusbar__group--end { margin-left: auto; }
+.vk-statusbar__item { display: inline-flex; align-items: center; gap: var(--vk-space-1); flex: none; white-space: nowrap; }
+.vk-statusbar__item > .vk-mini { --_s: calc(var(--vk-control-h) - 2px); }
+.vk-statusbar__text { font-family: var(--vk-font-mono); font-variant-numeric: tabular-nums slashed-zero; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--vk-text); }
+.vk-statusbar__item[data-state="running"] .vk-statusbar__text { color: var(--vk-activity); }
+.vk-statusbar__item[data-state="error"] .vk-statusbar__text { color: var(--vk-crit); }
+.vk-statusbar__item[data-state="waiting"] .vk-statusbar__text { color: var(--vk-warn); }
+.vk-statusbar__key { color: var(--vk-text-muted); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; margin-right: var(--vk-space-1); }
+.vk-statusbar__readout { padding: 0 var(--vk-space-1); }
+.vk-statusbar__sep { width: var(--vk-border-w); align-self: stretch; margin: var(--vk-space-2) 0; background: var(--vk-line); flex: none; }
+
+/* narrow: keep the minis, drop readout keys, then readout texts that are not pinned */
+@container vk-statusbar (max-width: 640px) {
+  .vk-statusbar__key { display: none; }
+}
+@container vk-statusbar (max-width: 460px) {
+  .vk-statusbar__item:not([data-pin]) > .vk-statusbar__text { display: none; }
+  .vk-statusbar__readout:not([data-pin]) { display: none; }
+  .vk-statusbar, .vk-statusbar__group { gap: var(--vk-space-2); }
+}

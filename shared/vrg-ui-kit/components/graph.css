@@ -1,0 +1,115 @@
+/* VRG UI Kit — components/graph.css — node/wire topology on SVG (flat or iso projection).
+   Mount: VK.graph.mount(el, {nodes, edges, frames, layers, projection}) — see graph.js.
+   World geometry (node sizes, label sizes) is in world units: the view zooms it, so its type sizes are
+   component-local properties (--vk-graph-fs-*), not density tokens. Chrome around it follows density.
+   Colour: wires by --_lc (set per edge to a --vk-wire-* / --vk-layer-* token), ice = selection/focus,
+   warm = active wires and the iso hub. Depends on: tokens, base, mini. */
+.vk-graph { --vk-graph-h: 520px; --vk-graph-fs-title: 12px; --vk-graph-fs-hex: 11px; --vk-graph-fs-tag: 9px;
+  --_gs: 24px; --_gx: 0px; --_gy: 0px;
+  position: relative; display: block; width: 100%; height: var(--vk-graph-h); min-height: 160px; overflow: hidden;
+  background-color: var(--vk-bg-sunken);
+  background-image: radial-gradient(circle at center, var(--vk-line-strong) 0.75px, transparent 1.25px);
+  background-size: var(--_gs) var(--_gs); background-position: var(--_gx) var(--_gy);
+  border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius);
+  touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; outline-offset: -2px; }
+.vk-graph[data-projection="iso"] { background-image: none; }
+.vk-graph[data-dragging="pan"] { cursor: grabbing; }
+.vk-graph[data-dragging="box"] { cursor: crosshair; }
+.vk-graph:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: -2px; }
+.vk-graph__svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: hidden; }
+
+/* ---------- frames (containers): dashed chamfered rectangles with a mono label ---------- */
+.vk-graph__frame-shape { fill: color-mix(in srgb, var(--vk-text) 2.5%, transparent); stroke: var(--vk-line-strong);
+  stroke-width: 1; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
+.vk-graph__frame-label { font-family: var(--vk-font-mono); font-size: var(--vk-graph-fs-tag); letter-spacing: .12em;
+  fill: var(--vk-text-muted); }
+.vk-graph__floor { fill: none; stroke: var(--vk-line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+
+/* ---------- wires ---------- */
+.vk-graph__edge { --_lc: var(--vk-wire-other); }
+.vk-graph__wire { fill: none; stroke: var(--_lc); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  vector-effect: non-scaling-stroke; }
+.vk-graph__edge[data-planned] .vk-graph__wire { stroke-dasharray: 6 4; stroke-linecap: butt; opacity: .9; }
+.vk-graph__edge[data-hl] .vk-graph__wire { stroke-width: 2.75; }
+.vk-graph__flow { fill: none; stroke: var(--vk-activity); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 2 10;
+  vector-effect: non-scaling-stroke; animation: vk-graph-flow 900ms linear infinite; pointer-events: none; }
+@keyframes vk-graph-flow { from { stroke-dashoffset: 12; } to { stroke-dashoffset: 0; } }
+.vk-graph__arrow { fill: var(--_lc); stroke: none; }
+.vk-graph__elabel { font-family: var(--vk-font-mono); font-size: var(--vk-graph-fs-tag); letter-spacing: .06em; fill: var(--vk-text-muted);
+  paint-order: stroke; stroke: var(--vk-bg-sunken); stroke-width: 3px; stroke-linejoin: round; }
+.vk-graph__port { fill: var(--_lc); stroke: var(--vk-bg-sunken); stroke-width: 1; }
+.vk-graph [data-hidden] { display: none; }
+
+/* ---------- nodes ---------- */
+.vk-graph__node { cursor: pointer; }
+.vk-graph__node > .vk-graph__hit { fill: transparent; stroke: none; }
+.vk-graph__card { fill: var(--vk-surface-1); stroke: var(--vk-line-strong); stroke-width: 1; rx: var(--vk-radius); ry: var(--vk-radius); }
+.vk-graph__bar { fill: var(--_lc, var(--vk-line-strong)); }
+.vk-graph__title { font-family: var(--vk-font-sans); font-weight: var(--vk-fw-strong); font-size: var(--vk-graph-fs-title); fill: var(--vk-text); }
+.vk-graph__node[data-kind="hex"] .vk-graph__title { font-size: var(--vk-graph-fs-hex); }
+.vk-graph__sub, .vk-graph__tag { font-family: var(--vk-font-mono); font-size: var(--vk-graph-fs-tag); letter-spacing: .1em; fill: var(--vk-text-muted); }
+.vk-graph__tag { paint-order: stroke; stroke: var(--vk-bg-sunken); stroke-width: 3px; stroke-linejoin: round; }
+.vk-graph__dot { fill: var(--vk-text); stroke: var(--vk-bg-sunken); stroke-width: 1.5; }
+.vk-graph__junction { fill: var(--vk-bg-sunken); stroke: var(--vk-text); stroke-width: 1.5; }
+.vk-graph__terminal { fill: var(--vk-surface-3); stroke: var(--vk-text); stroke-width: 1.5; }
+.vk-graph__hex { fill: var(--vk-surface-1); stroke: var(--vk-line-strong); stroke-width: 1; }
+.vk-graph__node:hover .vk-graph__card, .vk-graph__node:hover .vk-graph__hex { stroke: var(--vk-text-muted); }
+.vk-graph__node:hover .vk-graph__junction, .vk-graph__node:hover .vk-graph__terminal { stroke: var(--vk-accent-hover); }
+
+/* selected = ice */
+.vk-graph__node[data-selected] .vk-graph__card, .vk-graph__node[data-selected] .vk-graph__hex {
+  fill: color-mix(in srgb, var(--vk-accent) 16%, var(--vk-surface-1)); stroke: var(--vk-accent); stroke-width: 1.5; }
+.vk-graph__node[data-selected] .vk-graph__dot { fill: var(--vk-accent); }
+.vk-graph__node[data-selected] .vk-graph__junction, .vk-graph__node[data-selected] .vk-graph__terminal { stroke: var(--vk-accent); fill: var(--vk-select-bg); }
+.vk-graph__node[data-selected] .vk-graph__tag { fill: var(--vk-accent); }
+
+/* the focus cursor: a dashed ice ring on the focused node; solid while the graph has keyboard focus */
+.vk-graph__ring { fill: none; stroke: var(--vk-focus); stroke-width: 1.25; stroke-dasharray: 3 2.5; display: none;
+  vector-effect: non-scaling-stroke; pointer-events: none; }
+.vk-graph__node[data-focused] .vk-graph__ring { display: inline; }
+.vk-graph:focus .vk-graph__node[data-focused] .vk-graph__ring { stroke-dasharray: none; stroke-width: var(--vk-focus-w); }
+
+/* the node badge is a real MINI, sized to the world */
+.vk-graph__badge { overflow: visible; }
+.vk-graph__badge > .vk-mini { width: 22px; height: 22px; --_w: 1.5px; }
+.vk-graph__badge > .vk-mini > .vk-icon { width: 13px; height: 13px; }
+.vk-graph__badge > .vk-mini::after { width: 7px; height: 7px; }
+
+/* ---------- iso projection: extruded slabs, glowing hub ---------- */
+.vk-graph__top { fill: var(--vk-surface-2); stroke: var(--vk-line-strong); stroke-width: 1; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.vk-graph__side { fill: var(--vk-surface-1); stroke: var(--vk-line-strong); stroke-width: 1; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.vk-graph__side2 { fill: var(--vk-bg); stroke: var(--vk-line-strong); stroke-width: 1; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.vk-graph__node[data-kind="dot"] .vk-graph__top { fill: var(--vk-text); }
+.vk-graph__node[data-kind="terminal"] .vk-graph__top { stroke: var(--vk-text); }
+.vk-graph__node[data-kind="junction"] .vk-graph__top { fill: var(--vk-bg-sunken); stroke: var(--vk-text); stroke-width: 1.5; }
+.vk-graph__node:hover .vk-graph__top { stroke: var(--vk-text-muted); }
+.vk-graph__node[data-selected] .vk-graph__top { fill: color-mix(in srgb, var(--vk-accent) 22%, var(--vk-surface-2)); stroke: var(--vk-accent); }
+.vk-graph__node[data-selected] .vk-graph__side, .vk-graph__node[data-selected] .vk-graph__side2 { stroke: var(--vk-accent-line); }
+.vk-graph__node[data-hub] .vk-graph__top { stroke: var(--vk-activity); stroke-width: 1.5; }
+.vk-graph__node[data-hub] .vk-graph__side, .vk-graph__node[data-hub] .vk-graph__side2 { stroke: color-mix(in srgb, var(--vk-activity) 60%, transparent); }
+.vk-graph__glow { pointer-events: none; }
+.vk-graph__glow-a { stop-color: var(--vk-activity); stop-opacity: .42; }
+.vk-graph__glow-b { stop-color: var(--vk-activity); stop-opacity: 0; }
+.vk-graph__beam { stroke: var(--vk-activity); stroke-width: 1; opacity: .7; vector-effect: non-scaling-stroke; pointer-events: none; }
+
+/* ---------- box selection ---------- */
+.vk-graph__marquee { position: absolute; pointer-events: none; border: 1px dashed var(--vk-accent); background: var(--vk-select-bg); }
+
+/* ---------- layer legend (toggle minis), rendered by inst.legend(el) ---------- */
+.vk-graph-legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-2) var(--vk-space-4); min-width: 0; }
+.vk-graph-legend__item { display: inline-flex; align-items: center; gap: var(--vk-space-2); min-width: 0;
+  font-size: var(--vk-fs-sm); color: var(--vk-text); }
+.vk-graph-legend__swatch { width: 18px; height: 0; border-top: 2px solid var(--_lc); flex: none; }
+.vk-graph-legend__item[data-planned] .vk-graph-legend__swatch { border-top-style: dashed; }
+.vk-graph-legend__item[data-off] { color: var(--vk-text-muted); }
+.vk-graph-legend__item[data-off] .vk-graph-legend__swatch { opacity: .35; }
+.vk-graph-legend__item[data-off] .vk-graph-legend__name { text-decoration: line-through; text-decoration-color: var(--vk-text-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .vk-graph__flow { animation: none; stroke-dasharray: 2 6; }
+}
+@media (forced-colors: active) {
+  .vk-graph__wire, .vk-graph__flow { stroke: CanvasText; }
+  .vk-graph__node[data-selected] .vk-graph__card, .vk-graph__node[data-selected] .vk-graph__top { stroke: Highlight; }
+  .vk-graph__ring { stroke: Highlight; }
+}

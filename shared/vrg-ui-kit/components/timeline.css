@@ -1,0 +1,119 @@
+/* VRG UI Kit — components/timeline.css — swimlane timeline (behaviour: timeline.js).
+   Sticky lane headers and time axis, chips = sessions (bars), commits (dots), releases (small squares);
+   states through the run-state aliases: running = --vk-st-active (warm), done = --vk-ok, parked = --vk-st-parked.
+   Today = dashed hairline + "MA"; the playhead is ice (you). Local knobs: --vk-timeline-head (lane header width),
+   --vk-timeline-max-h (scroll height of the lanes).
+   Depends on: tokens, base, button, mini. */
+.vk-timeline { --vk-timeline-head: clamp(92px, calc(var(--vk-fs-md) * 9.5), 34vw); --vk-timeline-max-h: none;
+  --_bar: calc(var(--vk-row-h) - 6px); --_gap: 3px; --_pad: 6px; --_pt: var(--vk-target-min); --_tw: 600px;
+  --_g1: 30px; --_g2: 210px; --_g2o: 0px; --_axis: calc(var(--vk-fs-2xs) * 2 + 24px);
+  position: relative; display: flex; flex-direction: column; min-width: 0; color: var(--vk-text); font-size: var(--vk-fs-sm);
+  background: var(--vk-surface-1); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-lg); overflow: hidden; }
+
+/* bar */
+.vk-timeline__bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-3) var(--vk-space-4);
+  padding: var(--vk-space-3) var(--vk-pad-panel); background: var(--vk-surface-2); border-bottom: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-timeline__title { color: var(--vk-text); }
+.vk-timeline__minis { display: flex; align-items: center; gap: var(--vk-space-2); }
+.vk-timeline__minis[hidden] { display: none; }
+.vk-timeline__readout { margin-left: auto; font-size: var(--vk-fs-xs); color: var(--vk-text-muted); white-space: nowrap; }
+
+/* view and canvas */
+.vk-timeline__view { position: relative; overflow: auto; max-height: var(--vk-timeline-max-h); overscroll-behavior-x: contain;
+  scroll-padding-left: var(--vk-timeline-head); scroll-padding-top: var(--_axis); }
+.vk-timeline__canvas { position: relative; width: calc(var(--vk-timeline-head) + var(--_tw)); min-width: 100%; }
+
+/* axis */
+.vk-timeline__axis { position: sticky; top: 0; z-index: 5; display: flex; height: var(--_axis);
+  background: var(--vk-surface-2); border-bottom: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-timeline__corner { position: sticky; left: 0; z-index: 2; flex: none; width: var(--vk-timeline-head); display: flex; align-items: flex-end;
+  padding: 0 var(--vk-space-3) var(--vk-space-2); background: var(--vk-surface-2); border-right: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-timeline__scale { position: relative; flex: none; width: var(--_tw); cursor: ew-resize; touch-action: none; user-select: none; -webkit-user-select: none; }
+.vk-timeline__ticks { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.vk-timeline__tk { position: absolute; bottom: 0; width: 1px; height: 4px; background: var(--vk-line-strong); }
+.vk-timeline__tk[data-k="mid"] { height: 8px; }
+.vk-timeline__tk[data-k="major"] { height: 100%; background: var(--vk-line-strong); }
+.vk-timeline__tl { position: absolute; padding-left: 4px; font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); white-space: nowrap; }
+.vk-timeline__tl[data-r="top"] { top: 5px; color: var(--vk-text); text-transform: uppercase; letter-spacing: .06em; }
+.vk-timeline__tl[data-r="bot"] { bottom: 6px; }
+
+.vk-timeline__today-tag { position: absolute; bottom: 2px; z-index: 1; transform: translateX(-50%); padding: 1px 3px;
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); color: var(--vk-text);
+  background: var(--vk-surface-3); border: var(--vk-border-w) dashed var(--vk-text-muted); border-radius: var(--vk-radius-sm); pointer-events: none; }
+
+/* playhead: the handle is the slider (ice), the line runs through every lane */
+.vk-timeline__ph { position: absolute; top: 0; bottom: 0; z-index: 2; width: var(--vk-target-min); margin-left: calc(var(--vk-target-min) / -2); cursor: grab; }
+.vk-timeline__ph::after { content: ""; position: absolute; left: 50%; bottom: 0; top: calc(var(--vk-fs-2xs) + 8px); width: 1px; margin-left: -.5px; background: var(--vk-accent); }
+.vk-timeline__ph::before { content: ""; position: absolute; left: 50%; bottom: 0; width: 9px; height: 5px; margin-left: -4.5px; background: var(--vk-accent);
+  clip-path: polygon(0 100%, 50% 0, 100% 100%); }
+.vk-timeline[data-dragging] .vk-timeline__ph { cursor: grabbing; }
+.vk-timeline__ph-txt { position: absolute; top: 3px; left: 50%; transform: translateX(-50%); padding: 1px 4px; white-space: nowrap;
+  font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); color: var(--vk-text-on-accent); background: var(--vk-accent); border-radius: var(--vk-radius-sm); }
+.vk-timeline__ph:focus-visible { outline-offset: -2px; }
+.vk-timeline__ph:focus-visible .vk-timeline__ph-txt { box-shadow: 0 0 0 2px var(--vk-surface-2), 0 0 0 4px var(--vk-focus); }
+
+/* lanes */
+.vk-timeline__lane { display: flex; border-bottom: var(--vk-border-w) solid var(--vk-line); transition: opacity var(--vk-dur-2) var(--vk-ease); }
+.vk-timeline__lane[data-dim] .vk-timeline__track { opacity: .38; }
+.vk-timeline__lane[data-dim]:focus-within .vk-timeline__track { opacity: .75; }
+.vk-timeline__head { position: sticky; left: 0; z-index: 4; flex: none; width: var(--vk-timeline-head); min-width: 0; display: flex; align-items: center;
+  gap: var(--vk-space-2); padding: 0 var(--vk-space-3) 0 var(--vk-space-1); background: var(--vk-surface-1); border-right: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-timeline__name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: var(--vk-font-voice); font-weight: var(--vk-fw-strong); font-size: var(--vk-fs-md); letter-spacing: var(--vk-tracking-title); text-transform: uppercase; }
+.vk-timeline__count { font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); }
+.vk-timeline__track { position: relative; flex: none; width: var(--_tw);
+  height: calc(var(--_pad) * 2 + var(--_rows, 1) * (var(--_bar) + var(--_gap)) + var(--_pt));
+  background-image: linear-gradient(to right, var(--vk-line) 1px, transparent 1px),
+    linear-gradient(to right, var(--vk-line-strong) 1px, transparent 1px);
+  background-size: var(--_g1) 100%, var(--_g2) 100%; background-position: 0 0, var(--_g2o) 0;
+  transition: opacity var(--vk-dur-2) var(--vk-ease); }
+
+/* chips: sessions */
+.vk-timeline__chip { --_c: var(--vk-ok); position: absolute; z-index: 1; display: flex; align-items: center; box-sizing: border-box;
+  top: calc(var(--_pad) + var(--_r, 0) * (var(--_bar) + var(--_gap))); height: var(--_bar); min-width: var(--vk-target-min);
+  padding: 0 var(--vk-space-2); overflow: hidden; white-space: nowrap; cursor: pointer;
+  font-size: var(--vk-fs-xs); line-height: 1; color: var(--vk-text);
+  background: var(--vk-surface-3); border: var(--vk-border-w) solid var(--vk-line-strong); border-left: 3px solid var(--_c); border-radius: var(--vk-radius-sm); }
+.vk-timeline__txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.vk-timeline__chip[data-narrow] .vk-timeline__txt { display: none; }
+.vk-timeline__chip:hover { border-color: var(--vk-text-muted); border-left-color: var(--_c); }
+.vk-timeline__chip[data-state="running"] { --_c: var(--vk-st-active); border-color: var(--vk-activity); background-color: var(--vk-activity-soft);
+  background-image: repeating-linear-gradient(-45deg, transparent 0 5px, var(--vk-activity-soft) 5px 9px); }
+.vk-timeline__chip[data-state="parked"] { --_c: var(--vk-st-parked); background: transparent; border-style: dashed; border-left-style: solid; color: var(--vk-text-muted); }
+.vk-timeline__chip[aria-selected="true"] { color: var(--vk-text); border-color: var(--vk-select-line); background-color: var(--vk-select-bg);
+  box-shadow: inset 0 0 0 1px var(--vk-select-line); }
+.vk-timeline__chip:focus-visible { z-index: 3; outline-offset: 1px; }
+
+/* chips: commits (dot) and releases (small square = terminal) on the lane's point band */
+.vk-timeline__chip:is([data-kind="commit"], [data-kind="release"]) { --_c: var(--vk-text-muted);
+  top: calc(var(--_pad) + var(--_rows, 1) * (var(--_bar) + var(--_gap))); height: var(--_pt); width: var(--vk-target-min); min-width: 0;
+  margin-left: calc(var(--vk-target-min) / -2); padding: 0; justify-content: center; overflow: visible;
+  background: transparent; border: 0; border-radius: 50%; box-shadow: none; }
+.vk-timeline__chip:is([data-kind="commit"], [data-kind="release"])::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--_c); transition: transform var(--vk-dur-1) var(--vk-ease); }
+.vk-timeline__chip[data-kind="release"] { --_c: var(--vk-text); }
+.vk-timeline__chip[data-kind="release"]::before { width: 8px; height: 8px; border-radius: 0; }
+.vk-timeline__chip[data-kind="release"] .vk-timeline__txt { position: absolute; left: calc(50% + 7px); overflow: visible;
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); pointer-events: none; }
+.vk-timeline__chip:is([data-kind="commit"], [data-kind="release"])[data-state="running"] { --_c: var(--vk-st-active); background: transparent; }
+.vk-timeline__chip:is([data-kind="commit"], [data-kind="release"]):hover::before { transform: scale(1.35); }
+.vk-timeline__chip:is([data-kind="commit"], [data-kind="release"])[aria-selected="true"] { background: transparent; box-shadow: none; }
+.vk-timeline__chip:is([data-kind="commit"], [data-kind="release"])[aria-selected="true"]::before { background: var(--vk-accent);
+  box-shadow: 0 0 0 2px var(--vk-surface-1), 0 0 0 3.5px var(--vk-accent); }
+.vk-timeline__chip:is([data-kind="commit"], [data-kind="release"]):focus-visible { outline-offset: -3px; }
+
+/* marks: today (dashed) and playhead (ice) across the lanes */
+.vk-timeline__marks { position: absolute; top: var(--_axis); bottom: 0; left: var(--vk-timeline-head); width: var(--_tw); z-index: 2; pointer-events: none; }
+.vk-timeline__today { position: absolute; top: 0; bottom: 0; width: 0; border-left: var(--vk-border-w) dashed var(--vk-text-muted); }
+.vk-timeline__ph-line { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -.5px; background: var(--vk-accent); box-shadow: var(--vk-glow); }
+.vk-timeline__today[hidden], .vk-timeline__today-tag[hidden] { display: none; }
+
+.vk-timeline__empty { position: absolute; left: var(--vk-timeline-head); right: 0; top: calc(var(--_axis) + var(--vk-space-5)); z-index: 3; margin: 0;
+  text-align: center; color: var(--vk-text-muted); font-size: var(--vk-fs-sm); pointer-events: none; }
+.vk-timeline__empty[hidden] { display: none; }
+
+@media (forced-colors: active) {
+  .vk-timeline__chip { border-color: CanvasText; }
+  .vk-timeline__chip[aria-selected="true"] { outline: 2px solid Highlight; }
+  .vk-timeline__ph-line, .vk-timeline__ph::after { background: Highlight; forced-color-adjust: none; }
+}

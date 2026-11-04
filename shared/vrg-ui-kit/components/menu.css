@@ -1,0 +1,59 @@
+/* VRG UI Kit — components/menu.css — context / dropdown menus, submenus, menubar.
+   .vk-menu.vk-glass[role=menu] > .vk-menu__item[role=menuitem|menuitemcheckbox] (check · icon · label · side) and
+   .vk-menu__sep[role=separator]. aria-disabled = greyed (reason in .vk-menu__why + title), aria-checked = check mark,
+   data-danger = red, aria-haspopup = chevron. .vk-menu--static renders in flow (docs/gallery).
+   .vk-menubar[role=menubar] > .vk-menubar__item. Depends on: tokens, base. Optional: kbd.css (key hints). */
+.vk-menu { position: fixed; left: 0; top: 0; z-index: var(--vk-z-popover);
+  min-width: 13rem; max-width: min(22rem, calc(100vw - 8px)); max-height: calc(100vh - 8px); overflow: auto; overscroll-behavior: contain;
+  padding: var(--vk-space-1); border-radius: var(--vk-radius); box-shadow: var(--vk-shadow-overlay);
+  font-size: var(--vk-fs-md); color: var(--vk-text); outline: none; scrollbar-width: thin;
+  animation: vk-menu-in var(--vk-dur-1) var(--vk-ease); }
+@keyframes vk-menu-in { from { opacity: 0; transform: translateY(-2px); } }
+.vk-menu[data-side="top"] { animation-name: vk-menu-in-up; }
+@keyframes vk-menu-in-up { from { opacity: 0; transform: translateY(2px); } }
+.vk-menu--static { position: relative; z-index: auto; display: inline-block; vertical-align: top; animation: none; max-height: none; }
+
+.vk-menu__item { display: grid; grid-template-columns: 14px var(--vk-icon-size) minmax(0, 1fr) auto; align-items: center;
+  column-gap: var(--vk-space-3); min-height: max(var(--vk-row-h), var(--vk-target-min)); padding: 0 var(--vk-space-3) 0 var(--vk-space-2);
+  border-radius: var(--vk-radius-sm); cursor: default; user-select: none; white-space: nowrap; position: relative; }
+.vk-menu__item:focus { background: var(--vk-select-bg); outline: none; }
+.vk-menu__item:focus::before { content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: 2px; background: var(--vk-select-line); }
+.vk-menu__item:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: -2px; }
+.vk-menu__item[aria-expanded="true"] { background: var(--vk-hover-bg); }
+.vk-menu__item[aria-expanded="true"]:focus { background: var(--vk-select-bg); }
+.vk-menu__check { display: grid; place-items: center; width: 14px; height: 14px; color: var(--vk-accent); }
+.vk-menu__check .vk-icon { width: 14px; height: 14px; stroke-width: 2; }
+.vk-menu__item[role="menuitemcheckbox"] .vk-menu__check { border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-sm); }
+.vk-menu__item[aria-checked="true"] .vk-menu__check { border-color: var(--vk-accent); background: var(--vk-accent-soft); }
+.vk-menu__icon { color: var(--vk-text-muted); width: var(--vk-icon-size); height: var(--vk-icon-size); }
+.vk-menu__item:focus .vk-menu__icon { color: var(--vk-text); }
+.vk-menu__label { overflow: hidden; text-overflow: ellipsis; }
+.vk-menu__side { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--vk-space-2); padding-left: var(--vk-space-4); min-width: 0; }
+.vk-menu__chev { color: var(--vk-text-muted); width: 14px; height: 14px; }
+.vk-menu__why { font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); color: var(--vk-text-muted); max-width: 16ch;
+  overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; letter-spacing: .04em; }
+
+.vk-menu__item[aria-disabled="true"] { color: var(--vk-text-faint); }
+.vk-menu__item[aria-disabled="true"] .vk-menu__icon { color: var(--vk-text-faint); }
+.vk-menu__item[data-danger] { color: var(--vk-crit); }
+.vk-menu__item[data-danger] .vk-menu__icon { color: var(--vk-crit); }
+.vk-menu__item[data-danger]:focus { background: var(--vk-crit-soft); }
+.vk-menu__item[data-danger]:focus::before { background: var(--vk-crit); }
+.vk-menu__item[data-danger][aria-disabled="true"], .vk-menu__item[data-danger][aria-disabled="true"] .vk-menu__icon { color: var(--vk-text-faint); }
+.vk-menu__sep { height: var(--vk-border-w); margin: var(--vk-space-1) var(--vk-space-2); background: var(--vk-line-strong); }
+
+/* ---------- menubar ---------- */
+.vk-menubar { display: flex; align-items: stretch; gap: var(--vk-space-1); min-width: 0; flex-wrap: wrap; }
+.vk-menubar__item { display: inline-flex; align-items: center; gap: var(--vk-space-2); min-height: max(var(--vk-control-h), var(--vk-target-min));
+  padding: 0 var(--vk-space-3); border: var(--vk-border-w) solid transparent; border-radius: var(--vk-radius-sm);
+  background: transparent; color: var(--vk-text); font: inherit; font-size: var(--vk-fs-md); cursor: default; }
+.vk-menubar__item:hover { background: var(--vk-hover-bg); }
+.vk-menubar__item[aria-expanded="true"] { background: var(--vk-select-bg); border-color: var(--vk-accent-line); color: var(--vk-accent); }
+.vk-menubar__item:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: -2px; }
+
+[data-vk-density="touch"] .vk-menu { min-width: min(15rem, calc(100vw - 8px)); }
+@media (forced-colors: active) {
+  .vk-menu { border: 1px solid CanvasText; }
+  .vk-menu__item:focus { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .vk-menu__item[aria-disabled="true"] { color: GrayText; }
+}

@@ -1,0 +1,43 @@
+/* VRG UI Kit — components/scrubber.css — time scrubber / range slider (behaviour: scrubber.js).
+   [◀|] (play MINI = progress ring) [|▶]  ──ticks──■──────  2026. okt. 21.
+   The thumb and fill are ice (the instrument, you); the play MINI turns warm while playing (the system working).
+   Range mode (data-range) draws the two thumbs as brackets. Depends on: tokens, base, button, mini. */
+.vk-scrubber { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-2) var(--vk-space-4); min-width: 0;
+  color: var(--vk-text); font-size: var(--vk-fs-sm); }
+.vk-scrubber__ctl { display: flex; align-items: center; gap: var(--vk-space-1); flex: none; }
+.vk-scrubber__flip { transform: scaleX(-1); }
+.vk-scrubber__body { flex: 1 1 200px; min-width: 0; padding: 0 calc(var(--vk-target-min) / 2); }
+.vk-scrubber__track { position: relative; height: var(--vk-target-min); cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; }
+.vk-scrubber__rail { position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: var(--vk-line-strong); border-radius: 1px; }
+.vk-scrubber__fill { position: absolute; top: 0; bottom: 0; left: 0; background: var(--vk-accent); border-radius: 1px; }
+.vk-scrubber__ticks { position: absolute; left: 0; right: 0; top: calc(50% + 3px); height: 9px; pointer-events: none; }
+.vk-scrubber__tk { position: absolute; top: 0; width: 1px; height: 3px; background: var(--vk-line-strong); }
+.vk-scrubber__tk[data-k="mid"] { height: 5px; }
+.vk-scrubber__tk[data-k="major"] { height: 9px; background: var(--vk-text-muted); }
+.vk-scrubber__labels { position: relative; height: calc(var(--vk-fs-2xs) + 4px); }
+.vk-scrubber__lb { position: absolute; top: 0; padding-left: 3px; white-space: nowrap;
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); }
+
+.vk-scrubber__thumb { position: absolute; top: 0; z-index: 1; display: grid; place-items: center;
+  width: var(--vk-target-min); height: var(--vk-target-min); margin-left: calc(var(--vk-target-min) / -2);
+  border-radius: var(--vk-radius); cursor: grab; }
+.vk-scrubber__thumb::before { content: ""; width: 4px; height: calc(var(--vk-target-min) * .72); background: var(--vk-accent);
+  border-radius: 1px; box-shadow: 0 0 0 2px var(--vk-surface-1), var(--vk-glow); }
+.vk-scrubber__thumb:hover::before { background: var(--vk-accent-hover); }
+.vk-scrubber__thumb:focus-visible { outline-offset: -1px; }
+.vk-scrubber[data-dragging] .vk-scrubber__thumb { cursor: grabbing; }
+.vk-scrubber[data-range] .vk-scrubber__thumb::before { width: 6px; background: transparent; box-shadow: none;
+  border: 2px solid var(--vk-accent); border-right: 0; border-radius: 0; }
+.vk-scrubber[data-range] .vk-scrubber__thumb[data-i="1"]::before { border-right: 2px solid var(--vk-accent); border-left: 0; }
+.vk-scrubber[data-range] .vk-scrubber__fill { top: -3px; bottom: -3px; background: var(--vk-accent-soft); border-top: 1px solid var(--vk-accent-line); border-bottom: 1px solid var(--vk-accent-line); }
+
+.vk-scrubber__out { flex: none; min-width: 12ch; white-space: nowrap; font-size: var(--vk-fs-sm); }
+.vk-scrubber[aria-disabled="true"] .vk-scrubber__track { cursor: default; }
+.vk-scrubber[aria-disabled="true"] .vk-scrubber__fill { background: var(--vk-text-faint); }
+.vk-scrubber[aria-disabled="true"] .vk-scrubber__thumb { cursor: default; }
+.vk-scrubber[aria-disabled="true"] .vk-scrubber__thumb::before { background: var(--vk-text-faint); box-shadow: none; }
+.vk-scrubber[aria-disabled="true"] .vk-scrubber__out { color: var(--vk-text-muted); }
+
+@media (forced-colors: active) {
+  .vk-scrubber__fill, .vk-scrubber__thumb::before { background: Highlight; forced-color-adjust: none; }
+}

@@ -1,0 +1,45 @@
+/* VRG UI Kit — components/heatgrid.css — contribution-style pixel grid (behaviour: heatgrid.js).
+   Intensity through --vk-heat-0…4 (warm = the system working); selection is ice; today has an ink frame;
+   future days are hollow. Local knob: --vk-heatgrid-cell (cell size, follows --vk-target-min).
+   Depends on: tokens, base. */
+.vk-heatgrid { --vk-heatgrid-cell: max(10px, calc(var(--vk-target-min) * .55)); --_gap: 3px; --_step: calc(var(--vk-heatgrid-cell) + var(--_gap));
+  display: flex; flex-direction: column; gap: var(--vk-space-4); min-width: 0; color: var(--vk-text); font-size: var(--vk-fs-sm); }
+.vk-heatgrid__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--vk-space-3); }
+.vk-heatgrid__legend { display: inline-flex; align-items: center; gap: 3px; font-size: var(--vk-fs-xs); color: var(--vk-text-muted); }
+.vk-heatgrid__legend > span:first-child { margin-right: var(--vk-space-2); }
+.vk-heatgrid__legend > span:last-child { margin-left: var(--vk-space-2); }
+.vk-heatgrid__stack { display: flex; flex-direction: column; gap: var(--vk-space-5); min-width: 0; }
+.vk-heatgrid__year { display: flex; flex-direction: column; gap: var(--vk-space-2); min-width: 0; }
+.vk-heatgrid__yhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--vk-space-2) var(--vk-space-4); }
+.vk-heatgrid__yn { font-size: var(--vk-fs-xl); }
+.vk-heatgrid__total { font-size: var(--vk-fs-sm); color: var(--vk-text); }
+.vk-heatgrid__scroll { overflow-x: auto; overflow-y: hidden; padding: 5px; margin: -5px; }
+.vk-heatgrid__plot { display: grid; grid-template-columns: auto max-content; column-gap: var(--vk-space-2); width: max-content; }
+.vk-heatgrid__months { position: relative; height: calc(var(--vk-fs-2xs) + 6px); }
+.vk-heatgrid__mon { position: absolute; bottom: 4px; left: calc(var(--_c) * var(--_step)); white-space: nowrap;
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); }
+.vk-heatgrid__days { display: flex; flex-direction: column; gap: var(--_gap); }
+.vk-heatgrid__days > span { height: var(--vk-heatgrid-cell); line-height: var(--vk-heatgrid-cell); text-align: right;
+  font: var(--vk-fs-2xs)/var(--vk-heatgrid-cell) var(--vk-font-mono); color: var(--vk-text-muted); }
+.vk-heatgrid__grid { display: flex; flex-direction: column; gap: var(--_gap); }
+.vk-heatgrid__row { display: flex; gap: var(--_gap); }
+.vk-heatgrid__pad, .vk-heatgrid__cell, .vk-heatgrid__sw { flex: none; width: var(--vk-heatgrid-cell); height: var(--vk-heatgrid-cell); border-radius: var(--vk-radius-sm); }
+.vk-heatgrid__sw { width: 11px; height: 11px; }
+.vk-heatgrid__cell, .vk-heatgrid__sw { background: var(--vk-heat-0); }
+.vk-heatgrid__cell { cursor: pointer; }
+:is(.vk-heatgrid__cell, .vk-heatgrid__sw)[data-l="1"] { background: var(--vk-heat-1); }
+:is(.vk-heatgrid__cell, .vk-heatgrid__sw)[data-l="2"] { background: var(--vk-heat-2); }
+:is(.vk-heatgrid__cell, .vk-heatgrid__sw)[data-l="3"] { background: var(--vk-heat-3); }
+:is(.vk-heatgrid__cell, .vk-heatgrid__sw)[data-l="4"] { background: var(--vk-heat-4); }
+.vk-heatgrid__cell:hover { box-shadow: inset 0 0 0 1px var(--vk-text-muted); }
+.vk-heatgrid__cell[data-today] { box-shadow: inset 0 0 0 1.5px var(--vk-text); }
+.vk-heatgrid__cell[data-future] { background: transparent; box-shadow: inset 0 0 0 1px var(--vk-line); }
+.vk-heatgrid__cell[aria-selected="true"] { position: relative; z-index: 1; box-shadow: 0 0 0 1px var(--vk-bg), 0 0 0 3px var(--vk-accent); }
+.vk-heatgrid__cell:focus-visible { position: relative; z-index: 2; outline-offset: 2px; }
+.vk-heatgrid__cell[aria-selected="true"]:focus-visible { outline-offset: 4px; }
+.vk-heatgrid__readout { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--vk-space-3); min-height: calc(var(--vk-fs-sm) * 1.6); font-size: var(--vk-fs-sm); }
+
+@media (forced-colors: active) {
+  .vk-heatgrid__cell, .vk-heatgrid__sw { forced-color-adjust: none; border: 1px solid CanvasText; }
+  .vk-heatgrid__cell[aria-selected="true"] { outline: 2px solid Highlight; }
+}

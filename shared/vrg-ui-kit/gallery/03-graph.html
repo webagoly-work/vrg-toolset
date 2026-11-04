@@ -1,0 +1,223 @@
+<section class="g-sec" id="f03" data-vk-hop aria-labelledby="f03-h">
+  <header class="g-sec__head">
+    <span class="g-sec__num">03</span>
+    <h2 id="f03-h" class="vk-title">Gráf és topológia</h2>
+    <p class="g-sec__lead">Csomópontok, vezetékrétegek és keretek SVG-n: síkban és izometrikus „iso-board” nézetben, áttekintő térképpel, valamint egymásra rakott rétegsíkok pillérekkel és jelzőfényekkel.</p>
+  </header>
+
+  <article class="g-demo" id="f03-graph" data-vk-hop>
+    <h3 class="g-demo__title">Villamos topológia — VRG-2611-03 <code>graph · minimap</code></h3>
+    <p class="g-demo__note">Főelosztó → alelosztók → áramkörök → eszközök, „Földszint” és „Emelet” keretben. Egy tabulátor-megálló:
+      <kbd>←↑→↓</kbd> a nézetet mozgatja, <kbd>Enter</kbd> a középhez legközelebbi csomópontra lép, onnan a nyilak térben lépkednek;
+      <kbd>Szóköz</kbd> kijelöl, <kbd>Ctrl</kbd>+<kbd>A</kbd> mindet, <kbd>F2</kbd> átnevezés, <kbd>Delete</kbd> a regiszter <code>graph.delete</code> akcióját futtatja,
+      <kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd> nagyít / illeszt, <kbd>Esc</kbd> kijelölést töröl. Egér: húzás = mozgatás, görgő = nagyítás, <kbd>Ctrl</kbd>+kattintás = hozzáadás, <kbd>Shift</kbd>+húzás = keretes kijelölés.
+      Állapotok: kijelölt (AE2, K2 — jég), fókusz (V2 — szaggatott jéggyűrű), rejtett réteg (Védőföld), tervezett (szaggatott Világítás), aktív (meleg futófény).</p>
+    <div class="vk-row" style="flex-wrap:wrap;gap:var(--vk-space-4);margin-bottom:var(--vk-space-3)">
+      <div id="f03-tools" class="vk-row" role="toolbar" aria-label="Gráf eszköztár"></div>
+      <div id="f03-legend"></div>
+    </div>
+    <div style="position:relative;height:min(520px,72vh)">
+      <div id="f03-g" style="height:100%"></div>
+      <div id="f03-mm" class="vk-minimap--overlay" data-corner="bl"></div>
+    </div>
+    <p class="vk-label" id="f03-read" role="status" aria-live="polite" style="margin-top:var(--vk-space-3)">KIJELÖLÉS // —</p>
+  </article>
+
+  <article class="g-demo" id="f03-iso" data-vk-hop>
+    <h3 class="g-demo__title">Ugyanez iso-board vetületben <code>graph · projection:'iso'</code></h3>
+    <p class="g-demo__note">Ugyanaz az adat izometrikus síkon: a csomópontok kiemelt iso-lapok, a főelosztó izzó központ (meleg = a rendszer dolgozik), a vezetékek az iso-tengelyek mentén futnak, lekerekített törésekkel. Minden réteg látszik; a billentyűzet ugyanaz.</p>
+    <div class="vk-row" style="flex-wrap:wrap;gap:var(--vk-space-4);margin-bottom:var(--vk-space-3)">
+      <div id="f03-iso-tools" class="vk-row" role="toolbar" aria-label="Iso gráf eszköztár"></div>
+      <div id="f03-iso-legend"></div>
+    </div>
+    <div id="f03-gi" style="height:min(520px,72vh)"></div>
+  </article>
+
+  <article class="g-demo" id="f03-kinds" data-vk-hop>
+    <h3 class="g-demo__title">Elemkészlet <code>graph — node kinds · edge styles</code></h3>
+    <p class="g-demo__note">Buborék (kártya: cím, mono alcímke, port-pontok, MINI jelvény), telt pont = csomópont, üres rombusz = elágazás, kis négyzet = végpont, hatszög panel. Vezetékek: metró (alapstílus), görbe, egyenes; tervezett = szaggatott, aktív = meleg futófény (csökkentett mozgásnál álló), nyílhegy, felirat.</p>
+    <div id="f03-gk" style="height:240px"></div>
+  </article>
+
+  <article class="g-demo" id="f03-stack" data-vk-hop>
+    <h3 class="g-demo__title">Rétegköteg <code>layerstack</code></h3>
+    <p class="g-demo__note">Öt sík egymás fölött; a szaggatott függőleges pillérek ugyanazt az entitást kötik össze a síkok között, a meleg fényoszlopok az aktivitást jelzik.
+      A síklista egy megálló (nyilak; szem = megjelenítés, <code>solo</code> = szóló). A színpadon <kbd>↑</kbd><kbd>↓</kbd> sík, <kbd>←</kbd><kbd>→</kbd> entitás, <kbd>S</kbd> szóló, <kbd>H</kbd> elrejtés, <kbd>Esc</kbd> szóló vége.
+      Rámutatás vagy fókusz kiemeli a pillért és az entitás minden síkbeli pontját (jég). Itt az „Átjáró GW-01” ki van emelve.</p>
+    <div id="f03-ls"></div>
+  </article>
+</section>
+
+<script data-g-init>
+  var LAYERS = [
+    { id: 'power', name: 'Erősáram', icon: 'bolt' },
+    { id: 'light', name: 'Világítás', icon: 'bulb' },
+    { id: 'data', name: 'Adat', icon: 'cable' },
+    { id: 'control', name: 'Vezérlés', icon: 'sliders' },
+    { id: 'earth', name: 'Védőföld', icon: 'earth' }
+  ];
+  function topo() {
+    return {
+      nodes: [
+        { id: 'fe', kind: 'bubble', x: 100, y: 270, label: 'Főelosztó FE', sub: 'FE-01 // 3×63 A', layer: 'power', hub: true,
+          badge: { icon: 'gauge', label: 'Terhelés', state: 'running', progress: 0.62 } },
+        { id: 'j1', kind: 'junction', x: 250, y: 270, label: 'GY1', labelAt: 'top' },
+        { id: 'pe', kind: 'terminal', x: 100, y: 80, label: 'PE sín', labelAt: 'right' },
+        { id: 'ae1', kind: 'bubble', x: 400, y: 140, label: 'Alelosztó AE1', sub: 'AE1 // 24 modul', badge: { icon: 'check', label: 'Mérés', state: 'done' } },
+        { id: 'ae2', kind: 'bubble', x: 400, y: 390, label: 'Alelosztó AE2', sub: 'AE2 // 18 modul', badge: { icon: 'warning', label: 'Szigetelés', state: 'error' } },
+        { id: 'c11', kind: 'dot', x: 600, y: 70, label: 'K1 Konnektor' },
+        { id: 'c12', kind: 'dot', x: 600, y: 140, label: 'V1 Világítás' },
+        { id: 'c13', kind: 'dot', x: 600, y: 210, label: 'D1 Adat' },
+        { id: 'c21', kind: 'dot', x: 600, y: 320, label: 'K2 Hűtőkör' },
+        { id: 'c22', kind: 'dot', x: 600, y: 390, label: 'V2 Lámpák' },
+        { id: 'c23', kind: 'dot', x: 600, y: 460, label: 'VZ Vezérlés' },
+        { id: 'd11', kind: 'terminal', x: 840, y: 70, label: 'Aljzatok ×6' },
+        { id: 'd12', kind: 'terminal', x: 840, y: 140, label: 'Lámpatest L1–L4' },
+        { id: 'd13', kind: 'hex', x: 840, y: 210, label: 'Kapcsoló', sub: 'SW1 // 8P' },
+        { id: 'd21', kind: 'terminal', x: 840, y: 320, label: 'Hűtő H1' },
+        { id: 'd22', kind: 'terminal', x: 840, y: 390, label: 'Lámpák L5–L8', labelAt: 'right' },
+        { id: 'd23', kind: 'hex', x: 840, y: 470, label: 'Vezérlő', sub: 'VZ1 // KNX' }
+      ],
+      edges: [
+        { from: 'fe', to: 'j1', layer: 'power', active: true },
+        { from: 'j1', to: 'ae1', layer: 'power', label: 'NYY-J 5×10' },
+        { from: 'j1', to: 'ae2', layer: 'power', active: true },
+        { from: 'ae1', to: 'c11', layer: 'power' },
+        { from: 'ae1', to: 'c12', layer: 'light' },
+        { from: 'ae1', to: 'c13', layer: 'data' },
+        { from: 'c11', to: 'd11', layer: 'power' },
+        { from: 'c12', to: 'd12', layer: 'light' },
+        { from: 'c13', to: 'd13', layer: 'data', arrow: true, label: 'CAT6A' },
+        { from: 'ae2', to: 'c21', layer: 'power', active: true },
+        { from: 'ae2', to: 'c22', layer: 'light', planned: true },
+        { from: 'ae2', to: 'c23', layer: 'control' },
+        { from: 'c21', to: 'd21', layer: 'power', active: true, label: '3×2,5 MM²' },
+        { from: 'c22', to: 'd22', layer: 'light', planned: true, label: 'Tervezett' },
+        { from: 'c23', to: 'd23', layer: 'control', arrow: true },
+        { from: 'd23', to: 'd22', layer: 'control', arrow: true },
+        { from: 'fe', to: 'pe', layer: 'earth' },
+        { from: 'pe', to: 'ae1', layer: 'earth' },
+        { from: 'pe', to: 'ae2', layer: 'earth' }
+      ],
+      frames: [
+        { id: 'f0', label: 'Földszint // F0', nodes: ['ae1', 'c11', 'c12', 'c13', 'd11', 'd12', 'd13'] },
+        { id: 'f1', label: 'Emelet // F1', nodes: ['ae2', 'c21', 'c22', 'c23', 'd21', 'd22', 'd23'] }
+      ]
+    };
+  }
+  function labelOf(g, id) { var n = g.node(id); return n ? n.label : id; }
+
+  // the graph verbs live in the registry; each toolbar renders VK.actions.forSurface('toolbar:graph') as MINIs
+  var active = null;
+  function G(ctx) { return (ctx && ctx.graph) || active; }
+  VK.actions.registerAll([
+    { id: 'graph.zoomIn', label: 'Nagyítás', group: 'Gráf', icon: 'zoom-in', caption: 'NAGY', at: ['toolbar:graph', 'palette'], run: function (c) { G(c).zoomBy(1.25); } },
+    { id: 'graph.zoomOut', label: 'Kicsinyítés', group: 'Gráf', icon: 'zoom-out', caption: 'KICSI', at: ['toolbar:graph', 'palette'], run: function (c) { G(c).zoomBy(0.8); } },
+    { id: 'graph.fit', label: 'Illesztés', group: 'Gráf', icon: 'fit', caption: 'ILLESZT', at: ['toolbar:graph', 'palette'], run: function (c) { G(c).fit(); } },
+    { id: 'graph.delete', label: 'Kijelöltek törlése', hint: 'A kijelölt csomópontok és vezetékeik törlése', group: 'Gráf', icon: 'trash', caption: 'TÖRLÉS', danger: true,
+      at: ['toolbar:graph', 'palette'],
+      when: function (c) { var g = G(c); return !!g && ((c && c.ids && c.ids.length) || g.selection().length > 0); },
+      run: function (c) {
+        var g = G(c), ids = (c && c.ids) || g.selection(), d = g.data();
+        g.setData({ nodes: d.nodes.filter(function (n) { return ids.indexOf(n.id) < 0; }),
+          edges: d.edges.filter(function (e) { return ids.indexOf(e.from) < 0 && ids.indexOf(e.to) < 0; }) });
+        g.select([]);
+      } }
+  ]);
+  function toolbar(box, g) {
+    var btns = VK.actions.forSurface('toolbar:graph', { graph: g }, { all: true }).map(function (a) {
+      var m = VK.mini.create({ icon: a.icon, label: a.label, caption: a.caption, size: 'sm' });
+      m.dataset.action = a.id;
+      m.addEventListener('click', function () { VK.actions.run(a.id, { graph: g }, 'toolbar'); refresh(); });
+      box.appendChild(m);
+      return { a: a, m: m };
+    });
+    function refresh() { btns.forEach(function (b) { b.m.disabled = !VK.actions.enabled(b.a, { graph: g }); }); }
+    refresh(); g.on('select', refresh); g.on('data', refresh);
+    box.classList.add('vk-mini-row');
+    VK.focus.roving(box, { items: '.vk-mini', orientation: 'horizontal', typeahead: false });
+  }
+
+  // 1 — flat topology with minimap
+  var t = topo();
+  var g = VK.graph.mount(document.getElementById('f03-g'), {
+    label: 'Villamos topológia VRG-2611-03', nodes: t.nodes, edges: t.edges, frames: t.frames,
+    layers: LAYERS.map(function (l) { return Object.assign({}, l, { visible: l.id !== 'earth' }); })
+  });
+  active = g;
+  toolbar(document.getElementById('f03-tools'), g);
+  g.legend(document.getElementById('f03-legend'));
+  VK.minimap.mount(document.getElementById('f03-mm'), g);
+  var read = document.getElementById('f03-read');
+  g.el.addEventListener('vk:selection', function (e) {
+    var ids = e.detail.ids || e.detail;
+    read.textContent = 'KIJELÖLÉS // ' + (ids.length ? ids.map(function (id) { return labelOf(g, id); }).join(', ') : '—');
+  });
+  g.on('open', function (d) { read.textContent = 'MEGNYITÁS // ' + labelOf(g, d.id); });
+  g.on('rename', function (d) { read.textContent = 'ÁTNEVEZÉS (F2) // ' + labelOf(g, d.id); });
+  g.on('badge', function (d) { read.textContent = 'JELVÉNY // ' + labelOf(g, d.id) + ' — ' + (g.node(d.id).badge || {}).label; });
+  g.el.addEventListener('focusin', function () { active = g; });
+  g.select(['ae2', 'c21']);
+  g.focusNode('c22');
+
+  // 2 — iso-board projection, same data
+  var ti = topo();
+  var gi = VK.graph.mount(document.getElementById('f03-gi'), {
+    label: 'Villamos topológia iso-board nézetben', projection: 'iso', nodes: ti.nodes, edges: ti.edges, frames: ti.frames, layers: LAYERS.slice()
+  });
+  toolbar(document.getElementById('f03-iso-tools'), gi);
+  gi.legend(document.getElementById('f03-iso-legend'));
+  gi.el.addEventListener('focusin', function () { active = gi; });
+  gi.select(['ae1']);
+
+  // 3 — node kinds and edge styles
+  VK.graph.mount(document.getElementById('f03-gk'), {
+    label: 'Elemkészlet', layers: LAYERS.slice(),
+    nodes: [
+      { id: 'b', kind: 'bubble', x: 90, y: 120, label: 'Buborék', sub: 'BUBBLE // MINI', layer: 'data', badge: { icon: 'sync', label: 'Szinkron', state: 'running', progress: 0.42 } },
+      { id: 'p', kind: 'dot', x: 330, y: 40, label: 'Pont' },
+      { id: 'h', kind: 'hex', x: 330, y: 200, label: 'Panel', sub: 'HEX // 04' },
+      { id: 'j', kind: 'junction', x: 520, y: 120, label: 'Elágazás', labelAt: 'top' },
+      { id: 't1', kind: 'terminal', x: 740, y: 40, label: 'Végpont' },
+      { id: 't2', kind: 'terminal', x: 740, y: 200, label: 'Végpont 2' }
+    ],
+    edges: [
+      { from: 'b', to: 'p', layer: 'data', label: 'Metró' },
+      { from: 'b', to: 'h', layer: 'control', style: 'curve', label: 'Görbe' },
+      { from: 'p', to: 'j', layer: 'power', style: 'straight', label: 'Egyenes' },
+      { from: 'h', to: 'j', layer: 'earth', arrow: true, label: 'Nyíl' },
+      { from: 'j', to: 't1', layer: 'light', planned: true, label: 'Tervezett' },
+      { from: 'j', to: 't2', layer: 'power', active: true, arrow: true, label: 'Aktív' }
+    ]
+  });
+
+  // 4 — layer stack
+  var ls = VK.layerstack.mount(document.getElementById('f03-ls'), {
+    label: 'Rendszer-rétegköteg VRG-2611-03',
+    planes: [
+      { id: 'ui', name: 'Felület', color: '--vk-layer-6' },
+      { id: 'svc', name: 'Szolgáltatás', color: '--vk-layer-4' },
+      { id: 'net', name: 'Hálózat', color: '--vk-layer-3' },
+      { id: 'dev', name: 'Eszköz', color: '--vk-layer-1' },
+      { id: 'inst', name: 'Telepítés', color: '--vk-layer-5' }
+    ],
+    entities: [
+      { id: 'planner', label: 'Tervező', at: { ui: { x: 18, y: 22 }, svc: { x: 18, y: 22 } } },
+      { id: 'inv', label: 'Leltár', at: { ui: { x: 55, y: 15 }, svc: { x: 55, y: 15 } } },
+      { id: 'form', label: 'Űrlap', at: { ui: { x: 88, y: 45 } } },
+      { id: 'sync', label: 'Szinkron', at: { svc: { x: 38, y: 62 }, net: { x: 38, y: 62 } }, beacon: 0.55 },
+      { id: 'gw', label: 'Átjáró GW-01', at: { svc: { x: 80, y: 78 }, net: { x: 80, y: 78 }, dev: { x: 80, y: 78 } }, beacon: { net: 0.85 } },
+      { id: 'sw1', label: 'Kapcsoló SW1', at: { net: { x: 28, y: 28 }, dev: { x: 28, y: 28 }, inst: { x: 28, y: 28 } } },
+      { id: 'ae1', label: 'Alelosztó AE1', at: { dev: { x: 58, y: 38 }, inst: { x: 58, y: 38 } }, beacon: { dev: 0.4 } },
+      { id: 'hut', label: 'Hűtő H1', at: { dev: { x: 14, y: 82 }, inst: { x: 14, y: 82 } } },
+      { id: 'rack', label: 'Rack R1', at: { inst: { x: 86, y: 86 } } }
+    ],
+    links: [
+      { plane: 'svc', from: 'planner', to: 'sync' }, { plane: 'svc', from: 'inv', to: 'sync' },
+      { plane: 'net', from: 'sw1', to: 'gw' }, { plane: 'net', from: 'sync', to: 'gw' },
+      { plane: 'dev', from: 'ae1', to: 'sw1' }, { plane: 'dev', from: 'ae1', to: 'hut', planned: true },
+      { plane: 'inst', from: 'sw1', to: 'rack' }
+    ]
+  });
+  ls.highlight('gw');
+</script>

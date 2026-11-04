@@ -1,0 +1,66 @@
+/* VRG UI Kit — components/commandbar.css — top command bar: brand · breadcrumbs · search trigger · minis.
+   <div class="vk-commandbar">
+     <div class="vk-commandbar__brand"> emblem · <span class="vk-commandbar__name">VRG Desktop</span> · <span class="vk-commandbar__tag">MÉRŐPULT</span>
+     <nav class="vk-commandbar__nav"><ol class="vk-commandbar__crumbs"><li><button class="vk-commandbar__crumb">…
+     <button class="vk-commandbar__search"> icon · text · <kbd>
+     <div class="vk-commandbar__tools" role="toolbar"> minis (surface toolbar:command)
+   Responsive by container query: narrow bars drop the tag, early crumbs, then the search text.
+   Depends on: tokens, base, mini. */
+.vk-commandbar { container-type: inline-size; container-name: vk-commandbar; min-width: 0;
+  background: var(--vk-surface-2); border-bottom: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-commandbar__in { display: flex; align-items: center; gap: var(--vk-space-4); min-width: 0;
+  min-height: calc(max(var(--vk-control-h), var(--vk-target-min)) + var(--vk-space-3)); padding: var(--vk-space-1) var(--vk-space-3); }
+
+.vk-commandbar__brand { display: flex; align-items: center; gap: var(--vk-space-3); flex: none; min-width: 0; }
+.vk-commandbar__emblem { width: calc(var(--vk-icon-size) * 1.5); height: calc(var(--vk-icon-size) * 1.5); flex: none;
+  fill: none; stroke: var(--vk-accent); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.vk-commandbar__emblem .f { fill: var(--vk-accent); stroke: none; }
+.vk-commandbar__name { font-family: var(--vk-font-voice); font-weight: var(--vk-fw-strong); font-size: var(--vk-fs-lg);
+  text-transform: uppercase; letter-spacing: var(--vk-tracking-title); line-height: 1; white-space: nowrap; }
+.vk-commandbar__tag { font-family: var(--vk-font-mono); font-size: var(--vk-fs-2xs); text-transform: uppercase;
+  letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); white-space: nowrap; }
+
+.vk-commandbar__nav { flex: 1 1 auto; min-width: 0; }
+.vk-commandbar__crumbs { display: flex; align-items: center; min-width: 0; margin: 0; padding: 0; list-style: none; overflow: hidden; }
+.vk-commandbar__crumbs > li { display: flex; align-items: center; min-width: 0; flex: 0 1 auto; }
+.vk-commandbar__crumbs > li:last-child { flex: 0 1 auto; }
+.vk-commandbar__crumbs > li + li::before { content: "/"; flex: none; padding: 0 var(--vk-space-1); font-family: var(--vk-font-mono);
+  font-size: var(--vk-fs-sm); color: var(--vk-text-faint); }
+.vk-commandbar__crumb { display: inline-flex; align-items: center; gap: var(--vk-space-2); min-width: 0; max-width: 100%;
+  min-height: var(--vk-target-min); padding: 0 var(--vk-space-2); margin: 0; border: 0; border-radius: var(--vk-radius);
+  background: transparent; color: var(--vk-text-muted); font: inherit; font-size: var(--vk-fs-sm); cursor: pointer; white-space: nowrap; }
+.vk-commandbar__crumb > span { overflow: hidden; text-overflow: ellipsis; }
+.vk-commandbar__crumb[data-mono] { font-family: var(--vk-font-mono); font-size: var(--vk-fs-xs); letter-spacing: .04em; }
+.vk-commandbar__crumb:hover { color: var(--vk-text); background: var(--vk-hover-bg); }
+.vk-commandbar__crumb[aria-current] { color: var(--vk-text); }
+.vk-commandbar__crumb[aria-current]::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--vk-accent); flex: none; }
+.vk-commandbar__crumb > .vk-icon { width: calc(var(--vk-icon-size) * .875); height: calc(var(--vk-icon-size) * .875); }
+
+.vk-commandbar__search { display: inline-flex; align-items: center; gap: var(--vk-space-3); flex: 0 1 300px; min-width: 0;
+  height: max(var(--vk-control-h), var(--vk-target-min)); padding: 0 var(--vk-space-2) 0 var(--vk-space-3); margin: 0;
+  border: var(--vk-border-w) solid var(--vk-border-control); border-radius: var(--vk-radius); background: var(--vk-bg-sunken);
+  color: var(--vk-text-muted); font: inherit; font-size: var(--vk-fs-sm); cursor: pointer; text-align: left; }
+.vk-commandbar__search > span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vk-commandbar__search:hover:not([aria-disabled="true"]) { border-color: var(--vk-text-muted); color: var(--vk-text); }
+.vk-commandbar__search[aria-disabled="true"] { cursor: default; color: var(--vk-text-faint); border-color: var(--vk-line-strong); }
+.vk-commandbar__kbd { flex: none; font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); padding: 3px 5px;
+  border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-sm); }
+.vk-commandbar__kbd:empty { display: none; }
+
+.vk-commandbar__tools { display: flex; align-items: center; gap: var(--vk-space-1); flex: none; min-width: 0; }
+.vk-commandbar__tools > .vk-mini { --_s: var(--vk-control-h); }
+
+@container vk-commandbar (max-width: 900px) {
+  .vk-commandbar__tag { display: none; }
+  .vk-commandbar__crumbs > li:not(:nth-last-child(-n+2)) { display: none; }
+  .vk-commandbar__crumbs > li:nth-last-child(2)::before { content: "…/"; }
+  .vk-commandbar__search { flex-basis: 200px; }
+}
+@container vk-commandbar (max-width: 620px) {
+  .vk-commandbar__in { gap: var(--vk-space-2); }
+  .vk-commandbar__name { display: none; }
+  .vk-commandbar__crumbs > li:not(:last-child) { display: none; }
+  .vk-commandbar__search { flex: none; width: max(var(--vk-control-h), var(--vk-target-min)); padding: 0; justify-content: center; }
+  .vk-commandbar__search > span, .vk-commandbar__search > .vk-commandbar__kbd { display: none; }
+  .vk-commandbar__tools { overflow-x: auto; scrollbar-width: none; max-width: 55%; }
+}
