@@ -1,0 +1,7 @@
+{
+  "name": "vrg-dashboard-shell",
+  "private": true,
+  "description": "VRG Desktop Dashboard shell (D1). Run with H:\\VRG\\Full\\tools\\electron\\electron.exe Dashboard\\shell — no npm install.",
+  "main": "main.js",
+  "license": "UNLICENSED"
+}
