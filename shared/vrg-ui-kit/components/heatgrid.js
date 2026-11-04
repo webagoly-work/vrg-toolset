@@ -101,7 +101,15 @@
       });
       var start = S.active && S.cells[key(S.active)] ? S.active : bounds()[2];
       activate(start, false);
+      reveal(start);
       if (S.sel && S.cells[key(S.sel)]) S.cells[key(S.sel)].setAttribute('aria-selected', 'true');
+    }
+    // scroll every year's strip so the active day's week is in view (the same offset for every year)
+    function reveal(t) {
+      var c = S.cells[key(t)]; if (!c) return;
+      var sc = c.closest('.vk-heatgrid__scroll'); if (!sc || sc.scrollWidth <= sc.clientWidth) return;
+      var x = c.getBoundingClientRect().left - sc.getBoundingClientRect().left + sc.scrollLeft - sc.clientWidth * 0.75;
+      Array.prototype.forEach.call(stack.querySelectorAll('.vk-heatgrid__scroll'), function (s) { s.scrollLeft = Math.max(0, x); });
     }
     function bounds() {
       var ys = S.years.slice().sort(), a = Date.UTC(ys[0], 0, 1), b = Date.UTC(ys[ys.length - 1], 11, 31);

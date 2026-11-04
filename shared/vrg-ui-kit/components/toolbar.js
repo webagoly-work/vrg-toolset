@@ -155,7 +155,10 @@
         else if (n !== more) { prevSep = false; lastSep = null; }
       });
       if (lastSep) lastSep.hidden = true;
-      if (hadIn && had.hidden && !more.hidden) more.focus();
+      if (hadIn) {                                  // hiding a focused item must not drop focus to <body>
+        var tgt = had.hidden ? (more.hidden ? null : more) : had;
+        if (tgt && document.activeElement !== tgt) tgt.focus({ preventScroll: true });
+      }
       el.dataset.overflow = hiddenActs.length ? String(hiddenActs.length) : '';
       more.title = hiddenActs.length ? 'Továbbiak (' + hiddenActs.length + ')' : 'Továbbiak';
       rov.update();

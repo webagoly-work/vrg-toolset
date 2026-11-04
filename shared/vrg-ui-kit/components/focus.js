@@ -15,7 +15,9 @@
 
   function visible(n) { return !!(n.offsetWidth || n.offsetHeight || n.getClientRects().length) && getComputedStyle(n).visibility !== 'hidden'; }
   function all(scope) { return Array.prototype.filter.call((scope || document).querySelectorAll(FOCUSABLE), visible); }
-  function first(scope) { return all(scope)[0] || null; }
+  function first(scope) { return tabbable(scope)[0] || all(scope)[0] || null; }
+  /** focusables that are in the Tab order (roving items parked at tabindex=-1 are not) */
+  function tabbable(scope) { return all(scope).filter(function (n) { return n.tabIndex >= 0 && n.getAttribute('tabindex') !== '-1'; }); }
   function isEditable(n) {
     if (!n) return false;
     var t = n.tagName;
@@ -89,17 +91,17 @@
     function onKey(e) {
       if (e.key === 'Escape' && opts.onEscape) { e.preventDefault(); e.stopPropagation(); opts.onEscape(e); return; }
       if (e.key !== 'Tab') return;
-      var list = all(el); if (!list.length) { e.preventDefault(); return; }
+      var list = tabbable(el); if (!list.length) { e.preventDefault(); return; }
       var a = list[0], b = list[list.length - 1];
       if (e.shiftKey && (document.activeElement === a || !el.contains(document.activeElement))) { e.preventDefault(); b.focus(); }
       else if (!e.shiftKey && document.activeElement === b) { e.preventDefault(); a.focus(); }
     }
     el.addEventListener('keydown', onKey);
     var init = typeof opts.initial === 'string' ? el.querySelector(opts.initial) : opts.initial;
-    (init || first(el) || el).focus();
+    (init || first(el) || el).focus({ preventScroll: true });
     return function release() {
       el.removeEventListener('keydown', onKey);
-      if (opts.restore !== false && prev && prev.focus && document.contains(prev)) prev.focus();
+      if (opts.restore !== false && prev && prev.focus && document.contains(prev)) prev.focus({ preventScroll: true });
     };
   }
 
@@ -142,5 +144,5 @@
     });
   }
 
-  VK.focus = { FOCUSABLE: FOCUSABLE, all: all, first: first, isEditable: isEditable, roving: roving, trap: trap, enableHop: enableHop };
+  VK.focus = { FOCUSABLE: FOCUSABLE, all: all, tabbable: tabbable, first: first, isEditable: isEditable, roving: roving, trap: trap, enableHop: enableHop };
 })(typeof window !== 'undefined' ? window : globalThis);

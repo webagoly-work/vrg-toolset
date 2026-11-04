@@ -89,9 +89,9 @@
     var phLine = VK.el('span.vk-timeline__ph-line');
     var marks = VK.el('div.vk-timeline__marks', { 'aria-hidden': 'true' }, [todayLine, phLine]);
     var empty = VK.el('p.vk-timeline__empty', { text: o.emptyText || 'Nincs esemény ebben az időszakban.', hidden: true });
-    var canvas = VK.el('div.vk-timeline__canvas', null, [axis, grid, marks, empty]);
+    var canvas = VK.el('div.vk-timeline__canvas', null, [axis, grid, marks]);
     var view = VK.el('div.vk-timeline__view.vk-scroll', null, canvas);
-    el.append(bar, view);
+    el.append(bar, view, empty);
 
     function emit(type, data) { em.emit(type, data); VK.fire(el, 'timeline-' + type, data); }
     function listen(node, type, fn, opt) { node.addEventListener(type, fn, opt); offs.push(function () { node.removeEventListener(type, fn, opt); }); }
@@ -203,6 +203,7 @@
         var on = b.dataset.zoom === S.zoom; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1;
       });
       renderTicks(); placeMarks();
+      empty.style.top = (view.offsetTop + axis.offsetHeight + 12) + 'px';
       lastW = view.clientWidth;
     }
 

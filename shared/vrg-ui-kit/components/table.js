@@ -34,7 +34,7 @@
   function fmtNum(v, c) {
     if (v === null || v === undefined || v === '') return '';
     var n = toNum(v); if (n === null) return String(v);
-    return n.toLocaleString('hu-HU', { minimumFractionDigits: c.decimals || 0, maximumFractionDigits: c.decimals == null ? 2 : c.decimals });
+    return n.toLocaleString('hu-HU', { useGrouping: 'always', minimumFractionDigits: c.decimals || 0, maximumFractionDigits: c.decimals == null ? 2 : c.decimals });
   }
   /** number expression for quick filters: '>10', '<=5', '=3', '10-20', '10..20', '12' */
   function numTest(q) {

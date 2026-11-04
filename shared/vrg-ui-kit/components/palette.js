@@ -69,7 +69,7 @@
       Object.keys(providers).forEach(function (p) { foot.appendChild(footItem([p], providers[p].label.toLowerCase())); });
     }
 
-    var rows = [], active = -1, lastKey = null;
+    var rows = [], active = -1, lastKey = null, ids = {};
 
     function commandItems(q) {
       var res = VK.actions.search(q, surface, ctx).filter(function (r) { return typeof r.action.run === 'function'; });
@@ -131,7 +131,7 @@
         var hid = VK.uid('vk-pal-g');
         var grp = VK.el('div.vk-palette__group', { role: 'group', 'aria-labelledby': hid }, VK.el('div.vk-palette__gh', { id: hid, role: 'presentation' }, g));
         groups[g].forEach(function (it) {
-          var id = VK.uid('vk-pal-o'), el = optionEl(it, id);
+          var id = ids[it.key] || (ids[it.key] = VK.uid('vk-pal-o')), el = optionEl(it, id);   // stable across re-renders
           el.dataset.i = rows.length;
           rows.push({ it: it, el: el });
           grp.appendChild(el);

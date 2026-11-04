@@ -95,6 +95,8 @@
 .vk-mini:has(.vk-mini__val):hover > .vk-icon, .vk-mini:has(.vk-mini__val):focus-visible > .vk-icon { opacity: 1; }
 .vk-mini:has(.vk-mini__val):hover > .vk-mini__val, .vk-mini:has(.vk-mini__val):focus-visible > .vk-mini__val { opacity: 0; }
 
+/* captions can be hidden where a bar is too dense (the aria-label still names the feature) */
+.vk-mini[data-cap="hidden"] > .vk-mini__cap { display: none; }
 /* a row of minis with captions needs room underneath */
 .vk-mini-row { display: flex; flex-wrap: wrap; gap: var(--vk-space-4); align-items: flex-start; }
 .vk-mini-row:has(.vk-mini__cap) { padding-bottom: calc(var(--vk-fs-2xs) + 6px); column-gap: max(var(--vk-space-7), 40px); }

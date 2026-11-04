@@ -75,7 +75,7 @@
   font: var(--vk-fs-2xs)/1 var(--vk-font-mono); text-transform: uppercase; letter-spacing: var(--vk-tracking-label);
   color: var(--vk-text-muted); border: var(--vk-border-w) solid var(--vk-micro-c); white-space: nowrap; vertical-align: middle; }
 .vk-micro-chip > * { padding: 3px 6px; }
-.vk-micro-chip > :first-child:not(:only-child) { background: var(--vk-micro-c); color: var(--vk-bg); }
+.vk-micro-chip > :first-child:not(:only-child) { background: var(--vk-micro-c); }
 .vk-micro-chip[data-tone="activity"] { --vk-micro-c: var(--vk-activity); color: var(--vk-activity); }
 .vk-micro-chip[data-tone="accent"] { --vk-micro-c: var(--vk-accent); color: var(--vk-accent); }
 .vk-micro-chip > :first-child:not(:only-child) { color: var(--vk-text-on-solid); }
@@ -129,3 +129,6 @@
   .vk-micro-frame, .vk-micro-ruler, .vk-micro-cross, .vk-micro-dots { forced-color-adjust: none; }
   .vk-micro-callout { border-color: CanvasText; }
 }
+/* narrow rulers keep every other label */
+.vk-micro-ruler { container-type: inline-size; }
+@container (max-width: 380px) { .vk-micro-ruler__l:nth-child(even):not(:last-child) { visibility: hidden; } }

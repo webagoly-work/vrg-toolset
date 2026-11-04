@@ -74,6 +74,7 @@
       taskbar.hidden = own && wins.length === 0;
       wins.forEach(function (w) {
         var st = w.pstate || (w.min ? 'off' : 'idle');
+        w.task.dataset.label = w.title + (w.min ? ' (kis méretben)' : '');
         VK.mini.set(w.task, { pressed: w === activeW && !w.min, state: st, progress: w.pstate === 'running' ? w.progress : undefined });
       });
     }
@@ -249,7 +250,8 @@
       w.saved = { x: w.rect.x, y: w.rect.y, w: w.rect.w, h: w.rect.h };
       w.mode = kind; w.back = document.activeElement;
       w.el.dataset.mode = kind;
-      w.modeTag.textContent = (kind === 'move' ? 'MOZGATÁS' : 'MÉRET') + ' · ←↑→↓ · ENTER · ESC';
+      w.modeTag.textContent = (kind === 'move' ? 'MOZGATÁS' : 'MÉRET') + ' ←↑→↓';
+      w.modeTag.title = 'Nyilak, Ctrl + nyíl: nagy lépés · Enter: rögzít · Esc: mégse';
       raise(w);
       w.el.focus();
       say((kind === 'move' ? 'Mozgatás' : 'Átméretezés') + ': ' + w.title + '. Nyilak: 16 pont, Ctrl + nyíl: 64 pont, Enter: rögzít, Esc: mégse.');

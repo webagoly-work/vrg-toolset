@@ -27,6 +27,7 @@
 .vk-palette__box[data-mode="provider"] .vk-palette__mode { color: var(--vk-text); border-color: var(--vk-line-strong); background: var(--vk-hover-bg); }
 .vk-palette__input { flex: 1 1 auto; min-width: 0; min-height: max(calc(var(--vk-control-h) + 8px), var(--vk-target-min));
   border: 0; padding: 0; background: transparent; color: var(--vk-text); font: inherit; font-size: var(--vk-fs-lg); outline: none; }
+.vk-palette__input:focus-visible { outline: none; }   /* the head's inset ice line is the focus indicator */
 .vk-palette__input::placeholder { color: var(--vk-text-muted); }
 
 /* results */

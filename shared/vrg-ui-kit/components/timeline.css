@@ -5,7 +5,7 @@
    --vk-timeline-max-h (scroll height of the lanes).
    Depends on: tokens, base, button, mini. */
 .vk-timeline { --vk-timeline-head: clamp(92px, calc(var(--vk-fs-md) * 9.5), 34vw); --vk-timeline-max-h: none;
-  --_bar: calc(var(--vk-row-h) - 6px); --_gap: 3px; --_pad: 6px; --_pt: var(--vk-target-min); --_tw: 600px;
+  --_bar: max(var(--vk-target-min), calc(var(--vk-row-h) - 6px)); --_gap: 3px; --_pad: 6px; --_pt: var(--vk-target-min); --_tw: 600px;
   --_g1: 30px; --_g2: 210px; --_g2o: 0px; --_axis: calc(var(--vk-fs-2xs) * 2 + 24px);
   position: relative; display: flex; flex-direction: column; min-width: 0; color: var(--vk-text); font-size: var(--vk-fs-sm);
   background: var(--vk-surface-1); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-lg); overflow: hidden; }
@@ -108,7 +108,7 @@
 .vk-timeline__ph-line { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -.5px; background: var(--vk-accent); box-shadow: var(--vk-glow); }
 .vk-timeline__today[hidden], .vk-timeline__today-tag[hidden] { display: none; }
 
-.vk-timeline__empty { position: absolute; left: var(--vk-timeline-head); right: 0; top: calc(var(--_axis) + var(--vk-space-5)); z-index: 3; margin: 0;
+.vk-timeline__empty { position: absolute; left: var(--vk-timeline-head); right: 0; top: 0; z-index: 6; margin: 0; padding: 0 var(--vk-space-3);
   text-align: center; color: var(--vk-text-muted); font-size: var(--vk-fs-sm); pointer-events: none; }
 .vk-timeline__empty[hidden] { display: none; }
 

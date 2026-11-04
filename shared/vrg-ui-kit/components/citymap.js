@@ -467,8 +467,9 @@
         g.beginPath(); g.arc(h.x, h.y, k === 0 ? 17 : 13, 0, 6.2832); g.fillStyle = css(dark); g.fill();
         g.lineWidth = 3; g.strokeStyle = css(road); g.stroke();
         g.beginPath(); g.arc(h.x, h.y, k === 0 ? 7 : 5, 0, 6.2832); g.fillStyle = css(lite); g.fill();
-        g.fillStyle = css(p.light ? p.text : p.muted); g.textBaseline = 'middle';
-        g.fillText(String(h.name).toUpperCase().slice(0, 18), h.x + (k === 0 ? 24 : 20), h.y - (k === 0 ? 20 : 16));
+        var tx = String(h.name).toUpperCase().slice(0, 18), lx = h.x + (k === 0 ? 24 : 20), ly = h.y - (k === 0 ? 22 : 18);
+        g.textBaseline = 'middle'; g.lineJoin = 'round'; g.strokeStyle = css(ground); g.lineWidth = 4 / F.s; g.strokeText(tx, lx, ly);
+        g.fillStyle = css(p.light ? p.text : p.muted); g.fillText(tx, lx, ly);
       });
     }
 

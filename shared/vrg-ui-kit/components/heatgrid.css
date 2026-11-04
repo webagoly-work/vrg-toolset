@@ -1,8 +1,9 @@
 /* VRG UI Kit — components/heatgrid.css — contribution-style pixel grid (behaviour: heatgrid.js).
    Intensity through --vk-heat-0…4 (warm = the system working); selection is ice; today has an ink frame;
-   future days are hollow. Local knob: --vk-heatgrid-cell (cell size, follows --vk-target-min).
+   future days are hollow. Local knobs: --vk-heatgrid-cell (cell size, follows --vk-target-min), --vk-heatgrid-ground (backing of the
+   sticky day labels; set it to the panel the grid sits on).
    Depends on: tokens, base. */
-.vk-heatgrid { --vk-heatgrid-cell: max(10px, calc(var(--vk-target-min) * .55)); --_gap: 3px; --_step: calc(var(--vk-heatgrid-cell) + var(--_gap));
+.vk-heatgrid { --vk-heatgrid-ground: var(--vk-surface-1); --vk-heatgrid-cell: max(10px, calc(var(--vk-target-min) * .55)); --_gap: 3px; --_step: calc(var(--vk-heatgrid-cell) + var(--_gap));
   display: flex; flex-direction: column; gap: var(--vk-space-4); min-width: 0; color: var(--vk-text); font-size: var(--vk-fs-sm); }
 .vk-heatgrid__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--vk-space-3); }
 .vk-heatgrid__legend { display: inline-flex; align-items: center; gap: 3px; font-size: var(--vk-fs-xs); color: var(--vk-text-muted); }
@@ -18,7 +19,8 @@
 .vk-heatgrid__months { position: relative; height: calc(var(--vk-fs-2xs) + 6px); }
 .vk-heatgrid__mon { position: absolute; bottom: 4px; left: calc(var(--_c) * var(--_step)); white-space: nowrap;
   font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); }
-.vk-heatgrid__days { display: flex; flex-direction: column; gap: var(--_gap); }
+.vk-heatgrid__days { position: sticky; left: -5px; z-index: 3; display: flex; flex-direction: column; gap: var(--_gap);
+  margin-left: -5px; padding: 0 var(--vk-space-1) 0 5px; background: var(--vk-heatgrid-ground); }
 .vk-heatgrid__days > span { height: var(--vk-heatgrid-cell); line-height: var(--vk-heatgrid-cell); text-align: right;
   font: var(--vk-fs-2xs)/var(--vk-heatgrid-cell) var(--vk-font-mono); color: var(--vk-text-muted); }
 .vk-heatgrid__grid { display: flex; flex-direction: column; gap: var(--_gap); }

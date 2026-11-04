@@ -68,9 +68,9 @@
 .vk-drift__filters .vk-mini[aria-pressed="true"] .vk-mini__val { color: var(--_c); }
 .vk-drift__sum { font: var(--vk-fs-xs)/1.4 var(--vk-font-mono); color: var(--vk-text-muted); max-width: 46ch; }
 
-.vk-drift__row { --_c: var(--vk-text-muted); display: grid; grid-template-columns: 2ch minmax(0, 1fr) 9ch 2ch 9ch 6ch; align-items: center; gap: var(--vk-space-2);
+.vk-drift__row { --_c: var(--vk-text-muted); display: grid; grid-template-columns: 2ch minmax(0, 1fr) 11ch 2ch 12ch 6ch; align-items: center; gap: var(--vk-space-2);
   min-height: max(var(--vk-row-h), var(--vk-target-min)); padding: 0 var(--vk-space-3); border-bottom: var(--vk-border-w) solid var(--vk-line); cursor: default; }
-.vk-drift__cols { min-height: calc(var(--vk-row-h) * .8); font: var(--vk-fs-2xs)/1 var(--vk-font-mono); text-transform: uppercase; letter-spacing: var(--vk-tracking-label);
+.vk-drift__cols { min-height: calc(var(--vk-row-h) * .8); font: var(--vk-fs-2xs)/1.4 var(--vk-font-mono); text-transform: uppercase; letter-spacing: var(--vk-tracking-label);
   color: var(--vk-text-muted); border-bottom-color: var(--vk-line-strong); }
 .vk-drift__list { overflow: auto; max-height: var(--vk-drift-max-h); overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--vk-line-strong) transparent; }
 .vk-drift__row[data-kind="missing"] { --_c: var(--vk-crit); }
@@ -92,8 +92,9 @@
 .vk-drift__act { color: var(--_c); }
 .vk-drift__row[data-kind="match"] .vk-drift__act { color: inherit; }
 .vk-drift__d { color: var(--_c); font-weight: var(--vk-fw-strong); }
+.vk-drift__cols .vk-drift__n { overflow: visible; letter-spacing: .04em; }
 .vk-drift__empty { display: flex; align-items: center; gap: var(--vk-space-2); padding: var(--vk-space-4); color: var(--vk-text-muted); }
 
-@container (max-width: 420px) { .vk-drift__row { grid-template-columns: 2ch minmax(0, 1fr) 7ch 7ch; } .vk-drift__arr, .vk-drift__d { display: none; } }
+@container (max-width: 420px) { .vk-drift__row { grid-template-columns: 2ch minmax(0, 1fr) 9ch 10ch; } .vk-drift__arr, .vk-drift__d { display: none; } }
 .vk-drift { container-type: inline-size; }
 @media (forced-colors: active) { .vk-diff__ln, .vk-drift__row { forced-color-adjust: auto; } }

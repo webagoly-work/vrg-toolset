@@ -24,7 +24,7 @@
 .vk-wm__win[data-anim] { transition: left var(--vk-dur-3) var(--vk-ease), top var(--vk-dur-3) var(--vk-ease),
   width var(--vk-dur-3) var(--vk-ease), height var(--vk-dur-3) var(--vk-ease), border-color var(--vk-dur-2) var(--vk-ease); }
 
-.vk-wm__title { display: flex; align-items: center; gap: var(--vk-space-2); flex: none; min-width: 0;
+.vk-wm__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-2); flex: none; min-width: 0;
   min-height: calc(max(var(--vk-control-h), var(--vk-target-min)) + 4px); padding: 0 var(--vk-space-1) 0 var(--vk-space-3);
   border-bottom: var(--vk-border-w) solid var(--vk-line); cursor: grab; touch-action: none; user-select: none;
   container-type: inline-size; container-name: vk-wm-title; }
@@ -32,7 +32,7 @@
 .vk-wm__win[data-dragging] > .vk-wm__title { cursor: grabbing; }
 .vk-wm__title > .vk-icon { color: var(--vk-text-muted); }
 .vk-wm__win[data-active] > .vk-wm__title > .vk-icon { color: var(--vk-accent); }
-.vk-wm__name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.vk-wm__name { flex: 1 1 5em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-family: var(--vk-font-voice); font-weight: var(--vk-fw-strong); font-size: var(--vk-fs-md); text-transform: uppercase;
   letter-spacing: var(--vk-tracking-title); color: var(--vk-text-muted); }
 .vk-wm__win[data-active] .vk-wm__name { color: var(--vk-text); }
@@ -41,7 +41,7 @@
   font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-accent); white-space: nowrap; }
 .vk-wm__win[data-mode] .vk-wm__mode { display: inline-block; }
 .vk-wm__win[data-mode] { outline: var(--vk-focus-w) dashed var(--vk-accent); outline-offset: 2px; }
-.vk-wm__tools { display: flex; align-items: center; flex: none; }
+.vk-wm__tools { display: flex; align-items: center; flex: none; margin-left: auto; }
 .vk-wm__tools > .vk-mini { --_s: var(--vk-control-h); }
 
 .vk-wm__body { position: relative; flex: 1 1 auto; min-height: 0; overflow: auto; padding: var(--vk-pad-panel);

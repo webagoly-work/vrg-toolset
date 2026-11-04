@@ -14,7 +14,7 @@
   <article class="g-demo" id="f05-table-states" data-vk-hop>
     <h3 class="g-demo__title">Tömör, csíkozott tábla és állapotok <code>table · zebra · compact</code></h3>
     <p class="g-demo__note">Kijelölés nélküli, csíkozott változat <code>data-vk-density="compact"</code> tárolóban (a tokenek kaszkádolnak). Jobbra az állapotok: adat, betöltés, hiba, üres.</p>
-    <div class="g-grid">
+    <div style="display:grid;gap:var(--vk-space-4);grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));align-items:start">
       <div data-vk-density="compact"><div id="f05-tbl2"></div></div>
       <div>
         <div class="vk-btn-group" role="radiogroup" aria-label="Táblaállapot" id="f05-tstate">
@@ -60,7 +60,7 @@
   <article class="g-demo" id="f05-insp" data-vk-hop>
     <h3 class="g-demo__title">Tulajdonság-inspektor <code>inspector</code></h3>
     <p class="g-demo__note">Egy tabulátor-megálló: <kbd>↑</kbd>/<kbd>↓</kbd> sorok és csoportfejlécek · <kbd>→</kbd>/<kbd>←</kbd> csoport nyit/zár · <kbd>Enter</kbd> vagy <kbd>F2</kbd> szerkeszt, a mezőben <kbd>Enter</kbd> rögzít, <kbd>Esc</kbd> elvet · <kbd>C</kbd> másolja az értéket (a másolás-mini jelzi a sikert). Meleg pont = módosított érték, lakat = csak olvasható. A táblázatban <kbd>Enter</kbd> ide tölti a sort.</p>
-    <div class="g-grid">
+    <div style="display:grid;gap:var(--vk-space-4);grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));align-items:start">
       <div class="vk-surface" style="padding:var(--vk-space-2)"><p class="vk-label" id="f05-insp-t" style="margin:var(--vk-space-1) var(--vk-space-2) var(--vk-space-2)">ESZKÖZ // DB-1 / Q04 // VRG-2611-03</p><div id="f05-inspector"></div></div>
       <div><p class="g-cap">Módosítások</p><pre id="f05-insp-log" class="vk-sunken" style="margin:0;padding:var(--vk-space-3);font:var(--vk-fs-xs)/1.5 var(--vk-font-mono);min-height:120px;white-space:pre-wrap">—</pre></div>
     </div>
@@ -296,7 +296,7 @@
   cards.appendChild(VK.card.create({ title: 'Erősáramú doboz', id: 'SZINT 0 // 18 DB', status: 'active',
     minis: [VK.mini.create({ icon: 'sync', label: 'Szinkron a készlettel', size: 'sm', state: 'running', progress: null })],
     body: 'Készletadatok szinkronizálása folyamatban…', meta: [['Terv', '18'], ['Beépítve', '15']], footer: 'Betöltés…' }));
-  var focal = VK.card.create({ title: 'VRG-2611-03 // Összesítő', id: '[01] PROJEKT', meta: [['Tétel', '128'], ['Érték', ft(INV.reduce(function (a, r) { return a + r.qty * r.price; }, 0)) + ' Ft'], ['Eltérés', '9']],
+  var focal = VK.card.create({ title: 'VRG-2611-03 // Összesítő', id: '[01] PROJEKT', meta: [['Tétel', '128'], ['Érték', (INV.reduce(function (a, r) { return a + r.qty * r.price; }, 0) / 1e6).toLocaleString('hu-HU', { maximumFractionDigits: 1 }) + ' M Ft'], ['Eltérés', '9']],
     body: 'Fókuszpanel levágott sarkokkal (.vk-cut) — csak kiemelt, nem fókuszálható panelen.' });
   focal.classList.add('vk-cut'); cards.appendChild(focal);
 
@@ -309,7 +309,7 @@
     { id: 'archiv', icon: 'lock', title: 'Archív', sub: 'Lezárt tételek', value: '—', disabled: true }
   ];
   var tg = $('f05-tiles'); TL.forEach(function (t) { tg.appendChild(VK.card.tile(t)); });
-  var tiles1 = VK.card.tiles(tg, { onSelect: function (ids) { $('f05-tiles-out').textContent = 'Kategóriák: ' + (ids.join(', ') || '—'); } });
+  var tiles1 = VK.card.tiles(tg, { onSelect: function (ids) { $('f05-tiles-out').textContent = 'Kategóriák: ' + (ids.map(function (id) { return TL.find(function (t) { return t.id === id; }).title; }).join(', ') || '—'); } });
   tiles1.select(['kabel', 'kotoelem']);
   var tc = $('f05-tiles-c');
   [['K01', 'Világítás földszint', 'bulb', 'ok'], ['K02', 'Világítás emelet', 'bulb', 'ok'], ['K03', 'Dugaljak konyha', 'socket'], ['K04', 'Hűtő kör', 'sensor', 'active'], ['K05', 'Főzőlap', 'bolt', 'warn'], ['K06', 'Dugaljak nappali', 'socket'], ['K07', 'Erősáram műhely', 'plug', 'crit'], ['K08', 'Gyengeáram', 'wifi']]
@@ -386,17 +386,23 @@
     'Q09  B16  1P  Fürdő                    NYM-J 3×2,5',
     'Q10  B16  1P  Kert                     NYM-J 3×2,5',
     'Q11  B10  1P  Kültéri világítás        NYM-J 3×1,5',
+    'Q12  B16  1P  Mosókonyha               NYM-J 3×2,5',
+    'Q13  B16  1P  Mosogatógép              NYM-J 3×2,5',
+    'Q14  B10  1P  Lépcsőház világítás      NYM-J 3×1,5',
+    'Q15  C16  3P  Hőszivattyú              NYM-J 5×2,5',
+    'Q16  B16  1P  Dolgozószoba             NYM-J 3×2,5',
+    'Q17  B10  1P  Padlás                   NYM-J 3×1,5',
     'SPD  T2   4P  Túlfeszültség-levezető',
-    '# összesen: 11 kismegszakító, 1 FI-relé, 1 SPD'
+    '# összesen: 17 kismegszakító, 1 FI-relé, 1 SPD'
   ];
   var BUILT = PLAN.slice();
   BUILT[0] = '# VRG-2611-03 // DB-1 elosztó — kiosztás (kivitelezett)';
   BUILT[1] = 'F01  RCD  4P  63 A  30 mA   Főkör';
   BUILT[5] = 'Q04  C16  1P  Hűtő kör                 NYM-J 3×2,5';
   BUILT.splice(8, 1);
-  BUILT.splice(12, 0, 'Q12  B16  1P  Garázskapu motor         NYM-J 3×1,5');
-  BUILT.splice(13, 1);
-  BUILT[BUILT.length - 1] = '# összesen: 11 kismegszakító, 1 FI-relé, 0 SPD';
+  BUILT.splice(18, 0, 'Q18  B16  1P  Garázskapu motor         NYM-J 3×1,5');
+  BUILT.splice(19, 1);
+  BUILT[BUILT.length - 1] = '# összesen: 17 kismegszakító, 1 FI-relé, 0 SPD';
   VK.diff.mount($('f05-diff1'), { a: PLAN, b: BUILT, labels: ['terv', 'kivitelezett'], context: 2, title: 'DB-1 kiosztás: terv → kivitelezett' });
 
   VK.diff.drift($('f05-drift'), { label: 'VRG-2611-03 — terv kontra kivitelezett',

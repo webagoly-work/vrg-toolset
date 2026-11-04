@@ -43,6 +43,7 @@
 .vk-kbd-sheet__bar:focus-within { box-shadow: inset 0 -2px 0 var(--vk-focus); }
 .vk-kbd-sheet__search { flex: 1 1 auto; min-width: 0; min-height: max(var(--vk-control-h), var(--vk-target-min));
   border: 0; background: transparent; color: var(--vk-text); font: inherit; font-size: var(--vk-fs-md); outline: none; }
+.vk-kbd-sheet__search:focus-visible { outline: none; }   /* the bar's inset ice line is the focus indicator */
 .vk-kbd-sheet__search::placeholder { color: var(--vk-text-muted); }
 .vk-kbd-sheet__count { flex: none; }
 .vk-kbd-sheet__body { flex: 1 1 auto; min-height: 0; padding: var(--vk-space-4) var(--vk-space-5) var(--vk-space-5);

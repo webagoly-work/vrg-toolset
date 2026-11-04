@@ -250,7 +250,7 @@
       var c = counts(), keepId = document.activeElement && list.contains(document.activeElement) ? document.activeElement.dataset.id : null;
       ORDER.forEach(function (k) { VK.mini.set(minis[k], { value: String(c[k] || 0), pressed: show.has(k) }); });
       var dev = c.missing + c.extra + c.changed;
-      sum.textContent = items.length + ' tétel · ' + dev + ' eltérés' + (dev ? ' (' + ORDER.slice(0, 3).filter(function (k) { return c[k]; }).map(function (k) { return KINDS[k].mark + c[k] + ' ' + KINDS[k].label.toLowerCase(); }).join(', ') + ')' : '');
+      sum.textContent = items.length + ' tétel · ' + dev + ' eltérés' + (dev ? ' (' + ORDER.slice(0, 3).filter(function (k) { return c[k]; }).map(function (k) { return c[k] + ' ' + KINDS[k].label.toLowerCase(); }).join(', ') + ')' : '');
       list.textContent = '';
       var shown = items.filter(function (it) { return show.has(it.kind); });
       shown.forEach(function (it) {

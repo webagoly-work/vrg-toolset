@@ -37,10 +37,10 @@
 .vk-insp__row[data-readonly] .vk-insp__val { color: var(--vk-text-muted); }
 .vk-insp__row[data-invalid] { box-shadow: inset 2px 0 0 var(--vk-crit); }
 
-.vk-insp__acts { display: flex; align-items: center; gap: var(--vk-space-1); opacity: 0; }
-.vk-insp__row:hover .vk-insp__acts, .vk-insp__row:focus-within .vk-insp__acts, .vk-insp__acts:has([data-state]) { opacity: 1; }
-[data-vk-density="touch"] .vk-insp__acts { opacity: 1; }
-.vk-insp__row[data-readonly] .vk-insp__acts { opacity: 1; }
+.vk-insp__acts { display: flex; align-items: center; gap: var(--vk-space-1); }
+.vk-insp__acts > :not(.vk-insp__lock) { opacity: 0; }
+.vk-insp__row:hover .vk-insp__acts > *, .vk-insp__row:focus-within .vk-insp__acts > *, .vk-insp__acts > [data-state],
+[data-vk-density="touch"] .vk-insp__acts > * { opacity: 1; }
 .vk-insp__acts .vk-mini { --_s: calc(var(--vk-control-h) - 4px); }
 .vk-insp__edit { display: grid; place-items: center; width: max(calc(var(--vk-control-h) - 4px), var(--vk-target-min)); height: max(calc(var(--vk-control-h) - 4px), var(--vk-target-min));
   padding: 0; margin: 0; border: 0; border-radius: var(--vk-radius-sm); background: transparent; color: var(--vk-text-muted); cursor: pointer; }

@@ -28,7 +28,7 @@
 
 .vk-fm__cols, .vk-fm__row { display: grid; grid-template-columns: minmax(0, 1fr) 5ch 9ch 16ch; column-gap: var(--vk-space-3); align-items: center; padding: 0 var(--vk-space-3); }
 .vk-fm__cols { min-height: calc(var(--vk-row-h) * .8); border-bottom: var(--vk-border-w) solid var(--vk-line);
-  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); text-transform: uppercase; letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); }
+  font: var(--vk-fs-2xs)/1.4 var(--vk-font-mono); text-transform: uppercase; letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); }
 .vk-fm__list { height: var(--vk-fm-h); overflow: auto; overscroll-behavior: contain; position: relative; font-size: var(--vk-fs-sm);
   scrollbar-width: thin; scrollbar-color: var(--vk-line-strong) transparent; }
 .vk-fm__row { min-height: max(calc(var(--vk-row-h) - 4px), var(--vk-target-min)); border-left: 2px solid transparent; cursor: default; user-select: none; color: var(--vk-text); }

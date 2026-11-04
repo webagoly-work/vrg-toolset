@@ -56,7 +56,7 @@
 .vk-tile[aria-disabled="true"] :is(.vk-tile__sub, .vk-tile__cap, .vk-tile__icon) { color: var(--vk-text-faint); }
 
 /* compact tile: one line */
-.vk-tiles:has(> .vk-tile--compact) { --vk-tile-min: 132px; gap: var(--vk-space-1); }
+.vk-tiles:has(> .vk-tile--compact) { --vk-tile-min: 172px; gap: var(--vk-space-1); }
 .vk-tile--compact { grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; min-height: max(var(--vk-row-h), var(--vk-target-min)); padding: 0 var(--vk-space-2); box-shadow: inset 2px 0 0 var(--_edge); }
 .vk-tile--compact .vk-tile__icon { grid-row: auto; width: auto; height: auto; border: 0; }
 .vk-tile--compact .vk-tile__title { font-weight: var(--vk-fw-regular); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

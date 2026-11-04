@@ -7,7 +7,7 @@
    Row tint is one custom property (--_tint) painted as a background-image, so sticky cells stay opaque.
    Component-local: --vk-table-max-h (scroll height), --vk-table-stripe (zebra tint).
    Depends on: tokens, base, mini. */
-.vk-table { --vk-table-max-h: 420px; --vk-table-stripe: color-mix(in srgb, var(--vk-text) 3.5%, transparent);
+.vk-table { --vk-table-max-h: 420px; --vk-table-stripe: color-mix(in srgb, var(--vk-text) 4.5%, transparent);
   display: flex; flex-direction: column; min-width: 0; background: var(--vk-surface-1);
   border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-lg); overflow: hidden; }
 
@@ -24,6 +24,7 @@
 .vk-table__input:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: 0; border-color: var(--vk-accent); }
 .vk-table__tools { display: flex; align-items: center; gap: var(--vk-space-2); margin-left: auto; }
 .vk-table__tools .vk-mini { --_s: var(--vk-control-h); }
+.vk-table__tools .vk-mini__cap { display: none; }
 
 /* ---------- grid ---------- */
 .vk-table__scroll { position: relative; overflow: auto; max-height: var(--vk-table-max-h); overscroll-behavior: contain;

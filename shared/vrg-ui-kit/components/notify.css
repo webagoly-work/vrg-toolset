@@ -33,6 +33,8 @@
 .vk-notify__peak:hover .vk-notify__halo { stroke: var(--vk-line-strong); }
 .vk-notify__peak[aria-selected="true"] .vk-notify__halo { fill: var(--vk-accent-soft); stroke: var(--vk-accent); }
 .vk-notify__peak[aria-selected="true"] .vk-notify__foot { stroke: var(--vk-accent); stroke-width: 3; }
+/* the halo is the focus ring on the ring (an outline box would rotate with the peak) */
+.vk-notify__peak:focus-visible { outline: none; }
 .vk-notify__peak:focus-visible .vk-notify__halo { stroke: var(--vk-focus); stroke-width: 2.5; fill: var(--vk-accent-soft); }
 .vk-notify__peak[data-new] .vk-notify__cap { animation: vk-notify-new 1.4s var(--vk-ease) 1; transform-box: fill-box; transform-origin: center; }
 @keyframes vk-notify-new { 0%, 40% { transform: scale(2.2); } 100% { transform: scale(1); } }

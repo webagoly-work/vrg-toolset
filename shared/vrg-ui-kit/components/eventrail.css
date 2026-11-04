@@ -1,8 +1,8 @@
 /* VRG UI Kit — components/eventrail.css — film-HUD event rail (behaviour and drawing: eventrail.js).
    The SVG reads every colour from these classes (tokens), so themes switch without a redraw.
    Pips and label terminals are warm (activity); selection is ice; flagged ids carry a warning glyph.
-   Depends on: tokens, base. */
-.vk-eventrail { display: flex; flex-direction: column; gap: var(--vk-space-3); min-width: 0; color: var(--vk-text); font-size: var(--vk-fs-sm); }
+   Local knob: --vk-eventrail-ground (label backing; set it to the panel the rail sits on). Depends on: tokens, base. */
+.vk-eventrail { --vk-eventrail-ground: var(--vk-surface-1); display: flex; flex-direction: column; gap: var(--vk-space-3); min-width: 0; color: var(--vk-text); font-size: var(--vk-fs-sm); }
 .vk-eventrail__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--vk-space-3); }
 .vk-eventrail__title { color: var(--vk-text); }
 .vk-eventrail__scroll { overflow-x: auto; overflow-y: hidden; padding: 4px; margin: -4px; }
@@ -33,11 +33,11 @@
 /* labels (role=option) */
 .vk-eventrail__ev { position: absolute; display: flex; flex-direction: column; justify-content: center; gap: 3px;
   max-width: min(240px, 70vw); min-height: var(--vk-target-min); padding: 3px var(--vk-space-3);
-  background: var(--vk-bg); border-left: 2px solid var(--vk-activity); color: var(--vk-text);
+  background: var(--vk-eventrail-ground); border-left: 2px solid var(--vk-activity); color: var(--vk-text);
   white-space: nowrap; cursor: pointer; text-align: left; line-height: 1.2; }
 .vk-eventrail__ev[data-side="l"] { border-left: 0; border-right: 2px solid var(--vk-activity); align-items: flex-end; text-align: right; }
-.vk-eventrail__ev:hover { background: linear-gradient(var(--vk-hover-bg), var(--vk-hover-bg)), var(--vk-bg); }
-.vk-eventrail__ev[aria-selected="true"] { border-color: var(--vk-accent); background: linear-gradient(var(--vk-select-bg), var(--vk-select-bg)), var(--vk-bg); }
+.vk-eventrail__ev:hover { background: linear-gradient(var(--vk-hover-bg), var(--vk-hover-bg)), var(--vk-eventrail-ground); }
+.vk-eventrail__ev[aria-selected="true"] { border-color: var(--vk-accent); background: linear-gradient(var(--vk-select-bg), var(--vk-select-bg)), var(--vk-eventrail-ground); }
 .vk-eventrail__ev[aria-selected="true"] .vk-eventrail__meta { color: var(--vk-accent); }
 .vk-eventrail__ev:focus-visible { z-index: 2; outline-offset: 1px; }
 .vk-eventrail__meta { display: flex; align-items: center; gap: 5px; font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); color: var(--vk-text-muted); }

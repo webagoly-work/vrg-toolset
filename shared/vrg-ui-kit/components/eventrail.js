@@ -194,6 +194,7 @@
         e.ring = svg('circle', { class: 'vk-eventrail__ring', cx: xs, cy: railY + .5, r: 7.5 }, art);
         e.pip = svg('circle', { class: 'vk-eventrail__pip' + (e.flag ? ' vk-eventrail__pip--flag' : ''), cx: xs, cy: railY + .5, r: 4 }, art);
       });
+      if (!S.revealed && W > cw && S.now >= S.from && S.now <= S.to) { S.revealed = true; scroller.scrollLeft = Math.max(0, X(S.now) - cw * 0.6); }
       paint();
     }
 

@@ -11,17 +11,17 @@
    Depends on: tokens, base, mini. */
 .vk-panel { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0;
   background: var(--vk-surface-1); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-lg); overflow: hidden; }
-.vk-panel__head { display: flex; align-items: center; gap: var(--vk-space-2); flex: none; min-width: 0;
+.vk-panel__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-2); flex: none; min-width: 0;
   min-height: calc(max(var(--vk-control-h), var(--vk-target-min)) + 4px); padding: 0 var(--vk-space-1) 0 var(--vk-space-3);
   background: var(--vk-surface-2); border-bottom: var(--vk-border-w) solid var(--vk-line);
   container-type: inline-size; container-name: vk-panel-head; }
 .vk-panel__label { flex: none; font-family: var(--vk-font-mono); font-size: var(--vk-fs-2xs); text-transform: uppercase;
   letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); line-height: 1; }
 .vk-panel__label:empty { display: none; }
-.vk-panel__title { flex: 1 1 auto; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.vk-panel__title { flex: 1 1 4em; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-family: var(--vk-font-voice); font-weight: var(--vk-fw-strong); font-size: var(--vk-fs-md); text-transform: uppercase;
   letter-spacing: var(--vk-tracking-title); line-height: var(--vk-lh-tight); }
-.vk-panel__tools { display: flex; align-items: center; gap: 0; flex: none; }
+.vk-panel__tools { display: flex; align-items: center; gap: 0; flex: none; margin-left: auto; }
 .vk-panel__tools > .vk-mini { --_s: var(--vk-control-h); }
 .vk-panel__body { flex: 1 1 auto; min-height: 0; min-width: 0; overflow: auto; padding: var(--vk-pad-panel);
   overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--vk-line-strong) transparent; }
@@ -57,8 +57,11 @@
 .vk-panel__empty > .vk-icon { margin: 0 auto; width: calc(var(--vk-icon-size) * 1.75); height: calc(var(--vk-icon-size) * 1.75); color: var(--vk-text-faint); }
 
 /* narrow header: the micro label goes first, the title keeps the room */
-@container vk-panel-head (max-width: 240px) {
+@container vk-panel-head (max-width: 170px) {
   .vk-panel__label { display: none; }
+}
+@container vk-panel-head (max-width: 250px) {
+  [data-vk-density="touch"] .vk-panel__label { display: none; }
 }
 
 @media (forced-colors: active) {
