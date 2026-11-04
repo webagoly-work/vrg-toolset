@@ -53,9 +53,9 @@ const cssTags = tokens.concat(orderedCss).concat(['gallery/gallery.css']).filter
   .map(f => '<link rel="stylesheet" href="' + relFromOut(f) + '">').join('\n');
 const jsTags = ['icons/sprite.js'].concat(orderedJs).concat(['gallery/gallery.js']).filter(f => fs.existsSync(path.join(KIT, f)))
   .map(f => '<script src="' + relFromOut(f) + '"></script>').join('\n');
-html = html.replace('<!--@CSS@-->', cssTags).replace('<!--@JS@-->', jsTags)
-  .replace('<!--@TOC@-->', toc).replace('<!--@FOUNDATION@-->', foundation).replace('<!--@SECTIONS@-->', sections)
-  .replace('<!--@INIT@-->', inits);
+// function replacements: fragment code may contain $' / $& which a string replacement would expand
+const put = { '<!--@CSS@-->': cssTags, '<!--@JS@-->': jsTags, '<!--@TOC@-->': toc, '<!--@FOUNDATION@-->': foundation, '<!--@SECTIONS@-->': sections, '<!--@INIT@-->': inits };
+Object.keys(put).forEach(k => { html = html.replace(k, () => put[k]); });
 
 if (inline) {
   const tmp = outFile + '.tmp.html';

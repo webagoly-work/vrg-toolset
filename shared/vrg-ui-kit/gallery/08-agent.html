@@ -1,0 +1,337 @@
+<style>
+  /* fragment 08 layout only (g08-*); tokens only */
+  .g08-wrap { container-type: inline-size; }
+  .g08-ws { display: grid; gap: var(--vk-space-3); min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, .85fr);
+    grid-template-rows: 560px 260px; grid-template-areas: "chat trace side" "term term side"; }
+  .g08-chat { grid-area: chat; min-height: 0; }
+  .g08-trace { grid-area: trace; min-height: 0; }
+  .g08-side { grid-area: side; min-height: 0; display: flex; flex-direction: column; gap: var(--vk-space-3); overflow: auto; }
+  .g08-term { grid-area: term; min-height: 0; }
+  @container (max-width: 940px) {
+    .g08-ws { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 520px auto 280px;
+      grid-template-areas: "chat trace" "side side" "term term"; }
+  }
+  @container (max-width: 620px) {
+    .g08-ws { grid-template-columns: minmax(0, 1fr); grid-template-rows: 500px 500px auto 300px;
+      grid-template-areas: "chat" "trace" "side" "term"; }
+  }
+  .g08-nodes { margin: 0; padding: var(--vk-space-3); min-width: 0; background: var(--vk-surface-1);
+    border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-lg); }
+  .g08-nodes legend { padding: 0 var(--vk-space-2); }
+  .g08-nodes__bar { display: flex; gap: var(--vk-space-2); flex-wrap: wrap; margin-bottom: var(--vk-space-2); }
+  .g08-nodes__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--vk-space-1); }
+  .g08-node { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: var(--vk-space-3);
+    min-height: max(var(--vk-row-h), var(--vk-target-min)); padding: 0 var(--vk-space-3); cursor: pointer;
+    border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); font-size: var(--vk-fs-sm); }
+  .g08-node:hover { background: var(--vk-hover-bg); }
+  .g08-node:has(input:checked) { border-color: var(--vk-accent-line); background: var(--vk-select-bg); }
+  .g08-node:has(input:focus-visible) { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: calc(-1 * var(--vk-focus-w)); }
+  .g08-node input { margin: 0; accent-color: var(--vk-accent); width: calc(var(--vk-icon-size) - 2px); height: calc(var(--vk-icon-size) - 2px); }
+  .g08-node input:focus-visible { outline: none; }
+  .g08-node .vk-icon { color: var(--vk-text-muted); }
+  .g08-node .vk-num { font-size: var(--vk-fs-xs); color: var(--vk-text-muted); }
+  .g08-states { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); align-items: start; }
+  .g08-states > div { min-width: 0; }
+  .g08-h420 { height: 420px; }
+  .g08-h300 { height: 300px; }
+  .g08-h220 { height: 220px; }
+  .g08-cyd { width: 320px; max-width: 100%; height: 240px; }
+</style>
+
+<section class="g-sec" id="f08" data-vk-hop aria-labelledby="f08-h">
+  <header class="g-sec__head">
+    <span class="g-sec__num">08</span>
+    <h2 id="f08-h" class="vk-title">Ügynök és MI felületek</h2>
+    <p class="g-sec__lead">Csevegés, kontextuscsomag („Küldés Claude-nak”), élő nyomkövetés eszközhívásokkal és konzol — minden funkciónak saját minije: a küldés gomb maga a folyamatjelző, a lépések sínje maga az állapot.</p>
+  </header>
+
+  <article class="g-demo g08-wrap" id="f08-workspace">
+    <h3 class="g-demo__title">Ügynök-munkatér <code>chat · trace · context-tray · terminal</code></h3>
+    <p class="g-demo__note">Szimulált futás, hálózat nélkül. Jelölj ki csomópontokat a listában → a tálca kontextuscsomagot épít (<kbd>vk:selection</kbd>); a tálca küldés-minije átadja a csevegésnek, és indul a ~8 lépéses futás (egy hibával és újrapróbálással). Csevegés: <kbd>Enter</kbd> / <kbd>Ctrl+Enter</kbd> küld, <kbd>Shift+Enter</kbd> új sor, <kbd>Esc</kbd> leállít. Nyomkövetés: <kbd>↑</kbd><kbd>↓</kbd> lépések, <kbd>→</kbd><kbd>←</kbd> kinyit/becsuk, <kbd>Enter</kbd> részletek, <kbd>R</kbd> újrapróbálás. Tálca: <kbd>Alt+↑↓</kbd> sorrend, <kbd>Delete</kbd> eltávolítás. Konzol: <kbd>help</kbd>, <kbd>↑↓</kbd> előzmények, <kbd>Tab</kbd> kiegészítés, <kbd>Ctrl+L</kbd> törlés, <kbd>Ctrl+C</kbd> megszakítás. <kbd>Shift+nyilak</kbd>: ugrás a panelek között.</p>
+    <div class="g08-ws">
+      <div class="g08-chat" id="g08-chat"></div>
+      <div class="g08-trace" id="g08-trace"></div>
+      <div class="g08-side">
+        <fieldset class="g08-nodes" data-vk-hop>
+          <legend class="vk-label">Csomópontok // VRG-2611-03</legend>
+          <div class="g08-nodes__bar">
+            <button class="vk-btn vk-btn--sm" type="button" id="g08-all">Mind</button>
+            <button class="vk-btn vk-btn--sm" type="button" id="g08-none">Semmi</button>
+          </div>
+          <ul class="g08-nodes__list" id="g08-nodes"></ul>
+        </fieldset>
+        <div id="g08-tray"></div>
+      </div>
+      <div class="g08-term" id="g08-term"></div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f08-states">
+    <h3 class="g-demo__title">Állapotok <code>üres · összecsukott · fut · hiba · 320×240</code></h3>
+    <p class="g-demo__note">Üres csevegés javasolt kérdésekkel; nyomkövetés minden lépésállapottal (tervezett, fut 40%, kész, hiba); tálca összecsukva (vékony sáv a darabszámmal), üresen és JSON-előnézettel; konzol futó paranccsal egy 320×240-es CYD-dobozban.</p>
+    <div class="g08-states">
+      <div class="g08-h420" id="g08-chat-empty"></div>
+      <div class="g08-h420" id="g08-trace-states"></div>
+      <div class="vk-stack">
+        <div id="g08-tray-collapsed"></div>
+        <div id="g08-tray-empty"></div>
+        <div id="g08-tray-json"></div>
+      </div>
+      <div class="g08-cyd" id="g08-term-cyd"></div>
+    </div>
+  </article>
+</section>
+
+<script data-g-init>
+  var T0 = new Date(2026, 10, 4, 5, 12, 0).getTime();
+  function at(s) { return new Date(T0 + s * 1000); }
+
+  // ---------- sample graph nodes (job code only, never client names) ----------
+  var NODES = [
+    { id: 'N-0142', kind: 'node', label: 'Elosztó E1 — főelosztó', text: 'Típus: elosztó · 3×63 A · 14 leágazás\nHely: földszint, gépészet' },
+    { id: 'J-0157', kind: 'junction', label: 'Hűtőkör leágazás', text: 'Leágazás E1/3 felől · 2 fogyasztó (hűtő, keringető)' },
+    { id: 'K-012', kind: 'cable', label: 'Erősáramú kábel NYY-J 5×6', text: 'Hossz: 38 m · fektetés: tálcán · feszültségesés becslés: 2,9%' },
+    { id: 'S-003', kind: 'sensor', label: 'Hőérzékelő — szerverterem', text: 'Utolsó érték: 41 °C · riasztási küszöb: 45 °C' },
+    { id: 'T-007', kind: 'terminal', label: 'Kötőelem sorkapocs X2', text: 'X2:1…X2:12 · 6 mm² · 2 szabad kapocs' },
+    { id: 'D-021', kind: 'device', label: 'CYD-01 kijelző', text: 'ESP32 · 320×240 · állapot: online' },
+    { id: 'F-0311', kind: 'file', label: 'kiosztás-VRG-2611-03.md', text: '# Kiosztás\nE1/1 Világítás · E1/2 Dugaljak · E1/3 Hűtőkör · E1/4 Tartalék' }
+  ];
+  var BYID = {}; NODES.forEach(function (n) { BYID[n.id] = n; });
+
+  var nodeList = document.getElementById('g08-nodes');
+  NODES.forEach(function (n, i) {
+    var cb = VK.el('input', { type: 'checkbox', value: n.id, 'aria-describedby': 'g08-nid-' + i });
+    if (i < 4) cb.checked = true;
+    nodeList.appendChild(VK.el('li', null, VK.el('label.g08-node', null, [cb, VK.icon(VK.contextTray.KIND_ICON[n.kind] || 'dot'), VK.el('span.vk-ellipsis', { text: n.label }), VK.el('span.vk-num', { id: 'g08-nid-' + i, text: n.id })])));
+  });
+  function fireSelection() {
+    var ids = Array.prototype.map.call(nodeList.querySelectorAll('input:checked'), function (c) { return c.value; });
+    document.dispatchEvent(new CustomEvent('vk:selection', { detail: { ids: ids, source: 'g08' } }));
+  }
+  nodeList.addEventListener('change', fireSelection);
+  document.getElementById('g08-all').addEventListener('click', function () { nodeList.querySelectorAll('input').forEach(function (c) { c.checked = true; }); fireSelection(); });
+  document.getElementById('g08-none').addEventListener('click', function () { nodeList.querySelectorAll('input').forEach(function (c) { c.checked = false; }); fireSelection(); });
+
+  // ---------- simulated agent run (timers only, no network) ----------
+  var run = null;
+  function schedule(r, ms, fn) { var t = setTimeout(function () { r.timers.splice(r.timers.indexOf(t), 1); if (!r.cancelled) fn(); }, ms); r.timers.push(t); }
+  function cancelRun(reason) {
+    if (!run) return; var r = run; run = null; r.cancelled = true; r.timers.forEach(clearTimeout);
+    if (r.stepId) trace.update(r.stepId, { state: 'error', detail: reason || 'Leállítva a felhasználó kérésére.', progress: 1 });
+    r.planned.forEach(function (id) { if (trace.steps().some(function (s) { return s.id === id && s.state === 'planned'; })) trace.update(id, { state: 'error', detail: 'Kihagyva — a futás leállt.' }); });
+    term.print('[ügynök] futás leállítva', 'warn');
+    chat.setBusy(false);
+  }
+
+  var ANSWER = 'A **VRG-2611-03** hűtőköri leágazását átnéztem.\n\n' +
+    '- E1/3 terhelése: 12,4 A (77%) — rendben\n- K-012 feszültségesése 2,9% — közel a 3%-os határhoz\n- S-003 hőérzékelő: 41 °C, a küszöb alatt\n\n' +
+    'Javasolt módosítás a `K-012` kábelre:\n\n```json\n{\n  "circuit": "E1/3",\n  "cable": "NYY-J 5×10",\n  "breaker": "C20",\n  "drop_pct": 1.8\n}\n```\n\nBeírjam a tervbe új változatként?';
+
+  function startRun(prompt) {
+    if (run) cancelRun('Új futás indult.');
+    var r = run = { timers: [], cancelled: false, planned: [], stepId: null };
+    var now = Date.now(), sec = 0;
+    trace.clear(); trace.setRun('FUTÁS ' + (now % 4096).toString(16).toUpperCase().padStart(3, '0') + ' // OPUS');
+    chat.setBusy(true, null);
+    term.print('[ügynök] futás indul: „' + prompt.slice(0, 48) + (prompt.length > 48 ? '…' : '') + '”', 'accent');
+    var pack = tray.items();
+    var plan = [
+      { title: 'Feladat értelmezése', kind: 'think', ms: 700, detail: 'A kérés: hűtőkör-leágazás ellenőrzése, terhelés és kábel.' },
+      { title: 'Kontextuscsomag betöltése', kind: 'read', ms: 900, tool: { name: 'context.read_pack', args: { items: pack.length, format: 'md' }, result: pack.length + ' elem, ' + VK.contextTray.estimate(tray.tokens()), ms: 140 } },
+      { title: 'Gráf lekérdezése', kind: 'graph', ms: 1100, tool: { name: 'graph.query', args: { node: 'N-0142', depth: 2 }, result: '14 csomópont, 17 él; E1/3 → J-0157 → K-012', ms: 412 },
+        nodes: [{ id: 'N-0142', label: 'Elosztó E1', state: 'ok' }, { id: 'J-0157', label: 'Hűtőkör', state: 'active' }] },
+      { title: 'Terhelés számítása', kind: 'tool', ms: 1000, tool: { name: 'calc.load', args: { circuit: 'E1/3', cos_phi: 0.92, kW: 2.6 }, result: 'I = 12,4 A (77%)', ms: 233 } },
+      { title: 'Kábelellenőrzés', kind: 'check', ms: 1300, fail: true, tool: { name: 'cable.check', args: { id: 'K-012', length_m: 38 }, result: 'időtúllépés: a méréstár nem válaszolt (5000 ms)', ms: 5000 } },
+      { title: 'Jelentés írása', kind: 'write', ms: 1400, stream: true },
+      { title: 'Javaslat rögzítése', kind: 'net', ms: 700, tool: { name: 'plan.propose', args: { job: 'VRG-2611-03', change: 'K-012 → NYY-J 5×10' }, result: 'vázlat: V3 (nem véglegesítve)', ms: 188 } }
+    ];
+    var ids = plan.map(function (p) { var id = trace.add({ title: p.title, kind: p.kind, state: 'planned', time: new Date(now) }); return id; });
+    r.planned = ids.slice();
+
+    function doStep(i) {
+      if (i >= plan.length) return finish();
+      var p = plan[i], id = ids[i];
+      r.stepId = id; r.planned = r.planned.filter(function (x) { return x !== id; });
+      trace.update(id, { state: 'running', progress: 0, time: new Date(), detail: p.detail });
+      if (i === 1) chat.setBusy(true, .15);
+      var steps = 6, k = 0, toolId = null;
+      if (p.tool) schedule(r, 150, function () {
+        toolId = trace.addTool(id, { name: p.tool.name, args: p.tool.args, state: 'running' });
+        term.print('[ügynök] eszközhívás ' + p.tool.name + ' ' + JSON.stringify(p.tool.args), 'muted');
+      });
+      if (p.stream) {
+        var msgId = 'g08-ans-' + now, pos = 0;
+        (function chunk() {
+          if (pos >= ANSWER.length) { chat.end(msgId); return; }
+          var n = 4 + Math.floor(Math.random() * 6); chat.stream(msgId, ANSWER.slice(pos, pos + n)); pos += n;
+          trace.update(id, { progress: Math.min(.95, pos / ANSWER.length) });
+          chat.setBusy(true, .5 + .4 * pos / ANSWER.length);
+          schedule(r, 28, chunk);
+        })();
+      }
+      (function tick() {
+        k++;
+        if (!p.stream) trace.update(id, { progress: k / steps });
+        if (k < steps) return schedule(r, p.ms / steps, tick);
+        if (p.stream) { if (chat.messages().some(function (m) { return m.streaming; })) return schedule(r, 200, tick); }
+        if (p.fail) {
+          if (toolId) trace.updateTool(id, toolId, { state: 'error', result: p.tool.result, ms: p.tool.ms });
+          trace.update(id, { state: 'error', ms: p.ms + 4000, detail: 'A méréstár nem válaszolt. Automatikus újrapróbálás 1 s múlva — vagy R.',
+            nodes: [{ id: 'K-012', label: 'Kábel K-012', state: 'crit' }] });
+          term.print('[ügynök] HIBA cable.check: időtúllépés (5000 ms)', 'crit');
+          schedule(r, 1000, function () { retry(i); });
+          return;
+        }
+        if (toolId) trace.updateTool(id, toolId, { state: 'done', result: p.tool.result, ms: p.tool.ms });
+        trace.update(id, { state: 'done', ms: p.ms, progress: 1, nodes: p.nodes || [] });
+        if (p.nodes) p.nodes.forEach(function (n) { term.print('  ' + n.id + '  ' + n.label + '  [' + n.state + ']', n.state === 'ok' ? 'ok' : 'info'); });
+        chat.setBusy(true, .15 + .35 * (i + 1) / plan.length);
+        schedule(r, 120, function () { doStep(i + 1); });
+      })();
+    }
+    function retry(i) {
+      if (r.cancelled) return;
+      var p = plan[i];
+      var rid = trace.add({ title: 'Újrapróbálás: ' + p.title.toLowerCase(), kind: 'retry', state: 'running', retryOf: ids[i], time: new Date() });
+      r.stepId = rid;
+      var tid = trace.addTool(rid, { name: p.tool.name, args: Object.assign({ retry: 1 }, p.tool.args), state: 'running' });
+      term.print('[ügynök] újrapróbálás: ' + p.tool.name, 'warn');
+      schedule(r, 900, function () {
+        trace.updateTool(rid, tid, { state: 'done', result: 'ΔU = 2,9% (határ: 3%) — figyelmeztetés', ms: 690 });
+        trace.update(rid, { state: 'done', ms: 900, nodes: [{ id: 'K-012', label: 'Kábel K-012', state: 'warn' }, { id: 'T-007', label: 'Sorkapocs X2', state: 'ok' }] });
+        // the retry sits right after the failed step: move the remaining planned steps after it
+        schedule(r, 120, function () { doStep(i + 1); });
+      });
+    }
+    function finish() {
+      run = null; chat.setBusy(false);
+      term.print('[ügynök] kész — 8 lépés, 1 hiba, 1 újrapróbálás', 'ok');
+    }
+    schedule(r, 250, function () { doStep(0); });
+  }
+
+  // ---------- chat ----------
+  var chat = VK.chat.mount(document.getElementById('g08-chat'), {
+    agent: 'Claude', model: 'OPUS 5.5', status: 'Kész',
+    suggestions: ['Ellenőrizd a hűtőkör terhelését', 'Mi változott a VRG-2611-03 kiosztásában?', 'Keress hiányzó védőföld-bekötést'],
+    onSend: function (text) { startRun(text); },
+    onStop: function () { cancelRun(); },
+    onAttach: function (c) { c.addChip({ label: 'kiosztás-VRG-2611-03.pdf', icon: 'file', meta: '84 kB' }); c.focus(); },
+    messages: [
+      { role: 'user', time: at(0), text: 'Nézd át a hűtőkör leágazását, és mondd meg, elég-e a kábel.', chips: [{ label: 'Kontextuscsomag', icon: 'pack', meta: '4 elem' }] },
+      { role: 'tool', time: at(4), tool: { name: 'graph.query', state: 'done', ms: 412, args: { node: 'N-0142', depth: 2 }, result: '14 csomópont, 17 él; E1/3 → J-0157 → K-012' } },
+      { role: 'tool', time: at(9), tool: { name: 'cable.check', state: 'error', ms: 5000, args: { id: 'K-012' }, result: 'időtúllépés: a méréstár nem válaszolt' } },
+      { role: 'assistant', time: at(14), text: 'A kábel **megfelel**, de a feszültségesés (2,9%) közel van a határhoz. A számítás:\n\n```txt\nΔU% = 2·L·I·cosφ / (κ·A·U) · 100\n    = 2·38·12,4·0,92 / (56·6·230) · 100 ≈ 2,9\n```\n\nJavaslom az 5×10-es keresztmetszetet — írjam be a tervbe?' }
+    ]
+  });
+  chat.registerActions('agent.chat');
+
+  // ---------- trace (a finished earlier run, so the static page shows every glyph) ----------
+  var trace = VK.trace.mount(document.getElementById('g08-trace'), {
+    title: 'Nyomkövetés', run: 'FUTÁS 3F1 // OPUS',
+    onRun: function () { startRun('Hűtőkör ellenőrzése (újrafuttatás)'); },
+    onRetry: function (s) { term.print('[ügynök] kézi újrapróbálás: ' + s.title, 'warn'); }
+  });
+  trace.registerActions('agent.trace');
+  [
+    { title: 'Feladat értelmezése', kind: 'think', state: 'done', time: at(1), ms: 640, detail: 'Hűtőkör-leágazás: terhelés + kábel.' },
+    { title: 'Kontextuscsomag betöltése', kind: 'read', state: 'done', time: at(2), ms: 820, tools: [{ name: 'context.read_pack', state: 'done', ms: 140, args: { items: 4 }, result: '4 elem, ~310 token' }] },
+    { title: 'Gráf lekérdezése', kind: 'graph', state: 'done', time: at(3), ms: 1100, tools: [{ name: 'graph.query', state: 'done', ms: 412, args: { node: 'N-0142', depth: 2 }, result: '14 csomópont, 17 él' }],
+      nodes: [{ id: 'N-0142', label: 'Elosztó E1', state: 'ok' }, { id: 'J-0157', label: 'Hűtőkör', state: 'active' }] },
+    { title: 'Terhelés számítása', kind: 'tool', state: 'done', time: at(5), ms: 980, tools: [{ name: 'calc.load', state: 'done', ms: 233, args: { circuit: 'E1/3', cos_phi: 0.92 }, result: 'I = 12,4 A (77%)' }] },
+    { id: 'g08-s5', title: 'Kábelellenőrzés', kind: 'check', state: 'error', time: at(6), ms: 5300, detail: 'A méréstár nem válaszolt.',
+      tools: [{ name: 'cable.check', state: 'error', ms: 5000, args: { id: 'K-012' }, result: 'időtúllépés (5000 ms)' }], nodes: [{ id: 'K-012', label: 'Kábel K-012', state: 'crit' }] },
+    { title: 'Újrapróbálás: kábelellenőrzés', kind: 'retry', state: 'done', retryOf: 'g08-s5', time: at(12), ms: 900,
+      tools: [{ name: 'cable.check', state: 'done', ms: 690, args: { id: 'K-012', retry: 1 }, result: 'ΔU = 2,9% — figyelmeztetés' }], nodes: [{ id: 'K-012', label: 'Kábel K-012', state: 'warn' }] },
+    { title: 'Jelentés írása', kind: 'write', state: 'done', time: at(13), ms: 1400 },
+    { title: 'Javaslat rögzítése', kind: 'net', state: 'done', time: at(14), ms: 700, tools: [{ name: 'plan.propose', state: 'done', ms: 188, args: { job: 'VRG-2611-03' }, result: 'vázlat: V3' }] }
+  ].forEach(function (s) { trace.add(s); });
+
+  // ---------- context tray ----------
+  var tray = VK.contextTray.mount(document.getElementById('g08-tray'), {
+    onSend: function (pk, t) {
+      var p = 0;
+      (function step() {
+        p += .2; t.setSending(Math.min(p, 1));
+        if (p < 1) return setTimeout(step, 140);
+        t.setSending('done');
+        chat.addChip({ id: 'pack', label: 'Kontextuscsomag', icon: 'pack', meta: pk.items.length + ' elem · ' + VK.contextTray.estimate(pk.tokens).replace('~', '') });
+        chat.input.value = 'Elemezd a csomagot: elég-e a hűtőkör kábele?';
+        chat.send();
+      })();
+    }
+  });
+  tray.registerActions('agent.tray');
+  VK.contextTray.bindSelection(tray, function (id) { return BYID[id] || null; }, { accept: function (d) { return d.source === 'g08'; } });
+  fireSelection();
+
+  // ---------- terminal: its commands are registry actions on the 'terminal' surface ----------
+  var term = VK.terminal.mount(document.getElementById('g08-term'), {
+    title: 'Konzol', tag: 'TTY 01 // VRG', prompt: 'vrg@planner:~\u0024', surface: 'terminal',
+    greeting: ['VRG konzol — írd be: help', 'Tipp: ↑ előzmények · Tab kiegészítés · Ctrl+L törlés · Ctrl+C megszakítás'],
+    history: ['git status'],
+    onInterrupt: function () { if (job) { job.forEach(clearTimeout); job = null; } }
+  });
+  term.registerActions('agent.term');
+  var job = null;
+  function seq(t, items, done) {
+    job = []; var acc = 0;
+    items.forEach(function (it) { acc += it[0]; job.push(setTimeout(it[1], acc)); });
+    job.push(setTimeout(function () { job = null; if (done) done(); }, acc + 10));
+  }
+  VK.actions.registerAll([
+    { id: 'term.build', command: 'build planner', label: 'Planner építése', hint: 'a Planner egyfájlos buildje (szimulált)', icon: 'cpu', at: ['terminal'],
+      run: function (c) {
+        var t = c.term; t.setBusy('build planner', 0);
+        var mods = ['00-core', '05c-actions', '07-canvas', '12-wiring', '18-export', '21-ui-kit'], bar = null;
+        var items = [[100, function () { t.print('› Planner build — 6 modul', 'strong'); bar = t.progress(0, 'modulok'); }]];
+        mods.forEach(function (m, i) { items.push([380, function () { t.print('  ✓ ' + m + '.js', 'ok'); bar.set((i + 1) / mods.length, m); }]); });
+        items.push([200, function () { bar.end('ok'); t.print('  ! 1 figyelmeztetés: 21-ui-kit — ismeretlen token --vk-legacy', 'warn'); }]);
+        items.push([150, function () { t.print('kész → Planner/dist/planner.html (412 kB) 2,6 s', 'ok'); }]);
+        seq(t, items, function () { t.finish('done'); });
+      } },
+    { id: 'term.git', command: 'git status', label: 'Git állapot', hint: 'munkakönyvtár állapota', icon: 'git', at: ['terminal'],
+      run: function (c) {
+        var t = c.term;
+        t.print('Ágon: main — 2 véglegesítéssel előrébb, mint az origin/main', 'info');
+        t.print('Módosított fájlok:');
+        t.print('\x1b[33m  M shared/vrg-ui-kit/components/trace.js\x1b[0m');
+        t.print('\x1b[33m  M shared/vrg-ui-kit/gallery/08-agent.html\x1b[0m');
+        t.print('\x1b[32m  A shared/vrg-ui-kit/components/context-tray.js\x1b[0m');
+        t.print('\x1b[31m  D Planner/legacy/hűtő-régi.css\x1b[0m');
+      } },
+    { id: 'term.ping', command: 'ping cyd-01', label: 'CYD-01 pingelése', hint: 'a kijelzőpanel elérhetősége', icon: 'wifi', at: ['terminal'],
+      run: function (c) {
+        var t = c.term, n = 4, rtt = [12, 9, 31, 11]; t.setBusy('ping cyd-01', 0);
+        var items = [[80, function () { t.print('PING cyd-01.local (192.168.4.21): 56 bájt', 'muted'); }]];
+        rtt.forEach(function (ms, i) { items.push([520, function () { t.print('64 bájt cyd-01: seq=' + i + ' idő=' + ms + ' ms', ms > 25 ? 'warn' : 'ok'); t.setBusy('ping cyd-01', (i + 1) / n); }]); });
+        items.push([200, function () { t.print('--- ' + n + ' elküldve, ' + n + ' fogadva, 0% veszteség · átlag 15,8 ms', 'info'); }]);
+        seq(t, items, function () { t.finish('done'); });
+      } },
+    { id: 'term.agent', command: 'agent run', label: 'Ügynökfutás indítása', hint: 'a nyomkövetés szimulált futása', icon: 'agent', at: ['terminal'],
+      run: function (c) { c.term.print('futás indítása a nyomkövetésben…', 'accent'); startRun(c.args.join(' ') || 'Konzolból indított ellenőrzés'); } }
+  ]);
+
+  // ---------- states ----------
+  VK.chat.mount(document.getElementById('g08-chat-empty'), { agent: 'Claude', model: 'OPUS 5.5', status: 'Kész',
+    suggestions: ['Összegezd a VRG-2611-03 kiosztását', 'Mely kötőelemek szabadok az X2-n?', 'Írj ellenőrzőlistát az átadáshoz'],
+    chips: [{ label: 'Elosztó E1', icon: 'node', meta: 'N-0142' }],
+    onSend: function (text, info) { info.instance.add({ role: 'assistant', text: 'Ez egy állapotminta — a fenti munkatérben fut a szimuláció.' }); } });
+
+  var ts = VK.trace.mount(document.getElementById('g08-trace-states'), { title: 'Lépésállapotok', run: 'MINTA', follow: false, onRetry: function () {} });
+  ts.add({ title: 'Tervezett lépés', kind: 'plan', state: 'planned', time: at(0) });
+  ts.add({ title: 'Futó lépés eszközhívással', kind: 'tool', state: 'running', progress: .4, time: at(2), detail: 'Számítás folyamatban — 40%.',
+    tools: [{ name: 'calc.load', state: 'running', args: { circuit: 'E1/2' } }], nodes: [{ id: 'N-0142', label: 'Elosztó E1', state: 'active' }] });
+  ts.add({ title: 'Kész lépés', kind: 'check', state: 'done', time: at(4), ms: 1240, tools: [{ name: 'graph.query', state: 'done', ms: 412, args: { node: 'J-0157' }, result: 'rendben' }] });
+  ts.add({ title: 'Hibás lépés', kind: 'net', state: 'error', time: at(7), ms: 5000, detail: 'Időtúllépés.', tools: [{ name: 'cable.check', state: 'error', ms: 5000, args: { id: 'K-012' }, result: 'időtúllépés' }] });
+
+  var tc = VK.contextTray.mount(document.getElementById('g08-tray-collapsed'), { collapsed: true, items: NODES.slice(0, 3) });
+  VK.contextTray.mount(document.getElementById('g08-tray-empty'), { title: 'Üres tálca' });
+  var tj = VK.contextTray.mount(document.getElementById('g08-tray-json'), { title: 'Előnézet', format: 'json', items: [NODES[4], NODES[5]] });
+  tj.setPreview(true);
+
+  var cyd = VK.terminal.mount(document.getElementById('g08-term-cyd'), { title: 'CYD', prompt: '\u0024', greeting: ['CYD-01 // 320×240'] });
+  cyd.print('flash firmware v2.4', 'accent'); cyd.setBusy('flash', .62);
+  cyd.progress(.62, 'írás 0x1A000'); cyd.print('Hűtő érzékelő: 41 °C', 'ok'); cyd.print('Figyelem: ΔU 2,9%', 'warn'); cyd.print('Hiba: méréstár', 'crit');
+</script>

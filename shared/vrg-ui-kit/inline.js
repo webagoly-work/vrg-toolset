@@ -200,7 +200,7 @@ function main() {
     const src = fs.readFileSync(o.insert, 'utf8');
     const re = /(<!--\s*vk:begin\s*-->)[\s\S]*?(<!--\s*vk:end\s*-->)/;
     if (!re.test(src)) { console.error('no <!-- vk:begin --> … <!-- vk:end --> markers in ' + o.insert); process.exit(1); }
-    fs.writeFileSync(o.insert, src.replace(re, (m, a, z) => a + '\n' + b.html + z));
+    fs.writeFileSync(o.insert, src.replace(re, (m, a, z) => a + '\n' + b.html + z)); // function form: no $-pattern expansion
     console.error('inserted ' + b.comps.length + ' components into ' + o.insert);
     return;
   }
