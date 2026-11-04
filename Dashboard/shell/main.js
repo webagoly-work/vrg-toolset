@@ -8,7 +8,7 @@
 // - a START item runs the way vrg-ui.ps1 runs it (lib/runbat.js); action / phase / menu items stay in START: refused;
 // - every 4 s the registry's server ports are probed on 127.0.0.1 and the result goes to the page (lib/ports.js).
 'use strict';
-const { app, BrowserWindow, ipcMain, shell, screen, globalShortcut, Tray, Menu, nativeImage, safeStorage } = require('electron');
+const { app, BrowserWindow, WebContentsView, ipcMain, shell, screen, globalShortcut, Tray, Menu, nativeImage, safeStorage } = require('electron');
 const path = require('path'), os = require('os');
 const build = require('../build.js');
 const { createRegistry } = require('./lib/registry.js');
@@ -23,7 +23,11 @@ const { createAudit } = require('./lib/audit.js');
 const settings = require('./lib/settings.js');
 const { createSecrets } = require('./lib/secrets.js');
 
-const PAGE = path.join(__dirname, '..', 'vrg-dashboard.html');
+const layoutLib = require('./lib/layout.js');
+const { createViews } = require('./lib/views.js');
+
+const PAGE = path.join(__dirname, '..', 'vrg-dashboard.html');                 // the Kezdőlap, shown in a view
+const FRAME = path.join(__dirname, '..', 'page', 'vrg-desktop.html');          // the main window: the frame page
 const SELFTEST = process.argv.includes('--selftest');
 const TMP = path.join(os.tmpdir(), 'VRG');
 if (SELFTEST) process.env.VRG_DESK_HOME = path.join(TMP, 'desk-test-home');       // the selftest never touches the real home (CONTRACT §4.9)
@@ -32,13 +36,34 @@ const secrets = createSecrets({ safeStorage });                                 
 if (!SELFTEST && !app.requestSingleInstanceLock()) { app.quit(); return; }
 app.setAppUserModelId('VRG.Dashboard');
 
-let win = null, pollTimer = 0, winmodes = null, tray = null;
+let win = null, pollTimer = 0, winmodes = null, tray = null, views = null;
 const log = (...a) => console.log('[dash]', ...a);
 const R = createRegistry({ build, log });
 const run = createRunner({ R, shell, tmp: TMP });
-const ports = createPorts({ R, run, onChange: p => { if (win && !win.isDestroyed()) win.webContents.send('vrg:ports', p); } });
+const homeWc = () => { const v = views && views.get('home'); return v && !v.webContents.isDestroyed() ? v.webContents : null; };
+const toPages = (ch, ...a) => {                                                // the frame and the Kezdőlap view both get the D1 events
+  if (win && !win.isDestroyed()) win.webContents.send(ch, ...a);
+  const h = homeWc(); if (h) h.send(ch, ...a);
+};
+const ports = createPorts({ R, run, onChange: p => toPages('vrg:ports', p) });
 const acts = createActs({ R, run, ports, log });
-const selftest = createSelftest({ app, getWin: () => win, build, R, acts, run, ports, argv: process.argv, tmp: TMP, stopPolling: () => clearInterval(pollTimer) });
+
+// The selftest looks at "the page" through win.webContents: that is now the Kezdőlap view (D1 ids ≥ 30), everything
+// else (modes, sizes) is the real window. win.desk hands the frame and the views to the WP-07 probe.
+const selftestWin = () => new Proxy(win, {
+  get(t, k) {
+    if (k === 'desk') return { frame: t, home: homeWc(), views };
+    if (k === 'webContents') {
+      const wc = homeWc() || t.webContents;
+      return new Proxy(wc, { get(w, p) {
+        if (p === 'once') return (ev, cb) => (ev === 'did-finish-load' && !w.isLoading() ? setImmediate(cb) : w.once(ev, cb));
+        const v = w[p]; return typeof v === 'function' ? v.bind(w) : v;
+      } });
+    }
+    const v = t[k]; return typeof v === 'function' ? v.bind(t) : v;
+  },
+});
+const selftest = createSelftest({ app, getWin: selftestWin, build, R, acts, run, ports, argv: process.argv, tmp: TMP, stopPolling: () => clearInterval(pollTimer) });
 
 function createWindow() {
   win = new BrowserWindow({
@@ -46,16 +71,26 @@ function createWindow() {
     title: 'VRG Irányítópult',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
-  const pageUrl = require('url').pathToFileURL(PAGE).href;
+  const pageUrl = require('url').pathToFileURL(FRAME).href;
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));         // links go through act ids
   win.webContents.on('will-navigate', (e, url) => { if (url.split('#')[0] !== pageUrl) e.preventDefault(); });
-  win.on('maximize', () => win.webContents.send('vrg:max', true));
-  win.on('unmaximize', () => win.webContents.send('vrg:max', false));
+  win.on('maximize', () => toPages('vrg:max', true));
+  win.on('unmaximize', () => toPages('vrg:max', false));
+  views = createViews({ WebContentsView, win, preload: path.join(__dirname, 'preload.js'), homePage: PAGE, log });
+  if (SELFTEST || layoutLib.panes(currentTree().tree).some(p => p.kind === 'home')) views.createLocal('home');
+  win.on('closed', () => { views.destroyAll(); });
   win.once('ready-to-show', () => { if (!SELFTEST) win.show(); });
   winmodes = createWinModes({
     win, screen, log, settings,
   });
-  win.loadFile(PAGE);
+  win.loadFile(FRAME);
+}
+
+// the layout tree lives in the settings key layout.tree (null = the default tree)
+function currentTree() {
+  let t = null;
+  try { t = settings.get('layout.tree'); } catch (e) {}
+  return { tree: t && layoutLib.validate(t).ok ? t : layoutLib.defaultTree() };
 }
 
 function setupShell() {
@@ -66,7 +101,7 @@ function setupShell() {
     handlers: {
       mode: m => { winmodes.mode(m); tray.setMode(m); },
       show: () => { if (win.isMinimized()) win.restore(); win.show(); win.focus(); },
-      refresh: () => { build.write(); R.load(); ports.pollPorts(); win.webContents.reload(); },
+      refresh: () => { build.write(); R.load(); ports.pollPorts(); reload(); },
       quit: () => app.quit(),
     },
   });
@@ -118,9 +153,30 @@ ipc.register('app', 'setting', { k: types.text(80), v: types.json(4096) }, async
   try { return { v: settings.set(k, v) }; } catch (e) { return { ok: false, err: 'bad-request', hu: 'Érvénytelen érték.' }; }
 }, { optional: ['v'] });
 
+// layout (WP-07): the tree, and the rects of the view-backed panes. Views are only ever the ones main knows (viewId 'home').
+const reload = () => { const h = homeWc(); if (h) h.reload(); else if (win) win.webContents.reload(); };
+const coord = types.int(-20000, 20000), size = types.int(0, 20000);
+ipc.register('layout', 'get', {}, async () => currentTree());
+ipc.register('layout', 'set', { tree: types.json(65536) }, async ({ tree }) => {
+  const v = layoutLib.validate(tree);
+  if (!v.ok) return { ok: false, err: 'bad-request', hu: 'Érvénytelen elrendezés.' };
+  settings.set('layout.tree', tree);
+  const homes = layoutLib.panes(tree).some(p => p.kind === 'home');
+  if (!homes && views.has('home')) views.destroy('home');                        // the pane closed: its view goes
+  return {};
+});
+ipc.register('layout', 'bounds', { viewId: types.id, rect: types.obj({ x: coord, y: coord, w: size, h: size }) }, async ({ viewId, rect }) => {
+  if (viewId !== 'home') return { ok: false, err: 'bad-request', hu: 'Ismeretlen nézet.' };
+  if (!views.has(viewId)) {
+    if (!layoutLib.panes(currentTree().tree).some(p => p.kind === 'home')) return { ok: false, err: 'not-found', hu: 'Nincs ilyen panel.' };
+    views.createLocal(viewId);
+  }
+  return { ok: views.setBounds(viewId, rect) };
+});
+
 ipcMain.handle('vrg:act',(e, id) => acts.runAct(id));
 ipcMain.handle('vrg:ports', () => ports.ports);
-ipcMain.handle('vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); win.webContents.reload(); return true; });
+ipcMain.handle('vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });
 ipcMain.on('vrg:win', (e, cmd) => {
   if (!win) return;
   if (cmd === 'min') win.minimize();

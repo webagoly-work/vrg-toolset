@@ -4,6 +4,7 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 const paths = require('./paths.js');
+const layout = require('./layout.js');
 
 const rect = v => !!v && typeof v === 'object' && ['x', 'y', 'width', 'height'].every(k => Number.isFinite(v[k])) && v.width > 0 && v.height > 0;
 
@@ -15,6 +16,7 @@ const KEYS = {
   'term.embedClaude':  { type: v => typeof v === 'boolean', def: false },
   'web.history.days':  { type: v => Number.isInteger(v) && v >= 0 && v <= 3650, def: 90 },
   'ui.lang':           { type: v => v === 'hu' || v === 'en', def: 'hu' },
+  'layout.tree':       { type: v => v === null || layout.validate(v).ok, def: null },   // WP-07; null = the default tree
 };
 
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);

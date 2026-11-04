@@ -26,6 +26,11 @@ contextBridge.exposeInMainWorld('vrg', {
     autostart: p => call('app', 'autostart', p),
     setting: (k, v) => call('app', 'setting', v === undefined ? { k } : { k, v }),
   },
+  layout: {
+    get: () => call('layout', 'get', {}),
+    set: tree => call('layout', 'set', { tree }),
+    bounds: (viewId, rect) => call('layout', 'bounds', { viewId, rect }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),
