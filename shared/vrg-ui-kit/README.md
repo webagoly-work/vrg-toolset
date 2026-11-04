@@ -6,7 +6,7 @@ CSS plus vanilla JS. There is no framework, no CDN and no build step for consume
 An app inlines only what it needs into its single HTML file.
 
 - **Gallery:** `gallery.html` — every component, every state, with theme and density switches and Hungarian
-  labels. Open it straight from disk. The published copy is linked in the PR.
+  labels. Open it straight from disk. Published copy (private to the owner): <https://claude.ai/artifact/JQ1MF3TBCaobEZXzyS27LP>.
 - **Contract for builders:** `CONVENTIONS.md`.
 - **Checks:** `node test/lint.js` (no literal colours, known tokens only) and
   `NODE_PATH=$(npm root -g) node test/verify.js` (contrast, offline, keyboard, 320×240, bundle).

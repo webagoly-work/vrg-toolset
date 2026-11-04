@@ -33,7 +33,7 @@
 
   // theme and density apply NOW (this script loads before the fragments' init scripts), so components mount at the right size
   var q0 = new URLSearchParams(location.search);
-  html.dataset.vkTheme = THEMES[q0.get('theme')] ? q0.get('theme') : (THEMES[store.get('vk-gallery-theme')] ? store.get('vk-gallery-theme') : 'dark');
+  html.dataset.vkTheme = THEMES[q0.get('theme')] ? q0.get('theme') : (THEMES[store.get('vk-gallery-theme')] ? store.get('vk-gallery-theme') : (THEMES[html.dataset.vkTheme] ? html.dataset.vkTheme : 'dark'));
   html.dataset.vkDensity = DENS[q0.get('density')] ? q0.get('density') : (DENS[store.get('vk-gallery-density')] ? store.get('vk-gallery-density') : 'comfortable');
 
   function boot() {
