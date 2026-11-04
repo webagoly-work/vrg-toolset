@@ -1,0 +1,9 @@
+[
+  { "id": "repo", "hu": "Repó", "path": "{repo}" },
+  { "id": "full", "hu": "VRG Full", "path": "{full}" },
+  { "id": "shared", "hu": "Közös (OneDrive)", "path": "H:\\VRG\\Shared", "kind": "onedrive" },
+  { "id": "onedrive", "hu": "OneDrive", "env": ["OneDriveConsumer", "OneDrive", "OneDriveCommercial"], "kind": "onedrive" },
+  { "id": "desktop", "hu": "Asztal", "known": "desktop" },
+  { "id": "documents", "hu": "Dokumentumok", "known": "documents" },
+  { "id": "downloads", "hu": "Letöltések", "known": "downloads" }
+]

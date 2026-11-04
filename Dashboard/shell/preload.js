@@ -38,6 +38,11 @@ contextBridge.exposeInMainWorld('vrg', {
     cancel: job => call('jobs', 'cancel', { job }),
     answer: (job, choice, all) => call('jobs', 'answer', all === undefined ? { job, choice } : { job, choice, all }),
   },
+  fs: {
+    roots: () => call('fs', 'roots', {}),
+    list: (dir, o) => call('fs', 'list', { dir, ...(o && typeof o === 'object' ? { sort: o.sort, filter: o.filter } : {}) }),
+    stat: h => call('fs', 'stat', { h }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),

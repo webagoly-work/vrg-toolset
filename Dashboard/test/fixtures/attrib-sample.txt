@@ -1,0 +1,6 @@
+A    O                 C:\Users\test\OneDrive\cloud-only.docx
+A                 U    C:\Users\test\OneDrive\unpinned.xlsx
+A                 P    C:\Users\test\OneDrive\always-here.pdf
+A                      C:\Users\test\OneDrive\local.txt
+A    O           P     C:\Users\test\OneDrive\pinned-wins.txt
+     SH   U            C:\Users\test\OneDrive\árvíztűrő tükörfúrógép.txt

@@ -191,6 +191,24 @@ ipc.register('jobs', 'list', {}, async () => ({ jobs: jobs.list() }));
 ipc.register('jobs', 'cancel', { job: types.id }, async ({ job }) => jobs.cancel(job));
 ipc.register('jobs', 'answer', { job: types.id, choice: types.id, all: types.bool }, async ({ job, choice, all }) => jobs.answer(job, choice, all), { optional: ['all'] });
 
+// file roots, handles, listing (WP-10): the page holds handles only, main re-resolves every one against the roots
+const paths = require('./lib/paths.js');
+const { createRoots } = require('./lib/roots.js');
+const { createHandles, createFsView } = require('./lib/handles.js');
+const cloudattr = require('./lib/cloudattr.js');
+const REPO_DIR = path.join(__dirname, '..', '..');
+const FULL_DIR = require('fs').existsSync(path.join(REPO_DIR, '..', 'notes', 'features')) ? path.join(REPO_DIR, '..') : (process.env.VRG_FULL || 'H:\\VRG\\Full');
+const fsRoots = createRoots({
+  configFile: path.join(__dirname, '..', 'config', 'roots.json'), repo: path.resolve(REPO_DIR), full: path.resolve(FULL_DIR),
+  getPath: n => app.getPath(n), machineFile: paths.machine(),
+});
+const fsHandles = createHandles({ roots: fsRoots });
+const fsView = createFsView({ roots: fsRoots, handles: fsHandles, cloud: cloudattr });
+ipc.register('fs', 'roots', {}, async () => { fsRoots.load(); return { roots: fsView.rootList() }; });
+ipc.register('fs', 'list', { dir: types.handle, sort: types.enum('name', 'size', 'mtime'), filter: types.text(100) },
+  async ({ dir, sort, filter }) => fsView.list(dir, { sort, filter }), { optional: ['sort', 'filter'] });
+ipc.register('fs', 'stat', { h: types.handle }, async ({ h }) => fsView.stat(h));
+
 ipcMain.handle('vrg:act',(e, id) => acts.runAct(id));
 ipcMain.handle('vrg:ports', () => ports.ports);
 ipcMain.handle('vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });
