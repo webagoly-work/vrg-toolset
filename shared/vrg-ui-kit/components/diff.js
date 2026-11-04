@@ -236,7 +236,7 @@
     });
     var sum = VK.el('div.vk-drift__sum', { role: 'status', 'aria-live': 'polite' });
     var cols = VK.el('div.vk-drift__row.vk-drift__cols', { 'aria-hidden': 'true' },
-      [VK.el('span'), VK.el('span', { text: 'Tétel' }), VK.el('span.vk-drift__n', { text: labels[0] }), VK.el('span.vk-drift__arr'), VK.el('span.vk-drift__n', { text: labels[1] }), VK.el('span.vk-drift__n', { text: 'Δ' })]);
+      [VK.el('span'), VK.el('span', { text: 'Tétel' }), VK.el('span.vk-drift__n', { text: labels[0] }), VK.el('span.vk-drift__arr'), VK.el('span.vk-drift__n', { text: labels[1] }), VK.el('span.vk-drift__n.vk-drift__d', { text: 'Δ' })]);
     var list = VK.el('div.vk-drift__list', { role: 'listbox', 'aria-label': o.label || 'Eltérések: elvárt és tényleges' });
     el.appendChild(VK.el('div.vk-drift__head', null, [filt, sum]));
     el.appendChild(cols); el.appendChild(list);

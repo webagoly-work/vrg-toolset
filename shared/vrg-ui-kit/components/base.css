@@ -27,7 +27,8 @@
 :where(.vk) :where(table) { border-collapse: collapse; }
 
 /* every focusable kit element gets the same ring, even outside .vk */
-[class^="vk-"]:focus-visible, [class*=" vk-"]:focus-visible {
+/* (SVG parts are excluded: an outline around a rotated SVG shape draws a misleading box — SVG components draw their own halo) */
+[class^="vk-"]:not(svg *):focus-visible, [class*=" vk-"]:not(svg *):focus-visible {
   outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
 
 /* ---------- icons (sprite: icons/sprite.svg, injected by icons/sprite.js or inline.js) ---------- */
@@ -79,5 +80,6 @@
 /* ---------- forced colours (Windows high contrast): let the system draw, keep focus visible ---------- */
 @media (forced-colors: active) {
   .vk-glass, .vk-surface, .vk-sunken { forced-color-adjust: auto; border-color: CanvasText; }
-  [class^="vk-"]:focus-visible, [class*=" vk-"]:focus-visible { outline-color: Highlight; }
+  /* (SVG parts are excluded: an outline around a rotated SVG shape draws a misleading box — SVG components draw their own halo) */
+[class^="vk-"]:not(svg *):focus-visible, [class*=" vk-"]:not(svg *):focus-visible { outline-color: Highlight; }
 }

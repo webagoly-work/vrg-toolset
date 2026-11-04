@@ -95,6 +95,7 @@
 .vk-drift__cols .vk-drift__n { overflow: visible; letter-spacing: .04em; }
 .vk-drift__empty { display: flex; align-items: center; gap: var(--vk-space-2); padding: var(--vk-space-4); color: var(--vk-text-muted); }
 
-@container (max-width: 420px) { .vk-drift__row { grid-template-columns: 2ch minmax(0, 1fr) 9ch 10ch; } .vk-drift__arr, .vk-drift__d { display: none; } }
+@container (max-width: 420px) { .vk-drift__row { grid-template-columns: 2ch minmax(0, 1fr) 8ch 9ch; } .vk-drift__arr, .vk-drift__d, .vk-drift__note { display: none; }
+  .vk-drift__cols .vk-drift__n { letter-spacing: 0; overflow: hidden; } }
 .vk-drift { container-type: inline-size; }
 @media (forced-colors: active) { .vk-diff__ln, .vk-drift__row { forced-color-adjust: auto; } }

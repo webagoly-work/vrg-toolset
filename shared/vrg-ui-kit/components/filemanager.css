@@ -22,7 +22,8 @@
   font: inherit; cursor: pointer; border-radius: var(--vk-radius-sm); }
 .vk-fm__crumb:hover { color: var(--vk-text); background: var(--vk-hover-bg); }
 .vk-fm__crumb[aria-current] { color: var(--vk-text); }
-.vk-fm__sep { color: var(--vk-text-faint); }
+.vk-fm__sep { color: var(--vk-text-faint); flex: none; }
+.vk-fm__crumb { flex: none; }
 .vk-fm__head > .vk-mini { --_s: calc(var(--vk-icon-size) + 6px); width: var(--_s); height: var(--_s); pointer-events: none; }
 .vk-fm__head > .vk-mini:not([data-state]) { visibility: hidden; }
 

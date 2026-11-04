@@ -26,13 +26,16 @@
     return b;
   }
 
-  /** update a mini. opts: {progress: 0…1 | null, state, value: short text shown inside instead of the icon, pressed} */
+  /** update a mini. opts: {progress: 0…1 | null (indeterminate) | undefined (leave indeterminate), state, value: short text shown
+   *  inside instead of the icon, pressed, label: the accessible name (state/percent is appended to it)} */
   function set(b, o) {
     o = o || {};
     if ('state' in o) { if (o.state && o.state !== 'idle') b.dataset.state = o.state; else delete b.dataset.state; }
+    if ('label' in o && o.label !== undefined) { b.dataset.label = o.label || ''; b.title = o.label || ''; }
     if ('progress' in o) {
       if (o.progress === null) { b.style.removeProperty('--vk-p'); b.setAttribute('data-indeterminate', ''); }
-      else if (o.progress !== undefined) { b.removeAttribute('data-indeterminate'); b.style.setProperty('--vk-p', String(VK.clamp(+o.progress || 0, 0, 1))); }
+      else if (o.progress === undefined) { b.removeAttribute('data-indeterminate'); }   // leave indeterminate, keep the last value
+      else { b.removeAttribute('data-indeterminate'); b.style.setProperty('--vk-p', String(VK.clamp(+o.progress || 0, 0, 1))); }
     }
     if ('pressed' in o) b.setAttribute('aria-pressed', o.pressed ? 'true' : 'false');
     if ('value' in o) {
