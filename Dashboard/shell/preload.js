@@ -19,7 +19,12 @@ const on = (ns, type, cb) => {
 
 contextBridge.exposeInMainWorld('vrg', {
   call, on,
-  app: { info: () => call('app', 'info', {}) },
+  app: {
+    info: () => call('app', 'info', {}),
+    mode: p => call('app', 'mode', p),
+    toggleOverlay: () => call('app', 'toggleOverlay', {}),
+    autostart: p => call('app', 'autostart', p),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),
