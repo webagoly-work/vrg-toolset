@@ -240,7 +240,7 @@
     var K = { A1: .84, B1: 1, B2: .95, C: 1.12, E: 1.2 };
     var fmt = function (v, d) { return v.toFixed(d).replace('.', ','); };
     var tri = VK.field.mountAll(form)[0];
-    var formMini = VK.mini.create({ icon: 'cable', label: 'Kábelméretezés', caption: 'MÉRET', size: 'sm' });
+    var formMini = VK.mini.create({ icon: 'cable', label: 'Kábelméretezés', size: 'sm' });
     $('f07-form-mini').replaceWith(formMini);
     function check() {
       var ib = VK.field.number($('f07-ib')), cs = VK.field.number($('f07-cs')), len = VK.field.number($('f07-len'));

@@ -5,14 +5,14 @@
      <button class="vk-chip vk-chip--removable">VRG-2611-03 <span class="vk-chip__x">…</span></button>  Delete removes
      <button class="vk-chip vk-chip--add">+ Címke</button>          opens .vk-chip__input in place
    </div>
-   Pressed = ice frame + tick (shape, not colour alone). --vk-chip-c colours the swatch (a short wire).
+   Pill radius follows --vk-radius (square in Mélyvíz). Pressed = ice frame + tick (shape, not colour alone). --vk-chip-c colours the swatch (a short wire).
    Depends on: tokens, base. */
 .vk-chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-2); min-width: 0; }
 .vk-chip { --vk-chip-c: var(--vk-text-muted); --_h: calc(var(--vk-control-h) - 4px);
   display: inline-flex; align-items: center; gap: var(--vk-space-2); flex: none; max-width: 100%;
   min-height: max(var(--_h), var(--vk-target-min)); padding: 0 var(--vk-space-3); margin: 0;
   font: inherit; font-size: var(--vk-fs-sm); line-height: 1; white-space: nowrap; color: var(--vk-text);
-  background: transparent; border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-pill);
+  background: transparent; border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: calc(var(--vk-radius) * 333);
   cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
   transition: background-color var(--vk-dur-1) var(--vk-ease), border-color var(--vk-dur-1) var(--vk-ease), color var(--vk-dur-1) var(--vk-ease); }
 .vk-chip:hover { background: var(--vk-hover-bg); border-color: var(--vk-text-muted); }
@@ -51,7 +51,7 @@
 .vk-chip--add:hover { color: var(--vk-text); }
 .vk-chip__input { --_h: calc(var(--vk-control-h) - 4px); flex: 0 1 12em; min-width: 6em; height: max(var(--_h), var(--vk-target-min));
   padding: 0 var(--vk-space-3); font: inherit; font-size: var(--vk-fs-sm); color: var(--vk-text); background: var(--vk-bg-sunken);
-  border: var(--vk-border-w) solid var(--vk-accent); border-radius: var(--vk-radius-pill); }
+  border: var(--vk-border-w) solid var(--vk-accent); border-radius: calc(var(--vk-radius) * 333); }
 .vk-chip__input:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
 .vk-chip__input[aria-invalid="true"] { border-color: var(--vk-crit); }
 

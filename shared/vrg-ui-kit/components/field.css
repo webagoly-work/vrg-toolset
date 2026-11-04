@@ -120,7 +120,7 @@ textarea.vk-field__input { min-height: calc(var(--vk-control-h) * 2.6); resize: 
 .vk-field__choice > input:disabled:checked, .vk-field__choice > input:disabled:indeterminate { background: var(--vk-line-strong); border-color: var(--vk-line-strong); }
 .vk-field__choice > input[type="radio"]:disabled:checked { background: transparent; }
 .vk-field__choice > input[type="radio"]:disabled:checked::before { background: var(--vk-text-faint); }
-.vk-field__choice-hint { color: var(--vk-text-muted); font-size: var(--vk-fs-xs); }
+.vk-field__choice-hint { color: var(--vk-text-muted); font-size: var(--vk-fs-xs); white-space: nowrap; }
 
 /* ---------- groups ---------- */
 .vk-fieldset { margin: 0; min-width: 0; padding: var(--vk-space-3) var(--vk-space-4) var(--vk-space-4);
