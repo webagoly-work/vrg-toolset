@@ -16,7 +16,8 @@
      --density / --no-density               include tokens/density.css (default on)
      --no-fonts                             leave the vendored fonts out (default: inlined as data: URIs, ~130 kB;
                                             decision 6B — every app carries the kit's type)
-     --icons a,b,c | --icons all | --icons used   sprite subset (default 'used': icons named by the chosen
+     --icons a,b,c | --icons all | --icons used | --icons +a,b   sprite subset ('+a,b' = used plus the app's own icons;
+                                            default 'used': icons named by the chosen
                                             components' manifest entries + any `#vk-i-NAME` found in the files)
      --no-sprite                            leave the sprite out
      --list                                 print the resolved component order and sizes, nothing else
@@ -162,7 +163,10 @@ function bundle(o) {
       else if (f.endsWith('.js')) js.push('/* ' + f + ' */\n' + src);
     });
   });
-  let icons = o.icons === 'all' ? 'all' : o.icons === 'used' ? [...usedIcons] : o.icons.split(',').map(s => s.trim());
+  // '+a,b' = the components' icons plus the app's own (an app's markup is not scanned)
+  let icons = o.icons === 'all' ? 'all' : o.icons === 'used' ? [...usedIcons]
+    : o.icons.startsWith('+') ? [...usedIcons].concat(o.icons.slice(1).split(',').map(s => s.trim()).filter(Boolean))
+    : o.icons.split(',').map(s => s.trim());
   const sprite = o.sprite ? spriteFor(icons) : '';
   const safe = (s) => s.replace(/<\/(script|style)/gi, '<\\/$1');
   return {

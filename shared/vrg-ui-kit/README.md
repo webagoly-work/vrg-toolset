@@ -48,7 +48,7 @@ what the kit now builds (`DRIFT`), the same way `tools/melyviz-sync.js --check` 
 | Option | Effect |
 |---|---|
 | `--no-fonts` | Leaves out the three OFL fonts, which are otherwise embedded as `data:` URIs (about 130 kB); the system fallbacks are then used (Segoe UI, Bahnschrift, Cascadia Mono). |
-| `--icons all` / `--icons a,b` | Sprite subset (default `used`). |
+| `--icons all` / `--icons a,b` / `--icons +a,b` | Sprite subset (default `used`, the components' own icons). `+a,b` adds the icons the app's own markup uses; the app is not scanned. |
 | `--out file` | Writes the snippet to a file. |
 | `--list` | Shows the resolved order. |
 | `--check` | Validates the manifest. |
@@ -421,7 +421,7 @@ The user's answers to the open questions: `1A 2A 3A 4A 5A 6B 7B 8A` (8B only as 
 
 | # | Question | Decision | Where it stands |
 |---|---|---|---|
-| 1 | First app to adopt the kit | **A — Kapu**, the closest to the VRG Desktop shell | Next session |
+| 1 | First app to adopt the kit | **A — Kapu**, the closest to the VRG Desktop shell | Done: `Hub/src/index.html` (GO HUB, 2026-11-04) |
 | 2 | How apps take the kit | **A — `inline.js --insert`** with the component list recorded in the marker, plus `--sync-app` / `--check-app` | Done (§1) |
 | 3 | Keeping Mélyvíz in sync | **A — `tools/melyviz-sync.js` also generates `theme-melyviz.css`** | Done (§3) |
 | 4 | Default theme | **A — Éj**; Mélyvíz chosen per app | Already so |

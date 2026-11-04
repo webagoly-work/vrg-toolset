@@ -41,7 +41,8 @@ Waiting for the user (Claude prepares and checks, the user does the clicks):
    `node tools/build-hub.js --onedrive H:\VRG\Shared\00_START`.
 4. The clean-profile check, with the user typing their own token.
 
-Done: the pre-share audit (WP-HA), anonymising (step 3a), the signed list (step 8, two people),
+Done: the Kapu takes its look from the VRG UI Kit (2026-11-04: themes, palette, MINIs, the emblem; see
+`Hub/README.md` "Look"; the first adopter, kit decision 1A). The pre-share audit (WP-HA), anonymising (step 3a), the signed list (step 8, two people),
 `GO STRICT` (`check-hub --strict` → Rendben). The 12 empty OneDrive folder links of the old plan
 belonged to the parked board (`CodeCity/from-kapu/data/topology.json`); the current page has none.
 

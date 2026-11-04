@@ -20,7 +20,8 @@
 
 .vk-btn[data-variant="primary"] { color: var(--vk-text-on-accent); background: var(--vk-accent); border-color: var(--vk-accent); font-weight: var(--vk-fw-strong); }
 .vk-btn[data-variant="primary"]:hover:not(:disabled) { background: var(--vk-accent-hover); border-color: var(--vk-accent-hover); }
-.vk-btn[data-variant="primary"]:disabled { color: var(--vk-text-faint); background: transparent; border-color: var(--vk-line-strong); }
+.vk-btn[data-variant="primary"]:is(:disabled, [aria-disabled="true"]) { color: var(--vk-text-faint); background: transparent; border-color: var(--vk-line-strong); }
+.vk-btn[data-variant="primary"][aria-disabled="true"]:hover { background: var(--vk-hover-bg); border-color: var(--vk-line-strong); }
 .vk-btn[data-variant="ghost"] { border-color: transparent; }
 .vk-btn[data-variant="ghost"]:hover:not(:disabled) { border-color: transparent; }
 .vk-btn[data-variant="quiet"] { border-color: transparent; color: var(--vk-text-muted); }
