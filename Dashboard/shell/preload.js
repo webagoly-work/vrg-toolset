@@ -54,6 +54,13 @@ contextBridge.exposeInMainWorld('vrg', {
     edit: h => call('fs', 'edit', { h }),
     copyPath: h => call('fs', 'copyPath', { h }),
   },
+  term: {
+    profiles: () => call('term', 'profiles', {}),
+    open: (prof, at) => call('term', 'open', at === undefined ? { prof } : { prof, at }),
+    write: (term, data) => call('term', 'write', { term, data }),
+    resize: (term, cols, rows) => call('term', 'resize', { term, cols, rows }),
+    kill: term => call('term', 'kill', { term }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),

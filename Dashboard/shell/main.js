@@ -248,6 +248,35 @@ ipc.register('fs', 'reveal', { h: types.handle }, async ({ h }) => fileView.reve
 ipc.register('fs', 'edit', { h: types.handle }, async ({ h }) => fileView.edit(h));
 ipc.register('fs', 'copyPath', { h: types.handle }, async ({ h }) => fileView.copyPath(h));
 
+// terminals (WP-14): ConPTY sessions owned by main; the page names a profile id and a folder handle, nothing else
+const ptyLib = require('./lib/pty.js');
+let ptyMgr = null;
+const termMgr = () => {
+  if (ptyMgr) return ptyMgr;
+  ptyMgr = ptyLib.createPty({
+    profiles: ptyLib.readProfiles(path.join(__dirname, '..', 'config', 'profiles.json')),
+    expand: s => R.expand(s), env: process.env,
+    spawn: ptyLib.nodePtySpawn(ptyLib.loadNodePty(path.join(FULL_DIR, 'tools', 'js-libs', 'node-pty'))),
+  });
+  ptyMgr.on('data', m => ipc.emit(win, 'term', 'data', m));
+  ptyMgr.on('exit', m => ipc.emit(win, 'term', 'exit', m));
+  ptyMgr.on('title', m => ipc.emit(win, 'term', 'title', m));
+  return ptyMgr;
+};
+const termAt = v => types.handle(v) || v === 'repo' || (typeof v === 'string' && /^line:[\w-]+$/.test(v));
+const termId = v => typeof v === 'string' && /^t[0-9]{1,6}$/.test(v);
+ipc.register('term', 'profiles', {}, async () => ({ profiles: termMgr().profiles() }));
+ipc.register('term', 'open', { prof: types.id, at: termAt }, async ({ prof, at }) => {
+  const cwd = ptyLib.resolveAt(at, { handles: fsHandles, repo: path.resolve(REPO_DIR), lines: R.C ? R.C.data.lines : [] });
+  if (!cwd) return { ok: false, err: 'not-found', hu: 'Nincs ilyen mappa.' };
+  const r = termMgr().open(prof, cwd);
+  return r.term ? { term: r.term, title: r.title } : r;
+}, { optional: ['at'] });
+ipc.register('term', 'write', { term: termId, data: types.text(65536) }, async ({ term, data }) => { termMgr().write(term, data); return {}; });
+ipc.register('term', 'resize', { term: termId, cols: types.int(2, 500), rows: types.int(2, 300) }, async ({ term, cols, rows }) => { termMgr().resize(term, cols, rows); return {}; });
+ipc.register('term', 'kill', { term: termId }, async ({ term }) => { termMgr().kill(term); return {}; });
+app.on('before-quit', () => { if (ptyMgr) ptyMgr.killAll(); });
+
 ipcMain.handle('vrg:act',(e, id) => acts.runAct(id));
 ipcMain.handle('vrg:ports', () => ports.ports);
 ipcMain.handle('vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });
