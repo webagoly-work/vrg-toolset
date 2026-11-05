@@ -131,6 +131,8 @@
     window.VRGFrame.search = openSearch;
     window.VRGFrame.ctxAdd = ctxAdd;
     document.addEventListener('vrg-ctx-add', e => { if (e.detail) ctxAdd(e.detail); });
+    window.VRGFrame.mail = (acc) => openWeb('web:' + (acc === 'outlook' ? 'outlook' : 'gmail'));   // "Posta" (WP-26): a web pane tab on the webmail preset
+    document.addEventListener('vrg-open-mail', e => { window.VRGFrame.mail(e.detail && e.detail.acc); });
     window.VRGFrame.chat = openChat;
     window.VRGFrame.note = openNote;
     document.addEventListener('vrg-note', e => { if (e.detail) openNote(e.detail); });

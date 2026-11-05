@@ -7,6 +7,7 @@
 'use strict';
 const nodeFs = require('fs'), nodePath = require('path');
 const { isSafeName } = require('./names.js');
+const webmail = require('./webmail.js');
 
 const PARTITIONS = ['persist:vrg-web', 'persist:vrg-mail'];
 const MAX_TABS = 20;
@@ -56,8 +57,25 @@ function errorPage(url, desc) {
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
 }
 
+// config/web.json: the web presets (web:<id>); a bad file is an empty list
+function loadPresets() {
+  try { const j = JSON.parse(nodeFs.readFileSync(nodePath.join(__dirname, '..', '..', 'config', 'web.json'), 'utf8')); return Array.isArray(j) ? j : []; } catch (e) { return []; }
+}
+
+// palette (WP-08): the web: ids. run(id) goes through the opener main registers with setOpener (it opens the preset in a web pane)
+let opener = null;
+function setOpener(fn) { opener = typeof fn === 'function' ? fn : null; }
+function paletteItems() {
+  return loadPresets().filter(p => p && typeof p.id === 'string' && /^[a-z0-9_-]{1,40}$/i.test(p.id) && p.hu)
+    .map(p => ({ id: 'web:' + p.id, hu: String(p.hu), en: p.mail ? 'Webmail' : 'Web' }));
+}
+async function run(id) {
+  if (!opener) return { ok: false, hu: 'Ez még nem futtatható.', en: 'Not runnable yet.' };
+  return opener(id);
+}
+
 function createWebHost({
-  getViews, getSession, settings, jobs = null, emit = () => {}, downloadsDir = () => null, tmpDir = '', log = () => {}, onSelection = null,
+  getViews, getSession, settings, jobs = null, presets = loadPresets, emit = () => {}, downloadsDir = () => null, tmpDir = '', log = () => {}, onSelection = null,
   fs = nodeFs, now = Date.now, rand = () => Math.random().toString(36).slice(2, 10),
 }) {
   const tabs = new Map();                                          // view id → { id, partition, url, home, title, discarded, hiddenSince, failedUrl }
@@ -189,7 +207,9 @@ function createWebHost({
       if (/^data:/.test(url) && t.failedUrl) url = t.failedUrl;
       t.url = url; t.title = title;
     }
-    return { view: t.id, url, title, canBack, canFwd, loading, audible };
+    const s = { view: t.id, url, title, canBack, canFwd, loading, audible };
+    if (t.acc) { s.acc = t.acc; s.unread = t.unread; }
+    return s;
   }
   const push = t => { if (tabs.get(t.id) === t) fire('state', state(t)); };
 
@@ -217,19 +237,31 @@ function createWebHost({
       const extra = isAllowedNav(p.linkURL) ? [{ label: 'Link megnyitása új lapon', click: () => { try { open({ url: p.linkURL, partition: t.partition }); } catch (e) { log('link tab failed'); } } }] : [];
       try { onSelection({ text: p.selectionText, origin: 'web', extra }); } catch (e) { log('selection menu failed'); }
     });
+    // WP-26: a mail tab reports its unread count (the title carries it); no extra navigation rule is needed, the sign-in hosts are https
+    if (t.acc) webmail.watch(wc, t.acc, d => { t.unread = d.n; fire('mail.unread', { ...d, view: t.id }); push(t); });
     for (const e of ['did-navigate', 'did-navigate-in-page', 'page-title-updated', 'did-start-loading', 'did-stop-loading', 'audio-state-changed']) wc.on(e, () => push(t));
   }
 
   function load(t, url) { const wc = wcOf(t); if (wc) wc.loadURL(url).catch(() => {}); }   // an aborted load (a download, a blocked redirect) is not an error
 
-  function open({ url, partition = 'persist:vrg-web' } = {}) {
+  // open({ target:'web:<id>' }) resolves a preset of config/web.json: its url, its partition (allow-list below) and its mail account
+  function open(opts = {}) {
+    let { url, partition = 'persist:vrg-web', acc = '' } = opts;
+    if (typeof opts.target === 'string') {
+      const m = /^web:([a-z0-9_-]{1,40})$/i.exec(opts.target);
+      const p = m && presets().find(x => x && x.id === m[1]);
+      if (!p) return { ok: false, err: 'not-found', hu: 'Nincs ilyen cél.' };
+      url = p.url;
+      if (p.partition !== undefined) partition = p.partition;
+      if (p.mail === true) acc = p.id;
+    }
     if (!isAllowedNav(url)) return { ok: false, err: 'bad-request', hu: 'Csak http és https cím nyitható meg.' };
     if (!PARTITIONS.includes(partition)) return { ok: false, err: 'bad-request', hu: 'Ismeretlen munkamenet.' };
     if (tabs.size >= MAX_TABS) return { ok: false, err: 'limit', hu: 'Legfeljebb ' + MAX_TABS + ' lap lehet nyitva.' };
     prepare(partition);
     const made = views().createWeb({ partition });
     if (!made) return { ok: false, err: 'error', hu: 'A lap nem hozható létre.' };
-    const t = { id: made.id, partition, url, home: url, title: '', view: made.view, discarded: false, hiddenSince: now(), failedUrl: '' };
+    const t = { id: made.id, partition, url, home: url, title: '', view: made.view, discarded: false, hiddenSince: now(), failedUrl: '', acc: acc && partition === 'persist:vrg-mail' ? String(acc) : '', unread: null };
     tabs.set(t.id, t);
     attach(t);
     load(t, url);
@@ -384,4 +416,4 @@ function createWebHost({
   };
 }
 
-module.exports = { createWebHost, isAllowedNav, ZOOM_STEPS, cleanUA, uniqueName, safeDownloadName, errorPage, PARTITIONS, MAX_TABS, DISCARD_MS };
+module.exports = { createWebHost, paletteItems, run, setOpener, loadPresets, isAllowedNav, ZOOM_STEPS, cleanUA, uniqueName, safeDownloadName, errorPage, PARTITIONS, MAX_TABS, DISCARD_MS };

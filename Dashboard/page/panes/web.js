@@ -9,12 +9,15 @@
   const W = typeof window !== 'undefined' ? window : {};
   const P = W.VRGPanes = W.VRGPanes || {};
   const MAX_TABS = 20;
+  const MAIL_TARGET = /^web:(gmail|outlook)$/;                // a mail tab is saved as its preset, so it comes back in the mail partition
+  const MAIL = [{ id: 'gmail', hu: 'Gmail' }, { id: 'outlook', hu: 'Outlook' }];
+  const unreadText = n => n + ' olvasatlan';
 
   // ------------------------------------------------------------ pure helpers (exported for tests)
   // the saved state → the URLs to re-open (http / https only, ≤ 500 chars, ≤ 20) and the active index
   function restoreList(state) {
     const raw = state && Array.isArray(state.tabs) ? state.tabs : [];
-    const tabs = raw.filter(u => typeof u === 'string' && u.length <= 500 && /^https?:\/\//i.test(u)).slice(0, MAX_TABS);
+    const tabs = raw.filter(u => typeof u === 'string' && u.length <= 500 && (/^https?:\/\//i.test(u) || MAIL_TARGET.test(u))).slice(0, MAX_TABS);
     const a = state && Number.isInteger(state.active) ? state.active : 0;
     return { tabs, active: a >= 0 && a < tabs.length ? a : 0 };
   }
@@ -36,7 +39,7 @@
     return '';
   }
 
-  const helpers = { restoreList, tabLabel, percent, sizeText, keyRoute, MAX_TABS };
+  const helpers = { restoreList, tabLabel, percent, sizeText, keyRoute, unreadText, MAX_TABS };
   if (typeof module !== 'undefined' && module.exports) module.exports = helpers;
   if (typeof document === 'undefined') return;
 
@@ -65,10 +68,11 @@
       this.omni.spellcheck = false; this.omni.autocomplete = 'off';
       this.star = btn('web-bookmark', '☆', 'Könyvjelző');
       this.zoomLabel = el('span', 'web-zoom', '100%'); this.zoomLabel.title = 'Nagyítás';
+      this.mailBtn = btn('web-mail', 'Posta', 'Webmail (Gmail, Outlook)');
       this.serversBtn = btn('web-servers', 'Helyi szerverek', 'Local servers');
       this.historyBtn = btn('web-history', 'Előzmények', 'History and bookmarks');
       this.extBtn = btn('web-external', 'Megnyitás külső böngészőben', 'Open in the external browser');
-      bar.append(this.back, this.fwd, this.reload, this.omni, this.star, this.zoomLabel, this.serversBtn, this.historyBtn, this.extBtn);
+      bar.append(this.back, this.fwd, this.reload, this.omni, this.star, this.zoomLabel, this.mailBtn, this.serversBtn, this.historyBtn, this.extBtn);
 
       const find = this.findBar = el('div', 'web-find'); find.hidden = true;
       this.findInput = el('input', 'web-find-input'); this.findInput.type = 'text'; this.findInput.placeholder = 'Keresés az oldalon'; this.findInput.title = 'Find in page (Ctrl+F)';
@@ -106,7 +110,7 @@
       if (this.root) this.root.innerHTML = '';
       this.root = null;
     },
-    state() { return { tabs: this.tabs.map(t => t.url).filter(u => /^https?:\/\//i.test(u) && u.length <= 500).slice(0, MAX_TABS), active: Math.max(0, this.tabs.findIndex(t => t.view === this.active)) }; },
+    state() { return { tabs: this.tabs.map(t => (t.acc && MAIL_TARGET.test('web:' + t.acc) ? 'web:' + t.acc : t.url)).filter(u => (/^https?:\/\//i.test(u) || MAIL_TARGET.test(u)) && u.length <= 500).slice(0, MAX_TABS), active: Math.max(0, this.tabs.findIndex(t => t.view === this.active)) }; },
 
     // ---------------------------------------------------------- wiring
     wire() {
@@ -128,6 +132,7 @@
         this.drawStar();
       });
       this.extBtn.addEventListener('click', () => this.active && w().external(this.active));
+      this.mailBtn.addEventListener('click', () => this.togglePanel('mail'));
       this.serversBtn.addEventListener('click', () => this.togglePanel('servers'));
       this.historyBtn.addEventListener('click', () => this.togglePanel('history'));
 
@@ -213,6 +218,7 @@
         this.activate(m.view);
       }
       Object.assign(t, { url: m.url || '', title: m.title || '', loading: !!m.loading, canBack: !!m.canBack, canFwd: !!m.canFwd, audible: !!m.audible });
+      if (typeof m.acc === 'string' && MAIL.some(a => a.id === m.acc)) { t.acc = m.acc; t.unread = Number.isInteger(m.unread) && m.unread >= 0 ? m.unread : null; }
       this.drawTabs();
       if (m.view === this.active) this.drawBar();
     },
@@ -238,6 +244,7 @@
         const label = el('button', 'web-tab-title', tabLabel(t)); label.type = 'button'; label.title = t.url || t.title;
         label.addEventListener('click', () => this.activate(t.view));
         tab.append(label);
+        if (t.acc && t.unread > 0) { const u = el('span', 'web-tab-unread', String(t.unread)); u.title = unreadText(t.unread); tab.append(u); }
         if (t.audible) { const a = el('span', 'web-tab-audible', '♪'); a.title = 'Hangot játszik'; tab.append(a); }
         const x = btn('web-tab-close', '×', 'Close'); x.addEventListener('click', () => this.closeTab(t.view));
         tab.append(x);
@@ -280,7 +287,20 @@
       this.box.hidden = true; this.panel.hidden = false;
       this.panel.innerHTML = '';
       this.panel.dataset.panel = kind;
-      if (kind === 'servers') await this.drawServers(); else await this.drawHistory();
+      if (kind === 'servers') await this.drawServers(); else if (kind === 'mail') this.drawMail(); else await this.drawHistory();
+    },
+    // "Posta": one button per webmail preset; the Founder signs in inside the tab (own partition, nothing of ours handles a password)
+    drawMail() {
+      const p = this.panel;
+      p.innerHTML = '';
+      p.append(el('h3', 'web-panel-title', 'Posta'));
+      for (const a of MAIL) {
+        const t = this.tabs.find(x => x.acc === a.id);
+        const b = btn('web-mail-open', a.hu + (t && t.unread > 0 ? ' · ' + unreadText(t.unread) : ''), 'web:' + a.id);
+        b.dataset.mail = a.id;
+        b.addEventListener('click', () => { if (t) this.activate(t.view); else this.openTarget('web:' + a.id); });
+        p.append(b);
+      }
     },
     async drawServers() {
       const p = this.panel;
