@@ -37,6 +37,7 @@
       replace: kind => L.commit(lib.replace(L.tree(), id, kind)),
       setState: s => { const t = lib.setState(L.tree(), id, s); if (t !== L.tree()) L.commit(t); },
       has: kind => lib.panes(L.tree()).some(p => p.kind === kind),
+      open: (kind, state) => openKind(kind, state),                // a new tab next to the focused pane (term: Ctrl+Shift+T, profile menu)
     };
   }
 
@@ -112,13 +113,15 @@
       onPanes: ids => { for (const id of [...panes.keys()]) if (!ids.has(id)) drop(id); scheduleBounds(); },
     });
     L.set(tree);
-    window.VRGFrame = { tree: () => L.tree(), save, panes: () => [...panes.keys()] };
+    window.VRGFrame = { tree: () => L.tree(), save, panes: () => [...panes.keys()], open: openKind, close: id => L.commit(lib.close(L.tree(), id)), pane: id => (panes.get(id) || {}).inst || null };
     window.addEventListener('resize', scheduleBounds);
     window.addEventListener('scroll', scheduleBounds, true);
     new ResizeObserver(scheduleBounds).observe(root);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && saveTimer) { clearTimeout(saveTimer); save(); } });
     scheduleBounds();
-    if (vrg && vrg.on) vrg.on('layout', 'open', m => openKind(m.kind));
+    if (vrg && vrg.on) vrg.on('layout', 'open', m => openKind(m.kind, m.state));
+    // "Terminál itt" (files pane): the files pane fires  vrg-open-term  with detail { at: <dir handle> }
+    document.addEventListener('vrg-open-term', e => openKind('term', { prof: 'pwsh', at: e.detail && e.detail.at }));
     initPalette();
     document.body.dataset.ready = '1';
   }
@@ -132,20 +135,22 @@
   }
 
   // layout.open from main (a palette "pane:<kind>" command): a new tab in the focused group; the Kezdőlap is only focused
-  function openKind(kind) {
-    if (!L || typeof kind !== 'string' || !lib.KINDS.includes(kind)) return;
+  function openKind(kind, state) {
+    if (!L || typeof kind !== 'string' || !lib.KINDS.includes(kind)) return '';
     const t = JSON.parse(JSON.stringify(L.tree()));
     const all = lib.panes(t);
-    if (kind === 'home' && all.some(p => p.kind === 'home')) { L.commit(lib.focus(L.tree(), all.find(p => p.kind === 'home').id)); L.focusPane('home'); return; }
+    if (kind === 'home' && all.some(p => p.kind === 'home')) { L.commit(lib.focus(L.tree(), all.find(p => p.kind === 'home').id)); L.focusPane('home'); return 'home'; }
     const at = lib.find(t, L.focused()) || lib.find(t, all[0].id);
     const used = new Set(all.map(p => p.id));
     let id = kind === 'home' ? 'home' : '';
     for (let i = 1; !id; i++) if (!used.has(kind + '-' + i)) id = kind + '-' + i;
-    at.node.items.push({ id, kind, state: {} });
+    const s = state && typeof state === 'object' && !Array.isArray(state) ? JSON.parse(JSON.stringify(state)) : {};
+    at.node.items.push({ id, kind, state: s });
     at.node.active = at.node.items.length - 1;
-    if (!lib.validate(t).ok) return;
+    if (!lib.validate(t).ok) return '';
     L.commit(t);
     L.focusPane(id);
+    return id;
   }
 
   const wbar = document.getElementById('wbar');
