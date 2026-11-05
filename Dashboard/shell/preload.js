@@ -83,6 +83,11 @@ contextBridge.exposeInMainWorld('vrg', {
   sel: {                                                                         // event: vrg.on('sel', 'pick', cb) → { action, text }
     menu: (text, origin, o) => call('sel', 'menu', o && o.dryRun === true ? { text, origin, dryRun: true } : { text, origin }),
   },
+  search: {
+    inner: (q, o) => call('search', 'inner', { q, ...(o && typeof o === 'object' ? Object.fromEntries(['layers', 'budget'].filter(k => o[k] !== undefined).map(k => [k, o[k]])) : {}) }),
+    openHit: (kind, i) => call('search', 'openHit', { kind, i }),
+    node: id => call('search', 'node', { id }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),

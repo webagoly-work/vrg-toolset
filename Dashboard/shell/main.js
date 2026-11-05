@@ -54,7 +54,7 @@ const acts = createActs({ R, run, ports, log });
 // else (modes, sizes) is the real window. win.desk hands the frame and the views to the WP-07 probe.
 const selftestWin = () => new Proxy(win, {
   get(t, k) {
-    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs, selMenu, web: webHost, webOps, webBm };
+    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs, selMenu, web: webHost, webOps, webBm, innerSearch };
     if (k === 'webContents') {
       const wc = homeWc() || t.webContents;
       return new Proxy(wc, { get(w, p) {
@@ -365,6 +365,18 @@ ipc.register('sel', 'menu', { text: types.text(65536), origin: types.enum('frame
   if (dryRun === true && SELFTEST) { const t = selMenu.build(text, origin); return { template: t ? selMenu.labels(t) : null }; }
   return { shown: selMenu.popup({ text, origin, window: win }) };
 }, { optional: ['dryRun'] });
+
+// internal search (WP-20): the VRG Stack and the code index. The page sends words and a hit index; stack dir, repo and handles are main's.
+const { createInnerSearch } = require('./lib/innersearch.js');
+const nodeExe = () => { const n = path.join(FULL_DIR, 'tools', 'node', 'node.exe'); return require('fs').existsSync(n) ? n : 'node'; };
+const innerSearch = createInnerSearch({
+  execFile: require('child_process').execFile, node: nodeExe(), full: path.resolve(FULL_DIR), repo: path.resolve(REPO_DIR),
+  issue: abs => { if (!fsRoots.list().length) fsRoots.load(); return fsHandles.issue(abs); },
+  statusFile: path.join(FULL_DIR, 'notes', 'stack', 'out', 'STATUS.md'),
+});
+ipc.register('search', 'inner', { q: types.text(300), layers: types.text(20), budget: types.int(100, 4000) }, async ({ q, layers, budget }) => innerSearch.inner({ q, layers, budget }), { optional: ['layers', 'budget'] });
+ipc.register('search', 'openHit', { kind: types.enum('code'), i: types.int(0, 199) }, async ({ i }) => innerSearch.openHit(i));
+ipc.register('search', 'node', { id: types.text(160) }, async ({ id }) => innerSearch.node(id));
 
 ipc.legacy('handle', 'vrg:act', (e, id) => acts.runAct(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);

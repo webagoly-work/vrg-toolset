@@ -127,6 +127,8 @@
     document.addEventListener('vrg-open-term', e => openKind('term', { prof: 'pwsh', at: e.detail && e.detail.at }));
     initPalette();
     initSelection();
+    initSearch();
+    window.VRGFrame.search = openSearch;
     document.body.dataset.ready = '1';
   }
 
@@ -146,6 +148,7 @@
   }
   // Google / AI keresés: a web pane (made if none is open) takes a new tab on the search; the other actions wait for their WP
   async function onPick(m) {
+    if (m && m.action === 'search.inner' && typeof m.text === 'string') { openSearch(m.text); return; }
     if (!m || typeof m.text !== 'string' || (m.action !== 'google' && m.action !== 'ai')) return;
     let id = [...panes.keys()].find(k => panes.get(k).kind === 'web');
     if (id) L.focusPane(id); else id = openKind('web', {});
@@ -153,6 +156,30 @@
     let inst = null;
     for (let i = 0; i < 100 && !(inst && inst.openTarget); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
     if (inst && inst.openTarget) inst.openTarget('srch:' + m.action + ':' + m.text.slice(0, 300));
+  }
+
+  // ------------------------------------------------------------ internal search (WP-20)
+  // "Belső keresés" is a panel over the layout (not a layout pane kind): Ctrl+Shift+F, or the selection menu. Esc / Bezár closes it.
+  let searchBox = null, searchInst = null;
+  async function openSearch(q) {
+    if (searchBox && searchInst) { searchInst.focus(); if (q) searchInst.run(q); return searchBox; }
+    if (!(await loadKind('search'))) { log('warn', 'search pane not available'); return null; }
+    if (searchBox) return searchBox;
+    const box = document.createElement('div');
+    box.dataset.pane = 'search-panel'; box.dataset.kind = 'search'; box.setAttribute('role', 'dialog'); box.title = 'Internal search';
+    box.style.cssText = 'position:fixed;inset:48px 5% 5% 5%;z-index:50;overflow:auto';
+    const close = () => { try { searchInst.unmount(); } catch (e) {} box.remove(); searchBox = searchInst = null; };
+    document.body.append(box);
+    searchBox = box; searchInst = Object.create(P.search);
+    searchInst.mount(box, {}, { vrg, close });
+    searchInst.focus();
+    if (q) searchInst.run(q);
+    return box;
+  }
+  function initSearch() {
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && e.shiftKey && !e.altKey && (e.key === 'F' || e.key === 'f')) { e.preventDefault(); openSearch(String(window.getSelection ? window.getSelection() : '').trim().slice(0, 300)); }
+    });
   }
 
   // ------------------------------------------------------------ palette (WP-08)
