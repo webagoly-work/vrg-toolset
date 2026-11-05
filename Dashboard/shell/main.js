@@ -396,6 +396,31 @@ ipc.register('ctx', 'saveCluster', { name: types.text(80), ids: ctxIds(80) }, as
 ipc.register('ctx', 'deleteCluster', { id: types.id }, async ({ id }) => ctxLib.deleteCluster(id));
 ipc.register('ctx', 'sendToClaude', { packId: types.id, how: types.enum('term-A', 'term-B', 'chat') }, async ({ packId, how }) => ctxLib.sendToClaude(packId, how));
 
+// chat engine (WP-23): headless `claude -p` stream-json; the prompt goes on stdin, the page gets deltas as events (chat.*)
+const { createChat } = require('./lib/chat.js');
+const chatLib = createChat({
+  spawn: require('child_process').spawn, execFile: require('child_process').execFile, env: process.env, repo: path.resolve(REPO_DIR),
+  bin: () => R.C ? R.expand('{claude}') : '', claudeDirB: path.join(path.resolve(FULL_DIR), 'home', 'claude-account-b'), paths,
+  emit: (type, data) => ipc.emit(win, 'chat', type.replace(/^chat\./, ''), data),
+  packText: id => { const f = ctxLib.packFile(id); try { return f ? require('fs').readFileSync(f, 'utf8') : null; } catch (e) { return null; } },
+  readFile: async h => {
+    const r = await fileView.read(h, { max: 65536 });
+    if (!r || r.kind !== 'text' || typeof r.text !== 'string') return null;
+    const st = await fsView.stat(h);
+    return { name: st && st.item && st.item.name, text: r.text };
+  },
+  keepText: () => { try { return settings.get('chat.keepText') === true; } catch (e) { return false; } },   // the key is not in settings.js yet: false
+  log,
+});
+ipc.register('chat', 'start', {
+  account: types.enum('A', 'B'), prompt: types.text(256 * 1024), tools: types.enum('read', 'none'),
+  attach: types.obj({ text: types.text(64 * 1024), packId: types.id, file: types.handle }, { optional: ['text', 'packId', 'file'] }),
+}, async p => chatLib.start(p), { optional: ['attach'] });
+ipc.register('chat', 'follow', { chat: types.id, prompt: types.text(256 * 1024) }, async ({ chat, prompt }) => chatLib.follow(chat, prompt));
+ipc.register('chat', 'stop', { chat: types.id }, async ({ chat }) => chatLib.stop(chat));
+ipc.register('chat', 'list', {}, async () => chatLib.list());
+app.on('before-quit', () => chatLib.killAll());
+
 ipc.legacy('handle', 'vrg:act', (e, id) => acts.runAct(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);
 ipc.legacy('handle', 'vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });

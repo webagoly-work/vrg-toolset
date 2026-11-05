@@ -96,6 +96,12 @@ contextBridge.exposeInMainWorld('vrg', {
     deleteCluster: id => call('ctx', 'deleteCluster', { id }),
     sendToClaude: (packId, how) => call('ctx', 'sendToClaude', { packId, how }),
   },
+  chat: {                                                                        // events: vrg.on('chat', 'delta' | 'tool' | 'done' | 'error', cb)
+    start: o => call('chat', 'start', o && typeof o === 'object' ? Object.fromEntries(['account', 'prompt', 'attach', 'tools'].filter(k => o[k] !== undefined).map(k => [k, o[k]])) : {}),
+    follow: (chat, prompt) => call('chat', 'follow', { chat, prompt }),
+    stop: chat => call('chat', 'stop', { chat }),
+    list: () => call('chat', 'list', {}),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),
