@@ -129,6 +129,8 @@
     initSelection();
     initSearch();
     window.VRGFrame.search = openSearch;
+    window.VRGFrame.ctxAdd = ctxAdd;
+    document.addEventListener('vrg-ctx-add', e => { if (e.detail) ctxAdd(e.detail); });
     document.body.dataset.ready = '1';
   }
 
@@ -149,6 +151,7 @@
   // Google / AI keresés: a web pane (made if none is open) takes a new tab on the search; the other actions wait for their WP
   async function onPick(m) {
     if (m && m.action === 'search.inner' && typeof m.text === 'string') { openSearch(m.text); return; }
+    if (m && m.action === 'ctx' && typeof m.text === 'string') { ctxAdd(m.text); return; }
     if (!m || typeof m.text !== 'string' || (m.action !== 'google' && m.action !== 'ai')) return;
     let id = [...panes.keys()].find(k => panes.get(k).kind === 'web');
     if (id) L.focusPane(id); else id = openKind('web', {});
@@ -156,6 +159,21 @@
     let inst = null;
     for (let i = 0; i < 100 && !(inst && inst.openTarget); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
     if (inst && inst.openTarget) inst.openTarget('srch:' + m.action + ':' + m.text.slice(0, 300));
+  }
+
+  // ------------------------------------------------------------ context pack (WP-22)
+  // "Csomaghoz adás": the stack pane (made if none is open) takes the node ids in the text, or the text as a "kézi jegyzet".
+  // Also reachable as  VRGFrame.ctxAdd(text | { nodes: [{ id, title?, layer? }] })  and the  vrg-ctx-add  event (detail = the same), for search hits.
+  async function ctxAdd(what) {
+    let id = [...panes.keys()].find(k => panes.get(k).kind === 'stack');
+    if (id) L.focusPane(id); else id = openKind('stack', {});
+    if (!id) return false;
+    let inst = null;
+    for (let i = 0; i < 100 && !(inst && inst.addText); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
+    if (!inst || !inst.addText) return false;
+    if (typeof what === 'string') await inst.addText(what);
+    else if (what && Array.isArray(what.nodes)) inst.add(what.nodes);
+    return true;
   }
 
   // ------------------------------------------------------------ internal search (WP-20)

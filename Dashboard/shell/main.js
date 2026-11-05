@@ -260,7 +260,7 @@ let ptyMgr = null;
 const termMgr = () => {
   if (ptyMgr) return ptyMgr;
   ptyMgr = ptyLib.createPty({
-    profiles: ptyLib.readProfiles(path.join(__dirname, '..', 'config', 'profiles.json')),
+    profiles: require('./lib/claudeterm.js').withBinOverride(ptyLib.readProfiles(path.join(__dirname, '..', 'config', 'profiles.json')), process.env, s => R.expand(s)),
     expand: s => R.expand(s), env: process.env,
     spawn: ptyLib.nodePtySpawn(ptyLib.loadNodePty(path.join(FULL_DIR, 'tools', 'js-libs', 'node-pty'))),
   });
@@ -291,7 +291,7 @@ if (SELFTEST) { try { require('fs').rmSync(testDownloads, { recursive: true, for
 const { createSelMenu } = require('./lib/selmenu.js');
 const selMenu = createSelMenu({
   Menu, clipboard, emit: (type, data) => ipc.emit(win, 'sel', type, data),
-  features: () => ({ 'web.open': true, 'search.inner': false, 'chat.start': false, 'note.save': false, ctx: false }),
+  features: () => ({ 'web.open': true, 'search.inner': false, 'chat.start': false, 'note.save': false, ctx: false }),   // ctx stays false: the WP-19 probe pins "Csomaghoz adás (később)"; the frame already handles the pick
 });
 const webHost = createWebHost({
   onSelection: o => selMenu.popup({ ...o, window: win }),
@@ -377,6 +377,24 @@ const innerSearch = createInnerSearch({
 ipc.register('search', 'inner', { q: types.text(300), layers: types.text(20), budget: types.int(100, 4000) }, async ({ q, layers, budget }) => innerSearch.inner({ q, layers, budget }), { optional: ['layers', 'budget'] });
 ipc.register('search', 'openHit', { kind: types.enum('code'), i: types.int(0, 199) }, async ({ i }) => innerSearch.openHit(i));
 ipc.register('search', 'node', { id: types.text(160) }, async ({ id }) => innerSearch.node(id));
+
+// context packs (WP-22): stack-json.js writes the pack, main keeps packId → file, "send to Claude" opens an embedded Claude terminal (WP-16)
+const { createCtx, validId: ctxId } = require('./lib/ctx.js');
+const { createClaudeTerm } = require('./lib/claudeterm.js');
+let claudeTerm = null;
+const claudeTermLazy = { open: o => { if (!claudeTerm) claudeTerm = createClaudeTerm({ pty: termMgr(), emit: (ns, type, d) => ipc.emit(win, ns, type, d), env: process.env, expand: s => R.expand(s), log }); return claudeTerm.open(o); } };
+const ctxLib = createCtx({
+  execFile: require('child_process').execFile, node: nodeExe(), stackDir: path.join(FULL_DIR, 'notes', 'stack'),
+  paths, claudeterm: claudeTermLazy, repo: path.resolve(REPO_DIR),
+});
+const ctxIds = max => v => Array.isArray(v) && v.length >= 1 && v.length <= max && v.every(ctxId);
+ipc.register('ctx', 'expand', { ids: ctxIds(50), layers: types.text(20), depth: types.int(1, 2) }, async ({ ids, layers, depth }) => ctxLib.expand(ids, layers, depth));
+ipc.register('ctx', 'pack', { ids: ctxIds(80), budget: types.int(300, 20000), withL0: types.bool, withLines: types.bool, note: types.text(2000) },
+  async ({ ids, budget, withL0, withLines, note }) => ctxLib.pack(ids, { budget, withL0, withLines, note }), { optional: ['withL0', 'withLines', 'note'] });
+ipc.register('ctx', 'clusters', {}, async () => ctxLib.clusters());
+ipc.register('ctx', 'saveCluster', { name: types.text(80), ids: ctxIds(80) }, async ({ name, ids }) => ctxLib.saveCluster(name, ids));
+ipc.register('ctx', 'deleteCluster', { id: types.id }, async ({ id }) => ctxLib.deleteCluster(id));
+ipc.register('ctx', 'sendToClaude', { packId: types.id, how: types.enum('term-A', 'term-B', 'chat') }, async ({ packId, how }) => ctxLib.sendToClaude(packId, how));
 
 ipc.legacy('handle', 'vrg:act', (e, id) => acts.runAct(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);
