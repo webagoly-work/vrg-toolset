@@ -1,0 +1,5 @@
+LISTEN 0      511        0.0.0.0:8124       0.0.0.0:*    users:(("node",pid=4242,fd=21))
+LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*    users:(("systemd-resolve",pid=600,fd=14))
+LISTEN 0      128          [::1]:8797          [::]:*    users:(("node",pid=4300,fd=22))
+LISTEN 0      128   192.168.1.24:9000       0.0.0.0:*
+LISTEN 0      128              *:8123             *:*    users:(("node",pid=4400,fd=19))

@@ -24,7 +24,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M6** | Gyorsjegyzet (`notes`) | **LIVE** (built 2026-10-30, D-6 = A, checked on the phone 2026-10-31): quick notes pushed to a dedicated branch acting as the chat log | GitHub | high |
 | **M9** | Frissítés (`update`) | **LIVE** (built and checked on the phone 2026-10-31): self-update from GitHub Releases built by Actions | GitHub | medium (+ user step: keystore secret) |
 | **M4** | Haladás (`pulse`) | **LIVE** (built 2026-10-31, D-8 = A, checked on the phone 2026-11-05): main first, then branches with unmerged work; which tools changed, commits, PRs, CI | GitHub | high |
-| **M8** | Localhost (`ports`) | the PC's local servers: open on the phone (relay proxy) or in a separate desktop window | relay | high (relay) |
+| **M8** | Localhost (`ports`) | **BETA** (built 2026-11-05, D-10 = C, waiting for the phone check): the PC's local servers: open on the phone (relay proxy, `--ports`) or in a separate desktop window | relay | high (relay) |
 | **M16** | Kit (`kit`) | the VRG UI Kit's look on the phone: its tokens generated into Kotlin beside the six palettes, the three OFL fonts, the MINI as a Compose part (decided 2026-11-04, built after M8) | — | low (UI only) |
 | **M11** | Indítópult (`launch`) | START.cmd's tools from the phone; running ones; their log | relay | high (relay) |
 | **M12** | Átadás (`drop`) | a two-way file board (`localhost:47291/board` + the app), clipboard, photos routed to the Planner / Inventory | relay | medium |

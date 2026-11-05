@@ -67,6 +67,13 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   for any paired phone; "Itt" shows it on the phone through the relay's `/p/<port>/` proxy, paired phones only, and only
   while the relay runs with `--ports` (off by default, like `--shots`).
 
+- **M8 · How Localhost is built** (2026-11-05, no question needed). Windows reads `netstat -ano` + `tasklist`
+  (not Get-NetTCPConnection: ~100 ms instead of a PowerShell start; listening rows found by the zero foreign
+  port, since the state word is localised). "📱 Itt" is a Custom Tab through `/p/<port>/`, not a WebView; the
+  proxy token is one per pairing for 12 hours, made a cookie on the first request, revoked with the pairing.
+  `Mobile/catalogue/ports.json` is generated from START's servers (`ports-gen.js`). `mobile.cmd relay` starts
+  the relay with `--shots --ports`; START's bare relay (O → 7) with neither. Details: `WP/M8.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city

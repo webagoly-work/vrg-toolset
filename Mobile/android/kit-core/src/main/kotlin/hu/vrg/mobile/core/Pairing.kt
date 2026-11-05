@@ -91,8 +91,9 @@ sealed interface RelayNote {
 object RelayMsgs {
     private var seq = 0
 
+    /** One envelope; other relay abilities (PortsMsgs, WP M8) build theirs here too, so `seq` stays one counter. */
     @Synchronized
-    private fun build(type: String, payload: JSONObject, to: String? = null): String {
+    internal fun build(type: String, payload: JSONObject, to: String? = null): String {
         val o = JSONObject().put("v", 1).put("from", "phone").put("seq", ++seq)
             .put("t", System.currentTimeMillis()).put("type", type).put("payload", payload)
         if (to != null) o.put("to", to)

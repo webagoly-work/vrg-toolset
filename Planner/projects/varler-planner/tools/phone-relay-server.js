@@ -66,6 +66,17 @@
 //     on as well), the later ports / launch / drop too. Plain control (keys, cmd, gestures, state)
 //     is unchanged, so an unpaired phone-sender.html still drives the Planner.
 //   * /pair/code.json, /pair/list.json and POST /pair/remove?id= serve the page; same local-only rule.
+//
+// CHANGED 5 Nov — Localhost (VRG Mobile, WP M8, D-10 = C; the rules are in relay-ports.js).
+//   * {type:'ports.list', to:'relay'} from a trusted phone -> {type:'ports', payload:{ok, ports:[{port,
+//     process, http, title, known, path, system, self}], proxy:{on, token}}}: this PC's listening ports.
+//   * {type:'ports.open', to:'relay', payload:{port, path, where:'desktop'}} -> opens
+//     http://localhost:<port><path> in its own window here (portable Chrome --app=, else the system
+//     browser) and answers {type:'ports.opened', payload:{ok, port, url, how}}. The URL is built from
+//     the number; nothing else is ever opened.
+//   * /p/<port>/… reverse-proxies to localhost:<port> for a paired phone's token, Location rewritten.
+//     OFF unless started with --ports (or RELAY_PORTS=1), like --shots. Mobile\mobile.cmd relay
+//     starts it with both; START.cmd G with neither. An untrusted phone gets {ok:false, trusted:false}.
 // ==========================================================================
 
 const http = require('http');
@@ -76,6 +87,7 @@ const crypto = require('crypto');
 const { execFile } = require('child_process');
 const { WebSocketServer } = require('ws');
 const pairing = require('./relay-pair');
+const ports = require('./relay-ports');
 
 const DEFAULT_PORT = 47291;
 const MAX_TRIES = 8;                       // 47291..47298
@@ -83,7 +95,10 @@ const MAX_TRIES = 8;                       // 47291..47298
 const ARGS = process.argv.slice(2);
 const wanted = Number(ARGS.find(a => /^\d+$/.test(a))) || Number(process.env.GYRO_PORT) || DEFAULT_PORT;
 const SHOTS = ARGS.includes('--shots') || process.env.RELAY_SHOTS === '1';
+const PORTS = ARGS.includes('--ports') || process.env.RELAY_PORTS === '1';
 const PAIRS = pairing.createPairing();
+const GATE = ports.createGate();
+const isPaired = id => PAIRS.list().some(p => p.id === id);
 const SENDER_PAGE = path.join(__dirname, '..', 'mobile', 'phone-sender.html');
 const SENDER_FALLBACK = path.join(__dirname, 'phone-sender.html');
 
@@ -221,6 +236,7 @@ const server = http.createServer((req, res) => {
       roster: roster(),
       focus: lastFocus,
       shots: SHOTS,
+      ports: PORTS,
       app: 'varler-phone-relay',
       v: 3
     });
@@ -248,9 +264,50 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // ---- /p/<port>/… — the phone's view of a local server (see the 5 Nov note) --------------------
+  if (url === '/p' || url.startsWith('/p/')) { serveProxy(req, res); return; }
+
+  // A proxied page asking for a root-relative path ("/app.js") lands here: send it back under the
+  // /p/<port>/ it came from, but only for a phone that already holds a valid proxy cookie.
+  if (PORTS && req.method === 'GET') {
+    const ref = /^https?:\/\/[^/]+\/p\/(\d{1,5})\//.exec(req.headers.referer || '');
+    if (ref && GATE.check(ports.cookieValue(req.headers.cookie, ports.PROXY_COOKIE), isPaired)) {
+      res.writeHead(307, { Location: `/p/${Number(ref[1])}${req.url}`, 'Cache-Control': 'no-store' });
+      res.end();
+      return;
+    }
+  }
+
   res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
   res.end('Not found');
 });
+
+function serveProxy(req, res) {
+  const text = (code, msg) => { res.writeHead(code, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(msg); };
+  if (!PORTS) { text(404, 'A telefonos megnyitás ki van kapcsolva: a relét --ports kapcsolóval kell indítani (Mobile\\mobile.cmd relay).'); return; }
+  const bare = /^\/p\/(\d{1,5})(\?.*)?$/.exec(req.url || '');
+  if (bare) { res.writeHead(301, { Location: `/p/${bare[1]}/${bare[2] || ''}` }); res.end(); return; }
+  const m = ports.parseProxyPath(req.url);
+  if (!m || m.rest == null) { text(404, 'Not found'); return; }
+  if (m.port === server.address().port) { text(403, 'A relé önmagát nem közvetíti.'); return; }
+  const { path: rest, token } = ports.stripToken(m.rest);
+  if (token) {
+    // the first visit from the phone: the token becomes a cookie, and the URL loses it
+    if (!GATE.check(token, isPaired)) { console.log(`  ! proxy token elutasitva: ${clientIp(req)} -> :${m.port}`); text(403, 'Lejárt vagy hibás belépő: nyisd meg újra a VRG Mobile Localhost listájából.'); return; }
+    res.writeHead(302, {
+      Location: `/p/${m.port}${rest}`,
+      'Set-Cookie': `${ports.PROXY_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.round(ports.TOKEN_TTL / 1000)}`,
+      'Cache-Control': 'no-store',
+    });
+    res.end();
+    return;
+  }
+  if (!GATE.check(ports.cookieValue(req.headers.cookie, ports.PROXY_COOKIE), isPaired)) {
+    text(403, 'Csak párosított telefonról: nyisd meg a VRG Mobile Localhost listájából ("Itt").');
+    return;
+  }
+  ports.proxy(req, res, m.port, rest, 'localhost');
+}
 
 function servePair(req, res, url) {
   const own = lanAddresses().map(a => a.address);
@@ -320,6 +377,7 @@ function isTrusted(ws) { return !!ws.__trusted; }
 
 /** A pairing removed (on the PC or by the phone): its live connections stop being trusted at once. */
 function untrust(id) {
+  GATE.revoke(id);
   for (const c of clients) {
     if (c.__pairId === id) {
       c.__trusted = false; c.__pairId = null;
@@ -394,6 +452,12 @@ wss.on('connection', (ws, req) => {
       return;
     }
 
+    if (m && to === 'relay' && (m.type === 'ports.list' || m.type === 'ports.open')) {
+      if (roleOf(ws) !== PHONE) return;
+      onPortsMessage(ws, ip, m.type, m.payload || {});
+      return;
+    }
+
     if (m && m.type === 'focus' && isApp(from)) {
       lastFocus = {
         role: from,
@@ -453,6 +517,37 @@ function onPairMessage(ws, ip, type, p) {
       untrust(p.id);
     }
   }
+}
+
+/* ---- localhost: the PC's local servers (relay-ports.js has the rules) ------ */
+
+let portsBusy = null;                      // one scan at a time; a second asker shares its answer
+
+function onPortsMessage(ws, ip, type, p) {
+  const answerType = type === 'ports.list' ? 'ports' : 'ports.opened';
+  const answer = payload => { if (ws.readyState === ws.OPEN) ws.send(fromRelay(answerType, payload)); };
+  if (!isTrusted(ws)) {
+    answer({ ok: false, trusted: false,
+      reason: 'Párosítás kell: a PC-n nyisd meg a http://localhost:' + server.address().port + '/pair oldalt, és olvasd be a QR-t.' });
+    return;
+  }
+  if (type === 'ports.list') {
+    const started = Date.now();
+    portsBusy = portsBusy || ports.listPorts({ self: server.address().port }).finally(() => { portsBusy = null; });
+    portsBusy.then(list => {
+      console.log(`  [port] lista -> ${ip}: ${list.length} port, ${Date.now() - started} ms`);
+      answer({ ok: true, ports: list, took: Date.now() - started,
+        proxy: PORTS ? { on: true, token: GATE.issue(ws.__pairId) } : { on: false } });
+    }, err => answer({ ok: false, reason: 'A portok nem olvashatók: ' + err.message }));
+    return;
+  }
+  // ports.open: only where:'desktop' is the relay's job; "Itt" on the phone goes through /p/<port>/
+  if (p.where !== 'desktop') { answer({ ok: false, reason: 'Ismeretlen hely: ' + String(p.where).slice(0, 20) }); return; }
+  const u = ports.portUrl(p.port, p.path);
+  if (!u.ok) { answer({ ok: false, port: p.port, reason: u.reason }); return; }
+  const r = ports.openDesktop(u.url);
+  console.log(`  [port] megnyitas a PC-n (${ip}): ${u.url}  ${r.ok ? r.how : r.reason}`);
+  answer(Object.assign({ port: p.port, url: u.url }, r));
 }
 
 /* ---- screenshots -------------------------------------------------------- */
@@ -604,6 +699,7 @@ server.on('listening', () => {
   console.log('');
   console.log('   Telefon és PC UGYANAZON a WiFi-n legyen.');
   console.log(SHOTS ? '   Képernyőkép a telefonra: BEKAPCSOLVA (--shots, párosított telefonnak)' : '   Képernyőkép a telefonra: ki (indítás --shots kapcsolóval)');
+  console.log(PORTS ? '   Localhost a telefonon (/p/<port>/): BEKAPCSOLVA (--ports, párosított telefonnak)' : '   Localhost a telefonon: ki (indítás --ports kapcsolóval)');
   console.log(`   VRG Mobile párosítás (ezen a PC-n): http://localhost:${port}/pair`);
   console.log('   Mobiladat nem jó.');
   console.log('  ===========================================');

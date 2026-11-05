@@ -7,6 +7,7 @@ import hu.vrg.mobile.core.FeatureInfo
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.notes.NotesFeature
 import hu.vrg.mobile.pair.PairFeature
+import hu.vrg.mobile.ports.PortsFeature
 import hu.vrg.mobile.pulse.PulseFeature
 import hu.vrg.mobile.settings.SettingsFeature
 import hu.vrg.mobile.sphere.SphereFeature
@@ -27,6 +28,7 @@ object Registry {
         UpdateFeature,
         PulseFeature,
         SphereFeature,
+        PortsFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

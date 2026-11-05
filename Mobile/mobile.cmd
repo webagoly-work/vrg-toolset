@@ -19,6 +19,8 @@ setlocal EnableDelayedExpansion
 ::  2026-10-27 - first version.
 ::  2026-10-28 - 1) / relay starts the relay with --shots, so the phone can
 ::  ask for a screenshot of this PC. START.cmd G still starts it without.
+::  2026-11-05 - WP M8: 1) / relay adds --ports (the phone opens the PC's local
+::  servers through the relay's /p/<port>/ proxy); e2e runs relay-ports.js too.
 :: ==========================================================================
 
 set "AD=%~dp0"
@@ -56,7 +58,7 @@ echo   VRG Mobile - tarsalkalmazas ^(elso funkcio: Legeger^)
 echo   %AD%
 echo ============================================================
 echo.
-echo   1^) Gyro relay inditasa  ^(kulon ablakban, port 47291, kepernyokeppel a telefonra^)
+echo   1^) Gyro relay inditasa  ^(kulon ablakban, port 47291, kepernyokep + localhost a telefonra^)
 echo   2^) APK epitese          ^(gradlew assembleDebug - JDK 17 + Android SDK kell^)
 echo   3^) Telepites a telefonra ^(adb install - USB hibakereses bekapcsolva^)
 echo   4^) Core tesztek         ^(kit-core + airdeck-core - SDK nem kell^)
@@ -87,8 +89,9 @@ goto MENU
 if not exist "%NODE_EXE%" goto NO_NODE
 if not exist "%RELAY_JS%" goto NO_RELAY
 :: --shots: the phone may ask for a screenshot of this PC (Legeger camera button).
-:: START.cmd G starts the same relay without it.
-start "VRG 47291 - Gyro relay" /D "%PLANNER_DIR%" "%NODE_EXE%" "tools\phone-relay-server.js" --shots
+:: --ports: a paired phone may open this PC's local servers through /p/<port>/ (WP M8).
+:: START.cmd G starts the same relay without either.
+start "VRG 47291 - Gyro relay" /D "%PLANNER_DIR%" "%NODE_EXE%" "tools\phone-relay-server.js" --shots --ports
 echo.
 echo   A relay kulon ablakban fut ^(VRG 47291^). A telefonon: Beallitasok -^> Kereses a halozaton.
 ping -n 3 127.0.0.1 >nul 2>&1
@@ -139,6 +142,8 @@ if not exist "%PLANNER_DIR%\node_modules\ws" goto NO_WS
 pushd "%REPO%"
 rem QR pairing (WP M2): Node only, own port 47391, no Playwright needed
 "%NODE_EXE%" "Mobile\tests\relay-pair.js"
+rem Localhost (WP M8): Node only, ports 47393 + 47394, opens no window (dry run)
+"%NODE_EXE%" "Mobile\tests\relay-ports.js"
 "%NODE_EXE%" -e "require.resolve('playwright')" >nul 2>&1
 if errorlevel 1 goto NO_PLAYWRIGHT
 "%NODE_EXE%" "Mobile\tests\relay-e2e.js"

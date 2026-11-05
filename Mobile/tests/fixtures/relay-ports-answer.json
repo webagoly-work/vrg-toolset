@@ -1,0 +1,19 @@
+{
+  "v": 1, "from": "relay", "seq": 7, "t": 1762369200000, "type": "ports",
+  "payload": {
+    "ok": true,
+    "took": 412,
+    "proxy": { "on": true, "token": "0123456789abcdef0123456789abcdef" },
+    "ports": [
+      { "port": 135, "process": "svchost", "pid": 1252, "http": false, "status": null, "title": null, "known": null, "id": null, "path": "/", "system": true, "self": false },
+      { "port": 5037, "process": "adb", "pid": 32144, "http": false, "status": null, "title": null, "known": "adb szerver", "id": "adb", "path": "/", "system": false, "self": false },
+      { "port": 8124, "process": "node", "pid": 7311, "http": true, "status": 200, "title": "VRG MindMap", "known": "VRG MindMap", "id": "mindmap", "path": "/", "system": false, "self": false },
+      { "port": 8131, "process": "node", "pid": 7400, "http": true, "status": 200, "title": "Varler Planner", "known": "Varler Planner · dev szerver", "id": "planner", "path": "/Planner/projects/varler-planner/dist/varler_planner.html", "system": false, "self": false },
+      { "port": 9229, "process": "node", "pid": 7500, "http": false, "status": null, "title": null, "known": null, "id": null, "path": "/", "system": false, "self": false },
+      { "port": 5173, "process": "node", "pid": 7600, "http": true, "status": 200, "title": "Vite App", "known": null, "id": null, "path": "/", "system": false, "self": false },
+      { "port": 47291, "process": "node", "pid": 7700, "http": true, "status": 200, "title": "Légegér", "known": "Gyro relay · telefon", "id": "gyro", "path": "/", "system": false, "self": true },
+      { "port": 70000, "process": "bad", "pid": 1, "http": true, "status": 200, "title": "out of range", "known": null, "id": null, "path": "/", "system": false, "self": false },
+      { "port": 8125, "process": "node", "pid": 7800, "http": true, "status": 200, "title": "Bad path", "known": null, "id": null, "path": "//evil.example/", "system": false, "self": false }
+    ]
+  }
+}

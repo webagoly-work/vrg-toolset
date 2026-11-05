@@ -59,4 +59,5 @@ dependencies {
     implementation(project(":feature-update"))
     implementation(project(":feature-pulse"))
     implementation(project(":feature-sphere"))
+    implementation(project(":feature-ports"))
 }

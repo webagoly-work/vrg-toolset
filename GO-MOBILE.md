@@ -47,8 +47,9 @@ What changes locally compared with the cloud:
 - **Branch:** `main` in the main checkout, like everything else. Commit after each finished step.
 - **Check first:** `Mobile\mobile.cmd test` (or `cd Mobile/android && gradlew :kit-core:test :airdeck-core:test`)
   and `node Mobile/tests/relay-pair.js` must be green before you change anything.
-- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M8** (M1, M2, M3, M4, M6, M9 and M14 live; D-10 = C, 2026-11-05).
-  After M8 comes **M16** (the VRG UI Kit's look on the phone, planned 2026-11-04 in `docs/mobile/WP/M16.md`; it needs the kit PR #4 merged).
+- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M16** (the VRG UI Kit's look on the phone, planned 2026-11-04 in
+  `docs/mobile/WP/M16.md`; the kit PR #4 is merged). M1, M2, M3, M4, M6, M9 and M14 are live; **M8** (Localhost,
+  D-10 = C) was built on 2026-11-05 and is BETA until the user works through its phone list in `docs/mobile/WP/M8.md`.
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
 - Each WP ends with:
@@ -84,4 +85,5 @@ What changes locally compared with the cloud:
 - **Temporary access** (2026-11-02): `Mobile/access.json` switches the repo-name entry and the trusted device list;
   see the end of `docs/mobile/WP/M3.md`. Only the user decides when they change.
 - **Every WP**: install the APK (`mobile.cmd` → 3, or from the Actions run / Releases after M9) and work through the
-  phone checklist. Open right now: none.
+  phone checklist. Open right now: **M8** (`docs/mobile/WP/M8.md` → "Telefonon ellenőrizni"; the relay must be
+  started with `--ports`: START → L → S, or `Mobile\mobile.cmd` → 1).
