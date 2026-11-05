@@ -13,7 +13,8 @@ const KEYS = {
   'win.mode':          { type: v => ['ablak', 'munka', 'overlay'].includes(v), def: 'ablak' },
   'win.display':       { type: v => v === null || Number.isInteger(v), def: null },
   'win.bounds':        { type: v => v === null || rect(v), def: null },
-  'term.embedClaude':  { type: v => typeof v === 'boolean', def: false },
+  'term.embedClaude':  { type: v => typeof v === 'boolean', def: true },            // WP-16: s:C/*, cont:, go: open in a term pane
+  'claude.account':    { type: v => v === 'A' || v === 'B', def: 'A' },
   'web.history.days':  { type: v => Number.isInteger(v) && v >= 0 && v <= 3650, def: 90 },
   'ui.lang':           { type: v => v === 'hu' || v === 'en', def: 'hu' },
   'layout.tree':       { type: v => v === null || layout.validate(v).ok, def: null },   // WP-07; null = the default tree

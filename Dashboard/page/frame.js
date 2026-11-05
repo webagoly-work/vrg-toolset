@@ -62,6 +62,7 @@
       if (!ok) { body.textContent = 'Ez a panel még nem érhető el.'; body.title = 'This pane is not available yet.'; return; }
       e.inst = Object.create(P[pane.kind]);
       try { e.inst.mount(body, pane.state, api(pane.id)); } catch (err) { body.textContent = 'Hiba a panel indításakor.'; log('error', 'mount ' + pane.kind + ': ' + err.message); }
+      if (pane.kind === 'term') decorateClaude(e.inst);
       scheduleBounds();
     });
     return body;
@@ -119,7 +120,7 @@
     new ResizeObserver(scheduleBounds).observe(root);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && saveTimer) { clearTimeout(saveTimer); save(); } });
     scheduleBounds();
-    if (vrg && vrg.on) vrg.on('layout', 'open', m => openKind(m.kind, m.state));
+    if (vrg && vrg.on) vrg.on('layout', 'open', m => (m && m.kind === 'term' && typeof m.term === 'string' ? adoptTerm(m) : openKind(m.kind, m.state)));
     // "Terminál itt" (files pane): the files pane fires  vrg-open-term  with detail { at: <dir handle> }
     document.addEventListener('vrg-open-term', e => openKind('term', { prof: 'pwsh', at: e.detail && e.detail.at }));
     initPalette();
@@ -151,6 +152,59 @@
     L.commit(t);
     L.focusPane(id);
     return id;
+  }
+
+  // ------------------------------------------------------------ embedded Claude Code (WP-16)
+  // main opened the session (lib/claudeterm.js) and sends  layout.open { kind:'term', term, prof }: a new term pane takes it over
+  // instead of starting a shell of its own. The pane has no `adopt` of its own (panes/term.js is not part of this WP), so the frame
+  // builds the xterm through the pane's own methods and sets the session id.
+  const libBase = () => new URL('../../tools/js-libs/', document.baseURI).href;
+  const loadedLibs = {};
+  function loadScript(url) {
+    if (!loadedLibs[url]) loadedLibs[url] = new Promise(res => { const s = document.createElement('script'); s.src = url; s.onload = () => res(true); s.onerror = () => res(false); document.head.append(s); });
+    return loadedLibs[url];
+  }
+  async function ensureXterm() {
+    if (window.Terminal && window.FitAddon && window.FitAddon.FitAddon) return true;
+    let libs = {};
+    try { const i = await vrg.app.info(); libs = (i && i.libs) || {}; } catch (e) {}
+    const xt = /^file:/i.test(libs.xterm || '') ? libs.xterm : libBase() + 'xterm/lib/xterm.js';
+    const fit = /^file:/i.test(libs.fit || '') ? libs.fit : libBase() + 'xterm-addon-fit/lib/addon-fit.js';
+    if (!window.Terminal && !(await loadScript(xt))) return false;
+    if (!(window.FitAddon && window.FitAddon.FitAddon) && !(await loadScript(fit))) return false;
+    return !!window.Terminal;
+  }
+  async function adoptTerm(m) {
+    const id = openKind('term', {});                           // no prof: the pane stays idle (its profile menu is hidden below)
+    if (!id) { try { vrg.term.kill(m.term); } catch (e) {} return ''; }
+    let inst = null;
+    for (let i = 0; i < 100 && !(inst && inst.root && inst.host); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
+    if (!inst || !inst.root) { try { vrg.term.kill(m.term); } catch (e) {} return id; }
+    inst.prof = typeof m.prof === 'string' ? m.prof : 'claude-a';
+    inst.menu.hidden = true;
+    if (!(await ensureXterm()) || !inst.root) { try { vrg.term.kill(m.term); } catch (e) {} if (inst.note) { inst.note.hidden = false; inst.note.textContent = 'A terminál ebben a buildben nem érhető el.'; } return id; }
+    if (inst.note) inst.note.hidden = true;
+    if (!inst.term) inst.build();
+    inst.exited = false; inst.id = m.term; inst.root.dataset.term = m.term;
+    inst.fit(true); inst.term.focus();
+    decorateClaude(inst);
+    return id;
+  }
+
+  // the A/B account switch in the tab strip of a Claude term pane: it only changes the setting claude.account (the next start uses it)
+  function decorateClaude(inst) {
+    if (!inst || !inst.bar || !/^claude-/.test(inst.prof || '') || inst.bar.querySelector('[data-role="claude-account"]')) return;
+    const box = document.createElement('span'); box.dataset.role = 'claude-account'; box.title = 'Claude account';
+    const btns = {};
+    const mark = a => { for (const k of Object.keys(btns)) btns[k].setAttribute('aria-pressed', String(k === a)); };
+    for (const a of ['A', 'B']) {
+      const b = btns[a] = document.createElement('button'); b.type = 'button'; b.textContent = a; b.dataset.account = a; b.title = 'Claude account ' + a;
+      b.addEventListener('click', () => { mark(a); try { vrg.call('app', 'setting', { k: 'claude.account', v: a }); } catch (e) {} });
+      box.append(b);
+    }
+    inst.bar.append(box);
+    mark(/-b$/.test(inst.prof) ? 'B' : 'A');
+    try { vrg.call('app', 'setting', { k: 'claude.account' }).then(r => { if (r && (r.v === 'A' || r.v === 'B')) mark(r.v); }).catch(() => {}); } catch (e) {}
   }
 
   const wbar = document.getElementById('wbar');

@@ -1,5 +1,5 @@
 // acts.js — act ids → registry items (the allow-list) and what an act does.
-// createActs({ R, run, ports, log }) returns { act, lookup, runAct }.
+// createActs({ R, run, ports, log, claudeterm?, settings? }) returns { act, lookup, runAct(id, { account? }) }.
 'use strict';
 const path = require('path');
 const { execFile } = require('child_process');
@@ -7,7 +7,8 @@ const { execFile } = require('child_process');
 // the first prompt of a "continue" session; it only reads, so nothing runs before the user says so
 const CONTINUE = 'Continue this dev line: read CLAUDE.md in this folder, check the real state, then tell me where it stands and the next step.';
 
-function createActs({ R, run, ports, log = () => {} }) {
+// claudeterm (WP-16, lib/claudeterm.js) is optional: without it, or with the setting term.embedClaude off, Claude starts the D1 way
+function createActs({ R, run, ports, log = () => {}, claudeterm = null, settings = require('./settings.js') }) {
   const { say, T, ui, Q, argList, exists } = R;
   const P = s => R.expand(s);
 
@@ -80,12 +81,12 @@ function createActs({ R, run, ports, log = () => {} }) {
     if ((m = id.match(/^cont:([\w-]+)$/))) {
       const l = C.data.lines.find(x => x.id === m[1]); const c = C.claude && C.startActs[C.claude];
       if (!l || l.contAct !== id || !c) return null;
-      return { item: { ...c, name: 'Claude · ' + l.name, cwd: l.sessionPath, args: [...(c.args || []), CONTINUE] } };
+      return { item: { ...c, name: 'Claude · ' + l.name, cwd: l.sessionPath, args: [...(c.args || []), CONTINUE] }, claude: { cwd: l.sessionPath, prompt: CONTINUE } };
     }
     if ((m = id.match(/^go:([A-Z0-9]+)$/))) {
       const g = C.data.go.find(x => x.name === m[1]); const c = C.claude && C.startActs[C.claude];
       if (!g || !g.act || !c) return null;
-      return { item: { ...c, name: 'Claude · GO ' + g.name, args: [...(c.args || []), 'GO ' + g.name] } };
+      return { item: { ...c, name: 'Claude · GO ' + g.name, args: [...(c.args || []), 'GO ' + g.name] }, claude: { cwd: c.cwd ? P(c.cwd) : R.C.paths.REPO, prompt: 'GO ' + g.name } };
     }
     if ((m = id.match(/^godoc:([A-Z0-9]+)$/))) { const g = C.data.go.find(x => x.name === m[1]); return g ? { doc: g.file, name: 'GO ' + g.name } : null; }
     // D4: jobs by anonymised code; the folder and document paths come from collect()'s private map, never from the page
@@ -96,10 +97,26 @@ function createActs({ R, run, ports, log = () => {} }) {
     return null;
   }
 
-  async function runAct(id) {
+  // WP-16: what an embedded Claude terminal needs for an act id ({ cwd, prompt?, extra? }), or null when the act is not a Claude start
+  function claudeMeta(id, hit) {
+    if (hit.claude) return hit.claude;
+    if (!/^s:C\//.test(id) || !hit.item || !hit.item.exe || !/claude/i.test((hit.item.args || []).join(' '))) return null;
+    const agent = (hit.item.args || []).join(' ').match(/--agent ([\w-]+)/);
+    return { cwd: hit.item.cwd ? P(hit.item.cwd) : R.C.paths.REPO, extra: agent ? ['--agent', agent[1]] : undefined };
+  }
+  const setting = (k, def) => { try { return settings.get(k); } catch (e) { return def; } };
+
+  async function runAct(id, opts) {
     const hit = lookup(id);
     if (!hit) { log('refused', id); return say(false, 'Nincs a nyilvántartásban: ' + id, 'Not in the registry.'); }
     if (hit.doc) { run.openPath(hit.doc); return say(true, T(ui('opened'), { name: hit.name }), 'opened'); }
+    const cl = claudeMeta(id, hit);
+    if (cl && claudeterm && setting('term.embedClaude', true) === true) {
+      const account = opts && (opts.account === 'A' || opts.account === 'B') ? opts.account : setting('claude.account', 'A');
+      const r = claudeterm.open({ account, cwd: cl.cwd, firstPrompt: cl.prompt, extraArgs: cl.extra });
+      log(id, r.term ? 'ok' : 'no', 'embedded ' + account);
+      return r.term ? say(true, T(ui('opened'), { name: hit.item.name }), 'opened in a terminal pane') : say(false, r.hu || 'A terminál nem indult el.', 'the terminal did not start');
+    }
     try { const r = await act(hit.item); log(id, r.ok ? 'ok' : 'no', r.hu); return r; }
     catch (e) { log(id, 'error', e.message); return say(false, e.message, 'error'); }
   }
