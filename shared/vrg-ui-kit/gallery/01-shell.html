@@ -1,0 +1,443 @@
+<section class="g-sec" id="f01" data-vk-hop aria-labelledby="f01-h">
+  <header class="g-sec__head">
+    <span class="g-sec__num">01</span>
+    <h2 id="f01-h" class="vk-title">Munkafelület és keret</h2>
+    <p class="g-sec__lead">A VRG Desktop váza: parancssor, összecsukható dokkok panelekkel, lapok, osztott nézet, lebegő ablakok tálcával és élő állapotsor — és ugyanez HUD-ként, átlátszó keretben a tartalom fölött.</p>
+  </header>
+
+  <style>
+    .f01-fit { position: relative; overflow: hidden; border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); background: var(--vk-bg); }
+    .f01-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+    .f01-kv { display: grid; grid-template-columns: auto 1fr; gap: var(--vk-space-2) var(--vk-space-4); margin: 0; font-size: var(--vk-fs-sm); }
+    .f01-kv dt { font: var(--vk-fs-2xs)/1.6 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text-muted); }
+    .f01-kv dd { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .f01-tree { list-style: none; margin: 0; padding: 0; font-size: var(--vk-fs-sm); }
+    .f01-tree ul { list-style: none; margin: 0; padding: 0 0 0 var(--vk-space-4); border-left: var(--vk-border-w) solid var(--vk-line); margin-left: 7px; }
+    .f01-tree li > span { display: flex; align-items: center; gap: var(--vk-space-2); min-height: calc(var(--vk-row-h) - 4px); padding: 0 var(--vk-space-2); border-radius: var(--vk-radius-sm); white-space: nowrap; }
+    .f01-tree li > span .vk-icon { color: var(--vk-text-muted); }
+    .f01-tree li > span[aria-current] { background: var(--vk-select-bg); box-shadow: inset 2px 0 0 var(--vk-accent); }
+    .f01-tree li > span[aria-current] .vk-icon { color: var(--vk-accent); }
+    .f01-tree code { font-size: var(--vk-fs-2xs); color: var(--vk-text-muted); margin-left: auto; }
+    .f01-layers { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--vk-space-2); font-size: var(--vk-fs-sm); }
+    .f01-layers li { display: flex; align-items: center; gap: var(--vk-space-3); }
+    .f01-layers i { width: 18px; height: 2px; background: var(--c); flex: none; }
+    .f01-planpane { background: var(--vk-bg-sunken); display: grid; place-items: center; }
+    .f01-plan { display: block; width: 400px; height: 260px; flex: none; } /* 1 user unit = 1 px, so labels stay at --vk-fs-2xs */
+    .f01-plan text { font-family: var(--vk-font-mono); font-size: var(--vk-fs-2xs); letter-spacing: .1em; fill: var(--vk-text-muted); }
+    .f01-pane-h { display: flex; align-items: center; gap: var(--vk-space-2); padding: var(--vk-space-2) var(--vk-space-3); border-bottom: var(--vk-border-w) solid var(--vk-line); }
+    .f01-table { width: 100%; border-collapse: collapse; font-size: var(--vk-fs-xs); }
+    .f01-table th, .f01-table td { text-align: left; padding: var(--vk-space-1) var(--vk-space-3); border-bottom: var(--vk-border-w) solid var(--vk-line); white-space: nowrap; }
+    .f01-table th { font: var(--vk-fs-2xs)/1.6 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text-muted); font-weight: var(--vk-fw-regular); }
+    .f01-table td.n { font-family: var(--vk-font-mono); text-align: right; }
+    .f01-log { margin: 0; padding: var(--vk-space-3); font: var(--vk-fs-xs)/1.6 var(--vk-font-mono); color: var(--vk-term-text); background: var(--vk-term-bg); min-height: 100%; white-space: pre; }
+    .f01-log b { color: var(--vk-activity); font-weight: var(--vk-fw-regular); }
+    .f01-log i { color: var(--vk-ok); font-style: normal; }
+    .f01-log u { color: var(--vk-crit); text-decoration: none; }
+    .f01-ph { padding: var(--vk-space-5); color: var(--vk-text-muted); font-size: var(--vk-fs-sm); }
+    .f01-issues { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--vk-space-2); font-size: var(--vk-fs-sm); }
+    .f01-issues li { display: flex; gap: var(--vk-space-2); align-items: baseline; }
+    .f01-issues .vk-icon { color: var(--vk-sig-contradiction); flex: none; }
+    .f01-calc { display: grid; gap: var(--vk-space-3); }
+    .f01-calc .vk-btn { justify-self: start; }
+    .f01-pages { margin: var(--vk-space-3) 0 0; padding: 0; list-style: none; font: var(--vk-fs-xs)/1.7 var(--vk-font-mono); color: var(--vk-text-muted); }
+    .f01-pages [data-done] { color: var(--vk-text); }
+    .f01-blueprint { position: absolute; inset: 0; background-color: var(--vk-bg-sunken);
+      background-image: radial-gradient(circle at 58% 48%, var(--vk-activity-soft), transparent 32%), radial-gradient(circle at 30% 60%, var(--vk-accent-soft), transparent 40%),
+        linear-gradient(var(--vk-line-strong) 1px, transparent 1px), linear-gradient(90deg, var(--vk-line-strong) 1px, transparent 1px),
+        linear-gradient(var(--vk-line) 1px, transparent 1px), linear-gradient(90deg, var(--vk-line) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 120px 120px, 120px 120px, 24px 24px, 24px 24px; }
+    .f01-blueprint svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .f01-blueprint text { font-family: var(--vk-font-mono); font-size: var(--vk-fs-xs); letter-spacing: .12em; fill: var(--vk-text-muted); }
+    .f01-pin { position: absolute; }
+    .f01-sensor { display: grid; gap: var(--vk-space-3); }
+    .f01-big { font: var(--vk-fs-3xl)/1 var(--vk-font-mono); color: var(--vk-text); }
+    .f01-big small { font-size: var(--vk-fs-md); color: var(--vk-text-muted); }
+    .f01-bars { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
+    .f01-bars i { flex: 1; background: var(--vk-activity); opacity: .75; min-height: 2px; }
+    .f01-states { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); }
+    .f01-states > .vk-panel { min-height: 170px; }
+    .f01-states > .vk-panel[data-collapsed] { min-height: 0; align-self: start; }
+    .f01-tabsdemo { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); margin-top: var(--vk-space-5); }
+    .f01-tabsdemo > div { height: 170px; border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); overflow: hidden; }
+  </style>
+
+  <article class="g-demo" id="f01-desktop">
+    <h3 class="g-demo__title">VRG Desktop — élő miniatűr <code>shell · commandbar · panel · tabs · splitter · wm · statusbar</code></h3>
+    <p class="g-demo__note">Billentyűk: <kbd>Shift</kbd>+nyilak ugrálnak a régiók (dokkok, panelek, lapok, ablakok, tálca) között. Eszköztárak, sínek, tálca: nyilak. Lapok: ←/→, Home/End, <kbd>Delete</kbd> bezár, <kbd>Ctrl W</kbd> akció. Elválasztó: nyilak, <kbd>Ctrl</kbd>+nyíl vagy PgUp/PgDn nagy lépés, Home/End, <kbd>Enter</kbd> alapméret. Ablak: a ⠿ „Mozgatás” mini (<kbd>Alt F7</kbd>), majd nyilak, <kbd>Enter</kbd> rögzít, <kbd>Esc</kbd> visszavon; <kbd>Alt F8</kbd> átméretezés. Az alsó dokk összecsukva: sín minikkel.</p>
+    <div class="f01-fit" data-w="1180" data-h="640">
+      <div class="f01-stage">
+        <div class="vk-shell" id="f01-shell">
+          <div class="vk-shell__top"><div id="f01-cmd"></div></div>
+          <aside class="vk-shell__dock" data-dock="left">
+            <section id="f01-p-tree">
+              <ul class="f01-tree" aria-label="Projektfa (helykitöltő)">
+                <li><span><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-folder-open"/></svg><b class="vk-num">VRG-2611-03</b></span>
+                  <ul>
+                    <li><span><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-bolt"/></svg>Erősáram</span>
+                      <ul>
+                        <li><span><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-cabinet"/></svg>Elosztó E1<code>12</code></span>
+                          <ul>
+                            <li><span><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-switch"/></svg>Q1 Főkapcsoló</span></li>
+                            <li><span aria-current="true"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-switch"/></svg>Q3 Hűtő-02</span></li>
+                            <li><span><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-switch"/></svg>Q4 Erőátvitel</span></li>
+                          </ul>
+                        </li>
+                        <li><span><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-list"/></svg>Kötőelem-lista<code>148</code></span></li>
+                      </ul>
+                    </li>
+                    <li><span><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-bulb"/></svg>Világítás</span></li>
+                    <li><span><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-cable"/></svg>Adat és busz</span></li>
+                    <li><span><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-file"/></svg>Űrlapok · Ősszeg</span></li>
+                  </ul>
+                </li>
+              </ul>
+            </section>
+            <section id="f01-p-layers">
+              <ul class="f01-layers">
+                <li><i style="--c: var(--vk-wire-power)"></i>Erősáram</li>
+                <li><i style="--c: var(--vk-wire-light)"></i>Világítás</li>
+                <li><i style="--c: var(--vk-wire-data)"></i>Adat</li>
+                <li><i style="--c: var(--vk-wire-control)"></i>Vezérlés</li>
+                <li><i style="--c: var(--vk-wire-earth)"></i>Védőföld</li>
+              </ul>
+            </section>
+          </aside>
+          <div class="vk-shell__main" role="region" aria-label="Munkaterület">
+            <div id="f01-tabs"></div>
+            <div id="f01-wm" aria-label="Ablakok rétege"></div>
+          </div>
+          <aside class="vk-shell__dock" data-dock="right">
+            <section id="f01-p-insp">
+              <dl class="f01-kv">
+                <dt>Azonosító</dt><dd class="vk-num">E1-Q3</dd>
+                <dt>Típus</dt><dd>Kismegszakító</dd>
+                <dt>Névleges</dt><dd class="vk-num">16 A · C</dd>
+                <dt>Áramkör</dt><dd>Hűtő-02</dd>
+                <dt>Kábel</dt><dd class="vk-num">NYM-J 3×2,5</dd>
+                <dt>Hossz</dt><dd class="vk-num">24,0 m</dd>
+                <dt>Feszültségesés</dt><dd class="vk-num">1,8 %</dd>
+                <dt>Réteg</dt><dd>Erősáram</dd>
+              </dl>
+            </section>
+            <section id="f01-p-check">
+              <ul class="f01-issues">
+                <li><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-contradiction"/></svg><span>Q3 névleges árama ütközik a kábellel (<span class="vk-num">2,5 mm²</span>).</span></li>
+                <li><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-contradiction"/></svg><span>Hűtő-02: hiányzó védőföld-bekötés.</span></li>
+              </ul>
+            </section>
+          </aside>
+          <aside class="vk-shell__dock" data-dock="bottom">
+            <section id="f01-p-term"><pre class="f01-log">vrg&gt; build planner --job VRG-2611-03</pre></section>
+            <section id="f01-p-log"><pre class="f01-log">05:12:04  mentés kész</pre></section>
+          </aside>
+          <div class="vk-shell__status"><div id="f01-status"></div></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f01-hud">
+    <h3 class="g-demo__title">HUD mód — átlátszó keret a tartalom fölött <code>shell[data-mode="hud"]</code></h3>
+    <p class="g-demo__note">Ugyanaz a keret, de a parancssor, a sínek és a panelek üvegre váltanak, a közép átengedi a mutatót a terv alá (a „S-04” mini a terven kattintható). Tömör sűrűség, a bal dokk összecsukva. A „HUD mód” mini a parancssorban egy regiszter-akció: kapcsold ki, és a keret újra tömör.</p>
+    <div class="f01-fit" data-w="1180" data-h="440" id="f01-hudfit">
+      <div class="f01-stage">
+        <div class="f01-blueprint" aria-hidden="false">
+          <svg viewBox="0 0 1180 440" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+            <g fill="none" style="stroke: var(--vk-line-strong)" stroke-width="1.5">
+              <path d="M140 70h560v300H140z"/><path d="M380 70v170M380 290v80M560 70v300M140 220h240M560 200h140"/>
+              <path d="M700 120h330v250H700"/><path d="M860 120v250"/>
+            </g>
+            <g fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path style="stroke: var(--vk-wire-power)" d="M170 340h170a14 14 0 0 0 14-14V160a14 14 0 0 1 14-14h244a14 14 0 0 1 14 14v96a14 14 0 0 0 14 14h150"/>
+              <path style="stroke: var(--vk-wire-data)" stroke-dasharray="6 4" d="M170 320h120a12 12 0 0 0 12-12V110a12 12 0 0 1 12-12h420a12 12 0 0 1 12 12v40h200"/>
+              <path style="stroke: var(--vk-wire-control)" d="M900 200v100a12 12 0 0 0 12 12h80"/>
+            </g>
+            <g style="fill: var(--vk-wire-power)"><circle cx="354" cy="250" r="5"/><circle cx="668" cy="200" r="5"/><circle cx="818" cy="270" r="5"/></g>
+            <g style="fill: var(--vk-bg-sunken); stroke: var(--vk-text)" stroke-width="1.5"><path d="M668 140l8 8-8 8-8-8z"/><path d="M900 192l8 8-8 8-8-8z"/></g>
+            <g style="fill: var(--vk-wire-control)"><rect x="988" y="308" width="8" height="8"/><rect x="166" y="336" width="8" height="8" style="fill: var(--vk-wire-power)"/></g>
+            <g style="stroke: var(--vk-accent)" fill="none" stroke-width="1"><circle cx="818" cy="270" r="13"/><path d="M831 270h60v-40h70"/></g>
+            <text x="966" y="226">S-04 // HŰTŐKÖR</text><text x="966" y="242" style="fill: var(--vk-accent)">4,2 °C · AKTÍV</text>
+            <text x="150" y="88">[A] GÉPTEREM</text><text x="390" y="88">[B] FOLYOSÓ</text><text x="570" y="88">[C] RAKTÁR</text><text x="710" y="138">[D] HŰTŐKAMRA</text>
+            <text x="150" y="410">VRG-2611-03 // 2. EMELET // M 1:50</text>
+          </svg>
+          <span class="f01-pin" id="f01-pin" style="left: 803px; top: 255px"></span>
+        </div>
+        <div class="vk-shell vk-shell--overlay" id="f01-hudshell">
+          <div class="vk-shell__top"><div id="f01-hudcmd"></div></div>
+          <aside class="vk-shell__dock" data-dock="left">
+            <section id="f01-h-layers"><p class="f01-ph">Rétegek</p></section>
+            <section id="f01-h-sens"><p class="f01-ph">Érzékelők</p></section>
+          </aside>
+          <div class="vk-shell__main" role="region" aria-label="Átlátszó munkaterület"></div>
+          <aside class="vk-shell__dock" data-dock="right">
+            <section id="f01-h-sensor">
+              <div class="f01-sensor">
+                <div class="f01-big vk-num" id="f01-temp">4,2 <small>°C</small></div>
+                <div class="f01-bars" aria-hidden="true" id="f01-bars"></div>
+                <dl class="f01-kv">
+                  <dt>Érzékelő</dt><dd class="vk-num">S-04</dd>
+                  <dt>Helyiség</dt><dd>[D] Hűtőkamra</dd>
+                  <dt>Kör</dt><dd>Hűtő-02 · Q3</dd>
+                  <dt>Frissítve</dt><dd class="vk-num">05:12:40</dd>
+                </dl>
+              </div>
+            </section>
+          </aside>
+          <div class="vk-shell__status"><div id="f01-hudstatus"></div></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f01-states">
+    <h3 class="g-demo__title">Panel- és lapállapotok <code>panel · tabs</code></h3>
+    <p class="g-demo__note">Alap, összecsukott, betöltés (fut — a fejléc minije pörög), hiba (piros él), üres; lapsor túlcsordulással (nyilak a szélén), és üres lapsor egy „Új lap” minivel. A lebegtetés a Desktop jobb dokkjában próbálható: „Tulajdonságok” → ablak-mini.</p>
+    <div class="f01-states">
+      <section id="f01-s1"><p>Kötőelem-lista szűrve: <span class="vk-num">148</span> tétel, <span class="vk-num">3</span> eltérés.</p></section>
+      <section id="f01-s2"><p>rejtett</p></section>
+      <section id="f01-s3"><div class="vk-panel__empty"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-loader"/></svg><span>Erősáramú körök betöltése…</span></div></section>
+      <section id="f01-s4"><div class="vk-panel__empty"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-error"/></svg><span>A szinkron nem sikerült: a telefonkapcsolat megszakadt.</span><button class="vk-btn vk-btn--sm" type="button">Újra</button></div></section>
+      <section id="f01-s5"><div class="vk-panel__empty"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-inspector"/></svg><span>Nincs kijelölés. Válassz egy elemet az alaprajzon.</span></div></section>
+    </div>
+    <div class="f01-tabsdemo">
+      <div id="f01-tabs-over"></div>
+      <div id="f01-tabs-empty"></div>
+    </div>
+  </article>
+
+  <template id="f01-tpl-plan">
+    <div class="f01-split1">
+      <div class="vk-split__pane f01-planpane">
+        <svg class="f01-plan" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Alaprajz E1 — helykitöltő rajz">
+          <g fill="none" style="stroke: var(--vk-line-strong)" stroke-width="1"><path d="M20 20h360v220H20z"/><path d="M180 20v120M180 180v60M260 20v220M20 140h160"/></g>
+          <g fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path style="stroke: var(--vk-wire-power)" d="M40 220h90a8 8 0 0 0 8-8V70a8 8 0 0 1 8-8h150a8 8 0 0 1 8 8v60h60"/>
+            <path style="stroke: var(--vk-wire-light)" d="M40 200h60a8 8 0 0 0 8-8v-92a8 8 0 0 1 8-8h40"/>
+            <path style="stroke: var(--vk-wire-data)" stroke-dasharray="4 3" d="M40 180h30a8 8 0 0 0 8-8V40h240"/>
+          </g>
+          <g style="fill: var(--vk-wire-power)"><circle cx="138" cy="140" r="3.5"/><circle cx="314" cy="130" r="3.5"/></g>
+          <g style="fill: var(--vk-bg-sunken); stroke: var(--vk-text)" stroke-width="1.2"><path d="M222 56l6 6-6 6-6-6z"/></g>
+          <g style="fill: var(--vk-wire-light)"><rect x="152" y="88" width="6" height="6"/></g>
+          <rect x="34" y="214" width="12" height="12" style="fill: var(--vk-wire-power)"/>
+          <circle cx="374" cy="130" r="9" fill="none" style="stroke: var(--vk-accent)"/><circle cx="374" cy="130" r="3.5" style="fill: var(--vk-accent)"/>
+          <text x="28" y="34">[A] GÉPTEREM</text><text x="188" y="34">[B]</text><text x="268" y="34">[C] HŰTŐ</text><text x="332" y="152">Q3</text><text x="28" y="252">E1 // M 1:50</text>
+        </svg>
+      </div>
+      <div class="vk-split__pane">
+        <div class="f01-split2">
+          <div class="vk-split__pane">
+            <div class="f01-pane-h"><span class="vk-label">[A1] MÉRÉSI ADATOK</span></div>
+            <table class="f01-table">
+              <thead><tr><th>Kör</th><th>Áram</th><th>ΔU</th></tr></thead>
+              <tbody>
+                <tr><td>Hűtő-02</td><td class="n">12,4 A</td><td class="n">1,8 %</td></tr>
+                <tr><td>Erőátvitel</td><td class="n">8,1 A</td><td class="n">1,1 %</td></tr>
+                <tr><td>Világítás</td><td class="n">2,3 A</td><td class="n">0,6 %</td></tr>
+                <tr><td>Kötőelem-sor</td><td class="n">0,4 A</td><td class="n">0,1 %</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="vk-split__pane">
+<pre class="f01-log"><b>05:12:04</b>  mentés           <i>kész</i>
+<b>05:12:31</b>  export PDF       fut
+<b>05:12:33</b>  ellenőrzés       <u>2 ellentmondás</u>
+<b>05:12:40</b>  S-04 hűtő        4,2 °C</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+</section>
+
+<script data-g-init>
+  var A = VK.actions;
+  var desk = document.getElementById('f01-shell');
+  // desktop shortcuts are armed while the last focus was inside the desktop (so they never fire elsewhere on the page)
+  var armed = false;
+  document.addEventListener('focusin', function (e) {
+    if (desk.contains(e.target)) armed = true;
+    else if (e.target.closest && e.target.closest('.g-demo, .g-top, .g-nav')) armed = false;
+  });
+  var inDesk = function () { return armed; };
+
+  // ---- stage fitting: 1180 × H logical, scaled down; touch density keeps 1:1 and reflows instead ----
+  function fit(box) {
+    var W = +box.dataset.w, H = +box.dataset.h, stage = box.firstElementChild;
+    function go() {
+      var avail = box.clientWidth; if (!avail) return;
+      var touch = document.documentElement.dataset.vkDensity === 'touch', minS = touch ? 1 : 0.75;
+      var s = Math.min(1, avail / W), w = W;
+      if (s < minS) { s = minS; w = avail / s; }
+      stage.style.width = w + 'px'; stage.style.height = H + 'px'; stage.style.transform = s === 1 ? 'none' : 'scale(' + s + ')';
+      box.style.height = Math.round(H * s) + 'px';
+    }
+    if (window.ResizeObserver) new ResizeObserver(go).observe(box);
+    document.addEventListener('vk:density', go); go();
+  }
+  document.querySelectorAll('#f01 .f01-fit').forEach(fit);
+
+  // ---- live state the actions read ----
+  var S = { exp: 0.18, expState: 'running', sync: 0, syncState: 'idle', saved: 'done', mode: 'edit', link: 'done', tree: 'idle' };
+
+  // ---- panels ----
+  var pTree = VK.panel.mount(document.getElementById('f01-p-tree'), { title: 'Projektfa', label: '[01]', icon: 'tree', level: 4, controls: ['collapse', 'maximize'], surface: 'toolbar:f01-tree' });
+  var pLayers = VK.panel.mount(document.getElementById('f01-p-layers'), { title: 'Rétegek', label: '[02]', icon: 'layers', level: 4, collapsed: true });
+  var pInsp = VK.panel.mount(document.getElementById('f01-p-insp'), { title: 'Tulajdonságok', label: '[03]', icon: 'inspector', level: 4, controls: ['collapse', 'maximize', 'float', 'close'] });
+  var pCheck = VK.panel.mount(document.getElementById('f01-p-check'), { title: 'Ellenőrzés', label: '[04]', icon: 'contradiction', level: 4, controls: ['collapse', 'close'] });
+  pCheck.setState({ state: 'error', label: 'Ellenőrzés — 2 ellentmondás', icon: 'contradiction' });
+  VK.panel.mount(document.getElementById('f01-p-term'), { title: 'Terminál', label: '[05]', icon: 'terminal', level: 4 });
+  VK.panel.mount(document.getElementById('f01-p-log'), { title: 'Napló', label: '[06]', icon: 'history', level: 4 });
+  pInsp.el.addEventListener('vk:panelclose', function () { setTimeout(function () { pInsp.open(); sb.announce('Tulajdonságok panel újra megnyitva (bemutató)'); }, 2500); });
+
+  // ---- shell ----
+  var sh = VK.shell.mount(desk, { docks: { left: { size: 220 }, right: { size: 256 }, bottom: { collapsed: true, size: 150 } }, autoCollapse: 760 });
+
+  // ---- actions (Hungarian labels) for every surface the desktop renders ----
+  A.registerAll([
+    { id: 'f01.save', label: 'Mentés', hint: 'VRG-2611-03 mentése', group: 'Fájl', icon: 'save', at: ['toolbar:command', 'palette'],
+      state: function () { return S.saved; }, run: function () { S.saved = 'running'; setTimeout(function () { S.saved = 'done'; cb.refresh(); }, 900); } },
+    { id: 'f01.sync', label: 'Szinkron', hint: 'Telefon és Kapu szinkronizálása', group: 'Fájl', icon: 'sync', at: ['toolbar:command', 'statusbar', 'palette'],
+      state: function () { return S.syncState; }, progress: function () { return S.syncState === 'running' ? S.sync : undefined; },
+      statusText: function () { return S.syncState === 'running' ? 'SZINKRON ' + Math.round(S.sync * 100) + '%' : S.syncState === 'done' ? 'SZINKRON KÉSZ' : 'SZINKRON 2 PERCE'; },
+      run: function () { if (S.syncState === 'running') return; S.syncState = 'running'; S.sync = 0; } },
+    { id: 'f01.undo', label: 'Visszavonás', group: 'Szerkesztés', icon: 'undo', at: ['toolbar:command', 'palette'], run: function () { sb.announce('Visszavonva: Q3 áthelyezése'); } },
+    { id: 'f01.settings', label: 'Beállítások', hint: 'Beállítások ablak megnyitása', group: 'Ablakok', icon: 'settings', at: ['toolbar:command', 'palette'], run: function () { openSettings(); } },
+    { id: 'f01.mode', label: 'Szerkesztő mód', hint: 'Váltás szerkesztés és nézet között', group: 'Szerkesztés', icon: 'edit', at: ['statusbar', 'palette'],
+      checked: function () { return S.mode === 'edit'; }, statusText: function () { return S.mode === 'edit' ? 'MÓD: SZERKESZTÉS' : 'MÓD: NÉZET'; },
+      run: function () { S.mode = S.mode === 'edit' ? 'view' : 'edit'; } },
+    { id: 'f01.export', label: 'Export PDF', hint: 'Kötőelem-lista exportja', group: 'Fájl', icon: 'download', at: ['statusbar', 'palette'], statusPin: true,
+      state: function () { return S.expState; }, progress: function () { return S.expState === 'running' ? S.exp : undefined; },
+      statusText: function () { return S.expState === 'running' ? 'EXPORT ' + Math.round(S.exp * 100) + '%' : S.expState === 'done' ? 'EXPORT KÉSZ' : 'EXPORT'; },
+      run: function () { wm.focus('export'); } },
+    { id: 'f01.link', label: 'Telefonkapcsolat', group: 'Kapcsolat', icon: 'wifi', at: ['statusbar', 'palette'], statusSide: 'end',
+      state: function () { return S.link; }, statusText: function () { return S.link === 'done' ? 'LINK OK' : 'LINK SZÜNETEL'; },
+      run: function () { S.link = S.link === 'done' ? 'paused' : 'done'; } },
+    { id: 'f01.tree.refresh', label: 'Projektfa frissítése', group: 'Projekt', icon: 'refresh', at: ['toolbar:f01-tree', 'palette'],
+      state: function () { return S.tree; },
+      run: function () { S.tree = 'running'; pTree.setState({ state: 'running', progress: null, label: 'Frissítés' });
+        setTimeout(function () { S.tree = 'done'; pTree.setState({}); pTree.refresh(); setTimeout(function () { S.tree = 'idle'; pTree.refresh(); }, 1400); }, 1200); } },
+    { id: 'f01.tab.new', label: 'Új lap', hint: 'Új jegyzetlap a munkaterületen', group: 'Lapok', icon: 'plus', at: ['toolbar:f01-tabs', 'palette'], run: function () { newTab(); } }
+  ]);
+  A.registerAll(VK.shell.actions(sh, { prefix: 'f01.shell', at: ['toolbar:command', 'palette'] }).filter(function (a) { return a.id !== 'f01.shell.hud'; }));
+
+  // ---- command bar ----
+  var PATHS = {
+    plan: [{ label: 'VRG-2611-03', mono: true, icon: 'folder' }, { label: 'Erősáram', icon: 'bolt' }, { label: 'Elosztó E1' }, { label: 'Alaprajz' }],
+    list: [{ label: 'VRG-2611-03', mono: true, icon: 'folder' }, { label: 'Erősáram', icon: 'bolt' }, { label: 'Kötőelem-lista' }],
+    cool: [{ label: 'VRG-2611-03', mono: true, icon: 'folder' }, { label: 'Hűtőkör' }, { label: 'Számítás' }]
+  };
+  var cb = VK.commandbar.mount(document.getElementById('f01-cmd'), {
+    brand: { name: 'VRG Desktop', tag: 'MÉRŐPULT // V1' }, path: PATHS.plan, surface: 'toolbar:command', searchAction: 'palette.open',
+    onNavigate: function (i, seg) { cb.setPath(cb.path().slice(0, i + 1)); sb.announce('Ugrás: ' + seg.label); }
+  });
+
+  // ---- tabs + split view ----
+  var tpl = document.getElementById('f01-tpl-plan').content.firstElementChild.cloneNode(true);
+  function ph(text) { return VK.el('div.f01-ph', null, text); }
+  var tabs = VK.tabs.mount(document.getElementById('f01-tabs'), {
+    label: 'Megnyitott lapok', surface: 'toolbar:f01-tabs',
+    tabs: [
+      { id: 'plan', label: 'Alaprajz — E1', icon: 'floorplan', dirty: true, panel: tpl },
+      { id: 'list', label: 'Kötőelem-lista', icon: 'table', panel: ph('Kötőelem-lista: 148 tétel (helykitöltő).') },
+      { id: 'cool', label: 'Hűtőkör számítás', icon: 'gauge', panel: ph('Hűtőkör számítás: S-04, 4,2 °C (helykitöltő).') },
+      { id: 'form', label: 'Űrlap: Ősszeg', icon: 'file', closable: true, panel: ph('Űrlap az Ősszeghez (helykitöltő).') },
+      { id: 'topo', label: 'Topológia', icon: 'graph', panel: ph('Topológia nézet (helykitöltő).') }
+    ],
+    active: 'plan',
+    onSelect: function (id) { if (PATHS[id]) cb.setPath(PATHS[id]); }
+  });
+  var tabN = 0;
+  function newTab() { tabN += 1; tabs.add({ id: 'note' + tabN, label: 'Jegyzet ' + tabN, icon: 'edit', dirty: true, panel: ph('Új jegyzet — Erősáram, Kötőelem, Hűtő.') }, { activate: true, focus: true }); }
+  A.registerAll(VK.tabs.actions(tabs, { prefix: 'f01.tabs', when: inDesk }));
+  var split1 = VK.splitter.mount(tpl, { orientation: 'horizontal', value: 58, default: 58, min: [180, 160], label: 'Alaprajz és adatok',
+    onChange: function (v) { sb.setText('split', v.toFixed(0) + '%'); } });
+  VK.splitter.mount(tpl.querySelector('.f01-split2'), { orientation: 'vertical', value: 52, default: 52, min: [60, 50], label: 'Mérési adatok és napló' });
+
+  // ---- window manager ----
+  var wm = VK.wm.mount(document.getElementById('f01-wm'), { taskbarTag: 'ABLAKOK' });
+  function calcBody() {
+    return VK.el('div.f01-calc', null, [
+      VK.el('dl.f01-kv', null, [VK.el('dt', null, 'Áramerősség'), VK.el('dd.vk-num', null, '16 A'), VK.el('dt', null, 'Hossz'), VK.el('dd.vk-num', null, '24 m'),
+        VK.el('dt', null, 'Keresztmetszet'), VK.el('dd.vk-num', null, '2,5 mm²'), VK.el('dt', null, 'Feszültségesés'), VK.el('dd.vk-num', null, '1,8 %')]),
+      VK.el('button.vk-btn.vk-btn--sm', { type: 'button', 'data-variant': 'primary', onclick: function () { sb.announce('Számítás kész: 1,8 %'); } }, 'Számítás')
+    ]);
+  }
+  var pages = VK.el('ol.f01-pages', null, ['01 Címlap', '02 Elosztó E1', '03 Kötőelem-lista', '04 Hűtőkör', '05 Űrlap · Ősszeg'].map(function (t) { return VK.el('li', null, t); }));
+  wm.open({ id: 'calc', title: 'Kábelméretezés', icon: 'cable', tag: 'CALC-02', content: calcBody(), x: 290, y: 36, w: 320, h: 230, focus: false });
+  wm.open({ id: 'export', title: 'Export — PDF', icon: 'download', tag: 'VRG-2611-03', content: VK.el('div', null, [VK.el('p.vk-label', { id: 'f01-exp-l' }, 'EXPORT // 18%'), pages]), x: 420, y: 196, w: 320, h: 200, focus: false });
+  wm.open({ id: 'note', title: 'Jegyzet — Hűtőkör', icon: 'edit', content: 'Hűtő-02: ellenőrizni a védőföldet a kamránál.', x: 120, y: 120, w: 260, h: 160, focus: false });
+  wm.minimize('note');
+  wm.focus('export', false);
+  function openSettings() {
+    wm.open({ id: 'settings', title: 'Beállítások', icon: 'settings', tag: 'SYS', w: 280, h: 200,
+      content: VK.el('div.vk-stack', null, [
+        VK.el('button.vk-btn.vk-btn--sm', { type: 'button', 'aria-pressed': 'true', onclick: function (e) { var b = e.currentTarget; b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); } }, 'Rács illesztés'),
+        VK.el('button.vk-btn.vk-btn--sm', { type: 'button', 'aria-pressed': 'false', onclick: function (e) { var b = e.currentTarget; b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); } }, 'Hőtérkép réteg')
+      ]) });
+  }
+  var wmActs = VK.wm.actions(wm, { prefix: 'f01.wm', at: ['palette'], when: inDesk, keys: { move: 'alt+f7', resize: 'alt+f8', cycle: 'alt+f6' } });
+  wmActs.forEach(function (a) { if (a.id === 'f01.wm.tile') { a.at = ['toolbar:command', 'palette']; a.when = function () { return wm.list().length > 0; }; } });
+  A.registerAll(wmActs);
+
+  // ---- status bar ----
+  var sb = VK.statusbar.mount(document.getElementById('f01-status'), {
+    surface: 'statusbar', label: 'Állapotsor — VRG Desktop',
+    items: [{ id: 'split', key: 'Osztás', text: '58%', side: 'end' }, { id: 'cursor', key: 'Kurzor', text: 'X 12,40 · Y 3,85', side: 'end' }, { id: 'job', key: 'Munka', text: 'VRG-2611-03', side: 'end', pin: true }]
+  });
+
+  // ---- the live loop: export runs, sync runs when asked; minis everywhere follow ----
+  var pagesEls = pages.children, lbl = document.getElementById('f01-exp-l'), cur = 0;
+  setInterval(function () {
+    if (S.expState === 'running') { S.exp = Math.min(1, S.exp + 0.02); if (S.exp >= 1) { S.expState = 'done'; setTimeout(function () { S.exp = 0; S.expState = 'running'; }, 2600); } }
+    if (S.syncState === 'running') { S.sync = Math.min(1, S.sync + 0.06); if (S.sync >= 1) { S.syncState = 'done'; setTimeout(function () { S.syncState = 'idle'; }, 1800); } }
+    sb.refresh(); cb.refresh();
+    wm.setProgress('export', S.exp, S.expState);
+    lbl.textContent = S.expState === 'done' ? 'EXPORT // KÉSZ' : 'EXPORT // ' + Math.round(S.exp * 100) + '%';
+    Array.prototype.forEach.call(pagesEls, function (li, i) { if (S.exp * 5 > i + 0.5) li.setAttribute('data-done', ''); else li.removeAttribute('data-done'); });
+    cur += 1; if (cur % 8 === 0) sb.setText('cursor', 'X ' + (12 + (cur % 40) / 10).toFixed(2).replace('.', ',') + ' · Y 3,85');
+  }, 300);
+
+  // ================= HUD demo =================
+  var hudEl = document.getElementById('f01-hudshell'), hudFit = document.getElementById('f01-hudfit');
+  function hudDensity() { var d = document.documentElement.dataset.vkDensity; if (d === 'touch') hudFit.removeAttribute('data-vk-density'); else hudFit.setAttribute('data-vk-density', 'compact'); }
+  hudDensity(); document.addEventListener('vk:density', hudDensity);
+  VK.panel.mount(document.getElementById('f01-h-layers'), { title: 'Rétegek', icon: 'layers', level: 4 });
+  var hSens = VK.panel.mount(document.getElementById('f01-h-sens'), { title: 'Érzékelők', icon: 'sensor', level: 4 });
+  hSens.setState({ state: 'running', progress: 0.66, label: 'Érzékelők — mintavétel' });
+  VK.panel.mount(document.getElementById('f01-h-sensor'), { title: 'Érzékelő S-04', label: 'CH 04 // AKTÍV', icon: 'gauge', level: 4, controls: ['collapse', 'close'] });
+  var hud = VK.shell.mount(hudEl, { mode: 'hud', docks: { left: { collapsed: true }, right: { size: 250 } }, autoCollapse: 640 });
+  A.registerAll(VK.shell.actions(hud, { prefix: 'f01.hud', at: ['toolbar:f01-hud', 'palette'] }).filter(function (a) { return a.id !== 'f01.hud.dock.right'; }));
+  var hs = { rec: 'running', alarm: 'waiting' };
+  A.registerAll([
+    { id: 'f01.hud.rec', label: 'Felvétel', group: 'HUD', icon: 'scrubber', at: ['toolbar:f01-hud', 'statusbar:f01-hud'], state: function () { return hs.rec; },
+      statusText: function () { return hs.rec === 'running' ? 'FELVÉTEL 00:42' : 'FELVÉTEL SZÜNETEL'; }, run: function () { hs.rec = hs.rec === 'running' ? 'paused' : 'running'; } },
+    { id: 'f01.hud.alarm', label: 'Riasztás S-04', group: 'HUD', icon: 'bell', at: ['statusbar:f01-hud'], state: function () { return hs.alarm; },
+      statusText: function () { return hs.alarm === 'waiting' ? 'KÜSZÖB 5,0 °C' : 'NYUGTÁZVA'; }, run: function () { hs.alarm = hs.alarm === 'waiting' ? 'done' : 'waiting'; } }
+  ]);
+  VK.commandbar.mount(document.getElementById('f01-hudcmd'), {
+    brand: { name: 'VRG HUD', tag: 'ŐRSZEM // CH 04' }, surface: 'toolbar:f01-hud', searchAction: 'palette.open',
+    path: [{ label: 'VRG-2611-03', mono: true }, { label: '2. emelet' }, { label: '[D] Hűtőkamra' }]
+  });
+  VK.statusbar.mount(document.getElementById('f01-hudstatus'), { surface: 'statusbar:f01-hud', label: 'Állapotsor — HUD',
+    items: [{ id: 'scale', key: 'Lépték', text: 'M 1:50', side: 'end' }, { id: 'pos', key: 'Nézet', text: '2. EMELET', side: 'end', pin: true }] });
+  // a mini on the plan beneath the HUD: reachable through the see-through main area
+  var pin = VK.mini.create({ icon: 'sensor', label: 'S-04 érzékelő kiemelése', size: 'sm', pressed: true });
+  pin.addEventListener('click', function () { var on = pin.getAttribute('aria-pressed') !== 'true'; VK.mini.set(pin, { pressed: on }); });
+  document.getElementById('f01-pin').appendChild(pin);
+  var bars = document.getElementById('f01-bars'), rnd = VK.rng('S-04');
+  for (var bi = 0; bi < 24; bi++) bars.appendChild(VK.el('i', { style: { height: Math.round(20 + rnd() * 80) + '%' } }));
+
+  // ================= states =================
+  VK.panel.mount(document.getElementById('f01-s1'), { title: 'Alap', label: '[A]', icon: 'list', level: 4, controls: ['collapse', 'maximize', 'close'], onClose: function () { return false; } });
+  VK.panel.mount(document.getElementById('f01-s2'), { title: 'Összecsukva', label: '[B]', icon: 'layers', level: 4, collapsed: true });
+  VK.panel.mount(document.getElementById('f01-s3'), { title: 'Betöltés', label: '[C]', icon: 'loader', level: 4 }).setState({ state: 'running', progress: null, label: 'Betöltés' });
+  VK.panel.mount(document.getElementById('f01-s4'), { title: 'Hiba', label: '[D]', icon: 'error', level: 4 }).setState({ state: 'error', label: 'Szinkron hiba', icon: 'sync' });
+  VK.panel.mount(document.getElementById('f01-s5'), { title: 'Üres', label: '[E]', icon: 'inspector', level: 4 });
+  var many = ['Erősáram', 'Világítás', 'Adat és busz', 'Vezérlés', 'Védőföld', 'Kötőelem-lista', 'Hűtőkör', 'Űrlap · Ősszeg'];
+  VK.tabs.mount(document.getElementById('f01-tabs-over'), { label: 'Rétegek lapjai',
+    tabs: many.map(function (t, i) { return { id: 'o' + i, label: t, dirty: i === 2, closable: i !== 0, panel: ph(t + ' — réteg tartalma (helykitöltő).') }; }) });
+  var emptyTabs = VK.tabs.mount(document.getElementById('f01-tabs-empty'), { label: 'Üres lapsor', surface: 'toolbar:f01-tabs-empty', emptyText: 'Nincs megnyitott lap — „Új lap” a jobb felső minivel.' });
+  var en = 0;
+  A.register({ id: 'f01.tabs-empty.new', label: 'Új lap (állapotminta)', group: 'Lapok', icon: 'plus', at: ['toolbar:f01-tabs-empty'],
+    run: function () { en += 1; emptyTabs.add({ id: 'e' + en, label: 'Erősáram ' + en, panel: ph('Új lap ' + en + '.') }, { activate: true, focus: true }); } });
+</script>

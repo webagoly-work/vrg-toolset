@@ -1,0 +1,72 @@
+/* VRG UI Kit — components/toggle.css — switch (role=switch).
+   <button class="vk-toggle" role="switch" aria-checked="false" type="button">
+     <span class="vk-toggle__track" aria-hidden="true"><span class="vk-toggle__thumb"></span></span>
+     <span class="vk-toggle__label">Rács illesztés</span>
+   </button>
+   data-label="left" puts the label first (row reversed, label pushed left) · data-size sm|md|lg ·
+   disabled · aria-busy="true" = the change is being applied: the thumb shows a spinning arc (the MINI's
+   running meter) and clicks wait · data-state="error" = the last change failed (notched track, crit).
+   On = ice track + thumb right + an "I" mark; off = hollow track + "O" mark (shape, not colour alone).
+   Depends on: tokens, base. */
+.vk-toggle { --_w: calc(var(--vk-icon-size) * 2.25); --_h: calc(var(--vk-icon-size) * 1.25); --_k: calc(var(--_h) - 6px);
+  display: inline-flex; align-items: center; gap: var(--vk-space-3); min-height: var(--vk-target-min); max-width: 100%;
+  padding: 0; margin: 0; border: 0; background: transparent; color: var(--vk-text); font: inherit; font-size: var(--vk-fs-md);
+  text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.vk-toggle[data-size="sm"] { --_w: calc(var(--vk-icon-size) * 1.75); --_h: var(--vk-icon-size); --_k: calc(var(--_h) - 6px); font-size: var(--vk-fs-sm); }
+.vk-toggle[data-size="lg"] { --_w: calc(var(--vk-icon-size) * 3); --_h: calc(var(--vk-icon-size) * 1.6); --_k: calc(var(--_h) - 8px); font-size: var(--vk-fs-lg); }
+.vk-toggle[data-label="left"] { flex-direction: row-reverse; justify-content: flex-end; }
+.vk-toggle--block { display: flex; width: 100%; }
+.vk-toggle--block[data-label="left"] { justify-content: space-between; }
+.vk-toggle:focus-visible { outline: none; }
+.vk-toggle:focus-visible .vk-toggle__track { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
+
+.vk-toggle__track { position: relative; flex: none; width: var(--_w); height: var(--_h); border-radius: var(--vk-radius-pill);
+  background: var(--vk-bg-sunken); border: var(--vk-border-w) solid var(--vk-border-control);
+  transition: background-color var(--vk-dur-2) var(--vk-ease), border-color var(--vk-dur-2) var(--vk-ease); }
+/* the I / O marks drawn in the empty half */
+.vk-toggle__track::before { content: ""; position: absolute; top: 50%; right: calc(var(--_h) * .38); width: calc(var(--_k) * .5); height: calc(var(--_k) * .5);
+  transform: translate(50%, -50%); border: 1.5px solid var(--vk-text-muted); border-radius: 50%; }
+.vk-toggle__thumb { position: absolute; top: 50%; left: 2px; width: var(--_k); height: var(--_k); transform: translateY(-50%);
+  border-radius: 50%; background: var(--vk-text-muted); transition: left var(--vk-dur-2) var(--vk-ease), background-color var(--vk-dur-2) var(--vk-ease); }
+.vk-toggle__label { min-width: 0; line-height: var(--vk-lh-tight); }
+.vk-toggle__hint { display: block; font-size: var(--vk-fs-xs); color: var(--vk-text-muted); }
+.vk-toggle:hover:not(:disabled) .vk-toggle__track { border-color: var(--vk-text-muted); }
+
+.vk-toggle[aria-checked="true"] .vk-toggle__track { background: var(--vk-accent); border-color: var(--vk-accent); box-shadow: var(--vk-glow); }
+.vk-toggle[aria-checked="true"] .vk-toggle__track::before { right: auto; left: calc(var(--_h) * .45); width: 0; height: calc(var(--_k) * .55);
+  border: 0; border-left: 2px solid var(--vk-text-on-accent); border-radius: 0; transform: translate(-50%, -50%); }
+.vk-toggle[aria-checked="true"] .vk-toggle__thumb { left: calc(100% - var(--_k) - 2px); background: var(--vk-text-on-accent); }
+
+/* busy: the change is being applied — a running arc around the thumb (warm = the system working) */
+.vk-toggle[aria-busy="true"] { cursor: progress; }
+.vk-toggle[aria-busy="true"] .vk-toggle__thumb::after { content: ""; position: absolute; inset: -3px; border-radius: 50%;
+  background: conic-gradient(var(--vk-activity) 0 .28turn, transparent 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), currentColor calc(100% - 2px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), currentColor calc(100% - 2px));
+  animation: vk-toggle-spin .9s linear infinite; }
+.vk-toggle[aria-busy="true"] .vk-toggle__thumb { background: var(--vk-surface-2); }
+.vk-toggle[aria-busy="true"][aria-checked="true"] .vk-toggle__track { background: var(--vk-accent-soft); }
+@keyframes vk-toggle-spin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) {
+  .vk-toggle[aria-busy="true"] .vk-toggle__thumb::after { animation: none;
+    background: repeating-conic-gradient(var(--vk-activity) 0 30deg, transparent 30deg 60deg); }
+}
+.vk-toggle__status { font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-activity); }
+.vk-toggle__status:empty { display: none; }
+.vk-toggle[data-state="error"] .vk-toggle__track { border-color: var(--vk-crit); border-style: dashed; }
+.vk-toggle[data-state="error"] .vk-toggle__status { color: var(--vk-crit); }
+
+.vk-toggle:disabled { cursor: not-allowed; color: var(--vk-text-faint); }
+.vk-toggle:disabled .vk-toggle__track { background: transparent; border-color: var(--vk-line-strong); box-shadow: none; }
+.vk-toggle:disabled .vk-toggle__thumb { background: var(--vk-text-faint); }
+.vk-toggle:disabled .vk-toggle__track::before { border-color: var(--vk-text-faint); }
+.vk-toggle:disabled[aria-checked="true"] .vk-toggle__track { background: var(--vk-line-strong); }
+
+.vk-toggle-list { display: flex; flex-direction: column; gap: var(--vk-space-1); margin: 0; padding: 0; list-style: none; min-width: 0; }
+.vk-toggle-list > li { display: flex; align-items: center; gap: var(--vk-space-3); min-height: max(var(--vk-row-h), var(--vk-target-min));
+  padding: 0 var(--vk-space-2); border-bottom: var(--vk-border-w) solid var(--vk-line); }
+
+@media (forced-colors: active) {
+  .vk-toggle[aria-checked="true"] .vk-toggle__track { background: Highlight; }
+  .vk-toggle__track { border-color: CanvasText; }
+}

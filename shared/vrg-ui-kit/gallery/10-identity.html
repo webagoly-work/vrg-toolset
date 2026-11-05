@@ -1,0 +1,181 @@
+<section class="g-sec" id="f10" data-vk-hop aria-labelledby="f10-h">
+  <style>
+    .f10-heroes { display: grid; gap: var(--vk-space-6) var(--vk-space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); justify-items: center; align-items: end; }
+    .f10-tiles { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); list-style: none; padding: 0; margin: var(--vk-space-5) 0 0; align-items: end; }
+    .f10-tiles > li { display: grid; justify-items: center; padding: var(--vk-space-3) var(--vk-space-2) var(--vk-space-2); border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); background: var(--vk-bg); }
+    .f10-minis { display: flex; flex-wrap: wrap; gap: var(--vk-space-4); align-items: end; margin-top: var(--vk-space-5); }
+    .f10-minis figure { margin: 0; display: grid; justify-items: center; gap: var(--vk-space-1); }
+    .f10-minis figcaption { font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); color: var(--vk-text-muted); text-transform: uppercase; letter-spacing: var(--vk-tracking-label); }
+    .f10-daynight { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); margin-top: var(--vk-space-5); }
+    .f10-daynight > div { display: grid; justify-items: center; gap: var(--vk-space-2); padding: var(--vk-space-4); background: var(--vk-bg); color: var(--vk-text); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); }
+    .f10-input { min-height: max(var(--vk-control-h), var(--vk-target-min)); width: 12ch; padding: 0 var(--vk-space-3); background: var(--vk-bg-sunken); color: var(--vk-text);
+      border: var(--vk-border-w) solid var(--vk-border-control); border-radius: var(--vk-radius); font: var(--vk-fs-md) var(--vk-font-mono); }
+    .f10-maps { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+    .f10-maps > div > .g-cap { margin-top: 0; }
+    .f10-hud { display: grid; gap: var(--vk-space-4); padding: var(--vk-space-5); background-color: var(--vk-bg); border: var(--vk-border-w) solid var(--vk-line); min-width: 0; }
+    .f10-hud__head { display: flex; flex-wrap: wrap; gap: var(--vk-space-3); align-items: center; }
+    .f10-hud__head .vk-title { font-size: var(--vk-fs-xl); margin: 0 auto 0 0; }
+    .f10-hud__body { display: grid; gap: var(--vk-space-5); grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
+    .f10-hud__col { display: grid; gap: var(--vk-space-4); min-width: 0; align-content: start; }
+    .f10-hud__map { position: relative; height: 300px; border: var(--vk-border-w) solid var(--vk-line-strong); background-color: var(--vk-bg-sunken); overflow: hidden; }
+    .f10-bld { position: absolute; border: var(--vk-border-w) solid var(--vk-line-strong); background-color: var(--vk-surface-2); }
+    .f10-bld[data-hot] { border-color: var(--vk-activity); }
+    .f10-cross { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+    .f10-hexes { display: flex; flex-wrap: wrap; gap: var(--vk-space-2); }
+    .f10-kv { display: grid; grid-template-columns: auto 1fr; gap: 2px var(--vk-space-3); margin: 0; font-size: var(--vk-fs-xs); }
+    .f10-kv dt { color: var(--vk-text-muted); font-family: var(--vk-font-mono); text-transform: uppercase; letter-spacing: var(--vk-tracking-label); font-size: var(--vk-fs-2xs); align-self: center; }
+    .f10-kv dd { margin: 0; text-align: right; font-family: var(--vk-font-mono); font-variant-numeric: tabular-nums; }
+    .f10-tex { display: grid; gap: var(--vk-space-3); grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .f10-tex figure { margin: 0; display: grid; gap: var(--vk-space-2); }
+    .f10-tex .f10-sw { height: 96px; border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); background-color: var(--vk-bg-sunken); }
+    .f10-tex figcaption code { font-size: var(--vk-fs-2xs); color: var(--vk-text-muted); }
+    @media (max-width: 900px) { .f10-hud__body { grid-template-columns: minmax(0, 1fr); } }
+    [data-vk-density="touch"] .f10-hud { padding: var(--vk-space-3); }
+  </style>
+  <header class="g-sec__head">
+    <span class="g-sec__num">10</span>
+    <h2 id="f10-h" class="vk-title">Programarculat és városkép</h2>
+    <p class="g-sec__lead">A programok saját jele: izometrikus dioráma talapzaton, generatív városkép, HUD-mikrografika és textúrák — mind kódból rajzolva, csak tokenszínekkel. A Kódváros 3D-s alkalmazás mellé könnyű 2D / 2,5D elemek.</p>
+  </header>
+
+  <article class="g-demo" id="f10-emblem">
+    <h3 class="g-demo__title">Programembléma <code>emblem</code></h3>
+    <p class="g-demo__note">Nagy logó: kicsi mono felirat, a program neve, ikon a sprite-ból, dátum és kijelző egy talapzatos dioráma fölött; a jelenet a <code>kind</code>-ból és a magból épül (tervező, gondolattérkép, készlet, kalkulátor, város, központ). Papír témán nappali, légies kép; sötét témákon éjszakai — a meleg ablakok a rendszer munkáját jelzik.</p>
+    <div class="f10-heroes" id="f10-heroes"></div>
+    <p class="g-cap">Indítócsempék (tile, ~160 px)</p>
+    <ul class="f10-tiles" id="f10-tiles" aria-label="Program-csempék"></ul>
+    <p class="g-cap">Mini (48 px, csak talapzat) · üres talapzat · ugyanaz a fajta négy maggal</p>
+    <div class="f10-minis" id="f10-minis"></div>
+    <p class="g-cap">Nappal és éjjel egymás mellett (helyi témával)</p>
+    <div class="f10-daynight">
+      <div data-vk-theme="light" id="f10-day"></div>
+      <div data-vk-theme="dark" id="f10-night"></div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f10-citymap">
+    <h3 class="g-demo__title">Városkép <code>citymap</code></h3>
+    <p class="g-demo__note">Ugyanaz a mag három stílusban: figura–alap, folyamat (tranzit) és izometrikus. Sűrű, magas mag, kifelé ritkul; commitonként nő. A lejátszás mini egyben a folyamatjelző. Billentyűk a vásznon: <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> mozgatás, <kbd>+</kbd>/<kbd>−</kbd> nagyítás, <kbd>0</kbd> illesztés, <kbd>Szóköz</kbd> lejátszás/szünet, <kbd>R</kbd> új mag.</p>
+    <div class="g-row"><label class="vk-label" for="f10-seed">Mag</label><input id="f10-seed" class="f10-input" value="2611" spellcheck="false" autocomplete="off"><span class="vk-label">Enter: mindhárom térkép újraépül</span></div>
+    <div class="f10-maps" id="f10-maps"></div>
+    <p class="g-cap" style="margin-top:var(--vk-space-5)">Adatból: a kit fájljai (méret = sor, hő = friss commitok, csoport = mappa) — a csoportok az állomások</p>
+    <div class="f10-maps" id="f10-maps-data"></div>
+  </article>
+
+  <article class="g-demo" id="f10-micro">
+    <h3 class="g-demo__title">Mikrografika <code>micro</code></h3>
+    <p class="g-demo__note">HUD-elemek: saroktartós keret, osztásos vonalzó, célkereszt, pontmátrix, szegmentált mérősáv, kódolt címkék, hatszög-jelvény, vezetővonalas kártya és fényoszlopok. A díszítések <code>aria-hidden</code>-ek; a mérők és a kártya valódi tartalom.</p>
+    <div class="f10-hud vk-micro-frame" id="f10-hud" role="region" aria-label="Mérőpult-lap" data-vk-hop>
+      <div class="f10-hud__head">
+        <span class="vk-title">Erősáramú alállomás · ÉSZAK</span>
+        <span class="vk-micro-chip"><span>[01]</span><span>MODUL-D9</span></span>
+        <span class="vk-micro-chip" data-tone="activity"><span>CH 04</span><span>AKTÍV</span></span>
+        <span class="vk-micro-chip" data-tone="accent"><span>VRG-2611-03</span></span>
+        <span class="vk-micro-chip"><span>ŰRLAP-07</span></span>
+      </div>
+      <div id="f10-ruler-top"></div>
+      <div class="f10-hud__body">
+        <div class="f10-hud__col">
+          <div id="f10-m1"></div><div id="f10-m2"></div><div id="f10-m3"></div><div id="f10-m4"></div>
+          <p class="vk-label" style="margin:0">Commit-aktivitás · 24 óra</p>
+          <div id="f10-dots"></div>
+        </div>
+        <div class="f10-hud__map vk-tex-blueprint" id="f10-map" role="group" aria-label="Alaprajz-részlet célkereszttel">
+          <span class="f10-bld" style="left:12%;top:18%;width:16%;height:22%" aria-hidden="true"></span>
+          <span class="f10-bld vk-tex-windows" style="left:34%;top:12%;width:12%;height:30%" aria-hidden="true"></span>
+          <span class="f10-bld" data-hot id="f10-target" style="left:52%;top:46%;width:14%;height:18%" aria-hidden="true"></span>
+          <span class="f10-bld vk-tex-hatch" style="left:16%;top:58%;width:24%;height:16%" aria-hidden="true"></span>
+          <span class="f10-bld vk-tex-dots" style="left:72%;top:16%;width:16%;height:20%" aria-hidden="true"></span>
+          <span class="vk-micro-cross f10-cross" aria-hidden="true"></span>
+        </div>
+        <div class="f10-hud__col">
+          <div class="f10-hexes" aria-hidden="true">
+            <span class="vk-micro-hex">D9</span><span class="vk-micro-hex" data-tone="activity">04</span><span class="vk-micro-hex" data-tone="accent">TE</span><span class="vk-micro-hex">Ő1</span>
+          </div>
+          <dl class="f10-kv">
+            <dt>Ősszeg</dt><dd>1 284 600 Ft</dd>
+            <dt>Kötőelem</dt><dd>2 410 db</dd>
+            <dt>Hűtőkör</dt><dd>18,4 °C</dd>
+            <dt>Fázis</dt><dd>L1 · L2 · L3</dd>
+            <dt>Frissítve</dt><dd>05:12:08</dd>
+          </dl>
+          <div class="vk-micro-frame" data-tone="accent" style="padding:var(--vk-space-3)"><p class="vk-label" style="margin:0">Itt vagy · szint 02 · rács C-7</p></div>
+        </div>
+      </div>
+      <div id="f10-ruler-bot"></div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f10-textures">
+    <h3 class="g-demo__title">Textúrák <code>textures</code></h3>
+    <p class="g-demo__note">Csak tokenszínekből (átmenetek), bármilyen elemre ráhúzható osztályok; a háttérszínt nem írják felül, így minden témában működnek.</p>
+    <div class="f10-tex" id="f10-tex"></div>
+  </article>
+</section>
+<script data-g-init>
+  // ---------- emblems ----------
+  var heroes = document.getElementById('f10-heroes');
+  [['planner', 'Planner', 'floorplan', 'v1.1 · 48 modul', 0.5], ['city', 'Kódváros', 'city', 'v0.9 · 1 204 fájl', 0.6], ['inventory', 'Készlet', 'cabinet', 'v2.3 · 812 tétel', 0.35]].forEach(function (h) {
+    var d = document.createElement('div'); heroes.appendChild(d);
+    VK.emblem.render(d, { kind: h[0], name: h[1], glyph: h[2], date: '2026-11-04 · Erősáram', readout: h[3], seed: h[0], activity: h[4], level: 4 });
+  });
+  var tiles = document.getElementById('f10-tiles');
+  [['planner', 'Planner', 'floorplan', 'v1.1 · 48 modul'], ['mindmap', 'MindMap', 'graph', 'v3.0 · 212 buborék'], ['inventory', 'Készlet', 'cabinet', 'v2.3 · 812 tétel'],
+   ['calculator', 'Kalkulátor', 'gauge', 'v1.4 · 9 képlet'], ['city', 'Kódváros', 'city', 'v0.9 · 1 204 fájl'], ['hub', 'Kapu', 'home', 'v1.0 · 14 eszköz']].forEach(function (t) {
+    var li = document.createElement('li'), d = document.createElement('div'); li.appendChild(d); tiles.appendChild(li);
+    VK.emblem.render(d, { kind: t[0], name: t[1], glyph: t[2], readout: t[3], seed: t[0], size: 'tile' });
+  });
+  var minis = document.getElementById('f10-minis');
+  function miniFig(o, cap) { var f = VK.el('figure'), d = VK.el('div'); f.appendChild(d); f.appendChild(VK.el('figcaption', { text: cap })); minis.appendChild(f); VK.emblem.render(d, Object.assign({ size: 'mini' }, o)); }
+  VK.emblem.kinds.forEach(function (k) { miniFig({ kind: k, name: k, seed: k }, k); });
+  miniFig({ kind: null, name: 'Üres talapzat', seed: 'ures' }, 'üres');
+  ['a', 'b', 'c', 'd'].forEach(function (s) { miniFig({ kind: 'city', name: 'Kódváros ' + s, seed: 'city-' + s, activity: 0.7 }, 'mag ' + s); });
+  function inner(id) { return document.getElementById(id).appendChild(document.createElement('div')); }
+  VK.emblem.render(inner('f10-day'), { kind: 'hub', name: 'Kapu', glyph: 'home', kicker: 'NAPPAL · PAPÍR', readout: 'v1.0 · 14 eszköz', seed: 'hub', size: 'tile' });
+  VK.emblem.render(inner('f10-night'), { kind: 'hub', name: 'Kapu', glyph: 'home', kicker: 'ÉJJEL · ÉJ', readout: 'v1.0 · 14 eszköz', seed: 'hub', size: 'tile', activity: 0.7 });
+
+  // ---------- city maps ----------
+  var maps = document.getElementById('f10-maps'), cms = [];
+  [['figure', 'Figura–alap'], ['transit', 'Folyamat'], ['iso', 'Izometrikus']].forEach(function (st) {
+    var w = VK.el('div'), d = VK.el('div');
+    w.appendChild(VK.el('p.g-cap', { text: st[1] })); w.appendChild(d); maps.appendChild(w);
+    cms.push(VK.citymap.mount(d, { style: st[0], seed: '2611', grow: true, label: 'Városkép — ' + st[1] }));
+  });
+  var seed = document.getElementById('f10-seed');
+  seed.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); cms.forEach(function (m) { m.reseed(seed.value.trim() || '2611'); }); } });
+  seed.addEventListener('change', function () { cms.forEach(function (m) { if (m.state().seed !== seed.value.trim()) m.reseed(seed.value.trim() || '2611'); }); });
+  // sample data: the kit's own files (deterministic)
+  var rnd = VK.rng('kit-files'), rows = [];
+  var groups = { components: ['core', 'focus', 'mini', 'button', 'base', 'emblem', 'citymap', 'micro', 'textures', 'table', 'graph', 'timeline', 'palette', 'menu', 'toast', 'dock', 'statusbar', 'tree', 'tabs', 'splitter', 'inspector', 'agent', 'trace', 'heatgrid'],
+    tokens: ['base', 'theme-dark', 'theme-light', 'theme-contrast', 'theme-melyviz', 'density'], gallery: ['shell', 'build', 'gallery', '00-foundation', '03-graph', '05-data', '10-identity'],
+    icons: ['sprite', 'icons', 'sprite-js'], test: ['lint', 'keys', 'shots'], fonts: ['fonts', 'inter', 'barlow', 'jetbrains'] };
+  Object.keys(groups).forEach(function (g) { groups[g].forEach(function (n) {
+    var big = g === 'components' ? 1 : 0.4;
+    [g === 'components' ? '.js' : '', '.css'].forEach(function (ext) { if (!ext && g !== 'components') ext = '.css'; if (!ext) return;
+      rows.push({ name: g + '/' + n + ext, size: Math.round(40 + Math.pow(rnd(), 1.8) * 900 * big), heat: Math.round(Math.pow(rnd(), 2) * 30), group: g }); });
+  }); });
+  var dw = VK.el('div'), dd = VK.el('div'); dw.appendChild(dd); document.getElementById('f10-maps-data').appendChild(dw);
+  var dm = VK.citymap.mount(dd, { style: 'transit', seed: 'kit', data: rows, label: 'Kit fájljai mint város' });
+  var dw2 = VK.el('div'), dd2 = VK.el('div'); dw2.appendChild(dd2); document.getElementById('f10-maps-data').appendChild(dw2);
+  VK.citymap.mount(dd2, { style: 'figure', seed: 'kit', data: rows, label: 'Kit fájljai — hőtérkép' });
+
+  // ---------- micrographics ----------
+  VK.micro.ruler(document.getElementById('f10-ruler-top'), { from: 0, to: 48, major: 8, minor: 4, unit: 'm' });
+  VK.micro.ruler(document.getElementById('f10-ruler-bot'), { from: 0, to: 230, major: 5, minor: 5, unit: 'V' });
+  VK.micro.meter(document.getElementById('f10-m1'), 0.62, { label: 'Terhelés · L1' });
+  VK.micro.meter(document.getElementById('f10-m2'), 0.38, { label: 'Hűtő · kör 2', text: '38 %' });
+  VK.micro.meter(document.getElementById('f10-m3'), 0.81, { label: 'Kötőelem-készlet' });
+  VK.micro.meter(document.getElementById('f10-m4'), 0.94, { label: 'Erősáram · túlterhelés' });
+  VK.micro.dots(document.getElementById('f10-dots'), { cols: 24, rows: 6, seed: 'commits', fill: 0.42 });
+  var mapEl = document.getElementById('f10-map');
+  VK.micro.beacon(mapEl, { x: '59%', y: '55%', h: 120 });
+  VK.micro.beacon(mapEl, { x: '40%', y: '27%', h: 70 });
+  VK.micro.beacon(mapEl, { x: '80%', y: '26%', h: 50, tone: 'accent' });
+  VK.micro.callout(mapEl, { target: document.getElementById('f10-target'), title: 'Épület', rows: [['Gép', '10'], ['Kihasználtság', '26%'], ['Állapot', 'fut']], side: 'left', dx: 70, dy: 70 });
+
+  // ---------- textures ----------
+  var tex = document.getElementById('f10-tex');
+  [['hatch', 'Sraffozás'], ['crosshatch', 'Keresztsraff'], ['dots', 'Pontrács'], ['grid', 'Rács'], ['blueprint', 'Tervrajz'], ['windows', 'Ablakok (meleg)'], ['water', 'Víz'], ['road-glow', 'Izzó út'], ['sand', 'Homok']].forEach(function (t) {
+    tex.appendChild(VK.el('figure', null, [VK.el('div.f10-sw.vk-tex-' + t[0], { 'aria-hidden': 'true' }), VK.el('figcaption', null, [t[1] + ' ', VK.el('code', { text: '.vk-tex-' + t[0] })])]));
+  });
+</script>

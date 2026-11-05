@@ -48,6 +48,7 @@ What changes locally compared with the cloud:
 - **Check first:** `Mobile\mobile.cmd test` (or `cd Mobile/android && gradlew :kit-core:test :airdeck-core:test`)
   and `node Mobile/tests/relay-pair.js` must be green before you change anything.
 - **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M8** (M1, M2, M3, M6 and M9 live; M4 built 2026-10-31, BETA until its release reaches the phone and the user's check).
+  After M8 comes **M16** (the VRG UI Kit's look on the phone, planned 2026-11-04 in `docs/mobile/WP/M16.md`; it needs the kit PR #4 merged).
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
 - Each WP ends with:

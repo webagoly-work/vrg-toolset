@@ -1,0 +1,78 @@
+/* VRG UI Kit — components/kbd.css — keycaps, the Alt-held hint badges and the cheat-sheet dialog.
+   <kbd class="vk-kbd"><kbd class="vk-kbd__k">Ctrl</kbd><span class="vk-sr-only">+</span><kbd class="vk-kbd__k">K</kbd></kbd>
+   data-size="sm" → tighter caps · .vk-kbd-alt = alternatives separated by "/"
+   .vk-kbd-hints > .vk-kbd-hint = the overlay badges (fixed layer, no pointer events)
+   .vk-kbd-sheet > .vk-kbd-sheet__box = the cheat sheet (modal) · .vk-kbd-sheet__content works inline too.
+   Depends on: tokens, base. */
+.vk-kbd { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; flex: none;
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); white-space: nowrap; }
+.vk-kbd__k { display: inline-grid; place-items: center; min-width: 1.9em; height: calc(var(--vk-fs-2xs) + 8px); padding: 0 4px;
+  font: inherit; color: inherit; background: var(--vk-bg-sunken);
+  border: var(--vk-border-w) solid var(--vk-line-strong); border-bottom-width: 2px; border-radius: var(--vk-radius-sm);
+  letter-spacing: .02em; text-transform: none; }
+.vk-kbd[data-size="sm"] .vk-kbd__k { min-width: 1.6em; height: calc(var(--vk-fs-2xs) + 5px); padding: 0 3px; border-bottom-width: 1px; }
+.vk-kbd-alt { display: inline-flex; align-items: center; gap: var(--vk-space-2); flex-wrap: wrap; justify-content: flex-end; }
+.vk-kbd-alt__or { font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-faint); }
+/* inside selected / accent rows the caps follow the row colour */
+[aria-selected="true"] .vk-kbd, :focus > .vk-kbd { color: var(--vk-text); }
+
+/* ---------- Alt-held overlay ---------- */
+.vk-kbd-hints { position: fixed; inset: 0; z-index: var(--vk-z-hud); pointer-events: none; }
+.vk-kbd-hint { position: absolute; left: 0; top: 0; padding: 2px 5px; white-space: nowrap;
+  font: var(--vk-fs-2xs)/1.1 var(--vk-font-mono); letter-spacing: .02em;
+  color: var(--vk-text-on-accent); background: var(--vk-accent); border-radius: var(--vk-radius-sm);
+  box-shadow: 0 0 0 1px var(--vk-bg); animation: vk-kbd-pop var(--vk-dur-2) var(--vk-ease); }
+.vk-kbd-hint[data-off] { color: var(--vk-text-muted); background: var(--vk-surface-3); box-shadow: 0 0 0 1px var(--vk-line-strong); }
+@keyframes vk-kbd-pop { from { opacity: 0; transform: translateY(3px); } }
+
+/* ---------- cheat sheet ---------- */
+.vk-kbd-sheet { position: fixed; inset: 0; z-index: var(--vk-z-modal); display: flex; justify-content: center; align-items: flex-start;
+  padding: max(6vh, var(--vk-space-3)) var(--vk-gutter) var(--vk-space-3); background: var(--vk-scrim);
+  animation: vk-kbd-fade var(--vk-dur-2) var(--vk-ease); }
+@keyframes vk-kbd-fade { from { opacity: 0; } }
+.vk-kbd-sheet__box { display: flex; flex-direction: column; width: min(860px, 100%); max-height: calc(100dvh - max(6vh, var(--vk-space-3)) - var(--vk-space-3));
+  box-shadow: var(--vk-shadow-overlay); min-height: 0; }
+.vk-kbd-sheet__head { display: flex; align-items: center; gap: var(--vk-space-4); padding: var(--vk-space-4) var(--vk-space-5);
+  border-bottom: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-kbd-sheet__head > .vk-icon { color: var(--vk-accent); }
+.vk-kbd-sheet__head h2 { margin: 0; font-size: var(--vk-fs-xl); }
+.vk-kbd-sheet__head .vk-label { margin: var(--vk-space-1) 0 0; }
+.vk-kbd-sheet__content { display: flex; flex-direction: column; min-height: 0; min-width: 0; flex: 1 1 auto; }
+.vk-kbd-sheet__bar { display: flex; align-items: center; gap: var(--vk-space-3); padding: var(--vk-space-2) var(--vk-space-5);
+  border-bottom: var(--vk-border-w) solid var(--vk-line); color: var(--vk-text-muted); }
+.vk-kbd-sheet__bar:focus-within { box-shadow: inset 0 -2px 0 var(--vk-focus); }
+.vk-kbd-sheet__search { flex: 1 1 auto; min-width: 0; min-height: max(var(--vk-control-h), var(--vk-target-min));
+  border: 0; background: transparent; color: var(--vk-text); font: inherit; font-size: var(--vk-fs-md); outline: none; }
+.vk-kbd-sheet__search:focus-visible { outline: none; }   /* the bar's inset ice line is the focus indicator */
+.vk-kbd-sheet__search::placeholder { color: var(--vk-text-muted); }
+.vk-kbd-sheet__count { flex: none; }
+.vk-kbd-sheet__body { flex: 1 1 auto; min-height: 0; min-width: 0; padding: var(--vk-space-4) var(--vk-space-5) var(--vk-space-5);
+  overflow-x: hidden; display: grid; align-content: start; align-items: start; column-gap: var(--vk-space-6);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.vk-kbd-sheet__body:focus-visible { outline-offset: -2px; }
+.vk-kbd-sheet__group { min-width: 0; margin: 0 0 var(--vk-space-5); }
+.vk-kbd-sheet__group h3 { margin: 0 0 var(--vk-space-2); color: var(--vk-accent); font-weight: var(--vk-fw-regular); }
+.vk-kbd-sheet__list { margin: 0; }
+.vk-kbd-sheet__row { display: flex; align-items: center; justify-content: space-between; gap: var(--vk-space-4);
+  min-height: var(--vk-row-h); padding: var(--vk-space-1) 0; border-bottom: var(--vk-border-w) solid var(--vk-line); }
+.vk-kbd-sheet__row dt { min-width: 0; font-size: var(--vk-fs-sm); overflow-wrap: anywhere; }
+.vk-kbd-sheet__row dd { margin: 0; flex: none; max-width: 60%; }
+.vk-kbd-sheet__row dd .vk-kbd-alt { flex-wrap: wrap; }
+.vk-kbd-sheet__row[data-off] dt { color: var(--vk-text-muted); }
+.vk-kbd-sheet__empty { color: var(--vk-text-muted); margin: 0; }
+
+[data-vk-density="touch"] .vk-kbd-sheet__body { padding: var(--vk-space-3); }
+[data-vk-density="touch"] .vk-kbd-sheet__head { padding: var(--vk-space-3); }
+@media (max-width: 480px), (max-height: 420px) {
+  .vk-kbd-sheet { padding: var(--vk-space-2); }
+  .vk-kbd-sheet__box { max-height: calc(100dvh - 2 * var(--vk-space-2)); }
+  .vk-kbd-sheet__head { padding: var(--vk-space-2) var(--vk-space-3); gap: var(--vk-space-3); }
+  .vk-kbd-sheet__head > .vk-icon, .vk-kbd-sheet__head .vk-label { display: none; }
+  .vk-kbd-sheet__bar { padding: var(--vk-space-1) var(--vk-space-3); }
+  .vk-kbd-sheet__count { display: none; }
+  .vk-kbd-sheet__body { padding: var(--vk-space-3); grid-template-columns: minmax(0, 1fr); }
+}
+@media (forced-colors: active) {
+  .vk-kbd__k { border-color: CanvasText; }
+  .vk-kbd-hint { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+}

@@ -1,0 +1,49 @@
+/* VRG UI Kit — components/tree.css — treeview (role=tree), mounted by VK.tree.mount.
+   .vk-tree > li.vk-tree__item[role=treeitem] > .vk-tree__row (twisty · check · icon · label · meta) + ul.vk-tree__group
+   State through ARIA: aria-expanded, aria-selected (ice), aria-checked true|false|mixed, aria-disabled, aria-busy,
+   data-state="error". Indent guides are hairlines drawn behind each row ("metro" rails).
+   Component-local: --vk-tree-indent. Depends on: tokens, base, mini. */
+.vk-tree-wrap { min-width: 0; }
+.vk-tree, .vk-tree__group { list-style: none; margin: 0; padding: 0; }
+.vk-tree { --vk-tree-indent: calc(var(--vk-icon-size) + var(--vk-space-2));
+  padding: var(--vk-space-1) 0; font-size: var(--vk-fs-md); line-height: var(--vk-lh-tight); color: var(--vk-text); }
+.vk-tree__item { outline: none; }
+.vk-tree__row { --_lvl: 0; position: relative; display: flex; align-items: center; gap: var(--vk-space-2);
+  min-height: max(var(--vk-row-h), var(--vk-target-min)); padding: 0 var(--vk-space-3) 0 calc(var(--_lvl) * var(--vk-tree-indent) + var(--vk-space-2));
+  border-radius: var(--vk-radius-sm); cursor: default; user-select: none; white-space: nowrap;
+  background-image: repeating-linear-gradient(90deg, var(--vk-line) 0 1px, transparent 1px var(--vk-tree-indent));
+  background-size: calc(var(--_lvl) * var(--vk-tree-indent)) 100%; background-repeat: no-repeat;
+  background-position: calc(var(--vk-space-2) + var(--vk-icon-size) / 2) 0; }
+.vk-tree__row:hover { background-color: var(--vk-hover-bg); }
+.vk-tree__item:focus-visible > .vk-tree__row { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: calc(-1 * var(--vk-focus-w)); }
+.vk-tree__item[aria-selected="true"] > .vk-tree__row,
+.vk-tree__item[data-current]:not([aria-selected]) > .vk-tree__row { background-color: var(--vk-select-bg); box-shadow: inset 2px 0 0 var(--vk-select-line); }
+.vk-tree__item[aria-disabled="true"] > .vk-tree__row { color: var(--vk-text-faint); }
+
+.vk-tree__twisty { display: grid; place-items: center; flex: none; width: var(--vk-icon-size); height: var(--vk-icon-size); color: var(--vk-text-muted); cursor: pointer; }
+.vk-tree__twisty .vk-icon { width: calc(var(--vk-icon-size) * .8125); height: calc(var(--vk-icon-size) * .8125); transition: transform var(--vk-dur-2) var(--vk-ease); }
+.vk-tree__item[aria-expanded="true"] > .vk-tree__row > .vk-tree__twisty .vk-icon { transform: rotate(90deg); }
+.vk-tree__ico { display: grid; place-items: center; flex: none; width: var(--vk-icon-size); height: var(--vk-icon-size); color: var(--vk-text-muted); }
+.vk-tree__item[aria-expanded="true"] > .vk-tree__row > .vk-tree__ico { color: var(--vk-text); }
+.vk-tree__item[aria-selected="true"] > .vk-tree__row > .vk-tree__ico { color: var(--vk-accent); }
+.vk-tree__ico .vk-mini { --_s: var(--vk-icon-size); --_w: 1.5px; width: var(--vk-icon-size); height: var(--vk-icon-size); pointer-events: none; }
+.vk-tree__ico .vk-mini .vk-icon { width: calc(var(--vk-icon-size) * .6); height: calc(var(--vk-icon-size) * .6); }
+.vk-tree__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.vk-tree__meta { margin-left: auto; padding-left: var(--vk-space-3); font: var(--vk-fs-xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); font-variant-numeric: tabular-nums; }
+.vk-tree__item[data-state="error"] > .vk-tree__row > .vk-tree__meta { color: var(--vk-crit); }
+.vk-tree__item[aria-busy="true"] > .vk-tree__row > .vk-tree__meta { color: var(--vk-activity); }
+.vk-tree__empty { padding: var(--vk-space-3); color: var(--vk-text-muted); font-size: var(--vk-fs-sm); }
+
+/* tri-state check: empty square · filled ice with tick · ice dash (mixed) */
+.vk-tree__check { position: relative; display: grid; place-items: center; flex: none; width: calc(var(--vk-icon-size) * .875); height: calc(var(--vk-icon-size) * .875);
+  border: var(--vk-border-w) solid var(--vk-border-control); border-radius: var(--vk-radius-sm); background: var(--vk-bg-sunken); cursor: pointer; }
+.vk-tree__check .vk-icon { position: absolute; inset: 0; width: 100%; height: 100%; stroke-width: 2.25; color: var(--vk-text-on-accent); opacity: 0; }
+.vk-tree__item[aria-checked="true"] > .vk-tree__row > .vk-tree__check { background: var(--vk-accent); border-color: var(--vk-accent); }
+.vk-tree__item[aria-checked="true"] > .vk-tree__row > .vk-tree__check .vk-icon { opacity: 1; }
+.vk-tree__item[aria-checked="mixed"] > .vk-tree__row > .vk-tree__check { border-color: var(--vk-accent); }
+.vk-tree__item[aria-checked="mixed"] > .vk-tree__row > .vk-tree__check::after { content: ""; position: absolute; left: 22%; right: 22%; top: calc(50% - 1px); height: 2px; background: var(--vk-accent); }
+.vk-tree__item[aria-disabled="true"] > .vk-tree__row > .vk-tree__check { border-color: var(--vk-line-strong); background: transparent; }
+
+@media (forced-colors: active) {
+  .vk-tree__item[aria-selected="true"] > .vk-tree__row { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+}

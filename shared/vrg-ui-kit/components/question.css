@@ -1,0 +1,76 @@
+/* VRG UI Kit — components/question.css — the DECISION card and its stack.
+   Rendered by question.js (VK.question.mount). One card = title, one line of context, lettered options
+   (A = recommended, "Ajánlott"), a free-text "Más:" option, a confirm button; answered = one compact line.
+   The stack header carries the progress MINI ("2 / 4") and the copy MINI ("Összes válasz másolása").
+   data-state on .vk-question: open (default) · answered. Depends on: tokens, base, button, mini. */
+
+.vk-question-stack { display: flex; flex-direction: column; gap: var(--vk-space-3); min-width: 0;
+  padding: var(--vk-pad-panel); background: var(--vk-surface-1); border: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-question-stack__head { display: flex; align-items: center; gap: var(--vk-space-3); flex-wrap: wrap; min-width: 0;
+  padding-bottom: var(--vk-space-3); border-bottom: var(--vk-border-w) solid var(--vk-line); }
+.vk-question-stack__count { font-size: var(--vk-fs-lg); color: var(--vk-text); }
+.vk-question-stack__count > span { color: var(--vk-text-muted); }
+.vk-question-stack__tools { margin-left: auto; display: flex; gap: var(--vk-space-2); align-items: center; }
+.vk-question-stack__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--vk-space-3); }
+.vk-question-stack__foot { display: flex; align-items: baseline; gap: var(--vk-space-3); flex-wrap: wrap; min-width: 0;
+  padding-top: var(--vk-space-3); border-top: var(--vk-border-w) solid var(--vk-line); }
+.vk-question-stack__line { font: var(--vk-fs-md)/1.3 var(--vk-font-mono); color: var(--vk-text); overflow-wrap: anywhere; min-width: 0; }
+.vk-question-stack__line:empty::before { content: "—"; color: var(--vk-text-muted); }
+
+/* ---------- one card ---------- */
+.vk-question { position: relative; min-width: 0; padding: var(--vk-space-4); background: var(--vk-surface-2);
+  border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); }
+.vk-question:focus-within { border-color: var(--vk-accent-line); }
+.vk-question__head { display: flex; align-items: baseline; gap: var(--vk-space-3); min-width: 0; }
+.vk-question__num { flex: none; color: var(--vk-text-muted); }
+.vk-question__title { margin: 0; min-width: 0; font-family: var(--vk-font-voice); font-weight: var(--vk-fw-strong);
+  font-size: var(--vk-fs-xl); letter-spacing: var(--vk-tracking-title); line-height: var(--vk-lh-tight); }
+.vk-question__ctx { margin: var(--vk-space-2) 0 var(--vk-space-3); font-size: var(--vk-fs-sm); color: var(--vk-text-muted); }
+
+.vk-question__opts { display: flex; flex-direction: column; gap: var(--vk-space-1); }
+.vk-question__opt { display: flex; align-items: center; gap: var(--vk-space-3); min-width: 0;
+  min-height: max(var(--vk-row-h), var(--vk-target-min)); padding: var(--vk-space-1) var(--vk-space-3) var(--vk-space-1) var(--vk-space-2);
+  border: var(--vk-border-w) solid transparent; border-left-width: 2px; border-radius: var(--vk-radius-sm);
+  cursor: pointer; user-select: none; color: var(--vk-text);
+  transition: background-color var(--vk-dur-1) var(--vk-ease), border-color var(--vk-dur-1) var(--vk-ease); }
+.vk-question__opt:hover { background: var(--vk-hover-bg); }
+.vk-question__opt:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: -2px; }
+.vk-question__opt[aria-checked="true"] { background: var(--vk-select-bg); border-color: var(--vk-accent-line); border-left-color: var(--vk-accent); }
+/* the key cap: a small square terminal with the letter; checked = filled */
+.vk-question__key { flex: none; display: inline-grid; place-items: center; width: calc(var(--vk-icon-size) + 6px); height: calc(var(--vk-icon-size) + 6px);
+  font: var(--vk-fw-strong) var(--vk-fs-sm)/1 var(--vk-font-mono); color: var(--vk-text);
+  border: var(--vk-border-w) solid var(--vk-border-control); border-radius: var(--vk-radius-sm); }
+.vk-question__opt[aria-checked="true"] .vk-question__key { background: var(--vk-accent); border-color: var(--vk-accent); color: var(--vk-text-on-accent); }
+.vk-question__text { min-width: 0; flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vk-question__opt--other .vk-question__text { flex: none; }
+/* "Ajánlott": a hollow-diamond decision mark + micro label */
+.vk-question__rec { flex: none; display: inline-flex; align-items: center; gap: var(--vk-space-2);
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-ok); }
+.vk-question__rec::before { content: ""; width: 6px; height: 6px; border: 1.5px solid currentColor; transform: rotate(45deg); }
+.vk-question__other-row { display: flex; align-items: center; gap: var(--vk-space-2); min-width: 0; }
+.vk-question__other-row > .vk-question__opt { flex: none; }
+.vk-question__other { flex: 1 1 8em; min-width: 0; height: max(var(--vk-control-h), var(--vk-target-min)); padding: 0 var(--vk-space-3);
+  background: var(--vk-bg-sunken); color: var(--vk-text); font: inherit; font-size: var(--vk-fs-md);
+  border: var(--vk-border-w) solid var(--vk-border-control); border-radius: var(--vk-radius); }
+.vk-question__other::placeholder { color: var(--vk-text-muted); opacity: .8; }
+.vk-question__other:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: 0; border-color: var(--vk-accent); }
+.vk-question__other[aria-invalid="true"] { border-color: var(--vk-crit); }
+
+.vk-question__foot { display: flex; align-items: center; gap: var(--vk-space-3); flex-wrap: wrap; margin-top: var(--vk-space-3); }
+.vk-question__keys { flex: 1 1 12em; min-width: 0; }
+.vk-question__keys kbd { font: inherit; color: var(--vk-text); }
+
+/* answered: one compact line */
+.vk-question__summary { display: none; align-items: center; gap: var(--vk-space-3); min-width: 0; flex-wrap: wrap; margin-top: var(--vk-space-2); }
+.vk-question[data-state="answered"] { padding-block: var(--vk-space-3); background: var(--vk-surface-1); border-color: var(--vk-line); }
+.vk-question[data-state="answered"] .vk-question__title { font-size: var(--vk-fs-lg); color: var(--vk-text-muted); }
+.vk-question[data-state="answered"] :is(.vk-question__ctx, .vk-question__opts, .vk-question__foot) { display: none; }
+.vk-question[data-state="answered"] .vk-question__summary { display: flex; }
+.vk-question[data-state="answered"] .vk-question__num { color: var(--vk-ok); }
+.vk-question__summary .vk-question__key { background: var(--vk-accent); border-color: var(--vk-accent); color: var(--vk-text-on-accent); }
+.vk-question__summary .vk-question__text { flex: 1 1 10em; }
+.vk-question__done { color: var(--vk-ok); }
+
+@media (forced-colors: active) {
+  .vk-question__opt[aria-checked="true"] { outline: 2px solid Highlight; }
+}

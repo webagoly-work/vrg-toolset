@@ -1,0 +1,184 @@
+/* VRG UI Kit v1 — tokens/base.css
+   Every value a component may use. Components read ONLY var(--vk-*) and never write a literal colour.
+   Load order: tokens/base.css → one or more theme-*.css → density.css → components.
+   base.css alone already renders the dark theme (the colour values here equal theme-dark.css),
+   so an app that inlines only base.css still gets a complete, legible palette.
+
+   Naming: --vk-<group>-<role>. Colour roles, not hues: "accent" is the instrument and you
+   (selection, focus, "you are here"), "activity" is the system working (running, heat, recent
+   work). The two never swap (Mélyvíz rule M1). */
+
+:root {
+  /* ---------- colour: ground and surfaces (dark default) ---------- */
+  --vk-bg: #0b0d0f;               /* the ground: app background */
+  --vk-bg-sunken: #070809;        /* wells: canvas, terminal, inputs on a panel */
+  --vk-surface-1: #111417;        /* panels, docks, cards */
+  --vk-surface-2: #171b1f;        /* raised: headers, toolbars, hovered card */
+  --vk-surface-3: #1f2429;        /* menus, popovers, pressed */
+  --vk-overlay: rgba(17, 20, 23, .9);  /* glass base for palette, menus, HUD (with backdrop blur) */
+  --vk-scrim: rgba(3, 4, 5, .62);      /* behind modal layers */
+
+  /* ---------- colour: lines ---------- */
+  --vk-line: rgba(235, 240, 245, .11);         /* decorative hairline (dividers, grid) */
+  --vk-line-strong: rgba(235, 240, 245, .24);  /* panel edges, frames */
+  --vk-border-control: #69737c;                /* control boundaries: ≥3:1 on every surface */
+
+  /* ---------- colour: text ---------- */
+  --vk-text: #eef2f5;
+  --vk-text-muted: #a5aeb6;       /* secondary text: ≥4.5:1 on surface-3 */
+  --vk-text-faint: #6c757d;       /* disabled and decorative only — never information */
+  --vk-text-on-accent: #061418;
+  --vk-text-on-solid: #0b0d0f;    /* text on a filled status colour */
+
+  /* ---------- colour: the two temperatures ---------- */
+  --vk-accent: #9fd8ea;           /* ice: selection, focus, playhead, "you are here" */
+  --vk-accent-hover: #c2e7f3;
+  --vk-activity: #eaa46f;         /* warm: running, heat, recent work */
+  --vk-focus: #9fd8ea;            /* the focus ring */
+
+  /* ---------- colour: meaning ---------- */
+  --vk-ok: #84d0a0;
+  --vk-warn: #e7c27a;
+  --vk-crit: #f08479;
+  --vk-info: #98b8f4;
+  --vk-idea: #bba9f2;
+
+  /* ---------- colour: categorical layers (wires, graph layers, series) ---------- */
+  --vk-layer-1: #f08f6c;  /* erősáram / power */
+  --vk-layer-2: #e6cd62;  /* világítás / lighting */
+  --vk-layer-3: #7db3f2;  /* adat / data */
+  --vk-layer-4: #b69bf2;  /* vezérlés / control */
+  --vk-layer-5: #84d19a;  /* védőföld / earth */
+  --vk-layer-6: #5fd0c3;  /* busz / bus */
+  --vk-layer-7: #f08fbf;  /* jel / signal */
+  --vk-layer-8: #aab4bd;  /* egyéb / other */
+
+  /* ---------- colour: heat scale (contribution grid, intensity) — warm = activity ---------- */
+  --vk-heat-0: #171b1f;
+  --vk-heat-1: #3d2c20;
+  --vk-heat-2: #6f4628;
+  --vk-heat-3: #ad6c3c;
+  --vk-heat-4: #eaa46f;
+
+  /* ---------- colour: terminal ---------- */
+  --vk-term-bg: #070809;
+  --vk-term-text: #d9e3ea;
+  /* terminal tones: the well can stay dark in a light theme, so it has its own status colours */
+  --vk-term-ok: var(--vk-ok);
+  --vk-term-warn: var(--vk-warn);
+  --vk-term-crit: var(--vk-crit);
+  --vk-term-info: var(--vk-info);
+  --vk-term-muted: #9ba7b1;
+
+  /* ---------- elevation (themes may set these to none: Mélyvíz has no drop shadows) ---------- */
+  --vk-shadow-1: 0 1px 0 rgba(0, 0, 0, .35);
+  --vk-shadow-overlay: 0 12px 32px rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .5);
+  --vk-glow: 0 0 6px rgba(159, 216, 234, .35);   /* emission around an "on" control */
+  --vk-blur: 14px;                                /* backdrop blur of glass layers */
+
+  /* ---------- derived colour (color-mix keeps themes short; themes may override any) ---------- */
+  --vk-accent-soft: color-mix(in srgb, var(--vk-accent) 15%, transparent);
+  --vk-accent-line: color-mix(in srgb, var(--vk-accent) 55%, transparent);
+  --vk-activity-soft: color-mix(in srgb, var(--vk-activity) 15%, transparent);
+  --vk-ok-soft: color-mix(in srgb, var(--vk-ok) 15%, transparent);
+  --vk-warn-soft: color-mix(in srgb, var(--vk-warn) 15%, transparent);
+  --vk-crit-soft: color-mix(in srgb, var(--vk-crit) 15%, transparent);
+  --vk-info-soft: color-mix(in srgb, var(--vk-info) 15%, transparent);
+  --vk-idea-soft: color-mix(in srgb, var(--vk-idea) 15%, transparent);
+  --vk-hover-bg: color-mix(in srgb, var(--vk-text) 6%, transparent);
+  --vk-press-bg: color-mix(in srgb, var(--vk-text) 10%, transparent);
+  --vk-select-bg: color-mix(in srgb, var(--vk-accent) 18%, transparent);
+  --vk-select-line: var(--vk-accent);
+
+  /* ---------- status vocabulary (aliases: change the meaning map here, not in components) ---------- */
+  /* lifecycle: használatban / kész / fejlesztés alatt / tervezett / ötlet */
+  --vk-st-inuse: var(--vk-ok);
+  --vk-st-built: var(--vk-accent);
+  --vk-st-dev: var(--vk-activity);
+  --vk-st-planned: var(--vk-info);
+  --vk-st-idea: var(--vk-idea);
+  /* run state: aktív / várakozik / parkolva / lezárva */
+  --vk-st-active: var(--vk-activity);
+  --vk-st-waiting: var(--vk-warn);
+  --vk-st-parked: var(--vk-text-muted);
+  --vk-st-ended: var(--vk-text-muted);
+  /* signals: ellentmondás / hiány / fagyott */
+  --vk-sig-contradiction: var(--vk-crit);
+  --vk-sig-gap: var(--vk-warn);
+  --vk-sig-frozen: var(--vk-info);
+
+  /* wire aliases for electrical work (job-neutral) */
+  --vk-wire-power: var(--vk-layer-1);
+  --vk-wire-light: var(--vk-layer-2);
+  --vk-wire-data: var(--vk-layer-3);
+  --vk-wire-control: var(--vk-layer-4);
+  --vk-wire-earth: var(--vk-layer-5);
+  --vk-wire-bus: var(--vk-layer-6);
+  --vk-wire-signal: var(--vk-layer-7);
+  --vk-wire-other: var(--vk-layer-8);
+
+  /* ---------- type ---------- */
+  --vk-font-sans: "VK Inter", "Inter", "Segoe UI", system-ui, sans-serif;
+  --vk-font-voice: "VK Barlow Condensed", "Barlow Condensed", Bahnschrift, "DIN Alternate", "Arial Narrow", sans-serif;
+  --vk-font-mono: "VK JetBrains Mono", "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --vk-fs-2xs: 10px;
+  --vk-fs-xs: 11px;
+  --vk-fs-sm: 12px;
+  --vk-fs-md: 13px;      /* body; density.css rescales */
+  --vk-fs-lg: 15px;
+  --vk-fs-xl: 18px;
+  --vk-fs-2xl: 24px;
+  --vk-fs-3xl: 32px;
+  --vk-lh-tight: 1.2;
+  --vk-lh: 1.45;
+  --vk-fw-regular: 400;
+  --vk-fw-strong: 600;
+  --vk-tracking-label: .12em;   /* small uppercase labels */
+  --vk-tracking-title: .06em;   /* condensed titles */
+
+  /* ---------- space and size (density.css overrides) ---------- */
+  --vk-space-1: 2px;
+  --vk-space-2: 4px;
+  --vk-space-3: 8px;
+  --vk-space-4: 12px;
+  --vk-space-5: 16px;
+  --vk-space-6: 24px;
+  --vk-space-7: 32px;
+  --vk-control-h: 28px;   /* buttons, inputs, tabs */
+  --vk-row-h: 28px;       /* table rows, list items, menu items */
+  --vk-icon-size: 16px;
+  --vk-icon-stroke: 1.5;
+  --vk-target-min: 24px;  /* smallest hit area (WCAG 2.5.8); 40px in touch density */
+  --vk-pad-panel: 12px;
+  --vk-gutter: 16px;
+
+  /* ---------- shape ---------- */
+  --vk-radius-sm: 2px;
+  --vk-radius: 3px;
+  --vk-radius-lg: 5px;
+  --vk-radius-pill: 999px;
+  --vk-cut: 6px;           /* chamfer on .vk-cut panels (two opposite corners) */
+  --vk-border-w: 1px;
+  --vk-focus-w: 2px;
+  --vk-focus-offset: 2px;
+
+  /* ---------- motion ---------- */
+  --vk-dur-1: 80ms;
+  --vk-dur-2: 150ms;
+  --vk-dur-3: 240ms;
+  --vk-dur-4: 420ms;
+  --vk-ease: cubic-bezier(.2, .7, .2, 1);
+  --vk-ease-in-out: cubic-bezier(.6, 0, .3, 1);
+
+  /* ---------- layering ---------- */
+  --vk-z-panel: 10;
+  --vk-z-sticky: 20;
+  --vk-z-hud: 100;
+  --vk-z-popover: 200;
+  --vk-z-modal: 300;
+  --vk-z-toast: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --vk-dur-1: 1ms; --vk-dur-2: 1ms; --vk-dur-3: 1ms; --vk-dur-4: 1ms; }
+}

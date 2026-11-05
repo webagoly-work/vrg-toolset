@@ -1,0 +1,62 @@
+/* VRG UI Kit — components/layerstack.css — stacked iso planes, dashed pillars, warm beacons, plane list of MINIs.
+   Plane colour arrives as --_pc (a --vk-layer-* token); ice = you (focus, highlighted pillar), warm = beacons.
+   Depends on: tokens, base, mini. */
+.vk-layerstack { --vk-layerstack-h: 600px; display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--vk-space-4); min-width: 0; }
+
+/* ---------- plane list ---------- */
+.vk-layerstack__list { flex: 0 1 240px; min-width: min(100%, 200px); display: grid; gap: var(--vk-space-1); }
+.vk-layerstack__row { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto; align-items: center; gap: var(--vk-space-3);
+  min-height: var(--vk-row-h); padding: 0 var(--vk-space-2) 0 var(--vk-space-3); border-left: 2px solid transparent;
+  border-radius: var(--vk-radius-sm); }
+.vk-layerstack__row[data-current] { border-left-color: var(--vk-accent); background: var(--vk-hover-bg); }
+.vk-layerstack__row[data-off] { color: var(--vk-text-muted); }
+.vk-layerstack__row[data-off] .vk-layerstack__swatch { opacity: .35; }
+.vk-layerstack__num { font-size: var(--vk-fs-2xs); color: var(--vk-text-muted); }
+.vk-layerstack__swatch { width: 12px; height: 8px; border: 1.5px solid var(--_pc); background: color-mix(in srgb, var(--_pc) 25%, transparent);
+  transform: skewX(-30deg); }
+.vk-layerstack__name { font-size: var(--vk-fs-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- stage ---------- */
+.vk-layerstack__stage { position: relative; flex: 1 1 360px; min-width: min(100%, 260px); display: flex; flex-direction: column; gap: var(--vk-space-2);
+  padding: var(--vk-space-3); background: var(--vk-bg-sunken); border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); outline-offset: -2px; }
+.vk-layerstack__stage:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: -2px; }
+.vk-layerstack__svg { display: block; width: 100%; height: auto; max-height: var(--vk-layerstack-h); }
+.vk-layerstack__readout { margin: 0; min-height: 1.4em; overflow-wrap: anywhere; }
+
+.vk-layerstack__sheet { fill: color-mix(in srgb, var(--_pc) 7%, transparent); stroke: var(--_pc); stroke-width: 1.25; stroke-linejoin: round; }
+.vk-layerstack__plane[data-current] .vk-layerstack__sheet { fill: color-mix(in srgb, var(--_pc) 13%, transparent); stroke-width: 1.75; }
+.vk-layerstack__plane[data-state="ghost"] .vk-layerstack__sheet { fill: none; stroke: var(--vk-line-strong); stroke-dasharray: 2 4; }
+.vk-layerstack__grid { fill: none; stroke: color-mix(in srgb, var(--_pc) 22%, transparent); stroke-width: .75; }
+.vk-layerstack__plabel { font-family: var(--vk-font-mono); font-size: 9px; letter-spacing: .12em; fill: var(--vk-text-muted); }
+.vk-layerstack__plane[data-current] .vk-layerstack__plabel { fill: var(--vk-text); }
+.vk-layerstack__plane[data-state="ghost"] .vk-layerstack__plabel { fill: var(--vk-text-faint); }
+
+.vk-layerstack__pillar { stroke: var(--vk-text-muted); stroke-width: 1; stroke-dasharray: 3 3; opacity: .75; }
+.vk-layerstack__pillar[data-hl] { stroke: var(--vk-accent); stroke-width: 1.75; opacity: 1; }
+.vk-layerstack__link { fill: none; stroke: var(--_pc); stroke-width: 1.25; stroke-linejoin: round; opacity: .8; }
+.vk-layerstack__link[data-planned] { stroke-dasharray: 4 3; }
+
+.vk-layerstack__node { cursor: pointer; }
+.vk-layerstack__hit { fill: transparent; }
+.vk-layerstack__dot { fill: var(--_pc); stroke: var(--vk-bg-sunken); stroke-width: 1.25; }
+.vk-layerstack__ring { fill: none; stroke: none; }
+.vk-layerstack__node[data-hl] .vk-layerstack__ring { stroke: var(--vk-accent); stroke-width: 1.25; }
+.vk-layerstack__node[data-hl] .vk-layerstack__dot { fill: var(--vk-accent); }
+.vk-layerstack__node[data-current] .vk-layerstack__ring { stroke: var(--vk-focus); stroke-width: 2; }
+.vk-layerstack__elabel { font-family: var(--vk-font-sans); font-size: 9.5px; fill: var(--vk-text);
+  paint-order: stroke; stroke: var(--vk-bg-sunken); stroke-width: 3px; stroke-linejoin: round; }
+.vk-layerstack__elabel[data-hl] { fill: var(--vk-accent); }
+
+.vk-layerstack__beam-a { stop-color: var(--vk-activity); stop-opacity: .8; }
+.vk-layerstack__beam-foot { fill: color-mix(in srgb, var(--vk-activity) 35%, transparent); }
+.vk-layerstack__beam-b { stop-color: var(--vk-activity); stop-opacity: 0; }
+.vk-layerstack__beam-core { stroke: var(--vk-activity); stroke-width: 1.75; }
+.vk-layerstack__beacon { animation: vk-layerstack-pulse 2.4s ease-in-out infinite; pointer-events: none; }
+@keyframes vk-layerstack-pulse { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .vk-layerstack__beacon { animation: none; } }
+
+[data-vk-density="touch"] .vk-layerstack__list { flex-basis: 100%; }
+@media (forced-colors: active) {
+  .vk-layerstack__sheet, .vk-layerstack__pillar { stroke: CanvasText; }
+  .vk-layerstack__pillar[data-hl], .vk-layerstack__node[data-current] .vk-layerstack__ring { stroke: Highlight; }
+}

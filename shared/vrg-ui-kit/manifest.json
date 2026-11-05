@@ -1,0 +1,3037 @@
+{
+  "name": "vrg-ui-kit",
+  "version": "1.0.0",
+  "families": {
+    "1": "Shell / workspace",
+    "2": "Command layer",
+    "3": "Graph and topology",
+    "4": "Time views",
+    "5": "Data views",
+    "6": "Status and signals",
+    "7": "Decisions and input",
+    "8": "Agent / AI surfaces",
+    "9": "Small screens",
+    "10": "Program identity (emblem, city map, micrographics, textures)"
+  },
+  "tokens": [
+    "tokens/base.css",
+    "tokens/theme-dark.css",
+    "tokens/theme-light.css",
+    "tokens/theme-contrast.css",
+    "tokens/theme-melyviz.css",
+    "tokens/density.css"
+  ],
+  "fonts": "fonts/fonts.css",
+  "icons": {
+    "sprite": "icons/sprite.svg",
+    "index": "icons/icons.json",
+    "injector": "icons/sprite.js"
+  },
+  "components": [
+    {
+      "name": "base",
+      "files": [
+        "components/base.css"
+      ],
+      "deps": [],
+      "families": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-hover",
+        "--vk-accent-soft",
+        "--vk-bg",
+        "--vk-bg-sunken",
+        "--vk-blur",
+        "--vk-border-w",
+        "--vk-cut",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-sans",
+        "--vk-font-voice",
+        "--vk-fs-2xl",
+        "--vk-fs-2xs",
+        "--vk-fs-3xl",
+        "--vk-fs-lg",
+        "--vk-fs-md",
+        "--vk-fs-xl",
+        "--vk-fw-strong",
+        "--vk-icon-size",
+        "--vk-icon-stroke",
+        "--vk-lh",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-overlay",
+        "--vk-radius",
+        "--vk-radius-lg",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-surface-3",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-tracking-title"
+      ],
+      "summary": "Opt-in base layer under .vk, focus ring, .vk-icon, type/surface/layout utilities, .vk-cut chamfer, .vk-glass.",
+      "api": "CSS only"
+    },
+    {
+      "name": "core",
+      "files": [
+        "components/core.js"
+      ],
+      "deps": [],
+      "families": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent"
+      ],
+      "summary": "VK namespace: el(), icon(), uid(), emitter(), fire(), place() popover positioning, token(), fold(), rng().",
+      "api": "VK.el, VK.icon, VK.place, VK.token, VK.fold, VK.rng, VK.reducedMotion"
+    },
+    {
+      "name": "focus",
+      "files": [
+        "components/focus.js"
+      ],
+      "deps": [
+        "core"
+      ],
+      "families": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "icons": [],
+      "tokens": [],
+      "summary": "Keyboard plumbing: roving tabindex, focus trap, Shift+Arrow region hopping ([data-vk-hop]).",
+      "api": "VK.focus.roving(el, opts), VK.focus.trap(el, opts), VK.focus.enableHop()"
+    },
+    {
+      "name": "actions",
+      "files": [
+        "actions.js"
+      ],
+      "deps": [
+        "core"
+      ],
+      "families": [
+        2
+      ],
+      "icons": [],
+      "tokens": [],
+      "summary": "The one action registry: palette, menus, toolbars, status bar and shortcuts all read it.",
+      "api": "VK.actions.register(a), forSurface(id, ctx), run(id), search(q), bindKeys(), keyLabel()"
+    },
+    {
+      "name": "button",
+      "files": [
+        "components/button.css"
+      ],
+      "deps": [
+        "base"
+      ],
+      "families": [
+        1,
+        2,
+        7
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-hover",
+        "--vk-accent-soft",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-crit-soft",
+        "--vk-dur-1",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fw-regular",
+        "--vk-fw-strong",
+        "--vk-glow",
+        "--vk-hover-bg",
+        "--vk-line-strong",
+        "--vk-press-bg",
+        "--vk-radius",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-text-on-accent"
+      ],
+      "summary": "Buttons: outline/primary/ghost/quiet/danger, icon, small, pressed; segmented .vk-btn-group.",
+      "api": "CSS only"
+    },
+    {
+      "name": "mini",
+      "files": [
+        "components/mini.css",
+        "components/mini.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        1,
+        2,
+        6,
+        8,
+        9
+      ],
+      "icons": [
+        "dot"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-accent-soft",
+        "--vk-activity",
+        "--vk-bg",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius",
+        "--vk-space-4",
+        "--vk-space-7",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-warn"
+      ],
+      "summary": "The MINI: every feature's icon that is also its button and its progress indicator (ring/ticks/square meter, states).",
+      "api": "VK.mini.create(o), VK.mini.set(el, {progress, state, value, pressed}), VK.mini.fromAction(id)",
+      "optional": [
+        "actions"
+      ]
+    },
+    {
+      "name": "shell",
+      "files": [
+        "components/shell.css",
+        "components/shell.js"
+      ],
+      "deps": [
+        "base",
+        "focus",
+        "mini",
+        "panel",
+        "actions",
+        "core"
+      ],
+      "families": [
+        1
+      ],
+      "icons": [
+        "panel-left",
+        "panel-right",
+        "panel-bottom",
+        "hud"
+      ],
+      "tokens": [
+        "--vk-accent-line",
+        "--vk-bg",
+        "--vk-blur",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-dur-3",
+        "--vk-ease",
+        "--vk-font-mono",
+        "--vk-font-sans",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-lh",
+        "--vk-line-strong",
+        "--vk-overlay",
+        "--vk-radius-lg",
+        "--vk-shadow-overlay",
+        "--vk-space-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-tracking-label",
+        "--vk-z-hud",
+        "--vk-z-panel"
+      ],
+      "summary": "Full-screen app frame: CSS grid (top bar, left/right/bottom docks, main, status bar); docks collapse to a rail of minis; HUD mode (data-mode=hud) turns the frame transparent over content with glass bars and panels; auto-collapse when narrow.",
+      "api": "VK.shell.mount(el, {mode, docks:{left:{collapsed,size},right,bottom}, autoCollapse (default 480), touchCollapse (default 1100), onChange}) → {toggle(side, open?), collapsed, setSize, setMode, toggleMode, mode, state, refreshRails, destroy}; VK.shell.actions(sh, {prefix, at, keys}) → [<prefix>.hud, <prefix>.dock.left|right|bottom]"
+    },
+    {
+      "name": "commandbar",
+      "files": [
+        "components/commandbar.css",
+        "components/commandbar.js"
+      ],
+      "deps": [
+        "base",
+        "focus",
+        "mini",
+        "actions",
+        "core"
+      ],
+      "families": [
+        1
+      ],
+      "icons": [
+        "search",
+        "more-h"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-sans",
+        "--vk-font-voice",
+        "--vk-fs-2xs",
+        "--vk-fs-lg",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-strong",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-radius-lg",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-tracking-title",
+        "--vk-z-popover"
+      ],
+      "summary": "Top command bar: brand emblem slot, breadcrumbs as buttons, a search trigger that runs registry action palette.open when registered, minis from surface toolbar:command; container-query responsive. Minis that do not fit go behind a \"…\" overflow menu.",
+      "api": "VK.commandbar.mount(el, {brand:{name,tag,emblem}, path:[{label,icon,mono}], onNavigate(i,seg), surface, searchAction, searchText}) (narrow: surplus minis → \"…\" menu) → {setPath, setBrand, refresh, render, path, destroy}"
+    },
+    {
+      "name": "statusbar",
+      "files": [
+        "components/statusbar.css",
+        "components/statusbar.js"
+      ],
+      "deps": [
+        "base",
+        "focus",
+        "mini",
+        "actions",
+        "core"
+      ],
+      "families": [
+        1
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-activity",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-warn"
+      ],
+      "summary": "Bottom status bar rendering registry surface statusbar as minis + short mono text (action.statusText / statusSide / statusPin) plus passive readouts, start/end groups, polite role=status live region for state changes.",
+      "api": "VK.statusbar.mount(el, {surface, label, items:[{id,key,text,side,pin}]}) → {refresh(id?), setText(id, text, announce?), announce, render, destroy}"
+    },
+    {
+      "name": "panel",
+      "files": [
+        "components/panel.css",
+        "components/panel.js"
+      ],
+      "deps": [
+        "base",
+        "focus",
+        "mini",
+        "core",
+        "actions"
+      ],
+      "families": [
+        1
+      ],
+      "icons": [
+        "chevron-up",
+        "chevron-down",
+        "maximize",
+        "minimize",
+        "window",
+        "dock",
+        "close",
+        "loader"
+      ],
+      "tokens": [
+        "--vk-accent-line",
+        "--vk-activity",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-voice",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fw-strong",
+        "--vk-icon-size",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-overlay",
+        "--vk-pad-panel",
+        "--vk-radius-lg",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-tracking-title",
+        "--vk-warn",
+        "--vk-z-panel",
+        "--vk-z-sticky"
+      ],
+      "summary": "Dockable panel: header with micro label, condensed title and minis (collapse, maximise, float, close, registry verbs, state), scrolling body, data-vk-hop; works in docks and floating (pointer drag, Ctrl+arrows).",
+      "api": "VK.panel.mount(el, {title, label, icon, level, controls:[collapse,maximize,float,close], surface, collapsed, onCollapse, onMaximize, onFloat, onClose}) → {collapse, toggle, maximize, float, close, open, setTitle, setState({state,progress,label}), isCollapsed, refresh, destroy}; VK.panel.get(el)"
+    },
+    {
+      "name": "splitter",
+      "files": [
+        "components/splitter.css",
+        "components/splitter.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        1
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-soft",
+        "--vk-border-w",
+        "--vk-dur-1",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-line-strong",
+        "--vk-radius-sm",
+        "--vk-surface-2",
+        "--vk-target-min"
+      ],
+      "summary": "Resizable split view, horizontal or vertical, nestable: role=separator with aria-valuenow/min/max, arrows / Ctrl+arrows / PageUp/PageDown / Home/End, Enter or double-click resets, min sizes, onChange for persistence.",
+      "api": "VK.splitter.mount(el, {orientation:horizontal|vertical, value, default, min:[a,b], step, bigStep, label, onChange(v)}) → {value, set, reset, destroy}"
+    },
+    {
+      "name": "tabs",
+      "files": [
+        "components/tabs.css",
+        "components/tabs.js"
+      ],
+      "deps": [
+        "base",
+        "focus",
+        "mini",
+        "actions",
+        "core"
+      ],
+      "families": [
+        1
+      ],
+      "icons": [
+        "chevron-left",
+        "chevron-right",
+        "close",
+        "tabs"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-dur-1",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-fs-sm",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-press-bg",
+        "--vk-radius",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted"
+      ],
+      "summary": "Tablist with closable tabs, dirty dot (warm), overflow scroll with chevrons, roving keyboard (arrows, Home/End, Delete closes), registry minis (e.g. Új lap), tabpanels, empty state.",
+      "api": "VK.tabs.mount(el, {tabs:[{id,label,icon,dirty,closable,panel}], active, activation, surface, emptyText, onSelect, onClose}) → {add, close, closeActive, select, next, setDirty, setLabel, active, ids, refresh, destroy}; VK.tabs.actions(t, {prefix, when}) → close (mod+w), next, prev"
+    },
+    {
+      "name": "wm",
+      "files": [
+        "components/wm.css",
+        "components/wm.js"
+      ],
+      "deps": [
+        "base",
+        "focus",
+        "mini",
+        "actions",
+        "core"
+      ],
+      "families": [
+        1
+      ],
+      "icons": [
+        "grip",
+        "minus",
+        "maximize",
+        "minimize",
+        "close",
+        "window",
+        "fit",
+        "grid",
+        "panel-left",
+        "panel-right"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-accent-soft",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-dur-2",
+        "--vk-dur-3",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-voice",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-fw-strong",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-overlay",
+        "--vk-pad-panel",
+        "--vk-radius-lg",
+        "--vk-radius-sm",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-tracking-title",
+        "--vk-z-panel"
+      ],
+      "summary": "Window manager for the VRG Desktop: floating non-modal role=dialog windows, pointer drag/resize, edge snap, focus/z-order, minimise to a taskbar of minis (progress per window), maximise, snap halves, tile all, keyboard move/resize mode.",
+      "api": "VK.wm.mount(area, {taskbar, glass, sheetBelow (default 480: full-width sheets), onChange}) → {open({id,title,icon,tag,content,x,y,w,h}), close, minimize, restore, maximize, snap, tile, cycle, move, resize, setProgress, setTitle, focus, active, list, get, destroy}; VK.wm.actions(wm, {prefix, when, keys}) → move, resize, minimize, maximize, snapLeft, snapRight, tile, cycle, close"
+    },
+    {
+      "name": "kbd",
+      "files": [
+        "components/kbd.css",
+        "components/kbd.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus",
+        "actions"
+      ],
+      "families": [
+        2
+      ],
+      "icons": [
+        "keyboard",
+        "tag",
+        "search",
+        "close"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-bg",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xl",
+        "--vk-fw-regular",
+        "--vk-gutter",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-scrim",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-space-6",
+        "--vk-surface-3",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-text-on-accent",
+        "--vk-z-hud",
+        "--vk-z-modal"
+      ],
+      "summary": "Keycap chips from registry keys, Alt-held key-hint badges over visible [data-action] elements, searchable cheat-sheet dialog (and inline sheet).",
+      "api": "VK.kbd.chip(key), chips(keys), forAction(a), label(k), aria(k), hints({root, delay}) → off, showHints/hideHints, sheet(opts), renderSheet(el, opts), attachHelp({keys, at}) → actions 'help.keys' + 'help.hints'"
+    },
+    {
+      "name": "menu",
+      "files": [
+        "components/menu.css",
+        "components/menu.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus",
+        "actions",
+        "kbd"
+      ],
+      "families": [
+        2
+      ],
+      "icons": [
+        "check",
+        "chevron-right",
+        "more-h"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-accent-soft",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-crit-soft",
+        "--vk-dur-1",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-select-line",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-z-popover"
+      ],
+      "summary": "Context / dropdown menus and a menubar from registry surfaces: groups with separators, disabled with reason, checkable, danger, key hints, submenus (children / many), typeahead, VK.place flipping, overflow '…' on the menubar.",
+      "api": "VK.menu.open(surfaceOrItems, anchorOrPoint, ctx, {label, side, focus, restore, inline}) → {close, focusFirst, focusLast}; VK.menu.close(); bindContext(el, surface, ctxFn) → off; button(btn, surface, opts) → off; menubar(el, [{label, surface}], opts) → {layout, destroy}"
+    },
+    {
+      "name": "palette",
+      "files": [
+        "components/palette.css",
+        "components/palette.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus",
+        "actions",
+        "kbd",
+        "mini"
+      ],
+      "families": [
+        2
+      ],
+      "icons": [
+        "command",
+        "search",
+        "lock",
+        "check",
+        "target",
+        "arrow-right",
+        "dot"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-accent-soft",
+        "--vk-activity",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-lg",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-regular",
+        "--vk-fw-strong",
+        "--vk-gutter",
+        "--vk-hover-bg",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-scrim",
+        "--vk-select-bg",
+        "--vk-select-line",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-surface-1",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-warn",
+        "--vk-z-modal"
+      ],
+      "summary": "Command palette (Ctrl+K): glass modal combobox, fuzzy hits highlighted, grouped, recent first, toggles BE/KI, running minis, 'Nem érhető el most' for disabled-only matches, prefix providers ('#' jump). Inline mount for docs.",
+      "api": "VK.palette.attach({surface, keys, at, label}) registers 'palette.open'; open(text) · close() · toggle() · isOpen(); addProvider(prefix, fn(q, ctx) → [{label, hint, icon, run}], {label, placeholder}) → off; mount(el, {query, surface}) → {setQuery, refresh, destroy}"
+    },
+    {
+      "name": "toolbar",
+      "files": [
+        "components/toolbar.css",
+        "components/toolbar.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus",
+        "actions",
+        "mini",
+        "menu",
+        "kbd"
+      ],
+      "families": [
+        2
+      ],
+      "icons": [
+        "more-h",
+        "more-v",
+        "grip",
+        "dock",
+        "arrow-up",
+        "panel-bottom",
+        "panel-left",
+        "panel-right",
+        "window"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-accent-soft",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-fs-sm",
+        "--vk-hover-bg",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-select-bg",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-z-panel"
+      ],
+      "summary": "Registry surface 'toolbar:<id>' as minis or labelled buttons: roving arrows, group separators, dropdowns for children, ResizeObserver overflow into 'Továbbiak', toggleable placement top/bottom/left/right/floating via registry actions + onPlacement.",
+      "api": "VK.toolbar.mount(el, {id, mode:'mini'|'label', placement, placeable, placementAt, onPlacement(p, xy), name, ctx}) → {refresh, rebuild, layout, setPlacement(p, xy), placement(), setMode(m), destroy}"
+    },
+    {
+      "name": "graph",
+      "files": [
+        "components/graph.css",
+        "components/graph.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "mini",
+        "focus",
+        "actions"
+      ],
+      "families": [
+        3
+      ],
+      "icons": [
+        "dot",
+        "cable",
+        "bolt",
+        "bulb",
+        "sliders",
+        "earth",
+        "gauge"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-hover",
+        "--vk-accent-line",
+        "--vk-activity",
+        "--vk-bg",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-sans",
+        "--vk-fs-sm",
+        "--vk-fw-strong",
+        "--vk-layer-1",
+        "--vk-layer-2",
+        "--vk-layer-3",
+        "--vk-layer-4",
+        "--vk-layer-5",
+        "--vk-layer-6",
+        "--vk-layer-7",
+        "--vk-layer-8",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-select-bg",
+        "--vk-space-2",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-surface-3",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-wire-bus",
+        "--vk-wire-control",
+        "--vk-wire-data",
+        "--vk-wire-earth",
+        "--vk-wire-light",
+        "--vk-wire-other",
+        "--vk-wire-power",
+        "--vk-wire-signal"
+      ],
+      "summary": "SVG node/wire topology: bubble/dot/junction/terminal/hex nodes, metro/curve/straight wires typed by layer (planned dashed, active warm flow, arrows, labels, bundled fan-in/out), dashed chamfered frames, selection (click, Ctrl+click, Shift+box, Ctrl+A), keyboard spatial focus, layer show/hide with a legend of toggle minis, flat or iso-board projection (extruded slabs, glowing hub). Emits vk:selection.",
+      "api": "VK.graph.mount(el, {nodes, edges, frames, layers, projection:\"flat\"|\"iso\", label, edgeStyle, arrows}) → {setData, select(ids,{add,toggle}), selection, focusNode, fit, zoomTo(k|id), zoomBy, panBy, centerOn, getView, setView, setLayerVisible(id,on), isLayerVisible, setProjection, bounds, model, legend(el), on(select|focus|open|rename|badge|view|layer|data), destroy}; registry ids: graph.zoomIn, graph.zoomOut, graph.fit, graph.delete"
+    },
+    {
+      "name": "minimap",
+      "files": [
+        "components/minimap.css",
+        "components/minimap.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "graph"
+      ],
+      "families": [
+        3
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-soft",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-blur",
+        "--vk-border-w",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-line-strong",
+        "--vk-overlay",
+        "--vk-radius",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-z-panel"
+      ],
+      "summary": "Overview of a graph with the ice viewport rectangle: click/drag to move, arrows pan, +/- zoom, 0 fit; follows pan/zoom, selection and layer changes. .vk-minimap--overlay[data-corner=bl|tr] floats it on the stage.",
+      "api": "VK.minimap.mount(el, graphInstance, {label}) → {update, destroy}"
+    },
+    {
+      "name": "layerstack",
+      "files": [
+        "components/layerstack.css",
+        "components/layerstack.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "mini",
+        "focus"
+      ],
+      "families": [
+        3
+      ],
+      "icons": [
+        "eye",
+        "eye-off",
+        "solo"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-sans",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-hover-bg",
+        "--vk-layer-1",
+        "--vk-layer-2",
+        "--vk-layer-3",
+        "--vk-layer-4",
+        "--vk-layer-5",
+        "--vk-layer-6",
+        "--vk-layer-7",
+        "--vk-layer-8",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted"
+      ],
+      "summary": "Stacked isometric planes; dashed vertical pillars tie the same entity across planes, warm beacons rise from active entities; plane list of show/hide/solo minis; hover/focus lights an entity on every plane; keyboard Up/Down plane, Left/Right entity, S solo, H hide.",
+      "api": "VK.layerstack.mount(el, {planes:[{id,name,color}], entities:[{id,label,at:{planeId:{x,y}},beacon}], links}) → {setData, setVisible(id,on), solo(id|null), focus(planeId,entityId), highlight(id), state, on(focus|open|visibility), destroy}"
+    },
+    {
+      "name": "timeline",
+      "files": [
+        "components/timeline.css",
+        "components/timeline.js"
+      ],
+      "deps": [
+        "base",
+        "button",
+        "mini",
+        "core",
+        "focus",
+        "actions"
+      ],
+      "families": [
+        4
+      ],
+      "icons": [
+        "swimlane"
+      ],
+      "summary": "Swimlane timeline: sticky lanes, session bars / commit dots / release squares with run states, Nap/Hét/Hónap zoom, today marker, draggable ice playhead, roving-grid keyboard, registry actions as MINIs.",
+      "api": "VK.timeline.mount(el, {lanes, items, from, to, zoom, now, playhead, follow, actions}) → {setRange, setPlayhead, setZoom, zoomIn, zoomOut, setFollow, setItems, select, focusItem, scrollTo, refreshActions, state, on, destroy}",
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-activity-soft",
+        "--vk-border-w",
+        "--vk-dur-1",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-font-mono",
+        "--vk-font-voice",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-strong",
+        "--vk-glow",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-pad-panel",
+        "--vk-radius-lg",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-select-line",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-st-active",
+        "--vk-st-parked",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-surface-3",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-text-on-accent",
+        "--vk-tracking-label",
+        "--vk-tracking-title"
+      ]
+    },
+    {
+      "name": "eventrail",
+      "files": [
+        "components/eventrail.css",
+        "components/eventrail.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        4
+      ],
+      "icons": [
+        "warning"
+      ],
+      "summary": "Film-HUD event rail: chamfered band, year/age axis, warm pips, metro leader lines to row-stacked labels (date · [kategória] · text), id chips with warning glyph, ice selection.",
+      "api": "VK.eventrail.mount(el, {from, to, events:[{t, label, cat, id, flag}], now, axis, born, maxRows}) → {setEvents, select, layout, on, destroy}",
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-border-w",
+        "--vk-dur-1",
+        "--vk-ease",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-hover-bg",
+        "--vk-line-strong",
+        "--vk-radius-sm",
+        "--vk-select-bg",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-warn",
+        "--vk-warn-soft"
+      ]
+    },
+    {
+      "name": "heatgrid",
+      "files": [
+        "components/heatgrid.css",
+        "components/heatgrid.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        4
+      ],
+      "icons": [],
+      "summary": "Contribution pixel grid weeks × days (H K Sze Cs P Szo V), --vk-heat-0…4, legend, multi-year stack with totals, role=grid keyboard (day/week/month), live readout, select event.",
+      "api": "VK.heatgrid.mount(el, {years, data, unit, levels, now, title}) → {setData, select, focusDate, on, destroy}",
+      "tokens": [
+        "--vk-accent",
+        "--vk-bg",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-fs-xl",
+        "--vk-fs-xs",
+        "--vk-heat-0",
+        "--vk-heat-1",
+        "--vk-heat-2",
+        "--vk-heat-3",
+        "--vk-heat-4",
+        "--vk-line",
+        "--vk-radius-sm",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-surface-1",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted"
+      ]
+    },
+    {
+      "name": "scrubber",
+      "files": [
+        "components/scrubber.css",
+        "components/scrubber.js"
+      ],
+      "deps": [
+        "base",
+        "button",
+        "mini",
+        "core"
+      ],
+      "families": [
+        4
+      ],
+      "icons": [
+        "play",
+        "pause",
+        "step"
+      ],
+      "summary": "Time scrubber / range slider: ticks + date labels, play/pause MINI showing playback progress, step buttons, role=slider with date aria-valuetext, optional two-thumb range.",
+      "api": "VK.scrubber.mount(el, {min, max, value, range, step, bigStep, duration, time, disabled}) → {set, get, play, pause, toggle, playing, setBounds, setDisabled, on, destroy}",
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-hover",
+        "--vk-accent-line",
+        "--vk-accent-soft",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-glow",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted"
+      ]
+    },
+    {
+      "name": "table",
+      "files": [
+        "components/table.css",
+        "components/table.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "mini"
+      ],
+      "families": [
+        5
+      ],
+      "icons": [
+        "search",
+        "sort",
+        "sort-asc",
+        "sort-desc",
+        "filter",
+        "refresh",
+        "error",
+        "loader",
+        "table"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-regular",
+        "--vk-fw-strong",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-info",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius",
+        "--vk-radius-lg",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-select-line",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-warn"
+      ],
+      "summary": "Dense data table (role=grid): sort (aria-sort), global + per-column quick filters (number expressions), sticky header and first column, click/Ctrl/Shift and Space/Shift+Space/Ctrl+A/Esc selection, roving cell, status cells via render(), zebra, loading/error/empty states, footer counts.",
+      "api": "VK.table.mount(el, {columns, rows, selectable, onSelect, onActivate, onRefresh, tools, stickyFirst, zebra}) → {setRows, getSelection, select, selectAll, clearSelection, sort, filter, setState, getView, focus, refresh, destroy}"
+    },
+    {
+      "name": "tree",
+      "files": [
+        "components/tree.css",
+        "components/tree.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "mini"
+      ],
+      "families": [
+        5
+      ],
+      "icons": [
+        "chevron-right",
+        "check",
+        "folder",
+        "folder-open",
+        "file",
+        "file-code",
+        "database",
+        "cpu",
+        "cabinet",
+        "cable",
+        "socket",
+        "bolt",
+        "bulb",
+        "sensor",
+        "drive",
+        "server",
+        "board",
+        "layers",
+        "tag",
+        "node",
+        "link",
+        "loader",
+        "error"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-select-line",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-text-on-accent"
+      ],
+      "summary": "Treeview (WAI-ARIA tree): expand/collapse, arrows, typeahead, * expands siblings, icons by kind, tri-state checkboxes, lazy children with a loading/error MINI and retry, metro indent guides.",
+      "api": "VK.tree.mount(el, {items, checkboxes, lazy, icons, onSelect, onActivate, onCheck, onToggle}) → {setItems, expand, collapse, expandAll, collapseAll, select, focusItem, getSelected, getChecked, setChecked, focus, destroy}"
+    },
+    {
+      "name": "filemanager",
+      "files": [
+        "components/filemanager.css",
+        "components/filemanager.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "actions",
+        "mini"
+      ],
+      "families": [
+        5
+      ],
+      "icons": [
+        "folder",
+        "folder-open",
+        "arrow-up",
+        "file",
+        "file-code",
+        "database",
+        "error",
+        "dot"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-activity",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-strong",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-select-line",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label"
+      ],
+      "summary": "Dual-pane Total Commander style file manager: breadcrumb path bars, dense lists (name/ext/size/date), active pane in ice, warm marks, Tab pane switch, Enter/Backspace navigation, Insert/Space marking, F-key bar rendered from a registry surface (fkeys) with a MINI per key, status line.",
+      "api": "VK.filemanager.mount(el, {provider(path) → entries|Promise, left, right, rootLabel, surface: \"fkeys\", onOpen}) → {cd, up, refresh, getActive, getOther, getTargets, mark, clearMarks, setStatus, refreshKeys, switchPane, focus, destroy}"
+    },
+    {
+      "name": "card",
+      "files": [
+        "components/card.css",
+        "components/card.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus",
+        "mini"
+      ],
+      "families": [
+        5
+      ],
+      "icons": [
+        "window",
+        "card"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-cut",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-voice",
+        "--vk-fs-2xs",
+        "--vk-fs-lg",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xl",
+        "--vk-fs-xs",
+        "--vk-fw-regular",
+        "--vk-fw-strong",
+        "--vk-icon-size",
+        "--vk-info",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius",
+        "--vk-radius-lg",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-tracking-title",
+        "--vk-warn"
+      ],
+      "summary": "Cards (title + mono id + minis, body, meta row, footer, status edge) and selectable tile grids (listbox, 2-D roving): tile, compact tile, program tile whose icon sits in a MINI meter for launch progress.",
+      "api": "VK.card.create({title, id, minis, body, meta, footer, status}) → el · VK.card.tile({id, icon, title, sub, value, unit, kind, status}) → el · VK.card.tiles(el, {multi, activateOnClick, onSelect, onActivate}) → {getSelection, select, setState, update, destroy}"
+    },
+    {
+      "name": "inspector",
+      "files": [
+        "components/inspector.css",
+        "components/inspector.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "mini"
+      ],
+      "families": [
+        5
+      ],
+      "icons": [
+        "chevron-right",
+        "lock",
+        "edit",
+        "copy"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-line",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label"
+      ],
+      "summary": "Key-value inspector: collapsible groups, mono values with units, inline edit (Enter/Esc, F2), copy value via a MINI (done/error), read-only (lock) and changed (warm dot) states; one tab stop.",
+      "api": "VK.inspector.mount(el, {sections:[{title, collapsed, fields:[{key, label, value, unit, type, options, editable, readonly, changed}]}], onChange}) → {setData, set, get, getChanged, resetChanged, edit, destroy}"
+    },
+    {
+      "name": "diff",
+      "files": [
+        "components/diff.css",
+        "components/diff.js"
+      ],
+      "deps": [
+        "base",
+        "button",
+        "core",
+        "mini"
+      ],
+      "families": [
+        5
+      ],
+      "icons": [
+        "arrow-up",
+        "arrow-down",
+        "ok",
+        "more-h",
+        "gap",
+        "plus",
+        "drift",
+        "filter"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-sans",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-strong",
+        "--vk-hover-bg",
+        "--vk-info",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-6",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-warn"
+      ],
+      "summary": "Line diff (LCS; unified and side-by-side; + − ~ markers and colour, intra-line highlight, context folding, N/P J/K change navigation) and a drift list (expected vs actual) with per-kind counts in filter MINIs.",
+      "api": "VK.diff.mount(el, {a, b, mode, labels, context}) → {setText, setMode, next, prev, getStats, destroy} · VK.diff.drift(el, {items, labels, show, onActivate}) → {setItems, filter, next, prev, getCounts, destroy} · VK.diff.lines(a, b)"
+    },
+    {
+      "name": "badge",
+      "files": [
+        "components/badge.css",
+        "components/badge.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        6
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-border-w",
+        "--vk-ease",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-regular",
+        "--vk-radius-sm",
+        "--vk-st-active",
+        "--vk-st-built",
+        "--vk-st-dev",
+        "--vk-st-ended",
+        "--vk-st-idea",
+        "--vk-st-inuse",
+        "--vk-st-parked",
+        "--vk-st-planned",
+        "--vk-st-waiting",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-text-on-solid",
+        "--vk-tracking-label"
+      ],
+      "summary": "State badges: lifecycle (használatban/kész/fejlesztés alatt/tervezett/ötlet) and run state (aktív/várakozik/parkolva/lezárva), each with its own glyph shape; outline/solid/dot variants, sm/md/lg; aktív pulses (still halo under reduced motion).",
+      "api": "<span class=\"vk-badge\" data-state=\"inuse|built|dev|planned|idea|active|waiting|parked|ended\" data-variant=\"solid|dot\" data-size=\"sm|lg\">; VK.badge.create(state, {variant, size, label, glyphOnly}), VK.badge.set(el, state), VK.badge.STATES/LIFECYCLE/RUN"
+    },
+    {
+      "name": "signal",
+      "files": [
+        "components/signal.css",
+        "components/signal.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        6
+      ],
+      "icons": [
+        "contradiction",
+        "gap",
+        "frozen"
+      ],
+      "tokens": [
+        "--vk-border-w",
+        "--vk-dur-4",
+        "--vk-ease",
+        "--vk-font-mono",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-strong",
+        "--vk-icon-size",
+        "--vk-line-strong",
+        "--vk-radius-pill",
+        "--vk-radius-sm",
+        "--vk-sig-contradiction",
+        "--vk-sig-frozen",
+        "--vk-sig-gap",
+        "--vk-space-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-text-on-solid",
+        "--vk-tracking-label"
+      ],
+      "summary": "Signal markers ellentmondás/hiány/fagyott: inline marker, node-corner flag, count chip; own icon and own frame each (hatched / dashed / double).",
+      "api": "VK.signal.marker(kind, text), VK.signal.flag(kind), VK.signal.flags(host, kinds), VK.signal.count(kind, n), VK.signal.setCount(chip, n)"
+    },
+    {
+      "name": "progress",
+      "files": [
+        "components/progress.css",
+        "components/progress.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        6
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-soft",
+        "--vk-activity",
+        "--vk-crit",
+        "--vk-dur-3",
+        "--vk-ease",
+        "--vk-ease-in-out",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius-sm",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-surface-1",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-text-on-solid",
+        "--vk-tracking-label",
+        "--vk-warn"
+      ],
+      "summary": "Progress: linear bar (determinate, indeterminate, done/error/paused, tick scale, sizes), segmented, stepped with labels (vertical under 360 px), thin inline meter with warn/crit; role=progressbar|meter with aria-valuetext.",
+      "api": "VK.progress.create({label, value|null, max, text, variant:\"segments\", segments, scale, size, unit}), VK.progress.set(el, value|null, {text, state}), VK.progress.meter({label, value, max, warn, crit, tone}), VK.progress.steps({label, steps, current, error}), VK.progress.step(el, i, {error})"
+    },
+    {
+      "name": "loader",
+      "files": [
+        "components/loader.css",
+        "components/loader.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        6
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-ease-in-out",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-text-muted"
+      ],
+      "summary": "Loader sheet (own drawing, CSS): ring, dots, fade, ball, clock, bars; role=status + hidden text; a still meaningful frame under reduced motion; .vk-loader-sheet grid.",
+      "api": "VK.loader.create(kind, {label, size:\"sm|md|lg|xl\", decorative})"
+    },
+    {
+      "name": "toast",
+      "files": [
+        "components/toast.css",
+        "components/toast.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "button",
+        "mini"
+      ],
+      "families": [
+        6
+      ],
+      "icons": [
+        "info",
+        "ok",
+        "warning",
+        "error",
+        "activity",
+        "close"
+      ],
+      "tokens": [
+        "--vk-activity",
+        "--vk-blur",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-dur-2",
+        "--vk-dur-3",
+        "--vk-ease",
+        "--vk-ease-in-out",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fw-strong",
+        "--vk-gutter",
+        "--vk-info",
+        "--vk-lh",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-overlay",
+        "--vk-radius",
+        "--vk-radius-pill",
+        "--vk-shadow-overlay",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-warn",
+        "--vk-z-toast"
+      ],
+      "summary": "Toast stack: info/ok/warn/error/activity, title+text+action, auto-dismiss counted down on the close MINI ring (pauses on hover/focus), Esc dismisses the focused toast, max N visible + queue, six positions, page or contained stack, activity toasts with progress.",
+      "api": "VK.toast.show({kind, title, text, source, action, timeout, progress}) → {update, dismiss}; VK.toast.configure({position, max}), focusLatest(), clear(), count(); VK.toast.stack(container, opts) → same API. Suggested actions: toast.focus (Alt+T), toast.clear",
+      "optional": [
+        "actions"
+      ]
+    },
+    {
+      "name": "notify",
+      "files": [
+        "components/notify.css",
+        "components/notify.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus",
+        "mini",
+        "actions",
+        "state"
+      ],
+      "families": [
+        6
+      ],
+      "icons": [
+        "bell"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-soft",
+        "--vk-activity",
+        "--vk-activity-soft",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-voice",
+        "--vk-fs-2xs",
+        "--vk-fs-3xl",
+        "--vk-fs-lg",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-regular",
+        "--vk-fw-strong",
+        "--vk-hover-bg",
+        "--vk-lh",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-select-line",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-tracking-title"
+      ],
+      "summary": "Notification board + RING: radial SVG timeline, peaks by time, height and cap shape by severity, warm activity / crit errors, read dashed; unread count in the centre; ring peaks and board items roving and linked by selection; Ma/Tegnap/Korábban groups; registry toolbar as MINIs; bell MINI.",
+      "api": "VK.notify.mount(el, {items, now, span, toolbar, label, onSelect, onChange}) → {add, remove, markRead, markAllRead, clear, select, selected, items, unread, setFilter, filter, mini, refresh, destroy}. Suggested actions: notify.read, notify.readAll, notify.unreadOnly, notify.clear"
+    },
+    {
+      "name": "state",
+      "files": [
+        "components/state.css",
+        "components/state.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "button",
+        "loader"
+      ],
+      "families": [
+        6
+      ],
+      "icons": [
+        "folder",
+        "loader",
+        "error"
+      ],
+      "tokens": [
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-font-mono",
+        "--vk-font-voice",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xl",
+        "--vk-fw-strong",
+        "--vk-lh",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-space-6",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-tracking-title"
+      ],
+      "summary": "Empty / loading / error blocks: reticle mark, mono code, title, text, primary + secondary action (registry ids); inline and panel sizes; error role=alert, loading role=status.",
+      "api": "<div class=\"vk-state\" data-kind=\"empty|loading|error\" data-size=\"panel\">; VK.state.create({kind, size, icon, code, title, text, action, secondary, loader})",
+      "optional": [
+        "actions"
+      ]
+    },
+    {
+      "name": "readout",
+      "files": [
+        "components/readout.css",
+        "components/readout.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "badge"
+      ],
+      "families": [
+        6
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-bg",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-dur-3",
+        "--vk-ease",
+        "--vk-font-mono",
+        "--vk-fs-2xl",
+        "--vk-fs-2xs",
+        "--vk-fs-3xl",
+        "--vk-fs-sm",
+        "--vk-fs-xl",
+        "--vk-fs-xs",
+        "--vk-fw-regular",
+        "--vk-fw-strong",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-warn"
+      ],
+      "summary": "HUD stat block (own drawing): corner brackets, micro label with №, big mono value, tick ruler with triangle marker and warn/crit zones (role=meter), cross-tally over a stacked bar, status list with badge glyphs; Papír theme gets a black title bar.",
+      "api": "VK.readout.create({label, code, tag, tagTone, value, digits, unit, delta, min, max, warn, crit, ticks, tally, list}), VK.readout.update(el, partial)"
+    },
+    {
+      "name": "field",
+      "files": [
+        "components/field.css",
+        "components/field.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        7
+      ],
+      "icons": [
+        "warning",
+        "chevron-down"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-bg-sunken",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-dur-1",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-strong",
+        "--vk-icon-size",
+        "--vk-lh",
+        "--vk-lh-tight",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-radius-sm",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-surface-3",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-text-on-accent",
+        "--vk-tracking-label"
+      ],
+      "summary": "Form fields: label, help, error (aria-invalid + aria-describedby), required mark, text, number with mono unit suffix, textarea, native styled select, custom-drawn checkbox/radio (tri-state), prefix icon/text, readonly, disabled, inline vs stacked, fieldset, responsive form row grid.",
+      "api": "CSS .vk-field/.vk-field__box/__input/__unit/__choice, .vk-fieldset, .vk-field-grid · VK.field.setError(input, msg|null), VK.field.tristate(parent, children), VK.field.mountAll(root) ([data-vk=tristate]), VK.field.number(input)"
+    },
+    {
+      "name": "question",
+      "files": [
+        "components/question.css",
+        "components/question.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "button",
+        "mini"
+      ],
+      "families": [
+        7
+      ],
+      "icons": [
+        "question",
+        "copy",
+        "check"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-bg-sunken",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-dur-1",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-voice",
+        "--vk-fs-2xs",
+        "--vk-fs-lg",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xl",
+        "--vk-fw-strong",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-pad-panel",
+        "--vk-radius",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-text-on-accent",
+        "--vk-tracking-label",
+        "--vk-tracking-title"
+      ],
+      "summary": "Decision cards: title, one line of context, lettered options A/B/C (A = Ajánlott), free-text Más option; letters choose, arrows move (radiogroup), Enter confirms; answered = one compact line; stack with progress MINI (2/4) and copy MINI producing 1A 2C 3B.",
+      "api": "VK.question.mount(el, {questions:[{id,title,context,options,recommended,other,answer}], onAnswer, title}) → {answers, line, copy, focus, reopen, set, destroy}; suggested action question.copyAll"
+    },
+    {
+      "name": "rename",
+      "files": [
+        "components/rename.css",
+        "components/rename.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus"
+      ],
+      "families": [
+        7
+      ],
+      "icons": [
+        "warning"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-sans",
+        "--vk-fs-xs",
+        "--vk-icon-size",
+        "--vk-lh-tight",
+        "--vk-radius",
+        "--vk-radius-sm",
+        "--vk-select-bg",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-surface-3",
+        "--vk-text",
+        "--vk-z-popover"
+      ],
+      "summary": "Inline rename: F2 or double-click turns a label into an input in place (same metrics), stem selected without extension, Enter commits, Esc cancels, blur commits; empty/forbidden-char/duplicate validation in a popover tied by aria-describedby.",
+      "api": "VK.rename.attach(listEl, {item, label, names(), validate(name), onCommit(item, name, old), onCancel}) → {start(item), destroy}; VK.rename.start(labelEl, opts) → {commit, cancel}; suggested action item.rename"
+    },
+    {
+      "name": "search",
+      "files": [
+        "components/search.css",
+        "components/search.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "field",
+        "mini"
+      ],
+      "families": [
+        7
+      ],
+      "icons": [
+        "search",
+        "close",
+        "history",
+        "dot"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-fw-strong",
+        "--vk-hover-bg",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-radius-pill",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-z-popover"
+      ],
+      "summary": "Search field: clear button, Hungarian-folded matching (otodik → Ötödik), grouped results with counts and highlighted hits, ARIA combobox + listbox with aria-activedescendant, arrows/Enter/Esc, no-results state, recent searches, async provider shown on the search MINI.",
+      "api": "VK.search.mount(el, {provider(q) → groups|Promise, recent, onPick(item, group, q), label, placeholder}) → {query, open, close, clear, recent, focus, destroy}; VK.search.match(q, text), VK.search.filter(items, q)"
+    },
+    {
+      "name": "chip",
+      "files": [
+        "components/chip.css",
+        "components/chip.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus",
+        "mini"
+      ],
+      "families": [
+        7
+      ],
+      "icons": [
+        "check",
+        "close",
+        "plus",
+        "filter"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-accent-soft",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-crit-soft",
+        "--vk-dur-1",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-sm",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-radius-pill",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-wire-power"
+      ],
+      "summary": "Chips: filter (aria-pressed, tick + ice frame, wire swatch), removable (Delete/Backspace, sensible focus), count chips, roving focus, + add chip opening an inline input; group MINI = active filter count, click resets.",
+      "api": "VK.chip.mount(el, {label, chips:[{id,label,kind:filter|remove|count,pressed,count,color}], add:{label,validate,onAdd}, onChange, onRemove}) → {add, remove, get, set, pressed, reset, mini, destroy}"
+    },
+    {
+      "name": "slider",
+      "files": [
+        "components/slider.css",
+        "components/slider.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "mini"
+      ],
+      "families": [
+        7
+      ],
+      "icons": [
+        "slider"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-soft",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-glow",
+        "--vk-icon-size",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius-pill",
+        "--vk-radius-sm",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-surface-3",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted"
+      ],
+      "summary": "Single and range slider (two non-crossing thumbs), ticks with labels, mono readout with unit, role=slider + aria-valuetext, arrows/PageUp/PageDown/Home/End, pointer drag, disabled, vertical variant; MINI shows position.",
+      "api": "VK.slider.mount(el, {label, unit, min, max, step, bigStep, value | values:[a,b], ticks, labels, vertical, disabled, format, onInput, onChange}) → {get, set, disable, mini, destroy}"
+    },
+    {
+      "name": "toggle",
+      "files": [
+        "components/toggle.css",
+        "components/toggle.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "mini"
+      ],
+      "families": [
+        7
+      ],
+      "icons": [
+        "toggle"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-soft",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-offset",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-lg",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-glow",
+        "--vk-icon-size",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius-pill",
+        "--vk-row-h",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-text-on-accent",
+        "--vk-tracking-label"
+      ],
+      "summary": "Switch (role=switch): label left/right, sizes sm/md/lg, disabled, busy (aria-busy, spinning warm arc while a Promise applies, clicks wait), error revert; MINI mirror.",
+      "api": "VK.toggle.create({label, hint, checked, size, labelSide, disabled, block, onChange(on) → Promise|false}) · enhance(btn) · mountAll(root) · set(t, {checked, busy, disabled, error}) · get(t) · mini(t, {icon, caption})"
+    },
+    {
+      "name": "chat",
+      "files": [
+        "components/chat.css",
+        "components/chat.js"
+      ],
+      "deps": [
+        "base",
+        "button",
+        "core",
+        "mini",
+        "actions"
+      ],
+      "families": [
+        8
+      ],
+      "icons": [
+        "agent",
+        "arrow-right",
+        "attach",
+        "chat",
+        "chevron-down",
+        "close",
+        "copy",
+        "dot",
+        "pack",
+        "send",
+        "spark",
+        "stop",
+        "tool",
+        "trash"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-accent-soft",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-ease-in-out",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-lg",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xl",
+        "--vk-fs-xs",
+        "--vk-hover-bg",
+        "--vk-lh",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius",
+        "--vk-radius-lg",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-surface-3",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-tracking-label"
+      ],
+      "summary": "Agent side chat: header with status mini, role=log messages (prose, inline code, fenced mono code with copy mini), collapsible tool-call blocks, thinking indicator, auto-growing composer with attach mini and context chips; SEND mini turns into STOP/progress while streaming; empty state with suggested prompts.",
+      "api": "VK.chat.mount(el, {agent, model, status, suggestions, chips, messages, onSend(text, {chips, instance}), onStop, onAttach}) → {add(msg), update(id, patch), stream(id, chunk), end(id), setBusy(on, progress), addChip, removeChip, chips, clear, focus, send, stop, setStatus, registerActions(prefix), destroy}"
+    },
+    {
+      "name": "context-tray",
+      "files": [
+        "components/context-tray.css",
+        "components/context-tray.js"
+      ],
+      "deps": [
+        "base",
+        "button",
+        "core",
+        "focus",
+        "mini",
+        "actions"
+      ],
+      "families": [
+        8
+      ],
+      "icons": [
+        "board",
+        "cable",
+        "chevron-down",
+        "close",
+        "copy",
+        "cpu",
+        "database",
+        "dot",
+        "edit",
+        "eye",
+        "file",
+        "file-code",
+        "folder",
+        "junction",
+        "node",
+        "pack",
+        "send",
+        "sensor",
+        "server",
+        "session",
+        "terminal-node",
+        "trash"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-activity",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-crit-soft",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-lg",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-hover-bg",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-radius",
+        "--vk-radius-lg",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted"
+      ],
+      "summary": "\"Küldés Claude-nak\" tray: a selection becomes a context pack — chips (icon by kind, label, mono id) in a listbox with Alt+Arrow reorder and Delete, ~token estimate, Markdown/JSON preview, copy and send minis (progress), collapsed slim bar with count; follows document vk:selection.",
+      "api": "VK.contextTray.mount(el, {title, format, collapsed, items, onSend(pack, tray), onChange}) → {add, set, remove, clear, move, items, pack(format), tokens, setCollapsed, setPreview, setFormat, setSending(p|null|\"done\"|\"error\"|false), copy, send, registerActions(prefix), destroy}; VK.contextTray.bindSelection(tray, resolver, {mode, accept}) → unbind; VK.contextTray.estimate(n)",
+      "optional": [
+        "chat"
+      ]
+    },
+    {
+      "name": "trace",
+      "files": [
+        "components/trace.css",
+        "components/trace.js"
+      ],
+      "deps": [
+        "base",
+        "button",
+        "core",
+        "focus",
+        "mini",
+        "actions"
+      ],
+      "families": [
+        8
+      ],
+      "icons": [
+        "arrow-down",
+        "chevron-right",
+        "edit",
+        "file",
+        "filter",
+        "graph",
+        "list",
+        "ok",
+        "play",
+        "refresh",
+        "search",
+        "spark",
+        "step",
+        "terminal",
+        "tool",
+        "trace",
+        "wifi"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-activity-soft",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-crit",
+        "--vk-crit-soft",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-lg",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-info",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-radius",
+        "--vk-radius-lg",
+        "--vk-radius-pill",
+        "--vk-radius-sm",
+        "--vk-row-h",
+        "--vk-select-bg",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label",
+        "--vk-warn"
+      ],
+      "summary": "Agent activity trace: steps (planned → running → done/error) on a vertical rail of minis, nested collapsible tool calls with leader lines (args, result excerpt, mono duration), node state chips, timestamps, retry, filter (Összes/Eszközhívások/Hibák), auto-follow mini, run mini; role=log over a keyboard tree.",
+      "api": "VK.trace.mount(el, {title, run, follow, steps, onSelect(step), onRetry(step), onRun}) → {add(step), update(id, patch), addTool(stepId, call), updateTool(stepId, toolId, patch), expand(id, open), setFilter, setFollow, setRun, clear, steps, registerActions(prefix), destroy}"
+    },
+    {
+      "name": "terminal",
+      "files": [
+        "components/terminal.css",
+        "components/terminal.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "mini",
+        "actions"
+      ],
+      "families": [
+        8
+      ],
+      "icons": [
+        "copy",
+        "stop",
+        "terminal",
+        "trash"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-border-w",
+        "--vk-control-h",
+        "--vk-dur-2",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-lg",
+        "--vk-fs-sm",
+        "--vk-fw-strong",
+        "--vk-line-strong",
+        "--vk-radius-lg",
+        "--vk-radius-sm",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-2",
+        "--vk-target-min",
+        "--vk-term-bg",
+        "--vk-term-crit",
+        "--vk-term-info",
+        "--vk-term-muted",
+        "--vk-term-ok",
+        "--vk-term-text",
+        "--vk-term-warn",
+        "--vk-text"
+      ],
+      "summary": "Console pane: role=log scrollback with token-mapped tones (ok/warn/crit/info/muted/accent/strong) and ANSI SGR, prompt with history, Tab completion hook, Ctrl+L, Ctrl+C, copy selection mini, running-command mini (progress), progress lines; commands are registry actions on a surface.",
+      "api": "VK.terminal.mount(el, {title, tag, prompt, greeting, surface, onCommand(line, term), complete(value), onInterrupt, max}) → {print(text, tone), write(chunk, tone), progress(p, label) → {set, end}, setBusy(label, p), finish(state), interrupt, run(line), clear, copy, focus, history, isBusy, registerActions(prefix), destroy}",
+      "optional": [
+        "chat"
+      ]
+    },
+    {
+      "name": "phone",
+      "files": [
+        "components/phone.css",
+        "components/phone.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus",
+        "button",
+        "mini",
+        "actions"
+      ],
+      "families": [
+        9
+      ],
+      "icons": [
+        "arrow-left",
+        "maximize",
+        "close",
+        "chevron-right",
+        "dot"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-hover",
+        "--vk-accent-line",
+        "--vk-accent-soft",
+        "--vk-activity",
+        "--vk-bg",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-dur-2",
+        "--vk-dur-3",
+        "--vk-ease",
+        "--vk-font-mono",
+        "--vk-font-sans",
+        "--vk-font-voice",
+        "--vk-fs-2xs",
+        "--vk-fs-lg",
+        "--vk-fs-md",
+        "--vk-fs-xl",
+        "--vk-fs-xs",
+        "--vk-fw-strong",
+        "--vk-hover-bg",
+        "--vk-icon-size",
+        "--vk-lh",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-press-bg",
+        "--vk-radius",
+        "--vk-radius-lg",
+        "--vk-radius-pill",
+        "--vk-row-h",
+        "--vk-scrim",
+        "--vk-select-bg",
+        "--vk-select-line",
+        "--vk-shadow-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-space-5",
+        "--vk-space-7",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-surface-3",
+        "--vk-target-min",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-text-on-accent",
+        "--vk-tracking-label",
+        "--vk-tracking-title"
+      ],
+      "summary": "Phone layout (360–430 px): app bar with registry minis, back stack, bottom nav of MINIs with progress, one FAB (a MINI), modal/non-modal bottom sheet (drag, Kibontás half/full, Esc, focus trap), safe-area insets (--vk-phone-inset-*), list rows, registry action rows, optional 390×844 device frame.",
+      "api": "VK.phone.mount(el, {screens:[{id,title,render(params,app),parent,toolbar,fab}], nav:[{id,icon,label}], start, title, headingLevel}) → {go(id,params), back(), openSheet(el,{title,sub,modal,size}) → {el,body,close(),expand()}, setNav(id,{state,progress}), refresh(), current(), depth(), destroy()}; VK.phone.list(rows,{onOpen}); VK.phone.menu(surface,{onRun})"
+    },
+    {
+      "name": "cyd",
+      "files": [
+        "components/cyd.css",
+        "components/cyd.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus",
+        "mini"
+      ],
+      "families": [
+        9
+      ],
+      "icons": [
+        "link",
+        "chevron-left",
+        "chevron-right",
+        "dot"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-soft",
+        "--vk-activity",
+        "--vk-bg",
+        "--vk-bg-sunken",
+        "--vk-border-control",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-crit-soft",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-font-sans",
+        "--vk-font-voice",
+        "--vk-fs-2xl",
+        "--vk-fs-2xs",
+        "--vk-fs-3xl",
+        "--vk-fs-md",
+        "--vk-fs-sm",
+        "--vk-fs-xl",
+        "--vk-fs-xs",
+        "--vk-fw-strong",
+        "--vk-lh-tight",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-ok",
+        "--vk-ok-soft",
+        "--vk-press-bg",
+        "--vk-radius",
+        "--vk-radius-lg",
+        "--vk-radius-pill",
+        "--vk-radius-sm",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-surface-3",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted",
+        "--vk-text-on-accent",
+        "--vk-text-on-solid",
+        "--vk-tracking-label",
+        "--vk-tracking-title",
+        "--vk-warn"
+      ],
+      "summary": "320×240 embedded display (ESP32 CYD): 24 px header (title, pager dots, clock, link MINI), 2×3 / 3×2 / 3×1 big MINI tiles (actions, readouts, switches), pager zones, soft keys A/B/C mapped to physical buttons and a/b/c · 1/2/3, big progress ring, PASS/FAIL verdict, cells, toast; optional board mock (.vk-cyd-board) with LED and buttons; zoom via --vk-cyd-zoom.",
+      "api": "VK.cyd.mount(frame, {screens:[{id,title,cols,rows,tiles:[{id,icon,label,sub,state,progress,value,unit,tone,toggle,checked,go,run,onToggle}]|render(body,cyd),keys:{a,b,c}}], start, clock, link, label, onScreen}) → {go, next, prev, key(k), setTile, setKeys, setLink, led, toast, announce, zoom(z), focus, current, destroy}; VK.cyd.ring(o) / setRing(el,o) / read(o)"
+    },
+    {
+      "name": "emblem",
+      "files": [
+        "components/emblem.css",
+        "components/emblem.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        10
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-activity",
+        "--vk-bg",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-lg",
+        "--vk-fs-sm",
+        "--vk-fs-xs",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-tracking-label"
+      ],
+      "summary": "Program large logo: kicker, condensed name, sprite glyph, date and readout above a seeded isometric diorama on a plinth (planner/mindmap/inventory/calculator/city/hub); day phase on light grounds, night with warm lit windows on dark; hero/tile/mini sizes.",
+      "api": "VK.emblem.render(el, {kind, name, kicker, glyph, date, readout, seed, size:\"hero\"|\"tile\"|\"mini\", activity, level}) → {update(patch), destroy()}; VK.emblem.kinds"
+    },
+    {
+      "name": "citymap",
+      "files": [
+        "components/citymap.css",
+        "components/citymap.js"
+      ],
+      "deps": [
+        "base",
+        "core",
+        "focus",
+        "actions",
+        "mini"
+      ],
+      "families": [
+        10
+      ],
+      "icons": [
+        "play",
+        "pause",
+        "step",
+        "refresh",
+        "zoom-in",
+        "zoom-out",
+        "fit",
+        "stack-iso",
+        "metro",
+        "city"
+      ],
+      "tokens": [
+        "--vk-accent",
+        "--vk-activity",
+        "--vk-bg",
+        "--vk-bg-sunken",
+        "--vk-border-w",
+        "--vk-dur-2",
+        "--vk-ease",
+        "--vk-focus",
+        "--vk-focus-w",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-heat-0",
+        "--vk-heat-1",
+        "--vk-heat-2",
+        "--vk-heat-3",
+        "--vk-heat-4",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-overlay",
+        "--vk-radius",
+        "--vk-radius-sm",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-surface-1",
+        "--vk-surface-2",
+        "--vk-surface-3",
+        "--vk-text",
+        "--vk-text-faint",
+        "--vk-text-muted"
+      ],
+      "summary": "Generative city map on canvas from a seed or data rows [{name,size,heat,group}]: figure-ground, transit (octilinear pipelines, ring hubs, moving jobs) and iso styles; organic commit-by-commit buildup with a play/pause MINI; keyboard pan/zoom/play/reseed; registry actions citymap.*.",
+      "api": "VK.citymap.mount(el, {style:\"figure\"|\"transit\"|\"iso\", seed, data, grow, commits, label}) → {setStyle, reseed, play, pause, toggle, step, zoom, pan, fit, setData, state, destroy}"
+    },
+    {
+      "name": "micro",
+      "files": [
+        "components/micro.css",
+        "components/micro.js"
+      ],
+      "deps": [
+        "base",
+        "core"
+      ],
+      "families": [
+        10
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-activity",
+        "--vk-blur",
+        "--vk-border-w",
+        "--vk-crit",
+        "--vk-ease-in-out",
+        "--vk-font-mono",
+        "--vk-fs-2xs",
+        "--vk-fs-xs",
+        "--vk-heat-2",
+        "--vk-heat-3",
+        "--vk-line-strong",
+        "--vk-overlay",
+        "--vk-space-1",
+        "--vk-space-2",
+        "--vk-space-3",
+        "--vk-space-4",
+        "--vk-surface-1",
+        "--vk-surface-3",
+        "--vk-text",
+        "--vk-text-muted",
+        "--vk-text-on-solid",
+        "--vk-tracking-label",
+        "--vk-warn",
+        "--vk-z-panel"
+      ],
+      "summary": "Micrographics: corner-bracket frame, tick ruler, crosshair, dot matrix, segmented meter (role=meter), coded chips, hex badge, callout card with leader line, beacon light columns.",
+      "api": "CSS .vk-micro-frame/-ruler/-cross/-dots/-meter/-chip/-hex/-callout/-beacon; VK.micro.ruler(el,o), dots(el,o), meter(el,v,o), chip(parts,o), callout(host,{target,title,rows,side}) → {update,setTarget,destroy}, beacon(host,{x,y,h})"
+    },
+    {
+      "name": "textures",
+      "files": [
+        "components/textures.css"
+      ],
+      "deps": [
+        "base"
+      ],
+      "families": [
+        10
+      ],
+      "icons": [],
+      "tokens": [
+        "--vk-accent",
+        "--vk-accent-line",
+        "--vk-activity",
+        "--vk-line",
+        "--vk-line-strong",
+        "--vk-text"
+      ],
+      "summary": "Texture pack from token colours (gradients only, background-color untouched): hatch, crosshatch, dots, grid, blueprint, windows (warm lit), water, road-glow, sand.",
+      "api": "CSS .vk-tex-hatch|crosshatch|dots|grid|blueprint|windows|water|road-glow|sand; knobs --vk-tex-ink, --vk-tex-gap, --vk-tex-warm"
+    }
+  ]
+}

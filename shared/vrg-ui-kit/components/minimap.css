@@ -1,0 +1,28 @@
+/* VRG UI Kit — components/minimap.css — overview of a graph with the ice viewport rectangle.
+   .vk-minimap--overlay floats it in the bottom-right corner of a positioned parent (glass).
+   Depends on: tokens, base. */
+.vk-minimap { --vk-minimap-w: 200px; --vk-minimap-h: 120px;
+  position: relative; display: block; width: var(--vk-minimap-w); max-width: 100%; height: var(--vk-minimap-h);
+  background: var(--vk-bg-sunken); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius);
+  overflow: hidden; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; outline-offset: -2px; }
+.vk-minimap:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: -2px; }
+.vk-minimap--overlay { position: absolute; right: var(--vk-space-3); bottom: var(--vk-space-3); z-index: var(--vk-z-panel);
+  background: var(--vk-overlay); -webkit-backdrop-filter: blur(var(--vk-blur)); backdrop-filter: blur(var(--vk-blur));
+  box-shadow: var(--vk-shadow-overlay); }
+.vk-minimap--overlay[data-corner="bl"] { right: auto; left: var(--vk-space-3); }
+.vk-minimap--overlay[data-corner="tr"] { bottom: auto; top: var(--vk-space-3); }
+.vk-minimap__svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.vk-minimap__frame { fill: none; stroke: var(--vk-line-strong); stroke-width: 1; stroke-dasharray: 3 2; vector-effect: non-scaling-stroke; }
+.vk-minimap__edge { fill: none; stroke: var(--_lc, var(--vk-line-strong)); stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .85; }
+.vk-minimap__edge[data-planned] { stroke-dasharray: 2 2; }
+.vk-minimap__edge[data-active] { stroke: var(--vk-activity); }
+.vk-minimap__node { fill: var(--vk-text-muted); }
+.vk-minimap__node[data-hub] { fill: var(--vk-activity); }
+.vk-minimap__node[data-selected] { fill: var(--vk-accent); }
+.vk-minimap__vp { fill: var(--vk-accent-soft); stroke: var(--vk-accent); stroke-width: 1.5; vector-effect: non-scaling-stroke; cursor: move; }
+.vk-minimap__cap { position: absolute; left: var(--vk-space-2); top: var(--vk-space-1); pointer-events: none;
+  font: var(--vk-fs-2xs)/1.4 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); }
+[data-vk-density="compact"] .vk-minimap { --vk-minimap-w: 168px; --vk-minimap-h: 100px; }
+[data-vk-density="touch"] .vk-minimap { --vk-minimap-w: 132px; --vk-minimap-h: 84px; }
+@media (max-width: 480px) { .vk-minimap { --vk-minimap-w: 132px; --vk-minimap-h: 84px; } }
+@media (forced-colors: active) { .vk-minimap__vp { stroke: Highlight; } }

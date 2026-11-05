@@ -1,0 +1,65 @@
+/* VRG UI Kit — components/toolbar.css — registry toolbars and their host layout.
+   .vk-toolbar-host[data-placement=top|bottom|left|right|floating] > .vk-toolbar + one content child (any element).
+   .vk-toolbar[role=toolbar][data-mode=mini|label][aria-orientation] > .vk-toolbar__item (a .vk-mini, or
+   .vk-toolbar__btn = meter + text) · .vk-toolbar__sep[role=separator] · .vk-toolbar__more ("Továbbiak") ·
+   .vk-toolbar__grip (floating only). Floating position: --vk-toolbar-x / --vk-toolbar-y (set by toolbar.js).
+   Depends on: tokens, base, mini, menu. */
+.vk-toolbar-host { --vk-toolbar-x: 12px; --vk-toolbar-y: 12px;
+  position: relative; display: grid; min-width: 0; min-height: 0;
+  grid-template: "tb" auto "main" minmax(0, 1fr) / minmax(0, 1fr); }
+.vk-toolbar-host[data-placement="bottom"] { grid-template: "main" minmax(0, 1fr) "tb" auto / minmax(0, 1fr); }
+.vk-toolbar-host[data-placement="left"] { grid-template: "tb main" minmax(0, 1fr) / auto minmax(0, 1fr); }
+.vk-toolbar-host[data-placement="right"] { grid-template: "main tb" minmax(0, 1fr) / minmax(0, 1fr) auto; }
+.vk-toolbar-host[data-placement="floating"] { grid-template: "main" minmax(0, 1fr) / minmax(0, 1fr); }
+.vk-toolbar-host > .vk-toolbar { grid-area: tb; }
+.vk-toolbar-host > :not(.vk-toolbar) { grid-area: main; min-width: 0; min-height: 0; }
+
+.vk-toolbar { display: flex; align-items: center; gap: var(--vk-space-1); min-width: 0; min-height: 0;
+  padding: var(--vk-space-1) var(--vk-space-2); overflow: hidden; flex-wrap: nowrap;
+  background: var(--vk-surface-2); border: 0 solid var(--vk-line-strong); }
+.vk-toolbar[data-placement="top"] { border-bottom-width: var(--vk-border-w); }
+.vk-toolbar[data-placement="bottom"] { border-top-width: var(--vk-border-w); }
+.vk-toolbar[data-placement="left"] { border-right-width: var(--vk-border-w); }
+.vk-toolbar[data-placement="right"] { border-left-width: var(--vk-border-w); }
+.vk-toolbar[aria-orientation="vertical"] { flex-direction: column; padding: var(--vk-space-2) var(--vk-space-1); }
+.vk-toolbar[data-placement="floating"] { position: absolute; z-index: var(--vk-z-panel); left: var(--vk-toolbar-x); top: var(--vk-toolbar-y);
+  max-width: calc(100% - 2 * var(--vk-space-2)); border-width: var(--vk-border-w); border-radius: var(--vk-radius); box-shadow: var(--vk-shadow-overlay);
+  padding-left: 0; }
+.vk-toolbar[data-dragging] { opacity: .85; }
+
+.vk-toolbar > * { flex: none; }
+.vk-toolbar__sep { align-self: stretch; width: var(--vk-border-w); margin: var(--vk-space-2) var(--vk-space-1); background: var(--vk-line-strong); }
+.vk-toolbar[aria-orientation="vertical"] .vk-toolbar__sep { width: auto; height: var(--vk-border-w); margin: var(--vk-space-1) var(--vk-space-2); }
+.vk-toolbar__more { margin-left: auto; }
+.vk-toolbar[aria-orientation="vertical"] .vk-toolbar__more { margin: auto 0 0; }
+.vk-toolbar__grip { display: grid; place-items: center; align-self: stretch; width: max(18px, calc(var(--vk-target-min) * .6)); min-height: var(--vk-target-min);
+  color: var(--vk-text-muted); cursor: grab; touch-action: none; border-right: var(--vk-border-w) solid var(--vk-line); margin-right: var(--vk-space-1); }
+.vk-toolbar__grip:hover { color: var(--vk-text); background: var(--vk-hover-bg); }
+.vk-toolbar[data-dragging] .vk-toolbar__grip { cursor: grabbing; color: var(--vk-accent); }
+.vk-toolbar__grip[hidden] { display: none; }
+
+/* minis inside a toolbar: the open dropdown stays lit; danger stays red */
+.vk-toolbar .vk-mini[aria-expanded="true"] { background: var(--vk-select-bg); color: var(--vk-accent); }
+.vk-toolbar .vk-mini[data-danger]:not(:disabled) { color: var(--vk-crit); }
+.vk-toolbar .vk-mini[data-meter="none"]:hover:not(:disabled) { background: var(--vk-hover-bg); }
+
+/* labelled mode: meter + text, ghost button */
+.vk-toolbar__btn { display: inline-flex; align-items: center; gap: var(--vk-space-2); min-height: max(var(--vk-control-h), var(--vk-target-min));
+  padding: 0 var(--vk-space-3) 0 var(--vk-space-1); border: var(--vk-border-w) solid transparent; border-radius: var(--vk-radius);
+  background: transparent; color: var(--vk-text); font: inherit; font-size: var(--vk-fs-sm); white-space: nowrap; cursor: pointer; }
+.vk-toolbar__btn:hover:not(:disabled) { background: var(--vk-hover-bg); }
+.vk-toolbar__btn:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: -2px; }
+.vk-toolbar__btn:disabled { color: var(--vk-text-faint); cursor: default; }
+.vk-toolbar__btn[aria-pressed="true"] { color: var(--vk-accent); border-color: var(--vk-accent-line); background: var(--vk-accent-soft); }
+.vk-toolbar__btn[aria-expanded="true"] { background: var(--vk-select-bg); }
+.vk-toolbar__btn[data-danger]:not(:disabled) { color: var(--vk-crit); }
+.vk-toolbar__meter.vk-mini { --_s: calc(var(--vk-control-h) - 4px); width: var(--_s); height: var(--_s); pointer-events: none; color: inherit; }
+.vk-toolbar__btn:disabled .vk-toolbar__meter { color: var(--vk-text-faint); }
+.vk-toolbar__meter.vk-mini[aria-pressed="true"] { background: transparent; }
+.vk-toolbar[aria-orientation="vertical"] .vk-toolbar__btn { width: 100%; justify-content: flex-start; }
+
+[data-vk-density="touch"] .vk-toolbar { gap: var(--vk-space-2); }
+@media (forced-colors: active) {
+  .vk-toolbar { border-color: CanvasText; }
+  .vk-toolbar__sep { background: CanvasText; }
+}

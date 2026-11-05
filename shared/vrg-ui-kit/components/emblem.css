@@ -1,0 +1,112 @@
+/* VRG UI Kit — components/emblem.css — the program's large logo: a centred stack (kicker, name, glyph,
+   date, readout) above an isometric diorama on a plinth. Rendered by emblem.js; every fill is a token mix,
+   so themes restyle it live. data-phase="day" (light grounds: pale, airy, soft sun shadows) or "night"
+   (dark grounds: dark massing, warm lit windows, glowing cables and streets = the system working).
+   data-size: hero (~420 px) · tile (~160 px) · mini (48 px, plinth only).
+   Component-local knobs: --vk-emblem-w (width cap).
+   Depends on: tokens, base. */
+.vk-emblem { --vk-emblem-w: 420px;
+  /* night (default) */
+  --_pt: color-mix(in srgb, var(--vk-text) 7%, var(--vk-surface-2));
+  --_pl: color-mix(in srgb, var(--vk-text) 13%, var(--vk-surface-1));
+  --_pr: var(--vk-bg-sunken);
+  --_t: color-mix(in srgb, var(--vk-text) 22%, var(--vk-surface-2));
+  --_l: color-mix(in srgb, var(--vk-text) 11%, var(--vk-surface-1));
+  --_r: color-mix(in srgb, var(--vk-text) 4%, var(--vk-bg-sunken));
+  --_edge: var(--vk-line-strong);
+  --_win: color-mix(in srgb, var(--vk-bg-sunken) 75%, transparent);
+  --_lit: var(--vk-activity);
+  --_cable: var(--vk-activity);
+  --_glow: color-mix(in srgb, var(--vk-activity) 30%, transparent);
+  --_street: color-mix(in srgb, var(--vk-activity) 55%, transparent);
+  --_shadow: transparent;
+  --_halo: color-mix(in srgb, var(--vk-activity) 9%, transparent);
+  container-type: inline-size;
+  display: inline-flex; flex-direction: column; align-items: center; vertical-align: top;
+  width: min(100%, var(--vk-emblem-w)); color: var(--vk-text); text-align: center; }
+.vk-emblem[data-phase="day"] {
+  --_pt: color-mix(in srgb, var(--vk-text) 4%, var(--vk-bg));
+  --_pl: color-mix(in srgb, var(--vk-text) 13%, var(--vk-surface-2));
+  --_pr: color-mix(in srgb, var(--vk-text) 22%, var(--vk-surface-2));
+  --_t: var(--vk-surface-2);
+  --_l: color-mix(in srgb, var(--vk-text) 6%, var(--vk-surface-2));
+  --_r: color-mix(in srgb, var(--vk-text) 15%, var(--vk-surface-2));
+  --_edge: color-mix(in srgb, var(--vk-text) 30%, transparent);
+  --_win: color-mix(in srgb, var(--vk-text) 20%, var(--vk-surface-2));
+  --_lit: color-mix(in srgb, var(--vk-activity) 40%, var(--vk-surface-2));
+  --_cable: color-mix(in srgb, var(--vk-text) 70%, var(--vk-surface-2));
+  --_glow: transparent;
+  --_street: color-mix(in srgb, var(--vk-text) 9%, transparent);
+  --_shadow: color-mix(in srgb, var(--vk-text) 9%, transparent);
+  --_halo: color-mix(in srgb, var(--vk-text) 5%, transparent); }
+.vk-emblem[data-size="tile"] { --vk-emblem-w: 160px; }
+.vk-emblem[data-size="mini"] { --vk-emblem-w: 48px; width: var(--vk-emblem-w); flex: none; }
+
+/* ---------- the stack ---------- */
+.vk-emblem__stack { display: flex; flex-direction: column; align-items: center; gap: var(--vk-space-1);
+  width: 100%; min-width: 0; margin-bottom: calc(var(--vk-space-2) * -1); position: relative; z-index: 1; }
+.vk-emblem__stack > p, .vk-emblem__stack > :is(h1, h2, h3, h4, h5, h6) { margin: 0; max-width: 100%; overflow-wrap: anywhere; }
+.vk-emblem__kicker { letter-spacing: .24em; }
+.vk-emblem__name { font-size: clamp(var(--vk-fs-lg), 11cqi, 52px); line-height: 1; color: var(--vk-text); }
+.vk-emblem__glyph { display: flex; align-items: center; gap: var(--vk-space-3); width: 70%; color: var(--vk-text); margin: var(--vk-space-1) 0; }
+.vk-emblem__glyph .vk-icon { width: clamp(14px, 7cqi, 30px); height: clamp(14px, 7cqi, 30px); }
+.vk-emblem__rule { flex: 1 1 0; height: 0; border-top: var(--vk-border-w) solid var(--vk-line-strong); position: relative; }
+.vk-emblem__rule::after { content: ""; position: absolute; top: -3px; width: 5px; height: 5px; border: var(--vk-border-w) solid var(--vk-line-strong);
+  transform: rotate(45deg); background: var(--vk-bg); }
+.vk-emblem__rule:first-child::after { left: 0; }
+.vk-emblem__rule:last-child::after { right: 0; }
+.vk-emblem__date { font-size: var(--vk-fs-xs); color: var(--vk-text-muted); letter-spacing: var(--vk-tracking-label); }
+.vk-emblem__readout { font-size: var(--vk-fs-sm); color: var(--vk-text); letter-spacing: .04em; }
+.vk-emblem[data-size="tile"] .vk-emblem__stack { gap: 0; }
+.vk-emblem[data-size="tile"] .vk-emblem__date { display: none; }
+.vk-emblem[data-size="tile"] .vk-emblem__readout { font-size: var(--vk-fs-2xs); color: var(--vk-text-muted); }
+.vk-emblem[data-size="tile"] .vk-emblem__kicker { letter-spacing: var(--vk-tracking-label); }
+.vk-emblem[data-size="tile"] .vk-emblem__glyph { gap: var(--vk-space-2); }
+
+/* ---------- the diorama ---------- */
+.vk-emblem__svg { display: block; width: 100%; height: auto; overflow: visible; }
+.vk-emblem__svg polygon, .vk-emblem__svg path, .vk-emblem__svg line, .vk-emblem__svg polyline { stroke-linejoin: round; stroke-linecap: round; }
+.vk-emblem__halo { fill: var(--_halo); }
+.vk-emblem__p-t { fill: var(--_pt); stroke: var(--_edge); stroke-width: .7; }
+.vk-emblem__p-l { fill: var(--_pl); stroke: var(--_edge); stroke-width: .7; }
+.vk-emblem__p-r { fill: var(--_pr); stroke: var(--_edge); stroke-width: .7; }
+.vk-emblem__p-lip { fill: none; stroke: var(--vk-line); stroke-width: .5; stroke-dasharray: 1.5 2.5; }
+.vk-emblem__tick { stroke: var(--_edge); stroke-width: .5; }
+.vk-emblem__engrave { font: 5px var(--vk-font-mono); letter-spacing: .14em; fill: var(--vk-text-muted); }
+.vk-emblem__shadow { fill: var(--_shadow); }
+.vk-emblem__street { fill: none; stroke: var(--_street); stroke-width: 1.4; }
+.vk-emblem__cable { fill: none; stroke: var(--_cable); stroke-width: 1.3; }
+.vk-emblem__cable-glow { fill: none; stroke: var(--_glow); stroke-width: 4; }
+.vk-emblem__node { fill: var(--vk-text); }
+.vk-emblem__junction { fill: var(--_pt); stroke: var(--vk-text); stroke-width: .8; }
+.vk-emblem__term { fill: var(--_cable); }
+.vk-emblem__ring { fill: none; stroke: var(--_cable); stroke-width: .9; stroke-dasharray: 3 2; }
+.vk-emblem__f-t { fill: var(--_t); stroke: var(--_edge); stroke-width: .5; }
+.vk-emblem__f-l { fill: var(--_l); stroke: var(--_edge); stroke-width: .5; }
+.vk-emblem__f-r { fill: var(--_r); stroke: var(--_edge); stroke-width: .5; }
+.vk-emblem__hot { fill: var(--vk-activity); }
+.vk-emblem__box[data-type="slab"] .vk-emblem__f-t { fill: color-mix(in srgb, var(--_t) 60%, var(--_pt)); }
+.vk-emblem__box[data-type="socket"] .vk-emblem__f-t { fill: var(--_cable); }
+.vk-emblem__win { fill: var(--_win); stroke: none; }
+.vk-emblem__win--lit { fill: var(--_lit); }
+.vk-emblem__win--screen { fill: var(--_win); }
+.vk-emblem__win--screen.vk-emblem__win--lit { fill: color-mix(in srgb, var(--_lit) 70%, transparent); }
+.vk-emblem__seam { fill: none; stroke: var(--_edge); stroke-width: .45; }
+.vk-emblem__mast { stroke: var(--vk-text-muted); stroke-width: .8; }
+.vk-emblem__beacon { fill: var(--vk-activity); }
+.vk-emblem[data-phase="night"] .vk-emblem__win--lit,
+.vk-emblem[data-phase="night"] .vk-emblem__beacon,
+.vk-emblem[data-phase="night"] .vk-emblem__hot { filter: drop-shadow(0 0 1.5px var(--vk-activity)); }
+.vk-emblem[data-phase="night"] .vk-emblem__beacon { animation: vk-emblem-blink 2.4s steps(2, jump-none) infinite; }
+@keyframes vk-emblem-blink { 50% { opacity: .2; } }
+@media (prefers-reduced-motion: reduce) { .vk-emblem__beacon { animation: none !important; } }
+
+/* small sizes drop the fine print */
+.vk-emblem[data-size="tile"] .vk-emblem__engrave, .vk-emblem[data-size="mini"] .vk-emblem__engrave,
+.vk-emblem[data-size="mini"] .vk-emblem__p-lip { display: none; }
+.vk-emblem[data-size="mini"] .vk-emblem__f-t, .vk-emblem[data-size="mini"] .vk-emblem__f-l, .vk-emblem[data-size="mini"] .vk-emblem__f-r { stroke-width: 1; }
+.vk-emblem[data-size="mini"] :is(.vk-emblem__p-t, .vk-emblem__p-l, .vk-emblem__p-r) { stroke-width: 1.6; }
+
+@media (forced-colors: active) {
+  .vk-emblem__svg { forced-color-adjust: none; }
+}

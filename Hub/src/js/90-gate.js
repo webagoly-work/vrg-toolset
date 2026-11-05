@@ -19,8 +19,12 @@ const KP_WIZARD = [
 const kpIsFile = () => typeof location !== 'undefined' && location.protocol === 'file:';
 function kpOpen(href) { window.open(href, '_blank', 'noopener'); }
 
+const kpHasVK = () => typeof VK !== 'undefined';
+
+// toasts go through the kit (a stack with a countdown MINI); the old single toast stays as a fallback
 let kpToastTimer = null;
-function kpToast(msg) {
+function kpToast(msg, kind) {
+  if (kpHasVK() && VK.toast) { VK.toast.show({ kind: kind || 'info', text: msg }); return; }
   const el = document.getElementById('kpToast');
   el.textContent = msg;
   el.hidden = false;
@@ -35,8 +39,33 @@ function kpGateState() {
   return kpL1Open() ? 'open' : 'closed';
 }
 
-const kpCard = (cls, title, ...body) => kpEl('section', { class: 'kp-card' + (cls ? ' ' + cls : '') }, kpEl('h2', {}, title), ...body);
-const kpBtn = (label, onclick, cls, title) => kpEl('button', { class: 'kp-btn' + (cls ? ' ' + cls : ''), onclick, title }, label);
+const kpCard = (cls, title, ...body) => kpEl('section', { class: 'kp-card' + (cls ? ' ' + cls : ''), 'aria-label': title }, kpEl('h2', {}, title), ...body);
+// kit buttons: 'kp-primary' → the kit's primary, 'off' → aria-disabled (still focusable, so the toast can explain why)
+function kpBtn(label, onclick, cls, title) {
+  cls = cls || '';
+  return kpEl('button', { type: 'button', class: 'vk-btn kp-btn' + (/\bbig\b/.test(cls) ? ' big' : ''),
+    'data-variant': /kp-primary/.test(cls) ? 'primary' : null, 'aria-disabled': /\boff\b/.test(cls) ? 'true' : null, onclick, title }, label);
+}
+
+// a MINI (the kit's icon = button = progress) for a Kapu segéd call: spins while it runs, then done / error
+function kpMini(icon, label, run, opts) {
+  opts = opts || {};
+  if (!kpHasVK() || !VK.mini) return kpBtn(label, run, opts.off ? 'off' : '', opts.title);
+  const m = VK.mini.create({ icon, label, size: 'sm' });
+  m.dataset.cap = 'hidden';
+  if (opts.off) { m.setAttribute('aria-disabled', 'true'); VK.mini.set(m, { state: 'off' }); }
+  m.addEventListener('click', async () => {
+    if (m.dataset.state === 'running') return;
+    if (opts.off) { run(); return; }
+    VK.mini.set(m, { state: 'running', progress: null });
+    let r = null;
+    try { r = await run(); } catch (e) { r = { status: 0 }; }
+    const ok = !r || r.status === undefined || r.status === 200;
+    VK.mini.set(m, { state: ok ? 'done' : 'error', progress: ok ? 1 : undefined });
+    setTimeout(() => VK.mini.set(m, { state: 'idle', progress: 0 }), 2400);
+  });
+  return m;
+}
 
 async function kpSignOut() {
   kpGhSignOut();
@@ -45,7 +74,12 @@ async function kpSignOut() {
 }
 
 function kpLoginCard() {
-  const input = kpEl('input', { class: 'kp-in', type: 'password', autocomplete: 'off', spellcheck: 'false', placeholder: 'github_pat_…', 'aria-label': 'GitHub token' });
+  const input = kpEl('input', { id: 'kpToken', class: 'vk-field__input kp-in', type: 'password', autocomplete: 'off', spellcheck: 'false',
+    placeholder: 'github_pat_…', 'aria-describedby': 'kpTokenHelp' });
+  const field = kpEl('div', { class: 'vk-field' },
+    kpEl('label', { class: 'vk-field__label', for: 'kpToken' }, 'GitHub token'),
+    kpEl('div', { class: 'vk-field__box' }, kpIcon('lock', 'vk-field__icon'), input),
+    kpEl('p', { class: 'vk-field__help', id: 'kpTokenHelp' }, KP_TOKEN_NOTE));
   const msg = kpEl('p', { class: 'kp-bad', role: 'status' }, kpGh.error || '');
   const go = kpBtn('Belépés', null, 'kp-primary');
   go.addEventListener('click', async () => {
@@ -63,12 +97,12 @@ function kpLoginCard() {
   setTimeout(() => input.focus(), 0);
   return kpCard('', 'Belépés',
     kpEl('p', {}, 'A Kapu a GitHub-fiókoddal azonosít, és az aláírt engedélyezett listán nézi meg, hogy neked nyit-e. Jelszót nem tárol.'),
-    kpEl('div', { class: 'kp-row' }, input, go),
+    kpEl('div', { class: 'kp-row' }, field, go),
     msg,
     kpEl('div', { class: 'kp-row' }, kpBtn('Token oldal megnyitása (új ablak)', () => kpOpen(KP_LOGIN.ghToken))),
     kpEl('details', { class: 'kp-wiz' }, kpEl('summary', {}, 'Hogyan kapok tokent? (5 lépés)'),
       kpEl('ol', {}, ...KP_WIZARD.map(([a, b]) => kpEl('li', {}, a, kpEl('div', { class: 'kp-muted' }, b))))),
-    kpEl('p', { class: 'kp-note' }, KP_TOKEN_NOTE, ' ', KP_ACCESS_NOTE));
+    kpEl('p', { class: 'kp-note' }, KP_ACCESS_NOTE));
 }
 
 function kpClosedCard() {
@@ -78,20 +112,50 @@ function kpClosedCard() {
     kpEl('div', { class: 'kp-row' }, kpBtn('Kijelentkezés', kpSignOut)));
 }
 
+const kpIcon = (name, cls) => (kpHasVK() ? VK.icon(name, cls) : kpEl('span', {}));
+
+// links-only mode opens the tool through a real link (works from file://); full mode through the Kapu segéd
+function kpToolOpen(t) {
+  if (kpComp.on) return kpCompTool(t.path);
+  const a = kpEl('a', { href: kpToolHref(t), target: '_blank', rel: 'noopener' });
+  document.body.append(a); a.click(); a.remove();
+  return null;
+}
+
 function kpToolRow(t) {
-  const open = kpComp.on
-    ? kpBtn('Megnyitás', () => kpCompTool(t.path))
-    : kpEl('a', { class: 'kp-btn', href: kpToolHref(t), target: '_blank', rel: 'noopener' }, 'Megnyitás');
-  const folder = kpComp.on ? kpBtn('Mappa', () => kpCompFolder(t.dir), '', t.dir) : kpBtn('Mappa', () => kpToast(KP_NO_COMP), 'off', KP_NO_COMP);
-  return kpEl('li', { class: 'kp-tool' }, kpEl('span', { class: 'kp-key', title: 'Billentyű a START.cmd-ben' }, t.key),
-    kpEl('div', { class: 'kp-tool-t' }, kpEl('div', {}, t.name), kpEl('div', {}, t.path)), open, folder);
+  const key = kpHasVK() && VK.kbd ? VK.kbd.chip(t.key) : kpEl('span', { class: 'kp-key' }, t.key);
+  key.setAttribute('title', 'Billentyű a START.cmd-ben');
+  const open = kpMini('external', 'Megnyitás: ' + t.name, () => kpToolOpen(t));
+  const folder = kpComp.on ? kpMini('folder-open', 'Mappa: ' + t.dir, () => kpCompFolder(t.dir))
+    : kpMini('folder', 'Mappa — ' + KP_NO_COMP, () => kpToast(KP_NO_COMP, 'warn'), { off: true });
+  return kpEl('li', { class: 'kp-tool' }, key,
+    kpEl('div', { class: 'kp-tool-t' }, kpEl('div', {}, t.name), kpEl('div', {}, t.path)),
+    kpEl('div', { class: 'kp-tool-act' }, open, folder));
+}
+
+// the Kapu's emblem (the kit's isometric diorama, kind 'hub') beside the page title
+function kpHero(title, text) {
+  const em = kpEl('div', { class: 'kp-hero__emblem' });
+  if (kpHasVK() && VK.emblem) VK.emblem.render(em, { kind: 'hub', name: 'Kapu', kicker: 'VRG ESZKÖZTÁR', glyph: 'home',
+    readout: kpData.tools.length + ' eszköz', seed: 'vrg-kapu', size: 'tile', activity: kpComp.on ? .6 : .2 });
+  return kpEl('section', { class: 'kp-hero', 'aria-label': title }, em,
+    kpEl('div', { class: 'kp-hero__text' }, kpEl('h1', {}, title), kpEl('p', {}, text)));
+}
+
+let kpStarting = false;
+async function kpStartClick() {
+  if (kpStarting) return;
+  kpStarting = true; kpRender();
+  try { await kpCompStart(); } finally { kpStarting = false; kpRender(); }
 }
 
 function kpOpenCards() {
   const start = kpComp.on
-    ? kpBtn('▶ START.cmd indítása', kpCompStart, 'kp-primary big')
-    : kpBtn('▶ START.cmd indítása', () => kpToast(KP_NO_COMP), 'kp-primary big off', KP_NO_COMP);
+    ? kpBtn(kpStarting ? 'Indul…' : '▶ START.cmd indítása', kpStartClick, 'kp-primary big')
+    : kpBtn('▶ START.cmd indítása', () => kpToast(KP_NO_COMP, 'warn'), 'kp-primary big off', KP_NO_COMP);
+  if (kpStarting) start.setAttribute('aria-busy', 'true');
   return [
+    kpHero('Kapu nyitva', 'A START.cmd és minden eszköze innen indul. Ctrl+K: eszköz, téma vagy parancs keresése.'),
     kpCard('soon', 'Irányítópult — készül',
       kpEl('p', {}, 'Ide jön a közös irányítópult. Addig a START.cmd a kapu: minden program, build, teszt és mappa onnan érhető el.')),
     kpCard('', 'START.cmd — az indítópult',
@@ -99,7 +163,7 @@ function kpOpenCards() {
       kpEl('div', { class: 'kp-row' }, start, kpComp.on ? kpBtn('Planner mappa', () => kpCompFolder('Planner')) : null),
       kpComp.on ? null : kpEl('p', { class: 'kp-muted' }, KP_NO_COMP + ' Vagy indítsd közvetlenül: Planner\\START.cmd.')),
     kpCard('', 'Eszközök',
-      kpEl('p', { class: 'kp-muted' }, 'A START.cmd eszközlistája, ugyanazokkal a billentyűkkel.'),
+      kpEl('p', { class: 'kp-muted' }, 'A START.cmd eszközlistája, ugyanazokkal a billentyűkkel. Ikonok: megnyitás és mappa; a kör forog, amíg a Kapu segéd dolgozik.'),
       kpData.tools.length ? kpEl('ul', { class: 'kp-tools' }, ...kpData.tools.map(kpToolRow)) : kpEl('p', { class: 'kp-bad' }, 'A build nem találta a START.cmd eszközlistáját.'))
   ];
 }
@@ -107,13 +171,15 @@ function kpOpenCards() {
 function kpRender() {
   const state = kpGateState();
   const main = document.getElementById('kpMain');
-  if (state === 'login') main.replaceChildren(kpLoginCard());
+  if (state === 'login') main.replaceChildren(kpHero('Belépés a Kapun', 'A VRG eszköztár belépőlapja. A GitHub-fiókoddal azonosít, és az aláírt listán nézi meg, hogy neked nyit-e.'), kpLoginCard());
   else if (state === 'checking') main.replaceChildren(kpCard('', 'Belépés', kpEl('p', { class: 'kp-muted' }, 'Ellenőrzés a GitHubon…')));
   else if (state === 'closed') main.replaceChildren(kpClosedCard());
   else main.replaceChildren(...kpOpenCards());
 
   const who = document.getElementById('kpWho');
-  who.replaceChildren(...(kpGh.login ? [kpGh.login + (kpAccess.role ? ' · ' + (kpAccess.role === 'owner' ? 'Tulajdonos' : 'tag') : '') + ' ',
+  const role = kpAccess.role ? kpEl('span', { class: 'vk-badge', 'data-state': kpAccess.role === 'owner' ? 'inuse' : 'built', 'data-size': 'sm' },
+    kpAccess.role === 'owner' ? 'Tulajdonos' : 'tag') : null;
+  who.replaceChildren(...(kpGh.login ? [kpEl('span', { class: 'vk-mono' }, kpGh.login), role,
     kpEl('a', { href: '#', onclick: e => { e.preventDefault(); kpSignOut(); } }, 'Kijelentkezés')] : []));
 
   const msgs = [];
@@ -123,5 +189,8 @@ function kpRender() {
   const b = document.getElementById('kpBanner');
   b.hidden = !msgs.length;
   b.replaceChildren(...msgs.flatMap((m, i) => (i ? [kpEl('br'), m] : [m])));
-  document.getElementById('kpMode').textContent = kpComp.on ? 'teljes mód · Kapu segéd: localhost:' + window.KP_COMPANION.port : 'csak linkek mód';
+  const mode = document.getElementById('kpMode');
+  mode.replaceChildren(kpEl('span', { class: 'vk-badge', 'data-state': kpComp.on ? 'active' : 'parked', 'data-size': 'sm' },
+    kpComp.on ? 'teljes mód · Kapu segéd: localhost:' + window.KP_COMPANION.port : 'csak linkek mód'));
+  if (kpHasVK() && VK.actions) VK.actions.touch();
 }

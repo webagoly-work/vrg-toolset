@@ -1,0 +1,23 @@
+/* VRG UI Kit — density. Put data-vk-density on <html> (or any container; tokens cascade).
+   comfortable (default) · compact (dense tables, consoles) · touch (phones, 320×240 CYD boards:
+   40 px targets, larger type, no hover-only actions). */
+[data-vk-density="comfortable"] {
+  --vk-fs-md: 13px; --vk-control-h: 28px; --vk-row-h: 28px; --vk-icon-size: 16px;
+  --vk-target-min: 24px; --vk-pad-panel: 12px; --vk-gutter: 16px;
+}
+[data-vk-density="compact"] {
+  --vk-fs-2xs: 9.5px; --vk-fs-xs: 10.5px; --vk-fs-sm: 11px; --vk-fs-md: 12px; --vk-fs-lg: 13px;
+  --vk-space-3: 6px; --vk-space-4: 8px; --vk-space-5: 12px; --vk-space-6: 16px;
+  --vk-control-h: 24px; --vk-row-h: 22px; --vk-icon-size: 14px;
+  --vk-target-min: 22px; --vk-pad-panel: 8px; --vk-gutter: 10px; --vk-lh: 1.35;
+}
+[data-vk-density="touch"] {
+  --vk-fs-2xs: 11px; --vk-fs-xs: 12px; --vk-fs-sm: 13px; --vk-fs-md: 15px; --vk-fs-lg: 17px; --vk-fs-xl: 20px;
+  --vk-space-3: 8px; --vk-space-4: 12px; --vk-space-5: 16px;
+  --vk-control-h: 40px; --vk-row-h: 40px; --vk-icon-size: 20px; --vk-icon-stroke: 1.75;
+  --vk-target-min: 40px; --vk-pad-panel: 10px; --vk-gutter: 10px; --vk-focus-w: 3px;
+}
+/* coarse pointers get touch-sized targets even in comfortable density */
+@media (pointer: coarse) {
+  :root:not([data-vk-density]) { --vk-target-min: 40px; --vk-control-h: 36px; --vk-row-h: 36px; }
+}

@@ -56,6 +56,13 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   The phone reads and rules on `solomon-data`, a data-only branch the PC makes; `Contents.putBody` now accepts that branch
   as well as `mobile-log`. Its own tabs change by tapping, so a sideways swipe on that page always means the home screen.
 
+- **M16 · Kit** (2026-11-04, the user's `1A 2A 3A 4A 5A`). The VRG UI Kit (`shared/vrg-ui-kit`) comes to the phone as
+  Compose tokens, not HTML. **1A:** the kit's four themes (Éj, Papír, Kontraszt, Mélyvíz-kit) join the six palettes; the
+  default palette stays. **2A:** one source: a kit generator writes `KitTokens.kt` from the kit's token files, with a drift
+  check. **3A:** Inter, Barlow Condensed and JetBrains Mono ship as `res/font` (OFL, licences beside them). **4A:** a
+  `Mini` composable (icon = button = progress) on the home tiles and for sync / export. **5A:** the WP file is written in the
+  cloud session; it is built on H: after M8, where Gradle and the phone are.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city
