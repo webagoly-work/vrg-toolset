@@ -5,7 +5,6 @@
 'use strict';
 
 const BAD = { ok: false, err: 'bad-request', hu: 'Érvénytelen kérés.' };
-const FORBIDDEN = { ok: false, err: 'forbidden', hu: 'Nem engedélyezett küldő.' };
 const FAILED = { ok: false, err: 'error', hu: 'Hiba történt.' };
 
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
@@ -15,7 +14,7 @@ const isPlain = v => {
   return p === Object.prototype || p === null;
 };
 
-const RESERVED = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$/i;
+const RESERVED = /^(con|prn|aux|nul|com[0-9¹²³]|lpt[0-9¹²³])(\..*)?$/i;   // kept equal to lib/names.js (DESK-Q20; a test checks both)
 function isName(s) {                                                // CONTRACT §3: a basename, never a path
   if (typeof s !== 'string' || !s.length || s.length > 200) return false;
   if (/[\\/:*?"<>|\u0000-\u001f]/.test(s)) return false;
@@ -94,7 +93,7 @@ function createIpc({ ipcMain, audit, allowedUrls = () => [], log = () => {} }) {
     ipcMain.handle('vrg2:' + name, async (event, payload) => {
       if (!senderOk(event)) {
         w({ ch: name, ok: false, err: 'forbidden', sender: String(event && event.senderFrame && event.senderFrame.url || '') });
-        return { ...FORBIDDEN };
+        return { ...BAD };                                          // DESK-Q19: a refused sender learns no more than bad-request
       }
       let good = false;
       try { good = check(payload === undefined ? {} : payload) === true; } catch (e) { good = false; }
@@ -111,6 +110,18 @@ function createIpc({ ipcMain, audit, allowedUrls = () => [], log = () => {} }) {
     });
   }
 
+  // the D1 channels (vrg:act / ports / refresh / win) predate the registry: same sender check; refused → audit line, no action
+  function legacy(kind, channel, handler) {
+    const wrap = (event, ...args) => {
+      if (!senderOk(event)) {
+        w({ ch: channel, ok: false, err: 'forbidden', sender: String(event && event.senderFrame && event.senderFrame.url || '') });
+        return kind === 'handle' ? { ...BAD } : undefined;
+      }
+      return handler(event, ...args);
+    };
+    if (kind === 'handle') ipcMain.handle(channel, wrap); else ipcMain.on(channel, wrap);
+  }
+
   function emit(win, ns, type, data) {
     if (!win || win.isDestroyed()) return false;
     win.webContents.send('vrg2:evt', { ...(isPlain(data) ? data : {}), ns, type });
@@ -118,7 +129,7 @@ function createIpc({ ipcMain, audit, allowedUrls = () => [], log = () => {} }) {
   }
 
   const namespaces = () => [...new Set([...channels.keys()].map(n => n.split('.')[0]))];
-  return { register, emit, namespaces, has: name => channels.has(name) };
+  return { register, legacy, senderOk, emit, namespaces, has: name => channels.has(name) };
 }
 
 module.exports = { createIpc, types, compile, isPlain };

@@ -61,6 +61,25 @@ module.exports = async function probe({ win }) {
       await key('Tab');
       await key('a', { ctrlKey: true });
       if (!(await wait(async () => (await status('right')).startsWith('2 kijelölve')))) errors.push('Ctrl+A on the right side: ' + await status('right'));
+
+      // Alt+F2: a real root dropdown (DESK-Q33 = B); Esc closes it, Enter on the current root keeps the listing
+      const menu = () => fjs(`(() => { const m = document.querySelector('[data-pane="files-1"] [data-role="menu"][data-kind="roots"]'); return m ? { n: m.querySelectorAll('button').length, cur: (m.querySelector('[data-current="1"]') || {}).dataset, focus: m.contains(document.activeElement) } : null; })()`);
+      const bars = await fjs(`document.querySelectorAll('[data-pane="files-1"] [data-side="right"] [data-role="roots"] button').length`);
+      await key('F2', { altKey: true });
+      let m = null;
+      if (!(await wait(async () => (m = await menu()) !== null, 3000))) errors.push('Alt+F2 opened no root menu');
+      else {
+        if (m.n !== bars) errors.push('root menu lists ' + m.n + ' roots, the bar has ' + bars);
+        if (!m.focus) errors.push('root menu does not hold the focus');
+        if (!m.cur || m.cur.root !== 'root:test') errors.push('root menu does not mark the current root: ' + JSON.stringify(m.cur));
+        await fjs(`document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))`);
+        if (!(await wait(async () => (await menu()) === null, 2000))) errors.push('Esc did not close the root menu');
+        await key('F2', { altKey: true });
+        await wait(async () => (await menu()) !== null, 2000);
+        await fjs(`document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }))`);
+        if (!(await wait(async () => (await menu()) === null, 2000))) errors.push('Enter did not close the root menu');
+        if (!(await is('right', ['a', 'top.txt']))) errors.push('after picking the same root: ' + JSON.stringify(await rows('right')));
+      }
     }
   } catch (e) {
     errors.push('probe error: ' + e.message);

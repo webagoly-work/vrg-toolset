@@ -8,6 +8,8 @@ module.exports = async function probe({ win }) {
   const { createSecrets } = require('../lib/secrets.js');
   if (!/desk-test-/.test(paths.home())) return { ok: false, errors: ['home is not a temp folder: ' + paths.home()] };
 
+  // start clean: a secrets.bin left in the temp home by a run under another environment (the night runner) has another key
+  try { fs.rmSync(path.join(paths.userDir(), 'secrets.bin'), { force: true }); } catch (e) {}
   const s = createSecrets({ safeStorage });
   try {
     s.put('probe', 'VRG_SECRET_PROBE');

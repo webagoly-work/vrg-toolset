@@ -58,6 +58,7 @@ else {
     if (!j.ok || r.status !== 0) selftest.ok = false;
     if (!(j.ids >= 30)) { selftest.ok = false; selftest.errors.push('ids ' + j.ids + ' < 30'); }
     selftest.ids = j.ids;
+    if (j.probe) selftest.probe = j.probe;                                // the WP probe's own result, so the verifier can see what ran
   }
 }
 

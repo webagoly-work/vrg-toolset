@@ -161,6 +161,21 @@ test('cloudattr: a failing attrib gives no marks (never blocks a listing)', asyn
   let seen;
   const ok = (cmd, args, o, cb) => { seen = [cmd, args]; cb(null, 'A    O      ' + path.join(ROOT, 'b.txt') + '\r\n'); };
   const m = await cloudattr.marks(ROOT, { run: ok });
-  assert.deepEqual(seen, ['attrib', [ROOT + '\\*']]);
+  assert.deepEqual(seen, [cloudattr.ATTRIB, [ROOT + '\\*']]);
+  assert.ok(/\\System32\\attrib\.exe$/i.test(cloudattr.ATTRIB) && path.isAbsolute(cloudattr.ATTRIB));
   assert.equal(m.get('b.txt'), 'online');
+});
+
+test('cloudattr: cp852 output keeps accented names (DESK-Q29 = B)', async () => {
+  assert.equal(cloudattr.fromCp852(Buffer.from([0x8b, 0xfb, 0x8a, 0xeb, 0xa0, 0x82, 0xa1, 0xa2, 0x94, 0xa3, 0x81, 0xb5, 0x90])), 'őűŐŰáéíóöúüÁÉ');
+  // "á.txt" in cp852 is 0xA0; the same bytes read as UTF-8 would be invalid, as windows-1250 a no-break space
+  const line = Buffer.concat([Buffer.from('A    O      ' + ROOT + '\\', 'latin1'), Buffer.from([0xa0]), Buffer.from('.txt\r\n', 'latin1')]);
+  const run = (cmd, args, o, cb) => { assert.equal(o.encoding, 'buffer'); cb(null, line); };
+  const m = await cloudattr.marks(ROOT, { run });
+  assert.equal(m.get('á.txt'), 'online');
+  // a UTF-8 run of the same folder still matches
+  const u = Buffer.from('A    P      ' + path.join(ROOT, 'á.txt') + '\r\n', 'utf8');
+  assert.equal((await cloudattr.marks(ROOT, { run: (c, a, o, cb) => cb(null, u) })).get('á.txt'), 'pinned');
+  // without folder names cp852 is the default
+  assert.equal(cloudattr.decode(Buffer.from([0x8b])), 'ő');
 });

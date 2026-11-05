@@ -88,11 +88,12 @@ test('30 bad payloads are refused, the handler never runs', async () => {
   assert.deepStrictEqual(await invoke('t.none', {}), { ok: true, n: 1 });
 });
 
-test('sender check refuses a web view', async () => {
+test('sender check refuses a web view (reply: bad-request, DESK-Q19; audit: forbidden)', async () => {
   for (const u of ['https://example.com/', 'file:///C:/other.html', '', null]) {
-    assert.strictEqual((await invoke('t.none', {}, u)).err, 'forbidden');
+    assert.deepStrictEqual(await invoke('t.none', {}, u), { ok: false, err: 'bad-request', hu: 'Érvénytelen kérés.' });
   }
-  assert.strictEqual((await handlers.get('vrg2:t.none')({}, {})).err, 'forbidden');
+  assert.strictEqual((await handlers.get('vrg2:t.none')({}, {})).err, 'bad-request');
+  assert.ok(readAudit().includes('"err":"forbidden"'));
   assert.strictEqual((await invoke('t.none', {}, PAGE + '#x')).ok, true);
 });
 
@@ -123,4 +124,39 @@ test('register: namespaces, duplicate and bad names; emit', () => {
   assert.strictEqual(ipc.emit(win, 'jobs', 'update', { job: 'j1', ns: 'evil' }), true);
   assert.deepStrictEqual(sent, [['vrg2:evt', { job: 'j1', ns: 'jobs', type: 'update' }]]);
   assert.strictEqual(ipc.emit({ isDestroyed: () => true }, 'a', 'b', {}), false);
+});
+
+test('legacy D1 channels get the same sender check', async () => {
+  const hs = new Map(), ons = new Map();
+  const lip = createIpc({ ipcMain: { handle: (c, f) => hs.set(c, f), on: (c, f) => ons.set(c, f) }, audit, allowedUrls: () => [PAGE] });
+  let ran = 0, won = 0;
+  lip.legacy('handle', 'vrg:act', (e, id) => { ran++; return 'ran ' + id; });
+  lip.legacy('on', 'vrg:win', () => { won++; });
+  assert.strictEqual(await hs.get('vrg:act')(ev(PAGE), 'x'), 'ran x');
+  for (const u of ['https://example.com/', 'file:///C:/other.html', null]) {
+    assert.deepStrictEqual(await hs.get('vrg:act')(ev(u), 'x'), { ok: false, err: 'bad-request', hu: 'Érvénytelen kérés.' });
+    ons.get('vrg:win')(ev(u), 'close');
+  }
+  ons.get('vrg:win')(ev(PAGE), 'max');
+  assert.strictEqual(ran, 1); assert.strictEqual(won, 1);
+  assert.ok(readAudit().includes('"ch":"vrg:act"'));
+  assert.strictEqual(lip.senderOk(ev(PAGE + '#a')), true);
+  assert.strictEqual(lip.senderOk(ev('https://example.com/')), false);
+});
+
+test('the name rule in ipc.js and lib/names.js agree (DESK-Q20: two copies)', () => {
+  const { isSafeName } = require('../shell/lib/names.js');
+  const cases = ['a.txt', 'a b.c', 'ő ű.md', 'CON', 'con.txt', 'com0', 'COM1.log', 'lpt9', 'com¹', 'Lpt³.x', 'console', 'comx',
+    '..', 'a..b', 'x.', 'x ', 'a/b', 'a\b', 'a:b', 'a*b', 'a?b', 'a"b', 'a<b', 'a>b', 'a|b', 'ab', '', 'a'.repeat(200), 'a'.repeat(201), 'nul', 'aux.md', 'prn '];
+  for (const c of cases) assert.strictEqual(T.name(c), isSafeName(c), JSON.stringify(c));
+  for (const v of [null, 1, {}, []]) assert.strictEqual(T.name(v), isSafeName(v));
+});
+
+test('web views get no preload and stay isolated', () => {
+  const { webPrefs } = require('../shell/lib/views.js');
+  const w = webPrefs('persist:x', { preload: 'evil.js', nodeIntegration: true, contextIsolation: false, sandbox: false, webviewTag: true, zoomFactor: 1.2 });
+  assert.strictEqual('preload' in w, false);
+  assert.deepStrictEqual([w.sandbox, w.contextIsolation, w.nodeIntegration, w.nodeIntegrationInSubFrames, w.webviewTag], [true, true, false, false, false]);
+  assert.strictEqual(w.partition, 'persist:x'); assert.strictEqual(w.zoomFactor, 1.2);
+  assert.strictEqual('preload' in webPrefs(), false);
 });

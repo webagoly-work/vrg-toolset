@@ -168,7 +168,8 @@ function createFsOps({ fs, shell, jobs, handles, roots, view = null, cloud = nul
           if (cloudAnswer === 'cancel') return false;
           skipped++; bump(st.size); return true;
         }
-        await F.copyFile(abs, target, overwrite ? 0 : EXCL);
+        if (overwrite) await shell.trashItem(target);                                         // the old file goes to the Recycle Bin first (CONTRACT §4.5)
+        await F.copyFile(abs, target, EXCL);
         const out = await F.lstat(target);
         if (out.size !== st.size) throw new Error('size mismatch: ' + name);                   // verified before any source is trashed
         try { await F.utimes(target, st.atime, st.mtime); } catch (e) {}
@@ -185,7 +186,7 @@ function createFsOps({ fs, shell, jobs, handles, roots, view = null, cloud = nul
           const c = await conflict(s.name, s.st, here, plan.dst.abs);
           if (c === 'cancel') return false;
           if (c === 'skip') { skipped++; return true; }
-          if (c === 'overwrite') { if (here.isDirectory()) { skipped++; return true; } }
+          if (c === 'overwrite') { if (here.isDirectory()) { skipped++; return true; } await shell.trashItem(target); }   // old file → Recycle Bin, then rename
           else target = c.rename;
         }
         await F.rename(s.abs, target);

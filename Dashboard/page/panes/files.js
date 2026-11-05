@@ -224,10 +224,10 @@
         case 'filterBack': s.filter = s.filter.slice(0, -1); s.cursor = 0; break;
         case 'filterClear': s.filter = ''; s.cursor = 0; break;
         case 'type': s.filter += act.ch; s.cursor = 0; break;
-        case 'rootMenu': {                                       // Alt+F1 / Alt+F2: the next root on that side
+        case 'rootMenu': {                                       // Alt+F1 / Alt+F2: a real root dropdown on that side (DESK-Q33 = B)
           this.active = act.side;
-          const t = this.sides[act.side], i = this.roots.findIndex(r => r.root === t.root);
-          if (this.roots.length) this.switchRoot(act.side, this.roots[(i + 1) % this.roots.length]);
+          this.draw();
+          this.rootMenu(act.side);
           return;
         }
         case 'op': this.op(act.op); return;
@@ -414,6 +414,45 @@
       if (s.error) stat.append(el('span', 'warn', s.error));
       box.append(bar, crumb, filt, sc, stat);
       return box;
+    },
+    // the root dropdown under a side's root bar: ↑/↓ move, Enter or 1–9 pick, Esc closes; a click picks too
+    rootMenu(k) {
+      if (!this.root || !this.roots.length) return;
+      const old = this.root.querySelector('[data-role="menu"]'); if (old) old.remove();
+      const side = this.root.querySelector('[data-side="' + k + '"]');
+      const bar = side && side.querySelector('[data-role="roots"]');
+      const r0 = (bar || side || this.root).getBoundingClientRect();
+      const m = el('div', 'menu');
+      m.dataset.kind = 'roots'; m.tabIndex = -1;
+      m.setAttribute('role', 'listbox'); m.setAttribute('aria-label', 'Gyökérmappa');
+      m.style.position = 'fixed'; m.style.left = r0.left + 'px'; m.style.top = r0.bottom + 'px';
+      let at = Math.max(0, this.roots.findIndex(r => r.root === this.sides[k].root));
+      const buttons = this.roots.map((r, i) => {
+        const b = el('button', null, (i < 9 ? (i + 1) + '  ' : '') + r.hu);
+        b.type = 'button'; b.dataset.root = r.root; b.title = r.root; b.setAttribute('role', 'option');
+        b.addEventListener('click', () => pick(i));
+        m.append(b);
+        return b;
+      });
+      const mark = () => buttons.forEach((b, i) => { if (i === at) { b.dataset.current = '1'; b.setAttribute('aria-selected', 'true'); b.focus(); } else { delete b.dataset.current; b.removeAttribute('aria-selected'); } });
+      const close = () => { m.remove(); document.removeEventListener('mousedown', outside, true); };
+      const pick = i => { close(); this.switchRoot(k, this.roots[i]); };
+      const outside = ev => { if (!m.contains(ev.target)) { close(); this.focus(); } };
+      m.addEventListener('keydown', ev => {
+        ev.stopPropagation();
+        if (ev.key === 'ArrowDown') { at = (at + 1) % buttons.length; mark(); }
+        else if (ev.key === 'ArrowUp') { at = (at - 1 + buttons.length) % buttons.length; mark(); }
+        else if (ev.key === 'Home') { at = 0; mark(); }
+        else if (ev.key === 'End') { at = buttons.length - 1; mark(); }
+        else if (ev.key === 'Enter') pick(at);
+        else if (ev.key === 'Escape' || (ev.altKey && (ev.key === 'F1' || ev.key === 'F2'))) { close(); this.focus(); }
+        else if (/^[1-9]$/.test(ev.key) && +ev.key <= buttons.length) pick(+ev.key - 1);
+        else return;
+        ev.preventDefault();
+      });
+      this.root.append(m);
+      mark();
+      setTimeout(() => document.addEventListener('mousedown', outside, true), 0);
     },
     contextMenu(ev, k, it) {
       const old = this.root.querySelector('[data-role="menu"]'); if (old) old.remove();

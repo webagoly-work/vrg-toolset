@@ -41,7 +41,7 @@ function createViews({ WebContentsView, win, preload, homePage, log = () => {} }
     return view;
   }
 
-  function createWeb() { return null; }                     // WP-17
+  function createWeb() { return null; }                     // WP-17: build its webPreferences with webPrefs() below
 
   function setBounds(id, rect) {
     const e = map.get(id);
@@ -72,4 +72,14 @@ function createViews({ WebContentsView, win, preload, homePage, log = () => {} }
   };
 }
 
-module.exports = { createViews };
+// webPreferences for web content (WP-17 and later). Never a preload: a web page gets no window.vrg and no ipcRenderer.
+// `extra` may only add keys that keep it isolated; preload / nodeIntegration / contextIsolation / sandbox / webviewTag are fixed.
+const FIXED = ['preload', 'nodeIntegration', 'nodeIntegrationInSubFrames', 'nodeIntegrationInWorker', 'contextIsolation', 'sandbox', 'webviewTag'];
+function webPrefs(partition = 'persist:vrg-web', extra = {}) {
+  const out = { ...extra };
+  for (const k of FIXED) delete out[k];
+  return { ...out, partition, sandbox: true, contextIsolation: true, nodeIntegration: false, nodeIntegrationInSubFrames: false,
+    nodeIntegrationInWorker: false, webviewTag: false, spellcheck: false };
+}
+
+module.exports = { createViews, webPrefs };

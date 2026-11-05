@@ -8,7 +8,10 @@ const BAD = { ok: false, err: 'bad-request', hu: 'Érvénytelen kérés.' };
 const call = async (ns, fn, payload) => {
   if (!/^[a-z][a-z0-9]{0,19}$/.test(String(ns)) || !/^[a-zA-Z][a-zA-Z0-9]{0,29}$/.test(String(fn))) return { ...BAD };
   try { return await ipcRenderer.invoke('vrg2:' + ns + '.' + fn, payload === undefined ? {} : payload); }
-  catch (e) { return { ...BAD }; }
+  catch (e) {                                                       // main has no such channel: log it page-side (DESK-Q18), never loop
+    if (!(ns === 'app' && fn === 'log')) ipcRenderer.invoke('vrg2:app.log', { level: 'warn', msg: 'unknown channel ' + ns + '.' + fn }).catch(() => {});
+    return { ...BAD };
+  }
 };
 const on = (ns, type, cb) => {
   if (typeof cb !== 'function') return () => {};
@@ -24,6 +27,7 @@ contextBridge.exposeInMainWorld('vrg', {
     mode: p => call('app', 'mode', p),
     toggleOverlay: () => call('app', 'toggleOverlay', {}),
     autostart: p => call('app', 'autostart', p),
+    log: (level, msg) => call('app', 'log', { level, msg: String(msg).slice(0, 500) }),
     setting: (k, v) => call('app', 'setting', v === undefined ? { k } : { k, v }),
   },
   layout: {

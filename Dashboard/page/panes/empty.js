@@ -9,7 +9,7 @@
     ['term', 'Terminál', 'Terminal', 'term'],
     ['web', 'Böngésző', 'Browser', 'web'],
     ['mail', 'Levelek', 'Mail', 'mail'],
-    ['stack', 'Folyamatok', 'Jobs', 'jobs'],
+    ['stack', 'Folyamatok', 'Jobs', null],                 // always listed (DESK-Q23 = C)
     ['chat', 'Chat', 'Chat', 'chat'],
     ['note', 'Jegyzet', 'Note', 'note'],
     ['git', 'Git', 'Git', 'git'],

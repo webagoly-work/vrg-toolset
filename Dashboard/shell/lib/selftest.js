@@ -59,7 +59,7 @@ function createSelftest(ctx) {
     out.ok = !out.errors.length;
     fs.mkdirSync(tmp, { recursive: true });
     fs.writeFileSync(path.join(tmp, 'dash-selftest.json'), JSON.stringify(out, null, 1));
-    console.log(JSON.stringify({ ok: out.ok, page: out.page, ids: out.ids, portsUp: out.portsUp, errors: out.errors }));
+    console.log(JSON.stringify({ ok: out.ok, page: out.page, ids: out.ids, portsUp: out.portsUp, errors: out.errors, probe: out.probe }));
     ctx.stopPolling(); app.exit(out.ok ? 0 : 1);
   };
 }

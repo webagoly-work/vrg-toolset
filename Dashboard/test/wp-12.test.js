@@ -97,6 +97,24 @@ test('conflict + rename gives "x (2).txt"; skip leaves the target bytes', async 
   assert.equal(numbered('a.b.txt', 2), 'a.b (2).txt');
 });
 
+test('overwrite sends the old file to the Recycle Bin first (copy and same-volume move)', async () => {
+  const s = setup();
+  put(path.join(s.A, 'x.txt'), 'new'); put(path.join(s.B, 'x.txt'), 'old');
+  let snap = await finish(s.jobs, await s.ops.copy([s.h(path.join(s.A, 'x.txt'))], s.h(s.B), 'overwrite'));
+  assert.equal(snap.state, 'done');
+  assert.equal(fs.readFileSync(path.join(s.B, 'x.txt'), 'utf8'), 'new');
+  assert.deepEqual(s.calls.trash, [path.join(s.B, 'x.txt')]);
+  const binned = fs.readdirSync(TRASH).filter(n => n.endsWith('-x.txt')).map(n => fs.readFileSync(path.join(TRASH, n), 'utf8'));
+  assert.ok(binned.includes('old'), 'the old bytes are in the bin');
+  const m = setup({ sameVolume: async () => true });
+  put(path.join(m.A, 'y.txt'), 'new'); put(path.join(m.B, 'y.txt'), 'old-y');
+  snap = await finish(m.jobs, await m.ops.move([m.h(path.join(m.A, 'y.txt'))], m.h(m.B), 'overwrite'));
+  assert.equal(snap.state, 'done');
+  assert.equal(fs.readFileSync(path.join(m.B, 'y.txt'), 'utf8'), 'new');
+  assert.deepEqual(m.calls.trash, [path.join(m.B, 'y.txt')]);
+  assert.equal(m.calls.rm, 0);
+});
+
 test('policy ask: the job asks with the four choices and honours the answer', async () => {
   const s = setup();
   put(path.join(s.A, 'x.txt'), 'new'); put(path.join(s.B, 'x.txt'), 'old');

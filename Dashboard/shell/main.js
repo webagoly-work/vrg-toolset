@@ -159,6 +159,11 @@ ipc.register('app', 'autostart', { on: types.bool, userGesture: types.bool }, as
   return { on: cur() };
 }, { optional: ['on', 'userGesture'] });
 
+// app.log: page-side log lines (frame.js; preload for channels main does not know, DESK-Q18). Page text, marked as such.
+ipc.register('app', 'log', { level: types.enum('info', 'warn', 'error'), msg: types.text(500) }, async ({ level, msg }) => {
+  audit.write({ ch: 'app.log', ok: true, from: 'page', level, msg });
+  return {};
+});
 ipc.register('app', 'setting', { k: types.text(80), v: types.json(4096) }, async ({ k, v }) => {
   if (!settings.has(k)) return { ok: false, err: 'bad-request', hu: 'Ismeretlen beállítás.' };
   if (v === undefined) return { v: settings.get(k) };
@@ -277,10 +282,10 @@ ipc.register('term', 'resize', { term: termId, cols: types.int(2, 500), rows: ty
 ipc.register('term', 'kill', { term: termId }, async ({ term }) => { termMgr().kill(term); return {}; });
 app.on('before-quit', () => { if (ptyMgr) ptyMgr.killAll(); });
 
-ipcMain.handle('vrg:act',(e, id) => acts.runAct(id));
-ipcMain.handle('vrg:ports', () => ports.ports);
-ipcMain.handle('vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });
-ipcMain.on('vrg:win', (e, cmd) => {
+ipc.legacy('handle', 'vrg:act', (e, id) => acts.runAct(id));
+ipc.legacy('handle', 'vrg:ports', () => ports.ports);
+ipc.legacy('handle', 'vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });
+ipc.legacy('on', 'vrg:win', (e, cmd) => {
   if (!win) return;
   if (cmd === 'min') win.minimize();
   else if (cmd === 'max') win.isMaximized() ? win.unmaximize() : win.maximize();
