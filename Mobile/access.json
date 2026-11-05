@@ -9,7 +9,9 @@
   ],
   "repoName": true,
   "trustedDevices": {
-    "on": false,
-    "devices": []
+    "on": true,
+    "devices": [
+      { "code": "6CDB-FB09-6833", "name": "Redmi Note 13 Pro 5G (owner, added 2026-11-05)" }
+    ]
   }
 }
