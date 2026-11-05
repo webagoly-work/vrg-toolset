@@ -1,0 +1,63 @@
+/* VRG UI Kit — components/tabs.css — tablist with closable tabs, dirty dot, overflow chevrons, tabpanels.
+   Built by tabs.js:
+   <div class="vk-tabs">
+     <div class="vk-tabs__bar" data-overflow>
+       <button class="vk-tabs__chev" data-dir="-1">‹</button>
+       <div class="vk-tabs__list" role="tablist">
+         <div class="vk-tabs__tab" role="tab" aria-selected="true" data-dirty data-closable>
+           <svg class="vk-icon"/> <span class="vk-tabs__label">…</span> <span class="vk-tabs__dirty"/> <span class="vk-tabs__close"/>
+       <button class="vk-tabs__chev" data-dir="1">›</button>
+       <div class="vk-tabs__extra" role="toolbar"> minis </div>
+     <div class="vk-tabs__panels"> <div class="vk-tabs__panel" role="tabpanel"> …
+   Selected tab = ice (you are here); dirty dot = warm (recent, unsaved work). Depends on: tokens, base, mini. */
+.vk-tabs { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; }
+.vk-tabs__bar { position: relative; display: flex; align-items: stretch; flex: none; min-width: 0;
+  background: var(--vk-surface-2); border-bottom: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-tabs__list { display: flex; align-items: stretch; flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: none; overscroll-behavior-x: contain; }
+.vk-tabs__list::-webkit-scrollbar { display: none; }
+
+.vk-tabs__tab { --_h: max(var(--vk-control-h), var(--vk-target-min));
+  position: relative; display: inline-flex; align-items: center; gap: var(--vk-space-2); flex: none;
+  height: calc(var(--_h) + 4px); padding: 0 var(--vk-space-2) 0 var(--vk-space-4); max-width: 240px;
+  font-size: var(--vk-fs-sm); color: var(--vk-text-muted); white-space: nowrap; cursor: pointer; user-select: none;
+  border-right: var(--vk-border-w) solid var(--vk-line); -webkit-tap-highlight-color: transparent;
+  transition: color var(--vk-dur-1) var(--vk-ease), background-color var(--vk-dur-1) var(--vk-ease); }
+.vk-tabs__tab:not([data-closable]) { padding-right: var(--vk-space-4); }
+.vk-tabs__tab:hover { color: var(--vk-text); background: var(--vk-hover-bg); }
+.vk-tabs__tab[aria-selected="true"] { color: var(--vk-text); background: var(--vk-surface-1); }
+.vk-tabs__tab[aria-selected="true"]::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--vk-accent); }
+.vk-tabs__tab:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: calc(-1 * var(--vk-focus-w)); }
+.vk-tabs__tab > .vk-icon { width: calc(var(--vk-icon-size) * .875); height: calc(var(--vk-icon-size) * .875); }
+.vk-tabs__label { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+.vk-tabs__dirty { display: none; width: 7px; height: 7px; border-radius: 50%; background: var(--vk-activity); flex: none; }
+.vk-tabs__tab[data-dirty] > .vk-tabs__dirty { display: inline-block; }
+.vk-tabs__close { display: inline-grid; place-items: center; flex: none; width: var(--vk-target-min); height: var(--vk-target-min);
+  border-radius: var(--vk-radius); color: var(--vk-text-muted); cursor: pointer; }
+.vk-tabs__close > .vk-icon { width: calc(var(--vk-icon-size) * .75); height: calc(var(--vk-icon-size) * .75); }
+.vk-tabs__close:hover { color: var(--vk-text); background: var(--vk-press-bg); }
+
+.vk-tabs__chev { display: none; flex: none; place-items: center; width: var(--vk-target-min); padding: 0; margin: 0; border: 0;
+  background: var(--vk-surface-2); color: var(--vk-text-muted); cursor: pointer; font: inherit; }
+.vk-tabs__chev[data-dir="-1"] { border-right: var(--vk-border-w) solid var(--vk-line); }
+.vk-tabs__chev[data-dir="1"] { border-left: var(--vk-border-w) solid var(--vk-line); }
+.vk-tabs__bar[data-overflow] > .vk-tabs__chev { display: grid; }
+.vk-tabs__chev:hover:not(:disabled) { color: var(--vk-text); background: var(--vk-hover-bg); }
+.vk-tabs__chev:disabled { color: var(--vk-text-faint); cursor: default; }
+.vk-tabs__extra { display: flex; align-items: center; gap: var(--vk-space-1); flex: none; padding: 0 var(--vk-space-2);
+  border-left: var(--vk-border-w) solid var(--vk-line); }
+.vk-tabs__extra:empty { display: none; }
+.vk-tabs__extra > .vk-mini { --_s: var(--vk-control-h); }
+
+.vk-tabs__panels { position: relative; flex: 1 1 auto; min-height: 0; min-width: 0; background: var(--vk-surface-1); }
+.vk-tabs__panel { position: absolute; inset: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--vk-line-strong) transparent; }
+.vk-tabs__panel:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: calc(-1 * var(--vk-focus-w)); }
+.vk-tabs__empty { position: absolute; inset: 0; display: grid; place-content: center; gap: var(--vk-space-2); text-align: center; padding: var(--vk-space-5);
+  color: var(--vk-text-muted); font-size: var(--vk-fs-sm); }
+.vk-tabs__empty .vk-icon { margin: 0 auto; width: calc(var(--vk-icon-size) * 2); height: calc(var(--vk-icon-size) * 2); color: var(--vk-text-faint); }
+
+@media (forced-colors: active) {
+  .vk-tabs__tab[aria-selected="true"]::before { background: Highlight; forced-color-adjust: none; }
+  .vk-tabs__dirty { background: CanvasText; forced-color-adjust: none; }
+}

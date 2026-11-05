@@ -1,0 +1,85 @@
+/* VRG UI Kit — components/filemanager.css — dual-pane file manager (mounted by VK.filemanager.mount).
+   .vk-fm > .vk-fm__panes > .vk-fm__pane[data-active] (head: side tag + breadcrumb + busy MINI · column header ·
+   listbox of .vk-fm__row · summary) + .vk-fm__status + .vk-fm__fkeys (registry surface 'fkeys').
+   Cursor = ice (active pane) / dashed hairline (other pane). Marked = warm (aria-selected) with a small square.
+   Narrow panes drop the date, then the extension (container queries); under 600 px the panes stack.
+   Component-local: --vk-fm-h (list height). Depends on: tokens, base, mini. */
+.vk-fm { --vk-fm-h: 300px; container-type: inline-size; display: flex; flex-direction: column; gap: var(--vk-space-2); min-width: 0; }
+.vk-fm__panes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--vk-space-2); }
+@container (max-width: 600px) { .vk-fm__panes { grid-template-columns: minmax(0, 1fr); } .vk-fm { --vk-fm-h: 200px; } }
+
+.vk-fm__pane { container-type: inline-size; display: flex; flex-direction: column; min-width: 0; background: var(--vk-surface-1);
+  border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); }
+.vk-fm__pane[data-active] { border-color: var(--vk-accent); box-shadow: 0 0 0 1px var(--vk-accent-line); }
+.vk-fm__head { display: flex; align-items: center; gap: var(--vk-space-2); min-height: var(--vk-control-h); padding: var(--vk-space-1) var(--vk-space-2);
+  background: var(--vk-surface-2); border-bottom: var(--vk-border-w) solid var(--vk-line); }
+.vk-fm__side { font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); flex: none; }
+.vk-fm__pane[data-active] .vk-fm__side { color: var(--vk-accent); }
+.vk-fm__crumbs { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; white-space: nowrap;
+  font: var(--vk-fs-xs)/1 var(--vk-font-mono); }
+.vk-fm__crumbs::-webkit-scrollbar { display: none; }
+.vk-fm__crumb { min-height: var(--vk-target-min); min-width: var(--vk-target-min); padding: 0 var(--vk-space-1); margin: 0; border: 0; background: transparent; color: var(--vk-text-muted);
+  font: inherit; cursor: pointer; border-radius: var(--vk-radius-sm); }
+.vk-fm__crumb:hover { color: var(--vk-text); background: var(--vk-hover-bg); }
+.vk-fm__crumb[aria-current] { color: var(--vk-text); }
+.vk-fm__sep { color: var(--vk-text-faint); flex: none; }
+.vk-fm__crumb { flex: none; }
+.vk-fm__head > .vk-mini { --_s: calc(var(--vk-icon-size) + 6px); width: var(--_s); height: var(--_s); pointer-events: none; }
+.vk-fm__head > .vk-mini:not([data-state]) { visibility: hidden; }
+
+.vk-fm__cols, .vk-fm__row { display: grid; grid-template-columns: minmax(0, 1fr) 5ch 9ch 16ch; column-gap: var(--vk-space-3); align-items: center; padding: 0 var(--vk-space-3); }
+.vk-fm__cols { min-height: calc(var(--vk-row-h) * .8); border-bottom: var(--vk-border-w) solid var(--vk-line);
+  font: var(--vk-fs-2xs)/1.4 var(--vk-font-mono); text-transform: uppercase; letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); }
+.vk-fm__list { height: var(--vk-fm-h); overflow: auto; overscroll-behavior: contain; position: relative; font-size: var(--vk-fs-sm);
+  scrollbar-width: thin; scrollbar-color: var(--vk-line-strong) transparent; }
+.vk-fm__row { min-height: max(calc(var(--vk-row-h) - 4px), var(--vk-target-min)); border-left: 2px solid transparent; cursor: default; user-select: none; color: var(--vk-text); }
+.vk-fm__row:hover { background: var(--vk-hover-bg); }
+.vk-fm__row[data-cursor] { outline: 1px dashed var(--vk-line-strong); outline-offset: -1px; }
+.vk-fm__pane[data-active] .vk-fm__row[data-cursor] { outline: none; background: var(--vk-select-bg); border-left-color: var(--vk-select-line); }
+.vk-fm__pane[data-active] .vk-fm__row[data-cursor]:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: calc(-1 * var(--vk-focus-w)); }
+.vk-fm__row:focus { outline-offset: -2px; }
+.vk-fm__name { display: flex; align-items: center; gap: var(--vk-space-2); min-width: 0; }
+.vk-fm__name .vk-icon { color: var(--vk-text-muted); }
+.vk-fm__row[data-dir] .vk-fm__name { font-weight: var(--vk-fw-strong); }
+.vk-fm__row[data-up] .vk-fm__name { color: var(--vk-text-muted); }
+.vk-fm__c-ext, .vk-fm__c-size, .vk-fm__c-date { font-family: var(--vk-font-mono); font-size: var(--vk-fs-xs); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; }
+.vk-fm__c-ext { color: var(--vk-text-muted); }
+.vk-fm__c-size { text-align: right; }
+.vk-fm__row[data-dir] .vk-fm__c-size { color: var(--vk-text-muted); font-size: var(--vk-fs-2xs); letter-spacing: var(--vk-tracking-label); }
+.vk-fm__c-date { color: var(--vk-text-muted); }
+/* marked: warm text and a small warm square (terminal glyph) before the name */
+.vk-fm__row[aria-selected="true"], .vk-fm__row[aria-selected="true"] .vk-fm__c-ext, .vk-fm__row[aria-selected="true"] .vk-fm__c-date,
+.vk-fm__row[aria-selected="true"] .vk-fm__name .vk-icon { color: var(--vk-activity); }
+.vk-fm__row[aria-selected="true"] .vk-fm__name::before { content: ""; width: 6px; height: 6px; flex: none; background: var(--vk-activity); margin-right: calc(-1 * var(--vk-space-1)); }
+.vk-fm__msg { display: flex; align-items: center; gap: var(--vk-space-2); padding: var(--vk-space-4); color: var(--vk-text-muted); }
+.vk-fm__msg[data-kind="error"] { color: var(--vk-crit); }
+.vk-fm__sum { display: flex; flex-wrap: wrap; gap: var(--vk-space-1) var(--vk-space-4); padding: var(--vk-space-1) var(--vk-space-3);
+  border-top: var(--vk-border-w) solid var(--vk-line); font: var(--vk-fs-2xs)/1.4 var(--vk-font-mono); color: var(--vk-text-muted); font-variant-numeric: tabular-nums; }
+.vk-fm__sum [data-on] b { color: var(--vk-activity); }
+@container (max-width: 400px) { .vk-fm__cols, .vk-fm__row { grid-template-columns: minmax(0, 1fr) 4ch 8ch; } .vk-fm__c-date { display: none; } }
+@container (max-width: 250px) { .vk-fm__cols, .vk-fm__row { grid-template-columns: minmax(0, 1fr) 8ch; } .vk-fm__c-ext { display: none; } }
+
+.vk-fm__status { min-height: calc(var(--vk-fs-xs) * 1.6); padding: 0 var(--vk-space-2); font: var(--vk-fs-xs)/1.6 var(--vk-font-mono); color: var(--vk-text-muted); }
+.vk-fm__status[data-kind="run"] { color: var(--vk-activity); }
+.vk-fm__status[data-kind="ok"] { color: var(--vk-ok); }
+.vk-fm__status[data-kind="error"] { color: var(--vk-crit); }
+
+/* F-key bar: rendered from the registry; each key's icon is a MINI (progress lives there) */
+.vk-fm__fkeys { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 112px), 1fr)); gap: var(--vk-space-1); }
+.vk-fm__fkey { display: flex; align-items: center; gap: var(--vk-space-2); min-width: 0; min-height: max(var(--vk-control-h), var(--vk-target-min));
+  padding: 0 var(--vk-space-2); margin: 0; font: inherit; font-size: var(--vk-fs-sm); color: var(--vk-text); text-align: left;
+  background: var(--vk-surface-2); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); cursor: pointer; }
+.vk-fm__fkey:hover:not([aria-disabled="true"]) { background: var(--vk-hover-bg); border-color: var(--vk-text-muted); }
+.vk-fm__fkey:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
+.vk-fm__fkey[aria-disabled="true"] { color: var(--vk-text-faint); cursor: default; }
+.vk-fm__fkey > .vk-mini { --_s: calc(var(--vk-icon-size) + 8px); width: var(--_s); height: var(--_s); pointer-events: none; }
+.vk-fm__fkey > .vk-mini:not([data-state]):not([aria-pressed="true"])::before { opacity: 0; }
+.vk-fm__fkey[aria-disabled="true"] > .vk-mini { color: var(--vk-text-faint); }
+.vk-fm__kcap { font: var(--vk-fs-xs)/1 var(--vk-font-mono); color: var(--vk-accent); font-weight: var(--vk-fw-strong); }
+.vk-fm__fkey[aria-disabled="true"] .vk-fm__kcap { color: var(--vk-text-faint); }
+.vk-fm__klabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (forced-colors: active) {
+  .vk-fm__pane[data-active] { border-color: Highlight; }
+  .vk-fm__row[data-cursor] { forced-color-adjust: none; outline: 2px solid Highlight; }
+}

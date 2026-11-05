@@ -1,0 +1,49 @@
+/* VRG UI Kit — components/button.css
+   .vk-btn (outline, the default) · data-variant="primary|ghost|danger|quiet" · .vk-btn--icon (square)
+   aria-pressed="true" = toggled on (ice) · .vk-btn-group = segmented control.
+   Depends on: tokens, base. */
+.vk-btn { --_h: var(--vk-control-h);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--vk-space-2);
+  min-height: max(var(--_h), var(--vk-target-min)); min-width: max(var(--_h), var(--vk-target-min));
+  padding: 0 var(--vk-space-4); margin: 0;
+  font: inherit; font-size: var(--vk-fs-md); font-weight: var(--vk-fw-regular); line-height: 1; white-space: nowrap;
+  color: var(--vk-text); background: transparent;
+  border: var(--vk-border-w) solid var(--vk-border-control); border-radius: var(--vk-radius);
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--vk-dur-1) var(--vk-ease), border-color var(--vk-dur-1) var(--vk-ease), color var(--vk-dur-1) var(--vk-ease); }
+.vk-btn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--vk-hover-bg); border-color: var(--vk-text-muted); }
+.vk-btn:active:not(:disabled):not([aria-disabled="true"]) { background: var(--vk-press-bg); }
+.vk-btn:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
+.vk-btn:disabled, .vk-btn[aria-disabled="true"] { color: var(--vk-text-faint); border-color: var(--vk-line-strong); cursor: default; }
+.vk-btn[aria-pressed="true"], .vk-btn.is-on {
+  color: var(--vk-accent); border-color: var(--vk-accent); background: var(--vk-accent-soft); box-shadow: var(--vk-glow); }
+
+.vk-btn[data-variant="primary"] { color: var(--vk-text-on-accent); background: var(--vk-accent); border-color: var(--vk-accent); font-weight: var(--vk-fw-strong); }
+.vk-btn[data-variant="primary"]:hover:not(:disabled) { background: var(--vk-accent-hover); border-color: var(--vk-accent-hover); }
+.vk-btn[data-variant="primary"]:is(:disabled, [aria-disabled="true"]) { color: var(--vk-text-faint); background: transparent; border-color: var(--vk-line-strong); }
+.vk-btn[data-variant="primary"][aria-disabled="true"]:hover { background: var(--vk-hover-bg); border-color: var(--vk-line-strong); }
+.vk-btn[data-variant="ghost"] { border-color: transparent; }
+.vk-btn[data-variant="ghost"]:hover:not(:disabled) { border-color: transparent; }
+.vk-btn[data-variant="quiet"] { border-color: transparent; color: var(--vk-text-muted); }
+.vk-btn[data-variant="quiet"]:hover:not(:disabled) { color: var(--vk-text); border-color: transparent; }
+.vk-btn[data-variant="danger"] { color: var(--vk-crit); border-color: var(--vk-crit); }
+.vk-btn[data-variant="danger"]:hover:not(:disabled) { background: var(--vk-crit-soft); border-color: var(--vk-crit); }
+
+.vk-btn--icon { padding: 0; width: max(var(--_h), var(--vk-target-min)); }
+.vk-btn--sm { --_h: calc(var(--vk-control-h) - 6px); font-size: var(--vk-fs-sm); padding: 0 var(--vk-space-3); }
+.vk-btn--sm.vk-btn--icon { padding: 0; }
+.vk-btn--block { width: 100%; }
+.vk-btn > .vk-kbd { margin-left: var(--vk-space-2); }
+
+/* segmented control: buttons share borders; one may be aria-pressed / aria-checked */
+.vk-btn-group { display: inline-flex; isolation: isolate; }
+.vk-btn-group > .vk-btn { border-radius: 0; }
+.vk-btn-group > .vk-btn + .vk-btn { margin-left: calc(-1 * var(--vk-border-w)); }
+.vk-btn-group > .vk-btn:first-child { border-radius: var(--vk-radius) 0 0 var(--vk-radius); }
+.vk-btn-group > .vk-btn:last-child { border-radius: 0 var(--vk-radius) var(--vk-radius) 0; }
+.vk-btn-group > .vk-btn:is(:hover, :focus-visible, [aria-pressed="true"], [aria-checked="true"]) { z-index: 1; }
+.vk-btn-group > .vk-btn[aria-checked="true"] { color: var(--vk-accent); border-color: var(--vk-accent); background: var(--vk-accent-soft); }
+
+@media (forced-colors: active) {
+  .vk-btn[aria-pressed="true"], .vk-btn-group > .vk-btn[aria-checked="true"] { outline: 2px solid Highlight; }
+}

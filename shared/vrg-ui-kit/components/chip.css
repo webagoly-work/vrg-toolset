@@ -1,0 +1,62 @@
+/* VRG UI Kit — components/chip.css — chips.
+   <div class="vk-chips" role="toolbar" aria-label="…">            one tab stop, arrows rove (chip.js)
+     <button class="vk-chip" aria-pressed="true" style="--vk-chip-c: var(--vk-wire-power)">     filter chip
+       <span class="vk-chip__sw"></span> Erősáram <span class="vk-chip__count">12</span></button>
+     <button class="vk-chip vk-chip--removable">VRG-2611-03 <span class="vk-chip__x">…</span></button>  Delete removes
+     <button class="vk-chip vk-chip--add">+ Címke</button>          opens .vk-chip__input in place
+   </div>
+   Pill radius follows --vk-radius (square in Mélyvíz). Pressed = ice frame + tick (shape, not colour alone). --vk-chip-c colours the swatch (a short wire).
+   Depends on: tokens, base. */
+.vk-chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-2); min-width: 0; }
+.vk-chip { --vk-chip-c: var(--vk-text-muted); --_h: calc(var(--vk-control-h) - 4px);
+  display: inline-flex; align-items: center; gap: var(--vk-space-2); flex: none; max-width: 100%;
+  min-height: max(var(--_h), var(--vk-target-min)); padding: 0 var(--vk-space-3); margin: 0;
+  font: inherit; font-size: var(--vk-fs-sm); line-height: 1; white-space: nowrap; color: var(--vk-text);
+  background: transparent; border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: calc(var(--vk-radius) * 333);
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--vk-dur-1) var(--vk-ease), border-color var(--vk-dur-1) var(--vk-ease), color var(--vk-dur-1) var(--vk-ease); }
+.vk-chip:hover { background: var(--vk-hover-bg); border-color: var(--vk-text-muted); }
+.vk-chip:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
+.vk-chip__label { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* swatch: a short metro wire stub with a terminal square */
+.vk-chip__sw { flex: none; position: relative; width: 14px; height: 2px; border-radius: 1px; background: var(--vk-chip-c); }
+.vk-chip__sw::after { content: ""; position: absolute; right: -2px; top: -2px; width: 6px; height: 6px; background: var(--vk-chip-c); border-radius: 1px; }
+.vk-chip__count { flex: none; padding: 2px var(--vk-space-2); margin-right: calc(-1 * var(--vk-space-1));
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); font-variant-numeric: tabular-nums; color: var(--vk-text-muted);
+  border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius-pill); }
+.vk-chip__tick { display: none; width: calc(var(--vk-icon-size) * .8125); height: calc(var(--vk-icon-size) * .8125); margin-left: calc(-1 * var(--vk-space-1)); }
+
+/* filter chip: on */
+.vk-chip[aria-pressed="true"] { color: var(--vk-text); background: var(--vk-accent-soft); border-color: var(--vk-accent); }
+.vk-chip[aria-pressed="true"] .vk-chip__tick { display: inline-block; color: var(--vk-accent); }
+.vk-chip[aria-pressed="true"] .vk-chip__count { color: var(--vk-text); border-color: var(--vk-accent-line); }
+.vk-chip[aria-pressed="false"] .vk-chip__sw { opacity: .45; }
+.vk-chip[aria-pressed="false"] { color: var(--vk-text-muted); }
+
+/* removable chip: the × is a mouse/touch target; keyboard uses Delete / Backspace */
+.vk-chip--removable { padding-right: var(--vk-space-1); background: var(--vk-surface-2); }
+.vk-chip__x { flex: none; display: inline-grid; place-items: center; width: calc(var(--vk-icon-size) + 4px); height: calc(var(--vk-icon-size) + 4px);
+  border-radius: 50%; color: var(--vk-text-muted); }
+.vk-chip__x > .vk-icon { width: calc(var(--vk-icon-size) * .75); height: calc(var(--vk-icon-size) * .75); }
+.vk-chip__x:hover { color: var(--vk-crit); background: var(--vk-crit-soft); }
+[data-vk-density="touch"] .vk-chip__x { width: 28px; height: 28px; }
+
+/* count chip: a static readout (not a button) */
+.vk-chip--count { cursor: default; background: var(--vk-bg-sunken); border-style: dashed; }
+.vk-chip--count:hover { background: var(--vk-bg-sunken); border-color: var(--vk-line-strong); }
+.vk-chip--count .vk-chip__count { color: var(--vk-text); border-color: var(--vk-line-strong); }
+
+/* add chip and its inline input */
+.vk-chip--add { color: var(--vk-text-muted); border-style: dashed; }
+.vk-chip--add:hover { color: var(--vk-text); }
+.vk-chip__input { --_h: calc(var(--vk-control-h) - 4px); flex: 0 1 12em; min-width: 6em; height: max(var(--_h), var(--vk-target-min));
+  padding: 0 var(--vk-space-3); font: inherit; font-size: var(--vk-fs-sm); color: var(--vk-text); background: var(--vk-bg-sunken);
+  border: var(--vk-border-w) solid var(--vk-accent); border-radius: calc(var(--vk-radius) * 333); }
+.vk-chip__input:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: var(--vk-focus-offset); }
+.vk-chip__input[aria-invalid="true"] { border-color: var(--vk-crit); }
+
+.vk-chip:disabled, .vk-chip[aria-disabled="true"] { color: var(--vk-text-faint); border-color: var(--vk-line); cursor: default; background: transparent; }
+
+@media (forced-colors: active) {
+  .vk-chip[aria-pressed="true"] { outline: 2px solid Highlight; }
+}

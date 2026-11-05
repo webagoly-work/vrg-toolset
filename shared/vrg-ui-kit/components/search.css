@@ -1,0 +1,50 @@
+/* VRG UI Kit — components/search.css — search field + grouped results (ARIA combobox + listbox).
+   search.js builds: .vk-search > .vk-field__box.vk-search__box (mini · input · clear) + .vk-search__pop (glass)
+   > [role=listbox] > [role=group] (.vk-search__ghead with count) > [role=option].vk-search__opt.
+   Hits are <mark class="vk-search__hit">. The active option has [data-active] (aria-activedescendant).
+   Depends on: tokens, base, field (the frame), mini. */
+.vk-search { position: relative; min-width: 0; width: 100%; }
+.vk-search__box { padding-left: var(--vk-space-1); }
+.vk-search__mini.vk-mini { --_s: calc(var(--vk-control-h) - 4px); flex: none; margin: 0; }
+.vk-search__mini.vk-mini:hover { background: transparent; }
+.vk-search__input { min-width: 0; }
+.vk-search__input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.vk-search__clear { flex: none; display: inline-grid; place-items: center; margin: 0 calc(-1 * var(--vk-space-2)) 0 0; padding: 0;
+  width: max(calc(var(--vk-control-h) - 4px), var(--vk-target-min)); height: max(calc(var(--vk-control-h) - 4px), var(--vk-target-min));
+  color: var(--vk-text-muted); background: transparent; border: 0; border-radius: var(--vk-radius-sm); cursor: pointer; }
+.vk-search__clear:hover { color: var(--vk-text); background: var(--vk-hover-bg); }
+.vk-search__clear:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: -2px; }
+.vk-search__clear[hidden] { display: none; }
+
+.vk-search__pop { position: absolute; z-index: var(--vk-z-popover); left: 0; right: 0; top: calc(100% + 4px);
+  display: flex; flex-direction: column; max-height: min(380px, 62vh); min-width: 0;
+  border-radius: var(--vk-radius); box-shadow: var(--vk-shadow-overlay); overflow: hidden; }
+.vk-search__pop[hidden] { display: none; }
+.vk-search__list { overflow: auto; overscroll-behavior: contain; padding: var(--vk-space-2) 0; scrollbar-width: thin; }
+.vk-search__group + .vk-search__group { margin-top: var(--vk-space-2); padding-top: var(--vk-space-2); border-top: var(--vk-border-w) solid var(--vk-line); }
+.vk-search__ghead { display: flex; align-items: center; gap: var(--vk-space-2); padding: var(--vk-space-1) var(--vk-space-4);
+  font: var(--vk-fs-2xs)/1.4 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text-muted); }
+.vk-search__gcount { margin-left: auto; min-width: 2.2em; padding: 0 var(--vk-space-2); text-align: center;
+  border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-pill); color: var(--vk-text); font-variant-numeric: tabular-nums; }
+.vk-search__opt { display: flex; align-items: center; gap: var(--vk-space-3); min-height: max(var(--vk-row-h), var(--vk-target-min));
+  padding: var(--vk-space-1) var(--vk-space-4); cursor: pointer; color: var(--vk-text); border-left: 2px solid transparent; min-width: 0; }
+.vk-search__opt > .vk-icon { color: var(--vk-text-muted); }
+.vk-search__opt:hover { background: var(--vk-hover-bg); }
+.vk-search__opt[data-active] { background: var(--vk-select-bg); border-left-color: var(--vk-accent); }
+.vk-search__opt[data-active] > .vk-icon { color: var(--vk-accent); }
+.vk-search__olabel { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vk-search__ohint { color: var(--vk-text-muted); font-size: var(--vk-fs-xs); margin-left: var(--vk-space-2); }
+.vk-search__meta { flex: none; font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: .04em; color: var(--vk-text-muted); white-space: nowrap; }
+.vk-search__hit { background: transparent; color: var(--vk-accent); font-weight: var(--vk-fw-strong);
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.vk-search__empty { display: flex; align-items: center; gap: var(--vk-space-3); padding: var(--vk-space-4); color: var(--vk-text-muted); font-size: var(--vk-fs-sm); }
+.vk-search__empty[hidden] { display: none; }
+.vk-search__foot { display: flex; flex-wrap: wrap; gap: var(--vk-space-4); padding: var(--vk-space-2) var(--vk-space-4);
+  border-top: var(--vk-border-w) solid var(--vk-line); }
+.vk-search__foot kbd { font: inherit; color: var(--vk-text); }
+[data-vk-density="touch"] .vk-search__foot { display: none; }
+
+@media (forced-colors: active) {
+  .vk-search__opt[data-active] { outline: 2px solid Highlight; outline-offset: -2px; }
+  .vk-search__hit { color: Highlight; }
+}

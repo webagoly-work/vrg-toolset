@@ -1,0 +1,415 @@
+<section class="g-sec g07" id="f07" data-vk-hop aria-labelledby="f07-h">
+  <header class="g-sec__head">
+    <span class="g-sec__num">07</span>
+    <h2 id="f07-h" class="vk-title">Döntések és bevitel</h2>
+    <p class="g-sec__lead">Űrlapmezők, döntéskártyák betűs válaszokkal, helyben átnevezés, csoportosított keresés ékezet nélkül is, címkék, csúszkák és kapcsolók — mind billentyűzetről, mind a három sűrűségben.</p>
+  </header>
+
+  <style>
+    .g07 .g07-panel { padding: var(--vk-pad-panel); background: var(--vk-surface-2); border: var(--vk-border-w) solid var(--vk-line-strong); }
+    .g07 .g07-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-3); margin: 0 0 var(--vk-space-4); padding-bottom: var(--vk-space-3); border-bottom: var(--vk-border-w) solid var(--vk-line); }
+    .g07 .g07-bar .vk-title { font-size: var(--vk-fs-xl); margin: 0; }
+    .g07 .g07-bar .vk-label:last-of-type { margin-left: auto; }
+    .g07 .g07-cols { display: grid; gap: var(--vk-space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; }
+    .g07 .g07-files { list-style: none; margin: 0; padding: var(--vk-space-1) 0; border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius); background: var(--vk-surface-1); max-width: 560px; }
+    .g07 .g07-file { display: flex; align-items: center; gap: var(--vk-space-3); min-height: max(var(--vk-row-h), var(--vk-target-min)); padding: 0 var(--vk-space-4); border-left: 2px solid transparent; cursor: default; }
+    .g07 .g07-file:hover { background: var(--vk-hover-bg); }
+    .g07 .g07-file[aria-selected="true"] { background: var(--vk-select-bg); border-left-color: var(--vk-accent); }
+    .g07 .g07-file:focus-visible { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: -2px; }
+    .g07 .g07-file > .vk-icon { color: var(--vk-text-muted); }
+    .g07 .g07-file__name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .g07 .g07-file__meta { font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); white-space: nowrap; }
+    .g07 .g07-out { font: var(--vk-fs-xs)/1.4 var(--vk-font-mono); color: var(--vk-text-muted); margin: var(--vk-space-3) 0 0; min-height: 1.4em; overflow-wrap: anywhere; }
+    .g07 .g07-out b { color: var(--vk-text); font-weight: var(--vk-fw-regular); }
+    .g07 .g07-vert { display: flex; flex-wrap: wrap; gap: var(--vk-space-6); align-items: flex-start; }
+    .g07 .g07-states { display: grid; gap: var(--vk-space-3) var(--vk-space-5); grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); align-items: center; }
+  </style>
+
+  <!-- ===================== field ===================== -->
+  <article class="g-demo" id="f07-field" data-vk-hop>
+    <h3 class="g-demo__title">Kábelméretezés — űrlapmezők <code>field</code></h3>
+    <p class="g-demo__note">Szöveg, szám mértékegységgel (mono: <code>A</code>, <code>mm²</code>, <code>m</code>), lenyíló, szövegdoboz, rádió, háromállapotú jelölőnégyzet, előtag-ikon, csak olvasható és letiltott mező, kötelező jel, hibaüzenet (<code>aria-invalid</code> + <code>aria-describedby</code>). A feszültségesés élőben számol; a hibák gépelés közben frissülnek. A fejléc MINI-je a méretezés állapota: hiba (bevágott gyűrű) vagy kész (pipa). Az értékek tájékoztató jellegűek.</p>
+    <form class="g07-panel vk-cut" id="f07-form" novalidate aria-labelledby="f07-form-h">
+      <div class="g07-bar">
+        <span class="vk-label">[VRG-2611-03]</span>
+        <h4 class="vk-title" id="f07-form-h">Kábelméretezés</h4>
+        <span class="vk-label">F2 // FÜRDŐSZOBA // ERŐSÁRAM</span>
+        <span id="f07-form-mini"></span>
+      </div>
+      <div class="vk-field-grid">
+        <div class="vk-field">
+          <label class="vk-field__label" for="f07-id">Áramkör <span class="vk-field__req" aria-hidden="true">*</span><span class="vk-field__tag">ID</span></label>
+          <div class="vk-field__box">
+            <svg class="vk-icon vk-field__icon" aria-hidden="true"><use href="#vk-i-tag"/></svg>
+            <input class="vk-field__input" id="f07-id" type="text" required value="VRG-2611-03/F2" autocomplete="off">
+          </div>
+        </div>
+        <div class="vk-field">
+          <label class="vk-field__label" for="f07-name">Megnevezés</label>
+          <div class="vk-field__box"><input class="vk-field__input" id="f07-name" type="text" value="Hűtő és törölközőszárító" aria-describedby="f07-name-h"></div>
+          <p class="vk-field__help" id="f07-name-h">Rövid, a kiviteli tervben is így jelenik meg.</p>
+        </div>
+        <div class="vk-field">
+          <label class="vk-field__label" for="f07-ib">Terhelőáram <span class="vk-field__req" aria-hidden="true">*</span><span class="vk-field__tag">I_B</span></label>
+          <div class="vk-field__box">
+            <svg class="vk-icon vk-field__icon" aria-hidden="true"><use href="#vk-i-bolt"/></svg>
+            <input class="vk-field__input" id="f07-ib" type="number" inputmode="decimal" required min="0" step="0.5" value="20">
+            <span class="vk-field__unit">A</span>
+          </div>
+        </div>
+        <div class="vk-field">
+          <label class="vk-field__label" for="f07-cs">Keresztmetszet <span class="vk-field__req" aria-hidden="true">*</span><span class="vk-field__tag">S</span></label>
+          <div class="vk-field__box">
+            <input class="vk-field__input" id="f07-cs" type="number" inputmode="decimal" required min="0" step="0.5" value="1.5" aria-describedby="f07-cs-h">
+            <span class="vk-field__unit">mm²</span>
+          </div>
+          <p class="vk-field__help" id="f07-cs-h">Szabványos: 1,5 · 2,5 · 4 · 6 · 10 · 16 · 25</p>
+        </div>
+        <div class="vk-field">
+          <label class="vk-field__label" for="f07-len">Hossz <span class="vk-field__req" aria-hidden="true">*</span><span class="vk-field__tag">L</span></label>
+          <div class="vk-field__box">
+            <svg class="vk-icon vk-field__icon" aria-hidden="true"><use href="#vk-i-ruler"/></svg>
+            <input class="vk-field__input" id="f07-len" type="number" inputmode="decimal" required min="0" step="1" placeholder="0">
+            <span class="vk-field__unit">m</span>
+          </div>
+        </div>
+        <div class="vk-field">
+          <label class="vk-field__label" for="f07-method">Fektetési mód</label>
+          <div class="vk-field__box">
+            <select class="vk-field__input" id="f07-method">
+              <option value="A1">A1 — hőszigetelt falban, csőben</option>
+              <option value="B1" selected>B1 — falon, védőcsőben</option>
+              <option value="B2">B2 — falon, többeres kábel csőben</option>
+              <option value="C">C — falon, közvetlenül</option>
+              <option value="E">E — kábeltálcán, szabadon</option>
+            </select>
+            <svg class="vk-icon vk-field__chev" aria-hidden="true"><use href="#vk-i-chevron-down"/></svg>
+          </div>
+        </div>
+        <div class="vk-field">
+          <label class="vk-field__label" for="f07-du">Feszültségesés <span class="vk-field__tag">ΔU</span></label>
+          <div class="vk-field__box">
+            <input class="vk-field__input vk-num" id="f07-du" type="text" readonly value="—" aria-describedby="f07-du-h">
+            <span class="vk-field__unit">%</span>
+          </div>
+          <p class="vk-field__help" id="f07-du-h">Számított, csak olvasható · megfelelő: ≤ 3 %</p>
+        </div>
+        <div class="vk-field">
+          <label class="vk-field__label" for="f07-temp">Környezeti hőmérséklet <span class="vk-field__tag">T</span></label>
+          <div class="vk-field__box">
+            <input class="vk-field__input" id="f07-temp" type="number" disabled value="30" aria-describedby="f07-temp-h">
+            <span class="vk-field__unit">°C</span>
+          </div>
+          <p class="vk-field__help" id="f07-temp-h">Letiltva: csak E-fektetésnél állítható.</p>
+        </div>
+        <fieldset class="vk-fieldset" id="f07-mat">
+          <legend>[02] Vezető anyaga</legend>
+          <div class="vk-field__choices vk-field__choices--row">
+            <label class="vk-field__choice"><input type="radio" name="f07-mat" value="cu" checked> Réz (Cu)</label>
+            <label class="vk-field__choice"><input type="radio" name="f07-mat" value="al"> Alumínium (Al)</label>
+            <label class="vk-field__choice"><input type="radio" name="f07-mat" value="x" disabled> Ötvözött — nem elérhető</label>
+          </div>
+        </fieldset>
+        <fieldset class="vk-fieldset">
+          <legend>[03] Védelmek</legend>
+          <label class="vk-field__choice"><input type="checkbox" id="f07-prot-all" data-vk="tristate" aria-controls="f07-p1 f07-p2 f07-p3"> Összes védelem</label>
+          <div class="vk-field__choices vk-field__choices--nested">
+            <label class="vk-field__choice"><input type="checkbox" id="f07-p1" checked> Kismegszakító (MCB) <span class="vk-field__choice-hint">— B16</span></label>
+            <label class="vk-field__choice"><input type="checkbox" id="f07-p2" checked> Áram-védőkapcsoló (RCD) <span class="vk-field__choice-hint">— 30 mA</span></label>
+            <label class="vk-field__choice"><input type="checkbox" id="f07-p3"> Túlfeszültség-védelem (SPD)</label>
+          </div>
+          <label class="vk-field__choice" style="margin-top:var(--vk-space-2)"><input type="checkbox" checked disabled> Védőföld bekötve (rögzített)</label>
+        </fieldset>
+        <div class="vk-field vk-field--wide">
+          <label class="vk-field__label" for="f07-note">Megjegyzés</label>
+          <div class="vk-field__box vk-field__box--area"><textarea class="vk-field__input" id="f07-note" rows="3" placeholder="Pl. a hűtő külön dugaljról, a szárító fix bekötéssel…"></textarea></div>
+        </div>
+      </div>
+      <div class="vk-field-actions" style="margin-top:var(--vk-space-4)">
+        <button class="vk-btn" type="submit" data-variant="primary">Ellenőrzés</button>
+        <button class="vk-btn" type="reset">Visszaállítás</button>
+        <span class="g07-out" id="f07-form-out" role="status" style="margin:0"></span>
+      </div>
+    </form>
+
+    <p class="g-cap" style="margin-top:var(--vk-space-5)">Sorba rendezett elrendezés <code>.vk-field--inline</code> · érintő módban egymás alá kerül</p>
+    <div class="vk-stack" style="max-width:520px">
+      <div class="vk-field vk-field--inline">
+        <label class="vk-field__label" for="f07-u">Névleges feszültség</label>
+        <div class="vk-field__box"><input class="vk-field__input" id="f07-u" type="number" value="230"><span class="vk-field__unit">V</span></div>
+      </div>
+      <div class="vk-field vk-field--inline">
+        <label class="vk-field__label" for="f07-cos">Teljesítménytényező</label>
+        <div class="vk-field__box"><span class="vk-field__prefix">cos φ</span><input class="vk-field__input" id="f07-cos" type="number" value="0.95" step="0.01"></div>
+      </div>
+      <div class="vk-field vk-field--inline">
+        <label class="vk-field__label" for="f07-ro">Ősszeg (nettó)</label>
+        <div class="vk-field__box"><input class="vk-field__input vk-num" id="f07-ro" type="text" readonly value="148 200"><span class="vk-field__unit">Ft</span></div>
+      </div>
+      <div class="vk-field vk-field--inline">
+        <label class="vk-field__label" for="f07-err">Egyidejűség <span class="vk-field__req" aria-hidden="true">*</span></label>
+        <div class="vk-field__box"><input class="vk-field__input" id="f07-err" type="number" value="1.4" step="0.1"></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ===================== question ===================== -->
+  <article class="g-demo" id="f07-question" data-vk-hop>
+    <h3 class="g-demo__title">Döntéskártyák <code>question</code></h3>
+    <p class="g-demo__note">Billentyűk a kártyán: <kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> választ, <kbd>D</kbd> = „Más:” (saját szöveg), <kbd>↑</kbd><kbd>↓</kbd> mozgat, <kbd>Enter</kbd> rögzít és a következő nyitott kérdésre lép — friss kártyán az Enter az ajánlott (A) választ veszi. A megválaszolt kártya egy sorrá zárul („Módosítás”). Fent a haladás MINI (2/3) és a másolás MINI: „1A 2C 3B” egy sorban.</p>
+    <div id="f07-q" class="vk-cut" style="max-width:720px"></div>
+    <p class="g07-out" id="f07-q-out" role="status"></p>
+    <button class="vk-btn vk-btn--sm" type="button" id="f07-q-reset" style="margin-top:var(--vk-space-3)">Újrakezdés</button>
+  </article>
+
+  <!-- ===================== rename ===================== -->
+  <article class="g-demo" id="f07-rename" data-vk-hop>
+    <h3 class="g-demo__title">Helyben átnevezés <code>rename</code></h3>
+    <p class="g-demo__note">Lépj a listára, <kbd>↑</kbd><kbd>↓</kbd> választ, <kbd>F2</kbd> vagy dupla kattintás: a név helyben szerkeszthető, a kiterjesztés nélkül kijelölve. <kbd>Enter</kbd> ment, <kbd>Esc</kbd> elvet, kattintás máshova ment. Próbáld: <code>Űrlap-sablon.docx</code> → „Már van ilyen nevű elem”, vagy egy <code>/</code> jel.</p>
+    <ul class="g07-files" id="f07-files" role="listbox" aria-label="Fájlok — VRG-2611-03"></ul>
+    <p class="g07-out" id="f07-files-out" role="status"></p>
+  </article>
+
+  <!-- ===================== search ===================== -->
+  <article class="g-demo" id="f07-search" data-vk-hop>
+    <h3 class="g-demo__title">Keresés csoportokkal <code>search</code></h3>
+    <p class="g-demo__note">Ékezet nélkül is talál (<code>VK.fold</code>): írd be, hogy <code>otodik</code> → „Ötödik”, vagy <code>furdo</code>. Csoportok: Akciók (a regiszterből), Fájlok (a fenti lista, élőben), Csomópontok — darabszámmal, kiemelt találattal. <kbd>↓</kbd><kbd>↑</kbd> mozgat, <kbd>Enter</kbd> megnyit, <kbd>Esc</kbd> bezár, újra <kbd>Esc</kbd> töröl. Üres mezőben a legutóbbi keresések jönnek. A nagyító MINI forog, amíg a (szimulált) forrás válaszol.</p>
+    <div style="max-width:560px"><div id="f07-s"></div></div>
+    <p class="g07-out" id="f07-s-out" role="status"></p>
+  </article>
+
+  <!-- ===================== chip ===================== -->
+  <article class="g-demo" id="f07-chip" data-vk-hop>
+    <h3 class="g-demo__title">Címkék és szűrők <code>chip</code></h3>
+    <p class="g-demo__note">Egy tabulátor-megálló csoportonként, <kbd>←</kbd><kbd>→</kbd> mozgat. Szűrő: <kbd>Szóköz</kbd> kapcsol (<code>aria-pressed</code>, pipa + jégkeret). Eltávolítható: <kbd>Delete</kbd> / <kbd>⌫</kbd> törli, a fókusz a következőre lép. „+ Címke”: <kbd>Enter</kbd> mezőt nyit, <kbd>Enter</kbd> hozzáad, <kbd>Esc</kbd> mégse. A szűrő-MINI a bekapcsolt rétegek száma; kattintás = mind.</p>
+    <div class="g-row" style="align-items:flex-start;flex-wrap:nowrap">
+      <span id="f07-chip-mini"></span>
+      <div id="f07-layers" class="vk-grow"></div>
+    </div>
+    <p class="g07-out" id="f07-layers-out" role="status"></p>
+    <p class="g-cap">Eltávolítható címkék + hozzáadás</p>
+    <div id="f07-tags"></div>
+    <p class="g-cap">Darabszám-címkék (csak kijelzés) · letiltott</p>
+    <div id="f07-counts"></div>
+  </article>
+
+  <!-- ===================== slider ===================== -->
+  <article class="g-demo" id="f07-slider" data-vk-hop>
+    <h3 class="g-demo__title">Csúszkák <code>slider</code></h3>
+    <p class="g-demo__note">A fogantyún: <kbd>←</kbd><kbd>→</kbd> (<kbd>↑</kbd><kbd>↓</kbd>) lépés, <kbd>PgUp</kbd>/<kbd>PgDn</kbd> nagy lépés, <kbd>Home</kbd>/<kbd>End</kbd> szélső érték. A sávon bárhol megfogható. A terhelés jelölései a szabványos kismegszakító-értékek. A MINI-k gyűrűje az érték helye a tartományban.</p>
+    <div class="g07-cols">
+      <div class="vk-stack" style="gap:var(--vk-space-6)">
+        <div id="f07-load"></div>
+        <div id="f07-len-r"></div>
+        <div id="f07-dis"></div>
+      </div>
+      <div class="g07-vert">
+        <div id="f07-v1"></div>
+        <div id="f07-v2"></div>
+        <div class="vk-stack">
+          <span class="vk-label">MINI</span>
+          <div class="vk-mini-row" id="f07-sl-minis"></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ===================== toggle ===================== -->
+  <article class="g-demo" id="f07-toggle" data-vk-hop>
+    <h3 class="g-demo__title">Kapcsolók <code>toggle</code></h3>
+    <p class="g-demo__note"><code>role="switch"</code>, <kbd>Szóköz</kbd>/<kbd>Enter</kbd> kapcsol. Az „Automatikus mentés” változtatása időbe telik: a gomb foglalt (forgó ív a kapcsolón, meleg = a rendszer dolgozik), közben nem kattintható. A „Felhő-szinkron” hibát ad vissza: visszaáll és jelzi. Jobbra ugyanezek MINI-ként — ugyanaz az állapot.</p>
+    <div class="g07-cols">
+      <ul class="vk-toggle-list" id="f07-settings" aria-label="Beállítások"></ul>
+      <div class="vk-stack">
+        <span class="vk-label">MINI — ugyanazok a beállítások</span>
+        <div class="vk-mini-row" id="f07-tg-minis"></div>
+      </div>
+    </div>
+    <p class="g-cap" style="margin-top:var(--vk-space-5)">Állapotok és méretek</p>
+    <div class="g07-states" id="f07-tg-states"></div>
+  </article>
+</section>
+
+<script data-g-init>
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- field: cable sizing ---------- */
+  (function () {
+    var form = $('f07-form');
+    var IZ = { 1.5: 17.5, 2.5: 24, 4: 32, 6: 41, 10: 57, 16: 76, 25: 101 };     // Cu, B1 (tájékoztató)
+    var K = { A1: .84, B1: 1, B2: .95, C: 1.12, E: 1.2 };
+    var fmt = function (v, d) { return v.toFixed(d).replace('.', ','); };
+    var tri = VK.field.mountAll(form)[0];
+    var formMini = VK.mini.create({ icon: 'cable', label: 'Kábelméretezés', size: 'sm' });
+    $('f07-form-mini').replaceWith(formMini);
+    function check() {
+      var ib = VK.field.number($('f07-ib')), cs = VK.field.number($('f07-cs')), len = VK.field.number($('f07-len'));
+      var al = form.querySelector('input[name="f07-mat"]:checked').value === 'al';
+      var errs = 0, iz = NaN;
+      if (!$('f07-id').value.trim()) { VK.field.setError($('f07-id'), 'Kötelező mező.'); errs++; } else VK.field.setError($('f07-id'), null);
+      if (isNaN(ib)) { VK.field.setError($('f07-ib'), 'Kötelező mező: add meg a terhelőáramot.'); errs++; }
+      else if (ib <= 0) { VK.field.setError($('f07-ib'), 'Nullánál nagyobb érték kell.'); errs++; }
+      else VK.field.setError($('f07-ib'), null);
+      if (isNaN(cs)) { VK.field.setError($('f07-cs'), 'Kötelező mező.'); errs++; }
+      else if (!IZ[cs]) { VK.field.setError($('f07-cs'), 'Nem szabványos keresztmetszet: ' + fmt(cs, 1) + ' mm².'); errs++; }
+      else {
+        iz = IZ[cs] * (K[$('f07-method').value] || 1) * (al ? .78 : 1);
+        if (!isNaN(ib) && ib > iz) { VK.field.setError($('f07-cs'), 'Kevés: ' + fmt(cs, 1) + ' mm² → Iz ≈ ' + fmt(iz, 1) + ' A, de I_B = ' + fmt(ib, 1) + ' A.'); errs++; }
+        else VK.field.setError($('f07-cs'), null);
+      }
+      if (isNaN(len)) { VK.field.setError($('f07-len'), 'Kötelező mező: a kábel hossza méterben.'); errs++; } else VK.field.setError($('f07-len'), null);
+      var du = $('f07-du');
+      if (!isNaN(ib) && cs > 0 && !isNaN(len)) {
+        var d = 2 * len * ib * (al ? .0287 : .0175) / cs / 230 * 100;
+        du.value = fmt(d, 2);
+        if (d > 3) { VK.field.setError(du, 'Túl nagy feszültségesés: ' + fmt(d, 2) + ' % > 3 %.'); errs++; } else VK.field.setError(du, null);
+      } else { du.value = '—'; VK.field.setError(du, null); }
+      VK.mini.set(formMini, { state: errs ? 'error' : 'done', progress: errs ? .7 : 1 });
+      formMini.dataset.label = errs ? 'Kábelméretezés: ' + errs + ' hiba' : 'Kábelméretezés: megfelelő'; VK.mini.set(formMini, {});
+      formMini.title = formMini.dataset.label;
+      return errs;
+    }
+    form.addEventListener('input', check);
+    form.addEventListener('change', check);
+    form.addEventListener('submit', function (e) {
+      e.preventDefault(); var n = check();
+      $('f07-form-out').textContent = n ? n + ' hiba — az első hibás mezőre ugrottam.' : 'Rendben: a kábel megfelel (VRG-2611-03/F2).';
+      if (n) { var bad = form.querySelector('[aria-invalid="true"]:not([readonly])') || form.querySelector('[aria-invalid="true"]'); if (bad) bad.focus(); }
+    });
+    form.addEventListener('reset', function () { setTimeout(function () { if (tri) tri.update(); check(); $('f07-form-out').textContent = 'Visszaállítva.'; }, 0); });
+    formMini.addEventListener('click', function () { form.requestSubmit(); });
+    check();
+    VK.field.setError($('f07-err'), 'Az egyidejűségi tényező legfeljebb 1 lehet.');
+  })();
+
+  /* ---------- question ---------- */
+  (function () {
+    var QS = [
+      { id: 'protect', title: 'Melyik védelmi eszköz legyen a fürdőszobában?', context: 'VRG-2611-03 · F2 áramkör: hűtő és törölközőszárító, 2,5 mm², 16 A.',
+        options: ['30 mA RCBO áramkörönként', '30 mA RCD a fürdőszobai csoportra', 'Csak kismegszakító, RCD később'], answer: { key: 'A' } },
+      { id: 'route', title: 'Merre vezessük a hűtő leágazását?', context: 'A konyhai dugaljkör már 80 %-on terhelt.',
+        options: ['Külön áramkör, 2,5 mm², falon belül', 'Közös a konyhai dugaljkörrel', 'Külön áramkör, 4 mm² tartalékkal'] },
+      { id: 'panel', title: 'Hová kerüljön az alelosztó?', context: 'Az ötödik emeleti felszálló mellett 40 cm szabad hely van.',
+        options: ['Előszoba, a bejárati ajtó mellé', 'Kamra, szellőzött fülkébe', 'Garázs, külön leágazással'] }
+    ];
+    var out = $('f07-q-out');
+    var q = VK.question.mount($('f07-q'), { questions: QS, title: 'Döntések',
+      onAnswer: function (a) { out.textContent = 'Rögzítve: ' + a.line + ' — ' + a.label + (a.text ? ': ' + a.text : ''); } });
+    $('f07-q').addEventListener('vk:copy', function (e) { out.textContent = (e.detail.ok ? 'Vágólapra másolva: ' : 'Másolás nem sikerült: ') + e.detail.text; });
+    $('f07-q-reset').addEventListener('click', function () { q.set(QS.map(function (x, i) { var c = Object.assign({}, x); if (i) delete c.answer; return c; })); out.textContent = ''; q.focus(); });
+    VK.actions.register({ id: 'question.copyAll', label: 'Összes válasz másolása', hint: 'A döntéskártyák válaszai egy sorban (1A 2C 3B)',
+      group: 'Döntések', icon: 'copy', at: ['palette'], when: function () { return !!q.line(); }, run: function () { q.copy(); } });
+  })();
+
+  /* ---------- rename ---------- */
+  var f07Files = [
+    { name: 'Kötőelem-összesítő.xlsx', icon: 'table', meta: '24 kB' },
+    { name: 'Fürdőszoba-áramkör.dwg', icon: 'floorplan', meta: '1,2 MB' },
+    { name: 'Hűtő-leágazás_v2.pdf', icon: 'file', meta: '310 kB' },
+    { name: 'Ötödik emelet — kiosztás.dwg', icon: 'floorplan', meta: '2,4 MB' },
+    { name: 'Ősszeg-kalkuláció.xlsx', icon: 'table', meta: '18 kB' },
+    { name: 'Űrlap-sablon.docx', icon: 'file-code', meta: '41 kB' },
+    { name: 'README', icon: 'file', meta: '2 kB' }
+  ];
+  (function () {
+    var ul = $('f07-files'), out = $('f07-files-out'), lastItem = null;
+    f07Files.forEach(function (f, i) {
+      var li = VK.el('li.g07-file', { role: 'option', 'aria-selected': i === 0 ? 'true' : 'false', tabindex: i === 0 ? '0' : '-1', 'aria-keyshortcuts': 'F2' },
+        [VK.icon(f.icon), VK.el('span.g07-file__name', { text: f.name }), VK.el('span.g07-file__meta', { 'aria-hidden': 'true', text: f.meta })]);
+      li._f = f; ul.appendChild(li);
+    });
+    VK.focus.roving(ul, { items: '[role="option"]', onMove: function (it) { ul.querySelectorAll('[role="option"]').forEach(function (n) { n.setAttribute('aria-selected', n === it ? 'true' : 'false'); }); lastItem = it; } });
+    ul.addEventListener('click', function (e) { var it = e.target.closest('[role="option"]'); if (it && !e.target.closest('input')) { ul.querySelectorAll('[role="option"]').forEach(function (n) { n.setAttribute('aria-selected', n === it ? 'true' : 'false'); n.tabIndex = n === it ? 0 : -1; }); lastItem = it; } });
+    var rn = VK.rename.attach(ul, { item: '[role="option"]', label: '.g07-file__name',
+      names: function () { return f07Files.map(function (f) { return f.name; }); },
+      onCommit: function (item, name, old) { item._f.name = name; out.textContent = 'Átnevezve: „' + old + '” → „' + name + '”'; },
+      onCancel: function () { out.textContent = 'Átnevezés elvetve.'; } });
+    VK.actions.register({ id: 'item.rename', label: 'Átnevezés', hint: 'A kijelölt fájl átnevezése helyben (F2)', group: 'Szerkesztés', icon: 'rename', at: ['palette'],
+      run: function () { var it = lastItem || ul.querySelector('[aria-selected="true"]'); if (it) { it.focus(); rn.start(it); } } });
+  })();
+
+  /* ---------- search ---------- */
+  (function () {
+    var NODES = [
+      { label: 'Ötödik emeleti elosztó', meta: 'EL-5', icon: 'cabinet' }, { label: 'Fürdőszoba RCD 30 mA', meta: 'F2-Q1', icon: 'switch' },
+      { label: 'Hűtő dugalj', meta: 'F2-X3', icon: 'socket' }, { label: 'Erősáramú gerinc', meta: 'G-01', icon: 'metro' },
+      { label: 'Őrszem mozgásérzékelő', meta: 'S-14', icon: 'sensor' }, { label: 'Kötődoboz K-12', meta: 'K-12', icon: 'junction' },
+      { label: 'Ü-01 üzemi alelosztó', meta: 'Ü-01', icon: 'cabinet' }, { label: 'Törölközőszárító fix bekötés', meta: 'F2-X4', icon: 'plug' }
+    ];
+    var out = $('f07-s-out');
+    VK.search.mount($('f07-s'), {
+      label: 'Keresés a VRG-2611-03 munkában', placeholder: 'Akció, fájl, csomópont… (pl. otodik)', recent: ['otodik', 'rcd', 'kötődoboz'],
+      provider: function (q) {
+        var acts = VK.actions.search(q, 'palette').slice(0, 5).map(function (r) { return { id: r.action.id, label: r.action.label, icon: r.action.icon || 'command', meta: r.action.keys.length ? VK.actions.keyLabel(r.action.keys[0]) : '', action: r.action }; });
+        acts = acts.map(function (a) { var m = VK.search.match(q, a.label); a.ranges = m ? m.ranges : []; return a; });
+        var files = VK.search.filter(f07Files.map(function (f) { return { id: f.name, label: f.name, icon: f.icon, meta: f.meta }; }), q);
+        var nodes = VK.search.filter(NODES.map(function (n) { return { id: n.meta, label: n.label, icon: n.icon, meta: n.meta }; }), q);
+        var groups = [{ id: 'actions', label: 'Akciók', icon: 'command', items: acts }, { id: 'files', label: 'Fájlok', icon: 'file', items: files }, { id: 'nodes', label: 'Csomópontok', icon: 'node', items: nodes }];
+        return new Promise(function (res) { setTimeout(function () { res(groups); }, 140); });
+      },
+      onPick: function (item, group, q) {
+        if (item.action) { VK.actions.run(item.action.id); out.innerHTML = ''; VK.append(out, ['Akció futtatva: ', VK.el('b', { text: item.label })]); }
+        else { out.innerHTML = ''; VK.append(out, [group.label + ' → ', VK.el('b', { text: item.label }), ' (keresés: „' + q + '”)']); }
+      }
+    });
+  })();
+
+  /* ---------- chip ---------- */
+  (function () {
+    var out = $('f07-layers-out');
+    var L = [['power', 'Erősáram', 42, '--vk-wire-power'], ['light', 'Világítás', 18, '--vk-wire-light'], ['data', 'Adat', 12, '--vk-wire-data'], ['control', 'Vezérlés', 7, '--vk-wire-control'],
+      ['earth', 'Védőföld', 31, '--vk-wire-earth'], ['bus', 'Busz', 4, '--vk-wire-bus'], ['signal', 'Jel', 9, '--vk-wire-signal'], ['other', 'Egyéb', 2, '--vk-wire-other']];
+    var g = VK.chip.mount($('f07-layers'), { label: 'Vezeték-rétegek szűrése',
+      chips: L.map(function (l, i) { return { id: l[0], label: l[1], count: l[2], kind: 'filter', pressed: i !== 5 && i !== 7, color: l[3] }; }),
+      onChange: function (c, on, ids) { out.textContent = c.label + (on ? ' látszik' : ' rejtve') + ' · aktív: ' + ids.length + ' / 8'; } });
+    $('f07-chip-mini').replaceWith(g.mini({ label: 'Rétegszűrő' }));
+    VK.chip.mount($('f07-tags'), { label: 'Munka címkéi',
+      chips: [{ label: 'VRG-2611-03', kind: 'remove' }, { label: 'Fürdőszoba', kind: 'remove' }, { label: 'Ellenőrzésre vár', kind: 'remove', count: 3 }, { label: 'Ősszeg kész', kind: 'remove' }],
+      add: { label: 'Címke', placeholder: 'Új címke…', validate: function (n) { return n.length > 24 ? 'Legfeljebb 24 karakter.' : null; } } });
+    VK.chip.mount($('f07-counts'), { label: 'Összesítők',
+      chips: [{ label: 'Összes vezeték', kind: 'count', count: 125 }, { label: 'Hibás', kind: 'count', count: 3, color: '--vk-crit' }, { label: 'Űrlapból', kind: 'count', count: 18 },
+        { label: 'Archív (zárolt)', kind: 'filter', pressed: false, disabled: true }] });
+  })();
+
+  /* ---------- slider ---------- */
+  (function () {
+    var load = VK.slider.mount($('f07-load'), { label: 'Terhelés', unit: 'A', min: 0, max: 63, step: 1, bigStep: 10, value: 16,
+      ticks: [0, 6, 10, 13, 16, 20, 25, 32, 40, 50, 63], labels: [0, 10, 16, 25, 32, 40, 50, 63] });
+    var len = VK.slider.mount($('f07-len-r'), { label: 'Hossz', unit: 'm', min: 0, max: 100, step: 1, values: [12, 48], ticks: 5, labels: 25 });
+    VK.slider.mount($('f07-dis'), { label: 'Hűtési tartalék (letiltva)', unit: '%', min: 0, max: 50, value: 20, ticks: 10, labels: 10, disabled: true });
+    VK.slider.mount($('f07-v1'), { label: 'Fényerő', unit: '%', min: 0, max: 100, step: 5, value: 70, vertical: true, ticks: 25, labels: 50 });
+    VK.slider.mount($('f07-v2'), { label: 'Feszültség', unit: 'V', min: 200, max: 250, step: 0.5, bigStep: 5, value: 230, vertical: true, ticks: 10, labels: 25 });
+    var row = $('f07-sl-minis');
+    row.appendChild(load.mini({ caption: 'TERHELÉS', icon: 'bolt' }));
+    row.appendChild(len.mini({ caption: 'HOSSZ', icon: 'ruler' }));
+  })();
+
+  /* ---------- toggle ---------- */
+  (function () {
+    var ul = $('f07-settings'), minis = $('f07-tg-minis');
+    function later(ms, ok) { return new Promise(function (res, rej) { setTimeout(function () { ok ? res(true) : rej(new Error('nincs kapcsolat')); }, ms); }); }
+    var S = [
+      { label: 'Rács illesztés', hint: 'Csomópontok a 10 mm-es rácsra', checked: true, icon: 'grid', cap: 'RÁCS' },
+      { label: 'Automatikus mentés', hint: 'Változtatáskor 1–2 mp, amíg alkalmazza', checked: false, icon: 'save', cap: 'MENTÉS', onChange: function () { return later(1600, true); } },
+      { label: 'Felhő-szinkron', hint: 'Hibát ad vissza (bemutató)', checked: false, icon: 'sync', cap: 'SZINKRON', onChange: function () { return later(900, false); } },
+      { label: 'Rétegnevek a vásznon', checked: true, icon: 'layers', cap: 'RÉTEG' },
+      { label: 'Erősáramú figyelmeztetések', hint: 'Kötelező — nem kapcsolható ki', checked: true, disabled: true, icon: 'warning', cap: 'FIGY.' }
+    ];
+    S.forEach(function (s) {
+      var t = VK.toggle.create({ label: s.label, hint: s.hint, checked: s.checked, disabled: s.disabled, onChange: s.onChange, block: true, labelSide: 'left' });
+      ul.appendChild(VK.el('li', null, t));
+      minis.appendChild(VK.toggle.mini(t, { icon: s.icon, caption: s.cap }));
+    });
+    var st = $('f07-tg-states');
+    [
+      { label: 'Kicsi (sm)', size: 'sm', checked: true }, { label: 'Közepes (md)', checked: false }, { label: 'Nagy (lg)', size: 'lg', checked: true },
+      { label: 'Felirat balra', labelSide: 'left', checked: true }, { label: 'Letiltva, be', disabled: true, checked: true }, { label: 'Letiltva, ki', disabled: true },
+      { label: 'Foglalt (alkalmaz)', checked: true, busy: true }, { label: 'Hiba után', checked: false, error: 'nem sikerült' }
+    ].forEach(function (o) {
+      var t = VK.toggle.create(o);
+      if (o.busy) { VK.toggle.set(t, { busy: 'alkalmazás…' }); t.addEventListener('click', function (e) { e.stopImmediatePropagation(); }, true); }
+      if (o.error) VK.toggle.set(t, { error: o.error });
+      st.appendChild(t);
+    });
+  })();
+</script>

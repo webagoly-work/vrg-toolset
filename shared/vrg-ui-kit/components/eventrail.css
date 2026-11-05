@@ -1,0 +1,57 @@
+/* VRG UI Kit — components/eventrail.css — film-HUD event rail (behaviour and drawing: eventrail.js).
+   The SVG reads every colour from these classes (tokens), so themes switch without a redraw.
+   Pips and label terminals are warm (activity); selection is ice; flagged ids carry a warning glyph.
+   Local knob: --vk-eventrail-ground (label backing; set it to the panel the rail sits on). Depends on: tokens, base. */
+.vk-eventrail { --vk-eventrail-ground: var(--vk-surface-1); display: flex; flex-direction: column; gap: var(--vk-space-3); min-width: 0; color: var(--vk-text); font-size: var(--vk-fs-sm); }
+.vk-eventrail__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--vk-space-3); }
+.vk-eventrail__title { color: var(--vk-text); }
+.vk-eventrail__scroll { overflow-x: auto; overflow-y: hidden; padding: 4px; margin: -4px; }
+.vk-eventrail__stage { position: relative; min-width: 100%; }
+.vk-eventrail__svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.vk-eventrail__list { position: absolute; inset: 0; }
+
+/* drawing */
+.vk-eventrail__frame { fill: var(--vk-surface-2); stroke: var(--vk-line-strong); stroke-width: 1; }
+.vk-eventrail__bracket { fill: none; stroke: var(--vk-text-muted); stroke-width: 1; }
+.vk-eventrail__rail { stroke: var(--vk-line-strong); stroke-width: 1; }
+.vk-eventrail__cap { fill: var(--vk-text-muted); }
+.vk-eventrail__tick { stroke: var(--vk-line-strong); stroke-width: 1; }
+.vk-eventrail__tick--major { stroke: var(--vk-text-muted); }
+.vk-eventrail__num { fill: var(--vk-text-muted); font: var(--vk-fs-2xs) var(--vk-font-mono); letter-spacing: .04em; }
+.vk-eventrail__num--year { fill: var(--vk-text); }
+.vk-eventrail__now { fill: var(--vk-accent); }
+.vk-eventrail__now-line { stroke: var(--vk-accent); stroke-width: 1; stroke-dasharray: 2 2; }
+.vk-eventrail__now-t { fill: var(--vk-accent); font: var(--vk-fs-2xs) var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); }
+.vk-eventrail__leader { fill: none; stroke: var(--vk-line-strong); stroke-width: 1; transition: stroke var(--vk-dur-1) var(--vk-ease); }
+.vk-eventrail__leader[data-active] { stroke: var(--vk-text-muted); }
+.vk-eventrail__leader[data-sel] { stroke: var(--vk-accent); stroke-width: 1.5; }
+.vk-eventrail__pip { fill: var(--vk-activity); stroke: var(--vk-surface-2); stroke-width: 2; }
+.vk-eventrail__pip[data-active] { stroke: var(--vk-text); stroke-width: 1.5; }
+.vk-eventrail__ring { fill: none; stroke: var(--vk-accent); stroke-width: 1.5; visibility: hidden; }
+.vk-eventrail__ring[data-sel] { visibility: visible; }
+
+/* labels (role=option) */
+.vk-eventrail__ev { position: absolute; display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  max-width: min(240px, 70vw); min-height: var(--vk-target-min); padding: 3px var(--vk-space-3);
+  background: var(--vk-eventrail-ground); border-left: 2px solid var(--vk-activity); color: var(--vk-text);
+  white-space: nowrap; cursor: pointer; text-align: left; line-height: 1.2; }
+.vk-eventrail__ev[data-side="l"] { border-left: 0; border-right: 2px solid var(--vk-activity); align-items: flex-end; text-align: right; }
+.vk-eventrail__ev:hover { background: linear-gradient(var(--vk-hover-bg), var(--vk-hover-bg)), var(--vk-eventrail-ground); }
+.vk-eventrail__ev[aria-selected="true"] { border-color: var(--vk-accent); background: linear-gradient(var(--vk-select-bg), var(--vk-select-bg)), var(--vk-eventrail-ground); }
+.vk-eventrail__ev[aria-selected="true"] .vk-eventrail__meta { color: var(--vk-accent); }
+.vk-eventrail__ev:focus-visible { z-index: 2; outline-offset: 1px; }
+.vk-eventrail__meta { display: flex; align-items: center; gap: 5px; font: var(--vk-fs-2xs)/1.2 var(--vk-font-mono); color: var(--vk-text-muted); }
+.vk-eventrail__cat, .vk-eventrail__rcat { text-transform: uppercase; letter-spacing: var(--vk-tracking-label); font-family: var(--vk-font-mono); }
+.vk-eventrail__txt { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: var(--vk-fs-sm); }
+.vk-eventrail__id { display: inline-flex; align-items: center; gap: 2px; padding: 0 3px; font: var(--vk-fs-2xs)/1.3 var(--vk-font-mono);
+  color: var(--vk-text-muted); border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-sm); }
+.vk-eventrail__id .vk-icon { width: 10px; height: 10px; stroke-width: 2; }
+:is(.vk-eventrail__ev[data-flag] .vk-eventrail__id, .vk-eventrail__id[data-flag]) { color: var(--vk-warn); border-color: var(--vk-warn); background: var(--vk-warn-soft); }
+
+.vk-eventrail__readout { display: flex; flex-wrap: wrap; align-items: center; gap: var(--vk-space-2) var(--vk-space-3); min-height: calc(var(--vk-fs-sm) * 1.6); }
+.vk-eventrail__rcat { font-size: var(--vk-fs-xs); color: var(--vk-text-muted); }
+
+@media (forced-colors: active) {
+  .vk-eventrail__svg { forced-color-adjust: none; }
+  .vk-eventrail__ev[aria-selected="true"] { outline: 2px solid Highlight; }
+}

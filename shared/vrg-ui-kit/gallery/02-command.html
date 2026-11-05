@@ -1,0 +1,448 @@
+<section class="g-sec" id="f02" data-vk-hop aria-labelledby="f02-h">
+  <style>
+    /* fragment-only demo chrome (f02-*): tokens only */
+    .f02-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--vk-space-3);
+      padding: var(--vk-space-1) var(--vk-space-2); background: var(--vk-surface-2); border: var(--vk-border-w) solid var(--vk-line-strong);
+      border-bottom: 0; border-radius: var(--vk-radius) var(--vk-radius) 0 0; }
+    .f02-bar .vk-label { padding-right: var(--vk-space-2); }
+    .f02-frame { border: var(--vk-border-w) solid var(--vk-line-strong); background: var(--vk-bg-sunken); }
+    .f02-host { height: 340px; }
+    .f02-canvas { position: relative; overflow: auto; padding: var(--vk-space-5); display: grid; align-content: start; gap: var(--vk-space-4);
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 168px), 1fr)); outline-offset: -2px; }
+    .f02-canvas[data-grid] { background-image: radial-gradient(circle, var(--vk-line-strong) 1px, transparent 1.4px);
+      background-size: 16px 16px; background-position: 8px 8px; }
+    .f02-canvas[data-drawing] { cursor: crosshair; }
+    .f02-card { --f02-c: var(--vk-wire-other); position: relative; display: grid; gap: var(--vk-space-1); min-width: 0;
+      padding: var(--vk-space-3) var(--vk-space-4) var(--vk-space-3) var(--vk-space-4); background: var(--vk-surface-1);
+      border: var(--vk-border-w) solid var(--vk-line-strong); border-left: 3px solid var(--f02-c); border-radius: var(--vk-radius-sm);
+      cursor: default; user-select: none; outline-offset: 2px; }
+    .f02-card:hover { background: var(--vk-surface-2); }
+    .f02-card[aria-selected="true"] { border-color: var(--vk-accent); border-left-color: var(--f02-c); background: var(--vk-select-bg); }
+    .f02-card[data-off] { opacity: .38; border-style: dashed; }
+    .f02-card__t { font-size: var(--vk-fs-md); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .f02-card__m { font-size: var(--vk-fs-xs); color: var(--vk-text-muted); }
+    .f02-card__term { position: absolute; right: -4px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; background: var(--vk-bg); border: 1.5px solid var(--f02-c); }
+    .f02-card__node { position: absolute; left: -6px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%; background: var(--f02-c); }
+    .f02-card input { width: 100%; min-width: 0; font: inherit; font-size: var(--vk-fs-md); color: var(--vk-text); background: var(--vk-bg-sunken);
+      border: var(--vk-border-w) solid var(--vk-accent); border-radius: var(--vk-radius-sm); padding: 1px 4px; }
+    .f02-draw { position: absolute; right: var(--vk-space-3); bottom: var(--vk-space-3); color: var(--vk-activity); }
+    .f02-read { display: flex; flex-wrap: wrap; gap: var(--vk-space-1) var(--vk-space-4); margin: var(--vk-space-3) 0 0; }
+    .f02-read b { color: var(--vk-text); font-weight: var(--vk-fw-regular); }
+    .f02-read b[data-hot] { color: var(--vk-activity); }
+    .f02-rib { width: 100%; max-width: 100%; }
+    .f02-rib > .vk-toolbar { border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius) var(--vk-radius) 0 0; }
+    .f02-rib__body { padding: var(--vk-space-3) var(--vk-space-4); border: var(--vk-border-w) solid var(--vk-line); border-top: 0; color: var(--vk-text-muted); font-size: var(--vk-fs-sm); }
+    .f02-keys { display: grid; gap: var(--vk-space-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); margin-bottom: var(--vk-space-5); }
+    .f02-keys > div { display: grid; gap: var(--vk-space-2); justify-items: start; padding: var(--vk-space-3); border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); }
+    .f02-keys span { font-size: var(--vk-fs-xs); color: var(--vk-text-muted); }
+    .f02-sheet { height: 22rem; display: flex; flex-direction: column; border: var(--vk-border-w) solid var(--vk-line-strong); background: var(--vk-surface-1); }
+    .f02-menus { display: flex; flex-wrap: wrap; gap: var(--vk-space-5); align-items: flex-start; }
+    .f02-menus > figure { margin: 0; min-width: 0; max-width: 100%; }
+    .f02-menus .vk-menu--static { max-width: 100%; }
+    .f02-pals { display: grid; gap: var(--vk-space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+    .f02-pals > figure { margin: 0; min-width: 0; }
+    .f02-pals .vk-palette__box--inline { max-height: 21rem; }
+    [data-vk-density="touch"] .f02-host { height: 420px; }
+    #f02-menubar { flex: 1 1 12rem; min-width: 0; }
+    #f02-place { flex-wrap: wrap; max-width: 100%; }
+    .f02-card[aria-selected="true"] { background: linear-gradient(var(--vk-select-bg), var(--vk-select-bg)), var(--vk-surface-1); }
+    @media (max-width: 640px) {
+      .f02-pl-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      .f02-bar > .vk-label { display: none; }
+      .f02-canvas { padding: var(--vk-space-3); }
+    }
+  </style>
+  <header class="g-sec__head">
+    <span class="g-sec__num">02</span>
+    <h2 id="f02-h" class="vk-title">Parancsréteg</h2>
+    <p class="g-sec__lead">Egyetlen akció-regiszter, négy felület: parancspaletta (Ctrl+K), helyi és legördülő menük, áthelyezhető eszköztár, billentyű-jelölések és puskalap. Egy parancsot egyszer kell leírni — minden felület ugyanazt az állapotot, tiltást és folyamatot mutatja.</p>
+  </header>
+
+  <article class="g-demo" id="f02-stage">
+    <h3 class="g-demo__title">Egy regiszter, négy felület <code>palette · menu · toolbar · kbd</code></h3>
+    <p class="g-demo__note">Jelölj ki egy elemet a vásznon (nyilak vagy kattintás): a tiltott parancsok azonnal elérhetővé válnak mindenhol. Jobb klikk vagy <kbd>Shift</kbd>+<kbd>F10</kbd> = helyi menü, <kbd>Ctrl</kbd>+<kbd>K</kbd> = paletta, <kbd>?</kbd> = puskalap, <kbd>Alt</kbd> nyomva tartva = gyorsbillentyűk a gombokon. Az eszköztár helye a sor végi „HELY” minivel (vagy jobb klikk az eszköztáron) váltható: fent, lent, balra, jobbra, lebegő — és megmarad.</p>
+    <div class="f02-bar">
+      <div id="f02-menubar"></div>
+      <span class="vk-label">VRG-2611-03 // FÖLDSZINT // TERVEZŐ</span>
+    </div>
+    <div class="f02-frame">
+      <div class="f02-host" id="f02-host">
+        <div id="f02-tb"></div>
+        <div class="f02-canvas" id="f02-canvas" role="listbox" aria-label="Terv elemei — Shift+F10: helyi menü" data-vk-hop data-grid></div>
+      </div>
+    </div>
+    <p class="f02-read vk-label" id="f02-read" role="status" aria-live="polite"></p>
+  </article>
+
+  <article class="g-demo" id="f02-palette">
+    <h3 class="g-demo__title">Parancspaletta <code>palette</code></h3>
+    <p class="g-demo__note">Elmosódott üveg réteg, fuzzy keresés ékezet nélkül is („hutő” → Hűtő), csoportok, kiemelt találatok, üres keresésnél a legutóbbiak elöl. Kapcsolók BE/KI jelzéssel, futó akciók mini-gyűrűvel. Előtag: <kbd>&gt;</kbd> parancsok, <kbd>#</kbd> ugrás elemre vagy szakaszra. Ha a keresés csak tiltott parancsot talál: „Nem érhető el most” + az ok. Lent három élő, beágyazott példány.</p>
+    <div class="g-row">
+      <button class="vk-btn" type="button" id="f02-pal-open"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-command"/></svg> Paletta megnyitása</button>
+      <button class="vk-btn" type="button" id="f02-pal-jump"><svg class="vk-icon" aria-hidden="true"><use href="#vk-i-target"/></svg> Ugrás módban (#)</button>
+    </div>
+    <div class="f02-pals">
+      <figure><p class="g-cap">Üres keresés — legutóbbi + csoportok</p><div id="f02-pal-a"></div></figure>
+      <figure><p class="g-cap">„réteg” — találat-kiemelés, kapcsolók</p><div id="f02-pal-b"></div></figure>
+      <figure><p class="g-cap">„dxf” — csak tiltott találat: nem érhető el</p><div id="f02-pal-c"></div></figure>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f02-menu">
+    <h3 class="g-demo__title">Helyi és legördülő menü <code>menu</code></h3>
+    <p class="g-demo__note">Csoportok elválasztóval, ikonok, billentyű-jelölés, pipálható tételek (menuitemcheckbox), piros veszélyes tétel, tiltott tétel szürkén, az okkal. Almenü: <kbd>→</kbd> nyit, <kbd>←</kbd>/<kbd>Esc</kbd> zár; betű = ugrás. A felső menüsor (Fájl · Szerkesztés · Nézet · Megjelenés · Súgó) ugyanebből a regiszterből épül. Lent a két helyi menü statikus, élő képe.</p>
+    <div class="g-row">
+      <button class="vk-btn" type="button" id="f02-dd-file">Fájl <svg class="vk-icon" aria-hidden="true"><use href="#vk-i-chevron-down"/></svg></button>
+      <button class="vk-btn" type="button" id="f02-dd-item">Elem <svg class="vk-icon" aria-hidden="true"><use href="#vk-i-chevron-down"/></svg></button>
+    </div>
+    <div class="f02-menus">
+      <figure><p class="g-cap">menu:plan-item — kijelölt elemen</p><div id="f02-m-item"></div></figure>
+      <figure><p class="g-cap">menu:plan-canvas — üres vásznon</p><div id="f02-m-canvas"></div></figure>
+      <figure><p class="g-cap">menu:file — almenük</p><div id="f02-m-file"></div></figure>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f02-toolbar">
+    <h3 class="g-demo__title">Eszköztár <code>toolbar</code></h3>
+    <p class="g-demo__note">Feliratos mód (mini mérő + szöveg). Ha elfogy a hely, a hátsó elemek a „Továbbiak” menübe kerülnek (ResizeObserver). Egy tabulátor-megálló, nyilak mozgatnak. A fenti vászon eszköztárának helye itt is váltható — ugyanazok a regiszter-akciók.</p>
+    <div class="g-row">
+      <label class="vk-label" for="f02-rib-w">Szélesség</label>
+      <input type="range" id="f02-rib-w" min="30" max="100" value="100" step="5" aria-valuetext="100%">
+      <span class="vk-num" id="f02-rib-wv">100%</span>
+      <span class="vk-label" id="f02-place-l">Vászon eszköztár</span>
+      <div class="vk-btn-group" role="radiogroup" aria-labelledby="f02-place-l" id="f02-place"></div>
+    </div>
+    <div class="f02-rib vk-toolbar-host" id="f02-rib">
+      <div id="f02-rib-tb"></div>
+      <div class="f02-rib__body">Szalag: <code>toolbar:ribbon</code> · feliratos mód · a Kötőelem és a Kábel húzása kijelölést kér.</div>
+    </div>
+  </article>
+
+  <article class="g-demo" id="f02-kbd">
+    <h3 class="g-demo__title">Billentyű-jelölések és puskalap <code>kbd</code></h3>
+    <p class="g-demo__note">Billentyűsapkák a regiszter kulcsaiból (macOS-en ⌘ ⇧ ⌥). <kbd>Alt</kbd> nyomva tartva minden látható gombra kiírja a gyorsbillentyűt; érintőképernyőn a „JELÖL” mini kapcsolja be. <kbd>?</kbd> nyitja a puskalapot — minden kulcs, csoportosítva, kereshetően. Lent ugyanaz beágyazva.</p>
+    <div class="f02-keys" id="f02-keys"></div>
+    <div class="vk-mini-row" id="f02-kminis"></div>
+    <p class="g-cap" style="margin-top:var(--vk-space-5)">Puskalap — beágyazva</p>
+    <div class="f02-sheet" id="f02-sheet"></div>
+  </article>
+</section>
+
+<script data-g-init>
+  var $ = function (id) { return document.getElementById(id); };
+  var store = { get: function (k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* file:// */ } } };
+
+  // ---------------------------------------------------------------- sample plan (state lives here; actions read it)
+  var LAYER = { light: ['Világítás', '--vk-wire-light', 'VIL'], power: ['Erősáram', '--vk-wire-power', 'ERŐ'], data: ['Adat', '--vk-wire-data', 'ADAT'], other: ['Elosztó', '--vk-wire-other', 'ELO'] };
+  var ICON = { circuit: 'bolt', panel: 'cabinet', cable: 'cable' };
+  var items = [
+    { id: 'K-01', kind: 'circuit', layer: 'light', title: 'Világítás — földszint', meta: '3×1,5 mm² · B10' },
+    { id: 'K-02', kind: 'circuit', layer: 'power', title: 'Erősáram — konyha', meta: '3×2,5 mm² · B16' },
+    { id: 'K-03', kind: 'circuit', layer: 'power', title: 'Hűtő — külön kör', meta: '3×2,5 mm² · B16' },
+    { id: 'E-1', kind: 'panel', layer: 'other', title: 'Főelosztó', meta: '24 modul · 3F · 40 A' },
+    { id: 'KB-14', kind: 'cable', layer: 'power', title: 'NYM-J 5×6 betáp', meta: '18,4 m · Kötőelem: 4' },
+    { id: 'D-07', kind: 'circuit', layer: 'data', title: 'Adat — Cat6 rack', meta: '22 m · 1 Gb/s' }
+  ];
+  var S = { sel: null, layers: { light: true, power: true, data: true }, grid: true, offline: false, drawing: false,
+    exp: { p: 0, state: 'idle' }, sync: 'idle', saved: 'idle', undo: [], redo: [], last: '—', n: 3 };
+  var canvas = $('f02-canvas');
+  function find(id) { return items.filter(function (x) { return x.id === id; })[0] || null; }
+  function selOf(c) { return find((c && c.item) || S.sel); }
+  function typing() { var a = document.activeElement; return VK.focus.isEditable(a) && !(a.closest && a.closest('.vk-palette__box')); }
+  function ping(progressOnly) { VK.fire(document, 'actions', { progress: !!progressOnly }); }
+
+  function cardEl(it) {
+    var n = VK.el('div.f02-card', { role: 'option', tabindex: '-1', 'aria-selected': String(S.sel === it.id), 'data-id': it.id,
+      style: '--f02-c: var(' + LAYER[it.layer][1] + ')', 'aria-label': it.id + ' ' + it.title + ', ' + it.meta });
+    n.appendChild(VK.el('span.f02-card__node', { 'aria-hidden': 'true' }));
+    n.appendChild(VK.el('span.vk-label', { 'aria-hidden': 'true' }, '[' + it.id + '] // ' + LAYER[it.layer][0].toUpperCase()));
+    n.appendChild(VK.el('span.f02-card__t', { 'aria-hidden': 'true' }, it.title));
+    n.appendChild(VK.el('span.f02-card__m.vk-num', { 'aria-hidden': 'true' }, it.meta));
+    n.appendChild(VK.el('span.f02-card__term', { 'aria-hidden': 'true' }));
+    if (S.layers[it.layer] === false) n.dataset.off = '';
+    return n;
+  }
+  var rov = null;
+  function draw() {
+    var fid = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.id;
+    canvas.textContent = '';
+    items.forEach(function (it) { canvas.appendChild(cardEl(it)); });
+    if (S.drawing) canvas.appendChild(VK.el('span.f02-draw.vk-label', { 'aria-hidden': 'true' }, 'KÁBELHÚZÁS // AKTÍV // ' + (S.sel || '—')));
+    if (S.grid) canvas.dataset.grid = ''; else canvas.removeAttribute('data-grid');
+    if (S.drawing) canvas.dataset.drawing = ''; else canvas.removeAttribute('data-drawing');
+    var cur = canvas.querySelector('[data-id="' + (S.sel || fid || '') + '"]') || canvas.querySelector('.f02-card');
+    canvas.querySelectorAll('.f02-card').forEach(function (c) { c.tabIndex = c === cur ? 0 : -1; });
+    if (fid && canvas.querySelector('[data-id="' + fid + '"]')) canvas.querySelector('[data-id="' + fid + '"]').focus();
+    if (rov) rov.update();
+    readout();
+  }
+  function select(id, focus) {
+    if (S.sel === id) return;
+    S.sel = id;
+    canvas.querySelectorAll('.f02-card').forEach(function (c) { c.setAttribute('aria-selected', String(c.dataset.id === id)); });
+    var c = id && canvas.querySelector('[data-id="' + id + '"]');
+    if (c && focus) { canvas.querySelectorAll('.f02-card').forEach(function (x) { x.tabIndex = x === c ? 0 : -1; }); c.focus(); }
+    if (S.drawing) draw(); else readout();
+    ping();
+  }
+  rov = VK.focus.roving(canvas, { items: '.f02-card', orientation: 'both', typeahead: false,
+    onMove: function (n) { if (document.activeElement === n) select(n.dataset.id); } });
+  canvas.addEventListener('click', function (e) {
+    var c = e.target.closest('.f02-card');
+    if (c) { if (e.target.closest('input')) return; select(c.dataset.id, true); } else select(null);
+  });
+  canvas.addEventListener('focusin', function (e) { var c = e.target.closest && e.target.closest('.f02-card'); if (c && !e.target.closest('input')) select(c.dataset.id); });
+
+  function readout() {
+    var r = $('f02-read'); r.textContent = '';
+    var lay = Object.keys(S.layers).filter(function (k) { return S.layers[k]; }).map(function (k) { return LAYER[k][2]; }).join(' ') || '—';
+    var tb = window.f02tb ? window.f02tb.placement() : 'top';
+    var PH = { top: 'FENT', bottom: 'LENT', left: 'BALRA', right: 'JOBBRA', floating: 'LEBEGŐ' };
+    [['KIJELÖLÉS', S.sel || '—'], ['RÉTEG', lay], ['RÁCS', S.grid ? 'BE' : 'KI'], ['HELY', PH[tb]],
+     ['EXPORT', S.exp.state === 'running' ? Math.round(S.exp.p * 100) + '%' : S.exp.state === 'done' ? 'KÉSZ' : '—', S.exp.state === 'running'],
+     ['UTOLSÓ', S.last]].forEach(function (p) {
+      r.appendChild(VK.el('span', null, [p[0] + ' // ', VK.el('b', { 'data-hot': p[2] ? '' : null }, p[1])]));
+    });
+  }
+
+  // ---------------------------------------------------------------- undo-able edits
+  function addItem(it, at) { items.splice(at == null ? items.length : at, 0, it); }
+  function removeItem(id) { var i = items.findIndex(function (x) { return x.id === id; }); if (i >= 0) return { item: items.splice(i, 1)[0], at: i }; return null; }
+  function doOp(op, rec) {
+    if (op.type === 'add') addItem(op.item, op.at); else removeItem(op.item.id);
+    if (rec !== false) { S.undo.push(op); S.redo = []; }
+  }
+  function invert(op) { return { type: op.type === 'add' ? 'del' : 'add', item: op.item, at: op.at }; }
+  function newId(prefix) { var n = 1; while (find(prefix + String(n).padStart(2, '0'))) n++; return prefix + String(n).padStart(2, '0'); }
+
+  function rename(it) {
+    var card = canvas.querySelector('[data-id="' + it.id + '"]'); if (!card) return;
+    var t = card.querySelector('.f02-card__t');
+    var inp = VK.el('input', { type: 'text', value: it.title, 'aria-label': 'Új név: ' + it.id });
+    t.replaceWith(inp); inp.focus(); inp.select();
+    var done = false;
+    function finish(ok) {
+      if (done) return; done = true;
+      if (ok && inp.value.trim()) it.title = inp.value.trim();
+      draw(); var c = canvas.querySelector('[data-id="' + it.id + '"]'); if (c) { c.tabIndex = 0; c.focus(); }
+    }
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); }
+      e.stopPropagation();
+    });
+    inp.addEventListener('blur', function () { finish(true); });
+  }
+
+  // ---------------------------------------------------------------- long-running sample actions
+  var expT = 0, syncT = 0;
+  function runExport() {
+    if (S.exp.state === 'running') return;
+    S.exp = { p: 0, state: 'running' }; ping();
+    clearInterval(expT);
+    expT = setInterval(function () {
+      S.exp.p = Math.min(1, S.exp.p + 0.06);
+      if (S.exp.p >= 1) {
+        clearInterval(expT); S.exp.state = 'done'; ping();
+        setTimeout(function () { if (S.exp.state === 'done') { S.exp = { p: 0, state: 'idle' }; ping(); } }, 2400);
+      } else ping(true);
+      readout();
+    }, 140);
+  }
+  function runSync() {
+    if (S.sync === 'running') return;
+    S.sync = 'running'; ping();
+    clearTimeout(syncT);
+    syncT = setTimeout(function () {
+      S.sync = S.offline ? 'error' : 'done'; ping();
+      syncT = setTimeout(function () { if (S.sync !== 'running') { S.sync = 'idle'; ping(); } }, 3200);
+    }, S.offline ? 1100 : 2000);
+  }
+
+  // ---------------------------------------------------------------- the registry (Hungarian sample actions)
+  var NOSEL = 'Nincs kijelölés';
+  VK.actions.registerAll([
+    // Fájl
+    { id: 'plan.new', label: 'Új terv', hint: 'Üres tervlap a VRG-2611-03 munkában', group: 'Fájl', icon: 'file', at: ['palette', 'menu:file'],
+      run: function () {} },
+    { id: 'plan.recent', label: 'Legutóbbi tervek', group: 'Fájl', icon: 'history', at: ['menu:file'],
+      many: function () { return [
+        { label: 'VRG-2611-03 · Földszint', icon: 'floorplan', checked: true, run: function () {} },
+        { label: 'VRG-2611-03 · Emelet', icon: 'floorplan', run: function () {} },
+        { label: 'VRG-2610-11 · Hűtőkamra', icon: 'floorplan', run: function () {} },
+        { label: 'VRG-2609-07 · Őrház (archív)', icon: 'lock', disabled: true, reason: 'Archív, csak olvasható', run: function () {} }]; } },
+    { id: 'plan.save', label: 'Mentés', hint: 'A terv mentése helyben', group: 'Fájl', icon: 'save', keys: ['mod+s'], at: ['palette', 'menu:file', 'toolbar:ribbon'],
+      state: function () { return S.saved; }, progress: function () { return S.saved === 'done' ? 1 : 0; },
+      run: function () { S.saved = 'done'; ping(); setTimeout(function () { S.saved = 'idle'; ping(); }, 1800); } },
+    // Létrehozás
+    { id: 'plan.circuit.new', label: 'Új áramkör', hint: 'Üres áramkör a főelosztó alá', group: 'Létrehozás', icon: 'plus', keys: ['n'], caption: 'ÚJ',
+      at: ['palette', 'toolbar:plan', 'toolbar:ribbon', 'menu:plan-canvas', 'menu:edit'],
+      run: function () { var it = { id: newId('K-'), kind: 'circuit', layer: 'power', title: 'Új áramkör', meta: '3×2,5 mm² · B16' };
+        doOp({ type: 'add', item: it }); draw(); select(it.id, true); } },
+    { id: 'plan.fastener.new', label: 'Kötőelem hozzáadása', hint: 'Kötőelem a kijelölt elemhez', group: 'Létrehozás', icon: 'junction', keys: ['j'],
+      at: ['palette', 'toolbar:ribbon', 'menu:plan-canvas', 'menu:plan-item'],
+      when: function (c) { return !!selOf(c); }, reason: NOSEL, run: function () {} },
+    { id: 'plan.cable.draw', label: 'Kábel húzása', hint: 'Kábel a kijelölt áramkörből vagy elosztóból', group: 'Létrehozás', icon: 'cable', keys: ['c'], caption: 'KÁBEL',
+      at: ['palette', 'toolbar:plan', 'toolbar:ribbon', 'menu:plan-item'],
+      when: function (c) { var s = selOf(c); return S.drawing || !!(s && (s.kind === 'circuit' || s.kind === 'panel')); },
+      reason: function (c) { return selOf(c) ? 'Csak áramkörből vagy elosztóból' : 'Jelölj ki egy áramkört'; },
+      checked: function () { return S.drawing; }, run: function () { S.drawing = !S.drawing; draw(); } },
+    // Nézet
+    { id: 'view.layers', label: 'Rétegek', hint: 'Rétegek ki- és bekapcsolása', group: 'Nézet', icon: 'layers', caption: 'RÉTEG',
+      at: ['toolbar:plan', 'toolbar:ribbon', 'menu:plan-canvas'], children: ['view.layer.light', 'view.layer.power', 'view.layer.data'] },
+    { id: 'view.layer.light', label: 'Világítás réteg', group: 'Nézet', icon: 'bulb', keys: ['shift+l'], caption: 'FÉNY', at: ['palette', 'toolbar:plan', 'menu:view'],
+      checked: function () { return S.layers.light; }, run: function () { S.layers.light = !S.layers.light; draw(); } },
+    { id: 'view.layer.power', label: 'Erősáram réteg', group: 'Nézet', icon: 'bolt', keys: ['shift+e'], at: ['palette', 'menu:view'],
+      checked: function () { return S.layers.power; }, run: function () { S.layers.power = !S.layers.power; draw(); } },
+    { id: 'view.layer.data', label: 'Adat réteg', group: 'Nézet', icon: 'link', keys: ['shift+d'], at: ['palette', 'menu:view'],
+      checked: function () { return S.layers.data; }, run: function () { S.layers.data = !S.layers.data; draw(); } },
+    { id: 'view.grid', label: 'Rács', hint: 'Pontrács a vásznon', group: 'Nézet', icon: 'grid', keys: ['g'], at: ['palette', 'toolbar:plan', 'menu:plan-canvas', 'menu:view'],
+      checked: function () { return S.grid; }, run: function () { S.grid = !S.grid; draw(); } },
+    { id: 'view.fit', label: 'Illesztés a nézetbe', group: 'Nézet', icon: 'fit', keys: ['f'], at: ['palette', 'menu:plan-canvas', 'menu:view'],
+      run: function () { canvas.scrollTo({ top: 0, left: 0 }); } },
+    // Kimenet
+    { id: 'plan.export', label: 'Exportálás', group: 'Kimenet', icon: 'upload', at: ['menu:file'],
+      children: ['plan.export.pdf', 'plan.export.dxf', 'plan.export.csv'] },
+    { id: 'plan.export.pdf', label: 'Export PDF', hint: 'A3-as tervlap, VRG-2611-03 · Földszint', group: 'Kimenet', icon: 'download', caption: 'PDF', keys: ['mod+shift+e'],
+      at: ['palette', 'toolbar:plan', 'toolbar:ribbon'],
+      state: function () { return S.exp.state; }, progress: function () { return S.exp.state === 'done' ? 1 : S.exp.p; }, run: runExport },
+    { id: 'plan.export.dxf', label: 'Export DXF', group: 'Kimenet', icon: 'file-code', at: ['palette'],
+      when: function () { return false; }, reason: 'Hamarosan — a DXF-író fejlesztés alatt', run: function () {} },
+    { id: 'plan.export.csv', label: 'Anyaglista (CSV)', hint: 'Kábel, kötőelem, védelem — tételesen', group: 'Kimenet', icon: 'table', at: ['palette'], run: function () {} },
+    { id: 'plan.sync', label: 'Szinkron', hint: 'Terv és anyaglista egyeztetése a Kapuval', group: 'Kimenet', icon: 'sync', caption: 'SYNC', keys: ['mod+shift+s'],
+      at: ['palette', 'toolbar:plan', 'toolbar:ribbon', 'menu:file', 'statusbar'],
+      state: function () { return S.sync; }, progress: function () { return S.sync === 'running' ? null : S.sync === 'idle' ? 0 : 1; }, run: runSync },
+    { id: 'plan.offline', label: 'Offline mód', hint: 'Bekapcsolva a Szinkron hibára fut', group: 'Kimenet', icon: 'wifi', at: ['palette', 'menu:file'],
+      checked: function () { return S.offline; }, run: function () { S.offline = !S.offline; } },
+    // Szerkesztés
+    { id: 'edit.undo', label: 'Visszavonás', group: 'Szerkesztés', icon: 'undo', keys: ['mod+z'], at: ['palette', 'toolbar:plan', 'menu:edit'],
+      when: function () { return S.undo.length > 0 && !typing(); }, reason: 'Nincs mit visszavonni',
+      run: function () { var op = S.undo.pop(); doOp(invert(op), false); S.redo.push(op); if (op.type === 'add' && S.sel === op.item.id) S.sel = null; draw(); } },
+    { id: 'edit.redo', label: 'Újra', group: 'Szerkesztés', icon: 'redo', keys: ['mod+y'], at: ['palette', 'toolbar:plan', 'menu:edit'],
+      when: function () { return S.redo.length > 0 && !typing(); }, reason: 'Nincs mit újra végrehajtani',
+      run: function () { var op = S.redo.pop(); doOp(op, false); S.undo.push(op); draw(); } },
+    { id: 'edit.paste', label: 'Beillesztés', group: 'Szerkesztés', icon: 'paste', keys: ['mod+v'], at: ['palette', 'menu:edit', 'menu:plan-canvas'],
+      when: function () { return false; }, reason: 'A vágólap üres', run: function () {} },
+    // Elem
+    { id: 'item.rename', label: 'Átnevezés', group: 'Elem', icon: 'rename', keys: ['f2'], at: ['palette', 'menu:plan-item', 'menu:edit'],
+      when: function (c) { return !!selOf(c); }, reason: NOSEL, run: function (c) { rename(selOf(c)); } },
+    { id: 'item.props', label: 'Tulajdonságok', hint: 'Keresztmetszet, védelem, hossz', group: 'Elem', icon: 'inspector', keys: ['i'],
+      at: ['palette', 'menu:plan-item', 'toolbar:ribbon'], when: function (c) { return !!selOf(c); }, reason: NOSEL, run: function () {} },
+    { id: 'item.duplicate', label: 'Duplikálás', group: 'Elem', icon: 'copy', keys: ['mod+d'], at: ['palette', 'menu:plan-item', 'menu:edit'],
+      when: function (c) { return !!selOf(c) && !typing(); }, reason: NOSEL,
+      run: function (c) { var s = selOf(c), it = { id: newId(s.id.replace(/\d+$/, '')), kind: s.kind, layer: s.layer, title: s.title + ' (másolat)', meta: s.meta };
+        doOp({ type: 'add', item: it, at: items.indexOf(s) + 1 }); draw(); select(it.id, true); } },
+    { id: 'item.delete', label: 'Törlés', hint: 'A kijelölt elem törlése (visszavonható)', group: 'Elem', icon: 'trash', keys: ['delete'], danger: true,
+      at: ['palette', 'toolbar:plan', 'toolbar:ribbon', 'menu:plan-item', 'menu:edit'],
+      when: function (c) { return !!selOf(c); }, reason: NOSEL,
+      run: function (c) { var s = selOf(c), at = items.indexOf(s); doOp({ type: 'del', item: s, at: at }); S.sel = null; draw();
+        var next = canvas.querySelectorAll('.f02-card')[Math.min(at, items.length - 1)]; if (next) { next.tabIndex = 0; next.focus(); } } },
+    { id: 'plan.deselect', label: 'Kijelölés megszüntetése', group: 'Elem', icon: 'close', keys: ['escape'], at: ['palette', 'menu:edit'],
+      when: function () { return !!S.sel; }, reason: NOSEL, run: function () { select(null); } },
+    // Súgó
+    { id: 'help.about', label: 'Névjegy', hint: 'VRG UI Kit v1 · Mérőpult', group: 'Súgó', icon: 'info', at: ['menu:help', 'palette'], run: function () {} }
+  ]);
+  VK.palette.attach({ at: ['toolbar:plan', 'menu:help'], group: 'Súgó' });
+  VK.kbd.attachHelp({ at: ['palette', 'menu:help'] });
+  VK.kbd.hints();
+  var hdr = $('g-palette-btn'); if (hdr) hdr.addEventListener('click', function () { VK.actions.run('palette.open'); });
+  VK.actions.subscribe(function (kind, a) {
+    if (kind === 'run' && a && a.id !== 'palette.open') { S.last = a.label; readout(); }
+  });
+
+  // '#' — jump to a plan element or a gallery section
+  VK.palette.addProvider('#', function (q) {
+    var out = items.map(function (it) {
+      return { id: it.id, label: it.id + ' · ' + it.title, hint: 'Elem a vásznon — ' + it.meta, icon: ICON[it.kind], group: 'Terv elemei',
+        run: function () { canvas.scrollIntoView({ block: 'center', behavior: VK.reducedMotion() ? 'auto' : 'smooth' }); select(it.id, true); } };
+    });
+    document.querySelectorAll('.g-sec, [id="f02"] .g-demo').forEach(function (s) {
+      var h = s.querySelector('h1, h2, h3'); if (!h) return;
+      var txt = (h.firstChild && h.firstChild.textContent || h.textContent).trim();
+      out.push({ id: s.id, label: txt, hint: s.classList.contains('g-demo') ? 'Bemutató · 02' : 'Szakasz', icon: 'arrow-right', group: 'Galéria',
+        run: function () { s.scrollIntoView({ behavior: VK.reducedMotion() ? 'auto' : 'smooth' }); s.tabIndex = -1; s.focus({ preventScroll: true }); } });
+    });
+    return q ? out.filter(function (x) { return VK.actions.score(q, x.label + ' ' + x.hint).score > 0; }) : out;
+  }, { label: 'UGRÁS', placeholder: 'Ugrás elemre vagy szakaszra…', icon: 'target' });
+
+  // ---------------------------------------------------------------- surfaces
+  draw();
+  var saved = store.get('vk-gallery-f02-tb') || {};
+  window.f02tb = VK.toolbar.mount($('f02-tb'), { id: 'plan', name: 'Vászon eszköztár', label: 'Tervező eszköztár', placement: saved.p || 'top', position: saved.xy || null,
+    placementAt: ['menu:plan-canvas', 'menu:view'],
+    onPlacement: function (p, xy) { store.set('vk-gallery-f02-tb', { p: p, xy: xy }); readout(); placeGroup(); } });
+  readout();
+  VK.menu.menubar($('f02-menubar'), [
+    { label: 'Fájl', surface: 'menu:file' }, { label: 'Szerkesztés', surface: 'menu:edit' }, { label: 'Nézet', surface: 'menu:view' },
+    { label: 'Megjelenés', surface: 'menu:gallery' }, { label: 'Súgó', surface: 'menu:help' }], { label: 'Tervező menü' });
+  VK.menu.bindContext(canvas, 'menu:plan-canvas', function (t) {
+    if (t.closest('input')) return false;
+    var c = t.closest('.f02-card');
+    if (c) { select(c.dataset.id, true); return { item: c.dataset.id, menu: 'menu:plan-item', menuLabel: c.dataset.id + ' — elem' }; }
+    return { menu: 'menu:plan-canvas', menuLabel: 'Vászon' };
+  });
+
+  // palette article
+  $('f02-pal-open').addEventListener('click', function () { VK.actions.run('palette.open'); });
+  $('f02-pal-jump').addEventListener('click', function () { VK.palette.open('#'); });
+  VK.palette.mount($('f02-pal-a'), { title: 'Paletta — üres keresés' });
+  VK.palette.mount($('f02-pal-b'), { title: 'Paletta — réteg', query: 'réteg' });
+  VK.palette.mount($('f02-pal-c'), { title: 'Paletta — DXF', query: 'dxf' });
+
+  // menu article: dropdowns + live static menus
+  VK.menu.button($('f02-dd-file'), 'menu:file');
+  VK.menu.button($('f02-dd-item'), 'menu:plan-item');
+  function statics() {
+    [['f02-m-item', 'menu:plan-item', { item: 'K-03' }, 'K-03 — elem'], ['f02-m-canvas', 'menu:plan-canvas', null, 'Vászon'], ['f02-m-file', 'menu:file', null, 'Fájl']].forEach(function (m) {
+      var box = $(m[0]); if (box.contains(document.activeElement)) return;
+      box.textContent = '';
+      VK.menu.open(m[1], null, VK.actions.ctx(m[2] || undefined), { inline: box, label: m[3] });
+    });
+  }
+  statics();
+  var st = 0;
+  function staticsLater(e) { if (e && e.detail && e.detail.progress) return; clearTimeout(st); st = setTimeout(statics, 60); }
+  document.addEventListener('vk:actions', staticsLater);
+  VK.actions.subscribe(function () { staticsLater(); });
+
+  // toolbar article
+  VK.toolbar.mount($('f02-rib-tb'), { id: 'ribbon', mode: 'label', placeable: false, label: 'Szalag' });
+  var rw = $('f02-rib-w');
+  rw.addEventListener('input', function () { $('f02-rib').style.width = rw.value + '%'; $('f02-rib-wv').textContent = rw.value + '%'; rw.setAttribute('aria-valuetext', rw.value + '%'); });
+  function placeGroup() {
+    var g = $('f02-place'); var had = g.contains(document.activeElement) ? document.activeElement.dataset.action : null;
+    g.textContent = '';
+    VK.actions.forSurface('menu:toolbar:plan').forEach(function (a) {
+      var on = VK.actions.checked(a);
+      var b = VK.el('button.vk-btn.vk-btn--sm', { type: 'button', role: 'radio', 'aria-checked': String(on), tabindex: on ? '0' : '-1', 'data-action': a.id, title: a.label },
+        [VK.icon(a.icon), VK.el('span.f02-pl-t', null, a.label.split(': ')[1])]);
+      b.addEventListener('click', function () { VK.actions.run(a.id); });
+      g.appendChild(b);
+      if (had === a.id) b.focus();
+    });
+  }
+  $('f02-place').addEventListener('keydown', function (e) {
+    if (e.shiftKey || !/^Arrow(Left|Right|Up|Down)$/.test(e.key)) return;
+    var l = Array.prototype.slice.call(this.querySelectorAll('[role="radio"]')), i = l.indexOf(document.activeElement); if (i < 0) return;
+    e.preventDefault(); var n = l[(i + (/Right|Down/.test(e.key) ? 1 : -1) + l.length) % l.length];
+    VK.actions.run(n.dataset.action); var t = this.querySelector('[data-action="' + n.dataset.action + '"]'); if (t) t.focus();
+  });
+  placeGroup();
+
+  // kbd article
+  [['mod+k', 'Parancspaletta'], ['mod+shift+e', 'Export PDF'], ['shift+f10', 'Helyi menü'], ['f2', 'Átnevezés'], ['delete', 'Törlés'],
+   ['?', 'Puskalap'], ['alt', 'Jelölések (nyomva)'], ['shift+arrows', 'Régióugrás']].forEach(function (k) {
+    $('f02-keys').appendChild(VK.el('div', null, [VK.kbd.chip(k[0]), VK.el('span', null, k[1])]));
+  });
+  ['palette.open', 'help.keys', 'help.hints'].forEach(function (id) {
+    var a = VK.actions.get(id), m = VK.mini.fromAction(a);
+    if (id === 'help.keys') m.appendChild(VK.el('span.vk-mini__cap', { 'aria-hidden': 'true' }, 'PUSKA'));
+    if (id === 'help.hints') m.appendChild(VK.el('span.vk-mini__cap', { 'aria-hidden': 'true' }, 'JELÖL'));
+    m.title = a.label + (a.keys.length ? ' (' + VK.kbd.label(a.keys[0]) + ')' : '');
+    $('f02-kminis').appendChild(m);
+  });
+  function kminis() { $('f02-kminis').querySelectorAll('[data-action]').forEach(function (m) { VK.mini.refresh(m, VK.actions.get(m.dataset.action)); }); }
+  document.addEventListener('vk:actions', kminis); VK.actions.subscribe(function () { setTimeout(kminis, 0); });
+  VK.kbd.renderSheet($('f02-sheet'));
+</script>

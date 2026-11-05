@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="dark" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG UI Kit v1</title>
+<meta name="description" content="VRG UI Kit v1 — minden komponens, minden állapot; téma- és sűrűségváltó, magyar feliratok.">
+<!--@CSS@-->
+</head>
+<body>
+<a class="g-skip vk-btn" href="#g-main">Ugrás a tartalomra</a>
+<header class="g-top" data-vk-hop>
+  <div class="g-top__brand">
+    <svg class="g-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M7 3h22v26H3V7z"/><path d="M9 11l7 11 7-11"/><circle cx="16" cy="22" r="1.6"/></svg>
+    <span class="vk-title">VRG UI Kit</span><span class="vk-label">v1 · Mérőpult</span>
+  </div>
+  <div class="g-top__ctrl">
+    <span class="vk-label" id="g-theme-l">Téma</span>
+    <div class="vk-btn-group" role="radiogroup" aria-labelledby="g-theme-l" id="g-theme">
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="true" data-v="dark">Éj</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="light">Papír</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="contrast">Kontraszt</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="melyviz">Mélyvíz</button>
+    </div>
+    <span class="vk-label" id="g-dens-l">Sűrűség</span>
+    <div class="vk-btn-group" role="radiogroup" aria-labelledby="g-dens-l" id="g-density">
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="true" data-v="comfortable">Kényelmes</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="compact">Tömör</button>
+      <button class="vk-btn vk-btn--sm" role="radio" aria-checked="false" data-v="touch">Érintés</button>
+    </div>
+    <button class="vk-btn vk-btn--sm" type="button" id="g-palette-btn" title="Parancspaletta">
+      <svg class="vk-icon" aria-hidden="true"><use href="#vk-i-command"/></svg> Parancsok <kbd class="g-kbd">Ctrl K</kbd>
+    </button>
+  </div>
+</header>
+<div class="g-body">
+  <nav class="g-nav" aria-label="Családok" data-vk-hop>
+    <ol id="g-toc"><!--@TOC@--></ol>
+    <p class="g-nav__hint vk-label">Shift + nyilak: ugrás a régiók között</p>
+  </nav>
+  <main id="g-main" class="g-main" tabindex="-1">
+    <section class="g-sec g-intro" id="f00" data-vk-hop aria-labelledby="f00-h">
+      <header class="g-sec__head">
+        <span class="g-sec__num">00</span>
+        <h1 id="f00-h" class="vk-title">Alapok</h1>
+        <p class="g-sec__lead">Tokenek, témák, ikonok, a MINI (ikon = gomb = folyamatjelző) és az akció-regiszter. Minden komponens ezekre épül.</p>
+      </header>
+      <!--@FOUNDATION@-->
+    </section>
+<!--@SECTIONS@-->
+  </main>
+</div>
+<!--@JS@-->
+<!--@INIT@-->
+</body>
+</html>

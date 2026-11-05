@@ -15,6 +15,10 @@
 //   node tools/melyviz-sync.js --check   exit 1 if any copy has drifted
 //   node tools/melyviz-sync.js --list    every target and its state
 //
+// It also regenerates the UI kit's Mélyvíz theme, shared/vrg-ui-kit/tokens/
+// theme-melyviz.css, through the kit's mapping (tokens/melyviz-map.js), so the
+// kit theme can never drift from this source either.
+//
 // Paths in TARGETS may sit outside the repo (the Workflow Kit's internal
 // pages); a missing file is reported, never created.
 // ---------------------------------------------------------------------------
@@ -65,6 +69,14 @@ function main() {
     if (crlf) block = block.replace(/\n/g, '\r\n');
     fs.writeFileSync(file, text.slice(0, a + BEGIN.length) + block + text.slice(b));
     console.log('synced   ' + rel);
+  }
+  // the UI kit's theme is generated, not copied: melyviz-map.js maps --mv-* onto --vk-* tokens
+  const kitMap = path.join(REPO, 'shared', 'vrg-ui-kit', 'tokens', 'melyviz-map.js');
+  if (fs.existsSync(kitMap)) {
+    const r = require(kitMap).sync(mode === 'write' ? 'write' : 'check');
+    const label = { ok: 'ok      ', drift: 'DRIFT   ', written: 'synced  ' }[r];
+    console.log(label + ' shared/vrg-ui-kit/tokens/theme-melyviz.css (generated)');
+    if (r === 'drift') bad++;
   }
   if (bad) { console.log(bad + ' target(s) need attention.'); process.exit(1); }
 }

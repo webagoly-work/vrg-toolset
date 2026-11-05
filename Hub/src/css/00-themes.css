@@ -80,30 +80,7 @@ html.mv.low-glow { --mv-glow: 0px; }
 }
 /* melyviz:end */
 
-/* The VRG themes, verbatim from Modder/vrg-buildtree.html. Mélyvíz (2026-10-27, docs/city/melyviz.md) is the default;
-   kpSetTheme toggles html.mv, which switches on the chrome in 20-melyviz.css. */
-:root{
-  --bg:#14100c; --panel:#1d1712; --panel2:#241d16; --ink:#f4e9d6; --muted:#a8977d;
-  --accent:#e6a532; --accent-dim:#8a6a2a; --line:#3a2f22;
-  --green:#5b8c3e; --green-ink:#9ed46f; --amberflag:#c8912d; --red:#c8492d; --red-ink:#e88b73; --violet:#9a6cc0;
-}
-[data-theme="light"]{
-  --bg:#f4efe6; --panel:#fff; --panel2:#f7f2e8; --ink:#221c14; --muted:#6d6252;
-  --accent:#a9781a; --accent-dim:#a9781a; --line:#d8cdb8;
-  --green:#4f7d34; --green-ink:#3c6a22; --amberflag:#9a6a10; --red:#b33f22; --red-ink:#8f3016; --violet:#7a4fa8;
-}
-[data-theme="slate"]{
-  --bg:#0f1417; --panel:#161d22; --panel2:#1c252b; --ink:#e6edf2; --muted:#8fa2ad;
-  --accent:#4fb0d0; --accent-dim:#2f6f86; --line:#26323a;
-  --green:#4f9d6a; --green-ink:#7fd8a0; --amberflag:#c8912d; --red:#d0574a; --red-ink:#ec8b80; --violet:#8f7cd0;
-}
-[data-theme="green"]{
-  --bg:#0b120d; --panel:#111a13; --panel2:#16211a; --ink:#d7f0dc; --muted:#7fa088;
-  --accent:#57c07a; --accent-dim:#2f6f45; --line:#20301f; --green:#57c07a; --green-ink:#9ff0b6;
-  --amberflag:#c8b02d; --red:#c85a4a; --red-ink:#ec9384; --violet:#7cc0a0;
-}
-[data-theme="melyviz"]{
-  --bg:#0a141c; --panel:#121c24; --panel2:#17232c; --ink:#e8f0f6; --muted:#a6afb7;
-  --accent:#93d3e6; --accent-dim:#3d6f80; --line:#2b3741;
-  --green:#5f9c78; --green-ink:#8bcca1; --amberflag:#e3be7b; --red:#c8574e; --red-ink:#e4877d; --violet:#b4a7e6;
-}
+/* Since 2026-11-04 the Kapu takes its look from the VRG UI Kit (shared/vrg-ui-kit, inlined in index.html):
+   themes are the kit's data-vk-theme (Mélyvíz default, Éj, Papír, Kontraszt) and every colour below is a --vk-* token.
+   The Mélyvíz block above stays because tools/melyviz-sync.js keeps a copy here; the kit's own Mélyvíz theme
+   is generated from the same shared/melyviz.css, so both say the same thing. The page does not set html.mv. */

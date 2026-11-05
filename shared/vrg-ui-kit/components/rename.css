@@ -1,0 +1,22 @@
+/* VRG UI Kit — components/rename.css — inline rename: the label becomes an input in place, same metrics.
+   rename.js puts <input class="vk-rename__input"> inside the label element (font, size and line-height are
+   inherited, so the row does not move) and a .vk-rename__msg popover (position:fixed) under it for validation.
+   [data-renaming] is set on the label while editing. Depends on: tokens, base. */
+[data-renaming] { overflow: visible !important; text-overflow: clip !important; }
+.vk-rename__input { display: inline-block; box-sizing: content-box; vertical-align: baseline; max-width: 100%;
+  margin: 0 calc(-1 * var(--vk-space-1)); padding: 0 var(--vk-space-1); border: 0; border-radius: var(--vk-radius-sm);
+  font: inherit; letter-spacing: inherit; line-height: inherit; text-transform: none; color: var(--vk-text);
+  background: var(--vk-bg-sunken); outline: var(--vk-border-w) solid var(--vk-accent); outline-offset: 0; }
+.vk-rename__input:focus-visible, .vk-rename__input:focus { outline: var(--vk-focus-w) solid var(--vk-focus); outline-offset: 0; }
+.vk-rename__input[aria-invalid="true"] { outline-color: var(--vk-crit); box-shadow: inset 0 -2px 0 var(--vk-crit); }
+.vk-rename__input::selection { background: var(--vk-select-bg); }
+.vk-rename__mirror { position: absolute; visibility: hidden; white-space: pre; pointer-events: none; left: -9999px; top: 0;
+  font: inherit; letter-spacing: inherit; }
+
+.vk-rename__msg { position: fixed; z-index: var(--vk-z-popover); display: flex; align-items: flex-start; gap: var(--vk-space-2);
+  max-width: min(320px, calc(100vw - 16px)); padding: var(--vk-space-2) var(--vk-space-3);
+  font: var(--vk-fs-xs)/var(--vk-lh-tight) var(--vk-font-sans); text-transform: none; letter-spacing: 0; color: var(--vk-text);
+  background: var(--vk-surface-3); border: var(--vk-border-w) solid var(--vk-crit); border-left-width: 3px;
+  border-radius: var(--vk-radius); box-shadow: var(--vk-shadow-overlay); }
+.vk-rename__msg > .vk-icon { color: var(--vk-crit); width: calc(var(--vk-icon-size) * .8125); height: calc(var(--vk-icon-size) * .8125); }
+.vk-rename__msg[hidden] { display: none; }

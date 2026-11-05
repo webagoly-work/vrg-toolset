@@ -25,6 +25,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M9** | Frissítés (`update`) | **LIVE** (built and checked on the phone 2026-10-31): self-update from GitHub Releases built by Actions | GitHub | medium (+ user step: keystore secret) |
 | **M4** | Haladás (`pulse`) | **built, BETA** (2026-10-31, D-8 = A; phone check open): main first, then branches with unmerged work; which tools changed, commits, PRs, CI | GitHub | high |
 | **M8** | Localhost (`ports`) | the PC's local servers: open on the phone (relay proxy) or in a separate desktop window | relay | high (relay) |
+| **M16** | Kit (`kit`) | the VRG UI Kit's look on the phone: its tokens generated into Kotlin beside the six palettes, the three OFL fonts, the MINI as a Compose part (decided 2026-11-04, built after M8) | — | low (UI only) |
 | **M11** | Indítópult (`launch`) | START.cmd's tools from the phone; running ones; their log | relay | high (relay) |
 | **M12** | Átadás (`drop`) | a two-way file board (`localhost:47291/board` + the app), clipboard, photos routed to the Planner / Inventory | relay | medium |
 | **M13** | Képernyő (`screen`) | the PC's screen live on the phone, with Légegér's pointer; off unless `--shots`, paired phones only, and the PC shows it is being watched | relay | high (relay; the capture speed is measured on the PC first) |

@@ -1,0 +1,63 @@
+/* VRG UI Kit — components/textures.css — a texture pack from token colours only (gradients and masks).
+   Every class adds background-image layers and leaves background-color alone, so it works on any element and
+   in every theme: put it on a panel, a swatch, a map band, a progress track.
+     .vk-tex-hatch      45° hatching               .vk-tex-crosshatch  two crossing hatches
+     .vk-tex-dots       dot grid                   .vk-tex-grid        hairline grid
+     .vk-tex-blueprint  major + minor grid         .vk-tex-windows     lit window grid (warm = activity)
+     .vk-tex-water      fine ripple lines          .vk-tex-road-glow   a warm glowing road band (horizontal)
+     .vk-tex-sand       subtle stipple (layered radial gradients) with a faint warm tint
+   Knobs (component-local): --vk-tex-ink (line colour), --vk-tex-gap (repeat size), --vk-tex-warm (warm colour).
+   Depends on: tokens. */
+[class*="vk-tex-"] { --vk-tex-ink: var(--vk-line-strong); --vk-tex-gap: 8px; --vk-tex-warm: var(--vk-activity); }
+
+.vk-tex-hatch {
+  background-image: repeating-linear-gradient(45deg, var(--vk-tex-ink) 0 1px, transparent 1px var(--vk-tex-gap)); }
+.vk-tex-crosshatch {
+  background-image: repeating-linear-gradient(45deg, var(--vk-tex-ink) 0 1px, transparent 1px var(--vk-tex-gap)),
+    repeating-linear-gradient(-45deg, var(--vk-tex-ink) 0 1px, transparent 1px var(--vk-tex-gap)); }
+.vk-tex-dots {
+  background-image: radial-gradient(circle, var(--vk-tex-ink) 0 1.1px, transparent 1.6px);
+  background-size: var(--vk-tex-gap) var(--vk-tex-gap); }
+.vk-tex-grid { --vk-tex-gap: 16px;
+  background-image: linear-gradient(var(--vk-tex-ink) 1px, transparent 1px), linear-gradient(90deg, var(--vk-tex-ink) 1px, transparent 1px);
+  background-size: var(--vk-tex-gap) var(--vk-tex-gap); }
+.vk-tex-blueprint { --vk-tex-gap: 10px; --vk-tex-ink: var(--vk-accent-line);
+  background-image:
+    linear-gradient(var(--vk-tex-ink) 1px, transparent 1px), linear-gradient(90deg, var(--vk-tex-ink) 1px, transparent 1px),
+    linear-gradient(var(--vk-line) 1px, transparent 1px), linear-gradient(90deg, var(--vk-line) 1px, transparent 1px),
+    linear-gradient(color-mix(in srgb, var(--vk-accent) 6%, transparent), color-mix(in srgb, var(--vk-accent) 6%, transparent));
+  background-size: calc(var(--vk-tex-gap) * 5) calc(var(--vk-tex-gap) * 5), calc(var(--vk-tex-gap) * 5) calc(var(--vk-tex-gap) * 5),
+    var(--vk-tex-gap) var(--vk-tex-gap), var(--vk-tex-gap) var(--vk-tex-gap), auto;
+  background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px, 0 0; }
+/* lit windows: a dim window grid, then two warm grids with co-prime periods so the lit pattern looks irregular.
+   conic-gradient(at W H, transparent 75%, c 0) paints one W×H rectangle in the top-left of each tile. */
+.vk-tex-windows { --vk-tex-gap: 9px; --_wh: 12px;
+  background-image:
+    conic-gradient(at 5px 7px, transparent 75%, var(--vk-tex-warm) 0),
+    conic-gradient(at 5px 7px, transparent 75%, color-mix(in srgb, var(--vk-tex-warm) 55%, transparent) 0),
+    conic-gradient(at 5px 7px, transparent 75%, var(--vk-tex-ink) 0);
+  background-size: calc(var(--vk-tex-gap) * 3) calc(var(--_wh) * 2), calc(var(--vk-tex-gap) * 5) calc(var(--_wh) * 3), var(--vk-tex-gap) var(--_wh);
+  background-position: calc(var(--vk-tex-gap) + 2px) 3px, calc(var(--vk-tex-gap) * 3 + 2px) calc(var(--_wh) + 3px), 2px 3px; }
+.vk-tex-water { --vk-tex-gap: 7px;
+  background-image:
+    radial-gradient(ellipse 9px 3px at 50% 100%, transparent 70%, var(--vk-tex-ink) 72% 86%, transparent 88%),
+    radial-gradient(ellipse 9px 3px at 50% 100%, transparent 70%, color-mix(in srgb, var(--vk-tex-ink) 50%, transparent) 72% 86%, transparent 88%);
+  background-size: 20px var(--vk-tex-gap), 20px var(--vk-tex-gap);
+  background-position: 0 0, 10px calc(var(--vk-tex-gap) / 2); }
+.vk-tex-road-glow {
+  background-image:
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--vk-tex-warm) 90%, transparent) 0 10px, transparent 10px 18px),
+    linear-gradient(transparent 20%, color-mix(in srgb, var(--vk-tex-warm) 12%, transparent) 32%, color-mix(in srgb, var(--vk-tex-warm) 30%, transparent) 46%,
+      color-mix(in srgb, var(--vk-tex-warm) 30%, transparent) 54%, color-mix(in srgb, var(--vk-tex-warm) 12%, transparent) 68%, transparent 80%),
+    linear-gradient(transparent calc(30% - 1px), var(--vk-tex-warm) calc(30% - 1px) 30%, transparent 30% 70%, var(--vk-tex-warm) 70% calc(70% + 1px), transparent calc(70% + 1px));
+  background-size: 100% 2px, 100% 100%, 100% 100%; background-position: 0 50%, 0 0, 0 0; background-repeat: repeat-x, no-repeat, no-repeat; }
+.vk-tex-sand {
+  background-image:
+    radial-gradient(circle at 30% 40%, color-mix(in srgb, var(--vk-text) 14%, transparent) 0 .6px, transparent 1px),
+    radial-gradient(circle at 70% 20%, color-mix(in srgb, var(--vk-text) 9%, transparent) 0 .7px, transparent 1.1px),
+    radial-gradient(circle at 40% 80%, color-mix(in srgb, var(--vk-tex-warm) 22%, transparent) 0 .8px, transparent 1.2px),
+    radial-gradient(circle at 80% 60%, color-mix(in srgb, var(--vk-text) 7%, transparent) 0 .5px, transparent .9px),
+    linear-gradient(color-mix(in srgb, var(--vk-tex-warm) 8%, transparent), color-mix(in srgb, var(--vk-tex-warm) 8%, transparent));
+  background-size: 7px 7px, 11px 9px, 13px 17px, 5px 6px, auto; }
+
+@media (forced-colors: active) { [class*="vk-tex-"] { forced-color-adjust: none; } }

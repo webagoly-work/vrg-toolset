@@ -1,0 +1,41 @@
+/* VRG UI Kit — theme "Papír" (light). Drafting paper: white sheets, ink hairlines, black title bars.
+   Status hues are darkened so text and marks keep AA contrast on paper. */
+:root[data-vk-theme="light"], [data-vk-theme="light"] {
+  color-scheme: light;
+  --vk-bg: #f2f3f1;
+  --vk-bg-sunken: #e8eae7;
+  --vk-surface-1: #fbfbfa;
+  --vk-surface-2: #ffffff;
+  --vk-surface-3: #eceeec;
+  --vk-overlay: rgba(252, 252, 251, .94);
+  --vk-scrim: rgba(20, 28, 34, .32);
+  --vk-line: rgba(18, 26, 32, .12);
+  --vk-line-strong: rgba(18, 26, 32, .26);
+  --vk-border-control: #7a858e;
+  --vk-text: #11181d;
+  --vk-text-muted: #4b5761;
+  --vk-text-faint: #8d969d;
+  --vk-text-on-accent: #ffffff;
+  --vk-text-on-solid: #ffffff;
+  --vk-accent: #1b6682;
+  --vk-accent-hover: #124a5f;
+  --vk-activity: #9c5216;
+  --vk-focus: #1b6682;
+  --vk-ok: #276f43;
+  --vk-warn: #7f5a00;
+  --vk-crit: #b0322a;
+  --vk-info: #2d58b0;
+  --vk-idea: #6a48bd;
+  --vk-layer-1: #c4502b; --vk-layer-2: #8a6f00; --vk-layer-3: #2c6cbd; --vk-layer-4: #7550c4;
+  --vk-layer-5: #2c8448; --vk-layer-6: #0f8076; --vk-layer-7: #b23a79; --vk-layer-8: #66717b;
+  --vk-heat-0: #e4e7e4; --vk-heat-1: #f2d6bd; --vk-heat-2: #e2a775; --vk-heat-3: #c0753a; --vk-heat-4: #8a4a17;
+  --vk-term-bg: #161c21;
+  --vk-term-text: #dfe7ee;
+  /* the terminal well stays dark on paper, so its tones are the bright (dark-ground) set */
+  --vk-term-ok: #84d0a0; --vk-term-warn: #e7c27a; --vk-term-crit: #f08479; --vk-term-info: #98b8f4; --vk-term-muted: #9ba7b1;
+  --vk-shadow-1: 0 1px 0 rgba(18, 26, 32, .06);
+  --vk-shadow-overlay: 0 12px 32px rgba(18, 26, 32, .18), 0 0 0 1px rgba(18, 26, 32, .08);
+  --vk-glow: 0 0 0 3px rgba(27, 102, 130, .16);
+  --vk-hover-bg: color-mix(in srgb, var(--vk-text) 5%, transparent);
+  --vk-select-bg: color-mix(in srgb, var(--vk-accent) 12%, transparent);
+}

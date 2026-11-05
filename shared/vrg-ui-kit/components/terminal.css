@@ -1,0 +1,65 @@
+/* VRG UI Kit — components/terminal.css — console pane: scrollback (role=log), prompt line, running-command mini.
+   Tones are token-mapped and lifted toward --vk-term-text so they stay legible on the terminal well in every
+   theme (Papír keeps a dark well): component-local --vk-terminal-* read the --vk-term-* theme tokens.
+   [data-tone="ok|warn|crit|info|muted|accent|strong"] on spans · line .vk-term__cmd (echo) · .vk-term__progline.
+   Depends on: tokens, base, mini. */
+.vk-term {
+  --vk-terminal-ok: var(--vk-term-ok);
+  --vk-terminal-warn: var(--vk-term-warn);
+  --vk-terminal-crit: var(--vk-term-crit);
+  --vk-terminal-info: var(--vk-term-info);
+  --vk-terminal-accent: color-mix(in srgb, var(--vk-accent) 62%, var(--vk-term-text));
+  --vk-terminal-activity: color-mix(in srgb, var(--vk-activity) 62%, var(--vk-term-text));
+  --vk-terminal-muted: var(--vk-term-muted);
+  --vk-terminal-line: color-mix(in srgb, var(--vk-term-text) 16%, transparent);
+  display: flex; flex-direction: column; min-height: 0; min-width: 0; height: 100%;
+  background: var(--vk-term-bg); color: var(--vk-term-text);
+  border: var(--vk-border-w) solid var(--vk-line-strong); border-radius: var(--vk-radius-lg); overflow: hidden; }
+.vk-term[data-busy] { border-color: var(--vk-activity); }
+
+.vk-term__head { display: flex; align-items: center; gap: var(--vk-space-3); flex: none; min-width: 0;
+  padding: var(--vk-space-1) var(--vk-space-2) var(--vk-space-1) var(--vk-space-2);
+  background: var(--vk-surface-2); color: var(--vk-text); border-bottom: var(--vk-border-w) solid var(--vk-line-strong); }
+.vk-term__title { font-size: var(--vk-fs-lg); flex: none; }
+.vk-term__tag { flex: none; }
+.vk-term__job { min-width: 0; flex: 0 1 auto; }
+.vk-term[data-busy] .vk-term__job { color: var(--vk-activity); }
+
+.vk-term__out { flex: 1 1 auto; min-height: 0; overflow: auto; padding: var(--vk-space-3) var(--vk-space-4) var(--vk-space-2);
+  font: var(--vk-fs-sm)/1.55 var(--vk-font-mono); font-variant-numeric: tabular-nums; white-space: pre-wrap; overflow-wrap: anywhere;
+  scrollbar-color: var(--vk-terminal-line) transparent; }
+.vk-term__out:focus-visible { outline-offset: calc(-1 * var(--vk-focus-w)); }
+.vk-term__out ::selection { background: var(--vk-terminal-accent); color: var(--vk-term-bg); }
+.vk-term__line { min-height: 1.55em; }
+.vk-term__cmd { margin-top: var(--vk-space-2); }
+.vk-term__out [data-tone="ok"] { color: var(--vk-terminal-ok); }
+.vk-term__out [data-tone="warn"] { color: var(--vk-terminal-warn); }
+.vk-term__out [data-tone="crit"] { color: var(--vk-terminal-crit); }
+.vk-term__out [data-tone="info"] { color: var(--vk-terminal-info); }
+.vk-term__out [data-tone="accent"] { color: var(--vk-terminal-accent); }
+.vk-term__out [data-tone="muted"] { color: var(--vk-terminal-muted); }
+.vk-term__out [data-tone="strong"] { font-weight: var(--vk-fw-strong); color: var(--vk-term-text); }
+
+/* progress line: a hairline-framed bar, warm while running, ok/crit when ended */
+.vk-term__progline { display: flex; align-items: center; gap: var(--vk-space-3); }
+.vk-term__bar { position: relative; flex: 0 1 18ch; height: .7em; border: var(--vk-border-w) solid var(--vk-terminal-line); }
+.vk-term__fill { position: absolute; inset: 1px auto 1px 1px; width: 0; max-width: calc(100% - 2px); background: var(--vk-terminal-activity);
+  transition: width var(--vk-dur-2) linear; }
+.vk-term__progline[data-done="ok"] .vk-term__fill { background: var(--vk-terminal-ok); }
+.vk-term__progline[data-done="crit"] .vk-term__fill { background: var(--vk-terminal-crit); }
+.vk-term__pct { flex: none; white-space: pre; }
+
+.vk-term__prompt { display: flex; align-items: center; gap: var(--vk-space-2); flex: none; margin: 0;
+  padding: var(--vk-space-1) var(--vk-space-4); border-top: var(--vk-border-w) solid var(--vk-terminal-line);
+  font: var(--vk-fs-sm)/1.4 var(--vk-font-mono); }
+.vk-term__ps { flex: none; color: var(--vk-terminal-accent); white-space: nowrap; max-width: 45%; overflow: hidden; text-overflow: ellipsis; }
+.vk-term__input { flex: 1 1 auto; min-width: 0; min-height: max(var(--vk-control-h), var(--vk-target-min)); padding: 0 var(--vk-space-2); margin: 0;
+  font: inherit; color: var(--vk-term-text); caret-color: var(--vk-terminal-activity);
+  background: transparent; border: 0; border-radius: var(--vk-radius-sm); }
+.vk-term__input:focus-visible { outline: var(--vk-focus-w) solid var(--vk-terminal-accent); outline-offset: 0; }
+
+[data-vk-density="touch"] .vk-term__tag { display: none; }
+@media (forced-colors: active) {
+  .vk-term { border-color: CanvasText; }
+  .vk-term__fill { background: Highlight; }
+}

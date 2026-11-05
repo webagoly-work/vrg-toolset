@@ -1,0 +1,27 @@
+/* VRG UI Kit — vendored OFL fonts (licences beside the files). Subset to Latin + Latin Extended-A,
+   so Hungarian ő ű Ő Ű are covered. Families are registered under "VK …" names so they never
+   clash with an installed copy. inline.js --fonts turns these urls into data: URIs. */
+@font-face { font-family: "VK Inter"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("Inter-Regular-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+2212, U+2215; }
+@font-face { font-family: "VK Inter"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("Inter-Regular-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-0130, U+0132-0151, U+0154-017F, U+1E9E; }
+@font-face { font-family: "VK Inter"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("Inter-SemiBold-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+2212, U+2215; }
+@font-face { font-family: "VK Inter"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("Inter-SemiBold-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-0130, U+0132-0151, U+0154-017F, U+1E9E; }
+@font-face { font-family: "VK Barlow Condensed"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("BarlowCondensed-SemiBold-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+2212, U+2215; }
+@font-face { font-family: "VK Barlow Condensed"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("BarlowCondensed-SemiBold-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-0130, U+0132-0151, U+0154-017F, U+1E9E; }
+@font-face { font-family: "VK JetBrains Mono"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("JetBrainsMono-Regular-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+2212, U+2215; }
+@font-face { font-family: "VK JetBrains Mono"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("JetBrainsMono-Regular-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-0130, U+0132-0151, U+0154-017F, U+1E9E; }

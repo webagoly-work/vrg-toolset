@@ -1,0 +1,56 @@
+/* VRG UI Kit — components/signal.css — signal markers: ellentmondás / hiány / fagyott.
+   Three forms, each with its own icon AND its own frame, so the signal reads without colour:
+   contradiction = hatched fill · gap = dashed frame · frozen = double frame.
+
+   inline marker   <span class="vk-signal" data-signal="gap"><svg class="vk-icon"><use href="#vk-i-gap"/></svg>hiány</span>
+   corner flag     <div class="vk-signal-host"> … <span class="vk-signal-flags"><span class="vk-signal-flag" data-signal="frozen"
+                     role="img" aria-label="fagyott"><svg class="vk-icon"><use href="#vk-i-frozen"/></svg></span></span></div>
+   count chip      <span class="vk-signal-count" data-signal="contradiction"><svg …/><b>3</b><span class="vk-sr-only">ellentmondás</span></span>
+                   data-zero on a count chip = nothing found (frame turns faint, number stays readable)
+   Depends on: tokens, base, the sprite icons contradiction / gap / frozen. Optional: signal.js (VK.signal.*). */
+.vk-signal, .vk-signal-flag, .vk-signal-count { --_c: var(--vk-text-muted); --_bs: solid; --_bw: var(--vk-border-w); --_fill: color-mix(in srgb, var(--_c) 12%, transparent); }
+:is(.vk-signal, .vk-signal-flag, .vk-signal-count)[data-signal="contradiction"] { --_c: var(--vk-sig-contradiction);
+  --_fill: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--_c) 26%, transparent) 0 1.5px, transparent 1.5px 4.5px); }
+:is(.vk-signal, .vk-signal-flag, .vk-signal-count)[data-signal="gap"] { --_c: var(--vk-sig-gap); --_bs: dashed; }
+:is(.vk-signal, .vk-signal-flag, .vk-signal-count)[data-signal="frozen"] { --_c: var(--vk-sig-frozen); --_bs: double; --_bw: 3px; }
+
+/* inline marker: sits in running text or a table cell */
+.vk-signal { display: inline-flex; align-items: center; gap: .4em; vertical-align: middle; max-width: 100%;
+  min-height: 20px; padding: 0 .5em 0 .35em; white-space: nowrap;
+  font: var(--vk-fs-xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--vk-text);
+  background: var(--_fill); border: var(--_bw) var(--_bs) var(--_c); border-radius: var(--vk-radius-sm); }
+.vk-signal > .vk-icon { color: var(--_c); width: 1.35em; height: 1.35em; }
+
+/* corner flag: pinned to the top-right corner of a .vk-signal-host (a node card, a cell, a row) */
+.vk-signal-host { position: relative; }
+.vk-signal-flags { position: absolute; top: -1px; right: -1px; display: flex; gap: 1px; z-index: 1; pointer-events: none; }
+.vk-signal-flag { --_f: max(18px, calc(var(--vk-icon-size) + 4px));
+  display: inline-grid; place-items: center; width: var(--_f); height: var(--_f);
+  background: var(--_c); color: var(--vk-text-on-solid);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 5px 100%, 0 calc(100% - 5px)); }
+.vk-signal-flag > .vk-icon { width: calc(var(--_f) - 5px); height: calc(var(--_f) - 5px); stroke-width: 2; }
+/* the frame cue on a flag: gap = notched (open) corner, frozen = inner keyline, contradiction = hatch */
+.vk-signal-flag[data-signal="gap"] { background: linear-gradient(var(--_c), var(--_c)) 0 0 / 100% calc(100% - 4px) no-repeat,
+  repeating-linear-gradient(90deg, var(--_c) 0 3px, transparent 3px 5px) 0 100% / 100% 3px no-repeat; }
+.vk-signal-flag[data-signal="frozen"] { box-shadow: inset 0 0 0 1.5px var(--_c), inset 0 0 0 2.5px var(--vk-text-on-solid); }
+.vk-signal-flag[data-signal="contradiction"] { background: repeating-linear-gradient(-45deg, var(--_c) 0 5px, color-mix(in srgb, var(--_c) 78%, var(--vk-text-on-solid)) 5px 7px); }
+
+/* count chip */
+.vk-signal-count { display: inline-flex; align-items: center; gap: .35em; vertical-align: middle; flex: none;
+  min-height: max(22px, var(--vk-target-min)); min-width: max(22px, var(--vk-target-min)); padding: 0 .55em 0 .4em;
+  font: var(--vk-fs-sm)/1 var(--vk-font-mono); font-variant-numeric: tabular-nums slashed-zero; color: var(--vk-text);
+  background: var(--_fill); border: var(--_bw) var(--_bs) var(--_c); border-radius: var(--vk-radius-pill); }
+.vk-signal-count > .vk-icon { color: var(--_c); }
+.vk-signal-count > b { font-weight: var(--vk-fw-strong); }
+.vk-signal-count[data-zero] { --_c: var(--vk-line-strong); background: none; color: var(--vk-text-muted); }
+.vk-signal-count[data-zero] > .vk-icon { color: var(--vk-text-muted); }
+.vk-signal-count[data-changed] { animation: vk-signal-blip var(--vk-dur-4) var(--vk-ease); }
+@keyframes vk-signal-blip { 0% { box-shadow: 0 0 0 0 var(--_c); } 100% { box-shadow: 0 0 0 6px transparent; } }
+
+/* a row of signal counts: <span class="vk-signal-counts" role="group" aria-label="Jelzések"> */
+.vk-signal-counts { display: inline-flex; flex-wrap: wrap; gap: var(--vk-space-2); align-items: center; }
+
+@media (forced-colors: active) {
+  .vk-signal, .vk-signal-count { border-color: CanvasText; }
+  .vk-signal-flag { forced-color-adjust: none; background: CanvasText; color: Canvas; }
+}

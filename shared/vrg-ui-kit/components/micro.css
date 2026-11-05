@@ -1,0 +1,134 @@
+/* VRG UI Kit — components/micro.css — micrographics: HUD decorations in the "Mérőpult" voice.
+   Decorative pieces (aria-hidden="true" in markup): .vk-micro-frame (corner brackets) · .vk-micro-ruler (ticks +
+   labels) · .vk-micro-cross (crosshair) · .vk-micro-dots (dot-matrix field) · .vk-micro-hex (hex badge) ·
+   .vk-micro-beacon (light column rising from a point).
+   Content pieces: .vk-micro-chip (coded label "[01] MODUL-D9") · .vk-micro-meter (segmented bar, role=meter) ·
+   .vk-micro-callout (card + leader line to a target; micro.js positions it).
+   Tones: data-tone="accent" (you / instrument) · "activity" (the system working) · "muted".
+   Component-local knobs: --vk-micro-c (ink), --vk-micro-arm (bracket arm), --vk-micro-v (meter 0…1),
+   --vk-micro-x / --vk-micro-y / --vk-micro-h (beacon foot and height).
+   Depends on: tokens, base. Optional: micro.js (ruler labels, dot matrix, meter ARIA, callouts). */
+
+/* ---------- corner-bracket frame ---------- */
+.vk-micro-frame { --vk-micro-c: var(--vk-line-strong); --vk-micro-arm: 12px; --_w: 1.5px;
+  position: relative; padding: var(--vk-space-4);
+  background-image: linear-gradient(var(--vk-micro-c), var(--vk-micro-c)), linear-gradient(var(--vk-micro-c), var(--vk-micro-c)),
+    linear-gradient(var(--vk-micro-c), var(--vk-micro-c)), linear-gradient(var(--vk-micro-c), var(--vk-micro-c)),
+    linear-gradient(var(--vk-micro-c), var(--vk-micro-c)), linear-gradient(var(--vk-micro-c), var(--vk-micro-c)),
+    linear-gradient(var(--vk-micro-c), var(--vk-micro-c)), linear-gradient(var(--vk-micro-c), var(--vk-micro-c));
+  background-repeat: no-repeat;
+  background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%;
+  background-size: var(--vk-micro-arm) var(--_w), var(--_w) var(--vk-micro-arm), var(--vk-micro-arm) var(--_w), var(--_w) var(--vk-micro-arm),
+    var(--vk-micro-arm) var(--_w), var(--_w) var(--vk-micro-arm), var(--vk-micro-arm) var(--_w), var(--_w) var(--vk-micro-arm); }
+.vk-micro-frame[data-tone="accent"] { --vk-micro-c: var(--vk-accent); }
+.vk-micro-frame[data-tone="activity"] { --vk-micro-c: var(--vk-activity); }
+
+/* ---------- tick ruler: minor + major ticks, labels placed by micro.js ---------- */
+.vk-micro-ruler { --vk-micro-c: var(--vk-line-strong); --_n: 10; --_m: 5;
+  position: relative; height: calc(var(--vk-fs-2xs) + 14px); min-width: 60px;
+  border-bottom: var(--vk-border-w) solid var(--vk-micro-c);
+  background-image:
+    repeating-linear-gradient(90deg, var(--vk-micro-c) 0 1px, transparent 1px calc(100% / var(--_n) / var(--_m))),
+    repeating-linear-gradient(90deg, var(--vk-micro-c) 0 1px, transparent 1px calc(100% / var(--_n)));
+  background-size: calc(100% + 1px) 4px, calc(100% + 1px) 9px; background-position: 0 100%, 0 100%; background-repeat: no-repeat; }
+.vk-micro-ruler__l { position: absolute; top: 0; transform: translateX(-50%); font: var(--vk-fs-2xs)/1 var(--vk-font-mono);
+  color: var(--vk-text-muted); letter-spacing: .04em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.vk-micro-ruler__l:first-child { transform: none; }
+.vk-micro-ruler__l:last-child { transform: translateX(-100%); }
+.vk-micro-ruler[data-tone="accent"] { --vk-micro-c: var(--vk-accent-line); }
+
+/* ---------- crosshair ---------- */
+.vk-micro-cross { --vk-micro-c: var(--vk-accent); --_s: 36px; position: relative; display: inline-block; width: var(--_s); height: var(--_s); flex: none;
+  background-image: linear-gradient(90deg, var(--vk-micro-c) 0 34%, transparent 34% 66%, var(--vk-micro-c) 66%),
+    linear-gradient(var(--vk-micro-c) 0 34%, transparent 34% 66%, var(--vk-micro-c) 66%);
+  background-size: 100% 1px, 1px 100%; background-position: center; background-repeat: no-repeat; }
+.vk-micro-cross::before { content: ""; position: absolute; inset: 22%; border: var(--vk-border-w) solid var(--vk-micro-c); border-radius: 50%; }
+.vk-micro-cross::after { content: ""; position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px 0 0 -1.5px; background: var(--vk-micro-c); }
+.vk-micro-cross[data-tone="muted"] { --vk-micro-c: var(--vk-text-muted); }
+
+/* ---------- dot-matrix: a plain field (CSS) or lit cells (micro.js builds an SVG) ---------- */
+.vk-micro-dots { --vk-micro-c: var(--vk-line-strong); min-height: 24px;
+  background-image: radial-gradient(circle, var(--vk-micro-c) 0 1px, transparent 1.4px); background-size: 6px 6px; }
+.vk-micro-dots > svg { display: block; width: 100%; height: auto; }
+.vk-micro-dots__d { fill: var(--vk-line-strong); }
+.vk-micro-dots__d[data-on="1"] { fill: var(--vk-heat-2); }
+.vk-micro-dots__d[data-on="2"] { fill: var(--vk-heat-3); }
+.vk-micro-dots__d[data-on="3"] { fill: var(--vk-activity); }
+.vk-micro-dots:has(svg) { background: none; }
+
+/* ---------- segmented bar meter ---------- */
+.vk-micro-meter { --vk-micro-v: 0; --_fill: var(--vk-activity); --_seg: 6px; --_gap: 2px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--vk-space-1) var(--vk-space-3); min-width: 0; }
+.vk-micro-meter__label { grid-column: 1 / -1; }
+.vk-micro-meter__bar { height: 10px; min-width: 40px;
+  background: linear-gradient(90deg, var(--_fill) 0 calc(var(--vk-micro-v) * 100%), var(--vk-line-strong) 0);
+  -webkit-mask: repeating-linear-gradient(90deg, currentColor 0 var(--_seg), transparent var(--_seg) calc(var(--_seg) + var(--_gap)));
+          mask: repeating-linear-gradient(90deg, currentColor 0 var(--_seg), transparent var(--_seg) calc(var(--_seg) + var(--_gap))); }
+.vk-micro-meter__val { font: var(--vk-fs-xs)/1 var(--vk-font-mono); font-variant-numeric: tabular-nums; color: var(--vk-text); min-width: 4ch; text-align: right; }
+.vk-micro-meter[data-tone="accent"] { --_fill: var(--vk-accent); }
+.vk-micro-meter[data-level="warn"] { --_fill: var(--vk-warn); }
+.vk-micro-meter[data-level="crit"] { --_fill: var(--vk-crit); }
+.vk-micro-meter[data-level="crit"] .vk-micro-meter__val::after { content: " !"; color: var(--vk-crit); }
+
+/* ---------- coded label chip ---------- */
+.vk-micro-chip { --vk-micro-c: var(--vk-line-strong); display: inline-flex; align-items: stretch; max-width: 100%;
+  font: var(--vk-fs-2xs)/1 var(--vk-font-mono); text-transform: uppercase; letter-spacing: var(--vk-tracking-label);
+  color: var(--vk-text-muted); border: var(--vk-border-w) solid var(--vk-micro-c); white-space: nowrap; vertical-align: middle; }
+.vk-micro-chip > * { padding: 3px 6px; }
+.vk-micro-chip > :first-child:not(:only-child) { background: var(--vk-micro-c); }
+.vk-micro-chip[data-tone="activity"] { --vk-micro-c: var(--vk-activity); color: var(--vk-activity); }
+.vk-micro-chip[data-tone="accent"] { --vk-micro-c: var(--vk-accent); color: var(--vk-accent); }
+.vk-micro-chip > :first-child:not(:only-child) { color: var(--vk-text-on-solid); }
+.vk-micro-chip:not([data-tone]) > :first-child:not(:only-child) { color: var(--vk-text); background: var(--vk-surface-3); border-right: var(--vk-border-w) solid var(--vk-micro-c); }
+
+/* ---------- hex badge ---------- */
+.vk-micro-hex { --vk-micro-c: var(--vk-line-strong); --_s: 44px; position: relative; display: inline-grid; place-items: center; flex: none;
+  width: var(--_s); height: calc(var(--_s) * 1.1547); font: var(--vk-fs-xs)/1 var(--vk-font-mono); color: var(--vk-text); isolation: isolate;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); background: var(--vk-micro-c); }
+.vk-micro-hex::before { content: ""; position: absolute; inset: 1.5px; z-index: -1; background: var(--vk-surface-1);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+.vk-micro-hex[data-tone="activity"] { --vk-micro-c: var(--vk-activity); }
+.vk-micro-hex[data-tone="accent"] { --vk-micro-c: var(--vk-accent); }
+.vk-micro-hex small { display: block; font-size: var(--vk-fs-2xs); color: var(--vk-text-muted); margin-top: 2px; text-align: center; }
+
+/* ---------- callout card + leader line (micro.js places both inside a positioned host) ---------- */
+.vk-micro-host { position: relative; }
+.vk-micro-callout { position: absolute; z-index: var(--vk-z-panel); min-width: 120px; max-width: min(240px, calc(100% - 16px));
+  padding: var(--vk-space-2) var(--vk-space-3); background: var(--vk-overlay); border: var(--vk-border-w) solid var(--vk-line-strong);
+  -webkit-backdrop-filter: blur(var(--vk-blur)); backdrop-filter: blur(var(--vk-blur));
+  border-left: 2px solid var(--vk-activity); font-size: var(--vk-fs-xs); }
+.vk-micro-callout[data-tone="accent"] { border-left-color: var(--vk-accent); }
+.vk-micro-callout__t { margin: 0 0 var(--vk-space-1); color: var(--vk-text); }
+.vk-micro-callout__rows { display: grid; grid-template-columns: auto auto; gap: 1px var(--vk-space-3); margin: 0; }
+.vk-micro-callout__rows dt { color: var(--vk-text-muted); }
+.vk-micro-callout__rows dd { margin: 0; text-align: right; font-family: var(--vk-font-mono); font-variant-numeric: tabular-nums; color: var(--vk-text); }
+.vk-micro-leader { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: var(--vk-z-panel); }
+.vk-micro-leader__line { fill: none; stroke: var(--vk-text-muted); stroke-width: 1; }
+.vk-micro-leader__ring { fill: none; stroke: var(--vk-activity); stroke-width: 1.2; }
+.vk-micro-leader__dot { fill: var(--vk-activity); }
+.vk-micro-leader[data-tone="accent"] .vk-micro-leader__ring { stroke: var(--vk-accent); }
+.vk-micro-leader[data-tone="accent"] .vk-micro-leader__dot { fill: var(--vk-accent); }
+
+/* ---------- beacon: a light column rising from a point ---------- */
+.vk-micro-beacon { --vk-micro-x: 50%; --vk-micro-y: 100%; --vk-micro-h: 90px; --vk-micro-c: var(--vk-activity);
+  position: absolute; left: var(--vk-micro-x); top: var(--vk-micro-y); width: 12px; height: var(--vk-micro-h);
+  transform: translate(-50%, -100%); pointer-events: none;
+  background: linear-gradient(to top, color-mix(in srgb, var(--vk-micro-c) 55%, transparent), transparent);
+  -webkit-mask: linear-gradient(90deg, transparent, currentColor 35% 65%, transparent);
+          mask: linear-gradient(90deg, transparent, currentColor 35% 65%, transparent);
+  animation: vk-micro-beam 3.2s var(--vk-ease-in-out) infinite alternate; }
+.vk-micro-beacon::after { content: ""; position: absolute; left: 50%; bottom: 0; width: 1px; height: 100%; background: linear-gradient(to top, var(--vk-micro-c), transparent); }
+.vk-micro-beacon__foot { position: absolute; left: var(--vk-micro-x); top: var(--vk-micro-y); width: 24px; height: 8px; transform: translate(-50%, -50%);
+  border: var(--vk-border-w) solid var(--vk-activity); border-radius: 50%; pointer-events: none; }
+.vk-micro-beacon__foot::after { content: ""; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%; background: var(--vk-activity); }
+.vk-micro-beacon[data-tone="accent"] { --vk-micro-c: var(--vk-accent); }
+@keyframes vk-micro-beam { from { opacity: .55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .vk-micro-beacon { animation: none; } }
+
+@media (forced-colors: active) {
+  .vk-micro-frame, .vk-micro-ruler, .vk-micro-cross, .vk-micro-dots { forced-color-adjust: none; }
+  .vk-micro-callout { border-color: CanvasText; }
+}
+/* narrow rulers keep every other label */
+.vk-micro-ruler { container-type: inline-size; }
+@container (max-width: 380px) { .vk-micro-ruler__l:nth-child(even):not(:last-child) { visibility: hidden; } }

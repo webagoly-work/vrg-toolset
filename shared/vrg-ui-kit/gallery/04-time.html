@@ -1,0 +1,158 @@
+<section class="g-sec" id="f04" data-vk-hop aria-labelledby="f04-h">
+  <header class="g-sec__head">
+    <span class="g-sec__num">04</span>
+    <h2 id="f04-h" class="vk-title">Idő nézetek</h2>
+    <p class="g-sec__lead">A munka időben: sávos idővonal munkamenetekkel és commitokkal, filmes eseménysín vezetővonalakkal, aktivitási pixelrács és időcsúszka. Jég = te és a lejátszófej, meleg = a rendszer munkája.</p>
+  </header>
+
+  <article class="g-demo" id="f04-timeline">
+    <h3 class="g-demo__title">Sávos idővonal + csúszka <code>timeline · scrubber</code></h3>
+    <p class="g-demo__note">Az eszközkészlet saját git-aktivitása, ~10 hét. Sáv = munkavonal; csík = munkamenet (meleg csíkozás: fut, zöld él: kész, szaggatott: parkolva), pont = commit, kis négyzet = kiadás. A csúszka hajtja a lejátszófejet. Billentyűk: <kbd>←</kbd><kbd>→</kbd> időben, <kbd>↑</kbd><kbd>↓</kbd> sávok között, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>Enter</kbd> megnyit, <kbd>Szóköz</kbd> kijelöl, <kbd>+</kbd>/<kbd>−</kbd> nagyítás; a lejátszófej csúszka: nyilak, <kbd>PgUp</kbd>/<kbd>PgDn</kbd>.</p>
+    <div id="f04-tl"></div>
+    <div id="f04-tl-scrub" class="vk-sunken" style="margin-top:var(--vk-space-3);padding:var(--vk-space-2) var(--vk-space-3)"></div>
+    <p class="g-cap" id="f04-tl-log" role="status" aria-live="polite">Esemény: —</p>
+  </article>
+
+  <article class="g-demo" id="f04-rail">
+    <h3 class="g-demo__title">Eseménysín <code>eventrail</code></h3>
+    <p class="g-demo__note">2026 mérföldkövei egy keretezett sínen: meleg pöttyök, metró-hajlású vezetővonalak, lépcsőzött címkék, jelölt hibáknál figyelmeztető azonosító. Billentyűk: <kbd>←</kbd><kbd>→</kbd> események, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>Enter</kbd> kijelöl (jég), <kbd>Esc</kbd> törli.</p>
+    <div id="f04-er"></div>
+  </article>
+
+  <article class="g-demo" id="f04-heat">
+    <h3 class="g-demo__title">Aktivitási rács <code>heatgrid</code></h3>
+    <p class="g-demo__note">Hetek × napok, 2026 és 2025 egymás alatt, éves összeggel (stabil, magolt véletlen adat + az idővonal commitjai). Billentyűk: <kbd>↑</kbd><kbd>↓</kbd> nap, <kbd>←</kbd><kbd>→</kbd> hét, <kbd>PgUp</kbd>/<kbd>PgDn</kbd> hónap, <kbd>Home</kbd>/<kbd>End</kbd> év eleje/vége (<kbd>Ctrl</kbd>: az egész), <kbd>Enter</kbd> kijelöl.</p>
+    <div id="f04-hg"></div>
+  </article>
+
+  <article class="g-demo" id="f04-scrub">
+    <h3 class="g-demo__title">Időcsúszka — állapotok <code>scrubber</code></h3>
+    <p class="g-demo__note">A lejátszás MINI gyűrűje a lejátszás haladása (fut: meleg, szünetel, kész). Billentyűk a fogantyún: nyilak lépés, <kbd>PgUp</kbd>/<kbd>PgDn</kbd> hét, <kbd>Home</kbd>/<kbd>End</kbd>, <kbd>Szóköz</kbd> lejátszás. A tartomány módban két fogantyú van.</p>
+    <p class="g-cap">Egy időpont — ősz</p>
+    <div id="f04-s1"></div>
+    <p class="g-cap">Tartomány — két fogantyú</p>
+    <div id="f04-s2"></div>
+    <p class="g-cap">Egy nap, órák — VRG-2611-03 helyszíni mérés</p>
+    <div id="f04-s3"></div>
+    <p class="g-cap">Letiltva</p>
+    <div id="f04-s4"></div>
+    <p class="g-cap">Idővonal — üres állapot</p>
+    <div id="f04-tl-empty"></div>
+  </article>
+</section>
+
+<script data-g-init>
+  var NOW = '2026-11-04T11:20', FROM = '2026-08-31', TO = '2026-11-09';
+  var DAY = 864e5, HOUR = 36e5, P = VK.timeline.parse;
+  var rnd = VK.rng('vrg-f04-time');
+  function iso(t) { var d = new Date(t), p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) + 'T' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()); }
+  function hex() { var s = ''; for (var i = 0; i < 7; i++) s += '0123456789abcdef'.charAt(Math.floor(rnd() * 16)); return s; }
+
+  // ---- the toolset's own git activity, ~10 weeks ----
+  var LANES = [
+    { id: 'planner', label: 'Planner', icon: 'floorplan', topics: ['Kábelszámítás', 'Rétegek', 'Kötőelem-összesítő', 'Nézetek', 'Simple-UI S6', 'Tollhegy C6', 'Erősáramú réteg'], run: true },
+    { id: 'mindmap', label: 'MindMap', icon: 'graph', topics: ['Buborék-témák', 'Mélyvíz stílus', 'Exportálás', 'Hűtőköri ág', 'Keresés'] },
+    { id: 'city', label: 'Kódváros', icon: 'city', topics: ['Térkép-hangolás', 'Cloudflare-gyűrű', 'Kerületek', 'Őrszem'], parked: true },
+    { id: 'kapu', label: 'Kapu', icon: 'home', topics: ['Vendégmód', 'Megosztott mappák', 'Beállítás lépései', 'Eszközlista'] },
+    { id: 'mobile', label: 'Mobile', icon: 'phone', topics: ['M8 csomag', 'APK-építés', 'Logó (M15)', 'Űrlap-ellenőrzés'] },
+    { id: 'kit', label: 'Kit', icon: 'layers', topics: ['Tokenek', 'MINI', 'Galéria', 'Idő nézetek'], run: true }
+  ];
+  var RELEASES = { planner: ['2026-10-09T15:40', 'Planner 1.1'], mindmap: ['2026-09-18T17:10', 'MindMap 2.3'], city: ['2026-09-11T12:00', 'Kódváros 1.4'],
+    kapu: ['2026-09-30T16:20', 'Kapu 0.9'], mobile: ['2026-10-23T18:05', 'Mobile M6'], kit: ['2026-11-03T21:30', 'Kit v1-rc'] };
+  var items = [], tNow = P(NOW), tFrom = P(FROM), perDay = {};
+  LANES.forEach(function (ln) {
+    var t = tFrom + Math.floor(rnd() * 4) * DAY, k = 0, sess = [];
+    while (t < tNow) {
+      var len = 1 + Math.floor(rnd() * 5), s = t + (8 + Math.floor(rnd() * 3)) * HOUR + Math.floor(rnd() * 4) * 15 * 6e4;
+      var e = t + (len - 1) * DAY + (15 + Math.floor(rnd() * 5)) * HOUR;
+      var topic = ln.topics[k % ln.topics.length];
+      var it = { id: ln.id + '-s' + k, lane: ln.id, kind: 'session', start: s, end: e, label: topic, state: rnd() < .14 || (ln.parked && e > tNow - 21 * DAY) ? 'parked' : 'done' };
+      sess.push(it); items.push(it);
+      for (var d = 0; d < len; d++) {
+        var n = Math.floor(rnd() * 3.4);
+        for (var c = 0; c < n; c++) {
+          var ct = t + d * DAY + (9 + Math.floor(rnd() * 10)) * HOUR + Math.floor(rnd() * 60) * 6e4;
+          if (ct > Math.min(e, tNow) || ct < s) continue;
+          items.push({ id: ln.id + '-c' + k + '-' + d + '-' + c, lane: ln.id, kind: 'commit', start: ct, label: hex() + ' ' + topic + ': ' + ['javítás', 'tesztek', 'átszervezés', 'új nézet', 'dokumentáció'][Math.floor(rnd() * 5)] });
+          var dk = iso(ct).slice(0, 10); perDay[dk] = (perDay[dk] || 0) + 1;
+        }
+      }
+      t += (len + Math.floor(rnd() * 5)) * DAY; k++;
+    }
+    var last = sess[sess.length - 1];
+    if (!ln.run && last.start > tNow - 6 * HOUR) { items.splice(items.indexOf(last), 1); sess.pop(); last = sess[sess.length - 1]; }
+    if (ln.run) { last.state = 'running'; last.end = null; if (last.start > tNow - 2 * DAY) last.start = tNow - 2 * DAY - 3 * HOUR; }
+    else if (last.end > tNow) last.end = tNow - 3 * HOUR;
+    var r = RELEASES[ln.id]; items.push({ id: ln.id + '-rel', lane: ln.id, kind: 'release', start: r[0], label: r[1] });
+    ln.state = ln.run ? 'running' : ln.parked ? 'paused' : undefined;
+    ln.progress = ln.run ? (ln.id === 'kit' ? .72 : .4) : ln.parked ? .55 : undefined;
+  });
+
+  var log = document.getElementById('f04-tl-log');
+  function say(s) { log.textContent = s; }
+  var tl = null, sc = null;
+  VK.actions.registerAll([
+    { id: 'f04.timeline.today', label: 'Idővonal: ugrás a mai napra', group: 'Idő nézetek', icon: 'target', at: ['palette', 'toolbar:f04-timeline'],
+      run: function () { tl.setPlayhead(NOW); tl.scrollTo(NOW); } },
+    { id: 'f04.timeline.play', label: 'Idővonal: lejátszás', group: 'Idő nézetek', icon: 'play', at: ['palette', 'toolbar:f04-timeline'], caption: '',
+      state: function () { return sc && sc.playing() ? 'running' : 'idle'; },
+      progress: function () { return sc ? (sc.get() - P(FROM)) / (P(TO) - P(FROM)) : 0; },
+      run: function () { sc.toggle(); } },
+    { id: 'f04.timeline.follow', label: 'Idővonal: lejátszófej követése', group: 'Idő nézetek', icon: 'eye', at: ['palette', 'toolbar:f04-timeline'],
+      checked: function () { return !!(tl && tl.state().follow); }, run: function () { tl.setFollow(!tl.state().follow); } },
+    { id: 'f04.timeline.zoom-in', label: 'Idővonal: nagyítás', group: 'Idő nézetek', icon: 'zoom-in', at: ['palette'], run: function () { tl.zoomIn(); } },
+    { id: 'f04.timeline.zoom-out', label: 'Idővonal: kicsinyítés', group: 'Idő nézetek', icon: 'zoom-out', at: ['palette'], run: function () { tl.zoomOut(); } }
+  ]);
+
+  tl = VK.timeline.mount(document.getElementById('f04-tl'), { lanes: LANES, items: items, from: FROM, to: TO, now: NOW, playhead: '2026-10-28T14:00',
+    zoom: 'week', follow: true, label: 'Eszközkészlet git-aktivitása', title: 'VRG eszközkészlet', actions: 'toolbar:f04-timeline' });
+  tl.on('open', function (d) { say('Megnyitva: ' + d.item.lane + ' — ' + d.item.label); });
+  tl.on('select', function (d) { say(d.item ? 'Kijelölve: ' + d.item.lane + ' — ' + d.item.label : 'Kijelölés törölve'); });
+  tl.on('zoom', function (d) { say('Nagyítás: ' + { day: 'nap', week: 'hét', month: 'hónap' }[d.zoom]); });
+
+  sc = VK.scrubber.mount(document.getElementById('f04-tl-scrub'), { min: FROM, max: TO, value: '2026-10-28T14:00', step: 6 * HOUR, time: true, duration: 18000, label: 'Lejátszófej' });
+  sc.on('input', function (p) { tl.setPlayhead(p.value, { silent: true }); tl.refreshActions(); });
+  ['play', 'pause', 'end'].forEach(function (k) { sc.on(k, function () { tl.refreshActions(); }); });
+  tl.on('playhead', function (d) { sc.set(d.t, { silent: true }); tl.refreshActions(); });
+
+  // ---- event rail, 2026 ----
+  VK.eventrail.mount(document.getElementById('f04-er'), { from: '2026-01-01', to: '2027-01-01', now: NOW, title: 'Eseménysín // 2026', events: [
+    { t: '2026-01-14', cat: 'Indulás', label: 'Kódváros első térkép', id: 'EV-01' },
+    { t: '2026-02-06', cat: 'Mérföldkő', label: 'Planner moduláris forrás', id: 'EV-02' },
+    { t: '2026-03-18', cat: 'Kiadás', label: 'MindMap 2.0', id: 'EV-03' },
+    { t: '2026-04-22', cat: 'Hiba', label: 'Kábelszámítás eltérés', id: 'EV-04', flag: true },
+    { t: '2026-05-09', cat: 'Döntés', label: 'Egy indító: START', id: 'EV-05' },
+    { t: '2026-06-12', cat: 'Kiadás', label: 'Planner 1.0', id: 'EV-06' },
+    { t: '2026-07-02', cat: 'Mérföldkő', label: 'Mélyvíz stílus', id: 'EV-07' },
+    { t: '2026-08-19', cat: 'Hiba', label: 'Hűtőköri leágazás keresztmetszet', id: 'EV-08', flag: true },
+    { t: '2026-09-05', cat: 'Kiadás', label: 'VRG Mobile M1', id: 'EV-09' },
+    { t: '2026-10-09', cat: 'Kiadás', label: 'Planner 1.1', id: 'EV-10' },
+    { t: '2026-10-27', cat: 'Átállás', label: 'Meghajtó újrarendezése', id: 'EV-11' },
+    { t: '2026-11-04', cat: 'Mérföldkő', label: 'UI Kit v1 — Mérőpult', id: 'EV-12' },
+    { t: '2026-12-08', cat: 'Terv', label: 'Erősáramú réteg v2', id: 'EV-13' }
+  ] });
+
+  // ---- heat grid, 2026 + 2025 (seeded, plus the timeline's commits) ----
+  var hrnd = VK.rng('vrg-f04-heat'), heat = {};
+  for (var t = Date.UTC(2025, 0, 1); t <= P(NOW); t += DAY) {
+    var dd = new Date(t), wd = dd.getUTCDay(), y26 = dd.getUTCFullYear() === 2026;
+    var on = hrnd() < (wd === 0 || wd === 6 ? .28 : y26 ? .78 : .62), k = iso(t).slice(0, 10);
+    var n = on ? Math.floor(Math.pow(hrnd(), 1.8) * (y26 ? 13 : 9)) + 1 : 0;
+    n += perDay[k] || 0;
+    if (n) heat[k] = n;
+  }
+  heat['2026-10-21'] = 7;
+  var hg = VK.heatgrid.mount(document.getElementById('f04-hg'), { years: [2026, 2025], data: heat, unit: 'commit', now: NOW, title: 'Commitok naponta // VRG eszközkészlet' });
+  hg.select('2026-10-21');
+
+  // ---- scrubber states ----
+  var s1 = VK.scrubber.mount(document.getElementById('f04-s1'), { min: '2026-09-01', max: '2026-12-31', value: '2026-10-21', label: 'Nap', duration: 10000 });
+  VK.scrubber.mount(document.getElementById('f04-s2'), { min: '2026-01-01', max: '2026-12-31', range: ['2026-03-01', '2026-05-31'], label: 'Időszak', duration: 14000 });
+  VK.scrubber.mount(document.getElementById('f04-s3'), { min: '2026-11-04T00:00', max: '2026-11-05T00:00', value: '2026-11-04T09:30', step: 15 * 6e4, bigStep: 3 * HOUR, time: true, label: 'Mérés ideje' });
+  VK.scrubber.mount(document.getElementById('f04-s4'), { min: '2026-09-01', max: '2026-12-31', value: '2026-11-04', disabled: true, label: 'Letiltott csúszka' });
+  void s1;
+
+  VK.timeline.mount(document.getElementById('f04-tl-empty'), { lanes: [{ id: 'a', label: 'Kötőelem' }, { id: 'b', label: 'Hűtő' }], items: [],
+    from: '2026-10-01', to: '2026-11-30', now: NOW, zoom: 'month', title: 'Üres', label: 'Üres idővonal' });
+</script>

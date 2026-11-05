@@ -1,0 +1,96 @@
+/* VRG UI Kit — components/loader.css — the loader sheet: ring · dots · fade · ball · clock · bars. Own drawing, pure CSS.
+   Warm (--vk-activity, via currentColor) = the system working; set `color` on the loader to recolour it.
+
+   <span class="vk-loader" data-kind="dots" role="status"><span></span><span></span><span></span>
+     <span class="vk-sr-only">Betöltés…</span></span>
+   Child spans per kind: ring 0 · dots 3 · fade 8 · ball 1 · clock 2 (hour, minute) · bars 4 (loader.js adds them).
+   data-size: sm (16) · md (24, default) · lg (40) · xl (64)
+   Reduced motion: every kind holds one still, meaningful frame (arc, fading dots, ball in the air, 10:10, rising bars).
+   Depends on: tokens, base. Optional: loader.js (VK.loader.create). */
+.vk-loader { --_s: 24px; --_w: max(1.5px, calc(var(--_s) / 12)); --_t: 1s;
+  position: relative; display: inline-block; flex: none; vertical-align: middle; width: var(--_s); height: var(--_s);
+  color: var(--vk-activity); }
+.vk-loader[data-size="sm"] { --_s: 16px; }
+.vk-loader[data-size="lg"] { --_s: 40px; }
+.vk-loader[data-size="xl"] { --_s: 64px; }
+.vk-loader > span:not(.vk-sr-only) { position: absolute; display: block; }
+
+/* ring: a hairline track and a sweeping arc */
+.vk-loader[data-kind="ring"]::before, .vk-loader[data-kind="ring"]::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: var(--_w) solid var(--vk-line-strong); }
+.vk-loader[data-kind="ring"]::after { border-color: currentColor transparent transparent transparent; animation: vk-loader-spin .9s linear infinite; }
+@keyframes vk-loader-spin { to { transform: rotate(1turn); } }
+
+/* dots: three dots that swell in turn */
+.vk-loader[data-kind="dots"] > span { --_d: calc(var(--_s) / 4.2); top: calc(50% - var(--_d) / 2); width: var(--_d); height: var(--_d);
+  border-radius: 50%; background: currentColor; animation: vk-loader-dot 1.2s var(--vk-ease-in-out) infinite; }
+.vk-loader[data-kind="dots"] > span:nth-child(1) { left: 2%; }
+.vk-loader[data-kind="dots"] > span:nth-child(2) { left: calc(50% - var(--_d) / 2); animation-delay: .16s; }
+.vk-loader[data-kind="dots"] > span:nth-child(3) { right: 2%; animation-delay: .32s; }
+@keyframes vk-loader-dot { 0%, 80%, 100% { transform: scale(.45); opacity: .35; } 40% { transform: scale(1); opacity: 1; } }
+
+/* fade: eight circles round a dial, brightness chasing clockwise */
+.vk-loader[data-kind="fade"] > span { --_d: calc(var(--_s) / 6); left: calc(50% - var(--_d) / 2); top: calc(50% - var(--_d) / 2);
+  width: var(--_d); height: var(--_d); border-radius: 50%; background: currentColor;
+  transform: rotate(calc(var(--_i) * 45deg)) translateY(calc(var(--_s) * -.39));
+  animation: vk-loader-fade .96s linear infinite; animation-delay: calc(var(--_i) * .12s - .96s); }
+.vk-loader[data-kind="fade"] > span:nth-child(1) { --_i: 0; } .vk-loader[data-kind="fade"] > span:nth-child(2) { --_i: 1; }
+.vk-loader[data-kind="fade"] > span:nth-child(3) { --_i: 2; } .vk-loader[data-kind="fade"] > span:nth-child(4) { --_i: 3; }
+.vk-loader[data-kind="fade"] > span:nth-child(5) { --_i: 4; } .vk-loader[data-kind="fade"] > span:nth-child(6) { --_i: 5; }
+.vk-loader[data-kind="fade"] > span:nth-child(7) { --_i: 6; } .vk-loader[data-kind="fade"] > span:nth-child(8) { --_i: 7; }
+@keyframes vk-loader-fade { 0% { opacity: 1; } 100% { opacity: .12; } }
+
+/* ball: bounces on a floor line, squashes on landing, its shadow breathes */
+.vk-loader[data-kind="ball"]::before { content: ""; position: absolute; left: 8%; right: 8%; bottom: 0; height: 1px; background: var(--vk-line-strong); }
+.vk-loader[data-kind="ball"]::after { content: ""; position: absolute; left: 30%; right: 30%; bottom: -1px; height: 3px; border-radius: 50%;
+  background: currentColor; opacity: .35; animation: vk-loader-shadow .8s infinite; }
+.vk-loader[data-kind="ball"] > span { --_d: calc(var(--_s) * .3); left: calc(50% - var(--_d) / 2); bottom: 1px; width: var(--_d); height: var(--_d);
+  border-radius: 50%; background: currentColor; transform-origin: 50% 100%; animation: vk-loader-bounce .8s infinite; }
+@keyframes vk-loader-bounce {
+  0%   { transform: translateY(0) scale(1.25, .75); animation-timing-function: cubic-bezier(.2, .6, .35, 1); }
+  12%  { transform: translateY(0) scale(.9, 1.1); animation-timing-function: cubic-bezier(.2, .6, .35, 1); }
+  50%  { transform: translateY(calc(var(--_s) * -.62)) scale(1); animation-timing-function: cubic-bezier(.65, 0, .8, .4); }
+  100% { transform: translateY(0) scale(1.25, .75); } }
+@keyframes vk-loader-shadow { 0%, 100% { transform: scaleX(1.2); opacity: .45; } 50% { transform: scaleX(.5); opacity: .15; } }
+
+/* clock: a dial with two hands */
+.vk-loader[data-kind="clock"]::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: var(--_w) solid var(--vk-line-strong);
+  background: radial-gradient(circle, currentColor 0 calc(var(--_w) * 1.1), transparent calc(var(--_w) * 1.1 + .5px)); }
+.vk-loader[data-kind="clock"] > span { left: calc(50% - var(--_w) / 2); bottom: 50%; width: var(--_w); border-radius: var(--_w);
+  background: currentColor; transform-origin: 50% 100%; }
+.vk-loader[data-kind="clock"] > span:nth-child(1) { height: 24%; animation: vk-loader-spin 9.6s linear infinite; }
+.vk-loader[data-kind="clock"] > span:nth-child(2) { height: 36%; animation: vk-loader-spin .8s linear infinite; }
+
+/* bars: signal bars lighting up in sequence */
+.vk-loader[data-kind="bars"] > span { --_b: calc((100% - 3 * var(--_w)) / 4); bottom: 8%; width: var(--_b); background: currentColor;
+  border-radius: 1px; animation: vk-loader-bar 1.2s infinite steps(1, end); }
+.vk-loader[data-kind="bars"] > span:nth-child(1) { left: 0; height: 24%; }
+.vk-loader[data-kind="bars"] > span:nth-child(2) { left: calc(var(--_b) + var(--_w)); height: 46%; animation-delay: .15s; }
+.vk-loader[data-kind="bars"] > span:nth-child(3) { left: calc(2 * (var(--_b) + var(--_w))); height: 68%; animation-delay: .3s; }
+.vk-loader[data-kind="bars"] > span:nth-child(4) { left: calc(3 * (var(--_b) + var(--_w))); height: 90%; animation-delay: .45s; }
+@keyframes vk-loader-bar { 0%, 60% { opacity: 1; } 75%, 100% { opacity: .22; } }
+
+/* reduced motion: one still frame per kind that still says "working" */
+@media (prefers-reduced-motion: reduce) {
+  .vk-loader::before, .vk-loader::after, .vk-loader > span { animation: none !important; }
+  .vk-loader[data-kind="ring"]::after { border-color: currentColor currentColor transparent transparent; transform: rotate(-20deg); }
+  .vk-loader[data-kind="dots"] > span { transform: none; }
+  .vk-loader[data-kind="dots"] > span:nth-child(2) { opacity: .6; }
+  .vk-loader[data-kind="dots"] > span:nth-child(3) { opacity: .3; }
+  .vk-loader[data-kind="fade"] > span { opacity: calc(1 - var(--_i) * .11); }
+  .vk-loader[data-kind="ball"] > span { transform: translateY(calc(var(--_s) * -.5)); }
+  .vk-loader[data-kind="ball"]::after { transform: scaleX(.65); opacity: .25; }
+  .vk-loader[data-kind="clock"] > span:nth-child(1) { transform: rotate(-60deg); }
+  .vk-loader[data-kind="clock"] > span:nth-child(2) { transform: rotate(60deg); }
+  .vk-loader[data-kind="bars"] > span:nth-child(4) { opacity: .22; }
+}
+
+/* the sheet: a grid of labelled cells (gallery and "about" pages) */
+.vk-loader-sheet { display: grid; gap: 1px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 112px), 1fr));
+  background: var(--vk-line); border: var(--vk-border-w) solid var(--vk-line); border-radius: var(--vk-radius); overflow: hidden; }
+.vk-loader-sheet__cell { display: grid; justify-items: center; align-content: center; gap: var(--vk-space-4); min-height: 120px;
+  padding: var(--vk-space-5) var(--vk-space-3) var(--vk-space-4); background: var(--vk-bg-sunken); position: relative; }
+.vk-loader-sheet__cell > .vk-label { text-align: center; }
+.vk-loader-sheet__num { position: absolute; top: var(--vk-space-2); left: var(--vk-space-3); font: var(--vk-fs-2xs)/1 var(--vk-font-mono); color: var(--vk-text-muted); }
+
+@media (forced-colors: active) { .vk-loader { color: CanvasText; } }

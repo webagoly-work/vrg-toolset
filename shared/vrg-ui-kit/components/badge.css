@@ -1,0 +1,70 @@
+/* VRG UI Kit — components/badge.css — state badges. Shape carries the meaning as well as colour.
+
+   <span class="vk-badge" data-state="inuse">használatban</span>
+   <span class="vk-badge" data-state="active" data-variant="solid" data-size="lg">aktív</span>
+
+   data-state  lifecycle: inuse (telt négyzet) · built (telt kör) · dev (félig telt kör) · planned (szaggatott gyűrű)
+                          · idea (pontozott gyűrű)
+               run state: active (pont + gyűrű, lüktet) · waiting (homokóra) · parked (két sáv) · ended (áthúzott gyűrű)
+   data-variant  outline (default) · solid · dot (glyph + text, no frame)
+   data-size     sm · md (default) · lg
+   The glyph is CSS (::before), so the markup is just text. Under reduced motion the "aktív" pulse is a still halo.
+   Depends on: tokens, base. Optional: badge.js (VK.badge.create). */
+.vk-badge { --_c: var(--vk-text-muted); --_g: 1.1em;
+  position: relative; display: inline-flex; align-items: center; gap: .55em; vertical-align: middle; flex: none;
+  min-height: 20px; max-width: 100%; padding: 0 .5em 0 .45em; margin: 0;
+  font-family: var(--vk-font-mono); font-size: var(--vk-fs-xs); line-height: 1; font-weight: var(--vk-fw-regular);
+  letter-spacing: var(--vk-tracking-label); text-transform: uppercase; white-space: nowrap;
+  color: var(--vk-text); background: color-mix(in srgb, var(--_c) 9%, transparent);
+  border: var(--vk-border-w) solid color-mix(in srgb, var(--_c) 62%, transparent); border-radius: var(--vk-radius-sm); }
+.vk-badge::before { content: ""; flex: none; width: var(--_g); height: var(--_g); background: var(--_c);
+  -webkit-mask: var(--_m) center / 100% 100% no-repeat; mask: var(--_m) center / 100% 100% no-repeat; }
+.vk-badge[data-size="sm"] { font-size: var(--vk-fs-2xs); min-height: 16px; gap: .45em; }
+.vk-badge[data-size="lg"] { font-size: var(--vk-fs-sm); min-height: 26px; padding: 0 .65em 0 .55em; }
+
+/* variants */
+.vk-badge[data-variant="solid"] { color: var(--vk-text-on-solid); background: var(--_c); border-color: var(--_c); }
+.vk-badge[data-variant="solid"]::before { background: var(--vk-text-on-solid); }
+.vk-badge[data-variant="dot"] { background: none; border-color: transparent; padding-left: 0; padding-right: 0; min-height: 0; }
+
+/* colours: through the status aliases only */
+.vk-badge[data-state="inuse"]   { --_c: var(--vk-st-inuse); }
+.vk-badge[data-state="built"]   { --_c: var(--vk-st-built); }
+.vk-badge[data-state="dev"]     { --_c: var(--vk-st-dev); }
+.vk-badge[data-state="planned"] { --_c: var(--vk-st-planned); }
+.vk-badge[data-state="idea"]    { --_c: var(--vk-st-idea); }
+.vk-badge[data-state="active"]  { --_c: var(--vk-st-active); }
+.vk-badge[data-state="waiting"] { --_c: var(--vk-st-waiting); }
+.vk-badge[data-state="parked"]  { --_c: var(--vk-st-parked); }
+.vk-badge[data-state="ended"]   { --_c: var(--vk-st-ended); }
+.vk-badge[data-state="ended"]:not([data-variant="solid"]) { color: var(--vk-text-muted); }
+
+/* glyphs (12×12 masks, own drawing) */
+.vk-badge { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='2.4'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="inuse"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Crect x='2' y='2' width='8' height='8' rx='.8'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="built"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4.3'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="dev"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='3.9' fill='none' stroke='black' stroke-width='1.5'/%3E%3Cpath d='M6 1.4a4.6 4.6 0 0 0 0 9.2z'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="planned"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4' fill='none' stroke='black' stroke-width='1.7' stroke-dasharray='3.3 2.98' transform='rotate(-25 6 6)'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="idea"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-dasharray='0 3.1416'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="active"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='2.6'/%3E%3Ccircle cx='6' cy='6' r='5.1' fill='none' stroke='black' stroke-width='1'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="waiting"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.4 1.5h7.2v.9L6.9 6l2.7 3.6v.9H2.4v-.9L5.1 6 2.4 2.4z'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="parked"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Crect x='2.4' y='2' width='2.6' height='8' rx='.5'/%3E%3Crect x='7' y='2' width='2.6' height='8' rx='.5'/%3E%3C/svg%3E"); }
+.vk-badge[data-state="ended"] { --_m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='4' fill='none' stroke='black' stroke-width='1.4'/%3E%3Cpath d='M1.8 10.2 10.2 1.8' stroke='black' stroke-width='1.6'/%3E%3C/svg%3E"); }
+
+/* "aktív": a ring breathes out of the dot (the system is working). Still halo under reduced motion. */
+.vk-badge[data-state="active"]::after { content: ""; position: absolute; top: 50%; left: .45em; width: var(--_g); height: var(--_g);
+  margin-top: calc(var(--_g) / -2); border-radius: 50%; border: 1px solid var(--_c); pointer-events: none;
+  animation: vk-badge-pulse 1.8s var(--vk-ease) infinite; }
+.vk-badge[data-state="active"][data-size="lg"]::after { left: .55em; }
+.vk-badge[data-state="active"][data-variant="dot"]::after { left: 0; }
+.vk-badge[data-state="active"][data-variant="solid"]::after { border-color: var(--vk-text-on-solid); }
+@keyframes vk-badge-pulse { 0% { transform: scale(.5); opacity: .9; } 70%, 100% { transform: scale(1.7); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .vk-badge[data-state="active"]::after { animation: none; display: none; } }
+
+/* a badge used as a plain glyph (no text): <span class="vk-badge" data-variant="dot" data-state="dev" role="img" aria-label="fejlesztés alatt"></span> */
+.vk-badge:empty { gap: 0; }
+
+@media (forced-colors: active) {
+  .vk-badge::before { background: CanvasText; forced-color-adjust: none; }
+  .vk-badge { border-color: CanvasText; }
+}

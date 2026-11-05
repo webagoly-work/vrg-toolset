@@ -1,0 +1,54 @@
+/* VRG UI Kit — components/state.css — empty / loading / error state blocks.
+
+   <div class="vk-state" data-kind="empty" data-size="panel">
+     <div class="vk-state__mark"><svg class="vk-icon"><use href="#vk-i-folder"/></svg></div>
+     <div class="vk-state__body">
+       <p class="vk-state__code">[ÜRES] // 0 ELEM</p>
+       <p class="vk-state__title">Még nincs áramkör</p>
+       <p class="vk-state__text">Vegyél fel egyet, vagy importáld a tervből.</p>
+     </div>
+     <div class="vk-state__actions"><button class="vk-btn" data-variant="primary">Új áramkör</button></div>
+   </div>
+   data-kind: empty (dashed reticle) · loading (a loader in the reticle, warm) · error (notched frame, crit; give it role="alert")
+   data-size: inline (one row, default) · panel (centred, fills its parent)
+   Depends on: tokens, base, button. Optional: loader (for the loading mark), state.js (VK.state.create).
+*/
+.vk-state { --_c: var(--vk-text-muted); --_m: 36px;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--vk-space-3) var(--vk-space-4);
+  padding: var(--vk-space-3) var(--vk-space-4); min-width: 0; color: var(--vk-text);
+  border: var(--vk-border-w) dashed var(--vk-line-strong); border-radius: var(--vk-radius); background: var(--vk-bg-sunken); }
+.vk-state[data-kind="loading"] { --_c: var(--vk-activity); border-style: solid; border-color: var(--vk-line); }
+.vk-state[data-kind="error"] { --_c: var(--vk-crit); border-style: solid; border-color: color-mix(in srgb, var(--vk-crit) 55%, transparent);
+  background: color-mix(in srgb, var(--vk-crit) 6%, var(--vk-bg-sunken)); }
+
+/* the mark: a reticle (ring + four ticks) around the icon */
+.vk-state__mark { position: relative; display: grid; place-items: center; width: var(--_m); height: var(--_m); flex: none; color: var(--_c); }
+.vk-state__mark::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1px dashed currentColor; opacity: .7; }
+.vk-state__mark::after { content: ""; position: absolute; inset: -4px; pointer-events: none;
+  background: linear-gradient(currentColor, currentColor) 50% 0 / 1px 5px no-repeat, linear-gradient(currentColor, currentColor) 50% 100% / 1px 5px no-repeat,
+    linear-gradient(currentColor, currentColor) 0 50% / 5px 1px no-repeat, linear-gradient(currentColor, currentColor) 100% 50% / 5px 1px no-repeat; }
+.vk-state[data-kind="loading"] .vk-state__mark::before { border-style: solid; border-color: var(--vk-line-strong); opacity: 1; }
+.vk-state[data-kind="error"] .vk-state__mark::before { border-radius: 0; border-style: solid; opacity: 1;
+  clip-path: polygon(30% 0, 100% 0, 100% 70%, 70% 100%, 0 100%, 0 30%); border-width: 1.5px; }
+.vk-state__mark > .vk-icon { width: calc(var(--_m) * .5); height: calc(var(--_m) * .5); }
+
+.vk-state__body { min-width: 0; }
+.vk-state__body > p { margin: 0; }
+.vk-state__code { font: var(--vk-fs-2xs)/1.3 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase; color: var(--_c); }
+.vk-state[data-kind="empty"] .vk-state__code { color: var(--vk-text-muted); }
+.vk-state__title { font-weight: var(--vk-fw-strong); font-size: var(--vk-fs-md); line-height: var(--vk-lh-tight); margin-top: 2px !important; }
+.vk-state__text { font-size: var(--vk-fs-sm); color: var(--vk-text-muted); line-height: var(--vk-lh); }
+.vk-state__actions { display: flex; flex-wrap: wrap; gap: var(--vk-space-2); justify-content: flex-end; }
+
+/* panel size: centred column that fills its parent */
+.vk-state[data-size="panel"] { --_m: 64px; grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: center; text-align: center;
+  gap: var(--vk-space-4); padding: var(--vk-space-6) var(--vk-space-5); min-height: 100%; border: 0; background: transparent; }
+.vk-state[data-size="panel"][data-kind="error"] { background: transparent; }
+.vk-state[data-size="panel"] .vk-state__title { font-family: var(--vk-font-voice); font-size: var(--vk-fs-xl); letter-spacing: var(--vk-tracking-title); text-transform: uppercase; }
+.vk-state[data-size="panel"] .vk-state__text { max-width: 36ch; margin: var(--vk-space-2) auto 0; }
+.vk-state[data-size="panel"] .vk-state__actions { justify-content: center; }
+
+/* narrow inline: actions drop below the text */
+@media (max-width: 420px) { .vk-state:not([data-size="panel"]) { grid-template-columns: auto minmax(0, 1fr); } .vk-state:not([data-size="panel"]) .vk-state__actions { grid-column: 1 / -1; justify-content: flex-start; } }
+
+@media (forced-colors: active) { .vk-state { border-color: CanvasText; } }

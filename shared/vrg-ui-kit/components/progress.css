@@ -1,0 +1,123 @@
+/* VRG UI Kit — components/progress.css — progress in four forms. Warm (--vk-activity) = the system working.
+
+   linear bar
+   <div class="vk-progress" role="progressbar" aria-label="Export" aria-valuemin="0" aria-valuemax="100" aria-valuenow="42"
+        aria-valuetext="42% — 17 / 40 áramkör" style="--vk-p:.42">
+     <span class="vk-progress__label">Export</span><span class="vk-progress__val">42%</span>
+     <span class="vk-progress__track"><span class="vk-progress__bar"></span></span>
+   </div>
+   data-indeterminate (no aria-valuenow)  → a sweeping block; reduced motion: a still hatched track ("dolgozik")
+   data-variant="segments" + style="--vk-progress-n:12" → N segments
+   data-state="done|error|paused" → ok / crit hatched / muted hatched (shape changes with colour)
+   data-scale → a tick ruler under the track (every 10 %, longer at 50 %)
+
+   stepped:  <div class="vk-steps"> <ol class="vk-steps__list"> <li class="vk-steps__item" data-state="done|current|todo|error">
+               <span class="vk-steps__mark"></span><span class="vk-steps__label">…</span></li> … </ol>
+             <span class="vk-steps__meter" role="progressbar" …>02/05</span></div>
+             Narrower than 360 px the steps stack vertically (container query).
+   thin inline meter: <span class="vk-meter" role="meter" aria-valuenow … style="--vk-p:.73" data-level="warn">
+               <span class="vk-meter__track"><span class="vk-meter__fill"></span></span><span class="vk-meter__val">73%</span></span>
+   Depends on: tokens, base. Optional: progress.js (VK.progress.*) keeps ARIA, --vk-p and the value text in sync. */
+.vk-progress { --vk-progress-n: 10; --_c: var(--vk-activity); --_h: 6px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: var(--vk-space-3); row-gap: var(--vk-space-2);
+  min-width: 0; }
+.vk-progress__label { font: var(--vk-fs-2xs)/var(--vk-lh-tight) var(--vk-font-mono); letter-spacing: var(--vk-tracking-label);
+  text-transform: uppercase; color: var(--vk-text-muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vk-progress__val { font: var(--vk-fs-sm)/1 var(--vk-font-mono); font-variant-numeric: tabular-nums slashed-zero; color: var(--vk-text); white-space: nowrap; }
+.vk-progress__track { grid-column: 1 / -1; position: relative; display: block; height: var(--_h); overflow: hidden;
+  background: var(--vk-line); border-radius: var(--vk-radius-sm); }
+.vk-progress__bar { position: absolute; inset: 0 auto 0 0; display: block; width: calc(var(--vk-p, 0) * 100%);
+  background: var(--_c); border-radius: inherit; transition: width var(--vk-dur-3) var(--vk-ease); }
+.vk-progress[data-size="lg"] { --_h: 10px; }
+.vk-progress[data-size="sm"] { --_h: 3px; }
+
+/* tick ruler under the track */
+.vk-progress[data-scale]::after { content: ""; grid-column: 1 / -1; height: 5px; margin-top: calc(var(--vk-space-2) * -1 + 1px);
+  background:
+    linear-gradient(90deg, var(--vk-text-muted) 1px, transparent 1px) 50% 0 / 1px 5px no-repeat,
+    linear-gradient(90deg, var(--vk-line-strong) 1px, transparent 1px) 100% 0 / 1px 3px no-repeat,
+    linear-gradient(90deg, var(--vk-line-strong) 1px, transparent 1px) 0 0 / 10% 3px repeat-x; }
+
+/* states: the bar's texture changes too, not only its colour */
+.vk-progress[data-state="done"] { --_c: var(--vk-ok); }
+.vk-progress[data-state="error"] { --_c: var(--vk-crit); }
+.vk-progress[data-state="error"] .vk-progress__bar,
+.vk-progress[data-state="paused"] .vk-progress__bar { background: repeating-linear-gradient(-45deg, var(--_c) 0 3px, color-mix(in srgb, var(--_c) 45%, transparent) 3px 6px); }
+.vk-progress[data-state="error"] .vk-progress__bar { box-shadow: 2px 0 0 var(--vk-surface-1), 4px 0 0 var(--_c); }
+.vk-progress[data-state="paused"] { --_c: var(--vk-text-muted); }
+.vk-progress[data-state="error"] .vk-progress__val { color: var(--vk-crit); }
+
+/* indeterminate: a block sweeps along the track; reduced motion → a still hatched track */
+.vk-progress[data-indeterminate] .vk-progress__bar { width: 32%; animation: vk-progress-sweep 1.5s var(--vk-ease-in-out) infinite; }
+@keyframes vk-progress-sweep { 0% { transform: translateX(-105%); } 100% { transform: translateX(320%); } }
+@media (prefers-reduced-motion: reduce) {
+  .vk-progress[data-indeterminate] .vk-progress__bar { animation: none; transform: none; width: 100%;
+    background: repeating-linear-gradient(-45deg, var(--_c) 0 2px, transparent 2px 6px); }
+}
+
+/* segmented */
+.vk-progress[data-variant="segments"] { --_h: 8px; }
+.vk-progress[data-variant="segments"] .vk-progress__track { border-radius: 0;
+  -webkit-mask: repeating-linear-gradient(90deg, currentColor 0 calc(100% / var(--vk-progress-n) - 2px), transparent 0 calc(100% / var(--vk-progress-n)));
+          mask: repeating-linear-gradient(90deg, currentColor 0 calc(100% / var(--vk-progress-n) - 2px), transparent 0 calc(100% / var(--vk-progress-n)));
+  background: color-mix(in srgb, var(--vk-line-strong) 70%, transparent); }
+.vk-progress[data-variant="segments"] .vk-progress__bar { border-radius: 0; }
+
+/* ---------- stepped ---------- */
+.vk-steps { container-type: inline-size; display: grid; gap: var(--vk-space-3); min-width: 0; }
+.vk-steps__list { display: flex; margin: 0; padding: 0; list-style: none; counter-reset: vk-step; }
+.vk-steps__item { --_m: 14px; --_c: var(--vk-line-strong); position: relative; flex: 1 1 0; min-width: 0; counter-increment: vk-step;
+  display: grid; justify-items: center; gap: var(--vk-space-2); text-align: center; }
+/* connector from the previous step's mark to this one */
+.vk-steps__item + .vk-steps__item::before { content: ""; position: absolute; top: calc(var(--_m) / 2 - .5px); right: calc(50% + var(--_m) / 2 + 3px);
+  width: calc(100% - var(--_m) - 6px); height: 1px; background: var(--vk-line-strong); }
+.vk-steps__item[data-state="done"] + .vk-steps__item::before { height: 2px; background: var(--vk-ok); }
+.vk-steps__mark { width: var(--_m); height: var(--_m); box-sizing: border-box; border: 1.5px solid var(--_c); border-radius: 50%; position: relative; }
+.vk-steps__label { font: var(--vk-fs-2xs)/var(--vk-lh-tight) var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); text-transform: uppercase;
+  color: var(--vk-text-muted); overflow-wrap: anywhere; padding: 0 2px; }
+.vk-steps__label::before { content: counter(vk-step, decimal-leading-zero) " "; color: var(--vk-text-muted); }
+.vk-steps__item[data-state="done"] { --_c: var(--vk-ok); }
+.vk-steps__item[data-state="done"] .vk-steps__mark { border-radius: var(--vk-radius-sm); background: var(--_c); }
+.vk-steps__item[data-state="done"] .vk-steps__mark::after,
+.vk-steps__item[data-state="error"] .vk-steps__mark::after { content: ""; position: absolute; inset: 1px; background: var(--vk-text-on-solid);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5.2 4.2 7.3 8 2.8' fill='none' stroke='black' stroke-width='1.8'/%3E%3C/svg%3E") center/100% no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5.2 4.2 7.3 8 2.8' fill='none' stroke='black' stroke-width='1.8'/%3E%3C/svg%3E") center/100% no-repeat; }
+.vk-steps__item[data-state="current"] { --_c: var(--vk-accent); }
+.vk-steps__item[data-state="current"] .vk-steps__mark { box-shadow: 0 0 0 3px var(--vk-accent-soft); }
+.vk-steps__item[data-state="current"] .vk-steps__mark::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--_c); }
+.vk-steps__item[data-state="current"] .vk-steps__label { color: var(--vk-text); }
+.vk-steps__item[data-state="error"] { --_c: var(--vk-crit); }
+.vk-steps__item[data-state="error"] .vk-steps__mark { border-radius: 0; background: var(--_c); transform: rotate(45deg) scale(.86); }
+.vk-steps__item[data-state="error"] .vk-steps__mark::after { transform: rotate(-45deg);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='m3 3 4 4M7 3 3 7' fill='none' stroke='black' stroke-width='1.8'/%3E%3C/svg%3E");
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='m3 3 4 4M7 3 3 7' fill='none' stroke='black' stroke-width='1.8'/%3E%3C/svg%3E"); }
+.vk-steps__item[data-state="error"] .vk-steps__label { color: var(--vk-crit); }
+.vk-steps__meter { justify-self: end; font: var(--vk-fs-2xs)/1 var(--vk-font-mono); letter-spacing: var(--vk-tracking-label); color: var(--vk-text-muted); }
+@container (max-width: 360px) {
+  .vk-steps__list { flex-direction: column; gap: var(--vk-space-3); }
+  .vk-steps__item { grid-template-columns: var(--_m) minmax(0, 1fr); justify-items: start; align-items: center; text-align: left; gap: var(--vk-space-3); }
+  .vk-steps__item + .vk-steps__item::before { top: auto; bottom: calc(100% + 1px); right: auto; left: calc(var(--_m) / 2 - .5px);
+    width: 1px; height: calc(var(--vk-space-3) - 2px); }
+  .vk-steps__item[data-state="done"] + .vk-steps__item::before { width: 2px; height: calc(var(--vk-space-3) - 2px); }
+  .vk-steps__meter { justify-self: start; }
+}
+
+/* ---------- thin inline meter ---------- */
+.vk-meter { --_c: var(--vk-text-muted); --_w: 4.5em; display: inline-flex; align-items: center; gap: var(--vk-space-2); vertical-align: middle; white-space: nowrap; }
+.vk-meter__track { position: relative; width: var(--_w); height: 4px; background: var(--vk-line-strong); border-radius: 1px; overflow: visible; flex: none; }
+.vk-meter__fill { position: absolute; inset: 0 auto 0 0; width: calc(var(--vk-p, 0) * 100%); background: var(--_c); border-radius: inherit; }
+.vk-meter__val { font: var(--vk-fs-xs)/1 var(--vk-font-mono); font-variant-numeric: tabular-nums slashed-zero; color: var(--vk-text); min-width: 3.5ch; text-align: right; }
+/* threshold tick (--_t 0…1) */
+.vk-meter[style*="--_t"] .vk-meter__track::after { content: ""; position: absolute; left: calc(var(--_t) * 100%); top: -2px; bottom: -2px; width: 1px; background: var(--vk-text-muted); }
+.vk-meter[data-level="ok"] { --_c: var(--vk-ok); }
+.vk-meter[data-level="warn"] { --_c: var(--vk-warn); }
+.vk-meter[data-level="crit"] { --_c: var(--vk-crit); }
+.vk-meter[data-level="warn"] .vk-meter__fill, .vk-meter[data-level="crit"] .vk-meter__fill { height: 6px; top: -1px; }
+.vk-meter[data-level="crit"] .vk-meter__val { color: var(--vk-crit); }
+.vk-meter[data-level="crit"] .vk-meter__val::before { content: "▲ "; font-size: .8em; }
+.vk-meter[data-level="activity"] { --_c: var(--vk-activity); }
+
+@media (forced-colors: active) {
+  .vk-progress__bar, .vk-meter__fill, .vk-steps__item[data-state="done"] .vk-steps__mark { background: Highlight; forced-color-adjust: none; }
+  .vk-progress__track, .vk-meter__track { border: 1px solid CanvasText; }
+}
