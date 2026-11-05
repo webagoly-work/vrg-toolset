@@ -54,7 +54,7 @@ const acts = createActs({ R, run, ports, log });
 // else (modes, sizes) is the real window. win.desk hands the frame and the views to the WP-07 probe.
 const selftestWin = () => new Proxy(win, {
   get(t, k) {
-    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs, web: webHost };
+    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs, web: webHost, webOps, webBm };
     if (k === 'webContents') {
       const wc = homeWc() || t.webContents;
       return new Proxy(wc, { get(w, p) {
@@ -301,7 +301,53 @@ const webHost = createWebHost({
 const webSweep = setInterval(() => webHost.sweep(), 60000);
 webSweep.unref();
 app.on('certificate-error', webHost.certError);
-ipc.register('web', 'open', { target: types.url, newTab: types.bool }, async ({ target }) => webHost.open({ url: target }), { optional: ['newTab'] });
+
+// browser (WP-18): omnibox, find, zoom, bookmarks, history. The page sends words, ids and view ids; main turns them into URLs (lib/search.js).
+const search = require('./lib/search.js');
+const { createBookmarks } = require('./lib/bookmarks.js');
+const webBm = createBookmarks({ file: () => path.join(paths.userDir(), 'web.json'), days: () => settings.get('web.history.days') });
+const readJsonList = f => { try { const j = JSON.parse(require('fs').readFileSync(path.join(__dirname, '..', 'config', f), 'utf8')); return Array.isArray(j) ? j : []; } catch (e) { return []; } };
+const webServers = () => (R.C && R.C.menu && R.C.menu.servers) || [];
+const NO_TARGET = { ok: false, err: 'not-found', hu: 'Nincs ilyen cél.' };
+// open() targets: an http(s) URL, srv:<id>, web:<id> (config/web.json), srch:<id>:<words> (config/search.json), omni:<omnibox text>
+const isTarget = v => typeof v === 'string' && v.length <= 4200 && (types.url(v) || /^(srv|web):[a-z0-9_-]{1,40}$/i.test(v) || /^srch:[a-z0-9_-]{1,40}:[\s\S]{0,2000}$/i.test(v) || /^omni:[\s\S]{1,4096}$/.test(v));
+function targetUrl(target) {
+  let m;
+  if (types.url(target)) return target;
+  if ((m = /^srv:([a-z0-9_-]+)$/i.exec(target))) { const s = R.server(m[1]); return s ? R.serverUrl(s) : ''; }
+  if ((m = /^web:([a-z0-9_-]+)$/i.exec(target))) { const p = readJsonList('web.json').find(x => x && x.id === m[1]); return p && types.url(p.url) ? p.url : ''; }
+  if ((m = /^srch:([a-z0-9_-]+):([\s\S]*)$/i.exec(target))) return search.providerUrl(m[1], m[2]);
+  if (target.startsWith('omni:')) return search.toUrl(target.slice(5), { servers: webServers() });
+  return '';
+}
+const webOps = {
+  open: target => { const url = targetUrl(target); return url ? webHost.open({ url }) : { ...NO_TARGET }; },
+  go: (view, input) => { const url = search.toUrl(input, { servers: webServers() }); return url ? webHost.go(view, url) : { ok: false, err: 'bad-request', hu: 'Üres cím.' }; },
+  find: (view, q, dir) => webHost.find(view, q, dir),
+  zoom: (view, z) => webHost.zoom(view, z),
+  external: view => webHost.external(view, u => shell.openExternal(u)),
+  bookmarks: () => ({ bookmarks: webBm.list() }),
+  bookmark: view => { const s = webHost.state(view); return s ? webBm.toggle(s.url, s.title) : { ok: false, err: 'not-found', hu: 'Nincs ilyen lap.' }; },
+  history: q => ({ history: webBm.history(q) }),
+  clearHistory: () => { webBm.clear(); return {}; },
+  servers: () => ({
+    servers: webServers().map(s => ({ id: s.id, name: s.name, port: s.port })),
+    presets: readJsonList('web.json').filter(p => p && typeof p.id === 'string').map(p => ({ id: p.id, hu: String(p.hu || p.id) })),
+    providers: search.loadProviders().map(p => ({ id: p.id, hu: String(p.hu || p.id) })),
+  }),
+};
+webHost.on((type, d) => { if (type === 'state' && d && !d.loading && d.title !== 'Hiba' && webHost.webContents(d.view)) webBm.visit(d.url, d.title); });
+app.on('before-quit', () => webBm.flush());
+ipc.register('web', 'open', { target: isTarget, newTab: types.bool }, async ({ target }) => webOps.open(target), { optional: ['newTab'] });
+ipc.register('web', 'go', { view: types.id, input: types.text(4096) }, async ({ view, input }) => webOps.go(view, input));
+ipc.register('web', 'find', { view: types.id, q: types.text(200), dir: types.enum('next', 'prev') }, async ({ view, q, dir }) => webOps.find(view, q, dir), { optional: ['dir'] });
+ipc.register('web', 'zoom', { view: types.id, z: v => (typeof v === 'number' && v >= 0.25 && v <= 5) || ['in', 'out', 'reset'].includes(v) }, async ({ view, z }) => webOps.zoom(view, z));
+ipc.register('web', 'external', { view: types.id }, async ({ view }) => webOps.external(view));
+ipc.register('web', 'bookmarks', {}, async () => webOps.bookmarks());
+ipc.register('web', 'bookmark', { view: types.id }, async ({ view }) => webOps.bookmark(view));
+ipc.register('web', 'history', { q: types.text(200) }, async ({ q }) => webOps.history(q), { optional: ['q'] });
+ipc.register('web', 'clearHistory', {}, async () => webOps.clearHistory());
+ipc.register('web', 'servers', {}, async () => webOps.servers());
 ipc.register('web', 'nav', { view: types.id, cmd: types.enum('back', 'fwd', 'reload', 'stop', 'home') }, async ({ view, cmd }) => webHost.nav(view, cmd));
 ipc.register('web', 'close', { view: types.id }, async ({ view }) => webHost.close(view));
 ipc.register('web', 'answer', { ask: types.id, allow: types.bool }, async ({ ask, allow }) => webHost.answer(ask, allow));

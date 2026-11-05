@@ -118,6 +118,8 @@
     window.addEventListener('resize', scheduleBounds);
     window.addEventListener('scroll', scheduleBounds, true);
     new ResizeObserver(scheduleBounds).observe(root);
+    // a pane that swaps its view box (web: tab switch, a menu replacing the view) changes data-view / hidden, not the size
+    new MutationObserver(scheduleBounds).observe(root, { subtree: true, attributes: true, attributeFilter: ['data-view', 'hidden'] });
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && saveTimer) { clearTimeout(saveTimer); save(); } });
     scheduleBounds();
     if (vrg && vrg.on) vrg.on('layout', 'open', m => (m && m.kind === 'term' && typeof m.term === 'string' ? adoptTerm(m) : openKind(m.kind, m.state)));

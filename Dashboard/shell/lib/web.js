@@ -12,6 +12,7 @@ const PARTITIONS = ['persist:vrg-web', 'persist:vrg-mail'];
 const MAX_TABS = 20;
 const DISCARD_MS = 30 * 60 * 1000;
 const ASKABLE = ['media', 'clipboard-sanitized-write'];
+const ZOOM_STEPS = [0.25, 0.33, 0.5, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5];
 
 const NO_ASK = { ok: false, err: 'not-found', hu: 'Nincs ilyen kérdés.' };
 const NO_VIEW = { ok: false, err: 'not-found', hu: 'Nincs ilyen lap.' };
@@ -290,15 +291,91 @@ function createWebHost({
   }
   function closeAll() { for (const id of [...tabs.keys()]) close(id); }
 
+  // ---- WP-18: omnibox navigation, find, zoom, mute, external browser, DevTools (localhost only) ----
+  function go(id, url) {
+    const t = tabs.get(id);
+    if (!t) return { ...NO_VIEW };
+    if (!isAllowedNav(url)) return { ok: false, err: 'bad-request', hu: 'Csak http és https cím nyitható meg.' };
+    if (t.discarded) { t.url = url; t.failedUrl = ''; if (!revive(t)) return { ok: false, err: 'error', hu: 'A lap nem hozható létre.' }; return {}; }
+    load(t, url);
+    return {};
+  }
+
+  // find in page: q '' clears. dir 'next' | 'prev' steps through the hits of the same q; the answer carries the counts
+  function find(id, q, dir) {
+    const t = tabs.get(id);
+    const wc = t && wcOf(t);
+    if (!wc) return Promise.resolve({ ...NO_VIEW });
+    if (!q) { wc.stopFindInPage('clearSelection'); return Promise.resolve({ matches: 0, active: 0 }); }
+    return new Promise(res => {
+      let reqId = -1, done = false;
+      const finish = r => { if (done) return; done = true; wc.removeListener('found-in-page', onFound); clearTimeout(to); res(r); };
+      const onFound = (ev, r) => { if (r && r.requestId === reqId && r.finalUpdate) finish({ matches: r.matches, active: r.activeMatchOrdinal }); };
+      const to = setTimeout(() => finish({ matches: 0, active: 0 }), 2000);
+      wc.on('found-in-page', onFound);
+      const same = t.findQ === q && (dir === 'next' || dir === 'prev');
+      t.findQ = q;
+      reqId = same ? wc.findInPage(q, { forward: dir !== 'prev', findNext: true }) : wc.findInPage(q);   // a new query starts from the top
+    });
+  }
+
+  // z: a factor 0.25 … 5, or 'in' | 'out' | 'reset'
+  function zoom(id, z) {
+    const t = tabs.get(id);
+    const wc = t && wcOf(t);
+    if (!wc) return { ...NO_VIEW };
+    const cur = wc.getZoomFactor();
+    let f;
+    if (z === 'reset') f = 1;
+    else if (z === 'in') f = ZOOM_STEPS.find(s => s > cur + 0.001) || ZOOM_STEPS[ZOOM_STEPS.length - 1];
+    else if (z === 'out') f = [...ZOOM_STEPS].reverse().find(s => s < cur - 0.001) || ZOOM_STEPS[0];
+    else if (typeof z === 'number' && Number.isFinite(z)) f = Math.min(5, Math.max(0.25, z));
+    else return { ok: false, err: 'bad-request', hu: 'Érvénytelen nagyítás.' };
+    wc.setZoomFactor(f);
+    return { zoom: f };
+  }
+
+  function mute(id, muted) {
+    const t = tabs.get(id);
+    const wc = t && wcOf(t);
+    if (!wc) return { ...NO_VIEW };
+    wc.setAudioMuted(muted === true);
+    push(t);
+    return { muted: wc.isAudioMuted() };
+  }
+
+  // the tab's page in the user's own browser (http / https only)
+  function external(id, openExternal) {
+    const t = tabs.get(id);
+    if (!t) return { ...NO_VIEW };
+    const u = state(t).url;
+    if (!isAllowedNav(u)) return { ok: false, err: 'bad-request', hu: 'Csak http és https cím nyitható meg.' };
+    if (typeof openExternal !== 'function') return { ok: false, err: 'error', hu: 'A külső böngésző nem érhető el.' };
+    openExternal(u);
+    return {};
+  }
+
+  // DevTools only for a localhost page (our own local servers)
+  const isLocalUrl = u => { try { const h = new URL(u).hostname; return h === 'localhost' || h === '127.0.0.1' || h === '[::1]'; } catch (e) { return false; } };
+  function devtools(id) {
+    const t = tabs.get(id);
+    const wc = t && wcOf(t);
+    if (!wc) return { ...NO_VIEW };
+    if (!isLocalUrl(state(t).url)) return { ok: false, err: 'forbidden', hu: 'A fejlesztői eszközök csak helyi oldalakon érhetők el.' };
+    wc.openDevTools({ mode: 'detach' });
+    return {};
+  }
+
   // certificate errors are never overridden: wire to app.on('certificate-error', web.certError)
   function certError(ev, wc, url, error, cert, cb) { if (ev && ev.preventDefault) ev.preventDefault(); cb(false); }
 
   return {
-    open, createTab: open, nav, close, closeAll, answer, bounds, sweep, certError,
+    open, createTab: open, nav, go, find, zoom, mute, external, devtools, close, closeAll, answer, bounds, sweep, certError,
+    state: id => { const t = tabs.get(id); return t ? state(t) : null; },
     has: id => tabs.has(id), ids: () => [...tabs.keys()], list: () => [...tabs.values()].map(state),
     webContents: id => { const t = tabs.get(id); return t ? wcOf(t) : null; },
     downloadsDir: () => downloadsDir(), on: cb => { listeners.push(cb); },
   };
 }
 
-module.exports = { createWebHost, isAllowedNav, cleanUA, uniqueName, safeDownloadName, errorPage, PARTITIONS, MAX_TABS, DISCARD_MS };
+module.exports = { createWebHost, isAllowedNav, ZOOM_STEPS, cleanUA, uniqueName, safeDownloadName, errorPage, PARTITIONS, MAX_TABS, DISCARD_MS };
