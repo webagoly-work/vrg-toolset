@@ -54,7 +54,7 @@ const acts = createActs({ R, run, ports, log });
 // else (modes, sizes) is the real window. win.desk hands the frame and the views to the WP-07 probe.
 const selftestWin = () => new Proxy(win, {
   get(t, k) {
-    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs, web: webHost, webOps, webBm };
+    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs, selMenu, web: webHost, webOps, webBm };
     if (k === 'webContents') {
       const wc = homeWc() || t.webContents;
       return new Proxy(wc, { get(w, p) {
@@ -287,7 +287,14 @@ app.on('before-quit', () => { if (ptyMgr) ptyMgr.killAll(); });
 const { createWebHost } = require('./lib/web.js');
 const testDownloads = path.join(TMP, 'desk-test-downloads');                      // the selftest never writes into the real Downloads
 if (SELFTEST) { try { require('fs').rmSync(testDownloads, { recursive: true, force: true }); require('fs').mkdirSync(testDownloads, { recursive: true }); } catch (e) {} }
+// selection menu (WP-19): features that are not built yet stay false, so their items show greyed with "(később)"
+const { createSelMenu } = require('./lib/selmenu.js');
+const selMenu = createSelMenu({
+  Menu, clipboard, emit: (type, data) => ipc.emit(win, 'sel', type, data),
+  features: () => ({ 'web.open': true, 'search.inner': false, 'chat.start': false, 'note.save': false, ctx: false }),
+});
 const webHost = createWebHost({
+  onSelection: o => selMenu.popup({ ...o, window: win }),
   getViews: () => views, getSession: p => session.fromPartition(p), settings, jobs,
   emit: (type, data) => ipc.emit(win, 'web', type, data),
   downloadsDir: () => {
@@ -351,6 +358,13 @@ ipc.register('web', 'servers', {}, async () => webOps.servers());
 ipc.register('web', 'nav', { view: types.id, cmd: types.enum('back', 'fwd', 'reload', 'stop', 'home') }, async ({ view, cmd }) => webHost.nav(view, cmd));
 ipc.register('web', 'close', { view: types.id }, async ({ view }) => webHost.close(view));
 ipc.register('web', 'answer', { ask: types.id, allow: types.bool }, async ({ ask, allow }) => webHost.answer(ask, allow));
+
+// selection menu (WP-19): the page sends the selected text and where it came from; main pops the native menu, the choice returns as event sel.pick.
+// dryRun is a probe-only flag (selftest runs only): it returns the labels instead of popping the menu.
+ipc.register('sel', 'menu', { text: types.text(65536), origin: types.enum('frame', 'term', 'file', 'chat'), dryRun: types.bool }, async ({ text, origin, dryRun }) => {
+  if (dryRun === true && SELFTEST) { const t = selMenu.build(text, origin); return { template: t ? selMenu.labels(t) : null }; }
+  return { shown: selMenu.popup({ text, origin, window: win }) };
+}, { optional: ['dryRun'] });
 
 ipc.legacy('handle', 'vrg:act', (e, id) => acts.runAct(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);

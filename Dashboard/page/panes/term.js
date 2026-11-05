@@ -138,6 +138,13 @@
         if (text) this.paste(text);
       }, true);
       host.addEventListener('mousedown', () => { if (this.term) setTimeout(() => this.term && this.term.focus(), 0); });
+      // WP-19: right-click with a selection in the terminal → the selection menu (without one, nothing changes)
+      host.addEventListener('contextmenu', e => {
+        const s = this.term && this.term.hasSelection() ? this.term.getSelection() : '';
+        if (!s.trim() || !W.vrg || !W.vrg.sel) return;
+        e.preventDefault();
+        W.vrg.sel.menu(s.slice(0, 65536), 'term');
+      });
 
       if (this.prof) this.start(); else { this.menu.hidden = false; this.drawProfiles(); }
     },

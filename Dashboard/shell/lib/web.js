@@ -57,7 +57,7 @@ function errorPage(url, desc) {
 }
 
 function createWebHost({
-  getViews, getSession, settings, jobs = null, emit = () => {}, downloadsDir = () => null, tmpDir = '', log = () => {},
+  getViews, getSession, settings, jobs = null, emit = () => {}, downloadsDir = () => null, tmpDir = '', log = () => {}, onSelection = null,
   fs = nodeFs, now = Date.now, rand = () => Math.random().toString(36).slice(2, 10),
 }) {
   const tabs = new Map();                                          // view id → { id, partition, url, home, title, discarded, hiddenSince, failedUrl }
@@ -210,6 +210,12 @@ function createWebHost({
       if (!isMain || code === -3 || /^data:/.test(u || '')) return;
       t.failedUrl = u;
       wc.loadURL(errorPage(u, desc)).catch(() => {});
+    });
+    // WP-19: a selection in a web page gets the selection menu, raised here in main (the view has no preload)
+    wc.on('context-menu', (ev, p) => {
+      if (!onSelection || !p || typeof p.selectionText !== 'string' || !p.selectionText.trim()) return;
+      const extra = isAllowedNav(p.linkURL) ? [{ label: 'Link megnyitása új lapon', click: () => { try { open({ url: p.linkURL, partition: t.partition }); } catch (e) { log('link tab failed'); } } }] : [];
+      try { onSelection({ text: p.selectionText, origin: 'web', extra }); } catch (e) { log('selection menu failed'); }
     });
     for (const e of ['did-navigate', 'did-navigate-in-page', 'page-title-updated', 'did-start-loading', 'did-stop-loading', 'audio-state-changed']) wc.on(e, () => push(t));
   }

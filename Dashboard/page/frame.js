@@ -126,7 +126,33 @@
     // "Terminál itt" (files pane): the files pane fires  vrg-open-term  with detail { at: <dir handle> }
     document.addEventListener('vrg-open-term', e => openKind('term', { prof: 'pwsh', at: e.detail && e.detail.at }));
     initPalette();
+    initSelection();
     document.body.dataset.ready = '1';
+  }
+
+  // ------------------------------------------------------------ selection menu (WP-19)
+  // A right-click on selected text in a local pane asks main for the native menu; a pane that handled the click itself (term, files) has
+  // called preventDefault already. Inputs keep the normal menu. The choice comes back as  sel.pick { action, text }.
+  function initSelection() {
+    if (!vrg || !vrg.sel) return;
+    document.addEventListener('contextmenu', e => {
+      if (e.defaultPrevented || (e.target.closest && e.target.closest('input, textarea, [contenteditable="true"]'))) return;
+      const text = String(window.getSelection ? window.getSelection() : '');
+      if (!text.trim()) return;
+      e.preventDefault();
+      vrg.sel.menu(text.slice(0, 65536), 'frame');
+    });
+    if (vrg.on) vrg.on('sel', 'pick', onPick);
+  }
+  // Google / AI keresés: a web pane (made if none is open) takes a new tab on the search; the other actions wait for their WP
+  async function onPick(m) {
+    if (!m || typeof m.text !== 'string' || (m.action !== 'google' && m.action !== 'ai')) return;
+    let id = [...panes.keys()].find(k => panes.get(k).kind === 'web');
+    if (id) L.focusPane(id); else id = openKind('web', {});
+    if (!id) return;
+    let inst = null;
+    for (let i = 0; i < 100 && !(inst && inst.openTarget); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
+    if (inst && inst.openTarget) inst.openTarget('srch:' + m.action + ':' + m.text.slice(0, 300));
   }
 
   // ------------------------------------------------------------ palette (WP-08)

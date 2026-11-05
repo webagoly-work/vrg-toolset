@@ -80,6 +80,9 @@ contextBridge.exposeInMainWorld('vrg', {
     clearHistory: () => call('web', 'clearHistory', {}),
     servers: () => call('web', 'servers', {}),
   },
+  sel: {                                                                         // event: vrg.on('sel', 'pick', cb) → { action, text }
+    menu: (text, origin, o) => call('sel', 'menu', o && o.dryRun === true ? { text, origin, dryRun: true } : { text, origin }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),

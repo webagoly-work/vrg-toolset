@@ -402,7 +402,13 @@
           this.changed(); this.draw();
         });
         tr.addEventListener('dblclick', () => this.openItem(k, it));
-        tr.addEventListener('contextmenu', ev => { ev.preventDefault(); this.active = k; s.cursor = i; this.contextMenu(ev, k, it); });
+        tr.addEventListener('contextmenu', ev => {
+          ev.preventDefault(); this.active = k; s.cursor = i;
+          // WP-19: text selected inside the row → the selection menu with the file name only (never a path)
+          const sel = window.getSelection ? String(window.getSelection()) : '';
+          if (sel.trim() && tr.contains(window.getSelection().anchorNode) && window.vrg && window.vrg.sel) { window.vrg.sel.menu(it.name.slice(0, 200), 'file'); return; }
+          this.contextMenu(ev, k, it);
+        });
       });
       const sc = el('div', 'scroll'); sc.append(table);
 
