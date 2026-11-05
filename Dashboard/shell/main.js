@@ -131,7 +131,7 @@ const jsLib = (...rel) => {
 };
 const libUrls = () => ({
   dompurify: jsLib('dompurify', 'DOMPurify-main', 'dist', 'purify.min.js'),
-  markdownIt: jsLib('markdown-it', 'markdown-it-master', 'dist', 'markdown-it.min.js'),
+  markdownIt: jsLib('markdown-it', 'dist', 'markdown-it.min.js'),           // 14.1.0 UMD bundle from npm (DESK-Q36, see its VENDOR.json)
 });
 ipc.register('app', 'info', {}, async () => ({
   version: app.getVersion(), user: 'founder', mode: winmodes ? winmodes.state().mode : 'ablak', features: ipc.namespaces(), libs: libUrls(),
