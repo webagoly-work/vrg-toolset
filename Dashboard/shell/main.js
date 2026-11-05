@@ -291,7 +291,7 @@ if (SELFTEST) { try { require('fs').rmSync(testDownloads, { recursive: true, for
 const { createSelMenu } = require('./lib/selmenu.js');
 const selMenu = createSelMenu({
   Menu, clipboard, emit: (type, data) => ipc.emit(win, 'sel', type, data),
-  features: () => ({ 'web.open': true, 'search.inner': false, 'chat.start': false, 'note.save': false, ctx: false }),   // ctx stays false: the WP-19 probe pins "Csomaghoz adás (később)"; the frame already handles the pick
+  features: () => ({ 'web.open': true, 'search.inner': false, 'chat.start': false, 'note.save': true, ctx: false }),   // ctx stays false: the WP-19 probe pins "Csomaghoz adás (később)"; the frame already handles the pick
 });
 const webHost = createWebHost({
   onSelection: o => selMenu.popup({ ...o, window: win }),
@@ -431,6 +431,15 @@ ipc.register('chat', 'toTerminal', { chat: types.id }, async ({ chat }) => {
   return r && r.term ? { term: r.term } : (r || { ok: false, err: 'error', hu: 'A terminál nem indult el.' });
 });
 app.on('before-quit', () => chatLib.killAll());
+
+// dev notes (WP-25): the Divergence outbox through `tools/divergence.js jot`; the page names a topic, a title, a text and a source label, never a path
+const { createNotes, TOPIC_RE: NOTE_TOPIC } = require('./lib/notes.js');
+const notesLib = createNotes({ execFile: require('child_process').execFile, node: nodeExe(), repo: path.resolve(REPO_DIR) });
+ipc.register('note', 'topics', {}, async () => ({ ok: true, ...notesLib.topics() }));
+ipc.register('note', 'save', {
+  topic: v => typeof v === 'string' && NOTE_TOPIC.test(v), title: types.text(120), text: types.text(64 * 1024),
+  source: types.obj({ kind: types.enum('url', 'file', 'node', 'term', 'chat'), ref: types.text(500) }),
+}, async p => notesLib.save(p), { optional: ['source'] });
 
 ipc.legacy('handle', 'vrg:act', (e, id) => acts.runAct(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);

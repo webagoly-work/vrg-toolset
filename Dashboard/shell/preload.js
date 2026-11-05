@@ -103,6 +103,10 @@ contextBridge.exposeInMainWorld('vrg', {
     list: () => call('chat', 'list', {}),
     toTerminal: chat => call('chat', 'toTerminal', { chat }),
   },
+  note: {
+    topics: () => call('note', 'topics', {}),
+    save: n => call('note', 'save', n && typeof n === 'object' ? Object.fromEntries(['topic', 'title', 'text', 'source'].filter(k => n[k] !== undefined).map(k => [k, n[k]])) : {}),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),

@@ -132,6 +132,8 @@
     window.VRGFrame.ctxAdd = ctxAdd;
     document.addEventListener('vrg-ctx-add', e => { if (e.detail) ctxAdd(e.detail); });
     window.VRGFrame.chat = openChat;
+    window.VRGFrame.note = openNote;
+    document.addEventListener('vrg-note', e => { if (e.detail) openNote(e.detail); });
     window.VRGFrame.openUrl = url => (typeof url === 'string' && /^https?:\/\//i.test(url) ? openWeb(url.slice(0, 4000)) : false);
     window.addEventListener('vrg-ctx-attach', e => { if (e.detail && typeof e.detail.packId === 'string') openChat({ kind: 'pack', packId: e.detail.packId }); });
     document.addEventListener('vrg-chat-attach', e => { if (e.detail) openChat(e.detail); });
@@ -157,6 +159,7 @@
     if (m && m.action === 'search.inner' && typeof m.text === 'string') { openSearch(m.text); return; }
     if (m && m.action === 'ctx' && typeof m.text === 'string') { ctxAdd(m.text); return; }
     if (m && m.action === 'chat' && typeof m.text === 'string') { openChat({ kind: 'sel', text: m.text }); return; }
+    if (m && m.action === 'note' && typeof m.text === 'string') { openNote({ text: m.text, source: m.origin === 'term' || m.origin === 'chat' ? { kind: m.origin, ref: '' } : undefined }); return; }
     if (!m || typeof m.text !== 'string' || (m.action !== 'google' && m.action !== 'ai')) return;
     openWeb('srch:' + m.action + ':' + m.text.slice(0, 300));
   }
@@ -184,6 +187,19 @@
     for (let i = 0; i < 100 && !(inst && inst.attach && inst.input); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
     if (!inst || !inst.attach) return false;
     if (chip) inst.attach(chip); else { inst.newThread(); }
+    return true;
+  }
+
+  // ------------------------------------------------------------ dev notes (WP-25)
+  // "Mentés fejlesztői jegyzetként": a small dialog (panes/note.js, loaded on first use). draft = { text, source?:{ kind, ref }, label? }.
+  // Fired by the selection menu, by any pane through  vrg-note  (detail = a draft) and as  VRGFrame.note(draft).
+  let noteLoad = null;
+  async function openNote(draft) {
+    if (!window.VRGNote) {
+      noteLoad = noteLoad || new Promise(res => { const s = document.createElement('script'); s.src = 'panes/note.js'; s.onload = () => res(true); s.onerror = () => res(false); document.head.appendChild(s); });
+      if (!(await noteLoad) || !window.VRGNote) { noteLoad = null; return false; }
+    }
+    window.VRGNote.open(draft || {});
     return true;
   }
 
