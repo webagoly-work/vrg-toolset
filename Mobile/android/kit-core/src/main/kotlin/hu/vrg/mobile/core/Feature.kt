@@ -61,7 +61,7 @@ object Catalogue {
     )
     val PULSE = FeatureInfo(
         "pulse", "Haladás", "A main és a nyitott munkák friss állapota: melyik eszköz mit kapott, commitok, PR-ek, CI.",
-        "📈", Group.WORK, Stage.BETA, "M4", setOf(Need.INTERNET, Need.GITHUB),
+        "📈", Group.WORK, Stage.LIVE, "M4", setOf(Need.INTERNET, Need.GITHUB),
     )
     val CITY = FeatureInfo(
         "city", "Kódváros online", "A repó városa a GitHub friss állapotából, csak az online részek (nem a PC és nem a H:).",
@@ -93,7 +93,7 @@ object Catalogue {
     )
     val SPHERE = FeatureInfo(
         "sphere", "Gömb", "A tudásbázis három jelzése: ellentmondás, sötét zóna, dermedt. A kezdőlapról balra húzva is elérhető.",
-        "◉", Group.WORK, Stage.BETA, "M14", setOf(Need.INTERNET, Need.GITHUB),
+        "◉", Group.WORK, Stage.LIVE, "M14", setOf(Need.INTERNET, Need.GITHUB),
     )
     val UPDATE = FeatureInfo(
         "update", "Frissítés", "Új verzió a GitHubról: az app magát frissíti, ha a branchen újabb build van.",

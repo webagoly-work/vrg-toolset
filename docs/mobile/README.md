@@ -23,7 +23,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M3** | GitHub fiók (`account`) | **LIVE** (built 2026-10-30, checked on the phone 2026-10-31): GitHub sign-in with the device code; token in the Android Keystore; the shared GitHub client | internet | high |
 | **M6** | Gyorsjegyzet (`notes`) | **LIVE** (built 2026-10-30, D-6 = A, checked on the phone 2026-10-31): quick notes pushed to a dedicated branch acting as the chat log | GitHub | high |
 | **M9** | Frissítés (`update`) | **LIVE** (built and checked on the phone 2026-10-31): self-update from GitHub Releases built by Actions | GitHub | medium (+ user step: keystore secret) |
-| **M4** | Haladás (`pulse`) | **built, BETA** (2026-10-31, D-8 = A; phone check open): main first, then branches with unmerged work; which tools changed, commits, PRs, CI | GitHub | high |
+| **M4** | Haladás (`pulse`) | **LIVE** (built 2026-10-31, D-8 = A, checked on the phone 2026-11-05): main first, then branches with unmerged work; which tools changed, commits, PRs, CI | GitHub | high |
 | **M8** | Localhost (`ports`) | the PC's local servers: open on the phone (relay proxy) or in a separate desktop window | relay | high (relay) |
 | **M16** | Kit (`kit`) | the VRG UI Kit's look on the phone: its tokens generated into Kotlin beside the six palettes, the three OFL fonts, the MINI as a Compose part (decided 2026-11-04, built after M8) | — | low (UI only) |
 | **M11** | Indítópult (`launch`) | START.cmd's tools from the phone; running ones; their log | relay | high (relay) |
@@ -32,7 +32,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M5** | Kódváros online (`city`) | the repo's city from GitHub's fresh state (online parts only), built by Actions | GitHub | medium |
 | **M7** | Hálózat (`net`) | BT HID status, phone-as-relay over WiFi, hotspot with usage notification, USB / BT tethering | — | low (Android-bound) |
 | **M10** | Értesítések (`inbox`) | PR, CI, relay events in one list, with phone notifications | GitHub | medium |
-| **M14** | Gömb (`sphere`) | **built, BETA** (2026-11-01, phone check open): the Solomon sphere as a swipe page beside home: three signals on every document, rulings from the phone | GitHub | medium |
+| **M14** | Gömb (`sphere`) | **LIVE** (built 2026-11-01, checked on the phone 2026-11-05): the Solomon sphere as a swipe page beside home: three signals on every document, rulings from the phone | GitHub | medium |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
 - M1 gives the shell its own settings, which everything after it uses.

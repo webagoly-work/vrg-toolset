@@ -63,6 +63,10 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   `Mini` composable (icon = button = progress) on the home tiles and for sync / export. **5A:** the WP file is written in the
   cloud session; it is built on H: after M8, where Gradle and the phone are.
 
+- **D-10 · Localhost on the phone (M8)** (2026-11-05: **C**). Both: "A PC-n" opens a server in its own desktop window
+  for any paired phone; "Itt" shows it on the phone through the relay's `/p/<port>/` proxy, paired phones only, and only
+  while the relay runs with `--ports` (off by default, like `--shots`).
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city
@@ -71,7 +75,5 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
 - **D-9 · Phone as the relay (M7).** A) the phone runs a small relay itself (the PC apps connect to it
   over the phone's WiFi or hotspot), for sites without a PC relay; B) the phone only bridges, forwarding
   to the PC relay; C) not needed.
-- **D-10 · Localhost on the phone (M8).** A) through the relay as a proxy (`/p/<port>/`, paired phone only);
-  B) only "open on the PC"; C) both, with the proxy off by default.
 - **D-11 · Notifications (M10).** A) poll GitHub every 15 min (WorkManager), plus relay events while on the
   same WiFi; B) a small push service (needs a server, e.g. a GitHub Action calling ntfy.sh); C) A now, B later.

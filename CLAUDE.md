@@ -220,7 +220,7 @@ file at the repo root and does what it says.
 - **`GO CLA`** — `GO-CLA.md`: the CLA job thread. v1 and v2 delivered; open design questions only.
 - **`GO HUB`** — `GO-HUB.md`: VRG Kapu, the access page; setup steps, guest mode and shared folders (planned).
 - **`GO CITY`** — `GO-CITY.md`: Kódváros; parked tuning, deferred checks, the Cloudflare ring.
-- **`GO MOBILE`** — `GO-MOBILE.md`: VRG Mobile, one WP at a time from `docs/mobile/` (M1, M2, M3, M6, M9 live, M4, M14 built,
+- **`GO MOBILE`** — `GO-MOBILE.md`: VRG Mobile, one WP at a time from `docs/mobile/` (M1, M2, M3, M4, M6, M9, M14 live,
   next M8). **Worked on in the local H: session since 2026-10-30** (main checkout, `main`; `Mobile\mobile.cmd`
   builds and installs the APK); Actions still builds an APK on every push.
 - **`GO LOGO`** — `GO-LOGO.md`: the two-state Varler logo (ring ⇄ bulb, click to toggle) from `shared/varler-logo`,
