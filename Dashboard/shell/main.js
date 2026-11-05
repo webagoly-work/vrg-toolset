@@ -382,7 +382,8 @@ ipc.register('search', 'node', { id: types.text(160) }, async ({ id }) => innerS
 const { createCtx, validId: ctxId } = require('./lib/ctx.js');
 const { createClaudeTerm } = require('./lib/claudeterm.js');
 let claudeTerm = null;
-const claudeTermLazy = { open: o => { if (!claudeTerm) claudeTerm = createClaudeTerm({ pty: termMgr(), emit: (ns, type, d) => ipc.emit(win, ns, type, d), env: process.env, expand: s => R.expand(s), log }); return claudeTerm.open(o); } };
+const claudeTermGet = () => { if (!claudeTerm) claudeTerm = createClaudeTerm({ pty: termMgr(), emit: (ns, type, d) => ipc.emit(win, ns, type, d), env: process.env, expand: s => R.expand(s), log, repo: path.resolve(REPO_DIR) }); return claudeTerm; };
+const claudeTermLazy = { open: o => claudeTermGet().open(o), resume: (account, session) => claudeTermGet().resume(account, session) };
 const ctxLib = createCtx({
   execFile: require('child_process').execFile, node: nodeExe(), stackDir: path.join(FULL_DIR, 'notes', 'stack'),
   paths, claudeterm: claudeTermLazy, repo: path.resolve(REPO_DIR),
@@ -399,7 +400,9 @@ ipc.register('ctx', 'sendToClaude', { packId: types.id, how: types.enum('term-A'
 // chat engine (WP-23): headless `claude -p` stream-json; the prompt goes on stdin, the page gets deltas as events (chat.*)
 const { createChat } = require('./lib/chat.js');
 const chatLib = createChat({
-  spawn: require('child_process').spawn, execFile: require('child_process').execFile, env: process.env, repo: path.resolve(REPO_DIR),
+  // the test binary (VRG_CLAUDE_BIN = a .js) runs through process.execPath = electron.exe: only then it needs ELECTRON_RUN_AS_NODE to behave as node (stdin works)
+  spawn: (exe, args, o) => require('child_process').spawn(exe, args, exe === process.execPath ? { ...o, env: { ...o.env, ELECTRON_RUN_AS_NODE: '1' } } : o),
+  execFile: require('child_process').execFile, env: process.env, repo: path.resolve(REPO_DIR),
   bin: () => R.C ? R.expand('{claude}') : '', claudeDirB: path.join(path.resolve(FULL_DIR), 'home', 'claude-account-b'), paths,
   emit: (type, data) => ipc.emit(win, 'chat', type.replace(/^chat\./, ''), data),
   packText: id => { const f = ctxLib.packFile(id); try { return f ? require('fs').readFileSync(f, 'utf8') : null; } catch (e) { return null; } },
@@ -419,6 +422,14 @@ ipc.register('chat', 'start', {
 ipc.register('chat', 'follow', { chat: types.id, prompt: types.text(256 * 1024) }, async ({ chat, prompt }) => chatLib.follow(chat, prompt));
 ipc.register('chat', 'stop', { chat: types.id }, async ({ chat }) => chatLib.stop(chat));
 ipc.register('chat', 'list', {}, async () => chatLib.list());
+// "Folytatás terminálban" (WP-24): main looks the session up itself; the page only names the chat
+ipc.register('chat', 'toTerminal', { chat: types.id }, async ({ chat }) => {
+  const c = chatLib.list().chats.find(x => x.chat === chat);
+  if (!c) return { ok: false, err: 'not-found', hu: 'Nincs ilyen beszélgetés.' };
+  if (!c.session) return { ok: false, err: 'not-found', hu: 'A beszélgetés még nem folytatható.' };
+  const r = claudeTermLazy.resume(c.account, c.session);
+  return r && r.term ? { term: r.term } : (r || { ok: false, err: 'error', hu: 'A terminál nem indult el.' });
+});
 app.on('before-quit', () => chatLib.killAll());
 
 ipc.legacy('handle', 'vrg:act', (e, id) => acts.runAct(id));

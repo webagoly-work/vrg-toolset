@@ -131,6 +131,10 @@
     window.VRGFrame.search = openSearch;
     window.VRGFrame.ctxAdd = ctxAdd;
     document.addEventListener('vrg-ctx-add', e => { if (e.detail) ctxAdd(e.detail); });
+    window.VRGFrame.chat = openChat;
+    window.VRGFrame.openUrl = url => (typeof url === 'string' && /^https?:\/\//i.test(url) ? openWeb(url.slice(0, 4000)) : false);
+    window.addEventListener('vrg-ctx-attach', e => { if (e.detail && typeof e.detail.packId === 'string') openChat({ kind: 'pack', packId: e.detail.packId }); });
+    document.addEventListener('vrg-chat-attach', e => { if (e.detail) openChat(e.detail); });
     document.body.dataset.ready = '1';
   }
 
@@ -152,13 +156,35 @@
   async function onPick(m) {
     if (m && m.action === 'search.inner' && typeof m.text === 'string') { openSearch(m.text); return; }
     if (m && m.action === 'ctx' && typeof m.text === 'string') { ctxAdd(m.text); return; }
+    if (m && m.action === 'chat' && typeof m.text === 'string') { openChat({ kind: 'sel', text: m.text }); return; }
     if (!m || typeof m.text !== 'string' || (m.action !== 'google' && m.action !== 'ai')) return;
+    openWeb('srch:' + m.action + ':' + m.text.slice(0, 300));
+  }
+  // a web pane (made if none is open) takes the target (an http(s) URL or srch:<id>:<words>) in a new tab
+  async function openWeb(target) {
     let id = [...panes.keys()].find(k => panes.get(k).kind === 'web');
     if (id) L.focusPane(id); else id = openKind('web', {});
-    if (!id) return;
+    if (!id) return false;
     let inst = null;
     for (let i = 0; i < 100 && !(inst && inst.openTarget); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
-    if (inst && inst.openTarget) inst.openTarget('srch:' + m.action + ':' + m.text.slice(0, 300));
+    if (!inst || !inst.openTarget) return false;
+    inst.openTarget(target);
+    return true;
+  }
+
+  // ------------------------------------------------------------ side chat (WP-24)
+  // "Claude oldalchat": the chat pane (made if none is open) starts a new thread with the chip attached; nothing is sent until Enter.
+  // chip = { kind:'sel', text } | { kind:'pack', packId } | { kind:'file', handle, name }. Fired by the selection menu, by the stack pane's
+  // "Csatolás a csevegéshez" (vrg-ctx-attach, detail { packId }) and by any pane through  vrg-chat-attach  (detail = a chip).
+  async function openChat(chip) {
+    let id = [...panes.keys()].find(k => panes.get(k).kind === 'chat');
+    if (id) L.focusPane(id); else id = openKind('chat', {});
+    if (!id) return false;
+    let inst = null;
+    for (let i = 0; i < 100 && !(inst && inst.attach && inst.input); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
+    if (!inst || !inst.attach) return false;
+    if (chip) inst.attach(chip); else { inst.newThread(); }
+    return true;
   }
 
   // ------------------------------------------------------------ context pack (WP-22)

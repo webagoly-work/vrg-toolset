@@ -101,6 +101,7 @@ contextBridge.exposeInMainWorld('vrg', {
     follow: (chat, prompt) => call('chat', 'follow', { chat, prompt }),
     stop: chat => call('chat', 'stop', { chat }),
     list: () => call('chat', 'list', {}),
+    toTerminal: chat => call('chat', 'toTerminal', { chat }),
   },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),

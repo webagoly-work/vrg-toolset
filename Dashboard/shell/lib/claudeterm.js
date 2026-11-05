@@ -1,7 +1,8 @@
 // claudeterm.js — Claude Code in an embedded terminal pane (WP-16). The pty manager (WP-14) does the spawning; this module picks the
 // profile (claude-a / claude-b), passes the first prompt as ONE argv item (never typed into the pty) and tells the frame to show the term.
-//   const ct = createClaudeTerm({ pty, emit, env, expand, log });
+//   const ct = createClaudeTerm({ pty, emit, env, expand, log, repo });
 //   ct.open({ account: 'A'|'B', cwd, firstPrompt?, extraArgs? }) → { term, title, prof, account } | { ok:false, err, hu }
+//   ct.resume(account, session) → the same, in `repo`, with  --resume <session>  (WP-24)
 //   emit('layout', 'open', { kind: 'term', term, prof })
 // VRG_CLAUDE_BIN (tests only, CONTRACT §4.9) replaces the profile exe: use withBinOverride(profiles, env, expand) when building the pty manager.
 // A `.js` value runs through node ({node}) with the script as the first argument.
@@ -10,6 +11,7 @@ const path = require('path');
 
 const PROFILES = { A: 'claude-a', B: 'claude-b' };
 const MAX_PROMPT = 4000;
+const SESSION_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
 
 // the exe override of the test binary: { exe, lead } or null
 function binOverride(env, expand = s => s) {
@@ -26,7 +28,7 @@ function withBinOverride(profiles, env, expand) {
   return (profiles || []).map(p => (p && /^claude-[ab]$/.test(p.id) ? { ...p, exe: o.exe } : p));
 }
 
-function createClaudeTerm({ pty, emit = () => {}, env = process.env, expand = s => s, log = () => {} }) {
+function createClaudeTerm({ pty, emit = () => {}, env = process.env, expand = s => s, log = () => {}, repo }) {
   const replay = new Map();                                   // term id → last output (≤ 64 KB), for a pane that attaches late
   if (pty && pty.on) {
     pty.on('data', m => { if (replay.has(m.term)) replay.set(m.term, (replay.get(m.term) + m.data).slice(-65536)); });
@@ -48,7 +50,14 @@ function createClaudeTerm({ pty, emit = () => {}, env = process.env, expand = s 
     return { term: r.term, title: r.title, prof, account: acc };
   }
 
-  return { open, replay: id => replay.get(id) || '' };
+  // "Folytatás terminálban" (WP-24): the side chat's session continues in an embedded Claude terminal, `--resume <session>` as two argv items
+  function resume(account, session) {
+    if (typeof session !== 'string' || !SESSION_RE.test(session)) return { ok: false, err: 'bad-request', hu: 'Érvénytelen munkamenet.' };
+    if (typeof repo !== 'string' || !path.isAbsolute(repo)) return { ok: false, err: 'error', hu: 'A terminál nem indult el.' };
+    return open({ account, cwd: repo, extraArgs: ['--resume', session] });
+  }
+
+  return { open, resume, replay: id => replay.get(id) || '' };
 }
 
 module.exports = { createClaudeTerm, withBinOverride, binOverride, PROFILES };
