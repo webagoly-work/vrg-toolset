@@ -8,7 +8,7 @@
 // - a START item runs the way vrg-ui.ps1 runs it (lib/runbat.js); action / phase / menu items stay in START: refused;
 // - every 4 s the registry's server ports are probed on 127.0.0.1 and the result goes to the page (lib/ports.js).
 'use strict';
-const { app, BrowserWindow, WebContentsView, ipcMain, shell, screen, globalShortcut, Tray, Menu, nativeImage, safeStorage, clipboard } = require('electron');
+const { app, BrowserWindow, WebContentsView, ipcMain, shell, screen, globalShortcut, Tray, Menu, nativeImage, safeStorage, clipboard, session } = require('electron');
 const path = require('path'), os = require('os');
 const build = require('../build.js');
 const { createRegistry } = require('./lib/registry.js');
@@ -54,7 +54,7 @@ const acts = createActs({ R, run, ports, log });
 // else (modes, sizes) is the real window. win.desk hands the frame and the views to the WP-07 probe.
 const selftestWin = () => new Proxy(win, {
   get(t, k) {
-    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs };
+    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs, web: webHost };
     if (k === 'webContents') {
       const wc = homeWc() || t.webContents;
       return new Proxy(wc, { get(w, p) {
@@ -80,7 +80,7 @@ function createWindow() {
   win.on('unmaximize', () => toPages('vrg:max', false));
   views = createViews({ WebContentsView, win, preload: path.join(__dirname, 'preload.js'), homePage: PAGE, log });
   if (SELFTEST || layoutLib.panes(currentTree().tree).some(p => p.kind === 'home')) views.createLocal('home');
-  win.on('closed', () => { views.destroyAll(); });
+  win.on('closed', () => { webHost.closeAll(); views.destroyAll(); });
   win.once('ready-to-show', () => { if (!SELFTEST) win.show(); });
   winmodes = createWinModes({
     win, screen, log, settings,
@@ -183,6 +183,7 @@ ipc.register('layout', 'set', { tree: types.json(65536) }, async ({ tree }) => {
   return {};
 });
 ipc.register('layout', 'bounds', { viewId: types.id, rect: types.obj({ x: coord, y: coord, w: size, h: size }) }, async ({ viewId, rect }) => {
+  if (webHost.has(viewId)) return { ok: webHost.bounds(viewId, rect) };           // web tabs (WP-17)
   if (viewId !== 'home') return { ok: false, err: 'bad-request', hu: 'Ismeretlen nézet.' };
   if (!views.has(viewId)) {
     if (!layoutLib.panes(currentTree().tree).some(p => p.kind === 'home')) return { ok: false, err: 'not-found', hu: 'Nincs ilyen panel.' };
@@ -281,6 +282,29 @@ ipc.register('term', 'write', { term: termId, data: types.text(65536) }, async (
 ipc.register('term', 'resize', { term: termId, cols: types.int(2, 500), rows: types.int(2, 300) }, async ({ term, cols, rows }) => { termMgr().resize(term, cols, rows); return {}; });
 ipc.register('term', 'kill', { term: termId }, async ({ term }) => { termMgr().kill(term); return {}; });
 app.on('before-quit', () => { if (ptyMgr) ptyMgr.killAll(); });
+
+// web views (WP-17): isolated tabs; the page names a URL or a view id, main does the rest. Downloads land in the `downloads` root after a yes.
+const { createWebHost } = require('./lib/web.js');
+const testDownloads = path.join(TMP, 'desk-test-downloads');                      // the selftest never writes into the real Downloads
+if (SELFTEST) { try { require('fs').rmSync(testDownloads, { recursive: true, force: true }); require('fs').mkdirSync(testDownloads, { recursive: true }); } catch (e) {} }
+const webHost = createWebHost({
+  getViews: () => views, getSession: p => session.fromPartition(p), settings, jobs,
+  emit: (type, data) => ipc.emit(win, 'web', type, data),
+  downloadsDir: () => {
+    if (SELFTEST) return testDownloads;
+    fsRoots.load();
+    const r = fsRoots.get('downloads');
+    return r ? r.real : null;
+  },
+  tmpDir: path.join(TMP, SELFTEST ? 'desk-test-dlpart' : 'dl-part'), log,
+});
+const webSweep = setInterval(() => webHost.sweep(), 60000);
+webSweep.unref();
+app.on('certificate-error', webHost.certError);
+ipc.register('web', 'open', { target: types.url, newTab: types.bool }, async ({ target }) => webHost.open({ url: target }), { optional: ['newTab'] });
+ipc.register('web', 'nav', { view: types.id, cmd: types.enum('back', 'fwd', 'reload', 'stop', 'home') }, async ({ view, cmd }) => webHost.nav(view, cmd));
+ipc.register('web', 'close', { view: types.id }, async ({ view }) => webHost.close(view));
+ipc.register('web', 'answer', { ask: types.id, allow: types.bool }, async ({ ask, allow }) => webHost.answer(ask, allow));
 
 ipc.legacy('handle', 'vrg:act', (e, id) => acts.runAct(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);

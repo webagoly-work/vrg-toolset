@@ -65,6 +65,12 @@ contextBridge.exposeInMainWorld('vrg', {
     resize: (term, cols, rows) => call('term', 'resize', { term, cols, rows }),
     kill: term => call('term', 'kill', { term }),
   },
+  web: {                                                                         // events: vrg.on('web', 'state' | 'ask' | 'download', cb)
+    open: (target, o) => call('web', 'open', o && typeof o === 'object' && typeof o.newTab === 'boolean' ? { target, newTab: o.newTab } : { target }),
+    nav: (view, cmd) => call('web', 'nav', { view, cmd }),
+    close: view => call('web', 'close', { view }),
+    answer: (ask, allow) => call('web', 'answer', { ask, allow }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),

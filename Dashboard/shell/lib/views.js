@@ -1,7 +1,7 @@
 // views.js — the view host: WebContentsViews that main places at the rect the frame page reports (WP-07).
 //   const views = createViews({ WebContentsView, win, preload, homePage, log });
 //   views.createLocal('home')                     the D0–D4 page with the existing preload (the Kezdőlap)
-//   views.createWeb(opts)                         stub until WP-17 (isolated web content)
+//   views.createWeb({ partition, id? })           isolated web content (WP-17) → { id, view } | null
 //   views.setBounds(id, {x,y,w,h}) · hideAll() · showAll() · destroy(id) · has(id) · ids() · get(id)
 // Electron objects are passed in, so node --test can load this file with fakes.
 'use strict';
@@ -12,7 +12,7 @@ const validRect = r => !!r && typeof r === 'object' && ['x', 'y', 'w', 'h'].ever
 
 function createViews({ WebContentsView, win, preload, homePage, log = () => {} }) {
   const map = new Map();                                    // id → { view, rect, wanted }
-  let hidden = false;
+  let hidden = false, webSeq = 0;
 
   const alive = e => e && !win.isDestroyed() && !(e.view.webContents && e.view.webContents.isDestroyed());
   function apply(e) {
@@ -41,7 +41,17 @@ function createViews({ WebContentsView, win, preload, homePage, log = () => {} }
     return view;
   }
 
-  function createWeb() { return null; }                     // WP-17: build its webPreferences with webPrefs() below
+  // Isolated web content (WP-17): webPrefs() only, no preload. Returns { id, view } (hidden until bounds arrive); lib/web.js wires the guards.
+  function createWeb({ partition = 'persist:vrg-web', id } = {}) {
+    if (id !== undefined && (typeof id !== 'string' || map.has(id))) return null;
+    while (!id || map.has(id)) id = 'w' + (++webSeq);
+    const view = new WebContentsView({ webPreferences: webPrefs(partition) });
+    map.set(id, { view, rect: { x: 0, y: 0, w: 0, h: 0 }, wanted: false });
+    win.contentView.addChildView(view);
+    view.setVisible(false);
+    log('view created', id);
+    return { id, view };
+  }
 
   function setBounds(id, rect) {
     const e = map.get(id);

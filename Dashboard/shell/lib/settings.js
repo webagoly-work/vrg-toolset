@@ -8,6 +8,15 @@ const layout = require('./layout.js');
 
 const rect = v => !!v && typeof v === 'object' && ['x', 'y', 'width', 'height'].every(k => Number.isFinite(v[k])) && v.width > 0 && v.height > 0;
 
+const PERMS = ['media', 'clipboard-sanitized-write'];
+const permsOk = v => {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
+  const origins = Object.keys(v);
+  if (origins.length > 200) return false;
+  return origins.every(o => o.length <= 200 && v[o] && typeof v[o] === 'object' && !Array.isArray(v[o])
+    && Object.keys(v[o]).every(p => PERMS.includes(p) && typeof v[o][p] === 'boolean'));
+};
+
 // key → { type: v => bool, def: default }
 const KEYS = {
   'win.mode':          { type: v => ['ablak', 'munka', 'overlay'].includes(v), def: 'ablak' },
@@ -16,7 +25,8 @@ const KEYS = {
   'term.embedClaude':  { type: v => typeof v === 'boolean', def: true },            // WP-16: s:C/*, cont:, go: open in a term pane
   'claude.account':    { type: v => v === 'A' || v === 'B', def: 'A' },
   'web.history.days':  { type: v => Number.isInteger(v) && v >= 0 && v <= 3650, def: 90 },
-  'ui.lang':           { type: v => v === 'hu' || v === 'en', def: 'hu' },
+  'web.perms':         { type: permsOk, def: {} },                                        // WP-17: { origin: { 'media': bool, 'clipboard-sanitized-write': bool } }
+  'ui.lang':          { type: v => v === 'hu' || v === 'en', def: 'hu' },
   'layout.tree':       { type: v => v === null || layout.validate(v).ok, def: null },   // WP-07; null = the default tree
 };
 
