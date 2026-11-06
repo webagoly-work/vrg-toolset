@@ -140,6 +140,10 @@
       return !!openKind('mail', {});
     };
     document.addEventListener('vrg-open-mail', e => { window.VRGFrame.mail(e.detail && e.detail.acc); });
+    window.VRGFrame.workspaces = showWorkspaces;
+    window.VRGFrame.openWorkspace = openWorkspace;
+    document.addEventListener('vrg-workspaces', e => { showWorkspaces(e.detail && e.detail.line); });
+    if (vrg && vrg.on) vrg.on('layout', 'workspace', m => { applyWorkspace(m); });
     window.VRGFrame.chat = openChat;
     window.VRGFrame.note = openNote;
     document.addEventListener('vrg-note', e => { if (e.detail) openNote(e.detail); });
@@ -256,6 +260,71 @@
     document.addEventListener('keydown', e => {
       if (e.ctrlKey && e.shiftKey && !e.altKey && (e.key === 'F' || e.key === 'f')) { e.preventDefault(); openSearch(String(window.getSelection ? window.getSelection() : '').trim().slice(0, 300)); }
     });
+  }
+
+  // ------------------------------------------------------------ saved workspaces (WP-34)
+  // "Munkatér mentése…" and the "Munkaterek" list are one small panel over the layout: VRGFrame.workspaces() or the  vrg-workspaces  event.
+  // Opening takes main's reply (the saved tree, the NEW terminal sessions main started, the tab URLs, the cluster) and applies it here;
+  // a  cont:<line>  act with a bound workspace arrives the same way as the event  layout.workspace.
+  let wsBox = null;
+  async function applyWorkspace(r) {
+    if (!r || r.ok === false || !r.tree || !lib.validate(r.tree).ok) return false;
+    L.commit(r.tree);
+    for (const t of Array.isArray(r.terms) ? r.terms : []) if (t && typeof t.term === 'string') await adoptTerm({ term: t.term, prof: t.prof });
+    for (const u of Array.isArray(r.tabs) ? r.tabs : []) if (typeof u === 'string') await openWeb(u);
+    const hasStack = lib.panes(r.tree).some(p => p.kind === 'stack' && p.state && Array.isArray(p.state.nodes) && p.state.nodes.length);
+    if (r.cluster && Array.isArray(r.cluster.ids) && r.cluster.ids.length && !hasStack) await ctxAdd({ nodes: r.cluster.ids.map(id => ({ id })) });
+    return true;
+  }
+  async function openWorkspace(id) {
+    const r = await vrg.layout.openWorkspace(id);
+    const ok = await applyWorkspace(r);
+    if (!ok) log('warn', 'workspace did not open: ' + (r && r.err));
+    return ok;
+  }
+  function closeWorkspaces() { if (wsBox) { wsBox.remove(); wsBox = null; } }
+  async function showWorkspaces(line) {
+    if (!vrg || !vrg.layout || !vrg.layout.workspaces) return null;
+    closeWorkspaces();
+    const box = wsBox = document.createElement('div');
+    box.dataset.pane = 'workspaces-panel'; box.dataset.role = 'workspaces'; box.setAttribute('role', 'dialog'); box.title = 'Saved workspaces';
+    box.style.cssText = 'position:fixed;inset:48px 25% auto 25%;z-index:50;overflow:auto;max-height:80%';
+    const h = document.createElement('h3'); h.textContent = 'Munkaterek'; h.title = 'Workspaces';
+    const form = document.createElement('form'); form.dataset.role = 'ws-save';
+    const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 60; inp.placeholder = 'Munkatér mentése…'; inp.title = 'Save workspace';
+    const go = document.createElement('button'); go.type = 'submit'; go.textContent = 'Mentés'; go.title = 'Save';
+    const x = document.createElement('button'); x.type = 'button'; x.textContent = 'Bezár'; x.title = 'Close'; x.addEventListener('click', closeWorkspaces);
+    const ul = document.createElement('ul'); ul.dataset.role = 'ws-list';
+    form.append(inp, go, x);
+    box.append(h, form, ul);
+    const draw = async () => {
+      const r = await vrg.layout.workspaces();
+      ul.textContent = '';
+      for (const w of (r && r.workspaces) || []) {
+        const li = document.createElement('li'); li.dataset.ws = w.id;
+        const b = document.createElement('button'); b.type = 'button'; b.textContent = w.name; b.title = 'Munkatér megnyitása';
+        b.addEventListener('click', async () => { if (await openWorkspace(w.id)) closeWorkspaces(); });
+        li.append(b);
+        if (w.line) { const s = document.createElement('span'); s.textContent = ' Vonalhoz kötve: ' + w.line; s.title = 'Bound to line ' + w.line; li.append(s); }
+        ul.append(li);
+      }
+    };
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const name = inp.value.trim();
+      if (!name) return;
+      clearTimeout(saveTimer); saveTimer = 0;
+      const snap = snapshot();
+      if (lib.validate(snap).ok) await vrg.layout.set(snap);        // main saves the stored tree, so it must be current
+      const r = await vrg.layout.saveWorkspace(name, typeof line === 'string' ? line : undefined);
+      if (r && r.ok === false) { inp.title = r.hu || ''; return; }
+      inp.value = '';
+      draw();
+    });
+    document.body.append(box);
+    await draw();
+    inp.focus();
+    return box;
   }
 
   // ------------------------------------------------------------ palette (WP-08)

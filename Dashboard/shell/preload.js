@@ -36,6 +36,9 @@ contextBridge.exposeInMainWorld('vrg', {
     bounds: (viewId, rect) => call('layout', 'bounds', { viewId, rect }),
     palette: p => call('layout', 'palette', p === undefined ? {} : p),          // { open: bool } hides / shows the web views
     run: cmdId => call('layout', 'run', { cmdId }),
+    workspaces: () => call('layout', 'workspaces', {}),                           // WP-34; event: vrg.on('layout', 'workspace', cb)
+    saveWorkspace: (name, line) => call('layout', 'saveWorkspace', typeof line === 'string' ? { name, line } : { name }),
+    openWorkspace: id => call('layout', 'openWorkspace', { id }),
   },
   jobs: {
     list: () => call('jobs', 'list', {}),

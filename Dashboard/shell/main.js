@@ -277,6 +277,7 @@ ipc.register('fs', 'copyPath', { h: types.handle }, async ({ h }) => fileView.co
 // terminals (WP-14): ConPTY sessions owned by main; the page names a profile id and a folder handle, nothing else
 const ptyLib = require('./lib/pty.js');
 let ptyMgr = null;
+const termSessions = new Map();                                      // term id → { prof, abs }: what a saved workspace remembers (WP-34)
 const termMgr = () => {
   if (ptyMgr) return ptyMgr;
   ptyMgr = ptyLib.createPty({
@@ -285,7 +286,7 @@ const termMgr = () => {
     spawn: ptyLib.nodePtySpawn(ptyLib.loadNodePty(path.join(FULL_DIR, 'tools', 'js-libs', 'node-pty'))),
   });
   ptyMgr.on('data', m => ipc.emit(win, 'term', 'data', m));
-  ptyMgr.on('exit', m => ipc.emit(win, 'term', 'exit', m));
+  ptyMgr.on('exit', m => { termSessions.delete(m.term); ipc.emit(win, 'term', 'exit', m); });
   ptyMgr.on('title', m => ipc.emit(win, 'term', 'title', m));
   return ptyMgr;
 };
@@ -296,12 +297,43 @@ ipc.register('term', 'open', { prof: types.id, at: termAt }, async ({ prof, at }
   const cwd = ptyLib.resolveAt(at, { handles: fsHandles, repo: path.resolve(REPO_DIR), lines: R.C ? R.C.data.lines : [] });
   if (!cwd) return { ok: false, err: 'not-found', hu: 'Nincs ilyen mappa.' };
   const r = termMgr().open(prof, cwd);
+  if (r.term) termSessions.set(r.term, { prof, abs: cwd });
   return r.term ? { term: r.term, title: r.title } : r;
 }, { optional: ['at'] });
 ipc.register('term', 'write', { term: termId, data: types.text(65536) }, async ({ term, data }) => { termMgr().write(term, data); return {}; });
 ipc.register('term', 'resize', { term: termId, cols: types.int(2, 500), rows: types.int(2, 300) }, async ({ term, cols, rows }) => { termMgr().resize(term, cols, rows); return {}; });
 ipc.register('term', 'kill', { term: termId }, async ({ term }) => { termMgr().kill(term); return {}; });
 app.on('before-quit', () => { if (ptyMgr) ptyMgr.killAll(); });
+
+// saved workspaces (WP-34): layout + terminals (profile, root id + folder names) + web tabs + stack cluster, optionally owned by a DevLog line.
+// open() starts the terminals as new sessions and returns the data; the frame applies it. A `cont:<line>` act opens the line's workspace first
+// (setting ws.openWithLine, default true; settings.js has no such key yet, so the default stands: DESK-Q75 A).
+const { createWorkspaces, LINE_RE } = require('./lib/workspaces.js');
+const wsRoots = { get: id => { if (!fsRoots.list().length) fsRoots.load(); return fsRoots.get(id); }, rootOf: a => { if (!fsRoots.list().length) fsRoots.load(); return fsRoots.rootOf(a); } };
+const wsLib = createWorkspaces({
+  file: () => path.join(paths.userDir(), 'workspaces.json'), roots: wsRoots, getTree: () => currentTree().tree,
+  terms: () => [...termSessions.values()],
+  openTerm: (prof, abs) => { const r = termMgr().open(prof, abs); if (r.term) termSessions.set(r.term, { prof, abs }); return r; },
+  defaultDir: () => path.resolve(REPO_DIR),
+});
+const wsLine = v => typeof v === 'string' && LINE_RE.test(v);
+ipc.register('layout', 'workspaces', {}, async () => ({ workspaces: wsLib.list() }));
+ipc.register('layout', 'saveWorkspace', { name: types.text(60), line: wsLine }, async ({ name, line }) => wsLib.save(name, line), { optional: ['line'] });
+ipc.register('layout', 'openWorkspace', { id: types.id }, async ({ id }) => {
+  const r = wsLib.open(id);
+  if (r.ok) { try { settings.set('layout.tree', r.tree); } catch (e) {} }
+  return r;
+});
+const wsOpenWithLine = () => { try { return settings.get('ws.openWithLine') !== false; } catch (e) { return true; } };
+async function runActWithWorkspace(id) {
+  const m = /^cont:([\w-]+)$/.exec(String(id));
+  const w = m && wsOpenWithLine() ? wsLib.forLine(m[1]) : null;
+  if (w && win && !win.isDestroyed()) {
+    const r = wsLib.open(w.id);
+    if (r.ok) { try { settings.set('layout.tree', r.tree); } catch (e) {} ipc.emit(win, 'layout', 'workspace', r); }
+  }
+  return acts.runAct(id);
+}
 
 // web views (WP-17): isolated tabs; the page names a URL or a view id, main does the rest. Downloads land in the `downloads` root after a yes.
 const { createWebHost } = require('./lib/web.js');
@@ -588,7 +620,7 @@ ipc.register('feed', 'open', { pre: types.id, i: types.int(0, 199) }, async ({ p
 });
 app.on('will-quit', () => presetsLib.stop());
 
-ipc.legacy('handle', 'vrg:act',(e, id) => acts.runAct(id));
+ipc.legacy('handle', 'vrg:act',(e, id) => runActWithWorkspace(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);
 ipc.legacy('handle', 'vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });
 ipc.legacy('on', 'vrg:win', (e, cmd) => {
