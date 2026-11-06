@@ -446,7 +446,25 @@ ipc.register('note', 'save', {
   source: types.obj({ kind: types.enum('url', 'file', 'node', 'term', 'chat'), ref: types.text(500) }),
 }, async p => notesLib.save(p), { optional: ['source'] });
 
-ipc.legacy('handle', 'vrg:act', (e, id) => acts.runAct(id));
+// mail (WP-27): Gmail over OAuth (PKCE, loopback, system browser) + the webmail presets. Tokens stay in secrets.bin; the page gets ids and bools.
+const { createOAuth } = require('./lib/oauth.js');
+const { createGmail } = require('./lib/gmail.js');
+const { createMail } = require('./lib/mail.js');
+const oauthLib = createOAuth({
+  secrets, audit,
+  opener: async url => { if (SELFTEST || !types.url(url)) throw new Error('no-browser'); await shell.openExternal(url); },   // the selftest never opens a browser
+});
+const mailLib = createMail({ oauth: oauthLib, gmail: createGmail({ oauth: oauthLib, providers: require('./lib/oauth.js').loadProviders() }), presets: () => readJsonList('web.json') });
+ipc.register('mail', 'accounts', {}, async () => ({ accounts: mailLib.accounts() }));
+ipc.register('mail', 'signIn', { acc: types.id }, async ({ acc }) => mailLib.signIn(acc));
+ipc.register('mail', 'signOut', { acc: types.id }, async ({ acc }) => mailLib.signOut(acc));
+ipc.register('mail', 'list', { acc: types.id, q: types.text(200), page: types.text(200) }, async ({ acc, q, page }) => mailLib.list(acc, q, page), { optional: ['q', 'page'] });
+ipc.register('mail', 'get', { acc: types.id, msg: types.id }, async ({ acc, msg }) => {
+  const r = await mailLib.get(acc, msg);
+  return r.ok ? { ok: true, headers: r.headers, html: r.html, text: r.text, attachments: r.attachments.map(a => ({ att: a.att, name: a.name, size: a.size })) } : r;
+});
+
+ipc.legacy('handle', 'vrg:act',(e, id) => acts.runAct(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);
 ipc.legacy('handle', 'vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });
 ipc.legacy('on', 'vrg:win', (e, cmd) => {

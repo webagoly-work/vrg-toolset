@@ -1,0 +1,9 @@
+{
+  "google": {
+    "auth": "https://accounts.google.com/o/oauth2/v2/auth",
+    "token": "https://oauth2.googleapis.com/token",
+    "revoke": "https://oauth2.googleapis.com/revoke",
+    "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+    "api": "https://gmail.googleapis.com/gmail/v1"
+  }
+}

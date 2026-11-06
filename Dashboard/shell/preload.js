@@ -108,6 +108,13 @@ contextBridge.exposeInMainWorld('vrg', {
     topics: () => call('note', 'topics', {}),
     save: n => call('note', 'save', n && typeof n === 'object' ? Object.fromEntries(['topic', 'title', 'text', 'source'].filter(k => n[k] !== undefined).map(k => [k, n[k]])) : {}),
   },
+  mail: {                                                                        // WP-27; tokens never reach the page
+    accounts: () => call('mail', 'accounts', {}),
+    signIn: acc => call('mail', 'signIn', { acc }),
+    signOut: acc => call('mail', 'signOut', { acc }),
+    list: (acc, q, page) => call('mail', 'list', { acc, ...(q !== undefined ? { q } : {}), ...(page !== undefined ? { page } : {}) }),
+    get: (acc, msg) => call('mail', 'get', { acc, msg }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),
