@@ -114,6 +114,9 @@ contextBridge.exposeInMainWorld('vrg', {
     signOut: acc => call('mail', 'signOut', { acc }),
     list: (acc, q, page) => call('mail', 'list', { acc, ...(q !== undefined ? { q } : {}), ...(page !== undefined ? { page } : {}) }),
     get: (acc, msg) => call('mail', 'get', { acc, msg }),
+    saveAttachment: (acc, msg, att) => call('mail', 'saveAttachment', { acc, msg, att }),     // WP-28; events: vrg.on('mail', 'link', cb)
+    render: (acc, msg, images) => call('mail', 'render', { acc, msg, images: images === true }),
+    closeView: () => call('mail', 'closeView', {}),
   },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),

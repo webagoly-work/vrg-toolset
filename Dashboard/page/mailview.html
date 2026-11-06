@@ -1,0 +1,23 @@
+<!doctype html>
+<!-- mailview.html — the template of the mail read view (WP-28). Not opened as a page: shell/lib/mail.js renderDoc fills the three
+     double-brace slots (CSP, head, body = the DOMPurify-sanitized message) and views.createMailView loads the result in a view with
+     no preload, sandbox and JavaScript off. -->
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="{{csp}}">
+<meta name="referrer" content="no-referrer">
+<title>Levél</title>
+<style>
+  body { margin: 0; padding: 8px 12px; font: 14px/1.4 system-ui, sans-serif; overflow-wrap: anywhere; }
+  [data-role="mail-head"] { padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid #8884; }
+  [data-role="mail-subject"] { font-weight: 600; }
+  [data-role="mail-text"] { white-space: pre-wrap; font: inherit; margin: 0; }
+  img { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<header data-role="mail-head">{{head}}</header>
+<main data-role="mail-body">{{body}}</main>
+</body>
+</html>

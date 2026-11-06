@@ -58,7 +58,7 @@ const acts = createActs({ R, run, ports, log, claudeterm: { open: o => claudeTer
 // else (modes, sizes) is the real window. win.desk hands the frame and the views to the WP-07 probe.
 const selftestWin = () => new Proxy(win, {
   get(t, k) {
-    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs, selMenu, web: webHost, webOps, webBm, innerSearch };
+    if (k === 'desk') return { frame: t, home: homeWc(), views, palette, jobs, selMenu, web: webHost, webOps, webBm, innerSearch, mail: { lib: mailLib, providers: mailProviders, secrets, test: mailTest } };
     if (k === 'webContents') {
       const wc = homeWc() || t.webContents;
       return new Proxy(wc, { get(w, p) {
@@ -449,20 +449,50 @@ ipc.register('note', 'save', {
 // mail (WP-27): Gmail over OAuth (PKCE, loopback, system browser) + the webmail presets. Tokens stay in secrets.bin; the page gets ids and bools.
 const { createOAuth } = require('./lib/oauth.js');
 const { createGmail } = require('./lib/gmail.js');
-const { createMail } = require('./lib/mail.js');
+const { createMail, createSanitizer, linkPolicy } = require('./lib/mail.js');
+const { webPrefs } = require('./lib/views.js');
+const mailProviders = require('./lib/oauth.js').loadProviders();                 // one object: the WP-28 probe points it at the mock
 const oauthLib = createOAuth({
-  secrets, audit,
+  secrets, audit, providers: mailProviders,
   opener: async url => { if (SELFTEST || !types.url(url)) throw new Error('no-browser'); await shell.openExternal(url); },   // the selftest never opens a browser
 });
-const mailLib = createMail({ oauth: oauthLib, gmail: createGmail({ oauth: oauthLib, providers: require('./lib/oauth.js').loadProviders() }), presets: () => readJsonList('web.json') });
+// WP-28: the message HTML is sanitized here in main (DOMPurify in a hidden, sandboxed helper view with no preload), never in a page with window.vrg.
+const mailSanitizer = createSanitizer({
+  WebContentsView, webPrefs, log,
+  source: () => { const u = libUrls().dompurify; if (!u) throw new Error('DOMPurify not vendored'); return require('fs').readFileSync(require('url').fileURLToPath(u), 'utf8'); },
+});
+const mailTest = { loopback: false };                                             // selftest only: lets the read view load the mock's http://127.0.0.1 image
+const mailLink = u => {                                                           // a click in the read view: http(s) → the browser pane, mailto → copy offer, rest refused
+  const p = linkPolicy(u);
+  ipc.emit(win, 'mail', 'link', p.action === 'web' ? { action: 'web', url: p.url } : p.offer ? { action: 'refuse', offer: p.offer, address: p.address, hu: p.hu } : { action: p.action });
+};
+const mailDownloads = () => {
+  if (SELFTEST) return testDownloads;
+  fsRoots.load();
+  const r = fsRoots.get('downloads');
+  return r ? r.real : null;
+};
+const mailLib = createMail({
+  oauth: oauthLib, gmail: createGmail({ oauth: oauthLib, providers: mailProviders }), presets: () => readJsonList('web.json'),
+  jobs, downloadsDir: mailDownloads, sanitize: html => mailSanitizer.sanitize(html), loopback: () => SELFTEST && mailTest.loopback,
+  template: (() => { try { return require('fs').readFileSync(path.join(__dirname, '..', 'page', 'mailview.html'), 'utf8'); } catch (e) { return ''; } })(),
+  readView: {
+    show: (doc, o) => views.createMailView(doc, { onLink: mailLink, onSelection: text => selMenu.popup({ text, origin: 'web', ref: '', window: win }) }),
+    hide: () => views.destroy('mailview'),
+  },
+});
+app.on('will-quit', () => mailSanitizer.close());
 ipc.register('mail', 'accounts', {}, async () => ({ accounts: mailLib.accounts() }));
 ipc.register('mail', 'signIn', { acc: types.id }, async ({ acc }) => mailLib.signIn(acc));
 ipc.register('mail', 'signOut', { acc: types.id }, async ({ acc }) => mailLib.signOut(acc));
 ipc.register('mail', 'list', { acc: types.id, q: types.text(200), page: types.text(200) }, async ({ acc, q, page }) => mailLib.list(acc, q, page), { optional: ['q', 'page'] });
 ipc.register('mail', 'get', { acc: types.id, msg: types.id }, async ({ acc, msg }) => {
   const r = await mailLib.get(acc, msg);
-  return r.ok ? { ok: true, headers: r.headers, html: r.html, text: r.text, attachments: r.attachments.map(a => ({ att: a.att, name: a.name, size: a.size })) } : r;
+  return r.ok ? { ok: true, headers: r.headers, html: r.html, text: r.text, attachments: r.attachments.map(a => ({ att: a.att, name: a.name, size: a.size })) } : r;   // html is sanitized (WP-28, DESK-Q72)
 });
+ipc.register('mail', 'saveAttachment', { acc: types.id, msg: types.id, att: types.id }, async ({ acc, msg, att }) => mailLib.saveAttachment(acc, msg, att));
+ipc.register('mail', 'render', { acc: types.id, msg: types.id, images: types.bool }, async ({ acc, msg, images }) => mailLib.render(acc, msg, images));
+ipc.register('mail', 'closeView', {}, async () => mailLib.closeView());
 
 ipc.legacy('handle', 'vrg:act',(e, id) => acts.runAct(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);

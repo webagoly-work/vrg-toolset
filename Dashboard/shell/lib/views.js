@@ -2,7 +2,8 @@
 //   const views = createViews({ WebContentsView, win, preload, homePage, log });
 //   views.createLocal('home')                     the D0–D4 page with the existing preload (the Kezdőlap)
 //   views.createWeb({ partition, id? })           isolated web content (WP-17) → { id, view } | null
-//   views.setBounds(id, {x,y,w,h}) · hideAll() · showAll() · destroy(id) · has(id) · ids() · get(id)
+//   views.createMailView(html, opts)              the sandboxed, script-free mail read view (WP-28) → { id, view, loaded }
+//   views.setBounds(id,{x,y,w,h}) · hideAll() · showAll() · destroy(id) · has(id) · ids() · get(id)
 // Electron objects are passed in, so node --test can load this file with fakes.
 'use strict';
 
@@ -53,6 +54,31 @@ function createViews({ WebContentsView, win, preload, homePage, log = () => {} }
     return { id, view };
   }
 
+  // The mail read view (WP-28): a local WebContentsView with no preload, sandbox, JavaScript off, its own in-memory partition. `html` is the
+  // finished document (lib/mail.js renderDoc: sanitized body + CSP meta), loaded as a data: URL. Every navigation and window.open is
+  // cancelled and reported to opts.onLink(url); opts.onSelection(text) raises the selection menu. Re-creating keeps the rect the frame sent.
+  function createMailView(html, { onLink = () => {}, onSelection = null, id = 'mailview' } = {}) {
+    const prev = map.get(id);
+    const keep = prev ? { rect: { ...prev.rect }, wanted: prev.wanted } : { rect: { x: 0, y: 0, w: 0, h: 0 }, wanted: false };
+    if (prev) destroy(id);
+    const view = new WebContentsView({ webPreferences: webPrefs('vrg-mailview', { javascript: false }) });
+    const e = { view, rect: keep.rect, wanted: keep.wanted };
+    map.set(id, e);
+    win.contentView.addChildView(view);
+    view.setVisible(false);
+    const wc = view.webContents;
+    const link = u => { try { onLink(String(u)); } catch (err) { log('mail link failed'); } };
+    wc.setWindowOpenHandler(({ url }) => { link(url); return { action: 'deny' }; });
+    wc.on('will-navigate', (ev, u) => { ev.preventDefault(); link(u); });
+    wc.on('will-redirect', ev => ev.preventDefault());
+    if (onSelection) wc.on('context-menu', (ev, p) => { if (p && typeof p.selectionText === 'string' && p.selectionText.trim()) { try { onSelection(p.selectionText); } catch (err) {} } });
+    const loaded = new Promise(res => { wc.once('did-finish-load', () => res(true)); wc.once('did-fail-load', () => res(false)); });
+    wc.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(String(html))).catch(() => {});
+    apply(e);
+    log('view created', id);
+    return { id, view, loaded };
+  }
+
   function setBounds(id, rect) {
     const e = map.get(id);
     if (!e || !validRect(rect)) return false;
@@ -76,7 +102,7 @@ function createViews({ WebContentsView, win, preload, homePage, log = () => {} }
   function destroyAll() { for (const id of [...map.keys()]) destroy(id); }
 
   return {
-    createLocal, createWeb, setBounds, hideAll, showAll, destroy, destroyAll,
+    createLocal, createWeb, createMailView, setBounds, hideAll, showAll, destroy, destroyAll,
     has: id => map.has(id), ids: () => [...map.keys()], get: id => (map.has(id) ? map.get(id).view : null),
     rect: id => (map.has(id) ? { ...map.get(id).rect } : null), isHidden: () => hidden,
   };

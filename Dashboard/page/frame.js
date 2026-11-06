@@ -131,7 +131,14 @@
     window.VRGFrame.search = openSearch;
     window.VRGFrame.ctxAdd = ctxAdd;
     document.addEventListener('vrg-ctx-add', e => { if (e.detail) ctxAdd(e.detail); });
-    window.VRGFrame.mail = (acc) => openWeb('web:' + (acc === 'outlook' ? 'outlook' : 'gmail'));   // "Posta" (WP-26): a web pane tab on the webmail preset
+    // "Posta": a webmail account ('web:<id>', or the WP-26 short names gmail / outlook) opens its web tab; anything else focuses or opens the Mail pane (WP-28)
+    window.VRGFrame.mail = (acc) => {
+      if (acc === 'outlook' || acc === 'gmail') return openWeb('web:' + acc);
+      if (typeof acc === 'string' && /^web:[a-z0-9_-]{1,40}$/.test(acc)) return openWeb(acc);
+      const id = [...panes.keys()].find(k => panes.get(k).kind === 'mail');
+      if (id) { L.focusPane(id); return true; }
+      return !!openKind('mail', {});
+    };
     document.addEventListener('vrg-open-mail', e => { window.VRGFrame.mail(e.detail && e.detail.acc); });
     window.VRGFrame.chat = openChat;
     window.VRGFrame.note = openNote;
