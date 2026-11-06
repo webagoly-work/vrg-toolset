@@ -47,6 +47,11 @@
   [data-role="palette-list"] li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 12px; cursor: pointer; }
   [data-role="palette-list"] li[data-sel="1"] { background: var(--mv-raised); }
   [data-role="palette-list"] .k { color: var(--mv-dim); }
+  [data-role="quick"] { position: fixed; inset: 0; z-index: 110; display: flex; flex-direction: column; align-items: center; padding-top: 12vh; background: rgba(0, 0, 0, .45); }
+  [data-role="quick"][hidden] { display: none; }
+  [data-role="quick"] > * { width: min(640px, 90vw); box-sizing: border-box; background: var(--mv-bg); color: var(--mv-text); border: 1px solid var(--mv-line); }
+  [data-role="quick-input"] { padding: 10px 12px; font: inherit; outline: none; }
+  [data-role="quick-preview"] { padding: 6px 12px; color: var(--mv-dim); }
   [data-role="palette-status"] { padding: 6px 12px; color: var(--mv-dim); }
   [data-role="palette-status"]:empty { display: none; }
   [data-role="toasts"] { position: fixed; right: 18px; bottom: 18px; z-index: 90; display: flex; flex-direction: column; gap: 6px; max-width: 420px; }
@@ -76,6 +81,8 @@
 <script src="../shell/lib/palette.js"></script>
 <script src="layout.js"></script>
 <script src="palette.js"></script>
+<script src="../shell/lib/quick.js"></script>
+<script src="quick.js"></script>
 <script src="toasts.js"></script>
 <script src="frame.js"></script>
 </body>

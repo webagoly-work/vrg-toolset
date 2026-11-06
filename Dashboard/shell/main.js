@@ -26,6 +26,7 @@ const { createSecrets } = require('./lib/secrets.js');
 const layoutLib = require('./lib/layout.js');
 const { createViews } = require('./lib/views.js');
 const { createPalette, loadKeymap } = require('./lib/palette.js');
+const quickLib = require('./lib/quick.js');
 const { createJobs } = require('./lib/jobs.js');
 
 const PAGE = path.join(__dirname, '..', 'vrg-dashboard.html');                 // the Kezdőlap, shown in a view
@@ -117,6 +118,21 @@ function setupShell() {
   if (!ok) {
     audit.write({ ch: 'app.hotkey', ok: false, err: 'taken', key: HOTKEY });
     win.webContents.once('did-finish-load', () => toast('A gyorsbillentyű foglalt: Ctrl+Alt+Space', 'The hotkey is taken: Ctrl+Alt+Space'));
+  }
+  // quick bar (WP-30): works while another program has focus; brings the window forward (also from the hidden overlay), then the page opens the bar
+  const quickKey = quickLib.loadHotkey(path.join(__dirname, '..', 'config', 'keymap.json'));
+  let qok = false;
+  try {
+    qok = globalShortcut.register(quickKey, () => {
+      if (winmodes.state().mode === 'overlay' && !winmodes.state().visible) { winmodes.toggleOverlay(); tray.setMode(winmodes.state().mode); }
+      if (win.isMinimized()) win.restore();
+      win.show(); win.focus();
+      ipc.emit(win, 'quick', 'open', {});
+    });
+  } catch (e) {}
+  if (!qok) {
+    audit.write({ ch: 'app.hotkey', ok: false, err: 'taken', key: quickKey });
+    win.webContents.once('did-finish-load', () => toast('A gyorskereső billentyű foglalt: ' + quickKey, 'The quick bar hotkey is taken: ' + quickKey));
   }
 }
 
@@ -379,6 +395,21 @@ const innerSearch = createInnerSearch({
   statusFile: path.join(FULL_DIR, 'notes', 'stack', 'out', 'STATUS.md'),
 });
 ipc.register('search', 'inner', { q: types.text(300), layers: types.text(20), budget: types.int(100, 4000) }, async ({ q, layers, budget }) => innerSearch.inner({ q, layers, budget }), { optional: ['layers', 'budget'] });
+// quick bar (WP-30): route() decides, main executes what is main's (a palette command, a web URL it resolves itself); the rest goes back as { kind, text }
+// for the page to open (search panel, chat, note dialog, palette). An empty input only returns the history.
+const quickHistory = quickLib.createHistory({ file: path.join(paths.userDir(), 'quick.json') });
+ipc.register('search', 'quick', { input: types.text(500) }, async ({ input }) => {
+  const r = quickLib.route(input, { items: palette.index() });
+  if (r.kind === 'none') return { kind: 'none', history: quickHistory.list() };
+  quickHistory.add(input);
+  const out = { kind: r.kind, text: r.text, history: quickHistory.list() };
+  if (r.kind === 'command') { const c = await palette.run(r.target); return { ...out, ...(c && c.ok === false ? c : {}) }; }
+  if (['google', 'ai', 'url', 'server'].includes(r.kind)) {
+    const url = targetUrl(r.target);
+    return url ? { ...out, url } : { ...NO_TARGET };
+  }
+  return out;
+});
 ipc.register('search', 'openHit', { kind: types.enum('code'), i: types.int(0, 199) }, async ({ i }) => innerSearch.openHit(i));
 ipc.register('search', 'node', { id: types.text(160) }, async ({ id }) => innerSearch.node(id));
 

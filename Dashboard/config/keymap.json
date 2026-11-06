@@ -1,5 +1,6 @@
 {
   "palette": "Ctrl+Shift+P",
+  "quick": "Control+Alt+K",
   "closeTab": "Ctrl+W",
   "split": "Ctrl+\\",
   "splitStacked": "Ctrl+Shift+\\",

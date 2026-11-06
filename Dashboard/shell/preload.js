@@ -85,6 +85,7 @@ contextBridge.exposeInMainWorld('vrg', {
   },
   search: {
     inner: (q, o) => call('search', 'inner', { q, ...(o && typeof o === 'object' ? Object.fromEntries(['layers', 'budget'].filter(k => o[k] !== undefined).map(k => [k, o[k]])) : {}) }),
+    quick: input => call('search', 'quick', { input: String(input == null ? '' : input).slice(0, 500) }),   // event: vrg.on('quick', 'open', cb)
     openHit: (kind, i) => call('search', 'openHit', { kind, i }),
     node: id => call('search', 'node', { id }),
   },
