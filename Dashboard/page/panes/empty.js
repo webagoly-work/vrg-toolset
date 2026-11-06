@@ -8,7 +8,7 @@
     ['files', 'Fájlok', 'Files', 'fs'],
     ['term', 'Terminál', 'Terminal', 'term'],
     ['web', 'Böngésző', 'Browser', 'web'],
-    ['mail', 'Levelek', 'Mail', 'mail'],
+    ['mail', 'Posta', 'Mail', 'mail'],
     ['stack', 'Folyamatok', 'Jobs', null],                 // always listed (DESK-Q23 = C)
     ['chat', 'Chat', 'Chat', 'chat'],
     ['note', 'Jegyzet', 'Note', 'note'],

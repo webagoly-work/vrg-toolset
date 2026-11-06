@@ -29,7 +29,7 @@ if (!all && !/^WP-\d{2}$/i.test(wp)) {
 // ---------------------------------------------------------------- unit tests
 const testDir = __dirname;
 const files = all
-  ? fs.readdirSync(testDir).filter(f => /^wp-\d{2}\.test\.js$/.test(f)).sort().map(f => path.join(testDir, f))
+  ? fs.readdirSync(testDir).filter(f => /^wp-\d{2}[a-z]?\.test\.js$/.test(f)).sort().map(f => path.join(testDir, f))
   : [path.join(testDir, wp.toLowerCase() + '.test.js')].filter(f => fs.existsSync(f));
 const tests = { pass: 0, fail: 0 };
 if (!files.length) tests.fail = 1;                                 // a WP without a test file is not green

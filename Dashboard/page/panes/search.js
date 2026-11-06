@@ -12,6 +12,7 @@
       this.root = root; this.api = api || {}; this.vrg = (api && api.vrg) || W.vrg; this.gone = false;
       this.layers = new Set(Array.isArray(state && state.layers) ? state.layers.filter(l => LAYERS.includes(l)) : []);
       this.last = typeof (state && state.q) === 'string' ? state.q : '';
+      this.only = state && (state.only === 'code' || state.only === 'stack') ? state.only : '';
       root.innerHTML = '';
       root.dataset.role = 'search';
       root.title = 'Internal search';
@@ -40,22 +41,25 @@
       if (this.last) this.run(this.last);
     },
     unmount() { if (this.root) { this.root.removeEventListener('keydown', this.onKey); this.root.innerHTML = ''; } this.root = null; this.gone = true; },
-    state() { return { q: this.last, layers: [...this.layers] }; },
+    state() { return { q: this.last, layers: [...this.layers], only: this.only || undefined }; },
     focus() { if (this.input) { this.input.focus(); this.input.select(); } },
 
-    async run(q) {
+    // run(q, { only: 'code' | 'stack' }?): the quick bar's  k <q>  asks for the code index only (DESK-Q84 C); a run without options keeps the last choice
+    async run(q, o) {
       q = String(q == null ? '' : q).trim().slice(0, 300);
       if (!this.root || !q || !this.vrg || !this.vrg.search) return;
+      if (o && typeof o === 'object') this.only = o.only === 'code' || o.only === 'stack' ? o.only : '';
       this.last = q; this.input.value = q;
       this.status.textContent = 'Keresés…';
-      const opt = this.layers.size ? { layers: LAYERS.filter(l => this.layers.has(l)).join('') } : undefined;
-      const r = await this.vrg.search.inner(q, opt);
+      const opt = this.layers.size ? { layers: LAYERS.filter(l => this.layers.has(l)).join('') } : {};
+      if (this.only) opt.only = this.only;
+      const r = await this.vrg.search.inner(q, Object.keys(opt).length ? opt : undefined);
       if (this.gone) return;
       this.out.innerHTML = '';
       if (!r || r.ok === false) { this.status.textContent = (r && r.hu) || 'A keresés nem sikerült.'; return; }
-      this.status.textContent = r.updated ? 'Rétegverem frissítve: ' + r.updated : '';
-      this.drawStack(r.stack || []);
-      this.drawCode(r.code || [], r);
+      this.status.textContent = this.only === 'code' ? 'Csak a kódindex (k)' : r.updated ? 'Rétegverem frissítve: ' + r.updated : '';
+      if (this.only !== 'code') this.drawStack(r.stack || []);
+      if (this.only !== 'stack') this.drawCode(r.code || [], r);
     },
 
     // "Csomaghoz adás" (DESK-Q57 A): the hit goes to the context pack through the frame's vrg-ctx-add event (a node id, or the code line as text)

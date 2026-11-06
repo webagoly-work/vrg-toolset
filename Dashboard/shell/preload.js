@@ -87,7 +87,7 @@ contextBridge.exposeInMainWorld('vrg', {
     menu: (text, origin, o) => call('sel', 'menu', o && o.dryRun === true ? { text, origin, dryRun: true } : { text, origin }),
   },
   search: {
-    inner: (q, o) => call('search', 'inner', { q, ...(o && typeof o === 'object' ? Object.fromEntries(['layers', 'budget'].filter(k => o[k] !== undefined).map(k => [k, o[k]])) : {}) }),
+    inner: (q, o) => call('search', 'inner', { q, ...(o && typeof o === 'object' ? Object.fromEntries(['layers', 'budget', 'only'].filter(k => o[k] !== undefined).map(k => [k, o[k]])) : {}) }),
     quick: input => call('search', 'quick', { input: String(input == null ? '' : input).slice(0, 500) }),   // event: vrg.on('quick', 'open', cb)
     openHit: (kind, i) => call('search', 'openHit', { kind, i }),
     node: id => call('search', 'node', { id }),
@@ -130,7 +130,7 @@ contextBridge.exposeInMainWorld('vrg', {
     list: (acc, q, page) => call('mail', 'list', { acc, ...(q !== undefined ? { q } : {}), ...(page !== undefined ? { page } : {}) }),
     get: (acc, msg) => call('mail', 'get', { acc, msg }),
     saveAttachment: (acc, msg, att) => call('mail', 'saveAttachment', { acc, msg, att }),     // WP-28; events: vrg.on('mail', 'link', cb)
-    render: (acc, msg, images) => call('mail', 'render', { acc, msg, images: images === true }),
+    render: (acc, msg, images, html) => call('mail', 'render', typeof html === 'string' ? { acc, msg, images: images === true, html } : { acc, msg, images: images === true }),
     closeView: () => call('mail', 'closeView', {}),
   },
   feed: {                                                                        // WP-29; a job's end arrives as vrg.on('jobs', 'update', cb) with kind 'feed'

@@ -307,7 +307,7 @@ app.on('before-quit', () => { if (ptyMgr) ptyMgr.killAll(); });
 
 // saved workspaces (WP-34): layout + terminals (profile, root id + folder names) + web tabs + stack cluster, optionally owned by a DevLog line.
 // open() starts the terminals as new sessions and returns the data; the frame applies it. A `cont:<line>` act opens the line's workspace first
-// (setting ws.openWithLine, default true; settings.js has no such key yet, so the default stands: DESK-Q75 A).
+// (setting ws.openWithLine, default true; in settings.js KEYS since WP-35a, DESK-Q91 A).
 const { createWorkspaces, LINE_RE } = require('./lib/workspaces.js');
 const wsRoots = { get: id => { if (!fsRoots.list().length) fsRoots.load(); return fsRoots.get(id); }, rootOf: a => { if (!fsRoots.list().length) fsRoots.load(); return fsRoots.rootOf(a); } };
 const wsLib = createWorkspaces({
@@ -426,7 +426,7 @@ const innerSearch = createInnerSearch({
   issue: abs => { if (!fsRoots.list().length) fsRoots.load(); return fsHandles.issue(abs); },
   statusFile: path.join(FULL_DIR, 'notes', 'stack', 'out', 'STATUS.md'),
 });
-ipc.register('search', 'inner', { q: types.text(300), layers: types.text(20), budget: types.int(100, 4000) }, async ({ q, layers, budget }) => innerSearch.inner({ q, layers, budget }), { optional: ['layers', 'budget'] });
+ipc.register('search', 'inner', { q: types.text(300), layers: types.text(20), budget: types.int(100, 4000), only: types.enum('code', 'stack') }, async ({ q, layers, budget, only }) => innerSearch.inner({ q, layers, budget, only }), { optional: ['layers', 'budget', 'only'] });
 // quick bar (WP-30): route() decides, main executes what is main's (a palette command, a web URL it resolves itself); the rest goes back as { kind, text }
 // for the page to open (search panel, chat, note dialog, palette). An empty input only returns the history.
 const quickHistory = quickLib.createHistory({ file: path.join(paths.userDir(), 'quick.json') });
@@ -520,6 +520,9 @@ const gitExe = () => {                                                          
 };
 const gitLib = require('./lib/git.js').createGit({
   execFile: require('child_process').execFile, git: gitExe(), node: nodeExe(), anonymiseJs: path.join(path.resolve(REPO_DIR), 'tools', 'anonymise.js'),
+  // DESK-Q87 C: the gitignored map lives in the main checkout; a worktree (this one, wt-desktop-os) has none of its own. No map anywhere → every push refused.
+  anonymiseMap: () => [path.join(path.resolve(REPO_DIR), 'tools', 'anonymise.map.json'), path.join(FULL_DIR, 'Planner_VRG_U100', 'tools', 'anonymise.map.json')]
+    .find(f => { try { return require('fs').statSync(f).isFile(); } catch (e) { return false; } }) || '',
   repos: () => ((R.C && R.C.menu && R.C.menu.repos) || []).filter(r => r && r.name && r.path).map(r => ({ name: r.name, path: R.expand(r.path) })),
   openTerm: (cwd, args) => {
     if (SELFTEST) return { ok: false, hu: 'A teszt nem nyit terminált.' };
@@ -544,18 +547,14 @@ ipc.register('git', 'push', { repo: gitRepo, confirm: types.text(80) }, async ({
 // mail (WP-27): Gmail over OAuth (PKCE, loopback, system browser) + the webmail presets. Tokens stay in secrets.bin; the page gets ids and bools.
 const { createOAuth } = require('./lib/oauth.js');
 const { createGmail } = require('./lib/gmail.js');
-const { createMail, createSanitizer, linkPolicy } = require('./lib/mail.js');
+const { createMail, linkPolicy } = require('./lib/mail.js');
 const { webPrefs } = require('./lib/views.js');
 const mailProviders = require('./lib/oauth.js').loadProviders();                 // one object: the WP-28 probe points it at the mock
 const oauthLib = createOAuth({
   secrets, audit, providers: mailProviders,
   opener: async url => { if (SELFTEST || !types.url(url)) throw new Error('no-browser'); await shell.openExternal(url); },   // the selftest never opens a browser
 });
-// WP-28: the message HTML is sanitized here in main (DOMPurify in a hidden, sandboxed helper view with no preload), never in a page with window.vrg.
-const mailSanitizer = createSanitizer({
-  WebContentsView, webPrefs, log,
-  source: () => { const u = libUrls().dompurify; if (!u) throw new Error('DOMPurify not vendored'); return require('fs').readFileSync(require('url').fileURLToPath(u), 'utf8'); },
-});
+// DESK-Q73 B (WP-35a): the Posta pane cleans the message HTML with DOMPurify (lib/mailclean.js); the read view below has no script either way.
 const mailTest = { loopback: false };                                             // selftest only: lets the read view load the mock's http://127.0.0.1 image
 const mailLink = u => {                                                           // a click in the read view: http(s) → the browser pane, mailto → copy offer, rest refused
   const p = linkPolicy(u);
@@ -569,24 +568,23 @@ const mailDownloads = () => {
 };
 const mailLib = createMail({
   oauth: oauthLib, gmail: createGmail({ oauth: oauthLib, providers: mailProviders }), presets: () => readJsonList('web.json'),
-  jobs, downloadsDir: mailDownloads, sanitize: html => mailSanitizer.sanitize(html), loopback: () => SELFTEST && mailTest.loopback,
+  jobs, downloadsDir: mailDownloads, loopback: () => SELFTEST && mailTest.loopback,
   template: (() => { try { return require('fs').readFileSync(path.join(__dirname, '..', 'page', 'mailview.html'), 'utf8'); } catch (e) { return ''; } })(),
   readView: {
     show: (doc, o) => views.createMailView(doc, { onLink: mailLink, onSelection: text => selMenu.popup({ text, origin: 'web', ref: '', window: win }) }),
     hide: () => views.destroy('mailview'),
   },
 });
-app.on('will-quit', () => mailSanitizer.close());
 ipc.register('mail', 'accounts', {}, async () => ({ accounts: mailLib.accounts() }));
 ipc.register('mail', 'signIn', { acc: types.id }, async ({ acc }) => mailLib.signIn(acc));
 ipc.register('mail', 'signOut', { acc: types.id }, async ({ acc }) => mailLib.signOut(acc));
 ipc.register('mail', 'list', { acc: types.id, q: types.text(200), page: types.text(200) }, async ({ acc, q, page }) => mailLib.list(acc, q, page), { optional: ['q', 'page'] });
 ipc.register('mail', 'get', { acc: types.id, msg: types.id }, async ({ acc, msg }) => {
   const r = await mailLib.get(acc, msg);
-  return r.ok ? { ok: true, headers: r.headers, html: r.html, text: r.text, attachments: r.attachments.map(a => ({ att: a.att, name: a.name, size: a.size })) } : r;   // html is sanitized (WP-28, DESK-Q72)
+  return r.ok ? { ok: true, headers: r.headers, html: r.html, text: r.text, attachments: r.attachments.map(a => ({ att: a.att, name: a.name, size: a.size })) } : r;   // html as sent; the pane cleans it (DESK-Q73 B)
 });
 ipc.register('mail', 'saveAttachment', { acc: types.id, msg: types.id, att: types.id }, async ({ acc, msg, att }) => mailLib.saveAttachment(acc, msg, att));
-ipc.register('mail', 'render', { acc: types.id, msg: types.id, images: types.bool }, async ({ acc, msg, images }) => mailLib.render(acc, msg, images));
+ipc.register('mail', 'render', { acc: types.id, msg: types.id, images: types.bool, html: types.text(1500000) }, async ({ acc, msg, images, html }) => mailLib.render(acc, msg, images, html), { optional: ['html'] });
 ipc.register('mail', 'closeView', {}, async () => mailLib.closeView());
 
 // presets and feeds (WP-29): config/presets.json + <userDir>/presets.json; each run is a job, results are cached in the cache dir.

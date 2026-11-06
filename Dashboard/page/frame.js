@@ -122,22 +122,27 @@
     new MutationObserver(scheduleBounds).observe(root, { subtree: true, attributes: true, attributeFilter: ['data-view', 'hidden'] });
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && saveTimer) { clearTimeout(saveTimer); save(); } });
     scheduleBounds();
-    if (vrg && vrg.on) vrg.on('layout', 'open', m => (m && m.kind === 'term' && typeof m.term === 'string' ? adoptTerm(m) : openKind(m.kind, m.state)));
+    if (vrg && vrg.on) vrg.on('layout', 'open', m => (m && m.kind === 'workspaces' ? showWorkspaces()           // palette "Munkaterek" (DESK-Q93, WP-35a)
+      : m && m.kind === 'term' && typeof m.term === 'string' ? adoptTerm(m) : openKind(m.kind, m.state)));
     // "Terminál itt" (files pane): the files pane fires  vrg-open-term  with detail { at: <dir handle> }
     document.addEventListener('vrg-open-term', e => openKind('term', { prof: 'pwsh', at: e.detail && e.detail.at }));
     initPalette();
     initSelection();
     initSearch();
     window.VRGFrame.search = openSearch;
+    window.VRGFrame.openSide = url => (typeof url === 'string' && /^https?:\/\//i.test(url) ? openSide(url.slice(0, 4000)) : false);
     window.VRGFrame.ctxAdd = ctxAdd;
     document.addEventListener('vrg-ctx-add', e => { if (e.detail) ctxAdd(e.detail); });
-    // "Posta": a webmail account ('web:<id>', or the WP-26 short names gmail / outlook) opens its web tab; anything else focuses or opens the Mail pane (WP-28)
+    // DESK-Q74 B (WP-35a): mail() opens the webmail as in WP-26 (no argument → Gmail web, 'outlook', or a 'web:<id>' preset);
+    // the Posta pane opens from the palette ("Posta", pane:mail) or with mail('posta'), which focuses an open one first
     window.VRGFrame.mail = (acc) => {
-      if (acc === 'outlook' || acc === 'gmail') return openWeb('web:' + acc);
+      if (acc === 'posta') {
+        const id = [...panes.keys()].find(k => panes.get(k).kind === 'mail');
+        if (id) { L.focusPane(id); return true; }
+        return !!openKind('mail', {});
+      }
       if (typeof acc === 'string' && /^web:[a-z0-9_-]{1,40}$/.test(acc)) return openWeb(acc);
-      const id = [...panes.keys()].find(k => panes.get(k).kind === 'mail');
-      if (id) { L.focusPane(id); return true; }
-      return !!openKind('mail', {});
+      return openWeb('web:' + (acc === 'outlook' ? 'outlook' : 'gmail'));
     };
     document.addEventListener('vrg-open-mail', e => { window.VRGFrame.mail(e.detail && e.detail.acc); });
     window.VRGFrame.workspaces = showWorkspaces;
@@ -184,6 +189,35 @@
     return undefined;
   }
   // a web pane (made if none is open) takes the target (an http(s) URL or srch:<id>:<words>) in a new tab
+  // DESK-Q82 B (WP-35a): the quick bar's  ai <q>  /  ? <q>  opens in a narrow browser pane on the right (34 %, DESK-Q06 A). The pane made for
+  // it is remembered and reused while it exists; otherwise the focused group is split and the right half becomes a browser pane.
+  const SIDE_RATIO = 0.66;
+  let sideWeb = '';
+  async function openSide(target) {
+    if (typeof target !== 'string' || !target) return false;
+    let id = sideWeb && panes.has(sideWeb) && panes.get(sideWeb).kind === 'web' ? sideWeb : '';
+    if (!id) {
+      const t0 = L.tree(), at = lib.find(t0, L.focused()) || lib.find(t0, lib.panes(t0)[0].id);
+      if (!at) return openWeb(target);
+      const before = new Set(lib.panes(t0).map(p => p.id));
+      let t = lib.split(t0, at.pane.id, 'h');
+      const fresh = lib.panes(t).find(p => !before.has(p.id));
+      if (!fresh) return openWeb(target);                                  // no room (depth / pane limits): a normal tab
+      t = lib.replace(t, fresh.id, 'web', {});
+      const hit = lib.find(t, fresh.id);
+      if (hit && hit.path !== '') t = lib.setRatio(t, hit.path.slice(0, -1), SIDE_RATIO);
+      else if (t.root && t.root.dir) t = lib.setRatio(t, '', SIDE_RATIO);
+      L.commit(t);
+      L.focusPane(fresh.id);
+      id = sideWeb = fresh.id;
+    } else L.focusPane(id);
+    let inst = null;
+    for (let i = 0; i < 100 && !(inst && inst.openTarget); i++) { await new Promise(r => setTimeout(r, 50)); inst = (panes.get(id) || {}).inst; }
+    if (!inst || !inst.openTarget) return false;
+    inst.openTarget(target);
+    return true;
+  }
+
   async function openWeb(target) {
     let id = [...panes.keys()].find(k => panes.get(k).kind === 'web');
     if (id) L.focusPane(id); else id = openKind('web', {});
@@ -241,8 +275,10 @@
   // ------------------------------------------------------------ internal search (WP-20)
   // "Belső keresés" is a panel over the layout (not a layout pane kind): Ctrl+Shift+F, or the selection menu. Esc / Bezár closes it.
   let searchBox = null, searchInst = null;
-  async function openSearch(q) {
-    if (searchBox && searchInst) { searchInst.focus(); if (q) searchInst.run(q); return searchBox; }
+  // openSearch(q, { only? }): only 'code' = the code index alone (the quick bar's  k , DESK-Q84 C); without it both halves
+  async function openSearch(q, o) {
+    const opts = { only: o && (o.only === 'code' || o.only === 'stack') ? o.only : '' };
+    if (searchBox && searchInst) { searchInst.focus(); if (q) searchInst.run(q, opts); return searchBox; }
     if (!(await loadKind('search'))) { log('warn', 'search pane not available'); return null; }
     if (searchBox) return searchBox;
     const box = document.createElement('div');
@@ -253,7 +289,7 @@
     searchBox = box; searchInst = Object.create(P.search);
     searchInst.mount(box, {}, { vrg, close });
     searchInst.focus();
-    if (q) searchInst.run(q);
+    if (q) searchInst.run(q, opts);
     return box;
   }
   function initSearch() {

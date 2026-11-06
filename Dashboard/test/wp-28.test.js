@@ -1,4 +1,4 @@
-// WP-28: Mail pane — the CSP builder, the link policy, the read-view document, the sanitizer call, the read-view guards and the
+// WP-28: Mail pane — the CSP builder, the link policy, the read-view document, the page-side cleaner (WP-35a), the read-view guards and the
 // attachment job, with fakes only (no Electron, no network). The real DOMPurify / read view / mock-google run in selftest/wp-28.js.
 'use strict';
 const test = require('node:test');
@@ -7,7 +7,8 @@ const fs = require('fs'), path = require('path'), os = require('os');
 const { EventEmitter } = require('events');
 
 const mailLib = require('../shell/lib/mail.js');
-const { createMail, cspFor, linkPolicy, renderDoc, hasRemoteImages, sanitizeCall, SANITIZE } = mailLib;
+const { createMail, cspFor, linkPolicy, renderDoc, hasRemoteImages, SANITIZE } = mailLib;
+const mailClean = require('../shell/lib/mailclean.js');
 const { createViews } = require('../shell/lib/views.js');
 const { createJobs } = require('../shell/lib/jobs.js');
 const pane = require('../page/panes/mail.js');
@@ -60,15 +61,25 @@ test('hasRemoteImages', () => {
   assert.equal(hasRemoteImages('<p>no images</p>'), false);
 });
 
-test('the sanitizer call carries the forbid lists and the URI rule', () => {
+test('the page-side cleaner: forbid lists, URI rule, fail closed (DESK-Q73 B)', () => {
+  assert.equal(SANITIZE, mailClean.SANITIZE);                                   // one list for main and the page
   for (const t of ['script', 'iframe', 'object', 'embed', 'form', 'svg', 'meta', 'base', 'link']) assert.ok(SANITIZE.forbidTags.includes(t), t);
   assert.ok(SANITIZE.forbidAttr.includes('srcdoc'));
   const re = new RegExp(SANITIZE.uri, 'i');
   for (const ok of ['http://a', 'https://a', 'mailto:a@b', 'cid:x', 'data:image/png;base64,AA']) assert.ok(re.test(ok), ok);
   for (const bad of ['javascript:alert(1)', 'data:text/html,x', 'file:///x', 'vbscript:x']) assert.ok(!re.test(bad), bad);
-  const code = sanitizeCall('<p>"quoted" </script> \u2028</p>');
-  assert.match(code, /^\(function\(h\)\{return DOMPurify\.sanitize\(h,/);
-  assert.doesNotThrow(() => new Function(code));                          // the generated source parses, whatever the mail contained
+  const seen = [];
+  const fake = { sanitize: (h, c) => { seen.push({ h, c }); return '<p>clean</p>'; } };
+  assert.equal(mailClean.clean(fake, '<script>1</script><p>a</p>'), '<p>clean</p>');
+  assert.deepEqual(seen[0].c.FORBID_TAGS, SANITIZE.forbidTags.slice());
+  assert.equal(seen[0].c.ALLOW_UNKNOWN_PROTOCOLS, false);
+  assert.ok(seen[0].c.ALLOWED_URI_REGEXP instanceof RegExp);
+  assert.equal(mailClean.clean(null, '<p>a</p>'), '', 'no DOMPurify → no HTML');
+  assert.equal(mailClean.clean({ sanitize: () => { throw new Error('x'); } }, '<p>a</p>'), '', 'a throwing DOMPurify → no HTML');
+  assert.equal(mailClean.clean({ sanitize: () => ({ not: 'a string' }) }, '<p>a</p>'), '');
+  assert.equal(mailClean.clean(fake, ''), '');
+  const big = []; mailClean.clean({ sanitize: h => { big.push(h.length); return 'x'; } }, 'y'.repeat(mailClean.HTML_MAX + 10));
+  assert.equal(big[0], mailClean.HTML_MAX);
 });
 
 // ---- createMail with fakes
@@ -81,36 +92,34 @@ const GMAIL = {
 };
 const OAUTH = { signedIn: () => true };
 
-test('get: the HTML comes back only through the sanitizer; without one there is none', async () => {
-  const seen = [];
-  const withSan = createMail({ oauth: OAUTH, gmail: GMAIL, sanitize: async h => { seen.push(h); return '<p>a</p>'; } });
-  const r = await withSan.get('gmail-api', 'm1');
+test('get: the HTML comes back as sent; the pane cleans it (DESK-Q73 B)', async () => {
+  const mail = createMail({ oauth: OAUTH, gmail: GMAIL });
+  const r = await mail.get('gmail-api', 'm1');
   assert.equal(r.ok, true);
-  assert.equal(r.html, '<p>a</p>');
-  assert.deepEqual(seen, ['<script>1</script><p>a</p>']);
-  const without = createMail({ oauth: OAUTH, gmail: GMAIL });
-  assert.equal((await without.get('gmail-api', 'm1')).html, '');
-  const broken = createMail({ oauth: OAUTH, gmail: GMAIL, sanitize: async () => { throw new Error('helper down'); } });
-  assert.equal((await broken.get('gmail-api', 'm1')).html, '');
-  assert.equal((await withSan.get('gmail-api', 'nope')).err, 'not-found');
-  assert.equal((await withSan.get('web:gmail', 'm1')).err, 'not-found');          // no presets here → unknown account
+  assert.equal(r.html, '<script>1</script><p>a</p>');
+  assert.equal((await mail.get('gmail-api', 'nope')).err, 'not-found');
+  assert.equal((await mail.get('web:gmail', 'm1')).err, 'not-found');             // no presets here → unknown account
 });
 
 test('render hands the read view a finished document with the right CSP', async () => {
   const shown = [];
   const mail = createMail({
-    oauth: OAUTH, gmail: GMAIL, template: TEMPLATE, sanitize: async () => '<p>a</p><img src="https://x.test/i.png">', loopback: () => false,
+    oauth: OAUTH, gmail: GMAIL, template: TEMPLATE, loopback: () => false,
     readView: { show: (doc, o) => shown.push({ doc, o }), hide: () => shown.push('hide') },
   });
-  const r1 = await mail.render('gmail-api', 'm1', false);
+  const CLEAN = '<p>a</p><img src="https://x.test/i.png">';
+  const r1 = await mail.render('gmail-api', 'm1', false, CLEAN);
   assert.deepEqual(r1, { ok: true, view: 'mailview', remote: true, images: false });
+  assert.ok(shown[0].doc.includes(CLEAN), 'the cleaned HTML from the pane is the body');
   assert.match(shown[0].doc, /img-src data: cid:; style-src/);
   assert.ok(!shown[0].doc.includes('<script'));
-  const r2 = await mail.render('gmail-api', 'm1', true);
+  const r2 = await mail.render('gmail-api', 'm1', true, CLEAN);
   assert.equal(r2.images, true);
   assert.match(shown[1].doc, /img-src https: data: cid:; style-src/);
   assert.deepEqual(mail.closeView(), { ok: true });
   assert.equal(shown[2], 'hide');
+  await mail.render('gmail-api', 'm1', false);                                     // no cleaned HTML → the text part, never the raw HTML
+  assert.ok(!shown[3].doc.includes('<script') && shown[3].doc.includes('plain'));
   assert.equal((await createMail({ oauth: OAUTH, gmail: GMAIL }).render('gmail-api', 'm1', false)).err, 'unavailable');
 });
 

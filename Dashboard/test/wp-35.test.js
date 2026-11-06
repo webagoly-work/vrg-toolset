@@ -126,15 +126,8 @@ function badPayloads(spec) {
 // the page's sender, as the real window has it
 const send = async (ch, payload, url = FRAME_URL) => wrappers.get('vrg2:' + ch)({ senderFrame: { url } }, payload);
 
-// pinned findings (see SECURITY.md). Each is a rule of the brief that does not hold today.
-const KNOWN_ID_PATH_CHANNELS = [
-  'chat.follow.chat', 'chat.history.chat', 'chat.stop.chat', 'chat.toTerminal.chat', 'ctx.deleteCluster.id', 'ctx.sendToClaude.packId',
-  'feed.open.pre', 'feed.run.pre', 'fs.answer.job', 'git.branch.repo', 'git.branches.repo', 'git.commit.repo', 'git.diff.repo', 'git.log.repo',
-  'git.push.repo', 'git.status.repo', 'git.worktrees.repo', 'jobs.answer.choice', 'jobs.answer.job', 'jobs.cancel.job', 'layout.bounds.viewId',
-  'layout.openWorkspace.id', 'mail.get.acc', 'mail.get.msg', 'mail.list.acc', 'mail.render.acc', 'mail.render.msg', 'mail.saveAttachment.acc',
-  'mail.saveAttachment.att', 'mail.saveAttachment.msg', 'mail.signIn.acc', 'mail.signOut.acc', 'term.open.prof', 'web.answer.ask',
-  'web.bookmark.view', 'web.close.view', 'web.external.view', 'web.find.view', 'web.go.view', 'web.nav.view', 'web.zoom.view',
-];
+// pinned findings (see SECURITY.md). F1 was fixed in WP-35a (DESK-Q96 A): no id field lets path-looking text through any more.
+const KNOWN_ID_PATH_CHANNELS = [];
 let measuredIdFindings = null;
 
 test('main.js loads without Electron and registers the channels', () => {
@@ -181,14 +174,14 @@ test('IPC fuzz: 40+ bad payloads per channel; malformed ones are refused, no han
   measuredIdFindings = [...idFindings].sort();
 });
 
-test('FINDING F1 (pinned): the `id` type admits path-looking text (ipc.js:43), so these id fields let "../..", "/x", "file:///" through', () => {
-  // The handlers re-resolve ids against registries and never open them as paths, so this is hardening, not an exploit. Fix: tighten types.id
-  // (no "..", no leading "/", no "file:") and drop this test's expectation.
-  assert.ok(T.id('../..') && T.id('file:///') && T.id('/etc/passwd') && T.id('c:/windows'), 'types.id still admits path-looking text');
+test('F1 fixed (WP-35a): the `id` type refuses path-looking text, and no id field lets "../..", "/x", "file:///" through', () => {
+  for (const bad of ['../..', '..', 'a/../b', 'root:..', 'file:///', 'file:x', '/etc/passwd', 'c:/windows', 'a//b']) assert.equal(T.id(bad), false, bad);
+  for (const ok of ['root:demo', 'web:gmail', 'gmail-api', 'line:planner-stack', 'a1', '18f2a9c3b1d2e4f5', 'name.txt', 'desktop-os/wp-35', 'srv:hub'])
+    assert.equal(T.id(ok), true, ok);
   assert.equal(T.id('C:\\Windows'), false);
   assert.equal(T.id('..\\..'), false);
   assert.equal(T.id('\\\\server\\share'), false);
-  assert.ok(measuredIdFindings && measuredIdFindings.length > 0);
+  assert.ok(Array.isArray(measuredIdFindings));
   assert.deepEqual(measuredIdFindings, KNOWN_ID_PATH_CHANNELS);
 });
 

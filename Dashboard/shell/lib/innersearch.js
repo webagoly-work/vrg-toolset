@@ -1,6 +1,6 @@
 // innersearch.js — "Belső keresés" (WP-20): the VRG Stack (stack.js q) and the code index (tools/vrg-ctx.js q) in one answer.
 //   const is = createInnerSearch({ execFile, node, full, repo, issue, statusFile });
-//   is.inner({ q, layers, budget }) → { stack:[hit], code:[hit], codeErr?, updated? }     is.node(id) → { text }     is.openHit(i) → { handle, name, line }
+//   is.inner({ q, layers, budget, only? }) → (only 'code' | 'stack' skips the other half, DESK-Q84 C) { stack:[hit], code:[hit], codeErr?, updated? }     is.node(id) → { text }     is.openHit(i) → { handle, name, line }
 // The stack dir comes from {full}\notes\stack, never from the page. The query is always ONE argv item (no shell); `index` is never run here.
 // Electron stays out: execFile and the handle issuer are passed in, so node --test can load this file.
 'use strict';
@@ -97,13 +97,16 @@ function createInnerSearch({ execFile, node = 'node', full, repo, issue = () => 
     return hits ? { ok: true, hits } : { ok: false, err: 'failed', hu: 'A kódkeresés válasza nem olvasható.' };
   }
 
-  async function inner({ q, layers, budget } = {}) {
+  const SKIPPED = Object.freeze({ ok: true, hits: [] });
+  async function inner({ q, layers, budget, only } = {}) {
     const query = cleanQuery(q), l = cleanLayers(layers);
     if (!query) return bad('Üres keresés.');
     if (l === null) return bad('Érvénytelen réteg.');
-    const [s, c] = await Promise.all([stack(query, { layers: l, budget }), code(query, {})]);
+    if (only != null && only !== 'code' && only !== 'stack') return bad('Érvénytelen keresési rész.');
+    const [s, c] = await Promise.all([only === 'code' ? SKIPPED : stack(query, { layers: l, budget }), only === 'stack' ? SKIPPED : code(query, {})]);
     lastCode = c.ok ? c.hits : [];
     const out = { stack: s.ok ? s.hits : [], code: lastCode, updated: '' };
+    if (only) out.only = only;
     if (!s.ok) out.stackErr = s.err;
     if (!c.ok) { out.codeErr = c.err; out.codeHu = c.hu; }
     try { if (statusFile) out.updated = buildTime(fs.readFileSync(statusFile, 'utf8')); } catch (e) {}

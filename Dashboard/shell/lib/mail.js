@@ -1,9 +1,9 @@
 // mail.js — the vrg.mail surface (WP-27, WP-28): Gmail API accounts (OAuth) and the webmail presets (WP-26, kind 'web') in one list.
-//   const mail = createMail({ oauth, gmail, presets: () => [...config/web.json], jobs, downloadsDir, sanitize, readView, template });
-//   accounts() · signIn(acc) · signOut(acc) · list(acc, q, page) · get(acc, msg) · render(acc, msg, images) · saveAttachment(acc, msg, att) · closeView()
+//   const mail = createMail({ oauth, gmail, presets: () => [...config/web.json], jobs, downloadsDir, readView, template });
+//   accounts() · signIn(acc) · signOut(acc) · list(acc, q, page) · get(acc, msg) · render(acc, msg, images, html?) · saveAttachment(acc, msg, att) · closeView()
 // A token never leaves main: the page sees ids and the bool signedIn. Web accounts sign in inside their own pane.
-// WP-28: the raw HTML of a message is sanitized in main (createSanitizer: DOMPurify inside a hidden, sandboxed helper view with no preload),
-// so it never reaches a page that has window.vrg. The read view (views.createMailView) gets only the sanitized document.
+// DESK-Q73 B (WP-35a): get() returns the message HTML as Gmail sent it; the Posta pane cleans it with DOMPurify (lib/mailclean.js) and hands
+// the cleaned HTML to render(). The read view (views.createMailView) stays the safety net: no preload, JavaScript off, a CSP without script-src.
 'use strict';
 
 const API_ACCOUNTS = [{ acc: 'gmail-api', hu: 'Gmail (API)', provider: 'google' }];
@@ -46,66 +46,31 @@ function renderDoc(template, { csp, headers = {}, html = '', text = '' }) {
   return String(template).replace('{{csp}}', () => esc(csp)).replace('{{head}}', () => head).replace('{{body}}', () => body);
 }
 
+const { SANITIZE } = require('./mailclean.js');
 const hasRemoteImages = html => /<img\b[^>]*\bsrc\s*=\s*["']?\s*https?:/i.test(String(html || ''));
 
-// DOMPurify settings for mail. Runs in the helper view; ALLOWED_URI_REGEXP travels as a source string (a RegExp is not JSON).
-const SANITIZE = Object.freeze({
-  uri: '^(?:https?:|mailto:|cid:|data:image/)',
-  forbidTags: Object.freeze(['script', 'iframe', 'frame', 'frameset', 'object', 'embed', 'applet', 'form', 'input', 'button', 'textarea', 'select',
-    'link', 'meta', 'base', 'svg', 'math', 'video', 'audio', 'source', 'track', 'template']),
-  forbidAttr: Object.freeze(['srcdoc', 'formaction', 'action', 'ping', 'target', 'autofocus']),
-});
-const sanitizeCall = html => '(function(h){return DOMPurify.sanitize(h,{USE_PROFILES:{html:true},FORCE_BODY:true,ALLOW_DATA_ATTR:false,ALLOW_UNKNOWN_PROTOCOLS:false,'
-  + 'FORBID_TAGS:' + JSON.stringify(SANITIZE.forbidTags) + ',FORBID_ATTR:' + JSON.stringify(SANITIZE.forbidAttr)
-  + ',ALLOWED_URI_REGEXP:new RegExp(' + JSON.stringify(SANITIZE.uri) + ',"i")});})(' + JSON.stringify(String(html)) + ')';
-
-// The helper: a WebContentsView that is never attached to a window (so it never keeps the app alive), no preload, sandbox, own in-memory
-// partition. DOMPurify parses with DOMParser (inert: nothing runs, nothing loads). `source()` returns the text of purify.min.js.
-function createSanitizer({ WebContentsView, webPrefs, source, log = () => {} }) {
-  let view = null, ready = null;
-  const start = () => {
-    view = new WebContentsView({ webPreferences: webPrefs('vrg-mailsan') });
-    const wc = view.webContents;
-    wc.setWindowOpenHandler(() => ({ action: 'deny' }));
-    wc.on('will-navigate', ev => ev.preventDefault());
-    return wc.loadURL('about:blank').then(() => wc.executeJavaScript(String(source()) + '\n;typeof DOMPurify', true))
-      .then(t => { if (t !== 'function') throw new Error('DOMPurify missing'); });
-  };
-  async function sanitize(html) {
-    if (!ready) ready = start().catch(e => { log('mail sanitizer failed: ' + e.message); ready = null; throw e; });
-    await ready;
-    const out = await view.webContents.executeJavaScript(sanitizeCall(html), true);
-    return typeof out === 'string' ? out : '';
-  }
-  const close = () => { try { if (view && !view.webContents.isDestroyed()) view.webContents.close(); } catch (e) {} view = null; ready = null; };
-  return { sanitize, close };
-}
-
 // ------------------------------------------------------------ the module
-function createMail({ oauth, gmail, presets = () => [], jobs = null, downloadsDir = () => null, sanitize = null, readView = null, template = '', loopback = () => false, fs = require('fs'), path = require('path') }) {
+function createMail({ oauth, gmail, presets = () => [], jobs = null, downloadsDir = () => null, readView = null, template = '', loopback = () => false, fs = require('fs'), path = require('path') }) {
   const web = () => (presets() || []).filter(p => p && p.mail === true && /^[a-z0-9_-]{1,40}$/.test(String(p.id)))
     .map(p => ({ acc: 'web:' + p.id, kind: 'web', hu: String(p.hu || p.id), signedIn: false }));
   const api = acc => API_ACCOUNTS.find(a => a.acc === acc) || null;
   const guard = acc => api(acc) ? null : (String(acc).startsWith('web:') && web().some(w => w.acc === acc) ? { ...WEB_ONLY } : { ...UNKNOWN });
-  const clean = async html => (html && sanitize ? sanitize(html) : '');           // no sanitizer → no HTML at all (fail closed)
-
   async function get(acc, msg) {
     const g = guard(acc); if (g) return g;
     const r = await gmail.get(acc, msg);
-    if (!r.ok) return r;
-    let html = '';
-    try { html = await clean(r.html); } catch (e) { html = ''; }
-    return { ...r, html };
+    return r.ok ? { ...r, html: typeof r.html === 'string' ? r.html : '' } : r;
   }
 
-  async function render(acc, msg, images) {
+  // html = what the pane cleaned (mailclean.js); without it (no DOMPurify in the page) the read view shows the text part only
+  async function render(acc, msg, images, html) {
     if (!readView) return { ...NO_VIEW };
     const r = await get(acc, msg);
     if (!r.ok) return r;
+    const body = typeof html === 'string' ? html : '';
     const csp = cspFor({ images: images === true, loopback: loopback() === true });
-    const doc = renderDoc(template, { csp, headers: r.headers || {}, html: r.html, text: r.text });
+    const doc = renderDoc(template, { csp, headers: r.headers || {}, html: body, text: r.text });
     readView.show(doc, { images: images === true });
-    return { ok: true, view: 'mailview', remote: hasRemoteImages(r.html), images: images === true };
+    return { ok: true, view: 'mailview', remote: hasRemoteImages(body), images: images === true };
   }
 
   // asks first, then fetches and writes into the Downloads root under a free name; never opened automatically
@@ -153,4 +118,4 @@ function createMail({ oauth, gmail, presets = () => [], jobs = null, downloadsDi
   };
 }
 
-module.exports = { createMail, createSanitizer, API_ACCOUNTS, cspFor, linkPolicy, renderDoc, hasRemoteImages, SANITIZE, sanitizeCall };
+module.exports = { createMail, API_ACCOUNTS, cspFor, linkPolicy, renderDoc, hasRemoteImages, SANITIZE };

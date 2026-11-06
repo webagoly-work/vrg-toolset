@@ -11,8 +11,9 @@
   'use strict';
   const MAX_RECENT = 30;
   const PANES = { home: ['Kezdőlap', 'Home'], empty: ['Üres panel', 'Empty pane'], files: ['Fájlok', 'Files'], term: ['Terminál', 'Terminal'],
-    web: ['Böngésző', 'Browser'], mail: ['Levelek', 'Mail'], stack: ['Folyamatok', 'Stack'], chat: ['Chat', 'Chat'], note: ['Jegyzet', 'Note'],
-    git: ['Git', 'Git'], feed: ['Hírek', 'Feeds'] };
+    web: ['Böngésző', 'Browser'], mail: ['Posta', 'Mail'], stack: ['Folyamatok', 'Stack'], chat: ['Chat', 'Chat'], note: ['Jegyzet', 'Note'],
+    git: ['Git: állapot, ágak, commit, push', 'Git panel'], feed: ['Hírek', 'Feeds'],
+    workspaces: ['Munkaterek', 'Saved workspaces'] };                 // not a layout kind: the frame opens its panel (DESK-Q93, WP-35a)
   const OWNERS = { 'prof:': 'profiles', 'root:': 'roots', 'pre:': 'presets', 'web:': 'web' };
   const KIND = { 's:': 'start', 'cont:': 'start', 'go:': 'start', 'pane:': 'pane', 'prof:': 'term', 'root:': 'root', 'pre:': 'preset', 'web:': 'web' };
   const DEFAULT_KEYMAP = { palette: 'Ctrl+Shift+P', closeTab: 'Ctrl+W', split: 'Ctrl+\\', splitStacked: 'Ctrl+Shift+\\',

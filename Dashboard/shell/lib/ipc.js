@@ -40,7 +40,10 @@ function jsonSize(v, depth = 0) {                                   // -1 when v
 }
 
 const types = {
-  id: v => typeof v === 'string' && /^[a-z0-9:_./-]{1,80}$/.test(v),
+  // a registry id ('root:x', 'web:gmail', 'line:x', a Gmail message id …): never path-looking text (WP-35 F1, fixed in WP-35a):
+  // no ".." segment, no leading "/", no drive letter, no "file:", no "//"
+  id: v => typeof v === 'string' && /^[a-z0-9:_./-]{1,80}$/.test(v) && !/(^|[/:])\.\.([/:]|$)/.test(v) && !v.startsWith('/')
+    && !/^[a-z]:\//.test(v) && !v.startsWith('file:') && !v.includes('//'),
   handle: v => typeof v === 'string' && /^h:[A-Za-z0-9_-]{22}$/.test(v),
   name: isName,
   url: isHttpUrl,

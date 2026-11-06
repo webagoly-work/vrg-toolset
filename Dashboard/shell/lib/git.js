@@ -1,7 +1,8 @@
 // git.js — the Git panel's engine (WP-31, DESK-Q11 A): status, branches, worktrees, log, diff, a branch, a commit and a guarded push.
-//   createGit({ execFile, git, repos, anonymise?, node?, anonymiseJs?, openTerm?, fs? }) → { repos, status, branches, worktrees, log, diff, branch, commit, push }
+//   createGit({ execFile, git, repos, anonymise?, node?, anonymiseJs?, anonymiseMap?, openTerm?, fs? }) → { repos, status, branches, worktrees, log, diff, branch, commit, push }
 //   repos()        → () => [{ name, path }]   the vrg-menu.json `repos`, paths expanded; the page only ever names the id (slug of the name)
-//   anonymise(files, cwd) → Promise<{ ok, out }>   default: node <anonymiseJs> --check <files>  (tools/anonymise.js; exit 1 = a client code is in there)
+//   anonymise(files, cwd) → Promise<{ ok, out }>   default: node <anonymiseJs> [--map <anonymiseMap>] --check <files>  (tools/anonymise.js; exit 1 = a client code
+//   is in there, exit 2 = no map: both refuse the push. DESK-Q87 C: anonymiseMap() names the map, so a worktree checks against the main checkout's copy)
 //   openTerm(cwd, cmdline) → { term, ... }   WP-15 terminal: a push that needs credentials runs there, so GCM's own prompt shows to the Founder
 // Every call returns { ok:true, ... } or { ok:false, err, hu }. The page sends repo ids, file INDEXES of the last status reply, a branch name, a message:
 // never a path. Git always runs through execFile with an argument array, GIT_TERMINAL_PROMPT=0, and never with --force / -f / --force-with-lease / +refspec.
@@ -75,7 +76,7 @@ function parseWorktrees(out) {
   return list;
 }
 
-function createGit({ execFile, git, repos, anonymise, node, anonymiseJs, openTerm, fs = nodeFs, env = process.env }) {
+function createGit({ execFile, git, repos, anonymise, node, anonymiseJs, anonymiseMap = () => '', openTerm, fs = nodeFs, env = process.env }) {
   const last = new Map();                                            // repo id → { checkout, files } of the last status reply (fileIx indexes into this)
 
   function run(cwd, args, o = {}) {
@@ -95,7 +96,9 @@ function createGit({ execFile, git, repos, anonymise, node, anonymiseJs, openTer
 
   const defaultAnonymise = (files, cwd) => new Promise(resolve => {
     if (!node || !anonymiseJs) return resolve({ ok: false, out: 'anonymise.js not available' });
-    execFile(node, [anonymiseJs, '--check', ...files], { cwd, windowsHide: true, timeout: 60000, maxBuffer: 1024 * 1024, encoding: 'utf8' },
+    let map = '';
+    try { map = String(anonymiseMap() || ''); } catch (e) { map = ''; }
+    execFile(node, [anonymiseJs, ...(map ? ['--map', map] : []), '--check', ...files], { cwd, windowsHide: true, timeout: 60000, maxBuffer: 1024 * 1024, encoding: 'utf8' },
       (err, stdout, stderr) => resolve({ ok: !err, out: (String(stdout || '') + String(stderr || '')).trim() }));
   });
   const check = anonymise || defaultAnonymise;
@@ -248,7 +251,7 @@ function createGit({ execFile, git, repos, anonymise, node, anonymiseJs, openTer
     return fail('A push nem sikerült: ' + firstLine(p.err).slice(0, 300));
   }
 
-  return { repos: repoList, status, branches, worktrees, log, diff, branch, commit, push };
+  return { repos: repoList, status, branches, worktrees, log, diff, branch, commit, push, _check: check };   // _check: unit tests only (WP-35a)
 }
 
 module.exports = { createGit, parseStatus, parseWorktrees, BRANCH_RE, MAIN_BRANCHES, DIFF_MAX };

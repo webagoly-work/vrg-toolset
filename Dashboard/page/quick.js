@@ -80,8 +80,10 @@
   async function act(r) {
     const F = window.VRGFrame;
     if (!F) return;
+    if (r.url && r.kind === 'ai' && F.openSide) { F.openSide(r.url); return; }     // narrow right-hand pane (DESK-Q82 B)
     if (r.url) { F.openUrl(r.url); return; }
-    if (r.kind === 'stack' || r.kind === 'code') { F.search(r.text); return; }
+    if (r.kind === 'code') { F.search(r.text, { only: 'code' }); return; }           // k: the code index only (DESK-Q84 C)
+    if (r.kind === 'stack') { F.search(r.text); return; }
     if (r.kind === 'note') { F.note({ text: r.text }); return; }
     if (r.kind === 'chat') {
       if (!(await F.chat())) return;

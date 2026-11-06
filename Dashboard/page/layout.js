@@ -6,7 +6,7 @@
 (function () {
   'use strict';
   const lib = window.VRGLayoutLib;
-  const LABEL = { home: 'Kezdőlap', empty: 'Üres panel', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Levelek',
+  const LABEL = { home: 'Kezdőlap', empty: 'Üres panel', files: 'Fájlok', term: 'Terminál', web: 'Böngésző', mail: 'Posta',
     stack: 'Folyamatok', chat: 'Chat', note: 'Jegyzet', git: 'Git', feed: 'Hírek' };
   const el = (tag, attrs, ...kids) => {
     const e = document.createElement(tag);

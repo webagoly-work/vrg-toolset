@@ -2,7 +2,9 @@
 // VRGPanes.mail = { mount(el, state, api), unmount(), state() }.
 // Gmail API accounts (WP-27) are read through vrg.mail; webmail accounts (WP-26, 'web:<id>') open their web tab. The message itself is shown by a
 // separate local view that main places over the box marked data-view="mailview": no preload, sandbox, JavaScript off, a CSP that blocks
-// remote images until "Képek betöltése". This page never receives raw HTML and never builds HTML from a message: it sets text only.
+// remote images until "Képek betöltése". DESK-Q73 B (WP-35a): this pane receives the message HTML as sent and cleans it with DOMPurify
+// (VRGMailClean, shell/lib/mailclean.js; the URL comes from app.info().libs) before handing it to the read view. It never inserts message HTML
+// into its own DOM: the headers are set as text, the body only goes back to main as a string. Without DOMPurify the read view shows the text part.
 // The pure helpers at the top are also exported for node --test (module.exports, only when `module` exists).
 (function () {
   'use strict';
@@ -34,6 +36,24 @@
   const el = (tag, role, text, title) => { const e = document.createElement(tag); if (role) e.dataset.role = role; if (text != null) e.textContent = text; if (title) e.title = title; return e; };
   const btn = (role, text, title, fn) => { const b = el('button', role, text, title); b.type = 'button'; b.addEventListener('click', fn); return b; };
   const toast = (ok, hu, en) => { if (W.VRGToasts) W.VRGToasts.toast({ ok, hu, en: en || hu }); };
+  const loadScript = url => new Promise(res => {
+    if (!url || !/^file:/i.test(url)) return res(false);
+    const s = document.createElement('script'); s.src = url; s.onload = () => res(true); s.onerror = () => res(false); document.head.appendChild(s);
+  });
+  let purifyReady = null;                                                // DOMPurify once per page, from the URL main gives (never a guessed path)
+  const purify = vrg => purifyReady || (purifyReady = (async () => {
+    if (W.DOMPurify) return W.DOMPurify;
+    let libs = {};
+    try { const i = await vrg.app.info(); libs = (i && i.libs) || {}; } catch (e) {}
+    await loadScript(libs.dompurify);
+    return W.DOMPurify || null;
+  })());
+  const cleanHtml = async (vrg, html) => {
+    if (!html || !W.VRGMailClean) return '';
+    let dp = null;
+    try { dp = await purify(vrg); } catch (e) {}
+    return W.VRGMailClean.clean(dp, html);
+  };
 
   P.mail = {
     helpers,
@@ -183,7 +203,7 @@
     async open(it, rowEl) {
       for (const x of this.list.querySelectorAll('[data-role="mail-item"]')) x.removeAttribute('aria-current');
       if (rowEl) { rowEl.setAttribute('aria-current', 'true'); rowEl.dataset.unread = '0'; const dot = rowEl.querySelector('[data-role="mail-unread"]'); if (dot) dot.remove(); }
-      this.cur = { acc: this.acc, msg: it.msg };
+      this.cur = { acc: this.acc, msg: it.msg, html: '' };
       const seq = ++this.seq;
       let r = null;
       try { r = await this.vrg.mail.get(this.acc, it.msg); } catch (e) {}
@@ -193,12 +213,15 @@
       const h = r.headers || {};
       this.head.replaceChildren(el('div', 'mail-h-from', h.from || ''), el('div', 'mail-h-subject', h.subject || ''), el('div', 'mail-h-date', h.date || ''));
       this.drawAttachments(Array.isArray(r.attachments) ? r.attachments : []);
+      const html = await cleanHtml(this.vrg, typeof r.html === 'string' ? r.html : '');
+      if (this.gone || seq !== this.seq) return;
+      this.cur.html = html;
       await this.showMessage(this.cur, false);
     },
     async showMessage(cur, images) {
       if (!cur) return;
       let r = null;
-      try { r = await this.vrg.mail.render(cur.acc, cur.msg, images === true); } catch (e) {}
+      try { r = await this.vrg.mail.render(cur.acc, cur.msg, images === true, cur.html || ''); } catch (e) {}
       if (this.gone || !this.cur || this.cur.msg !== cur.msg) return;
       if (!r || !r.ok) { this.say((r && r.hu) || 'A levél nem jeleníthető meg.'); return; }
       this.box.dataset.view = r.view;                                        // the frame reports this box's rect; main places the view there
