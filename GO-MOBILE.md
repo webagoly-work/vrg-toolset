@@ -47,11 +47,15 @@ What changes locally compared with the cloud:
 - **Branch:** `main` in the main checkout, like everything else. Commit after each finished step.
 - **Check first:** `Mobile\mobile.cmd test` (or `cd Mobile/android && gradlew :kit-core:test :airdeck-core:test`)
   and `node Mobile/tests/relay-pair.js` must be green before you change anything.
-- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M13** (Képernyő, `docs/mobile/WP/M13.md`).
+- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Every WP
+  without an open decision is now built: the remaining ones each wait for the user's answer first, **M5** (Kódváros
+  online) on **D-7**, **M7** (Hálózat) on **D-9**, **M10** (Értesítések) on **D-11** (the options are in
+  `docs/mobile/DECISIONS.md` → Open). Ask them, record the answer, then build.
   M1, M2, M3, M4, M6, M9 and M14 are live; **M8** (Localhost, D-10 = C, built 2026-11-05), **M16** (the VRG UI Kit's
-  look on the phone, built 2026-11-06), **M11** (Indítópult, built 2026-11-06) and **M12** (Átadás, built 2026-11-06)
-  are BETA until the user works through their phone lists in `docs/mobile/WP/M8.md`, `docs/mobile/WP/M16.md`,
-  `docs/mobile/WP/M11.md` and `docs/mobile/WP/M12.md`.
+  look on the phone, built 2026-11-06), **M11** (Indítópult, built 2026-11-06), **M12** (Átadás, built 2026-11-06) and
+  **M13** (Képernyő, built 2026-11-06) are BETA until the user works through their phone lists in
+  `docs/mobile/WP/M8.md`, `docs/mobile/WP/M16.md`, `docs/mobile/WP/M11.md`, `docs/mobile/WP/M12.md` and
+  `docs/mobile/WP/M13.md`.
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
 - Each WP ends with:
@@ -93,4 +97,7 @@ What changes locally compared with the cloud:
   **M11** (`docs/mobile/WP/M11.md` → "Telefonon ellenőrizni": K opens Kódváros on the PC, the Planner shows as
   running, a server started and stopped from the phone; the relay from START → L → S) and **M12**
   (`docs/mobile/WP/M12.md` → "Telefonon ellenőrizni": a file both ways through `localhost:47291/board`, a gallery
-  share to "PC-re", the camera photo for the Planner, removal on either side, WiFi off mid-upload, the clipboard both ways).
+  share to "PC-re", the camera photo for the Planner, removal on either side, WiFi off mid-upload, the clipboard both ways)
+  and **M13** (`docs/mobile/WP/M13.md` → "Telefonon ellenőrizni": the PC's screen moving with the cursor, the notice
+  window and its Leállítás, steering with the Légegér strip, monitor / window switch, Home, removing the pairing,
+  a UAC prompt, the frame rate on WiFi and on the hotspot; the relay with `--shots`: `Mobile\mobile.cmd` → 1).

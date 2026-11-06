@@ -89,7 +89,7 @@ object Catalogue {
     )
     val SCREEN = FeatureInfo(
         "screen", "Képernyő", "A PC képernyője élőben a telefonon, Légegér vezérléssel. A PC-n jelzi, hogy nézik.",
-        "▣", Group.CONTROL, Stage.PLANNED, "M13", setOf(Need.RELAY),
+        "▣", Group.CONTROL, Stage.BETA, "M13", setOf(Need.RELAY),
     )
     val SPHERE = FeatureInfo(
         "sphere", "Gömb", "A tudásbázis három jelzése: ellentmondás, sötét zóna, dermedt. A kezdőlapról balra húzva is elérhető.",

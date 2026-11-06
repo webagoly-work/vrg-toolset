@@ -102,6 +102,26 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   - *ShotStore → kit `FileStore`*, with the FileProvider moved to the kit's manifest, since both features use it.
   Details: `WP/M12.md`.
 
+- **M13 · How Képernyő is built** (2026-11-06, no question asked; the WP has no open decision, these are the gaps
+  it left, settled the M8/M11/M12 way).
+  - *`-Command`, not `-EncodedCommand`.* Measured first, as the WP asks: every `-EncodedCommand` PowerShell child was
+    killed after ~9.8 s with exit 0 on this PC (a plain sleep loop too), the same loop under `-Command` was not. The
+    capture is one line under `-Command`; its C# source and every setting go through the environment, nothing from
+    the phone is on a command line.
+  - *The whole scaled frame is compared, not a small thumbnail.* A thumbnail misses a few typed characters (one
+    letter is under a pixel at 64 px wide); a byte compare of the ≤1280 px frame costs about a millisecond. A still
+    screen still costs little: after 1 s unchanged the loop looks 4 times a second (12 % of one core, 3.6 KB/s).
+  - *Steering through a kit `Pointer`* that Légegér fills with its existing sender (Bluetooth HID mouse + the gyro
+    clutch), so Képernyő never touches the Légegér feature (architecture rule 2) and adds no new way to control the PC.
+    It therefore needs Légegér's Bluetooth link; without it the strip says so.
+  - *Refusals at the upgrade* (403 / 404 / 409 before any frame), like M12's ticket check, rather than accepting the
+    socket and closing it. Ends after that are a `screen.end` note plus a close code (4000 PC, 4408 limit, 4410
+    unpaired, 4500 capture).
+  - *Coming back from Home resumes*, since the view is on screen again and the PC shows its window again; leaving the
+    view or an unpairing does not. The PC's window has no close box: Leállítás is the one way to stop it there.
+  - *Quality* is two steps: "Éles" 1280 px / q 60 and "Kíméletes" 960 px / q 45; frames are capped at 10 a second.
+  Details and the measurements: `WP/M13.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city

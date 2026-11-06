@@ -98,6 +98,13 @@
 //   * clip.set {text} / clip.get -> clip {ok, text?}: the PC's clipboard, text only.
 //   * {type:'board', payload:{event:'added'|'removed', id, name, bytes, from, target, ...}} goes to the
 //     trusted phones and to the apps on this PC (the board page, the Planner), so lists refresh by themselves.
+//
+// CHANGED 6 Nov — Képernyő, the PC's screen live on the phone (VRG Mobile, WP M13; rules in relay-screen.js).
+//   * screen.ticket from a trusted phone -> screen.ticket {ok, ticket, ttl, path:'/screen'} | {ok:false, reason,
+//     busy?}: one /screen connection within 60 s, the ticket in the X-VRG-Ticket header of the upgrade.
+//   * /screen is its own WebSocket (binary JPEG frames + a few JSON notes), so frames never hold up this
+//     link. OFF unless --shots, like 📸; one viewer at a time; the PC shows a notice window with Leállítás
+//     while it streams; removing the pairing ends it at once. Windows only (RELAY_FRAMES_DIR for tests).
 // ==========================================================================
 
 const http = require('http');
@@ -111,6 +118,7 @@ const pairing = require('./relay-pair');
 const ports = require('./relay-ports');
 const launch = require('./relay-launch');
 const board = require('./relay-board');
+const screen = require('./relay-screen');
 
 const DEFAULT_PORT = 47291;
 const MAX_TRIES = 8;                       // 47291..47298
@@ -261,6 +269,7 @@ const server = http.createServer((req, res) => {
       shots: SHOTS,
       ports: PORTS,
       board: true,
+      screen: SCREEN.available,
       app: 'varler-phone-relay',
       v: 3
     });
@@ -494,7 +503,13 @@ function servePair(req, res, url) {
   json(404, { ok: false });
 }
 
-const wss = new WebSocketServer({ server });
+// Two WebSocket endpoints on one port: /screen (Képernyő's frames, relay-screen.js) and everything else.
+const wss = new WebSocketServer({ noServer: true });
+const SCREEN = screen.createScreen({ enabled: SHOTS, isPaired });
+server.on('upgrade', (req, socket, head) => {
+  if ((req.url || '').split('?')[0] === '/screen') { SCREEN.upgrade(req, socket, head); return; }
+  wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws, req));
+});
 const clients = new Set();
 
 const PHONE = 'phone';
@@ -523,6 +538,7 @@ function isTrusted(ws) { return !!ws.__trusted; }
 function untrust(id) {
   GATE.revoke(id);
   BOARD.revoke(id);
+  SCREEN.revoke(id);
   for (const c of clients) {
     if (c.__pairId === id) {
       c.__trusted = false; c.__pairId = null;
@@ -595,6 +611,21 @@ wss.on('connection', (ws, req) => {
         return;
       }
       takeShot(ws, ip, (m.payload && m.payload.mode) === 'window' ? 'window' : 'screen');
+      return;
+    }
+
+    if (m && to === 'relay' && m.type === 'screen.ticket') {
+      if (roleOf(ws) !== PHONE) return;
+      const answer = p => { if (ws.readyState === ws.OPEN) ws.send(fromRelay('screen.ticket', p)); };
+      if (!isTrusted(ws)) {
+        answer({ ok: false, trusted: false,
+          reason: 'Párosítás kell: a PC-n nyisd meg a http://localhost:' + server.address().port + '/pair oldalt, és olvasd be a QR-t.' });
+        return;
+      }
+      const me = PAIRS.list().find(p => p.id === ws.__pairId);
+      const r = SCREEN.ticket(ws.__pairId, (me && me.device) || 'telefon');
+      if (!r.ok) console.log(`  [kepernyo] jegy elutasitva (${ip}): ${r.reason}`);
+      answer(r);
       return;
     }
 
@@ -850,7 +881,7 @@ function takeShot(ws, ip, mode) {
 }
 
 process.on('exit', () => { try { fs.rmSync(SHOT_DIR, { recursive: true, force: true }); } catch (e) { } });
-process.on('SIGINT', () => process.exit(0));
+process.on('SIGINT', () => { SCREEN.close(); process.exit(0); });
 
 /* ---- binding, with a walk to the next free port ------------------------- */
 
@@ -896,6 +927,7 @@ server.on('listening', () => {
   console.log('');
   console.log('   Telefon és PC UGYANAZON a WiFi-n legyen.');
   console.log(SHOTS ? '   Képernyőkép a telefonra: BEKAPCSOLVA (--shots, párosított telefonnak)' : '   Képernyőkép a telefonra: ki (indítás --shots kapcsolóval)');
+  console.log(SCREEN.available ? '   Képernyő élőben a telefonon: BEKAPCSOLVA (--shots, párosított telefonnak, a PC-n értesítő ablakkal)' : '   Képernyő élőben: ki' + (SHOTS ? ' (csak Windowson)' : ' (indítás --shots kapcsolóval)'));
   console.log(PORTS ? '   Localhost a telefonon (/p/<port>/): BEKAPCSOLVA (--ports, párosított telefonnak)' : '   Localhost a telefonon: ki (indítás --ports kapcsolóval)');
   console.log(`   VRG Mobile párosítás (ezen a PC-n): http://localhost:${port}/pair`);
   console.log(`   Átadás, fájltábla (ezen a PC-n): http://localhost:${port}/board`);

@@ -88,7 +88,8 @@ goto MENU
 :DO_RELAY
 if not exist "%NODE_EXE%" goto NO_NODE
 if not exist "%RELAY_JS%" goto NO_RELAY
-:: --shots: the phone may ask for a screenshot of this PC (Legeger camera button).
+:: --shots: the phone may ask for a screenshot of this PC (Legeger camera button),
+::   and a paired phone may watch it live (Kepernyo, WP M13; a notice window shows it here).
 :: --ports: a paired phone may open this PC's local servers through /p/<port>/ (WP M8).
 :: START.cmd G starts the same relay without either.
 start "VRG 47291 - Gyro relay" /D "%PLANNER_DIR%" "%NODE_EXE%" "tools\phone-relay-server.js" --shots --ports
@@ -151,6 +152,8 @@ rem Inditopult (WP M11): Node only, port 47395, starts and opens nothing (dry ru
 "%NODE_EXE%" "Mobile\tests\relay-launch.js"
 rem Atadas (WP M12): Node only, port 47396, a temporary board folder and clipboard file
 "%NODE_EXE%" "Mobile\tests\relay-board.js"
+rem Kepernyo (WP M13): Node only, ports 47397-47399, plays test frames, captures nothing
+"%NODE_EXE%" "Mobile\tests\relay-screen.js"
 "%NODE_EXE%" -e "require.resolve('playwright')" >nul 2>&1
 if errorlevel 1 goto NO_PLAYWRIGHT
 "%NODE_EXE%" "Mobile\tests\relay-e2e.js"

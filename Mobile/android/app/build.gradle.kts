@@ -62,4 +62,5 @@ dependencies {
     implementation(project(":feature-ports"))
     implementation(project(":feature-launch"))
     implementation(project(":feature-drop"))
+    implementation(project(":feature-screen"))
 }

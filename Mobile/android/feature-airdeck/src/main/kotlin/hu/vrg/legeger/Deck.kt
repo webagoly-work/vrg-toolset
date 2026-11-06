@@ -30,6 +30,8 @@ import hu.vrg.legeger.core.Throttle
 import hu.vrg.legeger.hid.HidPeripheral
 import hu.vrg.legeger.motion.MotionSource
 import hu.vrg.legeger.relay.RelayClient
+import hu.vrg.mobile.kit.Pointer
+import hu.vrg.mobile.kit.PointerSink
 import hu.vrg.mobile.kit.VrgLog
 import hu.vrg.mobile.kit.relay.LinkState
 import kotlinx.coroutines.CoroutineScope
@@ -89,6 +91,8 @@ object Deck {
     val padMode = MutableStateFlow(PadMode.MOUSE)
     /** The front screen is showing: sensors run only then. */
     private val foreground = MutableStateFlow(false)
+    /** Another feature holds the clutch through the kit's Pointer (Képernyő's strip, WP M13): the gyro runs then too. */
+    private val remoteHold = MutableStateFlow(false)
 
     val notes = MutableSharedFlow<String>(extraBufferCapacity = 8)
 
@@ -144,7 +148,28 @@ object Deck {
         motion.onGravity = ::onGravity
         scope.launch {
             combine(foreground, clutch, clutchLatched, scrubbing, settings.flow) { fg, c, l, sc, s -> fg && (c || l || sc || s.flicks) }
+                .combine(remoteHold) { deck, remote -> deck || remote }
                 .collect { motion.gyro(it); if (!it) pointer.reset() }
+        }
+        Pointer.sink = object : PointerSink {
+            override val ready: StateFlow<Boolean> = hid.phase.map { it == HidPeripheral.Phase.CONNECTED }
+                .stateIn(scope, SharingStarted.Eagerly, false)
+            override fun hold(on: Boolean) {
+                if (on && !hid.connected) return
+                remoteHold.value = on
+                clutch.value = on
+                if (on) haptic(10)
+            }
+            override fun drag(dx: Float, dy: Float) {
+                if (!hid.connected || clutch.value) return
+                val k = settings.value.padSpeed
+                hid.move((dx * k).toInt(), (dy * k).toInt())
+            }
+            override fun click(right: Boolean) {
+                if (!hid.connected) { notes.tryEmit("Nincs Bluetooth eszköz — Légegér ⚙ → Bluetooth"); return }
+                hid.click(if (right) Hid.Btn.RIGHT else Hid.Btn.LEFT)
+                haptic(8)
+            }
         }
         scope.launch { combine(foreground, camera) { fg, cam -> fg && cam }.collect { motion.pose(it) } }
         scope.launch {
