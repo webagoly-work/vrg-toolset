@@ -49,13 +49,14 @@ What changes locally compared with the cloud:
   and `node Mobile/tests/relay-pair.js` must be green before you change anything.
 - **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Every WP
   without an open decision is now built. The last three were answered on 2026-11-06 (D-7 = A, D-9 = A, D-11 = C) and
-  are built as one batch, in the order **M5** (Kódváros online), **M7** (Hálózat), **M10** (Értesítések).
+  are built as one batch: **M5** (Kódváros online) and **M10** (Értesítések) are done, **M7** (Hálózat) is last.
   M1, M2, M3, M4, M6, M9 and M14 are live; **M8** (Localhost, D-10 = C, built 2026-11-05), **M16** (the VRG UI Kit's
   look on the phone, built 2026-11-06), **M11** (Indítópult, built 2026-11-06), **M12** (Átadás, built 2026-11-06),
-  **M13** (Képernyő, built 2026-11-06) and **M5** (Kódváros online, built 2026-11-06; its city appears after the
-  first push, when `.github/workflows/mobile-city.yml` has run) are BETA until the user works through their phone
-  lists in `docs/mobile/WP/M8.md`, `docs/mobile/WP/M16.md`, `docs/mobile/WP/M11.md`, `docs/mobile/WP/M12.md`,
-  `docs/mobile/WP/M13.md` and `docs/mobile/WP/M5.md`.
+  **M13** (Képernyő, built 2026-11-06), **M5** (Kódváros online, built 2026-11-06; its city appears after the
+  first push, when `.github/workflows/mobile-city.yml` has run) and **M10** (Értesítések, built 2026-11-06; the push
+  service, D-11 B, is a later WP) are BETA until the user works through their phone lists in `docs/mobile/WP/M8.md`,
+  `docs/mobile/WP/M16.md`, `docs/mobile/WP/M11.md`, `docs/mobile/WP/M12.md`, `docs/mobile/WP/M13.md`,
+  `docs/mobile/WP/M5.md` and `docs/mobile/WP/M10.md`.
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
 - Each WP ends with:
@@ -103,4 +104,7 @@ What changes locally compared with the cloud:
   a UAC prompt, the frame rate on WiFi and on the hotspot; the relay with `--shots`: `Mobile\mobile.cmd` → 1)
   and **M5** (`docs/mobile/WP/M5.md` → "Telefonon ellenőrizni": first push, so that the **VRG Mobile (Kódváros
   online)** Actions run publishes `city-pages`; then the main city and a work branch's city on the phone, the
-  gestures, ⟳ without a new download, the offline open).
+  gestures, ⟳ without a new download, the offline open)
+  and **M10** (`docs/mobile/WP/M10.md` → "Telefonon ellenőrizni": the permission asked in context, a failing Actions
+  run ringing within 15 minutes and silenced by its channel, green after red, a review request, the tap marking the
+  thread read on github.com, a new release, `relay-notify.js` ringing at once on the same WiFi, a board file from the PC).

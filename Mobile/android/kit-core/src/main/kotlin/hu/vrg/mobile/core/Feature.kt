@@ -76,8 +76,8 @@ object Catalogue {
         "⌘", Group.WORK, Stage.BETA, "M8", setOf(Need.RELAY),
     )
     val INBOX = FeatureInfo(
-        "inbox", "Értesítések", "PR, CI, felhő-session és relé események egy helyen, telefonos értesítéssel.",
-        "🔔", Group.WORK, Stage.PLANNED, "M10", setOf(Need.INTERNET, Need.GITHUB),
+        "inbox", "Értesítések", "PR, CI, új verzió, jegyzet és relé események egy helyen, telefonos értesítéssel.",
+        "🔔", Group.WORK, Stage.BETA, "M10", setOf(Need.INTERNET, Need.GITHUB),
     )
     val LAUNCH = FeatureInfo(
         "launch", "Indítópult", "A START eszközei a telefonról: indítás a PC-n, futó eszközök, napló.",

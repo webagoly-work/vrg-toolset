@@ -26,8 +26,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import hu.vrg.mobile.core.Catalogue
+import hu.vrg.mobile.core.InboxChannel
 import hu.vrg.mobile.core.Look
+import hu.vrg.mobile.kit.VrgNotify
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.ShellSettings
 import hu.vrg.mobile.kit.VrgFeature
@@ -47,6 +52,7 @@ import java.util.Locale
 
 // Beállítások (WP M1): the settings that belong to the whole app, not to one feature.
 //   Megjelenés       palette and size, applied by the shell to every screen
+//   Értesítések      the notification channels (M10), each opening Android's own switch
 //   Indulás          reopen the last feature (D-5)
 //   Párosított PC-k  filled in by QR párosítás (M2); removable here
 //   Névjegy          version, build, commit, open-source notices
@@ -84,6 +90,26 @@ object SettingsFeature : VrgFeature {
                 ShellSettings.update { it.copy(uiScale = Look.scale(v)) }
             }
             Text("Minden képernyőre érvényes, a Légegérre is.", style = Melyviz.small)
+
+            // ---- notifications (WP M10): Android owns the switches; this lists them and opens each ------
+            VrgSectionTitle("Értesítések")
+            var tick by remember { mutableIntStateOf(0) }
+            LifecycleResumeEffect(Unit) { tick++; onPauseOrDispose { } }
+            val allowed = remember(tick) { VrgNotify.allowed(ctx) }
+            if (!allowed) Text("A telefonos értesítések most ki vannak kapcsolva (engedély vagy az app kapcsolója). Az Értesítések lista így is frissül.",
+                style = Melyviz.small.copy(color = Melyviz.sand))
+            InboxChannel.entries.forEach { c ->
+                val on = remember(tick) { VrgNotify.channelOn(ctx, c) }
+                Row(Modifier.fillMaxWidth().clickable { runCatching { ctx.startActivity(VrgNotify.settingsIntent(ctx, c)) } }.padding(vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(c.title, style = Melyviz.label)
+                        Text(c.blurb, style = Melyviz.small)
+                    }
+                    Text(if (on && allowed) "be ›" else "ki ›", style = Melyviz.readout.copy(color = if (on && allowed) Melyviz.glow else Melyviz.faint))
+                }
+            }
+            Row(Modifier.padding(top = 4.dp)) { VrgChip("Értesítések ›") { host.open(Catalogue.INBOX.id) } }
 
             // ---- start -----------------------------------------------------------------------------
             VrgSectionTitle("Indulás")

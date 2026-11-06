@@ -151,7 +151,7 @@ object NotesFeature : VrgFeature {
         var sent = 0
         while (true) {
             val n = outbox.value.next ?: break
-            val r = try { NoteWriter.send(GitHubNotes, n, zone) } catch (e: NotesApi.Problem) {
+            val r = try { NoteWriter.send(GitHubNotes, n, zone, android.os.Build.MODEL) } catch (e: NotesApi.Problem) {
                 problem.value = e.message
                 sending.fail()
                 return false

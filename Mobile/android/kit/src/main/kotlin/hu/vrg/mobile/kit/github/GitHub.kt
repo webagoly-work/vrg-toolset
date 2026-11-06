@@ -108,6 +108,7 @@ object GitHub {
         clientId = ctx.getString(R.string.github_client_id).trim()
         store = SecretStore(ctx)
         prefs = ctx.getSharedPreferences("github", Context.MODE_PRIVATE)
+        pollDir = File(ctx.cacheDir, "github-poll")
         token = store.get(TOKEN)
         // The repo-name access lasts only while the build allows it (Mobile/access.json)
         guest = token == null && Access.repoName && prefs.getBoolean(GUEST, false)
@@ -189,6 +190,7 @@ object GitHub {
         token = null
         leaveGuest()
         synchronized(cache) { cache.clear() }
+        pollDir?.listFiles()?.forEach { it.delete() }     // another account must not get this one's 304s
         _account.value = Account.SignedOut
         VrgLog.i(TAG, "Kilépve")
     }
@@ -283,6 +285,71 @@ object GitHub {
             VrgLog.w(TAG, "A letöltés megszakadt: ${e.javaClass.simpleName}: ${e.message}")
             Gh.Offline
         }
+    }
+
+    /** One answer of [poll]: [fresh] is false on a 304 (the stored body is handed back, nothing changed). */
+    data class Polled(val body: String, val fresh: Boolean, val headers: Map<String, String>)
+
+    /**
+     * A conditional GET for a background poller (Értesítések, M10). Like [get], but the validators
+     * (ETag, Last-Modified) and the body are kept in the app's cache folder, so the WorkManager job,
+     * which often runs in a fresh process, still sends If-None-Match / If-Modified-Since and a quiet
+     * repo costs no rate limit. Any non-2xx/304 answer comes back as [Gh.Failed] with its code; a
+     * 403 / 429 rate limit comes back as [Gh.Failed] too, with the headers in [lastHeaders], so the
+     * caller's rules (kit-core InboxPoll.limitedFor) decide the backoff.
+     */
+    suspend fun poll(pathOrUrl: String): Gh<Polled> = withContext(Dispatchers.IO) {
+        val t = token
+        if (t == null && !guest) return@withContext Gh.SignedOut
+        val url = if (pathOrUrl.startsWith("http")) pathOrUrl else GitHubUrls.API + pathOrUrl
+        val file = pollFile(url)
+        val kept = file?.takeIf { it.exists() }?.let { f ->
+            try { f.readText().split('\n', limit = 3).takeIf { it.size == 3 } } catch (e: IOException) { null }
+        }
+        val b = Request.Builder().url(url)
+            .apply { if (t != null) header("Authorization", "Bearer $t") }
+            .header("Accept", "application/vnd.github+json")
+            .header("X-GitHub-Api-Version", "2022-11-28")
+        if (kept != null) {
+            if (kept[0].isNotEmpty()) b.header("If-None-Match", kept[0])
+            if (kept[1].isNotEmpty()) b.header("If-Modified-Since", kept[1])
+        }
+        try {
+            http.newCall(b.build()).execute().use { r ->
+                val headers = r.headers.toMultimap().mapValues { it.value.firstOrNull().orEmpty() }
+                lastHeaders = headers
+                RateLimit.parse(headers)?.let { _rate.value = it }
+                val body = r.body?.string().orEmpty()
+                when {
+                    r.code == 304 && kept != null -> Gh.Ok(Polled(kept[2], false, headers))
+                    r.isSuccessful -> {
+                        val etag = r.header("ETag").orEmpty()
+                        val modified = r.header("Last-Modified").orEmpty()
+                        if (file != null && (etag.isNotEmpty() || modified.isNotEmpty())) {
+                            try { file.parentFile?.mkdirs(); file.writeText("$etag\n$modified\n$body") } catch (e: IOException) { }
+                        }
+                        Gh.Ok(Polled(body, true, headers))
+                    }
+                    r.code == 401 -> { VrgLog.w(TAG, "A token már nem érvényes"); signOut(); Gh.SignedOut }
+                    else -> Gh.Failed(r.code, message(body).ifEmpty { body.take(120) })
+                }
+            }
+        } catch (e: IOException) {
+            Gh.Offline
+        }
+    }
+
+    /** The headers of the last [poll] answer (rate limit, Retry-After, X-Poll-Interval). One poller asks at a time. */
+    @Volatile var lastHeaders: Map<String, String> = emptyMap()
+        private set
+
+    private var pollDir: File? = null
+
+    private fun pollFile(url: String): File? {
+        val dir = pollDir ?: return null
+        val name = java.security.MessageDigest.getInstance("SHA-1").digest(url.toByteArray())
+            .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+        return File(dir, "$name.txt")
     }
 
     private suspend fun call(method: String, pathOrUrl: String, json: String?): Gh<String> = withContext(Dispatchers.IO) {

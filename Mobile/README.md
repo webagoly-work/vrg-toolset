@@ -52,6 +52,7 @@ Mobile/
     feature-launch/     Indítópult (WP M11): START's tools as a grid; start on the PC, running dots, log, stop
     feature-drop/       Átadás (WP M12): the relay's file board; files / photos to the PC, downloads, clipboard, "PC-re" share
     feature-screen/     Képernyő (WP M13): the PC's screen live (/screen, --shots), zoom, monitor / window, Légegér strip
+    feature-inbox/      Értesítések (WP M10): the event list, the 15-min GitHub poller, relay notices, VrgNotify channels
     feature-city/       Kódváros online (WP M5): a branch's city from city-pages in a confined WebView, assets/city-touch.js
                         (the publishing side: Mobile/city/publish-city.js, .github/workflows/mobile-city.yml)
     airdeck-core/       Légegér's pure Kotlin: protocol, HID reports, layouts, gyro maths, macros

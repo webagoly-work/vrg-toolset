@@ -29,6 +29,19 @@ object NoteLog {
 
     fun header(day: String) = "# Mobil napló · $day\n\nJegyzetek a VRG Mobile-ból (Gyorsjegyzet). Egy sor egy jegyzet.\n\n"
 
+    /**
+     * The commit message of a note. [device] (the phone's model) lets Értesítések (M10) tell this phone's
+     * notes from another device's: "mobile-log: 2026-11-06 [mobile] jegyzet (Pixel 8)".
+     */
+    fun message(day: String, tag: String?, device: String?): String =
+        "mobile-log: $day " + (tag?.let { "[$it] " } ?: "") + "jegyzet" +
+            (device?.trim()?.takeIf { it.isNotEmpty() }?.let { " ($it)" } ?: "")
+
+    /** The device a note's commit message names, or null (an older build's note, or not a note at all). */
+    fun writtenBy(message: String): String? =
+        WRITTEN_BY.find(message.lineSequence().first())?.groupValues?.get(1)
+
+    private val WRITTEN_BY = Regex("""^mobile-log: \S+ (?:\[[^\]]*\] )?jegyzet \((.+)\)$""")
     private val DAY = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     internal val TIME: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 }
@@ -92,7 +105,7 @@ object NoteWriter {
      * Appends one note to its day file on [NoteLog.BRANCH]: makes the branch if it is missing, then
      * read + sha, append, write with that sha; a conflict re-reads and tries again, [NoteLog.RETRIES] times.
      */
-    suspend fun send(api: NotesApi, note: Note, zone: ZoneId): PutResult {
+    suspend fun send(api: NotesApi, note: Note, zone: ZoneId, device: String? = null): PutResult {
         val branch = NoteLog.BRANCH
         if (!api.branchExists(branch)) api.createBranch(branch, NoteLog.BASE)
         val path = NoteLog.path(note.at, zone)
@@ -100,7 +113,7 @@ object NoteWriter {
             val cur = api.read(path, branch)
             val text = NoteFile.append(cur?.text, note, zone)
             if (cur != null && text == cur.text) return PutResult.Ok          // already there (an earlier try landed)
-            val msg = "mobile-log: ${NoteLog.day(note.at, zone)} " + (note.tag?.let { "[$it] " } ?: "") + "jegyzet"
+            val msg = NoteLog.message(NoteLog.day(note.at, zone), note.tag, device)
             when (val r = api.write(path, branch, text, cur?.sha, msg)) {
                 PutResult.Conflict -> {}
                 else -> return r

@@ -132,6 +132,24 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
 - **D-11 · Notifications (M10)** (2026-11-06: **C**). A now: GitHub polled every 15 min (WorkManager) plus relay
   events while on the same WiFi. B, a push service (e.g. a GitHub Action calling ntfy.sh), is a later WP.
 
+- **M10 · How Értesítések is built** (2026-11-06, no question asked; D-11 = C settled the direction, these are the
+  gaps the WP left).
+  - *Five channels, not four:* CI, PR, Relé, Frissítés and **Jegyzet**, so notes from another device can be silenced
+    apart. The switches are Android's own; Beállítások lists them and opens Android's page, no second copy in the app.
+  - *Repo-scoped notifications* (`/repos/{r}/notifications`, not the user's whole `/notifications`): the app works
+    with the one repo, and other repos' threads would ring on a VRG phone.
+  - *Four conditional sources per round* (threads, runs, latest release, mobile-log commits), validators kept on disk
+    by kit `GitHub.poll`, because the worker usually runs in a fresh process where the in-memory ETag cache is empty.
+  - *The first answer of each source only fills the list*; a release newer than the installed build is the exception.
+    A green run is listed only after a failure (green after green is noise, not news).
+  - *A PC tool can ring the phone:* the relay's `notify` (`POST /notify` from this PC only, an app from this PC over
+    the socket, `relay-notify.js` on the command line), kept 30 / a day for `notify.list` after a reconnect. This is
+    the relay half of "relay events"; the other two are a board file from the PC and the PC back after 10+ minutes away.
+  - *Notes name their device* in the commit message ("… jegyzet (<model>)"), the smallest change to M6 that lets the
+    inbox skip the phone's own notes.
+  - *D-11 B's slot:* every source goes through `InboxFeature.take`, and a push delivers the poller's ids, so the
+    dedupe makes the two interchangeable. Details: `WP/M10.md`.
+
 - **M5 · How Kódváros online is built** (2026-11-06, no question asked; D-7 = A settled the direction, these are the
   gaps the WP left).
   - *Every pushed branch gets a city*, as the WP says (the brief said main): the branch chips need them. Data branches

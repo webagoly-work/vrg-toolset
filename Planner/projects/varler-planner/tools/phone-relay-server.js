@@ -105,6 +105,14 @@
 //   * /screen is its own WebSocket (binary JPEG frames + a few JSON notes), so frames never hold up this
 //     link. OFF unless --shots, like 📸; one viewer at a time; the PC shows a notice window with Leállítás
 //     while it streams; removing the pairing ends it at once. Windows only (RELAY_FRAMES_DIR for tests).
+//
+// CHANGED 6 Nov — Értesítések, a tool on this PC tells the phone (VRG Mobile, WP M10; rules in relay-notify.js).
+//   * POST /notify {title, text?, level?, link?, from?} from this PC only (the /pair rule; a browser's POST
+//     must carry this relay's own Origin, a script sends none) -> {ok, entry, delivered}. An app connected
+//     from this PC may send {type:'notify', to:'relay', payload} instead -> notify.added {ok, id | reason}.
+//   * Each notice goes to the trusted phones as {type:'notify', payload:{id, title, text, level, link, from, at}};
+//     the relay keeps the last 30 for a day, and notify.list {after} -> notify.listed {ok, entries} from a
+//     trusted phone brings the ones it missed. `node tools/relay-notify.js "Cím" "szöveg"` posts one.
 // ==========================================================================
 
 const http = require('http');
@@ -119,6 +127,7 @@ const ports = require('./relay-ports');
 const launch = require('./relay-launch');
 const board = require('./relay-board');
 const screen = require('./relay-screen');
+const notify = require('./relay-notify');
 
 const DEFAULT_PORT = 47291;
 const MAX_TRIES = 8;                       // 47291..47298
@@ -270,6 +279,7 @@ const server = http.createServer((req, res) => {
       ports: PORTS,
       board: true,
       screen: SCREEN.available,
+      notify: true,
       app: 'varler-phone-relay',
       v: 3
     });
@@ -299,6 +309,9 @@ const server = http.createServer((req, res) => {
 
   // ---- /board — Átadás, the file board (see the 6 Nov note) ------------------------------------
   if (url === '/board' || url.startsWith('/board/')) { serveBoard(req, res, url); return; }
+
+  // ---- /notify — a tool on this PC tells the phone (see the 6 Nov Értesítések note) -------------
+  if (url === '/notify') { serveNotify(req, res); return; }
 
   // ---- /p/<port>/… — the phone's view of a local server (see the 5 Nov note) --------------------
   if (url === '/p' || url.startsWith('/p/')) { serveProxy(req, res); return; }
@@ -460,6 +473,72 @@ function onBoardMessage(ws, ip, type, p) {
     console.log(`  [vagolap] PC -> telefon (${ip}): ${r.ok ? r.text.length + ' karakter' : r.reason}`);
     answer(r);
   });
+}
+
+/* ---- Értesítések: notices from this PC to the phones (relay-notify.js has the rules) ---------- */
+
+const NOTICES = notify.createNotices();
+const NOTIFY_BODY_MAX = 8192;
+
+// every notice, to the trusted phones only
+NOTICES.on(entry => {
+  const raw = fromRelay('notify', entry);
+  let n = 0;
+  for (const c of clients) if (c.readyState === c.OPEN && roleOf(c) === PHONE && isTrusted(c)) { c.send(raw); n++; }
+  NOTICES.lastDelivered = n;
+  console.log(`  [ertesites] ${entry.from || '?'}: ${entry.title}  -> ${n} telefon`);
+});
+
+function serveNotify(req, res) {
+  const own = lanAddresses().map(a => a.address);
+  const json = (code, o) => {
+    if (res.headersSent || res.destroyed) return;
+    res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', Connection: 'close' });
+    res.end(JSON.stringify(o));
+  };
+  const local = pairing.isLocal(clientIp(req), own) && pairing.isLocalHost(req.headers.host, own);
+  // a script sends no Origin; a browser always does on a POST, and then it must be this relay's own page
+  const originOk = req.headers.origin == null || board.originOk(req.headers.origin, req.headers.host);
+  if (req.method !== 'POST') { json(405, { ok: false, reason: 'POST kell.' }); return; }
+  if (!local || !originOk) {
+    console.log(`  ! ertesites elutasitva: ${clientIp(req)} (${local ? 'Origin' : 'nem helyi'})`);
+    req.resume();
+    json(403, { ok: false, reason: 'Értesítést csak ezen a PC-n futó eszköz küldhet.' });
+    return;
+  }
+  const len = Number(req.headers['content-length']);
+  if (Number.isFinite(len) && len > NOTIFY_BODY_MAX) { req.resume(); json(413, { ok: false, reason: 'Túl hosszú.' }); return; }
+  let body = '';
+  let over = false;
+  req.setEncoding('utf8');
+  req.on('data', d => { if (over) return; body += d; if (body.length > NOTIFY_BODY_MAX) { over = true; json(413, { ok: false, reason: 'Túl hosszú.' }); } });
+  req.on('end', () => {
+    if (over) return;
+    let p;
+    try { p = JSON.parse(body); } catch (e) { json(400, { ok: false, reason: 'JSON kell: {"title": "…"}' }); return; }
+    NOTICES.lastDelivered = 0;
+    const r = NOTICES.add(p, 'pc');
+    if (!r.ok) { json(400, r); return; }
+    json(200, { ok: true, entry: r.entry, delivered: NOTICES.lastDelivered });
+  });
+}
+
+function onNotifyMessage(ws, ip, type, p) {
+  if (type === 'notify.list') {
+    if (roleOf(ws) !== PHONE) return;
+    if (!isTrusted(ws)) { ws.send(fromRelay('notify.listed', { ok: false, trusted: false, reason: 'Párosítás kell.' })); return; }
+    ws.send(fromRelay('notify.listed', { ok: true, entries: NOTICES.since(p.after) }));
+    return;
+  }
+  // type === 'notify': an app on this PC only; a phone never announces to the phones
+  const answer = o => { if (ws.readyState === ws.OPEN) ws.send(fromRelay('notify.added', o)); };
+  if (!ws.__local || !isApp(roleOf(ws))) {
+    console.log(`  ! ertesites elutasitva (${ip}): ${ws.__local ? 'nem alkalmazas' : 'nem helyi'}`);
+    answer({ ok: false, reason: 'Értesítést csak ezen a PC-n futó eszköz küldhet.' });
+    return;
+  }
+  const r = NOTICES.add(p, ws.__app || roleOf(ws));
+  answer(r.ok ? { ok: true, id: r.entry.id } : r);
 }
 
 function servePair(req, res, url) {
@@ -638,6 +717,11 @@ wss.on('connection', (ws, req) => {
     if (m && to === 'relay' && LAUNCH_TYPES.has(m.type)) {
       if (roleOf(ws) !== PHONE) return;
       onLaunchMessage(ws, ip, m.type, m.payload || {});
+      return;
+    }
+
+    if (m && to === 'relay' && (m.type === 'notify' || m.type === 'notify.list')) {
+      onNotifyMessage(ws, ip, m.type, (m.payload && typeof m.payload === 'object') ? m.payload : {});
       return;
     }
 
