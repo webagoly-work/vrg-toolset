@@ -494,6 +494,37 @@ ipc.register('mail', 'saveAttachment', { acc: types.id, msg: types.id, att: type
 ipc.register('mail', 'render', { acc: types.id, msg: types.id, images: types.bool }, async ({ acc, msg, images }) => mailLib.render(acc, msg, images));
 ipc.register('mail', 'closeView', {}, async () => mailLib.closeView());
 
+// presets and feeds (WP-29): config/presets.json + <userDir>/presets.json; each run is a job, results are cached in the cache dir.
+// An item's target (act id, web:/srv:/srch:, or the cached http(s) link) is resolved here; the page only sends a preset id and an item index.
+const presetsMod = require('./lib/presets.js');
+const readJsonFile = f => { try { return JSON.parse(require('fs').readFileSync(f, 'utf8')); } catch (e) { return null; } };
+const presetsLib = presetsMod.createPresets({
+  jobs, log,
+  configFile: path.join(__dirname, '..', 'config', 'presets.json'),
+  userFile: () => readJsonFile(path.join(paths.userDir(), 'presets.json')),
+  cacheFile: () => path.join(paths.cache(), 'presets.json'),
+  sources: {
+    driftFile: path.join(FULL_DIR, 'notes', 'stack', 'out', 'DRIFT.md'),
+    repoPath: name => { const r = ((R.C && R.C.menu && R.C.menu.repos) || []).find(x => x && x.name === name); return r ? R.expand(r.path) : ''; },
+    ports: () => webServers().map(s => ({ id: s.id, name: s.name, port: s.port, up: !!ports.ports[s.port] })),
+    lines: () => (R.C && R.C.data && R.C.data.lines) || [],
+    mail: { accounts: () => mailLib.accounts(), list: (acc, q) => mailLib.list(acc, q) },
+  },
+});
+presetsMod.bind(presetsLib);                                                      // the palette's pre:<id> items run through it
+if (!SELFTEST) presetsLib.start();
+ipc.register('feed', 'presets', {}, async () => presetsLib.list());
+ipc.register('feed', 'run', { pre: types.id }, async ({ pre }) => presetsLib.run(pre));
+ipc.register('feed', 'results', {}, async () => presetsLib.results());
+ipc.register('feed', 'open', { pre: types.id, i: types.int(0, 199) }, async ({ pre, i }) => {
+  const r = presetsLib.resolveOpen(pre, i);
+  if (!r.ok) return r;
+  if (isTarget(r.target)) return webOps.open(r.target);
+  const c = await palette.run(r.target);
+  return c && c.ok === false ? { ok: false, err: c.err || 'error', hu: c.hu } : { ok: true };
+});
+app.on('will-quit', () => presetsLib.stop());
+
 ipc.legacy('handle', 'vrg:act',(e, id) => acts.runAct(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);
 ipc.legacy('handle', 'vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });

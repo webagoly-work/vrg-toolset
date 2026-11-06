@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Demo feed</title>
+    <item>
+      <title>First &amp; best</title>
+      <link>http://127.0.0.1/a</link>
+      <pubDate>Mon, 02 Nov 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Second <item>]]></title>
+      <link>http://127.0.0.1/b</link>
+      <pubDate>Tue, 03 Nov 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Third</title>
+      <link>javascript:alert(1)</link>
+      <pubDate>Wed, 04 Nov 2026 08:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

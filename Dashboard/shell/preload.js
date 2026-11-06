@@ -118,6 +118,12 @@ contextBridge.exposeInMainWorld('vrg', {
     render: (acc, msg, images) => call('mail', 'render', { acc, msg, images: images === true }),
     closeView: () => call('mail', 'closeView', {}),
   },
+  feed: {                                                                        // WP-29; a job's end arrives as vrg.on('jobs', 'update', cb) with kind 'feed'
+    presets: () => call('feed', 'presets', {}),
+    run: pre => call('feed', 'run', { pre }),
+    results: () => call('feed', 'results', {}),
+    open: (pre, i) => call('feed', 'open', { pre, i }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),
