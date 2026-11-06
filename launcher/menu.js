@@ -8,6 +8,7 @@
 //   tools()   -> [{ n, key, name, path, dir }]                 path relative to the repo, forward slashes
 //   servers() -> [{ n, key, id, name, port, path, js, args, bat, self }]   js / bat relative to the repo
 //   resolve(s) -> an absolute path, with the same tokens as vrg-ui.ps1
+//   reload()   -> the registry read again (the relay's Indítópult, WP M11, reads it on every list)
 // ---------------------------------------------------------------------------
 
 'use strict';
@@ -46,4 +47,7 @@ function servers() {
   }));
 }
 
-module.exports = { FILE, REPO, load, resolve, tools, servers };
+/** Forget the cached registry, so a long-running reader (the phone relay, WP M11) sees edits to it. */
+function reload() { cache = null; return load(); }
+
+module.exports = { FILE, REPO, load, reload, resolve, tools, servers };

@@ -246,6 +246,19 @@ class MacroTest {
         assertEquals(Step.Wait(MacroScript.MAX_WAIT), MacroScript.parse("wait 999999").steps[0])
     }
 
+    @Test fun launchStep() {
+        val p = MacroScript.parse("launch tool:K\nindít server:mindmap; launch k\nlaunch extra:K.S")
+        assertEquals(emptyList(), p.errors)
+        assertEquals(listOf("tool:K", "server:mindmap", "tool:K", "extra:K.S"), p.steps.map { ((it as Step.Do).send as Send.Launch).id })
+        val bad = MacroScript.parse("launch\nlaunch calc.exe\nlaunch tool:1 & calc\nlaunch C:\\x.exe\nlaunch KK")
+        assertEquals(0, bad.steps.size)
+        assertEquals(5, bad.errors.size)
+        val msg = org.json.JSONObject(Envelopes().launchRun("tool:K"))
+        assertEquals("launch.run", msg.getString("type"))
+        assertEquals("relay", msg.getString("to"))
+        assertEquals("tool:K", msg.getJSONObject("payload").getString("id"))
+    }
+
     @Test fun storageRoundTripAndDefaultsParse() {
         val back = MacroScript.fromJson(MacroScript.toJson(MacroScript.DEFAULTS))
         assertEquals(MacroScript.DEFAULTS, back)

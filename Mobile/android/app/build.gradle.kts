@@ -60,4 +60,5 @@ dependencies {
     implementation(project(":feature-pulse"))
     implementation(project(":feature-sphere"))
     implementation(project(":feature-ports"))
+    implementation(project(":feature-launch"))
 }

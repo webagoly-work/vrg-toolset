@@ -364,6 +364,6 @@ function proxy(req, res, port, rest, host) {
 
 module.exports = {
   parseNetstat, parseTasklist, parseSs, pickTitle, portUrl, parseProxyPath, rewriteLocation, stripToken,
-  cookieValue, cookiesWithout, createGate, loadCatalogue, listPorts, probe, openCommand, openDesktop,
+  cookieValue, cookiesWithout, createGate, loadCatalogue, listPorts, readListening, probe, openCommand, openDesktop,
   portableChrome, proxy, validPort, PROXY_COOKIE, TOKEN_TTL, CATALOGUE,
 };

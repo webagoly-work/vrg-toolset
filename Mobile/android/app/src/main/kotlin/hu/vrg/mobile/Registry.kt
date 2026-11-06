@@ -4,6 +4,7 @@ import hu.vrg.legeger.AirDeckFeature
 import hu.vrg.mobile.account.AccountFeature
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.FeatureInfo
+import hu.vrg.mobile.launch.LaunchFeature
 import hu.vrg.mobile.kit.VrgFeature
 import hu.vrg.mobile.notes.NotesFeature
 import hu.vrg.mobile.pair.PairFeature
@@ -29,6 +30,7 @@ object Registry {
         PulseFeature,
         SphereFeature,
         PortsFeature,
+        LaunchFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

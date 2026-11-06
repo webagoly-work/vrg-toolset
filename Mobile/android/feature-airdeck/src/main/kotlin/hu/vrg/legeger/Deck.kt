@@ -248,6 +248,8 @@ object Deck {
             is Send.Click -> hidOr { hid.click(send.button) }
             is Send.AltTab -> hidOr { altTab() }
             is Send.Screenshot -> screenshot()
+            // Indítópult (M11): the relay answers launch.ran, which the Indítópult feature shows
+            is Send.Launch -> relayOr { it.launchRun(send.id) }
             is Send.None -> true
         }
         if (ok) haptic(buzz)

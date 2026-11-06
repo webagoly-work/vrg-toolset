@@ -74,6 +74,17 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   `Mobile/catalogue/ports.json` is generated from START's servers (`ports-gen.js`). `mobile.cmd relay` starts
   the relay with `--shots --ports`; START's bare relay (O → 7) with neither. Details: `WP/M8.md`.
 
+- **M11 · How Indítópult is built** (2026-11-06, no question needed; each choice follows M8's pattern). Every START
+  tool is listed (a START tool is already something the user starts with one key); servers and tool extras only when
+  `Mobile/catalogue/launch.json` names them, by registry id, so a renamed registry entry drops out rather than
+  pointing somewhere new. Ids are `tool:<key>` / `server:<id>` / `extra:<tool>.<key>`, keys exactly as START has them
+  (servers shown as `O<key>`). Pages open in the portable Chrome first (Windows here has no default browser), as
+  START's `OpenUrl`. A server the phone starts runs detached **without a console window**, its output in
+  `%TEMP%\VRG\launch\<id>.log`: that is what makes "the tail of its log" possible, and the phone can stop it
+  (only what this relay started, by pid). The running state is M8's netstat scan; the phone asks again every 5 s
+  while the screen is open. "Megnyitás a telefonon" reuses M8's proxy token, so it needs the relay's `--ports`.
+  Details: `WP/M11.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city

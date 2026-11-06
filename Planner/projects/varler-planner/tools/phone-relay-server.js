@@ -77,6 +77,16 @@
 //   * /p/<port>/… reverse-proxies to localhost:<port> for a paired phone's token, Location rewritten.
 //     OFF unless started with --ports (or RELAY_PORTS=1), like --shots. Mobile\mobile.cmd relay
 //     starts it with both; START.cmd G with neither. An untrusted phone gets {ok:false, trusted:false}.
+//
+// CHANGED 6 Nov — Indítópult (VRG Mobile, WP M11; the rules are in relay-launch.js).
+//   * {type:'launch.list', to:'relay'} from a trusted phone -> {type:'launch', payload:{ok, entries:[{id,
+//     kind, key, name, hint, group, exists, server, port, path}], running:[id], mine:[id], proxy:{on, token}}}:
+//     START's tools (launcher/vrg-menu.json) plus the servers and extras Mobile/catalogue/launch.json allows.
+//   * launch.run {id} -> launch.ran {ok, id, how, started, note | reason}: the tool's page opens on the PC
+//     (portable Chrome first), a server is started detached first when it is not running.
+//   * launch.status -> launch.status {ok, running, mine}; launch.log {id} -> launch.log {ok, id, lines};
+//     launch.stop {id} -> launch.stopped {ok, id | reason}, only for a server this relay started.
+//   * The id is a key into the list, nothing else: no string from the phone reaches a command.
 // ==========================================================================
 
 const http = require('http');
@@ -88,6 +98,7 @@ const { execFile } = require('child_process');
 const { WebSocketServer } = require('ws');
 const pairing = require('./relay-pair');
 const ports = require('./relay-ports');
+const launch = require('./relay-launch');
 
 const DEFAULT_PORT = 47291;
 const MAX_TRIES = 8;                       // 47291..47298
@@ -458,6 +469,12 @@ wss.on('connection', (ws, req) => {
       return;
     }
 
+    if (m && to === 'relay' && LAUNCH_TYPES.has(m.type)) {
+      if (roleOf(ws) !== PHONE) return;
+      onLaunchMessage(ws, ip, m.type, m.payload || {});
+      return;
+    }
+
     if (m && m.type === 'focus' && isApp(from)) {
       lastFocus = {
         role: from,
@@ -548,6 +565,45 @@ function onPortsMessage(ws, ip, type, p) {
   const r = ports.openDesktop(u.url);
   console.log(`  [port] megnyitas a PC-n (${ip}): ${u.url}  ${r.ok ? r.how : r.reason}`);
   answer(Object.assign({ port: p.port, url: u.url }, r));
+}
+
+/* ---- Indítópult: START from the phone (relay-launch.js has the rules) ---------- */
+
+const LAUNCH_TYPES = new Set(['launch.list', 'launch.run', 'launch.status', 'launch.log', 'launch.stop']);
+const LAUNCH_ANSWER = { 'launch.list': 'launch', 'launch.run': 'launch.ran', 'launch.status': 'launch.status',
+  'launch.log': 'launch.log', 'launch.stop': 'launch.stopped' };
+const LAUNCHER = launch.createLauncher();
+
+function onLaunchMessage(ws, ip, type, p) {
+  const answer = payload => { if (ws.readyState === ws.OPEN) ws.send(fromRelay(LAUNCH_ANSWER[type], payload)); };
+  if (!isTrusted(ws)) {
+    answer({ ok: false, trusted: false,
+      reason: 'Párosítás kell: a PC-n nyisd meg a http://localhost:' + server.address().port + '/pair oldalt, és olvasd be a QR-t.' });
+    return;
+  }
+  let list;
+  try { list = launch.buildList(); } catch (e) { answer({ ok: false, reason: 'A START lista nem olvasható: ' + e.message }); return; }
+  const fail = err => answer({ ok: false, reason: 'Hiba: ' + err.message });
+  if (type === 'launch.list') {
+    LAUNCHER.status(list).then(st => {
+      console.log(`  [start] lista -> ${ip}: ${list.size} elem`);
+      answer({ ok: true, entries: [...list.values()].map(e => e.pub), running: st.running, mine: st.mine,
+        proxy: PORTS ? { on: true, token: GATE.issue(ws.__pairId) } : { on: false } });
+    }, fail);
+    return;
+  }
+  if (type === 'launch.status') { LAUNCHER.status(list).then(answer, fail); return; }
+  if (type === 'launch.log') { answer(LAUNCHER.tail(list, p.id)); return; }
+  if (type === 'launch.stop') {
+    const r = LAUNCHER.stop(list, p.id);
+    console.log(`  [start] leallitas (${ip}): ${String(p.id).slice(0, 40)}  ${r.ok ? 'ok' : r.reason}`);
+    answer(r);
+    return;
+  }
+  LAUNCHER.run(list, p.id).then(r => {
+    console.log(`  [start] inditas (${ip}): ${String(p.id).slice(0, 40)}  ${r.ok ? (r.how || 'ok') : r.reason}`);
+    answer(r);
+  }, fail);
 }
 
 /* ---- screenshots -------------------------------------------------------- */

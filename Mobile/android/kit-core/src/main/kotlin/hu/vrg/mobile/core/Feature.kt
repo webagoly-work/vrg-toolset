@@ -80,8 +80,8 @@ object Catalogue {
         "🔔", Group.WORK, Stage.PLANNED, "M10", setOf(Need.INTERNET, Need.GITHUB),
     )
     val LAUNCH = FeatureInfo(
-        "launch", "Indítópult", "A START.cmd eszközei a telefonról: indítás a PC-n, futó eszközök, napló.",
-        "▶", Group.CONTROL, Stage.PLANNED, "M11", setOf(Need.RELAY),
+        "launch", "Indítópult", "A START eszközei a telefonról: indítás a PC-n, futó eszközök, napló.",
+        "▶", Group.CONTROL, Stage.BETA, "M11", setOf(Need.RELAY),
     )
     val DROP = FeatureInfo(
         "drop", "Átadás", "Fotó, fájl, vágólap és helyszíni kép a telefonról a PC-re (Planner, Inventory) és vissza.",

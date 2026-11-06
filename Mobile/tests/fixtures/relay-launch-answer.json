@@ -1,0 +1,19 @@
+{
+  "v": 1, "from": "relay", "seq": 7, "t": 1762430000000, "type": "launch",
+  "payload": {
+    "ok": true,
+    "entries": [
+      { "id": "tool:1", "kind": "tool", "key": "1", "name": "Varler Planner", "hint": "munkaverzió", "group": "Eszközök", "exists": true, "server": "planner", "port": 8131, "path": "/Planner/projects/varler-planner/dist/varler_planner.html" },
+      { "id": "tool:2", "kind": "tool", "key": "2", "name": "Panel anyagár kalkulátor", "hint": "varlerÁron", "group": "Eszközök", "exists": true, "server": null },
+      { "id": "tool:7", "kind": "tool", "key": "7", "name": "Toolbox", "hint": null, "group": "Eszközök", "exists": false, "server": null },
+      { "id": "tool:K", "kind": "tool", "key": "K", "name": "VRG Kódváros", "hint": "a kód 3D városként", "group": "Eszközök", "exists": true, "server": "city", "port": 8797, "path": "/" },
+      { "id": "extra:K.S", "kind": "extra", "key": "K·S", "name": "Élő mód", "hint": "Kódváros segéd, :8797", "group": "Eszközök", "exists": true, "server": "city", "port": 8797, "path": "/" },
+      { "id": "server:mindmap", "kind": "server", "key": "O3", "name": "VRG MindMap", "hint": ":8124", "group": "Helyi szerverek", "exists": true, "server": "mindmap", "port": 8124, "path": "/" },
+      { "id": "bad id with spaces", "kind": "tool", "key": "X", "name": "skipped", "group": "Eszközök", "exists": true },
+      { "id": "server:huge", "kind": "server", "key": "O9", "name": "port dropped", "group": "Helyi szerverek", "exists": true, "server": "huge", "port": 70000, "path": "/" }
+    ],
+    "running": ["tool:1", "server:mindmap", "nope"],
+    "mine": ["server:mindmap"],
+    "proxy": { "on": true, "token": "0123456789abcdef0123456789abcdef" }
+  }
+}

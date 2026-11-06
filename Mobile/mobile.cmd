@@ -147,6 +147,8 @@ rem QR pairing (WP M2): Node only, own port 47391, no Playwright needed
 "%NODE_EXE%" "Mobile\tests\relay-pair.js"
 rem Localhost (WP M8): Node only, ports 47393 + 47394, opens no window (dry run)
 "%NODE_EXE%" "Mobile\tests\relay-ports.js"
+rem Inditopult (WP M11): Node only, port 47395, starts and opens nothing (dry run)
+"%NODE_EXE%" "Mobile\tests\relay-launch.js"
 "%NODE_EXE%" -e "require.resolve('playwright')" >nul 2>&1
 if errorlevel 1 goto NO_PLAYWRIGHT
 "%NODE_EXE%" "Mobile\tests\relay-e2e.js"

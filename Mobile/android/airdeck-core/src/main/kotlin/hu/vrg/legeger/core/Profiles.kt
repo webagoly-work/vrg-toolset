@@ -40,6 +40,8 @@ sealed interface Send {
     data class Gesture(val kind: String) : Send
     /** The PC screen through the relay; on a PHONE target, the target phone's own screenshot. */
     data object Screenshot : Send
+    /** Indítópult (WP M11): start a START entry on the PC by its id ("tool:K"), through the relay. Needs a paired phone. */
+    data class Launch(val id: String) : Send
     data object AltTab : Send
     data object None : Send
 }

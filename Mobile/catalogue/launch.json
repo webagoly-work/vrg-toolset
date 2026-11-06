@@ -1,0 +1,22 @@
+{
+  "about": "Indítópult (VRG Mobile, WP M11): what a paired phone may start on the PC. Read by Planner/projects/varler-planner/tools/relay-launch.js together with START's registry (launcher/vrg-menu.json, through launcher/menu.js). Every START tool (start.tools) is listed and opens its page in a browser, its 'before' step run first, as START does. Servers and tool extras are listed ONLY when named here: the relay never starts anything else, and never runs a string sent by the phone. Ids are registry ids/keys, so a renamed or removed registry entry simply drops out.",
+
+  "serves": {
+    "about": "START tool key -> registry server id: the tool's running dot, and 'Megnyitás a telefonon' (M8 proxy) on long-press.",
+    "1": "planner",
+    "4": "mindmap",
+    "6": "inventory",
+    "K": "city",
+    "T": "solomon"
+  },
+
+  "servers": {
+    "about": "Registry server ids (START -> O) a phone may start: started detached when not running, then their page opens on the PC. Not here: gyro (the relay itself), cyd-settings and board (hardware on USB), hub-admin (the allow-list admin), trace-relay, knobpad, openmct, kapu-dev (test servers).",
+    "allow": ["planner", "inventory", "mindmap", "kapu", "city", "console", "solomon", "divergence"]
+  },
+
+  "extras": {
+    "about": "Tool extras (START -> tool -> key) a phone may run. Not here: K.F (Fedőréteg; its first run downloads Electron).",
+    "allow": ["K.S", "K.G"]
+  }
+}

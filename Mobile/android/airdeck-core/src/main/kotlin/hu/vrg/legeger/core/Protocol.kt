@@ -91,6 +91,9 @@ class Envelopes(private val app: String = Proto.APP, private val clock: () -> Lo
 
     /** Asks the relay itself (not an app) for a capture of the PC: mode "screen" or "window". */
     fun screenshotRequest(mode: String): String = build("screenshot.request", JSONObject().put("mode", mode), "relay")
+
+    /** Indítópult (WP M11): the relay runs it only if the id is on its list (relay-launch.js). */
+    fun launchRun(id: String): String = build("launch.run", JSONObject().put("id", id), "relay")
 }
 
 object Inbound {

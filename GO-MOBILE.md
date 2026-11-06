@@ -47,10 +47,10 @@ What changes locally compared with the cloud:
 - **Branch:** `main` in the main checkout, like everything else. Commit after each finished step.
 - **Check first:** `Mobile\mobile.cmd test` (or `cd Mobile/android && gradlew :kit-core:test :airdeck-core:test`)
   and `node Mobile/tests/relay-pair.js` must be green before you change anything.
-- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M11** (Indítópult, `docs/mobile/WP/M11.md`).
-  M1, M2, M3, M4, M6, M9 and M14 are live; **M8** (Localhost, D-10 = C, built 2026-11-05) and **M16** (the VRG UI Kit's
-  look on the phone, built 2026-11-06) are BETA until the user works through their phone lists in `docs/mobile/WP/M8.md`
-  and `docs/mobile/WP/M16.md`.
+- **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Today that is **M12** (Átadás, `docs/mobile/WP/M12.md`).
+  M1, M2, M3, M4, M6, M9 and M14 are live; **M8** (Localhost, D-10 = C, built 2026-11-05), **M16** (the VRG UI Kit's
+  look on the phone, built 2026-11-06) and **M11** (Indítópult, built 2026-11-06) are BETA until the user works through
+  their phone lists in `docs/mobile/WP/M8.md`, `docs/mobile/WP/M16.md` and `docs/mobile/WP/M11.md`.
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
 - Each WP ends with:
@@ -88,4 +88,6 @@ What changes locally compared with the cloud:
 - **Every WP**: install the APK (`mobile.cmd` → 3, or from the Actions run / Releases after M9) and work through the
   phone checklist. Open right now: **M8** (`docs/mobile/WP/M8.md` → "Telefonon ellenőrizni"; the relay must be
   started with `--ports`: START → L → S, or `Mobile\mobile.cmd` → 1) and **M16** (`docs/mobile/WP/M16.md` →
-  "Telefonon ellenőrizni": the ten palettes, the kit faces, the MINI rings, TalkBack, "Animációk eltávolítása").
+  "Telefonon ellenőrizni": the ten palettes, the kit faces, the MINI rings, TalkBack, "Animációk eltávolítása") and
+  **M11** (`docs/mobile/WP/M11.md` → "Telefonon ellenőrizni": K opens Kódváros on the PC, the Planner shows as
+  running, a server started and stopped from the phone; the relay from START → L → S).

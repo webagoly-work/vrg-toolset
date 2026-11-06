@@ -15,6 +15,8 @@ import org.json.JSONObject
 //   media play|next|prev|mute|vol+|vol-|home|back|search|power
 //   click left|right|middle   ·   wheel -3
 //   shot                      a screenshot (PC via the relay; on a phone target its own screenshot)
+//   launch tool:K             a START entry started on the PC (Indítópult, WP M11; paired phone).
+//                             A bare START key means its tool: `launch K` = `launch tool:K`.
 
 sealed interface Step {
     data class Do(val send: Send) : Step
@@ -82,6 +84,7 @@ object MacroScript {
             "click" -> BUTTONS[arg.lowercase()]?.let { Step.Do(Send.Click(it)) }
             "wheel" -> arg.toIntOrNull()?.let { Step.Do(Send.Wheel(it.coerceIn(-20, 20))) }
             "shot", "kép", "kep" -> Step.Do(Send.Screenshot)
+            "launch", "indít", "indit" -> launchId(arg)?.let { Step.Do(Send.Launch(it)) }
             else -> Keys.chord(t)?.let { Step.Do(Send.Key(t)) }
         }
     }
@@ -97,6 +100,16 @@ object MacroScript {
             extra[k] = v.toIntOrNull() ?: v.toDoubleOrNull() ?: when (v) { "true" -> true; "false" -> false; else -> v }
         }
         return Step.Do(Send.Cmd(bits[0], extra))
+    }
+
+    /** The same id shape as kit-core's Launch / relay-launch.js; a bare key ("K", "1") is that START tool. */
+    private val LAUNCH_ID = Regex("(tool|server|extra):[A-Za-z0-9._-]{1,32}")
+    private val START_KEY = Regex("[A-Za-z0-9]")
+
+    fun launchId(arg: String): String? = when {
+        LAUNCH_ID.matches(arg) -> arg
+        START_KEY.matches(arg) -> "tool:" + arg.uppercase()
+        else -> null
     }
 
     private fun appKey(arg: String): Step? {
