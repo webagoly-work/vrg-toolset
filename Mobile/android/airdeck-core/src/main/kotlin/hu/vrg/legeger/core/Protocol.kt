@@ -108,7 +108,7 @@ object Inbound {
                 caps = p.optJSONArray("caps").strings(),
                 tools = tools(p.optJSONArray("tools")),
             )
-            "state" -> Incoming.State(role, p.toMap())
+            "state" -> Incoming.State(role, p.plainMap())
             "ack" -> Incoming.Ack(role, p.optString("id"), p.optBoolean("ok", true), p.optStringOrNull("reason"))
             "focus" -> Incoming.FocusChanged(Focus(role, p.optStringOrNull("app"), p.optStringOrNull("title")))
             "roster" -> Incoming.Roster(
@@ -145,7 +145,10 @@ object Inbound {
     private fun JSONObject.optStringOrNull(k: String): String? =
         if (!has(k) || isNull(k)) null else optString(k)
 
-    private fun JSONObject.toMap(): Map<String, Any?> {
+    // Not named toMap(): the desktop org.json this module compiles against has a toMap() member, a member
+    // wins over an extension, and Android's built-in org.json has no toMap(), so the phone crashed with
+    // NoSuchMethodError on the first "state" message (2026-11-06). JsonNamesTest guards the rule.
+    private fun JSONObject.plainMap(): Map<String, Any?> {
         val out = LinkedHashMap<String, Any?>()
         val it = keys()
         while (it.hasNext()) {
