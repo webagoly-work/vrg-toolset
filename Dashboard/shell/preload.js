@@ -109,6 +109,17 @@ contextBridge.exposeInMainWorld('vrg', {
     topics: () => call('note', 'topics', {}),
     save: n => call('note', 'save', n && typeof n === 'object' ? Object.fromEntries(['topic', 'title', 'text', 'source'].filter(k => n[k] !== undefined).map(k => [k, n[k]])) : {}),
   },
+  git: {                                                                         // WP-31; files are named by index of the last status reply, never by path
+    repos: () => call('git', 'repos', {}),
+    status: repo => call('git', 'status', { repo }),
+    branches: repo => call('git', 'branches', { repo }),
+    worktrees: repo => call('git', 'worktrees', { repo }),
+    log: (repo, n) => call('git', 'log', { repo, n: n === undefined ? 30 : n }),
+    diff: (repo, fileIx, cached) => call('git', 'diff', cached === true ? { repo, fileIx, cached: true } : { repo, fileIx }),
+    branch: (repo, name, sw) => call('git', 'branch', sw === true ? { repo, name, switch: true } : { repo, name }),
+    commit: (repo, fileIxs, msg) => call('git', 'commit', { repo, fileIxs, msg }),
+    push: (repo, confirm) => call('git', 'push', { repo, confirm }),
+  },
   mail: {                                                                        // WP-27; tokens never reach the page
     accounts: () => call('mail', 'accounts', {}),
     signIn: acc => call('mail', 'signIn', { acc }),

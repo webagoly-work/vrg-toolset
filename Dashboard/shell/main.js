@@ -477,6 +477,38 @@ ipc.register('note', 'save', {
   source: types.obj({ kind: types.enum('url', 'file', 'node', 'term', 'chat'), ref: types.text(500) }),
 }, async p => notesLib.save(p), { optional: ['source'] });
 
+// git panel (WP-31, DESK-Q11 A): status / branches / commit / guarded push. The page names a repo id and file indexes of the last status reply, never a path.
+// A push that needs credentials runs in an embedded `cmd` terminal (WP-15) so Git Credential Manager's own prompt shows; the panel never sees credentials.
+const gitExe = () => {                                                            // paths.git from the single action registry, {full} filled in
+  try {
+    const g = JSON.parse(require('fs').readFileSync(path.join(REPO_DIR, 'launcher', 'vrg-menu.json'), 'utf8')).paths.git;
+    const f = typeof g === 'string' ? g.replace(/\{full\}/g, path.resolve(FULL_DIR)) : '';
+    return f && require('fs').existsSync(f) ? f : 'git';
+  } catch (e) { return 'git'; }
+};
+const gitLib = require('./lib/git.js').createGit({
+  execFile: require('child_process').execFile, git: gitExe(), node: nodeExe(), anonymiseJs: path.join(path.resolve(REPO_DIR), 'tools', 'anonymise.js'),
+  repos: () => ((R.C && R.C.menu && R.C.menu.repos) || []).filter(r => r && r.name && r.path).map(r => ({ name: r.name, path: R.expand(r.path) })),
+  openTerm: (cwd, args) => {
+    if (SELFTEST) return { ok: false, hu: 'A teszt nem nyit terminált.' };
+    const t = termMgr().open('cmd', cwd);
+    if (!t.term) return t;
+    ipc.emit(win, 'layout', 'open', { kind: 'term', term: t.term, prof: 'cmd' });
+    setTimeout(() => { try { termMgr().write(t.term, '"' + gitExe() + '" ' + args + '\r'); } catch (e) {} }, 1000);
+    return { term: t.term };
+  },
+});
+const gitRepo = types.id, gitIx = types.int(0, 9999);
+ipc.register('git', 'repos', {}, async () => gitLib.repos());
+ipc.register('git', 'status', { repo: gitRepo }, async ({ repo }) => gitLib.status(repo));
+ipc.register('git', 'branches', { repo: gitRepo }, async ({ repo }) => gitLib.branches(repo));
+ipc.register('git', 'worktrees', { repo: gitRepo }, async ({ repo }) => gitLib.worktrees(repo));
+ipc.register('git', 'log', { repo: gitRepo, n: types.int(1, 200) }, async ({ repo, n }) => gitLib.log(repo, n));
+ipc.register('git', 'diff', { repo: gitRepo, fileIx: gitIx, cached: types.bool }, async ({ repo, fileIx, cached }) => gitLib.diff(repo, fileIx, cached), { optional: ['cached'] });
+ipc.register('git', 'branch', { repo: gitRepo, name: types.text(60), switch: types.bool }, async ({ repo, name, switch: sw }) => gitLib.branch(repo, name, sw), { optional: ['switch'] });
+ipc.register('git', 'commit', { repo: gitRepo, fileIxs: types.arr(gitIx, 2000), msg: types.text(2000) }, async ({ repo, fileIxs, msg }) => gitLib.commit(repo, fileIxs, msg));
+ipc.register('git', 'push', { repo: gitRepo, confirm: types.text(80) }, async ({ repo, confirm }) => gitLib.push(repo, confirm));
+
 // mail (WP-27): Gmail over OAuth (PKCE, loopback, system browser) + the webmail presets. Tokens stay in secrets.bin; the page gets ids and bools.
 const { createOAuth } = require('./lib/oauth.js');
 const { createGmail } = require('./lib/gmail.js');
