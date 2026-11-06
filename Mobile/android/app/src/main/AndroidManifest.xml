@@ -55,5 +55,24 @@
                 <data android:scheme="http" android:host="*" android:port="47291" android:path="/phone-sender.html" />
             </intent-filter>
         </activity>
+
+        <!-- "Megosztás → PC-re" from any app (Átadás, WP M12): files and pictures go onto the PC's board,
+             text onto the PC's clipboard. An alias of the shell, so it shows under its own label. -->
+        <activity-alias
+            android:name=".ShareToPc"
+            android:targetActivity=".ShellActivity"
+            android:exported="true"
+            android:label="@string/share_to_pc">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity-alias>
     </application>
 </manifest>

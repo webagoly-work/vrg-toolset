@@ -105,7 +105,7 @@
     { "key": "4", "id": "kapu", "name": "VRG Kapu · Kapu segéd", "port": 8795, "js": "{repo}\\Hub\\companion\\server.js", "args": ["--no-open"] },
     { "key": "5", "id": "cyd-settings", "name": "Planner CYD · makropad beállítása", "port": 8788, "bat": "{repo}\\Firmware\\planner-cyd\\5 - Makropad beallitasa.bat", "self": true },
     { "key": "6", "id": "board", "name": "Board Console · fejlesztőlap", "port": 8790, "bat": "{repo}\\Firmware\\board-console\\Board Console.bat", "self": true },
-    { "key": "7", "id": "gyro", "name": "Gyro relay · telefon", "port": 47291, "js": "{planner}\\tools\\phone-relay-server.js", "cwd": "{planner}" },
+    { "key": "7", "id": "gyro", "name": "Gyro relay · telefon", "port": 47291, "open": "/board", "js": "{planner}\\tools\\phone-relay-server.js", "cwd": "{planner}" },
     { "key": "8", "id": "knobpad", "name": "Knob pad · próba szerver", "port": 8177, "js": "{repo}\\Firmware\\knobpad\\mock-server.js" },
     { "key": "9", "id": "openmct", "name": "Open MCT · kísérlet", "port": 8150, "js": "{repo}\\docs\\research\\openmct-spike\\serve.js" },
     { "key": "0", "id": "kapu-dev", "name": "VRG Kapu · statikus dev", "port": 8796, "js": "{repo}\\Hub\\test\\serve.js" },

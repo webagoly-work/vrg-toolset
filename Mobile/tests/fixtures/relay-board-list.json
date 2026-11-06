@@ -1,0 +1,13 @@
+{
+  "v": 1, "from": "relay", "seq": 9, "t": 1762430000000, "type": "board.listed",
+  "payload": {
+    "op": "board.list",
+    "ok": true,
+    "entries": [
+      { "id": "0123456789abcdef", "name": "IMG_1.jpg", "bytes": 30000, "sha256": "4c1f6b1a2e1c3b0f9d8e7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d", "from": "phone", "at": "2026-11-06T10:15:00.000Z", "target": "planner" },
+      { "id": "fedcba9876543210", "name": "árajánlat.pdf", "bytes": 5021, "sha256": "aa1f6b1a2e1c3b0f9d8e7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d", "from": "pc", "at": "2026-11-06T09:00:00.000Z", "target": "inbox" },
+      { "id": "../board.json", "name": "skipped: not an id", "bytes": 1, "sha256": "x", "from": "pc", "at": "2026-11-06T08:00:00.000Z", "target": "inbox" },
+      { "id": "1111111111111111", "name": "weird.bin", "bytes": -5, "sha256": "bb", "from": "martian", "at": "2026-11-06T07:00:00.000Z", "target": "nowhere" }
+    ]
+  }
+}

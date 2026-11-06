@@ -87,6 +87,17 @@
 //   * launch.status -> launch.status {ok, running, mine}; launch.log {id} -> launch.log {ok, id, lines};
 //     launch.stop {id} -> launch.stopped {ok, id | reason}, only for a server this relay started.
 //   * The id is a key into the list, nothing else: no string from the phone reaches a command.
+//
+// CHANGED 6 Nov — Átadás, the file board (VRG Mobile, WP M12; the rules are in relay-board.js).
+//   * GET /board (this PC's own browser only, the /pair rule) is the board page; /board/list.json,
+//     /board/file/<id>, POST /board/upload?name=&sha256=&target= and POST /board/remove?id= serve it.
+//     Every POST from the page must carry this relay's own Origin as well.
+//   * A trusted phone: board.list -> board.listed {ok, entries}; board.ticket {op:'upload'|'download',
+//     id} -> board.ticket {ok, ticket, ttl}: one transfer within 60 s, sent as the X-VRG-Ticket header
+//     on /board/upload or /board/file/<id>; board.remove {id} -> board.removed {ok, id}.
+//   * clip.set {text} / clip.get -> clip {ok, text?}: the PC's clipboard, text only.
+//   * {type:'board', payload:{event:'added'|'removed', id, name, bytes, from, target, ...}} goes to the
+//     trusted phones and to the apps on this PC (the board page, the Planner), so lists refresh by themselves.
 // ==========================================================================
 
 const http = require('http');
@@ -99,6 +110,7 @@ const { WebSocketServer } = require('ws');
 const pairing = require('./relay-pair');
 const ports = require('./relay-ports');
 const launch = require('./relay-launch');
+const board = require('./relay-board');
 
 const DEFAULT_PORT = 47291;
 const MAX_TRIES = 8;                       // 47291..47298
@@ -248,6 +260,7 @@ const server = http.createServer((req, res) => {
       focus: lastFocus,
       shots: SHOTS,
       ports: PORTS,
+      board: true,
       app: 'varler-phone-relay',
       v: 3
     });
@@ -274,6 +287,9 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
+
+  // ---- /board — Átadás, the file board (see the 6 Nov note) ------------------------------------
+  if (url === '/board' || url.startsWith('/board/')) { serveBoard(req, res, url); return; }
 
   // ---- /p/<port>/… — the phone's view of a local server (see the 5 Nov note) --------------------
   if (url === '/p' || url.startsWith('/p/')) { serveProxy(req, res); return; }
@@ -318,6 +334,123 @@ function serveProxy(req, res) {
     return;
   }
   ports.proxy(req, res, m.port, rest, 'localhost');
+}
+
+/* ---- Átadás: the file board (relay-board.js has the rules) ------------------------------------ */
+
+const BOARD = board.createBoard();
+const CLIP = board.createClipboard();
+
+function serveBoard(req, res, url) {
+  const own = lanAddresses().map(a => a.address);
+  const json = (code, o, extra) => {
+    if (res.headersSent || res.destroyed) return;
+    res.writeHead(code, Object.assign({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }, extra || {}));
+    res.end(JSON.stringify(o));
+  };
+  // A refused POST: a body within the limit is read and dropped first, so the sender gets the answer
+  // rather than a reset connection; anything bigger (or unannounced) is answered at once and closed.
+  const answerPost = (code, o) => {
+    const len = Number(req.headers['content-length']);
+    if (req.complete || req.destroyed) { json(code, o); return; }
+    if (!Number.isInteger(len) || len > BOARD.max) { json(code, o, { Connection: 'close' }); return; }
+    req.on('end', () => json(code, o));
+    req.on('close', () => json(code, o));
+    req.resume();
+  };
+  const q = new URL(req.url, 'http://x').searchParams;
+  const ticket = req.headers[board.TICKET_HEADER];
+  const local = pairing.isLocal(clientIp(req), own) && pairing.isLocalHost(req.headers.host, own);
+  const ownPost = local && board.originOk(req.headers.origin, req.headers.host);
+  const refuse = why => {
+    console.log(`  ! tabla elutasitva: ${clientIp(req)} ${req.method} ${url} (${why})`);
+    const o = { ok: false, reason: 'Csak ezen a PC-n (http://localhost:' + server.address().port + '/board) vagy párosított telefonról.' };
+    if (req.method === 'POST') answerPost(403, o); else json(403, o);
+  };
+
+  const fm = /^\/board\/file\/([0-9a-f]{16})$/.exec(url);
+  if (fm && req.method === 'GET') {
+    // the phone's way: a download ticket for exactly this id; the PC's: its own browser
+    if (ticket != null ? !BOARD.useTicket(ticket, 'download', fm[1], isPaired) : !local) { refuse(ticket != null ? 'jegy' : 'nem helyi'); return; }
+    const e = BOARD.get(fm[1]);
+    const file = e && BOARD.pathOf(e);
+    if (!file || !fs.existsSync(file)) { json(404, { ok: false, reason: 'Ez már nincs a táblán.' }); return; }
+    res.writeHead(200, board.fileHeaders(e));
+    fs.createReadStream(file).on('error', () => res.destroy()).pipe(res);
+    return;
+  }
+  if (url === '/board/upload' && req.method === 'POST') {
+    const viaTicket = ticket != null;
+    if (viaTicket ? !BOARD.useTicket(ticket, 'upload', null, isPaired) : !ownPost) { refuse(viaTicket ? 'jegy' : local ? 'Origin' : 'nem helyi'); return; }
+    BOARD.receive(req, { name: q.get('name'), sha256: q.get('sha256'), target: q.get('target'), length: req.headers['content-length'], from: viaTicket ? 'phone' : 'pc' })
+      .then(r => {
+        if (!r.ok) {
+          console.log(`  ! feltoltes sikertelen (${clientIp(req)}): ${r.reason}`);
+          answerPost(r.status || 400, { ok: false, reason: r.reason });
+          return;
+        }
+        const e = r.entry;
+        const delivered = e.target === 'inbox' ? 0 : [...clients].filter(c => c.readyState === c.OPEN && roleOf(c) === e.target).length;
+        console.log(`  [tabla] ${e.from === 'phone' ? 'telefonrol' : 'PC-rol'}: ${e.file}  ${Math.round(e.bytes / 1024)} KB` + (e.target !== 'inbox' ? `  -> ${e.target} (${delivered})` : ''));
+        json(200, { ok: true, entry: board.pub(e), delivered });
+      });
+    return;
+  }
+  if (!local) { refuse('nem helyi'); return; }
+  if (url === '/board' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Frame-Options': 'DENY' });
+    res.end(board.boardPage());
+    return;
+  }
+  if (url === '/board/list.json' && req.method === 'GET') { json(200, { ok: true, entries: BOARD.list(), dir: BOARD.dir }); return; }
+  if (url === '/board/remove' && req.method === 'POST') {
+    if (!ownPost) { refuse('Origin'); return; }
+    const r = BOARD.remove(q.get('id'));
+    if (r.ok) console.log(`  [tabla] levetel a PC-n: ${r.entry.name} -> ${r.moved || '(a fajl mar nem volt meg)'}`);
+    json(r.ok ? 200 : 404, r.ok ? { ok: true, id: r.entry.id, moved: r.moved } : r);
+    return;
+  }
+  json(404, { ok: false, reason: 'Not found' });
+}
+
+// every change, to the trusted phones and to the apps on this PC (the board page, the Planner)
+BOARD.on(ev => {
+  const raw = fromRelay('board', Object.assign({}, ev, ev.event === 'added' ? { url: '/board/file/' + ev.id } : {}));
+  for (const c of clients) {
+    if (c.readyState !== c.OPEN) continue;
+    if (roleOf(c) === PHONE ? isTrusted(c) : c.__local) c.send(raw);
+  }
+});
+
+const BOARD_TYPES = new Set(['board.list', 'board.ticket', 'board.remove', 'clip.get', 'clip.set']);
+const BOARD_ANSWER = { 'board.list': 'board.listed', 'board.ticket': 'board.ticket', 'board.remove': 'board.removed', 'clip.get': 'clip', 'clip.set': 'clip' };
+
+function onBoardMessage(ws, ip, type, p) {
+  const answer = payload => { if (ws.readyState === ws.OPEN) ws.send(fromRelay(BOARD_ANSWER[type], Object.assign({ op: type }, payload))); };
+  if (!isTrusted(ws)) {
+    answer({ ok: false, trusted: false,
+      reason: 'Párosítás kell: a PC-n nyisd meg a http://localhost:' + server.address().port + '/pair oldalt, és olvasd be a QR-t.' });
+    return;
+  }
+  if (type === 'board.list') { answer({ ok: true, entries: BOARD.list() }); return; }
+  if (type === 'board.ticket') { answer(BOARD.ticket(p.op, p.id, ws.__pairId)); return; }
+  if (type === 'board.remove') {
+    const r = BOARD.remove(p.id);
+    if (r.ok) console.log(`  [tabla] levetel a telefonrol (${ip}): ${r.entry.name} -> ${r.moved || '(a fajl mar nem volt meg)'}`);
+    answer(r.ok ? { ok: true, id: r.entry.id, moved: r.moved } : { ok: false, id: typeof p.id === 'string' ? p.id.slice(0, 16) : null, reason: r.reason });
+    return;
+  }
+  if (type === 'clip.set') {
+    CLIP.set(p.text).then(r => {
+      console.log(`  [vagolap] telefon -> PC (${ip}): ${r.ok ? r.chars + ' karakter' : r.reason}`);
+      answer(r);
+    });
+    return;
+  }
+  CLIP.get().then(r => {
+    console.log(`  [vagolap] PC -> telefon (${ip}): ${r.ok ? r.text.length + ' karakter' : r.reason}`);
+    answer(r);
+  });
 }
 
 function servePair(req, res, url) {
@@ -389,6 +522,7 @@ function isTrusted(ws) { return !!ws.__trusted; }
 /** A pairing removed (on the PC or by the phone): its live connections stop being trusted at once. */
 function untrust(id) {
   GATE.revoke(id);
+  BOARD.revoke(id);
   for (const c of clients) {
     if (c.__pairId === id) {
       c.__trusted = false; c.__pairId = null;
@@ -419,6 +553,7 @@ wss.on('connection', (ws, req) => {
   ws.__challenge = PAIRS.challenge();
   ws.__trusted = false;
   const ip = (req.socket.remoteAddress || '').replace(/^::ffff:/, '');
+  ws.__local = pairing.isLocal(ip, lanAddresses().map(a => a.address));   // an app on this PC: hears board events
   console.log(`  + csatlakozott: ${ip}   (${clients.size} kliens)`);
 
   ws.on('message', raw => {
@@ -472,6 +607,12 @@ wss.on('connection', (ws, req) => {
     if (m && to === 'relay' && LAUNCH_TYPES.has(m.type)) {
       if (roleOf(ws) !== PHONE) return;
       onLaunchMessage(ws, ip, m.type, m.payload || {});
+      return;
+    }
+
+    if (m && to === 'relay' && BOARD_TYPES.has(m.type)) {
+      if (roleOf(ws) !== PHONE) return;
+      onBoardMessage(ws, ip, m.type, m.payload || {});
       return;
     }
 
@@ -757,6 +898,7 @@ server.on('listening', () => {
   console.log(SHOTS ? '   Képernyőkép a telefonra: BEKAPCSOLVA (--shots, párosított telefonnak)' : '   Képernyőkép a telefonra: ki (indítás --shots kapcsolóval)');
   console.log(PORTS ? '   Localhost a telefonon (/p/<port>/): BEKAPCSOLVA (--ports, párosított telefonnak)' : '   Localhost a telefonon: ki (indítás --ports kapcsolóval)');
   console.log(`   VRG Mobile párosítás (ezen a PC-n): http://localhost:${port}/pair`);
+  console.log(`   Átadás, fájltábla (ezen a PC-n): http://localhost:${port}/board`);
   console.log('   Mobiladat nem jó.');
   console.log('  ===========================================');
   console.log('');

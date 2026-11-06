@@ -149,6 +149,8 @@ rem Localhost (WP M8): Node only, ports 47393 + 47394, opens no window (dry run)
 "%NODE_EXE%" "Mobile\tests\relay-ports.js"
 rem Inditopult (WP M11): Node only, port 47395, starts and opens nothing (dry run)
 "%NODE_EXE%" "Mobile\tests\relay-launch.js"
+rem Atadas (WP M12): Node only, port 47396, a temporary board folder and clipboard file
+"%NODE_EXE%" "Mobile\tests\relay-board.js"
 "%NODE_EXE%" -e "require.resolve('playwright')" >nul 2>&1
 if errorlevel 1 goto NO_PLAYWRIGHT
 "%NODE_EXE%" "Mobile\tests\relay-e2e.js"

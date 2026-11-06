@@ -101,7 +101,7 @@
       "port": 47291,
       "id": "gyro",
       "name": "Gyro relay · telefon",
-      "path": "/"
+      "path": "/board"
     }
   ]
 }

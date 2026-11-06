@@ -2,6 +2,7 @@ package hu.vrg.mobile
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.WindowManager
@@ -32,11 +33,13 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.core.content.IntentCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.Links
 import hu.vrg.mobile.core.Route
+import hu.vrg.mobile.drop.DropFeature
 import hu.vrg.mobile.kit.Access
 import hu.vrg.mobile.kit.FeatureHost
 import hu.vrg.mobile.kit.ShellSettings
@@ -172,6 +175,16 @@ class ShellActivity : ComponentActivity(), FeatureHost {
     }
 
     private fun handleLink(i: Intent?) {
+        // "Megosztás → PC-re" (the ShareToPc alias): files to the PC's board, text to its clipboard (Átadás, M12)
+        if (i != null && i.component?.className?.endsWith(".ShareToPc") == true &&
+            (i.action == Intent.ACTION_SEND || i.action == Intent.ACTION_SEND_MULTIPLE)) {
+            val uris = if (i.action == Intent.ACTION_SEND_MULTIPLE)
+                IntentCompat.getParcelableArrayListExtra(i, Intent.EXTRA_STREAM, Uri::class.java).orEmpty()
+            else listOfNotNull(IntentCompat.getParcelableExtra(i, Intent.EXTRA_STREAM, Uri::class.java))
+            open(Catalogue.DROP.id)
+            DropFeature.share(uris, i.getStringExtra(Intent.EXTRA_TEXT))
+            return
+        }
         // "Megosztás → VRG Mobile" with text from any app: a quick note (Gyorsjegyzet, M6)
         if (i?.action == Intent.ACTION_SEND && i.type?.startsWith("text/") == true) {
             val text = i.getStringExtra(Intent.EXTRA_TEXT) ?: return

@@ -85,6 +85,23 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   while the screen is open. "Megnyitás a telefonon" reuses M8's proxy token, so it needs the relay's `--ports`.
   Details: `WP/M11.md`.
 
+- **M12 · How Átadás is built** (2026-11-06, no question asked; the WP left one real gap, settled the M8/M11 way).
+  - *Routing.* The WP routes `planner` through "the existing `07b-phone-camera.js` photo path" and `inventory` into
+    "the import queue". Neither exists: `07b` is the gyro camera control, the Inventory has no queue. Chosen: the
+    target is stored on the entry, and the relay's `board` event (with `target` and the file's `url`) reaches every
+    app on this PC, so the Planner tab hears it; the upload answer counts the clients of that role (`delivered`).
+    Taking the photo into the open job / an Inventory queue is left to "Planner site mode" and "Inventory scan"
+    (README, Later), where the Planner's data model gets a photo collection. Building a Planner photo store inside
+    M12 would have meant a new top-level collection (UKEYS, IDPRE, golden renders) for a WP about transfer.
+  - *No relay flag.* Like M11 (not like `--shots` / `--ports`), the board is behind the M2 trust only; `/board` itself
+    answers this PC only. Architecture rule 4's flag is for abilities that are not paired; this one always is.
+  - *Messages.* `board.list` → `board.listed`, `board.ticket`, `board.remove` → `board.removed`, `clip.get` /
+    `clip.set` → `clip`, and the event `board`. Tickets are bound to the pairing, as M8's proxy token is.
+  - *Files are always octet-stream* (not a type guessed from the name): the phone picks the MediaStore type from
+    the extension itself (`Drop.mimeOf`), and HTML is saved as a plain file.
+  - *ShotStore → kit `FileStore`*, with the FileProvider moved to the kit's manifest, since both features use it.
+  Details: `WP/M12.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 - **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city

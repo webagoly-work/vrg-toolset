@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The kit's part of the app manifest; the shell (:app) merges it. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Cached files shared to other apps or handed to the camera (FileStore): Légegér's screenshots
+             (cache/shots) and Átadás' files and camera photos (cache/drop, WP M12). Moved here from
+             feature-airdeck in M12 so both features use the one provider. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+</manifest>
