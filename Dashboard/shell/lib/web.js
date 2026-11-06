@@ -235,7 +235,7 @@ function createWebHost({
     wc.on('context-menu', (ev, p) => {
       if (!onSelection || !p || typeof p.selectionText !== 'string' || !p.selectionText.trim()) return;
       const extra = isAllowedNav(p.linkURL) ? [{ label: 'Link megnyitása új lapon', click: () => { try { open({ url: p.linkURL, partition: t.partition }); } catch (e) { log('link tab failed'); } } }] : [];
-      try { onSelection({ text: p.selectionText, origin: 'web', extra }); } catch (e) { log('selection menu failed'); }
+      try { onSelection({ text: p.selectionText, origin: 'web', ref: p.pageURL || (wc.getURL ? wc.getURL() : ''), extra }); } catch (e) { log('selection menu failed'); }
     });
     // WP-26: a mail tab reports its unread count (the title carries it); no extra navigation rule is needed, the sign-in hosts are https
     if (t.acc) webmail.watch(wc, t.acc, d => { t.unread = d.n; fire('mail.unread', { ...d, view: t.id }); push(t); });

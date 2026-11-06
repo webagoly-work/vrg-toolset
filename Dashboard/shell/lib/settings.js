@@ -24,6 +24,7 @@ const KEYS = {
   'win.bounds':        { type: v => v === null || rect(v), def: null },
   'term.embedClaude':  { type: v => typeof v === 'boolean', def: true },            // WP-16: s:C/*, cont:, go: open in a term pane
   'claude.account':    { type: v => v === 'A' || v === 'B', def: 'A' },
+  'chat.keepText':     { type: v => typeof v === 'boolean', def: false },           // WP-23/24, DESK-Q60 A + Q63 B: off = no chat text on disk
   'web.history.days':  { type: v => Number.isInteger(v) && v >= 0 && v <= 3650, def: 90 },
   'web.perms':         { type: permsOk, def: {} },                                        // WP-17: { origin: { 'media': bool, 'clipboard-sanitized-write': bool } }
   'ui.lang':          { type: v => v === 'hu' || v === 'en', def: 'hu' },

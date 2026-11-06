@@ -58,6 +58,12 @@
       this.drawCode(r.code || [], r);
     },
 
+    // "Csomaghoz adás" (DESK-Q57 A): the hit goes to the context pack through the frame's vrg-ctx-add event (a node id, or the code line as text)
+    addBtn(detail) {
+      const a = el('button', 'ctx-add', '+ Csomag'); a.type = 'button'; a.title = 'Csomaghoz adás · Add to the context pack';
+      a.addEventListener('click', ev => { ev.stopPropagation(); document.dispatchEvent(new CustomEvent('vrg-ctx-add', { detail })); });
+      return a;
+    },
     drawStack(hits) {
       const sec = el('section', 'stack-hits'); sec.append(el('h3', null, 'Rétegverem'));
       if (!hits.length) sec.append(el('p', 'none', 'Nincs találat'));
@@ -69,7 +75,7 @@
           const row = el('div', 'hit'); row.dataset.id = h.id;
           const b = el('button', 'node', h.id + '  ' + h.title); b.type = 'button'; b.title = h.brief || h.id;
           b.addEventListener('click', () => this.card(h.id, row));
-          row.append(b);
+          row.append(b, this.addBtn({ nodes: [{ id: h.id, title: h.title, layer: h.layer }] }));
           if (h.brief) row.append(el('div', 'brief', h.brief));
           g.append(row);
         }
@@ -100,7 +106,7 @@
           const b = el('button', 'code', ':' + h.line + (h.title ? '  ' + h.title : '')); b.type = 'button'; b.title = h.snippet || file;
           b.dataset.i = String(i);
           b.addEventListener('click', () => this.openCode(i));
-          g.append(b);
+          g.append(b, this.addBtn(file + ':' + h.line + (h.snippet ? '\n' + h.snippet : '')));
           if (h.snippet) g.append(el('div', 'snippet', h.snippet));
         }
         sec.append(g);

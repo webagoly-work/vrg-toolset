@@ -67,7 +67,7 @@ test('popup: native template, click on Google emits sel.pick, empty text pops no
   assert.strictEqual(tpl[0].label, 'Link megnyitása új lapon');
   assert.strictEqual(tpl[1].type, 'separator');
   tpl.find(i => i.label === 'Google').click();
-  assert.deepStrictEqual(events, [['pick', { action: 'google', text: 'Kapu' }]]);
+  assert.deepStrictEqual(events, [['pick', { action: 'google', text: 'Kapu', origin: 'web' }]]);
   assert.strictEqual(tpl.find(i => i.label === 'Belső keresés (később)').enabled, false);
 });
 
@@ -88,7 +88,7 @@ test('web tab: context-menu with a selection raises the menu; a link adds "Link 
   wc.emit('context-menu', {}, { selectionText: '' });
   assert.strictEqual(raised.length, 0);
   wc.emit('context-menu', {}, { selectionText: 'Kapu', linkURL: '' });
-  assert.deepStrictEqual(raised[0], { text: 'Kapu', origin: 'web', extra: [] });
+  assert.deepStrictEqual(raised[0], { text: 'Kapu', origin: 'web', ref: 'http://127.0.0.1/', extra: [] });   // ref = the page URL (DESK-Q65 B)
   wc.emit('context-menu', {}, { selectionText: 'Kapu', linkURL: 'javascript:alert(1)' });
   assert.strictEqual(raised[1].extra.length, 0);
   wc.emit('context-menu', {}, { selectionText: 'Kapu', linkURL: 'http://127.0.0.1/x' });

@@ -470,6 +470,8 @@
       add('Megmutatás Intézőben', () => this.fsCall('reveal', it));
       add('Útvonal másolása', () => this.fsCall('copyPath', it));
       add('Frissítés', () => this.reload(k));
+      // DESK-Q51 B: the selection actions on every right-click, for the file name (never a path); main pops its native menu
+      if (window.vrg && window.vrg.sel) add('Keresés, Claude, jegyzet a névvel…', () => window.vrg.sel.menu(it.name.slice(0, 200), 'file'));
       this.root.append(m);
       const close = () => { m.remove(); document.removeEventListener('mousedown', close, true); };
       setTimeout(() => document.addEventListener('mousedown', close, true), 0);

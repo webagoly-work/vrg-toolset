@@ -1,7 +1,8 @@
 // chat.js — "Claude oldalchat" engine (WP-23): headless `claude -p --output-format stream-json` with the account's own sign-in.
 //   const chat = createChat({ spawn, execFile, env, repo, bin, claudeDirB, paths, emit, readFile, packText, keepText, platform, log });
 //   chat.start({ account, prompt, attach, tools }) → { chat } | { ok:false, err, hu }      chat.follow(id, prompt)      chat.stop(id)      chat.list()
-//   emit(type, data): chat.delta {chat,text} · chat.tool {chat,name} · chat.done {chat,session,cost?,turns?} · chat.error {chat,hu}
+//   chat.history(id) → { msgs }   (DESK-Q63 B: with the setting chat.keepText on, every thread's text is saved in <userDir>\chats\<id>.json)
+//   emit(type, data): chat.delta {chat,text} · chat.tool {chat,name,target?} (DESK-Q64 B: the file or pattern the tool works on, repo-relative) · chat.done {chat,session,cost?,turns?} · chat.error {chat,hu}
 // The prompt goes on stdin (never argv). Env = the app env minus ELECTRON_* / NODE_OPTIONS, CLAUDE_CONFIG_DIR only for account B (as WP-14).
 // Electron stays out: spawn, execFile and the file / pack readers are passed in, so node --test can load this file.
 'use strict';
@@ -9,6 +10,18 @@ const fs = require('fs'), path = require('path'), crypto = require('crypto');
 
 const MAX_TOTAL = 256 * 1024, MAX_FILE = 64 * 1024, MAX_CHATS = 100;
 const bad = hu => ({ ok: false, err: 'bad-request', hu });
+const LOG_MAX = 512 * 1024, ID_RE = /^c[0-9a-f]{10}$/;
+const clean = (s, n) => String(s).replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, n);
+
+// the tool's target for the chat row: file_path / path / pattern from the tool input; a path inside the repo is shown repo-relative
+function toolTarget(input, repo) {
+  if (!input || typeof input !== 'object') return '';
+  const v = [input.file_path, input.path, input.pattern].find(x => typeof x === 'string' && x);
+  if (!v) return '';
+  let s = v;
+  if (repo && path.isAbsolute(s)) { const rel = path.relative(repo, s); if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) s = rel; }
+  return clean(s, 200);
+}
 const LOGIN_RE = /login|authenticate|401/i;
 const loginMsg = acc => `A(z) ${acc} fiók nincs bejelentkezve. Jelentkezz be egy Claude terminálban.`;
 
@@ -34,6 +47,25 @@ function childEnv(env, account, claudeDirB) {
 function createChat({ spawn, execFile, env = process.env, repo, bin, claudeDirB, paths, emit = () => {}, readFile, packText, keepText = () => false, platform = process.platform, log = () => {} }) {
   const threads = new Map();                                  // id → { id, account, session, title, at, tools, proc, stopped, ended }
   const file = () => path.join(paths.userDir(), 'chats.json');
+  const logFile = id => (ID_RE.test(id) ? path.join(paths.userDir(), 'chats', id + '.json') : null);
+  const keepOn = () => { try { return keepText() === true; } catch (e) { return false; } };
+  const okMsg = m => m && ((m.who === 'user' && typeof m.text === 'string') || (m.who === 'assistant' && Array.isArray(m.parts)));
+  const lastAnswer = t => { const a = t.log && t.log[t.log.length - 1]; return a && a.who === 'assistant' ? a : null; };
+
+  // the thread's messages in the chat pane's own shape: { who:'user', text } | { who:'assistant', parts:[{ text } | { tool, target }] }
+  function saveLog(t) {
+    if (!keepOn() || !t.log || !t.log.length) return;
+    const f = logFile(t.id); if (!f) return;
+    let msgs = t.log;
+    while (msgs.length > 2 && Buffer.byteLength(JSON.stringify(msgs), 'utf8') > LOG_MAX) msgs = msgs.slice(2);   // the oldest question + answer go first
+    t.log = msgs;
+    try { fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f + '.tmp', JSON.stringify({ msgs }), 'utf8'); fs.renameSync(f + '.tmp', f); }
+    catch (e) { log('chat', 'chat text not written'); }
+  }
+  function readLog(id) {
+    const f = logFile(id); if (!f) return [];
+    try { const j = JSON.parse(fs.readFileSync(f, 'utf8')); return Array.isArray(j && j.msgs) ? j.msgs.filter(okMsg) : []; } catch (e) { return []; }
+  }
 
   function readSaved() {
     try { const j = JSON.parse(fs.readFileSync(file(), 'utf8')); return Array.isArray(j) ? j.filter(c => c && typeof c.id === 'string') : []; }
@@ -80,8 +112,15 @@ function createChat({ spawn, execFile, env = process.env, repo, bin, claudeDirB,
     if (m.type === 'assistant' && m.message && Array.isArray(m.message.content)) {
       for (const b of m.message.content) {
         if (!b) continue;
-        if (b.type === 'text' && typeof b.text === 'string' && b.text) emit('chat.delta', { chat: t.id, text: b.text });
-        else if (b.type === 'tool_use' && typeof b.name === 'string') emit('chat.tool', { chat: t.id, name: b.name });
+        const a = lastAnswer(t);
+        if (b.type === 'text' && typeof b.text === 'string' && b.text) {
+          emit('chat.delta', { chat: t.id, text: b.text });
+          if (a) { const p = a.parts[a.parts.length - 1]; if (p && p.text !== undefined) p.text += b.text; else a.parts.push({ text: b.text }); }
+        } else if (b.type === 'tool_use' && typeof b.name === 'string') {
+          const target = toolTarget(b.input, repo);
+          emit('chat.tool', target ? { chat: t.id, name: b.name, target } : { chat: t.id, name: b.name });
+          if (a) a.parts.push(target ? { tool: clean(b.name, 40), target } : { tool: clean(b.name, 40) });
+        }
       }
     } else if (m.type === 'result') {
       if (typeof m.session_id === 'string') t.session = m.session_id;
@@ -90,7 +129,7 @@ function createChat({ spawn, execFile, env = process.env, repo, bin, claudeDirB,
       if (typeof m.total_cost_usd === 'number') d.cost = m.total_cost_usd;
       if (typeof m.num_turns === 'number') d.turns = m.num_turns;
       t.at = new Date().toISOString();
-      persist();
+      persist(); saveLog(t);
       finish(t, 'done', d);
     }
   }
@@ -132,6 +171,7 @@ function createChat({ spawn, execFile, env = process.env, repo, bin, claudeDirB,
     const id = 'c' + crypto.randomBytes(5).toString('hex');
     const at = new Date().toISOString();
     const t = { id, account, session: '', title: prompt.replace(/\s+/g, ' ').trim().slice(0, 60), label: 'Beszélgetés ' + at.slice(0, 16).replace('T', ' '), at, tools: tools === 'none' ? 'none' : 'read', proc: null, stopped: false, ended: false };
+    t.log = [{ who: 'user', text: prompt }, { who: 'assistant', parts: [] }];
     const r = run(t, c.text);
     if (r) return r;
     threads.set(id, t);
@@ -139,13 +179,25 @@ function createChat({ spawn, execFile, env = process.env, repo, bin, claudeDirB,
     return { chat: id };
   }
 
+  // a thread of an earlier run (chats.json) comes back to memory so it can continue: its session resumes, its saved text (if any) is its log
+  function revive(id) {
+    if (threads.has(id) || !ID_RE.test(String(id))) return threads.get(id);
+    const c = readSaved().find(x => x.id === id);
+    if (!c || typeof c.session !== 'string' || !c.session) return null;
+    const t = { id, account: c.account === 'B' ? 'B' : 'A', session: c.session, title: String(c.title || ''), label: String(c.title || ''), at: c.at, tools: 'read', proc: null, stopped: false, ended: true, log: keepOn() ? readLog(id) : [] };
+    threads.set(id, t);
+    return t;
+  }
+
   async function follow(id, prompt) {
-    const t = threads.get(id);
+    const t = revive(id);
     if (!t) return { ok: false, err: 'not-found', hu: 'Nincs ilyen beszélgetés.' };
     if (typeof prompt !== 'string' || !prompt.trim()) return bad('Üres kérés.');
     if (t.proc && !t.ended) return { ok: false, err: 'busy', hu: 'A válasz még készül.' };
     if (!t.session) return { ok: false, err: 'not-found', hu: 'A beszélgetés még nem folytatható.' };
     if (Buffer.byteLength(prompt, 'utf8') > MAX_TOTAL) return bad('A kérés túl hosszú.');
+    if (!t.log) t.log = [];
+    t.log.push({ who: 'user', text: prompt }, { who: 'assistant', parts: [] });
     return run(t, prompt) || {};
   }
 
@@ -169,7 +221,15 @@ function createChat({ spawn, execFile, env = process.env, repo, bin, claudeDirB,
     return { chats: [...mem, ...old].sort((a, b) => String(b.at).localeCompare(String(a.at))) };
   }
 
-  return { start, follow, stop, list, killAll: () => { for (const t of threads.values()) if (t.proc) stop(t.id); } };
+  // the saved text of a thread: memory first; from disk only while chat.keepText is on
+  function history(id) {
+    if (!ID_RE.test(String(id))) return bad('Érvénytelen beszélgetés.');
+    const t = threads.get(id);
+    if (t && t.log && t.log.length) return { msgs: t.log };
+    return { msgs: keepOn() ? readLog(id) : [] };
+  }
+
+  return { start, follow, stop, list, history, killAll: () => { for (const t of threads.values()) if (t.proc) stop(t.id); } };
 }
 
-module.exports = { createChat, binary, childEnv, MAX_TOTAL, MAX_FILE };
+module.exports = { createChat, binary, childEnv, toolTarget, MAX_TOTAL, MAX_FILE, LOG_MAX };

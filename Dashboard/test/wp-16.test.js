@@ -145,3 +145,15 @@ test('fake-claude prints its argv and CLAUDE_CONFIG_DIR and exits 0', () => {
   assert.strictEqual(r.status, 0);
   assert.strictEqual(r.stdout.replace(/\r/g, ''), 'FAKE_CLAUDE GO HUB\nCLAUDE_CONFIG_DIR=C:\\demo\\b\n');
 });
+
+// WP-25a: main now wires claudeterm (DESK-Q41 B), so the selftest's dry planning of every act must never start Claude
+test('dry run with embedding on: the plan names the embedded terminal, nothing is spawned', async () => {
+  const { fake, events, run, acts } = mk();
+  run.dry = [];
+  const r = await acts.runAct('go:HUB');
+  const plan = run.dry; run.dry = null;
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(fake.calls.length, 0);
+  assert.strictEqual(events.length, 0);
+  assert.deepStrictEqual(plan, [{ claudeterm: 'A', cwd: plan[0].cwd, prompt: 'GO HUB', extra: [] }]);
+});

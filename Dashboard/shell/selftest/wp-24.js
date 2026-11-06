@@ -51,7 +51,7 @@ module.exports = async function probe({ win }) {
     else {
       const txt = await js(`${asst}[0].innerText`);
       if (!/Szia/.test(txt) || !/second chunk\./.test(txt) || !/third chunk\./.test(txt)) errors.push('answer text: ' + JSON.stringify(txt));
-      if (!/Read: …/.test(txt)) errors.push('no tool line "Read: …": ' + JSON.stringify(txt));
+      if (!/Read: demo.txt/.test(txt)) errors.push("no tool line \"Read: demo.txt\" (DESK-Q64 B: the target): " + JSON.stringify(txt));
       if (!/Költség: \$0\.0123/.test(txt)) errors.push('no cost line: ' + JSON.stringify(txt));
     }
     const list1 = await js(`window.vrg.chat.list()`);

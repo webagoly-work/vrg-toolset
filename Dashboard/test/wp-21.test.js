@@ -98,3 +98,20 @@ test('live stack: pack E:dashboard,F:f12 fits 1500 tokens', { skip: hasLive ? fa
   assert.ok(tok(r.out) <= 1500);
   assert.ok(r.out.startsWith('# VRG context pack'));
 });
+
+// WP-25a (DESK-Q58 C, Q59 C)
+test('expand: a seed outside the layer filter is kept and still grows into the asked layers', () => {
+  const r = JSON.parse(cli(tmp, 'expand', 'E:demo', '--layers', 'F', '--depth', '1').out);
+  const ids = r.nodes.map(n => n.id);
+  assert.ok(ids.includes('E:demo'), 'the seed stays');
+  assert.ok(ids.includes('F:f1'), 'its F neighbour comes along');
+  assert.ok(r.nodes.filter(n => n.id !== 'E:demo').every(n => n.layer === 'F'), 'everything grown is on F');
+});
+
+test('pack --lines: cards of nodes with a file get a src: line; without the flag there is none', () => {
+  const on = cli(tmp, 'pack', 'C:c1,F:f1', '--budget', '2000', '--lines').out;
+  assert.ok(on.includes('src: demo/src/one.js'));
+  assert.equal((on.match(/^src: /gm) || []).length, 1, 'F:f1 has no path, so no src line');
+  const off = cli(tmp, 'pack', 'C:c1,F:f1', '--budget', '2000').out;
+  assert.equal(/^src: /m.test(off), false);
+});

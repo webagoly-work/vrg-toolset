@@ -3,7 +3,10 @@
 //
 //   node stack-json.js [--stack <dir>] node <id>
 //   node stack-json.js [--stack <dir>] expand <id,id,...> [--layers FIQLARCGE] [--depth 1|2] [--max 200]
-//   node stack-json.js [--stack <dir>] pack <id,id,...> --budget N [--l0] [--title "..."]
+//   node stack-json.js [--stack <dir>] pack <id,id,...> --budget N [--l0] [--lines] [--title "..."]
+//
+// expand: the seeds always pass the layer filter (DESK-Q58 C); the filter applies to what grows from them.
+// pack --lines: each card gets a  src: <path>  line (the node's file in the repo or notes), so Claude can open and cite it (DESK-Q59 C).
 //
 // Reads <stack>/out/stack.json and <stack>/out/codec/L0.txt only. No network, no writes, no cache.
 // Errors: {"ok":false,"err":"..."} on stdout, exit code 2.
@@ -63,7 +66,7 @@ function expand(S, ids, { layers = ORDER, depth = 1, max = 200 } = {}) {
   const picked = new Map();
   let frontier = [];
   const add = id => { if (picked.size >= max || picked.has(id)) return false; picked.set(id, S.byId.get(id)); return true; };
-  for (const id of ids) { const n = need(S, id); if (ok.has(n.layer) && add(id)) frontier.push(id); }
+  for (const id of ids) { need(S, id); if (add(id)) frontier.push(id); }        // a seed is kept whatever its layer
   for (let d = 0; d < depth && frontier.length; d++) {
     const next = [];
     for (const id of frontier) for (const x of links(S, id)) if (ok.has(x.layer) && add(x.id)) next.push(x.id);
@@ -79,11 +82,12 @@ function expand(S, ids, { layers = ORDER, depth = 1, max = 200 } = {}) {
   return { nodes, edges, tokens: nodes.reduce((s, n) => s + tok(shortLine(n)), 0) };
 }
 
-function pack(S, ids, { budget, l0 = false, title = '', l0Text = '' } = {}) {
+function pack(S, ids, { budget, l0 = false, lines: withSrc = false, title = '', l0Text = '' } = {}) {
   const cards = ids.map(id => {
     const n = need(S, id);
     const lines = [`## ${n.id} ${n.title}${n.state ? ' [' + n.state + ']' : ''}`];
     if (n.brief) lines.push(clip(n.brief, 300));
+    if (withSrc && typeof n.path === 'string' && n.path) lines.push('src: ' + clip(n.path, 200));
     for (const x of links(S, id).slice(0, 8)) lines.push(`- ${x.rel} → ${x.id} ${x.title}`);
     return lines.join('\n');
   });
@@ -112,7 +116,7 @@ function parse(argv) {
   const a = argv.slice();
   const opt = (name, def) => { const i = a.indexOf(name); if (i < 0) return def; const v = a[i + 1]; if (v === undefined) throw new StackError('missing value for ' + name); a.splice(i, 2); return v; };
   const flag = name => { const i = a.indexOf(name); if (i < 0) return false; a.splice(i, 1); return true; };
-  const o = { stack: opt('--stack', DEFAULT_STACK), layers: opt('--layers', ORDER), depth: opt('--depth', '1'), max: opt('--max', '200'), budget: opt('--budget', null), title: opt('--title', ''), l0: flag('--l0') };
+  const o = { stack: opt('--stack', DEFAULT_STACK), layers: opt('--layers', ORDER), depth: opt('--depth', '1'), max: opt('--max', '200'), budget: opt('--budget', null), title: opt('--title', ''), l0: flag('--l0'), lines: flag('--lines') };
   o.cmd = a.shift(); o.rest = a;
   return o;
 }
@@ -135,7 +139,7 @@ function run(argv) {
   const budget = +o.budget;
   if (!Number.isInteger(budget) || budget < 1) throw new StackError('--budget N is required');
   ids.forEach(id => need(S, id));
-  return { text: pack(S, ids, { budget, l0: o.l0, title: o.title, l0Text: o.l0 ? readL0(o.stack) : '' }) };
+  return { text: pack(S, ids, { budget, l0: o.l0, lines: o.lines, title: o.title, l0Text: o.l0 ? readL0(o.stack) : '' }) };
 }
 
 if (require.main === module) {

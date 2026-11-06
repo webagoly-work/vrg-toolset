@@ -34,6 +34,8 @@ const SELFTEST = process.argv.includes('--selftest');
 const TMP = path.join(os.tmpdir(), 'VRG');
 if (SELFTEST) process.env.VRG_DESK_HOME = path.join(TMP, 'desk-test-home');       // the selftest never touches the real home (CONTRACT §4.9)
 const secrets = createSecrets({ safeStorage });                                  // main-only: no IPC reaches it
+// a selftest always starts from the default layout: panes a previous test run saved (terminal panes re-open as new sessions) must not start anything
+if (SELFTEST) { try { settings.set('layout.tree', null); } catch (e) {} }
 
 if (!SELFTEST && !app.requestSingleInstanceLock()) { app.quit(); return; }
 app.setAppUserModelId('VRG.Dashboard');
@@ -48,7 +50,9 @@ const toPages = (ch, ...a) => {                                                /
   const h = homeWc(); if (h) h.send(ch, ...a);
 };
 const ports = createPorts({ R, run, onChange: p => toPages('vrg:ports', p) });
-const acts = createActs({ R, run, ports, log });
+// claudeterm (WP-16, DESK-Q41 B): s:C/*, cont: and go: open Claude in an embedded terminal pane (setting term.embedClaude, default on).
+// The arrow is resolved at call time: claudeTermGet and the pty manager are defined further down.
+const acts = createActs({ R, run, ports, log, claudeterm: { open: o => claudeTermGet().open(o) } });
 
 // The selftest looks at "the page" through win.webContents: that is now the Kezdőlap view (D1 ids ≥ 30), everything
 // else (modes, sizes) is the real window. win.desk hands the frame and the views to the WP-07 probe.
@@ -287,11 +291,11 @@ app.on('before-quit', () => { if (ptyMgr) ptyMgr.killAll(); });
 const { createWebHost } = require('./lib/web.js');
 const testDownloads = path.join(TMP, 'desk-test-downloads');                      // the selftest never writes into the real Downloads
 if (SELFTEST) { try { require('fs').rmSync(testDownloads, { recursive: true, force: true }); require('fs').mkdirSync(testDownloads, { recursive: true }); } catch (e) {} }
-// selection menu (WP-19): features that are not built yet stay false, so their items show greyed with "(később)"
+// selection menu (WP-19): a feature that is not built stays false, so its item shows greyed with "(később)"
 const { createSelMenu } = require('./lib/selmenu.js');
 const selMenu = createSelMenu({
   Menu, clipboard, emit: (type, data) => ipc.emit(win, 'sel', type, data),
-  features: () => ({ 'web.open': true, 'search.inner': false, 'chat.start': false, 'note.save': true, ctx: false }),   // ctx stays false: the WP-19 probe pins "Csomaghoz adás (később)"; the frame already handles the pick
+  features: () => ({ 'web.open': true, 'search.inner': true, 'chat.start': true, 'note.save': true, ctx: true }),   // all built (WP-20, 24, 25, 22); DESK-Q54/56/62 A
 });
 const webHost = createWebHost({
   onSelection: o => selMenu.popup({ ...o, window: win }),
@@ -412,7 +416,7 @@ const chatLib = createChat({
     const st = await fsView.stat(h);
     return { name: st && st.item && st.item.name, text: r.text };
   },
-  keepText: () => { try { return settings.get('chat.keepText') === true; } catch (e) { return false; } },   // the key is not in settings.js yet: false
+  keepText: () => { try { return settings.get('chat.keepText') === true; } catch (e) { return false; } },   // default off (DESK-Q60 A)
   log,
 });
 ipc.register('chat', 'start', {
@@ -422,6 +426,7 @@ ipc.register('chat', 'start', {
 ipc.register('chat', 'follow', { chat: types.id, prompt: types.text(256 * 1024) }, async ({ chat, prompt }) => chatLib.follow(chat, prompt));
 ipc.register('chat', 'stop', { chat: types.id }, async ({ chat }) => chatLib.stop(chat));
 ipc.register('chat', 'list', {}, async () => chatLib.list());
+ipc.register('chat', 'history', { chat: types.id }, async ({ chat }) => chatLib.history(chat));   // DESK-Q63 B
 // "Folytatás terminálban" (WP-24): main looks the session up itself; the page only names the chat
 ipc.register('chat', 'toTerminal', { chat: types.id }, async ({ chat }) => {
   const c = chatLib.list().chats.find(x => x.chat === chat);
@@ -453,7 +458,7 @@ ipc.legacy('on', 'vrg:win', (e, cmd) => {
 
 app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } });
 app.on('window-all-closed', () => app.quit());
-app.on('will-quit', () => { globalShortcut.unregisterAll(); if (tray) tray.destroy(); });
+app.on('will-quit', () => { globalShortcut.unregisterAll(); if (tray) tray.destroy(); if (ptyMgr) ptyMgr.killAll(); });   // DESK-Q40: before-quit can be skipped (session end); will-quit kills what is left
 
 app.whenReady().then(async () => {
   build.write(); R.load();                                             // the page always starts on fresh data

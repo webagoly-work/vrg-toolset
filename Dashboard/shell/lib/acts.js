@@ -113,6 +113,8 @@ function createActs({ R, run, ports, log = () => {}, claudeterm = null, settings
     const cl = claudeMeta(id, hit);
     if (cl && claudeterm && setting('term.embedClaude', true) === true) {
       const account = opts && (opts.account === 'A' || opts.account === 'B') ? opts.account : setting('claude.account', 'A');
+      // a dry run (the selftest plans every act) only records the plan: it never starts Claude (WP-25a)
+      if (run && run.dry) { run.dry.push({ claudeterm: account, cwd: cl.cwd, prompt: cl.prompt || '', extra: cl.extra || [] }); return say(true, T(ui('opened'), { name: hit.item.name }), 'planned: embedded terminal'); }
       const r = claudeterm.open({ account, cwd: cl.cwd, firstPrompt: cl.prompt, extraArgs: cl.extra });
       log(id, r.term ? 'ok' : 'no', 'embedded ' + account);
       return r.term ? say(true, T(ui('opened'), { name: hit.item.name }), 'opened in a terminal pane') : say(false, r.hu || 'A terminál nem indult el.', 'the terminal did not start');

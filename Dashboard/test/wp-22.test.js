@@ -60,11 +60,11 @@ test('expand: bad ids, layers and depth are refused before any process starts', 
   assert.equal(f.calls.length, 0);
 });
 
-test('expand: ids are ONE comma-joined argv item, layers include the seed layer, the answer keeps only the asked layers and the seeds', async () => {
+test('expand: ids are ONE comma-joined argv item, only the asked layers are sent (stack-json keeps the seeds, DESK-Q58 C), the answer keeps the asked layers and the seeds', async () => {
   const { ctx, f } = mk();
   const r = await ctx.expand(['E:demo', 'F:f1'], 'FL', 1);
   assert.equal(r.ok, true);
-  assert.deepEqual(f.calls[0].args, ['STACKJSON.js', '--stack', 'STACKDIR', 'expand', 'E:demo,F:f1', '--layers', 'FLE', '--depth', '1']);
+  assert.deepEqual(f.calls[0].args, ['STACKJSON.js', '--stack', 'STACKDIR', 'expand', 'E:demo,F:f1', '--layers', 'FL', '--depth', '1']);
   assert.equal(f.calls[0].file, 'NODE');
   assert.deepEqual(r.nodes.map(n => n.id), ['E:demo', 'F:f1', 'L:l1']);          // A:a1 is outside F,L and not a seed
   assert.deepEqual(r.edges.map(e => e.a + '>' + e.b), ['E:demo>F:f1', 'E:demo>L:l1']);
@@ -105,6 +105,14 @@ test('pack: --l0 only when asked; budget limits; note counts inside the budget a
   assert.equal(f.calls[1].args[f.calls[1].args.indexOf('--budget') + 1], String(500 - noteTokens));
   assert.ok(r.text.endsWith('## kézi jegyzet\n' + note + '\n'));
   assert.ok(r.text.indexOf('# VRG context pack') < r.text.indexOf('kézi jegyzet'));
+});
+
+test('pack: withLines sends --lines (DESK-Q59 C), not otherwise', async () => {
+  const { ctx, f } = mk();
+  await ctx.pack(['E:demo'], { budget: 500, withLines: true });
+  assert.ok(f.calls[0].args.includes('--lines'));
+  await ctx.pack(['E:demo'], { budget: 500 });
+  assert.equal(f.calls[1].args.includes('--lines'), false);
 });
 
 test('pack: unknown node from the stack is not-found; unreadable output is failed', async () => {

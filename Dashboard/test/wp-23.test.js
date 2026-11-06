@@ -144,3 +144,60 @@ test('list keeps no message text on disk unless keepText is on', async () => {
   await on.until(on.ended);
   assert.ok(fs.readFileSync(path.join(on.dir, 'chats.json'), 'utf8').includes('private words here'));
 });
+
+// WP-25a: DESK-Q64 B (tool target), Q63 B (saved text, earlier threads continue), Q60 A (off by default)
+const { toolTarget } = require('../shell/lib/chat.js');
+
+test('chat.tool carries the target; a path inside the repo is repo-relative', async () => {
+  const s = setup();
+  await s.chat.start({ account: 'A', prompt: 'hello demo', tools: 'read' });
+  await s.until(s.ended);
+  assert.strictEqual(s.events.find(e => e.type === 'chat.tool').target, 'demo.txt');
+  assert.strictEqual(toolTarget({ file_path: path.join('C:\\demo\\repo', 'a', 'b.js') }, 'C:\\demo\\repo'), path.join('a', 'b.js'));
+  assert.strictEqual(toolTarget({ file_path: 'C:\\other\\x.js' }, 'C:\\demo\\repo'), 'C:\\other\\x.js');
+  assert.strictEqual(toolTarget({ pattern: 'TODO\nx' }, 'C:\\demo\\repo'), 'TODO x');
+  assert.strictEqual(toolTarget({}, 'C:\\demo\\repo'), '');
+});
+
+test('keepText on: the thread text is saved in chats\\<id>.json and history() reads it; off: nothing on disk, history from memory only', async () => {
+  const off = setup();
+  const r0 = await off.chat.start({ account: 'A', prompt: 'private words here', tools: 'read' });
+  await off.until(off.ended);
+  assert.strictEqual(fs.existsSync(path.join(off.dir, 'chats')), false);
+  assert.strictEqual(off.chat.history(r0.chat).msgs.length, 2);              // the running app still has it in memory
+  const on = setup({}, { keepText: () => true });
+  const r = await on.chat.start({ account: 'A', prompt: 'private words here', tools: 'read' });
+  await on.until(on.ended);
+  const saved = JSON.parse(fs.readFileSync(path.join(on.dir, 'chats', r.chat + '.json'), 'utf8')).msgs;
+  assert.strictEqual(saved[0].who, 'user');
+  assert.strictEqual(saved[0].text, 'private words here');
+  assert.strictEqual(saved[1].who, 'assistant');
+  assert.ok(saved[1].parts.some(p => p.tool === 'Read' && p.target === 'demo.txt'));
+  assert.ok(saved[1].parts.some(p => typeof p.text === 'string' && p.text.includes('private words here'.slice(0, 20))));
+  assert.strictEqual(on.chat.history('../x').err, 'bad-request');
+});
+
+test('a thread of an earlier run continues: follow() revives it from chats.json with --resume, its saved text comes back', async () => {
+  const first = setup({}, { keepText: () => true });
+  const r = await first.chat.start({ account: 'B', prompt: 'first question', tools: 'read' });
+  await first.until(first.ended);
+  // a new app run: same userDir, empty memory
+  const events = [];
+  const again = createChat({
+    spawn, execFile, repo: first.dir, claudeDirB: 'C:\\demo\\account-b', paths: { userDir: () => first.dir }, keepText: () => true,
+    env: { ...process.env, VRG_CLAUDE_BIN: FAKE, FAKE_CLAUDE_LOG: path.join(first.dir, 'run2.json') },
+    emit: (type, data) => events.push({ type, ...data }),
+  });
+  assert.strictEqual(again.history(r.chat).msgs[0].text, 'first question');
+  const f = await again.follow(r.chat, 'second question');
+  assert.deepStrictEqual(f, {});
+  const end = Date.now() + 5000;
+  while (!events.some(e => e.type === 'chat.done' || e.type === 'chat.error') && Date.now() < end) await new Promise(res => setTimeout(res, 50));
+  assert.ok(events.some(e => e.type === 'chat.done'), JSON.stringify(events));
+  const run2 = JSON.parse(fs.readFileSync(path.join(first.dir, 'run2.json'), 'utf8'));
+  assert.strictEqual(run2.argv[run2.argv.indexOf('--resume') + 1], 'sess-demo-1');
+  assert.strictEqual(run2.configDir, 'C:\\demo\\account-b');
+  const msgs = again.history(r.chat).msgs;
+  assert.deepStrictEqual(msgs.filter(m => m.who === 'user').map(m => m.text), ['first question', 'second question']);
+  assert.strictEqual((await again.follow('c0000000000', 'x')).err, 'not-found');
+});

@@ -5,9 +5,9 @@ const { session } = require('electron');
 
 const EXPECT = [
   { label: 'Másolás', enabled: true }, { separator: true },
-  { label: 'Belső keresés (később)', enabled: false }, { label: 'Google', enabled: true }, { label: 'AI keresés', enabled: true }, { separator: true },
-  { label: 'Claude oldalchat (később)', enabled: false }, { label: 'Mentés fejlesztői jegyzetként (később)', enabled: false }, { separator: true },
-  { label: 'Csomaghoz adás (később)', enabled: false },
+  { label: 'Belső keresés', enabled: true }, { label: 'Google', enabled: true }, { label: 'AI keresés', enabled: true }, { separator: true },
+  { label: 'Claude oldalchat', enabled: true }, { label: 'Mentés fejlesztői jegyzetként', enabled: true }, { separator: true },
+  { label: 'Csomaghoz adás', enabled: true },          // WP-25a: every item is built (DESK-Q54/56/62 A)
 ];
 
 module.exports = async function probe({ win }) {

@@ -161,9 +161,16 @@
     if (m && m.action === 'search.inner' && typeof m.text === 'string') { openSearch(m.text); return; }
     if (m && m.action === 'ctx' && typeof m.text === 'string') { ctxAdd(m.text); return; }
     if (m && m.action === 'chat' && typeof m.text === 'string') { openChat({ kind: 'sel', text: m.text }); return; }
-    if (m && m.action === 'note' && typeof m.text === 'string') { openNote({ text: m.text, source: m.origin === 'term' || m.origin === 'chat' ? { kind: m.origin, ref: '' } : undefined }); return; }
+    if (m && m.action === 'note' && typeof m.text === 'string') { openNote({ text: m.text, source: noteSource(m) }); return; }
     if (!m || typeof m.text !== 'string' || (m.action !== 'google' && m.action !== 'ai')) return;
     openWeb('srch:' + m.action + ':' + m.text.slice(0, 300));
+  }
+  // the note's source line from where the text was selected (DESK-Q65 B): a terminal, the chat, a file name, a web page URL; the frame itself has none
+  function noteSource(m) {
+    if (m.origin === 'term' || m.origin === 'chat') return { kind: m.origin, ref: '' };
+    if (m.origin === 'file') return { kind: 'file', ref: m.text.slice(0, 200) };
+    if (m.origin === 'web' && typeof m.ref === 'string' && /^https?:\/\//i.test(m.ref)) return { kind: 'url', ref: m.ref.slice(0, 500) };
+    return undefined;
   }
   // a web pane (made if none is open) takes the target (an http(s) URL or srch:<id>:<words>) in a new tab
   async function openWeb(target) {

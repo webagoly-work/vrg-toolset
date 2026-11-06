@@ -33,23 +33,27 @@ function build(text, origin, features) {
 }
 
 function createSelMenu({ Menu, clipboard, emit = () => {}, features = () => ({}) }) {
-  // copy is done here; every other choice goes to the frame as  sel.pick { action, text }  (it opens the search panel, a browser tab, the chat, the note dialog)
-  function pick(action, text) {
+  // copy is done here; every other choice goes to the frame as  sel.pick { action, text, origin?, ref? }  (it opens the search panel, a browser tab,
+  // the chat, the note dialog). origin = where the text was selected (DESK-Q65 B); ref = the page URL for origin web, so a note gets its source line.
+  function pick(action, text, origin, ref) {
     const s = String(text == null ? '' : text).slice(0, TEXT_MAX);
     if (action === 'copy') { try { clipboard.writeText(s); } catch (e) {} return; }
-    emit('pick', { action, text: s });
+    const m = { action, text: s };
+    if (ORIGINS.includes(origin)) m.origin = origin;
+    if (m.origin === 'web' && typeof ref === 'string' && /^https?:\/\//i.test(ref)) m.ref = ref.slice(0, 500);
+    emit('pick', m);
   }
 
   const labels = tpl => (tpl || []).map(i => (i.type === 'separator' ? { separator: true } : { label: i.label, enabled: i.enabled }));
 
   // extra: [{ label, click }] items put in front (web views: "Link megnyitása új lapon")
-  function popup({ text, origin, window = null, extra = [] }) {
+  function popup({ text, origin, ref, window = null, extra = [] }) {
     const tpl = build(text, origin, features());
     if (!tpl) return false;
     const menu = Menu.buildFromTemplate([
       ...extra.map(x => ({ label: x.label, click: x.click })),
       ...(extra.length ? [{ type: 'separator' }] : []),
-      ...tpl.map(i => (i.type === 'separator' ? i : { label: i.label, enabled: i.enabled, click: () => pick(i.action, i.text) })),
+      ...tpl.map(i => (i.type === 'separator' ? i : { label: i.label, enabled: i.enabled, click: () => pick(i.action, i.text, origin, ref) })),
     ]);
     menu.popup(window ? { window } : {});
     return true;

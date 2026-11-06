@@ -227,7 +227,7 @@
       box.innerHTML = '';
       if (m.who === 'user') { const p = el('div', 'text', m.text); p.style.whiteSpace = 'pre-wrap'; box.append(p); return box; }
       for (const part of m.parts) {
-        if (part.tool) { const n = el('div', 'tool', part.tool + ': …'); n.style.fontSize = 'smaller'; box.append(n); }
+        if (part.tool) { const n = el('div', 'tool', part.tool + ': ' + (part.target || '…')); n.style.fontSize = 'smaller'; box.append(n); }
         else { const n = el('div', 'text'); this.render(part.text, n); box.append(n); }
       }
       if (m.error) box.append(el('div', 'error', m.error));
@@ -260,8 +260,18 @@
       const t = this.threads.get(id);
       if (!t) return;
       this.cur = t; this.say(''); this.draw(); this.focusInput();
-      if (!t.msgs.length) this.say('Folytatás csak terminálban lehetséges.');
+      if (!t.msgs.length) { this.say('Folytatás csak terminálban lehetséges.'); this.loadHistory(t); }
       this.api.setState && this.api.setState(this.state());
+    },
+    // a thread from an earlier run: its saved text (chat.keepText on, DESK-Q63 B) comes back, and then it can continue here too
+    async loadHistory(t) {
+      if (!this.vrg.chat.history) return;
+      let r = null;
+      try { r = await this.vrg.chat.history(t.chat); } catch (e) {}
+      if (this.gone || !r || !Array.isArray(r.msgs) || !r.msgs.length || t.msgs.length) return;
+      t.msgs = r.msgs.map(m => (m.who === 'user' ? { who: 'user', text: String(m.text || '') }
+        : { who: 'assistant', done: true, deltas: 0, parts: (Array.isArray(m.parts) ? m.parts : []).map(p => (p && p.tool ? { tool: String(p.tool).slice(0, 40), target: typeof p.target === 'string' ? p.target.slice(0, 200) : undefined } : { text: String((p && p.text) || '') })) }));
+      if (this.cur === t) { this.say(''); this.draw(); }
     },
     focusInput() { if (this.input) this.input.focus(); },
     // attach({ kind:'sel', text } | { kind:'pack', packId } | { kind:'file', handle, name }): a new thread with the chip; nothing is sent until Enter
@@ -343,7 +353,7 @@
         a.deltas++;
         this.redraw(t, a);
       } else if (type === 'tool' && typeof m.name === 'string') {
-        a.parts.push({ tool: m.name.slice(0, 40) });
+        a.parts.push(typeof m.target === 'string' && m.target ? { tool: m.name.slice(0, 40), target: m.target.slice(0, 200) } : { tool: m.name.slice(0, 40) });
         this.redraw(t, a);
       } else if (type === 'done') {
         t.running = false;

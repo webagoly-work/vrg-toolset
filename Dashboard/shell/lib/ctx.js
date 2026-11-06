@@ -40,9 +40,9 @@ function createCtx({ execFile, node = 'node', stackDir, paths, claudeterm, repo,
     const l = String(layers == null ? '' : layers).replace(/[\s,]/g, '');
     if (l && !LAYERS_RE.test(l)) return bad('Érvénytelen réteg.');
     if (depth !== 1 && depth !== 2) return bad('Érvénytelen mélység.');
-    // the seeds' own layers must pass stack-json's filter, or a seed is dropped before it grows; they are filtered out of the answer again below
-    const want = new Set(l || ORDER), seedLayers = new Set(ids.map(id => id[0]));
-    const send = ORDER.split('').filter(c => want.has(c) || seedLayers.has(c)).join('');
+    // stack-json keeps the seeds whatever their layer (DESK-Q58 C); the answer keeps the ticked layers plus the seeds
+    const want = new Set(l || ORDER);
+    const send = ORDER.split('').filter(c => want.has(c)).join('');
     const r = await run(['expand', ids.join(','), '--layers', send, '--depth', String(depth)]);
     let j = null; try { j = JSON.parse(r.stdout); } catch (e) {}
     if (j && j.ok === false) return { ...notFound };
@@ -69,7 +69,7 @@ function createCtx({ execFile, node = 'node', stackDir, paths, claudeterm, repo,
     const block = note ? `\n\n## kézi jegyzet\n${note}\n` : '';
     const inner = budget - tok(block);
     if (inner < 1) return bad('A jegyzet nem fér a keretbe.');
-    const r = await run(['pack', ids.join(','), '--budget', String(inner), ...(o.withL0 === true ? ['--l0'] : [])]);
+    const r = await run(['pack', ids.join(','), '--budget', String(inner), ...(o.withL0 === true ? ['--l0'] : []), ...(o.withLines === true ? ['--lines'] : [])]);
     if (/^\s*\{"ok":false/.test(r.stdout)) return { ...notFound };
     if (r.err || !r.stdout.trim()) return { ...failed };
     const text = r.stdout.replace(/\s+$/, '') + block;

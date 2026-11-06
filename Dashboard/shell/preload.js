@@ -101,6 +101,7 @@ contextBridge.exposeInMainWorld('vrg', {
     follow: (chat, prompt) => call('chat', 'follow', { chat, prompt }),
     stop: chat => call('chat', 'stop', { chat }),
     list: () => call('chat', 'list', {}),
+    history: chat => call('chat', 'history', { chat }),
     toTerminal: chat => call('chat', 'toTerminal', { chat }),
   },
   note: {
