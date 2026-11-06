@@ -2,6 +2,7 @@ package hu.vrg.mobile
 
 import hu.vrg.legeger.AirDeckFeature
 import hu.vrg.mobile.account.AccountFeature
+import hu.vrg.mobile.city.CityFeature
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.FeatureInfo
 import hu.vrg.mobile.drop.DropFeature
@@ -35,6 +36,7 @@ object Registry {
         LaunchFeature,
         DropFeature,
         ScreenFeature,
+        CityFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

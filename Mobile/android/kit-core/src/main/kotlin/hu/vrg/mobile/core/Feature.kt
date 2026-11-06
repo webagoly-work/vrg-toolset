@@ -65,7 +65,7 @@ object Catalogue {
     )
     val CITY = FeatureInfo(
         "city", "Kódváros online", "A repó városa a GitHub friss állapotából, csak az online részek (nem a PC és nem a H:).",
-        "🏙", Group.WORK, Stage.PLANNED, "M5", setOf(Need.INTERNET, Need.GITHUB),
+        "🏙", Group.WORK, Stage.BETA, "M5", setOf(Need.INTERNET, Need.GITHUB),
     )
     val NOTES = FeatureInfo(
         "notes", "Gyorsjegyzet", "Jegyzet a telefonról egy külön branchbe, ami a projekt naplójaként (chat log) működik.",

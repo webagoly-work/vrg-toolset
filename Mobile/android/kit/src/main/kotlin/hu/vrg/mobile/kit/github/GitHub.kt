@@ -249,13 +249,15 @@ object GitHub {
      * A release asset into [into], streamed. The asset url needs the token (a private repo) and
      * octet-stream; GitHub redirects to its storage, and OkHttp drops the token on that other host.
      * In by the repo's name there is no token, which a public repo's asset does not need.
+     * Kódváros online (M5) passes [accept] = application/vnd.github.raw for a contents-API file: the raw
+     * bytes, up to 100 MB, where the JSON answer stops at 1 MB.
      */
-    suspend fun download(url: String, into: File, onProgress: (Long) -> Unit = {}): Gh<Unit> = withContext(Dispatchers.IO) {
+    suspend fun download(url: String, into: File, accept: String = "application/octet-stream", onProgress: (Long) -> Unit = {}): Gh<Unit> = withContext(Dispatchers.IO) {
         val t = token
         if (t == null && !guest) return@withContext Gh.SignedOut
         val req = Request.Builder().url(url)
             .apply { if (t != null) header("Authorization", "Bearer $t") }
-            .header("Accept", "application/octet-stream")
+            .header("Accept", accept)
             .header("X-GitHub-Api-Version", "2022-11-28")
             .build()
         try {

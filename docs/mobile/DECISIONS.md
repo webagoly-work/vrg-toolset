@@ -132,6 +132,24 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
 - **D-11 · Notifications (M10)** (2026-11-06: **C**). A now: GitHub polled every 15 min (WorkManager) plus relay
   events while on the same WiFi. B, a push service (e.g. a GitHub Action calling ntfy.sh), is a later WP.
 
+- **M5 · How Kódváros online is built** (2026-11-06, no question asked; D-7 = A settled the direction, these are the
+  gaps the WP left).
+  - *Every pushed branch gets a city*, as the WP says (the brief said main): the branch chips need them. Data branches
+    (`city-pages`, `mobile-log`, `solomon-data`) are skipped; a deleted branch's city is removed.
+  - *city-pages is one root commit, replaced on every publish* with `--force-with-lease` on that branch alone. A
+    history of 1.4 MB pages would grow every clone and fetch. It is the toolset's only forced push, of a generated
+    branch, by the workflow; the lease turns a race into a retry instead of a lost city.
+  - *Branch → folder key* `~xx` (`claude/m5` → `claude~2fm5`): one URL-safe segment per branch, reversible, the same
+    in Node and Kotlin (one fixture tests both).
+  - *The chips list the published branches* (the listing of `city/`), not M4's active list, which hides main and old
+    branches and may name branches without a city yet.
+  - *The phone keeps its copies in `filesDir`*, not the cache: the offline open is the point. Four cities are kept.
+  - *Touch through an injected adapter* (`assets/city-touch.js`), not a change to `CodeCity/src`: another session has
+    uncommitted work in `03-scene.js`, and the PC's mouse behaviour stays exactly as it was.
+  - *The WebView answers one file per key* from an `https://appassets.androidplatform.net` origin and refuses every
+    other request: no file access, working `localStorage`, nothing leaves the phone.
+  Details: `WP/M5.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

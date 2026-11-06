@@ -36,7 +36,7 @@ What changes locally compared with the cloud:
 ## 1. Read first, in this order
 
 1. `docs/mobile/README.md`: the roadmap (M0–M13) with each WP's state, the build order, the architecture rules.
-2. `docs/mobile/DECISIONS.md`: what is decided (D-1…D-6, M1–M3 notes) and what is open (D-7…D-11).
+2. `docs/mobile/DECISIONS.md`: what is decided (D-1…D-11 and the per-WP notes) and what is open (none since 2026-11-06).
 3. `Mobile/README.md`: the code layout. Then `Mobile/android/kit-core/.../Feature.kt` (the catalogue) and
    `kit/.../VrgFeature.kt` (the contract). The shared pieces: `kit/relay/Relay` (the one relay link + trust),
    `kit/github/GitHub` (the one GitHub client), `kit/ShellSettings`, `kit/VrgLog`.
@@ -48,14 +48,14 @@ What changes locally compared with the cloud:
 - **Check first:** `Mobile\mobile.cmd test` (or `cd Mobile/android && gradlew :kit-core:test :airdeck-core:test`)
   and `node Mobile/tests/relay-pair.js` must be green before you change anything.
 - **One WP at a time, in the roadmap's order.** The next one is the first in the table that is not done. Every WP
-  without an open decision is now built: the remaining ones each wait for the user's answer first, **M5** (Kódváros
-  online) on **D-7**, **M7** (Hálózat) on **D-9**, **M10** (Értesítések) on **D-11** (the options are in
-  `docs/mobile/DECISIONS.md` → Open). Ask them, record the answer, then build.
+  without an open decision is now built. The last three were answered on 2026-11-06 (D-7 = A, D-9 = A, D-11 = C) and
+  are built as one batch, in the order **M5** (Kódváros online), **M7** (Hálózat), **M10** (Értesítések).
   M1, M2, M3, M4, M6, M9 and M14 are live; **M8** (Localhost, D-10 = C, built 2026-11-05), **M16** (the VRG UI Kit's
-  look on the phone, built 2026-11-06), **M11** (Indítópult, built 2026-11-06), **M12** (Átadás, built 2026-11-06) and
-  **M13** (Képernyő, built 2026-11-06) are BETA until the user works through their phone lists in
-  `docs/mobile/WP/M8.md`, `docs/mobile/WP/M16.md`, `docs/mobile/WP/M11.md`, `docs/mobile/WP/M12.md` and
-  `docs/mobile/WP/M13.md`.
+  look on the phone, built 2026-11-06), **M11** (Indítópult, built 2026-11-06), **M12** (Átadás, built 2026-11-06),
+  **M13** (Képernyő, built 2026-11-06) and **M5** (Kódváros online, built 2026-11-06; its city appears after the
+  first push, when `.github/workflows/mobile-city.yml` has run) are BETA until the user works through their phone
+  lists in `docs/mobile/WP/M8.md`, `docs/mobile/WP/M16.md`, `docs/mobile/WP/M11.md`, `docs/mobile/WP/M12.md`,
+  `docs/mobile/WP/M13.md` and `docs/mobile/WP/M5.md`.
   Before building, re-read its WP file, and ask the user any open decision it depends on in the reply as numbered
   A/B/C options (with your recommendation first). Record the answer in DECISIONS.md.
 - Each WP ends with:
@@ -100,4 +100,7 @@ What changes locally compared with the cloud:
   share to "PC-re", the camera photo for the Planner, removal on either side, WiFi off mid-upload, the clipboard both ways)
   and **M13** (`docs/mobile/WP/M13.md` → "Telefonon ellenőrizni": the PC's screen moving with the cursor, the notice
   window and its Leállítás, steering with the Légegér strip, monitor / window switch, Home, removing the pairing,
-  a UAC prompt, the frame rate on WiFi and on the hotspot; the relay with `--shots`: `Mobile\mobile.cmd` → 1).
+  a UAC prompt, the frame rate on WiFi and on the hotspot; the relay with `--shots`: `Mobile\mobile.cmd` → 1)
+  and **M5** (`docs/mobile/WP/M5.md` → "Telefonon ellenőrizni": first push, so that the **VRG Mobile (Kódváros
+  online)** Actions run publishes `city-pages`; then the main city and a work branch's city on the phone, the
+  gestures, ⟳ without a new download, the offline open).

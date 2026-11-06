@@ -63,4 +63,5 @@ dependencies {
     implementation(project(":feature-launch"))
     implementation(project(":feature-drop"))
     implementation(project(":feature-screen"))
+    implementation(project(":feature-city"))
 }

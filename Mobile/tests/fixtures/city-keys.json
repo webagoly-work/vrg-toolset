@@ -1,0 +1,15 @@
+{
+  "about": "VRG Mobile M5: branch name <-> city-pages folder key. Read by Mobile/tests/city-publish.js (publish-city.js) and kit-core CityTest (City.kt), so both sides encode the same way.",
+  "pairs": [
+    { "branch": "main", "key": "main" },
+    { "branch": "claude/m5-city", "key": "claude~2fm5-city" },
+    { "branch": "launcher-collect-2026-11-06", "key": "launcher-collect-2026-11-06" },
+    { "branch": "x.y_z-1", "key": "x.y_z-1" },
+    { "branch": ".hidden", "key": "~2ehidden" },
+    { "branch": "a~b", "key": "a~7eb" },
+    { "branch": "a b", "key": "a~20b" },
+    { "branch": "feature/ű", "key": "feature~2f~c5~b1" },
+    { "branch": "ccr-3aebf098-ytpsqa", "key": "ccr-3aebf098-ytpsqa" }
+  ],
+  "notKeys": ["", "a/b", "a~2", "a~zz", "a~41", "~2e~2e", ".x", "a~c5", "a~7E", "a%2fb"]
+}
