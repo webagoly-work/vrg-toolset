@@ -453,10 +453,10 @@ function StartServer($s, $extra) {
 function ServerUrl($s) { 'http://localhost:' + $s.port + $(if ($s.open) { $s.open } else { '/' }) }
 # A web address in a browser. Windows may have no browser registered for http: Start-Process then fails
 # with 'Application not found' and the error closed the whole menu (2026-11-06). Fall back to the
-# portable Chrome in Full	oolschrome. Returns $true when something opened.
+# portable Chrome in Full\tools\chrome. Returns $true when something opened.
 function OpenUrl($u) {
   try { Start-Process $u -ErrorAction Stop; return $true } catch { }
-  $chrome = P '{full}	oolschromechrome.exe'
+  $chrome = P '{full}\tools\chrome\chrome.exe'
   if (Test-Path -LiteralPath $chrome) {
     try { Start-Process $chrome -ArgumentList @('--new-window', $u) -ErrorAction Stop; return $true } catch { }
   }
