@@ -17,7 +17,7 @@
   "ui": {
     "changes": "VÁLTOZÁSOK", "clean": "tiszta", "files": "fájl", "unpushed": "commit feltöltetlen", "nogit": "nincs git",
     "tools": "ESZKÖZÖK", "toolsEn": "tools", "projects": "PROJEKTEK", "projectsEn": "almenük", "dev": "FEJLESZTÉS", "devEn": "dev",
-    "soon": "Ez a {phase}. fázisban készül el.", "opened": "Megnyitva: {name}", "missing": "Nem található: {path}",
+    "soon": "Ez a {phase}. fázisban készül el.", "opened": "Megnyitva: {name}", "noBrowser": "Nincs böngésző a megnyitáshoz. Nyisd meg kézzel: {url}", "missing": "Nem található: {path}",
     "browser": "MEGNYITÁS", "folder": "Mappa megnyitása", "back": "Vissza", "beforeFailed": "{note} nem sikerült, a legutóbbi adat marad.",
     "noBrowser": "Ez a böngésző nincs telepítve: {path}",
     "notInstalled": "nincs telepítve", "running": "Fut: {name}", "done": "Kész.", "doneName": "Kész: {name}", "failed": "Hiba (kód {code}), a további lépések elmaradtak.",

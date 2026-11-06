@@ -451,14 +451,29 @@ function StartServer($s, $extra) {
   ''
 }
 function ServerUrl($s) { 'http://localhost:' + $s.port + $(if ($s.open) { $s.open } else { '/' }) }
+# A web address in a browser. Windows may have no browser registered for http: Start-Process then fails
+# with 'Application not found' and the error closed the whole menu (2026-11-06). Fall back to the
+# portable Chrome in Full	oolschrome. Returns $true when something opened.
+function OpenUrl($u) {
+  try { Start-Process $u -ErrorAction Stop; return $true } catch { }
+  $chrome = P '{full}	oolschromechrome.exe'
+  if (Test-Path -LiteralPath $chrome) {
+    try { Start-Process $chrome -ArgumentList @('--new-window', $u) -ErrorAction Stop; return $true } catch { }
+  }
+  $false
+}
+function OpenedOr($u, $name) {
+  if (OpenUrl $u) { return Ok (T $UI.opened @{ name = $name }) }
+  Warn (T $UI.noBrowser @{ url = $u })
+}
 function OpenServer($s) {
-  if (Up $s.port) { Start-Process (ServerUrl $s); return Ok (T $UI.opened @{ name = $s.name }) }
+  if (Up $s.port) { return (OpenedOr (ServerUrl $s) $s.name) }
   $err = StartServer $s @(); if ($err) { return $err }
   if ($s.self) { return Ok (T $UI.started @{ name = $s.name }) }   # its own launcher opens the browser
   for ($i = 0; $i -lt 20; $i++) {
     Show (ServersScreen (Paint (T $UI.starting @{ name = $s.name; port = $s.port }) 'copper'))
     Start-Sleep -Milliseconds 500
-    if (Up $s.port) { Start-Process (ServerUrl $s); return Ok (T $UI.opened @{ name = $s.name }) }
+    if (Up $s.port) { return (OpenedOr (ServerUrl $s) $s.name) }
   }
   Warn (T $UI.noAnswer @{ port = $s.port })
 }
@@ -532,7 +547,7 @@ function ServersMenu {
     Show (ServersScreen $msg); $msg = ''
     $k = ReadKey; if (IsBack $k) { return '' }
     if ($k -eq 'A') {
-      $n = 0; foreach ($s in $R.servers) { if (Up $s.port) { Start-Process (ServerUrl $s); $n++ } }
+      $n = 0; foreach ($s in $R.servers) { if ((Up $s.port) -and (OpenUrl (ServerUrl $s))) { $n++ } }
       $msg = Ok (T $UI.opened @{ name = $n }); continue
     }
     $s = $R.servers | Where-Object { $_.key -eq $k } | Select-Object -First 1
@@ -775,7 +790,7 @@ function Act($it) {
   if ($it.path)     { return OpenTool $it }
   if ($it.exe)      { return StartExe $it }
   if ($it.server)   { return OpenServer (Server $it.server) }
-  if ($it.url)      { Start-Process (P $it.url); return Ok (T $UI.opened @{ name = $it.name }) }
+  if ($it.url)      { return (OpenedOr (P $it.url) $it.name) }
   if ($it.folder)   { $f = P $it.folder; if (-not (Test-Path -LiteralPath $f)) { return Crit (T $UI.missing @{ path = $f }) }
                       Start-Process explorer.exe (Q $f); return Ok (T $UI.opened @{ name = $it.name }) }
   ''
