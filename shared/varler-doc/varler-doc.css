@@ -1,0 +1,80 @@
+/* Varler Papír — the document style for Varler client paperwork (Költségvetési Tervezet, mellékletek, terv-lapok).
+   2026-11-06, docs/research/2026-11-06_varler-document-style.md is the why. Print first: no area darker than --wash
+   except plan walls and small symbols; one accent (--vez, red = new / the amount that matters). Fonts are Windows
+   system fonts (Sitka, Bahnschrift), so the offline single-file apps need nothing embedded on the user's PC. */
+:root{
+  --paper:#fff; --desk:#efebe5;
+  --ink:#2f2c28; --ink-2:#6b645b; --ink-3:#9b9389;
+  --rule:#d9d3ca; --rule-2:#ebe6de; --wash:#f5f2ed; --taupe:#b8ad9e;
+  --vez:#b5452f;            /* "vezeték" red: new / changed, the payable total */
+  --serif:"Sitka Banner","Sitka Display","Sitka Heading",Constantia,Georgia,serif;
+  --serif-t:"Sitka Text","Sitka Small",Constantia,Georgia,serif;
+  --sans:Bahnschrift,"DIN Alternate","Segoe UI",Arial,sans-serif;
+}
+@page{size:A4;margin:0}   /* one .lap = one sheet; the generator paginates, the browser never does */
+*{box-sizing:border-box}
+html{background:var(--desk)}
+body{margin:0;font:400 9.2pt/1.5 var(--sans);font-variation-settings:"wght" 330;color:var(--ink);
+  font-variant-numeric:tabular-nums;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+b,strong,.w5{font-weight:400;font-variation-settings:"wght" 470}
+
+/* the sheet on screen; in print each .lap is one page */
+.lap{position:relative;width:210mm;min-height:297mm;margin:10mm auto;background:var(--paper);padding:14mm 16mm 18mm 24mm;
+  box-shadow:0 1px 2px rgba(60,50,40,.08)}
+@media print{html{background:none}.lap{margin:0;box-shadow:none;height:297mm;overflow:hidden;break-after:page}
+  .lap:last-child{break-after:auto}}
+
+/* ---- the signature: the line that comes in from the paper edge and ends on a terminal ---- */
+.fej{display:grid;grid-template-columns:1fr auto;align-items:end;gap:6mm;margin-bottom:7mm}
+.cim{position:relative;margin:0;font:400 23pt/1 var(--serif);letter-spacing:.16em;text-transform:uppercase}
+.cim::before{content:"";position:absolute;right:calc(100% + 4mm);top:55%;width:20mm;border-top:.25pt solid var(--ink-2)}   /* = the left margin: it starts at the paper edge */
+.cim::after{content:"";position:absolute;right:calc(100% + 3.2mm);top:calc(55% - 1.1pt);width:2.6pt;height:2.6pt;border-radius:50%;
+  background:var(--paper);box-shadow:0 0 0 .5pt var(--ink-2)}
+.alcim{margin:3mm 0 0;font:italic 400 9.5pt/1.3 var(--serif-t);color:var(--ink-2)}
+.kapcs{margin-top:1.5mm;font-size:7.6pt;letter-spacing:.06em;color:var(--ink-3)}
+.logo{height:15mm;opacity:.9}
+
+/* meta: label over value, hairlines only */
+.meta{display:grid;grid-template-columns:repeat(4,1fr);border-top:.4pt solid var(--ink-2);margin-bottom:8mm}
+.meta>div{padding:2.2mm 3mm 2.4mm 0;border-bottom:.25pt solid var(--rule)}
+.meta>div.w2{grid-column:span 2}.meta>div.w4{grid-column:span 4}
+.meta dt,.lbl{font-size:6.6pt;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0 0 .6mm}
+.meta dd{margin:0}
+
+/* sections: a hanging serif numeral in the left margin, spaced caps title */
+.sz{position:relative;margin:7mm 0 3.5mm;padding-bottom:1.6mm;border-bottom:.25pt solid var(--rule)}
+.sz h2{margin:0;font:400 10.5pt/1.2 var(--sans);font-variation-settings:"wght" 420;letter-spacing:.16em;text-transform:uppercase}
+.sz .n{position:absolute;right:calc(100% + 5mm);top:-2.2mm;font:400 20pt/1 var(--serif);color:var(--taupe)}
+.sz p{margin:1.5mm 0 0;color:var(--ink-2)}
+h3{margin:5mm 0 1.5mm;font:italic 400 10pt/1.2 var(--serif-t)}
+p{margin:0 0 2mm}
+.halk{color:var(--ink-2)}.apro{font-size:7.6pt;color:var(--ink-3)}
+
+/* tables: no verticals, a washed header, hairline rows, right-aligned money */
+table{width:100%;border-collapse:collapse}
+th{font-size:6.6pt;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);text-align:left;
+  padding:1.6mm 2mm 1.4mm;background:var(--wash);border-bottom:.4pt solid var(--ink-2)}
+td{padding:1.35mm 2mm;border-bottom:.25pt solid var(--rule-2);vertical-align:top}
+td.n,th.n{text-align:right;white-space:nowrap}
+td.i{width:7mm;color:var(--ink-3)}
+tr.cs td{padding-top:3mm;border-bottom:.4pt solid var(--rule);font-variation-settings:"wght" 470}   /* group row */
+tr.al td:first-child{padding-left:5mm}                                                            /* indented item */
+tr.al td:first-child::before{content:"";display:inline-block;width:2.5mm;margin:0 1.5mm .7mm -4mm;border-top:.25pt solid var(--ink-3)}
+tr.ossz td{border-top:.4pt solid var(--ink-2);border-bottom:0;font-variation-settings:"wght" 470}
+.sav{display:flex;gap:6mm;justify-content:flex-end;padding:1.5mm 2mm;font-size:7.8pt;color:var(--ink-2)}
+
+/* the payable total: a double hairline (the ledger convention) and large figures, never a black bar */
+.fiz{display:grid;grid-template-columns:1fr auto;align-items:baseline;margin:6mm 0 1.5mm;padding:3mm 2mm 2.5mm;
+  border-top:.25pt solid var(--ink);box-shadow:inset 0 1.2pt 0 var(--paper),inset 0 1.5pt 0 var(--ink)}
+.fiz .lbl{font-size:7.6pt;color:var(--ink)}
+.fiz .ossz{font:400 21pt/1 var(--serif);letter-spacing:.02em;color:var(--vez);font-variant-numeric:lining-nums tabular-nums}
+/* Sitka has only old-style figures: codes, dates and page numbers are set in Bahnschrift; Sitka keeps words and the total */
+.lab .ol{font-family:var(--sans)}
+.fiz .ossz small{font:400 9pt var(--sans);letter-spacing:.1em;margin-left:1.5mm;color:var(--ink-2)}
+
+/* notes in the margin and the attachment list */
+.jegy{display:grid;grid-template-columns:5mm 1fr;gap:0 1mm;font-size:8.2pt;color:var(--ink-2)}
+.jegy span:nth-child(odd){font-family:var(--serif);color:var(--taupe)}
+.lab{position:absolute;left:24mm;right:16mm;bottom:8mm;display:flex;justify-content:space-between;
+  padding-top:2mm;border-top:.25pt solid var(--rule);font-size:6.8pt;letter-spacing:.06em;color:var(--ink-3)}
+.lab .ol{font-family:var(--serif);font-size:8pt;letter-spacing:.12em;color:var(--ink-2)}

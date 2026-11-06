@@ -1165,6 +1165,7 @@ function draw(){
   const apClean=alaprajzOn()&&!state.apAll;   // V9a: the plan output = building, objects, room labels, endpoints (+ the draft)
   if(apClean)s=s.slice(0,sTr)+s.slice(sDr0,sDr1)+s.slice(sDv0,sDv1);   // no text yet: room tags + placed codes are V9b
   if(typeof stkHookSvg==='function'){if(!tisztaOn()&&!apClean)s+=stkHookSvg(STK_SCENE);ov+=stkHookSvg(STK_OVERLAY);}   // BRIDGE Stack layers (05m)
+  if(typeof fnmInk==='function')s=fnmInk(s);   // 2026-11-06 Finom: re-inks the Alaprajz when state.apFinom (06f); a no-op otherwise
   const changed=paintLayers(s,ov);
   setTransform();
   if(typeof statusBar==='function')statusBar();

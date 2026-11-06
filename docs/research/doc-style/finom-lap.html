@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="hu"><head><meta charset="utf-8">
+<title>Finom lap — minta</title>
+<link rel="stylesheet" href="../../../shared/varler-doc/varler-doc.css">
+<style>
+@page{size:A3 landscape;margin:0}
+.a3{position:relative;width:420mm;height:297mm;margin:10mm auto;background:var(--paper);box-shadow:0 1px 2px rgba(60,50,40,.08);
+  display:grid;grid-template-columns:1fr 92mm;grid-template-rows:auto 1fr auto;gap:0 14mm;padding:16mm 18mm 14mm 26mm;overflow:hidden}
+@media print{.a3{margin:0;box-shadow:none}}
+.a3 .fej{grid-column:1/-1;margin-bottom:4mm}
+.a3 .cim::before{width:22mm}
+.rajz{position:relative;min-height:0;display:flex;align-items:center;justify-content:center}
+.rajz{overflow:hidden}.rajz img{height:262mm;width:auto;margin:-6mm 0 -40mm}   /* the export is portrait: it stands upright, text never rotates */
+.oldal{border-left:.25pt solid var(--rule);padding-left:8mm;display:flex;flex-direction:column;gap:6mm;font-size:8.4pt}
+.oldal h4{margin:0 0 2mm;font:400 7pt/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
+.jk{display:grid;grid-template-columns:13mm 1fr;gap:1.4mm 2mm;align-items:center}
+.kod{justify-self:start;font-size:6.6pt;letter-spacing:.1em;padding:.5mm 1.6mm;border:.4pt solid currentColor;border-radius:1.6mm}
+.uj{color:var(--vez)}
+.cimke{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,auto) 1fr;gap:0 9mm;align-items:end;
+  margin-top:5mm;padding-top:2.4mm;border-top:.4pt solid var(--ink-2)}
+.cimke dd{margin:0;font:400 11pt/1.1 var(--sans);letter-spacing:.04em}
+.cimke .vrg{justify-self:end;font:400 9pt var(--serif);letter-spacing:.24em;text-transform:uppercase;color:var(--ink-2)}
+.lepcs{position:absolute;right:124mm;bottom:36mm;display:flex;align-items:flex-end;gap:0;font-size:6.4pt;color:var(--ink-3)}
+.lepcs i{display:block;width:20mm;border-top:.4pt solid var(--ink-2);position:relative}
+.lepcs i::before{content:"";position:absolute;left:-1pt;top:-2pt;width:3pt;height:3pt;border-radius:50%;background:var(--paper);box-shadow:0 0 0 .5pt var(--ink-2)}
+.lepcs span{display:block;margin-top:1.4mm}
+</style></head><body>
+<section class="a3">
+  <header class="fej">
+    <div><h1 class="cim">P33 · Földszint</h1><p class="alcim">Villamos elrendezési terv · vágás 1200 mm · 42 végpont</p></div>
+    <img class="logo" src="../../../shared/varler-logo/lockups/svg/varler-logo-lower-light.svg" alt="varler">
+  </header>
+
+  <div class="rajz"><img src="finom-plan.svg" alt="alaprajz"></div>
+
+  <aside class="oldal">
+    <div><h4>Jelkulcs</h4>
+      <div class="jk">
+        <span class="kod">DED</span><span>dedikált kör (főzőlap, sütő, klíma)</span>
+        <span class="kod">NTL</span><span>lámpahely</span>
+        <span class="kod">SEN</span><span>érzékelő</span>
+        <span class="kod">ETH</span><span>adatvégpont, Cat6</span>
+        <span class="kod">SCR</span><span>média, vászon, projektor</span>
+        <span class="kod uj">ÚJ</span><span>új vagy módosított pont <span class="halk">— piros (CE-Q1 = B)</span></span>
+      </div></div>
+    <div><h4>Szabványmagasságok</h4>
+      <div class="jk"><span class="halk">H 30</span><span>dugalj</span><span class="halk">H 110</span><span>kapcsoló</span><span class="halk">H 120</span><span>konyhai munkapult felett</span></div>
+      <p class="apro" style="margin-top:2mm">Ettől eltérő magasság a ponton, H= jellel.</p></div>
+    <div><h4>Megjegyzések</h4>
+      <div class="jegy"><span>1</span><span>A pontos helyek és magasságok helyszíni felméréssel véglegesítendők.</span>
+        <span>2</span><span>A fürdő IP44-es szerelvényei a 2. zónán kívül.</span></div></div>
+  </aside>
+
+  <dl class="cimke">
+    <div><dt class="lbl">Lépték</dt><dd>1 : 50</dd></div>
+    <div><dt class="lbl">Lap</dt><dd>A3</dd></div>
+    <div><dt class="lbl">Dátum</dt><dd>2026. 11. 06.</dd></div>
+    <div><dt class="lbl">Rajzszám</dt><dd>V-01</dd></div>
+    <span class="vrg">Varler Planner</span>
+  </dl>
+  <div class="lepcs"><div><i></i><span>0</span></div><div><i></i><span>1</span></div><div><i></i><span>2 m</span></div></div>
+</section>
+</body></html>

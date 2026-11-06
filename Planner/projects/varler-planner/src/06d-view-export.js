@@ -72,7 +72,8 @@ function vexpPlanSheet(paper,N,title,opts){const o=opts||{},rot=VEXP_ROTS.includ
   finally{Object.assign(state,keep);draw();}
   const R={def:{level:state.active},stats:{devices:S?S.dev.full:0},roles:[],body:scene};
   const sub=`Alaprajz · vágás ${S?S.cut:apCut()} mm · ${S?S.dev.full:0} végpont a vágás alatt`;
-  const sh=viewSheetSvg(R,{paper:fit.paper,k:fit.k,box:fit.box,N,title:title||'',sub,date:o.date||new Date().toISOString().slice(0,10)});
+  const sh=viewSheetSvg(R,{paper:fit.paper,k:fit.k,box:fit.box,N,title:title||'',sub,date:o.date||new Date().toISOString().slice(0,10),
+    finom:!!state.apFinom,stats:S});   // 2026-11-06: Finom sheet + its legend (06f)
   return Object.assign(sh,{fit,stats:S});}
 function vexpPlanOn(){const c=$('expPlan');return !!(c&&c.checked);}
 function vexpPlanArgs(){return [(($('expPaper')||{}).value||'A3'),+(($('expScale')||{}).value||50),+(($('expRot')||{}).value||0)];}

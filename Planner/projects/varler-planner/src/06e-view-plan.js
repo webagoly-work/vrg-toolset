@@ -124,6 +124,7 @@ function drawAlaprajzGeom(){const level=state.active,z=dz(level,0),c=apCut();
 // draw()'s endpoint loop: a device above the cut on the active level is not drawn, only counted (D-V9-5 3C)
 function apDevWrap(d,svg){if(!alaprajzOn())return svg;if(d.level!==state.active)return state.apAll?svg:'';   // the clean plan: the active level only
   if((d.h||0)>apCut()){if(AP_LAST)AP_LAST.dev.above++;return '';}
+  if(typeof ceChgWrap==='function')svg=ceChgWrap(d,svg);   // CE-5 (06f): black = kept, red = new on a renovation plan
   if(AP_LAST){AP_LAST.dev.full++;AP_LAST.drawn.push({d,svg});}return svg;}
 // the object menu's Eleje entry: auto → ↑ → → → ↓ → ← → auto (o.front absent = derived)
 const AP_FRONT_ORD=[undefined,0,90,180,270],AP_FRONT_ARR={0:'↑',90:'→',180:'↓',270:'←'};
@@ -234,6 +235,7 @@ function apAnnotSvg(){const S=AP_LAST;if(!S)return '';const level=state.active,z
   // endpoint codes
   if(state.apCodes!==false)for(const e of S.drawn){const k=apDevCode(e.d),b=apSvgBox(e.svg);if(!k||!b)continue;
     Pl.add({x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,r:Math.max(b[2]-b[0],b[3]-b[1])/2+bpU(.3),lines:[{t:k.t,fs:fs(AP_TXT.code),w:700,col:k.col}],pref:[90,0,180,270],kind:'code'});L.codes++;}
+  if(typeof ceLetterItems==='function')ceLetterItems(S,Pl,fs,L);   // CE-1 (06f): switch-group letters A, B … per floor
   // dimension texts, on the outer side of their chain
   for(const t of dimTxt){Pl.add({x:t.x,y:t.y,r:bpU(.6),lines:[{t:t.t,fs:fs(AP_TXT.dim)}],pref:[t.ang],kind:'dim'});L.dims++;}
   S.labels=Object.assign(L,Pl.stats());S.boxes=Pl.boxes();

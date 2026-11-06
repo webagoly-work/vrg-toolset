@@ -393,7 +393,8 @@ const VIEW_SHEET={margin:70,legend:270,top:40,row:17};
 function viewSheetTitles(R,o){const def=R.def,lv=VIEW_LEVEL_HU[def.level]||def.level;
   return {t1:esc((o.title?o.title+' · '+lv:lv).toUpperCase()),
     t2:esc(o.sub!=null?o.sub:`Axonometria · nézet ${def.yaw}° / ${def.pitch}° · vágás ${def.cut} / ${def.nearCut} mm · ${R.stats.devices} végpont`)};}
-function viewSheetSvg(R,opts){const o=opts||{};if(o.paper)return viewPaperSheet(R,o);   // V9c: the plan on ISO paper at a true scale
+function viewSheetSvg(R,opts){const o=opts||{};
+  if(o.paper)return o.finom&&typeof fnmPaperSheet==='function'?fnmPaperSheet(R,o):viewPaperSheet(R,o);   // 2026-11-06: the Finom sheet (06f)   // V9c: the plan on ISO paper at a true scale
   const def=R.def,S=VIEW_STYLES[def.style]||VIEW_STYLES.tiszta,k=o.scale||1,b0=R.bounds,
   b={minX:b0.minX*k,minY:b0.minY*k,maxX:b0.maxX*k,maxY:b0.maxY*k};
   const M=VIEW_SHEET.margin,LEG=VIEW_SHEET.legend,top=VIEW_SHEET.top,RW=VIEW_SHEET.row,H=o.H!=null?o.H:wallH(def.level);
@@ -425,7 +426,8 @@ function viewSheetSvg(R,opts){const o=opts||{};if(o.paper)return viewPaperSheet(
 // framed base box [x0, y0, x1, y1], o.paper = {w, h, name} (already oriented), o.N the scale, o.date. ISO 5457 frame (20 left,
 // 10 elsewhere), a 180 × 30 title block in the bottom-right corner, the drawing centred above the 30 mm band, a 0–5 m bar.
 const VIEW_PAPER={frameL:20,frame:10,band:30,tbW:180};
-function viewPaperArea(w,h){const P=VIEW_PAPER;return {x:P.frameL,y:P.frame,w:w-P.frameL-P.frame,h:h-2*P.frame-P.band};}
+function viewPaperArea(w,h){if(state.apFinom&&typeof fnmPaperArea==='function')return fnmPaperArea(w,h);   // the Finom sheet's own layout (06f)
+  const P=VIEW_PAPER;return {x:P.frameL,y:P.frame,w:w-P.frameL-P.frame,h:h-2*P.frame-P.band};}
 function viewPaperSheet(R,o){const P=VIEW_PAPER,W=o.paper.w,H=o.paper.h,A=viewPaperArea(W,H),k=o.k,[x0,y0,x1,y1]=o.box,f=v=>+v.toFixed(3);
   const dw=(x1-x0)*k,dh=(y1-y0)*k,ox=A.x+(A.w-dw)/2,oy=A.y+(A.h-dh)/2;
   const {t1,t2}=viewSheetTitles(R,o),tx=W-P.frame-P.tbW,ty=H-P.frame-P.band;

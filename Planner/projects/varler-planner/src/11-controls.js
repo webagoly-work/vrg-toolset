@@ -30,6 +30,8 @@ if($('apCutN'))$('apCutN').onchange=e=>apCutSet(e.target.value);
 if($('apAll'))$('apAll').onchange=e=>{state.apAll=e.target.checked;draw();};
 if($('apDims'))$('apDims').onchange=e=>{state.apDims=e.target.checked;draw();};
 if($('apCodes'))$('apCodes').onchange=e=>{state.apCodes=e.target.checked;draw();};
+if($('apLetters'))$('apLetters').onchange=e=>ceLettersSet(e.target.checked);   // CE-1 (06f)
+if($('apFinom'))$('apFinom').onchange=e=>fnmSet(e.target.checked);             // Finom (06f)
 document.querySelectorAll('.apPre').forEach(b=>{b.onclick=()=>apCutSet(+b.dataset.v);});
 // V4: Tiszta axo is a 3D look; in 2D the normal drawing stays, and the HUD says why
 function tisztaHud(){if($('hud'))$('hud').textContent=tisztaOn()?'Tiszta axo — az aktív szint, kivágással ('+(state.cutH||1500)+' / '+(state.cutNearH||1000)+' mm); útvonalak és jegyzetek nélkül.'
