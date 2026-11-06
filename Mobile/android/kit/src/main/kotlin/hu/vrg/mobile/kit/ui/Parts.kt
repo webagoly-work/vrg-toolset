@@ -21,8 +21,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.kit.theme.Melyviz
 import hu.vrg.mobile.kit.theme.Palette
 
@@ -35,16 +40,29 @@ fun VrgSectionTitle(text: String) {
         modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 6.dp))
 }
 
+/**
+ * A chip. With a busy [status] (WP M16) a small MINI ring stands before the text and TalkBack reads the state
+ * ("Küldés — fut"); without one, or idle, it is the chip it always was.
+ */
 @Composable
-fun VrgChip(text: String, selected: Boolean = false, onClick: () -> Unit) {
+fun VrgChip(text: String, selected: Boolean = false, status: MiniStatus? = null, onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
-    Text(
-        text,
-        style = Melyviz.label.copy(color = if (selected) Melyviz.onGlow else Melyviz.ink, fontSize = 11.sp),
-        modifier = Modifier.clip(shape).background(if (selected) Melyviz.glow else Melyviz.surface)
-            .border(1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
-            .clickable(onClick = onClick).padding(horizontal = 10.dp, vertical = 5.dp),
-    )
+    val style = Melyviz.label.copy(color = if (selected) Melyviz.onGlow else Melyviz.ink, fontSize = 11.sp)
+    val base = Modifier.clip(shape).background(if (selected) Melyviz.glow else Melyviz.surface)
+        .border(1.dp, if (selected) Melyviz.glow else Melyviz.line, shape)
+        .clickable(onClick = onClick)
+    if (status == null || !status.busy) {
+        Text(text, style = style, modifier = base.padding(horizontal = 10.dp, vertical = 5.dp))
+        return
+    }
+    Row(
+        base.clearAndSetSemantics { contentDescription = status.describe(text); role = Role.Button }
+            .padding(start = 7.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Mini(null, text, status, size = MiniSize.XS, modifier = Modifier.padding(end = 5.dp))
+        Text(text, style = style)
+    }
 }
 
 @Composable

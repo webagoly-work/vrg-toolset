@@ -147,6 +147,8 @@ object SettingsFeature : VrgFeature {
         "AndroidX, Jetpack Compose, Material 3, CameraX (Google)" to "Apache 2.0",
         "OkHttp, Okio (Square)" to "Apache 2.0",
         "ML Kit vonalkód-olvasó (Google)" to "ML Kit Terms",
+        // WP M16: the kit palettes' faces; the full licence texts are in the APK (assets/licenses)
+        "Inter, Barlow Condensed, JetBrains Mono betűk" to "SIL OFL 1.1",
     )
 }
 

@@ -58,6 +58,7 @@ import hu.vrg.mobile.kit.github.Gh
 import hu.vrg.mobile.kit.github.GitHub
 import hu.vrg.mobile.kit.github.problem
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import kotlinx.coroutines.CoroutineScope
@@ -271,7 +272,7 @@ object AccountFeature : VrgFeature {
         if (repo != null && note != null) Text(note, style = Melyviz.small.copy(color = Melyviz.sand))
 
         Row(Modifier.padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            VrgChip(if (busy) "Frissítés…" else "Frissítés") {
+            VrgChip(if (busy) "Frissítés…" else "Frissítés", status = if (busy) MiniStatus.running() else null) {
                 if (!busy) { busy = true; scope.launch { GitHub.refresh(); busy = false } }
             }
             VrgChip("Kilépés") { GitHub.signOut() }

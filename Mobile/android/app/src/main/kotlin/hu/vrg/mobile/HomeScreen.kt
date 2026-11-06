@@ -27,8 +27,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
 import hu.vrg.mobile.core.FeatureInfo
+import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.core.Stage
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.Mini
+import hu.vrg.mobile.kit.ui.MiniSize
 import hu.vrg.mobile.update.UpdateFeature
 
 // The home screen: every feature of the catalogue as a tile, grouped. Built ones open; planned ones
@@ -79,6 +82,10 @@ fun HomeScreen(onOpen: (String) -> Unit) {
 @Composable
 private fun Tile(f: FeatureInfo, modifier: Modifier, onClick: () -> Unit) {
     val built = Registry.isBuilt(f)
+    // WP M16: a feature that is working shows its MINI ring around the glyph (notes outbox, update download, pulse
+    // refresh); at rest nothing is drawn, so the tile looks as it always did.
+    val ring = Registry.feature(f.id)?.activity
+    val status = ring?.collectAsStateWithLifecycle()?.value ?: MiniStatus.IDLE
     val shape = RoundedCornerShape(Melyviz.radius)
     Column(
         modifier.heightIn(min = 112.dp)
@@ -88,7 +95,7 @@ private fun Tile(f: FeatureInfo, modifier: Modifier, onClick: () -> Unit) {
             .padding(12.dp),
     ) {
         Row {
-            Text(f.glyph, style = Melyviz.glyph.copy(color = if (built) Melyviz.glow else Melyviz.faint))
+            Mini(f.glyph, f.title, status, size = MiniSize.SM, tint = if (built) Melyviz.glow else Melyviz.faint, quietIdle = true)
             Spacer(Modifier.weight(1f))
             StageBadge(f.stage)
         }

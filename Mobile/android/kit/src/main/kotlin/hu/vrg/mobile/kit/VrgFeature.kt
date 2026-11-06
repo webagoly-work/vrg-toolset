@@ -5,7 +5,9 @@ import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import hu.vrg.mobile.core.FeatureInfo
+import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.core.Route
+import kotlinx.coroutines.flow.StateFlow
 
 // The contract between the VRG Mobile shell and a feature. A feature is a Gradle module
 // (feature-<id>) with one object implementing this; the shell lists it in its registry and does the
@@ -36,6 +38,9 @@ interface VrgFeature {
 
     /** The app came on screen, whichever feature is showing: the moment Android allows network for sure. Keep it cheap. */
     fun onAppVisible() {}
+
+    /** What the feature is doing now, for the MINI ring on its home tile (WP M16); null = never shows one. */
+    val activity: StateFlow<MiniStatus>? get() = null
 }
 
 /** What the shell offers a feature. */

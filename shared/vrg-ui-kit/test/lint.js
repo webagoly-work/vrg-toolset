@@ -113,6 +113,12 @@ function main() {
       if (missing.length) { warnings++; console.log('! manifest ' + c.name + ' does not list ' + missing.length + ' token(s): ' + missing.slice(0, 6).join(' ') + (missing.length > 6 ? ' …' : '')); }
     });
   }
+  // 4. VRG Mobile's generated KitTokens.kt still says what the tokens say (WP M16); skipped where the app is not beside the kit
+  const kotlinTokens = path.join(KIT, 'tools', 'kotlin-tokens.js');
+  if (fs.existsSync(path.join(KIT, '..', '..', 'Mobile', 'android', 'kit'))) {
+    const r = require('child_process').spawnSync(process.execPath, [kotlinTokens, '--check'], { encoding: 'utf8' });
+    if (r.status !== 0) { errors++; console.log('✗ ' + (r.stdout || r.stderr || 'kotlin-tokens --check failed').trim()); }
+  }
   console.log((errors ? '✗ ' : '✓ ') + errors + ' error(s), ' + warnings + ' warning(s)');
   process.exit(errors ? 1 : 0);
 }

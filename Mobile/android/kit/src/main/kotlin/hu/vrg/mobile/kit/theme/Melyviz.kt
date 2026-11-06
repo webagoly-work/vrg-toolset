@@ -10,10 +10,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import hu.vrg.mobile.kit.R
 
 // VRG Mélyvíz — "deep water", and its variants. Every colour, radius and type size of the app lives
 // here and nowhere else. A palette is plain data; `Melyviz` reads the current one from Compose state,
@@ -35,6 +39,13 @@ data class Palette(
     val onGlow: Color,
     /** The top of the background gradient: light from above. */
     val shallows: Color,
+    /** The warm "system working" colour (running, recent work; the MINI's ring). The six take it from sand. */
+    val activity: Color = sand,
+    /** Corner radius of tiles and cards, and of small parts (rows, fields). Kit palettes take `--vk-radius-lg` / `--vk-radius`. */
+    val radius: Dp = 14.dp,
+    val radiusSmall: Dp = 10.dp,
+    /** The VRG UI Kit faces (Barlow Condensed titles, Inter body, JetBrains Mono readouts); the six keep the system ones. */
+    val kitFaces: Boolean = false,
 )
 
 object Palettes {
@@ -100,8 +111,11 @@ object Palettes {
         onGlow = Color(0xFFFFFFFF), shallows = Color(0xFFD4ECF1),
     )
 
-    /** Same ids, same order as `Look.PALETTES` in kit-core, which the stored setting is checked against. */
-    val ALL = listOf(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY)
+    /**
+     * Same ids, same order as `Look.PALETTES` in kit-core, which the stored setting is checked against (KitTokensTest
+     * reads this file). The app's own six first, then the four VRG UI Kit themes generated into KitTokens.kt (WP M16).
+     */
+    val ALL = listOf(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY) + KitTokens.ALL
 
     fun byId(id: String?): Palette = ALL.firstOrNull { it.id == id } ?: MELYVIZ
 }
@@ -126,21 +140,40 @@ object Melyviz {
     val coral get() = palette.coral
     val kelp get() = palette.kelp
     val onGlow get() = palette.onGlow
+    val activity get() = palette.activity
 
-    val radius = 14.dp
-    val radiusSmall = 10.dp
+    /** Palette data since WP M16: 14 / 10 dp for the six, the kit's own radius (0 in Mélyvíz (kit)) for the four. */
+    val radius get() = palette.radius
+    val radiusSmall get() = palette.radiusSmall
     val gutter = 12.dp
 
-    val mono = FontFamily.Monospace
+    /** Readouts (IP, port, time): JetBrains Mono on a kit palette, the system monospace on the six. */
+    val mono get() = if (palette.kitFaces) KitFaces.mono else FontFamily.Monospace
+    private val sans get() = if (palette.kitFaces) KitFaces.sans else FontFamily.Default
 
     /** The page background: light from above fading into the abyss. */
     val water get() = Brush.verticalGradient(listOf(palette.shallows, deep, abyss))
 
-    val title get() = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.4.sp, color = ink)
-    val label get() = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Medium, color = ink)
-    val small get() = TextStyle(fontSize = 11.sp, color = muted)
+    // A kit palette switches the faces only; the sizes stay, so a screen keeps its layout on all ten.
+    val title get() = if (palette.kitFaces)
+        TextStyle(fontSize = 15.sp, fontFamily = KitFaces.voice, fontWeight = FontWeight.SemiBold, letterSpacing = 0.06.em, color = ink)
+    else TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.4.sp, color = ink)
+    val label get() = if (palette.kitFaces)
+        TextStyle(fontSize = 12.sp, fontFamily = sans, fontWeight = FontWeight.SemiBold, color = ink)
+    else TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Medium, color = ink)
+    val small get() = if (palette.kitFaces) TextStyle(fontSize = 11.sp, fontFamily = sans, color = muted) else TextStyle(fontSize = 11.sp, color = muted)
     val readout get() = TextStyle(fontSize = 11.sp, fontFamily = mono, color = muted)
     val glyph get() = TextStyle(fontSize = 20.sp, color = ink)
+}
+
+/** The VRG UI Kit's OFL faces (res/font, made by shared/vrg-ui-kit/tools/android-fonts.js; licences in assets/licenses). */
+object KitFaces {
+    val voice = FontFamily(Font(R.font.vk_barlow_condensed_semibold, FontWeight.SemiBold))
+    val sans = FontFamily(
+        Font(R.font.vk_inter_regular, FontWeight.Normal),
+        Font(R.font.vk_inter_semibold, FontWeight.SemiBold),
+    )
+    val mono = FontFamily(Font(R.font.vk_jetbrains_mono_regular, FontWeight.Normal))
 }
 
 @Composable

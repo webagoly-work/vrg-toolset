@@ -46,8 +46,11 @@ import hu.vrg.mobile.kit.github.Gh
 import hu.vrg.mobile.kit.github.GitHub
 import hu.vrg.mobile.kit.github.problem
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.core.MiniStatus
+import hu.vrg.mobile.kit.ui.MiniTrack
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -84,19 +87,26 @@ object PulseFeature : VrgFeature {
     val busy = MutableStateFlow(false)
     val problem = MutableStateFlow<String?>(null)
 
+    /** The refresh's MINI on the home tile (WP M16). */
+    private val ring = MiniTrack()
+    override val activity: StateFlow<MiniStatus> get() = ring.status
+
     fun refresh() {
         if (busy.value || !GitHub.signedIn) return
         busy.value = true
+        ring.run()
         scope.launch {
             val started = System.currentTimeMillis()
             when (val r = load()) {
                 is Gh.Ok -> {
                     view.value = r.value.copy(tookMs = System.currentTimeMillis() - started)
                     problem.value = null
+                    ring.done()
                 }
                 else -> {
                     problem.value = r.problem()
                     VrgLog.w(TAG, "Nem sikerült: ${problem.value}")
+                    ring.fail()
                 }
             }
             busy.value = false

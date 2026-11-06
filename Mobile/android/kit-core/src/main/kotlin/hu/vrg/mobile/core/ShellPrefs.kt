@@ -4,10 +4,13 @@ package hu.vrg.mobile.core
 // (kit: ShellSettings) keeps them in SharedPreferences as strings and floats; everything that decides
 // what a stored value means lives here, so `gradlew :kit-core:test` checks it without the Android SDK.
 
-/** What the look can be. The ids match `Palettes` in kit/theme/Melyviz.kt, which holds the colours. */
+/**
+ * What the look can be. The ids match `Palettes.ALL` in kit/theme/Melyviz.kt, which holds the colours: the app's own
+ * six, then the four VRG UI Kit themes (WP M16, [KitTokens.IDS]). KitTokensTest checks both files against this list.
+ */
 object Look {
     const val DEFAULT_PALETTE = "melyviz"
-    val PALETTES = listOf("melyviz", "arok", "korall", "laguna", "moszat", "sekely")
+    val PALETTES = listOf("melyviz", "arok", "korall", "laguna", "moszat", "sekely") + KitTokens.IDS
     val SCALE = 0.8f..1.3f
 
     /** An unknown or missing palette id falls back to Mélyvíz. */

@@ -44,6 +44,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import hu.vrg.mobile.core.Catalogue
+import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.core.Note
 import hu.vrg.mobile.core.NoteFile
 import hu.vrg.mobile.core.NoteLog
@@ -59,12 +60,14 @@ import hu.vrg.mobile.kit.github.Account
 import hu.vrg.mobile.kit.github.GitHub
 import hu.vrg.mobile.kit.github.GitHubNotes
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.kit.ui.MiniTrack
 import hu.vrg.mobile.kit.ui.VrgChip
 import hu.vrg.mobile.kit.ui.VrgSectionTitle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -138,25 +141,43 @@ object NotesFeature : VrgFeature {
 
     /** Sends the outbox, oldest first. true = done (or nothing to do), false = try again later. */
     suspend fun flush(): Boolean = lock.withLock {
-        if (!GitHub.canWrite) { problem.value = "Nincs GitHub belépés: a jegyzetek a telefonon várnak."; return true }
+        if (!GitHub.canWrite) {
+            problem.value = "Nincs GitHub belépés: a jegyzetek a telefonon várnak."
+            if (outbox.value.notes.isNotEmpty()) sending.waiting()
+            return true
+        }
+        val total = outbox.value.notes.size
+        if (total > 0) sending.run(if (total > 1) 0f else null)
+        var sent = 0
         while (true) {
             val n = outbox.value.next ?: break
             val r = try { NoteWriter.send(GitHubNotes, n, zone) } catch (e: NotesApi.Problem) {
                 problem.value = e.message
+                sending.fail()
                 return false
             }
             when (r) {
-                PutResult.Ok -> { save(outbox.value.sent(n.id)); VrgLog.i(info.id, "Jegyzet elküldve: ${NoteLog.path(n.at, zone)}") }
+                PutResult.Ok -> {
+                    save(outbox.value.sent(n.id)); sent++
+                    if (total > 1) sending.run(sent.toFloat() / total)
+                    VrgLog.i(info.id, "Jegyzet elküldve: ${NoteLog.path(n.at, zone)}")
+                }
                 else -> {
                     problem.value = (r as? PutResult.Failed)?.reason ?: "Ütközés, újrapróbálom."
                     VrgLog.w(info.id, "Jegyzet nem ment el: ${problem.value}")
+                    sending.fail()
                     return false
                 }
             }
         }
         problem.value = null
+        if (sent > 0) sending.done()
         true
     }
+
+    /** The outbox's MINI (WP M16): the tile's ring and the "Küldés" chip. */
+    private val sending = MiniTrack()
+    override val activity: StateFlow<MiniStatus> get() = sending.status
 
     /** Today's file read back, as lines. */
     suspend fun today(): Result<List<String>> = try {
@@ -171,6 +192,7 @@ object NotesFeature : VrgFeature {
         val why by problem.collectAsStateWithLifecycle()
         val pre by draft.collectAsStateWithLifecycle()
         val account by GitHub.account.collectAsStateWithLifecycle()
+        val send by sending.status.collectAsStateWithLifecycle()
         val scope = rememberCoroutineScope()
         var text by remember { mutableStateOf(pre) }
         var tag by remember { mutableStateOf<String?>(null) }
@@ -216,7 +238,7 @@ object NotesFeature : VrgFeature {
                 NoteLog.TAGS.forEach { t -> VrgChip(t, tag == t) { tag = if (tag == t) null else t } }
             }
             Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                VrgChip("Küldés", true) {
+                VrgChip("Küldés", true, status = send) {
                     if (text.isNotBlank()) { submit(text, tag); text = ""; host.note("A jegyzet a kimenőben, küldöm.") }
                 }
                 VrgChip("🎤 Diktálás") {
@@ -241,7 +263,9 @@ object NotesFeature : VrgFeature {
                 if (lines.isEmpty() && logNote == null) Text("Ma még nincs jegyzet.", style = Melyviz.small)
                 lines.forEach { Text(it, style = Melyviz.readout.copy(fontSize = 11.sp), modifier = Modifier.padding(vertical = 2.dp)) }
             }
-            Row(Modifier.padding(top = 6.dp)) { VrgChip("Frissítés") { reload() } }
+            Row(Modifier.padding(top = 6.dp)) {
+                VrgChip("Frissítés", status = if (logNote == "Betöltés…") MiniStatus.running() else null) { reload() }
+            }
             Spacer(Modifier.height(24.dp))
         }
     }

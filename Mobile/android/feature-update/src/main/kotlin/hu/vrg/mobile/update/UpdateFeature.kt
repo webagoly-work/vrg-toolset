@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hu.vrg.mobile.core.Catalogue
+import hu.vrg.mobile.core.MiniState
+import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.core.ReleaseAssets
 import hu.vrg.mobile.core.UpdateInfo
 import hu.vrg.mobile.core.Updates
@@ -41,7 +43,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -79,6 +84,15 @@ object UpdateFeature : VrgFeature {
     val problem = MutableStateFlow<String?>(null)
     /** Android's "install unknown apps" switch is off for this app. */
     val needsPermission = MutableStateFlow(false)
+
+    /** The MINI (WP M16): a sweep while checking, the download's percent, the notch when a step failed. */
+    private fun mini(s: UpdateState, why: String?): MiniStatus = when (s) {
+        UpdateState.Checking, is UpdateState.Installing -> MiniStatus.running()
+        is UpdateState.Downloading -> MiniStatus.running(s.percent / 100f)
+        else -> if (why != null) MiniStatus(MiniState.ERROR) else MiniStatus.IDLE
+    }
+    override val activity: StateFlow<MiniStatus> =
+        combine(_state, problem) { s, why -> mini(s, why) }.stateIn(scope, SharingStarted.Eagerly, MiniStatus.IDLE)
 
     private fun prefs() = app.getSharedPreferences("update", Context.MODE_PRIVATE)
 
@@ -199,6 +213,7 @@ object UpdateFeature : VrgFeature {
         val why by problem.collectAsStateWithLifecycle()
         val blocked by needsPermission.collectAsStateWithLifecycle()
         val account by GitHub.account.collectAsStateWithLifecycle()
+        val ring by activity.collectAsStateWithLifecycle()
         val pi = app.packageManager.getPackageInfo(app.packageName, 0)
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
@@ -218,12 +233,20 @@ object UpdateFeature : VrgFeature {
                 UpdateState.Checking -> Text("Keresés a GitHubon…", style = Melyviz.small)
                 UpdateState.UpToDate -> Text("Ez a legfrissebb verzió.", style = Melyviz.small)
                 is UpdateState.Available -> Offer(s.info, host, blocked)
-                is UpdateState.Downloading -> Text("Letöltés: ${s.info.name} · ${s.percent} %", style = Melyviz.readout)
-                is UpdateState.Installing -> Text("A telepítő indul: ${s.info.name}", style = Melyviz.readout)
+                is UpdateState.Downloading -> {
+                    Text("Letöltés: ${s.info.name} · ${s.percent} %", style = Melyviz.readout)
+                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring) {} }
+                }
+                is UpdateState.Installing -> {
+                    Text("A telepítő indul: ${s.info.name}", style = Melyviz.readout)
+                    Row(Modifier.padding(top = 8.dp)) { VrgChip("Letöltés és telepítés", true, status = ring) {} }
+                }
             }
             why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp)) }
 
-            if (account is Account.SignedIn) Row(Modifier.padding(top = 12.dp)) { VrgChip("Keresés most") { check() } }
+            if (account is Account.SignedIn) Row(Modifier.padding(top = 12.dp)) {
+                VrgChip("Keresés most", status = if (now == UpdateState.Checking) ring else null) { check() }
+            }
             Spacer(Modifier.height(24.dp))
         }
     }

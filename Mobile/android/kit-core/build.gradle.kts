@@ -18,4 +18,11 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")   // runBlocking for the suspend writers
 }
 
-tasks.test { useJUnitPlatform() }
+tasks.test {
+    useJUnitPlatform()
+    // KitTokensTest (WP M16) reads the VRG UI Kit's token files and the generated kit/theme/KitTokens.kt
+    val repo = rootProject.projectDir.resolve("../..").canonicalFile
+    systemProperty("vrg.repo", repo.path)
+    inputs.dir(repo.resolve("shared/vrg-ui-kit/tokens"))
+    inputs.dir(rootProject.projectDir.resolve("kit/src/main/kotlin/hu/vrg/mobile/kit/theme"))
+}

@@ -69,6 +69,7 @@ import hu.vrg.mobile.kit.github.Account
 import hu.vrg.mobile.kit.github.GitHub
 import hu.vrg.mobile.kit.github.GitHubNotes
 import hu.vrg.mobile.kit.theme.Melyviz
+import hu.vrg.mobile.core.MiniStatus
 import hu.vrg.mobile.kit.ui.VrgChip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -169,7 +170,7 @@ object SphereFeature : VrgFeature {
                         Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
                             modifier = Modifier.clickable(onClick = back).padding(vertical = 8.dp))
                         Spacer(Modifier.weight(1f))
-                        VrgChip(if (loading) "Frissítés…" else "Frissítés") { refresh(force = true) }
+                        VrgChip(if (loading) "Frissítés…" else "Frissítés", status = if (loading) MiniStatus.running() else null) { refresh(force = true) }
                     }
                     Text("GÖMB", style = Melyviz.title.copy(fontSize = 18.sp))
                     data?.let { Text("${it.docs.size} dokumentum · ${it.generated} · ${it.commit}", style = Melyviz.readout) }
