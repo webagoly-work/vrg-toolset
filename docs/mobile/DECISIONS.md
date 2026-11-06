@@ -122,13 +122,16 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   - *Quality* is two steps: "Éles" 1280 px / q 60 and "Kíméletes" 960 px / q 45; frames are capped at 10 a second.
   Details and the measurements: `WP/M13.md`.
 
+- **D-7 · Kódváros online (M5)** (2026-11-06: **A**). Actions runs `CodeCity/scan.js` on each push and publishes
+  the city to a `city-pages` branch; the phone loads it into a WebView. (Not chosen: B, the phone builds the city
+  from the GitHub tree API; C, A now and B later.)
+- **D-9 · Phone as the relay (M7)** (2026-11-06: **A**). The phone runs a small relay itself, speaking the
+  `phone-relay-server.js` envelope; the PC apps can be pointed at it over the phone's WiFi or hotspot, for sites
+  without a PC relay. (Not chosen: B, bridge only; C, not needed.) The user asked for M5, M7 and M10 to be built as
+  one batch, so M7's research file is written first and the build goes on past it without a separate stop.
+- **D-11 · Notifications (M10)** (2026-11-06: **C**). A now: GitHub polled every 15 min (WorkManager) plus relay
+  events while on the same WiFi. B, a push service (e.g. a GitHub Action calling ntfy.sh), is a later WP.
+
 ## Open (to ask when the WP that needs them starts)
 
-- **D-7 · Kódváros online (M5).** A) Actions runs `CodeCity/scan.js` on each push and publishes the city
-  to a `city-pages` branch, and the phone loads it into a WebView; B) the phone builds the city itself
-  from the GitHub tree API (a Kotlin port of the layout); C) both: A now, B later for offline.
-- **D-9 · Phone as the relay (M7).** A) the phone runs a small relay itself (the PC apps connect to it
-  over the phone's WiFi or hotspot), for sites without a PC relay; B) the phone only bridges, forwarding
-  to the PC relay; C) not needed.
-- **D-11 · Notifications (M10).** A) poll GitHub every 15 min (WorkManager), plus relay events while on the
-  same WiFi; B) a small push service (needs a server, e.g. a GitHub Action calling ntfy.sh); C) A now, B later.
+None.
