@@ -71,7 +71,7 @@ good: a conda install cannot be relocated.
 Since 2026-10-27 (re-root phase 3.2) there is one menu: `launcher/vrg-ui.ps1`
 draws it in the Mélyvíz 8-bit style and `launcher/vrg-menu.json` is its only
 registry — tools (keys 1-9, 0, K), project submenus (P Planner, I Készlet,
-Y CYD, U Board Console, R Rétegverem = the VRG Stack pages in `notes\stack`, V Vendor) with their build/test/serve actions, dev
+Y CYD, U Board Console, R Rétegverem = the VRG Stack pages in `Stack`, V Vendor) with their build/test/serve actions, dev
 items, the local servers (O), the programs (A) and the prompt library
 (`tools/prompts/*.txt`). `Planner/START.cmd` and `VRG-DE.cmd` only forward to
 `launcher/vrg-start.cmd`, so every shortcut keeps working. The Node side

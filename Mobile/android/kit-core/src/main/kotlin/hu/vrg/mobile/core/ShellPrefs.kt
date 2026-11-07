@@ -6,11 +6,11 @@ package hu.vrg.mobile.core
 
 /**
  * What the look can be. The ids match `Palettes.ALL` in kit/theme/Melyviz.kt, which holds the colours: the app's own
- * six, then the four VRG UI Kit themes (WP M16, [KitTokens.IDS]). KitTokensTest checks both files against this list.
+ * six, Varler SUI (2026-11-07), then the four VRG UI Kit themes (WP M16, [KitTokens.IDS]). KitTokensTest checks both files against this list.
  */
 object Look {
     const val DEFAULT_PALETTE = "melyviz"
-    val PALETTES = listOf("melyviz", "arok", "korall", "laguna", "moszat", "sekely") + KitTokens.IDS
+    val PALETTES = listOf("melyviz", "arok", "korall", "laguna", "moszat", "sekely", "sui") + KitTokens.IDS
     val SCALE = 0.8f..1.3f
 
     /** An unknown or missing palette id falls back to Mélyvíz. */

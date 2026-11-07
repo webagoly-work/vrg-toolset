@@ -112,10 +112,25 @@ object Palettes {
     )
 
     /**
+     * Varler SUI (the HUD design system behind the Console; Console/design/tokens.json): ground / panel / line,
+     * one cyan accent, amber for activity, alert yellow, ok green. Square-ish: 2 / 4 px radii, never larger.
+     */
+    val SUI = Palette(
+        "sui", "Varler SUI", false,
+        abyss = Color(0xFF0D141A), deep = Color(0xFF121B22), surface = Color(0xFF18242D), raised = Color(0xFF1F2E38),
+        line = Color(0xFF2C4250), lineSoft = Color(0xFF223440),
+        ink = Color(0xFFD6E4EA), muted = Color(0xFF8AA3AF), faint = Color(0xFF4C6878),
+        glow = Color(0xFF7ED3DF), glowDim = Color(0xFF3B6870), current = Color(0xFFA9C9D3),
+        sand = Color(0xFFF0C24B), coral = Color(0xFFE4877D), kelp = Color(0xFF8FD49A),
+        onGlow = Color(0xFF0B1A1F), shallows = Color(0xFF16222A),
+        activity = Color(0xFFE8A04A), radius = 4.dp, radiusSmall = 2.dp, kitFaces = true,
+    )
+
+    /**
      * Same ids, same order as `Look.PALETTES` in kit-core, which the stored setting is checked against (KitTokensTest
      * reads this file). The app's own six first, then the four VRG UI Kit themes generated into KitTokens.kt (WP M16).
      */
-    val ALL = listOf(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY) + KitTokens.ALL
+    val ALL = listOf(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY, SUI) + KitTokens.ALL
 
     fun byId(id: String?): Palette = ALL.firstOrNull { it.id == id } ?: MELYVIZ
 }

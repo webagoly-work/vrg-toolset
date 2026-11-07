@@ -25,13 +25,13 @@ class KitTokensTest {
     }
 
     @Test fun theTenIdsMatchLookPalettes() {
-        assertEquals(10, Look.PALETTES.size)
+        assertEquals(11, Look.PALETTES.size)
         assertEquals(Look.PALETTES.size, Look.PALETTES.toSet().size)
         assertEquals("melyviz", Look.DEFAULT_PALETTE, "the default stays the app's own")
         assertEquals(KitTokens.IDS, Look.PALETTES.takeLast(4))
         val six = kotlinPalettes(File(theme, "Melyviz.kt").readText()).keys.toList()
-        assertEquals(Look.PALETTES, six + kotlinPalettes(generated).keys.toList(), "Palettes.ALL = the six + KitTokens.ALL, in this order")
-        assertTrue(Regex("ALL = listOf\\(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY\\) \\+ KitTokens.ALL").containsMatchIn(File(theme, "Melyviz.kt").readText()))
+        assertEquals(Look.PALETTES, six + kotlinPalettes(generated).keys.toList(), "Palettes.ALL = the seven + KitTokens.ALL, in this order")
+        assertTrue(Regex("ALL = listOf\\(MELYVIZ, AROK, KORALL, LAGUNA, MOSZAT, SEKELY, SUI\\) \\+ KitTokens.ALL").containsMatchIn(File(theme, "Melyviz.kt").readText()))
     }
 
     @Test fun everyKitColourEqualsItsToken() {

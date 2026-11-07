@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Holo</title>
+<!-- The Holo order (research/ORB-PLAN.md, HO-Q1…Q6): the VRG Stack grown from one origin along its DevLog lines.
+     Polip (inverted octopus): the origin is the centre of the base, every line is an arm in its own sector;
+     active lines reach up, parked ones droop. Gömb (holo orb): the origin is the core, every line is a ring in its
+     own plane. Same data as the Konnektóm (out/connectome-data.js), 1 neuron = 2 KB. Plain WebGL2, works from file://. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<style>
+  :root { --bg: var(--mv-bg, #0a141c); --panel: var(--mv-panel-solid, #121c24); --line: var(--mv-line, rgba(232,240,246,.15)); --text: var(--mv-text, #e8f0f6);
+    --dim: var(--mv-dim, #a6afb7); --faint: var(--mv-faint, #646d74); --acc: var(--mv-accent, #93d3e6); --warm: var(--mv-warm, #e8a873);
+    --mono: var(--mv-mono, Consolas, ui-monospace, monospace); --sans: var(--mv-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--mv-voice, Bahnschrift, sans-serif); }
+  /* readable on the dark stage: the shared faint grey was too dark over the rings */
+  :root { --faint: #95a0a8; --dim: #c6ced4; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 var(--sans); overflow: hidden; display: flex; flex-direction: column; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+  h1 { font: 600 16px var(--voice); font-stretch: 75%; margin: 0; letter-spacing: .08em; text-transform: uppercase; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--faint); margin-left: 6px; }
+  #stat { font: 12px var(--mono); color: var(--dim); }
+  #stale { font: 12px var(--mono); color: var(--warm); }
+  .sp { flex: 1; }
+  button, select, input[type=search] { font: 12px var(--mono); background: var(--panel); color: var(--dim); border: 1px solid var(--line); padding: 5px 9px; }
+  button { cursor: pointer; } button.on, button:hover { color: var(--text); border-color: var(--acc); } button:disabled { opacity: .4; cursor: default; }
+  #forms { display: inline-flex; } #forms button + button { border-left: 0; }
+  #forms button.on { color: var(--text); border-color: var(--warm); background: rgba(232,168,115,.08); }
+  #bWatch.lock { color: #ffd59a; border-color: #e8a873; background: rgba(232,168,115,.10); }
+  input[type=search] { width: 180px; color: var(--text); font-family: var(--sans); }
+  main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 330px; min-height: 0; }
+  #stage { position: relative; min-height: 0; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+  canvas.drag { cursor: grabbing; }
+  #tip { position: absolute; pointer-events: none; background: rgba(14,24,32,.96); color: #eef4f8; border: 1px solid var(--line); padding: 5px 8px; max-width: 340px; font-size: 12px; display: none; z-index: 2; }
+  #tip b { font-weight: 600; } #tip .m { font: 11px var(--mono); color: var(--faint); }
+  #lg { position: absolute; left: 12px; bottom: 12px; background: rgba(10,20,28,.93); color: #e4ecf1; border: 1px solid var(--line); padding: 6px 10px; font-size: 12px; max-width: 320px; z-index: 1; }
+  #lg summary { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); cursor: pointer; }
+  #lg[open] summary { margin-bottom: 6px; }
+  #lg .k { display: grid; grid-template-columns: 12px minmax(0,1fr); gap: 7px; align-items: baseline; padding: 1px 0; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  i { color: var(--faint); font-size: 11px; }
+  h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin: 10px 0 4px; }
+  aside { border-left: 1px solid var(--line); padding: 10px 14px; overflow: auto; min-height: 0; }
+  aside h3:first-child { margin-top: 0; }
+  .pw { display: grid; grid-template-columns: 9px minmax(0,1fr) auto; gap: 7px; align-items: baseline; padding: 2px 4px; cursor: pointer; color: var(--dim); border-left: 2px solid transparent; }
+  .pw:hover { color: var(--text); } .pw.sel { border-color: var(--acc); background: rgba(147,211,230,.07); color: var(--text); }
+  .pw .tt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pw .n { font: 11px var(--mono); color: var(--faint); }
+  .pw .bar { grid-column: 2 / 4; height: 2px; background: var(--line); margin: 1px 0 2px; }
+  .pw .bar span { display: block; height: 2px; }
+  .grp { font: 11px var(--mono); color: var(--faint); margin: 8px 0 2px; }
+  #card .title { font-size: 14px; font-weight: 600; margin: 2px 0 4px; }
+  #card .kv { display: grid; grid-template-columns: 92px minmax(0,1fr); gap: 2px 8px; font-size: 12px; }
+  #card .kv span:nth-child(odd) { color: var(--faint); }
+  #card .kv span:nth-child(even) { font-family: var(--mono); overflow-wrap: anywhere; }
+  .nb { display: block; padding: 1px 0; color: var(--dim); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nb:hover { color: var(--text); } .nb .c { font: 11px var(--mono); color: var(--faint); }
+  .hint { color: var(--faint); font-size: 12px; }
+  #clock { font: 12px var(--mono); color: var(--dim); }
+  #msg { font: 12px var(--mono); color: var(--acc); }
+  .sigil { width: 13px; height: 14px; vertical-align: -2px; }
+  #bWatch.on { color: #dfeaf2; border-color: #dfeaf2; background: #05080b; }
+  .tinc { display: grid; grid-template-columns: 22px minmax(0,1fr); gap: 7px; align-items: center; padding: 1px 0; }
+  .tinc svg { width: 20px; height: 13px; border: 1px solid var(--line); background: #05080b; }
+  .pw .q { font: 11px var(--mono); color: #cfe0ea; }
+  canvas { touch-action: none; }
+  /* header: one row of main controls, the rest in the Nézet menu; the stat line is its own row (no overlaps) */
+  header .row2 { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 4px 12px; min-width: 0; }
+  #view { position: relative; }
+  #view > summary { list-style: none; font: 12px var(--mono); background: var(--panel); color: var(--dim); border: 1px solid var(--line); padding: 5px 9px; cursor: pointer; user-select: none; }
+  #view > summary::-webkit-details-marker { display: none; }
+  #view[open] > summary { color: var(--text); border-color: var(--acc); }
+  #view .menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 8; background: var(--panel); border: 1px solid var(--line); padding: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 290px; box-shadow: 0 10px 28px rgba(0,0,0,.55); }
+  #view .menu button, #view .menu select { width: 100%; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #bExit { position: absolute; right: 10px; top: 10px; z-index: 6; display: none; opacity: .5; } #bExit:hover { opacity: 1; }
+  body.full header, body.full aside, body.full #lg { display: none !important; }
+  body.full main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); height: 100vh; }
+  body.full { overflow: hidden !important; } body.full #bExit { display: block; }
+  body.bundle #bRefresh, body.bundle #bBuild { display: none; }
+  @media (max-width: 900px) {
+    main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(380px, 1fr) auto; }
+    aside { border-left: 0; border-top: 1px solid var(--line); max-height: 45vh; overflow-x: hidden; }
+    body { overflow-x: hidden; overflow-y: auto; } #lg { max-width: calc(100% - 24px); }
+    header { padding: 8px 12px; gap: 6px; } header > * { min-width: 0; } header button, header select { flex-shrink: 0; } #stat { overflow-wrap: anywhere; font-size: 11px; }
+    input[type=search] { flex: 1 1 100%; width: auto; order: 9; } .sp { display: none; }
+    header .row2 { order: 10; } #view .menu { position: fixed; left: 12px; right: 12px; top: auto; width: auto; } h1 i { display: none; } header { gap: 6px; } header .t { display: none; } header .row2 > span { min-width: 0; flex: 1 1 100%; overflow-wrap: anywhere; }
+    body.full main { grid-template-rows: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Holo<i>VRG Stack · pályák · pathways</i></h1>
+  <span id="forms" role="group" aria-label="Forma · form"><button data-f="0" title="Polip: karok az alapból · octopus: arms from the base (1)">Polip</button><button data-f="1" title="Gömb: egy gyűrű pályánként · orb: a ring per pathway (2)">Gömb</button><button data-f="2" title="Föld: holografikus földgömb, minden pálya egy ország · hologram Earth, every pathway a country (3)">Föld</button><button data-f="3" title="Mag: Jarvis-burok, benne az agy, belépési pontok a felszínen · core: the Jarvis shell, the brain inside, entry points on the surface (4)">Mag</button></span>
+  <button id="bWatch" title="Őrség: zár. Zárva a háromszögháló a burokra pattan, a belső tartalom borostyán kis gömbbé húzódik; nyitva a darabok kint lebegnek (L) · Night's Watch lock: locked, the triangle mesh snaps onto the shell and the inside shrinks into a small amber orb; unlocked, the pieces hover outside (L)"><svg class="sigil" viewBox="0 0 20 22" aria-hidden="true"><defs><pattern id="sable" width="3" height="3" patternUnits="userSpaceOnUse"><path d="M0 1.5H3M1.5 0V3" stroke="currentColor" stroke-width=".7"/></pattern></defs><path d="M2 2H18V10C18 15 14.5 18.5 10 20.5C5.5 18.5 2 15 2 10Z" fill="url(#sable)" stroke="currentColor" stroke-width="1.2"/></svg><span class="t"> Őrség</span></button>
+  <input type="search" id="q" placeholder="Keresés · search">
+  <span class="sp"></span>
+  <details id="view"><summary title="Nézet: a többi kapcsoló · view: the other switches">⚙<span class="t"> Nézet</span></summary><div class="menu">
+    <button id="bTransit" class="on" title="Átmenet: formaváltáskor a Mag-burkon át · transit: between forms, pass through the core shell">⟳ Átmenet</button>
+    <button id="bFire" class="on" title="Tüzelés: az utolsó felvett sessionök lépései · firing: steps of the latest recorded sessions">⏸ Tüzelés</button>
+    <select id="speed" title="Lejátszási sebesség · replay speed"><option value="10">10×</option><option value="60" selected>60×</option><option value="600">600×</option></select>
+    <button id="bBund" class="on" title="Pályák közti kötegek · bundles between pathways">Kötegek</button>
+    <button id="bSpin" class="on" title="Lassú forgás · slow spin">Forgás</button>
+    <button id="bCrisp" title="Éles pontok: kemény szélű pontok elmosás helyett (P) · crisp points instead of soft glow (P)">◉ Éles pontok</button>
+    <button id="bSpark" title="Impulzus: a tüzelés vékony elektromos impulzus, nem fénygömb (I) · firing as thin electric impulses, not light orbs (I)">ϟ Impulzus</button>
+    <button id="bRefresh" title="Adat újraolvasása (szerverrel: újragenerálás) · reload (with serve.js: regenerate)">Frissítés</button>
+    <button id="bBuild" title="Teljes verem-újraépítés (csak serve.js-szel) · full stack rebuild (serve.js only)">Újraépítés</button>
+  </div></details>
+  <button id="bFull" title="Teljes képernyő: csak a 3D (F) · full screen: the 3D only (F)">⛶</button>
+  <div class="row2"><span id="stat">…</span><span id="stale"></span><span id="msg"></span></div>
+</header>
+<main>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="tip"></div>
+    <button id="bExit" title="Vissza (F / Esc) · back">✕</button>
+    <details id="lg" open><summary>Jelmagyarázat <i>· legend</i></summary><div id="legend"></div></details>
+  </div>
+  <aside>
+    <h3>Kiválasztva <i>· selected</i></h3>
+    <div id="card"><div class="hint">Kattints egy pályára a listában vagy egy pontra. Húzás: forgatás, görgő: nagyítás, dupla katt: alaphelyzet.<br><i>Click a pathway in the list or a dot. Drag to rotate, wheel to zoom, double-click to reset.</i></div></div>
+    <h3>Tüzelés <i>· firing</i></h3>
+    <div id="clock">–</div>
+    <h3>Pályák <i>· pathways (DevLog)</i></h3>
+    <div id="pws"></div>
+  </aside>
+</main>
+<script src="brain.js"></script>
+<script src="touch.js"></script>
+<script src="earth-land.js"></script>
+<script>
+'use strict';
+/* ================= constants */
+const STATE = {
+  active:    { col: '#ffa45c', hu: 'aktív', en: 'active', tier: 0 },
+  recurring: { col: '#7fd3ec', hu: 'visszatérő', en: 'recurring', tier: 0 },
+  waiting:   { col: '#b8a2ff', hu: 'vár', en: 'waiting', tier: 1 },
+  parked:    { col: '#5f86a6', hu: 'parkol', en: 'parked', tier: 2 },
+  ended:     { col: '#7d8b95', hu: 'lezárva', en: 'ended', tier: 2 },
+  absorbed:  { col: '#7fb895', hu: 'beolvadt', en: 'absorbed', tier: 2 },
+  personal:  { col: '#e48fb0', hu: 'személyes', en: 'personal', tier: 2 },
+  '':        { col: '#6b7a85', hu: '–', en: '–', tier: 2 },
+};
+const NOLINE = '#4a5a66';
+const TIER = [{ hu: 'Elöl: aktív + visszatérő', en: 'Front: active + recurring' }, { hu: 'Várakozó', en: 'Waiting' }, { hu: 'Parkol, lezárva, beolvadt', en: 'Parked, ended, absorbed' }];
+const ACTIVE_KIND = new Set(['run', 'day', 'session', 'commit', 'merge', 'session start', 'agent', 'agent tool', 'generator', 'scheduled task', 'workflow kit', 'house rules (CLAUDE.md)', 'line']);
+const LNAME = { F: 'Kirakat · Featured', I: 'Ötletfa · Ideas', Q: 'Döntések · Decisions', L: 'DevLog', A: 'Ügynöki gerinc · Agentic', U: 'Futás · Runtime', R: 'Repó · DevRepo', C: 'Kód · Code', G: 'Adatgömb · Data Globe', E: 'Pillérek · Pillars' };
+const HOUR = 3600e3;
+const hex = h => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmtB = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : b >= 1024 ? (b / 1024).toFixed(1) + ' KB' : b + ' B';
+const fmtT = t => t ? new Date(t).toLocaleString('hu-HU', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–';
+const fmtN = n => n.toLocaleString('hu-HU');
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const add3 = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], mul3 = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = a => { const l = Math.hypot(...a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+const lerp3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+const stateOf = l => STATE[l.state] || STATE[''];
+
+/* ================= state */
+let D = null, items = [], lines = [], adj = [], neuronCount = 0, decorCount = 0, bri = null, glow = null;
+let gl, progP, progL, buf = {}, lineVerts = 0, selVerts = 0;
+let cam = { yaw: 0.6, pitch: 0.12, dist: 4.3 }, spin = true, showBund = true, firing = true;
+// forms: 0 Polip · 1 Gömb · 2 Föld · 3 Mag. A move goes fa → fb (ft 0…1); with transit on it passes through Mag.
+let fa = 0, fb = 0, ft = 1, fq = [], transit = true, W4 = [1, 0, 0, 0];
+let locked = false, lockT = 0, hoverEntry = -1;
+const FORMS = ['Polip', 'Gömb', 'Föld', 'Mag'], CAMD = [4.3, 5.0, 3.6, 4.7], CAMP = [0.12, 0.25, 0.28, 0.2];
+const RSH = 1.45, RLOCK = 1.53, JN = 2600, RCOH = 1.84;   // RCOH: Gömb's coherence shell, just under the outer dust (1.95…2.4)       // Mag: the shell radius, the lock radius, the shell particles (Föld: coastline)
+let pd = null, brainLines = [], filaments = [], earthEdges = [], lockMesh = null, entries = [], lockVerts = 0;
+let watch = false, watchT = 0, wallDays = 14;  // Őrség (Night's Watch) look
+const PAT = { active: 1, recurring: 2, waiting: 4, parked: 5, ended: 5, absorbed: 6, personal: 3, '': 0 };
+const beyond = l => Date.now() - (l.last || 0) > wallDays * 24 * HOUR;
+let hover = -1, sel = -1, focusLine = -1, query = '';
+// view switches (kept per viewer): crisp points, electric impulses; full screen
+const PREF = (() => { try { return JSON.parse(localStorage.getItem('vrg-holo-view') || '{}'); } catch (e) { return {}; } })();
+let crisp = !!PREF.crisp, spark = !!PREF.spark, full = false;
+const savePref = () => { try { localStorage.setItem('vrg-holo-view', JSON.stringify({ crisp, spark })); } catch (e) {} };
+let trb = null, cohMean = 0;
+let sched = [], playT = 0, playIdx = 0, pulses = [], lastFrame = performance.now(), curM = null, geomDirty = true;
+const ORIGIN = [[0, -1.25, 0], [0, 0.05, 0], [0, 0.05, 0], [0, 0.05, 0]];
+const C3 = ORIGIN[1];
+
+/* ================= data */
+function loadData(cb) {
+  if (window.STACK_BUNDLE) { cb(!!window.CONNECTOME); return; }   // the phone bundle (Mobile/stack/publish-stack.js) has the data inside
+  const s = document.createElement('script');
+  s.src = 'out/connectome-data.js?t=' + Date.now();
+  s.onload = () => { s.remove(); cb(true); }; s.onerror = () => { s.remove(); cb(false); };
+  document.head.appendChild(s);
+}
+function prepare() {
+  const C = D.cols.reduce((m, k, i) => (m[k] = i, m), {});
+  items = D.nodes.map((r, i) => ({ i, id: r[C.id], layer: r[C.layer], kind: r[C.kind], title: r[C.title], bytes: r[C.bytes], n: r[C.neurons], last: r[C.last], src: r[C.src], line: r[C.line], line2: r[C.line2], com: r[C.com], region: r[C.region] || 'ctx-temp', hemi: r[C.hemi] || 0 }));
+  items.forEach(it => { it.active = ACTIVE_KIND.has(it.kind); });
+  lines = D.lines.map(l => ({ ...l, members: [] }));
+  for (const it of items) if (it.line >= 0) lines[it.line].members.push(it);
+  adj = items.map(() => []);
+  for (let k = 0; k < D.edges.length; k += 3) { adj[D.edges[k]].push(D.edges[k + 1]); adj[D.edges[k + 1]].push(D.edges[k]); }
+  layout();
+  buildSchedule();
+  renderList(); renderLegend();
+}
+
+/* ================= layout: both shapes, one neuron order */
+function lineOrder() {
+  // within a tier, lines connected by fork / next / feeds sit next to each other
+  const nb = lines.map(() => []); for (const [a, b] of D.lineLinks) { nb[a].push(b); nb[b].push(a); }
+  const tiers = [[], [], []];
+  for (const l of lines) tiers[stateOf(l).tier].push(l);
+  return tiers.map(t => {
+    const set = new Set(t.map(l => l.k)), seen = new Set(), out = [];
+    const start = t.slice().sort((a, b) => b.neurons - a.neurons);
+    for (const s of start) { if (seen.has(s.k)) continue; const q = [s.k]; seen.add(s.k); while (q.length) { const x = q.shift(); out.push(lines[x]); for (const y of nb[x]) if (set.has(y) && !seen.has(y)) { seen.add(y); q.push(y); } } }
+    return out;
+  });
+}
+function layout() {
+  const R = rng(20261107);
+  const maxN = Math.max(...lines.map(l => l.neurons), 1);
+  const tiers = lineOrder();
+  /* --- Polip: arms from the base origin */
+  const O = ORIGIN[0], up = [0, 1, 0];
+  const POL = [[0.10, 0.42, 0.55], [0.55, 0.85, 1.25], [0.95, 1.35, 2.6]];   // [polar from, polar to, curl]
+  tiers.forEach((t, ti) => t.forEach((l, j) => {
+    const az = (j / Math.max(1, t.length)) * Math.PI * 2 + ti * 0.9;
+    const pol = POL[ti][0] + (POL[ti][1] - POL[ti][0]) * ((j * 0.618) % 1);
+    const h = [Math.cos(az), 0, Math.sin(az)], side = norm(cross(up, h));
+    const mass = Math.sqrt(l.neurons / maxN);
+    const len = (ti === 0 ? 2.75 : ti === 1 ? 2.1 : 1.5) * (0.5 + 0.5 * mass);
+    const curl = POL[ti][2] * (0.8 + 0.4 * R()), twist = (R() - 0.5) * 0.5;
+    const pts = [O]; let p = O; const STEPS = 48;
+    for (let s = 1; s <= STEPS; s++) {
+      const u = s / STEPS, phi = pol + curl * u * u;
+      p = add3(p, mul3(add3(mul3(up, Math.cos(phi)), mul3(h, Math.sin(phi))), len / STEPS));
+      pts.push(add3(p, mul3(side, twist * Math.sin(Math.PI * u) * 0.25)));
+    }
+    l.arm = { pts, h, side, rad: 0.045 + 0.09 * mass, len };
+  }));
+  /* --- Gömb: one ring per line in its own plane */
+  const all = [].concat(...tiers), Nl = all.length, g = Math.PI * (3 - Math.sqrt(5));
+  const RAD = [[0.55, 0.9], [0.98, 1.25], [1.32, 1.7]];
+  all.forEach((l, j) => {
+    const y = 1 - 2 * (j + 0.5) / Nl, r = Math.sqrt(1 - y * y), ph = j * g;
+    const nrm = [r * Math.cos(ph), y, r * Math.sin(ph)];
+    const u = norm(cross(nrm, Math.abs(nrm[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), v = cross(nrm, u);
+    const ti = stateOf(l).tier, tl = tiers[ti], idx = tl.indexOf(l);
+    const rad = RAD[ti][0] + (RAD[ti][1] - RAD[ti][0]) * (tl.length > 1 ? idx / (tl.length - 1) : 0.5);
+    const cov = 0.3 + 0.62 * Math.sqrt(l.neurons / maxN);
+    l.ring = { nrm, u, v, rad, a0: R() * Math.PI * 2, span: cov * Math.PI * 2, band: 0.012 + 0.03 * Math.sqrt(l.neurons / maxN) };
+  });
+  const armAt = (l, s) => { const f = Math.max(0, Math.min(1, s)) * (l.arm.pts.length - 1), i = Math.min(l.arm.pts.length - 2, f | 0); return lerp3(l.arm.pts[i], l.arm.pts[i + 1], f - i); };
+  const ringAt = (l, s, rr = l.ring.rad) => { const a = l.ring.a0 + s * l.ring.span, c = ORIGIN[1]; return add3(c, add3(mul3(l.ring.u, Math.cos(a) * rr), mul3(l.ring.v, Math.sin(a) * rr))); };
+  for (const l of lines) { l.anchor = [armAt(l, 0.5), ringAt(l, 0.5)]; l.tip = [armAt(l, 1), ringAt(l, 1)]; }
+  lines.forEach(l => { l.armAt = s => armAt(l, s); l.ringAt = (s, rr) => ringAt(l, s, rr); l.spine = [s => armAt(l, s), s => ringAt(l, s)]; });
+
+  /* --- neurons */
+  const total = items.reduce((s, it) => s + it.n, 0);
+  const DECOR = 900 + JN;
+  neuronCount = total; decorCount = DECOR;
+  const T = total + DECOR;
+  const pa = new Float32Array(T * 3), pb = new Float32Array(T * 3), col = new Float32Array(T * 3), size = new Float32Array(T);
+  const pc = new Float32Array(T * 3), pdd = new Float32Array(T * 3), vis = new Float32Array(T * 4).fill(1), inner = new Float32Array(T);
+  let w = 0;
+  const put = (a, b, c, sz) => { pa.set(a, w * 3); pb.set(b, w * 3); col.set(c, w * 3); size[w] = sz; w++; };
+  const orderIn = l => l.members.slice().sort((a, b) => (a.last || 0) - (b.last || 0) || b.n - a.n);
+  const placed = new Set();
+  for (const l of lines) {
+    const ms = orderIn(l), tot = ms.reduce((s, it) => s + it.n, 0) || 1, c = hex(stateOf(l).col);
+    let cum = 0;
+    for (const it of ms) {
+      const s0 = 0.08 + 0.92 * cum / tot, ds = 0.92 * it.n / tot; cum += it.n;
+      it.start = w; it.s = s0 + ds / 2;
+      const isQ = it.layer === 'Q';
+      for (let k = 0; k < it.n; k++) {
+        const s = s0 + ds * (k + R()) / it.n;
+        // polip
+        const cA = armAt(l, s), tA = norm(sub(armAt(l, s + 0.01), armAt(l, s - 0.01))), n1 = norm(cross(tA, l.arm.side)), n2 = cross(n1, tA);
+        const rr = l.arm.rad * (1 - 0.75 * s) + 0.006;
+        let ang = R() * Math.PI * 2, rad = it.active ? rr * 0.55 * Math.sqrt(R()) : rr * (0.9 + 1.8 * R());
+        if (isQ) { ang = Math.PI + (R() - 0.5) * 0.5; rad = rr * 1.25; }
+        const a = add3(cA, add3(mul3(n1, Math.cos(ang) * rad), mul3(n2, Math.sin(ang) * rad)));
+        // gömb
+        const band = l.ring.band, rr2 = l.ring.rad + (isQ ? band * 2.6 : (R() - 0.5) * (it.active ? band * 0.6 : band * 3.2));
+        const cB = ringAt(l, s, rr2), off = it.active ? (R() - 0.5) * band * 0.7 : (R() - 0.5) * band * 3.5;
+        const b = add3(cB, mul3(l.ring.nrm, off));
+        put(a, b, it.active ? c : c.map(x => x * 0.75 + 0.08), it.active ? 1.25 : (isQ ? 1.1 : 0.85));
+      }
+      it.end = w; placed.add(it.i);
+    }
+  }
+  // no line: the mantle (polip) / outer dust (gömb)
+  const nc = hex(NOLINE);
+  for (const it of items) {
+    if (placed.has(it.i)) continue;
+    it.start = w; it.s = 0;
+    for (let k = 0; k < it.n; k++) {
+      let x, y, z; do { x = R() * 2 - 1; y = R() * 2 - 1; z = R() * 2 - 1; } while (x * x + y * y + z * z > 1);
+      const a = [x * 0.62, ORIGIN[0][1] - 0.32 + y * 0.3, z * 0.62];
+      const d = norm([R() - 0.5, R() - 0.5, R() - 0.5]), rr = 1.95 + R() * 0.45, b = add3(ORIGIN[1], mul3(d, rr));
+      put(a, b, nc, 0.8);
+    }
+    it.end = w;
+  }
+  // decor: the origin core + frame circles (gömb) / mantle rim (polip)
+  for (let k = 0; k < DECOR; k++) {
+    // the Jarvis shell (negative size = it wobbles). In Gömb it sits just under the outer sphere as the coherence shell.
+    if (k >= 900) { put(ORIGIN[0], add3(ORIGIN[1], mul3(fib(k - 900, JN), RCOH)), [0.42, 0.74, 0.95], -0.85); continue; }
+    if (k < 300) { const d = norm([R() - 0.5, R() - 0.5, R() - 0.5]), r = Math.cbrt(R()); put(add3(ORIGIN[0], mul3(d, 0.09 * r)), add3(ORIGIN[1], mul3(d, 0.17 * r)), [1, 0.92, 0.8], 1.0); }
+    else {
+      const ring = (k - 300) % 3, a = R() * Math.PI * 2, skip = (Math.floor(a * 9) % 4 === 0);
+      const rr = skip ? 0 : 1;
+      const A = add3(ORIGIN[0], [Math.cos(a) * (0.66 + ring * 0.05), -0.04 + ring * 0.015, Math.sin(a) * (0.66 + ring * 0.05)]);
+      const tilt = ring * 0.5, B = add3(ORIGIN[1], [Math.cos(a) * 2.45, Math.sin(a) * 2.45 * Math.sin(tilt), Math.sin(a) * 2.45 * Math.cos(tilt)]);
+      put(rr ? A : ORIGIN[0], rr ? B : ORIGIN[1], [0.45, 0.75, 0.85], 0.7);
+    }
+  }
+  layoutEarthCore(R, tiers, pc, pdd, vis, inner, total, T);
+  for (let j = 0; j < JN; j++) vis[(total + 900 + j) * 4 + 1] = 1.0;   // Gömb: the coherence shell
+  coherence(total, T);
+  // centres + pulse control points per form
+  const PS = [pa, pb, pc, pdd];
+  for (const it of items) {
+    it.c = PS.map(P => { const c = [0, 0, 0]; for (let k = it.start; k < it.end; k++) for (let j = 0; j < 3; j++) c[j] += P[k * 3 + j]; return mul3(c, 1 / it.n); });
+    const c2 = lerp3(C3, it.c[2], 0.55), c3 = lerp3(C3, it.c[3], 0.5);
+    if (it.line >= 0) { const l = lines[it.line]; it.ctrl = [armAt(l, it.s * 0.55), ringAt(l, it.s * 0.6, l.ring.rad * 0.45), c2, c3]; }
+    else it.ctrl = [lerp3(ORIGIN[0], it.c[0], 0.5), lerp3(ORIGIN[1], it.c[1], 0.4), c2, c3];
+  }
+  linesEarthCore();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.pa); gl.bufferData(gl.ARRAY_BUFFER, pa, gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.pb); gl.bufferData(gl.ARRAY_BUFFER, pb, gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.pc); gl.bufferData(gl.ARRAY_BUFFER, pc, gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.pd); gl.bufferData(gl.ARRAY_BUFFER, pdd, gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.vis); gl.bufferData(gl.ARRAY_BUFFER, vis, gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.inner); gl.bufferData(gl.ARRAY_BUFFER, inner, gl.STATIC_DRAW);
+  pd = pdd;
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.col); gl.bufferData(gl.ARRAY_BUFFER, col, gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.size); gl.bufferData(gl.ARRAY_BUFFER, size, gl.STATIC_DRAW);
+  computePatterns();
+  bri = new Float32Array(T); for (let k = total; k < T; k++) bri[k] = k - total < 300 ? 0.75 : k - total < 900 ? 0.3 : 0.62;
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.bri); gl.bufferData(gl.ARRAY_BUFFER, bri, gl.DYNAMIC_DRAW);
+  glow = new Float32Array(items.length);
+  geomDirty = true;
+}
+
+/* ================= Gömb: the coherence shell
+   Every pathway gets a trouble score 0…1: a live pathway going quiet (days since its last touch), its share of
+   unlinked members (knowledge that reaches nothing), and waiting = blocked. Every shell particle takes the
+   score of the rings it lies over, so the shell breathes calmly over coherent data and starts to wobble, then
+   glitch, over troubled pathways. Parked / ended pathways count only a quarter: quiet is their normal. */
+function coherence(total, T) {
+  const now = Date.now(), DAY = 24 * HOUR;
+  for (const l of lines) {
+    const st = stateOf(l), live = st.tier === 0 ? 1 : st.tier === 1 ? 0.7 : 0.25, age = (now - (l.last || 0)) / DAY;
+    const stale = Math.max(0, Math.min(1, (age - 4) / 26));
+    const orph = l.members.length ? l.members.filter(it => !adj[it.i].length).length / l.members.length : 0;
+    l.trb = Math.min(1, live * (0.65 * stale + 0.55 * orph) + (l.state === 'waiting' ? 0.3 : 0));
+    l.trbWhy = { stale: Math.round(age), orph: Math.round(orph * 100) };
+  }
+  trb = new Float32Array(T); let sum = 0;
+  for (let j = 0; j < JN; j++) {
+    const d = fib(j, JN); let t = 0;
+    for (const l of lines) {
+      if (!l.trb) continue;
+      const g = l.ring, sd = dot(d, g.nrm), q = norm(sub(d, mul3(g.nrm, sd)));
+      let rel = Math.atan2(dot(q, g.v), dot(q, g.u)) - g.a0; rel = ((rel % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      const arc = rel <= g.span ? 0 : Math.min(rel - g.span, 2 * Math.PI - rel);
+      const ang = Math.hypot(Math.asin(Math.min(1, Math.abs(sd))), arc * 0.6);
+      t = Math.max(t, l.trb * Math.exp(-((ang / 0.24) ** 2)));
+    }
+    trb[total + 900 + j] = t; sum += t;
+  }
+  cohMean = sum / JN; document.body.dataset.coh = cohMean.toFixed(3) + '/' + lines.filter(l => l.trb > 0.3).length;
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.trb); gl.bufferData(gl.ARRAY_BUFFER, trb, gl.STATIC_DRAW);
+}
+
+/* ================= Föld (hologram Earth) + Mag (Jarvis shell, brain inside, the Őrség lock) */
+const fib = (i, N) => { const y = 1 - 2 * (i + 0.5) / N, r = Math.sqrt(1 - y * y), ph = i * Math.PI * (3 - Math.sqrt(5)); return [r * Math.cos(ph), y, r * Math.sin(ph)]; };
+function hilbert(n, x, y) { let d = 0; for (let s = n >> 1; s > 0; s >>= 1) { const rx = (x & s) > 0 ? 1 : 0, ry = (y & s) > 0 ? 1 : 0; d += s * s * ((3 * rx) ^ ry); if (ry === 0) { if (rx === 1) { x = s - 1 - x; y = s - 1 - y; } const t = x; x = y; y = t; } } return d; }
+let LAND = null;
+function land() {
+  if (LAND) return LAND;
+  const E = window.EARTH_LAND, w = E ? E.w : 2, h = E ? E.h : 1, raw = E ? atob(E.bits) : '\0';
+  const bit = (x, y) => { x = ((x % w) + w) % w; if (y < 0 || y >= h) return 0; const i = y * w + x; return raw.charCodeAt(i >> 3) >> (i & 7) & 1; };
+  const cell = d => { const lat = Math.asin(Math.max(-1, Math.min(1, d[1]))), lon = Math.atan2(-d[2], d[0]); return [Math.floor((lon + Math.PI) / (2 * Math.PI) * w), Math.floor((Math.PI / 2 - lat) / Math.PI * h)]; };
+  const coast = []; if (E) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (bit(x, y) && (!bit(x + 1, y) || !bit(x - 1, y) || !bit(x, y + 1) || !bit(x, y - 1))) coast.push([x, y]);
+  let c = 0; const N = 20000; for (let i = 0; i < N; i++) { const q = cell(fib(i, N)); if (bit(q[0], q[1])) c++; }
+  return (LAND = { w, h, bit, cell, coast, frac: Math.max(0.05, c / N), ok: !!E });
+}
+const dirOf = (lon, lat) => [Math.cos(lat) * Math.cos(lon), Math.sin(lat), -Math.cos(lat) * Math.sin(lon)];
+function icosphere(sub) {
+  const t = (1 + Math.sqrt(5)) / 2;
+  let v = [[-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0], [0, -1, t], [0, 1, t], [0, -1, -t], [0, 1, -t], [t, 0, -1], [t, 0, 1], [-t, 0, -1], [-t, 0, 1]].map(norm);
+  let f = [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]];
+  for (let k = 0; k < sub; k++) {
+    const mid = new Map(), m = (a, b) => { const key = a < b ? a + ',' + b : b + ',' + a; if (!mid.has(key)) { v.push(norm(lerp3(v[a], v[b], 0.5))); mid.set(key, v.length - 1); } return mid.get(key); };
+    const nf = []; for (const [a, b, c] of f) { const ab = m(a, b), bc = m(b, c), ca = m(c, a); nf.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]); } f = nf;
+  }
+  return { v, f };
+}
+const edgesOf = faces => { const e = new Map(); for (const [a, b, c] of faces) for (const [x, y] of [[a, b], [b, c], [c, a]]) e.set(x < y ? x + ',' + y : y + ',' + x, [Math.min(x, y), Math.max(x, y)]); return [...e.values()]; };
+function rot(v, k, a) { const c = Math.cos(a), s = Math.sin(a), kv = dot(k, v), kx = cross(k, v); return [v[0] * c + kx[0] * s + k[0] * kv * (1 - c), v[1] * c + kx[1] * s + k[1] * kv * (1 - c), v[2] * c + kx[2] * s + k[2] * kv * (1 - c)]; }
+
+function layoutEarthCore(R, tiers, P2, P3, VIS, INNER, total, T) {
+  for (let k = 0; k < total; k++) INNER[k] = 1;
+  /* --- Föld: every 2 KB node is a dot on land; a pathway is a country (contiguous along a Hilbert curve over lon/lat) */
+  const L = land(), need = total, N = Math.ceil(need / L.frac * 1.03) + 64, spots = [];
+  for (let i = 0; i < N; i++) { const d = fib(i, N), q = L.cell(d); if (!L.ok || L.bit(q[0], q[1])) spots.push({ d, k: hilbert(1024, Math.min(1023, q[0] * 1024 / L.w | 0), Math.min(1023, q[1] * 1024 / L.h | 0)) }); }
+  spots.sort((a, b) => a.k - b.k);
+  const order = [];
+  for (const l of [].concat(...tiers)) order.push(...l.members.slice().sort((a, b) => a.com - b.com || (b.last || 0) - (a.last || 0)));
+  for (const it of items) if (it.line < 0) order.push(it);
+  let s = 0;
+  for (const it of order) for (let k = it.start; k < it.end; k++) {
+    const sp = spots[Math.min(spots.length - 1, Math.floor(s++ * spots.length / need))];
+    const r = 1 + (it.active ? 0.012 : 0) + (it.layer === 'Q' ? 0.02 : 0);
+    P2.set(add3(C3, mul3(sp.d, r)), k * 3);
+  }
+  /* --- Mag: the Jarvis core (see magCore) */
+  magCore(R, P3);
+  for (const it of items) if (it.region === 'pons' || it.region === 'medulla') for (let k = it.start; k < it.end; k++) VIS[k * 4 + 3] = it.region === 'pons' ? 0.3 : 0.55;   // the outer shells must not hide the core
+  /* --- decor per form: core · HUD rings · the shell (Föld: the coastline) */
+  const coast = L.coast;
+  for (let k = total; k < T; k++) {
+    const d = k - total;
+    if (d < 300) { const u = norm([R() - 0.5, R() - 0.5, R() - 0.5]), r = Math.cbrt(R()); P2.set(C3, k * 3); P3.set(add3(C3, mul3(u, 0.075 * r)), k * 3); VIS.set([1, 1, 0, 1], k * 4); }
+    else if (d < 900) {
+      const ring = (d - 300) % 3, a = R() * Math.PI * 2, tilt = 0.41;
+      const e = [Math.cos(a), 0, Math.sin(a)], te = [e[0], e[2] * Math.sin(tilt), e[2] * Math.cos(tilt)];
+      P2.set(add3(C3, mul3(te, 1.16 + ring * 0.05)), k * 3);
+      P3.set(add3(C3, mul3(rot(e, [1, 0, 0], 0.18 + ring * 0.5), 1.78 + ring * 0.06)), k * 3);
+      VIS.set([1, 1, 0.55, 0.45], k * 4);
+    } else {
+      const j = d - 900, sd = fib(j, JN), jit = (R() - 0.5) * 0.05;
+      P3.set(add3(C3, mul3(sd, RSH + jit)), k * 3);
+      if (coast.length) { const q = coast[Math.floor((j + R()) * coast.length / JN) % coast.length], lon = (q[0] + 0.5) / L.w * 2 * Math.PI - Math.PI, lat = Math.PI / 2 - (q[1] + 0.5) / L.h * Math.PI; P2.set(add3(C3, mul3(dirOf(lon, lat), 1.004)), k * 3); }
+      else P2.set(add3(C3, mul3(sd, 1.0)), k * 3);
+      VIS.set([0, 0, 0.9, 1], k * 4);
+    }
+  }
+  /* --- filaments: each shell particle to its nearest few, plus a few long chords (the tangled Jarvis look) */
+  filaments = [];
+  const sp = []; for (let j = 0; j < JN; j++) { const k = total + 900 + j; sp.push([P3[k * 3], P3[k * 3 + 1], P3[k * 3 + 2]]); }
+  for (let i = 0; i < JN; i++) {
+    const best = []; for (let j = 0; j < JN; j++) { if (j === i) continue; const d = (sp[i][0] - sp[j][0]) ** 2 + (sp[i][1] - sp[j][1]) ** 2 + (sp[i][2] - sp[j][2]) ** 2; if (best.length < 3 || d < best[2][1]) { best.push([j, d]); best.sort((a, b) => a[1] - b[1]); if (best.length > 3) best.pop(); } }
+    for (const [j] of best) if (j > i || R() < 0.3) filaments.push([sp[i], sp[j]]);
+    if (i % 7 === 0) { const j = Math.floor(R() * JN), d = Math.hypot(sp[i][0] - sp[j][0], sp[i][1] - sp[j][1], sp[i][2] - sp[j][2]); if (d < 0.9) filaments.push([sp[i], sp[j]]); }
+  }
+  /* --- the Earth's own triangle mesh, and the lock: the same kind of mesh in chunks */
+  const e4 = icosphere(4); earthEdges = edgesOf(e4.f).map(([a, b]) => [add3(C3, mul3(e4.v[a], 1.0)), add3(C3, mul3(e4.v[b], 1.0))]);
+  const e3 = icosphere(3), NS = 36, seeds = []; for (let i = 0; i < NS; i++) seeds.push(fib(i, NS));
+  const chunks = seeds.map(d => ({ dir: d, faces: [], out: 0.42 + 0.62 * R(), ph: R() * 6.283, delay: R() * 0.4, spin: (R() - 0.5) * 0.6 }));
+  for (const f of e3.f) { const c = norm(add3(add3(e3.v[f[0]], e3.v[f[1]]), e3.v[f[2]])); let bi = 0, bd = -2; seeds.forEach((d, i) => { const x = dot(d, c); if (x > bd) { bd = x; bi = i; } }); chunks[bi].faces.push(f); }
+  for (const ch of chunks) { const vs = [...new Set(ch.faces.flat())], loc = new Map(vs.map((v, i) => [v, i])); ch.v = vs.map(v => e3.v[v]); ch.e = edgesOf(ch.faces).map(([a, b]) => [loc.get(a), loc.get(b)]); }
+  lockMesh = { chunks };
+}
+
+/* ================= Mag: the Jarvis core
+   Not a brain shape any more: one sphere, mirror-symmetric by hemisphere and laid on a cube / octahedron frame,
+   built from organic parts (thick clouds, thin shells with holes) and mechanical parts (disks, half-disks, rings),
+   as in the Jarvis hologram. The brain parts keep their function and their depth:
+     cortex (8 groups = 4 lobes × 2 hemispheres) at the 8 cube corners, r 0.66…0.95:
+       parietal (code)   a patchwork of clouds and thin shells, one patch per run of files
+       temporal (memory) a thin shell with holes        frontal (plans) half-disks        occipital (apps) rings
+     cerebellum (agents, tools)  a large thin patchy shell at r 0.56 / 0.62, spread over the whole sphere
+     colliculi  inferior (sessions) two crossed rings r 0.42 · superior (signals) two half-disks r 0.30
+     thalamus (lines) two thick disks by the centre · hypothalamus (decisions) the dense cloud in the middle
+     pons (runs) and medulla (commits) the two shells under the surface (r 1.03…1.09, 1.17…1.195)
+   Small files (≤ 2 nodes) leave their lobe and fill the empty places as loose mini clusters.
+   Bridges (faint lines) join each part to the next layer in: the visual paths between outer and inner. */
+function magCore(R, P3) {
+  const T = (r, d) => add3(C3, mul3(d, r));
+  const gauss = () => { let u = 0; for (let i = 0; i < 4; i++) u += R(); return (u - 2) * 1.73; };
+  const frame = c => { const u = norm(cross(c, Math.abs(c[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])); return [u, cross(c, u)]; };
+  const noise = d => Math.sin(d[0] * 5.1 + d[1] * 2.3) + Math.sin(d[1] * 4.7 - d[2] * 3.1) + Math.sin(d[2] * 6.3 + d[0] * 1.7);
+  const OCC = new Map(), cellK = p => Math.floor(p[0] * 8) + ',' + Math.floor(p[1] * 8) + ',' + Math.floor(p[2] * 8);
+  const occ = p => { const k = cellK(p); OCC.set(k, (OCC.get(k) || 0) + 1); };
+  const occAt = p => { let n = 0; for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) for (let z = -1; z <= 1; z++) n += OCC.get(cellK([p[0] + x / 8, p[1] + y / 8, p[2] + z / 8])) || 0; return n; };
+  const set = (k, p) => { P3.set(p, k * 3); occ(p); };
+  const lines3 = []; const poly = (pts, a = 1, c) => { const pl = pts.slice(); pl.a = a; if (c) pl.c = c; lines3.push(pl); };
+  const arc = (cen, nrm, rad, a0, span, a = 1, seg = 48) => { const [u, v] = frame(nrm), pts = []; for (let i = 0; i <= seg; i++) { const t = a0 + span * i / seg; pts.push(add3(cen, add3(mul3(u, Math.cos(t) * rad), mul3(v, Math.sin(t) * rad)))); } poly(pts, a); };
+  const bridge = (p, q, a = 0.32) => { const m = mul3(add3(p, q), 0.5), bend = add3(C3, mul3(norm(sub(m, C3)), Math.hypot(...sub(m, C3)) * 1.06)), pts = []; for (let i = 0; i <= 10; i++) pts.push(bez(p, bend, q, i / 10)); poly(pts, a, [0.55, 0.8, 0.95]); };
+  const anchors = { cereb: [], ic: [], thal: [] };
+
+  /* groups: region × side (thalamus and the colliculi alternate their nodes between the two sides) */
+  const groups = new Map(), pairSide = {}, small = [];
+  for (const it of items) {
+    let h = it.hemi;
+    if (it.region === 'thal' || it.region === 'sc' || it.region === 'ic') { pairSide[it.region] = (pairSide[it.region] || 0) + 1; h = pairSide[it.region] % 2 ? -1 : 1; }
+    else if (!it.region.startsWith('ctx')) h = 0;
+    if (it.region.startsWith('ctx') && it.n <= 2) { small.push(it); continue; }
+    const k = it.region + '|' + h; if (!groups.has(k)) groups.set(k, { reg: it.region, h: h || 1, list: [] }); groups.get(k).list.push(it);
+  }
+  const each = (Lst, fn) => { let j = 0; for (const it of Lst) for (let k = it.start; k < it.end; k++) set(k, fn(j++, it)); };
+  const CORN = { 'ctx-par': [1, 1, 1], 'ctx-temp': [1, -1, 1], 'ctx-front': [1, 1, -1], 'ctx-occ': [1, -1, -1] };
+  const order = ['hypo', 'thal', 'sc', 'ic', 'cereb', 'ctx-front', 'ctx-occ', 'ctx-temp', 'ctx-par', 'pons', 'medulla'];
+  const gl8 = [...groups.values()].sort((x, y) => (order.indexOf(x.reg) + 99) % 99 - (order.indexOf(y.reg) + 99) % 99);
+  for (const g of gl8) {
+    const Lst = g.list, need = Lst.reduce((a2, it) => a2 + it.n, 0), h = g.h;
+    Lst.sort((x, y) => x.com - y.com || x.layer.localeCompare(y.layer) || y.n - x.n);
+    if (g.reg === 'pons' || g.reg === 'medulla') {          // runs, then commits: thin shells under the surface, newest at the top
+      Lst.sort((x, y) => (y.last || 0) - (x.last || 0));
+      each(Lst, j => T(g.reg === 'pons' ? 1.03 + 0.06 * R() : 1.17 + 0.025 * R(), fib(j, need)));
+      continue;
+    }
+    if (g.reg === 'hypo') { each(Lst, () => T(Math.abs(gauss()) * 0.05, norm([R() - 0.5, R() - 0.5, R() - 0.5]))); continue; }
+    if (g.reg === 'thal') {                                  // two thick disks either side of the middle
+      const cen = add3(C3, [0.14 * h, 0, 0]), nrm = [1, 0, 0], [u, v] = frame(nrm);
+      each(Lst, () => { const t = R() * 6.283, r = 0.02 + 0.06 * Math.sqrt(R()); return add3(cen, add3(add3(mul3(u, Math.cos(t) * r), mul3(v, Math.sin(t) * r)), mul3(nrm, (R() - 0.5) * 0.035))); });
+      arc(cen, nrm, 0.085, 0, 6.283, 0.8); arc(cen, nrm, 0.045, 0, 6.283, 0.5); anchors.thal.push(cen);
+      continue;
+    }
+    if (g.reg === 'sc') {                                     // superior colliculi: two half-disks
+      const nrm = norm([h * 0.8, 0.6, 0]), [u, v] = frame(nrm), a0 = h > 0 ? 0 : Math.PI;
+      each(Lst, () => { const t = a0 + R() * Math.PI, r = 0.27 + 0.08 * R(); return add3(C3, add3(add3(mul3(u, Math.cos(t) * r), mul3(v, Math.sin(t) * r)), mul3(nrm, (R() - 0.5) * 0.01))); });
+      arc(C3, nrm, 0.27, a0, Math.PI, 0.7); arc(C3, nrm, 0.35, a0, Math.PI, 0.7);
+      continue;
+    }
+    if (g.reg === 'ic') {                                     // inferior colliculi: two crossed rings, gyroscope-like
+      const nrm = rot([0, 1, 0], [0, 0, 1], 0.62 * h), [u, v] = frame(nrm);
+      each(Lst, () => { const t = R() * 6.283, w = gauss() * 0.009; return add3(C3, add3(mul3(add3(mul3(u, Math.cos(t)), mul3(v, Math.sin(t))), 0.42 + w), mul3(nrm, gauss() * 0.009))); });
+      arc(C3, nrm, 0.40, 0, 6.283, 0.55, 96); arc(C3, nrm, 0.44, 0, 6.283, 0.55, 96);
+      for (let i = 0; i < 4; i++) { const t = i * Math.PI / 2 + 0.4 * h; anchors.ic.push(add3(C3, mul3(add3(mul3(u, Math.cos(t)), mul3(v, Math.sin(t))), 0.42))); }
+      continue;
+    }
+    if (g.reg === 'cereb') {                                  // the cerebellum spread thin: two patchy shells over the whole sphere
+      let j = 0, tries = 0; const M = need * 3;
+      each(Lst, () => { let d; do { d = fib(Math.floor(R() * M), M); tries++; } while (noise(d) < -0.6 && tries < need * 40); const r = (j++ % 2 ? 0.56 : 0.62) + gauss() * 0.006; return T(r, d); });
+      for (let i = 0; i < 12; i++) anchors.cereb.push(T(0.59, fib(i, 12)));
+      for (const r of [0.56, 0.62]) for (const n of [[1, 0, 0], [0, 1, 0], [0, 0, 1]]) arc(C3, n, r, R() * 6.283, Math.PI * (0.5 + 0.6 * R()), 0.35, 40);
+      continue;
+    }
+    const corner = norm([h * CORN[g.reg][0], CORN[g.reg][1], CORN[g.reg][2]]);
+    if (g.reg === 'ctx-occ') {                                // rings facing out
+      const cen = T(0.82, corner);
+      each(Lst, () => { const t = R() * 6.283, [u, v] = frame(corner); return add3(cen, add3(mul3(add3(mul3(u, Math.cos(t)), mul3(v, Math.sin(t))), 0.1 + gauss() * 0.004), mul3(corner, gauss() * 0.006))); });
+      arc(cen, corner, 0.1, 0, 6.283, 0.8); arc(cen, corner, 0.135, 0.3, 4.2, 0.5); bridge(cen, nearest(anchors.cereb, cen));
+      continue;
+    }
+    if (g.reg === 'ctx-front') {                              // half-disks, standing on the radius
+      const cen = T(0.76, corner), nrm = norm(cross(corner, [0, 1, 0])), [u, v] = frame(nrm), a0 = Math.atan2(dot(corner, v), dot(corner, u)) - Math.PI / 2;
+      each(Lst, () => { const t = a0 + R() * Math.PI, r = 0.05 + 0.12 * Math.sqrt(R()); return add3(cen, add3(add3(mul3(u, Math.cos(t) * r), mul3(v, Math.sin(t) * r)), mul3(nrm, (R() - 0.5) * 0.016))); });
+      arc(cen, nrm, 0.17, a0, Math.PI, 0.8); arc(cen, nrm, 0.05, a0, Math.PI, 0.6); bridge(cen, nearest(anchors.cereb, cen));
+      continue;
+    }
+    if (g.reg === 'ctx-temp') {                               // a thin shell with holes over its corner
+      each(Lst, () => { let d, n = 0; do { const [u, v] = frame(corner), r = Math.sqrt(R()) * 0.75, t = R() * 6.283; d = norm(add3(corner, add3(mul3(u, Math.cos(t) * r), mul3(v, Math.sin(t) * r)))); n++; } while (noise(mul3(d, 1.7)) < -0.4 && n < 30); return T(0.88 + gauss() * 0.005, d); });
+      arc(C3, frame(corner)[0], 0.9, Math.atan2(dot(corner, frame(frame(corner)[0])[1]), dot(corner, frame(frame(corner)[0])[0])) - 0.6, 1.2, 0.45);
+      bridge(T(0.88, corner), nearest(anchors.cereb, T(0.88, corner)));
+      continue;
+    }
+    // parietal (code) and anything else: a patchwork of clouds and thin shells, one patch per run of files
+    const patches = []; let cur = null;
+    for (const it of Lst) { if (!cur || cur.n > cur.cap) { cur = { list: [], n: 0, cap: 180 + R() * 700 }; patches.push(cur); } cur.list.push(it); cur.n += it.n; }
+    const cents = [];
+    for (const p of patches) {
+      let best = null, bs = -1;
+      for (let c = 0; c < 10; c++) {
+        const [u, v] = frame(corner), r = Math.sqrt(R()) * 1.15, t = R() * 6.283, d = norm(add3(corner, add3(mul3(u, Math.cos(t) * r), mul3(v, Math.sin(t) * r))));
+        const sc = cents.length ? Math.min(...cents.map(q => 1 - dot(q, d))) : 1; if (sc > bs) { bs = sc; best = d; }
+      }
+      cents.push(best);
+      const cloud = R() < 0.5, r0 = 0.66 + 0.29 * R(), sig = 0.018 + 0.0019 * Math.sqrt(p.n), [u, v] = frame(best);
+      each(p.list, () => { const d = norm(add3(best, add3(mul3(u, gauss() * sig), mul3(v, gauss() * sig * (cloud ? 1 : 1.6))))); return T(r0 + gauss() * (cloud ? 0.03 : 0.005), d); });
+      if (!cloud && p.n > 250) arc(C3, norm(cross(best, u)), r0 + 0.012, Math.atan2(dot(best, frame(norm(cross(best, u)))[1]), dot(best, frame(norm(cross(best, u)))[0])) - sig * 1.4, sig * 2.8, 0.4, 16);
+      if (p.n > 400 && anchors.cereb.length) bridge(T(r0, best), nearest(anchors.cereb, T(r0, best)), 0.22);
+    }
+  }
+  /* small files: loose mini clusters in the emptiest places */
+  small.sort((x, y) => x.com - y.com || (y.last || 0) - (x.last || 0));
+  for (let i = 0; i < small.length;) {
+    const take = small.slice(i, i + 4 + Math.floor(R() * 10)); i += take.length;
+    let best = null, bo = 1e9;
+    for (let c = 0; c < 16; c++) { const p = T(0.22 + 0.72 * Math.cbrt(R()), norm([R() - 0.5, R() - 0.5, R() - 0.5])), o = occAt(p); if (o < bo) { bo = o; best = p; } }
+    each(take, () => add3(best, [gauss() * 0.022, gauss() * 0.022, gauss() * 0.022]));
+  }
+  /* the mechanical frame: three broken great circles (octahedral), corner spokes, and the inner bridges */
+  for (const n of [[1, 0, 0], [0, 1, 0], [0, 0, 1]]) for (let q = 0; q < 4; q++) arc(C3, n, 0.985, q * Math.PI / 2 + 0.18, Math.PI / 2 - 0.36, 0.3, 24);
+  for (let i = 0; i < 8; i++) { const d = norm([i & 1 ? 1 : -1, i & 2 ? 1 : -1, i & 4 ? 1 : -1]); poly([T(0.2, d), T(0.32, d)], 0.45); poly([T(0.5, d), T(0.54, d)], 0.45); }
+  for (const p of anchors.cereb) bridge(p, nearest(anchors.ic, p), 0.26);
+  for (const p of anchors.ic) bridge(p, nearest(anchors.thal, p), 0.26);
+  for (const p of anchors.thal) bridge(p, C3, 0.3);
+  brainLines = lines3;
+}
+const nearest = (list, p) => { let b = list[0] || C3, bd = 1e9; for (const q of list) { const d = Math.hypot(...sub(q, p)); if (d < bd) { bd = d; b = q; } } return b; };
+// line shapes for Föld (a ring round the country's capital) and Mag (the path from its brain centre out to its entry point)
+function linesEarthCore() {
+  const maxN = Math.max(...lines.map(l => l.neurons), 1);
+  entries = [];
+  lines.forEach((l, j) => {
+    const c2 = [0, 0, 0], c3 = [0, 0, 0]; let n = 0;
+    for (const it of l.members) for (let q = 0; q < 3; q++) { c2[q] += it.c[2][q] * it.n; c3[q] += it.c[3][q] * it.n; n += q === 0 ? it.n : 0; }
+    const cap = norm(sub(mul3(c2, 1 / Math.max(1, n)), C3)), cen = mul3(c3, 1 / Math.max(1, n));
+    let dir = sub(cen, C3); dir = Math.hypot(...dir) < 0.05 ? fib(j, lines.length) : norm(dir);
+    const u = norm(cross(cap, Math.abs(cap[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), v = cross(cap, u), rr = 0.03 + 0.11 * Math.sqrt(l.neurons / maxN);
+    const capAt = s => add3(C3, mul3(norm(add3(mul3(cap, Math.cos(rr)), mul3(add3(mul3(u, Math.cos(s * 6.283)), mul3(v, Math.sin(s * 6.283))), Math.sin(rr)))), 1.008));
+    const entry = add3(C3, mul3(dir, RSH));
+    l.spine[2] = capAt; l.spine[3] = s => lerp3(cen, entry, s);
+    l.anchor[2] = add3(C3, mul3(cap, 1.01)); l.anchor[3] = cen; l.tip[2] = capAt(0); l.tip[3] = entry;
+    l.cap = cap; l.entry = entry; l.dir = dir;
+    if (stateOf(l).tier === 0) entries.push({ k: l.k, p: entry, dir });
+  });
+}
+
+/* ================= current geometry (mixes the four forms) */
+const ease = t => t * t * (3 - 2 * t);
+function mixF(fn) { const o = [0, 0, 0]; for (let f = 0; f < 4; f++) { const w = W4[f]; if (w < 1e-4) continue; const p = fn(f); o[0] += p[0] * w; o[1] += p[1] * w; o[2] += p[2] * w; } return o; }
+const at = arr => mixF(f => arr[f]);
+const lockE = () => ease(Math.max(0, Math.min(1, (lockT - 0.3) / 0.7)));
+function bez(a, m, b, t) { const u = 1 - t; return [u * u * a[0] + 2 * u * t * m[0] + t * t * b[0], u * u * a[1] + 2 * u * t * m[1] + t * t * b[1], u * u * a[2] + 2 * u * t * m[2] + t * t * b[2]]; }
+function curveVerts(out, a, m, b, ca, cb, alpha, seg) {
+  let prev = a;
+  for (let s = 1; s <= seg; s++) {
+    const t = s / seg, p = bez(a, m, b, t), t0 = (s - 1) / seg;
+    for (const [q, tt] of [[prev, t0], [p, t]]) out.push(q[0], q[1], q[2], ca[0] + (cb[0] - ca[0]) * tt, ca[1] + (cb[1] - ca[1]) * tt, ca[2] + (cb[2] - ca[2]) * tt, alpha);
+    prev = p;
+  }
+}
+function buildGeom() {
+  const out = [], O = at(ORIGIN), w3 = W4[3], fade = 1 - lockE() * w3;
+  // the pathways themselves: arm spine / ring arc, brightness by recency
+  const now = Date.now();
+  for (const l of lines) {
+    const c = hex(stateOf(l).col), heat = 0.25 + 0.75 * Math.exp(-Math.max(0, now - l.last) / HOUR / 96);
+    const dim = focusLine >= 0 && focusLine !== l.k ? 0.15 : 1, a = 0.35 * heat * dim * fade * (1 - w3 * (stateOf(l).tier ? 0.7 : -0.6));
+    const N = 40; let prev = null;
+    for (let s = 0; s <= N; s++) {
+      const p = mixF(f => l.spine[f](s / N));
+      if (prev) out.push(prev[0], prev[1], prev[2], c[0], c[1], c[2], a, p[0], p[1], p[2], c[0], c[1], c[2], a);
+      prev = p;
+    }
+  }
+  // bundles between pathways, through the origin
+  if (showBund) {
+    const maxC = Math.max(...D.bundles.map(b => b[2]), 1);
+    for (const [x, y, cnt] of D.bundles) {
+      if (focusLine >= 0 && x !== focusLine && y !== focusLine) continue;
+      const A = at(lines[x].anchor), B = at(lines[y].anchor);
+      const m = mixF(f => { const a = lines[x].anchor[f], b = lines[y].anchor[f], mid = lerp3(a, b, 0.5); return f === 2 ? add3(C3, mul3(norm(sub(mid, C3)), 1.3)) : lerp3(ORIGIN[f], mid, 0.3); });
+      const a = ((focusLine >= 0 ? 0.35 : 0.04) + 0.22 * Math.log(1 + cnt) / Math.log(1 + maxC)) * (focusLine >= 0 ? 1 : 1 - 0.6 * W4[1] - 0.5 * w3) * fade;
+      curveVerts(out, A, m, B, hex(stateOf(lines[x]).col), hex(stateOf(lines[y]).col), a * 0.6, 14);
+    }
+  }
+  // Mag: the Jarvis filaments (negative alpha = they wobble with the shell), the entry points of the active lines
+  if (w3 > 0.01) {
+    const fc = [0.36, 0.66, 0.92], fa = -0.085 * w3;
+    for (const [p, q] of filaments) out.push(p[0], p[1], p[2], fc[0], fc[1], fc[2], fa, q[0], q[1], q[2], fc[0], fc[1], fc[2], fa);
+    for (const e of entries) {
+      const l = lines[e.k], c = hex(stateOf(l).col), u = norm(cross(e.dir, Math.abs(e.dir[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), v = cross(e.dir, u);
+      const a = 0.7 * w3 * fade * (focusLine >= 0 && focusLine !== l.k ? 0.25 : 1);
+      for (const [rr, al] of [[0.075, a], [0.115, a * 0.45]]) for (let i = 0; i < 28; i++) {
+        const t0 = i / 28 * 6.283, t1 = (i + 1) / 28 * 6.283, P = t => add3(e.p, add3(mul3(u, Math.cos(t) * rr), mul3(v, Math.sin(t) * rr)));
+        const p = P(t0), q = P(t1); out.push(p[0], p[1], p[2], c[0], c[1], c[2], al, q[0], q[1], q[2], c[0], c[1], c[2], al);
+      }
+    }
+  }
+  // Mag: the brain parts' outlines
+  if (w3 > 0.01) for (const pl of brainLines) { const bc = pl.c || [0.6, 0.85, 0.95], ba = 0.48 * (pl.a || 1) * w3 * fade; for (let i = 1; i < pl.length; i++) { const p = pl[i - 1], q = pl[i]; out.push(p[0], p[1], p[2], bc[0], bc[1], bc[2], ba, q[0], q[1], q[2], bc[0], bc[1], bc[2], ba); } }
+  // Föld: the triangle mesh of the globe
+  if (W4[2] > 0.01) { const mc = [0.5, 0.74, 0.88], ma = 0.05 * W4[2]; for (const [p, q] of earthEdges) out.push(p[0], p[1], p[2], mc[0], mc[1], mc[2], ma, q[0], q[1], q[2], mc[0], mc[1], mc[2], ma); }
+  // Őrség: the Wall. Polip: a palisade ring round the base; Gömb: a shell between the waiting and the parked rings
+  if (watchT > 0) {
+    const ice = [0.8, 0.89, 0.95], a = 0.22 * watchT, P = 56, O0 = ORIGIN[0], O1 = ORIGIN[1], RW = 1.0, RS = 1.29;
+    const wallPt = (lon, v) => { const la = (v - 0.5) * 2.1; return lerp3(add3(O0, [Math.cos(lon) * RW, -0.05 + v * 0.6, Math.sin(lon) * RW]),
+      add3(O1, [Math.cos(lon) * Math.cos(la) * RS, Math.sin(la) * RS, Math.sin(lon) * Math.cos(la) * RS]), W4[1]); };
+    for (let j = 0; j < P; j++) {
+      const lon = j / P * Math.PI * 2, lon2 = (j + 1) / P * Math.PI * 2;
+      for (let k = 0; k < 4; k++) { const p = wallPt(lon, k / 4), q = wallPt(lon, (k + 1) / 4); out.push(...p, ...ice, a * 0.7, ...q, ...ice, a * 0.7); }
+      for (const v of [0, 1]) { const p = wallPt(lon, v), q = wallPt(lon2, v); out.push(...p, ...ice, a, ...q, ...ice, a); }
+    }
+  }
+  const g = new Float32Array(out);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.lines); gl.bufferData(gl.ARRAY_BUFFER, g, gl.DYNAMIC_DRAW); lineVerts = g.length / 7;
+  // the selected node's own edges
+  const so = [];
+  if (sel >= 0) {
+    const A = at(items[sel].c), ca = hex(items[sel].line >= 0 ? stateOf(lines[items[sel].line]).col : NOLINE);
+    for (const b of adj[sel]) { const B = at(items[b].c), cb = hex(items[b].line >= 0 ? stateOf(lines[items[b].line]).col : NOLINE); curveVerts(so, A, lerp3(O, lerp3(A, B, 0.5), 0.55), B, ca, cb, 0.55, 10); }
+  }
+  const gs = new Float32Array(so);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.sel); gl.bufferData(gl.ARRAY_BUFFER, gs, gl.DYNAMIC_DRAW); selVerts = gs.length / 7;
+  geomDirty = false;
+}
+
+/* ================= Őrség lock: chunks of the triangle mesh hover outside (open) or snap onto the shell (locked) */
+function buildLock(ts) {
+  const w3 = W4[3]; lockVerts = 0; const dots = [];
+  if (w3 < 0.01 || !lockMesh) return dots;
+  const out = [], t = ts / 1000;
+  for (const ch of lockMesh.chunks) {
+    const e = ease(Math.max(0, Math.min(1, (lockT - ch.delay) / 0.6)));
+    const ang = ch.spin + 0.28 * Math.sin(t * 0.3 + ch.ph), off = ch.out + 0.05 * Math.sin(t * 0.7 + ch.ph);
+    const P = ch.v.map(v => { const snap = add3(C3, mul3(v, RLOCK)), fl = add3(add3(C3, rot(mul3(v, RLOCK), ch.dir, ang)), mul3(ch.dir, off)); return lerp3(fl, snap, e); });
+    const c = lerp3([0.42, 0.46, 0.5], [0.55, 0.84, 1.0], e), a = (0.07 + 0.2 * e) * w3;
+    for (const [i, j] of ch.e) out.push(P[i][0], P[i][1], P[i][2], c[0], c[1], c[2], a, P[j][0], P[j][1], P[j][2], c[0], c[1], c[2], a);
+    if (e > 0.6) for (const p of P) dots.push(p, (e - 0.6) * 1.1 * w3);
+  }
+  const g = new Float32Array(out); gl.bindBuffer(gl.ARRAY_BUFFER, buf.lock); gl.bufferData(gl.ARRAY_BUFFER, g, gl.STREAM_DRAW); lockVerts = g.length / 7;
+  return dots;
+}
+function setLock(v) { locked = v; $('bWatch').classList.toggle('lock', v); $('bWatch').classList.toggle('on', v); if (v && fb !== 3) goTo(3); }
+function goTo(f) {
+  if (f === fb && !fq.length) return;
+  const from = ft >= 1 ? fb : fb;
+  fq = transit && from !== 3 && f !== 3 ? [3, f] : [f];
+  if (ft >= 1) { fa = fb; fb = fq.shift(); ft = 0; }
+  cam.dist = CAMD[f]; cam.pitch = CAMP[f];
+  document.querySelectorAll('#forms button').forEach(b => b.classList.toggle('on', +b.dataset.f === f));
+}
+
+/* ================= firing */
+function buildSchedule() {
+  sched = []; playT = 0; playIdx = 0; pulses = [];
+  const steps = [];
+  D.fire.forEach((f, ri) => { for (const [t, ns, bad] of f.steps) steps.push({ t, run: f.run, ri, ns, bad }); });
+  steps.sort((a, b) => a.t - b.t);
+  const speed = +$('speed').value;
+  let pt = 0, prev = steps.length ? steps[0].t : 0;
+  for (const s of steps) { pt += Math.min((s.t - prev) / speed, 600); prev = s.t; sched.push({ ...s, at: pt }); }
+}
+
+/* ================= GL */
+// the Jarvis "voice": the shell breathes, never the inside
+const WOB = `uniform float uTime; uniform float uVoice; uniform vec3 uC;
+vec3 wob(vec3 p){ vec3 d = p - uC; float l = length(d); if (l < 1e-4) return p; vec3 n = d / l;
+  float a = 0.055*sin(dot(n, vec3(3.1,2.3,1.7))*3.0 + uTime*2.1) + 0.035*sin(dot(n, vec3(-1.9,2.7,3.3))*5.0 - uTime*3.3) + 0.018*sin(dot(n, vec3(4.1,-3.7,2.2))*9.0 + uTime*5.2);
+  return p + n * a * uVoice; }`;
+// Gömb: the coherence shell. Calm, slow, small over coherent data; over troubled pathways (aTrb) it wobbles harder
+// and, as trouble grows, glitches: cells of the shell jump out and sideways on a slow stepped clock.
+const COH = `float h11(float x){ return fract(sin(x*127.1)*43758.5453); }
+vec3 coh(vec3 p, float t){ vec3 d = p - uC; float l = length(d); if (l < 1e-4) return p; vec3 n = d / l;
+  float calm = 0.010*sin(dot(n, vec3(2.1,1.3,0.7))*2.5 + uTime*0.55) + 0.006*sin(dot(n, vec3(-1.3,2.2,0.4))*4.0 - uTime*0.4);
+  float rough = t*(0.045*sin(dot(n, vec3(3.1,2.3,1.7))*7.0 + uTime*1.9) + 0.03*sin(dot(n, vec3(-1.9,2.7,3.3))*13.0 - uTime*3.1));
+  float cell = floor(uTime*2.5), sd = dot(floor(n*6.0), vec3(1.0,7.0,49.0));
+  float g = step(1.0 - 0.5*t*t, h11(sd + cell*13.7)) * t * (0.05 + 0.06*h11(sd*3.1 + cell));
+  vec3 tg = normalize(cross(n, vec3(0.3,1.0,0.2)));
+  return p + n*(calm + rough + g) + tg*g*0.7*(h11(sd + cell) - 0.5); }`;
+const VS_P = `#version 300 es
+in vec3 aP0; in vec3 aP1; in vec3 aP2; in vec3 aP3; in vec4 aVis; in float aInner; in vec3 aCol; in float aBri; in float aSize; in float aPat; in float aTrb;
+uniform mat4 uM; uniform float uPx; uniform vec4 uW; uniform float uWatch; uniform float uLock; uniform float uCrisp;
+${WOB}
+${COH}
+out vec3 vCol; out float vA; flat out int vPat;
+void main(){ vec3 pos = aP0*uW.x + aP1*uW.y + aP2*uW.z + aP3*uW.w; float vis = dot(aVis, uW);
+  if (aSize < 0.0) pos = mix(wob(pos), coh(pos, aTrb), uW.y);
+  float L = uLock * aInner;   // Őrség locked: the inside draws into a small amber orb
+  if (L > 0.0) { vec3 d = pos - uC; float l = length(d); vec3 n = l > 1e-4 ? d / l : vec3(0.0, 1.0, 0.0); pos = mix(pos, uC + n * (0.14 + 0.035 * fract(l * 37.0)), L); }
+  vec4 p = uM * vec4(pos, 1.0); gl_Position = p; float b = max(aBri, 0.34 * uW.w * aInner) * vis * mix(1.0, 0.16, L);   // Mag: the core keeps its shape even where the data is quiet
+  if (aSize < 0.0) b *= 1.0 + uW.y * aTrb * 0.9;
+  gl_PointSize = max(1.0, uPx * abs(aSize) * mix(1.0, 2.6, uWatch) * mix(1.0, 0.5, uCrisp) * (0.75 + 0.9*clamp(b-0.6,0.0,2.0)) / p.w);
+  // Őrség: ice-white ink, gold only for the torches (Or = dots)
+  vec3 ink = int(aPat + 0.5) == 1 ? vec3(0.98,0.74,0.36) : vec3(0.80,0.89,0.95);
+  vec3 base = aSize < 0.0 ? mix(aCol, vec3(1.0, 0.42, 0.28), uW.y * clamp(aTrb * 1.3, 0.0, 1.0) * 0.85) : aCol;   // trouble runs warm
+  vCol = mix(mix(mix(base, vec3(1.0,0.94,0.85), clamp(b-1.0,0.0,1.0)), ink, uWatch), vec3(1.0, 0.64, 0.2), L); vA = clamp(b,0.0,2.2); vPat = int(aPat + 0.5); }`;
+// Heraldic hatching (Petra Sancta): 0 argent plain · 1 or dots · 2 azure horizontal · 3 gules vertical ·
+// 4 purpure bend sinister · 5 sable crossed (beyond the Wall) · 6 vert bend. Screen space, so neighbouring dots merge.
+const FS_P = `#version 300 es
+precision highp float; in vec3 vCol; in float vA; flat in int vPat; uniform float uWatch; uniform float uHatch; uniform float uCrisp; out vec4 o;
+float hatch(int k, vec2 q){
+  vec2 f = fract(q); float w = 0.22;
+  if (k == 1) return step(length(f - 0.5), 0.26);
+  if (k == 2) return step(abs(f.y - 0.5), w);
+  if (k == 3) return step(abs(f.x - 0.5), w);
+  if (k == 4) return step(abs(fract((q.x - q.y) * 0.7071) - 0.5), w);
+  if (k == 6) return step(abs(fract((q.x + q.y) * 0.7071) - 0.5), w);
+  if (k == 5) return max(step(abs(f.y - 0.5), w * 0.8), step(abs(f.x - 0.5), w * 0.8));
+  return 0.28; }
+void main(){ vec2 d = gl_PointCoord-0.5; float r = dot(d,d); if(r>0.25) discard;
+  float soft = mix(smoothstep(0.25,0.0,r), (1.0 - smoothstep(0.13, 0.22, r)) * 0.85, uCrisp);   // crisp: a hard little disc
+  float h = hatch(vPat, gl_FragCoord.xy / uHatch) * step(r, 0.2);
+  float f = mix(soft, h, uWatch);
+  if (f <= 0.0) discard;
+  o = vec4(vCol*f*vA*mix(0.55, 0.62, uWatch), 1.0); }`;
+const VS_L = `#version 300 es
+in vec3 aPos; in vec3 aCol; in float aAl; uniform mat4 uM; uniform float uWatch; out vec4 vC;
+${WOB}
+void main(){ vec3 p = aAl < 0.0 ? wob(aPos) : aPos; gl_Position = uM*vec4(p,1.0); vC = vec4(mix(aCol, vec3(0.80,0.89,0.95), uWatch)*abs(aAl)*mix(1.0, 0.75, uWatch), 1.0); }`;
+const FS_L = `#version 300 es
+precision mediump float; in vec4 vC; out vec4 o; void main(){ o = vC; }`;
+function prog(vs, fs) {
+  const p = gl.createProgram();
+  for (const [t, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); gl.attachShader(p, s); }
+  gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  return p;
+}
+function attr(p, name, b, n, stride = 0, off = 0) { const l = gl.getAttribLocation(p, name); if (l < 0) return; gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, n, gl.FLOAT, false, stride, off); }
+function unattr(p, names) { for (const n of names) { const l = gl.getAttribLocation(p, n); if (l >= 0) gl.disableVertexAttribArray(l); } }
+function mat() {
+  const cv = $('cv'), asp = cv.width / cv.height, f = 1 / Math.tan(0.42), n = 0.05, fa = 60;
+  const P = [f / asp, 0, 0, 0, 0, f, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0];
+  const target = [0, 0.05, 0], cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  const eye = [target[0] + cam.dist * cp * sy, target[1] + cam.dist * sp, target[2] + cam.dist * cp * cy];
+  const zA = norm(sub(eye, target)), xA = norm(cross([0, 1, 0], zA)), yA = cross(zA, xA);
+  const V = [xA[0], yA[0], zA[0], 0, xA[1], yA[1], zA[1], 0, xA[2], yA[2], zA[2], 0, -dot(xA, eye), -dot(yA, eye), -dot(zA, eye), 1];
+  const o = new Array(16).fill(0); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) for (let k = 0; k < 4; k++) o[c * 4 + r] += P[k * 4 + r] * V[c * 4 + k];
+  return o;
+}
+function project(M, p) { const x = M[0] * p[0] + M[4] * p[1] + M[8] * p[2] + M[12], y = M[1] * p[0] + M[5] * p[1] + M[9] * p[2] + M[13], w = M[3] * p[0] + M[7] * p[1] + M[11] * p[2] + M[15]; return [x / w, y / w, w]; }
+
+/* ================= frame */
+const heatOf = (it, now) => it.last ? 0.3 + 0.6 * Math.exp(-Math.max(0, now - it.last) / HOUR / 72) : 0.3;
+let dragging = false;
+function frame(ts) {
+  const dt = Math.min(100, ts - lastFrame); lastFrame = ts;
+  if (spin && !dragging) cam.yaw += dt * 0.00006;
+  const cv = $('cv'), dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = cv.clientWidth * dpr | 0, H = cv.clientHeight * dpr | 0;
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  gl.viewport(0, 0, W, H); gl.clearColor(0.031 - 0.02 * watchT, 0.063 - 0.045 * watchT, 0.09 - 0.065 * watchT, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+  if (!D) { requestAnimationFrame(frame); return; }
+  if (ft < 1) {   // one leg of a form change; a transit leg through the shell is a little quicker
+    ft = Math.min(1, ft + dt / (fq.length ? 1100 : 1400)); geomDirty = true;
+    if (ft >= 1 && fq.length) { fa = fb; fb = fq.shift(); ft = 0; }
+  }
+  W4 = [0, 0, 0, 0]; { const e = ease(ft); W4[fa] += 1 - e; W4[fb] += e; }
+  const lg = locked ? 1 : 0; if (lockT !== lg) { lockT = lg > lockT ? Math.min(1, lockT + dt / 2200) : Math.max(0, lockT - dt / 1800); geomDirty = true; }
+  if (geomDirty || W4[3] > 0.01) buildGeom();
+  const lockDots = buildLock(ts);
+  // firing: a pulse runs from the origin along the pathway to each touched node
+  if (firing && sched.length) {
+    playT += dt;
+    while (playIdx < sched.length && sched[playIdx].at <= playT) {
+      const s = sched[playIdx++]; glow[s.run] = Math.max(glow[s.run], 0.9);
+      for (const tgt of s.ns) pulses.push({ b: tgt, t: 0, bad: s.bad });
+      $('clock').textContent = fmtT(s.t) + ' · ' + D.fire[s.ri].sid + ' · ' + playIdx + ' / ' + sched.length;
+    }
+    if (playIdx >= sched.length && playT > (sched.length ? sched[sched.length - 1].at : 0) + 3000) { playT = 0; playIdx = 0; }
+  }
+  const O = at(ORIGIN), pp = [];
+  pulses = pulses.filter(p => { p.t += dt / 1100; if (p.t >= 1) { glow[p.b] = Math.max(glow[p.b], p.bad ? 1.0 : 0.7); return false; } return true; });
+  const spk = [];   // electric impulses: a short jagged streak along the path instead of a light orb
+  if (lockE() * W4[3] < 0.5) for (const p of pulses) {
+    const it = items[p.b], C1 = at(it.ctrl), C2 = at(it.c);
+    if (!spark) { const q = bez(O, C1, C2, p.t); pp.push(q[0], q[1], q[2]); continue; }
+    const K = 7, len = 0.09, c = p.bad ? [1, 0.5, 0.35] : [0.72, 0.9, 1];
+    let prev = null;
+    for (let k = 0; k <= K; k++) {
+      const t = Math.max(0, p.t - len * (1 - k / K)), q = bez(O, C1, C2, t), j = k === 0 || k === K ? 0 : 0.014;
+      const r = [q[0] + (Math.random() - 0.5) * j, q[1] + (Math.random() - 0.5) * j, q[2] + (Math.random() - 0.5) * j], a = 0.15 + 0.85 * (k / K);
+      if (prev) spk.push(...prev, ...c, a, ...r, ...c, a);
+      prev = r;
+    }
+  }
+  const npulse = pp.length / 3;
+  for (let i = 0; i < lockDots.length; i += 2) pp.push(...lockDots[i]);
+  if (W4[3] > 0.01) for (const e of entries) pp.push(...e.p);
+  // brightness
+  const now = Date.now(), ql = query;
+  for (const it of items) {
+    let b = heatOf(it, now) * (it.active ? 1.1 : 0.55) + glow[it.i];
+    if (focusLine >= 0 && it.line !== focusLine && it.line2 !== focusLine) b *= 0.12;
+    if (ql) b = it.match ? b + 0.8 : b * 0.15;
+    b = Math.min(b, 1.35);                                   // nothing burns white except the picked node
+    if (it.i === sel || it.i === hover) b += 1.0;
+    for (let k = it.start; k < it.end; k++) bri[k] = b;
+    if (glow[it.i] > 0) glow[it.i] = Math.max(0, glow[it.i] - dt / 1400);
+  }
+  const M = mat(); curM = M;
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.disable(gl.DEPTH_TEST);
+  gl.blendEquation(gl.FUNC_ADD);
+  const voice = W4[3] * (0.35 + 0.65 * Math.min(1, pulses.length / 12)) * (1 - 0.75 * lockE());
+  for (const P of [progL, progP]) { gl.useProgram(P); gl.uniform1f(gl.getUniformLocation(P, 'uTime'), ts / 1000); gl.uniform1f(gl.getUniformLocation(P, 'uVoice'), voice); gl.uniform3fv(gl.getUniformLocation(P, 'uC'), C3); }
+  gl.useProgram(progL); gl.uniformMatrix4fv(gl.getUniformLocation(progL, 'uM'), false, M); gl.uniform1f(gl.getUniformLocation(progL, 'uWatch'), ease(watchT));
+  for (const [b, n] of [[buf.lines, lineVerts], [buf.sel, selVerts], [buf.lock, lockVerts]]) { if (!n) continue; attr(progL, 'aPos', b, 3, 28, 0); attr(progL, 'aCol', b, 3, 28, 12); attr(progL, 'aAl', b, 1, 28, 24); gl.drawArrays(gl.LINES, 0, n); }
+  if (spk.length) { gl.bindBuffer(gl.ARRAY_BUFFER, buf.spk); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(spk), gl.STREAM_DRAW); attr(progL, 'aPos', buf.spk, 3, 28, 0); attr(progL, 'aCol', buf.spk, 3, 28, 12); attr(progL, 'aAl', buf.spk, 1, 28, 24); gl.drawArrays(gl.LINES, 0, spk.length / 7); }
+  unattr(progL, ['aPos', 'aCol', 'aAl']);
+  gl.useProgram(progP); gl.uniform1f(gl.getUniformLocation(progP, 'uCrisp'), crisp ? 1 : 0); gl.uniformMatrix4fv(gl.getUniformLocation(progP, 'uM'), false, M);
+  gl.uniform1f(gl.getUniformLocation(progP, 'uPx'), 9.5 * dpr * Math.min(1.6, H / 900 + 0.4));
+  gl.uniform4fv(gl.getUniformLocation(progP, 'uW'), W4); gl.uniform1f(gl.getUniformLocation(progP, 'uLock'), lockE() * W4[3]);
+  gl.uniform1f(gl.getUniformLocation(progP, 'uWatch'), ease(watchT)); gl.uniform1f(gl.getUniformLocation(progP, 'uHatch'), 3.4 * dpr);
+  if (watchT > 0.5) gl.blendEquation(gl.MAX);   // an engraving: overlapping strokes do not pile up into white
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.bri); gl.bufferSubData(gl.ARRAY_BUFFER, 0, bri);
+  attr(progP, 'aP0', buf.pa, 3); attr(progP, 'aP1', buf.pb, 3); attr(progP, 'aP2', buf.pc, 3); attr(progP, 'aP3', buf.pd, 3); attr(progP, 'aVis', buf.vis, 4); attr(progP, 'aInner', buf.inner, 1); attr(progP, 'aCol', buf.col, 3); attr(progP, 'aBri', buf.bri, 1); attr(progP, 'aSize', buf.size, 1); attr(progP, 'aPat', buf.pat, 1); attr(progP, 'aTrb', buf.trb, 1);
+  gl.drawArrays(gl.POINTS, 0, neuronCount + decorCount);
+  if (pp.length) {
+    const n = pp.length / 3, P = new Float32Array(pp), C = new Float32Array(n * 3), B = new Float32Array(n).fill(2.2), S = new Float32Array(n).fill(2.3);
+    const nl = lockDots.length / 2;
+    for (let k = 0; k < n; k++) {
+      if (k < npulse) { C.set([1, 0.8, 0.55], k * 3); continue; }
+      if (k < npulse + nl) { C.set([0.62, 0.88, 1], k * 3); B[k] = lockDots[(k - npulse) * 2 + 1] * 0.75; S[k] = 1.1; continue; }   // the mesh's cross points glow when locked
+      const e = entries[k - npulse - nl], c = hex(stateOf(lines[e.k]).col); C.set(c, k * 3); B[k] = 1.5 * W4[3] * (1 - lockE()); S[k] = 2.0;   // entry points
+    }
+    const tb = [buf.qp, buf.qc, buf.qb, buf.qs];
+    [P, C, B, S].forEach((arr, j) => { gl.bindBuffer(gl.ARRAY_BUFFER, tb[j]); gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STREAM_DRAW); });
+    gl.uniform4fv(gl.getUniformLocation(progP, 'uW'), [1, 0, 0, 0]); gl.uniform1f(gl.getUniformLocation(progP, 'uLock'), 0);
+    attr(progP, 'aP0', buf.qp, 3); attr(progP, 'aP1', buf.qp, 3); attr(progP, 'aP2', buf.qp, 3); attr(progP, 'aP3', buf.qp, 3); attr(progP, 'aCol', buf.qc, 3);
+    unattr(progP, ['aVis', 'aInner', 'aTrb']); gl.vertexAttrib4f(gl.getAttribLocation(progP, 'aVis'), 1, 1, 1, 1); gl.vertexAttrib1f(gl.getAttribLocation(progP, 'aInner'), 0); gl.vertexAttrib1f(gl.getAttribLocation(progP, 'aTrb'), 0); attr(progP, 'aBri', buf.qb, 1); attr(progP, 'aSize', buf.qs, 1);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf.qpat); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(n).fill(1), gl.STREAM_DRAW); attr(progP, 'aPat', buf.qpat, 1);
+    gl.drawArrays(gl.POINTS, 0, n);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ================= picking + UI */
+function pick(mx, my) {
+  if (!curM) return -1;
+  const r = $('cv').getBoundingClientRect(); let best = -1, bd = 196;
+  for (const it of items) {
+    if (focusLine >= 0 && it.line !== focusLine && it.line2 !== focusLine) continue;
+    const p = project(curM, at(it.c)); if (p[2] <= 0) continue;
+    const sx = (p[0] * 0.5 + 0.5) * r.width, sy = (0.5 - p[1] * 0.5) * r.height, rad = Math.min(26, 3 + Math.sqrt(it.n) * 1.2);
+    const d = (sx - mx) ** 2 + (sy - my) ** 2 - rad * rad * 0.5;
+    if (d < bd) { bd = d; best = it.i; }
+  }
+  return best;
+}
+function pickEntry(mx, my) {
+  if (!curM || W4[3] < 0.5 || lockE() > 0.5) return -1;
+  const r = $('cv').getBoundingClientRect(); let best = -1, bd = 18 * 18;
+  entries.forEach((e, i) => { const p = project(curM, e.p); if (p[2] <= 0) return; const d = ((p[0] * 0.5 + 0.5) * r.width - mx) ** 2 + ((0.5 - p[1] * 0.5) * r.height - my) ** 2; if (d < bd) { bd = d; best = i; } });
+  return best;
+}
+function showEntryTip(i, x, y) {
+  const l = lines[entries[i].k], st = stateOf(l), tip = $('tip');
+  tip.innerHTML = `<b>Belépési pont <i>· entry point</i></b><div>${esc(l.title || l.id)}</div><div class="m">${st.hu} · ${fmtN(l.members.length)} elem · ${fmtT(l.last)} · katt: kiemelés</div>`;
+  tip.style.display = 'block';
+  const sr = $('stage').getBoundingClientRect(); tip.style.left = Math.min(sr.width - tip.offsetWidth - 6, x + 14) + 'px'; tip.style.top = Math.max(6, Math.min(sr.height - tip.offsetHeight - 6, y + 14)) + 'px';
+}
+const lineName = k => k >= 0 ? esc(lines[k].title || lines[k].id) : 'nincs pálya <i>· no pathway</i>';
+function showTip(i, x, y) {
+  const tip = $('tip'); if (i < 0) { tip.style.display = 'none'; return; }
+  const it = items[i];
+  tip.innerHTML = `<b>${esc(it.title || it.id)}</b><div class="m">${esc(it.id)} · ${fmtB(it.bytes)} · ${fmtN(it.n)} neuron</div><div class="m">pálya: ${lineName(it.line)}</div>`;
+  tip.style.display = 'block';
+  const st = $('stage').getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(st.width - w - 6, x + 14) + 'px'; tip.style.top = Math.max(6, Math.min(st.height - h - 6, y + 14)) + 'px';
+}
+function select(i) {
+  sel = i; geomDirty = true;
+  if (i < 0) { if (focusLine < 0) $('card').innerHTML = '<div class="hint">Kattints egy pályára vagy pontra.<br><i>Click a pathway or a dot.</i></div>'; else lineCard(focusLine); return; }
+  const it = items[i], nb = adj[i].slice().sort((a, b) => items[b].n - items[a].n);
+  $('card').innerHTML = `<div class="title">${esc(it.title || it.id)}</div>
+    <div class="kv"><span>id</span><span>${esc(it.id)}</span>
+    <span>réteg <i>layer</i></span><span>${esc(LNAME[it.layer] || it.layer)}</span>
+    <span>fajta <i>kind</i></span><span>${esc(it.kind)}${it.active ? ' · aktív folyamat' : ''}</span>
+    <span>pálya <i>path</i></span><span>${it.line >= 0 ? `<a class="nb" data-l="${it.line}">${lineName(it.line)}</a>` : lineName(-1)}${it.line2 >= 0 ? `<a class="nb" data-l="${it.line2}">+ ${lineName(it.line2)}</a>` : ''}</span>
+    <span>méret <i>size</i></span><span>${fmtB(it.bytes)} → ${fmtN(it.n)} neuron</span>
+    <span>utolsó <i>last</i></span><span>${fmtT(it.last)}</span>
+    <span>élek <i>links</i></span><span>${adj[i].length}</span></div>
+    <h3>Szomszédok <i>· neighbours</i></h3>
+    ${nb.slice(0, 12).map(b => `<span class="nb" data-i="${b}"><span class="c">${items[b].layer}</span> ${esc(items[b].title || items[b].id)}</span>`).join('')}${nb.length > 12 ? `<div class="hint">+${nb.length - 12}</div>` : ''}`;
+  wireCard();
+}
+function lineCard(k) {
+  const l = lines[k], st = stateOf(l);
+  const byL = {}; for (const it of l.members) byL[it.layer] = (byL[it.layer] || 0) + it.n;
+  const newest = l.members.slice().sort((a, b) => (b.last || 0) - (a.last || 0)).slice(0, 8);
+  const linked = D.lineLinks.filter(x => x[0] === k || x[1] === k).map(x => [x[0] === k ? x[1] : x[0], x[2]]);
+  $('card').innerHTML = `<div class="title">${esc(l.title || l.id)}</div>
+    <div class="kv"><span>id</span><span>${esc(l.id)}</span>
+    <span>állapot <i>state</i></span><span style="color:${st.col}">${st.hu} <i>· ${st.en}</i></span>
+    <span>tagok <i>members</i></span><span>${fmtN(l.members.length)} elem · ${fmtN(l.neurons)} neuron</span>
+    <span>rétegek <i>layers</i></span><span>${Object.entries(byL).sort((a, b) => b[1] - a[1]).map(([a, b]) => a + ' ' + fmtN(b)).join(' · ')}</span>
+    <span>utolsó <i>last</i></span><span>${fmtT(l.last)}</span>
+    <span>koherencia <i>coherence</i></span><span style="color:${l.trb > 0.5 ? '#ff8a6a' : l.trb > 0.2 ? '#e8c37a' : '#8fd6b0'}">${Math.round((1 - (l.trb || 0)) * 100)}% <i>· ${l.trbWhy ? l.trbWhy.stale + ' napja csend, ' + l.trbWhy.orph + '% kapcsolatlan' : ''}</i></span></div>
+    ${linked.length ? `<h3>Rokon pályák <i>· related lines</i></h3>${linked.map(([x, rel]) => `<a class="nb" data-l="${x}"><span class="c">${esc(rel)}</span> ${lineName(x)}</a>`).join('')}` : ''}
+    <h3>Legújabb a csúcson <i>· newest, at the tip</i></h3>
+    ${newest.map(it => `<span class="nb" data-i="${it.i}"><span class="c">${it.layer} ${fmtT(it.last)}</span> ${esc(it.title || it.id)}</span>`).join('')}`;
+  wireCard();
+}
+function wireCard() {
+  $('card').querySelectorAll('[data-i]').forEach(el => el.onclick = () => select(+el.dataset.i));
+  $('card').querySelectorAll('[data-l]').forEach(el => el.onclick = () => focus(+el.dataset.l));
+}
+function focus(k) {
+  focusLine = focusLine === k ? -1 : k; sel = -1; geomDirty = true;
+  $('pws').querySelectorAll('.pw').forEach(el => el.classList.toggle('sel', +el.dataset.l === focusLine));
+  if (focusLine >= 0) lineCard(focusLine); else select(-1);
+}
+function renderList() {
+  const maxN = Math.max(...lines.map(l => l.neurons), 1);
+  const quiet = l => Math.floor((Date.now() - (l.last || 0)) / (24 * HOUR));
+  const watchHtml = !watch ? '' : (() => {
+    const out = lines.filter(beyond).sort((a, b) => (a.last || 0) - (b.last || 0));
+    return `<div class="grp">A Falon túl · ${out.length} <i>beyond the Wall (&gt; ${wallDays} nap · days quiet)</i></div>` + out.map(l =>
+      `<div class="pw${l.k === focusLine ? ' sel' : ''}" data-l="${l.k}" title="${esc(l.id)}"><span class="dot" style="background:${stateOf(l).col}"></span><span class="tt">${esc(l.title || l.id)}</span><span class="q">${l.last ? quiet(l) + ' napja' : 'soha'}</span></div>`).join('');
+  })();
+  const groups = [0, 1, 2].map(t => lines.filter(l => stateOf(l).tier === t).sort((a, b) => (b.last || 0) - (a.last || 0)));
+  $('pws').innerHTML = watchHtml + groups.map((g, t) => `<div class="grp">${TIER[t].hu} · ${g.length} <i>${TIER[t].en}</i></div>` + g.map(l => {
+    const st = stateOf(l);
+    return `<div class="pw${l.k === focusLine ? ' sel' : ''}" data-l="${l.k}" title="${esc(l.id)} · ${st.hu} / ${st.en}"><span class="dot" style="background:${st.col}"></span><span class="tt">${esc(l.title || l.id)}</span><span class="n">${fmtT(l.last).split(' ')[0] || '–'}</span><div class="bar"><span style="width:${(100 * Math.sqrt(l.neurons / maxN)).toFixed(1)}%;background:${st.col}"></span></div></div>`;
+  }).join('')).join('');
+  $('pws').querySelectorAll('.pw').forEach(el => el.onclick = () => focus(+el.dataset.l));
+}
+const TINC = [[1, 'Or · arany, pontok', 'gold, dots: active (torches)'], [2, 'Azure · kék, vízszintes', 'blue, horizontal: recurring'], [4, 'Purpure · bíbor, balharánt', 'purple, bend sinister: waiting'],
+  [6, 'Vert · zöld, haránt', 'green, bend: absorbed'], [3, 'Gules · vörös, függőleges', 'red, vertical: personal'], [5, 'Sable · fekete, keresztsraff', 'black, crossed: beyond the Wall'], [0, 'Argent · ezüst, sima', 'silver, plain: no pathway']];
+function swatch(k) {
+  const L = { 1: '<circle cx="5" cy="4" r="1"/><circle cx="11" cy="4" r="1"/><circle cx="17" cy="4" r="1"/><circle cx="8" cy="9" r="1"/><circle cx="14" cy="9" r="1"/>',
+    2: '<path d="M0 3H20M0 7H20M0 11H20"/>', 3: '<path d="M3 0V13M8 0V13M13 0V13M18 0V13"/>', 4: '<path d="M0 6L6 0M0 13L13 0M7 13L20 0M14 13L20 7"/>',
+    6: '<path d="M0 7L6 13M0 0L13 13M7 0L20 13M14 0L20 6"/>', 5: '<path d="M0 3H20M0 7H20M0 11H20M3 0V13M8 0V13M13 0V13M18 0V13"/>', 0: '<rect x="0" y="0" width="20" height="13" opacity=".45"/>' }[k];
+  const c = k === 1 ? '#fabd5c' : '#cde3f2';
+  return `<svg viewBox="0 0 20 13" fill="${c}" stroke="${c}" stroke-width=".9">${L}</svg>`;
+}
+function renderLegend() {
+  if (watch) {
+    $('legend').innerHTML = `<div class="hint" style="margin-bottom:4px">Őrség: metszet, heraldikai sraffozással (Petra Sancta). Az Éjjeli Őrség jele egy sima fekete pajzs, tollal rajzolva keresztsraff. <i>Night's Watch: an engraving in heraldic hatching. The Watch bears a plain black shield; in pen that is crossed hatching.</i></div>`
+      + TINC.map(([k, hu, en]) => `<div class="tinc">${swatch(k)}<span>${hu} <i>${en}</i></span></div>`).join('')
+      + `<div class="hint" style="margin-top:4px">A Fal: ${wallDays} nap csend. <i>The Wall: ${wallDays} days quiet.</i></div>`;
+    return;
+  }
+  const cnt = {}; for (const l of lines) cnt[l.state] = (cnt[l.state] || 0) + 1;
+  $('legend').innerHTML = `${Object.entries(STATE).filter(([k]) => cnt[k]).map(([k, s]) => `<div class="k"><span class="dot" style="background:${s.col}"></span><span>${s.hu} · ${cnt[k]} <i>${s.en}</i></span></div>`).join('')}
+    <div class="k"><span class="dot" style="background:${NOLINE}"></span><span>pálya nélkül <i>no pathway</i></span></div>
+    <details style="margin-top:6px"><summary class="hint" style="cursor:pointer">Hogyan olvasd <i>· how to read</i></summary><div class="hint">Polip: az alap közepe a kiindulópont; minden pálya egy kar, a legújabb a csúcson. Az aktív karok felfelé nyúlnak, a parkolók lekonyulnak. A tapadókorongok a döntések. A fényes mag az aktív folyamat, a halvány burok a passzív tudás.<br>
+    <i>Octopus: the origin is the centre of the base; each pathway is an arm, newest at the tip. Active arms reach up, parked ones droop. Suckers are decisions. The bright core is active work, the faint sleeve passive information.</i><br>
+    Gömb: minden pálya egy gyűrű a saját síkjában; belül az aktívak. A külső gömb alatt a koherencia-burok: ahol az adat rendben van, lassan, kicsit hullámzik; a gondos pályák fölött (régóta csendes aktív pálya, kapcsolatlan elemek, várakozás) erősebben hullámzik, melegebb színű, és ha nő a baj, lassan glitchel. <i>Orb: each pathway is a ring in its own plane; active ones inside. Under the outer sphere the coherence shell: calm and slow over coherent data; over troubled pathways (an active line gone quiet, unlinked members, waiting) it wobbles harder, runs warm and, as trouble grows, slowly glitches.</i><br>
+    Föld: minden 2 KB-os pont egy pont a szárazföldön, minden pálya egy ország; a gyűrű a fővárosa, az ívek a kötegek. <i>Earth: every 2 KB node is a dot on land, every pathway a country; the ring marks its capital, the arcs are the bundles.</i><br>
+    Mag: kívül a lélegző Jarvis-burok, belül a mag: felhők, vékony héjak, korongok, félkorongok és gyűrűk, tükörszimmetrikusan, az agyterületek funkciója szerint (kéreg kint a kocka nyolc sarkán, kisagy vékony belső héj, ikertestek gyűrűk és félkorongok, talamusz korongok, hipotalamusz a középső felhő); a kis fájlok szabad helyeket töltő mini-fürtök, a hidak a rétegeket kötik össze; alatta két héj: a futások és a commitok. Az aktív pályák útja a felszínig fut: ott a belépési pontjuk. <i>Core: the breathing Jarvis shell outside; inside, clouds, thin shells, disks, half-disks and rings, mirror-symmetric, placed by brain function (cortex at the eight cube corners, cerebellum a thin inner shell, colliculi rings and half-disks, thalamus disks, hypothalamus the middle cloud); small files are mini clusters filling the gaps, bridges join the layers; under the shell two layers: runs and commits. Active pathways run out to the surface: their entry point.</i><br>
+    Őrség (L): zárva a háromszögháló a burokra pattan, a csomópontjai halványan izzanak, a belső tartalom borostyán kis gömbbé húzódik. Nyitva a darabok kint lebegnek, szürkén. <i>Night's Watch lock (L): locked, the triangle mesh snaps onto the shell, its cross points glow faintly and the inside shrinks into a small amber orb. Open, the pieces hover outside, greyed.</i></div></details>`;
+}
+function renderHeader() {
+  const placed = items.filter(it => it.line >= 0).length;
+  $('stat').textContent = `${fmtN(lines.length)} pálya · ${fmtN(items.length)} csomópont (${fmtN(placed)} pályán) → ${fmtN(neuronCount)} × 2 KB · ${fmtN(D.bundles.length)} köteg · 1 pont = ${D.unit / 1024} KB`;
+  const age = (Date.now() - Date.parse(D.lastBuild || D.stackGenerated)) / HOUR;
+  $('stale').textContent = age > 6 ? `verem: ${fmtT(Date.parse(D.lastBuild || D.stackGenerated))} (${Math.round(age)} órája · hours ago)` : '';
+}
+function applyQuery() { const q = query.toLowerCase(); for (const it of items) it.match = !!q && ((it.title || '').toLowerCase().includes(q) || it.id.toLowerCase().includes(q)); }
+function apply(data) {
+  if (!data.lines) { $('msg').textContent = 'régi adat — futtasd: node stack.js connectome · old data'; return; }
+  const keepSel = sel >= 0 && items[sel] ? items[sel].id : (!D && location.hash.startsWith('#sel=') ? decodeURIComponent(location.hash.slice(5)) : null);
+  const keepLine = focusLine >= 0 && lines[focusLine] ? lines[focusLine].id : (!D && location.hash.startsWith('#line=') ? decodeURIComponent(location.hash.slice(6)) : null);
+  D = data; prepare(); applyQuery(); renderHeader();
+  focusLine = -1; sel = -1;
+  if (keepLine) { const l = lines.find(x => x.id === keepLine || x.id === 'L:' + keepLine); if (l) focus(l.k); }
+  if (keepSel) { const f = items.find(it => it.id === keepSel); if (f) select(f.i); }
+  if (focusLine < 0 && sel < 0) select(-1);
+}
+function reload(note) {
+  loadData(ok => {
+    if (!ok || !window.CONNECTOME) { $('msg').textContent = 'nincs adat — futtasd: node stack.js connectome · no data'; return; }
+    if (!D || window.CONNECTOME.generated !== D.generated) apply(window.CONNECTOME);
+    if (note) { $('msg').textContent = note; setTimeout(() => { $('msg').textContent = ''; }, 4000); }
+  });
+}
+const isHttp = location.protocol.startsWith('http');
+async function serverDo(kind) {
+  const btns = [$('bRefresh'), $('bBuild')]; btns.forEach(b => b.disabled = true);
+  $('msg').textContent = kind === 'build' ? 'újraépítés… · rebuilding…' : 'frissítés… · refreshing…';
+  try { const j = await (await fetch('api/' + kind, { method: 'POST' })).json(); if (!j.ok) throw new Error(j.msg); reload(`kész · done (${(j.ms / 1000).toFixed(1)} s)`); }
+  catch (e) { $('msg').textContent = 'hiba · error: ' + e.message; }
+  btns.forEach(b => b.disabled = false); if (!isHttp) $('bBuild').disabled = true;
+}
+function computePatterns() {
+  if (!items.length || !buf.pat) return;
+  const pat = new Float32Array(neuronCount + decorCount);
+  for (const it of items) {
+    const l = it.line >= 0 ? lines[it.line] : null, k = !l ? 0 : beyond(l) ? 5 : (PAT[l.state] != null ? PAT[l.state] : 0);
+    for (let j = it.start; j < it.end; j++) pat[j] = k;
+  }
+  for (let j = neuronCount; j < neuronCount + decorCount; j++) pat[j] = j - neuronCount < 300 ? 1 : 2;
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf.pat); gl.bufferData(gl.ARRAY_BUFFER, pat, gl.DYNAMIC_DRAW);
+}
+// the Őrség hatching look (HO-Q5) is parked: watch stays false; the Őrség button is now the lock (HO-Q7)
+
+
+/* ================= boot */
+(function boot() {
+  const cv = $('cv');
+  gl = cv.getContext('webgl2', { antialias: true, premultipliedAlpha: false });
+  if (!gl) { $('stat').textContent = 'WebGL2 nem érhető el · WebGL2 is not available'; return; }
+  progP = prog(VS_P, FS_P); progL = prog(VS_L, FS_L);
+  for (const k of ['pa', 'pb', 'pc', 'pd', 'vis', 'inner', 'col', 'bri', 'size', 'pat', 'trb', 'lines', 'sel', 'lock', 'spk', 'qp', 'qc', 'qb', 'qs', 'qpat']) buf[k] = gl.createBuffer();
+  if (!isHttp) $('bBuild').disabled = true;
+  if (window.innerWidth < 900) $('lg').open = false;
+  { const h = location.hash, f = /[#&]orb\b/.test(h) ? 1 : /[#&](earth|fold)\b/.test(h) ? 2 : /[#&](core|mag|lock)\b/.test(h) ? 3 : 0;
+    fa = fb = f; ft = 1; cam.dist = +(h.match(/[#&]d=([0-9.]+)/) || [])[1] || CAMD[f]; cam.pitch = CAMP[f]; document.querySelectorAll('#forms button').forEach(b => b.classList.toggle('on', +b.dataset.f === f));
+    if (/[#&]lock\b/.test(h)) { setLock(true); lockT = 1; } }
+  let down = null, moved = false;
+  cv.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch }; moved = false; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+    if (down) {
+      const dx = e.clientX - down.x, dy = e.clientY - down.y;
+      if (Math.abs(dx) + Math.abs(dy) > 3) { moved = true; dragging = true; cv.classList.add('drag'); }
+      cam.yaw = down.yaw - dx * 0.006; cam.pitch = Math.max(-1.3, Math.min(1.3, down.pitch + dy * 0.006)); showTip(-1); return;
+    }
+    hoverEntry = pickEntry(mx, my);
+    if (hoverEntry >= 0) { hover = -1; showEntryTip(hoverEntry, mx, my); return; }
+    hover = pick(mx, my); showTip(hover, mx, my);
+  });
+  cv.addEventListener('pointerup', e => { const r = cv.getBoundingClientRect(); if (!moved) { const en = pickEntry(e.clientX - r.left, e.clientY - r.top); if (en >= 0) focus(entries[en].k); else select(pick(e.clientX - r.left, e.clientY - r.top)); } down = null; dragging = false; cv.classList.remove('drag'); });
+  cv.addEventListener('pointerleave', () => { hover = -1; showTip(-1); });
+  cv.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(1.6, Math.min(10, cam.dist * Math.exp(e.deltaY * 0.001))); }, { passive: false });
+  cv.addEventListener('dblclick', () => { cam = { yaw: 0.6, pitch: CAMP[fb], dist: CAMD[fb] }; });
+  document.querySelectorAll('#forms button').forEach(b => b.onclick = () => goTo(+b.dataset.f));
+  $('bTransit').onclick = () => { transit = !transit; $('bTransit').classList.toggle('on', transit); };
+  $('bWatch').onclick = () => setLock(!locked);
+  $('bFire').onclick = () => { firing = !firing; $('bFire').classList.toggle('on', firing); $('bFire').textContent = (firing ? '⏸' : '▶') + ' Tüzelés'; };
+  $('speed').onchange = () => { if (D) buildSchedule(); };
+  $('bBund').onclick = () => { showBund = !showBund; $('bBund').classList.toggle('on', showBund); geomDirty = true; };
+  $('bSpin').onclick = () => { spin = !spin; $('bSpin').classList.toggle('on', spin); };
+  $('bRefresh').onclick = () => isHttp ? serverDo('connectome') : reload('újraolvasva · reloaded');
+  $('bBuild').onclick = () => serverDo('build');
+  const setCrisp = on => { crisp = on; $('bCrisp').classList.toggle('on', on); savePref(); };
+  const setSpark = on => { spark = on; $('bSpark').classList.toggle('on', on); savePref(); };
+  setCrisp(crisp || /[#&]crisp/.test(location.hash)); setSpark(spark || /[#&]spark/.test(location.hash));
+  $('bCrisp').onclick = () => setCrisp(!crisp); $('bSpark').onclick = () => setSpark(!spark);
+  // full screen: only the 3D on a clean screen (the VRG App hides its own bars through window.VRGApp)
+  window.setFull = on => {
+    full = on; document.body.classList.toggle('full', on); showTip(-1); $('view').open = false;
+    try { if (window.VRGApp && VRGApp.fullscreen) VRGApp.fullscreen(on); else if (on && !document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
+  };
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && full) setFull(false); });
+  $('bFull').onclick = () => setFull(true); $('bExit').onclick = () => setFull(false);
+  if (/[#&]full\b/.test(location.hash)) setFull(true);
+  document.addEventListener('click', e => { if ($('view').open && !$('view').contains(e.target)) $('view').open = false; });
+  $('q').addEventListener('input', e => { query = e.target.value.trim(); applyQuery(); });
+  window.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; if (e.key === 'g' || e.key === 'G') goTo((fb + 1) % 4); if (e.key >= '1' && e.key <= '4') goTo(+e.key - 1); if (e.key === 'l' || e.key === 'L') setLock(!locked); if (e.key === 'f' || e.key === 'F') setFull(!full); if (e.key === 'p' || e.key === 'P') $('bCrisp').click(); if (e.key === 'i' || e.key === 'I') $('bSpark').click(); if (e.key === 'Escape') { if (full) setFull(false); focusLine = -1; focus(-1); } });
+  if (window.STACK_BUNDLE) document.body.classList.add('bundle');
+  // touch (VRG Mobile, WP M17): one finger orbits, pinch zooms, twist turns, two fingers up / down tilt,
+  // a two-finger swipe left / right changes the form, tap picks (an entry point focuses its line),
+  // double tap resets the view, a long press on empty space opens / closes the Őrség lock
+  if (window.StackTouch) StackTouch.attach(cv, {
+    dragging: on => { dragging = on; if (on) showTip(-1); },
+    orbit: (dx, dy) => { cam.yaw -= dx * 0.007; cam.pitch = Math.max(-1.3, Math.min(1.3, cam.pitch + dy * 0.007)); },
+    zoom: f => { cam.dist = Math.max(1.6, Math.min(10, cam.dist * f)); },
+    twist: a => { cam.yaw -= a; },
+    tilt: dy => { cam.pitch = Math.max(-1.3, Math.min(1.3, cam.pitch + dy * 0.005)); },
+    swipe: d => goTo((fb + d + 4) % 4),
+    tap: (x, y) => {
+      const en = pickEntry(x, y);
+      if (en >= 0) { focus(entries[en].k); showEntryTip(en, x, y); }
+      else { const i = pick(x, y); select(i); showTip(i, x, y); }
+      clearTimeout(window.__tipT); window.__tipT = setTimeout(() => showTip(-1), 2600);
+    },
+    dbl: () => { cam = { yaw: 0.6, pitch: CAMP[fb], dist: CAMD[fb] }; },
+    long: (x, y) => {
+      const i = pick(x, y);
+      if (i >= 0) { select(i); document.querySelector('aside').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      else setLock(!locked);
+    },
+  });
+  reload();
+  setInterval(() => reload(), 60e3);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

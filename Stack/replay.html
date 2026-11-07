@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Visszajátszás</title>
+<!-- v2, function only (the look is redone in the design session). Data: out/replay/*.js (node stack.js build). -->
+<link rel="stylesheet" href="../../Planner_VRG_U100/shared/melyviz.css">
+<style>
+  :root { --bg: var(--mv-bg, #0b141b); --panel: var(--mv-panel, #111d26); --line: var(--mv-line, #22323e); --text: var(--mv-text, #dfe9ee);
+    --dim: var(--mv-dim, #9fb2bd); --faint: var(--mv-faint, #6b808c); --acc: var(--mv-accent, #6fc3df); --warm: var(--mv-warm, #e3be7b); --warn: var(--mv-warn, #e4877d);
+    --ok: #8fd19e; --mono: var(--mv-mono, ui-monospace, Consolas, monospace); --sans: var(--mv-sans, system-ui, Segoe UI, sans-serif); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 var(--sans); }
+  header { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); z-index: 3; }
+  h1 { font: 600 15px var(--mono); margin: 0; letter-spacing: .06em; text-transform: uppercase; }
+  select, input[type=search] { background: var(--panel); color: var(--text); border: 1px solid var(--line); padding: 6px 8px; font: 13px var(--sans); min-width: 0; }
+  #pick { flex: 1 1 360px; max-width: 640px; }
+  button { font: 12px var(--mono); background: var(--panel); color: var(--dim); border: 1px solid var(--line); padding: 5px 9px; cursor: pointer; }
+  button.on, button:hover { color: var(--text); border-color: var(--acc); }
+  #bar { display: flex; gap: 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+  #scrub { flex: 1; accent-color: var(--acc); }
+  #clock { font: 12px var(--mono); color: var(--dim); min-width: 190px; text-align: right; }
+  main { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr); min-height: calc(100vh - 100px); }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+  section { border-right: 1px solid var(--line); padding: 10px 14px; overflow: auto; max-height: calc(100vh - 100px); }
+  section h2 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin: 0 0 8px; }
+  .step { display: grid; grid-template-columns: 62px 18px minmax(0, 1fr); gap: 6px; padding: 2px 4px; border-left: 2px solid transparent; cursor: pointer; color: var(--dim); }
+  .step.now { border-color: var(--acc); color: var(--text); background: var(--panel); }
+  .step.future { opacity: .35; }
+  .step .tm { font: 11px var(--mono); color: var(--faint); }
+  .step .ic { text-align: center; }
+  .step .tx { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .step .tx b { font-weight: 600; color: var(--text); }
+  .sub { padding-left: 14px; }
+  .bad { color: var(--warn) !important; }
+  .tree { font: 12px var(--mono); }
+  .tree div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 1px 0; transition: color .6s, background .6s; }
+  .tree .dir { color: var(--faint); }
+  .tree .f { color: var(--dim); }
+  .tree .f.read { color: var(--acc); } .tree .f.write { color: var(--warm); } .tree .f.err { color: var(--warn); }
+  .tree .f.flash { background: color-mix(in srgb, var(--acc) 22%, transparent); }
+  .tree .f.committed::after { content: '  ✓ commit'; color: var(--ok); }
+  .layer { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; border-top: 1px solid var(--line); padding: 6px 0; }
+  .layer .lh { font: 11px var(--mono); color: var(--faint); text-transform: uppercase; }
+  .layer .lh b { display: block; color: var(--dim); font-size: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip { font: 11px var(--sans); padding: 2px 6px; border: 1px solid var(--line); color: var(--text); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #detail { border-top: 1px solid var(--line); padding: 8px 16px; font: 12px var(--mono); color: var(--dim); white-space: pre-wrap; min-height: 42px; }
+  .k { color: var(--faint); font: 11px var(--mono); }
+  .empty { color: var(--faint); padding: 20px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Visszajátszás</h1>
+  <input id="filter" type="search" placeholder="Munkamenet keresése…" aria-label="Munkamenet keresése">
+  <select id="pick" aria-label="Munkamenet"></select>
+  <span class="k" id="meta"></span>
+</header>
+<div id="bar">
+  <button id="prev" title="Előző lépés (←)">◀</button>
+  <button id="play" title="Lejátszás / szünet (szóköz)">▶</button>
+  <button id="next" title="Következő lépés (→)">▶|</button>
+  <span class="k">sebesség</span>
+  <button data-speed="1">1×</button><button data-speed="10" class="on">10×</button><button data-speed="60">60×</button><button data-speed="600">600×</button>
+  <input id="scrub" type="range" min="0" max="0" value="0" aria-label="Idővonal">
+  <span id="clock"></span>
+</div>
+<main>
+  <section><h2>Lépések</h2><div id="steps"></div></section>
+  <section><h2>Fájlok, ahogy előkerülnek</h2><div id="tree" class="tree"></div></section>
+  <section><h2>Rétegverem: ami most világít</h2><div id="stack"></div></section>
+</main>
+<div id="detail"></div>
+
+<script src="lib/activation.js"></script>
+<script src="out/replay/index.js"></script>
+<script>
+'use strict';
+const LAYERS = [['F', 'Kirakat'], ['I', 'Ötletfa'], ['Q', 'Döntések'], ['L', 'Fejl. vonalak'], ['A', 'Ügynöki gerinc'], ['U', 'Futás'], ['R', 'Repó'], ['C', 'Kód'], ['G', 'Adatgömb'], ['E', 'Oszlop']];
+const ICON = { prompt: '✎', chat: '·', execute_tool: '⚙', invoke_agent: '⇢', commit: '◆' };
+const READS = /^(Read|Grep|Glob|NotebookRead|WebFetch|WebSearch)$/, WRITES = /^(Edit|Write|NotebookEdit|MultiEdit)$/;
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const INDEX = window.REPLAY_INDEX || [];
+const loaded = {};
+let S = null, at = 0, timer = null, speed = 10, glow = new Map();
+
+window.REPLAY_LOAD = (sid, data) => { loaded[sid] = data; if (S && S.sid === sid) start(sid); };
+
+function fillPick() {
+  const f = $('filter').value.toLowerCase();
+  const rows = INDEX.filter(r => !f || (r.title + ' ' + r.sid + ' ' + r.project).toLowerCase().includes(f)).slice(0, 400);
+  $('pick').innerHTML = rows.map(r => `<option value="${r.sid}">${esc((r.start || '').slice(0, 16).replace('T', ' '))} · ${r.steps} lépés · ${esc(r.title)}</option>`).join('');
+}
+function choose(sid) {
+  stop(); S = { sid }; at = 0; glow = new Map();
+  try { history.replaceState(null, '', '#' + sid); } catch {}
+  if (loaded[sid]) return start(sid);
+  const s = document.createElement('script'); s.src = `out/replay/${sid}.js`;
+  s.onerror = () => { $('steps').innerHTML = '<div class="empty">Ehhez a munkamenethez nincs adat. Futtasd: node stack.js build</div>'; };
+  document.body.appendChild(s);
+}
+function start(sid) {
+  const d = loaded[sid]; const row = INDEX.find(r => r.sid === sid) || {};
+  S = { sid, d, row, steps: d.steps };
+  $('scrub').max = Math.max(0, S.steps.length - 1);
+  $('meta').textContent = `${row.project || ''} · ${row.prompts || 0} kérés · ${row.commits || 0} commit · ${row.subagents || 0} alügynök`;
+  renderSteps(); go(0);
+}
+const nb = id => (S && S.d.adj[id]) || [];
+function go(i) {
+  if (!S) return;
+  at = Math.max(0, Math.min(S.steps.length - 1, i));
+  // glow: replay every step up to here, fading as it goes (cheap: activation per step on a small subgraph)
+  glow = new Map();
+  for (let k = Math.max(0, at - 40); k <= at; k++) {
+    const seeds = new Map(S.steps[k][5].map(id => [id, 1]));
+    glow = StackActivation.merge(StackActivation.fade(glow, 0.85), seeds.size ? StackActivation.spread(nb, seeds, { decay: 0.5, hops: 2, hubPenalty: 0.5 }) : new Map());
+  }
+  $('scrub').value = at;
+  const st = S.steps[at];
+  $('clock').textContent = `${at + 1} / ${S.steps.length} · ${st[0].slice(11, 19)}`;
+  for (const el of $('steps').children) { const k = +el.dataset.i; el.classList.toggle('now', k === at); el.classList.toggle('future', k > at); }
+  const cur = $('steps').children[at]; if (cur) cur.scrollIntoView({ block: 'nearest' });
+  renderTree(); renderStack();
+  $('detail').textContent = `${st[3]} · ${st[1]}${st[2] ? ' · ' + st[2] : ''}${st[6] ? '' : ' · HIBA'}${st[8] ? ' · ' + st[8] + ' kimenő token' : ''}\n${st[7] || (st[4] || []).join('  ')}`;
+}
+function renderSteps() {
+  $('steps').innerHTML = S.steps.map((st, i) => `<div class="step ${st[3] === 'subagent' ? 'sub' : ''} ${st[6] ? '' : 'bad'}" data-i="${i}"><span class="tm">${st[0].slice(11, 19)}</span><span class="ic">${ICON[st[1]] || '·'}</span><span class="tx">${st[2] ? `<b>${esc(st[2])}</b> ` : ''}${esc((st[4] || [])[0] || st[7] || '')}</span></div>`).join('');
+}
+const short = p => p.replace(/^H:\/VRG\/Full\//, '').replace(/^C:\/Users\/[^/]+\//, '~/');
+function renderTree() {
+  const files = new Map(); // path → { kind, last, committed }
+  let pending = [];
+  for (let k = 0; k <= at; k++) {
+    const st = S.steps[k];
+    if (st[1] === 'commit') { for (const p of pending) { const f = files.get(p); if (f) f.committed = true; } pending = []; continue; }
+    for (const p of st[4] || []) {
+      const f = files.get(p) || { kind: 'read', last: k };
+      if (WRITES.test(st[2])) { f.kind = 'write'; pending.push(p); } if (!st[6]) f.kind = 'err';
+      f.last = k; files.set(p, f);
+    }
+  }
+  if (!files.size) { $('tree').innerHTML = '<div class="empty">Még egy fájl sem.</div>'; return; }
+  const sorted = [...files.keys()].sort((a, b) => short(a).localeCompare(short(b)));
+  const out = []; let prevDirs = [];
+  for (const p of sorted) {
+    const parts = short(p).split('/'); const dirs = parts.slice(0, -1);
+    let same = 0; while (same < dirs.length && dirs[same] === prevDirs[same]) same++;
+    for (let i = same; i < dirs.length; i++) out.push(`<div class="dir" style="padding-left:${i * 12}px">${esc(dirs[i])}/</div>`);
+    const f = files.get(p);
+    out.push(`<div class="f ${f.kind} ${f.last === at ? 'flash' : ''} ${f.committed ? 'committed' : ''}" style="padding-left:${dirs.length * 12}px" title="${esc(p)}">${esc(parts[parts.length - 1])}</div>`);
+    prevDirs = dirs;
+  }
+  $('tree').innerHTML = out.join('');
+}
+function renderStack() {
+  const rows = [];
+  for (const [code, hu] of LAYERS) {
+    const lit = [...glow.entries()].filter(([id]) => id[0] === code).sort((a, b) => b[1] - a[1]).slice(0, 16);
+    if (!lit.length) continue;
+    rows.push(`<div class="layer"><div class="lh"><b>${code} · ${esc(hu)}</b>${lit.length}</div><div class="chips">${lit.map(([id, e]) => {
+      const n = S.d.nodes[id] || [code, id]; const a = Math.max(0.15, Math.min(1, e));
+      return `<span class="chip" title="${esc(id)} · ${esc(n[2] || '')}" style="opacity:${a.toFixed(2)};border-color:color-mix(in srgb, var(--warm) ${Math.round(a * 100)}%, var(--line))">${esc(n[1])}</span>`;
+    }).join('')}</div></div>`);
+  }
+  $('stack').innerHTML = rows.join('') || '<div class="empty">Ez a lépés nem ért stack-csomópontot.</div>';
+}
+function tick() {
+  if (!S || at >= S.steps.length - 1) return stop();
+  const gap = Date.parse(S.steps[at + 1][0]) - Date.parse(S.steps[at][0]);
+  go(at + 1);
+  timer = setTimeout(tick, Math.max(40, Math.min(2500, (gap || 0) / speed)));
+}
+function play() { if (timer) return stop(); $('play').textContent = '❚❚'; $('play').classList.add('on'); tick(); }
+function stop() { clearTimeout(timer); timer = null; $('play').textContent = '▶'; $('play').classList.remove('on'); }
+
+$('filter').addEventListener('input', fillPick);
+$('pick').addEventListener('change', e => choose(e.target.value));
+$('play').addEventListener('click', play);
+$('prev').addEventListener('click', () => { stop(); go(at - 1); });
+$('next').addEventListener('click', () => { stop(); go(at + 1); });
+$('scrub').addEventListener('input', e => { stop(); go(+e.target.value); });
+$('steps').addEventListener('click', e => { const el = e.target.closest('.step'); if (el) { stop(); go(+el.dataset.i); } });
+for (const b of document.querySelectorAll('[data-speed]')) b.addEventListener('click', () => { speed = +b.dataset.speed; for (const x of document.querySelectorAll('[data-speed]')) x.classList.toggle('on', x === b); });
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && e.target.type === 'search') return;
+  if (e.key === ' ') { e.preventDefault(); play(); } else if (e.key === 'ArrowRight') { stop(); go(at + 1); } else if (e.key === 'ArrowLeft') { stop(); go(at - 1); }
+});
+
+fillPick();
+if (!INDEX.length) $('steps').innerHTML = '<div class="empty">Nincs felvétel. Futtasd: node stack.js build</div>';
+else choose((location.hash.slice(1) && INDEX.some(r => r.sid === location.hash.slice(1))) ? location.hash.slice(1) : INDEX[0].sid);
+if (S) $('pick').value = S.sid;
+</script>
+</body>
+</html>

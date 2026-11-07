@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Konnektóm</title>
+<!-- The VRG Stack as a brain. One neuron = 2 KB on disk (CN-Q1 = A). Data: out/connectome-data.js
+     (node stack.js connectome, also written by every stack.js build). Plain WebGL2, no library, works from file://.
+     Live: re-reads the data every 60 s; served by serve.js it can also regenerate it (Frissítés) or rebuild the stack. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<style>
+  :root { --bg: var(--mv-bg, #0a141c); --panel: var(--mv-panel-solid, #121c24); --line: var(--mv-line, rgba(232,240,246,.15)); --text: var(--mv-text, #e8f0f6);
+    --dim: var(--mv-dim, #a6afb7); --faint: var(--mv-faint, #646d74); --acc: var(--mv-accent, #93d3e6); --warm: var(--mv-warm, #e8a873); --crit: var(--mv-crit, #e4877d);
+    --mono: var(--mv-mono, Consolas, ui-monospace, monospace); --sans: var(--mv-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--mv-voice, Bahnschrift, sans-serif); }
+  :root { --faint: #95a0a8; --dim: #c6ced4; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 var(--sans); overflow: hidden; display: flex; flex-direction: column; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+  h1 { font: 600 16px var(--voice); font-stretch: 75%; margin: 0; letter-spacing: .08em; text-transform: uppercase; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--faint); margin-left: 6px; }
+  #stat { font: 12px var(--mono); color: var(--dim); }
+  #stale { font: 12px var(--mono); color: var(--warm); }
+  .sp { flex: 1; }
+  button, select, input[type=search] { font: 12px var(--mono); background: var(--panel); color: var(--dim); border: 1px solid var(--line); padding: 5px 9px; }
+  button { cursor: pointer; }
+  button.on, button:hover { color: var(--text); border-color: var(--acc); }
+  button:disabled { opacity: .4; cursor: default; }
+  input[type=search] { width: 200px; color: var(--text); font-family: var(--sans); }
+  main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 320px; min-height: 0; }
+  #stage { position: relative; min-height: 0; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+  canvas.drag { cursor: grabbing; }
+  #tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); padding: 5px 8px; max-width: 340px; font-size: 12px; display: none; z-index: 2; }
+  #tip b { font-weight: 600; } #tip .m { font: 11px var(--mono); color: var(--faint); }
+  #lg { position: absolute; left: 12px; bottom: 12px; max-height: calc(100% - 24px); overflow: auto; background: rgba(10,20,28,.82); border: 1px solid var(--line); padding: 6px 10px; font-size: 12px; max-width: 330px; z-index: 1; }
+  #lg summary { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--dim); cursor: pointer; }
+  #lg[open] summary { margin-bottom: 6px; }
+  #legend .row { display: grid; grid-template-columns: 12px minmax(0,1fr) auto; gap: 7px; align-items: baseline; padding: 1px 0; cursor: pointer; user-select: none; }
+  #legend .row.off { opacity: .35; }
+  #legend .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  #legend .n { font: 11px var(--mono); color: var(--faint); }
+  #legend i, aside i { color: var(--faint); font-size: 11px; }
+  #legend h3, aside h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin: 8px 0 4px; }
+  #legend h3:first-child, aside h3:first-child { margin-top: 0; }
+  #legend .shell { color: var(--dim); }
+  aside { border-left: 1px solid var(--line); padding: 10px 14px; overflow: auto; min-height: 0; }
+  #clock { font: 12px var(--mono); color: var(--dim); }
+  .run { display: grid; grid-template-columns: 8px minmax(0,1fr); gap: 7px; padding: 2px 4px; cursor: pointer; color: var(--dim); border-left: 2px solid transparent; }
+  .run .tt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .run .when { font: 11px var(--mono); color: var(--faint); grid-column: 2; }
+  .run.now { border-color: var(--warm); color: var(--text); background: rgba(232,168,115,.08); }
+  .run .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); margin-top: 5px; }
+  .run.now .pip { background: var(--warm); }
+  #card .title { font-size: 14px; font-weight: 600; margin: 2px 0 4px; }
+  #card .kv { display: grid; grid-template-columns: 92px minmax(0,1fr); gap: 2px 8px; font-size: 12px; }
+  #card .kv span:nth-child(odd) { color: var(--faint); }
+  #card .kv span:nth-child(even) { font-family: var(--mono); overflow-wrap: anywhere; }
+  .nb { display: block; padding: 1px 0; color: var(--dim); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nb:hover { color: var(--text); }
+  .nb .c { font: 11px var(--mono); color: var(--faint); }
+  .hint { color: var(--faint); font-size: 12px; }
+  #msg { font: 12px var(--mono); color: var(--acc); }
+  canvas { touch-action: none; }
+  header .row2 { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 4px 12px; min-width: 0; }
+  #view { position: relative; }
+  #view > summary { list-style: none; font: 12px var(--mono); background: var(--panel); color: var(--dim); border: 1px solid var(--line); padding: 5px 9px; cursor: pointer; user-select: none; }
+  #view > summary::-webkit-details-marker { display: none; }
+  #view[open] > summary { color: var(--text); border-color: var(--acc); }
+  #view .menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 8; background: var(--panel); border: 1px solid var(--line); padding: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 290px; box-shadow: 0 10px 28px rgba(0,0,0,.55); }
+  #view .menu button, #view .menu select { width: 100%; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #bExit { position: absolute; right: 10px; top: 10px; z-index: 6; display: none; opacity: .5; } #bExit:hover { opacity: 1; }
+  body.full header, body.full aside, body.full #lg { display: none !important; }
+  body.full main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); height: 100vh; }
+  body.full { overflow: hidden !important; } body.full #bExit { display: block; }
+  body.bundle #bRefresh, body.bundle #bBuild { display: none; }
+  #labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .lbl { position: absolute; transform: translate(-50%, -50%); font: 11px var(--sans); color: rgba(220,236,245,.82); white-space: nowrap; text-shadow: 0 0 4px #0a141c, 0 0 2px #0a141c; }
+  .lbl i { font-size: 10px; }
+  #legend .reg { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 6px; color: var(--dim); padding: 1px 0 1px 8px; }
+  #legend .part { color: var(--text); margin-top: 3px; padding-left: 0; }
+  @media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(360px, 1fr) auto; } aside { border-left: 0; border-top: 1px solid var(--line); max-height: 40vh; } #lg { max-width: calc(100% - 24px); } body { overflow-x: hidden; overflow-y: auto; }
+    header > * { min-width: 0; } header button, header select { flex-shrink: 0; } #stat { overflow-wrap: anywhere; font-size: 11px; } input[type=search] { flex: 1 1 100%; width: auto; } header { padding: 8px 12px; gap: 6px 6px; } aside { overflow-x: hidden; } #runs { max-width: calc(100vw - 28px); } .sp { display: none; }
+    input[type=search] { order: 9; } header .row2 { order: 10; } #view .menu { position: fixed; left: 12px; right: 12px; top: auto; width: auto; } h1 i { display: none; } header { gap: 6px; } header .t { display: none; } header .row2 > span { min-width: 0; flex: 1 1 100%; overflow-wrap: anywhere; } body.full main { grid-template-rows: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Konnektóm<i>VRG Stack connectome</i></h1>
+  <input type="search" id="q" placeholder="Keresés · search" title="Keresés a csomópontok címében · search node titles">
+  <button id="bParts" class="on" title="Agyterületek körvonala és neve · outlines and names of the brain parts">Részek</button>
+  <button id="bAx" class="on" title="Axiómák: 12, 24, 48, 120, 220, 400 KB folytonos adat egy-egy hálója és neuronja; nyomvonal az aktiváláskor · axioms: a web and a neuron per 12…400 KB of continuous data; tracer lines on activation">Axiómák</button>
+  <span class="sp"></span>
+  <details id="view"><summary title="Nézet: a többi kapcsoló · view: the other switches">⚙<span class="t"> Nézet</span></summary><div class="menu">
+    <button id="bFire" class="on" title="Tüzelés: az utolsó felvett sessionök lépései · firing: the steps of the latest recorded sessions">⏸ Tüzelés</button>
+    <select id="speed" title="Lejátszási sebesség · replay speed"><option value="10">10×</option><option value="60" selected>60×</option><option value="600">600×</option></select>
+    <button id="bWeb" class="on" title="Fájl-háló: egy fájl 2 KB-os pontjai a növekedés sorrendjében összekötve · file web: one file's 2 KB nodes joined in growth order">Háló</button>
+    <button id="bEdges" title="Kapcsolatok (a verem saját élei) · links (the stack's own edges)">Élek</button>
+    <button id="bSpin" class="on" title="Lassú forgás · slow spin">Forgás</button>
+    <button id="bCrisp" title="Éles pontok: kemény szélű pontok elmosás helyett (P) · crisp points instead of soft glow (P)">◉ Éles pontok</button>
+    <button id="bSpark" title="Impulzus: a tüzelés vékony elektromos impulzus, nem fénygömb (I) · firing as thin electric impulses, not light orbs (I)">ϟ Impulzus</button>
+    <button id="bRefresh" title="Adat újraolvasása (szerverrel: újragenerálás) · reload the data (with serve.js: regenerate)">Frissítés</button>
+    <button id="bBuild" title="Teljes verem-újraépítés (csak serve.js-szel) · full stack rebuild (serve.js only)">Újraépítés</button>
+  </div></details>
+  <button id="bFull" title="Teljes képernyő: csak a 3D (F) · full screen: the 3D only (F)">⛶</button>
+  <div class="row2"><span id="stat">…</span><span id="stale"></span><span id="msg"></span></div>
+</header>
+<main>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="labels"></div>
+    <div id="tip"></div>
+    <button id="bExit" title="Vissza (F / Esc) · back">✕</button>
+    <details id="lg" open><summary>Jelmagyarázat <i>· legend</i></summary><div id="legend"></div></details>
+  </div>
+  <aside>
+    <h3>Kiválasztva <i>· selected</i></h3>
+    <div id="card"><div class="hint">Kattints egy csomópontra. Húzás: forgatás, görgő: nagyítás, dupla katt: alaphelyzet.<br><i>Click a node. Drag to rotate, wheel to zoom, double-click to reset.</i></div></div>
+    <h3>Tüzelés <i>· firing</i></h3>
+    <div id="clock">–</div>
+    <div id="runs"></div>
+    <h3>Mérték <i>· scale</i></h3>
+    <div id="scale" class="hint"></div>
+  </aside>
+</main>
+<script src="brain.js"></script>
+<script src="neurons.js"></script>
+<script src="touch.js"></script>
+<script>
+'use strict';
+/* ================= constants */
+const LAYER = {
+  F: { col: '#e3be7b', hu: 'Kirakat', en: 'Featured', depth: 1.000 },
+  I: { col: '#c6a0e6', hu: 'Ötletfa', en: 'Ideas', depth: 0.985 },
+  E: { col: '#f2f6f8', hu: 'Pillérek', en: 'Pillars', depth: 0.972 },
+  A: { col: '#7fd3ec', hu: 'Ügynöki gerinc', en: 'Agentic backbone', depth: 0.958 },
+  G: { col: '#8aa4b4', hu: 'Adatgömb', en: 'Data Globe', depth: 0.944 },
+  C: { col: '#5b8fe0', hu: 'Kód', en: 'Code', depth: 0.925 },
+  L: { col: '#8bcca1', hu: 'Fejlesztési vonalak', en: 'DevLog' },
+  Q: { col: '#e4877d', hu: 'Döntések', en: 'Decisions' },
+  U: { col: '#ff9a52', hu: 'Futás', en: 'Runtime' },
+  R: { col: '#f0dc6e', hu: 'Repó', en: 'DevRepo' },
+};
+const LORDER = ['F', 'I', 'E', 'A', 'G', 'C', 'L', 'Q', 'U', 'R'];
+const HOUR = 3600e3;
+const hex = h => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmtB = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : b >= 1024 ? (b / 1024).toFixed(1) + ' KB' : b + ' B';
+const fmtT = t => t ? new Date(t).toLocaleString('hu-HU', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–';
+const fmtN = n => n.toLocaleString('hu-HU');
+
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hilbert(n, x, y) { let d = 0; for (let s = n >> 1; s > 0; s >>= 1) { const rx = (x & s) > 0 ? 1 : 0, ry = (y & s) > 0 ? 1 : 0; d += s * s * ((3 * rx) ^ ry); if (ry === 0) { if (rx === 1) { x = s - 1 - x; y = s - 1 - y; } const t = x; x = y; y = t; } } return d; }
+function morton3(x, y, z) { const sp = v => { v &= 1023; v = (v | v << 16) & 0x30000ff; v = (v | v << 8) & 0x300f00f; v = (v | v << 4) & 0x30c30c3; v = (v | v << 2) & 0x9249249; return v; }; return sp(x) | sp(y) << 1 | sp(z) << 2; }
+
+/* ================= state */
+let D = null, items = [], neuronItem = null, neuronCount = 0, edgesIdx = null, adj = [];
+let showParts = true, bufOut, outVerts = 0, lblEls = [];
+let showWeb = true, showAx = true, npos = null, conns = [], TN = [], conGlow = null, conBri = null, bufWeb, webVerts = 0, bufAxW, axVerts = 0, bufTr, trVerts = 0, bufCon = {};
+let tracers = [], lastTop = {};
+const AX_COL = [[0.62, 0.86, 0.95], [0.7, 0.9, 0.96], [0.8, 0.93, 0.97], [0.92, 0.9, 0.8], [1, 0.84, 0.6], [1, 0.76, 0.46]];
+let gl, progP, progL, bufPos, bufCol, bufBri, bufSize, bufEdge, edgeVerts = 0, bufSel, selVerts = 0, bufPulse;
+let bri = null, hidden = new Set(), query = '', hover = -1, sel = -1;
+let cam = { yaw: 0.9, pitch: 0.18, dist: 3.7 }, spin = true, showEdges = false, firing = true;
+const PREF = (() => { try { return JSON.parse(localStorage.getItem('vrg-konnektom-view') || '{}'); } catch (e) { return {}; } })();
+let crisp = !!PREF.crisp, spark = !!PREF.spark, full = false, bufSpk = null;
+const savePref = () => { try { localStorage.setItem('vrg-konnektom-view', JSON.stringify({ crisp, spark })); } catch (e) {} };
+let sched = [], playT = 0, playIdx = 0, pulses = [], glow = null, lastFrame = performance.now(), runNow = -1;
+
+/* ================= data */
+function loadData(cb) {
+  if (window.STACK_BUNDLE) { cb(!!window.CONNECTOME); return; }   // the phone bundle (Mobile/stack/publish-stack.js) has the data inside
+  const s = document.createElement('script');
+  s.src = 'out/connectome-data.js?t=' + Date.now();
+  s.onload = () => { s.remove(); cb(true); };
+  s.onerror = () => { s.remove(); cb(false); };
+  document.head.appendChild(s);
+}
+
+function prepare() {
+  const C = D.cols.reduce((m, k, i) => (m[k] = i, m), {});
+  items = D.nodes.map((r, i) => ({ i, id: r[C.id], layer: r[C.layer], kind: r[C.kind], title: r[C.title], shell: r[C.shell], region: r[C.region] || 'ctx-temp', hemi: r[C.hemi] || 0, bytes: r[C.bytes], n: r[C.neurons], com: r[C.com], last: r[C.last], src: r[C.src] }));
+  edgesIdx = D.edges;
+  adj = items.map(() => []);
+  for (let k = 0; k < edgesIdx.length; k += 3) { adj[edgesIdx[k]].push(edgesIdx[k + 1]); adj[edgesIdx[k + 1]].push(edgesIdx[k]); }
+  layout();
+  buildSchedule();
+}
+
+/* ================= layout: the stack placed in brain parts by function (brain.js, BR-Q1) */
+function layout() {
+  const R = rng(20261107);
+  const groups = new Map(), pairSide = {};   // paired deep parts (thalamus, colliculi) alternate left / right
+  for (const it of items) {
+    let h = it.hemi;
+    if (it.region === 'thal' || it.region === 'sc' || it.region === 'ic') { pairSide[it.region] = (pairSide[it.region] || 0) + 1; h = pairSide[it.region] % 2 ? -1 : 1; }
+    else if (!it.region.startsWith('ctx')) h = 0;
+    it.side = h;
+    const k = it.region + '|' + h; if (!groups.has(k)) groups.set(k, { reg: it.region, h, list: [] }); groups.get(k).list.push(it);
+  }
+  const total = items.reduce((s, it) => s + it.n, 0);
+  neuronCount = total;
+  const pos = new Float32Array(total * 3), col = new Float32Array(total * 3), size = new Float32Array(total);
+  neuronItem = new Uint32Array(total);
+  let w = 0;
+  for (const g of groups.values()) {
+    const L = g.list;
+    if (g.reg === 'pons' || g.reg === 'medulla') L.sort((a, b) => (b.last || 0) - (a.last || 0));       // newest at the top of the stem
+    else L.sort((a, b) => a.com - b.com || LORDER.indexOf(a.layer) - LORDER.indexOf(b.layer) || a.kind.localeCompare(b.kind) || b.n - a.n);
+    const need = L.reduce((s, it) => s + it.n, 0), sl = BRAIN.slots(g.reg, g.h, need, R);
+    const gr = BRAIN.grow(sl, L.map(it => it.n), L.map(it => BRAIN.patternOf(it.id, it.n)), R);
+    L.forEach((it, j) => {
+      const { idx, par } = gr[j];
+      it.start = w; it.par = par; it.bf = g.reg === 'pons' ? 0.38 : 1; const c = hex(LAYER[it.layer].col); let cx = 0, cy = 0, cz = 0;
+      for (let k = 0; k < it.n; k++) {
+        const p = k < idx.length ? sl[idx[k]] : sl[idx[idx.length - 1] || 0].map(v => v + (R() - 0.5) * 0.01);
+        if (k >= idx.length) par.push(k - 1);
+        pos.set(p, w * 3); col.set(c, w * 3); size[w] = (it.n === 1 ? 1.15 : 1) * (need > 3000 ? 0.72 : 1); neuronItem[w] = it.i; w++; cx += p[0]; cy += p[1]; cz += p[2];
+      }
+      it.end = w; it.c = [cx / it.n, cy / it.n, cz / it.n];
+    });
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufPos); gl.bufferData(gl.ARRAY_BUFFER, pos, gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufCol); gl.bufferData(gl.ARRAY_BUFFER, col, gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufSize); gl.bufferData(gl.ARRAY_BUFFER, size, gl.STATIC_DRAW);
+  bri = new Float32Array(total);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufBri); gl.bufferData(gl.ARRAY_BUFFER, bri, gl.DYNAMIC_DRAW);
+  glow = new Float32Array(items.length);
+  npos = pos; buildAxioms();
+  buildEdges(); buildOutlines(); buildWeb();
+  renderLegend();
+}
+// Axioms: every 12, 24, 48, 120, 220 and 400 KB of a file's continuous string (growth order) is one web with its own
+// neuron connector. Tier 0 joins its 2 KB nodes, each higher tier joins the connectors of the tier below it.
+function buildAxioms() {
+  TN = BRAIN.AXIOM_KB.map(kb => Math.round(kb * 1024 / D.unit));
+  conns = [];
+  for (const it of items) {
+    it.ax = []; it.axN = [];
+    TN.forEach((c, t) => {
+      const m = Math.floor(it.n / c); it.ax[t] = conns.length; it.axN[t] = m;
+      for (let j = 0; j < m; j++) {
+        const s0 = j * c, e0 = s0 + c, p = [0, 0, 0];
+        for (let k = s0; k < e0; k++) for (let q = 0; q < 3; q++) p[q] += npos[(it.start + k) * 3 + q] / c;
+        let kids = [];
+        if (t === 0) for (let k = s0; k < e0; k++) kids.push(it.start + k);
+        else { const cp = TN[t - 1]; for (let jj = Math.ceil(s0 / cp); jj * cp < e0 && jj < it.axN[t - 1]; jj++) kids.push(it.ax[t - 1] + jj); }
+        conns.push({ it: it.i, t, p, kids });
+      }
+    });
+  }
+  // addresses (neurons.js): same file / tier / index order as conns, so the i-th neuron is conns[i]
+  if (window.NEURONS) {
+    const NN = NEURONS.build(items.map(it => ({ id: it.id, n: it.n, kind: it.kind, layer: it.layer, line: it.line, line2: it.line2, degree: adj[it.i].length, last: it.last,
+      lineState: it.line >= 0 && D.lines && D.lines[it.line] ? D.lines[it.line].state : '' })), D.unit);
+    if (NN.length === conns.length) NN.forEach((x, i) => { conns[i].addr = x.addr; conns[i].w = x.w; });
+  }
+  const n = conns.length, P = new Float32Array(n * 3), C = new Float32Array(n * 3), S = new Float32Array(n);
+  conns.forEach((x, i) => { P.set(x.p, i * 3); C.set(AX_COL[x.t], i * 3); S[i] = 1.25 + 0.42 * x.t; });
+  conGlow = new Float32Array(n); conBri = new Float32Array(n);
+  for (const k of ['p', 'c', 'b', 's']) if (!bufCon[k]) bufCon[k] = gl.createBuffer();
+  [[bufCon.p, P], [bufCon.c, C], [bufCon.s, S], [bufCon.b, conBri]].forEach(([b, a]) => { gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, a, b === bufCon.b ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW); });
+  tracers = []; lastTop = {};
+}
+function buildWeb() {
+  const w = [], a = [];
+  const seg = (out, A, B, c, al) => out.push(A[0], A[1], A[2], c[0], c[1], c[2], al, B[0], B[1], B[2], c[0], c[1], c[2], al);
+  const np = k => [npos[k * 3], npos[k * 3 + 1], npos[k * 3 + 2]];
+  for (const it of items) {
+    if (hidden.has(it.layer) || !it.par) continue;
+    const c = hex(LAYER[it.layer].col);
+    for (let k = 1; k < it.n; k++) seg(w, np(it.start + k), np(it.start + (it.par[k] >= 0 ? it.par[k] : k - 1)), c, 0.085);
+  }
+  for (const x of conns) {
+    if (hidden.has(items[x.it].layer)) continue;
+    const c = AX_COL[x.t], al = 0.035 + 0.02 * x.t;
+    for (const k of x.kids) seg(a, x.p, x.t === 0 ? np(k) : conns[k].p, c, al);
+  }
+  const W = new Float32Array(w), A = new Float32Array(a);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufWeb); gl.bufferData(gl.ARRAY_BUFFER, W, gl.STATIC_DRAW); webVerts = W.length / 7;
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufAxW); gl.bufferData(gl.ARRAY_BUFFER, A, gl.STATIC_DRAW); axVerts = A.length / 7;
+}
+// a firing reaches one 2 KB node of a file: every axiom holding it lights up, and a tracer line joins the run's last
+// lit neuron to the highest one lit now
+function activate(itemIdx, ri, ts) {
+  const it = items[itemIdx]; if (!it.ax || !it.axN[0]) return;
+  const k = Math.floor(((Math.sin(ts * 12.9898 + itemIdx * 78.233) * 43758.5453) % 1 + 1) % 1 * it.n);
+  let top = -1;
+  TN.forEach((c, t) => { const j = Math.floor(k / c); if (j < it.axN[t]) { top = it.ax[t] + j; conGlow[top] = Math.max(conGlow[top], 1.3); } });
+  if (top < 0) return;
+  const prev = lastTop[ri];
+  if (prev != null && prev !== top) { tracers.push({ a: conns[prev].p, b: conns[top].p, born: ts }); if (tracers.length > 500) tracers.shift(); }
+  lastTop[ri] = top;
+}
+function buildTracers(ts) {
+  const out = [], LIFE = 45000, SEG = 14;
+  tracers = tracers.filter(t => ts - t.born < LIFE);
+  for (const t of tracers) {
+    const age = (ts - t.born) / LIFE, al = 0.5 * (1 - age) * (1 - age), m = [(t.a[0] + t.b[0]) * 0.32, (t.a[1] + t.b[1]) * 0.32 + 0.12, (t.a[2] + t.b[2]) * 0.32];
+    let prev = t.a;
+    for (let i = 1; i <= SEG; i++) {
+      const u = i / SEG, v = 1 - u, p = [v * v * t.a[0] + 2 * v * u * m[0] + u * u * t.b[0], v * v * t.a[1] + 2 * v * u * m[1] + u * u * t.b[1], v * v * t.a[2] + 2 * v * u * m[2] + u * u * t.b[2]];
+      out.push(prev[0], prev[1], prev[2], 1, 0.82, 0.55, al, p[0], p[1], p[2], 1, 0.82, 0.55, al); prev = p;
+    }
+  }
+  const T = new Float32Array(out); gl.bindBuffer(gl.ARRAY_BUFFER, bufTr); gl.bufferData(gl.ARRAY_BUFFER, T, gl.STREAM_DRAW); trVerts = T.length / 7;
+}
+// the parts' own outlines: lobe borders on the cortex, contour rings round the deep parts
+const SHORT = { 'ctx-front': ['Homloklebeny', 'frontal'], 'ctx-par': ['Fali lebeny', 'parietal'], 'ctx-temp': ['Halántéklebeny', 'temporal'], 'ctx-occ': ['Nyakszirtlebeny', 'occipital'],
+  thal: ['Talamusz', 'thalamus'], hypo: ['Hipotalamusz', 'hypothalamus'], sc: ['Felső ikertestek', 'sup. colliculi'], ic: ['Alsó ikertestek', 'inf. colliculi'], cereb: ['Kisagy', 'cerebellum'], pons: ['Híd', 'pons'], medulla: ['Nyúltvelő', 'medulla'] };
+function buildOutlines() {
+  const out = [];
+  for (const pl of BRAIN.outlines()) for (let i = 1; i < pl.length; i++) for (const q of [pl[i - 1], pl[i]]) out.push(q[0], q[1], q[2], 0.55, 0.78, 0.9, 0.11);
+  const g = new Float32Array(out); gl.bindBuffer(gl.ARRAY_BUFFER, bufOut); gl.bufferData(gl.ARRAY_BUFFER, g, gl.STATIC_DRAW); outVerts = g.length / 7;
+  $('labels').innerHTML = BRAIN.regions.map(r => `<div class="lbl" data-r="${r}">${SHORT[r][0]} <i>${SHORT[r][1]}</i></div>`).join('');
+  lblEls = [...$('labels').children].map(el => ({ el, p: BRAIN.ANCHOR[el.dataset.r] }));
+}
+function placeLabels(M) {
+  const st = $('stage').getBoundingClientRect(), boxes = [];
+  const vis = lblEls.map(L => ({ L, p: project(M, L.p) })).sort((a, b) => b.p[1] - a.p[1]);
+  for (const { L, p } of vis) {
+    if (!showParts || p[2] <= 0) { L.el.style.display = 'none'; continue; }
+    const x = (p[0] * 0.5 + 0.5) * st.width; let y = (0.5 - p[1] * 0.5) * st.height; const w = L.el.offsetWidth || 90;
+    for (const b of boxes) if (Math.abs(b.x - x) < (b.w + w) / 2 + 4 && Math.abs(b.y - y) < 15) y = b.y + 15;   // never one label on another
+    boxes.push({ x, y, w }); L.el.style.display = 'block'; L.el.style.left = x + 'px'; L.el.style.top = y + 'px';
+  }
+}
+
+function bez(a, b, t, pull) {
+  const m = [(a[0] + b[0]) / 2 * pull, (a[1] + b[1]) / 2 * pull + (1 - pull) * 0.1, (a[2] + b[2]) / 2 * pull], u = 1 - t;
+  return [u * u * a[0] + 2 * u * t * m[0] + t * t * b[0], u * u * a[1] + 2 * u * t * m[1] + t * t * b[1], u * u * a[2] + 2 * u * t * m[2] + t * t * b[2]];
+}
+function edgeGeom(pairs, alpha) {
+  const SEG = 8, out = new Float32Array(pairs.length / 2 * SEG * 2 * 7); let w = 0;
+  for (let k = 0; k < pairs.length; k += 2) {
+    const A = items[pairs[k]], B = items[pairs[k + 1]], ca = hex(LAYER[A.layer].col), cb = hex(LAYER[B.layer].col);
+    let prev = A.c;
+    for (let s = 1; s <= SEG; s++) {
+      const t = s / SEG, p = bez(A.c, B.c, t, 0.5), t0 = (s - 1) / SEG;
+      for (const [q, tt] of [[prev, t0], [p, t]]) { out[w++] = q[0]; out[w++] = q[1]; out[w++] = q[2]; out[w++] = ca[0] + (cb[0] - ca[0]) * tt; out[w++] = ca[1] + (cb[1] - ca[1]) * tt; out[w++] = ca[2] + (cb[2] - ca[2]) * tt; out[w++] = alpha; }
+      prev = p;
+    }
+  }
+  return out;
+}
+function buildEdges() {
+  const pairs = [];
+  for (let k = 0; k < edgesIdx.length; k += 3) { const a = edgesIdx[k], b = edgesIdx[k + 1]; if (hidden.has(items[a].layer) || hidden.has(items[b].layer)) continue; pairs.push(a, b); }
+  const g = edgeGeom(pairs, 0.016);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufEdge); gl.bufferData(gl.ARRAY_BUFFER, g, gl.STATIC_DRAW); edgeVerts = g.length / 7;
+}
+function buildSel() {
+  if (sel < 0) { selVerts = 0; return; }
+  const pairs = []; for (const b of adj[sel]) if (!hidden.has(items[b].layer)) pairs.push(sel, b);
+  const g = edgeGeom(pairs, 0.55);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufSel); gl.bufferData(gl.ARRAY_BUFFER, g, gl.DYNAMIC_DRAW); selVerts = g.length / 7;
+}
+
+/* ================= firing schedule (recordings) */
+function buildSchedule() {
+  sched = []; playT = 0; playIdx = 0; pulses = [];
+  const steps = [];
+  D.fire.forEach((f, ri) => { for (const [t, ns, bad] of f.steps) steps.push({ t, run: f.run, ri, ns, bad }); });
+  steps.sort((a, b) => a.t - b.t);
+  const speed = +$('speed').value;
+  let pt = 0, prev = steps.length ? steps[0].t : 0;
+  for (const s of steps) { pt += Math.min((s.t - prev) / speed, 600); prev = s.t; sched.push({ ...s, at: pt }); }
+  renderRuns();
+}
+
+/* ================= GL */
+const VS_P = `#version 300 es
+in vec3 aPos; in vec3 aCol; in float aBri; in float aSize; uniform mat4 uM; uniform float uPx; uniform float uCrisp;
+out vec3 vCol; out float vA;
+void main(){ vec4 p = uM * vec4(aPos,1.0); gl_Position = p; float b = aBri; gl_PointSize = max(1.0, uPx * aSize * mix(1.0, 0.5, uCrisp) * (0.75 + 0.9*clamp(b-0.6,0.0,2.0)) / p.w);
+  vCol = mix(aCol, vec3(1.0,0.93,0.82), clamp(b-1.0,0.0,1.0)); vA = clamp(b,0.0,2.0); }`;
+const FS_P = `#version 300 es
+precision highp float; in vec3 vCol; in float vA; uniform float uCrisp; out vec4 o;
+void main(){ vec2 d = gl_PointCoord-0.5; float r = dot(d,d); if(r>0.25) discard; float f = mix(smoothstep(0.25,0.0,r), (1.0 - smoothstep(0.13, 0.22, r)) * 0.85, uCrisp); o = vec4(vCol*f*vA*0.55, 1.0); }`;
+const VS_L = `#version 300 es
+in vec3 aPos; in vec3 aCol; in float aA; uniform mat4 uM; out vec4 vC;
+void main(){ gl_Position = uM*vec4(aPos,1.0); vC = vec4(aCol*aA, 1.0); }`;
+const FS_L = `#version 300 es
+precision mediump float; in vec4 vC; out vec4 o; void main(){ o = vC; }`;
+function prog(vs, fs) {
+  const p = gl.createProgram();
+  for (const [t, src] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); gl.attachShader(p, s); }
+  gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  return p;
+}
+function attr(p, name, buf, n, stride = 0, off = 0) { const l = gl.getAttribLocation(p, name); if (l < 0) return; gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, n, gl.FLOAT, false, stride, off); }
+function off(p, name) { const l = gl.getAttribLocation(p, name); if (l >= 0) gl.disableVertexAttribArray(l); }
+
+function mat() {
+  const cv = $('cv'), asp = cv.width / cv.height, f = 1 / Math.tan(0.42), n = 0.05, fa = 50;
+  const P = [f / asp, 0, 0, 0, 0, f, 0, 0, 0, 0, (fa + n) / (n - fa), -1, 0, 0, 2 * fa * n / (n - fa), 0];
+  const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  const target = [0, -0.08, -0.1];
+  const eye = [target[0] + cam.dist * cp * sy, target[1] + cam.dist * sp, target[2] + cam.dist * cp * cy];
+  const zA = norm(sub(eye, target)), xA = norm(cross([0, 1, 0], zA)), yA = cross(zA, xA);
+  const V = [xA[0], yA[0], zA[0], 0, xA[1], yA[1], zA[1], 0, xA[2], yA[2], zA[2], 0, -dot(xA, eye), -dot(yA, eye), -dot(zA, eye), 1];
+  const o = mul(P, V), sx = $('lg').open && cv.clientWidth > 900 ? 0.16 : 0;
+  for (let c = 0; c < 4; c++) o[c * 4] += sx * o[c * 4 + 3];
+  return o;
+}
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = a => { const l = Math.hypot(...a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+function mul(a, b) { const o = new Array(16).fill(0); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) for (let k = 0; k < 4; k++) o[c * 4 + r] += a[k * 4 + r] * b[c * 4 + k]; return o; }
+function project(M, p) { const x = M[0] * p[0] + M[4] * p[1] + M[8] * p[2] + M[12], y = M[1] * p[0] + M[5] * p[1] + M[9] * p[2] + M[13], w = M[3] * p[0] + M[7] * p[1] + M[11] * p[2] + M[15]; return [x / w, y / w, w]; }
+
+/* ================= frame */
+function heatOf(it, now) {
+  if (!it.last) return 0.30;
+  const age = Math.max(0, now - it.last) / HOUR;
+  return 0.30 + 0.55 * Math.exp(-age / 72);
+}
+function frame(ts) {
+  const dt = Math.min(100, ts - lastFrame); lastFrame = ts;
+  if (spin && !dragging) cam.yaw += dt * 0.00006;
+  const cv = $('cv'), dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = cv.clientWidth * dpr | 0, H = cv.clientHeight * dpr | 0;
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  gl.viewport(0, 0, W, H); gl.clearColor(0.039, 0.078, 0.11, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+  if (!D) { requestAnimationFrame(frame); return; }
+  // firing
+  if (firing && sched.length) {
+    playT += dt;
+    while (playIdx < sched.length && sched[playIdx].at <= playT) {
+      const s = sched[playIdx++]; glow[s.run] = Math.max(glow[s.run], 1.4); runNow = s.ri;
+      for (const tgt of s.ns) pulses.push({ a: s.run, b: tgt, t: 0, bad: s.bad, ri: s.ri });
+      $('clock').textContent = fmtT(s.t) + ' · ' + D.fire[s.ri].sid + ' · ' + (playIdx) + ' / ' + sched.length;
+      markRun();
+    }
+    if (playIdx >= sched.length && playT > (sched.length ? sched[sched.length - 1].at : 0) + 3000) { playT = 0; playIdx = 0; }
+  }
+  const pp = [];
+  pulses = pulses.filter(p => { p.t += dt / 900; if (p.t >= 1) { glow[p.b] = Math.max(glow[p.b], p.bad ? 1.6 : 1.2); activate(p.b, p.ri, ts); return false; } return true; });
+  const spk = [];   // electric impulses: a short jagged streak instead of a light orb
+  for (const p of pulses) {
+    if (!spark) { const q = bez(items[p.a].c, items[p.b].c, p.t, 0.5); pp.push(q[0], q[1], q[2]); continue; }
+    const K = 7, c = p.bad ? [1, 0.5, 0.35] : [0.72, 0.9, 1]; let prev = null;
+    for (let k = 0; k <= K; k++) {
+      const q = bez(items[p.a].c, items[p.b].c, Math.max(0, p.t - 0.1 * (1 - k / K)), 0.5), j = k === 0 || k === K ? 0 : 0.012;
+      const r = [q[0] + (Math.random() - 0.5) * j, q[1] + (Math.random() - 0.5) * j, q[2] + (Math.random() - 0.5) * j], a = 0.15 + 0.85 * k / K;
+      if (prev) spk.push(...prev, ...c, a, ...r, ...c, a); prev = r;
+    }
+  }
+  // brightness per neuron
+  const now = Date.now(), ql = query;
+  for (const it of items) {
+    let b = hidden.has(it.layer) ? 0 : heatOf(it, now) * (it.bf || 1) + glow[it.i];
+    if (ql && b > 0) b = it.match ? b + 0.7 : b * 0.15;
+    if (it.i === sel || it.i === hover) b += 0.9;
+    if (it.fresh && b > 0) b += 0.25 + 0.25 * Math.sin(ts / 300);
+    for (let k = it.start; k < it.end; k++) bri[k] = b;
+    if (glow[it.i] > 0) glow[it.i] = Math.max(0, glow[it.i] - dt / 1400);
+  }
+  const M = mat(); curM = M; placeLabels(M);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.disable(gl.DEPTH_TEST);
+  // edges
+  gl.useProgram(progL); gl.uniformMatrix4fv(gl.getUniformLocation(progL, 'uM'), false, M);
+  const drawLines = (buf, n) => { if (!n) return; attr(progL, 'aPos', buf, 3, 28, 0); attr(progL, 'aCol', buf, 3, 28, 12); attr(progL, 'aA', buf, 1, 28, 24); gl.drawArrays(gl.LINES, 0, n); };
+  if (showParts) drawLines(bufOut, outVerts);
+  if (showWeb) drawLines(bufWeb, webVerts);
+  if (showAx) { drawLines(bufAxW, axVerts); buildTracers(ts); drawLines(bufTr, trVerts); }
+  if (showEdges) drawLines(bufEdge, edgeVerts);
+  drawLines(bufSel, selVerts);
+  if (spk.length) { gl.bindBuffer(gl.ARRAY_BUFFER, bufSpk); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(spk), gl.STREAM_DRAW); drawLines(bufSpk, spk.length / 7); }
+  off(progL, 'aPos'); off(progL, 'aCol'); off(progL, 'aA');
+  // neurons
+  gl.useProgram(progP); gl.uniformMatrix4fv(gl.getUniformLocation(progP, 'uM'), false, M);
+  gl.uniform1f(gl.getUniformLocation(progP, 'uPx'), 9.5 * dpr * Math.min(1.6, H / 900 + 0.4)); gl.uniform1f(gl.getUniformLocation(progP, 'uCrisp'), crisp ? 1 : 0);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufBri); gl.bufferSubData(gl.ARRAY_BUFFER, 0, bri);
+  attr(progP, 'aPos', bufPos, 3); attr(progP, 'aCol', bufCol, 3); attr(progP, 'aBri', bufBri, 1); attr(progP, 'aSize', bufSize, 1);
+  gl.drawArrays(gl.POINTS, 0, neuronCount);
+  // the axiom neurons
+  if (showAx && conns.length) {
+    for (let i = 0; i < conns.length; i++) { const x = conns[i]; conBri[i] = hidden.has(items[x.it].layer) ? 0 : 0.2 + 0.07 * x.t + conGlow[i]; if (conGlow[i] > 0) conGlow[i] = Math.max(0, conGlow[i] - dt / 2600); }
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufCon.b); gl.bufferSubData(gl.ARRAY_BUFFER, 0, conBri);
+    attr(progP, 'aPos', bufCon.p, 3); attr(progP, 'aCol', bufCon.c, 3); attr(progP, 'aBri', bufCon.b, 1); attr(progP, 'aSize', bufCon.s, 1);
+    gl.drawArrays(gl.POINTS, 0, conns.length);
+  }
+  // pulses
+  if (pp.length) {
+    const n = pp.length / 3, pc = new Float32Array(n * 3).fill(1), pb = new Float32Array(n).fill(2.2), ps = new Float32Array(n).fill(2.2);
+    for (let k = 0; k < n; k++) { pc[k * 3] = 1; pc[k * 3 + 1] = 0.78; pc[k * 3 + 2] = 0.5; }
+    const tmp = [bufPulse.p, bufPulse.c, bufPulse.b, bufPulse.s];
+    [new Float32Array(pp), pc, pb, ps].forEach((arr, j) => { gl.bindBuffer(gl.ARRAY_BUFFER, tmp[j]); gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STREAM_DRAW); });
+    attr(progP, 'aPos', tmp[0], 3); attr(progP, 'aCol', tmp[1], 3); attr(progP, 'aBri', tmp[2], 1); attr(progP, 'aSize', tmp[3], 1);
+    gl.drawArrays(gl.POINTS, 0, n);
+  }
+  requestAnimationFrame(frame);
+}
+let curM = null;
+
+/* ================= picking + UI */
+function pick(mx, my) {
+  if (!curM) return -1;
+  const cv = $('cv'), r = cv.getBoundingClientRect();
+  let best = -1, bd = 196;
+  for (const it of items) {
+    if (hidden.has(it.layer)) continue;
+    const p = project(curM, it.c); if (p[2] <= 0) continue;
+    const sx = (p[0] * 0.5 + 0.5) * r.width, sy = (0.5 - p[1] * 0.5) * r.height;
+    const rad = Math.min(30, 3 + Math.sqrt(it.n) * 1.4);
+    const d = (sx - mx) ** 2 + (sy - my) ** 2 - rad * rad * 0.5;
+    if (d < bd) { bd = d; best = it.i; }
+  }
+  return best;
+}
+function layerName(L) { const l = LAYER[L]; return l ? `${l.hu} <i>· ${l.en}</i>` : L; }
+function regName(r) { const g = BRAIN.REG[r]; return g ? `${g.hu} <i>· ${g.en}</i>` : r; }
+function showTip(i, x, y) {
+  const tip = $('tip');
+  if (i < 0) { tip.style.display = 'none'; return; }
+  const it = items[i];
+  tip.innerHTML = `<b>${esc(it.title || it.id)}</b><div class="m">${esc(it.id)} · ${fmtB(it.bytes)} · ${fmtN(it.n)} × 2 KB · ${BRAIN.patternOf(it.id, it.n)}</div>`;
+  tip.style.display = 'block';
+  const st = $('stage').getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(st.width - w - 6, x + 14) + 'px'; tip.style.top = Math.max(6, Math.min(st.height - h - 6, y + 14)) + 'px';
+}
+function select(i) {
+  sel = i; buildSel();
+  const card = $('card');
+  if (i < 0) { card.innerHTML = '<div class="hint">Kattints egy csomópontra.<br><i>Click a node.</i></div>'; return; }
+  const it = items[i];
+  const nb = adj[i].slice().sort((a, b) => items[b].n - items[a].n);
+  const byL = {}; for (const b of adj[i]) byL[items[b].layer] = (byL[items[b].layer] || 0) + 1;
+  card.innerHTML = `<div class="title">${esc(it.title || it.id)}</div>
+    <div class="kv"><span>id</span><span>${esc(it.id)}</span>
+    <span>réteg <i>layer</i></span><span>${layerName(it.layer)}</span>
+    <span>fajta <i>kind</i></span><span>${esc(it.kind)}</span>
+    <span>agyterület <i>part</i></span><span>${regName(it.region)}${it.region.startsWith('ctx') ? (it.side < 0 ? ' · bal félteke' : ' · jobb félteke') : ''}</span>
+    <span>méret <i>size</i></span><span>${fmtB(it.bytes)} → ${fmtN(it.n)} × 2 KB pont · ${it.axN ? it.axN.reduce((a, b) => a + b, 0) : 0} neuron</span>
+    <span>forrás <i>source</i></span><span>${esc(it.src)}</span>
+    <span>utolsó <i>last</i></span><span>${fmtT(it.last)}</span>
+    <span>élek <i>links</i></span><span>${adj[i].length} · ${Object.entries(byL).map(([k, v]) => k + ' ' + v).join(' ')}</span></div>
+    <h3>Szomszédok <i>· neighbours</i></h3>
+    ${nb.slice(0, 14).map(b => `<span class="nb" data-i="${b}"><span class="c">${items[b].layer}</span> ${esc(items[b].title || items[b].id)}</span>`).join('')}
+    ${nb.length > 14 ? `<div class="hint">+${nb.length - 14}</div>` : ''}
+    ${neuronList(it)}`;
+  card.querySelectorAll('.nb').forEach(el => el.onclick = () => select(+el.dataset.i));
+}
+// the file's axiom neurons by address (gate letter + root), the head (highest tier) first
+function neuronList(it) {
+  if (!it.ax || !window.NEURONS) return '';
+  const L = []; for (let t = TN.length - 1; t >= 0; t--) for (let j = (it.axN[t] || 0) - 1; j >= 0; j--) { const x = conns[it.ax[t] + j]; if (x && x.addr) L.push(x); }
+  if (!L.length) return '<h3>Neuronok <i>· neurons</i></h3><div class="hint">12 KB alatt nincs axióma-neuron. <i>Under 12 KB there is no axiom neuron.</i></div>';
+  const G = NEURONS.GATES, col = t => 'rgb(' + AX_COL[t].map(v => v * 255 | 0).join(',') + ')';
+  return '<h3>Neuronok <i>· neurons: cím = kapu + gyökér · address = gate + root</i></h3>'
+    + L.slice(0, 18).map(x => { const g = G[x.addr[0]]; return `<span class="nb" title="${esc(g.hu + ' · ' + g.rule)}"><span class="c" style="color:${col(x.t)};font-size:12px">${x.addr}</span> ${g.hu} <i>${g.name}</i> · ${BRAIN.AXIOM_KB[x.t]} KB · w${x.w}</span>`; }).join('')
+    + (L.length > 18 ? `<div class="hint">+${L.length - 18}</div>` : '');
+}
+function renderLegend() {
+  const cnt = {}, rc = {}; for (const it of items) { cnt[it.layer] = (cnt[it.layer] || 0) + it.n; rc[it.region] = (rc[it.region] || 0) + it.n; }
+  const pc = p => p.regs.reduce((s, r) => s + (rc[r] || 0), 0);
+  $('legend').innerHTML = `<h3>Agyterületek <i>· brain parts, by function</i></h3>
+    ${BRAIN.PARTS.map(p => `<div class="part reg"><span>${p.hu} <i>${p.en}</i></span><span class="n">${fmtN(pc(p))}</span></div>` + p.regs.map(r => `<div class="reg"><span>${SHORT[r][0]}: ${esc(BRAIN.REG[r].what)}<br><i>${SHORT[r][1]}: ${esc(BRAIN.REG[r].whatEn)}</i></span><span class="n">${fmtN(rc[r] || 0)}</span></div>`).join('')).join('')}
+    <h3>Rétegek <i>· layers (katt: ki/be · click: on/off)</i></h3>
+    ${LORDER.filter(L => cnt[L]).map(L => `<div class="row${hidden.has(L) ? ' off' : ''}" data-l="${L}"><span class="dot" style="background:${LAYER[L].col}"></span><span>${L} · ${LAYER[L].hu} <i>${LAYER[L].en}</i></span><span class="n">${fmtN(cnt[L])}</span></div>`).join('')}`;
+  $('legend').querySelectorAll('.row').forEach(el => el.onclick = () => { const L = el.dataset.l; hidden.has(L) ? hidden.delete(L) : hidden.add(L); el.classList.toggle('off'); buildEdges(); buildSel(); buildWeb(); });
+}
+function renderRuns() {
+  $('runs').innerHTML = D.fire.map((f, ri) => `<div class="run" data-ri="${ri}"><span class="pip"></span><span class="tt">${esc(items[f.run].title || f.sid)}</span><span class="when">${f.sid} · ${fmtT(f.t1)} · ${f.steps.length} lépés</span></div>`).join('')
+    || '<div class="hint">Nincs felvett session. <i>No recorded sessions.</i></div>';
+  $('runs').querySelectorAll('.run').forEach(el => el.onclick = () => select(D.fire[+el.dataset.ri].run));
+}
+function markRun() { $('runs').querySelectorAll('.run').forEach(el => el.classList.toggle('now', +el.dataset.ri === runNow)); }
+function renderHeader() {
+  $('stat').textContent = `${fmtN(items.length)} csomópont → ${fmtN(neuronCount)} × ${D.unit / 1024} KB pont · ${fmtN(conns.length)} neuron (axióma) · ${fmtN(edgesIdx.length / 3)} él`;
+  const age = (Date.now() - Date.parse(D.lastBuild || D.stackGenerated)) / HOUR;
+  $('stale').textContent = age > 6 ? `verem: ${fmtT(Date.parse(D.lastBuild || D.stackGenerated))} (${Math.round(age)} órája · hours ago)` : '';
+  $('scale').innerHTML = `1 pont = ${fmtN(D.unit)} B, egy tipikus memória-jegyzet vagy brief. Egy elem ⌈méret / egység⌉ neuron, legalább 1, legfeljebb ${fmtN(D.cap)} (${D.capped} elem érte el). Kód: csak szöveges fájlok. Egy fájl pontjai foltként, fonálként vagy faként nőnek, vékony hálóval. Minden 12, 24, 48, 120, 220 és 400 KB folytonos adat egy axióma, saját neuronnal; az aktivált axiómák neuronjait nyomvonal köti össze.<br>
+    <i>1 node = ${fmtN(D.unit)} B, a typical memory note or brief. An item is ⌈size / unit⌉ neurons, at least 1, at most ${fmtN(D.cap)} (${D.capped} items hit it). Code: text files only. A file's nodes grow as a patch, a string or a tree, joined by a thin web. Every 12, 24, 48, 120, 220 and 400 KB of continuous data is an axiom with its own neuron; tracer lines join the neurons of activated axioms.</i><br>
+    <span class="m">adat · data: ${fmtT(Date.parse(D.generated))} · tüzelés · firing: ${D.stats.fireRuns} futás / ${fmtN(D.stats.fireSteps)} lépés · új · fresh: ${D.fresh.length}</span>`;
+}
+
+function apply(data) {
+  const fromHash = !D && location.hash.startsWith('#sel=') ? decodeURIComponent(location.hash.slice(5)) : null;
+  const keepSel = fromHash || (sel >= 0 && items[sel] ? items[sel].id : null);
+  D = data; prepare();
+  const fresh = new Set(D.fresh.map(f => f[0])); items.forEach(it => { it.fresh = fresh.has(it.i); });
+  applyQuery();
+  renderHeader();
+  sel = -1; if (keepSel) { const f = items.find(it => it.id === keepSel); if (f) select(f.i); else select(-1); } else select(-1);
+}
+function applyQuery() { const q = query.toLowerCase(); for (const it of items) it.match = !!q && ((it.title || '').toLowerCase().includes(q) || it.id.toLowerCase().includes(q)); }
+
+function reload(note) {
+  loadData(ok => {
+    if (!ok || !window.CONNECTOME) { $('msg').textContent = 'nincs adat — futtasd: node stack.js connectome · no data'; return; }
+    if (!D || window.CONNECTOME.generated !== D.generated) apply(window.CONNECTOME);
+    if (note) { $('msg').textContent = note; setTimeout(() => { $('msg').textContent = ''; }, 4000); }
+  });
+}
+async function serverDo(kind) {
+  const btns = [$('bRefresh'), $('bBuild')]; btns.forEach(b => b.disabled = true);
+  $('msg').textContent = kind === 'build' ? 'újraépítés… · rebuilding…' : 'frissítés… · refreshing…';
+  try {
+    const r = await fetch('api/' + kind, { method: 'POST' }); const j = await r.json();
+    if (!j.ok) throw new Error(j.msg);
+    reload(`kész · done (${(j.ms / 1000).toFixed(1)} s)`);
+  } catch (e) { $('msg').textContent = 'hiba · error: ' + e.message; }
+  btns.forEach(b => b.disabled = false); if (!isHttp) $('bBuild').disabled = true;
+}
+const isHttp = location.protocol.startsWith('http');
+
+/* ================= boot */
+let dragging = false;
+(function boot() {
+  const cv = $('cv');
+  gl = cv.getContext('webgl2', { antialias: true, premultipliedAlpha: false });
+  if (!gl) { $('stat').textContent = 'WebGL2 nem érhető el · WebGL2 is not available'; return; }
+  progP = prog(VS_P, FS_P); progL = prog(VS_L, FS_L);
+  [bufPos, bufCol, bufBri, bufSize, bufEdge, bufSel, bufOut, bufWeb, bufAxW, bufTr] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => gl.createBuffer());
+  bufPulse = { p: gl.createBuffer(), c: gl.createBuffer(), b: gl.createBuffer(), s: gl.createBuffer() }; bufSpk = gl.createBuffer();
+  if (!isHttp) $('bBuild').disabled = true;
+  if (window.innerWidth < 900) $('lg').open = false;
+  let down = null, moved = false;
+  cv.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch }; moved = false; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+    if (down) {
+      const dx = e.clientX - down.x, dy = e.clientY - down.y;
+      if (Math.abs(dx) + Math.abs(dy) > 3) { moved = true; dragging = true; cv.classList.add('drag'); }
+      cam.yaw = down.yaw - dx * 0.006; cam.pitch = Math.max(-1.3, Math.min(1.3, down.pitch + dy * 0.006));
+      showTip(-1); return;
+    }
+    hover = pick(mx, my); showTip(hover, mx, my);
+  });
+  cv.addEventListener('pointerup', e => { const r = cv.getBoundingClientRect(); if (!moved) select(pick(e.clientX - r.left, e.clientY - r.top)); down = null; dragging = false; cv.classList.remove('drag'); });
+  cv.addEventListener('pointerleave', () => { hover = -1; showTip(-1); });
+  cv.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(1.4, Math.min(9, cam.dist * Math.exp(e.deltaY * 0.001))); }, { passive: false });
+  cv.addEventListener('dblclick', () => { cam = { yaw: 0.9, pitch: 0.18, dist: 3.7 }; });
+  $('bFire').onclick = () => { firing = !firing; $('bFire').classList.toggle('on', firing); $('bFire').textContent = (firing ? '⏸' : '▶') + ' Tüzelés'; };
+  $('speed').onchange = () => { if (D) buildSchedule(); };
+  $('bWeb').onclick = () => { showWeb = !showWeb; $('bWeb').classList.toggle('on', showWeb); };
+  $('bAx').onclick = () => { showAx = !showAx; $('bAx').classList.toggle('on', showAx); };
+  $('bParts').onclick = () => { showParts = !showParts; $('bParts').classList.toggle('on', showParts); };
+  $('bEdges').onclick = () => { showEdges = !showEdges; $('bEdges').classList.toggle('on', showEdges); };
+  $('bSpin').onclick = () => { spin = !spin; $('bSpin').classList.toggle('on', spin); };
+  $('bRefresh').onclick = () => isHttp ? serverDo('connectome') : reload('újraolvasva · reloaded');
+  $('bBuild').onclick = () => serverDo('build');
+  const setCrisp = on => { crisp = on; $('bCrisp').classList.toggle('on', on); savePref(); };
+  const setSpark = on => { spark = on; $('bSpark').classList.toggle('on', on); savePref(); };
+  setCrisp(crisp || /[#&]crisp/.test(location.hash)); setSpark(spark || /[#&]spark/.test(location.hash));
+  $('bCrisp').onclick = () => setCrisp(!crisp); $('bSpark').onclick = () => setSpark(!spark);
+  window.setFull = on => {
+    full = on; document.body.classList.toggle('full', on); $('view').open = false;
+    try { if (window.VRGApp && VRGApp.fullscreen) VRGApp.fullscreen(on); else if (on && !document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
+  };
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && full) setFull(false); });
+  $('bFull').onclick = () => setFull(true); $('bExit').onclick = () => setFull(false);
+  if (/[#&]full\b/.test(location.hash)) setFull(true);
+  document.addEventListener('click', e => { if ($('view').open && !$('view').contains(e.target)) $('view').open = false; });
+  window.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; if (e.key === 'f' || e.key === 'F') setFull(!full); if (e.key === 'p' || e.key === 'P') $('bCrisp').click(); if (e.key === 'i' || e.key === 'I') $('bSpark').click(); if (e.key === 'Escape' && full) setFull(false); });
+  $('q').addEventListener('input', e => { query = e.target.value.trim(); applyQuery(); });
+  if (window.STACK_BUNDLE) document.body.classList.add('bundle');
+  // touch (VRG Mobile, WP M17): one finger orbits, pinch zooms, twist turns, two fingers up / down tilt,
+  // tap picks (and shows the tip), double tap resets, a long press selects and scrolls the card into view
+  if (window.StackTouch) StackTouch.attach(cv, {
+    dragging: on => { dragging = on; if (on) showTip(-1); },
+    orbit: (dx, dy) => { cam.yaw -= dx * 0.007; cam.pitch = Math.max(-1.3, Math.min(1.3, cam.pitch + dy * 0.007)); },
+    zoom: f => { cam.dist = Math.max(1.4, Math.min(9, cam.dist * f)); },
+    twist: a => { cam.yaw -= a; },
+    tilt: dy => { cam.pitch = Math.max(-1.3, Math.min(1.3, cam.pitch + dy * 0.005)); },
+    tap: (x, y) => { const i = pick(x, y); select(i); showTip(i, x, y); clearTimeout(window.__tipT); window.__tipT = setTimeout(() => showTip(-1), 2600); },
+    dbl: () => { cam = { yaw: 0.9, pitch: 0.18, dist: 3.7 }; },
+    long: (x, y) => { const i = pick(x, y); if (i >= 0) { select(i); $('card').scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
+  });
+  reload();
+  setInterval(() => reload(), 60e3);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

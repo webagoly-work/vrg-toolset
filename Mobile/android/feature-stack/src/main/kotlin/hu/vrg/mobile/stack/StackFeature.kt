@@ -1,6 +1,11 @@
 package hu.vrg.mobile.stack
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.ContextWrapper
+import android.os.Handler
+import android.os.Looper
+import android.webkit.JavascriptInterface
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -12,6 +17,8 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,10 +29,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -70,6 +83,10 @@ import java.io.FileInputStream
 // in the pages themselves (notes/stack/touch.js): one finger orbits, pinch zooms, twist turns, tap picks, double
 // tap resets, long press selects; on Holo a two-finger swipe changes the form and a long press on empty space
 // opens / closes the Őrség lock.
+//
+// Full screen (2026-11-07): ⛶ here or in the page hides this screen's bar and the system bars, so only the 3D is
+// left; the page's ✕ or Back brings them back. The page and the app tell each other through one JavaScript
+// interface, `VRGApp.fullscreen(on)`; it is the only thing the pages can call, and only our two pages load here.
 
 object StackFeature : VrgFeature {
     override val info = Catalogue.STACK
@@ -90,6 +107,12 @@ object StackFeature : VrgFeature {
     val progress = MutableStateFlow<Float?>(null)
     val problem = MutableStateFlow<String?>(null)
     val offline = MutableStateFlow(false)
+    /** Full screen: only the 3D, no bars. */
+    val full = MutableStateFlow(false)
+    private val main = Handler(Looper.getMainLooper())
+
+    /** What the pages may call: window.VRGApp.fullscreen(on). */
+    private class Bridge { @JavascriptInterface fun fullscreen(on: Boolean) { main.post { full.value = on } } }
 
     private val ring = MiniTrack()
     override val activity: StateFlow<MiniStatus> get() = ring.status
@@ -216,6 +239,7 @@ object StackFeature : VrgFeature {
         settings.setGeolocationEnabled(false)
         settings.mediaPlaybackRequiresUserGesture = true
         settings.cacheMode = WebSettings.LOAD_NO_CACHE
+        addJavascriptInterface(Bridge(), "VRGApp")
         webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse = serve(request.url)
 
@@ -238,6 +262,8 @@ object StackFeature : VrgFeature {
         }
     }
 
+    private tailrec fun Context.findActivity(): Activity? = when (this) { is Activity -> this; is ContextWrapper -> baseContext.findActivity(); else -> null }
+
     override fun onForeground(on: Boolean) {
         web?.let { if (on) it.onResume() else it.onPause() }
     }
@@ -254,31 +280,44 @@ object StackFeature : VrgFeature {
         val pct by progress.collectAsStateWithLifecycle()
         val why by problem.collectAsStateWithLifecycle()
         val old by offline.collectAsStateWithLifecycle()
+        val isFull by full.collectAsStateWithLifecycle()
         LaunchedEffect(account is Account.SignedIn) { refresh() }
+        // full screen: the system bars go too (swipe from the edge shows them for a moment); the page is told as well
+        val view = LocalView.current
+        LaunchedEffect(isFull) {
+            view.context.findActivity()?.window?.let { w ->
+                val c = WindowCompat.getInsetsController(w, view)
+                if (isFull) { c.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE; c.hide(WindowInsetsCompat.Type.systemBars()) }
+                else c.show(WindowInsetsCompat.Type.systemBars())
+            }
+            web?.evaluateJavascript("window.setFull && setFull($isFull)", null)
+        }
+        DisposableEffect(Unit) { onDispose { if (full.value) { full.value = false; view.context.findActivity()?.window?.let { WindowCompat.getInsetsController(it, view).show(WindowInsetsCompat.Type.systemBars()) } } } }
+        BackHandler(isFull) { full.value = false }
 
-        Column(Modifier.fillMaxSize()) {
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("‹ Vissza", style = Melyviz.label.copy(color = Melyviz.current),
-                        modifier = Modifier.clickable { host.home() }.padding(vertical = 8.dp))
-                    Text("RÉTEGVEREM", style = Melyviz.title.copy(fontSize = 16.sp),
-                        modifier = Modifier.weight(1f).padding(start = 12.dp))
-                    VrgChip(if (loading) "…" else "⟳ Frissítés") { refresh() }
-                }
-                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.fillMaxSize().then(if (isFull) Modifier.background(Melyviz.abyss) else Modifier)) {
+            if (!isFull) Column(Modifier.padding(horizontal = 12.dp, vertical = 2.dp)) {
+                // one row: back, the title, the two pages, refresh, full screen; nothing wraps or overlaps
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("‹", style = Melyviz.title.copy(fontSize = 22.sp, color = Melyviz.current),
+                        modifier = Modifier.clickable { host.home() }.padding(horizontal = 4.dp, vertical = 6.dp))
+                    Text("RÉTEGVEREM", style = Melyviz.title.copy(fontSize = 13.sp), maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f))
                     StackPages.PAGES.forEach { p -> VrgChip(p.title, selected = p == current) { choose(p.id) } }
+                    VrgChip(if (loading) "…" else "⟳") { refresh() }
+                    if (meta != null) VrgChip("⛶") { full.value = true }
                 }
                 val m = meta
                 if (m != null) {
                     Text("${m.generatedLabel} UTC · ${m.nodes} csomópont · ${m.points} × 2 KB · ${m.lines} pálya" + if (old) " · offline" else "",
-                        style = Melyviz.readout.copy(fontSize = 11.sp))
+                        style = Melyviz.readout.copy(fontSize = 10.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 pct?.let { Text("Letöltés… ${(it * 100).toInt()} %", style = Melyviz.small) }
                 if (account !is Account.SignedIn && m == null) {
                     Text("A repó privát: GitHub belépés kell.", style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(top = 6.dp))
                     Row(Modifier.padding(vertical = 6.dp)) { VrgChip("GitHub fiók ›") { host.open(Catalogue.ACCOUNT.id) } }
                 }
-                why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), modifier = Modifier.padding(vertical = 2.dp)) }
+                why?.let { Text(it, style = Melyviz.small.copy(color = Melyviz.sand), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(vertical = 2.dp)) }
             }
             Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                 val m = meta
@@ -291,7 +330,7 @@ object StackFeature : VrgFeature {
                         modifier = Modifier.fillMaxSize(),
                         update = { wv ->
                             val want = "$url@${m.published}#$tick"
-                            if (wv.tag != want) { wv.tag = want; wv.loadUrl(url) }
+                            if (wv.tag != want) { wv.tag = want; wv.loadUrl(if (isFull) "$url#full" else url) }
                         },
                         onRelease = { wv -> if (web === wv) web = null; wv.destroy() },
                     )

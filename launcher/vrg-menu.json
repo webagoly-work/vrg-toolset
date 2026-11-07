@@ -12,7 +12,7 @@
     "zen": "{full}\\programs\\zen-browser\\zen.exe",
     "planner": "{repo}\\Planner\\projects\\varler-planner",
     "inventory": "{repo}\\Inventory",
-    "stack": "{full}\\notes\\stack"
+    "stack": "{repo}\\Stack"
   },
 
   "ui": {

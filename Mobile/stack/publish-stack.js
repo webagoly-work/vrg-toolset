@@ -8,7 +8,7 @@
 // the repo's object store and prints what would change, but sends nothing. START → R Rétegverem → T runs it with
 // --push.
 //
-// Why from the PC: the stack (H:\VRG\Full\notes\stack, outside the repo) is built from H: (transcripts, git, the
+// Why from the PC: the stack (Stack/ in this repo; its out/ is not committed) is built from H: (transcripts, git, the
 // notes), which no Actions runner has. So the PC bundles and publishes; GitHub only carries the result.
 //
 // What it bundles (each page becomes ONE self-contained HTML file; the phone loads nothing else):
@@ -38,7 +38,7 @@ hand; the branch is replaced (one commit, no history) on every publish.
 - \`stack/holo.html\`: the Holo page (Polip, Gömb, Föld, Mag, the Őrség lock), one self-contained page.
 - \`stack/meta.json\`: when the data was built and published, the sizes.
 
-The source lives in \`H:\\VRG\\Full\\notes\\stack\` (outside the repo); the data is titles, kinds, sizes, times and
+The source lives in \`Stack/\` on main; the data is titles, kinds, sizes, times and
 links, never file contents.
 `;
 
@@ -53,7 +53,7 @@ function args(argv) {
     else if (k === '--out') a.out = path.resolve(argv[++i]);
     else throw new Error('unknown argument: ' + k);
   }
-  a.stack = a.stack || path.join(path.dirname(a.repo), 'notes', 'stack');
+  a.stack = a.stack || path.join(a.repo, 'Stack');
   return a;
 }
 

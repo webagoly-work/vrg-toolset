@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "vrg-stack", "runtimeExecutable": "H:/VRG/Full/tools/node/node.exe", "runtimeArgs": ["serve.js", "8806"], "port": 8806 }
+  ]
+}
