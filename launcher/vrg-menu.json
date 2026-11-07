@@ -221,6 +221,7 @@
             { "key": "5", "name": "Holo · polip ⇄ gömb", "hint": "pályák, :8806", "exe": "C:\\Windows\\System32\\rundll32.exe", "args": ["url.dll,FileProtocolHandler", "http://localhost:8806/orb.html"],
               "server": "stack", "serverArgs": ["--no-open"], "page": "{stack}\\orb.html" },
             { "key": "6", "name": "Holo fájlként", "hint": "szerver nélkül", "path": "{stack}\\orb.html" },
+            { "key": "7", "name": "Rétegek", "hint": "robbantott izometrikus rétegnézet", "path": "{stack}\\layers.html" },
             { "key": "T", "name": "Telefonra", "hint": "stack-pages: a VRG Mobile Rétegverem", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Mobile/stack/publish-stack.js", "--push"] }] },
             { "key": "B", "name": "Újraépítés", "hint": "stack.js build", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "build"] }] },
             { "key": "D", "name": "Doktor", "hint": "stack.js doctor", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "doctor"] }] },

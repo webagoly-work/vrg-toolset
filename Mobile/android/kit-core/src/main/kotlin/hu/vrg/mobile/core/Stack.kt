@@ -3,8 +3,8 @@ package hu.vrg.mobile.core
 import org.json.JSONObject
 
 // Rétegverem / VRG Stack on the phone (WP M17): the rules of the phone's side. The stack is built on the PC
-// (H:\VRG\Full\notes\stack); Mobile/stack/publish-stack.js bundles its two 3D pages into self-contained HTML
-// files and puts them on the `stack-pages` branch as stack/{konnektom.html, holo.html, meta.json}. The phone reads
+// (H:\VRG\Full\Planner_VRG_U100\Stack); Mobile/stack/publish-stack.js bundles its three 3D pages into self-contained HTML
+// files and puts them on the `stack-pages` branch as stack/{konnektom.html, holo.html, retegek.html, meta.json}. The phone reads
 // meta.json and downloads a page only when the published copy differs from the one it has.
 
 object StackPages {
@@ -12,10 +12,11 @@ object StackPages {
     const val DIR = "stack"
     const val META = "meta.json"
 
-    /** The two pages, in the order of the chips. Ids are stable: settings and deep links use them. */
+    /** The three pages, in the order of the chips. Ids are stable: settings and deep links use them. */
     val PAGES = listOf(
         StackPage("konnektom", "Konnektóm", "konnektom.html"),
         StackPage("holo", "Holo", "holo.html"),
+        StackPage("retegek", "Rétegek", "retegek.html"),
     )
 
     fun page(id: String?): StackPage = PAGES.firstOrNull { it.id == id } ?: PAGES.first()

@@ -12,14 +12,14 @@
 // notes), which no Actions runner has. So the PC bundles and publishes; GitHub only carries the result.
 //
 // What it bundles (each page becomes ONE self-contained HTML file; the phone loads nothing else):
-//   connectome.html -> stack/konnektom.html     orb.html -> stack/holo.html
+//   connectome.html -> stack/konnektom.html     orb.html -> stack/holo.html     layers.html -> stack/retegek.html
 //   inlined: shared/melyviz.css, brain.js, touch.js, earth-land.js (Holo), out/connectome-data.js (the data),
 //   plus `window.STACK_BUNDLE = true`, which makes the pages skip the data reload and hide the server buttons.
 //   The data is node ids, titles, kinds, sizes, times and links; never a file's content. The repo is private.
 //
 // The layout of stack-pages (kit-core Stack.kt reads exactly this):
 //   README.md
-//   stack/konnektom.html   stack/holo.html
+//   stack/konnektom.html   stack/holo.html   stack/retegek.html
 //   stack/meta.json        {kind:'vrg-stack-meta', generated, published, nodes, points, neurons?, files:{name:bytes}}
 //
 // How it writes: git plumbing only (hash-object, mktree, commit-tree); the working tree, the index, HEAD and every
@@ -36,6 +36,7 @@ hand; the branch is replaced (one commit, no history) on every publish.
 
 - \`stack/konnektom.html\`: the Konnektóm (the stack as a brain, by function), one self-contained page.
 - \`stack/holo.html\`: the Holo page (Polip, Gömb, Föld, Mag, the Őrség lock), one self-contained page.
+- \`stack/retegek.html\`: the Rétegek page (the layers as an exploded isometric stack), one self-contained page.
 - \`stack/meta.json\`: when the data was built and published, the sizes.
 
 The source lives in \`Stack/\` on main; the data is titles, kinds, sizes, times and
@@ -91,9 +92,9 @@ function main() {
   if (!fs.existsSync(path.join(a.stack, 'connectome.html'))) throw new Error('no stack at ' + a.stack);
   const out = a.out || fs.mkdtempSync(path.join(os.tmpdir(), 'vrg-stack-'));
   fs.mkdirSync(out, { recursive: true });
-  const kon = bundle(a.stack, a.repo, 'connectome.html'), holo = bundle(a.stack, a.repo, 'orb.html');
+  const kon = bundle(a.stack, a.repo, 'connectome.html'), holo = bundle(a.stack, a.repo, 'orb.html'), ret = bundle(a.stack, a.repo, 'layers.html');
   const D = JSON.parse(kon.data.slice(kon.data.indexOf('=') + 1).trim().replace(/;\s*$/, ''));
-  const files = { 'konnektom.html': kon.html, 'holo.html': holo.html };
+  const files = { 'konnektom.html': kon.html, 'holo.html': holo.html, 'retegek.html': ret.html };
   const meta = {
     kind: 'vrg-stack-meta', generated: D.generated, stackGenerated: D.stackGenerated, published: new Date().toISOString(),
     nodes: D.nodes.length, points: D.neurons, lines: (D.lines || []).length,
@@ -103,9 +104,9 @@ function main() {
   fs.writeFileSync(path.join(out, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
   fs.writeFileSync(path.join(out, 'README.md'), README);
 
-  // the commit: README.md + stack/{konnektom.html, holo.html, meta.json}
+  // the commit: README.md + stack/{konnektom.html, holo.html, retegek.html, meta.json}
   const blob = f => git(a.repo, ['hash-object', '-w', '--', f]);
-  const sub = git(a.repo, ['mktree'], ['holo.html', 'konnektom.html', 'meta.json'].map(f => `100644 blob ${blob(path.join(out, f))}\t${f}`).join('\n') + '\n');
+  const sub = git(a.repo, ['mktree'], ['holo.html', 'konnektom.html', 'meta.json', 'retegek.html'].map(f => `100644 blob ${blob(path.join(out, f))}\t${f}`).join('\n') + '\n');
   const root = git(a.repo, ['mktree'], `100644 blob ${blob(path.join(out, 'README.md'))}\tREADME.md\n040000 tree ${sub}\tstack\n`);
   const env = { ...process.env, GIT_AUTHOR_NAME: 'VRG Stack', GIT_AUTHOR_EMAIL: 'stack@vrg.local', GIT_COMMITTER_NAME: 'VRG Stack', GIT_COMMITTER_EMAIL: 'stack@vrg.local' };
   const commit = execFileSync('git', ['commit-tree', root, '-m', `stack-pages: ${meta.nodes} nodes, data ${meta.generated}`], { cwd: a.repo, env, encoding: 'utf8' }).trim();
