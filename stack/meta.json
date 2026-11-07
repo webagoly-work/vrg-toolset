@@ -1,0 +1,14 @@
+{
+  "kind": "vrg-stack-meta",
+  "generated": "2026-11-07T18:13:25.131Z",
+  "stackGenerated": "2026-11-07T09:23:39.536Z",
+  "published": "2026-11-07T19:22:04.244Z",
+  "nodes": 2068,
+  "points": 24876,
+  "lines": 50,
+  "files": {
+    "konnektom.html": 574303,
+    "holo.html": 653069,
+    "retegek.html": 533217
+  }
+}
