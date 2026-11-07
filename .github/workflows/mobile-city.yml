@@ -10,7 +10,7 @@ name: VRG Mobile (Kódváros online)
 
 on:
   push:
-    branches-ignore: [city-pages, mobile-log, solomon-data]
+    branches-ignore: [city-pages, mobile-log, solomon-data, stack-pages]
   delete:
   workflow_dispatch:
 

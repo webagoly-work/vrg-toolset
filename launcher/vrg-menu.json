@@ -11,7 +11,8 @@
     "gitbash": "{full}\\tools\\git\\git-bash.exe",
     "zen": "{full}\\programs\\zen-browser\\zen.exe",
     "planner": "{repo}\\Planner\\projects\\varler-planner",
-    "inventory": "{repo}\\Inventory"
+    "inventory": "{repo}\\Inventory",
+    "stack": "{full}\\notes\\stack"
   },
 
   "ui": {
@@ -114,7 +115,8 @@
     { "key": "C", "id": "console", "name": "Varler Console · terepi konzol", "port": 8133, "js": "{repo}\\Console\\serve.js" },
     { "key": "R", "id": "trace-relay", "name": "Ügynöknyom · közvetítő", "port": 8134, "js": "{repo}\\Console\\tools\\trace-relay.js" },
     { "key": "T", "id": "solomon", "name": "Solomon Gömb · döntésekkel", "port": 8799, "js": "{repo}\\Solomon\\serve.js" },
-    { "key": "J", "id": "divergence", "name": "Divergencia · jelzőtábla", "port": 8801, "js": "{repo}\\Divergence\\serve.js" }
+    { "key": "J", "id": "divergence", "name": "Divergencia · jelzőtábla", "port": 8801, "js": "{repo}\\Divergence\\serve.js" },
+    { "key": "V", "id": "stack", "name": "Rétegverem · Konnektóm", "port": 8806, "open": "/connectome.html", "js": "{stack}\\serve.js" }
   ],
 
   "programs": [
@@ -208,6 +210,21 @@
             { "key": "S", "name": "Indítás", "hint": ":8790", "server": "board" },
             { "key": "V", "name": "VS Code", "exe": "{code}", "args": ["{repo}\\Firmware\\board-console"] },
             { "key": "O", "name": "Mappa megnyitása", "folder": "{repo}\\Firmware\\board-console" }
+          ] } },
+      { "key": "R", "name": "Rétegverem", "hint": "VRG Stack · konnektóm, keresés", "menu": {
+          "title": "RÉTEGVEREM / VRG STACK", "subtitle": "{stack}", "note": "A szerverrel a Konnektóm élő: Frissítés és Újraépítés gomb.",
+          "items": [
+            { "key": "1", "name": "Konnektóm", "hint": "élő agy-nézet, :8806", "server": "stack" },
+            { "key": "2", "name": "Keresés", "hint": "stack-search.html", "path": "{stack}\\stack-search.html" },
+            { "key": "3", "name": "Visszajátszás", "hint": "egy session lépésről lépésre", "path": "{stack}\\replay.html" },
+            { "key": "4", "name": "Konnektóm fájlként", "hint": "szerver nélkül, frissítés gomb nélkül", "path": "{stack}\\connectome.html" },
+            { "key": "5", "name": "Holo · polip ⇄ gömb", "hint": "pályák, :8806", "exe": "C:\\Windows\\System32\\rundll32.exe", "args": ["url.dll,FileProtocolHandler", "http://localhost:8806/orb.html"],
+              "server": "stack", "serverArgs": ["--no-open"], "page": "{stack}\\orb.html" },
+            { "key": "6", "name": "Holo fájlként", "hint": "szerver nélkül", "path": "{stack}\\orb.html" },
+            { "key": "T", "name": "Telefonra", "hint": "stack-pages: a VRG Mobile Rétegverem", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Mobile/stack/publish-stack.js", "--push"] }] },
+            { "key": "B", "name": "Újraépítés", "hint": "stack.js build", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "build"] }] },
+            { "key": "D", "name": "Doktor", "hint": "stack.js doctor", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "doctor"] }] },
+            { "key": "O", "name": "Mappa megnyitása", "folder": "{stack}" }
           ] } },
       { "key": "L", "name": "VRG Mobile", "hint": "telefonos társapp, benne a Légegér", "was": "A", "menu": {
           "title": "VRG MOBILE", "subtitle": "{repo}\\Mobile", "note": "Android app. Még nem futott valódi telefonon. Az APK építéséhez JDK 17 + Android SDK kell (Android Studio).",

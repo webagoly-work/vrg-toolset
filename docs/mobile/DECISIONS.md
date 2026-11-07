@@ -168,6 +168,15 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
     other request: no file access, working `localStorage`, nothing leaves the phone.
   Details: `WP/M5.md`.
 
+- **D-12 · Rétegverem on the phone (M17), 2026-11-07.** The user asked for the stack views in the app with proper
+  touch. Decided without a question (the user asked to proceed): **the PC publishes, the phone reads GitHub**, like
+  M5. The stack is built from H: (transcripts, git, notes), which no Actions runner has, so
+  `Mobile/stack/publish-stack.js --push` (START → R → T) bundles both pages into self-contained HTML and replaces the
+  orphan branch `stack-pages` (one root commit, `--force-with-lease` on that branch only). The data on it is ids,
+  titles, kinds, sizes, times and links, never file contents; the repo is private. Touch lives in the pages
+  (`notes/stack/touch.js`), not in an injected adapter, so the pages work in any phone browser too.
+  Details: `WP/M17.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

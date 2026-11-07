@@ -95,6 +95,10 @@ object Catalogue {
         "sphere", "Gömb", "A tudásbázis három jelzése: ellentmondás, sötét zóna, dermedt. A kezdőlapról balra húzva is elérhető.",
         "◉", Group.WORK, Stage.LIVE, "M14", setOf(Need.INTERNET, Need.GITHUB),
     )
+    val STACK = FeatureInfo(
+        "stack", "Rétegverem", "A VRG Stack 3D-ben: Konnektóm (agyterületek funkció szerint) és Holo (Polip, Gömb, Föld, Mag, Őrség zár), érintéssel.",
+        "🧠", Group.WORK, Stage.BETA, "M17", setOf(Need.INTERNET, Need.GITHUB),
+    )
     val UPDATE = FeatureInfo(
         "update", "Frissítés", "Új verzió a GitHubról: az app magát frissíti, ha a branchen újabb build van.",
         "⟳", Group.APP, Stage.LIVE, "M9", setOf(Need.INTERNET, Need.GITHUB),
@@ -107,7 +111,7 @@ object Catalogue {
     val ALL: List<FeatureInfo> = listOf(
         AIRDECK, LAUNCH, DROP, SCREEN,
         PAIR, ACCOUNT, NET,
-        PULSE, SPHERE, CITY, NOTES, PORTS, INBOX,
+        PULSE, SPHERE, CITY, STACK, NOTES, PORTS, INBOX,
         UPDATE, SETTINGS,
     )
 

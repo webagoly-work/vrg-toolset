@@ -32,6 +32,7 @@ The base framework is built (M0). This pack is what the sessions build from (clo
 | **M5** | Kódváros online (`city`) | **BETA** (built 2026-11-06, D-7 = A, waiting for the first Actions run and the phone check): the repo's city from GitHub's fresh state (online parts only): `.github/workflows/mobile-city.yml` scans each pushed branch onto `city-pages`, the phone shows it in a confined WebView with touch | GitHub | medium |
 | **M7** | Hálózat (`net`) | BT HID status, phone-as-relay over WiFi, hotspot with usage notification, USB / BT tethering | — | low (Android-bound) |
 | **M10** | Értesítések (`inbox`) | **BETA** (built 2026-11-06, D-11 = C, waiting for the phone check): PR, CI, release, note and relay events in one list grouped by day, phone notifications on five channels; GitHub polled every 15 min (WorkManager, conditional requests), relay events live (`relay-notify.js`); the push service (D-11 B) is a later WP | GitHub | medium |
+| **M17** | Rétegverem (`stack`) | **BETA** (built 2026-11-07, D-12 = PC publishes, waiting for the phone check): the VRG Stack's Konnektóm and Holo 3D pages, published from the PC on `stack-pages` (START → R → T), shown offline-capable in a confined WebView, with touch gestures in the pages | GitHub | medium |
 | **M14** | Gömb (`sphere`) | **LIVE** (built 2026-11-01, checked on the phone 2026-11-05): the Solomon sphere as a swipe page beside home: three signals on every document, rulings from the phone | GitHub | medium |
 
 **Build order is the table's order.** Each step makes the next ones cheaper:
