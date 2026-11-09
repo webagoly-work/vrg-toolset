@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Döntésnapló</title>
+<!-- Döntésnapló (decision inbox): the Q layer of the VRG Stack in its own order (2026-11-09, STK-P26…).
+     Every question the stack found in a DECISIONS file, open ones first, ranked by what they block (the DevLog
+     lines, sessions, features and agentic files that link to them). Each shows its options as written, its file
+     and line, its date, and what it blocks. The A/B/C buttons write nothing: each copies a ready prompt for a
+     fresh session that answers the question in its file (ROADMAP 2.7 write-back is not built). Decision ids that
+     no file holds (only chats and memory name them) are listed as "nincs fájlja"; answered ones are read-only.
+     Data: out/decisions-data.js (lib/decisions.js, written on every `stack.js build`). Works from file:// and serve.js. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/density.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-light.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/base.css">
+<style>
+  /* fallbacks so the page still reads if the kit is not reachable */
+  :root { --bg: var(--vk-bg, #0a141c); --s1: var(--vk-surface-1, #121c24); --s2: var(--vk-surface-2, #17232c); --s3: var(--vk-surface-3, #1d2a33);
+    --ln: var(--vk-line, rgba(232,240,246,.15)); --ln2: var(--vk-line-strong, rgba(232,240,246,.34));
+    --tx: var(--vk-text, #e8f0f6); --mu: var(--vk-text-muted, #a6afb7); --fa: var(--vk-text-faint, #6f7880);
+    --acc: var(--vk-accent, #93d3e6); --warm: var(--vk-activity, #e8a873); --ok: var(--vk-ok, #8bcca1); --warn: var(--vk-warn, #e3be7b);
+    --info: var(--vk-info, #9db8e8); --idea: var(--vk-idea, #b4a7e6); --bad: var(--vk-error, #e88f8f);
+    --acc-soft: color-mix(in srgb, var(--acc) 14%, transparent); --warm-soft: color-mix(in srgb, var(--warm) 14%, transparent);
+    --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif);
+    --panel-w: 440px; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--tx); font: 14px/1.5 var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--ln); }
+  h1 { font: 600 17px var(--voice); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--mu); margin-left: 6px; }
+  .sp { flex: 1; }
+  header button, header a.b, header select, header input { font: 12px var(--mono); background: var(--s1); color: var(--mu); border: 1px solid var(--ln); padding: 5px 9px; text-decoration: none; min-height: 28px; cursor: pointer; }
+  header select, header input { color: var(--tx); max-width: 200px; }
+  header input { cursor: text; width: 200px; }
+  header select.on, header input.on { border-color: var(--warm); box-shadow: inset 0 -2px 0 var(--warm); }
+  header button:hover, header a.b:hover, header select:hover { color: var(--tx); border-color: var(--acc); }
+  header button[aria-pressed="true"] { color: var(--tx); border-color: var(--acc); background: var(--acc-soft); }
+  header button[aria-pressed="false"].st { text-decoration: line-through; color: var(--fa); }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .filters label { font: 11px var(--mono); color: var(--fa); text-transform: uppercase; letter-spacing: .06em; display: inline-flex; gap: 5px; align-items: center; }
+  .stgroup { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+  #bClear { display: none; } #bClear.on { display: inline-block; color: var(--warm); border-color: var(--warm); }
+  #stat { font: 12px var(--mono); color: var(--mu); }
+  .shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) var(--panel-w); min-height: 0; }
+  #main { overflow: auto; min-height: 0; min-width: 0; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 18px 16px 60px; display: flex; flex-direction: column; gap: 22px; }
+  h2 { font: 600 22px/1.15 var(--voice); margin: 0; }
+  p { margin: 0; max-width: 80ch; }
+  .dim { color: var(--mu); } .faint { color: var(--fa); } .mono { font-family: var(--mono); font-size: 12px; }
+  a { color: var(--acc); }
+  code { font: 12px var(--mono); background: var(--s2); padding: 0 3px; overflow-wrap: anywhere; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .tile { all: unset; box-sizing: border-box; cursor: pointer; background: var(--s1); border: 1px solid var(--ln); padding: 9px 12px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .tile:hover, .tile:focus-visible { border-color: var(--acc); }
+  .tile b { font: 600 24px/1.1 var(--voice); font-variant-numeric: tabular-nums; }
+  .tile small { font-size: 12px; color: var(--mu); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tile.o b { color: var(--warm); } .tile.d b { color: var(--info); } .tile.a b { color: var(--ok); } .tile.n b { color: var(--idea); }
+
+  section.box { background: var(--s1); border: 1px solid var(--ln); padding: 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .boxhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
+  .boxhead h3 { font: 600 15px var(--voice); margin: 0; letter-spacing: .03em; }
+  .boxhead .en { font: italic 400 12px var(--sans); color: var(--fa); }
+  .hint { color: var(--mu); font-size: 12.5px; }
+  .empty { padding: 10px 4px; color: var(--mu); font-size: 13px; }
+
+  /* one decision in the list */
+  .qc { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 112px minmax(0, 1fr) auto; gap: 2px 10px; padding: 8px 6px; width: 100%; border-top: 1px solid var(--ln); }
+  .qc:hover { background: var(--acc-soft); }
+  .qc:focus-visible { outline: 2px solid var(--acc); outline-offset: -2px; }
+  .qc.sel { background: var(--s2); box-shadow: inset 3px 0 0 var(--acc); }
+  .qc .id { font: 600 12px var(--mono); color: var(--tx); overflow-wrap: anywhere; padding-top: 1px; }
+  .qc .qt { font-size: 13.5px; line-height: 1.35; overflow-wrap: anywhere; }
+  .qc .mt { grid-column: 2 / 4; font: 11px var(--mono); color: var(--fa); display: flex; flex-wrap: wrap; gap: 2px 10px; }
+  .qc .mt .bl { color: var(--warm); }
+  .qc .sc { font: 11px var(--mono); color: var(--mu); text-align: right; white-space: nowrap; padding-top: 2px; }
+  .qc .sc b { font: 600 15px var(--voice); color: var(--warm); display: block; }
+  .qc .sc.z b { color: var(--fa); }
+  .mk { display: inline-flex; align-items: center; gap: 3px; font: 10.5px/1.4 var(--mono); padding: 0 5px; border: 1px solid currentColor; white-space: nowrap; margin-top: 3px; width: max-content; }
+  .mk.o { color: var(--warm); } .mk.d { color: var(--info); } .mk.a { color: var(--ok); } .mk.n { color: var(--idea); border-style: dashed; } .mk.dub { color: var(--warn); border-style: dotted; }
+  .qc .idc { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+
+  details.ns { border-top: 1px solid var(--ln); }
+  details.ns > summary { cursor: pointer; padding: 7px 4px; font: 600 13px var(--voice); letter-spacing: .03em; list-style: none; display: flex; gap: 8px; align-items: baseline; }
+  details.ns > summary::-webkit-details-marker { display: none; }
+  details.ns > summary::before { content: '▸'; color: var(--mu); font: 12px var(--mono); }
+  details.ns[open] > summary::before { content: '▾'; }
+  details.ns > summary:focus-visible { outline: 2px solid var(--acc); outline-offset: -2px; }
+  details.ns > summary .c { font: 11px var(--mono); color: var(--fa); font-weight: 400; }
+  details.ns .qc { padding-left: 18px; }
+  #secAns > details.all > summary { font-size: 15px; }
+
+  .nf { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 112px minmax(0, 1fr) auto; gap: 2px 10px; padding: 6px; width: 100%; border-top: 1px solid var(--ln); font-size: 13px; }
+  .nf:hover { background: var(--acc-soft); } .nf:focus-visible { outline: 2px solid var(--acc); outline-offset: -2px; }
+  .nf.sel { background: var(--s2); box-shadow: inset 3px 0 0 var(--idea); }
+  .nf .id { font: 600 12px var(--mono); }
+  .nf .w { grid-column: 2; grid-row: 1; color: var(--mu); overflow-wrap: anywhere; } .nf .id { grid-column: 1; grid-row: 1; } .nf .k { grid-column: 3; grid-row: 1; } .nf .k { font: 11px var(--mono); color: var(--fa); white-space: nowrap; }
+
+  table.files { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.files th { text-align: left; font: 11px var(--mono); color: var(--fa); text-transform: uppercase; letter-spacing: .05em; padding: 4px 6px; border-bottom: 1px solid var(--ln2); }
+  table.files td { padding: 4px 6px; border-bottom: 1px solid var(--ln); vertical-align: top; overflow-wrap: anywhere; }
+  table.files td.n { font: 12px var(--mono); text-align: right; white-space: nowrap; }
+  table.files tr.zero td { color: var(--warn); }
+  table.files button { all: unset; cursor: pointer; color: var(--acc); font: 12px var(--mono); overflow-wrap: anywhere; }
+  table.files button:hover { text-decoration: underline; }
+  .tblwrap { overflow-x: auto; }
+
+  /* side panel (a sheet on the phone) */
+  aside { border-left: 1px solid var(--ln); padding: 14px 16px 40px; overflow: auto; min-height: 0; min-width: 0; background: var(--bg); }
+  aside h2 { font-size: 20px; overflow-wrap: anywhere; }
+  aside h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--mu); margin: 18px 0 6px; border-bottom: 1px solid var(--ln); padding-bottom: 2px; }
+  aside p { margin: 0 0 6px; overflow-wrap: anywhere; font-size: 13px; }
+  .kick { font: 11px var(--mono); color: var(--mu); text-transform: uppercase; letter-spacing: .06em; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .qtext { font-size: 15px; line-height: 1.4; margin: 6px 0; overflow-wrap: anywhere; }
+  .ctx { color: var(--mu); font-size: 12.5px; overflow-wrap: anywhere; }
+  .note { border-left: 2px solid var(--warn); padding: 4px 8px; font-size: 12.5px; color: var(--mu); background: color-mix(in srgb, var(--warn) 7%, transparent); }
+  .note b { color: var(--warn); font-weight: 600; }
+  .opt { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 4px 8px; padding: 8px 0; border-bottom: 1px solid var(--ln); }
+  .opt .L { font: 600 16px/1.2 var(--voice); color: var(--acc); text-align: center; }
+  .opt.rec .L { color: var(--warm); }
+  .opt .tx { font-size: 13px; overflow-wrap: anywhere; }
+  .opt .rb { font: 10.5px var(--mono); color: var(--warm); border: 1px solid var(--warm); padding: 0 4px; margin-left: 4px; white-space: nowrap; }
+  .opt .act { grid-column: 2; }
+  .btn { font: 12px var(--mono); background: var(--s1); color: var(--tx); border: 1px solid var(--ln2); padding: 5px 10px; cursor: pointer; min-height: 30px; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover, .btn:focus-visible { border-color: var(--acc); outline: none; }
+  .btn.pri { border-color: var(--acc); color: var(--acc); }
+  .btn.copied { border-color: var(--ok); color: var(--ok); }
+  .btn svg { width: 13px; height: 13px; }
+  textarea.own { width: 100%; min-height: 70px; font: 13px/1.4 var(--sans); background: var(--s1); color: var(--tx); border: 1px solid var(--ln2); padding: 7px; resize: vertical; }
+  textarea.own:focus { border-color: var(--acc); outline: none; }
+  .kv { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 3px 8px; font-size: 12.5px; }
+  .kv > span:nth-child(odd) { color: var(--fa); font: 11px var(--mono); padding-top: 2px; } .kv > span:nth-child(even) { overflow-wrap: anywhere; }
+  .lk { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; padding: 2px; font-size: 12.5px; color: var(--tx); text-decoration: none; }
+  .lk:hover { background: var(--acc-soft); }
+  .lk .c { font: 11px var(--mono); color: var(--mu); } .lk .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .lk .r { font: 11px var(--mono); color: var(--mu); white-space: nowrap; }
+  .lk.sub { padding-left: 20px; } .lk.sub .c { color: var(--fa); }
+  .also { font: 12px var(--mono); color: var(--mu); padding: 2px 0; overflow-wrap: anywhere; }
+  .also b { color: var(--fa); font-weight: 400; }
+  pre.raw { white-space: pre-wrap; overflow-wrap: anywhere; font: 11.5px/1.45 var(--mono); background: var(--s1); border: 1px solid var(--ln); padding: 8px; color: var(--mu); max-height: 360px; overflow: auto; margin: 6px 0 0; }
+  details.pv > summary { cursor: pointer; font: 11.5px var(--mono); color: var(--acc); }
+  #back { display: none; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+
+  /* toast + fallback (the Thread Board's pattern) */
+  .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 40;
+    background: var(--tx); color: var(--bg); padding: 9px 16px; font: 500 13px var(--sans); max-width: calc(100vw - 32px); }
+  .fallback { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .5); }
+  .fallback[hidden], .toast[hidden] { display: none; }
+  .fallback .card { width: min(720px, 100%); display: grid; gap: 10px; background: var(--s1); border: 1px solid var(--ln2); padding: 14px; }
+  .fallback h2 { font-size: 17px; }
+  .fallback textarea { width: 100%; height: 50vh; font: 12.5px/1.45 var(--mono); background: var(--bg); color: var(--tx); border: 1px solid var(--ln2); padding: 10px; resize: vertical; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .qc, .nf, .tile, .btn { transition: background-color .12s ease, border-color .12s ease; }
+  }
+  @media (max-width: 900px) {
+    body { overflow-x: hidden; overflow-y: auto; height: auto; min-height: 100%; }
+    header { padding: 8px 16px; } h1 i { display: none; } .sp { display: none; }
+    .filters { width: 100%; } .filters label { flex: 1 1 140px; min-width: 0; } .filters select { flex: 1 1 0; width: 0; max-width: none; min-width: 0; }
+    #about { order: 9; } #secFiles { order: 10; }
+    header input { width: 100%; max-width: none; flex: 1 1 100%; }
+    .shell { display: block; }
+    #main { overflow: visible; }
+    .wrap { padding: 14px 16px 24px; }
+    .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .qc, .nf { grid-template-columns: minmax(0, 1fr) auto; }
+    .qc .idc { grid-column: 1; flex-direction: row; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .qc .idc .mk { margin-top: 0; }
+    .qc .qt { grid-column: 1 / 3; grid-row: 2; }
+    .qc .sc { grid-column: 2; grid-row: 1; }
+    .qc .mt { grid-column: 1 / 3; }
+    .nf .id { grid-column: 1; grid-row: 1; } .nf .k { grid-column: 2; grid-row: 1; } .nf .w { grid-column: 1 / 3; grid-row: 2; }
+    /* the panel becomes a full-screen sheet while something is open */
+    aside { display: none; position: fixed; inset: 0; z-index: 30; border: 0; padding: 12px 16px 40px; overflow-y: auto; overflow-x: hidden; }
+    body.sheet aside { display: block; }
+    body.sheet { overflow: hidden; }
+    #back { display: inline-flex; margin-bottom: 8px; }
+    .kv { grid-template-columns: 64px minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Döntésnapló<i>VRG Stack · Q réteg · döntések · decision inbox</i></h1>
+  <div class="filters" role="group" aria-label="Szűrő">
+    <input id="fS" type="search" placeholder="Keresés (/)" aria-label="Keresés azonosítóban, kérdésben, válaszlehetőségben, fájlban">
+    <span class="stgroup" role="group" aria-label="Állapot">
+      <button class="st" data-st="o" aria-pressed="true" title="Nyitott≈: a fájl szerint nincs válasz (a parser becslése)">◌ nyitott≈</button>
+      <button class="st" data-st="d" aria-pressed="true" title="Alapértelmezett A: a fájl szerint a válasz nélküli kérdés A">A▸ alap</button>
+      <button class="st" data-st="n" aria-pressed="true" title="Nincs fájlja: csak csevegés és memória említi">⌀ nincs fájlja</button>
+      <button class="st" data-st="a" aria-pressed="true" title="Megválaszolt (csak olvasható)">✓ megválaszolt</button>
+    </span>
+    <label>Névtér <select id="fN" aria-label="Szűrés névtér szerint"></select></label>
+    <label>Fájl <select id="fF" aria-label="Szűrés fájl szerint"></select></label>
+    <label>Sorrend <select id="fO" aria-label="A nyitott kérdések sorrendje"><option value="b">blokkolás</option><option value="n">névtér · szám</option><option value="t">kor (legrégebbi)</option></select></label>
+    <button id="bClear" title="Szűrő törlése">× szűrő</button>
+  </div>
+  <span class="sp"></span>
+  <button id="bTheme" title="Téma: auto → sötét → világos">◐ Téma</button>
+  <a class="b" href="layers.html" title="Rétegek · a teljes verem">Rétegek</a>
+  <a class="b" href="connectome.html" title="Konnektóm">Konnektóm</a>
+  <a class="b" href="control.html" title="Vezérlőterem (A réteg)">Vezérlőterem</a>
+  <span id="stat"></span>
+</header>
+<div class="shell">
+  <div id="main"><div class="wrap" id="wrap">
+    <div class="tiles" id="tiles"></div>
+    <p class="hint" id="about"></p>
+    <section class="box" id="secOpen" aria-labelledby="hOpen">
+      <div class="boxhead"><h3 id="hOpen">Nyitott kérdések</h3><span class="en" id="sOpen"></span></div>
+      <div id="lOpen"></div>
+    </section>
+    <section class="box" id="secDef" aria-labelledby="hDef">
+      <div class="boxhead"><h3 id="hDef">Alapértelmezett A</h3><span class="en" id="sDef"></span></div>
+      <p class="hint" id="pDef"></p>
+      <div id="lDef"></div>
+    </section>
+    <section class="box" id="secNo" aria-labelledby="hNo">
+      <div class="boxhead"><h3 id="hNo">Nincs fájlja</h3><span class="en" id="sNo"></span></div>
+      <p class="hint">Döntésazonosítók, amelyeket a verem csevegésekben, memóriában, dokumentumokban vagy commitokban lát, de egyetlen DECISIONS fájl sem tartalmaz. Csak említések: a kérdés szövege és a válaszlehetőségek ott vannak, ahol először felbukkant (ha a verem megtalálta). Egy vonalanként vezetett kérdésfájl szüntetné meg ezt a rést (LAYERS.md §2, Q).</p>
+      <div id="lNo"></div>
+    </section>
+    <section class="box" id="secAns" aria-labelledby="hAns">
+      <div class="boxhead"><h3 id="hAns">Megválaszolt</h3><span class="en" id="sAns"></span></div>
+      <p class="hint">Csak olvasható, névterenként csukva. A válasz a fájl szövegéből (≈).</p>
+      <div id="lAns"></div>
+    </section>
+    <section class="box" id="secFiles" aria-labelledby="hFiles">
+      <div class="boxhead"><h3 id="hFiles">Döntésfájlok</h3><span class="en">what the parser read in each file</span></div>
+      <div class="tblwrap"><table class="files" id="tFiles"></table></div>
+    </section>
+  </div></div>
+  <aside id="panel" aria-label="A kiválasztott döntés"></aside>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="fallback" id="fallback" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="fbh">
+    <h2 id="fbh">Másold ki a promptot</h2>
+    <p class="dim">A böngésző nem engedte a másolást. A szöveg ki van jelölve: Ctrl+C.</p>
+    <textarea id="fallback-text" readonly></textarea>
+    <div><button type="button" class="btn" id="fallback-close">Bezárás</button></div>
+  </div>
+</div>
+<script src="out/decisions-data.js"></script>
+<script>
+'use strict';
+(function () {
+  const D = window.DECISIONS;
+  const $ = s => document.querySelector(s);
+  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* file:// or private */ } } };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const md = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, '$1<i>$2</i>').replace(/\*\*/g, '');
+  const plain = s => String(s || '').replace(/\*\*/g, '').replace(/`/g, '');
+  const fold = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  /* ---------- theme: auto (system) → dark (Mélyvíz) → light (Papír), the same as the sibling pages ---------- */
+  const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
+  let themePref = store.get('vrg-decisions-theme') || 'auto';
+  function applyTheme() {
+    const light = themePref === 'light' || (themePref === 'auto' && mq && mq.matches);
+    document.documentElement.setAttribute('data-vk-theme', light ? 'light' : 'melyviz');
+    $('#bTheme').textContent = '◐ ' + ({ auto: 'Auto', dark: 'Sötét', light: 'Világos' })[themePref];
+  }
+  $('#bTheme').onclick = () => { themePref = { auto: 'dark', dark: 'light', light: 'auto' }[themePref]; store.set('vrg-decisions-theme', themePref); applyTheme(); };
+  if (mq && mq.addEventListener) mq.addEventListener('change', applyTheme);
+  applyTheme();
+
+  if (!D || !D.q) {
+    $('#wrap').innerHTML = '<div class="empty">Nincs adat: <code>out/decisions-data.js</code> hiányzik. Futtasd: <code>stack.js build</code> vagy <code>stack.js decisions</code> (a Stack mappában).</div>';
+    return;
+  }
+
+  /* ---------- words, dates, the data ---------- */
+  const Q = D.q, N = D.nodes, FILES = D.files, NF = D.nofile;
+  const LAYER = D.layers || {};
+  const ST = { 'open≈': 'o', 'default A': 'd', answered: 'a' };
+  const STW = { o: ['◌', 'nyitott≈'], d: ['A▸', 'alap A'], a: ['✓', 'megválaszolt'], n: ['⌀', 'nincs fájlja'] };
+  const p2 = n => (n < 10 ? '0' : '') + n;
+  const todayKey = () => { const d = new Date(); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); };   // the day the button is pressed
+  const ageOf = k => k ? Math.round((Date.parse(todayKey() + 'T00:00:00Z') - Date.parse(k + 'T00:00:00Z')) / 864e5) : null;
+  const MON = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+  const fDate = k => { if (!k) return '—'; const [y, m, d] = k.split('-').map(Number); return `${y}. ${MON[m - 1]} ${d}.`; };
+  const DSRC = { sor: 'a sorából', 'fejléc': 'a fejlécből', 'szöveg': 'a bejegyzés szövegéből', 'git blame': 'git blame: a sor utolsó módosítása', 'fájl ideje': 'a fájl ideje' };
+  const node = i => N[i] || null;
+  const titleOf = n => n[3] || n[0].slice(2);
+  const winAbs = p => !p ? '' : /^[A-Za-z]:/.test(p) ? p.replace(/\//g, '\\') : D.repo + '\\' + p.replace(/\//g, '\\');
+  const COPY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M5 1h7l3 3v8H5zM6 2v9h8V5h-3V2zM1 4h3v1H2v9h7v-1h1v2H1z"/></svg>';
+  const stOf = q => ST[q.state] || 'o';
+  const fileOf = q => q.f >= 0 ? FILES[q.f] : null;
+  const shortFile = f => f ? (f.inRepo ? f.rel : f.rel.replace(/^H:\/VRG\/Full\//, '')) : '—';
+  const nBlocks = q => q.blocks.L.length + q.blocks.F.length + q.blocks.A.length;
+  // a second look at the parser's state: evidence that disagrees with it (shown, never applied)
+  function doubt(q) {
+    const out = [];
+    if (q.state !== 'answered') {
+      for (const [ln, t] of q.also) if (/answered|in effect|=\s*\**[A-F]\b|válasz|chose|decided/i.test(t)) { out.push(`A fájl ${ln}. sora válaszra utal: „${plain(t).slice(0, 140)}”`); break; }
+    }
+    if (q.state === 'answered' && !q.answer && !q.also.length && !/answer|válasz|=\s*\**[A-F]|döntés|chose|decided/i.test(q.block)) out.push('A parser megválaszoltnak veszi, de a bejegyzésben nem látszik válasz (valószínűleg a fejezet címe alapján).');
+    if (q.state === 'open≈' && q.ctxParent) out.push(q.ctxParent);
+    return out;
+  }
+  // a sub-item under a heading that says "answered" (D-V5-2a under "D-V5-2 · … — answered"): mark it doubtful
+  for (const q of Q) {
+    if (q.state !== 'open≈') continue;
+    const m = /^(.*\d)[a-z]$/.exec(q.id); if (!m) continue;
+    const parent = Q.find(x => x.id === m[1] && x.f === q.f);
+    if (parent && parent.state === 'answered') q.ctxParent = `A szülő bejegyzés (${parent.id}) megválaszolt; ez az alpont valószínűleg vele együtt eldőlt.`;
+  }
+
+  /* ---------- filter state, in the link ---------- */
+  const F = { st: new Set(['o', 'd', 'n', 'a']), ns: '', f: '', q: '', o: 'b', sel: '' };
+  const NSs = [...new Set(Q.map(q => q.ns).concat(NF.map(x => x.ns)))].sort();
+  const opt = (v, t) => `<option value="${esc(v)}">${esc(t)}</option>`;
+  $('#fN').innerHTML = opt('', 'mind') + NSs.map(ns => opt(ns, `${ns} (${Q.filter(q => q.ns === ns).length + NF.filter(x => x.ns === ns).length})`)).join('');
+  $('#fF').innerHTML = opt('', 'mind') + FILES.map(f => opt(f.rel, `${shortFile(f)} (${f.n})`)).join('');
+  const filtering = () => F.st.size < 4 || F.ns || F.f || F.q;
+  const qWords = () => fold(F.q).split(/\s+/).filter(Boolean);
+  const hay = new Map(Q.map(q => [q, fold([q.id, q.question, q.title, q.ctx, q.answer, q.opts.map(o => o[1]).join(' '), (fileOf(q) || {}).rel, q.block].join(' '))]));
+  const hayN = new Map(NF.map(x => [x, fold([x.id, x.at ? x.at[0] + ' ' + x.at[2] : '', x.where.map(i => (N[i] ? N[i][0] + ' ' + titleOf(N[i]) : '')).join(' ')].join(' '))]));
+  const matchQ = q => F.st.has(stOf(q)) && (!F.ns || q.ns === F.ns) && (!F.f || (fileOf(q) || {}).rel === F.f) && qWords().every(w => hay.get(q).includes(w));
+  const matchN = x => F.st.has('n') && (!F.ns || x.ns === F.ns) && !F.f && qWords().every(w => hayN.get(x).includes(w));
+
+  function toHash() {
+    const h = new URLSearchParams();
+    if (F.sel) h.set('sel', F.sel);
+    if (F.st.size < 4) h.set('st', [...F.st].join(','));
+    if (F.ns) h.set('ns', F.ns); if (F.f) h.set('f', F.f); if (F.q) h.set('q', F.q); if (F.o !== 'b') h.set('o', F.o);
+    const s = h.toString().replace(/%2C/g, ',').replace(/%2F/g, '/');
+    if (('#' + s) !== location.hash && !(s === '' && location.hash === '')) history.replaceState(null, '', s ? '#' + s : location.pathname + location.search);
+  }
+  function fromHash() {
+    const h = new URLSearchParams(location.hash.slice(1));
+    F.sel = h.get('sel') || '';
+    F.st = new Set(h.has('st') ? h.get('st').split(',').filter(x => 'odna'.includes(x) && x) : ['o', 'd', 'n', 'a']);
+    F.ns = NSs.includes(h.get('ns')) ? h.get('ns') : '';
+    F.f = FILES.some(f => f.rel === h.get('f')) ? h.get('f') : '';
+    F.q = h.get('q') || ''; F.o = ['b', 'n', 't'].includes(h.get('o')) ? h.get('o') : 'b';
+  }
+  function syncControls() {
+    for (const b of document.querySelectorAll('button.st')) b.setAttribute('aria-pressed', F.st.has(b.dataset.st) ? 'true' : 'false');
+    $('#fN').value = F.ns; $('#fF').value = F.f; $('#fO').value = F.o; if ($('#fS').value !== F.q) $('#fS').value = F.q;
+    $('#fN').classList.toggle('on', !!F.ns); $('#fF').classList.toggle('on', !!F.f); $('#fS').classList.toggle('on', !!F.q);
+    $('#bClear').classList.toggle('on', !!filtering());
+  }
+
+  /* ---------- the list ---------- */
+  const order = {
+    b: (a, b) => b.score - a.score || (a.date || '9').localeCompare(b.date || '9') || a.sort.localeCompare(b.sort),
+    n: (a, b) => a.sort.localeCompare(b.sort),
+    t: (a, b) => (a.date || '9').localeCompare(b.date || '9') || b.score - a.score || a.sort.localeCompare(b.sort),
+  };
+  function blockSummary(q) {
+    const parts = [];
+    if (q.blocks.L.length) parts.push(q.blocks.L.length + ' vonal');
+    const ses = q.blocks.L.reduce((s, x) => s + x[1].length, 0); if (ses) parts.push(ses + ' munkamenet');
+    if (q.blocks.F.length) parts.push(q.blocks.F.length + ' funkció');
+    if (q.blocks.A.length) parts.push(q.blocks.A.length + ' ügynöki');
+    if (q.fileBlocks) parts.push('fájl: ' + q.fileBlocks);
+    return parts.join(' · ');
+  }
+  function card(q) {
+    const s = stOf(q), f = fileOf(q), age = ageOf(q.date), bs = blockSummary(q), dub = doubt(q).length;
+    return `<button class="qc${F.sel === q.id ? ' sel' : ''}" data-q="${esc(q.id)}" aria-label="${esc(q.id + ': ' + plain(q.question))}">
+      <span class="idc"><span class="id">${esc(q.id)}</span><span class="mk ${s}">${STW[s][0]} ${STW[s][1]}</span>${dub ? '<span class="mk dub" title="A parser állapota kétes, lásd a részleteket">≈ kétes</span>' : ''}</span>
+      <span class="qt">${md(q.question)}</span>
+      <span class="sc${q.score ? '' : ' z'}" title="Blokkolási súly: vonalak (aktív 3, parkoló 2, lezárt 1) + munkamenetek ½ + funkciók 3 + briefek, GO, ügynökök 2, más ügynöki fájl 1">${s === 'a' ? '' : `<b>${q.score}</b>súly`}</span>
+      <span class="mt"><span>${esc(shortFile(f))}${q.line ? ':' + q.line : ''}</span><span>${fDate(q.date)}${age != null && s !== 'a' ? ' · ' + age + ' napja' : ''}</span>${q.opts.length ? `<span>${q.opts.map(o => o[0]).join('/')}</span>` : ''}${bs && s !== 'a' ? `<span class="bl">blokkol: ${esc(bs)}</span>` : ''}</span>
+    </button>`;
+  }
+  function nfRow(x) {
+    const lay = Object.entries(x.lay).sort((a, b) => 'LAFGRIUC'.indexOf(a[0]) - 'LAFGRIUC'.indexOf(b[0])).map(([l, k]) => l + ' ' + k).join(' · ');
+    return `<button class="nf${F.sel === x.id ? ' sel' : ''}" data-n="${esc(x.id)}" aria-label="${esc(x.id + ', ' + x.n + ' helyen említve')}">
+      <span class="id">${esc(x.id)}</span><span class="k">${x.n} említés · ${esc(lay)}</span>
+      <span class="w">${x.at ? esc(x.at[0].replace(/^H:\\VRG\\Full\\(Planner_VRG_U100\\)?/, '')) + ':' + x.at[1] + ' — ' + md(x.at[2].slice(0, 160)) : esc(x.where.slice(0, 3).map(i => N[i] ? titleOf(N[i]) : '').join(' · '))}</span></button>`;
+  }
+  function render() {
+    syncControls(); toHash();
+    const qs = Q.filter(matchQ);
+    const open = qs.filter(q => stOf(q) === 'o').sort(order[F.o]);
+    const def = qs.filter(q => stOf(q) === 'd').sort(order[F.o]);
+    const ans = qs.filter(q => stOf(q) === 'a').sort(order.n);
+    const nf = NF.filter(matchN);
+    const vis = (sec, on) => { $(sec).style.display = on ? '' : 'none'; };
+    vis('#secOpen', F.st.has('o')); vis('#secDef', F.st.has('d')); vis('#secNo', F.st.has('n') && !F.f); vis('#secAns', F.st.has('a'));
+    $('#lOpen').innerHTML = open.map(card).join('') || '<div class="empty">Nincs nyitott kérdés ezzel a szűrővel.</div>';
+    $('#sOpen').textContent = `${open.length} · ${F.o === 'b' ? 'ranked by what they block' : F.o === 'n' ? 'by namespace and number' : 'oldest first'}`;
+    $('#lDef').innerHTML = def.map(card).join('') || '<div class="empty">Nincs ilyen kérdés ezzel a szűrővel.</div>';
+    $('#sDef').textContent = `${def.length} · unanswered, the file says A holds`;
+    $('#pDef').textContent = 'A fájl kimondja, hogy a válasz nélküli kérdés A („Unanswered = A”), így a munka A-val ment tovább. Válasz még nincs: ha nem A a jó, itt lehet másikat választani.';
+    $('#lNo').innerHTML = nf.slice(0, nfLimit).map(nfRow).join('') + (nf.length > nfLimit ? `<button class="btn" id="nfMore" style="margin-top:8px">+ ${nf.length - nfLimit} további</button>` : '') || '<div class="empty">Nincs ilyen azonosító ezzel a szűrővel.</div>';
+    $('#sNo').textContent = `${nf.length} ids · mentions only`;
+    const byNs = new Map(); for (const q of ans) (byNs.get(q.ns) || byNs.set(q.ns, []).get(q.ns)).push(q);
+    const openAns = F.q || F.ns || F.f || (F.sel && ans.some(q => q.id === F.sel));
+    $('#lAns').innerHTML = ans.length ? `<details class="all"${openAns ? ' open' : ''}><summary>${ans.length} megválaszolt döntés, ${byNs.size} névtérben</summary>` +
+      [...byNs].map(([ns, list]) => `<details class="ns"${(F.q || F.ns || list.some(q => q.id === F.sel)) ? ' open' : ''}><summary>${esc(ns)} <span class="c">${list.length}</span></summary>${list.map(card).join('')}</details>`).join('') + '</details>'
+      : '<div class="empty">Nincs megválaszolt döntés ezzel a szűrővel.</div>';
+    $('#sAns').textContent = `${ans.length} · read-only`;
+    const shown = open.length + def.length + ans.length + nf.length;
+    $('#stat').textContent = filtering() ? `${shown} / ${Q.length + NF.length}` : `${Q.length} döntés · ${NF.length} fájl nélkül`;
+    const more = $('#nfMore'); if (more) more.onclick = () => { nfLimit = 1e9; render(); };
+  }
+  let nfLimit = 40;
+
+  /* ---------- tiles, about, files ---------- */
+  const K = D.counts;
+  const tile = (cls, n, t, act) => `<button class="tile ${cls}" data-act="${act}"><b>${n}</b><small>${esc(t)}</small></button>`;
+  $('#tiles').innerHTML = tile('o', K['open≈'], 'nyitott≈', 'o') + tile('d', K['default A'], 'alapértelmezett A', 'd') +
+    tile('', K.blocking, 'válasz nélkül blokkol', 'b') + tile('n', K.nofile, 'nincs fájlja', 'n') + tile('a', K.answered, 'megválaszolt', 'a') +
+    tile('', K.files, `fájl · ${K.unread} olvasatlan`, 'f');
+  $('#tiles').onclick = e => {
+    const t = e.target.closest('.tile'); if (!t) return;
+    const a = t.dataset.act;
+    if (a === 'f') { $('#secFiles').scrollIntoView({ block: 'start' }); return; }
+    if (a === 'b') { F.st = new Set(['o', 'd']); F.o = 'b'; }
+    else F.st = new Set([a]);
+    render(); $('#wrap').scrollIntoView({ block: 'start' });
+  };
+  const gen = (D.generated || '').slice(0, 16).replace('T', ' ');
+  $('#about').innerHTML = `A Q réteg saját sorrendjében: minden kérdés, amit a verem DECISIONS fájlokban talált, elöl a nyitottak, aszerint rangsorolva, hány DevLog vonal, munkamenet, funkció és ügynöki fájl hivatkozik rájuk. ` +
+    `<b>Az állapot a parser becslése (≈):</b> a fájlokat lazán olvassa, ezért a „kétes” jel ott áll, ahol a fájl máshol mást mond. ` +
+    `Az A/B/C gombok <b>nem írnak semmit</b>: egy kész promptot másolnak egy friss munkamenethez, amely a kérdést a saját fájljában, a fájl formájában, a mai dátummal válaszolja meg (a visszaírás a ROADMAP 2.7 lépése). ` +
+    `<span class="faint">Adat: out/decisions-data.js · ${esc(gen)} · ${D.mentionsFrom === 'join' ? 'említések a join-ból' : 'említések csak címekből (stack.js decisions önállóan)'}.</span>`;
+  $('#tFiles').innerHTML = '<tr><th>Fájl</th><th>Névtér</th><th>◌</th><th>A▸</th><th>✓</th><th>Össz.</th></tr>' + FILES.map(f =>
+    `<tr class="${f.n ? '' : 'zero'}"><td><button data-file="${esc(f.rel)}" title="${esc(f.abs)}">${esc(shortFile(f))}</button>${f.n ? '' : ' <span title="A parser ebből a fájlból egy döntést sem olvasott ki: más a formátuma (NS_BY_FILE / idOf a lib/layers.js-ben)">⚠ 0 olvasott: ismeretlen formátum</span>'}${f.readable ? '' : ' ✕ nem olvasható'}</td>` +
+    `<td>${esc(f.ns || '—')}</td><td class="n">${f.counts['open≈'] || 0}</td><td class="n">${f.counts['default A'] || 0}</td><td class="n">${f.counts.answered || 0}</td><td class="n">${f.n}</td></tr>`).join('');
+  $('#tFiles').onclick = e => { const b = e.target.closest('button[data-file]'); if (!b) return; F.f = b.dataset.file; F.st = new Set(['o', 'd', 'n', 'a']); render(); $('#wrap').scrollIntoView({ block: 'start' }); };
+
+  /* ---------- the prompt a button copies ---------- */
+  const STATE_EN = { 'open≈': 'open (≈: the VRG Stack\'s parser found no answer, but it reads the files loosely)', 'default A': 'unanswered; the file says an unanswered question takes A, so work may already follow A', answered: 'answered' };
+  function unblockLines(q) {
+    const out = [];
+    for (const [li, ses] of q.blocks.L) {
+      const n = node(li); if (!n) continue;
+      if (n[2] === 'line') out.push(`   - DevLog line "${titleOf(n)}" (${n[0].slice(2)}${n[5] ? ', ' + n[5] : ''}): its next step and notes in ${D.devlog}\\lines.js${ses.length ? ` (sessions that named it: ${ses.map(i => node(i) ? node(i)[0].slice(3) : '').filter(Boolean).join(', ')})` : ''}`);
+      else out.push(`   - DevLog session ${n[0].slice(2)}: ${titleOf(n)}`);
+    }
+    for (const i of q.blocks.F) { const n = node(i); if (n) out.push(`   - feature "${titleOf(n)}" (${n[0].slice(2)}${n[5] ? ', ' + n[5] : ''}) in H:\\VRG\\Full\\notes\\features\\data.js`); }
+    for (const i of q.blocks.A) { const n = node(i); if (n) out.push(`   - ${n[2]} "${titleOf(n)}"${n[6] ? ': ' + winAbs(n[6]) : ''}`); }
+    if (q.fileBlocks) out.push(`   - what the file itself says waits on it: "${q.fileBlocks}"`);
+    return out;
+  }
+  function prompt(q, choice) {
+    const f = fileOf(q), today = todayKey();
+    const where = f ? `${f.abs}, line ${q.line}${f.inRepo ? ` (repo root ${D.repo}; path in the repo ${f.rel})` : ' (outside the repo)'}` : '(no file known)';
+    const ans = choice.own != null
+      ? `Answer, in my own words (not one of the listed options): "${choice.own}"`
+      : `Answer: option ${choice.k}, worded exactly as the file has it: "${choice.text}"`;
+    const ub = unblockLines(q);
+    return [
+      'Answer one open VRG decision in its file.', '',
+      `Decision: ${q.id} — ${plain(q.question)}`,
+      `File: ${where}`,
+      ans,
+      `Date: ${today} (the day I chose it).`,
+      `State on the Döntésnapló: ${STATE_EN[q.state] || q.state}.`, '',
+      'What to do:',
+      `1. Open the file and find ${q.id} (near line ${q.line}; it may have moved). If it already has an answer, stop and tell me what it says.`,
+      `2. Write the answer into the file with the date ${today}, in the file's own format: copy how this file already marks an answered question (for example an "answered **X** (date)" note on the question, an answers table, or an "Answered" section). Keep the question and its options; change no other entry.`,
+      '3. Update whatever the answer unblocks' + (ub.length ? ':' : ': look for the WP, brief, GO file or DevLog line that names the decision id.'),
+      ...ub,
+      '   If code already follows a different option (often A, the default), list what would change and ask me before changing any code.',
+      `4. Rebuild the VRG Stack so the Döntésnapló shows the answer: ${D.node} stack.js build (run it in ${D.stack}).`,
+      '5. Report in five lines or fewer: what you wrote where, what you updated, what still waits.', '',
+      `Work in the main checkout ${D.repo}, branch main, and follow its CLAUDE.md. Never commit or push unless I ask.`,
+    ].join('\n');
+  }
+  function homePrompt(x) {
+    const seen = x.where.map(i => node(i)).filter(Boolean).slice(0, 10).map(n => `   - ${LAYER[n[1]] || n[1]} ${n[0]}: ${titleOf(n)}${n[6] ? ' (' + winAbs(n[6]) + ')' : ''}`);
+    return [
+      'Find where one VRG decision was asked, and propose a home file for it.', '',
+      `Decision id: ${x.id}. No DECISIONS file holds it; the VRG Stack sees it only as a mention in:`, ...seen,
+      x.at ? `First line found that names it: ${x.at[0]}, line ${x.at[1]}: "${x.at[2]}"` : 'The stack found no document line that names it; search the transcripts and memory notes.', '',
+      'What to do:',
+      '1. Find the question text, its options and any answer (documents, memory notes, the sessions above).',
+      '2. Tell me in five lines: what was asked, the options, whether it was answered, and which DECISIONS file of its line should hold it.',
+      '3. Ask me before writing anything. Never commit or push unless I ask.',
+      `Work in the main checkout ${D.repo}, branch main, and follow its CLAUDE.md.`,
+    ].join('\n');
+  }
+
+  /* ---------- copy with feedback; falls back to a selectable box when the browser refuses ---------- */
+  let toastTimer;
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600); }
+  function fallback(text) { const f = $('#fallback'), ta = $('#fallback-text'); ta.value = text; f.hidden = false; ta.focus(); ta.select(); }
+  $('#fallback-close').onclick = () => { $('#fallback').hidden = true; };
+  function copy(text, label, el) {
+    const ok = () => { toast('Másolva: ' + label); if (el) { el.classList.add('copied'); setTimeout(() => el.classList.remove('copied'), 1600); } };
+    const legacy = () => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let done = false; try { done = document.execCommand('copy'); } catch (e) { done = false; }
+      ta.remove();
+      done ? ok() : fallback(text);
+    };
+    try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, legacy); else legacy(); } catch (e) { legacy(); }
+  }
+
+  /* ---------- the panel ---------- */
+  const linkOf = n => {
+    const id = n[0];
+    if (id[0] === 'R') return `commits.html#c=${encodeURIComponent(id.slice(2))}`;
+    if (id.startsWith('U:run.')) return `replay.html#${encodeURIComponent(id.slice(6))}`;
+    return `connectome.html#sel=${encodeURIComponent(id)}`;
+  };
+  const lk = (n, sub, rel) => `<a class="lk${sub ? ' sub' : ''}" href="${linkOf(n)}" title="${esc(n[0] + (n[6] ? ' · ' + n[6] : ''))}"><span class="c">${esc(n[1])}</span><span class="t">${esc(titleOf(n))}</span><span class="r">${esc(rel || n[5] || n[4] || n[2])}</span></a>`;
+  function intro() {
+    return `<p class="kick">Döntésnapló</p><h2>Válassz egy kérdést</h2>
+      <p class="dim" style="margin-top:8px">Bal oldalt a nyitott kérdések, aszerint rangsorolva, mennyi munkát tartanak fel. Egy kattintás: a válaszlehetőségek a fájl szavaival, a fájl és a sor, a dátum, és hogy mit blokkol.</p>
+      <p class="dim">A gombok egy promptot másolnak: illeszd be egy friss Claude Code munkamenetbe, és az a fájlban, a fájl formájában írja be a választ a mai dátummal, frissíti, amit a válasz felold, és nem commitol.</p>
+      <p class="faint">Billentyűk: <code>/</code> keresés · <code>Esc</code> bezár · <code>j</code> / <code>k</code> következő / előző a listában.</p>`;
+  }
+  function panelQ(q) {
+    const s = stOf(q), f = fileOf(q), age = ageOf(q.date), dub = doubt(q), ro = s === 'a';
+    let h = `<button class="btn" id="back">← Vissza a listához</button>
+      <div class="kick"><span class="mk ${s}">${STW[s][0]} ${STW[s][1]}</span><span>${esc(q.ns)}</span>${q.score && !ro ? `<span>súly ${q.score}</span>` : ''}</div>
+      <h2>${esc(q.id)}</h2><p class="qtext">${md(q.question)}</p>${q.ctx ? `<p class="ctx">${md(q.ctx)}</p>` : ''}`;
+    if (dub.length) h += `<p class="note"><b>≈ kétes:</b> ${dub.map(esc).join(' ')} <span class="faint">A Döntésnapló a parser állapotát mutatja, nem javítja ki.</span></p>`;
+    if (ro) {
+      h += `<h3>Válasz (a fájlból, ≈)</h3>${q.answer ? `<p>${md(q.answer)}</p>` : '<p class="dim">A bejegyzésben nincs külön válaszsor; lásd lent a fájl többi említését és a teljes bejegyzést.</p>'}`;
+      if (q.opts.length) h += `<h3>A válaszlehetőségek voltak</h3>` + q.opts.map(o => `<div class="opt${o[2] ? ' rec' : ''}"><span class="L">${esc(o[0])}</span><span class="tx">${md(o[1])}${o[2] ? '<span class="rb">ajánlott</span>' : ''}</span></div>`).join('');
+    } else {
+      h += `<h3>Válaszlehetőségek, ahogy a fájlban állnak</h3>`;
+      h += q.opts.length ? q.opts.map((o, i) => `<div class="opt${o[2] ? ' rec' : ''}"><span class="L" aria-hidden="true">${esc(o[0])}</span><span class="tx">${md(o[1])}${o[2] ? '<span class="rb">ajánlott</span>' : ''}${o[3] && !/recommend/i.test(o[3]) ? ` <span class="faint">(${esc(o[3])})</span>` : ''}</span>
+          <span class="act"><button class="btn${o[2] ? ' pri' : ''}" data-copy="${i}" aria-label="${esc(o[0])} válasz: prompt másolása">${COPY} ${esc(o[0])} válasz: prompt másolása</button></span></div>`).join('')
+        : '<p class="dim">A parser nem talált A/B/C sorokat ennél a bejegyzésnél. Írd be a választ alább; a prompt idézi.</p>';
+      h += `<h3>Egyéni válasz</h3><label class="faint" for="own" style="font-size:12px">Saját szavaiddal (pl. „B, de csak a 2. lépésig”):</label>
+        <textarea class="own" id="own" placeholder="A válasz szövege…">${esc(ownDraft.get(q.id) || '')}</textarea>
+        <div class="row"><button class="btn" id="copyOwn">${COPY} Egyéni válasz: prompt másolása</button></div>
+        <details class="pv"><summary>Mit másol a gomb? (minta: ${esc(q.opts.length ? q.opts.find(o => o[2]) ? q.opts.find(o => o[2])[0] : q.opts[0][0] : 'egyéni')})</summary><pre class="raw" id="pv"></pre></details>`;
+    }
+    h += `<h3>Hol van</h3><div class="kv"><span>fájl</span><span>${esc(f ? f.abs : '—')}</span><span>sor</span><span>${q.line || '—'}</span>
+      <span>dátum</span><span>${fDate(q.date)}${age != null ? ` · ${age} napja` : ''} <span class="faint">(${esc(DSRC[q.dateSrc] || q.dateSrc || 'nincs')})</span></span></div>
+      ${f ? `<div class="row"><button class="btn" id="copyPath">${COPY} Útvonal:sor másolása</button></div>` : ''}`;
+    const L_ = q.blocks.L, hasB = L_.length || q.blocks.F.length || q.blocks.A.length || q.fileBlocks;
+    h += ro ? `<h3>Mit érint</h3>` : `<h3>Mit blokkol</h3>`;
+    if (!hasB) h += `<p class="dim">${ro ? 'Semmi nem hivatkozik rá a DevLogból, a funkciókból vagy az ügynöki rétegből.' : 'A verem szerint semmi: egyetlen DevLog vonal, munkamenet, funkció vagy ügynöki fájl sem hivatkozik rá. Ettől még tarthat fel munkát, csak nem nevezi meg senki.'}</p>`;
+    if (q.fileBlocks) h += `<p>A fájl szerint: <b>${md(q.fileBlocks)}</b></p>`;
+    for (const [li, ses] of L_) { const n = node(li); if (!n) continue; h += lk(n, false, n[2] === 'line' ? (n[5] || 'vonal') : 'munkamenet'); for (const si of ses.slice(0, 6)) { const sn = node(si); if (sn) h += lk(sn, true, sn[4] || 'munkamenet'); } if (ses.length > 6) h += `<p class="faint" style="padding-left:20px">+ ${ses.length - 6} munkamenet</p>`; }
+    for (const i of q.blocks.F) { const n = node(i); if (n) h += lk(n, false, n[5] || 'funkció'); }
+    for (const i of q.blocks.A) { const n = node(i); if (n) h += lk(n, false, n[2]); }
+    const men = Object.entries(q.men);
+    if (men.length) {
+      h += `<h3>Más rétegek említik</h3>`;
+      for (const [lay, list] of men.sort((a, b) => 'IQRUCG'.indexOf(a[0]) - 'IQRUCG'.indexOf(b[0]))) {
+        const more = list.find(x => x < 0);
+        h += `<p class="faint" style="margin:6px 0 2px">${esc(lay)} · ${esc(LAYER[lay] || '')}${more ? ` (${-more}, az első 12)` : ''}</p>` + list.filter(x => x >= 0).map(i => node(i) ? lk(node(i), false) : '').join('');
+      }
+    }
+    if (q.also.length) h += `<h3>A fájl máshol is említi</h3>` + q.also.map(([ln, t]) => `<div class="also"><b>${ln}:</b> ${md(t)}</div>`).join('');
+    if (q.block) h += `<h3>A teljes bejegyzés</h3><details class="pv"><summary>${q.block.split('\n').length} sor a fájlból</summary><pre class="raw">${esc(q.block)}</pre></details>`;
+    h += `<p class="faint" style="margin-top:14px"><a href="connectome.html#sel=Q:${encodeURIComponent(q.id)}">Konnektóm: Q:${esc(q.id)}</a></p>`;
+    return h;
+  }
+  function panelN(x) {
+    let h = `<button class="btn" id="back">← Vissza a listához</button>
+      <div class="kick"><span class="mk n">⌀ nincs fájlja</span><span>${esc(x.ns)}</span><span>${x.n} említés</span></div><h2>${esc(x.id)}</h2>
+      <p class="dim">Egyetlen DECISIONS fájl sem tartalmazza, ezért a Döntésnapló nem tudja, nyitott-e, és milyen lehetőségei vannak. Ezek a helyek nevezik meg:</p>`;
+    if (x.at) h += `<h3>Első talált sor</h3><div class="kv"><span>fájl</span><span>${esc(x.at[0])}</span><span>sor</span><span>${x.at[1]}</span></div><p class="also" style="margin-top:4px">${md(x.at[2])}</p>`;
+    h += `<h3>Hol látta a verem</h3>`;
+    const byL = {}; for (const i of x.where) { const n = node(i); if (n) (byL[n[1]] || (byL[n[1]] = [])).push(n); }
+    for (const lay of Object.keys(byL).sort((a, b) => 'LAFGRIUC'.indexOf(a) - 'LAFGRIUC'.indexOf(b))) h += `<p class="faint" style="margin:6px 0 2px">${esc(lay)} · ${esc(LAYER[lay] || '')}${lay === 'L' ? ' (csevegések)' : lay === 'A' ? ' (memória, briefek)' : ''}</p>` + byL[lay].map(n => lk(n, false, n[1] === 'L' && n[7] >= 0 && node(n[7]) ? titleOf(node(n[7])) : '')).join('');
+    if (x.n > x.where.length) h += `<p class="faint">+ ${x.n - x.where.length} további</p>`;
+    h += `<h3>Otthon keresése</h3><p class="dim">Nincs mit A/B/C-vel megválaszolni, amíg a kérdés nincs fájlban. Ez a prompt megkeresi, mit kérdeztek, és javasol neki egy DECISIONS fájlt (írás csak jóváhagyással).</p>
+      <div class="row"><button class="btn pri" id="copyHome">${COPY} Prompt másolása</button></div>`;
+    return h;
+  }
+  const ownDraft = new Map();
+  function select(id, scroll) {
+    F.sel = id || '';
+    const q = Q.find(x => x.id === id), x = !q && NF.find(y => y.id === id);
+    const P = $('#panel');
+    P.innerHTML = q ? panelQ(q) : x ? panelN(x) : intro();
+    P.scrollTop = 0;
+    document.body.classList.toggle('sheet', !!(q || x));
+    for (const el of document.querySelectorAll('.qc.sel, .nf.sel')) el.classList.remove('sel');
+    const el = id && document.querySelector(`[data-q="${CSS.escape(id)}"], [data-n="${CSS.escape(id)}"]`);
+    if (el) { el.classList.add('sel'); if (scroll) el.scrollIntoView({ block: 'nearest' }); }
+    const back = $('#back'); if (back) back.onclick = () => { select(''); if (el) el.focus(); };
+    if (q) {
+      for (const b of P.querySelectorAll('button[data-copy]')) b.onclick = () => { const o = q.opts[+b.dataset.copy]; copy(prompt(q, { k: o[0], text: o[1] }), `${q.id} → ${o[0]} prompt`, b); };
+      const own = $('#own');
+      if (own) {
+        own.oninput = () => ownDraft.set(q.id, own.value);
+        $('#copyOwn').onclick = e => { const t = own.value.trim(); if (!t) { toast('Előbb írd be a választ.'); own.focus(); return; } copy(prompt(q, { own: t }), `${q.id} → egyéni válasz prompt`, e.currentTarget); };
+        const pv = $('#pv'); const r = q.opts.find(o => o[2]) || q.opts[0];
+        if (pv) pv.textContent = r ? prompt(q, { k: r[0], text: r[1] }) : prompt(q, { own: '<a válaszod>' });
+      }
+      const cp = $('#copyPath'); if (cp) cp.onclick = e => copy(`${fileOf(q).abs}:${q.line}`, 'útvonal', e.currentTarget);
+    }
+    if (x) $('#copyHome').onclick = e => copy(homePrompt(x), `${x.id} prompt`, e.currentTarget);
+    toHash();
+  }
+
+  /* ---------- events ---------- */
+  $('#wrap').addEventListener('click', e => { const b = e.target.closest('[data-q], [data-n]'); if (!b) return; select(b.dataset.q || b.dataset.n); });
+  for (const b of document.querySelectorAll('button.st')) b.onclick = () => { const s = b.dataset.st; F.st.has(s) ? F.st.delete(s) : F.st.add(s); if (!F.st.size) F.st.add(s); render(); };
+  $('#fN').onchange = e => { F.ns = e.target.value; render(); };
+  $('#fF').onchange = e => { F.f = e.target.value; render(); };
+  $('#fO').onchange = e => { F.o = e.target.value; render(); };
+  let sT; $('#fS').oninput = e => { clearTimeout(sT); sT = setTimeout(() => { F.q = e.target.value.trim(); render(); }, 120); };
+  $('#bClear').onclick = () => { F.st = new Set(['o', 'd', 'n', 'a']); F.ns = F.f = F.q = ''; render(); };
+  addEventListener('keydown', e => {
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName);
+    if (e.key === 'Escape') { if (!$('#fallback').hidden) { $('#fallback').hidden = true; return; } if (typing) { document.activeElement.blur(); return; } if (F.sel) { select(''); return; } if (filtering()) { $('#bClear').click(); } return; }
+    if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === '/') { e.preventDefault(); $('#fS').focus(); return; }
+    if (e.key === 'j' || e.key === 'k') {
+      const items = [...document.querySelectorAll('#wrap [data-q], #wrap [data-n]')].filter(el => el.offsetParent);
+      if (!items.length) return;
+      let i = items.findIndex(el => (el.dataset.q || el.dataset.n) === F.sel);
+      i = e.key === 'j' ? Math.min(items.length - 1, i + 1) : Math.max(0, i < 0 ? 0 : i - 1);
+      const el = items[i]; select(el.dataset.q || el.dataset.n, true); el.focus({ preventScroll: true });
+    }
+  });
+  addEventListener('hashchange', () => { fromHash(); render(); select(F.sel, true); });
+
+  fromHash(); render(); select(F.sel, true);
+})();
+</script>
+</body>
+</html>

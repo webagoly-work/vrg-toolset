@@ -18,7 +18,7 @@ module.exports = [
     is: 'Every question asked in a DECISIONS file and whether it has an answer. The layer that says what is still waiting on the Founder.',
     order: 'by namespace (SOL, HUB, D-V …) and number; open before answered', nodes: 'decision file · decision', edges: 'holds',
     source: 'every tracked *DECISIONS*.md + Workflow Kit DECISIONS_L1-L18.md (parsed loosely, ≈)',
-    page: { state: 'missing', name: 'Döntésnapló (decision inbox)', want: 'all open questions in one list with A/B/C buttons; an answer is written back to its file with the date' } },
+    page: { state: 'exists', name: 'Döntésnapló (decision inbox)', open: 'H:/VRG/Full/Planner_VRG_U100/Stack/decisions.html', want: 'write-back: an answer written to its file with the date, with approval (ROADMAP 2.7); today the A/B/C buttons copy a prompt' } },
   { code: 'L', id: 'devlog', hu: 'Fejlesztési vonalak', en: 'DevLog',
     is: 'The work process: thematic dev lines (state, next step, what was never built) and the Claude sessions that moved them.',
     order: 'lines in lanes; sessions on a time axis inside their line', nodes: 'line · session', edges: 'fork · next · feeds · absorbed-by · overruled-by · on-line',

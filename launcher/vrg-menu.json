@@ -231,6 +231,7 @@
             { "key": "8", "name": "Ötletfolyam", "hint": "az ötletek folyama az időben (I réteg)", "path": "{stack}\\lineage.html" },
             { "key": "9", "name": "Vezérlőterem", "hint": "ügynökök, briefek, memória, kódszavak, használat (A réteg)", "path": "{stack}\\control.html" },
             { "key": "0", "name": "Commit-pixel", "hint": "a git történet napi rácsban, ágakkal (R réteg)", "path": "{stack}\\commits.html" },
+            { "key": "N", "name": "Döntésnapló", "hint": "minden nyitott kérdés egy listában, A/B/C prompttal (Q réteg)", "path": "{stack}\\decisions.html" },
             { "key": "T", "name": "Telefonra", "hint": "stack-pages: a VRG Mobile Rétegverem", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Mobile/stack/publish-stack.js", "--push"] }] },
             { "key": "B", "name": "Újraépítés", "hint": "stack.js build", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "build"] }] },
             { "key": "D", "name": "Doktor", "hint": "stack.js doctor", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "doctor"] }] },
