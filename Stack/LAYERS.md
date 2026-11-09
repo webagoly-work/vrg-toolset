@@ -30,7 +30,7 @@ Every layer should have **one interactive page** where a person sees that layer 
 | **F Featured** | VRG Desktop Dashboard (`notes/dashboard`) | ✅ | — (D5+ continues there) |
 | **I Ideas** | Ötletfolyam, `Stack/lineage.html` (2026-11-09; the MindMap view of `VRG_idea_timeline.mindmap.json` stays) | ✅ | — (lineage river: time scrubber, ideas branch and merge, dormant ones greyed, springs = the inferred needs, click opens what it became) |
 | **Q Decisions** | Döntésnapló, `Stack/decisions.html` (2026-11-09) | ✅ | — (every open question in one list, ranked by what it blocks; each A/B/C button and the custom answer copy a prompt for a fresh session; still to come: the answer written back to its file with the date, with approval, ROADMAP 2.7) |
-| **L DevLog** | Thread Board, `H:\VRG\Full\notes\devlog\BOARD.html` (START F) | ✅ | — (the **Vonaltérkép** metro-map idea stays open: lines as tracks, sessions as stations, quiet stretches in red, "continue this line" button) |
+| **L DevLog** | Thread Board, `H:\VRG\Full\notes\devlog\BOARD.html` (START F) · Vonaltérkép, `Stack/metro.html` (2026-11-09, START R → M) | ✅ | — (Vonaltérkép: lines as tracks on one time axis by lane, sessions as stations, fork / next / feeds / absorbed-by as junctions and transfers, termini with where the work went, quiet stretches red + dashed + named, the quiet open lines first, "Folytatás" copies the Thread Board's item prompt) |
 | **A Agentic** | Vezérlőterem, `Stack/control.html` (2026-11-09; the Varler Console live trace, Console/, START W, still shows the *running* agents) | ✅ | — (the Council as a flow with lanes, each agent's tools, briefs and memory one click away; start anatomy per GO codephrase; briefs from `brief-state.js --check`; memory freshness; module map; schedules; usage per day) |
 | **U Futás** | `replay.html` (Visszajátszás): one session step by step, files and stack glow | ◐ | the live Control Room view once hooks feed it |
 | **R DevRepo** | Commit-pixel, `Stack/commits.html` (2026-11-09; the MindMap view of `VRG_devrep.mindmap.json` stays) | ✅ | — (the mirrored git grid: one pixel per day, colour = commits in four steps, merge days marked, branch lanes with forks and merges on the same time axis, filter by pillar / area / branch, a click opens that day's commits and the lines, sessions, runs and files they belong to) |
@@ -39,7 +39,7 @@ Every layer should have **one interactive page** where a person sees that layer 
 | **Z Codec** | — | n/a | machine layer; `stack.js` reads it |
 | **The stack itself** | `stack-search.html` (Rétegverem): flat, layer rows | ◐ | **Stacked view** (your first two pictures): isometric planes, one per layer, nodes on each, vertical lines lit for the selection. Later the neural view: activation during agent sessions |
 
-**Missing pages, by value:** Stacked view (the hub of everything), Vonaltérkép. (Vezérlőterem, Commit-pixel and Döntésnapló built 2026-11-09.) Which one comes first is STK-Q4.
+**Missing pages, by value:** Stacked view (the hub of everything). (Vezérlőterem, Commit-pixel, Döntésnapló and Vonaltérkép built 2026-11-09.) Which one comes first is STK-Q4.
 
 ---
 

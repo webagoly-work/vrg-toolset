@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Vonaltérkép</title>
+<!-- Vonaltérkép (metro map): the L layer of the VRG Stack in its own order (2026-11-09, STK-P36…).
+     Every DevLog line is a track on one time axis, grouped by lane; every session that moved a line is a
+     station on it, timed by its own prompts there. fork / next / feeds / absorbed-by / overruled-by are
+     junctions and transfers; an ended line shows its terminus and where its work went. A stretch with no
+     station for longer than the threshold is a quiet stretch: red, dashed, and named ("csend"); open lines
+     gone quiet are listed first. A station opens its date, title, what it touched and its replay; a line opens
+     its state, next step and sessions, and "Folytatás" copies the Thread Board's item prompt for it.
+     Data: out/metro-data.js (lib/metro.js, written on every `stack.js build`; quotes job codes, stays out of
+     git). Works from file:// and serve.js. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/density.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-light.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/base.css">
+<style>
+  /* fallbacks so the page still reads if the kit is not reachable */
+  :root { --bg: var(--vk-bg, #0a141c); --s1: var(--vk-surface-1, #121c24); --s2: var(--vk-surface-2, #17232c); --s3: var(--vk-surface-3, #1d2a33);
+    --ln: var(--vk-line, rgba(232,240,246,.15)); --ln2: var(--vk-line-strong, rgba(232,240,246,.34));
+    --tx: var(--vk-text, #e8f0f6); --mu: var(--vk-text-muted, #a6afb7); --fa: var(--vk-text-faint, #6f7880);
+    --acc: var(--vk-accent, #93d3e6); --warm: var(--vk-activity, #e8a873); --ok: var(--vk-ok, #8bcca1); --warn: var(--vk-warn, #e3be7b);
+    --info: var(--vk-info, #9db8e8); --idea: var(--vk-idea, #b4a7e6);
+    --acc-soft: color-mix(in srgb, var(--acc) 14%, transparent);
+    --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif);
+    --panel-w: 420px;
+    /* a quiet stretch: its own red (never a lane colour), always with a dash pattern and a word */
+    --quiet: #ff6b6b; --quiet-soft: color-mix(in srgb, var(--quiet) 13%, transparent);
+    /* lane colours (metro lines): no lane is red, so red always means "quiet" */
+    --l-o: #b8c2cc; --l-p: #6fd0e8; --l-w: #f0a35e; --l-m: #86d39a; --l-s: #d9c25a; --l-b: #b9a2f0;
+    --l-h: #f2a8e0; --l-c: #5fd6bf; --l-i: #9ad1ff; --l-k: #c8d27a; --l-r: #d8a878; --l-x: #8a939b; --l-u: var(--mu); }
+  [data-vk-theme="light"] { --quiet: #c62828;
+    --l-o: #56616c; --l-p: #0f7590; --l-w: #a5520f; --l-m: #2a7a44; --l-s: #7a6608; --l-b: #5a43a8;
+    --l-h: #9c2f86; --l-c: #127564; --l-i: #2667a3; --l-k: #5c6a10; --l-r: #80562a; --l-x: #858d95; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--tx); font: 14px/1.5 var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--ln); }
+  h1 { font: 600 17px var(--voice); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--mu); margin-left: 6px; }
+  .sp { flex: 1; }
+  header button, header a.b, header select, header input { font: 12px var(--mono); background: var(--s1); color: var(--mu); border: 1px solid var(--ln); padding: 5px 9px; text-decoration: none; min-height: 28px; cursor: pointer; }
+  header select, header input { color: var(--tx); max-width: 200px; }
+  header input { cursor: text; width: 180px; }
+  header select.on, header input.on { border-color: var(--warm); box-shadow: inset 0 -2px 0 var(--warm); }
+  header button:hover, header a.b:hover, header select:hover { color: var(--tx); border-color: var(--acc); }
+  header button[aria-pressed="true"] { color: var(--tx); border-color: var(--acc); background: var(--acc-soft); }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .filters label { font: 11px var(--mono); color: var(--fa); text-transform: uppercase; letter-spacing: .06em; display: inline-flex; gap: 5px; align-items: center; }
+  #stat { font: 12px var(--mono); color: var(--mu); }
+  .shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) var(--panel-w); min-height: 0; }
+  #main { overflow: auto; min-height: 0; min-width: 0; }
+  .wrap { padding: 16px 16px 60px; display: flex; flex-direction: column; gap: 16px; }
+  p { margin: 0; max-width: 90ch; }
+  .dim { color: var(--mu); } .faint { color: var(--fa); }
+  a { color: var(--acc); }
+  code { font: 12px var(--mono); background: var(--s2); padding: 0 3px; overflow-wrap: anywhere; }
+  .hint { color: var(--mu); font-size: 12.5px; }
+  .empty { padding: 10px 4px; color: var(--mu); font-size: 13px; }
+
+  section.box { background: var(--s1); border: 1px solid var(--ln); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .boxhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
+  .boxhead h3 { font: 600 15px var(--voice); margin: 0; letter-spacing: .03em; }
+  .boxhead .en { font: italic 400 12px var(--sans); color: var(--fa); }
+
+  /* quiet open lines: the first thing on the page */
+  #secQuiet { border-color: color-mix(in srgb, var(--quiet) 45%, var(--ln)); }
+  #secQuiet h3 { color: var(--quiet); }
+  .ql { display: flex; flex-wrap: wrap; gap: 6px; }
+  .qchip { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; gap: 6px; align-items: baseline; max-width: 100%;
+    border: 1px dashed var(--quiet); background: var(--quiet-soft); padding: 3px 8px; font-size: 13px; }
+  .qchip:hover, .qchip:focus-visible { border-style: solid; outline: none; }
+  .qchip .d { font: 600 12px var(--mono); color: var(--quiet); white-space: nowrap; }
+  .qchip .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .qchip .w { font: 11px var(--mono); color: var(--mu); white-space: nowrap; }
+  .qchip.sel { border-style: solid; box-shadow: inset 0 -2px 0 var(--quiet); }
+  .note { border-left: 2px solid var(--warn); padding: 4px 8px; font-size: 12.5px; color: var(--mu); background: color-mix(in srgb, var(--warn) 7%, transparent); }
+  .note b { color: var(--warn); font-weight: 600; }
+
+  /* the map */
+  #secMap { padding: 0; gap: 0; }
+  #secMap .boxhead { padding: 12px 14px 4px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 0 14px 8px; font: 11.5px var(--mono); color: var(--mu); align-items: center; }
+  .legend svg { vertical-align: middle; }
+  .legend label { display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
+  .axis { position: sticky; top: 0; z-index: 3; background: var(--s1); border-bottom: 1px solid var(--ln); }
+  .axis svg, #map svg { display: block; }
+  #map { position: relative; }
+  #map .lab { position: absolute; display: flex; align-items: center; gap: 6px; min-width: 0; padding: 0 6px 0 10px; font-size: 12.5px; }
+  #map .lab.lane { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--mu); align-items: flex-end; padding-bottom: 3px; }
+  #map .lab.lane i { width: 14px; height: 4px; flex: none; margin-bottom: 4px; }
+  #map .lab.lane span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nm { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 6px; width: 100%; min-width: 0; height: 100%; }
+  .nm .ic { font: 12px var(--mono); width: 14px; text-align: center; flex: none; color: var(--mu); }
+  .nm .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1 1 auto; }
+  .nm .qb { font: 600 11px var(--mono); color: var(--quiet); white-space: nowrap; flex: none; border: 1px dashed var(--quiet); padding: 0 4px; line-height: 15px; }
+  .nm .eb { font: 11px var(--mono); color: var(--fa); white-space: nowrap; flex: none; }
+  .nm:hover .t, .nm:focus-visible .t { color: var(--acc); text-decoration: underline; }
+  .nm:focus-visible { outline: 2px solid var(--acc); outline-offset: -2px; }
+  .lab.sel { background: var(--acc-soft); box-shadow: inset 3px 0 0 var(--acc); }
+  .lab.ghost .t { color: var(--fa); }
+
+  /* svg marks: classes, not inline colours, so the theme switch only touches attributes */
+  .grid { stroke: var(--ln); stroke-width: 1; }
+  .gridm { stroke: var(--ln2); stroke-width: 1; }
+  .axt { fill: var(--mu); font: 10.5px var(--mono); }
+  .axm { fill: var(--tx); font: 600 11px var(--mono); }
+  .today { stroke: var(--acc); stroke-width: 1.5; stroke-dasharray: 2 3; }
+  .today-t { fill: var(--acc); font: 600 10.5px var(--mono); }
+  .harv { stroke: var(--warn); stroke-width: 1; stroke-dasharray: 1 3; }
+  .harv-t { fill: var(--warn); font: 10.5px var(--mono); }
+  .band { fill: var(--s2); opacity: .45; }
+  .rowsel { fill: var(--acc-soft); }
+  .trk { fill: none; stroke-width: 5; stroke-linecap: round; }
+  .trk.thin { stroke-width: 2.5; }
+  .trk.park { stroke-width: 2.5; stroke-dasharray: 1 5; opacity: .85; }
+  .trk.personal { opacity: .55; }
+  .gap { fill: none; stroke: var(--quiet); stroke-width: 3.5; stroke-dasharray: 6 4; }
+  .tail { fill: none; stroke: var(--quiet); stroke-width: 3.5; stroke-dasharray: 6 4; }
+  .qmark { fill: var(--quiet); }
+  .qmark-t { fill: var(--bg); font: 700 9px var(--sans); }
+  .glab { fill: var(--quiet); font: 600 9.5px var(--mono); paint-order: stroke; stroke: var(--s1); stroke-width: 3px; stroke-linejoin: round; }
+  .term { stroke-width: 3; stroke-linecap: square; }
+  .tlab { fill: var(--mu); font: 10.5px var(--mono); paint-order: stroke; stroke: var(--s1); stroke-width: 3px; stroke-linejoin: round; }
+  .stn { cursor: pointer; }
+  .stn circle, .stn rect { fill: var(--s1); stroke-width: 2.5; }
+  .stn.ix circle, .stn.ix rect { fill: var(--tx); stroke: var(--tx); }
+  .stn text { fill: var(--tx); font: 600 9px var(--mono); pointer-events: none; }
+  .stn.ix text { fill: var(--bg); }
+  .stn:hover circle, .stn:hover rect, .stn:focus-visible circle, .stn:focus-visible rect { stroke-width: 4; }
+  .stn:focus-visible { outline: none; }
+  .stn.sel circle, .stn.sel rect { stroke: var(--acc) !important; stroke-width: 4; fill: var(--acc); }
+  .stn.sel text { fill: var(--bg); }
+  .ms { fill: var(--s1); stroke: var(--mu); stroke-width: 1.2; pointer-events: none; }
+  .ixl { stroke: var(--mu); stroke-width: 1.3; stroke-linecap: round; opacity: .75; }
+  .cx { fill: none; stroke-width: 1.6; }
+  .cx.fork { stroke: var(--mu); }
+  .cx.next { stroke: var(--acc); stroke-dasharray: 5 3; }
+  .cx.feeds { stroke: var(--idea); stroke-dasharray: 1.5 3; stroke-width: 1.4; }
+  .cx.absorbed-by, .cx.overruled-by { stroke: var(--warm); stroke-width: 2; }
+  .cxd { stroke: none; }
+  .cxd.fork { fill: var(--mu); } .cxd.next { fill: var(--acc); } .cxd.feeds { fill: var(--idea); } .cxd.absorbed-by, .cxd.overruled-by { fill: var(--warm); }
+  .run { cursor: pointer; }
+  .run rect { fill: var(--s1); stroke: var(--mu); stroke-width: 1.5; }
+  .run:hover rect, .run:focus-visible rect { stroke: var(--acc); stroke-width: 2.5; }
+  .run.sel rect { fill: var(--acc); stroke: var(--acc); }
+  .run:focus-visible { outline: none; }
+  svg .dim { opacity: .18; }
+  svg.hidecx-fork .cx.fork, svg.hidecx-fork .cxd.fork, svg.hidecx-next .cx.next, svg.hidecx-next .cxd.next,
+  svg.hidecx-feeds .cx.feeds, svg.hidecx-feeds .cxd.feeds, svg.hidecx-end .cx.absorbed-by, svg.hidecx-end .cxd.absorbed-by,
+  svg.hidecx-end .cx.overruled-by, svg.hidecx-end .cxd.overruled-by { display: none; }
+
+  /* side panel (a sheet on the phone) */
+  aside { border-left: 1px solid var(--ln); padding: 14px 16px 40px; overflow: auto; min-height: 0; min-width: 0; background: var(--bg); }
+  aside h2 { font: 600 20px/1.2 var(--voice); margin: 4px 0 6px; overflow-wrap: anywhere; }
+  aside h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--mu); margin: 18px 0 6px; border-bottom: 1px solid var(--ln); padding-bottom: 2px; }
+  aside p { margin: 0 0 6px; overflow-wrap: anywhere; font-size: 13px; }
+  aside ul { margin: 0; padding-left: 18px; font-size: 13px; } aside li { overflow-wrap: anywhere; }
+  .kick { font: 11px var(--mono); color: var(--mu); text-transform: uppercase; letter-spacing: .06em; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .kick i.sw { width: 14px; height: 4px; display: inline-block; }
+  .mk { display: inline-flex; align-items: center; gap: 4px; font: 11.5px/1.5 var(--mono); padding: 0 6px; border: 1px solid currentColor; white-space: nowrap; }
+  .mk.quiet { color: var(--quiet); border-style: dashed; }
+  .mk.ok { color: var(--ok); } .mk.mu { color: var(--mu); } .mk.wa { color: var(--warn); } .mk.end { color: var(--warm); }
+  .marks { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+  .nextstep { font-size: 14px; line-height: 1.4; border-left: 3px solid var(--acc); padding: 4px 10px; background: var(--acc-soft); margin: 6px 0; overflow-wrap: anywhere; }
+  .btn { font: 12px var(--mono); background: var(--s1); color: var(--tx); border: 1px solid var(--ln2); padding: 5px 10px; cursor: pointer; min-height: 30px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+  .btn:hover, .btn:focus-visible { border-color: var(--acc); outline: none; }
+  .btn.pri { border-color: var(--acc); color: var(--acc); font-weight: 600; }
+  .btn.copied { border-color: var(--ok); color: var(--ok); }
+  .btn svg { width: 13px; height: 13px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+  .kv { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 3px 8px; font-size: 12.5px; }
+  .kv > span:nth-child(odd) { color: var(--fa); font: 11px var(--mono); padding-top: 2px; } .kv > span:nth-child(even) { overflow-wrap: anywhere; }
+  .lk { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; padding: 3px 2px; font-size: 12.5px; color: var(--tx); width: 100%; text-decoration: none; }
+  .lk:hover, .lk:focus-visible { background: var(--acc-soft); outline: none; }
+  .lk .c { font: 11px var(--mono); color: var(--mu); } .lk .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .lk .r { font: 11px var(--mono); color: var(--mu); white-space: nowrap; }
+  .lk.cur { background: var(--s2); box-shadow: inset 3px 0 0 var(--acc); }
+  .rel { font-size: 12.5px; padding: 2px 0; overflow-wrap: anywhere; }
+  .rel b { font: 11px var(--mono); color: var(--mu); font-weight: 400; margin-right: 4px; }
+  .rel button { all: unset; cursor: pointer; color: var(--acc); }
+  .rel button:hover, .rel button:focus-visible { text-decoration: underline; }
+  .files { font: 11.5px/1.5 var(--mono); color: var(--mu); overflow-wrap: anywhere; margin: 0; padding-left: 16px; }
+  pre.raw { white-space: pre-wrap; overflow-wrap: anywhere; font: 11.5px/1.45 var(--mono); background: var(--s1); border: 1px solid var(--ln); padding: 8px; color: var(--mu); max-height: 360px; overflow: auto; margin: 6px 0 0; }
+  details.pv > summary { cursor: pointer; font: 11.5px var(--mono); color: var(--acc); margin-top: 6px; }
+  #back { display: none; }
+
+  /* toast + fallback (the Thread Board's pattern) */
+  .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 40;
+    background: var(--tx); color: var(--bg); padding: 9px 16px; font: 500 13px var(--sans); max-width: calc(100vw - 32px); }
+  .fallback { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .5); }
+  .fallback[hidden], .toast[hidden] { display: none; }
+  .fallback .card { width: min(720px, 100%); display: grid; gap: 10px; background: var(--s1); border: 1px solid var(--ln2); padding: 14px; }
+  .fallback h2 { font: 600 17px var(--voice); margin: 0; }
+  .fallback textarea { width: 100%; height: 50vh; font: 12.5px/1.45 var(--mono); background: var(--bg); color: var(--tx); border: 1px solid var(--ln2); padding: 10px; resize: vertical; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .qchip, .btn, .lk { transition: background-color .12s ease, border-color .12s ease; }
+    svg .dim { transition: opacity .15s ease; }
+  }
+  @media (max-width: 900px) {
+    body { overflow-x: hidden; overflow-y: auto; height: auto; min-height: 100%; }
+    h1 i { display: none; } .sp { display: none; }
+    .filters { width: 100%; } .filters label { flex: 1 1 140px; min-width: 0; } .filters select { flex: 1 1 0; width: 0; max-width: none; min-width: 0; }
+    header input { width: 100%; max-width: none; flex: 1 1 100%; }
+    .shell { display: block; }
+    #main { overflow: visible; }
+    .wrap { padding: 12px 16px 24px; }
+    #map .lab { padding: 0 2px; pointer-events: none; }
+    #map .lab .nm { pointer-events: auto; width: auto; max-width: 100%; }
+    #map .lab:not(.lane) .nm { background: var(--s1); padding-right: 4px; }
+    #map .lab .qb, #map .lab .eb { background: var(--s1); }
+    aside { display: none; position: fixed; inset: 0; z-index: 30; border: 0; padding: 12px 16px 40px; overflow-y: auto; overflow-x: hidden; }
+    body.sheet aside { display: block; }
+    body.sheet { overflow: hidden; }
+    #back { display: inline-flex; margin-bottom: 8px; }
+    .kv { grid-template-columns: 70px minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Vonaltérkép<i>VRG Stack · L réteg · DevLog vonalak · metro map</i></h1>
+  <div class="filters" role="group" aria-label="Szűrő">
+    <input id="fS" type="search" placeholder="Vonal keresése (/)" aria-label="Vonal keresése névben, azonosítóban, leírásban">
+    <label>Sáv <select id="fL" aria-label="Szűrés sáv szerint"></select></label>
+    <label>Csend <select id="fQ" aria-label="Ennyi nap állomás nélkül számít csendnek"></select></label>
+    <button id="fO" aria-pressed="false" title="Csak a nyitott vonalak (aktív, rád vár, parkol, visszatérő)">Csak nyitott</button>
+  </div>
+  <span class="sp"></span>
+  <button id="bTheme" title="Téma: auto → sötét → világos">◐ Téma</button>
+  <a class="b" href="decisions.html" title="Döntésnapló (Q réteg)">Döntésnapló</a>
+  <a class="b" href="commits.html" title="Commit-pixel (R réteg)">Commit-pixel</a>
+  <a class="b" href="replay.html" title="Visszajátszás (U réteg)">Visszajátszás</a>
+  <span id="stat"></span>
+</header>
+<div class="shell">
+  <div id="main"><div class="wrap" id="wrap">
+    <section class="box" id="secQuiet" aria-labelledby="hQuiet">
+      <div class="boxhead"><h3 id="hQuiet">⚠ Elcsendesült nyitott vonalak</h3><span class="en" id="sQuiet"></span></div>
+      <div class="ql" id="lQuiet"></div>
+      <p class="note" id="harvNote" hidden></p>
+    </section>
+    <section class="box" id="secMap" aria-labelledby="hMap">
+      <div class="boxhead"><h3 id="hMap">Vonalak időben</h3><span class="en" id="sMap"></span></div>
+      <div class="legend" id="legend"></div>
+      <div class="axis" id="axis"></div>
+      <div id="map"></div>
+    </section>
+    <p class="hint" id="about"></p>
+  </div></div>
+  <aside id="panel" aria-label="A kiválasztott vonal vagy állomás"></aside>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="fallback" id="fallback" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="fbh">
+    <h2 id="fbh">Másold ki a promptot</h2>
+    <p class="dim">A böngésző nem engedte a másolást. A szöveg ki van jelölve: Ctrl+C.</p>
+    <textarea id="fallback-text" readonly></textarea>
+    <div><button type="button" class="btn" id="fallback-close">Bezárás</button></div>
+  </div>
+</div>
+<script src="out/metro-data.js"></script>
+<script>
+'use strict';
+(function () {
+  const M = window.METRO;
+  const $ = s => document.querySelector(s);
+  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* file:// or private */ } } };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const md = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  const fold = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const win = p => String(p).replace(/\//g, '\\');
+
+  /* ---------- theme: auto (system) → dark (Mélyvíz) → light (Papír), the same as the sibling pages ---------- */
+  const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
+  let themePref = store.get('vrg-metro-theme') || 'auto';
+  function applyTheme() {
+    const light = themePref === 'light' || (themePref === 'auto' && mq && mq.matches);
+    document.documentElement.setAttribute('data-vk-theme', light ? 'light' : 'melyviz');
+    $('#bTheme').textContent = '◐ ' + ({ auto: 'Auto', dark: 'Sötét', light: 'Világos' })[themePref];
+  }
+  $('#bTheme').onclick = () => { themePref = { auto: 'dark', dark: 'light', light: 'auto' }[themePref]; store.set('vrg-metro-theme', themePref); applyTheme(); };
+  if (mq && mq.addEventListener) mq.addEventListener('change', applyTheme);
+  applyTheme();
+
+  if (!M || !M.lines) {
+    $('#wrap').innerHTML = '<div class="empty">Nincs adat: <code>out/metro-data.js</code> hiányzik. Futtasd: <code>stack.js build</code> vagy <code>stack.js metro</code> (a Stack mappában).</div>';
+    return;
+  }
+
+  /* ---------- the data ---------- */
+  const DAY = 864e5;
+  const LINES = M.lines, ST = M.st, RUNS = M.runs || [], NODES = M.nodes || [];
+  const LBY = new Map(LINES.map(l => [l.id, l]));
+  const LANE = new Map(M.lanes.map(l => [l.code, l]));
+  const NOW = Date.parse(M.generated);
+  const T0 = Date.parse(M.from + 'T00:00:00') - DAY, T1 = NOW + DAY * .6;
+  const HARV = M.harvest ? Date.parse(M.harvest) : 0;
+  const ENDS = new Set(['ended', 'absorbed', 'overruled']);
+  const MON = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+  const p2 = n => (n < 10 ? '0' : '') + n;
+  const dkey = t => { const d = new Date(t); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); };
+  const fDate = t => { if (!t) return '—'; const d = new Date(t); return `${d.getFullYear()}. ${MON[d.getMonth()]} ${d.getDate()}.`; };
+  const fTime = t => { const d = new Date(t); return p2(d.getHours()) + ':' + p2(d.getMinutes()); };
+  const laneCol = code => `var(--l-${/^[a-z]$/.test(code) ? code : 'u'})`;
+  const SW = { active: 'ok', waiting: 'wa', parked: 'mu', recurring: 'mu', personal: 'mu', ended: 'end', absorbed: 'end', overruled: 'end' };
+  const REL_HU = { fork: 'innen ágazott le', next: 'utána jön', feeds: 'táplálja', 'absorbed-by': 'beolvadt ide', 'overruled-by': 'felülírta' };
+  const REL_IN = { fork: 'leágazott belőle', next: 'előtte volt', feeds: 'táplálja ezt', 'absorbed-by': 'beolvadt ebbe', 'overruled-by': 'ezt felülírta' };
+  const isQuietLine = (l, thr) => (l.status === 'active' || l.status === 'waiting') && l.quiet != null && l.quiet >= thr;
+  const COPY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M5 1h7l3 3v8H5zM6 2v9h8V5h-3V2zM1 4h3v1H2v9h7v-1h1v2H1z"/></svg>';
+
+  /* ---------- state (in the link: #sel=views, #sel=s:78b7a31c@views, #sel=run:55e43b9a, &q=5, &o=1, &ln=p, &s=…) ---------- */
+  const F = { sel: '', q: M.quietDays || 5, o: false, ln: '', s: '', hide: new Set(['feeds']) };
+  function toHash() {
+    const h = new URLSearchParams();
+    if (F.sel) h.set('sel', F.sel);
+    if (F.q !== (M.quietDays || 5)) h.set('q', F.q);
+    if (F.o) h.set('o', '1');
+    if (F.ln) h.set('ln', F.ln);
+    if (F.s) h.set('s', F.s);
+    const s = h.toString().replace(/%3A/g, ':').replace(/%40/g, '@');
+    if (('#' + s) !== location.hash && !(s === '' && location.hash === '')) history.replaceState(null, '', s ? '#' + s : location.pathname + location.search);
+  }
+  function fromHash() {
+    const h = new URLSearchParams(location.hash.slice(1));
+    F.sel = h.get('sel') || '';
+    F.q = Math.max(1, Math.min(60, parseInt(h.get('q'), 10) || M.quietDays || 5));
+    F.o = h.get('o') === '1';
+    F.ln = LANE.has(h.get('ln')) ? h.get('ln') : '';
+    F.s = h.get('s') || '';
+  }
+
+  /* ---------- copy with feedback (the Thread Board's pattern) ---------- */
+  let toastTimer;
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600); }
+  function fallback(text) { const f = $('#fallback'), ta = $('#fallback-text'); ta.value = text; f.hidden = false; ta.focus(); ta.select(); }
+  $('#fallback-close').onclick = () => { $('#fallback').hidden = true; };
+  function copy(text, label, el) {
+    const ok = () => { toast('Másolva: ' + label); if (el) { el.classList.add('copied'); setTimeout(() => el.classList.remove('copied'), 1600); } };
+    const legacy = () => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let done = false; try { done = document.execCommand('copy'); } catch (e) { done = false; }
+      ta.remove();
+      done ? ok() : fallback(text);
+    };
+    try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, legacy); else legacy(); } catch (e) { legacy(); }
+  }
+
+  /* ---------- the "Folytatás" prompt: the Thread Board's item prompt (board.template.html itemPrompt), for a line ---------- */
+  function linePrompt(l) {
+    const P = M.paths, th = l.threads[0];
+    const out = ['Fresh start on one open VRG item.', '',
+      `Item: ${l.name}${l.next ? ' — ' + l.next : ''}`];
+    if (th) out.push(`Thread: ${th.n} (${th.sWord}, board id ${th.id}). ${th.note}`);
+    if (l.threads.length > 1) out.push(`Also on thread${l.threads.length > 2 ? 's' : ''}: ${l.threads.slice(1).map(t => `${t.n} (board id ${t.id})`).join(', ')}.`);
+    if (th && th.go) out.push(`Codephrase: ${th.go}${th.goFile ? ` — read ${th.goFile} first.` : ''}`);
+    out.push(`DevLog line: ${l.name} (${l.id}), ${l.word}${l.lastMd ? ', last active ' + l.lastMd : ''}. Its next step: "${l.next}"`);
+    if (l.brief_) out.push(`  Line brief: ${P.devlog}\\${win(l.brief_)}`);
+    if (th && th.read.length) out.push('Read first:', ...th.read.map(p => '  - ' + p));
+    if (th && th.t.length) out.push(`Still open on this thread (not this session's job): ${th.t.join(', ')}.`);
+    out.push('', 'How to work:',
+      `- Main checkout ${P.repo}, branch main; follow its CLAUDE.md.`,
+      '- First check the real state (git status, git log -5, the files above) and tell me in five lines where this item stands.',
+      '- Before building anything, ask what you need as numbered A/B/C options, A recommended.',
+      '- Never commit or push unless I ask.',
+      `- When the item is done, give me the one-line change for ${P.devlog}\\lines.js (line ${l.id}: its new status and nextStep) so the DevLog shows where the line stands.`);
+    return out.join('\n');
+  }
+
+  /* ---------- which lines are shown ---------- */
+  function visibleLines() {
+    const q = fold(F.s).trim();
+    return LINES.filter(l => (!F.o || l.open) && (!F.ln || l.lane === F.ln) &&
+      (!q || fold(l.id + ' ' + l.name + ' ' + l.brief + ' ' + l.next).includes(q)));
+  }
+  // within a lane: by the first thing that happened on the line (a fork, a station, a milestone)
+  function startOf(l) {
+    const ts = l.st.map(i => Date.parse(ST[i].t0)).concat(l.ms.map(m => Date.parse(m[0] + 'T12:00:00')));
+    if (l.from) { const f = forkTime(l); if (f) ts.push(f); }
+    return ts.length ? Math.min(...ts) : Infinity;
+  }
+  function forkTime(l) {
+    if (!l.from) return 0;
+    const src = LBY.get(l.from.line); if (!src) return 0;
+    const s = src.st.map(i => ST[i]).find(x => l.from.sid && x.sid.startsWith(l.from.sid));
+    if (s) return Date.parse(s.t0);
+    const own = l.st.length ? Date.parse(ST[l.st[0]].t0) : 0;
+    return own;
+  }
+  function endOf(l) {
+    const ts = l.st.map(i => Date.parse(ST[i].t1)).concat(l.ms.map(m => Date.parse(m[0] + 'T12:00:00')));
+    return ts.length ? Math.max(...ts) : 0;
+  }
+
+  /* ---------- text width for label fitting (no overlapping labels) ---------- */
+  const cv = document.createElement('canvas').getContext('2d');
+  const textW = (s, font) => { cv.font = font; return cv.measureText(s).width; };
+  const MONOF = getComputedStyle(document.documentElement).getPropertyValue('--vk-font-mono').trim() || 'Consolas, monospace';
+
+  /* ---------- layout + render ---------- */
+  let G = null;            // the current geometry: rows, x(), y of each line
+  function geometry(W) {
+    const phone = W < 640;
+    const GW = phone ? 0 : Math.min(250, Math.max(170, Math.round(W * .24)));
+    const X0 = phone ? 8 : GW + 10, X1 = W - (phone ? 16 : 40);
+    const x = t => X0 + (t - T0) / (T1 - T0) * (X1 - X0);
+    return { W, phone, GW, X0, X1, x, RH: phone ? 46 : 26, LH: phone ? 26 : 28, TY: phone ? 28 : 13, R: phone ? 3.6 : 4.6 };
+  }
+
+  function renderAxis() {
+    const g = G, H = 34;
+    let s = `<svg width="${g.W}" height="${H}" viewBox="0 0 ${g.W} ${H}" role="img" aria-label="Időtengely ${esc(fDate(T0 + DAY))} – ${esc(fDate(NOW))}">`;
+    // Mondays; every second one when they would crowd
+    const first = new Date(T0); first.setHours(0, 0, 0, 0);
+    while (first.getDay() !== 1) first.setDate(first.getDate() + 1);
+    const weekPx = g.x(T0 + 7 * DAY) - g.x(T0);
+    const step = weekPx < 44 ? 2 : 1;
+    let k = 0, lastEnd = -1e9;
+    for (let d = new Date(first); d.getTime() < T1; d.setDate(d.getDate() + 7), k++) {
+      const xx = g.x(d.getTime());
+      s += `<line class="grid" x1="${xx}" x2="${xx}" y1="${H - 8}" y2="${H}"/>`;
+      if (k % step) continue;
+      const lab = p2(d.getMonth() + 1) + '-' + p2(d.getDate()), w = textW(lab, `10.5px ${MONOF}`);
+      if (xx - w / 2 < lastEnd + 6 || xx + w / 2 > g.W - 2 || xx - w / 2 < (g.phone ? 0 : g.GW)) continue;
+      s += `<text class="axt" x="${xx}" y="${H - 11}" text-anchor="middle">${lab}</text>`; lastEnd = xx + w / 2;
+    }
+    // months
+    let mEnd = -1e9;
+    const m0 = new Date(T0); m0.setDate(1); m0.setHours(0, 0, 0, 0);
+    for (let d = new Date(m0); d.getTime() < T1; d.setMonth(d.getMonth() + 1)) {
+      const xx = Math.max(g.X0, g.x(d.getTime())), lab = MON[d.getMonth()] + (d.getMonth() === 0 || mEnd < 0 ? ' ' + d.getFullYear() : '');
+      const w = textW(lab, `600 11px ${MONOF}`);
+      if (xx < mEnd + 8 || xx + w > g.W) continue;
+      s += `<text class="axm" x="${xx}" y="11">${esc(lab)}</text>`; mEnd = xx + w;
+    }
+    if (!g.phone) s += `<text class="axt" x="10" y="${H - 11}">vonal · ${esc(fDate(T0 + DAY))} → ma</text>`;
+    s += '</svg>';
+    $('#axis').innerHTML = s;
+  }
+
+  function render() {
+    const W = $('#map').clientWidth || 800;
+    G = geometry(W);
+    const g = G, vis = visibleLines(), visSet = new Set(vis.map(l => l.id));
+    renderAxis();
+    // rows
+    const rows = []; let y = 6;
+    const yOf = new Map();
+    for (const lane of M.lanes) {
+      const ls = vis.filter(l => l.lane === lane.code).sort((a, b) => startOf(a) - startOf(b) || a.id.localeCompare(b.id));
+      if (!ls.length) continue;
+      rows.push({ kind: 'lane', lane, y, h: g.LH }); y += g.LH;
+      for (const l of ls) { rows.push({ kind: 'line', l, y, h: g.RH }); yOf.set(l.id, y + g.TY); y += g.RH; }
+    }
+    const runsVisible = RUNS.length && !F.ln && !F.s;
+    let runY = 0;
+    if (runsVisible) {
+      rows.push({ kind: 'lane', lane: { code: 'u', name: 'Aratás után · még nincs vonalon', say: '' }, y, h: g.LH }); y += g.LH;
+      rows.push({ kind: 'runs', y, h: g.RH }); runY = y + g.TY; y += g.RH;
+    }
+    const H = y + 10;
+    g.yOf = yOf; g.H = H;
+    const xs = [], labs = [];
+    const P = (cls, d, extra) => `<path class="${cls}" d="${d}"${extra || ''}/>`;
+
+    // background: lane bands, week grid, harvest and today
+    let bandOn = false;
+    for (const r of rows) if (r.kind === 'lane') bandOn = !bandOn; else if (bandOn) xs.push(`<rect class="band" x="0" y="${r.y}" width="${g.W}" height="${r.h}"/>`);
+    const first = new Date(T0); first.setHours(0, 0, 0, 0); while (first.getDay() !== 1) first.setDate(first.getDate() + 1);
+    for (const d = new Date(first); d.getTime() < T1; d.setDate(d.getDate() + 7)) { const xx = g.x(d.getTime()); xs.push(`<line class="${d.getDate() <= 7 ? 'gridm' : 'grid'}" x1="${xx}" x2="${xx}" y1="0" y2="${H}" opacity=".6"/>`); }
+    if (HARV) {
+      const hx = g.x(HARV);
+      xs.push(`<line class="harv" x1="${hx}" x2="${hx}" y1="0" y2="${H}"><title>A DevLog utolsó aratása (sessions.json): ${esc(fDate(HARV))}. Ami utána jött, még nincs vonalon.</title></line>`);
+    }
+    const tx = g.x(NOW);
+    xs.push(`<line class="today" x1="${tx}" x2="${tx}" y1="0" y2="${H}"/>`);
+    xs.push(`<text class="today-t" x="${tx - 3}" y="${H - 2}" text-anchor="end">ma</text>`);
+    // selected row highlight (filled by select())
+    xs.push(`<rect id="rowsel" class="rowsel" x="0" y="-100" width="${g.W}" height="${g.RH}"/>`);
+
+    // connectors between lines (under the tracks)
+    const cx = [];
+    for (const [a, b, rel] of M.rel) {
+      if (!visSet.has(a) || !visSet.has(b)) continue;
+      const la = LBY.get(a), lb = LBY.get(b), ya = yOf.get(a), yb = yOf.get(b);
+      let t, y1, y2, spur = null, cls = rel;
+      if (rel === 'fork') { t = forkTime(lb) || startOf(lb); y1 = ya; y2 = yb; }
+      else if (rel === 'next' || rel === 'absorbed-by' || rel === 'overruled-by') {
+        t = endOf(la) || startOf(la); y1 = ya; y2 = yb;
+        const bs = startOf(lb); if (isFinite(bs) && bs > t + DAY / 2) spur = bs;
+      } else { // feeds: where the source's output is there and the target runs
+        const ls = endOf(la) || startOf(la), bs = startOf(lb), be = Math.max(endOf(lb), bs);
+        t = Math.min(Math.max(ls, bs), be || ls); y1 = ya; y2 = yb;
+      }
+      if (!isFinite(t) || !t) continue;
+      const xx = g.x(t);
+      let d = `M${xx},${y1}L${xx},${y2}`;
+      if (spur) d += `L${g.x(spur)},${y2}`;
+      cx.push(`<g data-l="${esc(a)} ${esc(b)}"><title>${esc(la.name)} — ${esc(REL_HU[rel] || rel)} → ${esc(lb.name)}</title>${P('cx ' + cls, d)}<circle class="cxd ${cls}" cx="${xx}" cy="${y1}" r="2.6"/>` +
+        (rel === 'absorbed-by' || rel === 'overruled-by' ? `<path class="cxd ${cls}" d="M${xx - 4},${y2 + (y2 > y1 ? -7 : 7)}L${xx + 4},${y2 + (y2 > y1 ? -7 : 7)}L${xx},${y2 + (y2 > y1 ? -1 : 1)}Z"/>` : `<circle class="cxd ${cls}" cx="${spur ? g.x(spur) : xx}" cy="${y2}" r="2.6"/>`) + '</g>');
+    }
+
+    // tracks, quiet stretches, milestones, termini, stations
+    const tr = [], st = [], ix = [], tl = [];
+    const stPos = new Map();   // station index → [x, y]
+    for (const r of rows) {
+      if (r.kind !== 'line') continue;
+      const l = r.l, ty = r.y + g.TY, col = laneCol(l.lane), id = esc(l.id);
+      const S = l.st.map(i => ST[i]);
+      const a = startOf(l), e = endOf(l);
+      const parts = [], labs = [];
+      if (isFinite(a) && e) {
+        const xa = g.x(a), xe = g.x(e);
+        const cls = l.status === 'parked' ? 'trk thin' : l.status === 'personal' ? 'trk thin personal' : 'trk';
+        // the solid track, cut where a stretch is quiet
+        let cur = xa;
+        for (let k = 1; k < S.length; k++) {
+          const p = S[k - 1], q = S[k], gap = (Date.parse(q.t0) - Date.parse(p.t1)) / DAY;
+          if (gap > F.q) {
+            const g0 = g.x(Date.parse(p.t1)), g1 = g.x(Date.parse(q.t0));
+            parts.push(P(cls, `M${cur},${ty}L${g0},${ty}`, ` style="stroke:${col}"`));
+            parts.push(`<path class="gap" d="M${g0},${ty}L${g1},${ty}"><title>Csend: ${Math.floor(gap)} nap állomás nélkül (${esc(fDate(Date.parse(p.t1)))} → ${esc(fDate(Date.parse(q.t0)))})</title></path>`);
+            const lab = `csend ${Math.floor(gap)} n`, w = textW(lab, `600 9.5px ${MONOF}`);
+            if (g1 - g0 > w + 10) labs.push(`<text class="glab" data-x0="${g0}" data-x1="${g1}" x="${(g0 + g1) / 2}" y="${g.phone ? ty + 14 : ty - 6}" text-anchor="middle">${lab}</text>`);
+            cur = g1;
+          }
+        }
+        parts.push(P(cls, `M${cur},${ty}L${Math.max(cur, xe)},${ty}`, ` style="stroke:${col}"`));
+        // after the last station: a tail to today (open lines) or a terminus (ended lines)
+        if (ENDS.has(l.status)) {
+          parts.push(`<line class="term" x1="${xe}" x2="${xe}" y1="${ty - 7}" y2="${ty + 7}" style="stroke:${col}"/>`);
+          const to = l.by ? LBY.get(l.by.line) : l.to.length ? LBY.get(l.to[0].line) : null;
+          const sym = l.status === 'ended' ? '◼' : l.status === 'absorbed' ? '⤳' : '✕';
+          let lab = `${sym} ${to ? '→ ' + to.name : 'végállomás'}`;
+          const room = g.X1 + (g.phone ? 14 : 36) - (xe + 9);
+          const font = `10.5px ${MONOF}`;
+          while (lab.length > 6 && textW(lab, font) > room) lab = lab.slice(0, -2) + '…';
+          if (textW(lab, font) <= room) labs.push(`<text class="tlab" x="${xe + 9}" y="${ty + 3.5}">${esc(lab)}</text>`);
+        } else if (l.status === 'parked' || l.status === 'recurring' || l.status === 'personal') {
+          parts.push(P('trk park', `M${xe},${ty}L${tx},${ty}`, ` style="stroke:${col}"`));
+        } else if (S.length) {
+          const quiet = isQuietLine(l, F.q);
+          if (quiet) {
+            parts.push(`<path class="tail" d="M${xe},${ty}L${tx},${ty}"><title>Csend: ${l.quiet} napja nincs állomás (utolsó: ${esc(fDate(Date.parse(l.last)))})</title></path>`);
+            parts.push(`<g><path class="qmark" d="M${tx},${ty - 7}L${tx + 7},${ty + 5}L${tx - 7},${ty + 5}Z"/><text class="qmark-t" x="${tx}" y="${ty + 3.6}" text-anchor="middle">!</text></g>`);
+          } else parts.push(P('trk thin', `M${xe},${ty}L${tx},${ty}`, ` style="stroke:${col}"`));
+        }
+      }
+      // milestones (small diamonds, under the stations)
+      for (const [d, text] of l.ms) {
+        const mx = g.x(Date.parse(d + 'T12:00:00')); if (!isFinite(mx)) continue;
+        parts.push(`<path class="ms" d="M${mx},${ty - 3.2}L${mx + 3.2},${ty}L${mx},${ty + 3.2}L${mx - 3.2},${ty}Z"><title>${esc(d)} · ${esc(text)}</title></path>`);
+      }
+      if (!S.length && !l.ms.length) parts.push(`<text class="tlab" x="${g.X0 + 4}" y="${ty + 3.5}">még nincs állomás</text>`);
+      tr.push(`<g data-l="${id}">${parts.join('')}</g>`);
+      if (labs.length) tl.push(`<g data-l="${id}">${labs.join('')}</g>`);
+
+      // stations: those closer than one mark are one group (a count shows how many)
+      const minGap = 2 * g.R + 3;
+      const groups = [];
+      for (const s of S) {
+        const sx = g.x(Date.parse(s.t0)), last = groups[groups.length - 1];
+        if (last && sx - last.x0 < minGap) { last.m.push(s); last.x1 = sx; } else groups.push({ x0: sx, x1: sx, m: [s] });
+      }
+      for (const gr of groups) {
+        const n = gr.m.length, ixs = gr.m.some(s => s.also.length);
+        const ids = gr.m.map(s => s.i).join(',');
+        const tip = n === 1 ? `${fDate(Date.parse(gr.m[0].t0))} · ${gr.m[0].title}` : `${n} munkamenet: ${gr.m.map(s => s.d.slice(5) + ' ' + s.title).join(' · ')}`;
+        const lab = n === 1 ? `Állomás: ${l.name}, ${fDate(Date.parse(gr.m[0].t0))}, ${gr.m[0].title}` : `${n} állomás: ${l.name}, ${fDate(Date.parse(gr.m[0].t0))}`;
+        let mark;
+        if (n === 1) mark = `<circle cx="${gr.x0}" cy="${ty}" r="${g.R}" style="stroke:${col}"/>`;
+        else {
+          const cw = Math.max(gr.x1 - gr.x0, textW(String(n), `600 9px ${MONOF}`) + 4);
+          const xm = (gr.x0 + gr.x1) / 2, h = 2 * g.R + 3;
+          mark = `<rect x="${xm - cw / 2 - g.R}" y="${ty - h / 2}" width="${cw + 2 * g.R}" height="${h}" rx="${h / 2}" style="stroke:${col}"/>` +
+            (g.phone && cw + 2 * g.R < 12 ? '' : `<text x="${xm}" y="${ty + 3.2}" text-anchor="middle">${n}</text>`);
+        }
+        st.push(`<g class="stn${ixs ? ' ix' : ''}" data-l="${id}" data-s="${ids}" tabindex="0" role="button" aria-label="${esc(lab)}"><title>${esc(tip)}</title>${mark}</g>`);
+        for (const s of gr.m) stPos.set(s.i, [n === 1 ? gr.x0 : (gr.x0 + gr.x1) / 2, ty]);
+      }
+    }
+    // interchanges: one session that moved two lines
+    const seen = new Set();
+    for (const s of ST) {
+      if (!s.also.length || !stPos.has(s.i)) continue;
+      for (const o of s.also) {
+        const k = [s.sid, s.line, o].sort().join('|'); if (seen.has(k)) continue; seen.add(k);
+        const t = ST.find(x => x.sid === s.sid && x.line === o);
+        if (!t || !stPos.has(t.i)) continue;
+        const [x1, y1] = stPos.get(s.i), [x2, y2] = stPos.get(t.i);
+        ix.push(`<g data-l="${esc(s.line)} ${esc(o)}"><title>Átszállás: ugyanaz a munkamenet (${esc(s.title)}) két vonalon</title><path class="ixl" d="M${x1},${y1}L${x2},${y2}"/></g>`);
+      }
+    }
+    // the recorded runs no line holds yet
+    const rn = [];
+    if (runsVisible) {
+      const minGap = 2 * g.R + 3; let lastX = -1e9, grp = null; const grs = [];
+      for (const r of RUNS) { const rx = g.x(Date.parse(r.t0)); if (grp && rx - grp.x0 < minGap) { grp.m.push(r); grp.x1 = rx; } else { grp = { x0: rx, x1: rx, m: [r] }; grs.push(grp); } lastX = rx; }
+      for (const gr of grs) {
+        const n = gr.m.length, xm = (gr.x0 + gr.x1) / 2, h = 2 * g.R + 3, cw = Math.max(gr.x1 - gr.x0, n > 1 ? textW(String(n), `600 9px ${MONOF}`) + 4 : 0);
+        rn.push(`<g class="run" data-r="${gr.m.map(r => r.sid).join(',')}" tabindex="0" role="button" aria-label="${esc(n === 1 ? 'Futás: ' + gr.m[0].title : n + ' futás, ' + gr.m[0].d)}"><title>${esc(gr.m.map(r => r.d.slice(5) + ' ' + r.title).join(' · '))}</title>` +
+          `<rect x="${xm - cw / 2 - g.R}" y="${runY - h / 2}" width="${cw + 2 * g.R}" height="${h}" rx="2"/>` + (n > 1 && !(g.phone && cw + 2 * g.R < 12) ? `<text class="axt" x="${xm}" y="${runY + 3.2}" text-anchor="middle" style="font-size:9px;font-weight:600;pointer-events:none">${n}</text>` : '') + '</g>');
+      }
+    }
+
+    const hide = ['fork', 'next', 'feeds', 'end'].filter(k => F.hide.has(k)).map(k => 'hidecx-' + k).join(' ');
+    $('#map').innerHTML = `<svg id="msvg" class="${hide}" width="${g.W}" height="${H}" viewBox="0 0 ${g.W} ${H}" role="group" aria-label="Vonaltérkép: ${vis.length} vonal">${xs.join('')}${cx.join('')}${tr.join('')}${ix.join('')}${st.join('')}${tl.join('')}${rn.join('')}</svg>` +
+      rows.map(r => {
+        if (r.kind === 'lane') return `<div class="lab lane" style="left:0;width:${g.phone ? g.W : g.GW}px;top:${r.y}px;height:${r.h}px" title="${esc(r.lane.say || '')}"><i style="background:${laneCol(r.lane.code)}"></i><span>${esc(r.lane.name)}</span></div>`;
+        if (r.kind === 'runs') return g.phone ? `<div class="lab" style="left:0;width:${g.W}px;top:${r.y}px;height:18px"><span class="nm"><span class="ic">▫</span><span class="t faint">${RUNS.length} felvett futás ${esc(fDate(HARV))} után</span></span></div>`
+          : `<div class="lab" style="left:0;width:${g.GW}px;top:${r.y}px;height:${r.h}px"><span class="nm" title="Felvett munkamenetek a DevLog utolsó aratása után; a lines.js még nem tette őket vonalra"><span class="ic">▫</span><span class="t faint">${RUNS.length} futás, vonal nélkül</span></span></div>`;
+        const l = r.l, q = isQuietLine(l, F.q);
+        const badge = q ? `<span class="qb" title="${l.quiet} napja nincs állomás">⚠ ${l.quiet} n csend</span>` : ENDS.has(l.status) ? `<span class="eb">${esc(l.icon)} ${esc(l.hu)}</span>` : '';
+        const style = g.phone ? `left:0;width:${g.W}px;top:${r.y}px;height:18px` : `left:0;width:${g.GW}px;top:${r.y}px;height:${r.h}px`;
+        return `<div class="lab${l.pseudo ? ' ghost' : ''}" data-l="${esc(l.id)}" style="${style}"><button class="nm" data-l="${esc(l.id)}" title="${esc(l.name)} · ${esc(l.hu)}${l.lastMd ? ' · utoljára ' + esc(l.lastMd) : ''}"><span class="ic" style="color:${laneCol(l.lane)}">${esc(l.icon)}</span><span class="t">${esc(l.name)}</span>${badge}</button></div>`;
+      }).join('');
+    $('#map').style.height = H + 'px';
+    fitLabels();
+    renderQuiet();
+    const shown = vis.reduce((n, l) => n + l.st.length, 0);
+    $('#sMap').textContent = `${vis.length} vonal · ${shown} állomás · ${fDate(T0 + DAY)} → ${fDate(NOW)}`;
+    $('#stat').textContent = `${LINES.length} vonal · ${ST.length} állomás`;
+    $('#fS').classList.toggle('on', !!F.s); $('#fL').classList.toggle('on', !!F.ln);
+    $('#fO').setAttribute('aria-pressed', String(F.o));
+    paintSel();
+  }
+
+  /* the canvas guess can miss the real font: measure the drawn text, shorten or drop what does not fit */
+  function fitLabels() {
+    const svg = $('#msvg'); if (!svg) return;
+    for (const t of svg.querySelectorAll('text.glab')) {
+      try { if (t.getComputedTextLength() > (+t.dataset.x1 - +t.dataset.x0) - 6) t.remove(); } catch (e) { /* not laid out */ }
+    }
+    for (const t of svg.querySelectorAll('text.tlab')) {
+      try {
+        const x = +t.getAttribute('x'); let s = t.textContent;
+        while (s.length > 6 && x + t.getComputedTextLength() > G.W - 3) { s = s.slice(0, -2) + '…'; t.textContent = s; }
+        if (x + t.getComputedTextLength() > G.W - 3) t.remove();
+      } catch (e) { /* not laid out */ }
+    }
+  }
+
+  /* ---------- the quiet list (first thing on the page) ---------- */
+  function renderQuiet() {
+    const qs = LINES.filter(l => isQuietLine(l, F.q)).sort((a, b) => b.quiet - a.quiet);
+    $('#sQuiet').textContent = qs.length ? `aktív vagy rád vár, ≥ ${F.q} napja állomás nélkül · ${qs.length} vonal` : `≥ ${F.q} nap`;
+    $('#lQuiet').innerHTML = qs.length ? qs.map(l => `<button class="qchip${F.sel === l.id ? ' sel' : ''}" data-l="${esc(l.id)}" title="${esc(l.name)}: ${l.quiet} napja nincs állomás · következő lépés: ${esc(l.next)}"><span class="d">⚠ ${l.quiet} n</span><span class="n">${esc(l.name)}</span><span class="w">${esc(l.icon)} ${esc(l.hu)}</span></button>`).join('')
+      : `<span class="empty">Nincs ${F.q} napnál csendesebb aktív vagy rád váró vonal.</span>`;
+    const hn = $('#harvNote');
+    if (HARV && (NOW - HARV) / DAY >= 1) {
+      hn.hidden = false;
+      hn.innerHTML = `<b>A csend egy része látszólagos.</b> A DevLog munkamenet-listáját (<code>sessions.json</code>, harvest.js) utoljára ${esc(fDate(HARV))} aratták; azóta ${RUNS.length} felvett futás van, amelyet még egy vonal sem tart (a térkép alján, a ${esc(fDate(HARV))} pontozott vonal után). Az aratás és a <code>lines.js</code> ASSIGN frissítése után ezek is állomások lesznek.`;
+    } else hn.hidden = true;
+  }
+
+  /* ---------- selection ---------- */
+  function parseSel(s) {
+    if (!s) return null;
+    let m;
+    if ((m = /^s:([0-9a-f]{8})@(.+)$/.exec(s))) { const x = ST.find(t => t.sid === m[1] && t.line === m[2]); return x ? { kind: 'st', s: x, l: LBY.get(x.line) } : null; }
+    if ((m = /^g:(\d+(?:,\d+)+)$/.exec(s))) { const xs = m[1].split(',').map(Number).map(i => ST[i]).filter(Boolean); return xs.length ? { kind: 'grp', xs, l: LBY.get(xs[0].line) } : null; }
+    if ((m = /^run:([0-9a-f]{8})$/.exec(s))) { const r = RUNS.find(x => x.sid === m[1]); return r ? { kind: 'run', r } : null; }
+    if ((m = /^runs:([0-9a-f,]+)$/.exec(s))) { const rs = m[1].split(',').map(id => RUNS.find(x => x.sid === id)).filter(Boolean); return rs.length ? { kind: 'runs', rs } : null; }
+    const l = LBY.get(s.replace(/^L:/, '')); return l ? { kind: 'line', l } : null;
+  }
+  function paintSel() {
+    const sel = parseSel(F.sel), svg = $('#msvg'); if (!svg) return;
+    const lid = sel && sel.l ? sel.l.id : '';
+    for (const el of svg.querySelectorAll('[data-l]')) el.classList.toggle('dim', !!lid && !el.getAttribute('data-l').split(' ').includes(lid));
+    for (const el of document.querySelectorAll('#map .lab[data-l]')) el.classList.toggle('sel', el.getAttribute('data-l') === lid);
+    for (const el of document.querySelectorAll('.qchip')) el.classList.toggle('sel', el.dataset.l === lid);
+    const rs = $('#rowsel');
+    if (rs) { const yy = lid && G.yOf.has(lid) ? G.yOf.get(lid) - G.TY : -100; rs.setAttribute('y', yy); rs.setAttribute('height', G.RH); }
+    const want = sel && sel.kind === 'st' ? [sel.s.i] : sel && sel.kind === 'grp' ? sel.xs.map(x => x.i) : [];
+    for (const el of svg.querySelectorAll('.stn')) el.classList.toggle('sel', want.length > 0 && el.dataset.s.split(',').map(Number).some(i => want.includes(i)));
+    const wr = sel && sel.kind === 'run' ? [sel.r.sid] : sel && sel.kind === 'runs' ? sel.rs.map(r => r.sid) : [];
+    for (const el of svg.querySelectorAll('.run')) el.classList.toggle('sel', wr.length > 0 && el.dataset.r.split(',').some(i => wr.includes(i)));
+  }
+  function select(s, scroll) {
+    F.sel = s || ''; toHash(); paintSel(); renderPanel();
+    document.body.classList.toggle('sheet', !!F.sel);
+    if (scroll && F.sel) {
+      const sel = parseSel(F.sel), lid = sel && sel.l ? sel.l.id : '';
+      const lab = lid && document.querySelector(`#map .lab[data-l="${CSS.escape(lid)}"]`);
+      const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (lab && innerWidth > 900) lab.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    }
+  }
+
+  /* ---------- the side panel ---------- */
+  const nodeRow = k => NODES[k] || null;
+  const lineBtn = (id, extra) => { const l = LBY.get(id); return l ? `<button data-go="${esc(l.id)}">${esc(l.name)}</button>${extra || ''}` : esc(id); };
+  const stRow = (s, cur) => `<button class="lk${cur ? ' cur' : ''}" data-go="s:${s.sid}@${esc(s.line)}"><span class="c">${esc(s.d.slice(5))}</span><span class="t" title="${esc(s.title)}">${esc(s.title)}</span><span class="r">${s.n} kérdés${s.also.length ? ' · ⇄' : ''}</span></button>`;
+  function backBtn() { return '<button class="btn" id="back">← Vissza a térképhez</button>'; }
+
+  function linePanel(l) {
+    const lane = LANE.get(l.lane) || { name: l.lane };
+    const quiet = isQuietLine(l, F.q);
+    const S = l.st.map(i => ST[i]);
+    let h = backBtn();
+    h += `<div class="kick"><i class="sw" style="background:${laneCol(l.lane)}"></i>${esc(lane.name)} · L:${esc(l.id)}${l.pseudo ? ' · nem igazi vonal' : ''}</div>`;
+    h += `<h2>${esc(l.name)}</h2>`;
+    h += `<div class="marks"><span class="mk ${SW[l.status] || 'mu'}">${esc(l.icon)} ${esc(l.hu)}</span>` +
+      (quiet ? `<span class="mk quiet">⚠ ${l.quiet} napja csend</span>` : '') +
+      (l.lastMd ? `<span class="mk mu">utoljára ${esc(fDate(Date.parse(l.last)))}</span>` : '<span class="mk mu">még nincs állomás</span>') +
+      `<span class="mk mu">${S.length} állomás</span></div>`;
+    if (l.brief) h += `<p class="dim">${md(l.brief)}</p>`;
+    h += `<h3>Következő lépés</h3><div class="nextstep">${md(l.next || '—')}</div>`;
+    // the button
+    if (ENDS.has(l.status)) {
+      const to = l.by ? [l.by] : l.to;
+      h += `<p>Végállomás${l.lastMd ? ' (' + esc(l.lastMd) + ')' : ''}. ${to.length ? 'A munka itt folytatódik:' : 'A vonal nem mondja meg, hová ment a munka.'}</p>`;
+      if (to.length) h += '<div class="row">' + to.map(t => LBY.get(t.line) ? `<button class="btn pri" data-go="${esc(t.line)}">→ ${esc(LBY.get(t.line).name)}</button>` : '').join('') + '</div>' +
+        to.filter(t => t.why).map(t => `<p class="faint" style="margin-top:4px">${esc(t.why)}</p>`).join('');
+    } else if (l.status === 'personal') {
+      h += '<p class="faint">Személyes vonal (nem VRG-munka): nincs folytatási prompt.</p>';
+    } else if (l.pseudo) {
+      h += '<p class="faint">Ez a DevLog gyűjtője a még be nem sorolt munkamenetekhez: a reggeli kör a lines.js ASSIGN-ban teszi őket vonalra.</p>';
+    } else {
+      h += `<div class="row"><button class="btn pri" id="bCont" title="A Thread Board elem-promptja erre a vonalra: friss munkamenet indításához">${COPY} Folytatás</button><span class="faint" style="font-size:12px">prompt egy friss munkamenethez</span></div>`;
+      if (l.briefMissing) h += `<p class="note" style="margin-top:8px"><b>Nincs munkamenet-brief.</b> <code>${esc(M.paths.devlog)}\\${esc(l.briefMissing)}</code> nem létezik, ezért a prompt nem hivatkozik rá. A DevLog build (<code>notes\\devlog\\build.js</code>) írja meg.</p>`;
+      else if (l.brief_) h += `<p class="faint" style="font-size:12px;margin-top:6px">A prompt a vonal briefjére mutat: <code>${esc(M.paths.devlog)}\\${esc(win(l.brief_))}</code></p>`;
+      h += `<details class="pv"><summary>A prompt szövege</summary><pre class="raw">${esc(linePrompt(l))}</pre></details>`;
+    }
+    if (l.remaining.length) h += `<h3>Ami hátra van</h3><ul>${l.remaining.map(x => `<li>${md(x)}</li>`).join('')}</ul>`;
+    // relations, both ways
+    const rels = [];
+    if (l.from) rels.push(`<div class="rel"><b>${REL_HU.fork}</b>${lineBtn(l.from.line)}${l.from.why ? ' — ' + esc(l.from.why) : ''}${l.from.sid ? ` <span class="faint">(munkamenet ${esc(l.from.sid)})</span>` : ''}</div>`);
+    if (l.by) rels.push(`<div class="rel"><b>${l.status === 'overruled' ? REL_HU['overruled-by'] : REL_HU['absorbed-by']}</b>${lineBtn(l.by.line)}${l.by.why ? ' — ' + esc(l.by.why) : ''}</div>`);
+    for (const t of l.to) rels.push(`<div class="rel"><b>${REL_HU.next}</b>${lineBtn(t.line)}${t.why ? ' — ' + esc(t.why) : ''}</div>`);
+    for (const t of l.feeds) rels.push(`<div class="rel"><b>${REL_HU.feeds}</b>${lineBtn(t.line)}${t.why ? ' — ' + esc(t.why) : ''}</div>`);
+    for (const o of LINES) {
+      if (o.id === l.id) continue;
+      if (o.from && o.from.line === l.id) rels.push(`<div class="rel"><b>${REL_IN.fork}</b>${lineBtn(o.id)}${o.from.why ? ' — ' + esc(o.from.why) : ''}</div>`);
+      if (o.by && o.by.line === l.id) rels.push(`<div class="rel"><b>${o.status === 'overruled' ? REL_IN['overruled-by'] : REL_IN['absorbed-by']}</b>${lineBtn(o.id)}</div>`);
+      for (const t of o.to) if (t.line === l.id) rels.push(`<div class="rel"><b>${REL_IN.next}</b>${lineBtn(o.id)}</div>`);
+      for (const t of o.feeds) if (t.line === l.id) rels.push(`<div class="rel"><b>${REL_IN.feeds}</b>${lineBtn(o.id)}</div>`);
+    }
+    if (rels.length) h += `<h3>Átszállások</h3>${rels.join('')}`;
+    if (l.threads.length) h += `<h3>Szál a Thread Boardon</h3>` + l.threads.map(t => `<p><b>${esc(t.n)}</b> <span class="faint">(${esc(t.sWord)}, ${esc(t.area)}${t.go ? ', ' + esc(t.go) : ''})</span><br><span class="dim">${esc(t.note)}</span>${t.t.length ? `<br><span class="faint">Még nyitott: ${t.t.map(esc).join(', ')}</span>` : ''}</p>`).join('');
+    if (S.length) h += `<h3>Állomások · ${S.length}</h3>` + S.slice().reverse().map(s => stRow(s)).join('');
+    if (l.ms.length) h += `<h3>Mérföldkövek</h3><ul>${l.ms.map(([d, t]) => `<li><span class="faint">${esc(d.slice(5))}</span> ${md(t)}</li>`).join('')}</ul>`;
+    if (l.notes.length) h += `<h3>Fejlesztési jegyzetek</h3><ul>${l.notes.map(x => `<li>${md(x)}</li>`).join('')}</ul>`;
+    h += `<h3>Máshol</h3><div class="kv"><span>napló</span><span>${l.doc ? `<code>${esc(M.paths.devlog)}\\${esc(win(l.doc))}</code>` : '<span class="faint">nincs vonalnapló</span>'}</span>` +
+      `<span>pillér</span><span>${l.pillars.length ? l.pillars.map(esc).join(', ') : '—'}</span></div>` +
+      `<div class="row"><a class="btn" href="connectome.html#sel=L:${esc(l.id)}">Konnektóm</a><a class="btn" href="stack-search.html#L:${esc(l.id)}">Keresés</a></div>`;
+    return h;
+  }
+
+  function stationPanel(s) {
+    const l = LBY.get(s.line), lane = LANE.get(l.lane) || { name: l.lane };
+    const S = l.st.map(i => ST[i]), k = S.indexOf(s);
+    let h = backBtn();
+    h += `<div class="kick"><i class="sw" style="background:${laneCol(l.lane)}"></i>${esc(lane.name)} · állomás · L:s${esc(s.sid)}</div>`;
+    h += `<h2>${esc(s.title)}</h2>`;
+    h += `<div class="marks"><span class="mk mu">${esc(fDate(Date.parse(s.t0)))} ${esc(fTime(Date.parse(s.t0)))}${s.t1 !== s.t0 ? '–' + esc(dkey(Date.parse(s.t1)) === dkey(Date.parse(s.t0)) ? fTime(Date.parse(s.t1)) : fDate(Date.parse(s.t1))) : ''}</span>` +
+      `<span class="mk mu">${s.n} kérdés ezen a vonalon${s.total !== s.n ? ' / ' + s.total : ''}</span>${s.tools ? `<span class="mk mu">${s.tools} eszközhívás</span>` : ''}</div>`;
+    h += `<div class="rel"><b>vonal</b>${lineBtn(l.id, ` <span class="faint">(${esc(l.hu)})</span>`)}</div>`;
+    if (s.also.length) h += `<div class="rel"><b>⇄ átszállás</b>ugyanez a munkamenet: ${s.also.map(o => lineBtn(o)).join(', ')}</div>`;
+    if (s.forkOf) h += `<div class="rel"><b>ága ennek</b><span class="faint">munkamenet ${esc(s.forkOf)}</span></div>`;
+    h += '<div class="row">' + (k > 0 ? `<button class="btn" data-go="s:${S[k - 1].sid}@${esc(l.id)}" title="Előző állomás (←)">← előző</button>` : '') +
+      (k < S.length - 1 ? `<button class="btn" data-go="s:${S[k + 1].sid}@${esc(l.id)}" title="Következő állomás (→)">következő →</button>` : '') +
+      (s.rec ? `<a class="btn pri" href="replay.html#${esc(s.sid)}">▶ Visszajátszás${s.steps ? ' · ' + s.steps + ' lépés' : ''}</a>` : '<span class="faint" style="font-size:12px">nincs felvett futás</span>') + '</div>';
+    if (s.first) h += `<h3>Első kérdése ezen a vonalon</h3><p class="dim">${esc(s.first)}</p>`;
+    // what it touched
+    if (s.files.length) h += `<h3>Fájlok · ${s.nfiles}</h3><ul class="files">${s.files.map(f => `<li>${esc(f)}</li>`).join('')}${s.nfiles > s.files.length ? `<li class="faint">… még ${s.nfiles - s.files.length}</li>` : ''}</ul>`;
+    if (s.touched.length) h += `<h3>A futás ezekhez nyúlt</h3>` + s.touched.map(([id, w]) => `<a class="lk" href="connectome.html#sel=${encodeURIComponent(id)}"><span class="c">${esc(id.split(':')[0])}</span><span class="t">${esc(id.slice(2))}</span><span class="r">${esc(w)}</span></a>`).join('');
+    const L = s.links || {};
+    for (const code of 'RCGQAIF') {
+      const arr = L[code]; if (!arr || !arr.length) continue;
+      h += `<h3>${esc((M.layers || {})[code] || code)} · ${arr.length}</h3>` + arr.slice(0, 14).map(([i]) => { const n = nodeRow(i); return n ? `<a class="lk" href="connectome.html#sel=${encodeURIComponent(n[0])}"><span class="c">${esc((n[2] || '').slice(5) || n[0].slice(0, 1))}</span><span class="t" title="${esc(n[1])}">${esc(n[1] || n[0])}</span><span class="r">${esc(n[3] || '')}</span></a>` : ''; }).join('') +
+        (arr.length > 14 ? `<p class="faint">… még ${arr.length - 14}</p>` : '');
+    }
+    if (s.cwd) h += `<h3>Hol futott</h3><p><code>${esc(s.cwd)}</code></p>`;
+    return h;
+  }
+
+  function groupPanel(xs) {
+    const l = LBY.get(xs[0].line);
+    let h = backBtn() + `<div class="kick"><i class="sw" style="background:${laneCol(l.lane)}"></i>${esc(l.name)}</div><h2>${xs.length} állomás egy pontban</h2>`;
+    h += `<p class="dim">Ezek a munkamenetek olyan közel vannak egymáshoz az időtengelyen, hogy a térkép egy jelként mutatja őket.</p>`;
+    return h + xs.map(s => stRow(s)).join('') + `<div class="row"><button class="btn" data-go="${esc(l.id)}">A vonal: ${esc(l.name)}</button></div>`;
+  }
+
+  function runPanel(r) {
+    let h = backBtn() + `<div class="kick"><i class="sw" style="background:var(--l-u)"></i>felvett futás · U:run.${esc(r.sid)}</div><h2>${esc(r.title)}</h2>`;
+    h += `<div class="marks"><span class="mk mu">${esc(fDate(Date.parse(r.t0)))} ${esc(fTime(Date.parse(r.t0)))}</span><span class="mk mu">${r.prompts} kérdés · ${r.steps} lépés</span>${r.commits ? `<span class="mk mu">${r.commits} commit</span>` : ''}<span class="mk wa">nincs vonalon</span></div>`;
+    h += `<p class="dim">A DevLog utolsó aratása (${esc(fDate(HARV))}) után indult, ezért még egy vonal sem tartja. A következő aratás (<code>notes\\devlog\\harvest.js</code>) és a <code>lines.js</code> ASSIGN bejegyzése után állomás lesz.</p>`;
+    h += `<div class="row"><a class="btn pri" href="replay.html#${esc(r.sid)}">▶ Visszajátszás · ${r.steps} lépés</a>${r.node >= 0 ? `<a class="btn" href="connectome.html#sel=U:run.${esc(r.sid)}">Konnektóm</a>` : ''}</div>`;
+    if (r.touched.length) h += `<h3>Ezekhez nyúlt</h3>` + r.touched.map(([id, w]) => `<a class="lk" href="connectome.html#sel=${encodeURIComponent(id)}"><span class="c">${esc(id.split(':')[0])}</span><span class="t">${esc(id.slice(2))}</span><span class="r">${esc(w)}</span></a>`).join('');
+    h += `<h3>Hol futott</h3><div class="kv"><span>mappa</span><span><code>${esc(r.cwd || '—')}</code></span><span>ág</span><span>${esc(r.branch || '—')}</span></div>`;
+    return h;
+  }
+
+  function overview() {
+    const c = M.counts;
+    return `<div class="kick">Vonaltérkép · L réteg</div><h2>DevLog vonalak metróként</h2>` +
+      `<p class="dim">Minden vonal egy sín, a sávjában; minden munkamenet, amely vitte, egy állomás rajta, a saját kérdései idején. Válassz egy vonalat vagy állomást a térképen.</p>` +
+      `<div class="kv"><span>vonal</span><span>${c.lines} (${c.open} nyitott)</span><span>állomás</span><span>${c.stations} (${c.sessions} munkamenet)</span>` +
+      `<span>csend</span><span>${F.q} nap állomás nélkül (Csend menü)</span><span>aratás</span><span>${esc(fDate(HARV))} · ${c.runs} futás azóta vonal nélkül</span>` +
+      `<span>szálak</span><span>threads.js, ${esc(M.threadsAsOf || '—')}</span></div>` +
+      `<h3>Jelek</h3><p>● állomás · ⇄ fehér: egy munkamenet több vonalon (átszállás) · szám: közeli állomások egy jelben · ◇ mérföldkő · ┃ végállomás, utána: hová ment a munka · pontozott sín: parkol vagy visszatérő, a mai napig · <span style="color:var(--quiet)">piros szaggatott + „csend” / ⚠</span>: csendes szakasz.</p>` +
+      `<p class="faint" style="margin-top:8px">Billentyűk: / keresés · Esc bezár · ← → előző / következő állomás a vonalon.</p>`;
+  }
+
+  function renderPanel() {
+    const sel = parseSel(F.sel), p = $('#panel');
+    p.innerHTML = !sel ? overview() : sel.kind === 'line' ? linePanel(sel.l) : sel.kind === 'st' ? stationPanel(sel.s) : sel.kind === 'grp' ? groupPanel(sel.xs) : sel.kind === 'run' ? runPanel(sel.r) : (backBtn() + `<h2>${sel.rs.length} futás</h2>` + sel.rs.map(r => `<button class="lk" data-go="run:${r.sid}"><span class="c">${esc(r.d.slice(5))}</span><span class="t">${esc(r.title)}</span><span class="r">${r.steps} lépés</span></button>`).join(''));
+    p.scrollTop = 0;
+    const b = $('#bCont'); if (b && sel && sel.l) b.onclick = () => copy(linePrompt(sel.l), `Folytatás → ${sel.l.name}`, b);
+    const bk = $('#back'); if (bk) bk.onclick = () => select('');
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener('click', e => {
+    const go = e.target.closest('[data-go]'); if (go) { e.preventDefault(); select(go.dataset.go, true); return; }
+    const nm = e.target.closest('.nm[data-l], .qchip'); if (nm) { select(nm.dataset.l, true); return; }
+    const stn = e.target.closest('.stn'); if (stn) { const ids = stn.dataset.s.split(',').map(Number); select(ids.length === 1 ? `s:${ST[ids[0]].sid}@${ST[ids[0]].line}` : 'g:' + ids.join(',')); return; }
+    const run = e.target.closest('.run'); if (run) { const ids = run.dataset.r.split(','); select(ids.length === 1 ? 'run:' + ids[0] : 'runs:' + ids.join(',')); return; }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.target.matches && e.target.matches('input, select, textarea')) { if (e.key === 'Escape' && e.target.id === 'fS') { e.target.value = ''; F.s = ''; toHash(); render(); e.target.blur(); } return; }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('.stn, .run')) { e.preventDefault(); e.target.closest('.stn, .run').dispatchEvent(new MouseEvent('click', { bubbles: true })); return; }
+    if (e.key === '/') { e.preventDefault(); $('#fS').focus(); return; }
+    if (e.key === 'Escape') { if (!$('#fallback').hidden) { $('#fallback').hidden = true; return; } if (F.sel) select(''); return; }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      const sel = parseSel(F.sel); if (!sel || sel.kind !== 'st') return;
+      const S = sel.l.st.map(i => ST[i]), k = S.indexOf(sel.s) + (e.key === 'ArrowRight' ? 1 : -1);
+      if (S[k]) { e.preventDefault(); select(`s:${S[k].sid}@${sel.l.id}`); }
+    }
+  });
+  $('#fS').addEventListener('input', e => { F.s = e.target.value; toHash(); render(); });
+  $('#fL').innerHTML = '<option value="">mind</option>' + M.lanes.filter(l => LINES.some(x => x.lane === l.code)).map(l => `<option value="${esc(l.code)}">${esc(l.name)}</option>`).join('');
+  $('#fL').addEventListener('change', e => { F.ln = e.target.value; toHash(); render(); });
+  const QOPT = [3, 5, 7, 10, 14, 21];
+  function fillQ() { const o = QOPT.includes(F.q) ? QOPT : QOPT.concat(F.q).sort((a, b) => a - b); $('#fQ').innerHTML = o.map(n => `<option value="${n}"${n === F.q ? ' selected' : ''}>${n} nap${n === (M.quietDays || 5) ? ' (Thread Board)' : ''}</option>`).join(''); }
+  $('#fQ').addEventListener('change', e => { F.q = +e.target.value; toHash(); render(); renderPanel(); });
+  $('#fO').addEventListener('click', () => { F.o = !F.o; toHash(); render(); });
+
+  // legend with the transfer toggles
+  const sw = (cls, d) => `<svg width="30" height="12" aria-hidden="true">${d.replace(/CLS/g, cls)}</svg>`;
+  $('#legend').innerHTML =
+    `<span>${sw('', `<line x1="2" x2="28" y1="6" y2="6" style="stroke:var(--l-p);stroke-width:5;stroke-linecap:round"/><circle cx="15" cy="6" r="4" style="fill:var(--s1);stroke:var(--l-p);stroke-width:2.5"/>`)} sín + állomás</span>` +
+    `<span>${sw('', `<line x1="2" x2="28" y1="6" y2="6" class="gap"/>`)} <b style="color:var(--quiet)">csend</b> (≥ küszöb, szaggatott)</span>` +
+    `<span>${sw('', `<line x1="4" x2="26" y1="6" y2="6" class="trk park" style="stroke:var(--l-p)"/>`)} parkol / visszatérő</span>` +
+    `<span>${sw('', `<line x1="4" x2="18" y1="6" y2="6" style="stroke:var(--l-p);stroke-width:5"/><line x1="19" x2="19" y1="0" y2="12" style="stroke:var(--l-p);stroke-width:3"/>`)} végállomás</span>` +
+    [['fork', 'leágazás'], ['next', 'utána jön'], ['end', 'beolvadt / felülírva'], ['feeds', 'táplálja']].map(([k, t]) =>
+      `<label><input type="checkbox" data-cx="${k}"${F.hide.has(k) ? '' : ' checked'}>${sw('', `<line x1="2" x2="28" y1="6" y2="6" class="cx ${k === 'end' ? 'absorbed-by' : k}"/>`)} ${t}</label>`).join('');
+  $('#legend').addEventListener('change', e => { const k = e.target.dataset.cx; if (!k) return; e.target.checked ? F.hide.delete(k) : F.hide.add(k); const svg = $('#msvg'); if (svg) svg.classList.toggle('hidecx-' + k, F.hide.has(k)); });
+
+  $('#about').innerHTML = `Adat: <code>out/metro-data.js</code> (lib/metro.js, minden <code>stack.js build</code>; ügyfélkódokat idéz, ezért nincs a gitben) · DevLog: <code>notes/devlog/lines.js</code> + <code>sessions.json</code> · generálva ${esc(M.generated.slice(0, 16).replace('T', ' '))}. ` +
+    `Link: <code>#sel=views</code>, <code>#sel=s:&lt;sid8&gt;@&lt;vonal&gt;</code>, <code>&amp;q=7</code> (csend küszöb), <code>&amp;o=1</code>, <code>&amp;ln=p</code>.`;
+
+  let rt = 0;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 120); });
+  addEventListener('hashchange', () => { fromHash(); fillQ(); $('#fS').value = F.s; $('#fL').value = F.ln; render(); renderPanel(); });
+  fromHash(); fillQ(); $('#fS').value = F.s; $('#fL').value = F.ln;
+  render(); renderPanel();
+  if (F.sel) { document.body.classList.toggle('sheet', true); select(F.sel, true); }
+})();
+</script>
+</body>
+</html>

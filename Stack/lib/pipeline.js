@@ -136,6 +136,7 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
     await hc.stage('control', () => log(require('./control').write({ graph }).msg), { optional: true });   // Vezérlőterem (control.html)
     await hc.stage('commits', () => log(require('./commitpixel').write({ graph }).msg), { optional: true });   // Commit-pixel (commits.html)
     await hc.stage('decisions', () => log(require('./decisions').write({ graph, q: layers.Q, nodes }).msg), { optional: true });   // Döntésnapló (decisions.html)
+    await hc.stage('metro', () => log(require('./metro').write({ graph }).msg), { optional: true });   // Vonaltérkép (metro.html)
     const ms = Date.now() - t0;
     X.writeAtomic(path.join(CFG.out, 'STATUS.md'), INS.status(graph, metrics, codec.report, ms));
     const props = INS.proposals({ graph, communities, pat, health: hc });
