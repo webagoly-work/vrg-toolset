@@ -98,6 +98,12 @@
       "path": "/"
     },
     {
+      "port": 8806,
+      "id": "stack",
+      "name": "Rétegverem · Konnektóm",
+      "path": "/connectome.html"
+    },
+    {
       "port": 47291,
       "id": "gyro",
       "name": "Gyro relay · telefon",
