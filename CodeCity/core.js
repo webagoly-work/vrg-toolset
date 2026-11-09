@@ -3,13 +3,14 @@
 // It does not re-implement anything: it loads the page's own DOM-free modules (01-data, 02-layout,
 // 05-replay, 09-ask) into a vm context, so `city_query` and the page's query bar are the same code
 // and cannot drift apart. The only stubs are the two things those modules touch outside themselves:
-// a THREE.Matrix4 that 05-replay creates at load, and `roads.importers`, which 08-roads fills in the page.
+// the THREE.Matrix4 / Vector3 / Quaternion that 05-replay creates at load, and `roads.importers`, which 08-roads fills in the page.
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm');
 
 const MODULES = ['01-data.js', '02-layout.js', '05-replay.js', '09-ask.js'];
 const PRELUDE = `
-const THREE = { Matrix4: class { makeScale() { return this; } setPosition() { return this; } } };
+const THREE = { Matrix4: class { makeScale() { return this; } setPosition() { return this; } compose() { return this; } },
+  Vector3: class { set() { return this; } }, Quaternion: class { setFromAxisAngle() { return this; } } };
 let current = null;
 const roads = { importers: [] };
 const hu = n => n.toLocaleString('hu-HU');

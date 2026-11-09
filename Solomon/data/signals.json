@@ -1,6 +1,6 @@
 {
- "generated": "2026-11-01",
- "commit": "06b8948",
+ "generated": "2026-11-09",
+ "commit": "0e46f7a",
  "sections": [
   {
    "id": "bridge-std",
@@ -13,8 +13,8 @@
    "id": "bridge-arch",
    "n": "BRIDGE felépítés",
    "docs": 18,
-   "reviewed": null,
-   "summary": null
+   "reviewed": "2026-11-09",
+   "summary": "Judged 1 candidate (M20 conduit, dismissed: different conduits). Read ARCH-002, ARCH-001, OUTLINE-001; reported one clash: C5 KNX conduit installed only if taken (ARCH-002:278) vs installed empty regardless (STD-001:270). Frozen signal not examined."
   },
   {
    "id": "bridge-cat",
@@ -47,14 +47,14 @@
   {
    "id": "council",
    "n": "Tanács",
-   "docs": 31,
+   "docs": 33,
    "reviewed": null,
    "summary": null
   },
   {
    "id": "hub",
    "n": "Kapu, indítók",
-   "docs": 67,
+   "docs": 69,
    "reviewed": null,
    "summary": null
   },
@@ -68,14 +68,14 @@
   {
    "id": "mobile",
    "n": "Mobil",
-   "docs": 19,
+   "docs": 23,
    "reviewed": null,
    "summary": null
   },
   {
    "id": "docs",
    "n": "Kutatás, egyéb",
-   "docs": 17,
+   "docs": 19,
    "reviewed": null,
    "summary": null
   }
@@ -114,6 +114,13 @@
    "s": "council",
    "t": "bernard.md",
    "d": "2026-10-31",
+   "i": 0
+  },
+  {
+   "p": ".claude/agents/caleb.md",
+   "s": "council",
+   "t": "caleb.md",
+   "d": "2026-11-01",
    "i": 0
   },
   {
@@ -211,7 +218,7 @@
    "p": "BRIDGE/01_architecture/CLA_BRIDGE_Inline_Architecture.md",
    "s": "bridge-arch",
    "t": "CLA — BRIDGE Inline Network Architecture",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 0
   },
   {
@@ -498,7 +505,7 @@
    "p": "CLAUDE.md",
    "s": "hub",
    "t": "VRG toolset — working rules",
-   "d": "2026-10-31",
+   "d": "2026-11-07",
    "i": 0
   },
   {
@@ -568,28 +575,35 @@
    "p": "GO-CLA.md",
    "s": "hub",
    "t": "GO CLA — the CLA job thread (base layer, data layer, v1 + v2 budget plans)",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 0
   },
   {
    "p": "GO-HUB.md",
    "s": "hub",
    "t": "GO HUB — VRG Kapu (the access page)",
-   "d": "2026-10-30",
+   "d": "2026-11-04",
+   "i": 0
+  },
+  {
+   "p": "GO-LOGO.md",
+   "s": "hub",
+   "t": "GO LOGO — the two-state Varler logo, and the new VRG Mobile home page",
+   "d": "2026-11-02",
    "i": 0
   },
   {
    "p": "GO-MAIN.md",
    "s": "hub",
    "t": "GO MAIN — the overall entry point",
-   "d": "2026-10-30",
+   "d": "2026-11-02",
    "i": 0
   },
   {
    "p": "GO-MOBILE.md",
    "s": "hub",
    "t": "GO MOBILE — build VRG Mobile, the companion app, one work package at a time",
-   "d": "2026-10-31",
+   "d": "2026-11-06",
    "i": 1
   },
   {
@@ -603,7 +617,7 @@
    "p": "GO-PLANNER.md",
    "s": "hub",
    "t": "GO PLANNER — the open Planner work (everything except wiring)",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 0
   },
   {
@@ -645,7 +659,7 @@
    "p": "Mobile/README.md",
    "s": "mobile",
    "t": "VRG Mobile: the companion app",
-   "d": "2026-10-30",
+   "d": "2026-11-06",
    "i": 0
   },
   {
@@ -848,15 +862,15 @@
    "p": "Planner/projects/varler-planner/docs/round-2026-10-10/NEXT-CLA-ADD-001-SF_smartframe-brief.md",
    "s": "planner",
    "t": "NEXT — CLA-ADD-001 · SF: the SmartFrame (BSF), a second BRIDGE box type at every portal",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 1
   },
   {
    "p": "Planner/projects/varler-planner/docs/round-2026-10-10/NEXT-CLA-ADD-001_cla-extras.md",
    "s": "planner",
    "t": "NEXT — CLA-ADD-001: CLA extras to add to the layer stack (after round 2026-10-10)",
-   "d": "2026-11-01",
-   "i": 7
+   "d": "2026-11-09",
+   "i": 8
   },
   {
    "p": "Planner/projects/varler-planner/docs/round-2026-10-10/PROMPTS.md",
@@ -2031,7 +2045,7 @@
    "p": "docs/council/03_COUNCIL-CHARTER.md",
    "s": "council",
    "t": "The Council — charter of Delos and the Park",
-   "d": "2026-10-31",
+   "d": "2026-11-01",
    "i": 1
   },
   {
@@ -2052,7 +2066,7 @@
    "p": "docs/council/ROSTER.md",
    "s": "council",
    "t": "Call sheet",
-   "d": "2026-10-31",
+   "d": "2026-11-01",
    "i": 1
   },
   {
@@ -2088,6 +2102,13 @@
    "s": "council",
    "t": "bernard.md",
    "d": "2026-10-31",
+   "i": 0
+  },
+  {
+   "p": "docs/council/agents/caleb.md",
+   "s": "council",
+   "t": "caleb.md",
+   "d": "2026-11-01",
    "i": 0
   },
   {
@@ -2227,7 +2248,7 @@
    "p": "docs/hub/agents/README.md",
    "s": "hub",
    "t": "Ügynök indítók — agent init docs",
-   "d": "2026-10-31",
+   "d": "2026-11-01",
    "i": 0
   },
   {
@@ -2325,7 +2346,7 @@
    "p": "docs/hub/agents/kapu.md",
    "s": "hub",
    "t": "VRG Kapu — agent init",
-   "d": "2026-10-31",
+   "d": "2026-11-01",
    "i": 0
   },
   {
@@ -2339,14 +2360,14 @@
    "p": "docs/hub/agents/kodvaros.md",
    "s": "hub",
    "t": "VRG Kódváros — agent init",
-   "d": "2026-10-31",
+   "d": "2026-11-01",
    "i": 0
   },
   {
    "p": "docs/hub/agents/launchers.md",
    "s": "hub",
    "t": "Indítópult (START · BACKUP · OTG) — agent init",
-   "d": "2026-10-31",
+   "d": "2026-11-01",
    "i": 0
   },
   {
@@ -2374,7 +2395,7 @@
    "p": "docs/hub/agents/mobile.md",
    "s": "hub",
    "t": "VRG Mobile — agent init",
-   "d": "2026-10-31",
+   "d": "2026-11-01",
    "i": 0
   },
   {
@@ -2402,7 +2423,7 @@
    "p": "docs/hub/agents/repo.md",
    "s": "hub",
    "t": "GitHub kódtár (vrg-toolset) — agent init",
-   "d": "2026-10-31",
+   "d": "2026-11-01",
    "i": 0
   },
   {
@@ -2424,6 +2445,13 @@
    "s": "hub",
    "t": "Okosotthon katalógus — agent init",
    "d": "2026-10-31",
+   "i": 0
+  },
+  {
+   "p": "docs/hub/agents/solomon.md",
+   "s": "hub",
+   "t": "Solomon — agent init",
+   "d": "2026-11-01",
    "i": 0
   },
   {
@@ -2570,14 +2598,14 @@
    "p": "docs/mobile/DECISIONS.md",
    "s": "mobile",
    "t": "VRG Mobile: decisions",
-   "d": "2026-10-31",
+   "d": "2026-11-07",
    "i": 1
   },
   {
    "p": "docs/mobile/README.md",
    "s": "mobile",
    "t": "VRG Mobile build pack",
-   "d": "2026-10-31",
+   "d": "2026-11-07",
    "i": 1
   },
   {
@@ -2598,28 +2626,49 @@
    "p": "docs/mobile/WP/M10.md",
    "s": "mobile",
    "t": "M10 · Értesítések (`inbox`): PR, CI and relay events in one place",
-   "d": "2026-10-29",
+   "d": "2026-11-06",
    "i": 0
   },
   {
    "p": "docs/mobile/WP/M11.md",
    "s": "mobile",
    "t": "M11 · Indítópult (`launch`): START.cmd from the phone",
-   "d": "2026-10-29",
+   "d": "2026-11-06",
    "i": 0
   },
   {
    "p": "docs/mobile/WP/M12.md",
    "s": "mobile",
    "t": "M12 · Átadás (`drop`): the file board between the phone and the PC",
-   "d": "2026-10-30",
+   "d": "2026-11-06",
    "i": 0
   },
   {
    "p": "docs/mobile/WP/M13.md",
    "s": "mobile",
    "t": "M13 · Képernyő (`screen`): the PC's screen, live on the phone",
-   "d": "2026-10-31",
+   "d": "2026-11-06",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M14.md",
+   "s": "mobile",
+   "t": "M14 · Gömb (`sphere`): the three signals on the phone",
+   "d": "2026-11-05",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M16.md",
+   "s": "mobile",
+   "t": "M16 · Kit (`kit`): the VRG UI Kit's look on the phone",
+   "d": "2026-11-06",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/WP/M17.md",
+   "s": "mobile",
+   "t": "M17 · Rétegverem (`stack`): the VRG Stack's 3D pages on the phone",
+   "d": "2026-11-07",
    "i": 0
   },
   {
@@ -2633,21 +2682,21 @@
    "p": "docs/mobile/WP/M3.md",
    "s": "mobile",
    "t": "M3 · GitHub fiók (`account`): sign in, and the shared GitHub client",
-   "d": "2026-10-31",
+   "d": "2026-11-02",
    "i": 0
   },
   {
    "p": "docs/mobile/WP/M4.md",
    "s": "mobile",
    "t": "M4 · Haladás (`pulse`): the active branches, fresh",
-   "d": "2026-10-31",
+   "d": "2026-11-05",
    "i": 0
   },
   {
    "p": "docs/mobile/WP/M5.md",
    "s": "mobile",
    "t": "M5 · Kódváros online (`city`): the repo's city from GitHub",
-   "d": "2026-10-29",
+   "d": "2026-11-06",
    "i": 0
   },
   {
@@ -2668,7 +2717,7 @@
    "p": "docs/mobile/WP/M8.md",
    "s": "mobile",
    "t": "M8 · Localhost (`ports`): the PC's local servers on the phone and on the desktop",
-   "d": "2026-10-29",
+   "d": "2026-11-05",
    "i": 0
   },
   {
@@ -2676,6 +2725,13 @@
    "s": "mobile",
    "t": "M9 · Frissítés (`update`): the app updates itself from GitHub Releases",
    "d": "2026-10-31",
+   "i": 0
+  },
+  {
+   "p": "docs/mobile/research/M7-network.md",
+   "s": "mobile",
+   "t": "M7 research: what an ordinary app can do with the phone's links (Android 9–15)",
+   "d": "2026-11-09",
    "i": 0
   },
   {
@@ -2721,52 +2777,66 @@
    "i": 0
   },
   {
+   "p": "docs/research/2026-11-06_classical-electrical-plan-review.md",
+   "s": "docs",
+   "t": "Classical electrical plan: review of an interior designer's method vs the Planner",
+   "d": "2026-11-06",
+   "i": 0
+  },
+  {
+   "p": "docs/research/2026-11-06_varler-document-style.md",
+   "s": "docs",
+   "t": "Varler Papír: a new document style + the \"Finom\" plan render",
+   "d": "2026-11-06",
+   "i": 0
+  },
+  {
    "p": "docs/research/reports/Kódváros live workspace and GitWorld.md",
    "s": "docs",
    "t": "Wire Kódváros into a living GitWorld",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/01_our_assets.md",
    "s": "docs",
    "t": "Our assets on this computer for a live Kódváros workspace / GitWorld",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/02_workspace_architecture.md",
    "s": "docs",
    "t": "Kódváros as a live local workspace: architectures and building blocks",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/03_windows_live_telemetry.md",
    "s": "docs",
    "t": "03 · Windows live telemetry for the Land (Kódváros live workspace)",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/04_overlay_os_layer.md",
    "s": "docs",
    "t": "04 — The overlay \"OS\" layer on Windows 10 Pro",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/05_gitworld_map_and_repos.md",
    "s": "docs",
    "t": "05 — GitWorld map, implementation methods for §7.1/§7.2, and the repo map",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 0
   },
   {
    "p": "docs/research/research_notes/Kódváros live workspace and GitWorld/06_media_rea_candidates.md",
    "s": "docs",
    "t": "06 — Media REA candidates for the Kódváros live workspace / overlay OS",
-   "d": "2026-11-01",
+   "d": "2026-11-09",
    "i": 0
   },
   {
@@ -2781,7 +2851,7 @@
   {
    "id": "be57a05b",
    "type": "contradiction",
-   "stage": "candidate",
+   "stage": "dismissed",
    "sec": "bridge-arch",
    "title": "M20: 230V vagy 24V?",
    "a": {
@@ -2794,8 +2864,9 @@
     "line": 269,
     "text": "| **C4b BUS B** | M20 | **the assured 24 V bus B pair** (K25) | — *(was the spare reserved for a DALI pair; that reservation moves to C5, or C4 if KNX is taken)* |"
    },
-   "ai": 18,
-   "bi": 30
+   "note": "Different scope: A (CLA_BRIDGE_Inline_Architecture.md:236) lists the Room Box's downstream device conduit for a blind motor (M20 at 230V or SELV); B (BRIDGE-STD-001:269) is the inter-room C4b BUS B trunk conduit. Same size, different conduits, no clash.",
+   "ai": 19,
+   "bi": 31
   },
   {
    "id": "4e1909b3",
@@ -2814,8 +2885,8 @@
     "text": "| 4–5 | PSU temperature, box air temperature — 0.1 °C signed |"
    },
    "note": "Wrong match: STD-001 l.237 is a design ambient limit (35 C, derate above 40 C); STD-004 l.249 is a register encoding (0.1 C resolution), not a temperature limit. Different things.",
-   "ai": 30,
-   "bi": 33
+   "ai": 31,
+   "bi": 34
   },
   {
    "id": "14d08c78",
@@ -2833,8 +2904,8 @@
     "line": 59,
     "text": "| B5 | Portal graph: line of sight, 500 mm encoding, heatmap | B4 | M | built — 2026-10-07 — f40abfe |"
    },
-   "ai": 158,
-   "bi": 161
+   "ai": 160,
+   "bi": 163
   },
   {
    "id": "3565ec2f",
@@ -2852,7 +2923,7 @@
     "line": 82,
     "text": "{code:'PAN',role:'sys:HMI',n:'Kezelőpanel',cat:'device',mount:'wall',h:1450,topo:'star',from:'rbx',vars:[ /*r h*/"
    },
-   "ai": 51
+   "ai": 52
   },
   {
    "id": "40be0db6",
@@ -2867,7 +2938,7 @@
     "text": "| **FX-Q3** | Scripting | **off-box through the open API (HA / Node / Python); on-box Lua later, Guarded only** | Lua / Berry on every box | firmware usermods only |"
    },
    "note": "Only one side quoted (STD-010 l.391, FX-Q3 scripting decision, option A recommended, no sign-off mark); the second side was not supplied, so no clash shown. Needs the other line checked.",
-   "ai": 39
+   "ai": 40
   },
   {
    "id": "8fc9f135",
@@ -2881,7 +2952,7 @@
     "line": 142,
     "text": "- Still open: the Cloudflare outer ring CITY-D29–D33 and CITY-D21 option D (report §8, prompt CF-01)."
    },
-   "ai": 247
+   "ai": 249
   },
   {
    "id": "df586a1f",
@@ -2895,7 +2966,7 @@
     "line": 225,
     "text": "## 9. Open MCT — inside or beside? (HUB-Q12)"
    },
-   "ai": 297
+   "ai": 300
   },
   {
    "id": "e7e24076",
@@ -2909,7 +2980,7 @@
     "line": 7,
     "text": "H3. **HUB-Q08** (A = companion), **HUB-Q05** (A = open tools like START.cmd does)."
    },
-   "ai": 340
+   "ai": 344
   },
   {
    "id": "0ceab8cf",
@@ -2923,7 +2994,7 @@
     "line": 7,
     "text": "H3. **HUB-Q08** (A = companion), **HUB-Q05** (A = open tools like START.cmd does)."
    },
-   "ai": 340
+   "ai": 344
   },
   {
    "id": "09c7a64b",
@@ -2937,7 +3008,7 @@
     "line": 347,
     "text": "- **OMCT-Q5 · Dictionary delivery.** A: Planner exports `vrg-bridge-dict.json` **and** an Open MCT"
    },
-   "ai": 372
+   "ai": 380
   },
   {
    "id": "bff38ee9",
@@ -2951,7 +3022,7 @@
     "text": "- A ⚑ jelölésű szám másodlagos forrás. BRIDGE szabály csak ellenőrzés után lesz belőle."
    },
    "n": 1,
-   "ai": 41
+   "ai": 42
   },
   {
    "id": "be8391a6",
@@ -2965,7 +3036,7 @@
     "text": "A ⚑ jelölésű számok másodlagos forrásból származnak. Mielőtt BRIDGE szabály lesz belőlük, a szabványszöveggel vagy az eszköz kézikönyvével ellenőrizni kell őket."
    },
    "n": 11,
-   "ai": 42
+   "ai": 43
   },
   {
    "id": "2b980912",
@@ -2979,7 +3050,7 @@
     "text": "// 'floor' sinks. h = recommended sensor height band in mm (null = on the ceiling). Figures marked ⚑ are secondary-source"
    },
    "n": 8,
-   "ai": 44
+   "ai": 45
   },
   {
    "id": "0b9f9a1a",
@@ -2993,7 +3064,7 @@
     "text": "mnNote: 'Szemben álló 24 GHz-es radarok zavarhatják egymást ⚑; egymástól elfordítva, átfedés nélkül. A gráfvétó (STD-003) a szellemjeleket szűri.',"
    },
    "n": 9,
-   "ai": 45
+   "ai": 46
   },
   {
    "id": "3503200b",
@@ -3007,7 +3078,7 @@
     "text": "why: 'Egy modulban kapható (pl. Sensirion SEN66: PM, RH/T, VOC, NOx, CO₂ ⚑); a szoba egészségügyi alapcsomagja.' },"
    },
    "n": 1,
-   "ai": 46
+   "ai": 47
   },
   {
    "id": "3d02f24c",
@@ -3021,7 +3092,7 @@
     "text": "con: 'Vastagság ~ 10–25 mm-ig ⚑, nedvesség és fém zavarja; idegen nem találja.', bridge: { code: 'SWI', var: 'selv' } },"
    },
    "n": 2,
-   "ai": 47
+   "ai": 48
   },
   {
    "id": "ef54a20c",
@@ -3035,7 +3106,7 @@
     "text": "note: 'Modern trend: modulok (spot, lineáris, függő) szabadon áthelyezhetők. 48 V tápot kér — saját tápegység ⚑, a 24 V busz nem viszi.' },"
    },
    "n": 1,
-   "ai": 48
+   "ai": 49
   },
   {
    "id": "f86011e1",
@@ -3049,7 +3120,7 @@
     "text": "segment: { min: 500, max: 1000, def: 750, note: 'Egész számú vágási egység (24 V szalagon jellemzően 50 / 100 mm ⚑) — a falhosszhoz igazítva.' },"
    },
    "n": 7,
-   "ai": 50
+   "ai": 51
   },
   {
    "id": "a51e15e6",
@@ -3063,7 +3134,7 @@
     "text": "'Kint közeledés (kapacitív / rövid ToF a tokon) → foglalt: piros ⚑, szabad: semmi vagy rövid zöld.',"
    },
    "n": 2,
-   "ai": 51
+   "ai": 52
   },
   {
    "id": "ac7caec1",
@@ -3077,7 +3148,7 @@
     "text": "future: ['UWB / NFC alapú beléptetés (Aliro ⚑ státusz ellenőrizendő)', 'arcfelismerés helyben (Frigate)', 'csomagtároló doboz zárral', 'EV / e-bike töltő ötlet (lépcsőház)'],"
    },
    "n": 1,
-   "ai": 52
+   "ai": 53
   },
   {
    "id": "a963a331",
@@ -3091,7 +3162,7 @@
     "text": "// 11 product groups. Category → group is NOT given by Tuya; grp below is inferred from the table order. ⚑"
    },
    "n": 1,
-   "ai": 53
+   "ai": 54
   },
   {
    "id": "96f52b96",
@@ -3105,146 +3176,259 @@
     "text": "// a missing heartbeat is itself an alarm. life = typical, vendor-dependent ⚑."
    },
    "n": 2,
-   "ai": 54
+   "ai": 55
   },
   {
-   "id": "42baeb9f",
-   "type": "frozen",
-   "kind": "lemaradt",
-   "sec": "bridge-arch",
-   "title": "BRIDGE-PRIMER-001_Session-Handover.md lemaradt BRIDGE-OUTLINE-001_General-Outline.md mögött (8 nap)",
+   "id": "95b95c1b",
+   "type": "dark",
+   "kind": "ellenőrzés",
+   "sec": "hub",
+   "title": "Hibás ellenőrzés: Brief állapot",
    "a": {
-    "p": "BRIDGE/BRIDGE-PRIMER-001_Session-Handover.md",
-    "line": 49,
-    "text": "> knowledge is generalised into the standards, and `BRIDGE-OUTLINE-001` §4 carries the instance"
-   },
-   "b": {
-    "p": "BRIDGE/BRIDGE-OUTLINE-001_General-Outline.md",
+    "p": "tools/brief-state.js",
     "line": 1,
-    "text": "BRIDGE — General Outline"
+    "text": "8 problem(s). Run node tools/brief-state.js for stale state."
+   }
+  },
+  {
+   "id": "48b54ed4",
+   "type": "frozen",
+   "kind": "alvó",
+   "sec": "inventory",
+   "title": "50 napja érintetlen: VRG Inventory — core item database",
+   "a": {
+    "p": "Inventory/README.md",
+    "line": 1,
+    "text": "VRG Inventory — core item database"
    },
-   "ai": 57,
-   "bi": 56
+   "age": 50,
+   "keystone": false,
+   "ai": 78
+  },
+  {
+   "id": "6f4b14ff",
+   "type": "frozen",
+   "kind": "alvó",
+   "sec": "inventory",
+   "title": "50 napja érintetlen: AI-CONTEXT — vrg-inventory",
+   "a": {
+    "p": "Inventory/docs/AI-CONTEXT.md",
+    "line": 1,
+    "text": "AI-CONTEXT — vrg-inventory"
+   },
+   "age": 50,
+   "keystone": false,
+   "ai": 79
+  },
+  {
+   "id": "0164e04d",
+   "type": "frozen",
+   "kind": "alvó",
+   "sec": "inventory",
+   "title": "50 napja érintetlen: VRG Inventory — development plan",
+   "a": {
+    "p": "Inventory/docs/DEV-PLAN.md",
+    "line": 1,
+    "text": "VRG Inventory — development plan"
+   },
+   "age": 50,
+   "keystone": false,
+   "ai": 80
+  },
+  {
+   "id": "0aae7997",
+   "type": "frozen",
+   "kind": "alvó",
+   "sec": "inventory",
+   "title": "50 napja érintetlen: Sources and extraction rules",
+   "a": {
+    "p": "Inventory/docs/SOURCES.md",
+    "line": 1,
+    "text": "Sources and extraction rules"
+   },
+   "age": 50,
+   "keystone": false,
+   "ai": 81
   },
   {
    "id": "81c3aabf",
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "45 napja érintetlen: VARLER — hordozható munkakörnyezet",
+   "title": "53 napja érintetlen: VARLER — hordozható munkakörnyezet",
    "a": {
     "p": "Planner/README.md",
     "line": 1,
     "text": "VARLER — hordozható munkakörnyezet"
    },
-   "age": 45,
+   "age": 53,
    "keystone": false,
-   "ai": 82
+   "ai": 84
   },
   {
    "id": "ab275c7a",
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "45 napja érintetlen: VARLER — setup from zero",
+   "title": "53 napja érintetlen: VARLER — setup from zero",
    "a": {
     "p": "Planner/SETUP.md",
     "line": 1,
     "text": "VARLER — setup from zero"
    },
-   "age": 45,
+   "age": 53,
    "keystone": false,
-   "ai": 83
+   "ai": 85
   },
   {
    "id": "af3a3f71",
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "45 napja érintetlen: Varler Planner — State of the Project",
+   "title": "53 napja érintetlen: Varler Planner — State of the Project",
    "a": {
     "p": "Planner/STATE.md",
     "line": 1,
     "text": "Varler Planner — State of the Project"
    },
-   "age": 45,
+   "age": 53,
    "keystone": false,
-   "ai": 84
+   "ai": 86
   },
   {
    "id": "ea6fca65",
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "45 napja érintetlen: Varler Planner",
+   "title": "53 napja érintetlen: Varler Planner",
    "a": {
     "p": "Planner/projects/varler-planner/README.md",
     "line": 1,
     "text": "Varler Planner"
    },
-   "age": 45,
+   "age": 53,
    "keystone": false,
-   "ai": 88
+   "ai": 90
   },
   {
    "id": "397b83c4",
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "45 napja érintetlen: Varler Planner 2.0 — tool taxonomy, tool pages, phone protocol",
+   "title": "53 napja érintetlen: Varler Planner 2.0 — tool taxonomy, tool pages, phone protocol",
    "a": {
     "p": "Planner/projects/varler-planner/docs/2_0_architecture.md",
     "line": 1,
     "text": "Varler Planner 2.0 — tool taxonomy, tool pages, phone protocol"
    },
-   "age": 45,
+   "age": 53,
    "keystone": false,
-   "ai": 90
+   "ai": 92
   },
   {
    "id": "2b0a9cd3",
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "45 napja érintetlen: Varler pendrive — állapot",
+   "title": "53 napja érintetlen: Varler pendrive — állapot",
    "a": {
     "p": "Planner/projects/varler-planner/docs/MANIFEST.md",
     "line": 1,
     "text": "Varler pendrive — állapot"
    },
-   "age": 45,
+   "age": 53,
    "keystone": false,
-   "ai": 93
+   "ai": 95
+  },
+  {
+   "id": "92744015",
+   "type": "frozen",
+   "kind": "alvó",
+   "sec": "planner",
+   "title": "50 napja érintetlen: Library scouting — candidates, triaged",
+   "a": {
+    "p": "Planner/projects/varler-planner/docs/library-scouting.md",
+    "line": 1,
+    "text": "Library scouting — candidates, triaged"
+   },
+   "age": 50,
+   "keystone": false,
+   "ai": 98
   },
   {
    "id": "6640e10a",
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "45 napja érintetlen: Domoszló Planner — architecture, UI and workflow review",
+   "title": "53 napja érintetlen: Domoszló Planner — architecture, UI and workflow review",
    "a": {
     "p": "Planner/projects/varler-planner/docs/planner_1.0_review.md",
     "line": 1,
     "text": "Domoszló Planner — architecture, UI and workflow review"
    },
-   "age": 45,
+   "age": 53,
    "keystone": false,
-   "ai": 105
+   "ai": 107
   },
   {
    "id": "adda9d58",
    "type": "frozen",
    "kind": "alvó",
    "sec": "planner",
-   "title": "45 napja érintetlen: QR subsystem — design, integration, verification",
+   "title": "53 napja érintetlen: QR subsystem — design, integration, verification",
    "a": {
     "p": "Planner/projects/varler-planner/docs/qr-subsystem.md",
     "line": 1,
     "text": "QR subsystem — design, integration, verification"
    },
-   "age": 45,
+   "age": 53,
    "keystone": false,
-   "ai": 106
+   "ai": 108
+  },
+  {
+   "id": "7ac1a7dc",
+   "type": "frozen",
+   "kind": "alvó",
+   "sec": "planner",
+   "title": "46 napja érintetlen: Wiring pipeline — design",
+   "a": {
+    "p": "Planner/projects/varler-planner/docs/wiring_pipeline.md",
+    "line": 1,
+    "text": "Wiring pipeline — design"
+   },
+   "age": 46,
+   "keystone": false,
+   "ai": 213
+  },
+  {
+   "id": "2477e910",
+   "type": "frozen",
+   "kind": "alvó",
+   "sec": "docs",
+   "title": "50 napja érintetlen: Components — single-file / offline, and local tooling",
+   "a": {
+    "p": "docs/components-offline.md",
+    "line": 1,
+    "text": "Components — single-file / offline, and local tooling"
+   },
+   "age": 50,
+   "keystone": false,
+   "ai": 277
+  },
+  {
+   "id": "6e2b6d09",
+   "type": "frozen",
+   "kind": "alvó",
+   "sec": "docs",
+   "title": "50 napja érintetlen: Services — server builds, and what running them actually costs",
+   "a": {
+    "p": "docs/services-server.md",
+    "line": 1,
+    "text": "Services — server builds, and what running them actually costs"
+   },
+   "age": 50,
+   "keystone": false,
+   "ai": 394
   },
   {
    "id": "963f0125",
@@ -3263,8 +3447,28 @@
     "text": "3 W · Class-D **2-channel** amp bay at moderate output 3 W. **≈ 42 W typical.**"
    },
    "by": "caleb",
-   "ai": 30,
-   "bi": 30
+   "ai": 31,
+   "bi": 31
+  },
+  {
+   "id": "b64670dc",
+   "type": "contradiction",
+   "stage": "confirmed",
+   "sec": "bridge-arch",
+   "title": "C5 KNX conduit: ARCH-002 lists it as present only 'if taken' (ha van); STD-001 says C5 is installed empty even if KNX is not taken (B10). Same conduit, same scope, conflicting rule. ARCH-002 is a v1.0 draft, so the Founder should check which is current.",
+   "a": {
+    "p": "BRIDGE/01_architecture/BRIDGE-ARCH-002_Alapozo-Architektura-Terv_HU.md",
+    "line": 278,
+    "text": "| **C5 · KNX** (ha van) | M20 | KNX TP kábel | — |"
+   },
+   "b": {
+    "p": "BRIDGE/05_standards/BRIDGE-STD-001_Physical-Standardisation.md",
+    "line": 270,
+    "text": "| **C5 KNX** | M20 | **installed empty** even if KNX is not taken (B10) | KNX TP |"
+   },
+   "by": "caleb",
+   "ai": 15,
+   "bi": 31
   }
  ]
 }

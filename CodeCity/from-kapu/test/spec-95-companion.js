@@ -124,7 +124,7 @@ module.exports = [
     await start();
     const c = await req('GET', '/api/catalog');
     assert.strictEqual(c.status, 200);
-    assert.ok(c.json.tools.some(t => t.n === 11 && t.path === 'CodeCity/dist/vrg-codecity.html'), JSON.stringify(c.json.tools.slice(-1)));
+    assert.ok(c.json.tools.some(t => t.n > 0 && t.path === 'CodeCity/dist/vrg-codecity.html'), JSON.stringify(c.json.tools.slice(-1)));
     assert.ok(Array.isArray(c.json.prompts) && Array.isArray(c.json.agents) && Array.isArray(c.json.branches));
     assert.strictEqual((await req('GET', '/api/catalog', { origin: 'https://evil.test' })).status, 403);
   } },

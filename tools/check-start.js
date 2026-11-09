@@ -142,7 +142,11 @@ if (menu) {
   for (const b of menu.browsers || []) if (b.exe && !exists(b.exe)) menuNotes.push('bongeszo ' + b.name + ': ' + b.exe);
   for (const r of menu.repos || []) if (!exists(r.path)) problems.push(J + 'a(z) ' + r.name + ' repo nem talalhato: ' + r.path);
   for (const t of start.tools || []) {
-    toolLines.push('  ' + (exists(t.path || '') ? 'ok     ' : 'HIANYZIK') + ' ' + String(t.key).padEnd(4) + String(t.name).slice(0, 44).padEnd(46) + t.path);
+    // A tool without a page of its own is served: show (and check) its server's script instead.
+    const srv = !t.path && t.server ? (menu.servers || []).find(s => s.id === t.server) : null;
+    const shown = t.path || (srv ? srv.js + '  (:' + srv.port + ')' : t.exe || '');
+    const file = t.path || (srv ? srv.js : t.exe) || '';
+    toolLines.push('  ' + (file && exists(file) ? 'ok     ' : 'HIANYZIK') + ' ' + String(t.key).padEnd(4) + String(t.name).slice(0, 44).padEnd(46) + shown);
   }
 }
 

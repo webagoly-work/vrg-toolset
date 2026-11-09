@@ -136,6 +136,9 @@ const ARGS = process.argv.slice(2);
 const wanted = Number(ARGS.find(a => /^\d+$/.test(a))) || Number(process.env.GYRO_PORT) || DEFAULT_PORT;
 const SHOTS = ARGS.includes('--shots') || process.env.RELAY_SHOTS === '1';
 const PORTS = ARGS.includes('--ports') || process.env.RELAY_PORTS === '1';
+// --pair: on start, pop the pairing QR (/pair) up in its own app window (portable Chrome --app=,
+// else the system browser), so the phone can scan it without typing an address (2026-11-06).
+const PAIR_WINDOW = ARGS.includes('--pair') || process.env.RELAY_PAIR === '1';
 const PAIRS = pairing.createPairing();
 const GATE = ports.createGate();
 const isPaired = id => PAIRS.list().some(p => p.id === id);
@@ -1025,6 +1028,13 @@ server.on('listening', () => {
   }
   console.log('  Leállítás: Ctrl+C');
   console.log('');
+  if (PAIR_WINDOW) {
+    const r = ports.openDesktop(`http://localhost:${port}/pair`);
+    console.log(r && r.ok === false
+      ? `  A QR ablak nem nyílt meg: nyisd meg kézzel: http://localhost:${port}/pair`
+      : '  A párosító QR külön ablakban megnyílt.');
+    console.log('');
+  }
 });
 
 server.listen(wanted);

@@ -61,6 +61,7 @@ function lensApply() {
   b.instanceColor.needsUpdate = true;
   const u = b.material.userData.uniforms;
   u.uWinColor.value.setHex(lens.win); u.uWinGain.value = lookGlow(delta ? 0.3 : lens.gain); u.uBodyGlow.value = lookGlow(delta ? 0.4 : lens.glow);   // 37-look: low glow
+  if (u.uMat) u.uMat.value = lens.id === 'alap' && !delta ? 1 : 0.3;   // 51-grammar: materials tint fully only on the plain lens
   const [ph, ps, pl] = lens.plate;
   world.dirOf.forEach((d, i) => world.plates.setColorAt(i, _c1.setHSL(ph, ps, pl + Math.min(d.depth, 6) * 0.025)));
   world.plates.instanceColor.needsUpdate = true;
@@ -71,7 +72,7 @@ function lensApply() {
   st.style.setProperty('--horizon', hex(new THREE.Color(lens.horizon)));
   seaLens(lens);   // 38-sea: the Mélyvíz water takes the lens's horizon and highlight
   $('legend').innerHTML = delta ? compareLegend(delta) : lens.legend();
-  document.querySelectorAll('#lenses button').forEach(x => x.classList.toggle('on', x.dataset.lens === lens.id));
+  document.querySelectorAll('#lenses button[data-lens]').forEach(x => x.classList.toggle('on', x.dataset.lens === lens.id));
   placeCranes(ctx);
   compareGhosts(delta);
   requestRender();
@@ -120,8 +121,9 @@ function lensBar() {
   $('lenses').innerHTML = groups.map(g => `<span class="grp">${g ? `<small>${g}</small>` : ''}${LENSES.filter(l => l.group === g)
     .map(l => `<button class="btn" data-lens="${l.id}" title="${l.name} (${l.key})"><kbd>${l.key}</kbd>${l.name}</button>`).join('')}</span>`).join('')
     + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>'
-    + '<span class="grp"><small>Fény</small><button id="glow-btn" class="btn" title="Halk fény: az ablakok és a felvillanások visszafogva (L)"><kbd>L</kbd>Halk</button></span>';
-  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt && bt.id === 'glow-btn') return setLowGlow(!look.low); if (bt) setLens(bt.dataset.lens); };
+    + '<span class="grp"><small>Fény</small><button id="glow-btn" class="btn" title="Halk fény: az ablakok és a felvillanások visszafogva (L)"><kbd>L</kbd>Halk</button>'
+    + '<button id="mood-btn" class="btn" title="Hangulat: emberek és kocsik az utcákon (ahol mostanában dolgoztak, ott többen), pislákoló ablakok, csillogó part, lélegző víz (H)"><kbd>H</kbd>Hangulat</button></span>';
+  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt && bt.id === 'glow-btn') return setLowGlow(!look.low); if (bt && bt.id === 'mood-btn') return moodSet(!mood.on); if (bt) setLens(bt.dataset.lens); };
 }
 lensBar();
 addEventListener('keydown', e => {

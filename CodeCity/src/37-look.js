@@ -17,6 +17,7 @@ function setLowGlow(on) {
   document.documentElement.classList.toggle('low-glow', look.low);
   const b = document.getElementById('glow-btn'); if (b) b.classList.toggle('on', look.low);
   if (world) setLens(lens.id);
+  moodGlow();   // 50-mood: lamps, shore and people dim with the windows
   requestRender();
 }
 

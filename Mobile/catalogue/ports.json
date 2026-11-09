@@ -98,6 +98,12 @@
       "path": "/"
     },
     {
+      "port": 8802,
+      "id": "terkep",
+      "name": "VRG Térkép · offline térkép",
+      "path": "/"
+    },
+    {
       "port": 8806,
       "id": "stack",
       "name": "Rétegverem · Konnektóm",

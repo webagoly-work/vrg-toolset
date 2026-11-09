@@ -152,6 +152,7 @@ function load(city) {
   if (!city || city.kind !== 'vrg-codecity') { alert('Ez nem Kódváros-fájl (city.json).'); return; }
   current = cityModel(city);
   layoutCity(current);
+  planPrepare(current);          // 02-grow.js: the grown plan beside the treemap, and the current one in f.rect
   roadsPrepare(current);
   hudPrepare();
   showCity(current);

@@ -9,6 +9,15 @@ effort. Confirm with `git rev-parse --show-toplevel` if ever unsure.
 Each tool is a self-contained HTML app; the Planner and Inventory additionally
 have modular sources that build into one file.
 
+## Ask the VRG Stack before reading files
+
+Every map of the work (features, ideas, decisions, dev lines, agent memory, runs, commits,
+code, documents) is one searchable graph in `H:\VRG\Full\Planner_VRG_U100\Stack`. For "where is X /
+what state is Y / what touched Z", ask it first: the `vrg-stack` MCP tools (`stack_search`,
+then `stack_node` / `stack_path` / `stack_pillar`; orientation = resource `stack://codec/L0`).
+Without the MCP: `H:\VRG\Full\tools\node\node.exe H:\VRG\Full\Planner_VRG_U100\Stack\stack.js q "<words>"`.
+Open source files only after that. Never load `Stack/out/stack.json` whole.
+
 ## Drive layout
 
 **One work root, one personal root** (re-rooted 2026-10-27; the plan and the

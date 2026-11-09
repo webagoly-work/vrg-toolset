@@ -64,6 +64,30 @@
         "Solomon/serve.js"
       ],
       "port": 8799
+    },
+    {
+      "name": "terkep",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "Map/serve.js",
+        "--no-open",
+        "--allow-remote"
+      ],
+      "port": 8802,
+      "url": "http://localhost:8802",
+      "env": {
+        "NODE_USE_SYSTEM_CA": "1"
+      }
+    },
+    {
+      "name": "kodvaros-static",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-e",
+        "const h=require('http'),f=require('fs'),p=require('path');const D=p.resolve('CodeCity/dist');h.createServer((q,r)=>{const u=decodeURIComponent(q.url.split('?')[0].split('#')[0]);const fp=p.join(D,u==='/'?'vrg-codecity.html':u);if(!fp.startsWith(D)||!f.existsSync(fp)||f.statSync(fp).isDirectory()){r.writeHead(404);return r.end();}r.writeHead(200,{'Content-Type':fp.endsWith('.html')?'text/html; charset=utf-8':fp.endsWith('.js')?'text/javascript':'application/octet-stream','Cache-Control':'no-store'});f.createReadStream(fp).pipe(r);}).listen(8811,'127.0.0.1');"
+      ],
+      "port": 8811,
+      "url": "http://127.0.0.1:8811"
     }
   ]
 }

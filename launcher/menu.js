@@ -34,9 +34,14 @@ function resolve(s) {
 const rel = s => path.relative(REPO, resolve(s)).split(path.sep).join('/');
 
 function tools() {
-  return (load().start.tools || []).map((t, i) => {
-    const p = rel(t.path);
-    return { n: i + 1, key: t.key, name: t.name, path: p, dir: p.split('/').slice(0, -1).join('/') || '.' };
+  // A served tool (no "path", a "server" + its "page") also carries the url it really runs at.
+  const srv = id => (load().servers || []).find(s => s.id === id);
+  return (load().start.tools || []).filter(t => t.path || t.page).map((t, i) => {
+    const p = rel(t.path || t.page);
+    const s = !t.path && t.server ? srv(t.server) : null;
+    const out = { n: i + 1, key: t.key, name: t.name, path: p, dir: p.split('/').slice(0, -1).join('/') || '.' };
+    if (s) out.url = 'http://localhost:' + s.port + (s.open || '/');
+    return out;
   });
 }
 

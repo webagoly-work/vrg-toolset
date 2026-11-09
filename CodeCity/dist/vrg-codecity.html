@@ -40,6 +40,13 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 #stage::after { content: ""; position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(ellipse at 50% 55%, transparent 58%, rgba(2, 8, 12, .5) 100%); }
 #gl { display: block; width: 100%; height: 100%; touch-action: none; }
+/* K2-09 Hangulat (50-mood): a tilt-shift — the top and bottom of the view softly out of focus, the miniature-town look */
+#mood-fx { position: absolute; inset: 0; pointer-events: none; display: none; }
+html.mood #mood-fx { display: block; }
+body[data-quality^="low"] #mood-fx { display: none; }
+#mood-fx i { position: absolute; left: 0; right: 0; -webkit-backdrop-filter: blur(2.4px); backdrop-filter: blur(2.4px); }
+#mood-fx .ts-top { top: 0; height: 36%; -webkit-mask-image: linear-gradient(#000 0%, transparent 100%); mask-image: linear-gradient(#000 0%, transparent 100%); }
+#mood-fx .ts-bot { bottom: 0; height: 26%; -webkit-mask-image: linear-gradient(transparent 0%, #000 100%); mask-image: linear-gradient(transparent 0%, #000 100%); }
 #drop { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; color: var(--dim); }
 #drop.over { outline: 2px dashed var(--accent); outline-offset: -16px; }
 #drop .hint { font-size: 12px; }
@@ -422,6 +429,7 @@ body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb
   <button id="hall-btn" class="btn" hidden title="Városháza: a futó Claude-munkamenetek öt sávban — dolgozik, rád vár, kész…">Városháza</button>
   <button id="news-btn" class="btn" hidden title="Commitok a legutóbbi látogatás óta és az élő változások">Mi változott?</button>
   <button id="dock-btn" class="btn" title="Promptkártyák és ügynökök: húzd őket egy épületre">Dokk</button>
+  <button id="plan-btn" class="btn" title="A város két terve: Növekedés (ahogy nőtt) ⇄ Tervrajz (fák szerint) (P)">Tervrajz</button>
   <button id="tour-btn" class="btn" title="Városnézés: túrák a városban">Városnézés</button>
   <button id="card-btn" class="btn" title="A mostani nézet képként (PNG, 1200×630)">Kép</button>
   <button id="link" class="btn" hidden title="A nézet linkjének másolása (kamera + kijelölés)">Link</button>
@@ -430,6 +438,7 @@ body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb
 <main id="stage">
   <canvas id="sea" aria-hidden="true"></canvas>
   <canvas id="gl"></canvas>
+  <div id="mood-fx" aria-hidden="true"><i class="ts-top"></i><i class="ts-bot"></i></div>
   <canvas id="brk" aria-hidden="true"></canvas>
   <div id="hud" aria-live="off"></div>
   <div id="drop" hidden>
@@ -444,7 +453,7 @@ body[data-view="homeland"] :is(#timeline, #lenses, #legend, #board, #hud, #crumb
   <div id="legend"></div>
   <nav id="lenses" aria-label="Nézetek"></nav>
   <div id="board" aria-hidden="true"><div id="board-1"></div><div id="board-2"></div></div>
-  <div id="help">bal: forgatás · jobb: mozgatás / műveletek · Shift+húzás, Ctrl+katt.: kijelölés · Ctrl+K: paletta · Home: a Föld · Szóköz: lejátszás · ← →: lépés · 1–6: nézet · U: utak · B: összevetés</div>
+  <div id="help">bal: forgatás · jobb: mozgatás / műveletek · Shift+húzás, Ctrl+katt.: kijelölés · Ctrl+K: paletta · Home: a Föld · Szóköz: lejátszás · ← →: lépés · 1–6: nézet · U: utak · B: összevetés · P: terv · H: hangulat</div>
   <div id="timeline" hidden>
     <button id="tl-back" class="btn" title="Előző commit (←)">⏮</button>
     <button id="tl-play" class="btn" title="Lejátszás (Szóköz)">▶</button>
@@ -1182,6 +1191,814 @@ function dirStats(d) {
   return { files, loc };
 }
 
+// ==== src/02-grow.js
+// 02-grow.js — Növekedés, the grown city (Kódváros 2.0, K2-01; CITY-D54 A: the default plan).
+// The treemap (02-layout.js, now "Tervrajz") is a planned city. This is the same set of buildings placed the way a
+// village grows: the first track runs from the castle site to the first workshop; every top-level area, in the order it
+// first appeared in git, starts a road from the road of the area it most often changes with, out towards free land;
+// its files take plots fronting the road, in the order they were born, on alternating sides; a full road branches.
+//
+// The promise of the layout stays: it is computed ONCE over every file that ever existed, so nothing moves during a
+// replay, and it is deterministic (one seed from the first commit, per-path hashes for every variation). Plots are
+// rotated to their road: f.rot is the rotation about +Y, f.rect is the plot's own w × h centred on the plot.
+// Both plans are kept (f.rectT / f.rectG …) so P can fly the buildings between them (planSet, at the end).
+// docs/city/v2/README.md §3.
+
+const GROWTH = {
+  cell: 0.5,          // occupancy grid, world units
+  step: 3,            // road segment length
+  wiggle: 0.16,       // max heading change per segment (rad): the organic bend
+  spineW: 3.2,        // an area's main road
+  laneW: 2.0,         // a side lane
+  setback: 1.1,       // plot edge to road edge (more than a grid cell, or rounding blocks it)
+  gap: 1.2,           // between neighbouring plots on one side (a little air between houses)
+  castle: 42,         // the castle site, north of the first workshop (K2-04 puts the keep there)
+  room: 11,           // free probes ahead that count as "room enough" (of 15)
+  minRoom: 6,         // fewer free probes than this: no street starts there
+  pull: 0.08,         // how strongly a new street prefers the centre
+  slot: 5,            // a gap left in a row of plots, where a side street can leave later
+  slotEvery: [14, 30],// frontage between two such gaps (min, max)
+  maxSpine: 110,      // a main road stops here; the rest of its files branch off through its gaps
+  maxLane: 60,        // the same for a side lane
+};
+
+// ---- K2-04 districts (README §4): who lives where, and how their streets and plots are laid out. Matched in order
+// against a group's path (area, or area/sub-folder); the first match wins. gap / setback scale GROWTH's, wiggle
+// scales the bend, grid = straight streets on the world axes (downtown, laid out late as downtowns are), pull scales
+// how strongly new streets keep to the centre (negative: they head for the shore), pool = villas get garden pools.
+const GROWTH_DISTRICTS = [
+  { code: 1, id: 'akademia', name: 'Akadémia', re: /^Planner(\/|$)/, gap: 1.1, setback: 1.2, wiggle: 0.7, pull: 1 },
+  { code: 2, id: 'belvaros', name: 'Belváros', re: /^(docs|Calculator|Inventory)(\/|$)/, gap: 0.6, setback: 1, wiggle: 0, pull: 1, grid: true },
+  { code: 4, id: 'lakopark', name: 'OmniComm Lakópark', re: /^BRIDGE\/[^/]*omnicomm/i, gap: 0.1, setback: 1.4, wiggle: 0.25, pull: 1, unit: 22 },
+  { code: 3, id: 'villa', name: 'Villanegyed', re: /^BRIDGE(\/|$)/, gap: 3.2, setback: 2.2, wiggle: 1.5, pull: 0.6, pool: true },
+  { code: 5, id: 'ipari', name: 'Ipari part', re: /^(Firmware|Modder|ServiceKitCYD|tools|\.github)(\/|$)/, gap: 1.1, setback: 1, wiggle: 0.6, pull: -0.15 },
+  { code: 6, id: 'munkas', name: 'Munkásnegyed', re: /./, gap: 0.55, setback: 0.85, wiggle: 1, pull: 1 },
+];
+const growDistrict = path => GROWTH_DISTRICTS.find(d => d.re.test(path || '')) || GROWTH_DISTRICTS[GROWTH_DISTRICTS.length - 1];
+
+// ---- deterministic randomness
+function growHash(s) {                      // FNV-1a, 32 bit
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return h >>> 0;
+}
+function growRng(seed) {                    // mulberry32
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+const growU = (s, k = 0) => growHash(s + '#' + k) / 4294967296;   // a stable 0..1 per path
+
+// ---- occupancy: a set of blocked grid cells (plots and road surfaces)
+function growGrid() {
+  // a flat bitset over ±1024 world units (2 MB; the hot path of the whole layout), a Set beyond it
+  const set = new Set(), C = GROWTH.cell, N = 4096, H = N >> 1, bits = new Uint32Array((N * N) >>> 5);
+  const key = (i, j) => (i + 32768) * 65536 + (j + 32768);
+  return {
+    has(x, z) {
+      const i = Math.floor(x / C) + H, j = Math.floor(z / C) + H;
+      if (i >= 0 && i < N && j >= 0 && j < N) { const k = i * N + j; return ((bits[k >>> 5] >>> (k & 31)) & 1) === 1; }
+      return set.has(key(i, j));
+    },
+    add(x, z) {
+      const i = Math.floor(x / C) + H, j = Math.floor(z / C) + H;
+      if (i >= 0 && i < N && j >= 0 && j < N) { const k = i * N + j; bits[k >>> 5] |= 1 << (k & 31); return; }
+      set.add(key(i, j));
+    },
+    // every sample point of a rotated rectangle (centre, half sizes along u = (cos a, sin a) and its normal)
+    rectFree(cx, cz, hw, hd, a) {
+      const ux = Math.cos(a), uz = Math.sin(a), s = C * 0.7;   // checks sample a little coarser than marks (marks cover every cell)
+      for (let p = -hw; p <= hw + 1e-6; p += Math.min(s, hw || s)) for (let q = -hd; q <= hd + 1e-6; q += Math.min(s, hd || s)) {
+        if (this.has(cx + ux * p - uz * q, cz + uz * p + ux * q)) return false;
+      }
+      return true;
+    },
+    rectMark(cx, cz, hw, hd, a) {
+      const ux = Math.cos(a), uz = Math.sin(a), s = C * 0.6;   // every cell a turned rectangle touches (the spec's exact overlap test guards it)
+      for (let p = -hw; p <= hw + 1e-6; p += Math.min(s, hw || s)) for (let q = -hd; q <= hd + 1e-6; q += Math.min(s, hd || s)) {
+        this.add(cx + ux * p - uz * q, cz + uz * p + ux * q);
+      }
+    },
+  };
+}
+
+// ---- which areas change together (for where a new area's road leaves from)
+function growAffinity(model, areaOf) {
+  const pair = new Map();
+  for (const c of model.city.commits) {
+    const ch = c[5] || [], seen = new Set();
+    for (let i = 0; i < ch.length; i += 3) { const a = areaOf[ch[i]]; if (a !== undefined) seen.add(a); }
+    const list = [...seen];
+    for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+      const k = Math.min(list[i], list[j]) + ':' + Math.max(list[i], list[j]);
+      pair.set(k, (pair.get(k) || 0) + 1);
+    }
+  }
+  return (a, b) => pair.get(Math.min(a, b) + ':' + Math.max(a, b)) || 0;
+}
+
+// The folder tree as areas and groups. An area is a top-level folder (root files form the town square, "Főtér").
+// Chains of single-child folders collapse (Planner/projects/varler-planner/src reads as one place).
+function growCollapse(d) { while (!d.files.length && d.dirs.size === 1) d = [...d.dirs.values()][0]; return d; }
+function growFilesOf(d, out = []) { out.push(...d.files); d.dirs.forEach(c => growFilesOf(c, out)); return out; }
+const growBorn = list => list.reduce((m, f) => Math.min(m, f.born), Infinity);
+
+// ---- the layout
+function growCity(model) {
+  const files = model.city.files, rnd = growRng(growHash(String((model.city.commits[0] || [])[4] || model.city.repo.name)));
+  const grid = growGrid(), roads = [], pools = [];
+  let D = growDistrict('');   // the district being laid out (K2-04): newRoad, extend, frontage and departure read it
+  const PL = typeof PLATE === 'number' ? PLATE : 0.5;
+
+  // areas in the order they first appeared; ties: the bigger first
+  const root = model.root, areas = [];
+  if (root.files.length) areas.push({ name: '', dir: null, files: root.files.slice() });
+  root.dirs.forEach(d => areas.push({ name: d.name, dir: d, files: growFilesOf(d) }));
+  for (const a of areas) a.born = growBorn(a.files);
+  areas.sort((a, b) => a.born - b.born || b.files.length - a.files.length || a.name.localeCompare(b.name));
+  const areaOf = [];
+  areas.forEach((a, k) => { a.k = k; for (const f of a.files) areaOf[f.i] = k; });
+  const aff = growAffinity(model, areaOf);
+
+  const weightOf = f => (typeof fileWeight === 'function' ? fileWeight(f) : Math.max(4, Math.pow(Math.max(f.maxLoc, 1), 0.7)));
+  const plotOf = (f, dist) => {               // frontage × depth, aspect varied per path, area = the treemap's weight
+    // a district with a unit (the terraces) caps the plot: a row of like houses, the data stays in the height
+    const a = Math.min(weightOf(f) * 0.62, dist && dist.unit || Infinity), asp = 0.75 + 0.6 * growU(f.p, 1);
+    return { fw: Math.sqrt(a * asp), dp: Math.sqrt(a / asp) };
+  };
+
+  // a road: a polyline that grows segment by segment, and the plots along its two sides
+  function newRoad(x, z, heading, width, area, parent) {
+    if (D.grid) heading = Math.round(heading / (Math.PI / 2)) * (Math.PI / 2);   // downtown keeps to the axes
+    const r = { id: roads.length, pts: [[x, z]], heading, w: width, area, len: 0, cur: [0.6 * width, 0.6 * width], dead: false, parent, cum: [0],
+      slots: [], next: [nextSlot(), nextSlot()], dist: D };
+    roads.push(r);
+    return r;
+  }
+  function nextSlot() { const [a, b] = GROWTH.slotEvery; return a + rnd() * (b - a); }
+  function markSeg(r, x0, z0, x1, z1) {
+    // the segment as one rotated rectangle (its full length and width)
+    grid.rectMark((x0 + x1) / 2, (z0 + z1) / 2, Math.hypot(x1 - x0, z1 - z0) / 2, r.w / 2, Math.atan2(z1 - z0, x1 - x0));
+  }
+  // extend a road by one segment; it bends a little, steers away from what blocks it, and dies when boxed in
+  function extend(r, steer) {
+    if (r.dead) return false;
+    const [x, z] = r.pts[r.pts.length - 1];
+    const base = r.heading + (rnd() * 2 - 1) * GROWTH.wiggle * r.dist.wiggle + (r.dist.grid ? 0 : steer || 0);
+    const grace = r.pts.length < 3 ? (r.parent ? r.parent.w / 2 : 0) + 0.8 : 0;   // leaving the host road
+    for (const d of r.dist.grid ? [0, Math.PI / 2, -Math.PI / 2] : [0, 0.35, -0.35, 0.7, -0.7, 1.05, -1.05]) {
+      const h = base + d, x1 = x + Math.cos(h) * GROWTH.step, z1 = z + Math.sin(h) * GROWTH.step;
+      // look ahead a little past the segment, at the road's full width (plus a verge)
+      let ok = true;
+      for (const t of [0.8, 1.2, 1.6]) {   // ahead of the road's own end cells
+        if (r.len + GROWTH.step * t < grace) continue;
+        if (!grid.rectFree(x + (x1 - x) * t, z + (z1 - z) * t, 0.01, r.w / 2 + 0.6, h)) { ok = false; break; }
+      }
+      if (!ok) continue;
+      markSeg(r, x, z, x1, z1);
+      r.pts.push([x1, z1]); r.heading = h; r.len += GROWTH.step; r.cum.push(r.len);
+      return true;
+    }
+    r.dead = true;
+    return false;
+  }
+  function at(r, s) {                         // point and tangent angle at distance s along the road
+    const c = r.cum;
+    let i = 1;
+    while (i < c.length - 1 && c[i] < s) i++;
+    const [x0, z0] = r.pts[i - 1], [x1, z1] = r.pts[i], seg = c[i] - c[i - 1] || 1, t = Math.max(0, Math.min(1, (s - c[i - 1]) / seg));
+    return [x0 + (x1 - x0) * t, z0 + (z1 - z0) * t, Math.atan2(z1 - z0, x1 - x0)];
+  }
+
+  // place files along one road; returns the files that did not fit
+  function frontage(r, list) {
+    let k = 0, fails = 0;
+    while (k < list.length) {
+      const f = list[k], { fw, dp } = plotOf(f, r.dist);
+      const side = r.cur[0] <= r.cur[1] ? 0 : 1, sgn = side ? -1 : 1;
+      if (r.cur[side] >= r.next[side] && r.cur[side] !== Infinity) {   // leave a gap for a future side street
+        r.slots.push({ s: r.cur[side] + GROWTH.slot / 2, side, used: false });
+        r.cur[side] += GROWTH.slot; r.next[side] = r.cur[side] + nextSlot();
+        continue;
+      }
+      const s0 = r.cur[side], s1 = s0 + fw;
+      const cap = r.w > 2.5 ? GROWTH.maxSpine : GROWTH.maxLane;
+      while (r.len < s1 + 0.5 && r.len < cap && extend(r)) { /* lay road ahead of the plot, up to the cap */ }
+      if (r.len < s1 + 0.5) {                // the road cannot go on: try the other side, then give up
+        if (r.cur[1 - side] + fw < r.len) { r.cur[side] = Infinity; continue; }
+        break;
+      }
+      const [mx, mz, a] = at(r, (s0 + s1) / 2);
+      const off = r.w / 2 + GROWTH.setback * r.dist.setback + dp / 2 + 0.3 * growU(f.p, 2) * r.dist.wiggle;
+      const cx = mx - Math.sin(a) * off * sgn, cz = mz + Math.cos(a) * off * sgn;
+      if (grid.rectFree(cx, cz, fw / 2 + 0.15, dp / 2 + 0.15, a)) {
+        grid.rectMark(cx, cz, fw / 2 + 0.25, dp / 2 + 0.25, a);
+        f.rectG = { x: cx - fw / 2, z: cz - dp / 2, w: fw, h: dp };
+        f.rotG = -a; f.baseG = PL; f.areaG = r.area; f.distG = r.dist.code;
+        const gap = GROWTH.gap * r.dist.gap + 0.8 * growU(f.p, 3) * Math.min(1, r.dist.gap);
+        // a villa's garden pool in the gap after it (checked and marked like a plot)
+        if (r.dist.pool && growU(f.p, 5) < 0.7 && gap > 2.6) {
+          const pw = Math.min(gap - 1.2, 2.6), pd = Math.max(1.4, dp * 0.5), [px, pz, pa] = at(r, Math.min(r.len, s1 + gap / 2));
+          const po = r.w / 2 + GROWTH.setback * r.dist.setback + pd / 2 + 0.6, qx = px - Math.sin(pa) * po * sgn, qz = pz + Math.cos(pa) * po * sgn;
+          if (grid.rectFree(qx, qz, pw / 2 + 0.1, pd / 2 + 0.1, pa)) { grid.rectMark(qx, qz, pw / 2 + 0.2, pd / 2 + 0.2, pa); pools.push({ x: qx, z: qz, a: pa, w: pw, d: pd }); }
+        }
+        r.cur[side] = s1 + gap;
+        k++; fails = 0;
+      } else {
+        r.cur[side] += 1;                       // something is in the way: move along
+        if (++fails > 80) break;
+      }
+    }
+    for (let i = 0; i < 2; i++) if (r.cur[i] === Infinity) r.cur[i] = r.len;
+    return list.slice(k);
+  }
+
+  // where a new road leaves from: a gap left in a host road's frontage (or a live road end) with the most free land
+  // ahead, leaning outwards; only when there is none, any point of the host roads
+  function freeAhead(x, z, h) {
+    let free = 0;
+    for (let d = 3; d <= 19; d += 4) for (const w of [-5, 0, 5]) {
+      if (!grid.has(x + Math.cos(h) * d - Math.sin(h) * w, z + Math.sin(h) * d + Math.cos(h) * w)) free++;
+    }
+    return free;
+  }
+  const tried = new Set();
+  function departure(hostRoads, hub) {
+    // A town grows compactly: of the spots with enough room ahead, the one nearest the centre wins.
+    // Room is capped, so a wide-open road end does not drag every new street outwards.
+    const score = (x, z, free) => Math.min(free, GROWTH.room) - Math.hypot(x - hub[0], z - hub[1]) * GROWTH.pull * D.pull + rnd() * 1.5;
+    let best = null;
+    for (const r of hostRoads) {
+      for (const sl of r.slots) {
+        if (sl.used || r.len < sl.s + 1) continue;
+        const [x, z, a] = at(r, sl.s), h = a + (sl.side ? -1 : 1) * Math.PI / 2, free = freeAhead(x, z, h);
+        if (free < GROWTH.minRoom) continue;
+        const sc = score(x, z, free) + 2;      // a gap left for a street is the natural place for one
+        if (!best || sc > best.sc) best = { sc, x, z, h, host: r, slot: sl };
+      }
+      if (!r.dead && r.pts.length > 1) {
+        const [x, z] = r.pts[r.pts.length - 1], free = freeAhead(x, z, r.heading);
+        if (free < GROWTH.minRoom) continue;
+        const sc = score(x, z, free);
+        if (!best || sc > best.sc) best = { sc, x, z, h: r.heading, host: r, tip: true };
+      }
+    }
+    if (best) { if (best.slot) best.slot.used = true; if (best.tip) best.host.dead = true; return best; }
+    best = null;
+    for (const r of hostRoads) for (let i = 0; i < r.pts.length; i++) {
+      const [x, z] = r.pts[i], tan = i ? Math.atan2(z - r.pts[i - 1][1], x - r.pts[i - 1][0]) : r.heading;
+      for (const sgn of [1, -1]) {
+        const key = r.id + ':' + i + ':' + sgn;
+        if (tried.has(key)) continue;                // a spot that failed once fails again: never retry it
+        const h = tan + sgn * Math.PI / 2;
+        const free = freeAhead(x, z, h);
+        if (free < GROWTH.minRoom) { tried.add(key); continue; }
+        const sc = score(x, z, free);
+        if (!best || sc > best.sc) best = { sc, x, z, h, host: r, key };
+      }
+    }
+    if (best) tried.add(best.key);
+    return best;
+  }
+
+  // last resort: a lone farmstead on free land, spiralling out from the area's last road (checked like every plot)
+  function farmstead(f, mine, area) {
+    const { fw, dp } = plotOf(f, D), r0 = mine[mine.length - 1], [x0, z0] = r0.pts[r0.pts.length - 1];
+    for (let i = 0; i < 20000; i++) {
+      const ang = i * 0.5, rad = 4 + i * 0.12, cx = x0 + Math.cos(ang) * rad, cz = z0 + Math.sin(ang) * rad, a = ang + Math.PI / 2;
+      if (!grid.rectFree(cx, cz, fw / 2 + 0.6, dp / 2 + 0.6, a)) continue;
+      grid.rectMark(cx, cz, fw / 2 + 0.25, dp / 2 + 0.25, a);
+      f.rectG = { x: cx - fw / 2, z: cz - dp / 2, w: fw, h: dp }; f.rotG = -a; f.baseG = PL; f.areaG = area; f.distG = D.code;
+      return;
+    }
+  }
+
+  const areaRoads = k => roads.filter(r => r.area === k);
+  // lay a list of files out from a starting road; a full road branches off itself until everything has a plot
+  function settle(list, road, area) {
+    let rest = frontage(road, list), tries = 0;
+    const mine = [road];
+    while (rest.length && tries++ < 80) {
+      // this group's roads first, then the whole area's, then any road in town
+      const dep = departure(mine.slice(-8), [0, 0]) || departure(mine, [0, 0]) || departure(areaRoads(area), [0, 0]) || departure(roads.slice(), [0, 0]);
+      if (!dep) break;
+      const r = newRoad(dep.x, dep.z, dep.h, GROWTH.laneW, area, dep.host);
+      const before = rest.length;
+      rest = frontage(r, rest);
+      if (r.pts.length < 2) roads.splice(roads.indexOf(r), 1);   // it never left: no stub road
+      else mine.push(r);
+      if (rest.length < before) tries = 0;
+    }
+    for (const f of rest) farmstead(f, mine, area);   // never a lost building
+
+    return mine;
+  }
+
+  // the first track: castle site -> the first workshop (the hub)
+  const castle = [0, -GROWTH.castle], hub = [0, 0];
+  const track = newRoad(castle[0], castle[1], Math.PI / 2, GROWTH.spineW + 0.6, -1, null);
+  while (track.len < GROWTH.castle && extend(track, (Math.atan2(hub[1] - track.pts[track.pts.length - 1][1], hub[0] - track.pts[track.pts.length - 1][0]) - track.heading) * 0.5)) { /* */ }
+  grid.rectMark(castle[0], castle[1] - 6, 10, 9, 0);   // the castle's own ground
+
+  // nowhere left to branch: the first free spot on a spiral out from the hub
+  function openLand(c) {
+    for (let i = 0; i < 40000; i++) {
+      const ang = i * 0.37, rad = 10 + i * 0.05, x = c[0] + Math.cos(ang) * rad, z = c[1] + Math.sin(ang) * rad;
+      if (grid.rectFree(x, z, 4, 4, 0)) return { x, z, h: ang, host: null };
+    }
+    return { x: c[0] + 999, z: c[1], h: 0, host: null };
+  }
+  const placedRoads = [];
+  areas.forEach((a, k) => {
+    D = growDistrict(a.name);
+    let start;
+    if (k === 0) {
+      const [x, z] = track.pts[track.pts.length - 1];
+      start = { x, z, h: track.heading + (rnd() - 0.5) * 0.5, host: track };
+    } else {
+      let host = 0, bestA = -1;
+      for (let j = 0; j < k; j++) { const v = aff(j, k); if (v > bestA || (v === bestA && j === k - 1)) { bestA = v; host = j; } }
+      const hostRoads = placedRoads[host] && placedRoads[host].length ? placedRoads[host] : [track];
+      // the host's roads first, then any road at all; a road that cannot leave anywhere starts on open land
+      start = departure(hostRoads, hub) || departure(roads.slice(), hub) || openLand(hub);
+    }
+    const spine = newRoad(start.x, start.z, start.h, a.files.length > 40 ? GROWTH.spineW : GROWTH.laneW, k, start.host);
+    // the area's own files on its spine, then each group (sub-folder) on a lane of its own, in birth order
+    const top = a.dir ? growCollapse(a.dir) : null;
+    const direct = top ? top.files.slice() : a.files.slice();
+    const groups = top ? [...top.dirs.values()].map(d => ({ d, files: growFilesOf(d) })) : [];
+    groups.forEach(g => { g.born = growBorn(g.files); g.files.sort((x, y) => x.born - y.born || x.p.localeCompare(y.p)); });
+    groups.sort((x, y) => x.born - y.born || x.d.name.localeCompare(y.d.name));
+    direct.sort((x, y) => x.born - y.born || x.p.localeCompare(y.p));
+    const mine = settle(direct, spine, k);
+    for (const g of groups) {
+      D = growDistrict(g.d.path || a.name + '/' + g.d.name);
+      // a lane leaves the spine where it has got to; the spine grows on a little between lanes
+      for (let n = 0; n < 2; n++) extend(spine);
+      const dep = departure([spine], hub) || departure(mine, hub) || departure(roads.slice(), hub) || openLand(hub);
+      const lane = newRoad(dep.x, dep.z, dep.h, GROWTH.laneW, k, dep.host);
+      mine.push(...settle(g.files, lane, k));
+      D = growDistrict(a.name);
+    }
+    placedRoads[k] = mine;
+  });
+
+  // district bounding rects (for the camera, tours and the HUD), and the extent
+  let minX = Infinity, minZ = Infinity, maxX = -Infinity, maxZ = -Infinity;
+  const bbox = (d) => {
+    let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity;
+    for (const f of growFilesOf(d)) {
+      const r = f.rectG, cx = r.x + r.w / 2, cz = r.z + r.h / 2, e = Math.max(r.w, r.h) / 2;
+      x0 = Math.min(x0, cx - e); z0 = Math.min(z0, cz - e); x1 = Math.max(x1, cx + e); z1 = Math.max(z1, cz + e);
+    }
+    d.rectG = isFinite(x0) ? { x: x0, z: z0, w: x1 - x0, h: z1 - z0 } : { x: 0, z: 0, w: 0, h: 0 };
+    d.dirs.forEach(bbox);
+  };
+  bbox(root);
+  for (const r of roads) for (const [x, z] of r.pts) { minX = Math.min(minX, x); minZ = Math.min(minZ, z); maxX = Math.max(maxX, x); maxZ = Math.max(maxZ, z); }
+  const rr = root.rectG;
+  minX = Math.min(minX, rr.x); minZ = Math.min(minZ, rr.z); maxX = Math.max(maxX, rr.x + rr.w); maxZ = Math.max(maxZ, rr.z + rr.h);
+
+  // the town: a star-shaped blob around everything built, smoothed (02-island.js builds the island around it)
+  const N = 96, rad = new Array(N).fill(12), cx0 = (minX + maxX) / 2, cz0 = (minZ + maxZ) / 2;
+  const reach = (x, z, e) => { const a = Math.atan2(z - cz0, x - cx0), i = ((Math.round(a / (2 * Math.PI) * N) % N) + N) % N, d = Math.hypot(x - cx0, z - cz0) + e; if (d > rad[i]) rad[i] = d; };
+  for (const f of files) if (f.rectG) { const r = f.rectG; reach(r.x + r.w / 2, r.z + r.h / 2, Math.max(r.w, r.h) * 0.75 + 6); }
+  for (const r of roads) for (const [x, z] of r.pts) reach(x, z, r.w + 6);
+  reach(castle[0], castle[1] - 6, 18);
+  // a lone far ray (one long road) would be a spike: each ray reaches at least 94 % of its neighbours, a headland
+  for (let pass = 0; pass < 24; pass++) for (let i = 0; i < N; i++) rad[i] = Math.max(rad[i], rad[(i + N - 1) % N] * 0.94, rad[(i + 1) % N] * 0.94);
+  for (let pass = 0; pass < 3; pass++) {
+    const c = rad.slice();
+    for (let i = 0; i < N; i++) rad[i] = Math.max(c[i], (c[(i + N - 1) % N] + 2 * c[i] + c[(i + 1) % N]) / 4);
+  }
+  // K2-02 (02-island.js): the town blob is the flat ground; the island around it is twice its area
+  const bridge = areas.find(a => a.name === 'BRIDGE');
+  const villas = bridge ? (() => { let x = 0, z = 0, n = 0; for (const f of bridge.files) if (f.rectG) { x += f.rectG.x + f.rectG.w / 2; z += f.rectG.z + f.rectG.h / 2; n++; } return n ? [x / n, z / n] : null; })() : null;
+  const island = growIsland({ built: rad, cx: cx0, cz: cz0, castle, villas, PL, roads: roads.map(r => r.pts),
+    plots: files.filter(f => f.rectG).map(f => [f.rectG.x + f.rectG.w / 2, f.rectG.z + f.rectG.h / 2, Math.hypot(f.rectG.w, f.rectG.h) / 2]), seed: growHash(String((model.city.commits[0] || [])[4] || model.city.repo.name) + ':island') });
+
+  const side = 2 * Math.max(...rad);   // the town's size: camera, fog and the Land keep reading the town, not the island
+  model.grow = { pools, districts: growDistrictCentres(files), roads: roads.map(r => ({ pts: r.pts, w: r.w, area: r.area })).concat(island.access.map(r => ({ pts: r.pts, w: r.w, area: -2 }))), coast: island.coastPts, island, side, castle, hub, centre: [cx0, cz0],
+    areas: areas.map(a => ({ name: a.name || 'Főtér', born: a.born, files: a.files.length })) };
+  return model.grow;
+}
+
+// where each district's name goes: the middle of its buildings (K2-04 labels)
+function growDistrictCentres(files) {
+  const acc = new Map();
+  for (const f of files) if (f.rectG && f.distG) { const a = acc.get(f.distG) || { x: 0, z: 0, n: 0 }; a.x += f.rectG.x + f.rectG.w / 2; a.z += f.rectG.z + f.rectG.h / 2; a.n++; acc.set(f.distG, a); }
+  return [...acc].filter(([, a]) => a.n >= 8).map(([code, a]) => ({ code, name: GROWTH_DISTRICTS.find(d => d.code === code).name, x: a.x / a.n, z: a.z / a.n, n: a.n }));
+}
+
+// ---- the two plans and the move between them
+const plan = { mode: 'grow', raf: 0 };
+try { const m = localStorage.getItem('kv.plan'); if (m === 'tree' || m === 'grow') plan.mode = m; } catch (e) { /* file:// or private */ }
+
+// keep the treemap's answer beside the grown one, then make one of them current
+function planPrepare(model) {
+  const walk = d => { d.rectT = d.rect; d.dirs.forEach(walk); };
+  walk(model.root);
+  for (const f of model.city.files) { f.rectT = f.rect; f.baseT = f.base; f.rotT = 0; }
+  model.sideT = model.side;
+  growCity(model);
+  planUse(model, plan.mode);
+}
+function planUse(model, mode) {
+  const g = mode === 'grow';
+  const walk = d => { d.rect = g ? d.rectG : d.rectT; d.dirs.forEach(walk); };
+  walk(model.root);
+  for (const f of model.city.files) { f.rect = g ? f.rectG : f.rectT; f.base = g ? f.baseG : f.baseT; f.rot = g ? f.rotG : 0; }
+  model.side = g ? model.grow.side : model.sideT;
+}
+
+// the ground and the streets of the grown plan, added to the city's group by 03-scene's showCity
+function growMeshes(model, group) {
+  const PL = typeof PLATE === 'number' ? PLATE : 0.5, gw = model.grow;
+  const ground = islandMeshes(gw.island, PL);   // 02-island.js: terrain, woods, airfield, harbour, lighthouse
+  const pos = [], col = [], c = new THREE.Color();
+  for (const r of gw.roads) {
+    c.setHSL(0.57, 0.16, r.area < 0 ? 0.14 : r.w > 2.5 ? 0.115 : 0.09);   // night paving: dark, so the lamps' pools show (50-mood)
+    for (let i = 1; i < r.pts.length; i++) {
+      const [x0, z0] = r.pts[i - 1], [x1, z1] = r.pts[i], a = Math.atan2(z1 - z0, x1 - x0), nx = -Math.sin(a) * r.w / 2, nz = Math.cos(a) * r.w / 2;
+      const ext = 0.25, ex = Math.cos(a) * ext, ez = Math.sin(a) * ext, y = PL + 0.03;   // overlap the joints
+      const q = [[x0 - ex + nx, z0 - ez + nz], [x0 - ex - nx, z0 - ez - nz], [x1 + ex - nx, z1 + ez - nz], [x1 + ex + nx, z1 + ez + nz]];
+      for (const k of [0, 1, 2, 0, 2, 3]) { pos.push(q[k][0], y, q[k][1]); col.push(c.r, c.g, c.b); }
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  const streets = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+  const g = new THREE.Group();
+  g.add(ground, streets, districtMeshes(gw, PL));   // 52-district: the castle, the villas' pools, the names
+  g.name = 'grow';
+  group.add(g);
+  return g;
+}
+
+// P: fly every building between the two plans (the same instances; only their matrices move)
+function planSet(mode, animate = 1600) {
+  if (!current || !world || mode === plan.mode) return;
+  plan.mode = mode;
+  try { localStorage.setItem('kv.plan', mode); } catch (e) { /* */ }
+  const files = current.city.files, g = mode === 'grow';
+  const from = files.map(f => ({ r: f.rect, b: f.base, a: f.rot || 0 }));
+  const sideA = current.side, cA = g ? [0, 0] : current.grow.centre;
+  planUse(current, mode);
+  const to = files.map(f => ({ r: f.rect, b: f.base, a: f.rot || 0 }));
+  // the camera keeps its place relative to the city (the two plans differ in size; a fixed distance would cross a zoom level)
+  const k = current.side / sideA, cB = g ? current.grow.centre : [0, 0], t = orbit.target;
+  flyCamera([cB[0] + (t.x - cA[0]) * k, cB[1] + (t.z - cA[1]) * k, orbit.theta, orbit.phi, orbit.r * k], animate || 0);
+  world.plates.visible = false; if (world.grow) world.grow.visible = false;
+  const done = () => {
+    planUse(current, mode);
+    world.plates.visible = !g; if (world.grow) world.grow.visible = g;
+    scene.fog.near = current.side * 1.1; scene.fog.far = current.side * 3.2;
+    writeInstances(replay.cur);
+    planChanged.forEach(fn => { try { fn(mode); } catch (e) { console.warn(e); } });
+    planButton();
+    requestRender();
+  };
+  cancelAnimationFrame(plan.raf);
+  if (!animate) { done(); return; }
+  const t0 = performance.now();
+  const step = () => {
+    const k = Math.min(1, (performance.now() - t0) / animate), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2, lift = Math.sin(Math.PI * k) * current.side * 0.06;
+    for (let i = 0; i < files.length; i++) {
+      const A = from[i], B = to[i], ra = A.r, rb = B.r;
+      const cx = ra.x + ra.w / 2 + (rb.x + rb.w / 2 - ra.x - ra.w / 2) * e, cz = ra.z + ra.h / 2 + (rb.z + rb.h / 2 - ra.z - ra.h / 2) * e;
+      const w = ra.w + (rb.w - ra.w) * e, h = ra.h + (rb.h - ra.h) * e;
+      let da = B.a - A.a; da = Math.atan2(Math.sin(da), Math.cos(da));
+      files[i].rect = { x: cx - w / 2, z: cz - h / 2, w, h };
+      files[i].base = A.b + (B.b - A.b) * e + lift * (0.6 + 0.4 * growU(files[i].p, 4));
+      files[i].rot = A.a + da * e;
+    }
+    writeInstances(replay.cur);
+    requestRender();
+    if (k < 1) plan.raf = requestAnimationFrame(step); else done();
+  };
+  plan.raf = requestAnimationFrame(step);
+}
+const planChanged = [];   // other modules re-anchor what they drew on the old plan (lenses, roads, beacon)
+planChanged.push(() => { if (typeof lensApply === 'function') lensApply(); });
+
+// the button (its label names the OTHER plan) and the key
+function planButton() { const b = $('plan-btn'); if (b) b.textContent = plan.mode === 'grow' ? 'Tervrajz' : 'Növekedés'; }
+setTimeout(() => {
+  const b = $('plan-btn');
+  if (b) b.onclick = () => planSet(plan.mode === 'grow' ? 'tree' : 'grow');
+  planButton();
+});
+addEventListener('keydown', e => {
+  if (!current || e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input:not([type=range]), textarea, select')) return;
+  if (e.key === 'p' || e.key === 'P') planSet(plan.mode === 'grow' ? 'tree' : 'grow');
+});
+
+// ==== src/02-island.js
+// 02-island.js — K2-02: the island the grown city stands on (docs/city/v2/README.md §6). DOM-free (the spec runs it
+// in Node); 02-grow.js calls growIsland at the end of growCity, and growMeshes draws what it returns.
+//
+// - The town is the built blob (every plot and road plus a margin, flat at the plate height). Around it the island is
+//   about twice the built area: its coastline is the blob pushed outwards with seeded low-frequency noise, scaled until
+//   the area ratio is ISLE.area.
+// - Hills: one behind the castle (Domoszló, the founding story), one behind the BRIDGE villas (the hill suburb), a few
+//   small ones from the seed. They rise only outside the town and fall to a beach at the coast.
+// - Fields and woods fill the land between: woods where a noise field is high or the ground climbs, fields elsewhere.
+// - Three sites for the outward links (K2-07 gives them meaning): the harbour where the town comes closest to the sea,
+//   the lighthouse on the most prominent headland, the airport's runway across the widest free land.
+// Everything comes from the same seed as the layout: the same repo always gets the same island.
+
+const ISLE = {
+  rays: 180,          // coastline resolution
+  area: 2.0,          // island area / built area
+  noise: 0.22,        // coastline noise (share of the land band)
+  margin: 14,         // the narrowest land beyond the town
+  beach: 7,           // beach width
+  trees: 2800,        // at most
+};
+
+// smooth value noise on the plane (integer hash, no strings: it runs per vertex)
+function isleHash(i, j, s) {
+  let h = Math.imul(i, 0x27d4eb2d) ^ Math.imul(j, 0x165667b1) ^ Math.imul(s, 0x9e3779b1);
+  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b); h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+function isleNoise(x, z, s) {
+  const i = Math.floor(x), j = Math.floor(z), fx = x - i, fz = z - j, u = fx * fx * (3 - 2 * fx), v = fz * fz * (3 - 2 * fz);
+  const a = isleHash(i, j, s), b = isleHash(i + 1, j, s), c = isleHash(i, j + 1, s), d = isleHash(i + 1, j + 1, s);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function isleFbm(x, z, s) { return (isleNoise(x, z, s) * 0.55 + isleNoise(x * 2.1, z * 2.1, s + 1) * 0.3 + isleNoise(x * 4.3, z * 4.3, s + 2) * 0.15) * 2 - 1; }
+
+// a radius per ray, read at any angle (linear between rays)
+function isleAt(rad, a) {
+  const N = rad.length, t = ((a / (2 * Math.PI)) % 1 + 1) % 1 * N, i = Math.floor(t) % N, f = t - Math.floor(t);
+  return rad[i] * (1 - f) + rad[(i + 1) % N] * f;
+}
+const isleSmooth = (x0, x1, x) => { const t = Math.max(0, Math.min(1, (x - x0) / (x1 - x0))); return t * t * (3 - 2 * t); };
+const isleAngDist = (a, b) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+
+// ctx: { built: rays of the town blob, cx, cz, castle: [x, z], villas: [x, z] | null, seed, PL }
+function growIsland(ctx) {
+  const N = ISLE.rays, { cx, cz, PL } = ctx, seed = ctx.seed >>> 0, rnd = growRng(seed ^ 0x51ab1e);
+  const built = Array.from({ length: N }, (_, i) => isleAt(ctx.built, i / N * 2 * Math.PI));
+  const area = rad => rad.reduce((s, r) => s + r * r, 0) * Math.PI / rad.length;   // Σ r² / 2 · dθ
+  const builtArea = area(built), meanR = Math.sqrt(builtArea / Math.PI);
+  // the raw coast: the town pushed out by a noisy band (periodic in the angle, so it closes)
+  const ph = [rnd(), rnd(), rnd(), rnd(), rnd()].map(p => p * 2 * Math.PI);
+  const wave = a => 0.45 * Math.sin(2 * a + ph[0]) + 0.3 * Math.sin(3 * a + ph[1]) + 0.2 * Math.sin(5 * a + ph[2]) + 0.12 * Math.sin(9 * a + ph[3]) + 0.07 * Math.sin(14 * a + ph[4]);
+  const band = built.map((r, i) => Math.max(0.15, 1 + ISLE.noise * 2.2 * wave(i / N * 2 * Math.PI)));
+  // scale the band until the island is ISLE.area times the town (bisection on the band's length)
+  let lo = 0, hi = meanR * 4, coast = built;
+  for (let it = 0; it < 40; it++) {
+    const s = (lo + hi) / 2;
+    coast = built.map((r, i) => r + ISLE.margin + s * band[i]);
+    if (area(coast) > builtArea * ISLE.area) hi = s; else lo = s;
+  }
+  for (let pass = 0; pass < 2; pass++) { const c = coast.slice(); for (let i = 0; i < N; i++) coast[i] = Math.max(built[i] + ISLE.margin, (c[(i + N - 1) % N] + 2 * c[i] + c[(i + 1) % N]) / 4); }
+
+  const polar = (x, z) => [Math.atan2(z - cz, x - cx), Math.hypot(x - cx, z - cz)];
+  const ray = (a, r) => [cx + Math.cos(a) * r, cz + Math.sin(a) * r];
+  const landBand = a => [isleAt(built, a), isleAt(coast, a)];
+
+  // hills: behind the castle, behind the villas, and a few small ones; each sits in the land band on its ray
+  const hills = [];
+  const hillOn = (a, h, share) => {
+    const [rb, rc] = landBand(a), d = rc - rb, [x, z] = ray(a, rb + d * share);
+    hills.push({ x, z, a, h, s: Math.max(14, d * 0.32) });
+  };
+  hillOn(polar(...ctx.castle)[0], 16, 0.5);
+  if (ctx.villas) hillOn(polar(...ctx.villas)[0], 11, 0.5);
+  for (let k = 0; k < 3; k++) hillOn(rnd() * 2 * Math.PI, 4 + rnd() * 5, 0.35 + rnd() * 0.35);
+
+  // the runway: across the widest free land, away from the two big hills, tangential so it stays in the band
+  let runway = null;
+  {
+    let best = -1, bestA = 0;
+    for (let i = 0; i < N; i++) {
+      const a = i / N * 2 * Math.PI;
+      if (hills.slice(0, 2).some(h => isleAngDist(a, h.a) < 0.7)) continue;
+      const d = coast[i] - built[i]; if (d > best) { best = d; bestA = a; }
+    }
+    if (best > 30) {
+      const [rb] = landBand(bestA), r = rb + best * 0.5, [x, z] = ray(bestA, r), ang = bestA + Math.PI / 2;
+      for (let L = 80; L >= 30; L -= 5) {
+        const ends = [-1, 1].map(s => [x + Math.cos(ang) * L / 2 * s, z + Math.sin(ang) * L / 2 * s]);
+        if (ends.every(([ex, ez]) => { const [ea, er] = polar(ex, ez), [b, c] = landBand(ea); return er > b + 8 && er < c - ISLE.beach - 4; })) {
+          runway = { x, z, a: ang, len: L, w: 5, ray: bestA }; break;
+        }
+      }
+    }
+  }
+  const runwayDist = (x, z) => {   // distance to the runway's rectangle (Infinity without one)
+    if (!runway) return Infinity;
+    const dx = x - runway.x, dz = z - runway.z, c = Math.cos(runway.a), s = Math.sin(runway.a);
+    const u = Math.abs(dx * c + dz * s) - runway.len / 2, v = Math.abs(-dx * s + dz * c) - runway.w / 2;
+    return Math.hypot(Math.max(u, 0), Math.max(v, 0)) + Math.min(Math.max(u, v), 0);
+  };
+
+  // the harbour: where the town comes closest to the sea (not on the runway's side)
+  let harbour = null;
+  {
+    let best = Infinity, bestI = 0;
+    for (let i = 0; i < N; i++) {
+      const a = i / N * 2 * Math.PI;
+      if (runway && isleAngDist(a, runway.ray) < 0.6) continue;
+      if (hills.length && isleAngDist(a, hills[0].a) < 0.4) continue;
+      const d = coast[i] - built[i]; if (d < best) { best = d; bestI = i; }
+    }
+    const a = bestI / N * 2 * Math.PI, [x, z] = ray(a, coast[bestI]);
+    harbour = { x, z, a, i: bestI };
+  }
+  // the lighthouse: the ray that stands out most from its neighbours, away from the harbour and the runway
+  let lighthouse = null;
+  {
+    let best = -Infinity, bestI = 0;
+    for (let i = 0; i < N; i++) {
+      const a = i / N * 2 * Math.PI;
+      if (isleAngDist(a, harbour.a) < 0.8 || (runway && isleAngDist(a, runway.ray) < 0.5)) continue;
+      let m = 0; for (let k = -10; k <= 10; k++) m += coast[(i + k + N) % N]; m /= 21;
+      const p = coast[i] - m + coast[i] * 0.02; if (p > best) { best = p; bestI = i; }
+    }
+    const a = bestI / N * 2 * Math.PI, [x, z] = ray(a, coast[bestI] - 4);
+    lighthouse = { x, z, a, i: bestI };
+  }
+  const nearSite = (x, z, d) => (Math.hypot(x - harbour.x, z - harbour.z) < d) || (Math.hypot(x - lighthouse.x, z - lighthouse.z) < d * 0.6);
+
+  // access roads: from the nearest town street to each site, in a gentle curve; a start whose way would brush a plot is
+  // skipped for the next nearest. The ground along them is levelled (height) and kept free of trees.
+  const access = [];
+  {
+    const town = [];
+    for (const r of ctx.roads || []) for (const p of r) town.push(p);
+    const plots = ctx.plots || [];
+    const targets = [[harbour.x - Math.cos(harbour.a) * 2, harbour.z - Math.sin(harbour.a) * 2]];
+    if (runway) targets.push([runway.x - Math.cos(runway.ray) * 19, runway.z - Math.sin(runway.ray) * 19]);
+    targets.push([lighthouse.x - Math.cos(lighthouse.a) * 3, lighthouse.z - Math.sin(lighthouse.a) * 3]);
+    for (const [tx, tz] of targets) {
+      const cands = town.map(p => [p, Math.hypot(p[0] - tx, p[1] - tz)]).sort((a, b) => a[1] - b[1]).slice(0, 60);
+      for (const [[sx, sz], len] of cands) {
+        const n = Math.max(2, Math.ceil(len / 3)), bend = (rnd() - 0.5) * Math.min(14, len * 0.15), nx = -(tz - sz) / len, nz = (tx - sx) / len;
+        const pts = [];
+        for (let k = 0; k <= n; k++) { const t = k / n, o = Math.sin(t * Math.PI) * bend; pts.push([sx + (tx - sx) * t + nx * o, sz + (tz - sz) * t + nz * o]); }
+        // the first metres run along the town street's end, so only the way out is checked
+        const clear = pts.every(([x, z], k) => k < 1 || plots.every(([px, pz, pr]) => Math.hypot(x - px, z - pz) > pr + 2.2));
+        if (clear) { access.push({ pts, w: 2.6 }); break; }
+      }
+    }
+  }
+  // a coarse lookup first: cells of 8 within ~16 of an access road; anywhere else is simply far
+  const nearCells = new Set();
+  for (const r of access) for (const [x, z] of r.pts) for (let i = -2; i <= 2; i++) for (let j = -2; j <= 2; j++) nearCells.add((Math.floor(x / 8) + i) + ':' + (Math.floor(z / 8) + j));
+  const accessDist = (x, z) => {
+    if (!nearCells.has(Math.floor(x / 8) + ':' + Math.floor(z / 8))) return 40;
+    let d = 40;   // only near distances matter (levelling, trees); a cap lets the box test skip far segments
+    for (const r of access) for (let k = 1; k < r.pts.length; k++) {
+      const [x0, z0] = r.pts[k - 1], [x1, z1] = r.pts[k], vx = x1 - x0, vz = z1 - z0;
+      if (Math.min(x0, x1) - d > x || Math.max(x0, x1) + d < x || Math.min(z0, z1) - d > z || Math.max(z0, z1) + d < z) continue;
+      const t = Math.max(0, Math.min(1, ((x - x0) * vx + (z - z0) * vz) / (vx * vx + vz * vz || 1)));
+      d = Math.min(d, Math.hypot(x - x0 - vx * t, z - z0 - vz * t));
+    }
+    return d;
+  };
+
+  // the ground's height: flat town, hills and rolling land outside it, a beach falling to the water
+  const S = 1 / 38;   // noise scale
+  function height(x, z) {
+    const [a, r] = polar(x, z), [rb, rc] = landBand(a);
+    if (r > rc) return 0;
+    const inland = isleSmooth(rb + 2, rb + 24, r);
+    const shore = isleSmooth(rc, rc - ISLE.beach * 1.8, r);
+    let up = 2.4 * (isleFbm(x * S, z * S, seed) + 0.6);
+    for (const h of hills) { const d2 = (x - h.x) ** 2 + (z - h.z) ** 2; up += h.h * Math.exp(-d2 / (2 * h.s * h.s)); }
+    up *= isleSmooth(2, 12, runwayDist(x, z)) * isleSmooth(2.5, 9, accessDist(x, z));   // the airfield and the roads are level
+    if (nearSite(x, z, 16)) up *= isleSmooth(6, 16, Math.hypot(x - harbour.x, z - harbour.z));
+    const base = 0.12 + (PL - 0.12) * isleSmooth(rc, rc - ISLE.beach, r);
+    return base + Math.max(0, up) * inland * shore;
+  }
+  // what the land is used for (the ground's colour): town, beach, field, wood, hill
+  function use(x, z) {
+    const [a, r] = polar(x, z), [rb, rc] = landBand(a);
+    if (r <= rb + 2) return 'town';
+    if (r > rc - ISLE.beach) return 'beach';
+    if (runwayDist(x, z) < 6) return 'field';
+    const hgt = height(x, z) - PL;
+    if (hgt > 7) return 'hill';
+    return isleFbm(x * S * 1.7 + 11, z * S * 1.7 - 7, seed + 9) > 0.08 || hgt > 3.5 ? 'wood' : 'field';
+  }
+
+  // trees: on wood land, jittered, never in the town, on the beach, the airfield or the harbour
+  const trees = [];
+  {
+    const step = 4.2, xs = [cx - Math.max(...coast), cx + Math.max(...coast)], zs = [cz - Math.max(...coast), cz + Math.max(...coast)];
+    for (let gx = xs[0]; gx < xs[1]; gx += step) for (let gz = zs[0]; gz < zs[1]; gz += step) {
+      const x = gx + (isleHash(Math.round(gx), Math.round(gz), seed + 3) - 0.5) * step * 0.9, z = gz + (isleHash(Math.round(gz), Math.round(gx), seed + 4) - 0.5) * step * 0.9;
+      const [a, r] = polar(x, z), [rb, rc] = landBand(a);
+      if (r < rb + 4 || r > rc - ISLE.beach - 1 || runwayDist(x, z) < 9 || nearSite(x, z, 14) || accessDist(x, z) < 4.5) continue;
+      if (use(x, z) !== 'wood') continue;
+      trees.push({ x, z, y: height(x, z), s: 0.75 + isleHash(Math.round(x * 3), Math.round(z * 3), seed + 5) * 0.7 });
+    }
+    // over the cap: thin evenly (a stable hash per tree), never by scan order
+    if (trees.length > ISLE.trees) { const keep = ISLE.trees / trees.length; trees.splice(0, trees.length, ...trees.filter(t => isleHash(Math.round(t.x * 7), Math.round(t.z * 7), seed + 6) < keep)); }
+  }
+
+  return { rays: N, cx, cz, built, coast, hills, runway, harbour, lighthouse, trees, access, height, use, runwayDist, accessDist,
+    area: area(coast) / builtArea, coastPts: coast.map((r, i) => ray(i / N * 2 * Math.PI, r)) };
+}
+
+// ---- drawing (page only): the terrain, the woods, the airfield, the harbour, the lighthouse. Low-poly, flat-shaded,
+// night colours; the lights on them are 50-mood's.
+function islandMeshes(I, PL) {
+  const g = new THREE.Group(), c = new THREE.Color();
+  const COL = {
+    town: () => c.setHSL(0.57, 0.28, 0.075),
+    beach: () => c.setHSL(0.11, 0.22, 0.15),
+    wood: () => c.setHSL(0.36, 0.35, 0.05),
+    hill: (h) => c.setHSL(0.1, 0.1, 0.08 + Math.min(0.06, h * 0.004)),
+    field: (h, i, j) => { const k = isleHash(i >> 1, j >> 1, 77); return c.setHSL(0.15 + k * 0.1, 0.32, 0.065 + 0.035 * isleHash(i >> 1, j >> 1, 78) + ((i + j) & 1) * 0.006); },
+  };
+  // the terrain: a polar grid from the centre out to the coast, then a skirt down into the water
+  const N = I.rays, rings = [0, 0.5, 1];
+  for (let k = 1; k <= 26; k++) rings.push(1 + Math.pow(k / 26, 0.85));   // 1..2 = town edge .. coast
+  const P = (i, t) => {
+    const a = i / N * 2 * Math.PI, rb = I.built[i % N], rc = I.coast[i % N];
+    const r = t <= 1 ? rb * t : rb + (rc - rb) * (t - 1), x = I.cx + Math.cos(a) * r, z = I.cz + Math.sin(a) * r;
+    return [x, t <= 1 ? PL : I.height(x, z), z];
+  };
+  const pos = [], col = [];
+  const quad = (p, cc) => { for (const k of [0, 1, 2, 0, 2, 3]) { pos.push(...p[k]); col.push(cc.r, cc.g, cc.b); } };
+  for (let i = 0; i < N; i++) for (let j = 0; j < rings.length - 1; j++) {
+    const p = [P(i, rings[j]), P(i + 1, rings[j]), P(i + 1, rings[j + 1]), P(i, rings[j + 1])];
+    const mx = (p[0][0] + p[2][0]) / 2, mz = (p[0][2] + p[2][2]) / 2, u = rings[j + 1] <= 1 ? 'town' : I.use(mx, mz);
+    quad(p, COL[u](I.height(mx, mz) - PL, i, j));
+  }
+  for (let i = 0; i < N; i++) {   // the skirt: the island's edge going down into the sea
+    const a = P(i, 2), b = P(i + 1, 2);
+    quad([a, [a[0], -3, a[2]], [b[0], -3, b[2]], b], c.setHSL(0.1, 0.18, 0.07));
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  geo.computeVertexNormals();
+  const ground = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+  ground.name = 'island';
+  g.add(ground);
+
+  // the woods: one instanced low-poly cone per tree
+  const m = new THREE.Matrix4();
+  if (I.trees.length) {
+    const trees = new THREE.InstancedMesh(new THREE.ConeGeometry(1, 1, 6).translate(0, 0.5, 0), new THREE.MeshLambertMaterial(), I.trees.length);
+    I.trees.forEach((t, k) => {
+      m.makeScale(1.15 * t.s, 3.3 * t.s, 1.15 * t.s).setPosition(t.x, t.y - 0.15, t.z);
+      trees.setMatrixAt(k, m);
+      const h = isleHash(k, 3, 11);
+      trees.setColorAt(k, c.setHSL(0.31 + h * 0.08, 0.4, 0.06 + h * 0.05));
+    });
+    g.add(trees);
+  }
+  const box = (w, h, d, x, y, z, a, color, basic) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0),
+      basic ? new THREE.MeshBasicMaterial({ color }) : new THREE.MeshLambertMaterial({ color }));
+    mesh.position.set(x, y, z); mesh.rotation.y = -a; g.add(mesh); return mesh;
+  };
+  // the airfield: a runway with a centre line, an apron, a terminal and a hangar on the town side
+  if (I.runway) {
+    const R = I.runway, y = PL, inx = -Math.cos(R.ray), inz = -Math.sin(R.ray);   // towards the town
+    box(R.len, 0.06, R.w, R.x, y, R.z, R.a, 0x1b2329);
+    for (let s = -R.len / 2 + 4; s < R.len / 2 - 3; s += 5) box(2.2, 0.08, 0.25, R.x + Math.cos(R.a) * s, y, R.z + Math.sin(R.a) * s, R.a, 0x6d7a80);
+    const ax = R.x + inx * 9, az = R.z + inz * 9;
+    box(R.len * 0.45, 0.05, 7, ax, y, az, R.a, 0x151c21);
+    box(12, 3.2, 5, ax + inx * 6, y, az + inz * 6, R.a, 0x3c4d57);              // terminal
+    box(9, 4.5, 8, ax + inx * 6 + Math.cos(R.a) * 14, y, az + inz * 6 + Math.sin(R.a) * 14, R.a, 0x2c3a42);   // hangar
+    box(1.4, 7, 1.4, ax + inx * 6 - Math.cos(R.a) * 10, y, az + inz * 6 - Math.sin(R.a) * 10, 0, 0x4a5a63);   // tower
+  }
+  // the harbour: a pier out into the water with a T-head, a warehouse ashore, a few boats moored
+  {
+    const H = I.harbour, ox = Math.cos(H.a), oz = Math.sin(H.a), tx = -oz, tz = ox, deck = 0.55;
+    const at = (s, t) => [H.x + ox * s + tx * t, H.z + oz * s + tz * t];
+    let [x, z] = at(7, 0); box(22, 0.25, 3, x, deck, z, H.a, 0x3a2e24);                 // the pier
+    [x, z] = at(18, 0); box(3, 0.25, 16, x, deck, z, H.a, 0x3a2e24);                    // the head
+    [x, z] = at(-9, 0); box(10, 3.4, 7, x, I.height(x, z), z, H.a, 0x3b4650);           // the warehouse
+    for (const [s, t, w, col] of [[10, 3.2, 4, 0x6b3b2a], [14, -3.4, 5, 0x2f5160], [21, 6, 3.5, 0x7a6a3a]]) {
+      [x, z] = at(s, t); box(w, 0.9, 1.5, x, 0.05, z, H.a, col);
+      box(w * 0.35, 0.8, 1.0, x, 0.95, z, H.a, 0x9aa5ab);                             // cabin
+    }
+  }
+  // the lighthouse: a banded tower on the headland with a lantern (its beam is 50-mood's)
+  {
+    const L = I.lighthouse, y0 = I.height(L.x, L.z);
+    for (let k = 0; k < 4; k++) {
+      const t = new THREE.Mesh(new THREE.CylinderGeometry(1.3 - (k + 1) * 0.12, 1.3 - k * 0.12, 2.6, 10).translate(0, 1.3, 0),
+        new THREE.MeshLambertMaterial({ color: k & 1 ? 0x8a3a32 : 0xb9c0c2 }));
+      t.position.set(L.x, y0 + k * 2.6, L.z); g.add(t);
+    }
+    const lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 1.2, 10).translate(0, 0.6, 0), new THREE.MeshBasicMaterial({ color: 0xffe2a8 }));
+    lantern.position.set(L.x, y0 + 10.4, L.z); g.add(lantern);
+    L.top = [L.x, y0 + 11, L.z];
+  }
+  g.traverse(o => { o.raycast = () => {}; });   // scenery: never picked
+  return g;
+}
+
 // ==== src/02-layout.js
 // 02-layout.js — squarified treemap: folders are districts, files are building plots.
 // Laid out ONCE over every file that ever existed (maxLoc), so nothing moves during a replay.
@@ -1336,37 +2153,153 @@ canvas.addEventListener('wheel', e => {
 function buildingMaterial() {
   const mat = new THREE.MeshLambertMaterial();
   // the look (07-lens) drives these: window colour and strength, and how much the body glows itself
-  const uniforms = { uWinColor: { value: new THREE.Color(1.0, 0.78, 0.42) }, uWinGain: { value: 1.1 }, uBodyGlow: { value: 0 } };
+  // K2-09 Hangulat (50-mood.js): uDetail = floor lines, darkened feet, roof parapets, warm/cool window tints (static);
+  // uTime + uFlick = a few windows switching on and off over time, only while the moving life runs
+  // K2-03 grammar (51-grammar.js): per instance aGram = (typology, roof pitch, hash, awning hue),
+  // aWear = (scaffolding, patina and ivy); uMat = how strongly materials tint the lens colour (1 on Alap)
+  const uniforms = { uWinColor: { value: new THREE.Color(1.0, 0.78, 0.42) }, uWinGain: { value: 1.1 }, uBodyGlow: { value: 0 },
+    uDetail: { value: 1 }, uTime: { value: 0 }, uFlick: { value: 0 }, uMat: { value: 1 } };
   mat.userData.uniforms = uniforms;
   mat.onBeforeCompile = sh => {
     Object.assign(sh.uniforms, uniforms);
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
 attribute float aLit; attribute float aFlash;
-varying float vLit; varying float vFlash; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;`)
+attribute vec2 aHouse; attribute vec4 aGram; attribute vec2 aWear;   // 51-grammar: (roof part, slope side), (kind, pitch, var, owner), (churn, age) — packed: WebGL allows 16 attributes
+varying float vLit; varying float vFlash; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;
+varying vec3 vObj; flat varying vec3 vScale; flat varying float vKind; flat varying float vVar; flat varying float vOwn; flat varying float vChurn; flat varying float vAge; flat varying float vRoofH;`)
+      // the roof: ridge vertices rise by the pitch (in world units, so a tall house does not get a tall roof); towers
+      // (over 16 high) are flat-roofed. The slope normals follow the real pitch.
+      .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+float gSy = length(instanceMatrix[1].xyz), gSz = length(instanceMatrix[2].xyz);
+float gKind = mod(aGram.x, 16.0), gDist = floor(aGram.x / 16.0 + 0.01);   // K2-04: typology and district, packed
+float gTower = step(gDist == 2.0 ? 9.0 : 16.0, gSy) * (step(gKind, 3.5) + step(9.5, gKind));   // downtown climbs sooner
+float gRoofH = aGram.y * (1.0 - gTower) * gSz * 0.5;
+float gK = gRoofH / max(gSy, 0.001);
+if (aHouse.y != 0.0) objectNormal = normalize(vec3(0.0, 0.5, aHouse.y * gK));`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>
+transformed.y += step(1.5, aHouse.x) * gK;
 vLit = aLit; vFlash = aFlash; vONrm = objectNormal; vSeed = float(gl_InstanceID);
+vKind = gTower > 0.5 ? 7.0 : gKind; vVar = aGram.z; vOwn = aGram.w; vChurn = aWear.x; vAge = aWear.y; vRoofH = gRoofH;
+vObj = transformed; vScale = vec3(length(instanceMatrix[0].xyz), gSy, gSz);
 vWPos = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
 varying float vLit; varying float vFlash; varying vec3 vWPos; varying vec3 vONrm; flat varying float vSeed;
+varying vec3 vObj; flat varying vec3 vScale; flat varying float vKind; flat varying float vVar; flat varying float vOwn; flat varying float vChurn; flat varying float vAge; flat varying float vRoofH;
 // fract-only hash (no sin of large numbers: that amplified float noise into speckled windows);
 // the seed is flat and every input is rounded, so a window cell is one value end to end
-uniform vec3 uWinColor; uniform float uWinGain; uniform float uBodyGlow;
-float cityHash(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }`)
+uniform vec3 uWinColor; uniform float uWinGain; uniform float uBodyGlow; uniform float uDetail; uniform float uTime; uniform float uFlick; uniform float uMat;
+float cityHash(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
+vec3 hueRgb(float h) { return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0); }
+bool isK(float k) { return abs(vKind - k) < 0.5; }`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+float hy = vObj.y * vScale.y;                       // height above the building's foot
 if (abs(vONrm.y) < 0.5) {
-  float u = abs(vONrm.x) > 0.5 ? vWPos.z : vWPos.x;
-  vec2 cell = vec2(u / 1.1, vWPos.y / 1.4);
+  // the facade's own axis (the grown plan turns buildings, so world x / z would smear the windows on a turned facade)
+  float u = (abs(vONrm.x) > 0.5 ? vObj.z * vScale.z : vObj.x * vScale.x);
+  bool gable = hy > vScale.y + 0.01;                // the triangle under a pitched roof
+  // window rhythm per typology: plaster / brick 1.1 x 1.4, timber 1.3, stone few and small, glass dense
+  vec2 cs = isK(7.0) ? vec2(0.8, 1.05) : isK(9.0) ? vec2(2.4, 2.8) : isK(10.0) ? vec2(1.3, 1.7) : isK(3.0) ? vec2(1.7, 1.6) : isK(2.0) ? vec2(1.3, 1.4) : vec2(1.1 + 0.15 * vVar, 1.4);
+  vec2 cell = vec2(u / cs.x, hy / cs.y);
   vec2 f = fract(cell);
-  float win = step(0.22, f.x) * step(f.x, 0.78) * step(0.28, f.y) * step(f.y, 0.78);
+  vec4 wb = isK(7.0) ? vec4(0.06, 0.94, 0.1, 0.92) : isK(9.0) ? vec4(0.05, 0.95, 0.14, 0.86) : isK(10.0) ? vec4(0.3, 0.7, 0.18, 0.86) : isK(3.0) ? vec4(0.36, 0.64, 0.3, 0.72) : vec4(0.22, 0.78, 0.28, 0.78);
+  float win = step(wb.x, f.x) * step(f.x, wb.y) * step(wb.z, f.y) * step(f.y, wb.w);
+  // barns and sheds: no rows of windows, only a band of small high ones (they still light with recent work)
+  if (isK(5.0) || isK(6.0)) win *= step(vScale.y - 1.3, hy) * step(hy, vScale.y - 0.35) * step(0.3, f.x) * step(f.x, 0.7);
+  // galleries: blank walls, one lit band
+  if (isK(8.0)) win = step(abs(hy - vScale.y * 0.55), 0.35) * step(0.1, f.x) * step(f.x, 0.9);
+  // shops: the ground floor is one wide shop window
+  bool shopFloor = isK(4.0) && hy < 1.7;
+  if (shopFloor) win = step(0.08, fract(u / 3.2)) * step(fract(u / 3.2), 0.92) * step(0.25, hy) * step(hy, 1.45);
+  if (gable) win = step(1.0, vRoofH) * step(abs(u), 0.4) * step(vScale.y + 0.3, hy) * step(hy, vScale.y + vRoofH * 0.55);   // one attic window
   float face = dot(floor(vONrm + 0.5), vec3(1.0, 2.0, 3.0));
-  float on = step(cityHash(vec3(floor(cell), vSeed * 7.0 + face)), vLit);
+  float hc = cityHash(vec3(floor(cell), vSeed * 7.0 + face));
+  float on = step(hc, vLit);
+  if (shopFloor) on = step(0.15, vLit);              // a shop is lit while it is worked on at all
+  // Hangulat: one window in eight follows its own slow clock (someone comes home, someone goes to bed)
+  float hk = cityHash(vec3(floor(cell) + 17.0, vSeed * 3.0 + face));
+  float tick = floor(uTime / (7.0 + 13.0 * hk) + hk * 9.0);
+  float on2 = step(cityHash(vec3(floor(cell), vSeed * 7.0 + face + tick * 13.1)), vLit);
+  on = mix(on, on2, uFlick * step(0.875, hk));
   float far = smoothstep(0.25, 0.6, max(fwidth(cell.x), fwidth(cell.y)));
-  win = mix(win, 0.3, far); on = mix(on, vLit, far);
-  diffuseColor.rgb *= mix(1.0, 0.35, win);
-  totalEmissiveRadiance += win * on * uWinColor * uWinGain;
+  float near = 1.0 - far;
+  win = mix(win, isK(5.0) || isK(6.0) || isK(8.0) ? 0.08 : isK(7.0) ? 0.6 : 0.3, far); on = mix(on, vLit, far);
+  // wall materials (seen close; they fade out with distance like the windows)
+  float wall = 1.0; vec3 tintM = vec3(1.0);
+  if (isK(1.0)) {                                   // brick: courses and staggered joints
+    float row = floor(hy / 0.28), jx = fract(u / 0.6 + 0.5 * mod(row, 2.0));
+    wall -= near * 0.22 * max(step(0.86, fract(hy / 0.28)), step(0.93, jx));
+    tintM = vec3(1.12, 0.86, 0.74);
+  } else if (isK(2.0)) {                            // timber framing: dark posts, rails and a brace per bay
+    float post = step(fract(u / 1.3 + 0.04), 0.08), rail = step(fract(hy / 1.4 + 0.03), 0.06);
+    float brace = step(abs(fract(u / 1.3) - fract(hy / 1.4)), 0.05);
+    wall -= near * 0.5 * clamp(post + rail + brace * (1.0 - win), 0.0, 1.0);
+    tintM = vec3(1.1, 1.04, 0.9);
+  } else if (isK(3.0)) {                            // stone: big blocks, pale
+    float row = floor(hy / 0.55), jx = fract(u / 1.1 + 0.5 * mod(row, 2.0));
+    wall -= near * 0.16 * max(step(0.9, fract(hy / 0.55)), step(0.95, jx));
+    wall *= 0.92 + 0.16 * cityHash(vec3(floor(u / 1.1), row, vSeed));
+    tintM = vec3(0.95, 0.97, 1.02) * 1.15;
+  } else if (isK(5.0) || isK(6.0)) {                // barns and sheds: vertical planks and a big door
+    wall -= near * 0.18 * step(0.88, fract(u / 0.35));
+    float door = step(abs(u), isK(5.0) ? 1.1 : 0.45) * step(hy, isK(5.0) ? 2.4 : 1.6) * step(0.5, abs(vONrm.z));
+    wall *= 1.0 - 0.55 * door;
+    tintM = vec3(1.08, 0.9, 0.78);
+  } else if (isK(7.0)) {                            // glass: cool, with a sky gradient in it
+    tintM = mix(vec3(0.55, 0.75, 1.0), vec3(0.85, 0.95, 1.1), clamp(hy / max(vScale.y, 1.0), 0.0, 1.0));
+  } else if (isK(9.0)) {                            // villas: white render, a dark plinth
+    tintM = vec3(1.75, 1.72, 1.62) * (hy < 0.45 ? 0.45 : 1.0);
+  } else if (isK(10.0)) {                           // college halls: pale plaster with a stone string course per floor
+    wall -= near * 0.12 * step(0.92, fract(hy / 1.7));
+    tintM = vec3(1.32, 1.27, 1.12);
+  } else if (isK(8.0)) {                            // galleries: smooth panels
+    wall -= near * 0.1 * step(0.95, fract(u / 2.4));
+    tintM = vec3(1.05);
+  }
+  diffuseColor.rgb *= wall * mix(vec3(1.0), tintM, uMat * uDetail);
+  if (isK(9.0)) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.66, 0.68, 0.7) * wall * (hy < 0.45 ? 0.4 : 1.0), 0.8 * uMat * uDetail);   // villas: white render (a blend: a tint of a dark lens colour stays dark)
+  // patina and ivy: old buildings darken, and ivy climbs from the foot (age since the last change)
+  float ivyN = cityHash(vec3(floor(u * 1.6), floor(hy * 1.6), vSeed));
+  float ivy = near * step(ivyN * 0.5 + hy / max(4.0, vScale.y) * 1.4, vAge * 1.25 - 0.2);
+  diffuseColor.rgb *= 1.0 - (isK(9.0) ? 0.08 : 0.28) * vAge * uDetail;   // villas are kept up
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.05, 0.11, 0.05), ivy * 0.85 * uDetail * (1.0 - win));
+  // awning: the main author's colour over the ground floor, on the long sides (shops always, houses now and then)
+  if ((isK(4.0) || (vVar > 0.72 && vKind < 2.5)) && abs(vONrm.z) > 0.5 && vOwn >= 0.0) {
+    float aw = step(1.75, hy) * step(hy, 2.15) * step(abs(u), vScale.x * 0.42);
+    diffuseColor.rgb = mix(diffuseColor.rgb, hueRgb(fract(vOwn * 0.618 + 0.05)) * 0.55, aw * near * uDetail);
+  }
+  // detail: a darker line at every floor, dark feet (contact shade), a lighter parapet just under a flat roof
+  float floorLine = (1.0 - smoothstep(0.0, 0.07, fract(vWPos.y / 1.4))) * near * (isK(7.0) ? 0.4 : 1.0);
+  float feet = exp(-hy / 1.1);
+  float parapet = smoothstep(0.35, 0.0, vScale.y - hy) * step(2.0, vScale.y) * step(vRoofH, 0.05) * (gable ? 0.0 : 1.0);
+  diffuseColor.rgb *= 1.0 - uDetail * (0.16 * floorLine + 0.5 * feet);
+  diffuseColor.rgb *= 1.0 + uDetail * 0.35 * parapet;
+  diffuseColor.rgb *= mix(1.0, isK(7.0) ? 0.55 : 0.35, win);
+  vec3 tint = mix(vec3(1.0), mix(vec3(1.08, 0.92, 0.78), vec3(0.8, 0.95, 1.15), step(0.8, hc)), uDetail * 0.6);
+  totalEmissiveRadiance += win * on * uWinColor * tint * uWinGain * (shopFloor ? 1.35 : 1.0);
+  // scaffolding: churned in the last week — poles, planks and a brace over the facade
+  if (vChurn > 0.0) {
+    float pole = step(fract(u / 1.6), 0.05), plank = step(fract(hy / 1.4 + 0.5), 0.06), br = step(abs(fract(u / 1.6) - fract(hy / 1.4)), 0.035);
+    float sc = clamp(pole + plank + br * 0.7, 0.0, 1.0) * step(hy, vScale.y) * mix(1.0, near, 0.7);
+    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.62, 0.55, 0.42), sc * min(1.0, vChurn) * 0.9);
+  }
 } else if (vONrm.y > 0.5) {
+  if (vRoofH > 0.05) {
+    // a pitched roof: tiles in rows down the slope; terracotta on houses, slate on stone, tar on sheds
+    float rows = step(0.82, fract(abs(vObj.z) * vScale.z * 3.2));
+    vec3 tile = (isK(3.0) || isK(10.0)) ? vec3(0.55, 0.62, 0.72) : (isK(5.0) || isK(6.0)) ? vec3(0.5, 0.5, 0.48) : isK(2.0) ? vec3(0.95, 0.62, 0.42) : vec3(1.2, 0.58, 0.42);
+    diffuseColor.rgb *= mix(vec3(1.0), tile, uMat * uDetail) * (1.0 - 0.18 * rows * uDetail);
+    float ridge = 1.0 - smoothstep(0.0, 0.18, abs(vObj.z) * vScale.z);
+    diffuseColor.rgb *= 1.0 - 0.25 * ridge * uDetail;
+  } else {
+    // a flat roof: a lighter parapet ring, a slightly darker, grainy middle, a plant room on the big ones
+    float edge = min((0.5 - abs(vObj.x)) * vScale.x, (0.5 - abs(vObj.z)) * vScale.z);
+    float rim = 1.0 - smoothstep(0.0, 0.28, edge);
+    float grain = cityHash(vec3(floor(vWPos.xz * 2.0), vSeed));
+    float plant = step(abs(vObj.x - (vVar - 0.5) * 0.3) * vScale.x, 1.1) * step(abs(vObj.z) * vScale.z, 0.8) * step(5.0, vScale.x * vScale.z);
+    diffuseColor.rgb *= 1.0 + uDetail * (0.45 * rim - 0.12 * (1.0 - rim) + 0.06 * (grain - 0.5) + 0.25 * plant);
+  }
   totalEmissiveRadiance += vFlash * vec3(1.0, 0.92, 0.7) * 1.6;   // roof flash: touched by this commit
 }
 totalEmissiveRadiance += diffuseColor.rgb * uBodyGlow;`);
@@ -1395,7 +2328,8 @@ function showCity(model) {
   // every file that ever existed gets an instance (index = file index); 05-replay sizes them,
   // and a file that does not exist at the shown commit is scaled to nothing
   const all = model.city.files;
-  const geo = unitBox.clone();
+  const geo = houseGeometry();   // 51-grammar: walls and a gable roof the shader raises per building
+  grammarAttrs(geo, all);
   const buildings = new THREE.InstancedMesh(geo, buildingMaterial(), all.length);
   buildings.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   const baseColor = [];
@@ -1411,13 +2345,20 @@ function showCity(model) {
     new THREE.MeshBasicMaterial({ color: 0x93d3e6, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
   beacon.visible = false;
   group.add(plates, buildings, beacon);
+  // the grown plan's ground and streets (02-grow.js); the folder plates belong to the treemap plan
+  const grow = model.grow ? growMeshes(model, group) : null;
+  const grown = !!grow && plan.mode === 'grow';
+  plates.visible = !grown;
+  if (grow) grow.visible = grown;
   scene.add(group);
   scene.fog = new THREE.Fog(HORIZON, model.side * 1.1, model.side * 3.2);
-  world = { group, buildings, plates, fileOf: all, dirOf: dirs, baseColor, beacon };
+  world = { group, buildings, plates, grow, fileOf: all, dirOf: dirs, baseColor, beacon };
+  moodBuild(model);   // 50-mood: shadows, street lamps, the shining shore, the people and carts
   replayPrepare(model);
   applyTime(replay.last, false);
 
-  orbit.target.set(0, 0, 0);
+  if (grown) orbit.target.set(model.grow.centre[0], 0, model.grow.centre[1]);
+  else orbit.target.set(0, 0, 0);
   orbit.r = model.side * 1.25;
   placeCamera();
 }
@@ -1447,7 +2388,8 @@ function pickAt(e) {
   ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ndc, camera);
   // a building scaled to nothing (not born yet / deleted) has a singular matrix: never a real hit
-  const hit = ray.intersectObjects([world.buildings, world.plates], false)
+  // hidden plates (the grown plan) must not be picked: the raycaster ignores visibility
+  const hit = ray.intersectObjects(world.plates.visible ? [world.buildings, world.plates] : [world.buildings], false)
     .find(h => h.object !== world.buildings || replay.cur[h.instanceId * 3] > 0);
   if (!hit) return null;
   return hit.object === world.buildings ? { file: world.fileOf[hit.instanceId], i: hit.instanceId } : { dir: world.dirOf[hit.instanceId] };
@@ -1618,6 +2560,7 @@ function load(city) {
   if (!city || city.kind !== 'vrg-codecity') { alert('Ez nem Kódváros-fájl (city.json).'); return; }
   current = cityModel(city);
   layoutCity(current);
+  planPrepare(current);          // 02-grow.js: the grown plan beside the treemap, and the current one in f.rect
   roadsPrepare(current);
   hudPrepare();
   showCity(current);
@@ -1696,12 +2639,20 @@ function stateAt(f, i, T) {
 }
 
 const _m = new THREE.Matrix4();
+// a building's matrix: its plot (f.rect, centred), its height, its footprint scale, and — on the grown plan (02-grow.js) —
+// the rotation that turns it to face its road
+const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _Y = new THREE.Vector3(0, 1, 0);
+function plotMatrix(m, f, h, s) {
+  const { x, z, w, h: d } = f.rect;
+  if (!f.rot) return m.makeScale(w * s, h, d * s).setPosition(x + w / 2, f.base, z + d / 2);
+  return m.compose(_p.set(x + w / 2, f.base, z + d / 2), _q.setFromAxisAngle(_Y, f.rot), _s.set(w * s, h, d * s));
+}
 function writeInstances(vals) {
   const b = world.buildings, files = current.city.files, lit = b.geometry.attributes.aLit, fl = b.geometry.attributes.aFlash;
   for (let i = 0; i < files.length; i++) {
-    const h = vals[i * 3], s = vals[i * 3 + 1], { x, z, w, h: d } = files[i].rect;
+    const h = vals[i * 3], s = vals[i * 3 + 1];
     if (h <= 0) _m.makeScale(0, 0, 0);
-    else _m.makeScale(w * s, h, d * s).setPosition(x + w / 2, files[i].base, z + d / 2);
+    else plotMatrix(_m, files[i], h, s);
     b.setMatrixAt(i, _m);
     lit.array[i] = vals[i * 3 + 2];
     fl.array[i] = replay.flash[i];
@@ -1709,6 +2660,8 @@ function writeInstances(vals) {
   b.instanceMatrix.needsUpdate = lit.needsUpdate = fl.needsUpdate = true;
   b.boundingSphere = null; b.boundingBox = null;   // raycast recomputes them from the new matrices
   replay.cur.set(vals);
+  grammarTime();       // 51-grammar: scaffolding and patina at the shown commit
+  moodShadows(vals);   // 50-mood: the soft shadow under every building follows it
   placeBeacon();
   if (sel.shell || sel.set.size) selShellRefresh();   // the selection shell follows the buildings
 }
@@ -1954,6 +2907,7 @@ function lensApply() {
   b.instanceColor.needsUpdate = true;
   const u = b.material.userData.uniforms;
   u.uWinColor.value.setHex(lens.win); u.uWinGain.value = lookGlow(delta ? 0.3 : lens.gain); u.uBodyGlow.value = lookGlow(delta ? 0.4 : lens.glow);   // 37-look: low glow
+  if (u.uMat) u.uMat.value = lens.id === 'alap' && !delta ? 1 : 0.3;   // 51-grammar: materials tint fully only on the plain lens
   const [ph, ps, pl] = lens.plate;
   world.dirOf.forEach((d, i) => world.plates.setColorAt(i, _c1.setHSL(ph, ps, pl + Math.min(d.depth, 6) * 0.025)));
   world.plates.instanceColor.needsUpdate = true;
@@ -1964,7 +2918,7 @@ function lensApply() {
   st.style.setProperty('--horizon', hex(new THREE.Color(lens.horizon)));
   seaLens(lens);   // 38-sea: the Mélyvíz water takes the lens's horizon and highlight
   $('legend').innerHTML = delta ? compareLegend(delta) : lens.legend();
-  document.querySelectorAll('#lenses button').forEach(x => x.classList.toggle('on', x.dataset.lens === lens.id));
+  document.querySelectorAll('#lenses button[data-lens]').forEach(x => x.classList.toggle('on', x.dataset.lens === lens.id));
   placeCranes(ctx);
   compareGhosts(delta);
   requestRender();
@@ -2013,8 +2967,9 @@ function lensBar() {
   $('lenses').innerHTML = groups.map(g => `<span class="grp">${g ? `<small>${g}</small>` : ''}${LENSES.filter(l => l.group === g)
     .map(l => `<button class="btn" data-lens="${l.id}" title="${l.name} (${l.key})"><kbd>${l.key}</kbd>${l.name}</button>`).join('')}</span>`).join('')
     + '<span class="grp"><small>Kapcsolatok</small><button id="roads-btn" class="btn" title="Minden import-út (U)"><kbd>U</kbd>Utak</button></span>'
-    + '<span class="grp"><small>Fény</small><button id="glow-btn" class="btn" title="Halk fény: az ablakok és a felvillanások visszafogva (L)"><kbd>L</kbd>Halk</button></span>';
-  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt && bt.id === 'glow-btn') return setLowGlow(!look.low); if (bt) setLens(bt.dataset.lens); };
+    + '<span class="grp"><small>Fény</small><button id="glow-btn" class="btn" title="Halk fény: az ablakok és a felvillanások visszafogva (L)"><kbd>L</kbd>Halk</button>'
+    + '<button id="mood-btn" class="btn" title="Hangulat: emberek és kocsik az utcákon (ahol mostanában dolgoztak, ott többen), pislákoló ablakok, csillogó part, lélegző víz (H)"><kbd>H</kbd>Hangulat</button></span>';
+  $('lenses').onclick = e => { const bt = e.target.closest('button'); if (bt && bt.id === 'glow-btn') return setLowGlow(!look.low); if (bt && bt.id === 'mood-btn') return moodSet(!mood.on); if (bt) setLens(bt.dataset.lens); };
 }
 lensBar();
 addEventListener('keydown', e => {
@@ -2576,8 +3531,8 @@ function compareGhosts(delta) {
   let n = 0;
   if (delta) files.forEach((f, i) => {
     if (delta[i].kind !== 'gone' || n >= g.instanceMatrix.count) return;
-    const [h, s] = stateAt(f, i, compare.base), { x, z, w, h: d } = f.rect;
-    g.setMatrixAt(n++, m.makeScale(w * s, h, d * s).setPosition(x + w / 2, f.base, z + d / 2));
+    const [h, s] = stateAt(f, i, compare.base);
+    g.setMatrixAt(n++, plotMatrix(m, f, h, s));
   });
   g.count = n;
   g.instanceMatrix.needsUpdate = true;
@@ -5510,6 +6465,7 @@ function setLowGlow(on) {
   document.documentElement.classList.toggle('low-glow', look.low);
   const b = document.getElementById('glow-btn'); if (b) b.classList.toggle('on', look.low);
   if (world) setLens(lens.id);
+  moodGlow();   // 50-mood: lamps, shore and people dim with the windows
   requestRender();
 }
 
@@ -5551,7 +6507,8 @@ addEventListener('keydown', e => {
 // field on its own WebGL2 canvas (#sea, behind the transparent city canvas) that refracts a faint drafting grid.
 // Rules it keeps:
 // - R3 one animation, one meaning: the water moves only when YOU click empty water (a plain left click that hits no
-//   building or plate). No rain, no idle motion — a wave means "you touched the ground here".
+//   building or plate). No rain — a wave means "you touched the ground here". The one exception (K2-09, 50-mood):
+//   with Hangulat on, the surface breathes in a slow, low swell (uAmb); it carries no meaning and H turns it off.
 // - R11 render on demand: the simulation runs only while a wave is alive (~5 s after the last click), then draws one
 //   final frame and stops. A quiet city costs nothing, as before. The wallpaper gets one still frame.
 // - the look follows the lens: the water's horizon is the lens's fog colour, its highlights are the instrument's ice
@@ -5580,11 +6537,15 @@ o=c;}`;
   // the ground: horizon colour at ~70 % height, deep water above and below, a grid that fades towards the top (far),
   // refracted by the wave normals; light from the upper left adds the highlight colour on the wave fronts
   const REN = `#version 300 es
-precision highp float;uniform sampler2D uS;uniform vec2 uTx;uniform vec3 uHor,uDeep,uLine,uHi;uniform float uLA,uCell,uGlow,uDpr;in vec2 vUv;out vec4 o;
+precision highp float;uniform sampler2D uS;uniform vec2 uTx;uniform vec3 uHor,uDeep,uLine,uHi;uniform float uLA,uCell,uGlow,uDpr,uTime,uAmb;in vec2 vUv;out vec4 o;
 void main(){vec2 uv=vUv;
 float hx=texture(uS,uv+vec2(uTx.x,0.)).r-texture(uS,uv-vec2(uTx.x,0.)).r;
 float hy=texture(uS,uv+vec2(0.,uTx.y)).r-texture(uS,uv-vec2(0.,uTx.y)).r;
 vec3 n=normalize(vec3(-hx*5.,-hy*5.,1.));
+vec2 sp=gl_FragCoord.xy/uDpr;
+float a1=sin(sp.x*.021+sp.y*.013+uTime*.7)+sin(-sp.x*.017+sp.y*.029-uTime*.55);
+float a2=cos(sp.x*.031-sp.y*.019+uTime*.9)+sin(sp.y*.041+uTime*.4);
+n=normalize(n+vec3(a1,a2,0.)*.03*uAmb);
 vec2 px=gl_FragCoord.xy+n.xy*60.*uDpr;
 float y=uv.y;
 vec3 col=mix(uDeep,uHor,smoothstep(.0,.3,y));
@@ -5607,7 +6568,7 @@ o=vec4(col,1.);}`;
     return { p, u };
   }
   const S = { gl, cv, drops: [], live: 0, running: false, ok: true, tex: null, fb: null, sw: 0, sh: 0, cur: 0, dpr: 1,
-    hor: [0, 0, 0], deep: [0, 0, 0], line: [0.91, 0.94, 0.96], hi: [0, 0, 0], glow: 0.2, cell: 44 };
+    hor: [0, 0, 0], deep: [0, 0, 0], line: [0.91, 0.94, 0.96], hi: [0, 0, 0], glow: 0.2, cell: 44, amb: 0, time: 0 };
   try { S.sim = prog(SIM); S.ren = prog(REN); S.vao = gl.createVertexArray(); }
   catch (e) { console.warn('38-sea:', e); cv.hidden = true; return null; }
   return S;
@@ -5665,6 +6626,7 @@ function seaDraw() {
   gl.uniform2f(r.uTx, 1 / sea.sw, 1 / sea.sh);
   gl.uniform3fv(r.uHor, sea.hor); gl.uniform3fv(r.uDeep, sea.deep); gl.uniform3fv(r.uLine, sea.line); gl.uniform3fv(r.uHi, sea.hi);
   gl.uniform1f(r.uLA, 0.11); gl.uniform1f(r.uCell, sea.cell); gl.uniform1f(r.uGlow, lookGlow(sea.glow)); gl.uniform1f(r.uDpr, sea.dpr);
+  gl.uniform1f(r.uTime, sea.time); gl.uniform1f(r.uAmb, sea.amb);   // 50-mood: the slow swell
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
 
@@ -7496,6 +8458,557 @@ async function kvTraceToggle(on) {
   b.onclick = () => kvTraceToggle(!kvTrace.open);
   before.before(b);
 })();
+
+// ==== src/50-mood.js
+// 50-mood.js — K2-09 Hangulat: life and atmosphere without models. Everything here is a trick on the boxes and
+// roads that already exist: no textures to download, no new geometry per building.
+//
+// Always on (static, costs nothing once drawn):
+// - a soft shadow under every building, leaning away from the moon, a little longer for a taller one (moodShadows,
+//   called by 05-replay's writeInstances, so it follows the replay and the P flight);
+// - street lamps along every road of the grown plan: a post, a glowing head, a warm pool of light on the street;
+// - the shore: a glowing band where the island meets the water, and a wide faint halo around it;
+// - (03-scene's building shader) floor lines, dark feet, lighter parapets and roof rims, warm and cool window tints.
+// The moving life (H, the "Hangulat" button in the lens bar, #mood=0|1, remembered in kv.mood; default on):
+// - residents on the pavements and carts on the roads. Where they walk follows the data: an area's streets get
+//   people in proportion to how much of it changed recently (07-lens's Hő window, at the shown commit), and the
+//   whole town is busier when the repo is busy. The replay moves them with it;
+// - one window in eight switching on and off on its own slow clock; the shore shimmers; the sea breathes a little
+//   (38-sea's uAmb). A wave on click (38-sea, R3) is still the only motion that answers you.
+// - a tilt-shift blur at the top and bottom of the view (CSS backdrop-filter, #mood-fx), the miniature-town look.
+// Costs and limits (R11, 37-look): the moving life renders continuously, so it runs only in the city view, only when
+// the city is close enough to see it (landLevel 'city'), never in the wallpaper (KV_WALL: one still frame) or with
+// prefers-reduced-motion, and pauses in a hidden tab. On the mid / low quality tiers it runs at 30 fps with fewer
+// people; the auto tier step-down (37-look) watches these frames like any other motion.
+
+const MOOD_PEOPLE = { high: 2600, mid: 1400, low: 500 };
+const mood = { on: true, built: null, raf: 0, t0: performance.now(), last: 0, frame: 0, T: -1, tier: '' };
+{
+  const q = new URLSearchParams(location.hash.slice(1)).get('mood');
+  let saved = null;
+  try { saved = localStorage.getItem('kv.mood'); } catch (e) { /* file:// */ }
+  mood.on = q === '0' ? false : q === '1' ? true : saved !== '0';
+}
+const moodMotionOk = () => !KV_WALL && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---- textures, drawn once
+function moodTexture(kind) {
+  const N = 64, c = document.createElement('canvas'); c.width = c.height = N;
+  const g = c.getContext('2d'), img = g.createImageData(N, N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    let a;
+    if (kind === 'blob') {             // a soft rounded rectangle: the core is the inner 36 px, 14 px of falloff
+      const dx = Math.max(Math.abs(x + 0.5 - N / 2) - 18, 0), dy = Math.max(Math.abs(y + 0.5 - N / 2) - 18, 0);
+      a = Math.max(0, 1 - Math.hypot(dx, dy) / 14); a = a * a * (3 - 2 * a);
+    } else {                           // a round glow
+      const d = Math.hypot(x + 0.5 - N / 2, y + 0.5 - N / 2) / (N / 2);
+      a = Math.max(0, 1 - d); a = a * a;
+    }
+    const o = (y * N + x) * 4;
+    img.data[o] = img.data[o + 1] = img.data[o + 2] = 255; img.data[o + 3] = Math.round(a * 255);
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+// ---- building
+function moodBuild(model) {
+  if (mood.built) for (const o of mood.built.dispose) { o.geometry && o.geometry.dispose(); o.material && o.material.dispose(); }
+  const all = model.city.files, flat = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+  const tex = mood.tex || (mood.tex = { blob: moodTexture('blob'), dot: moodTexture('dot') });
+  const shadows = new THREE.InstancedMesh(flat, new THREE.MeshBasicMaterial({ map: tex.blob, color: 0x01060a, transparent: true, opacity: 0.62, depthWrite: false,
+    polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), all.length);
+  shadows.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  shadows.renderOrder = 1;
+  shadows.raycast = () => {};
+  world.group.add(shadows);
+  const b = { shadows, dispose: [shadows], lampMat: null, poolMat: null, coast: [], people: null };
+  mood.built = b;
+  if (world.grow) moodTown(model, b, tex);
+  mood.T = -1;
+  moodGlow();
+  moodApply();
+}
+
+// lamps, light pools and the shore: children of the grown plan's group, so they share its visibility
+function moodTown(model, b, tex) {
+  const gw = model.grow, PL = typeof PLATE === 'number' ? PLATE : 0.5, heads = [], posts = [];
+  for (const r of gw.roads) {
+    const cum = [0];
+    for (let i = 1; i < r.pts.length; i++) cum.push(cum[i - 1] + Math.hypot(r.pts[i][0] - r.pts[i - 1][0], r.pts[i][1] - r.pts[i - 1][1]));
+    r.cum = cum; r.len = cum[cum.length - 1];
+    const gap = r.w > 2.5 ? 6 : 7.5;
+    let side = (r.pts.length & 1) ? 1 : -1, i = 1;
+    for (let s = gap * 0.5; s < r.len - 1; s += gap, side = -side) {
+      while (i < cum.length - 1 && cum[i] < s) i++;
+      const [x0, z0] = r.pts[i - 1], [x1, z1] = r.pts[i], t = (s - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]);
+      const a = Math.atan2(z1 - z0, x1 - x0), o = (r.w / 2 + 0.35) * side;
+      const x = x0 + (x1 - x0) * t - Math.sin(a) * o, z = z0 + (z1 - z0) * t + Math.cos(a) * o;
+      heads.push(x, PL + 1.7, z);
+      posts.push(x, PL, z, x, PL + 1.6, z);
+    }
+  }
+  const hg = new THREE.BufferGeometry(); hg.setAttribute('position', new THREE.Float32BufferAttribute(heads, 3));
+  const lampMat = new THREE.PointsMaterial({ map: tex.dot, color: 0xffd79a, size: 1.5, sizeAttenuation: true, transparent: true,
+    depthWrite: false, blending: THREE.AdditiveBlending });
+  const lamps = new THREE.Points(hg, lampMat); lamps.raycast = () => {};
+  const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.Float32BufferAttribute(posts, 3));
+  const postLines = new THREE.LineSegments(pg, new THREE.LineBasicMaterial({ color: 0x2a3a44 })); postLines.raycast = () => {};
+  // the pools: one flat glow per lamp, on the street
+  const n = heads.length / 3, poolMat = new THREE.MeshBasicMaterial({ map: tex.dot, color: 0xff9a40, transparent: true, opacity: 0.16,
+    depthWrite: false, blending: THREE.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
+  const pools = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), poolMat, n);
+  const m = new THREE.Matrix4();
+  for (let k = 0; k < n; k++) { m.makeScale(5, 1, 5).setPosition(heads[k * 3], PL + 0.06, heads[k * 3 + 2]); pools.setMatrixAt(k, m); }
+  pools.raycast = () => {};
+  world.grow.add(postLines, pools, lamps);
+  b.lampMat = lampMat; b.poolMat = poolMat; b.lamps = n;
+  b.dispose.push(lamps, postLines, pools);
+  // the shore: a bright band and a wide faint halo, both fading outwards from the coastline
+  for (const [w, a, y, foam] of [[5, 0.75, 0.06, 1], [26, 0.18, 0.03, 0]]) {
+    const ring = moodShore(gw.coast, w, a, y, foam);
+    world.grow.add(ring); b.coast.push(ring); b.dispose.push(ring);
+  }
+  moodSites(gw.island, PL, b, tex);
+  b.people = moodPeopleBuild(model, PL);
+  world.grow.add(b.people.points); b.dispose.push(b.people.points);
+}
+
+// K2-02's sites: runway edge lights (blue-white, green and red at the ends), lamps on the pier, the lighthouse's
+// lantern and its beam (the beam turns while the moving life runs; still, it points out to sea)
+function moodSites(I, PL, b, tex) {
+  if (!I) return;
+  const pos = [], col = [], c = new THREE.Color(), put = (x, y, z, hex) => { pos.push(x, y, z); c.setHex(hex); col.push(c.r, c.g, c.b); };
+  if (I.runway) {
+    const R = I.runway, ux = Math.cos(R.a), uz = Math.sin(R.a), vx = -uz, vz = ux;
+    for (let s = -R.len / 2; s <= R.len / 2 + 0.01; s += 5) for (const t of [-1, 1]) {
+      const end = Math.abs(Math.abs(s) - R.len / 2) < 0.1;
+      put(R.x + ux * s + vx * t * (R.w / 2 + 0.3), PL + 0.35, R.z + uz * s + vz * t * (R.w / 2 + 0.3), end ? (s < 0 ? 0x5dff8a : 0xff4a3a) : 0xa9d8ff);
+    }
+  }
+  const H = I.harbour, ox = Math.cos(H.a), oz = Math.sin(H.a);
+  for (const s of [0, 6, 12, 18]) put(H.x + ox * s, 1.9, H.z + oz * s, 0xffd79a);
+  for (const t of [-7, 7]) put(H.x + ox * 18 - oz * t, 1.9, H.z + oz * 18 + ox * t, 0xffd79a);
+  const L = I.lighthouse;
+  if (L.top) put(L.top[0], L.top[1], L.top[2], 0xfff0c8);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  const lights = new THREE.Points(g, new THREE.PointsMaterial({ map: tex.dot, size: 2.2, vertexColors: true, sizeAttenuation: true, transparent: true,
+    depthWrite: false, blending: THREE.AdditiveBlending }));
+  lights.raycast = () => {};
+  world.grow.add(lights); b.dispose.push(lights);
+  if (L.top) {
+    // the beam: an open cone with its tip in the lantern, fading out with distance
+    const cone = new THREE.ConeGeometry(7, 90, 20, 1, true).translate(0, -45, 0).rotateZ(Math.PI / 2);
+    const beam = new THREE.Mesh(cone, new THREE.ShaderMaterial({
+      uniforms: { uA: { value: 0.22 } },
+      vertexShader: 'varying float vD; void main() { vD = position.x / 90.0; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: 'uniform float uA; varying float vD; void main() { float a = (1.0 - vD) * (1.0 - vD) * uA; gl_FragColor = vec4(vec3(1.0, 0.92, 0.72) * a, 1.0); }',
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    }));
+    beam.position.set(...L.top); beam.rotation.y = -L.a; beam.raycast = () => {};
+    world.grow.add(beam); b.dispose.push(beam); b.beam = beam; b.beamA = -L.a;
+  }
+}
+
+function moodShore(coast, width, alpha, y, foam) {
+  const n = coast.length, pos = [], v = [], along = [], idx = [];
+  let cx = 0, cz = 0; for (const [x, z] of coast) { cx += x / n; cz += z / n; }
+  let s = 0;
+  for (let i = 0; i <= n; i++) {
+    const p = coast[i % n], a = coast[(i - 1 + n) % n], b = coast[(i + 1) % n];
+    let nx = -(b[1] - a[1]), nz = b[0] - a[0];
+    const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l;
+    if (nx * (p[0] - cx) + nz * (p[1] - cz) < 0) { nx = -nx; nz = -nz; }   // outwards
+    if (i) s += Math.hypot(p[0] - coast[(i - 1) % n][0], p[1] - coast[(i - 1) % n][1]);
+    pos.push(p[0] - nx * 0.4, y, p[1] - nz * 0.4, p[0] + nx * width, y, p[1] + nz * width);
+    v.push(0, 1); along.push(s, s);
+    if (i < n) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('aV', new THREE.Float32BufferAttribute(v, 1));
+  g.setAttribute('aAlong', new THREE.Float32BufferAttribute(along, 1));
+  g.setIndex(idx);
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uAlpha: { value: alpha }, uColor: { value: new THREE.Color(SEA_ICE) }, uFoam: { value: foam } },
+    vertexShader: `attribute float aV; attribute float aAlong; varying float vV; varying float vA;
+void main() { vV = aV; vA = aAlong; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform float uTime; uniform float uAlpha; uniform vec3 uColor; uniform float uFoam; varying float vV; varying float vA;
+void main() {
+  float f = 1.0 - vV; float a = f * f * (uFoam > 0.5 ? f : 1.0);
+  // foam: slow swells running along the shore, and a thin bright line that comes and goes
+  float swell = 0.62 + 0.38 * sin(vA * 0.21 - uTime * 0.9) * sin(vA * 0.057 + uTime * 0.31);
+  float line = uFoam * smoothstep(0.08, 0.0, abs(vV - 0.25 - 0.08 * sin(vA * 0.4 + uTime * 1.3)));
+  gl_FragColor = vec4(uColor * (a * mix(1.0, swell, uFoam) + line * 0.6) * uAlpha, 1.0);
+}`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  });
+  const mesh = new THREE.Mesh(g, mat);
+  mesh.raycast = () => {};
+  return mesh;
+}
+
+// ---- the people and the carts
+function moodPeopleBuild(model, PL) {
+  const N = MOOD_PEOPLE.high, roads = model.grow.roads, rnd = growRng(growHash('mood:' + model.city.repo.name));
+  const pos = new Float32Array(N * 3), col = new Float32Array(N * 3), size = new Float32Array(N);
+  const road = new Int32Array(N), seg = new Int32Array(N), s = new Float32Array(N), v = new Float32Array(N), off = new Float32Array(N), cart = new Uint8Array(N);
+  const c = new THREE.Color();
+  for (let i = 0; i < N; i++) {
+    cart[i] = rnd() < 0.28 ? 1 : 0;
+    const speed = cart[i] ? 2.4 + rnd() * 2.2 : 0.55 + rnd() * 0.6;
+    v[i] = rnd() < 0.5 ? speed : -speed;
+    off[i] = rnd();                      // side and lane are decided per road (its width), from this
+    if (cart[i]) c.setHSL(rnd() < 0.5 ? 0.11 : 0.02, 0.9, rnd() < 0.5 ? 0.78 : 0.62);
+    else c.setHSL(rnd(), 0.35, 0.62 + rnd() * 0.18);
+    col.set([c.r, c.g, c.b], i * 3);
+    size[i] = cart[i] ? 1.35 : 0.95;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  g.setAttribute('aSize', new THREE.BufferAttribute(size, 1).setUsage(THREE.DynamicDrawUsage));
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uScale: { value: 400 }, uGain: { value: 1 } },
+    vertexShader: `attribute float aSize; varying vec3 vC; uniform float uScale;
+void main() { vC = color; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = aSize * uScale / -mv.z; gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `varying vec3 vC; uniform float uGain;
+void main() { vec2 q = gl_PointCoord - 0.5; float d = length(q) * 2.0; if (d > 1.0) discard; float a = 1.0 - d; gl_FragColor = vec4(vC * (0.7 * a + 1.3 * a * a * a * a) * uGain, 1.0); }`,
+    vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  });
+  const points = new THREE.Points(g, mat);
+  points.raycast = () => {};
+  points.frustumCulled = false;
+  const roadOk = roads.map(r => r.len > 2 && r.pts.length > 1);
+  return { points, N, road, seg, s, v, off, cart, size, base: size.slice(), roads, roadOk, rnd, PL, live: 0 };
+}
+
+// who walks where: each road's share follows its area's recent changes at the shown commit; the town's total
+// follows how busy the whole repo was
+function moodDistribute() {
+  const P = mood.built && mood.built.people;
+  if (!P || !current) return;
+  const files = current.city.files, heat = heatCounts(), act = new Map();
+  let total = 0, alive = 0;
+  for (let i = 0; i < files.length; i++) {
+    if (replay.cur[i * 3] <= 0) continue;
+    alive++; total += heat[i];
+    const k = files[i].areaG; if (k !== undefined) act.set(k, (act.get(k) || 0) + heat[i]);
+  }
+  const top = Math.max(1, ...act.values());
+  const w = P.roads.map((r, j) => P.roadOk[j] ? r.len * (0.08 + (act.get(r.area) || 0) / top) : 0);
+  const cum = []; let sum = 0; for (const x of w) cum.push(sum += x);
+  const busy = Math.min(1, total / Math.max(1, alive * 0.25));
+  const cap = MOOD_PEOPLE[look.tier] || MOOD_PEOPLE.high;
+  P.live = Math.round(cap * (0.3 + 0.7 * busy));
+  const rnd = growRng(replay.T + 7);
+  for (let i = 0; i < P.N; i++) {
+    if (i >= P.live || !sum) { P.size[i] = 0; continue; }
+    const u = rnd() * sum; let lo = 0, hi = cum.length - 1;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (cum[mid] < u) lo = mid + 1; else hi = mid; }
+    P.road[i] = lo; P.seg[i] = 1; P.s[i] = rnd() * P.roads[lo].len; P.size[i] = P.base[i];
+  }
+  P.points.geometry.attributes.aSize.needsUpdate = true;
+  mood.T = replay.T; mood.tier = look.tier;
+}
+
+function moodWalk(dt) {
+  const P = mood.built.people, pos = P.points.geometry.attributes.position, a = pos.array;
+  for (let i = 0; i < P.live; i++) {
+    const r = P.roads[P.road[i]], cum = r.cum, n = cum.length;
+    let s = P.s[i] + P.v[i] * dt;
+    if (s < 0 || s > r.len) { P.v[i] = -P.v[i]; s = Math.max(0, Math.min(r.len, s)); }   // turn round at the road's end
+    P.s[i] = s;
+    let k = Math.min(Math.max(P.seg[i], 1), n - 1);
+    while (k < n - 1 && cum[k] < s) k++;
+    while (k > 1 && cum[k - 1] > s) k--;
+    P.seg[i] = k;
+    const [x0, z0] = r.pts[k - 1], [x1, z1] = r.pts[k], t = (s - cum[k - 1]) / Math.max(1e-6, cum[k] - cum[k - 1]);
+    const ang = Math.atan2(z1 - z0, x1 - x0), dir = P.v[i] > 0 ? 1 : -1;
+    // carts keep to the right of their way; people walk on either pavement
+    const o = P.cart[i] ? -dir * r.w * 0.22 : (P.off[i] < 0.5 ? 1 : -1) * (r.w / 2 + 0.22 + 0.25 * (P.off[i] * 2 % 1));
+    a[i * 3] = x0 + (x1 - x0) * t - Math.sin(ang) * o;
+    a[i * 3 + 1] = P.PL + (P.cart[i] ? 0.45 : 0.4);
+    a[i * 3 + 2] = z0 + (z1 - z0) * t + Math.cos(ang) * o;
+  }
+  pos.needsUpdate = true;
+}
+
+// ---- shadows (05-replay's writeInstances calls this with the values it just wrote)
+const _mm = new THREE.Matrix4(), _mp = new THREE.Vector3(), _mq = new THREE.Quaternion(), _ms = new THREE.Vector3(), _mY = new THREE.Vector3(0, 1, 0);
+function moodShadows(vals) {
+  const b = mood.built;
+  if (!b || !world) return;
+  const sh = b.shadows, files = current.city.files, K = 64 / 36;   // the texture's core is 36 of its 64 px
+  for (let i = 0; i < files.length; i++) {
+    const h = vals[i * 3], s = vals[i * 3 + 1], f = files[i];
+    if (h <= 0 || !f.rect) { sh.setMatrixAt(i, _mm.makeScale(0, 0, 0)); continue; }
+    const { x, z, w, h: d } = f.rect, lean = Math.min(h * 0.18, 5);
+    // away from the moon (03-scene: light from -x, +z): the shadow falls towards +x, -z
+    _mp.set(x + w / 2 + lean * 0.5, f.base + 0.04, z + d / 2 - lean * 0.75);
+    _mq.setFromAxisAngle(_mY, f.rot || 0);
+    _ms.set((w * s + 0.5 + lean * 0.6) * K, 1, (d * s + 0.5 + lean * 0.6) * K);
+    sh.setMatrixAt(i, _mm.compose(_mp, _mq, _ms));
+  }
+  sh.instanceMatrix.needsUpdate = true;
+}
+
+// low glow (37-look) dims the lamps, the pools, the shore and the people with the windows
+function moodGlow() {
+  const b = mood.built;
+  if (!b) return;
+  if (b.lampMat) { b.lampMat.opacity = lookGlow(1) < 1 ? 0.45 : 1; b.poolMat.opacity = lookGlow(0.16); }
+  for (const r of b.coast) r.material.uniforms.uAlpha.value = lookGlow(r === b.coast[0] ? 0.75 : 0.18);
+  if (b.people) b.people.points.material.uniforms.uGain.value = lookGlow(1) < 1 ? 0.5 : 1;
+  requestRender();
+}
+
+// ---- the loop
+const moodRunning = () => mood.on && moodMotionOk() && !!world && !!mood.built && vw.id !== 'homeland';
+const moodFx = () => mood.on && !KV_OVERLAY && vw.id !== 'homeland';   // the tilt-shift (CSS), a still effect
+function moodApply() {
+  const run = moodRunning();
+  document.documentElement.classList.toggle('mood', moodFx());
+  const btn = document.getElementById('mood-btn'); if (btn) btn.classList.toggle('on', mood.on);
+  if (mood.built && mood.built.people) mood.built.people.points.visible = run;
+  if (world) world.buildings.material.userData.uniforms.uFlick.value = run ? 1 : 0;
+  if (typeof sea !== 'undefined' && sea && sea.ok) { sea.amb = run ? 1 : 0; seaDraw(); }
+  if (run && !mood.raf) { mood.last = 0; mood.raf = requestAnimationFrame(moodLoop); }
+  requestRender();
+}
+function moodLoop(now) {
+  mood.raf = 0;
+  if (!moodRunning()) return moodApply();
+  mood.raf = requestAnimationFrame(moodLoop);
+  if (document.hidden) { mood.last = 0; return; }
+  if (look.tier !== 'high' && (mood.frame++ & 1)) return;   // 30 fps on the lower tiers
+  moodFrame(now);
+}
+function moodFrame(now) {
+  const dt = mood.last ? Math.min(0.1, (now - mood.last) / 1000) : 0;
+  mood.last = now;
+  if (typeof landLevel === 'function' && landLevel() !== 'city') return;   // too far out to see anyone
+  const t = (now - mood.t0) / 1000, b = mood.built;
+  world.buildings.material.userData.uniforms.uTime.value = t;
+  for (const r of b.coast) r.material.uniforms.uTime.value = t;
+  if (b.beam) b.beam.rotation.y = b.beamA - t * 0.45;   // one sweep every ~14 s
+  if (b.people && b.people.points.visible) {
+    if (mood.T !== replay.T || mood.tier !== look.tier) moodDistribute();
+    // a point's size in world units: pixels = size × (half the drawing height / tan(half the fov)) / distance
+    b.people.points.material.uniforms.uScale.value = renderer.domElement.height / 2 / Math.tan(camera.fov * Math.PI / 360);
+    moodWalk(dt);
+  }
+  if (typeof sea !== 'undefined' && sea && sea.ok && !sea.running) { sea.time = t; seaDraw(); }
+  requestRender();
+}
+function moodSet(on) {
+  mood.on = !!on;
+  try { localStorage.setItem('kv.mood', mood.on ? '1' : '0'); } catch (e) { /* file:// */ }
+  moodApply();
+}
+// the view can change under the loop (Gépország, a reduced-motion switch): look again now and then
+setInterval(() => { if (!!mood.raf !== moodRunning() || document.documentElement.classList.contains('mood') !== moodFx()) moodApply(); }, 1000);
+addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input:not([type=range]), textarea, select')) return;
+  if (e.key === 'h' || e.key === 'H') moodSet(!mood.on);
+});
+// test hook: #moodtest=1 lets a headless check read the state (people alive, lamps, whether the loop runs)
+if (new URLSearchParams(location.hash.slice(1)).get('moodtest')) window.kvMood = (raw) => {
+  // raw: drive frames by hand (a hidden or headless page gets no animation frames)
+  if (raw) return { mood, renderer, files: current && current.city.files, grow: current && current.grow, island: current && current.grow && current.grow.island, step(n = 1) { const t = performance.now(); for (let i = 0; i < n; i++) moodFrame(t + i * 33); renderer.render(scene, camera); afterRender(); } };
+  const P = mood.built && mood.built.people;
+  return { on: mood.on, running: !!mood.raf, lamps: mood.built ? mood.built.lamps || 0 : 0, live: P ? P.live : 0,
+    visible: P ? P.points.visible : false, first: P ? Array.from(P.points.geometry.attributes.position.array.slice(0, 6)) : [] };
+};
+
+// ==== src/51-grammar.js
+// 51-grammar.js — K2-03: every building says what it holds (docs/city/v2/README.md §7, CITY-D59 A: low-poly, made in
+// code). One instanced mesh stays one instance per file (picking, lenses, selection, roads and the replay are
+// unchanged): the house geometry carries a gable roof whose ridge the shader raises per building (aPitch), and the
+// facade, window rhythm and roof material come from the typology (aKind). The lens still owns the colour; materials
+// only tint it, fully on the plain Alap lens (uMat, 07-lens).
+//
+// Typologies (aKind):           measured details on top (per shown commit):
+//  0 plaster house  (default)    height = commits, footprint = lines, lit windows = recency (as before)
+//  1 brick townhouse (.js .ts …) aChurn: scaffolding when it changed 4+ times in the week before
+//  2 timber house   (.md, docs)  aAge:   patina and ivy with the time since its last change
+//  3 stone house    (compiled)   aOwn:   the awning's colour = the main author
+//  4 shop           (.html)      aVar:   a stable hash: pitch, window rhythm, which houses get awnings
+//  5 barn / store   (data)
+//  6 shed           (scripts, tests)
+//  7 glass tower    (any house over 16 high, decided in the shader as it grows)
+//  8 gallery        (images, audio, fonts)
+//  9 villa          (Villanegyed: white, flat-roofed, panoramic glass)
+// 10 college hall   (Akadémia: pale plaster, tall windows, slate roofs)
+// K2-04: the district re-styles the typology (README §4: a .js house is brick in the Munkásnegyed, plaster in the
+// Akadémia, glass downtown) and is packed beside it: aGram.x = kind + 16 × district code (02-grow GROWTH_DISTRICTS).
+
+const GRAMMAR_EXT = [
+  [1, /\.(m?js|cjs|jsx|ts|tsx|vue|svelte|py|rb|go|rs|java|kt|swift|lua|php)$/i],
+  [2, /\.(md|mdx|txt|rst|adoc)$/i],
+  [3, /\.(c|h|cpp|hpp|cc|cs|ino|s|asm|csproj|sln|dll|exe|so|wasm)$/i],
+  [4, /\.html?$/i],
+  [5, /\.(json|jsonl|csv|tsv|ya?ml|xml|toml|ini|sql|db|sqlite|lock|map)$/i],
+  [6, /\.(cmd|bat|ps1|psm1|sh|bash|zsh|mk)$|(^|\/)makefile$/i],
+  [8, /\.(png|jpe?g|gif|svg|webp|ico|bmp|mp3|wav|ogg|mp4|webm|ttf|otf|woff2?)$/i],
+];
+const GRAMMAR_PITCH = { 0: [0.45, 0.35], 1: [0.55, 0.4], 2: [0.95, 0.3], 3: [0.42, 0.12], 4: [0.25, 0.25], 5: [0.78, 0.2], 6: [0.32, 0.15], 8: [0, 0] };
+
+function grammarKind(f) {
+  if (/(^|\/)(tests?|spec|__tests__)\/|\.(test|spec)\.[a-z]+$/i.test(f.p)) return 6;
+  for (const [k, re] of GRAMMAR_EXT) if (re.test(f.p)) return k;
+  return 0;
+}
+// the district's version of a typology
+function grammarDistrictKind(kind, dist) {
+  switch (dist) {
+    case 1: return kind <= 1 ? 10 : kind;          // Akadémia: code and plain houses are college halls
+    case 2: return kind <= 3 ? 7 : kind;           // Belváros: offices of glass
+    case 3: return kind <= 4 ? 9 : kind;           // Villanegyed
+    case 4: return kind <= 3 ? 1 : kind;           // OmniComm Lakópark: brick terraces
+    case 5: return kind <= 4 ? 6 : kind;           // Ipari part: sheds and works
+    case 6: return kind === 0 ? 1 : kind;          // Munkásnegyed: brick
+    default: return kind;
+  }
+}
+function grammarPitch(f, kind, v, dist) {
+  if (dist === 2 || dist === 3) return 0;                                    // downtown and the villas: flat
+  if (dist === 4) return 0.62;                                               // a terrace: one roof line
+  if (dist === 5) return v < 0.5 ? 0 : 0.3;                                  // works: flat or low
+  if (kind === 5 && f.maxLoc > 5000) return 0;                    // a big data file is a flat-roofed vault
+  if (kind === 6 && /(^|\/)(tests?|spec|__tests__)\//i.test(f.p)) return 0;   // the training yard's hall
+  if ((kind === 0 || kind === 1 || kind === 4) && v < 0.18) return 0;          // now and then a modern flat roof
+  const [a, b] = GRAMMAR_PITCH[kind] || GRAMMAR_PITCH[0];
+  return a + b * v;
+}
+
+// the house: the walls of the unit box (no top), and a gable roof over it whose ridge runs along the object x axis —
+// the frontage, so a grown street's houses turn their eaves to the road. aRoof 2 = ridge vertex (raised by the shader),
+// aSide = which slope (its normal is set in the shader), 0 elsewhere. With pitch 0 the roof is the flat top.
+function houseGeometry() {
+  const pos = [], nrm = [], house = [];
+  const tri = (a, b, c, n, r = [0, 0, 0], s = 0) => { for (const [p, k] of [[a, 0], [b, 1], [c, 2]]) { pos.push(...p); nrm.push(...n); house.push(r[k], s); } };
+  const quad = (a, b, c, d, n, r, s) => { tri(a, b, c, n, r && [r[0], r[1], r[2]], s); tri(a, c, d, n, r && [r[0], r[2], r[3]], s); };
+  const X = 0.5, Z = 0.5;
+  quad([-X, 0, Z], [X, 0, Z], [X, 1, Z], [-X, 1, Z], [0, 0, 1]);          // front (+z)
+  quad([X, 0, -Z], [-X, 0, -Z], [-X, 1, -Z], [X, 1, -Z], [0, 0, -1]);     // back
+  quad([X, 0, Z], [X, 0, -Z], [X, 1, -Z], [X, 1, Z], [1, 0, 0]);          // right (+x)
+  quad([-X, 0, -Z], [-X, 0, Z], [-X, 1, Z], [-X, 1, -Z], [-1, 0, 0]);     // left
+  quad([-X, 0, -Z], [X, 0, -Z], [X, 0, Z], [-X, 0, Z], [0, -1, 0]);       // floor (for the raycaster's closed box)
+  // the two slopes: eave (y 1, z ±0.5) to ridge (y 1, z 0; aRoof 2)
+  quad([-X, 1, Z], [X, 1, Z], [X, 1, 0], [-X, 1, 0], [0, 1, 0], [0, 0, 2, 2], 1);
+  quad([X, 1, -Z], [-X, 1, -Z], [-X, 1, 0], [X, 1, 0], [0, 1, 0], [0, 0, 2, 2], -1);
+  // the gables (degenerate when flat)
+  tri([X, 1, Z], [X, 1, -Z], [X, 1, 0], [1, 0, 0], [0, 0, 2]);
+  tri([-X, 1, -Z], [-X, 1, Z], [-X, 1, 0], [-1, 0, 0], [0, 0, 2]);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+  g.setAttribute('aHouse', new THREE.Float32BufferAttribute(house, 2));   // (roof part, slope side)
+  g.computeBoundingBox(); g.computeBoundingSphere();
+  return g;
+}
+
+// per-instance attributes, set once per city (03-scene's showCity)
+function grammarAttrs(geo, files) {
+  const n = files.length, gram = new Float32Array(n * 4);   // (kind, pitch, var, owner) per file
+  files.forEach((f, i) => {
+    const dist = f.distG || 0, k = grammarDistrictKind(grammarKind(f), dist), v = growU(f.p, 9);
+    gram.set([k + 16 * dist, grammarPitch(f, k, v, dist), v, typeof f.own === 'number' && f.own >= 0 ? f.own : -1], i * 4);
+  });
+  geo.setAttribute('aGram', new THREE.InstancedBufferAttribute(gram, 4));
+  geo.setAttribute('aWear', new THREE.InstancedBufferAttribute(new Float32Array(n * 2), 2).setUsage(THREE.DynamicDrawUsage));   // (churn, age)
+  grammar.T = -1;
+}
+
+// scaffolding and patina follow the shown commit (05-replay's writeInstances calls this; it works only when T changed)
+const grammar = { T: -1 };
+function grammarTime() {
+  if (!world || replay.T === grammar.T) return;
+  const wear = world.buildings.geometry.attributes.aWear;
+  if (!wear) return;
+  grammar.T = replay.T;
+  const c = current.city.commits, T = replay.T, t7 = c[T] ? c[T][0] - 7 * 86400 : 0;
+  let lo = 0, hi = T;                       // the first commit of the week before T
+  while (lo < hi) { const m = (lo + hi) >> 1; if (c[m][0] < t7) lo = m + 1; else hi = m; }
+  for (let i = 0; i < wear.count; i++) {
+    const tl = replay.touch[i], week = countUpTo(tl, T) - countUpTo(tl, lo - 1);
+    wear.array[i * 2] = week >= 4 ? Math.min(1, (week - 3) / 3) : 0;
+    wear.array[i * 2 + 1] = ageOf(i);
+  }
+  wear.needsUpdate = true;
+}
+
+// ==== src/52-district.js
+// 52-district.js — K2-04: what makes the districts visible beyond their streets (02-grow.js lays them out, 51-grammar
+// turns each building to its district's style). Here: the Vár — the Domoszló castle at the head of the first track
+// (CITY-D55 A: the founding story, named; other jobs later), the villas' garden pools (lit, they are the suburb's
+// signature at night), and each district's name over its middle. All of it belongs to the grown plan's group.
+
+function districtMeshes(gw, PL) {
+  const g = new THREE.Group(), stone = new THREE.MeshLambertMaterial({ color: 0x6b7178 }), dark = new THREE.MeshLambertMaterial({ color: 0x4a5057 });
+  const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); g.add(m); return m; };
+  // ---- the castle: a curtain wall with four round towers and a gate towards the track, a keep with battlements, a flag
+  {
+    const [cx, cz0] = gw.castle, cz = cz0 - 6, W = 18, D = 14, H = 3.6, T = 0.9;
+    for (const [w, d, x, z] of [[W, T, 0, -D / 2], [T, D, -W / 2, 0], [T, D, W / 2, 0], [(W - 3.4) / 2, T, -(W + 3.4) / 4, D / 2], [(W - 3.4) / 2, T, (W + 3.4) / 4, D / 2]]) {
+      add(new THREE.BoxGeometry(w, H, d).translate(0, H / 2, 0), stone, cx + x, PL, cz + z);
+      // merlons along the wall top
+      const n = Math.max(2, Math.floor(Math.max(w, d) / 1.4));
+      for (let k = 0; k < n; k++) {
+        const t = (k + 0.5) / n - 0.5;
+        add(new THREE.BoxGeometry(0.6, 0.6, 0.6).translate(0, 0.3, 0), stone, cx + x + (w > d ? t * w : 0), PL + H, cz + z + (w > d ? 0 : t * d));
+      }
+    }
+    for (const [x, z] of [[-W / 2, -D / 2], [W / 2, -D / 2], [-W / 2, D / 2], [W / 2, D / 2]]) {
+      add(new THREE.CylinderGeometry(1.35, 1.5, 5.6, 12).translate(0, 2.8, 0), stone, cx + x, PL, cz + z);
+      add(new THREE.ConeGeometry(1.7, 2.2, 12).translate(0, 1.1, 0), dark, cx + x, PL + 5.6, cz + z);
+    }
+    add(new THREE.BoxGeometry(3.4, 4.6, 1.3).translate(0, 2.3, 0), stone, cx - 2.6, PL, cz + D / 2);   // the gatehouse
+    add(new THREE.BoxGeometry(3.4, 4.6, 1.3).translate(0, 2.3, 0), stone, cx + 2.6, PL, cz + D / 2);
+    const kx = cx, kz = cz - 2.5;
+    add(new THREE.BoxGeometry(6.5, 11, 6.5).translate(0, 5.5, 0), stone, kx, PL, kz);                    // the keep
+    for (let k = 0; k < 4; k++) for (let m = 0; m < 4; m++) {
+      if (k > 0 && k < 3 && m > 0 && m < 3) continue;
+      add(new THREE.BoxGeometry(0.8, 0.8, 0.8).translate(0, 0.4, 0), stone, kx - 2.85 + k * 1.9, PL + 11, kz - 2.85 + m * 1.9);
+    }
+    // the keep's windows: a few warm slits (Lambert walls do not carry the window shader)
+    const slit = new THREE.MeshBasicMaterial({ color: 0xffc977 });
+    for (const [y, x] of [[4, -1.2], [4, 1.2], [7.5, 0], [9.5, -1.4], [9.5, 1.4]]) add(new THREE.BoxGeometry(0.35, 0.9, 0.05), slit, kx + x, PL + y, kz + 3.27);
+    add(new THREE.CylinderGeometry(0.07, 0.07, 4, 6).translate(0, 2, 0), dark, kx, PL + 11, kz);          // the flag
+    const flag = add(new THREE.PlaneGeometry(2.2, 1.3).translate(1.1, 0, 0), new THREE.MeshLambertMaterial({ color: 0xb8323a, side: THREE.DoubleSide }), kx + 0.05, PL + 14.3, kz);
+    flag.name = 'flag';
+    g.add(districtLabel('Domoszló', '#e9d9b0', cx, PL + 19, cz, 0.9));
+  }
+  // ---- the villas' pools: lit water in the gardens
+  if (gw.pools && gw.pools.length) {
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), Y = new THREE.Vector3(0, 1, 0);
+    const rims = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.12, 1).translate(0, 0.06, 0), new THREE.MeshLambertMaterial({ color: 0x9aa3a8 }), gw.pools.length);
+    const water = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x3fc9e8 }), gw.pools.length);
+    gw.pools.forEach((p, k) => {
+      q.setFromAxisAngle(Y, -p.a);
+      rims.setMatrixAt(k, m4.compose(new THREE.Vector3(p.x, PL, p.z), q, new THREE.Vector3(p.w + 0.5, 1, p.d + 0.5)));
+      water.setMatrixAt(k, m4.compose(new THREE.Vector3(p.x, PL + 0.14, p.z), q, new THREE.Vector3(p.w, 1, p.d)));
+    });
+    g.add(rims, water);
+  }
+  // ---- the districts' names, over their middles
+  for (const d of gw.districts || []) g.add(districtLabel(d.name, '#b9cfdc', d.x, PL + 26, d.z, 0.6 + Math.min(0.6, d.n / 400)));
+  g.traverse(o => { o.raycast = () => {}; });
+  return g;
+}
+
+function districtLabel(text, color, x, y, z, k = 1) {
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: landLabel(text, color), transparent: true, opacity: 0.8, depthWrite: false, fog: false }));
+  sp.scale.set(48 * k, 9 * k, 1);
+  sp.position.set(x, y, z);
+  sp.name = 'district-label';
+  return sp;
+}
 
 // ==== src/99-boot.js
 // 09-boot.js — runs last, so every module above is initialised before the first city loads.

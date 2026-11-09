@@ -54,8 +54,8 @@ function compareGhosts(delta) {
   let n = 0;
   if (delta) files.forEach((f, i) => {
     if (delta[i].kind !== 'gone' || n >= g.instanceMatrix.count) return;
-    const [h, s] = stateAt(f, i, compare.base), { x, z, w, h: d } = f.rect;
-    g.setMatrixAt(n++, m.makeScale(w * s, h, d * s).setPosition(x + w / 2, f.base, z + d / 2));
+    const [h, s] = stateAt(f, i, compare.base);
+    g.setMatrixAt(n++, plotMatrix(m, f, h, s));
   });
   g.count = n;
   g.instanceMatrix.needsUpdate = true;

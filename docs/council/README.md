@@ -10,6 +10,12 @@
 | 4 | [01_HAND-BRIEF.md](01_HAND-BRIEF.md) | Review, candidates, tools, agent technology, the Lego set, roadmap |
 | 5 | [02_DNA-V2.md](02_DNA-V2.md) | The capsule rewritten as a virtual reference. Waits for the GO TNT merge; not needed for daily work |
 
+## Rule: the Council is malleable
+
+The Council is a middle-management layer between an orchestrator and low-level agentic processes. It represents the
+sectors, divisions and fields of the system. It is secondary and exists for conceptual clarity, not as a fixed point:
+rename it, ignore it or use it. A persona alone never justifies a separate agent.
+
 ## Contents
 
 | Path | State |

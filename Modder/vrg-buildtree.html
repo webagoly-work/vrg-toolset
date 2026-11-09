@@ -1110,6 +1110,254 @@ const VARIANTS = [
     ],
     missing:['Számítási mag (o_pi5 a Bővítés fülön, vagy CM5).','Dokkoló mechanika, töltési út a bay-eken.'],
     notes:['Részletek: BRIDGE/04_related-hardware/HID-DECK-concept.md — építési sorrend 0–4. fázis.']
+  },
+
+  // ---------- E) FÉNYMÉRŐ (2026-11-06) ----------
+  {
+    "group": "E) Fénymérő (USB-C táp, akku nélkül)",
+    "name": "V1 Solo · Luxmérő",
+    "tagline": "A legolcsóbb, pontos megvilágításmérő: 1–65 535 lx, OLED-en kijelezve.",
+    "layout": [
+      "C3 Zero + BH1750 + 0,96\" OLED egy I2C buszon (0x23, 0x3C)."
+    ],
+    "parts": [
+      {
+        "name": "ESP32-C3 Zero",
+        "conn": "host",
+        "owned": true
+      },
+      {
+        "name": "BH1750 (GY-302) fényerősség-érzékelő",
+        "conn": "I2C 0x23",
+        "owned": false
+      },
+      {
+        "name": "0,96\" OLED 128×64",
+        "conn": "I2C 0x3C",
+        "owned": true
+      },
+      {
+        "name": "USB-C táp: powerbank vagy telefon (OTG) — nincs akku",
+        "conn": "USB-C 5V",
+        "owned": true
+      }
+    ],
+    "missing": [
+      "BH1750 — Modulshop 616 Ft (Bővítés fül: o_bh1750)."
+    ],
+    "pinmap": [
+      "C3 Zero: SDA G6 · SCL G7 (javaslat, nem ellenőrzött)"
+    ],
+    "notes": [
+      "Csak „mennyi fény” — szín és spektrum nincs.",
+      "Részletes kapcsolási rajz + mérhető jellemzők: Modder/vrg-fenymero.html."
+    ]
+  },
+  {
+    "group": "E) Fénymérő (USB-C táp, akku nélkül)",
+    "name": "V2 Solo · Spektrum",
+    "tagline": "Egy szenzorral a legtöbb jellemző: 8 látható sáv + Clear + NIR, CCT (K), szín (CIE xy), villogásjelzés 100/120 Hz.",
+    "layout": [
+      "C3 Zero + AS7341 + 0,96\" OLED egy I2C buszon (0x39, 0x3C)."
+    ],
+    "parts": [
+      {
+        "name": "ESP32-C3 Zero",
+        "conn": "host",
+        "owned": true
+      },
+      {
+        "name": "AS7341 spektrális szín- és fényérzékelő",
+        "conn": "I2C 0x39",
+        "owned": false
+      },
+      {
+        "name": "0,96\" OLED 128×64",
+        "conn": "I2C 0x3C",
+        "owned": true
+      },
+      {
+        "name": "USB-C táp: powerbank vagy telefon (OTG) — nincs akku",
+        "conn": "USB-C 5V",
+        "owned": true
+      }
+    ],
+    "missing": [
+      "AS7341 — Modulshop 2 485 Ft (o_as7341)."
+    ],
+    "pinmap": [
+      "C3 Zero: SDA G6 · SCL G7 (javaslat, nem ellenőrzött)"
+    ],
+    "notes": [
+      "A CCT és a szín a 8 sávból számolt közelítő érték; a lux is csak becslés referencia nélkül.",
+      "Részletes kapcsolási rajz + mérhető jellemzők: Modder/vrg-fenymero.html."
+    ]
+  },
+  {
+    "group": "E) Fénymérő (USB-C táp, akku nélkül)",
+    "name": "V3a Dual · Spektrum + lux-referencia",
+    "tagline": "AS7341 a színre és spektrumra, BH1750 a pontos luxra — a kettő egymást kalibrálja.",
+    "layout": [
+      "C3 Zero + AS7341 + BH1750 + OLED egy buszon — nincs címütközés (0x39, 0x23, 0x3C)."
+    ],
+    "parts": [
+      {
+        "name": "ESP32-C3 Zero",
+        "conn": "host",
+        "owned": true
+      },
+      {
+        "name": "AS7341",
+        "conn": "I2C 0x39",
+        "owned": false
+      },
+      {
+        "name": "BH1750 (GY-302)",
+        "conn": "I2C 0x23",
+        "owned": false
+      },
+      {
+        "name": "0,96\" OLED 128×64",
+        "conn": "I2C 0x3C",
+        "owned": true
+      },
+      {
+        "name": "USB-C táp: powerbank vagy telefon (OTG) — nincs akku",
+        "conn": "USB-C 5V",
+        "owned": true
+      }
+    ],
+    "missing": [
+      "AS7341 + BH1750 — Modulshop 3 101 Ft."
+    ],
+    "pinmap": [
+      "C3 Zero: SDA G6 · SCL G7 (javaslat, nem ellenőrzött)"
+    ],
+    "notes": [
+      "Az AS7341 Clear csatornáját a BH1750 luxához skálázzuk → stabilabb CCT.",
+      "Részletes kapcsolási rajz + mérhető jellemzők: Modder/vrg-fenymero.html."
+    ]
+  },
+  {
+    "group": "E) Fénymérő (USB-C táp, akku nélkül)",
+    "name": "V3b Dual · Spektrum + villogás-hullámforma",
+    "tagline": "A TEMT6000 analóg jelét ~10 kHz-en mintavételezve valódi villogás-%, villogásindex és frekvencia (LED-izzók, tápegységek).",
+    "layout": [
+      "S3-Zero: AS7341 + OLED az I2C-n, TEMT6000 az ADC1-en (folyamatos DMA-mód)."
+    ],
+    "parts": [
+      {
+        "name": "ESP32-S3-Zero",
+        "conn": "host",
+        "owned": true
+      },
+      {
+        "name": "AS7341",
+        "conn": "I2C 0x39",
+        "owned": false
+      },
+      {
+        "name": "TEMT6000 analóg fénymérő",
+        "conn": "ADC",
+        "owned": false
+      },
+      {
+        "name": "0,96\" OLED 128×64",
+        "conn": "I2C 0x3C",
+        "owned": true
+      },
+      {
+        "name": "USB-C táp: powerbank vagy telefon (OTG) — nincs akku",
+        "conn": "USB-C 5V",
+        "owned": true
+      }
+    ],
+    "missing": [
+      "AS7341 + TEMT6000 — Modulshop 2 828 Ft."
+    ],
+    "pinmap": [
+      "S3-Zero: SDA G5 · SCL G6 · TEMT6000 OUT → G3 (ADC1) — javaslat, nem ellenőrzött"
+    ],
+    "notes": [
+      "A TEMT6000 nem színhelyes, csak a jel alakjára és frekvenciájára jó.",
+      "Részletes kapcsolási rajz + mérhető jellemzők: Modder/vrg-fenymero.html."
+    ]
+  },
+  {
+    "group": "E) Fénymérő (USB-C táp, akku nélkül)",
+    "name": "V5 Multi · Fénylabor",
+    "tagline": "Minden egy dobozban: spektrum, pontos lux, CCT, szín, NIR, UV-index, villogás-hullámforma, távolság a fényforrásig, enkóderes menü + gesztus.",
+    "layout": [
+      "S3-Zero két I2C vezérlővel: I2C-A = AS7341 + BH1750 + VL6180X + OLED, I2C-B = APDS-9960.",
+      "ADC: GUVA-S12SD (UV) + TEMT6000 (villogás) · GPIO: EC-11."
+    ],
+    "parts": [
+      {
+        "name": "ESP32-S3-Zero",
+        "conn": "host",
+        "owned": true
+      },
+      {
+        "name": "AS7341",
+        "conn": "I2C-A 0x39",
+        "owned": false
+      },
+      {
+        "name": "BH1750 (GY-302)",
+        "conn": "I2C-A 0x23",
+        "owned": false
+      },
+      {
+        "name": "VL6180X ToF + fényérzékelő",
+        "conn": "I2C-A 0x29",
+        "owned": true
+      },
+      {
+        "name": "0,96\" OLED 128×64",
+        "conn": "I2C-A 0x3C",
+        "owned": true
+      },
+      {
+        "name": "APDS-9960 (GY-9960) RGB + gesztus",
+        "conn": "I2C-B 0x39",
+        "owned": false
+      },
+      {
+        "name": "GUVA-S12SD UV",
+        "conn": "ADC",
+        "owned": false
+      },
+      {
+        "name": "TEMT6000",
+        "conn": "ADC",
+        "owned": false
+      },
+      {
+        "name": "EC-11 forgóenkóder",
+        "conn": "GPIO",
+        "owned": true
+      },
+      {
+        "name": "USB-C táp: powerbank vagy telefon (OTG) — nincs akku",
+        "conn": "USB-C 5V",
+        "owned": true
+      }
+    ],
+    "missing": [
+      "AS7341, BH1750, APDS-9960, GUVA-S12SD, TEMT6000 — Modulshop összesen 5 264 Ft."
+    ],
+    "pinmap": [
+      "I2C-A: SDA G5 · SCL G6",
+      "I2C-B: SDA G11 · SCL G12",
+      "ADC: GUVA → G2 · TEMT6000 → G3",
+      "EC-11: A G7 · B G8 · SW G4 — kerülendő G0 (BOOT), G21 (RGB LED); javaslat, nem ellenőrzött"
+    ],
+    "notes": [
+      "⚠ Az AS7341 és az APDS-9960 is fixen 0x39 → külön I2C buszra kell; ezért S3, nem C3.",
+      "Fényerősség-becslés: I [cd] ≈ E [lx] × d² — a VL6180X csak ~10 cm-ig mér, ezért kis lámpákra/LED-ekre.",
+      "A 0,96\" és az 1,3\" OLED is 0x3C — egyszerre csak az egyik.",
+      "Részletes kapcsolási rajz + mérhető jellemzők: Modder/vrg-fenymero.html."
+    ]
   }
 ];
 
@@ -1237,6 +1485,13 @@ const ORDER = [
  {id:'o_tc',cat:'Szenzor',name:'K-hőelem + MAX31855',unlock:'Elosztó/HVAC magas hőmérséklet — a SA-12 hatókörén túl.'},
  {id:'o_vl53',cat:'Szenzor',name:'VL53L0X/L1X ToF (hosszabb táv)',unlock:'A VL6180X ~10cm-e helyett méteres távolság — gesztus/térkép.'},
  {id:'o_i2s',cat:'Szenzor',name:'INMP441 mic + MAX98357 amp',unlock:'S3-audio be+ki: zajszintmérő, intercom, prop hang, wake-word.'},
+
+ // ===== Fénymérés =====
+ {"id":"o_as7341","cat":"Fénymérés","name":"AS7341 spektrális szín- és fényérzékelő","specs":"I2C 0x39 · 8 sáv + Clear + NIR · Modulshop 2 485 Ft (product_id 3917, 2026-11-06)","unlock":"A fénymérő magja: spektrum, CCT, szín, villogásjelzés (E) Fénymérő V2–V5)."},
+ {"id":"o_bh1750","cat":"Fénymérés","name":"BH1750 (GY-302) digitális fényerősség-érzékelő","specs":"I2C 0x23 · 1–65 535 lx · Modulshop 616 Ft (product_id 713)","unlock":"Pontos lux, a többi szenzor kalibrációs referenciája (V1, V3a, V5)."},
+ {"id":"o_apds9960","cat":"Fénymérés","name":"APDS-9960 (GY-9960) RGB + gesztus","specs":"I2C 0x39 — ütközik az AS7341-gyel · Modulshop 1 085 Ft (product_id 686)","unlock":"Második színmérés + érintésmentes kezelés (V5, külön I2C buszon)."},
+ {"id":"o_guva","cat":"Fénymérés","name":"GUVA-S12SD UV szenzor","specs":"analóg 0–1 V · 240–370 nm · Modulshop 735 Ft (product_id 3013)","unlock":"UV-index napfényre és UV-lámpára (V5)."},
+ {"id":"o_temt6000","cat":"Fénymérés","name":"TEMT6000 analóg fénymérő","specs":"gyors fototranzisztor → ADC · Modulshop 343 Ft (product_id 2981)","unlock":"Villogás-hullámforma: %, index, frekvencia (V3b, V5)."},
 
  // ===== Kijelző & UI =====
  {id:'o_epaper',cat:'Kijelző & UI',name:'2.9" e-paper kijelző',unlock:'Alacsony fogyasztású állapotkijelző fix node-okhoz (akkuról hetekig).'},

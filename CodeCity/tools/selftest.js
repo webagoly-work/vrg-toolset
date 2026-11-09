@@ -134,6 +134,10 @@ try {
   const wps = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-wallpaper.js')], { encoding: 'utf8', timeout: 90000 });
   for (const l of String(wps.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
   check(wps.status === 0, `wallpaper spec exit ${wps.status}`);
+  // grown plan (K2-01): every file a plot, no overlaps, nothing on a road, deterministic, this repo within 15 s
+  const grs = require('child_process').spawnSync(process.execPath, [path.join(__dirname, 'run-spec.js'), path.join(__dirname, 'spec-grow.js')], { encoding: 'utf8', timeout: 120000 });
+  for (const l of String(grs.stdout || '').trim().split('\n').filter(Boolean)) check(l.startsWith('ok'), l.replace(/^(ok|FAIL)\s+/, ''));
+  check(grs.status === 0, `grow spec exit ${grs.status}`);
   // overlay shell (P12 L2, KV-25): the Electron files parse with this Node, the shell loads only the segéd origin and
   // stays sandboxed; the page has #mode=overlay. The live check needs the desktop: electron CodeCity/shell --selftest
   const shellDir = path.join(__dirname, '..', 'shell');
@@ -208,6 +212,19 @@ try {
     'M4/M7 Mélyvíz: the water follows the lens; the planet ocean fades out near the Land');
   check(!/border-radius:\s*[1-9]\d*px/.test(css) && /backdrop-filter: blur\(var\(--blur\)\)/.test(css) && /body\[data-quality\^="low"\]/.test(css),
     'M5 Mélyvíz: square glass panels with cut corners, solid on the low quality tier');
+  // K2-09 Hangulat (50-mood.js): the moving life is one switch (H / the lens-bar button), stays off the wallpaper and
+  // under reduced motion, steps down with the quality tier, and its swell is the only idle motion the water has
+  const moodSrc = src('50-mood.js');
+  check(/e\.key === 'h' \|\| e\.key === 'H'/.test(moodSrc) && /id="mood-btn"/.test(lensSrc) && /!KV_WALL && !matchMedia\('\(prefers-reduced-motion: reduce\)'\)/.test(moodSrc)
+    && /MOOD_PEOPLE\[look\.tier\]/.test(moodSrc) && /landLevel\(\) !== 'city'\) return/.test(moodSrc) && /uniform1f\(r\.uAmb, sea\.amb\)/.test(seaSrc),
+    'K2-09 Hangulat: one switch (H), none on the wallpaper or with reduced motion, fewer people on lower tiers, paused out of sight');
+  check(/moodShadows\(vals\)/.test(src('05-replay.js')) && /moodBuild\(model\)/.test(src('03-scene.js')) && /heatCounts\(\)/.test(moodSrc),
+    'K2-09 Hangulat: shadows follow every written frame; the streets fill where the data changed recently');
+  // K2-03 grammar: the building shader must stay within WebGL's 16 vertex attributes (position, normal, the instance
+  // matrix's 4, the instance colour, plus its own) — over it the buildings silently stop drawing
+  const bmat = src('03-scene.js').slice(src('03-scene.js').indexOf('function buildingMaterial'), src('03-scene.js').indexOf('// ---- the city'));
+  const ownAttrs = (bmat.match(/^attribute /gm) || []).length ? bmat.split('\n').filter(l => /^attribute /.test(l)).join(' ').split(';').filter(s => /attribute /.test(s)).length : 0;
+  check(ownAttrs + 7 <= 16, `K2-03 grammar: the building shader uses ${ownAttrs + 7} of 16 vertex attributes`);
   // trademark limits (report §4): no Tron terms in user-visible text — the page, the shell, START.cmd's menu lines
   const strip = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1');
   const uiFiles = fs.readdirSync(path.join(__dirname, '..', 'src')).filter(n => /\.(js|css|html)$/.test(n)).map(n => path.join(__dirname, '..', 'src', n))

@@ -2,7 +2,8 @@
 // field on its own WebGL2 canvas (#sea, behind the transparent city canvas) that refracts a faint drafting grid.
 // Rules it keeps:
 // - R3 one animation, one meaning: the water moves only when YOU click empty water (a plain left click that hits no
-//   building or plate). No rain, no idle motion — a wave means "you touched the ground here".
+//   building or plate). No rain — a wave means "you touched the ground here". The one exception (K2-09, 50-mood):
+//   with Hangulat on, the surface breathes in a slow, low swell (uAmb); it carries no meaning and H turns it off.
 // - R11 render on demand: the simulation runs only while a wave is alive (~5 s after the last click), then draws one
 //   final frame and stops. A quiet city costs nothing, as before. The wallpaper gets one still frame.
 // - the look follows the lens: the water's horizon is the lens's fog colour, its highlights are the instrument's ice
@@ -31,11 +32,15 @@ o=c;}`;
   // the ground: horizon colour at ~70 % height, deep water above and below, a grid that fades towards the top (far),
   // refracted by the wave normals; light from the upper left adds the highlight colour on the wave fronts
   const REN = `#version 300 es
-precision highp float;uniform sampler2D uS;uniform vec2 uTx;uniform vec3 uHor,uDeep,uLine,uHi;uniform float uLA,uCell,uGlow,uDpr;in vec2 vUv;out vec4 o;
+precision highp float;uniform sampler2D uS;uniform vec2 uTx;uniform vec3 uHor,uDeep,uLine,uHi;uniform float uLA,uCell,uGlow,uDpr,uTime,uAmb;in vec2 vUv;out vec4 o;
 void main(){vec2 uv=vUv;
 float hx=texture(uS,uv+vec2(uTx.x,0.)).r-texture(uS,uv-vec2(uTx.x,0.)).r;
 float hy=texture(uS,uv+vec2(0.,uTx.y)).r-texture(uS,uv-vec2(0.,uTx.y)).r;
 vec3 n=normalize(vec3(-hx*5.,-hy*5.,1.));
+vec2 sp=gl_FragCoord.xy/uDpr;
+float a1=sin(sp.x*.021+sp.y*.013+uTime*.7)+sin(-sp.x*.017+sp.y*.029-uTime*.55);
+float a2=cos(sp.x*.031-sp.y*.019+uTime*.9)+sin(sp.y*.041+uTime*.4);
+n=normalize(n+vec3(a1,a2,0.)*.03*uAmb);
 vec2 px=gl_FragCoord.xy+n.xy*60.*uDpr;
 float y=uv.y;
 vec3 col=mix(uDeep,uHor,smoothstep(.0,.3,y));
@@ -58,7 +63,7 @@ o=vec4(col,1.);}`;
     return { p, u };
   }
   const S = { gl, cv, drops: [], live: 0, running: false, ok: true, tex: null, fb: null, sw: 0, sh: 0, cur: 0, dpr: 1,
-    hor: [0, 0, 0], deep: [0, 0, 0], line: [0.91, 0.94, 0.96], hi: [0, 0, 0], glow: 0.2, cell: 44 };
+    hor: [0, 0, 0], deep: [0, 0, 0], line: [0.91, 0.94, 0.96], hi: [0, 0, 0], glow: 0.2, cell: 44, amb: 0, time: 0 };
   try { S.sim = prog(SIM); S.ren = prog(REN); S.vao = gl.createVertexArray(); }
   catch (e) { console.warn('38-sea:', e); cv.hidden = true; return null; }
   return S;
@@ -116,6 +121,7 @@ function seaDraw() {
   gl.uniform2f(r.uTx, 1 / sea.sw, 1 / sea.sh);
   gl.uniform3fv(r.uHor, sea.hor); gl.uniform3fv(r.uDeep, sea.deep); gl.uniform3fv(r.uLine, sea.line); gl.uniform3fv(r.uHi, sea.hi);
   gl.uniform1f(r.uLA, 0.11); gl.uniform1f(r.uCell, sea.cell); gl.uniform1f(r.uGlow, lookGlow(sea.glow)); gl.uniform1f(r.uDpr, sea.dpr);
+  gl.uniform1f(r.uTime, sea.time); gl.uniform1f(r.uAmb, sea.amb);   // 50-mood: the slow swell
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
 

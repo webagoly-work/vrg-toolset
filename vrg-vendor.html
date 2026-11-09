@@ -964,6 +964,51 @@ html.mv.low-glow { --mv-glow: 0px; }
       "vendor": "reference",
       "target": null,
       "note": "Az overlay-héj futtatókörnyezete (P12, KV-25: CodeCity/shell/). Nem npm install és nem Vendor/: a CodeCity/tools/fetch-electron.js az npm-csomagot az itt rögzített sha512-vel ellenőrzi, a benne lévő checksums.json sha256-jával a GitHub-kiadás electron-v44.7.1-win32-x64.zip-jét, és a repó melletti H:\\VRG\\Full\\tools\\electron mappába bontja. 44.7.1 = 2026-10-13, a kiválasztáskor legalább két hetes. MIT; a Chromium és a többi komponens licence a csomag LICENSES.chromium.html fájljában."
+    },
+    {
+      "slug": "maplibre-gl",
+      "name": "MapLibre GL JS",
+      "repo": "maplibre/maplibre-gl-js",
+      "npm": null,
+      "license": "BSD-3-Clause",
+      "stars": null,
+      "pushed": null,
+      "aspect": "Térkép",
+      "build": "helyi-eszkoz",
+      "priority": 1,
+      "vendor": "fetch",
+      "target": "maplibre-gl",
+      "note": "A VRG Térkép renderelője (vektorcsempék, 3D épületek, domborzat). A Map/serve.js a dist/ mappát szolgálja ki /vendor/maplibre-gl/ alatt, így offline fut. BSD-3: a szerzői jogi fejléc és a nem-ajánlás záradék a kóddal megy."
+    },
+    {
+      "slug": "pmtiles",
+      "name": "PMTiles (JS)",
+      "repo": "protomaps/PMTiles",
+      "npm": null,
+      "license": "BSD-3-Clause",
+      "stars": null,
+      "pushed": null,
+      "aspect": "Térkép",
+      "build": "helyi-eszkoz",
+      "priority": 1,
+      "vendor": "fetch",
+      "target": "pmtiles",
+      "note": "Egyetlen .pmtiles fájlból olvas csempéket HTTP Range kérésekkel, csempeszerver nélkül. A VRG Térkép Magyarország-alaptérképe és domborzata így egy-egy fájl a Map/data alatt."
+    },
+    {
+      "slug": "protomaps-basemaps",
+      "name": "Protomaps basemaps (stílus)",
+      "repo": "protomaps/basemaps",
+      "npm": null,
+      "license": "BSD-3-Clause",
+      "stars": null,
+      "pushed": null,
+      "aspect": "Térkép",
+      "build": "helyi-eszkoz",
+      "priority": 1,
+      "vendor": "fetch",
+      "target": "protomaps-basemaps",
+      "note": "A Protomaps v4 csempesémához tartozó rétegdefiníciók. Csak build közben használjuk: a Map/tools/build-style.js ebből és a saját VRG Terep színeinkből írja a Map/style/terep.json-t."
     }
   ];
   /*__COMPONENTS_END__*/

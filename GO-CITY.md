@@ -35,6 +35,12 @@ checkout**, with its own login.
 3. The Cloudflare outer ring: CITY-D29–D33 + CITY-D21 option D (report §8, prompts CF-01…CF-07), merged 2026-10-30, not started.
 4. Self-contained `vrg-probe.exe` needs the runtime pack from nuget.org: not asked yet. P3b (VS Code extension) has no prompt yet.
 5. `GO OPENWRT` is its own thread; after it, re-ask CITY-D24.
+6. **Kódváros 2.0** (2026-11-06): the grown city on its island — organic layout from the git history, ages, districts,
+   a landmark per program, the Planner as a campus. Concept and decisions CITY-D54–D60 in `docs/city/v2/README.md`,
+   sketch `docs/city/v2/concept-plan.html`, WPs K2-01…K2-09. D54–D60 decided (all A), D61 taken; **K2-01 (growth
+   layout, P toggle), K2-02 (island), K2-03 (building grammar), K2-04 (districts) and K2-09 (Hangulat, H toggle)
+   built** — README §11 "Built". Next: K2-05 landmarks (the Planner campus), K2-06 ages. Preview: `kodvaros-static`
+   in .claude/launch.json, port 8811 (8806 is the Rétegverem now).
 
 - **Gotchas learned:**
   - Write patch scripts with the Write tool; shell heredocs here lose backslashes (`\n`, `\s`).

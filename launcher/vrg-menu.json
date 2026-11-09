@@ -116,6 +116,7 @@
     { "key": "R", "id": "trace-relay", "name": "Ügynöknyom · közvetítő", "port": 8134, "js": "{repo}\\Console\\tools\\trace-relay.js" },
     { "key": "T", "id": "solomon", "name": "Solomon Gömb · döntésekkel", "port": 8799, "js": "{repo}\\Solomon\\serve.js" },
     { "key": "J", "id": "divergence", "name": "Divergencia · jelzőtábla", "port": 8801, "js": "{repo}\\Divergence\\serve.js" },
+    { "key": "H", "id": "terkep", "name": "VRG Térkép · offline térkép", "port": 8802, "js": "{repo}\\Map\\serve.js" },
     { "key": "V", "id": "stack", "name": "Rétegverem · Konnektóm", "port": 8806, "open": "/connectome.html", "js": "{stack}\\serve.js" }
   ],
 
@@ -164,7 +165,12 @@
           { "key": "F", "name": "Fedőréteg", "hint": "a város az asztal fölött, Ctrl+Alt+K", "exe": "{full}\\tools\\electron\\electron.exe", "args": ["{repo}\\CodeCity\\shell"],
             "ensure": { "path": "{full}\\tools\\electron\\electron.exe", "note": "Az Electron még nincs letöltve, most letöltöm (kb. 150 MB)…", "exe": "{node}", "args": ["{repo}\\CodeCity\\tools\\fetch-electron.js"] },
             "server": "city", "serverArgs": ["--no-open"] }
-        ] }
+        ] },
+      { "key": "M", "name": "VRG Térkép", "hint": "Magyarország offline · 3D · címkereső", "otg": false,
+        "exe": "C:\\Windows\\System32\\rundll32.exe", "args": ["url.dll,FileProtocolHandler", "http://localhost:8802/"],
+        "server": "terkep", "serverArgs": ["--no-open"], "page": "{repo}\\Map\\vrg-terkep.html",
+        "ensure": { "path": "{repo}\\Map\\data\\hungary.pmtiles", "note": "A térkép adatai még nincsenek letöltve, most letöltöm (egyszer, kb. 1,7 GB)…",
+                    "exe": "{node}", "args": ["{repo}\\Map\\tools\\fetch-data.js"] } }
     ],
 
     "projects": [

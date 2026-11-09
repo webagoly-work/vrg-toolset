@@ -46,12 +46,20 @@ function stateAt(f, i, T) {
 }
 
 const _m = new THREE.Matrix4();
+// a building's matrix: its plot (f.rect, centred), its height, its footprint scale, and — on the grown plan (02-grow.js) —
+// the rotation that turns it to face its road
+const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _Y = new THREE.Vector3(0, 1, 0);
+function plotMatrix(m, f, h, s) {
+  const { x, z, w, h: d } = f.rect;
+  if (!f.rot) return m.makeScale(w * s, h, d * s).setPosition(x + w / 2, f.base, z + d / 2);
+  return m.compose(_p.set(x + w / 2, f.base, z + d / 2), _q.setFromAxisAngle(_Y, f.rot), _s.set(w * s, h, d * s));
+}
 function writeInstances(vals) {
   const b = world.buildings, files = current.city.files, lit = b.geometry.attributes.aLit, fl = b.geometry.attributes.aFlash;
   for (let i = 0; i < files.length; i++) {
-    const h = vals[i * 3], s = vals[i * 3 + 1], { x, z, w, h: d } = files[i].rect;
+    const h = vals[i * 3], s = vals[i * 3 + 1];
     if (h <= 0) _m.makeScale(0, 0, 0);
-    else _m.makeScale(w * s, h, d * s).setPosition(x + w / 2, files[i].base, z + d / 2);
+    else plotMatrix(_m, files[i], h, s);
     b.setMatrixAt(i, _m);
     lit.array[i] = vals[i * 3 + 2];
     fl.array[i] = replay.flash[i];
@@ -59,6 +67,8 @@ function writeInstances(vals) {
   b.instanceMatrix.needsUpdate = lit.needsUpdate = fl.needsUpdate = true;
   b.boundingSphere = null; b.boundingBox = null;   // raycast recomputes them from the new matrices
   replay.cur.set(vals);
+  grammarTime();       // 51-grammar: scaffolding and patina at the shown commit
+  moodShadows(vals);   // 50-mood: the soft shadow under every building follows it
   placeBeacon();
   if (sel.shell || sel.set.size) selShellRefresh();   // the selection shell follows the buildings
 }

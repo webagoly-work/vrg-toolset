@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Térkép</title>
+<!--
+  VRG Térkép — offline, keyless map of Hungary in the VRG Terep style: address search,
+  3D buildings, terrain. Served by Map/serve.js (http://localhost:8802); data from
+  node Map/tools/fetch-data.js. Optional, online only: the Google 3D view (G).
+
+  URL:  #zoom/lat/lon/bearing/pitch   the camera (shareable)
+        ?q=Budapest Váci út 12         search on load and fly there
+        ?embed=1                        slim UI for embedding in Kapu / Planner
+  Keys: /  search   3  3D buildings   T  terrain   G  Google 3D view   N  north   Esc  close
+
+  Libraries (Vendor/, see vendor-manifest.json):
+    MapLibre GL JS — Copyright (c) 2023, MapLibre contributors; (c) 2020 Mapbox. BSD-3-Clause.
+    PMTiles — Copyright (c) 2021 Protomaps LLC. BSD-3-Clause.
+  Neither the names of the copyright holders nor of the contributors may be used to endorse
+  or promote products derived from this software without specific prior written permission.
+-->
+<link rel="stylesheet" href="/vendor/maplibre-gl/maplibre-gl.css">
+<style>
+  :root{
+    --ink:#1f1d1a; --ink-2:#4d4943; --faint:#8a8378; --paper:#fbf9f4; --line:#d8d0c2;
+    --accent:#c26a12; --accent-soft:#f6e3c9; --ok:#2f7d4a; --warn:#b5491f;
+    --shadow:0 2px 10px rgba(40,30,15,.18);
+  }
+  html,body{margin:0;height:100%;background:#e9e5dc;color:var(--ink);
+    font:14px/1.35 "Segoe UI",system-ui,-apple-system,sans-serif}
+  #map{position:absolute;inset:0}
+  .panel{position:absolute;top:12px;left:12px;width:min(380px,calc(100vw - 24px));z-index:5;
+    background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+  .bar{display:flex;align-items:center;gap:8px;padding:8px 10px}
+  .brand{font-weight:700;letter-spacing:.02em;white-space:nowrap}
+  .brand b{color:var(--accent)}
+  #q{flex:1;min-width:0;border:1px solid var(--line);border-radius:7px;padding:8px 10px;font:inherit;
+    background:#fff;color:var(--ink);outline:none}
+  #q:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  #results{list-style:none;margin:0;padding:0 0 6px;max-height:50vh;overflow:auto;border-top:1px solid var(--line)}
+  #results:empty{display:none}
+  #results li{padding:7px 12px;cursor:pointer;display:flex;gap:8px;align-items:baseline}
+  #results li[aria-selected=true],#results li:hover{background:var(--accent-soft)}
+  #results .k{font-size:11px;color:var(--faint);min-width:52px;text-transform:uppercase;letter-spacing:.04em}
+  #results .t{flex:1}
+  #results .s{color:var(--ink-2);font-size:12px}
+  #results .online{color:var(--accent)}
+  .status{display:flex;gap:10px;flex-wrap:wrap;padding:0 12px 8px;font-size:12px;color:var(--faint)}
+  .status .on{color:var(--ok)} .status .off{color:var(--warn)}
+  .tools{position:absolute;top:12px;right:12px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+  .btn{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;
+    padding:7px 11px;font:600 13px/1 inherit;cursor:pointer;box-shadow:var(--shadow);min-width:44px}
+  .btn[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn kbd{font:11px ui-monospace,Consolas,monospace;color:var(--faint);margin-left:6px}
+  .btn[aria-pressed=true] kbd{color:#d9d2c5}
+  .maplibregl-ctrl-top-right{top:auto;bottom:34px}
+  #notice{position:absolute;inset:0;z-index:20;display:none;place-items:center;background:rgba(233,229,220,.92)}
+  #notice.show{display:grid}
+  #notice div{max-width:560px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:22px 26px;box-shadow:var(--shadow)}
+  #notice code{display:block;margin:10px 0;padding:8px 10px;background:#fff;border:1px solid var(--line);border-radius:6px;user-select:all}
+  .pin{width:26px;height:26px;border-radius:50% 50% 50% 0;background:var(--accent);transform:rotate(-45deg);
+    border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+  /* Google 3D view: an embedded panel, opened on command, aimed where our map looks */
+  #gpanel{position:absolute;top:0;right:0;bottom:0;width:min(46vw,720px);z-index:10;display:none;flex-direction:column;
+    background:#111;border-left:2px solid var(--ink);box-shadow:-4px 0 18px rgba(0,0,0,.25)}
+  #gpanel.show{display:flex}
+  #gpanel header{display:flex;gap:8px;align-items:center;padding:8px 10px;background:var(--paper);border-bottom:1px solid var(--line)}
+  #gpanel header .t{flex:1;font-weight:700}
+  #gpanel header .s{font-weight:400;color:var(--faint);font-size:12px;margin-left:6px}
+  #gbody{position:relative;flex:1;min-height:0}
+  #gbody iframe,#gbody .cesium{position:absolute;inset:0;width:100%;height:100%;border:0}
+  #gfoot{padding:8px 10px;background:var(--paper);border-top:1px solid var(--line);font-size:12px;color:var(--ink-2);
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  #gfoot a{color:var(--accent)}
+  #gfoot input{flex:1;min-width:160px;border:1px solid var(--line);border-radius:6px;padding:5px 8px;font:12px ui-monospace,Consolas,monospace}
+  body.embed .panel{width:min(300px,calc(100vw - 24px))}
+  body.embed .brand,body.embed .status{display:none}
+  @media (max-width:700px){ #gpanel{width:100vw;top:40%} }
+</style>
+</head>
+<body>
+<div id="map" aria-label="Térkép"></div>
+
+<section class="panel" aria-label="Keresés">
+  <div class="bar">
+    <span class="brand">VRG <b>Térkép</b></span>
+    <input id="q" type="search" placeholder="Cím, utca, település…  ( / )" autocomplete="off" spellcheck="false"
+           aria-controls="results" aria-autocomplete="list">
+  </div>
+  <ul id="results" role="listbox"></ul>
+  <div class="status"><span id="st-net"></span><span id="st-index">címjegyzék: betöltés…</span><span id="st-data"></span></div>
+</section>
+
+<div class="tools">
+  <button class="btn" id="b-3d" aria-pressed="true" title="3D épületek">3D<kbd>3</kbd></button>
+  <button class="btn" id="b-terrain" aria-pressed="true" title="Domborzat">Domb<kbd>T</kbd></button>
+  <button class="btn" id="b-north" title="Északra, felülnézet">É<kbd>N</kbd></button>
+  <button class="btn" id="b-google" aria-pressed="false" title="Google 3D nézet ugyanerre a helyre (online)">Google 3D<kbd>G</kbd></button>
+</div>
+
+<aside id="gpanel" aria-label="Google 3D nézet">
+  <header>
+    <span class="t">Google 3D nézet<span class="s" id="g-mode"></span></span>
+    <button class="btn" id="g-sync" title="Igazítás a VRG térkép nézetéhez">Igazítás</button>
+    <button class="btn" id="g-close" title="Bezárás (Esc)">✕</button>
+  </header>
+  <div id="gbody"></div>
+  <div id="gfoot"></div>
+</aside>
+
+<div id="notice"><div id="notice-body"></div></div>
+
+<script>
+// Opened as a file (from Kapu or Explorer) the page cannot reach its data: say how to start it.
+if (location.protocol === 'file:') {
+  document.getElementById('notice-body').innerHTML = '<h2>A VRG Térkép szerverről fut</h2>' +
+    '<p>Fájlként megnyitva nem éri el az adatait. Indítsd a START menüből (<b>M</b>), vagy:</p>' +
+    '<code>node Map\\serve.js</code><p>majd nyisd meg: <b>http://localhost:8802/</b></p>';
+  document.getElementById('notice').classList.add('show');
+}
+</script>
+<script src="/vendor/pmtiles/pmtiles.js"></script>
+<script type="module">
+import * as maplibregl from '/vendor/maplibre-gl/maplibre-gl.mjs';
+
+const $ = s => document.querySelector(s);
+const params = new URLSearchParams(location.search);
+if (params.get('embed') === '1') document.body.classList.add('embed');
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('vrg.terkep.' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('vrg.terkep.' + k, JSON.stringify(v)); } catch { /* private window */ } },
+};
+
+// ---------------------------------------------------------------- data check
+async function exists(url) { try { return (await fetch(url, { method: 'HEAD' })).ok; } catch { return false; } }
+// ?remote=1 (testing only): read the same planet files over the internet instead of Map/data.
+// Goes through serve.js's /remote/ proxy (start it with --allow-remote).
+const REMOTE = params.get('remote') === '1' ? {
+  base: location.origin + '/remote/build.protomaps.com/' + (params.get('build') || '20261105') + '.pmtiles',
+  terrain: location.origin + '/remote/download.mapterhorn.com/planet.pmtiles',
+  assets: location.origin + '/remote/protomaps.github.io/basemaps-assets',
+} : null;
+const [hasBase, hasTerrain] = REMOTE ? [true, true]
+  : await Promise.all([exists('/data/hungary.pmtiles'), exists('/data/terrain.pmtiles')]);
+if (!hasBase) {
+  $('#notice-body').innerHTML = '<h2>Még nincs letöltve a térkép</h2>' +
+    '<p>A VRG Térkép offline fut, ehhez egyszer le kell tölteni Magyarország adatait (~1,7 GB, ingyenes, kulcs nélkül):</p>' +
+    '<code>node Map\\tools\\fetch-data.js</code><p>Utána frissítsd ezt az oldalt.</p>';
+  $('#notice').classList.add('show');
+  throw new Error('no basemap');
+}
+
+// ---------------------------------------------------------------- map
+const protocol = new pmtiles.Protocol();   // attribution comes from our style, not the archives (no doubles)
+maplibregl.addProtocol('pmtiles', protocol.tile);
+const style = JSON.parse((await (await fetch('/style/terep.json')).text()).replaceAll('{origin}', location.origin));
+if (REMOTE) {
+  style.sources.protomaps.url = 'pmtiles://' + REMOTE.base;
+  style.sources.terrain.url = 'pmtiles://' + REMOTE.terrain;
+  style.sources.hillshade.url = 'pmtiles://' + REMOTE.terrain;
+  style.glyphs = REMOTE.assets + '/fonts/{fontstack}/{range}.pbf';
+  style.sprite = REMOTE.assets + '/sprites/v4/light';
+}
+if (!hasTerrain) {
+  delete style.sources.terrain; delete style.sources.hillshade; delete style.terrain;
+  style.layers = style.layers.filter(l => l.source !== 'terrain' && l.source !== 'hillshade');
+}
+
+const HOME = { center: [19.0402, 47.4979], zoom: 11.2, pitch: 45, bearing: -15 };
+const map = new maplibregl.Map({
+  container: 'map', style, hash: true, ...HOME,
+  minZoom: 6, maxZoom: 19.5, maxPitch: 80,
+  maxBounds: [[15.2, 45.3], [23.8, 49.0]],
+  attributionControl: { compact: true },
+  canvasContextAttributes: { antialias: true },
+});
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+// Nothing below waits for the first tiles: search works while the map is still drawing.
+map.once('load', () => { apply3d(); applyTerrain(); });
+
+// ---------------------------------------------------------------- toggles
+function press(btn, on) { btn.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+let show3d = store.get('3d', true), showTerrain = store.get('terrain', true) && hasTerrain;
+function apply3d() {
+  if (!map.getLayer('buildings-3d')) return;
+  map.setLayoutProperty('buildings-3d', 'visibility', show3d ? 'visible' : 'none');
+  map.setPaintProperty('buildings', 'fill-opacity', show3d
+    ? ['interpolate', ['linear'], ['zoom'], 13, 0.55, 14.5, 0.8, 15, 0] : 0.85);
+  press($('#b-3d'), show3d); store.set('3d', show3d);
+}
+function applyTerrain() {
+  if (!hasTerrain) { $('#b-terrain').disabled = true; press($('#b-terrain'), false); return; }
+  map.setTerrain(showTerrain ? { source: 'terrain', exaggeration: 1.25 } : null);
+  if (map.getLayer('hillshade')) map.setLayoutProperty('hillshade', 'visibility', showTerrain ? 'visible' : 'none');
+  press($('#b-terrain'), showTerrain); store.set('terrain', showTerrain);
+}
+$('#b-3d').onclick = () => { show3d = !show3d; apply3d(); };
+$('#b-terrain').onclick = () => { showTerrain = !showTerrain; applyTerrain(); };
+$('#b-north').onclick = () => map.easeTo({ bearing: 0, pitch: 0 });
+
+// ---------------------------------------------------------------- status
+function net() { $('#st-net').innerHTML = navigator.onLine ? '<span class="on">● online</span>' : '<span class="off">● offline</span>'; }
+addEventListener('online', net); addEventListener('offline', net); net();
+fetch('/data/manifest.json').then(r => r.ok ? r.json() : null).then(m => {
+  if (m && m.parts && m.parts.basemap) $('#st-data').textContent = 'térkép: ' + m.parts.basemap.fetched;
+}).catch(() => {});
+
+// ---------------------------------------------------------------- address index (offline)
+// Normalised for matching: lower case, no accents, common Hungarian abbreviations expanded.
+const ABBR = { u: 'utca', krt: 'korut', sgt: 'sugarut', rkp: 'rakpart', ltp: 'lakotelep', stny: 'setany', fasor: 'fasor', bp: 'budapest' };
+const ROMAN = { i:1,ii:2,iii:3,iv:4,v:5,vi:6,vii:7,viii:8,ix:9,x:10,xi:11,xii:12,xiii:13,xiv:14,xv:15,xvi:16,xvii:17,xviii:18,xix:19,xx:20,xxi:21,xxii:22,xxiii:23 };
+const fold = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const words = s => fold(s).replace(/[.,;:()"„”]/g, ' ').split(/\s+/).filter(Boolean).map(w => ABBR[w] || w);
+
+let IDX = null;
+async function loadIndex() {
+  try {
+    const r = await fetch('/data/addresses.json');
+    if (!r.ok) throw new Error('missing');
+    const d = await r.json();
+    const S = d.s;
+    const streets = d.streets.map(([n, c, lon, lat]) => ({ name: S[n], city: S[c], lon: lon / 1e5, lat: lat / 1e5, key: n + '|' + c,
+      w: words(S[n]), cw: words(S[c]) }));
+    const addr = new Map();
+    for (const [c, n, hn, pc, lon, lat] of d.addr) {
+      const k = n + '|' + c; let l = addr.get(k); if (!l) addr.set(k, l = []);
+      l.push({ hn, pc, lon: lon / 1e5, lat: lat / 1e5 });
+    }
+    const places = d.places.map(([name, kind, lon, lat]) => ({ name, kind, lon: lon / 1e5, lat: lat / 1e5, w: words(name) }));
+    IDX = { streets, addr, places, built: d.built };
+    $('#st-index').textContent = 'címjegyzék: ' + d.addr.length.toLocaleString('hu') + ' cím (' + d.built + ')';
+  } catch (e) {
+    if (e.message !== 'missing') console.warn('address index:', e);
+    $('#st-index').innerHTML = '<span class="off">címjegyzék hiányzik</span>';
+  }
+}
+loadIndex();
+
+const KIND = { city: 'város', town: 'város', village: 'falu', suburb: 'városrész', quarter: 'negyed', neighbourhood: 'környék', hamlet: 'tanya', borough: 'kerület' };
+const RANK = { city: 0, town: 1, borough: 2, suburb: 3, village: 4, quarter: 5, neighbourhood: 6, hamlet: 7 };
+// every query word must start one of the target's words
+const covers = (qw, tw) => qw.every(q => tw.some(t => t.startsWith(q)));
+
+function parseQuery(text) {
+  const ws = words(text);
+  let hn = null, pc = null, district = null;
+  const rest = [];
+  ws.forEach((w, i) => {
+    if (/^\d{4}$/.test(w) && (i === 0 || pc === null && hn !== null)) { pc = w; return; }
+    if (/^\d+(\/?[a-z])?(\/\d+)?$/.test(w) && hn === null && i > 0) { hn = w; return; }
+    if (ROMAN[w] && (ws[i + 1] === 'ker' || ws[i + 1] === 'kerulet' || /\b[ivx]+\.\s/i.test(text))) { district = ROMAN[w]; return; }
+    if (/^\d{1,2}$/.test(w) && (ws[i + 1] === 'ker' || ws[i + 1] === 'kerulet')) { district = Number(w); return; }
+    if (w === 'ker' || w === 'kerulet') return;
+    rest.push(w);
+  });
+  return { hn, pc, district, rest };
+}
+
+function searchOffline(text) {
+  if (!IDX) return [];
+  const q = parseQuery(text);
+  if (!q.rest.length) return [];
+  const out = [];
+  const pcOk = p => (!q.pc || p === q.pc) && (!q.district || (p && p[0] === '1' && Number(p.slice(1, 3)) === q.district));
+  // streets: the street words must be covered by street+city words, and at least one word must hit the street
+  for (const s of IDX.streets) {
+    const all = s.w.concat(s.cw);
+    if (!covers(q.rest, all) || !q.rest.some(w => s.w.some(t => t.startsWith(w)))) continue;
+    const list = IDX.addr.get(s.key) || [];
+    let score = q.rest.filter(w => s.w.includes(w)).length * 2 + q.rest.filter(w => s.cw.includes(w)).length;
+    if (q.hn) {
+      const want = q.hn.replace('/', '');
+      let hit = list.find(a => fold(a.hn).replace(/[\s/.]/g, '') === want && pcOk(a.pc));
+      let approx = false;
+      if (!hit && list.length) {         // nearest house number on the same street
+        const n = parseInt(q.hn, 10);
+        const cand = list.filter(a => pcOk(a.pc) && !isNaN(parseInt(a.hn, 10)) && parseInt(a.hn, 10) % 2 === n % 2);
+        cand.sort((a, b) => Math.abs(parseInt(a.hn, 10) - n) - Math.abs(parseInt(b.hn, 10) - n));
+        hit = cand[0]; approx = !!hit;
+      }
+      if (hit) { out.push({ kind: 'cím', title: s.name + ' ' + hit.hn + (approx ? ' (legközelebbi)' : ''), sub: label(s.city, hit.pc), lon: hit.lon, lat: hit.lat, zoom: 18.2, score: score + (approx ? 3 : 5) }); continue; }
+    }
+    if ((q.pc || q.district) && list.length && !list.some(a => pcOk(a.pc))) continue;
+    const a0 = list.find(a => pcOk(a.pc));
+    out.push({ kind: 'utca', title: s.name, sub: label(s.city, a0 && a0.pc), lon: s.lon, lat: s.lat, zoom: 16.8, score });
+  }
+  for (const p of IDX.places) {
+    if (!covers(q.rest, p.w)) continue;
+    const exact = p.w.join(' ') === q.rest.join(' ');
+    out.push({ kind: KIND[p.kind] || p.kind, title: p.name, sub: '', lon: p.lon, lat: p.lat,
+      zoom: p.kind === 'city' ? 11.5 : p.kind === 'town' ? 13 : 14.2, score: (exact ? 6 : 2) + (q.hn ? -4 : 0) - RANK[p.kind] * 0.2 });
+  }
+  out.sort((a, b) => b.score - a.score || a.title.length - b.title.length);
+  const seen = new Set();
+  return out.filter(r => { const k = r.kind + r.title + r.sub; if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+}
+function label(city, pc) {
+  if (city === 'Budapest' && pc && pc[0] === '1') return pc + ' Budapest ' + toRoman(Number(pc.slice(1, 3))) + '. ker.';
+  return (pc ? pc + ' ' : '') + city;
+}
+function toRoman(n) {
+  return (Object.keys(ROMAN).find(k => ROMAN[k] === n) || String(n)).toUpperCase();
+}
+
+// ---------------------------------------------------------------- online fallback (Nominatim, on request only)
+let lastOnline = 0;
+async function searchOnline(text) {
+  const wait = 1100 - (Date.now() - lastOnline);           // OSM policy: max 1 request / second
+  if (wait > 0) await new Promise(r => setTimeout(r, wait));
+  lastOnline = Date.now();
+  const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=hu&limit=6&accept-language=hu&q=' + encodeURIComponent(text);
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return (await r.json()).map(x => ({ kind: 'online', title: x.display_name.split(',').slice(0, 2).join(','),
+    sub: x.display_name.split(',').slice(2, 5).join(','), lon: +x.lon, lat: +x.lat, zoom: x.type === 'house' || x.addresstype === 'building' ? 18.2 : 15.5 }));
+}
+
+// ---------------------------------------------------------------- search UI
+const q = $('#q'), ul = $('#results');
+let results = [], sel = -1, timer = 0;
+function render() {
+  ul.innerHTML = '';
+  results.forEach((r, i) => {
+    const li = document.createElement('li');
+    li.setAttribute('role', 'option'); li.setAttribute('aria-selected', i === sel ? 'true' : 'false');
+    li.innerHTML = `<span class="k">${r.kind}</span><span class="t">${esc(r.title)}<br><span class="s">${esc(r.sub || '')}</span></span>`;
+    li.onmousedown = e => { e.preventDefault(); choose(i); };
+    ul.appendChild(li);
+  });
+  if (q.value.trim().length > 2 && navigator.onLine) {
+    const li = document.createElement('li');
+    li.innerHTML = '<span class="k online">online</span><span class="t online">Keresés az interneten (OpenStreetMap Nominatim)</span>';
+    li.onmousedown = async e => {
+      e.preventDefault();
+      try { results = await searchOnline(q.value.trim()); sel = results.length ? 0 : -1; render(); }
+      catch (err) { li.querySelector('.t').textContent = 'Online keresés sikertelen: ' + err.message; }
+    };
+    ul.appendChild(li);
+  }
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+q.addEventListener('input', () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => { results = searchOffline(q.value); sel = results.length ? 0 : -1; render(); }, 120);
+});
+q.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown') { sel = Math.min(sel + 1, results.length - 1); render(); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { sel = Math.max(sel - 1, 0); render(); e.preventDefault(); }
+  else if (e.key === 'Enter') { if (sel >= 0) choose(sel); }
+  else if (e.key === 'Escape') { ul.innerHTML = ''; q.blur(); }
+});
+q.addEventListener('blur', () => setTimeout(() => { ul.innerHTML = ''; }, 150));
+q.addEventListener('focus', () => { if (q.value.trim()) { results = searchOffline(q.value); render(); } });
+
+const marker = new maplibregl.Marker({ element: Object.assign(document.createElement('div'), { className: 'pin' }), anchor: 'bottom-left' });
+function choose(i) {
+  const r = results[i]; if (!r) return;
+  ul.innerHTML = ''; q.value = r.title + (r.sub ? ', ' + r.sub : '');
+  flyToPlace(r);
+}
+function flyToPlace(r) {
+  marker.setLngLat([r.lon, r.lat]).addTo(map);
+  // The "arrival" camera: close, tilted, slightly turned, so terrain and building heights read at once.
+  map.flyTo({ center: [r.lon, r.lat], zoom: r.zoom, pitch: r.zoom >= 16 ? 62 : 50, bearing: -20, speed: 1.4, curve: 1.5, essential: true });
+  map.once('moveend', () => { if ($('#gpanel').classList.contains('show')) gsync(); });
+}
+if (params.get('q')) {
+  const text = params.get('q'); q.value = text;
+  const wait = setInterval(() => { if (IDX) { clearInterval(wait); results = searchOffline(text); if (results[0]) flyToPlace(results[0]); } }, 200);
+  setTimeout(() => clearInterval(wait), 15000);
+}
+
+// ---------------------------------------------------------------- Google 3D view (optional, online)
+// Opened on command (G). It is aimed at what the VRG map shows: same centre, heading, tilt and
+// roughly the same distance. With a Map Tiles API key it is the real 3D city in CesiumJS (free
+// quota: 1 000 root requests a month, one per opening); without a key a keyless satellite embed.
+const CESIUM = 'https://cdn.jsdelivr.net/npm/cesium@1.146.0/Build/Cesium/';
+const GEOID_HU = 44;   // EGM96 geoid above the ellipsoid in Hungary (~43-45 m); Google tiles use ellipsoid heights
+let viewer = null;
+
+function camera() {
+  const c = map.getCenter(), z = map.getZoom(), pitch = map.getPitch(), bearing = map.getBearing();
+  const fovDeg = typeof map.getVerticalFieldOfView === 'function' ? map.getVerticalFieldOfView() : 36.87;
+  const h = map.getCanvas().clientHeight, fovy = fovDeg * Math.PI / 180;
+  const mpp = 40075016.686 * Math.cos(c.lat * Math.PI / 180) / (512 * Math.pow(2, z));
+  const range = (h / 2) / Math.tan(fovy / 2) * mpp;
+  let ground = 0;
+  try { ground = (map.queryTerrainElevation(c) || 0) / (map.getTerrain() ? map.getTerrain().exaggeration || 1 : 1); } catch { /* no terrain */ }
+  return { lat: c.lat, lon: c.lng, zoom: z, pitch, bearing, range, ground, fovy };
+}
+function links(cam) {
+  const alt = Math.round(cam.ground);
+  const earth = `https://earth.google.com/web/@${cam.lat.toFixed(6)},${cam.lon.toFixed(6)},${alt}a,${Math.round(cam.range)}d,35y,${cam.bearing.toFixed(1)}h,${cam.pitch.toFixed(1)}t,0r`;
+  const gmaps = `https://www.google.com/maps/@${cam.lat.toFixed(6)},${cam.lon.toFixed(6)},${Math.round(cam.range)}m/data=!3m1!1e3`;
+  return { earth, gmaps };
+}
+function foot(cam, keyed) {
+  const l = links(cam), used = store.get('gcount', { m: '', n: 0 });
+  const month = new Date().toISOString().slice(0, 7);
+  $('#gfoot').innerHTML =
+    `<a href="${l.earth}" target="_blank" rel="noopener">Megnyitás a Google Földben</a>` +
+    `<a href="${l.gmaps}" target="_blank" rel="noopener">Google Térkép</a>` +
+    (keyed ? `<span>ebben a hónapban ${used.m === month ? used.n : 0} / 1000 ingyenes megnyitás</span>` +
+             `<button class="btn" id="g-forget">Kulcs törlése</button>`
+           : `<input id="g-key" placeholder="Map Tiles API kulcs a valódi 3D-hez (opcionális)"><button class="btn" id="g-save">Mentés</button>`);
+  const save = $('#g-save'), forget = $('#g-forget');
+  if (save) save.onclick = () => { const k = $('#g-key').value.trim(); if (k) { store.set('gkey', k); gopen(true); } };
+  if (forget) forget.onclick = () => { store.set('gkey', ''); if (viewer) { viewer.destroy(); viewer = null; } gopen(true); };
+}
+function loadCesium() {
+  if (window.Cesium) return Promise.resolve();
+  return new Promise((ok, fail) => {
+    const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = CESIUM + 'Widgets/widgets.css';
+    document.head.appendChild(css);
+    window.CESIUM_BASE_URL = CESIUM;
+    const s = document.createElement('script'); s.src = CESIUM + 'Cesium.js'; s.onload = ok; s.onerror = () => fail(new Error('CesiumJS nem tölthető be'));
+    document.head.appendChild(s);
+  });
+}
+async function gopen(fresh) {
+  const panel = $('#gpanel'), body = $('#gbody'), key = store.get('gkey', '');
+  panel.classList.add('show'); press($('#b-google'), true);
+  const cam = camera();
+  foot(cam, !!key);
+  if (!navigator.onLine) { body.innerHTML = '<p style="color:#ddd;padding:20px">A Google nézethez internet kell. A VRG térkép offline is fut.</p>'; return; }
+  if (!key) {
+    $('#g-mode').textContent = 'műhold, kulcs nélkül (2D)';
+    const gz = Math.min(21, Math.round(cam.zoom + 1));
+    body.innerHTML = `<iframe title="Google műholdkép" referrerpolicy="no-referrer-when-downgrade"
+      src="https://maps.google.com/maps?q=${cam.lat.toFixed(6)},${cam.lon.toFixed(6)}&z=${gz}&t=k&output=embed"></iframe>`;
+    return;
+  }
+  $('#g-mode').textContent = 'fotorealisztikus 3D (Map Tiles API)';
+  try {
+    if (!viewer || fresh) {
+      if (viewer) { viewer.destroy(); viewer = null; }
+      await loadCesium();
+      body.innerHTML = '<div class="cesium" id="cesium"></div>';
+      viewer = new Cesium.Viewer('cesium', {
+        globe: false, baseLayer: false, geocoder: false, homeButton: false, sceneModePicker: false, baseLayerPicker: false,
+        navigationHelpButton: false, animation: false, timeline: false, fullscreenButton: false, infoBox: false, selectionIndicator: false,
+      });
+      viewer.scene.skyAtmosphere.show = true;
+      Cesium.GoogleMaps.defaultApiKey = key;
+      const tiles = await Cesium.createGooglePhotorealistic3DTileset({ key });
+      viewer.scene.primitives.add(tiles);
+      const month = new Date().toISOString().slice(0, 7), used = store.get('gcount', { m: month, n: 0 });
+      store.set('gcount', { m: month, n: used.m === month ? used.n + 1 : 1 });
+      foot(cam, true);
+    }
+    gsync();
+  } catch (e) {
+    body.innerHTML = `<p style="color:#f3c9b6;padding:20px">Google 3D hiba: ${esc(e.message || e)}</p>`;
+  }
+}
+function gsync() {
+  const cam = camera();
+  if (!viewer) { if ($('#gpanel').classList.contains('show')) gopen(false); return; }
+  const C = Cesium, v = viewer, cv = v.canvas;
+  const aspect = cv.clientWidth / Math.max(1, cv.clientHeight);
+  v.camera.frustum.fov = aspect > 1 ? 2 * Math.atan(Math.tan(cam.fovy / 2) * aspect) : cam.fovy;   // Cesium's fov is the wider side
+  const target = C.Cartesian3.fromDegrees(cam.lon, cam.lat, cam.ground + GEOID_HU);
+  v.camera.lookAt(target, new C.HeadingPitchRange(C.Math.toRadians(cam.bearing), C.Math.toRadians(-(90 - cam.pitch)), cam.range));
+  v.camera.lookAtTransform(C.Matrix4.IDENTITY);
+  foot(cam, true);
+}
+function gclose() { $('#gpanel').classList.remove('show'); press($('#b-google'), false); }
+$('#b-google').onclick = () => ($('#gpanel').classList.contains('show') ? gclose() : gopen(false));
+$('#g-close').onclick = gclose;
+$('#g-sync').onclick = () => gsync();
+
+// ---------------------------------------------------------------- keys
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.ctrlKey || e.altKey || e.metaKey) return;
+  const k = e.key.toLowerCase();
+  if (k === '/') { q.focus(); q.select(); e.preventDefault(); }
+  else if (k === '3') $('#b-3d').click();
+  else if (k === 't') $('#b-terrain').click();
+  else if (k === 'n') $('#b-north').click();
+  else if (k === 'g') $('#b-google').click();
+  else if (k === 'escape') gclose();
+});
+window.vrgMap = { map, searchOffline, camera };   // for tests and the console
+</script>
+</body>
+</html>

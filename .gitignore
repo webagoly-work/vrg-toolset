@@ -75,3 +75,6 @@ Console/traces/
 Divergence/data/outbox.jsonl
 Divergence/data/sent.jsonl
 Divergence/data/handoff/
+
+# --- VRG Térkép: offline map data, ~2 GB, rebuildable with node Map/tools/fetch-data.js ---
+Map/data/
