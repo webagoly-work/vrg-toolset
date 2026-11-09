@@ -37,9 +37,9 @@ Every layer should have **one interactive page** where a person sees that layer 
 | **C Code** | Kódváros (CodeCity) | ✅ | — |
 | **G Data Globe** | Gömb (`Solomon/dist/vrg-solomon.html`, START T) | ✅ | — |
 | **Z Codec** | — | n/a | machine layer; `stack.js` reads it |
-| **The stack itself** | `stack-search.html` (Rétegverem): flat, layer rows | ◐ | **Stacked view** (your first two pictures): isometric planes, one per layer, nodes on each, vertical lines lit for the selection. Later the neural view: activation during agent sessions |
+| **The stack itself** | `stack-search.html` (Rétegverem): flat, layer rows; Rétegek, `Stack/layers.html` (START R → 7): exploded isometric planes, one per layer (2026-11-07) | ◐ | **Stacked view** (your first two pictures): isometric planes, one per layer, nodes on each, vertical lines lit for the selection. **Rétegek has the planes; missing (checked 2026-11-10 against ROADMAP 3.1):** ① each plane is a force layout, not the layer's own natural order (time for I/L/U/R, hierarchy for F, tree for C/G); ② every vertical link is drawn by default (≈ 12 000, the "Kötők" toggle is on), not only the selection's; ③ the selection's pillar is not drawn as a vertical line through the planes (E is one more plane). A click already narrows the links to the selected node's own. Later the neural view: activation during agent sessions |
 
-**Missing pages, by value:** Stacked view (the hub of everything). (Vezérlőterem, Commit-pixel, Döntésnapló, Vonaltérkép and Futásnapló built 2026-11-09.) Which one comes first is STK-Q4.
+**Missing pages, by value:** Stacked view, finished (the hub of everything): Rétegek (`layers.html`) has the planes but needs natural-order layouts, selection-only vertical links and the pillar line (row above). (Ötletfolyam, Vezérlőterem, Commit-pixel built 2026-11-09; Döntésnapló, Vonaltérkép, Futásnapló built 2026-11-09/10.) Which one comes first was STK-Q4.
 
 ---
 
