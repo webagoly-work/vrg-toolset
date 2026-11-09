@@ -12,6 +12,7 @@
 //   node stack.js doctor [--fix]                                                check out/ and data/; --fix repairs and rebuilds
 //   node stack.js archive                                                       copy new transcripts into _admin/recordings
 //   node stack.js connectome                                                    rewrite out/connectome-data.js (connectome.html)
+//   node stack.js lineage                                                       rewrite out/lineage-data.js (lineage.html, Ötletfolyam)
 //   node stack.js neuron [<address | root prefix>]                              an axiom neuron by address (or the gate counts)
 //   node stack.js mcp                                                          run the MCP server on stdio
 //
@@ -63,6 +64,7 @@ async function main() {
       return hit.slice(0, 20).map(x => x[0] + '  ' + x[1] + '  ' + x[2] + ' KB #' + x[3] + '  w' + x[4] + (x[5].length ? '  → ' + x[5].join(' ') : '')).join('\n') || 'no neuron ' + q;
     }
     case 'connectome': return require('./lib/connectome').write().msg;
+    case 'lineage': return require('./lib/lineage').write().msg;
     case 'archive': { const r = require('./lib/archive').archive(); return `archive: ${r.copied} copied, ${r.same} unchanged, ${r.failed.length} failed`; }
     case 'mcp': require('./mcp/server').start(); return null;
     default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 20).map(l => l.slice(3)).join('\n');

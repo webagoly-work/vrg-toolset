@@ -228,6 +228,7 @@
               "server": "stack", "serverArgs": ["--no-open"], "page": "{stack}\\orb.html" },
             { "key": "6", "name": "Holo fájlként", "hint": "szerver nélkül", "path": "{stack}\\orb.html" },
             { "key": "7", "name": "Rétegek", "hint": "robbantott izometrikus rétegnézet", "path": "{stack}\\layers.html" },
+            { "key": "8", "name": "Ötletfolyam", "hint": "az ötletek folyama az időben (I réteg)", "path": "{stack}\\lineage.html" },
             { "key": "T", "name": "Telefonra", "hint": "stack-pages: a VRG Mobile Rétegverem", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Mobile/stack/publish-stack.js", "--push"] }] },
             { "key": "B", "name": "Újraépítés", "hint": "stack.js build", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "build"] }] },
             { "key": "D", "name": "Doktor", "hint": "stack.js doctor", "cwd": "{stack}", "steps": [{ "exe": "{node}", "args": ["stack.js", "doctor"] }] },

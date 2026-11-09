@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Ötletfolyam</title>
+<!-- Ötletfolyam (lineage river): the I layer of the VRG Stack in its own order, time (2026-11-09, STK-P1…).
+     Time flows left → right; every idea is a stream segment that starts on its date and runs until its last
+     offspring; a branch leaves the stream where a child idea starts (fork, dev, feed …) and a merge joins the
+     target. Width = downstream reach. Springs = the inferred "Need: …" ideas (and inferred roots). The scrubber
+     reveals the river up to a date. A click opens what the idea became in the other layers and where it came from.
+     Data: out/lineage-data.js (lib/lineage.js, written on every `stack.js build`). Works from file:// and serve.js. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/density.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-light.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/button.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/mini.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/scrubber.css">
+<style>
+  /* fallbacks so the page still reads if the kit is not reachable */
+  :root { --bg: var(--vk-bg, #0a141c); --s1: var(--vk-surface-1, #121c24); --s2: var(--vk-surface-2, #17232c); --ln: var(--vk-line, rgba(232,240,246,.15));
+    --ln2: var(--vk-line-strong, rgba(232,240,246,.34)); --tx: var(--vk-text, #e8f0f6); --mu: var(--vk-text-muted, #a6afb7); --fa: var(--vk-text-faint, #646d74);
+    --acc: var(--vk-accent, #93d3e6); --warm: var(--vk-activity, #e8a873);
+    --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif);
+    /* the river's colours: one per link kind (water = dev), all kit tokens so both themes follow */
+    --r-dev: var(--vk-layer-6, #3fb8a8); --r-fork: var(--vk-info, #9db8e8); --r-merge: var(--vk-idea, #b4a7e6); --r-trig: var(--vk-activity, #e8a873);
+    --r-feed: var(--vk-ok, #8bcca1); --r-meth: var(--vk-warn, #e3be7b); --r-look: var(--vk-layer-7, #d77aa8); --water: var(--vk-layer-6, #3fb8a8); }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--tx); font: 13px/1.4 var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--ln); }
+  h1 { font: 600 17px var(--voice); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--mu); margin-left: 6px; }
+  .sp { flex: 1; }
+  header button, header a.b, header input { font: 12px var(--mono); background: var(--s1); color: var(--mu); border: 1px solid var(--ln); padding: 5px 9px; text-decoration: none; min-height: 28px; }
+  header button { cursor: pointer; } header button:hover, header a.b:hover, header button[aria-pressed="true"] { color: var(--tx); border-color: var(--acc); }
+  header input[type=search] { width: 200px; color: var(--tx); font-family: var(--sans); }
+  #stat { font: 12px var(--mono); color: var(--mu); }
+  #scrubRow { padding: 4px 16px 6px; border-bottom: 1px solid var(--ln); }
+  main { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 340px; min-height: 0; }
+  #river { position: relative; overflow: auto; min-height: 0; min-width: 0; touch-action: pan-x pan-y; outline: none; }
+  #river svg { display: block; }
+  aside { border-left: 1px solid var(--ln); padding: 12px 14px; overflow: auto; min-height: 0; min-width: 0; background: var(--bg); }
+  aside h2 { font: 600 16px var(--voice); letter-spacing: .03em; margin: 2px 0 6px; overflow-wrap: anywhere; }
+  aside h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--mu); margin: 14px 0 4px; border-bottom: 1px solid var(--ln); padding-bottom: 2px; }
+  aside p { margin: 0 0 6px; overflow-wrap: anywhere; }
+  .kick { font: 11px var(--mono); color: var(--mu); text-transform: uppercase; letter-spacing: .06em; }
+  .kv { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 2px 8px; font-size: 12px; margin-top: 6px; }
+  .kv > span:nth-child(odd) { color: var(--mu); } .kv > span:nth-child(even) { overflow-wrap: anywhere; }
+  .mono { font-family: var(--mono); font-size: 12px; }
+  .row { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; padding: 2px 2px; color: var(--tx); text-decoration: none; cursor: pointer; border: 0; background: none; width: 100%; text-align: left; font: inherit; }
+  .row:hover { background: var(--vk-hover-bg, rgba(255,255,255,.05)); }
+  .row .c { font: 11px var(--mono); color: var(--mu); } .row .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .r { font: 11px var(--mono); color: var(--mu); white-space: nowrap; }
+  .row.alike .t { font-style: italic; color: var(--mu); }
+  .grp { font: 11px var(--mono); color: var(--mu); margin: 6px 0 1px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip { font: 11px var(--mono); border: 1px solid var(--ln2); background: var(--s1); color: var(--tx); padding: 2px 7px; cursor: pointer; }
+  .chip:hover { border-color: var(--acc); }
+  .chip[aria-pressed="false"] { opacity: .45; text-decoration: line-through; }
+  .sw { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 5px; }
+  .sw.dash { background: none !important; border-top: 2px dashed currentColor; height: 0; }
+  .hint { color: var(--mu); font-size: 12px; }
+  .warn { color: var(--warm); }
+  .links { margin-top: 12px; font-size: 12px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .links a { color: var(--acc); }
+  .glyph { width: 14px; height: 14px; vertical-align: -2px; margin-right: 5px; overflow: visible; }
+
+  /* ---- the river (SVG) ---- */
+  .lane-bg { fill: var(--tx); opacity: .025; } .lane-bg.odd { opacity: 0; }
+  .lane-sep { stroke: var(--ln); stroke-width: 1; }
+  .lane-name { font: 600 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; fill: var(--mu); paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+  .grid-l { stroke: var(--ln); stroke-width: 1; } .grid-l.mon { stroke: var(--ln2); }
+  .grid-t { font: 10px var(--mono); fill: var(--mu); }
+  .bar { fill: none; stroke: var(--water); stroke-linecap: round; opacity: .55; }
+  .tail { fill: none; stroke: var(--water); stroke-linecap: round; opacity: .18; }
+  .edge { fill: none; stroke-linecap: round; opacity: .72; }
+  .edge.inf { stroke-dasharray: 3 4; opacity: .55; }
+  .edge.dev { stroke: var(--r-dev); } .edge.fork { stroke: var(--r-fork); } .edge.merge { stroke: var(--r-merge); } .edge.trig { stroke: var(--r-trig); }
+  .edge.feed { stroke: var(--r-feed); } .edge.meth { stroke: var(--r-meth); } .edge.look { stroke: var(--r-look); }
+  .junc { fill: var(--bg); stroke: var(--r-merge); stroke-width: 1.5; }
+  .nd { cursor: pointer; }
+  .nd .g { stroke-width: 1.6; }
+  .nd.built .g { fill: var(--water); stroke: var(--water); }
+  .nd.document .g { fill: var(--bg); stroke: var(--tx); }
+  .nd.inferred .g { fill: var(--bg); stroke: var(--mu); stroke-dasharray: 2 2; }
+  .nd.question .g { fill: var(--bg); stroke: var(--warm); }
+  .nd.spring .g { fill: var(--bg); stroke: var(--acc); stroke-dasharray: none; }
+  .nd.spring .ring { fill: none; stroke: var(--acc); stroke-width: 1; opacity: .55; }
+  .nd .lb { font: 12px var(--sans); fill: var(--tx); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
+  .nd .dt { font: 10px var(--mono); fill: var(--mu); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+  .nd .hitbox { fill: transparent; stroke: none; }
+  .nd.dormant .g { fill: var(--fa); stroke: var(--fa); }
+  .nd.dormant .lb { fill: var(--fa); font-style: italic; }
+  .bar.dormant, .tail.dormant { stroke: var(--fa); }
+  .nd:hover .lb { fill: var(--acc); }
+  .nd.sel .g { stroke: var(--acc); stroke-width: 2.6; }
+  .nd.sel .lb { fill: var(--acc); font-weight: 600; }
+  .nd.hit .lb { fill: var(--acc); text-decoration: underline; }
+  .nd .halo { fill: none; stroke: var(--acc); stroke-width: 1.5; opacity: 0; }
+  .nd.sel .halo { opacity: .9; }
+  svg.focus .dim { opacity: .13; }
+  svg.focus .edge.on { opacity: .95; }
+  svg.focus .bar.on { opacity: .75; }
+  .future { display: none; }
+  .play-l { stroke: var(--acc); stroke-width: 1.5; }
+  .play-t { font: 600 10px var(--mono); fill: var(--acc); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+  .today-l { stroke: var(--warm); stroke-width: 1; stroke-dasharray: 2 3; opacity: .7; }
+  .hide-rel { display: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .nd, .edge, .bar, .tail { transition: opacity .18s ease; }
+  }
+  #empty { padding: 24px; color: var(--mu); }
+
+  @media (max-width: 900px) {
+    body { overflow-x: hidden; overflow-y: auto; height: auto; min-height: 100%; }
+    header { padding: 8px 12px; } h1 i { display: none; }
+    header input[type=search] { flex: 1 1 100%; width: auto; order: 9; }
+    #scrubRow { padding: 4px 12px 6px; }
+    main { display: block; }
+    #river { height: 58vh; border-bottom: 1px solid var(--ln); }
+    aside { border-left: 0; overflow: visible; }
+    .sp { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ötletfolyam<i>VRG Stack · I réteg · ötletek időben · lineage river</i></h1>
+  <input type="search" id="q" placeholder="Ötlet keresése · search" aria-label="Ötlet keresése">
+  <span class="sp"></span>
+  <button id="bOut" title="Kicsinyítés (−)" aria-label="Kicsinyítés">−</button>
+  <button id="bIn" title="Nagyítás (+)" aria-label="Nagyítás">+</button>
+  <button id="bTheme" title="Téma: auto → sötét → világos">◐ Téma</button>
+  <a class="b" href="layers.html" title="Rétegek · a teljes verem">Rétegek</a>
+  <a class="b" href="connectome.html" title="Konnektóm">Konnektóm</a>
+  <span id="stat"></span>
+</header>
+<div id="scrubRow"><div id="scrub"></div></div>
+<main>
+  <div id="river" tabindex="0" aria-label="Az ötletek folyama: az idő balról jobbra halad"></div>
+  <aside id="card" aria-live="polite"></aside>
+</main>
+<script src="../shared/vrg-ui-kit/icons/sprite.js"></script>
+<script src="../shared/vrg-ui-kit/components/core.js"></script>
+<script src="../shared/vrg-ui-kit/components/mini.js"></script>
+<script src="../shared/vrg-ui-kit/components/scrubber.js"></script>
+<script src="out/lineage-data.js"></script>
+<script>
+'use strict';
+(function () {
+  const D = window.LINEAGE;
+  const $ = s => document.querySelector(s);
+  const river = $('#river'), card = $('#card');
+  const NS = 'http://www.w3.org/2000/svg';
+  const DAY = 864e5;
+  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* file:// or private */ } } };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* ---------- theme: auto (system) → dark (Mélyvíz) → light (Papír) ---------- */
+  const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
+  let themePref = store.get('vrg-lineage-theme') || 'auto';
+  function applyTheme() {
+    const light = themePref === 'light' || (themePref === 'auto' && mq && mq.matches);
+    document.documentElement.setAttribute('data-vk-theme', light ? 'light' : 'melyviz');
+    $('#bTheme').textContent = '◐ ' + ({ auto: 'Auto', dark: 'Sötét', light: 'Világos' })[themePref];
+  }
+  $('#bTheme').onclick = () => { themePref = { auto: 'dark', dark: 'light', light: 'auto' }[themePref]; store.set('vrg-lineage-theme', themePref); applyTheme(); };
+  if (mq && mq.addEventListener) mq.addEventListener('change', applyTheme);
+  applyTheme();
+
+  if (!D || !D.nodes) {
+    river.innerHTML = '<div id="empty">Nincs adat: <code>out/lineage-data.js</code> hiányzik. Futtasd: <code>stack.js build</code> (a Stack mappában).</div>';
+    card.innerHTML = '';
+    return;
+  }
+
+  /* ---------- names ---------- */
+  const KIND = { built: 'megépült', document: 'dokumentum', inferred: 'kikövetkeztetett', dormant: 'alvó', question: 'kérdés' };
+  const REL = { dev: 'továbbfejlődik', fork: 'leágazik', merge: 'beolvad', trig: 'kivált', feed: 'táplál', meth: 'módszert ad', look: 'látványt ad' };
+  const REL_SHORT = { dev: 'fejl.', fork: 'ág', merge: 'beolv.', trig: 'kivált', feed: 'tápl.', meth: 'mód.', look: 'látv.' };
+  const VREL = { 'ref:c': 'commit', 'ref:m': 'memória', 'ref:p': 'útvonal', 'ref:go': 'GO', 'ref:q': 'döntés', 'ref:s': 'munkamenet', alike: '≈ név', pillar: 'pillér' };
+  const LAYER = D.layers || {};
+  const laneName = Object.fromEntries((D.lanes || []).map(l => [l[0], l[1]]));
+  const T = s => { const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(s || ''); return m ? Date.UTC(+m[1], m[2] - 1, +m[3]) : NaN; };
+  const fmt = t => { const d = new Date(t); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0'); };
+  const MON = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+
+  /* ---------- graph ---------- */
+  const N = new Map(D.nodes.map(n => [n.id, Object.assign(n, { tm: T(n.t), kids: [], pars: [] })]));
+  const E = D.links.map(([a, b, rel, inf]) => ({ a: N.get(a), b: N.get(b), rel, inf: !!inf })).filter(e => e.a && e.b);
+  for (const e of E) { e.a.kids.push(e); e.b.pars.push(e); }
+  const t0 = T(D.min) - 3 * DAY;
+  const tEnd = Math.max(T(D.today) || 0, T(D.max));
+  const t1 = tEnd + 6 * DAY;
+  const lanes = (D.lanes || []).map(l => l[0]).filter(c => D.nodes.some(n => n.lane === c));
+  for (const n of D.nodes) if (!lanes.includes(n.lane)) lanes.push(n.lane);
+  const counts = D.counts || {};
+  $('#stat').textContent = `${counts.ideas} ötlet · ${counts.links} kapcsolat · ${counts.springs} forrás`;
+
+  /* stream end: the idea flows until its last offspring starts; a leaf gets a short fading tail */
+  for (const n of N.values()) {
+    const last = n.kids.reduce((m, e) => Math.max(m, e.b.tm), n.tm);
+    n.end = last; n.leaf = !n.kids.length;
+    n.tailEnd = n.tm + (n.kind === 'dormant' ? 2 : 5) * DAY;
+  }
+  const wBar = n => Math.min(9, 2 + Math.sqrt(n.reach) * 1.05);
+  const wEdge = n => Math.min(6, 1.2 + Math.sqrt(n.reach + 1) * 0.75);
+
+  /* ---------- state ---------- */
+  const phone = () => innerWidth <= 900;
+  let ppd = 0;               // pixels per day
+  let cut = tEnd;            // the scrubber: river revealed up to here
+  let sel = null, hits = new Set(), relOff = new Set(JSON.parse(store.get('vrg-lineage-reloff') || '[]')), infOff = store.get('vrg-lineage-infoff') === '1';
+  const hash = new URLSearchParams(location.hash.slice(1));
+  if (hash.get('t') && !isNaN(T(hash.get('t')))) cut = Math.min(tEnd, Math.max(t0, T(hash.get('t'))));
+
+  /* ---------- layout ---------- */
+  const meas = document.createElement('canvas').getContext('2d');
+  const PADL = 14, LANE_HEAD = 22, ROW = 32, TOP = 22;
+  let L = null;  // layout result
+  function clipTitle(s) { const max = phone() ? 24 : 34; return s.length > max ? s.slice(0, max - 1) + '…' : s; }
+  function layout() {
+    const fontFam = getComputedStyle(document.body).fontFamily;
+    meas.font = '12px ' + fontFam;
+    const X = t => PADL + (t - t0) / DAY * ppd;
+    const lay = { X, lanes: [], H: 0, W: Math.ceil(X(t1)) + 20 };
+    let y = TOP;
+    lanes.forEach((code, li) => {
+      const ns = [...N.values()].filter(n => n.lane === code).sort((a, b) => a.tm - b.tm || b.reach - a.reach);
+      const tracks = [];
+      for (const n of ns) {
+        n.label = clipTitle(n.title);
+        const lw = meas.measureText(n.label).width;
+        const x = X(n.tm);
+        const start = x - 8;
+        const stop = Math.max(x + 9 + lw, X(n.leaf ? n.tailEnd : n.end) + 4) + 12;
+        let k = tracks.findIndex(e => e < start);
+        if (k < 0) { k = tracks.length; tracks.push(0); }
+        tracks[k] = stop; n.track = k; n.x = x;
+      }
+      const h = LANE_HEAD + Math.max(1, tracks.length) * ROW + 6;
+      for (const n of ns) n.y = y + LANE_HEAD + n.track * ROW + 20;
+      lay.lanes.push({ code, y, h, odd: li % 2 });
+      y += h;
+    });
+    lay.H = y + 10;
+    return lay;
+  }
+
+  /* ---------- draw ---------- */
+  let svg, gPlay, gLaneNames, gGrid;
+  const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  function glyph(n, g, r) {
+    if (n.kind === 'document') return mk('rect', { class: 'g', x: -r + .5, y: -r + .5, width: 2 * r - 1, height: 2 * r - 1 }, g);
+    if (n.kind === 'question') return mk('path', { class: 'g', d: `M0 ${-r - 1}L${r + 1} 0L0 ${r + 1}L${-r - 1} 0Z` }, g);
+    return mk('circle', { class: 'g', r }, g);
+  }
+  function edgePath(e) {
+    const xa = e.a.x, ya = e.a.y, xb = e.b.x, yb = e.b.y, rb = 6;
+    if (Math.abs(ya - yb) < 1) return `M${xa} ${ya}L${xb - rb} ${yb}`;
+    const dx = xb - xa;
+    if (dx < 14) { // same day or nearly: a short S-bend out of the stream and into the child
+      const c = 18;
+      return `M${xa} ${ya}C${xa + c} ${ya} ${xb - c} ${yb} ${xb - rb} ${yb}`;
+    }
+    const sx = Math.max(xa, xb - Math.min(70, dx * 0.7));
+    const mx = (sx + xb) / 2;
+    return `M${xa} ${ya}L${sx} ${ya}C${mx} ${ya} ${mx} ${yb} ${xb - rb} ${yb}`;
+  }
+  function draw() {
+    L = layout();
+    river.textContent = '';
+    svg = mk('svg', { width: L.W, height: L.H, viewBox: `0 0 ${L.W} ${L.H}`, role: 'img', 'aria-label': 'Ötletfolyam' }, river);
+    // lane bands
+    const gL = mk('g', {}, svg);
+    for (const l of L.lanes) {
+      mk('rect', { class: 'lane-bg' + (l.odd ? ' odd' : ''), x: 0, y: l.y, width: L.W, height: l.h }, gL);
+      mk('line', { class: 'lane-sep', x1: 0, x2: L.W, y1: l.y, y2: l.y }, gL);
+    }
+    // time grid: weeks (Mondays) and months
+    gGrid = mk('g', {}, svg);
+    let lastLabel = -1e9;
+    for (let t = Math.ceil(t0 / DAY) * DAY; t <= t1; t += DAY) {
+      const d = new Date(t), mon = d.getUTCDate() === 1, monday = d.getUTCDay() === 1;
+      if (!mon && !monday) continue;
+      const x = L.X(t);
+      mk('line', { class: 'grid-l' + (mon ? ' mon' : ''), x1: x, x2: x, y1: TOP - 4, y2: L.H }, gGrid);
+      const txt = mon ? MON[d.getUTCMonth()].toUpperCase() : MON[d.getUTCMonth()] + ' ' + d.getUTCDate() + '.';
+      if (x - lastLabel > (mon ? 44 : 66)) { const tx = mk('text', { class: 'grid-t', x: x + 3, y: TOP - 8 }, gGrid); tx.textContent = txt; lastLabel = x; }
+    }
+    const today = T(D.today);
+    if (!isNaN(today)) { const x = L.X(today); mk('line', { class: 'today-l', x1: x, x2: x, y1: TOP - 4, y2: L.H }, gGrid); }
+    // streams (bars) under everything
+    const gB = mk('g', {}, svg), gE = mk('g', {}, svg), gN = mk('g', {}, svg);
+    for (const n of N.values()) {
+      const w = wBar(n);
+      n.elBar = mk('line', { class: 'bar' + (n.kind === 'dormant' ? ' dormant' : ''), x1: n.x, y1: n.y, x2: n.x, y2: n.y, 'stroke-width': w }, gB);
+      n.elTail = mk('line', { class: 'tail' + (n.kind === 'dormant' ? ' dormant' : ''), x1: n.x, y1: n.y, x2: n.x, y2: n.y, 'stroke-width': w }, gB);
+    }
+    for (const e of E) {
+      e.el = mk('path', { class: `edge ${e.rel}${e.inf ? ' inf' : ''}`, d: edgePath(e), 'stroke-width': wEdge(e.b) }, gE);
+      const ti = mk('title', {}, e.el); ti.textContent = `${e.a.title} → ${REL[e.rel] || e.rel} → ${e.b.title}${e.inf ? ' (kikövetkeztetett)' : ''}`;
+      if (e.rel === 'merge') e.elJ = mk('path', { class: 'junc', d: `M${e.b.x - 13} ${e.b.y}l4 -4l4 4l-4 4z` }, gE);
+    }
+    // ideas
+    for (const n of N.values()) {
+      const cls = ['nd', n.kind]; if (n.spring) cls.push('spring');
+      const g = mk('g', { class: cls.join(' '), transform: `translate(${n.x} ${n.y})`, tabindex: '-1', 'data-id': n.id }, gN);
+      const r = n.kind === 'built' ? 4.5 : 4;
+      mk('circle', { class: 'halo', r: r + 5 }, g);
+      if (n.spring) mk('circle', { class: 'ring', r: r + 3.5 }, g);
+      glyph(n, g, r);
+      const lb = mk('text', { class: 'lb', x: 7, y: -wBar(n) / 2 - 5 }, g); lb.textContent = n.label;
+      const w = meas.measureText(n.label).width;
+      mk('rect', { class: 'hitbox', x: -9, y: -wBar(n) / 2 - 19, width: w + 18, height: 26 + wBar(n) / 2 }, g);
+      const ti = mk('title', {}, g); ti.textContent = `${n.title}\n${n.approx ? '~' : ''}${n.t} · ${KIND[n.kind] || n.kind}${n.spring ? ' · forrás' : ''} · ${n.reach} utód`;
+      g.addEventListener('click', ev => { ev.stopPropagation(); select(n.id === sel ? null : n.id); });
+      n.el = g;
+    }
+    // lane names (kept at the left edge while scrolling)
+    gLaneNames = mk('g', {}, svg);
+    for (const l of L.lanes) { const t = mk('text', { class: 'lane-name', x: 8, y: l.y + 15 }, gLaneNames); t.textContent = (laneName[l.code] || l.code); }
+    // playhead
+    gPlay = mk('g', {}, svg);
+    mk('line', { class: 'play-l', x1: 0, x2: 0, y1: TOP - 4, y2: L.H }, gPlay);
+    mk('text', { class: 'play-t', x: 4, y: TOP + 8 }, gPlay);
+    svg.addEventListener('click', () => select(null));
+    stickLaneNames();
+    applyCut(); applyRel(); applyFocus();
+  }
+  function stickLaneNames() { if (gLaneNames) gLaneNames.setAttribute('transform', `translate(${river.scrollLeft} 0)`); }
+  river.addEventListener('scroll', stickLaneNames, { passive: true });
+
+  /* ---------- scrubber cut ---------- */
+  function applyCut() {
+    const xc = L.X(cut);
+    for (const n of N.values()) {
+      const vis = n.tm <= cut;
+      n.el.classList.toggle('future', !vis);
+      const endB = Math.min(n.end, cut), endT = Math.min(n.tailEnd, cut);
+      n.elBar.classList.toggle('future', !vis);
+      n.elBar.setAttribute('x2', vis ? L.X(Math.max(n.tm, endB)) : n.x);
+      const showTail = vis && n.leaf && endT > n.tm;
+      n.elTail.classList.toggle('future', !showTail);
+      if (showTail) n.elTail.setAttribute('x2', L.X(endT));
+    }
+    for (const e of E) { const vis = e.b.tm <= cut; e.el.classList.toggle('future', !vis); if (e.elJ) e.elJ.classList.toggle('future', !vis); }
+    gPlay.setAttribute('transform', `translate(${xc} 0)`);
+    gPlay.style.display = cut >= tEnd ? 'none' : '';
+    gPlay.lastChild.textContent = fmt(cut);
+  }
+  function follow() { // keep the playhead in view while scrubbing / playing
+    const xc = L.X(cut), w = river.clientWidth, left = river.scrollLeft;
+    if (xc > left + w - 60 || xc < left + 40) river.scrollLeft = Math.max(0, xc - w * 0.7);
+  }
+
+  /* ---------- link-kind filter ---------- */
+  function applyRel() {
+    for (const e of E) { const off = relOff.has(e.rel) || (infOff && e.inf); e.el.classList.toggle('hide-rel', off); if (e.elJ) e.elJ.classList.toggle('hide-rel', off); }
+  }
+
+  /* ---------- selection: the idea's whole lineage stays lit ---------- */
+  function lineage(n) {
+    // each direction walked on its own, so siblings (a parent's other children) do not leak in
+    const up = new Set([n]), dn = new Set([n]);
+    const walk = (m, down, acc) => { for (const e of down ? m.kids : m.pars) { const o = down ? e.b : e.a; if (!acc.has(o)) { acc.add(o); walk(o, down, acc); } } };
+    walk(n, false, up); walk(n, true, dn);
+    return { up, dn, all: new Set([...up, ...dn]) };
+  }
+  function applyFocus() {
+    if (!svg) return;
+    const n = sel && N.get(sel);
+    svg.classList.toggle('focus', !!n);
+    const lin = n ? lineage(n) : null;
+    for (const m of N.values()) {
+      const on = !lin || lin.all.has(m);
+      m.el.classList.toggle('dim', !on); m.el.classList.toggle('sel', m === n);
+      m.elBar.classList.toggle('dim', !on); m.elTail.classList.toggle('dim', !on);
+      m.elBar.classList.toggle('on', !!lin && on);
+      m.el.classList.toggle('hit', hits.has(m.id));
+    }
+    for (const e of E) {
+      const on = !lin || ((lin.up.has(e.a) && lin.up.has(e.b)) || (lin.dn.has(e.a) && lin.dn.has(e.b)));
+      e.el.classList.toggle('dim', !on); e.el.classList.toggle('on', !!lin && on);
+      if (e.elJ) e.elJ.classList.toggle('dim', !on);
+    }
+  }
+  function select(id, { scroll = false } = {}) {
+    sel = id && N.has(id) ? id : null;
+    applyFocus(); renderCard();
+    const h = new URLSearchParams(location.hash.slice(1));
+    if (sel) h.set('sel', sel); else h.delete('sel');
+    history.replaceState(null, '', '#' + h.toString());
+    if (sel && scroll) {
+      const n = N.get(sel);
+      if (n.tm > cut) { cut = tEnd; scrub && scrub.set(cut, { silent: true }); applyCut(); }
+      river.scrollLeft = Math.max(0, n.x - river.clientWidth * 0.35);
+      river.scrollTop = Math.max(0, n.y - river.clientHeight * 0.45);
+    }
+  }
+
+  /* ---------- the side card ---------- */
+  const rowIdea = (m, relTxt, inf) => `<button class="row" data-go="${esc(m.id)}"><span class="c">${esc(m.t.slice(5))}</span><span class="t" title="${esc(m.title)}">${esc(m.title)}</span><span class="r">${esc(relTxt)}${inf ? ' ?' : ''}</span></button>`;
+  function glyphSvg(kind, spring) {
+    const cls = `nd ${kind}${spring ? ' spring' : ''}`;
+    const shape = kind === 'document' ? '<rect class="g" x="-3.5" y="-3.5" width="7" height="7"/>' : kind === 'question' ? '<path class="g" d="M0 -5L5 0L0 5L-5 0Z"/>' : '<circle class="g" r="4"/>';
+    return `<svg class="glyph" viewBox="-7 -7 14 14"><g class="${cls}">${spring ? '<circle class="ring" r="6.5"/>' : ''}${shape}</g></svg>`;
+  }
+  function renderCard() {
+    const n = sel && N.get(sel);
+    if (!n) return renderOverview();
+    const bec = (D.became[n.id] || []);
+    const groups = {};
+    for (const r of bec) (groups[r[1]] || (groups[r[1]] = [])).push(r);
+    const outcomes = Object.keys(groups).filter(k => k !== 'E');
+    let h = `<div class="kick">${glyphSvg(n.kind, n.spring)}${esc(KIND[n.kind] || n.kind)}${n.spring ? ' · forrás' : ''} · ${esc(laneName[n.lane] || n.lane)}</div>`;
+    h += `<h2>${esc(n.title)}</h2>`;
+    if (n.brief) h += `<p>${esc(n.brief)}</p>`;
+    h += '<div class="kv">';
+    h += `<span>Dátum</span><span class="mono">${n.approx ? '~' : ''}${esc(n.t)}${n.approx ? ' (becsült)' : ''}</span>`;
+    if (n.fate) h += `<span>Sorsa</span><span>${esc(n.fate)}</span>`;
+    if (n.evidence) h += `<span>Bizonyíték</span><span class="mono">${esc(n.evidence)}</span>`;
+    h += `<span>Utódok</span><span class="mono">${n.reach} ötlet lefelé</span>`;
+    if (groups.E) h += `<span>Pillér</span><span>${groups.E.map(r => `<a href="connectome.html#sel=${encodeURIComponent(r[0])}">${esc(r[2])}</a>`).join(', ')}</span>`;
+    h += '</div>';
+
+    h += `<h3>Mivé lett · más rétegekben</h3>`;
+    if (!outcomes.length) h += `<p class="hint">Nincs kapcsolata más réteghez (se funkció, se DevLog-vonal, se commit).</p>`;
+    for (const k of outcomes) {
+      h += `<div class="grp">${esc(k)} · ${esc(LAYER[k] || k)}</div>`;
+      for (const r of groups[k]) h += `<a class="row${r[3] === 'alike' ? ' alike' : ''}" href="connectome.html#sel=${encodeURIComponent(r[0])}" title="${esc(r[0])} — megnyitás a Konnektómban"><span class="c">${esc(r[1])}</span><span class="t">${esc(r[2])}</span><span class="r">${esc(VREL[r[3]] || r[3])}</span></a>`;
+    }
+    if (n.kids.length) {
+      h += `<h3>Továbbfolyik · ${n.kids.length} közvetlen utód</h3>`;
+      for (const e of [...n.kids].sort((a, b) => a.b.tm - b.b.tm)) h += rowIdea(e.b, REL[e.rel] || e.rel, e.inf);
+    }
+    h += `<h3>Honnan jött</h3>`;
+    if (n.spring && !n.pars.length) h += `<p class="hint">Ez maga egy forrás: egy kikövetkeztetett igény, innen ered a folyam.</p>`;
+    else if (!n.pars.length) h += `<p class="hint">Nincs feljegyzett előzménye: önálló kezdet.</p>`;
+    for (const e of [...n.pars].sort((a, b) => a.a.tm - b.a.tm)) h += rowIdea(e.a, REL[e.rel] || e.rel, e.inf);
+    if (n.springs && n.springs.length) {
+      h += `<div class="grp">Források (felfelé)</div><div class="chips">${n.springs.map(id => N.get(id)).filter(Boolean).map(s => `<button class="chip" data-go="${esc(s.id)}" title="${esc(s.title)}">${esc(s.title.replace(/^Need:\s*/i, ''))}</button>`).join('')}</div>`;
+    }
+    h += `<div class="links"><a href="connectome.html#sel=${encodeURIComponent('I:' + n.id)}">Megnyitás a Konnektómban</a><a href="layers.html">Rétegek</a><a href="#" data-clear="1">× Bezárás (Esc)</a></div>`;
+    card.innerHTML = h;
+  }
+  function renderOverview() {
+    const springs = [...N.values()].filter(n => n.spring).sort((a, b) => b.reach - a.reach);
+    let h = `<div class="kick">I réteg · Ötletek</div><h2>Honnan jön, hová folyik</h2>`;
+    h += `<p class="hint">Az idő balról jobbra halad. Minden ötlet egy patak a saját dátumától az utolsó utódjáig; ahol egy új ötlet kiválik belőle, ott ágazik el, ahol beolvad, ott egyesül. A vastagság a lefelé elért ötletek száma. A csúszkával a folyam egy adott napig látszik. Kattints egy ötletre: megmutatja, mivé lett és honnan jött.</p>`;
+    h += `<h3>Jelek</h3><div class="hint">`;
+    for (const [k, txt] of [['built', 'megépült'], ['document', 'dokumentum (terv, csomag)'], ['inferred', 'kikövetkeztetett lépés'], ['dormant', 'alvó: leírva, sosem épült'], ['question', 'nyitott kérdés']]) h += `<div>${glyphSvg(k, 0)}${txt}</div>`;
+    h += `<div>${glyphSvg('inferred', 1)}forrás: kikövetkeztetett igény („Need: …”)</div></div>`;
+    h += `<h3>Kapcsolatok · kattintással ki/be</h3><div class="chips">`;
+    for (const r of Object.keys(REL)) h += `<button class="chip" data-rel="${r}" aria-pressed="${!relOff.has(r)}"><span class="sw" style="background:var(--r-${r})"></span>${REL[r]}</button>`;
+    h += `<button class="chip" data-inf="1" aria-pressed="${!infOff}"><span class="sw dash" style="color:var(--mu)"></span>kikövetkeztetett (?)</button></div>`;
+    h += `<h3>Források · ${springs.length}</h3>`;
+    for (const s of springs) h += rowIdea(s, s.reach + ' utód', 0);
+    if (D.back && D.back.length) h += `<h3 class="warn">Időben visszafelé mutató kapcsolat · ${D.back.length}</h3>` + D.back.map(b => `<div class="mono warn">${esc(b.join(' → '))}</div>`).join('');
+    h += `<p class="hint" style="margin-top:12px">${counts.ideas} ötlet, ${counts.links} kapcsolat (${counts.inferred} kikövetkeztetett), ${counts.vertical} kapcsolat más rétegekbe. Adat: <code>out/lineage-data.js</code>, ${esc(String(D.generated).slice(0, 16).replace('T', ' '))}. Frissítés: <code>stack.js build</code>.</p>`;
+    card.innerHTML = h;
+  }
+  card.addEventListener('click', ev => {
+    const go = ev.target.closest('[data-go]'); if (go) { ev.preventDefault(); select(go.dataset.go, { scroll: true }); return; }
+    const rel = ev.target.closest('[data-rel]');
+    if (rel) { const r = rel.dataset.rel; relOff.has(r) ? relOff.delete(r) : relOff.add(r); store.set('vrg-lineage-reloff', JSON.stringify([...relOff])); rel.setAttribute('aria-pressed', String(!relOff.has(r))); applyRel(); return; }
+    const inf = ev.target.closest('[data-inf]');
+    if (inf) { infOff = !infOff; store.set('vrg-lineage-infoff', infOff ? '1' : '0'); inf.setAttribute('aria-pressed', String(!infOff)); applyRel(); return; }
+    if (ev.target.closest('[data-clear]')) { ev.preventDefault(); select(null); }
+  });
+
+  /* ---------- search ---------- */
+  const fold = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  $('#q').addEventListener('input', ev => {
+    const q = fold(ev.target.value.trim());
+    hits = new Set(q.length < 2 ? [] : [...N.values()].filter(n => fold(n.title + ' ' + n.brief + ' ' + n.evidence).includes(q)).map(n => n.id));
+    applyFocus();
+  });
+  $('#q').addEventListener('keydown', ev => {
+    if (ev.key === 'Enter' && hits.size) { const first = [...hits].map(id => N.get(id)).sort((a, b) => a.tm - b.tm)[0]; select(first.id, { scroll: true }); }
+    if (ev.key === 'Escape') { ev.target.value = ''; hits = new Set(); applyFocus(); }
+  });
+
+  /* ---------- zoom ---------- */
+  const fitPpd = () => phone() ? 9 : Math.max(9, Math.min(22, (river.clientWidth - 30) / ((t1 - t0) / DAY)));
+  function zoom(f) {
+    const mid = (river.scrollLeft + river.clientWidth / 2 - PADL) / ppd;   // days from t0 at the centre
+    ppd = Math.max(4, Math.min(48, ppd * f));
+    draw();
+    river.scrollLeft = Math.max(0, PADL + mid * ppd - river.clientWidth / 2);
+  }
+  $('#bIn').onclick = () => zoom(1.35); $('#bOut').onclick = () => zoom(1 / 1.35);
+  document.addEventListener('keydown', ev => {
+    if (ev.target.closest && ev.target.closest('input, textarea, [role=slider]')) return;
+    if (ev.key === 'Escape') select(null);
+    else if (ev.key === '+' || ev.key === '=') zoom(1.35);
+    else if (ev.key === '-') zoom(1 / 1.35);
+    else if (ev.key === '/') { ev.preventDefault(); $('#q').focus(); }
+  });
+
+  /* ---------- scrubber (VRG UI Kit) ---------- */
+  let scrub = null;
+  function onScrub(p) { cut = Math.min(tEnd, p.value); applyCut(); follow(); const h = new URLSearchParams(location.hash.slice(1)); if (cut < tEnd) h.set('t', fmt(cut)); else h.delete('t'); history.replaceState(null, '', '#' + h.toString()); }
+  if (window.VK && VK.scrubber) {
+    scrub = VK.scrubber.mount($('#scrub'), { min: fmt(T(D.min)), max: fmt(tEnd), value: fmt(cut), label: 'A folyam eddig a napig látszik', duration: 16000, caption: 'IDŐ' });
+    scrub.on('input', onScrub);
+  } else { // plain fallback when the kit is not reachable
+    const r = document.createElement('input'); r.type = 'range'; r.min = T(D.min); r.max = tEnd; r.step = DAY; r.value = cut; r.style.width = '100%'; r.setAttribute('aria-label', 'Időpont');
+    r.oninput = () => onScrub({ value: +r.value }); $('#scrub').appendChild(r);
+  }
+
+  /* ---------- go ---------- */
+  ppd = fitPpd();
+  draw();
+  let rt = 0;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { const p = fitPpd(); if (Math.abs(p - ppd) > 0.5 && !phone()) { ppd = p; draw(); } }, 200); });
+  select(hash.get('sel'), { scroll: !!hash.get('sel') });
+  if (!hash.get('sel') && cut < tEnd) follow();
+})();
+</script>
+</body>
+</html>

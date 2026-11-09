@@ -13,7 +13,7 @@ module.exports = [
     is: 'Why things exist: every work idea as a dated node, with where it came from and what it turned into.',
     order: 'time (x = date), lineage DAG; links only point forward in time', nodes: 'built · document · inferred · dormant · question', edges: 'dev · fork · merge · trig · feed · meth · look',
     source: 'notes/idea-timeline/data.js',
-    page: { state: 'partial', name: 'MindMap (VRG_idea_timeline.mindmap.json)', open: 'MindMap → Megnyitás', want: 'a lineage river: time scrubber, ideas branching and merging, dormant ones greyed' } },
+    page: { state: 'exists', name: 'Ötletfolyam (lineage river)', open: 'H:/VRG/Full/Planner_VRG_U100/Stack/lineage.html' } },
   { code: 'Q', id: 'decisions', hu: 'Döntések', en: 'Decisions',
     is: 'Every question asked in a DECISIONS file and whether it has an answer. The layer that says what is still waiting on the Founder.',
     order: 'by namespace (SOL, HUB, D-V …) and number; open before answered', nodes: 'decision file · decision', edges: 'holds',

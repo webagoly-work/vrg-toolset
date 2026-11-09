@@ -26,7 +26,8 @@ http.createServer((req, res) => {
     return api(busy).then(r => json(res, 200, r), e => json(res, 500, { ok: false, msg: String(e && e.message || e) })).finally(() => { busy = null; });
   }
   // the page links the Mélyvíz stylesheet from the repo
-  const file = p.startsWith('/Planner_VRG_U100/shared/') ? path.join(ROOT, '../..', p) : path.join(ROOT, p);
+  // pages link the repo's shared/ either as ../../Planner_VRG_U100/shared/ or as ../shared/ (which the browser asks for as /shared/)
+  const file = p.startsWith('/Planner_VRG_U100/shared/') ? path.join(ROOT, '../..', p) : p.startsWith('/shared/') ? path.join(ROOT, '..', p) : path.join(ROOT, p);
   if (!file.startsWith(path.join(ROOT, '../..'))) { res.writeHead(403); return res.end(); }
   fs.readFile(file, (err, buf) => { if (err) { res.writeHead(404); return res.end('not found'); } res.writeHead(200, { 'Content-Type': TYPE[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store' }); res.end(buf); });
 }).listen(PORT, '127.0.0.1', () => console.log(`VRG Stack: http://localhost:${PORT}/stack-search.html · http://localhost:${PORT}/connectome.html`));

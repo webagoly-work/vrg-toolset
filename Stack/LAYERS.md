@@ -28,7 +28,7 @@ Every layer should have **one interactive page** where a person sees that layer 
 | Layer | Its page today | State | The page it should have |
 |---|---|---|---|
 | **F Featured** | VRG Desktop Dashboard (`notes/dashboard`) | ✅ | — (D5+ continues there) |
-| **I Ideas** | MindMap with `VRG_idea_timeline.mindmap.json` | ◐ | **Lineage river**: time scrubber, ideas branch and merge, dormant ones greyed, click to open the feature it became |
+| **I Ideas** | Ötletfolyam, `Stack/lineage.html` (2026-11-09; the MindMap view of `VRG_idea_timeline.mindmap.json` stays) | ✅ | — (lineage river: time scrubber, ideas branch and merge, dormant ones greyed, springs = the inferred needs, click opens what it became) |
 | **Q Decisions** | none; the questions sit in 13 Markdown files | ✗ | **Döntésnapló** (decision inbox): every open question in one list, A/B/C buttons, the answer written back to its file with the date (with approval) |
 | **L DevLog** | `DEVLOG.md` board + MindMap with `VRG_devlog.mindmap.json` | ◐ | **Vonaltérkép** (metro map): lines as tracks, sessions as stations, quiet stretches in red, "continue this line" button |
 | **A Agentic** | Varler Console live trace (Console/, START W) shows only *running* agents | ◐ | **Vezérlőterem** (Control Room): agents and what they may read, memory freshness, briefs with stale state, schedules, usage per day |
