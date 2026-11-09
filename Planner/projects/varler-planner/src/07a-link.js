@@ -54,6 +54,82 @@ const PLANNER_LINK = (function () {
   const commands = Object.create(null); // cmd id  -> fn(payload)
   const listeners = [];                 // status observers
 
+  /* ---- the phone relay (VRG Mobile WP M7, D-9 = A) ----------------------
+     The phone can run the relay itself (Hálózat → Telefon relé). It lets only paired
+     PCs in: the first time this tab sends the code shown on the phone with a WebCrypto
+     P-256 key, later it signs the relay's challenge. Open the Planner with
+     ?relay=<phone address>[&pair=<code>], or call PLANNER_LINK.connectPhone(addr, code).
+     The same block as Kódváros' 36-link.js (Mobile/tests/relay-phone-link.js checks
+     both copies); the PC relay never sends relay:'phone', so nothing changes there. */
+
+  /* phone-relay auth: begin */
+  function vrgPhoneRelayAuth(send, app, firstCode) {
+    const S = (typeof crypto !== 'undefined' && crypto.subtle) || null;
+    const KEY = 'vrg.phoneRelay.';
+    const mem = {};
+    let code = firstCode || null, pending = null;
+    const b64 = buf => btoa(String.fromCharCode.apply(null, new Uint8Array(buf)));
+    const load = pc => { try { const s = localStorage.getItem(KEY + pc); if (s) return JSON.parse(s); } catch (e) { } return mem[pc] || null; };
+    const save = (pc, v) => { mem[pc] = v; try { if (v) localStorage.setItem(KEY + pc, JSON.stringify(v)); else localStorage.removeItem(KEY + pc); } catch (e) { } };
+    const ALG = { name: 'ECDSA', namedCurve: 'P-256' };
+    async function onWelcome(p) {
+      const pc = p.pc && p.pc.id;
+      if (!S || !pc || !p.challenge) return 'no-crypto';
+      const known = load(pc);
+      if (known) {
+        const k = await S.importKey('jwk', known.jwk, ALG, false, ['sign']);
+        const sig = await S.sign({ name: 'ECDSA', hash: 'SHA-256' }, k, new TextEncoder().encode('vrg-relay-auth:1:' + p.challenge + ':' + known.id));
+        send('auth', { id: known.id, sig: b64(sig) });
+        return 'auth';
+      }
+      if (!code && typeof prompt === 'function') code = prompt('A telefon reléje párosítást kér.\nÍrd be a kódot (telefonon: Hálózat → Telefon relé → Új párosító kód):') || null;
+      if (!code) return 'no-code';
+      const kp = await S.generateKey(ALG, true, ['sign', 'verify']);
+      pending = { pc, jwk: await S.exportKey('jwk', kp.privateKey) };
+      send('pair', { code, device: app + ' · ' + ((typeof navigator !== 'undefined' && navigator.platform) || 'PC'), pub: b64(await S.exportKey('spki', kp.publicKey)) });
+      code = null;
+      return 'pair';
+    }
+    return {
+      /** A message from the relay. Returns a promise for 'welcome', true when it was a pairing message, else false. */
+      onRelay(m) {
+        const p = (m && m.payload) || {};
+        if (m.type === 'welcome' && p.relay === 'phone') return onWelcome(p).catch(e => 'error: ' + e.message);
+        if (m.type === 'paired') {
+          if (p.ok && pending && p.id) save(pending.pc, { id: p.id, jwk: pending.jwk });
+          else if (!p.ok && typeof console !== 'undefined') console.warn('Telefon relé párosítás:', p.reason);
+          pending = null;
+          return true;
+        }
+        if (m.type === 'trust') {
+          const pc = p.pc && p.pc.id, known = pc && load(pc);
+          if (!p.ok && known && p.id === known.id) save(pc, null);    // the phone forgot this PC
+          return true;
+        }
+        return false;
+      },
+      setCode(c) { code = c || null; },
+    };
+  }
+  /* phone-relay auth: end */
+
+  const phoneAuth = vrgPhoneRelayAuth(function (type, payload) { return sendTo(type, payload, 'relay'); }, 'Planner',
+    (typeof location !== 'undefined' && location.search) ? new URLSearchParams(location.search).get('pair') : null);
+
+  function sendTo(type, payload, to) {
+    if (!ws || ws.readyState !== 1) return false;
+    const m = envelope(type, payload); m.to = to;
+    try { ws.send(JSON.stringify(m)); stats.out++; return true; } catch (e) { return false; }
+  }
+
+  /** "192.168.43.1" or "192.168.43.1:47292" (the phone shows it) -> connected, the code kept for the welcome. */
+  function connectPhone(addr, code) {
+    const a = String(addr || '').trim().replace(/^wss?:\/\//, '').replace(/\/.*$/, '');
+    if (!a) return false;
+    if (code) phoneAuth.setCode(code);
+    return connect('ws://' + (/:\d+$/.test(a) ? a : a + ':47291'));
+  }
+
   /* ---- envelope -------------------------------------------------------- */
 
   function envelope(type, payload) {
@@ -147,6 +223,7 @@ const PLANNER_LINK = (function () {
     // legacy one-way clients send bare messages with no envelope
     if (m.from == null && m.type) m = { v: 0, from: 'phone', type: m.type, payload: m, legacy: true };
     if (m.from === ROLE) return;                        // our own echo
+    if (m.from === 'relay' && phoneAuth.onRelay(m)) return;   // the phone relay's pairing (WP M7)
 
     if (m.type === 'hello') {
       peer = {
@@ -297,6 +374,7 @@ const PLANNER_LINK = (function () {
 
   const api = {
     connect: connect,
+    connectPhone: connectPhone,
     disconnect: disconnect,
     send: send,
     on: on,
@@ -315,5 +393,10 @@ const PLANNER_LINK = (function () {
 
   defineDefaults();
   if (typeof window !== 'undefined') window.PLANNER_LINK = api;
+  // ?relay=<address> opens the link at once (the phone relay, or any relay by address)
+  try {
+    const r = (typeof location !== 'undefined' && location.search) ? new URLSearchParams(location.search).get('relay') : null;
+    if (r) setTimeout(function () { connectPhone(r); }, 0);
+  } catch (e) { }
   return api;
 })();

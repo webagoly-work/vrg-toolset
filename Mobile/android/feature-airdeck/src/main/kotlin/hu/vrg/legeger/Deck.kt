@@ -30,6 +30,9 @@ import hu.vrg.legeger.core.Throttle
 import hu.vrg.legeger.hid.HidPeripheral
 import hu.vrg.legeger.motion.MotionSource
 import hu.vrg.legeger.relay.RelayClient
+import hu.vrg.mobile.kit.HidInfo
+import hu.vrg.mobile.kit.HidPhase
+import hu.vrg.mobile.kit.HidStatus
 import hu.vrg.mobile.kit.Pointer
 import hu.vrg.mobile.kit.PointerSink
 import hu.vrg.mobile.kit.VrgLog
@@ -141,6 +144,11 @@ object Deck {
         scope.launch { target.collect { padMode.value = Profiles.of(it).padMode } }
         scope.launch { relay.notes.collect { notes.emit(it) } }
         scope.launch { relay.shots.collect { onShot(it) } }
+        // the HID state for Hálózat (WP M7), through the kit: the phase names match one to one
+        scope.launch {
+            combine(hid.phase, hid.host) { p, _ -> HidInfo(HidPhase.valueOf(p.name), hid.hostLabel()) }
+                .collect { HidStatus.publish(it) }
+        }
         logLinks()
 
         motion.onGyro = ::onGyro

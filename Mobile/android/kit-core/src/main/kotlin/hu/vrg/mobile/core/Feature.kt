@@ -56,8 +56,8 @@ object Catalogue {
         "⎔", Group.LINK, Stage.LIVE, "M3", setOf(Need.INTERNET),
     )
     val NET = FeatureInfo(
-        "net", "Hálózat", "Bluetooth HID, WiFi relé, hotspot adatforgalom-figyeléssel, USB és Bluetooth internetmegosztás.",
-        "📶", Group.LINK, Stage.PLANNED, "M7",
+        "net", "Hálózat", "A telefon kapcsolatai egy helyen: hotspot adatforgalom-figyeléssel, USB és Bluetooth megosztás, helyi WiFi, Bluetooth HID és a telefon saját reléje.",
+        "📶", Group.LINK, Stage.BETA, "M7",
     )
     val PULSE = FeatureInfo(
         "pulse", "Haladás", "A main és a nyitott munkák friss állapota: melyik eszköz mit kapott, commitok, PR-ek, CI.",

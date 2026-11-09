@@ -9,6 +9,7 @@ import hu.vrg.mobile.drop.DropFeature
 import hu.vrg.mobile.inbox.InboxFeature
 import hu.vrg.mobile.launch.LaunchFeature
 import hu.vrg.mobile.kit.VrgFeature
+import hu.vrg.mobile.net.NetFeature
 import hu.vrg.mobile.notes.NotesFeature
 import hu.vrg.mobile.pair.PairFeature
 import hu.vrg.mobile.ports.PortsFeature
@@ -41,6 +42,7 @@ object Registry {
         CityFeature,
         StackFeature,
         InboxFeature,
+        NetFeature,
     )
 
     fun feature(id: String?): VrgFeature? = built.firstOrNull { it.info.id == id }

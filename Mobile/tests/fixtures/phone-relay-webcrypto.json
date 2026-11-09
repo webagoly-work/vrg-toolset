@@ -1,0 +1,7 @@
+{
+  "note": "A browser-style (WebCrypto, P1363) signature made by Node for relay-core PhoneRelayTest: the JVM relay must accept it. Regenerate with any WebCrypto; the key is throwaway.",
+  "pub": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2l3Dg2TrRv9pjONL95WqZ0SLy7vVCAkSkC+8BaobdogOCWnqPp1Csgegq5DjIfG2YiK9oZ7Kb5MqHE+QHW9XOg==",
+  "challenge": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+  "id": "a1b2c3d4e5f60718",
+  "sig": "qGADhggeDrXu+nLbzvhajZm000NiIpMjgQm0jV9cIred+rJX9CNtFkn1XSc/UZTaMymQmTwh2d/AJj+p5mQo5Q=="
+}

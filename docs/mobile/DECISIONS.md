@@ -177,6 +177,28 @@ options as well (the user answers like "A, A, B"), and the answer is recorded he
   (`notes/stack/touch.js`), not in an injected adapter, so the pages work in any phone browser too.
   Details: `WP/M17.md`.
 
+- **M7 · How Hálózat is built** (2026-11-07, no question asked; D-9 = A settled the direction, the research
+  `research/M7-network.md` the limits, these are the gaps the WP left).
+  - *Every client of the phone relay must be paired*, apps included, not only phones as on the PC relay: on the PC the
+    apps are local, on the phone the WiFi or hotspot is the open side. An untrusted client is held (nothing routed
+    either way) and closed after 30 s. Never an unauthenticated server.
+  - *The PC pairs with a code the phone shows*, typed on the PC (the PC relay's QR needs a camera on the other side):
+    10 letters, ≈ 49 bits, 2 min, single use, burnt after 5 wrong tries. The rest is the PC relay's handshake turned
+    round: a P-256 key from WebCrypto, `vrg-relay-auth:1:<challenge>:<id>` signed on every connect; P1363 and DER both
+    accepted.
+  - *The phone's own key is "self"*, so Légegér reaches the phone relay through the unchanged kit `Relay` (one hook,
+    `localPairing`), not a second link.
+  - *Own WebSocket server* (relay-core `WsServer`, RFC 6455, text only) instead of Ktor / NanoHTTPD: no framework on
+    the phone, and the JVM tests run the same server over real sockets.
+  - *The same port, 47291*, as the PC relay: `?relay=<phone>` works in Kódváros without a port; `<phone>:<port>` is new.
+  - *The PC relay's PC-side abilities* (screenshots, ports, launch, board, notify, screen) are answered
+    `{ok:false, unsupported:true}` under their usual answer type, so a feature says "not here" instead of waiting.
+  - *One foreground service, `connectedDevice`*, for the relay and the usage watch; started only by a tap,
+    `START_NOT_STICKY`. The usage figure is the whole phone's mobile data and is labelled so; the hotspot interface's own
+    bytes are added on Android 12+.
+  - *Dropped, per the research:* switching any tethering (system-only permission), per-client usage (no API).
+  Details: `WP/M7.md`.
+
 ## Open (to ask when the WP that needs them starts)
 
 None.

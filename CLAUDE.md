@@ -221,7 +221,7 @@ file at the repo root and does what it says.
 - **`GO HUB`** — `GO-HUB.md`: VRG Kapu, the access page; setup steps, guest mode and shared folders (planned).
 - **`GO CITY`** — `GO-CITY.md`: Kódváros; parked tuning, deferred checks, the Cloudflare ring.
 - **`GO MOBILE`** — `GO-MOBILE.md`: VRG Mobile, one WP at a time from `docs/mobile/` (M1, M2, M3, M4, M6, M9, M14 live,
-  M8, M16, M11, M12, M13, M5 and M10 built and in BETA; M7 next in the batch, D-9 = A). **Worked on in the local H: session since 2026-10-30** (main checkout, `main`; `Mobile\mobile.cmd`
+  M8, M16, M11, M12, M13, M5, M10 and M7 built and in BETA; the D-7/D-9/D-11 batch is done). **Worked on in the local H: session since 2026-10-30** (main checkout, `main`; `Mobile\mobile.cmd`
   builds and installs the APK); Actions still builds an APK on every push.
 - **`GO LOGO`** — `GO-LOGO.md`: the two-state Varler logo (ring ⇄ bulb, click to toggle) from `shared/varler-logo`,
   then the VRG Mobile logo home page (WP M15). Starts by asking Q1–Q4.

@@ -15,15 +15,17 @@
 //   orientation {pitch,yaw}  -> rotate, relative to the pose when the phone's camera switch was turned on
 //   keys {key,ctrl,shift,alt} -> a synthetic keydown, so every keyboard binding of the page works from the phone
 //
-// Read-only like the file:// page itself: nothing here writes anything. Without a relay it probes the ports
-// once at boot and then every 20 s, quietly.
+// Read-only like the file:// page itself: nothing here writes anything, except the phone relay's pairing key in
+// localStorage (WP M7, below). Without a relay it probes the ports once at boot and then every 20 s, quietly.
 
 const vlink = { ws: null, seq: 0, port: 0, timer: null, base: null, lastState: '' };
 const VLINK_PORTS = [47291, 47292, 47293, 47294, 47295, 47296, 47297, 47298];
 
-function vlinkSend(type, payload) {
+function vlinkSend(type, payload, to) {
   if (!vlink.ws || vlink.ws.readyState !== 1) return false;
-  vlink.ws.send(JSON.stringify({ v: 1, from: 'codecity', seq: ++vlink.seq, t: Date.now(), type, payload: payload || {} }));
+  const m = { v: 1, from: 'codecity', seq: ++vlink.seq, t: Date.now(), type, payload: payload || {} };
+  if (to) m.to = to;
+  vlink.ws.send(JSON.stringify(m));
   return true;
 }
 
@@ -96,10 +98,69 @@ function vlinkOrient(o) {
   placeCamera();
 }
 
+// The phone's own relay (VRG Mobile WP M7, D-9 = A): open the page with ?relay=<phone address>[&pair=<code>]. That
+// relay lets only paired PCs in: the first time this page sends the code shown on the phone (Hálózat → Telefon relé)
+// with a WebCrypto P-256 key, later it signs the relay's challenge. Same block as the Planner's 07a-link.js; the
+// PC relay never sends relay:'phone', so nothing changes there. Mobile/tests/relay-phone-link.js checks both copies.
+/* phone-relay auth: begin */
+function vrgPhoneRelayAuth(send, app, firstCode) {
+  const S = (typeof crypto !== 'undefined' && crypto.subtle) || null;
+  const KEY = 'vrg.phoneRelay.';
+  const mem = {};
+  let code = firstCode || null, pending = null;
+  const b64 = buf => btoa(String.fromCharCode.apply(null, new Uint8Array(buf)));
+  const load = pc => { try { const s = localStorage.getItem(KEY + pc); if (s) return JSON.parse(s); } catch (e) { } return mem[pc] || null; };
+  const save = (pc, v) => { mem[pc] = v; try { if (v) localStorage.setItem(KEY + pc, JSON.stringify(v)); else localStorage.removeItem(KEY + pc); } catch (e) { } };
+  const ALG = { name: 'ECDSA', namedCurve: 'P-256' };
+  async function onWelcome(p) {
+    const pc = p.pc && p.pc.id;
+    if (!S || !pc || !p.challenge) return 'no-crypto';
+    const known = load(pc);
+    if (known) {
+      const k = await S.importKey('jwk', known.jwk, ALG, false, ['sign']);
+      const sig = await S.sign({ name: 'ECDSA', hash: 'SHA-256' }, k, new TextEncoder().encode('vrg-relay-auth:1:' + p.challenge + ':' + known.id));
+      send('auth', { id: known.id, sig: b64(sig) });
+      return 'auth';
+    }
+    if (!code && typeof prompt === 'function') code = prompt('A telefon reléje párosítást kér.\nÍrd be a kódot (telefonon: Hálózat → Telefon relé → Új párosító kód):') || null;
+    if (!code) return 'no-code';
+    const kp = await S.generateKey(ALG, true, ['sign', 'verify']);
+    pending = { pc, jwk: await S.exportKey('jwk', kp.privateKey) };
+    send('pair', { code, device: app + ' · ' + ((typeof navigator !== 'undefined' && navigator.platform) || 'PC'), pub: b64(await S.exportKey('spki', kp.publicKey)) });
+    code = null;
+    return 'pair';
+  }
+  return {
+    /** A message from the relay. Returns a promise for 'welcome', true when it was a pairing message, else false. */
+    onRelay(m) {
+      const p = (m && m.payload) || {};
+      if (m.type === 'welcome' && p.relay === 'phone') return onWelcome(p).catch(e => 'error: ' + e.message);
+      if (m.type === 'paired') {
+        if (p.ok && pending && p.id) save(pending.pc, { id: p.id, jwk: pending.jwk });
+        else if (!p.ok && typeof console !== 'undefined') console.warn('Telefon relé párosítás:', p.reason);
+        pending = null;
+        return true;
+      }
+      if (m.type === 'trust') {
+        const pc = p.pc && p.pc.id, known = pc && load(pc);
+        if (!p.ok && known && p.id === known.id) save(pc, null);    // the phone forgot this PC
+        return true;
+      }
+      return false;
+    },
+    setCode(c) { code = c || null; },
+  };
+}
+/* phone-relay auth: end */
+
+const vlinkPhone = vrgPhoneRelayAuth((type, payload) => vlinkSend(type, payload, 'relay'), 'Kódváros',
+  new URLSearchParams(location.search).get('pair'));
+
 function vlinkOnMessage(raw) {
   let m;
   try { m = JSON.parse(raw); } catch (e) { return; }
   if (!m || m.from === 'codecity') return;
+  if (m.from === 'relay' && vlinkPhone.onRelay(m)) return;
   const p = m.payload || {};
   if (m.type === 'hello' && (p.role === 'phone' || m.from === 'phone')) { vlinkState(true); return; }
   if (m.type === 'state.request') { vlinkState(true); return; }
@@ -121,13 +182,16 @@ function vlinkFocus() { vlinkSend('focus', { app: 'codecity', title: document.ti
 
 function vlinkOpen(i = 0) {
   if (vlink.ws) return;
-  if (i >= VLINK_PORTS.length) { vlink.timer = setTimeout(() => vlinkOpen(0), 20000); return; }
-  const host = new URLSearchParams(location.search).get('relay') || '127.0.0.1';
+  // ?relay=<host> probes the usual ports there; ?relay=<host>:<port> (the phone relay on another port) only that one
+  const want = (new URLSearchParams(location.search).get('relay') || '127.0.0.1').trim();
+  const hp = /^(.+):(\d{2,5})$/.exec(want);
+  const host = hp ? hp[1] : want, ports = hp ? [Number(hp[2])] : VLINK_PORTS;
+  if (i >= ports.length) { vlink.timer = setTimeout(() => vlinkOpen(0), 20000); return; }
   let ws;
-  try { ws = new WebSocket(`ws://${host}:${VLINK_PORTS[i]}`); } catch (e) { vlinkOpen(i + 1); return; }
+  try { ws = new WebSocket(`ws://${host}:${ports[i]}`); } catch (e) { vlinkOpen(i + 1); return; }
   let opened = false;
   ws.onopen = () => {
-    opened = true; vlink.ws = ws; vlink.port = VLINK_PORTS[i];
+    opened = true; vlink.ws = ws; vlink.port = ports[i];
     vlinkSend('hello', { role: 'codecity', app: 'codecity', caps: ['state', 'cmd', 'keys', 'orientation', 'gesture'], tools: vlinkTools() });
     if (document.hasFocus()) vlinkFocus();
   };

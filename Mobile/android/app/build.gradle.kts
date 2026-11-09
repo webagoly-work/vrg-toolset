@@ -66,4 +66,5 @@ dependencies {
     implementation(project(":feature-city"))
     implementation(project(":feature-stack"))
     implementation(project(":feature-inbox"))
+    implementation(project(":feature-net"))
 }

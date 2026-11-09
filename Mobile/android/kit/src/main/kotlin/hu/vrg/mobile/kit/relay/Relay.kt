@@ -79,6 +79,12 @@ object Relay {
     private var pairTimeout: Job? = null
     private val caps = linkedSetOf("state", "cmd")
 
+    /**
+     * A pairing the app holds itself rather than in ShellSettings: the phone's own relay (WP M7, feature-net)
+     * trusts this phone's key as "self", so Légegér's link to 127.0.0.1 proves itself like any paired phone.
+     */
+    @Volatile var localPairing: (pcId: String) -> PairedPc? = { null }
+
     /** A feature's relay abilities, announced in the hello. Call from init(), before the link opens. */
     @Synchronized
     fun addCaps(more: Collection<String>) { caps += more }
@@ -204,7 +210,7 @@ object Relay {
                 challenge = n.challenge
                 _pc.value = RelayPc(n.pcId, n.pcName)
                 val offer = pending
-                val known = ShellSettings.value.pcById(n.pcId)
+                val known = ShellSettings.value.pcById(n.pcId) ?: localPairing(n.pcId)
                 when {
                     offer != null -> sendPair(offer)
                     known != null -> auth(known, n.challenge)
