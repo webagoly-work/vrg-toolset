@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Futásnapló</title>
+<!-- Futásnapló (run log): the U layer of the VRG Stack in its own order (2026-11-09, STK-P46…).
+     A day strip, then the day's runs as bars on a time-of-day axis (UTC, like every U day), one row per
+     place (worktree or checkout) or per DevLog line, so parallel sessions read as parallel. Colour = how the
+     run was started, length = its active stretches, thickness + badge = its steps that day. A run that goes
+     on past midnight is cut there and carries a continuation mark (‹ ›) on both days. A run opens its
+     tools, files, the stack layers it touched (the Konnektóm's glow), its DevLog line and a replay link;
+     replay.html (Visszajátszás) stays the step-by-step view under this one.
+     Data: out/runs-data.js (lib/runs.js, written on every `stack.js build`; quotes job codes, stays out of
+     git). Works from file:// and serve.js. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/density.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-light.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/base.css">
+<style>
+  /* fallbacks so the page still reads if the kit is not reachable */
+  :root { --bg: var(--vk-bg, #0a141c); --s1: var(--vk-surface-1, #121c24); --s2: var(--vk-surface-2, #17232c); --s3: var(--vk-surface-3, #1d2a33);
+    --ln: var(--vk-line, rgba(232,240,246,.15)); --ln2: var(--vk-line-strong, rgba(232,240,246,.34));
+    --tx: var(--vk-text, #e8f0f6); --mu: var(--vk-text-muted, #a6afb7); --fa: var(--vk-text-faint, #6f7880);
+    --acc: var(--vk-accent, #93d3e6); --warm: var(--vk-activity, #e8a873); --ok: var(--vk-ok, #8bcca1); --warn: var(--vk-warn, #e3be7b);
+    --info: var(--vk-info, #9db8e8); --idea: var(--vk-idea, #b4a7e6); --crit: var(--vk-crit, #e4877d);
+    --acc-soft: color-mix(in srgb, var(--acc) 14%, transparent);
+    --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif);
+    --panel-w: 420px;
+    /* how a run was started (bar colour, STK-P48); never the only cue: the legend, the list and the panel name it */
+    --k-desktop: #6fd0e8; --k-cli: #86d39a; --k-agent: #b9a2f0; --k-auto: #f0a35e; --k-scheduled: #f2a8e0; --k-unknown: #8a939b;
+    /* the Konnektóm's layer colours (connectome.html LAYER), for the "touched" glow */
+    --ly-F: #e3be7b; --ly-I: #c6a0e6; --ly-E: #f2f6f8; --ly-A: #7fd3ec; --ly-G: #8aa4b4; --ly-C: #5b8fe0; --ly-L: #8bcca1; --ly-Q: #e4877d; --ly-U: #ff9a52; --ly-R: #f0dc6e;
+    --read: #6fb6e8; --write: #e8a873; --err: #ff6b6b; }
+  [data-vk-theme="light"] {
+    --k-desktop: #0f7590; --k-cli: #2a7a44; --k-agent: #5a43a8; --k-auto: #a5520f; --k-scheduled: #9c2f86; --k-unknown: #6d757d;
+    --ly-F: #8a6410; --ly-I: #6c3fa0; --ly-E: #4a5560; --ly-A: #0f7590; --ly-G: #4d6878; --ly-C: #2556a8; --ly-L: #2a7a44; --ly-Q: #b03a2e; --ly-U: #b8580f; --ly-R: #7a6608;
+    --read: #1f6aa5; --write: #a5520f; --err: #c62828; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--tx); font: 14px/1.5 var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--ln); }
+  h1 { font: 600 17px var(--voice); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--mu); margin-left: 6px; }
+  .sp { flex: 1; }
+  header button, header a.b, header select, header input { font: 12px var(--mono); background: var(--s1); color: var(--mu); border: 1px solid var(--ln); padding: 5px 9px; text-decoration: none; min-height: 28px; cursor: pointer; }
+  header select, header input { color: var(--tx); max-width: 200px; }
+  header input { cursor: text; width: 200px; }
+  header input.on { border-color: var(--warm); box-shadow: inset 0 -2px 0 var(--warm); }
+  header button:hover, header a.b:hover, header select:hover { color: var(--tx); border-color: var(--acc); }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .filters label { font: 11px var(--mono); color: var(--fa); text-transform: uppercase; letter-spacing: .06em; display: inline-flex; gap: 5px; align-items: center; }
+  #stat { font: 12px var(--mono); color: var(--mu); }
+  .shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) var(--panel-w); min-height: 0; }
+  #main { overflow: auto; min-height: 0; min-width: 0; }
+  .wrap { padding: 16px 16px 60px; display: flex; flex-direction: column; gap: 16px; }
+  p { margin: 0; max-width: 90ch; }
+  .dim { color: var(--mu); } .faint { color: var(--fa); }
+  a { color: var(--acc); }
+  code { font: 12px var(--mono); background: var(--s2); padding: 0 3px; overflow-wrap: anywhere; }
+  .hint { color: var(--mu); font-size: 12.5px; }
+  .empty { padding: 10px 4px; color: var(--mu); font-size: 13px; }
+
+  section.box { background: var(--s1); border: 1px solid var(--ln); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .boxhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
+  .boxhead h3 { font: 600 15px var(--voice); margin: 0; letter-spacing: .03em; }
+  .boxhead .en { font: italic 400 12px var(--sans); color: var(--fa); }
+  .note { border-left: 2px solid var(--warn); padding: 4px 8px; font-size: 12.5px; color: var(--mu); background: color-mix(in srgb, var(--warn) 7%, transparent); }
+  .note b { color: var(--warn); font-weight: 600; }
+  .note.on { border-left-color: var(--ok); background: color-mix(in srgb, var(--ok) 8%, transparent); }
+  .note.on b { color: var(--ok); }
+
+  /* day strip */
+  #strip svg { display: block; width: 100%; height: auto; }
+  .sbar { fill: var(--acc); opacity: .78; }
+  .sbar.zero { fill: var(--ln2); opacity: 1; }
+  .sday { cursor: pointer; }
+  .sday:hover .sbar, .sday:focus-visible .sbar { opacity: 1; }
+  .sday:focus-visible { outline: none; }
+  .sday:focus-visible .shit { stroke: var(--acc); stroke-width: 1.5; }
+  .shit { fill: transparent; }
+  .ssel { fill: none; stroke: var(--warm); stroke-width: 2; }
+  .smatch { fill: var(--warm); }
+  .grid { stroke: var(--ln); stroke-width: 1; }
+  .axt { fill: var(--mu); font: 10.5px var(--mono); }
+  .axm { fill: var(--tx); font: 600 11px var(--mono); }
+  .stripctl { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font: 11.5px var(--mono); color: var(--mu); }
+  .seg { display: inline-flex; border: 1px solid var(--ln); }
+  .seg button { font: 11.5px var(--mono); background: transparent; color: var(--mu); border: 0; padding: 3px 8px; cursor: pointer; min-height: 26px; }
+  .seg button + button { border-left: 1px solid var(--ln); }
+  .seg button[aria-pressed="true"] { color: var(--tx); background: var(--acc-soft); box-shadow: inset 0 -2px 0 var(--acc); }
+  .seg button:focus-visible { outline: 2px solid var(--acc); outline-offset: -2px; }
+
+  /* the day's totals */
+  .dayhead { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+  .dayhead h3 { font: 600 18px var(--voice); margin: 0; letter-spacing: .02em; }
+  .dayhead .nav { display: inline-flex; gap: 4px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+  .tile { border: 1px solid var(--ln); background: var(--s2); padding: 6px 9px; min-width: 0; }
+  .tile .v { font: 600 18px/1.2 var(--mono); color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile .k { font: 11px var(--mono); color: var(--mu); text-transform: uppercase; letter-spacing: .05em; }
+  .tile .s { font: 11px var(--mono); color: var(--fa); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* the day chart */
+  #secDay { padding: 0; gap: 0; }
+  #secDay .boxhead { padding: 12px 14px 4px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 0 14px 8px; font: 11.5px var(--mono); color: var(--mu); align-items: center; }
+  .legend svg { vertical-align: middle; }
+  .legend label { display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
+  .legend label.off { opacity: .5; text-decoration: line-through; }
+  .axis { position: sticky; top: 0; z-index: 3; background: var(--s1); border-bottom: 1px solid var(--ln); }
+  .axis svg, #chart svg { display: block; }
+  #chart { position: relative; }
+  #chart .lab { position: absolute; display: flex; align-items: center; gap: 6px; min-width: 0; padding: 0 8px 0 12px; font-size: 12.5px; pointer-events: none; }
+  #chart .lab span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  #chart .lab .n { font: 11px var(--mono); color: var(--fa); flex: none; }
+  #chart .lab.top { font: 600 11px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--mu); padding-left: 2px; }
+  .band { fill: var(--s2); opacity: .5; }
+  .hl { stroke: var(--ln); stroke-width: 1; }
+  .hlm { stroke: var(--ln2); stroke-width: 1; }
+  .now { stroke: var(--acc); stroke-width: 1.5; stroke-dasharray: 2 3; }
+  .now-t { fill: var(--acc); font: 600 10.5px var(--mono); }
+  .run { cursor: pointer; }
+  .run:focus-visible { outline: none; }
+  .run .bar { stroke: none; }
+  .run .idle { stroke-width: 1.5; stroke-dasharray: 1.5 3; fill: none; }
+  .run .cont { stroke: none; }
+  .run .badge { font: 600 9.5px var(--mono); fill: var(--bg); pointer-events: none; }
+  .run .badge.out { fill: var(--mu); }
+  .run .hit { fill: transparent; }
+  .run:hover .bar, .run:focus-visible .bar { filter: brightness(1.18); }
+  .run:focus-visible .ring, .run:hover .ring { stroke: var(--tx); stroke-width: 1.5; fill: none; }
+  .run .ring { stroke: none; fill: none; }
+  .run.sel .ring { stroke: var(--tx); stroke-width: 2.5; fill: none; }
+  .run.dim { opacity: .2; }
+
+  /* the day's run list */
+  .rl { display: flex; flex-direction: column; }
+  .ri { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 14px 92px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 4px 4px; border-bottom: 1px solid var(--ln); font-size: 13px; }
+  .ri:hover, .ri:focus-visible { background: var(--acc-soft); outline: none; }
+  .ri.sel { background: var(--s2); box-shadow: inset 3px 0 0 var(--acc); }
+  .ri .sw { width: 10px; height: 10px; align-self: center; }
+  .ri .tm { font: 11.5px var(--mono); color: var(--mu); white-space: nowrap; }
+  .ri .tt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .ri .tt small { color: var(--fa); font: 11px var(--mono); margin-left: 6px; }
+  .ri .nn { font: 11.5px var(--mono); color: var(--mu); white-space: nowrap; }
+
+  /* side panel (a sheet on the phone) */
+  aside { border-left: 1px solid var(--ln); padding: 14px 16px 40px; overflow: auto; min-height: 0; min-width: 0; background: var(--bg); }
+  aside h2 { font: 600 20px/1.2 var(--voice); margin: 4px 0 6px; overflow-wrap: anywhere; }
+  aside h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--mu); margin: 18px 0 6px; border-bottom: 1px solid var(--ln); padding-bottom: 2px; }
+  aside p { margin: 0 0 6px; overflow-wrap: anywhere; font-size: 13px; }
+  .kick { font: 11px var(--mono); color: var(--mu); text-transform: uppercase; letter-spacing: .06em; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .kick i.sw { width: 14px; height: 6px; display: inline-block; }
+  .marks { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+  .mk { display: inline-flex; align-items: center; gap: 4px; font: 11.5px/1.5 var(--mono); padding: 0 6px; border: 1px solid currentColor; white-space: nowrap; color: var(--mu); }
+  .mk.ok { color: var(--ok); } .mk.wa { color: var(--warn); }
+  .btn { font: 12px var(--mono); background: var(--s1); color: var(--tx); border: 1px solid var(--ln2); padding: 5px 10px; cursor: pointer; min-height: 30px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+  .btn:hover, .btn:focus-visible { border-color: var(--acc); outline: none; }
+  .btn.pri { border-color: var(--acc); color: var(--acc); font-weight: 600; }
+  .btn.copied { border-color: var(--ok); color: var(--ok); }
+  .btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+  .btn svg { width: 13px; height: 13px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+  .kv { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 3px 8px; font-size: 12.5px; }
+  .kv > span:nth-child(odd) { color: var(--fa); font: 11px var(--mono); padding-top: 2px; } .kv > span:nth-child(even) { overflow-wrap: anywhere; }
+  .lk { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; padding: 3px 2px; font-size: 12.5px; color: var(--tx); width: 100%; text-decoration: none; }
+  .lk:hover, .lk:focus-visible { background: var(--acc-soft); outline: none; }
+  .lk .c { font: 11px var(--mono); color: var(--mu); white-space: nowrap; } .lk .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .lk .r { font: 11px var(--mono); color: var(--mu); white-space: nowrap; }
+  .lk.cur { background: var(--s2); box-shadow: inset 3px 0 0 var(--acc); }
+  .tb { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) 44px; gap: 4px 8px; align-items: center; font-size: 12px; }
+  .tb .n { font: 11.5px var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tb .b { height: 8px; background: var(--acc); opacity: .7; min-width: 2px; }
+  .tb .c { font: 11px var(--mono); color: var(--mu); text-align: right; }
+  .fl { font: 11.5px/1.5 var(--mono); margin: 0; padding: 0; list-style: none; }
+  .fl li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 1px 0; }
+  .fl li span:first-child { overflow-wrap: anywhere; color: var(--tx); }
+  .fl .rw { white-space: nowrap; color: var(--mu); }
+  .fl .rd { color: var(--read); } .fl .wr { color: var(--write); } .fl .er { color: var(--err); }
+  .glow { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 8px; }
+  .gl { display: inline-flex; align-items: baseline; gap: 6px; padding: 2px 8px; border: 1px solid var(--c); font: 11.5px var(--mono); color: var(--tx);
+    background: color-mix(in srgb, var(--c) 12%, transparent); box-shadow: 0 0 var(--g, 4px) color-mix(in srgb, var(--c) 70%, transparent); }
+  .gl b { color: var(--c); font-weight: 700; }
+  .nl .lk .c b { display: inline-block; width: 8px; height: 8px; margin-right: 5px; background: var(--c); box-shadow: 0 0 5px var(--c); }
+  pre.raw { white-space: pre-wrap; overflow-wrap: anywhere; font: 11.5px/1.45 var(--mono); background: var(--s1); border: 1px solid var(--ln); padding: 8px; color: var(--mu); max-height: 240px; overflow: auto; margin: 6px 0 0; }
+  #back { display: none; }
+
+  /* toast + fallback (the Thread Board's pattern) */
+  .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 40;
+    background: var(--tx); color: var(--bg); padding: 9px 16px; font: 500 13px var(--sans); max-width: calc(100vw - 32px); }
+  .fallback { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .5); }
+  .fallback[hidden], .toast[hidden] { display: none; }
+  .fallback .card { width: min(720px, 100%); display: grid; gap: 10px; background: var(--s1); border: 1px solid var(--ln2); padding: 14px; }
+  .fallback h2 { font: 600 17px var(--voice); margin: 0; }
+  .fallback textarea { width: 100%; height: 30vh; font: 12.5px/1.45 var(--mono); background: var(--bg); color: var(--tx); border: 1px solid var(--ln2); padding: 10px; resize: vertical; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .btn, .lk, .ri { transition: background-color .12s ease, border-color .12s ease; }
+    .run { transition: opacity .15s ease; }
+  }
+  @media (max-width: 900px) {
+    body { overflow-x: hidden; overflow-y: auto; height: auto; min-height: 100%; }
+    h1 i { display: none; } .sp { display: none; }
+    .filters { width: 100%; } .filters label { flex: 1 1 140px; min-width: 0; } .filters select { flex: 1 1 0; width: 0; max-width: none; min-width: 0; }
+    header input { width: 100%; max-width: none; flex: 1 1 100%; }
+    .shell { display: block; }
+    #main { overflow: visible; }
+    .wrap { padding: 12px 16px 24px; }
+    .ri { grid-template-columns: 12px 76px minmax(0, 1fr); }
+    .ri .nn { grid-column: 3; }
+    aside { display: none; position: fixed; inset: 0; z-index: 30; border: 0; padding: 12px 16px 40px; overflow-y: auto; overflow-x: hidden; }
+    body.sheet aside { display: block; }
+    body.sheet { overflow: hidden; }
+    #back { display: inline-flex; margin-bottom: 8px; }
+    .kv { grid-template-columns: 76px minmax(0, 1fr); }
+    .tb { grid-template-columns: minmax(0, 110px) minmax(0, 1fr) 40px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Futásnapló<i>VRG Stack · U réteg · futások naponta · run log</i></h1>
+  <div class="filters" role="group" aria-label="Szűrő">
+    <input id="fS" type="search" placeholder="Futás keresése (/)" aria-label="Futás keresése címben, azonosítóban, ágban, fájlban">
+    <label>Sor <select id="fG" aria-label="Egy sor = egy hely vagy egy DevLog vonal"><option value="place">hely (worktree)</option><option value="line">DevLog vonal</option></select></label>
+  </div>
+  <span class="sp"></span>
+  <button id="bTheme" title="Téma: auto → sötét → világos">◐ Téma</button>
+  <a class="b" href="replay.html" title="Visszajátszás: egy futás lépésről lépésre (U réteg)">Visszajátszás</a>
+  <a class="b" href="control.html#sel=day:" id="lControl" title="Vezérlőterem (A réteg): használat naponta">Vezérlőterem</a>
+  <a class="b" href="metro.html" title="Vonaltérkép (L réteg)">Vonaltérkép</a>
+  <span id="stat"></span>
+</header>
+<div class="shell">
+  <div id="main"><div class="wrap" id="wrap">
+    <p class="note" id="live"></p>
+    <section class="box" id="secStrip" aria-labelledby="hStrip">
+      <div class="boxhead"><h3 id="hStrip">Napok</h3><span class="en" id="sStrip"></span></div>
+      <div class="stripctl"><span>Oszlop:</span><span class="seg" id="mSeg" role="group" aria-label="Mit mutat a napi oszlop"></span></div>
+      <div id="strip"></div>
+    </section>
+    <section class="box" id="secTot" aria-labelledby="hDay">
+      <div class="dayhead">
+        <h3 id="hDay"></h3>
+        <span class="nav"><button class="btn" id="dPrev" title="Előző nap futással (←)">← előző</button><button class="btn" id="dNext" title="Következő nap futással (→)">következő →</button></span>
+        <a class="btn" id="dControl" href="control.html" title="Ugyanez a nap a Vezérlőterem használati csíkján">Vezérlőterem ↗</a>
+      </div>
+      <div class="tiles" id="tiles"></div>
+      <p class="hint" id="totNote"></p>
+    </section>
+    <section class="box" id="secDay" aria-labelledby="hChart">
+      <div class="boxhead"><h3 id="hChart">A nap futásai</h3><span class="en" id="sChart"></span></div>
+      <div class="legend" id="legend"></div>
+      <div class="axis" id="axis"></div>
+      <div id="chart"></div>
+    </section>
+    <section class="box" id="secList" aria-labelledby="hList">
+      <div class="boxhead"><h3 id="hList">Lista</h3><span class="en" id="sList">j / k lépked, Enter megnyit</span></div>
+      <div class="rl" id="list" role="list"></div>
+    </section>
+    <p class="hint" id="about"></p>
+  </div></div>
+  <aside id="panel" aria-label="A kiválasztott futás"></aside>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="fallback" id="fallback" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="fbh">
+    <h2 id="fbh">Másold ki</h2>
+    <p class="dim">A böngésző nem engedte a másolást. A szöveg ki van jelölve: Ctrl+C.</p>
+    <textarea id="fallback-text" readonly></textarea>
+    <div><button type="button" class="btn" id="fallback-close">Bezárás</button></div>
+  </div>
+</div>
+<script src="out/runs-data.js"></script>
+<script>
+'use strict';
+(function () {
+  const R = window.RUNS;
+  const $ = s => document.querySelector(s);
+  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* file:// or private */ } } };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fold = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const win = p => String(p).replace(/\//g, '\\');
+
+  /* ---------- theme: auto (system) → dark (Mélyvíz) → light (Papír), the same as the sibling pages ---------- */
+  const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
+  let themePref = store.get('vrg-runs-theme') || 'auto';
+  function applyTheme() {
+    const light = themePref === 'light' || (themePref === 'auto' && mq && mq.matches);
+    document.documentElement.setAttribute('data-vk-theme', light ? 'light' : 'melyviz');
+    $('#bTheme').textContent = '◐ ' + ({ auto: 'Auto', dark: 'Sötét', light: 'Világos' })[themePref];
+  }
+  $('#bTheme').onclick = () => { themePref = { auto: 'dark', dark: 'light', light: 'auto' }[themePref]; store.set('vrg-runs-theme', themePref); applyTheme(); };
+  if (mq && mq.addEventListener) mq.addEventListener('change', applyTheme);
+  applyTheme();
+
+  if (!R || !R.runs) {
+    $('#wrap').innerHTML = '<div class="empty">Nincs adat: <code>out/runs-data.js</code> hiányzik. Futtasd: <code>stack.js build</code> vagy <code>stack.js runs</code> (a Stack mappában).</div>';
+    return;
+  }
+
+  /* ---------- the data ---------- */
+  const DAY = 864e5, HOUR = 36e5;
+  const RUNS = R.runs, BY = new Map(RUNS.map(r => [r.sid8, r]));
+  const KIND = new Map(R.kinds.map(k => [k.id, k]));
+  const PLACE = new Map(R.places.map(p => [p.id, p]));
+  const PORDER = new Map(R.places.map((p, i) => [p.id, i]));
+  const DAYS = new Map(R.days.map(d => [d.d, d]));
+  const LINES = R.lines || {};
+  const LORDER = new Map(Object.keys(LINES).map(l => [l, RUNS.filter(r => r.lines[0] === l).length])); // rows in line mode: busiest first
+  const MON = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+  const WD = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
+  const p2 = n => (n < 10 ? '0' : '') + n;
+  const d0 = d => Date.parse(d + 'T00:00:00Z');                          // a U day is a UTC day (STK-P47)
+  const dk = ms => new Date(ms).toISOString().slice(0, 10);
+  const fDay = d => { const t = new Date(d0(d)); return `${t.getUTCFullYear()}. ${MON[t.getUTCMonth()]} ${t.getUTCDate()}., ${WD[t.getUTCDay()]}`; };
+  const fShort = d => d.slice(5).replace('-', '.') + '.';
+  const fUtc = t => { const d = new Date(t); return p2(d.getUTCHours()) + ':' + p2(d.getUTCMinutes()); };
+  const fLoc = t => { const d = new Date(t); return p2(d.getHours()) + ':' + p2(d.getMinutes()); };
+  const fWhen = t => `${dk(Date.parse(t))} ${fUtc(t)} UTC (helyi ${fLoc(t)})`;
+  const fDur = ms => { const m = Math.round(ms / 6e4); if (m < 1) return '< 1 perc'; if (m < 60) return m + ' perc'; const h = Math.floor(m / 60); return h + ' ó ' + p2(m % 60) + ' p'; };
+  const fN = n => n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace('.', ',') + ' M' : n >= 1e4 ? Math.round(n / 1e3) + ' e' : String(n);
+  const fNum = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const kcol = k => `var(--k-${KIND.has(k) ? k : 'unknown'})`;
+  const COPY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M5 1h7l3 3v8H5zM6 2v9h8V5h-3V2zM1 4h3v1H2v9h7v-1h1v2H1z"/></svg>';
+  const TODAY = dk(Date.parse(R.generated));
+  const FIRST = R.days.length ? R.days[0].d : TODAY;
+  const CAL = []; for (let t = d0(FIRST); t <= d0(TODAY); t += DAY) CAL.push(dk(t));   // every calendar day, empty ones too
+  const WITH = R.days.filter(d => d.steps).map(d => d.d);
+  const runDays = r => Object.keys(r.perDay).sort();
+
+  /* ---------- state (in the link: #d=2026-11-07, &run=55e43b9a, &g=line, &q=…, &hk=auto,cli, &m=tok) ---------- */
+  const F = { d: WITH[WITH.length - 1] || TODAY, run: '', g: 'place', q: '', hk: new Set(), m: 'steps' };
+  function toHash() {
+    const h = new URLSearchParams();
+    h.set('d', F.d);
+    if (F.run) h.set('run', F.run);
+    if (F.g !== 'place') h.set('g', F.g);
+    if (F.q) h.set('q', F.q);
+    if (F.hk.size) h.set('hk', [...F.hk].join(','));
+    if (F.m !== 'steps') h.set('m', F.m);
+    const s = h.toString().replace(/%2C/g, ',');
+    if (('#' + s) !== location.hash) history.replaceState(null, '', '#' + s);
+  }
+  function fromHash() {
+    const h = new URLSearchParams(location.hash.slice(1));
+    const run = h.get('run') || ''; F.run = BY.has(run) ? run : '';
+    const d = h.get('d');
+    F.d = d && /^\d{4}-\d\d-\d\d$/.test(d) ? d : F.run ? runDays(BY.get(F.run))[0] : (WITH[WITH.length - 1] || TODAY);
+    if (F.run && !BY.get(F.run).perDay[F.d]) F.d = runDays(BY.get(F.run))[0];
+    F.g = h.get('g') === 'line' ? 'line' : 'place';
+    F.q = h.get('q') || '';
+    F.hk = new Set((h.get('hk') || '').split(',').filter(k => KIND.has(k)));
+    F.m = ['steps', 'runs', 'tok'].includes(h.get('m')) ? h.get('m') : 'steps';
+  }
+
+  /* ---------- copy (the Thread Board's pattern: clipboard, then execCommand, then a select-and-Ctrl+C box) ---------- */
+  let toastTimer = 0;
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600); }
+  function fallback(text) { const f = $('#fallback'), ta = $('#fallback-text'); ta.value = text; f.hidden = false; ta.focus(); ta.select(); }
+  $('#fallback-close').onclick = () => { $('#fallback').hidden = true; };
+  function copy(text, label, el) {
+    const ok = () => { toast('Másolva: ' + label); if (el) { el.classList.add('copied'); setTimeout(() => el.classList.remove('copied'), 1600); } };
+    const legacy = () => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let done = false; try { done = document.execCommand('copy'); } catch (e) { done = false; }
+      ta.remove();
+      done ? ok() : fallback(text);
+    };
+    try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, legacy); else legacy(); } catch (e) { legacy(); }
+  }
+
+  /* ---------- filters ---------- */
+  const hay = new Map(RUNS.map(r => [r.sid8, fold([r.title, r.sid, r.branch, r.cwd, r.agent, (PLACE.get(r.place) || {}).label, r.lines.map(l => (LINES[l] || [l])[0]).join(' '), r.files.map(f => f[0]).join(' '), r.first].join(' '))]));
+  const matches = r => !F.q || fold(F.q).split(/\s+/).filter(Boolean).every(w => hay.get(r.sid8).includes(w));
+  const shown = r => !F.hk.has(r.kind) && matches(r);
+  const rowOf = r => F.g === 'line' ? (r.lines[0] || '·none') : r.place;
+  const rowLabel = id => F.g === 'line' ? (id === '·none' ? 'nincs DevLog vonalon' : (LINES[id] || [id])[0]) : (PLACE.get(id) || { label: id }).label;
+  const rowRank = id => F.g === 'line' ? (id === '·none' ? 1e9 : -(LORDER.get(id) || 0)) : (PORDER.has(id) ? PORDER.get(id) : 1e9);
+
+  /* ---------- live line (STK-P52) ---------- */
+  function renderLive() {
+    const L = R.live || { on: false };
+    const el = $('#live');
+    if (!L.on) { el.className = 'note'; el.innerHTML = `<b>Élő felvétel: még nincs bekapcsolva.</b> A <code>${esc(L.dir || 'data/live')}</code> mappa nem létezik; a munkamenet-hookok (ROADMAP 2.5) még nincsenek beépítve, ezért minden futás utólag, a lezárt átiratokból jön (STK-Q9 A).`; return; }
+    const n = L.sessions.length, st = L.sessions.reduce((a, s) => a + s.steps, 0);
+    el.className = 'note on';
+    el.innerHTML = `<b>Élő felvétel: be van kapcsolva.</b> <code>${esc(L.dir)}</code>: ${n} munkamenet, ${fNum(st)} lépés${L.last ? `, utolsó lépés ${esc(fWhen(L.last))}` : ''}. ` +
+      (n ? L.sessions.slice(0, 6).map(s => BY.has(s.sid8) ? `<a href="#d=${esc(s.last.slice(0, 10))}&run=${esc(s.sid8)}">${esc(s.sid8)}</a>` : `<code>${esc(s.sid8)}</code>`).join(', ') : '') +
+      ' · Az oldal a build pillanatát mutatja; a folyó lépések a következő buildnél kerülnek a felvételbe.';
+  }
+
+  /* ---------- day strip ---------- */
+  const MODES = [['steps', 'lépés'], ['runs', 'futás'], ['tok', 'token']];
+  $('#mSeg').innerHTML = MODES.map(([k, t]) => `<button type="button" data-m="${k}" aria-pressed="${F.m === k}">${t}</button>`).join('');
+  $('#mSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; F.m = b.dataset.m; toHash(); renderStrip(); });
+  const dayVal = (x, m) => !x ? 0 : m === 'runs' ? x.runs : m === 'tok' ? x.tin + x.tout + x.tcw : x.steps;
+  function renderStrip() {
+    $('#mSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === F.m)));
+    const box = $('#strip'); const W = Math.max(300, box.clientWidth || 600), H = 118, pl = 4, pr = 4, pt = 8, pb = 26;
+    const n = CAL.length, cw = (W - pl - pr) / n, max = Math.max(1, ...CAL.map(d => dayVal(DAYS.get(d), F.m)));
+    const hit = new Set(); if (F.q) for (const r of RUNS) if (matches(r)) for (const d of runDays(r)) hit.add(d);
+    let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="group" aria-label="Napok: ${n} nap, oszlop = ${MODES.find(m => m[0] === F.m)[1]}">`;
+    // month starts and Mondays as light grid, labels where they fit
+    let lastEnd = -1e9;
+    CAL.forEach((d, i) => {
+      const x = pl + i * cw, t = new Date(d0(d)), mon = t.getUTCDay() === 1, first = t.getUTCDate() === 1;
+      if (mon || first || i === 0) {
+        s += `<line class="grid" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${pt}" y2="${H - pb + 4}"/>`;
+        const lab = first || i === 0 ? `${MON[t.getUTCMonth()]} ${t.getUTCDate()}` : String(t.getUTCDate());
+        const lw = lab.length * 7.4 + 6;
+        if (x + 2 > lastEnd + 4 && x + 2 + lw < W) { s += `<text class="${first || i === 0 ? 'axm' : 'axt'}" x="${(x + 2).toFixed(1)}" y="${H - pb + 16}">${esc(lab)}</text>`; lastEnd = x + 2 + lw; }
+      }
+    });
+    CAL.forEach((d, i) => {
+      const x = pl + i * cw, v = dayVal(DAYS.get(d), F.m), h = v ? Math.max(2, (H - pt - pb) * Math.sqrt(v / max)) : 1.5;
+      const bw = Math.max(1, cw - (cw > 6 ? 2 : 1)), y = H - pb - h, x0 = DAYS.get(d) || {};
+      const lbl = `${fShort(d)}: ${x0.runs || 0} futás, ${fNum(x0.steps || 0)} lépés, ${fN((x0.tin || 0) + (x0.tout || 0) + (x0.tcw || 0))} token`;
+      s += `<g class="sday" data-d="${d}" tabindex="${d === F.d ? 0 : -1}" role="button" aria-label="${esc(lbl)}"><title>${esc(lbl)}</title>` +
+        `<rect class="shit" x="${x.toFixed(1)}" y="${pt}" width="${cw.toFixed(1)}" height="${H - pt - pb}"/>` +
+        `<rect class="sbar${v ? '' : ' zero'}" x="${(x + (cw - bw) / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}"/>` +
+        (d === F.d ? `<rect class="ssel" x="${(x + .5).toFixed(1)}" y="${pt - 3}" width="${Math.max(2, cw - 1).toFixed(1)}" height="${H - pt - pb + 5}"/>` : '') +
+        (hit.has(d) ? `<circle class="smatch" cx="${(x + cw / 2).toFixed(1)}" cy="${H - pb + 3.5}" r="${Math.min(2.5, cw / 2.5).toFixed(1)}"/>` : '') + '</g>';
+    });
+    s += '</svg>';
+    box.innerHTML = s;
+    box.querySelectorAll('.sday').forEach(g => g.addEventListener('click', () => setDay(g.dataset.d, true)));
+    const tot = R.days.reduce((a, d) => a + d.steps, 0);
+    $('#sStrip').textContent = `${CAL.length} naptári nap, ebből ${WITH.length} futással · ${RUNS.length} futás, ${fNum(tot)} lépés (UTC napok, mint a Vezérlőteremben)`;
+  }
+
+  /* ---------- the day's totals ---------- */
+  function renderTotals() {
+    const x = DAYS.get(F.d) || { runs: 0, steps: 0, calls: 0, commits: 0, sub: 0, tin: 0, tout: 0, tcr: 0, tcw: 0 };
+    $('#hDay').textContent = fDay(F.d);
+    const i = WITH.indexOf(F.d);
+    const prev = WITH.filter(d => d < F.d).pop(), next = WITH.find(d => d > F.d);
+    $('#dPrev').disabled = !prev; $('#dNext').disabled = !next;
+    $('#dControl').href = 'control.html#sel=day:' + F.d;
+    $('#lControl').href = 'control.html#sel=day:' + F.d;
+    const T = (k, v, s, title) => `<div class="tile" title="${esc(title || '')}"><div class="k">${k}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
+    const inTok = x.tin + x.tcw;
+    $('#tiles').innerHTML =
+      T('Futás', x.runs, x.runs ? `${RUNS.filter(r => r.perDay[F.d] && r.start.slice(0, 10) === F.d).length} itt indult` : '', 'Futások, amelyeknek legalább egy lépése erre a napra esik') +
+      T('Lépés', fNum(x.steps), '', 'Minden felvett lépés: prompt, válasz, eszközhívás, al-ügynök, commit') +
+      T('Eszközhívás', fNum(x.calls), x.sub ? x.sub + ' al-ügynök indítás' : '', 'execute_tool + invoke_agent') +
+      T('Commit', x.commits, '', 'A futások lépéseihez kötött commitok') +
+      T('Token ki', fN(x.tout), '', 'output tokens') +
+      T('Token be', fN(inTok), 'be + cache írás', `input ${fNum(x.tin)} + cache write ${fNum(x.tcw)}`) +
+      T('Cache olvasás', fN(x.tcr), '', `cache read ${fNum(x.tcr)}`);
+    $('#totNote').innerHTML = i < 0 && !x.steps ? 'Ezen a napon nincs felvett lépés.' :
+      'Minden lépés a saját időbélyege szerinti UTC napra számít, ezért egy éjfélen átnyúló futás mindkét napon szerepel; a számok ugyanazok, mint a Vezérlőterem használati csíkján. A típus- és keresőszűrő a számokat nem változtatja.';
+  }
+
+  /* ---------- the day chart ---------- */
+  const legendHtml = () => R.kinds.filter(k => k.n).map(k => `<label class="${F.hk.has(k.id) ? 'off' : ''}" title="${esc(k.en)}"><input type="checkbox" data-k="${k.id}"${F.hk.has(k.id) ? '' : ' checked'}><svg width="22" height="10" aria-hidden="true"><rect x="1" y="2" width="20" height="6" rx="1.5" style="fill:${kcol(k.id)}"/></svg>${esc(k.hu)} <span class="faint">${k.n}</span></label>`).join('') +
+    `<span title="vastagság + szám = a futás lépései ezen a napon"><svg width="40" height="18" aria-hidden="true"><rect x="1" y="7" width="10" height="4" rx="1" style="fill:var(--mu)"/><rect x="14" y="5" width="10" height="8" rx="1" style="fill:var(--mu)"/><rect x="27" y="2" width="12" height="14" rx="1" style="fill:var(--mu)"/></svg> vastagság = lépés</span>` +
+    `<span title="tétlen szakasz (${R.idleGapMin} percnél hosszabb szünet) a futáson belül"><svg width="30" height="10" aria-hidden="true"><line x1="2" x2="28" y1="5" y2="5" style="stroke:var(--mu);stroke-width:1.5;stroke-dasharray:1.5 3"/></svg> szünet &gt; ${R.idleGapMin} p</span>` +
+    `<span title="a futás az előző / a következő napon folytatódik"><svg width="30" height="12" aria-hidden="true"><path d="M2 6 L8 1 L8 11 Z M28 6 L22 1 L22 11 Z" style="fill:var(--mu)"/></svg> folytatódik</span>`;
+  $('#legend').addEventListener('change', e => { const k = e.target.dataset.k; if (!k) return; e.target.checked ? F.hk.delete(k) : F.hk.add(k); toHash(); renderDay(); });
+
+  function dayPieces(r, d) {
+    const a = d0(d), b = a + DAY, out = [];
+    for (const [s, e, n] of r.segs) { if (e < a || s >= b) continue; out.push([Math.max(s, a), Math.min(e, b), s < a, e >= b, n]); }
+    return out;
+  }
+  let lastRows = [];
+  function renderDay() {
+    const d = F.d, a0 = d0(d);
+    $('#legend').innerHTML = legendHtml();
+    const runs = RUNS.filter(r => r.perDay[d]);
+    const vis = runs.filter(r => !F.hk.has(r.kind));
+    const W = Math.max(320, $('#chart').clientWidth || 700);
+    const narrow = W < 640;
+    const LW = narrow ? 0 : Math.min(220, Math.round(W * .22)), PR = 10, CW = W - LW - PR - (narrow ? 0 : 6);
+    const X = t => LW + (narrow ? 0 : 6) + (t - a0) / DAY * CW;
+    const pxH = CW / 24, step = [1, 2, 3, 4, 6].find(s => s * pxH >= 34) || 6;
+    const off = -new Date(a0 + 12 * HOUR).getTimezoneOffset() / 60;
+    $('#sChart').textContent = `${runs.length} futás${vis.length < runs.length ? ` (${runs.length - vis.length} elrejtve)` : ''} · idő: UTC, helyi = UTC${off >= 0 ? '+' : ''}${off} · egy sor = ${F.g === 'line' ? 'egy DevLog vonal' : 'egy hely (worktree vagy mappa)'}`;
+    // axis
+    let ax = `<svg width="${W}" height="24" aria-hidden="true">`;
+    for (let h = 0; h <= 24; h += step) { const x = X(a0 + h * HOUR); ax += `<text class="${h % 6 === 0 ? 'axm' : 'axt'}" x="${x.toFixed(1)}" y="16" text-anchor="${h === 0 ? 'start' : h === 24 ? 'end' : 'middle'}">${p2(h)}</text>`; }
+    if (!narrow) ax += `<text class="axt" x="12" y="16">${F.g === 'line' ? 'DevLog vonal' : 'Hely'}</text>`;
+    ax += '</svg>';
+    $('#axis').innerHTML = ax;
+    if (!vis.length) { $('#chart').innerHTML = `<div class="empty">${runs.length ? 'Minden futás el van rejtve a típusszűrővel.' : 'Ezen a napon nincs felvett futás.'}</div>`; lastRows = []; return; }
+
+    // rows, each packed into tracks: a run keeps one track for all its pieces that day (STK-P50)
+    const groups = new Map();
+    for (const r of vis) { const k = rowOf(r); (groups.get(k) || groups.set(k, []).get(k)).push(r); }
+    const order = [...groups.keys()].sort((x, y) => rowRank(x) - rowRank(y) || String(rowLabel(x)).localeCompare(rowLabel(y)));
+    const TH = 26, HEAD = narrow ? 18 : 0, GAP = 6;
+    let y = 4, svg = '', labs = '', bands = '';
+    const rows = [];
+    order.forEach((key, gi) => {
+      const rs = groups.get(key).map(r => {
+        const pcs = dayPieces(r, d);
+        const before = r.segs.some(s => s[0] < a0), after = r.segs.some(s => s[1] >= a0 + DAY);
+        const x1 = before ? X(a0) : X(pcs[0][0]), x2 = after ? X(a0 + DAY) : X(pcs[pcs.length - 1][1]);
+        const ds = r.perDay[d][0], bh = Math.max(4, Math.min(18, 3 + 4 * Math.log10(ds + 1))), tw = String(ds).length * 6 + 6;
+        const wide = pcs.map(([s, e]) => [X(s), Math.max(3, X(e) - X(s))]).sort((u, v) => v[1] - u[1])[0];
+        const inside = wide[1] >= tw + 2 && bh >= 9;
+        return { r, pcs, before, after, x1, x2: Math.max(x2, x1 + 4), ds, bh, tw, wide, inside, outside: !inside && !after };
+      }).sort((p, q) => p.x1 - q.x1);
+      const ends = [];
+      for (const p of rs) {
+        let t = ends.findIndex(e => e + 4 <= p.x1); if (t < 0) { t = ends.length; ends.push(0); }
+        p.t = t; ends[t] = p.x2 + (p.outside ? p.tw + 2 : 0);   // keep room for a badge after the run
+      }
+      const nT = Math.max(1, ends.length), top = y, h = HEAD + nT * TH;
+      if (gi % 2 === 0) bands += `<rect class="band" x="0" y="${top - 2}" width="${W}" height="${h + 4}"/>`;
+      const lab = rowLabel(key), cnt = rs.length;
+      labs += narrow
+        ? `<div class="lab top" style="left:0;top:${top}px;height:${HEAD}px;width:${W}px"><span>${esc(lab)}</span><span class="n">${cnt}</span></div>`
+        : `<div class="lab" style="left:0;top:${top}px;height:${Math.min(h, TH)}px;width:${LW}px" title="${esc(lab)}"><span>${esc(lab)}</span><span class="n">${cnt}</span></div>`;
+      for (const p of rs) {
+        const r = p.r, cy = top + HEAD + p.t * TH + TH / 2, ds = p.ds, bh = p.bh;
+        const col = kcol(r.kind), k = KIND.get(r.kind) || { hu: r.kind };
+        const lbl = `${r.title} · ${k.hu}${r.agent ? ' (' + r.agent + ')' : ''} · ${fUtc(p.pcs[0][0])}–${fUtc(p.pcs[p.pcs.length - 1][1])} UTC · ezen a napon ${ds} lépés, összesen ${r.steps}${p.before ? ' · előző napon kezdődött' : ''}${p.after ? ' · másnap folytatódik' : ''}`;
+        let g = `<g class="run${r.sid8 === F.run ? ' sel' : ''}${matches(r) ? '' : ' dim'}" data-sid="${r.sid8}" tabindex="0" role="button" aria-label="${esc(lbl)}"><title>${esc(lbl)}</title>`;
+        g += `<rect class="hit" x="${(p.x1 - 3).toFixed(1)}" y="${(cy - TH / 2 + 1).toFixed(1)}" width="${(p.x2 - p.x1 + 6).toFixed(1)}" height="${TH - 2}"/>`;
+        // idle stretches inside the run, and the continuation lines to the day's edges
+        const dots = [];
+        if (p.before) dots.push([X(a0) + 7, X(p.pcs[0][0])]);
+        for (let i = 1; i < p.pcs.length; i++) dots.push([X(p.pcs[i - 1][1]), X(p.pcs[i][0])]);
+        if (p.after) dots.push([X(p.pcs[p.pcs.length - 1][1]), X(a0 + DAY) - 7]);
+        for (const [u, v] of dots) if (v - u > 2) g += `<line class="idle" x1="${u.toFixed(1)}" x2="${v.toFixed(1)}" y1="${cy}" y2="${cy}" style="stroke:${col}"/>`;
+        let bx1 = 1e9, bx2 = -1e9;
+        for (const [s, e] of p.pcs) {
+          const x = X(s), w = Math.max(3, X(e) - x);
+          g += `<rect class="bar" x="${x.toFixed(1)}" y="${(cy - bh / 2).toFixed(1)}" width="${w.toFixed(1)}" height="${bh.toFixed(1)}" rx="1.5" style="fill:${col}"/>`;
+          bx1 = Math.min(bx1, x); bx2 = Math.max(bx2, x + w);
+        }
+        if (p.before) g += `<path class="cont" d="M${X(a0) + .5} ${cy} L${X(a0) + 7} ${cy - 5} L${X(a0) + 7} ${cy + 5} Z" style="fill:${col}"/>`;
+        if (p.after) g += `<path class="cont" d="M${X(a0 + DAY) - .5} ${cy} L${X(a0 + DAY) - 7} ${cy - 5} L${X(a0 + DAY) - 7} ${cy + 5} Z" style="fill:${col}"/>`;
+        // the badge: inside the widest piece when it fits, else just after the run (its room was kept when packing)
+        const n = String(ds), wide = p.wide;
+        if (p.inside) g += `<text class="badge" x="${(wide[0] + wide[1] / 2).toFixed(1)}" y="${cy + 3.3}" text-anchor="middle">${n}</text>`;
+        else if (p.outside && bx2 + p.tw < W - 2) g += `<text class="badge out" x="${(bx2 + 3).toFixed(1)}" y="${cy + 3.3}">${n}</text>`;
+        g += `<rect class="ring" x="${(bx1 - 2).toFixed(1)}" y="${(cy - bh / 2 - 2).toFixed(1)}" width="${(bx2 - bx1 + 4).toFixed(1)}" height="${(bh + 4).toFixed(1)}" rx="2"/>`;
+        svg += g + '</g>';
+        rows.push({ sid: r.sid8, y: cy, x: p.x1 });
+      }
+      y += h + GAP;
+    });
+    const Hc = y + 2;
+    let grid = '';
+    for (let hh = 0; hh <= 24; hh += step) { const x = X(a0 + hh * HOUR); grid += `<line class="${hh % 6 === 0 ? 'hlm' : 'hl'}" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="0" y2="${Hc}"/>`; }
+    const gen = Date.parse(R.generated);
+    if (gen >= a0 && gen < a0 + DAY) grid += `<line class="now" x1="${X(gen).toFixed(1)}" x2="${X(gen).toFixed(1)}" y1="0" y2="${Hc}"/><text class="now-t" x="${(X(gen) - 3).toFixed(1)}" y="${Hc - 4}" text-anchor="end">build</text>`;
+    $('#chart').innerHTML = `<svg id="csvg" width="${W}" height="${Hc}" role="group" aria-label="A nap futásai idősávon">${bands}${grid}${svg}</svg>${labs}`;
+    $('#chart').style.height = Hc + 'px';
+    $('#chart').querySelectorAll('.run').forEach(g => {
+      g.addEventListener('click', () => select(g.dataset.sid));
+      g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(g.dataset.sid); } });
+    });
+    lastRows = rows;
+  }
+
+  /* ---------- the day's list ---------- */
+  function dayRuns() { return RUNS.filter(r => r.perDay[F.d] && shown(r)).sort((a, b) => dayPieces(a, F.d)[0][0] - dayPieces(b, F.d)[0][0]); }
+  function renderList() {
+    const rs = dayRuns();
+    $('#hList').textContent = `Lista · ${rs.length} futás`;
+    $('#list').innerHTML = rs.length ? rs.map(r => {
+      const p = dayPieces(r, F.d), k = KIND.get(r.kind) || { hu: r.kind }, pd = r.perDay[F.d];
+      const tm = `${p[0][2] ? '‹' : ''}${fUtc(p[0][0])}–${fUtc(p[p.length - 1][1])}${p[p.length - 1][3] ? '›' : ''}`;
+      return `<button class="ri${r.sid8 === F.run ? ' sel' : ''}" role="listitem" data-sid="${r.sid8}" title="${esc(k.hu)}"><i class="sw" style="background:${kcol(r.kind)}"></i><span class="tm">${tm}</span>` +
+        `<span class="tt">${esc(r.title)}<small>${esc(rowLabel(rowOf(r)))}</small></span><span class="nn">${pd[0]} lépés · ${fN(pd[2])} tok</span></button>`;
+    }).join('') : '<div class="empty">Nincs a szűrőnek megfelelő futás ezen a napon.</div>';
+    $('#list').querySelectorAll('.ri').forEach(b => b.addEventListener('click', () => select(b.dataset.sid)));
+  }
+
+  /* ---------- the panel ---------- */
+  const ly = L => `var(--ly-${'FIQLARCGUE'.includes(L) ? L : 'E'})`;
+  function renderPanel() {
+    const P = $('#panel');
+    document.body.classList.toggle('sheet', !!F.run);
+    const r = F.run && BY.get(F.run);
+    if (!r) {
+      const x = DAYS.get(F.d);
+      P.innerHTML = `<div class="kick">Futásnapló · U réteg</div><h2>${esc(fDay(F.d))}</h2>` +
+        `<p class="dim">Kattints egy futásra (sáv vagy lista) a részletekért: eszközök, fájlok, az érintett rétegek, a DevLog vonal és a visszajátszás.</p>` +
+        (x ? `<h3>A nap legnagyobb futásai</h3>` + RUNS.filter(q => q.perDay[F.d]).sort((a, b) => b.perDay[F.d][0] - a.perDay[F.d][0]).slice(0, 8).map(q =>
+          `<button class="lk" data-sid="${q.sid8}"><span class="c"><i style="display:inline-block;width:8px;height:8px;margin-right:5px;background:${kcol(q.kind)}"></i>${q.sid8}</span><span class="t">${esc(q.title)}</span><span class="r">${q.perDay[F.d][0]}</span></button>`).join('') : '') +
+        `<h3>Olvasás</h3><p>Szín = hogyan indult a futás. Hossz = az aktív szakaszai (${R.idleGapMin} percnél hosszabb szünet szaggatott). Vastagság és szám = a lépései ezen a napon. A ‹ › jel: a futás az előző / a következő napon folytatódik; éjfélnél kettévágjuk, és mindkét napon látszik.</p>`;
+      P.querySelectorAll('[data-sid]').forEach(b => b.addEventListener('click', () => select(b.dataset.sid)));
+      return;
+    }
+    const k = KIND.get(r.kind) || { hu: r.kind, en: '' }, pl = PLACE.get(r.place) || { label: r.place };
+    const days = runDays(r), wall = Date.parse(r.end) - Date.parse(r.start);
+    const tokIn = r.tok.in + r.tok.cw;
+    let h = `<button class="btn" id="back">← Vissza a naphoz</button>`;
+    h += `<div class="kick"><i class="sw" style="background:${kcol(r.kind)}"></i>${esc(k.hu)}${r.agent ? ' · ' + esc(r.agent) : ''} · ${esc(pl.label)}</div>`;
+    h += `<h2>${esc(r.title)}</h2>`;
+    h += `<div class="marks"><span class="mk">${fNum(r.steps)} lépés</span><span class="mk">${r.calls} eszközhívás</span><span class="mk">aktív ${fDur(r.active)}</span>` +
+      (days.length > 1 ? `<span class="mk wa">${days.length} napon</span>` : '') + (r.nCommits ? `<span class="mk ok">${r.nCommits} commit</span>` : '') + '</div>';
+    h += '<div class="row">' + (r.replay
+      ? `<a class="btn pri" href="replay.html#${esc(r.sid8)}" title="Lépésről lépésre a Visszajátszásban">▶ Visszajátszás</a>`
+      : `<span class="btn" aria-disabled="true" title="A Visszajátszás csak a legalább 3 lépéses futásokat tartja">▶ nincs visszajátszás</span>`) +
+      `<a class="btn" href="connectome.html#sel=${encodeURIComponent('U:run.' + r.sid8)}" title="Ez a futás a Konnektómban">Konnektóm</a>` +
+      (r.lines[0] ? `<a class="btn" href="metro.html#sel=${encodeURIComponent('s:' + r.sid8 + '@' + r.lines[0].slice(2))}" title="Az állomása a Vonaltérképen">Vonaltérkép</a>` : '') + '</div>';
+    h += '<div class="row">' +
+      `<button class="btn" data-copy="sid">${COPY} Session id</button>` +
+      `<button class="btn" data-copy="resume" title="claude --resume ${esc(r.sid)}">${COPY} claude --resume</button>` +
+      `<button class="btn" data-copy="session" title="stack.js session ${esc(r.sid8)}">${COPY} stack.js session</button></div>`;
+    h += '<h3>Adatok</h3><div class="kv">' +
+      `<span>kezdés</span><span>${esc(fWhen(r.start))}</span><span>vége</span><span>${esc(fWhen(r.end))}</span>` +
+      `<span>idő</span><span>aktív ${fDur(r.active)} · falióra ${fDur(wall)} · ${r.segs.length} szakasz</span>` +
+      `<span>hely</span><span>${esc(r.cwd || '—')}</span><span>ág</span><span>${esc(r.branch || '—')}</span>` +
+      `<span>indítás</span><span>${esc(k.hu)} <span class="faint">(${esc([r.entry, r.origin].filter(Boolean).join(' · ') || 'nincs adat')})</span></span>` +
+      `<span>promptok</span><span>${r.prompts}</span><span>al-ügynök</span><span>${r.subagents} átirat · ${r.sub} indítás</span>` +
+      `<span>token</span><span>ki ${fN(r.tok.out)} · be ${fN(tokIn)} · cache olvasás ${fN(r.tok.cr)}</span>` +
+      `<span>id</span><span><code>U:run.${esc(r.sid8)}</code>${r.session ? ` · <code>${esc(r.session)}</code>` : ''}</span></div>`;
+    if (days.length > 1 || days[0] !== F.d) h += '<h3>Napjai</h3>' + days.map(d => { const v = r.perDay[d]; return `<button class="lk${d === F.d ? ' cur' : ''}" data-day="${d}"><span class="c">${fShort(d)}</span><span class="t">${v[0]} lépés · ${v[1]} hívás${v[4] ? ' · ' + v[4] + ' commit' : ''}</span><span class="r">${fN(v[2])} tok</span></button>`; }).join('');
+    h += '<h3>DevLog vonal</h3>' + (r.lines.length ? r.lines.map(l => { const L = LINES[l] || [l, '']; return `<a class="lk" href="metro.html#sel=${encodeURIComponent(l.slice(2))}"><span class="c">${esc(l.slice(2))}</span><span class="t">${esc(L[0])}</span><span class="r">${esc(L[1])}</span></a>`; }).join('')
+      : `<p class="dim">${r.session ? 'A DevLog munkamenete (' + esc(r.session) + ') nincs vonalhoz rendelve.' : 'Nincs DevLog munkamenete: a DevLog még nem aratta le (vagy nem VRG munka).'}</p>`);
+    const maxT = Math.max(1, ...r.tools.map(t => t[1]));
+    h += `<h3>Eszközök · ${r.tools.length}</h3>` + (r.tools.length ? '<div class="tb">' + r.tools.slice(0, 16).map(([n, c]) => `<span class="n" title="${esc(n)}">${esc(n)}</span><span><i class="b" style="display:block;width:${(100 * c / maxT).toFixed(1)}%"></i></span><span class="c">${c}</span>`).join('') + '</div>' + (r.tools.length > 16 ? `<p class="faint">+ ${r.tools.length - 16} további</p>` : '') : '<p class="dim">Nem hívott eszközt.</p>');
+    h += `<h3>Fájlok · ${r.nFiles}</h3>` + (r.files.length ? `<ul class="fl">${r.files.map(([p, rd, wr, ot, er]) => `<li><span>${esc(p)}</span><span class="rw">${rd ? `<span class="rd" title="olvasva">${rd}○</span> ` : ''}${wr ? `<span class="wr" title="írva">${wr}●</span> ` : ''}${ot ? `<span title="más eszköz">${ot}·</span> ` : ''}${er ? `<span class="er" title="hibával">${er}✕</span>` : ''}</span></li>`).join('')}</ul>` +
+      (r.nFiles > r.files.length ? `<p class="faint">+ ${r.nFiles - r.files.length} további (a teljes lista a Visszajátszásban)</p>` : '') + `<div class="row"><button class="btn" data-copy="files">${COPY} Fájllista</button></div>` : '<p class="dim">Nem nevezett meg fájlt.</p>');
+    const lw = Object.entries(r.layers).sort((a, b) => b[1] - a[1]), maxL = Math.max(1, ...lw.map(x => x[1]));
+    h += '<h3>Érintett rétegek</h3>' + (lw.length ? '<div class="glow">' + lw.map(([L, w]) => `<span class="gl" style="--c:${ly(L)};--g:${(2 + 10 * Math.sqrt(w / maxL)).toFixed(1)}px" title="${esc((R.layers[L] || L) + ': ' + w + ' érintés')}"><b>${esc(L)}</b>${esc(R.layers[L] || L)} <span class="faint">${w}</span></span>`).join('') + '</div>' +
+      '<div class="nl">' + r.nodes.map(([id, L, t, w]) => `<a class="lk" style="--c:${ly(L)}" href="connectome.html#sel=${encodeURIComponent(id)}" title="${esc(id)} a Konnektómban"><span class="c"><b></b>${esc(id.length > 9 ? id.slice(0, 9) + '…' : id)}</span><span class="t">${esc(t)}</span><span class="r">${w}</span></a>`).join('') + '</div>'
+      : '<p class="dim">A felvétel egy stack-csomópontot sem talált el.</p>');
+    if (r.commits.length) h += `<h3>Commitok · ${r.commits.length}</h3>` + r.commits.map(([c, s]) => `<a class="lk" href="commits.html#c=${esc(c)}"><span class="c">${esc(c)}</span><span class="t">${esc(s)}</span><span class="r"></span></a>`).join('');
+    if (r.first) h += `<h3>Első prompt</h3><pre class="raw">${esc(r.first)}</pre>`;
+    P.innerHTML = h;
+    $('#back').onclick = () => select('');
+    P.querySelectorAll('[data-day]').forEach(b => b.addEventListener('click', () => setDay(b.dataset.day, false)));
+    P.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => {
+      const w = b.dataset.copy;
+      if (w === 'sid') copy(r.sid, 'session id', b);
+      else if (w === 'resume') copy(`claude --resume ${r.sid}`, 'claude --resume', b);
+      else if (w === 'session') copy(`cd ${R.paths.stack}\n..\\..\\tools\\node\\node.exe stack.js session ${r.sid8}`, 'stack.js session', b);
+      else if (w === 'files') copy(r.files.map(f => f[0]).join('\n'), r.files.length + ' fájl', b);
+    }));
+  }
+
+  /* ---------- actions ---------- */
+  function render() { renderStrip(); renderTotals(); renderDay(); renderList(); $('#stat').textContent = `${RUNS.length} futás · ${WITH.length} nap`; }
+  function setDay(d, clearRun) {
+    F.d = d;
+    if (clearRun && F.run && !BY.get(F.run).perDay[d]) F.run = '';
+    toHash(); render(); renderPanel();
+  }
+  function select(sid) {
+    F.run = sid || '';
+    if (F.run && !BY.get(F.run).perDay[F.d]) F.d = runDays(BY.get(F.run))[0];
+    toHash(); render(); renderPanel();
+    if (F.run) {
+      const g = document.querySelector(`#chart .run[data-sid="${F.run}"]`);
+      if (g && matchMedia('(min-width: 901px)').matches) g.focus({ preventScroll: true });
+      $('#panel').scrollTop = 0;
+    }
+  }
+  $('#dPrev').onclick = () => { const p = WITH.filter(d => d < F.d).pop(); if (p) setDay(p, true); };
+  $('#dNext').onclick = () => { const n = WITH.find(d => d > F.d); if (n) setDay(n, true); };
+  $('#fG').addEventListener('change', e => { F.g = e.target.value; toHash(); renderDay(); renderList(); });
+  let qt = 0;
+  $('#fS').addEventListener('input', e => { clearTimeout(qt); qt = setTimeout(() => { F.q = e.target.value.trim(); e.target.classList.toggle('on', !!F.q); toHash(); renderStrip(); renderDay(); renderList(); }, 120); });
+
+  document.addEventListener('keydown', e => {
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') { if (e.key === 'Escape') e.target.blur(); return; }
+    if (!$('#fallback').hidden) { if (e.key === 'Escape') $('#fallback').hidden = true; return; }
+    if (e.key === '/') { e.preventDefault(); $('#fS').focus(); return; }
+    if (e.key === 'Escape') { if (F.run) select(''); else if (F.q) { F.q = ''; $('#fS').value = ''; $('#fS').classList.remove('on'); toHash(); render(); } return; }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      if (e.target.closest && e.target.closest('.run')) { /* moving along the bars */ }
+      const fwd = e.key === 'ArrowRight';
+      const t = e.shiftKey ? dk(d0(F.d) + (fwd ? DAY : -DAY)) : fwd ? WITH.find(d => d > F.d) : WITH.filter(d => d < F.d).pop();
+      if (t && t >= FIRST && t <= TODAY) { e.preventDefault(); setDay(t, true); }
+      return;
+    }
+    if (e.key === 'j' || e.key === 'k') {
+      const rs = dayRuns(); if (!rs.length) return;
+      const i = rs.findIndex(r => r.sid8 === F.run);
+      const n = e.key === 'j' ? (i < 0 ? 0 : Math.min(rs.length - 1, i + 1)) : (i < 0 ? rs.length - 1 : Math.max(0, i - 1));
+      select(rs[n].sid8);
+    }
+  });
+
+  $('#about').innerHTML = `Adat: <code>out/runs-data.js</code> (lib/runs.js, minden <code>stack.js build</code>, vagy <code>stack.js runs</code>; ügyfélkódokat idéz, ezért nincs a gitben) · forrás: <code>out/recordings</code> (lib/record.js) és az átiratok első sorai (indítás módja) · generálva ${esc(R.generated.slice(0, 16).replace('T', ' '))} UTC` +
+    (R.fallbacks ? ` · ${R.fallbacks} futásnak nincs felvételfájlja (a kezdőnapjára számít, mint a Vezérlőteremben)` : '') + '. ' +
+    `Link: <code>#d=2026-11-07</code>, <code>&amp;run=&lt;sid8&gt;</code>, <code>&amp;g=line</code>, <code>&amp;q=…</code>, <code>&amp;hk=auto,cli</code> (rejtett típusok), <code>&amp;m=tok</code>. Billentyűk: ← → nap futással, Shift+← → naptári nap, j / k futás, / keresés, Esc.`;
+
+  let rt = 0;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { renderStrip(); renderDay(); }, 120); });
+  addEventListener('hashchange', () => { fromHash(); $('#fS').value = F.q; $('#fG').value = F.g; toHash(); render(); renderPanel(); });
+  fromHash(); $('#fS').value = F.q; $('#fS').classList.toggle('on', !!F.q); $('#fG').value = F.g;
+  renderLive(); toHash(); render(); renderPanel();
+})();
+</script>
+</body>
+</html>

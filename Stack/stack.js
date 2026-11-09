@@ -17,6 +17,7 @@
 //   node stack.js commits                                                       rewrite out/commits-data.js (commits.html, Commit-pixel)
 //   node stack.js decisions                                                     rewrite out/decisions-data.js (decisions.html, Döntésnapló)
 //   node stack.js metro                                                         rewrite out/metro-data.js (metro.html, Vonaltérkép)
+//   node stack.js runs                                                          rewrite out/runs-data.js (runs.html, Futásnapló)
 //   node stack.js neuron [<address | root prefix>]                              an axiom neuron by address (or the gate counts)
 //   node stack.js mcp                                                          run the MCP server on stdio
 //
@@ -73,6 +74,7 @@ async function main() {
     case 'commits': return require('./lib/commitpixel').write().msg;
     case 'decisions': return require('./lib/decisions').write().msg;
     case 'metro': return require('./lib/metro').write().msg;
+    case 'runs': return require('./lib/runs').write().msg;
     case 'archive': { const r = require('./lib/archive').archive(); return `archive: ${r.copied} copied, ${r.same} unchanged, ${r.failed.length} failed`; }
     case 'mcp': require('./mcp/server').start(); return null;
     default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 24).map(l => l.slice(3)).join('\n');

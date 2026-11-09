@@ -2,7 +2,7 @@
 //
 //   archive → layers F I Q L A R C G → join → record → U (Futás) → pillars → analytics
 //   → validate → write graph → events + snapshot → index (+ embeddings) → codec · drift · status
-//   → patterns · proposals · replay · connectome · lineage · control · commits · decisions → health
+//   → patterns · proposals · replay · connectome · lineage · control · commits · decisions · metro · runs → health
 //
 // Rules each stage keeps:
 //  · sources are read, never written; everything written goes to out/ (derived) or data/ (history)
@@ -137,6 +137,7 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
     await hc.stage('commits', () => log(require('./commitpixel').write({ graph }).msg), { optional: true });   // Commit-pixel (commits.html)
     await hc.stage('decisions', () => log(require('./decisions').write({ graph, q: layers.Q, nodes }).msg), { optional: true });   // Döntésnapló (decisions.html)
     await hc.stage('metro', () => log(require('./metro').write({ graph }).msg), { optional: true });   // Vonaltérkép (metro.html)
+    await hc.stage('runs', () => log(require('./runs').write({ graph }).msg), { optional: true });   // Futásnapló (runs.html)
     const ms = Date.now() - t0;
     X.writeAtomic(path.join(CFG.out, 'STATUS.md'), INS.status(graph, metrics, codec.report, ms));
     const props = INS.proposals({ graph, communities, pat, health: hc });

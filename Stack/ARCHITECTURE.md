@@ -24,13 +24,13 @@ Every write goes through `lib/fsx.js`:
 archive ─► layers F I Q L A R C G ─► join ─► record ─► U · Futás ─► pillars
    ─► validate ─► analytics (PageRank, Louvain, metrics, PARA, actor)
    ─► write graph ─► events + snapshot ─► search index (+ bge-m3 vectors)
-   ─► codec · drift · patterns · replay · connectome · lineage · control · commits · decisions · metro · status · proposals ─► HEALTH.md
+   ─► codec · drift · patterns · replay · connectome · lineage · control · commits · decisions · metro · runs · status · proposals ─► HEALTH.md
 ```
 
 | A stage that … | does this when it fails |
 |---|---|
 | reads a **layer** | is **carried forward**: the last good build's nodes for that layer are reused, marked `stale`. One broken map never empties its layer. |
-| is **optional** (archive, embeddings, drift, patterns, replay, connectome, lineage, control, commits, decisions, metro) | is **skipped**, and the build goes on |
+| is **optional** (archive, embeddings, drift, patterns, replay, connectome, lineage, control, commits, decisions, metro, runs) | is **skipped**, and the build goes on |
 | builds the **search index** | keeps the last good index |
 | is **required** (git facts, join) | stops the build; `out/` keeps the last good files and HEALTH.md says why |
 
@@ -63,6 +63,7 @@ archive ─► layers F I Q L A R C G ─► join ─► record ─► U · Fut�
 | Commit-pixel page (layer R) | `commits.html` + `lib/commitpixel.js` → `out/commits-data.js` (optional stage `commits` after `control`); `stack.js commits`. Reads the R layer and its links from the graph, plus one `git log --all` + `for-each-ref` for time of day, full parents, refs, files → areas and the branch lanes | STK-P19…P24 (2026-11-09) |
 | Döntésnapló page (decision inbox, layer Q) | `decisions.html` + `lib/decisions.js` → `out/decisions-data.js` (optional stage `decisions` after `commits`); `stack.js decisions`. Reads the Q layer (the parser's ids, lines, states), re-reads each decision file for the block, options as written, dates (`git blame` as a fallback) and other lines naming the id; the graph's Q links to L, F, A rank what each question blocks; the join's unresolved `q:` mentions are the "nincs fájlja" group | STK-P26…P35 (2026-11-09) |
 | Vonaltérkép page (metro map, layer L) | `metro.html` + `lib/metro.js` → `out/metro-data.js` (optional stage `metro` after `decisions`); `stack.js metro`. Reads the L layer and every session's links from the graph; re-reads `notes/devlog/lines.js` + `sessions.json` for the prompt times and the ASSIGN spans (one station per session × line, sliced as `notes/devlog/build.js` does), `threads.js` for the Folytatás prompt, whether `sessions/<line>/CLAUDE.md` exists, and `out/recordings/index.json` for replays and the runs after the last harvest | STK-P36…P45 (2026-11-09) |
+| Futásnapló page (run log, layer U) | `runs.html` + `lib/runs.js` → `out/runs-data.js` (optional stage `runs` after `metro`); `stack.js runs`. Reads `out/recordings` (index + every `<sid8>.jsonl`: per-day totals by the Vezérlőterem's rule, active stretches, files), the first 256 KB of each archived transcript (entrypoint, turnOrigin, agentSetting → the kind of run), the graph (touched nodes, commit subjects, run → session → line), `out/replay/index.js` (which runs replay) and `data/live/*.jsonl` when it exists | STK-P46…P56 (2026-11-09) |
 | Connectome page (Konnektóm) | `connectome.html` + `lib/connectome.js` → `out/connectome-data.js`; `stack.js connectome`; serve.js `/api/connectome`, `/api/build` | CN-Q1…Q5 A (2026-11-07) |
 | Holo page (polip ⇄ gömb) | `orb.html`; pathways = `pathways()` in `lib/connectome.js` (scores +4 line, +2 session, +1 run touch, +0.5 pillar) → columns `line`, `line2`, plus `lines`, `lineLinks`, `bundles` in the same data file | HO-Q1…Q6 (2026-11-07) |
 | Spreading activation with hub inhibition | `lib/activation.js` (Node and browser) | roadmap 3.3 |
