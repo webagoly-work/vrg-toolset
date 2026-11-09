@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Commit-pixel</title>
+<!-- Commit-pixel: the R layer of the VRG Stack in its own order (2026-11-09, STK-P19…).
+     The git history as a contribution grid (weeks as columns, Monday first, months labelled), colour = commits
+     that day in four quantised steps; under it the branch lanes on the same time axis (forks and merges drawn).
+     A click on a day opens its commits and what they belong to: DevLog lines and sessions (L), runs (U), ideas,
+     decisions, the agentic layer, folders (C) and documents (G). Filter by pillar, area (top-level folder) and
+     branch: the grid is drawn once and the filter only re-colours it.
+     Data: out/commits-data.js (lib/commitpixel.js, written on every `stack.js build`). Works from file:// and serve.js. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/density.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-light.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/base.css">
+<style>
+  /* fallbacks so the page still reads if the kit is not reachable */
+  :root { --bg: var(--vk-bg, #0a141c); --s1: var(--vk-surface-1, #121c24); --s2: var(--vk-surface-2, #17232c); --s3: var(--vk-surface-3, #1d2a33);
+    --ln: var(--vk-line, rgba(232,240,246,.15)); --ln2: var(--vk-line-strong, rgba(232,240,246,.34));
+    --tx: var(--vk-text, #e8f0f6); --mu: var(--vk-text-muted, #a6afb7); --fa: var(--vk-text-faint, #6f7880);
+    --acc: var(--vk-accent, #93d3e6); --warm: var(--vk-activity, #e8a873); --ok: var(--vk-ok, #8bcca1); --warn: var(--vk-warn, #e3be7b);
+    --info: var(--vk-info, #9db8e8); --idea: var(--vk-idea, #b4a7e6);
+    --h0: var(--vk-heat-0, #17232c); --h1: var(--vk-heat-1, #3a2e25); --h2: var(--vk-heat-2, #6a4a30); --h3: var(--vk-heat-3, #a87048); --h4: var(--vk-heat-4, #e8a873);
+    --acc-soft: color-mix(in srgb, var(--acc) 14%, transparent); --warm-soft: color-mix(in srgb, var(--warm) 15%, transparent);
+    --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif);
+    --panel-w: 400px; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--tx); font: 14px/1.5 var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--ln); }
+  h1 { font: 600 17px var(--voice); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--mu); margin-left: 6px; }
+  .sp { flex: 1; }
+  header button, header a.b, header select { font: 12px var(--mono); background: var(--s1); color: var(--mu); border: 1px solid var(--ln); padding: 5px 9px; text-decoration: none; min-height: 28px; cursor: pointer; }
+  header select { color: var(--tx); max-width: 190px; }
+  header select.on { border-color: var(--warm); box-shadow: inset 0 -2px 0 var(--warm); }
+  header button:hover, header a.b:hover, header select:hover { color: var(--tx); border-color: var(--acc); }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .filters label { font: 11px var(--mono); color: var(--fa); text-transform: uppercase; letter-spacing: .06em; display: inline-flex; gap: 5px; align-items: center; }
+  #bClear { display: none; } #bClear.on { display: inline-block; color: var(--warm); border-color: var(--warm); }
+  #stat { font: 12px var(--mono); color: var(--mu); }
+  .shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) var(--panel-w); min-height: 0; }
+  #main { overflow: auto; min-height: 0; min-width: 0; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 18px 16px 60px; display: flex; flex-direction: column; gap: 22px; }
+  .eyebrow { font: 12px var(--voice); text-transform: uppercase; letter-spacing: .14em; color: var(--acc); }
+  h2 { font: 600 22px/1.15 var(--voice); margin: 0; }
+  h2 .en { display: block; font: italic 400 13px var(--sans); color: var(--fa); margin-top: 2px; }
+  p { margin: 0; max-width: 78ch; }
+  .dim { color: var(--mu); } .faint { color: var(--fa); } .mono { font-family: var(--mono); font-size: 12px; }
+  a { color: var(--acc); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .tile { background: var(--s1); border: 1px solid var(--ln); padding: 9px 12px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .tile b { font: 600 24px/1.1 var(--voice); font-variant-numeric: tabular-nums; }
+  .tile small { font-size: 12px; color: var(--mu); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tile.f b { color: var(--warm); }
+
+  .box { background: var(--s1); border: 1px solid var(--ln); padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .boxhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; }
+  .boxhead h3 { font: 600 15px var(--voice); margin: 0; letter-spacing: .03em; }
+  .legend { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 12px; color: var(--mu); }
+  .legend .sw { display: inline-flex; align-items: center; gap: 4px; font: 11px var(--mono); }
+  .legend .sw i { width: 12px; height: 12px; display: inline-block; }
+  .legend .mg i { width: 7px; height: 7px; border-radius: 50%; background: var(--tx); outline: 1px solid var(--bg); }
+  .scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; max-width: 100%; padding-bottom: 4px; }
+  #grid svg { display: block; }
+  #grid:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  .readout { font: 12.5px var(--mono); color: var(--mu); min-height: 1.5em; }
+  .boxfoot { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 12.5px; color: var(--mu); }
+  .boxfoot button { font: 12px var(--mono); background: var(--bg); color: var(--mu); border: 1px solid var(--ln2); padding: 4px 9px; cursor: pointer; }
+  .boxfoot button:hover { color: var(--tx); border-color: var(--acc); }
+
+  /* svg marks: classes, not inline colours, so the theme switch and the filter only touch attributes */
+  .ax { font: 10px var(--mono); fill: var(--mu); }
+  .ax.yr { fill: var(--tx); font-weight: 600; }
+  rect.d { stroke: none; cursor: pointer; }
+  rect.d.l0 { fill: var(--h0); } rect.d.l1 { fill: var(--h1); } rect.d.l2 { fill: var(--h2); } rect.d.l3 { fill: var(--h3); } rect.d.l4 { fill: var(--h4); }
+  rect.d.fu { fill: none; stroke: var(--ln); stroke-width: 1; cursor: default; }
+  rect.d.today { stroke: var(--tx); stroke-width: 1.5; }
+  rect.d:hover { stroke: var(--mu); stroke-width: 1; }
+  circle.mg { fill: var(--tx); stroke: var(--bg); stroke-width: 1; pointer-events: none; }
+  circle.mg.off { display: none; }
+  #selring { fill: none; stroke: var(--acc); stroke-width: 2.5; pointer-events: none; }
+  #cursor { fill: none; stroke: var(--tx); stroke-width: 1; stroke-dasharray: 2 2; pointer-events: none; }
+  .lane line.ln { stroke: var(--ln2); stroke-width: 1.5; }
+  .lane.main line.ln { stroke: var(--acc); stroke-width: 2; }
+  .lane circle { fill: var(--mu); }
+  .lane.main circle { fill: var(--acc); }
+  .lane circle.off { fill: var(--s3); }
+  .lane text { font: 10.5px var(--mono); fill: var(--mu); cursor: pointer; }
+  .lane.main text { fill: var(--acc); }
+  .lane.sel line.ln { stroke: var(--warm); } .lane.sel circle:not(.off) { fill: var(--warm); } .lane.sel text { fill: var(--warm); font-weight: 600; }
+  .lane .hit { fill: transparent; cursor: pointer; }
+  .lane:hover text { fill: var(--tx); }
+  path.cx { fill: none; stroke: var(--ln2); stroke-width: 1; }
+  path.cx.mg { stroke: var(--warm); stroke-opacity: .75; }
+  #dayguide { fill: var(--acc-soft); pointer-events: none; }
+  .lanehead { font: 600 10px var(--mono); fill: var(--fa); letter-spacing: .08em; }
+
+  #tip { position: fixed; z-index: 30; pointer-events: none; background: var(--s3); color: var(--tx); border: 1px solid var(--ln2); padding: 4px 8px; font: 12px var(--mono); white-space: nowrap; display: none; }
+
+  /* side panel */
+  aside { border-left: 1px solid var(--ln); padding: 14px 16px 40px; overflow: auto; min-height: 0; min-width: 0; background: var(--bg); }
+  aside h2 { font-size: 20px; overflow-wrap: anywhere; }
+  aside h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--mu); margin: 16px 0 4px; border-bottom: 1px solid var(--ln); padding-bottom: 2px; }
+  aside p { margin: 0 0 6px; overflow-wrap: anywhere; font-size: 13px; }
+  .kick { font: 11px var(--mono); color: var(--mu); text-transform: uppercase; letter-spacing: .06em; }
+  .sum { font: 12.5px var(--mono); color: var(--mu); margin-top: 4px; }
+  .sum b { color: var(--warm); font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .chip { all: unset; cursor: pointer; font: 11.5px var(--mono); border: 1px solid var(--ln2); padding: 1px 7px; color: var(--mu); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; box-sizing: border-box; }
+  .chip:hover, .chip:focus-visible { border-color: var(--acc); color: var(--tx); outline: none; }
+  .chip.on { border-color: var(--warm); color: var(--warm); }
+  .chip.main { border-color: var(--acc); color: var(--acc); }
+  .cm { border-bottom: 1px solid var(--ln); }
+  .cm > button { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 0 8px; padding: 6px 4px; width: 100%; }
+  .cm > button:hover { background: var(--acc-soft); }
+  .cm > button:focus-visible { outline: 2px solid var(--acc); outline-offset: -2px; }
+  .cm .tm { font: 11px var(--mono); color: var(--mu); padding-top: 2px; }
+  .cm .su { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
+  .cm .mt { grid-column: 2; font: 11px var(--mono); color: var(--fa); display: flex; flex-wrap: wrap; gap: 2px 8px; margin-top: 2px; }
+  .cm .mt .br { color: var(--mu); }
+  .cm .mt .br.main { color: var(--acc); }
+  .cm.out > button { opacity: .42; }
+  .cm.open { background: var(--s1); }
+  .mk { display: inline-flex; align-items: center; gap: 3px; font: 10.5px/1.3 var(--mono); padding: 0 5px; border: 1px solid currentColor; white-space: nowrap; }
+  .mk.mg { color: var(--warm); } .mk.ss { color: var(--idea); } .mk.ref { color: var(--ok); border-style: dashed; }
+  .det { padding: 4px 6px 10px 52px; font-size: 12.5px; display: flex; flex-direction: column; gap: 6px; }
+  .det .brief { color: var(--mu); overflow-wrap: anywhere; }
+  .kv { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 2px 8px; }
+  .kv > span:nth-child(odd) { color: var(--fa); font: 11px var(--mono); padding-top: 2px; } .kv > span:nth-child(even) { overflow-wrap: anywhere; }
+  .lk { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; padding: 2px; font-size: 12.5px; color: var(--tx); text-decoration: none; }
+  .lk:hover { background: var(--acc-soft); }
+  .lk .c { font: 11px var(--mono); color: var(--mu); } .lk .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .lk .r { font: 11px var(--mono); color: var(--mu); white-space: nowrap; }
+  .lk.sub { padding-left: 18px; } .lk.sub .c { color: var(--fa); }
+  .hint { color: var(--mu); font-size: 12.5px; }
+  .empty { padding: 24px; color: var(--mu); }
+  .more { all: unset; cursor: pointer; font: 11.5px var(--mono); color: var(--acc); padding: 2px; }
+
+  @media (prefers-reduced-motion: no-preference) { .cm > button, .chip { transition: background-color .12s ease, border-color .12s ease; } }
+  @media (max-width: 900px) {
+    body { overflow-x: hidden; overflow-y: auto; height: auto; min-height: 100%; }
+    header { padding: 8px 16px; } h1 i { display: none; } .sp { display: none; }
+    .filters { width: 100%; } .filters label { flex: 1 1 140px; } .filters select { flex: 1; max-width: none; min-width: 0; }
+    .shell { display: block; }
+    #main { overflow: visible; }
+    .wrap { padding: 14px 16px 24px; }
+    #tiles { order: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); } #about { order: 3; }   /* the grid first on a phone */
+    aside { border-left: 0; border-top: 2px solid var(--acc); overflow: visible; }
+    .det { padding-left: 8px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Commit-pixel<i>VRG Stack · R réteg · repó · commits per day</i></h1>
+  <div class="filters" role="group" aria-label="Szűrő">
+    <label>Pillér <select id="fP" aria-label="Szűrés pillér szerint"></select></label>
+    <label>Terület <select id="fA" aria-label="Szűrés terület (felső szintű mappa) szerint"></select></label>
+    <label>Ág <select id="fB" aria-label="Szűrés ág szerint"></select></label>
+    <button id="bClear" title="Szűrő törlése">× szűrő</button>
+  </div>
+  <span class="sp"></span>
+  <button id="bTheme" title="Téma: auto → sötét → világos">◐ Téma</button>
+  <a class="b" href="layers.html" title="Rétegek · a teljes verem">Rétegek</a>
+  <a class="b" href="connectome.html" title="Konnektóm">Konnektóm</a>
+  <a class="b" href="lineage.html" title="Ötletfolyam (I réteg)">Ötletfolyam</a>
+  <span id="stat"></span>
+</header>
+<div class="shell">
+  <div id="main"><div class="wrap" id="wrap">
+    <div class="tiles" id="tiles"></div>
+    <section class="box" aria-labelledby="gh">
+      <div class="boxhead"><h3 id="gh">Commitok naponta <span class="faint" style="font:italic 400 12px var(--sans)">· commits per day, every branch</span></h3><span class="legend" id="legend"></span></div>
+      <div class="scroll" id="gridScroll"><div id="grid" tabindex="0" role="application" aria-roledescription="naptárrács" aria-describedby="readout"></div></div>
+      <div class="readout" id="readout" role="status" aria-live="polite"></div>
+      <div class="boxfoot"><button id="bLanes" aria-pressed="false"></button><span id="laneNote"></span></div>
+    </section>
+    <p class="hint" id="about"></p>
+  </div></div>
+  <aside id="panel" aria-live="polite" aria-label="A kiválasztott nap"></aside>
+</div>
+<div id="tip" role="presentation"></div>
+<script src="out/commits-data.js"></script>
+<script>
+'use strict';
+(function () {
+  const D = window.COMMITS;
+  const $ = s => document.querySelector(s);
+  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* file:// or private */ } } };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* ---------- theme: auto (system) → dark (Mélyvíz) → light (Papír), the same as the sibling pages ---------- */
+  const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
+  let themePref = store.get('vrg-commits-theme') || 'auto';
+  function applyTheme() {
+    const light = themePref === 'light' || (themePref === 'auto' && mq && mq.matches);
+    document.documentElement.setAttribute('data-vk-theme', light ? 'light' : 'melyviz');
+    $('#bTheme').textContent = '◐ ' + ({ auto: 'Auto', dark: 'Sötét', light: 'Világos' })[themePref];
+  }
+  $('#bTheme').onclick = () => { themePref = { auto: 'dark', dark: 'light', light: 'auto' }[themePref]; store.set('vrg-commits-theme', themePref); applyTheme(); };
+  if (mq && mq.addEventListener) mq.addEventListener('change', applyTheme);
+  applyTheme();
+
+  if (!D || !D.c) {
+    $('#wrap').innerHTML = '<div class="empty">Nincs adat: <code>out/commits-data.js</code> hiányzik. Futtasd: <code>stack.js build</code> vagy <code>stack.js commits</code> (a Stack mappában).</div>';
+    return;
+  }
+  const T0 = performance.now();
+
+  /* ---------- words and dates ---------- */
+  const DAY = 864e5;
+  const MON = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+  const MONL = ['jan', 'feb', 'márc', 'ápr', 'máj', 'jún', 'júl', 'aug', 'szept', 'okt', 'nov', 'dec'];
+  const WD = ['H', 'K', 'Sze', 'Cs', 'P', 'Szo', 'V'];
+  const WDL = ['hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat', 'vasárnap'];
+  const LAYER = D.layers || {};
+  const LORDER = 'LUIQACG';
+  const VREL = { 'ref:c': 'commit', 'ref:p': 'útvonal', touched: 'futás érintette', 'ref:go': 'GO', 'ref:q': 'döntés', 'ref:s': 'munkamenet', 'ref:m': 'memória' };
+  const p2 = n => (n < 10 ? '0' : '') + n;
+  const d0 = Date.parse(D.first + 'T00:00:00Z');
+  const keyOf = d => { const x = new Date(d0 + d * DAY); return x.getUTCFullYear() + '-' + p2(x.getUTCMonth() + 1) + '-' + p2(x.getUTCDate()); };
+  const dayOf = k => Math.round((Date.parse(k + 'T00:00:00Z') - d0) / DAY);
+  const wdOf = d => (new Date(d0 + d * DAY).getUTCDay() + 6) % 7;            // Monday = 0
+  const fDate = d => { const x = new Date(d0 + d * DAY); return x.getUTCFullYear() + '. ' + MON[x.getUTCMonth()] + ' ' + x.getUTCDate() + '.'; };
+  const fShort = d => { const x = new Date(d0 + d * DAY); return MON[x.getUTCMonth()] + ' ' + x.getUTCDate() + '.'; };
+  const num = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  /* ---------- the data, unpacked once ---------- */
+  const C = D.c, N = D.nodes, BR = D.branches;
+  const today = dayOf(D.today);
+  const lead = wdOf(0);                                // weekday of the first day; the grid starts on that week's Monday
+  const nDays = Math.max(today, C.length ? C[C.length - 1][1] : 0) + 1;
+  const weeks = Math.ceil((lead + nDays) / 7);
+  const byDay = Array.from({ length: nDays }, () => []);
+  for (let i = 0; i < C.length; i++) if (C[i][1] >= 0 && C[i][1] < nDays) byDay[C[i][1]].push(i);
+  const mainIdx = BR.findIndex(b => b[0] === 'main');
+
+  // colour steps: quartiles of the busy days over the whole history, fixed while filtering (STK-P22)
+  const busy = byDay.map(a => a.length).filter(Boolean).sort((a, b) => a - b);
+  const q = f => busy.length ? busy[Math.min(busy.length - 1, Math.floor(f * busy.length))] : 1;
+  const LV = [1, Math.max(2, q(.25)), 0, 0]; LV[2] = Math.max(LV[1] + 1, q(.5)); LV[3] = Math.max(LV[2] + 1, q(.75));
+  const level = n => n <= 0 ? 0 : n >= LV[3] ? 4 : n >= LV[2] ? 3 : n >= LV[1] ? 2 : 1;
+  const range = l => l === 0 ? '0' : l === 4 ? LV[3] + '+' : (LV[l - 1] === LV[l] - 1 ? LV[l - 1] : LV[l - 1] + '–' + (LV[l] - 1));
+  $('#legend').innerHTML = `<span>Kevesebb</span>${[0, 1, 2, 3, 4].map(l => `<span class="sw" title="${range(l)} commit"><i style="background:var(--h${l})"></i>${range(l)}</span>`).join('')}<span>Több</span>` +
+    `<span class="sw mg"><i></i>merge-nap</span>`;
+
+  /* ---------- filter state (pillar ∧ area ∧ branch) ---------- */
+  const F = { p: -1, a: -1, b: -1 };
+  const match = i => (F.p < 0 || C[i][8].includes(F.p)) && (F.a < 0 || C[i][7].includes(F.a)) && (F.b < 0 || C[i][3] === F.b);
+  const filtering = () => F.p >= 0 || F.a >= 0 || F.b >= 0;
+  const opt = (v, t, sel) => `<option value="${v}"${sel ? ' selected' : ''}>${esc(t)}</option>`;
+  $('#fP').innerHTML = opt(-1, 'mind') + D.pillars.map((p, i) => opt(i, `${p[1]} (${p[2]})`)).join('');
+  $('#fA').innerHTML = opt(-1, 'mind') + D.areas.map((a, i) => opt(i, `${a[0]} (${a[1]})`)).join('');
+  const brOrder = BR.map((b, i) => i).filter(i => BR[i][2]).sort((x, y) => (y === mainIdx) - (x === mainIdx) || BR[y][2] - BR[x][2] || BR[x][0].localeCompare(BR[y][0]));
+  $('#fB').innerHTML = opt(-1, 'mind') + brOrder.map(i => opt(i, `${BR[i][0]} (${BR[i][2]})`)).join('');
+
+  /* ---------- geometry ---------- */
+  const GUT = 30, TOP = 20;
+  let step = 22, cell = 19;
+  function measure() {
+    const w = $('#gridScroll').clientWidth || 600;
+    step = Math.max(14, Math.min(34, Math.floor((w - GUT - 12) / Math.max(weeks, 1))));
+    cell = step - 3;
+  }
+  const colOf = d => Math.floor((lead + d) / 7);
+  const cx = d => GUT + colOf(d) * step;
+  const cy = d => TOP + wdOf(d) * step;
+  const lx = d => GUT + colOf(d) * step + (wdOf(d) + .5) * step / 7;   // the lanes share the grid's x: a week column split in 7
+
+  /* ---------- branch lanes ---------- */
+  let showAll = store.get('vrg-commits-lanes') === 'all';
+  const laneSpan = BR.map(() => [Infinity, -Infinity]);
+  for (const r of C) { const s = laneSpan[r[3]]; if (r[1] < s[0]) s[0] = r[1]; if (r[1] > s[1]) s[1] = r[1]; }
+  const OTHER = -2;
+  function laneRows() {
+    const used = BR.map((b, i) => i).filter(i => BR[i][2]);
+    const big = i => i === mainIdx || BR[i][2] >= 3;
+    const shown = used.filter(i => showAll || big(i)).sort((x, y) => (y === mainIdx) - (x === mainIdx) || laneSpan[x][0] - laneSpan[y][0] || x - y);
+    const hidden = used.filter(i => !shown.includes(i));
+    const rowOf = new Map(shown.map((b, k) => [b, k]));
+    if (hidden.length) for (const b of hidden) rowOf.set(b, shown.length);
+    return { shown, hidden, rowOf, rows: shown.length + (hidden.length ? 1 : 0) };
+  }
+
+  /* ---------- draw once (grid + lanes); a resize or the lane toggle draws again, the filter never does ---------- */
+  let cells = [], marks = [], dots = [], laneG = [];
+  let lanes = null;
+  function draw() {
+    const t0 = performance.now();
+    measure();
+    lanes = laneRows();
+    const LH = 13, laneTop = TOP + 7 * step + 26;
+    const gridW = GUT + weeks * step;
+    // labels sit after each lane's last commit, so they never overlap another lane
+    let maxX = gridW;
+    const label = b => b === OTHER ? `egyéb ágak (${lanes.hidden.length} ág, ${lanes.hidden.reduce((s, i) => s + BR[i][2], 0)} commit)` : `${BR[b][0]} · ${BR[b][2]}`;
+    const rowEnd = [];
+    for (const b of lanes.shown) rowEnd.push(lx(laneSpan[b][1]));
+    if (lanes.hidden.length) rowEnd.push(Math.max(...lanes.hidden.map(b => lx(laneSpan[b][1]))));
+    const labels = lanes.shown.concat(lanes.hidden.length ? [OTHER] : []);
+    labels.forEach((b, k) => { maxX = Math.max(maxX, rowEnd[k] + 8 + label(b).length * 6.4 + 6); });
+    const W = Math.ceil(maxX), H = laneTop + lanes.rows * LH + 6;
+    const s = [], dotLists = [];
+    s.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">`);
+    // weekday labels (every row; cells are at least 11 px)
+    for (let r = 0; r < 7; r++) s.push(`<text class="ax" x="${GUT - 6}" y="${TOP + r * step + cell / 2 + 3.5}" text-anchor="end">${WD[r]}</text>`);
+    // month labels: at the week where the month's first day falls; the year with the first one and with every January; skip what would collide
+    let lastEnd = -1;
+    for (let d = 0; d < nDays; d++) {
+      const x = new Date(d0 + d * DAY);
+      if (d !== 0 && x.getUTCDate() !== 1) continue;
+      const yr = d === 0 || x.getUTCMonth() === 0;
+      const txt = (yr ? x.getUTCFullYear() + ' ' : '') + MONL[x.getUTCMonth()];
+      const X0 = GUT + colOf(d) * step + (d === 0 ? 0 : (wdOf(d) ? step : 0));
+      if (X0 < lastEnd + 6) continue;
+      s.push(`<text class="ax${yr ? ' yr' : ''}" x="${X0}" y="${TOP - 7}">${txt}</text>`);
+      lastEnd = X0 + txt.length * 6.2;
+    }
+    s.push('<g id="cells">');
+    for (let d = 0; d < nDays; d++) s.push(`<rect class="d" data-d="${d}" x="${cx(d)}" y="${cy(d)}" width="${cell}" height="${cell}"/>`);
+    // the days after today in the current week are hollow
+    for (let d = nDays; d < weeks * 7 - lead; d++) s.push(`<rect class="d fu" x="${cx(d)}" y="${cy(d)}" width="${cell}" height="${cell}"/>`);
+    s.push('</g><g id="marks">');
+    for (let d = 0; d < nDays; d++) if (byDay[d].some(i => C[i][4] & 1)) s.push(`<circle class="mg" data-d="${d}" cx="${cx(d) + cell - 3.5}" cy="${cy(d) + 3.5}" r="2.6"/>`);
+    s.push(`</g><rect id="selring" width="${cell + 3}" height="${cell + 3}" x="-99" y="-99"/><rect id="cursor" width="${cell + 1}" height="${cell + 1}" x="-99" y="-99"/>`);
+    // lanes
+    s.push(`<text class="lanehead" x="${GUT}" y="${laneTop - 9}">ÁGAK · BRANCHES</text>`);
+    s.push(`<rect id="dayguide" x="-99" y="${laneTop - 4}" width="${step / 7 + 2}" height="${lanes.rows * LH + 6}"/>`);
+    const ly = b => laneTop + lanes.rowOf.get(b) * LH + LH / 2;
+    s.push('<g id="cx">');
+    for (let i = 0; i < C.length; i++) {
+      const r = C[i];
+      r[9].forEach((p, k) => {
+        if (p < 0 || C[p][3] === r[3] || lanes.rowOf.get(C[p][3]) === lanes.rowOf.get(r[3])) return;
+        const x1 = lx(C[p][1]), y1 = ly(C[p][3]), x2 = lx(r[1]), y2 = ly(r[3]), m = (x1 + x2) / 2;
+        s.push(`<path class="cx${k > 0 ? ' mg' : ''}" d="M${x1.toFixed(1)} ${y1}C${m.toFixed(1)} ${y1} ${m.toFixed(1)} ${y2} ${x2.toFixed(1)} ${y2}"/>`);
+      });
+    }
+    s.push('</g>');
+    labels.forEach((b, k) => {
+      const members = b === OTHER ? lanes.hidden : [b];
+      const y = laneTop + k * LH + LH / 2;
+      const a = Math.min(...members.map(m => laneSpan[m][0])), z = Math.max(...members.map(m => laneSpan[m][1]));
+      s.push(`<g class="lane${b === mainIdx ? ' main' : ''}" data-b="${b}"><rect class="hit" x="${GUT}" y="${y - LH / 2}" width="${W - GUT}" height="${LH}"/>`);
+      s.push(`<line class="ln" x1="${lx(a).toFixed(1)}" x2="${Math.max(lx(z), lx(a) + 1).toFixed(1)}" y1="${y}" y2="${y}"/>`);
+      // one dot per lane and day; the filter dims it when none of its commits match
+      const per = new Map(), mem = new Set(members);
+      for (let i = 0; i < C.length; i++) if (mem.has(C[i][3])) { const kk = C[i][1]; (per.get(kk) || per.set(kk, []).get(kk)).push(i); }
+      for (const [d, list] of per) { s.push(`<circle cx="${lx(d).toFixed(1)}" cy="${y}" r="${Math.min(4.2, 1.7 + Math.sqrt(list.length) * .55).toFixed(1)}"/>`); dotLists.push(list); }
+      s.push(`<text x="${(rowEnd[k] + 8).toFixed(1)}" y="${y + 3.5}">${esc(label(b))}</text></g>`);
+    });
+    s.push('</svg>');
+    const host = $('#grid');
+    host.innerHTML = s.join('');
+    cells = Array.prototype.slice.call(host.querySelectorAll('#cells rect.d:not(.fu)'));
+    marks = Array.prototype.slice.call(host.querySelectorAll('#marks circle'));
+    laneG = Array.prototype.slice.call(host.querySelectorAll('g.lane'));
+    // dot → its commits: the lane circles come out in the order they were written
+    const dotEls = host.querySelectorAll('g.lane circle');
+    dots = dotLists.map((list, j) => [dotEls[j], list]);
+    if (today >= 0 && today < nDays) cells[today].classList.add('today');
+    $('#bLanes').textContent = showAll ? 'Csak a fő ágak' : `Minden ág (${BR.filter(b => b[2]).length})`;
+    $('#bLanes').setAttribute('aria-pressed', String(showAll));
+    $('#laneNote').textContent = `${lanes.shown.length} ág látszik${lanes.hidden.length ? `, ${lanes.hidden.length} kicsi ág (1–2 commit) egy sorban` : ''}. A vonalak: elágazás (szürke) és merge (meleg). Egy sorra kattintva az ágra szűrsz.`;
+    recolour();
+    placeRings();
+    return performance.now() - t0;
+  }
+
+  /* ---------- the filter: re-colour only ---------- */
+  let shown = new Int16Array(nDays);
+  function recolour() {
+    const t0 = performance.now();
+    const on = filtering();
+    for (let d = 0; d < nDays; d++) { let n = 0; for (const i of byDay[d]) if (!on || match(i)) n++; shown[d] = n; }
+    for (let d = 0; d < nDays; d++) {
+      const el = cells[d], cls = 'l' + level(shown[d]);
+      if (el._l !== cls) { if (el._l) el.classList.remove(el._l); el.classList.add(cls); el._l = cls; }
+    }
+    for (const m of marks) { const d = +m.dataset.d; m.classList.toggle('off', !byDay[d].some(i => (C[i][4] & 1) && (!on || match(i)))); }
+    for (const [el, list] of dots) el.classList.toggle('off', on && !list.some(match));
+    for (const g of laneG) g.classList.toggle('sel', F.b >= 0 && (+g.dataset.b === F.b || (+g.dataset.b === OTHER && lanes.hidden.includes(F.b))));
+    for (const [id, k] of [['#fP', 'p'], ['#fA', 'a'], ['#fB', 'b']]) { $(id).value = String(F[k]); $(id).classList.toggle('on', F[k] >= 0); }
+    $('#bClear').classList.toggle('on', on);
+    tiles();
+    return performance.now() - t0;
+  }
+
+  /* ---------- overview tiles (follow the filter) ---------- */
+  function tiles() {
+    const on = filtering();
+    const ids = []; for (let i = 0; i < C.length; i++) if (!on || match(i)) ids.push(i);
+    let active = 0, peak = 0, peakD = -1, streak = 0, best = 0;
+    for (let d = 0; d < nDays; d++) { const n = shown[d]; if (n) { active++; streak++; if (streak > best) best = streak; } else streak = 0; if (n > peak) { peak = n; peakD = d; } }
+    const merges = ids.filter(i => C[i][4] & 1).length;
+    const brs = new Set(ids.map(i => C[i][3])).size;
+    const ss = ids.filter(i => C[i][4] & 2).length;
+    const t = (n, l, f) => `<div class="tile${f ? ' f' : ''}"><b>${n}</b><small>${esc(l)}</small></div>`;
+    $('#tiles').innerHTML = t(num(ids.length), on ? `commit a szűrőben (${C.length}-ból)` : 'commit, minden ágon', on) + t(active, `aktív nap (${nDays} napból)`) + t(best, 'leghosszabb sorozat, nap') +
+      t(peak, peakD >= 0 ? 'csúcs: ' + fShort(peakD) : 'csúcs') + t(merges, 'merge commit') + t(brs, 'ág') + t(ss, 'munkamenet-kezdet (TL;DR)');
+  }
+
+  /* ---------- selection, cursor, tooltip, keyboard ---------- */
+  let sel = -1, cur = -1, openC = -1, showOut = false;
+  function placeRings() {
+    const r = $('#selring'), c = $('#cursor'), g = $('#dayguide');
+    if (sel >= 0) { r.setAttribute('x', cx(sel) - 1.5); r.setAttribute('y', cy(sel) - 1.5); g.setAttribute('x', lx(sel) - step / 14 - 1); } else { r.setAttribute('x', -99); g.setAttribute('x', -99); }
+    if (cur >= 0 && cur !== sel) { c.setAttribute('x', cx(cur) - .5); c.setAttribute('y', cy(cur) - .5); } else c.setAttribute('x', -99);
+  }
+  const dayLine = d => {
+    const all = byDay[d].length, m = byDay[d].filter(i => C[i][4] & 1).length;
+    return `${fDate(d)}, ${WDL[wdOf(d)]} — ${all} commit${m ? ` · ${m} merge` : ''}${filtering() ? ` · a szűrőben ${shown[d]}` : ''}`;
+  };
+  const say = d => { $('#readout').textContent = d >= 0 ? dayLine(d) : ''; };
+  const tip = $('#tip');
+  $('#grid').addEventListener('pointerover', e => {
+    const el = e.target.closest('rect.d:not(.fu)'); if (!el) { tip.style.display = 'none'; return; }
+    const d = +el.dataset.d; tip.textContent = dayLine(d); tip.style.display = 'block';
+    const b = el.getBoundingClientRect(), w = tip.offsetWidth;
+    tip.style.left = Math.max(4, Math.min(innerWidth - w - 4, b.left + b.width / 2 - w / 2)) + 'px';
+    tip.style.top = (b.top - 30 < 4 ? b.bottom + 6 : b.top - 30) + 'px';
+  });
+  $('#grid').addEventListener('pointerleave', () => { tip.style.display = 'none'; });
+  $('#gridScroll').addEventListener('scroll', () => { tip.style.display = 'none'; }, { passive: true });
+  $('#grid').addEventListener('click', e => {
+    const el = e.target.closest('rect.d:not(.fu)');
+    if (el) { cur = +el.dataset.d; select(cur); return; }
+    const g = e.target.closest('g.lane');
+    if (g) { const b = +g.dataset.b; F.b = b === OTHER ? -1 : (F.b === b ? -1 : b); if (b === OTHER && !showAll) { showAll = true; store.set('vrg-commits-lanes', 'all'); draw(); } recolour(); render(); hash(); }
+  });
+  $('#grid').addEventListener('keydown', e => {
+    if (e.altKey || e.metaKey || e.ctrlKey) return;
+    let d = cur >= 0 ? cur : sel >= 0 ? sel : nDays - 1;
+    switch (e.key) {
+      case 'ArrowUp': d -= 1; break; case 'ArrowDown': d += 1; break;
+      case 'ArrowLeft': d -= 7; break; case 'ArrowRight': d += 7; break;
+      case 'Home': d = 0; break; case 'End': d = nDays - 1; break;
+      case 'PageUp': { let k = d - 1; while (k > 0 && !shown[k]) k--; d = k; break; }       // previous day with commits
+      case 'PageDown': { let k = d + 1; while (k < nDays - 1 && !shown[k]) k++; d = k; break; }
+      case 'Enter': case ' ': e.preventDefault(); if (d >= 0) select(d); return;
+      case 'Escape': if (filtering()) { F.p = F.a = F.b = -1; recolour(); render(); hash(); } return;
+      default: return;
+    }
+    e.preventDefault();
+    cur = Math.max(0, Math.min(nDays - 1, d)); placeRings(); say(cur);
+    const el = cells[cur]; if (el) { const sc = $('#gridScroll'), x = +el.getAttribute('x'); if (x < sc.scrollLeft || x + step > sc.scrollLeft + sc.clientWidth) sc.scrollLeft = x - sc.clientWidth / 2; }
+  });
+  $('#grid').addEventListener('focus', () => { if (cur < 0) cur = sel >= 0 ? sel : nDays - 1; placeRings(); say(cur); });
+  function select(d, keepOpen) { sel = d; showOut = false; if (!keepOpen) openC = -1; placeRings(); say(d); render(); hash(); }
+
+  /* ---------- the day panel ---------- */
+  const brName = b => BR[b] ? BR[b][0] : '?';
+  // one linked node; `right` is the small text at the end of the row (relation, count or date)
+  const nodeLink = (i, right, sub) => {
+    const n = N[i]; if (!n) return '';
+    const id = n[0], L = n[1], title = n[3] || id.slice(2);
+    const href = L === 'U' && /^U:run\./.test(id) ? 'replay.html#' + encodeURIComponent(id.slice(6)) : 'connectome.html#sel=' + encodeURIComponent(id);
+    const r = right != null && right !== '' ? right : (n[4] ? fShortK(n[4]) : '');
+    return `<a class="lk${sub ? ' sub' : ''}" href="${href}" title="${esc(id)}${L === 'U' ? ' — visszajátszás' : ' — a Konnektómban'}"><span class="c">${sub ? '└' : esc(L)}</span><span class="t">${esc(title)}</span><span class="r">${esc(r)}</span></a>`;
+  };
+  const fShortK = k => { const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(k); return m ? MON[+m[2] - 1] + ' ' + +m[3] + '.' : k; };
+  // links of a set of commits, grouped by layer; DevLog sessions sit under their line
+  function linkGroups(ids, cap) {
+    const per = {};   // layer → Map(node → count)
+    for (const i of ids) for (const x of C[i][10]) { const ni = x >> 4, L = N[ni][1]; const m = per[L] || (per[L] = new Map()); m.set(ni, (m.get(ni) || 0) + 1); }
+    let h = '';
+    for (const L of LORDER) {
+      const m = per[L]; if (!m) continue;
+      const list = [...m].sort((a, b) => b[1] - a[1] || String(N[a[0]][3]).localeCompare(String(N[b[0]][3])));
+      h += `<h3>${esc(L)} · ${esc(LAYER[L] || L)} <span class="faint">(${list.length})</span></h3>`;
+      const cnt = c => ids.length > 1 ? (c > 1 ? c + ' commit' : '1 commit') : '';
+      if (L === 'L') {
+        // lines first (direct links or through their sessions), each with its sessions under it
+        const lines = new Map();
+        for (const [ni, c] of list) { const n = N[ni]; const line = n[2] === 'line' ? ni : n[5]; const key = line >= 0 ? line : ni; const e = lines.get(key) || lines.set(key, { c: 0, ses: [] }).get(key); e.c += c; if (key !== ni) e.ses.push([ni, c]); }
+        for (const [li, e] of [...lines].sort((a, b) => b[1].c - a[1].c)) {
+          h += nodeLink(li, (N[li][2] === 'line' ? 'vonal' : 'munkamenet') + (cnt(e.c) ? ' · ' + cnt(e.c) : ''), false);
+          for (const [si] of e.ses) h += nodeLink(si, '', true);
+        }
+        continue;
+      }
+      const lim = cap && list.length > cap ? cap : list.length;
+      for (const [ni, c] of list.slice(0, lim)) {
+        const rel = ids.length === 1 ? D.rels[C[ids[0]][10].find(x => x >> 4 === ni) & 15] : '';
+        h += nodeLink(ni, rel ? (VREL[rel] || rel) : cnt(c));
+      }
+      if (lim < list.length) h += `<p class="faint mono">+ ${list.length - lim} további</p>`;
+    }
+    return h || '<p class="faint">A stackben ezekhez a commitokhoz nincs kapocs más rétegbe.</p>';
+  }
+  function commitDetail(i) {
+    const r = C[i];
+    const par = r[9].map((p, k) => p < 0 ? '<span class="faint">(a stacken kívül)</span>' : `<button class="chip" data-go="${p}" title="${esc(C[p][5])}">${k ? '⑂ ' : ''}${esc(C[p][0])} · ${fShort(C[p][1])}</button>`).join(' ');
+    const kids = []; for (let j = i + 1; j < C.length && kids.length < 8; j++) if (C[j][9].includes(i)) kids.push(j);
+    const men = r[13].map(p => `<button class="chip" data-go="${p}">${esc(C[p][0])}</button>`).join(' ');
+    return `<div class="det">${r[11] ? `<div class="brief">${esc(r[11])}</div>` : ''}<div class="kv">
+      <span>hash</span><span class="mono">${esc(r[0])} <a href="connectome.html#sel=${encodeURIComponent('R:' + r[0])}">Konnektómban</a></span>
+      <span>ág</span><span><button class="chip${r[3] === mainIdx ? ' main' : ''}${F.b === r[3] ? ' on' : ''}" data-b="${r[3]}">${esc(brName(r[3]))}</button></span>
+      ${r[12] ? `<span>ref</span><span class="mono">${esc(r[12])}</span>` : ''}
+      <span>szülő</span><span>${par || '<span class="faint">nincs (első commit)</span>'}</span>
+      ${kids.length ? `<span>utód</span><span>${kids.map(j => `<button class="chip" data-go="${j}" title="${esc(C[j][5])}">${esc(C[j][0])} · ${fShort(C[j][1])}</button>`).join(' ')}</span>` : ''}
+      ${men ? `<span>említ</span><span>${men}</span>` : ''}
+      <span>fájlok</span><span>${r[6]}${r[7].length ? ' · ' + r[7].map(a => `<button class="chip${F.a === a ? ' on' : ''}" data-a="${a}">${esc(D.areas[a][0])}</button>`).join(' ') : ''}</span>
+      ${r[8].length ? `<span>pillér</span><span>${r[8].map(p => `<button class="chip${F.p === p ? ' on' : ''}" data-p="${p}">${esc(D.pillars[p][1])}</button>`).join(' ')}</span>` : ''}
+    </div>${linkGroups([i], 12)}</div>`;
+  }
+  function render() {
+    const P = $('#panel');
+    if (sel < 0) { P.innerHTML = '<p class="kick">Nap</p><h2>Válassz egy napot</h2><p class="hint">Kattints egy cellára, vagy a rácson ← → (hét), ↑ ↓ (nap), PageUp/PageDown (előző/következő commitos nap), Enter.</p>'; return; }
+    const ids = byDay[sel].slice().sort((a, b) => (C[a][2] || '').localeCompare(C[b][2] || '') || a - b);
+    const on = filtering(), inF = ids.filter(match);
+    const brs = new Map(); for (const i of ids) brs.set(C[i][3], (brs.get(C[i][3]) || 0) + 1);
+    const m = ids.filter(i => C[i][4] & 1).length;
+    let h = `<p class="kick">Nap · ${esc(keyOf(sel))}</p><h2>${fDate(sel)} <span class="faint" style="font-size:14px">${WDL[wdOf(sel)]}</span></h2>
+      <p class="sum"><b>${ids.length}</b> commit${m ? ` · ${m} merge` : ''} · ${brs.size} ág${on ? ` · a szűrőben <b>${inF.length}</b>` : ''}</p>`;
+    if (ids.length) {
+      h += `<div class="chips">${[...brs].sort((a, b) => b[1] - a[1]).map(([b, n]) => `<button class="chip${b === mainIdx ? ' main' : ''}${F.b === b ? ' on' : ''}" data-b="${b}" title="Szűrés erre az ágra">${esc(brName(b))} · ${n}</button>`).join('')}</div>`;
+      h += `<h3>Commitok <span class="faint">(idő szerint)</span></h3>`;
+      // with a filter on, the commits that match come first; the rest are one click away
+      if (on && openC >= 0 && ids.includes(openC) && !match(openC)) showOut = true;   // an opened commit stays visible
+      const order = on ? inF.concat(showOut ? ids.filter(i => !match(i)) : []) : ids;
+      for (const i of order) {
+        const r = C[i], out = on && !match(i);
+        h += `<div class="cm${out ? ' out' : ''}${openC === i ? ' open' : ''}"><button data-c="${i}" aria-expanded="${openC === i}"><span class="tm">${esc(r[2] || '—')}</span><span class="su">${esc(r[5])}</span>
+          <span class="mt"><span>${esc(r[0])}</span><span class="br${r[3] === mainIdx ? ' main' : ''}">${esc(brName(r[3]))}</span>${r[4] & 1 ? '<span class="mk mg" title="merge commit">⑂ merge</span>' : ''}${r[4] & 2 ? '<span class="mk ss" title="DevRep TL;DR: egy munkamenet kezdete">★ TL;DR</span>' : ''}${r[12] && /tag:|->|,/.test(r[12]) ? `<span class="mk ref" title="${esc(r[12])}">⌖ ref</span>` : ''}<span>${r[6]} fájl</span>${out ? '<span>· nem illik a szűrőre</span>' : ''}</span></button>${openC === i ? commitDetail(i) : ''}</div>`;
+      }
+      if (on && ids.length > inF.length) h += `<button class="more" data-out="1" aria-expanded="${showOut}">${showOut ? '− a szűrőre nem illők elrejtése' : '+ ' + (ids.length - inF.length) + ' commit, ami nem illik a szűrőre'}</button>`;
+      h += `<h3 style="margin-top:22px;color:var(--acc)">Hová tartozik ez a nap</h3><p class="hint">${on ? 'A szűrőre illő ' + inF.length : 'Mind a ' + ids.length} commit kapcsai, rétegenként: DevLog vonalak és munkamenetek (L), futások (U), ötletek (I), döntések (Q), ügynöki gerinc (A), mappák (C), dokumentumok (G).</p>`;
+      h += linkGroups(on ? inF : ids, 10);
+    } else h += '<p class="hint">Ezen a napon nem volt commit.</p>';
+    P.innerHTML = h;
+  }
+  $('#panel').addEventListener('click', e => {
+    const t = e.target.closest('[data-c],[data-go],[data-b],[data-a],[data-p],[data-out]'); if (!t) return;
+    if (t.dataset.out) { showOut = !showOut; render(); return; }
+    if (t.dataset.c !== undefined) { const i = +t.dataset.c; openC = openC === i ? -1 : i; render(); hash(); const el = $(`#panel [data-c="${i}"]`); if (el) el.focus(); return; }
+    if (t.dataset.go !== undefined) { const i = +t.dataset.go; openC = i; select(C[i][1], true); return; }
+    if (t.dataset.b !== undefined) { const b = +t.dataset.b; F.b = F.b === b ? -1 : b; }
+    if (t.dataset.a !== undefined) { const a = +t.dataset.a; F.a = F.a === a ? -1 : a; }
+    if (t.dataset.p !== undefined) { const p = +t.dataset.p; F.p = F.p === p ? -1 : p; }
+    recolour(); render(); hash();
+  });
+  for (const [id, k] of [['#fP', 'p'], ['#fA', 'a'], ['#fB', 'b']]) $(id).addEventListener('change', e => { F[k] = +e.target.value; recolour(); render(); hash(); });
+  $('#bClear').onclick = () => { F.p = F.a = F.b = -1; recolour(); render(); hash(); };
+  $('#bLanes').onclick = () => { showAll = !showAll; store.set('vrg-commits-lanes', showAll ? 'all' : 'main'); draw(); };
+
+  /* ---------- link: #d=2026-11-07&c=abc1234&p=planner&a=Stack&b=main ---------- */
+  function hash() {
+    const parts = [];
+    if (sel >= 0) parts.push('d=' + keyOf(sel));
+    if (openC >= 0) parts.push('c=' + C[openC][0]);
+    if (F.p >= 0) parts.push('p=' + encodeURIComponent(D.pillars[F.p][0]));
+    if (F.a >= 0) parts.push('a=' + encodeURIComponent(D.areas[F.a][0]));
+    if (F.b >= 0) parts.push('b=' + encodeURIComponent(BR[F.b][0]));
+    try { history.replaceState(null, '', parts.length ? '#' + parts.join('&') : location.pathname + location.search); } catch (e) { /* file:// in some browsers */ }
+  }
+  function fromHash() {
+    const h = new URLSearchParams(location.hash.slice(1));
+    const c = h.get('c'), d = h.get('d');
+    if (h.get('p')) F.p = D.pillars.findIndex(x => x[0] === h.get('p'));
+    if (h.get('a')) F.a = D.areas.findIndex(x => x[0] === h.get('a'));
+    if (h.get('b')) F.b = BR.findIndex(x => x[0] === h.get('b'));
+    const ci = c ? C.findIndex(r => r[0] === c.slice(0, 7)) : -1;
+    if (ci >= 0) { openC = ci; sel = C[ci][1]; }
+    else if (d && /^\d{4}-\d\d-\d\d$/.test(d)) sel = Math.max(0, Math.min(nDays - 1, dayOf(d)));
+    else { let k = nDays - 1; while (k > 0 && !byDay[k].length) k--; sel = k; }
+  }
+
+  /* ---------- go ---------- */
+  fromHash();
+  const drawMs = draw();
+  render(); say(sel);
+  const firstMs = performance.now() - T0;
+  const k = D.counts;
+  $('#stat').textContent = `${k.commits} commit · ${k.days} nap · ${(D.generated || '').slice(0, 16).replace('T', ' ')}`;
+  $('#stat').title = `rajz ${drawMs.toFixed(1)} ms · első kép ${firstMs.toFixed(1)} ms`;
+  window.COMMITS_TIMING = { drawMs, firstMs, recolour: () => recolour() };
+  $('#about').innerHTML = `Forrás: a Stack R rétege (${k.commits} commit, ${k.links} kapocs ${k.nodes} csomópontra), plusz egy <code>git log --all</code> az időpontért, a teljes szülőlistáért, a refekért és a fájlok felső mappájáért (terület).` +
+    ` Az ágakat a build vezeti le: minden ág csúcsa az első-szülő láncát kapja (main először), az archivált ágak <code>archive/…</code> címkéből, a többi a merge üzenetéből.` +
+    ` Színlépcső a teljes történet aktív napjainak negyedelőiből; szűréskor nem változik, hogy egy szín mindig ugyanannyi commitot jelentsen.${D.git ? ' <b>git most nem válaszolt: ' + esc(D.git) + '</b>' : ''}`;
+  // a link to another day or filter on this page (same document) arrives as a hash change
+  addEventListener('hashchange', () => { F.p = F.a = F.b = -1; openC = -1; fromHash(); recolour(); placeRings(); render(); say(sel); });
+  let rz = 0, lastW = $('#gridScroll').clientWidth;
+  addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { const w = $('#gridScroll').clientWidth; if (Math.abs(w - lastW) > 30) { lastW = w; draw(); } }, 150); });
+})();
+</script>
+</body>
+</html>

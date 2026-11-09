@@ -33,13 +33,13 @@ Every layer should have **one interactive page** where a person sees that layer 
 | **L DevLog** | `DEVLOG.md` board + MindMap with `VRG_devlog.mindmap.json` | ◐ | **Vonaltérkép** (metro map): lines as tracks, sessions as stations, quiet stretches in red, "continue this line" button |
 | **A Agentic** | Vezérlőterem, `Stack/control.html` (2026-11-09; the Varler Console live trace, Console/, START W, still shows the *running* agents) | ✅ | — (the Council as a flow with lanes, each agent's tools, briefs and memory one click away; start anatomy per GO codephrase; briefs from `brief-state.js --check`; memory freshness; module map; schedules; usage per day) |
 | **U Futás** | `replay.html` (Visszajátszás): one session step by step, files and stack glow | ◐ | the live Control Room view once hooks feed it |
-| **R DevRepo** | MindMap with `VRG_devrep.mindmap.json` | ◐ | **Commit-pixel** (the mirrored git grid you showed): one pixel per day, colour = commits, click opens that day's commits and the lines they belong to |
+| **R DevRepo** | Commit-pixel, `Stack/commits.html` (2026-11-09; the MindMap view of `VRG_devrep.mindmap.json` stays) | ✅ | — (the mirrored git grid: one pixel per day, colour = commits in four steps, merge days marked, branch lanes with forks and merges on the same time axis, filter by pillar / area / branch, a click opens that day's commits and the lines, sessions, runs and files they belong to) |
 | **C Code** | Kódváros (CodeCity) | ✅ | — |
 | **G Data Globe** | Gömb (`Solomon/dist/vrg-solomon.html`, START T) | ✅ | — |
 | **Z Codec** | — | n/a | machine layer; `stack.js` reads it |
 | **The stack itself** | `stack-search.html` (Rétegverem): flat, layer rows | ◐ | **Stacked view** (your first two pictures): isometric planes, one per layer, nodes on each, vertical lines lit for the selection. Later the neural view: activation during agent sessions |
 
-**Missing pages, by value:** Döntésnapló (it unblocks lines), Commit-pixel (cheap, and you designed it), Stacked view (the hub of everything), Vonaltérkép. (Vezérlőterem built 2026-11-09.) Which one comes first is STK-Q4.
+**Missing pages, by value:** Döntésnapló (it unblocks lines), Stacked view (the hub of everything), Vonaltérkép. (Vezérlőterem and Commit-pixel built 2026-11-09.) Which one comes first is STK-Q4.
 
 ---
 

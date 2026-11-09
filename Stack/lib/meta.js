@@ -38,7 +38,7 @@ module.exports = [
     is: 'What was committed, when, on which branch, and which files it touched.',
     order: 'time + branch (commit DAG)', nodes: 'commit · merge · session start (DevRep TL;DR)', edges: 'parent · merged-in',
     source: 'git log --all of Planner_VRG_U100 + notes/devrep/notes.js',
-    page: { state: 'partial', name: 'MindMap (VRG_devrep.mindmap.json)', want: 'the mirrored commit pixel: a contribution grid per day, each pixel opens its commits and the lines they belong to' } },
+    page: { state: 'exists', name: 'Commit-pixel', open: 'H:/VRG/Full/Planner_VRG_U100/Stack/commits.html' } },
   { code: 'C', id: 'code', hu: 'Kód', en: 'Code',
     is: 'The repository as a tree of modules and folders, with size and last change.',
     order: 'containment tree (folder ⊃ folder)', nodes: 'module · folder', edges: 'contains',
