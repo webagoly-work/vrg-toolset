@@ -31,7 +31,7 @@ Every layer should have **one interactive page** where a person sees that layer 
 | **I Ideas** | Ötletfolyam, `Stack/lineage.html` (2026-11-09; the MindMap view of `VRG_idea_timeline.mindmap.json` stays) | ✅ | — (lineage river: time scrubber, ideas branch and merge, dormant ones greyed, springs = the inferred needs, click opens what it became) |
 | **Q Decisions** | none; the questions sit in 13 Markdown files | ✗ | **Döntésnapló** (decision inbox): every open question in one list, A/B/C buttons, the answer written back to its file with the date (with approval) |
 | **L DevLog** | `DEVLOG.md` board + MindMap with `VRG_devlog.mindmap.json` | ◐ | **Vonaltérkép** (metro map): lines as tracks, sessions as stations, quiet stretches in red, "continue this line" button |
-| **A Agentic** | Varler Console live trace (Console/, START W) shows only *running* agents | ◐ | **Vezérlőterem** (Control Room): agents and what they may read, memory freshness, briefs with stale state, schedules, usage per day |
+| **A Agentic** | Vezérlőterem, `Stack/control.html` (2026-11-09; the Varler Console live trace, Console/, START W, still shows the *running* agents) | ✅ | — (the Council as a flow with lanes, each agent's tools, briefs and memory one click away; start anatomy per GO codephrase; briefs from `brief-state.js --check`; memory freshness; module map; schedules; usage per day) |
 | **U Futás** | `replay.html` (Visszajátszás): one session step by step, files and stack glow | ◐ | the live Control Room view once hooks feed it |
 | **R DevRepo** | MindMap with `VRG_devrep.mindmap.json` | ◐ | **Commit-pixel** (the mirrored git grid you showed): one pixel per day, colour = commits, click opens that day's commits and the lines they belong to |
 | **C Code** | Kódváros (CodeCity) | ✅ | — |
@@ -39,7 +39,7 @@ Every layer should have **one interactive page** where a person sees that layer 
 | **Z Codec** | — | n/a | machine layer; `stack.js` reads it |
 | **The stack itself** | `stack-search.html` (Rétegverem): flat, layer rows | ◐ | **Stacked view** (your first two pictures): isometric planes, one per layer, nodes on each, vertical lines lit for the selection. Later the neural view: activation during agent sessions |
 
-**Missing pages, by value:** Döntésnapló (it unblocks lines), Commit-pixel (cheap, and you designed it), Stacked view (the hub of everything), Vonaltérkép, Vezérlőterem. Which one comes first is STK-Q4.
+**Missing pages, by value:** Döntésnapló (it unblocks lines), Commit-pixel (cheap, and you designed it), Stacked view (the hub of everything), Vonaltérkép. (Vezérlőterem built 2026-11-09.) Which one comes first is STK-Q4.
 
 ---
 

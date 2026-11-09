@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="hu" class="vk" data-vk-theme="melyviz" data-vk-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Vezérlőterem</title>
+<!-- Vezérlőterem (Control Room): the A layer of the VRG Stack in its own order (2026-11-09, STK-P11…).
+     The Council as a flow with lanes (Alapító → Bernard → the seats → contractors → workers), each node one click
+     from its tools, briefs, memory and links (side panel); one start anatomy per GO codephrase (what a session
+     reads, what is herded from it, what is stale); the briefs (tools/brief-state.js --check), memory freshness,
+     a module map of every A kind, the GO codephrases, the schedules and usage per day (layer U).
+     Visual language borrowed from the Kit Gyár proposal (Varler_Workflow_Kit/PROPOSAL_kit-gyar_2026-11-06.html).
+     Data: out/control-data.js (lib/control.js, written on every `stack.js build`). Works from file:// and serve.js. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/fonts/fonts.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/base.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/density.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-melyviz.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/tokens/theme-light.css">
+<link rel="stylesheet" href="../shared/vrg-ui-kit/components/base.css">
+<style>
+  /* fallbacks so the page still reads if the kit is not reachable */
+  :root { --bg: var(--vk-bg, #0a141c); --s1: var(--vk-surface-1, #121c24); --s2: var(--vk-surface-2, #17232c); --s3: var(--vk-surface-3, #1d2a33);
+    --ln: var(--vk-line, rgba(232,240,246,.15)); --ln2: var(--vk-line-strong, rgba(232,240,246,.34));
+    --tx: var(--vk-text, #e8f0f6); --mu: var(--vk-text-muted, #a6afb7); --fa: var(--vk-text-faint, #6f7880);
+    --acc: var(--vk-accent, #93d3e6); --warm: var(--vk-activity, #e8a873); --ok: var(--vk-ok, #8bcca1); --warn: var(--vk-warn, #e3be7b);
+    --crit: var(--vk-crit, #e4877d); --info: var(--vk-info, #9db8e8); --idea: var(--vk-idea, #b4a7e6);
+    --acc-soft: color-mix(in srgb, var(--acc) 14%, transparent); --warm-soft: color-mix(in srgb, var(--warm) 15%, transparent);
+    --ok-soft: color-mix(in srgb, var(--ok) 14%, transparent); --warn-soft: color-mix(in srgb, var(--warn) 15%, transparent);
+    --crit-soft: color-mix(in srgb, var(--crit) 14%, transparent);
+    --mono: var(--vk-font-mono, Consolas, monospace); --sans: var(--vk-font-sans, "Segoe UI", system-ui, sans-serif); --voice: var(--vk-font-voice, Bahnschrift, sans-serif);
+    --cut: 7px; --panel-w: 380px; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--tx); font: 14px/1.5 var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--ln); }
+  h1 { font: 600 17px var(--voice); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  h1 i { font: italic 400 12px var(--sans); letter-spacing: 0; text-transform: none; color: var(--mu); margin-left: 6px; }
+  .sp { flex: 1; }
+  header button, header a.b { font: 12px var(--mono); background: var(--s1); color: var(--mu); border: 1px solid var(--ln); padding: 5px 9px; text-decoration: none; min-height: 28px; cursor: pointer; }
+  header button:hover, header a.b:hover { color: var(--tx); border-color: var(--acc); }
+  #stat { font: 12px var(--mono); color: var(--mu); }
+  .shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) var(--panel-w); min-height: 0; }
+  #main { overflow: auto; min-height: 0; min-width: 0; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 18px 16px 70px; display: flex; flex-direction: column; gap: 40px; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 14px var(--voice); }
+  nav.toc a { color: var(--mu); text-decoration: none; border-bottom: 1px solid var(--ln); }
+  nav.toc a:hover, nav.toc a:focus-visible { color: var(--acc); border-color: var(--acc); }
+  .sec { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .sec-head { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--ln2); padding-top: 14px; }
+  .eyebrow { font: 12px var(--voice); text-transform: uppercase; letter-spacing: .14em; color: var(--acc); }
+  h2 { font: 600 24px/1.15 var(--voice); margin: 0; letter-spacing: .01em; }
+  h2 .en, h3 .en { display: block; font: italic 400 13px var(--sans); color: var(--fa); letter-spacing: 0; margin-top: 2px; }
+  h3 { font: 600 17px var(--voice); margin: 0; }
+  h4 { font: 600 13px var(--voice); letter-spacing: .04em; margin: 0; }
+  p { margin: 0; max-width: 78ch; }
+  .dim { color: var(--mu); } .faint { color: var(--fa); } .mono { font-family: var(--mono); font-size: 12px; }
+  a { color: var(--acc); }
+  .cut { clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); }
+  .box { background: var(--s1); border: 1px solid var(--ln); padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  button.pick { all: unset; cursor: pointer; }
+  button.pick:focus-visible, .node:focus-visible, .row:focus-visible, .tile:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+
+  /* marks: every state has a glyph and a word, never colour alone */
+  .mk { display: inline-flex; align-items: center; gap: 3px; font: 11px/1.2 var(--mono); padding: 1px 6px; border: 1px solid currentColor; white-space: nowrap; }
+  .mk.stale { color: var(--warn); background: var(--warn-soft); }
+  .mk.broken { color: var(--crit); background: var(--crit-soft); }
+  .mk.quiet { color: var(--fa); border-style: dashed; }
+  .mk.unlinked { color: var(--crit); }
+  .mk.old { color: var(--warm); }
+  .mk.ok { color: var(--ok); }
+  .mk.vacant { color: var(--fa); border-style: dotted; }
+  .mk.info { color: var(--info); }
+  .marks { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* overview tiles */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .tile { all: unset; box-sizing: border-box; cursor: pointer; background: var(--s1); border: 1px solid var(--ln); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .tile:hover { border-color: var(--acc); }
+  .tile b { font: 600 26px/1.1 var(--voice); font-variant-numeric: tabular-nums; }
+  .tile small { font-size: 12px; color: var(--mu); }
+  .tile .mk { align-self: flex-start; margin-top: 4px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--mu); align-items: center; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .shp { display: inline-block; width: 14px; height: 14px; flex: none; }
+  .shp.end { background: var(--tx); }
+  .shp.stop { background: var(--warm); clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); }
+  .shp.auto { border: 2px solid var(--acc); border-radius: 50%; }
+  .shp.work { border: 2px dashed var(--ok); border-radius: 3px; }
+
+  /* flow graph with lanes */
+  .flowbox { position: relative; border: 1px solid var(--ln); background: var(--s1); }
+  .flow { position: relative; display: grid; grid-template-columns: 150px 175px repeat(3, minmax(170px, 1fr)); min-width: 960px; }
+  .lane { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; padding: 0 10px 14px; border-right: 1px solid var(--ln); min-width: 0; }
+  .lane:last-child { border-right: 0; }
+  .lane:nth-child(even) { background: color-mix(in srgb, var(--tx) 2.5%, transparent); }
+  .lane-h { font: 600 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--mu); padding: 10px 0 6px; border-bottom: 1px solid var(--ln); position: sticky; top: 0; }
+  .lane-h small { display: block; font: italic 11px var(--sans); text-transform: none; letter-spacing: 0; color: var(--fa); }
+  .lane.mid { justify-content: flex-start; }
+  .node { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 4px 8px; align-items: center; padding: 7px 8px; background: var(--bg); border: 1px solid var(--ln); min-width: 0; }
+  .node:hover { border-color: var(--acc); }
+  .node.sel { border-color: var(--acc); box-shadow: inset 3px 0 0 var(--acc); }
+  .node.dimmed { opacity: .35; }
+  .node .shape { width: 30px; height: 30px; display: grid; place-items: center; font: 700 12px var(--voice); }
+  .node.k-end .shape { background: var(--tx); color: var(--bg); }
+  .node.k-stop .shape { background: var(--warm); color: var(--bg); clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); }
+  .node.k-auto .shape { border: 2px solid var(--acc); border-radius: 50%; color: var(--acc); }
+  .node.k-work .shape { border: 2px dashed var(--ok); border-radius: 4px; color: var(--ok); width: 26px; height: 26px; margin-left: 2px; }
+  .node.vacant { border-style: dashed; background: transparent; }
+  .node.vacant .shape { background: none; border: 1.5px dotted var(--fa); color: var(--fa); clip-path: none; }
+  .node .nm { font: 600 14px/1.15 var(--voice); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .node .ti { font-size: 11.5px; color: var(--mu); line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .node .marks { grid-column: 1 / -1; }
+  .node .meta { grid-column: 1 / -1; font: 11px var(--mono); color: var(--fa); }
+  svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
+  .wire { fill: none; stroke: var(--ln2); stroke-width: 1.3; }
+  .wire.vac { stroke-dasharray: 3 4; }
+  .wire.on { stroke: var(--acc); stroke-width: 2; }
+  .wire.off { opacity: .25; }
+  .flow-note { font-size: 12.5px; color: var(--mu); }
+
+  /* stop anatomy (one start, from a GO codephrase) */
+  .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--ln2); }
+  .seg button { all: unset; cursor: pointer; padding: 6px 11px; font: 13px var(--voice); color: var(--mu); border-right: 1px solid var(--ln); }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { background: var(--acc-soft); color: var(--tx); box-shadow: inset 0 -2px 0 var(--acc); }
+  .seg button:focus-visible { outline: 2px solid var(--acc); }
+  .stopcard { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); border: 1px solid var(--ln2); background: var(--s1); }
+  .stopcard .main { padding: 16px; display: flex; flex-direction: column; gap: 12px; border-right: 1px solid var(--ln); min-width: 0; }
+  .stopcard .herd { padding: 16px; display: flex; flex-direction: column; gap: 8px; background: var(--s2); min-width: 0; }
+  .qhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .qn { font: 13px var(--voice); color: var(--warm); border: 1px solid var(--warm); padding: 1px 7px; }
+  .chain { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .chain .c { font-size: 12.5px; padding: 4px 9px; border: 1px solid var(--ln2); }
+  .chain .c.go { border-color: var(--warm); color: var(--warm); }
+  .chain .c.br { border-color: var(--acc); color: var(--acc); }
+  .chain .c.st { border-color: var(--warn); color: var(--warn); border-style: dashed; }
+  .chain i { color: var(--fa); font-style: normal; }
+  .opts { display: flex; flex-direction: column; gap: 6px; }
+  .opt { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 7px 10px; border: 1px solid var(--ln); font-size: 13.5px; }
+  .opt:hover { border-color: var(--acc); }
+  .opt.rec { border-color: var(--acc); background: var(--acc-soft); }
+  .opt .imp { font: 11.5px var(--mono); color: var(--mu); white-space: nowrap; }
+  .hbtn { all: unset; box-sizing: border-box; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border: 1px solid var(--ln2); font-size: 13.5px; }
+  .hbtn:hover { border-color: var(--acc); }
+  .hbtn small { color: var(--fa); font-size: 12px; text-align: right; }
+  .gapbox { grid-column: 1 / -1; border-top: 1px solid var(--ln); padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; background: var(--warn-soft); }
+  .gapbox.clean { background: var(--ok-soft); }
+  .gaprow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; font-size: 13.5px; align-items: baseline; }
+  .gaprow .imp { font: 11.5px var(--mono); color: var(--warn); white-space: nowrap; }
+
+  /* tables / rows */
+  .cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .row { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; align-items: baseline; padding: 5px 6px; border-bottom: 1px solid var(--ln); min-width: 0; }
+  .row:hover { background: var(--acc-soft); }
+  .row .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+  .row .r { font: 11px var(--mono); color: var(--mu); white-space: nowrap; }
+  .row .sub { grid-column: 1 / -1; font-size: 11.5px; color: var(--fa); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .checkline { font: 12px var(--mono); color: var(--mu); border-left: 3px solid var(--acc); padding: 4px 10px; background: var(--acc-soft); overflow-wrap: anywhere; }
+
+  /* memory freshness */
+  .mem { display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 4px 6px; border-bottom: 1px solid var(--ln); cursor: pointer; background: none; border-left: 0; border-right: 0; border-top: 0; color: inherit; font: inherit; text-align: left; width: 100%; }
+  .mem:hover { background: var(--acc-soft); }
+  .mem:focus-visible { outline: 2px solid var(--acc); }
+  .age { position: relative; height: 12px; background: var(--s2); }
+  .age i { position: absolute; inset: 0 auto 0 0; background: var(--ok); }
+  .age.mid i { background: var(--warn); } .age.old i { background: var(--warm); } .age.unknown i { background: var(--fa); }
+  .age b { position: absolute; right: 3px; top: -1px; font: 10px/14px var(--mono); color: var(--tx); }
+  .mem .t { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .mem .t small { color: var(--fa); font: 11px var(--mono); margin-left: 6px; }
+  .memlist { max-height: 520px; overflow: auto; border: 1px solid var(--ln); background: var(--s1); }
+
+  /* module map */
+  .mods { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .mod { all: unset; box-sizing: border-box; cursor: pointer; border: 1px solid var(--ln); border-top: 3px solid var(--acc); background: var(--s1); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .mod:hover { border-color: var(--acc); }
+  .mod:focus-visible { outline: 2px solid var(--acc); }
+  .mod b { font: 600 22px var(--voice); }
+  .mod .h { font: 600 14px var(--voice); }
+  .mod .u { height: 6px; background: var(--s2); position: relative; }
+  .mod .u i { position: absolute; inset: 0 auto 0 0; background: var(--acc); }
+  .mod small { font-size: 12px; color: var(--mu); }
+
+  /* GO cards */
+  .gos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .gocard { all: unset; box-sizing: border-box; cursor: pointer; background: var(--s1); border: 1px solid var(--ln); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .gocard:hover { border-color: var(--warm); }
+  .gocard:focus-visible { outline: 2px solid var(--acc); }
+  .gocard .code { font: 600 18px var(--voice); color: var(--warm); }
+  .gocard .ti { font-size: 12.5px; color: var(--mu); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .gocard .meta { font: 11px var(--mono); color: var(--fa); }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip { all: unset; cursor: pointer; font: 11.5px var(--mono); border: 1px solid var(--ln2); padding: 2px 7px; color: var(--mu); }
+  .chip:hover { border-color: var(--acc); color: var(--tx); }
+
+  /* usage strip */
+  .usage svg { display: block; width: 100%; height: auto; }
+  .ubar { fill: var(--acc); cursor: pointer; }
+  .ubar:hover, .ubar.sel { fill: var(--warm); }
+  .uempty { fill: url(#hatch); }
+  .uax { font: 10px var(--mono); fill: var(--mu); }
+  .ugrid { stroke: var(--ln); }
+  .unrec { font: 10px var(--mono); fill: var(--fa); }
+
+  /* side panel */
+  aside { border-left: 1px solid var(--ln); padding: 12px 14px 30px; overflow: auto; min-height: 0; min-width: 0; background: var(--bg); }
+  aside h2 { font-size: 19px; overflow-wrap: anywhere; }
+  aside h3 { font: 11px var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--mu); margin: 14px 0 4px; border-bottom: 1px solid var(--ln); padding-bottom: 2px; }
+  aside p { margin: 0 0 6px; overflow-wrap: anywhere; font-size: 13px; }
+  .kick { font: 11px var(--mono); color: var(--mu); text-transform: uppercase; letter-spacing: .06em; }
+  .kv { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 2px 8px; font-size: 12.5px; margin-top: 6px; }
+  .kv > span:nth-child(odd) { color: var(--mu); } .kv > span:nth-child(even) { overflow-wrap: anywhere; }
+  .tl { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; padding: 2px; font-size: 12.5px; color: var(--tx); text-decoration: none; cursor: pointer; border: 0; background: none; width: 100%; text-align: left; font-family: inherit; }
+  .tl:hover { background: var(--acc-soft); }
+  .tl .c { font: 11px var(--mono); color: var(--mu); } .tl .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .tl .r { font: 11px var(--mono); color: var(--mu); white-space: nowrap; }
+  .tl.alike .t { font-style: italic; color: var(--mu); }
+  .tool { display: inline-flex; gap: 4px; align-items: baseline; font: 11.5px var(--mono); border: 1px solid var(--ln2); padding: 2px 7px; }
+  .tool small { color: var(--fa); font: 10px var(--sans); }
+  .tool.w { border-color: var(--warm); } .tool.x { border-color: var(--crit); } .tool.n { border-color: var(--info); } .tool.a { border-color: var(--idea); }
+  #pclose { display: none; float: right; font: 13px var(--mono); background: var(--s1); color: var(--tx); border: 1px solid var(--ln2); padding: 4px 10px; cursor: pointer; }
+  .hint { color: var(--mu); font-size: 12.5px; }
+  .empty { padding: 24px; color: var(--mu); }
+
+  @media (prefers-reduced-motion: no-preference) { .node, .wire, .tile, .mod, .gocard { transition: opacity .18s ease, border-color .15s ease, stroke .15s ease; } }
+  @media (max-width: 1100px) { .cols3 { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) {
+    body { overflow-x: hidden; overflow-y: auto; height: auto; min-height: 100%; }
+    header { padding: 8px 12px; } h1 i { display: none; } .sp { display: none; }
+    .shell { display: block; }
+    #main { overflow: visible; }
+    .wrap { padding: 14px 16px 60px; gap: 32px; }
+    .stopcard { grid-template-columns: 1fr; } .stopcard .main { border-right: 0; border-bottom: 1px solid var(--ln); }
+    aside { position: fixed; left: 0; right: 0; bottom: 0; max-height: 72vh; border-left: 0; border-top: 2px solid var(--acc); z-index: 20; box-shadow: 0 -8px 24px rgba(0,0,0,.35); display: none; }
+    aside.open { display: block; }
+    #pclose { display: inline-block; }
+    .mem { grid-template-columns: 74px minmax(0, 1fr); } .mem .marks { grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Vezérlőterem<i>VRG Stack · A réteg · ügynöki gerinc · control room</i></h1>
+  <span class="sp"></span>
+  <button id="bTheme" title="Téma: auto → sötét → világos">◐ Téma</button>
+  <a class="b" href="layers.html" title="Rétegek · a teljes verem">Rétegek</a>
+  <a class="b" href="connectome.html" title="Konnektóm">Konnektóm</a>
+  <a class="b" href="replay.html" title="Visszajátszás">Visszajátszás</a>
+  <span id="stat"></span>
+</header>
+<div class="shell">
+  <div id="main"><div class="wrap" id="wrap"></div></div>
+  <aside id="panel" aria-live="polite" aria-label="Részletek"></aside>
+</div>
+<script src="out/control-data.js"></script>
+<script>
+'use strict';
+(function () {
+  const D = window.CONTROL;
+  const $ = s => document.querySelector(s);
+  const wrap = $('#wrap'), panel = $('#panel');
+  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* file:// or private */ } } };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const k = x => x >= 1e9 ? (x / 1e9).toFixed(1) + 'G' : x >= 1e6 ? (x / 1e6).toFixed(1) + 'M' : x >= 1e3 ? Math.round(x / 1e3) + 'k' : String(x || 0);
+
+  /* ---------- theme: auto (system) → dark (Mélyvíz) → light (Papír) ---------- */
+  const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
+  let themePref = store.get('vrg-control-theme') || 'auto';
+  function applyTheme() {
+    const light = themePref === 'light' || (themePref === 'auto' && mq && mq.matches);
+    document.documentElement.setAttribute('data-vk-theme', light ? 'light' : 'melyviz');
+    $('#bTheme').textContent = '◐ ' + ({ auto: 'Auto', dark: 'Sötét', light: 'Világos' })[themePref];
+  }
+  $('#bTheme').onclick = () => { themePref = { auto: 'dark', dark: 'light', light: 'auto' }[themePref]; store.set('vrg-control-theme', themePref); applyTheme(); };
+  if (mq && mq.addEventListener) mq.addEventListener('change', applyTheme);
+  applyTheme();
+
+  if (!D || !D.agents) {
+    wrap.innerHTML = '<div class="empty">Nincs adat: <code>out/control-data.js</code> hiányzik. Futtasd: <code>stack.js build</code> vagy <code>stack.js control</code> (a Stack mappában).</div>';
+    return;
+  }
+
+  /* ---------- words ---------- */
+  const LAYER = D.layers || {};
+  const TH = D.thresholds || {};
+  const ROLE = { hand: 'Irányítóterem', seat: 'Tanácsi szék', contractor: 'Szerződő', worker: 'Munkás', other: 'Egyéb ügynök' };
+  const VREL = { 'ref:c': 'commit', 'ref:m': 'memória', 'ref:p': 'útvonal', 'ref:go': 'GO', 'ref:q': 'döntés', 'ref:s': 'munkamenet', alike: '≈ név', pillar: 'pillér', same: 'azonos' };
+  const MTYPE = { feedback: 'visszajelzés', project: 'projekt', reference: 'hivatkozás', user: 'felhasználó', memory: 'memória' };
+  // a tool in words: what an agent may read or do with it
+  const TOOL = { Read: ['olvas', ''], Grep: ['keres', ''], Glob: ['fájlnév', ''], Write: ['ír', 'w'], Edit: ['szerkeszt', 'w'], NotebookEdit: ['szerkeszt', 'w'],
+    Bash: ['parancs', 'x'], PowerShell: ['parancs', 'x'], WebFetch: ['web', 'n'], WebSearch: ['web', 'n'], Agent: ['alügynök', 'a'], Task: ['alügynök', 'a'] };
+  const MARK = {
+    stale: ['⚠', 'elavult', 'stale'], broken: ['✕', 'hibás', 'broken'], quiet: ['◌', 'csendes', 'quiet'], never: ['◌', 'nincs rögzített futás', 'quiet'],
+    unlinked: ['⌀', 'nincs függőleges kapocs', 'unlinked'], old: ['⏳', 'régi', 'old'], nodate: ['?', 'nincs dátum', 'quiet'], missing: ['✕', 'fájl hiányzik', 'broken'],
+    vacant: ['○', 'üres szék', 'vacant'], 'stale-briefs': ['⚠', 'elavult brief', 'stale'], 'not-in-claude-md': ['✕', 'nincs a CLAUDE.md-ben', 'broken'], ok: ['✓', 'friss', 'ok'],
+  };
+  const mark = (f, extra) => { const m = MARK[f] || ['•', f, 'info']; return `<span class="mk ${m[2]}" title="${esc(m[1])}">${m[0]} ${esc(extra || m[1])}</span>`; };
+  const marks = fs => fs && fs.length ? `<span class="marks">${fs.map(f => mark(f)).join('')}</span>` : '';
+  const ago = n => n == null ? '—' : n === 0 ? 'ma' : n + ' napja';
+  const ageOf = d => d ? Math.max(0, Math.round((Date.parse(D.today) - Date.parse(d.slice(0, 10))) / 864e5)) : null;
+
+  const agentBy = new Map(D.agents.map(a => [a.id, a]));
+  const briefBy = new Map(D.briefs.map(b => [b.id, b]));
+  const memBy = new Map(D.memory.map(m => [m.id, m]));
+  const goBy = new Map(D.go.map(g => [g.code, g]));
+  const modBy = new Map(D.modules.map(m => [m.kind, m]));
+  const dayBy = new Map(D.usage.map(d => [d.d, d]));
+  const schBy = new Map(D.schedules.map(s => [s.id, s]));
+  // a stack node id → the panel key that shows it here (else it opens in the Konnektóm)
+  const keyOfNode = id => {
+    if (id.startsWith('A:agent.')) return agentBy.has(id.slice(8)) ? 'agent:' + id.slice(8) : '';
+    if (id.startsWith('A:brief.')) return briefBy.has(id.slice(8)) ? 'brief:' + id.slice(8) : '';
+    if (id.startsWith('A:mem.')) return memBy.has(id.slice(6)) ? 'mem:' + id.slice(6) : '';
+    if (id.startsWith('A:go.GO-')) return 'go:' + id.slice(8);
+    if (id.startsWith('A:sched.')) return schBy.has(id.slice(8)) ? 'sched:' + id.slice(8) : '';
+    return '';
+  };
+
+  /* ---------- page ---------- */
+  const C = D.counts;
+  $('#stat').textContent = `${C.agents} ügynök · ${C.briefs} brief · ${C.memory} memória · ${(D.generated || '').slice(0, 16).replace('T', ' ')}`;
+  const sec = (id, n, hu, en, intro, body) => `<section class="sec" id="${id}"><div class="sec-head"><span class="eyebrow">${n}</span><h2>${hu}<span class="en">${en}</span></h2>${intro ? `<p class="dim">${intro}</p>` : ''}</div>${body}</section>`;
+
+  const html = [];
+  html.push(`<nav class="toc" aria-label="Tartalom"><a href="#attekintes">Áttekintés</a><a href="#folyam">Tanács</a><a href="#inditas">Egy indítás</a><a href="#briefek">Briefek</a><a href="#memoria">Memória</a><a href="#modulok">Modultérkép</a><a href="#go">GO kódszavak</a><a href="#utemezes">Ütemezések</a><a href="#hasznalat">Használat</a></nav>`);
+
+  /* 1 · overview */
+  const tile = (key, n, label, mk) => `<button class="tile" data-k="${key}"><b>${n}</b><small>${esc(label)}</small>${mk || ''}</button>`;
+  html.push(sec('attekintes', '1 · Áttekintés', 'A ház állapota egy képen', 'The state of the house: agents, briefs, memory, codephrases, schedules, usage',
+    `Ami nem friss, jelet és szót kap, nem csak színt. Küszöbök: ügynök ${TH.quietAgent} nap futás nélkül csendes, memória ${TH.oldMemory} nap után régi, GO kódszó ${TH.quietGo} nap után csendes.`,
+    `<div class="tiles">${[
+      tile('jump:folyam', C.agents, 'ügynök a .claude/agents-ben', C.quiet ? mark('quiet', C.quiet + ' csendes') : mark('ok')),
+      tile('jump:folyam', C.vacant, 'üres szék (ROSTER)', C.vacant ? mark('vacant') : ''),
+      tile('jump:briefek', C.briefs, 'brief (docs/hub/agents)', C.staleBriefs ? mark('stale', C.staleBriefs + ' elavult') : mark('ok')),
+      tile('jump:memoria', C.memory, 'memória-jegyzet', C.oldMemory ? mark('old', C.oldMemory + ' régi') : mark('ok')),
+      tile('jump:memoria', C.unlinkedMemory, 'jegyzet függőleges kapocs nélkül', C.unlinkedMemory ? mark('unlinked', 'gyanús') : mark('ok')),
+      tile('jump:go', C.go, `élő GO kódszó (+${C.goArchived} archív)`, C.quietGo ? mark('quiet', C.quietGo + ' csendes') : mark('ok')),
+      tile('jump:utemezes', C.schedules, 'ütemezett feladat', ''),
+      tile('jump:hasznalat', k(C.tokens7), `új token az utolsó 7 napban · ${C.runs7} futás`, ''),
+    ].join('')}</div>
+    <div class="legend"><span><i class="shp end"></i>Alapító: innen jön a kérés</span><span><i class="shp stop"></i>Szék: itt dől el, ki dolgozik</span><span><i class="shp auto"></i>Szerződő: egy csomagot visz végig</span><span><i class="shp work"></i>Munkás: egy szűk feladat</span>
+      ${['stale', 'quiet', 'unlinked', 'old', 'vacant'].map(f => mark(f)).join('')}</div>`));
+
+  /* 2 · the Council as a flow with lanes */
+  const lanes = [
+    ['founder', 'Alapító', 'a kérés'], ['hand', 'Irányítóterem', 'Bernard, a Tanács keze'], ['seat', 'Tanács', 'a székek és a részlegek'],
+    ['contractor', 'Szerződők', 'egy csomag, végig'], ['worker', 'Munkások', 'egy szűk feladat'],
+  ];
+  if (D.agents.some(a => a.role === 'other')) lanes.push(['other', 'Egyéb', 'nincs a ROSTER-ben']);
+  const shapeOf = a => a.role === 'hand' || a.role === 'seat' ? 'stop' : a.role === 'contractor' ? 'auto' : 'work';
+  const glyphOf = a => a.seat || (a.role === 'hand' ? 'I' : (a.name || '?')[0]);
+  const nodeHtml = a => {
+    const fl = a.flags.filter(f => f !== 'vacant');
+    const own = a.briefs.length ? `${a.briefs.length} brief` : '';
+    const tl = a.vacant ? '' : a.allTools ? 'minden eszköz' : `${a.tools.length} eszköz`;
+    return `<button class="node k-${shapeOf(a)}${a.vacant ? ' vacant' : ''}" data-k="agent:${esc(a.id)}" data-node="${esc(a.id)}" title="${esc(a.desc)}">
+      <span class="shape">${esc(glyphOf(a))}</span><span style="min-width:0"><span class="nm" style="display:block">${esc(a.name)}</span><span class="ti" style="display:block">${esc(a.title || ROLE[a.role])}</span></span>
+      ${a.vacant ? `<span class="marks">${mark('vacant')}</span>` : marks(fl)}
+      <span class="meta">${[a.model, tl, own].filter(Boolean).map(esc).join(' · ')}</span></button>`;
+  };
+  const flowLane = ([key, hu, en]) => {
+    let inner = '';
+    if (key === 'founder') inner = `<button class="node k-end" data-k="founder" data-node="founder"><span class="shape">A</span><span style="min-width:0"><span class="nm" style="display:block">Alapító</span><span class="ti" style="display:block">Founder · a felhasználó</span></span><span class="meta">START → C → B</span></button>`;
+    else inner = D.agents.filter(a => a.role === key).map(nodeHtml).join('');
+    return `<div class="lane" data-lane="${key}"><div class="lane-h">${esc(hu)}<small>${esc(en)}</small></div>${inner}</div>`;
+  };
+  html.push(sec('folyam', '2 · A Tanács', 'Az Alapítótól a munkásokig', 'The Council as a flow: Founder → Bernard → the seats → contractors and workers',
+    'A vonalak azt mutatják, ki kinek ad munkát: Bernard a székeknek (és Theresának), a székek a szerződőknek és a munkásoknak. Kattints egy csomópontra: oldalt nyílnak az eszközei, briefjei, memóriája és kapcsai. A szaggatott vonal üres székhez vezet.',
+    `<div class="scroll flowbox" role="region" aria-label="A Tanács folyamatábrája" tabindex="0"><div class="flow" id="flow">${lanes.map(flowLane).join('')}<svg class="wires" id="wires" aria-hidden="true"></svg></div></div>
+     <p class="flow-note">Futás = alügynökként indítva (a transzkript-archívum <span class="mono">subagents/*.meta.json</span> fájljaiból) vagy egy rögzített futás olvasta az ügynök fájlját. Fő munkamenetként (<span class="mono">claude --agent …</span>) indított ügynököt a felvétel nem nevez meg, ezért ezek „nincs rögzített futás” jelet kaphatnak.</p>`));
+
+  /* 3 · stop anatomy: one start from a GO codephrase */
+  const liveGo = D.go.filter(g => g.live);
+  html.push(sec('inditas', '3 · Egy indítás belülről', 'Kódszó, olvasnivaló, elavult', 'Inside a start: what a GO codephrase makes a session read, what is herded from it, what is stale',
+    'Egy új munkamenet a kódszóval indul: elolvassa a CLAUDE.md-t, a GO fájlt, a hozzá tartozó brief(ek)et, és a brief gazdájának részlegében dolgozik. Válassz kódszót.',
+    `<div class="seg" role="group" aria-label="GO kódszó" id="goSeg">${liveGo.map(g => `<button type="button" data-go="${esc(g.code)}" aria-pressed="false">${esc(g.code)}${g.flags.length ? ' ⚠' : ''}</button>`).join('')}</div><div id="stop"></div>`));
+
+  /* 4 · briefs */
+  const bc = D.briefCheck || {};
+  const briefRow = b => {
+    const st = b.broken ? mark('broken') : b.stale ? mark('stale') : mark('ok');
+    return `<button class="row" data-k="brief:${esc(b.id)}"><span class="t">${esc(b.id)}</span>${st}<span class="sub">${esc(b.title)}${b.go ? ' · ' + esc(b.go) : ''}${b.stateAt ? ' · állapot ' + esc(b.stateAt) : ''}</span></button>`;
+  };
+  const ownersOrder = ['arnold', 'charlotte', 'elsie'];
+  const briefCols = ownersOrder.map(o => { const a = agentBy.get(o); const bs = D.briefs.filter(b => b.agent === o); const bad = bs.filter(b => b.stale || b.broken).length;
+    return `<div class="box cut"><h4><button class="pick" data-k="agent:${o}">${esc(a ? a.name : o)}</button> <span class="faint">· ${esc(a ? a.title : '')} · ${bs.length} brief${bad ? ' · ' + bad + ' elavult' : ''}</span></h4><div>${bs.map(briefRow).join('')}</div></div>`; }).join('');
+  const orphan = D.briefs.filter(b => !ownersOrder.includes(b.agent));
+  html.push(sec('briefek', '4 · Briefek', 'Briefek és az állapotuk', 'Agent briefs (docs/hub/agents) by owner, with the state tools/brief-state.js --check reports',
+    'Az „elavult” azt jelenti, hogy a brief git-sora régebbi, mint a mappája legújabb commitja: a brief kézzel írt része még jó lehet, de az állapotsora nem. A javítás a <span class="mono">node tools/brief-state.js</span> futtatása, ezt ez az oldal soha nem teszi meg.',
+    `<div class="checkline">${bc.ran ? `Ellenőrzés: ${esc(bc.mode)} (csak olvas) · kilépési kód ${esc(bc.exit)} · ${esc(bc.summary || '')} · ${esc(bc.ms)} ms` : `Az ellenőrzés nem futott: ${esc(bc.err || 'ismeretlen ok')}. Az állapotok ismeretlenek.`}</div>
+     <div class="cols3">${briefCols}</div>${orphan.length ? `<div class="box"><h4>Gazda nélkül</h4>${orphan.map(briefRow).join('')}</div>` : ''}`));
+
+  /* 5 · memory freshness */
+  const maxAge = Math.max(1, ...D.memory.map(m => m.age || 0));
+  const memRow = m => `<button class="mem" data-k="mem:${esc(m.id)}" data-f="${esc(m.flags.join(' '))} ${m.fresh}">
+      <span class="age ${m.fresh}" title="${esc(ago(m.age))}"><i style="width:${Math.max(4, Math.round(100 * (m.age || 0) / maxAge))}%"></i><b>${m.age == null ? '?' : m.age + ' n'}</b></span>
+      <span class="t">${esc(m.id)}<small>${esc(MTYPE[m.type] || m.type)} · ${m.vert} függ. · ${m.mem} mem.</small></span>${marks(m.flags.filter(f => f !== 'nodate'))}</button>`;
+  html.push(sec('memoria', '5 · Memória', 'Mennyire friss a memória', 'Memory freshness: every note by age, with its links; a note with no vertical link is suspicious',
+    `A sáv a jegyzet kora (frontmatter <span class="mono">modified</span>, ennek híján a fájl ideje): ≤ ${TH.midMemory} nap friss, ≤ ${TH.oldMemory} nap érett, fölötte régi. A „függ.” a többi rétegbe (F, I, Q, L, R, C, G) vezető kapcsok száma; ha nulla, a jegyzet vagy semmiről sem szól, ami a veremben van, vagy elavult.`,
+    `<div class="seg" role="group" aria-label="Szűrő" id="memSeg"><button data-mf="" aria-pressed="true">Mind (${D.memory.length})</button><button data-mf="unlinked" aria-pressed="false">⌀ Gyanús (${C.unlinkedMemory})</button><button data-mf="old" aria-pressed="false">⏳ Régi (${C.oldMemory})</button><button data-mf="fresh" aria-pressed="false">Friss (${D.memory.filter(m => m.fresh === 'fresh').length})</button></div>
+     <div class="memlist" id="memList">${D.memory.map(memRow).join('')}</div>`));
+
+  /* 6 · module map */
+  const maxN = Math.max(...D.modules.map(m => m.n));
+  html.push(sec('modulok', '6 · Modultérkép', 'Miből áll az ügynöki gerinc', 'Module map: every kind of node in the A layer, how much of it runs use, and what has no vertical link',
+    'A csík azt mutatja, a csoport hány elemét olvasta legalább egy rögzített futás. Kattints egy csoportra: oldalt jön a teljes lista.',
+    `<div class="mods">${D.modules.map(m => `<button class="mod" data-k="mod:${esc(m.kind)}"><span class="h">${esc(m.hu)}</span><b>${m.n}</b>
+      <span class="u" title="${m.used} / ${m.n} használt"><i style="width:${Math.round(100 * m.used / m.n)}%"></i></span>
+      <small>${m.used} használt futásban</small>${m.unlinked ? mark('unlinked', m.unlinked + ' kapocs nélkül') : ''}${m.stale ? mark('stale', m.stale + ' átvett') : ''}</button>`).join('')}</div>`));
+
+  /* 7 · GO codephrases */
+  const goCard = g => `<button class="gocard" data-k="go:${esc(g.code)}"><span class="code">GO ${esc(g.code)}</span><span class="ti">${esc(g.line || g.title)}</span>
+      <span class="meta">változott ${esc(g.changed || '—')} · ${g.mentions} említés · ${g.briefs.length} brief</span>${marks(g.flags)}</button>`;
+  html.push(sec('go', '7 · GO kódszavak', 'Kódszavak', 'GO codephrases: the live ones from CLAUDE.md, the archived ones from docs/go-archive',
+    'Az „említés” a többi rétegből (munkamenet, commit, dokumentum, memória) erre a kódszóra mutató kapcsok száma.',
+    `<div class="gos">${liveGo.map(goCard).join('')}</div>
+     <div><h4 class="faint" style="margin-bottom:6px">Archív kódszavak</h4><div class="chips">${D.go.filter(g => !g.live).map(g => `<button class="chip" data-k="go:${esc(g.code)}" title="${esc(g.title)}">${esc(g.code)}</button>`).join('')}</div></div>`));
+
+  /* 8 · schedules */
+  const DOW = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
+  const cronHu = c => { const m = /^(\d+)\s+(\d+)\s+\*\s+\*\s+([\d,]+|\*)$/.exec(c || ''); if (!m) return c || ''; const t = String(m[2]).padStart(2, '0') + ':' + String(m[1]).padStart(2, '0');
+    return (m[3] === '*' ? 'naponta' : m[3].split(',').map(x => DOW[+x % 7]).join(', ')) + ' ' + t + ' (helyi idő)'; };
+  html.push(sec('utemezes', '8 · Ütemezések', 'Ütemezett feladatok', 'Scheduled tasks (~/.claude/scheduled-tasks); cron and run times where the desktop app keeps them on disk',
+    '', D.schedules.length ? `<div class="cols3">${D.schedules.map(s => `<button class="box cut pick" data-k="sched:${esc(s.id)}" style="text-align:left"><h4>${esc(s.title)}</h4><span class="dim" style="font-size:13px">${esc(s.desc)}</span>
+      <span class="mono">${s.cron ? '⏱ ' + esc(cronHu(s.cron)) : '⏱ az időzítés nem olvasható a lemezről'}</span>${s.last ? `<span class="mono">utoljára ${esc(s.last.replace('T', ' '))} UTC</span>` : ''}
+      ${s.enabled === false ? mark('quiet', 'kikapcsolva') : s.enabled ? mark('ok', 'bekapcsolva') : ''}</button>`).join('')}</div>` : '<p class="dim">Nincs ütemezett feladat.</p>'));
+
+  /* 9 · usage per day (U layer) */
+  html.push(sec('hasznalat', '9 · Használat naponta', 'Tokenek és futások naponta', `Usage per day (layer U, the recorded sessions), last ${D.usage.length} days; each step counts on the day it ran`,
+    `Új token = bemenet + kimenet + gyorsítótárba írás; a gyorsítótár-olvasás külön mérce. A felvétel ${esc(D.recordedTo || '—')}-ig tart; az utána lévő napok sraffozottak („nincs felvétel”), nem nullák. Kattints egy napra.`,
+    `<div class="seg" role="group" aria-label="Mérce" id="uSeg"><button data-u="new" aria-pressed="true">Új token</button><button data-u="cr" aria-pressed="false">Gyorsítótár-olvasás</button><button data-u="steps" aria-pressed="false">Lépések</button><button data-u="runs" aria-pressed="false">Futások</button></div>
+     <div class="usage box" id="usage"></div>`));
+
+  wrap.innerHTML = html.join('');
+
+  /* ---------- flow wires ---------- */
+  const flow = $('#flow'), wires = $('#wires');
+  const edges = [];
+  const bern = D.agents.find(a => a.role === 'hand');
+  if (bern) edges.push(['founder', bern.id]);
+  for (const a of D.agents) {
+    if (a.role === 'seat' && bern) edges.push([bern.id, a.id, a.vacant]);
+    if (bern && /Serves Bernard/i.test(a.desc || '')) edges.push([bern.id, a.id]);
+  }
+  const canCall = a => !a.vacant && (a.allTools || a.tools.includes('Agent') || a.tools.includes('Task'));
+  for (const a of D.agents.filter(x => x.role === 'seat' && canCall(x))) for (const b of D.agents.filter(x => x.role === 'contractor' || x.role === 'worker')) if (!/Serves Bernard/i.test(b.desc || '')) edges.push([a.id, b.id]);
+  for (const a of D.agents.filter(x => x.role === 'contractor' && canCall(x))) for (const b of D.agents.filter(x => x.role === 'worker')) edges.push([a.id, b.id]);
+  const NS = 'http://www.w3.org/2000/svg';
+  let selNode = '';
+  function drawWires() {
+    const box = flow.getBoundingClientRect();
+    wires.setAttribute('viewBox', `0 0 ${box.width} ${box.height}`);
+    wires.innerHTML = '';
+    const el = id => flow.querySelector(`[data-node="${CSS.escape(id)}"]`);
+    for (const [a, b, vac] of edges) {
+      const ea = el(a), eb = el(b); if (!ea || !eb) continue;
+      const ra = ea.getBoundingClientRect(), rb = eb.getBoundingClientRect();
+      const x1 = ra.right - box.left, y1 = ra.top + ra.height / 2 - box.top, x2 = rb.left - box.left, y2 = rb.top + rb.height / 2 - box.top;
+      const mx = (x1 + x2) / 2;
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+      const on = selNode && (a === selNode || b === selNode);
+      p.setAttribute('class', 'wire' + (vac ? ' vac' : '') + (on ? ' on' : selNode ? ' off' : ''));
+      wires.appendChild(p);
+    }
+  }
+  function markFlow() {
+    const near = new Set([selNode]); for (const [a, b] of edges) { if (a === selNode) near.add(b); if (b === selNode) near.add(a); }
+    flow.querySelectorAll('.node').forEach(n => { const id = n.dataset.node; n.classList.toggle('sel', id === selNode); n.classList.toggle('dimmed', !!selNode && !near.has(id)); });
+    drawWires();
+  }
+  if (window.ResizeObserver) new ResizeObserver(() => drawWires()).observe(flow); else addEventListener('resize', drawWires);
+  requestAnimationFrame(drawWires);
+
+  /* ---------- stop anatomy ---------- */
+  function showStop(code) {
+    const g = goBy.get(code); if (!g) return;
+    store.set('vrg-control-go', code);
+    document.querySelectorAll('#goSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.go === code ? 'true' : 'false'));
+    const bs = g.briefs.map(id => briefBy.get(id)).filter(Boolean);
+    const owners = [...new Set(bs.map(b => b.agent).filter(Boolean))].map(id => agentBy.get(id)).filter(Boolean);
+    const mems = g.links.filter(r => r[0].startsWith('A:mem.')).map(r => memBy.get(r[0].slice(6))).filter(Boolean);
+    const gaps = [];
+    for (const b of bs) for (const p of b.problems) gaps.push([`Brief <b>${esc(b.id)}</b>: ${esc(p.replace(/^state stale, newest is/, 'az állapotsor elavult, a mappa legújabb commitja'))}`, b.broken ? '✕ hibás' : '⚠ elavult']);
+    for (const m of mems) if (m.flags.includes('old') || m.flags.includes('unlinked')) gaps.push([`Memória <b>${esc(m.id)}</b> (${ago(m.age)})`, m.flags.includes('unlinked') ? '⌀ kapocs nélkül' : '⏳ régi']);
+    if (g.flags.includes('quiet')) gaps.push([`A GO fájlt ${TH.quietGo} napja senki nem változtatta és nem említette`, '◌ csendes']);
+    if (g.flags.includes('not-in-claude-md')) gaps.push(['A kódszó nincs a CLAUDE.md Codephrases listájában', '✕ hiányzik']);
+    if (!bs.length) gaps.push(['Egyetlen brief sem nevezi meg indítóként (**Indító:** sor)', 'nincs brief']);
+    const ownerName = owners.map(a => a.name).join(', ');
+    $('#stop').innerHTML = `<div class="stopcard">
+      <div class="main">
+        <div class="qhead"><span class="qn">Indítás · GO ${esc(g.code)}</span><h3>${esc(g.title)}<span class="en">${esc(g.file)} · változott ${esc(g.changed || '—')} · utolsó említés ${esc(g.lastMention || '—')}</span></h3></div>
+        <p class="dim" style="font-size:13.5px">${esc(g.line || g.brief)}</p>
+        <div class="chain" aria-label="Amit a munkamenet olvas"><span class="c">CLAUDE.md</span><i>→</i><span class="c go">${esc(g.file)}</span><i>→</i>${bs.length ? bs.map(b => `<span class="c ${b.stale || b.broken ? 'st' : 'br'}">${esc(b.id)}${b.stale || b.broken ? ' ⚠' : ''}</span>`).join('') : '<span class="c st">nincs brief</span>'}<i>→</i><span class="c">${esc(ownerName || 'Bernard')}</span></div>
+        <div class="opts" role="list" aria-label="A briefek">${bs.map((b, i) => `<button class="opt${i === 0 ? ' rec' : ''}" data-k="brief:${esc(b.id)}"><span>${b.stale || b.broken ? '⚠' : '✓'}</span><span><b>${esc(b.id)}</b> · ${esc(b.title)} <span class="faint">(${esc(b.owner)})</span></span><span class="imp">${b.stale ? 'elavult' : b.broken ? 'hibás' : 'friss'}</span></button>`).join('') || '<p class="faint">Ehhez a kódszóhoz nincs brief.</p>'}</div>
+      </div>
+      <div class="herd">
+        <h4>Terelés innen<span class="en faint" style="display:block;font:italic 12px var(--sans)">Herd from this start</span></h4>
+        <button class="hbtn" data-k="go:${esc(g.code)}">A kódszó kártyája <small>${g.mentions} említés</small></button>
+        ${owners.map(a => `<button class="hbtn" data-k="agent:${esc(a.id)}">${esc(a.name)} részlege <small>${esc(a.title)}</small></button>`).join('')}
+        <a class="hbtn" href="connectome.html#sel=${encodeURIComponent(g.nid)}">Konnektómban <small>${esc(g.nid)}</small></a>
+        <a class="hbtn" href="layers.html">Rétegek nézetben <small>a teljes verem</small></a>
+        <span class="faint" style="font-size:12px">Ha egy brief elavult: <span class="mono">node tools/brief-state.js</span> (a repó gyökeréből; ez írja a briefeket).</span>
+      </div>
+      <div class="gapbox${gaps.length ? '' : ' clean'}"><h4>${gaps.length ? 'Elavult vagy hiányzik ennél az indításnál' : '✓ Ennél az indításnál minden friss'}</h4>
+        ${gaps.map(([t, imp]) => `<div class="gaprow"><span>${t}</span><span class="imp">${esc(imp)}</span></div>`).join('')}</div>
+    </div>`;
+  }
+  document.querySelectorAll('#goSeg button').forEach(b => b.onclick = () => showStop(b.dataset.go));
+  const firstGo = (liveGo.find(g => g.code === store.get('vrg-control-go')) || liveGo.find(g => g.code === 'MAIN') || liveGo[0]);
+  if (firstGo) showStop(firstGo.code);
+
+  /* ---------- memory filter ---------- */
+  document.querySelectorAll('#memSeg button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#memSeg button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+    const f = b.dataset.mf;
+    document.querySelectorAll('#memList .mem').forEach(r => { r.hidden = !!f && !r.dataset.f.split(' ').includes(f); });
+  });
+
+  /* ---------- usage strip ---------- */
+  let uMode = 'new', selDay = '';
+  const uVal = d => uMode === 'new' ? d.tin + d.tout + d.tcw : uMode === 'cr' ? d.tcr : uMode === 'steps' ? d.steps : d.runs;
+  function drawUsage() {
+    const U = D.usage, W = 900, H = 190, pl = 44, pr = 8, pt = 10, pb = 34;
+    const max = Math.max(1, ...U.map(uVal));
+    const bw = (W - pl - pr) / U.length;
+    const y = v => pt + (H - pt - pb) * (1 - v / max);
+    const fmt = v => uMode === 'new' || uMode === 'cr' ? k(v) : String(Math.round(v));
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Használat naponta"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="none"/><line x1="0" y1="0" x2="0" y2="6" stroke="var(--fa)" stroke-width="1.5" opacity=".6"/></pattern></defs>`;
+    for (const f of [0, .5, 1]) { const v = max * f, yy = y(v); s += `<line class="ugrid" x1="${pl}" x2="${W - pr}" y1="${yy}" y2="${yy}"/><text class="uax" x="${pl - 6}" y="${yy + 3}" text-anchor="end">${fmt(v)}</text>`; }
+    U.forEach((d, i) => {
+      const x = pl + i * bw, v = uVal(d), unrec = D.recordedTo && d.d > D.recordedTo;
+      if (unrec) s += `<rect class="uempty" x="${x + 1}" y="${pt}" width="${Math.max(1, bw - 2)}" height="${H - pt - pb}"><title>${d.d}: nincs felvétel</title></rect>`;
+      else s += `<rect class="ubar${d.d === selDay ? ' sel' : ''}" data-day="${d.d}" x="${x + 1}" y="${y(v)}" width="${Math.max(1, bw - 2)}" height="${Math.max(v ? 1 : 0, H - pb - y(v))}"><title>${d.d}: ${fmt(v)} · ${d.runs} futás · ${d.steps} lépés</title></rect>`;
+      if (!unrec) s += `<rect data-day="${d.d}" x="${x}" y="${pt}" width="${bw}" height="${H - pt - pb}" fill="transparent" style="cursor:pointer"><title>${d.d}: ${fmt(v)}</title></rect>`;
+      const dt = new Date(d.d + 'T00:00:00Z');
+      if (dt.getUTCDay() === 1) s += `<line class="ugrid" x1="${x}" x2="${x}" y1="${H - pb}" y2="${H - pb + 4}"/><text class="uax" x="${x}" y="${H - pb + 15}">${d.d.slice(5)}</text>`;
+    });
+    if (D.recordedTo) { const i = U.findIndex(d => d.d > D.recordedTo); if (i >= 0) s += `<text class="unrec" x="${pl + i * bw + 2}" y="${H - 6}">nincs felvétel →</text>`; }
+    s += '</svg>';
+    const tot = D.usage.reduce((a, d) => a + uVal(d), 0);
+    $('#usage').innerHTML = s + `<span class="mono">${D.usage.length} nap összesen: ${fmt(tot)} · ${D.usage.reduce((a, d) => a + d.runs, 0)} napi futás-jelenlét${D.usageOlderDays ? ` · ${D.usageOlderDays} korábbi nap nincs a csíkon` : ''}</span>`;
+    $('#usage').querySelectorAll('[data-day]').forEach(r => r.addEventListener('click', () => open('day:' + r.dataset.day)));
+  }
+  document.querySelectorAll('#uSeg button').forEach(b => b.onclick = () => { uMode = b.dataset.u; document.querySelectorAll('#uSeg button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); drawUsage(); });
+  drawUsage();
+
+  /* ---------- side panel ---------- */
+  const linkRows = (rows, opts = {}) => {
+    if (!rows || !rows.length) return '<p class="faint">Nincs kapocs.</p>';
+    const by = {}; for (const r of rows) (by[r[1]] || (by[r[1]] = [])).push(r);
+    return Object.keys(by).sort((a, b) => 'FIQLARCGUE'.indexOf(a) - 'FIQLARCGUE'.indexOf(b)).map(L => `<div class="kick" style="margin-top:6px">${esc(L)} · ${esc(LAYER[L] || L)} (${by[L].length})</div>` +
+      by[L].slice(0, opts.max || 14).map(r => { const kk = keyOfNode(r[0]);
+        return kk ? `<button class="tl${r[3] === 'alike' ? ' alike' : ''}" data-k="${esc(kk)}"><span class="c">${esc(L)}</span><span class="t">${esc(r[2])}</span><span class="r">${esc(VREL[r[3]] || r[3])}</span></button>`
+          : `<a class="tl${r[3] === 'alike' ? ' alike' : ''}" href="connectome.html#sel=${encodeURIComponent(r[0])}" title="${esc(r[0])}"><span class="c">${esc(L)}</span><span class="t">${esc(r[2])}</span><span class="r">${esc(VREL[r[3]] || r[3])}${r[4] ? ' · ' + esc(r[4]) : ''}</span></a>`; }).join('') +
+      (by[L].length > (opts.max || 14) ? `<p class="faint">… és még ${by[L].length - (opts.max || 14)}</p>` : '')).join('');
+  };
+  const kv = pairs => `<div class="kv">${pairs.filter(p => p[1] !== '' && p[1] != null).map(([a, b]) => `<span>${esc(a)}</span><span>${b}</span>`).join('')}</div>`;
+  const toolChip = t => { const w = TOOL[t] || [t.startsWith('mcp') ? 'MCP' : '', 'n']; return `<span class="tool ${w[1]}">${esc(t)}${w[0] ? ` <small>${esc(w[0])}</small>` : ''}</span>`; };
+  const nodeLink = id => id ? `<a href="connectome.html#sel=${encodeURIComponent(id)}">Konnektómban: ${esc(id)}</a>` : '';
+
+  const VIEW = {
+    founder() {
+      return `<div class="kick">Alapító</div><h2>Alapító</h2><p>A felhasználó. A kérés innen indul; Bernard irányítja a megfelelő székhez (START → C → B), vagy egy ügynök közvetlenül hívható: <span class="mono">@arnold</span>, <span class="mono">claude --agent arnold</span>.</p>
+        <h3>Amit ő dönt el</h3><p class="dim">A nyitott kérdések a döntésfájlokban (Q réteg), a briefek állapota és a memória gondozása. Ez az oldal csak olvas.</p>`;
+    },
+    agent(id) {
+      const a = agentBy.get(id); if (!a) return '';
+      const bs = a.briefs.map(b => briefBy.get(b)).filter(Boolean);
+      const mems = (a.links || []).filter(r => r[0].startsWith('A:mem.'));
+      return `<div class="kick">${esc(ROLE[a.role] || a.role)}${a.seat ? ' · ' + esc(a.seat) + '. szék' : ''}</div><h2>${esc(a.name)}</h2><p class="dim">${esc(a.title)}</p>${a.vacant ? `<p>${mark('vacant')} A ROSTER-ben szerepel, de még nincs ügynökfájlja.</p>` : marks(a.flags)}
+        <p>${esc(a.desc)}</p>
+        ${a.vacant ? '' : kv([['modell', esc(a.model || 'alap')], ['erőfeszítés', esc(a.effort || '—')], ['max. kör', esc(a.maxTurns || '—')], ['memória', esc(a.memory ? a.memory + ' (saját)' : 'nincs saját')],
+          ['CLAUDE.md', a.omitClaudeMd ? 'nem olvassa' : 'olvassa'], ['utolsó futás', a.last ? `${esc(a.last)} (${ago(a.quietDays)})` : 'nincs rögzítve'],
+          ['alügynökként', `${a.launches.n}×${a.launches.last ? ' · ' + esc(a.launches.last) : ''}`], ['futás olvasta', `${a.touched.n}×${a.touched.last ? ' · ' + esc(a.touched.last) : ''}`],
+          ['fájl', `<span class="mono">${esc(a.path)}</span>${a.changed ? ' · ' + esc(a.changed) : ''}`], ['charta', a.charter ? `<span class="mono">${esc(a.charter)}</span>` : '']])}
+        ${a.vacant ? '' : `<h3>Eszközök: mit olvashat, mit tehet</h3><div class="chips">${a.allTools ? '<span class="tool a">minden eszköz <small>a munkamenet összes eszköze</small></span>' : a.tools.map(toolChip).join('')}</div>`}
+        <h3>Briefek (${bs.length})</h3>${bs.length ? bs.map(b => `<button class="tl" data-k="brief:${esc(b.id)}"><span class="c">${b.stale || b.broken ? '⚠' : '✓'}</span><span class="t">${esc(b.id)} · ${esc(b.title)}</span><span class="r">${b.stale ? 'elavult' : b.broken ? 'hibás' : 'friss'}</span></button>`).join('') : '<p class="faint">Nincs saját briefje.</p>'}
+        <h3>Memória (${mems.length})</h3>${mems.length ? linkRows(mems) : '<p class="faint">Egy memória-jegyzet sem mutat rá.</p>'}
+        <h3>Kapcsok a veremben</h3>${linkRows((a.links || []).filter(r => !r[0].startsWith('A:mem.')))}
+        <p style="margin-top:10px">${nodeLink(a.nid)}</p>`;
+    },
+    brief(id) {
+      const b = briefBy.get(id); if (!b) return '';
+      const a = agentBy.get(b.agent);
+      const goCode = (/GO ([A-Z0-9]+)/.exec(b.go) || [])[1];
+      return `<div class="kick">Brief · docs/hub/agents</div><h2>${esc(b.title)}</h2>${b.broken ? mark('broken') : b.stale ? mark('stale') : mark('ok')}
+        ${kv([['gazda', a ? `<button class="pick" style="color:var(--acc)" data-k="agent:${esc(a.id)}">${esc(b.owner)}</button>` : esc(b.owner || '—')], ['indító', goCode && goBy.has(goCode) ? `<button class="pick" style="color:var(--acc)" data-k="go:${esc(goCode)}">${esc(b.go)}</button>` : esc(b.go || '—')],
+          ['állapotsor', esc(b.stateAt || '—')], ['fájl változott', esc(b.changed || '—')], ['fájl', `<span class="mono">docs/hub/agents/${esc(b.id)}.md</span>`]])}
+        <h3>Az ellenőrzés szerint</h3>${b.problems.length ? b.problems.map(p => `<p>${/stale/.test(p) ? '⚠' : '✕'} ${esc(p)}</p>`).join('') + '<p class="hint">Javítás: <span class="mono">node tools/brief-state.js</span> a repó gyökeréből (ez írja a briefeket; az oldal nem futtatja).</p>' : '<p>✓ Nincs hiba.</p>'}
+        <h3>Kapcsok a veremben</h3>${linkRows(b.links)}<p style="margin-top:10px">${nodeLink(b.nid)}</p>`;
+    },
+    mem(id) {
+      const m = memBy.get(id); if (!m) return '';
+      const mems = m.links.filter(r => r[0].startsWith('A:mem.')), other = m.links.filter(r => !r[0].startsWith('A:mem.'));
+      return `<div class="kick">Memória · ${esc(MTYPE[m.type] || m.type)}</div><h2>${esc(m.id)}</h2>${marks(m.flags)}
+        <p>${esc(m.desc)}</p><p class="hint">Csak a jegyzet egysoros leírása látszik; a teljes szöveg a memória-mappában van.</p>
+        ${kv([['dátum', esc(m.t || '—') + (m.dated ? '' : ' (fájlidő)')], ['kor', ago(m.age)], ['frissesség', ({ fresh: 'friss', mid: 'érett', old: 'régi', unknown: 'ismeretlen' })[m.fresh]],
+          ['függőleges', `${m.vert}${Object.keys(m.vl).length ? ' · ' + Object.entries(m.vl).map(([l, n]) => esc(l) + ' ' + n).join(', ') : ''}`], ['memória-kapocs', m.mem], ['futás olvasta', `${m.used.n}×${m.used.last ? ' · ' + esc(m.used.last) : ''}`]])}
+        ${m.flags.includes('unlinked') ? '<p class="warn" style="margin-top:8px">⌀ Egyetlen kapcsa sem vezet a többi rétegbe: vagy olyasmiről szól, ami egyik rétegben sincs, vagy elavult (LAYERS.md §2, A réteg).</p>' : ''}
+        <h3>Más jegyzetek</h3>${linkRows(mems)}<h3>Kapcsok a veremben</h3>${linkRows(other)}<p style="margin-top:10px">${nodeLink(m.nid)}</p>`;
+    },
+    go(code) {
+      const g = goBy.get(code); if (!g) return '';
+      return `<div class="kick">GO kódszó · ${g.live ? 'élő' : 'archív'}</div><h2>GO ${esc(g.code)}</h2><p class="dim">${esc(g.title)}</p>${marks(g.flags)}
+        <p>${esc(g.line || g.brief)}</p>
+        ${kv([['fájl', `<span class="mono">${esc(g.file)}</span>`], ['változott', esc(g.changed || '—')], ['utolsó említés', esc(g.lastMention || '—')],
+          ['említés', `${g.mentions}${Object.keys(g.byLayer).length ? ' · ' + Object.entries(g.byLayer).map(([l, n]) => esc(l) + ' ' + n).join(', ') : ''}`]])}
+        <h3>Briefek, amelyek ezzel indulnak (${g.briefs.length})</h3>${g.briefs.map(id => { const b = briefBy.get(id); return `<button class="tl" data-k="brief:${esc(id)}"><span class="c">${b.stale || b.broken ? '⚠' : '✓'}</span><span class="t">${esc(id)}</span><span class="r">${esc(b.owner)}</span></button>`; }).join('') || '<p class="faint">Nincs.</p>'}
+        ${g.live ? `<p style="margin-top:8px"><button class="hbtn" data-stop="${esc(g.code)}">Indítás anatómiája <small>a 3. szakaszban</small></button></p>` : ''}
+        <h3>Kapcsok a veremben</h3>${linkRows(g.links)}<p style="margin-top:10px">${nodeLink(g.nid)}</p>`;
+    },
+    mod(kind) {
+      const m = modBy.get(kind); if (!m) return '';
+      return `<div class="kick">Modul · A réteg</div><h2>${esc(m.hu)}</h2><p class="dim">${m.n} elem · ${m.used} olvasta futás · ${m.unlinked} függőleges kapocs nélkül</p>
+        <h3>Elemek (futás-olvasás szerint)</h3>${m.items.map(([id, t, p, d, v, u]) => { const kk = keyOfNode(id);
+          const inner = `<span class="c">${v ? v : '⌀'}</span><span class="t">${esc(t)}</span><span class="r">${u ? u + '× futás' : '◌'}</span>`;
+          return kk ? `<button class="tl" data-k="${esc(kk)}" title="${esc(p)}">${inner}</button>` : `<a class="tl" href="connectome.html#sel=${encodeURIComponent(id)}" title="${esc(p)}">${inner}</a>`; }).join('')}
+        <p class="hint">Bal oszlop: függőleges kapcsok száma (⌀ = nincs). Jobb: hány rögzített futás olvasta (◌ = egy sem).</p>`;
+    },
+    day(d) {
+      const x = dayBy.get(d); if (!x) return '';
+      return `<div class="kick">Nap · U réteg</div><h2>${esc(d)}</h2>
+        ${kv([['futások', x.runs], ['lépések', x.steps], ['eszközhívás', x.calls], ['alügynök', x.sub], ['commit', x.commits], ['új token', k(x.tin + x.tout + x.tcw)], ['ebből kimenet', k(x.tout)], ['gyorsítótár-olvasás', k(x.tcr)]])}
+        <h3>A nap futásai (új token szerint)</h3>${x.top.length ? x.top.map(r => `<a class="tl" href="replay.html#${encodeURIComponent(r[0])}" title="${esc(r[7])}"><span class="c">${esc(r[0].slice(0, 4))}</span><span class="t">${esc(r[1] || '(cím nélkül)')}</span><span class="r">${k(r[2])} · ${r[4]} l.</span></a>`).join('') : '<p class="faint">Ezen a napon nincs rögzített futás.</p>'}
+        <p class="hint">Egy futásra kattintva a Visszajátszás nyílik.</p>`;
+    },
+    sched(id) {
+      const s = schBy.get(id); if (!s) return '';
+      return `<div class="kick">Ütemezett feladat</div><h2>${esc(s.title)}</h2><p>${esc(s.desc)}</p>
+        ${kv([['időzítés', s.cron ? esc(cronHu(s.cron)) + ` <span class="mono">(${esc(s.cron)})</span>` : 'nem olvasható a lemezről'], ['állapot', s.enabled === false ? 'kikapcsolva' : s.enabled ? 'bekapcsolva' : '—'],
+          ['utoljára', esc((s.last || '—').replace('T', ' ')) + (s.last ? ' UTC' : '')], ['parancs', `<span class="mono">${esc(s.cmd || '—')}</span>`], ['SKILL.md', esc(s.changed || '—')]])}`;
+    },
+  };
+
+  function open(key, opts = {}) {
+    if (key.startsWith('jump:')) { const el = document.getElementById(key.slice(5)); if (el) el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); return; }
+    const i = key.indexOf(':'), kind = i < 0 ? key : key.slice(0, i), arg = i < 0 ? '' : key.slice(i + 1);
+    const body = VIEW[kind] ? VIEW[kind](arg) : '';
+    if (!body) return;
+    panel.innerHTML = `<button id="pclose" aria-label="Bezárás">✕ Bezár</button>` + body;
+    panel.classList.add('open'); panel.scrollTop = 0;
+    $('#pclose').onclick = () => panel.classList.remove('open');
+    selNode = kind === 'agent' ? arg : kind === 'founder' ? 'founder' : '';
+    markFlow();
+    if (kind === 'day') { selDay = arg; drawUsage(); }
+    if (!opts.noHash) history.replaceState(null, '', '#sel=' + encodeURIComponent(key));
+  }
+  document.addEventListener('click', e => {
+    const s = e.target.closest('[data-stop]'); if (s) { showStop(s.dataset.stop); open('jump:inditas'); return; }
+    const t = e.target.closest('[data-k]'); if (!t) return;
+    e.preventDefault(); open(t.dataset.k);
+  });
+  addEventListener('keydown', e => { if (e.key === 'Escape') { panel.classList.remove('open'); selNode = ''; markFlow(); } });
+
+  const hk = /#sel=([^&]+)/.exec(location.hash);
+  if (hk) open(decodeURIComponent(hk[1]), { noHash: true });
+  else panel.innerHTML = `<div class="kick">Részletek</div><h2>Válassz egy elemet</h2><p class="dim">Egy ügynök, brief, memória-jegyzet, kódszó, modul, nap vagy ütemezés: itt nyílik meg, a kapcsaival együtt. Link egy elemre: <span class="mono">control.html#sel=agent:arnold</span>.</p>
+    <h3>Mit jelölnek a jelek</h3><div class="marks" style="flex-direction:column;align-items:flex-start;gap:6px">${['stale', 'broken', 'quiet', 'never', 'unlinked', 'old', 'vacant'].map(f => mark(f)).join('')}</div>`;
+})();
+</script>
+</body>
+</html>

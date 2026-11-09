@@ -2,7 +2,7 @@
 //
 //   archive → layers F I Q L A R C G → join → record → U (Futás) → pillars → analytics
 //   → validate → write graph → events + snapshot → index (+ embeddings) → codec · drift · status
-//   → patterns · proposals · replay · connectome · lineage → health
+//   → patterns · proposals · replay · connectome · lineage · control → health
 //
 // Rules each stage keeps:
 //  · sources are read, never written; everything written goes to out/ (derived) or data/ (history)
@@ -133,6 +133,7 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
     await hc.stage('replay data', () => { const r = REPLAY.exportAll(index, gp, REC.readRecording); log(`replay: ${r.sessions} sessions (${r.written} rewritten)`); }, { optional: true });
     await hc.stage('connectome', () => log(require('./connectome').write().msg), { optional: true });
     await hc.stage('lineage', () => log(require('./lineage').write({ graph }).msg), { optional: true });   // Ötletfolyam (lineage.html)
+    await hc.stage('control', () => log(require('./control').write({ graph }).msg), { optional: true });   // Vezérlőterem (control.html)
     const ms = Date.now() - t0;
     X.writeAtomic(path.join(CFG.out, 'STATUS.md'), INS.status(graph, metrics, codec.report, ms));
     const props = INS.proposals({ graph, communities, pat, health: hc });

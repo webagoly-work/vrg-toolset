@@ -28,7 +28,7 @@ module.exports = [
     is: 'What agents read and run on: memory, house rules (CLAUDE.md), agents, briefs, GO codephrases, the Workflow Kit, agent tools, schedules, the map generators.',
     order: 'by kind; memory links ([[…]]) and brief owners make it a graph', nodes: 'memory · agent · brief · codephrase · house rules · tool · kit · scheduled task · generator', edges: 'mentions (memory links, owners)',
     source: 'memory folder, .claude/agents, docs/hub/agents, GO-*.md, CLAUDE.md, docs/council, tools/*.js, Varler_Workflow_Kit, scheduled-tasks',
-    page: { state: 'partial', name: 'Varler Console live trace (Console/, START W)', want: 'a Control Room: agents and what they may read, memory freshness, briefs with stale state, schedules, usage per day' } },
+    page: { state: 'exists', name: 'Vezérlőterem (Control Room)', open: 'H:/VRG/Full/Planner_VRG_U100/Stack/control.html' } },
   { code: 'U', id: 'futas', hu: 'Futás', en: 'Runtime',
     is: 'What agents actually did: every recorded session (tools, tokens, commits, the nodes it touched) and every working day.',
     order: 'time (runs inside days)', nodes: 'run · day', edges: 'on-day · ran (→ DevLog session) · touched (→ any node, weighted)',
