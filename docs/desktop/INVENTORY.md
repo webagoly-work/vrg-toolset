@@ -7,7 +7,7 @@
 |---|---:|
 | START registry (launcher/vrg-menu.json) | 154 |
 | Features map (notes/features, outside git) | 105 |
-| VRG Irányítópult (Dashboard/) | 83 |
+| VRG Irányítópult (Dashboard/) | 84 |
 | Varler Console pages | 51 |
 | VRG Mobile features | 19 |
 | VRG Stack | 23 |
@@ -16,9 +16,9 @@
 | Agents, hooks, MCP | 17 |
 | Firmware | 4 |
 | Shared libraries | 4 |
-| Docs packs + GO phrases | 23 |
+| Docs packs + GO phrases | 24 |
 | Top-level folders + launcher parts | 25 |
-| **Total** | **532** |
+| **Total** | **534** |
 
 ## START registry (launcher/vrg-menu.json) (154)
 
@@ -289,7 +289,7 @@
 | `feat:x10` | FlyBrainLab |  | program · tier 2 | Third-party programs | Neuro research tool, repaired without reinstall; use hemibrain. |
 | `feat:x11` | Android toolchain | Mobile/mobile.cmd | program · tier 3 | Third-party programs | Gradle and adb for VRG Mobile; no JDK yet for the Console APK. |
 
-## VRG Irányítópult (Dashboard/) (83)
+## VRG Irányítópult (Dashboard/) (84)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -359,6 +359,7 @@
 | `dashlib:paths` | lib/paths.js | Dashboard/shell/lib/paths.js | module | shell/lib | paths.js — the only module that knows where personal state lives (CONTRACT §5). |
 | `dashlib:ports` | lib/ports.js | Dashboard/shell/lib/ports.js | module | shell/lib | ports.js — server ports probed on 127.0.0.1, starting and opening registry servers. |
 | `dashlib:presets` | lib/presets.js | Dashboard/shell/lib/presets.js | module | shell/lib | presets.js — presets and feeds (WP-29): a registry of named lookups (config/presets.json + <userDir>/presets.json) that run as jobs, |
+| `dashlib:programs` | lib/programs.js | Dashboard/shell/lib/programs.js | module | shell/lib | programs.js — third-party programs the VRG Asztal installs into Full\programs (WP-45). |
 | `dashlib:pty` | lib/pty.js | Dashboard/shell/lib/pty.js | module | shell/lib | pty.js — the terminal manager (WP-14). Profiles come from config/profiles.json; the page only ever names a profile id, |
 | `dashlib:quick` | lib/quick.js | Dashboard/shell/lib/quick.js | module | shell/lib | quick.js — the quick bar (WP-30): what a typed line means, and the per-user history of lines. Shared with the page as window.VRGQuick. |
 | `dashlib:registry` | lib/registry.js | Dashboard/shell/lib/registry.js | module | shell/lib | registry.js — the loaded build.collect() registry and the vrg-ui.ps1 equivalents (tokens, quoting, texts). |
@@ -559,7 +560,7 @@
 | `lib:varler-logo` | varler-logo | shared/varler-logo | library | shared | Varler logo — animated v1 and the divergence ring |
 | `lib:vrg-ui-kit` | vrg-ui-kit | shared/vrg-ui-kit | library | shared | VRG UI Kit v1 — "Mérőpult" |
 
-## Docs packs + GO phrases (23)
+## Docs packs + GO phrases (24)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -573,6 +574,7 @@
 | `doc:housekeeping` | docs/housekeeping | docs/housekeeping | docs pack | docs |  |
 | `doc:hub` | docs/hub | docs/hub | docs pack | docs |  |
 | `doc:mobile` | docs/mobile | docs/mobile | docs pack | docs |  |
+| `doc:notes` | docs/notes | docs/notes | docs pack | docs |  |
 | `doc:research` | docs/research | docs/research | docs pack | docs |  |
 | `doc:services-server` | docs/services-server.md | docs/services-server.md | doc | docs |  |
 | `doc:solomon` | docs/solomon | docs/solomon | docs pack | docs |  |

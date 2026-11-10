@@ -3902,6 +3902,18 @@
    "reason": "internal code unit"
   },
   {
+   "id": "dashlib:programs",
+   "name": "lib/programs.js",
+   "source": "dashboard",
+   "type": "module",
+   "qualifier": "",
+   "scope": "internal",
+   "level": "",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit"
+  },
+  {
    "id": "dashlib:pty",
    "name": "lib/pty.js",
    "source": "dashboard",
@@ -5926,6 +5938,18 @@
    "scope": "open",
    "level": "dev",
    "parent": "mobile",
+   "unit": "",
+   "reason": "design, decisions and briefs"
+  },
+  {
+   "id": "doc:notes",
+   "name": "docs/notes",
+   "source": "docs",
+   "type": "document set",
+   "qualifier": "pack",
+   "scope": "open",
+   "level": "dev",
+   "parent": "docs",
    "unit": "",
    "reason": "design, decisions and briefs"
   },

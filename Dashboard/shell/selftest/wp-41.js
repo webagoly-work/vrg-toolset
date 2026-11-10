@@ -29,7 +29,7 @@ module.exports = async function probe({ win }) {
   await wait(() => fjs(`document.body.dataset.level === 'user' && !!document.querySelector('#sec-apps')`));
   const secs = () => fjs(`[...document.querySelectorAll('.dash-sec')].map(s => s.dataset.section)`);
   let s = await secs();
-  if (JSON.stringify(s) !== JSON.stringify(['ma', 'apps', 'munkak', 'allapot'])) errors.push('user sections: ' + JSON.stringify(s));
+  if (JSON.stringify(s) !== JSON.stringify(['ma', 'apps', 'programok', 'munkak', 'allapot'])) errors.push('user sections: ' + JSON.stringify(s));
   const userTiles = await fjs(`[...document.querySelectorAll('#sec-apps .tile')].map(t => t.dataset.id)`);
   for (const id of ['planner', 'inventory', 'calc-panel', 'files', 'web', 'mail', 'console']) if (!userTiles.includes(id)) errors.push('user tile missing: ' + id);
   for (const id of ['codecity', 'stack', 'term', 'git']) if (userTiles.includes(id)) errors.push('dev tile at user level: ' + id);

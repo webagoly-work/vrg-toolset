@@ -3,7 +3,7 @@
  "counts": {
   "vrg-menu": 154,
   "features": 105,
-  "dashboard": 83,
+  "dashboard": 84,
   "console": 51,
   "mobile": 19,
   "stack": 23,
@@ -12,10 +12,10 @@
   "agents": 17,
   "firmware": 4,
   "shared": 4,
-  "docs": 23,
+  "docs": 24,
   "folders": 25
  },
- "total": 532,
+ "total": 534,
  "errors": [],
  "rows": [
   {
@@ -2944,6 +2944,15 @@
    "note": "presets.js — presets and feeds (WP-29): a registry of named lookups (config/presets.json + <userDir>/presets.json) that run as jobs,"
   },
   {
+   "id": "dashlib:programs",
+   "name": "lib/programs.js",
+   "where": "Dashboard/shell/lib/programs.js",
+   "source": "dashboard",
+   "kind": "module",
+   "group": "shell/lib",
+   "note": "programs.js — third-party programs the VRG Asztal installs into Full\\programs (WP-45)."
+  },
+  {
    "id": "dashlib:pty",
    "name": "lib/pty.js",
    "where": "Dashboard/shell/lib/pty.js",
@@ -4459,6 +4468,15 @@
    "id": "doc:mobile",
    "name": "docs/mobile",
    "where": "docs/mobile",
+   "source": "docs",
+   "kind": "docs pack",
+   "group": "docs",
+   "note": ""
+  },
+  {
+   "id": "doc:notes",
+   "name": "docs/notes",
+   "where": "docs/notes",
    "source": "docs",
    "kind": "docs pack",
    "group": "docs",

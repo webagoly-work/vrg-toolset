@@ -107,7 +107,7 @@
           }
         }
       } else sec.items = mine.map(i => i.id);
-      if (sec.items.length || sec.groups.length || ['ma', 'munkak', 'allapot', 'vonalak', 'meroszamok', 'szerverek'].includes(id)) out.push(sec);
+      if (sec.items.length || sec.groups.length || ['ma', 'programok', 'munkak', 'allapot', 'vonalak', 'meroszamok', 'szerverek'].includes(id)) out.push(sec);
     }
     return out;
   }

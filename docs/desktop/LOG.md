@@ -118,3 +118,18 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 - GLOSSARY: where the list lives, six terms it lacked (device, library, web service, folder, asset, category), scopes.
   ARCHITECTURE: up to date (counts, Q01…Q21, migration status, the collision renames marked ●, the Founder's open calls).
 - Tests: wp-40 +3 (type list, the User rule, classification scopes); wp-40 / wp-41 fixtures updated.
+
+## WP-45 — Programok: install third-party programs from the Dashboard view (2026-11-10)
+
+- `launcher/programs.json`: the levels, folders and detect paths over the ServiceKit catalog (70 packages) + VLC, Zen, Opera GX,
+  KeyTweak = 74 programs, 12 at User. DESKU-Q22.
+- `Dashboard/shell/lib/programs.js`: merge, detect (detect paths, else the app's exe under its folder, 3 levels), resolve sources as
+  ServiceKit does (url / github / scrape / sfrss, https only), download with Node's https (fetch crashed the process on a paused
+  stream end), zip via System32 tar (never Git's GNU tar), 7z / sfx via a 7za bootstrapped into `programs\_kit`, a lone top folder
+  stripped, links in an archive refused, post steps (vscode-data, portable.ini/txt), `programs\_state.json` (version, url, sha256).
+  One job per program (kind `program`); the install level is the saved `desk.level`, never the page's word.
+- IPC `programs.list / install / launch / page / folder`; preload `vrg.programs`; catalog section `programok` (User);
+  `page/desk.js` secProgramok (ghost / page / busy / installed, select, Mind kijelölése, Törlés, Telepítés (n), filter); desk.css.
+- Tests: `wp-45.test.js` (8, a throwaway folder, no network); probe `shell/selftest/wp-45.js` (User 12, Dev 74, ghost styles from
+  computed CSS, ticking, refusals); wp-41 section lists updated. Live run into a temp folder: Everything, SumatraPDF, 7-Zip (sfx via
+  the 7za bootstrap), CrystalDiskInfo, Rufus all installed and found.

@@ -674,6 +674,33 @@ ipc.register('desktop', 'state', {}, async () => ({
   level: deskSetting('desk.level', 'user'), view: deskSetting('desk.view', 'dashboard'), top: deskSetting('desk.top', null), dock: deskSetting('desk.dock', null),
   auth: deskSetting('auth.enabled', false) === true, toggle: deskLib.toggleSpec(deskKeymap()), start: DESK_START,
 }));
+// Programok (WP-45): third-party programs from launcher/programs.json + the ServiceKit catalog, installed into Full\programs as jobs
+// (kind 'program'). The page names program ids only; the level that gates an install is the saved desk.level, never the page's word.
+// A selftest never downloads (its fetch refuses) and never starts a program (the runner is dry there).
+const programs = require('./lib/programs.js').createPrograms({
+  fs: require('fs'), execFile: require('child_process').execFile, jobs, log,
+  net: SELFTEST ? { text: async () => { throw new Error('no downloads in a selftest'); }, save: async () => { throw new Error('no downloads in a selftest'); } } : undefined,
+  file: path.join(REPO_DIR, 'launcher', 'programs.json'), expand: s => R.expand(s),
+  fullPrograms: path.resolve(process.env.VRG_PROGRAMS || path.join(FULL_DIR, 'programs')),
+  startExe: (name, exe, args, cwd) => run.startExe(name, exe, args, cwd), openUrl: u => run.openUrl(u),
+});
+const progReady = () => { if (!programs.all().length) programs.load(); };
+const progId = v => typeof v === 'string' && /^[a-z0-9][a-z0-9-]{0,39}$/.test(v);
+ipc.register('programs', 'list', { level: types.enum('user', 'dev', 'all') }, async ({ level }) => {
+  progReady();
+  return { level: level || deskSetting('desk.level', 'user'), programs: programs.list(level || deskSetting('desk.level', 'user')), errors: programs.errors().length };
+}, { optional: ['level'] });
+ipc.register('programs', 'install', { ids: types.arr(progId, 100) }, async ({ ids }) => { progReady(); return programs.install([...new Set(ids)], deskSetting('desk.level', 'user')); });
+ipc.register('programs', 'launch', { id: progId }, async ({ id }) => { progReady(); return programs.launch(id); });
+ipc.register('programs', 'page', { id: progId }, async ({ id }) => { progReady(); return programs.page(id); });
+ipc.register('programs', 'folder', { id: progId }, async ({ id }) => {
+  progReady();
+  const f = programs.folder(id);
+  if (!f) return { ok: false, err: 'not-installed', hu: 'Nincs telepítve.' };
+  run.openPath(f);
+  return { ok: true };
+});
+
 // a registry server, started when it is down (never in a selftest), as the URL the browser pane opens
 async function deskServer(id, urlPath) {
   const s = R.server(id);

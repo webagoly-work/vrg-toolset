@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "about": "Third-party programs the VRG Asztal can install (WP-45). Every ServiceKit package (ServiceKit/core/catalog.json) is included at `defaultLevel`; the entries below set a level, a folder or a detect path, or add programs ServiceKit does not have. Installs go to `root`\\<dir> (dir defaults to the id; the 'dev' category goes to dev\\<id>). Formats zip / 7z / sfx are unpacked, exe is copied; installer, iso and manual sources are never run: they show as ghosts with the official download page and count as installed once `detect` finds them. Levels: user < dev < all.",
+  "root": "{full}\\programs",
+  "servicekit": "{repo}\\ServiceKit\\core\\catalog.json",
+  "defaultLevel": "dev",
+  "categories": {
+    "web": { "hu": "Böngészők", "en": "Browsers" },
+    "media": { "hu": "Média", "en": "Media" }
+  },
+  "programs": [
+    { "id": "sevenzip", "level": "user", "dir": "7zip", "detect": ["{full}\\programs\\7zip\\7zFM.exe"] },
+    { "id": "notepadpp", "level": "user" },
+    { "id": "everything", "level": "user" },
+    { "id": "wiztree", "level": "user", "dir": "WizTree" },
+    { "id": "crystaldiskinfo", "level": "user", "dir": "CrystalDiskInfo" },
+    { "id": "hwinfo", "level": "user", "dir": "HWiNFO" },
+    { "id": "sumatra", "level": "user" },
+    { "id": "sharex", "level": "user" },
+    { "id": "keepassxc", "level": "user" },
+    { "id": "portablegit", "detect": ["{full}\\tools\\git\\cmd\\git.exe"] },
+    { "id": "node", "detect": ["{full}\\tools\\node\\node.exe"] },
+    { "id": "vscode", "detect": ["{full}\\tools\\vscode\\Code.exe"] },
+    {
+      "id": "vlc", "level": "user", "dir": "VLC", "cat": "media", "name": "VLC media player", "sizeMB": 45,
+      "page": "https://www.videolan.org/vlc/download-windows.html",
+      "source": { "type": "scrape", "page": "https://get.videolan.org/vlc/last/win64/", "regex": "vlc-[\\d.]+-win64\\.zip" },
+      "format": "zip",
+      "desc": { "hu": "Lejátszik szinte bármilyen videót és hangot, kodekek telepítése nélkül.", "en": "Plays almost any video or audio file, no codec packs needed." },
+      "apps": [{ "id": "vlc", "name": "VLC", "exe": "vlc.exe" }]
+    },
+    {
+      "id": "zen", "level": "user", "dir": "zen-browser", "cat": "web", "name": "Zen Browser", "sizeMB": 90,
+      "page": "https://zen-browser.app/download/",
+      "source": { "type": "manual" }, "format": "installer",
+      "desc": { "hu": "Firefox alapú böngésző, munkaterekkel és függőleges fülekkel.", "en": "Firefox-based browser with workspaces and vertical tabs." },
+      "apps": [{ "id": "zen", "name": "Zen", "exe": "zen.exe" }]
+    },
+    {
+      "id": "operagx", "level": "user", "dir": "opera-gx", "cat": "web", "name": "Opera GX", "sizeMB": 120,
+      "page": "https://www.opera.com/gx",
+      "source": { "type": "manual" }, "format": "installer",
+      "desc": { "hu": "Chromium alapú böngésző, CPU- és RAM-korláttal.", "en": "Chromium-based browser with CPU and RAM limiters." },
+      "apps": [{ "id": "operagx", "name": "Opera GX", "exe": "opera.exe" }]
+    },
+    {
+      "id": "keytweak", "dir": "keytweak", "cat": "util", "name": "KeyTweak", "sizeMB": 1,
+      "source": { "type": "manual" }, "format": "installer",
+      "desc": { "hu": "Billentyűk átkiosztása a registryben.", "en": "Remaps keyboard keys through the registry." },
+      "apps": [{ "id": "keytweak", "name": "KeyTweak", "exe": "KeyTweak.exe" }]
+    }
+  ]
+}

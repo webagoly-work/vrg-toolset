@@ -146,6 +146,13 @@ contextBridge.exposeInMainWorld('vrg', {
     server: id => call('desktop', 'server', { id }),
     cover: on => call('desktop', 'cover', { on: on === true }),
   },
+  programs: {                                                                    // WP-45 Programok; progress: vrg.on('jobs', 'update', cb), kind 'program'
+    list: level => call('programs', 'list', level ? { level } : {}),
+    install: ids => call('programs', 'install', { ids: Array.isArray(ids) ? ids : [] }),
+    launch: id => call('programs', 'launch', { id }),
+    page: id => call('programs', 'page', { id }),
+    folder: id => call('programs', 'folder', { id }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),

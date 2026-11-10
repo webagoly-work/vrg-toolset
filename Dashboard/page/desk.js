@@ -209,7 +209,94 @@
     draw();
     return [inp, h('table', { class: 'cat' }, h('thead', {}, h('tr', {}, ['Név', 'Típus', 'Szint', 'Szülő', 'Állapot', 'Azonosító'].map(x => h('th', {}, x)))), tb)];
   }
-  const SEC = { ma: secMa, apps: secApps, munkak: secMunkak, allapot: secAllapot, vonalak: secVonalak, szerverek: secSzerverek, meroszamok: secMeroszamok, katalogus: secKatalogus };
+  // ------------------------------------------------------------ Programok (WP-45): ghosts to tick and install, solid icons to start
+  // The list comes from vrg.programs.list(level) (launcher/programs.json + the ServiceKit catalog). Installing makes one job per
+  // program in main; its jobs.update events move the bar on that ghost and the list is re-read when one finishes.
+  const PG = { items: [], sel: new Set(), jobs: new Map(), prog: {}, q: '', box: null, wired: false };
+  const pcall = (fn, p) => (vrg && vrg.call ? vrg.call('programs', fn, p || {}) : Promise.resolve({ ok: false }));
+  function wirePrograms() {
+    if (PG.wired || !vrg || !vrg.on) return;
+    PG.wired = true;
+    vrg.on('jobs', 'update', m => {
+      if (m.kind !== 'program') return;
+      const id = PG.jobs.get(m.job); if (!id) return;
+      PG.prog[id] = { state: m.state, done: m.done, total: m.total, hu: m.hu, err: m.err };
+      if (['done', 'failed', 'cancelled'].includes(m.state)) {
+        PG.jobs.delete(m.job);                                          // the toast itself comes from toasts.js, as for every job
+        loadPrograms();
+      } else drawPrograms();
+    });
+  }
+  async function loadPrograms() {
+    const r = await pcall('list', { level: S.level });
+    if (r && r.ok !== false) {
+      PG.items = r.programs || [];
+      for (const p of PG.items) if (p.job && !PG.jobs.has(p.job)) PG.jobs.set(p.job, p.id);
+      for (const id of [...PG.sel]) { const p = PG.items.find(x => x.id === id); if (!p || p.installed || p.mode !== 'install') PG.sel.delete(id); }
+      for (const id of Object.keys(PG.prog)) { const p = PG.items.find(x => x.id === id); if (!p || !p.job) delete PG.prog[id]; }
+    }
+    drawPrograms();
+  }
+  async function installSelected() {
+    const ids = [...PG.sel];
+    if (!ids.length) return;
+    const r = await pcall('install', { ids });
+    if (!r || r.ok === false) { toast(false, (r && r.hu) || 'A telepítés nem indult.', 'Install did not start.'); return; }
+    for (const s of r.started || []) { PG.jobs.set(s.job, s.id); PG.prog[s.id] = { state: 'queued', done: 0, total: 0, hu: 'sorban áll' }; PG.sel.delete(s.id); }
+    if ((r.skipped || []).length) toast(false, r.skipped.length + ' kihagyva (' + r.skipped.map(s => s.id).join(', ') + ')', 'Skipped.');
+    drawPrograms();
+  }
+  async function progAction(fn, id) {
+    const r = await pcall(fn, { id });
+    if (r && r.hu) toast(r.ok !== false, r.hu, r.en);
+  }
+  function progCard(p) {
+    const busy = PG.prog[p.id] && !['done', 'failed', 'cancelled'].includes(PG.prog[p.id].state);
+    const st = p.installed ? 'installed' : busy ? 'busy' : p.mode === 'page' ? 'page' : 'ghost';
+    const sel = PG.sel.has(p.id);
+    const tip = (p.desc.hu || p.name) + (p.sizeMB ? ' · ~' + p.sizeMB + ' MB' : '') + (p.version ? ' · ' + p.version : '');
+    const click = () => {
+      if (st === 'installed') return progAction('launch', p.id);
+      if (st === 'ghost') { if (sel) PG.sel.delete(p.id); else PG.sel.add(p.id); drawPrograms(); }
+      if (st === 'page') return progAction('page', p.id);
+    };
+    const kids = [h('button', { type: 'button', class: 'pm', title: tip, 'aria-pressed': st === 'ghost' ? String(sel) : null, onclick: click },
+      h('span', { class: 'mono' }, p.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '??'),
+      h('span', { class: 't' }, p.name),
+      h('span', { class: 'ty' }, st === 'installed' ? 'indítás' : st === 'busy' ? (PG.prog[p.id].hu || '').replace(/^.*· /, '') : st === 'page' ? (p.hasPage ? 'letöltő oldal ↗' : 'kézi telepítés') : (sel ? '✓ kijelölve' : 'telepíthető') + (p.sizeMB ? ' · ' + p.sizeMB + ' MB' : '')))];
+    if (st === 'busy') { const g = PG.prog[p.id]; kids.push(h('i', { class: 'bar', style: 'width:' + (g.total ? Math.round(100 * g.done / g.total) : 8) + '%' })); }
+    if (st === 'installed') kids.push(h('button', { type: 'button', class: 'pf', title: 'Mappa megnyitása / Open folder', onclick: e => { e.stopPropagation(); progAction('folder', p.id); } }, '▤'));
+    return h('div', { class: 'prog', 'data-prog': p.id, 'data-state': st, 'data-level': p.level, 'data-selected': sel ? '1' : '' }, kids);
+  }
+  function drawPrograms() {
+    const box = PG.box; if (!box || !box.isConnected) return;
+    const q = PG.q.trim().toLowerCase();
+    const items = q ? PG.items.filter(p => (p.name + ' ' + p.id + ' ' + p.catHu + ' ' + p.desc.hu + ' ' + p.desc.en).toLowerCase().includes(q)) : PG.items;
+    const inst = PG.items.filter(p => p.installed).length;
+    const free = PG.items.filter(p => !p.installed && p.mode === 'install');
+    const head = h('div', { class: 'prog-head', 'data-role': 'prog-head' },
+      h('span', { class: 'sub' }, inst + ' telepítve · ' + (PG.items.length - inst) + ' elérhető'),
+      h('input', { type: 'search', 'data-role': 'prog-filter', placeholder: 'Szűrés… / Filter', value: PG.q, oninput: e => { PG.q = e.target.value; drawPrograms(); const f = PG.box.querySelector('[data-role="prog-filter"]'); if (f) { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } } }),
+      h('span', { class: 'sp' }),
+      h('button', { type: 'button', 'data-role': 'prog-all', disabled: !free.length, onclick: () => { for (const p of items) if (!p.installed && p.mode === 'install' && !PG.prog[p.id]) PG.sel.add(p.id); drawPrograms(); } }, 'Mind kijelölése'),
+      h('button', { type: 'button', 'data-role': 'prog-none', disabled: !PG.sel.size, onclick: () => { PG.sel.clear(); drawPrograms(); } }, 'Törlés'),
+      h('button', { type: 'button', class: 'go', 'data-role': 'prog-install', disabled: !PG.sel.size, onclick: installSelected }, 'Telepítés (' + PG.sel.size + ')'));
+    const groups = [];
+    let cur = null;
+    for (const p of items) { if (!cur || cur.cat !== p.cat) { cur = { cat: p.cat, hu: p.catHu, items: [] }; groups.push(cur); } cur.items.push(p); }
+    box.textContent = '';
+    box.append(head, ...(groups.length ? groups.map(g => [h('div', { class: 'dash-grp' }, g.hu), h('div', { class: 'progs' }, g.items.map(progCard))]).flat()
+      : [empty(PG.items.length ? 'Nincs találat.' : 'Nincs program a listában.', 'Nothing here.')]));
+  }
+  function secProgramok() {
+    wirePrograms();
+    PG.box = h('div', { 'data-role': 'programs' });
+    drawPrograms();
+    loadPrograms();
+    return [PG.box];
+  }
+
+  const SEC = { ma: secMa, apps: secApps, programok: secProgramok, munkak: secMunkak, allapot: secAllapot, vonalak: secVonalak, szerverek: secSzerverek, meroszamok: secMeroszamok, katalogus: secKatalogus };
 
   function renderDashboard() {
     const secs = D.sections(S.items, S.level, S.sections, S.groups);

@@ -153,3 +153,12 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
 - **A (taken):** a User item whose status is not `live` or `beta` shows from the Dev level on (`effectiveLevel`); its declared level
   stays in the catalog, so it moves to User by itself when its status changes. Today: Ügyfélnézet and ServiceKit.
 - B: move those items to `level: dev` by hand (and back by hand later). C: show them at User marked unfinished.
+
+## DESKU-Q22 — Third-party programs in the Dashboard view (revises Q04 for them; the Founder, 2026-11-10)
+
+- **A (taken):** a **Programok** section at User level (WP-45). The list is `launcher/programs.json` over every ServiceKit package:
+  User sees a short everyday set (7-Zip, Notepad++, Everything, WizTree, CrystalDiskInfo, HWiNFO, SumatraPDF, ShareX, KeePassXC,
+  VLC, Zen, Opera GX); Dev and All see every program. Not installed = a ghost; tick one or more and Telepítés installs them in the
+  same window, into `Full\programs\<dir>` (the dev category into `Full\programs\dev\<id>`). Installer, ISO and manual sources are
+  never run: they stay ghosts that open the official download page, and count as installed once found. The START A list is unchanged.
+- B: install into a folder of the Dashboard's own. C: run vendor installers too (admin rights, outside the VRG folders).

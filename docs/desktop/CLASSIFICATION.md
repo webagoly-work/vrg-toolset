@@ -21,11 +21,11 @@ Every row gets a **type** from one fixed list (the catalog's `types` = the gloss
 | Scope · level | Rows | Catalog items |
 |---|---:|---:|
 | open · user | 115 | 31 |
-| open · dev | 279 | 55 |
+| open · dev | 280 | 55 |
 | open · all | 24 | 1 |
-| internal | 68 | 0 |
+| internal | 69 | 0 |
 | roadmap | 46 | 5 |
-| **total** | **532** | **92** |
+| **total** | **534** | **92** |
 
 The catalog's planned items keep `level: all` so the Dashboard's Katalógus can list them, marked *planned*; nothing opens them.
 
@@ -166,7 +166,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `feature module` | Feature module · Funkciómodul | unit | 18 |
 | `plugin` | Plugin · Bővítmény | unit | 36 |
 | `widget` | Widget · Widget | unit | 12 |
-| `module` | Module · Modul | unit | 46 |
+| `module` | Module · Modul | unit | 47 |
 | `library` | Library · Könyvtár | unit | 1 |
 | `command` | Command · Parancs | unit | 93 |
 | `command family` | Command family · Parancscsalád | unit | 10 |
@@ -175,7 +175,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `web service` | Web service · Webszolgáltatás | unit | 2 |
 | `registry` | Registry · Nyilvántartás | unit | 8 |
 | `knowledge base` | Knowledge base · Tudásbázis | unit | 8 |
-| `document set` | Document set · Dokumentumcsomag | unit | 17 |
+| `document set` | Document set · Dokumentumcsomag | unit | 18 |
 | `runbook` | Runbook · Forgatókönyv | unit | 10 |
 | `ai agent` | AI agent · MI-ügynök | unit | 16 |
 | `ai coding assistant` | AI coding assistant · MI kódsegéd | unit | 3 |
@@ -545,6 +545,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `dashlib:paths` | lib/paths.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:ports` | lib/ports.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:presets` | lib/presets.js | module | internal |  | `desktop` | internal code unit |
+| `dashlib:programs` | lib/programs.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:pty` | lib/pty.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:quick` | lib/quick.js | module | internal |  | `desktop` | internal code unit |
 | `dashlib:registry` | lib/registry.js | module | internal |  | `desktop` | internal code unit |
@@ -714,6 +715,7 @@ The catalog's planned items keep `level: all` so the Dashboard's Katalógus can 
 | `doc:housekeeping` | docs/housekeeping | document set · pack | open | dev | `dev:infra` | design, decisions and briefs |
 | `doc:hub` | docs/hub | document set · pack | open | dev | `kapu` | design, decisions and briefs |
 | `doc:mobile` | docs/mobile | document set · pack | open | dev | `mobile` | design, decisions and briefs |
+| `doc:notes` | docs/notes | document set · pack | open | dev | `docs` | design, decisions and briefs |
 | `doc:research` | docs/research | document set · research notes | roadmap |  | `dev:knowledge` | is the catalog item `research` (planned) |
 | `doc:services-server` | docs/services-server.md | document set · pack | open | dev | `servers` | design, decisions and briefs |
 | `doc:solomon` | docs/solomon | document set · pack | open | dev | `solomon` | design, decisions and briefs |
