@@ -96,7 +96,7 @@ async function chain(a, b, { time = false } = {}) {
 
 async function pillar(id) {
   const K = await load();
-  const row = e => `${e.id.padEnd(13)} ${e.name.padEnd(34)} ${(e.thread ? '⟿ ' + e.thread : '').padEnd(14)} ${Object.entries(e.per).sort((a, b) => ORDER.indexOf(a[0]) - ORDER.indexOf(b[0])).map(([l, c]) => l + c).join(' ')}`;
+  const row = e => `${e.id.padEnd(13)} ${e.name.padEnd(34)} ${(e.thread ? '⟿ ' + e.thread : '').padEnd(14)} ${(e.status ? '✋' + e.status : '').padEnd(6)} ${Object.entries(e.per).sort((a, b) => ORDER.indexOf(a[0]) - ORDER.indexOf(b[0])).map(([l, c]) => l + c).join(' ')}`;
   if (!id) {
     const areas = [...new Set([...(require('../entities').areas || []), ...K.g.entities.map(e => e.area || '')])].filter(a => K.g.entities.some(e => (e.area || '') === a));
     return areas.map(a => (a ? `## ${a}\n` : '') + K.g.entities.filter(e => (e.area || '') === a).map(row).join('\n')).join('\n')

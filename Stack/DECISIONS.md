@@ -218,7 +218,7 @@ Asked in one round in the session that built S1 + S2.
 |---|---|---|---|
 | STK-Q18 | Name of the selection trail | **A** Füzér / Stack String | `lib/strings.js`, `stack.js string`, MCP `stack_string`; Hungarian UI says Füzér |
 | STK-Q19 | Threads and pillars | **A** threads become pillars | one list in `entities.js`; each pillar may carry an `area` and the board's hand fields (S2) |
-| STK-Q20 | Is the board's six-step status kept by hand? | **B** computed only | no hand-status field on pillars; the string's class (§1.3) is the status. The `s` field of `threads.js` is not carried over, so there are no status-drift cards; the "looks done" check on T items (S3) stays |
+| STK-Q20 | Is the board's six-step status kept by hand? | ~~**B** computed only~~ → **narrow A** (revised the same day, see below) | status computed wherever an F row exists; an optional hand `status` only on pillars with no F row; drift cards when hand and evidence disagree |
 | STK-Q21 | Write-back scope for the first release | **A** threads + lines + decisions answers, with diff approval | S6 editors in that order; nothing commits |
 | STK-Q22 | Default detail in the Viewer | **A** Auto (Fine on desktop, Normál on phone) | thresholds measured in S9 before they are fixed |
 | STK-Q23 | G in the layer text | **A** whole documents | ≈ 4.6 MB of `.md` text in `out/layertext/G.bin` (S8) |
@@ -237,3 +237,14 @@ Made while building S1 and S2 of research/STRINGS-PLAN.md. Each can be changed i
 | STK-P60 | "F tier ≤ 2" for Program: which F nodes count | A any F member · B members scoring ≥ 0.5 | **B**: a far F node at depth 2 is not evidence that the thing itself is in use. Result today: Planner is Program; Kapu and Gömb are In build because their F rows are tier 3 |
 | STK-P61 | Where the threads' hand data lives | A all of it in `entities.json` · B the mapping (area, thread) in `entities.json`, the board's hand fields (note, read, go, done, not-yet, lines) stay in `notes/devlog/threads.js` until S4 | **B**: those fields quote job codes and job paths, and `entities.json` is committed. The build reads each thread's lines from threads.js, so the Past jobs pillar gets its lines without a code in git. A test checks `entities.json` against `tools/anonymise.map.json` |
 | STK-P62 | Pillar file format | A keep the JS rows · B `entities.json`, one pillar per line, `entities.js` a two-line reader | **B**: the S6 gateway edits data, not code (§9); one line per pillar keeps a diff to one line. `lib/pillars.js` still reads the old rows |
+
+## STK-Q20 revised, 2026-11-10
+
+Asked again at the Founder's invitation ("if you think otherwise is more beneficial, explain it and ask again"), after S2 was built on B.
+
+Why B fell short: the computed class reads the evidence's shape and recency, the board's six steps read maturity. Under B maturity silently lives in the Features tier alone (Kapu and Gömb read "In build" because their F rows are tier 3, and nothing checks that), and 11 of the 47 thread pillars have no F row at all (sui, rounds, finom, drive, repo, kitgyar, route, cla, buda, pastjobs, openwrt), so a delivered job such as CLA could never read as more than "Built, quiet".
+
+**Answer: narrow A.**
+- Status is computed wherever the pillar has an F member: F tier + the string (one hand fact, in `notes/features/data.js`).
+- A pillar with no F member may carry an optional hand `status` on the six-step scale (`op · high · mid · low · out · idea`) in `entities.json`. The 11 got their Thread Board value. The build warns (HEALTH) when a pillar has both a status and an F member, since that is the same fact kept twice; the F row wins.
+- A drift card when the hand value (F tier or that status) and the evidence are two or more steps apart, proposing a change and never applying one. Built in **S3**, with the "looks done" check in DRIFT.

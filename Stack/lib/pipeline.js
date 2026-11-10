@@ -86,6 +86,8 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
       const has = new Set(ENT.map(e => e.thread).filter(Boolean));
       const lost = threadIds.filter(t => !has.has(t));
       if (lost.length) hc.warn('pillars', `${lost.length} Thread Board threads have no pillar: ${lost.join(', ')} (add them to entities.json)`);
+      const twice = entities.filter(e => e.status && e.per.F).map(e => e.id);
+      if (twice.length) hc.warn('pillars', `hand status kept twice (the pillar has an F row, whose tier wins): ${twice.join(', ')}`);
       const dead = ENT.filter(e => e.thread && !threadIds.includes(e.thread)).map(e => e.id);
       if (dead.length) hc.warn('pillars', `pillars name a thread the board does not have: ${dead.join(', ')}`);
     }

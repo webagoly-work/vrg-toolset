@@ -14,12 +14,16 @@
 //     notes/devlog/threads.js, which stays outside the repo because its lines name job codes).
 // Keep words specific: "hub" would catch GitHub, "stack" would catch the Planner BRIDGE Stack.
 //
-// Each pillar: { id, name, area, thread, words, paths, ids }
+// Each pillar: { id, name, area, thread, [status], words, paths, ids }
 //   area    one of `areas` (the Thread Board's groups)
 //   thread  the Thread Board thread it is (STK-Q19 = A: threads are pillars), or '' for none
+//   status  optional, op · high · mid · low · out · idea, ONLY on a pillar with no F (Featured) member:
+//           where an F row exists its tier is the hand fact and the build warns about a second one
 // Paths inside the repo are relative; outside it they start with H:/ . No job code goes in here
 // (tools/anonymise.map.json): a job's pillar gets its members through its thread's lines.
-// The board's hand status (`s`) is not carried over: STK-Q20 = B, the string's class is the status.
+// STK-Q20 = narrow A (revised 2026-11-10): status is computed from the F tier + the string; the hand
+// status above only fills in for jobs and housekeeping, which have no F row. A drift card (S3) flags
+// a hand value two or more steps away from the evidence.
 'use strict';
 
 const J = require('./entities.json');

@@ -337,6 +337,7 @@ test('pillars: a thread\'s DevLog lines join its pillar; old rows still read', (
   const ent = pillars(nodes, edges, [{ id: 'past', name: 'Past jobs', area: 'Wiring and jobs', thread: 'pastjobs', words: [], paths: [], ids: [] }], { threadLines: { pastjobs: ['job1'] } });
   assert.deepEqual(ent[0].members, ['L:job1']);
   assert.equal(ent[0].area, 'Wiring and jobs');
+  assert.equal(ent[0].status, '');
   assert.equal(nodes.get('E:past').lane, 'Wiring and jobs');
   assert.ok(edges.some(e => e.a === 'L:job1' && e.b === 'E:past' && e.rel === 'pillar'));
   nodes = mk(); edges = [];
@@ -350,7 +351,7 @@ test('entities.json: unique ids and threads, known areas, no job code', () => {
   const th = E.map(e => e.thread).filter(Boolean);
   assert.equal(new Set(th).size, th.length);                            // one pillar per thread
   assert.ok(E.every(e => E.areas.includes(e.area)));
-  assert.ok(E.every(e => !('s' in e) && !('status' in e)));               // STK-Q20 = B: no hand status
+  assert.ok(E.every(e => !('s' in e) && (!('status' in e) || ['op', 'high', 'mid', 'low', 'out', 'idea'].includes(e.status))));   // STK-Q20 narrow A
   const map = path.join(require('../config').sources.repo, 'tools', 'anonymise.map.json');
   if (fs.existsSync(map)) {                                             // git-ignored: present on the work PC only
     const M = JSON.parse(fs.readFileSync(map, 'utf8')), text = fs.readFileSync(path.join(__dirname, '..', 'entities.json'), 'utf8').toLowerCase();

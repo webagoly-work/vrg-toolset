@@ -12,7 +12,7 @@ const { fold } = C;
 const asObj = x => Array.isArray(x) ? { id: x[0], name: x[1], words: x[2], paths: x[3], ids: x[4], area: '', thread: '' } : x;
 
 function pillars(nodes, edges, list, { threadLines = null } = {}) {
-  const entities = list.map(asObj).map(({ id, name, words, paths, ids, area = '', thread = '' }) => {
+  const entities = list.map(asObj).map(({ id, name, words, paths, ids, area = '', thread = '', status = '' }) => {
     const lines = thread && threadLines && threadLines[thread] ? threadLines[thread].map(l => 'L:' + l) : [];
     ids = [...(ids || []), ...lines];
     const rx = words.map(w => new RegExp('(^|[^a-z0-9])' + fold(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])'));
@@ -26,7 +26,7 @@ function pillars(nodes, edges, list, { threadLines = null } = {}) {
     }
     for (const m of members) (nodes.get(m).ent = nodes.get(m).ent || []).push(id);
     const per = {}; for (const m of members) { const l = nodes.get(m).layer; per[l] = (per[l] || 0) + 1; }
-    return { id, name, area, thread, words, paths, members, per };
+    return { id, name, area, thread, status, words, paths, members, per };
   });
   for (const e of entities) {
     nodes.set('E:' + e.id, {
