@@ -281,6 +281,7 @@
             { "key": "B", "name": "Bernard", "hint": "a Tanács főművezetője", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\" --agent bernard"], "cwd": "{repo}", "needs": "{claude}" }
           ] } },
       { "key": "D", "name": "Irányítópult", "hint": "a teljes képernyős munkafelület", "exe": "{repo}\\Dashboard\\VRG Irányítópult.cmd" },
+      { "key": "F", "name": "VRG Desktop .exe építése", "hint": "{full}\\build\\vrg-desktop", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Dashboard\\tools\\package.js"] }] },
       { "key": "E", "name": "VS Code", "was": "R V", "menu": {
           "title": "VS CODE", "subtitle": "{code}",
           "items": [

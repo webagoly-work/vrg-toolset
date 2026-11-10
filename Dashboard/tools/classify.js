@@ -94,6 +94,7 @@ function classify() {
       if (r.kind === 'config registry') { put(r, 'registry (config file)', 'dev', 'desktop', 'settings-level data behind the VRG Asztal'); continue; }
       if (r.kind === 'module') { put(r, 'module', 'all', 'desktop', 'internal code unit, never shown as a tile'); continue; }
       if (id === 'pane:empty') { put(r, 'panel (placeholder)', 'all', 'desktop', 'the empty tab a new group starts with'); continue; }
+      if (id === 'pane:app') { put(r, 'in-shell app window (host panel)', 'dev', 'desktop', 'hosts a catalog HTML app on vrg-app://; the user sees the app, not the host'); continue; }
     }
     if (r.source === 'console') {
       const stub = /stub/.test(r.kind), cat2 = r.group;

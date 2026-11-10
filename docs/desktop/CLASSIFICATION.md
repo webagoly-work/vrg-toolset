@@ -14,9 +14,9 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | Level | Rows | Catalog items |
 |---|---:|---:|
 | user | 118 | 33 |
-| dev | 284 | 52 |
-| all | 124 | 6 |
-| **total** | **526** | **91** |
+| dev | 287 | 53 |
+| all | 127 | 6 |
+| **total** | **532** | **92** |
 
 ## The catalog by level (what the Desktop shows)
 
@@ -102,6 +102,7 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | `backup` | BACKUP · *BACKUP* | backup tool (text UI) | `dev:infra` | fejlesztes | live |
 | `servers` | Helyi szerverek · *Local servers* | service list | `dev:infra` | fejlesztes | live |
 | `check` | Ellenőrzés · *Checks* | command (registry check) | `dev:infra` | fejlesztes | live |
+| `desktop-exe` | VRG Desktop .exe építése · *Build VRG Desktop.exe* | command (build / packaging) | `desktop` | fejlesztes | beta |
 | `kapu` | VRG Kapu · *VRG Gate* | gate (sign-in screen) + guest launcher | `dev:infra` | fejlesztes | beta |
 | `vendor` | VRG Vendor · *VRG Vendor* | vendored-component browser | `dev:infra` | fejlesztes | live |
 | `toolbox` | Toolbox · *Toolbox* | launcher page (legacy) | `dev:infra` | fejlesztes | retire |
@@ -146,7 +147,7 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | Type | Rows |
 |---|---:|
 | command | 80 |
-| module | 43 |
+| module | 46 |
 | stack layer view | 20 |
 | page (plugin) | 19 |
 | feature | 18 |
@@ -158,7 +159,7 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | AI agent (subagent definition) | 14 |
 | document pack | 12 |
 | widget | 12 |
-| CLI tool | 10 |
+| CLI tool | 11 |
 | command family (action id scheme) | 10 |
 | runbook (session entry point) | 10 |
 | plan (work package) | 9 |
@@ -210,6 +211,7 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | UI component library + gallery | 2 |
 | utility (product configurator) | 2 |
 | web service | 2 |
+| command (build / packaging) | 1 |
 | command palette | 1 |
 | dashboard (primary view) | 1 |
 | dialog (quick capture) | 1 |
@@ -217,6 +219,7 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | experiment (spike) | 1 |
 | hardware lab (asset folder) | 1 |
 | hook | 1 |
+| in-shell app window (host panel) | 1 |
 | job folders (records) | 1 |
 | launcher bar | 1 |
 | library | 1 |
@@ -326,6 +329,7 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | `menu:dev:C/3` | Claude Code · Inventory projekt | command | dev | `claude-code` | one variant of START C (claude-code) |
 | `menu:dev:C/B` | Claude Code · Bernard | command | dev | `claude-code` | one variant of START C (claude-code) |
 | `menu:dev:D` | Irányítópult | workbench shell | user |  | is the catalog item `desktop` |
+| `menu:dev:F` | VRG Desktop .exe építése | command (build / packaging) | dev | `desktop` | is the catalog item `desktop-exe` |
 | `menu:dev:E` | VS Code | third-party application (IDE) | dev | `dev:repo` | is the catalog item `vscode` |
 | `menu:dev:E/1` | VS Code · A teljes repo | command | dev | `vscode` | one variant of START E (vscode) |
 | `menu:dev:E/2` | VS Code · Planner projekt | command | dev | `vscode` | one variant of START E (vscode) |
@@ -510,6 +514,7 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | `pane:note` | Fejlesztői jegyzet | dialog (quick capture) | dev | `divergence` | is the catalog item `devnote` |
 | `pane:git` | Git | panel (version control) | dev | `dev:repo` | is the catalog item `git` |
 | `pane:feed` | Hírfolyam (presetek) | panel (saved-query feed) | user |  | is the catalog item `feed` |
+| `pane:app` | app | in-shell app window (host panel) | dev | `desktop` | hosts a catalog HTML app on vrg-app://; the user sees the app, not the host |
 | `pane:search` | Belső keresés | search (overlay panel) | user |  | is the catalog item `search` |
 | `pane:viewer` | Fájlnézegető | panel (file manager) | user |  | is the catalog item `files` |
 | `dash:palette` | Parancspaletta | command palette | user | `desktop` | is the catalog item `palette` |
@@ -536,12 +541,15 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | `dashcfg:search` | Registry search.json | registry (config file) | dev | `desktop` | settings-level data behind the VRG Asztal |
 | `dashcfg:web` | Registry web.json | registry (config file) | dev | `desktop` | settings-level data behind the VRG Asztal |
 | `dashlib:acts` | lib/acts.js | module | all | `desktop` | internal code unit, never shown as a tile |
+| `dashlib:appscheme` | lib/appscheme.js | module | all | `desktop` | internal code unit, never shown as a tile |
 | `dashlib:audit` | lib/audit.js | module | all | `desktop` | internal code unit, never shown as a tile |
 | `dashlib:bookmarks` | lib/bookmarks.js | module | all | `desktop` | internal code unit, never shown as a tile |
+| `dashlib:catalog` | lib/catalog.js | module | all | `desktop` | internal code unit, never shown as a tile |
 | `dashlib:chat` | lib/chat.js | module | all | `desktop` | internal code unit, never shown as a tile |
 | `dashlib:claudeterm` | lib/claudeterm.js | module | all | `desktop` | internal code unit, never shown as a tile |
 | `dashlib:cloudattr` | lib/cloudattr.js | module | all | `desktop` | internal code unit, never shown as a tile |
 | `dashlib:ctx` | lib/ctx.js | module | all | `desktop` | internal code unit, never shown as a tile |
+| `dashlib:desk` | lib/desk.js | module | all | `desktop` | internal code unit, never shown as a tile |
 | `dashlib:fsops` | lib/fsops.js | module | all | `desktop` | internal code unit, never shown as a tile |
 | `dashlib:fsview` | lib/fsview.js | module | all | `desktop` | internal code unit, never shown as a tile |
 | `dashlib:git` | lib/git.js | module | all | `desktop` | internal code unit, never shown as a tile |
@@ -675,6 +683,7 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | `tool:brief-state` | tools/brief-state.js | CLI tool | dev | `council` | command-line script, run by START, a build or an agent |
 | `tool:build-hub` | tools/build-hub.js | CLI tool | dev | `kapu` | command-line script, run by START, a build or an agent |
 | `tool:build-mobile-tools` | tools/build-mobile-tools.js | CLI tool | dev | `mobile` | command-line script, run by START, a build or an agent |
+| `tool:check-catalog` | tools/check-catalog.js | CLI tool | dev | `dev:infra` | command-line script, run by START, a build or an agent |
 | `tool:check-hub` | tools/check-hub.js | CLI tool | dev | `kapu` | command-line script, run by START, a build or an agent |
 | `tool:check-start` | tools/check-start.js | command (registry check) | dev | `dev:infra` | is the catalog item `check` |
 | `tool:council-gate` | tools/council-gate.js | CLI tool | dev | `council` | command-line script, run by START, a build or an agent |

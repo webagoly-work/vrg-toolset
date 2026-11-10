@@ -852,6 +852,16 @@
    "reason": "is the catalog item `desktop`"
   },
   {
+   "id": "menu:dev:F",
+   "name": "VRG Desktop .exe építése",
+   "source": "vrg-menu",
+   "type": "command (build / packaging)",
+   "level": "dev",
+   "parent": "desktop",
+   "unit": "desktop-exe",
+   "reason": "is the catalog item `desktop-exe`"
+  },
+  {
    "id": "menu:dev:E",
    "name": "VS Code",
    "source": "vrg-menu",
@@ -2692,6 +2702,16 @@
    "reason": "is the catalog item `feed`"
   },
   {
+   "id": "pane:app",
+   "name": "app",
+   "source": "dashboard",
+   "type": "in-shell app window (host panel)",
+   "level": "dev",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "hosts a catalog HTML app on vrg-app://; the user sees the app, not the host"
+  },
+  {
    "id": "pane:search",
    "name": "Belső keresés",
    "source": "dashboard",
@@ -2952,6 +2972,16 @@
    "reason": "internal code unit, never shown as a tile"
   },
   {
+   "id": "dashlib:appscheme",
+   "name": "lib/appscheme.js",
+   "source": "dashboard",
+   "type": "module",
+   "level": "all",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit, never shown as a tile"
+  },
+  {
    "id": "dashlib:audit",
    "name": "lib/audit.js",
    "source": "dashboard",
@@ -2964,6 +2994,16 @@
   {
    "id": "dashlib:bookmarks",
    "name": "lib/bookmarks.js",
+   "source": "dashboard",
+   "type": "module",
+   "level": "all",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit, never shown as a tile"
+  },
+  {
+   "id": "dashlib:catalog",
+   "name": "lib/catalog.js",
    "source": "dashboard",
    "type": "module",
    "level": "all",
@@ -3004,6 +3044,16 @@
   {
    "id": "dashlib:ctx",
    "name": "lib/ctx.js",
+   "source": "dashboard",
+   "type": "module",
+   "level": "all",
+   "parent": "desktop",
+   "unit": "",
+   "reason": "internal code unit, never shown as a tile"
+  },
+  {
+   "id": "dashlib:desk",
+   "name": "lib/desk.js",
    "source": "dashboard",
    "type": "module",
    "level": "all",
@@ -4338,6 +4388,16 @@
    "type": "CLI tool",
    "level": "dev",
    "parent": "mobile",
+   "unit": "",
+   "reason": "command-line script, run by START, a build or an agent"
+  },
+  {
+   "id": "tool:check-catalog",
+   "name": "tools/check-catalog.js",
+   "source": "tools",
+   "type": "CLI tool",
+   "level": "dev",
+   "parent": "dev:infra",
    "unit": "",
    "reason": "command-line script, run by START, a build or an agent"
   },

@@ -5,22 +5,22 @@
 
 | Source | Rows |
 |---|---:|
-| START registry (launcher/vrg-menu.json) | 153 |
+| START registry (launcher/vrg-menu.json) | 154 |
 | Features map (notes/features, outside git) | 105 |
-| VRG Irányítópult (Dashboard/) | 79 |
+| VRG Irányítópult (Dashboard/) | 83 |
 | Varler Console pages | 51 |
 | VRG Mobile features | 19 |
 | VRG Stack | 23 |
-| CLI tools | 15 |
+| CLI tools | 16 |
 | Prompt library | 8 |
 | Agents, hooks, MCP | 17 |
 | Firmware | 4 |
 | Shared libraries | 4 |
 | Docs packs + GO phrases | 23 |
 | Top-level folders + launcher parts | 25 |
-| **Total** | **526** |
+| **Total** | **532** |
 
-## START registry (launcher/vrg-menu.json) (153)
+## START registry (launcher/vrg-menu.json) (154)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -109,6 +109,7 @@
 | `menu:dev:C/3` | Claude Code · Inventory projekt | START C 3 · cmd.exe | start.action | dev/C |  |
 | `menu:dev:C/B` | Claude Code · Bernard | START C B · cmd.exe | start.action | dev/C | a Tanács főművezetője |
 | `menu:dev:D` | Irányítópult | START D · {repo}\Dashboard\VRG Irányítópult.cmd | start.dev | dev | a teljes képernyős munkafelület |
+| `menu:dev:F` | VRG Desktop .exe építése | START F · {node} Dashboard\tools\package.js | start.dev | dev | {full}\build\vrg-desktop |
 | `menu:dev:E` | VS Code | START E · submenu | start.dev | dev |  |
 | `menu:dev:E/1` | VS Code · A teljes repo | START E 1 · {code} | start.action | dev/E |  |
 | `menu:dev:E/2` | VS Code · Planner projekt | START E 2 · {code} | start.action | dev/E |  |
@@ -288,7 +289,7 @@
 | `feat:x10` | FlyBrainLab |  | program · tier 2 | Third-party programs | Neuro research tool, repaired without reinstall; use hemibrain. |
 | `feat:x11` | Android toolchain | Mobile/mobile.cmd | program · tier 3 | Third-party programs | Gradle and adb for VRG Mobile; no JDK yet for the Console APK. |
 
-## VRG Irányítópult (Dashboard/) (79)
+## VRG Irányítópult (Dashboard/) (83)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -303,6 +304,7 @@
 | `pane:note` | Fejlesztői jegyzet | Dashboard/page/panes/note.js | pane | panes |  |
 | `pane:git` | Git | Dashboard/page/panes/git.js | pane | panes |  |
 | `pane:feed` | Hírfolyam (presetek) | Dashboard/page/panes/feed.js | pane | panes |  |
+| `pane:app` | app | Dashboard/page/panes/app.js | pane | panes |  |
 | `pane:search` | Belső keresés | Dashboard/page/panes/search.js (Ctrl+Shift+F) | overlay panel | panes |  |
 | `pane:viewer` | Fájlnézegető | Dashboard/page/panes/viewer.js | pane part | panes |  |
 | `dash:palette` | Parancspaletta | Dashboard/page/palette.js (Ctrl+K) | command palette | frame |  |
@@ -329,12 +331,15 @@
 | `dashcfg:search` | Registry search.json | Dashboard/config/search.json | config registry | config | 4 entries |
 | `dashcfg:web` | Registry web.json | Dashboard/config/web.json | config registry | config | 3 entries |
 | `dashlib:acts` | lib/acts.js | Dashboard/shell/lib/acts.js | module | shell/lib | acts.js — act ids → registry items (the allow-list) and what an act does. |
+| `dashlib:appscheme` | lib/appscheme.js | Dashboard/shell/lib/appscheme.js | module | shell/lib | appscheme.js — the vrg-app:// scheme of the VRG Asztal (WP-43, DESKU-Q08): an in-shell HTML app gets a real origin, so its |
 | `dashlib:audit` | lib/audit.js | Dashboard/shell/lib/audit.js | module | shell/lib | audit.js — append-only JSON lines in <logs>/audit-YYYY-MM-DD.jsonl (CONTRACT §4.1, API.md). |
 | `dashlib:bookmarks` | lib/bookmarks.js | Dashboard/shell/lib/bookmarks.js | module | shell/lib | bookmarks.js — bookmarks and browsing history in <userDir>/web.json (WP-18). Only { url, title, at }: no page content is stored. |
+| `dashlib:catalog` | lib/catalog.js | Dashboard/shell/lib/catalog.js | module | shell/lib | catalog.js — launcher/vrg-catalog.json: WHAT exists in the VRG Asztal, its type, level, parent and surfaces (U4, WP-40). |
 | `dashlib:chat` | lib/chat.js | Dashboard/shell/lib/chat.js | module | shell/lib | chat.js — "Claude oldalchat" engine (WP-23): headless `claude -p --output-format stream-json` with the account's own sign-in. |
 | `dashlib:claudeterm` | lib/claudeterm.js | Dashboard/shell/lib/claudeterm.js | module | shell/lib | claudeterm.js — Claude Code in an embedded terminal pane (WP-16). The pty manager (WP-14) does the spawning; this module picks the |
 | `dashlib:cloudattr` | lib/cloudattr.js | Dashboard/shell/lib/cloudattr.js | module | shell/lib | cloudattr.js — OneDrive marks from one `attrib` run per listing (no shell). Any failure → no marks, never a blocked listing. |
 | `dashlib:ctx` | lib/ctx.js | Dashboard/shell/lib/ctx.js | module | shell/lib | ctx.js — "Csomag" (WP-22): VRG Stack node clusters as context packs, and "send to Claude" (API.md vrg.ctx). |
+| `dashlib:desk` | lib/desk.js | Dashboard/shell/lib/desk.js | module | shell/lib | desk.js — the VRG Asztal's two primary views, as pure functions shared by main (CommonJS) and the frame page (window.VRGDeskLib). |
 | `dashlib:fsops` | lib/fsops.js | Dashboard/shell/lib/fsops.js | module | shell/lib | fsops.js — file operations as jobs (WP-12): copy, move, rename, mkdir, trash. Everything goes through handles and roots. |
 | `dashlib:fsview` | lib/fsview.js | Dashboard/shell/lib/fsview.js | module | shell/lib | fsview.js — look at a file and hand it to a program (WP-13): read, open, reveal, edit, copyPath. Handles in, display strings out. |
 | `dashlib:git` | lib/git.js | Dashboard/shell/lib/git.js | module | shell/lib | git.js — the Git panel's engine (WP-31, DESK-Q11 A): status, branches, worktrees, log, diff, a branch, a commit and a guarded push. |
@@ -480,7 +485,7 @@
 | `layer:G` | Réteg G · Data Globe | Gömb (Solomon/dist/vrg-solomon.html, START T) | stack layer | layers | its page, per Stack/LAYERS.md |
 | `layer:Z` | Réteg Z · Codec | — | stack layer | layers | its page, per Stack/LAYERS.md |
 
-## CLI tools (15)
+## CLI tools (16)
 
 | id | name | where | kind | group | note |
 |---|---|---|---|---|---|
@@ -488,6 +493,7 @@
 | `tool:brief-state` | tools/brief-state.js | tools/brief-state.js | cli script | tools | brief-state.js — keeps the agent briefs in docs/hub/agents honest. They went |
 | `tool:build-hub` | tools/build-hub.js | tools/build-hub.js | cli script | tools | build-hub.js — VRG Kapu source -> one self-contained file. |
 | `tool:build-mobile-tools` | tools/build-mobile-tools.js | tools/build-mobile-tools.js | cli script | tools | tools/build-mobile-tools.js — writes Mobile/catalogue/tools.json, which tool owns which paths, for |
+| `tool:check-catalog` | tools/check-catalog.js | tools/check-catalog.js | cli script | tools | check-catalog.js — checks launcher/vrg-catalog.json (WHAT exists) against vrg-menu.json (HOW to run) and the features map. |
 | `tool:check-hub` | tools/check-hub.js | tools/check-hub.js | cli script | tools | check-hub.js — gate for VRG Kapu, run after build-hub.js. |
 | `tool:check-start` | tools/check-start.js | tools/check-start.js | cli script | tools | check-start.js — keep the START launcher honest. |
 | `tool:council-gate` | tools/council-gate.js | tools/council-gate.js | cli script | tools | council-gate.js — the Hand's budget gate, a PreToolUse hook. The Council can |
