@@ -19,3 +19,11 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 - Client codes: 8 features rows held one; the script now swaps codes for their aliases with the anonymise map (the main checkout's copy,
   DESK-Q87 C) and writes nothing without a map. `anonymise.js --check` on the outputs: clean.
 - Checks: run.js --all green.
+
+## U2 — glossary + classification (2026-11-10)
+
+- `docs/desktop/GLOSSARY.md`: 30 software-unit terms, 25 UI-container terms, the levels; each with well-known examples and the VRG instance.
+- `launcher/vrg-catalog.json` (the decision data, 91 items: 33 user, 52 dev, 6 all) + `Dashboard/tools/classify.js` →
+  `docs/desktop/classification.json` + `CLASSIFICATION.md`: all 526 rows typed and levelled (user 118, dev 284, all 124), every
+  dev row has a parent in the catalog; 10 naming collisions with proposed names. DESKU-Q02…Q05.
+- Checks: classify.js exit 0 (no orphan, no unparented dev row); anonymise --check clean.
