@@ -4,6 +4,11 @@
 and what it is in VRG. `CLASSIFICATION.md` applies these to every row of the inventory; `ARCHITECTURE.md` uses them
 for the new layout. HU names are the ones the UI shows; EN in italics.*
 
+**These terms are a fixed list.** The catalog's `types` block (`launcher/vrg-catalog.json`) holds them as keys (`utility`,
+`companion app`, `panel`, …) with their EN / HU names; an item's `type` must be one of them, and anything more specific goes in its
+free `qualifier` ("utility · calculator", "panel · mail client"). `check-catalog` and `classify.js` refuse any other type (DESKU-Q19).
+A new kind of thing means a new term here **and** in `types`, not a new free-text type.
+
 ## 1. Software units — what a thing *is*
 
 | Term | Industry meaning | Well-known examples | In VRG |
@@ -33,6 +38,11 @@ for the new layout. HU names are the ones the UI shows; EN in italics.*
 | **Design system** | Tokens (colours, type, spacing) + components + rules that give products one look. | Material Design, Microsoft Fluent | Mélyvíz, Varler HUD (today "Varler SUI"), Varler Papír |
 | **UI component library** | The coded components of a design system. | MUI, Fluent UI React | VRG UI Kit (`shared/vrg-ui-kit`) |
 | **Firmware** | Software that runs on a microcontroller or device. | a router's OpenWrt, a keyboard's QMK | planner-cyd, board-console agent, knobpad, servicekit_cyd |
+| **Device** | A piece of hardware with its own job, usually with firmware and a companion app. | a Garmin watch, a Stream Deck | ServiceKit (portable field kit) |
+| **Library** | Shared code or assets other programs load; nothing to open by itself. | lodash, a font family | `shared/` (Mélyvíz, the UI Kit parts, the logo) |
+| **Web service** | A program run by someone else that we reach over the web. | GitHub, Gmail | GitHub (START G) |
+| **Folder** | A file-system folder offered as a place to go, or a source folder in the repo. | the Windows "Documents" shortcut | Munkák (job folders), the ESP lab folder, the program-folder shortcuts |
+| **Asset** | Data, documents or design files used by other things. | an icon set, a price list | the Varler logo + ring, features-map assets |
 | **Build / test pipeline** | Scripts that produce artifacts and verify them, locally or in CI. | GitHub Actions, `npm run build` | each `build.js`, `Dashboard/test/run.js`, the selftests, Mobile CI |
 | **Third-party application** | Software we use but did not write. | Chrome, VS Code | Programok (START A): Chrome, Zen, VLC, 7-Zip … |
 | **Runtime / toolchain** | The engines and compilers other software runs on. | Node.js, the JDK | `tools/node`, `tools/electron`, arduino-cli, the Android toolchain |
@@ -67,12 +77,21 @@ for the new layout. HU names are the ones the UI shows; EN in italics.*
 | **Top bar / status area / tray** | A bar or corner of status indicators and quick functions. | the macOS menu bar extras, the Windows system tray | the Desktop view's top strip; the Electron tray icon |
 | **HUD** | A translucent overlay of live readouts over the work. | aircraft HUDs, game HUDs | Varler HUD tokens, the UI Kit HUD mode |
 | **Overlay** | An always-on-top layer over other windows. | the Xbox Game Bar, Discord overlay | Kódváros Fedőréteg, the Irányítópult Overlay mode |
+| **Category (menu group)** | A grouping node in a menu tree; it opens nothing, it holds things. | the "Accessories" folder of the old Start menu, Settings categories | the six dev roots (Repó & Git, Ügynökök & AI, …) |
 
-## 3. Levels
+## 3. Scopes and levels
+
+Every inventory row has a **scope**; only rows you can open have a **level** (DESKU-Q20).
+
+| Scope | Meaning | Level |
+|---|---|---|
+| **open** | something a person can open or run | user / dev / all |
+| **internal** | real but never opened by itself: code modules, libraries, config, id schemes, hooks, source folders | none |
+| **roadmap** | not available yet: plans, ideas, stubs, planned items (their home is the features map) | none |
 
 | Term | Meaning | Where it shows |
 |---|---|---|
-| **User** (*Felhasználó*) | The default layout: what a person needs to do the work. | dock, Dashboard sections Ma · Alkalmazások · Munkák · Állapot, SUI Munka · Alkalmazások · Fájlok · Rendszer |
+| **User** (*Felhasználó*) | The default layout: what a person needs to do the work, **finished** (`live` or `beta`); a User item still `dev` or `planned` shows from Dev until it is ready (DESKU-Q21). | dock, Dashboard sections Ma · Alkalmazások · Munkák · Állapot, SUI Munka · Alkalmazások · Fájlok · Rendszer |
 | **Dev** (*Fejlesztő*) | User + secondary items drawn behind their parent, + six dev roots. | Dashboard adds Fejlesztési vonalak · Rétegverem · Ügynökök · Szerverek · Mérőszámok; SUI adds Fejlesztés |
-| **All** (*Minden*) | Dev + everything else, as a flat filterable table. | Dashboard adds Katalógus |
-| **Dev root** | A parent for dev items that sit behind no User item. | Repó & Git · Ügynökök & AI · Tudás · Infrastruktúra · Eszközök & hardver · Megjelenés |
+| **All** (*Minden*) | Dev + the rest that is available but rarely needed (third-party programs, odd actions), as a flat filterable table; the catalog's planned items are listed there too, marked *planned*. | Dashboard adds Katalógus |
+| **Dev root** | A parent for dev items that sit behind no User item; type `category`. | Repó & Git · Ügynökök & AI · Tudás · Infrastruktúra · Eszközök & hardver · Megjelenés |

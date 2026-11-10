@@ -126,14 +126,14 @@
   function suiTree(list, level, groups) {
     if (!LEVELS.includes(level)) level = 'user';
     const leaf = i => ({ id: i.id, label: i.hu, en: i.en, icon: i.icon || '', kind: 'item', status: i.status, opens: i.opens !== false });
-    const byGroup = g => list.filter(i => i.group === g && i.type !== 'dev root');
+    const byGroup = g => list.filter(i => i.group === g && i.type !== 'category');
     const root = { label: 'MENÜ', en: 'Menu', children: [] };
     for (const g of GROUP_ORDER) {
       if (g === 'fejlesztes' && RANK[level] < RANK.dev) continue;
       const gd = (groups || {})[g] || { hu: g, en: g, subs: {} };
       const node = { label: gd.hu, en: gd.en, children: [] };
       if (g === 'fejlesztes') {
-        for (const r of list.filter(i => i.type === 'dev root')) {
+        for (const r of list.filter(i => i.type === 'category')) {
           const kids = list.filter(i => i.parent === r.id).map(i => {
             const sub = list.filter(x => x.parent === i.id && x.group === 'fejlesztes');
             return sub.length ? { label: i.hu, en: i.en, children: [leaf(i)].concat(sub.map(leaf)) } : leaf(i);

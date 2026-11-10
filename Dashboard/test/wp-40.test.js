@@ -16,11 +16,12 @@ const cat = createCatalog({ file: FILE, collect: () => C, kinds: KINDS });
 cat.load();
 
 const base = () => ({
+  types: { application: {}, category: {}, utility: {}, t: {} },
   groups: { munka: { hu: 'Munka', en: 'Work', subs: { tervezes: 'T' } }, fejlesztes: { hu: 'F', en: 'D', subs: {} } },
   sections: { apps: { hu: 'A', en: 'A', level: 'user' } },
   items: [
     { id: 'a', title: { hu: 'A', en: 'A' }, type: 'application', level: 'user', group: 'munka', status: 'live', launch: { act: 's:1' } },
-    { id: 'dev:x', title: { hu: 'X', en: 'X' }, type: 'dev root', level: 'dev', group: 'fejlesztes', status: 'live', launch: {} },
+    { id: 'dev:x', title: { hu: 'X', en: 'X' }, type: 'category', level: 'dev', group: 'fejlesztes', status: 'live', launch: {} },
   ],
 });
 const fakeC = { startActs: { 's:1': { path: 'x.html' } }, menu: { servers: [{ id: 'srv1', name: 'S', port: 9000 }], start: { projects: [], dev: [] } }, data: { features: [] } };
@@ -36,11 +37,11 @@ test('ids are unique and every dev item has a parent in the catalog', () => {
   const items = cat.raw().items;
   assert.equal(new Set(items.map(i => i.id)).size, items.length);
   const ids = new Set(items.map(i => i.id));
-  for (const i of items.filter(x => x.level === 'dev' && x.type !== 'dev root')) assert.ok(ids.has(i.parent), i.id + ' -> ' + i.parent);
+  for (const i of items.filter(x => x.level === 'dev' && x.type !== 'category')) assert.ok(ids.has(i.parent), i.id + ' -> ' + i.parent);
 });
 
 test('six dev roots, each with something behind it', () => {
-  const roots = cat.raw().items.filter(i => i.type === 'dev root').map(i => i.id).sort();
+  const roots = cat.raw().items.filter(i => i.type === 'category').map(i => i.id).sort();
   assert.deepEqual(roots, ['dev:ai', 'dev:hw', 'dev:infra', 'dev:knowledge', 'dev:look', 'dev:repo']);
   for (const r of roots) assert.ok(cat.children(r, 'dev').items.length > 0, r);
 });
@@ -103,7 +104,7 @@ test('validate: duplicate id, bad level, dev without parent, unresolved refs, cy
   assert.ok(validate(dup, { C: fakeC, kinds: KINDS }).some(e => /duplicate id/.test(e)));
   const lv = base(); lv.items[0].level = 'admin';
   assert.ok(validate(lv, { C: fakeC, kinds: KINDS }).some(e => /level must be/.test(e)));
-  const orphan = base(); orphan.items.push({ id: 'd', title: { hu: 'D', en: 'D' }, type: 'tool', level: 'dev', group: 'fejlesztes', status: 'live', launch: {} });
+  const orphan = base(); orphan.items.push({ id: 'd', title: { hu: 'D', en: 'D' }, type: 'utility', level: 'dev', group: 'fejlesztes', status: 'live', launch: {} });
   assert.ok(validate(orphan, { C: fakeC, kinds: KINDS }).some(e => /needs a parent/.test(e)));
   const refs = base(); refs.items[0].launch = { act: 's:9' }; refs.items[1].launch = { server: 'nope' };
   const e = validate(refs, { C: fakeC, kinds: KINDS });
@@ -117,3 +118,46 @@ test('validate: duplicate id, bad level, dev without parent, unresolved refs, cy
 });
 
 test('levels rank user < dev < all', () => assert.ok(RANK.user < RANK.dev && RANK.dev < RANK.all));
+
+test('types: every item\'s type is in the fixed list; detail goes in a short qualifier', () => {
+  const V = cat.raw().types;
+  assert.ok(V && Object.keys(V).length >= 40, 'the vocabulary is in the catalog');
+  for (const [k, v] of Object.entries(V)) { assert.ok(v.en && v.hu, k); assert.ok(['unit', 'container'].includes(v.kind), k); }
+  for (const i of cat.raw().items) assert.ok(Object.prototype.hasOwnProperty.call(V, i.type), i.id + ': ' + i.type);
+  const free = base(); free.items[0].type = 'utility (calculator)';
+  assert.ok(validate(free, { C: fakeC, kinds: KINDS }).some(e => /is not in the catalog's types/.test(e)));
+  const q = base(); q.items[0].qualifier = 'x'.repeat(81);
+  assert.ok(validate(q, { C: fakeC, kinds: KINDS }).some(e => /qualifier/.test(e)));
+  const calc = cat.listFor('user').find(i => i.id === 'calc-panel');
+  assert.deepEqual([calc.type, calc.qualifier, calc.label], ['utility', 'calculator', 'Utility · calculator']);
+});
+
+test('User shows finished things only: a user item still dev / planned shows from Dev, with its declared level kept', () => {
+  const { effectiveLevel, USER_STATUS } = require('../shell/lib/catalog.js');
+  assert.deepEqual(USER_STATUS, ['live', 'beta']);
+  for (const i of cat.listFor('user')) assert.ok(USER_STATUS.includes(i.status), i.id + ' is ' + i.status);
+  const dev = cat.listFor('dev');
+  const cp = dev.find(i => i.id === 'client-preview');
+  assert.deepEqual([cp.level, cp.declared], ['dev', 'user']);
+  assert.ok(dev.some(i => i.id === 'servicekit'));
+  assert.equal(effectiveLevel({ level: 'user', status: 'beta' }), 'user');
+  assert.equal(effectiveLevel({ level: 'user', status: 'planned' }), 'dev');
+  assert.equal(effectiveLevel({ level: 'all', status: 'planned' }), 'all');
+  assert.equal(cat.children('planner', 'user').items.includes('client-preview'), false);
+});
+
+test('classification: every row has a listed type and a scope; only open rows carry a level', () => {
+  const C2 = require('../tools/classify.js');
+  const res = C2.classify();
+  assert.deepEqual(C2.problems(res), []);
+  for (const r of res.out) {
+    assert.ok(['open', 'internal', 'roadmap'].includes(r.scope), r.id);
+    if (r.scope === 'open') assert.ok(['user', 'dev', 'all'].includes(r.level), r.id); else assert.equal(r.level, '', r.id);
+  }
+  const by = id => res.out.find(r => r.id === id);
+  const mod = res.out.find(r => r.source === 'dashboard' && r.type === 'module');
+  assert.equal(mod.scope, 'internal');
+  const plan = res.out.find(r => r.source === 'features' && (r.type === 'work package' || r.type === 'idea'));
+  assert.equal(plan.scope, 'roadmap');
+  assert.equal(by('pane:app').scope, 'internal');
+});

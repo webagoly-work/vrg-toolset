@@ -128,7 +128,7 @@
     const t = h('div', { class: 'tile', 'data-id': it.id, 'data-level': it.level, 'data-role': 'tile' },
       h('button', { type: 'button', class: 'main', disabled: !it.opens, title: it.en + ' · ' + it.type, onclick: () => openItem(it.id) },
         h('span', { class: 'mono' }, it.icon || it.hu.slice(0, 2).toUpperCase()),
-        h('span', {}, h('span', { class: 't' }, it.hu, it.status !== 'live' ? h('span', { class: 'st' }, it.status) : null), h('span', { class: 'ty' }, it.type))));
+        h('span', {}, h('span', { class: 't' }, it.hu, it.status !== 'live' ? h('span', { class: 'st' }, it.status) : null), h('span', { class: 'ty' }, it.label || it.type))));
     const rows = [];
     for (const cid of att.items) { const c = byId(cid); if (c) rows.push(h('button', { type: 'button', 'data-child': cid, title: c.en, onclick: () => openItem(cid) }, c.hu, h('span', { class: 'k' }, c.level))); }
     for (const a of att.acts) rows.push(h('button', { type: 'button', 'data-act': a.act, title: a.hint || '', onclick: () => runAct(a.act) }, a.hu, h('span', { class: 'k' }, a.act.replace(/^s:/, 'START '))));
@@ -200,10 +200,10 @@
     const tb = h('tbody');
     const draw = () => {
       const q = inp.value.trim();
-      const rows = q && window.VRGPaletteLib ? window.VRGPaletteLib.search(S.items.map(i => ({ ...i, hu: i.hu + ' ' + i.id + ' ' + i.type, en: i.en })), q).map(x => byId(x.id)) : S.items;
+      const rows = q && window.VRGPaletteLib ? window.VRGPaletteLib.search(S.items.map(i => ({ ...i, hu: i.hu + ' ' + i.id + ' ' + i.type + ' ' + (i.qualifier || ''), en: i.en })), q).map(x => byId(x.id)) : S.items;
       tb.textContent = '';
       for (const i of rows) tb.append(h('tr', { 'data-id': i.id, 'data-open': i.opens ? '1' : '', onclick: () => i.opens && openItem(i.id) },
-        h('td', {}, i.hu), h('td', {}, i.type), h('td', { class: 'lv' }, i.level), h('td', { class: 'lv' }, i.parent), h('td', { class: 'lv' }, i.status), h('td', { class: 'lv' }, i.id)));
+        h('td', {}, i.hu), h('td', {}, i.label || i.type), h('td', { class: 'lv' }, i.level), h('td', { class: 'lv' }, i.parent), h('td', { class: 'lv' }, i.status), h('td', { class: 'lv' }, i.id)));
     };
     inp.addEventListener('input', draw);
     draw();

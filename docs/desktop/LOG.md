@@ -108,3 +108,13 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   could find nothing), scheme name tricks, double Tab in iframes / stale reads, package.js marker order. All fixed with tests; see
   MORNING.md for what was left and why.
 - `docs/desktop/MORNING.md`: the report.
+
+## After the merge — the theory tightened (2026-11-10)
+
+- Review of GLOSSARY / CLASSIFICATION / ARCHITECTURE: four mechanical fixes made, four points left to the Founder (in ARCHITECTURE §6.5).
+- DESKU-Q19 the fixed type list (`types` in the catalog, `qualifier` for detail; validate + classify enforce it; tiles show
+  "Utility · calculator"); Q20 scopes open / internal / roadmap (level only for open rows); Q21 User = `live` / `beta` only
+  (`effectiveLevel` in catalog.js: Ügyfélnézet and ServiceKit now show from Dev).
+- GLOSSARY: where the list lives, six terms it lacked (device, library, web service, folder, asset, category), scopes.
+  ARCHITECTURE: up to date (counts, Q01…Q21, migration status, the collision renames marked ●, the Founder's open calls).
+- Tests: wp-40 +3 (type list, the User rule, classification scopes); wp-40 / wp-41 fixtures updated.

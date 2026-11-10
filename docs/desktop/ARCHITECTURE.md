@@ -1,7 +1,8 @@
 # VRG Asztal (VRG Desktop) — the architecture
 
-*U3 of the Desktop unify, 2026-11-10. Built on the Irányítópult (`Dashboard/`, desktop-os WP-01…WP-35b), the inventory (`INVENTORY.md`, 526 rows),
-the terms (`GLOSSARY.md`) and the classification (`CLASSIFICATION.md`). Decisions: `DECISIONS.md` DESKU-Q01 … Q14.*
+*U3 of the Desktop unify, 2026-11-10; brought up to date after U9 and the merge into `main` (9cc0a80). Built on the Irányítópult
+(`Dashboard/`, desktop-os WP-01…WP-35b), the inventory (`INVENTORY.md`, 532 rows), the terms (`GLOSSARY.md`, a fixed type list) and the
+classification (`CLASSIFICATION.md`). Decisions: `DECISIONS.md` DESKU-Q01 … Q21. What was built and checked: `MORNING.md`.*
 
 ## 1. Why things tangle today
 
@@ -52,7 +53,8 @@ VRG Desktop.exe  (Electron 44.7.1 portable, one instance, frameless, default win
                      item's folder + shared/ are served; a page at the repo root is served alone)
          apps with a server → the browser pane on 127.0.0.1:<port>   built-in panes (files, terminal, browser, mail, chat, git, …) as today
  registries:  launcher/vrg-menu.json  = HOW to run (unchanged; check-start)      notes/features  = the roadmap (unchanged)
-              launcher/vrg-catalog.json (new) = WHAT exists: type, level, parent, group, status, surfaces, launch ref (check-catalog)
+              launcher/vrg-catalog.json (new) = WHAT exists: type (fixed list) + qualifier, level, parent, group, status, surfaces,
+                                                launch ref (check-catalog)
  START.cmd = the fallback / recovery launcher, kept working, labelled "tartalék"
 ```
 
@@ -62,7 +64,12 @@ view or a frame tool. The page never sends a path (CONTRACT §3). Opening from t
 with the window open (like an app launched from Launchpad).
 
 **Levels are a filter, not a mode switch.** The same catalog drives every surface; `listFor(level)` returns the items of that level
-and below, each with its children (catalog items whose `parent` is it, its START submenu actions, its servers).
+and below, each with its children (catalog items whose `parent` is it, its START submenu actions, its servers). The User level shows
+finished things only: a User item that is still `dev` or `planned` appears from Dev on (DESKU-Q21). Only things you can open have a
+level at all; code, config and plans are *internal* or *roadmap* in the classification (DESKU-Q20).
+
+**Types are a fixed list.** The catalog's `types` block is the glossary's vocabulary; an item names one of them and puts the detail in
+`qualifier` ("utility · calculator"). Grouping and filtering work on `type`; the screen shows "Utility · calculator" (DESKU-Q19).
 
 ## 4. What the old surfaces become
 
@@ -75,12 +82,14 @@ and below, each with its children (catalog items whose `parent` is it, its START
 | Kapu `kpTools` (baked START tools) | reads the catalog's User items in a later Kapu build | one list |
 | Toolbox (`toolbox.html`) | **retired** into the catalog (status `retire`), kept until the Founder removes it | a hand-made third list |
 | `docs/hub/hub-seed.json` | folders → `config/roots.json` of the Desktop (Shared roots); tool rows → the catalog | it seeded Kapu's topology |
-| Varler Console | stays **its own companion app** (phone / field PWA); on the Desktop its quick pages are **top-strip shortcuts** and its agent trace sits behind it at Dev | different device, different job |
+| ● Varler Console | stays **its own companion app** (phone / field PWA); on the Desktop its quick pages are **top-strip shortcuts** and its agent trace sits behind it at Dev | different device, different job |
 | VRG Mobile | stays the Android companion; its features are classified, its tile shows status | — |
 | Zen munkamenetek | **retired** into Munkaterek (saved Desktop layouts) | the Desktop has its own browser and workspaces |
 | Planner Simple-UI dial | lifted into the shell as the **Sarokvezérlő** component (`Dashboard/page/sui-dial.js`); the Planner keeps its own | same design, different host |
 
-## 5. Rename table (proposals; nothing is renamed in files tonight — DESKU-Q05)
+## 5. Rename table (proposals; nothing has been renamed in files — DESKU-Q05)
+
+Rows marked ● fix a real collision (one word for several things: Console, SUI, Rétegverem); do those first. The first three are already what the new UI shows; the rest are tidy-ups and can wait.
 
 | Old name | Type | New name (HU · *EN*) |
 |---|---|---|
@@ -88,12 +97,12 @@ and below, each with its children (catalog items whose `parent` is it, its START
 | Kezdőlap | dashboard | **Irányítópult nézet** · *Dashboard view* |
 | — | desktop / workspace | **Asztal nézet** · *Desktop view* |
 | Varler Console | companion app (field PWA) | **Varler Terep** · *Varler Field* |
-| Board Console | device web UI | **Board Web** · *Board web UI* |
-| Simplified UI (SUI), Planner | app mode | **Egyszerű mód** · *Simple mode* |
-| SUI dial | corner dial (radial launcher) | **Sarokvezérlő** · *Corner dial* |
-| Varler SUI | design system (HUD) | **Varler HUD** · *Varler HUD* |
-| Rétegverem (`stack-search.html`) | view (search) | **Rétegkereső** · *Stack search* |
-| Rétegverem (Dashboard pane) | panel (context builder) | **Kontextuscsomag** · *Context packs* |
+| ● Board Console | device web UI | **Board Web** · *Board web UI* |
+| ● Simplified UI (SUI), Planner | app mode | **Egyszerű mód** · *Simple mode* |
+| ● SUI dial | corner dial (radial launcher) | **Sarokvezérlő** · *Corner dial* |
+| ● Varler SUI | design system (HUD) | **Varler HUD** · *Varler HUD* |
+| ● Rétegverem (`stack-search.html`) | view (search) | **Rétegkereső** · *Stack search* |
+| ● Rétegverem (Dashboard pane) | panel (context builder) | **Kontextuscsomag** · *Context packs* |
 | Napló (START N) | command | **Git napló** · *Git log* |
 | Indítópult (Mobile M11) | feature module | **Távindító** · *Remote launcher* |
 | START | launcher (TUI) | **START tartalék indító** · *START fallback launcher* |
@@ -103,12 +112,15 @@ and below, each with its children (catalog items whose `parent` is it, its START
 
 ## 6. Migration order
 
-1. **U0–U4 (done tonight):** green baseline; inventory; classification; the catalog + its checker. Nothing moves.
-2. **U5–U7 (tonight):** the two primary views, the level switch, the double-Tab toggle, the Desktop view with dock, top strip and both
+1. **U0–U4 — done:** green baseline; inventory; classification; the catalog + its checker. Nothing moved.
+2. **U5–U7 — done:** the two primary views, the level switch, the double-Tab toggle, the Desktop view with dock, top strip and both
    corner dials, in-shell apps on `vrg-app://`, the boot state machine with the gate behind `auth.enabled`.
-3. **U8 (tonight):** `VRG Desktop.exe` beside the repo (`H:\VRG\Full\build\vrg-desktop`); START D prefers it.
-4. **Founder, attended:** merge `desktop/unify` → `main`; give the exe its icon (rcedit, vendored first); decide the renames (§5).
-5. **Next sessions:** the Kapu reads the catalog (one list); `hub-seed` folders into `roots.json`; Toolbox and Zen sessions removed;
+3. **U8–U9 — done:** `VRG Desktop.exe` beside the repo (`H:\VRG\Full\build\vrg-desktop`, rebuilt from the main checkout); START D
+   prefers it, START F builds it; the independent check's findings fixed.
+4. **Merge — done** (`main` 9cc0a80, not pushed). Then the theory tightened: a fixed type list, scopes, User = finished things.
+5. **Founder's calls (open):** the exe's icon (rcedit, vendored first); which renames of §5 to make; whether the Stack layers F · I · Q
+   belong at User; "built-in app" vs "panel" for Fájlok / Böngésző / Posta; a standard key next to double Tab.
+6. **Next sessions:** the Kapu reads the catalog (one list); `hub-seed` folders into `roots.json`; Toolbox and Zen sessions removed;
    Console quick pages as real top-strip widgets (not shortcuts); the gate turned on when Kapu auth is ready; a catalog field
    `pinned` edited from the Desktop; START's own screens grouped by the catalog's `group` (the TUI stays, its order follows the catalog).
 
@@ -122,3 +134,5 @@ and below, each with its children (catalog items whose `parent` is it, its START
 - **DESKU-Q10** Varler Console stays its own app; its pages surface as top-strip shortcuts.
 - **DESKU-Q11** Toolbox, Zen sessions and the Kapu tool list retire into the catalog (proposal; files stay).
 - **DESKU-Q12** the exe is the portable Electron renamed, with a `resources/app` bootstrap that loads the repo's shell (no npm, no network).
+- Later (U5–U9 and after the merge): Q13–Q18 the Desktop's details (top strip, double Tab, Esc, the gate flag, the probe, `--start windows`);
+  **Q19** a fixed type list + qualifier, **Q20** scopes (only open things have a level), **Q21** User shows finished things only.

@@ -132,3 +132,24 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
   app name (`vrg-dashboard-shell`), so it and `electron.exe Dashboard\shell` share one profile.
 - B: turn D into a submenu (start / build) — changes a key the Founder types by heart. C: a productName "VRG Desktop" (a second,
   empty profile: the in-shell apps' saved data would seem lost).
+
+## DESKU-Q19 — A fixed type list (after the review of the theory, 2026-11-10)
+
+- **A (taken):** the catalog's `types` block holds the glossary's terms (56: 35 software units, 21 UI containers) with EN / HU names;
+  an item's `type` must be one of them and the detail goes in a free `qualifier` ("utility · calculator"). `validate` (check-catalog)
+  and `classify.js` refuse any other type. The 90 free-text types of U2 collapsed into 44 used terms.
+- B: free text with a lint for near-duplicates (still not groupable). C: a two-level enum (kind → type) with no qualifier (too rigid).
+
+## DESKU-Q20 — Only things you can open have a level
+
+- **A (taken):** every classification row has a scope: **open** (a level: user / dev / all), **internal** (code modules, libraries,
+  config, id schemes, hooks, source folders, the app-host pane) or **roadmap** (plans, ideas, stubs, planned items). U2 had put 127
+  rows at "all", most of them never openable. Now: open 418 (user 115, dev 279, all 24), internal 68, roadmap 46. The catalog's planned
+  items keep `level: all` so the Katalógus can list them, marked planned.
+- B: keep "all" as a catch-all (the original muddle). C: drop internal rows from the inventory (loses the map of what exists).
+
+## DESKU-Q21 — User shows finished things only
+
+- **A (taken):** a User item whose status is not `live` or `beta` shows from the Dev level on (`effectiveLevel`); its declared level
+  stays in the catalog, so it moves to User by itself when its status changes. Today: Ügyfélnézet and ServiceKit.
+- B: move those items to `level: dev` by hand (and back by hand later). C: show them at User marked unfinished.

@@ -60,10 +60,10 @@ test('Alkalmazások groups by function; a feature hangs under its app, not besid
   assert.equal(apps.groups[0].group, 'munka');
 });
 
-test('attached: at User a tile carries its user children only; at Dev also its START actions and servers', () => {
+test('attached: at User a tile carries its finished user children only; at Dev also its START actions and servers', () => {
   const pick = lv => { const l = cat.listFor(lv); return D.attached(l.find(i => i.id === 'planner'), l, lv); };
   const u = pick('user'), d = pick('dev');
-  assert.deepEqual(u.items, ['client-preview']);
+  assert.deepEqual(u.items, [], 'Ügyfélnézet is status dev: it shows from Dev on');
   assert.deepEqual(u.acts, []);
   assert.deepEqual(u.servers, []);
   assert.ok(d.items.includes('planner-cyd') && d.items.includes('client-preview'));

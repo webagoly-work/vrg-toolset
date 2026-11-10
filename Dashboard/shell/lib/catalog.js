@@ -14,6 +14,13 @@ const FRAMES = ['palette', 'quick', 'search', 'workspaces', 'note', 'settings'];
 const VIEWS = ['dashboard', 'desktop'];
 const ID_RE = /^[a-z0-9][a-z0-9.:-]{0,59}$/;
 const STACK = ['F', 'I', 'Q', 'L', 'A', 'U', 'R', 'C', 'G', 'Z', 'page', '*', ''];
+// the default layout shows finished things only: a user item that is still dev / planned / … appears from the Dev level on
+const USER_STATUS = ['live', 'beta'];
+const effectiveLevel = it => (it.level === 'user' && !USER_STATUS.includes(it.status) ? 'dev' : it.level);
+// a category (a dev root such as Repó & Git) is a menu group, not a thing you open; dev items may hang behind it
+const isCategory = it => !!it && it.type === 'category';
+// "Utility · calculator": the vocabulary's display name plus the item's own qualifier
+const typeLabel = (types, it) => ((types && types[it.type] && types[it.type].en) || it.type) + (it.qualifier ? ' · ' + it.qualifier : '');
 
 function readCatalog(file) {
   const j = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -41,7 +48,10 @@ function validate(cat, { C, kinds = [] } = {}) {
     byId.set(it.id, it);
     if (!it.title || typeof it.title.hu !== 'string' || !it.title.hu || typeof it.title.en !== 'string' || !it.title.en) errs.push(at + ': title {hu, en} missing');
     if (!LEVELS.includes(it.level)) errs.push(at + ': level must be user, dev or all');
+    // type comes from the fixed vocabulary in the catalog's "types" (the glossary's terms); the detail goes in qualifier
     if (typeof it.type !== 'string' || !it.type) errs.push(at + ': type missing');
+    else if (!cat.types || !Object.prototype.hasOwnProperty.call(cat.types, it.type)) errs.push(at + ': type "' + it.type + '" is not in the catalog\'s types (use a qualifier for detail)');
+    if (it.qualifier !== undefined && (typeof it.qualifier !== 'string' || !it.qualifier || it.qualifier.length > 80)) errs.push(at + ': qualifier must be a short text');
     if (!STATUS.includes(it.status)) errs.push(at + ': status must be one of ' + STATUS.join(', '));
     if (!cat.groups || !cat.groups[it.group]) errs.push(at + ': unknown group ' + it.group);
     else if (it.sub && it.group !== 'fejlesztes' && !(it.sub in (cat.groups[it.group].subs || {}))) errs.push(at + ': unknown sub ' + it.sub);
@@ -74,7 +84,7 @@ function validate(cat, { C, kinds = [] } = {}) {
       else if (p.id === it.id) errs.push(at + ': is its own parent');
     }
     // a dev item hangs behind a user item or a dev root (or another dev item); an all item may hang anywhere
-    if (it.level === 'dev' && it.type !== 'dev root' && !it.parent) errs.push(at + ': a dev item needs a parent');
+    if (it.level === 'dev' && !isCategory(it) && !it.parent) errs.push(at + ': a dev item needs a parent');
     if (it.level === 'dev' && it.parent && byId.get(it.parent) && byId.get(it.parent).level === 'all') errs.push(at + ': a dev item cannot sit behind an all item');
     const seen = new Set([it.id]);                                   // no parent cycles
     for (let p = byId.get(it.parent); p; p = byId.get(p.parent)) { if (seen.has(p.id)) { errs.push(at + ': parent cycle'); break; } seen.add(p.id); }
@@ -93,7 +103,7 @@ function createCatalog({ file, collect = () => null, kinds = [] }) {
   }
 
   const get = id => byId.get(id) || null;
-  const within = (it, level) => RANK[it.level] <= RANK[level];
+  const within = (it, level) => RANK[effectiveLevel(it)] <= RANK[level];
 
   // what hangs behind an item: catalog children, its START submenu actions, its servers (resolved from vrg-menu.json)
   function children(id, level = 'all') {
@@ -118,7 +128,8 @@ function createCatalog({ file, collect = () => null, kinds = [] }) {
   function listFor(level) {
     if (!LEVELS.includes(level)) level = 'user';
     return cat.items.filter(it => within(it, level)).map(it => ({
-      id: it.id, hu: it.title.hu, en: it.title.en, type: it.type, level: it.level, parent: it.parent || '', group: it.group, sub: it.sub || '',
+      id: it.id, hu: it.title.hu, en: it.title.en, type: it.type, qualifier: it.qualifier || '', label: typeLabel(cat.types, it),
+      level: effectiveLevel(it), declared: it.level, parent: it.parent || '', group: it.group, sub: it.sub || '',
       status: it.status, icon: it.icon || '', surfaces: { ...(it.surfaces || {}) }, opens: !!resolve(it.id), children: children(it.id, level),
     }));
   }
@@ -171,4 +182,4 @@ function createCatalog({ file, collect = () => null, kinds = [] }) {
   };
 }
 
-module.exports = { createCatalog, validate, LEVELS, RANK, FRAMES, VIEWS, readCatalog, featureAct };
+module.exports = { createCatalog, validate, LEVELS, RANK, FRAMES, VIEWS, readCatalog, featureAct, USER_STATUS, effectiveLevel, isCategory, typeLabel };
