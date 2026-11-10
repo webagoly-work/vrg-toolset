@@ -77,7 +77,18 @@ async function run({ quiet = false, noArchive = false, noEmbed = false, rerecord
     for (const e of U.edges) edges.push({ ...e, v: nodes.get(e.a).layer !== nodes.get(e.b).layer ? 1 : 0 });
 
     /* ---- 4. pillars */
-    const entities = pillars(nodes, edges, ENT);
+    let T = null; try { const f = CFG.sources.notes + '/devlog/threads.js'; delete require.cache[require.resolve(f)]; T = require(f); } catch { T = null; }
+    const threadLines = {}, threadIds = [];
+    for (const a of (T && T.AREAS) || []) for (const r of a.rows) { threadIds.push(r.id); threadLines[r.id] = r.lines || []; }
+    const entities = pillars(nodes, edges, ENT, { threadLines });
+    if (!T) hc.warn('pillars', 'notes/devlog/threads.js could not be read: pillars got no thread lines');
+    else {
+      const has = new Set(ENT.map(e => e.thread).filter(Boolean));
+      const lost = threadIds.filter(t => !has.has(t));
+      if (lost.length) hc.warn('pillars', `${lost.length} Thread Board threads have no pillar: ${lost.join(', ')} (add them to entities.json)`);
+      const dead = ENT.filter(e => e.thread && !threadIds.includes(e.thread)).map(e => e.id);
+      if (dead.length) hc.warn('pillars', `pillars name a thread the board does not have: ${dead.join(', ')}`);
+    }
 
     /* ---- 5. validate, then analytics on the evidence graph */
     edges = H.validate(nodes, edges, hc);

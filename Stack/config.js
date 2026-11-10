@@ -72,6 +72,11 @@ module.exports = {
     threshold: 0.02,
   },
 
+  strings: {
+    // Stack Strings (lib/strings.js, research/STRINGS-PLAN.md §1). Any key here overrides its DEFAULTS.
+    depth: 2, cutoff: 0.15, hub: 16, hubPenalty: 1, inBuildDays: 14,
+  },
+
   patterns: {
     minSupport: 3,     // a sequence must occur in at least this many sessions
     maxLen: 4,

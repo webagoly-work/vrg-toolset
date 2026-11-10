@@ -96,9 +96,14 @@ async function chain(a, b, { time = false } = {}) {
 
 async function pillar(id) {
   const K = await load();
-  if (!id) return K.g.entities.map(e => `${e.id.padEnd(13)} ${e.name.padEnd(32)} ${Object.entries(e.per).sort((a, b) => ORDER.indexOf(a[0]) - ORDER.indexOf(b[0])).map(([l, c]) => l + c).join(' ')}`).join('\n');
-  const e = K.g.entities.find(x => x.id === id); if (!e) return 'no pillar ' + id;
-  const out = [`E:${e.id} ${e.name} — words: ${e.words.join(', ')} · paths: ${e.paths.join(', ')}`];
+  const row = e => `${e.id.padEnd(13)} ${e.name.padEnd(34)} ${(e.thread ? '⟿ ' + e.thread : '').padEnd(14)} ${Object.entries(e.per).sort((a, b) => ORDER.indexOf(a[0]) - ORDER.indexOf(b[0])).map(([l, c]) => l + c).join(' ')}`;
+  if (!id) {
+    const areas = [...new Set([...(require('../entities').areas || []), ...K.g.entities.map(e => e.area || '')])].filter(a => K.g.entities.some(e => (e.area || '') === a));
+    return areas.map(a => (a ? `## ${a}\n` : '') + K.g.entities.filter(e => (e.area || '') === a).map(row).join('\n')).join('\n')
+      + `\n(${K.g.entities.length} pillars · ${K.g.entities.filter(e => e.thread).length} are Thread Board threads ⟿)`;
+  }
+  const e = K.g.entities.find(x => x.id === id.replace(/^E:/, '')); if (!e) return 'no pillar ' + id;
+  const out = [`E:${e.id} ${e.name} — words: ${e.words.join(', ') || '—'} · paths: ${e.paths.join(', ') || '—'}${e.area ? ' · area: ' + e.area : ''}${e.thread ? ' · thread: ' + e.thread : ''}`];
   for (const L of ORDER) {
     const ms = e.members.map(m => K.byId.get(m)).filter(m => m && m.layer === L); if (!ms.length) continue;
     out.push(`${L} ${K.LNAME[L]} (${ms.length})`);
@@ -133,6 +138,38 @@ async function session(sid8, { steps = 40 } = {}) {
   return out.join('\n');
 }
 
+/* Stack String (Füzér, STK-Q18): the seed's members on every layer, its reach mask and class.
+   arg = an id, or words (the best pillar hit wins, then a Featured hit, then the first hit).
+   --orphans: every code folder whose string reaches neither F nor I (nobody registered it). */
+async function string(arg, { per = 3, orphans = false, json = false } = {}) {
+  const K = await load();
+  const ST = require('./strings');
+  if (!K.strings) K.strings = ST.prepare(K.g.nodes, K.g.edges);
+  const o = Object.assign({ today: String(K.g.generated || '').slice(0, 10) || undefined }, CFG.strings);
+  if (orphans) {
+    const list = K.g.nodes.filter(n => n.layer === 'C').map(n => ({ n, s: ST.string(K.strings, n.id, o) })).filter(x => x.s.cls === 'orphan');
+    if (json) return JSON.stringify(list.map(x => ({ id: x.n.id, mask: x.s.mask, members: x.s.members.length, pulse: x.s.pulse })), null, 1);
+    return `${list.length} code folders nobody registered (no F, no I on their string):\n` + list.map(x => `  ${x.s.mask}  ${short(x.n)}`).join('\n');
+  }
+  let id = String(arg || '').trim();
+  if (!id) return 'stack.js string <id | words>   or   stack.js string --orphans';
+  if (!/^[A-Z]:./.test(id) || !K.byId.has(id)) {
+    const r = await S.search(id, { n: 8, rank: x => (K.byId.get(x) || {}).rank || 0 });
+    const hits = r.hits.map(h => h.id).filter(x => K.byId.has(x));
+    id = hits.find(x => x[0] === 'E') || hits.find(x => x[0] === 'F') || hits[0];
+    if (!id) return `nothing for "${arg}" — try: stack.js q "<words>"`;
+  }
+  const s = ST.string(K.strings, id, o);
+  if (json) return JSON.stringify(s, null, 1);
+  const c = ST.CLASS[s.cls], seed = K.byId.get(id);
+  const out = [`Füzér · ${short(seed)}`, `  reach  ${s.mask}   ${s.reach.length}/10   ${c.sign} ${c.en} · ${c.hu}${s.pulse ? '   pulse ' + s.pulse : ''}   ${s.members.length} members`];
+  for (const L of ORDER) {
+    const ms = s.members.filter(m => m.layer === L && m.id !== id); const p = s.profile[L]; if (!ms.length) continue;
+    out.push(`  ${L} ${String(ms.length).padStart(4)}  ${ms.slice(0, per).map(m => `${m.id} ${clip(K.byId.get(m.id).title, 28)} ${m.score.toFixed(2)}`).join(' · ')}${p.newest ? '  ⟳' + p.newest : ''}`);
+  }
+  return out.join('\n') + `\n(score = best path product, depth ${o.depth}, cutoff ${o.cutoff}; next: stack.js node <id>)`;
+}
+
 const report = name => { try { return fs.readFileSync(path.join(CFG.out, name), 'utf8'); } catch { return `out/${name} not built yet — node stack.js build`; } };
 
-module.exports = { load, readOnly, ask, node, chain, pillar, layer, session, report, short };
+module.exports = { load, readOnly, ask, node, chain, pillar, layer, session, string, report, short };

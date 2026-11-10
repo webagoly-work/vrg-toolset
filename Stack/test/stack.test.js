@@ -257,3 +257,103 @@ test('neuron addresses: gate + family + run, unique, stable, roles from facts', 
   assert.equal(a.filter(x => x.file === 'A:mem').length, 0);
   assert.equal(N.find(a, q[0].addr), q[0]);
 });
+
+// ── Stack Strings (lib/strings.js, research/STRINGS-PLAN.md §1) ──────────────────────────────
+const ST = require('../lib/strings');
+const sn = (id, extra = {}) => Object.assign({ id, layer: id[0], kind: 'x', title: id, own: [], t: '' }, extra);
+const se = (a, b, rel = 'ref:p', extra = {}) => Object.assign({ a, b, rel, v: 1 }, extra);
+const TODAY = '2026-11-10';
+
+test('strings: a full tool reaches every layer and classes as Program; its pillar joins it', () => {
+  const nodes = [sn('F:app', { tier: 1 }), sn('I:idea'), sn('Q:q1'), sn('L:line'), sn('U:run', { t: '2026-11-08' }),
+    sn('R:c1', { t: '2026-11-09' }), sn('C:app'), sn('G:doc'), sn('Q:far'), sn('E:app', { kind: 'pillar' })];
+  const edges = [se('F:app', 'C:app'), se('I:idea', 'F:app', 'ref:go'), se('Q:q1', 'F:app', 'ref:q'), se('Q:far', 'G:doc', 'same'), se('L:line', 'F:app', 'alike', { s: 0.8 }),
+    se('U:run', 'C:app', 'touched', { w: 12 }), se('R:c1', 'C:app', 'ref:p'), se('G:doc', 'C:app'),
+    se('F:app', 'E:app', 'pillar'), se('G:doc', 'E:app', 'pillar')];
+  const s = ST.string(ST.prepare(nodes, edges), 'F:app', { today: TODAY });
+  assert.equal(s.mask, 'F I Q L · U R C G ·');                          // U through C (depth 2); no A on this string
+  assert.equal(s.cls, 'program');
+  assert.equal(s.pulse, '2026-11-09');
+  assert.equal(s.members.find(m => m.id === 'E:app').score, 0.8);
+  assert.equal(s.members.find(m => m.id === 'U:run').depth, 2);
+  assert.ok(!s.members.some(m => m.id === 'Q:far'));                    // three hops away: past the depth
+});
+
+test('strings: an idea with only a feature stays a Spark; dates decide In build vs Built, quiet', () => {
+  const spark = ST.string(ST.prepare([sn('F:x', { tier: 5 }), sn('I:x')], [se('I:x', 'F:x', 'ref:go')]), 'I:x', { today: TODAY });
+  assert.equal(spark.mask, 'F I · · · · · · · ·');
+  assert.equal(spark.cls, 'spark');
+  const mk = t => ST.string(ST.prepare([sn('F:t', { tier: 3 }), sn('C:t'), sn('R:t', { t })], [se('F:t', 'C:t'), se('R:t', 'C:t')]), 'F:t', { today: TODAY }).cls;
+  assert.equal(mk('2026-11-01'), 'build');                              // 9 days
+  assert.equal(mk('2026-10-27'), 'build');                              // 14 days: still in build
+  assert.equal(mk('2026-10-26'), 'quiet');                              // 15 days: quiet, no gap between the two (STK-P58)
+  const planned = ST.string(ST.prepare([sn('I:p'), sn('G:p')], [se('I:p', 'G:p')]), 'I:p', { today: TODAY });
+  assert.equal(planned.cls, 'planned');
+});
+
+test('strings: code nobody registered is an Orphan, even when it was touched yesterday', () => {
+  const nodes = [sn('C:lone'), sn('U:r', { t: '2026-11-09' }), sn('R:c', { t: '2026-11-09' })];
+  const s = ST.string(ST.prepare(nodes, [se('U:r', 'C:lone', 'touched', { w: 3 }), se('R:c', 'C:lone')]), 'C:lone', { today: TODAY });
+  assert.equal(s.cls, 'orphan');                                        // Orphan is tried before In build (STK-P57)
+});
+
+test('strings: a hub passes on less, so a small string does not swallow the hub\'s neighbours', () => {
+  const nodes = [sn('F:small', { tier: 2 }), sn('C:tools')], edges = [se('F:small', 'C:tools')];
+  for (let i = 0; i < 200; i++) { nodes.push(sn('G:d' + i)); edges.push(se('G:d' + i, 'C:tools')); }
+  nodes.push(sn('G:own')); edges.push(se('F:small', 'G:own'));
+  const ix = ST.prepare(nodes, edges);
+  const damped = ST.string(ix, 'F:small', { today: TODAY });
+  assert.ok(damped.members.some(m => m.id === 'C:tools'));              // the hub itself is on the string
+  assert.ok(!damped.members.some(m => /^G:d/.test(m.id)));              // 201 vertical links: 16 / 201 = 0.08, under the 0.15 cutoff
+  assert.ok(damped.members.some(m => m.id === 'G:own'));
+  const raw = ST.string(ix, 'F:small', { today: TODAY, hub: 1e9 });
+  assert.equal(raw.members.filter(m => /^G:d/.test(m.id)).length, 200); // without damping the hub floods the string
+  const fromHub = ST.string(ix, 'C:tools', { today: TODAY });
+  assert.equal(fromHub.members.filter(m => /^G:d/.test(m.id)).length, 200);  // the seed itself is never damped
+});
+
+test('strings: horizontal links go one step, from the container only', () => {
+  const nodes = [sn('F:a', { tier: 1 }), sn('F:b'), sn('F:c'), sn('C:b')];
+  const edges = [se('F:a', 'F:b', 'part', { v: 0 }), se('F:b', 'F:c', 'part', { v: 0 }), se('F:b', 'C:b')];
+  const ix = ST.prepare(nodes, edges);
+  const s = ST.string(ix, 'F:a', { today: TODAY });
+  assert.deepEqual(s.members.map(m => m.id).sort(), ['C:b', 'F:a', 'F:b']);   // F:c is two horizontal steps away
+  assert.ok(!ST.string(ix, 'F:b', { today: TODAY }).members.some(m => m.id === 'F:a'));   // a part does not pull in its parent
+});
+
+test('mcp: stack_string is listed and calls the string query', async () => {
+  const { handle } = require('../mcp/server');
+  const Q = { string: async (id, o) => 'string ' + id + (o.orphans ? ' orphans' : '') };
+  assert.ok((await handle({ id: 1, method: 'tools/list' }, Q)).tools.some(t => t.name === 'stack_string'));
+  const r = await handle({ id: 2, method: 'tools/call', params: { name: 'stack_string', arguments: { id: 'E:planner' } } }, Q);
+  assert.equal(r.content[0].text, 'string E:planner');
+});
+
+// ── Pillars take threads (S2, STK-Q19 = A) ───────────────────────────────────────────────────
+test('pillars: a thread\'s DevLog lines join its pillar; old rows still read', () => {
+  const { pillars } = require('../lib/pillars');
+  const mk = () => new Map([['L:job1', sn('L:job1', { title: 'a line with no telling words' })], ['L:other', sn('L:other')], ['F:x', sn('F:x', { title: 'Knob Pad' })]]);
+  let nodes = mk(), edges = [];
+  const ent = pillars(nodes, edges, [{ id: 'past', name: 'Past jobs', area: 'Wiring and jobs', thread: 'pastjobs', words: [], paths: [], ids: [] }], { threadLines: { pastjobs: ['job1'] } });
+  assert.deepEqual(ent[0].members, ['L:job1']);
+  assert.equal(ent[0].area, 'Wiring and jobs');
+  assert.equal(nodes.get('E:past').lane, 'Wiring and jobs');
+  assert.ok(edges.some(e => e.a === 'L:job1' && e.b === 'E:past' && e.rel === 'pillar'));
+  nodes = mk(); edges = [];
+  assert.deepEqual(pillars(nodes, edges, [['knob', 'Knob Pad', ['knob pad'], [], []]])[0].members, ['F:x']);   // the old tuple form
+});
+
+test('entities.json: unique ids and threads, known areas, no job code', () => {
+  const E = require('../entities');
+  assert.ok(E.length >= 55);
+  assert.equal(new Set(E.map(e => e.id)).size, E.length);
+  const th = E.map(e => e.thread).filter(Boolean);
+  assert.equal(new Set(th).size, th.length);                            // one pillar per thread
+  assert.ok(E.every(e => E.areas.includes(e.area)));
+  assert.ok(E.every(e => !('s' in e) && !('status' in e)));               // STK-Q20 = B: no hand status
+  const map = path.join(require('../config').sources.repo, 'tools', 'anonymise.map.json');
+  if (fs.existsSync(map)) {                                             // git-ignored: present on the work PC only
+    const M = JSON.parse(fs.readFileSync(map, 'utf8')), text = fs.readFileSync(path.join(__dirname, '..', 'entities.json'), 'utf8').toLowerCase();
+    for (const x of [...(M.codes || []), ...(M.literals || [])]) assert.ok(!text.includes(String(x.from).toLowerCase()), 'a job code is in entities.json');
+  }
+});

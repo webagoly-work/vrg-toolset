@@ -1,13 +1,20 @@
 // VRG Stack — entity pillars (layer E): one real thing across every layer.
-// The list is by hand (entities.js). A node joins a pillar by path, by a whole title word, or by
-// explicit id. Member → pillar links carry v = 2, so counts can tell evidence (v = 1) from list (v = 2).
+// The list is by hand (entities.json, read by entities.js). A node joins a pillar by path, by a whole
+// title word, by explicit id, or as a DevLog line of the pillar's thread (threadLines: thread id →
+// line ids, from notes/devlog/threads.js). Member → pillar links carry v = 2, so counts can tell
+// evidence (v = 1) from list (v = 2). A pillar is an object { id, name, area, thread, words, paths,
+// ids }; the old [id, name, words, paths, ids] row is still read.
 'use strict';
 
 const C = require('./common');
 const { fold } = C;
 
-function pillars(nodes, edges, list) {
-  const entities = list.map(([id, name, words, paths, ids]) => {
+const asObj = x => Array.isArray(x) ? { id: x[0], name: x[1], words: x[2], paths: x[3], ids: x[4], area: '', thread: '' } : x;
+
+function pillars(nodes, edges, list, { threadLines = null } = {}) {
+  const entities = list.map(asObj).map(({ id, name, words, paths, ids, area = '', thread = '' }) => {
+    const lines = thread && threadLines && threadLines[thread] ? threadLines[thread].map(l => 'L:' + l) : [];
+    ids = [...(ids || []), ...lines];
     const rx = words.map(w => new RegExp('(^|[^a-z0-9])' + fold(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])'));
     const under = paths.map(p => C.normPath(p));
     const members = [];
@@ -19,11 +26,11 @@ function pillars(nodes, edges, list) {
     }
     for (const m of members) (nodes.get(m).ent = nodes.get(m).ent || []).push(id);
     const per = {}; for (const m of members) { const l = nodes.get(m).layer; per[l] = (per[l] || 0) + 1; }
-    return { id, name, words, paths, members, per };
+    return { id, name, area, thread, words, paths, members, per };
   });
   for (const e of entities) {
     nodes.set('E:' + e.id, {
-      id: 'E:' + e.id, layer: 'E', kind: 'pillar', title: e.name, own: [], t: '', state: `${e.members.length} nodes`,
+      id: 'E:' + e.id, layer: 'E', kind: 'pillar', title: e.name, own: [], t: '', state: `${e.members.length} nodes`, lane: e.area,
       brief: `Same thing across layers: ${Object.entries(e.per).map(([l, c]) => l + ' ' + c).join(', ')}.`, text: e.name + ' ' + e.words.join(' '),
     });
     for (const m of e.members) edges.push({ a: m, b: 'E:' + e.id, rel: 'pillar', v: 2 });

@@ -74,11 +74,12 @@ Never load `out/stack.json` whole. Ids look like:
 | `ARCHITECTURE.md` | **how the code is built**: the three folders, the pipeline, self-healing, where each feature lives, how to extend it |
 | `RULES.md` | Rules of the Subject: multilayer networks, the twelve rules, "Huffman for agents" |
 | `LAYERS.md` | the charter: each layer's rules, sources, joins and page |
-| `ROADMAP.md` · `DECISIONS.md` | what comes next · STK-Q1 … Q17 |
+| `ROADMAP.md` · `DECISIONS.md` | what comes next · STK-Q1 … Q25 |
+| `research/STRINGS-PLAN.md` | Stack Strings, the live twin and the particle viewer: the plan and its rollout S0–S11 |
 | `research/TERMS.md` | the research-terms report the v2 choices came from |
 | `stack.js` | the one command (CLI) |
 | `config.js` | every path and tunable |
-| `entities.js` | **by hand**: the 31 pillars |
+| `entities.json` · `entities.js` | **by hand**: the 55 pillars as data (one per line), each with its Thread Board area and thread; `entities.js` only reads it |
 | `schema/` | the link registry with its verbs, and the record shapes with their checks |
 | `lib/` | one module per job (see ARCHITECTURE.md) |
 | `mcp/server.js` | MCP server, stdio, no dependencies |
@@ -91,6 +92,6 @@ Never load `out/stack.json` whole. Ids look like:
 ## House rules
 
 - A source changes only by its own tool or by hand. The stack is read-only, following the Solomon rule.
-- A new app or program gets a pillar in `entities.js` and a row in `notes/features/data.js` on the day it gets a folder.
+- A new app or program gets a pillar in `entities.json` and a row in `notes/features/data.js` on the day it gets a folder.
 - A new relation needs its verbs in `schema/links.js` first; HEALTH.md flags any it does not know.
 - A new DECISIONS file format: add its namespace to `NS_BY_FILE` in `lib/layers.js`, rebuild, and check `out/codec/L2-Q.txt`.

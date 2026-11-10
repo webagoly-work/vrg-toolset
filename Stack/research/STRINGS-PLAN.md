@@ -323,9 +323,9 @@ Each work package (WP) is one commit (or a few), with its tests. **S** is under 
 
 | WP | What | Depends | Size | Done when |
 |---|---|---|---|---|
-| **S0** | Answer STK-Q18…Q25 (§8) | — | — | DECISIONS.md has the answers |
-| **S1** | `lib/strings.js`: walk, reach, profile, class; `stack.js string`; MCP `stack_string`; fixture tests | — | M | Planner reaches ≥ 8 layers and classes as Program; a fixture Spark stays a Spark; the Orphan list is non-empty and checked by eye |
-| **S2** | Pillars take threads: an area + a hand-status field in `entities.js`; the 47 threads mapped (about 16 new pillars) | S0 | M | every thread id resolves to a pillar; `stack.js ent` lists them |
+| **S0** ✅ 11-10 | Answer STK-Q18…Q25 (§8) | — | — | DECISIONS.md has the answers (Q20 = B: computed status only) |
+| **S1** ✅ 11-10 | `lib/strings.js`: walk, reach, profile, class; `stack.js string`; MCP `stack_string`; fixture tests | — | M | Planner reaches ≥ 8 layers and classes as Program; a fixture Spark stays a Spark; the Orphan list is non-empty and checked by eye |
+| **S2** ✅ 11-10 | Pillars take threads: an area (no hand status, STK-Q20 = B) in `entities.json`; the 47 threads mapped (24 new pillars, 55 in all) | S0 | M | every thread id resolves to a pillar; `stack.js ent` lists them |
 | **S3** | **T layer (Teendők)** adapter, deduplicated; "looks done" check in DRIFT | S1, S2 | M | the Döntésnapló item is flagged with evidence |
 | **S4** | **Füzértábla** `board.html` + `lib/board.js` → `out/board-data.js`; reach squares, class, pulse, "looks done"; anonymised export; START F repointed; `notes/devlog/board.js` forwards | S1–S3 | L | parity test vs. BOARD.html passes; `check-start` clean on main; Kapu rebuilt |
 | **S5** | Live bus: `serve.js` fs.watch + source map + **incremental per-layer build** + SSE `/api/events`; `live.js` shared by every page; `BroadcastChannel` selection | — (parallel to S1–S4) | L | a hand edit of `lines.js` reaches an open metro page in under 2 s |

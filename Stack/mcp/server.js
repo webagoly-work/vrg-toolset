@@ -6,6 +6,7 @@
 //   stack_node      one node card, links read as sentences
 //   stack_path      shortest chain between two nodes (optionally forward in time)
 //   stack_pillar    the pillars, or one pillar's members per layer
+//   stack_string    a Stack String (Füzér): what one thing reaches on every layer, and its development class
 //   stack_session   a recorded session step by step, or the list of sessions
 //   stack_report    drift · status · health · patterns · proposals
 // Resources (read once, cheap, cache-friendly):
@@ -30,6 +31,8 @@ const TOOLS = [
     inputSchema: { type: 'object', properties: { from: { type: 'string' }, to: { type: 'string' }, time: { type: 'boolean' } }, required: ['from', 'to'] } },
   { name: 'stack_pillar', description: 'Entity pillars (one real thing across all layers). Without id: the list. With id: its members per layer.',
     inputSchema: { type: 'object', properties: { id: { type: 'string' } } } },
+  { name: 'stack_string', description: 'Stack String (Füzér): select one thing (id or words) and get every node about it on every layer, its reach mask (which layers it touches) and its development class (Program, In build, Built quiet, Planned, Spark, Orphan, Loose). orphans=true lists code folders nobody registered.',
+    inputSchema: { type: 'object', properties: { id: { type: 'string', description: 'node id (E:planner, F:f8) or words' }, per: { type: 'number', description: 'members shown per layer (default 3)' }, orphans: { type: 'boolean' } } } },
   { name: 'stack_session', description: 'A recorded Claude Code session step by step (prompts, tool calls, files, commits, the stack nodes touched). Without sid: the newest sessions.',
     inputSchema: { type: 'object', properties: { sid: { type: 'string', description: 'first 8 characters of the session id' }, steps: { type: 'number' } } } },
   { name: 'stack_report', description: 'One of the stack reports: drift, status, health, patterns, proposals.',
@@ -48,6 +51,7 @@ async function callTool(name, a, Q) {
     case 'stack_node': return Q.node(String(a.id), { all: !!a.all });
     case 'stack_path': return Q.chain(String(a.from), String(a.to), { time: !!a.time });
     case 'stack_pillar': return Q.pillar(a.id);
+    case 'stack_string': return Q.string(String(a.id || ''), { per: a.per || 3, orphans: !!a.orphans });
     case 'stack_session': return Q.session(a.sid, { steps: a.steps || 40 });
     case 'stack_report': return REPORT[a.name] ? Q.report(REPORT[a.name]) : 'unknown report';
     default: throw Object.assign(new Error('unknown tool ' + name), { code: -32602 });

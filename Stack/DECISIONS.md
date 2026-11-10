@@ -209,3 +209,31 @@ Page 6 of the 2026-11-09 Stack page run (second run). The Founder was away; each
 | STK-P54 | The replay link | A always `replay.html#<sid8>` · B only when the replay page holds that run | **B**: `replay.html` silently opens the newest session for an id it does not hold (it keeps runs with ≥ 3 steps). The module reads `out/replay/index.js`; a run it lacks gets a greyed "nincs visszajátszás". Checked: `replay.html#995bdec6` from this page opens 995bdec6 |
 | STK-P55 | What can be copied | A nothing · B the session id, `claude --resume <sid>`, `cd <Stack> + stack.js session <sid8>`, and the run's file list | **B**, with the Thread Board's clipboard → `execCommand` → select-and-Ctrl+C fallback and a toast. No prompt is offered: a run is a record, not an open item (the Vonaltérkép's Folytatás covers its line) |
 | STK-P56 | Where it was built | A the main checkout · B this session's worktree branch | **B**, forced like STK-P10, STK-P35 and STK-P45: the harness refuses writes to the main checkout from a worktree session. Built and committed on `claude/vrg-stack-layer-pages-0b92dd` for the coordinator to cherry-pick |
+
+## Answered 2026-11-10: Stack Strings, the live twin and the viewer (research/STRINGS-PLAN.md §8)
+
+Asked in one round in the session that built S1 + S2.
+
+| Id | Question | Answer | What follows |
+|---|---|---|---|
+| STK-Q18 | Name of the selection trail | **A** Füzér / Stack String | `lib/strings.js`, `stack.js string`, MCP `stack_string`; Hungarian UI says Füzér |
+| STK-Q19 | Threads and pillars | **A** threads become pillars | one list in `entities.js`; each pillar may carry an `area` and the board's hand fields (S2) |
+| STK-Q20 | Is the board's six-step status kept by hand? | **B** computed only | no hand-status field on pillars; the string's class (§1.3) is the status. The `s` field of `threads.js` is not carried over, so there are no status-drift cards; the "looks done" check on T items (S3) stays |
+| STK-Q21 | Write-back scope for the first release | **A** threads + lines + decisions answers, with diff approval | S6 editors in that order; nothing commits |
+| STK-Q22 | Default detail in the Viewer | **A** Auto (Fine on desktop, Normál on phone) | thresholds measured in S9 before they are fixed |
+| STK-Q23 | G in the layer text | **A** whole documents | ≈ 4.6 MB of `.md` text in `out/layertext/G.bin` (S8) |
+| STK-Q24 | Order of new layers | **A** T → N → P → K → J, then STK-Q5's | S3 builds T; S11+ the rest |
+| STK-Q25 | `layers.html` | **A** replaced by the Viewer under the same key | when S9 lands |
+
+## Stack Strings S1 + S2 (builder's choices), 2026-11-10
+
+Made while building S1 and S2 of research/STRINGS-PLAN.md. Each can be changed in `config.js` or `entities.json`.
+
+| Id | Question | Options A/B/C | Chosen + why |
+|---|---|---|---|
+| STK-P57 | Class order: the plan lists Orphan last | A as listed · B Orphan before In build | **B**: with A, code nobody registered that was touched this week reads "In build" and never reaches the orphan list, which is the list check-start's "never heard of" wants |
+| STK-P58 | The plan's In build (≤ 14 days) and Built, quiet (≥ 30 days) leave a gap | A a third class for 15–29 days · B quiet starts where In build ends · C keep the gap (falls to Loose) | **B**: one threshold, `inBuildDays` 14. **Loose** is kept for shapes no rule describes (R without C, Q alone …) |
+| STK-P59 | Hub damping strength | A activation's (hub 24, d^0.5) · B hub 16, (16 / d)^1 | **B**: with A, a seed next to `docs/city/README.md` (132 vertical links) still pulled in 70 of its neighbours. Seeds and pillars are never damped: a hub's own string is large, and a pillar is the definition of "the same thing" |
+| STK-P60 | "F tier ≤ 2" for Program: which F nodes count | A any F member · B members scoring ≥ 0.5 | **B**: a far F node at depth 2 is not evidence that the thing itself is in use. Result today: Planner is Program; Kapu and Gömb are In build because their F rows are tier 3 |
+| STK-P61 | Where the threads' hand data lives | A all of it in `entities.json` · B the mapping (area, thread) in `entities.json`, the board's hand fields (note, read, go, done, not-yet, lines) stay in `notes/devlog/threads.js` until S4 | **B**: those fields quote job codes and job paths, and `entities.json` is committed. The build reads each thread's lines from threads.js, so the Past jobs pillar gets its lines without a code in git. A test checks `entities.json` against `tools/anonymise.map.json` |
+| STK-P62 | Pillar file format | A keep the JS rows · B `entities.json`, one pillar per line, `entities.js` a two-line reader | **B**: the S6 gateway edits data, not code (§9); one line per pillar keeps a diff to one line. `lib/pillars.js` still reads the old rows |

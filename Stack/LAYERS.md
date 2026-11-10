@@ -114,8 +114,9 @@ Every layer should have **one interactive page** where a person sees that layer 
 - **Is:** the whole stack folded for agents: L0 (one screen), L1 (pillars), L2 (one line per node, per layer), with L3 node cards and L4 source lines on demand.
 - **Source:** generated from all layers above. It never has its own facts.
 
-### E · Pillars (Oszlopok): 31, the vertical axis
-- **Is:** one real thing across all layers. `entities.js` defines each pillar by its words, paths and explicit ids.
+### E · Pillars (Oszlopok): 55, the vertical axis
+- **Is:** one real thing across all layers. `entities.json` defines each pillar by its words, paths and explicit ids, plus its Thread Board **area** and **thread** (STK-Q19 = A: the 47 threads are pillars). A pillar also takes its thread's DevLog lines, read at build time from `notes/devlog/threads.js`, so a job's lines join it without a job code in the repo.
+- **Strings:** `stack.js string <id|words>` (MCP `stack_string`) walks from any node to everything about it on every layer and classes it by reach: Program · In build · Built, quiet · Planned · Spark · Orphan · Loose (`lib/strings.js`, research/STRINGS-PLAN.md §1). `--orphans` lists code folders nobody registered.
 - **Rule:** words must be specific. "hub" would catch GitHub, and "stack" would catch the Planner BRIDGE Stack. A new app gets a pillar the day it gets a folder.
 
 ---

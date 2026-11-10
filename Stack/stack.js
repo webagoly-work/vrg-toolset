@@ -5,6 +5,7 @@
 //   node stack.js node <id> [--all]                                             one node card, links read as sentences
 //   node stack.js path <id> <id> [--time]                                       shortest chain; --time = forward in time only
 //   node stack.js ent [<pillar>]                                                pillars, or one pillar's members
+//   node stack.js string <id|words> [--per 3] [--json] | --orphans               Stack String (Füzér): reach on every layer + class
 //   node stack.js layer <code>                                                  a layer's rules and its page
 //   node stack.js session [<sid8>]                                              a recorded session step by step (or the list)
 //   node stack.js drift | stats | health | patterns | proposals                 the reports in out/
@@ -41,6 +42,7 @@ async function main() {
     case 'node': return Q.node(args[0], { all: flag('--all') });
     case 'path': { const time = flag('--time'); return Q.chain(args[0], args[1], { time }); }
     case 'ent': return Q.pillar(args[0]);
+    case 'string': case 'fuzer': { const orphans = flag('--orphans'), json = flag('--json'), per = +opt('--per', 3); return Q.string(args.join(' '), { orphans, json, per }); }
     case 'layer': return Q.layer(args[0]);
     case 'session': return Q.session(args[0], { steps: +opt('--steps', 40) });
     case 'drift': return Q.report('DRIFT.md');
@@ -77,7 +79,7 @@ async function main() {
     case 'runs': return require('./lib/runs').write().msg;
     case 'archive': { const r = require('./lib/archive').archive(); return `archive: ${r.copied} copied, ${r.same} unchanged, ${r.failed.length} failed`; }
     case 'mcp': require('./mcp/server').start(); return null;
-    default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 24).map(l => l.slice(3)).join('\n');
+    default: return require('fs').readFileSync(__filename, 'utf8').split('\n').filter(l => l.startsWith('//')).slice(0, 25).map(l => l.slice(3)).join('\n');
   }
 }
 
