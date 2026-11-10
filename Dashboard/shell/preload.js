@@ -139,6 +139,13 @@ contextBridge.exposeInMainWorld('vrg', {
     results: () => call('feed', 'results', {}),
     open: (pre, i) => call('feed', 'open', { pre, i }),
   },
+  desktop: {                                                                     // WP-41 … WP-43: the VRG Asztal; events: desktop.toggle / cmd / link
+    catalog: level => call('desktop', 'catalog', level ? { level } : {}),
+    state: () => call('desktop', 'state', {}),
+    open: id => call('desktop', 'open', { id }),
+    server: id => call('desktop', 'server', { id }),
+    cover: on => call('desktop', 'cover', { on: on === true }),
+  },
   act: id => ipcRenderer.invoke('vrg:act', String(id)),
   ports: () => ipcRenderer.invoke('vrg:ports'),
   onPorts: cb => ipcRenderer.on('vrg:ports', (e, p) => cb(p)),

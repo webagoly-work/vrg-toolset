@@ -155,8 +155,18 @@ function createCatalog({ file, collect = () => null, kinds = [] }) {
     return { page, allow: dir ? [dir, 'shared/'] : [page, 'shared/'] };     // a page at the repo root is served alone (+ shared/)
   }
 
+  // the one catalog id whose origin an in-shell app uses: the item that "is" that START tool (from: menu:tool:<key>), so the
+  // Planner opened as "Ügyfélnézet" or "Varler Planner" shares one origin, one localStorage (vrg-app://planner/)
+  function appOwner(id) {
+    const r = resolve(id);
+    if (!r || r.do !== 'act' || !r.app) return null;
+    const key = r.act.replace(/^s:/, '');
+    const owner = cat.items.find(x => (x.from || []).includes('menu:tool:' + key)) || cat.items.find(x => x.launch && x.launch.act === r.act && x.launch.app);
+    return owner ? owner.id : id;
+  }
+
   return {
-    load, errors: () => errors.slice(), get, children, listFor, resolve, appTarget,
+    load, errors: () => errors.slice(), get, children, listFor, resolve, appTarget, appOwner,
     raw: () => cat, groups: () => cat.groups || {}, sections: () => cat.sections || {},
   };
 }

@@ -14,8 +14,8 @@
     web: ['Böngésző', 'Browser'], mail: ['Posta', 'Mail'], stack: ['Folyamatok', 'Stack'], chat: ['Chat', 'Chat'], note: ['Jegyzet', 'Note'],
     git: ['Git: állapot, ágak, commit, push', 'Git panel'], feed: ['Hírek', 'Feeds'],
     workspaces: ['Munkaterek', 'Saved workspaces'] };                 // not a layout kind: the frame opens its panel (DESK-Q93, WP-35a)
-  const OWNERS = { 'prof:': 'profiles', 'root:': 'roots', 'pre:': 'presets', 'web:': 'web' };
-  const KIND = { 's:': 'start', 'cont:': 'start', 'go:': 'start', 'pane:': 'pane', 'prof:': 'term', 'root:': 'root', 'pre:': 'preset', 'web:': 'web' };
+  const OWNERS = { 'prof:': 'profiles', 'root:': 'roots', 'pre:': 'presets', 'web:': 'web', 'desk:': 'deskcmds' };   // desk: the VRG Asztal's views and levels (WP-41), passed in by main
+  const KIND = { 's:': 'start', 'cont:': 'start', 'go:': 'start', 'pane:': 'pane', 'prof:': 'term', 'root:': 'root', 'pre:': 'preset', 'web:': 'web', 'desk:': 'desk' };
   const DEFAULT_KEYMAP = { palette: 'Ctrl+Shift+P', closeTab: 'Ctrl+W', split: 'Ctrl+\\', splitStacked: 'Ctrl+Shift+\\',
     focusLeft: 'Ctrl+Alt+Left', focusRight: 'Ctrl+Alt+Right', focusUp: 'Ctrl+Alt+Up', focusDown: 'Ctrl+Alt+Down' };
 

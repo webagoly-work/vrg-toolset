@@ -44,3 +44,58 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   three items with no opener re-pointed, the map opens its server.
 - CLAUDE.md: the catalog rule next to the START rule.
 - Checks: run.js --all 357/0, selftest ok; check-start ok; check-catalog ok.
+
+## U5 — primary views + level switch (WP-41, 2026-11-10)
+
+- `Dashboard/shell/lib/desk.js` (UMD, shared by main and page): levels, views, the double-tap detector, `toggleSpec`, the boot steps,
+  Dashboard `sections`, `attached` (what a tile carries behind it per level).
+- `page/vrg-desktop.html` → title "VRG Asztal": `#stage` holds the Desktop view (top strip, workspace with the ground and the old
+  `#root` layout, dock) and the Dashboard view, plus the corner toggle and the boot screen. `page/desk.js` + `page/desk.css` draw them.
+- Dashboard sections: Ma · Alkalmazások (by group) · Munkák · Állapot; Dev adds Fejlesztési vonalak · Rétegverem · Ügynökök ·
+  Szerverek · Mérőszámok, dev items drawn attached under their parent tile (dashed); All adds the filterable Katalógus table.
+  Reuses `dashboard-data.js` (the Kezdőlap's data).
+- Level switch: control in both views, palette `desk:level:*`, settings `desk.level` (default user, remembered). View: `desk.view`.
+- Toggle: double Tab (DESKU-Q14), double-click on the empty background, the corner button; `config/keymap.json` desktopToggleKey/Ms.
+- The Dashboard job list uses `data-role="job-list"` (`jobs` is the frame's fixed job strip and floated over the tiles).
+
+## U6 — the Desktop view (WP-42)
+
+- `page/sui-dial.js` (VRGSuiDial): the Planner SUI dial's design re-written for the frame (01_DESIGN.md §2–§4): 88 px quadrant,
+  ≤ 5-row column 100 px above it, 3 per page + TOVÁBB, Back/Bezár at the bottom, breadcrumb, type-to-search, keys 1–5, arrows,
+  Esc / Backspace; mirrored for the right corner. While a dial is open the web views are hidden (`desktop.cover`, by reason).
+- ◣ tree = the catalog by function (Munka · Alkalmazások · Fájlok · Rendszer; Dev adds Fejlesztés with six roots; a Szint submenu).
+- ◢ Rétegverem = layers (User F, I, Q; Dev/All all ten, Z shown not openable) + Konnektóm · Holo · Rétegek · Keresés.
+- Dock: pinned user apps, Dev items after a divider, running windows, show desktop. Top strip: DESKU-Q13, Testreszabás sheet.
+
+## U7 — in-shell apps + gate stub (WP-43)
+
+- `shell/lib/appscheme.js`: `vrg-app://<catalog-id>/…` decides every request (the item's folder + `shared/`; a repo-root page alone;
+  traversal, encoded traversal, dot-files and secret names refused). `protocol.handle` on `persist:vrg-app`; real origin, localStorage works.
+- `views.createApp`: no preload, sandbox, its own partition, off-origin links go to the browser pane; `hideAll/showAll(reason)`.
+- New pane kind `app` (`page/panes/app.js`); `desktop.*` IPC namespace (catalog, state, open, server, cover); `auth.enabled`
+  page-read-only (DESKU-Q16); boot splash → (gate) → ready.
+- Double Tab over a web view: the first version missed forms (the async probe saw the input Tab had just focused); fixed with the
+  isolated-world recorder; the probe now checks both: toggles from the app's body, does not from a text field in it.
+- Tests: `wp-41.test.js` (9), `wp-42.test.js` (7), `wp-43.test.js` (11); one window probe `shell/selftest/wp-41.js` for all three
+  (DESKU-Q17), with screenshots when `VRG_SHOTS` is set. wp-35's channel count 89 → 94 (the desktop namespace).
+- The earlier window probes (WP-03 … WP-35) test the workbench, which since U5 starts hidden behind the Dashboard: `--start windows`
+  boots the Desktop view with its windows (the selftest gives it to probes below WP-40), and a pane opened from elsewhere (palette,
+  hotkey, link) switches to the Desktop with its windows shown instead of opening unseen. WP-20 had broken before this branch: the Stack
+  folder's `stack.js q --json` now answers `{ hits:[{ id, node }] }`; `innersearch.parseStack` reads both shapes (test added).
+- Checks: run.js --all 387/0; all 20 window probes ok (WP-03 … WP-35, WP-41); check-start ok; check-catalog ok; anonymise clean.
+
+## U8 — VRG Desktop.exe (WP-44)
+
+- `Dashboard/tools/package.js`: copies `{full}\tools\electron` (44.7.1) to `{full}\build\vrg-desktop\` without `electron.exe` and
+  `resources\default_app.asar`, as `VRG Desktop.exe`; writes `resources\app\{package.json, main.js}` and `vrg-desktop.json` (the repo).
+  Never deletes: an out folder that is not an earlier build is refused. `--dry`, `--check`, `--out`, `--electron`, `--repo`.
+- `Dashboard/tools/exe-bootstrap.js` (= `resources\app\main.js`): `--repo <dir>` or `vrg-desktop.json` → `require(<repo>\Dashboard\shell\main.js)`;
+  every other argument reaches the shell. A bad repo: an error box (with `--selftest`: a JSON error, exit 1).
+- `Dashboard\VRG Irányítópult.cmd` (CRLF, ASCII): the exe with `--repo` this checkout when it exists, else the portable electron.exe.
+- START dev **F** "VRG Desktop .exe építése"; catalog item `desktop-exe` (dev, behind VRG Asztal); inventory + classification re-run
+  (532 rows; the new `pane:app` row typed). Kapu rebuilt (its tool list did not change).
+- Tests: `wp-44.test.js` (6) against a fake Electron folder in %TEMP%.
+- Real run: built (75 files, 367 MB); `"VRG Desktop.exe" --selftest` ok (ids 344); `--selftest --probe wp-41` ok; `--repo H:/VRG/Full/nope
+  --selftest` refused with the reason; `package.js --check` ok.
+- Not done (needs the Founder): the file icon (rcedit, not vendored); the exe's `vrg-desktop.json` names this worktree — after the
+  merge run START F (or `node Dashboard/tools/package.js`) from the main checkout once.

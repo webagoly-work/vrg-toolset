@@ -79,6 +79,26 @@ function createViews({ WebContentsView, win, preload, homePage, log = () => {} }
     return { id, view, loaded };
   }
 
+  // An in-shell HTML app (WP-43): web content on vrg-app://<appId>/ in the persist:vrg-app partition, no preload. It stays on its own
+  // origin: an http(s) link or window.open goes to opts.onLink(url) (the browser pane), anything else is cancelled.
+  function createApp(id, url, { sameApp = () => false, onLink = () => {} } = {}) {
+    if (typeof id !== 'string' || !/^app:[a-z0-9][a-z0-9.-]{0,59}$/.test(id)) return null;
+    if (map.has(id)) return { id, view: map.get(id).view };
+    const view = new WebContentsView({ webPreferences: webPrefs('persist:vrg-app') });
+    map.set(id, { view, rect: { x: 0, y: 0, w: 0, h: 0 }, wanted: false });
+    win.contentView.addChildView(view);
+    view.setVisible(false);
+    const wc = view.webContents;
+    const out = u => { if (/^https?:\/\//i.test(String(u))) { try { onLink(String(u)); } catch (e) {} } };
+    wc.setWindowOpenHandler(({ url: u }) => { if (!sameApp(u)) out(u); return { action: 'deny' }; });
+    wc.on('will-navigate', (ev, u) => { if (!sameApp(u)) { ev.preventDefault(); out(u); } });
+    wc.on('will-redirect', (ev, u) => { if (!sameApp(u)) ev.preventDefault(); });
+    wc.session.setPermissionRequestHandler((w, perm, cb) => cb(perm === 'clipboard-sanitized-write'));
+    wc.loadURL(url).catch(() => {});
+    log('view created', id);
+    return { id, view };
+  }
+
   function setBounds(id, rect) {
     const e = map.get(id);
     if (!e || !validRect(rect)) return false;
@@ -87,8 +107,10 @@ function createViews({ WebContentsView, win, preload, homePage, log = () => {} }
     apply(e);
     return true;
   }
-  function hideAll() { hidden = true; for (const e of map.values()) apply(e); }
-  function showAll() { hidden = false; for (const e of map.values()) apply(e); }
+  // several overlays can hide the views at once (the palette, a corner dial, a sheet): each names its reason, the views come back when none is left
+  const reasons = new Set();
+  function hideAll(r = 'palette') { reasons.add(r); hidden = true; for (const e of map.values()) apply(e); }
+  function showAll(r = 'palette') { reasons.delete(r); hidden = reasons.size > 0; for (const e of map.values()) apply(e); }
   function destroy(id) {
     const e = map.get(id);
     if (!e) return false;
@@ -102,7 +124,7 @@ function createViews({ WebContentsView, win, preload, homePage, log = () => {} }
   function destroyAll() { for (const id of [...map.keys()]) destroy(id); }
 
   return {
-    createLocal, createWeb, createMailView, setBounds, hideAll, showAll, destroy, destroyAll,
+    createLocal, createWeb, createMailView, createApp, setBounds, hideAll, showAll, destroy, destroyAll,
     has: id => map.has(id), ids: () => [...map.keys()], get: id => (map.has(id) ? map.get(id).view : null),
     rect: id => (map.has(id) ? { ...map.get(id).rect } : null), isHidden: () => hidden,
   };

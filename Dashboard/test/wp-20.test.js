@@ -135,3 +135,13 @@ test('buildTime reads the Generated line of STATUS.md', () => {
   assert.equal(is.buildTime('x\nGenerated 2026-11-04 05:43 by build.js in 2.0 s.\n'), '2026-11-04 05:43');
   assert.equal(is.buildTime('nothing'), '');
 });
+
+test('parseStack: the Stack folder\'s newer shape { hits:[{ id, score, node, vertical }] } reads the same as the flat array', () => {
+  const out = JSON.stringify({ routed: [], meaning: false, hits: [
+    { id: 'E:kapu', score: 0.9, from: { node: 1 }, node: { id: 'E:kapu', layer: 'E', kind: 'pillar', title: 'VRG Kapu', brief: 'b', state: 'live', t: '2026' }, vertical: [{ id: 'F:f8', rel: 'same', title: 'Kapu' }] },
+    { id: 7, node: {} },
+  ] });
+  const hits = is.parseStack(out);
+  assert.equal(hits.length, 1);
+  assert.deepEqual([hits[0].id, hits[0].layer, hits[0].title, hits[0].vertical[0].id], ['E:kapu', 'E', 'VRG Kapu', 'F:f8']);
+});

@@ -88,3 +88,47 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
   `resources/app` bootstrap that loads the repo's `Dashboard/shell/main.js` (path in `vrg-desktop.json` beside the exe). No npm, no network.
   The file icon stays Electron's until rcedit is vendored (attended).
 - B: electron-builder (needs npm + network). C: a .cmd shortcut only.
+
+## DESKU-Q13 — The top strip's built-in widgets
+
+- **A (taken):** seven built-ins drawn by the Desktop itself (`w:clock`, `w:search`, `w:servers`, `w:git`, `w:backup`, `w:ring`, `w:level`);
+  catalog items with `surfaces.top` (the Varler Console, Kódváros …) join them as shortcuts. The Testreszabás sheet picks and orders
+  at most 12, saved as `desk.top` (per user, in the Dashboard's settings file). Default: clock · search · servers · git · backup · ring · Console · level.
+- B: Console pages as live widgets now (needs a page-to-widget contract). C: a fixed strip with no choice.
+
+## DESKU-Q14 — Double Tab: who detects it
+
+- **A (taken):** the frame page detects its own double Tab (it sees the focused element before Tab moves the focus, and can
+  `preventDefault` the second tap); every other webContents (web tabs, in-shell apps, the Kezdőlap) is watched by main through
+  `before-input-event`, and an isolated-world recorder (`TAB_RECORDER`, world 1013) notes at each Tab keydown whether the focus took
+  text. A pair from a text field, a textarea, contenteditable or a terminal never toggles. Key and interval: `config/keymap.json`.
+- B: main only (its async probe ran after Tab had moved focus into the first input: toggled from text fields / skipped on forms).
+  C: a global shortcut (steals Tab from every other program).
+
+## DESKU-Q15 — Esc
+
+- **A (taken):** Esc closes the open dial or sheet first; on the Desktop's own chrome (empty ground, dock, top strip) it hides the
+  windows (show desktop). Inside an app Esc belongs to the app; the way back is double Tab or the dock.
+- B: Esc always returns to the Dashboard (breaks every app that uses Esc). C: no Esc behaviour.
+
+## DESKU-Q16 — The gate flag
+
+- **A (taken):** `auth.enabled` (default false) is a settings key the page can read but never write (`app.setting` refuses it with
+  `forbidden`); only the settings file or a later Kapu step turns it on. With it off the boot is splash → ready; on, splash → gate
+  (a placeholder until Kapu's sign-in moves in) → ready.
+- B: a page-settable flag (a page could switch the gate off). C: no flag, the gate added later.
+
+## DESKU-Q17 — One probe for three WPs
+
+- **A (taken):** WP-41, 42 and 43 share one real-window probe (`shell/selftest/wp-41.js`): the views, the dials and the in-shell app
+  depend on each other's state and one window start costs ~10 s. WP-42 and WP-43 have their own unit tests.
+- B: three probes (three window starts, duplicated set-up).
+
+## DESKU-Q18 — How the old workbench is reached, and the exe's START key
+
+- **A (taken):** the boot shows the last primary view (default Dashboard) with the workspace's windows hidden until something opens;
+  `--start windows` boots straight into the Desktop with its windows (the Irányítópult as it was before U5). START D keeps its key and
+  now prefers `VRG Desktop.exe` (passing its own checkout as `--repo`); the new dev key **F** builds the exe. The exe keeps the shell's
+  app name (`vrg-dashboard-shell`), so it and `electron.exe Dashboard\shell` share one profile.
+- B: turn D into a submenu (start / build) — changes a key the Founder types by heart. C: a productName "VRG Desktop" (a second,
+  empty profile: the in-shell apps' saved data would seem lost).

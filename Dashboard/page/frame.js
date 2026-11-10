@@ -114,7 +114,11 @@
       onPanes: ids => { for (const id of [...panes.keys()]) if (!ids.has(id)) drop(id); scheduleBounds(); },
     });
     L.set(tree);
-    window.VRGFrame = { tree: () => L.tree(), save, panes: () => [...panes.keys()], open: openKind, close: id => L.commit(lib.close(L.tree(), id)), pane: id => (panes.get(id) || {}).inst || null };
+    const paneOf = id => lib.panes(L.tree()).find(p => p.id === id) || null;
+    window.VRGFrame = { tree: () => L.tree(), save, panes: () => [...panes.keys()], open: openKind, close: id => L.commit(lib.close(L.tree(), id)), pane: id => (panes.get(id) || {}).inst || null,
+      // the VRG Asztal's dock (WP-42): what each pane is, and focusing one
+      kindOf: id => (paneOf(id) || {}).kind || '', stateOf: id => (paneOf(id) || {}).state || null, focused: () => L.focused(),
+      focus: id => { if (!paneOf(id)) return false; L.commit(lib.focus(L.tree(), id)); L.focusPane(id); return true; } };
     window.addEventListener('resize', scheduleBounds);
     window.addEventListener('scroll', scheduleBounds, true);
     new ResizeObserver(scheduleBounds).observe(root);

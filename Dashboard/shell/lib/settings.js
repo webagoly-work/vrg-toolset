@@ -5,6 +5,7 @@
 const fs = require('fs'), path = require('path');
 const paths = require('./paths.js');
 const layout = require('./layout.js');
+const desk = require('./desk.js');
 
 const rect = v => !!v && typeof v === 'object' && ['x', 'y', 'width', 'height'].every(k => Number.isFinite(v[k])) && v.width > 0 && v.height > 0;
 
@@ -30,6 +31,11 @@ const KEYS = {
   'web.perms':         { type: permsOk, def: {} },                                        // WP-17: { origin: { 'media': bool, 'clipboard-sanitized-write': bool } }
   'ui.lang':          { type: v => v === 'hu' || v === 'en', def: 'hu' },
   'layout.tree':       { type: v => v === null || layout.validate(v).ok, def: null },   // WP-07; null = the default tree
+  'desk.level':        { type: v => desk.LEVELS.includes(v), def: 'user' },             // WP-41: User / Dev / All (DESKU-Q04)
+  'desk.view':         { type: v => desk.VIEWS.includes(v), def: 'dashboard' },         // WP-41: the last primary view, the boot target
+  'desk.top':          { type: v => v === null || desk.validTop(v), def: null },       // WP-42: the top strip's ids in order; null = the default
+  'desk.dock':         { type: v => desk.validDock(v), def: null },                     // WP-42: pinned dock ids; null = the catalog's surfaces.dock
+  'auth.enabled':      { type: v => typeof v === 'boolean', def: false },               // WP-43: the Kapu gate in the boot flow (off until Kapu auth is ready)
 };
 
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);

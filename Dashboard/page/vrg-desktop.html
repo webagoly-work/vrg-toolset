@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data:; connect-src 'none'">
-<title>VRG Irányítópult</title>
+<title>VRG Asztal</title>
 <link rel="stylesheet" href="../../shared/melyviz.css">
 <link rel="stylesheet" href="../../../tools/js-libs/xterm/css/xterm.css">
+<link rel="stylesheet" href="desk.css">
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: var(--mv-bg); color: var(--mv-text); }
   body { display: flex; flex-direction: column; font: 13px var(--mv-sans, sans-serif); }
@@ -15,6 +16,7 @@
   [data-role="wbar"] button { -webkit-app-region: no-drag; background: none; border: 0; border-left: 1px solid var(--mv-line); color: var(--mv-dim); width: 42px; cursor: pointer; }
   [data-role="wbar"] button:hover { background: var(--mv-raised); color: var(--mv-text); }
   #root { flex: 1 1 0; min-height: 0; display: flex; }
+  #root[hidden] { display: none; }
   .split { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; }
   .split[data-dir="h"] { flex-direction: row; }
   .split[data-dir="v"] { flex-direction: column; }
@@ -69,13 +71,25 @@
 </head>
 <body>
 <header data-role="wbar" id="wbar">
-  <div class="wt">VRG Irányítópult</div>
+  <div class="wt">VRG Asztal</div>
   <div class="sp"></div>
   <button data-w="min" title="Kis méret / Minimize">&#8211;</button>
   <button data-w="max" title="Nagy méret / Maximize">&#9633;</button>
   <button data-w="close" class="x" title="Bezár / Close">&#10005;</button>
 </header>
-<main id="root" data-role="root"></main>
+<div id="stage" data-role="stage">
+  <section data-role="desktop" hidden aria-label="Asztal nézet">
+    <div data-role="topstrip"></div>
+    <div data-role="workspace">
+      <div data-role="ground"><div class="mark">VRG Asztal</div><div class="hint">dupla Tab: Irányítópult · ◣ menü · ◢ Rétegverem<span class="en">double Tab: Dashboard · ◣ menu · ◢ VRG Stack</span></div></div>
+      <main id="root" data-role="root" hidden></main>
+    </div>
+    <nav data-role="dock" aria-label="Dokk"></nav>
+  </section>
+  <section data-role="dashboard" aria-label="Irányítópult nézet"></section>
+  <button type="button" data-role="view-toggle" title="Nézetváltás / Toggle view">⊞</button>
+</div>
+<div data-role="boot"></div>
 <script src="../shell/lib/layout.js"></script>
 <script src="panes/empty.js"></script>
 <script src="../shell/lib/palette.js"></script>
@@ -86,5 +100,9 @@
 <script src="quick.js"></script>
 <script src="toasts.js"></script>
 <script src="frame.js"></script>
+<script src="../dashboard-data.js"></script>
+<script src="../shell/lib/desk.js"></script>
+<script src="sui-dial.js"></script>
+<script src="desk.js"></script>
 </body>
 </html>

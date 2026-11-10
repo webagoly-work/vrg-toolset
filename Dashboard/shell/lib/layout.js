@@ -8,7 +8,7 @@
   else root.VRGLayoutLib = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
-  const KINDS = ['home', 'empty', 'files', 'term', 'web', 'mail', 'stack', 'chat', 'note', 'git', 'feed'];
+  const KINDS = ['home', 'empty', 'files', 'term', 'web', 'mail', 'stack', 'chat', 'note', 'git', 'feed', 'app'];   // app: an in-shell HTML app (WP-43)
   const MAX_DEPTH = 6, MAX_PANES = 40, MAX_STATE = 8192;
   const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
   const plain = v => v !== null && typeof v === 'object' && !Array.isArray(v);

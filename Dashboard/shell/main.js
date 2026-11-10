@@ -8,7 +8,7 @@
 // - a START item runs the way vrg-ui.ps1 runs it (lib/runbat.js); action / phase / menu items stay in START: refused;
 // - every 4 s the registry's server ports are probed on 127.0.0.1 and the result goes to the page (lib/ports.js).
 'use strict';
-const { app, BrowserWindow, WebContentsView, ipcMain, shell, screen, globalShortcut, Tray, Menu, nativeImage, safeStorage, clipboard, session } = require('electron');
+const { app, BrowserWindow, WebContentsView, ipcMain, shell, screen, globalShortcut, Tray, Menu, nativeImage, safeStorage, clipboard, session, protocol, net } = require('electron');
 const path = require('path'), os = require('os');
 const build = require('../build.js');
 const { createRegistry } = require('./lib/registry.js');
@@ -28,6 +28,11 @@ const { createViews } = require('./lib/views.js');
 const { createPalette, loadKeymap } = require('./lib/palette.js');
 const quickLib = require('./lib/quick.js');
 const { createJobs } = require('./lib/jobs.js');
+const deskLib = require('./lib/desk.js');
+const { createCatalog } = require('./lib/catalog.js');
+const { createAppScheme, PRIVILEGES: APP_SCHEME } = require('./lib/appscheme.js');
+// in-shell HTML apps get a real origin on vrg-app:// (WP-43, DESKU-Q08); a privileged scheme must be registered before ready
+protocol.registerSchemesAsPrivileged([{ scheme: 'vrg-app', privileges: APP_SCHEME }]);
 
 const PAGE = path.join(__dirname, '..', 'vrg-dashboard.html');                 // the Kezdőlap, shown in a view
 const FRAME = path.join(__dirname, '..', 'page', 'vrg-desktop.html');          // the main window: the frame page
@@ -37,6 +42,11 @@ if (SELFTEST) process.env.VRG_DESK_HOME = path.join(TMP, 'desk-test-home');     
 const secrets = createSecrets({ safeStorage });                                  // main-only: no IPC reaches it
 // a selftest always starts from the default layout: panes a previous test run saved (terminal panes re-open as new sessions) must not start anything
 if (SELFTEST) { try { settings.set('layout.tree', null); } catch (e) {} }
+// --start windows: boot straight into the Desktop view with its windows shown (the workbench the Irányítópult opened before the
+// Desktop views, U5). The selftest probes written before them (WP-03 … WP-35) test that workbench, so they start there too.
+const argVal = k => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : undefined; };
+const PROBE_NO = Number((/^wp-(\d+)$/i.exec(argVal('--probe') || '') || [])[1]) || 0;
+const DESK_START = argVal('--start') === 'windows' || (SELFTEST && PROBE_NO > 0 && PROBE_NO < 40) ? 'windows' : '';
 
 if (!SELFTEST && !app.requestSingleInstanceLock()) { app.quit(); return; }
 app.setAppUserModelId('VRG.Dashboard');
@@ -186,6 +196,7 @@ ipc.register('app', 'log', { level: types.enum('info', 'warn', 'error'), msg: ty
 });
 ipc.register('app', 'setting', { k: types.text(80), v: types.json(4096) }, async ({ k, v }) => {
   if (!settings.has(k)) return { ok: false, err: 'bad-request', hu: 'Ismeretlen beállítás.' };
+  if (k === 'auth.enabled' && v !== undefined) return { ok: false, err: 'forbidden', hu: 'A belépés kapcsolója nem a lapról állítható.' };   // WP-43: only the settings file
   if (v === undefined) return { v: settings.get(k) };
   try { return { v: settings.set(k, v) }; } catch (e) { return { ok: false, err: 'bad-request', hu: 'Érvénytelen érték.' }; }
 }, { optional: ['v'] });
@@ -200,10 +211,22 @@ ipc.register('layout', 'set', { tree: types.json(65536) }, async ({ tree }) => {
   settings.set('layout.tree', tree);
   const homes = layoutLib.panes(tree).some(p => p.kind === 'home');
   if (!homes && views.has('home')) views.destroy('home');                        // the pane closed: its view goes
+  const apps = new Set(layoutLib.panes(tree).filter(p => p.kind === 'app' && p.state && typeof p.state.id === 'string').map(p => 'app:' + p.state.id));
+  for (const v of views.ids()) if (/^app:/.test(v) && !apps.has(v)) views.destroy(v);   // an app pane closed: its view goes (WP-43)
   return {};
 });
 ipc.register('layout', 'bounds', { viewId: types.id, rect: types.obj({ x: coord, y: coord, w: size, h: size }) }, async ({ viewId, rect }) => {
   if (webHost.has(viewId)) return { ok: webHost.bounds(viewId, rect) };           // web tabs (WP-17)
+  if (/^app:/.test(viewId)) {                                                    // in-shell HTML apps (WP-43): created on the first rect
+    if (!views.has(viewId)) {
+      const id = viewId.slice(4);
+      if (catalog.appOwner(id) !== id) return { ok: false, err: 'not-found', hu: 'Nincs ilyen alkalmazás.' };
+      const url = appScheme.urlFor(id);
+      if (!url) return { ok: false, err: 'not-found', hu: 'Nincs ilyen alkalmazás.' };
+      views.createApp(viewId, url, { sameApp: u => appScheme.sameApp(id, u), onLink: u => ipc.emit(win, 'desktop', 'link', { url: u }) });
+    }
+    return { ok: views.setBounds(viewId, rect) };
+  }
   if (viewId !== 'home') return { ok: false, err: 'bad-request', hu: 'Ismeretlen nézet.' };
   if (!views.has(viewId)) {
     if (!layoutLib.panes(currentTree().tree).some(p => p.kind === 'home')) return { ok: false, err: 'not-found', hu: 'Nincs ilyen panel.' };
@@ -213,7 +236,22 @@ ipc.register('layout', 'bounds', { viewId: types.id, rect: types.obj({ x: coord,
 });
 
 // command palette (WP-08): the index, and run(id) re-resolved in main. palette({open}) hides / shows the web views under the overlay.
-const palette = createPalette({ R, acts, log, openPane: kind => ipc.emit(win, 'layout', 'open', { kind, state: {} }) });
+// desk: the VRG Asztal's views and levels as palette commands (WP-41); main only forwards them to the frame, a level is also saved here
+const DESK_CMDS = [['desk:toggle', 'Nézetváltás: Irányítópult ⇄ Asztal', 'Toggle Dashboard / Desktop view'], ['desk:view:dashboard', 'Irányítópult nézet', 'Dashboard view'],
+  ['desk:view:desktop', 'Asztal nézet', 'Desktop view'], ['desk:level:user', 'Szint: Felhasználó', 'Level: User'], ['desk:level:dev', 'Szint: Fejlesztő', 'Level: Dev'],
+  ['desk:level:all', 'Szint: Minden', 'Level: All'], ['desk:settings', 'Beállítások (VRG Asztal)', 'Settings'], ['desk:customize', 'Felső sáv testreszabása', 'Customise the top strip']];
+const deskCmds = {
+  paletteItems: () => DESK_CMDS.map(([id, hu, en]) => ({ id, hu, en })),
+  run: id => {
+    const c = DESK_CMDS.find(x => x[0] === id);
+    if (!c) return { ok: false, hu: 'Ismeretlen parancs.', en: 'Unknown command.' };
+    const cmd = id.slice(5);
+    if (cmd.startsWith('level:')) { try { settings.set('desk.level', cmd.slice(6)); } catch (e) {} }
+    ipc.emit(win, 'desktop', 'cmd', { cmd });
+    return { ok: true, hu: c[1], en: c[2] };
+  },
+};
+const palette = createPalette({ R, acts, log, modules: { 'desk:': deskCmds }, openPane: kind => ipc.emit(win, 'layout', 'open', { kind, state: {} }) });
 ipc.register('layout', 'palette', { open: types.bool }, async ({ open }) => {
   if (open === true) views.hideAll(); else if (open === false) views.showAll();
   if (open === false) return {};
@@ -618,9 +656,95 @@ ipc.register('feed', 'open', { pre: types.id, i: types.int(0, 199) }, async ({ p
 });
 app.on('will-quit', () => presetsLib.stop());
 
+// ------------------------------------------------------------ the VRG Asztal (Desktop unify U5–U7, WP-41 … WP-43)
+// The catalog (launcher/vrg-catalog.json) says what exists; the page names a catalog id and main resolves it (lib/catalog.js resolve):
+// a START act (an HTML app opens in-shell on vrg-app://), a server + path (started if down, then the browser pane), a pane kind,
+// a primary view, a frame tool. Settings desk.* are per user; auth.enabled is read here, never set by the page.
+const catalog = createCatalog({ file: path.join(REPO_DIR, 'launcher', 'vrg-catalog.json'), collect: () => R.C, kinds: layoutLib.KINDS });
+const isFile = f => { try { return require('fs').statSync(f).isFile(); } catch (e) { return false; } };
+const appScheme = createAppScheme({ catalog, repo: path.resolve(REPO_DIR), expand: s => R.expand(s), isFile });
+const deskKeymap = () => { try { return JSON.parse(require('fs').readFileSync(path.join(__dirname, '..', 'config', 'keymap.json'), 'utf8')); } catch (e) { return {}; } };
+const deskSetting = (k, def) => { try { return settings.get(k); } catch (e) { return def; } };
+ipc.register('desktop', 'catalog', { level: types.enum('user', 'dev', 'all') }, async ({ level }) => {
+  if (!catalog.raw().items.length) catalog.load();
+  const lv = level || deskSetting('desk.level', 'user');
+  return { level: lv, items: catalog.listFor(lv), groups: catalog.groups(), sections: catalog.sections(), errors: catalog.errors().length };
+}, { optional: ['level'] });
+ipc.register('desktop', 'state', {}, async () => ({
+  level: deskSetting('desk.level', 'user'), view: deskSetting('desk.view', 'dashboard'), top: deskSetting('desk.top', null), dock: deskSetting('desk.dock', null),
+  auth: deskSetting('auth.enabled', false) === true, toggle: deskLib.toggleSpec(deskKeymap()), start: DESK_START,
+}));
+// a registry server, started when it is down (never in a selftest), as the URL the browser pane opens
+async function deskServer(id, urlPath) {
+  const s = R.server(id);
+  if (!s) return { ok: false, err: 'not-found', hu: 'Nincs ilyen szerver.' };
+  const url = 'http://127.0.0.1:' + s.port + (urlPath || s.open || '/');
+  if (!SELFTEST && !(await ports.up(s.port))) {
+    const err = ports.startServer(s);
+    if (err) return { ok: false, err: 'not-found', hu: err };
+    let up = false;
+    for (let i = 0; i < 20 && !up; i++) { await new Promise(r => setTimeout(r, 500)); up = await ports.up(s.port); }
+    ports.pollPorts();
+    if (!up) return { ok: false, err: 'error', hu: 'A szerver nem válaszol 10 mp alatt: ' + s.name };
+  }
+  return { do: 'web', url, server: s.id };
+}
+ipc.register('desktop', 'open', { id: types.id }, async ({ id }) => {
+  if (!catalog.raw().items.length) catalog.load();
+  const it = catalog.get(id);
+  if (!it) return { ok: false, err: 'not-found', hu: 'Nincs ilyen elem a katalógusban.' };
+  const r = catalog.resolve(id);
+  if (!r) return { ok: false, err: 'not-found', hu: 'Ennek nincs mit megnyitni: ' + it.title.hu };
+  if (r.do === 'act') {
+    if (r.app) {
+      const owner = catalog.appOwner(id);
+      const t = owner && catalog.appTarget(owner, { repo: path.resolve(REPO_DIR), expand: s => R.expand(s) });
+      if (t && isFile(path.join(path.resolve(REPO_DIR), ...t.page.split('/')))) return { do: 'app', id: owner, title: catalog.get(owner).title.hu };
+    }
+    if (SELFTEST) return { do: 'done', result: { ok: true, hu: 'teszt: ' + r.act, plan: r.act } };   // the selftest never starts anything
+    return { do: 'done', result: await runActWithWorkspace(r.act) };
+  }
+  if (r.do === 'web') return deskServer(r.server, new URL(r.url).pathname);
+  return r;
+});
+ipc.register('desktop', 'server', { id: types.id }, async ({ id }) => deskServer(id));
+ipc.register('desktop', 'cover', { on: types.bool }, async ({ on }) => { if (on) views.hideAll('cover'); else views.showAll('cover'); return {}; });
+
+// double Tab (configurable in config/keymap.json: desktopToggleKey, desktopToggleMs). The frame page watches its own keys (it knows the
+// focused element before Tab moves it, page/desk.js); every other webContents (web tabs, in-shell apps, the Kezdőlap) is watched here,
+// and the toggle is skipped when the focus was in something that takes text (input, textarea, contenteditable, a terminal) at either tap
+const deskTap = deskLib.createDoubleTap(deskLib.toggleSpec(deskKeymap()));
+const editable = wc => Promise.race([
+  wc.executeJavaScript(deskLib.EDITABLE_PROBE, false).then(v => v === true).catch(() => false),
+  new Promise(r => setTimeout(() => r(false), 250)),
+]);
+// the recorder notes the focus at each Tab keydown in an isolated world (lib/desk.js TAB_RECORDER); where it is missing (the page was not
+// ready yet) the async probe is the fallback
+const inWorld = (wc, code) => Promise.race([
+  wc.executeJavaScriptInIsolatedWorld(deskLib.TAB_WORLD, [{ code }], false).catch(() => null),
+  new Promise(r => setTimeout(() => r(null), 250)),
+]);
+let firstTap = null;
+app.on('web-contents-created', (e, wc) => {
+  wc.on('dom-ready', () => { if (win && !win.isDestroyed() && wc !== win.webContents) inWorld(wc, deskLib.TAB_RECORDER); });
+  wc.on('before-input-event', (ev, input) => {
+    if (!win || win.isDestroyed() || wc === win.webContents) return;
+    const plain = input.type === 'keyDown' && input.key === deskTap.spec.key && !input.control && !input.alt && !input.shift && !input.meta && !input.isAutoRepeat;
+    if (!deskTap.feed(input, Date.now())) { if (plain) firstTap = { wc, ed: editable(wc) }; return; }
+    const first = firstTap && firstTap.wc === wc ? firstTap.ed : Promise.resolve(false);
+    firstTap = null;
+    // the second keydown reaches the page after this event: read the recorder a moment later
+    setTimeout(() => inWorld(wc, deskLib.TAB_READ).then(rec => {
+      const go = () => { if (win && !win.isDestroyed()) ipc.emit(win, 'desktop', 'toggle', {}); };
+      if (Array.isArray(rec)) { if (!rec[0] && !rec[1]) go(); return; }
+      Promise.all([first, editable(wc)]).then(([a, b]) => { if (!a && !b) go(); });
+    }), 40);
+  });
+});
+
 ipc.legacy('handle', 'vrg:act',(e, id) => runActWithWorkspace(id));
 ipc.legacy('handle', 'vrg:ports', () => ports.ports);
-ipc.legacy('handle', 'vrg:refresh', () => { build.write(); R.load(); ports.pollPorts(); reload(); return true; });
+ipc.legacy('handle', 'vrg:refresh', () => { build.write(); R.load(); catalog.load(); ports.pollPorts(); reload(); return true; });
 ipc.legacy('on', 'vrg:win', (e, cmd) => {
   if (!win) return;
   if (cmd === 'min') win.minimize();
@@ -634,6 +758,13 @@ app.on('will-quit', () => { globalShortcut.unregisterAll(); if (tray) tray.destr
 
 app.whenReady().then(async () => {
   build.write(); R.load();                                             // the page always starts on fresh data
+  catalog.load();
+  session.fromPartition('persist:vrg-app').protocol.handle('vrg-app', async req => {    // WP-43: only the app's folder + shared/
+    const d = appScheme.decide(req.url);
+    if (!d.ok) return new Response(d.why, { status: d.status, headers: { 'content-type': 'text/plain; charset=utf-8' } });
+    const r = await net.fetch(require('url').pathToFileURL(d.file).href);
+    return new Response(r.body, { status: 200, headers: { 'content-type': d.type } });
+  });
   createWindow();
   setupShell();
   await ports.pollPorts();

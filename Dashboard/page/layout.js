@@ -34,7 +34,7 @@
       node.items.forEach((p, i) => {
         const on = i === node.active;
         const tab = el('div', { class: 'tab', 'data-tab': p.id, 'data-active': on ? '1' : '0' });
-        const t = el('button', { type: 'button', class: 't', draggable: 'true', text: LABEL[p.kind] || p.kind, title: p.kind });
+        const t = el('button', { type: 'button', class: 't', draggable: 'true', text: p.kind === 'app' && p.state && typeof p.state.title === 'string' ? p.state.title.slice(0, 40) : LABEL[p.kind] || p.kind, title: p.kind });
         t.addEventListener('click', () => { commit(lib.focus(tree, p.id)); setFocus(p.id); });
         t.addEventListener('dragstart', e => { dragId = p.id; document.body.dataset.dragging = '1'; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', 'vrg-pane'); });
         t.addEventListener('dragend', () => { dragId = ''; delete document.body.dataset.dragging; });

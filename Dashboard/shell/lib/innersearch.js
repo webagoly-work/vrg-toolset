@@ -33,9 +33,11 @@ function codeArgs(ctxJs, q, { n } = {}) {
   return [ctxJs, 'q', q, '-n', String(clampInt(n, 1, 50, 8)), '--json'];
 }
 
-// stack.js q --json → [{ id, layer, kind, title, brief, state, t, vertical:[{ id, rel, title }] }]
+// stack.js q --json → [{ id, layer, kind, title, brief, state, t, vertical:[{ id, rel, title }] }] (the old shape), or since the Stack's
+// own repo folder { routed, meaning, hits:[{ id, score, node:{ id, layer, kind, title, brief, state, t, … }, vertical }] }
 function parseStack(out) {
   let j; try { j = JSON.parse(out); } catch (e) { return null; }
+  if (j && !Array.isArray(j) && Array.isArray(j.hits)) j = j.hits.map(h => (h && h.node && typeof h.node === 'object' ? { ...h.node, id: h.id, vertical: h.vertical } : h));
   if (!Array.isArray(j)) return null;
   const s = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
   return j.filter(h => h && typeof h.id === 'string').slice(0, 50).map(h => ({
