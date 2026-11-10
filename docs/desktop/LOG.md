@@ -11,3 +11,11 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 - Checks: `node Dashboard/test/run.js --all` → 346 pass, 0 fail, selftest ok (343 ids);
   `node tools/check-start.js` → ok (one unlisted page, `Modder/vrg-fenymero.html`, was already there);
   `launcher/test/selftest.ps1` → Rendben.
+
+## U1 — inventory (2026-11-10)
+
+- `Dashboard/tools/inventory.js` (re-runnable, read-only) → `docs/desktop/inventory.json` + `INVENTORY.md`: **526 rows** from 13 sources
+  (vrg-menu 153, features 105, dashboard 79, console 51, mobile 19, stack 23, tools 15, prompts 8, agents 17, firmware 4, shared 4, docs 23, folders 25).
+- Client codes: 8 features rows held one; the script now swaps codes for their aliases with the anonymise map (the main checkout's copy,
+  DESK-Q87 C) and writes nothing without a map. `anonymise.js --check` on the outputs: clean.
+- Checks: run.js --all green.
