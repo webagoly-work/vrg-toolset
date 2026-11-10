@@ -427,5 +427,5 @@ The user's answers to the open questions: `1A 2A 3A 4A 5A 6B 7B 8A` (8B only as 
 | 4 | Default theme | **A — Éj**; Mélyvíz chosen per app | Already so |
 | 5 | Terminal tones in Papír | **A — `--vk-term-*` tokens** in every theme | Done (§3) |
 | 6 | Fonts in single-file apps | **B — always inline** (`--no-fonts` to opt out) | Done (§1) |
-| 7 | START registry | **B — add it now**: key **D**, "VRG UI Kit galéria", in `launcher/vrg-menu.json`; Kapu rebuilt | Done |
+| 7 | START registry | **B — add it now**: key **B** (was D until 2026-11-10, DESKU-Q01), "VRG UI Kit galéria", in `launcher/vrg-menu.json`; Kapu rebuilt | Done |
 | 8 | Graph editing | **A — in the GO ROUTE Topology View work**, where the real editing rules live; a generic kit version (B) only if that work doesn't produce one | Later |
