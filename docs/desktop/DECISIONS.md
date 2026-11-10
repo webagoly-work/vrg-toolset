@@ -47,3 +47,44 @@ The merge put both on the main screen (check-start error, wp-05 and wp-08 red).
   files, START keys or the phone wait for the Founder.
 - B: rename now in code and registries.
 - C: keep every current name, add types only.
+
+## DESKU-Q06 — Product name
+
+- **A (taken):** **VRG Asztal** (*VRG Desktop*) for the program and the exe (`VRG Desktop.exe`); its views are *Irányítópult nézet* and
+  *Asztal nézet*; the folder `Dashboard/` keeps its name until a rename is worth the churn.
+- B: keep "VRG Irányítópult" for the program. C: rename the folder to `Desktop/` now.
+
+## DESKU-Q07 — Where the catalog lives
+
+- **A (taken):** `launcher/vrg-catalog.json`, next to vrg-menu.json (START, Kapu, the Desktop and check tools all read `launcher/`).
+- B: `Dashboard/config/catalog.json`. C: inside `notes/features` (outside git).
+
+## DESKU-Q08 — How HTML apps open inside the shell
+
+- **A (taken):** a privileged standard scheme `vrg-app://<catalog-id>/<repo-relative path>`, served by main from that item's own folder
+  plus `shared/` (a page whose folder is the repo root is served alone). Real origin per app → localStorage works, apps stay apart.
+  The view has no preload, sandbox on, its own partition `persist:vrg-app`.
+- B: `file://` in a view (localStorage fails: null origin). C: a local static server per app.
+
+## DESKU-Q09 — Where opened things live
+
+- **A (taken):** on the Desktop view's workspace, in the existing layout (tabs, splits); the Dashboard view covers the workspace; opening
+  from the Dashboard switches to the Desktop. "Show desktop" in the dock hides the windows (the empty ground).
+- B: a third "work" view. C: separate OS windows.
+
+## DESKU-Q10 — Varler Console on the Desktop
+
+- **A (taken):** stays its own companion app (field PWA, :8133); its quick pages are top-strip shortcuts that open it on the page.
+- B: embed Console pages as native Desktop widgets now. C: merge the Console into the Desktop.
+
+## DESKU-Q11 — Old lists
+
+- **A (taken, proposal):** Toolbox, Zen sessions and Kapu's baked tool list retire into the catalog; the files stay until the Founder removes them.
+- B: remove them now. C: keep all of them as equal lists.
+
+## DESKU-Q12 — How the exe is made
+
+- **A (taken):** copy the portable Electron 44.7.1, rename `electron.exe` → `VRG Desktop.exe`, drop `default_app.asar`, add a
+  `resources/app` bootstrap that loads the repo's `Dashboard/shell/main.js` (path in `vrg-desktop.json` beside the exe). No npm, no network.
+  The file icon stays Electron's until rcedit is vendored (attended).
+- B: electron-builder (needs npm + network). C: a .cmd shortcut only.

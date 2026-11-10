@@ -27,3 +27,9 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   `docs/desktop/classification.json` + `CLASSIFICATION.md`: all 526 rows typed and levelled (user 118, dev 284, all 124), every
   dev row has a parent in the catalog; 10 naming collisions with proposed names. DESKU-Q02…Q05.
 - Checks: classify.js exit 0 (no orphan, no unparented dev row); anonymise --check clean.
+
+## U3 — architecture proposal (2026-11-10)
+
+- `docs/desktop/ARCHITECTURE.md`: why it tangles (7 lists), what VS Code / Windows / macOS / JetBrains Toolbox / Home Assistant–Grafana do,
+  the recommended layout, what START / Kapu / Toolbox / hub-seed / Console / Zen become, a 16-row rename table, the migration order.
+- DESKU-Q06 … Q12 recorded.
