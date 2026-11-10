@@ -1,0 +1,21 @@
+From: News Desk <news@example.test>
+To: demo@example.test
+Subject: Multipart demo
+Date: Mon, 02 Nov 2026 18:00:00 +0100
+Message-ID: <multipart@example.test>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="alt-demo-001"
+
+This is a multi-part message in MIME format.
+--alt-demo-001
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Hello! Ez a sz=C3=B6veges v=C3=A1ltozat, a hossz=C3=BA sort =
+egyben tartjuk.
+--alt-demo-001
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<html><body><p>Hello <b>vil&aacute;g</b></p><script>window.__demo = 1;</script><img src="http://127.0.0.1:{port}/img" width="1" height="1"></body></html>
+--alt-demo-001--

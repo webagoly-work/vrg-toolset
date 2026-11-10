@@ -280,6 +280,7 @@
             { "key": "3", "name": "Inventory projekt", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{inventory}", "needs": "{claude}" },
             { "key": "B", "name": "Bernard", "hint": "a Tanács főművezetője", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\" --agent bernard"], "cwd": "{repo}", "needs": "{claude}" }
           ] } },
+      { "key": "D", "name": "Irányítópult", "hint": "a teljes képernyős munkafelület", "exe": "{repo}\\Dashboard\\VRG Irányítópult.cmd" },
       { "key": "E", "name": "VS Code", "was": "R V", "menu": {
           "title": "VS CODE", "subtitle": "{code}",
           "items": [

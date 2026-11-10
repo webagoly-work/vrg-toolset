@@ -1,0 +1,6 @@
+[
+  { "id": "google", "hu": "Google", "url": "https://www.google.com/search?q={q}" },
+  { "id": "ai", "hu": "AI keresés (Google AI Mode)", "url": "https://www.google.com/search?udm=50&q={q}" },
+  { "id": "maps", "hu": "Térkép", "url": "https://www.google.com/maps/search/{q}" },
+  { "id": "youtube", "hu": "YouTube", "url": "https://www.youtube.com/results?search_query={q}" }
+]

@@ -1,0 +1,9 @@
+[
+  { "id": "pwsh", "hu": "PowerShell", "exe": "{systemroot}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", "args": ["-NoLogo"] },
+  { "id": "cmd", "hu": "Parancssor", "exe": "{systemroot}\\System32\\cmd.exe", "args": ["/k", "chcp 65001>nul"] },
+  { "id": "bash", "hu": "Git Bash", "exe": "{full}\\tools\\git\\bin\\bash.exe", "args": ["--login", "-i"] },
+  { "id": "node", "hu": "Node konzol", "exe": "{node}", "args": [] },
+  { "id": "claude-a", "hu": "Claude Code (A)", "exe": "{claude}", "args": [], "account": "A" },
+  { "id": "claude-b", "hu": "Claude Code (B)", "exe": "{claude}", "args": [], "account": "B",
+    "env": { "CLAUDE_CONFIG_DIR": "{full}\\home\\claude-account-b" } }
+]

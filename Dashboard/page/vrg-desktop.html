@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data:; connect-src 'none'">
+<title>VRG Irányítópult</title>
+<link rel="stylesheet" href="../../shared/melyviz.css">
+<link rel="stylesheet" href="../../../tools/js-libs/xterm/css/xterm.css">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--mv-bg); color: var(--mv-text); }
+  body { display: flex; flex-direction: column; font: 13px var(--mv-sans, sans-serif); }
+  [data-role="wbar"] { display: flex; align-items: stretch; flex: 0 0 30px; height: 30px; -webkit-app-region: drag; user-select: none; border-bottom: 1px solid var(--mv-line); }
+  [data-role="wbar"] .wt { padding: 0 12px; display: flex; align-items: center; font: 11px var(--mv-mono); letter-spacing: .14em; color: var(--mv-dim); text-transform: uppercase; }
+  [data-role="wbar"] .sp { flex: 1; }
+  [data-role="wbar"] button { -webkit-app-region: no-drag; background: none; border: 0; border-left: 1px solid var(--mv-line); color: var(--mv-dim); width: 42px; cursor: pointer; }
+  [data-role="wbar"] button:hover { background: var(--mv-raised); color: var(--mv-text); }
+  #root { flex: 1 1 0; min-height: 0; display: flex; }
+  .split { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; }
+  .split[data-dir="h"] { flex-direction: row; }
+  .split[data-dir="v"] { flex-direction: column; }
+  .cell { min-width: 0; min-height: 0; display: flex; }
+  .cell > * { flex: 1 1 0; min-width: 0; min-height: 0; }
+  [data-role="handle"] { flex: 0 0 5px; background: var(--mv-line); touch-action: none; }
+  .split[data-dir="h"] > [data-role="handle"] { cursor: col-resize; }
+  .split[data-dir="v"] > [data-role="handle"] { cursor: row-resize; }
+  [data-role="group"] { display: flex; flex-direction: column; border: 1px solid var(--mv-line); }
+  [data-role="group"][data-focus="1"] { border-color: var(--mv-accent); }
+  [data-role="tabs"] { display: flex; flex: 0 0 auto; align-items: stretch; border-bottom: 1px solid var(--mv-line); }
+  [data-role="tabs"] .tab { display: flex; align-items: stretch; border-right: 1px solid var(--mv-line); }
+  [data-role="tabs"] .tab[data-active="1"] { background: var(--mv-raised); }
+  [data-role="tabs"] button { background: none; border: 0; color: var(--mv-dim); padding: 4px 8px; cursor: pointer; font: inherit; }
+  [data-role="tabs"] .tab[data-active="1"] button.t { color: var(--mv-text); }
+  [data-role="tabs"] .sp { flex: 1; }
+  [data-role="tabs"] .drophint { display: none; padding: 4px 8px; color: var(--mv-faint); }
+  body[data-dragging="1"] [data-role="tabs"] .drophint { display: block; }
+  [data-role="body"] { position: relative; flex: 1 1 0; min-height: 0; overflow: auto; }
+  [data-role="body"] [data-pane] { height: 100%; box-sizing: border-box; }
+  [data-pane][hidden] { display: none; }
+  [data-pane][data-kind="empty"] { padding: 12px; }
+  [data-pane][data-kind="empty"] button { display: block; margin: 4px 0; cursor: pointer; }
+  [data-role="palette"] { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; padding-top: 12vh; background: rgba(0, 0, 0, .45); }
+  [data-role="palette"][hidden] { display: none; }
+  [data-role="palette"] > * { width: min(640px, 90vw); box-sizing: border-box; background: var(--mv-bg); color: var(--mv-text); border: 1px solid var(--mv-line); }
+  [data-role="palette-input"] { padding: 10px 12px; font: inherit; outline: none; }
+  [data-role="palette-list"] { margin: 0; padding: 0; list-style: none; max-height: 50vh; overflow: auto; }
+  [data-role="palette-list"]:empty { display: none; }
+  [data-role="palette-list"] li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 12px; cursor: pointer; }
+  [data-role="palette-list"] li[data-sel="1"] { background: var(--mv-raised); }
+  [data-role="palette-list"] .k { color: var(--mv-dim); }
+  [data-role="quick"] { position: fixed; inset: 0; z-index: 110; display: flex; flex-direction: column; align-items: center; padding-top: 12vh; background: rgba(0, 0, 0, .45); }
+  [data-role="quick"][hidden] { display: none; }
+  [data-role="quick"] > * { width: min(640px, 90vw); box-sizing: border-box; background: var(--mv-bg); color: var(--mv-text); border: 1px solid var(--mv-line); }
+  [data-role="quick-input"] { padding: 10px 12px; font: inherit; outline: none; }
+  [data-role="quick-preview"] { padding: 6px 12px; color: var(--mv-dim); }
+  [data-role="palette-status"] { padding: 6px 12px; color: var(--mv-dim); }
+  [data-role="palette-status"]:empty { display: none; }
+  [data-role="toasts"] { position: fixed; right: 18px; bottom: 18px; z-index: 90; display: flex; flex-direction: column; gap: 6px; max-width: 420px; }
+  [data-role="toast"] { padding: 8px 12px; border-left: 3px solid var(--mv-ok); font-size: 12.5px; }
+  [data-role="toast"].no { border-left-color: var(--mv-crit); }
+  [data-role="toast"] .en { display: block; font-size: 11.5px; }
+  [data-role="jobs"] { position: fixed; left: 18px; bottom: 18px; z-index: 90; display: flex; flex-direction: column; gap: 4px; max-width: 420px; }
+  [data-role="job"] { display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: var(--mv-bg); border: 1px solid var(--mv-line); }
+  [data-role="job"] progress { flex: 1; }
+  [data-role="job-cancel"] { cursor: pointer; }
+  [data-role="ask"] { position: fixed; left: 50%; top: 30%; transform: translateX(-50%); z-index: 110; min-width: 320px; padding: 12px; background: var(--mv-bg); color: var(--mv-text); border: 1px solid var(--mv-line); }
+  [data-role="ask"][hidden] { display: none; }
+  [data-role="ask-choices"] button { margin-right: 6px; cursor: pointer; }
+</style>
+</head>
+<body>
+<header data-role="wbar" id="wbar">
+  <div class="wt">VRG Irányítópult</div>
+  <div class="sp"></div>
+  <button data-w="min" title="Kis méret / Minimize">&#8211;</button>
+  <button data-w="max" title="Nagy méret / Maximize">&#9633;</button>
+  <button data-w="close" class="x" title="Bezár / Close">&#10005;</button>
+</header>
+<main id="root" data-role="root"></main>
+<script src="../shell/lib/layout.js"></script>
+<script src="panes/empty.js"></script>
+<script src="../shell/lib/palette.js"></script>
+<script src="layout.js"></script>
+<script src="palette.js"></script>
+<script src="../shell/lib/quick.js"></script>
+<script src="../shell/lib/mailclean.js"></script>
+<script src="quick.js"></script>
+<script src="toasts.js"></script>
+<script src="frame.js"></script>
+</body>
+</html>

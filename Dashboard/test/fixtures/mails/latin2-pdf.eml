@@ -1,0 +1,20 @@
+From: =?ISO-8859-2?Q?Kov=E1cs_Anna?= <anna@example.test>
+To: demo@example.test
+Subject: =?ISO-8859-2?Q?Sz=E1mla_=E9rkezett:?= =?ISO-8859-2?Q?_=F5szi_t=FBz?=
+Date: Sun, 01 Nov 2026 07:30:00 +0100
+Message-ID: <latin2@example.test>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="mix-demo-002"
+
+--mix-demo-002
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: quoted-printable
+
+A sz=E1mla csatolva.
+--mix-demo-002
+Content-Type: application/pdf; name="szamla.pdf"
+Content-Disposition: attachment; filename*=ISO-8859-2''sz%E1mla.pdf
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQgZmFrZQ==
+--mix-demo-002--

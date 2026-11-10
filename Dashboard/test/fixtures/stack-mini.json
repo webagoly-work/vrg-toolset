@@ -1,0 +1,33 @@
+{
+  "layers": [
+    { "code": "F", "en": "Feature", "hu": "Funkció" },
+    { "code": "L", "en": "Logic", "hu": "Logika" },
+    { "code": "C", "en": "Code", "hu": "Kód" }
+  ],
+  "nodes": [
+    { "id": "F:f1", "layer": "F", "kind": "feature", "title": "Demo feature one", "brief": "The first made-up feature.", "state": "live", "t": "2026-01-01", "deg": { "v": 2 } },
+    { "id": "F:f2", "layer": "F", "kind": "feature", "title": "Demo feature two", "brief": "The second made-up feature.", "state": "idea", "t": "", "deg": { "v": 1 } },
+    { "id": "F:f3", "layer": "F", "kind": "feature", "title": "Demo feature three", "brief": "", "state": "", "t": "", "deg": { "v": 0 } },
+    { "id": "F:f4", "layer": "F", "kind": "feature", "title": "Demo feature four", "brief": "", "state": "", "t": "", "deg": { "v": 0 } },
+    { "id": "L:l1", "layer": "L", "kind": "rule", "title": "Demo rule one", "brief": "A made-up rule.", "state": "", "t": "", "deg": { "v": 2 } },
+    { "id": "L:l2", "layer": "L", "kind": "rule", "title": "Demo rule two", "brief": "", "state": "", "t": "", "deg": { "v": 1 } },
+    { "id": "L:l3", "layer": "L", "kind": "rule", "title": "Demo rule three", "brief": "", "state": "", "t": "", "deg": { "v": 0 } },
+    { "id": "L:l4", "layer": "L", "kind": "rule", "title": "Demo rule four", "brief": "", "state": "", "t": "", "deg": { "v": 0 } },
+    { "id": "C:c1", "layer": "C", "kind": "file", "title": "demo/src/one.js", "brief": "", "state": "", "t": "", "path": "demo/src/one.js", "deg": { "v": 1 } },
+    { "id": "C:c2", "layer": "C", "kind": "file", "title": "demo/src/two.js", "brief": "", "state": "", "t": "", "path": "demo/src/two.js", "deg": { "v": 0 } },
+    { "id": "C:c3", "layer": "C", "kind": "file", "title": "demo/src/three.js", "brief": "", "state": "", "t": "", "path": "demo/src/three.js", "deg": { "v": 0 } },
+    { "id": "C:c4", "layer": "C", "kind": "file", "title": "demo/src/four.js", "brief": "", "state": "", "t": "", "path": "demo/src/four.js", "deg": { "v": 0 } }
+  ],
+  "edges": [
+    { "a": "F:f1", "b": "L:l1", "rel": "implements", "v": 1 },
+    { "a": "F:f1", "b": "E:demo", "rel": "pillar", "v": 2 },
+    { "a": "F:f1", "b": "F:f2", "rel": "related", "v": 0 },
+    { "a": "F:f3", "b": "F:f1", "rel": "follows", "v": 0 },
+    { "a": "L:l1", "b": "C:c1", "rel": "evidence", "v": 1 },
+    { "a": "C:c1", "b": "C:c2", "rel": "imports", "v": 0 },
+    { "a": "F:f2", "b": "L:l2", "rel": "implements", "v": 1 }
+  ],
+  "entities": [
+    { "id": "demo", "name": "Demo pillar", "members": ["F:f1", "L:l1"], "words": ["demo"], "paths": ["demo"], "per": { "F": 1, "L": 1 } }
+  ]
+}
