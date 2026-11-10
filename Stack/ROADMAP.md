@@ -31,7 +31,7 @@
 | 2.2 daily snapshot | ✅ data/snapshots |
 | 2.3 MCP server | ✅ built, registered at user scope 2026-11-06 |
 | 2.4 Futás layer | ✅ layer U |
-| 2.5 session hooks | ✗ not built (STK-Q9 A = after the fact); the step shape is ready |
+| 2.5 session hooks | ✅ 2026-11-10 `hook.js`: SessionStart prints the stamp + L0; Stop appends each turn's touched nodes to `data/live` (shown in the Futásnapló). Registered in the main checkout's `.claude/settings.local.json` |
 | 2.6 semantic search | ◐ hybrid search + RRF built; bge-m3 off until Ollama is installed |
 | 2.7 write-back with approval | ✗ next (Döntésnapló) |
 | 2.8 imports in Code | ✗ |

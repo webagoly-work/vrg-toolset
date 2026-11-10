@@ -248,3 +248,14 @@ Why B fell short: the computed class reads the evidence's shape and recency, the
 - Status is computed wherever the pillar has an F member: F tier + the string (one hand fact, in `notes/features/data.js`).
 - A pillar with no F member may carry an optional hand `status` on the six-step scale (`op · high · mid · low · out · idea`) in `entities.json`. The 11 got their Thread Board value. The build warns (HEALTH) when a pillar has both a status and an F member, since that is the same fact kept twice; the F row wins.
 - A drift card when the hand value (F tier or that status) and the evidence are two or more steps apart, proposing a change and never applying one. Built in **S3**, with the "looks done" check in DRIFT.
+
+## Session hooks (ROADMAP 2.5), 2026-11-10
+
+Asked as numbered A/B/C options; the Founder chose A for all four (question 2 after an explanation).
+
+| Id | Question | Answer | What was done |
+|---|---|---|---|
+| STK-P63 | Where are the hooks registered? | **A** the main checkout's git-ignored `.claude/settings.local.json` | beside the Kódváros and Console hooks; it also reaches sessions in this repo's worktrees (checked: the Console trace hook fires there). Not committed settings (cloud sessions have no H:), not user settings (other projects) |
+| STK-P64 | What SessionStart prints | **A** L0 + a build stamp, "STALE" after 48 h | about 730 tokens on startup, `/clear` and after compaction; nothing on resume. Node's own start is ≈ 0.9 s on this PC, the hook ≈ 40 ms more |
+| STK-P65 | What Stop appends, and where | **A** one line per turn in `data/live/<sid8>.jsonl` | files from file tools and from path words in shell commands, resolved to node ids; ≈ 70 ms on a 6 MB transcript, reading only what is new. Subagent calls are left to the after-the-fact recorder |
+| STK-P66 | The trace-hook entries whose backslashes were lost (`H:VRGFull\tools\node\node.exe`, failing on every call of 8 events) | **A** removed | the working forward-slash entries stay; the file was backed up first. Rebuilding stays by hand (STK-Q3 = A): neither hook builds |

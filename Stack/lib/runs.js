@@ -17,8 +17,8 @@
 //   · the graph (the one the build just made, or out/stack.json): node titles and layers for what a run
 //     touched, the commit subjects, and run → DevLog session → line (ran, on-line).
 //   · out/replay/index.js: which runs replay.html can open (#<sid8>).
-//   · data/live/<sid8>.jsonl when that folder exists (ROADMAP 2.5, ARCHITECTURE §4 "live recording": a
-//     PostToolUse hook appends steps in the checkStep shape). Only counted and dated here (STK-P52).
+//   · data/live/<sid8>.jsonl when that folder exists: one line per turn from the Stop hook (Stack/hook.js,
+//     ROADMAP 2.5), or steps from a future PostToolUse feed. Only counted and dated here (STK-P52).
 // The data quotes client job codes (session titles, paths), so out/ keeps it out of git.
 // Writes out/runs-data.js only (fsx.writeAtomic). Runs as the optional stage `runs`, or alone with
 // `stack.js runs`.
@@ -105,9 +105,16 @@ function live() {
   for (const f of list(dir)) {
     if (!/^[0-9a-f]{8}\.jsonl$/i.test(f)) continue;
     const lines = read(path.join(dir, f)).split('\n').filter(Boolean);
-    let last = '', first = '', ok = 0, tools = {};
-    for (const l of lines) { let s; try { s = JSON.parse(l); } catch { continue; } if (!s || !s.t) continue; ok++; if (!first || s.t < first) first = s.t; if (s.t > last) last = s.t; if (s.tool) tools[s.tool] = (tools[s.tool] || 0) + 1; }
-    sessions.push({ sid8: f.slice(0, 8), steps: ok, bad: lines.length - ok, first, last, tools: Object.entries(tools).sort((a, b) => b[1] - a[1]).slice(0, 5) });
+    // two line shapes: a step ({ t, tool }, a future PostToolUse feed) or a turn from Stack/hook.js stop
+    // ({ t, kind: 'turn', steps, tools: {name: n}, nodes }), one per turn's end
+    let last = '', first = '', ok = 0, bad = 0, turns = 0, tools = {}; const nodes = new Set();
+    for (const l of lines) {
+      let s; try { s = JSON.parse(l); } catch { bad++; continue; } if (!s || !s.t) { bad++; continue; }
+      if (!first || s.t < first) first = s.t; if (s.t > last) last = s.t;
+      if (s.kind === 'turn') { turns++; ok += s.steps || 0; for (const [k, n] of Object.entries(s.tools || {})) tools[k] = (tools[k] || 0) + n; for (const id of s.nodes || []) nodes.add(id); }
+      else { ok++; if (s.tool) tools[s.tool] = (tools[s.tool] || 0) + 1; }
+    }
+    sessions.push({ sid8: f.slice(0, 8), steps: ok, turns, nodes: nodes.size, bad, first, last, tools: Object.entries(tools).sort((a, b) => b[1] - a[1]).slice(0, 5) });
   }
   sessions.sort((a, b) => b.last.localeCompare(a.last));
   return { on: true, dir: 'data/live', sessions, last: sessions.length ? sessions[0].last : '' };

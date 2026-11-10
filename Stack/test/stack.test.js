@@ -358,3 +358,58 @@ test('entities.json: unique ids and threads, known areas, no job code', () => {
     for (const x of [...(M.codes || []), ...(M.literals || [])]) assert.ok(!text.includes(String(x.from).toLowerCase()), 'a job code is in entities.json');
   }
 });
+
+// ── Session hooks (hook.js, ROADMAP 2.5) ─────────────────────────────────────────────────────
+const HK = require('../hook');
+
+test('hook start: L0 with a build stamp, STALE after 48 h, nothing on resume or without a build', () => {
+  const t0 = Date.parse('2026-11-10T20:00:00Z');
+  const fresh = HK.startText('# L0 VRG Stack\nF Featured: 105', t0, t0 + 3 * 36e5);
+  assert.match(fresh, /^VRG Stack \(from Stack\/hook\.js, SessionStart\): built 2026-11-10 20:00 UTC, 3 h ago\. Ask it/);
+  assert.match(fresh, /\n\n# L0 VRG Stack\nF Featured: 105\n$/);
+  assert.match(HK.startText('x', t0, t0 + 50 * 36e5), /STALE/);
+  assert.equal(HK.startText('', t0, t0), '');
+  assert.equal(HK.start({ source: 'resume' }), '');
+  assert.equal(HK.start({ source: 'startup' }, { out: path.join(os.tmpdir(), 'no-stack-here') }), '');
+});
+
+test('hook stop: paths fold worktrees into the repo and resolve to a node or its nearest folder', () => {
+  const repo = 'H:/VRG/Full/Planner_VRG_U100';
+  assert.equal(HK.keyPath('H:\\VRG\\Full\\Planner_VRG_U100\\Stack\\lib\\strings.js', repo), 'Stack/lib/strings.js');
+  assert.equal(HK.keyPath('h:/VRG/Full/Planner_VRG_U100/.claude/worktrees/abc/Stack/hook.js', repo), 'Stack/hook.js');
+  assert.equal(HK.keyPath('H:/VRG/Full/notes/devlog/threads.js', repo), 'H:/VRG/Full/notes/devlog/threads.js');
+  const idx = HK.pathIndex([sn('C:Stack', { own: ['p:Stack'] }), sn('C:Stack/lib', { own: ['p:Stack/lib'] }), sn('G:Stack/README.md', { own: ['p:Stack/README.md'] })]);
+  assert.deepEqual(HK.resolvePath(idx, 'Stack/lib/strings.js'), ['C:Stack/lib']);
+  assert.deepEqual(HK.resolvePath(idx, 'Stack/README.md'), ['G:Stack/README.md']);
+  assert.deepEqual(HK.resolvePath(idx, 'Other/x.js'), []);
+});
+
+test('hook stop: one line per turn, reading only what is new in the transcript', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stack-hook-')), out = path.join(dir, 'out'), data = path.join(dir, 'data');
+  fs.mkdirSync(out);
+  fs.writeFileSync(path.join(out, 'stack.json'), JSON.stringify({ nodes: [sn('C:Stack/lib', { own: ['p:Stack/lib'] })] }));
+  const tp = path.join(dir, 't.jsonl'), repo = 'H:/VRG/Full/Planner_VRG_U100';
+  const use = (ts, name, input) => JSON.stringify({ type: 'assistant', timestamp: ts, message: { content: [{ type: 'tool_use', id: 'x', name, input }] } }) + '\n';
+  fs.writeFileSync(tp, JSON.stringify({ type: 'user', timestamp: '2026-11-10T20:00:00Z', message: { content: 'go' } }) + '\n' + use('2026-11-10T20:00:05Z', 'Read', { file_path: repo + '/Stack/lib/strings.js' }) + use('2026-11-10T20:00:06Z', 'Bash', { command: 'ls' }));
+  const h = { session_id: 'abcdef12-3456', transcript_path: tp };
+  assert.equal(HK.stop(h, { out, data, repo }), '');
+  fs.appendFileSync(tp, use('2026-11-10T20:01:00Z', 'mcp__vrg-stack__stack_string', { id: 'E:stack' }) + '{"torn');
+  assert.equal(HK.stop(h, { out, data, repo }), '');
+  assert.equal(HK.stop(h, { out, data, repo }), 'no whole line yet');    // the torn line is left for later
+  fs.appendFileSync(tp, '"}\n');
+  assert.equal(HK.stop(h, { out, data, repo }), '');                     // now whole: a turn with no tool calls
+  assert.equal(HK.stop(h, { out, data, repo }), 'nothing new');
+  const lines = fs.readFileSync(path.join(data, 'live', 'abcdef12.jsonl'), 'utf8').trim().split('\n').map(JSON.parse);
+  assert.equal(lines.length, 3);
+  assert.deepEqual([lines[2].seq, lines[2].steps, lines[2].upto], [3, 0, fs.statSync(tp).size]);
+  assert.deepEqual([lines[0].seq, lines[0].steps, lines[0].tools, lines[0].files, lines[0].nodes], [1, 2, { Read: 1, Bash: 1 }, ['Stack/lib/strings.js'], ['C:Stack/lib']]);
+  assert.deepEqual([lines[1].seq, lines[1].steps, lines[1].tools, lines[1].t], [2, 1, { 'mcp:vrg-stack.stack_string': 1 }, '2026-11-10T20:01:00Z']);
+  assert.ok(lines[1].upto < lines[2].upto);
+  assert.equal(HK.stop({ session_id: 'nope' }, { out, data, repo }), 'no session id or transcript');
+});
+
+test('hook stop: path words in shell commands count, flags, URLs, globs and system folders do not', () => {
+  assert.deepEqual(HK.commandPaths('sed -n 1,40p /h/VRG/Full/Planner_VRG_U100/Stack/lib/runs.js; grep -rn x lib/query.js --include=*.js https://x.y/z /dev/null "$TEMP/a.txt"', 'H:/VRG/Full/Planner_VRG_U100/Stack'),
+    ['H:/VRG/Full/Planner_VRG_U100/Stack/lib/runs.js', 'H:/VRG/Full/Planner_VRG_U100/Stack/lib/query.js']);
+  assert.deepEqual(HK.commandPaths('cat lib/a.js', ''), []);                  // relative with no folder known: skipped
+});

@@ -83,6 +83,7 @@ Never load `out/stack.json` whole. Ids look like:
 | `schema/` | the link registry with its verbs, and the record shapes with their checks |
 | `lib/` | one module per job (see ARCHITECTURE.md) |
 | `mcp/server.js` | MCP server, stdio, no dependencies |
+| `hook.js` | Claude Code session hooks (ROADMAP 2.5): `start` prints the build stamp + L0 into a new session, `stop` appends each turn's touched nodes to `data/live/<sid8>.jsonl`; registered in the main checkout's git-ignored `.claude/settings.local.json` |
 | `neurons.js` · `research/NEURON-CODES.md` | axiom neuron addresses (gate letter + 2-char file family + 3-char run) and the 13 gate kinds; `node stack.js neuron <addr>` |
 | `stack-search.html` · `replay.html` · `connectome.html` · `orb.html` · `layers.html` · `lineage.html` · `control.html` · `commits.html` · `decisions.html` · `metro.html` · `runs.html` · `brain.js` · `touch.js` · `earth-land.js` · `serve.js` | the pages (serve.js also has `POST /api/connectome` and `POST /api/build` for the connectome page) |
 | `test/` | `..\..\..\tools\node\node.exe --test test/stack.test.js` |

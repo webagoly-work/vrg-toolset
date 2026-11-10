@@ -387,10 +387,10 @@
   function renderLive() {
     const L = R.live || { on: false };
     const el = $('#live');
-    if (!L.on) { el.className = 'note'; el.innerHTML = `<b>Élő felvétel: még nincs bekapcsolva.</b> A <code>${esc(L.dir || 'data/live')}</code> mappa nem létezik; a munkamenet-hookok (ROADMAP 2.5) még nincsenek beépítve, ezért minden futás utólag, a lezárt átiratokból jön (STK-Q9 A).`; return; }
-    const n = L.sessions.length, st = L.sessions.reduce((a, s) => a + s.steps, 0);
+    if (!L.on) { el.className = 'note'; el.innerHTML = `<b>Élő felvétel: még nincs bekapcsolva.</b> A <code>${esc(L.dir || 'data/live')}</code> mappa még nem létezik: a <code>Stack/hook.js stop</code> hook (ROADMAP 2.5) az első munkamenet-kör végén hozza létre. Addig minden futás utólag, a lezárt átiratokból jön (STK-Q9 A).`; return; }
+    const n = L.sessions.length, st = L.sessions.reduce((a, s) => a + s.steps, 0), tu = L.sessions.reduce((a, s) => a + (s.turns || 0), 0), nd = L.sessions.reduce((a, s) => a + (s.nodes || 0), 0);
     el.className = 'note on';
-    el.innerHTML = `<b>Élő felvétel: be van kapcsolva.</b> <code>${esc(L.dir)}</code>: ${n} munkamenet, ${fNum(st)} lépés${L.last ? `, utolsó lépés ${esc(fWhen(L.last))}` : ''}. ` +
+    el.innerHTML = `<b>Élő felvétel: be van kapcsolva.</b> <code>${esc(L.dir)}</code>: ${n} munkamenet, ${tu ? fNum(tu) + ' kör, ' : ''}${fNum(st)} lépés${nd ? `, ${fNum(nd)} érintett csomópont` : ''}${L.last ? `, utolsó lépés ${esc(fWhen(L.last))}` : ''}. ` +
       (n ? L.sessions.slice(0, 6).map(s => BY.has(s.sid8) ? `<a href="#d=${esc(s.last.slice(0, 10))}&run=${esc(s.sid8)}">${esc(s.sid8)}</a>` : `<code>${esc(s.sid8)}</code>`).join(', ') : '') +
       ' · Az oldal a build pillanatát mutatja; a folyó lépések a következő buildnél kerülnek a felvételbe.';
   }

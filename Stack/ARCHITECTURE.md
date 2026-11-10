@@ -84,7 +84,7 @@ archive ─► layers F I Q L A R C G ─► join ─► record ─► U · Fut�
 - Link prediction: STK-Q13 A puts it last.
 - The competence layer: proposal 20 needs its data first.
 - The sun study: STK-Q15 A makes it a BRIDGE/Planner line of its own.
-- Live hooks: STK-Q9 A records after the fact. The step shape is ready for a live feed.
+- A live step feed (PostToolUse): STK-Q9 A records after the fact. The session hooks (ROADMAP 2.5, `hook.js`) only print L0 at start and append one line per turn; the step shape is ready for a full feed.
 
 ## 4. Extending it
 
@@ -93,6 +93,7 @@ archive ─► layers F I Q L A R C G ─► join ─► record ─► U · Fut�
 | a layer | 1. Write an adapter that returns `{ nodes, edges }`, the way the ones in `lib/layers.js` do.<br>2. Add its row to `lib/meta.js` and its letter to `schema/shapes.js` `LAYER`.<br>3. Register its relations in `schema/links.js`.<br>4. Call it in `pipeline.js` under `hc.stage(…, { fallback: carryForward })`. |
 | a report | Write a function in `lib/insight.js` and an optional stage in `pipeline.js`. Reports only read the graph. |
 | an MCP tool | Write the function in `lib/query.js` (the CLI and the server share it), then add a line in `TOOLS` and in `callTool`. |
+| session hooks | `hook.js start` (SessionStart, matcher `startup|clear|compact`) prints the stamp + `out/codec/L0.txt`; `hook.js stop` (Stop) reads the transcript from the last line's `upto`, resolves the turn's paths (file tools + path words in shell commands, worktree copies folded into the repo) to node ids through `out/stack.json`'s own `p:` keys or the nearest folder, and appends `{ t, kind: 'turn', sid, seq, steps, tools, files, nodes, upto }` to `data/live/<sid8>.jsonl`. Both exit 0 within 2 s whatever happens. |
 | live recording | A PostToolUse hook appends steps in the `checkStep` shape to `data/live/<sid8>.jsonl`; `record.js` merges them in. No change to Futás or the replay page. |
 | embeddings | Install Ollama, then `ollama pull bge-m3` (about 1.2 GB). The next build embeds up to 2 000 nodes and the rest follow on later builds. Search switches to words + meaning by itself. |
 
