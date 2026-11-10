@@ -16,25 +16,36 @@ const TYPES = {
 };
 const SECRET = /(^|\/)(\.[^/]*|anonymise\.map\.json|[^/]*credentials[^/]*\.json|secrets\.bin|oauth-clients\.json|[^/]*\.pem|[^/]*\.key)$/i;
 
-function createAppScheme({ catalog, repo, expand, isFile }) {
+// realpath (optional; main passes fs.realpathSync.native): a junction or symlink inside a served folder must not lead out of it
+function createAppScheme({ catalog, repo, expand, isFile, realpath }) {
   const REPO = path.resolve(repo);
+  let realRepo = null;
   function decide(url) {
     let u;
     try { u = new URL(String(url)); } catch (e) { return { ok: false, status: 400, why: 'bad url' }; }
     if (u.protocol !== 'vrg-app:') return { ok: false, status: 400, why: 'scheme' };
+    if (u.port || u.username || u.password) return { ok: false, status: 400, why: 'port or user info' };   // another origin, same host
     const id = u.hostname;
     const t = catalog.appTarget(id, { repo: REPO, expand });
     if (!t) return { ok: false, status: 404, why: 'not an app' };
     let rel;
     try { rel = decodeURIComponent(u.pathname).replace(/^\/+/, ''); } catch (e) { return { ok: false, status: 400, why: 'bad path' }; }
     if (!rel) rel = t.page;
-    if (rel.includes('\0') || /^[a-z]:/i.test(rel) || rel.startsWith('\\\\')) return { ok: false, status: 403, why: 'path' };
+    // ':' = drive letters and NTFS streams (x::$DATA); Windows drops trailing dots and spaces from a name ("secrets.bin." opens
+    // secrets.bin), so such a name would slip past the rules below
+    if (rel.includes('\0') || rel.includes(':') || rel.startsWith('\\\\')) return { ok: false, status: 403, why: 'path' };
+    if (rel.split(/[\\/]/).some(seg => seg !== '.' && seg !== '..' && /[. ]$/.test(seg))) return { ok: false, status: 403, why: 'path' };
     const abs = path.resolve(REPO, rel);
     const back = path.relative(REPO, abs).split(path.sep).join('/');
     if (!back || back.startsWith('..') || path.isAbsolute(back)) return { ok: false, status: 403, why: 'outside the repo' };
     if (!t.allow.some(a => (a.endsWith('/') ? back.startsWith(a) : back === a))) return { ok: false, status: 403, why: 'outside the app folder' };
     if (SECRET.test(back)) return { ok: false, status: 403, why: 'never served' };
     if (!isFile(abs)) return { ok: false, status: 404, why: 'no such file' };
+    if (realpath) {
+      let real;
+      try { if (realRepo === null) realRepo = realpath(REPO); real = realpath(abs); } catch (e) { return { ok: false, status: 404, why: 'no such file' }; }
+      if (path.relative(realRepo, real).split(path.sep).join('/').toLowerCase() !== back.toLowerCase()) return { ok: false, status: 403, why: 'a link leads elsewhere' };
+    }
     return { ok: true, file: abs, type: TYPES[path.extname(abs).toLowerCase()] || 'application/octet-stream', id, page: t.page };
   }
   // the URL a view loads for catalog item `id` (its owner id), or '' when it is not an app
@@ -43,7 +54,7 @@ function createAppScheme({ catalog, repo, expand, isFile }) {
     return t ? 'vrg-app://' + id + '/' + t.page.split('/').map(encodeURIComponent).join('/') : '';
   }
   // a view of app `id` may stay on its own origin; anything else is refused (http(s) goes to the browser pane)
-  const sameApp = (id, url) => { try { const u = new URL(String(url)); return u.protocol === 'vrg-app:' && u.hostname === id; } catch (e) { return false; } };
+  const sameApp = (id, url) => { try { const u = new URL(String(url)); return u.protocol === 'vrg-app:' && u.hostname === id && !u.port && !u.username && !u.password; } catch (e) { return false; } };
   return { decide, urlFor, sameApp };
 }
 

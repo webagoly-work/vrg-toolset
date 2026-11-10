@@ -132,9 +132,29 @@ test('the Tab recorder: an isolated-world script that notes, at each Tab keydown
   const k = key => listeners[0].f({ key });
   doc.activeElement = { tagName: 'INPUT', type: 'number' }; k('Tab');
   doc.activeElement = { tagName: 'BUTTON' }; k('Tab'); k('a');
-  assert.deepEqual(run(D.TAB_READ), [true, false]);
+  let r = run(D.TAB_READ);
+  assert.deepEqual(r.p, [true, false]); assert.ok(r.gap >= 0 && r.age >= 0);
+  assert.equal(D.readPair(r, 350), 'keep');
   doc.activeElement = { tagName: 'DIV', isContentEditable: false, closest: () => null }; k('Tab');
-  assert.deepEqual(run(D.TAB_READ), [false, false]);
+  r = run(D.TAB_READ);
+  assert.deepEqual(r.p, [false, false]);
+  assert.equal(D.readPair(r, 350), 'toggle');
+  // a focused iframe: followed into a same-origin document; one that cannot be looked into keeps the keys with the page
+  doc.activeElement = { tagName: 'IFRAME', contentDocument: { activeElement: { tagName: 'TEXTAREA' } } }; k('Tab');
+  assert.equal(run(D.TAB_READ).p[1], true);
+  doc.activeElement = { tagName: 'IFRAME', contentDocument: null }; k('Tab');
+  assert.equal(run(D.TAB_READ).p[1], true);
+  doc.activeElement = { tagName: 'IFRAME', contentDocument: { activeElement: { tagName: 'A', closest: () => null } } }; k('Tab');
+  assert.equal(run(D.TAB_READ).p[1], false);
+});
+
+test('readPair: only a fresh pair within the interval counts; anything else is stale (read again, then the probe)', () => {
+  assert.equal(D.readPair(null, 350), 'stale');
+  assert.equal(D.readPair({ p: [false, false], gap: 120, age: 30 }, 350), 'toggle');
+  assert.equal(D.readPair({ p: [false, true], gap: 120, age: 30 }, 350), 'keep');
+  assert.equal(D.readPair({ p: [false, false], gap: 5000, age: 30 }, 350), 'stale', 'the second tap not recorded yet: [older, first]');
+  assert.equal(D.readPair({ p: [false, false], gap: 100, age: 9000 }, 350), 'stale', 'an old pair');
+  assert.equal(D.readPair([false, false], 350), 'stale', 'the old array shape');
 });
 
 test('--start windows: main boots the Desktop view with its windows; the probes written before the desk get it too', () => {

@@ -55,6 +55,26 @@ test('decide: outside the folder, traversal, encoded traversal, other apps\' fol
   no('not a url', 400);
 });
 
+test('decide: names Windows would normalise, NTFS streams, ports and user info are refused (theresa, U9)', () => {
+  for (const u of ['vrg-app://calc-panel/Calculator/panel_anyagar_kalkulator.html.', 'vrg-app://calc-panel/Calculator/panel_anyagar_kalkulator.html%20',
+    'vrg-app://calc-panel/Calculator/secrets.bin.', 'vrg-app://calc-panel/Calculator/a.pem%20', 'vrg-app://calc-panel/Calculator./panel_anyagar_kalkulator.html',
+    'vrg-app://calc-panel/Calculator/panel_anyagar_kalkulator.html::$DATA', 'vrg-app://calc-panel/Calculator/panel_anyagar_kalkulator.html%3a%3a$DATA',
+    'vrg-app://calc-panel:80/Calculator/panel_anyagar_kalkulator.html', 'vrg-app://user@calc-panel/Calculator/panel_anyagar_kalkulator.html'])
+    assert.equal(sch.decide(u).ok, false, u);
+  assert.equal(sch.sameApp('calc-panel', 'vrg-app://calc-panel:80/x'), false);
+  assert.equal(sch.sameApp('calc-panel', 'vrg-app://u@calc-panel/x'), false);
+});
+
+test('decide: with realpath, a junction or symlink inside a served folder that leads elsewhere is refused', () => {
+  const page = path.join(REPO, 'Calculator', 'panel_anyagar_kalkulator.html');
+  const real = p => (p.toLowerCase() === page.toLowerCase() ? path.join(REPO, 'launcher', 'vrg-menu.json') : p);
+  const s2 = createAppScheme({ catalog: cat, repo: REPO, expand: s => C.expand(s), isFile, realpath: real });
+  const r = s2.decide('vrg-app://calc-panel/Calculator/panel_anyagar_kalkulator.html');
+  assert.equal(r.ok, false); assert.equal(r.why, 'a link leads elsewhere');
+  const s3 = createAppScheme({ catalog: cat, repo: REPO, expand: s => C.expand(s), isFile, realpath: p => fs.realpathSync.native(p) });
+  assert.equal(s3.decide('vrg-app://calc-panel/Calculator/panel_anyagar_kalkulator.html').ok, true, 'the real file passes');
+});
+
 test('decide: a repo-root page (VRG Vendor) is served alone, never its siblings', () => {
   assert.equal(sch.decide('vrg-app://vendor/vrg-vendor.html').ok, true);
   assert.equal(sch.decide('vrg-app://vendor/CLAUDE.md').ok, false);

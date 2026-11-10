@@ -49,21 +49,30 @@ function build({ electronDir, outDir, repo, dry }) {
   const errors = [];
   if (!fs.existsSync(path.join(electronDir, 'electron.exe'))) errors.push('no electron.exe in ' + electronDir);
   if (!fs.existsSync(path.join(repo, 'Dashboard', 'shell', 'main.js'))) errors.push('no Dashboard/shell/main.js in ' + repo);
-  if (fs.existsSync(outDir) && fs.readdirSync(outDir).length && !fs.existsSync(path.join(outDir, MARK))) errors.push('out folder is not an earlier VRG Desktop build, refused: ' + outDir);
+  if (fs.existsSync(outDir) && !fs.statSync(outDir).isDirectory()) errors.push('out is a file, not a folder: ' + outDir);
+  else if (fs.existsSync(outDir) && fs.readdirSync(outDir).length && !fs.existsSync(path.join(outDir, MARK))) errors.push('out folder is not an earlier VRG Desktop build, refused: ' + outDir);
   if (path.resolve(outDir).toLowerCase().startsWith(path.resolve(electronDir).toLowerCase() + path.sep) || path.resolve(outDir).toLowerCase() === path.resolve(electronDir).toLowerCase())
     errors.push('out folder is inside the electron folder');
   if (errors.length) return { ok: false, errors, files: 0, out: outDir };
   const files = plan(electronDir, walk(electronDir));
   if (dry) return { ok: true, errors, files: files.length, out: outDir, dry: true, sample: files.slice(0, 5) };
-  for (const f of files) {
-    const to = path.join(outDir, f.to);
-    fs.mkdirSync(path.dirname(to), { recursive: true });
-    fs.copyFileSync(path.join(electronDir, f.from), to);
+  // the marker goes in first (with building: true), so a build that stops half-way is still recognised as ours and can be re-run
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, MARK), JSON.stringify({ ...config(repo, electronDir), building: true }, null, 2) + '\n');
+  try {
+    for (const f of files) {
+      const to = path.join(outDir, f.to);
+      fs.mkdirSync(path.dirname(to), { recursive: true });
+      fs.copyFileSync(path.join(electronDir, f.from), to);
+    }
+    const appDir = path.join(outDir, 'resources', 'app');
+    fs.mkdirSync(appDir, { recursive: true });
+    fs.writeFileSync(path.join(appDir, 'package.json'), JSON.stringify(PKG, null, 2) + '\n');
+    fs.copyFileSync(path.join(__dirname, 'exe-bootstrap.js'), path.join(appDir, 'main.js'));
+  } catch (e) {
+    const busy = /EBUSY|EPERM/.test(e.code || '') ? ' (is "' + EXE + '" still running? close it and build again)' : '';
+    return { ok: false, errors: ['copy failed: ' + e.message + busy, 'the build is incomplete; ' + MARK + ' says building: true'], files: 0, out: outDir };
   }
-  const appDir = path.join(outDir, 'resources', 'app');
-  fs.mkdirSync(appDir, { recursive: true });
-  fs.writeFileSync(path.join(appDir, 'package.json'), JSON.stringify(PKG, null, 2) + '\n');
-  fs.copyFileSync(path.join(__dirname, 'exe-bootstrap.js'), path.join(appDir, 'main.js'));
   fs.writeFileSync(path.join(outDir, MARK), JSON.stringify(config(repo, electronDir), null, 2) + '\n');
   return { ok: true, errors, files: files.length + 3, out: outDir, ...check(outDir) };
 }
@@ -77,11 +86,14 @@ function check(outDir) {
   if (has(path.join('resources', 'default_app.asar'))) errors.push('default_app.asar is still there');
   for (const f of [path.join('resources', 'app', 'main.js'), path.join('resources', 'app', 'package.json'), MARK]) if (!has(f)) errors.push('missing ' + f);
   try {
+    const cfg = JSON.parse(fs.readFileSync(path.join(outDir, MARK), 'utf8'));
+    if (cfg.building) errors.push(MARK + ': an unfinished build (building: true); build again');
+    if (!cfg.repo || !fs.existsSync(path.join(cfg.repo, 'Dashboard', 'shell', 'main.js'))) errors.push(MARK + ': repo has no Dashboard/shell/main.js: ' + cfg.repo);
+  } catch (e) { errors.push('unreadable ' + MARK + ': ' + e.message); }
+  try {
     const pkg = JSON.parse(fs.readFileSync(path.join(outDir, 'resources', 'app', 'package.json'), 'utf8'));
     if (pkg.name !== PKG.name || pkg.productName) errors.push('resources/app/package.json: the name must stay ' + PKG.name + ' (one profile)');
-    const cfg = JSON.parse(fs.readFileSync(path.join(outDir, MARK), 'utf8'));
-    if (!cfg.repo || !fs.existsSync(path.join(cfg.repo, 'Dashboard', 'shell', 'main.js'))) errors.push(MARK + ': repo has no Dashboard/shell/main.js: ' + cfg.repo);
-  } catch (e) { errors.push('unreadable build files: ' + e.message); }
+  } catch (e) { errors.push('unreadable resources/app/package.json: ' + e.message); }
   return { ok: !errors.length, errors };
 }
 

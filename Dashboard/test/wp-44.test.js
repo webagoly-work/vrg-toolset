@@ -58,6 +58,23 @@ test('build refuses: an out folder that is not an earlier build, no electron.exe
   } finally { rm(el); rm(other); }
 });
 
+test('build: an unfinished earlier build (marker with building: true) is ours and is completed; out as a file is refused', () => {
+  const el = fakeElectron(), out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'VRG-pkg-half-')), 'vrg-desktop');
+  try {
+    fs.mkdirSync(out); fs.writeFileSync(path.join(out, 'vrg-desktop.json'), JSON.stringify({ repo: REPO, building: true }));
+    fs.writeFileSync(path.join(out, 'ffmpeg.dll'), 'half');
+    assert.equal(P.check(out).ok, false);
+    assert.ok(P.check(out).errors.some(e => /unfinished build/.test(e)));
+    const r = P.build({ electronDir: el, outDir: out, repo: REPO });
+    assert.equal(r.ok, true, JSON.stringify(r.errors));
+    assert.equal(JSON.parse(fs.readFileSync(path.join(out, 'vrg-desktop.json'), 'utf8')).building, undefined);
+    const file = path.join(path.dirname(out), 'a-file');
+    fs.writeFileSync(file, 'x');
+    const r2 = P.build({ electronDir: el, outDir: file, repo: REPO });
+    assert.equal(r2.ok, false); assert.match(r2.errors[0], /out is a file/);
+  } finally { rm(el); rm(path.dirname(out)); }
+});
+
 test('check: a build missing its parts, or with electron.exe / default_app.asar left, fails', () => {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'VRG-pkg-chk-'));
   try {
@@ -88,4 +105,30 @@ test('the START .cmd prefers the exe, passes its own checkout, falls back to the
   assert.ok(s.indexOf('VRG Desktop.exe') > 0 && s.indexOf('VRG Desktop.exe') < s.indexOf('electron.exe'));
   assert.match(s, /--repo "%REPO%"/);
   assert.match(s, /start "" "%EL%" "%~dp0shell"/);
+  assert.ok(!/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(s), 'no control characters (a JS string escape once ate the backslashes: \\b, \\v, \\t)');
+  assert.ok(s.includes('set "EXE=%~dp0..\\..\\build\\vrg-desktop\\VRG Desktop.exe"'));
+  assert.ok(s.includes('set "EL=%~dp0..\\..\\tools\\electron\\electron.exe"'));
+});
+
+test('the START .cmd really finds the exe, else the portable electron (run by cmd.exe in a copy under %TEMP%, start → echo)', { skip: process.platform !== 'win32' }, () => {
+  const { execFileSync } = require('child_process');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'VRG-cmd-'));
+  try {
+    const dash = path.join(root, 'repo', 'Dashboard');
+    fs.mkdirSync(dash, { recursive: true });
+    const src = fs.readFileSync(path.join(__dirname, '..', 'VRG Irányítópult.cmd'), 'latin1').replace(/start ""/g, 'echo START').replace(/^\s*pause\s*$/m, '');
+    const cmd = path.join(dash, 'launch.cmd');
+    fs.writeFileSync(cmd, src, 'latin1');
+    const run = () => { try { return execFileSync('cmd.exe', ['/d', '/c', cmd, '--x'], { encoding: 'latin1' }); } catch (e) { return String(e.stdout || '') + 'EXIT ' + e.status; } };
+    assert.match(run(), /Nincs Electron/, 'neither present');
+    const el = path.join(root, 'tools', 'electron', 'electron.exe');
+    fs.mkdirSync(path.dirname(el), { recursive: true }); fs.writeFileSync(el, 'MZ');
+    let out = run();
+    assert.match(out, /START "[^"]*\\tools\\electron\\electron\.exe" "[^"]*\\Dashboard\\shell" --x/, out);
+    const exe = path.join(root, 'build', 'vrg-desktop', 'VRG Desktop.exe');
+    fs.mkdirSync(path.dirname(exe), { recursive: true }); fs.writeFileSync(exe, 'MZ');
+    out = run();
+    assert.match(out, /START "[^"]*\\build\\vrg-desktop\\VRG Desktop\.exe" --repo "[^"]*\\Dashboard\\\.\." --x/, out);
+    assert.ok(!/electron\.exe/.test(out), 'the exe wins');
+  } finally { rm(root); }
 });

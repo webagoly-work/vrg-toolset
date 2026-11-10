@@ -99,3 +99,12 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
   --selftest` refused with the reason; `package.js --check` ok.
 - Not done (needs the Founder): the file icon (rcedit, not vendored); the exe's `vrg-desktop.json` names this worktree — after the
   merge run START F (or `node Dashboard/tools/package.js`) from the main checkout once.
+
+## U9 — screens, independent check, report
+
+- Screenshots (from the final code, `VRG_SHOTS`): dash-user/dev/all, desk-sui, desk-stack, desk-app, app-view in
+  `H:\VRG\Full\notes\desktop-unify\shots\` (outside git). The empty pane's buttons got the shell's look.
+- theresa (read-only) against PROMPT U4–U8: one bug (the START `.cmd` from U8 had control characters where its backslashes were: START D
+  could find nothing), scheme name tricks, double Tab in iframes / stale reads, package.js marker order. All fixed with tests; see
+  MORNING.md for what was left and why.
+- `docs/desktop/MORNING.md`: the report.

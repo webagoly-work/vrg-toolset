@@ -662,7 +662,7 @@ app.on('will-quit', () => presetsLib.stop());
 // a primary view, a frame tool. Settings desk.* are per user; auth.enabled is read here, never set by the page.
 const catalog = createCatalog({ file: path.join(REPO_DIR, 'launcher', 'vrg-catalog.json'), collect: () => R.C, kinds: layoutLib.KINDS });
 const isFile = f => { try { return require('fs').statSync(f).isFile(); } catch (e) { return false; } };
-const appScheme = createAppScheme({ catalog, repo: path.resolve(REPO_DIR), expand: s => R.expand(s), isFile });
+const appScheme = createAppScheme({ catalog, repo: path.resolve(REPO_DIR), expand: s => R.expand(s), isFile, realpath: p => require('fs').realpathSync.native(p) });
 const deskKeymap = () => { try { return JSON.parse(require('fs').readFileSync(path.join(__dirname, '..', 'config', 'keymap.json'), 'utf8')); } catch (e) { return {}; } };
 const deskSetting = (k, def) => { try { return settings.get(k); } catch (e) { return def; } };
 ipc.register('desktop', 'catalog', { level: types.enum('user', 'dev', 'all') }, async ({ level }) => {
@@ -734,11 +734,14 @@ app.on('web-contents-created', (e, wc) => {
     const first = firstTap && firstTap.wc === wc ? firstTap.ed : Promise.resolve(false);
     firstTap = null;
     // the second keydown reaches the page after this event: read the recorder a moment later
-    setTimeout(() => inWorld(wc, deskLib.TAB_READ).then(rec => {
-      const go = () => { if (win && !win.isDestroyed()) ipc.emit(win, 'desktop', 'toggle', {}); };
-      if (Array.isArray(rec)) { if (!rec[0] && !rec[1]) go(); return; }
-      Promise.all([first, editable(wc)]).then(([a, b]) => { if (!a && !b) go(); });
-    }), 40);
+    const go = () => { if (win && !win.isDestroyed()) ipc.emit(win, 'desktop', 'toggle', {}); };
+    const fallback = () => Promise.all([first, editable(wc)]).then(([a, b]) => { if (!a && !b) go(); });
+    const read = tries => inWorld(wc, deskLib.TAB_READ).then(rec => {
+      const v = deskLib.readPair(rec, deskTap.spec.ms);
+      if (v === 'toggle') go();
+      else if (v === 'stale') { if (tries > 0) setTimeout(() => read(tries - 1), 100); else fallback(); }
+    });
+    setTimeout(() => read(1), 40);
   });
 });
 

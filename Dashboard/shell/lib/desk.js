@@ -56,17 +56,28 @@
     };
   }
   // what the page's focused element must not be for the toggle to fire (evaluated in the webContents that had the keys)
-  const EDITABLE_FN = 'function(a){if(!a)return false;var t=(a.tagName||"").toLowerCase();' +
+  // a focused iframe is followed into its document; one we cannot look into (cross-origin) counts as taking text, so the keys stay
+  // with the page (theresa, U9: typing inside an iframe read as "not editable")
+  const EDITABLE_FN = 'function(a){while(a&&/^i?frame$/i.test(a.tagName||"")){var d=null;try{d=a.contentDocument;}catch(x){}if(!d)return true;a=d.activeElement;}' +
+    'if(!a)return false;var t=(a.tagName||"").toLowerCase();' +
     'if(t==="textarea"||t==="select")return true;if(t==="input"){var y=(a.type||"text").toLowerCase();return !/^(button|checkbox|radio|range|color|submit|reset|image|file)$/.test(y);}' +
     'if(a.isContentEditable)return true;return !!(a.closest&&a.closest(".xterm,[data-kind=\\"term\\"]"));}';
   const EDITABLE_PROBE = '(' + EDITABLE_FN + ')(document.activeElement)';
   // main runs the probe asynchronously, after Tab has already moved the focus (into the first input of a form, typically); so every
   // watched webContents also gets this recorder in an isolated world (the page can neither see nor fake it): at each Tab keydown,
-  // before the browser moves focus, it notes whether the focus took text. main reads the last two notes at the second tap.
+  // before the browser moves focus, it notes whether the focus took text, with the time. main reads the last two notes at the second
+  // tap and trusts them only when they are a fresh pair (readPair): a slow renderer may not have recorded the second tap yet.
   const TAB_WORLD = 1013;
   const TAB_RECORDER = '(function(){if(window.__vrgTabEd)return;var ed=(' + EDITABLE_FN + ');window.__vrgTabEd=[];' +
-    'window.addEventListener("keydown",function(e){if(e.key!=="Tab")return;var l=window.__vrgTabEd;l.push(ed(document.activeElement));if(l.length>2)l.shift();},true);return true;})()';
-  const TAB_READ = '(window.__vrgTabEd&&window.__vrgTabEd.length===2)?window.__vrgTabEd.slice():null';
+    'window.addEventListener("keydown",function(e){if(e.key!=="Tab")return;var l=window.__vrgTabEd;l.push({e:ed(document.activeElement),t:performance.now()});if(l.length>2)l.shift();},true);return true;})()';
+  const TAB_READ = '(function(){var l=window.__vrgTabEd;if(!l||l.length<2)return null;var n=performance.now();' +
+    'return{p:[l[0].e,l[1].e],gap:l[1].t-l[0].t,age:n-l[1].t};})()';
+  // the recorder's answer → 'toggle' | 'keep' (a text field at either tap) | 'stale' (not this pair: read again or fall back)
+  function readPair(rec, ms) {
+    if (!rec || !Array.isArray(rec.p) || rec.p.length !== 2 || !(rec.gap >= 0) || !(rec.age >= 0)) return 'stale';
+    if (rec.age > 400 || rec.gap > ms + 100) return 'stale';
+    return rec.p[0] || rec.p[1] ? 'keep' : 'toggle';
+  }
 
   // ------------------------------------------------------------ boot (WP-43): splash → gate (only with auth.enabled) → ready
   function boot(o) { return o && o.authEnabled === true ? ['splash', 'gate', 'ready'] : ['splash', 'ready']; }
@@ -180,7 +191,7 @@
   const validDock = v => v === null || (Array.isArray(v) && v.length <= MAX_DOCK * 2 && v.every(x => typeof x === 'string' && /^[a-z0-9:.-]{1,60}$/.test(x)));
 
   return {
-    LEVELS, RANK, VIEWS, LAYERS, WIDGETS, DEFAULT_TOP, DEFAULT_TOGGLE, GROUP_ORDER, EDITABLE_PROBE, TAB_WORLD, TAB_RECORDER, TAB_READ,
+    LEVELS, RANK, VIEWS, LAYERS, WIDGETS, DEFAULT_TOP, DEFAULT_TOGGLE, GROUP_ORDER, EDITABLE_PROBE, TAB_WORLD, TAB_RECORDER, TAB_READ, readPair,
     toggleSpec, createDoubleTap, boot, nextBoot, sections, attached, suiTree, leaves, stackDial, dock, topChoices, topStrip, validTop, validDock,
   };
 });

@@ -174,3 +174,7 @@ table.cat td.lv { font: 11px var(--mv-mono); color: var(--mv-dim); }
 [data-role="dashboard"]::-webkit-scrollbar, [data-role="sheet"]::-webkit-scrollbar { width: 10px; height: 10px; }
 [data-role="dashboard"]::-webkit-scrollbar-track, [data-role="sheet"]::-webkit-scrollbar-track { background: var(--mv-bg); }
 [data-role="dashboard"]::-webkit-scrollbar-thumb, [data-role="sheet"]::-webkit-scrollbar-thumb { background: var(--mv-line-strong); border: 2px solid var(--mv-bg); }
+
+/* the empty pane's "open …" buttons in the shell's look (they were browser-default buttons since D1) */
+[data-pane][data-kind="empty"] button { background: var(--mv-raised); border: 1px solid var(--mv-line); color: var(--mv-text); font: 12px var(--mv-mono); letter-spacing: .04em; padding: 6px 12px; min-width: 140px; text-align: left; }
+[data-pane][data-kind="empty"] button:hover, [data-pane][data-kind="empty"] button:focus-visible { border-color: var(--mv-accent); color: var(--mv-accent); outline: none; }
