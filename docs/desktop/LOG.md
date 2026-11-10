@@ -33,3 +33,14 @@ Run in an attended session on 2026-11-10 (the Founder chose that over the night 
 - `docs/desktop/ARCHITECTURE.md`: why it tangles (7 lists), what VS Code / Windows / macOS / JetBrains Toolbox / Home Assistant–Grafana do,
   the recommended layout, what START / Kapu / Toolbox / hub-seed / Console / Zen become, a 16-row rename table, the migration order.
 - DESKU-Q06 … Q12 recorded.
+
+## U4 — the catalog (WP-40, 2026-11-10)
+
+- `Dashboard/shell/lib/catalog.js`: load + validate `launcher/vrg-catalog.json` against `build.collect()` (START acts, servers,
+  submenus, features) and the pane kinds; `listFor(level)`, `children(id, level)` (catalog children, START submenu actions, servers),
+  `resolve(id)` (act / web / pane / view / frame / start), `appTarget(id)` (the page + the folders vrg-app:// may serve).
+- `tools/check-catalog.js` (ASCII, exit 1 on errors; lists START / features apps the catalog does not know: only e6 RL-CYD, personal).
+- `Dashboard/test/wp-40.test.js`: 11 tests. Catalog fixes found by the checker: layer ids lowercased (the IPC id type), prompts and
+  three items with no opener re-pointed, the map opens its server.
+- CLAUDE.md: the catalog rule next to the START rule.
+- Checks: run.js --all 357/0, selftest ok; check-start ok; check-catalog ok.

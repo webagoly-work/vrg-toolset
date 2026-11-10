@@ -2278,8 +2278,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.L",
-   "reason": "is the catalog item `layer.L`"
+   "unit": "layer.l",
+   "reason": "is the catalog item `layer.l`"
   },
   {
    "id": "feat:k4",
@@ -2288,8 +2288,8 @@
    "type": "stack layer view",
    "level": "user",
    "parent": "stack",
-   "unit": "layer.I",
-   "reason": "is the catalog item `layer.I`"
+   "unit": "layer.i",
+   "reason": "is the catalog item `layer.i`"
   },
   {
    "id": "feat:k5",
@@ -2298,8 +2298,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.R",
-   "reason": "is the catalog item `layer.R`"
+   "unit": "layer.r",
+   "reason": "is the catalog item `layer.r`"
   },
   {
    "id": "feat:k6",
@@ -2308,8 +2308,8 @@
    "type": "stack layer view",
    "level": "user",
    "parent": "stack",
-   "unit": "layer.F",
-   "reason": "is the catalog item `layer.F`"
+   "unit": "layer.f",
+   "reason": "is the catalog item `layer.f`"
   },
   {
    "id": "feat:k14",
@@ -4078,8 +4078,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.R",
-   "reason": "is the catalog item `layer.R`"
+   "unit": "layer.r",
+   "reason": "is the catalog item `layer.r`"
   },
   {
    "id": "stack:connectome",
@@ -4098,8 +4098,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.A",
-   "reason": "is the catalog item `layer.A`"
+   "unit": "layer.a",
+   "reason": "is the catalog item `layer.a`"
   },
   {
    "id": "stack:decisions",
@@ -4108,8 +4108,8 @@
    "type": "stack layer view",
    "level": "user",
    "parent": "stack",
-   "unit": "layer.Q",
-   "reason": "is the catalog item `layer.Q`"
+   "unit": "layer.q",
+   "reason": "is the catalog item `layer.q`"
   },
   {
    "id": "stack:layers",
@@ -4128,8 +4128,8 @@
    "type": "stack layer view",
    "level": "user",
    "parent": "stack",
-   "unit": "layer.I",
-   "reason": "is the catalog item `layer.I`"
+   "unit": "layer.i",
+   "reason": "is the catalog item `layer.i`"
   },
   {
    "id": "stack:metro",
@@ -4138,8 +4138,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.L",
-   "reason": "is the catalog item `layer.L`"
+   "unit": "layer.l",
+   "reason": "is the catalog item `layer.l`"
   },
   {
    "id": "stack:orb",
@@ -4158,8 +4158,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.U",
-   "reason": "is the catalog item `layer.U`"
+   "unit": "layer.u",
+   "reason": "is the catalog item `layer.u`"
   },
   {
    "id": "stack:runs",
@@ -4168,8 +4168,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.U",
-   "reason": "is the catalog item `layer.U`"
+   "unit": "layer.u",
+   "reason": "is the catalog item `layer.u`"
   },
   {
    "id": "stack:stack-search",
@@ -4208,8 +4208,8 @@
    "type": "stack layer view",
    "level": "user",
    "parent": "stack",
-   "unit": "layer.F",
-   "reason": "is the catalog item `layer.F`"
+   "unit": "layer.f",
+   "reason": "is the catalog item `layer.f`"
   },
   {
    "id": "layer:I",
@@ -4218,8 +4218,8 @@
    "type": "stack layer view",
    "level": "user",
    "parent": "stack",
-   "unit": "layer.I",
-   "reason": "is the catalog item `layer.I`"
+   "unit": "layer.i",
+   "reason": "is the catalog item `layer.i`"
   },
   {
    "id": "layer:Q",
@@ -4228,8 +4228,8 @@
    "type": "stack layer view",
    "level": "user",
    "parent": "stack",
-   "unit": "layer.Q",
-   "reason": "is the catalog item `layer.Q`"
+   "unit": "layer.q",
+   "reason": "is the catalog item `layer.q`"
   },
   {
    "id": "layer:L",
@@ -4238,8 +4238,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.L",
-   "reason": "is the catalog item `layer.L`"
+   "unit": "layer.l",
+   "reason": "is the catalog item `layer.l`"
   },
   {
    "id": "layer:A",
@@ -4248,8 +4248,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.A",
-   "reason": "is the catalog item `layer.A`"
+   "unit": "layer.a",
+   "reason": "is the catalog item `layer.a`"
   },
   {
    "id": "layer:U",
@@ -4258,8 +4258,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.U",
-   "reason": "is the catalog item `layer.U`"
+   "unit": "layer.u",
+   "reason": "is the catalog item `layer.u`"
   },
   {
    "id": "layer:R",
@@ -4268,8 +4268,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.R",
-   "reason": "is the catalog item `layer.R`"
+   "unit": "layer.r",
+   "reason": "is the catalog item `layer.r`"
   },
   {
    "id": "layer:C",
@@ -4278,8 +4278,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.C",
-   "reason": "is the catalog item `layer.C`"
+   "unit": "layer.c",
+   "reason": "is the catalog item `layer.c`"
   },
   {
    "id": "layer:G",
@@ -4288,8 +4288,8 @@
    "type": "stack layer view",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.G",
-   "reason": "is the catalog item `layer.G`"
+   "unit": "layer.g",
+   "reason": "is the catalog item `layer.g`"
   },
   {
    "id": "layer:Z",
@@ -4298,8 +4298,8 @@
    "type": "stack layer (machine only)",
    "level": "dev",
    "parent": "stack",
-   "unit": "layer.Z",
-   "reason": "is the catalog item `layer.Z`"
+   "unit": "layer.z",
+   "reason": "is the catalog item `layer.z`"
   },
   {
    "id": "tool:anonymise",

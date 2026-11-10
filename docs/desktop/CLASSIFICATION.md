@@ -54,9 +54,9 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | `mobile` | VRG Mobile · *VRG Mobile* | companion app (Android) |  | alkalmazasok / terep | beta |
 | `servicekit` | ServiceKit · *ServiceKit* | field toolkit (portable kit) |  | alkalmazasok / terep | dev |
 | `stack.search` | Keresés · *Search* | view (search) | `stack` | fejlesztes | live |
-| `layer.I` | I · Ötletfolyam · *I · Ideas* | stack layer view | `stack` | fejlesztes | live |
-| `layer.F` | F · Kiemelt · *F · Featured* | stack layer view | `stack` | fejlesztes | live |
-| `layer.Q` | Q · Döntésnapló · *Q · Decisions* | stack layer view | `stack` | fejlesztes | live |
+| `layer.i` | I · Ötletfolyam · *I · Ideas* | stack layer view | `stack` | fejlesztes | live |
+| `layer.f` | F · Kiemelt · *F · Featured* | stack layer view | `stack` | fejlesztes | live |
+| `layer.q` | Q · Döntésnapló · *Q · Decisions* | stack layer view | `stack` | fejlesztes | live |
 
 ### dev
 
@@ -85,13 +85,13 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | `stack.connectome` | Konnektóm · *Connectome* | view (graph visualization) | `stack` | fejlesztes | live |
 | `stack.orb` | Holo · *Holo* | view (graph visualization) | `stack` | fejlesztes | live |
 | `stack.layers` | Rétegek · *Layers* | view (graph visualization) | `stack` | fejlesztes | live |
-| `layer.L` | L · Vonaltérkép · *L · DevLog lines* | stack layer view | `stack` | fejlesztes | live |
-| `layer.A` | A · Vezérlőterem · *A · Control room* | stack layer view | `stack` | fejlesztes | live |
-| `layer.U` | U · Futásnapló · *U · Run log* | stack layer view | `stack` | fejlesztes | live |
-| `layer.R` | R · Commit-pixel · *R · Commit pixels* | stack layer view | `stack` | fejlesztes | live |
-| `layer.C` | C · Kódváros · *C · Code city* | stack layer view | `stack` | fejlesztes | live |
-| `layer.G` | G · Gömb · *G · Data globe* | stack layer view | `stack` | fejlesztes | live |
-| `layer.Z` | Z · Kódex · *Z · Codec* | stack layer (machine only) | `stack` | fejlesztes | live |
+| `layer.l` | L · Vonaltérkép · *L · DevLog lines* | stack layer view | `stack` | fejlesztes | live |
+| `layer.a` | A · Vezérlőterem · *A · Control room* | stack layer view | `stack` | fejlesztes | live |
+| `layer.u` | U · Futásnapló · *U · Run log* | stack layer view | `stack` | fejlesztes | live |
+| `layer.r` | R · Commit-pixel · *R · Commit pixels* | stack layer view | `stack` | fejlesztes | live |
+| `layer.c` | C · Kódváros · *C · Code city* | stack layer view | `stack` | fejlesztes | live |
+| `layer.g` | G · Gömb · *G · Data globe* | stack layer view | `stack` | fejlesztes | live |
+| `layer.z` | Z · Kódex · *Z · Codec* | stack layer (machine only) | `stack` | fejlesztes | live |
 | `codecity` | VRG Kódváros · *VRG Code City* | application (code visualization) | `dev:knowledge` | fejlesztes | beta |
 | `solomon` | Solomon Gömb · *Solomon Sphere* | application (knowledge visualization) | `dev:knowledge` | fejlesztes | beta |
 | `divergence` | Divergencia jelzőtábla · *Divergence board* | application (signal board) | `dev:knowledge` | fejlesztes | beta |
@@ -468,10 +468,10 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | `feat:e8` | Site Pager + S3 projects | idea | all | `dev:hw` | tier 5 idea in lane e: planned or an idea, All |
 | `feat:k1` | VRG MindMap | application | user |  | is the catalog item `mindmap` |
 | `feat:k2` | Claude Code entry points | AI coding agent (embedded terminal) | dev | `dev:ai` | is the catalog item `claude-code` |
-| `feat:k3` | DevLog board + Thread Board | stack layer view | dev | `stack` | is the catalog item `layer.L` |
-| `feat:k4` | Idea timeline map | stack layer view | user | `stack` | is the catalog item `layer.I` |
-| `feat:k5` | DevRep map | stack layer view | dev | `stack` | is the catalog item `layer.R` |
-| `feat:k6` | Features map | stack layer view | user | `stack` | is the catalog item `layer.F` |
+| `feat:k3` | DevLog board + Thread Board | stack layer view | dev | `stack` | is the catalog item `layer.l` |
+| `feat:k4` | Idea timeline map | stack layer view | user | `stack` | is the catalog item `layer.i` |
+| `feat:k5` | DevRep map | stack layer view | dev | `stack` | is the catalog item `layer.r` |
+| `feat:k6` | Features map | stack layer view | user | `stack` | is the catalog item `layer.f` |
 | `feat:k14` | VRG Stack (Rétegverem) | knowledge graph | dev | `dev:knowledge` | is the catalog item `stack` |
 | `feat:k7` | Kódváros | application (code visualization) | dev | `dev:knowledge` | is the catalog item `codecity` |
 | `feat:k8` | GO codephrases | runbook (session entry point) | dev | `dev:ai` | is the catalog item `go` |
@@ -648,29 +648,29 @@ Terms: `GLOSSARY.md`. Re-run after the inventory or the catalog changes.*
 | `mobile:M17` | Rétegverem | feature module (companion app) | dev | `mobile` | repo, CI, servers or knowledge on the phone |
 | `mobile:M15` | Logó kezdőlap | feature module (companion app) | all | `mobile` | planned |
 | `mobile:catalogue` | Mobile eszközkatalógus | registry | dev | `mobile` | the phone's tool list, generated |
-| `stack:commits` | VRG Commit-pixel | stack layer view | dev | `stack` | is the catalog item `layer.R` |
+| `stack:commits` | VRG Commit-pixel | stack layer view | dev | `stack` | is the catalog item `layer.r` |
 | `stack:connectome` | VRG Konnektóm | view (graph visualization) | dev | `stack` | is the catalog item `stack.connectome` |
-| `stack:control` | VRG Vezérlőterem | stack layer view | dev | `stack` | is the catalog item `layer.A` |
-| `stack:decisions` | VRG Döntésnapló | stack layer view | user | `stack` | is the catalog item `layer.Q` |
+| `stack:control` | VRG Vezérlőterem | stack layer view | dev | `stack` | is the catalog item `layer.a` |
+| `stack:decisions` | VRG Döntésnapló | stack layer view | user | `stack` | is the catalog item `layer.q` |
 | `stack:layers` | VRG Rétegek | view (graph visualization) | dev | `stack` | is the catalog item `stack.layers` |
-| `stack:lineage` | VRG Ötletfolyam | stack layer view | user | `stack` | is the catalog item `layer.I` |
-| `stack:metro` | VRG Vonaltérkép | stack layer view | dev | `stack` | is the catalog item `layer.L` |
+| `stack:lineage` | VRG Ötletfolyam | stack layer view | user | `stack` | is the catalog item `layer.i` |
+| `stack:metro` | VRG Vonaltérkép | stack layer view | dev | `stack` | is the catalog item `layer.l` |
 | `stack:orb` | VRG Holo | view (graph visualization) | dev | `stack` | is the catalog item `stack.orb` |
-| `stack:replay` | VRG Visszajátszás | stack layer view | dev | `stack` | is the catalog item `layer.U` |
-| `stack:runs` | VRG Futásnapló | stack layer view | dev | `stack` | is the catalog item `layer.U` |
+| `stack:replay` | VRG Visszajátszás | stack layer view | dev | `stack` | is the catalog item `layer.u` |
+| `stack:runs` | VRG Futásnapló | stack layer view | dev | `stack` | is the catalog item `layer.u` |
 | `stack:stack-search` | VRG Rétegverem | knowledge graph | dev | `dev:knowledge` | is the catalog item `stack` |
 | `stack:cli` | stack.js (CLI) | knowledge graph | dev | `dev:knowledge` | is the catalog item `stack` |
 | `stack:mcp` | vrg-stack MCP szerver | knowledge graph | dev | `dev:knowledge` | is the catalog item `stack` |
-| `layer:F` | Réteg F · Featured | stack layer view | user | `stack` | is the catalog item `layer.F` |
-| `layer:I` | Réteg I · Ideas | stack layer view | user | `stack` | is the catalog item `layer.I` |
-| `layer:Q` | Réteg Q · Decisions | stack layer view | user | `stack` | is the catalog item `layer.Q` |
-| `layer:L` | Réteg L · DevLog | stack layer view | dev | `stack` | is the catalog item `layer.L` |
-| `layer:A` | Réteg A · Agentic | stack layer view | dev | `stack` | is the catalog item `layer.A` |
-| `layer:U` | Réteg U · Futás | stack layer view | dev | `stack` | is the catalog item `layer.U` |
-| `layer:R` | Réteg R · DevRepo | stack layer view | dev | `stack` | is the catalog item `layer.R` |
-| `layer:C` | Réteg C · Code | stack layer view | dev | `stack` | is the catalog item `layer.C` |
-| `layer:G` | Réteg G · Data Globe | stack layer view | dev | `stack` | is the catalog item `layer.G` |
-| `layer:Z` | Réteg Z · Codec | stack layer (machine only) | dev | `stack` | is the catalog item `layer.Z` |
+| `layer:F` | Réteg F · Featured | stack layer view | user | `stack` | is the catalog item `layer.f` |
+| `layer:I` | Réteg I · Ideas | stack layer view | user | `stack` | is the catalog item `layer.i` |
+| `layer:Q` | Réteg Q · Decisions | stack layer view | user | `stack` | is the catalog item `layer.q` |
+| `layer:L` | Réteg L · DevLog | stack layer view | dev | `stack` | is the catalog item `layer.l` |
+| `layer:A` | Réteg A · Agentic | stack layer view | dev | `stack` | is the catalog item `layer.a` |
+| `layer:U` | Réteg U · Futás | stack layer view | dev | `stack` | is the catalog item `layer.u` |
+| `layer:R` | Réteg R · DevRepo | stack layer view | dev | `stack` | is the catalog item `layer.r` |
+| `layer:C` | Réteg C · Code | stack layer view | dev | `stack` | is the catalog item `layer.c` |
+| `layer:G` | Réteg G · Data Globe | stack layer view | dev | `stack` | is the catalog item `layer.g` |
+| `layer:Z` | Réteg Z · Codec | stack layer (machine only) | dev | `stack` | is the catalog item `layer.z` |
 | `tool:anonymise` | tools/anonymise.js | CLI tool | dev | `dev:repo` | command-line script, run by START, a build or an agent |
 | `tool:brief-state` | tools/brief-state.js | CLI tool | dev | `council` | command-line script, run by START, a build or an agent |
 | `tool:build-hub` | tools/build-hub.js | CLI tool | dev | `kapu` | command-line script, run by START, a build or an agent |
