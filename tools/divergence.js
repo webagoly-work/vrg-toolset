@@ -9,6 +9,7 @@
 //   node tools/divergence.js prompt <id>              the hand-off text for another session (also saved to data/handoff/)
 //   node tools/divergence.js enter <id>               mark entered and print the hand-off
 //   node tools/divergence.js note <id> "<text>"       leave a dev note on the signal's topic
+//   node tools/divergence.js jot --topic <t> --title <s> [--source <kind:ref>]   a free dev note, its text on stdin (not a signal, not logged)
 //   node tools/divergence.js ignore <id> ["<why>"]    take it off the ring, logged
 //   node tools/divergence.js close <id> "<summary>"   done; off the ring
 //   node tools/divergence.js add --kind K --title T --why W [--level 0.5] [--topic X] [--target doc:path[:line]]
@@ -20,7 +21,7 @@ const fs = require('fs'), path = require('path'), os = require('os');
 const { execFileSync, spawnSync } = require('child_process');
 
 const REPO = path.resolve(__dirname, '..');
-const DIR = path.join(REPO, 'Divergence');
+const DIR = process.env.VRG_DIVERGENCE_DIR || path.join(REPO, 'Divergence');
 const CONFIG = path.join(DIR, 'config.json'), SIGNALS = path.join(DIR, 'signals.json');
 const DATA = path.join(DIR, 'data'), LOG = path.join(DATA, 'log.jsonl'), OUTBOX = path.join(DATA, 'outbox.jsonl');
 const HANDOFF = path.join(DATA, 'handoff'), SENT = path.join(DATA, 'sent.jsonl');
@@ -88,6 +89,22 @@ function act(id, action, text) {
   if (action === 'note') appendJsonl(OUTBOX, { id, topic: s.topic, title: s.title, at, text });
   appendJsonl(LOG, { id, action, at, ...(action !== 'note' && text ? { text } : {}) });
   return action === 'enter' ? handoff(id) : { ok: true };
+}
+
+// A jot is a dev note that belongs to no signal: it goes to the outbox like a signal note, and nowhere else (the tracked log holds signal state only).
+function jot({ topic, title, text, source } = {}) {
+  topic = String(topic == null ? '' : topic); title = String(title == null ? '' : title).trim();
+  text = String(text == null ? '' : text).trim(); source = source == null ? '' : String(source);
+  if (!/^[a-z0-9-]{1,40}$/.test(topic)) refuse('jot needs a topic of 1-40 characters: a-z, 0-9, -.');
+  if (title.length > 120) refuse('The title is longer than 120 characters.');
+  if (!text) refuse('jot needs a text.');
+  if (text.length > 65536) refuse('The text is longer than 65536 characters.');
+  if (source.length > 500) refuse('The source is longer than 500 characters.');
+  const t = new Date(), p = n => String(n).padStart(2, '0');
+  const stamp = `${t.getUTCFullYear()}${p(t.getUTCMonth() + 1)}${p(t.getUTCDate())}${p(t.getUTCHours())}${p(t.getUTCMinutes())}${p(t.getUTCSeconds())}`;
+  const id = `jot-${stamp}-${Math.floor(Math.random() * 0x10000).toString(16).padStart(4, '0')}`;
+  appendJsonl(OUTBOX, { id, topic, title: title || 'Jegyzet', at: now(), text, ...(source ? { source } : {}) });
+  return { ok: true, id };
 }
 
 function add(o) {
@@ -183,7 +200,7 @@ function clearOutbox(sent) {
   fs.writeFileSync(OUTBOX, left.map(x => JSON.stringify(x)).join('\n') + (left.length ? '\n' : ''));
 }
 
-module.exports = { state, handoff, act, add, check, push, Refusal, REPO };
+module.exports = { state, handoff, act, add, jot, check, push, Refusal, REPO };
 
 if (require.main === module) {
   const [cmd, ...args] = process.argv.slice(2);
@@ -196,8 +213,9 @@ if (require.main === module) {
     else if (cmd === 'enter') { const h = act(args[0], 'enter'); console.log(h.text + `\n\n(saved to ${h.file})`); }
     else if (['note', 'ignore', 'close', 'reopen'].includes(cmd)) { act(args[0], cmd, args.slice(1).join(' ')); console.log(`${cmd}: ${args[0]}`); }
     else if (cmd === 'add') console.log(`added ${add(flags)}`);
+    else if (cmd === 'jot') console.log(`jot: ${jot({ topic: flags.topic, title: flags.title, source: flags.source, text: fs.readFileSync(0, 'utf8') }).id}`);
     else if (cmd === 'push') console.log(push().message);
     else if (cmd === 'check') { const b = check(); b.forEach(x => console.log('BAD ' + x)); console.log(b.length ? `${b.length} problem(s)` : 'divergence: ok'); process.exit(b.length ? 1 : 0); }
-    else { console.error('usage: divergence.js list | prompt | enter | note | ignore | close | reopen | add | push | check'); process.exit(1); }
+    else { console.error('usage: divergence.js list | prompt | enter | note | ignore | close | reopen | add | jot | push | check'); process.exit(1); }
   } catch (e) { console.error(e instanceof Refusal ? e.message : e.stack); process.exit(1); }
 }

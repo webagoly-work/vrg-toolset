@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Demo atom</title>
+  <entry>
+    <title>Atom one</title>
+    <link rel="alternate" href="http://127.0.0.1/x"/>
+    <updated>2026-11-05T10:00:00Z</updated>
+  </entry>
+  <entry>
+    <title>Atom two</title>
+    <link href="javascript:alert(2)"/>
+    <updated>2026-11-04T10:00:00Z</updated>
+  </entry>
+</feed>

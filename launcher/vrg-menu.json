@@ -154,7 +154,7 @@
       { "key": "9", "name": "VRG BuildTree", "hint": "modder", "path": "{repo}\\Modder\\vrg-buildtree.html", "otg": true },
       { "key": "0", "name": "VRG Vendor", "hint": "külső komponensek", "path": "{repo}\\vrg-vendor.html", "otg": false },
       { "key": "T", "name": "Solomon Gömb", "hint": "a tudás három jelzése", "path": "{repo}\\Solomon\\dist\\vrg-solomon.html" },
-      { "key": "D", "name": "VRG UI Kit galéria", "hint": "komponensek, témák, sűrűség", "path": "{repo}\\shared\\vrg-ui-kit\\gallery.html", "otg": false },
+      { "key": "B", "name": "VRG UI Kit galéria", "hint": "komponensek, témák, sűrűség", "path": "{repo}\\shared\\vrg-ui-kit\\gallery.html", "otg": false },
       { "key": "K", "name": "VRG Kódváros", "hint": "a kód 3D városként", "path": "{repo}\\CodeCity\\dist\\vrg-codecity.html", "otg": false,
         "before": { "note": "Kódváros: a repo beolvasása…", "exe": "{node}",
                     "args": ["{repo}\\CodeCity\\scan.js", "{repo}", "--js", "{repo}\\CodeCity\\dist\\vrg-codecity.data.js"] },
@@ -280,6 +280,8 @@
             { "key": "3", "name": "Inventory projekt", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\""], "cwd": "{inventory}", "needs": "{claude}" },
             { "key": "B", "name": "Bernard", "hint": "a Tanács főművezetője", "exe": "cmd.exe", "args": ["/k", "call \"{claude}\" --agent bernard"], "cwd": "{repo}", "needs": "{claude}" }
           ] } },
+      { "key": "D", "name": "Irányítópult", "hint": "a teljes képernyős munkafelület", "exe": "{repo}\\Dashboard\\VRG Irányítópult.cmd" },
+      { "key": "F", "name": "VRG Desktop .exe építése", "hint": "{full}\\build\\vrg-desktop", "cwd": "{repo}", "steps": [{ "exe": "{node}", "args": ["Dashboard\\tools\\package.js"] }] },
       { "key": "E", "name": "VS Code", "was": "R V", "menu": {
           "title": "VS CODE", "subtitle": "{code}",
           "items": [

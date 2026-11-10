@@ -1,0 +1,180 @@
+/* desk.css — the VRG Asztal's two primary views (WP-41 … WP-43): Irányítópult nézet, Asztal nézet, the corner dials, the boot screens.
+   Mélyvíz tokens (shared/melyviz.css) for the ground and the Dashboard; the dial glass uses the Simple-UI tokens of
+   Planner docs/simple-ui/01_DESIGN.md §7, light glass on the dark ground by design. Hooks are data-role attributes. */
+:root {
+  --sm-glass: rgba(214, 224, 232, .80); --sm-glass-hi: rgba(234, 241, 247, .94); --sm-glass-back: rgba(196, 208, 219, .86);
+  --sm-edge-hi: rgba(255, 255, 255, .90); --sm-edge-lo: rgba(110, 130, 150, .45); --sm-ink: #1c2833; --sm-ink-dim: #5b6d7e;
+  --sm-accent: #3a8ac4; --sm-glow: 0 0 0 1px rgba(255, 255, 255, .55), 0 0 16px rgba(130, 185, 228, .45);
+  --sm-scan: repeating-linear-gradient(0deg, rgba(255, 255, 255, .05) 0 1px, transparent 1px 3px);
+  --sm-font: "Bahnschrift SemiCondensed", "Bahnschrift", "Segoe UI", sans-serif; --sm-num: "Cascadia Mono", "Consolas", monospace;
+  --dk-top: 38px; --dk-dock: 60px;
+}
+
+/* ---------------------------------------------------------------- stage: the two primary views stacked */
+#stage { position: relative; flex: 1 1 0; min-height: 0; }
+[data-role="desktop"], [data-role="dashboard"] { position: absolute; inset: 0; }
+[data-role="desktop"][hidden], [data-role="dashboard"][hidden] { display: none; }
+[data-role="desktop"] { display: flex; flex-direction: column; }
+
+/* ---------------------------------------------------------------- Asztal nézet: top strip, workspace, dock */
+[data-role="topstrip"] { flex: 0 0 var(--dk-top); height: var(--dk-top); display: flex; align-items: stretch; gap: 0; padding: 0 56px 0 12px;
+  border-bottom: 1px solid var(--mv-line); background: var(--mv-panel-solid); font: 12px var(--mv-mono); color: var(--mv-dim); user-select: none; }
+[data-role="topstrip"] > * { display: flex; align-items: center; gap: 6px; padding: 0 12px; border-right: 1px solid var(--mv-line); background: none; border-top: 0; border-bottom: 0; border-left: 0; color: inherit; font: inherit; }
+[data-role="topstrip"] button { cursor: pointer; }
+[data-role="topstrip"] button:hover { background: var(--mv-raised); color: var(--mv-text); }
+[data-role="topstrip"] .sp { flex: 1; border-right: 0; padding: 0; }
+[data-role="topstrip"] .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mv-faint); display: inline-block; }
+[data-role="topstrip"] .dot.ok { background: var(--mv-ok); } [data-role="topstrip"] .dot.warn { background: var(--mv-warn); } [data-role="topstrip"] .dot.crit { background: var(--mv-crit); }
+[data-role="topstrip"] [data-w="w:clock"] { color: var(--mv-text); font-size: 13px; letter-spacing: .06em; }
+[data-role="ring"] { width: 18px; height: 18px; }
+
+[data-role="workspace"] { position: relative; flex: 1 1 0; min-height: 0; display: flex;
+  background: radial-gradient(120% 90% at 50% 110%, var(--mv-horizon) 0%, var(--mv-bg) 62%); }
+[data-role="workspace"] > #root { flex: 1 1 0; min-height: 0; display: flex; margin: 6px 6px 0; }
+[data-role="workspace"] > #root[hidden] { display: none; }
+[data-role="ground"] { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; pointer-events: none; }
+[data-role="ground"][hidden] { display: none; }
+[data-role="ground"] .mark { font: 600 13px var(--mv-mono); letter-spacing: .5em; color: var(--mv-faint); text-transform: uppercase; }
+[data-role="ground"] .hint { font-size: 12px; color: var(--mv-faint); }
+[data-role="ground"] .hint .en { display: block; font-style: italic; text-align: center; }
+
+[data-role="dock"] { flex: 0 0 var(--dk-dock); height: var(--dk-dock); display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 0 104px; border-top: 1px solid var(--mv-line); background: var(--mv-panel-solid); }
+[data-role="dock"] .div { width: 1px; height: 32px; background: var(--mv-line-strong); margin: 0 6px; }
+[data-role="dock"] button { position: relative; width: 44px; height: 44px; border: 1px solid var(--mv-line); background: var(--mv-raised); color: var(--mv-text);
+  font: 600 12px var(--mv-mono); letter-spacing: .04em; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+[data-role="dock"] button:hover, [data-role="dock"] button:focus-visible { border-color: var(--mv-accent); outline: none; }
+[data-role="dock"] button[data-level="dev"] { border-style: dashed; color: var(--mv-dim); }
+[data-role="dock"] button[data-running="1"]::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 14px; height: 2px; margin-left: -7px; background: var(--mv-accent); }
+[data-role="dock"] button.win { width: auto; max-width: 150px; padding: 0 10px; font: 12px var(--mv-sans); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+[data-role="dock"] button.win[data-focus="1"] { border-color: var(--mv-accent); background: var(--mv-accent-soft); }
+
+/* the corner toggle (both views) and the level control */
+[data-role="view-toggle"] { position: absolute; top: 0; right: 0; z-index: 40; width: 44px; height: var(--dk-top); border: 0; border-left: 1px solid var(--mv-line);
+  background: var(--mv-panel-solid); color: var(--mv-accent); font: 15px var(--mv-mono); cursor: pointer; }
+[data-role="view-toggle"]:hover { background: var(--mv-raised); }
+[data-role="level"] { display: inline-flex; border: 1px solid var(--mv-line); }
+[data-role="level"] button { background: none; border: 0; border-right: 1px solid var(--mv-line); color: var(--mv-dim); font: 11px var(--mv-mono); letter-spacing: .08em; padding: 3px 8px; cursor: pointer; text-transform: uppercase; }
+[data-role="level"] button:last-child { border-right: 0; }
+[data-role="level"] button[aria-pressed="true"] { background: var(--mv-accent-soft); color: var(--mv-accent); }
+
+/* ---------------------------------------------------------------- Sarokvezérlő (corner dial), 01_DESIGN.md §2–§3, mirrored for the right */
+.sui { position: absolute; bottom: 0; z-index: 60; width: 88px; height: 88px; }
+.sui[data-side="left"] { left: 0; } .sui[data-side="right"] { right: 0; }
+.sui-dial { position: absolute; inset: 0; padding: 0; border: 0; background: none; cursor: pointer;
+  clip-path: path("M0 88 L0 0 A88 88 0 0 1 88 88 Z"); }
+.sui[data-side="right"] .sui-dial { clip-path: path("M88 88 L88 0 A88 88 0 0 0 0 88 Z"); }
+.sui[data-side="right"] .sui-dial svg { transform: scaleX(-1); }
+.sui-dial svg { position: absolute; inset: 0; display: block; }
+.sui-dial .g { fill: var(--sm-glass); }
+.sui-dial .r1 { fill: none; stroke: var(--sm-edge-lo); stroke-width: 2; }
+.sui-dial .r2 { fill: none; stroke: var(--sm-edge-lo); stroke-width: 1; }
+.sui-dial .tk { stroke: var(--sm-ink-dim); stroke-opacity: .5; stroke-width: 1; }
+.sui-dial .dp { fill: none; stroke: var(--sm-edge-lo); stroke-width: 5; }
+.sui-dial .dp.lit { stroke: var(--sm-accent); }
+.sui-dial .core { fill: var(--sm-glass-hi); stroke: var(--sm-edge-lo); }
+.sui-dial:hover .g, .sui-dial:focus-visible .g { fill: var(--sm-glass-hi); }
+.sui-dial:focus-visible { outline: none; }
+.sui-core { position: absolute; bottom: 8px; font: 600 20px var(--sm-font); color: var(--sm-ink); line-height: 1; pointer-events: none; }
+.sui[data-side="left"] .sui-core { left: 10px; } .sui[data-side="right"] .sui-core { right: 10px; }
+.sui[data-open="1"] .sui-dial .g { fill: var(--sm-glass-hi); }
+.sui-col { position: absolute; bottom: 100px; width: 248px; display: flex; flex-direction: column; gap: 6px; }
+.sui[data-side="left"] .sui-col { left: 20px; } .sui[data-side="right"] .sui-col { right: 20px; }
+.sui-col[hidden] { display: none; }
+.sui-crumb { height: 18px; line-height: 18px; font: 10.5px var(--sm-font); letter-spacing: .1em; color: var(--sm-glass-hi); text-shadow: 0 1px 2px rgba(0, 0, 0, .6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sui[data-side="right"] .sui-crumb { text-align: right; }
+.sui-list { display: flex; flex-direction: column; gap: 6px; }
+.sui-item { position: relative; display: grid; grid-template-columns: 26px 30px 1fr 16px; align-items: center; min-height: 48px; padding: 0 10px 0 8px; text-align: left;
+  background: var(--sm-scan), var(--sm-glass); backdrop-filter: blur(6px) saturate(1.1); border: 1px solid; border-color: var(--sm-edge-hi) var(--sm-edge-lo) var(--sm-edge-lo) var(--sm-edge-hi);
+  border-radius: 2px; color: var(--sm-ink); cursor: pointer; animation: sui-rise 140ms ease-out both; }
+.sui-item.back { background: var(--sm-scan), var(--sm-glass-back); }
+.sui-item[data-focus="1"] { background: var(--sm-scan), var(--sm-glass-hi); box-shadow: var(--sm-glow); }
+.sui-item[data-focus="1"]::before { content: ""; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 3px; background: var(--sm-accent); }
+.sui-item:active { border-color: var(--sm-edge-lo) var(--sm-edge-hi) var(--sm-edge-hi) var(--sm-edge-lo); }
+.sui-item .ix { font: 12px var(--sm-num); color: var(--sm-ink-dim); font-variant-numeric: tabular-nums; }
+.sui-item .ic { font: 600 11px var(--sm-num); color: var(--sm-ink); filter: grayscale(1) brightness(.4) contrast(1.3); }
+.sui-item .lb { font: 14px var(--sm-font); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sui-item .why { display: block; font: 10.5px var(--sm-font); letter-spacing: .02em; text-transform: none; color: var(--sm-ink-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sui-item .ch { font: 14px var(--sm-font); color: var(--sm-ink-dim); text-align: right; }
+.sui-item[aria-disabled="true"] .ix, .sui-item[aria-disabled="true"] .ic, .sui-item[aria-disabled="true"] .lb > :not(.why) { opacity: .45; }
+@keyframes sui-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sui-item { animation: none; } }
+
+/* ---------------------------------------------------------------- Irányítópult nézet: one scrollable page of sections */
+[data-role="dashboard"] { overflow: auto; background: var(--mv-bg); }
+[data-role="dashboard"] .dash-in { max-width: 1480px; margin: 0 auto; padding: 18px 28px 80px; }
+[data-role="dash-head"] { display: flex; align-items: baseline; gap: 16px; padding: 4px 0 14px; border-bottom: 1px solid var(--mv-line); margin-bottom: 8px; }
+[data-role="dash-head"] h1 { margin: 0; font: 600 13px var(--mv-mono); letter-spacing: .32em; text-transform: uppercase; color: var(--mv-text); }
+[data-role="dash-head"] .sub { color: var(--mv-dim); font-size: 12px; }
+[data-role="dash-head"] .sp { flex: 1; }
+[data-role="dash-nav"] { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 0; background: var(--mv-bg); border-bottom: 1px solid var(--mv-line); }
+[data-role="dash-nav"] a { color: var(--mv-dim); text-decoration: none; font: 11px var(--mv-mono); letter-spacing: .08em; padding: 3px 8px; border: 1px solid var(--mv-line); }
+[data-role="dash-nav"] a:hover { color: var(--mv-accent); border-color: var(--mv-accent); }
+[data-role="dash-nav"] a[data-level="dev"] { border-style: dashed; } [data-role="dash-nav"] a[data-level="all"] { border-style: dotted; }
+.dash-sec { padding: 18px 0 6px; scroll-margin-top: 48px; }
+.dash-sec > h2 { margin: 0 0 10px; font: 600 11px var(--mv-mono); letter-spacing: .24em; text-transform: uppercase; color: var(--mv-accent); }
+.dash-sec > h2 .en { margin-left: 10px; font: italic 11px var(--mv-sans); letter-spacing: 0; text-transform: none; color: var(--mv-faint); }
+.dash-sec > h2 .lv { margin-left: 10px; font-size: 10px; color: var(--mv-faint); border: 1px dashed var(--mv-line-strong); padding: 0 5px; }
+.dash-grp { margin: 8px 0 4px; font: 11px var(--mv-mono); letter-spacing: .14em; color: var(--mv-dim); text-transform: uppercase; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.tile { display: flex; flex-direction: column; border: 1px solid var(--mv-line); background: var(--mv-panel-solid); min-height: 64px; }
+.tile > button.main { display: grid; grid-template-columns: 40px 1fr; gap: 10px; align-items: center; padding: 10px; text-align: left; background: none; border: 0; color: var(--mv-text); cursor: pointer; font: inherit; }
+.tile > button.main:hover { background: var(--mv-raised); }
+.tile > button.main[disabled] { cursor: default; } .tile > button.main[disabled]:hover { background: none; }
+.tile .mono { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--mv-line-strong); font: 600 12px var(--mv-mono); color: var(--mv-accent); }
+.tile .t { font-size: 13.5px; } .tile .ty { display: block; font-size: 11px; color: var(--mv-dim); margin-top: 2px; }
+.tile .st { font: 10px var(--mv-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--mv-warn); margin-left: 6px; }
+.tile[data-level="dev"] { border-style: dashed; } .tile[data-level="all"] { border-style: dotted; }
+.tile .att { border-top: 1px dashed var(--mv-line); padding: 4px 0; display: flex; flex-direction: column; }
+.tile .att button { display: flex; justify-content: space-between; gap: 8px; background: none; border: 0; color: var(--mv-dim); text-align: left; padding: 3px 10px 3px 22px; font: 12px var(--mv-sans); cursor: pointer; position: relative; }
+.tile .att button::before { content: ""; position: absolute; left: 10px; top: 0; bottom: 50%; width: 7px; border-left: 1px solid var(--mv-line-strong); border-bottom: 1px solid var(--mv-line-strong); }
+.tile .att button:hover { color: var(--mv-text); background: var(--mv-raised); }
+.tile .att .k { font: 10.5px var(--mv-mono); color: var(--mv-faint); }
+.tile .att .k.up { color: var(--mv-ok); }
+.rows { display: flex; flex-direction: column; border: 1px solid var(--mv-line); }
+.rows > div, .rows > button { display: grid; grid-template-columns: 160px 1fr auto; gap: 12px; align-items: center; padding: 6px 10px; border: 0; border-bottom: 1px solid var(--mv-line); background: none; color: var(--mv-text); text-align: left; font: inherit; }
+.rows > :last-child { border-bottom: 0; }
+.rows > button { cursor: pointer; } .rows > button:hover { background: var(--mv-raised); }
+.rows .c { font: 12px var(--mv-mono); color: var(--mv-accent); } .rows .d { color: var(--mv-dim); font-size: 12px; }
+.rows .empty { color: var(--mv-faint); font-style: italic; grid-template-columns: 1fr; }
+.steps { display: inline-flex; gap: 3px; } .steps i { width: 14px; height: 6px; background: var(--mv-line-strong); display: inline-block; } .steps i.on { background: var(--mv-ok); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.kpi { border: 1px solid var(--mv-line); padding: 10px 12px; background: var(--mv-panel-solid); }
+.kpi .n { font: 600 22px var(--mv-mono); color: var(--mv-text); } .kpi .l { font-size: 11.5px; color: var(--mv-dim); }
+.bars { display: flex; align-items: flex-end; gap: 4px; height: 90px; padding: 8px 10px 0; border: 1px solid var(--mv-line); background: var(--mv-panel-solid); }
+.bars > div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 3px; }
+.bars i { display: block; width: 100%; background: var(--mv-accent); opacity: .7; min-height: 1px; }
+.bars span { font: 9.5px var(--mv-mono); color: var(--mv-faint); }
+[data-role="catalog-filter"] { width: 320px; max-width: 100%; margin-bottom: 8px; padding: 6px 10px; background: var(--mv-raised); color: var(--mv-text); border: 1px solid var(--mv-line); font: inherit; }
+table.cat { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.cat th, table.cat td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--mv-line); }
+table.cat th { font: 10.5px var(--mv-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--mv-dim); position: sticky; top: 44px; background: var(--mv-bg); }
+table.cat tr[data-open="1"] { cursor: pointer; } table.cat tr[data-open="1"]:hover td { background: var(--mv-raised); }
+table.cat td.lv { font: 11px var(--mv-mono); color: var(--mv-dim); }
+
+/* ---------------------------------------------------------------- sheets (Testreszabás, Beállítások) and the boot screens */
+[data-role="sheet"] { position: fixed; z-index: 120; top: 60px; left: 50%; transform: translateX(-50%); width: min(560px, 92vw); max-height: 80vh; overflow: auto;
+  background: var(--mv-bg); color: var(--mv-text); border: 1px solid var(--mv-line-strong); box-shadow: 0 12px 40px rgba(0, 0, 0, .5); }
+[data-role="sheet"] h3 { margin: 0; padding: 12px 14px; font: 600 12px var(--mv-mono); letter-spacing: .2em; text-transform: uppercase; border-bottom: 1px solid var(--mv-line); }
+[data-role="sheet"] h3 .en { margin-left: 8px; font: italic 11px var(--mv-sans); letter-spacing: 0; text-transform: none; color: var(--mv-faint); }
+[data-role="sheet"] .body { padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+[data-role="sheet"] label { display: flex; align-items: center; gap: 8px; } [data-role="sheet"] .row { display: flex; align-items: center; gap: 8px; }
+[data-role="sheet"] .row .sp { flex: 1; } [data-role="sheet"] .note { color: var(--mv-faint); font-size: 12px; }
+[data-role="sheet"] .foot { display: flex; justify-content: flex-end; gap: 6px; padding: 10px 14px; border-top: 1px solid var(--mv-line); }
+[data-role="sheet"] button { background: var(--mv-raised); color: var(--mv-text); border: 1px solid var(--mv-line); padding: 4px 10px; cursor: pointer; font: inherit; }
+[data-role="sheet"] button:hover { border-color: var(--mv-accent); }
+[data-role="boot"] { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: radial-gradient(120% 90% at 50% 110%, var(--mv-horizon) 0%, var(--mv-bg) 62%); color: var(--mv-text); }
+[data-role="boot"][hidden] { display: none; }
+[data-role="boot"] .mark { font: 600 15px var(--mv-mono); letter-spacing: .6em; text-transform: uppercase; }
+[data-role="boot"] .msg { color: var(--mv-dim); font-size: 12.5px; text-align: center; } [data-role="boot"] .msg .en { display: block; font-style: italic; color: var(--mv-faint); }
+[data-role="boot"] button { background: var(--mv-raised); color: var(--mv-text); border: 1px solid var(--mv-accent); padding: 6px 16px; cursor: pointer; font: 12px var(--mv-mono); letter-spacing: .14em; }
+
+/* dark scrollbars on the Mélyvíz ground */
+[data-role="dashboard"]::-webkit-scrollbar, [data-role="sheet"]::-webkit-scrollbar { width: 10px; height: 10px; }
+[data-role="dashboard"]::-webkit-scrollbar-track, [data-role="sheet"]::-webkit-scrollbar-track { background: var(--mv-bg); }
+[data-role="dashboard"]::-webkit-scrollbar-thumb, [data-role="sheet"]::-webkit-scrollbar-thumb { background: var(--mv-line-strong); border: 2px solid var(--mv-bg); }
+
+/* the empty pane's "open …" buttons in the shell's look (they were browser-default buttons since D1) */
+[data-pane][data-kind="empty"] button { background: var(--mv-raised); border: 1px solid var(--mv-line); color: var(--mv-text); font: 12px var(--mv-mono); letter-spacing: .04em; padding: 6px 12px; min-width: 140px; text-align: left; }
+[data-pane][data-kind="empty"] button:hover, [data-pane][data-kind="empty"] button:focus-visible { border-color: var(--mv-accent); color: var(--mv-accent); outline: none; }

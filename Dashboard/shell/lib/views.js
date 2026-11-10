@@ -1,0 +1,143 @@
+// views.js — the view host: WebContentsViews that main places at the rect the frame page reports (WP-07).
+//   const views = createViews({ WebContentsView, win, preload, homePage, log });
+//   views.createLocal('home')                     the D0–D4 page with the existing preload (the Kezdőlap)
+//   views.createWeb({ partition, id? })           isolated web content (WP-17) → { id, view } | null
+//   views.createMailView(html, opts)              the sandboxed, script-free mail read view (WP-28) → { id, view, loaded }
+//   views.setBounds(id,{x,y,w,h}) · hideAll() · showAll() · destroy(id) · has(id) · ids() · get(id)
+// Electron objects are passed in, so node --test can load this file with fakes.
+'use strict';
+
+const MAX = 20000;
+const clampInt = v => Math.max(0, Math.min(MAX, Math.round(v)));
+const validRect = r => !!r && typeof r === 'object' && ['x', 'y', 'w', 'h'].every(k => Number.isFinite(r[k]));
+
+function createViews({ WebContentsView, win, preload, homePage, log = () => {} }) {
+  const map = new Map();                                    // id → { view, rect, wanted }
+  let hidden = false, webSeq = 0;
+
+  const alive = e => e && !win.isDestroyed() && !(e.view.webContents && e.view.webContents.isDestroyed());
+  function apply(e) {
+    if (!alive(e)) return;
+    const show = e.wanted && !hidden && e.rect.w > 0 && e.rect.h > 0;
+    if (show) e.view.setBounds({ x: e.rect.x, y: e.rect.y, width: e.rect.w, height: e.rect.h });
+    e.view.setVisible(!!show);
+  }
+
+  function createLocal(id) {
+    if (id !== 'home') return null;
+    if (map.has(id)) return map.get(id).view;
+    const view = new WebContentsView({
+      webPreferences: { preload, contextIsolation: true, nodeIntegration: false, sandbox: true },
+    });
+    const e = { view, rect: { x: 0, y: 0, w: 0, h: 0 }, wanted: false };
+    map.set(id, e);
+    win.contentView.addChildView(view);
+    view.setVisible(false);                                 // hidden until the frame reports a rect
+    const wc = view.webContents;
+    wc.setWindowOpenHandler(() => ({ action: 'deny' }));    // links go through act ids
+    const url = require('url').pathToFileURL(homePage).href;
+    wc.on('will-navigate', (ev, u) => { if (u.split('#')[0] !== url) ev.preventDefault(); });
+    wc.loadFile(homePage);
+    log('view created', id);
+    return view;
+  }
+
+  // Isolated web content (WP-17): webPrefs() only, no preload. Returns { id, view } (hidden until bounds arrive); lib/web.js wires the guards.
+  function createWeb({ partition = 'persist:vrg-web', id } = {}) {
+    if (id !== undefined && (typeof id !== 'string' || map.has(id))) return null;
+    while (!id || map.has(id)) id = 'w' + (++webSeq);
+    const view = new WebContentsView({ webPreferences: webPrefs(partition) });
+    map.set(id, { view, rect: { x: 0, y: 0, w: 0, h: 0 }, wanted: false });
+    win.contentView.addChildView(view);
+    view.setVisible(false);
+    log('view created', id);
+    return { id, view };
+  }
+
+  // The mail read view (WP-28): a local WebContentsView with no preload, sandbox, JavaScript off, its own in-memory partition. `html` is the
+  // finished document (lib/mail.js renderDoc: sanitized body + CSP meta), loaded as a data: URL. Every navigation and window.open is
+  // cancelled and reported to opts.onLink(url); opts.onSelection(text) raises the selection menu. Re-creating keeps the rect the frame sent.
+  function createMailView(html, { onLink = () => {}, onSelection = null, id = 'mailview' } = {}) {
+    const prev = map.get(id);
+    const keep = prev ? { rect: { ...prev.rect }, wanted: prev.wanted } : { rect: { x: 0, y: 0, w: 0, h: 0 }, wanted: false };
+    if (prev) destroy(id);
+    const view = new WebContentsView({ webPreferences: webPrefs('vrg-mailview', { javascript: false }) });
+    const e = { view, rect: keep.rect, wanted: keep.wanted };
+    map.set(id, e);
+    win.contentView.addChildView(view);
+    view.setVisible(false);
+    const wc = view.webContents;
+    const link = u => { try { onLink(String(u)); } catch (err) { log('mail link failed'); } };
+    wc.setWindowOpenHandler(({ url }) => { link(url); return { action: 'deny' }; });
+    wc.on('will-navigate', (ev, u) => { ev.preventDefault(); link(u); });
+    wc.on('will-redirect', ev => ev.preventDefault());
+    if (onSelection) wc.on('context-menu', (ev, p) => { if (p && typeof p.selectionText === 'string' && p.selectionText.trim()) { try { onSelection(p.selectionText); } catch (err) {} } });
+    const loaded = new Promise(res => { wc.once('did-finish-load', () => res(true)); wc.once('did-fail-load', () => res(false)); });
+    wc.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(String(html))).catch(() => {});
+    apply(e);
+    log('view created', id);
+    return { id, view, loaded };
+  }
+
+  // An in-shell HTML app (WP-43): web content on vrg-app://<appId>/ in the persist:vrg-app partition, no preload. It stays on its own
+  // origin: an http(s) link or window.open goes to opts.onLink(url) (the browser pane), anything else is cancelled.
+  function createApp(id, url, { sameApp = () => false, onLink = () => {} } = {}) {
+    if (typeof id !== 'string' || !/^app:[a-z0-9][a-z0-9.-]{0,59}$/.test(id)) return null;
+    if (map.has(id)) return { id, view: map.get(id).view };
+    const view = new WebContentsView({ webPreferences: webPrefs('persist:vrg-app') });
+    map.set(id, { view, rect: { x: 0, y: 0, w: 0, h: 0 }, wanted: false });
+    win.contentView.addChildView(view);
+    view.setVisible(false);
+    const wc = view.webContents;
+    const out = u => { if (/^https?:\/\//i.test(String(u))) { try { onLink(String(u)); } catch (e) {} } };
+    wc.setWindowOpenHandler(({ url: u }) => { if (!sameApp(u)) out(u); return { action: 'deny' }; });
+    wc.on('will-navigate', (ev, u) => { if (!sameApp(u)) { ev.preventDefault(); out(u); } });
+    wc.on('will-redirect', (ev, u) => { if (!sameApp(u)) ev.preventDefault(); });
+    wc.session.setPermissionRequestHandler((w, perm, cb) => cb(perm === 'clipboard-sanitized-write'));
+    wc.loadURL(url).catch(() => {});
+    log('view created', id);
+    return { id, view };
+  }
+
+  function setBounds(id, rect) {
+    const e = map.get(id);
+    if (!e || !validRect(rect)) return false;
+    e.rect = { x: clampInt(rect.x), y: clampInt(rect.y), w: clampInt(rect.w), h: clampInt(rect.h) };
+    e.wanted = e.rect.w > 0 && e.rect.h > 0;
+    apply(e);
+    return true;
+  }
+  // several overlays can hide the views at once (the palette, a corner dial, a sheet): each names its reason, the views come back when none is left
+  const reasons = new Set();
+  function hideAll(r = 'palette') { reasons.add(r); hidden = true; for (const e of map.values()) apply(e); }
+  function showAll(r = 'palette') { reasons.delete(r); hidden = reasons.size > 0; for (const e of map.values()) apply(e); }
+  function destroy(id) {
+    const e = map.get(id);
+    if (!e) return false;
+    map.delete(id);
+    try {
+      if (!win.isDestroyed()) win.contentView.removeChildView(e.view);
+      if (!e.view.webContents.isDestroyed()) e.view.webContents.close();
+    } catch (err) { log('view destroy failed', id); }
+    return true;
+  }
+  function destroyAll() { for (const id of [...map.keys()]) destroy(id); }
+
+  return {
+    createLocal, createWeb, createMailView, createApp, setBounds, hideAll, showAll, destroy, destroyAll,
+    has: id => map.has(id), ids: () => [...map.keys()], get: id => (map.has(id) ? map.get(id).view : null),
+    rect: id => (map.has(id) ? { ...map.get(id).rect } : null), isHidden: () => hidden,
+  };
+}
+
+// webPreferences for web content (WP-17 and later). Never a preload: a web page gets no window.vrg and no ipcRenderer.
+// `extra` may only add keys that keep it isolated; preload / nodeIntegration / contextIsolation / sandbox / webviewTag are fixed.
+const FIXED = ['preload', 'nodeIntegration', 'nodeIntegrationInSubFrames', 'nodeIntegrationInWorker', 'contextIsolation', 'sandbox', 'webviewTag'];
+function webPrefs(partition = 'persist:vrg-web', extra = {}) {
+  const out = { ...extra };
+  for (const k of FIXED) delete out[k];
+  return { ...out, partition, sandbox: true, contextIsolation: true, nodeIntegration: false, nodeIntegrationInSubFrames: false,
+    nodeIntegrationInWorker: false, webviewTag: false, spellcheck: false };
+}
+
+module.exports = { createViews, webPrefs };

@@ -1,0 +1,11 @@
+{
+  "allowHosts": [],
+  "presets": [
+    { "id": "drift", "hu": "Rétegverem: elakadt vonalak", "kind": "stack-drift", "sections": [2, 4] },
+    { "id": "git", "hu": "Repó állapota", "kind": "git-status", "repo": "Planner" },
+    { "id": "ports", "hu": "Helyi szerverek", "kind": "ports" },
+    { "id": "waiting", "hu": "Rád vár (DevLog)", "kind": "devlog-waiting" },
+    { "id": "inbox", "hu": "Olvasatlan levelek", "kind": "mail-query", "acc": "gmail", "q": "is:unread newer_than:2d", "every": 30 },
+    { "id": "rss-example", "hu": "Példa RSS (kikapcsolva)", "kind": "rss", "url": "https://example.org/feed.xml", "enabled": false }
+  ]
+}

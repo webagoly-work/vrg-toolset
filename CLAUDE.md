@@ -177,6 +177,23 @@ To add a tool: add an entry to `start.tools` with a free key. Paths use the
 tokens `{repo}`, `{full}`, `{vrg}` and the `paths` shortcuts (`{planner}`,
 `{node}`, ...). Keep existing keys stable — the user knows them by heart.
 
+**The catalog says what exists; keep it current too.** `launcher/vrg-catalog.json`
+lists every unit the VRG Asztal (VRG Desktop) shows: its industry type, its
+level (`user` < `dev` < `all`), its parent (a dev item sits behind a user item
+or a `dev:*` root), its group and where it surfaces. It never repeats how to
+run a thing: `launch.act` names a START act (`s:1`, `s:P/B`), `launch.server` a
+server id, `launch.feature` a features node. A new tool gets a catalog entry in
+the same change as its vrg-menu.json entry, then:
+
+```bash
+node tools/check-catalog.js
+```
+
+(exit 1 on a dangling launch ref, a dev item without a parent, a duplicate id).
+The terms are in `docs/desktop/GLOSSARY.md`; re-run
+`node Dashboard/tools/inventory.js` and `node Dashboard/tools/classify.js` to
+refresh `docs/desktop/INVENTORY.md` and `CLASSIFICATION.md`.
+
 ## Things that must not be committed
 
 `.gitignore` covers these; do not defeat it.

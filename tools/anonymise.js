@@ -13,6 +13,8 @@
 //   node tools/anonymise.js             dry run: what would change
 //   node tools/anonymise.js --apply     rewrite contents + git mv the paths
 //   node tools/anonymise.js --check <file>...   exit 1 if one of these holds a code
+//   --map <file>   use this map instead of tools/anonymise.map.json (a worktree has no copy of the gitignored map; DESK-Q87 C).
+//                  A missing map is still exit 2, so a caller that treats "not 0" as "refuse" stays fail closed.
 //
 // A match is skipped when it is preceded by a letter (gitInv4, base64),
 // followed by a digit (a longer number) or sits inside a base64-looking run.
@@ -37,7 +39,9 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const REPO = path.resolve(__dirname, '..');
-const MAP_FILE = path.join(__dirname, 'anonymise.map.json');
+const mapAt = process.argv.indexOf('--map');
+if (mapAt > 0 && !process.argv[mapAt + 1]) { console.error('--map needs a file'); process.exit(2); }
+const MAP_FILE = mapAt > 0 ? path.resolve(process.argv[mapAt + 1]) : path.join(__dirname, 'anonymise.map.json');
 const APPLY = process.argv.includes('--apply');
 
 /* Files whose content is never rewritten (they still get renamed if needed). */
@@ -100,7 +104,10 @@ function git(args) {
 /* --check <file>...: exit 1 if one of them holds a code. For a push that carries only these files. */
 const checkAt = process.argv.indexOf('--check');
 if (checkAt > 0) {
-  const hits = process.argv.slice(checkAt + 1).filter(f => swap(fs.readFileSync(f, 'utf8'))[1]);
+  const rest = process.argv.slice(checkAt + 1);
+  const mi = rest.indexOf('--map');                                     // --map after --check: not a file to check
+  if (mi >= 0) rest.splice(mi, 2);
+  const hits = rest.filter(f => swap(fs.readFileSync(f, 'utf8'))[1]);
   hits.forEach(f => console.log('  holds a client code: ' + f));
   process.exit(hits.length ? 1 : 0);
 }

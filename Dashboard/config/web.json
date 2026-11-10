@@ -1,0 +1,5 @@
+[
+  { "id": "github", "hu": "GitHub", "url": "https://github.com/webagoly-work/vrg-toolset" },
+  { "id": "gmail", "hu": "Gmail", "url": "https://mail.google.com/mail/u/0/#inbox", "partition": "persist:vrg-mail", "mail": true },
+  { "id": "outlook", "hu": "Outlook", "url": "https://outlook.live.com/mail/0/", "partition": "persist:vrg-mail", "mail": true }
+]

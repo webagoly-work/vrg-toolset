@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="hu" class="mv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VRG Irányítópult</title>
+<!-- D0: static, read only. Data comes from dashboard-data.js (node build.js). Style: Mélyvíz, linked from the repo. -->
+<link rel="stylesheet" href="../shared/melyviz.css">
+<style>
+  :root { --t1: var(--mv-ok); --t2: var(--mv-accent); --t3: var(--mv-warm); --t4: var(--mv-warn); --t5: var(--mv-faint); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: radial-gradient(120% 70% at 50% -10%, var(--mv-horizon), var(--mv-bg) 70%) fixed, var(--mv-bg);
+    min-height: 100vh; font-size: 13.5px; line-height: 1.45; }
+  a { text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .en { display: block; font-style: italic; color: var(--mv-dim); font-size: .86em; font-weight: 400; letter-spacing: 0; text-transform: none; font-family: var(--mv-sans); font-stretch: 100%; }
+  .en.inl { display: inline; margin-left: 6px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 28px; padding: 18px 24px 14px; border-bottom: 1px solid var(--mv-line); }
+  header h1 { margin: 0; font-size: 26px; line-height: 1.05; letter-spacing: .14em; text-transform: uppercase; }
+  header h1 .en { letter-spacing: .02em; font-size: 13px; margin-top: 2px; }
+  .ro { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-left: auto; }
+  .ro div { min-width: 70px; }
+  .ro b { display: block; font: 600 20px var(--mv-mono); color: var(--mv-text); }
+  .ro b.w { color: var(--mv-warm); } .ro b.q { color: var(--mv-warn); }
+  .stamp { width: 100%; display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+  .stamp .mv-badge.d0 { color: var(--mv-accent); border-color: var(--mv-accent); }
+
+  .bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; padding: 10px 24px;
+    background: rgba(10, 20, 28, .82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1px solid var(--mv-line); }
+  .bar .mv-btn { padding: 4px 10px; text-align: left; line-height: 1.2; }
+  .bar .mv-btn .en { font-size: 10.5px; }
+  .bar .mv-btn .n { font: 11px var(--mv-mono); color: var(--mv-faint); margin-left: 6px; }
+  .bar .sep { width: 1px; background: var(--mv-line); margin: 2px 4px; }
+  .tierdot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; vertical-align: 1px; background: var(--c); }
+  .bar input { min-width: 220px; flex: 1 1 220px; max-width: 360px; padding: 4px 9px; }
+
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; padding: 18px 24px 40px; align-items: start; }
+  @media (max-width: 1100px) { main { grid-template-columns: 1fr; } aside { order: -1; } }
+  @media (max-width: 600px) { header, .bar, main { padding-left: 16px; padding-right: 16px; } .ro { margin-left: 0; } }
+
+  h2 { margin: 0; font-size: 17px; letter-spacing: .1em; text-transform: uppercase; }
+  h2 .en { font-size: 12px; letter-spacing: .02em; }
+  .lane { margin-bottom: 26px; }
+  .lane > .hd { display: flex; gap: 12px; align-items: baseline; padding-bottom: 6px; margin-bottom: 10px; border-bottom: 1px solid var(--mv-line); }
+  .lane > .hd .about { margin-left: auto; color: var(--mv-faint); font-size: 12px; max-width: 46%; text-align: right; }
+  .lane > .hd .cnt { font: 11px var(--mv-mono); color: var(--mv-faint); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+
+  .tile { position: relative; padding: 10px 12px 10px 14px; display: flex; flex-direction: column; gap: 6px; min-height: 120px; }
+  .tile::before { content: ""; position: absolute; left: 0; top: var(--mv-cut); bottom: 0; width: 3px; background: var(--c); opacity: .85; }
+  .tile .top { display: flex; gap: 6px; align-items: center; font: 10px var(--mv-mono); text-transform: uppercase; letter-spacing: .1em; color: var(--mv-dim); }
+  .tile .top .tr { color: var(--c); }
+  .tile .top .id { margin-left: auto; color: var(--mv-faint); }
+  .tile h3 { margin: 0; font-size: 15.5px; letter-spacing: .03em; line-height: 1.2; }
+  .tile .brief { color: var(--mv-dim); font-size: 12.5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .tile.open .brief { -webkit-line-clamp: unset; }
+  .tile .brief:hover { color: var(--mv-text); cursor: pointer; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip { font: 11px var(--mv-mono); padding: 1px 6px; border: 1px solid var(--mv-line-strong); color: var(--mv-dim); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  a.chip { color: var(--mv-accent); border-color: rgba(147, 211, 230, .4); }
+  a.chip:hover { background: var(--mv-accent-soft); text-decoration: none; }
+  .chip.key { color: var(--mv-text); }
+  .chip.srv { color: var(--mv-warm); border-color: rgba(232, 168, 115, .45); }
+  .chip.miss { color: var(--mv-crit); border-color: var(--mv-crit); }
+  .chip.prog { color: var(--mv-faint); border-style: dashed; }
+  .next { margin-top: auto; font-size: 12px; color: var(--mv-warm); border-top: 1px solid var(--mv-line); padding-top: 5px; }
+  .next .mv-label { margin-right: 6px; }
+  .linetag { font-size: 11.5px; color: var(--mv-dim); }
+  .linetag a { color: var(--mv-dim); } .linetag .q { color: var(--mv-warn); }
+
+  aside { position: sticky; top: 66px; display: flex; flex-direction: column; gap: 16px; max-height: calc(100vh - 80px); overflow: auto; padding-right: 2px; }
+  @media (max-width: 1100px) { aside { position: static; max-height: none; } }
+  .panel { padding: 12px 14px; }
+  .panel > h2 { margin-bottom: 10px; }
+  .row { padding: 8px 0 8px 10px; border-top: 1px solid var(--mv-line); position: relative; }
+  .row::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px; background: var(--c, var(--mv-line-strong)); }
+  .row .nm { font-weight: 600; }
+  .row .nx { color: var(--mv-dim); font-size: 12.5px; }
+  .row .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 4px; font: 11px var(--mv-mono); color: var(--mv-faint); }
+  .row .meta .q { color: var(--mv-warn); }
+  .sub { margin: 12px 0 4px; }
+  .empty { color: var(--mv-faint); font-style: italic; }
+  .keys { display: grid; grid-template-columns: 34px 1fr auto; gap: 3px 8px; align-items: baseline; font-size: 12.5px; }
+  .keys kbd { font: 600 12px var(--mv-mono); color: var(--mv-accent); border: 1px solid var(--mv-line-strong); text-align: center; padding: 0 4px; }
+  .keys .h { color: var(--mv-faint); font-size: 11.5px; }
+  aside { overflow-x: hidden; }
+  .keys > span { min-width: 0; overflow-wrap: anywhere; }
+  .keys kbd.sk { color: var(--mv-dim); border-color: var(--mv-line); font-weight: 400; font-size: 11px; }
+  .keys .ss { padding-left: 12px; font-size: 12px; }
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::before { content: "▸ "; color: var(--mv-faint); }
+  details[open] > summary::before { content: "▾ "; }
+  .hidden { display: none !important; }
+  footer { padding: 0 24px 30px; color: var(--mv-faint); font-size: 12px; }
+
+  /* ---- D1: inside the Electron shell (html.shell) ---- */
+  .wbar { display: none; }
+  html.shell .wbar { display: flex; align-items: stretch; height: 30px; -webkit-app-region: drag; user-select: none;
+    background: var(--mv-panel-solid); border-bottom: 1px solid var(--mv-line); position: sticky; top: 0; z-index: 7; }
+  html.shell .bar { top: 30px; }
+  html.shell aside { top: 96px; max-height: calc(100vh - 110px); }
+  .wbar .wt { padding: 0 12px; display: flex; align-items: center; gap: 10px; font: 11px var(--mv-mono); letter-spacing: .14em; color: var(--mv-dim); text-transform: uppercase; }
+  .wbar .wt i { color: var(--mv-faint); letter-spacing: .02em; text-transform: none; }
+  .wbar .sp { flex: 1; }
+  .wbar button { -webkit-app-region: no-drag; background: none; border: 0; border-left: 1px solid var(--mv-line); color: var(--mv-dim);
+    width: 44px; font: 14px var(--mv-mono); cursor: pointer; }
+  .wbar button:hover { background: var(--mv-raised); color: var(--mv-text); }
+  .wbar button.x:hover { background: var(--mv-crit); color: var(--mv-bg); }
+  .wbar button.rf { width: auto; padding: 0 12px; font: 11px var(--mv-mono); letter-spacing: .08em; }
+  .wbar button.rf i { color: var(--mv-faint); font-style: italic; text-transform: none; margin-left: 6px; }
+  .wbar .ports { display: flex; align-items: center; gap: 6px; padding: 0 12px; font: 11px var(--mv-mono); color: var(--mv-dim); -webkit-app-region: no-drag; }
+  .chip.srv::before { content: ""; display: none; width: 6px; height: 6px; margin-right: 5px; vertical-align: 1px; background: var(--mv-faint); }
+  html.shell .chip.srv::before { display: inline-block; }
+  html.shell .chip.srv.up::before { background: var(--mv-warm); box-shadow: 0 0 var(--mv-glow) var(--mv-warm); }
+  html.shell .chip.srv.up { color: var(--mv-warm); border-color: var(--mv-warm); }
+  html.shell .chip.srv:not(.up) { color: var(--mv-dim); border-color: var(--mv-line-strong); }
+  html.shell [data-act] { cursor: pointer; }
+  html.shell .chip.key[data-act], html.shell .chip.prog[data-act] { color: var(--mv-accent); border-color: rgba(147, 211, 230, .4); border-style: solid; }
+  html.shell .chip[data-act]:hover, html.shell .keys [data-act]:hover { background: var(--mv-accent-soft); text-decoration: none; }
+  html.shell .keys span[data-act] { color: var(--mv-text); }
+  html.shell .keys span[data-act]:hover { color: var(--mv-accent); }
+  .chip.busy { opacity: .5; }
+  .chip.go { color: var(--mv-bg); background: var(--mv-accent); border-color: var(--mv-accent); font-weight: 600; }
+  .chip.go i { font-weight: 400; opacity: .75; }
+  html.shell .chip.go:hover { background: var(--mv-text); color: var(--mv-bg); }
+  .keys.gos { grid-template-columns: 30px 1fr auto; }
+  .keys.gos b { font-family: var(--mv-mono); font-size: 12px; color: var(--mv-accent); }
+  .only-shell { display: none; } html.shell .only-shell { display: inline; } html.shell .only-web { display: none; }
+  /* ---- D3: stats ---- */
+  .stats { margin-bottom: 22px; }
+  .stats > summary { display: flex; align-items: baseline; gap: 12px; padding-bottom: 6px; margin-bottom: 10px; border-bottom: 1px solid var(--mv-line); }
+  .stats > summary::before { align-self: center; }
+  .sgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .card { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .card .mv-label { display: block; }
+  .card .big { font: 600 24px var(--mv-mono); line-height: 1.1; }
+  .card .big small { font: 11.5px var(--mv-sans); color: var(--mv-dim); margin-left: 8px; }
+  .card .note { font-size: 12px; color: var(--mv-dim); }
+  .card .note.w { color: var(--mv-warn); }
+  .card svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .card svg .bar { fill: var(--mv-accent); }
+  .card svg .bar.part { fill: url(#hatch); }
+  .card svg .hit { fill: transparent; cursor: default; }
+  .card svg .hit:hover + .bar, .card svg g:hover .bar { fill: var(--mv-text); }
+  .card svg .axis { stroke: var(--mv-line-strong); stroke-width: 1; }
+  .card svg text { fill: var(--mv-faint); font: 10px var(--mv-mono); }
+  .card svg text.v { fill: var(--mv-dim); }
+  .hb { display: grid; grid-template-columns: minmax(90px, auto) 1fr 28px; gap: 4px 8px; align-items: center; font-size: 12px; }
+  .hb .t { height: 8px; background: var(--mv-line); position: relative; }
+  .hb .t i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--mv-accent); }
+  .hb .n { font: 12px var(--mv-mono); text-align: right; color: var(--mv-text); }
+  .hb .l { color: var(--mv-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meter { height: 8px; background: var(--mv-line); position: relative; margin: 2px 0 4px; }
+  .meter i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--mv-accent); }
+  .meter.w i { background: var(--mv-warn); }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 12px; }
+  .kv span:nth-child(odd) { color: var(--mv-faint); }
+  .kv b { font: 12px var(--mv-mono); font-weight: 600; }
+  .ok-t { color: var(--mv-ok); } .warn-t { color: var(--mv-warn); } .crit-t { color: var(--mv-crit); }
+  /* ---- D4: project workflows ---- */
+  .jt { width: 100%; padding: 4px 12px 10px; overflow-x: auto; }
+  .jt table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 760px; }
+  .jt th { text-align: center; padding: 8px 4px 6px; border-bottom: 1px solid var(--mv-line); vertical-align: bottom; }
+  .jt th .en { font-size: 10px; letter-spacing: 0; }
+  .jt th:first-child, .jt td:first-child { text-align: left; }
+  .jt td { padding: 7px 4px; border-bottom: 1px solid var(--mv-line); text-align: center; vertical-align: middle; }
+  .jt td.code { font: 600 14px var(--mv-mono); white-space: nowrap; }
+  .jt tr.sub td.code { font-weight: 400; font-size: 12.5px; padding-left: 18px; color: var(--mv-dim); }
+  .jt .st { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; font: 12px var(--mv-mono); color: var(--mv-faint); }
+  .jt .st.on { color: var(--mv-bg); background: var(--mv-accent); }
+  .jt .st.cur { box-shadow: 0 0 0 2px var(--mv-bg), 0 0 0 3px var(--mv-accent); }
+  .jt td.step { text-align: left; white-space: nowrap; }
+  .jt td.dt, .jt td.doc { font: 12px var(--mv-mono); color: var(--mv-dim); white-space: nowrap; }
+  .jt td.go { text-align: right; white-space: nowrap; }
+  .jt .cap { padding: 8px 0 0; font-size: 12px; color: var(--mv-faint); }
+  #tip { position: fixed; z-index: 10; pointer-events: none; padding: 5px 9px; font: 12px var(--mv-mono); display: none;
+    background: var(--mv-panel-solid); border: 1px solid var(--mv-line-strong); color: var(--mv-text); }
+  #toast { position: fixed; right: 18px; bottom: 18px; z-index: 9; display: flex; flex-direction: column; gap: 6px; max-width: 420px; }
+  #toast div { padding: 8px 12px; border-left: 3px solid var(--mv-ok); font-size: 12.5px; }
+  #toast div.no { border-left-color: var(--mv-crit); }
+  #toast .en { font-size: 11.5px; }
+</style>
+</head>
+<body>
+<div class="wbar" id="wbar">
+  <span class="wt">VRG · Irányítópult <i>dashboard</i></span>
+  <span class="sp"></span>
+  <span class="ports" id="ports" title="Futó helyi szerverek / local servers up"></span>
+  <button class="rf" id="refresh" title="Adat újraolvasása / re-read the data">FRISSÍTÉS<i>refresh</i></button>
+  <button data-w="min" title="Kis méret / minimise">–</button>
+  <button data-w="max" title="Teljes méret / maximise">□</button>
+  <button data-w="close" class="x" title="Bezárás / close">✕</button>
+</div>
+<div id="toast"></div>
+<div id="tip"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <rect width="4" height="4" fill="rgba(147,211,230,.25)"/><rect width="1.6" height="4" fill="#93d3e6"/></pattern></defs></svg>
+<header>
+  <h1 class="mv-title">VRG Irányítópult<span class="en">VRG Desktop Dashboard</span></h1>
+  <div class="ro" id="ro"></div>
+  <div class="stamp" id="stamp"></div>
+</header>
+<div class="bar" id="bar"></div>
+<main>
+  <div style="min-width:0">
+  <details class="stats" id="stats" open></details>
+  <details class="stats" id="jobs" open></details>
+  <section id="lanes"></section>
+  </div>
+  <aside>
+    <div class="panel mv-glass mv-cut" id="today"></div>
+    <div class="panel mv-glass mv-cut" id="lines"></div>
+    <div class="panel mv-glass mv-cut" id="start"></div>
+  </aside>
+</main>
+<footer id="foot"></footer>
+
+<script src="dashboard-data.js"></script>
+<script>
+'use strict';
+const D = window.VRG_DASH;
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const bi = (hu, en, cls = '') => `${hu}<span class="en ${cls}">${en}</span>`;
+
+if (!D) {
+  document.body.innerHTML = '<p style="padding:24px">Nincs adat: futtasd a <code>node build.js</code> parancsot ebben a mappában.<br><i>No data: run <code>node build.js</code> in this folder.</i></p>';
+  throw new Error('dashboard-data.js missing');
+}
+const SHELL = !!window.vrg;                                         // D1: inside the Electron shell
+if (SHELL) document.documentElement.classList.add('shell');
+const A = a => a ? ` data-act="${esc(a)}"` : '';
+let ports = {};                                                     // port → up, from the shell
+
+// ---------------------------------------------------------------- words (HU first, EN below)
+const TIER = {
+  1: ['① Használatban', 'in use'], 2: ['② Kész', 'built'], 3: ['③ Fejlesztés alatt', 'in development'],
+  4: ['④ Tervezett', 'planned'], 5: ['⑤ Ötlet', 'idea'] };
+const LANE = { f: 'Belépési pontok', p: 'Planner', m: 'Árazás + tervezetek', d: 'Anyagok + adatok', b: 'BRIDGE + ügyféloldal',
+  h: 'Telefon + terep', e: 'Eszközök + firmware', k: 'Fejlesztői + tudás eszközök', l: 'Kinézet + grafikák', x: 'Külső programok' };
+const KIND = { app: 'alkalmazás', feature: 'funkció', program: 'külső program', asset: 'anyag', dev: 'fejlesztői eszköz', plan: 'terv', idea: 'ötlet' };
+const STATUS = {
+  active: ['●', 'Aktív', 'active', 'var(--mv-warm)'], waiting: ['◐', 'Rád vár', 'waiting on you', 'var(--mv-accent)'],
+  parked: ['○', 'Parkolva', 'parked', 'var(--mv-faint)'], recurring: ['↻', 'Visszatérő', 'recurring', 'var(--mv-dim)'],
+  ended: ['✓', 'Lezárva', 'ended', 'var(--mv-ok)'], overruled: ['⤳', 'Felülírva', 'overruled', 'var(--mv-faint)'],
+  absorbed: ['⤳', 'Beolvadt', 'absorbed', 'var(--mv-faint)'], personal: ['·', 'Személyes', 'personal', 'var(--mv-faint)'] };
+const GROUP = { tools: ['Eszközök', 'tools'], projects: ['Projektek', 'projects'], dev: ['Fejlesztés', 'dev'], bottom: ['Lent', 'bottom row'] };
+const tc = t => `var(--t${t})`;
+const lineById = Object.fromEntries(D.lines.map(l => [l.id, l]));
+
+// ---------------------------------------------------------------- filter state (per-viewer convenience only)
+let state = { tiers: [1, 2, 3, 4, 5], q: '' };
+try { const s = JSON.parse(localStorage.getItem('vrg-dash-d0') || 'null'); if (s && Array.isArray(s.tiers)) state.tiers = s.tiers; } catch (e) {}
+const save = () => { try { localStorage.setItem('vrg-dash-d0', JSON.stringify({ tiers: state.tiers })); } catch (e) {} };
+
+// ---------------------------------------------------------------- header
+const cntTier = t => D.features.filter(f => f.tier === t).length;
+const waiting = D.lines.filter(l => l.status === 'waiting');
+const quiet = D.lines.filter(l => l.quietDays > 0).sort((a, b) => b.quietDays - a.quietDays);
+const active = D.lines.filter(l => l.status === 'active');
+$('#ro').innerHTML = [
+  [D.features.length, 'Funkció', 'features', ''],
+  [cntTier(1) + cntTier(2), 'Felhasználói ①–②', 'user side', ''],
+  [cntTier(3) + cntTier(4) + cntTier(5), 'Fejlesztői ③–⑤', 'dev side', ''],
+  [active.length, 'Aktív vonal', 'active lines', 'w'],
+  [waiting.length, 'Rád vár', 'waiting on you', ''],
+  [quiet.length, '⚠ Csendes', 'quiet', 'q'],
+  [D.servers.length, SHELL ? 'Szerver fut' : 'Helyi szerver', SHELL ? 'servers up' : 'local servers', '', 'ro-srv'],
+].map(([n, hu, en, c, id]) => `<div><b class="${c}"${id ? ` id="${id}"` : ''}>${n}</b><span class="mv-label">${hu}</span><span class="en">${en}</span></div>`).join('');
+$('#stamp').innerHTML = `${SHELL ? '<span class="mv-badge d0">D1 · indít a nyilvántartásból <i>launches from the registry</i></span>' : '<span class="mv-badge d0">D0 · csak olvasás <i>read only</i></span>'}
+  <span class="mv-label">Funkciók ${esc(D.sources.features)} · DevLog ${esc(D.sources.devlog)} · vrg-menu ${esc(D.sources.menu)} · adat ${esc(D.generated)}</span>`;
+
+// ---------------------------------------------------------------- filter bar
+function renderBar() {
+  const on = t => state.tiers.includes(t);
+  const same = a => a.length === state.tiers.length && a.every(on);
+  $('#bar').innerHTML =
+    [1, 2, 3, 4, 5].map(t => `<button class="mv-btn ${on(t) ? 'on' : ''}" data-t="${t}"><span class="tierdot" style="--c:${tc(t)}"></span>${TIER[t][0]}<span class="n">${cntTier(t)}</span><span class="en">${TIER[t][1]}</span></button>`).join('') +
+    `<span class="sep"></span>` +
+    `<button class="mv-btn ${same([1, 2]) ? 'on' : ''}" data-p="1,2">Felhasználói<span class="en">user side ①–②</span></button>` +
+    `<button class="mv-btn ${same([3, 4, 5]) ? 'on' : ''}" data-p="3,4,5">Fejlesztői<span class="en">dev side ③–⑤</span></button>` +
+    `<button class="mv-btn ${same([1, 2, 3, 4, 5]) ? 'on' : ''}" data-p="1,2,3,4,5">Mind<span class="en">all</span></button>` +
+    `<span class="sep"></span><input id="q" type="search" placeholder="Keresés… / search ( / )" value="${esc(state.q)}">`;
+}
+$('#bar').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.t) { const t = +b.dataset.t; state.tiers = state.tiers.includes(t) ? state.tiers.filter(x => x !== t) : [...state.tiers, t].sort(); }
+  if (b.dataset.p) state.tiers = b.dataset.p.split(',').map(Number);
+  save(); renderBar(); renderLanes();
+});
+$('#bar').addEventListener('input', e => { if (e.target.id === 'q') { state.q = e.target.value; renderLanes(); } });
+document.addEventListener('keydown', e => { if (e.key === '/' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); $('#q').focus(); } });
+
+// ---------------------------------------------------------------- tiles
+const LINKWORD = { doc: 'dok', folder: 'mappa', server: '', missing: 'hiányzik', program: 'program' };
+function linkChip(l) {
+  const tip = esc(l.path || l.href || '');
+  if (l.kind === 'server') return `<a class="chip srv ${ports[l.port] ? 'up' : ''}" data-port="${l.port}" href="${esc(l.href)}" target="_blank"${A(l.act)} title="${SHELL ? 'Elindítja, ha nem fut, és megnyitja / starts it if down, then opens it' : 'localhost — megnyílik, ha fut / opens if it is running'}">${esc(l.label)}</a>`;
+  if (l.kind === 'missing') return `<span class="chip miss" title="${tip}">✕ ${esc(short(l.path))}</span>`;
+  if (l.kind === 'program') return `<span class="chip prog"${SHELL ? A(l.act) : ''} title="${tip}${SHELL ? '' : ' — az ablakos változat indítja / the shell launches it'}">⏵ ${esc(short(l.path))}</span>`;
+  return `<a class="chip" href="${esc(l.href)}" target="_blank"${A(l.act)} title="${tip}">${l.kind === 'folder' ? '▤' : '❐'} ${esc(short(l.path))}</a>`;
+}
+function short(p) { p = String(p || '').replace(/\\/g, '/').replace(/^H:\/VRG\/Full\/(Planner_VRG_U100\/)?/i, ''); const a = p.split('/'); return a.length > 2 ? '…/' + a.slice(-2).join('/') : p; }
+function lineTag(id) {
+  const l = lineById[id]; if (!l) return '';
+  const s = STATUS[l.status] || ['·', l.status, l.status];
+  return `<div class="linetag">DevLog: <a href="${esc(l.doc)}" target="_blank"${A(l.docAct)}>${s[0]} ${esc(l.name)}</a>${l.quietDays ? ` <span class="q">⚠ ${l.quietDays} n</span>` : ''}</div>`;
+}
+function tile(f) {
+  const start = f.start.map(s => `<span class="chip key"${SHELL ? A(s.act) : ''} title="${esc(s.names.join(' › '))}">${esc(s.chain.replace('START ', ''))}</span>`).join('');
+  const links = f.links.map(linkChip).join('');
+  const text = f.text.map(t => `<span class="chip">${esc(t)}</span>`).join('');
+  const chips = start + links + text;
+  return `<article class="tile mv-glass mv-cut" style="--c:${tc(f.tier)}" data-id="${f.id}">
+    <div class="top"><span class="tr">${TIER[f.tier][0].split(' ')[0]}</span><span>${KIND[f.kind] || f.kind}</span><span class="id">${f.id}</span></div>
+    <h3>${esc(f.title)}</h3>
+    <div class="brief" title="Kattints a teljes szövegért / click for the full text">${esc(f.brief)}</div>
+    ${chips ? `<div class="chips">${chips}</div>` : ''}
+    ${f.line ? lineTag(f.line) : ''}
+    ${f.next ? `<div class="next"><span class="mv-label">Következő</span>${esc(f.next)}</div>` : ''}
+  </article>`;
+}
+function match(f) {
+  if (!state.tiers.includes(f.tier)) return false;
+  const q = state.q.trim().toLowerCase(); if (!q) return true;
+  return [f.id, f.title, f.brief, f.open, f.next].join(' ').toLowerCase().includes(q);
+}
+function renderLanes() {
+  let shown = 0;
+  $('#lanes').innerHTML = D.lanes.map(L => {
+    const fs = D.features.filter(f => f.lane === L.id && match(f)).sort((a, b) => a.tier - b.tier);
+    shown += fs.length;
+    if (!fs.length) return '';
+    const all = D.features.filter(f => f.lane === L.id).length;
+    return `<section class="lane" id="lane-${L.id}">
+      <div class="hd"><h2 class="mv-title">${bi(LANE[L.id] || L.name, L.name)}</h2><span class="cnt">${fs.length}/${all}</span><span class="about">${esc(L.about)}</span></div>
+      <div class="grid">${fs.map(tile).join('')}</div></section>`;
+  }).join('') || `<p class="empty">Nincs találat ezzel a szűrővel.<span class="en">Nothing matches this filter.</span></p>`;
+  $('#foot').innerHTML = `${shown} / ${D.features.length} funkció látszik · <i>${shown} of ${D.features.length} features shown</i>. D0 semmit nem indít: a linkek dokumentumot, mappát vagy localhost portot nyitnak. <i>D0 launches nothing: links open a document, a folder or a localhost port.</i>`;
+}
+$('#lanes').addEventListener('click', e => { const b = e.target.closest('.brief'); if (b) b.closest('.tile').classList.toggle('open'); });
+
+// ---------------------------------------------------------------- Today
+function lineRow(l, why) {
+  const s = STATUS[l.status] || ['·', l.status, l.status, 'var(--mv-dim)'];
+  return `<div class="row" style="--c:${l.quietDays ? 'var(--mv-warn)' : s[3]}">
+    <div class="nm">${s[0]} ${esc(l.name)}</div>
+    <div class="nx">${esc(l.nextStep)}</div>
+    <div class="meta">${why}${l.last ? `<span>utolsó ${esc(l.last)}</span>` : ''}</div>
+    <div class="meta">
+      ${SHELL && l.contAct ? `<span class="chip go"${A(l.contAct)} title="Claude Code a vonal munkamappájában (START → C → 1) / Claude Code in the line's session folder">▶ Folytatás <i>continue</i></span>` : ''}
+      ${SHELL && l.go ? `<span class="chip go"${A('go:' + l.go)} title="Claude Code a repóban, „GO ${esc(l.go)}” kódszóval / Claude Code in the repo with the codephrase">▶ GO ${esc(l.go)}</span>` : ''}
+      ${l.session ? (SHELL ? `<span class="chip"${A(l.act)} title="${esc(l.sessionPath)}">▶ munkamappa</span>`
+        : `<a class="chip" href="${esc(l.session)}" target="_blank" title="${esc(l.sessionPath)}">▶ CLAUDE.md</a>`) : ''}
+      ${l.doc ? `<a class="chip" href="${esc(l.doc)}" target="_blank"${A(l.docAct)}>napló</a>` : ''}</div></div>`;
+}
+const quietIds = new Set(quiet.map(l => l.id));
+$('#today').innerHTML = `<h2 class="mv-title">${bi('Ma', 'Today')}</h2>
+  <div class="mv-label sub">⚠ Csendes, de nyitott <span class="en inl">quiet but not closed</span></div>
+  ${quiet.map(l => lineRow(l, `<span class="q">⚠ ${l.quietDays} napja csendes</span>`)).join('') || '<div class="empty">nincs · <i>none</i></div>'}
+  <div class="mv-label sub">◐ Rád vár <span class="en inl">waiting on you</span></div>
+  ${waiting.filter(l => !quietIds.has(l.id)).map(l => lineRow(l, '<span>◐ rád vár</span>')).join('') || '<div class="empty">nincs · <i>none</i></div>'}
+  <div class="mv-label sub" style="margin-top:12px">GO kódszavak · ${(D.go || []).length} <span class="en inl">codephrase briefs in the repo</span></div>
+  <div class="keys gos">${(D.go || []).map(g => `<kbd>GO</kbd><span${SHELL ? A(g.act) : ''} title="${SHELL ? 'Claude Code a repóban ezzel a kódszóval / Claude Code in the repo with this codephrase' : ''}"><b>${esc(g.name)}</b> <span class="h">${esc(g.title)}</span></span>
+    <span><a class="chip" href="${esc('file:///' + encodeURI(g.file.replace(/\\/g, '/')))}" target="_blank"${A(g.docAct)}>brief</a></span>`).join('')}</div>
+  <div class="mv-label sub" style="margin-top:10px">Folyamatban lévő munkák <span class="en inl">jobs in progress</span></div><div id="today-jobs"></div>`;
+
+// ---------------------------------------------------------------- all lines, by status
+const ORDER = ['active', 'waiting', 'recurring', 'parked', 'ended', 'absorbed', 'overruled', 'personal'];
+$('#lines').innerHTML = `<h2 class="mv-title">${bi('Fejlesztési vonalak', 'dev lines')}</h2>` + ORDER.map(st => {
+  const ls = D.lines.filter(l => l.status === st); if (!ls.length) return '';
+  const s = STATUS[st];
+  return `<details ${st === 'active' ? 'open' : ''}><summary class="mv-label sub">${s[0]} ${s[1]} · ${ls.length} <span class="en inl">${s[2]}</span></summary>
+    ${ls.map(l => lineRow(l, `<span>${esc(l.laneName)}</span>${l.by ? `<span>→ ${esc(l.by.name)}</span>` : ''}`)).join('')}</details>`;
+}).join('');
+
+// ---------------------------------------------------------------- START registry
+const keyRow = i => `<kbd>${esc(i.key)}</kbd><span${SHELL ? A(i.act) : ''}>${esc(i.name)}${i.hint ? ` <span class="h">${esc(i.hint)}</span>` : ''}</span>
+  <span>${i.link && i.link.href ? linkChip(i.link) : ''}</span>` +
+  (SHELL && i.subs && i.subs.length ? i.subs.map(s => `<kbd class="sk">${esc(i.key)}${esc(s.key)}</kbd><span class="ss"${A(s.act)}>${esc(s.name)}${s.hint ? ` <span class="h">${esc(s.hint)}</span>` : ''}</span><span></span>`).join('') : '');
+$('#start').innerHTML = `<h2 class="mv-title">${bi('Indító', 'START registry · vrg-menu.json')}</h2>` +
+  Object.keys(GROUP).map(g => {
+    const its = D.start.filter(i => i.group === g); if (!its.length) return '';
+    return `<details ${g === 'tools' ? 'open' : ''}><summary class="mv-label sub">${GROUP[g][0]} · ${its.length} <span class="en inl">${GROUP[g][1]}</span></summary><div class="keys">${its.map(keyRow).join('')}</div></details>`;
+  }).join('') +
+  `<details><summary class="mv-label sub">Helyi szerverek · ${D.servers.length} <span class="en inl">local servers — START → O</span></summary><div class="keys">${
+    D.servers.map(s => `<kbd>${esc(s.key)}</kbd><span>${esc(s.name)}</span><span>${linkChip({ kind: 'server', label: ':' + s.port, href: s.href, port: s.port, act: s.act })}</span>`).join('')}</div></details>` +
+  `<details><summary class="mv-label sub">Programok · ${D.programs.length} <span class="en inl">programs — START → A</span></summary><div class="keys">${
+    D.programs.map(p => `<kbd>${esc(p.key)}</kbd><span${SHELL ? A(p.act) : ''}>${esc(p.name)}</span><span></span>`).join('')}</div></details>`;
+
+// ---------------------------------------------------------------- D3: stats + metrics
+const ST = D.stats || null;
+const fmtGB = b => (b / 2 ** 30).toFixed(b < 100 * 2 ** 30 ? 1 : 0) + ' GB';
+// weekly bars: one series, one colour; the running week is hatched; hover shows the exact value
+function weekBars(weeks, unitHu, unitEn) {
+  const W = 240, H = 74, gap = 2, n = weeks.length, bw = (W - gap * (n - 1)) / n;
+  const max = Math.max(1, ...weeks.map(w => w.n)), top = 12;
+  const bars = weeks.map((w, i) => {
+    const h = Math.round((H - top) * w.n / max), x = (bw + gap) * i, part = i === n - 1;
+    const tip = `${w.label} hete: ${w.n} ${unitHu}${part ? ' (folyamatban)' : ''} / week of ${w.label}: ${w.n} ${unitEn}${part ? ' (in progress)' : ''}`;
+    return `<g data-tip="${esc(tip)}"><rect class="hit" x="${x}" y="0" width="${bw + gap}" height="${H}"/>
+      <rect class="bar${part ? ' part' : ''}" x="${x}" y="${H - h}" width="${bw}" height="${h}"/></g>`;
+  }).join('');
+  const iMax = weeks.findIndex(w => w.n === max);
+  const xm = (bw + gap) * iMax + bw / 2;
+  return `<svg viewBox="0 -2 ${W} ${H + 16}" role="img" aria-label="${esc(weeks.map(w => w.label + ': ' + w.n).join(', '))}">
+    ${bars}<line class="axis" x1="0" x2="${W}" y1="${H + .5}" y2="${H + .5}"/>
+    <text class="v" x="${Math.min(W - 14, Math.max(8, xm))}" y="${H - Math.round((H - top) * max / max) - 3}" text-anchor="middle">${max}</text>
+    <text x="0" y="${H + 12}">${weeks[0].label}</text><text x="${W}" y="${H + 12}" text-anchor="end">${weeks[n - 1].label}</text></svg>`;
+}
+function hbars(rows) {                                                // labelled horizontal bars, one colour
+  const max = Math.max(1, ...rows.map(r => r.n));
+  return `<div class="hb">${rows.map(r => `<span class="l" title="${esc(r.en)}">${r.hu}</span><span class="t"><i style="width:${(100 * r.n / max).toFixed(1)}%"></i></span><span class="n">${r.n}</span>`).join('')}</div>`;
+}
+function renderStats() {
+  if (!ST) { $('#stats').remove(); return; }
+  const cards = [];
+  if (ST.git) {
+    const ws = ST.git.weeks, last = ws[ws.length - 2], sum = ws.reduce((a, w) => a + w.n, 0);
+    cards.push(`<div class="card mv-glass mv-cut"><span class="mv-label">Commitok hetente <span class="en inl">commits per week</span></span>
+      <div class="big">${last ? last.n : 0}<small>múlt héten <i>last week</i></small></div>${weekBars(ws, 'commit', 'commits')}
+      <span class="note">${sum} commit ${ws.length} hét alatt, minden ágon <i>${sum} in ${ws.length} weeks, all branches</i></span></div>`);
+  }
+  if (ST.sessions) {
+    const ws = ST.sessions.weeks, last = ws[ws.length - 2];
+    cards.push(`<div class="card mv-glass mv-cut"><span class="mv-label">Claude munkamenetek hetente <span class="en inl">sessions per week</span></span>
+      <div class="big">${last ? last.n : 0}<small>múlt héten <i>last week</i></small></div>${weekBars(ws, 'munkamenet', 'sessions')}
+      <span class="note">${ST.sessions.total} összesen · DevLog gyűjtés ${esc(ST.sessions.harvested)} <i>total · harvested</i></span></div>`);
+  }
+  const ORDER = ['active', 'waiting', 'recurring', 'parked', 'ended', 'absorbed', 'overruled', 'personal'];
+  cards.push(`<div class="card mv-glass mv-cut"><span class="mv-label">Vonalak állapot szerint <span class="en inl">lines by status</span></span>
+    ${hbars(ORDER.filter(s => ST.lineStatus[s]).map(s => ({ hu: STATUS[s][0] + ' ' + STATUS[s][1], en: STATUS[s][2], n: ST.lineStatus[s] })))}</div>`);
+  const mv = ST.movement || {};
+  const mvText = !mv.since ? `<span class="note">Az első pillanatkép ma készült; a mozgás holnaptól látszik. <i>First snapshot taken today; movement shows from tomorrow.</i></span>`
+    : (mv.moved.length + mv.added.length + mv.gone.length) === 0 ? `<span class="note">Nincs változás ${esc(mv.since)} óta. <i>No change since ${esc(mv.since)}.</i></span>`
+    : `<span class="note">${esc(mv.since)} óta <i>since</i>: ${[...mv.moved.map(m => `${m.id} ${TIER[m.from][0].split(' ')[0]}→${TIER[m.to][0].split(' ')[0]}`), ...mv.added.map(id => '+' + id), ...mv.gone.map(id => '−' + id)].map(esc).join(' · ')}</span>`;
+  cards.push(`<div class="card mv-glass mv-cut"><span class="mv-label">Funkciók szintenként <span class="en inl">features by tier</span></span>
+    ${hbars([1, 2, 3, 4, 5].map(t => ({ hu: TIER[t][0], en: TIER[t][1], n: ST.tiers[t] || 0 })))}${mvText}</div>`);
+  if (ST.git) {
+    const g = ST.git, ahead = g.branches.filter(b => b.ahead), noUp = g.branches.filter(b => !b.upstream);
+    cards.push(`<div class="card mv-glass mv-cut"><span class="mv-label">Repó <span class="en inl">repository</span></span>
+      <div class="kv"><span>ág <i>branch</i></span><b>${esc(g.branch)}</b>
+        <span>feltöltetlen <i>unpushed</i></span><b class="${ahead.length ? 'warn-t' : 'ok-t'}">${ahead.length ? ahead.map(b => `${esc(b.name)} +${b.ahead}`).join(', ') : '✓ 0'}</b>
+        <span>nem commitolt <i>uncommitted</i></span><b class="${g.uncommitted ? 'warn-t' : 'ok-t'}">${g.uncommitted} fájl</b>
+        <span>helyi ágak <i>local only</i></span><b>${noUp.length ? noUp.map(b => esc(b.name)).join(', ') : '—'}</b>
+        <span>utolsó <i>last</i></span><b title="${esc(g.last[2])}">${esc(g.last[1])} · ${esc((g.last[0] || '').slice(0, 10))}</b></div></div>`);
+  }
+  if (ST.backup !== undefined) {
+    const b = ST.backup;
+    const cls = !b ? 'crit-t' : !b.ok ? 'crit-t' : b.age > 7 ? 'warn-t' : 'ok-t';
+    const word = !b ? '✕ nincs napló · no log' : !b.ok ? '✕ hibás · failed' : b.age > 7 ? `⚠ ${b.age} napja · days ago` : `✓ ${b.age} napja · days ago`;
+    cards.push(`<div class="card mv-glass mv-cut"><span class="mv-label">Mentés <span class="en inl">last backup</span></span>
+      <div class="big ${cls}" style="font-size:18px">${word}</div>
+      ${b ? `<div class="kv"><span>mikor <i>when</i></span><b>${esc(b.when)}</b>
+        <span>repók <i>repos</i></span><b>${b.repos.map(r => `${r.ok ? '✓' : '✕'} ${esc(r.name)}`).join(' · ')}</b>
+        <span>mappák <i>folders</i></span><b>${b.folders}</b>
+        <span>manifest</span><b>${b.manifest ? b.manifest.files + ' fájl · ' + esc(b.manifest.when) : '—'}</b></div>` : ''}
+      <span class="note">Az épség-ellenőrzés nem ír naplót: BACKUP → ellenőrzés. <i>The integrity check keeps no log: run it from BACKUP.</i></span></div>`);
+  }
+  if (ST.disks && ST.disks.length) {
+    cards.push(`<div class="card mv-glass mv-cut"><span class="mv-label">Lemezhely <span class="en inl">disk space</span></span>
+      ${ST.disks.map(d => { const used = 1 - d.free / d.total, w = d.free < 20 * 2 ** 30 || used > .9;
+        return `<div class="kv" style="grid-template-columns:auto 1fr"><b>${esc(d.drive)}</b><span class="${w ? 'warn-t' : ''}" style="text-align:right">${w ? '⚠ ' : ''}${fmtGB(d.free)} szabad <i>free</i> / ${fmtGB(d.total)}</span></div>
+          <div class="meter ${w ? 'w' : ''}" title="${(used * 100).toFixed(0)}% foglalt / used"><i style="width:${(used * 100).toFixed(1)}%"></i></div>`; }).join('')}</div>`);
+  }
+  if (ST.errors && ST.errors.length) cards.push(`<div class="card mv-glass mv-cut"><span class="mv-label">Nem olvasható <span class="en inl">could not read</span></span><span class="note w">${ST.errors.map(esc).join('<br>')}</span></div>`);
+  let open = true; try { open = localStorage.getItem('vrg-dash-stats') !== '0'; } catch (e) {}
+  const el = $('#stats'); el.open = open;
+  el.innerHTML = `<summary><h2 class="mv-title">${bi('Statisztika', 'stats + metrics')}</h2><span class="cnt mv-label">${esc(D.generated)}</span></summary><div class="sgrid">${cards.join('')}</div>`;
+  el.addEventListener('toggle', () => { try { localStorage.setItem('vrg-dash-stats', el.open ? '1' : '0'); } catch (e) {} });
+  el.addEventListener('mousemove', e => {
+    const g = e.target.closest('[data-tip]'), tip = $('#tip');
+    if (!g) { tip.style.display = 'none'; return; }
+    tip.textContent = g.dataset.tip; tip.style.display = 'block';
+    tip.style.left = Math.min(innerWidth - tip.offsetWidth - 8, e.clientX + 12) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+  });
+  el.addEventListener('mouseleave', () => { $('#tip').style.display = 'none'; });
+}
+renderStats();
+
+// ---------------------------------------------------------------- D4: project workflows per job (codes only)
+const JSTEP = [
+  ['intake', 'Bemenet', 'intake'], ['funnel', 'Kérdések', 'question funnel'], ['plan', 'Terv', 'Planner plan'],
+  ['price', 'Árazás', 'pricing'], ['doc', 'Tervezet', 'Költségvetési Tervezet'], ['delivered', 'Átadva', 'delivered']];
+const jobStepName = j => j.step ? JSTEP[j.step - 1] : ['', 'Nincs még', 'not started'];
+function renderJobs() {
+  const el = $('#jobs');
+  if (!D.jobs || !D.jobs.length) { el.remove(); return; }
+  const row = (j, sub) => {
+    const cur = jobStepName(j);
+    return `<tr class="${sub ? 'sub' : ''}"><td class="code">${esc(j.code)}${j.market ? ' <span class="mv-badge" title="Piaci összevetés kész / market check done">piac</span>' : ''}</td>
+      ${JSTEP.map(([k], i) => `<td><span class="st ${j.has[k] ? 'on' : ''} ${j.step === i + 1 ? 'cur' : ''}" title="${esc(JSTEP[i][1] + ' / ' + JSTEP[i][2])}: ${j.has[k] ? 'kész / done' : 'nincs / not yet'}">${j.has[k] ? '●' : '○'}</span></td>`).join('')}
+      <td class="step">${esc(cur[1])}<span class="en">${esc(cur[2])}</span></td>
+      <td class="dt" title="Utolsó változás a mappában / last change in the folder">${esc(j.lastChange || '—')}</td>
+      <td class="doc">${j.lastDoc ? `${esc(j.lastDoc.number || 'PDF')} · ${esc(j.lastDoc.date)}` : '—'}</td>
+      <td class="go">${SHELL ? `<span class="chip"${A(j.act)}>▤ mappa</span>${j.docAct ? ` <span class="chip"${A(j.docAct)}>❐ dokumentum</span>` : ''}` : ''}</td></tr>`;
+  };
+  let open = true; try { open = localStorage.getItem('vrg-dash-jobs') !== '0'; } catch (e) {}
+  el.open = open;
+  el.innerHTML = `<summary><h2 class="mv-title">${bi('Projektmunkák', 'project workflows')}</h2><span class="cnt mv-label">${D.jobs.length} munka · ${D.jobHistory} korábbi <i>jobs · earlier</i></span></summary>
+    <div class="jt mv-glass mv-cut"><table>
+      <thead><tr><th>Kód<span class="en">code</span></th>${JSTEP.map(s => `<th>${s[1]}<span class="en">${s[2]}</span></th>`).join('')}
+        <th style="text-align:left">Hol tart<span class="en">current step</span></th><th>Változott<span class="en">changed</span></th><th>Utolsó dokumentum<span class="en">last document</span></th><th></th></tr></thead>
+      <tbody>${D.jobs.map(j => row(j, false) + (j.subs || []).map(s => row(s, true)).join('')).join('')}</tbody></table>
+      <div class="cap">A lépések a mappában lévő fájlokból adódnak; csak az anonim kódok jelennek meg. <i>Steps are read from the files in each job folder; only the anonymised codes are shown.</i></div></div>`;
+  el.addEventListener('toggle', () => { try { localStorage.setItem('vrg-dash-jobs', el.open ? '1' : '0'); } catch (e) {} });
+  // Today: every job (or sub-job) not yet delivered, newest change first
+  const open2 = [];
+  for (const j of D.jobs) for (const x of [j, ...(j.subs || [])]) if (!x.has.delivered) open2.push(x);
+  open2.sort((a, b) => (b.lastChange || '').localeCompare(a.lastChange || ''));
+  $('#today-jobs').innerHTML = open2.map(x => { const s = jobStepName(x);
+    return `<div class="row" style="--c:var(--mv-accent)"><div class="nm" style="font-family:var(--mv-mono)">${esc(x.code)}</div>
+      <div class="nx">${x.step}/6 · ${esc(s[1])} <i>${esc(s[2])}</i> → következő: ${esc(x.step < 6 ? JSTEP[x.step][1] : '—')} <i>next</i></div>
+      <div class="meta"><span>változott ${esc(x.lastChange || '—')}</span>${SHELL ? `<span class="chip"${A(x.act)}>▤ mappa</span>` : ''}</div></div>`; }).join('')
+    || '<div class="empty">nincs · <i>none</i></div>';
+}
+renderJobs();
+
+// ---------------------------------------------------------------- D1: the shell runs act ids, shows ports
+function toast(r) {
+  const d = document.createElement('div');
+  d.className = 'mv-glass' + (r.ok ? '' : ' no');
+  d.innerHTML = `${esc(r.hu)}<span class="en">${esc(r.en)}</span>`;
+  $('#toast').appendChild(d); setTimeout(() => d.remove(), r.ok ? 3500 : 7000);
+}
+function showPorts(p) {
+  ports = p || {};
+  document.querySelectorAll('.chip.srv[data-port]').forEach(c => c.classList.toggle('up', !!ports[c.dataset.port]));
+  const n = D.servers.filter(s => ports[s.port]).length;
+  $('#ports').innerHTML = `<span class="tierdot" style="--c:${n ? 'var(--mv-warm)' : 'var(--mv-faint)'}"></span>szerver fut ${n}/${D.servers.length} <i class="en inl">up</i>`;
+  const ro = $('#ro-srv'); if (ro) ro.textContent = n + '/' + D.servers.length;
+}
+if (SHELL) {
+  document.addEventListener('click', async e => {
+    const el = e.target.closest('[data-act]'); if (!el) return;
+    e.preventDefault(); e.stopPropagation();
+    if (el.classList.contains('busy')) return;
+    el.classList.add('busy');
+    try { toast(await window.vrg.act(el.dataset.act)); } catch (err) { toast({ ok: false, hu: String(err.message || err), en: 'error' }); }
+    el.classList.remove('busy');
+  }, true);
+  // a link without an act id goes nowhere in the shell (the main process denies new windows)
+  document.addEventListener('click', e => { const a = e.target.closest('a[href]'); if (a && !a.dataset.act) e.preventDefault(); });
+  $('#wbar').addEventListener('click', e => { const b = e.target.closest('button[data-w]'); if (b) window.vrg.win(b.dataset.w); });
+  $('#wbar').addEventListener('dblclick', e => { if (!e.target.closest('button')) window.vrg.win('max'); });
+  $('#refresh').addEventListener('click', () => { $('#refresh').classList.add('busy'); window.vrg.refresh(); });
+  window.vrg.onPorts(showPorts);
+  window.vrg.ports().then(showPorts);
+}
+
+renderBar(); renderLanes();
+</script>
+</body>
+</html>
